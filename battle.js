@@ -393,6 +393,7 @@ function startSideTurn(side){
   const risen=legionTurn(side); // B3 Deathless: ships reassembling since last round stand up now
   for(const u of B.units){
     if(u.dead||u.side!==side) continue;
+    if(u.isSq) u.activated=false;
     u.braced=false; u.coverBy=null; u.postFire=false; u.postMp=0; u.pivotUsed=false; u.lockOn=false; u.focus=false; u.fullAhead=false; u.noTurn=false; u.evBuff=0; u.order=null; u.ramBoost=0;
     u.mp=Math.max(1,u.speed-u.st.engine); u.turnsLeft=u.turns;
     for(const w of u.weapons){ w.fired=false; if(w.cdLeft>0) w.cdLeft--; if(w.off>0) w.off--; }
@@ -412,6 +413,7 @@ function startSideTurn(side){
   if(B.event&&B.event.k==='flare'&&B.round===B.event.r&&B.event.done) for(const u of B.units){ if(!u.dead&&u.side===side&&u.shMax>0) u.sh=[0,0,0,0]; }
   for(const u of risen) for(const w of u.weapons) w.fired=true; // a reassembled ship cannot fire the round it rises
   if(burned) checkEnd(); // a ship that burned out can decide the battle at the turn boundary
+  if(side==='player'&&!B.over) replaceWings(side);
   return deaths.length?settleDeaths(deaths):null;
 }
 // v53: a death from a rules tick (fire, acid, the dead star, station guns) starts now, so its state changes land at once, and is awaited in order by the turn flow
@@ -1144,7 +1146,7 @@ function sqValue(t,e,s){ let v=e.hull+e.shield*.3; if(e.hull>=t.hp) v+=25; if(t.
 function sqObjNear(t){ const o=B&&B.obj; if(!o) return false; if(o.type==='defend'&&o.hex) return hdist(t,o.hex)<=3; if(o.type==='intercept'){ for(const x of B.units) if(x.transport&&!x.dead&&hdist(x,t)<=3) return true; } return false; }
 // a target is "in reach" only if some hex the squadron can actually fly to this round lets a weapon legally hit it (same range, arc and sight rules as manual fire)
 // wing orders (player only): 'strike' a chosen enemy, or 'guard' a friendly ship and hit whatever comes near it
-function sqOrder(s){ const o=s.wingOrder; if(!o) return null; const t=B.units.find(x=>x.id===o.id); if(!t||t.dead||t.side===s.side){ s.wingOrder=null; return null; } return {kind:o.kind,t}; }
+function sqOrder(s){ const o=s.wingOrder; if(!o) return null; const t=B.units.find(x=>x.id===o.id); if(!t||t.dead||(o.kind==='strike'?t.side===s.side:t.side!==s.side)){ s.wingOrder=null; return null; } return {kind:o.kind,t}; }
 function sqPlan(s){ const ord=sqOrder(s); let foes=alive(s.side==='player'?'enemy':'player').filter(t=>sqWants(s,t)||(ord&&ord.kind==='strike'&&ord.t===t)); if(!foes.length) return null;
   const carrier=B.units.find(x=>x.id===s.parent&&!x.dead), ready=s.weapons.filter(weaponReady), {states}=computeReach(s), here={q:s.q,r:s.r,f:s.facing,cost:0,stay:true};
   const stc=ord?null:wingStance(s), guard=ord&&ord.kind==='guard'?ord.t:stc==='screen'&&carrier?carrier:null; // B4: a screening wing guards its carrier (an explicit order still wins)
@@ -1179,10 +1181,22 @@ function deployWings(){ for(const u of B.units.filter(x=>(x.ab==='launch'||(x.fx
 // a carrier's wing mix: strike craft first, then escorts. Factions whose own craft are fighters still field bombers, or their wings never touch a ship
 function wingKind(u,i){ const set=FACTIONS[u.fac]&&FACTIONS[u.fac].sq, own=set||'fighter'; if(own!=='fighter') return own; if(set&&u.side==='enemy') return own; /* enemy fighter fleets stay true to their faction */ const foe=u.side==='player'?'enemy':'player', air=B.units.some(x=>!x.dead&&x.side===foe&&(x.isSq||x.ab==='launch')); if(!air) return 'bomber'; /* no enemy craft to fight: every wing is a strike wing */ const have=squadronsOf(u), nb=have.filter(x=>x.t.sq!=='fighter').length, nf=have.length-nb; if(i!=null) return i%2?'fighter':'bomber'; return nb<=nf?'bomber':'fighter'; }
 function squadronsOf(u){ return alive().filter(x=>x.parent===u.id); }
+// R88: replace one lost player wing per ready carrier each round, using the existing reserves and cooldown.
+function replaceWings(side){ for(const u of alive(side).filter(x=>x.ab==='launch'&&!x.isSq)){
+  if(!launchReady(u)) continue;
+  const foes=alive(side==='player'?'enemy':'player'), hs=launchHexes(u);
+  hs.sort((a,b)=>Math.min(99,...foes.map(f=>hdist(a,f)))-Math.min(99,...foes.map(f=>hdist(b,f))));
+  launchWing(u,hs[0],wingKind(u)); u.abCd=abilityCd(u);
+} }
+function launchReady(u){ return u.ab==='launch'&&!u.dead&&!(u.abCd>0)&&!u.braced&&squadronsOf(u).length<u.hangar&&(u.spare==null||u.spare>0)&&launchHexes(u).length>0; }
+function launchWing(u,h,kind){
+  if(u.spare!=null) u.spare=Math.max(0,u.spare-1); const sq=makeWing(u,h,kind); sq.mp=0; sq.weapons.forEach(w=>w.fired=true); if(typeof fxFlash==='function') fxFlash(h,'#f0b35a');
+  log(`${u.name} launches a ${HULLS[kind].n.toLowerCase()}.`,u.side==='player'?'p':'e');
+}
 function canAbility(u){
   if(!u.ab||u.dead||u.abCd>0||u.braced) return false;
   if(u.ab==='surge'&&u.st&&u.st.shieldOff>=99) return false; // the shield generator section is destroyed
-  if(u.ab==='launch') return squadronsOf(u).length<u.hangar && (u.spare==null||u.spare>0) && launchHexes(u).length>0;
+  if(u.ab==='launch') return u.side!=='player'&&launchReady(u);
   if(u.ab==='reload') return u.weapons.some(w=>w.k==='torp'&&(w.cdLeft>0||w.fired));
   if(u.ab==='regrow') return u.hp<u.maxHp;
   if(u.ab==='reclaim') return alive(u.side).some(x=>!x.isSq&&hdist(x,u)<=3&&x.hp<x.maxHp);
@@ -1214,8 +1228,7 @@ async function useAbility(u,arg){
   if(a==='launch'){
     const h=arg&&arg.hex ? arg.hex : pick(launchHexes(u));
     const kind = arg&&arg.kind ? arg.kind : wingKind(u);
-    if(u.spare!=null) u.spare=Math.max(0,u.spare-1); const sq=makeWing(u,h,kind); sq.mp=0; sq.weapons.forEach(w=>w.fired=true); if(typeof fxFlash==='function') fxFlash(h,'#f0b35a');
-    log(`${u.name} launches a ${HULLS[kind].n.toLowerCase()}.`, u.side==='player'?'p':'e');
+    launchWing(u,h,kind);
   }
   if(a==='nova'){
     const c=arg.hex;

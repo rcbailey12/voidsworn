@@ -2295,7 +2295,7 @@ func _overlay() -> void:
 	if threat_on:
 		fills = _threat_fills()
 	var u := _sel_unit()
-	var ability_mode := mode in ["nova", "blink", "launch"]
+	var ability_mode := mode in ["nova", "blink"]
 	if _usable(u) and not ability_mode:
 		# F1: every reachable hex blue with a lit edge (style 1) and one bright line around the whole area
 		for k in reach_map:
@@ -2508,9 +2508,9 @@ func _threat_done() -> void:
 	_overlay.call_deferred()
 
 
-# target hexes for nova, blink and launch
+# target hexes for nova and blink
 func _ability_hexes() -> Array:
-	if sel == "" or not (mode in ["nova", "blink", "launch"]):
+	if sel == "" or not (mode in ["nova", "blink"]):
 		return []
 	var out: Array = []
 	for h in _ui(sel).get("ability", {}).get("hexes", []):
@@ -2799,7 +2799,7 @@ func _on_click() -> void:
 		return
 	var u := _unit_at(hover.x, hover.y)
 	var s := _sel_unit()
-	if mode in ["nova", "blink", "launch"] and not s.is_empty():
+	if mode in ["nova", "blink"] and not s.is_empty():
 		var m := mode
 		mode = ""
 		var ok := false
@@ -3393,9 +3393,9 @@ func _on_action(name: String, arg) -> void:
 			if sel != "" and _can_act():
 				var id := sel
 				var ab := str(_sel_unit().get("ab", ""))
-				if ab in ["nova", "blink", "launch"]:
+				if ab in ["nova", "blink"]:
 					mode = "" if mode == ab else ab
-					hud.toast({"nova": "Click a hex 3 to 9 ahead for the nova shell.", "blink": "Click an open hex within 3 to jump to.", "launch": "Click an open hex next to the carrier."}[ab])
+					hud.toast({"nova": "Click a hex 3 to 9 ahead for the nova shell.", "blink": "Click an open hex within 3 to jump to."}[ab])
 					_refresh_ui()
 				else:
 					plog.act("ability", {"ab": ab})
@@ -3795,6 +3795,8 @@ func _panel_info() -> Dictionary:
 		stats += "\n[color=#9fd4ff]Braced: hull damage −40% until its next turn.[/color]"
 	if u["burning"]:
 		stats += "\n[color=#f08a4b]On fire.[/color]"
+	if u.get("ab") == "launch":
+		stats += "\nWings launch and fight automatically. Replacements use spares and fight next round."
 	info["stats"] = stats
 	var ws: Array = []
 	var tgt := target
@@ -3823,7 +3825,7 @@ func _panel_info() -> Dictionary:
 		var orders: Array = []
 		var ui := _ui(id)
 		orders.append({"text": "Brace (B)", "act": "brace", "on": can and bool(ui.get("orders", {}).get("brace", false)), "tip": str(TBL.get("ORDERS", {}).get("brace", {}).get("d", ""))})
-		if u.get("ab") != null:
+		if u.get("ab") != null and u.get("ab") != "launch":
 			var A = TBL.get("ABILITIES", {}).get(str(u["ab"]), {})
 			orders.append({"text": str(A.get("n", u["ab"])) + ("" if u["abReady"] else " (%d)" % int(u["abCd"])), "act": "ability", "on": can and u["abReady"], "tip": str(A.get("d", ""))})
 		orders.append({"text": "Ram (X)", "act": "ram", "on": can and ui.get("ram") != null, "tip": "Charge the first enemy dead ahead (needs a run-up)."})

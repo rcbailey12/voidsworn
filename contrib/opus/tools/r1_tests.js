@@ -107,7 +107,7 @@ check('salvage (relics): none offered that can never act (coils without abilitie
   R.fleet.forEach(s => { s.tpl = 'fighter'; }); const noab = !T.relicUseful('coils'); return lone && two && top && low && noab && T.relicUseful('ledger'); });
 check('ROS-2 and ROS-3 every hull variant that drops a gun or the ability says so', () => {
   const V = T.HULL_VARIANTS; return /null cannon instead of two/.test(V.d_harvester_t.d) && /in place of the two prow lances/.test(V.i_song_w.d) && /Trades its spine volley/.test(V.b_razor_s.d)
-    && /no Launch squadron ability/.test(V.h_vanguard_g.d) && /no Launch squadron ability/.test(V.c_hulk_g.d); });
+    && /No hangar or automatic wings/.test(V.h_vanguard_g.d) && /No hangar or automatic wings/.test(V.c_hulk_g.d); });
 check('h_repair is named and described for what it does (free repairs only)', () => T.HEAT.h_repair.n === 'Thin repair crews' && /Shipyard repairs are unaffected/.test(T.HEAT.h_repair.d));
 check('FS-2 the Eclipse cp6 battleship costs 590, above its 415-credit cruiser (balance v2)', () => {
   // No Eclipse battleship exists yet. Price the ruled cp6 hull with the shipyard rounding in data.js.

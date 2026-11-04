@@ -160,6 +160,7 @@ async function runScenario(S){
   if(S.campaign){ B.campaign=true; B.event=rollBattleEvent(cfg,S.event_war?(cfg.kind!=='boss'?(rnd()<.6?'reinf_enemy':'reinf_ally'):null):(S.event_force||null)); } // campaign3d.js battleScreen (event_war: the sector at war)
   hook('start',null);
   B.alt=S.alt!==false; for(const x of B.units) x.activated=false; if(B.alt){ const d=startSideTurn('enemy'); if(d) await d; } // ui3d.js prepBattle
+  B.busy=true; await swarmPhase('player'); B.busy=false;
   let g=0;
   const bot0=S.bot==='full'?pBotFull:pBotF, bot=S.attack_move?async u=>{ await attackFirstF(u); if(!B.over&&!u.dead&&!u.activated&&B.side==='player') await bot0(u); }:bot0;
   if(B.alt) while(!B.over&&B.round<=S.rounds&&g++<2000){ threatSnap(); const u=pendingP()[0]; if(u) await bot(u); else await endActivationF(true,null); }
