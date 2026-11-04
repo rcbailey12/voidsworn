@@ -319,16 +319,16 @@ SFX.CUES={
 // plus its synth take when a {syn} layer is listed; if none of its clips decoded it plays the synth take alone.
 // g = layer level, r = playback rate (pitch per faction), d = delay in seconds.
 SFX.MAP={
-  gun_shell:[{syn:1,g:.7},{s:'boomLow',g:.5,r:1.3}], gun_las:[{s:'laserLarge',r:.9},{syn:1,g:.3}], gun_needle:[{s:'laserSmall',r:1.3},{syn:1,g:.35}], gun_sq:[{s:'laserSmall',g:.8,r:1.05}],
-  gun_plasma:[{syn:1,g:.85},{s:'laserLarge',g:.35,r:.62}], gun_rail:[{syn:1,g:.85},{s:'boomLow',g:.4,r:1.1}], salvo_tail:[{syn:1,g:.8},{s:'boomLow',g:.45,r:.75,d:.05}],
-  lance:[{s:'laserLarge',g:.75,r:.55},{syn:1,g:.7}], lance_ion:[{s:'arc',g:.7},{syn:1,g:.6}], lance_dark:[{syn:1,g:.85},{s:'laserLarge',g:.35,r:.42}], lance_choir:[{syn:1,g:.8},{s:'laserSmall',g:.35,r:1.5}],
-  torp:[{s:'whoosh',g:.75,r:1.1},{syn:1,g:.55}], torp_heavy:[{s:'whoosh',g:.7,r:.85},{syn:1,g:.7}], torp_star:[{s:'whoosh',g:.45,r:1.5},{syn:1,g:.7}],
+  gun_shell:[{s:'boomLow',g:.5,r:1.3},{s:'shellBang',g:.45}], gun_las:[{s:'laserLarge',r:.9},{s:'laserLR',g:.4}], gun_needle:[{s:'laserSmall',r:1.3},{s:'needleTick',g:.4,r:1.15}], gun_sq:[{s:'laserSmall',g:.8,r:1.05}],
+  gun_plasma:[{s:'laserLarge',g:.35,r:.62},{s:'plasmaShot',g:.38}], gun_rail:[{s:'boomLow',g:.4,r:1.1},{s:'railStrike',g:.5}], salvo_tail:[{s:'boomLow',g:.45,r:.75,d:.05},{s:'salvoBoom',g:.45}],
+  lance:[{s:'laserLarge',g:.75,r:.55},{s:'lanceLR',g:.32}], lance_ion:[{s:'arc',g:.7},{s:'ionField',g:.3,r:1.1}], lance_dark:[{s:'laserLarge',g:.35,r:.42},{s:'darkLance',g:.28}], lance_choir:[{s:'laserSmall',g:.35,r:1.5},{s:'choirBell',g:.3}],
+  torp:[{s:'whoosh',g:.75,r:1.1},{s:'torpLaunch',g:.35}], torp_heavy:[{s:'whoosh',g:.7,r:.85},{s:'heavyPlate',g:.45,r:.85}], torp_star:[{s:'whoosh',g:.45,r:1.5},{s:'starShimmer',g:.32}],
   launch:[{s:'launch'}], phase:[{s:'whoosh',g:.6,r:1.2},{s:'arc',g:.4,d:.25}],
-  hit:[{s:'hullHit'},{syn:1,g:.3}], hit_las:[{s:'hullHit',g:.45,r:1.3},{syn:1,g:.8}], hit_plasma:[{s:'hullHitBig',g:.55,r:.78},{syn:1,g:.85}], hit_rail:[{s:'hullHitBig',g:.6,r:1.12},{syn:1,g:.75}], hit_glass:[{s:'shieldHit',g:.35,r:1.6},{syn:1,g:.8}], hit_ion:[{s:'arc',g:.6,r:1.2},{syn:1,g:.7}], hit_heavy:[{s:'hullHitBig'},{s:'boomLow',g:.45}], shield:[{s:'shieldHit'},{syn:1,g:.35}], shield_break:[{s:'shieldBig'},{s:'shieldHit',g:.5,r:.8},{syn:1,g:.3}],
-  pop:[{s:'boomSmall',g:.8,r:1.35}], boom_s:[{s:'boomSmall'},{syn:1,g:.3}], boom_m:[{s:'boomSmall',r:.8},{s:'boomLow',g:.65},{s:'debris',g:.4,d:.15}], boom_l:[{s:'boomBig'},{s:'debris',g:.45,d:.3}],
-  bass_drop:[{s:'bassDrop'}], charge:[{s:'ionCharge'}], wreck:[{s:'scrape'}],
+  hit:[{s:'hullHit'},{s:'hullTick',g:.5}], hit_las:[{s:'hullHit',g:.45,r:1.3},{s:'lasSear',g:.4}], hit_plasma:[{s:'hullHitBig',g:.55,r:.78},{s:'plasmaHit',g:.5}], hit_rail:[{s:'hullHitBig',g:.6,r:1.12},{s:'railHit',g:.5}], hit_glass:[{s:'hitGlass',g:.35}], hit_ion:[{s:'arc',g:.6,r:1.2},{s:'ionZap',g:.38}], hit_heavy:[{s:'hullHitBig'},{s:'boomLow',g:.45}], shield:[{s:'shieldHit'},{s:'shieldShimmer',g:.3,r:.9}], shield_break:[{s:'shieldBig'},{s:'shieldHit',g:.5,r:.8},{s:'shieldShatter',g:.45}],
+  pop:[{s:'boomSmall',g:.8,r:1.35}], boom_s:[{s:'boomSmall'},{s:'boomCrunch',g:.42}], boom_m:[{s:'boomSmall',r:.8},{s:'boomLow',g:.65},{s:'debris',g:.4,d:.15}], boom_l:[{s:'boomBig'},{s:'debris',g:.45,d:.3}],
+  bass_drop:[{s:'bassDrop'}], charge:[{s:'ionCharge'}], wreck:[{s:'scrape'},{s:'wreckSettle',g:.25}],
   ui_click:[{s:'uiClick'}], ui_confirm:[{s:'uiConfirm'}], ui_cancel:[{s:'uiDeny'}], ui_select:[{s:'uiSelect'}], ui_panel:[{s:'uiPanel'}], ui_reward:[{s:'reward'}],
-  ui_your:[{s:'yourTurn'}], ui_alert:[{s:'enemyTurn',g:.6}], ui_boss:[{s:'impactChord'}], sting_win:[{s:'victory'},{syn:1,g:.55}], sting_loss:[{s:'enemyTurn',r:.8},{syn:1,g:.6}],
+  ui_your:[{s:'yourTurn'}], ui_alert:[{s:'enemyTurn',g:.6}], ui_enemy:[{s:'enemyTurn',g:.6}], ui_boss:[{s:'impactChord'}], sting_win:[{s:'victory'}], sting_loss:[{s:'enemyTurn',r:.8}],
 };
 for(const k of ['ui_click','ui_confirm','ui_cancel','ui_round','ui_your','ui_enemy','sting_win','sting_loss']) SFX.CUES[k].spj=k.startsWith('sting')?0:.02;
 
