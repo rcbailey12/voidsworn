@@ -1,0 +1,35 @@
+{
+  "pieces": [
+    {
+      "name": "hull_fragment",
+      "triangles": 6584,
+      "radius": 1.0
+    },
+    {
+      "name": "broken_frame",
+      "triangles": 7168,
+      "radius": 1.0
+    },
+    {
+      "name": "truss",
+      "triangles": 4320,
+      "radius": 1.0
+    },
+    {
+      "name": "hull_section",
+      "triangles": 3992,
+      "radius": 1.0
+    },
+    {
+      "name": "engine_bell",
+      "triangles": 4980,
+      "radius": 1.0
+    },
+    {
+      "name": "weapon_sponson",
+      "triangles": 4960,
+      "radius": 1.0
+    }
+  ],
+  "source": "tools/blender/wreck_kit.py"
+}
