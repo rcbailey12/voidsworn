@@ -34,8 +34,8 @@ If "Running: yes" and the start time is under 90 minutes old, another loop is wo
 
 From the backlog check (R106, synthesis section 5), with the station repaint added (R104):
 
-1. #187 Pyre-Barge round 6 (running). HOLD its PR for Ryan.
-2. #195 station repaint (blocked; release after #187). Stop for Ryan's look.
+1. #195 station repaint (released 04:40Z). Stop for Ryan's look.
+2. #198 Pyre-Barge round 7 (R108; blocked, release after #195). HOLD its PR for Ryan.
 3. #139 nebulas and ion storms (deaths #137 and weapons #138 are already merged, so R88's order is met).
 4. #140 rocky and terran planets.
 5. #120 Nemesis redesign 1.
@@ -48,18 +48,18 @@ From the backlog check (R106, synthesis section 5), with the station repaint add
 12. #30 progression step 14.
 13. #92 debrief screen (edited, after #24 and #122).
 14. #100 terrain fx 2 (edited; #60 merged as PR #143 on Nov 5, R107, so build on its wreckage kit).
-15. #169 breakable Pyre-Barge (edited; after Ryan's round 6 pick and #167, which is merged).
+15. #169 breakable Pyre-Barge (edited; after Ryan's round 7 pick, R108, and #167, which is merged).
 16. Later: #41, then #42, then #44.
 
 ## Holds
 
-- PR from #187 (round 6): hold for Ryan's pick; send the comparison sheet, the blurred greyscale check and both ceiling numbers.
+- PR from #198 (round 7): hold for Ryan's pick; send the comparison sheet, the blurred greyscale check and both ceiling numbers. (#187 round 6 merged as tools only, R108.)
 - PR from #195 (station repaint): hold for Ryan's look.
 - Issues #193 (Tripo per-part test) and #194 (five ship-pipeline options): Muse proposals labelled opus, parked until the weekly reset. Note: Tripo is a paid cloud service; the house rule is free and local tools only, so #193 needs Ryan's call before any work.
 
 ## Waiting on Ryan
 
-- Round 6 pick when #187 lands.
+- Round 7 pick when #198 lands.
 
 ## Muse
 
@@ -90,6 +90,8 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 - Codex: coding jobs from the board (local on Ryan's PC). Muse: research, design text, low-code PRs.
 
 ## Log (newest first, keep about 10)
+
+- 2026-11-05 04:50 lead chat: #187 round 6 done (PR #196, merged as tools); Ryan ruled R108, round 7 filed as #198. Released #195 station repaint.
 
 - 2026-11-05 03:50 lead chat: took the board back (hourly task switched off by Ryan until the weekly reset). Merged #190, #191, #192. Recorded R104 to R106, applied the backlog edits to #24, #27, #92, #100, #169, filed #195 (station repaint), rewrote the queue.
 
