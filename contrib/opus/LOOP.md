@@ -4,9 +4,9 @@
 
 ## Lock
 
-Running: yes
-Running since (UTC): 2026-11-04 23:39
-Last run finished (UTC): 2026-11-04 21:40 (set up by the lead chat)
+Running: no
+Running since (UTC): -
+Last run finished (UTC): 2026-11-05 00:22
 
 If "Running: yes" and the start time is under 90 minutes old, another loop is working: stop without changes. If it is older, the last run died: take over and say so in the log.
 
@@ -23,17 +23,18 @@ If "Running: yes" and the start time is under 90 minutes old, another loop is wo
 7. Rewrite this file (state, queue, holds, waiting, log), set "Running: no", commit straight to main (this file only, docs-only exception) and push with timeout 90. Stop.
 8. If a job will finish or a usage limit will reset well before the next hourly run, schedule one send_later check for just after it. Never chain send_later loops.
 
-## Current state (2026-11-04 21:40 UTC)
+## Current state (2026-11-05 00:22 UTC)
 
-- Codex: #163 (Pyre-Barge round 5) running since 21:28Z, after a usage limit that reset at 21:28Z.
+- Codex: #163 finished 22:25Z (exit 0), PR #186 open and HELD for Ryan's pick. #183 unblocked at 00:11Z (blocked label already removed when this run looked); queue_b and running were empty at 00:20Z, so the board should queue it on its next poll. Check next run that it is running and not doubled.
+- PR #186 review (Opus): files are round5 tools plus docs/shots only, no shipping asset touched, matches the done-when list. Paint is now soot-dominant and much closer to the reference (largest colour gap 9.35 points). Both hulls still 0/9 clean. V1 307,477 tris, 4.175 ms GPU (over 3.9; the round 4 V1 control also measured 4.23 this session, so part is session drift). V2 289,047 tris, 3.248 ms. Codex picks V1.
 - Latest playtest exe: g2_pt_d03ac22 at Downloads\voidsworn_test\build\export\Voidsworn.exe (passed). Not in it yet: #185 deaths 2.
 - PC disk: about 100 GB free after Ryan's cleanup (sync_old holds only g2_pt_d03ac22). Skip new playtest builds if free space drops under 60 GB and ask Ryan to clean sync_old.
-- Merged today: #149 #150 #151 #153 #154 #155 #157 #158 #159 #160 #161 #164 #165 #170 #174 #175 #176 #177 #178 #179 #180 #181 #185 and the R-row PRs.
+- PC shell (device_bash) is unavailable on this PC (hypervisor off); use list_dir and stage only. voidsworn_test had to be re-granted this run (granted automatically).
 
 ## Queue order (Codex)
 
-1. #163 Pyre-Barge round 5 (running). HOLD its PR for Ryan.
-2. #183 station detail pass (blocked; release after #163). Stop for Ryan's look.
+1. #163 Pyre-Barge round 5: done, PR #186 held for Ryan.
+2. #183 station detail pass (released 00:11Z, waiting for the board to queue it). Stop for Ryan's look.
 3. #139 nebulas and ion storms (blocked).
 4. #140 rocky and terran planets (blocked).
 5. #92 debrief screen.
@@ -45,13 +46,13 @@ If "Running: yes" and the start time is under 90 minutes old, another loop is wo
 
 ## Holds
 
-- PR from #163 (round 5): hold for Ryan's pick; send the V1/V2 comparison sheet and colour-balance numbers, check both against the R96 ceiling (about 306k tris, 3.9 ms at 20 ships).
+- PR #186 (#163 round 5): hold for Ryan's pick (sent 00:22Z). Merge it once he picks; it is docs and tools only.
 - PR from #183 (stations): hold for Ryan's look.
 - PR #143 (#60 debris): parked. Unpark only if Ryan asks; then close #143 and drop 60 from queued.txt.
 
 ## Waiting on Ryan
 
-- Nothing right now.
+- Pyre-Barge round 5 pick (asked 2026-11-05 00:22, sheet: docs/shots/ship_pipeline/pyre_round5/comparison.webp on PR #186). Recommended: V1 goes on to the repair and breakable pass (#169), with a triangle cut in that pass to get under the 3.9 ms ceiling. V1 has the hand-built engine, guns and bridge; it is about 7% over the GPU budget. V2 is under budget but has floating blocks, fused machinery and a slab bow, so it needs more geometry rebuilding. Other option: keep today's ship and park the barge rebuild. Once he picks: record an R row, merge #186, and write the #169 brief for that hull.
 
 ## Muse
 
@@ -83,4 +84,5 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-05 00:22 loop: #163 done, PR #186 reviewed and held, round 5 pick sent to Ryan; #183 found already unblocked, waiting for the board to queue it.
 - 2026-11-04 21:40 lead chat: loop moved to this file and the hourly scheduled task "Voidsworn board loop" (runs at :37 each hour, first run 22:37 UTC, auto approval, needs Ryan's PC) (R102). #163 running. No send_later checks pending.
