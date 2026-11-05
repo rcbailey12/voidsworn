@@ -4,8 +4,8 @@
 
 ## Lock
 
-Running: no
-Running since (UTC): -
+Running: yes
+Running since (UTC): 2026-11-04 23:39
 Last run finished (UTC): 2026-11-04 21:40 (set up by the lead chat)
 
 If "Running: yes" and the start time is under 90 minutes old, another loop is working: stop without changes. If it is older, the last run died: take over and say so in the log.
