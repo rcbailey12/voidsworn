@@ -1,6 +1,6 @@
 # Board loop state (LOOP.md)
 
-**This loop is the only owner of the job board** (Ryan, Nov 4 2026, FINDINGS R102). Only the hourly scheduled task "Voidsworn board loop" (and a one-off send_later check it schedules) queues jobs, merges PRs and releases blocked issues. Any other Claude chat on this repo works one named area or only reads.
+**Board owner right now: the lead chat (Ryan, Nov 4 21:33 CST).** The hourly scheduled task "Voidsworn board loop" is switched off until the weekly Claude usage reset: its runs kept stopping for approvals and were refused merges. The lead chat runs the board with one-off send_later checks until Ryan revisits it. When the hourly task is back on, it becomes the only owner again (R102). Any other Claude chat on this repo works one named area or only reads.
 
 ## Lock
 
@@ -23,51 +23,49 @@ If "Running: yes" and the start time is under 90 minutes old, another loop is wo
 7. Rewrite this file (state, queue, holds, waiting, log), set "Running: no", commit straight to main (this file only, docs-only exception) and push with timeout 90. Stop.
 8. If a job will finish or a usage limit will reset well before the next hourly run, schedule one send_later check for just after it. Never chain send_later loops.
 
-## Current state (2026-11-05 03:40 UTC)
+## Current state (2026-11-05 03:50 UTC)
 
-- **PC folders not reachable from the scheduled run.** The 03:27 run's device connection listed no connected folders (get_device_info connectedFolders empty), so queue_b, board\issue-N and shots could not be read. The run did not request access (that would prompt Ryan). Until fixed, the loop works from GitHub only and cannot see running jobs, logs or shots.
-- **Merges refused in the scheduled run.** The auto approval check denied gh api PUT .../merge on #191 and #192 ("merge without review"), even after an Opus review. Do not route around it with another merge tool. Merges wait for Ryan (one click on GitHub) or for a chat he is in.
-- Codex: #183 finished; PR #190 open (checks pass, tools only: station_kit.py, station_check.gd, station_sheets.py; fleet 11,636 tris, refinery 6,656, about 0.04 ms at 4K; shipping swap not done). HELD for Ryan's look; shots are on the PC at board\issue-183\shots\station_overview.jpg and DELIVERY_NOTES.md (flags unchanged baseline turret pivots).
-- #187 round 6 released 03:35Z (blocked label removed). The board should queue it on its next poll. The #188 paint standard is not on main yet (PR #191 unmerged), so round 6 may run without it; its issue allows that.
-- Muse: PR #191 (#188 readable paint standard) and PR #192 (#189 backlog check) reviewed by Opus: contrib/muse only, checks pass (#192's open-pr job failed, which is only the auto PR opener). Both good to merge.
-- New opus issues #193 (Tripo per-part challenger test) and #194 (five ideation options for the ship look pipeline), filed 02:40Z and 03:23Z as proposals. Not triaged yet (usage is low); triage in a chat with Ryan or a later run.
-- Latest playtest exe: g2_pt_d03ac22 (passed). Not in it yet: #185 deaths 2.
-- PC disk: about 100 GB free at last look.
+- Codex: #187 (Pyre-Barge round 6) running since 03:29Z. It started before the paint standard merged, so it may not follow #188 exactly.
+- Merged tonight: #186 (round 5 tools), #190 (#183 station detail shapes), #191 (#188 readable-paint standard), #192 (#189 backlog check), plus FINDINGS R103 to R106.
+- Latest playtest exe: g2_pt_d03ac22 (no deaths 2, no station detail yet).
+- PC disk: about 100 GB free.
 
 ## Queue order (Codex)
 
-1. #163 Pyre-Barge round 5: done; PR #186 merged as tools only (lead chat, R103: paint rejected).
-2. #183 station detail pass: done, PR #190 held for Ryan's look.
-3. #187 Pyre-Barge round 6 (R103). Released 03:35Z. HOLD its PR for Ryan.
-4. #139 nebulas and ion storms (blocked).
-5. #140 rocky and terran planets (blocked).
-6. #92 debrief screen.
-7. #100 terrain fx 2 (needs #60 decided; see Holds).
-8. Progression #24, #26, #27, #29, #30.
-9. Nemesis #120, #121 (uses contrib/muse/design/nemesis_writing_2026_11/text_table.md, R101), #122.
-10. #169 breakable Pyre-Barge: only after Ryan picks a round 6 hull (R98, R99, R103).
-11. Later, not yet scheduled: #41, #42, #44.
+From the backlog check (R106, synthesis section 5), with the station repaint added (R104):
 
-Muse #189 (PR #192) proposes a new order: Nemesis #120 to #122 before progression, #92 after #24 and #122, #60 decision as a gate before #100, #169 also gated on #167 (already merged as #185). Apply it and its five issue edits once Ryan answers its questions (Waiting on Ryan).
+1. #187 Pyre-Barge round 6 (running). HOLD its PR for Ryan.
+2. #195 station repaint (blocked; release after #187). Stop for Ryan's look.
+3. #139 nebulas and ion storms (deaths #137 and weapons #138 are already merged, so R88's order is met).
+4. #140 rocky and terran planets.
+5. #120 Nemesis redesign 1.
+6. #121 Nemesis redesign 2 (NEM_VOICE from contrib/muse/design/nemesis_writing_2026_11/text_table.md, R101).
+7. #122 Nemesis redesign 3.
+8. #24 progression step 7 (edited, after #121).
+9. #26 progression step 10.
+10. #27 progression step 11 (edited: XP by line only).
+11. #29 progression step 13.
+12. #30 progression step 14.
+13. #92 debrief screen (edited, after #24 and #122).
+14. #100 terrain fx 2 (edited; gated on Ryan's look at #60, PR #143).
+15. #169 breakable Pyre-Barge (edited; after Ryan's round 6 pick and #167, which is merged).
+16. Later: #41, then #42, then #44.
 
 ## Holds
 
-- PR #190 (#183 stations): hold for Ryan's look.
-- PR from #187 (round 6): hold for Ryan's pick; send the comparison sheet, the blurred greyscale readability check and both ceiling numbers.
-- PR #143 (#60 debris): parked. Unpark only if Ryan asks; then close #143 and drop 60 from queued.txt.
+- PR from #187 (round 6): hold for Ryan's pick; send the comparison sheet, the blurred greyscale check and both ceiling numbers.
+- PR from #195 (station repaint): hold for Ryan's look.
+- PR #143 (#60 debris): unparked for ONE look by Ryan (R106). Send him its sheet; he decides merge or close.
+- Issues #193 (Tripo per-part test) and #194 (five ship-pipeline options): Muse proposals labelled opus, parked until the weekly reset. Note: Tripo is a paid cloud service; the house rule is free and local tools only, so #193 needs Ryan's call before any work.
 
 ## Waiting on Ryan
 
-- **Reconnect the PC folders for the hourly task** (asked 03:40). The 03:27 run saw no connected folders. Recommended: open the "Voidsworn board loop" task in the desktop app and re-add Downloads\voidsworn_test and the Godot app_userdata\Voidsworn folder, with the desktop app left open. Without it the loop cannot see jobs, logs or shots.
-- **Merge PR #191 and PR #192** (asked 03:40). Both reviewed, Muse docs only, checks pass. The scheduled run is not allowed to merge on its own. Recommended: merge both on GitHub, #191 first so round 6 can use the paint standard. Trade-off: none known; they add files under contrib/muse only.
-- **Station look, PR #190** (asked 03:40): open board\issue-183\shots\station_overview.jpg on the PC. Recommended: approve if the stations read better at battle distance; the shipping swap is a separate step after that.
-- **#188 paint standard questions** (PR #191, synthesis section 6). Chair picks, recommended as is: Q1 1080p binds (a plate that passes at 1080p passes at 4K). Q2 two value step tiers, not a flat 25 everywhere (a flat step pushes Hegemony out of its own colours). Q3 Hullbreaker rust may form full plates inside the rust budget (break-up only is the stricter option). Q4 close-range paint rules come after two hulls pass the battle test. Q5 seven of nine clean cells is the paint sign-off bar, for any hull however it was built.
-- **#189 backlog check questions** (PR #192, synthesis section 7). Chair picks, recommended as is: Q1 unpark #60 (PR #143) for one look, since #100 builds on its debris kit. Q2 run Nemesis #120 to #122 before the progression steps, so the work is not done twice. Q3 keep #24 as its own step after #121. Q4 move #92 debrief behind #24 and #122. Q5 let Opus apply the issue edits and the new queue order.
-- Pyre-Barge round 5 pick: superseded by R103 (round 6, #187). Nothing to answer.
+- Look at the debris pass (#60, PR #143) and decide merge or close (R106 Q1).
+- Round 6 pick when #187 lands.
 
 ## Muse
 
-- #188 and #189 delivered as PR #191 and #192; reviewed, waiting only on the merge click. No Muse jobs open after those.
+- Open: none. #188 and #189 delivered and ruled (R105, R106).
 
 ## Known traps
 
@@ -94,6 +92,8 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 - Codex: coding jobs from the board (local on Ryan's PC). Muse: research, design text, low-code PRs.
 
 ## Log (newest first, keep about 10)
+
+- 2026-11-05 03:50 lead chat: took the board back (hourly task switched off by Ryan until the weekly reset). Merged #190, #191, #192. Recorded R104 to R106, applied the backlog edits to #24, #27, #92, #100, #169, filed #195 (station repaint), rewrote the queue.
 
 - 2026-11-05 03:40 loop: took over a stale 01:38 lock. PC folders not connected to the run, worked from GitHub only. Reviewed Muse PRs #191 and #192 (good); merge refused by the scheduled run's approval check, left for Ryan. Released #187. PR #190 stations held for Ryan. #193 and #194 not triaged.
 - 2026-11-05 02:00 lead chat: the hourly task had no PC folders attached, so every run asked Ryan for access. Replaced it with an identical task (runs at :58, first 02:58 UTC) with Downloads\voidsworn_test and the Godot app_userdata\Voidsworn folder attached. Runs must not request other folders.
