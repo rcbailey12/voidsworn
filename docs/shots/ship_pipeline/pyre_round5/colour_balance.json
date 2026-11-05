@@ -1,0 +1,227 @@
+{
+  "method": "Nearest fixed sRGB anchors on ship pixels only; warm-hue gate R>1.16G, R>1.22B, R-G>10, otherwise dark/neutral; silhouette threshold 127; no per-variant thresholds",
+  "classes": [
+    "soot_dark",
+    "rust",
+    "red_trim",
+    "lit_red"
+  ],
+  "anchors_srgb": [
+    [
+      40,
+      39,
+      38
+    ],
+    [
+      106,
+      44,
+      34
+    ],
+    [
+      184,
+      64,
+      42
+    ],
+    [
+      224,
+      64,
+      44
+    ]
+  ],
+  "crops": {
+    "battle": [
+      608,
+      417,
+      1312,
+      662
+    ],
+    "close": [
+      448,
+      275,
+      1472,
+      805
+    ]
+  },
+  "rows": [
+    {
+      "route": "reference",
+      "crop": "battle",
+      "pixels": 25562,
+      "share_percent": {
+        "soot_dark": 85.408,
+        "rust": 13.622,
+        "red_trim": 0.966,
+        "lit_red": 0.004
+      },
+      "median_srgb_luma": 30.072,
+      "mean_srgb_luma": 37.518,
+      "delta_from_reference_pp": {
+        "soot_dark": 0.0,
+        "rust": 0.0,
+        "red_trim": 0.0,
+        "lit_red": 0.0
+      },
+      "near_reference_10pp": true,
+      "median_luma_delta": 0.0
+    },
+    {
+      "route": "V1",
+      "crop": "battle",
+      "pixels": 27632,
+      "share_percent": {
+        "soot_dark": 94.76,
+        "rust": 4.669,
+        "red_trim": 0.525,
+        "lit_red": 0.047
+      },
+      "median_srgb_luma": 41.634,
+      "mean_srgb_luma": 44.094,
+      "actual_emission_area_percent": 0.373,
+      "delta_from_reference_pp": {
+        "soot_dark": 9.352,
+        "rust": -8.953,
+        "red_trim": -0.441,
+        "lit_red": 0.043
+      },
+      "near_reference_10pp": true,
+      "median_luma_delta": 11.562
+    },
+    {
+      "route": "V2",
+      "crop": "battle",
+      "pixels": 20946,
+      "share_percent": {
+        "soot_dark": 89.487,
+        "rust": 9.992,
+        "red_trim": 0.52,
+        "lit_red": 0.0
+      },
+      "median_srgb_luma": 44.262,
+      "mean_srgb_luma": 45.07,
+      "actual_emission_area_percent": 0.468,
+      "delta_from_reference_pp": {
+        "soot_dark": 4.079,
+        "rust": -3.63,
+        "red_trim": -0.446,
+        "lit_red": -0.004
+      },
+      "near_reference_10pp": true,
+      "median_luma_delta": 14.19
+    },
+    {
+      "route": "reference",
+      "crop": "close",
+      "pixels": 290465,
+      "share_percent": {
+        "soot_dark": 85.516,
+        "rust": 13.537,
+        "red_trim": 0.938,
+        "lit_red": 0.009
+      },
+      "median_srgb_luma": 28.425,
+      "mean_srgb_luma": 37.171,
+      "delta_from_reference_pp": {
+        "soot_dark": 0.0,
+        "rust": 0.0,
+        "red_trim": 0.0,
+        "lit_red": 0.0
+      },
+      "near_reference_10pp": true,
+      "median_luma_delta": 0.0
+    },
+    {
+      "route": "V1",
+      "crop": "close",
+      "pixels": 325453,
+      "share_percent": {
+        "soot_dark": 92.662,
+        "rust": 6.323,
+        "red_trim": 0.905,
+        "lit_red": 0.11
+      },
+      "median_srgb_luma": 39.625,
+      "mean_srgb_luma": 43.735,
+      "actual_emission_area_percent": 0.218,
+      "delta_from_reference_pp": {
+        "soot_dark": 7.146,
+        "rust": -7.214,
+        "red_trim": -0.033,
+        "lit_red": 0.101
+      },
+      "near_reference_10pp": true,
+      "median_luma_delta": 11.2
+    },
+    {
+      "route": "V2",
+      "crop": "close",
+      "pixels": 230570,
+      "share_percent": {
+        "soot_dark": 90.759,
+        "rust": 8.574,
+        "red_trim": 0.66,
+        "lit_red": 0.008
+      },
+      "median_srgb_luma": 40.475,
+      "mean_srgb_luma": 42.891,
+      "actual_emission_area_percent": 0.189,
+      "delta_from_reference_pp": {
+        "soot_dark": 5.243,
+        "rust": -4.963,
+        "red_trim": -0.278,
+        "lit_red": -0.001
+      },
+      "near_reference_10pp": true,
+      "median_luma_delta": 12.05
+    }
+  ],
+  "caveat": "Rendered colour bins, not semantic material IDs. Soot includes neutral steel and trophy colours. Lit red is a bright-colour proxy, not an emissive-channel area measurement. Reference art has approximate camera and baked lighting.",
+  "reference_resampling": "Same width and centre as V1 silhouette per camera, aspect preserved; same crop rectangles",
+  "target": "Within 10 percentage points in every colour bin, in both crops",
+  "round4_baseline": [
+    {
+      "route": "V1",
+      "crop": "battle",
+      "pixels": 27632,
+      "share_percent": {
+        "soot_dark": 67.512,
+        "rust": 28.869,
+        "red_trim": 3.597,
+        "lit_red": 0.022
+      }
+    },
+    {
+      "route": "V2",
+      "crop": "battle",
+      "pixels": 20946,
+      "share_percent": {
+        "soot_dark": 23.723,
+        "rust": 74.181,
+        "red_trim": 2.096,
+        "lit_red": 0.0
+      }
+    },
+    {
+      "route": "V1",
+      "crop": "close",
+      "pixels": 325453,
+      "share_percent": {
+        "soot_dark": 68.729,
+        "rust": 26.693,
+        "red_trim": 4.485,
+        "lit_red": 0.093
+      }
+    },
+    {
+      "route": "V2",
+      "crop": "close",
+      "pixels": 230570,
+      "share_percent": {
+        "soot_dark": 26.373,
+        "rust": 70.561,
+        "red_trim": 3.055,
+        "lit_red": 0.01
+      }
+    }
+  ],
+  "baseline_mask": "Current silhouettes on unchanged round 4 geometry and cameras"
+}

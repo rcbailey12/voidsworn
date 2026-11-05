@@ -1,0 +1,27 @@
+{
+  "quarter": {
+    "source_name": "quarter_selected.png",
+    "sha256": "e2c07d71f5bb4ec40b4453a1218da3f9f36b52f5b4814e8cac6d2fe0570e8327",
+    "review_image": "reference_quarter.png"
+  },
+  "side": {
+    "source_name": "side_ortho.png",
+    "sha256": "c6ba654003df14eb6202a485896ec92778c2254f48fa0fc608ec469ec05004d0",
+    "review_image": "reference_side.png"
+  },
+  "front": {
+    "source_name": "front_headon.png",
+    "sha256": "470ebfcfb913bd1bc119047e70b3e887ee1774f2bdf8fe22d8e450610694af55",
+    "review_image": "reference_front.png"
+  },
+  "top": {
+    "source_name": "top_ortho.png",
+    "sha256": "dad849d6aaedc4f3bdc385e522ada08cfee5c2c7398f84ff3ec3ef72610c23c7",
+    "review_image": "reference_top.png"
+  },
+  "battle": {
+    "source_name": "battle_target.png",
+    "sha256": "b74951f64ede6567cc3ac5d35b663ab4da1c61fa5a96fb29e82a63dbe15abb4d",
+    "review_image": "reference_battle.png"
+  }
+}

@@ -1,0 +1,189 @@
+{
+  "V1": {
+    "triangles": 307477,
+    "reimport_triangles": 307477,
+    "reimport": "PASS",
+    "bytes": 83055272,
+    "sha256": "0f89ca0e6836c4ac2bc5bd9fcf1d1311697fd7c2091414527f8c3298eb221d7e",
+    "source": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue163\\base_repair\\C19_51\\S5\\prototype.blend",
+    "source_sha256": "f5e9ace595c25a6534bb82160436ae8bf8798af670811661abdc9a2f0846d486",
+    "stage5_source_sha256": "74db5a169a274d0ac8f28131ce051f764026b2c839af84a378cbce863ee56447",
+    "retained_stage5_triangles": 305857,
+    "new_materials": {
+      "0": 282553,
+      "1": 9600,
+      "2": 824,
+      "8": 2340,
+      "3": 9564,
+      "12": 1336,
+      "9": 30,
+      "10": 30,
+      "11": 30,
+      "6": 360
+    },
+    "material": {
+      "version": 16303,
+      "resolution": 4096,
+      "seconds": 35.664499899954535,
+      "method": "unique UV bake of geometry Pointiness wear, short-distance AO grime, position noise scorch, CC0 photo microstructure",
+      "photo": "ambientCG PaintedMetal004, installed CC0 set",
+      "projected_paint": false,
+      "maps": {
+        "base.png": "79c7b9415030ed0e159c01065da9c1eb76b0a4425df974e0aa7111e8149a8539",
+        "emission.png": "3781856e1f9a9280b312afa01811e2f395e95d8bf2c2238267596210b6fb3e8b",
+        "normal.png": "c5225fe1c8cd8f6001d7b7a3197fca30289bd796cd53ed18a116a57999fbe45c",
+        "orm.png": "14681b41294643e1843cb811a8e5ef4157e2afe0cec3179ce52c674b12165fbf"
+      }
+    },
+    "mount_anchors": [
+      {
+        "part": "bridge_mount",
+        "host": "retained_hull_with_cut_closures",
+        "anchor": [
+          -0.1899999976158142,
+          0.0,
+          0.12999999523162842
+        ],
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "gap": 2.2351741790771484e-08
+      },
+      {
+        "part": "engine_mount",
+        "host": "retained_hull_with_cut_closures",
+        "anchor": [
+          -0.4268249273300171,
+          0.0,
+          -0.06400000303983688
+        ],
+        "normal": [
+          -1.0,
+          -0.0,
+          0.0
+        ],
+        "gap": 5.961192073300481e-08
+      },
+      {
+        "part": "gun_mount",
+        "host": "retained_hull_with_cut_closures",
+        "anchor": [
+          0.10000000149011612,
+          -0.21599996089935303,
+          -0.04500000178813934
+        ],
+        "normal": [
+          0.0,
+          -1.0,
+          -0.0
+        ],
+        "gap": 4.470348358154297e-08
+      },
+      {
+        "part": "gun_mount.001",
+        "host": "retained_hull_with_cut_closures",
+        "anchor": [
+          0.10000000149011612,
+          0.2160000205039978,
+          -0.04500000178813934
+        ],
+        "normal": [
+          -0.0,
+          1.0,
+          0.0
+        ],
+        "gap": 2.0061301952978283e-08
+      }
+    ],
+    "gun_directions": [
+      [
+        0.45107823610305786,
+        -0.8921325206756592,
+        0.025059903040528297
+      ],
+      [
+        0.45107823610305786,
+        -0.8921325206756592,
+        0.025059903040528297
+      ],
+      [
+        0.45107823610305786,
+        0.8921325206756592,
+        0.025059903040528297
+      ],
+      [
+        0.45107823610305786,
+        0.8921325206756592,
+        0.025059903040528297
+      ]
+    ],
+    "route": "V1",
+    "seconds": 46.42692060000263,
+    "projected_paint": false,
+    "round": 5,
+    "geometry_regenerated": false,
+    "recipe_sha256": "eac41e3ad72d5c210a02f8ab651db7e61ab52f4ed9b336f17d588b914902cc27",
+    "builder_sha256": "e2586be40aa502fec6878eac46820a0e710d8989ab7f58d5e7c28686cffb5f2a"
+  },
+  "V2": {
+    "triangles": 289047,
+    "reimport_triangles": 289047,
+    "reimport": "PASS",
+    "bytes": 132446824,
+    "sha256": "4c01f378155a04d2ae54e217b8cd1a521f25975a32f0894bf1bd6824c66a5039",
+    "source": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue146\\reference\\mesh\\round4_2048_raw_00001_.glb",
+    "source_sha256": "413b23fd70fe7cc74b0ff3f56585c2f3dee51ff191dc520f21787c93b540be40",
+    "coordinate_conversion": "native glTF to Blender: X=source Z, Y=source X, Z=source Y; uniform longitudinal scale",
+    "zero_area_faces_removed": 0,
+    "validated_native_geometry": true,
+    "cleanup": "native QEM decimation without remeshing, unique UVs, 4096 tangent normal bake",
+    "new_materials": {
+      "0": 281842,
+      "1": 4237,
+      "2": 536
+    },
+    "material": {
+      "version": 16303,
+      "resolution": 4096,
+      "seconds": 36.82226659997832,
+      "method": "unique UV bake of geometry Pointiness wear, short-distance AO grime, position noise scorch, CC0 photo microstructure",
+      "photo": "ambientCG PaintedMetal004, installed CC0 set",
+      "projected_paint": false,
+      "maps": {
+        "base.png": "2be2a8c49166dd05557da73754df8542354613e3370475a5d16ad66a2b3285f0",
+        "emission.png": "7d0b5e3ae052fc155706ce49bc1b43595cdb5854c24b397dbe8ae8298ff0a4f7",
+        "normal.png": "c219b953e976700f7f98411e696d524a6e8cab23d1401e57f5367a4706596161",
+        "normal_filtered.png": "463633499043c31446349bdc548607798855311bf2e01f8e788ce927104c2643",
+        "normal_raw.png": "8fdb191b7db66135bdf6b9b7457a02dfbc0717abd48f193e5cc5f002349640e2",
+        "orm.png": "3145c912367fa23e3e1ec562e901a5467b8c4bdfb2d7ab2bd7d1d0ac6ac53638"
+      }
+    },
+    "proof_target_godot": [
+      -0.013134718872606754,
+      -0.016063228249549866,
+      -0.0054318527691066265
+    ],
+    "proof_normal_godot": [
+      -0.002914036624133587,
+      -0.03287893906235695,
+      0.9994550943374634
+    ],
+    "bake": {
+      "raw": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue163\\C19_51\\V2\\normal_raw.png",
+      "filtered": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue163\\C19_51\\V2\\normal_filtered.png",
+      "method": "normalize(flat + .65*(deviation - blur(deviation))); flat=(0,0,1)",
+      "low_frequency_rms_before": 0.13301749527454376,
+      "low_frequency_rms_after": 0.06213633343577385,
+      "normal_mean_z": 0.9546251893043518
+    },
+    "route": "V2",
+    "seconds": 74.01858409994747,
+    "projected_paint": false,
+    "round": 5,
+    "geometry_regenerated": false,
+    "recipe_sha256": "eac41e3ad72d5c210a02f8ab651db7e61ab52f4ed9b336f17d588b914902cc27",
+    "builder_sha256": "e2586be40aa502fec6878eac46820a0e710d8989ab7f58d5e7c28686cffb5f2a"
+  }
+}
