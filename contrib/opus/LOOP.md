@@ -85,6 +85,8 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-05 02:00 lead chat: the hourly task had no PC folders attached, so every run asked Ryan for access. Replaced it with an identical task (runs at :58, first 02:58 UTC) with Downloads\voidsworn_test and the Godot app_userdata\Voidsworn folder attached. Runs must not request other folders.
+
 - 2026-11-05 00:25 lead chat: hourly runs at 22:37 and 23:37 sat pending until Ryan approved the task in the desktop app; he says it now runs. Merged #186 (round 5 tools), filed #187 (R103), released #183.
 
 - 2026-11-05 00:22 loop: #163 done, PR #186 reviewed and held, round 5 pick sent to Ryan; #183 found already unblocked, waiting for the board to queue it.
