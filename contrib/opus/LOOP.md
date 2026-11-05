@@ -34,7 +34,7 @@ If "Running: yes" and the start time is under 90 minutes old, another loop is wo
 
 From the backlog check (R106, synthesis section 5), with the station repaint added (R104):
 
-1. #195 station repaint: PR #197 landed 04:54Z, held for Ryan's look.
+1. #199 station surface detail (R109; unblocked, runs after #198). HOLD its PR for Ryan.
 2. #198 Pyre-Barge round 7 (R108; released 14:32Z). HOLD its PR for Ryan.
 3. #139 nebulas and ion storms (deaths #137 and weapons #138 are already merged, so R88's order is met).
 4. #140 rocky and terran planets.
@@ -54,15 +54,17 @@ From the backlog check (R106, synthesis section 5), with the station repaint add
 ## Holds
 
 - PR from #198 (round 7): hold for Ryan's pick; send the comparison sheet, the blurred greyscale check and both ceiling numbers. (#187 round 6 merged as tools only, R108.)
-- PR #197 from #195 (station repaint): hold for Ryan's look. Sheet: board\issue-195\shots\station_paint_overview.jpg. Darker steel, same shapes, 26/26 checks, no frame cost.
+- PR from #199 (station detail): hold for Ryan's look. (#197 repaint merged as the base, R109.)
 - Issues #193 (Tripo per-part test) and #194 (five ship-pipeline options): Muse proposals labelled opus, parked until the weekly reset. Note: Tripo is a paid cloud service; the house rule is free and local tools only, so #193 needs Ryan's call before any work.
 
 ## Waiting on Ryan
 
-- Station repaint look (PR #197): merge as is, or ask for more surface detail.
+- Station detail look when #199 lands.
 - Round 7 pick when #198 lands.
 
 ## Muse
+
+- Open (R109, Claude usage capped): #200 surface detail standard, #201 Nemesis test checks, #202 playtest checklist. Review and merge when they land; #201 results feed edits to #120 to #122.
 
 - Open: none. #188 and #189 delivered and ruled (R105, R106).
 
@@ -92,6 +94,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-05 14:40 lead chat: Ryan R109, station needs way more detail. Merged #197 as base, filed #199 (codex) and #200 to #202 (muse).
 - 2026-11-05 14:32 lead chat: #195 PR #197 reviewed, held for Ryan. Released #198 round 7.
 - 2026-11-05 04:50 lead chat: #187 round 6 done (PR #196, merged as tools); Ryan ruled R108, round 7 filed as #198. Released #195 station repaint.
 
