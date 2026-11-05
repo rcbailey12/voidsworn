@@ -41,7 +41,7 @@ If "Running: yes" and the start time is under 90 minutes old, another loop is wo
 6. #100 terrain fx 2 (needs #60 decided; see Holds).
 7. Progression #24, #26, #27, #29, #30.
 8. Nemesis #120, #121 (uses contrib/muse/design/nemesis_writing_2026_11/text_table.md, R101), #122.
-9. #169 breakable Pyre-Barge: only after Ryan picks a round 5 hull (R98, R99).
+9. #169 breakable Pyre-Barge: only after Ryan picks a round 6 hull (R98, R99, R103).
 10. Later, not yet scheduled: #41, #42, #44.
 
 ## Holds
@@ -83,6 +83,8 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 - Codex: coding jobs from the board (local on Ryan's PC). Muse: research, design text, low-code PRs.
 
 ## Log (newest first, keep about 10)
+
+- 2026-11-05 00:25 lead chat: hourly runs at 22:37 and 23:37 sat pending until Ryan approved the task in the desktop app; he says it now runs. Merged #186 (round 5 tools), filed #187 (R103), released #183.
 
 - 2026-11-05 00:22 loop: #163 done, PR #186 reviewed and held, round 5 pick sent to Ryan; #183 found already unblocked, waiting for the board to queue it.
 - 2026-11-04 21:40 lead chat: loop moved to this file and the hourly scheduled task "Voidsworn board loop" (runs at :37 each hour, first run 22:37 UTC, auto approval, needs Ryan's PC) (R102). #163 running. No send_later checks pending.
