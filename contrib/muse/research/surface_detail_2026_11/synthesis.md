@@ -4,7 +4,7 @@ Chair synthesis of four legs (blind Rey leg, DeepSeek, Qwen, Argon review), grou
 
 ## Verdict
 
-GO WITH CONDITIONS. The standard in section 2 is ready to bind the station detail pass (issue 199) and all later hull work, subject to the five owner picks in section 5. The one-line lesson: the paint standard (R105) governs colour and value, but a surface can pass it and still read as plain shapes (R109 on stations) or as a long box (R108 on the round 6 V3). What was missing is a geometry floor: how much detail, of what size, how densely packed, and what it may cost. That floor is this standard.
+GO WITH CONDITIONS, conditions resolved. The standard in section 2 is ready to bind the station detail pass (issue 199) and all later hull work. The owner ruled on all five picks in section 5 on Nov 5, 2026, agreeing with every chair pick; the rulings are recorded in section 7. The one-line lesson: the paint standard (R105) governs colour and value, but a surface can pass it and still read as plain shapes (R109 on stations) or as a long box (R108 on the round 6 V3). What was missing is a geometry floor: how much detail, of what size, how densely packed, and what it may cost. That floor is this standard.
 
 ## 1. The two failures this standard answers
 
@@ -148,3 +148,13 @@ Q5. Is the break-line clearance 1 unit (D22, INFERRED, chair pick) or 2 units (D
 - The nine-cell studio renders' camera scale for ships is not stated in any source in the pack; the blind leg's mapping (the nine-cell sweep is the ships' close judgement surface) is INFERRED, and the D8 close-band conversions for ships inherit that inference. Station close captures carry the pack's derived scales directly.
 - DeepSeek's web evidence could not be verified from the returned text (bracket citations, no URLs); section 2 rests on the pack, the blind leg's derivations, and the chair's adjudication between the two writer drafts that did answer the brief.
 - No other faction's hull has been measured against D7 or D8; the maxima are calibrated on the Pyre-Barge and station scales in the pack and are expected to need the Q2 recalibration once two hulls have passed.
+
+## 7. Owner rulings (Ryan, Nov 5, 2026)
+
+Ryan agreed with all five chair picks in section 5 ("Those all make sense to me as picks"). The picks are therefore the standard:
+
+- Q1: the fleet budget binds to the fixed test mix in D19 (8 small craft, 6 frigates, 4 cruisers, 2 capitals; 272,000 tris and 3.62 ms against the R96 ceiling).
+- Q2: the plain-area maxima stand as adopted (D7: battle band 6 units and 36 sq units; D8: close band 3 units and 9 sq units), with recalibration after the first two hulls pass, mirroring R105 sequencing.
+- Q3: no combined station-plus-fleet ceiling for now; stations are judged alone under R100 (D20). The combined rule is written only when a scene fields both at once.
+- Q4: the close-band detail share caps stand (D18: 25 percent fleet default, 40 percent hero).
+- Q5: the break-line clearance is 1 unit (D22).
