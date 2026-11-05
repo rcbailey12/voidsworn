@@ -47,7 +47,7 @@ From the backlog check (R106, synthesis section 5), with the station repaint add
 11. #29 progression step 13.
 12. #30 progression step 14.
 13. #92 debrief screen (edited, after #24 and #122).
-14. #100 terrain fx 2 (edited; gated on Ryan's look at #60, PR #143).
+14. #100 terrain fx 2 (edited; #60 merged as PR #143 on Nov 5, R107, so build on its wreckage kit).
 15. #169 breakable Pyre-Barge (edited; after Ryan's round 6 pick and #167, which is merged).
 16. Later: #41, then #42, then #44.
 
@@ -55,12 +55,10 @@ From the backlog check (R106, synthesis section 5), with the station repaint add
 
 - PR from #187 (round 6): hold for Ryan's pick; send the comparison sheet, the blurred greyscale check and both ceiling numbers.
 - PR from #195 (station repaint): hold for Ryan's look.
-- PR #143 (#60 debris): unparked for ONE look by Ryan (R106). Send him its sheet; he decides merge or close.
 - Issues #193 (Tripo per-part test) and #194 (five ship-pipeline options): Muse proposals labelled opus, parked until the weekly reset. Note: Tripo is a paid cloud service; the house rule is free and local tools only, so #193 needs Ryan's call before any work.
 
 ## Waiting on Ryan
 
-- Look at the debris pass (#60, PR #143) and decide merge or close (R106 Q1).
 - Round 6 pick when #187 lands.
 
 ## Muse
