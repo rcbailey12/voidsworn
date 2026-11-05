@@ -33,8 +33,9 @@ If "Running: yes" and the start time is under 90 minutes old, another loop is wo
 
 ## Queue order (Codex)
 
-1. #163 Pyre-Barge round 5: done, PR #186 held for Ryan.
+1. #163 Pyre-Barge round 5: done; PR #186 merged as tools only (lead chat, R103: paint rejected).
 2. #183 station detail pass (released 00:11Z, waiting for the board to queue it). Stop for Ryan's look.
+3. #187 Pyre-Barge round 6 (R103: V3 cut to the ceiling and V1, both with simple paint). Blocked; release after #183. HOLD its PR for Ryan.
 3. #139 nebulas and ion storms (blocked).
 4. #140 rocky and terran planets (blocked).
 5. #92 debrief screen.
@@ -46,7 +47,7 @@ If "Running: yes" and the start time is under 90 minutes old, another loop is wo
 
 ## Holds
 
-- PR #186 (#163 round 5): hold for Ryan's pick (sent 00:22Z). Merge it once he picks; it is docs and tools only.
+- PR from #187 (round 6): hold for Ryan's pick; send the comparison sheet, the blurred greyscale readability check and both ceiling numbers. (#186 round 5 merged by the lead chat; Ryan rejected its paint, R103.)
 - PR from #183 (stations): hold for Ryan's look.
 - PR #143 (#60 debris): parked. Unpark only if Ryan asks; then close #143 and drop 60 from queued.txt.
 
