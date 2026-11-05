@@ -1,0 +1,11 @@
+{
+  "image": "battle_target.png",
+  "camera_roll_correction_degrees": 44.39757565316647,
+  "crop": [
+    459,
+    606,
+    1165,
+    884
+  ],
+  "method": "rigid image rotation and empty-background crop for sheet presentation only; native PNG unchanged"
+}

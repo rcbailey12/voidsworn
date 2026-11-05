@@ -1,0 +1,30 @@
+{
+  "result": "PASS",
+  "source_game_unchanged": true,
+  "V1_geometry_unchanged": true,
+  "routes": [
+    "today",
+    "V3",
+    "V1"
+  ],
+  "ceiling": {
+    "V3": {
+      "triangles": 220524,
+      "triangle_ceiling": 306000,
+      "triangle_pass": true,
+      "gpu_ms": 2.51600003242493,
+      "gpu_ceiling_ms": 3.9,
+      "gpu_pass": true
+    },
+    "V1": {
+      "triangles": 307477,
+      "triangle_ceiling": 306000,
+      "triangle_pass": false,
+      "gpu_ms": 4.17199993133545,
+      "gpu_ceiling_ms": 3.9,
+      "gpu_pass": false
+    }
+  },
+  "verifier_sha256": "6fc72bc061a3ddecb2f851e2a800d00d0aa7f776ac6af7fc0835c0c6abe3b0f1",
+  "caveat": "Evidence integrity is separate from ceiling, nine-cell and owner visual acceptance."
+}

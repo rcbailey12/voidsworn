@@ -1,0 +1,39 @@
+{
+  "method": "Rec.709 weighted sRGB greyscale, Gaussian sigma 7.5 px at native battle scale",
+  "rows": [
+    {
+      "route": "V3",
+      "blur_sigma_source_pixels": 7.5,
+      "p10": 22.0,
+      "p90": 44.0,
+      "median": 27.0,
+      "gradient_rms": 0.24239828988130685
+    },
+    {
+      "route": "reference_V3",
+      "blur_sigma_source_pixels": 7.5,
+      "p10": 21.0,
+      "p90": 50.0,
+      "median": 36.0,
+      "gradient_rms": 0.33582160273927353
+    },
+    {
+      "route": "V1",
+      "blur_sigma_source_pixels": 7.5,
+      "p10": 21.0,
+      "p90": 36.0,
+      "median": 26.0,
+      "gradient_rms": 0.23161958594860024
+    },
+    {
+      "route": "reference_V1",
+      "blur_sigma_source_pixels": 7.5,
+      "p10": 21.0,
+      "p90": 50.0,
+      "median": 36.0,
+      "gradient_rms": 0.33582160273927353
+    }
+  ],
+  "acceptance": "Visual judgement of broad masses; no invented numerical pass threshold",
+  "measurements": "Descriptive crop statistics; gradient includes silhouette, never a geometry score"
+}
