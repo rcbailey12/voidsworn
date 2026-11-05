@@ -57,7 +57,7 @@ If "Running: yes" and the start time is under 90 minutes old, another loop is wo
 
 ## Muse
 
-- Open: none. Muse owner-ruling issues for Opus (label opus) are recorded in FINDINGS and closed.
+- Open: #188 readable ship paint standard (feeds #187 round 6), #189 backlog check of queued Codex jobs (apply its edits to the issues and the queue here after Ryan rules on its questions). Review and merge their PRs; owner questions go under Waiting on Ryan.
 
 ## Known traps
 
