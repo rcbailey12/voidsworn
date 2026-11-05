@@ -1,0 +1,11 @@
+{
+  "result": "PASS",
+  "standing_checks": 26,
+  "node": "v22.11.0",
+  "prng_seeds": 3,
+  "draws_per_seed": 10000,
+  "scenarios": 56,
+  "threat_maps": 3,
+  "threads_and_hard_stop": "PASS",
+  "parity_subprocesses": 187
+}

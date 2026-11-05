@@ -1,0 +1,19 @@
+{
+  "result": "PASS",
+  "python_parse": "PASS",
+  "all_json_parse": "PASS",
+  "no_em_dashes_or_trailing_whitespace": "PASS",
+  "report_links": "PASS",
+  "review_copies_identical": "PASS",
+  "script_and_model_hashes": "PASS",
+  "tracked_files_unchanged": true,
+  "new_tools": 8,
+  "docs_artifacts": 28,
+  "source_pngs": 93,
+  "visual_status": {
+    "V3": "FAIL",
+    "V1": "FAIL"
+  },
+  "commit_or_push_performed": false,
+  "review_report_links": "PASS"
+}
