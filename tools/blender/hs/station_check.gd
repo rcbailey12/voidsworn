@@ -7,12 +7,18 @@ func _init() -> void:
 
 func _run() -> void:
 	var args := OS.get_cmdline_user_args()
+	if args.size() == 5 and args[0] == "--paint-review":
+		await review(args[1], args[2], args[3], int(args[4]))
+		return
 	if args.size() == 4 and args[0] == "--measure":
 		await measure(args[1], args[2], args[3])
 		return
 	if args.size() == 4 and args[0] == "--review":
 		await review(args[1], args[2], args[3])
 		return
+	var paint_only := args.size() == 2 and args[0] == "--paint-check"
+	if paint_only:
+		args = PackedStringArray([args[1]])
 	if args.size() != 1:
 		push_error("Expected the station render folder")
 		quit(2)
@@ -80,11 +86,12 @@ func _run() -> void:
 			var report: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(args[0].path_join("detail_audit.json")))
 			assert(triangles == int(report.variants[variant].triangles_roundtrip), "Godot triangle count differs")
 			assert(material_names.size() == 3, "Expected three export material slots")
-			for line in ["a", "b"]:
-				var wreck := imported(args[0].path_join(variant + "_break_" + line + ".glb"))
-				var pieces := wreck.find_children("*", "MeshInstance3D", true, false)
-				assert(pieces.size() == 2, "Expected two named break pieces")
-				wreck.free()
+			if not paint_only:
+				for line in ["a", "b"]:
+					var wreck := imported(args[0].path_join(variant + "_break_" + line + ".glb"))
+					var pieces := wreck.find_children("*", "MeshInstance3D", true, false)
+					assert(pieces.size() == 2, "Expected two named break pieces")
+					wreck.free()
 		station.free()
 	quit(0)
 
@@ -98,9 +105,9 @@ func imported(path: String) -> Node3D:
 	return scene
 
 
-func review(folder: String, source: String, suffix: String) -> void:
+func review(folder: String, source: String, suffix: String, paint_height: int = 0) -> void:
 	var vp := SubViewport.new()
-	vp.size = Vector2i(3840, 2160)
+	vp.size = Vector2i(paint_height * 16 / 9, paint_height) if paint_height > 0 else Vector2i(3840, 2160)
 	vp.own_world_3d = true
 	vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	vp.msaa_3d = Viewport.MSAA_4X
@@ -144,6 +151,8 @@ func review(folder: String, source: String, suffix: String) -> void:
 				assert(node.a4, "Required real ship reference missing")
 				for engine in node.engines: engine.hide()
 			for shot in ["plan", "battle", "close", "macro46", "macro30", "service", "side", "below"]:
+				if paint_height > 0 and shot not in ["battle", "close", "macro46", "service", "below"]:
+					continue
 				var distance := 170.0 if shot in ["plan", "battle"] else 90.0
 				if shot == "macro46": distance = 46
 				if shot == "macro30": distance = 30
@@ -158,10 +167,31 @@ func review(folder: String, source: String, suffix: String) -> void:
 				for frame in 24: await process_frame
 				await RenderingServer.frame_post_draw
 				var file := "%s_%s_%d_%s_4k.png" % [variant, suffix, int(length), shot]
+				if paint_height > 0:
+					file = "%s_%s_%d_%s_%dp.png" % [variant, suffix, int(length), shot, paint_height]
 				assert(vp.get_texture().get_image().save_png(folder.path_join(file)) == OK)
 				captures.append({"image": file, "length": length, "radius": distance,
 					"fov": camera.fov, "beta": 0.98, "real_ships": [33.6, 10.4]})
-				if length == 46 and shot in ["plan", "side", "below"]:
+				if paint_height > 0 and shot == "battle":
+					# Same framing with references hidden, then an unlit silhouette.
+					# This keeps ship pixels out of station luma and accent measures.
+					for child in assembly.get_children():
+						if child != station: child.hide()
+					for frame in 4: await process_frame
+					await RenderingServer.frame_post_draw
+					assert(vp.get_texture().get_image().save_png(folder.path_join(file.replace(".png", "_isolated.png"))) == OK)
+					var white := StandardMaterial3D.new()
+					white.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+					var overrides := {}
+					for mi in station.find_children("*", "MeshInstance3D", true, false):
+						overrides[mi] = mi.material_override
+						mi.material_override = white
+					for frame in 4: await process_frame
+					await RenderingServer.frame_post_draw
+					assert(vp.get_texture().get_image().save_png(folder.path_join(file.replace(".png", "_mask.png"))) == OK)
+					for mi in overrides: mi.material_override = overrides[mi]
+					for child in assembly.get_children(): child.show()
+				if paint_height == 0 and length == 46 and shot in ["plan", "side", "below"]:
 					for child in assembly.get_children():
 						if child != station: child.hide()
 					camera.look_at_from_position(target + direction * 75, target, Vector3.FORWARD if shot == "plan" else Vector3.UP)
@@ -170,7 +200,7 @@ func review(folder: String, source: String, suffix: String) -> void:
 					assert(vp.get_texture().get_image().save_png(folder.path_join(variant + "_" + suffix + "_isolated_" + shot + ".png")) == OK)
 					for child in assembly.get_children(): child.show()
 			assembly.free()
-		if suffix == "detail":
+		if suffix == "detail" and paint_height == 0:
 			for line in ["a", "b"]:
 				var wreck := imported(folder.path_join(variant + "_break_" + line + ".glb"))
 				stage.add_child(wreck)
@@ -195,7 +225,8 @@ func review(folder: String, source: String, suffix: String) -> void:
 				assert(vp.get_texture().get_image().save_png(folder.path_join(variant + "_break_" + line + "_close_4k.png")) == OK)
 				inspection.free()
 				wreck.free()
-	var file := FileAccess.open(folder.path_join(suffix + "_captures.json"), FileAccess.WRITE)
+	var capture_report := suffix + ("_%dp" % paint_height if paint_height > 0 else "") + "_captures.json"
+	var file := FileAccess.open(folder.path_join(capture_report), FileAccess.WRITE)
 	file.store_string(JSON.stringify(captures, "  ") + "\n")
 	stage.free()
 	view.clear_static()

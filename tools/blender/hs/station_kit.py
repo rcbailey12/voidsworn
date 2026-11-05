@@ -546,7 +546,7 @@ def shared_trim(out):
     return source, save_pixels(out / 'station_trim_normal_2048.png', normal * .5 + .5)
 
 
-def paint_station(out, name, faction, reuse_local=False):
+def paint_station(out, name, faction, reuse_local=False, readable=False):
     """Bake real per-element masks, assembly AO, then the three-slot PBR stack."""
     sc = bpy.context.scene
     sc.render.engine = 'CYCLES'; sc.cycles.samples = 8
@@ -585,6 +585,10 @@ def paint_station(out, name, faction, reuse_local=False):
     bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.uv.smart_project(angle_limit=math.radians(66), island_margin=.003, area_weight=.35)
     bpy.ops.object.mode_set(mode='OBJECT')
+    zones = None
+    if readable:
+        import station_readable_paint
+        zones = station_readable_paint.assign(PARTS, name)
     # Work-face wear weighting is a per-element attribute, baked into the mask.
     for o in PARTS:
         a = o.data.attributes.new('work_wear', 'FLOAT', 'POINT')
@@ -688,10 +692,14 @@ def paint_station(out, name, faction, reuse_local=False):
         nt.links.new(mathn(nt, 'ADD', .25, mathn(nt, 'MULTIPLY', wear, .45)), orm.inputs[2])
         data['orm'] = orm.outputs[0]
         data['emission'] = mix(nt, (0, 0, 0, 1), (*palette['win'], 1), strips.outputs['Green'])
+        if readable:
+            data['base'], data['orm'], data['emission'] = station_readable_paint.nodes(
+                nt, n, mathn, mix, palette, hex_linear, split, ao, name)
         bs = n(nt, 'ShaderNodeBsdfPrincipled'); data['bsdf'] = bs
         nt.links.new(data['base'], bs.inputs['Base Color'])
         nmtex = n(nt, 'ShaderNodeTexImage'); nmtex.image = normal; nt.links.new(uv.outputs[0], nmtex.inputs[0])
         nm = n(nt, 'ShaderNodeNormalMap', uv_map='trim'); nt.links.new(nmtex.outputs[0], nm.inputs['Color'])
+        if readable: nm.inputs['Strength'].default_value = .12
         nt.links.new(nm.outputs[0], bs.inputs['Normal'])
     for kind in ('base', 'orm', 'emission', 'normal'): bake(kind, kind == 'normal')
     # Runtime materials retain the three original slots, with no procedural
@@ -718,6 +726,9 @@ def paint_station(out, name, faction, reuse_local=False):
     bpy.data.objects.remove(proxy, do_unlink=True)
     for o in PARTS: o.hide_render = False; o.select_set(True)
     return {'faction': faction, 'palettes': palettes, 'resolution': 2048,
+            'readable_coats': station_readable_paint.TONES if readable else None,
+            'readable_recess': station_readable_paint.RECESS if readable else None,
+            'construction_zones': zones,
             'per_element_masks': [o.name for o in PARTS], 'station_wide_ao': True,
             'maps': {k: {'path': im.filepath_raw, 'bytes': Path(im.filepath_raw).stat().st_size} for k, im in images.items()},
             'shared_trim': ['station_trim_2048.png', 'station_trim_normal_2048.png'],
@@ -897,6 +908,7 @@ def break_variants(out, name, faction):
 def detail_main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--detail', action='store_true')
+    parser.add_argument('--readable-paint', action='store_true', help='R104 intact review repaint only; retain R100 geometry and three material slots')
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--faction', default='ithar')
     parser.add_argument('--finish-breaks', action='store_true')
@@ -932,11 +944,12 @@ def detail_main():
         result['locked_primitives'] = len(frozen)
         result['locked_primitive_hashes'] = frozen
         result['locked_geometry'] = 'PASS: exact vertex, polygon, transform and bevel hashes'
-        result['paint'] = paint_station(args.out, name, args.faction, args.reuse_local_masks)
+        result['paint'] = paint_station(args.out, name, args.faction, args.reuse_local_masks, args.readable_paint)
         result['triangles_roundtrip'] = merge_export(args.out / (name + '_detail.glb'))
         assert result['triangles_roundtrip'] <= (40000 if name == 'fleet' else 45000)
         bpy.ops.wm.save_as_mainfile(filepath=str(args.out / (name + '_detail.blend')))
-        result['breaks'] = break_variants(args.out, name, args.faction)
+        if not args.readable_paint:
+            result['breaks'] = break_variants(args.out, name, args.faction)
         report['variants'][name] = result
         (args.out / 'detail_audit.json').write_text(json.dumps(report, indent=2) + '\n')
         print('[station-detail]', name, json.dumps(result), flush=True)
