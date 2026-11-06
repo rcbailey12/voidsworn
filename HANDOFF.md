@@ -1,6 +1,29 @@
-# Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 1, 2026, 01:30 CDT)
+# Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 5, 2026, 22:30 CST)
 
-## 0. Status at Nov 1, 2026, 19:15 CDT (read this first)
+## 0. Status at Nov 5, 2026, 22:30 CST (read this first)
+
+**Who runs the board now (Ryan, Nov 5):** Claude's weekly usage resets and **Codex is out of ChatGPT weekly usage for a while** (Ryan will say when it is back). Until then **Opus owns the board and does the Codex jobs itself**. The hourly "Voidsworn board loop" scheduled task (trig_01AYQAMdwD6BZHsizYS6EZdE) stays disabled; revisit it once things are steady (R102 setup; it failed on folder access and on "merge without review"). One lead chat owns the board; LOOP.md is its state file.
+
+**How Opus works while Codex is out:**
+- Take codex-labelled issues yourself, one at a time, in the LOOP.md queue order. Push `opus/issue-<n>` branches and open PRs; checks run by themselves. Use Sonnet subagents for routine coding, log reading and capture jobs (R102); Opus keeps merge calls, claim checks, visual judgment and messages to Ryan.
+- Heavy work (Blender bakes, renders, closeshots, GPU probes, Godot exports) still runs on Ryan's PC through the test runner (HANDOFF "PC test runner", LOOP.md Known traps). The sandbox is for code and small conversions.
+- The PC Codex watcher (codex_board.ps1) keeps queueing unblocked codex issues; while usage is out those runs end with "usage limit hit, left on the board to retry". Harmless, but before you start a job yourself, label it `opus` (remove `codex`) so the watcher skips it and no duplicate PR appears when Codex comes back.
+- Muse still runs on its own (muse label, its own watcher). Review and merge its PRs.
+- Ryan's look first for anything visual: hold those PRs and send him the sheet in two lines.
+
+**Open right now:**
+- Muse PRs to review: #203 (#200 close-range surface detail standard), #204 (#201 Nemesis redesign test checks; feeds edits to #120 to #122), #205 (#202 playtest checklist for the next build). Titles on #203 and #204 were copied from a commit; judge the content.
+- #198 Pyre-Barge round 7 (R108): released, no PR yet (Codex ran out). V3 gets mounted detail back up to the R96 ceiling plus the reference's outline features; V1 and V3 both get red-brown plate paint (R105). Hold for Ryan's pick; send the comparison sheet, the blurred greyscale check and both ceiling numbers.
+- #199 station surface detail (R109): Ryan said the #197 repaint is "super plain, just regular shapes" and wants WAY more detail. #197 is merged as the base paint. Hold for Ryan's look. Use #200's standard once merged.
+- Then the LOOP.md queue: #139 nebulas, #140 planets, #120 to #122 Nemesis redesign, #24, #26, #27, #29, #30, #92, #100, #169 (after the round 7 pick), later #41, #42, #44.
+- Parked: #193 (Tripo test; paid cloud service, needs Ryan's call; house rule is free and local only) and #194 (five pipeline options).
+- Next playtest exe: fold in #185, #190, #143, #197 and whatever lands next; recipe in LOOP.md. Last build g2_pt_d03ac22.
+
+**Rulings this week:** FINDINGS R98 (breakable by design), R99 (no human-hour estimates), R102 to R109. Check FINDINGS before trusting any older doc.
+
+**Ryan's rules that bite:** plain words, lead with the answer, no em dashes, picks not lists, screenshots of results, double-click .bat files, ask 3 to 5 plain questions before anything big unless he says "just build it", never delete anything on his PC, never put |, &, < or > in job arguments, git identity Ryan Bailey <rcbailey12@gmail.com>.
+
+## Older status (Nov 1, 2026, 19:15 CDT)
 
 **Board loop (Ryan, Nov 4 2026, FINDINGS R102):** the job board is run by one hourly scheduled task, "Voidsworn board loop", which starts fresh, reads this section and [contrib/opus/LOOP.md](contrib/opus/LOOP.md), runs one loop, rewrites LOOP.md, pushes and stops. LOOP.md holds the current state, queue order, holds, questions waiting on Ryan, the run lock and the known traps. The loop is the only board owner; any other Claude chat on this repo works one named area or only reads. Opus does merge calls, PR claim checks, visual judgment, planning and messages to Ryan; Sonnet subagents do board checks, log reading, renames and capture jobs. send_later is only for one-off timed checks (for example just after a Codex usage reset). LOOP.md is committed straight to main (docs-only exception).
 

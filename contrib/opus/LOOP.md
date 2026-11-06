@@ -1,5 +1,7 @@
 # Board loop state (LOOP.md)
 
+**Nov 5 22:30 CST (Ryan): Codex is out of weekly usage for a while. Opus owns the board and does the codex jobs itself; relabel an issue `opus` before starting it so the PC watcher skips it. See HANDOFF.md section 0.**
+
 **Board owner right now: the lead chat (Ryan, Nov 4 21:33 CST).** The hourly scheduled task "Voidsworn board loop" is switched off until the weekly Claude usage reset: its runs kept stopping for approvals and were refused merges. The lead chat runs the board with one-off send_later checks until Ryan revisits it. When the hourly task is back on, it becomes the only owner again (R102). Any other Claude chat on this repo works one named area or only reads.
 
 ## Lock
@@ -34,8 +36,8 @@ If "Running: yes" and the start time is under 90 minutes old, another loop is wo
 
 From the backlog check (R106, synthesis section 5), with the station repaint added (R104):
 
-1. #199 station surface detail (R109; unblocked, runs after #198). HOLD its PR for Ryan.
-2. #198 Pyre-Barge round 7 (R108; released 14:32Z). HOLD its PR for Ryan.
+1. #198 Pyre-Barge round 7 (R108; released 14:32Z, no PR yet, Codex out of usage). HOLD its PR for Ryan.
+2. #199 station surface detail (R109). HOLD its PR for Ryan.
 3. #139 nebulas and ion storms (deaths #137 and weapons #138 are already merged, so R88's order is met).
 4. #140 rocky and terran planets.
 5. #120 Nemesis redesign 1.
@@ -66,7 +68,7 @@ From the backlog check (R106, synthesis section 5), with the station repaint add
 
 - Open (R109, Claude usage capped): #200 surface detail standard, #201 Nemesis test checks, #202 playtest checklist. Review and merge when they land; #201 results feed edits to #120 to #122.
 
-- Open: none. #188 and #189 delivered and ruled (R105, R106).
+- PRs waiting for review: #203 (#200), #204 (#201), #205 (#202). #188 and #189 delivered and ruled earlier (R105, R106).
 
 ## Known traps
 
@@ -94,6 +96,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-05 22:30 lead chat: handoff written. Codex out of usage; Opus takes the board after the Claude weekly reset. Muse PRs #203 to #205 open.
 - 2026-11-05 14:40 lead chat: Ryan R109, station needs way more detail. Merged #197 as base, filed #199 (codex) and #200 to #202 (muse).
 - 2026-11-05 14:32 lead chat: #195 PR #197 reviewed, held for Ryan. Released #198 round 7.
 - 2026-11-05 04:50 lead chat: #187 round 6 done (PR #196, merged as tools); Ryan ruled R108, round 7 filed as #198. Released #195 station repaint.
