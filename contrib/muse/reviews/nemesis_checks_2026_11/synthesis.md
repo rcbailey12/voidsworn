@@ -99,3 +99,15 @@ The enumeration driver and the scenario harness extensions (registry and assignm
 ## 9. Not checked
 
 The legs worked from the pack alone, by design. The chair verified cross-leg quotations and the fall_final question against the adopted table text (text_table.md) and the filed legs, and did not re-read campaign_run.js, data.js or core.js beyond the pack's file:line record. Whether the shipped adaptation cap formula matches the reconstruction flagged in A2 is for whoever runs 121-6 and 121-8 to confirm against the code line, as that amendment states.
+
+## 10. Owner rulings (Ryan, Nov 6, 2026, about 19:32 CST)
+
+Ryan ruled on the three questions in section 6 (presented to him in plain English alongside the UI audit's three questions; he adopted all chair picks across both sets except Q2 here, which he closed as irrelevant).
+
+R-Q1 (enumeration gating): RULED per chair pick. The full enumeration (120-1, 120,000 run starts) runs ONCE as a recorded verification for issue 120. The PR gates on the exact constraints (120-2) plus the scenario suite, not on the statistical enumeration.
+
+R-Q2 (migrated legacy save draws): CLOSED AS MOOT by the owner, in his words: "5 is irrelevant because there's no saves that far back, just me." No ruling between draw-at-load and draw-at-sector was made, and none is needed: no pre-Nemesis saves exist in practice, and the game's only player is the owner. Consequences: proposed edit G1 in section 4 is WITHDRAWN (Opus takes no action on it); the migration checks cover the current-entry migration the shipped text already describes, and no check or build step should invent a production rule for non-current entries of a migrated run. If a pre-Nemesis save ever does surface, it is the owner's own and out of scope for the build.
+
+R-Q3 (compounding counter scope): RULED per chair pick. The per-commander compounding counter is scoped to the Chorus fed counter only, capped at 8. Riches and honed are NOT re-expressed as counters; they persist per commander through NEM_CARRY as shipped. Proposed edit G3 in section 4 stands as written for Opus to apply.
+
+With R-Q1 and R-Q3 ruled and R-Q2 closed as moot, the owner questions for this job are fully resolved. G2, G4, G5, and G6 in section 4 were not owner questions and stand as proposed for Opus.
