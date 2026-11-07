@@ -81,6 +81,16 @@ Legs split on the first two steps (DeepSeek and Qwen put PR review or the LOOP r
 
 Owner action, not a question: the S15 sound listen pass (one sitting, your ear). Issue #210's sound settlements and issue #211's adopt-or-drop both wait on it; the chair suggests scheduling it once #211's probe clips exist so one sitting covers both.
 
+## 6b. Owner rulings on the section 6 questions (Nov 7, 2026, 13:24 CST)
+
+Ryan ruled on all three questions the same day the audit was delivered:
+
+1. Board ownership: Opus owns the board again as of its reset, including restarting the hourly board loop task as board owner. (Chair pick adopted.)
+2. Issue #193: start with the other approaches first (the free local probe leg written into #193, and #209's free local route); if those do not work, Tripo gets evaluated, and Opus runs that evaluation. Ryan delegated the sequencing to the chair's framing ("Basically your choice" on the order of approaches). The paid-service exception is therefore granted conditionally: local first, Tripo only if the local route leaves the question open. #193 is no longer parked behind an owner call; it is an Opus work item with a local-first order.
+3. Codex queue priority: Opus chooses the order. The chair's #120 to #122 first suggestion stands as a proposal in the briefing, not a ruling.
+
+The S15 listen pass remains an unscheduled owner action.
+
 ## 7. What was done while Opus was capped (inventory for the record)
 
 - Nov 5: muse jobs #200 (surface detail standard), #201 (Nemesis test checks), #202 (playtest checklist) delivered as PRs #203, #204, #205. Owner rulings on #200 (five picks) and #202 folded in before delivery closed.
