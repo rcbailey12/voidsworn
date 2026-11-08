@@ -280,7 +280,7 @@ function endRun(victory, abandoned){
   const prevBest=META.stats.best||0; META.stats.best=Math.max(prevBest, RUN.sector); if(victory){ META.stats.wins++; META.stats.wonFacs=META.stats.wonFacs||[]; if(!META.stats.wonFacs.includes(RUN.fac)) META.stats.wonFacs.push(RUN.fac); }
   else if(!abandoned) META.stats.losses=(META.stats.losses||0)+1;
   for(const f of RUN.fallen) META.fallen.push(f); if(META.fallen.length>80) META.fallen=META.fallen.slice(-80);
-  try{ tel('run_end',{victory:!!victory,abandoned:!!abandoned,fac:RUN.fac,sector:RUN.sector,stats:s,mins:RUN.t0?Math.round((Date.now()-RUN.t0)/60000):null,fleet:(RUN.fleet||[]).map(x=>x.tpl)}); }catch(e){}
+  try{ tel('run_end',{victory:!!victory,abandoned:!!abandoned,fac:RUN.fac,sector:RUN.sector,stats:s,mins:RUN.t0?Math.round((Date.now()-RUN.t0)/60000):null,fleet:(RUN.fleet||[]).map(x=>x.tpl),nem:typeof nemTelSummary==='function'?nemTelSummary():null}); }catch(e){} // #122: the run's Nemesis record
   // what carries forward: renown (more with Heat), admiral mastery, and a Heat record for this faction
   const hl=heatLevel(RUN.heat), ren=Math.round((typeof runRenown==='function'?runRenown():0)*(1+.1*hl)); META.renown=(META.renown||0)+ren;
   const mx0=masteryLevel(RUN.admiral), mxEarned=(s.battles-s.elites-s.bosses)+s.elites*2+s.bosses*5+(victory?10:0); /* Keep the shipped combat weights. Heat XP is paid beside them. */
