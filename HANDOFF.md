@@ -12,9 +12,11 @@
 
 **Rules that changed this week:** R111 retires the R96 triangle ceiling: triangles, draw calls and surfaces are reported, never capped; one measured scene gate in ms on the RTX 5080 is the only binding performance limit, its share set by Ryan after the #207 benchmark. Anything older that says "inside the R96 ceiling" means "report the cost".
 
-**#220 stalls (R118):** fixed in PR #223, waiting on Ryan's merge word: death piece meshes moved off the main thread plus two smaller fixes; gate scene frame p99 now 9.3 to 10.9 ms in every session (was up to 53), no visible change.
+**#220 stalls (R118):** fixed in PR #223, merged Nov 8 by the board thread after a diff review (R119): death piece meshes moved off the main thread plus two smaller fixes; gate scene frame p99 now 9.3 to 10.9 ms in every session (was up to 53), no visible change.
 
-**Next:** merge #223 on Ryan's word, #221 (per-ship per-frame CPU work), then the #217 trial review when Ryan has run it (job #26), then the #201 edits to #120 to #122 and the settlement triage. Full order in LOOP.md.
+**Nov 8 (R119):** #222 reviewed after the fact; its agent guard had a gap (chained pushes, deletes anywhere on the PC), fixed in PR #224, which must be merged, copied to the PC and dry-run before the real trial.
+
+**Next:** #224 on Ryan's word, #221 (per-ship per-frame CPU work), then the #217 trial review when Ryan has run it (job #26), then the #201 edits to #120 to #122 and the settlement triage. Full order in LOOP.md.
 
 ## 0b. Status at Nov 5, 2026, 22:30 CST (superseded by section 0 where they differ)
 
