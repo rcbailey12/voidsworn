@@ -1,6 +1,18 @@
 # Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 7, 2026, 23:10 CST)
 
-## 0. Status at Nov 7, 2026, 22:05 CST (read this first)
+## 0. Status at Nov 8, 2026, 12:10 CST (read this first)
+
+**Board:** the Board thread in the Claude Code Project owns the board and its merges (R119; Ryan: "you're the owner now"). Worker threads never merge their own PRs. LOOP.md holds the live state, queue, holds and what waits on Ryan. Every workhorse PR gets a diff review plus an impact sweep (R129).
+
+**Seats (seat map in AGENTS.md, R128):** DeepSeek V4 Flash in OpenCode on the PC is the primary coding seat ($0.09 and $0.13 a job, two clean finishes; R127). Kimi on pay-as-you-go is dropped ($13.63 for zero finished jobs: throttle, time cap, empty balance); no Kimi subscription for now. DeepSeek V4 Pro is running #120 now as the last contender (started 12:05 CST). Ryan's plan (11:44, to confirm): Opus takes the hard coding jobs on the Claude plan until Codex is back, with a usage reserve (Ryan says when weekly use passes about 70 percent) and an outside checker on Opus code; then Opus goes back to orchestrating Codex, with DeepSeek for bulk. ChatGPT back about Nov 10 (checker; possible OpenCode sign-in, unverified). Computer use is on for File Explorer (R126): the board double-clicks PC .bat files itself, one screenshot before every click.
+
+**Done Nov 8:** #223 stalls fix merged; #222 runner reviewed, guard fixed (#224); #217 trial closed (R127: #241 Heat gate merged); #201 checks applied to #120 to #122 (R120); Nov 6 audits triaged into jobs #227 to #238 (R121 to R125), records filed by Muse (#247, R130); movement spec (#251, R131); seat map (#244); Glasswright species design (#249; consistent visuals are #250); #246 Heat back-fill filed.
+
+**Open now:** #120 head-to-head: PR #248 (Flash, plus the board's two fixes) held until the V4 Pro arm lands; Kimi's arm ended on an empty balance. Then: #121 and #122, #246, the self-check list in the runner's task file, #230 and #231 (Opus writing), #221 (PC profiling).
+
+**Waiting on Ryan:** confirm the Opus-codes-hard-jobs plan; #48 calls (design read, Brin's pronoun, close package question 2); #250 scope questions when it starts; S15 sound listen pass.
+
+## 0a. Status at Nov 7, 2026, 22:05 CST (superseded by section 0 where they differ)
 
 **Board:** Opus owns it (R110), now from the Claude Code Project "Embers of the Hollow Sun" (R114 pilot; it passed on the #207 thread, see LOOP.md). The hourly task stays off; why, and the restart test, are at the top of [contrib/opus/LOOP.md](contrib/opus/LOOP.md). LOOP.md holds the seats, queue, holds and what waits on Ryan.
 
