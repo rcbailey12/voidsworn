@@ -5,7 +5,8 @@ extends Node
 # the most detail the build has (A4 kit ships, then the max-detail "hi" hulls, then the game hulls), mesh LOD off.
 #
 # The scene: the real battle scene (scenes/battle/battle.tscn) on a storm map (nebula and ion storm hexes) with the
-# world's planet, sky, rocks and clouds, the board in Ryan's look C (cine), the HUD up, at the default battle camera.
+# world's planet, sky, rocks and clouds, the board in Ryan's look C (cine), the HUD up, from the battle camera's angle
+# pulled back to frame both fleets (--camera engagement, the default) or at the turn-start view (--camera turn).
 # 20 ships in the 8/6/4/2 reporting mix (#207, R111 point 2): 8 frigates, 6 destroyers, 4 cruiser tier (cruiser,
 # carrier, battleship), 2 capitals (the Sunward Crusade dreadnought and the Hullbreaker Pyre-Barge, the round 4 anchor).
 # Your side is ten Sunward Crusade hulls; the enemy side is two hulls from each of the other five factions, so every
@@ -14,7 +15,7 @@ extends Node
 # gallery's fleet bench but between the battle's own ships.
 #
 #   godot --path godot --rendering-method forward_plus --resolution 1920x1080 res://bench/scene_gate.tscn -- --out DIR
-#         [--sessions 3] [--warmup 120] [--frames 720] [--modes base,shadows_off,...]
+#         [--sessions 3] [--warmup 120] [--frames 720] [--modes base,shadows_off,...] [--camera engagement|turn]
 #
 # Writes DIR/scene_gate.json (every mode, every session, plus the scene's per-ship and per-class counts) and
 # DIR/scene_base.png (the base scene as measured). Modes, each on a freshly built battle:
@@ -150,7 +151,8 @@ func _run() -> void:
 		"renderer": RenderingServer.get_current_rendering_method(), "driver": OS.get_video_adapter_driver_info(),
 		"resolution_asked": [RES.x, RES.y], "vsync": "disabled", "warmup_frames": int(args.get("warmup", 120)),
 		"measured_frames": int(args.get("frames", 720)), "sessions": sessions, "volley_every_s": VOLLEY_EVERY,
-		"fleet": FLEET, "enemies": ENEMIES, "map": "storm", "shape": "open", "look": "cine", "camera": "default battle camera",
+		"fleet": FLEET, "enemies": ENEMIES, "map": "storm", "shape": "open", "look": "cine",
+		"camera": str(args.get("camera", "engagement")),
 		"probe_sha256": FileAccess.get_sha256("res://bench/scene_gate.gd"), "modes": {}, "order": []}
 	for s in sessions:
 		# alternate the order each session (round 5's paired method), so slow drift (heat, background work) spreads evenly
@@ -221,6 +223,22 @@ func _build(mode: String, seed: int) -> void:
 	b.cam.keyboard_enabled = false
 	b.set_process_unhandled_input(false)
 	b.set_process_input(false)
+	# the camera: "engagement" (default) frames both fleets from the battle camera's own angle, so every faction's hulls
+	# and the shots between them are on screen; "turn" keeps the turn-start view (your fleet, the enemy mostly off screen)
+	if str(args.get("camera", "engagement")) == "engagement":
+		var c := Vector3.ZERO
+		var n := 0
+		for sv in _views():
+			c += sv.global_position
+			n += 1
+		c /= maxf(1.0, n)
+		var rad := 0.0
+		for sv in _views():
+			rad = maxf(rad, Vector2(sv.global_position.x - c.x, sv.global_position.z - c.z).length())
+		b.cam.t = Vector3(c.x, 0, c.z)
+		b.cam.r = clampf(maxf(b.cam.r, rad * 2.0), 60.0, 900.0)
+		b.cam.snap()
+		await get_tree().process_frame
 	side_ids = {"player": [], "enemy": []}
 	fac_of.clear()
 	for u in b.V.get("units", []):
