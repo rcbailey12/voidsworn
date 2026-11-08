@@ -48,7 +48,7 @@ Same job (Nemesis redesign 1: hunter draw per story point and commander registry
 | Gaps the board's sweep found | four Godot UI readers still read RUN.nem directly; the 120-2 quick gate not wired into CI (both fixed by the board) | the same four UI readers, and worse: Pro never sets RUN.nem for a new run, so those screens would show no Nemesis; enumeration driver not committed | n/a |
 | Extra catch | none | the sector-advance adaptation now reads the incoming commander (a #121 timing item, A4) | n/a |
 
-Decision: DeepSeek Flash takes the hard coding jobs too. Pro cost about 11 times as much and took about 2.5 times as long for the same checks and a bigger gap; its one useful catch goes into #121's brief. Kimi stays off (no more API money, R127). The runner now also gives every agent the R129 self-check list (PR #253), aimed at the UI-reader gap both DeepSeek arms left.
+Decision: among the API models DeepSeek Flash takes hard coding jobs too (R132 still sends the hardest to Opus threads while the Claude plan has room). Pro cost about 11 times as much and took about 2.5 times as long for the same checks and a bigger gap; its one useful catch goes into #121's brief. Kimi stays off (no more API money, R127). The runner now also gives every agent the R129 self-check list (PR #253), aimed at the UI-reader gap both DeepSeek arms left.
 
 ## Second real job: #246 (Heat back-fill), DeepSeek Flash
 
