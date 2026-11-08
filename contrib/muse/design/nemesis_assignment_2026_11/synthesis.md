@@ -51,7 +51,7 @@ Against the Job 9 draft, the defect is gone: Hegemony hunts (it never did in the
 
 ## 4. What this changes and what it does not
 
-Behaviour packages: unchanged. All six NEM_FAC[fac].beh packages (data.js:443-470) stay attached to their hunter faction wherever it appears, per #45: Hullbreaker raids, Glasswright duels and returns upgraded, Chorus grows from the player's losses anywhere, Eclipse never retreats and returns once after death in sector 3 only, Crusade duels the flagship and chalks names, Hegemony reinforces in round 3. The packages were never the redesign problem; the assignment shape was.
+Behaviour packages: unchanged. All six NEM_FAC[fac].beh packages (data.js:443-470) stay attached to their hunter faction wherever it appears, per #45: Hullbreaker raids, Glasswright duels and returns upgraded, Chorus grows from the player's losses in meetings with the Chorus commander, Eclipse never retreats and returns once after death in sector 3 only, Crusade duels the flagship and chalks names, Hegemony reinforces in round 3. The packages were never the redesign problem; the assignment shape was.
 
 Job 7 step 6 (clash check): unchanged in rule, extended in scope. The blocked-set logic in nemAdapt (campaign_run.js:300) still prevents an adaptation from directly countering a REVEALED weakness; it now runs per commander on that commander's own revealed set, and the tests at contrib/opus/tools/nemesis_clash_tests.js gain per-commander cases. The check is not duplicated into telemetry.
 
