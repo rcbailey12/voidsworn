@@ -109,6 +109,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-08 06:35 CST #217 thread: Ryan topped up (DeepSeek $2; Moonshot $5 paid plus the $5 voucher, so still Tier0 by the docs, his call to try it before adding $5) and ran WORKHORSE_SETUP.bat: OpenCode, both keys, both balance endpoints, both models READY through OpenCode, all PASS. WORKHORSE_TRIAL.bat started 06:30, DeepSeek arm first. If the Kimi arm stalls on 429s (Tier0: 3 requests a minute, 1.5M tokens a day), Ryan adds $5 and only the Kimi arm reruns (work_issue.bat 26 kimi). Ryan is moving the board to a single Board thread; the trial PRs and the results note go to it. #222 (the runner) was merged by its own author without a checker leg: the Board thread reviews it after the fact.
 - 2026-11-08 05:25 project thread (#220): traced the gate scene per frame on the 5080, named the stall (death piece meshes on the main thread), fixed it and two smaller ones, before and after gate runs and stills; PR #223 open, R118.
 - 2026-11-08 05:10 project thread (#217): runner built (work_setup, work_trial, work_issue), three free dry runs on the PC (stand-in model) pass both arms end to end; fixes for the PowerShell shell fallback and the 2 minute command limit. PR #222 merged, R117, #26 relabelled opus. Waiting on Ryan's top-ups and two double-clicks.
 - 2026-11-08 04:15 project thread: #198 and #199 re-specced against R111, R113, R116; filed #220 (effects stalls) and #221 (per-ship CPU trim); Opus queue reordered (#217 runner first).
