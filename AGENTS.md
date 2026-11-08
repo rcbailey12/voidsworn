@@ -1,7 +1,9 @@
 # Voidsworn: rules for any AI agent (Claude, Argon, or another model)
 
-Voidsworn is a Babylon.js hex fleet-tactics roguelite built into one HTML file (`python3 build.py`). The owner is Ryan. He is not a coder:
-he plays on a Pixel 10 XL and a Windows PC, and he judges work by screenshots.
+Embers of the Hollow Sun (repo name voidsworn) is a hex fleet-tactics roguelite. The product is the Godot 4 port in `godot/`, played on
+Ryan's Windows PC only; the browser JS game is the rules oracle, frozen except for rules fixes. The owner is Ryan. He is not a coder:
+he judges work by screenshots. Start with HANDOFF.md section 0 and contrib/opus/FINDINGS.md (fixed Nov 7, R110; the rest of this file
+is reviewed in #216).
 
 ## Auditing? Follow `docs/REVIEW_PROTOCOL.md` exactly (mandatory). Then `docs/ship_pipeline/TEXTURE_PASS.md` (current), then `docs/ship_pipeline/AUDIT_BRIEF.md`
 
