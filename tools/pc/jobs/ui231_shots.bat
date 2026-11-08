@@ -2,6 +2,7 @@
 rem Issue 231 (UI spec): parse check, the MN8 debrief mock and the battle UI check with the AC5 menu focus moment.
 rem Started (not called) by the queue job q231_ui.bat, in its own window, so the queue stays free.
 rem Clone: Downloads\voidsworn_test\opus231\repo (branch opus/issue-231); the import cache is seeded from opus207's clone.
+rem The project boots maximised: the debrief mock takes its window size as an argument; the battle UI check runs maximised.
 rem Output: Downloads\voidsworn_test\opus231\out\ (status.txt says when each step finished).
 setlocal enabledelayedexpansion
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
@@ -27,10 +28,9 @@ for %%S in (ui/ui_scale.gd ui/battle/hud.gd ui/battle/ui_shots.gd main/title.gd 
   echo exit !ERRORLEVEL! >> "%O%\parse.txt"
 )
 echo parse done %date% %time% >> "%O%\status.txt"
-call "%TMO%" 300 "%G%" --path "%R%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 --script res://campaign/test/debrief_mock_shots.gd -- "%O%\debrief_1080" > "%O%\debrief_1080_log.txt" 2>&1
-call "%TMO%" 300 "%G%" --path "%R%\godot" --rendering-method forward_plus --windowed --resolution 3840x2160 --script res://campaign/test/debrief_mock_shots.gd -- "%O%\debrief_2160" > "%O%\debrief_2160_log.txt" 2>&1
+call "%TMO%" 300 "%G%" --path "%R%\godot" --rendering-method forward_plus --windowed --script res://campaign/test/debrief_mock_shots.gd -- "%O%\debrief_1080" 1920x1080 > "%O%\debrief_1080_log.txt" 2>&1
+call "%TMO%" 300 "%G%" --path "%R%\godot" --rendering-method forward_plus --windowed --script res://campaign/test/debrief_mock_shots.gd -- "%O%\debrief_max" > "%O%\debrief_max_log.txt" 2>&1
 echo debrief done %date% %time% >> "%O%\status.txt"
-call "%TMO%" 600 "%G%" --path "%R%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 res://scenes/battle/battle.tscn -- --ui-shots "%O%\battle_ui_1080" --seed 7 > "%O%\battle_ui_1080_log.txt" 2>&1
-call "%TMO%" 600 "%G%" --path "%R%\godot" --rendering-method forward_plus --windowed --resolution 3840x2160 res://scenes/battle/battle.tscn -- --ui-shots "%O%\battle_ui_2160" --seed 7 > "%O%\battle_ui_2160_log.txt" 2>&1
+call "%TMO%" 600 "%G%" --path "%R%\godot" --rendering-method forward_plus res://scenes/battle/battle.tscn -- --ui-shots "%O%\battle_ui" --seed 7 > "%O%\battle_ui_log.txt" 2>&1
 echo all done %date% %time% >> "%O%\status.txt"
 exit /b 0

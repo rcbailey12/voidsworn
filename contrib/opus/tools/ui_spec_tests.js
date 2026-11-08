@@ -1,5 +1,5 @@
 'use strict';
-// Standing checks for the consolidated UI specification (contrib/opus/briefs/ui_spec.md, issue #231, FINDINGS R134).
+// Standing checks for the consolidated UI specification (contrib/opus/briefs/ui_spec.md, issue #231, FINDINGS R136).
 // Node 18+, no dependencies. Run by run_all_checks.js (every *_tests.js in this folder).
 // These are code-structure checks, not numeric gates: they keep the one scale law one law, keep the battle focus ring
 // visible, and keep text at or above the stated floor. The values themselves are provisional until the U-A captures.

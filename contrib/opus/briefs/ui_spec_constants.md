@@ -56,7 +56,7 @@ hex | named as
 
 ## 3. Hex colours in the browser build
 
-53 distinct hex colours, 36 of them off the palette. Off-palette colours, most used first (nearest palette colour and its RGB distance; under 20 reads as the same colour):
+54 distinct hex colours, 37 of them off the palette. Off-palette colours, most used first (nearest palette colour and its RGB distance; under 20 reads as the same colour):
 
 hex | uses | nearest palette colour | distance | first use
 --- | --- | --- | --- | ---
@@ -74,6 +74,7 @@ hex | uses | nearest palette colour | distance | first use
 #7dff9b | 2 | #5fb3a6 (css --verd) | 82 | ui3d.js:102
 #ff6b5a | 2 | #ff5a3c (hud HULL_LOW) | 34 | ui3d.js:452
 #bfb6a0 | 2 | #b3aa95 (css --bone2) | 20 | campaign_run.js:21
+#112200 | 2 | #0f1626 (css --ink) | 40 | campaign_run.js:245
 #e2bb62 | 1 | #f0b35a (css --ember) | 18 | head.html:29
 #cc33dd | 1 | #e27f74 (hud BLOOD) | 131 | head.html:39
 #8ff0a0 | 1 | #5fb3a6 (css --verd) | 78 | head.html:77
@@ -94,7 +95,7 @@ hex | uses | nearest palette colour | distance | first use
 #1b2436 | 1 | #182133 (css --iron) | 5 | campaign_run.js:41
 #7f8fa6 | 1 | #5fb3a6 (css --verd) | 48 | campaign_run.js:43
 #9fcbff | 1 | #62ccff (css --shield) | 61 | campaign_run.js:238
-#ffd27a | 1 | #f0b35a (css --ember) | 47 | campaign_run.js:544
+#ffd27a | 1 | #f0b35a (css --ember) | 47 | campaign_run.js:562
 #9fe2ff | 1 | #62ccff (css --shield) | 65 | campaign3d.js:156
 
 ## 4. Hex colours in the port build

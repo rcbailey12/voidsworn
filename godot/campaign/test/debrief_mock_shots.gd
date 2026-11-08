@@ -1,7 +1,9 @@
 # MN8 debrief mock (issue #231, contrib/opus/briefs/debrief_spec.md): the run debrief as the spec lays it out, built from
 # the campaign UI's own parts (fonts, colours, panels, buttons, the shared scale law) over a real run end, next to the
 # shipped end page for the same run. A mock for Ryan's review round, not the build: #92 builds the screen.
-#   godot --path godot --resolution 1920x1080 --script res://campaign/test/debrief_mock_shots.gd -- <out dir>
+#   godot --path godot --script res://campaign/test/debrief_mock_shots.gd -- <out dir> [WxH]
+# The project boots maximised, so --resolution alone gives the monitor's size: pass WxH (1920x1080) to get a window of
+# that size; leave it out to shoot at the maximised window (Ryan's 4K monitor).
 # Shots: today_top, today_bottom (the shipped end page, scrolled to the top and the bottom), mock_top, mock_bottom (the
 # spec's layout for the same run), mock_first_top (the same run as a first-ever loss: kicker and teaching block).
 # The run: Sunward Crusade, Admiral Roderic Vex, lost in sector II after 6 battles (one elite, one sector flagship), the
@@ -20,6 +22,10 @@ func _initialize() -> void:
 	var a := OS.get_cmdline_user_args()
 	dir = a[0] if a.size() > 0 else "user://debrief_mock_shots"
 	DirAccess.make_dir_recursive_absolute(dir)
+	if a.size() > 1 and DisplayServer.get_name() != "headless":
+		var wh = a[1].split("x")
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+		DisplayServer.window_set_size(Vector2i(int(wh[0]), int(wh[1])))
 	C = CampaignScript.new()
 	var err = C.load_tables()
 	if err != "":
@@ -56,6 +62,13 @@ func _scroll(host: Node, bottom: bool) -> void:
 
 func _run() -> void:
 	await _frames(4)
+	var want = OS.get_cmdline_user_args()
+	if want.size() > 1 and DisplayServer.get_name() != "headless":   # the start-up maximise can land a frame later: apply until it holds
+		var wh = want[1].split("x")
+		for i in range(3):
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED); DisplayServer.window_set_size(Vector2i(int(wh[0]), int(wh[1])))
+			await _frames(2)
+	print("window ", DisplayServer.window_get_size(), " viewport ", root.get_visible_rect().size, " k ", ui.k)
 	BattleAPI.JSM.rnd_seed(4242)
 	C.playtest_default = false
 	C.META = C.migrateMeta(C.defaultMeta())
@@ -73,7 +86,7 @@ func _run() -> void:
 		fl[i]["car"] = {"dealt": [612, 344, 188, 90, 40][i % 5], "kills": [7, 4, 2, 1, 0][i % 5], "battles": 6}
 	for i in range(1, fl.size()): fl[i]["hp"] = 0   # one hull limps home
 	R["fallen"] = [{"name": "Captain Ilse Marrow"}, {"name": "Commander Tobin Reyes"}, {"name": "Lieutenant Aster Vale"}]
-	var N = R["nem"]; N["met"] = 1; N["beaten"] = 1
+	var N = C.nemActive(); N["met"] = 1; N["beaten"] = 1   # this run's hunter (#120 commander registry)
 	if N["weak"].size() > 0 and not N["revealed"].has(N["weak"][0]): N["revealed"].append(N["weak"][0])
 	var nem = {"full": C.nemFull(), "weak": str(C.NEM_WEAK[N["weak"][0]]["n"]) if N["weak"].size() > 0 else "", "fac": str(N["fac"])}
 	var patrons = C.PATRONS.keys()
@@ -93,7 +106,8 @@ func _run() -> void:
 	quit(0)
 
 func _show(c: Control) -> void:
-	for ch in layer.get_children(): ch.queue_free()
+	for ch in layer.get_children():
+		layer.remove_child(ch); ch.queue_free()
 	var host = Control.new(); host.set_anchors_preset(Control.PRESET_FULL_RECT); host.theme = ui.theme_main
 	var bg = ColorRect.new(); bg.set_anchors_preset(Control.PRESET_FULL_RECT); bg.color = Color("#0b111e"); host.add_child(bg)
 	host.add_child(c); layer.add_child(host)

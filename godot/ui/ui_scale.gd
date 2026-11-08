@@ -1,5 +1,5 @@
 extends RefCounted
-# The one UI scale law for every screen (contrib/opus/briefs/ui_spec.md section 4, FINDINGS R134; settles TY4 of the
+# The one UI scale law for every screen (contrib/opus/briefs/ui_spec.md section 4, FINDINGS R136; settles TY4 of the
 # Nov 6 UI audit). Before this there were six copies with three ceilings (battle HUD, title and campaign fallback 2.2,
 # campaign screens 2.5, career screen and rename dialog 2.0); all six agreed at 1080, 1440 and 2160 lines.
 #
