@@ -14,7 +14,7 @@ $mode = $args[0]
 
 function Arm-Info($arm) {
   switch ($arm) {
-    'deepseek' { return @{ base = 'https://api.deepseek.com'; key = $env:DEEPSEEK_API_KEY; models = 'https://api.deepseek.com/models'; bal = 'https://api.deepseek.com/user/balance' } }
+    { $_ -in 'deepseek','deepseekpro' } { return @{ base = 'https://api.deepseek.com'; key = $env:DEEPSEEK_API_KEY; models = 'https://api.deepseek.com/models'; bal = 'https://api.deepseek.com/user/balance' } }
     'kimi'     { return @{ base = 'https://api.moonshot.ai/v1'; key = $env:MOONSHOT_API_KEY; models = 'https://api.moonshot.ai/v1/models'; bal = 'https://api.moonshot.ai/v1/users/me/balance' } }
     default    { throw "unknown arm $arm" }
   }
@@ -80,7 +80,7 @@ elseif ($mode -eq 'balance') {
   $arm = $args[1]; $file = $args[2]; $a = Arm-Info $arm; $v = 'unknown'
   try {
     $r = Invoke-RestMethod -UseBasicParsing -TimeoutSec 30 -Headers @{ Authorization = "Bearer $($a.key)" } -Uri $a.bal
-    if ($arm -eq 'deepseek') { $b = $r.balance_infos | Select-Object -First 1; $v = "$($b.total_balance) $($b.currency)" }
+    if ($arm -like 'deepseek*') { $b = $r.balance_infos | Select-Object -First 1; $v = "$($b.total_balance) $($b.currency)" }
     else { $v = "$($r.data.available_balance) USD" }
   } catch { $v = 'unknown' }
   [IO.File]::WriteAllText($file, $v, [Text.Encoding]::ASCII)
