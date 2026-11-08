@@ -6,17 +6,17 @@
 
 ## Lock
 
-Running: yes
+Running: no
 Running since (UTC): 2026-11-08 04:20
-Last run finished (UTC): 2026-11-08 00:50
+Last run finished (UTC): 2026-11-08 05:10
 
-If "Running: yes" and the start time is under 90 minutes old, another run is working: stop without changes. If it is older, the last run died: take over and say so in the log.
+If "Running: no" and the start time is under 90 minutes old, another run is working: stop without changes. If it is older, the last run died: take over and say so in the log.
 
 ## Seats right now (Nov 7)
 
 - Opus: board owner, reviewer, merges, visual calls, issue writing, messages to Ryan; builds the opus jobs below. Sonnet subagents for routine checks, logs, staging.
 - Codex: DOWN until Ryan says. The PC watcher (codex_board.ps1) still queues any unblocked `codex` issue; those runs die on the usage limit. Keep every codex issue `blocked` until a live seat takes it.
-- Workhorse (#217, decided Nov 7): OpenCode on the PC, Kimi primary, DeepSeek second. NOT LIVE: waits on Ryan's setup steps, then the two-arm trial. Branch pattern `work/issue-<n>` or `work/issue-<n>-<arm>` (auto_pr opens the PR).
+- Workhorse (#217, decided Nov 7): OpenCode on the PC, Kimi primary, DeepSeek second. Runner BUILT and dry-run on the PC (R117, PR #222). NOT LIVE: waits on Ryan's top-ups and WORKHORSE_SETUP.bat, then WORKHORSE_TRIAL.bat (DeepSeek arm, then Kimi arm, on #26). Branch pattern `work/issue-<n>-<arm>` (auto_pr opens the PR). Runs land in Downloads\voidsworn_test\work217\issue-26-<arm>\<date_time>\out (latest.txt names the newest); summary work217\trial_summary.txt.
 - Muse: runs on its own watcher (muse label). Council seats: Rey, DeepSeek, Qwen, Flash (ideation only), Grok (new free leg, Nov 7). ChatGPT down until about Nov 10; Argon blocked since Nov 5. For an independent checker leg on an Opus merge while ChatGPT is down, ask Ryan in the main chat and Rey runs it.
 
 ## How a run works
@@ -30,7 +30,9 @@ If "Running: yes" and the start time is under 90 minutes old, another run is wor
 7. Rewrite this file, set "Running: no", commit straight to main (this file and FINDINGS only, docs-only exception), push with timeout 90. Stop.
 8. One send_later check only when a job or a limit reset lands well before the next look. Never chain them.
 
-## Current state (2026-11-08 03:50 UTC)
+## Current state (2026-11-08 05:10 UTC)
+
+- #217 runner DONE (project thread, Nov 7 night): PR #222 merged, R117. Dry run on the PC passed both arms. Ryan's files: Downloads\voidsworn_test\WORKHORSE_SETUP.bat and WORKHORSE_TRIAL.bat (scripts in work217\tools). #26 relabelled opus as the trial job. When the trial lands: review both PRs by diff (one pass each), merge the better, close the other, write the results note in contrib/opus/ with the measurement set and the decision rules from #217.
 
 - #207 DONE (Projects pilot thread, Nov 7 evening): PR #219 merged, report docs/shots/ship_pipeline/bench207/README.md, FINDINGS R115 (measurement) and R116 (gate). Gate scene at 1080p: frame median 6.9 ms (42%), GPU 2.4 ms (14%); 4K GPU 5.4 ms. **The gate (R116): 12.5 ms on the frame median at 1080p and on GPU ms with the 3D at 4K.** Binder: CPU, the game's own per-frame work per ship on screen and for effects (fixable in Godot; no engine probe). Flag: frame p99 14 to 53 ms from effects spawns.
 - Merged Nov 7: #204, #203, #205 (reviewed by diff, retitled). FINDINGS R110 to R115.
@@ -42,7 +44,7 @@ If "Running: yes" and the start time is under 90 minutes old, another run is wor
 ## Queue (Opus's order, Nov 7 night)
 
 Opus jobs, in order (Nov 7 night, after #207):
-1. #217 runner: build the OpenCode setup .bat (installs OpenCode, takes each key once, does-it-start test) and the one trial .bat (DeepSeek arm then Kimi arm on #26, pushes work/issue-26-<arm>; backup: a synthetic spec of the same shape). Every coding job waits on a live seat, so this comes first. The trial itself waits on Ryan's top-ups.
+1. #217 trial review and results note, as soon as Ryan has run setup and the trial (runner done, R117).
 2. #220 effects spawn stalls (frame p99 14 to 65 ms in battle; PC thread). Visible stutter, so ahead of the CPU trim.
 3. Apply #201 edits G2 to G6 to #120, #121, #122 (G1 withdrawn) before any of them is released.
 4. Triage settlements into named jobs with fixed top blocks: #208 (also the only home of the station assert fixes), #210, #212, #213, #215. Writing only; ceiling-dependent builds now follow R116.
@@ -67,7 +69,7 @@ Coding seat queue (released one at a time to the workhorse once #217 picks a win
 
 ## Waiting on Ryan
 
-- #217 money: about $10 on Moonshot and $2 on DeepSeek, no OpenRouter for the trial (R114). Setup itself is one double-click once Opus has built the runner.
+- #217: top up about $10 on Moonshot (platform.kimi.ai) and $2 on DeepSeek (platform.deepseek.com), make one API key on each, double-click WORKHORSE_SETUP.bat (paste the keys), then WORKHORSE_TRIAL.bat. No OpenRouter (R114).
 - S15 sound listen pass: one sitting, best once the #211 probe clips exist.
 - Round 7 pick and station look: when #198 and #199 land.
 
@@ -104,6 +106,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-08 05:10 project thread (#217): runner built (work_setup, work_trial, work_issue), three free dry runs on the PC (stand-in model) pass both arms end to end; fixes for the PowerShell shell fallback and the 2 minute command limit. PR #222 merged, R117, #26 relabelled opus. Waiting on Ryan's top-ups and two double-clicks.
 - 2026-11-08 04:15 project thread: #198 and #199 re-specced against R111, R113, R116; filed #220 (effects stalls) and #221 (per-ship CPU trim); Opus queue reordered (#217 runner first).
 - 2026-11-08 04:08 project thread: Ryan OK'd deleting the old hourly board task; deleted. The board runs from the project (R114).
 - 2026-11-08 04:05 project thread: Ryan set the gate, 12.5 ms (75%) on frame at 1080p and GPU at 4K (R116). PR #219 merged; #207 closed.
