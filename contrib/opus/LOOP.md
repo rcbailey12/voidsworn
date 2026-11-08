@@ -86,7 +86,7 @@ Coding seat queue (released one at a time to the workhorse once #217 picks a win
 
 ## Projects pilot (R114) and spin-offs (R133)
 
-R133: the board spins off threads itself. Route 1 (pick): the board runs from the Project's main chat, which starts its own threads. Route 2 (now, from the Board chat): one-shot scheduled tasks bound to the PC, one per job, each with a full standalone brief (job, branch, checks, who reviews). First spin-off: #121 after #120 merges. Keep 2 or 3 live at once.
+R133: the board spins off threads itself. Route 1: the Project's main chat starts its own threads, but Ryan's account still has the older session-list Projects (checked Nov 8 12:37 from his screenshots), so not yet. Route 2 (in use, from the Board chat): one-shot scheduled tasks bound to the PC, one per job, each with a full standalone brief (job, branch, checks, who reviews). Live: #231 UI spec thread (fires 13:45 CST Nov 8, auto approval, push to Ryan). Next: #121 after #120 merges. Keep 2 or 3 live at once.
 
 
 #207 runs as one Claude Code Project thread on the PC. Judge it on: did it run Godot on the 5080 without stalling on approvals, did it report numbers into the repo, how much plan usage it took, and could Ryan follow it from his phone. If yes, the lead conversation moves into the project and Opus asks Ryan before deleting the old hourly task. If no, the board stays in a lead chat and #207 runs through the PC queue. Limits checked Nov 7 (code.claude.com/docs/en/claude-projects): threads use Anthropic models only (the workhorse stays on the board), every thread draws the plan (default Opus high), cloud threads skip the repo's .claude skills and settings, a PC thread needs the desktop app's Remote Control setting and the PC awake.
@@ -95,9 +95,13 @@ Result (Opus, Nov 7 night): PASS on three of four. (1) Godot ran on the 5080 thr
 
 ## Muse
 
+- Nov 8 13:40: #257 (stale-claim audit of the entry docs plus contrib/muse/COUNCIL.md, from #216 asks 1 and 4) and #258 (#211 HunyuanVideo-Foley licence and run plan) released to Muse. #256 is the standing outside check on Opus-coded PRs (R132): it stays blocked until an Opus PR is ready; then comment the PR number on #256 and remove blocked.
+
 - No open Muse PRs. #200 to #202 are merged and closed.
 
 ## Known traps
+
+- Starting a PC job without clicks (Nov 8): drop a .bat into Downloads\voidsworn_test\queue\ with device_commit_files; watcher_q.bat runs it from build\ within seconds and logs to queue\logs\. For a long run the queue job should only `start` the real .bat in its own window, so the queue stays free (q_flash246.bat is the example). Computer control on Explorer misfired again Nov 8 (dark masked screen), so prefer the queue.
 
 - Never list queue\logs, queue_b\logs, queue\done or big shots folders recursively; they are huge. Stage the one file you need.
 - Computer use (R126): File Explorer at click tier; double-click a .bat in Downloads\voidsworn_test, then computer_release_lock straight away (it hides Ryan's other windows while held). Never while he is gaming. Take a screenshot before EVERY click (never chain clicks blind; a vanished window put a double-click on the desktop). Access lapses after 30 idle minutes (re-request). Explorer opens on the 27GL850 monitor.
