@@ -2,7 +2,7 @@
 
 **Board owner (Nov 7 2026, 19:20 CST, R114): Opus in the Claude Code Project "Embers of the Hollow Sun" (pilot). The Nov 7 lead chat has handed over and only reads.** If the pilot fails, the board goes back to a lead chat. Any other Claude chat on this repo works one named area or only reads.
 
-**The hourly scheduled task "Voidsworn board loop" (trig_01AYQAMdwD6BZHsizYS6EZdE) stays OFF (Opus, Nov 7).** Ryan made restarting it Opus's call. Reasons it stays off for now: almost nothing arrives to poll (Codex is down, the #217 workhorse is not set up yet, Muse PRs come a few a day), and its two failure modes from Nov 4 to 5 (folder access prompts, merges refused in unattended runs) are not fixed. Idle hourly runs would spend Claude usage that the reviewer and builder needs. Restart test: the workhorse is producing PRs. At that point the choice is an event-driven run (fires when a PR opens) or a Claude Code Project as the lead conversation; see "Open decisions" below.
+**The hourly scheduled task "Voidsworn board loop" is DELETED (Ryan, Nov 7 22:06 CST, after the Projects pilot passed, R114).** The board is run from the Claude Code Project. If an unattended loop is ever wanted again, the choice is an event-driven run (fires when a PR opens), not an hourly poll.
 
 ## Lock
 
@@ -66,7 +66,6 @@ Coding seat queue (released one at a time to the workhorse once #217 picks a win
 ## Waiting on Ryan
 
 - #217 money: about $10 on Moonshot and $2 on DeepSeek, no OpenRouter for the trial (R114). Setup itself is one double-click once Opus has built the runner.
-- Projects pilot: it worked (see the pilot section). Per R114, may Opus delete the old hourly task (trig_01AYQAMdwD6BZHsizYS6EZdE, already off)? Pick: yes.
 - S15 sound listen pass: one sitting, best once the #211 probe clips exist.
 - Round 7 pick and station look: when #198 and #199 land.
 
@@ -103,6 +102,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-08 04:08 project thread: Ryan OK'd deleting the old hourly board task; deleted. The board runs from the project (R114).
 - 2026-11-08 04:05 project thread: Ryan set the gate, 12.5 ms (75%) on frame at 1080p and GPU at 4K (R116). PR #219 merged; #207 closed.
 - 2026-11-08 03:50 project thread (#207): fresh clone on the PC, A4 files copied (252 of 252 match), mixed-fleet gate scene built and measured on the 5080 (5 launches: turn view, gate view twice, 1440p and 4K). Result R115; PR #219 opened, held for Ryan's share pick. Ryan paused the GPU work for gaming 20:15 to 20:49 CST.
 - 2026-11-08 01:25 lead chat: Ryan created the project and started the #207 thread; Remote Control on for Downloads\voidsworn_test, keep-awake on. Board ownership handed to the project.
@@ -112,4 +112,3 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 - 2026-11-06 Rey: Nov 6 audit stack filed and ruled by Ryan as #206 to #215. #200 synthesis corrected twice on PR #203; #201 rulings pushed to PR #204.
 - 2026-11-05 22:30 lead chat: handoff written. Codex out of usage; Opus takes the board after the Claude weekly reset. Muse PRs #203 to #205 open.
 - 2026-11-05 14:40 lead chat: Ryan R109, station needs way more detail. Merged #197 as base, filed #199 (codex) and #200 to #202 (muse).
-- 2026-11-05 14:32 lead chat: #195 PR #197 reviewed, held for Ryan. Released #198 round 7.
