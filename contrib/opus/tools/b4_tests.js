@@ -54,7 +54,7 @@ check('Nemesis battle: his flagship named, weaknesses and adaptations applied to
 check('Nemesis after battle: a win reveals a weakness and resets the clock; sector 3 flagship kill ends him; one adaptation per sector', () => {
   T.rndSeed(37);
   // A randomly revealed torpedo weakness correctly blocks pd (R63). Use fixed weaknesses for this pd check.
-  const R = fresh('corsair'); const N = R.nem; N.fac = 'hegemony'; N.weak = ['flank', 'slow']; N.clock = 3; const l1 = T.nemAfterBattle('win', true); const ok1 = N.revealed.length === 1 && N.revealed[0] === 'flank' && N.clock === 0 && N.scars === 1 && !N.dead && N.met === 1;
+  const R = fresh('corsair'); const N = R.nem; N.fac = 'hegemony'; R.nemAssign = ['hegemony', 'hegemony', 'hegemony']; R.nems = {hegemony: N}; N.weak = ['flank', 'slow']; N.clock = 3; const l1 = T.nemAfterBattle('win', true); const ok1 = N.revealed.length === 1 && N.revealed[0] === 'flank' && N.clock === 0 && N.scars === 1 && !N.dead && N.met === 1;
   T.nemLearn({ kind: { torp: 9 }, fire: {} }, 0); R.sector = 2; const a1 = T.nemAdapt(), a2 = T.nemAdapt(); R.sector = 3; N.met = 2; T.nemAfterBattle('win', true);
   return ok1 && a1 === 'pd' && a2 === null && N.dead && l1.length >= 1; });
 check('faction verbs: once per sector, costs paid, free with the right event flag, next-battle verbs wait for the fight', () => {
@@ -91,7 +91,7 @@ check('R42 scars: surviving a defeat adds a scar and a new epithet; he remembers
   const R = fresh('voidsworn'); const N = R.nem; N.fac = 'corsair'; const n0 = T.nemFull(); T.nemAfterBattle('win', true, { beat: 'torp', cause: 'big' });
   return N.scars === 1 && N.epithet && T.NEM_FAC.corsair.scars.includes(N.epithet) && T.nemFull() !== n0 && N.last_beat === 'torp' && T.nemBattleCfg().last_beat === 'torp' && N.scarKinds.join() === 'big' && N.epithets[0] === N.epithet; });
 check('R42 Deathless: patient clock (half speed), comes back once after being killed, even in sector 3', () => {
-  const R = fresh('voidsworn'); const N = R.nem; N.fac = 'deathless'; N.clock = 0; T.nemClockAdd(1); const half = N.clock === .5;
+  const R = fresh('voidsworn'); const N = R.nem; N.fac = 'deathless'; R.nemAssign = ['deathless', 'deathless', 'deathless']; R.nems = {deathless: N}; N.clock = 0; T.nemClockAdd(1); const half = N.clock === .5;
   R.sector = 3; T.nemAfterBattle('win', true, {}); const back = !N.dead && N.revived && N.met === 2; T.nemAfterBattle('win', true, {}); return half && back && N.dead; });
 check('R42 Corsair: a full clock raids your credits (announced on his card), and he flees a lost fight in battle and comes back richer', async () => {
   const R = fresh('voidsworn'); const N = R.nem; N.fac = 'corsair'; R.credits = 200; N.clock = 3; const msg = T.nemClockAdd(1); const raided = R.credits === 150 && /raiders/.test(msg);
@@ -114,7 +114,7 @@ check('Story alignment: R42 persona ids, gender g, last_beat words, signature ev
   for (const b of ['lance', 'torp', 'sq', 'ram', 'board', 'battery', 'evasive']) if (!T.NEM_BEAT_WORD[b]) ok = false;
   if (T.nemBeatOf({ kind: {} }, true) !== 'evasive' || T.nemBeatOf({ kind: { torp: 3 } }, false) !== 'torp') ok = false;
   const R = fresh('voidsworn'); const N = R.nem; N.fac = 'corsair'; N.clock = 3; T.nemClockAdd(1); if (!N.signatures.includes('raid')) ok = false;
-  const old = { fac: 'chorus', persona: 'ravenous', pronoun: 'it', beat: 'ion', scarList: ['big', 'ep:the Torn'], name: 'X', title: 'Y', traits: [], weak: [], revealed: [], adapt: [] }; R.nem = old; T.ensureNemesis();
+  const old = { fac: 'chorus', persona: 'ravenous', pronoun: 'it', beat: 'ion', scarList: ['big', 'ep:the Torn'], name: 'X', title: 'Y', traits: [], weak: [], revealed: [], adapt: [] }; R.nemAssign = [null, null, null]; R.nems = {}; R.sector = 1; R.nem = old; T.ensureNemesis();
   return ok && old.persona === 'ravenous' && old.last_beat === 'battery' && old.g === 'n' && !('pronoun' in old) && old.scarKinds.join() === 'big' && old.epithets[0] === 'the Torn' && !('beat' in old) && T.nemBattleCfg().g === 'n'; });
 check('Story arcs: killing the Nemesis for good unlocks the faction arc variant (free, not for sale before), once', () => {
   const R = fresh('ithar'); const N = R.nem; N.fac = 'corsair'; const id = T.ARC_VARIANT.ithar; T.META.variants = {};
@@ -122,10 +122,10 @@ check('Story arcs: killing the Nemesis for good unlocks the faction arc variant 
   R.sector = 3; const out = T.nemAfterBattle('win', true, {}); const once = T.nemAfterBattle('win', true, {}).every(l => !/Story complete/.test(l));
   return N.dead && T.META.variants[id] === true && out.some(l => /Story complete/.test(l)) && once && Object.keys(T.ARC_VARIANT).length === 6; });
 check('R49 Deathless: destroyed before sector 3 he withdraws like the others (no comeback spent); in sector 3 he rises once, then dies', () => {
-  const R = fresh('voidsworn'); const N = R.nem; N.fac = 'deathless'; R.sector = 2; T.nemAfterBattle('win', true, { cause: 'big' }); const early = !N.revived && !N.dead && N.scars === 1;
+  const R = fresh('voidsworn'); const N = R.nem; N.fac = 'deathless'; R.nemAssign = ['deathless', 'deathless', 'deathless']; R.nems = {deathless: N}; R.sector = 2; T.nemAfterBattle('win', true, { cause: 'big' }); const early = !N.revived && !N.dead && N.scars === 1;
   R.sector = 3; T.nemAfterBattle('win', true, {}); const back = N.revived && !N.dead && N.met === 2; T.nemAfterBattle('win', true, {}); return early && back && N.dead; });
 check('R49 Corsair: a towed ship is warned on his card, held, not returned when he only flees, and comes back when he dies', () => {
-  const R = fresh('voidsworn'); const N = R.nem; N.fac = 'corsair'; R.credits = 10; while (R.fleet.length < 3) R.fleet.push(T.newShip(R.fleet[R.fleet.length - 1].tpl, false));
+  const R = fresh('voidsworn'); const N = R.nem; N.fac = 'corsair'; R.nemAssign = ['corsair', 'corsair', 'corsair']; R.nems = {corsair: N}; R.credits = 10; while (R.fleet.length < 3) R.fleet.push(T.newShip(R.fleet[R.fleet.length - 1].tpl, false));
   const v = R.fleet.find(x => x.uid !== R.flagUid); v.hp = 1; N.clock = 3; N.met = 0; const warn = /most damaged ship/.test(T.nemPanel()); T.nemClockAdd(1); const taken = N.held === v && !R.fleet.includes(v);
   T.nemAfterBattle('win', false, { fled: true }); const stillHeld = N.held === v; R.sector = 3; const out = T.nemAfterBattle('win', true, {}); return warn && taken && stillHeld && N.dead && R.fleet.includes(v) && !N.held && out.some(l => /take back/.test(l)); });
 check('R49 Ithar: a rival who fled returns with the same small elite fleet, honed (shields and aim), never extra ships', () => {

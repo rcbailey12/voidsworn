@@ -408,7 +408,7 @@ function altCommand(admiralId){ const a=ADMIRALS[admiralId], fac=a.fac||'voidswo
 function newRun(admiralId,fac,opt){
   opt=opt||{}; const adm=ADMIRALS[admiralId]; fac=RUN_FACTIONS.includes(fac)?fac:'voidsworn';
   RUN = {fac, foes:shuffle(RUN_FACTIONS.filter(f=>f!==fac)), admiral:admiralId, credits:120, cpCap:10, sector:1, relics:[], inventory:[], fleet:[], pos:null,
-    stats:{battles:0,elites:0,bosses:0,kills:0,lost:0}, t0:Date.now(), fallen:[], ambush:false, over:false, boons:[], patrons:shuffle(Object.keys(PATRONS)).slice(0,4), aspect:null, flagUid:null};
+    stats:{battles:0,elites:0,bosses:0,kills:0,lost:0}, t0:Date.now(), fallen:[], ambush:false, over:false, boons:[], patrons:shuffle(Object.keys(PATRONS)).slice(0,4), aspect:null, flagUid:null, nem:null};
   if(opt.teachingGate===true&&(META.stats.finishedRuns==null?(META.stats.runs||0):META.stats.finishedRuns)<2) RUN.teachingGate=true;
   if(META.unlocked.chest1) RUN.credits+=75; if(META.unlocked.chest2) RUN.credits+=75; if(META.unlocked.chest3) RUN.credits+=75;
   if(META.unlocked.cmd1) RUN.cpCap+=2; if(META.unlocked.cmd2) RUN.cpCap+=2;
@@ -423,11 +423,11 @@ function newRun(admiralId,fac,opt){
   // a Devoted patron sends a gift: one common boon from the first devoted patron watching this run
   { const dev=RUN.patrons.find(p=>favourTier(p)>=2); if(dev){ const pool=Object.keys(BOONS).filter(id=>BOONS[id].p===dev&&!BOONS[id].leg&&boonUseful(id,fleetKit())); if(pool.length){ const id=pick(pool); RUN.boons.push({id,r:favourTier(dev)>=3?1:0}); RUN.giftBoon=id; } } }
   RUN.map=genSector(1);
-  RUN.flags={}; if(typeof newNemesis==='function') RUN.nem=newNemesis(); // B4: one named enemy commander per run
+  RUN.flags={}; if(typeof drawNemAssign==='function'){ RUN.nems={}; RUN.nemAssign=drawNemAssign(); RUN.nem=newNemesis(RUN.nemAssign[0]); } // B4: one hunter per story point, drawn once; the first is ready, the rest are created lazily
   META.stats.runs++;
   saveRun();
 }
-function saveRun(){ SAVED_RUN = RUN && !RUN.over ? JSON.parse(JSON.stringify(RUN)) : null; Persist.save(); }
+function saveRun(){ SAVED_RUN = RUN && !RUN.over ? JSON.parse(JSON.stringify(RUN)) : null; Persist.save(); } // the registry is saved; RUN.nem is the active commander lookup and keeps working for older readers
 function availableNodes(){
   const m=RUN.map;
   if(!RUN.pos) return m.cols[0].map(n=>n.id);
