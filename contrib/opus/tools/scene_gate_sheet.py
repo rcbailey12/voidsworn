@@ -2,10 +2,10 @@
 """Issue 207: the one-image sheet for Ryan (phone size): the measured scene, where it sits in a 60 fps frame at
 1080p, 1440p and 4K with the gate share options marked, and what each part of the scene costs.
 
-    python3 contrib/opus/tools/scene_gate_sheet.py docs/shots/ship_pipeline/bench207 --shares 50,60,75 --pick 60
+    python3 contrib/opus/tools/scene_gate_sheet.py docs/shots/ship_pipeline/bench207 --shares 50,60,75 --pick 75
 
 Reads <dir>/summary.json (scene_gate_report.py) and <dir>/scene_engagement.webp; writes <dir>/headroom_sheet.png.
-Colours: the reference dark palette (dataviz skill): blue for whole-frame time, aqua for GPU time, white for the pick.
+Colours: the reference dark palette (dataviz skill): blue for whole-frame time, aqua for GPU time, white for the ruled gate.
 """
 import argparse
 import json
@@ -78,7 +78,7 @@ def main():
     ax1 = fig.add_axes([0.13, 0.335, 0.82, 0.165], facecolor=SURFACE)
     fig.text(0.03, 0.552, "Time per frame, against one 60 fps frame (16.7 ms)", color=INK, fontsize=19,
              fontweight="bold", va="top")
-    fig.text(0.03, 0.530, "Blue: whole frame (what you feel).  Green: graphics card.  Dashed: gate options, white is my pick.",
+    fig.text(0.03, 0.530, "Blue: whole frame (what you feel).  Green: graphics card.  Dashed: gate options, white is the gate (R116).",
              color=INK2, fontsize=13.5, va="top")
     n = len(rows)
     xmax = FRAME * 1.32

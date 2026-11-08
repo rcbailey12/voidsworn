@@ -2,7 +2,7 @@
 
 **The answer.** The representative battle runs at **6.9 ms a frame** (median) on the RTX 5080 at 1080p, **42% of a 60 fps frame**, and the graphics card is busy for only **2.4 ms (14%)** of it. The binder is **CPU work on the main thread, not the GPU**: the game-side per-frame work of the ships on screen and their effects sets the frame time, while the graphics card's whole share (geometry, shadows, surfaces, post) is 14% of the frame. At 4K the GPU rises to 5.4 ms and the frame stays at 7.1 ms, still CPU-bound. Headroom is large: 9.7 ms of frame and 14.3 ms of GPU before 60 fps. Triangles are cheap here: the whole 20-ship fleet's 2.38M hull triangles cost about 0.8 ms of GPU, and a second full copy of every hull added 0.83 ms GPU and 0.60 ms of frame.
 
-**Gate share pick (Ryan decides, R111): 60 percent, 10.0 ms**, on both GPU ms and frame median, for this scene at 1080p. Options and trade-offs are in "Gate share" below.
+**The gate (Ryan, Nov 7, R116): 75 percent of the 60 fps frame, 12.5 ms**, on the frame median of this scene at 1080p and on its GPU ms with the 3D drawn at 4K. Today: frame 6.9 ms, 4K GPU 5.4 ms, so 5.6 ms and 7.1 ms of room. See "Gate" below.
 
 **Flag you did not ask about:** about 1 frame in 100 takes 14 to 53 ms (frame p99), well past 16.7 ms, and three ship deaths push it as high as 65 ms. The GPU's own p99 stays near 3.0 ms, and with effects off the p99 falls to 9 ms, so these are effects-side CPU stalls (volley and death spawns). Medians hide them; they read as stutter. Worth a job under #210 or #212.
 
@@ -116,21 +116,23 @@ Per ship (counted on the base scene after warm-up, so damage skins that hits had
 
 Empty studio scene: GPU 0.388 ms, frame 0.444 ms, render CPU 0.106 ms, 0 draw calls. Retained per row: draw calls, frame median and p99, GPU median, render CPU median (fleet and single ship). **No per-pass or shadow timing was retained** (fields: draw_calls, frame_median_ms, frame_p99_ms, frames, gpu_median_ms, label, render_cpu_median_ms, warmup). The round 4 series already pointed the same way: draw calls fell from 158 (today) to 9 or 10 (V1, V3) while GPU time rose, and V3 carried twice V1's triangles for 35 percent more GPU time. For scale: twenty copies of today's Pyre-Barge alone cost 2.68 ms of GPU in the studio, more than this whole 20-ship battle's GPU time (2.4 ms); the studio scene stays as the A/B instrument for hull variants and is retired as a budget.
 
-## Gate share (Ryan's pick, R111 and addendum 2)
+## Gate (Ryan's ruling, Nov 7, R116)
 
-The gate binds GPU ms and frame median of this scene at 1080p, as a share of the 16.7 ms frame. Today: frame 42%, GPU 14%.
+**12.5 ms (75% of the 16.7 ms frame)**, read two ways on this scene:
+- **Frame median at 1080p** (the protocol above): today 6.9 ms, 5.6 ms of room.
+- **GPU ms with the 3D at 4K** (the `res_2160` run): today 5.4 ms, 7.1 ms of room. Ryan plays at 1440p and 4K, and about half of the GPU cost grows with pixels: a 1080p GPU reading allowed to climb to 12.5 ms could land anywhere from about 16 ms to over 40 ms at 4K, depending on whether the new cost is geometry or per-pixel shading. Reading the GPU half at 4K keeps the gate true to how the game is played.
 
-| Share | Gate | Room for growth today (frame / GPU) | What it means |
+How it was settled: Opus first proposed 60% (10.0 ms). Ryan asked why the gate should sit lower when the binder is fixable inside Godot. Opus agreed and moved to 75%: the gate does not limit optimization (trimming the per-ship work lowers the scene's cost and adds room under any gate); the share only sets how much of the frame new content may spend. The p99 spikes are stalls of 40 to 50 ms that break 60 fps at any share, so they are fixed as their own job rather than priced into a lower gate. A 12.5 ms median still means about 80 fps in this busy battle, and scaling down stays possible later (R111 point 1).
+
+| Share | Gate | Room today (frame at 1080p / GPU at 4K) | |
 |---|---:|---:|---|
-| 50% | 8.3 ms | 1.4 / 5.9 ms | Safest for stutter, but the frame is already close: the next few effects or bigger fights would hit it before the CPU fix lands |
-| **60% (my pick)** | **10.0 ms** | **3.1 / 7.6 ms** | Real room to grow now (about 4 times today's GPU load for fidelity), and a third of the frame kept for the spikes we already see |
-| 75% | 12.5 ms | 5.6 / 10.1 ms | Most room, but today's spikes (p99 up to 53 ms) on top of a 12.5 ms median would be visible stutter |
-
-Why 60: the GPU has room for far richer hulls, materials and post under it, and the frame has about 3.1 ms to spend while the per-ship script cost gets trimmed (which buys room back under the same gate). It also leaves 6.7 ms of each frame for death and volley spikes and the bigger late-run fights.
+| 50% | 8.3 ms | 1.4 / 2.9 ms | considered |
+| 60% | 10.0 ms | 3.1 / 4.6 ms | Opus's first proposal |
+| **75%** | **12.5 ms** | **5.6 / 7.1 ms** | **ruled (R116)** |
 
 ## What this unblocks on the board
 
-- #198 and #199 re-spec: report the scene gate ms delta, per-class triangles, draw calls and surfaces per ship (R111, R113); the gate binds once Ryan sets the share.
+- #198 and #199 re-spec: report the scene gate ms deltas (frame at 1080p, GPU at 4K), per-class triangles, draw calls and surfaces per ship (R111, R113); the 12.5 ms gate binds (R116).
 - #209, #139, #140 and the ceiling-dependent settlement jobs: unblocked on the same terms.
 - Engine probe: not indicated (addendum point 2: the binder is fixable inside Godot).
 - Two new jobs worth filing: profile and trim the per-ship per-frame work (the binder), and remove the effects spawn stalls behind the p99 spikes (#210 or #212 home).
