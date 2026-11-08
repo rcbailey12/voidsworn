@@ -112,7 +112,7 @@
 - After every rules step, G1 and G3 re-pin their oracles.
 - Helpers watch port_notes.md for steps rather than waiting for a ping.
 
-**PC runner.** Lane A (GPU) and lane B (CPU), always through tools\pc\tmo.bat, which now waits while Ryan has the game open (Nov 1). Inspect only through device_list_dir and device_stage_files. Never drive the PC by computer control. Large downloads need Ryan's OK.
+**PC runner.** Lane A (GPU) and lane B (CPU), always through tools\pc\tmo.bat, which now waits while Ryan has the game open (Nov 1). Inspect through device_list_dir and device_stage_files. Computer use (R126, Nov 8): the board may double-click .bat files in File Explorer itself; payments stay Ryan's. Large downloads need Ryan's OK.
 
 ## 1. What and where
 
