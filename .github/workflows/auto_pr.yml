@@ -1,4 +1,7 @@
 # Open a pull request automatically when an agent pushes a job branch (Ryan, Nov 2 2026, FINDINGS R75).
+# Nov 7 2026 (R110): the PR title comes from the issue, not the head commit (a branch created from main
+# used to copy main's last commit as the title, which mislabelled PRs #203 and #204). work/issue-<n>[-arm]
+# is the workhorse branch pattern (#217).
 # Codex on Ryan's PC (codex/issue-<n>) and Muse (muse/issue-<n>) only need to push; this opens the PR into main
 # and starts the checks on it. Opus reviews and merges.
 name: auto-pr
@@ -7,6 +10,7 @@ on:
     branches:
       - 'codex/issue-*'
       - 'muse/issue-*'
+      - 'work/issue-*'
 permissions:
   contents: read
   pull-requests: write
@@ -22,10 +26,13 @@ jobs:
           REPO: ${{ github.repository }}
           TITLE: ${{ github.event.head_commit.message }}
         run: |
-          n="${BRANCH##*issue-}"
+          n=$(printf '%s' "$BRANCH" | sed -E 's/.*issue-([0-9]+).*/\1/')
+          arm=$(printf '%s' "$BRANCH" | sed -E 's/.*issue-[0-9]+-?//')
           open=$(gh pr list -R "$REPO" --head "$BRANCH" --state open --json number --jq 'length')
           if [ "$open" = "0" ]; then
-            title=$(printf '%s\n' "$TITLE" | head -1)
+            ititle=$(gh api "repos/$REPO/issues/$n" --jq .title 2>/dev/null || true)
+            if [ -n "$ititle" ]; then title="Issue $n: $ititle"; else title=$(printf '%s\n' "$TITLE" | head -1); fi
+            if [ -n "$arm" ]; then title="$title [$arm arm]"; fi
             body=$(printf '%s\n' "$TITLE" | tail -n +2)
             printf '%s\n\nOpened automatically from branch %s. Opus reviews and merges.\n' "$body" "$BRANCH" > body.md
             grep -q "Closes #$n" body.md || printf '\nCloses #%s\n' "$n" >> body.md
