@@ -54,10 +54,10 @@ Opus jobs, in order:
 2. #221 scene gate binder (PC thread, after the trial frees the PC; not urgent at 6.0 of 12.5 ms).
 3. #228 movement spec, #230 environment reconciliation (before #100), #231 UI spec. All need #227's audit records. (#229 done Nov 8: gravity well parity holds, no fix.)
 4. #216 first pass: rest of AGENTS.md, demote NEXT.md, confirm the council memory file placement for Rey (record Grok in the seat map).
-5. #48 Glasswright species design; record #43's unblock condition. (#96, #98, #206, #214 closed Nov 8.)
+5. Record #43's unblock condition. (#48 moved to Muse, R128.) (#96, #98, #206, #214 closed Nov 8.)
 Done Nov 8: #201 edits applied to #120 to #122 (R120); settlements triaged (R121 to R125: #208 closed with PR #226 merged; #210, #212, #213, #215 closed with board homes; jobs #227 to #238 filed).
 
-Muse: #227 files the five Nov 6 audit records (item definitions every settlement job needs).
+Muse: #227 files the five Nov 6 audit records (item definitions every settlement job needs; not picked up as of 08:56 CST, Ryan to nudge Muse), then #48 Glasswright species design (moved to Muse, R128).
 
 Coding seat queue (released one at a time to the workhorse once #217 picks a winner; Opus takes one itself only if the workhorse fails and Ryan wants speed):
 1. #120, #121, #122 Nemesis redesign (with the #201 check pack).
@@ -117,6 +117,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-08 15:00 UTC board thread: seat map (R128, PR #244, part of #216); #48 moved to Muse. Muse has not started #227 yet.
 - 2026-11-08 14:50 UTC board thread: PR #243 merged (results note, runner fixes). Free dry run on the PC passed. #120 relabelled opus and the head-to-head started through computer use (DeepSeek then Kimi, 90 min each). Check scheduled 10:25 CST.
 - 2026-11-08 14:40 UTC board thread: #217 trial closed out (R127): #241 DeepSeek merged (closes #26), #242 Kimi closed (one-hour cap, $4.95). Results note and runner fixes in PR #243. Guard and runner copied to the PC; free dry run started through computer use. Computer use access lapses after 30 idle minutes and Ryan re-approves; a Razer window can sit in front and block clicks (open File Explorer first).
 - 2026-11-08 13:30 UTC board thread: first Kimi rerun (07:18 CST) refused again, 3 requests a minute, because the $5 had not posted (balance still 9.98). Ryan fixed it (balance 15.96); the board started WORKHORSE_KIMI_RERUN.bat itself through computer use at 07:28 CST, first use of R126. Run 20261108_072823 is working.
@@ -126,4 +127,3 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 - 2026-11-08 12:56 UTC board thread: Ryan asked for a proactive orchestrator. Folder access to voidsworn_test granted (the Godot user folder was refused by the auto classifier; device shell still off). DeepSeek arm checked live: about 90 commands and 6 cents in at 06:46 CST. #201 applied (R120). Settlements triaged (R121 to R125), jobs #227 to #238 filed, five audit issues closed; PRs #225 (G6) and #226 (#208 close-out) merged after green checks.
 - 2026-11-08 12:50 UTC board thread: Ryan said merge and "you're the owner now"; #224 merged after green checks.
 - 2026-11-08 12:50 UTC board thread: #223 reviewed by diff (traces recounted, stills checked) and merged, #220 closed. #222 reviewed after the fact: guard gap found, PR #224 opened and held; the live trial keeps #222's config (no change mid-run). R119. No trial branches yet.
-- 2026-11-08 06:35 CST #217 thread: Ryan topped up (DeepSeek $2; Moonshot $5 paid plus the $5 voucher, so still Tier0 by the docs, his call to try it before adding $5) and ran WORKHORSE_SETUP.bat: OpenCode, both keys, both balance endpoints, both models READY through OpenCode, all PASS. WORKHORSE_TRIAL.bat started 06:30, DeepSeek arm first. If the Kimi arm stalls on 429s (Tier0: 3 requests a minute, 1.5M tokens a day), Ryan adds $5 and only the Kimi arm reruns (work_issue.bat 26 kimi). Ryan is moving the board to a single Board thread; the trial PRs and the results note go to it. #222 (the runner) was merged by its own author without a checker leg: the Board thread reviews it after the fact.
