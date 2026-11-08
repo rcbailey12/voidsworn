@@ -172,3 +172,15 @@ C) Delete it; anything still live gets filed as an issue first.
 - BACKLOG.md:17 and the rest of its section 0a coverage gaps: FINDINGS records the R63 ruling but not the Eclipse battleship's build status, so these could be neither confirmed nor refuted from the winning sources.
 - LOOP.md lines 71 to 140 reached only the chair and the blind leg (the Qwen supplementary pack carried lines 1 to 70); no leg checked the entry docs against the tail of LOOP's queue and holds in full, beyond the holds the blind leg cites.
 - Whether CI or any reader actually opens PROGRESS.md or NEXT.md first in practice: the audit judges mislead-risk from the files' own presentation, not from measured reader behaviour.
+
+## Rulings on the NEEDS RYAN questions (Ryan, Nov 8, 2026)
+
+Ryan ruled on all five questions the same day, in the main chat, agreeing with the Rey pick on each:
+
+- NR1: (A) Move HANDOFF.md sections 1 to 6 and the Nov 1 block into docs/archive, leaving section 0 plus a one-line pointer in HANDOFF.md.
+- NR2: (A) PROGRESS.md gets a superseded banner and is frozen as the pre-Godot history.
+- NR3: (A) NEXT.md is retired entirely; the per-weapon effects brief moves into the current effects work (the #232 stress pack and the FX stack under R122).
+- NR4: (A) CLAUDE.md becomes a short file that points at AGENTS.md and keeps only Claude-specific notes.
+- NR5: (A) BACKLOG.md is frozen as the pre-board record with a banner; live work lives only in GitHub issues.
+
+Opus applies these together with the UNAMBIGUOUS fixes above.
