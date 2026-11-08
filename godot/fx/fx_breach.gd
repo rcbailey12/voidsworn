@@ -1626,7 +1626,9 @@ static func apply(fx, s, job: Dictionary) -> void:
 	# (F3: the ship's nodes were freed while its rebuild ran on the worker: nothing left to show it on)
 	if not is_instance_valid(s.root) or not s.root.is_inside_tree() or not is_instance_valid(s._dmg_root):
 		return
+	var t_b := Time.get_ticks_usec()
 	build_meshes(res)
+	t_b = fx.pend("ba_build", t_b)
 	var orig: Array = job["surfs"]
 	var meshes: Dictionary = res.get("meshes", {})
 	var by_mi := {}
@@ -1659,7 +1661,9 @@ static func apply(fx, s, job: Dictionary) -> void:
 	var ents: Array = job["ents"]
 	var ends_by: Array = res.get("ends", [])
 	var glow: Color = s.fac.get("damage_glow", Color(1.0, 0.45, 0.12))
+	t_b = fx.pend("ba_swap", t_b)
 	_inside_overlay(fx, s, by_mi.keys(), ents, glow)
+	t_b = fx.pend("ba_overlay", t_b)
 	var b := POOLS.Batch.new()
 	var bs := POOLS.Batch.new()
 	var r := RandomNumberGenerator.new()
@@ -1696,6 +1700,7 @@ static func apply(fx, s, job: Dictionary) -> void:
 	s._hole_nodes.append(hb)
 	b.build(fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else ""), hb, "fx_breach_sprites")
 	bs.build(fx.mat(SH.STREAK, 1), hb, "fx_breach_sparks")
+	fx.pend("ba_nodes", t_b)
 
 
 # The actual surface material owns discard and burnt back faces. Overlays cannot

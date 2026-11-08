@@ -302,7 +302,13 @@ func _run_later() -> void:
 	_later = keep
 	due.sort_custom(func(a: Array, b: Array) -> bool: return float(a[0]) < float(b[0]))
 	for e in due:
+		var t0 := Time.get_ticks_usec()
 		(e[1] as Callable).call()
+		# issue 220: which deferred step a long frame spent its time in (named lambdas and bound functions)
+		var us := Time.get_ticks_usec() - t0
+		if us > 300:
+			var key := "L:" + String((e[1] as Callable).get_method())
+			prof[key] = int(prof.get(key, 0)) + us
 
 
 # ---------------------------------------------------------------- emit helpers (t = absolute effect-clock time)
@@ -652,9 +658,11 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 	DEATH.add_collider(self, s)
 	# cut the hull for its death on a worker thread, staggered so a battle start does not stall
 	var n = ships.size()
-	later(now + 0.4 + 0.25 * n, func() -> void:
+	later(now + 0.4 + 0.25 * n, func l_cut_first() -> void:
 		if ships.get(id) == s and not s.dead:
-			DEATH.precompute(self, s))
+			var t_c := Time.get_ticks_usec()
+			DEATH.precompute(self, s)
+			pend("cut_first", t_c))
 
 
 func remove_ship(id: String) -> void:
@@ -695,7 +703,10 @@ func ship(id: String) -> SHIP:
 
 func volley(attacker_id: String, kind: String, target_id: String, opts := {}) -> Dictionary:
 	stats["volleys"] += 1
-	return WEAP.volley(self, attacker_id, kind, target_id, opts)
+	var t0 := Time.get_ticks_usec()
+	var r: Dictionary = WEAP.volley(self, attacker_id, kind, target_id, opts)
+	pend("volley", t0)
+	return r
 
 
 # Fire at a point in space (gallery, misses, station guns with no attacker ship): from and to in world space.
@@ -712,7 +723,10 @@ func death(id: String, cause := "blast") -> float:
 	if not ships.has(id):
 		return 0.0
 	stats["deaths"] += 1
-	return DEATH.death(self, ships[id], cause)
+	var t0 := Time.get_ticks_usec()
+	var r: float = DEATH.death(self, ships[id], cause)
+	pend("death", t0)
+	return r
 
 
 func clear_wreck(id: String) -> void:
@@ -864,6 +878,14 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			baked.set_shader_parameter("intensity", 0.01)
 			mats.append(baked)
 	mats.append(DEATH.power_material(HULL.damage_material(StandardMaterial3D.new(), Transform3D.IDENTITY, {}, 1.0)))
+	# issue 220: the torpedo and rocket bodies (drive glow, star torpedo body, exhaust plume) and the weapon bursts' atlas
+	# shader: their first launch or hit compiled them mid-fight (a 53 ms frame with 3 surface pipelines at the gate scene)
+	mats.append_array([mat(WEAP.DRIVE, 1), mat(WEAP.STAR_BODY)])
+	var wburst: ShaderMaterial = DEATH.flipbook_material(self, "vent", "small")
+	wburst.shader = WEAP._weapon_shader(self)
+	wburst.set_shader_parameter("born", now)
+	wburst.set_shader_parameter("intensity", 0.01)
+	mats.append(wburst)
 	DEATH.tear_particles(self, at, Vector3.UP, 0.1, Vector3.ZERO)
 	for i in mats.size():
 		# Pin generated hull shaders until release, even after the temporary warmup meshes go away.
@@ -873,6 +895,12 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		mi.material_override = mats[i]
 		mi.position = Vector3((i % 4 - 1.5) * 2.5, (i / 4 - 1.0) * 2.5, 0) * unit
 		tmp.add_child(mi)
+	# the torpedo and rocket casings, in their own vertex format (position, normal, colour) and lit material
+	for rocket in [false, true]:
+		var cm := MeshInstance3D.new()
+		cm.mesh = WEAP._casing(self, rocket)
+		cm.position = Vector3(3.5 if rocket else -3.5, 3.0, 0) * unit
+		tmp.add_child(cm)
 	# a breach interior (its own vertex format: position, normal, colour)
 	var harr = []
 	harr.resize(Mesh.ARRAY_MAX)

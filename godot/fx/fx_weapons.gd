@@ -298,7 +298,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 				tend = T0
 				# the rammer's own bow folds as well (a smaller crumple, no glow)
 				if A != null and hd.size() > 0:
-					fx.later(T0, func() -> void: A.add_mark(fx, "ram_self", 2, A.hull.bow, Vector3(1, 0, 0), Vector3(-1, 0, 0)))
+					fx.later(T0, func l_ram_mark() -> void: A.add_mark(fx, "ram_self", 2, A.hull.bow, Vector3(1, 0, 0), Vector3(-1, 0, 0)))
 			else:
 				var vent = 0.45 + i * (0.35 if lk == "torp" else 0.12)
 				tf = T0 + vent
@@ -398,7 +398,7 @@ static func _burst(fx, p: Vector3, axis: Vector3, T: float, size: float, kind: S
 			power = 1.25
 			duration = maxf(life, 0.4)
 	var seed: float = fx.rng.randf()
-	fx.later(T, func() -> void:
+	fx.later(T, func l_burst() -> void:
 		var node := DEATH.flipbook(fx, p, axis, size * fx.unit, kind, duration, velocity, power, "small") as MeshInstance3D
 		node.name = "fx_weapon_" + kind
 		# The vent helper offsets its atlas to put the tip on the sampled surface.
@@ -776,7 +776,7 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 			imp *= 0.35
 		var lhp: Vector3 = tg["lp"] if tg.has("lp") else Tg.xf().affine_inverse() * p
 		var ldr: Vector3 = (Tg.xf().basis.inverse() * dir).normalized()
-		fx.later(T, func() -> void: Tg.hit_react(fx, imp, lhp, ldr))
+		fx.later(T, func l_hit_react() -> void: Tg.hit_react(fx, imp, lhp, ldr))
 	if bool(tg.get("shield", false)):
 		_shield_impact(fx, lk, w, Tg, tg, T, dir, k, sustain, torp, beam, bio, light)
 		return
@@ -790,7 +790,7 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 		var lp0: Vector3 = tg["lp"]
 		var ln0: Vector3 = tg["ln"]
 		var wound_look: String = tg.get("mark_look", lk)
-		fx.later(T, func() -> void: Tg.add_mark(fx, wound_look, w, lp0, ln0, ld))
+		fx.later(T, func l_mark() -> void: Tg.add_mark(fx, wound_look, w, lp0, ln0, ld))
 	# Material changes the ejecta; the incoming weapon still owns its burst shape.
 	var substance: String = Tg.faction if Tg != null else "metal"
 	if beam:
@@ -1132,7 +1132,7 @@ static func torp_strike(fx, lane_id: String, tid: String, hit: Dictionary) -> Di
 		_impact(fx, ln["look"], 3, Tg, tg, ti, ln["fac"]["weapon"], (tg["p"] - start).normalized(), hd, kt, 0.0)
 		if Tg != null:
 			Tg.busy_until = maxf(Tg.busy_until, ti)
-	fx.later(ti + 0.2, func() -> void: torp_lane_clear(fx, lane_id, false))
+	fx.later(ti + 0.2, func l_lane_clear() -> void: torp_lane_clear(fx, lane_id, false))
 	return {"impacts": [ti - T], "done": ti - T + 0.5, "at": tg["p"]}
 
 
