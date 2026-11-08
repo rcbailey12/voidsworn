@@ -1,5 +1,7 @@
 # Readable ship paint standard: chair synthesis (board issue 188)
 
+> **Status (Nov 8 2026, Opus for #208; FINDINGS R121).** The paint clauses below are the round 4 to 6 lessons, kept as guidance and as the viewing method (the blurred greyscale battle crop next to the reference). Their assumed numbers (value steps, grain caps, plate sizes in px, rust and trim shares, the 170-unit crop radius) stop binding until a measurement earns them back; sheets are judged by Ryan's eye. The measured per-faction anchors and the procedural paint route (R96) still bind.
+
 Chair synthesis of four legs (blind Rey leg, DeepSeek, Qwen, Argon review), grounded in the issue 188 evidence pack: FINDINGS R96, R97 and R103, the round 4 (#146) and round 5 (#163) build reports, the settled paint stack from the ship look round 3 synthesis, and the shipped faction palettes. FINDINGS rulings override every other doc. Where a leg conflicts with the pack, the pack wins. Numbers in the standard are of two kinds and are labelled as such: derived (computed from the pack's camera anchors and the round 5 measurements) and chair judgments (thresholds the chair chose between leg positions, marked INFERRED). No human-hour estimates anywhere (R99); effort is stated in agent terms only.
 
 ## Verdict
