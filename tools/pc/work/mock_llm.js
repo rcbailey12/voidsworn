@@ -32,7 +32,7 @@ const server = http.createServer((req, res) => {
     if (!(j.tools || []).length) { delta = { role: 'assistant', content: 'Dry run' }; fin = 'stop'; }
     else if (step < SCRIPT.length) {
       const s = SCRIPT[step];
-      delta = { role: 'assistant', tool_calls: [{ index: 0, id: 'call_' + step, type: 'function', function: { name: 'bash', arguments: JSON.stringify({ command: s.cmd, description: s.d, timeout: 900000 }) } }] };
+      delta = { role: 'assistant', tool_calls: [{ index: 0, id: 'call_' + step, type: 'function', function: { name: 'bash', arguments: JSON.stringify({ command: s.cmd, description: s.d }) } }] };
       fin = 'tool_calls';
     } else {
       delta = { role: 'assistant', content: 'Dry run report: the stand-in model ran the fixed script (look around, write a file, standing checks, parity, a refused push). No game files were changed.' };
