@@ -17,6 +17,7 @@ signal action(name: String, arg: Variant)
 signal rescaled   # the HUD was rebuilt at a new size; the battle refreshes what it shows
 
 const Brand := preload("res://ui/battle/brand.gd")
+const UiScale := preload("res://ui/ui_scale.gd")
 
 const INK := Color("#0f1626")
 const IRON := Color("#182133")
@@ -41,7 +42,7 @@ var font: FontFile
 var font_semi: FontFile
 var font_goth: Font                 # headers: Michroma (brand.gd), the sci-fi display face
 var font_caps: Font                 # section heads: Oxanium small caps
-var k := 1.0                        # window height / 1080
+var k := 1.0                        # the UI scale (ui_scale.gd: window height / 1080, clamped, times the player scale)
 var root: Control
 var top: PanelContainer
 var title_lbl: Label
@@ -90,9 +91,9 @@ func _ready() -> void:
 	_build_all()
 
 
-# the UI scale for a window: its height over 1080 (the design size), within 0.6 and 2.2
+# the UI scale for a window: the one shared law (godot/ui/ui_scale.gd, ui_spec.md section 4)
 static func scale_for(vs: Vector2) -> float:
-	return clampf(vs.y / 1080.0, 0.6, 2.2)
+	return UiScale.k_for(vs)
 
 
 var _built_vs := Vector2.ZERO       # the window size the HUD was built for
@@ -232,7 +233,20 @@ func _theme() -> Theme:
 	th.set_stylebox("normal", "Button", sb)
 	th.set_stylebox("hover", "Button", sbh)
 	th.set_stylebox("pressed", "Button", sbh)
-	th.set_stylebox("focus", "Button", StyleBoxEmpty.new())
+	# AC5 (UI audit, ui_spec.md 6.2): a visible focus ring, the title screen's own (WCAG 2.4.7): no fill, a bone border at
+	# least 2 px, drawn just outside the button. Bone, not gilt, so it shows on the gilt primary buttons too. Only the
+	# menu and the end card take keyboard focus (_button keys); the board-time buttons stay out of it because Space, Enter
+	# and Tab belong to the battle there (F1 key scheme).
+	var sf := StyleBoxFlat.new()
+	sf.draw_center = false
+	sf.border_color = BONE
+	sf.set_border_width_all(maxi(2, s(2)))
+	sf.set_corner_radius_all(s(4))
+	sf.expand_margin_left = 3
+	sf.expand_margin_right = 3
+	sf.expand_margin_top = 3
+	sf.expand_margin_bottom = 3
+	th.set_stylebox("focus", "Button", sf)
 	th.set_stylebox("disabled", "Button", sbd)
 	th.set_color("font_color", "Button", BONE)
 	th.set_color("font_hover_color", "Button", BONE)
@@ -312,10 +326,12 @@ func _label(txt: String, size := 15, col := BONE, f: Font = null) -> Label:
 	return l
 
 
-func _button(txt: String, act: String, arg: Variant = null, primary := false) -> Button:
+# keys: the button takes keyboard focus (Tab, the arrows, Enter or Space press it). Only for the menu and the end card,
+# where the battle's own keys are not in play; everywhere else Space, Enter and Tab drive the battle (ui_spec.md 6.2).
+func _button(txt: String, act: String, arg: Variant = null, primary := false, keys := false) -> Button:
 	var b := Button.new()
 	b.text = txt
-	b.focus_mode = Control.FOCUS_NONE
+	b.focus_mode = Control.FOCUS_ALL if keys else Control.FOCUS_NONE
 	if primary:
 		var sb := StyleBoxFlat.new()
 		sb.bg_color = GILT
@@ -547,7 +563,7 @@ func _hull_bar(hp: float, mx: float, h: int) -> Control:
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var fg := ColorRect.new()
 	var f := clampf(hp / maxf(mx, 1.0), 0.0, 1.0)
-	fg.color = HULL_LOW if f < 0.34 else HULL
+	fg.color = HULL_LOW if f < 0.35 else HULL   # HD9: one hull-low line, 0.35, as the browser and the campaign bars (ui_spec.md 3; was 0.34)
 	fg.anchor_right = f
 	fg.anchor_bottom = 1.0
 	fg.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1214,11 +1230,17 @@ func show_end(title: String, body: String, win: bool, external := false) -> void
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", s(10))
 	if external:
-		row.add_child(_button("Continue", "continue", null, true))
+		row.add_child(_button("Continue", "continue", null, true, true))
 	else:
-		row.add_child(_button("Fight again", "restart", null, true))
-		row.add_child(_button("Quit", "quit"))
+		row.add_child(_button("Fight again", "restart", null, true, true))
+		row.add_child(_button("Quit", "quit", null, false, true))
 	v.add_child(row)
+	# keyboard focus on the first button, after a beat: a Space still held down to hurry the last enemy turn must not
+	# press Continue the moment the card appears (the battle's own 0.5 s guard on Space, battle.gd _on_key)
+	var first := row.get_child(0) as Button
+	get_tree().create_timer(0.75).timeout.connect(func() -> void:
+		if is_instance_valid(first) and first.is_visible_in_tree() and get_viewport().gui_get_focus_owner() == null:
+			first.grab_focus())
 
 
 # the in-battle menu (Esc with nothing to cancel, or Menu in the top bar): items are [text, action, arg]
@@ -1226,6 +1248,12 @@ var menu: PanelContainer
 
 
 func show_menu(title: String, items: Array) -> void:
+	# a toggle in the menu builds it again: keep the keyboard on the same row
+	var refocus := 0
+	if menu != null and is_instance_valid(menu):
+		var fo := get_viewport().gui_get_focus_owner()
+		if fo != null and menu.is_ancestor_of(fo):
+			refocus = maxi(0, fo.get_index() - 1)   # row 0 is the title label
 	hide_menu()
 	_last["show_menu"] = [title, items]
 	menu = PanelContainer.new()
@@ -1247,7 +1275,9 @@ func show_menu(title: String, items: Array) -> void:
 	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(t)
 	for it in items:
-		v.add_child(_button(str(it[0]), str(it[1]), it[2] if it.size() > 2 else null, it == items[0]))
+		v.add_child(_button(str(it[0]), str(it[1]), it[2] if it.size() > 2 else null, it == items[0], true))
+	if items.size() > 0:
+		(v.get_child(1 + mini(refocus, items.size() - 1)) as Button).grab_focus.call_deferred()
 
 
 # cut-in letterbox bars

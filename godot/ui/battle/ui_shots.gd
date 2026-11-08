@@ -260,6 +260,32 @@ func run(battle) -> void:
 	Engine.time_scale = 6.0
 	await _idle()
 	Engine.time_scale = 1.0
+	# 7. AC5 (ui_spec.md 6.2): the menu takes keyboard focus and shows the focus ring; a toggle keeps the keyboard on its
+	# row; Esc closes the menu and gives the keys back to the battle
+	b._open_menu()
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var fo := get_viewport().gui_get_focus_owner()
+	var ring = fo.get_theme_stylebox("focus") if fo is Button else null
+	_note(fo is Button and b.hud.menu != null and b.hud.menu.is_ancestor_of(fo) and ring is StyleBoxFlat and not (ring as StyleBoxFlat).draw_center,
+		"7_menu_focus: the menu's first button has keyboard focus and a visible focus ring (%s)" % (str((fo as Button).text) if fo is Button else "no focus"))
+	await _shot("7_menu_focus")
+	var row: Button = null
+	for ch in b.hud.menu.get_child(0).get_children():
+		if ch is Button and str(ch.text).begins_with("Firing arcs"):
+			row = ch
+	if row != null:
+		row.grab_focus()
+		row.pressed.emit()
+		await get_tree().process_frame
+		await get_tree().process_frame
+		var fo2 := get_viewport().gui_get_focus_owner()
+		_note(fo2 is Button and str(fo2.text).begins_with("Firing arcs"), "7_menu_focus: after a toggle the keyboard stays on its row (%s)" % (str(fo2.text) if fo2 is Button else "no focus"))
+		b.arcs_on = not b.arcs_on   # put the option back as it was (the toggle saved nothing: screenshot jobs keep their settings)
+	b._on_key(KEY_ESCAPE)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_note(b.hud.menu == null and get_viewport().gui_get_focus_owner() == null, "7_menu_focus: Esc closes the menu and no button keeps the keyboard")
 	_finish()
 
 

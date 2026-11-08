@@ -15,7 +15,8 @@ func _ready() -> void:
 	add_child(cover)
 	var label := Label.new()
 	label.text = "Preparing the sector..."
-	label.add_theme_font_size_override("font_size", 24)
+	var US = load("res://ui/ui_scale.gd")   # the one shared scale law (ui_spec.md section 4); was a fixed 24 at every size
+	label.add_theme_font_size_override("font_size", US.px(24, US.k_for(get_viewport().get_visible_rect().size)))
 	label.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	label.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	label.grow_vertical = Control.GROW_DIRECTION_BOTH

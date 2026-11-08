@@ -28,7 +28,7 @@ func bind(campaign) -> void:
 
 
 func _ready() -> void:
-	k = clampf(get_viewport().get_visible_rect().size.y / 1080.0, 0.6, 2.2)
+	k = load("res://ui/ui_scale.gd").k_for(get_viewport().get_visible_rect().size)   # the one shared law (ui_spec.md section 4)
 	font_goth = load("res://ui/battle/brand.gd").display()  # the sci-fi display face (lore round 5)
 	root = Control.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
