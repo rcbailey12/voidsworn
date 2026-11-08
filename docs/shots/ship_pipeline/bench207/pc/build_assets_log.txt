@@ -1,0 +1,76 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[assets] A4 ship B16_23 (+ breach parts)
+[assets] A4 ship B19_11 (+ breach parts)
+[assets] A4 ship B20_11 (+ breach parts)
+[assets] A4 ship B21_11 (+ breach parts)
+[assets] A4 ship B22_11 (+ breach parts)
+[assets] A4 ship B23_51 (+ breach parts)
+[assets] A4 ship C13s_23 (+ breach parts)
+[assets] A4 ship C14s_23 (+ breach parts)
+[assets] A4 ship C15s_23 (+ breach parts)
+[assets] A4 ship C16s_23 (+ breach parts)
+[assets] A4 ship C19_51 (+ breach parts)
+[assets] A4 ship D20_23 (+ breach parts)
+[assets] A4 ship D21_23 (+ breach parts)
+[assets] A4 ship D22_23 (+ breach parts)
+[assets] A4 ship D9_23 (+ breach parts)
+[assets] A4 ship H10_23 (+ breach parts)
+[assets] A4 ship H4_11 (+ breach parts)
+[assets] A4 ship H7_23 (+ breach parts)
+[assets] A4 ship H8_23 (+ breach parts)
+[assets] A4 ship H9_23 (+ breach parts)
+[assets] A4 ship I11_37 (+ breach parts)
+[assets] A4 ship I14_23 (+ breach parts)
+[assets] A4 ship I15_11 (+ breach parts)
+[assets] A4 ship I16_11 (+ breach parts)
+[assets] A4 ship I8_37 (+ breach parts)
+[assets] A4 ship O1_37 (+ breach parts)
+[assets] A4 ship O2_37 (+ breach parts)
+[assets] A4 ship O3_11 (+ breach parts)
+[assets] A4 ship S1_51 (+ breach parts)
+[assets] A4 ship S2_23 (+ breach parts)
+[assets] A4 ship V14_23 (+ breach parts)
+[assets] A4 ship V15_37 (+ breach parts)
+[assets] A4 ship V16_37 (+ breach parts)
+[assets] A4 ship V17_37 (+ breach parts)
+[assets] A4 ship V18_51 (+ breach parts)
+[assets] A4 ship V1b_r_23 (+ breach parts)
+[assets] check B16_23 loads=true skins=11 heavy_skins=10 hardpoints=17 hull_meshes=1 holes=10 heavies=10 wreck_chunks=10
+[assets] check B19_11 loads=true skins=5 heavy_skins=4 hardpoints=8 hull_meshes=1 holes=4 heavies=4 wreck_chunks=4
+[assets] check B20_11 loads=true skins=7 heavy_skins=6 hardpoints=11 hull_meshes=1 holes=6 heavies=6 wreck_chunks=6
+[assets] check B21_11 loads=true skins=7 heavy_skins=6 hardpoints=11 hull_meshes=1 holes=6 heavies=6 wreck_chunks=6
+[assets] check B22_11 loads=true skins=9 heavy_skins=8 hardpoints=15 hull_meshes=1 holes=8 heavies=8 wreck_chunks=8
+[assets] check B23_51 loads=true skins=1 heavy_skins=0 hardpoints=2 hull_meshes=1 holes=0 heavies=0 wreck_chunks=3
+[assets] check C13s_23 loads=true skins=5 heavy_skins=4 hardpoints=9 hull_meshes=1 holes=4 heavies=4 wreck_chunks=4
+[assets] check C14s_23 loads=true skins=7 heavy_skins=6 hardpoints=12 hull_meshes=1 holes=6 heavies=6 wreck_chunks=6
+[assets] check C15s_23 loads=true skins=7 heavy_skins=6 hardpoints=14 hull_meshes=1 holes=6 heavies=6 wreck_chunks=6
+[assets] check C16s_23 loads=true skins=9 heavy_skins=8 hardpoints=16 hull_meshes=1 holes=8 heavies=8 wreck_chunks=8
+[assets] check C19_51 loads=true skins=9 heavy_skins=8 hardpoints=22 hull_meshes=1 holes=8 heavies=8 wreck_chunks=8
+[assets] check D20_23 loads=true skins=7 heavy_skins=6 hardpoints=13 hull_meshes=1 holes=6 heavies=6 wreck_chunks=6
+[assets] check D21_23 loads=true skins=7 heavy_skins=6 hardpoints=13 hull_meshes=1 holes=6 heavies=6 wreck_chunks=6
+[assets] check D22_23 loads=true skins=11 heavy_skins=10 hardpoints=17 hull_meshes=1 holes=10 heavies=10 wreck_chunks=10
+[assets] check D9_23 loads=true skins=5 heavy_skins=4 hardpoints=7 hull_meshes=1 holes=4 heavies=4 wreck_chunks=4
+[assets] check H10_23 loads=true skins=9 heavy_skins=8 hardpoints=19 hull_meshes=1 holes=8 heavies=8 wreck_chunks=8
+[assets] check H4_11 loads=true skins=11 heavy_skins=10 hardpoints=23 hull_meshes=1 holes=10 heavies=10 wreck_chunks=10
+[assets] check H7_23 loads=true skins=5 heavy_skins=4 hardpoints=10 hull_meshes=1 holes=4 heavies=4 wreck_chunks=4
+[assets] check H8_23 loads=true skins=7 heavy_skins=6 hardpoints=11 hull_meshes=1 holes=6 heavies=6 wreck_chunks=6
+[assets] check H9_23 loads=true skins=7 heavy_skins=6 hardpoints=12 hull_meshes=1 holes=6 heavies=6 wreck_chunks=6
+[assets] check I11_37 loads=true skins=7 heavy_skins=6 hardpoints=10 hull_meshes=1 holes=6 heavies=6 wreck_chunks=6
+[assets] check I14_23 loads=true skins=4 heavy_skins=3 hardpoints=7 hull_meshes=1 holes=3 heavies=3 wreck_chunks=4
+[assets] check I15_11 loads=true skins=7 heavy_skins=6 hardpoints=11 hull_meshes=1 holes=6 heavies=6 wreck_chunks=6
+[assets] check I16_11 loads=true skins=9 heavy_skins=8 hardpoints=14 hull_meshes=1 holes=8 heavies=8 wreck_chunks=8
+[assets] check I8_37 loads=true skins=11 heavy_skins=10 hardpoints=17 hull_meshes=1 holes=10 heavies=10 wreck_chunks=10
+[assets] check O1_37 loads=true skins=11 heavy_skins=10 hardpoints=11 hull_meshes=1 holes=10 heavies=10 wreck_chunks=10
+[assets] check O2_37 loads=true skins=7 heavy_skins=6 hardpoints=9 hull_meshes=1 holes=6 heavies=6 wreck_chunks=6
+[assets] check O3_11 loads=true skins=5 heavy_skins=4 hardpoints=5 hull_meshes=1 holes=4 heavies=4 wreck_chunks=4
+[assets] check S1_51 loads=true skins=1 heavy_skins=0 hardpoints=3 hull_meshes=1 holes=0 heavies=0 wreck_chunks=3
+[assets] check S2_23 loads=true skins=1 heavy_skins=0 hardpoints=6 hull_meshes=1 holes=0 heavies=0 wreck_chunks=3
+[assets] check V14_23 loads=true skins=5 heavy_skins=4 hardpoints=10 hull_meshes=1 holes=4 heavies=4 wreck_chunks=4
+[assets] check V15_37 loads=true skins=7 heavy_skins=6 hardpoints=11 hull_meshes=1 holes=6 heavies=6 wreck_chunks=6
+[assets] check V16_37 loads=true skins=7 heavy_skins=6 hardpoints=14 hull_meshes=1 holes=6 heavies=6 wreck_chunks=6
+[assets] check V17_37 loads=true skins=9 heavy_skins=8 hardpoints=19 hull_meshes=1 holes=8 heavies=8 wreck_chunks=8
+[assets] check V18_51 loads=true skins=9 heavy_skins=8 hardpoints=18 hull_meshes=1 holes=8 heavies=8 wreck_chunks=8
+[assets] check V1b_r_23 loads=true skins=11 heavy_skins=10 hardpoints=22 hull_meshes=1 holes=10 heavies=10 wreck_chunks=10
+[assets] check: 36 A4 ships in the manifest
+[assets] done in 15.2 s: 36 hulls, 6 max-detail, 32 rocks, sky true

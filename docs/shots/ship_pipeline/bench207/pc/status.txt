@@ -1,0 +1,20 @@
+start Sat 11/07/2026 19:52:32.68 
+import 19:53:02.31 
+assets 19:56:32.87 
+a4copy start Sat 11/07/2026 20:04:44.92 
+a4copy done Sat 11/07/2026 20:04:50.52 
+bench run1 20:20:26.87 
+bench run2 20:20:29.25 
+done Sat 11/07/2026 20:20:31.17 
+v2 waiting for go.txt Sat 11/07/2026 20:20:41.55 
+v2 start Sat 11/07/2026 20:49:41.20 
+import 20:49:45.53 
+assets 20:55:10.12 
+
+---------- C:\USERS\RCBAI\DOWNLOADS\VOIDSWORN_TEST\OPUS207\OUT\BUILD_ASSETS_LOG.TXT: 0
+bench run1 20:55:26.19 
+bench run2 21:08:14.01 
+bench run3_res 21:21:43.73 
+done Sat 11/07/2026 21:25:13.96 
+repeat start Sat 11/07/2026 21:25:18.58 
+repeat done Sat 11/07/2026 21:38:45.50 

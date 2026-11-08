@@ -1,0 +1,37 @@
+Sat Nov  7 21:25:13 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 617.42                 KMD Version: 617.42        CUDA UMD Version: 13.4     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                  Driver-Model | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 5080      WDDM  |   00000000:07:00.0  On |                  N/A |
+| 30%   38C    P3             52W /  252W |    2420MiB /  16303MiB |      7%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A            5260    C+G   C:\Windows\explorer.exe               N/A      |
+|    0   N/A  N/A            9608    C+G   ...h_cw5n1h2txyewy\SearchApp.exe      N/A      |
+|    0   N/A  N/A           12152    C+G   ..._pzs8sxrjxfjjc\app\claude.exe      N/A      |
+|    0   N/A  N/A           13504    C+G   ...5n1h2txyewy\TextInputHost.exe      N/A      |
+|    0   N/A  N/A           13800    C+G   ...h_cw5n1h2txyewy\SearchApp.exe      N/A      |
+|    0   N/A  N/A           14084    C+G   ...86)\Battle.net\Battle.net.exe      N/A      |
+|    0   N/A  N/A           15980    C+G   ...cord\app-1.0.9267\Discord.exe      N/A      |
+|    0   N/A  N/A           17348    C+G   ...m Files\NZXT CAM\NZXT CAM.exe      N/A      |
+|    0   N/A  N/A           18204    C+G   ...A Desktop\EACefSubProcess.exe      N/A      |
+|    0   N/A  N/A           19132    C+G   ...m Files\NZXT CAM\NZXT CAM.exe      N/A      |
+|    0   N/A  N/A           19512    C+G   ...\codex-computer-use-swift.exe      N/A      |
+|    0   N/A  N/A           20996    C+G   ...4900\EA Desktop\EADesktop.exe      N/A      |
+|    0   N/A  N/A           21092    C+G   ...ot\Application\copilotapp.exe      N/A      |
+|    0   N/A  N/A           21460    C+G   ..._pzs8sxrjxfjjc\app\claude.exe      N/A      |
+|    0   N/A  N/A           24408    C+G   ...2p2nqsd0c76g0\app\ChatGPT.exe      N/A      |
+|    0   N/A  N/A           25084    C+G   ...2p2nqsd0c76g0\app\ChatGPT.exe      N/A      |
+|    0   N/A  N/A           26912    C+G   ...xyewy\ShellExperienceHost.exe      N/A      |
+|    0   N/A  N/A           27264    C+G   ....0.4341.42\msedgewebview2.exe      N/A      |
++-----------------------------------------------------------------------------------------+
