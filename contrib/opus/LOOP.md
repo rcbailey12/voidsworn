@@ -105,6 +105,9 @@ Result (Opus, Nov 7 night): PASS on three of four. (1) Godot ran on the 5080 thr
 
 ## Known traps
 
+- CRLF clone trap on the PC (found by the #121 thread, Nov 8): a plain git clone there checks files out with CRLF (core.autocrlf), and then the campaign table export cannot read FNAMES from oracle\ui3d.js, so campaign parity and b1_tests fail for no reason. Always clone with git -c core.autocrlf=false clone.
+- Standing issue #256 (Muse outside check) gets closed by any PR that says 'Closes #256'; reopen it and ask for 'Refs #256'.
+
 - Starting a PC job without clicks (Nov 8): drop a .bat into Downloads\voidsworn_test\queue\ with device_commit_files; watcher_q.bat runs it from build\ within seconds and logs to queue\logs\. For a long run the queue job should only `start` the real .bat in its own window, so the queue stays free (q_flash246.bat is the example). Computer control on Explorer misfired again Nov 8 (dark masked screen), so prefer the queue.
 
 - Never list queue\logs, queue_b\logs, queue\done or big shots folders recursively; they are huge. Stage the one file you need.
@@ -129,6 +132,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-08 23:55 UTC board thread: #232 merged (PR #275, DeepSeek Flash, first GPU job for the workhorse: 81 min, $0.20; pale square fixed, caps at the measured 4x step, flash test passes; timing sheets wait for Ryan's review round). #121 PR #274 and #231 PR #269 wait on Muse #256 (reopened). Threads running: #122 (cloud, R135), #209 round 1 (PC; it started without a Needs input stop). Filed #276 (ship design redo, R138), #270 and #271 (UI redesign, R137).
 - 2026-11-08 21:55 UTC board thread: merged #261 (Muse check of #248, GO), #248 (#120 done), #262 (#257 audit), #263 (#258 Foley research), #266 (#265 docs cleanup by Flash, board added the @AGENTS.md import). Filed #264 and #265. Times: the current_time tool runs about 20 minutes behind; use date -u.
 - 2026-11-08 20:05 UTC board thread: #120 V4 Pro arm in (PR #255, $1.49, 81 min, same UI-reader gap plus RUN.nem never set for new runs): closed; Flash wins (R134). #254 (#246 Heat back-fill, Flash, 20 min) merged. #256 unblocked for #248. Muse got #257 and #258. PC jobs now start through the queue folder instead of clicks.
 - 2026-11-08 18:07 UTC board thread: Ryan added $10 on DeepSeek. V4 Pro arm on #120 started 12:05 CST through computer use (model id deepseek/deepseek-v4-pro; deepseek/deepseek-pro is not in OpenCode 1.19.5's catalog). An earlier attempt misfired: two chained double-clicks without a screenshot between them opened Ryan's FilterFactory desktop folder (no program ran). Rule: one screenshot before every click. Ryan away until mid-afternoon; Opus-codes-hard-jobs plan confirmed (R132).
