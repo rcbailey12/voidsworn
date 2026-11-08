@@ -31,6 +31,27 @@ func _init() -> void:
 	c.META = c.migrateMeta(c.defaultMeta()); c.newRun("vaelen", "ithar"); c.endRun(false, true)
 	check(float(c.z0(c.META["stats"].get("losses"))) == 0 and not c.heatUnlocked(), "an abandoned run is not a recorded loss")
 
+	c.META = c.defaultMeta()
+	c.META["tel"] = [
+		{"ev": "run_end", "victory": false, "abandoned": false},
+		{"ev": "run_end", "victory": false, "abandoned": false},
+		{"ev": "run_end", "victory": false, "abandoned": true},
+		{"ev": "run_end", "victory": true, "abandoned": false}]
+	c.META = c.migrateMeta(c.META)
+	check(c.META["stats"].get("losses") == 2, "a profile from before the Heat gate back-fills its recorded losses from the run log")
+	check(c.heatUnlocked(), "the back-filled losses open Heat on the next load")
+
+	c.META = c.defaultMeta()
+	c.META["tel"] = [{"ev": "run_end", "victory": false, "abandoned": true}, {"ev": "run_end", "victory": true, "abandoned": false}]
+	c.META = c.migrateMeta(c.META)
+	check(not c.META["stats"].has("losses"), "a log with no real loss leaves the count absent so old fixtures stay unchanged")
+
+	var saved = {"format": "voidsworn-godot-campaign", "v": 1, "uid": 1, "meta": c.defaultMeta(), "run": {"none": true},
+		"tel": [{"ev": "run_end", "victory": false, "abandoned": false}, {"ev": "run_end", "victory": false, "abandoned": false},
+			{"ev": "run_end", "victory": false, "abandoned": true}, {"ev": "run_end", "victory": true, "abandoned": false}]}
+	c.load_save_text(JSON.stringify(saved))
+	check(c.META["stats"].get("losses") == 2 and c.heatUnlocked(), "a saved pre-gate profile back-fills from its saved run log on load")
+
 	c.META = c.migrateMeta(c.defaultMeta()); c.META["stats"]["losses"] = 1
 	c.newRun("vaelen", "ithar", {"heat": ["h_hunted"]})
 	check(c.heatLevel(c.RUN["heat"]) == 2, "h_hunted is two Heat points")
