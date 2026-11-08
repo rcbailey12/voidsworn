@@ -52,9 +52,9 @@ Ryan, Nov 8 06:50 CST: the board thread is the orchestrator; be proactive and ke
 Opus jobs, in order:
 1. #217 trial (running since 06:30 CST): review both PRs by diff when they land (work/issue-26-deepseek, work/issue-26-kimi), merge the better, close the other, write the results note. If the Kimi arm stalls on 429s, Ryan adds $5 and only `work_issue.bat 26 kimi` reruns. Then, before any further workhorse run: tools/pc/work (with #224) copied to Downloads\voidsworn_test\work217\tools\work, free dry run (`work_trial.bat dryrun nopause`) refuses the chained push and the delete.
 2. #221 scene gate binder (PC thread, after the trial frees the PC; not urgent at 6.0 of 12.5 ms).
-3. #229 five small reads (gravity well rules state first), #228 movement spec, #230 environment reconciliation (before #100), #231 UI spec. All need #227's audit records except the PF9 part of #229.
+3. #228 movement spec, #230 environment reconciliation (before #100), #231 UI spec. All need #227's audit records. (#229 done Nov 8: gravity well parity holds, no fix.)
 4. #216 first pass: rest of AGENTS.md, demote NEXT.md, confirm the council memory file placement for Rey (record Grok in the seat map).
-5. Close #96 and #98 if FINDINGS already carries them; absorb #206 and #214 into the working docs and close; #48; record #43's unblock condition.
+5. #48 Glasswright species design; record #43's unblock condition. (#96, #98, #206, #214 closed Nov 8.)
 Done Nov 8: #201 edits applied to #120 to #122 (R120); settlements triaged (R121 to R125: #208 closed with PR #226 merged; #210, #212, #213, #215 closed with board homes; jobs #227 to #238 filed).
 
 Muse: #227 files the five Nov 6 audit records (item definitions every settlement job needs).
@@ -116,6 +116,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-08 13:20 UTC board thread: #217 DeepSeek arm done (36.7 min, 116 model calls, real charge $0.09, opencode exit 0), PR #241 reviewed by diff: Heat gate moves to the first real loss (abandoned runs do not count, older winners keep it), R63 payout +2 XP per point to the flown line and +1 to the shadow pool with cap overflow, browser and Godot together, oracle identical, new heat_tests.js and Godot test, two 4K shots; a first-review pass candidate, held until the Kimi arm lands. Merged #239 (harness note, closes #206 and #214) and #240 (#229 reads; merged a minute before its parity check finished, which then passed; docs only). Closed #96 (superseded by R83, R86, R96) and #98 (R82).
 - 2026-11-08 12:56 UTC board thread: Ryan asked for a proactive orchestrator. Folder access to voidsworn_test granted (the Godot user folder was refused by the auto classifier; device shell still off). DeepSeek arm checked live: about 90 commands and 6 cents in at 06:46 CST. #201 applied (R120). Settlements triaged (R121 to R125), jobs #227 to #238 filed, five audit issues closed; PRs #225 (G6) and #226 (#208 close-out) merged after green checks.
 - 2026-11-08 12:50 UTC board thread: Ryan said merge and "you're the owner now"; #224 merged after green checks.
 - 2026-11-08 12:50 UTC board thread: #223 reviewed by diff (traces recounted, stills checked) and merged, #220 closed. #222 reviewed after the fact: guard gap found, PR #224 opened and held; the live trial keeps #222's config (no change mid-run). R119. No trial branches yet.
@@ -125,4 +126,3 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 - 2026-11-08 04:15 project thread: #198 and #199 re-specced against R111, R113, R116; filed #220 (effects stalls) and #221 (per-ship CPU trim); Opus queue reordered (#217 runner first).
 - 2026-11-08 04:08 project thread: Ryan OK'd deleting the old hourly board task; deleted. The board runs from the project (R114).
 - 2026-11-08 04:05 project thread: Ryan set the gate, 12.5 ms (75%) on frame at 1080p and GPU at 4K (R116). PR #219 merged; #207 closed.
-- 2026-11-08 03:50 project thread (#207): fresh clone on the PC, A4 files copied (252 of 252 match), mixed-fleet gate scene built and measured on the 5080 (5 launches: turn view, gate view twice, 1440p and 4K). Result R115; PR #219 opened, held for Ryan's share pick. Ryan paused the GPU work for gaming 20:15 to 20:49 CST.
