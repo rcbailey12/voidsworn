@@ -57,7 +57,7 @@ Opus jobs, in order:
 5. Record #43's unblock condition. (#48 moved to Muse, R128.) (#96, #98, #206, #214 closed Nov 8.)
 Done Nov 8: #201 edits applied to #120 to #122 (R120); settlements triaged (R121 to R125: #208 closed with PR #226 merged; #210, #212, #213, #215 closed with board homes; jobs #227 to #238 filed).
 
-Muse: #227 DONE (PR #247 merged, R130: five audit records plus the stack review). Next for Muse: #48 Glasswright species design (moved to Muse, R128).
+Muse: #227 DONE (PR #247 merged, R130: five audit records plus the stack review). #48 DONE (PR #249 merged: species design text; Rey's concept images failed consistency, visual work handed to Opus as #250). Next for Muse: Glasswright species design (moved to Muse, R128).
 
 Coding seat queue (released one at a time to the workhorse once #217 picks a winner; Opus takes one itself only if the workhorse fails and Ryan wants speed):
 1. #120, #121, #122 Nemesis redesign (with the #201 check pack).
@@ -78,6 +78,7 @@ Coding seat queue (released one at a time to the workhorse once #217 picks a win
 
 ## Waiting on Ryan
 
+- #48 Glasswright design (contrib/muse/design/glasswright_species_2026_11/design.md): his read of the design text; Brin's pronoun (one word); close faction package question 2 on the design's youth-to-old gradient (yes or no).
 - Nothing right now.
 - #221: OK to start a PC thread for the per-ship CPU trim (not urgent; the scene sits at 6.0 ms of the 12.5 ms gate).
 - S15 sound listen pass: one sitting, best once the #211 probe clips exist.
@@ -117,6 +118,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-08 16:10 UTC board thread: #249 (Muse, #48 species design) merged after replacing em dashes in four raw legs; #250 filed (consistent concept sheet, Opus, scope questions first). #120 Kimi arm 38 min in, 29 model calls, about $2 so far.
 - 2026-11-08 15:50 UTC board thread: #120 Flash arm landed (PR #248, held; R130 findings), Kimi arm running since 09:24 CST. #247 (audit records and stack review) merged. Checks every 25 min while runs are active.
 - 2026-11-08 15:20 UTC board thread: R129: V4 Pro arm for #120 (PR #245), impact-sweep review standard, #246 filed (Heat back-fill for existing profiles, found by sweeping #241). Seat map #244 merged.
 - 2026-11-08 15:00 UTC board thread: seat map (R128, PR #244, part of #216); #48 moved to Muse. Muse has not started #227 yet.
@@ -126,4 +128,3 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 - 2026-11-08 13:20 UTC board thread: Ryan added $5 on Moonshot and started the Kimi rerun. Computer use set up for the board (File Explorer, click tier, R126): the board double-clicks PC .bat files itself from now on; payments stay Ryan's.
 - 2026-11-08 13:30 UTC board thread: #217 Kimi arm stopped 11 s in, no changes: Moonshot 429 "max organization concurrency: 1" (starter tier, msh-gid free; OpenCode sends parallel requests) and opencode exited. Not a model result. Fallback as planned (R117): Ryan adds $5 on Moonshot (paid total $10, next tier), then double-clicks Downloads\voidsworn_test\WORKHORSE_KIMI_RERUN.bat (Kimi arm only, same runner and #222 config as the DeepSeek arm). #241 held until then.
 - 2026-11-08 13:20 UTC board thread: #217 DeepSeek arm done (36.7 min, 116 model calls, real charge $0.09, opencode exit 0), PR #241 reviewed by diff: Heat gate moves to the first real loss (abandoned runs do not count, older winners keep it), R63 payout +2 XP per point to the flown line and +1 to the shadow pool with cap overflow, browser and Godot together, oracle identical, new heat_tests.js and Godot test, two 4K shots; a first-review pass candidate, held until the Kimi arm lands. Merged #239 (harness note, closes #206 and #214) and #240 (#229 reads; merged a minute before its parity check finished, which then passed; docs only). Closed #96 (superseded by R83, R86, R96) and #98 (R82).
-- 2026-11-08 12:56 UTC board thread: Ryan asked for a proactive orchestrator. Folder access to voidsworn_test granted (the Godot user folder was refused by the auto classifier; device shell still off). DeepSeek arm checked live: about 90 commands and 6 cents in at 06:46 CST. #201 applied (R120). Settlements triaged (R121 to R125), jobs #227 to #238 filed, five audit issues closed; PRs #225 (G6) and #226 (#208 close-out) merged after green checks.
