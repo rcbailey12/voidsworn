@@ -946,7 +946,8 @@ def detail_main():
         result['locked_geometry'] = 'PASS: exact vertex, polygon, transform and bevel hashes'
         result['paint'] = paint_station(args.out, name, args.faction, args.reuse_local_masks, args.readable_paint)
         result['triangles_roundtrip'] = merge_export(args.out / (name + '_detail.glb'))
-        assert result['triangles_roundtrip'] <= (40000 if name == 'fleet' else 45000)
+        # R113 (Nov 7 2026): station triangles are reported, never capped (the 40k/45k R100 ceiling is withdrawn; #208, #213 ST5)
+        print('[station-detail]', name, 'triangles', result['triangles_roundtrip'], flush=True)
         bpy.ops.wm.save_as_mainfile(filepath=str(args.out / (name + '_detail.blend')))
         if not args.readable_paint:
             result['breaks'] = break_variants(args.out, name, args.faction)
