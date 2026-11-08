@@ -1,6 +1,6 @@
 # Board loop state (LOOP.md)
 
-**Board owner (Ryan, Nov 7 2026, FINDINGS R110): Opus, run from one lead chat.** Any other Claude chat on this repo works one named area or only reads.
+**Board owner (Nov 7 2026, 19:20 CST, R114): Opus in the Claude Code Project "Embers of the Hollow Sun" (pilot). The Nov 7 lead chat has handed over and only reads.** If the pilot fails, the board goes back to a lead chat. Any other Claude chat on this repo works one named area or only reads.
 
 **The hourly scheduled task "Voidsworn board loop" (trig_01AYQAMdwD6BZHsizYS6EZdE) stays OFF (Opus, Nov 7).** Ryan made restarting it Opus's call. Reasons it stays off for now: almost nothing arrives to poll (Codex is down, the #217 workhorse is not set up yet, Muse PRs come a few a day), and its two failure modes from Nov 4 to 5 (folder access prompts, merges refused in unattended runs) are not fixed. Idle hourly runs would spend Claude usage that the reviewer and builder needs. Restart test: the workhorse is producing PRs. At that point the choice is an event-driven run (fires when a PR opens) or a Claude Code Project as the lead conversation; see "Open decisions" below.
 
@@ -99,6 +99,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-08 01:25 lead chat: Ryan created the project and started the #207 thread; Remote Control on for Downloads\voidsworn_test, keep-awake on. Board ownership handed to the project.
 - 2026-11-08 00:50 lead chat: Ryan answered: Projects pilot on #207, both triangle caps dropped (R113), one double-click trial, cheaper spend (R114). #217 spec fixes posted on the issue.
 - 2026-11-08 00:40 lead chat (Opus back from the weekly cap): audit conditions 1 to 3 done. Merged #204, #203, #205 by diff, retitled. Blocked #198 and #199. FINDINGS R110 to R112. auto_pr title fix, AGENTS.md opening fix. Hourly task left off. Next: #207, then the #217 runner.
 - 2026-11-07 13:30 Rey (lead chat while Opus was capped): repo state audit delivered on muse/repo-state-2026-11; Ryan ruled board to Opus, #193 local first, queue order to Opus. #217 filed (workhorse trial). #216 filed Nov 7 morning.
