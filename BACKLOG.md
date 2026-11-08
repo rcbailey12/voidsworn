@@ -2,16 +2,17 @@
 
 One list so nothing is lost between chats. Details live in the linked docs. Order inside each section = suggested order.
 
+> **Frozen (Nov 8, 2026): this is the pre-board record.** Live work lives only in GitHub issues (R75); this file is not the queue. The Oct 24 note below still explains the phase tags.
+
 > **Oct 24 2026: the approved build plan is `contrib/opus/go-forward-plan.md`.** Items below are tagged with the plan phase that covers them, for example [A1]. Untagged items are parking lot. Phone and Pixel items are retired (PC-only). The engine is decided by the 6-ship test (A2, A3), not after v55.
 
 ## 0. Near backlog (Ryan, Oct 24: keep close, not this pass)
 - [ ] Three height bands for 3D space (contrib/muse/reviews/space_3d.md): a big rules change, proposal only
-- [ ] Admiral portraits: Matriarch v3 verdict, a new direction for the Mending Choir, the 15 unmade portraits (the game has no portrait screen yet)
+- [ ] Admiral portraits: remaining portrait work only (Matriarch v3 verdict, a new direction for the Mending Choir, the remaining unmade portraits); 7 admirals and 36 Nemesis portraits are built (G-14, S-1)
 - [ ] Full 5-notch difficulty dial (contrib/muse/reviews/difficulty_dial_synthesis.md), revisited after the battle-size ramp (B2)
 - [ ] Plate variants and special backdrops with their triggers (contrib/muse/reviews/plate_mapping_synthesis.md); the game hooks do not exist yet
 - [ ] Per-faction economy engine spike, after the data-only pass (B3)
-- [ ] Option C long career (contrib/muse/reviews/career_story.md)
-- [ ] Installable app wrapper, unless Godot wins
+- [x] Installable app wrapper, unless Godot wins (moot: Godot won, R32; the Godot path ships a native Windows exe, G-14)
 
 ## 0a. After the feel-pass playtest (Nov 1, 2026)
 - [ ] Eclipse battleship-class hull (R63 ruling, never built): art (A4) plus data and rules (B), then re-pin.
@@ -33,7 +34,7 @@ One list so nothing is lost between chats. Details live in the linked docs. Orde
 
 ## 2. Ships: the other 35 hulls
 - [ ] [A2] Real-GPU check on the PC (Pixel retired): speed, anti-aliasing, shadows, 20-ship stress test with an fps counter, loading per battle
-- [ ] Publish a test build for the Pixel and PC (live artifact)
+- [ ] Publish a test build for the PC (the playtest exe flow in LOOP.md)
 - [ ] [A4] Ship 2 with the kit: template + per-ship section table, then the rest in `SHIP_QUEUE.md`
 - [ ] Ship files in GitHub large-file storage with a manifest (owner pick)
 - [ ] Chorus and Ithar approaches (organic and porcelain hulls don't fit the Corsair kit); Ithar sails in engine
@@ -48,7 +49,7 @@ One list so nothing is lost between chats. Details live in the linked docs. Orde
 - [ ] Asteroid rebuild (faceted blockers, variety), Blender world pass (rock libraries, nebula renders, explosion footage)
 - [ ] [A5] Effects, doubled down: every weapon family its own look, plasma nothing like lasers, visceral and punchy (`NEXT.md`)
 - [ ] Live shaders: black-hole lensing with accretion disc, flowing beams and shields
-- [ ] Gold selection ring too bright at close zoom on the Pixel (re-check)
+- [ ] Gold selection ring too bright at close zoom, re-check on the PC RTX 5080 scene (Pixel retired)
 - [ ] Cleanup: points-only ship build, pooled effect meshes, reflection probe per battle
 
 ## 4. Game
@@ -71,16 +72,16 @@ One list so nothing is lost between chats. Details live in the linked docs. Orde
 - [ ] FIRST: make the code reviewable by other AIs: split the giant files, break up the 1,000+ character one-line functions, a short map per system (what, which file, which lines), and per-system review bundles. Outside reviews keep half-reading the huge files.
 - [ ] Code-wide audit like the graphics review: every system (battle rules, AI, campaign, UI, save/load, audio, effects), looking for
       hidden bugs, dead code, leaks across battles, things that only work by accident
-- [ ] Performance on a real GPU and the Pixel: frame time per system, draw calls, texture memory, load time per battle, battery/heat
+- [ ] Performance on a real GPU: frame time per system, draw calls, texture memory, load time per battle (PC performance is governed by the R116 scene gate)
 - [ ] Automated checks: extend smoke tests (softlocks, every faction and map, long runs), console-error capture on every run
 - [ ] Write findings to a review doc with a fixed/open table (same format as GRAPHICS_REVIEW.md)
 
 ## 5. Process and tooling
 - [ ] Outside audits: texture pass (`TEXTURE_PASS.md`), earlier audits merged (`AUDIT_SYNTHESIS.md`). Outside agents work in `contrib/<name>/`
-- [ ] [A2/A3] Engine: decided by the 6-ship Babylon vs Godot test before ship 2 (replaces "revisit after v55")
+- [x] [A2/A3] Engine: decided by the 6-ship Babylon vs Godot test before ship 2 (replaces "revisit after v55"); Godot 4.7 (R32)
 - [ ] PC runner: give each job its own staged file name (stale copies re-ran old jobs)
 
 ## Open questions for Ryan
-- Music style for the adaptive score.
+- Track sourcing for the adaptive score (the style is agreed: R37 and R40; the specific tracks are open).
 - Calm the Pyre-Barge flanks, or keep the busy ork look?
 - Career/story mode: how long a story, how much text, voice lines or none, portrait art style?

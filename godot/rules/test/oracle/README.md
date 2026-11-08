@@ -1,5 +1,10 @@
 # The rules oracle, pinned
 
+Nov 8 2026, issue 246: re-copied core.js for the loss back-fill in migrateMeta.
+A profile saved before the Heat gate has no losses count; the count is rebuilt
+from its run_end log entries, and only written when above 0 so old fixtures
+stay unchanged. Combat rules and the checksum are unchanged.
+
 Nov 4 2026, issue 134 (R88): re-copied battle.js, data.js and ui3d.js where held.
 Player carriers replace lost wings automatically, opening wings use the shared
 squadron AI, and launch controls and teaching text are removed. Stats unchanged.
@@ -44,3 +49,5 @@ History: b71c8d7 (Oct 25, the sprint start), c7b1a78 (Oct 26), d8b47c6 (Oct 27),
 **Catching up:** when stream B changes the rules (`contrib/opus/compute/port_notes.md` lists each step), the change is ported to `godot/rules/` with a new golden scenario, then these files are re-copied from the new commit and this note is updated.
 
 Nov 3 2026, issue 88: re-copied data.js and ui3d.js for the text truth pass (one boon text corrected, two tutorial card texts corrected). No rules or numbers changed. Re-exported tables.
+
+Nov 8 2026, issue 121: re-copied data.js (NEM_VOICE, R101) and battle.js (the Nemesis opening line reads cfg.nemesis.line when the campaign sends one; no rule or number changed, every existing scenario takes the old path). Re-exported tables.

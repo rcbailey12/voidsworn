@@ -1,6 +1,6 @@
 @echo off
 rem Workhorse (#217, Opus, Nov 7 2026): one job-board issue, one model, OpenCode headless on Ryan's PC. Nobody watches the run.
-rem Usage: work_issue.bat <issue number> <arm: deepseek or kimi> [dryrun]
+rem Usage: work_issue.bat <issue number> <arm: deepseek, deepseekpro or kimi> [dryrun]   (WORK_MODEL overrides the arm's model id)
 rem Each run gets its own folder, Downloads\voidsworn_test\work217\issue-<n>-<arm>\<date_time>\, holding repo\ (a fresh clone of
 rem main on branch work/issue-<n>-<arm>) and out\ (OpenCode events, the agent's report, run stats, balances, shots).
 rem Nothing is deleted anywhere. latest.txt in issue-<n>-<arm>\ names the newest run folder.
@@ -15,8 +15,10 @@ set "ARM=%~2"
 set "MODE=%~3"
 set "MODEL="
 if /i "%ARM%"=="deepseek" set "MODEL=deepseek/deepseek-flash"
+if /i "%ARM%"=="deepseekpro" set "MODEL=deepseek/deepseek-pro"
 if /i "%ARM%"=="kimi" set "MODEL=moonshotai/kimi-k3.1-pro"
-if not defined MODEL (echo usage: work_issue.bat issue-number deepseek-or-kimi [dryrun] & exit /b 2)
+if not defined MODEL (echo usage: work_issue.bat issue-number deepseek-deepseekpro-or-kimi [dryrun] & exit /b 2)
+if defined WORK_MODEL set "MODEL=%WORK_MODEL%"
 rem The repo's bundled Node 22 first: the shell's Node 24 gives a false 4,048 pow differences in the parity math sweep (#217 trial)
 set "PATH=%USERPROFILE%\Downloads\voidsworn_test\node;C:\Program Files\nodejs;C:\Program Files\Git\cmd;%APPDATA%\npm;%PATH%"
 rem WORK_CAP: the run's cap in seconds (default one hour; set it before calling for a bigger job)
@@ -52,7 +54,7 @@ set "OPENCODE_CONFIG=%T%work\opencode.json"
 if /i "%MODE%"=="dryrun" goto :drysetup
 call :getkey DEEPSEEK_API_KEY
 call :getkey MOONSHOT_API_KEY
-if /i "%ARM%"=="deepseek" if not defined DEEPSEEK_API_KEY (echo no DeepSeek key saved: run WORKHORSE_SETUP.bat >> "%O%\result.txt" & exit /b 3)
+if /i not "%ARM%"=="kimi" if not defined DEEPSEEK_API_KEY (echo no DeepSeek key saved: run WORKHORSE_SETUP.bat >> "%O%\result.txt" & exit /b 3)
 if /i "%ARM%"=="kimi" if not defined MOONSHOT_API_KEY (echo no Moonshot key saved: run WORKHORSE_SETUP.bat >> "%O%\result.txt" & exit /b 3)
 goto :clone
 :drysetup

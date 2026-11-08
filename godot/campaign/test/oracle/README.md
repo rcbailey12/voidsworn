@@ -1,5 +1,11 @@
 # The campaign oracle, pinned
 
+Nov 8 2026, issue 246: re-copied core.js for the loss back-fill. A profile
+saved before the Heat gate has no losses count; migrateMeta counts its
+run_end entries that were neither a win nor abandoned, writes the count only
+when above 0 so old fixtures stay unchanged, and Heat opens on the next load.
+Re-exported campaign tables; their checksums are unchanged.
+
 Nov 8 2026, issue 26: re-copied campaign_meta.js for Heat after the first loss
 and the R63 Heat XP payout. Re-exported both table sets; their checksums are
 unchanged. The R69 playtest default stays on.
@@ -56,3 +62,5 @@ The parity harness and the campaign table exporter read these files, not the liv
 **Catching up:** when stream B changes a campaign rule, port the change to `godot/campaign/`, re-copy the six files from the new commit, run `node godot/campaign/test/node/export_campaign.js` to refresh `godot/campaign/data/campaign_tables.json`, run the parity test, and update the commit numbers above.
 
 Nov 3 2026, issue 88: re-copied data.js and ui3d.js for the text truth pass (one boon text corrected, two tutorial card texts corrected). No rules or numbers changed. Re-exported tables.
+
+Nov 8 2026, issue 121: re-copied data.js, core.js, battle.js and campaign_run.js (the run clock RUN.nemClock and RUN.nemStrike, per-commander adaptation, lessons and NEM_VOICE). Re-exported tables.

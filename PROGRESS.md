@@ -1,5 +1,7 @@
-# Voidsworn 3D: fidelity pass progress
-Live artifact: https://claude.ai/artifact/QZ7pVvYuupUHFZkFGwxsaH
+# Voidsworn 3D: fidelity pass progress (pre-Godot history, frozen)
+
+> **Frozen: pre-Godot history through Oct 21, 2026.** This log records the browser build before the Oct 24 PC-only ruling and the Oct 26 move to Godot 4 (R32). It is not current state. Current state lives in HANDOFF.md section 0 and contrib/opus/LOOP.md. The product is the Godot 4 port in `godot/`; the browser artifact is the frozen rules oracle.
+Browser artifact (the frozen rules oracle): https://claude.ai/artifact/QZ7pVvYuupUHFZkFGwxsaH
 Working dir: /home/claude/v3d (git); source backup: /mnt/user-data/outputs/voidsworn/src
 
 ## Status
@@ -470,7 +472,7 @@ Live main: https://claude.ai/artifact/QZ7pVvYuupUHFZkFGwxsaH | Preview: https://
 - Saves: run vs meta timestamps split for cloud sync, error/stall saves local only, one normalizeRun with defaults, malformed saves fall back to the backup, renamed module/perk/relic ids are skipped instead of crashing.
 - Mid-battle reload replays the same node, seed and enemy fleet.
 - Tests: 8 new rulecheck checks (seed replay and one per bug class); smoke now reloads mid-fight and wins a sector boss through to the next sector intro. Full smoke now runs on the owner's PC (real GPU, about 4 minutes) via Downloads/voidsworn_test.
-- Repo backed up to github.com/rcbailey12/voidsworn (private).
+- Repo backed up to github.com/rcbailey12/voidsworn (public).
 
 ## v53.2 (Oct 20): AI that reads, enemy intent
 - Enemy AI re-picks targets per gun (no overkill), fires shield strippers first, keeps a sticky focus (veteran), ignores guns that already fired when judging danger, avoids hexes where it would die, plays objectives with a round clock, uses abilities after moving, spaces escorts.

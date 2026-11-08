@@ -16,21 +16,23 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 
 - Opus: board owner, reviewer, merges, visual calls, issue writing, messages to Ryan; builds the opus jobs below. Sonnet subagents for routine checks, logs, staging.
 - Codex: DOWN until Ryan says. The PC watcher (codex_board.ps1) still queues any unblocked `codex` issue; those runs die on the usage limit. Keep every codex issue `blocked` until a live seat takes it.
-- Workhorse (#217, R127): LIVE. OpenCode on the PC through tools/pc/work_issue.bat (copy in Downloads\voidsworn_test\work217\tools). DeepSeek V4.1 Flash is the primary model ($0.09 and one review pass on #26). Kimi K3.1 Pro on pay-as-you-go (Moonshot paid total $10, Tier 1) pending the #120 head-to-head that decides the subscription. #224 guard and the Node 22 fix copied to the PC Nov 8; free dry run started 08:39 CST. Start a run: write a one-line .bat (set WORK_CAP if needed, call work217\tools\work_issue.bat <issue> <arm>) in Downloads\voidsworn_test and double-click it through computer use (R126).
+- Workhorse (#217, R127, R134): LIVE. OpenCode on the PC through tools/pc/work_issue.bat (copy in Downloads\voidsworn_test\work217\tools). DeepSeek V4 Flash for coding jobs, hard ones included (R134: beat V4 Pro and Kimi on #120); the hardest still go to Opus threads while the plan has room (R132). V4 Pro only as a second try on a job Flash fails; Kimi off. Start a run: drop a one-line queue job in Downloads\voidsworn_test\queue\ that `start`s a WORKHORSE_*.bat (see Known traps); two runs can share the PC. Every task now carries the R129 self-check list (PR #253).
 - Muse: runs on its own watcher (muse label). Council seats: Rey, DeepSeek, Qwen, Flash (ideation only), Grok (new free leg, Nov 7). ChatGPT down until about Nov 10; Argon blocked since Nov 5. For an independent checker leg on an Opus merge while ChatGPT is down, ask Ryan in the main chat and Rey runs it.
 
 ## How a run works
 
 1. Read HANDOFF.md section 0 and this file. Set the lock and push it first.
 2. Board check: open PRs, open issues and labels (gh api REST, never GraphQL). PC queue folders only when a PC job is running.
-3. Review each new PR yourself, by diff, never by title. Check claims against the diff and the done-when, look at the shots. Merge if good; hold what Holds lists.
+3. Review each new PR yourself, by diff, never by title, then sweep its impact (R129): every caller of each changed function, save and old-profile behaviour, the JS and Godot twins, every UI path that shows it, which tests actually ran in CI. Check claims against the done-when, look at the shots. Merge if good; hold what Holds lists; file a follow-up for anything the sweep finds.
 4. Release the next job only to a live seat, one at a time. Before releasing, check it is not already queued or running.
 5. Anything for Ryan goes under "Waiting on Ryan" with a pick and plain trade-offs. In an unattended run use one PushNotification, never AskUserQuestion.
 6. Tell Ryan only when something lands or needs him: two lines and one image.
 7. Rewrite this file, set "Running: no", commit straight to main (this file and FINDINGS only, docs-only exception), push with timeout 90. Stop.
 8. One send_later check only when a job or a limit reset lands well before the next look. Never chain them.
 
-## Current state (2026-11-08 12:50 UTC)
+## Current state (2026-11-08 21:55 UTC)
+
+- Nov 8 afternoon: #120 MERGED (PR #248) after Muse's outside check (PR #261, GO, ten notes: keep RUN.nem as a maintained alias; campaign parity and Nemesis scenarios are not in CI, filed #264). #246 merged (PR #254). Muse #257 merged (entry-doc audit, COUNCIL.md; Ryan ruled NR1 to NR5 all A) and applied by Flash in #265 (PR #266 merged: CLAUDE.md now a pointer that imports AGENTS.md; HANDOFF history in docs/archive). Muse #258 merged (Foley licence and plan: XL with offload, US-only outputs; the GPU probe #211 is next when a GPU seat is free). Opus threads running: #231 (since 19:45 UTC), #121 (since 20:24 UTC, from the #120 branch; #120 has merged since, its PR must merge main). #256 waits blocked for their PRs.
 
 - Board thread (Nov 8 morning, R119): Ryan set it up as the board owner in the project; worker threads never merge their own PRs. #223 reviewed by diff and MERGED (4b6c365), #220 closed. #222 reviewed after the fact: sound, one gap (the agent could push through a chained or `git -c` command and could delete anywhere on the PC); fix PR #224 merged on Ryan's word ("you're the owner now").
 
@@ -50,14 +52,14 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 Ryan, Nov 8 06:50 CST: the board thread is the orchestrator; be proactive and keep pushing everything forward.
 
 Opus jobs, in order:
-1. #217 done (R127). Next: the dry run must refuse the chained push and the delete; then the #120 head-to-head, DeepSeek arm then Kimi arm, WORK_CAP 5400, judged on the #201 check pack. Then the coding queue goes to DeepSeek one job at a time (Kimi too if it wins #120). Small follow-up for the next progression job: take Kimi's loss back-fill from the run log (#242) so an existing profile with losses opens Heat.
+1. #217 done (R127). Dry run passed 08:48 CST (Node 22 parity PASS; push, chained push and delete refused). #120 head-to-head RUNNING since 08:49 CST (WORKHORSE_H2H_120.bat, summary work217\h2h_120_summary.txt), DeepSeek arm then Kimi arm, WORK_CAP 5400, judged on the #201 check pack. Then the coding queue goes to DeepSeek one job at a time (Kimi too if it wins #120). Small follow-up for the next progression job: take Kimi's loss back-fill from the run log (#242) so an existing profile with losses opens Heat.
 2. #221 scene gate binder (PC thread, after the trial frees the PC; not urgent at 6.0 of 12.5 ms).
-3. #228 movement spec, #230 environment reconciliation (before #100), #231 UI spec. All need #227's audit records. (#229 done Nov 8: gravity well parity holds, no fix.)
+3. #228 movement spec DONE (PR #251, R131). Next: #230 environment reconciliation (before #100), #231 UI spec. Records now in (R130). (#229 done Nov 8: gravity well parity holds, no fix.)
 4. #216 first pass: rest of AGENTS.md, demote NEXT.md, confirm the council memory file placement for Rey (record Grok in the seat map).
-5. #48 Glasswright species design; record #43's unblock condition. (#96, #98, #206, #214 closed Nov 8.)
+5. Record #43's unblock condition. (#48 moved to Muse, R128.) (#96, #98, #206, #214 closed Nov 8.)
 Done Nov 8: #201 edits applied to #120 to #122 (R120); settlements triaged (R121 to R125: #208 closed with PR #226 merged; #210, #212, #213, #215 closed with board homes; jobs #227 to #238 filed).
 
-Muse: #227 files the five Nov 6 audit records (item definitions every settlement job needs).
+Muse: #227 DONE (PR #247 merged, R130: five audit records plus the stack review). #48 DONE (PR #249 merged: species design text; Rey's concept images failed consistency, visual work handed to Opus as #250). Next for Muse: Glasswright species design (moved to Muse, R128).
 
 Coding seat queue (released one at a time to the workhorse once #217 picks a winner; Opus takes one itself only if the workhorse fails and Ryan wants speed):
 1. #120, #121, #122 Nemesis redesign (with the #201 check pack).
@@ -78,12 +80,16 @@ Coding seat queue (released one at a time to the workhorse once #217 picks a win
 
 ## Waiting on Ryan
 
+- #48 Glasswright design (contrib/muse/design/glasswright_species_2026_11/design.md): his read of the design text; Brin's pronoun (one word); close faction package question 2 on the design's youth-to-old gradient (yes or no).
 - Nothing right now.
 - #221: OK to start a PC thread for the per-ship CPU trim (not urgent; the scene sits at 6.0 ms of the 12.5 ms gate).
 - S15 sound listen pass: one sitting, best once the #211 probe clips exist.
 - Round 7 pick and station look: when #198 and #199 land.
 
-## Projects pilot (R114)
+## Projects pilot (R114) and spin-offs (R133)
+
+R133: the board spins off threads itself. Route 1: the Project's main chat starts its own threads, but Ryan's account still has the older session-list Projects (checked Nov 8 12:37 from his screenshots), so not yet. Route 2 (in use, from the Board chat): one-shot scheduled tasks bound to the PC, one per job, each with a full standalone brief (job, branch, checks, who reviews). Live: #231 UI spec thread (fires 13:45 CST Nov 8, auto approval, push to Ryan). Next: #121 after #120 merges. Keep 2 or 3 live at once.
+
 
 #207 runs as one Claude Code Project thread on the PC. Judge it on: did it run Godot on the 5080 without stalling on approvals, did it report numbers into the repo, how much plan usage it took, and could Ryan follow it from his phone. If yes, the lead conversation moves into the project and Opus asks Ryan before deleting the old hourly task. If no, the board stays in a lead chat and #207 runs through the PC queue. Limits checked Nov 7 (code.claude.com/docs/en/claude-projects): threads use Anthropic models only (the workhorse stays on the board), every thread draws the plan (default Opus high), cloud threads skip the repo's .claude skills and settings, a PC thread needs the desktop app's Remote Control setting and the PC awake.
 
@@ -91,12 +97,16 @@ Result (Opus, Nov 7 night): PASS on three of four. (1) Godot ran on the 5080 thr
 
 ## Muse
 
+- Nov 8 13:40: #257 (stale-claim audit of the entry docs plus contrib/muse/COUNCIL.md, from #216 asks 1 and 4) and #258 (#211 HunyuanVideo-Foley licence and run plan) released to Muse. #256 is the standing outside check on Opus-coded PRs (R132): it stays blocked until an Opus PR is ready; then comment the PR number on #256 and remove blocked.
+
 - No open Muse PRs. #200 to #202 are merged and closed.
 
 ## Known traps
 
+- Starting a PC job without clicks (Nov 8): drop a .bat into Downloads\voidsworn_test\queue\ with device_commit_files; watcher_q.bat runs it from build\ within seconds and logs to queue\logs\. For a long run the queue job should only `start` the real .bat in its own window, so the queue stays free (q_flash246.bat is the example). Computer control on Explorer misfired again Nov 8 (dark masked screen), so prefer the queue.
+
 - Never list queue\logs, queue_b\logs, queue\done or big shots folders recursively; they are huge. Stage the one file you need.
-- Computer use (R126): File Explorer at click tier; double-click a .bat in Downloads\voidsworn_test, then computer_release_lock straight away (it hides Ryan's other windows while held). Never while he is gaming.
+- Computer use (R126): File Explorer at click tier; double-click a .bat in Downloads\voidsworn_test, then computer_release_lock straight away (it hides Ryan's other windows while held). Never while he is gaming. Take a screenshot before EVERY click (never chain clicks blind; a vanished window put a double-click on the desktop). Access lapses after 30 idle minutes (re-request). Explorer opens on the 27GL850 monitor.
 - PC access is device_list_dir, device_stage_files and device_commit_files inside the attached folders (Downloads\voidsworn_test, the Godot app_userdata\Voidsworn folder). Never delete anything on the PC; ask Ryan.
 - Duplicate runs: the board (codex_board.ps1, every 10 minutes) queues any unblocked open codex issue that is not in board\queued.txt and has no open PR from codex/issue-N. If you also write a job file, it runs twice. Keep finished issues in queued.txt.
 - A duplicate run of an already merged job force-pushes the branch and auto_pr opens a new PR: close it with a note, do not merge.
@@ -117,13 +127,15 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-08 21:55 UTC board thread: merged #261 (Muse check of #248, GO), #248 (#120 done), #262 (#257 audit), #263 (#258 Foley research), #266 (#265 docs cleanup by Flash, board added the @AGENTS.md import). Filed #264 and #265. Times: the current_time tool runs about 20 minutes behind; use date -u.
+- 2026-11-08 20:05 UTC board thread: #120 V4 Pro arm in (PR #255, $1.49, 81 min, same UI-reader gap plus RUN.nem never set for new runs): closed; Flash wins (R134). #254 (#246 Heat back-fill, Flash, 20 min) merged. #256 unblocked for #248. Muse got #257 and #258. PC jobs now start through the queue folder instead of clicks.
+- 2026-11-08 18:07 UTC board thread: Ryan added $10 on DeepSeek. V4 Pro arm on #120 started 12:05 CST through computer use (model id deepseek/deepseek-v4-pro; deepseek/deepseek-pro is not in OpenCode 1.19.5's catalog). An earlier attempt misfired: two chained double-clicks without a screenshot between them opened Ryan's FilterFactory desktop folder (no program ran). Rule: one screenshot before every click. Ryan away until mid-afternoon; Opus-codes-hard-jobs plan confirmed (R132).
+- 2026-11-08 17:05 UTC board thread: #120 Kimi arm ended at 84 min on a Moonshot low-credit 429 ($8.68 real charge, balance $1.62), no report, push refused (it edited checks.yml; the token has no workflow scope); about 100 Godot .uid files in its diff. Its UI and CI catches match the board's sweep of #248; the board pushed both fixes onto work/issue-120-deepseek (b45b973). #248 held until the V4 Pro arm runs (it must start from a main without #120). Pro arm waits on a DeepSeek top-up.
+- 2026-11-08 16:10 UTC board thread: #249 (Muse, #48 species design) merged after replacing em dashes in four raw legs; #250 filed (consistent concept sheet, Opus, scope questions first). #120 Kimi arm 38 min in, 29 model calls, about $2 so far.
+- 2026-11-08 15:50 UTC board thread: #120 Flash arm landed (PR #248, held; R130 findings), Kimi arm running since 09:24 CST. #247 (audit records and stack review) merged. Checks every 25 min while runs are active.
+- 2026-11-08 15:20 UTC board thread: R129: V4 Pro arm for #120 (PR #245), impact-sweep review standard, #246 filed (Heat back-fill for existing profiles, found by sweeping #241). Seat map #244 merged.
+- 2026-11-08 15:00 UTC board thread: seat map (R128, PR #244, part of #216); #48 moved to Muse. Muse has not started #227 yet.
+- 2026-11-08 14:50 UTC board thread: PR #243 merged (results note, runner fixes). Free dry run on the PC passed. #120 relabelled opus and the head-to-head started through computer use (DeepSeek then Kimi, 90 min each). Check scheduled 10:25 CST.
 - 2026-11-08 14:40 UTC board thread: #217 trial closed out (R127): #241 DeepSeek merged (closes #26), #242 Kimi closed (one-hour cap, $4.95). Results note and runner fixes in PR #243. Guard and runner copied to the PC; free dry run started through computer use. Computer use access lapses after 30 idle minutes and Ryan re-approves; a Razer window can sit in front and block clicks (open File Explorer first).
 - 2026-11-08 13:30 UTC board thread: first Kimi rerun (07:18 CST) refused again, 3 requests a minute, because the $5 had not posted (balance still 9.98). Ryan fixed it (balance 15.96); the board started WORKHORSE_KIMI_RERUN.bat itself through computer use at 07:28 CST, first use of R126. Run 20261108_072823 is working.
 - 2026-11-08 13:20 UTC board thread: Ryan added $5 on Moonshot and started the Kimi rerun. Computer use set up for the board (File Explorer, click tier, R126): the board double-clicks PC .bat files itself from now on; payments stay Ryan's.
-- 2026-11-08 13:30 UTC board thread: #217 Kimi arm stopped 11 s in, no changes: Moonshot 429 "max organization concurrency: 1" (starter tier, msh-gid free; OpenCode sends parallel requests) and opencode exited. Not a model result. Fallback as planned (R117): Ryan adds $5 on Moonshot (paid total $10, next tier), then double-clicks Downloads\voidsworn_test\WORKHORSE_KIMI_RERUN.bat (Kimi arm only, same runner and #222 config as the DeepSeek arm). #241 held until then.
-- 2026-11-08 13:20 UTC board thread: #217 DeepSeek arm done (36.7 min, 116 model calls, real charge $0.09, opencode exit 0), PR #241 reviewed by diff: Heat gate moves to the first real loss (abandoned runs do not count, older winners keep it), R63 payout +2 XP per point to the flown line and +1 to the shadow pool with cap overflow, browser and Godot together, oracle identical, new heat_tests.js and Godot test, two 4K shots; a first-review pass candidate, held until the Kimi arm lands. Merged #239 (harness note, closes #206 and #214) and #240 (#229 reads; merged a minute before its parity check finished, which then passed; docs only). Closed #96 (superseded by R83, R86, R96) and #98 (R82).
-- 2026-11-08 12:56 UTC board thread: Ryan asked for a proactive orchestrator. Folder access to voidsworn_test granted (the Godot user folder was refused by the auto classifier; device shell still off). DeepSeek arm checked live: about 90 commands and 6 cents in at 06:46 CST. #201 applied (R120). Settlements triaged (R121 to R125), jobs #227 to #238 filed, five audit issues closed; PRs #225 (G6) and #226 (#208 close-out) merged after green checks.
-- 2026-11-08 12:50 UTC board thread: Ryan said merge and "you're the owner now"; #224 merged after green checks.
-- 2026-11-08 12:50 UTC board thread: #223 reviewed by diff (traces recounted, stills checked) and merged, #220 closed. #222 reviewed after the fact: guard gap found, PR #224 opened and held; the live trial keeps #222's config (no change mid-run). R119. No trial branches yet.
-- 2026-11-08 06:35 CST #217 thread: Ryan topped up (DeepSeek $2; Moonshot $5 paid plus the $5 voucher, so still Tier0 by the docs, his call to try it before adding $5) and ran WORKHORSE_SETUP.bat: OpenCode, both keys, both balance endpoints, both models READY through OpenCode, all PASS. WORKHORSE_TRIAL.bat started 06:30, DeepSeek arm first. If the Kimi arm stalls on 429s (Tier0: 3 requests a minute, 1.5M tokens a day), Ryan adds $5 and only the Kimi arm reruns (work_issue.bat 26 kimi). Ryan is moving the board to a single Board thread; the trial PRs and the results note go to it. #222 (the runner) was merged by its own author without a checker leg: the Board thread reviews it after the fact.
-- 2026-11-08 05:25 project thread (#220): traced the gate scene per frame on the 5080, named the stall (death piece meshes on the main thread), fixed it and two smaller ones, before and after gate runs and stills; PR #223 open, R118.

@@ -21,6 +21,21 @@ globalThis.heatTest = () => {
   ok.equal(META.stats.losses || 0, 0, 'an abandoned run is not a recorded loss');
   ok.equal(heatUnlocked(), false, 'an abandoned run does not open Heat');
 
+  META = migrateMeta(Object.assign(defaultMeta(), { tel: [
+    { ev: 'run_end', victory: false, abandoned: false },
+    { ev: 'run_end', victory: false },
+    { ev: 'run_end', victory: false, abandoned: true },
+    { ev: 'run_end', victory: true, abandoned: false }
+  ] }));
+  ok.equal(META.stats.losses, 2, 'a profile from before the Heat gate back-fills its recorded losses from the run log');
+  ok.equal(heatUnlocked(), true, 'the back-filled losses open Heat on the next load');
+
+  META = migrateMeta(Object.assign(defaultMeta(), { tel: [
+    { ev: 'run_end', victory: false, abandoned: true },
+    { ev: 'run_end', victory: true, abandoned: false }
+  ] }));
+  ok.ok(!('losses' in META.stats), 'a log with no real loss leaves the count absent so old fixtures stay unchanged');
+
   META = migrateMeta(defaultMeta()); META.stats.losses = 1; runOpt.heat = [];
   newRun('vaelen', 'ithar', {heat: ['h_hunted']});
   ok.equal(heatLevel(RUN.heat), 2, 'h_hunted is two Heat points');

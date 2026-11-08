@@ -208,8 +208,10 @@ const SAVE_VERSION := 2
 func defaultMeta() -> Dictionary:
 	return {"v": SAVE_VERSION, "renown": 0, "unlocked": {}, "admirals": {"vex": true}, "fallen": [], "stats": {"runs": 0, "best": 0, "wins": 0}, "opts": {}, "tel": [], "updated": 0,
 		"mastery": {}, "heirs": {}, "shadowPool": {}, "favour": {}, "variants": {}, "heatBest": {}}
-# The browser's back-fill of old run logs (backfilled, wonFix41) is not carried: a Godot profile never had a browser log (R33: old saves are not migrated).
-func migrateMeta(m: Dictionary) -> Dictionary:
+# The browser's mastery and favour back-fill of old run logs (backfilled, wonFix41) is not carried: a Godot profile never had a
+# browser log (R33: old saves are not migrated). The loss back-fill is carried: a Godot profile saved before the Heat gate still
+# has its run log, and Heat must open on the next load.
+func migrateMeta(m: Dictionary, log: Array = []) -> Dictionary:
 	var d = defaultMeta()
 	for k in d.keys():
 		if k != "v" and m.get(k) == null: m[k] = d[k]
@@ -217,6 +219,14 @@ func migrateMeta(m: Dictionary) -> Dictionary:
 	for k in d["stats"].keys():
 		var v = m["stats"].get(k)
 		if not (v is int or v is float): m["stats"][k] = z0(d["stats"][k])
+	# #246: a profile that lost runs before the Heat gate has no loss count. Count the run_end entries that were
+	# neither a win nor abandoned, so Heat opens on the next load. Only written when above 0, so old fixtures stay unchanged.
+	if not (m["stats"].get("losses") is int or m["stats"].get("losses") is float):
+		var losses = 0
+		var entries = log if log.size() > 0 else (m.get("tel") if m.get("tel") is Array else [])
+		for e in entries:
+			if e is Dictionary and e.get("ev") == "run_end" and not jt(e.get("victory")) and not jt(e.get("abandoned")): losses += 1
+		if losses > 0: m["stats"]["losses"] = losses
 	if not jt(m.get("v")) or float(m["v"]) < 2:
 		m["opts"] = or_(m.get("opts"), {}); m["tel"] = or_(m.get("tel"), []); m["v"] = 2
 	for k in ["mastery", "favour", "variants", "heatBest"]: m[k] = or_(m.get(k), {})
@@ -414,14 +424,14 @@ func load_save_text(s: String, bak: String = "") -> void:
 		if not saneRun(o.get("run")): o["run"] = null
 		if o.get("meta") != null and not saneMeta(o["meta"]): o["meta"] = null
 	if o is Dictionary:
+		tel_log = o["tel"] if o.get("tel") is Array else []
 		if o.get("meta") is Dictionary:
 			var m = defaultMeta()
 			for k in o["meta"].keys(): m[k] = o["meta"][k]
-			META = migrateMeta(m)
+			META = migrateMeta(m, tel_log)
 		var r = o.get("run")
 		SAVED_RUN = migrateRun(r if (r is Dictionary and not jt(r.get("none"))) else null)
 		if o.has("uid"): UID = max(UID, int(o["uid"]))
-		if o.get("tel") is Array: tel_log = o["tel"]
 func persist_load() -> void:
 	var s = FileAccess.get_file_as_string(save_path) if FileAccess.file_exists(save_path) else ""
 	var b = FileAccess.get_file_as_string(save_path + ".bak") if FileAccess.file_exists(save_path + ".bak") else ""
