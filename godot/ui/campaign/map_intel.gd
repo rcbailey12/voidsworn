@@ -60,7 +60,7 @@ func danger(n: Dictionary) -> Dictionary:
 # The Nemesis's own growth (battle.js applyNemesis): damage per scar, each adaptation, his strength traits, the Chorus feeding on your
 # losses (hull), Corsair riches (one cheap hull each) and the Ithar duel fleet (fewer ships, all elite: about even).
 func _nem_threat(threat: float, tough: float, why: Array) -> float:
-	var N = C.RUN["nem"]; var t = threat
+	var N = C.nemActive(); var t = threat
 	var sc = float(C.z0(N.get("scars")))
 	if sc > 0: t *= 1.0 + 0.1 * sc; why.append(["his scars", 1.0 + 0.1 * sc])
 	var ad = N["adapt"].size()

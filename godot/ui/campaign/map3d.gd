@@ -874,7 +874,7 @@ func _card_bb(n: Dictionary) -> String:
 	if C.jt(n.get("done")): t += "  " + _cc("(passed)", ui.BONE3)
 	var nem = fight and not C.jt(n.get("done")) and C.nemNodeIs(n)
 	if nem:
-		var N = C.RUN["nem"]
+		var N = C.nemActive()
 		t += "\n[b]" + _cc("Nemesis: " + ui.esc(C.nemFull()) + "'s fleet", Color("#ff6b5a")) + "[/b] " + _cc("(" + ui.esc(C.FACTIONS[N["fac"]]["n"]) + ", an elite fight)", ui.BONE3)
 		t += _nem_card(N)
 	elif fight:

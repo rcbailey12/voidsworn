@@ -18,6 +18,7 @@ function add(file, extra = [], kind = 'normal', timeout = 300) {
   checks.push({ name: path.basename(file, '.js'), file, args: extra, kind, timeout });
 }
 fs.readdirSync(__dirname).filter(f => f.endsWith('_tests.js') || f === 'campaign_start_test.js').sort().forEach(f => add(OPUS + f));
+add('godot/campaign/test/node/nem_assign_enum.js'); // #120 R-Q1: the exact assignment constraints (quick mode) gate every PR
 add(OPUS + 'naming_lint_game.test.js');
 add(OPUS + 'naming_lint_game.js', [], 'naming');
 add(OPUS + 'checkpack/checks.js', [], 'pack');
