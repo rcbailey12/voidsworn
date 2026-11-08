@@ -32,6 +32,22 @@ It holds the goal, the full history, every piece of owner feedback word for word
 - Muse research, design and review jobs always include a blind Rey leg written before Rey reads the other legs (Ryan, Nov 3, R89). Write the Models line as: Rey writes a blind leg first, DeepSeek and Qwen write, Argon reviews only, Rey chairs.
 - Questions for Ryan go to him directly in the agent's own chat, not as GitHub tags or comments (Ryan, Nov 2).
 
+## Who does what (seat map, Ryan and Opus, Nov 8 2026, FINDINGS R128)
+
+Match the job to the seat that is best at it, and keep the paid seats for what only they do well. The board (Opus) assigns by this table; LOOP.md says which seats are live today.
+
+| Work | Seat | Why |
+|---|---|---|
+| Board, PR review and merges, specs, visual calls, questions for Ryan | Opus (Claude, the project's Board thread) | the reviewer is the bottleneck; spend Claude on judgment, not bulk typing (2 or 3 threads at once) |
+| Well-specified coding: rules, campaign, UI, scripts, tests | Workhorse: DeepSeek V4.1 Flash in OpenCode on the PC (tools/pc/work_issue.bat) | merged on one review pass for $0.09 on #26 (R127) |
+| Hard or open-ended multi-file coding | Kimi K3.1 Pro in the same runner, if it wins the #120 head-to-head (then a Kimi subscription) | better judgment on #26, but slower and 50x the price per job on the API |
+| GPU and Blender work: bakes, renders, captures, benchmarks, exports | Codex on the PC (when ChatGPT is back); until then Opus PC threads | Codex knows the pipeline tools; the workhorse is untested on GPU jobs |
+| Research, design text, audits, second-opinion reviews | Muse (Rey chairs; blind Rey leg; DeepSeek and Qwen write) | several models, an outside view |
+| Ideation and wide brainstorms | Flash and Grok (free), through Muse | cheap and broad |
+| Independent checker on an Opus-built change | Rey (or ChatGPT when back) | nobody grades their own work |
+| Concept art and visual references | Rey's image models; production art through local ComfyUI and Blender on the PC | free and local first |
+| Picks, looks, money | Ryan | his game and his accounts |
+
 ## If you are not the main agent: work in your own folder
 
 - Put everything you make in `contrib/<your-agent-name>/` (for example `contrib/argon/`). Do not edit files outside it: no game
