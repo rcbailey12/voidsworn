@@ -85,6 +85,8 @@ What a loading cover must show: one line saying what is being prepared ("Prepari
 
 ## 5. Ryan's review round (the Board routes it)
 
+**Ruled (R137, Nov 8 16:53 CST):** Ryan said yes to this layout as #92's target, content and order. The look itself waits for the UI redesign's style guide (#270, #271); #92 builds after it.
+
 One image, docs/shots/ui231/debrief_sheet.png: left, today's end page for a sector II loss; right, the same run laid out by this spec. The questions for that round, each with Opus's pick:
 1. Does the inheritance panel read as "what this death bought" before the stats? Pick: yes, the panel above the recap, as ruled Nov 2.
 2. Is the 960 column right at 1080 and at 4K? Pick: yes (ruled Nov 2; the mock shows it).

@@ -2,6 +2,8 @@
 
 Opus, Nov 8 2026. FINDINGS R136. This is settlement U-B of the Nov 6 UI and campaign map audit (contrib/muse/reviews/ui_audit_2026_11/, synthesis section 6, the blind Rey table at legs/rey_blind.md section 5, owner rulings R1 to R3 in synthesis section 9 and issue #215). It also carries the U-E pieces #231 names: the MN10 host read, the MP9 precedence read, the MN3 defaults block, and the MN8 debrief spec (with MN9 folded in), which lives in its own file: [debrief_spec.md](debrief_spec.md).
 
+**R137 (Ryan, Nov 8 16:53 CST):** the whole UI gets a redesign from scratch (warship-console look, battle screen first, #270 and #271). The redesign changes the look and the layouts; this spec's scale law, focus ring, text floor, colour meanings and content rules stay underneath it. Where a section here names a shipped layout value (a panel width, a banner size), the redesign's style guide replaces it.
+
 How to use it: a coding job that touches UI reads this file first. The generated table of both builds' literals is [ui_spec_constants.md](ui_spec_constants.md) (`node contrib/opus/tools/ui_constants_diff.js` writes it). The standing checks in contrib/opus/tools/ui_spec_tests.js keep the code-structure rules below true on every PR.
 
 Values marked **provisional** are this spec's picks pending a capture round: U-A (the calibration sitting, #235, Ryan at 1440p and 4K), U-C (the campaign capture round, #237) or U-D (the danger-band Monte Carlo and the colour-vision pass, #238). A provisional value is the rule until its round lands; the round changes it here, in one place. Nothing here is a performance gate (R111, R121); the scene gate (R116) is the only one.
