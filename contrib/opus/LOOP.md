@@ -50,7 +50,7 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 Ryan, Nov 8 06:50 CST: the board thread is the orchestrator; be proactive and keep pushing everything forward.
 
 Opus jobs, in order:
-1. #217 done (R127). Next: the dry run must refuse the chained push and the delete; then the #120 head-to-head, DeepSeek arm then Kimi arm, WORK_CAP 5400, judged on the #201 check pack. Then the coding queue goes to DeepSeek one job at a time (Kimi too if it wins #120). Small follow-up for the next progression job: take Kimi's loss back-fill from the run log (#242) so an existing profile with losses opens Heat.
+1. #217 done (R127). Dry run passed 08:48 CST (Node 22 parity PASS; push, chained push and delete refused). #120 head-to-head RUNNING since 08:49 CST (WORKHORSE_H2H_120.bat, summary work217\h2h_120_summary.txt), DeepSeek arm then Kimi arm, WORK_CAP 5400, judged on the #201 check pack. Then the coding queue goes to DeepSeek one job at a time (Kimi too if it wins #120). Small follow-up for the next progression job: take Kimi's loss back-fill from the run log (#242) so an existing profile with losses opens Heat.
 2. #221 scene gate binder (PC thread, after the trial frees the PC; not urgent at 6.0 of 12.5 ms).
 3. #228 movement spec, #230 environment reconciliation (before #100), #231 UI spec. All need #227's audit records. (#229 done Nov 8: gravity well parity holds, no fix.)
 4. #216 first pass: rest of AGENTS.md, demote NEXT.md, confirm the council memory file placement for Rey (record Grok in the seat map).
@@ -117,6 +117,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-08 14:50 UTC board thread: PR #243 merged (results note, runner fixes). Free dry run on the PC passed. #120 relabelled opus and the head-to-head started through computer use (DeepSeek then Kimi, 90 min each). Check scheduled 10:25 CST.
 - 2026-11-08 14:40 UTC board thread: #217 trial closed out (R127): #241 DeepSeek merged (closes #26), #242 Kimi closed (one-hour cap, $4.95). Results note and runner fixes in PR #243. Guard and runner copied to the PC; free dry run started through computer use. Computer use access lapses after 30 idle minutes and Ryan re-approves; a Razer window can sit in front and block clicks (open File Explorer first).
 - 2026-11-08 13:30 UTC board thread: first Kimi rerun (07:18 CST) refused again, 3 requests a minute, because the $5 had not posted (balance still 9.98). Ryan fixed it (balance 15.96); the board started WORKHORSE_KIMI_RERUN.bat itself through computer use at 07:28 CST, first use of R126. Run 20261108_072823 is working.
 - 2026-11-08 13:20 UTC board thread: Ryan added $5 on Moonshot and started the Kimi rerun. Computer use set up for the board (File Explorer, click tier, R126): the board double-clicks PC .bat files itself from now on; payments stay Ryan's.
@@ -126,4 +127,3 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 - 2026-11-08 12:50 UTC board thread: Ryan said merge and "you're the owner now"; #224 merged after green checks.
 - 2026-11-08 12:50 UTC board thread: #223 reviewed by diff (traces recounted, stills checked) and merged, #220 closed. #222 reviewed after the fact: guard gap found, PR #224 opened and held; the live trial keeps #222's config (no change mid-run). R119. No trial branches yet.
 - 2026-11-08 06:35 CST #217 thread: Ryan topped up (DeepSeek $2; Moonshot $5 paid plus the $5 voucher, so still Tier0 by the docs, his call to try it before adding $5) and ran WORKHORSE_SETUP.bat: OpenCode, both keys, both balance endpoints, both models READY through OpenCode, all PASS. WORKHORSE_TRIAL.bat started 06:30, DeepSeek arm first. If the Kimi arm stalls on 429s (Tier0: 3 requests a minute, 1.5M tokens a day), Ryan adds $5 and only the Kimi arm reruns (work_issue.bat 26 kimi). Ryan is moving the board to a single Board thread; the trial PRs and the results note go to it. #222 (the runner) was merged by its own author without a checker leg: the Board thread reviews it after the fact.
-- 2026-11-08 05:25 project thread (#220): traced the gate scene per frame on the 5080, named the stall (death piece meshes on the main thread), fixed it and two smaller ones, before and after gate runs and stills; PR #223 open, R118.
