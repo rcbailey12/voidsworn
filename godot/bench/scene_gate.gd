@@ -36,6 +36,11 @@ extends Node
 # frame: frame, process, physics, render CPU and GPU ms, the effects system's own main-thread sections (fx.prof, ms),
 # new pipeline compiles by kind, volleys fired and objects created that frame; and add a per-section summary of the
 # frames over 16.7 ms to the mode's row in scene_gate.json.
+# --still (issue 220): no measuring. The base scene on a fixed effect clock (fx.manual, 1/60 s a step, a volley every 21
+# steps from the session-1 seed, three deaths at steps 260, 320 and 380), with every worker job (hull rebuilds, death
+# cuts) waited for before each step, so the same code draws the same moments; writes still_<step>_wide.png (the gate
+# view) and still_<step>_close.png (the third death's ship, close) at steps 200, 300, 400 and 470. For before and
+# after sheets of a change that must not show.
 # Not in the default list (run with --modes): the 3D scene drawn at more pixels than the 1080p window, so the cost at
 # Ryan's real screens shows whatever monitor the window sits on (the HUD stays at 1080p):
 #   res_1440     3D at 2560x1440 (scaling_3d_scale 1.333)
@@ -148,6 +153,10 @@ func _volley() -> void:
 
 
 func _run() -> void:
+	if args.has("still"):
+		await _still_run()
+		get_tree().quit(0)
+		return
 	var sessions := int(args.get("sessions", 3))
 	var modes: Array = MODES.duplicate()
 	if args.has("modes"):
@@ -176,6 +185,64 @@ func _run() -> void:
 	_save()
 	print("[scene_gate] DONE")
 	get_tree().quit(0)
+
+
+func _settle(fx) -> void:
+	for id in fx.ships:
+		var sh = fx.ships[id]
+		if int(sh._dmg_task) >= 0:
+			while not WorkerThreadPool.is_task_completed(int(sh._dmg_task)):
+				OS.delay_usec(500)
+		if sh.has_meta("cut_task"):
+			while not WorkerThreadPool.is_task_completed(int(sh.get_meta("cut_task"))):
+				OS.delay_usec(500)
+
+
+func _still_run() -> void:
+	rng.seed = 2070
+	await _build("still", 4207)
+	_apply("base")
+	var fx = b.gfx
+	if fx == null:
+		return
+	fx.manual = true
+	var deaths: Array = []
+	for want in ["Frigate", "Destroyer", "Cruiser"]:
+		for u in b.V.get("units", []):
+			if str(u.get("cls", "")) == want and not deaths.has(str(u["id"])):
+				deaths.append(str(u["id"]))
+				break
+	var keep := {"t": b.cam.t, "r": b.cam.r}
+	var close_t := Vector3.INF
+	for id in b.views:
+		var sv = b.views[id]
+		if deaths.size() > 2 and str(id) == str(deaths[2]) and sv != null and is_instance_valid(sv):
+			close_t = Vector3(sv.global_position.x, 0, sv.global_position.z)
+	var shots := [200, 300, 400, 470]
+	for st in 471:
+		_settle(fx)
+		if st % 21 == 0:
+			_volley()
+		for d in deaths.size():
+			if st == 260 + 60 * d and fx.ships.has(deaths[d]):
+				fx.death(deaths[d], "big" if d == 2 else "blast")
+				side_ids["player"].erase(deaths[d])
+				side_ids["enemy"].erase(deaths[d])
+		fx.step(1.0 / 60.0)
+		await get_tree().process_frame
+		if st in shots:
+			await _shot("still_%03d_wide.png" % st)
+			if close_t != Vector3.INF:
+				b.cam.t = close_t
+				b.cam.r = 70.0
+				b.cam.snap()
+				await get_tree().process_frame
+				await _shot("still_%03d_close.png" % st)
+				b.cam.t = keep["t"]
+				b.cam.r = keep["r"]
+				b.cam.snap()
+				await get_tree().process_frame
+	print("[scene_gate] STILLS DONE")
 
 
 func _save() -> void:
