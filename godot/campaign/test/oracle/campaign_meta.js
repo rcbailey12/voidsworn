@@ -85,19 +85,21 @@ function admiralScreen(){
 ACT.pickAdmiral=a=>{ if(!admiralOwned(a)) return; if(pickedAdmiral!==a){ runOpt.alt=false; runOpt.cmdAlt=false; } pickedAdmiral=a; admiralScreen(); };
 let pickedFaction=(META.opts&&META.opts.lastFac)||'voidsworn';
 ACT.pickFaction=f=>{ pickedFaction=f; META.opts=META.opts||{}; META.opts.lastFac=f; admiralScreen(); };
-ACT.startRun=()=>{ if(!admiralOwned(pickedAdmiral)) return; const ml=masteryLevel(pickedAdmiral); newRun(pickedAdmiral,pickedFaction,{alt:runOpt.alt&&ml>=1,cmdAlt:runOpt.cmdAlt&&ml>=3,heat:(META.stats.wins||0)>0?runOpt.heat.slice():[]});
+ACT.startRun=()=>{ if(!admiralOwned(pickedAdmiral)) return; const ml=masteryLevel(pickedAdmiral); newRun(pickedAdmiral,pickedFaction,{alt:runOpt.alt&&ml>=1,cmdAlt:runOpt.cmdAlt&&ml>=3,heat:heatUnlocked()?runOpt.heat.slice():[]});
   try{ tel('run_start',{fac:RUN.fac,foes:RUN.foes,admiral:pickedAdmiral,patrons:RUN.patrons,mastery:RUN.mastery,alt:!!RUN.altFleet,cmd:RUN.cmdOverride?RUN.cmdOverride.id:null,heat:RUN.heat,gift:RUN.giftBoon||null}); }catch(e){} aspectScreen(); };
 // ---------- run options: mastery unlocks and Heat ----------
 const runOpt={alt:false,cmdAlt:false,heat:[]};
+// Heat opens after the first loss; a winner from an older profile keeps it open too.
+function heatUnlocked(){ const s=META.stats||{}; return (s.losses||0)>0||(s.wins||0)>0; }
 function masteryBar(id){ const l=masteryLevel(id), x=masteryXP(id), thresholds=masteryThresholds(id), nx=thresholds[l+1]; const f=nx?Math.min(1,(x-thresholds[l])/(nx-thresholds[l])):1;
   return `<div style="margin:6px 0 2px;font-size:13px"><span class="gilt">Mastery ${l}/${thresholds.length-1}</span> <span class="dim num">${nx?`${x}/${nx}: next ${esc(masteryPerk(l+1).n.toLowerCase())}`:'mastered'}</span><div class="bar" style="margin-top:3px"><i style="width:${Math.round(f*100)}%;background:var(--gilt)"></i></div></div>`; }
 function runOptionsHtml(){ const id=pickedAdmiral, a=ADMIRALS[id], ml=masteryLevel(id), parts=[];
   if(ml>=1){ const ap=altFleetPlan(id,pickedFaction), alt=ap.fleet.map(t=>HULLS[t].n).join(', ')+(ap.mod?` (the carrier starts with a ${MODULES[ap.mod].n.toLowerCase()})`:''), std=a.start.map(t=>HULLS[equivHull(t,pickedFaction)].n).join(', ');
     parts.push(`<div class="card"><h3>Starting fleet</h3><button class="choice ${!runOpt.alt?'sel':''}" data-act="optAlt" data-arg="0"><b>Standard</b><small>${esc(std)}</small></button><button class="choice ${runOpt.alt?'sel':''}" data-act="optAlt" data-arg="1"><b>Alternate</b><small>${esc(alt)}</small></button></div>`); }
   if(ml>=3&&a.cmd){ const c2=altCommand(id); if(c2) parts.push(`<div class="card"><h3>Command</h3><button class="choice ${!runOpt.cmdAlt?'sel':''}" data-act="optCmd" data-arg="0"><b>${esc(a.cmd.n)}</b><small>${esc(cmdDesc(a.cmd,0,pickedFaction))}</small></button><button class="choice ${runOpt.cmdAlt?'sel':''}" data-act="optCmd" data-arg="1"><b>${esc(c2.n)}</b><small>${esc(cmdDesc(c2,0,pickedFaction))}</small></button></div>`); }
-  if((META.stats.wins||0)>0){ const hl=heatLevel(runOpt.heat), best=(META.heatBest||{})[pickedFaction]||0;
+  if(heatUnlocked()){ const hl=heatLevel(runOpt.heat), best=(META.heatBest||{})[pickedFaction]||0;
     parts.push(`<div class="card"><h3>Heat <span class="gilt num">${hl}</span> <span class="dim" style="font-size:14px">+${hl*10}% renown${best?` \u00b7 best win with this faction: Heat ${best}`:''}</span></h3><p class="dim" style="font-size:13.5px">Optional rules that make the run harder. Pick any.</p>${Object.entries(HEAT).map(([k,h])=>`<button class="choice ${runOpt.heat.includes(k)?'sel':''}" data-act="optHeat" data-arg="${k}"><b>${esc(h.n)} <span class="dim">+${h.w}</span></b><small>${esc(h.d)}</small></button>`).join('')}</div>`); }
-  else parts.push(`<div class="card locked"><h3>Heat</h3><p class="dim">Win a run to unlock Heat: optional rules that make runs harder and pay more renown.</p></div>`);
+  else parts.push(`<div class="card locked"><h3>Heat</h3><p class="dim">Lose a run to unlock Heat: optional rules that make runs harder and pay more renown.</p></div>`);
   return `<h2 class="gothic" style="margin-top:22px">Run options</h2><div class="cards">${parts.join('')}</div>`; }
 ACT.optAlt=v=>{ runOpt.alt=v==='1'; admiralScreen(); };
 ACT.optCmd=v=>{ runOpt.cmdAlt=v==='1'; admiralScreen(); };
@@ -134,7 +136,7 @@ function legacyScreen(){
       favFirst().map(f=>`<h3 style="margin:20px 0 8px">${esc(FACTIONS[f].n)}</h3><div class="cards">${Object.entries(ADMIRALS).filter(([id,a])=>(a.fac||'voidsworn')===f).map(([id,a])=>`<div class="card"><h3>${esc(a.n)}</h3><p class="gilt" style="font-size:14px">${esc(a.doc)}</p>${masteryBar(id)}<p class="dim">${META.heirs[a.fac||'voidsworn']===id?'Heir: 50%':'Shadow: 25%'} XP while benched</p>${LINEAGE_TREES[id]?`<button data-act="lineage" data-arg="${id}">View lineage tree</button>`:''}</div>`).join('')}</div>`).join(''); }
   if(progTab==='favour'){ body=`<p class="lede">Every protocol you take raises your sync with that core (rare protocols count double, epic triple).</p><div class="cards">${FAVOUR_TIERS.slice(1).map(t=>`<div class="card"><h3>${esc(t.n)} <span class="dim num">${t.at}+</span></h3><p>${esc(t.d)}</p></div>`).join('')}</div><div style="margin-top:14px">`+
       Object.entries(PATRONS).map(([p,P])=>{ const f=favourOf(p), t=favourTier(p), nx=FAVOUR_TIERS[t+1]; return `<div class="favrow"><div class="sg" style="background:${P.col}">${P.glyph}</div><div><b>${esc(P.n)}</b><div class="dim" style="font-size:13px">${esc(P.theme)}</div></div><div class="num" style="text-align:right"><b style="color:${P.col}">${esc(FAVOUR_TIERS[t].n)}</b><div class="dim" style="font-size:12.5px">${f}${nx?` / ${nx.at}`:''}</div></div></div>`; }).join('')+'</div>'; }
-  if(progTab==='heat'){ const wins=META.stats.wins||0; body=`<p class="lede">${wins?'Heat is open. Pick rules on the admiral screen before a run; each level adds 10% renown.':'Win a run to open Heat.'}</p><div class="cards">${Object.entries(HEAT).map(([k,h])=>`<div class="card"><h3>${esc(h.n)} <span class="dim">+${h.w}</span></h3><p>${esc(h.d)}</p></div>`).join('')}</div>
+  if(progTab==='heat'){ const open=heatUnlocked(); body=`<p class="lede">${open?'Heat is open. Pick rules on the admiral screen before a run; each level adds 10% renown.':'Lose a run to open Heat.'}</p><div class="cards">${Object.entries(HEAT).map(([k,h])=>`<div class="card"><h3>${esc(h.n)} <span class="dim">+${h.w}</span></h3><p>${esc(h.d)}</p></div>`).join('')}</div>
       <h3 style="margin:20px 0 8px">Best Heat won</h3><div class="cards">${RUN_FACTIONS.map(f=>`<div class="card"><h3>${esc(FACTIONS[f].n)}</h3><p class="num ${(META.heatBest||{})[f]?'gilt':'dim'}">${(META.heatBest||{})[f]?'Heat '+META.heatBest[f]:((META.stats.wonFacs||[]).includes(f)?'Won at Heat 0':'Not yet won')}</p></div>`).join('')}</div>`; }
   if(progTab==='fallen'){ const fallen=(META.fallen||[]).slice(-40).reverse(); body=fallen.length?`<div class="cards">${fallen.map(f=>`<div class="card"><h3>${esc(f.name)}</h3><p>${esc(rankName(f))} of the ${esc(f.ship)}</p><p class="dim">Lost in sector ${roman(f.sector)}</p></div>`).join('')}</div>`:'<p class="muted">No captain has died yet.</p>'; }
   show(`<div class="screen"><div class="page">
@@ -171,7 +173,7 @@ function helpScreen(){
   show(touchWords(`<div class="screen"><div class="page" style="max-width:820px">
     <h2 class="gothic">How to play</h2>
     <p class="lede">Embers of the Hollow Sun is a roguelite. Each run crosses three sectors, each ending in a flagship battle. Ships and captains you lose are gone for the run; every faction, admiral and ship is available from the start.</p>
-    <p>What carries between runs (Progression, on the title screen): <b>renown</b> buys hull variants for your shipyards; each <b>admiral</b> levels up as you fly with them, unlocking an alternate fleet, a fourth aspect, a second Command and a veteran flag captain; <b>cores</b> sync with you as you take their protocols, offering rarer protocols and eventually a gift at the start of a run; and after your first victory, <b>Heat</b> lets you add harder rules for more renown. After each sector flagship falls, the fleet docks at a shipyard before its next fight.</p>
+    <p>What carries between runs (Progression, on the title screen): <b>renown</b> buys hull variants for your shipyards; each <b>admiral</b> levels up as you fly with them, unlocking an alternate fleet, a fourth aspect, a second Command and a veteran flag captain; <b>cores</b> sync with you as you take their protocols, offering rarer protocols and eventually a gift at the start of a run; and after your first loss, <b>Heat</b> lets you add harder rules for more renown. After each sector flagship falls, the fleet docks at a shipyard before its next fight.</p>
     <h3 class="gilt" style="margin:18px 0 6px">Your turn</h3>
     <p>Every ship can move, turn and fire each of its weapons once per turn, in any order. Click a ship, then click a highlighted hex to move. Moving forward costs 1 movement. Turning 60\u00b0 also costs 1 movement and uses one of the ship\u2019s turns; big ships only get one turn per round, so plan their heading early. Press <kbd>Q</kbd> and <kbd>E</kbd> to turn in place.</p>
     <p>Thrusters keep you from getting boxed in. A ship can slip into either forward-diagonal hex, or back off one hex, without changing its heading (2 movement each; a slow ship can always spend its whole move on one hop). It can climb over a rock or wreck, or dive under an enemy ship, for +1 movement, but cannot stop there. Each faction bends one of these rules: see the Helm panel.</p>
@@ -276,12 +278,16 @@ function endRun(victory, abandoned){
   const s=RUN.stats;
   if(META.stats.finishedRuns!=null&&!RUN.over) META.stats.finishedRuns++;
   const prevBest=META.stats.best||0; META.stats.best=Math.max(prevBest, RUN.sector); if(victory){ META.stats.wins++; META.stats.wonFacs=META.stats.wonFacs||[]; if(!META.stats.wonFacs.includes(RUN.fac)) META.stats.wonFacs.push(RUN.fac); }
+  else if(!abandoned) META.stats.losses=(META.stats.losses||0)+1;
   for(const f of RUN.fallen) META.fallen.push(f); if(META.fallen.length>80) META.fallen=META.fallen.slice(-80);
   try{ tel('run_end',{victory:!!victory,abandoned:!!abandoned,fac:RUN.fac,sector:RUN.sector,stats:s,mins:RUN.t0?Math.round((Date.now()-RUN.t0)/60000):null,fleet:(RUN.fleet||[]).map(x=>x.tpl)}); }catch(e){}
   // what carries forward: renown (more with Heat), admiral mastery, and a Heat record for this faction
   const hl=heatLevel(RUN.heat), ren=Math.round((typeof runRenown==='function'?runRenown():0)*(1+.1*hl)); META.renown=(META.renown||0)+ren;
-  const mx0=masteryLevel(RUN.admiral), mxEarned=(s.battles-s.elites-s.bosses)+s.elites*2+s.bosses*5+(victory?10:0); /* Keep the shipped combat weights. Heat XP is Step 10. */
-  const earnings=awardLineageXP(RUN.admiral,RUN.fac,mxEarned), mx1=masteryLevel(RUN.admiral);
+  const mx0=masteryLevel(RUN.admiral), mxEarned=(s.battles-s.elites-s.bosses)+s.elites*2+s.bosses*5+(victory?10:0); /* Keep the shipped combat weights. Heat XP is paid beside them. */
+  const earnings=awardLineageXP(RUN.admiral,RUN.fac,mxEarned);
+  if(hl>0){ const hx=masteryCredit(RUN.admiral,hl*2); /* R63: +2 XP per Heat point to the flown line, +1 to the faction shadow pool; cap overflow joins the pool */
+    earnings.mxGain+=hx.xp; earnings.mxOverflow+=hx.overflow; earnings.shadowBank=(META.shadowPool[RUN.fac]||0)+hx.overflow+hl; META.shadowPool[RUN.fac]=earnings.shadowBank; }
+  const mx1=masteryLevel(RUN.admiral);
   if(victory&&hl){ META.heatBest=META.heatBest||{}; META.heatBest[RUN.fac]=Math.max(META.heatBest[RUN.fac]||0,hl); }
   RUN.carry={ren,...earnings,mx0,mx1,hl};
   RUN.carry.inheritance=inheritanceSummary(RUN);

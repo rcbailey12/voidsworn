@@ -1019,6 +1019,10 @@ func heatLevel(list) -> float:
 	var t = 0.0
 	for k in or_(list, []): t += float(z0(HEAT[k].get("w"))) if HEAT.has(k) else 0.0
 	return t
+# Heat opens after the first loss; a winner from an older profile keeps it open too.
+func heatUnlocked() -> bool:
+	var s = META.get("stats") if META.get("stats") is Dictionary else {}
+	return float(z0(s.get("losses"))) > 0 or float(z0(s.get("wins"))) > 0
 func _cp(t) -> float: return float(or_(HULLS[t].get("cp"), 1))
 func _car(t) -> bool: return HULLS[t].get("ab") == "launch"
 func _sum(l: Array) -> float:
@@ -1297,7 +1301,7 @@ func admiralScreen() -> void:
 		if admiralOwned(id): A(acts, "pickAdmiral", id)
 		else: A(acts, "buyAdmiral", id, float(z0(META.get("renown"))) >= float(ADMIRALS[id]["cost"]))   # R1 (PROG-2): locked admirals can be bought here
 	var id0 = picked_admiral; var a = ADMIRALS[id0]; var ml = masteryLevel(id0)
-	var opts = {"ml": ml, "alt": null, "cmd2": null, "heat": float(z0(META["stats"].get("wins"))) > 0}
+	var opts = {"ml": ml, "alt": null, "cmd2": null, "heat": heatUnlocked()}
 	if ml >= 1:
 		opts["alt"] = altFleetPlan(id0, picked_faction); A(acts, "optAlt", "0"); A(acts, "optAlt", "1")
 	if ml >= 3 and jt(a.get("cmd")):
@@ -1311,7 +1315,7 @@ func admiralScreen() -> void:
 func ACT_startRun() -> void:
 	if not admiralOwned(picked_admiral): return
 	var ml = masteryLevel(picked_admiral)
-	newRun(picked_admiral, picked_faction, {"alt": run_opt["alt"] and ml >= 1, "cmdAlt": run_opt["cmdAlt"] and ml >= 3, "heat": run_opt["heat"].duplicate() if float(z0(META["stats"].get("wins"))) > 0 else []})
+	newRun(picked_admiral, picked_faction, {"alt": run_opt["alt"] and ml >= 1, "cmdAlt": run_opt["cmdAlt"] and ml >= 3, "heat": run_opt["heat"].duplicate() if heatUnlocked() else []})
 	tel("run_start", {"fac": RUN["fac"], "admiral": picked_admiral})
 	aspectScreen()
 func aspectScreen() -> void:
@@ -1470,12 +1474,20 @@ func endRun(victory: bool, abandoned: bool = false) -> void:
 	if victory:
 		META["stats"]["wins"] = float(META["stats"]["wins"]) + 1; META["stats"]["wonFacs"] = or_(META["stats"].get("wonFacs"), [])
 		if not META["stats"]["wonFacs"].has(RUN["fac"]): META["stats"]["wonFacs"].append(RUN["fac"])
+	elif not abandoned:
+		META["stats"]["losses"] = float(z0(META["stats"].get("losses"))) + 1
 	for f in RUN["fallen"]: META["fallen"].append(f)
 	if META["fallen"].size() > 80: META["fallen"] = META["fallen"].slice(META["fallen"].size() - 80)
 	tel("run_end", {"victory": victory, "abandoned": abandoned, "fac": RUN["fac"], "stats": s})
 	var hl = heatLevel(RUN.get("heat")); var ren = jsround(runRenown() * (1.0 + 0.1 * hl)); META["renown"] = float(z0(META.get("renown"))) + ren
 	var mx0 = masteryLevel(RUN["admiral"]); var mxEarned = (float(s["battles"]) - float(s["elites"]) - float(s["bosses"])) + float(s["elites"]) * 2 + float(s["bosses"]) * 5 + (10.0 if victory else 0.0)
-	var earnings = awardLineageXP(RUN["admiral"], RUN["fac"], mxEarned); var mx1 = masteryLevel(RUN["admiral"])
+	var earnings = awardLineageXP(RUN["admiral"], RUN["fac"], mxEarned)
+	if hl > 0:
+		# R63: +2 XP per Heat point to the flown line, +1 to the faction shadow pool; cap overflow joins the pool
+		var hx = masteryCredit(RUN["admiral"], hl * 2.0)
+		earnings["mxGain"] = float(earnings["mxGain"]) + float(hx["xp"]); earnings["mxOverflow"] = float(earnings["mxOverflow"]) + float(hx["overflow"])
+		earnings["shadowBank"] = float(z0(META["shadowPool"].get(RUN["fac"]))) + float(hx["overflow"]) + hl; META["shadowPool"][RUN["fac"]] = earnings["shadowBank"]
+	var mx1 = masteryLevel(RUN["admiral"])
 	if victory and hl > 0:
 		META["heatBest"] = or_(META.get("heatBest"), {}); META["heatBest"][RUN["fac"]] = max(float(z0(META["heatBest"].get(RUN["fac"]))), hl)
 	RUN["carry"] = {"ren": ren, "mx0": mx0, "mx1": mx1, "hl": hl}
