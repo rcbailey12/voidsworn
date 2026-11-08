@@ -94,6 +94,9 @@ func _case(c: Array) -> void:
 	b.tips_off = true
 	var sc := {"seed": int(c[5]), "sector": 1, "admiral": "vex", "fleet": ["penitent", "harrow", "warden", "warden"], "fac": c[1],
 		"obj": "rout", "shape": c[3], "map": c[2], "dep": "line", "kind": "battle"}
+	# Issue 232 riders: a warm faction sky for the E17/NB5 weight sheet without editing the case table.
+	if args.has("fac"):
+		sc["fac"] = str(args["fac"])
 	if c.size() > 6:
 		for k in c[6]:
 			sc[k] = c[6][k]

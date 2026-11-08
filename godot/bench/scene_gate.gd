@@ -157,6 +157,11 @@ func _run() -> void:
 		await _still_run()
 		get_tree().quit(0)
 		return
+	# Issue 232: the E6/E24 worst-case salvo flash test (per-frame screen luminance, WCAG 2.3.1 counting).
+	if args.has("flash"):
+		await _flash_run()
+		get_tree().quit(0)
+		return
 	var sessions := int(args.get("sessions", 3))
 	var modes: Array = MODES.duplicate()
 	if args.has("modes"):
@@ -243,6 +248,277 @@ func _still_run() -> void:
 				b.cam.snap()
 				await get_tree().process_frame
 	print("[scene_gate] STILLS DONE")
+
+
+# Issue 232 E12/E13: every ship at stage 3 or 4 with a full load of weapon marks, so the raised caps bind. The fx.cap_k
+# multiplier comes from --capk (1, 2, 4), so the same scene reports each cap step on equal terms.
+func _apply_damage_stress() -> void:
+	var fx = b.gfx
+	if fx == null:
+		return
+	# The battle's own per-frame sync reads the unit hp back into the damage stages, so the stress sets the units' hp
+	# low as well: otherwise the staged damage is reset to 0 on the first measured frame.
+	for u in b.V.get("units", []):
+		if bool(u.get("dead", false)):
+			continue
+		var mx := maxf(float(u.get("maxHp", 1.0)), 1.0)
+		u["hp"] = mx * 0.05
+		if u.get("sec") is Dictionary:
+			for nm in u["sec"]:
+				var sd = u["sec"][nm]
+				if sd is Dictionary:
+					sd["hp"] = maxf(float(sd.get("max", 1.0)), 1.0) * 0.05
+		u["burning"] = true
+	var looks := ["lance", "plasma", "macro", "gauss", "torp", "flak", "spine", "ion"]
+	for id in fx.ships:
+		var s = fx.ships[id]
+		if s.dead or s.squadron:
+			continue
+		s.set_stages(fx, [4, 4, 4])
+		s._set_burning(fx, true)
+		var marks := int(24 * float(args.get("capk", 1.0)))
+		for j in marks:
+			var sec := j % 3
+			var h: Dictionary = s.hull.random_sample(sec, 2.0)
+			s.add_mark(fx, looks[j % looks.size()], 2 + (j % 2), h["p"], h["n"], -(h["n"] as Vector3).normalized())
+	_settle(fx)
+
+
+# Issue 232: the worst-case mixed salvo the A5 synthesis specifies: every weapon kind plus heavy gauss, a heavy torpedo
+# volley, a flak screen and mass squadron deaths, with damaged ships in frame (E24). One capital dies for DS9.
+func _flash_run() -> void:
+	rng.seed = 2320
+	await _build("flash", 4232)
+	_apply("base")
+	var fx = b.gfx
+	if fx == null:
+		return
+	fx.manual = true
+	# E24: damaged and burning ships in frame for the continuous-flicker rules.
+	var n := 0
+	for id in fx.ships:
+		var s = fx.ships[id]
+		if s.dead or s.squadron:
+			continue
+		if n % 3 == 0:
+			s.set_stages(fx, [4, 3, 4])
+			s._set_burning(fx, true)
+		n += 1
+	_settle(fx)
+	# HD12: the production HUD's floating combat text (make_float), captured while it is up.
+	var fid := ""
+	for id in side_ids["enemy"]:
+		if b.views.has(id):
+			fid = id
+			break
+	if fid != "":
+		b._float_hit(fid, 12, 7, true)
+		b._float_hit(fid, 0, 9, false)
+	var deaths: Array = []
+	for id in fx.ships:
+		var s = fx.ships[id]
+		if s.squadron and not s.dead:
+			deaths.append(str(id))
+	var capital := ""
+	for u in b.V.get("units", []):
+		if str(u.get("side", "")) == "enemy" and str(u.get("cls", "")) in ["Battle-barge", "Dreadnought", "Super-dreadnought", "Carrier", "Battleship"]:
+			capital = str(u["id"])
+			break
+	var rows: Array = []
+	var death_t := -1.0
+	var nsteps := int(args.get("frames", 240))
+	var shot_steps := [2, 10, 30, 60, 90, 120, 180, 230]
+	for i in nsteps:
+		_settle(fx)
+		# Three waves, spaced inside the 1 s WCAG window, so the budget has to hold the rolling second.
+		if i in [0, 18, 36]:
+			_worst_salvo(fx, 0.0)
+		if i == 60:
+			death_t = fx.now
+			for d in deaths:
+				if fx.ships.has(d) and not fx.ships[d].dead:
+					fx.death(d, "blast")
+			if capital != "" and fx.ships.has(capital) and not fx.ships[capital].dead:
+				fx.death(capital, "big")
+		fx.step(1.0 / 60.0)
+		await _post()
+		var img := get_viewport().get_texture().get_image()
+		var lum := _luma(img)
+		rows.append({"i": i, "t": snappedf(fx.now, 0.001), "mean": snappedf(float(lum["mean"]), 0.00001),
+			"block": snappedf(float(lum["block"]), 0.00001), "flashes": fx.flash_log.size(), "refused": fx._refused.size()})
+		if i in shot_steps:
+			var p := out.path_join("flash_%03d.png" % i)
+			if img != null and not img.is_empty():
+				img.save_png(p)
+	# DS9: the capital death's counted flashes and the secondaries' timing from the same log.
+	var deaths_at: Array = []
+	for k in fx.flash_log:
+		if float(k) > death_t:
+			deaths_at.append(snappedf(float(k), 0.001))
+	# the effect system's own rolling-second count (its budget is the thing under test)
+	var flash_times: Array = []
+	for k in fx.flash_log:
+		flash_times.append(float(k))
+	var eff_max := 0
+	for f in flash_times:
+		var c := 0
+		for g in flash_times:
+			if float(g) >= float(f) - 1.0 and float(g) <= float(f):
+				c += 1
+		eff_max = maxi(eff_max, c)
+	var max_delta := 0.0
+	var max_luma := 0.0
+	for j in range(1, rows.size()):
+		max_delta = maxf(max_delta, maxf(absf(float(rows[j]["mean"]) - float(rows[j - 1]["mean"])), absf(float(rows[j]["block"]) - float(rows[j - 1]["block"]))))
+	for r in rows:
+		max_luma = maxf(max_luma, float(r["mean"]))
+	# HD12: the HUD's own floating-text size (make_float uses hud.s(16)).
+	var float_px := 0
+	if b.hud != null and b.hud.has_method("s"):
+		float_px = int(b.hud.s(16))
+	var fs := FileAccess.open(out.path_join("flash_luma.csv"), FileAccess.WRITE)
+	fs.store_line("i,t,mean_relative_luminance,max_block,counted_flashes,refused")
+	for r in rows:
+		fs.store_line("%d,%.4f,%.6f,%.6f,%d,%d" % [int(r["i"]), float(r["t"]), float(r["mean"]), float(r["block"]), int(r["flashes"]), int(r["refused"])])
+	fs.close()
+	var stats := _flash_stats(rows)
+	var rep := {"kind": "flash", "frames": nsteps, "wire": "WCAG 2.3.1 general flash threshold: opposing relative-luminance changes of 0.10 or more, darker of the pair below 0.80", "cap_per_second": 3,
+		"mean_max_per_second": stats["mean_max"], "block_max_per_second": stats["block_max"],
+		"flash_events_mean": stats["mean_events"], "flash_events_block": stats["block_events"],
+		"pass": bool(stats["mean_max"] <= 3 and stats["block_max"] <= 3),
+		"counted_effect_flashes": int(fx.flash_log.size()), "refused_effect_flashes": int(fx._refused.size()),
+		"effect_flashes_max_per_second": eff_max, "max_frame_luminance_delta": snappedf(max_delta, 0.00001),
+		"max_mean_luminance": snappedf(max_luma, 0.00001), "death_start_t": snappedf(death_t, 0.001),
+		"death_flashes_after_start": deaths_at, "hud_float_font_px": float_px, "damage_counts": fx.damage_counts(),
+		"shots": shot_steps, "build_ms": build_ms}
+	var ff := FileAccess.open(out.path_join("flash.json"), FileAccess.WRITE)
+	ff.store_string(JSON.stringify(rep, "  ") + "\n")
+	ff.close()
+	print("[flash] mean_max_per_s %d block_max_per_s %d counted %d refused %d PASS %s float_px %d" % [stats["mean_max"], stats["block_max"], int(fx.flash_log.size()), int(fx._refused.size()), str(rep["pass"]), float_px])
+	print("[scene_gate] FLASH DONE")
+
+
+func _worst_salvo(fx, t: float) -> void:
+	var from_ids: Array = []
+	for id in side_ids["player"] + side_ids["enemy"]:
+		if fx.ships.has(id) and not fx.ships[id].dead:
+			from_ids.append(str(id))
+	if from_ids.is_empty():
+		return
+	var i := 0
+	for fac in LOOKS:
+		for lk in LOOKS[fac]:
+			var att := ""
+			var tgt := ""
+			for id in from_ids:
+				if att == "" and str(fac_of.get(id, "")) == str(fac):
+					att = id
+				if att != "" and id != att:
+					tgt = id
+					break
+			if att == "" or tgt == "":
+				continue
+			_fire_at(fx, att, str(lk[0]), tgt, str(lk[1]), t, 3)
+			i += 1
+	# heavy gauss, a heavy torpedo volley, and a flak screen on top of the faction looks
+	var a: String = from_ids[0]
+	var tgt2: String = from_ids[from_ids.size() - 1]
+	_fire_at(fx, a, "gauss", tgt2, "gauss", t, 2)
+	_fire_at(fx, a, "torp", tgt2, "torp", t, 4)
+	_fire_at(fx, a, "flak", tgt2, "flak", t, 8)
+
+
+func _fire_at(fx, att: String, kind: String, tgt: String, weapon: String, t: float, n: int) -> void:
+	var shield := rng.randf() < 0.35
+	var shots := []
+	var hits := []
+	for k in n:
+		shots.append(true)
+		hits.append({"shield": 8 if shield else 0, "hull": 0 if shield else 9, "section": ["prow", "mid", "eng"][rng.randi() % 3], "crit": false})
+	if fx.ships.has(att) and fx.ships.has(tgt) and not fx.ships[att].dead and not fx.ships[tgt].dead:
+		fx.volley(att, kind, tgt, {"weapon_id": weapon, "shots": shots, "hits": hits})
+
+
+# Per-frame screen luminance, downsampled: mean over the whole frame and the brightest 1/6-screen block (the WCAG
+# 10-degree field is about a quarter of the screen, so the block is the stricter read).
+func _luma(img: Image) -> Dictionary:
+	if img == null or img.is_empty():
+		return {"mean": 0.0, "block": 0.0}
+	var im: Image = img.duplicate()
+	im.convert(Image.FORMAT_RGBA8)
+	im.resize(96, 54, Image.INTERPOLATE_BILINEAR)
+	var data: PackedByteArray = im.get_data()
+	var sum := 0.0
+	var bw := 16
+	var bh := 9
+	var blocks := {}
+	for y in 54:
+		for x in 96:
+			var o := (y * 96 + x) * 4
+			var r := float(data[o]) / 255.0
+			var g := float(data[o + 1]) / 255.0
+			var b := float(data[o + 2]) / 255.0
+			r = r / 12.92 if r <= 0.04045 else pow((r + 0.055) / 1.055, 2.4)
+			g = g / 12.92 if g <= 0.04045 else pow((g + 0.055) / 1.055, 2.4)
+			b = b / 12.92 if b <= 0.04045 else pow((b + 0.055) / 1.055, 2.4)
+			var l := 0.2126 * r + 0.7152 * g + 0.0722 * b
+			sum += l
+			var key := (y / bh) * 6 + (x / bw)
+			blocks[key] = float(blocks.get(key, 0.0)) + l
+	var mx := 0.0
+	for key in blocks:
+		mx = maxf(mx, float(blocks[key]) / float(bw * bh))
+	return {"mean": sum / float(96 * 54), "block": mx}
+
+
+func _flash_stats(rows: Array) -> Dictionary:
+	var mean_max := _rolling_max(rows, "mean")
+	var block_max := _rolling_max(rows, "block")
+	return {"mean_max": mean_max["max"], "block_max": block_max["max"], "mean_events": mean_max["events"], "block_events": block_max["events"]}
+
+
+# Count WCAG flash pairs: a rise and the following fall (or the reverse) each of at least 0.10 relative luminance,
+# merged inside 0.33 s, with the darker of the pair under 0.80. Then the most in any rolling second.
+func _rolling_max(rows: Array, key: String) -> Dictionary:
+	var ys: Array = []
+	for r in rows:
+		ys.append(float(r[key]))
+	# local extrema after a light 3-frame smooth (keeps a one-frame pop)
+	var sm: Array = []
+	for i in ys.size():
+		var a: float = float(ys[maxi(0, i - 1)])
+		var b: float = float(ys[i])
+		var c: float = float(ys[mini(ys.size() - 1, i + 1)])
+		sm.append((a + b + c) / 3.0)
+	var ext: Array = []   # [i, y, turning up?]
+	for i in range(1, sm.size() - 1):
+		var d0: float = float(sm[i]) - float(sm[i - 1])
+		var d1: float = float(sm[i + 1]) - float(sm[i])
+		if (d0 >= 0.0 and d1 < 0.0) or (d0 <= 0.0 and d1 > 0.0):
+			if ext.is_empty() or absf(float(sm[i]) - float(ext[ext.size() - 1][1])) >= 0.02:
+				ext.append([i, float(sm[i])])
+	var flashes: Array = []   # [t, low]
+	var last := -100.0
+	for j in range(1, ext.size()):
+		var a: float = float(ext[j - 1][1])
+		var b: float = float(ext[j][1])
+		var swing := absf(b - a)
+		var low := minf(a, b)
+		if swing < 0.10 or low >= 0.80:
+			continue
+		var t: float = float(ext[j][0]) / 60.0
+		if t - last < 0.33:
+			continue
+		last = t
+		flashes.append(t)
+	var mx := 0
+	for f in flashes:
+		var c := 0
+		for g in flashes:
+			if float(g) >= float(f) - 1.0 and float(g) <= float(f):
+				c += 1
+		mx = maxi(mx, c)
+	return {"max": mx, "events": flashes.size()}
 
 
 func _save() -> void:
@@ -341,6 +617,8 @@ func _apply(mode: String) -> void:
 	var vp := get_viewport()
 	vp.scaling_3d_scale = 1.0
 	vp.mesh_lod_threshold = 0.0   # triangles uncapped (R111): no mesh LOD swaps, every hull at full detail
+	if b != null and b.gfx != null:
+		b.gfx.cap_k = float(args.get("capk", 1.0))
 	kill_shadows = false
 	match mode:
 		"shadows_off":
@@ -391,6 +669,8 @@ func _mode(mode: String, s: int) -> Dictionary:
 	volley_t = 0.0
 	await _build(mode, 4207)
 	_apply(mode)
+	if mode == "caps":
+		_apply_damage_stress()
 	volleys_on = mode != "floor" and mode != "fx_off"
 	var vp := get_viewport()
 	var vrid := vp.get_viewport_rid()
@@ -470,6 +750,8 @@ func _mode(mode: String, s: int) -> Dictionary:
 	var row := {"mode": mode, "frames": n, "warmup": warm, "seconds": (Time.get_ticks_usec() - t0) / 1e6,
 		"viewport": [vp.get_visible_rect().size.x, vp.get_visible_rect().size.y], "msaa_3d": vp.msaa_3d,
 		"scaling_3d": vp.scaling_3d_scale, "volleys": b.gfx.stats.get("volleys", 0) if b.gfx != null else 0,
+		"cap_k": float(args.get("capk", 1.0)) if b.gfx != null else 1.0,
+		"damage_counts": b.gfx.damage_counts() if b.gfx != null else {},
 		"vram_mb": Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0,
 		"texture_mb": Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED) / 1048576.0,
 		"buffer_mb": Performance.get_monitor(Performance.RENDER_BUFFER_MEM_USED) / 1048576.0}
