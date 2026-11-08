@@ -45,24 +45,30 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 - PC: Downloads\voidsworn_test attached to the project thread. The device shell does not start on this PC (hardware virtualization off), so PC work goes through file staging and the watcher queue. Opus's own clone: Downloads\voidsworn_test\opus207\repo. A stale a4_rbs2_acd9ef1.bat sits in queue\running since Nov 1 (its watcher died mid-job); harmless, leave it.
 - Latest playtest exe: g2_pt_d03ac22. The next build folds in #185, #190, #143, #197 (checklist in contrib/muse/reviews/playtest_checklist_2026_11/).
 
-## Queue (Opus's order, Nov 7 night)
+## Queue (Opus's order, Nov 8 morning)
 
-Opus jobs, in order (Nov 7 night, after #207):
+Ryan, Nov 8 06:50 CST: the board thread is the orchestrator; be proactive and keep pushing everything forward.
+
+Opus jobs, in order:
 1. #217 trial (running since 06:30 CST): review both PRs by diff when they land (work/issue-26-deepseek, work/issue-26-kimi), merge the better, close the other, write the results note. If the Kimi arm stalls on 429s, Ryan adds $5 and only `work_issue.bat 26 kimi` reruns. Then, before any further workhorse run: tools/pc/work (with #224) copied to Downloads\voidsworn_test\work217\tools\work, free dry run (`work_trial.bat dryrun nopause`) refuses the chained push and the delete.
-2. #220 DONE (merged Nov 8). Next PC thread: #221 (propose it to Ryan first; big thread).
-3. Apply #201 edits G2 to G6 to #120, #121, #122 (G1 withdrawn) before any of them is released.
-4. Triage settlements into named jobs with fixed top blocks: #208 (also the only home of the station assert fixes), #210, #212, #213, #215. Writing only; ceiling-dependent builds now follow R116.
-5. #221 scene gate binder: profile and trim the per-ship per-frame work (PC thread; not urgent at 42% of the frame).
-6. #216 first pass: rest of AGENTS.md, demote NEXT.md, confirm the council memory file placement for Rey (record Grok in the seat map).
-7. Close #96 and #98 if FINDINGS already carries them; absorb #206 and #214 into the working docs and close; #48 after settlements move; record #43's unblock condition.
+2. #221 scene gate binder (PC thread, after the trial frees the PC; not urgent at 6.0 of 12.5 ms).
+3. #229 five small reads (gravity well rules state first), #228 movement spec, #230 environment reconciliation (before #100), #231 UI spec. All need #227's audit records except the PF9 part of #229.
+4. #216 first pass: rest of AGENTS.md, demote NEXT.md, confirm the council memory file placement for Rey (record Grok in the seat map).
+5. Close #96 and #98 if FINDINGS already carries them; absorb #206 and #214 into the working docs and close; #48; record #43's unblock condition.
+Done Nov 8: #201 edits applied to #120 to #122 (R120); settlements triaged (R121 to R125: #208 closes when PR #226 merges; #210, #212, #213, #215 closed with board homes; jobs #227 to #238 filed).
+
+Muse: #227 files the five Nov 6 audit records (item definitions every settlement job needs).
 
 Coding seat queue (released one at a time to the workhorse once #217 picks a winner; Opus takes one itself only if the workhorse fails and Ryan wants speed):
 1. #120, #121, #122 Nemesis redesign (with the #201 check pack).
 2. #24, #26 (unless the trial arm merged it), #27, #29, #30 progression steps.
-3. #92 debrief screen (after #24 and #122).
-4. #198 Pyre-Barge round 7 and #199 station detail (re-specced Nov 7 to R116), #139 nebulas, #140 planets, #100 terrain fx 2.
-5. #169 breakable Pyre-Barge (after Ryan's round 7 pick).
-6. Later: #41, #42, #44.
+3. #232 effects stress pack (salvo flash safety test first).
+4. #236 environment sheets, then #235 camera and UI calibration (one Ryan sitting), both before the terrain jobs.
+5. #198 Pyre-Barge round 7 and #199 station detail, #139 nebulas, #140 planets, #100 terrain fx 2 (after #230).
+6. #233 destruction captures, #237 campaign captures, #92 debrief screen (after #24, #122 and #231's debrief spec).
+7. #169 breakable Pyre-Barge (after Ryan's round 7 pick).
+8. Filler when a seat idles: #234 probe and ram Monte Carlo, #238 reporting scripts.
+9. Later: #41, #42, #44.
 
 ## Holds
 
@@ -110,6 +116,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-08 13:30 UTC board thread: Ryan asked for a proactive orchestrator. Folder access to voidsworn_test granted (the Godot user folder was refused by the auto classifier; device shell still off). DeepSeek arm checked live: about 90 commands and 6 cents in at 06:46 CST. #201 applied (R120). Settlements triaged (R121 to R125), jobs #227 to #238 filed, four audit issues closed, #208 close-out in PR #226, G6 in PR #225.
 - 2026-11-08 12:50 UTC board thread: Ryan said merge and "you're the owner now"; #224 merged after green checks.
 - 2026-11-08 12:50 UTC board thread: #223 reviewed by diff (traces recounted, stills checked) and merged, #220 closed. #222 reviewed after the fact: guard gap found, PR #224 opened and held; the live trial keeps #222's config (no change mid-run). R119. No trial branches yet.
 - 2026-11-08 06:35 CST #217 thread: Ryan topped up (DeepSeek $2; Moonshot $5 paid plus the $5 voucher, so still Tier0 by the docs, his call to try it before adding $5) and ran WORKHORSE_SETUP.bat: OpenCode, both keys, both balance endpoints, both models READY through OpenCode, all PASS. WORKHORSE_TRIAL.bat started 06:30, DeepSeek arm first. If the Kimi arm stalls on 429s (Tier0: 3 requests a minute, 1.5M tokens a day), Ryan adds $5 and only the Kimi arm reruns (work_issue.bat 26 kimi). Ryan is moving the board to a single Board thread; the trial PRs and the results note go to it. #222 (the runner) was merged by its own author without a checker leg: the Board thread reviews it after the fact.
@@ -119,4 +126,3 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 - 2026-11-08 04:08 project thread: Ryan OK'd deleting the old hourly board task; deleted. The board runs from the project (R114).
 - 2026-11-08 04:05 project thread: Ryan set the gate, 12.5 ms (75%) on frame at 1080p and GPU at 4K (R116). PR #219 merged; #207 closed.
 - 2026-11-08 03:50 project thread (#207): fresh clone on the PC, A4 files copied (252 of 252 match), mixed-fleet gate scene built and measured on the 5080 (5 launches: turn view, gate view twice, 1440p and 4K). Result R115; PR #219 opened, held for Ryan's share pick. Ryan paused the GPU work for gaming 20:15 to 20:49 CST.
-- 2026-11-08 01:25 lead chat: Ryan created the project and started the #207 thread; Remote Control on for Downloads\voidsworn_test, keep-awake on. Board ownership handed to the project.
