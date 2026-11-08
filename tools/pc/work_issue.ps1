@@ -58,6 +58,14 @@ Rules:
 - Finish with a short report: what you changed (files), each check you ran and its result (paste the PASS or FAIL lines),
   anything you skipped and why. That report becomes the pull request description, so write it for a reviewer.
 
+Before you finish, check how your change reaches the rest of the game (the reviewer checks all five, so do it first):
+- Callers: search the whole repo for every function, constant and save field you changed or added, and check or fix each use.
+- Saves: a player profile or run save written before your change must still load and behave; say how you checked.
+- Twins: rules that exist in both the JS (core.js, campaign_meta.js) and Godot (godot/) must change on both sides; parity proves it.
+- UI: every screen that shows what you changed (campaign map, intel, panels, HUD) must read the new value the same way.
+- CI: a new test file must be added to contrib/opus/tools/run_all_checks.js, or GitHub never runs it; say which checks GitHub runs.
+Put one line per item in your report with what you found.
+
 How to run things on this PC (Windows 10; your shell is Git Bash):
 - Standing checks: node contrib/opus/tools/run_all_checks.js
 - Rules parity and campaign parity (needs Godot, a few minutes): cmd.exe //c "tools\\pc\\parity.bat nopause"
