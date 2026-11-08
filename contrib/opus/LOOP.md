@@ -78,7 +78,7 @@ Coding seat queue (released one at a time to the workhorse once #217 picks a win
 
 ## Waiting on Ryan
 
-- #217: nothing now; the trial is running. Only if the Kimi arm stalls: add $5 on Moonshot.
+- #217: add $5 on Moonshot (platform.kimi.ai), then double-click WORKHORSE_KIMI_RERUN.bat in Downloads\voidsworn_test. The first Kimi run was refused by the starter tier's one-request limit in its first second.
 - #221: OK to start a PC thread for the per-ship CPU trim (not urgent; the scene sits at 6.0 ms of the 12.5 ms gate).
 - S15 sound listen pass: one sitting, best once the #211 probe clips exist.
 - Round 7 pick and station look: when #198 and #199 land.
@@ -116,6 +116,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-08 13:30 UTC board thread: #217 Kimi arm stopped 11 s in, no changes: Moonshot 429 "max organization concurrency: 1" (starter tier, msh-gid free; OpenCode sends parallel requests) and opencode exited. Not a model result. Fallback as planned (R117): Ryan adds $5 on Moonshot (paid total $10, next tier), then double-clicks Downloads\voidsworn_test\WORKHORSE_KIMI_RERUN.bat (Kimi arm only, same runner and #222 config as the DeepSeek arm). #241 held until then.
 - 2026-11-08 13:20 UTC board thread: #217 DeepSeek arm done (36.7 min, 116 model calls, real charge $0.09, opencode exit 0), PR #241 reviewed by diff: Heat gate moves to the first real loss (abandoned runs do not count, older winners keep it), R63 payout +2 XP per point to the flown line and +1 to the shadow pool with cap overflow, browser and Godot together, oracle identical, new heat_tests.js and Godot test, two 4K shots; a first-review pass candidate, held until the Kimi arm lands. Merged #239 (harness note, closes #206 and #214) and #240 (#229 reads; merged a minute before its parity check finished, which then passed; docs only). Closed #96 (superseded by R83, R86, R96) and #98 (R82).
 - 2026-11-08 12:56 UTC board thread: Ryan asked for a proactive orchestrator. Folder access to voidsworn_test granted (the Godot user folder was refused by the auto classifier; device shell still off). DeepSeek arm checked live: about 90 commands and 6 cents in at 06:46 CST. #201 applied (R120). Settlements triaged (R121 to R125), jobs #227 to #238 filed, five audit issues closed; PRs #225 (G6) and #226 (#208 close-out) merged after green checks.
 - 2026-11-08 12:50 UTC board thread: Ryan said merge and "you're the owner now"; #224 merged after green checks.
@@ -125,4 +126,3 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 - 2026-11-08 05:10 project thread (#217): runner built (work_setup, work_trial, work_issue), three free dry runs on the PC (stand-in model) pass both arms end to end; fixes for the PowerShell shell fallback and the 2 minute command limit. PR #222 merged, R117, #26 relabelled opus. Waiting on Ryan's top-ups and two double-clicks.
 - 2026-11-08 04:15 project thread: #198 and #199 re-specced against R111, R113, R116; filed #220 (effects stalls) and #221 (per-ship CPU trim); Opus queue reordered (#217 runner first).
 - 2026-11-08 04:08 project thread: Ryan OK'd deleting the old hourly board task; deleted. The board runs from the project (R114).
-- 2026-11-08 04:05 project thread: Ryan set the gate, 12.5 ms (75%) on frame at 1080p and GPU at 4K (R116). PR #219 merged; #207 closed.
