@@ -615,8 +615,6 @@
   },
   "loaded": {
     "meta": {
-      "heirs": {},
-      "shadowPool": {},
       "v": 2,
       "renown": 240,
       "unlocked": {
@@ -642,6 +640,8 @@
       "mastery": {
         "kassar": 31
       },
+      "heirs": {},
+      "shadowPool": {},
       "favour": {},
       "variants": {},
       "heatBest": {},
@@ -1225,7 +1225,9 @@
           "station": "rig"
         }
       },
-      "v": 2
+      "v": 2,
+      "nemAssign": null,
+      "nems": null
     },
     "recovered": false
   }

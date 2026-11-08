@@ -29,8 +29,6 @@
   },
   "loaded": {
     "meta": {
-      "heirs": {},
-      "shadowPool": {},
       "v": 2,
       "renown": 0,
       "unlocked": {},
@@ -48,6 +46,8 @@
       "tel": [],
       "updated": 0,
       "mastery": {},
+      "heirs": {},
+      "shadowPool": {},
       "favour": {},
       "variants": {},
       "heatBest": {},

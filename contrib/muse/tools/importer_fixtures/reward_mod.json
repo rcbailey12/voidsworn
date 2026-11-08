@@ -454,8 +454,6 @@
   },
   "loaded": {
     "meta": {
-      "heirs": {},
-      "shadowPool": {},
       "v": 2,
       "renown": 90,
       "unlocked": {},
@@ -474,6 +472,8 @@
       "tel": [],
       "updated": 1793200000000,
       "mastery": {},
+      "heirs": {},
+      "shadowPool": {},
       "favour": {},
       "variants": {},
       "heatBest": {},
@@ -904,7 +904,9 @@
           "drive"
         ]
       },
-      "v": 2
+      "v": 2,
+      "nemAssign": null,
+      "nems": null
     },
     "recovered": false
   }

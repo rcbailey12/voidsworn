@@ -68,7 +68,8 @@ for (const ev of events) for (const fac of T.RUN_FACTIONS) {
     assert.equal(T.run.stats.battles, 0, name + ': no battle');
     assert.deepEqual(T.run.inventory, initial.run.inventory, name + ': no refits spent');
     assert.deepEqual(T.run.relics, initial.run.relics, name + ': no salvage spent');
-    assert.equal(T.run.nem.clock, initial.run.nem.clock, name + ': no hunt penalty');
+    const clockOf = r => r.nems[r.nemAssign[r.sector - 1]].clock;
+    assert.equal(clockOf(result.run), clockOf(entered.run), name + ': no hunt penalty');
     assert.ok(T.acts().some(a => a[0] === 'closeModal' && a[2] === 1), name + ': Continue offered');
     T.ACT.closeModal();
     assert.equal(T.modal, '', name + ': result dismissed');

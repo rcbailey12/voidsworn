@@ -609,8 +609,6 @@
   },
   "loaded": {
     "meta": {
-      "heirs": {},
-      "shadowPool": {},
       "v": 2,
       "renown": 210,
       "unlocked": {
@@ -684,6 +682,8 @@
         "kassar": 23,
         "sable": 9
       },
+      "heirs": {},
+      "shadowPool": {},
       "favour": {
         "iron": 5,
         "storm": 2
@@ -1209,7 +1209,9 @@
           "station": "rig"
         }
       },
-      "v": 2
+      "v": 2,
+      "nemAssign": null,
+      "nems": null
     },
     "recovered": false
   }

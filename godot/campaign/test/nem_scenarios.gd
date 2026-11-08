@@ -8,12 +8,16 @@ var C
 var OUT := PackedStringArray()
 func rec(tag: String, x) -> void: OUT.append(tag + " " + JSM.canon(x, "", {}, true))
 func state(tag: String) -> void:
-	rec(tag, {"nem": C.RUN["nem"], "credits": C.RUN["credits"], "fleet": C.RUN["fleet"].map(func(s): return [s["uid"], s["hp"]]), "variants": C.META["variants"], "rng": JSM.rng_s & 0xFFFFFFFF})
+	rec(tag, {"nem": C.RUN.get("nem"), "nemAssign": C.RUN.get("nemAssign"), "nems": C.RUN.get("nems"), "credits": C.RUN["credits"], "fleet": C.RUN["fleet"].map(func(s): return [s["uid"], s["hp"]]), "variants": C.META["variants"], "rng": JSM.rng_s & 0xFFFFFFFF})
 func setup(seed: int, fac: String) -> void:
 	C.UID = 1; JSM.rnd_seed(seed); C.META = C.defaultMeta(); C.META["backfilled"] = 1; C.META["wonFix41"] = 1; C.SAVED_RUN = null; C.RUN = null; C.B = null
 	C.picked_admiral = "vex"; C.picked_faction = "voidsworn"; C.run_opt = {"alt": false, "cmdAlt": false, "heat": []}
 	C.titleScreen(); C.act("newRunScreen"); C.act("startRun"); C.act("pickAspect", C.W["aspOffer"][0]); C.act("closeModal")
-	C.RUN["foes"][3] = fac; C.RUN["nem"] = C.newNemesis(); state("new " + fac)
+	C.RUN["foes"][3] = fac; C.RUN["nemAssign"] = [fac, fac, fac]; C.RUN["nems"] = {}; C.RUN["nem"] = C.newNemesis(fac); C.RUN["nems"][fac] = C.RUN["nem"]; state("new " + fac)
+func setupDraw(seed: int) -> void:
+	C.UID = 1; JSM.rnd_seed(seed); C.META = C.defaultMeta(); C.META["backfilled"] = 1; C.META["wonFix41"] = 1; C.SAVED_RUN = null; C.RUN = null; C.B = null
+	C.picked_admiral = "vex"; C.picked_faction = "voidsworn"; C.run_opt = {"alt": false, "cmdAlt": false, "heat": []}
+	C.titleScreen(); C.act("newRunScreen"); C.act("startRun"); rec("draw0 " + str(seed), {"a": C.RUN["nemAssign"], "n": C.RUN["nems"].size()}); C.act("pickAspect", C.W["aspOffer"][0]); C.act("closeModal"); state("draw " + str(seed))
 func _init() -> void:
 	C = CampaignScript.new()
 	var err = C.load_tables()
@@ -41,7 +45,20 @@ func _init() -> void:
 	# 8 R1 (Nov 1): loss reveals, the clash check, the pre-persona migration (node/nem_scenarios.js section 8)
 	setup(120, "hegemony"); rec("h1", C.nemAfterBattle("loss", false, {})); state("h1"); rec("h2", C.nemAfterBattle("retreat", false, {"found": [C.RUN["nem"]["weak"][1], "nonsense"]})); state("h2"); rec("h3", C.nemAfterBattle("loss", false, {})); state("h3")
 	setup(121, "chorus"); C.RUN["nem"]["revealed"] = ["ion", "torp"]; C.RUN["nem"]["seen"] = {"lance": 9, "ion": 9, "torp": 9, "sq": 9}; C.RUN["sector"] = 2; rec("h4", C.nemAdapt()); rec("h5", C.nemAdapt(true)); state("h5")
-	setup(122, "corsair"); C.RUN["nem"] = {"weak": ["ion", "slow"], "revealed": ["ion"], "adapt": ["riches"], "clock": 2, "met": 1, "beaten": 1, "scars": 1, "dead": false, "strike": false, "seen": {}, "loot": 500, "riches": 2, "fed": 3, "honed": 1, "held": C.RUN["fleet"][1], "last_beat": "lance"}; rec("h6", C.ensureNemesis()); state("h6")
+	setup(122, "corsair"); C.RUN["nemAssign"] = null; C.RUN["nems"] = null; C.RUN["nem"] = {"weak": ["ion", "slow"], "revealed": ["ion"], "adapt": ["riches"], "clock": 2, "met": 1, "beaten": 1, "scars": 1, "dead": false, "strike": false, "seen": {}, "loot": 500, "riches": 2, "fed": 3, "honed": 1, "held": C.RUN["fleet"][1], "last_beat": "lance"}; rec("h6", C.ensureNemesis()); state("h6")
+	# 9 R85 (#120): assignment drawn once, registry lazy, active resolution, mid-run migration
+	setupDraw(210); rec("i0", {"a": C.RUN["nemAssign"], "n": C.RUN["nems"].size()})
+	C.ensureNemesis(); rec("i1", {"a": C.RUN["nemAssign"], "n": C.RUN["nems"].size()})
+	C.RUN["sector"] = 2; C.ensureNemesis(); rec("i2", {"a": C.RUN["nemAssign"], "n": C.RUN["nems"].size()})
+	C.RUN["sector"] = 3; C.ensureNemesis(); rec("i3", {"a": C.RUN["nemAssign"], "n": C.RUN["nems"].size()})
+	setupDraw(12); rec("j0", {"a": C.RUN["nemAssign"], "n": C.RUN["nems"].size()})
+	C.ensureNemesis(); rec("j1", {"a": C.RUN["nemAssign"], "n": C.RUN["nems"].size()})
+	C.RUN["sector"] = 2; C.ensureNemesis(); rec("j2", {"a": C.RUN["nemAssign"], "n": C.RUN["nems"].size()})
+	C.RUN["sector"] = 3; C.ensureNemesis(); rec("j3", {"a": C.RUN["nemAssign"], "n": C.RUN["nems"].size()})
+	setup(220, "hegemony"); C.RUN["nemAssign"] = ["hegemony", "corsair", "ithar"]; C.RUN["nems"] = {"hegemony": C.RUN["nem"]}; C.RUN["foes"][3] = "chorus"
+	rec("k1", C.nemBattleCfg()["fac"]); C.RUN["sector"] = 2; rec("k2", C.nemBattleCfg()["fac"]); C.RUN["sector"] = 3; rec("k3", C.nemBattleCfg()["fac"])
+	setup(230, "corsair"); C.RUN["nemAssign"] = null; C.RUN["nems"] = null; C.RUN["sector"] = 2; C.RUN["nem"] = {"fac": "ithar", "name": "Test Nem", "title": "First Admiral", "persona": "proud", "traits": [], "portrait": "nem_ithar_1", "g": "m", "weak": ["ion", "slow"], "revealed": ["ion"], "adapt": ["armor"], "clock": 2.5, "met": 1, "beaten": 1, "scars": 1, "scarKinds": [], "epithets": [], "epithet": null, "last_beat": null, "fed": 0, "riches": 0, "loot": 0, "held": null, "gloat": null, "honed": 0, "revived": false, "dead": false, "strike": false, "seen": {"lance": 2}, "signatures": []}
+	C.ensureNemesis(); rec("l1", {"a": C.RUN["nemAssign"], "n": C.RUN["nems"].size(), "fac": C.nemBattleCfg()["fac"]}); state("l1")
 	var a := OS.get_cmdline_user_args()
 	var fo = FileAccess.open(a[0], FileAccess.WRITE); fo.store_string("\n".join(OUT) + "\n"); fo.close()
 	print(OUT.size(), " records")

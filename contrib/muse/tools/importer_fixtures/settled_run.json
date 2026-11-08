@@ -73,8 +73,6 @@
   },
   "loaded": {
     "meta": {
-      "heirs": {},
-      "shadowPool": {},
       "v": 2,
       "renown": 393,
       "unlocked": {
@@ -131,6 +129,8 @@
       "mastery": {
         "sable": 67
       },
+      "heirs": {},
+      "shadowPool": {},
       "favour": {},
       "variants": {},
       "heatBest": {

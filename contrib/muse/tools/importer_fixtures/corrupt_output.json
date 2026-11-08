@@ -2,8 +2,6 @@
   "fixture": "corrupt_output",
   "loaded": {
     "meta": {
-      "heirs": {},
-      "shadowPool": {},
       "v": 2,
       "renown": 75,
       "unlocked": {},
@@ -21,6 +19,8 @@
       "tel": [],
       "updated": 1793200000000,
       "mastery": {},
+      "heirs": {},
+      "shadowPool": {},
       "favour": {},
       "variants": {},
       "heatBest": {},
@@ -476,7 +476,9 @@
           "station": "ring"
         }
       },
-      "v": 2
+      "v": 2,
+      "nemAssign": null,
+      "nems": null
     },
     "recovered": true
   },

@@ -629,8 +629,6 @@
   },
   "loaded": {
     "meta": {
-      "heirs": {},
-      "shadowPool": {},
       "v": 2,
       "renown": 130,
       "unlocked": {
@@ -664,6 +662,8 @@
         "kassar": 17,
         "vex": 6
       },
+      "heirs": {},
+      "shadowPool": {},
       "favour": {
         "iron": 3
       },
@@ -1254,7 +1254,9 @@
         ],
         "modOffer": null
       },
-      "v": 2
+      "v": 2,
+      "nemAssign": null,
+      "nems": null
     },
     "recovered": false
   }

@@ -53,8 +53,6 @@
   },
   "loaded": {
     "meta": {
-      "heirs": {},
-      "shadowPool": {},
       "v": 2,
       "renown": 95,
       "unlocked": {
@@ -87,6 +85,8 @@
         "vex": 11,
         "zzz_admiral": 40
       },
+      "heirs": {},
+      "shadowPool": {},
       "favour": {
         "iron": 4,
         "zzz_patron": 9

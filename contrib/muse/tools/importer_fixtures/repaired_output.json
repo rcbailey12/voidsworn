@@ -3,8 +3,6 @@
   "inputPassesSaneSave": true,
   "loaded": {
     "meta": {
-      "heirs": {},
-      "shadowPool": {},
       "v": 2,
       "renown": 85,
       "unlocked": {},
@@ -22,6 +20,8 @@
       "tel": [],
       "updated": 1793200000000,
       "mastery": {},
+      "heirs": {},
+      "shadowPool": {},
       "favour": {},
       "variants": {},
       "heatBest": {},
@@ -487,6 +487,8 @@
         }
       },
       "v": 2,
+      "nemAssign": null,
+      "nems": null,
       "_shipsDropped": 1,
       "_repairs": [
         "admiral zzz_admiral",

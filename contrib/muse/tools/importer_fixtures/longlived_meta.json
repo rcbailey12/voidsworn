@@ -119,8 +119,6 @@
   },
   "loaded": {
     "meta": {
-      "heirs": {},
-      "shadowPool": {},
       "v": 2,
       "renown": 460,
       "unlocked": {
@@ -211,6 +209,8 @@
         "grax": 12,
         "nekhet": 8
       },
+      "heirs": {},
+      "shadowPool": {},
       "favour": {
         "iron": 12,
         "storm": 7,

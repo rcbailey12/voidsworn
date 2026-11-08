@@ -428,8 +428,6 @@
   },
   "loaded": {
     "meta": {
-      "heirs": {},
-      "shadowPool": {},
       "v": 2,
       "renown": 0,
       "unlocked": {},
@@ -446,6 +444,8 @@
       "tel": [],
       "updated": 0,
       "mastery": {},
+      "heirs": {},
+      "shadowPool": {},
       "favour": {},
       "variants": {},
       "heatBest": {}
@@ -867,7 +867,9 @@
           "station": "spire"
         }
       },
-      "v": 2
+      "v": 2,
+      "nemAssign": null,
+      "nems": null
     },
     "recovered": false
   }

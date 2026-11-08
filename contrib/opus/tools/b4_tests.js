@@ -20,7 +20,9 @@ global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get B(){ return B; 
   setStance, canStance, wingStance, aiStance, killUnit, dmgMult, hitChance, genSector, META, RUN_FACTIONS, ADMIRALS, mapScreen, eventScreen, shipyardScreen, boonStep, NEM_FAC, nemFull, nemFeedLosses, startSideTurn, NEM_PERSONA, NEM_BEAT_WORD, nemBeatOf, ARC_VARIANT, HULL_VARIANTS, ACT, nemTargetBonus, nemDuelTarget, nemFoundMerge, landVolley, nemScar, nemPanel, W };
 `);
 const pickAdm = fac => Object.entries(T.ADMIRALS).find(([k, a]) => (a.fac || 'voidsworn') === fac)[0];
-const fresh = (fac, adm) => { T.META.unlocked = {}; T.newRun(adm || pickAdm(fac), fac); return T.RUN; };
+// R85 (#120): one commander per run is now a registry keyed by faction with a per-story-point assignment. For the B4 behaviour tests,
+// force the assignment to one faction across all three story points so a single commander persists through a run, exactly as before.
+const fresh = (fac, adm) => { T.META.unlocked = {}; T.newRun(adm || pickAdm(fac), fac); const N = T.ensureNemesis(); T.RUN.nemAssign = [N.fac, N.fac, N.fac]; T.RUN.nems = { [N.fac]: N }; T.RUN.nem = N; return T.RUN; };
 
 check('20 new events plus blue options on the old ones; every option of every event applies and writes a flag', () => {
   const bad = []; let n = 0;
@@ -114,7 +116,7 @@ check('Story alignment: R42 persona ids, gender g, last_beat words, signature ev
   for (const b of ['lance', 'torp', 'sq', 'ram', 'board', 'battery', 'evasive']) if (!T.NEM_BEAT_WORD[b]) ok = false;
   if (T.nemBeatOf({ kind: {} }, true) !== 'evasive' || T.nemBeatOf({ kind: { torp: 3 } }, false) !== 'torp') ok = false;
   const R = fresh('voidsworn'); const N = R.nem; N.fac = 'corsair'; N.clock = 3; T.nemClockAdd(1); if (!N.signatures.includes('raid')) ok = false;
-  const old = { fac: 'chorus', persona: 'ravenous', pronoun: 'it', beat: 'ion', scarList: ['big', 'ep:the Torn'], name: 'X', title: 'Y', traits: [], weak: [], revealed: [], adapt: [] }; R.nem = old; T.ensureNemesis();
+  const old = { fac: 'chorus', persona: 'ravenous', pronoun: 'it', beat: 'ion', scarList: ['big', 'ep:the Torn'], name: 'X', title: 'Y', traits: [], weak: [], revealed: [], adapt: [] }; R.nemAssign = null; R.nems = null; R.nem = old; T.ensureNemesis();
   return ok && old.persona === 'ravenous' && old.last_beat === 'battery' && old.g === 'n' && !('pronoun' in old) && old.scarKinds.join() === 'big' && old.epithets[0] === 'the Torn' && !('beat' in old) && T.nemBattleCfg().g === 'n'; });
 check('Story arcs: killing the Nemesis for good unlocks the faction arc variant (free, not for sale before), once', () => {
   const R = fresh('ithar'); const N = R.nem; N.fac = 'corsair'; const id = T.ARC_VARIANT.ithar; T.META.variants = {};
@@ -146,7 +148,7 @@ check('R42 identity: no strength and weakness that cancel (swift/slow, boarders/
   for (let i = 0; i < 120; i++) { const N = fresh(['voidsworn', 'corsair', 'ithar'][i % 3]).nem; const t = N.traits, w = N.weak;
     if ((t.includes('swift') && w.includes('slow')) || (t.includes('boarders') && w.includes('board')) || (t.includes('shielded') && w.includes('ion'))) return false; } return true; });
 check('R42 memory: beaten by lances, his next adaptation is the shield counter, so "it will not work twice" is true', () => {
-  const R = fresh('voidsworn'); const N = R.nem; N.fac = 'hegemony'; N.adapt = []; N.seen = { battery: 5 }; R.sector = 2; T.nemAfterBattle('win', false, { beat: 'lance' }); return T.nemAdapt() === 'shields'; });
+  const R = fresh('voidsworn'); const N = R.nem; N.fac = 'hegemony'; N.weak = ['flank', 'slow']; N.revealed = []; N.adapt = []; N.seen = { battery: 5 }; R.sector = 2; T.nemAfterBattle('win', false, { beat: 'lance' }); return T.nemAdapt() === 'shields'; });
 check('R42 narration: Chorus feeding says so; scar epithets follow the cause; Hegemony escorts hold an artillery line', () => {
   const R = fresh('voidsworn'); const N = R.nem; N.fac = 'chorus'; N.fed = 0; const line = T.nemFeedLosses(2); const fedOk = /feeds on your losses/.test(line) && /8%/.test(line);
   N.fac = 'corsair'; N.epithets = []; T.nemScar('fled'); const ep = N.epithet === 'the Uncaught';

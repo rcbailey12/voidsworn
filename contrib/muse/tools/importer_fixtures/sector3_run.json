@@ -627,8 +627,6 @@
   },
   "loaded": {
     "meta": {
-      "heirs": {},
-      "shadowPool": {},
       "v": 2,
       "renown": 305,
       "unlocked": {
@@ -662,6 +660,8 @@
       "mastery": {
         "matriarch": 26
       },
+      "heirs": {},
+      "shadowPool": {},
       "favour": {
         "hunger": 8
       },
@@ -1249,7 +1249,9 @@
           "station": "rig"
         }
       },
-      "v": 2
+      "v": 2,
+      "nemAssign": null,
+      "nems": null
     },
     "recovered": false
   }

@@ -18,9 +18,11 @@ function canonJ(v){
 toast=function(){}; show=function(){}; modal=function(){};
 const OUT=[];
 function rec(tag,x){ OUT.push(tag+' '+canonJ(x)); }
-function state(tag){ rec(tag,{nem:RUN.nem,credits:RUN.credits,fleet:RUN.fleet.map(s=>[s.uid,s.hp]),variants:META.variants,rng:RNG_S>>>0}); }
+function state(tag){ rec(tag,{nem:RUN.nem,nemAssign:RUN.nemAssign,nems:RUN.nems,credits:RUN.credits,fleet:RUN.fleet.map(s=>[s.uid,s.hp]),variants:META.variants,rng:RNG_S>>>0}); }
 function setup(seed,fac){ UID=1; rndSeed(seed); META=defaultMeta(); META.backfilled=1; META.wonFix41=1; SAVED_RUN=null; RUN=null; B=null; pickedAdmiral='vex'; pickedFaction='voidsworn'; runOpt.alt=false; runOpt.cmdAlt=false; runOpt.heat=[];
-  titleScreen(); ACT.newRunScreen(); ACT.startRun(); ACT.pickAspect(window._aspOffer[0]); ACT.closeModal(); RUN.foes[3]=fac; RUN.nem=newNemesis(); state('new '+fac); }
+  titleScreen(); ACT.newRunScreen(); ACT.startRun(); ACT.pickAspect(window._aspOffer[0]); ACT.closeModal(); RUN.foes[3]=fac; RUN.nemAssign=[fac,fac,fac]; RUN.nems={}; RUN.nem=newNemesis(fac); RUN.nems[fac]=RUN.nem; state('new '+fac); }
+function setupDraw(seed){ UID=1; rndSeed(seed); META=defaultMeta(); META.backfilled=1; META.wonFix41=1; SAVED_RUN=null; RUN=null; B=null; pickedAdmiral='vex'; pickedFaction='voidsworn'; runOpt.alt=false; runOpt.cmdAlt=false; runOpt.heat=[];
+  titleScreen(); ACT.newRunScreen(); ACT.startRun(); rec('draw0 '+seed,{a:RUN.nemAssign,n:Object.keys(RUN.nems).length}); ACT.pickAspect(window._aspOffer[0]); ACT.closeModal(); state('draw '+seed); }
 // 1 Deathless: a sector 2 kill scars him; the first sector 3 kill brings him back once; the second kills him and unlocks the arc hull
 setup(101,'deathless'); RUN.sector=2; rec('a1',nemAfterBattle('win',true,{cause:'melt'})); state('a1');
 RUN.sector=3; rec('a2',nemAfterBattle('win',true,{})); state('a2'); rec('a3',nemAfterBattle('win',true,{})); state('a3');
@@ -43,7 +45,20 @@ for(const [i,f] of ['voidsworn','hegemony','ithar','deathless','chorus','corsair
 // 8 R1 (Nov 1): a lost meeting teaches one weakness, a battle find counts as it, a full file says so; the clash check; a pre-persona save keeps its state
 setup(120,'hegemony'); rec('h1',nemAfterBattle('loss',false,{})); state('h1'); rec('h2',nemAfterBattle('retreat',false,{found:[RUN.nem.weak[1],'nonsense']})); state('h2'); rec('h3',nemAfterBattle('loss',false,{})); state('h3');
 setup(121,'chorus'); RUN.nem.revealed=['ion','torp']; RUN.nem.seen={lance:9,ion:9,torp:9,sq:9}; RUN.sector=2; rec('h4',nemAdapt()); rec('h5',nemAdapt(true)); state('h5');
-setup(122,'corsair'); RUN.nem={weak:['ion','slow'],revealed:['ion'],adapt:['riches'],clock:2,met:1,beaten:1,scars:1,dead:false,strike:false,seen:{},loot:500,riches:2,fed:3,honed:1,held:RUN.fleet[1],last_beat:'lance'}; rec('h6',ensureNemesis()); state('h6');
+setup(122,'corsair'); RUN.nemAssign=null; RUN.nems=null; RUN.nem={weak:['ion','slow'],revealed:['ion'],adapt:['riches'],clock:2,met:1,beaten:1,scars:1,dead:false,strike:false,seen:{},loot:500,riches:2,fed:3,honed:1,held:RUN.fleet[1],last_beat:'lance'}; rec('h6',ensureNemesis()); state('h6');
+// 9 R85 (#120): assignment drawn once, registry lazy, active resolution, mid-run migration
+setupDraw(210); rec('i0',{a:RUN.nemAssign,n:Object.keys(RUN.nems).length});
+ensureNemesis(); rec('i1',{a:RUN.nemAssign,n:Object.keys(RUN.nems).length});
+RUN.sector=2; ensureNemesis(); rec('i2',{a:RUN.nemAssign,n:Object.keys(RUN.nems).length});
+RUN.sector=3; ensureNemesis(); rec('i3',{a:RUN.nemAssign,n:Object.keys(RUN.nems).length});
+setupDraw(12); rec('j0',{a:RUN.nemAssign,n:Object.keys(RUN.nems).length});
+ensureNemesis(); rec('j1',{a:RUN.nemAssign,n:Object.keys(RUN.nems).length});
+RUN.sector=2; ensureNemesis(); rec('j2',{a:RUN.nemAssign,n:Object.keys(RUN.nems).length});
+RUN.sector=3; ensureNemesis(); rec('j3',{a:RUN.nemAssign,n:Object.keys(RUN.nems).length});
+setup(220,'hegemony'); RUN.nemAssign=['hegemony','corsair','ithar']; RUN.nems={hegemony:RUN.nem}; RUN.foes[3]='chorus';
+rec('k1',nemBattleCfg().fac); RUN.sector=2; rec('k2',nemBattleCfg().fac); RUN.sector=3; rec('k3',nemBattleCfg().fac);
+setup(230,'corsair'); RUN.nemAssign=null; RUN.nems=null; RUN.sector=2; RUN.nem={fac:'ithar',name:'Test Nem',title:'First Admiral',persona:'proud',traits:[],portrait:'nem_ithar_1',g:'m',weak:['ion','slow'],revealed:['ion'],adapt:['armor'],clock:2.5,met:1,beaten:1,scars:1,scarKinds:[],epithets:[],epithet:null,last_beat:null,fed:0,riches:0,loot:0,held:null,gloat:null,honed:0,revived:false,dead:false,strike:false,seen:{lance:2},signatures:[]};
+ensureNemesis(); rec('l1',{a:RUN.nemAssign,n:Object.keys(RUN.nems).length,fac:nemBattleCfg().fac}); state('l1');
 globalThis.__OUT=OUT;
 `);
 fs.writeFileSync(process.argv[2], __OUT.join('\n') + '\n');
