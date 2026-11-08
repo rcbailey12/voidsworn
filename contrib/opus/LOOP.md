@@ -6,8 +6,8 @@
 
 ## Lock
 
-Running: no
-Running since (UTC): 2026-11-08 00:05
+Running: yes
+Running since (UTC): 2026-11-08 04:20
 Last run finished (UTC): 2026-11-08 00:50
 
 If "Running: yes" and the start time is under 90 minutes old, another run is working: stop without changes. If it is older, the last run died: take over and say so in the log.
