@@ -26,9 +26,9 @@ Things learned on the PC (Nov 7):
 - On Windows its shell falls back to PowerShell 5.1, where `&&`, grep and tail fail. The runner sets SHELL to Git Bash.
 - Its shell commands stop after 2 minutes by default; parity takes about 8. The runner sets
   OPENCODE_EXPERIMENTAL_BASH_DEFAULT_TIMEOUT_MS to 30 minutes.
-- `opencode.json` here allows everything except `git commit` and `git push` (the runner does those). The dry run proves the push is refused.
+- `opencode.json` here allows everything except `git commit` and `git push` (the runner does those; caught anywhere in a command, and `git -c` too) and recursive deletes (`rm -r`, `rmdir`, `Remove-Item`; Ryan's rule: nothing is deleted on his PC). The dry run proves the push, a chained push and a delete outside the repo are refused.
 - OPENCODE_DISABLE_MODELS_FETCH keeps the model list and price table pinned to the installed version.
 
 Free dry run: `work_trial.bat dryrun` swaps in work/mock_llm.js, a stand-in model on port 8765 that drives a fixed script (look, write a
-file, standing checks, Godot parity, a refused push, report), and uses `git push --dry-run`. It costs nothing and checks the whole
+file, standing checks, Godot parity, a refused push, a refused chained push, a refused delete, report), and uses `git push --dry-run`. It costs nothing and checks the whole
 Windows path end to end.

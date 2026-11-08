@@ -14,6 +14,8 @@ const SCRIPT = [
   { cmd: 'node contrib/opus/tools/run_all_checks.js --fast 2>&1 | tail -n 8', d: 'standing checks' },
   { cmd: 'cmd.exe //c "tools\\pc\\parity.bat nopause" 2>&1 | grep -E "PASS|FAIL" | tail -n 12', d: 'rules and campaign parity' },
   { cmd: 'git push origin HEAD', d: 'push (the config must refuse this)' },
+  { cmd: 'cd . && git -c core.quotepath=off push origin HEAD', d: 'chained push (the config must refuse this too)' },
+  { cmd: 'rm -rf ../dryrun_delete_probe', d: 'delete outside the repo (the config must refuse this)' },
 ];
 setTimeout(() => { say('quit after 20 minutes'); process.exit(0); }, 20 * 60 * 1000);
 const server = http.createServer((req, res) => {
@@ -35,7 +37,7 @@ const server = http.createServer((req, res) => {
       delta = { role: 'assistant', tool_calls: [{ index: 0, id: 'call_' + step, type: 'function', function: { name: 'bash', arguments: JSON.stringify({ command: s.cmd, description: s.d }) } }] };
       fin = 'tool_calls';
     } else {
-      delta = { role: 'assistant', content: 'Dry run report: the stand-in model ran the fixed script (look around, write a file, standing checks, parity, a refused push). No game files were changed.' };
+      delta = { role: 'assistant', content: 'Dry run report: the stand-in model ran the fixed script (look around, write a file, standing checks, parity, a refused push, a refused chained push, a refused delete). No game files were changed.' };
       fin = 'stop';
       setTimeout(() => { say('script finished, quitting'); process.exit(0); }, 15000);
     }

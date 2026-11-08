@@ -10,6 +10,6 @@
     "edit": "allow",
     "webfetch": "allow",
     "external_directory": "allow",
-    "bash": { "*": "allow", "git push*": "deny", "git commit*": "deny" }
+    "bash": { "*": "allow", "*git push*": "deny", "*git commit*": "deny", "*git -c*": "deny", "*rm -r*": "deny", "*rm -fr*": "deny", "*rmdir*": "deny", "*Remove-Item*": "deny" }
   }
 }
