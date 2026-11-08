@@ -1,0 +1,38 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[sfx] 67 cues, 67 clip sets, loaded in 289 ms
+[world] loaded 41bddf4ec97a586e10167a412e5568edef996bc8b3bfa95dc42ecaa7cf2050ed 4096x2048 in 4106 ms (worker)
+[world] loaded 2a2fa2f080559a98a04c9727f34c5527bcbfc832723ce52c60b38b60c4692c59 4096x2048 in 4183 ms (worker)
+[world] loaded bfb4738e12f25bdd8a19c9fafdb46a36b2d27eb2035fbc28a774a3851dd563b0 1024x512 in 4173 ms (worker)
+[world] loaded 26c1181c33b392ff3d4d2783c3b165db5d7839e1f8a6d1ff2864b00c4ee86708 1024x512 in 4176 ms (worker)
+[world] loaded b351a636418c33bf0ffe40726a5994c46913188dc02a9a1908c00c8d7ae8e372 4096x2048 in 82 ms (worker)
+[world] loaded 29401d682e61fa49e4e6528678e4cd92ca91656b15e25bddc555da5525e9fa5f 1024x512 in 82 ms (worker)
+[world] loaded 914e4bdca78d949a26ea118bc365eef1a29b909d3237be3f7bb0657cafac18c1 1024x512 in 77 ms (worker)
+[scene_gate] base built in 12696 ms (ready after 12696 ms)
+[scene_gate] 1 base gpu 2.393 frame 6.559 cpu 1.198 dc 450+294 prims 3999394+2919203
+[sfx] 67 cues, 67 clip sets, loaded in 323 ms
+[scene_gate] res_1440 built in 10731 ms (ready after 10730 ms)
+[scene_gate] 1 res_1440 gpu 3.150 frame 7.072 cpu 1.338 dc 450+314 prims 4001212+2919625
+[sfx] 67 cues, 67 clip sets, loaded in 310 ms
+[scene_gate] res_2160 built in 10683 ms (ready after 10682 ms)
+[scene_gate] 1 res_2160 gpu 5.432 frame 7.168 cpu 1.401 dc 446+294 prims 3999529+2919251
+[sfx] 67 cues, 67 clip sets, loaded in 337 ms
+[scene_gate] res_2160 built in 10608 ms (ready after 10607 ms)
+[scene_gate] 2 res_2160 gpu 5.529 frame 7.952 cpu 1.584 dc 505+314 prims 4000095+2918797
+[sfx] 67 cues, 67 clip sets, loaded in 302 ms
+[scene_gate] res_1440 built in 10640 ms (ready after 10640 ms)
+[scene_gate] 2 res_1440 gpu 3.237 frame 7.622 cpu 1.514 dc 503+314 prims 3999840+2918781
+[sfx] 67 cues, 67 clip sets, loaded in 290 ms
+[scene_gate] base built in 10626 ms (ready after 10626 ms)
+[scene_gate] 2 base gpu 2.440 frame 7.792 cpu 1.526 dc 505+314 prims 3999663+2918715
+[sfx] 67 cues, 67 clip sets, loaded in 282 ms
+[scene_gate] base built in 10719 ms (ready after 10719 ms)
+[scene_gate] 3 base gpu 2.503 frame 7.579 cpu 1.474 dc 435+293 prims 4002194+2923043
+[sfx] 67 cues, 67 clip sets, loaded in 288 ms
+[scene_gate] res_1440 built in 10738 ms (ready after 10738 ms)
+[scene_gate] 3 res_1440 gpu 3.193 frame 6.775 cpu 1.290 dc 432+293 prims 4004427+2923145
+[sfx] 67 cues, 67 clip sets, loaded in 316 ms
+[scene_gate] res_2160 built in 10811 ms (ready after 10811 ms)
+[scene_gate] 3 res_2160 gpu 5.457 frame 7.112 cpu 1.373 dc 434+293 prims 4002357+2923027
+[scene_gate] DONE

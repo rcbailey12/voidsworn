@@ -1,16 +1,18 @@
-# Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 7, 2026, 18:30 CST)
+# Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 7, 2026, 21:50 CST)
 
-## 0. Status at Nov 7, 2026, 18:30 CST (read this first)
+## 0. Status at Nov 7, 2026, 21:50 CST (read this first)
 
-**Board:** Opus owns it again (Ryan, Nov 7, FINDINGS R110), from one lead chat. The hourly task stays off; why, and the restart test, are at the top of [contrib/opus/LOOP.md](contrib/opus/LOOP.md). LOOP.md holds the seats, queue, holds and what waits on Ryan.
+**Board:** Opus owns it (R110), now from the Claude Code Project "Embers of the Hollow Sun" (R114 pilot; it passed on the #207 thread, see LOOP.md). The hourly task stays off; why, and the restart test, are at the top of [contrib/opus/LOOP.md](contrib/opus/LOOP.md). LOOP.md holds the seats, queue, holds and what waits on Ryan.
 
 **Seats:** Codex down until Ryan says. ChatGPT down until about Nov 10. The #217 workhorse (OpenCode on the PC, Kimi primary, DeepSeek second) is decided but not set up; its two-arm trial runs first, pay-as-you-go, $30 cap. Grok joined the council as a free leg. Muse runs on its own.
+
+**#207 measured (R115):** the gate scene (20 ships, all six factions, A4 hulls uncapped, storm map, effects, HUD) runs 6.9 ms a frame (42% of 60 fps) on 2.4 ms of GPU at 1080p; 4K GPU 5.4 ms. The binder is CPU: the game's own per-frame work per ship on screen and for effects, fixable inside Godot (no engine probe). Frame p99 spikes of 14 to 53 ms come from effects spawns. Report: docs/shots/ship_pipeline/bench207/README.md. Opus proposes a 60% gate (10.0 ms); the PR waits for Ryan's pick.
 
 **Done Nov 7:** repo state audit accepted (contrib/muse/reviews/repo_state_2026_11/ on branch muse/repo-state-2026-11); PRs #203 to #205 merged by diff; #198 and #199 blocked (their done-whens target the retired R96 ceiling); R110 to R112 recorded; auto_pr title bug and the stale AGENTS.md opening fixed.
 
 **Rules that changed this week:** R111 retires the R96 triangle ceiling: triangles, draw calls and surfaces are reported, never capped; one measured scene gate in ms on the RTX 5080 is the only binding performance limit, its share set by Ryan after the #207 benchmark. Anything older that says "inside the R96 ceiling" means "report the cost".
 
-**Next:** #207 benchmark (Opus, PC), then the #217 runner and trial (job #26), then the #201 edits to #120 to #122 and the settlement triage. Full order in LOOP.md.
+**Next:** Ryan's gate share pick (then R116, merge the #207 PR, re-spec #198 and #199, file the per-ship CPU and effects-stall jobs), then the #217 runner and trial (job #26), then the #201 edits to #120 to #122 and the settlement triage. Full order in LOOP.md.
 
 ## 0b. Status at Nov 5, 2026, 22:30 CST (superseded by section 0 where they differ)
 

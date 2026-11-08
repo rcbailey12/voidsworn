@@ -3,9 +3,9 @@
 
     python3 contrib/opus/tools/scene_gate_report.py docs/shots/ship_pipeline/bench207
 
-Reads <dir>/run1.json, run2.json (every mode, 3 sessions each) and run3_res.json (base, res_1440, res_2160) when
-present, and the round 4 record (docs/shots/ship_pipeline/pyre_round4/gpu.json). Writes <dir>/summary.json and prints
-the tables. Every delta is paired: a mode against the base measured in the same session of the same launch, then the
+Reads <dir>/run2.json and run4.json (the gate view, engagement camera: every mode, 3 sessions each), run1.json (the
+turn-start camera), run3_res.json (base, res_1440, res_2160 at the engagement camera) and the round 4 record
+(docs/shots/ship_pipeline/pyre_round4/gpu.json). Writes <dir>/summary.json and <dir>/tables.md and prints them. Every delta is paired: a mode against the base measured in the same session of the same launch, then the
 median over sessions (the sessions alternate their order, so drift spreads evenly).
 """
 import json
@@ -97,44 +97,30 @@ def round4():
             "per_pass_or_shadow_timing": [k for k in keys if "shadow" in k or "pass" in k]}
 
 
-def main():
-    folder = sys.argv[1]
-    runs = {}
-    for n in ["run1", "run2"]:
-        p = os.path.join(folder, n + ".json")
-        if os.path.exists(p):
-            runs[n] = load(p)
-    s = summarise(runs)
-    res = {}
-    p3 = os.path.join(folder, "run3_res.json")
-    if os.path.exists(p3):
-        res = summarise({"run3": load(p3)})
-    scene = runs["run1"]["scene"]
+ORDER = ["base", "shadows_off", "msaa_2x", "msaa_off", "fx_off", "post_off", "hud_off", "world_off", "ships_off",
+         "half_res", "fleet_x2", "deaths", "floor", "res_1440", "res_2160"]
+LABEL = {"base": "Base (everything on)", "shadows_off": "Shadows off", "msaa_2x": "MSAA 2x", "msaa_off": "MSAA off",
+         "fx_off": "Effects off", "post_off": "Post off (SSAO, SSIL, glow)", "hud_off": "HUD off",
+         "world_off": "World off (planet, rocks, clouds)", "ships_off": "Ships hidden", "half_res": "3D at half size (quarter pixels)",
+         "fleet_x2": "Fleet x2 (a copy of every hull)", "deaths": "Three deaths during the frames", "floor": "Floor (board and sky only)",
+         "res_1440": "3D at 2560x1440", "res_2160": "3D at 3840x2160"}
+
+
+def derive(s, scene):
     b = s["base"]
     hull_tris = sum(x["hull_triangles"] for x in scene["ships"])
-    ship_tris = sum(x["hull_triangles"] for x in scene["ships"] if x["cls"] != "Squadron")
-    out = {"base": b, "modes": s, "res": res, "round4": round4(), "scene": {k: v for k, v in scene.items() if k != "ships"},
-           "ships": scene["ships"], "adapter": runs["run1"]["adapter"], "driver": runs["run1"].get("driver"),
-           "godot": runs["run1"]["godot"]["string"], "frames": runs["run1"]["measured_frames"],
-           "warmup": runs["run1"]["warmup_frames"]}
-    d = {}
-    d["frame_60_ms"] = FRAME_60
-    d["base_gpu_share_of_60"] = b["gpu_ms"] / FRAME_60
-    d["base_frame_share_of_60"] = b["frame_ms"] / FRAME_60
-    d["headroom_gpu_ms"] = FRAME_60 - b["gpu_ms"]
-    d["headroom_frame_ms"] = FRAME_60 - b["frame_ms"]
-    d["gpu_bound"] = (b["frame_ms"] - b["gpu_ms"]) / b["frame_ms"]
-    d["hull_triangles_scene"] = hull_tris
-    d["ship_triangles_scene"] = ship_tris
+    d = {"frame_60_ms": FRAME_60, "base_gpu_share_of_60": b["gpu_ms"] / FRAME_60,
+         "base_frame_share_of_60": b["frame_ms"] / FRAME_60, "headroom_gpu_ms": FRAME_60 - b["gpu_ms"],
+         "headroom_frame_ms": FRAME_60 - b["frame_ms"], "cpu_over_gpu_ms": b["frame_ms"] - b["gpu_ms"],
+         "hull_triangles_scene": hull_tris, "hull_copies": len(scene["ships"])}
     if "fleet_x2" in s:
         add = s["fleet_x2"]["delta_gpu_ms"]
-        d["fleet_x2_added_ms"] = add
-        d["ms_per_hull_copy"] = add / max(1, len(scene["ships"]))
-        d["ms_per_million_tris"] = add / (hull_tris / 1e6)
-        d["extra_hulls_in_headroom"] = d["headroom_gpu_ms"] / d["ms_per_hull_copy"] if d["ms_per_hull_copy"] > 0 else None
-        d["extra_million_tris_in_headroom"] = d["headroom_gpu_ms"] / d["ms_per_million_tris"] if d["ms_per_million_tris"] > 0 else None
+        d["fleet_x2_added_gpu_ms"] = add
+        d["fleet_x2_added_frame_ms"] = s["fleet_x2"]["delta_frame_ms"]
+        d["gpu_ms_per_hull_copy"] = add / max(1, len(scene["ships"]))
+        d["frame_ms_per_hull_copy"] = s["fleet_x2"]["delta_frame_ms"] / max(1, len(scene["ships"]))
+        d["gpu_ms_per_million_tris"] = add / (hull_tris / 1e6)
     if "half_res" in s:
-        # GPU ms = fixed + per-pixel cost x 3D pixels, from the full and quarter-pixel points
         q = s["half_res"]["gpu_ms"]
         per_px = (b["gpu_ms"] - q) / (PIX_1080 * 0.75)
         fixed = b["gpu_ms"] - per_px * PIX_1080
@@ -142,25 +128,62 @@ def main():
                             "pixel_share_at_1080": per_px * PIX_1080 / b["gpu_ms"],
                             "predicted_1440_ms": fixed + per_px * 2560 * 1440,
                             "predicted_2160_ms": fixed + per_px * 3840 * 2160}
-    out["derived"] = d
-    with open(os.path.join(folder, "summary.json"), "w") as f:
-        json.dump(out, f, indent=2)
-        f.write("\n")
-    order = ["base", "shadows_off", "msaa_2x", "msaa_off", "fx_off", "post_off", "hud_off", "world_off", "ships_off",
-             "half_res", "fleet_x2", "deaths", "floor"]
-    print("%-12s %7s %7s %7s %7s %6s %8s %6s %6s %10s %10s" % ("mode", "gpu", "dgpu", "frame", "p99", "cpu", "spread%",
-                                                          "dcV", "dcS", "primV", "primS"))
-    for m in order + [k for k in s if k not in order]:
+    return d
+
+
+def table(s, ref=None):
+    lines = ["| Run | GPU ms | GPU change | Frame median ms | Frame change | Frame p99 ms | Render CPU ms | Draw calls (view + shadow) | Triangles drawn (view + shadow) | Sessions, GPU spread |",
+             "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+    for m in ORDER:
         if m not in s:
             continue
         x = s[m]
-        print("%-12s %7.3f %7s %7.3f %7.3f %6.3f %8.1f %6.0f %6.0f %10.0f %10.0f" % (
-            m, x["gpu_ms"], "" if x["delta_gpu_ms"] is None else "%+.3f" % x["delta_gpu_ms"], x["frame_ms"],
-            x["frame_p99_ms"], x["render_cpu_ms"], x["gpu_spread_pct"], x["draw_calls_visible"], x["draw_calls_shadow"],
-            x["primitives_visible"], x["primitives_shadow"]))
-    for m, x in res.items():
-        print("res %-8s gpu %.3f d %s frame %.3f p99 %.3f" % (m, x["gpu_ms"], x["delta_gpu_ms"], x["frame_ms"], x["frame_p99_ms"]))
-    print(json.dumps(d, indent=1))
+        dg = "" if x["delta_gpu_ms"] is None else "%+.2f" % x["delta_gpu_ms"]
+        dfr = "" if x["delta_frame_ms"] is None else "%+.2f" % x["delta_frame_ms"]
+        lines.append("| %s | %.2f | %s | %.2f | %s | %.1f | %.2f | %d + %d | %.2fM + %.2fM | %d, %.1f%% |" % (
+            LABEL.get(m, m), x["gpu_ms"], dg, x["frame_ms"], dfr, x["frame_p99_ms"], x["render_cpu_ms"],
+            x["draw_calls_visible"], x["draw_calls_shadow"], x["primitives_visible"] / 1e6, x["primitives_shadow"] / 1e6,
+            x["sessions"], x["gpu_spread_pct"]))
+    return "\n".join(lines)
+
+
+def main():
+    folder = sys.argv[1]
+    sets = {"engagement": ["run2", "run4"], "turn": ["run1"], "res": ["run3_res"]}
+    out = {"round4": round4()}
+    for name, files in sets.items():
+        runs = {}
+        for n in files:
+            p = os.path.join(folder, n + ".json")
+            if os.path.exists(p):
+                runs[n] = load(p)
+        if not runs:
+            continue
+        s = summarise(runs)
+        first = runs[files[0]] if files[0] in runs else list(runs.values())[0]
+        out[name] = {"runs": sorted(runs), "modes": s, "camera": first.get("camera"),
+                     "adapter": first["adapter"], "driver": first.get("driver"), "godot": first["godot"]["string"],
+                     "frames": first["measured_frames"], "warmup": first["warmup_frames"]}
+        if "scene" in first:
+            out[name]["scene"] = {k: v for k, v in first["scene"].items() if k != "ships"}
+            out[name]["ships"] = first["scene"]["ships"]
+            if "base" in s:
+                out[name]["derived"] = derive(s, first["scene"])
+    with open(os.path.join(folder, "summary.json"), "w") as f:
+        json.dump(out, f, indent=2)
+        f.write("\n")
+    md = []
+    for name in ["engagement", "turn", "res"]:
+        if name in out:
+            md.append("### %s (%s)\n\n%s\n" % (name, ", ".join(out[name]["runs"]), table(out[name]["modes"])))
+    with open(os.path.join(folder, "tables.md"), "w") as f:
+        f.write("\n".join(md))
+    for name in ["engagement", "turn", "res"]:
+        if name in out:
+            print("==", name, out[name]["runs"])
+            print(table(out[name]["modes"]))
+            if "derived" in out[name]:
+                print(json.dumps(out[name]["derived"], indent=1))
 
 
 if __name__ == "__main__":
