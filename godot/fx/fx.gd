@@ -878,6 +878,14 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			baked.set_shader_parameter("intensity", 0.01)
 			mats.append(baked)
 	mats.append(DEATH.power_material(HULL.damage_material(StandardMaterial3D.new(), Transform3D.IDENTITY, {}, 1.0)))
+	# issue 220: the torpedo and rocket bodies (drive glow, star torpedo body, exhaust plume) and the weapon bursts' atlas
+	# shader: their first launch or hit compiled them mid-fight (a 53 ms frame with 3 surface pipelines at the gate scene)
+	mats.append_array([mat(WEAP.DRIVE, 1), mat(WEAP.STAR_BODY)])
+	var wburst: ShaderMaterial = DEATH.flipbook_material(self, "vent", "small")
+	wburst.shader = WEAP._weapon_shader(self)
+	wburst.set_shader_parameter("born", now)
+	wburst.set_shader_parameter("intensity", 0.01)
+	mats.append(wburst)
 	DEATH.tear_particles(self, at, Vector3.UP, 0.1, Vector3.ZERO)
 	for i in mats.size():
 		# Pin generated hull shaders until release, even after the temporary warmup meshes go away.
@@ -887,6 +895,12 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		mi.material_override = mats[i]
 		mi.position = Vector3((i % 4 - 1.5) * 2.5, (i / 4 - 1.0) * 2.5, 0) * unit
 		tmp.add_child(mi)
+	# the torpedo and rocket casings, in their own vertex format (position, normal, colour) and lit material
+	for rocket in [false, true]:
+		var cm := MeshInstance3D.new()
+		cm.mesh = WEAP._casing(self, rocket)
+		cm.position = Vector3(3.5 if rocket else -3.5, 3.0, 0) * unit
+		tmp.add_child(cm)
 	# a breach interior (its own vertex format: position, normal, colour)
 	var harr = []
 	harr.resize(Mesh.ARRAY_MAX)

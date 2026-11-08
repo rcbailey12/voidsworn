@@ -523,12 +523,21 @@ static func precompute(fx, s, cause := "blast") -> void:
 		for si in mi.mesh.get_surface_count():
 			var mat: Material = mi.get_active_material(si)
 			surfs.append({"arrays": s.current_arrays(mi, si), "xf": xf, "mat": mat, "fmt": (mi.mesh as ArrayMesh).surface_get_format(si) if mi.mesh is ArrayMesh else 0})
-	var job = {"seeds": seeds, "surfs": surfs, "cause": cause, "organic": s.faction == "chorus", "out": null}
+	var job = {"seeds": seeds, "surfs": surfs, "cause": cause, "organic": s.faction == "chorus", "out": null,
+		"mesh_on_worker": DisplayServer.get_name() != "headless"}
 	s.set_meta("cut_job", job)
 	_init_dirs()
 	var tid = WorkerThreadPool.add_task(func() -> void:
 		var pieces := _cut(job)
 		_piece_hulls(pieces)
+		# issue 220: the pieces' geometry is uploaded here on the worker (as the hull rebuild's meshes are, fx_breach
+		# compute): on the main thread it cost 20 to 85 ms frames in battle, once per ship and after every cut refresh.
+		# Materials stay on the main thread (_prebuild). A headless run builds it all in _prebuild instead.
+		if bool(job["mesh_on_worker"]):
+			var geo: Array = []
+			for pc in pieces:
+				geo.append(_piece_geometry(pc))
+			job["geo"] = geo
 		job["out"] = pieces)
 	s.set_meta("cut_task", tid)
 	fx.later(fx.now + 0.5, func l_prebuild() -> void: _prebuild(fx, s))
@@ -555,8 +564,11 @@ static func _prebuild(fx, s) -> void:
 	var job: Dictionary = s.get_meta("cut_job", {})
 	var t0 := Time.get_ticks_usec()
 	var meshes: Array = []
-	for pc in job.get("out", []) if job.get("out") != null else []:
-		meshes.append(_piece_mesh(pc))
+	var geo: Array = job.get("geo", [])
+	var pieces: Array = job.get("out", []) if job.get("out") != null else []
+	for i in pieces.size():
+		var pc: Dictionary = pieces[i]
+		meshes.append(_piece_materials(geo[i], pc) if i < geo.size() else _piece_mesh(pc))
 		if pc.has("hull"): pc["shape"] = safe_convex(pc["hull"])
 	job["meshes"] = meshes
 	fx.pend("piece_meshes", t0)
@@ -565,20 +577,35 @@ static func _prebuild(fx, s) -> void:
 # Hull attributes keep their vertex format; private damage materials add burnt backs.
 # The opaque slag surface is built here with the piece, before death when possible.
 static func _piece_mesh(pc: Dictionary, weathered := false) -> ArrayMesh:
+	return _piece_materials(_piece_geometry(pc), pc, weathered)
+
+
+# The piece's surfaces, no materials (safe on a worker thread: no shaders or static caches are touched).
+static func _piece_geometry(pc: Dictionary) -> ArrayMesh:
 	var am = ArrayMesh.new()
 	for sd in pc["surfs"]:
 		am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, sd["arrays"], [], {}, int(sd.get("fmt", 0)) & Mesh.ARRAY_FLAG_COMPRESS_ATTRIBUTES)
+	if pc.has("cap"):
+		am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, pc["cap"])
+	return am
+
+
+# The piece's materials, in surface order (main thread).
+static func _piece_materials(am: ArrayMesh, pc: Dictionary, weathered := false) -> ArrayMesh:
+	var si := 0
+	for sd in pc["surfs"]:
 		var hull_mat := HULL.damage_material(sd["mat"], Transform3D.IDENTITY, {}, float(pc.get("section_scale", 1.0)), bool(pc.get("organic", false)))
 		hull_mat.set_shader_parameter("fx_power", 0.0)
 		hull_mat.set_shader_parameter("fx_weather", 0.8 if weathered else 0.0)
-		am.surface_set_material(am.get_surface_count() - 1, hull_mat)
+		if si < am.get_surface_count():
+			am.surface_set_material(si, hull_mat)
+		si += 1
 	if pc.has("cap"):
 		var mat := ShaderMaterial.new()
 		mat.shader = HULL.shared_shader(SLAG)
 		mat.set_shader_parameter("organic", pc.get("organic", false))
 		mat.set_shader_parameter("section_scale", pc.get("section_scale", 1.0))
-		am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, pc["cap"])
-		am.surface_set_material(am.get_surface_count() - 1, mat)
+		am.surface_set_material(mini(si, am.get_surface_count() - 1), mat)
 		pc["cap_mat"] = mat
 	return am
 
@@ -1198,7 +1225,8 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		if (pc["surfs"] as Array).is_empty():
 			continue
 		var pre: Array = job.get("meshes", [])
-		var am: ArrayMesh = pre[i] if i < pre.size() else _piece_mesh(pc)
+		var geo: Array = job.get("geo", [])
+		var am: ArrayMesh = pre[i] if i < pre.size() else (_piece_materials(geo[i], pc) if i < geo.size() else _piece_mesh(pc))
 		var cen: Vector3 = pc["cen"] if pc.has("cen") else Vector3.ZERO
 		if not pc.has("cen"):
 			for p in (pc["pts"] as PackedVector3Array):

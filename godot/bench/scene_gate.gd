@@ -80,6 +80,7 @@ var fac_of := {}
 var shadow_scan := 0
 var kill_shadows := false
 var build_ms := 0.0
+var vol_looks: Array = []   # --trace: the volleys fired this frame (faction:kind:weapon)
 
 
 func _ready() -> void:
@@ -142,6 +143,7 @@ func _volley() -> void:
 		shots.append(true)
 		hits.append({"shield": 8 if shield else 0, "hull": 0 if shield else 9, "section": ["prow", "mid", "eng"][rng.randi() % 3], "crit": false})
 	if fx.ships.has(att) and fx.ships.has(tgt) and not fx.ships[att].dead and not fx.ships[tgt].dead:
+		vol_looks.append("%s:%s:%s%s" % [fac_of.get(att, "?"), lk[0], lk[1], ":shield" if shield else ""])
 		fx.volley(att, str(lk[0]), tgt, {"weapon_id": str(lk[1]), "shots": shots, "hits": hits})
 
 
@@ -354,6 +356,7 @@ func _mode(mode: String, s: int) -> Dictionary:
 	var obj0 := int(Performance.get_monitor(Performance.OBJECT_COUNT))
 	if b.gfx != null:
 		b.gfx.prof_take()
+	vol_looks.clear()
 	for i in n:
 		if mode == "deaths" and b.gfx != null:
 			for d in deaths.size():
@@ -393,9 +396,10 @@ func _mode(mode: String, s: int) -> Dictionary:
 			tr.append({"i": i, "frame": snappedf(cols["frame"][-1], 0.001), "proc": snappedf(cols["proc"][-1], 0.001),
 				"phys": snappedf(Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0, 0.001),
 				"rcpu": snappedf(cols["cpu"][-1], 0.001), "gpu": snappedf(cols["gpu"][-1], 0.001), "fx": pf, "pipes": dp,
-				"volleys": vol - vol0, "objects": obj - obj0, "death": mode == "deaths" and i in [int(n * 0.2), int(n * 0.45), int(n * 0.7)]})
+				"volleys": vol - vol0, "looks": vol_looks.duplicate(), "objects": obj - obj0, "death": mode == "deaths" and i in [int(n * 0.2), int(n * 0.45), int(n * 0.7)]})
 			vol0 = vol
 			obj0 = obj
+		vol_looks.clear()
 	var row := {"mode": mode, "frames": n, "warmup": warm, "seconds": (Time.get_ticks_usec() - t0) / 1e6,
 		"viewport": [vp.get_visible_rect().size.x, vp.get_visible_rect().size.y], "msaa_3d": vp.msaa_3d,
 		"scaling_3d": vp.scaling_3d_scale, "volleys": b.gfx.stats.get("volleys", 0) if b.gfx != null else 0,

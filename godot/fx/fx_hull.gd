@@ -150,6 +150,8 @@ static func shared_shader(code: String) -> Shader:
 
 static func clear_shader_cache() -> void:
 	_shader_refs.clear()
+	_dmg_code.clear()
+	_uniform_names.clear()
 
 
 static func damage_material(src: Material, frame: Transform3D, mouths: Dictionary, L: float, organic := false) -> ShaderMaterial:
@@ -158,7 +160,44 @@ static func damage_material(src: Material, frame: Transform3D, mouths: Dictionar
 	if src == null:
 		src = StandardMaterial3D.new()
 	var base: ShaderMaterial = src if src is ShaderMaterial else _exterior(src)
-	var code: String = base.shader.code
+	var mat := ShaderMaterial.new()
+	mat.shader = shared_shader(_damage_code(base.shader.code))
+	for param in _uniforms_of(base.shader):
+		var value = base.get_shader_parameter(param)
+		if value != null:
+			mat.set_shader_parameter(param, value)
+	mat.set_meta("fx_hull_source", src)
+	mat.set_shader_parameter("fx_hull_frame", frame)
+	mat.set_shader_parameter("fx_organic", organic)
+	mat.set_shader_parameter("fx_burnt_cell", Vector3.ONE * maxf(L * 0.05, 0.001))
+	mat.set_shader_parameter("fx_mouth_count", int(mouths.get("count", 0)))
+	for key in ["mouths", "axes", "tangents", "shapes", "tears"]:
+		if mouths.has(key):
+			mat.set_shader_parameter("fx_" + key, mouths[key])
+	return mat
+
+
+# Issue 220: the damage shader's source is a pure function of the hull shader's source, so it is worked out once per
+# hull shader and kept (the regex and the character walk in _inject cost about a millisecond per surface, and every
+# hull rebuild, death and death piece made one per surface on the main thread). Same code out, same shader.
+static var _dmg_code := {}
+static var _uniform_names := {}
+
+
+static func _uniforms_of(shader: Shader) -> Array:
+	var key := shader.code
+	if not _uniform_names.has(key):
+		var names: Array = []
+		for param in shader.get_shader_uniform_list():
+			names.append(param["name"])
+		_uniform_names[key] = names
+	return _uniform_names[key]
+
+
+static func _damage_code(source: String) -> String:
+	if _dmg_code.has(source):
+		return _dmg_code[source]
+	var code: String = source
 	var cull := RegEx.new()
 	cull.compile("cull_(back|front|disabled)")
 	code = cull.sub(code, "cull_disabled", true)
@@ -199,21 +238,8 @@ if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
 	EMISSION = max(EMISSION, structure);
 }
 """)
-	var mat := ShaderMaterial.new()
-	mat.shader = shared_shader(code)
-	for param in base.shader.get_shader_uniform_list():
-		var value = base.get_shader_parameter(param["name"])
-		if value != null:
-			mat.set_shader_parameter(param["name"], value)
-	mat.set_meta("fx_hull_source", src)
-	mat.set_shader_parameter("fx_hull_frame", frame)
-	mat.set_shader_parameter("fx_organic", organic)
-	mat.set_shader_parameter("fx_burnt_cell", Vector3.ONE * maxf(L * 0.05, 0.001))
-	mat.set_shader_parameter("fx_mouth_count", int(mouths.get("count", 0)))
-	for key in ["mouths", "axes", "tangents", "shapes", "tears"]:
-		if mouths.has(key):
-			mat.set_shader_parameter("fx_" + key, mouths[key])
-	return mat
+	_dmg_code[source] = code
+	return code
 
 
 static func _exterior(src: Material) -> ShaderMaterial:
