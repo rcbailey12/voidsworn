@@ -1,5 +1,5 @@
 @echo off
-rem Issue 207, part 2: the same scene with the 3D drawn at 2560x1440 and 3840x2160 pixel counts (Ryan's 1440p and 4K
+rem Issue 207, res part only (bench207_scene_gate.bat already runs it): base against the 3D drawn at 2560x1440 and 3840x2160
 rem screens), paired with base, 3 sessions. Runs after bench207_scene_gate.bat on its clone (updated to the branch tip).
 rem Output: Downloads\voidsworn_test\opus207\out\run3_res\ and run3_res_log.txt.
 setlocal
