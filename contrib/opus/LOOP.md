@@ -16,7 +16,7 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 
 - Opus: board owner, reviewer, merges, visual calls, issue writing, messages to Ryan; builds the opus jobs below. Sonnet subagents for routine checks, logs, staging.
 - Codex: DOWN until Ryan says. The PC watcher (codex_board.ps1) still queues any unblocked `codex` issue; those runs die on the usage limit. Keep every codex issue `blocked` until a live seat takes it.
-- Workhorse (#217, decided Nov 7): OpenCode on the PC, Kimi primary, DeepSeek second. Runner BUILT and dry-run on the PC (R117, PR #222). NOT LIVE: waits on Ryan's top-ups and WORKHORSE_SETUP.bat, then the #224 guard (merged, copied to the PC, free dry run passes, R119), then WORKHORSE_TRIAL.bat (DeepSeek arm, then Kimi arm, on #26). Branch pattern `work/issue-<n>-<arm>` (auto_pr opens the PR). Runs land in Downloads\voidsworn_test\work217\issue-26-<arm>\<date_time>\out (latest.txt names the newest); summary work217\trial_summary.txt.
+- Workhorse (#217, decided Nov 7): OpenCode on the PC, Kimi primary, DeepSeek second. Runner BUILT and dry-run on the PC (R117, PR #222). Setup ALL PASS Nov 8 06:30 CST; the TRIAL IS RUNNING (DeepSeek arm, then Kimi; Moonshot still Tier0, see the log). It runs on #222's config: the board left the live run alone. The #224 guard goes in after the trial and before any other workhorse run (merged, copied to the PC, free dry run passes, R119) (DeepSeek arm, then Kimi arm, on #26). Branch pattern `work/issue-<n>-<arm>` (auto_pr opens the PR). Runs land in Downloads\voidsworn_test\work217\issue-26-<arm>\<date_time>\out (latest.txt names the newest); summary work217\trial_summary.txt.
 - Muse: runs on its own watcher (muse label). Council seats: Rey, DeepSeek, Qwen, Flash (ideation only), Grok (new free leg, Nov 7). ChatGPT down until about Nov 10; Argon blocked since Nov 5. For an independent checker leg on an Opus merge while ChatGPT is down, ask Ryan in the main chat and Rey runs it.
 
 ## How a run works
@@ -48,7 +48,7 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 ## Queue (Opus's order, Nov 7 night)
 
 Opus jobs, in order (Nov 7 night, after #207):
-1. #217: once #224 is merged and Ryan has topped up, copy tools/pc/work to Downloads\voidsworn_test\work217\tools\work, queue `work_trial.bat dryrun nopause` (free), check both arms refuse the chained push and the delete, then tell Ryan to double-click WORKHORSE_TRIAL.bat. Then the trial review and results note.
+1. #217 trial (running since 06:30 CST): review both PRs by diff when they land (work/issue-26-deepseek, work/issue-26-kimi), merge the better, close the other, write the results note. If the Kimi arm stalls on 429s, Ryan adds $5 and only `work_issue.bat 26 kimi` reruns. Then, before any further workhorse run: #224 merged, tools/pc/work copied to Downloads\voidsworn_test\work217\tools\work, free dry run (`work_trial.bat dryrun nopause`) refuses the chained push and the delete.
 2. #220 DONE (merged Nov 8). Next PC thread: #221 (propose it to Ryan first; big thread).
 3. Apply #201 edits G2 to G6 to #120, #121, #122 (G1 withdrawn) before any of them is released.
 4. Triage settlements into named jobs with fixed top blocks: #208 (also the only home of the station assert fixes), #210, #212, #213, #215. Writing only; ceiling-dependent builds now follow R116.
@@ -74,7 +74,7 @@ Coding seat queue (released one at a time to the workhorse once #217 picks a win
 ## Waiting on Ryan
 
 - #224: say "merge" (or ask Rey to check it). Pick: merge; it only adds refusals.
-- #217: top up about $10 on Moonshot (platform.kimi.ai) and $2 on DeepSeek (platform.deepseek.com), make one API key on each, double-click WORKHORSE_SETUP.bat (paste the keys), then tell Opus. Hold WORKHORSE_TRIAL.bat until Opus has run the guarded dry run. No OpenRouter (R114).
+- #217: nothing now; the trial is running. Only if the Kimi arm stalls: add $5 on Moonshot.
 - #221: OK to start a PC thread for the per-ship CPU trim (not urgent; the scene sits at 6.0 ms of the 12.5 ms gate).
 - S15 sound listen pass: one sitting, best once the #211 probe clips exist.
 - Round 7 pick and station look: when #198 and #199 land.
@@ -112,7 +112,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
-- 2026-11-08 12:50 board thread: #223 reviewed by diff (traces recounted, stills checked) and merged, #220 closed. #222 reviewed after the fact: guard gap found, PR #224 opened and held. R119. No PRs from the #217 trial yet.
+- 2026-11-08 12:50 UTC board thread: #223 reviewed by diff (traces recounted, stills checked) and merged, #220 closed. #222 reviewed after the fact: guard gap found, PR #224 opened and held; the live trial keeps #222's config (no change mid-run). R119. No trial branches yet.
 - 2026-11-08 06:35 CST #217 thread: Ryan topped up (DeepSeek $2; Moonshot $5 paid plus the $5 voucher, so still Tier0 by the docs, his call to try it before adding $5) and ran WORKHORSE_SETUP.bat: OpenCode, both keys, both balance endpoints, both models READY through OpenCode, all PASS. WORKHORSE_TRIAL.bat started 06:30, DeepSeek arm first. If the Kimi arm stalls on 429s (Tier0: 3 requests a minute, 1.5M tokens a day), Ryan adds $5 and only the Kimi arm reruns (work_issue.bat 26 kimi). Ryan is moving the board to a single Board thread; the trial PRs and the results note go to it. #222 (the runner) was merged by its own author without a checker leg: the Board thread reviews it after the fact.
 - 2026-11-08 05:25 project thread (#220): traced the gate scene per frame on the 5080, named the stall (death piece meshes on the main thread), fixed it and two smaller ones, before and after gate runs and stills; PR #223 open, R118.
 - 2026-11-08 05:10 project thread (#217): runner built (work_setup, work_trial, work_issue), three free dry runs on the PC (stand-in model) pass both arms end to end; fixes for the PowerShell shell fallback and the 2 minute command limit. PR #222 merged, R117, #26 relabelled opus. Waiting on Ryan's top-ups and two double-clicks.

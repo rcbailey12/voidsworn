@@ -14,7 +14,7 @@
 
 **#220 stalls (R118):** fixed in PR #223, merged Nov 8 by the board thread after a diff review (R119): death piece meshes moved off the main thread plus two smaller fixes; gate scene frame p99 now 9.3 to 10.9 ms in every session (was up to 53), no visible change.
 
-**Nov 8 (R119):** #222 reviewed after the fact; its agent guard had a gap (chained pushes, deletes anywhere on the PC), fixed in PR #224, which must be merged, copied to the PC and dry-run before the real trial.
+**Nov 8 (R119):** #222 reviewed after the fact; its agent guard had a gap (chained pushes, deletes anywhere on the PC), fixed in PR #224, which goes in after the running trial and before any other workhorse run. The #217 trial started 06:30 CST (setup all PASS).
 
 **Next:** #224 on Ryan's word, #221 (per-ship per-frame CPU work), then the #217 trial review when Ryan has run it (job #26), then the #201 edits to #120 to #122 and the settlement triage. Full order in LOOP.md.
 
