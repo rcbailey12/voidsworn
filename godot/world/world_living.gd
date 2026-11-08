@@ -35,6 +35,8 @@ var clock := 0.0
 
 # R82: keep the ends violet even under a warm faction sky.
 const NEBULA_FACTION_END_WEIGHT := 0.25
+# Issue 232 E17/NB5 sheet: the live weight, overridable for the three-weight capture (default is the shipped 0.25).
+var faction_end_weight := float(OS.get_environment("VS_NEB_W")) if OS.get_environment("VS_NEB_W") != "" else NEBULA_FACTION_END_WEIGHT
 
 const GAS_SHADER := """
 shader_type spatial;
@@ -338,14 +340,14 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 		# Match value before the hue blend, so warm skies cannot make brown gas.
 		faction /= maxf(faction.length(), 0.001)
 		var end_tint := faction
-		m.set_shader_parameter("c_dark", Vector3(0.006, 0.002, 0.014).lerp(end_tint * Vector3(0.006, 0.002, 0.014).length(), NEBULA_FACTION_END_WEIGHT))
+		m.set_shader_parameter("c_dark", Vector3(0.006, 0.002, 0.014).lerp(end_tint * Vector3(0.006, 0.002, 0.014).length(), faction_end_weight))
 		m.set_shader_parameter("c_shadow", Vector3(0.055, 0.012, 0.14))
 		var body := violet.lerp(faction * violet.length(), 0.5)
 		# R82 fixes the violet family: a warm sky may shift it, never neutralise it.
 		body.y = minf(body.y, body.z * 0.24)
 		body.x = minf(body.x, body.z * 0.60)
 		m.set_shader_parameter("c_lit", body * 0.65)
-		m.set_shader_parameter("c_glow", Vector3(0.88, 0.72, 1.0).lerp(end_tint * Vector3(0.88, 0.72, 1.0).length(), NEBULA_FACTION_END_WEIGHT))
+		m.set_shader_parameter("c_glow", Vector3(0.88, 0.72, 1.0).lerp(end_tint * Vector3(0.88, 0.72, 1.0).length(), faction_end_weight))
 		m.set_shader_parameter("dens", 0.5)
 	# drawn before the board's own fills, so a move hex inside the gas still shows on top
 	m.render_priority = -5

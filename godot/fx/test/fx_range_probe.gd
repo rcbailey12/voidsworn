@@ -118,6 +118,14 @@ func _run() -> void:
 	var calm := _env("PROBE_CALM", "") == "1"
 	var qual := _env("PROBE_QUALITY", "max")
 	fx.setup({"camera": cam, "quality": qual, "reduce_flashing": calm, "shake": 1.0, "unit": 1.0})
+	# Issue 232 E31: one alternate weapon-timing set without touching the shipped pins (PROBE_TIMING=ripple=0.12,...)
+	var timing_env := _env("PROBE_TIMING", "")
+	if timing_env != "":
+		for pair in timing_env.split(","):
+			var kv := pair.split("=")
+			if kv.size() == 2:
+				fx.timing[str(kv[0])] = float(kv[1])
+		print("[range] timing %s" % str(fx.timing))
 	print("[range] renderer=%s adapter=%s res=%dx%d calm=%s" % [RenderingServer.get_current_rendering_method(),
 		RenderingServer.get_video_adapter_name(), W, H, str(calm)])
 	_home()
