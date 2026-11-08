@@ -1,6 +1,6 @@
 # Board loop state (LOOP.md)
 
-**Board owner (Nov 7 2026, 19:20 CST, R114): Opus in the Claude Code Project "Embers of the Hollow Sun" (pilot). The Nov 7 lead chat has handed over and only reads.** If the pilot fails, the board goes back to a lead chat. Any other Claude chat on this repo works one named area or only reads.
+**Board owner (Nov 8 2026, R119): the Board thread in the Claude Code Project "Embers of the Hollow Sun"; Ryan, Nov 8 06:39 CST: "you're the owner now" (merge calls are the Board thread's; worker threads never merge their own PRs).** Earlier: (Nov 7 2026, 19:20 CST, R114) Opus in the project (pilot). The Nov 7 lead chat has handed over and only reads.** If the pilot fails, the board goes back to a lead chat. Any other Claude chat on this repo works one named area or only reads.
 
 **The hourly scheduled task "Voidsworn board loop" is DELETED (Ryan, Nov 7 22:06 CST, after the Projects pilot passed, R114).** The board is run from the Claude Code Project. If an unattended loop is ever wanted again, the choice is an event-driven run (fires when a PR opens), not an hourly poll.
 
@@ -16,7 +16,7 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 
 - Opus: board owner, reviewer, merges, visual calls, issue writing, messages to Ryan; builds the opus jobs below. Sonnet subagents for routine checks, logs, staging.
 - Codex: DOWN until Ryan says. The PC watcher (codex_board.ps1) still queues any unblocked `codex` issue; those runs die on the usage limit. Keep every codex issue `blocked` until a live seat takes it.
-- Workhorse (#217, decided Nov 7): OpenCode on the PC, Kimi primary, DeepSeek second. Runner BUILT and dry-run on the PC (R117, PR #222). Setup ALL PASS Nov 8 06:30 CST; the TRIAL IS RUNNING (DeepSeek arm, then Kimi; Moonshot still Tier0, see the log). It runs on #222's config: the board left the live run alone. The #224 guard goes in after the trial and before any other workhorse run (merged, copied to the PC, free dry run passes, R119) (DeepSeek arm, then Kimi arm, on #26). Branch pattern `work/issue-<n>-<arm>` (auto_pr opens the PR). Runs land in Downloads\voidsworn_test\work217\issue-26-<arm>\<date_time>\out (latest.txt names the newest); summary work217\trial_summary.txt.
+- Workhorse (#217, decided Nov 7): OpenCode on the PC, Kimi primary, DeepSeek second. Runner BUILT and dry-run on the PC (R117, PR #222). Setup ALL PASS Nov 8 06:30 CST; the TRIAL IS RUNNING (DeepSeek arm, then Kimi; Moonshot still Tier0, see the log). It runs on #222's config: the board left the live run alone. The #224 guard is merged; before any other workhorse run it is copied to the PC and the free dry run must pass (R119) (DeepSeek arm, then Kimi arm, on #26). Branch pattern `work/issue-<n>-<arm>` (auto_pr opens the PR). Runs land in Downloads\voidsworn_test\work217\issue-26-<arm>\<date_time>\out (latest.txt names the newest); summary work217\trial_summary.txt.
 - Muse: runs on its own watcher (muse label). Council seats: Rey, DeepSeek, Qwen, Flash (ideation only), Grok (new free leg, Nov 7). ChatGPT down until about Nov 10; Argon blocked since Nov 5. For an independent checker leg on an Opus merge while ChatGPT is down, ask Ryan in the main chat and Rey runs it.
 
 ## How a run works
@@ -32,7 +32,7 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 
 ## Current state (2026-11-08 12:50 UTC)
 
-- Board thread (Nov 8 morning, R119): Ryan set it up as the board owner in the project; worker threads never merge their own PRs. #223 reviewed by diff and MERGED (4b6c365), #220 closed. #222 reviewed after the fact: sound, one gap (the agent could push through a chained or `git -c` command and could delete anywhere on the PC); fix in PR #224, held (see Holds).
+- Board thread (Nov 8 morning, R119): Ryan set it up as the board owner in the project; worker threads never merge their own PRs. #223 reviewed by diff and MERGED (4b6c365), #220 closed. #222 reviewed after the fact: sound, one gap (the agent could push through a chained or `git -c` command and could delete anywhere on the PC); fix PR #224 merged on Ryan's word ("you're the owner now").
 
 - #220 DONE (project thread, Nov 7 night; merged Nov 8): R118. The stalls were the death pieces' meshes built on the main thread when a cut finished (20 to 85 ms), the damage shader source remade per surface (5 to 11 ms) and the first torpedo's shader compiles (53 to 59 ms). After: frame p99 9.3 to 10.9 ms in all 12 base and deaths sessions, 0 of 8,640 frames over 16.7 ms; median 6.0 ms at 1080p, 4K GPU 5.45 ms (gate 12.5). Stills before and after match within run-to-run noise. Report docs/shots/ship_pipeline/bench207/stalls/README.md. PC output Downloads\voidsworn_test\opus220\out. Flag for #210: a pale square effect sprite in battle (on main too).
 
@@ -48,7 +48,7 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 ## Queue (Opus's order, Nov 7 night)
 
 Opus jobs, in order (Nov 7 night, after #207):
-1. #217 trial (running since 06:30 CST): review both PRs by diff when they land (work/issue-26-deepseek, work/issue-26-kimi), merge the better, close the other, write the results note. If the Kimi arm stalls on 429s, Ryan adds $5 and only `work_issue.bat 26 kimi` reruns. Then, before any further workhorse run: #224 merged, tools/pc/work copied to Downloads\voidsworn_test\work217\tools\work, free dry run (`work_trial.bat dryrun nopause`) refuses the chained push and the delete.
+1. #217 trial (running since 06:30 CST): review both PRs by diff when they land (work/issue-26-deepseek, work/issue-26-kimi), merge the better, close the other, write the results note. If the Kimi arm stalls on 429s, Ryan adds $5 and only `work_issue.bat 26 kimi` reruns. Then, before any further workhorse run: tools/pc/work (with #224) copied to Downloads\voidsworn_test\work217\tools\work, free dry run (`work_trial.bat dryrun nopause`) refuses the chained push and the delete.
 2. #220 DONE (merged Nov 8). Next PC thread: #221 (propose it to Ryan first; big thread).
 3. Apply #201 edits G2 to G6 to #120, #121, #122 (G1 withdrawn) before any of them is released.
 4. Triage settlements into named jobs with fixed top blocks: #208 (also the only home of the station assert fixes), #210, #212, #213, #215. Writing only; ceiling-dependent builds now follow R116.
@@ -66,14 +66,12 @@ Coding seat queue (released one at a time to the workhorse once #217 picks a win
 
 ## Holds
 
-- #224 (workhorse guard, written by the board thread): merge on Ryan's word or after Rey's checker leg, so the board does not merge its own change unchecked (the #222 lesson).
 - #198 and #199: re-specced (R116), blocked until a coding seat is live. When they land: hold #198 for Ryan's round 7 pick (comparison sheet, blurred greyscale check, cost numbers), hold #199 for Ryan's look.
 - #193: local first (its free local probe leg plus #209's free local route), after #207. Tripo only if those leave the question open; Opus runs that evaluation (paid exception granted for it only, R110).
 - #194: behind #209.
 
 ## Waiting on Ryan
 
-- #224: say "merge" (or ask Rey to check it). Pick: merge; it only adds refusals.
 - #217: nothing now; the trial is running. Only if the Kimi arm stalls: add $5 on Moonshot.
 - #221: OK to start a PC thread for the per-ship CPU trim (not urgent; the scene sits at 6.0 ms of the 12.5 ms gate).
 - S15 sound listen pass: one sitting, best once the #211 probe clips exist.
@@ -112,6 +110,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-08 12:50 UTC board thread: Ryan said merge and "you're the owner now"; #224 merged after green checks.
 - 2026-11-08 12:50 UTC board thread: #223 reviewed by diff (traces recounted, stills checked) and merged, #220 closed. #222 reviewed after the fact: guard gap found, PR #224 opened and held; the live trial keeps #222's config (no change mid-run). R119. No trial branches yet.
 - 2026-11-08 06:35 CST #217 thread: Ryan topped up (DeepSeek $2; Moonshot $5 paid plus the $5 voucher, so still Tier0 by the docs, his call to try it before adding $5) and ran WORKHORSE_SETUP.bat: OpenCode, both keys, both balance endpoints, both models READY through OpenCode, all PASS. WORKHORSE_TRIAL.bat started 06:30, DeepSeek arm first. If the Kimi arm stalls on 429s (Tier0: 3 requests a minute, 1.5M tokens a day), Ryan adds $5 and only the Kimi arm reruns (work_issue.bat 26 kimi). Ryan is moving the board to a single Board thread; the trial PRs and the results note go to it. #222 (the runner) was merged by its own author without a checker leg: the Board thread reviews it after the fact.
 - 2026-11-08 05:25 project thread (#220): traced the gate scene per frame on the 5080, named the stall (death piece meshes on the main thread), fixed it and two smaller ones, before and after gate runs and stills; PR #223 open, R118.
@@ -121,4 +120,3 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 - 2026-11-08 04:05 project thread: Ryan set the gate, 12.5 ms (75%) on frame at 1080p and GPU at 4K (R116). PR #219 merged; #207 closed.
 - 2026-11-08 03:50 project thread (#207): fresh clone on the PC, A4 files copied (252 of 252 match), mixed-fleet gate scene built and measured on the 5080 (5 launches: turn view, gate view twice, 1440p and 4K). Result R115; PR #219 opened, held for Ryan's share pick. Ryan paused the GPU work for gaming 20:15 to 20:49 CST.
 - 2026-11-08 01:25 lead chat: Ryan created the project and started the #207 thread; Remote Control on for Downloads\voidsworn_test, keep-awake on. Board ownership handed to the project.
-- 2026-11-08 00:50 lead chat: Ryan answered: Projects pilot on #207, both triangle caps dropped (R113), one double-click trial, cheaper spend (R114). #217 spec fixes posted on the issue.
