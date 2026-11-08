@@ -1,11 +1,11 @@
-Ideation only — candidate substance systems, challenges, and risks
+Ideation only - candidate substance systems, challenges, and risks
 
 Candidate substance systems (one-system first)
 
 These treat glass, flesh, and light as a single continuous biology rather than adjacent materials.
 
 Living optical continuum (primary candidate)
-Flesh is a semi-translucent, living silica-gel matrix that continuously secretes, reabsorbs, and refracts glass. Glass is not "grown on" or "woven into" the body; it is the densified, ordered phase of the same tissue. Light is both energy source and structural memory: photons trapped and replayed inside the matrix stiffen or soften regions on demand. Everywhere the same gradient exists — soft, veined, light-storing gel → denser crystalline facets → pure focusing edges. Face lenses, spinneret threads, sail vanes, and internal "bones" are simply different crystallisation densities of one substance.
+Flesh is a semi-translucent, living silica-gel matrix that continuously secretes, reabsorbs, and refracts glass. Glass is not "grown on" or "woven into" the body; it is the densified, ordered phase of the same tissue. Light is both energy source and structural memory: photons trapped and replayed inside the matrix stiffen or soften regions on demand. Everywhere the same gradient exists - soft, veined, light-storing gel → denser crystalline facets → pure focusing edges. Face lenses, spinneret threads, sail vanes, and internal "bones" are simply different crystallisation densities of one substance.
 Photonic lattice flesh
 The body is a living photonic crystal. Organic cells arrange themselves into periodic refractive lattices that trap and guide light the way a fibre-optic cable does. "Glass" is the ordered lattice state; "flesh" is the disordered, vascularised state of the same cells. Emotion colours the lattice by changing packing density (involuntary). Spinnerets extrude lattice filaments that the body can later reabsorb or lock. Sails are large, low-density lattice sheets that can be collapsed by flooding the lattice with disordered cells.
 Secretory silicate biology
@@ -27,6 +27,6 @@ Over-emphasising the sails so they dominate the silhouette or look like wings/cl
 Allowing any steampunk, jeweller, or camera visual language to creep back through "precision" cues on the secondary arms or brow.
 Treating colour-in-glass as communicative in any way, even subtly. It is only an involuntary physiological tell.
 Designing the ancient-elder fuller spider form first and then "toning it down." The base species must stand alone; the elder is an extreme expression of the same continuum, not the source of the design.
-Leaving the internal light-memory (optical recording) purely decorative. If the substance system includes trapped light as structural or metabolic, that should visibly affect how the body glows, stiffens, or records under stress — otherwise it becomes another bolted-on faction motif.
+Leaving the internal light-memory (optical recording) purely decorative. If the substance system includes trapped light as structural or metabolic, that should visibly affect how the body glows, stiffens, or records under stress - otherwise it becomes another bolted-on faction motif.
 
 Strongest path appears to be a single living optical continuum (candidate 1 or 2) in which every part is a different density or order state of the same light-responsive silicate matrix. That forces face, arms, spinnerets, thorax, and sails to be derived rather than assembled.

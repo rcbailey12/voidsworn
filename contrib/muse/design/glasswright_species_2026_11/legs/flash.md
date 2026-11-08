@@ -14,7 +14,7 @@ The mandate requires one unified biological story where flesh, glass, and light 
 
 *The System:* An exoskeleton-endoskeleton continuum derived from high-refraction quartz-doped biopolymers. Soft inner tissues are pressurized hydrogels rich in luminescent fluid; outer surfaces cure into distinct plates and prisms.
 
-*How it unifies the body:* Eliminates all "flesh versus shell" dichotomy. The thorax segments, brow ridges, reed grille, and back sails are identical in cross-section—they vary only in plate thickness and clarity. Thick plates become clear silver-edged sails; segmented interlocking plates form the thorax and brow; razor-thin slits form the flush vocal reed grille.
+*How it unifies the body:* Eliminates all "flesh versus shell" dichotomy. The thorax segments, brow ridges, reed grille, and back sails are identical in cross-section - they vary only in plate thickness and clarity. Thick plates become clear silver-edged sails; segmented interlocking plates form the thorax and brow; razor-thin slits form the flush vocal reed grille.
 
 *Light behavior:* Refraction and rainbow fringing naturally happen at every seam and joint interface where plates overlap.
 
@@ -44,7 +44,7 @@ The mandate requires one unified biological story where flesh, glass, and light 
 
 *The Tension:* Four arms (two working, two precision) with wrist spinnerets weaving glass thread onto wooden frames.
 
-*Challenge:* Glass extrusion requires either thermal management or chemical polymerization. If it is hot, the wrist needs a heat-resistant gland chamber and powered cooling—something not specified in the pack. If it is a cold chemical sol-gel drawn out into fiber, the wrist requires an active drawing tool or a winding mandrel to elongate the fiber. The pack should commit to how the fiber transitions from fluid body storage to hardened external structure without requiring external heat sources.
+*Challenge:* Glass extrusion requires either thermal management or chemical polymerization. If it is hot, the wrist needs a heat-resistant gland chamber and powered cooling - something not specified in the pack. If it is a cold chemical sol-gel drawn out into fiber, the wrist requires an active drawing tool or a winding mandrel to elongate the fiber. The pack should commit to how the fiber transitions from fluid body storage to hardened external structure without requiring external heat sources.
 
 **Species Read: Spider-Carriage vs. Standing Admiral Silhouette**
 
@@ -56,9 +56,9 @@ The mandate requires one unified biological story where flesh, glass, and light 
 
 **The "Crystal Golem / Eclipse Drift" Trap:** If the body incorporates too much faceted, hard-edged glass over the torso or limbs, it immediately resembles the Eclipse faction's floating mineral shards. The designer must firmly ground the organism in soft, semi-translucent, vascularized flesh, with glass appearing primarily as structural terminations (sails, lens eyes, claws) rather than whole-body armor.
 
-**The "Teeth-Mouth" Read on the Flush Grille:** Composite C1 already suffered from the reed grille looking like a bare row of teeth or an open jaw. The design must define the grille as horizontal or vertical micro-louvers/slits integrated flush into the facial plane—never as separated dentition, chitinous jaws, or an open mouth.
+**The "Teeth-Mouth" Read on the Flush Grille:** Composite C1 already suffered from the reed grille looking like a bare row of teeth or an open jaw. The design must define the grille as horizontal or vertical micro-louvers/slits integrated flush into the facial plane - never as separated dentition, chitinous jaws, or an open mouth.
 
-**Steampunk and Mechanical Intrusion:** With multiple jointed sails, focusing edges, and optical spinnerets, prompt generators and artists will readily drift toward brass, rivets, gears, and articulated mechanical arms. Every joint must explicitly be described in biological terms: cartilage knuckles, lubricated fascia, sinew, and silicate tendon—there should be no metal plating, hinges, pins, or screws visible on the body.
+**Steampunk and Mechanical Intrusion:** With multiple jointed sails, focusing edges, and optical spinnerets, prompt generators and artists will readily drift toward brass, rivets, gears, and articulated mechanical arms. Every joint must explicitly be described in biological terms: cartilage knuckles, lubricated fascia, sinew, and silicate tendon - there should be no metal plating, hinges, pins, or screws visible on the body.
 
 **The "Monocle / Loupe" Artifact:** Avoid any asymmetrical optical structures, singular brow lenses, or layered rings around the two eyes. The eyes must be two smooth, equal, deep-green refractive lenses seated flush within segmented organic brow ridges.
 
