@@ -1,5 +1,9 @@
 # The campaign oracle, pinned
 
+Nov 8 2026, issue 26: re-copied campaign_meta.js for Heat after the first loss
+and the R63 Heat XP payout. Re-exported both table sets; their checksums are
+unchanged. The R69 playtest default stays on.
+
 Nov 4 2026, issue 134 (R88): re-copied battle.js, data.js and ui3d.js where held.
 Player carriers replace lost wings automatically, opening wings use the shared
 squadron AI, and launch controls and teaching text are removed. Stats unchanged.
