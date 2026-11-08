@@ -144,4 +144,4 @@ Why 60: the GPU has room for far richer hulls, materials and post under it, and 
 - Probe: `godot/bench/scene_gate.gd`. PC job: `tools/pc/jobs/bench207_scene_gate.bat` (clone, copy the A4 files, import, build, measure) and `bench207_scene_gate_repeat.bat`.
 - Rerun: queue `bench207_scene_gate.bat` on the PC; then `python3 contrib/opus/tools/scene_gate_report.py <folder>`.
 
-Notes: run1 used the probe at commit 7f18429 with the turn-start camera; run2, run3 and run4 used the probe as committed here (sha256 in each JSON). The frame median moves more between sessions than GPU time (22% against 6%), because it is CPU-bound; the gate should be read on the median of several sessions, as here.
+Notes: run1 used the probe at 645d697 (7f18429 on the PC, before this branch was rebased onto main; same content) with the turn-start camera; run2, run3 and run4 used the probe at 15bcd2a, as committed here (run4's sha256 differs only by the PC checkout's line endings). The frame median moves more between sessions than GPU time (22% against 6%), because it is CPU-bound; the gate should be read on the median of several sessions, as here.
