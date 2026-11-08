@@ -84,7 +84,10 @@ Coding seat queue (released one at a time to the workhorse once #217 picks a win
 - S15 sound listen pass: one sitting, best once the #211 probe clips exist.
 - Round 7 pick and station look: when #198 and #199 land.
 
-## Projects pilot (R114)
+## Projects pilot (R114) and spin-offs (R133)
+
+R133: the board spins off threads itself. Route 1 (pick): the board runs from the Project's main chat, which starts its own threads. Route 2 (now, from the Board chat): one-shot scheduled tasks bound to the PC, one per job, each with a full standalone brief (job, branch, checks, who reviews). First spin-off: #121 after #120 merges. Keep 2 or 3 live at once.
+
 
 #207 runs as one Claude Code Project thread on the PC. Judge it on: did it run Godot on the 5080 without stalling on approvals, did it report numbers into the repo, how much plan usage it took, and could Ryan follow it from his phone. If yes, the lead conversation moves into the project and Opus asks Ryan before deleting the old hourly task. If no, the board stays in a lead chat and #207 runs through the PC queue. Limits checked Nov 7 (code.claude.com/docs/en/claude-projects): threads use Anthropic models only (the workhorse stays on the board), every thread draws the plan (default Opus high), cloud threads skip the repo's .claude skills and settings, a PC thread needs the desktop app's Remote Control setting and the PC awake.
 
