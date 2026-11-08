@@ -302,7 +302,13 @@ func _run_later() -> void:
 	_later = keep
 	due.sort_custom(func(a: Array, b: Array) -> bool: return float(a[0]) < float(b[0]))
 	for e in due:
+		var t0 := Time.get_ticks_usec()
 		(e[1] as Callable).call()
+		# issue 220: which deferred step a long frame spent its time in (named lambdas and bound functions)
+		var us := Time.get_ticks_usec() - t0
+		if us > 300:
+			var key := "L:" + String((e[1] as Callable).get_method())
+			prof[key] = int(prof.get(key, 0)) + us
 
 
 # ---------------------------------------------------------------- emit helpers (t = absolute effect-clock time)
@@ -652,9 +658,11 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 	DEATH.add_collider(self, s)
 	# cut the hull for its death on a worker thread, staggered so a battle start does not stall
 	var n = ships.size()
-	later(now + 0.4 + 0.25 * n, func() -> void:
+	later(now + 0.4 + 0.25 * n, func l_cut_first() -> void:
 		if ships.get(id) == s and not s.dead:
-			DEATH.precompute(self, s))
+			var t_c := Time.get_ticks_usec()
+			DEATH.precompute(self, s)
+			pend("cut_first", t_c))
 
 
 func remove_ship(id: String) -> void:
@@ -695,7 +703,10 @@ func ship(id: String) -> SHIP:
 
 func volley(attacker_id: String, kind: String, target_id: String, opts := {}) -> Dictionary:
 	stats["volleys"] += 1
-	return WEAP.volley(self, attacker_id, kind, target_id, opts)
+	var t0 := Time.get_ticks_usec()
+	var r: Dictionary = WEAP.volley(self, attacker_id, kind, target_id, opts)
+	pend("volley", t0)
+	return r
 
 
 # Fire at a point in space (gallery, misses, station guns with no attacker ship): from and to in world space.
@@ -712,7 +723,10 @@ func death(id: String, cause := "blast") -> float:
 	if not ships.has(id):
 		return 0.0
 	stats["deaths"] += 1
-	return DEATH.death(self, ships[id], cause)
+	var t0 := Time.get_ticks_usec()
+	var r: float = DEATH.death(self, ships[id], cause)
+	pend("death", t0)
+	return r
 
 
 func clear_wreck(id: String) -> void:

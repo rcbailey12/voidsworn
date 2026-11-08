@@ -531,14 +531,14 @@ static func precompute(fx, s, cause := "blast") -> void:
 		_piece_hulls(pieces)
 		job["out"] = pieces)
 	s.set_meta("cut_task", tid)
-	fx.later(fx.now + 0.5, func() -> void: _prebuild(fx, s))
+	fx.later(fx.now + 0.5, func l_prebuild() -> void: _prebuild(fx, s))
 
 
 static func _collect_later(fx, tid: int) -> void:
 	if WorkerThreadPool.is_task_completed(tid):
 		WorkerThreadPool.wait_for_task_completion(tid)
 		return
-	fx.later(fx.now + 0.25, func() -> void: _collect_later(fx, tid))
+	fx.later(fx.now + 0.25, func l_collect() -> void: _collect_later(fx, tid))
 
 
 # When the cut is done, upload the pieces' meshes while the battle is quiet, so the break-up itself only shows them
@@ -548,7 +548,7 @@ static func _prebuild(fx, s) -> void:
 		return
 	var tid: int = s.get_meta("cut_task")
 	if not WorkerThreadPool.is_task_completed(tid):
-		fx.later(fx.now + 0.5, func() -> void: _prebuild(fx, s))
+		fx.later(fx.now + 0.5, func l_prebuild() -> void: _prebuild(fx, s))
 		return
 	WorkerThreadPool.wait_for_task_completion(tid)
 	s.remove_meta("cut_task")
@@ -941,14 +941,14 @@ static func _death_inner(fx, s, cause: String) -> float:
 		if "_vel" in s.root: s.set_meta("death_velocity", s.root.get("_vel"))
 		if not s.has_meta("cut_task") and not s.has_meta("cut_job"):
 			precompute(fx, s, "rupture")
-		fx.later(T + 0.35, func() -> void: _break_up_when_ready(fx, s, "rupture", s.fac.damage_glow, T + 2.85))
+		fx.later(T + 0.35, func l_break_up() -> void: _break_up_when_ready(fx, s, "rupture", s.fac.damage_glow, T + 2.85))
 		return 0.95
 	# Explicit burn-outs retain their cold hulk. Ordinary kills always break up.
 	var hulk := cause == "dark" or cause == "hulk"
 	s.set_meta("death_hulk", hulk)
 	if hulk:
 		s.set_meta("death_split", T + 0.72)
-		fx.later(T + 0.72, func() -> void: _hulk(fx, s))
+		fx.later(T + 0.72, func l_hulk() -> void: _hulk(fx, s))
 		return 1.32
 	var timeline := DeathTimeline.new(s.death_big, int(s.get_meta("death_cut_count", 2)))
 	s.set_meta("death_timeline", timeline)
@@ -967,8 +967,8 @@ static func _death_inner(fx, s, cause: String) -> float:
 	var lp: Vector3 = hit.get("p", at)
 	var ln: Vector3 = hit.get("n", Vector3.UP)
 	s.set_meta("death_tear", [lp, ln])
-	fx.later(T + timeline.vent, func() -> void: _split_vent(fx, s, lp, ln))
-	fx.later(T + timeline.cut, func() -> void: _break_up_when_ready(fx, s, cause, tint, T + timeline.end))
+	fx.later(T + timeline.vent, func l_split_vent() -> void: _split_vent(fx, s, lp, ln))
+	fx.later(T + timeline.cut, func l_break_up() -> void: _break_up_when_ready(fx, s, cause, tint, T + timeline.end))
 	return timeline.end
 
 
@@ -1054,7 +1054,7 @@ static func _break_up_when_ready(fx, s, cause: String, tint: Color, deadline: fl
 		return
 	if s.has_meta("cut_task") and not s.has_meta("cut_prev"):
 		if not WorkerThreadPool.is_task_completed(int(s.get_meta("cut_task"))):
-			fx.later(fx.now + 0.05, func() -> void: _break_up_when_ready(fx, s, cause, tint, deadline))
+			fx.later(fx.now + 0.05, func l_break_up() -> void: _break_up_when_ready(fx, s, cause, tint, deadline))
 			return
 	_break_up(fx, s, cause, tint)
 

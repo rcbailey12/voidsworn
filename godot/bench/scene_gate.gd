@@ -32,6 +32,10 @@ extends Node
 #   fleet_x2     a visual copy of every hull hovering above it (40 hulls), effects as base
 #   deaths       base plus three ship deaths during the measured frames
 #   floor        nothing but the board and the sky (no ships, world, HUD or effects)
+# --trace (issue 220): in the base and deaths modes, also write DIR/trace_<mode>_s<session>.json, one row per measured
+# frame: frame, process, physics, render CPU and GPU ms, the effects system's own main-thread sections (fx.prof, ms),
+# new pipeline compiles by kind, volleys fired and objects created that frame; and add a per-section summary of the
+# frames over 16.7 ms to the mode's row in scene_gate.json.
 # Not in the default list (run with --modes): the 3D scene drawn at more pixels than the 1080p window, so the cost at
 # Ryan's real screens shows whatever monitor the window sits on (the HUD stays at 1080p):
 #   res_1440     3D at 2560x1440 (scaling_3d_scale 1.333)
@@ -339,10 +343,17 @@ func _mode(mode: String, s: int) -> Dictionary:
 					break
 	var cols := {"gpu": [], "cpu": [], "frame": [], "dc_vis": [], "dc_sh": [], "prim_vis": [], "prim_sh": [], "obj_vis": [],
 		"obj_sh": [], "proc": []}
+	var trace := bool(args.get("trace", false)) and mode in ["base", "deaths"]
+	var tr: Array = []
 	var last := Time.get_ticks_usec()
 	var t0 := last
 	await _post()
 	last = Time.get_ticks_usec()
+	var pipes0 := _pipes()
+	var vol0: int = b.gfx.stats.get("volleys", 0) if b.gfx != null else 0
+	var obj0 := int(Performance.get_monitor(Performance.OBJECT_COUNT))
+	if b.gfx != null:
+		b.gfx.prof_take()
 	for i in n:
 		if mode == "deaths" and b.gfx != null:
 			for d in deaths.size():
@@ -364,6 +375,27 @@ func _mode(mode: String, s: int) -> Dictionary:
 		cols["obj_vis"].append(RenderingServer.viewport_get_render_info(vrid, 0, 0))
 		cols["obj_sh"].append(RenderingServer.viewport_get_render_info(vrid, 1, 0))
 		cols["proc"].append(Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0)
+		if trace:
+			var pf := {}
+			if b.gfx != null:
+				var raw: Dictionary = b.gfx.prof_take()
+				for k in raw:
+					if int(raw[k]) > 0:
+						pf[k] = snappedf(int(raw[k]) / 1000.0, 0.001)
+			var pp := _pipes()
+			var dp := {}
+			for k in pp:
+				if int(pp[k]) != int(pipes0.get(k, 0)):
+					dp[k] = int(pp[k]) - int(pipes0.get(k, 0))
+			pipes0 = pp
+			var vol: int = b.gfx.stats.get("volleys", 0) if b.gfx != null else 0
+			var obj := int(Performance.get_monitor(Performance.OBJECT_COUNT))
+			tr.append({"i": i, "frame": snappedf(cols["frame"][-1], 0.001), "proc": snappedf(cols["proc"][-1], 0.001),
+				"phys": snappedf(Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0, 0.001),
+				"rcpu": snappedf(cols["cpu"][-1], 0.001), "gpu": snappedf(cols["gpu"][-1], 0.001), "fx": pf, "pipes": dp,
+				"volleys": vol - vol0, "objects": obj - obj0, "death": mode == "deaths" and i in [int(n * 0.2), int(n * 0.45), int(n * 0.7)]})
+			vol0 = vol
+			obj0 = obj
 	var row := {"mode": mode, "frames": n, "warmup": warm, "seconds": (Time.get_ticks_usec() - t0) / 1e6,
 		"viewport": [vp.get_visible_rect().size.x, vp.get_visible_rect().size.y], "msaa_3d": vp.msaa_3d,
 		"scaling_3d": vp.scaling_3d_scale, "volleys": b.gfx.stats.get("volleys", 0) if b.gfx != null else 0,
@@ -387,6 +419,11 @@ func _mode(mode: String, s: int) -> Dictionary:
 	if s == 0 and mode in ["fleet_x2", "fx_off", "shadows_off"]:
 		await _shot("scene_%s.png" % mode)
 	row["build_ms"] = build_ms
+	if trace:
+		row["trace"] = _trace_summary(tr)
+		var tf := FileAccess.open(out.path_join("trace_%s_s%d.json" % [mode, s + 1]), FileAccess.WRITE)
+		tf.store_string(JSON.stringify(tr) + "\n")
+		tf.close()
 	print("[scene_gate] %d %s gpu %.3f frame %.3f cpu %.3f dc %d+%d prims %d+%d" % [s + 1, mode, row["gpu_median"],
 		row["frame_median"], row["cpu_median"], int(row["dc_vis_median"]), int(row["dc_sh_median"]),
 		int(row["prim_vis_median"]), int(row["prim_sh_median"])])
@@ -397,6 +434,43 @@ func _mode(mode: String, s: int) -> Dictionary:
 	for k in 5:
 		await get_tree().process_frame
 	return row
+
+
+const PIPE_KINDS := ["CANVAS", "MESH", "SURFACE", "DRAW", "SPECIALIZATION"]
+
+
+func _pipes() -> Dictionary:
+	var out := {}
+	for k in PIPE_KINDS:
+		var m: String = "PIPELINE_COMPILATIONS_" + str(k)
+		if ClassDB.class_has_integer_constant("Performance", m):
+			out[k] = int(Performance.get_monitor(ClassDB.class_get_integer_constant("Performance", m)))
+	return out
+
+
+func _trace_summary(tr: Array) -> Dictionary:
+	var spikes := 0
+	var spike_ms := {}
+	var all_ms := {}
+	var spike_pipes := 0
+	var spike_frames: Array = []
+	for r in tr:
+		var pf: Dictionary = r["fx"]
+		for k in pf:
+			all_ms[k] = float(all_ms.get(k, 0.0)) + float(pf[k])
+		if float(r["frame"]) > 16.7:
+			spikes += 1
+			for k in pf:
+				spike_ms[k] = float(spike_ms.get(k, 0.0)) + float(pf[k])
+			var np := 0
+			for k in r["pipes"]:
+				np += int(r["pipes"][k])
+			if np > 0:
+				spike_pipes += 1
+			if spike_frames.size() < 40:
+				spike_frames.append(r)
+	return {"frames": tr.size(), "spikes_over_16_7": spikes, "spikes_with_pipeline_compiles": spike_pipes,
+		"fx_ms_total": all_ms, "fx_ms_in_spikes": spike_ms, "spike_frames": spike_frames}
 
 
 # after the frame is drawn (headless has no drawing: the next frame, so the probe can be dry-run in the cloud)

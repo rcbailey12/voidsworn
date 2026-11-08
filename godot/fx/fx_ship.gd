@@ -725,7 +725,7 @@ func sync(fx, u: Dictionary) -> void:
 		_squad_smoke = hpf < 0.5 and not fx.compat
 	if fx.now < busy_until:
 		var w = want.duplicate()
-		fx.later(busy_until + 0.05, func() -> void: _apply_stages(fx, w))
+		fx.later(busy_until + 0.05, func l_stages() -> void: _apply_stages(fx, w))
 	else:
 		_apply_stages(fx, want)
 	# shields: a rise means regen
@@ -896,14 +896,14 @@ func _dmg_request(fx) -> void:
 		"organic": faction == "chorus", "wound_kind": int(fac.get("wound_kind", 0)), "flat": fx.compat, "mesh_on_worker": DisplayServer.get_name() != "headless"}
 	_dmg_job = job
 	_dmg_task = WorkerThreadPool.add_task(func() -> void: job["out"] = BREACH.compute(job))
-	fx.later(fx.now + 0.02, func() -> void: _dmg_poll(fx))
+	fx.later(fx.now + 0.02, func l_dmg_poll() -> void: _dmg_poll(fx))
 
 
 func _dmg_poll(fx) -> void:
 	if _dmg_task < 0:
 		return
 	if not WorkerThreadPool.is_task_completed(_dmg_task):
-		fx.later(fx.now + 0.02, func() -> void: _dmg_poll(fx))
+		fx.later(fx.now + 0.02, func l_dmg_poll() -> void: _dmg_poll(fx))
 		return
 	flush_damage(fx)
 
@@ -944,7 +944,7 @@ func _cut_refresh(fx) -> void:
 	if fx.now - _cut_t < CUT_REFRESH:
 		if not _cut_pending:
 			_cut_pending = true
-			fx.later(_cut_t + CUT_REFRESH, func() -> void:
+			fx.later(_cut_t + CUT_REFRESH, func l_cut_refresh() -> void:
 				_cut_pending = false
 				_cut_refresh(fx))
 		return
@@ -964,6 +964,7 @@ func add_mark(fx, look: String, w: int, lp: Vector3, ln: Vector3, ldir: Vector3)
 	if squadron or weight <= 0 or dead or gone:
 		return
 	_mark_n += 1
+	var t_m := Time.get_ticks_usec()
 	var es: Array = BREACH.marks_for(hull, look, w, lp, ln, ldir, float(posmod(_seed, 997)) * 0.013 + _mark_n * 1.37, faction, 1.0, 1.0 - section_fraction[hull.section_of(lp.x)])
 	if es.is_empty():
 		return
@@ -971,7 +972,9 @@ func add_mark(fx, look: String, w: int, lp: Vector3, ln: Vector3, ldir: Vector3)
 		e.t0 = fx.now
 		e.sec = hull.section_of(e.c.x)
 		_place_mark(fx, e)
+	t_m = fx.pend("mark", t_m)
 	_dmg_request(fx)
+	fx.pend("dmg_request", t_m)
 
 
 # One new mark into the ship's list (R43 budget). A repeat of the same style close by (anywhere in the section for a
@@ -1267,7 +1270,7 @@ func jump_out(fx) -> void:
 	fx.light(p, T, 0.6, 6.0, c, 0)
 	fx.stk(p, T + 0.35, 0.4, c.lerp(Color.WHITE, 0.5), 10.0, hull.L * 3.0, hull.W * 0.4, 0, bow * hull.L * 20.0)
 	fx.ring(p, bow, T + 0.35, 0.6, c, 1.5, hull.L * 0.2, hull.L * 1.2, 1)
-	fx.later(T + 0.4, func() -> void:
+	fx.later(T + 0.4, func l_jump() -> void:
 		gone = true
 		for m in meshes:
 			if is_instance_valid(m):
