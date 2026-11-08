@@ -30,18 +30,18 @@ If "Running: yes" and the start time is under 90 minutes old, another run is wor
 7. Rewrite this file, set "Running: no", commit straight to main (this file and FINDINGS only, docs-only exception), push with timeout 90. Stop.
 8. One send_later check only when a job or a limit reset lands well before the next look. Never chain them.
 
-## Current state (2026-11-08 00:40 UTC)
+## Current state (2026-11-08 03:50 UTC)
 
-- Merged Nov 7: #204 (#201 Nemesis checks), #203 (#200 surface detail standard), #205 (#202 playtest checklist), all retitled and reviewed by diff. FINDINGS R110 to R112 recorded.
-- Fixed Nov 7: auto_pr titles PRs from the issue (the #203 and #204 wrong-title bug); AGENTS.md opening (Babylon and phone lines were stale).
-- Blocked Nov 7: #198 and #199 (Codex down, and both done-whens target the retired R96 ceiling; re-spec after #207).
-- PC queue folders not checked this session (no PC folders attached to this chat). Unknown whether the watcher queued #198 or #199 before the block; harmless while Codex is down.
+- #207 measured (Projects pilot thread, Nov 7 evening): PR #219 (branch opus/issue-207), report docs/shots/ship_pipeline/bench207/README.md, FINDINGS R115. Gate scene at 1080p: frame median 6.9 ms (42%), GPU 2.4 ms (14%); 4K GPU 5.4 ms. Binder: CPU, the game's own per-frame work per ship on screen and for effects (fixable in Godot; no engine probe). Flag: frame p99 14 to 53 ms from effects spawns. PR held for Ryan's gate share pick, then Opus records it and merges.
+- Merged Nov 7: #204, #203, #205 (reviewed by diff, retitled). FINDINGS R110 to R115.
+- Blocked: #198 and #199 until their re-spec (report costs, gate binds once set; R111, R113, R115).
+- PC: Downloads\voidsworn_test attached to the project thread. The device shell does not start on this PC (hardware virtualization off), so PC work goes through file staging and the watcher queue. Opus's own clone: Downloads\voidsworn_test\opus207\repo. A stale a4_rbs2_acd9ef1.bat sits in queue\running since Nov 1 (its watcher died mid-job); harmless, leave it.
 - Latest playtest exe: g2_pt_d03ac22. The next build folds in #185, #190, #143, #197 (checklist in contrib/muse/reviews/playtest_checklist_2026_11/).
 
 ## Queue (Opus's order, Nov 7)
 
 Opus jobs, in order:
-1. #207 benchmark scene on the RTX 5080. It gates the scene-gate share (Ryan sets it after seeing the numbers), the #198 and #199 re-spec, #209, #139, #140 and every ceiling-dependent settlement job. Name the binder (shadow/surface/post vs geometry submission vs CPU submission) and report headroom, not compliance.
+1. #207: DONE pending Ryan's share pick (R115). On his pick: FINDINGS R116, merge PR #219, re-spec #198 and #199, file two jobs (profile and trim per-ship per-frame work; effects spawn stalls behind the p99 spikes, home #210 or #212).
 2. #217 trial: build the OpenCode runner (tools/pc: a setup .bat that installs OpenCode, takes each key once and runs a does-it-start test, then one trial .bat that runs the DeepSeek arm then the Kimi arm on #26 and pushes work/issue-26-<arm>); trial job is #26 (Heat un-gate: multi-file, browser plus Godot, parity checks run locally, a visible control to screenshot, cheap to throw away). Backup: a synthetic spec of the same shape.
 3. Apply #201 edits G2 to G6 to #120, #121, #122 (G1 withdrawn) before any of them is released.
 4. Triage settlements into named jobs with fixed top blocks: #208 (also the only home of the station assert fixes), #210, #212, #213, #215. Writing only; ceiling-dependent builds wait for #207.
@@ -58,6 +58,8 @@ Coding seat queue (released one at a time to the workhorse once #217 picks a win
 
 ## Holds
 
+- #219 (#207 benchmark): held for Ryan's gate share pick; on the pick, R116 then merge.
+
 - #198 and #199: blocked until re-specced after #207. When they land: hold #198 for Ryan's round 7 pick (comparison sheet, blurred greyscale check, cost numbers), hold #199 for Ryan's look.
 - #193: local first (its free local probe leg plus #209's free local route), after #207. Tripo only if those leave the question open; Opus runs that evaluation (paid exception granted for it only, R110).
 - #194: behind #209.
@@ -65,14 +67,16 @@ Coding seat queue (released one at a time to the workhorse once #217 picks a win
 ## Waiting on Ryan
 
 - #217 money: about $10 on Moonshot and $2 on DeepSeek, no OpenRouter for the trial (R114). Setup itself is one double-click once Opus has built the runner.
-- Projects pilot (R114): Ryan checks that Projects shows in his Code sidebar, turns on Remote Control for Downloads\voidsworn_test in the desktop app, and starts the #207 thread from the project with the starter line Opus gave him in chat (Nov 7).
-- Scene-gate share: after #207's first measurement.
+- Scene-gate share (R111, R115): 50% (8.3 ms), 60% (10.0 ms) or 75% (12.5 ms) of the 16.7 ms frame, on GPU ms and frame median of the #207 scene at 1080p. Opus picks 60%: today's scene is at 42% frame and 14% GPU, so 60% leaves real room to grow and a third of the frame for the spikes already seen; 50% would bind almost at once; 75% would let today's p99 spikes read as stutter.
+- Projects pilot: it worked (see the pilot section). Per R114, may Opus delete the old hourly task (trig_01AYQAMdwD6BZHsizYS6EZdE, already off)? Pick: yes.
 - S15 sound listen pass: one sitting, best once the #211 probe clips exist.
 - Round 7 pick and station look: when #198 and #199 land.
 
 ## Projects pilot (R114)
 
 #207 runs as one Claude Code Project thread on the PC. Judge it on: did it run Godot on the 5080 without stalling on approvals, did it report numbers into the repo, how much plan usage it took, and could Ryan follow it from his phone. If yes, the lead conversation moves into the project and Opus asks Ryan before deleting the old hourly task. If no, the board stays in a lead chat and #207 runs through the PC queue. Limits checked Nov 7 (code.claude.com/docs/en/claude-projects): threads use Anthropic models only (the workhorse stays on the board), every thread draws the plan (default Opus high), cloud threads skip the repo's .claude skills and settings, a PC thread needs the desktop app's Remote Control setting and the PC awake.
+
+Result (Opus, Nov 7 night): PASS on three of four. (1) Godot ran on the 5080 through the watcher queue with no approval stalls after the one folder grant; the device shell itself does not start on this PC (hardware virtualization off in the BIOS), so the thread drives the PC by staging files and queue jobs, which is enough. (2) Numbers went into the repo (bench207 report, raw JSON, FINDINGS R115). (3) Plan usage was not measured; it was one long thread with several waits on the PC. (4) Ryan followed and steered it from chat (paused it for gaming with a go-file wait, resumed it). Lessons: the A4 ship files exist only in build\godot\assets\ships on the PC, so a fresh clone must copy them before its first import (the #207 job does); a queued job can wait on a go file to keep the GPU free for Ryan.
 
 ## Muse
 
@@ -88,6 +92,8 @@ Coding seat queue (released one at a time to the workhorse once #217 picks a win
 - Codex has a one-hour cap per run (tmo 3600). Heavy GPU bake-offs can need two runs: back up the branch (git push origin origin/codex/issue-N:refs/heads/opus/issue-N-run1), add a resume note to the issue body, close the PR, drop N from queued.txt.
 - GitHub's PR list can lag a few minutes after a close, and the board then re-adds the number to queued.txt. Check on the next run.
 - Never put |, &, < or > in job arguments. Job .bat files are CRLF.
+- A4 ship files (glb and maps) live only in build\godot\assets\ships\<code>\ on the PC, out of git by design. A fresh clone builds textureless or old hulls unless they are copied in before its Godot import (tools/pc/jobs/bench207_scene_gate.bat shows the copy, import and rebuild order).
+- Ryan may want the GPU while a job is queued: write the job to wait for a go file (opus207\go.txt in the #207 job) and commit the file when he says go.
 - git push from the sandbox can hang: wrap in timeout 90 and retry once.
 - gh GraphQL is blocked: use gh api REST (pulls, issues, merges). Branch deletion and repo settings are refused by the proxy.
 - auto_pr (Nov 7): PR titles come from the issue title, with "[arm arm]" added for work/issue-N-arm branches. Branches outside codex/, muse/ and work/issue-* do not auto-open a PR; open it with gh api.
@@ -99,6 +105,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-08 03:50 project thread (#207): fresh clone on the PC, A4 files copied (252 of 252 match), mixed-fleet gate scene built and measured on the 5080 (5 launches: turn view, gate view twice, 1440p and 4K). Result R115; PR #219 opened, held for Ryan's share pick. Ryan paused the GPU work for gaming 20:15 to 20:49 CST.
 - 2026-11-08 01:25 lead chat: Ryan created the project and started the #207 thread; Remote Control on for Downloads\voidsworn_test, keep-awake on. Board ownership handed to the project.
 - 2026-11-08 00:50 lead chat: Ryan answered: Projects pilot on #207, both triangle caps dropped (R113), one double-click trial, cheaper spend (R114). #217 spec fixes posted on the issue.
 - 2026-11-08 00:40 lead chat (Opus back from the weekly cap): audit conditions 1 to 3 done. Merged #204, #203, #205 by diff, retitled. Blocked #198 and #199. FINDINGS R110 to R112. auto_pr title fix, AGENTS.md opening fix. Hourly task left off. Next: #207, then the #217 runner.
@@ -108,6 +115,3 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 - 2026-11-05 14:40 lead chat: Ryan R109, station needs way more detail. Merged #197 as base, filed #199 (codex) and #200 to #202 (muse).
 - 2026-11-05 14:32 lead chat: #195 PR #197 reviewed, held for Ryan. Released #198 round 7.
 - 2026-11-05 04:50 lead chat: #187 round 6 done (PR #196, merged as tools); Ryan ruled R108, round 7 filed as #198. Released #195 station repaint.
-- 2026-11-05 03:50 lead chat: took the board back (hourly task switched off by Ryan until the weekly reset). Merged #190, #191, #192. Recorded R104 to R106.
-- 2026-11-05 02:00 lead chat: replaced the hourly task with an identical one (runs at :58) with the two PC folders attached.
-- 2026-11-04 21:40 lead chat: loop moved to this file and the hourly scheduled task (R102).
