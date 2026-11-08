@@ -34,3 +34,24 @@ Kimi's version had better judgment in three places: it back-fills `losses` from 
 Under #217's rules Kimi fails this trial (throttle events, not mergeable in one pass) and DeepSeek passes, so DeepSeek becomes the primary model inside OpenCode.
 
 The subscription rule is revised (Ryan, Nov 8): a Kimi subscription is worth far more than its price in API terms (Ryan cites about $847 of API value a month from Muse's stack review; not checked here), so the old "only above $39 a month of API spend" rule is dropped. The subscription question becomes purely: does Kimi's work beat DeepSeek's by enough to matter? This one bounded job says no: DeepSeek matched it at a fiftieth of the cost and finished in time. One harder job decides it: both arms on #120 (Nemesis registry, multi-file, parity-heavy) with a 90-minute cap, on the balances already loaded (about $11 Moonshot, $1.91 DeepSeek). If Kimi's PR is clearly better there, buy Kimi Code Pro monthly and run the capacity test on its first job (under about 5 percent of the monthly pool); if not, DeepSeek stays primary and Kimi stays pay-as-you-go for second opinions.
+
+## The #120 head-to-head (Nov 8, board)
+
+Same job (Nemesis redesign 1: hunter draw per story point and commander registry, judged on the #201 check pack), 90-minute cap, each arm from a main without #120.
+
+| | DeepSeek V4 Flash (PR #248) | DeepSeek V4 Pro (PR #255) | Kimi K3.1 Pro |
+|---|---|---|---|
+| Result | **goes forward** (with the board's two fixes, commit b45b9731, after Muse's outside check #256) | closed | no PR: out of credit, push refused (it edited checks.yml without workflow scope), about 100 junk .uid files |
+| Cost | $0.13 | $1.49 (OpenCode estimate; the balance drop also held part of #246's run, which overlapped) | $8.68 |
+| Agent time | 33 min | 81 min | 84 min |
+| Checks | standing, rules parity, campaign parity 30/30, Nemesis scenarios, 120,000-start enumeration all PASS | the same, all PASS | not finished |
+| Gaps the board's sweep found | four Godot UI readers still read RUN.nem directly; the 120-2 quick gate not wired into CI (both fixed by the board) | the same four UI readers, and worse: Pro never sets RUN.nem for a new run, so those screens would show no Nemesis; enumeration driver not committed | n/a |
+| Extra catch | none | the sector-advance adaptation now reads the incoming commander (a #121 timing item, A4) | n/a |
+
+Decision: DeepSeek Flash takes the hard coding jobs too. Pro cost about 11 times as much and took about 2.5 times as long for the same checks and a bigger gap; its one useful catch goes into #121's brief. Kimi stays off (no more API money, R127). The runner now also gives every agent the R129 self-check list (PR #253), aimed at the UI-reader gap both DeepSeek arms left.
+
+## Second real job: #246 (Heat back-fill), DeepSeek Flash
+
+PR #254, merged on the first review. 20 minutes, $0.05 by OpenCode's estimate (the balance window overlapped the Pro run, so the balance drop of $0.49 is not its own). First run with the self-check list in its task; its report and tests covered the saved-log load path in Godot as well as the browser.
+
+Concurrency note: two runs at once on the PC worked (separate folders, separate branches). Balance-difference costs stop being per-run when runs overlap; use OpenCode's estimate then.
