@@ -78,7 +78,7 @@ Coding seat queue (released one at a time to the workhorse once #217 picks a win
 
 ## Waiting on Ryan
 
-- #217: nothing; Ryan topped up Moonshot and started WORKHORSE_KIMI_RERUN.bat at 07:18 CST.
+- #217: nothing; the Kimi rerun is running.
 - #221: OK to start a PC thread for the per-ship CPU trim (not urgent; the scene sits at 6.0 ms of the 12.5 ms gate).
 - S15 sound listen pass: one sitting, best once the #211 probe clips exist.
 - Round 7 pick and station look: when #198 and #199 land.
@@ -117,6 +117,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-08 13:30 UTC board thread: first Kimi rerun (07:18 CST) refused again, 3 requests a minute, because the $5 had not posted (balance still 9.98). Ryan fixed it (balance 15.96); the board started WORKHORSE_KIMI_RERUN.bat itself through computer use at 07:28 CST, first use of R126. Run 20261108_072823 is working.
 - 2026-11-08 13:20 UTC board thread: Ryan added $5 on Moonshot and started the Kimi rerun. Computer use set up for the board (File Explorer, click tier, R126): the board double-clicks PC .bat files itself from now on; payments stay Ryan's.
 - 2026-11-08 13:30 UTC board thread: #217 Kimi arm stopped 11 s in, no changes: Moonshot 429 "max organization concurrency: 1" (starter tier, msh-gid free; OpenCode sends parallel requests) and opencode exited. Not a model result. Fallback as planned (R117): Ryan adds $5 on Moonshot (paid total $10, next tier), then double-clicks Downloads\voidsworn_test\WORKHORSE_KIMI_RERUN.bat (Kimi arm only, same runner and #222 config as the DeepSeek arm). #241 held until then.
 - 2026-11-08 13:20 UTC board thread: #217 DeepSeek arm done (36.7 min, 116 model calls, real charge $0.09, opencode exit 0), PR #241 reviewed by diff: Heat gate moves to the first real loss (abandoned runs do not count, older winners keep it), R63 payout +2 XP per point to the flown line and +1 to the shadow pool with cap overflow, browser and Godot together, oracle identical, new heat_tests.js and Godot test, two 4K shots; a first-review pass candidate, held until the Kimi arm lands. Merged #239 (harness note, closes #206 and #214) and #240 (#229 reads; merged a minute before its parity check finished, which then passed; docs only). Closed #96 (superseded by R83, R86, R96) and #98 (R82).
@@ -126,4 +127,3 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 - 2026-11-08 06:35 CST #217 thread: Ryan topped up (DeepSeek $2; Moonshot $5 paid plus the $5 voucher, so still Tier0 by the docs, his call to try it before adding $5) and ran WORKHORSE_SETUP.bat: OpenCode, both keys, both balance endpoints, both models READY through OpenCode, all PASS. WORKHORSE_TRIAL.bat started 06:30, DeepSeek arm first. If the Kimi arm stalls on 429s (Tier0: 3 requests a minute, 1.5M tokens a day), Ryan adds $5 and only the Kimi arm reruns (work_issue.bat 26 kimi). Ryan is moving the board to a single Board thread; the trial PRs and the results note go to it. #222 (the runner) was merged by its own author without a checker leg: the Board thread reviews it after the fact.
 - 2026-11-08 05:25 project thread (#220): traced the gate scene per frame on the 5080, named the stall (death piece meshes on the main thread), fixed it and two smaller ones, before and after gate runs and stills; PR #223 open, R118.
 - 2026-11-08 05:10 project thread (#217): runner built (work_setup, work_trial, work_issue), three free dry runs on the PC (stand-in model) pass both arms end to end; fixes for the PowerShell shell fallback and the 2 minute command limit. PR #222 merged, R117, #26 relabelled opus. Waiting on Ryan's top-ups and two double-clicks.
-- 2026-11-08 04:15 project thread: #198 and #199 re-specced against R111, R113, R116; filed #220 (effects stalls) and #221 (per-ship CPU trim); Opus queue reordered (#217 runner first).
