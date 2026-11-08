@@ -34,32 +34,34 @@ If "Running: yes" and the start time is under 90 minutes old, another run is wor
 
 - #207 DONE (Projects pilot thread, Nov 7 evening): PR #219 merged, report docs/shots/ship_pipeline/bench207/README.md, FINDINGS R115 (measurement) and R116 (gate). Gate scene at 1080p: frame median 6.9 ms (42%), GPU 2.4 ms (14%); 4K GPU 5.4 ms. **The gate (R116): 12.5 ms on the frame median at 1080p and on GPU ms with the 3D at 4K.** Binder: CPU, the game's own per-frame work per ship on screen and for effects (fixable in Godot; no engine probe). Flag: frame p99 14 to 53 ms from effects spawns.
 - Merged Nov 7: #204, #203, #205 (reviewed by diff, retitled). FINDINGS R110 to R115.
-- Blocked: #198 and #199 until their re-spec against the R116 gate (and Codex is down).
+- #198 and #199 re-specced against R111, R113 and R116 (Nov 7 night): costs reported, no triangle caps; Opus reruns the gate scene before any swap ships. Still blocked until a coding seat is live.
+- Filed Nov 7 night: #220 (effects spawn stalls) and #221 (per-ship per-frame CPU trim), both opus.
 - PC: Downloads\voidsworn_test attached to the project thread. The device shell does not start on this PC (hardware virtualization off), so PC work goes through file staging and the watcher queue. Opus's own clone: Downloads\voidsworn_test\opus207\repo. A stale a4_rbs2_acd9ef1.bat sits in queue\running since Nov 1 (its watcher died mid-job); harmless, leave it.
 - Latest playtest exe: g2_pt_d03ac22. The next build folds in #185, #190, #143, #197 (checklist in contrib/muse/reviews/playtest_checklist_2026_11/).
 
-## Queue (Opus's order, Nov 7)
+## Queue (Opus's order, Nov 7 night)
 
-Opus jobs, in order:
-1. After #207 (done, R115, R116): re-spec #198 and #199 against the gate (report both deltas; 12.5 ms binds), and the two jobs #207 found: profile and trim the per-ship per-frame work (the binder), and the effects spawn stalls behind the p99 spikes (home #210 or #212).
-2. #217 trial: build the OpenCode runner (tools/pc: a setup .bat that installs OpenCode, takes each key once and runs a does-it-start test, then one trial .bat that runs the DeepSeek arm then the Kimi arm on #26 and pushes work/issue-26-<arm>); trial job is #26 (Heat un-gate: multi-file, browser plus Godot, parity checks run locally, a visible control to screenshot, cheap to throw away). Backup: a synthetic spec of the same shape.
+Opus jobs, in order (Nov 7 night, after #207):
+1. #217 runner: build the OpenCode setup .bat (installs OpenCode, takes each key once, does-it-start test) and the one trial .bat (DeepSeek arm then Kimi arm on #26, pushes work/issue-26-<arm>; backup: a synthetic spec of the same shape). Every coding job waits on a live seat, so this comes first. The trial itself waits on Ryan's top-ups.
+2. #220 effects spawn stalls (frame p99 14 to 65 ms in battle; PC thread). Visible stutter, so ahead of the CPU trim.
 3. Apply #201 edits G2 to G6 to #120, #121, #122 (G1 withdrawn) before any of them is released.
-4. Triage settlements into named jobs with fixed top blocks: #208 (also the only home of the station assert fixes), #210, #212, #213, #215. Writing only; ceiling-dependent builds wait for #207.
-5. #216 first pass: rest of AGENTS.md, demote NEXT.md, confirm the council memory file placement for Rey (record Grok in the seat map).
-6. Close #96 and #98 if FINDINGS already carries them; absorb #206 and #214 into the working docs and close; #48 after settlements move; record #43's unblock condition.
+4. Triage settlements into named jobs with fixed top blocks: #208 (also the only home of the station assert fixes), #210, #212, #213, #215. Writing only; ceiling-dependent builds now follow R116.
+5. #221 scene gate binder: profile and trim the per-ship per-frame work (PC thread; not urgent at 42% of the frame).
+6. #216 first pass: rest of AGENTS.md, demote NEXT.md, confirm the council memory file placement for Rey (record Grok in the seat map).
+7. Close #96 and #98 if FINDINGS already carries them; absorb #206 and #214 into the working docs and close; #48 after settlements move; record #43's unblock condition.
 
 Coding seat queue (released one at a time to the workhorse once #217 picks a winner; Opus takes one itself only if the workhorse fails and Ryan wants speed):
 1. #120, #121, #122 Nemesis redesign (with the #201 check pack).
 2. #24, #26 (unless the trial arm merged it), #27, #29, #30 progression steps.
 3. #92 debrief screen (after #24 and #122).
-4. After #207: #198 Pyre-Barge round 7 and #199 station detail (re-specced), #139 nebulas, #140 planets, #100 terrain fx 2.
+4. #198 Pyre-Barge round 7 and #199 station detail (re-specced Nov 7 to R116), #139 nebulas, #140 planets, #100 terrain fx 2.
 5. #169 breakable Pyre-Barge (after Ryan's round 7 pick).
 6. Later: #41, #42, #44.
 
 ## Holds
 
 
-- #198 and #199: blocked until re-specced after #207. When they land: hold #198 for Ryan's round 7 pick (comparison sheet, blurred greyscale check, cost numbers), hold #199 for Ryan's look.
+- #198 and #199: re-specced (R116), blocked until a coding seat is live. When they land: hold #198 for Ryan's round 7 pick (comparison sheet, blurred greyscale check, cost numbers), hold #199 for Ryan's look.
 - #193: local first (its free local probe leg plus #209's free local route), after #207. Tripo only if those leave the question open; Opus runs that evaluation (paid exception granted for it only, R110).
 - #194: behind #209.
 
@@ -102,6 +104,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-08 04:15 project thread: #198 and #199 re-specced against R111, R113, R116; filed #220 (effects stalls) and #221 (per-ship CPU trim); Opus queue reordered (#217 runner first).
 - 2026-11-08 04:08 project thread: Ryan OK'd deleting the old hourly board task; deleted. The board runs from the project (R114).
 - 2026-11-08 04:05 project thread: Ryan set the gate, 12.5 ms (75%) on frame at 1080p and GPU at 4K (R116). PR #219 merged; #207 closed.
 - 2026-11-08 03:50 project thread (#207): fresh clone on the PC, A4 files copied (252 of 252 match), mixed-fleet gate scene built and measured on the 5080 (5 launches: turn view, gate view twice, 1440p and 4K). Result R115; PR #219 opened, held for Ryan's share pick. Ryan paused the GPU work for gaming 20:15 to 20:49 CST.
@@ -111,4 +114,3 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 - 2026-11-07 13:30 Rey (lead chat while Opus was capped): repo state audit delivered on muse/repo-state-2026-11; Ryan ruled board to Opus, #193 local first, queue order to Opus. #217 filed (workhorse trial). #216 filed Nov 7 morning.
 - 2026-11-06 Rey: Nov 6 audit stack filed and ruled by Ryan as #206 to #215. #200 synthesis corrected twice on PR #203; #201 rulings pushed to PR #204.
 - 2026-11-05 22:30 lead chat: handoff written. Codex out of usage; Opus takes the board after the Claude weekly reset. Muse PRs #203 to #205 open.
-- 2026-11-05 14:40 lead chat: Ryan R109, station needs way more detail. Merged #197 as base, filed #199 (codex) and #200 to #202 (muse).
