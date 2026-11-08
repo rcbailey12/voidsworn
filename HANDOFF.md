@@ -1,6 +1,6 @@
-# Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 8, 2026, 12:10 CST)
+# Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 8, 2026, 15:55 CST)
 
-## 0. Status at Nov 8, 2026, 12:10 CST (read this first)
+## 0. Status at Nov 8, 2026, 15:55 CST (read this first)
 
 **Board:** the Board thread in the Claude Code Project owns the board and its merges (R119; Ryan: "you're the owner now"). Worker threads never merge their own PRs. LOOP.md holds the live state, queue, holds and what waits on Ryan. Every workhorse PR gets a diff review plus an impact sweep (R129).
 
@@ -8,7 +8,7 @@
 
 **Done Nov 8:** #223 stalls fix merged; #222 runner reviewed, guard fixed (#224); #217 trial closed (R127: #241 Heat gate merged); #201 checks applied to #120 to #122 (R120); Nov 6 audits triaged into jobs #227 to #238 (R121 to R125), records filed by Muse (#247, R130); movement spec (#251, R131); seat map (#244); Glasswright species design (#249; consistent visuals are #250); #246 Heat back-fill merged (PR #254, Flash); the R129 self-check list landed in the runner's task file (PR #253).
 
-**Open now:** #120 head-to-head: PR #248 (Flash, plus the board's two fixes) held until the #256 outside check lands; Kimi's arm ended on an empty balance. Then: #121 and #122, #230 and #231 (Opus writing), #221 (PC profiling).
+**Open now:** #120 merged (PR #248, Flash; R134 Flash beat V4 Pro and Kimi). Opus worker threads (scheduled tasks, R133): #231 UI spec (since 13:45 CST) and #121 Nemesis behaviour (since 14:24, branched from #120); no PRs yet. Muse #256 is the standing outside check on Opus code (R132): comment the PR number there and remove blocked. Next: #122, #230 (when a thread slot frees), #264 (campaign parity in CI), #221 (PC profiling). PC jobs start by dropping a .bat into Downloads\voidsworn_test\queue (LOOP Known traps).
 
 **Waiting on Ryan:** #48 calls (design read, Brin's pronoun, close package question 2); #250 scope questions when it starts; S15 sound listen pass.
 
