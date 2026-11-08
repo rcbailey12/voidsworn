@@ -1,5 +1,10 @@
 # The rules oracle, pinned
 
+Nov 8 2026, issue 246: re-copied core.js for the loss back-fill in migrateMeta.
+A profile saved before the Heat gate has no losses count; the count is rebuilt
+from its run_end log entries, and only written when above 0 so old fixtures
+stay unchanged. Combat rules and the checksum are unchanged.
+
 Nov 4 2026, issue 134 (R88): re-copied battle.js, data.js and ui3d.js where held.
 Player carriers replace lost wings automatically, opening wings use the shared
 squadron AI, and launch controls and teaching text are removed. Stats unchanged.

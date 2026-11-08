@@ -1,5 +1,11 @@
 # The campaign oracle, pinned
 
+Nov 8 2026, issue 246: re-copied core.js for the loss back-fill. A profile
+saved before the Heat gate has no losses count; migrateMeta counts its
+run_end entries that were neither a win nor abandoned, writes the count only
+when above 0 so old fixtures stay unchanged, and Heat opens on the next load.
+Re-exported campaign tables; their checksums are unchanged.
+
 Nov 8 2026, issue 26: re-copied campaign_meta.js for Heat after the first loss
 and the R63 Heat XP payout. Re-exported both table sets; their checksums are
 unchanged. The R69 playtest default stays on.
