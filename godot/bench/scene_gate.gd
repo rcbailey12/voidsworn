@@ -31,6 +31,10 @@ extends Node
 #   fleet_x2     a visual copy of every hull hovering above it (40 hulls), effects as base
 #   deaths       base plus three ship deaths during the measured frames
 #   floor        nothing but the board and the sky (no ships, world, HUD or effects)
+# Not in the default list (run with --modes): the 3D scene drawn at more pixels than the 1080p window, so the cost at
+# Ryan's real screens shows whatever monitor the window sits on (the HUD stays at 1080p):
+#   res_1440     3D at 2560x1440 (scaling_3d_scale 1.333)
+#   res_2160     3D at 3840x2160 (scaling_3d_scale 2.0)
 
 const BattleScene := preload("res://scenes/battle/battle.tscn")
 const API := preload("res://rules/battle_api.gd")
@@ -271,6 +275,10 @@ func _apply(mode: String) -> void:
 				sv.visible = false
 		"half_res":
 			vp.scaling_3d_scale = 0.5
+		"res_1440":
+			vp.scaling_3d_scale = 2560.0 / 1920.0
+		"res_2160":
+			vp.scaling_3d_scale = 2.0
 		"fleet_x2":
 			for sv in _views():
 				if sv.hull == null:
