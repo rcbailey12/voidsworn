@@ -1,5 +1,9 @@
 # The rules oracle, pinned
 
+Nov 8 2026, issue 26: re-copied core.js for the recorded run-loss profile
+field used by first-loss Heat availability. The field stays absent until the
+first defeat. Re-exported rules tables; combat rules and the checksum are unchanged.
+
 Nov 4 2026, issue 134 (R88): re-copied battle.js, data.js and ui3d.js where held.
 Player carriers replace lost wings automatically, opening wings use the shared
 squadron AI, and launch controls and teaching text are removed. Stats unchanged.

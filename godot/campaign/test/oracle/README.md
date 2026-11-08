@@ -1,5 +1,12 @@
 # The campaign oracle, pinned
 
+Nov 8 2026, issue 26: re-copied core.js and campaign_meta.js for recorded run
+losses, first-loss Heat availability and the ruled +2 flown / +1 shadow XP
+payments. Existing winners keep access; abandoned runs do not count as losses.
+The loss count stays absent until the first defeat, so old profile fixtures
+are unchanged. Re-exported both table sets; their checksums are unchanged.
+The R69 playtest default stays on in the Godot UI.
+
 Nov 4 2026, issue 134 (R88): re-copied battle.js, data.js and ui3d.js where held.
 Player carriers replace lost wings automatically, opening wings use the shared
 squadron AI, and launch controls and teaching text are removed. Stats unchanged.

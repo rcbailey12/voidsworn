@@ -450,14 +450,14 @@ func _run_options() -> Control:
 		var hl = C.heatLevel(C.run_opt["heat"]); var best = float(C.z0(C.META["heatBest"].get(C.picked_faction)))
 		var cv3 = card(false, 420)
 		cv3[1].add_child(rich("[b]Heat " + c(C.numstr(hl), GILT) + "[/b] " + c("+" + C.numstr(hl * 10) + "% renown" + ((" · best win with this faction: Heat " + C.numstr(best)) if best > 0 else ""), BONE3), 19))
-		cv3[1].add_child(lbl("Optional rules that make the run harder. Pick any.", 15, BONE3))
+		cv3[1].add_child(lbl("Optional rules that make the run harder. Pick any. Each Heat point pays +2 XP to your flown admiral and +1 XP to the faction shadow pool.", 15, BONE3))
 		for kk in C.HEAT.keys():
 			var h = C.HEAT[kk]
 			add(cv3[1], choice(h["n"] + "  +" + C.numstr(h["w"]), h["d"], "optHeat", kk, null, null, "", BONE2, C.run_opt["heat"].has(kk)))
 		cards.add_child(cv3[0])
 	else:
 		var cv4 = card(false, 380); cv4[0].modulate.a = 0.55; cv4[1].add_child(lbl("Heat", 20, BONE, font_semi))
-		cv4[1].add_child(lbl("Win a run to unlock Heat: optional rules that make runs harder and pay more renown.", 16, BONE3)); cards.add_child(cv4[0])
+		cv4[1].add_child(lbl("Lose a run to unlock Heat: optional harder rules that pay +2 XP per point to your flown admiral and +1 XP to the faction shadow pool, plus 10% renown per point.", 16, BONE3)); cards.add_child(cv4[0])
 	v.add_child(cards)
 	return v
 
@@ -1042,8 +1042,7 @@ func _legacy() -> Control:
 				var r = hbox(); r.add_child(lbl(P["glyph"], 18, Color(P["col"]), font_semi, false)); r.add_child(rich("[b]" + esc(P["n"]) + "[/b]\n" + c(esc(P["theme"]), BONE3), 15))
 				r.add_child(rich("[right][b]" + c(esc(C.FAVOUR_TIERS[t]["n"]), Color(P["col"])) + "[/b]\n" + c(C.numstr(f) + ((" / " + C.numstr(nx["at"])) if nx != null else ""), BONE3) + "[/right]", 15)); v.add_child(r)
 		"heat":
-			var wins = float(C.z0(st.get("wins")))
-			v.add_child(lbl("Heat is open. Pick rules on the admiral screen before a run; each level adds 10% renown." if wins > 0 else "Win a run to open Heat.", 17, BONE2))
+			v.add_child(lbl("Heat is open. Pick rules on the admiral screen before a run. Each point adds 10% renown, +2 XP to the flown admiral and +1 XP to the faction shadow pool." if C.heatAvailable() else "Lose a run to open Heat.", 17, BONE2))
 			var hc = flow()
 			for kk in C.HEAT.keys():
 				var cv = card(false, 300); cv[1].add_child(rich("[b]" + esc(C.HEAT[kk]["n"]) + "[/b] " + c("+" + C.numstr(C.HEAT[kk]["w"]), BONE3), 19)); cv[1].add_child(lbl(C.HEAT[kk]["d"], 16, BONE2)); hc.add_child(cv[0])
@@ -1065,7 +1064,7 @@ func _legacy() -> Control:
 	return v
 const HELP := [
 	["", "Embers of the Hollow Sun is a roguelite. Each run crosses three sectors, each ending in a flagship battle. Ships and captains you lose are gone for the run; every faction, admiral and ship is available from the start."],
-	["", "What carries between runs (Progression, on the title screen): renown buys hull variants for your shipyards; each admiral levels up as you fly with them, unlocking an alternate fleet, a fourth aspect, a second Command and a veteran flag captain; cores sync with you as you take their protocols, offering rarer protocols and eventually a gift at the start of a run; and after your first victory, Heat lets you add harder rules for more renown. After each sector flagship falls, the fleet docks at a shipyard before its next fight."],
+	["", "What carries between runs (Progression, on the title screen): renown buys hull variants for your shipyards; each admiral levels up as you fly with them, unlocking an alternate fleet, a fourth aspect, a second Command and a veteran flag captain; cores sync with you as you take their protocols, offering rarer protocols and eventually a gift at the start of a run; and after your first loss, Heat lets you add harder rules for more renown, +2 XP per point to the flown admiral and +1 XP to the faction shadow pool. After each sector flagship falls, the fleet docks at a shipyard before its next fight."],
 	["Your turn", "Every ship can move, turn and fire each of its weapons once per turn, in any order. Click a ship, then click a highlighted hex to move. Moving forward costs 1 movement. Turning 60° also costs 1 movement and uses one of the ship’s turns; big ships only get one turn per round, so plan their heading early. Press Q and E to turn in place."],
 	["", "Thrusters keep you from getting boxed in. A ship can slip into either forward-diagonal hex, or back off one hex, without changing its heading (2 movement each; a slow ship can always spend its whole move on one hop). It can climb over a rock or wreck, or dive under an enemy ship, for +1 movement, but cannot stop there. Each faction bends one of these rules: see the Helm panel."],
 	["", "Ships fight on the move. Click an enemy your guns can't reach yet and the ship burns to the best spot and fires as it arrives."],
@@ -1115,6 +1114,7 @@ func _end(d: Dictionary) -> Control:
 	if receipt["affordable"].is_empty(): cv.add_child(lbl("No unowned doctrine or hull reward is affordable yet. Your renown stays saved.", 16, BONE3))
 	cv.add_child(lbl(str(C.ADMIRALS[flown["id"]]["n"]) + (": lineage tree" if flown["tree"] else ": admiral line"), 20, GILT, font_semi))
 	cv.add_child(lbl("+" + C.numstr(snapped(float(cy["mxGain"]), 0.01)) + " XP. Level " + str(flown["level"]) + ((" (was " + C.numstr(cy["mx0"]) + ")") if cy["mx1"] > cy["mx0"] else "") + ".", 17, BONE))
+	if C.jt(cy["hl"]): cv.add_child(lbl("Heat " + C.numstr(cy["hl"]) + " paid " + C.numstr(cy["hl"] * 2) + " XP to " + str(C.ADMIRALS[R["admiral"]]["n"]) + " and " + C.numstr(cy["hl"]) + " XP to the faction shadow pool.", 16, GILT))
 	for perk in flown["earned"]: cv.add_child(lbl(str(perk["n"]) + " earned: " + str(perk["d"]), 16, GILT))
 	if flown["next"] == null: cv.add_child(lbl(C.numstr(flown["xp"]) + " XP. This line is at its current cap.", 16, BONE3))
 	else: cv.add_child(lbl(C.numstr(flown["xp"]) + " / " + C.numstr(flown["next"]) + " XP. " + C.numstr(flown["remaining"]) + " XP to level " + str(int(flown["level"]) + 1) + ": " + str(C.masteryPerk(int(flown["level"]) + 1)["n"]) + ".", 16, BONE3))

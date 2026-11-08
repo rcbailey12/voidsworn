@@ -210,6 +210,7 @@ func defaultMeta() -> Dictionary:
 		"mastery": {}, "heirs": {}, "shadowPool": {}, "favour": {}, "variants": {}, "heatBest": {}}
 # The browser's back-fill of old run logs (backfilled, wonFix41) is not carried: a Godot profile never had a browser log (R33: old saves are not migrated).
 func migrateMeta(m: Dictionary) -> Dictionary:
+	var had_losses = m.get("stats") is Dictionary and (m["stats"].get("losses") is int or m["stats"].get("losses") is float)
 	var d = defaultMeta()
 	for k in d.keys():
 		if k != "v" and m.get(k) == null: m[k] = d[k]
@@ -217,6 +218,11 @@ func migrateMeta(m: Dictionary) -> Dictionary:
 	for k in d["stats"].keys():
 		var v = m["stats"].get(k)
 		if not (v is int or v is float): m["stats"][k] = z0(d["stats"][k])
+	if not had_losses:
+		var losses = 0
+		for e in m.get("tel", []):
+			if e is Dictionary and e.get("ev") == "run_end" and not jt(e.get("victory")) and not jt(e.get("abandoned")): losses += 1
+		if losses > 0: m["stats"]["losses"] = losses
 	if not jt(m.get("v")) or float(m["v"]) < 2:
 		m["opts"] = or_(m.get("opts"), {}); m["tel"] = or_(m.get("tel"), []); m["v"] = 2
 	for k in ["mastery", "favour", "variants", "heatBest"]: m[k] = or_(m.get(k), {})
@@ -1015,6 +1021,8 @@ func favourTier(p) -> int:
 	for i in range(FAVOUR_TIERS.size()):
 		if f >= float(FAVOUR_TIERS[i]["at"]): t = i
 	return t
+func heatAvailable() -> bool:
+	return float(z0(META["stats"].get("losses"))) > 0 or float(z0(META["stats"].get("wins"))) > 0
 func heatLevel(list) -> float:
 	var t = 0.0
 	for k in or_(list, []): t += float(z0(HEAT[k].get("w"))) if HEAT.has(k) else 0.0
@@ -1182,6 +1190,7 @@ func act(name: String, arg = "") -> void:
 		"optCmd":
 			run_opt["cmdAlt"] = a == "1"; admiralScreen()
 		"optHeat":
+			if not heatAvailable(): return
 			var i = run_opt["heat"].find(a)
 			if i >= 0: run_opt["heat"].remove_at(i)
 			else: run_opt["heat"].append(a)
@@ -1297,7 +1306,7 @@ func admiralScreen() -> void:
 		if admiralOwned(id): A(acts, "pickAdmiral", id)
 		else: A(acts, "buyAdmiral", id, float(z0(META.get("renown"))) >= float(ADMIRALS[id]["cost"]))   # R1 (PROG-2): locked admirals can be bought here
 	var id0 = picked_admiral; var a = ADMIRALS[id0]; var ml = masteryLevel(id0)
-	var opts = {"ml": ml, "alt": null, "cmd2": null, "heat": float(z0(META["stats"].get("wins"))) > 0}
+	var opts = {"ml": ml, "alt": null, "cmd2": null, "heat": heatAvailable()}
 	if ml >= 1:
 		opts["alt"] = altFleetPlan(id0, picked_faction); A(acts, "optAlt", "0"); A(acts, "optAlt", "1")
 	if ml >= 3 and jt(a.get("cmd")):
@@ -1311,7 +1320,7 @@ func admiralScreen() -> void:
 func ACT_startRun() -> void:
 	if not admiralOwned(picked_admiral): return
 	var ml = masteryLevel(picked_admiral)
-	newRun(picked_admiral, picked_faction, {"alt": run_opt["alt"] and ml >= 1, "cmdAlt": run_opt["cmdAlt"] and ml >= 3, "heat": run_opt["heat"].duplicate() if float(z0(META["stats"].get("wins"))) > 0 else []})
+	newRun(picked_admiral, picked_faction, {"alt": run_opt["alt"] and ml >= 1, "cmdAlt": run_opt["cmdAlt"] and ml >= 3, "heat": run_opt["heat"].duplicate() if heatAvailable() else []})
 	tel("run_start", {"fac": RUN["fac"], "admiral": picked_admiral})
 	aspectScreen()
 func aspectScreen() -> void:
@@ -1396,10 +1405,10 @@ func masteryCredit(id, xp) -> Dictionary:
 	var thresholds = masteryThresholds(id); var cap = float(thresholds[-1]); var old = masteryXP(id); var total = old + xp
 	META["mastery"][id] = min(cap, total)
 	return {"xp": max(0.0, META["mastery"][id] - old), "overflow": max(0.0, total - cap)}
-func awardLineageXP(flown, fac, xp) -> Dictionary:
-	var active = masteryCredit(flown, xp); var shadow = []
+func awardLineageXP(flown, fac, xp, heat = 0.0) -> Dictionary:
+	var active = masteryCredit(flown, xp + 2.0 * heat); var shadow = []
 	for id in shadowAdmirals(fac, flown): shadow.append({"id": id, "xp": 0.0, "rate": shadowRate(id)})
-	var pool = float(z0(META["shadowPool"].get(fac))) + active["overflow"]
+	var pool = float(z0(META["shadowPool"].get(fac))) + active["overflow"] + heat
 	for row in shadow:
 		var gain = masteryCredit(row["id"], xp * shadowRate(row["id"])); row["xp"] += gain["xp"]; pool += gain["overflow"]
 	while pool > 0:
@@ -1470,12 +1479,13 @@ func endRun(victory: bool, abandoned: bool = false) -> void:
 	if victory:
 		META["stats"]["wins"] = float(META["stats"]["wins"]) + 1; META["stats"]["wonFacs"] = or_(META["stats"].get("wonFacs"), [])
 		if not META["stats"]["wonFacs"].has(RUN["fac"]): META["stats"]["wonFacs"].append(RUN["fac"])
+	elif not abandoned: META["stats"]["losses"] = float(z0(META["stats"].get("losses"))) + 1
 	for f in RUN["fallen"]: META["fallen"].append(f)
 	if META["fallen"].size() > 80: META["fallen"] = META["fallen"].slice(META["fallen"].size() - 80)
 	tel("run_end", {"victory": victory, "abandoned": abandoned, "fac": RUN["fac"], "stats": s})
 	var hl = heatLevel(RUN.get("heat")); var ren = jsround(runRenown() * (1.0 + 0.1 * hl)); META["renown"] = float(z0(META.get("renown"))) + ren
 	var mx0 = masteryLevel(RUN["admiral"]); var mxEarned = (float(s["battles"]) - float(s["elites"]) - float(s["bosses"])) + float(s["elites"]) * 2 + float(s["bosses"]) * 5 + (10.0 if victory else 0.0)
-	var earnings = awardLineageXP(RUN["admiral"], RUN["fac"], mxEarned); var mx1 = masteryLevel(RUN["admiral"])
+	var earnings = awardLineageXP(RUN["admiral"], RUN["fac"], mxEarned, hl); var mx1 = masteryLevel(RUN["admiral"])
 	if victory and hl > 0:
 		META["heatBest"] = or_(META.get("heatBest"), {}); META["heatBest"][RUN["fac"]] = max(float(z0(META["heatBest"].get(RUN["fac"]))), hl)
 	RUN["carry"] = {"ren": ren, "mx0": mx0, "mx1": mx1, "hl": hl}
