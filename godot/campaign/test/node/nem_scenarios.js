@@ -18,9 +18,9 @@ function canonJ(v){
 toast=function(){}; show=function(){}; modal=function(){};
 const OUT=[];
 function rec(tag,x){ OUT.push(tag+' '+canonJ(x)); }
-function state(tag){ rec(tag,{nem:RUN.nem,credits:RUN.credits,fleet:RUN.fleet.map(s=>[s.uid,s.hp]),variants:META.variants,rng:RNG_S>>>0}); }
+function state(tag){ rec(tag,{nem:RUN.nem,nemAssign:RUN.nemAssign||null,nems:RUN.nems||null,credits:RUN.credits,fleet:RUN.fleet.map(s=>[s.uid,s.hp]),variants:META.variants,rng:RNG_S>>>0}); }
 function setup(seed,fac){ UID=1; rndSeed(seed); META=defaultMeta(); META.backfilled=1; META.wonFix41=1; SAVED_RUN=null; RUN=null; B=null; pickedAdmiral='vex'; pickedFaction='voidsworn'; runOpt.alt=false; runOpt.cmdAlt=false; runOpt.heat=[];
-  titleScreen(); ACT.newRunScreen(); ACT.startRun(); ACT.pickAspect(window._aspOffer[0]); ACT.closeModal(); RUN.foes[3]=fac; RUN.nem=newNemesis(); state('new '+fac); }
+  titleScreen(); ACT.newRunScreen(); ACT.startRun(); ACT.pickAspect(window._aspOffer[0]); ACT.closeModal(); RUN.nemAssign=[fac,fac,fac]; RUN.nems={}; RUN.nem=null; nemActive(); state('new '+fac); }
 // 1 Deathless: a sector 2 kill scars him; the first sector 3 kill brings him back once; the second kills him and unlocks the arc hull
 setup(101,'deathless'); RUN.sector=2; rec('a1',nemAfterBattle('win',true,{cause:'melt'})); state('a1');
 RUN.sector=3; rec('a2',nemAfterBattle('win',true,{})); state('a2'); rec('a3',nemAfterBattle('win',true,{})); state('a3');
@@ -44,6 +44,44 @@ for(const [i,f] of ['voidsworn','hegemony','ithar','deathless','chorus','corsair
 setup(120,'hegemony'); rec('h1',nemAfterBattle('loss',false,{})); state('h1'); rec('h2',nemAfterBattle('retreat',false,{found:[RUN.nem.weak[1],'nonsense']})); state('h2'); rec('h3',nemAfterBattle('loss',false,{})); state('h3');
 setup(121,'chorus'); RUN.nem.revealed=['ion','torp']; RUN.nem.seen={lance:9,ion:9,torp:9,sq:9}; RUN.sector=2; rec('h4',nemAdapt()); rec('h5',nemAdapt(true)); state('h5');
 setup(122,'corsair'); RUN.nem={weak:['ion','slow'],revealed:['ion'],adapt:['riches'],clock:2,met:1,beaten:1,scars:1,dead:false,strike:false,seen:{},loot:500,riches:2,fed:3,honed:1,held:RUN.fleet[1],last_beat:'lance'}; rec('h6',ensureNemesis()); state('h6');
+
+// ---------- issue 120: assignment draw, registry, active resolution, migration ----------
+function fresh(seed){ UID=1; rndSeed(seed); META=defaultMeta(); META.backfilled=1; META.wonFix41=1; SAVED_RUN=null; RUN=null; B=null; pickedAdmiral='vex'; pickedFaction='voidsworn'; runOpt.alt=false; runOpt.cmdAlt=false; runOpt.heat=[];
+  titleScreen(); ACT.newRunScreen(); ACT.startRun(); return RUN.nemAssign; }
+function toMap(){ ACT.pickAspect(window._aspOffer[0]); ACT.closeModal(); }
+// 9 drawn once at run start, registry empty until a story point resolves
+fresh(130); state('i0'); rec('i0a',{len:RUN.nemAssign.length,nems:Object.keys(RUN.nems).length});
+toMap(); state('i1'); var IA=canonJ(RUN.nemAssign);
+RUN.sector=2; nemActive(); rec('i2',nemAfterBattle('win',false,{})); state('i2');
+RUN.sector=3; nemActive(); rec('i3',nemAfterBattle('win',false,{})); state('i3');
+rec('i4',canonJ(RUN.nemAssign)===IA);
+// 10 the active commander resolves from the assignment, not the legacy foes[3] default
+fresh(131); toMap(); const FA=RUN.foes[0], FB=RUN.foes[1], FC=RUN.foes[2], FD=RUN.foes[3];
+RUN.nemAssign=[FA,FB,FC]; RUN.nems={}; RUN.nem=null; RUN.sector=1; rec('j1',nemBattleCfg().fac);
+RUN.sector=2; rec('j2',nemBattleCfg().fac);
+RUN.sector=3; rec('j3',nemBattleCfg().fac);
+RUN.sector=1; RUN.foes[3]=FD; rec('j4',nemBattleCfg().fac);
+// 11 lazy creation grows the registry by one per new faction; a returning commander keeps his identity and scars
+fresh(1); state('k0'); RUN.sector=1; var n1=nemActive(); state('k1');
+n1.scars=1; n1.scarKinds=['blast']; RUN.sector=2; var n2=nemActive(); state('k2');
+RUN.sector=3; var n3=nemActive(); state('k3');
+rec('k4',{fac1:n1.fac,fac2:n2.fac,fac3:n3.fac,same:n1===n3,scars:n3.scars,nems:Object.keys(RUN.nems).length});
+// 12 a mid-run legacy save migrates into the current story point's entry
+fresh(135); toMap(); const FM=RUN.nemAssign[0]; RUN.nems={}; RUN.nem=null; RUN.nemAssign=[null,null,null]; RUN.sector=2;
+RUN.nem={fac:FM,persona:NEM_FAC[FM].personas[0],weak:['ion','slow'],revealed:['ion'],adapt:[],clock:2.5,met:1,beaten:1,scars:1,seen:{lance:2}};
+ensureNemesis(); rec('l1',{size:Object.keys(RUN.nems).length,slot:RUN.nemAssign[1],fac:nemActive().fac,weak:RUN.nem.weak,revealed:RUN.nem.revealed,adapt:RUN.nem.adapt,clock:RUN.nem.clock,met:RUN.nem.met,beaten:RUN.nem.beaten,scars:RUN.nem.scars,seen:RUN.nem.seen}); state('l1');
+// 13 a pre-persona legacy save rebuilds its identity and lands in the current entry
+fresh(136); toMap(); const FP=RUN.nemAssign[0]; RUN.nems={}; RUN.nem=null; RUN.nemAssign=[null,null,null]; RUN.sector=1;
+RUN.nem={fac:FP,weak:['ion','slow'],revealed:['ion'],adapt:[],clock:2,met:1,beaten:1,scars:1,dead:false,strike:false,seen:{},loot:500,riches:2,fed:3,honed:1,last_beat:'lance'};
+ensureNemesis(); rec('m1',{size:Object.keys(RUN.nems).length,slot:RUN.nemAssign[0],fac:nemActive().fac,weak:RUN.nem.weak,revealed:RUN.nem.revealed,clock:RUN.nem.clock,met:RUN.nem.met,beaten:RUN.nem.beaten,scars:RUN.nem.scars,loot:RUN.nem.loot,riches:RUN.nem.riches,fed:RUN.nem.fed,honed:RUN.nem.honed,last_beat:RUN.nem.last_beat}); state('m1');
+// 14 a new-format save round trip keeps the assignment and both commanders
+fresh(137); toMap(); RUN.nemAssign=[FA,FB,FA]; RUN.nems={}; RUN.nem=null;
+RUN.sector=1; var rA=nemActive(); rA.scars=1; rA.scarKinds=['blast']; rA.epithet='the Scarred';
+RUN.sector=2; var rB=nemActive(); rB.revealed=[rB.weak[0]];
+var RB=canonJ({a:RUN.nemAssign,n:RUN.nems});
+SAVED_RUN=JSON.parse(JSON.stringify(RUN));
+RUN=migrateRun(JSON.parse(JSON.stringify(SAVED_RUN))); ensureNemesis();
+rec('n1',{same:RB===canonJ({a:RUN.nemAssign,n:RUN.nems}),size:Object.keys(RUN.nems).length,fac:nemBattleCfg().fac,scars:RUN.nems[FA].scars,revealed:RUN.nems[FB].revealed}); state('n1');
 globalThis.__OUT=OUT;
 `);
 fs.writeFileSync(process.argv[2], __OUT.join('\n') + '\n');

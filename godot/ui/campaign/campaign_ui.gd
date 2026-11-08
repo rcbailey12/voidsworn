@@ -713,7 +713,7 @@ func _side() -> Control:
 	return p
 # B4: the Nemesis card (clock, known weaknesses, adaptations) and the faction action button, as campaign_run.js nemPanel / verbPanel
 func _nem_panel(v: VBoxContainer) -> void:
-	var N = C.RUN.get("nem")
+	var N = C.nemActive()
 	if not C.jt(N): return
 	var F = C.FACTIONS.get(N["fac"]); var NF = C.NEM_FAC.get(N["fac"], {}); var beh = NF.get("beh", {})
 	v.add_child(_wr_head("Nemesis"))
@@ -778,7 +778,7 @@ const SCAR_BURN := ["big", "melt", "blast", "fled"]
 var _nem_key := ""
 var _nem_tex: Texture2D = null
 func nem_portrait() -> Texture2D:
-	var N = C.RUN.get("nem") if C != null and C.RUN != null else null
+	var N = C.nemActive() if C != null and C.RUN != null else null
 	if not C.jt(N) or not ResourceLoader.exists("res://portraits/portraits.gd"): return null
 	var idx = 1
 	var pid = str(N.get("portrait", ""))
