@@ -23,7 +23,7 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 
 1. Read HANDOFF.md section 0 and this file. Set the lock and push it first.
 2. Board check: open PRs, open issues and labels (gh api REST, never GraphQL). PC queue folders only when a PC job is running.
-3. Review each new PR yourself, by diff, never by title. Check claims against the diff and the done-when, look at the shots. Merge if good; hold what Holds lists.
+3. Review each new PR yourself, by diff, never by title, then sweep its impact (R129): every caller of each changed function, save and old-profile behaviour, the JS and Godot twins, every UI path that shows it, which tests actually ran in CI. Check claims against the done-when, look at the shots. Merge if good; hold what Holds lists; file a follow-up for anything the sweep finds.
 4. Release the next job only to a live seat, one at a time. Before releasing, check it is not already queued or running.
 5. Anything for Ryan goes under "Waiting on Ryan" with a pick and plain trade-offs. In an unattended run use one PushNotification, never AskUserQuestion.
 6. Tell Ryan only when something lands or needs him: two lines and one image.
@@ -117,6 +117,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-08 15:20 UTC board thread: R129: V4 Pro arm for #120 (PR #245), impact-sweep review standard, #246 filed (Heat back-fill for existing profiles, found by sweeping #241). Seat map #244 merged.
 - 2026-11-08 15:00 UTC board thread: seat map (R128, PR #244, part of #216); #48 moved to Muse. Muse has not started #227 yet.
 - 2026-11-08 14:50 UTC board thread: PR #243 merged (results note, runner fixes). Free dry run on the PC passed. #120 relabelled opus and the head-to-head started through computer use (DeepSeek then Kimi, 90 min each). Check scheduled 10:25 CST.
 - 2026-11-08 14:40 UTC board thread: #217 trial closed out (R127): #241 DeepSeek merged (closes #26), #242 Kimi closed (one-hour cap, $4.95). Results note and runner fixes in PR #243. Guard and runner copied to the PC; free dry run started through computer use. Computer use access lapses after 30 idle minutes and Ryan re-approves; a Razer window can sit in front and block clicks (open File Explorer first).
@@ -126,4 +127,3 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 - 2026-11-08 13:20 UTC board thread: #217 DeepSeek arm done (36.7 min, 116 model calls, real charge $0.09, opencode exit 0), PR #241 reviewed by diff: Heat gate moves to the first real loss (abandoned runs do not count, older winners keep it), R63 payout +2 XP per point to the flown line and +1 to the shadow pool with cap overflow, browser and Godot together, oracle identical, new heat_tests.js and Godot test, two 4K shots; a first-review pass candidate, held until the Kimi arm lands. Merged #239 (harness note, closes #206 and #214) and #240 (#229 reads; merged a minute before its parity check finished, which then passed; docs only). Closed #96 (superseded by R83, R86, R96) and #98 (R82).
 - 2026-11-08 12:56 UTC board thread: Ryan asked for a proactive orchestrator. Folder access to voidsworn_test granted (the Godot user folder was refused by the auto classifier; device shell still off). DeepSeek arm checked live: about 90 commands and 6 cents in at 06:46 CST. #201 applied (R120). Settlements triaged (R121 to R125), jobs #227 to #238 filed, five audit issues closed; PRs #225 (G6) and #226 (#208 close-out) merged after green checks.
 - 2026-11-08 12:50 UTC board thread: Ryan said merge and "you're the owner now"; #224 merged after green checks.
-- 2026-11-08 12:50 UTC board thread: #223 reviewed by diff (traces recounted, stills checked) and merged, #220 closed. #222 reviewed after the fact: guard gap found, PR #224 opened and held; the live trial keeps #222's config (no change mid-run). R119. No trial branches yet.
