@@ -738,9 +738,9 @@ func _nem_panel(v: VBoxContainer) -> void:
 	if beh.get("d") != null: v.add_child(lbl(C.nemSay(str(beh["d"]), N), 13, BONE2))
 	var warn = C.nemWarnLine(N)   # what the next win will do when it fills his clock
 	if warn != "": v.add_child(lbl(warn, 13, BLOOD))
-	var ck = float(N["clock"]); var dots = "●".repeat(int(floor(ck))) + ("◐" if fmod(ck, 1.0) != 0.0 else "") + "○".repeat(max(0, int(C.NEM_CLOCK) - int(ceil(ck))))
+	var ck = C.nemClockGet(); var dots = "●".repeat(int(floor(ck))) + ("◐" if fmod(ck, 1.0) != 0.0 else "") + "○".repeat(max(0, int(C.NEM_CLOCK) - int(ceil(ck))))   # #121: the run's clock
 	var met = float(N["met"]) >= float(C.RUN["sector"])
-	var tail = (" " + c("[b]His fleet is coming: your next fight is his.[/b]", BLOOD)) if C.jt(N.get("strike")) else ((" " + c("(met this sector)", BONE3)) if met else "")
+	var tail = (" " + c("[b]His fleet is coming: your next fight is his.[/b]", BLOOD)) if C.jt(C.RUN.get("nemStrike")) else ((" " + c("(met this sector)", BONE3)) if met else "")
 	var pace = float(beh.get("clock", 1))
 	v.add_child(rich(c("Hunting you: ", BONE2) + c(dots, BLOOD) + c(" " + C.numstr(ck) + " of " + C.numstr(C.NEM_CLOCK), BONE3) + tail, 14))
 	v.add_child(lbl(C.nemSay("Each fight you win moves the clock " + (C.numstr(pace) + " steps" if pace != 1.0 else "one step") + "; when it fills, your next fight is against him. You meet him once each sector at the latest, at one of the last fights before the rest stop.", N), 13, BONE3))
@@ -1252,9 +1252,10 @@ func _modal(md: Dictionary) -> void:
 				v.add_child(rich("With the flagship broken, the fleet jumps deeper. Fleet command expands: [b]" + c("+3 command points", GILT) + "[/b], and crews patch 40% of every hull during the transit.", 17))
 				v.add_child(rich("Scanners confirm [b]" + esc(F["n"]) + "[/b] ahead.", 17))
 			if md["kind"] == "intro": p.call(F.get("blurb", ""), BONE2)
-			if md["kind"] == "sector" and d.get("adapt") != null and C.jt(R.get("nem")):
-				var na = d["adapt"]; var nf = R["nem"]["fac"]
-				v.add_child(rich(c("Intelligence: " + esc(C.nemFull()) + " has adapted to you: [b]" + esc(C.nemAdaptName(na, nf)) + "[/b] (" + esc(C.nemAdaptWhy(na, nf)) + "). " + esc(C.nemAdaptDesc(na, nf)), BLOOD), 17))
+			if md["kind"] == "sector" and d.get("adapt") != null and d.get("adaptFac") != null:   # #121 (A4): the commander who fought the sector just ended
+				var na = d["adapt"]; var nf = d["adaptFac"]
+				v.add_child(rich(c("Intelligence: " + esc(str(d.get("adaptWho", ""))) + " has adapted to you: [b]" + esc(C.nemAdaptName(na, nf)) + "[/b] (" + esc(C.nemAdaptWhy(na, nf)) + "). " + esc(C.nemAdaptDesc(na, nf)), BLOOD), 17))
+				if str(d.get("adaptLine", "")) != "": v.add_child(rich(c(esc(str(d["adaptLine"])), BLOOD), 15))
 			if d["cond"] != null: v.add_child(rich(c("Sector condition: [b]" + esc(d["cond"]["n"]) + "[/b].", GILT) + " " + c(esc(d["cond"]["d"]), BONE2), 17))
 			if md["kind"] == "sector": p.call(F.get("blurb", ""), BONE2)
 			if md["kind"] == "intro": p.call("Pick a route across the sector map. Battles carrying a core’s signal pay out that core’s protocols, so the route you choose shapes your build. The flagship of the sector waits at the far end.", BONE2)

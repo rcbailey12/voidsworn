@@ -595,7 +595,7 @@ function applyNemesis(N){ B.nem=N; let es=B.units.filter(u=>u.side==='enemy'&&!u
   const an=a=>(typeof nemAdaptName==='function'?nemAdaptName(a,N.fac):(NEM_ADAPT[a]?NEM_ADAPT[a].n:a)).toLowerCase(), L=typeof NEM_LINES!=='undefined'?NEM_LINES:null;
   log(`${fl.name} commands this fleet: your Nemesis.${ad.length?' '+(N.g==='n'?'It':N.g==='f'?'She':'He')+' has adapted: '+ad.map(an).join(', ')+'.':''}`,'e');
   if(L){ const bw=N.last_beat&&typeof NEM_BEAT_WORD!=='undefined'?(NEM_BEAT_WORD[N.last_beat]||N.last_beat):null, cnt=NEM_BEAT_COUNTER[N.last_beat];
-    const line=N.gloat&&L.gloat?L.gloat[N.gloat]:N.met&&bw?(ad.includes(cnt)?L.again:(L.remember||L.again)).replace('{beat}',bw):(L.meet[N.persona]||''); if(line) log(`${fl.name}: "${line}"`,'e'); }
+    const line=typeof N.line==='string'?N.line:N.gloat&&L.gloat?L.gloat[N.gloat]:N.met&&bw?(ad.includes(cnt)?L.again:(L.remember||L.again)).replace('{beat}',bw):(L.meet[N.persona]||''); if(line) log(`${fl.name}: "${line}"`,'e'); } // #121: the campaign's own NEM_VOICE line (cfg.nemesis.line) when it sends one
   if(B.nemChallenge) nemSig('challenge'); if(beh.strike==='duel') nemSig('duel'); if(beh.line) nemSig('line');
   if(B.nemChallenge){ const d=nemDuelTarget(); if(d) log(`${fl.name} challenges ${d.pflag?'your flagship':d.name} to single combat and comes for it: the two ships deal 20% more damage to each other.`,'e'); } }
 // R49 Voidsworn challenge: his flagship seeks your flagship, or your strongest ship once it is gone, and both deal 20% more damage to each other

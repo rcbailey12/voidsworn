@@ -69,5 +69,48 @@ for (const fac of Object.keys(T.NEM_ADAPT_FAC)) {
     }
   }
 }
+// #121 (121-7, A4): the clash check is per commander, on that commander's own revealed set, and nemAdapt(force, N) touches only N.
+// Runs hold a faction-keyed registry (RUN.nems); the fixture's `who` names the commander adapted, and every other commander must be unchanged.
+function checkPair(name, run, who, force, want) {
+  const before = copy(run), seed = fixtures.length + 1;
+  T.setRun(run); T.rndSeed(seed);
+  const n = run.nems[who], pick = T.nemAdapt(force, n), b = before.nems[who];
+  const blocked = [];
+  if (b.revealed.includes('ion')) blocked.push('shields');
+  if (b.revealed.includes('torp')) blocked.push('pd');
+  assert.ok(!blocked.includes(pick), name + ': never counter his own revealed weakness');
+  assert.equal(T.rng(), seed, name + ': adaptation does not draw random numbers');
+  const others = Object.fromEntries(Object.keys(run.nems).filter(k => k !== who).map(k => [k, copy(run.nems[k])]));
+  for (const k of Object.keys(others)) assert.deepEqual(others[k], before.nems[k], name + ': ' + k + ' is untouched');
+  if (pick !== null) assert.deepEqual(n.adapt, [...b.adapt, pick], name + ': append only the choice');
+  if (want !== undefined) assert.equal(pick, want, name);
+  fixtures.push({ name, seed, run: before, force, who,
+    expected: { pick, adapt: copy(n.adapt), seen: copy(n.seen), revealed: copy(n.revealed), rng: T.rng(), others } });
+  return pick;
+}
+const cmd = (fac, revealed, adapt, seen, beaten = 0, scars = 0) => ({ fac, weak: ['ion', 'torp'], revealed: [...revealed], adapt: [...adapt], seen: { ...seen }, beaten, scars, dead: false });
+const facs = Object.keys(T.NEM_ADAPT_FAC);
+let pairs = 0;
+for (const fa of facs) for (const fb of facs) {
+  if (fa === fb) continue;
+  const reg = (ra, rb, sa, sb, sector = 3) => ({ sector, nemAssign: [fa, fb, fa], nems: { [fa]: cmd(fa, ra, [], sa), [fb]: cmd(fb, rb, [], sb) } });
+  // A has ion revealed, B does not; identical seen that picks the shields counter: A is blocked, B matches the single-commander baseline
+  const base = (() => { const r = run(fb, [], [], { ion: 100, lance: 100 }); T.setRun(r); return T.nemAdapt(false); })();
+  checkPair(fa + '>' + fb + ' A revealed ion', reg(['ion'], [], { ion: 100, lance: 100 }, { ion: 100, lance: 100 }), fa, false);
+  assert.equal(checkPair(fa + '>' + fb + ' B hidden ion', reg(['ion'], [], { ion: 100, lance: 100 }, { ion: 100, lance: 100 }), fb, false, base), 'shields', 'B baseline is the counter');
+  // the other way round, on point defense
+  checkPair(fa + '>' + fb + ' B revealed torp', reg([], ['torp'], { torp: 100 }, { torp: 100 }), fb, false);
+  checkPair(fa + '>' + fb + ' A hidden torp', reg([], ['torp'], { torp: 100 }, { torp: 100 }), fa, false, 'pd');
+  // A4: in sector 2 the active commander is B, yet the advance adapts A (the one who fought sector 1); B stays as he was
+  checkPair(fa + '>' + fb + ' A4 outgoing adapts', reg([], [], { ram: 5 }, { lance: 9 }, 2), fa, false, 'armor');
+  pairs++;
+}
+// 121-8: the fast adapter's cap uses its own beaten and scars (Chorus as SP2, the SP1 commander at 0 and 0)
+{
+  const r = { sector: 2, nemAssign: ['hegemony', 'chorus', 'ithar'], nems: { hegemony: cmd('hegemony', [], [], {}), chorus: cmd('chorus', [], ['armor', 'aim'], { lance: 9 }, 1, 1) } };
+  checkPair('chorus SP2 own cap 3', r, 'chorus', false, 'shields');
+  const r2 = { sector: 2, nemAssign: ['chorus', 'hegemony', 'ithar'], nems: { chorus: cmd('chorus', [], [], {}, 1, 1), hegemony: cmd('hegemony', [], ['armor'], { lance: 9 }) } };
+  checkPair('hegemony SP2 not fast, cap 1', r2, 'hegemony', false, null);
+}
 if (process.argv[2]) fs.writeFileSync(process.argv[2], JSON.stringify(fixtures));
-console.log('PASS: ' + fixtures.length + ' Nemesis adaptation cases, all six factions, scored and fallback choices, caps and forced exhaustion.');
+console.log('PASS: ' + fixtures.length + ' Nemesis adaptation cases, all six factions, scored and fallback choices, caps and forced exhaustion, ' + pairs + ' commander pairs (#121).');

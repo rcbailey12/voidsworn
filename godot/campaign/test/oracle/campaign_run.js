@@ -71,13 +71,13 @@ function mapScreen(){
 // B4: the Nemesis card on the map (clock, known weaknesses, adaptations) and the faction verb button
 function nemPanel(){ const N=nemActive(); if(!N||!N.persona) return ''; const F=FACTIONS[N.fac], NF=NEM_FAC[N.fac], P=NEM_PERSONA[N.persona];
   if(N.dead) return `<h3>Nemesis</h3><p class="muted" style="font-size:14px">${esc(nemFull())} is dead.</p>`;
-  const dots='●'.repeat(Math.floor(N.clock))+(N.clock%1?'◐':'')+'○'.repeat(Math.max(0,NEM_CLOCK-Math.ceil(N.clock))), met=N.met>=RUN.sector;
+  const ck=nemClockGet(), dots='●'.repeat(Math.floor(ck))+(ck%1?'◐':'')+'○'.repeat(Math.max(0,NEM_CLOCK-Math.ceil(ck))), met=N.met>=RUN.sector;
   return `<h3>Nemesis</h3><div class="nemcard" data-portrait="${esc(N.portrait)}" data-scars="${esc((N.scarKinds||[]).join(','))}"><p style="margin:0 0 4px"><b class="blood">${esc(nemFull())}</b> <span class="dim">${esc(F?F.n:'')}${N.scars?`, scarred ${N.scars}x`:''}</span></p>
     <p style="margin:0;font-size:13.5px"><span class="gilt">${esc(P.n)}:</span> <span class="muted">${esc(P.d)}</span></p>
     <p style="margin:2px 0 0;font-size:13.5px">Strengths: ${N.traits.map(t=>`<span class="blood" title="${esc(NEM_TRAITS[t].d)}">${esc(NEM_TRAITS[t].n)}</span>`).join(', ')}</p>
     <p class="muted" style="font-size:13px;margin:4px 0 0">${esc(nemSay(NF.beh.d,N))}</p>${nemWarnLine(N)}
     ${NF.beh.feeds?`<p style="font-size:13px;margin:2px 0 0">Fed on your losses: <span class="blood">${N.fed||0} of 8</span>${N.fed?` (+${Math.round(Math.min(.32,.04*N.fed)*100)}% hull)`:''}</p>`:''}${(N.loot||N.held)?`<p style="font-size:13px;margin:2px 0 0">${nemPr(N).He} holds <span class="gilt">${[N.loot?N.loot+' of your credits':'',N.held?'the '+esc(N.held.name):''].filter(Boolean).join(' and ')}</span>: it all comes back when ${nemPr(N).he} dies.</p>`:''}
-    <p class="num" style="margin:4px 0 0;font-size:14px">Hunting you: <span class="blood">${dots}</span>${N.strike?' <b class="blood">His fleet is coming: your next fight is his.</b>':met?' <span class="dim">(met this sector)</span>':''}</p>
+    <p class="num" style="margin:4px 0 0;font-size:14px">Hunting you: <span class="blood">${dots}</span>${RUN.nemStrike?' <b class="blood">His fleet is coming: your next fight is his.</b>':met?' <span class="dim">(met this sector)</span>':''}</p>
     <p class="muted" style="font-size:13px;margin:4px 0 0">${esc(nemSay('Every fight you win moves the clock on; when it fills, your next fight is against him. You meet him once each sector at the latest before the rest stop.',N))}</p>
     <div style="font-size:13.5px;margin-top:4px">Weaknesses: ${N.weak.map(w=>N.revealed.includes(w)?`<span class="gilt" title="${esc(NEM_WEAK[w].d)}">${esc(NEM_WEAK[w].n)}</span>`:'<span class="dim">unknown</span>').join(', ')}</div>
     ${N.adapt.length?`<div style="font-size:13.5px;margin-top:2px">Adapted: ${N.adapt.map(a=>`<span class="blood" title="${esc(nemAdaptDesc(a,N.fac))}">${esc(nemAdaptName(a,N.fac))}</span>`).join(', ')}</div>`:''}
@@ -246,6 +246,9 @@ function eventFlags(ev,o,i){ RUN.flags=RUN.flags||{}; RUN.flags[ev.id]=o.k||Stri
 // repeats (H2 differs from H1, H3 differs from H2; H3 may be H1 again). Each drawn faction gets one commander, created lazily
 // when its story point first resolves, held in a faction-keyed registry. The active commander for sector k is the registry
 // entry for RUN.nemAssign[k-1]; RUN.nem is kept as that entry so older readers and the UI keep working.
+// #121: the meeting, its met-this-sector flag (N.met), weaknesses, adaptations, scars, epithets and debrief lessons (N.lessons) belong to
+// the commander; the clock (RUN.nemClock) and the strike it sets (RUN.nemStrike) belong to the run, paced by the active commander's
+// beh.clock, and any meeting resets both. On a sector advance the commander who fought the sector just ended adapts (A4).
 // One meeting per sector: when the clock fills, or at the latest at the fight before the rest stop. Beaten in sectors 1 and 2
 // he escapes; in sector 3 his flagship's death ends him.
 // R42 (Oct 26): a fresh identity every run from the faction's own pools (never a CAPTAINS or ADMIRALS name), a personality, two strength
@@ -258,7 +261,7 @@ function newNemesis(fac0){ const fac=fac0||(RUN.foes&&RUN.foes[3])||pick(RUN_FAC
   const beh=F.beh, name=nemName(fac), title=pick(F.titles), persona=pick(F.personas), traits=shuffle(F.traits.slice()).slice(0,2), portrait='nem_'+fac+'_'+(1+Math.floor(rnd()*6));
   const clash={slow:'swift',board:'boarders',ion:'shielded'}, weakPool=Object.keys(NEM_WEAK).filter(k=>!(k==='anchor'&&(beh.noFlee||beh.revive))&&!traits.includes(clash[k])); // zealots and the Deathless never break; no strength and weakness that cancel out
   return {fac,name,g:nemGender(fac,name),title,persona,traits,portrait,
-    weak:shuffle(weakPool).slice(0,2),revealed:[],adapt:[],clock:0,met:0,beaten:0,scars:0,scarKinds:[],epithets:[],epithet:null,last_beat:null,fed:0,riches:0,loot:0,held:null,gloat:null,honed:0,revived:false,dead:false,strike:false,seen:{},signatures:[]}; }
+    weak:shuffle(weakPool).slice(0,2),revealed:[],adapt:[],met:0,beaten:0,scars:0,scarKinds:[],epithets:[],epithet:null,last_beat:null,fed:0,riches:0,loot:0,held:null,gloat:null,honed:0,revived:false,dead:false,seen:{},signatures:[],lessons:[]}; } // #121: no clock or strike here (they are the run's)
 // R1 (NEM-7): what a pre-persona save keeps when it gets its new identity: everything the rival has built up, not only the first ten fields
 const NEM_CARRY=['weak','revealed','adapt','clock','met','beaten','scars','dead','strike','seen','loot','riches','fed','honed','held','revived','gloat','last_beat'];
 // a pre-persona rival keeps his faction: the stored one, else the one whose own adaptation he already carries
@@ -276,7 +279,11 @@ function nemMigrate(){ if(!RUN||!RUN.fleet) return;
     if(N.beat&&!N.last_beat){ N.last_beat=N.beat==='ion'?'battery':N.beat; } delete N.beat;
     if(!N.g) N.g=nemGender(N.fac,N.name||''); delete N.pronoun;
     if(N.scarList&&!N.scarKinds){ N.scarKinds=N.scarList.filter(x=>!x.startsWith('ep:')); N.epithets=N.scarList.filter(x=>x.startsWith('ep:')).map(x=>x.slice(3)); } delete N.scarList;
-    N.scarKinds=N.scarKinds||[]; N.epithets=N.epithets||(N.epithet?[N.epithet]:[]); N.signatures=N.signatures||[]; }
+    N.scarKinds=N.scarKinds||[]; N.epithets=N.epithets||(N.epithet?[N.epithet]:[]); N.signatures=N.signatures||[]; N.lessons=Array.isArray(N.lessons)?N.lessons:[]; }
+  // #121: a save from before the run clock keeps the clock and strike of the commander it was on (the active one), then no commander holds one
+  if(typeof RUN.nemClock!=='number'){ const src=reg[nemAssignSlot()]||Object.values(reg)[0]||null; RUN.nemClock=src&&typeof src.clock==='number'?src.clock:0; RUN.nemStrike=!!(src&&src.strike); }
+  if(typeof RUN.nemStrike!=='boolean') RUN.nemStrike=!!RUN.nemStrike;
+  for(const k of Object.keys(reg)){ const N=reg[k]; if(N&&typeof N==='object'){ delete N.clock; delete N.strike; } }
 }
 function nemAssignSlot(){ const a=RUN&&RUN.nemAssign; if(!Array.isArray(a)) return null; const i=(RUN.sector||1)-1; if(a[i]) return a[i]; for(let j=Math.min(i,a.length-1);j>=0;j--) if(a[j]) return a[j]; return null; }
 function nemActive(){ if(!RUN) return null; if(!RUN.fleet) return RUN.nem||null; nemMigrate(); const fac=nemAssignSlot(); if(fac){ const reg=RUN.nems; if(!reg[fac]) reg[fac]=newNemesis(fac); RUN.nem=reg[fac]; } return RUN.nem||null; }
@@ -285,18 +292,20 @@ function ensureNemesis(){ return nemActive(); } // B4 saves get an R42 identity;
 function nemGender(fac,name){ const F=NEM_FAC[fac]||{}; if(F.g) return F.g; return (F.fem||[]).some(p=>name.startsWith(p))?'f':'m'; }
 function nemPr(N){ const g=N&&N.g; return g==='n'?{he:'it',He:'It',his:'its',His:'Its',him:'it'}:g==='f'?{he:'she',He:'She',his:'her',His:'Her',him:'her'}:{he:'he',He:'He',his:'his',His:'His',him:'him'}; }
 function nemSay(t,N){ const g=N&&N.g; if(!t||g==='m'||!g) return t; const P=nemPr(N); return t.replace(/\b(he|his|him|He|His)\b/g,w=>({he:P.he,his:P.his,him:P.him,He:P.He,His:P.His})[w]); }
-function nemFull(){ const N=nemActive(); return N?`${N.title} ${N.name}${N.epithet?' '+N.epithet:''}`:''; }
+function nemFull(N0){ const N=N0||nemActive(); return N?`${N.title} ${N.name}${N.epithet?' '+N.epithet:''}`:''; }
 function nemReveal(){ const N=ensureNemesis(); if(!N) return null; const w=N.weak.find(x=>!N.revealed.includes(x)); if(w) N.revealed.push(w); return w||null; }
 // R42: his faction behaviour firing (raid, tithe, flee, revive, feed, fast_adapt, reinforce, duel, challenge) is logged as a 'nem_signature' event
 function nemSignature(kind){ const N=nemActive(); if(!N) return; (N.signatures=N.signatures||[]).push(kind); if(N.signatures.length>40) N.signatures.shift(); try{ tel('nem_signature',{fac:N.fac,kind,sector:RUN.sector}); }catch(e){} }
-function nemWarnLine(N){ const s=nemBeh().strike; if(N.strike||N.met>=RUN.sector||N.clock+(nemBeh().clock||1)<NEM_CLOCK) return '';
+function nemWarnLine(N){ const s=nemBeh().strike; if(RUN.nemStrike||N.met>=RUN.sector||nemClockGet()+(nemBeh().clock||1)<NEM_CLOCK) return '';
   if(s==='raid'){ const crip=RUN.fleet.length>=3&&RUN.fleet.some(x=>x.uid!==RUN.flagUid&&x.hp<derive(x).maxHp*.25); return `<p class="blood" style="font-size:13px;margin:2px 0 0">${esc(nemSay('Your next win fills his clock: he will raid',N))} ${RUN.credits>=30?Math.round(RUN.credits*.25)+' credits':crip?'your most damaged ship (repair it above 25% hull, or keep 30 credits, to stop it)':'and find nothing to take'}.</p>`; }
   if(s==='tithe') return `<p class="blood" style="font-size:13px;margin:2px 0 0">Your next win fills the clock: every ship will lose 6% of its hull (never below 1).</p>`;
   return `<p class="blood" style="font-size:13px;margin:2px 0 0">${esc(nemSay('Your next win fills the clock: your next fight will be his.',N))}</p>`; }
 function nemBeh(){ const N=nemActive(); return (N&&NEM_FAC[N.fac]&&NEM_FAC[N.fac].beh)||{}; }
 // the clock: returns a line to show when it fills (the next fight becomes his); his faction sets the pace (Deathless patient, Voidsworn zealous)
-function nemClockAdd(n){ const N=ensureNemesis(); if(!N||N.dead) return ''; const step=n>0?n*(nemBeh().clock||1):n; N.clock=clamp(Math.round((N.clock+step)*2)/2,0,NEM_CLOCK);
-  if(N.clock>=NEM_CLOCK&&N.met<RUN.sector&&!N.strike){ N.strike=true; const extra=nemStrike(); return `${nemFull()} has found your trail. Your next fight will be against his fleet.${extra?' '+extra:''}`; } return ''; }
+// #121: the clock is the run's (RUN.nemClock), one for the whole run; the active commander's faction sets its pace
+function nemClockGet(){ return RUN&&typeof RUN.nemClock==='number'?RUN.nemClock:0; }
+function nemClockAdd(n){ const N=ensureNemesis(); if(!N||N.dead) return ''; const step=n>0?n*(nemBeh().clock||1):n; RUN.nemClock=clamp(Math.round((nemClockGet()+step)*2)/2,0,NEM_CLOCK);
+  if(RUN.nemClock>=NEM_CLOCK&&N.met<RUN.sector&&!RUN.nemStrike){ RUN.nemStrike=true; const extra=nemStrike(); return `${nemFull()} has found your trail. Your next fight will be against his fleet.${extra?' '+extra:''}`; } return ''; }
 // what a full clock does on the map, by faction (always written on his card beforehand)
 function nemStrike(){ const N=nemActive(), s=nemBeh().strike;
   if(s==='raid'||s==='tithe') nemSignature(s);
@@ -305,11 +314,12 @@ function nemStrike(){ const N=nemActive(), s=nemBeh().strike;
   if(s==='tithe'){ RUN.fleet.forEach(x=>{ x.hp=Math.max(1,x.hp-Math.round(derive(x).maxHp*.06)); }); return 'The hunt wears on your fleet: every ship loses 6% of its hull.'; }
   return ''; }
 // is this battle node his? (strike pending, or the last fight before the rest stop when he has not been met this sector)
-function nemNodeIs(n){ const N=nemActive(); if(!N||N.dead||N.met>=RUN.sector||!n||(n.type!=='battle'&&n.type!=='elite')) return false; return N.strike||n.col>=(RUN.map.cols.length-3); }
-function nemBattleCfg(){ const N=ensureNemesis(); return {gloat:N.gloat||null,honed:N.honed||0,beaten:N.beaten||0,name:nemFull().replace(N.title+' ',''),title:N.title,fac:N.fac,persona:N.persona,traits:N.traits.slice(),weak:N.weak.slice(),revealed:N.revealed.slice(),adapt:N.adapt.slice(),scars:N.scars,fed:N.fed,riches:N.riches,last_beat:N.last_beat,g:N.g,met:N.beaten+N.scars>0}; }
+function nemNodeIs(n){ const N=nemActive(); if(!N||N.dead||N.met>=RUN.sector||!n||(n.type!=='battle'&&n.type!=='elite')) return false; return !!RUN.nemStrike||n.col>=(RUN.map.cols.length-3); }
+function nemBattleCfg(){ const N=ensureNemesis(); return {gloat:N.gloat||null,honed:N.honed||0,beaten:N.beaten||0,name:nemFull().replace(N.title+' ',''),title:N.title,fac:N.fac,persona:N.persona,traits:N.traits.slice(),weak:N.weak.slice(),revealed:N.revealed.slice(),adapt:N.adapt.slice(),scars:N.scars,fed:N.fed,riches:N.riches,last_beat:N.last_beat,g:N.g,met:N.beaten+N.scars>0,line:nemOpenLine(N)}; }
 // adaptation: once per sector (Chorus also after every meeting), read from how you fought (RUN.nem.seen); his faction names it, and when nothing
 // stood out he takes his faction's own special adaptation
-function nemAdapt(force){ const N=nemActive(); if(!N||N.dead) return null; const fast=nemBeh().adaptFast, cap=Math.max(0,RUN.sector-1)+(fast?N.beaten+N.scars:0);
+// #121: nemAdapt(force, N) adapts the commander given (the sector advance passes the one who fought the sector just ended), else the active one
+function nemAdapt(force,N0){ const N=N0||nemActive(); if(!N||N.dead) return null; const fast=((NEM_FAC[N.fac]||{}).beh||{}).adaptFast, cap=Math.max(0,RUN.sector-1)+(fast?N.beaten+N.scars:0);
   if(N.adapt.length>=Math.min(cap,6)&&!force) return null; const s=N.seen||{}, sp=NEM_ADAPT_FAC[N.fac]&&NEM_ADAPT_FAC[N.fac].special;
   const score={shields:(s.lance||0)*2+(s.ion||0)*2,pd:(s.torp||0)*2+(s.sq||0),armor:(s.ram||0)*4+(s.board||0)*4,evasion:(s.battery||0)+(s.broad||0),aim:(s.evaded||0)*3};
   const blocked=new Set(); if((N.revealed||[]).includes('ion')) blocked.add('shields'); if((N.revealed||[]).includes('torp')) blocked.add('pd'); // R1 (NEM-2, R63 clash check, Codex PR #1): never a direct counter to a known weakness
@@ -318,28 +328,44 @@ function nemAdapt(force){ const N=nemActive(); if(!N||N.dead) return null; const
 function nemAdaptName(a,fac){ const T=NEM_ADAPT_FAC[fac]||{}; if(T.special&&T.special.id===a) return T.special.n; return T[a]||(NEM_ADAPT[a]&&NEM_ADAPT[a].n)||a; }
 function nemAdaptDesc(a,fac){ const T=NEM_ADAPT_FAC[fac]||{}; if(T.special&&T.special.id===a) return T.special.d; return (NEM_ADAPT[a]&&NEM_ADAPT[a].d)||''; }
 function nemAdaptWhy(a,fac){ const T=NEM_ADAPT_FAC[fac]||{}; if(T.special&&T.special.id===a) return 'his own way of war'; return (NEM_ADAPT[a]&&NEM_ADAPT[a].why)||''; }
+// #121 (R101): his own lines from NEM_VOICE, through nemSay. A pool's line is chosen without the rules PRNG: the pick turns with how many
+// times you have met and hurt him and with the sector. A faction with no table (the Sunward Crusade) says nothing new and keeps NEM_LINES.
+function nemPersonaVoice(N){ const V=N&&NEM_VOICE[N.fac]; return (V&&V[N.persona])||null; }
+function nemPickLine(arr,N){ if(!Array.isArray(arr)||!arr.length) return ''; return arr[((N.beaten||0)+(N.scars||0)+((RUN&&RUN.sector)||1))%arr.length]; }
+function nemSpeak(N,slot){ const P=nemPersonaVoice(N), t=P?nemSay(nemPickLine(P[slot],N),N):''; return t?`${nemFull(N)}: "${t}"`:''; }
+// the line that opens his battle (battle.js logs cfg.nemesis.line; null keeps the old NEM_LINES path): a gloat, else again or remember, else meet
+function nemOpenLine(N){ const P=nemPersonaVoice(N); if(!P) return null; if(N.gloat&&NEM_LINES.gloat[N.gloat]) return NEM_LINES.gloat[N.gloat];
+  const bw=N.last_beat?(NEM_BEAT_WORD[N.last_beat]||N.last_beat):null;
+  if((N.beaten||0)+(N.scars||0)>0&&bw) return nemSay(((N.adapt||[]).includes(NEM_BEAT_COUNTER[N.last_beat])?P.again:(P.remember||P.again)).replace('{beat}',bw),N);
+  return nemSay(nemPickLine(P.meet,N),N)||null; }
+// what he says when he adapts (the six NEM_ADAPT_FAC slots; his faction's own adaptation is 'special')
+function nemAdaptLine(N,a){ const V=N&&NEM_VOICE[N.fac], sp=NEM_ADAPT_FAC[N.fac]&&NEM_ADAPT_FAC[N.fac].special, t=V&&V.adapt?V.adapt[sp&&sp.id===a?'special':a]:''; return t?`${nemFull(N)}: "${nemSay(t,N)}"`:''; }
+// R85 Q3, G2: a lost meeting records the lesson it taught on the commander met (N.lessons: {w, t, sector}), with the NEM_VOICE lesson
+// text for the weakness taught; when the file is already complete it teaches his faction's strike instead, once. No table: the weakness's own words.
+function nemLessonText(N,w){ const V=N&&NEM_VOICE[N.fac]; if(V&&V.lessons&&V.lessons[w]) return nemSay(V.lessons[w],N); return w!=='strike'&&NEM_WEAK[w]?`${NEM_WEAK[w].n}: ${NEM_WEAK[w].d}`:''; }
+function nemLessonAdd(N,w){ N.lessons=Array.isArray(N.lessons)?N.lessons:[]; if(N.lessons.some(l=>l.w===w)) return ''; const t=nemLessonText(N,w); if(!t) return ''; N.lessons.push({w,t,sector:RUN.sector}); return t; }
 // each survival adds a scar (a portrait overlay keyed by how he was hurt) and a new epithet
 function nemScar(cause){ const N=nemActive(), F=NEM_FAC[N.fac]; N.scars++; N.scarKinds=N.scarKinds||[]; N.epithets=N.epithets||[]; N.scarKinds.push(cause||'blast'); const tag=cause==='fled'?'fled':['melt','flay','tidal'].includes(cause)?'burn':'wound', byC=((F.scarBy||{})[tag]||[]).filter(x=>!N.epithets.includes(x)), left=byC.length?byC:F.scars.filter(x=>!N.epithets.includes(x)); if(left.length){ N.epithet=pick(left); N.epithets.push(N.epithet); } } // scarKinds: how each scar was made (fled, big, cut, flay, melt, dark, blast, tidal), for the portrait overlays
 // after his battle: returns plain lines for the reward summary. fled = he withdrew (Corsair, Ithar); flagDead = his flagship was destroyed
-function nemAfterBattle(result,flagDead,o){ const N=nemActive(); if(!N) return []; o=o||{}; const out=[], beh=nemBeh(), P=nemPr(N), say=t=>nemSay(t,N); N.met=RUN.sector; N.strike=false; N.clock=0; let back=false;
+function nemAfterBattle(result,flagDead,o){ const N=nemActive(); if(!N) return []; o=o||{}; const out=[], beh=nemBeh(), P=nemPr(N), say=t=>nemSay(t,N), speak=k=>{ const l=nemSpeak(N,k); if(l) out.push(l); }; N.met=RUN.sector; RUN.nemStrike=false; RUN.nemClock=0; let back=false; // #121: any meeting resets the run's clock and strike
   if(result==='win'){ N.beaten++; N.gloat=null; if(o.beat){ N.last_beat=o.beat; nemBeatTeach(o.beat); } const w=nemReveal(); if(w) out.push(say(`His captured logs reveal a weakness: ${NEM_WEAK[w].n}.`));
-    if(o.fled){ if(beh.strike==='raid') N.riches++; if(beh.strike==='duel') N.honed=(N.honed||0)+1; nemScar('fled'); nemSignature('flee'); out.push(say(`${nemFull()} breaks off and runs before you can finish him.${beh.strike==='raid'?' He will come back richer.':beh.strike==='duel'?' He will be back with the same few ships, honed sharper.':' He will be back.'}`)); }
-    else if(flagDead&&RUN.sector>=3&&beh.revive&&!N.revived){ N.revived=true; back=true; nemScar(o.cause||'big'); nemSignature('revive'); N.met=RUN.sector-1; out.push(say(`${nemFull()}'s flagship is destroyed, and then the wreck begins to move. He is reassembling for one last fight.`)); }
-    else if(flagDead&&RUN.sector>=3){ N.dead=true; out.push(say(`${nemFull()} is dead. The feud is over.`)); }
-    else if(flagDead){ nemScar(o.cause||'big'); out.push(say(`${nemFull()}'s flagship breaks apart, but he escapes, scarred and furious. He will be back.`)); } // R49: before the last sector every rival, the Deathless one too, withdraws like this
+    if(o.fled){ if(beh.strike==='raid') N.riches++; if(beh.strike==='duel') N.honed=(N.honed||0)+1; nemScar('fled'); nemSignature('flee'); out.push(say(`${nemFull()} breaks off and runs before you can finish him.${beh.strike==='raid'?' He will come back richer.':beh.strike==='duel'?' He will be back with the same few ships, honed sharper.':' He will be back.'}`)); speak('flee'); }
+    else if(flagDead&&RUN.sector>=3&&beh.revive&&!N.revived){ N.revived=true; back=true; nemScar(o.cause||'big'); nemSignature('revive'); N.met=RUN.sector-1; out.push(say(`${nemFull()}'s flagship is destroyed, and then the wreck begins to move. He is reassembling for one last fight.`)); speak('fall_final'); } // A1: the kill that triggers the revive
+    else if(flagDead&&RUN.sector>=3){ N.dead=true; out.push(say(`${nemFull()} is dead. The feud is over.`)); if(!beh.revive) speak('fall'); } // A1: the Eclipse commander's second, permanent death says nothing (he does not rise again)
+    else if(flagDead){ nemScar(o.cause||'big'); out.push(say(`${nemFull()}'s flagship breaks apart, but he escapes, scarred and furious. He will be back.`)); speak('fall'); } // R49: before the last sector every rival, the Deathless one too, withdraws like this
     else out.push(say(`${nemFull()} withdraws to fight another day.`));
     // R49 fairness: what a Corsair raid took (credits and a towed ship) comes back when he dies
     if(N.dead&&N.loot){ RUN.credits+=N.loot; out.push(`You take back ${N.loot} credits from his hold.`); N.loot=0; }
     if(N.dead&&N.held){ RUN.fleet.push(N.held); out.push(`You take back the ${N.held.name}.`); N.held=null; }
     if(RUN.sector>=3&&!back){ const u=arcComplete(RUN.fac); if(u) out.push(u); } } // R41: the last meeting won (dead, fled or withdrawn) ends the arc
-  else { N.clock=1; N.gloat=o.myFlagDead?'flagship':result==='retreat'?'retreat':'loss'; out.push(say(`${nemFull()} drove you off. He will remember this.`));
+  else { RUN.nemClock=1; N.gloat=o.myFlagDead?'flagship':result==='retreat'?'retreat':'loss'; out.push(say(`${nemFull()} drove you off. He will remember this.`)); speak('win');
     // R1 (FR-2, Ryan's Q5 ruling, Codex PR #1): a lost meeting still teaches: what the fight itself uncovered, else one new weakness, never more
     const found=Array.isArray(o.found)?o.found.filter(k=>N.weak.includes(k)):[]; nemFoundMerge(found);
     const learned=[...new Set(found)]; const w=learned[0]||nemReveal();
-    if(w){ const ws=learned.length?learned:[w]; out.push(`Your analysts piece together the engagement. ${ws.length>1?'Weaknesses':'Weakness'} found: ${ws.map(k=>NEM_WEAK[k].n).join(', ')}.`); }
-    else out.push(`The engagement confirms what your analysts already held: the file on ${N.name} is complete.`); }
+    if(w){ const ws=learned.length?learned:[w]; out.push(`Your analysts piece together the engagement. ${ws.length>1?'Weaknesses':'Weakness'} found: ${ws.map(k=>NEM_WEAK[k].n).join(', ')}.`); for(const k of ws){ const t=nemLessonAdd(N,k); if(t) out.push(`Lesson: ${t}`); } }
+    else { out.push(`The engagement confirms what your analysts already held: the file on ${N.name} is complete.`); const t=nemLessonAdd(N,'strike'); if(t) out.push(`Lesson: ${t}`); } }
   if(result==='win'){ const fw=nemFoundMerge(o.found); if(fw.length) out.push(`Weakness confirmed: ${fw.map(k=>NEM_WEAK[k].n).join(', ')}.`); }
-  if(beh.adaptFast){ const a=nemAdapt(); if(a){ nemSignature('fast_adapt'); out.push(`${P.He} learns from it at once: ${nemAdaptName(a,N.fac)} (${say(nemAdaptWhy(a,N.fac))}).`); } }
+  if(beh.adaptFast){ const a=nemAdapt(false,N); if(a){ nemSignature('fast_adapt'); out.push(`${P.He} learns from it at once: ${nemAdaptName(a,N.fac)} (${say(nemAdaptWhy(a,N.fac))}).`); const l=nemAdaptLine(N,a); if(l) out.push(l); } }
   return out; }
 // R42: when you beat him with something, his next adaptation counters it (so "it will not work twice" is true when he says it)
 const NEM_BEAT_SEEN={lance:'lance',torp:'torp',sq:'sq',ram:'ram',board:'board',battery:'battery',evasive:'evaded'};
@@ -607,12 +633,12 @@ function afterBattle(){
   completeNode();
   if(cfg.kind==='boss'){
     if(RUN.sector>=3){ endRun(true); return; }
-    RUN.sector++; RUN.cpCap+=3; RUN.map=genSector(RUN.sector); RUN.pos=null; const na=nemAdapt(); // B4: the Nemesis adapts once per sector
+    const prev=nemActive(); RUN.sector++; RUN.cpCap+=3; RUN.map=genSector(RUN.sector); RUN.pos=null; const na=prev?nemAdapt(false,prev):null; nemActive(); // B4, #121 (A4): the commander who fought the sector just ended adapts once, from his own seen; then the incoming one resolves
     RUN.fleet.forEach(s=>{ const d=derive(s); s.hp=Math.min(d.maxHp,s.hp+Math.round(d.maxHp*.4*repairMult())); });
     saveRun(); mapScreen();
     const F=FACTIONS[RUN.map.fac];
     modal(`<h2>Sector ${roman(RUN.sector)}${RUN.map.region&&REGIONS[RUN.map.region]?`: ${esc(REGIONS[RUN.map.region].n)}`:''}</h2><p>With the flagship broken, the fleet jumps deeper. Fleet command expands: <b class="gilt">+3 command points</b>, and crews patch 40% of every hull during the transit.</p>
-      <p>Scanners confirm <b>${esc(F.n)}</b> ahead.</p>${na&&nemActive()?`<p class="blood">Intelligence: ${esc(nemFull())} has adapted to you: <b>${esc(nemAdaptName(na,nemActive().fac))}</b> (${esc(nemAdaptWhy(na,nemActive().fac))}). ${esc(nemAdaptDesc(na,nemActive().fac))}</p>`:''}${(()=>{ const c=sectorCond(); return c?`<p class="gilt">Sector condition: <b>${esc(c.n)}</b>. <span class="muted">${esc(c.d)}</span></p>`:''; })()}<p class="muted">${esc(F.blurb)}</p><button class="primary" data-act="${RUN.sector===3?'beat3':'closeModal'}">Plot a course</button>`);
+      <p>Scanners confirm <b>${esc(F.n)}</b> ahead.</p>${na&&prev?`<p class="blood">Intelligence: ${esc(nemFull(prev))} has adapted to you: <b>${esc(nemAdaptName(na,prev.fac))}</b> (${esc(nemSay(nemAdaptWhy(na,prev.fac),prev))}). ${esc(nemAdaptDesc(na,prev.fac))}</p>${nemAdaptLine(prev,na)?`<p class="blood" style="font-size:14px">${esc(nemAdaptLine(prev,na))}</p>`:''}`:''}${(()=>{ const c=sectorCond(); return c?`<p class="gilt">Sector condition: <b>${esc(c.n)}</b>. <span class="muted">${esc(c.d)}</span></p>`:''; })()}<p class="muted">${esc(F.blurb)}</p><button class="primary" data-act="${RUN.sector===3?'beat3':'closeModal'}">Plot a course</button>`);
     return;
   }
   mapScreen();
