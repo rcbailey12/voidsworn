@@ -17,7 +17,10 @@ set "MODEL="
 if /i "%ARM%"=="deepseek" set "MODEL=deepseek/deepseek-flash"
 if /i "%ARM%"=="kimi" set "MODEL=moonshotai/kimi-k3.1-pro"
 if not defined MODEL (echo usage: work_issue.bat issue-number deepseek-or-kimi [dryrun] & exit /b 2)
-set "PATH=C:\Program Files\nodejs;C:\Program Files\Git\cmd;%APPDATA%\npm;%PATH%"
+rem The repo's bundled Node 22 first: the shell's Node 24 gives a false 4,048 pow differences in the parity math sweep (#217 trial)
+set "PATH=%USERPROFILE%\Downloads\voidsworn_test\node;C:\Program Files\nodejs;C:\Program Files\Git\cmd;%APPDATA%\npm;%PATH%"
+rem WORK_CAP: the run's cap in seconds (default one hour; set it before calling for a bigger job)
+if not defined WORK_CAP set "WORK_CAP=3600"
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 set "T=%~dp0"
 set "PS=powershell -NoProfile -ExecutionPolicy Bypass -File "%T%work_issue.ps1""
@@ -71,7 +74,7 @@ if errorlevel 1 goto :prepfail
 if /i "%MODE%"=="dryrun" (echo dry> "%O%\balance_before.txt") else (%PS% balance %ARM% "%O%\balance_before.txt" > nul)
 powershell -NoProfile -Command "(Get-Date).ToString('s')" > "%O%\time_start.txt"
 echo agent running %time% >> "%O%\result.txt"
-call "%T%tmo.bat" 3600 "%OC%" run --auto --format json -m %MODEL% --dir "%R%" "Read WORK_TASK.md in this folder and do exactly what it says. Do not commit and do not push." > "%O%\events.jsonl" 2> "%O%\stderr.txt"
+call "%T%tmo.bat" %WORK_CAP% "%OC%" run --auto --format json -m %MODEL% --dir "%R%" "Read WORK_TASK.md in this folder and do exactly what it says. Do not commit and do not push." > "%O%\events.jsonl" 2> "%O%\stderr.txt"
 > "%O%\exit.txt" echo %ERRORLEVEL%
 powershell -NoProfile -Command "(Get-Date).ToString('s')" > "%O%\time_agent_end.txt"
 set /p OCX=<"%O%\exit.txt"
