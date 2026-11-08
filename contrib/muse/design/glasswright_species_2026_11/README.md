@@ -6,6 +6,7 @@ Settles issue #48 (Owner: muse; moved to Muse under R128). The done-when: a holi
 
 - `design.md`: the chaired species design. One tissue, lumen-flesh, whose state is set by crystallinity, hydration, and light-saturation, derived through body plan, face, arms and spinnerets, sails, age, the four admirals, and the ancient elder.
 - `synthesis.md`: the chair synthesis. Verdict, the substance-system ruling, every conflict between legs with its disposition and reasons, ideation dispositions, consistency notes against the faction package, and the open items for Ryan.
+- `concept_sheet_notes.md`: the concept sheet handoff to Opus (added Nov 8, 2026): Ryan's inconsistency ruling, verified per-image failure notes, the consistency bar for any future image pass, and generation lessons.
 - `PACK.md`: the evidence pack the legs wrote from, copied as recorded.
 - `legs/`: the five legs, copied as recorded and not rewritten. rey_blind.md (blind Rey, written from the pack only before any other leg was read), deepseek.md and qwen.md (writer legs), flash.md and grok.md (ideation legs).
 
@@ -18,7 +19,7 @@ Four concept images were generated from the chaired design (bench worker at the 
 - media-generation-glasswright-48-admiral-0-22b5ae21-cce1-4bb5-8828-acfe8452ea62.webp
 - media-generation-glasswright-48-ancient-elder-0-db24c8de-3062-4504-92a3-41afce34e7ba.webp
 
-The prompts used are recorded in concept_sheet_prompts.md. Chair notes on the sheet, for Ryan's pick: the bench worker's grille reads slightly toothy at small size, the admiral's vanes run larger than the written modest spec, and the elder leans further toward monster than the text intends. The design text governs; the images are a first visual pass in the spirit of the Nov 2 run.
+The prompts used are recorded in concept_sheet_prompts.md. Update Nov 8, 2026: Ryan reviewed the sheet and ruled the four portraits inconsistent as a species set (limb counts and head construction differ image to image; verified counts and per-image failures are in concept_sheet_notes.md). Two corrective generations (v2, v3, also in the local concepts folder) each traded one failure for another. At Ryan's direction the visual work is handed to Opus with the full notes in concept_sheet_notes.md; the images stand as inspiration only, and the design text governs.
 
 ## Open items left for Ryan (also in synthesis.md)
 
