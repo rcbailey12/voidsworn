@@ -78,6 +78,7 @@ Coding seat queue (released one at a time to the workhorse once #217 picks a win
 
 ## Waiting on Ryan
 
+- #120 V4 Pro arm: add about $5 on DeepSeek (platform.deepseek.com; balance is $1.77, the bigger model costs roughly ten times Flash a token). Then the board starts WORKHORSE_H2H_120_PRO.bat itself.
 - #48 Glasswright design (contrib/muse/design/glasswright_species_2026_11/design.md): his read of the design text; Brin's pronoun (one word); close faction package question 2 on the design's youth-to-old gradient (yes or no).
 - Nothing right now.
 - #221: OK to start a PC thread for the per-ship CPU trim (not urgent; the scene sits at 6.0 ms of the 12.5 ms gate).
@@ -118,6 +119,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-08 17:05 UTC board thread: #120 Kimi arm ended at 84 min on a Moonshot low-credit 429 ($8.68 real charge, balance $1.62), no report, push refused (it edited checks.yml; the token has no workflow scope); about 100 Godot .uid files in its diff. Its UI and CI catches match the board's sweep of #248; the board pushed both fixes onto work/issue-120-deepseek (b45b973). #248 held until the V4 Pro arm runs (it must start from a main without #120). Pro arm waits on a DeepSeek top-up.
 - 2026-11-08 16:10 UTC board thread: #249 (Muse, #48 species design) merged after replacing em dashes in four raw legs; #250 filed (consistent concept sheet, Opus, scope questions first). #120 Kimi arm 38 min in, 29 model calls, about $2 so far.
 - 2026-11-08 15:50 UTC board thread: #120 Flash arm landed (PR #248, held; R130 findings), Kimi arm running since 09:24 CST. #247 (audit records and stack review) merged. Checks every 25 min while runs are active.
 - 2026-11-08 15:20 UTC board thread: R129: V4 Pro arm for #120 (PR #245), impact-sweep review standard, #246 filed (Heat back-fill for existing profiles, found by sweeping #241). Seat map #244 merged.
@@ -127,4 +129,3 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 - 2026-11-08 13:30 UTC board thread: first Kimi rerun (07:18 CST) refused again, 3 requests a minute, because the $5 had not posted (balance still 9.98). Ryan fixed it (balance 15.96); the board started WORKHORSE_KIMI_RERUN.bat itself through computer use at 07:28 CST, first use of R126. Run 20261108_072823 is working.
 - 2026-11-08 13:20 UTC board thread: Ryan added $5 on Moonshot and started the Kimi rerun. Computer use set up for the board (File Explorer, click tier, R126): the board double-clicks PC .bat files itself from now on; payments stay Ryan's.
 - 2026-11-08 13:30 UTC board thread: #217 Kimi arm stopped 11 s in, no changes: Moonshot 429 "max organization concurrency: 1" (starter tier, msh-gid free; OpenCode sends parallel requests) and opencode exited. Not a model result. Fallback as planned (R117): Ryan adds $5 on Moonshot (paid total $10, next tier), then double-clicks Downloads\voidsworn_test\WORKHORSE_KIMI_RERUN.bat (Kimi arm only, same runner and #222 config as the DeepSeek arm). #241 held until then.
-- 2026-11-08 13:20 UTC board thread: #217 DeepSeek arm done (36.7 min, 116 model calls, real charge $0.09, opencode exit 0), PR #241 reviewed by diff: Heat gate moves to the first real loss (abandoned runs do not count, older winners keep it), R63 payout +2 XP per point to the flown line and +1 to the shadow pool with cap overflow, browser and Godot together, oracle identical, new heat_tests.js and Godot test, two 4K shots; a first-review pass candidate, held until the Kimi arm lands. Merged #239 (harness note, closes #206 and #214) and #240 (#229 reads; merged a minute before its parity check finished, which then passed; docs only). Closed #96 (superseded by R83, R86, R96) and #98 (R82).
