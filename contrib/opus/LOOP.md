@@ -8,7 +8,7 @@
 
 Running: no
 Running since (UTC): 2026-11-08 00:05
-Last run finished (UTC): 2026-11-08 00:40
+Last run finished (UTC): 2026-11-08 00:50
 
 If "Running: yes" and the start time is under 90 minutes old, another run is working: stop without changes. If it is older, the last run died: take over and say so in the log.
 
@@ -42,7 +42,7 @@ If "Running: yes" and the start time is under 90 minutes old, another run is wor
 
 Opus jobs, in order:
 1. #207 benchmark scene on the RTX 5080. It gates the scene-gate share (Ryan sets it after seeing the numbers), the #198 and #199 re-spec, #209, #139, #140 and every ceiling-dependent settlement job. Name the binder (shadow/surface/post vs geometry submission vs CPU submission) and report headroom, not compliance.
-2. #217 trial: build the OpenCode runner .bat files once Ryan answers the setup questions; trial job is #26 (Heat un-gate: multi-file, browser plus Godot, parity checks run locally, a visible control to screenshot, cheap to throw away). Backup: a synthetic spec of the same shape.
+2. #217 trial: build the OpenCode runner (tools/pc: a setup .bat that installs OpenCode, takes each key once and runs a does-it-start test, then one trial .bat that runs the DeepSeek arm then the Kimi arm on #26 and pushes work/issue-26-<arm>); trial job is #26 (Heat un-gate: multi-file, browser plus Godot, parity checks run locally, a visible control to screenshot, cheap to throw away). Backup: a synthetic spec of the same shape.
 3. Apply #201 edits G2 to G6 to #120, #121, #122 (G1 withdrawn) before any of them is released.
 4. Triage settlements into named jobs with fixed top blocks: #208 (also the only home of the station assert fixes), #210, #212, #213, #215. Writing only; ceiling-dependent builds wait for #207.
 5. #216 first pass: rest of AGENTS.md, demote NEXT.md, confirm the council memory file placement for Rey (record Grok in the seat map).
@@ -64,15 +64,15 @@ Coding seat queue (released one at a time to the workhorse once #217 picks a win
 
 ## Waiting on Ryan
 
-- #217 setup: OpenCode on the PC, a Moonshot API key and a DeepSeek API key (small prepaid balances), optional OpenRouter key. Opus asked how he wants the setup and run done (Nov 7 chat).
-- Station triangle ceiling: #200 D20 (40k to 45k hard ceiling) and D18 (detail share caps) still cap triangles, against R111. Opus pick: make both reported figures and price stations in ms on the scene gate. Asked Nov 7.
+- #217 money: about $10 on Moonshot and $2 on DeepSeek, no OpenRouter for the trial (R114). Setup itself is one double-click once Opus has built the runner.
+- Projects pilot (R114): Ryan checks that Projects shows in his Code sidebar, turns on Remote Control for Downloads\voidsworn_test in the desktop app, and starts the #207 thread from the project with the starter line Opus gave him in chat (Nov 7).
 - Scene-gate share: after #207's first measurement.
 - S15 sound listen pass: one sitting, best once the #211 probe clips exist.
 - Round 7 pick and station look: when #198 and #199 land.
 
-## Open decisions (Opus)
+## Projects pilot (R114)
 
-- Lead conversation: a Claude Code Project (public beta) could replace both the lead chat and the hourly task. Upside: one conversation that keeps its memory, a phone overview of what is waiting, and threads that run on the PC through Remote Control. Limits checked Nov 7 (code.claude.com/docs/en/claude-projects): threads use Anthropic models only (the workhorse stays on the board), every thread draws the plan (default Opus high), cloud threads skip the repo's .claude skills and settings, a PC thread needs the desktop app's Remote Control setting and the PC awake. The repo stays the record either way. Proposed pilot: #207 as one PC thread, if Ryan's account has Projects.
+#207 runs as one Claude Code Project thread on the PC. Judge it on: did it run Godot on the 5080 without stalling on approvals, did it report numbers into the repo, how much plan usage it took, and could Ryan follow it from his phone. If yes, the lead conversation moves into the project and Opus asks Ryan before deleting the old hourly task. If no, the board stays in a lead chat and #207 runs through the PC queue. Limits checked Nov 7 (code.claude.com/docs/en/claude-projects): threads use Anthropic models only (the workhorse stays on the board), every thread draws the plan (default Opus high), cloud threads skip the repo's .claude skills and settings, a PC thread needs the desktop app's Remote Control setting and the PC awake.
 
 ## Muse
 
@@ -99,6 +99,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-08 00:50 lead chat: Ryan answered: Projects pilot on #207, both triangle caps dropped (R113), one double-click trial, cheaper spend (R114). #217 spec fixes posted on the issue.
 - 2026-11-08 00:40 lead chat (Opus back from the weekly cap): audit conditions 1 to 3 done. Merged #204, #203, #205 by diff, retitled. Blocked #198 and #199. FINDINGS R110 to R112. auto_pr title fix, AGENTS.md opening fix. Hourly task left off. Next: #207, then the #217 runner.
 - 2026-11-07 13:30 Rey (lead chat while Opus was capped): repo state audit delivered on muse/repo-state-2026-11; Ryan ruled board to Opus, #193 local first, queue order to Opus. #217 filed (workhorse trial). #216 filed Nov 7 morning.
 - 2026-11-06 Rey: Nov 6 audit stack filed and ruled by Ryan as #206 to #215. #200 synthesis corrected twice on PR #203; #201 rulings pushed to PR #204.
