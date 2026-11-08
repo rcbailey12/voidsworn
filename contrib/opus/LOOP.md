@@ -16,7 +16,7 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 
 - Opus: board owner, reviewer, merges, visual calls, issue writing, messages to Ryan; builds the opus jobs below. Sonnet subagents for routine checks, logs, staging.
 - Codex: DOWN until Ryan says. The PC watcher (codex_board.ps1) still queues any unblocked `codex` issue; those runs die on the usage limit. Keep every codex issue `blocked` until a live seat takes it.
-- Workhorse (#217, R127): LIVE. OpenCode on the PC through tools/pc/work_issue.bat (copy in Downloads\voidsworn_test\work217\tools). DeepSeek V4.1 Flash is the primary model ($0.09 and one review pass on #26). Kimi K3.1 Pro on pay-as-you-go (Moonshot paid total $10, Tier 1) pending the #120 head-to-head that decides the subscription. #224 guard and the Node 22 fix copied to the PC Nov 8; free dry run started 08:39 CST. Start a run: write a one-line .bat (set WORK_CAP if needed, call work217\tools\work_issue.bat <issue> <arm>) in Downloads\voidsworn_test and double-click it through computer use (R126).
+- Workhorse (#217, R127, R134): LIVE. OpenCode on the PC through tools/pc/work_issue.bat (copy in Downloads\voidsworn_test\work217\tools). DeepSeek V4 Flash for coding jobs, hard ones included (R134: beat V4 Pro and Kimi on #120); the hardest still go to Opus threads while the plan has room (R132). V4 Pro only as a second try on a job Flash fails; Kimi off. Start a run: drop a one-line queue job in Downloads\voidsworn_test\queue\ that `start`s a WORKHORSE_*.bat (see Known traps); two runs can share the PC. Every task now carries the R129 self-check list (PR #253).
 - Muse: runs on its own watcher (muse label). Council seats: Rey, DeepSeek, Qwen, Flash (ideation only), Grok (new free leg, Nov 7). ChatGPT down until about Nov 10; Argon blocked since Nov 5. For an independent checker leg on an Opus merge while ChatGPT is down, ask Ryan in the main chat and Rey runs it.
 
 ## How a run works
@@ -30,7 +30,9 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 7. Rewrite this file, set "Running: no", commit straight to main (this file and FINDINGS only, docs-only exception), push with timeout 90. Stop.
 8. One send_later check only when a job or a limit reset lands well before the next look. Never chain them.
 
-## Current state (2026-11-08 12:50 UTC)
+## Current state (2026-11-08 20:05 UTC)
+
+- Nov 8 afternoon: #120 head-to-head done (R134): #248 (Flash plus board commit b45b9731) waits only on Muse's outside check #256, then merge; #255 (V4 Pro) closed. #246 merged (PR #254, Flash). Spin-off threads (R133): #231 UI spec running since 13:45 CST; #121 thread started from the #248 branch. Muse: #256 (check #248, then #231's PR), #257 entry-doc audit and COUNCIL.md, #258 Foley licence and plan.
 
 - Board thread (Nov 8 morning, R119): Ryan set it up as the board owner in the project; worker threads never merge their own PRs. #223 reviewed by diff and MERGED (4b6c365), #220 closed. #222 reviewed after the fact: sound, one gap (the agent could push through a chained or `git -c` command and could delete anywhere on the PC); fix PR #224 merged on Ryan's word ("you're the owner now").
 
@@ -125,6 +127,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-08 20:05 UTC board thread: #120 V4 Pro arm in (PR #255, $1.49, 81 min, same UI-reader gap plus RUN.nem never set for new runs): closed; Flash wins (R134). #254 (#246 Heat back-fill, Flash, 20 min) merged. #256 unblocked for #248. Muse got #257 and #258. PC jobs now start through the queue folder instead of clicks.
 - 2026-11-08 18:07 UTC board thread: Ryan added $10 on DeepSeek. V4 Pro arm on #120 started 12:05 CST through computer use (model id deepseek/deepseek-v4-pro; deepseek/deepseek-pro is not in OpenCode 1.19.5's catalog). An earlier attempt misfired: two chained double-clicks without a screenshot between them opened Ryan's FilterFactory desktop folder (no program ran). Rule: one screenshot before every click. Ryan away until mid-afternoon; Opus-codes-hard-jobs plan confirmed (R132).
 - 2026-11-08 17:05 UTC board thread: #120 Kimi arm ended at 84 min on a Moonshot low-credit 429 ($8.68 real charge, balance $1.62), no report, push refused (it edited checks.yml; the token has no workflow scope); about 100 Godot .uid files in its diff. Its UI and CI catches match the board's sweep of #248; the board pushed both fixes onto work/issue-120-deepseek (b45b973). #248 held until the V4 Pro arm runs (it must start from a main without #120). Pro arm waits on a DeepSeek top-up.
 - 2026-11-08 16:10 UTC board thread: #249 (Muse, #48 species design) merged after replacing em dashes in four raw legs; #250 filed (consistent concept sheet, Opus, scope questions first). #120 Kimi arm 38 min in, 29 model calls, about $2 so far.
