@@ -944,7 +944,7 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 
 # A short cooling atlas over the contact point and a dim hot spot on the plate.
 static func _afterglow(fx, p: Vector3, T: float, col: Color, sz: float, light: bool, px := 0.0) -> void:
-	_burst(fx,p,Vector3.UP,T+0.08,sz*0.9,"cool",0.42 if light else 0.50,col,0.55,0.0,Vector3.ZERO,0.40)
+	_burst(fx,p,Vector3.UP,T+0.08,sz*1.3,"cool",0.50 if light else 0.70,col,0.65,0.0,Vector3.ZERO,0.45)
 	fx.spr(p,T,0.7 if light else 1.0,col,1.0,sz*0.18,sz*0.13,21)
 
 
