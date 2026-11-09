@@ -689,8 +689,24 @@ func _rcs(fx) -> void:
 			break
 		var rp: Vector3 = best[j][1]
 		var t: Vector3 = best[j][2]
-		var wp: Vector3 = to_world(rp)
-		var gv: Vector3 = dir_world(-t) * (5.0 + fx.rng.randf() * 3.0) * k
+		# Issue 281 run 7: a hull that does not fill its bounding box (the Eclipse disc and tower) leaves the box
+		# corner in empty space, so the old corner puff floated off the ship. Start each puff on the real plating: cast
+		# a ray from the corner, pushed a further L away from the hull centre, back toward it, and use the hit point.
+		# A corner whose ray misses has no plating behind it, so skip it.
+		var outward: Vector3 = rp - hull.c
+		var od: float = outward.length()
+		outward = outward / maxf(od, 1e-3)
+		var h: Dictionary = hull.ray(rp + outward * L, -outward)
+		if h.is_empty():
+			continue
+		var wp: Vector3 = to_world(h["p"])
+		var n: Vector3 = h["n"]
+		# The gas blows away from the plating, never into the hull.
+		var gd: Vector3 = -t
+		if gd.dot(n) < 0.15:
+			gd = n
+		var gv: Vector3 = dir_world(gd) * (5.0 + fx.rng.randf() * 3.0) * k
+		fx.record_spawn(self, wp)
 		fx.spr(wp, fx.now, 0.35, Color(0.85, 0.88, 0.95), 0.6, 0.12 * k, 0.9 * k, 7, gv, 2.5)
 		fx.spr(wp, fx.now, 0.06, Color(0.9, 0.95, 1.0), 1.5, 0.08 * k, 0.15 * k, 18)
 
