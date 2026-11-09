@@ -1,5 +1,9 @@
 # The rules oracle, pinned
 
+Nov 9 2026, issue 29 (progression step 13): re-copied data.js for the lineage
+tree rollout to the other five factions. Combat rules and the campaign tables'
+contents are unchanged. Re-exported rules tables.
+
 Nov 8 2026, issue 246: re-copied core.js for the loss back-fill in migrateMeta.
 A profile saved before the Heat gate has no losses count; the count is rebuilt
 from its run_end log entries, and only written when above 0 so old fixtures

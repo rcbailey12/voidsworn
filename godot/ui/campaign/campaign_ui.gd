@@ -1214,7 +1214,7 @@ func _end(d: Dictionary) -> Control:
 	add(menu, abtn("Title screen", "title")); v.add_child(menu)
 	return cc
 
-# ---------------- Glasswright lineage ----------------
+# ---------------- lineage trees ----------------
 func _lineage_node(n) -> Control:
 	var chosen = n["state"] == "chosen"; var cv = card(chosen, 300); var col = cv[1]
 	col.add_child(lbl(n["n"], 19, GILT if chosen else BONE, font_semi)); col.add_child(lbl(n["d"], 16, BONE2))
@@ -1228,7 +1228,7 @@ func _lineage(id) -> Control:
 	v.add_child(lbl("Recorded in the glass. One pick at each of levels 5, 6 and 7. Choose a branch, then one skill at its next tier. Its partner locks until you reset this line.", 17, BONE2))
 	v.add_child(_mastery_bar(id))
 	v.add_child(lbl(str(maxi(0, mini(3, level - 4) - build["picks"].size())) + " branch picks ready. Capstone at level 8 (230 XP).", 17, GILT))
-	v.add_child(lbl("Command skills and capstones use " + str(C.ADMIRALS[id]["cmd"]["n"]) + ", the primary Command. Fleet and flagship branches have their first tier in this test slice.", 15, BONE3))
+	v.add_child(lbl("Command skills and capstones use " + str(C.ADMIRALS[id]["cmd"]["n"]) + ", the primary Command. Fleet and flagship branches open their first tier.", 15, BONE3))
 	if not C.lineageBetweenRuns(): v.add_child(lbl("Finish or abandon your saved run before changing this line.", 17, BLOOD))
 	var columns = flow(16); var trunk = vbox(8); trunk.custom_minimum_size.x = px(300)
 	trunk.add_child(lbl("Trunk: levels 1 to 4", 20, BONE, font_semi))
