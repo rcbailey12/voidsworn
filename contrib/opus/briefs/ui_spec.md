@@ -16,7 +16,7 @@ Values marked **provisional** are this spec's picks pending a capture round: U-A
 | Player UI scale hook (R2) | ui_scale.gd `player`, main.gd `_apply_settings` | Nothing yet: it reads `settings["ui_scale"]`, missing means 1.0. The settings entry is follow-up job A (section 11). |
 | Visible battle focus ring (AC5) | hud.gd `_theme` | The battle menu (Esc) and the end card now take keyboard focus and show the title screen's bone ring. Board-time buttons are unchanged (section 6). |
 | Text floor (TY6) | ui_scale.gd MIN_TEXT 12; three campaign side panel small-caps labels 11 to 12 | Three small labels on the map's side panel one point larger. |
-| One hull-low line (HD9) | hud.gd roster bar 0.34 to 0.35 | Invisible (the browser and the campaign bars already used 0.35). |
+| One hull-low line (HD9) | hud.gd roster bar and nameplate bar 0.34 to 0.35 | Invisible (the browser and the campaign bars already used 0.35). |
 | Menu keyboard check | ui_shots.gd moment 7 | Nothing (a test): the menu takes focus, keeps it on a toggled row, and Esc gives the keys back. |
 | Debrief mock | godot/campaign/test/debrief_mock_shots.gd | Nothing (a capture script for Ryan's review round). |
 

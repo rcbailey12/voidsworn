@@ -51,7 +51,8 @@ for (const r of low) check(false, `text size ${r.v} under the ${MIN_TEXT} floor 
 check(true, 'text floor scan ran');
 
 // 5. HD9: one hull-low line in the port
-check(/HULL_LOW if f < 0\.35 else HULL/.test(hud) && /BLOOD if f < 0\.35 else/.test(read('godot/ui/campaign/campaign_ui.gd')), 'hull-low line is 0.35 in the battle roster and the campaign bars (HD9)');
+const lows = [...hud.matchAll(/HULL_LOW if \w+ < ([\d.]+)/g), ...read('godot/ui/campaign/campaign_ui.gd').matchAll(/BLOOD if f < ([\d.]+)/g)].map(m => +m[1]);
+check(lows.length >= 4 && lows.every(v => v === 0.35), `every hull-low line is 0.35: battle roster, nameplate and the campaign bars (HD9; found ${lows.join(', ')})`);
 
 // 6. the diff script still reads every named pair (a pattern that stopped matching is reported, not failed)
 const r = diff.build();
