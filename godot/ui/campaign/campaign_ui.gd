@@ -752,7 +752,7 @@ func _nem_panel(v: VBoxContainer) -> void:
 	if C.jt(beh.get("feeds")):
 		var fd = int(C.z0(N.get("fed"))); v.add_child(rich(c("Fed: ", BONE2) + c(str(fd) + " of 8", BLOOD) + c(C.nemSay(" (his fleet has " + str(min(32, 4 * fd)) + "% more hull; every ship you lose feeds him)", N), BONE3), 13))
 	if beh.get("strike") == "raid":
-		var rc = int(C.z0(N.get("riches"))); v.add_child(rich(c("Riches: ", BONE2) + c(str(rc), BLOOD) + c(" (" + ("no extra ships yet" if rc == 0 else str(rc) + " extra ship" + ("s" if rc > 1 else "") + " in his fleet") + "; each escape or ship he tows adds one)", BONE3), 13))
+		var rc = int(C.z0(N.get("riches"))); v.add_child(rich(c("Riches: ", BONE2) + c(str(rc), BLOOD) + c(C.nemSay(" (" + ("no extra ships yet" if rc == 0 else str(rc) + " extra ship" + ("s" if rc > 1 else "") + " in his fleet") + "; each escape or ship he tows adds one)", N), BONE3), 13))
 	if C.jt(N.get("loot")) or C.jt(N.get("held")):   # R49: what a raid took comes back when he dies
 		var hs = []
 		if C.jt(N.get("loot")): hs.append(C.numstr(N["loot"]) + " of your credits")
@@ -761,7 +761,7 @@ func _nem_panel(v: VBoxContainer) -> void:
 	if beh.get("strike") == "duel" and C.jt(N.get("honed")):
 		var hn = min(3, int(N["honed"])); v.add_child(rich(c("Honed: ", BONE2) + c(str(hn) + " of 3", BLOOD) + c(C.nemSay(" (his few ships aim " + str(3 * hn) + " better and carry " + str(10 * hn) + "% stronger shields)", N), BONE3), 13))
 	if C.jt(beh.get("revive")):   # R49: only in the last sector
-		v.add_child(rich(c("Comeback: ", BONE2) + (c("spent, the next kill is final", GILT) if C.jt(N.get("revived")) else c("in sector III his flagship rises once more after it falls; before that he withdraws like any rival", BLOOD)), 13))
+		v.add_child(rich(c("Comeback: ", BONE2) + (c("spent, the next kill is final", GILT) if C.jt(N.get("revived")) else c(C.nemSay("in sector III his flagship rises once more after it falls; before that he withdraws like any rival", N), BLOOD)), 13))
 	# weaknesses with what they do; adaptations in his faction's words with what they do
 	var ws = []; var unknown = 0
 	for w in N["weak"]:
