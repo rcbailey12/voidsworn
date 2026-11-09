@@ -7,7 +7,8 @@
 #      no longer print ghost copies on the decks (round 2's flaw); its normals are baked twice, from the trimmed B0 and from a smoothed
 #      copy, and the smooth one is taken out of the sharp one (a detail-only normal map: B0's panel lines, grilles and ribs stay, its
 #      lopsided, melted large shape goes, and the hand-built plate chamfers keep their own shading); B0's cavity AO is baked too;
-#   4. the concept paint (paint3.py) baked into albedo and ORM maps, one atlas for the hull (RES), one for every part (RES / 2);
+#   4. the concept paint (paint3.py) baked into albedo and ORM maps, one atlas for the hull (RES), one for the hand parts (RES / 2),
+#      and in the hybrid one for the generated hero parts (RES / 2);
 #   5. the textured materials replace the procedural ones; the blend is what render.py and export3.py read.
 # usage: blender -b -P bakeAb3.py -- OUT_DIR B0_GLB GEN3D_DIR CELL [RES] [SAMPLES]      CELL = Ab3 or Hy3
 import os, sys, math, json, time
@@ -151,11 +152,13 @@ def main():
     parts = hard + gen; allobj = [hull] + parts + made + prox
     mats = P3.assign(allobj, [hull], b0ao)
     lod_tags(parts + made + prox)
-    painted = [o for o in parts + made if o.get('role') not in ('interior', 'glow')]
+    painted = [o for o in hard + made if o.get('role') not in ('interior', 'glow')]
     pprox = [o for o in prox if o.get('role') not in ('interior', 'glow')]
     unwrap(painted + pprox, margin=.002)
+    if gen: unwrap(gen, margin=.002)   # the generated parts get their own atlas: their thousands of tiny UV islands, packed in with
+    #                                    the hand parts, shrank every island below a texel and the parts baked black (round 3 first run)
     sc = bpy.context.scene; sc.cycles.samples = max(4, SAMPLES // 8); t1 = time.time()
-    hm = [m for (b, g), m in mats.items() if g == 'H']; pm = [m for (b, g), m in mats.items() if g in ('P', 'G')]
+    hm = [m for (b, g), m in mats.items() if g == 'H']; pm = [m for (b, g), m in mats.items() if g == 'P']; gm = [m for (b, g), m in mats.items() if g == 'G']
     himg, th = P3.bake_group([hull], hm, f'{CELL}_hull', RES, OUT)
     pimg, tp = P3.bake_group(painted, pm, f'{CELL}_parts', RES // 2, OUT, margin=4)
     if pprox:   # second pass: the hand proxies into the same atlas, with the generated parts out of the way
@@ -164,11 +167,17 @@ def main():
         pimg, tp2 = P3.bake_group(pprox, pm, f'{CELL}_parts', RES // 2, OUT, margin=4, imgs=pimg); tp['proxies'] = tp2
         for o in gen: o.hide_render = False
         for o in prox: o.hide_render = True
+    if gen:
+        gimg, tg = P3.bake_group(gen, gm, f'{CELL}_gen', RES // 2, OUT, margin=4); tp['generated'] = tg
     INFO.update(paint_bake_seconds=round(time.time() - t1, 1), paint_bake_hull=th, paint_bake_parts=tp)
     HM = P3.textured(f'{CELL}_hull_mat', himg['albedo'], himg['orm'], nimg); PM = P3.textured(f'{CELL}_parts_mat', pimg['albedo'], pimg['orm'])
     hull.data.materials.clear(); hull.data.materials.append(HM); hull.data.polygons.foreach_set('material_index', np.zeros(len(hull.data.polygons), np.int32))
     for o in painted + pprox:
         o.data.materials.clear(); o.data.materials.append(PM); o.data.polygons.foreach_set('material_index', np.zeros(len(o.data.polygons), np.int32))
+    if gen:
+        GM = P3.textured(f'{CELL}_gen_mat', gimg['albedo'], gimg['orm'])
+        for o in gen:
+            o.data.materials.clear(); o.data.materials.append(GM); o.data.polygons.foreach_set('material_index', np.zeros(len(o.data.polygons), np.int32))
     for m in list(bpy.data.materials):
         if m.name.startswith('p3_') and m.users == 0 and m.name not in ('p3_glow', 'p3_interior'): bpy.data.materials.remove(m)
     skin.show_render = True; skin.show_viewport = True
