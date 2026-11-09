@@ -23,18 +23,18 @@ import paint3 as P3
 from paint3 import node, math_, mixc, mulc, ramp, flat, bake_group, textured
 
 # linear albedo pairs (low, high) per band; see the README for the concept samples they were fitted to
-LIN = dict(rust=((.050, .0085, .0050), (.085, .0150, .0080)), gun=((.016, .017, .019), (.028, .029, .032)),
-           drum=((.012, .013, .014), (.022, .023, .025)),
+LIN = dict(rust=((.040, .0052, .0030), (.066, .0090, .0048)), gun=((.012, .013, .0145), (.021, .022, .024)),
+           drum=((.007, .0075, .008), (.013, .0135, .015)),
            belly=((.0050, .0048, .0044), (.0085, .0078, .0068)), copper=((.090, .030, .016), (.150, .052, .026)),
            sleeve=((.030, .031, .034), (.050, .052, .058)), ochre=((.20, .12, .025), (.30, .19, .040)), rack=((.060, .011, .006), (.095, .018, .010)),
            hazard=((.36, .22, .015), (.44, .28, .02)), yellow=((.30, .19, .015), (.40, .26, .02)), white=((.36, .35, .32), (.46, .45, .41)), dark=((.004, .004, .005), (.007, .007, .008)),
            borrowed=((.040, .050, .062), (.050, .062, .076)), rustdk=((.022, .010, .008), (.034, .015, .011)))
-DUST = dict(rust=((.30, .17, .145), .95), rack=((.12, .05, .035), .4), gun=((.075, .072, .072), .55), drum=((.04, .04, .04), .3), sleeve=((.08, .08, .082), .4))
+DUST = dict(rust=((.34, .19, .16), 1.0), rack=((.12, .05, .035), .4), gun=((.075, .072, .072), .55), drum=((.04, .04, .04), .3), sleeve=((.08, .08, .082), .4))
 PATCH = (.45, .110, .030)       # the concept's bright orange rust blooms
 PATCH2 = (.10, .020, .008)      # their darker rim
 STREAK = (.050, .020, .010)     # rust run-off on gunmetal
 WORN = (.16, .15, .135)         # bare steel on worn edges
-GRIME_LOW = (.012, .0095, .0065)  # the concept's dark olive lower hull
+GRIME_LOW = (.022, .017, .011)  # the concept's dark olive lower hull
 Z_GRIME = (-.135, -.050)        # grime ramps in from z0 (full) to z1 (none)
 
 def make(band, group, b0ao=None):
@@ -61,13 +61,14 @@ def make(band, group, b0ao=None):
     edge = math_(nt, 'MULTIPLY', edge, ramp(nt, noise(4, 2), .35, .65))                # and only in some areas (handled, scraped)
     clean = band in ('borrowed', 'dark', 'white', 'hazard', 'yellow')
     if band == 'borrowed': edge = math_(nt, 'MULTIPLY', edge, .25)
+    if band == 'drum': edge = math_(nt, 'MULTIPLY', edge, .35)                        # strapped drums: wear on the rims, not every strap
     # base: two tones in broad patches, a finer mottle on top
     col = mixc(nt, lo, hi, ramp(nt, noise(3.0, 3), .38, .66))
     col = mulc(nt, col, math_(nt, 'ADD', .82, math_(nt, 'MULTIPLY', noise(18, 4), .36)))
     col = mulc(nt, col, math_(nt, 'ADD', .62, math_(nt, 'MULTIPLY', up, .38)))      # sides darker than decks (the concept's read)
     if band in DUST:          # dust and bleach on up-facing faces (the concept's light pink-grey bow deck, grey aft deck)
         dc, dk = DUST[band]
-        col = mixc(nt, col, dc, math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', math_(nt, 'POWER', up, 3.0), dk), ramp(nt, noise(5, 3), .15, .65)))
+        col = mixc(nt, col, dc, math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', math_(nt, 'POWER', up, 4.0), dk), ramp(nt, noise(5, 3), .05, .55)))
     if band in ('rust', 'rack'):
         bloom = math_(nt, 'ADD', ramp(nt, noise(11, 4, .6), .54, .64), math_(nt, 'MULTIPLY', ramp(nt, noise(24, 6, .65), .57, .64), .8))
         reach = math_(nt, 'ADD', .55, math_(nt, 'MULTIPLY', up, .45))                  # blooms sit mostly on decks and upper sides
