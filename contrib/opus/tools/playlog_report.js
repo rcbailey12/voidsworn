@@ -50,10 +50,69 @@ function load(folder, campaignFile, explicitCampaign = false) {
       if (e.ev === 'battle_end') start = null;
     }
   }
-  return { battles, warnings, campaignEvents: events.length, campaignTips: events.filter(e => e.ev === 'teaching_tip') };
+  return { battles, warnings, campaignEvents: events.length, campaignTips: events.filter(e => e.ev === 'teaching_tip'), events };
 }
 
-function report({ battles, warnings = [], campaignEvents = 0, campaignTips = [] }) {
+// Job 7 step 11: median XP per run per line from the run_xp events the campaign writes to its play log.
+// A line is an admiral's lineage. Each run records the flown line's full payout and every benched line of the
+// same faction with its shadow share, so a line's median is over the runs where it was in that faction.
+function median(values) {
+  const sorted = values.slice().sort((a, b) => a - b), n = sorted.length;
+  return n ? (sorted[Math.floor((n - 1) / 2)] + sorted[Math.floor(n / 2)]) / 2 : null;
+}
+function lineXPSummary(events) {
+  const runs = (events || []).filter(e => e && e.ev === 'run_xp'), rows = new Map();
+  for (const e of runs) {
+    for (const line of (Array.isArray(e.lines) ? e.lines : [])) {
+      if (!line || typeof line.id !== 'string') continue;
+      const xp = number(line.xp) ? line.xp : 0;
+      let row = rows.get(line.id);
+      if (!row) { row = { id: line.id, fac: typeof e.fac === 'string' ? e.fac : '', runs: 0, flown: 0, shadow: 0, total: 0, values: [] }; rows.set(line.id, row); }
+      row.runs++; row.total += xp; row.values.push(xp);
+      if (line.id === e.admiral) row.flown++; else row.shadow++;
+      if (!row.fac && typeof e.fac === 'string') row.fac = e.fac;
+    }
+  }
+  const lines = [...rows.values()].map(r => ({ id: r.id, fac: r.fac, runs: r.runs, flown: r.flown, shadow: r.shadow,
+    total: Math.round(r.total * 100) / 100, mean: r.runs ? r.total / r.runs : null, median: median(r.values) }))
+    .sort((a, b) => a.fac.localeCompare(b.fac) || a.id.localeCompare(b.id));
+  return { runs: runs.length, lines };
+}
+// Job 7 step 11 reads Nemesis rates from the #122 counters in run_end; it keeps no Nemesis counter of its own.
+// Escape rate: share of finished runs with at least one escape. Compounding rate: share of compounding counter
+// entries above zero at run end (the Chorus fed counter today).
+function nemesisRates(events) {
+  const rows = (events || []).filter(e => e && e.ev === 'run_end' && e.nem && typeof e.nem === 'object');
+  let escapes = 0, escapeRuns = 0, compoundRuns = 0, compoundActive = 0, compoundTotal = 0;
+  for (const e of rows) {
+    const esc = number(e.nem.escapes) ? e.nem.escapes : 0;
+    escapes += esc; if (esc > 0) escapeRuns++;
+    const comp = e.nem.compound && typeof e.nem.compound === 'object' ? e.nem.compound : {};
+    for (const fac of Object.keys(comp)) {
+      const n = number(comp[fac]) ? comp[fac] : 0;
+      compoundRuns++; compoundTotal += n; if (n > 0) compoundActive++;
+    }
+  }
+  return { runs: rows.length, escapes, escapeRuns, escapeRate: rows.length ? escapeRuns / rows.length : null,
+    compoundRuns, compoundActive, compoundRate: compoundRuns ? compoundActive / compoundRuns : null,
+    compoundMean: compoundRuns ? compoundTotal / compoundRuns : null };
+}
+function runTelemetry(events) {
+  const xp = lineXPSummary(events), nz = nemesisRates(events);
+  const out = ['## Run telemetry (progression step 11)', '', `Finished runs with XP telemetry: ${xp.runs}.`];
+  if (xp.lines.length) {
+    out.push('', '| Line | Faction | Runs | Flown | Shadow | Median XP per run | Mean XP per run |', '| --- | --- | --- | --- | --- | --- | --- |');
+    for (const r of xp.lines) out.push(`| ${safe(r.id)} | ${safe(r.fac)} | ${r.runs} | ${r.flown} | ${r.shadow} | ${fmt(r.median)} | ${fmt(r.mean)} |`);
+  } else out.push('', 'No run_xp events in this save (older saves do not contain them).');
+  out.push('', '### Nemesis counters (read from issue #122)', '');
+  if (nz.runs) out.push(`Runs with a Nemesis record: ${nz.runs}. Escapes: ${nz.escapes}. Escape rate: ${fmt(nz.escapeRate * 100)}% of runs (${nz.escapeRuns} runs with at least one escape).`,
+    `Compounding counter entries: ${nz.compoundRuns}; above zero: ${nz.compoundActive}${nz.compoundRuns ? ' (' + fmt(nz.compoundRate * 100) + '%)' : ''}. Mean counter: ${fmt(nz.compoundMean)}.`);
+  else out.push('No run_end Nemesis record in this save.');
+  out.push('', 'These are read from the #122 counters; this report keeps no Nemesis counter of its own.', '');
+  return out;
+}
+
+function report({ battles, warnings = [], campaignEvents = 0, campaignTips = [], events = [] }) {
   const out = ['# Battle play report', '', '## Overview', '',
     'Battles played: ' + battles.length + '. Campaign events available: ' + campaignEvents + '.', '',
     '| Battle | Enemy faction | Objective | Result | Rounds | Real minutes |',
@@ -118,6 +177,7 @@ function report({ battles, warnings = [], campaignEvents = 0, campaignTips = [] 
     `- Auto-ended ships (activation share): ${automatic}/${activations} (${activations ? fmt(automatic / activations * 100) + '%' : 'not logged'}).`,
     `- Cancels: ${cancels}; average per battle with activation details: ${fmt(covered ? cancels / covered : null)}.`);
   battles.forEach(({ log: b }, i) => out.push(`- Battle ${i + 1} cancels: ${Array.isArray(b.acts) ? b.acts.reduce((s, a) => s + (number(a.cancels) ? a.cancels : 0), 0) : 'not retained'}.`));
+  out.push(...runTelemetry(events));
   out.push('', '## Format limits and definitions', '', ...limitations.map(s => '- ' + s), ...warnings.map(s => '- Warning: ' + safe(s)), '');
   return out.join('\n');
 }
@@ -135,7 +195,7 @@ function main(args) {
   if (output) fs.writeFileSync(output, result, 'utf8');
   process.stdout.write(result);
 }
-module.exports = { load, report, readJson };
+module.exports = { load, report, readJson, lineXPSummary, nemesisRates };
 if (require.main === module) {
   try { main(process.argv.slice(2)); } catch (e) { console.error('playlog_report: ' + e.message); process.exitCode = 1; }
 }

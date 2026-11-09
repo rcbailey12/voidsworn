@@ -300,6 +300,7 @@ function endRun(victory, abandoned){
   if(hl>0){ const hx=masteryCredit(RUN.admiral,hl*2); /* R63: +2 XP per Heat point to the flown line, +1 to the faction shadow pool; cap overflow joins the pool */
     earnings.mxGain+=hx.xp; earnings.mxOverflow+=hx.overflow; earnings.shadowBank=(META.shadowPool[RUN.fac]||0)+hx.overflow+hl; META.shadowPool[RUN.fac]=earnings.shadowBank; }
   const mx1=masteryLevel(RUN.admiral);
+  if(typeof runXPTel==='function') runXPTel(RUN,earnings,victory); // Job 7 step 11: per run XP by line for the F1 play log report
   if(victory&&hl){ META.heatBest=META.heatBest||{}; META.heatBest[RUN.fac]=Math.max(META.heatBest[RUN.fac]||0,hl); }
   RUN.carry={ren,...earnings,mx0,mx1,hl};
   RUN.carry.inheritance=inheritanceSummary(RUN);
