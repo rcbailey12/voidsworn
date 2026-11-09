@@ -39,3 +39,7 @@ His eight tree texts call his Command "Interdiction strike". The game shows "Rel
 
 - **A (my pick). Rename it Interdiction strike in the game.** Matches his tree and the design docs. One text change.
 - **B. Keep "Reload and strike"** and Muse rewrites his eight texts to match.
+
+## Ryan's answers (Nov 9 2026 07:08 CST, FINDINGS R145)
+
+"Agree with picks on 3": all five are A. 1: Muse rewrites the 49 x and c texts onto existing effects, nothing is left as text. 2: the playtest switch opens every tree skill. 3: Grax, three skills back to boarding, one stays a ram. 4: callout over the ship, a log line and a count on the recap. 5: Vorn's Command becomes Interdiction strike.
