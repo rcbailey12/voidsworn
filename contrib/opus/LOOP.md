@@ -30,7 +30,11 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 7. Rewrite this file, set "Running: no", commit straight to main (this file and FINDINGS only, docs-only exception), push with timeout 90. Stop.
 8. One send_later check only when a job or a limit reset lands well before the next look. Never chain them.
 
-## Current state (2026-11-09 04:05 UTC)
+## Current state (2026-11-09 06:50 UTC)
+
+- Nov 9 early: #24 MERGED (PR #298). #27 (DeepSeek, PR #302) reviewed by diff plus R129 sweep: sound (one run_xp event per finished run, both twins, play log capped at 600, old saves report "no run_xp events", no Nemesis counter of its own). Board stripped a stray CR in run_all_checks.js; first parity failure was a Godot download flake (corrupt zip), rerun. Merge when parity is green, then #29. #271 round 2 mockups in draft PR #301 (A Solid Slab, B Glass Cards, C Glass Shell; board pick C bold), contact sheet sent to Ryan, waiting on his pick. #209 round 3 still on the PC (opus209_r3c job 06:22 UTC). Muse: #296 and #256's check of #286 no comment yet. #281 waits for the GPU. The PC Linux shell is down (virtualization off): read the PC with device_list_dir and staging only.
+
+## Earlier state (2026-11-09 04:05 UTC)
 
 - Nov 8 late: Nemesis redesign DONE (#120 to #122 merged; #282 follow-ups merged as PR #294). #283 CI now runs campaign parity and the Nemesis scenarios. Ships: #209 round 1 (PR #287) and round 2 (PR #295) judged by Ryan (R140 structure first); round 3 (Ab3 plus the hybrid with AI hero parts) running on the PC since 03:50 UTC; #287, #295 and round 3 merge together as the record when the route is ruled. UI: R141 one consistent modern UI (Glass Bridge bold plus Chart Room, action-first); #271 round 1 mockups (PR #291) judged (2B best so far, R142); Muse #292 researches best tactics, strategy and roguelike UIs before round 2. Running: DeepSeek on #24 (Nemesis teaching loop); Muse #292, #296 (Crusade voice), #256 check of #286. Waiting for the GPU: #281 (vent puff options). Ryan: no playtest build until the new UI and first new hulls land.
 
