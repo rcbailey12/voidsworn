@@ -1031,7 +1031,7 @@ func set_plate(id: String, screen: Vector2, on: bool, name_txt: String, friend: 
 	var hf := c.get_node("hb/f") as ColorRect
 	var f := clampf(hp / maxf(mx, 1.0), 0.0, 1.0)
 	hf.anchor_right = f
-	hf.color = HULL_LOW if f < 0.34 else HULL
+	hf.color = HULL_LOW if f < 0.35 else HULL  # HD9: one hull-low line at 0.35 (Muse check of #269)
 	var sbar := c.get_node("sb") as ColorRect
 	sbar.visible = shmx > 0.0
 	(c.get_node("sb/f") as ColorRect).anchor_right = clampf(sh / maxf(shmx, 1.0), 0.0, 1.0)
