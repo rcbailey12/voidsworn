@@ -120,9 +120,15 @@ Every UI colour is a named palette entry. A new colour in UI code is either one 
 | DANGER 1 to 4 | #7ddc6a, #d0a64b, #f0883a, #e2453a | map danger bands Easy, Even, Hard, Deadly (MP8; cut points re-ruled by the U-D Monte Carlo) |
 | core colours | PATRONS col (data) | a core's own name and its sync lines |
 | faction colours | section 5.4 | campaign map and crests only |
-| SHELL, SHELL_EDGE | ink rgb(9, 14, 24) at 38%; GILT at 30% | #271 Glass Shell: the see-through frame and its etched edge (contrib/opus/briefs/ui_style.md) |
-| WELL, WELL_EDGE | #0b111c (94% in a frame, 86% as a strip); IRON3 at 90% | #271: the solid backing under every line of text, and its border |
-| SHIELD_TRACK | #16304a | #271: the empty part of a shield bar |
+| SHELL, SHELL_EDGE | #0a0d0a at 80%; lime at 20% | #271 Lime Tactical: the matte panel and its edge (contrib/opus/briefs/ui_style.md) |
+| WELL, WELL_EDGE | #080a08 (93% in a panel, 88% as a strip); lime at 35% | #271: the solid backing under every line of text, and its 2 px left bar |
+| SHIELD_TRACK | #1b2a2e | #271: the empty part of a shield bar |
+
+**Lime Tactical values (R149, #271).** The battle HUD now draws from godot/ui/theme/glass_shell.gd, which keeps these
+names and meanings with new values: the grounds black-olive, the text family pale sage, GILT neon lime #c8f53a (still
+"the player's own and the next action"), ALERT #ff4433 (still the one alarm red), FRIEND mint #52f0c4 (moved off green
+so it never reads as the lime). The full table is ui_style.md section 5. The hex values in the table above stay true
+for the screens not yet rebuilt (title, campaign, career, menus); each moves to the glass_shell.gd values when it is.
 
 Recorded decisions:
 - The browser's `--blood` #d0493f is dead (H6) and stays out of the palette.

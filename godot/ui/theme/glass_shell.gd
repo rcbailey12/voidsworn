@@ -1,68 +1,188 @@
 extends RefCounted
-# Glass Shell (issue #271, Ryan's pick Nov 9 2026, FINDINGS R145: "C bold, let's try"): the one look every screen of the
-# game follows. The battle HUD is the first user; the title, the campaign map, the end screen and the menus follow it
-# from contrib/opus/briefs/ui_style.md, which states these rules in plain words.
+# The game's UI theme (issue #271). Layout: Glass Shell C bold (Ryan, Nov 9 2026, FINDINGS R145: "C bold, let's try").
+# Identity: Lime Tactical (Ryan, Nov 9 2026 12:00 CST, FINDINGS R149: "yeah i like lime tactical, run it"): a combat
+# targeting computer. Chakra Petch (angular) for words, Azeret Mono for numbers, black-olive panels, pale sage text, neon
+# lime as the one accent for the next action, chamfered corners, lime brackets, slanted strips, a fine scanline on panels.
+# The battle HUD is the first user; the title, the campaign map, the end screen and the menus follow it from
+# contrib/opus/briefs/ui_style.md, which states these rules in plain words.
 #
-#   - Frames are glass: a see-through shell, a thin etched edge and gilt corner ticks. The scene shows through the
-#     frame, never through text.
-#   - Text always sits on a solid backing: a well inside a frame, or a strip on the board (nameplates, chips, tags).
-#   - Faction colour is a small accent only (a crest, a 3 px bar); the friend and foe channel in battle stays
-#     FRIEND green and the FOE lavender family (ui_spec.md 5.1 and 5.4).
+#   - Panels are matte, near-solid slabs (80%): the scene only hints through. Text never sits on the panel itself.
+#   - Text always sits on a solid backing: a well inside a panel, or a strip on the board (nameplates, chips, tags).
+#   - Lime means "do this next" (the filled End ship slab, the UP tag, the lit step, the armed weapon) and marks the
+#     panel furniture (section heads, brackets, the bevel). Only one filled lime button at a time (R148).
+#   - ALERT red is reserved for danger (the Nemesis). Faction colour is a small accent only (a crest, a 3 px bar); the
+#     friend and foe channel in battle is FRIEND mint and the FOE lavender family (ui_spec.md 5.1 and 5.4).
 #   - Sizes are written at the 1080 design height and scaled by ui_scale.gd k (ui_spec.md 4.1). No text under 12.
 #
 # Every function takes k (the UI scale) so a screen can build its pieces at its own size. Nothing here reads the rules.
 
 const UiScale := preload("res://ui/ui_scale.gd")
 
-# ---------------------------------------------------------------- palette (ui_spec.md 5.1; the shell entries are new)
-const INK := Color("#0f1626")
-const IRON := Color("#182133")
-const IRON2 := Color("#222d44")
-const IRON3 := Color("#2d3a56")
-const BONE := Color("#e6dcc4")
-const BONE2 := Color("#b3aa95")
-const BONE3 := Color("#7d7768")
-const GILT := Color("#d0a64b")
-const GILT2 := Color("#8c6d2c")
-const GILT_HOVER := Color("#e2bb62")
-const ON_GILT := Color("#1c1405")
-const VERD := Color("#5fb3a6")
-const BLOOD := Color("#e27f74")
-const ALERT := Color("#ff6b5a")
-const EMBER := Color("#f0b35a")
-const SHIELD := Color("#62ccff")
-const HULL := Color("#ffae42")
-const HULL_LOW := Color("#ff5a3c")
-const BAR_TRACK := Color("#3a1d1d")
-const FRIEND := Color("#8ff0a0")
-const FOE := Color("#c9a2ff")          # FOE family: enemy names
-const FOE_RING := Color("#a64dff")     # FOE family: rings, chip borders, danger badges
+# ---------------------------------------------------------------- palette: Lime Tactical (FINDINGS R149)
+# The names are the old ones (ui_spec.md 5.1) so every screen keeps its meaning: GILT is still "the accent", now neon lime;
+# BONE is the text family, now pale sage; INK and IRON are the backgrounds, now black-olive. The values are the mockup's
+# (docs/shots/ui_redesign/identity/2_lime_tactical.png, contrib/opus/ui271_mockups/identity/identity.css body.id2).
+const INK := Color("#090c09")
+const IRON := Color("#111611")
+const IRON2 := Color("#182019")
+const IRON3 := Color("#283228")
+const BONE := Color("#e8eee0")         # pale sage: body text
+const BONE2 := Color("#a7b09d")        # secondary text
+const BONE3 := Color("#7c8674")        # dim text (units, maxima, "done"): 4.5:1 or better on a well
+const GILT := Color("#c8f53a")         # THE accent, neon lime: the next action (End ship, the lit step, UP, the armed weapon)
+const GILT2 := Color("#6f8a1c")        # dim lime: tooltip edges, a disabled finish button
+const GILT_HOVER := Color("#d9ff5c")
+const ON_GILT := Color("#0d1200")      # text on lime
+const VERD := Color("#59d6a8")
+const BLOOD := Color("#ff8a72")
+const ALERT := Color("#ff4433")        # reserved red: the Nemesis and danger, nothing else
+const EMBER := Color("#ffb23e")
+const SHIELD := Color("#4fc4ff")
+const HULL := Color("#ffad3b")
+const HULL_LOW := Color("#ff5530")
+const BAR_TRACK := Color("#2b2a20")
+# the friend and foe channel (ui_spec.md 5.4). FRIEND moved from the mockup's spring green #5ff0a0 to mint (R149): next to
+# the lime they both read "green" at a glance, and under deuteranopia the gap shrinks further; mint keeps them apart
+# (CIE76 distance to lime 71 vs 55, deuteranopia 69 vs 51) and still clear of SHIELD blue (61).
+const FRIEND := Color("#52f0c4")       # your ships: names, nameplate bars, Ready, the ring under your hulls
+const FOE := Color("#c4a4ff")          # FOE family: enemy names
+const FOE_RING := Color("#a06bff")     # FOE family: rings, chip borders, danger badges
 const FOE_TEXT := Color("#e2d2ff")     # FOE family: text on the enemy chip
-# Glass Shell entries (added to ui_spec.md 5.1 with this PR)
-const WELL := Color("#0b111c")         # the solid backing under every block of text (alpha WELL_A)
-const WELL_A := 0.94
-const STRIP_A := 0.86                  # a text strip on the board (nameplates, chips): WELL at this alpha
-const SHELL := Color(0.035, 0.055, 0.095, 0.38)   # the glass frame: the scene shows through it
-const SHELL_EDGE := Color(0.816, 0.651, 0.294, 0.30)  # GILT at 30%: the etched frame edge
-const WELL_EDGE := Color(0.176, 0.227, 0.337, 0.9)    # IRON3 at 90%: a well's border
-const SHIELD_TRACK := Color("#16304a") # the empty part of a shield bar
+const KEY_FG := Color("#d9f78a")       # key cap text (light lime, in the number face)
+# the material
+const WELL := Color("#080a08")         # the solid backing under every block of text (alpha WELL_A)
+const WELL_A := 0.93
+const STRIP_A := 0.88                  # a text strip on the board (nameplates, chips): WELL at this alpha
+const SHELL := Color(0.039, 0.051, 0.039, 0.80)   # the matte panel: near-solid black-olive, the scene only hints through
+const SHELL_EDGE := Color(0.784, 0.961, 0.227, 0.20)  # lime at 20%: the panel edge
+const WELL_EDGE := Color(0.784, 0.961, 0.227, 0.35)   # lime at 35%: a well's 2 px left bar
+const LINE := Color(0.784, 0.961, 0.227, 0.12)        # lime at 12%: row separators and quiet edges
+const SCAN := Color(0.784, 0.961, 0.227, 0.025)       # the fine scanline on panels (one line every 4 px)
+const SHIELD_TRACK := Color("#1b2a2e") # the empty part of a shield bar
+const CUT := 14.0                      # the panel chamfer (top left and bottom right), at 1080
+const BTN_CUT := 10.0                  # the finish button's chamfer
+const BRACKET := 18.0                  # the lime corner brackets (top right and bottom left), 2 px lines
+
+# ---------------------------------------------------------------- type (OFL, godot/ui/theme/fonts)
+# Chakra Petch (angular) for every word, Azeret Mono for numbers that decide something (odds, damage, hull, keys).
+const FONT_DIR := "res://ui/theme/fonts/"
+static var _fonts := {}
 
 
 static func px(v: float, k: float) -> int:
 	return UiScale.px(v, k)
 
 
+# ---------------------------------------------------------------- fonts
+
+# the imported font when the project has been imported or exported, else the raw file (a copy without .godot/)
+static func _font_file(name: String) -> Font:
+	var p := FONT_DIR + name
+	if _fonts.has(p):
+		return _fonts[p]
+	var f: Font = null
+	if _imported_ok(p):
+		var r = load(p)
+		if r is Font:
+			f = r
+	if f == null:
+		var ff := FontFile.new()
+		if FileAccess.file_exists(p):
+			ff.data = FileAccess.get_file_as_bytes(p)
+		f = ff
+	_fonts[p] = f
+	return f
+
+
+static func _imported_ok(p: String) -> bool:
+	var ip := p + ".import"
+	if not FileAccess.file_exists(ip):
+		return false
+	for line in FileAccess.get_file_as_string(ip).split("\n"):
+		if line.begins_with("path=") or line.begins_with("path."):
+			var q := line.substr(line.find("\"") + 1)
+			q = q.substr(0, q.find("\""))
+			return q != "" and FileAccess.file_exists(q)
+	return false
+
+
+# a face with letter spacing (em x size x k, in whole pixels) and, for the variable number face, a weight
+static func _variant(key: String, base: Font, spacing_px: int, wght := 0) -> Font:
+	if _fonts.has(key):
+		return _fonts[key]
+	var v := FontVariation.new()
+	v.base_font = base
+	v.spacing_glyph = spacing_px
+	if wght > 0:
+		v.variation_opentype = {TextServerManager.get_primary_interface().name_to_tag("wght"): wght}
+	_fonts[key] = v
+	return v
+
+
+# body text: Chakra Petch Regular
+static func body() -> Font:
+	return _font_file("ChakraPetch-Regular.ttf")
+
+
+static func medium() -> Font:
+	return _font_file("ChakraPetch-Medium.ttf")
+
+
+# names, buttons, numbers in prose: Chakra Petch SemiBold
+static func semi() -> Font:
+	return _font_file("ChakraPetch-SemiBold.ttf")
+
+
+static func bold() -> Font:
+	return _font_file("ChakraPetch-Bold.ttf")
+
+
+# section heads and tags ("1 MOVE", "FLEET", "UP", "NEMESIS"): Chakra Petch Bold in caps, tracked 0.18 em at 13
+static func caps(k: float) -> Font:
+	var sp := maxi(1, int(round(13.0 * 0.18 * k)))
+	return _variant("caps%d" % sp, bold(), sp)
+
+
+# display (the round title, the banner, the end card, menu titles): Chakra Petch Bold in caps, tracked 0.14 em at 19
+static func display(k: float) -> Font:
+	var sp := maxi(1, int(round(19.0 * 0.14 * k)))
+	return _variant("disp%d" % sp, bold(), sp)
+
+
+# the finish button's label ("END SHIP"): Chakra Petch Bold in caps, tracked 0.12 em at 17
+static func action_font(k: float) -> Font:
+	var sp := maxi(1, int(round(17.0 * 0.12 * k)))
+	return _variant("act%d" % sp, bold(), sp)
+
+
+# the name of the ship that is up (star, "LONG WATCH"): Chakra Petch Bold in caps, tracked 0.06 em at 20
+static func ship_name(k: float) -> Font:
+	var sp := maxi(1, int(round(20.0 * 0.06 * k)))
+	return _variant("name%d" % sp, bold(), sp)
+
+
+# numbers that decide something (odds, damage, hull, Heat, key caps): Azeret Mono, medium and bold
+static func num() -> Font:
+	return _variant("num", _font_file("AzeretMono-VF.ttf"), 0, 500)
+
+
+static func num_bold() -> Font:
+	return _variant("numb", _font_file("AzeretMono-VF.ttf"), 0, 700)
+
+
 # ---------------------------------------------------------------- frames and backings
 
-# the glass shell: a see-through frame with an etched edge (corner ticks are drawn by ticks_on())
+# the panel: a matte, near-solid black-olive slab with a lime edge at 20% and two chamfered corners (top left, bottom
+# right). frame_marks() draws the scanline, the lime bevel on the top-left chamfer and the corner brackets.
 static func shell(k: float, pad := 8.0) -> StyleBoxFlat:
 	var g := StyleBoxFlat.new()
 	g.bg_color = SHELL
 	g.border_color = SHELL_EDGE
 	g.set_border_width_all(1)
 	g.set_corner_radius_all(0)
-	g.shadow_color = Color(0, 0, 0, 0.35)
-	g.shadow_size = px(10, k)
+	g.corner_detail = 1
+	g.corner_radius_top_left = px(CUT, k)
+	g.corner_radius_bottom_right = px(CUT, k)
 	g.content_margin_left = px(pad, k)
 	g.content_margin_right = px(pad, k)
 	g.content_margin_top = px(pad, k)
@@ -70,17 +190,21 @@ static func shell(k: float, pad := 8.0) -> StyleBoxFlat:
 	return g
 
 
-# a solid well: every line of text inside a frame sits on one
-static func well(k: float, accent := Color(0, 0, 0, 0), pad_x := 12.0, pad_y := 8.0) -> StyleBoxFlat:
+# a solid well: every line of text inside a frame sits on one. Square, with a 2 px lime bar on the left (an ALERT bar
+# for the Nemesis block: pass bar). A lit well (the step you are on, the armed weapon, the ship that is up) gets a lime
+# edge all round and a soft lime glow; nothing else lights a well.
+static func well(k: float, accent := Color(0, 0, 0, 0), pad_x := 12.0, pad_y := 8.0, bar := Color(0, 0, 0, 0)) -> StyleBoxFlat:
 	var w := StyleBoxFlat.new()
 	w.bg_color = Color(WELL, WELL_A)
-	w.border_color = WELL_EDGE
-	w.set_border_width_all(1)
-	w.set_corner_radius_all(px(2, k))
+	w.border_color = bar if bar.a > 0.0 else WELL_EDGE
+	w.set_border_width_all(0)
+	w.border_width_left = maxi(2, px(3 if bar.a > 0.0 else 2, k))
+	w.set_corner_radius_all(0)
 	if accent.a > 0.0:
-		# a lit well (the step you are on, the armed weapon, the ship that is up): gilt edge and a soft glow
 		w.border_color = accent
-		w.shadow_color = Color(accent, 0.18)
+		w.set_border_width_all(1)
+		w.border_width_left = maxi(2, px(2, k))
+		w.shadow_color = Color(accent, 0.16)
 		w.shadow_size = px(6, k)
 	w.content_margin_left = px(pad_x, k)
 	w.content_margin_right = px(pad_x, k)
@@ -89,7 +213,8 @@ static func well(k: float, accent := Color(0, 0, 0, 0), pad_x := 12.0, pad_y := 
 	return w
 
 
-# a text strip on the board (nameplates, the unacted chips, tags): solid, a 3 px accent bar on the left
+# a text strip on the board (nameplates, the unacted chips, toasts): solid black-olive, a 3 px accent bar on the left
+# and a slanted right end (an 8 px cut on the bottom-right corner)
 static func strip(k: float, accent: Color, border := Color(0, 0, 0, 0)) -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
 	s.bg_color = Color(WELL, STRIP_A)
@@ -102,21 +227,23 @@ static func strip(k: float, accent: Color, border := Color(0, 0, 0, 0)) -> Style
 		s.border_color = border
 		s.set_border_width_all(1)
 		s.border_width_left = maxi(2, px(3, k))
-	s.set_corner_radius_all(px(1, k))
+	s.set_corner_radius_all(0)
+	s.corner_detail = 1
+	s.corner_radius_bottom_right = px(8, k)
 	s.content_margin_left = px(7, k)
-	s.content_margin_right = px(6, k)
+	s.content_margin_right = px(9, k)
 	s.content_margin_top = px(2, k)
 	s.content_margin_bottom = px(3, k)
 	return s
 
 
-# a small solid tag ("UP", "NEMESIS", "ENEMY", "LOW"): filled or outlined
+# a small solid tag ("UP", "NEMESIS", "ENEMY", "LOW"): filled or outlined, square
 static func tag(k: float, col: Color, filled := true) -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
 	s.bg_color = col if filled else Color(WELL, WELL_A)
 	s.border_color = col
 	s.set_border_width_all(1)
-	s.set_corner_radius_all(px(1, k))
+	s.set_corner_radius_all(0)
 	s.content_margin_left = px(6, k)
 	s.content_margin_right = px(6, k)
 	s.content_margin_top = px(0, k)
@@ -124,13 +251,14 @@ static func tag(k: float, col: Color, filled := true) -> StyleBoxFlat:
 	return s
 
 
-# a key cap ("B", "Tab", "Space") beside an action: the key always shows next to what it does
+# a key cap ("B", "Tab", "Space") beside an action: the key always shows next to what it does. A lime-tinted square with
+# a lime edge; the text is KEY_FG in the number face.
 static func keycap(k: float) -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
-	s.bg_color = IRON2
-	s.border_color = Color(BONE3, 0.8)
+	s.bg_color = Color("#141a0c")
+	s.border_color = Color(GILT, 0.45)
 	s.set_border_width_all(1)
-	s.set_corner_radius_all(px(2, k))
+	s.set_corner_radius_all(0)
 	s.content_margin_left = px(5, k)
 	s.content_margin_right = px(5, k)
 	s.content_margin_top = px(0, k)
@@ -138,105 +266,105 @@ static func keycap(k: float) -> StyleBoxFlat:
 	return s
 
 
-# buttons: a plain one sits on a well colour with an iron edge; the primary is solid gilt with dark text
+# buttons: a plain one is a dark square with a lime edge at 28% (55% on hover); the primary is solid lime with dark text
 static func button_boxes(k: float, primary := false) -> Dictionary:
 	var n := StyleBoxFlat.new()
-	n.bg_color = GILT if primary else Color(IRON, 0.96)
-	n.border_color = GILT if primary else IRON3
+	n.bg_color = GILT if primary else Color("#10140b", 0.97)
+	n.border_color = GILT if primary else Color(GILT, 0.28)
 	n.set_border_width_all(1)
-	n.set_corner_radius_all(px(2, k))
+	n.set_corner_radius_all(0)
+	if primary:
+		n.corner_detail = 1
+		n.corner_radius_top_left = px(BTN_CUT * 0.6, k)
+		n.corner_radius_bottom_right = px(BTN_CUT * 0.6, k)
 	n.content_margin_left = px(10, k)
 	n.content_margin_right = px(10, k)
 	n.content_margin_top = px(5, k)
 	n.content_margin_bottom = px(5, k)
 	var h := n.duplicate() as StyleBoxFlat
-	h.bg_color = GILT_HOVER if primary else IRON2
-	h.border_color = GILT_HOVER if primary else GILT2
+	h.bg_color = GILT_HOVER if primary else Color("#1b210d", 0.97)
+	h.border_color = GILT_HOVER if primary else Color(GILT, 0.55)
 	var d := n.duplicate() as StyleBoxFlat
-	d.bg_color = Color(GILT2, 0.35) if primary else Color(IRON, 0.5)
-	d.border_color = Color(IRON3, 0.6)
+	d.bg_color = Color(GILT2, 0.35) if primary else Color("#060806", 0.9)
+	d.border_color = LINE
 	return {"normal": n, "hover": h, "pressed": h, "disabled": d}
 
 
-# the screen's one finishing action (End ship; Continue, Confirm or Launch elsewhere): the big filled gold button of
-# C_glass_shell_bold.png. A solid gilt box with a gilt glow; gilt_sheen() lays the top-lit gradient over it. One per screen.
+# the screen's one finishing action (End ship; Continue, Confirm or Launch elsewhere): the big filled lime slab of the
+# Lime Tactical mockup. Flat lime, chamfered top left and bottom right, a soft lime glow, dark caps label. One per screen.
 static func finish_boxes(k: float) -> Dictionary:
 	var n := StyleBoxFlat.new()
 	n.bg_color = GILT
-	n.border_color = Color("#e7c26c")
+	n.border_color = GILT
 	n.set_border_width_all(1)
-	n.set_corner_radius_all(px(2, k))
-	n.shadow_color = Color(GILT, 0.42)
+	n.set_corner_radius_all(0)
+	n.corner_detail = 1
+	n.corner_radius_top_left = px(BTN_CUT, k)
+	n.corner_radius_bottom_right = px(BTN_CUT, k)
+	n.shadow_color = Color(GILT, 0.35)
 	n.shadow_size = px(14, k)
+	n.anti_aliasing = true
 	for side in [SIDE_LEFT, SIDE_RIGHT]:
 		n.set_content_margin(side, px(12, k))
 	for side in [SIDE_TOP, SIDE_BOTTOM]:
 		n.set_content_margin(side, px(6, k))
 	var h := n.duplicate() as StyleBoxFlat
 	h.bg_color = GILT_HOVER
-	h.shadow_color = Color(GILT, 0.6)
+	h.border_color = GILT_HOVER
+	h.shadow_color = Color(GILT, 0.55)
 	var d := n.duplicate() as StyleBoxFlat
-	d.bg_color = Color(GILT2, 0.35)
-	d.border_color = Color(IRON3, 0.6)
+	d.bg_color = Color("#1a2109")
+	d.border_color = Color(GILT2, 0.8)
 	d.shadow_size = 0
 	return {"normal": n, "hover": h, "pressed": h, "disabled": d}
 
 
-# a lit button: the step's own confirm (Move here, Fire N weapons) when the finishing action is already the filled gold
-# one. A well fill, a gilt edge and gilt text with a soft inner glow, so the screen never shows two gold buttons.
+# a lit button: the step's own confirm (Move here, Fire N weapons) when the finishing action is already the filled lime
+# one. A dark lime-tinted fill, a lime edge, lime text and a soft glow, so the screen never shows two filled buttons (R148).
 static func lit_boxes(k: float) -> Dictionary:
 	var bb := button_boxes(k)
 	var n := (bb["normal"] as StyleBoxFlat).duplicate() as StyleBoxFlat
-	n.bg_color = Color(WELL, 0.96)
+	n.bg_color = Color("#171d0c", 0.97)
 	n.border_color = GILT
-	n.shadow_color = Color(GILT, 0.22)
+	n.shadow_color = Color(GILT, 0.20)
 	n.shadow_size = px(6, k)
 	var h := n.duplicate() as StyleBoxFlat
-	h.bg_color = Color(GILT, 0.16)
+	h.bg_color = Color("#232d10", 0.97)
 	h.border_color = GILT_HOVER
 	return {"normal": n, "hover": h, "pressed": h, "disabled": bb["disabled"]}
 
 
-# the gold sheen on a finishing button: a top-lit gradient (light gold to gilt to deep gold) and a thin highlight on the
-# top edge, drawn by the button over its own box and under its label. Off while the button is disabled.
+# the finish button's highlight: a thin light line along its top edge (the slab is flat lime, as in the mockup). Off while
+# the button is disabled. The name is kept from the Glass Shell build so callers stay the same.
 static func gilt_sheen(b: Button, k: float) -> void:
-	var top := Color("#e7c26c")
-	var bot := Color("#b88e38")
 	b.draw.connect(func() -> void:
 		if b.disabled:
 			return
-		var r := Rect2(Vector2.ONE, b.size - Vector2(2, 2))
-		if r.size.x <= 0.0 or r.size.y <= 0.0:
+		var c := float(px(BTN_CUT, k))
+		var y := 1.5
+		if b.size.x <= c * 2.0:
 			return
-		var mid := GILT_HOVER if b.is_hovered() else GILT
-		var t0 := top.lightened(0.08) if b.is_hovered() else top
-		var ym := r.position.y + r.size.y * 0.55
-		var x0 := r.position.x
-		var x1 := r.end.x
-		b.draw_polygon(PackedVector2Array([Vector2(x0, r.position.y), Vector2(x1, r.position.y), Vector2(x1, ym), Vector2(x0, ym)]),
-			PackedColorArray([t0, t0, mid, mid]))
-		b.draw_polygon(PackedVector2Array([Vector2(x0, ym), Vector2(x1, ym), Vector2(x1, r.end.y), Vector2(x0, r.end.y)]),
-			PackedColorArray([mid, mid, bot, bot]))
-		b.draw_line(Vector2(x0, r.position.y + 0.5), Vector2(x1, r.position.y + 0.5), Color(1, 1, 1, 0.55), maxf(1.0, float(px(1, k)))))
+		b.draw_line(Vector2(c, y), Vector2(b.size.x - 1.0, y), Color(1, 1, 1, 0.35), maxf(1.0, float(px(1, k)))))
 	b.mouse_entered.connect(b.queue_redraw)
 	b.mouse_exited.connect(b.queue_redraw)
 
 
-# a key cap sitting on a gold button: dark text on a light wash with a dark edge (bone on iron would vanish on gold)
+# a key cap sitting on the lime button: dark text on a light wash with a dark edge
 static func keycap_on_gilt(k: float) -> StyleBoxFlat:
 	var s := keycap(k)
-	s.bg_color = Color(1, 1, 1, 0.18)
-	s.border_color = Color(ON_GILT, 0.5)
+	s.bg_color = Color(1, 1, 1, 0.22)
+	s.border_color = Color(ON_GILT, 0.55)
 	return s
 
 
-# the focus ring every screen uses (ui_spec.md 6): no fill, a BONE border at least 2 px, 3 px outside the button
+# the focus ring every screen uses (ui_spec.md 6): no fill, a BONE (pale sage) border at least 2 px, 3 px outside the
+# button, square like everything else in Lime Tactical
 static func focus_ring(k: float) -> StyleBoxFlat:
 	var f := StyleBoxFlat.new()
 	f.draw_center = false
 	f.border_color = BONE
 	f.set_border_width_all(maxi(2, px(2, k)))
-	f.set_corner_radius_all(px(4, k))
+	f.set_corner_radius_all(0)
 	f.expand_margin_left = px(3, k)
 	f.expand_margin_right = px(3, k)
 	f.expand_margin_top = px(3, k)
@@ -244,11 +372,11 @@ static func focus_ring(k: float) -> StyleBoxFlat:
 	return f
 
 
-# the shared theme for any screen: body font and base size, buttons, labels, rich text, tooltips. The battle HUD adds
-# its focus ring on top (hud.gd _theme); other screens can use focus_ring(k) the same way.
-static func make_theme(k: float, body: Font, body_semi: Font, base := 15) -> Theme:
+# the shared theme for any screen: body font and base size, buttons, labels, rich text ([code] uses the number face),
+# tooltips. The battle HUD adds its focus ring on top (hud.gd _theme); other screens can use focus_ring(k) the same way.
+static func make_theme(k: float, body_f: Font, body_semi: Font, base := 15) -> Theme:
 	var th := Theme.new()
-	th.default_font = body
+	th.default_font = body_f
 	th.default_font_size = px(base, k)
 	var bb := button_boxes(k)
 	for st in ["normal", "hover", "pressed", "disabled"]:
@@ -262,21 +390,24 @@ static func make_theme(k: float, body: Font, body_semi: Font, base := 15) -> The
 	th.set_font_size("font_size", "Button", px(14, k))
 	th.set_color("font_color", "Label", BONE)
 	th.set_color("default_color", "RichTextLabel", BONE)
-	th.set_font("normal_font", "RichTextLabel", body)
+	th.set_font("normal_font", "RichTextLabel", body_f)
 	th.set_font("bold_font", "RichTextLabel", body_semi)
+	th.set_font("mono_font", "RichTextLabel", num())
 	th.set_font_size("normal_font_size", "RichTextLabel", px(14, k))
 	th.set_font_size("bold_font_size", "RichTextLabel", px(14, k))
-	# tooltips: a solid well with bone text (keyword definitions, one layer deep)
+	th.set_font_size("mono_font_size", "RichTextLabel", px(14, k))
+	# tooltips: a solid well with sage text (keyword definitions, one layer deep), a dim lime edge
 	var tp := well(k, Color(0, 0, 0, 0), 10, 7)
 	tp.border_color = GILT2
+	tp.set_border_width_all(1)
 	th.set_stylebox("panel", "TooltipPanel", tp)
 	th.set_color("font_color", "TooltipLabel", BONE)
-	th.set_font("font", "TooltipLabel", body)
+	th.set_font("font", "TooltipLabel", body_f)
 	th.set_font_size("font_size", "TooltipLabel", px(14, k))
-	# scroll bars: thin, iron, out of the way
+	# scroll bars: thin, olive, out of the way
 	var sg := StyleBoxFlat.new()
 	sg.bg_color = Color(IRON3, 0.9)
-	sg.set_corner_radius_all(px(2, k))
+	sg.set_corner_radius_all(0)
 	sg.content_margin_left = px(2, k)
 	sg.content_margin_right = px(2, k)
 	var sbg := StyleBoxFlat.new()
@@ -290,19 +421,44 @@ static func make_theme(k: float, body: Font, body_semi: Font, base := 15) -> The
 	return th
 
 
-# gilt corner ticks on a frame (the etched-glass look): drawn by the frame itself, over its edge, under its children
-static func ticks_on(p: Control, k: float, col := GILT) -> void:
-	var arm := float(px(14, k))
-	var w := maxf(1.0, float(px(2, k)))
+# the panel's marks, drawn by the panel itself over its fill and under its children:
+#   - the fine scanline (SCAN, one 1 px line every 4 px, kept inside the two chamfers),
+#   - a 2 px lime bevel along the top-left chamfer (bevel; off on the flat top bar),
+#   - lime corner brackets, 18 px arms of 2 px, at the top right and bottom left (brackets).
+static func frame_marks(p: Control, k: float, brackets := true, bevel := true, col := GILT) -> void:
+	var cut := float(px(CUT, k))
+	var arm := float(px(BRACKET, k))
+	var w := maxf(2.0, float(px(2, k)))
+	var step := maxf(3.0, float(px(4, k)))
 	p.draw.connect(func() -> void:
 		var r := Rect2(Vector2.ZERO, p.size)
-		var a := Color(col, 0.85)
-		for corner in [[r.position, Vector2(1, 1)], [Vector2(r.end.x, r.position.y), Vector2(-1, 1)],
-				[Vector2(r.position.x, r.end.y), Vector2(1, -1)], [r.end, Vector2(-1, -1)]]:
-			var q: Vector2 = corner[0]
-			var d: Vector2 = corner[1]
-			p.draw_line(q, q + Vector2(arm * d.x, 0), a, w)
-			p.draw_line(q, q + Vector2(0, arm * d.y), a, w))
+		if r.size.x < cut * 2.0 or r.size.y < cut * 2.0:
+			return
+		var pts := PackedVector2Array()
+		var y := step * 0.5
+		while y < r.size.y - 1.0:
+			var x0 := maxf(1.0, cut - y)
+			var x1 := r.size.x - 1.0 - maxf(0.0, y - (r.size.y - cut))
+			if x1 > x0:
+				pts.append(Vector2(x0, y))
+				pts.append(Vector2(x1, y))
+			y += step
+		if pts.size() >= 2:
+			p.draw_multiline(pts, SCAN, maxf(1.0, float(px(1, k))))
+		if bevel:
+			p.draw_line(Vector2(0, cut), Vector2(cut, 0), col, w, true)
+		if brackets:
+			var tr := Vector2(r.end.x - w * 0.5, w * 0.5)
+			p.draw_line(tr + Vector2(-arm, 0), tr, col, w)
+			p.draw_line(tr, tr + Vector2(0, arm), col, w)
+			var bl := Vector2(w * 0.5, r.end.y - w * 0.5)
+			p.draw_line(bl + Vector2(0, -arm), bl, col, w)
+			p.draw_line(bl, bl + Vector2(arm, 0), col, w))
+
+
+# the old name (Glass Shell's corner ticks): the full panel marks
+static func ticks_on(p: Control, k: float, col := GILT) -> void:
+	frame_marks(p, k, true, true, col)
 
 
 # a segmented bar (hull, the heat gauge): n cells, the first `fill` of them lit; ghost cells (expected loss) hatched

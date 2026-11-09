@@ -4,6 +4,16 @@ extends CanvasLayer
 const HUD := preload("res://ui/battle/hud.gd")
 const Brand := preload("res://ui/battle/brand.gd")
 const UiScale := preload("res://ui/ui_scale.gd")
+# The palette this screen had before the battle HUD moved to Lime Tactical (R149, #271). The screen keeps it until its own
+# rollout moves it onto godot/ui/theme/glass_shell.gd (contrib/opus/briefs/ui_style.md section 8), so it never shows a
+# half-changed look. The focus ring stays HUD.BONE, the battle ring's own colour (ui_spec.md 6).
+const T_GILT := Color("#d0a64b")
+const T_GILT2 := Color("#8c6d2c")
+const T_BONE := Color("#e6dcc4")
+const T_BONE2 := Color("#b3aa95")
+const T_BONE3 := Color("#7d7768")
+const T_IRON3 := Color("#2d3a56")
+const T_EMBER := Color("#f0b35a")
 
 var main: Node
 var k := 1.0
@@ -87,14 +97,14 @@ func _build() -> void:
 	# the game's name (brand.gd TITLE, the one place to rename it): one line at the largest size that fits 88% of the
 	# window width; if that would be small (a narrow window), two centred lines at a larger size instead
 	var vw := vs.x
-	var h := _label(Brand.TITLE, 84, HUD.GILT, font_goth)
+	var h := _label(Brand.TITLE, 84, T_GILT, font_goth)
 	h.text = _title_text(vw * 0.88)
 	h.add_theme_font_size_override("font_size", _title_size)
 	h.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	h.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	title_lbl = h
 	v.add_child(h)
-	var sub := _label(Brand.TAGLINE, 19, HUD.BONE2, font)
+	var sub := _label(Brand.TAGLINE, 19, T_BONE2, font)
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	sub.custom_minimum_size = Vector2(minf(vw * 0.86, font.get_string_size(Brand.TAGLINE, HORIZONTAL_ALIGNMENT_LEFT, -1, s(19)).x + s(4)), 0)
@@ -103,7 +113,7 @@ func _build() -> void:
 	# the playtest switch (R1, Nov 1): every admiral, hull and variant unlocked; the line says so in gold on the title
 	var pt := _playtest_on()
 	if pt != null:
-		var pl := _label("Playtest: everything unlocked (all admirals, carriers, battleships and hull variants)" if pt else "Playtest unlocks are off: unlock admirals and hulls with renown", 17, HUD.GILT if pt else HUD.BONE3, font_semi)
+		var pl := _label("Playtest: everything unlocked (all admirals, carriers, battleships and hull variants)" if pt else "Playtest unlocks are off: unlock admirals and hulls with renown", 17, T_GILT if pt else T_BONE3, font_semi)
 		pl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		pl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		pl.custom_minimum_size = Vector2(minf(vw * 0.86, font_semi.get_string_size(pl.text, HORIZONTAL_ALIGNMENT_LEFT, -1, s(17)).x + s(4)), 0)
@@ -130,7 +140,7 @@ func _build() -> void:
 	menu.add_child(_button("Credits", func() -> void: _credits()))
 	menu.add_child(_button("Quit", func() -> void: main.quit_clean()))
 	(menu.get_child(0) as Control).grab_focus.call_deferred()  # arrow keys, Enter and a controller work from the start
-	toast_lbl = _label("", 17, HUD.EMBER, font_semi)
+	toast_lbl = _label("", 17, T_EMBER, font_semi)
 	toast_lbl.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	toast_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	toast_lbl.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -199,8 +209,8 @@ func _button(t: String, cb: Callable, primary := false) -> Button:
 	b.add_theme_font_override("font", font_semi if primary else font)
 	b.add_theme_font_size_override("font_size", s(19))
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = HUD.GILT if primary else Color(0.133, 0.176, 0.267, 0.85)
-	sb.border_color = HUD.GILT if primary else HUD.IRON3
+	sb.bg_color = T_GILT if primary else Color(0.133, 0.176, 0.267, 0.85)
+	sb.border_color = T_GILT if primary else T_IRON3
 	sb.set_border_width_all(1)
 	sb.set_corner_radius_all(s(4))
 	sb.content_margin_top = s(9)
@@ -208,8 +218,8 @@ func _button(t: String, cb: Callable, primary := false) -> Button:
 	sb.content_margin_left = s(20)   # a short label (Done) keeps clear of its own edges
 	sb.content_margin_right = s(20)
 	var sh := sb.duplicate() as StyleBoxFlat
-	sh.bg_color = Color("#e2bb62") if primary else HUD.IRON3
-	sh.border_color = HUD.GILT2 if not primary else HUD.GILT
+	sh.bg_color = Color("#e2bb62") if primary else T_IRON3
+	sh.border_color = T_GILT2 if not primary else T_GILT
 	b.add_theme_stylebox_override("normal", sb)
 	b.add_theme_stylebox_override("hover", sh)
 	b.add_theme_stylebox_override("pressed", sh)
@@ -220,7 +230,7 @@ func _button(t: String, cb: Callable, primary := false) -> Button:
 	sf.set_corner_radius_all(s(4))
 	sf.expand_margin_left = 3; sf.expand_margin_right = 3; sf.expand_margin_top = 3; sf.expand_margin_bottom = 3
 	b.add_theme_stylebox_override("focus", sf)
-	var fc := Color("#1c1405") if primary else HUD.BONE
+	var fc := Color("#1c1405") if primary else T_BONE
 	b.add_theme_color_override("font_color", fc)
 	b.add_theme_color_override("font_hover_color", fc)
 	b.pressed.connect(cb)
@@ -278,7 +288,7 @@ func _settings() -> void:
 	v.add_theme_constant_override("separation", s(10))
 	v.custom_minimum_size = Vector2(s(460), 0)
 	settings_panel.add_child(v)
-	v.add_child(_label("Settings", 24, HUD.GILT, font_goth))
+	v.add_child(_label("Settings", 24, T_GILT, font_goth))
 	v.add_child(_toggle("Sound", "sound"))
 	v.add_child(_slider("Volume", "volume", 0.0, 1.0))
 	v.add_child(_toggle("Music", "music"))
@@ -343,7 +353,7 @@ func _credits() -> void:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", s(10))
 	credits_panel.add_child(v)
-	v.add_child(_label("Credits", 24, HUD.GILT, font_goth))
+	v.add_child(_label("Credits", 24, T_GILT, font_goth))
 	var sc := ScrollContainer.new()
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	sc.custom_minimum_size = Vector2(minf(float(s(760)), vs.x * 0.8), minf(float(s(560)), vs.y * 0.62))
@@ -358,7 +368,7 @@ func _credits() -> void:
 	t.add_theme_font_override("bold_font", font_semi)
 	t.add_theme_font_size_override("normal_font_size", s(16))
 	t.add_theme_font_size_override("bold_font_size", s(16))
-	t.add_theme_color_override("default_color", HUD.BONE2)
+	t.add_theme_color_override("default_color", T_BONE2)
 	t.text = credits_bbcode()
 	sc.add_child(t)
 	var row := HBoxContainer.new()
@@ -419,7 +429,7 @@ func _focus_first(n: Node) -> void:
 
 func _row(t: String) -> HBoxContainer:
 	var r := HBoxContainer.new()
-	var l := _label(t, 18, HUD.BONE, font)
+	var l := _label(t, 18, T_BONE, font)
 	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	r.add_child(l)
 	return r

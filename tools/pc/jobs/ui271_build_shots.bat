@@ -1,5 +1,5 @@
 @echo off
-rem Issue 271 build (Glass Shell bold): parse check and the battle HUD captures the board judges (docs/shots/ui_redesign/build/CAPTURES.md).
+rem Issue 271 build (Glass Shell bold layout, Lime Tactical identity R149): parse check and the battle HUD captures the board judges (docs/shots/ui_redesign/build/CAPTURES.md).
 rem Started (not called) by a queue job, in its own window, so the queue stays free.
 rem Clone: Downloads\voidsworn_test\opus271b\repo (branch opus/issue-271-build); the import cache is seeded from opus207's clone.
 rem Output: Downloads\voidsworn_test\opus271b\out\ or the folder named by the first argument (status.txt says when each step finished; each capture folder has ui_check.txt).
@@ -13,19 +13,21 @@ if not "%~1"=="" set "O=%W%\%~1"
 set /p G=<"%VT%\godot_path.txt"
 if not exist "%O%" mkdir "%O%"
 echo start %date% %time% > "%O%\status.txt"
-if not exist "%R%\.git" git clone --depth 1 -b opus/issue-271-build https://github.com/rcbailey12/voidsworn "%R%" > "%O%\git.txt" 2>&1
+if not exist "%R%\.git" git -c core.autocrlf=false clone --depth 1 -b opus/issue-271-build https://github.com/rcbailey12/voidsworn "%R%" > "%O%\git.txt" 2>&1
 git -C "%R%" fetch --depth 1 origin opus/issue-271-build >> "%O%\git.txt" 2>&1
 git -C "%R%" reset --hard FETCH_HEAD >> "%O%\git.txt" 2>&1
 git -C "%R%" log -1 --format=%%H > "%O%\commit.txt" 2>&1
 if not exist "%R%\godot\.godot" if exist "%VT%\opus207\repo\godot\.godot" robocopy "%VT%\opus207\repo\godot\.godot" "%R%\godot\.godot" /E /NFL /NDL /NJH /NJS /R:1 /W:1 > "%O%\cache_copy.txt" 2>&1
 rem the PC-built ship assets (not in git, R144) so the captures show the real hulls
 if exist "%VT%\opus207\repo\godot\assets\ships" robocopy "%VT%\opus207\repo\godot\assets\ships" "%R%\godot\assets\ships" /E /XC /XN /XO /NFL /NDL /NJH /NJS /R:1 /W:1 > "%O%\ships_copy.txt" 2>&1
+rem the generated hull and kit files (godot/gen, not in git) so the board shows real hulls, not grey boxes
+if exist "%VT%\opus207\repo\godot\gen" robocopy "%VT%\opus207\repo\godot\gen" "%R%\godot\gen" /E /XC /XN /XO /NFL /NDL /NJH /NJS /R:1 /W:1 > "%O%\gen_copy.txt" 2>&1
 echo clone done %date% %time% >> "%O%\status.txt"
 set "TMO=%R%\tools\pc\tmo.bat"
 call "%TMO%" 1800 "%G%" --headless --path "%R%\godot" --import > "%O%\import.txt" 2>&1
 echo import done %date% %time% >> "%O%\status.txt"
 if exist "%O%\parse.txt" del "%O%\parse.txt"
-for %%S in (ui/theme/glass_shell.gd ui/battle/hud.gd ui/battle/ui_shots.gd scenes/battle/battle.gd render/board.gd rules/battle_api.gd) do (
+for %%S in (ui/theme/glass_shell.gd render/ship_view.gd ui/battle/hud.gd ui/battle/ui_shots.gd scenes/battle/battle.gd render/board.gd rules/battle_api.gd) do (
   echo == %%S >> "%O%\parse.txt"
   call "%TMO%" 120 "%G%" --headless --path "%R%\godot" --check-only --script res://%%S >> "%O%\parse.txt" 2>&1
   echo exit !ERRORLEVEL! >> "%O%\parse.txt"

@@ -354,7 +354,7 @@ const BASE_FILL := Color(0.04, 0.06, 0.09, 0.18)
 # F1: a neutral grey grid (was a pale blue that blended with the move hexes); it fades away from the ship that is up
 const BASE_RING := Color(0.66, 0.70, 0.78, 0.075)
 # F1: the hexes a ship can move to are blue, a colour no terrain, zone or marker uses (nebula violet, debris sand, storm
-# yellow, exits green, perimeters red, the relay gold, your ships green, enemies violet, the selection gold)
+# yellow, exits green, perimeters red, the relay gold, your ships mint, enemies violet, the hovered hex lime)
 const REACH_FILL := Color(0.10, 0.45, 1.0, 0.36)
 const REACH_HOT := Color(0.30, 0.70, 1.0, 0.55)
 const REACH_RING := Color(0.25, 0.55, 1.0, 0.22)
@@ -403,7 +403,7 @@ func refresh() -> void:
 		if ring_over.has(k) and style_over.has(k):
 			rc.a *= 0.5
 		if k == hover_key:
-			rc = Color(1.0, 0.82, 0.4, 0.9)
+			rc = Color(0.78, 0.96, 0.23, 0.9)   # the hovered hex: Lime Tactical lime (R149), the next action
 		rm.set_instance_color(i, rc)
 		rm.set_instance_custom_data(i, Color(1.0 if (ring_over.has(k) or k == hover_key) else 0.0, 0, 0, 0))
 

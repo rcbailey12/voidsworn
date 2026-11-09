@@ -1127,7 +1127,7 @@ func _play_batch(bt: Dictionary) -> void:
 	if enemy and not bot and not showcase and _player_pending() == 0 and tail_round != int(V.get("round", 0)):
 		# F1: every one of your ships has acted and the enemy plays out the rest of the round: say so once, big
 		tail_round = int(V.get("round", 0))
-		hud.banner("Enemy turn", Color("#c9a3ff"), 0.8)
+		hud.banner("Enemy turn", Color("#c4a4ff"), 0.8)
 	if enemy:
 		speed = minf(speed, float(PACE["skip"]) if skip else (float(PACE["enemy"]) if _player_pending() > 0 else float(PACE["tail"])) * _enemy_pace_k())
 	var base_speed := speed
@@ -1256,7 +1256,7 @@ func _play_event(e: Dictionary) -> void:
 				gfx.torp_launch(str(e["id"]))
 			else:
 				_torp_marker(str(e["id"]), _pos(e["unit"]), aim, fac)
-			_float(e["unit"], "Torpedoes away", Color("#f0b35a"), -24)
+			_float(e["unit"], "Torpedoes away", Color("#ffb23e"), -24)
 			await wait(700.0)
 		"torpedo_miss":
 			var aim: Vector3 = board.hex_world(int(e["aim"]["q"]), int(e["aim"]["r"]), 1.5) if e.get("aim") != null else Vector3.ZERO
@@ -1397,7 +1397,7 @@ func _play_event(e: Dictionary) -> void:
 			var who := _who(e["unit"])
 			if res == "capture":
 				_log("Boarding parties from %s take %s. It now fights for %s." % [_name(e["unit"]), _name(e["target"]), "you" if _side(e["unit"]) == "player" else "the enemy"], who)
-				_float(e["target"], "Captured", Color("#f0b35a"), -30)
+				_float(e["target"], "Captured", Color("#ffb23e"), -30)
 			elif res == "overrun":
 				_log("%s's boarders overrun %s, but the last of its crew hold the bridge." % [_name(e["unit"]), _name(e["target"])], who)
 			else:
@@ -1413,7 +1413,7 @@ func _play_event(e: Dictionary) -> void:
 		"command":
 			var C = _command(str(e["id"]))
 			_log("%s: %s!" % [_name(e["unit"]), str(C.get("n", e["id"]))], "e" if e["side"] == "enemy" else "p")
-			hud.banner(str(C.get("n", e["id"])), Color("#ff8a6a") if e["side"] == "enemy" else Color("#d0a64b"))
+			hud.banner(str(C.get("n", e["id"])), Color("#ff8a6a") if e["side"] == "enemy" else Color("#c8f53a"))
 			await wait(float(PACE["banner"]) + 140.0)
 		"wreck":
 			wrecked[e["unit"]] = true
@@ -2006,7 +2006,7 @@ func _end_flow() -> void:
 			music.victory(boss_fight)
 		else:
 			music.defeat()
-	hud.banner("Victory" if win else "Defeat", Color("#d0a64b") if win else Color("#e27f74"), 1.6)
+	hud.banner("Victory" if win else "Defeat", Color("#c8f53a") if win else Color("#ff8a72"), 1.6)
 	await get_tree().create_timer(1.2).timeout
 	var lost := 0
 	var killed := 0
@@ -3221,7 +3221,7 @@ func _enemy_phase(uid: String) -> void:
 		else:
 			done = mini(done + 1, maxi(total, 1))
 			who = "  ·  [color=#e2d2ff]%s[/color]  ·  ship %d of %d" % [_name(uid), done, total]
-	hud.set_phase("enemy", "[b][color=#c9a3ff]ENEMY TURN[/color][/b]  ·  %s%s  ·  [color=#8d86a0]Enter hurries[/color]" % [fname, who], float(done) / maxf(1.0, float(total)))
+	hud.set_phase("enemy", "[b][color=#c4a4ff]ENEMY TURN[/color][/b]  ·  %s%s  ·  [color=#8d86a0]Enter hurries[/color]" % [fname, who], float(done) / maxf(1.0, float(total)))
 
 
 # F1: reinforcements arrive: the ship appears with a flash, a banner names it, the camera nudges over and back
@@ -3241,11 +3241,11 @@ func _arrive(list: Array) -> void:
 		arrival_index += 1
 		c += p
 		_flash(p + Vector3(0, 2, 0), 24.0, Color(0.6, 0.9, 1.0) if u["side"] == "player" else Color(1.0, 0.5, 0.4), 0.6)
-		_float(u["id"], "Arrived", Color("#8ff0a0") if u["side"] == "player" else Color("#e27f74"), -30)
+		_float(u["id"], "Arrived", Color("#52f0c4") if u["side"] == "player" else Color("#ff8a72"), -30)
 	c /= float(list.size())
 	var names: Array = list.map(func(x): return str(x["name"]))
 	if not mine.is_empty():
-		hud.banner("Reinforcements", Color("#8ff0a0"), 1.4)
+		hud.banner("Reinforcements", Color("#52f0c4"), 1.4)
 		hud.toast("Reinforcements: the %s joins your fleet." % " and the ".join(PackedStringArray(names)))
 	else:
 		hud.banner("Enemy reinforcements", Color("#ff8a6a"), 1.4)
@@ -3322,8 +3322,8 @@ func _tip() -> String:
 			var nh := int(_danger.get(hk, 0))
 			var nn := int(_danger.get(board.key(int(s["q"]), int(s["r"])), 0))
 			if nh > 0 or nn > 0:
-				t += "\n[color=#c9a2ff]%d enem%s can reach this hex[/color] [color=#7d7768]now %d[/color]" % [nh, "y" if nh == 1 else "ies", nn]
-		t += "\n[color=#7d7768]Q/E change the facing. %s[/color]" % ("Click again or Enter to go. Esc cancels." if hk == plan_k else "Click to plan the move (nothing moves yet).")
+				t += "\n[color=#c4a4ff]%d enem%s can reach this hex[/color] [color=#7c8674]now %d[/color]" % [nh, "y" if nh == 1 else "ies", nn]
+		t += "\n[color=#7c8674]Q/E change the facing. %s[/color]" % ("Click again or Enter to go. Esc cancels." if hk == plan_k else "Click to plan the move (nothing moves yet).")
 		return t
 	if board.zone_of.has(hk):
 		var zi := {"exit": ["Exit", "A ship that ends its move here jumps clear of the battle."], "texit": ["Transport exit", "An enemy transport that reaches this edge gets through."],
@@ -3383,16 +3383,16 @@ func _legend() -> void:
 
 
 func _ship_tip(u: Dictionary) -> String:
-	var col := "#8ff0a0" if u["side"] == "player" else "#c9a3ff"
+	var col := "#52f0c4" if u["side"] == "player" else "#c4a4ff"
 	var d: Dictionary = disp.get(u["id"], {"hp": u["hp"], "sh": u["sh"]})
-	var t := "[b][color=%s]%s%s[/color][/b]\n[color=#b3aa95]%s[/color]\nHull [color=#ffae42]%d/%d[/color]" % [col, "★ " if u["flagship"] else "", str(u["name"]), str(u["cls"]), int(d["hp"]), int(u["maxHp"])]
+	var t := "[b][color=%s]%s%s[/color][/b]\n[color=#a7b09d]%s[/color]\nHull [color=#ffad3b]%d/%d[/color]" % [col, "★ " if u["flagship"] else "", str(u["name"]), str(u["cls"]), int(d["hp"]), int(u["maxHp"])]
 	if float(u["shMax"]) > 0:
 		var parts: Array = []
 		for i in 4:
 			parts.append(str(int(d["sh"][i])))
-		t += "   Shields [color=#62ccff]%s[/color] / %d" % [" ".join(parts), int(u["shMax"])]
+		t += "   Shields [color=#4fc4ff]%s[/color] / %d" % [" ".join(parts), int(u["shMax"])]
 	if u["side"] == "player" and u["activated"]:
-		t += "\n[color=#7d7768]Already acted this round.[/color]"
+		t += "\n[color=#7c8674]Already acted this round.[/color]"
 	return t
 
 
@@ -3423,47 +3423,47 @@ func _attack_tip(t_id: String) -> String:
 			hull += float(tg.get("hull", 0))
 			sh += float(tg.get("shield", 0))
 			n += 1
-			right = "[b][color=#f0b35a]%d%%[/color][/b] [color=#7d7768]%d\u00d7%d[/color]" % [int(tg.get("hit", 0)), int(w["shots"]), int(round(float(tg.get("dmgMult", 0))))]
+			right = "[b][color=#ffb23e]%d%%[/color][/b] [color=#7c8674]%d\u00d7%d[/color]" % [int(tg.get("hit", 0)), int(w["shots"]), int(round(float(tg.get("dmgMult", 0))))]
 			if vw["kind"] == "torp":
 				right = "%d%% hit; about %d shield, %d hull" % [int(tg["hit"]), int(round(float(tg["shield"]))), int(round(float(tg["hull"])))]
-				right += "\n[color=#b3aa95]%s[/color]" % _torpedo_why()
+				right += "\n[color=#a7b09d]%s[/color]" % _torpedo_why()
 		elif float(_z0(vw.get("off"))) > 0:
-			right = "[color=#e27f74]offline[/color]"
+			right = "[color=#ff8a72]offline[/color]"
 		elif float(_z0(vw.get("cd"))) > 0:
-			right = "[color=#7d7768]reloading[/color]"
+			right = "[color=#7c8674]reloading[/color]"
 		elif not vw["ready"]:
-			right = "[color=#7d7768]fired[/color]"
+			right = "[color=#7c8674]fired[/color]"
 		elif vw["kind"] == "flak":
-			right = "[color=#7d7768]point defence[/color]"
+			right = "[color=#7c8674]point defence[/color]"
 		elif su["braced"]:
-			right = "[color=#7d7768]braced[/color]"
+			right = "[color=#7c8674]braced[/color]"
 		elif not tg.get("inRange", false):
-			right = "[color=#7d7768]out of range (%d/%d)[/color]" % [int(tg.get("range", 0)), int(vw["range"])]
+			right = "[color=#7c8674]out of range (%d/%d)[/color]" % [int(tg.get("range", 0)), int(vw["range"])]
 		elif not tg.get("inArc", false):
-			right = "[color=#7d7768]out of arc[/color]"
+			right = "[color=#7c8674]out of arc[/color]"
 		elif not tg.get("los", false):
-			right = "[color=#7d7768]blocked[/color]"
+			right = "[color=#7c8674]blocked[/color]"
 		rows += "%s  %s\n" % [str(vw["name"]), right]
-	var t := "[b][color=#e27f74]%s[/color][/b]\n[color=#b3aa95]Hull %d/%d, armor %d%%, evasion %d[/color]\n" % [str(tv["name"]), int(tv["hp"]), int(tv["maxHp"]), int(round(float(tu.get("armor", 0)) * 100.0)), int(_z0(tu.get("ev"))) + int(_z0(tu.get("evBuff")))]
+	var t := "[b][color=#ff8a72]%s[/color][/b]\n[color=#a7b09d]Hull %d/%d, armor %d%%, evasion %d[/color]\n" % [str(tv["name"]), int(tv["hp"]), int(tv["maxHp"]), int(round(float(tu.get("armor", 0)) * 100.0)), int(_z0(tu.get("ev"))) + int(_z0(tu.get("evBuff")))]
 	if float(tv["shMax"]) > 0:
-		t += "Hits the [color=#62ccff][b]%s shield[/b] (%d/%d)[/color]%s." % [QUAD_NAME[quad], int(tv["sh"][quad]), int(tv["shMax"]), " [color=#ffae42]down, straight to hull[/color]" if float(tv["sh"][quad]) < 1 else ""]
+		t += "Hits the [color=#4fc4ff][b]%s shield[/b] (%d/%d)[/color]%s." % [QUAD_NAME[quad], int(tv["sh"][quad]), int(tv["shMax"]), " [color=#ffad3b]down, straight to hull[/color]" if float(tv["sh"][quad]) < 1 else ""]
 	else:
-		t += "Target is unshielded: [color=#ffae42]every hit lands on the hull[/color]."
+		t += "Target is unshielded: [color=#ffad3b]every hit lands on the hull[/color]."
 	if rear:
-		t += " [color=#f0b35a]Rear arc: armor halved, +15% crit.[/color]"
+		t += " [color=#ffb23e]Rear arc: armor halved, +15% crit.[/color]"
 	if plan != null:
 		t += "\n[color=#7fc4ff]From current position (move not taken yet).[/color]"
 	t += "\n" + rows
 	if not _shot_blockers(tv).is_empty(): t += "[color=#ffb875]%s[/color]\n" % _blocker_text(tv)
 	if n > 0:
-		t += "Expected: about [color=#62ccff]%d shield[/color] and [color=#ffae42]%d hull[/color] damage.%s\n[color=#d0a64b]%s[/color]" % [int(round(sh)), int(round(hull)), " [color=#f0b35a]Likely kill.[/color]" if hull >= float(tv["hp"]) else "",
+		t += "Expected: about [color=#4fc4ff]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage.%s\n[color=#c8f53a]%s[/color]" % [int(round(sh)), int(round(hull)), " [color=#ffb23e]Likely kill.[/color]" if hull >= float(tv["hp"]) else "",
 			("Targeted. Click again or Enter to fire %d weapon%s." % [n, "s" if n > 1 else ""]) if target == t_id else "Click to target (nothing fires yet)."]
 	else:
 		var am = (atk if (target == t_id and atk != null) else (_attack_move(t_id) if int(su.get("moveLeft", 0)) > 0 else null))
 		if am != null:
-			t += "[color=#d0a64b]Out of reach from here. %s[/color]" % (("Planned: burn %d movement to the ghost and fire %d weapon%s on the way. Click again or Enter to go." % [int(am["st"].cost), int(am["n"]), "s" if int(am["n"]) > 1 else ""]) if target == t_id else "Click to see the attack-move: where the ship would stop and what would fire.")
+			t += "[color=#c8f53a]Out of reach from here. %s[/color]" % (("Planned: burn %d movement to the ghost and fire %d weapon%s on the way. Click again or Enter to go." % [int(am["st"].cost), int(am["n"]), "s" if int(am["n"]) > 1 else ""]) if target == t_id else "Click to see the attack-move: where the ship would stop and what would fire.")
 		else:
-			t += "[color=#7d7768]No ready weapon can reach this target.[/color]"
+			t += "[color=#7c8674]No ready weapon can reach this target.[/color]"
 	return t
 
 
@@ -3701,11 +3701,11 @@ func _refresh_ui() -> void:
 		hud.set_phase("", "")
 	elif mine and not busy:
 		var up := sel if sel != "" else ""
-		hud.set_phase("player", "[b][color=#d0a64b]YOUR TURN[/color][/b]  ·  Round %d%s  ·  [color=#b3aa95]%d more ready[/color]" % [int(V["round"]),
-			("  ·  [color=#e6dcc4]%s[/color] is up" % _name(up)) if up != "" else "", maxi(0, pend - (1 if up != "" and not VU.get(up, {}).get("active", false) else 0))])
+		hud.set_phase("player", "[b][color=#c8f53a]YOUR TURN[/color][/b]  ·  Round %d%s  ·  [color=#a7b09d]%d more ready[/color]" % [int(V["round"]),
+			("  ·  [color=#e8eee0]%s[/color] is up" % _name(up)) if up != "" else "", maxi(0, pend - (1 if up != "" and not VU.get(up, {}).get("active", false) else 0))])
 	for id in views:
 		var sv = views[id]
-		sv.set_selected(id == sel, Color(0.82, 0.65, 0.29))
+		sv.set_selected(id == sel, Color(0.78, 0.96, 0.23))   # the ship that is up: Lime Tactical lime (R149)
 	_overlay()
 	_tutorial()
 	# F1: a click changes what the hovered thing means (targeted, planned): refresh its tip without waiting for the mouse
@@ -3777,7 +3777,7 @@ func _card_info() -> Dictionary:
 	var hint := ""
 	var btns: Array = []
 	if nothing or ending:
-		hint = "[color=#b3aa95]Nothing left to do this round: handing over to the next ship.[/color]"
+		hint = "[color=#a7b09d]Nothing left to do this round: handing over to the next ship.[/color]"
 	elif braced:
 		hint = "Braced: hull damage −40% until its next turn. End the ship (Space)."
 	elif plan != null:
@@ -3785,7 +3785,7 @@ func _card_info() -> Dictionary:
 		btns.append({"text": "Move here (Enter)", "act": "confirm", "on": true, "primary": true})
 		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
 	elif target != "" and atk != null:
-		hint = "[color=#f0b35a]%s is out of reach from here.[/color] The ghost shows where the ship would stop: it burns %d movement and fires %d of %d guns on the way. [b]Click it again or press Enter to go.[/b] Esc cancels." % [_name(target), int(atk["st"].cost), int(atk["n"]), int(atk["of"])]
+		hint = "[color=#ffb23e]%s is out of reach from here.[/color] The ghost shows where the ship would stop: it burns %d movement and fires %d of %d guns on the way. [b]Click it again or press Enter to go.[/b] Esc cancels." % [_name(target), int(atk["st"].cost), int(atk["n"]), int(atk["of"])]
 		btns.append({"text": "Burn and fire (Enter)", "act": "confirm", "on": true, "primary": true})
 		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
 	elif target != "":
@@ -3804,7 +3804,7 @@ func _card_info() -> Dictionary:
 		if set.is_empty():
 			hint = _cant_fire_reason(target)
 		else:
-			hint = "[color=#ff8a6a]Target: %s.[/color] %d gun%s bear from here: about [color=#62ccff]%d shield[/color] and [color=#ffae42]%d hull[/color] damage%s. [b]Click it again or press Enter to fire.[/b] Esc cancels." % [_name(target), set.size(), "" if set.size() == 1 else "s", int(round(sh)), int(round(hl)), " (likely kill)" if hl >= float(VU[target]["hp"]) else ""]
+			hint = "[color=#ff8a6a]Target: %s.[/color] %d gun%s bear from here: about [color=#4fc4ff]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage%s. [b]Click it again or press Enter to fire.[/b] Esc cancels." % [_name(target), set.size(), "" if set.size() == 1 else "s", int(round(sh)), int(round(hl)), " (likely kill)" if hl >= float(VU[target]["hp"]) else ""]
 			btns.append({"text": "Fire %d weapon%s (Enter)" % [set.size(), "" if set.size() == 1 else "s"], "act": "confirm", "on": true, "primary": true})
 			if not torp_rows.is_empty():
 				hint += "\n[color=#f0c58b]%s[/color]\n%s" % [" ".join(torp_rows), torp_why]
@@ -3901,9 +3901,9 @@ func _panel_info() -> Dictionary:
 	var d: Dictionary = disp.get(id, {"hp": u["hp"], "sh": u["sh"]})
 	var info := {"name": u["name"], "cls": u["cls"], "side": u["side"], "flag": u["flagship"], "hp": d["hp"], "maxHp": u["maxHp"], "sh": d["sh"], "shMax": u["shMax"]}
 	var mleft := int(u.get("moveLeft", u["mp"])) if u.get("moveLeft") != null else int(u["mp"])
-	var stats := "Hull [color=#ffae42]%d/%d[/color]   Armor %d%%   Evasion %d\nMovement %d of %d   Turns %d" % [int(d["hp"]), int(u["maxHp"]), int(round(float(ru.get("armor", 0)) * 100.0)), int(_z0(ru.get("ev"))), mleft, int(_z0(ru.get("speed"))), int(u["turnsLeft"])]
+	var stats := "Hull [color=#ffad3b]%d/%d[/color]   Armor %d%%   Evasion %d\nMovement %d of %d   Turns %d" % [int(d["hp"]), int(u["maxHp"]), int(round(float(ru.get("armor", 0)) * 100.0)), int(_z0(ru.get("ev"))), mleft, int(_z0(ru.get("speed"))), int(u["turnsLeft"])]
 	if u.get("fired", false) and mleft < int(u["mp"]):
-		stats += "\n[color=#7d7768]Fired: ships move, then fire.%s[/color]" % (" Half the movement left to slip away." if mleft > 0 else "")
+		stats += "\n[color=#7c8674]Fired: ships move, then fire.%s[/color]" % (" Half the movement left to slip away." if mleft > 0 else "")
 	if u.get("crew") != null:
 		stats += "   Crew %d/%d" % [int(u["crew"]), int(u["crewMax"])]
 	if u["braced"]:
@@ -3989,13 +3989,13 @@ func _panel_info() -> Dictionary:
 	if u["burning"]:
 		fl.append("[color=#f08a4b]On fire.[/color]")
 	if u.get("fired", false) and mleft < int(u["mp"]):
-		fl.append("[color=#7d7768]Fired: ships move, then fire.%s[/color]" % (" Half the movement left to slip away." if mleft > 0 else ""))
+		fl.append("[color=#7c8674]Fired: ships move, then fire.%s[/color]" % (" Half the movement left to slip away." if mleft > 0 else ""))
 	var Bs0 = api.R.B
 	if Bs0.get("aiFocus") is Dictionary and Bs0["aiFocus"].get("id") == ru.get("id") and not u["dead"]:
-		fl.append("[color=#e27f74]The enemy fleet is focusing its fire on this ship.[/color]")
+		fl.append("[color=#ff8a72]The enemy fleet is focusing its fire on this ship.[/color]")
 	for ts in (Bs0["torps"] if Bs0.get("torps") is Array else []):
 		if ts.get("tid") == ru.get("id") and ts.get("side") != ru.get("side"):
-			fl.append("[color=#e27f74]Torpedoes inbound: move 3 or more hexes from its marked hex to dodge.[/color]")
+			fl.append("[color=#ff8a72]Torpedoes inbound: move 3 or more hexes from its marked hex to dodge.[/color]")
 			break
 	info["flags"] = " ".join(fl)
 	_panel_sheet(u, ru, info)
@@ -4066,7 +4066,7 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 		for pk in cap.get("perks", []):
 			var P = TBL.get("PERKS", {}).get(str(pk))
 			if P is Dictionary:
-				line += "  [color=#d0a64b]%s[/color] [color=#7d7768](%s)[/color]" % [str(P.get("n", pk)), str(P.get("d", "")).trim_suffix(".")]
+				line += "  [color=#c8f53a]%s[/color] [color=#7c8674](%s)[/color]" % [str(P.get("n", pk)), str(P.get("d", "")).trim_suffix(".")]
 		info["captain"] = line.strip_edges()
 	# hull by section
 	if ru.get("sec") is Dictionary:
@@ -4079,7 +4079,7 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 	# shields in words
 	if float(u["shMax"]) > 0.0:
 		var sh: Array = disp.get(u["id"], {"sh": u["sh"]})["sh"]
-		info["stats"] = str(info.get("stats", "")) + "\n[color=#62ccff]Shields[/color] of %d each, +%d a turn: prow %d, port %d, starboard %d, rear %d" % [int(u["shMax"]), int(_z0(ru.get("regen"))), int(sh[0]), int(sh[3]), int(sh[1]), int(sh[2])]
+		info["stats"] = str(info.get("stats", "")) + "\n[color=#4fc4ff]Shields[/color] of %d each, +%d a turn: prow %d, port %d, starboard %d, rear %d" % [int(u["shMax"]), int(_z0(ru.get("regen"))), int(sh[0]), int(sh[3]), int(sh[1]), int(sh[2])]
 	# state and faction lines (refreshPanel tr[] and battle.js factionTraitLines)
 	var tr: Array = R.storyModifierLines(ru)
 	if _jt(ru.get("hullRegen")):
@@ -4096,7 +4096,7 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 	if _jt(ru.get("focus")):
 		tr.append("Concentrated fire: +30% damage.")
 	if Bs.get("aiFocus") is Dictionary and Bs["aiFocus"].get("id") == ru.get("id") and not u["dead"]:
-		tr.append("[color=#e27f74]The enemy fleet is focusing its fire on this ship.[/color]")
+		tr.append("[color=#ff8a72]The enemy fleet is focusing its fire on this ship.[/color]")
 	if not _jt(ru.get("isSq")):
 		var fac := str(ru.get("fac", ""))
 		if fac == "hegemony":
@@ -4113,7 +4113,7 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 			tr.append("Reassembled this battle." if _jt(ru.get("risen")) else ("Archive restore: the first to fall reassembles next round." if L is Dictionary and float(L.get("used", 0)) < float(L.get("max", 0)) and not _jt(ru.get("pflag")) and not _jt(ru.get("flagship")) and not _jt(ru.get("boss")) else "Archive restore spent."))
 		for ts in (Bs["torps"] if Bs.get("torps") is Array else []):
 			if ts.get("tid") == ru.get("id") and ts.get("side") != ru.get("side"):
-				tr.append("[color=#e27f74]Torpedoes inbound: they strike its marked hex next turn. Move 3 or more hexes from it to dodge.[/color]")
+				tr.append("[color=#ff8a72]Torpedoes inbound: they strike its marked hex next turn. Move 3 or more hexes from it to dodge.[/color]")
 		if ru.get("ab") == "launch" or (ru.get("fx") is Dictionary and _jt(ru["fx"].get("hive"))):
 			var WS = TBL.get("WING_STANCES", {}).get(str(ru.get("stance", "strike")) if _jt(ru.get("stance")) else "strike", {})
 			tr.append("Wing stance: %s. %s%s" % [str(WS.get("n", "")), str(WS.get("d", "")), ((" One free change this round." if R.canStance(ru) else " Changed this round.") if ru["side"] == "player" else "")])
@@ -4125,7 +4125,7 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 					parts.append("%s (%s)" % [str(WP.get("n", k)), str(WP.get("d", "")).trim_suffix(".")])
 				tr.append("Wing veterans: " + ", ".join(parts) + ".")
 		if _jt(ru.get("nem")) and _jt(Bs.get("nem")) and _jt(ru.get("nemFlag")):
-			tr.append("[color=#e27f74]Your Nemesis commands from this ship.[/color]")
+			tr.append("[color=#ff8a72]Your Nemesis commands from this ship.[/color]")
 			var kn: Array = []
 			var weak: Array = Bs["nem"]["weak"] if Bs["nem"].get("weak") is Array else []
 			for w in (Bs["nem"]["revealed"] if Bs["nem"].get("revealed") is Array else []):
@@ -4140,13 +4140,13 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 			var M = TBL.get("MOVE_RULES", {}).get(fac)
 			var dl := "Thrusters: sideslip %s, back off %s, pass over or under %s." % [_n(MR.get("slip")), _n(MR.get("rev")), ("+" + _n(MR.get("over"))) if _jt(MR.get("over")) else "free"]
 			if M is Dictionary:
-				dl += " [color=#d0a64b]%s[/color]: %s" % [str(M.get("n", "")), str(M.get("d", ""))]
+				dl += " [color=#c8f53a]%s[/color]: %s" % [str(M.get("n", "")), str(M.get("d", ""))]
 			if ru.get("hexMoved") != null:
 				if int(ru["hexMoved"]) == 0:
-					dl += " [color=#e27f74]Has not moved: enemies get +%s to hit.[/color]" % _n(MR.get("still"))
+					dl += " [color=#ff8a72]Has not moved: enemies get +%s to hit.[/color]" % _n(MR.get("still"))
 				elif int(ru["hexMoved"]) >= int(_z0(MR.get("evadeAt"))):
-					dl += " [color=#5fb3a6]Evasive: enemies get −%s to hit.[/color]" % _n(MR.get("evade"))
-			tr.append("[color=#7d7768]%s[/color]" % dl)
+					dl += " [color=#59d6a8]Evasive: enemies get −%s to hit.[/color]" % _n(MR.get("evade"))
+			tr.append("[color=#7c8674]%s[/color]" % dl)
 	if not tr.is_empty():
 		info["note"] = "[font_size=%d]%s[/font_size]" % [hud.s(13), " ".join(tr)]
 	# extra sections
@@ -4154,7 +4154,7 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 	if ru["side"] == "enemy" and _jt(T.get("boss")) and TBL.get("BOSS_CMD", {}).has(str(ru.get("fac"))):
 		var c = TBL["BOSS_CMD"][str(ru["fac"])]
 		var when := "used" if _jt(Bs.get("cmdEUsed")) else ("strikes next round" if Bs.get("cmdENext") != null else "not yet")
-		var col := "#e27f74" if Bs.get("cmdENext") != null and not _jt(Bs.get("cmdEUsed")) else "#b3aa95"
+		var col := "#ff8a72" if Bs.get("cmdENext") != null and not _jt(Bs.get("cmdEUsed")) else "#a7b09d"
 		extra.append(["Flagship Command (%s)" % when, "[color=%s][b]%s.[/b] %s[/color]" % [col, str(c.get("n", "")), str(R.bossCmdText(c, ru["fac"]))]])
 	var RUN = R.RUN
 	if ru["side"] == "player" and not _jt(ru.get("isSq")) and RUN is Dictionary and ((RUN.get("boons", []) as Array).size() > 0 or (_jt(RUN.get("aspect")) and _jt(ru.get("pflag")))):
@@ -4170,23 +4170,23 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 		if _jt(ru.get("pflag")) and _jt(RUN.get("aspect")):
 			var AS = TBL.get("ASPECTS", {}).get(str(RUN["aspect"]))
 			if AS is Dictionary:
-				bb += "[b][color=#d0a64b]%s[/color][/b] [color=#b3aa95]%s[/color]\n" % [str(AS.get("n", "")), str(AS.get("d", ""))]
+				bb += "[b][color=#c8f53a]%s[/color][/b] [color=#a7b09d]%s[/color]\n" % [str(AS.get("n", "")), str(AS.get("d", ""))]
 		var stats: Dictionary = Bs.get("boonStats", {}) if Bs.get("boonStats") is Dictionary else {}
 		for b in RUN.get("boons", []):
 			var B0 = TBL.get("BOONS", {}).get(str(b.get("id")))
 			if not B0 is Dictionary:
 				continue
 			var pat = B0.get("p") if _jt(B0.get("p")) else (B0.get("duo", [""])[0] if B0.get("duo") is Array else "")
-			var pcol := str(TBL.get("PATRONS", {}).get(str(pat), {}).get("col", "#d0a64b"))
+			var pcol := str(TBL.get("PATRONS", {}).get(str(pat), {}).get("col", "#c8f53a"))
 			var dl: Array = _boon_d.get(str(b.get("id")), [])
 			var d := str(dl[clampi(int(_z0(b.get("r"))), 0, dl.size() - 1)]) if not dl.is_empty() else ""
-			bb += "[color=%s]▌[/color][b]%s[/b]%s [color=#b3aa95]%s[/color]\n" % [pcol, str(B0.get("n", "")), (" [color=#d0a64b]×%d this battle[/color]" % int(stats[b["id"]])) if _jt(stats.get(b.get("id"))) else "", d]
+			bb += "[color=%s]▌[/color][b]%s[/b]%s [color=#a7b09d]%s[/color]\n" % [pcol, str(B0.get("n", "")), (" [color=#c8f53a]×%d this battle[/color]" % int(stats[b["id"]])) if _jt(stats.get(b.get("id"))) else "", d]
 		if bb != "":
 			extra.append(["Fleet protocols", bb.strip_edges()])
 	if ru["side"] == "enemy":
 		var F = TBL.get("FACTIONS", {}).get(str(ru.get("fac")), {})
 		if F is Dictionary and str(F.get("blurb", "")) != "":
-			extra.append([str(F.get("n", "")), "[color=#b3aa95]%s[/color]" % str(F["blurb"])])
+			extra.append([str(F.get("n", "")), "[color=#a7b09d]%s[/color]" % str(F["blurb"])])
 	info["extra"] = extra
 
 
@@ -4472,7 +4472,7 @@ func _target_info() -> Dictionary:
 		best = maxi(best, int(p.get("hit", 0)))
 	var line := ""
 	if set.is_empty():
-		line = "[color=#b3aa95]%s[/color]" % ("No ready gun bears on it from the planned hex." if plan != null else _cant_fire_reason(tid))
+		line = "[color=#a7b09d]%s[/color]" % ("No ready gun bears on it from the planned hex." if plan != null else _cant_fire_reason(tid))
 	else:
 		var tot := eh
 		var bq := 0
@@ -4481,12 +4481,12 @@ func _target_info() -> Dictionary:
 			if es[i] > es[bq]:
 				bq = i
 		var who := ("Both bearing guns" if set.size() == 2 else ("%d bearing guns" % set.size() if set.size() > 2 else "The bearing gun"))
-		line = "%s%s: about [color=#d0a64b][b]%d[/b][/color] damage" % [who, " from the planned hex" if plan != null else "", int(round(tot))]
+		line = "%s%s: about [color=#c8f53a][b]%d[/b][/color] damage" % [who, " from the planned hex" if plan != null else "", int(round(tot))]
 		if es[bq] > 0.5:
 			line += ", about %d on its %s shield" % [int(round(es[bq])), FACING_WORD[bq]]
 		line += " and %d on hull." % int(round(eh)) if es[bq] > 0.5 else ", %d on hull." % int(round(eh))
 		if eh >= float(d["hp"]):
-			line += " [color=#d0a64b]Likely kill.[/color]"
+			line += " [color=#c8f53a]Likely kill.[/color]"
 		_tgt_plate[tid] = {"odds": "%d%% %d gun%s" % [best, set.size(), "" if set.size() == 1 else "s"], "ghost": maxf(0.0, float(d["hp"]) - eh)}
 	return {"name": str(tu["name"]), "flag": tu["flagship"], "hp": float(d["hp"]), "maxHp": float(tu["maxHp"]), "sh": d["sh"], "shMax": float(tu["shMax"]),
 		"exp_hull": eh, "exp_sh": es, "line": line}
@@ -4498,11 +4498,11 @@ func _torpedo_why() -> String:
 
 func _float_hit(id, sh: float, hull: float, crit) -> void:
 	if sh > 0:
-		_float(id, "−%d shield" % int(sh), Color("#62ccff"), -18)
+		_float(id, "−%d shield" % int(sh), Color("#4fc4ff"), -18)
 	if hull > 0:
-		_float(id, "−%d hull" % int(hull), Color("#ffd27a") if crit else Color("#ffae42"), 0)
+		_float(id, "−%d hull" % int(hull), Color("#ffd27a") if crit else Color("#ffad3b"), 0)
 	if crit:
-		_float(id, "Critical", Color("#f0b35a"), 18)
+		_float(id, "Critical", Color("#ffb23e"), 18)
 
 
 # ---------------------------------------------------------------- onboarding (ui3d.js tutorialCheck)

@@ -1,10 +1,11 @@
 extends CanvasLayer
-# The battle HUD in the Glass Shell look (issue #271 build, Ryan's pick Nov 9 2026, FINDINGS R145: round 2 version C bold;
-# the mockup docs/shots/ui_redesign/mockups_r2/C_glass_shell_bold.png is the spec, the style rules are
-# contrib/opus/briefs/ui_style.md, the theme pieces godot/ui/theme/glass_shell.gd).
+# The battle HUD: the Glass Shell C bold layout (issue #271, FINDINGS R145) in the Lime Tactical identity (FINDINGS R149).
+# Specs: the layout docs/shots/ui_redesign/mockups_r2/C_glass_shell_bold.png, the look
+# docs/shots/ui_redesign/identity/2_lime_tactical.png; the style rules are contrib/opus/briefs/ui_style.md, the theme
+# pieces (palette, fonts, panel, well, strip, buttons) godot/ui/theme/glass_shell.gd.
 #
-# One see-through glass frame per region, every line of text on a solid well or strip, faction colour only as a small
-# accent. The right column is one glass shell holding seven blocks in decision order:
+# One matte panel per region, every line of text on a solid well or strip, lime only for the next action and the panel
+# furniture, faction colour only as a small accent. The right column is one glass shell holding seven blocks in decision order:
 #   Nemesis | the ship that is up | 1 Move | 2 Fire | Orders | Target | 3 End (End ship fixed in the bottom right corner)
 # Left: the fleet list (one line plus bars per ship; 20 ships fit at 1080 with no scroll) and the four-line log ticker
 # (L opens the full log). Top: round, whose turn, the acted pips, the objective, the enemy, the run's Heat level and the
@@ -43,7 +44,6 @@ const EMBER := GS.EMBER
 const SHIELD := GS.SHIELD
 const HULL := GS.HULL
 const HULL_LOW := GS.HULL_LOW
-const GLASS := Color(0.047, 0.07, 0.12, 0.80)
 const FRIEND := GS.FRIEND
 const FOE := GS.FOE
 const FOE_RING := GS.FOE_RING
@@ -58,10 +58,13 @@ const LOG_W := 600.0     # the log
 const LOG_LINES := 4     # the ticker
 const LOG_H := 134.0     # the ticker's height: head 36, four lines of 21, padding 14
 
-var font: FontFile
-var font_semi: FontFile
-var font_goth: Font                 # headers: Michroma (brand.gd), the sci-fi display face
-var font_caps: Font                 # section heads: Oxanium small caps
+var font: Font                      # body: Chakra Petch Regular (glass_shell.gd, Lime Tactical R149)
+var font_semi: Font                 # names, buttons: Chakra Petch SemiBold
+var font_goth: Font                 # display (round title, banner, end card): Chakra Petch Bold, tracked caps
+var font_caps: Font                 # section heads and tags: Chakra Petch Bold, tracked caps
+var font_num: Font                  # numbers that decide something (odds, damage, hull, keys): Azeret Mono
+var font_num_b: Font                # the same, bold
+var font_act: Font                  # the finish button's caps label
 var k := 1.0                        # the UI scale (ui_scale.gd: window height / 1080, clamped, times the player scale)
 var root: Control
 var top: PanelContainer
@@ -133,11 +136,10 @@ var _phase_kind := ""
 
 func _ready() -> void:
 	layer = 10
-	font = _font("BarlowSemiCondensed-Regular.ttf")
-	font_semi = _font("BarlowSemiCondensed-SemiBold.ttf")
-	font_goth = Brand.display()
-	font_caps = Brand.caps()
+	font = GS.body()
+	font_semi = GS.semi()
 	k = scale_for(get_viewport().get_visible_rect().size)
+	_scaled_fonts()
 	_built_vs = get_viewport().get_visible_rect().size
 	_build_all()
 
@@ -210,6 +212,7 @@ func _rebuild() -> void:
 	_phase_fs = -1
 	_heights = {}
 	k = nk
+	_scaled_fonts()
 	_build_all()
 	retreat_btn.visible = keep["retreat_v"]
 	retreat_btn.disabled = keep["retreat_d"]
@@ -251,17 +254,13 @@ static func imported_ok(p: String) -> bool:
 	return false
 
 
-func _font(name: String) -> FontFile:
-	# the imported font when the project has been imported or exported, else the raw file
-	var p := "res://ui/battle/fonts/" + name
-	if imported_ok(p):
-		var r = load(p)
-		if r is FontFile:
-			return r
-	var f := FontFile.new()
-	if FileAccess.file_exists(p):
-		f.data = FileAccess.get_file_as_bytes(p)
-	return f
+# the faces whose letter spacing follows the UI scale (Lime Tactical type, glass_shell.gd): made again on a rebuild
+func _scaled_fonts() -> void:
+	font_goth = GS.display(k)
+	font_caps = GS.caps(k)
+	font_act = GS.action_font(k)
+	font_num = GS.num()
+	font_num_b = GS.num_bold()
 
 
 func s(v: float) -> int:
@@ -280,7 +279,7 @@ func _theme() -> Theme:
 	sf.draw_center = false
 	sf.border_color = BONE
 	sf.set_border_width_all(maxi(2, s(2)))
-	sf.set_corner_radius_all(s(4))
+	sf.set_corner_radius_all(0)   # square, like everything in Lime Tactical (R149)
 	sf.expand_margin_left = s(3)
 	sf.expand_margin_right = s(3)
 	sf.expand_margin_top = s(3)
@@ -292,7 +291,7 @@ func _theme() -> Theme:
 	return th
 
 
-# a glass frame (the see-through shell) with gilt corner ticks
+# a panel (the matte black-olive slab, chamfered); its marks (scanline, bevel, brackets) come from _frame
 func _glass(radius := 6) -> StyleBoxFlat:
 	var g := GS.shell(k, 8)
 	if radius > 6:
@@ -301,20 +300,18 @@ func _glass(radius := 6) -> StyleBoxFlat:
 	return g
 
 
+# Lime Tactical marks: every panel has the scanline and the two lime corner brackets; the lime bevel on the top-left
+# chamfer is off on the flat top bar (ticks false), as in the mockup
 func _frame(p: PanelContainer, ticks := true) -> void:
 	p.add_theme_stylebox_override("panel", _glass())
-	if ticks:
-		GS.ticks_on(p, k)
+	GS.frame_marks(p, k, true, ticks)
 
 
 func _panel(l: float, t: float, r: float, b: float, w := -1.0, h := -1.0, ticks := true) -> PanelContainer:
 	var p := PanelContainer.new()
 	root.add_child(p)
 	p.mouse_filter = Control.MOUSE_FILTER_STOP
-	if ticks:
-		_frame(p, true)
-	else:
-		p.add_theme_stylebox_override("panel", _glass())
+	_frame(p, ticks)
 	# offsets: negative means "not anchored to that side"
 	if l >= 0.0 and r >= 0.0:
 		p.anchor_left = 0.0
@@ -368,14 +365,14 @@ func _label(txt: String, size := 15, col := BONE, f: Font = null) -> Label:
 	return l
 
 
-# a section head: "1 MOVE" (the number gilt, the word in letter-spaced caps)
+# a section head: "1 MOVE" (Lime Tactical: the number and the word both lime, tracked caps, as in the mockup)
 func _head(n: String, word: String, right: String = "", right_col := BONE2) -> HBoxContainer:
 	var h := HBoxContainer.new()
 	h.add_theme_constant_override("separation", s(6))
 	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if n != "":
 		h.add_child(_label(n, 13, GILT, font_caps))
-	h.add_child(_label(word.to_upper(), 13, BONE2, font_caps))
+	h.add_child(_label(word.to_upper(), 13, GILT, font_caps))
 	var sp := Control.new()
 	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	sp.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -398,7 +395,7 @@ func _tag(txt: String, col: Color, filled := true, size := 13) -> Label:
 
 # a key cap beside an action ("B", "Tab", "Space")
 func _keycap(key: String, size := 13) -> Label:
-	var l := _label(key, size, BONE, font_semi)
+	var l := _label(key, size, GS.KEY_FG, font_num_b)
 	l.add_theme_stylebox_override("normal", GS.keycap(k))
 	l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -417,7 +414,7 @@ func _badge(n: int, size := 13) -> Control:
 	h.add_theme_constant_override("separation", s(3))
 	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	h.add_child(_reticle(size))
-	h.add_child(_label(str(n), size, FOE, font_semi))
+	h.add_child(_label(str(n), size, FOE, font_num_b))
 	p.add_child(h)
 	return p
 
@@ -469,7 +466,9 @@ func _button(txt: String, act: String, arg: Variant = null, primary := false, ke
 		b.add_theme_color_override("font_color", GS.ON_GILT)
 		b.add_theme_color_override("font_hover_color", GS.ON_GILT)
 		b.add_theme_color_override("font_pressed_color", GS.ON_GILT)
-		b.add_theme_font_override("font", font_semi)
+		b.add_theme_color_override("font_focus_color", GS.ON_GILT)    # sage on lime would not read with the keyboard on it
+		b.add_theme_color_override("font_hover_pressed_color", GS.ON_GILT)
+		b.add_theme_font_override("font", GS.bold())
 	b.pressed.connect(func() -> void: action.emit(act, arg))
 	return b
 
@@ -495,9 +494,10 @@ func _key_button(txt: String, act: String, arg: Variant = null, primary := false
 	if kk != "":
 		var kc := _keycap(kk, 12 if kk.length() > 2 else 13)
 		if primary:
-			kc.add_theme_color_override("font_color", BONE)
+			kc.add_theme_stylebox_override("normal", GS.keycap_on_gilt(k))
+			kc.add_theme_color_override("font_color", GS.ON_GILT)
 		h.add_child(kc)
-	var l := _label(t, 15 if primary else 14, GS.ON_GILT if primary else BONE, font_semi)
+	var l := _label(t, 15 if primary else 14, GS.ON_GILT if primary else BONE, GS.bold() if primary else font_semi)
 	l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	l.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -510,9 +510,9 @@ func _key_button(txt: String, act: String, arg: Variant = null, primary := false
 	return b
 
 
-# 3 End: End ship is the big filled gold button of C_glass_shell_bold.png in every state (R148): the label centred, its
-# key cap after it, dark on gold. Whatever the step, this is the one gold button on the screen; a step's own confirm
-# (Move here, Fire N weapons) is drawn lit instead (_hint_into).
+# 3 End: End ship is the big filled lime slab of the Lime Tactical mockup in every state (R148, R149): "END SHIP" in
+# tracked bold caps, centred, its key cap ("SPACE") after it, dark on lime. Whatever the step, this is the one filled
+# button on the screen; a step's own confirm (Move here, Fire N weapons) is drawn lit instead (_hint_into).
 func _end_button(b: Dictionary) -> Button:
 	var t := str(b["text"])
 	var kk := ""
@@ -533,12 +533,12 @@ func _end_button(b: Dictionary) -> Button:
 	h.add_theme_constant_override("separation", s(10))
 	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	h.set_anchors_preset(Control.PRESET_FULL_RECT)
-	var l := _label(t, 17, GS.ON_GILT if on else BONE3, font_semi)
+	var l := _label(t.to_upper(), 17, GS.ON_GILT if on else BONE3, font_act)
 	l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	h.add_child(l)
 	if kk != "":
-		var kc := _keycap(kk, 12 if kk.length() > 2 else 13)
+		var kc := _keycap(kk.to_upper(), 12 if kk.length() > 2 else 13)
 		kc.add_theme_stylebox_override("normal", GS.keycap_on_gilt(k))
 		kc.add_theme_color_override("font_color", GS.ON_GILT if on else BONE3)
 		h.add_child(kc)
@@ -556,9 +556,10 @@ func _kb_width(b: Button) -> float:
 	var l: Label = b.get_meta("lbl")
 	var kk := str(b.get_meta("key", ""))
 	var fs := l.get_theme_font_size("font_size") if l.has_theme_font_size_override("font_size") else s(14)
-	var w := font_semi.get_string_size(l.text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
+	var lf: Font = l.get_theme_font("font") if l.has_theme_font_override("font") else font_semi
+	var w := lf.get_string_size(l.text, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
 	if kk != "":
-		w += font_semi.get_string_size(kk, HORIZONTAL_ALIGNMENT_LEFT, -1, s(12 if kk.length() > 2 else 13)).x + s(10) + s(8)
+		w += font_num_b.get_string_size(kk, HORIZONTAL_ALIGNMENT_LEFT, -1, s(12 if kk.length() > 2 else 13)).x + s(10) + s(8)
 	return ceilf(w + s(16) + s(6))
 
 
@@ -569,6 +570,8 @@ func _build_top() -> void:
 	var sb := GS.shell(k, 8)
 	sb.content_margin_top = s(3)
 	sb.content_margin_bottom = s(3)
+	sb.content_margin_left = s(GS.CUT)      # clear of the chamfers
+	sb.content_margin_right = s(GS.CUT)
 	top.add_theme_stylebox_override("panel", sb)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", s(10))
@@ -626,7 +629,7 @@ func _build_top() -> void:
 	heat_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	heat_bar.draw.connect(_draw_heat)
 	heat_box.add_child(heat_bar)
-	heat_lbl = _label("0", 15, EMBER, font_semi)
+	heat_lbl = _label("0", 15, EMBER, font_num_b)
 	heat_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	heat_box.add_child(heat_lbl)
 	row.add_child(heat_box)
@@ -974,12 +977,14 @@ func set_roster(rows: Array) -> void:
 func _roster_row(r: Dictionary) -> Control:
 	var card := PanelContainer.new()
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.30, 0.24, 0.10, 0.30) if r["sel"] else Color(GS.WELL, 0.55)
+	# Lime Tactical: the selected row is a lime-tinted solid with a lime edge; the rest sit on the well colour with a quiet
+	# lime separator under each
+	sb.bg_color = Color("#1b210d", 0.95) if r["sel"] else Color(GS.WELL, 0.62)
 	sb.border_color = GILT if r["sel"] else Color(0, 0, 0, 0)
 	sb.set_border_width_all(1 if r["sel"] else 0)
 	sb.border_width_bottom = 1
 	if not r["sel"]:
-		sb.border_color = Color(IRON3, 0.45)
+		sb.border_color = GS.LINE
 	sb.content_margin_left = s(8)
 	sb.content_margin_right = s(7)
 	sb.content_margin_top = s(3)
@@ -1000,7 +1005,8 @@ func _roster_row(r: Dictionary) -> Control:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", s(5))
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var nm := _label(("★ " if r["flag"] else "") + str(r["name"]), 15, BONE, font_semi)
+	# 14, not 15: Chakra Petch is wider than the old Barlow (the Lime Tactical mockup does the same; still above the 12 floor)
+	var nm := _label(("★ " if r["flag"] else "") + str(r["name"]), 14, BONE, font_semi)
 	nm.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	nm.custom_minimum_size.x = s(90)
 	nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1016,7 +1022,7 @@ func _roster_row(r: Dictionary) -> Control:
 	if r.get("new", false):
 		row.add_child(_label("NEW", 12, EMBER, font_caps))
 	var st := str(r["status"])
-	var stc := GILT if st in ["Up", "Acting"] else (Color("#7ddc6a") if st == "Ready" else (BLOOD if st == "Lost" else BONE3))
+	var stc := GILT if st in ["Up", "Acting"] else (FRIEND if st == "Ready" else (BLOOD if st == "Lost" else BONE3))
 	var sl := _label(st, 13, stc, font_semi)
 	sl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(sl)
@@ -1069,6 +1075,7 @@ func _build_panel() -> void:
 	panel_box.add_theme_constant_override("separation", s(6))
 	sc.add_child(panel_box)
 	nem_well = _well(Color(0, 0, 0, 0), 10, 7)
+	nem_well.add_theme_stylebox_override("panel", GS.well(k, Color(0, 0, 0, 0), 10, 7, ALERT))   # the reserved red bar
 	up_well = _well()
 	move_well = _well()
 	fire_well = _well()
@@ -1103,6 +1110,15 @@ func _rich(bb: String, size := 14) -> RichTextLabel:
 	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	r.add_theme_font_size_override("normal_font_size", s(size))
 	r.add_theme_font_size_override("bold_font_size", s(size))
+	r.add_theme_font_size_override("mono_font_size", s(size))
+	return r
+
+
+# rich text set in the number face (Azeret Mono): hull "312/370 to about 75" and the like
+func _num_rich(bb: String, size := 14) -> RichTextLabel:
+	var r := _rich(bb, size)
+	r.add_theme_font_override("normal_font", font_num)
+	r.add_theme_font_override("bold_font", font_num_b)
 	return r
 
 
@@ -1143,16 +1159,16 @@ func set_nemesis(info: Dictionary) -> void:
 	if stt != "":
 		top_r.add_child(_label(stt, 13, BONE3))
 	v.add_child(top_r)
-	var bb := "[color=#b3aa95]Aboard[/color] %s" % str(info.get("ship", ""))
+	var bb := "[color=#a7b09d]Aboard[/color] %s" % str(info.get("ship", ""))
 	if str(info.get("flee", "")) != "":
-		bb += " [color=#7d7768]·[/color] [color=#b3aa95]%s[/color]" % str(info["flee"])
+		bb += " [color=#7c8674]·[/color] [color=#a7b09d]%s[/color]" % str(info["flee"])
 	for a in info.get("adapted", []):
-		bb += "\n[color=#e27f74]Adapted:[/color] %s%s" % [str(a[1]).trim_suffix("."), (" [color=#7d7768](%s)[/color]" % str(a[2])) if str(a[2]) != "" else ""]
+		bb += "\n[color=#ff8a72]Adapted:[/color] %s%s" % [str(a[1]).trim_suffix("."), (" [color=#7c8674](%s)[/color]" % str(a[2])) if str(a[2]) != "" else ""]
 	var weak: Array = info.get("weak", [])
 	if weak.is_empty():
-		bb += "\n[color=#5fb3a6]Weakness:[/color] [color=#7d7768]not found yet[/color]"
+		bb += "\n[color=#59d6a8]Weakness:[/color] [color=#7c8674]not found yet[/color]"
 	for w in weak:
-		bb += "\n[color=#5fb3a6]Weakness:[/color] %s [color=#7d7768](%s)[/color]" % [str(w[1]).trim_suffix("."), str(w[0]).to_lower()]
+		bb += "\n[color=#59d6a8]Weakness:[/color] %s [color=#7c8674](%s)[/color]" % [str(w[1]).trim_suffix("."), str(w[0]).to_lower()]
 	var r := _rich(bb, 13)
 	r.custom_minimum_size.x = s(COL_W - 110)
 	v.add_child(r)
@@ -1177,7 +1193,7 @@ func set_panel(info: Dictionary) -> void:
 		up_well.add_theme_stylebox_override("panel", GS.well(k))
 		var v0 := VBoxContainer.new()
 		v0.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		v0.add_child(_rich("[color=#b3aa95]Select one of your ships, or hover an enemy to see it.[/color]"))
+		v0.add_child(_rich("[color=#a7b09d]Select one of your ships, or hover an enemy to see it.[/color]"))
 		var kt := _rich(keys_text())
 		kt.custom_minimum_size.x = s(COL_W - 44)
 		v0.add_child(kt)
@@ -1197,8 +1213,10 @@ func set_panel(info: Dictionary) -> void:
 	h.add_theme_constant_override("separation", s(8))
 	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var tg := str(info.get("tag", "UP" if mine else "ENEMY"))
-	h.add_child(_tag(tg, GILT if mine else FOE_RING, mine))
-	var nm := _label(("★ " if info.get("flag", false) else "") + str(info["name"]), 20, GILT if is_up else (FRIEND if mine else FOE), font_semi)
+	# filled lime only for the ship that is up (the next action); your other ships get a mint outline, the enemy lavender
+	h.add_child(_tag(tg, GILT if is_up else (FRIEND if mine else FOE_RING), is_up))
+	# Lime Tactical: the ship's name in bold tracked caps (the mockup's "LONG WATCH"), lime while it is up
+	var nm := _label(("★ " if info.get("flag", false) else "") + str(info["name"]).to_upper(), 20, GILT if is_up else (FRIEND if mine else FOE), GS.ship_name(k))
 	nm.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	h.add_child(nm)
@@ -1223,7 +1241,7 @@ func set_panel(info: Dictionary) -> void:
 	hb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hb.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	hr.add_child(hb)
-	var hn := _rich("[b]%d[/b][color=#7d7768]/%d[/color]" % [int(info["hp"]), int(info["maxHp"])], 15)
+	var hn := _num_rich("[b]%d[/b][color=#7c8674]/%d[/color]" % [int(info["hp"]), int(info["maxHp"])], 15)
 	hn.autowrap_mode = TextServer.AUTOWRAP_OFF
 	hn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	hr.add_child(hn)
@@ -1243,11 +1261,11 @@ func set_panel(info: Dictionary) -> void:
 	var mv: Array = info.get("move", [])
 	var bits := PackedStringArray()
 	if info.has("arm"):
-		bits.append("[color=#b3aa95]ARM[/color] [b]%d%%[/b]" % int(info["arm"]))
+		bits.append("[color=#a7b09d]ARM[/color] [b]%d%%[/b]" % int(info["arm"]))
 	if mv.size() == 2:
-		bits.append("[color=#b3aa95]MOVE[/color] [b]%d/%d[/b]" % [int(mv[0]), int(mv[1])])
+		bits.append("[color=#a7b09d]MOVE[/color] [b]%d/%d[/b]" % [int(mv[0]), int(mv[1])])
 	if info.has("turns"):
-		bits.append("[color=#b3aa95]TURNS[/color] [b]%d[/b]" % int(info["turns"]))
+		bits.append("[color=#a7b09d]TURNS[/color] [b]%d[/b]" % int(info["turns"]))
 	var nr := HBoxContainer.new()
 	nr.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var nl := _rich("   ".join(bits), 14)
@@ -1299,9 +1317,9 @@ func _facings(sh: Array, mx: float, ghost: Array = []) -> Control:
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		g.add_child(b)
 	for i in 4:
-		var t := "[color=#7d7768]%s[/color] [color=#62ccff]%d[/color]" % [names[i], int(sh[i])]
+		var t := "[color=#7c8674]%s[/color] [color=#4fc4ff]%d[/color]" % [names[i], int(sh[i])]
 		if ghost.size() == 4 and float(ghost[i]) > 0.5:
-			t += " [color=#7d7768]to about %d[/color]" % maxi(0, int(round(float(sh[i]) - float(ghost[i]))))
+			t += " [color=#7c8674]to about %d[/color]" % maxi(0, int(round(float(sh[i]) - float(ghost[i]))))
 		var l := _rich(t, 12)
 		l.autowrap_mode = TextServer.AUTOWRAP_OFF
 		l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1310,7 +1328,7 @@ func _facings(sh: Array, mx: float, ghost: Array = []) -> Control:
 
 
 func _detail_bb(info: Dictionary) -> String:
-	var bb := "[b]%s[/b]  [color=#b3aa95]%s[/color]" % [str(info.get("name", "")), str(info.get("cls", ""))]
+	var bb := "[b]%s[/b]  [color=#a7b09d]%s[/color]" % [str(info.get("name", "")), str(info.get("cls", ""))]
 	if str(info.get("captain", "")) != "":
 		bb += "\n" + str(info["captain"])
 	bb += "\n" + str(info.get("stats", ""))
@@ -1318,11 +1336,11 @@ func _detail_bb(info: Dictionary) -> String:
 		var parts := PackedStringArray()
 		for sc in info["secs"]:
 			parts.append("%s %d/%d" % [str(sc[0]), int(sc[1]), int(sc[2])])
-		bb += "\n[color=#b3aa95]Sections:[/color] " + ", ".join(parts)
+		bb += "\n[color=#a7b09d]Sections:[/color] " + ", ".join(parts)
 	if str(info.get("note", "")) != "":
 		bb += "\n" + str(info["note"])
 	for ex in info.get("extra", []):
-		bb += "\n[color=#d0a64b]%s[/color]\n%s" % [str(ex[0]).to_upper(), str(ex[1])]
+		bb += "\n[color=#c8f53a]%s[/color]\n%s" % [str(ex[0]).to_upper(), str(ex[1])]
 	if info.get("side", "") == "player":
 		bb += "\n\n" + keys_text()
 	return bb
@@ -1345,7 +1363,7 @@ func _show_dtip() -> void:
 
 
 func keys_text() -> String:
-	return "[font_size=%d][color=#b3aa95]Click a blue hex to plan a move, click it again (or [b]Enter[/b]) to go. Click an enemy to target it and see the odds, click it again (or [b]Enter[/b]) to fire. [b]Q[/b]/[b]E[/b] turn, [b]1[/b]-[b]6[/b] pick one weapon, [b]B[/b] brace, [b]X[/b] ram, [b]G[/b] board, [b]C[/b] Command, [b]Tab[/b] next ship, [b]Space[/b] end ship, [b]Esc[/b] cancel the plan. In the enemy turn [b]Enter[/b] or [b]Space[/b] hurries. Right-drag orbit, left-drag or WASD pan, wheel zoom, [b]T[/b] top-down, [b]R[/b] threat map, [b]V[/b] firing arcs, [b]F[/b] focus, [b]L[/b] full log, [b]Home[/b] reset view.[/color][/font_size]" % s(12)
+	return "[font_size=%d][color=#a7b09d]Click a blue hex to plan a move, click it again (or [b]Enter[/b]) to go. Click an enemy to target it and see the odds, click it again (or [b]Enter[/b]) to fire. [b]Q[/b]/[b]E[/b] turn, [b]1[/b]-[b]6[/b] pick one weapon, [b]B[/b] brace, [b]X[/b] ram, [b]G[/b] board, [b]C[/b] Command, [b]Tab[/b] next ship, [b]Space[/b] end ship, [b]Esc[/b] cancel the plan. In the enemy turn [b]Enter[/b] or [b]Space[/b] hurries. Right-drag orbit, left-drag or WASD pan, wheel zoom, [b]T[/b] top-down, [b]R[/b] threat map, [b]V[/b] firing arcs, [b]F[/b] focus, [b]L[/b] full log, [b]Home[/b] reset view.[/color][/font_size]" % s(12)
 
 
 func _sect(t: String) -> Control:
@@ -1363,12 +1381,12 @@ func _build_fire(info: Dictionary) -> void:
 	var tname := str(info.get("fire_at", ""))
 	var right := ""
 	if mine and tname != "":
-		right = "%s, at [color=#c9a2ff]%s[/color]" % [str(info.get("fire_from", "from here")), tname]
+		right = "%s, at [color=#c4a4ff]%s[/color]" % [str(info.get("fire_from", "from here")), tname]
 	elif mine:
 		right = str(info.get("fire_from", ""))
 	var hh := _head("2" if mine else "", "Fire" if mine else "Weapons")
 	if right != "":
-		var rl := _rich("[right][color=#b3aa95]%s[/color][/right]" % right, 13)
+		var rl := _rich("[right][color=#a7b09d]%s[/color][/right]" % right, 13)
 		rl.autowrap_mode = TextServer.AUTOWRAP_OFF
 		rl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		hh.remove_child(hh.get_child(hh.get_child_count() - 1))
@@ -1410,7 +1428,7 @@ func _weapon_row(w: Dictionary) -> Control:
 	var p := PanelContainer.new()
 	var armed: bool = w.get("armed", false)
 	var sb := GS.well(k, GILT if armed else Color(0, 0, 0, 0), 7, 3)
-	sb.bg_color = Color(GS.IRON, 0.9) if not armed else Color(0.20, 0.16, 0.07, 0.95)
+	sb.bg_color = Color(GS.IRON, 0.9) if not armed else Color("#171d0c", 0.96)
 	p.add_theme_stylebox_override("panel", sb)
 	p.mouse_filter = Control.MOUSE_FILTER_STOP
 	p.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -1432,7 +1450,7 @@ func _weapon_row(w: Dictionary) -> Control:
 	n.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	h.add_child(n)
 	var arc := str(w.get("arc", ""))
-	var at := _label(("%s %s" % [arc, str(w.get("rng", ""))]).strip_edges(), 13, BONE, font_semi)
+	var at := _label(("%s %s" % [arc, str(w.get("rng", ""))]).strip_edges(), 13, BONE, font_num_b)
 	at.add_theme_stylebox_override("normal", GS.keycap(k))
 	at.custom_minimum_size.x = s(WCOL[2])
 	at.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -1442,12 +1460,12 @@ func _weapon_row(w: Dictionary) -> Control:
 	h.add_child(at)
 	var hit := int(w.get("hit", -1))
 	if hit >= 0:
-		var hl := _label("%d%%" % hit, 15, GILT, font_semi)
+		var hl := _label("%d%%" % hit, 15, GILT, font_num_b)
 		hl.custom_minimum_size.x = s(WCOL[3])
 		hl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		hl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		h.add_child(hl)
-		var dl := _label("~%d" % int(w.get("dmg", 0)), 15, BONE, font_semi)
+		var dl := _label("~%d" % int(w.get("dmg", 0)), 15, BONE, font_num_b)
 		dl.custom_minimum_size.x = s(WCOL[4])
 		dl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		dl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -1463,7 +1481,7 @@ func _weapon_row(w: Dictionary) -> Control:
 		why.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		h.add_child(why)
 	var cost := str(w.get("cost", ""))
-	var cl := _label(cost, 13, EMBER if cost.begins_with("CD") else BONE3, font_semi)
+	var cl := _label(cost, 13, EMBER if cost.begins_with("CD") else BONE3, font_num)
 	cl.custom_minimum_size.x = s(WCOL[5])
 	cl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	cl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -1533,10 +1551,10 @@ func set_target(info: Dictionary) -> void:
 	nr.add_child(nm)
 	var hp := float(info.get("hp", 0))
 	var after := maxf(0.0, hp - eh)
-	var t := "[b]%d[/b][color=#7d7768]/%d[/color]" % [int(hp), int(info.get("maxHp", 0))]
+	var t := "[b]%d[/b][color=#7c8674]/%d[/color]" % [int(hp), int(info.get("maxHp", 0))]
 	if eh > 0.5:
-		t += " [color=#b3aa95]to about[/color] [b]%d[/b]" % int(round(after))
-	var hn := _rich(t, 15)
+		t += " [color=#a7b09d]to about[/color] [b]%d[/b]" % int(round(after))
+	var hn := _num_rich(t, 15)
 	hn.autowrap_mode = TextServer.AUTOWRAP_OFF
 	nr.add_child(hn)
 	v.add_child(nr)
@@ -1753,13 +1771,13 @@ func _refresh_end() -> void:
 				next_name = str(r["name"])
 	if next_name == "" and not ready.is_empty():
 		next_name = str(ready[0]["name"])
-	cnt.text = ("[color=#7ddc6a]%d ship%s still Ready[/color] [color=#7d7768]·[/color] [color=#b3aa95]Tab jumps to the next[/color]" % [ready.size(), "" if ready.size() == 1 else "s"]) if ready.size() > 0 else ""
+	cnt.text = ("[color=#52f0c4]%d ship%s still Ready[/color] [color=#7c8674]·[/color] [color=#a7b09d]Tab jumps to the next[/color]" % [ready.size(), "" if ready.size() == 1 else "s"]) if ready.size() > 0 else ""
 	var foes := int(_info.get("foe_ships", 0))
 	var t := ""
 	if next_name != "":
-		t = "Then [color=#8ff0a0]%s[/color] is up (Tab). " % next_name
-	t += "After your ships, the [color=#c9a2ff]enemy turn[/color]%s." % ((": %d ship%s" % [foes, "" if foes == 1 else "s"]) if foes > 0 else "")
-	nxt.text = "[color=#b3aa95]%s[/color]" % t
+		t = "Then [color=#52f0c4]%s[/color] is up (Tab). " % next_name
+	t += "After your ships, the [color=#c4a4ff]enemy turn[/color]%s." % ((": %d ship%s" % [foes, "" if foes == 1 else "s"]) if foes > 0 else "")
+	nxt.text = "[color=#a7b09d]%s[/color]" % t
 
 
 # ---------------------------------------------------------------- log ticker, banner, tip, chip, hint
@@ -1785,6 +1803,7 @@ func _build_log() -> void:
 	if log_text != null and is_instance_valid(log_text):   # a rebuild keeps the log's text
 		log_text.add_theme_font_size_override("normal_font_size", s(14))
 		log_text.add_theme_font_size_override("bold_font_size", s(14))
+		log_text.add_theme_constant_override("line_separation", s(2))
 		w.add_child(log_text)
 		_log_bar()
 		return
@@ -1794,6 +1813,7 @@ func _build_log() -> void:
 	log_text.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	log_text.add_theme_font_size_override("normal_font_size", s(14))
 	log_text.add_theme_font_size_override("bold_font_size", s(14))
+	log_text.add_theme_constant_override("line_separation", s(2))   # Chakra Petch lines are 19 at 14; 21 a line keeps the ticker at four
 	w.add_child(log_text)
 	_log_bar()
 
@@ -1821,7 +1841,7 @@ func toggle_log() -> void:
 	_apply_heights()
 
 
-const LOG_COL := {"p": "#5fb3a6", "e": "#e27f74", "s": "#d0a64b", "x": "#b3aa95", "ember": "#f0b35a"}
+const LOG_COL := {"p": "#59d6a8", "e": "#ff8a72", "s": "#c8f53a", "x": "#a7b09d", "ember": "#ffb23e"}
 
 
 func add_log(m: String, c: String) -> void:
@@ -1829,11 +1849,11 @@ func add_log(m: String, c: String) -> void:
 	# the game's colouring: shield damage cyan, hull damage amber
 	var re := RegEx.new()
 	re.compile("(\\d+) to (\\w+) shields")
-	txt = re.sub(txt, "[color=#62ccff]$1 to $2 shields[/color]", true)
+	txt = re.sub(txt, "[color=#4fc4ff]$1 to $2 shields[/color]", true)
 	re.compile("(\\d+) hull")
-	txt = re.sub(txt, "[color=#ffae42]$1 hull[/color]", true)
-	var col: String = LOG_COL.get(c, "#e6dcc4")
-	log_text.append_text("[color=#7d7768]R%d[/color]  [color=%s]%s[/color]\n" % [_round, col, txt])
+	txt = re.sub(txt, "[color=#ffad3b]$1 hull[/color]", true)
+	var col: String = LOG_COL.get(c, "#e8eee0")
+	log_text.append_text("[color=#7c8674]R%d[/color]  [color=%s]%s[/color]\n" % [_round, col, txt])
 
 
 func _build_banner() -> void:
@@ -2058,9 +2078,9 @@ func _draw_legend() -> void:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", s(4))
 	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var bb := "[b][color=#d0a64b]%s[/color][/b] [color=#7d7768](click to close)[/color]" % (title if title != "" else "Terrain")
+	var bb := "[b][color=#c8f53a]%s[/color][/b] [color=#7c8674](click to close)[/color]" % (title if title != "" else "Terrain")
 	if str(_legend.get("desc", "")) != "":
-		bb += "\n[color=#b3aa95]%s[/color]" % str(_legend["desc"])
+		bb += "\n[color=#a7b09d]%s[/color]" % str(_legend["desc"])
 	var head := _rich(bb)
 	head.custom_minimum_size.x = s(352)
 	v.add_child(head)
@@ -2192,7 +2212,7 @@ func set_plate(id: String, screen: Vector2, on: bool, name_txt: String, friend: 
 			elif t == "NEMESIS":
 				tags.add_child(_tag("NEMESIS", ALERT, true, 12))
 			else:
-				var o := _label(t.substr(5), 13, GS.ON_GILT, font_semi)
+				var o := _label(t.substr(5), 13, GS.ON_GILT, font_num_b)
 				o.add_theme_stylebox_override("normal", GS.tag(k, GILT, true))
 				tags.add_child(o)
 		tags.visible = not want.is_empty()
@@ -2342,7 +2362,14 @@ func show_tipcard(id: String, title: String, body: String) -> void:
 	v.add_child(b)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", s(8))
-	row.add_child(_button("Got it", "tip_ok", id, true))
+	# lit, not filled: End ship stays the one filled lime button on the screen (R148)
+	var ok := _button("Got it", "tip_ok", id)
+	var lb := GS.lit_boxes(k)
+	for st in ["normal", "hover", "pressed", "disabled"]:
+		ok.add_theme_stylebox_override(st, lb[st])
+	for c in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
+		ok.add_theme_color_override(c, GILT)
+	row.add_child(ok)
 	row.add_child(_button("Turn off all tips", "tip_off"))
 	v.add_child(row)
 
@@ -2473,7 +2500,7 @@ func loading(on: bool) -> void:
 	_last["loading"] = on
 	if on and load_cover == null:
 		load_cover = ColorRect.new()
-		load_cover.color = Color(0.02, 0.025, 0.04, 1.0)
+		load_cover.color = Color(GS.INK, 1.0)
 		load_cover.set_anchors_preset(Control.PRESET_FULL_RECT)
 		load_cover.mouse_filter = Control.MOUSE_FILTER_STOP
 		var l := _label("PREPARING THE BATTLE...", 22, GILT, font_goth)

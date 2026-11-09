@@ -1,10 +1,43 @@
 # Issue 271 build: the captures the board runs on Ryan's PC
 
-Branch opus/issue-271-build (Glass Shell bold, FINDINGS R145). The cloud sandbox drew the HUD with software Vulkan and
+Branch opus/issue-271-build (Glass Shell bold layout, FINDINGS R145; Lime Tactical identity, FINDINGS R149). The cloud sandbox drew the HUD with software Vulkan and
 grey placeholder hulls (the ship assets are not in git, R144), so the real look has to be judged from Ryan's PC: the
 real hulls, the RTX 5080, his screen. The sandbox stills in sandbox/ are only there to show the layout.
 
-## R148 fix pass (Nov 9 2026): what the board reruns
+## Lime Tactical (Nov 9 2026, R149): what the board reruns now
+
+Ryan picked identity 2 (Nov 9 12:00 CST: "yeah i like lime tactical, run it"). It is now the Godot theme
+(godot/ui/theme/glass_shell.gd, fonts in godot/ui/theme/fonts/, hud.gd; rules in contrib/opus/briefs/ui_style.md).
+The R148 fixes stay: one filled accent button at a time, hatching only while planning a move.
+
+Rerun on the PC, same job, into a new folder: the queue job `start`s
+`tools\pc\jobs\ui271_build_shots.bat out_lime` (output Downloads\voidsworn_test\opus271b\out_lime\).
+
+Two changes to the job (the board's PC copy already had the first; the repo copy now matches):
+
+1. It copies **godot/gen** from opus207's clone as well as the ship assets, so the captures show the real hulls (the
+   generated hull and kit files are not in git): `if exist "%VT%\opus207\repo\godot\gen" robocopy
+   "%VT%\opus207\repo\godot\gen" "%R%\godot\gen" /E /XC /XN /XO /NFL /NDL /NJH /NJS /R:1 /W:1`.
+2. It clones with `git -c core.autocrlf=false clone`, so the .bat and .gd files keep their line endings as committed.
+
+The parse step now checks seven scripts (render/ship_view.gd added: the mint ring under your ships). The existing
+clone at opus271b\repo is reused (fetch plus reset), so the clone flag only matters on a fresh folder; the new fonts
+are imported by the job's own import step.
+
+| Capture | Still | Look for (against docs/shots/ui_redesign/identity/2_lime_tactical.png) |
+|---|---|---|
+| A_1080 | 5a_planned_move_odds | **Ryan's still.** Black-olive panels with the fine scanline, 14 px cut corners top left and bottom right, the lime bevel and lime brackets; Chakra Petch words, Azeret Mono numbers (odds, damage, hull, keys); section heads in lime caps; Move here lit (lime edge, not filled); END SHIP the one filled lime slab with its SPACE cap |
+| A_1080 | 1_battle_start | the up ship's name (star, "LONG WATCH" style) in lime caps, the UP tag filled lime; your names and the fleet list's Ready in **mint**, not green; the ring under your ships mint |
+| A_1080 | 5_enemy_targeted | Fire N weapons lit; the armed weapon row lime-edged; NEMESIS tag and the Nemesis block's bar in the reserved red |
+| A_1080 | 6_enemy_turn | the lavender turn strip; End block hidden |
+| B_1080_20 | 1_battle_start | **Ryan's still.** 20 rows, no scroll (names at 14: Chakra Petch is wider than Barlow) |
+| C_4k | 1_battle_start, 5a | chamfers, scanline and brackets scale cleanly at k 2.0; letter spacing grows with k |
+| D_4k_20 | 1_battle_start | as B at 4K |
+| E_1080_plain | 1_battle_start, 2_move_preview | hatching only where enemies can reach; the hovered hex ring lime |
+
+Pass bar as below (every ui_check.txt "0 failed", parse.txt exit 0 for all seven).
+
+## R148 fix pass (Nov 9 2026): rerun done earlier (out_r148)
 
 Ryan agreed to two fixes (FINDINGS R148). Both are in this branch now:
 
@@ -35,15 +68,15 @@ Rerun on the PC, same job, into a new folder so the first stills stay: the queue
 Pass bar as below (every ui_check.txt "0 failed", parse.txt exit 0). Sandbox check of A at 1920x1080 (software renderer,
 grey hulls): 21 checks, 0 failed; stills in sandbox/R148_A1080_*.jpg.
 
-The three identity variants (docs/shots/ui_redesign/identity/) are mockups only; nothing in the theme changes until Ryan
-picks one, so they need no PC capture yet.
+The three identity variants (docs/shots/ui_redesign/identity/) were mockups; Ryan's pick (2, Lime Tactical) is now
+built, captured by the out_lime rerun above.
 
 ## How to run
 
 One job does all of it: `tools/pc/jobs/ui271_build_shots.bat`. Start it the usual way (a one-line queue job in
 Downloads\voidsworn_test\queue that `start`s it, LOOP.md Known traps). It clones the branch into
-Downloads\voidsworn_test\opus271b\repo, seeds the import cache and the ship assets from opus207's clone, imports,
-parse-checks the six changed scripts, then runs five captures. Output: Downloads\voidsworn_test\opus271b\out\
+Downloads\voidsworn_test\opus271b\repo, seeds the import cache, the ship assets and godot/gen from opus207's clone,
+imports, parse-checks the seven changed scripts, then runs five captures. Output: Downloads\voidsworn_test\opus271b\out\
 (status.txt shows progress; each capture folder holds the PNGs and ui_check.txt).
 
 Every capture uses the existing route: `res://scenes/battle/battle.tscn -- --ui-shots <folder>` (godot/ui/battle/ui_shots.gd),
@@ -88,9 +121,9 @@ fleet is folder B (and D).
 - ui_check.txt in every folder ends "0 failed" (layout, overlap, the End block at the bottom of the shell, no scroll
   in the fleet list at 1080 or more, the menu focus ring, hover facts equal to the rules' own queries, tips that leave
   the battle state and RNG unchanged).
-- parse.txt: exit 0 for all six scripts.
-- Ryan's eye on A and B at 1080 against docs/shots/ui_redesign/mockups_r2/C_glass_shell_bold.png and
-  C_glass_shell_bold_20_ships.png; the board posts A's 5a and B's 1_battle_start to him (two lines, one image each).
+- parse.txt: exit 0 for all seven scripts.
+- Ryan's eye on A and B at 1080 against docs/shots/ui_redesign/identity/2_lime_tactical.png and
+  2_lime_tactical_20_ships.jpg (the layout spec stays mockups_r2/C_glass_shell_bold.png); the board posts A's 5a and B's 1_battle_start to him (two lines, one image each).
 - The R116 gate is not re-measured by this job; if the board wants it, the bench207 scene gate (bench/scene_gate.tscn,
   hud_off mode against base) runs on this branch unchanged.
 

@@ -246,7 +246,7 @@ func _ring() -> void:
 	ring.mesh = tm
 	var m := StandardMaterial3D.new()
 	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	m.albedo_color = Color(0.82, 0.65, 0.29)
+	m.albedo_color = Color(0.78, 0.96, 0.23)
 	m.emission_enabled = true
 	ring.material_override = m
 	ring.position.y = -0.3
@@ -255,7 +255,7 @@ func _ring() -> void:
 	add_child(ring)
 
 
-# the footprint under every ship (B1 markers): a green ring under yours, a broken violet hex under the enemy's
+# the footprint under every ship (B1 markers): a mint ring under yours, a broken violet hex under the enemy's
 var marker: MeshInstance3D
 var marker_friend := -1
 
@@ -295,7 +295,8 @@ func set_marker(friend: bool) -> void:
 	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	m.cull_mode = BaseMaterial3D.CULL_DISABLED
-	m.albedo_color = Color(0.42, 1.0, 0.55, 0.85) if friend else Color(0.62, 0.22, 1.0, 0.9)
+	# your ring is the HUD's FRIEND mint (glass_shell.gd, R149: moved off green so it never reads as the lime accent)
+	m.albedo_color = Color(0.32, 0.94, 0.77, 0.85) if friend else Color(0.62, 0.22, 1.0, 0.9)
 	marker.material_override = m
 	marker.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	marker.position.y = -0.25
@@ -361,7 +362,7 @@ func flee() -> void:
 	ring.visible = false
 
 
-func set_selected(on: bool, col := Color(0.82, 0.65, 0.29)) -> void:
+func set_selected(on: bool, col := Color(0.78, 0.96, 0.23)) -> void:   # lime: the ship that is up (R149)
 	ring.visible = on
 	(ring.material_override as StandardMaterial3D).albedo_color = col
 	ring.rotation.y = -rotation.y
