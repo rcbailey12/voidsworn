@@ -165,7 +165,17 @@ def main():
     hm = [m for (b, g), m in mats.items() if g == 'H']; pm = [m for (b, g), m in mats.items() if g == 'P']; gm = [m for (b, g), m in mats.items() if g == 'G']
     himg, th = P3.bake_group([hull], hm, f'{CELL}_hull', RES, OUT)
     PRES = int(os.environ.get('R209_PARTS_RES', RES))
-    pimg, tp = P3.bake_group(painted, pm, f'{CELL}_parts', PRES, OUT, margin=4)
+    # round 6: Cycles bakes each selected object on its own and re-syncs the whole scene for each, so ~1200 kit parts made the parts
+    # bake quadratic (hours). Bake one joined copy instead (same UVs, same materials, same texels), with the originals hidden from
+    # the render so the AO rays see the copy only, then drop the copy.
+    cps = []
+    for o in painted:
+        c = o.copy(); c.data = o.data.copy(); bpy.context.scene.collection.objects.link(c); cps.append(c)
+    J = join(cps, 'parts_bake_copy'); hid = {o.name: o.hide_render for o in painted}
+    for o in painted: o.hide_render = True
+    t2 = time.time(); pimg, tp = P3.bake_group([J], pm, f'{CELL}_parts', PRES, OUT, margin=4); INFO['parts_bake_joined_seconds'] = round(time.time() - t2, 1)
+    for o in painted: o.hide_render = hid[o.name]
+    bpy.data.objects.remove(J)
     if pprox:   # second pass: the hand proxies into the same atlas, with the generated parts out of the way
         for o in gen: o.hide_render = True
         for o in prox: o.hide_render = False
