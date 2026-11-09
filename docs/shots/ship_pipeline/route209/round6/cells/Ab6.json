@@ -1,8 +1,8 @@
 {
  "cell": "Ab6",
  "route": "round 6: round 5 hull traced from B0 + Hullbreaker kit weapons (kits/hullbreakers) + Hullbreaker paint + B0 detail baked + concept paint baked",
- "build_seconds": 102.2,
- "geometry_seconds": 16.7,
+ "build_seconds": 111.2,
+ "geometry_seconds": 18.8,
  "audit": {
   "problems": [],
   "parts": 1207,
@@ -359,24 +359,24 @@
   "b0_faces_kept": 386352,
   "trim_outside": 0.01,
   "bake_device": "OPTIX",
-  "bake_hi_seconds": 8.2,
-  "bake_lo_seconds": 7.5,
-  "bake_ao_seconds": 11.6,
+  "bake_hi_seconds": 8.4,
+  "bake_lo_seconds": 7.7,
+  "bake_ao_seconds": 12.6,
   "detail_pixels_inverted_share": 0.0963,
   "detail_pixels_clamped_share": 0.0553,
   "b0ao_miss_share": 0.4433,
   "normal_tilt_mean_deg_detail": 5.79,
   "normal_tilt_mean_deg_raw": 28.8,
-  "b0_bake_total_seconds": 42.0,
-  "parts_bake_joined_seconds": 16.9,
-  "paint_bake_seconds": 39.1,
+  "b0_bake_total_seconds": 44.3,
+  "parts_bake_joined_seconds": 17.7,
+  "paint_bake_seconds": 43.4,
   "paint_bake_hull": {
-   "albedo": 9.2,
-   "orm": 10.3
+   "albedo": 11.3,
+   "orm": 11.5
   },
   "paint_bake_parts": {
-   "albedo": 7.6,
-   "orm": 8.1
+   "albedo": 8.2,
+   "orm": 8.2
   }
  },
  "res": 4096,

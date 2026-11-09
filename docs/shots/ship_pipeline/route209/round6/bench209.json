@@ -17,7 +17,7 @@
             10984
           ]
         ],
-        "lod_seconds": 0.076962,
+        "lod_seconds": 0.079269,
         "lod_sizes": [
           [
             0.0,
@@ -96,7 +96,7 @@
             10984
           ]
         ],
-        "lod_seconds": 0.000056,
+        "lod_seconds": 0.000048,
         "lod_sizes": [
           [
             0.0
@@ -143,7 +143,7 @@
             10984
           ]
         ],
-        "lod_seconds": 0.000055,
+        "lod_seconds": 0.000059,
         "lod_sizes": [
           [
             0.0
@@ -177,8 +177,8 @@
       },
       "one_auto": {
         "draw_calls": 16.0,
-        "frame_median_ms": 0.536,
-        "frame_p99_ms": 1.137,
+        "frame_median_ms": 0.54,
+        "frame_p99_ms": 1.168,
         "gpu_median_ms": 0.430000007152557,
         "label": "Ab5_auto_1",
         "lod_threshold": 1.0,
@@ -188,180 +188,180 @@
       },
       "one_hand": {
         "draw_calls": 12.0,
-        "frame_median_ms": 0.581,
-        "frame_p99_ms": 1.13,
-        "gpu_median_ms": 0.462000012397766,
+        "frame_median_ms": 0.541,
+        "frame_p99_ms": 1.016,
+        "gpu_median_ms": 0.430999994277954,
         "label": "Ab5_hand_1",
         "lod_threshold": 0.0,
         "primitives": 234080,
-        "render_cpu_median_ms": 0.135000005364418,
+        "render_cpu_median_ms": 0.129999995231628,
         "scaling_3d": 1.0
       },
       "one_off": {
         "draw_calls": 16.0,
-        "frame_median_ms": 0.582,
-        "frame_p99_ms": 1.029,
-        "gpu_median_ms": 0.467999994754791,
+        "frame_median_ms": 0.547,
+        "frame_p99_ms": 1.053,
+        "gpu_median_ms": 0.441000014543533,
         "label": "Ab5_off_1",
         "lod_threshold": 0.0,
         "primitives": 348352,
-        "render_cpu_median_ms": 0.140000000596046,
+        "render_cpu_median_ms": 0.131999999284744,
         "scaling_3d": 1.0
       },
       "runs": [
         {
           "draw_calls": 40.0,
-          "frame_median_ms": 1.475,
-          "frame_p99_ms": 2.029,
-          "gpu_median_ms": 1.22899997234344,
+          "frame_median_ms": 1.391,
+          "frame_p99_ms": 1.922,
+          "gpu_median_ms": 1.17799997329712,
           "label": "Ab5_off_20_1.0",
           "lod_threshold": 0.0,
           "mode": "off",
           "primitives": 6531600,
-          "render_cpu_median_ms": 0.167999997735024,
+          "render_cpu_median_ms": 0.160999998450279,
           "repeat": 1,
           "scaling_3d": 1.0
         },
         {
           "draw_calls": 40.0,
-          "frame_median_ms": 2.95,
-          "frame_p99_ms": 3.601,
-          "gpu_median_ms": 2.70300006866455,
+          "frame_median_ms": 2.961,
+          "frame_p99_ms": 3.477,
+          "gpu_median_ms": 2.72399997711182,
           "label": "Ab5_off_20_2.0",
           "lod_threshold": 0.0,
           "mode": "off",
           "primitives": 6531600,
-          "render_cpu_median_ms": 0.184000000357628,
+          "render_cpu_median_ms": 0.195999994874001,
           "repeat": 1,
           "scaling_3d": 2.0
         },
         {
           "draw_calls": 44.0,
-          "frame_median_ms": 1.045,
-          "frame_p99_ms": 1.672,
-          "gpu_median_ms": 0.830999970436096,
+          "frame_median_ms": 1.031,
+          "frame_p99_ms": 1.506,
+          "gpu_median_ms": 0.833000004291534,
           "label": "Ab5_auto_20_1.0",
           "lod_threshold": 1.0,
           "mode": "auto",
           "primitives": 3191742,
-          "render_cpu_median_ms": 0.167999997735024,
+          "render_cpu_median_ms": 0.158000007271767,
           "repeat": 1,
           "scaling_3d": 1.0
         },
         {
           "draw_calls": 44.0,
-          "frame_median_ms": 2.706,
-          "frame_p99_ms": 3.283,
-          "gpu_median_ms": 2.42000007629395,
+          "frame_median_ms": 2.671,
+          "frame_p99_ms": 3.285,
+          "gpu_median_ms": 2.40499997138977,
           "label": "Ab5_auto_20_2.0",
           "lod_threshold": 1.0,
           "mode": "auto",
           "primitives": 3191742,
-          "render_cpu_median_ms": 0.20100000500679,
+          "render_cpu_median_ms": 0.202000007033348,
           "repeat": 1,
           "scaling_3d": 2.0
         },
         {
           "draw_calls": 54.0,
-          "frame_median_ms": 1.164,
-          "frame_p99_ms": 1.644,
-          "gpu_median_ms": 0.944000005722046,
+          "frame_median_ms": 1.098,
+          "frame_p99_ms": 1.697,
+          "gpu_median_ms": 0.89300000667572,
           "label": "Ab5_hand_20_1.0",
           "lod_threshold": 0.0,
           "mode": "hand",
           "primitives": 3721200,
-          "render_cpu_median_ms": 0.163000002503395,
+          "render_cpu_median_ms": 0.158000007271767,
           "repeat": 1,
           "scaling_3d": 1.0
         },
         {
           "draw_calls": 54.0,
-          "frame_median_ms": 2.592,
-          "frame_p99_ms": 3.191,
-          "gpu_median_ms": 2.34599995613098,
+          "frame_median_ms": 2.706,
+          "frame_p99_ms": 3.298,
+          "gpu_median_ms": 2.44600009918213,
           "label": "Ab5_hand_20_2.0",
           "lod_threshold": 0.0,
           "mode": "hand",
           "primitives": 3721200,
-          "render_cpu_median_ms": 0.187000006437302,
+          "render_cpu_median_ms": 0.195999994874001,
           "repeat": 1,
           "scaling_3d": 2.0
         },
         {
           "draw_calls": 54.0,
-          "frame_median_ms": 1.084,
-          "frame_p99_ms": 1.557,
+          "frame_median_ms": 1.08,
+          "frame_p99_ms": 1.561,
           "gpu_median_ms": 0.879000008106232,
           "label": "Ab5_hand_20_1.0",
           "lod_threshold": 0.0,
           "mode": "hand",
           "primitives": 3721200,
-          "render_cpu_median_ms": 0.170000001788139,
+          "render_cpu_median_ms": 0.163000002503395,
           "repeat": 2,
           "scaling_3d": 1.0
         },
         {
           "draw_calls": 54.0,
-          "frame_median_ms": 2.587,
-          "frame_p99_ms": 3.25,
-          "gpu_median_ms": 2.31100010871887,
+          "frame_median_ms": 2.591,
+          "frame_p99_ms": 3.236,
+          "gpu_median_ms": 2.31900000572205,
           "label": "Ab5_hand_20_2.0",
           "lod_threshold": 0.0,
           "mode": "hand",
           "primitives": 3721200,
-          "render_cpu_median_ms": 0.186000004410744,
+          "render_cpu_median_ms": 0.19200000166893,
           "repeat": 2,
           "scaling_3d": 2.0
         },
         {
           "draw_calls": 44.0,
-          "frame_median_ms": 1.038,
-          "frame_p99_ms": 1.57,
-          "gpu_median_ms": 0.83899998664856,
+          "frame_median_ms": 1.043,
+          "frame_p99_ms": 1.489,
+          "gpu_median_ms": 0.841000020503998,
           "label": "Ab5_auto_20_1.0",
           "lod_threshold": 1.0,
           "mode": "auto",
           "primitives": 3191742,
-          "render_cpu_median_ms": 0.174999997019768,
+          "render_cpu_median_ms": 0.163000002503395,
           "repeat": 2,
           "scaling_3d": 1.0
         },
         {
           "draw_calls": 44.0,
-          "frame_median_ms": 2.549,
-          "frame_p99_ms": 3.013,
-          "gpu_median_ms": 2.13599991798401,
+          "frame_median_ms": 2.567,
+          "frame_p99_ms": 3.15,
+          "gpu_median_ms": 2.13700008392334,
           "label": "Ab5_auto_20_2.0",
           "lod_threshold": 1.0,
           "mode": "auto",
           "primitives": 3191742,
-          "render_cpu_median_ms": 0.181999996304512,
+          "render_cpu_median_ms": 0.196999996900558,
           "repeat": 2,
           "scaling_3d": 2.0
         },
         {
           "draw_calls": 40.0,
-          "frame_median_ms": 1.366,
-          "frame_p99_ms": 1.935,
-          "gpu_median_ms": 1.16100001335144,
+          "frame_median_ms": 1.396,
+          "frame_p99_ms": 1.929,
+          "gpu_median_ms": 1.16400003433228,
           "label": "Ab5_off_20_1.0",
           "lod_threshold": 0.0,
           "mode": "off",
           "primitives": 6531600,
-          "render_cpu_median_ms": 0.17399999499321,
+          "render_cpu_median_ms": 0.172000005841255,
           "repeat": 2,
           "scaling_3d": 1.0
         },
         {
           "draw_calls": 40.0,
-          "frame_median_ms": 3.055,
-          "frame_p99_ms": 3.695,
-          "gpu_median_ms": 2.79200005531311,
+          "frame_median_ms": 3.079,
+          "frame_p99_ms": 3.701,
+          "gpu_median_ms": 2.80999994277954,
           "label": "Ab5_off_20_2.0",
           "lod_threshold": 0.0,
           "mode": "off",
           "primitives": 6531600,
-          "render_cpu_median_ms": 0.202999994158745,
+          "render_cpu_median_ms": 0.210999995470047,
           "repeat": 2,
           "scaling_3d": 2.0
         }
@@ -821,7 +821,7 @@
             24868
           ]
         ],
-        "lod_seconds": 0.107579,
+        "lod_seconds": 0.11871,
         "lod_sizes": [
           [
             0.0,
@@ -832,12 +832,12 @@
           ],
           [
             0.0,
-            0.00219228444620967,
-            0.00805456470698118,
+            0.00215624459087849,
+            0.00814469531178474,
             0.0316915735602379,
-            0.143531441688538,
-            0.215297177433968,
-            0.322945773601532
+            0.139214128255844,
+            0.422121673822403,
+            0.633182525634766
           ],
           [
             0.0,
@@ -865,8 +865,8 @@
             78284,
             39142,
             19570,
-            5902,
-            2950,
+            5994,
+            2992,
             500,
             238
           ],
@@ -888,53 +888,6 @@
         "triangles": 125616
       },
       "load_hand": {
-        "chain_triangles": [
-          [
-            "Ab6_Ab6_lod1",
-            89888
-          ],
-          [
-            "Ab6_Ab6_lod2",
-            59996
-          ],
-          [
-            "Ab6_Ab6_lod3",
-            24868
-          ]
-        ],
-        "lod_seconds": 0.000047,
-        "lod_sizes": [
-          [
-            0.0
-          ],
-          [
-            0.0
-          ],
-          [
-            0.0
-          ],
-          [
-            0.0
-          ]
-        ],
-        "lod_triangles": [
-          [
-            44672
-          ],
-          [
-            78284
-          ],
-          [
-            1108
-          ],
-          [
-            1552
-          ]
-        ],
-        "surfaces": 4,
-        "triangles": 125616
-      },
-      "load_off": {
         "chain_triangles": [
           [
             "Ab6_Ab6_lod1",
@@ -981,193 +934,240 @@
         "surfaces": 4,
         "triangles": 125616
       },
+      "load_off": {
+        "chain_triangles": [
+          [
+            "Ab6_Ab6_lod1",
+            89888
+          ],
+          [
+            "Ab6_Ab6_lod2",
+            59996
+          ],
+          [
+            "Ab6_Ab6_lod3",
+            24868
+          ]
+        ],
+        "lod_seconds": 0.000052,
+        "lod_sizes": [
+          [
+            0.0
+          ],
+          [
+            0.0
+          ],
+          [
+            0.0
+          ],
+          [
+            0.0
+          ]
+        ],
+        "lod_triangles": [
+          [
+            44672
+          ],
+          [
+            78284
+          ],
+          [
+            1108
+          ],
+          [
+            1552
+          ]
+        ],
+        "surfaces": 4,
+        "triangles": 125616
+      },
       "one_auto": {
         "draw_calls": 16.0,
-        "frame_median_ms": 0.549,
+        "frame_median_ms": 0.542,
         "frame_p99_ms": 1.097,
-        "gpu_median_ms": 0.435000002384186,
+        "gpu_median_ms": 0.435999989509583,
         "label": "Ab6_auto_1",
         "lod_threshold": 1.0,
         "primitives": 249408,
-        "render_cpu_median_ms": 0.150999993085861,
+        "render_cpu_median_ms": 0.131999999284744,
         "scaling_3d": 1.0
       },
       "one_hand": {
         "draw_calls": 12.0,
-        "frame_median_ms": 0.547,
-        "frame_p99_ms": 1.105,
-        "gpu_median_ms": 0.435999989509583,
+        "frame_median_ms": 0.546,
+        "frame_p99_ms": 1.223,
+        "gpu_median_ms": 0.437000006437302,
         "label": "Ab6_hand_1",
         "lod_threshold": 0.0,
         "primitives": 359552,
-        "render_cpu_median_ms": 0.136999994516373,
+        "render_cpu_median_ms": 0.133000001311302,
         "scaling_3d": 1.0
       },
       "one_off": {
         "draw_calls": 16.0,
-        "frame_median_ms": 0.563,
-        "frame_p99_ms": 1.112,
-        "gpu_median_ms": 0.451999992132187,
+        "frame_median_ms": 0.56,
+        "frame_p99_ms": 1.084,
+        "gpu_median_ms": 0.45100000500679,
         "label": "Ab6_off_1",
         "lod_threshold": 0.0,
         "primitives": 502464,
-        "render_cpu_median_ms": 0.136000007390976,
+        "render_cpu_median_ms": 0.130999997258186,
         "scaling_3d": 1.0
       },
       "runs": [
         {
           "draw_calls": 40.0,
-          "frame_median_ms": 1.774,
-          "frame_p99_ms": 2.256,
-          "gpu_median_ms": 1.49300003051758,
+          "frame_median_ms": 1.726,
+          "frame_p99_ms": 2.17,
+          "gpu_median_ms": 1.44700002670288,
           "label": "Ab6_off_20_1.0",
           "lod_threshold": 0.0,
           "mode": "off",
           "primitives": 9421200,
-          "render_cpu_median_ms": 0.177000001072884,
+          "render_cpu_median_ms": 0.166999995708466,
           "repeat": 1,
           "scaling_3d": 1.0
         },
         {
           "draw_calls": 40.0,
-          "frame_median_ms": 3.344,
-          "frame_p99_ms": 3.978,
-          "gpu_median_ms": 3.02800011634827,
+          "frame_median_ms": 3.288,
+          "frame_p99_ms": 3.89,
+          "gpu_median_ms": 3.03399991989136,
           "label": "Ab6_off_20_2.0",
           "lod_threshold": 0.0,
           "mode": "off",
           "primitives": 9421200,
-          "render_cpu_median_ms": 0.20100000500679,
+          "render_cpu_median_ms": 0.202000007033348,
           "repeat": 1,
           "scaling_3d": 2.0
         },
         {
           "draw_calls": 44.0,
-          "frame_median_ms": 1.195,
-          "frame_p99_ms": 1.643,
-          "gpu_median_ms": 0.984000027179718,
+          "frame_median_ms": 1.218,
+          "frame_p99_ms": 1.713,
+          "gpu_median_ms": 1.00800001621246,
           "label": "Ab6_auto_20_1.0",
           "lod_threshold": 1.0,
           "mode": "auto",
           "primitives": 4609392,
-          "render_cpu_median_ms": 0.172000005841255,
+          "render_cpu_median_ms": 0.162000000476837,
           "repeat": 1,
           "scaling_3d": 1.0
         },
         {
           "draw_calls": 44.0,
-          "frame_median_ms": 2.859,
-          "frame_p99_ms": 3.355,
-          "gpu_median_ms": 2.61700010299683,
-          "label": "Ab6_auto_20_2.0",
-          "lod_threshold": 1.0,
-          "mode": "auto",
-          "primitives": 4609392,
-          "render_cpu_median_ms": 0.187000006437302,
-          "repeat": 1,
-          "scaling_3d": 2.0
-        },
-        {
-          "draw_calls": 54.0,
-          "frame_median_ms": 1.291,
-          "frame_p99_ms": 1.83,
-          "gpu_median_ms": 1.08800005912781,
-          "label": "Ab6_hand_20_1.0",
-          "lod_threshold": 0.0,
-          "mode": "hand",
-          "primitives": 5695380,
-          "render_cpu_median_ms": 0.170000001788139,
-          "repeat": 1,
-          "scaling_3d": 1.0
-        },
-        {
-          "draw_calls": 54.0,
-          "frame_median_ms": 2.873,
-          "frame_p99_ms": 3.406,
-          "gpu_median_ms": 2.62599992752075,
-          "label": "Ab6_hand_20_2.0",
-          "lod_threshold": 0.0,
-          "mode": "hand",
-          "primitives": 5695380,
-          "render_cpu_median_ms": 0.187000006437302,
-          "repeat": 1,
-          "scaling_3d": 2.0
-        },
-        {
-          "draw_calls": 54.0,
-          "frame_median_ms": 1.302,
-          "frame_p99_ms": 1.855,
-          "gpu_median_ms": 1.09700000286102,
-          "label": "Ab6_hand_20_1.0",
-          "lod_threshold": 0.0,
-          "mode": "hand",
-          "primitives": 5695380,
-          "render_cpu_median_ms": 0.171000003814697,
-          "repeat": 2,
-          "scaling_3d": 1.0
-        },
-        {
-          "draw_calls": 54.0,
-          "frame_median_ms": 2.964,
-          "frame_p99_ms": 3.474,
-          "gpu_median_ms": 2.69600009918213,
-          "label": "Ab6_hand_20_2.0",
-          "lod_threshold": 0.0,
-          "mode": "hand",
-          "primitives": 5695380,
-          "render_cpu_median_ms": 0.199000000953674,
-          "repeat": 2,
-          "scaling_3d": 2.0
-        },
-        {
-          "draw_calls": 44.0,
-          "frame_median_ms": 1.229,
-          "frame_p99_ms": 1.758,
-          "gpu_median_ms": 0.976000010967255,
-          "label": "Ab6_auto_20_1.0",
-          "lod_threshold": 1.0,
-          "mode": "auto",
-          "primitives": 4609392,
-          "render_cpu_median_ms": 0.178000003099442,
-          "repeat": 2,
-          "scaling_3d": 1.0
-        },
-        {
-          "draw_calls": 44.0,
-          "frame_median_ms": 2.749,
-          "frame_p99_ms": 3.36,
-          "gpu_median_ms": 2.60800004005432,
+          "frame_median_ms": 2.753,
+          "frame_p99_ms": 3.272,
+          "gpu_median_ms": 2.51900005340576,
           "label": "Ab6_auto_20_2.0",
           "lod_threshold": 1.0,
           "mode": "auto",
           "primitives": 4609392,
           "render_cpu_median_ms": 0.194000005722046,
+          "repeat": 1,
+          "scaling_3d": 2.0
+        },
+        {
+          "draw_calls": 54.0,
+          "frame_median_ms": 1.296,
+          "frame_p99_ms": 1.811,
+          "gpu_median_ms": 1.08800005912781,
+          "label": "Ab6_hand_20_1.0",
+          "lod_threshold": 0.0,
+          "mode": "hand",
+          "primitives": 5695380,
+          "render_cpu_median_ms": 0.172000005841255,
+          "repeat": 1,
+          "scaling_3d": 1.0
+        },
+        {
+          "draw_calls": 54.0,
+          "frame_median_ms": 3.008,
+          "frame_p99_ms": 3.558,
+          "gpu_median_ms": 2.74000000953674,
+          "label": "Ab6_hand_20_2.0",
+          "lod_threshold": 0.0,
+          "mode": "hand",
+          "primitives": 5695380,
+          "render_cpu_median_ms": 0.199000000953674,
+          "repeat": 1,
+          "scaling_3d": 2.0
+        },
+        {
+          "draw_calls": 54.0,
+          "frame_median_ms": 1.322,
+          "frame_p99_ms": 1.807,
+          "gpu_median_ms": 1.09599995613098,
+          "label": "Ab6_hand_20_1.0",
+          "lod_threshold": 0.0,
+          "mode": "hand",
+          "primitives": 5695380,
+          "render_cpu_median_ms": 0.172999992966652,
+          "repeat": 2,
+          "scaling_3d": 1.0
+        },
+        {
+          "draw_calls": 54.0,
+          "frame_median_ms": 2.834,
+          "frame_p99_ms": 3.464,
+          "gpu_median_ms": 2.58500003814697,
+          "label": "Ab6_hand_20_2.0",
+          "lod_threshold": 0.0,
+          "mode": "hand",
+          "primitives": 5695380,
+          "render_cpu_median_ms": 0.209000006318092,
+          "repeat": 2,
+          "scaling_3d": 2.0
+        },
+        {
+          "draw_calls": 44.0,
+          "frame_median_ms": 1.185,
+          "frame_p99_ms": 1.642,
+          "gpu_median_ms": 0.973999977111816,
+          "label": "Ab6_auto_20_1.0",
+          "lod_threshold": 1.0,
+          "mode": "auto",
+          "primitives": 4609392,
+          "render_cpu_median_ms": 0.164000004529953,
+          "repeat": 2,
+          "scaling_3d": 1.0
+        },
+        {
+          "draw_calls": 44.0,
+          "frame_median_ms": 2.731,
+          "frame_p99_ms": 3.381,
+          "gpu_median_ms": 2.48300004005432,
+          "label": "Ab6_auto_20_2.0",
+          "lod_threshold": 1.0,
+          "mode": "auto",
+          "primitives": 4609392,
+          "render_cpu_median_ms": 0.193000003695488,
           "repeat": 2,
           "scaling_3d": 2.0
         },
         {
           "draw_calls": 40.0,
-          "frame_median_ms": 1.731,
-          "frame_p99_ms": 2.259,
-          "gpu_median_ms": 1.46000003814697,
+          "frame_median_ms": 1.727,
+          "frame_p99_ms": 2.325,
+          "gpu_median_ms": 1.46099996566772,
           "label": "Ab6_off_20_1.0",
           "lod_threshold": 0.0,
           "mode": "off",
           "primitives": 9421200,
-          "render_cpu_median_ms": 0.17399999499321,
+          "render_cpu_median_ms": 0.165000006556511,
           "repeat": 2,
           "scaling_3d": 1.0
         },
         {
           "draw_calls": 40.0,
-          "frame_median_ms": 3.409,
-          "frame_p99_ms": 4.094,
-          "gpu_median_ms": 3.14599990844727,
+          "frame_median_ms": 3.408,
+          "frame_p99_ms": 3.943,
+          "gpu_median_ms": 3.15899991989136,
           "label": "Ab6_off_20_2.0",
           "lod_threshold": 0.0,
           "mode": "off",
           "primitives": 9421200,
-          "render_cpu_median_ms": 0.19200000166893,
+          "render_cpu_median_ms": 0.209000006318092,
           "repeat": 2,
           "scaling_3d": 2.0
         }
@@ -1615,24 +1615,24 @@
   "empty": [
     {
       "draw_calls": 0.0,
-      "frame_median_ms": 0.495,
-      "frame_p99_ms": 0.963,
-      "gpu_median_ms": 0.388999998569489,
+      "frame_median_ms": 0.498,
+      "frame_p99_ms": 1.042,
+      "gpu_median_ms": 0.389999985694885,
       "label": "empty_1.0",
       "lod_threshold": 1.0,
       "primitives": 0,
-      "render_cpu_median_ms": 0.112999998033047,
+      "render_cpu_median_ms": 0.116999998688698,
       "scaling_3d": 1.0
     },
     {
       "draw_calls": 0.0,
-      "frame_median_ms": 1.778,
-      "frame_p99_ms": 2.313,
-      "gpu_median_ms": 1.50899994373322,
+      "frame_median_ms": 1.77,
+      "frame_p99_ms": 2.392,
+      "gpu_median_ms": 1.49399995803833,
       "label": "empty_2.0",
       "lod_threshold": 1.0,
       "primitives": 0,
-      "render_cpu_median_ms": 0.138999998569489,
+      "render_cpu_median_ms": 0.136000007390976,
       "scaling_3d": 2.0
     }
   ],
@@ -1645,5 +1645,5 @@
   "length_world": 14.5,
   "method": "round 4 studio protocol: 20 copies 5x4 at 1.15 length spacing, camera at 8 lengths, MSAA 4x, 100 warm-up + 360 frames; 1080p and 3D at 4K (scaling 2.0); modes off / auto / hand",
   "renderer": "forward_plus",
-  "texture_prep_seconds": 29.50373
+  "texture_prep_seconds": 30.25669
 }

@@ -55,14 +55,19 @@ and only in some areas; hazard stripes on the pylon feet; the borrowed turret ba
 
 The sheet adds a second light rig for this comparison only, the concept painting's own light (one high key, a weak fill). The
 studio rig every earlier round used is beside it, and all other sheets use it. The region table samples the same pixels of each
-image. Where it stands:
+image.
 
-- Closer than Ab5: the red-forward and gunmetal-aft split, rust blooms, edge wear, streaks, markings, the dark keel line.
-- Still off: the bow sides read lighter and pinker than the concept (111, 72, 60 against 63, 33, 27); the concept's bow deck is a
-  much lighter pink-grey than ours (the dust shows on the flat decks but Ab6's bow top is mostly the raised deck's sloped faces);
-  the lower hull is darker than the concept's olive. Two retunes moved these only a little; the gap is partly the painting's own
-  dark side lighting. Next paint step: a hand-painted dark band along the bow's slab side and a lighter deck coat by face, read off
-  the concept, rather than more global tuning.
+**The focused paint pass (after Ryan agreed with the round 6 sheets, Nov 9):** the first round 6 paint read lighter and pinker than
+the concept on the bow (big peach blotches, a grey sheen on dark red that read mauve). Now: a darker, redder base; the rust as
+smaller, sparser, saturated orange specks and spots under a broad mask so some panels stay plain red (the concept's look, not
+camouflage blotches); some metalness on the rust paint so its sheen takes the red instead of greying it. The casemate plate now
+matches the concept almost exactly (67, 44, 39 against 68, 43, 38); the bow side went from 111, 72, 60 to 92, 55, 46 (concept 63,
+33, 27).
+
+What is left: the bow-deck sample does not compare like for like (at the concept camera those pixels fall on the concept's flat
+bow deck but on the side wall of Ab6's raised forward deck, a shape difference from round 5, not paint); the lower hull is darker
+than the concept's olive under the concept rig (its weak fill); the drums read a little lighter. None of these needs another pass
+before the game export, in my view.
 
 At battle distance (`battle.jpg`) the casemate barrels now read as guns pointing out of the bow, and the decks read light like the
 concept's.
@@ -110,13 +115,15 @@ Ab6: 125,616 triangles, 4 surfaces; hand LOD chain 125,616 / 89,888 / 59,996 / 2
 | Outline gate loop (sandbox) | 12 | about 1.5 min each | 88.2 to 90.1 percent |
 | PC run 1 | 1 | stopped after 35 min | the parts bake re-synced the whole scene once per part (1,200 parts, hours); fixed by baking one joined copy (16 min to 17 s) |
 | PC run 2 (5080) | 1 | 8 min | bake 2 min, renders, close-ups, export, Godot |
-| PC run 3 (5080) | 1 | 7 min | paint retune; every sheet here is from this run |
+| PC run 3 (5080) | 1 | 7 min | paint retune |
+| Preview loop, paint pass (sandbox CPU) | 3 | about 1 min each | specks, base red, sheen |
+| PC run 4 (5080) | 1 | 7 min | the focused paint pass; every sheet here is from this run |
 
 ## The question for Ryan
 
-Do the weapons now look right, and is the paint direction right? **My pick: yes to the weapons as the Hullbreaker kit's first set;
-paint gets one more focused pass** (the bow sides darker and redder, the bow deck lighter, read off the concept face by face), then
-Ab6 goes to the game export and the scene gate.
+Ryan, Nov 9: agreed with the round 6 takes ("They look way better"): the weapons stand as the Hullbreaker kit's first set and the
+paint got its focused pass (above). **Next, my pick: Ab6 to the game export (the A4 ship format) and the scene gate**, then the
+concepts redone and every ship through the recipe.
 
 ## Files
 
@@ -124,5 +131,5 @@ Ab6 goes to the game export and the scene gate.
   `ships/C15s_23.json`, `ships/_template.json`), `tools/blender/r209/`: `armA6.py`, `bakeAb6.py`, `close6.py`, `preview6.py`
   (sandbox preview), `sheets6.py`, `render.py` (`--light=concept`), PC jobs `pc/r6*_queue.bat`, `pc/r6*_run.bat`.
 - Records here: `cells/Ab6.json` (build, audit, sockets), `bench209.json`, `silhouette_scores.json`, `paint_regions.json`.
-- PC: `Downloads\voidsworn_test\opus209\out6c\` (blend, maps, renders `r\`, close-ups `close\`, glbs `glb\`, Godot `godot\`); `out6b`
-  is the run before the paint retune; `out6` holds the stopped first run's hull maps and Ab5's concept-rig renders.
+- PC: `Downloads\voidsworn_test\opus209\out6d\` (blend, maps, renders `r\`, close-ups `close\`, glbs `glb\`, Godot `godot\`); `out6b`
+  and `out6c` are the runs before the paint pass; `out6` holds the stopped first run's hull maps and Ab5's concept-rig renders.
