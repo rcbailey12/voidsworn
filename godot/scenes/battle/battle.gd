@@ -3456,7 +3456,7 @@ func _attack_tip(t_id: String) -> String:
 	t += "\n" + rows
 	if not _shot_blockers(tv).is_empty(): t += "[color=#ffb875]%s[/color]\n" % _blocker_text(tv)
 	if n > 0:
-		t += "Expected: about [color=#4fc4ff]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage.%s\n[color=#c8f53a]%s[/color]" % [int(round(sh)), int(round(hull)), " [color=#ffb23e]Likely kill.[/color]" if hull >= float(tv["hp"]) else "",
+		t += "Expected: about [color=#4fc4ff]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage.\n[color=#c8f53a]%s[/color]" % [int(round(sh)), int(round(hull)),
 			("Targeted. Click again or Enter to fire %d weapon%s." % [n, "s" if n > 1 else ""]) if target == t_id else "Click to target (nothing fires yet)."]
 	else:
 		var am = (atk if (target == t_id and atk != null) else (_attack_move(t_id) if int(su.get("moveLeft", 0)) > 0 else null))
@@ -3804,7 +3804,7 @@ func _card_info() -> Dictionary:
 		if set.is_empty():
 			hint = _cant_fire_reason(target)
 		else:
-			hint = "[color=#ff8a6a]Target: %s.[/color] %d gun%s bear from here: about [color=#4fc4ff]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage%s. [b]Click it again or press Enter to fire.[/b] Esc cancels." % [_name(target), set.size(), "" if set.size() == 1 else "s", int(round(sh)), int(round(hl)), " (likely kill)" if hl >= float(VU[target]["hp"]) else ""]
+			hint = "[color=#ff8a6a]Target: %s.[/color] %d gun%s bear from here: about [color=#4fc4ff]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage. [b]Click it again or press Enter to fire.[/b] Esc cancels." % [_name(target), set.size(), "" if set.size() == 1 else "s", int(round(sh)), int(round(hl))]
 			btns.append({"text": "Fire %d weapon%s (Enter)" % [set.size(), "" if set.size() == 1 else "s"], "act": "confirm", "on": true, "primary": true})
 			if not torp_rows.is_empty():
 				hint += "\n[color=#f0c58b]%s[/color]\n%s" % [" ".join(torp_rows), torp_why]
@@ -3951,6 +3951,7 @@ func _panel_info() -> Dictionary:
 		elif tgt != "" and u["side"] == "player" and mine_up:
 			right = "ready"
 			var wt := _wtarget(id, wi, tgt)
+			# view() weapons carry the rules' "k" as "kind" (battle_api.gd _i_view), so this reads the right key
 			if w["kind"] == "flak" and bool(wt.get("inRange", false)) and bool(wt.get("inArc", false)):
 				why = "wings only"
 			elif not bool(wt.get("inRange", false)):
@@ -4485,8 +4486,8 @@ func _target_info() -> Dictionary:
 		if es[bq] > 0.5:
 			line += ", about %d on its %s shield" % [int(round(es[bq])), FACING_WORD[bq]]
 		line += " and %d on hull." % int(round(eh)) if es[bq] > 0.5 else ", %d on hull." % int(round(eh))
-		if eh >= float(d["hp"]):
-			line += " [color=#c8f53a]Likely kill.[/color]"
+		# no kill prediction (ui_spec S1 board ruling on the #314 check): the expected value only; the hatched ghost on the
+		# target's hull bar already shows the hull reaching zero
 		_tgt_plate[tid] = {"odds": "%d%% %d gun%s" % [best, set.size(), "" if set.size() == 1 else "s"], "ghost": maxf(0.0, float(d["hp"]) - eh)}
 	return {"name": str(tu["name"]), "flag": tu["flagship"], "hp": float(d["hp"]), "maxHp": float(tu["maxHp"]), "sh": d["sh"], "shMax": float(tu["shMax"]),
 		"exp_hull": eh, "exp_sh": es, "line": line}

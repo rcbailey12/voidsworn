@@ -267,24 +267,13 @@ func s(v: float) -> int:
 	return int(round(v * k))
 
 
-# the battle theme: the shared Glass Shell theme (glass_shell.gd make_theme) at the battle base sizes, plus the focus ring
+# the battle theme: the shared Glass Shell theme (glass_shell.gd make_theme, focus ring included) at the battle base sizes
 func _theme() -> Theme:
 	var th := GS.make_theme(k, font, font_semi, 15)
 	th.default_font_size = s(15)
-	# AC5 (UI audit, ui_spec.md 6.2): a visible focus ring, the title screen's own (WCAG 2.4.7): no fill, a bone border at
-	# least 2 px, drawn just outside the button. Bone, not gilt, so it shows on the gilt primary buttons too. Only the
-	# menu and the end card take keyboard focus (_button keys); the board-time buttons stay out of it because Space, Enter
-	# and Tab belong to the battle there (F1 key scheme).
-	var sf := StyleBoxFlat.new()
-	sf.draw_center = false
-	sf.border_color = BONE
-	sf.set_border_width_all(maxi(2, s(2)))
-	sf.set_corner_radius_all(0)   # square, like everything in Lime Tactical (R149)
-	sf.expand_margin_left = s(3)
-	sf.expand_margin_right = s(3)
-	sf.expand_margin_top = s(3)
-	sf.expand_margin_bottom = s(3)
-	th.set_stylebox("focus", "Button", sf)
+	# AC5 (UI audit, ui_spec.md 6.2): the focus ring comes from the theme alone (glass_shell.gd focus_ring via make_theme),
+	# one source for every screen (#314 check condition 4). Only the menu and the end card take keyboard focus (_button
+	# keys); the board-time buttons stay out of it because Space, Enter and Tab belong to the battle there (F1 key scheme).
 	th.set_font_size("font_size", "Button", s(14))
 	th.set_font_size("normal_font_size", "RichTextLabel", s(14))
 	th.set_font_size("bold_font_size", "RichTextLabel", s(14))
@@ -371,7 +360,9 @@ func _head(n: String, word: String, right: String = "", right_col := BONE2) -> H
 	h.add_theme_constant_override("separation", s(6))
 	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if n != "":
-		h.add_child(_label(n, 13, GILT, font_caps))
+		var nl := _label(n, 13, GILT, font_caps)
+		nl.name = "step_no"   # _route_card relabels it (a tick when done); a head without a number has none
+		h.add_child(nl)
 	h.add_child(_label(word.to_upper(), 13, GILT, font_caps))
 	var sp := Control.new()
 	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -576,27 +567,37 @@ func _build_top() -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", s(10))
 	top.add_child(row)
+	# every line of text sits on a solid backing (ui_style.md 2 and 3; #314 check condition 1): the round, the turn, the
+	# acted pips and the objective share one well on the left, the enemy and Heat a second well; the buttons keep their
+	# own boxes on the bar
+	var lw := _well(Color(0, 0, 0, 0), 10, 1)
+	lw.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lw.mouse_filter = Control.MOUSE_FILTER_PASS
+	row.add_child(lw)
+	var lrow := HBoxContainer.new()
+	lrow.add_theme_constant_override("separation", s(10))
+	lw.add_child(lrow)
 	crest = TextureRect.new()
 	crest.custom_minimum_size = Vector2(s(28), s(28))
 	crest.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	crest.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	crest.visible = false
-	row.add_child(crest)
+	lrow.add_child(crest)
 	title_lbl = _label("ROUND 1", 19, BONE, font_goth)
 	title_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	row.add_child(title_lbl)
+	lrow.add_child(title_lbl)
 	turn_lbl = _label("", 13, GILT, font_caps)
 	turn_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	row.add_child(turn_lbl)
+	lrow.add_child(turn_lbl)
 	# the acted pips: your ships (filled when done, gilt for the one that is up), a dash, then the enemy's ships
 	pips = Control.new()
 	pips.mouse_filter = Control.MOUSE_FILTER_PASS
 	pips.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	pips.draw.connect(_draw_pips)
-	row.add_child(pips)
+	lrow.add_child(pips)
 	acted_lbl = _label("", 13, BONE2)
 	acted_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	row.add_child(acted_lbl)
+	lrow.add_child(acted_lbl)
 	# the objective takes the room the buttons leave and ends in "..." when there is not enough, so the buttons on the
 	# right are never pushed off the screen
 	obj_lbl = _label("", 14, GILT)
@@ -605,18 +606,26 @@ func _build_top() -> void:
 	obj_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	obj_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	obj_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
-	row.add_child(obj_lbl)
-	# the enemy: its crest (the faction accent, R3) and its name in plain bone
+	lrow.add_child(obj_lbl)
+	# the enemy: its crest (the faction accent, R3) and its name in plain bone, then Heat, on their own well (set_info
+	# shows it when either shows)
+	info_well = _well(Color(0, 0, 0, 0), 10, 1)
+	info_well.mouse_filter = Control.MOUSE_FILTER_PASS
+	info_well.visible = false
+	row.add_child(info_well)
+	var irow := HBoxContainer.new()
+	irow.add_theme_constant_override("separation", s(10))
+	info_well.add_child(irow)
 	foe_crest = TextureRect.new()
 	foe_crest.custom_minimum_size = Vector2(s(22), s(22))
 	foe_crest.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	foe_crest.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	foe_crest.visible = false
-	row.add_child(foe_crest)
+	irow.add_child(foe_crest)
 	foe_lbl = _label("", 14, BONE)
 	foe_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	foe_lbl.visible = false
-	row.add_child(foe_lbl)
+	irow.add_child(foe_lbl)
 	# Heat: the run's difficulty level, nine segments (data HEAT: seven optional rules weighing 1 or 2)
 	heat_box = HBoxContainer.new()
 	heat_box.add_theme_constant_override("separation", s(6))
@@ -632,7 +641,7 @@ func _build_top() -> void:
 	heat_lbl = _label("0", 15, EMBER, font_num_b)
 	heat_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	heat_box.add_child(heat_lbl)
-	row.add_child(heat_box)
+	irow.add_child(heat_box)
 	top_row = row
 	# Command moved to the Orders block (C); the button lives there (set_command)
 	cmd_btn = _key_button("Command", "command", null, false, "C")
@@ -667,6 +676,7 @@ func _top_key(txt: String, act: String, tipt: String) -> Button:
 
 
 var top_row: HBoxContainer
+var info_well: PanelContainer   # the top bar's right well: the enemy's crest and name, and Heat
 var _grid_btn: Button
 
 
@@ -751,7 +761,10 @@ func set_info(info: Dictionary) -> void:
 	foe_crest.visible = foe_crest.texture != null
 	var h := int(info.get("heat", -1))
 	heat_box.visible = h >= 0
-	heat_lbl.text = str(maxi(h, 0))
+	# the label shows what the gauge shows: nine segments, so at most 9 (the HEAT weights sum to exactly 9 today; the
+	# clamp keeps the two in step if a rule is ever added)
+	heat_lbl.text = str(clampi(h, 0, 9))
+	info_well.visible = foe_lbl.visible or foe_crest.visible or heat_box.visible
 	heat_box.tooltip_text = str(info.get("heat_tip", "Heat: the run's difficulty level, up to 9."))
 	heat_bar.queue_redraw()
 	_refresh_acted()
@@ -978,8 +991,9 @@ func _roster_row(r: Dictionary) -> Control:
 	var card := PanelContainer.new()
 	var sb := StyleBoxFlat.new()
 	# Lime Tactical: the selected row is a lime-tinted solid with a lime edge; the rest sit on the well colour with a quiet
-	# lime separator under each
-	sb.bg_color = Color("#1b210d", 0.95) if r["sel"] else Color(GS.WELL, 0.62)
+	# lime separator under each. Both fills are at the well's alpha (ui_style.md 3, WELL_A; #314 check condition 1), so
+	# every name sits on a solid backing over the scene
+	sb.bg_color = Color("#1b210d", GS.WELL_A) if r["sel"] else Color(GS.WELL, GS.WELL_A)
 	sb.border_color = GILT if r["sel"] else Color(0, 0, 0, 0)
 	sb.set_border_width_all(1 if r["sel"] else 0)
 	sb.border_width_bottom = 1
@@ -990,7 +1004,6 @@ func _roster_row(r: Dictionary) -> Control:
 	sb.content_margin_top = s(3)
 	sb.content_margin_bottom = s(4)
 	card.add_theme_stylebox_override("panel", sb)
-	card.modulate.a = 0.55 if r["done"] else 1.0
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
 	card.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	card.tooltip_text = str(r.get("cls", ""))
@@ -1001,6 +1014,8 @@ func _roster_row(r: Dictionary) -> Control:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", s(2))
 	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# a ship that has acted dims its words and bars, never its backing (the backing stays solid)
+	v.modulate.a = 0.55 if r["done"] else 1.0
 	card.add_child(v)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", s(5))
@@ -1606,6 +1621,7 @@ func _route_card() -> void:
 					o.queue_free()
 			fire_well.add_theme_stylebox_override("panel", GS.well(k))
 			fire_well.modulate.a = 1.0
+			fv0.modulate.a = 1.0
 		return
 	var steps: Array = info.get("steps", [])
 	var now := ""
@@ -1640,10 +1656,12 @@ func _route_card() -> void:
 	if not mv.is_empty():
 		var lit: bool = str(mv.get("st", "")) == "now"
 		move_well.add_theme_stylebox_override("panel", GS.well(k, GILT if lit else Color(0, 0, 0, 0)))
-		move_well.modulate.a = 0.5 if str(mv.get("st", "")) == "off" else 1.0
+		move_well.modulate.a = 1.0
 		var v := VBoxContainer.new()
 		v.add_theme_constant_override("separation", s(4))
 		v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		# a step that is off dims its words, never its backing (ui_style.md 3: the well stays solid)
+		v.modulate.a = 0.5 if str(mv.get("st", "")) == "off" else 1.0
 		v.add_child(_head("✓" if str(mv.get("st", "")) == "done" else "1", "Move", str(mv.get("detail", "")), BONE if lit else BONE2))
 		if hint_to == "Move":
 			_hint_into(v, hint_txt, local)
@@ -1656,16 +1674,20 @@ func _route_card() -> void:
 	if fire_well.visible and fire_well.get_child_count() > 0:
 		var lit2: bool = str(fi.get("st", "")) == "now"
 		fire_well.add_theme_stylebox_override("panel", GS.well(k, GILT if lit2 else Color(0, 0, 0, 0)))
-		fire_well.modulate.a = 0.6 if str(fi.get("st", "")) == "off" else 1.0
+		fire_well.modulate.a = 1.0
 		var fv := fire_well.get_child(0) as VBoxContainer
+		fv.modulate.a = 0.6 if str(fi.get("st", "")) == "off" else 1.0   # the words dim, the well stays solid
 		var old := fv.find_child("fire_hint", false, false)
 		if old != null:
 			fv.remove_child(old)
 			old.queue_free()
-		if not fi.is_empty() and fv.get_child_count() > 0:
-			var hh := fv.get_child(0) as HBoxContainer
-			if hh != null and hh.get_child_count() > 0 and hh.get_child(0) is Label:
-				(hh.get_child(0) as Label).text = "✓" if str(fi.get("st", "")) == "done" else "2"
+		# the step number and its detail line belong to your own Fire table ("2 FIRE"); an enemy's table ("WEAPONS",
+		# shown while you inspect or hover it mid-activation) has no step number and keeps its header (#314 check
+		# condition 2)
+		var hh: HBoxContainer = fv.get_child(0) as HBoxContainer if fv.get_child_count() > 0 else null
+		var step_no: Label = hh.find_child("step_no", false, false) as Label if hh != null else null
+		if not fi.is_empty() and step_no != null:
+			step_no.text = "✓" if str(fi.get("st", "")) == "done" else "2"
 			var det := _label(str(fi.get("detail", "")), 13, BONE if lit2 else BONE2)
 			det.name = "fire_detail"
 			var od := fv.find_child("fire_detail", false, false)
@@ -1788,23 +1810,29 @@ func _build_log() -> void:
 	v.add_theme_constant_override("separation", s(3))
 	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	log_panel.add_child(v)
+	# the head (LOG and Full log) sits inside the log's well with the lines, so every word is on the solid backing
+	# (ui_style.md 2 and 3; #314 check condition 1)
+	var w := PanelContainer.new()
+	w.add_theme_stylebox_override("panel", GS.well(k, Color(0, 0, 0, 0), 10, 4))
+	w.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	w.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_child(w)
+	var wv := VBoxContainer.new()
+	wv.add_theme_constant_override("separation", s(2))
+	wv.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	w.add_child(wv)
 	var hh := _head("", "Log")
 	var lb := _key_button("Full log", "log", null, false, "L")
 	lb.custom_minimum_size.y = s(24)
 	lb.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
 	lb.tooltip_text = "Open or close the full battle log (L)"
 	hh.add_child(lb)
-	v.add_child(hh)
-	var w := PanelContainer.new()
-	w.add_theme_stylebox_override("panel", GS.well(k, Color(0, 0, 0, 0), 10, 4))
-	w.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	w.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_child(w)
+	wv.add_child(hh)
 	if log_text != null and is_instance_valid(log_text):   # a rebuild keeps the log's text
 		log_text.add_theme_font_size_override("normal_font_size", s(14))
 		log_text.add_theme_font_size_override("bold_font_size", s(14))
 		log_text.add_theme_constant_override("line_separation", s(2))
-		w.add_child(log_text)
+		wv.add_child(log_text)
 		_log_bar()
 		return
 	log_text = RichTextLabel.new()
@@ -1814,7 +1842,7 @@ func _build_log() -> void:
 	log_text.add_theme_font_size_override("normal_font_size", s(14))
 	log_text.add_theme_font_size_override("bold_font_size", s(14))
 	log_text.add_theme_constant_override("line_separation", s(2))   # Chakra Petch lines are 19 at 14; 21 a line keeps the ticker at four
-	w.add_child(log_text)
+	wv.add_child(log_text)
 	_log_bar()
 
 

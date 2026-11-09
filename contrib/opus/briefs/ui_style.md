@@ -59,6 +59,8 @@ focused on user actions and best practices". So: one look for every screen, no f
 - **Key cap**: every action shows its key beside it (B Brace, Tab Next ship, Space End ship). `keycap(k)`: a square,
   dark lime-tinted fill (#141a0c), a lime edge at 45%, text `KEY_FG` #d9f78a in the number face, 13 (12 for words
   like Space). On the lime button it is `keycap_on_gilt(k)`: dark text on a light wash.
+- Dimming (a ship that has acted, a step that is off) fades the words and bars, never the backing: the well or row
+  fill stays at its alpha.
 - Rule: if a string can land over the 3D scene, it is on a well, a strip or a tag. Floating callouts over ships
   (damage numbers) are the one exception: they carry a dark outline instead, because they live for a second.
 

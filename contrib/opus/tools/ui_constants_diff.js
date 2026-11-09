@@ -150,7 +150,7 @@ const PAIRS = [
   ['MN7', 'end card heading size', ['head.html', /#endcard h1\{[^}]*font-size:(\d+)px|\.endcard h2\{[^}]*font-size:(\d+)px/], ['godot/ui/battle/hud.gd', /_label\(title\.to_upper\(\), (\d+), GILT if win/]],
   ['TY3', 'campaign body text size', ['head.html', /\nbody\{margin:0;height:100%;background:var\(--ink\)[^}]*font-size:(\d+)px/], ['godot/ui/campaign/campaign_ui.gd', /default_font_size = px\((\d+)\)/]],
   ['TY4', 'scale ceiling (all screens)', ['head.html', null, 'none (fixed px, two media queries)'], ['godot/ui/ui_scale.gd', /const K_MAX := (\d+(?:\.\d+)?)/]],
-  ['AC5', 'battle focus ring width', ['head.html', /button:focus-visible\{outline:(\d+)px/], ['godot/ui/battle/hud.gd', /sf\.set_border_width_all\(maxi\((\d+)/]],
+  ['AC5', 'battle focus ring width', ['head.html', /button:focus-visible\{outline:(\d+)px/], ['godot/ui/theme/glass_shell.gd', /f\.set_border_width_all\(maxi\((\d+)/]],
   ['HD10', 'friend name colour', ['head.html', /(#8ff0a0)/i], ['godot/ui/theme/glass_shell.gd', /const FRIEND := (Color\([^)]*\))/]],
   ['HD10', 'foe name colour', ['head.html', /(#c9a2ff)/i], ['godot/ui/theme/glass_shell.gd', /const FOE := (Color\([^)]*\))/]],
   ['H6', 'blood text colour', ['head.html', /\.blood\{color:(#[0-9a-f]{6})\}/i], ['godot/ui/theme/glass_shell.gd', /const BLOOD := Color\("(#[0-9a-f]{6})"\)/i]],

@@ -373,7 +373,7 @@ static func focus_ring(k: float) -> StyleBoxFlat:
 
 
 # the shared theme for any screen: body font and base size, buttons, labels, rich text ([code] uses the number face),
-# tooltips. The battle HUD adds its focus ring on top (hud.gd _theme); other screens can use focus_ring(k) the same way.
+# tooltips and the focus ring (focus_ring). Every screen takes its focus ring from here, the battle HUD included.
 static func make_theme(k: float, body_f: Font, body_semi: Font, base := 15) -> Theme:
 	var th := Theme.new()
 	th.default_font = body_f

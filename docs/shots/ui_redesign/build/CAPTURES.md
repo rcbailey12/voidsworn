@@ -4,6 +4,44 @@ Branch opus/issue-271-build (Glass Shell bold layout, FINDINGS R145; Lime Tactic
 grey placeholder hulls (the ship assets are not in git, R144), so the real look has to be judged from Ryan's PC: the
 real hulls, the RTX 5080, his screen. The sandbox stills in sandbox/ are only there to show the layout.
 
+## Last pass before merge (Nov 9 2026, Rey's check on #314): rerun out_final
+
+Rey's outside check (contrib/muse/reviews/opus_check_314.md, GO WITH CONDITIONS) set four conditions; the board ruled
+on them in the #271 job. This pass, on the same branch:
+
+1. Every line of text on a solid backing (ui_style.md 2 and 3). The top bar's words now sit on two wells: the round,
+   turn, acted pips and objective on the left, the enemy's crest and name plus Heat on the right (shown only when one
+   of them shows); the buttons keep their own boxes. The log head (LOG and Full log) moved inside the log's well, with
+   the lines. Fleet list rows fill at the well's alpha (93%) selected and unselected, and an acted ship dims its words
+   and bars, never its backing. The same goes for a Move or Fire step that is off.
+2. The Fire block only relabels a step number that exists ("2 FIRE", named step_no in hud.gd `_head`), so an enemy's
+   WEAPONS table shown mid-activation keeps its header and gets no step detail line.
+3. No kill prediction (ui_spec S1): "Likely kill." is gone from the Target block, the enemy hover tip and the fire hint;
+   the expected numbers and the hatched ghost on the hull bar stay.
+4. The focus ring has one source: glass_shell.gd `focus_ring` through `make_theme`; hud.gd no longer sets its own
+   (ui_spec_tests.js now checks that).
+Notes settled: the counted line's Ready is FRIEND mint (#52f0c4) since the Lime pass; view() weapons carry "kind"
+(battle_api.gd `_i_view` maps the rules' "k"), so the flak "wings only" reason reads the right key; the HEAT weights sum
+to exactly 9, and the Heat label is clamped to 9 anyway so it always matches the gauge.
+
+Rerun on the PC, same job, new folder: the queue job `start`s `tools\pc\jobs\ui271_build_shots.bat out_final`
+(output Downloads\voidsworn_test\opus271b\out_final\). No job changes.
+
+| Capture | Still | Look for |
+|---|---|---|
+| A_1080 | 1_battle_start | **Ryan's still.** The top bar's words on two dark wells with the lime left bar; the fleet list rows solid (no scene through them); the log's LOG and Full log inside its well |
+| A_1080 | 5a_planned_move_odds | Target block reads the expected numbers with no "Likely kill."; Move here lit; END SHIP the one filled lime slab |
+| A_1080 | 5_enemy_targeted | 2 FIRE header with the step detail under it; an enemy's table (if hovered) still reads WEAPONS |
+| A_1080 | 6_enemy_turn | acted ships in the fleet list dimmed, backing still solid |
+| B_1080_20 | 1_battle_start | **Ryan's still.** 20 rows, no scroll; rows solid |
+| B_1080_20 | 7_menu_focus | the sage focus ring on Resume (now from the theme alone) |
+| C_4k, D_4k_20 | 1_battle_start | the top bar wells scale cleanly at k 2.0, no text clipped |
+| E_1080_plain | 1_battle_start | no Nemesis, no Heat: the top bar's right well hides when the enemy name and Heat are both absent |
+
+Pass bar as below (every ui_check.txt "0 failed", parse.txt exit 0 for all seven). The sandbox could not run Godot on
+this pass, so out_final is the first run of these changes; hud.gd and glass_shell.gd parse with gdtoolkit, and the
+standing checks pass (run_all_checks.js, ui_spec_tests 45 of 45).
+
 ## Lime Tactical (Nov 9 2026, R149): what the board reruns now
 
 Ryan picked identity 2 (Nov 9 12:00 CST: "yeah i like lime tactical, run it"). It is now the Godot theme
