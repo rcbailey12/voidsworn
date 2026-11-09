@@ -2541,12 +2541,27 @@ func _danger_bands() -> Dictionary:
 	if not _danger_shown():
 		return {}
 	_threat_request()
+	# R148: the board hatching shows only in the Move step, as in the mockup (a ship up that can still move, nothing
+	# targeted, not braced). The counts stay live for the danger badges on the fleet list and the shell either way.
+	if not _move_step():
+		return {}
 	var out := {}
 	for k in _danger:
 		var n := int(_danger[k])
 		if n > 0:
 			out[k] = mini(n, 3)
 	return out
+
+
+# the Move step: a usable ship is up (or selected) with movement left, not braced, with no enemy targeted
+func _move_step() -> bool:
+	var id := _active_id()
+	if id == "":
+		id = sel
+	if id == "" or not VU.has(id) or not _usable(VU[id]) or target != "":
+		return false
+	var u: Dictionary = VU[id]
+	return not bool(u.get("braced", false)) and int(u.get("moveLeft", u.get("mp", 0))) > 0
 
 
 # enemies that can bring guns on a ship's hex next turn (0 when the counts are not in yet)

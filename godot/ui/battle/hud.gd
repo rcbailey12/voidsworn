@@ -510,6 +510,47 @@ func _key_button(txt: String, act: String, arg: Variant = null, primary := false
 	return b
 
 
+# 3 End: End ship is the big filled gold button of C_glass_shell_bold.png in every state (R148): the label centred, its
+# key cap after it, dark on gold. Whatever the step, this is the one gold button on the screen; a step's own confirm
+# (Move here, Fire N weapons) is drawn lit instead (_hint_into).
+func _end_button(b: Dictionary) -> Button:
+	var t := str(b["text"])
+	var kk := ""
+	var re := RegEx.new()
+	re.compile("^(.*?)\\s*\\(([^()]{1,6})\\)$")
+	var m := re.search(t)
+	if m != null:
+		t = m.get_string(1)
+		kk = m.get_string(2)
+	var on := bool(b.get("on", true))
+	var bt := _button("", str(b["act"]), b.get("arg"))
+	var fb := GS.finish_boxes(k)
+	for st in ["normal", "hover", "pressed", "disabled"]:
+		bt.add_theme_stylebox_override(st, fb[st])
+	bt.disabled = not on
+	var h := HBoxContainer.new()
+	h.alignment = BoxContainer.ALIGNMENT_CENTER
+	h.add_theme_constant_override("separation", s(10))
+	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	h.set_anchors_preset(Control.PRESET_FULL_RECT)
+	var l := _label(t, 17, GS.ON_GILT if on else BONE3, font_semi)
+	l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	h.add_child(l)
+	if kk != "":
+		var kc := _keycap(kk, 12 if kk.length() > 2 else 13)
+		kc.add_theme_stylebox_override("normal", GS.keycap_on_gilt(k))
+		kc.add_theme_color_override("font_color", GS.ON_GILT if on else BONE3)
+		h.add_child(kc)
+	bt.add_child(h)
+	bt.set_meta("lbl", l)
+	bt.set_meta("key", kk)
+	GS.gilt_sheen(bt, k)
+	bt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bt.custom_minimum_size = Vector2(_kb_width(bt), s(46))
+	return bt
+
+
 # a key button's natural width, measured from its fonts (a container's minimum size is not known before it is drawn)
 func _kb_width(b: Button) -> float:
 	var l: Label = b.get_meta("lbl")
@@ -1647,20 +1688,16 @@ func _route_card() -> void:
 	row.add_theme_constant_override("separation", s(8))
 	for b in bottom:
 		var big_end: bool = str(b.get("act", "")) == "end"
-		var bt := _key_button(str(b["text"]), str(b["act"]), b.get("arg"), bool(b.get("primary", false)))
-		bt.disabled = not bool(b.get("on", true))
-		if bt.disabled:
-			(bt.get_meta("lbl") as Label).add_theme_color_override("font_color", BONE3)
-		bt.tooltip_text = str(b.get("tip", ""))
-		bt.custom_minimum_size.y = s(42)
+		var bt: Button
 		if big_end:
-			bt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			var l := bt.get_meta("lbl") as Label
-			l.add_theme_font_size_override("font_size", s(17))
-			l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			_size_key_button(bt)
-			if not bool(b.get("primary", false)):
-				bt.add_theme_stylebox_override("normal", GS.well(k, GILT, 10, 5))
+			bt = _end_button(b)
+		else:
+			bt = _key_button(str(b["text"]), str(b["act"]), b.get("arg"), bool(b.get("primary", false)))
+			bt.disabled = not bool(b.get("on", true))
+			if bt.disabled:
+				(bt.get_meta("lbl") as Label).add_theme_color_override("font_color", BONE3)
+		bt.tooltip_text = str(b.get("tip", ""))
+		bt.custom_minimum_size.y = s(46)
 		if b.get("name", "") != "":
 			bt.name = str(b["name"])
 		row.add_child(bt)
@@ -1678,7 +1715,14 @@ func _hint_into(v: Container, hint_txt: String, btns: Array) -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", s(6))
 	for b in btns:
-		var bt := _key_button(str(b["text"]), str(b["act"]), b.get("arg"), bool(b.get("primary", false)))
+		# the step's confirm (Move here, Fire N weapons) is lit, not filled: End ship is the screen's one gold button
+		var lit := bool(b.get("primary", false))
+		var bt := _key_button(str(b["text"]), str(b["act"]), b.get("arg"), false)
+		if lit:
+			var lb := GS.lit_boxes(k)
+			for st in ["normal", "hover", "pressed", "disabled"]:
+				bt.add_theme_stylebox_override(st, lb[st])
+			(bt.get_meta("lbl") as Label).add_theme_color_override("font_color", GILT)
 		bt.disabled = not bool(b.get("on", true))
 		bt.tooltip_text = str(b.get("tip", ""))
 		bt.custom_minimum_size.y = s(32)

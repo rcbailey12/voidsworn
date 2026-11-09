@@ -4,6 +4,40 @@ Branch opus/issue-271-build (Glass Shell bold, FINDINGS R145). The cloud sandbox
 grey placeholder hulls (the ship assets are not in git, R144), so the real look has to be judged from Ryan's PC: the
 real hulls, the RTX 5080, his screen. The sandbox stills in sandbox/ are only there to show the layout.
 
+## R148 fix pass (Nov 9 2026): what the board reruns
+
+Ryan agreed to two fixes (FINDINGS R148). Both are in this branch now:
+
+1. **End ship** is the big filled gold button of C_glass_shell_bold.png in every state: gold with a top-lit sheen and a
+   soft glow, "End ship" centred with the Space key cap after it (dark on gold), 46 tall. A step's own confirm (Move here,
+   Fire N weapons, Burn and fire) is now a lit button (gilt edge and gilt text on a dark well), so the screen never shows
+   two gold buttons. Code: glass_shell.gd `finish_boxes`, `lit_boxes`, `gilt_sheen`, `keycap_on_gilt`; hud.gd `_end_button`.
+2. **Board hatching** is calmer: it shows only in the Move step (a ship up that can still move, nothing targeted, not
+   braced), as in the mockup; the lines are about three times as far apart (about three across a hex for one enemy, four for
+   two or more) and much lighter (the shader blends in linear light, so the old values read far stronger than their numbers).
+   The danger badges on the fleet list and the shell keep their counts in every step. Code: board.gd FILL_SHADER,
+   battle.gd `_danger_bands` and `_move_step`.
+
+Rerun on the PC, same job, into a new folder so the first stills stay: the queue job `start`s
+`tools\pc\jobs\ui271_build_shots.bat out_r148` (output Downloads\voidsworn_test\opus271b\out_r148\).
+
+| Capture | Still | Look for |
+|---|---|---|
+| A_1080 | 1_battle_start | End ship gold and filled, Space cap after the label; light hatching on the hexes in reach |
+| A_1080 | 5a_planned_move_odds | **Ryan's still.** Move here lit (gilt edge, not filled), End ship still the one gold button; hatching quiet, lines wide apart |
+| A_1080 | 5_enemy_targeted | no hatching (an enemy is targeted); Fire N weapons lit; End ship gold |
+| A_1080 | 6_enemy_turn | no hatching, End block hidden |
+| B_1080_20 | 1_battle_start | **Ryan's still.** 20 rows, no scroll; End ship gold at the bottom right |
+| C_4k | 1_battle_start, 5a | the gold button and its sheen scale cleanly at k 2.0 (no gaps at the edges) |
+| D_4k_20 | 1_battle_start | as B at 4K |
+| E_1080_plain | 1_battle_start, 2_move_preview | fleets apart: hatching only where enemies can reach, none on your own side |
+
+Pass bar as below (every ui_check.txt "0 failed", parse.txt exit 0). Sandbox check of A at 1920x1080 (software renderer,
+grey hulls): 21 checks, 0 failed; stills in sandbox/R148_A1080_*.jpg.
+
+The three identity variants (docs/shots/ui_redesign/identity/) are mockups only; nothing in the theme changes until Ryan
+picks one, so they need no PC capture yet.
+
 ## How to run
 
 One job does all of it: `tools/pc/jobs/ui271_build_shots.bat`. Start it the usual way (a one-line queue job in

@@ -68,7 +68,8 @@ The palette is ui_spec.md 5.1; this guide adds the shell entries (also listed th
 
 - GILT is the player's own and the current step: the ship that is up, the lit well, the primary action, hit chances.
 - FRIEND green and the FOE lavender family carry the sides in battle (names, plate accents, rings, badges). ALERT red
-  is the Nemesis tag's alone. The threat map and the reach hatching are lavender, not red.
+  is the Nemesis tag's alone. The threat map and the reach hatching are lavender, not red. The reach hatching shows only in the
+  Move step and stays faint (R148); the danger badges carry the counts in every step.
 - Hull bars are segmented (10 cells in panels, 8 on nameplates); HULL_LOW at 35% (HD9). Shields are one bar per facing,
   always in the order prow, starboard, rear, port.
 - Expected loss is hatching over the part of a bar a volley should take, always labelled "expected" or "to about N",
@@ -88,6 +89,9 @@ The palette is ui_spec.md 5.1; this guide adds the shell entries (also listed th
   The battle column is the worked example: Nemesis, the ship that is up, 1 Move, 2 Fire, Orders, Target, 3 End.
 - The finishing action is fixed in the bottom right corner and never moves (End ship; on other screens Continue,
   Confirm, Launch). Text above it keeps its height when empty so the button does not jump.
+- The finishing action is the screen's one filled gold button (glass_shell.gd `finish_boxes` plus `gilt_sheen`), its key
+  cap after the label. A step's own confirm (Move here, Fire N weapons) is a lit button (`lit_boxes`), never a second
+  gold one (R148).
 - Lists are one line plus bars per item; the battle fleet list fits 20 ships at 1080 with no scroll.
 - Details live one layer down: hover a block or a keyword for the rest ("more on hover"), never a second panel.
 - A ticker, not a wall: logs show their last four lines; a key (L) opens the full log.

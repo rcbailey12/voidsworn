@@ -85,10 +85,11 @@ void fragment() {
 	}
 	if (band > 0.5) {
 		// #271 reach hatching, in the enemy side's lavender: how many enemies can bring guns on this hex next turn,
-		// carried by the pattern as well as the colour (ui_spec.md 5.2): sparse lines for 1, dense for 2, crossed for 3+.
+		// carried by the pattern as well as the colour (ui_spec.md 5.2): sparse lines for 1, closer for 2, crossed for 3+.
 		// Drawn in board space so the lines run on across hexes.
 		// line width: about one pixel at any zoom (screen-space), never thicker than a tenth of the gap between lines
-		float per = band > 1.5 ? 1.8 : 3.2;
+		// R148 (calmer, as the mockup): about three lines across a hex for 1, four for 2 and 3+, and light
+		float per = band > 1.5 ? 5.7 : 8.5;
 		float d1 = abs(fract((wpos.x + wpos.y) / per) - 0.5) * per;
 		float w1 = fwidth(wpos.x + wpos.y);
 		float hw1 = min(0.55 * w1, 0.1 * per);
@@ -99,7 +100,9 @@ void fragment() {
 			float hw2 = min(0.55 * w2, 0.1 * per);
 			l = max(l, 1.0 - smoothstep(hw2, hw2 + w2, d2));
 		}
-		float h = l * (band > 2.5 ? 0.22 : (band > 1.5 ? 0.19 : 0.15));
+		// alphas are blended in linear light, so a small number already reads clearly on the dark board (0.03 shows
+		// about as bright as 0.2 would in screen colour)
+		float h = l * (band > 2.5 ? 0.034 : (band > 1.5 ? 0.028 : 0.022));
 		float A = h + a * (1.0 - h);
 		c = (vec3(0.79, 0.64, 1.0) * h + c * a * (1.0 - h)) / max(A, 0.0001);
 		a = A;

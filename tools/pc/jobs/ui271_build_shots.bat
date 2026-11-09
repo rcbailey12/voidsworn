@@ -2,12 +2,14 @@
 rem Issue 271 build (Glass Shell bold): parse check and the battle HUD captures the board judges (docs/shots/ui_redesign/build/CAPTURES.md).
 rem Started (not called) by a queue job, in its own window, so the queue stays free.
 rem Clone: Downloads\voidsworn_test\opus271b\repo (branch opus/issue-271-build); the import cache is seeded from opus207's clone.
-rem Output: Downloads\voidsworn_test\opus271b\out\ (status.txt says when each step finished; each capture folder has ui_check.txt).
+rem Output: Downloads\voidsworn_test\opus271b\out\ or the folder named by the first argument (status.txt says when each step finished; each capture folder has ui_check.txt).
 setlocal enabledelayedexpansion
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 set "W=%VT%\opus271b"
 set "R=%W%\repo"
+rem Optional first argument: the output folder name under opus271b (default out), so a rerun keeps the earlier stills.
 set "O=%W%\out"
+if not "%~1"=="" set "O=%W%\%~1"
 set /p G=<"%VT%\godot_path.txt"
 if not exist "%O%" mkdir "%O%"
 echo start %date% %time% > "%O%\status.txt"

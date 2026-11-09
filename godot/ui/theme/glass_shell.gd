@@ -158,6 +158,78 @@ static func button_boxes(k: float, primary := false) -> Dictionary:
 	return {"normal": n, "hover": h, "pressed": h, "disabled": d}
 
 
+# the screen's one finishing action (End ship; Continue, Confirm or Launch elsewhere): the big filled gold button of
+# C_glass_shell_bold.png. A solid gilt box with a gilt glow; gilt_sheen() lays the top-lit gradient over it. One per screen.
+static func finish_boxes(k: float) -> Dictionary:
+	var n := StyleBoxFlat.new()
+	n.bg_color = GILT
+	n.border_color = Color("#e7c26c")
+	n.set_border_width_all(1)
+	n.set_corner_radius_all(px(2, k))
+	n.shadow_color = Color(GILT, 0.42)
+	n.shadow_size = px(14, k)
+	for side in [SIDE_LEFT, SIDE_RIGHT]:
+		n.set_content_margin(side, px(12, k))
+	for side in [SIDE_TOP, SIDE_BOTTOM]:
+		n.set_content_margin(side, px(6, k))
+	var h := n.duplicate() as StyleBoxFlat
+	h.bg_color = GILT_HOVER
+	h.shadow_color = Color(GILT, 0.6)
+	var d := n.duplicate() as StyleBoxFlat
+	d.bg_color = Color(GILT2, 0.35)
+	d.border_color = Color(IRON3, 0.6)
+	d.shadow_size = 0
+	return {"normal": n, "hover": h, "pressed": h, "disabled": d}
+
+
+# a lit button: the step's own confirm (Move here, Fire N weapons) when the finishing action is already the filled gold
+# one. A well fill, a gilt edge and gilt text with a soft inner glow, so the screen never shows two gold buttons.
+static func lit_boxes(k: float) -> Dictionary:
+	var bb := button_boxes(k)
+	var n := (bb["normal"] as StyleBoxFlat).duplicate() as StyleBoxFlat
+	n.bg_color = Color(WELL, 0.96)
+	n.border_color = GILT
+	n.shadow_color = Color(GILT, 0.22)
+	n.shadow_size = px(6, k)
+	var h := n.duplicate() as StyleBoxFlat
+	h.bg_color = Color(GILT, 0.16)
+	h.border_color = GILT_HOVER
+	return {"normal": n, "hover": h, "pressed": h, "disabled": bb["disabled"]}
+
+
+# the gold sheen on a finishing button: a top-lit gradient (light gold to gilt to deep gold) and a thin highlight on the
+# top edge, drawn by the button over its own box and under its label. Off while the button is disabled.
+static func gilt_sheen(b: Button, k: float) -> void:
+	var top := Color("#e7c26c")
+	var bot := Color("#b88e38")
+	b.draw.connect(func() -> void:
+		if b.disabled:
+			return
+		var r := Rect2(Vector2.ONE, b.size - Vector2(2, 2))
+		if r.size.x <= 0.0 or r.size.y <= 0.0:
+			return
+		var mid := GILT_HOVER if b.is_hovered() else GILT
+		var t0 := top.lightened(0.08) if b.is_hovered() else top
+		var ym := r.position.y + r.size.y * 0.55
+		var x0 := r.position.x
+		var x1 := r.end.x
+		b.draw_polygon(PackedVector2Array([Vector2(x0, r.position.y), Vector2(x1, r.position.y), Vector2(x1, ym), Vector2(x0, ym)]),
+			PackedColorArray([t0, t0, mid, mid]))
+		b.draw_polygon(PackedVector2Array([Vector2(x0, ym), Vector2(x1, ym), Vector2(x1, r.end.y), Vector2(x0, r.end.y)]),
+			PackedColorArray([mid, mid, bot, bot]))
+		b.draw_line(Vector2(x0, r.position.y + 0.5), Vector2(x1, r.position.y + 0.5), Color(1, 1, 1, 0.55), maxf(1.0, float(px(1, k)))))
+	b.mouse_entered.connect(b.queue_redraw)
+	b.mouse_exited.connect(b.queue_redraw)
+
+
+# a key cap sitting on a gold button: dark text on a light wash with a dark edge (bone on iron would vanish on gold)
+static func keycap_on_gilt(k: float) -> StyleBoxFlat:
+	var s := keycap(k)
+	s.bg_color = Color(1, 1, 1, 0.18)
+	s.border_color = Color(ON_GILT, 0.5)
+	return s
+
+
 # the focus ring every screen uses (ui_spec.md 6): no fill, a BONE border at least 2 px, 3 px outside the button
 static func focus_ring(k: float) -> StyleBoxFlat:
 	var f := StyleBoxFlat.new()
