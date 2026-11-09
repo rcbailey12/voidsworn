@@ -56,17 +56,37 @@ func _init() -> void:
 	check(not c.lineageRespec("vaelen"), "no charge for an empty reset")
 	for id in c.ADMIRALS.keys():
 		c.META["mastery"][id] = 230
-		if c.ADMIRALS[id].get("fac") != "ithar":
-			check(c.masteryLevel(id) == 4 and c.lineageNodes(id).is_empty() and not c.lineageRespec(id), "fixed perks: " + id)
-		else:
-			check(c.masteryLevel(id) == 8, "Glasswright level 8: " + id)
-			for suffix in [":B:0:0", ":C:0:0", ":A:0:0", ":cap:0"]:
-				check(c.lineagePick(id + suffix), "spread build: " + id + suffix)
+		check(c.masteryLevel(id) == 8, "every admiral reaches the tree: " + str(id))
+		check(c.lineageNodes(id).size() > 0, "every admiral has a tree: " + str(id))
+	var fac_first = {"voidsworn": "vex", "hegemony": "kassar", "corsair": "grax", "chorus": "matriarch", "ithar": "aelith", "deathless": "nekhet"}
+	for fac in fac_first.keys():
+		var id = fac_first[fac]
+		if not (c.META.get("lineage") is Dictionary): c.META["lineage"] = {}
+		c.META["lineage"].erase(id)
+		c.META["mastery"][id] = 230
+		check(c.lineageCanPick(id + ":A:0:0"), fac + " offers a branch pick")
+		c.act("lineage", id); c.act("offerLineage", id + ":A:0:0"); c.act("closeModal")
+		c.act("confirmLineage", id + ":A:0:0")
+		c.act("confirmLineage", id + ":B:0:0")
+		c.act("confirmLineage", id + ":C:0:0")
+		c.act("confirmLineage", id + ":cap:0")
+		check(c.lineageBuild(id)["picks"].size() == 3, fac + " took three branch picks")
+		check(c.lineageBuild(id)["capstone"] == 0, fac + " took a capstone")
+	for id in ["nekhet", "sekhmar", "anuket", "khepra"]:
+		for n in c.lineageNodes(id):
+			check(not ("shield" in str(n["d"]).to_lower()), "Eclipse tree does not touch shields: " + str(n["key"]))
 	for pair in [[0,0],[6,1],[16,2],[30,3],[50,4],[74,4],[75,5],[109,5],[110,6],[159,6],[160,7],[229,7],[230,8]]:
 		c.META["mastery"]["vaelen"] = pair[0]
 		check(c.masteryLevel("vaelen") == pair[1], "XP threshold " + str(pair[0]))
 	var old = c.defaultMeta(); old.erase("lineage")
 	c.META = c.migrateMeta(old)
 	check(c.lineageBuild("vaelen")["picks"].is_empty(), "old profiles migrate")
-	print("PASS: Glasswright XP, tiers, locks, capstones, saves and per-line resets; other factions unchanged." if failures == 0 else "FAIL: %d checks" % failures)
+	var old_vex = c.defaultMeta(); old_vex.erase("lineage"); old_vex["mastery"]["vex"] = 50
+	c.META = c.migrateMeta(old_vex)
+	check(c.masteryXP("vex") == 50, "old XP carries over")
+	check(c.masteryLevel("vex") == 4, "an old profile keeps its level when a tree arrives")
+	check(c.lineageBuild("vex")["picks"].is_empty(), "an old profile gets no picks it did not earn")
+	c.META["mastery"]["vex"] = 75
+	check(c.lineageCanPick("vex:A:0:0"), "the old line earns its first pick at the next level")
+	print("PASS: every faction's XP, tiers, locks, capstones, saves and per-line resets." if failures == 0 else "FAIL: %d checks" % failures)
 	quit(0 if failures == 0 else 1)

@@ -1,5 +1,11 @@
 # The campaign oracle, pinned
 
+Nov 9 2026, issue 29 (progression step 13): re-copied data.js for the rollout
+of the lineage trees to the other five factions (20 admirals, Branch A tiers 1
+to 3, both capstones, and each faction's shared Branch B and C tier 1 sets) and
+campaign_meta.js for the lineage screen wording that no longer calls the slice
+a test. Re-exported campaign tables.
+
 Nov 8 2026, issue 27 (progression step 11): re-copied campaign_run.js and
 campaign_meta.js for per run XP earnings by line in the F1 play log. Each
 finished run writes one run_xp event: the flown line's payout plus each

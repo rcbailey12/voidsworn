@@ -63,25 +63,39 @@ globalThis.lineageTest = () => {
   ok.equal(lineageRespec('vaelen'), false, 'empty resets cannot charge');
   for (const id of Object.keys(ADMIRALS)) {
     META.mastery[id] = 230;
-    if (ADMIRALS[id].fac !== 'ithar') {
-      ok.equal(masteryLevel(id), 4);
-      ok.deepEqual(lineageNodes(id), []);
-      ok.equal(lineageRespec(id), false);
-    } else {
-      ok.equal(masteryLevel(id), 8);
-      ok.equal(lineagePick(id + ':B:0:0'), true);
-      ok.equal(lineagePick(id + ':C:0:0'), true);
-      ok.equal(lineagePick(id + ':A:0:0'), true);
-      ok.equal(lineagePick(id + ':cap:0'), true);
-    }
+    ok.equal(masteryLevel(id), 8, 'every admiral reaches the tree: ' + id);
+    ok.ok(lineageNodes(id).length > 0, 'every admiral has a tree: ' + id);
+  }
+  const facFirst = {voidsworn: 'vex', hegemony: 'kassar', corsair: 'grax', chorus: 'matriarch', ithar: 'aelith', deathless: 'nekhet'};
+  for (const [fac, id] of Object.entries(facFirst)) {
+    META.lineage = META.lineage || {}; delete META.lineage[id];
+    META.mastery[id] = 230;
+    ok.equal(lineageCanPick(id + ':A:0:0'), true, fac + ' offers a branch pick');
+    ACT.offerLineage(id + ':A:0:0'); ACT.closeModal();
+    ACT.confirmLineage(id + ':A:0:0');
+    ACT.confirmLineage(id + ':B:0:0');
+    ACT.confirmLineage(id + ':C:0:0');
+    ACT.confirmLineage(id + ':cap:0');
+    ok.equal(lineageBuild(id).picks.length, 3, fac + ' took three branch picks');
+    ok.equal(lineageBuild(id).capstone, 0, fac + ' took a capstone');
+  }
+  for (const id of ['nekhet', 'sekhmar', 'anuket', 'khepra']) {
+    for (const n of lineageNodes(id)) ok.ok(!/shield/i.test(n.d), 'Eclipse tree does not touch shields: ' + n.key);
   }
   for (const [xp, level] of [[0,0],[6,1],[16,2],[30,3],[50,4],[74,4],[75,5],[109,5],[110,6],[159,6],[160,7],[229,7],[230,8]]) {
     META.mastery.vaelen = xp; ok.equal(masteryLevel('vaelen'), level);
   }
   const old = defaultMeta(); delete old.lineage;
   META = migrateMeta(old); ok.deepEqual(lineageBuild('vaelen'), {picks: [], capstone: null, respecs: 0}, 'old profiles start with no choices');
+  const oldVex = defaultMeta(); delete oldVex.lineage; oldVex.mastery.vex = 50;
+  META = migrateMeta(oldVex);
+  ok.equal(masteryXP('vex'), 50, 'old XP carries over');
+  ok.equal(masteryLevel('vex'), 4, 'an old profile keeps its level when a tree arrives');
+  ok.deepEqual(lineageBuild('vex').picks, [], 'an old profile gets no picks it did not earn');
+  META.mastery.vex = 75;
+  ok.equal(lineageCanPick('vex:A:0:0'), true, 'the old line earns its first pick at the next level');
   return true;
 };
 `);
 assert.equal(global.lineageTest(), true);
-console.log('PASS: Glasswright XP, tiers, locks, capstones, saves and per-line resets; other factions unchanged.');
+console.log('PASS: every faction\'s XP, tiers, locks, capstones, saves and per-line resets.');
