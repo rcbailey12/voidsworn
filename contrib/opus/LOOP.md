@@ -30,12 +30,15 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 7. Rewrite this file, set "Running: no", commit straight to main (this file and FINDINGS only, docs-only exception), push with timeout 90. Stop.
 8. One send_later check only when a job or a limit reset lands well before the next look. Never chain them.
 
-## Current state (2026-11-09 12:20 UTC)
+## Current state (2026-11-09 13:25 UTC)
 
-- Job 7 progression DONE: #30 MERGED (PR #306, capstone mastery; 144 mastery texts missing, placeholders, list in the PR). #305 plan in draft PR #307 (thread done; spot checks passed: data.js Glasswrights carry Oct 29 drafts, eclipse.md still mentions shields). Five questions for Ryan in contrib/opus/plans/tree_effects_questions.md; board picks are all A (rewrite the 49 first, playtest switch opens trees, Grax 3 skills to boarding, callout plus log plus recap, rename Vorn's Command Interdiction strike). When Ryan answers: record in FINDINGS, merge #307 with the rulings, release the Muse text pass (also the 144 mastery texts), then DeepSeek plumbing plus the Glasswrights pilot.
-- Waiting on Ryan: #271 round 2 (board C bold, PR #301); #209 round 3 (board Hy3 plus tall tower and long top guns, PR #303); #305 questions.
-- #281: run 2 also hit its cap (120 minutes, 49 steps): each Godot capture took 15 to 30 minutes, so no shots were committed and PR #309 is still not mergeable (fx code plus .import re-saves only). The board copied its stills off the PC (Downloads\voidsworn_test\vent281) and sent Ryan a sheet at 12:20 UTC: today, hot core R and B, cone B. Board pick: Cone B (tight forward flash with sparks; the hot core options are still the beige ball). Next run after Ryan picks: build only the picked treatment, one small capture pass, restore .import files.
-- Muse: no activity since 03:27 UTC (#296, #256 check of #286). Needs Ryan to bump Rey.
+Ryan ruled at 07:08 CST (R145): ship Hy3 and Ab3 both forward plus "looks like a basic submarine" (silhouette); UI C bold; #305 all A; gun smoke Cone B.
+
+- Ships #209 round 4: PC thread (trig_01RttH7W6U1LeVGnmmoGM6o4, fires 13:35 UTC), silhouette first (concept outline scored per cell), cells Ab4 and Hy4, branch opus/issue-209-r4. #287, #295, #303 stay open as the record until the route is ruled.
+- UI #271 build: cloud thread (trig_015TZrt6UWzVnT2ZHcwVXmTQ, 13:36 UTC), branch opus/issue-271-build; the board runs its PC captures from docs/shots/ui_redesign/build/CAPTURES.md. Rey checks the code (R132).
+- Tree effects #305: plan MERGED (PR #307, answers recorded). Job 0 Muse text pass #311 (49 rewrites, Grax boarding, Vorn rename, eclipse shields, 144 mastery texts). Job 1 #312 plumbing plus Glasswrights pilot on DeepSeek since 13:30 UTC (cap 120).
+- Gun smoke #281 run 3 on DeepSeek since 13:15 UTC: Cone B only, one capture pass. PR #309 updates in place.
+- Muse idle since 03:27 UTC (#296, #256 check of #286); Ryan asked to bump Rey.
 
 ## Earlier state (2026-11-09 06:50 UTC)
 
