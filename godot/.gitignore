@@ -1,3 +1,9 @@
 .godot/
 gen/
 *.import
+# Per-hull ship assets are built on the PC and copied in for captures; only the manifest, README, scripts and previews are tracked.
+assets/ships/*/
+!assets/ships/previews/
+!assets/ships/test/
+# Godot 4 regenerates .uid files; the repo does not track new ones.
+*.uid
