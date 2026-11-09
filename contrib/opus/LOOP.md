@@ -34,7 +34,7 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 
 - Tree effects: job 1 MERGED (PR #313: plumbing plus 21 Glasswrights skills, log line and panel count; the float callout and recap line are in code but not yet in a screenshot, check in job 2's shots). Job 2 Sunward Crusade #315 on DeepSeek since 15:33 UTC. Muse text pass #311 not started.
 - UI #271 build: draft PR #314 (cloud thread done). Board queued the PC captures 15:30 UTC (Downloads\voidsworn_test\opus271b\out, status.txt; the job's clone line was fixed to autocrlf=false). Rey asked for the outside check on #256.
-- Gun smoke #281: run 3 (PR #309) clean scope with clips, but the after still shows the big beige ball; not merged. Run 4 on DeepSeek since 15:32 UTC (puffs a third the size, tight hull-hit jet).
+- Gun smoke #281: run 3 (PR #309) and run 4 (Flash, since 15:32 UTC, smaller puffs) still use flat line sparks; Ryan (R146): "like Microsoft paint". Run 5 on DeepSeek V4 Pro since 15:27 UTC bakes muzzle and impact flipbooks with tools/blender/vfx (the #137 death route) and soft curved sparks, branch work/issue-281-deepseekpro. Run 4 is only a fallback.
 - Ships #209 round 4: PC thread running since 13:36 UTC, no branch yet.
 - Muse: no activity since Ryan's 07:51 CST bump (#311, #296, #256).
 
