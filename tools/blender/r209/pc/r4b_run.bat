@@ -1,6 +1,6 @@
 @echo off
 rem Issue 209 round 4, second PC run: the B0 cavity fix (black AO texels as misses) and the fore drum tails off the break line.
-rem Bake, render and export only; the Godot numbers come from the first run (out4), the geometry is the same within a millimetre.
+rem Bake, render and export only; the Godot numbers come from the first run (out4), the geometry differs only in two drum tails (0.008 of the ship length).
 rem Issue 209 round 4 on Ryan's PC (Opus worker thread): build and bake the two round 4 cells (Ab4, Hy4) on the 5080 from the round 4
 rem slab structure (armA4.py, silhouette first), render them with round 3's cameras and lights, export each with its hand LOD chain,
 rem and run the Godot cost bench with round 3's Ab3 and Hy3 beside them. One GPU job at a time, in sequence. Started by

@@ -35,8 +35,8 @@ def render(c):
         if os.path.exists(p): return Image.open(p).convert('RGB')
 
 p = cam['camera']
-parts = [head('Silhouette against the concept', 'The concept outline at its own camera (fitted to the concept image through B0: %.0f%% overlap).\n'
-              'Green: both. Red: concept only (missing). Yellow: cell only (extra). Score: overlap (intersection over union).' % (100 * cam['b0_iou']))]
+parts = [head('Silhouette against the concept', 'The concept outline at its own camera (fitted through B0, %.0f%% overlap).\n'
+              'Score: overlap, the shared area over the combined area.' % (100 * cam['b0_iou']))]
 legend = Image.new('RGB', (W, 44), BG); d = ImageDraw.Draw(legend); x = 16
 for col, t in (((40, 190, 70), 'both'), ((215, 45, 40), 'concept only (missing)'), ((235, 200, 40), 'cell only (extra)'), ((255, 140, 0), 'concept outline')):
     d.rectangle((x, 12, x + 22, 34), fill=col); d.text((x + 30, 10), t, font=F(20), fill=FG); x += 60 + int(d.textlength(t, font=F(20)))
@@ -50,7 +50,10 @@ for c in CELLS:
         a = np.asarray(r).copy(); a[edge] = (255, 140, 0); r = Image.fromarray(a).crop(box)
         h = round(ov.height * (W // 2 - 6) / ov.width); row = Image.new('RGB', (W, h + 6), BG)
         row.paste(fitw(ov, W // 2 - 6), (3, 3)); row.paste(fitw(r, W // 2 - 6), (W // 2 + 3, 3)); parts.append(row)
-    else: parts.append(fitw(ov, W))
+    else:   # no clay render (B0): the overlay beside the concept itself
+        cc = Image.open(CONCEPT).convert('RGBA'); bgc = Image.new('RGBA', cc.size, (52, 54, 60, 255)); bgc.alpha_composite(cc); r = bgc.convert('RGB').crop(box)
+        h = round(ov.height * (W // 2 - 6) / ov.width); row = Image.new('RGB', (W, h + 6), BG)
+        row.paste(fitw(ov, W // 2 - 6), (3, 3)); row.paste(fitw(r, W // 2 - 6), (W // 2 + 3, 3)); parts.append(row)
     parts.append(note(f"covers {s['concept_covered']:.1f}% of the concept outline; {s['cell_outside']:.1f}% of the cell lies outside it"))
 rows = [(c, S[c]) for c in CELLS if c in S]
 t = Image.new('RGB', (W, 60 + 40 * len(rows)), BG); d = ImageDraw.Draw(t)
