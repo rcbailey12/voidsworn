@@ -50,3 +50,7 @@ Standing steps unchanged: the board runs the PC captures (including the R148 out
 - The main-branch state behind the PR's claim that the one naming_lint_game residual hit predates it.
 
 Refs #256.
+
+## Addendum, Nov 9, 2026: identity pick recorded
+
+Ryan ruled in the main chat on Nov 9, 2026 (12:46 CST): the identity is **2 Lime Tactical** (Chakra Petch / Azeret Mono, black-olive, neon lime accent), which was also Opus's pick. The board can now convert glass_shell.gd (palette and boxes), the fonts, and ui_style.md sections 2 to 5 to the Lime Tactical identity and rerun the PC captures. The README's noted risk stands: lime against the friend green (the identity pushes friend to a cooler spring green; the fallback is mint-teal), so the captures should include a friend/foe readability pass.
