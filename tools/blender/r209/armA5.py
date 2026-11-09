@@ -57,14 +57,21 @@ HK = [
     (0.497, -.010, .050, .064, -.028, -.084, .050, -.104, .030, -.118),
 ]
 
+def _pchip(xs, ys, x):
+    """monotone cubic (Fritsch-Carlson) through the knots: a smooth hull with no creases at the knots and no overshoot"""
+    n = len(xs); h = [xs[i + 1] - xs[i] for i in range(n - 1)]; d = [(ys[i + 1] - ys[i]) / h[i] for i in range(n - 1)]
+    m = [d[0]] + [0.0] * (n - 2) + [d[-1]]
+    for i in range(1, n - 1):
+        if d[i - 1] * d[i] > 0:
+            w1, w2 = 2 * h[i] + h[i - 1], h[i] + 2 * h[i - 1]; m[i] = (w1 + w2) / (w1 / d[i - 1] + w2 / d[i])
+    i = max(0, min(n - 2, next((k for k in range(n - 1) if x <= xs[k + 1]), n - 2)))
+    t = (x - xs[i]) / h[i]; t2, t3 = t * t, t * t * t
+    return ((2 * t3 - 3 * t2 + 1) * ys[i] + (t3 - 2 * t2 + t) * h[i] * m[i] + (-2 * t3 + 3 * t2) * ys[i + 1] + (t3 - t2) * h[i] * m[i + 1])
+
 def knot(x):
-    """the hull's numbers at station x (linear between knots)"""
-    xs = [k[0] for k in HK]
-    if x <= xs[0]: return dict(zip(KEYS, HK[0][1:]))
-    if x >= xs[-1]: return dict(zip(KEYS, HK[-1][1:]))
-    for a, b in zip(HK, HK[1:]):
-        if a[0] <= x <= b[0]:
-            t = (x - a[0]) / (b[0] - a[0]); return {k: a[i + 1] + (b[i + 1] - a[i + 1]) * t for i, k in enumerate(KEYS)}
+    """the hull's numbers at station x (smooth monotone cubic through the knots)"""
+    xs = [k[0] for k in HK]; x = min(max(x, xs[0]), xs[-1])
+    return {k: _pchip(xs, [kk[i + 1] for kk in HK], x) for i, k in enumerate(KEYS)}
 
 def half(k):
     zt, Wd, Ws = k['zt'], k['Wd'], max(k['Ws'], k['Wd'])
@@ -78,8 +85,9 @@ def section(x):
 
 def stations():
     xs = set(round(k[0], 4) for k in HK)
-    xs |= set(round(x, 4) for x in np.arange(-.46, .49, .02))
-    return sorted(xs)
+    xs |= set(round(x, 4) for x in np.arange(-.46, .40, .01))
+    xs |= set(round(x, 4) for x in np.arange(.40, HK[-1][0], .004))   # dense at the nose: its plan is round, not faceted
+    return sorted(x for x in xs if HK[0][0] <= x <= HK[-1][0])
 
 def deck_z(x): return knot(x)['zt']
 def deck_w(x): return knot(x)['Wd']
@@ -155,18 +163,23 @@ def plates5(S):
     by = {}
     for o in S: by.setdefault(o['kind'], []).append(o)
     B = {k: C.bvh(v) for k, v in by.items()}; Pl = []; lo, hi = .0025, .0045
-    p = P
+    p = P; kb = knot(.30); km = knot(0.0); ka = knot(-.39)
+    zU = (kb['zs1'] + .005, kb['zt'] - .006)          # bow shoulder (chamfer from the deck edge to the slab side)
+    zS = (kb['zs2'] + .004, kb['zs1'] - .003)         # bow slab side
+    zT = (kb['zt2'] + .008, kb['zs2'] - .004)         # bow upper tuck
+    zH = (ka['zs2'] + .006, ka['zt'] - .008)          # aft hull side
+    zt1 = max(.026, km['zt'] + .003)                    # tier plates start above the midship deck
     for s in (1, -1):
         t = 'p' if s > 0 else 's'
         # bow block: the shoulder (deck edge down to the slab side), the slab side, the upper tuck
-        for k, (x0, x1) in enumerate(((.190, .272), (.264, .346), (.338, .414))):
-            Pl.append(armour(f'plU{t}{k}', B['core'], 'side', (x0, x1), (-.014, .012), s, off=hi if k % 2 else lo))
-        for k, (x0, x1) in enumerate(((.190, .300), (.292, .404), (.396, .446))):
-            Pl.append(armour(f'plS{t}{k}', B['core'], 'side', (x0, x1), (-.082, -.024), s, off=lo if k % 2 else hi))
-        for k, (x0, x1) in enumerate(((.190, .296), (.288, .392))):
-            Pl.append(armour(f'plT{t}{k}', B['core'], 'side', (x0, x1), (-.120, -.092), s, off=hi if k % 2 else lo))
+        for k, (x0, x1) in enumerate(((.216, .286), (.278, .346), (.338, .400))):
+            Pl.append(armour(f'plU{t}{k}', B['core'], 'side', (x0, x1), zU, s, off=hi if k % 2 else lo))
+        for k, (x0, x1) in enumerate(((.216, .306), (.298, .380), (.372, .424))):
+            Pl.append(armour(f'plS{t}{k}', B['core'], 'side', (x0, x1), zS, s, off=lo if k % 2 else hi))
+        for k, (x0, x1) in enumerate(((.216, .304), (.296, .380))):
+            Pl.append(armour(f'plT{t}{k}', B['core'], 'side', (x0, x1), zT, s, off=hi if k % 2 else lo))
         # bow deck strips beside the raised deck, and the deck ahead of it
-        for k, (x0, x1) in enumerate(((.190, .292), (.284, .384))):
+        for k, (x0, x1) in enumerate(((.216, .300), (.292, .384))):
             Pl.append(armour(f'pld{t}{k}', B['core'], 'top', (x0, x1), tuple(sorted((s * (p['gl_wb'] + .006), s * .098))), s, off=lo if k % 2 else hi))
         Pl.append(armour(f'pldn{t}', B['core'], 'top', (.418, .468), tuple(sorted((s * .004, s * .062))), s, off=lo))
         # raised deck top, split down the centreline
@@ -181,13 +194,13 @@ def plates5(S):
             Pl.append(armour(f'plml{t}{k}', B['module'], 'side', (x0, x1), (p['md_z'][0] + .012, -.050), s, off=hi if k % 2 else lo))
         # deckhouse tier, aft body and stern block sides
         for k, (x0, x1) in enumerate(((-.090, .040), (.032, .160))):
-            Pl.append(armour(f'plt{t}{k}', B['tier'], 'side', (x0, x1), (.026, p['t1_z'] - .006), s, off=lo if k % 2 else hi))
+            Pl.append(armour(f'plt{t}{k}', B['tier'], 'side', (x0, x1), (zt1, max(zt1 + .006, p['t1_z'] - .004)), s, off=lo if k % 2 else hi))
         for k, (x0, x1) in enumerate(((-.418, -.350), (-.358, -.272), (-.280, -.196), (-.204, -.132))):
             Pl.append(armour(f'pla{t}{k}', B['spine'], 'side', (x0, x1), (.026, p['ab_z'] - .016), s, off=hi if k % 2 else lo))
         Pl.append(armour(f'plst{t}', B['stern'], 'side', (-.470, -.432), (-.020, p['st_z'] - .006), s, off=lo))
         # aft hull side behind the cargo blocks
         for k, (x0, x1) in enumerate(((-.420, -.360), (-.366, -.304))):
-            Pl.append(armour(f'plh{t}{k}', B['core'], 'side', (x0, x1), (-.030, .018), s, off=lo if k % 2 else hi))
+            Pl.append(armour(f'plh{t}{k}', B['core'], 'side', (x0, x1), zH, s, off=lo if k % 2 else hi))
     return Pl
 
 # ------------------------------------------------------------------------------------------------ parts, seated by ray cast
