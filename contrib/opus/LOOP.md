@@ -30,14 +30,12 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 7. Rewrite this file, set "Running: no", commit straight to main (this file and FINDINGS only, docs-only exception), push with timeout 90. Stop.
 8. One send_later check only when a job or a limit reset lands well before the next look. Never chain them.
 
-## Current state (2026-11-09 07:35 UTC)
+## Current state (2026-11-09 09:10 UTC)
 
-- Progression: #27 MERGED (PR #302) and #29 MERGED (PR #304; trees for all six factions from contrib/muse/design/admiral_trees_2026_11, the finalized texts; faction_packages_2026_11 are first drafts, do not build from them). #30 (capstone mastery, last step) running on DeepSeek since 07:33 UTC. Board finding R143: no plan step makes tree skills work in battle; filed #305 (opus, blocked, plan first, Ryan answers scope questions before any build). Grax boarding restatement still open inside #305.
-- Ships: #209 round 3 in draft PR #303. Board pick, sent to Ryan with paint.jpg: Hy3 (hand hull plus generated casemates and drum racks) with the hand LOD chain, hand-built bow guns, plus the concept's tall bridge tower and long top guns for silhouette; then the real gate scene. Ab3 is the fallback. Waiting on Ryan. #287, #295, #303 merge together as the record once he rules.
-- UI: #271 round 2 (draft PR #301), board pick C Glass Shell bold, waiting on Ryan.
-- FX: #281 (vent puff options) running on DeepSeek since 07:36 UTC, GPU now free.
-- Muse: #296 (Crusade voice, filed 03:47 UTC) and #256 check of #286 (asked 02:50 UTC): no activity by 08:25 UTC; last Muse delivery was #292 at 03:27 UTC. Its watcher may need Ryan to bump Rey when he is up.
-- 08:25 UTC: #30 and #281 both still running on the PC (no PR yet). Cloud thread for #305 PLAN ONLY (tree_effects_plan.md plus Ryan scope questions, branch opus/issue-305) fires 08:30 UTC.
+- Job 7 progression DONE: #30 MERGED (PR #306, capstone mastery; 144 mastery texts missing, placeholders, list in the PR). #305 plan in draft PR #307 (thread done; spot checks passed: data.js Glasswrights carry Oct 29 drafts, eclipse.md still mentions shields). Five questions for Ryan in contrib/opus/plans/tree_effects_questions.md; board picks are all A (rewrite the 49 first, playtest switch opens trees, Grax 3 skills to boarding, callout plus log plus recap, rename Vorn's Command Interdiction strike). When Ryan answers: record in FINDINGS, merge #307 with the rulings, release the Muse text pass (also the 144 mastery texts), then DeepSeek plumbing plus the Glasswrights pilot.
+- Waiting on Ryan: #271 round 2 (board C bold, PR #301); #209 round 3 (board Hy3 plus tall tower and long top guns, PR #303); #305 questions.
+- Running: #281 vent puff options (DeepSeek on the PC since 07:36 UTC).
+- Muse: no activity since 03:27 UTC (#296, #256 check of #286). Needs Ryan to bump Rey.
 
 ## Earlier state (2026-11-09 06:50 UTC)
 
