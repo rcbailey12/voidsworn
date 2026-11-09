@@ -1827,18 +1827,18 @@ const LINEAGE_TREES={
               "d": "ships that end their burn movement closer to the largest enemy than they started gain +15% damage this round."
             },
             {
-              "n": "Ram First",
-              "d": "a ship that moves at least 4 hexes during the burn may ram with no accuracy penalty."
+              "n": "First Over the Rail",
+              "d": "a ship that moves at least 4 hexes during the burn boards at +25% strength."
             }
           ],
           [
             {
               "n": "The Pack Closes",
-              "d": "during the burn, your ships may pass through hexes held by friendly ships."
+              "d": "during the burn, a ship that ends its movement next to a friendly ship gains +10 aim this round."
             },
             {
-              "n": "Ram Rush",
-              "d": "a ship that ends its burn movement adjacent to an enemy may ram it immediately instead of firing this round."
+              "n": "Rush the Rail",
+              "d": "a ship that ends its burn movement adjacent to an enemy may board it even if it has already fired this round."
             }
           ],
           [
@@ -1863,7 +1863,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Loose Pack, Wide Lanes",
-              "d": "your ships never block each other's movement or firing lanes."
+              "d": "a ship gains +1 movement on a move that ends with no friendly ship within 2 hexes."
             }
           ]
         ]
@@ -1887,11 +1887,11 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "Burn Until the Hulls Meet",
-        "d": "Full burn movement and accuracy protection carry into next round movement phase."
+        "d": "Full burn movement, turns and accuracy protection carry into the next round."
       },
       {
         "n": "Run of the Warlord",
-        "d": "when Full burn is declared, the flagship may move twice, and may ram after each move."
+        "d": "when Full burn is declared, the flagship may move twice, and may board after each move."
       }
     ]
   },
@@ -1907,7 +1907,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Torpedoes in the Dark",
-              "d": "torpedoes fired this round are screened at -20 effect, as if the firing ships were never seen."
+              "d": "torpedoes fired this round are intercepted at half the usual chance: enemy flak and screen wings roll at half effect."
             }
           ],
           [
@@ -1923,7 +1923,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "The Smile Before the Cut",
-              "d": "during the Command round, ships that begin their activation behind an enemy act before that enemy."
+              "d": "each round during the Command, the first of your ships to activate gains +20% damage on its first shot."
             },
             {
               "n": "Every Knife at Once",
@@ -1942,7 +1942,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Loose Pack, Wide Lanes",
-              "d": "your ships never block each other's movement or firing lanes."
+              "d": "a ship gains +1 movement on a move that ends with no friendly ship within 2 hexes."
             }
           ]
         ]
@@ -1986,13 +1986,13 @@ const LINEAGE_TREES={
             },
             {
               "n": "Hulk Holds More",
-              "d": "one of your largest ships may launch an extra wing during the Command even though it is not a carrier, using its held wing space."
+              "d": "choose one of your largest ships that is not a carrier; it launches one extra wing during the Command, from the Hulk's spare racks."
             }
           ],
           [
             {
               "n": "Re-Tasked Mid-Flight",
-              "d": "after the first strike resolves, each extra wing may switch to a new target for its strike again."
+              "d": "an extra wing that strikes a target no other wing struck this round gains +20% damage."
             },
             {
               "n": "Launched from the Wreck Line",
@@ -2002,11 +2002,11 @@ const LINEAGE_TREES={
           [
             {
               "n": "The Whole Yard Flies",
-              "d": "every ship with any hangar space launches an extra wing during the Command, not only carriers."
+              "d": "a launch ship that launches all its wings this Command launches one more extra wing."
             },
             {
               "n": "Wings Come Back Screaming",
-              "d": "the strike again keeps the full +50% bonus even when it hits a new target across the field."
+              "d": "an extra wing's strike again gains +15% damage when it hits a target already hit this round."
             }
           ]
         ]
@@ -2021,7 +2021,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Loose Pack, Wide Lanes",
-              "d": "your ships never block each other's movement or firing lanes."
+              "d": "a ship gains +1 movement on a move that ends with no friendly ship within 2 hexes."
             }
           ]
         ]
@@ -2045,11 +2045,11 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "Swarm Over the Scrap Field",
-        "d": "Release the swarm launches the extra wings twice, once at the start of your turn and once at its end."
+        "d": "Release the swarm launches the extra wings twice: once when the Command is used, and once after your last activation this round."
       },
       {
         "n": "Old Mott Private Wing",
-        "d": "choose one carrier; its extra wing stays launched for the rest of the battle and strikes at half damage at the start of each round."
+        "d": "choose one launch ship; its extra wing stays for the battle and gains +20% damage on its first strike each round."
       }
     ]
   },
@@ -2065,7 +2065,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Patch Over the Guns",
-              "d": "each repaired ship chooses where its repair lands first: weapon sections or engine sections."
+              "d": "a ship whose weapons section is repaired by the Command gains +10 aim this round."
             }
           ],
           [
@@ -2075,7 +2075,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Welded While Fighting",
-              "d": "a section patched by the Command works at full effect in the same round it is patched."
+              "d": "a ship repaired by the Command may fire one weapon at half damage at once."
             }
           ],
           [
@@ -2100,7 +2100,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Loose Pack, Wide Lanes",
-              "d": "your ships never block each other's movement or firing lanes."
+              "d": "a ship gains +1 movement on a move that ends with no friendly ship within 2 hexes."
             }
           ]
         ]
@@ -2128,7 +2128,7 @@ const LINEAGE_TREES={
       },
       {
         "n": "Nothing Stays Broken",
-        "d": "Patch and weld may be declared at the start of the enemy turn, landing before the first hit that would cripple one of your ships that turn."
+        "d": "the first time one of your ships would lose a section this battle, that section is not broken and is restored to full."
       }
     ]
   },
@@ -2874,7 +2874,44 @@ const TREE_FX={
   "matriarch:B:0:1":{k:"broodReserve"},"matriarch:C:0:0":{k:"firstThroat"},"matriarch:C:0:1":{k:"throatDeep",n:10},
   "razormaw:B:0:1":{k:"broodReserve"},"razormaw:C:0:0":{k:"firstThroat"},"razormaw:C:0:1":{k:"throatDeep",n:10},
   "mending:B:0:1":{k:"broodReserve"},"mending:C:0:0":{k:"firstThroat"},"mending:C:0:1":{k:"throatDeep",n:10},
-  "voice:B:0:1":{k:"broodReserve"},"voice:C:0:0":{k:"firstThroat"},"voice:C:0:1":{k:"throatDeep",n:10}
+  "voice:B:0:1":{k:"broodReserve"},"voice:C:0:0":{k:"firstThroat"},"voice:C:0:1":{k:"throatDeep",n:10},
+  // The Ashfall Hullbreakers (issue #305 job 5). All 36 rows, including the rewritten x and c rows (Muse PR 324).
+  "grax:A:0:0":{k:"runBigger",n:.15},
+  "grax:A:0:1":{k:"railBoarding",n:.25},
+  "grax:A:1:0":{k:"packCloses",n:10},
+  "grax:A:1:1":{k:"rushRail"},
+  "grax:A:2:0":{k:"allScars",n:2},
+  "grax:A:2:1":{k:"mawOpens",n:.3},
+  "grax:cap:0":{k:"burnCarry"},
+  "grax:cap:1":{k:"warlordRun"},
+  "sable:A:0:0":{k:"knifeBack",n:.15},
+  "sable:A:0:1":{k:"darkTorps"},
+  "sable:A:1:0":{k:"cutTurn"},
+  "sable:A:1:1":{k:"secondKnife"},
+  "sable:A:2:0":{k:"smileCut",n:.2},
+  "sable:A:2:1":{k:"everyKnife",n:20},
+  "sable:cap:0":{k:"darkKnives"},
+  "sable:cap:1":{k:"cutFeeds"},
+  "mott:A:0:0":{k:"patchedWing",n:.25},
+  "mott:A:0:1":{k:"hulkMore"},
+  "mott:A:1:0":{k:"reTasked",n:.2},
+  "mott:A:1:1":{k:"wreckLine",n:.15},
+  "mott:A:2:0":{k:"wholeYard"},
+  "mott:A:2:1":{k:"screaming",n:.15},
+  "mott:cap:0":{k:"swarmScrap"},
+  "mott:cap:1":{k:"privateWing",n:.2},
+  "vesh:A:0:0":{k:"weldMatters"},
+  "vesh:A:0:1":{k:"patchGuns",n:10},
+  "vesh:A:1:0":{k:"scrapFront"},
+  "vesh:A:1:1":{k:"weldedFight"},
+  "vesh:A:2:0":{k:"doubleBolted",n:.2},
+  "vesh:A:2:1":{k:"packBites",n:.15},
+  "vesh:cap:0":{k:"weldedWhole"},
+  "vesh:cap:1":{k:"nothingBroken"},
+  "grax:B:0:0":{k:"preyScent",n:10},"grax:B:0:1":{k:"loosePack"},"grax:C:0:0":{k:"firstScar"},"grax:C:0:1":{k:"trophyStandard"},
+  "sable:B:0:0":{k:"preyScent",n:10},"sable:B:0:1":{k:"loosePack"},"sable:C:0:0":{k:"firstScar"},"sable:C:0:1":{k:"trophyStandard"},
+  "mott:B:0:0":{k:"preyScent",n:10},"mott:B:0:1":{k:"loosePack"},"mott:C:0:0":{k:"firstScar"},"mott:C:0:1":{k:"trophyStandard"},
+  "vesh:B:0:0":{k:"preyScent",n:10},"vesh:B:0:1":{k:"loosePack"},"vesh:C:0:0":{k:"firstScar"},"vesh:C:0:1":{k:"trophyStandard"}
 };
 // Patron favour: grows with every boon you take from a patron
 const FAVOUR_TIERS=[{at:0,n:'Listening'},{at:4,n:'Partial sync',d:'Its protocols are rare more often.'},{at:12,n:'Synced',d:'If it is in range of your run, you start with one of its protocols.'},{at:25,n:'Full sync',d:'Its protocols are never common.'}];
