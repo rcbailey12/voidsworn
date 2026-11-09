@@ -36,7 +36,7 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 - Muse Crusade voice MERGED (PR #328, flee pool empty like Eclipse, beh.noFlee). Wiring the voidsworn block into data.js NEM_VOICE is a small DeepSeek job after the tree jobs.
 - UI #271: last pass done 20:12 UTC (Rey's four conditions, "Likely kill." removed). PC captures out_final queued 20:30 UTC; check ui_check, send Ryan one shot, merge PR #314.
 - Gun smoke #281: run 6 (V4 Pro) since 19:36 UTC: stray puffs, distance check, 1.5x size.
-- Ships #209: Ab5 forward (R150). Ryan's three scope questions (order, parts kit, Ab5 next) asked again 19:40 UTC, unanswered.
+- Ships #209 (R151): recipe first; a parts kit per faction (only invisible plumbing shared; Hullbreakers a scavenged mix); Ab5 weapons and paint first, "ensure it actually looks good". Round 6 PC thread trig_01UHN6sJNKxooyXptyaG5NH7 (20:58 UTC): Hullbreaker kit weapons to concept level, concept paint, docs/ship_pipeline/RECIPE.md plus one .bat per stage, tools/blender/kits/<faction>/, branch opus/issue-209-r6. Ryan got a phone page of every Nov 9 skill text (artifact 250c3767, 74 rewrites plus fixes plus mastery) for his one-sitting read.
 
 ## Earlier state (2026-11-09 06:50 UTC)
 
