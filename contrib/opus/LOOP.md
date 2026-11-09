@@ -8,7 +8,7 @@
 
 Running: no
 Running since (UTC): 2026-11-08 12:35
-Last run finished (UTC): 2026-11-09 21:20
+Last run finished (UTC): 2026-11-09 23:15
 
 If "Running: no" and the start time is under 90 minutes old, another run is working: stop without changes. If it is older, the last run died: take over and say so in the log.
 
@@ -34,15 +34,14 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 
 The board moved to a new thread on Fable 5.2 (R152). The Opus board thread stood down. Its last check-in (scheduled task "Board check: 281 run 6, Hullbreakers, ship r6", 21:40 UTC, bound to the old session) was still switched on at 21:15 UTC and the new thread is not allowed to switch it off: if it wakes the old thread, that thread changes nothing (PR #327 is on hold, R153). The new thread checks the board every 45 minutes (Ryan, Nov 9 15:05 CST) with one send_later per check.
 
-## Current state (2026-11-09 22:10 UTC)
+## Current state (2026-11-09 23:15 UTC)
 
-- Board thread (Fable 5.2) took over at 21:06 UTC. Ryan attached Downloads\voidsworn_test at 21:28 UTC (C:\Users\rcbai\Downloads\voidsworn_test), so the board can queue PC runs and read run folders.
-- Gun smoke #281 (PR #327): HELD (R153). Run 7 (V4 Pro) RUNNING since 21:30 UTC (WORKHORSE_PRO_281h.bat through the queue; run folder work217\issue-281-deepseekpro\20261109_153014, cap 120 minutes). Run 6 made no new captures (no godot/gen hulls in its checkout; the clips on the branch are run 5's) and guessed the afterglow; the board traced the stray puffs to the braking thruster puffs (fx_ship.gd _rcs, bounding box corners). Run 7 copies godot\gen and godot\assets\ships from run 5's checkout first, proves the cause, fixes it, recaptures. When it lands: look at after_close frames 28 to 38 before anything else.
-- Tree effects #305: job 5 Hullbreakers FULL tree (#329, PR #331, Flash, 65 minutes, $0.73) reviewed 22:05 UTC by diff plus sweep: sound except three rows that do not match their final text (Nothing Stays Broken saves once per ship, text says once per battle; Second Knife sets the reload to 0, text says one turn sooner; Swarm Over the Scrap Field launches both waves at Command time, text puts the second after the last activation). Run 2 RUNNING since 22:05 UTC (WORKHORSE_FLASH_329b.bat, run folder work217\issue-329-deepseek\20261109_160519, cap 90 minutes, brief on #329). When it lands: check the three rows and their new checks, merge, pin audit pass 1 to that merge commit and launch it, then release job 6 Hegemony full tree. Next one at a time after that: job 7 the x rows of Glasswrights, Crusade, Eclipse, Chorus plus their final texts into data.js; job 8 mastery level effects; then the balance pass (carry the two notes on PR #331: First Scar is automatic, Smile goes to the first ship to fire). Ryan still owes his one-sitting read of text_pass_nov9.md (phone page, artifact 250c3767).
-- Ships #209 round 6: Opus thread trig_01UHN6sJNKxooyXptyaG5NH7 since 20:58 UTC, branch opus/issue-209-r6 (R151: recipe, Hullbreaker kit weapons, concept paint). WORKING (Ryan's screenshots, 22:30 UTC): it reaches the PC, opus209\out6 exists, sheets6.py is written, and it is waiting on its PC bake behind a GPU-idle wait it added. Not stuck. A thread's PENDING run status and an empty folder list do not mean it is blocked.
-- Outside audit (R154, Ryan Nov 9 15:25 CST): three passes by fresh Fable 5.2 sessions; the Board launches, reviews with verdicts and merges. Plan: pass 1 (code health) pinned to main right after #329 merges; pass 2 (graphics and effects) on the PC after ship round 6 and gun smoke run 7 land; pass 3 (issues) after both are merged. Give the auditors symptoms only, never causes.
-- HANDOFF PR #330 MERGED 21:24 UTC (section 0 for Nov 9 afternoon, R152 seat, R153 hold, AGENTS.md seat map: Board row is Fable 5.2). Next 45-minute check is set for about 22:55 UTC.
-- Still to do when no workhorse run is active and the PC folder is attached: copy tools/pc/work_issue.bat to work217\tools (PR #320 model id).
+- Board thread is Fable 5.2 (R152); the PC folder C:\Users\rcbai\Downloads\voidsworn_test is attached. Checks every 45 minutes by send_later.
+- Tree effects #305: job 5 Hullbreakers MERGED 22:58 UTC (PR #331, da01a7a; Flash, two runs, $0.94 total; run 2 put three rows right and added behaviour checks). Job 6 Hegemony full tree is #332, RUNNING on DeepSeek Flash since 23:00 UTC (WORKHORSE_FLASH_332.bat, cap 120 minutes); its brief carries the job 5 lesson (match the text word for word on counts, limits and timing, with a behaviour check for each such row). Next one at a time: job 7 the x rows of Glasswrights, Crusade, Eclipse, Chorus plus their final texts into data.js; job 8 mastery level effects; then the balance pass. Notes for the balance pass from PR #331: The Flagship Takes the First Scar is automatic (text says "may"); The Smile Before the Cut goes to the first ship to fire (text says first to activate); Swarm Over the Scrap Field's second launch arrives at the next round start (text says after the last activation this round). Ryan still owes his one-sitting read of text_pass_nov9.md (phone page, artifact 250c3767).
+- Gun smoke #281: MERGED 23:12 UTC (PR #327, 8bfc341; V4 Pro runs 5 to 7, about $2.80). Run 7 proved the cause (STRAY_FAIL before, none after), put the braking thruster puffs on the real plating and reshot; the board checked after_close frame by frame. PR #309 shut, #281 closed. Follow-up #333 (opus, blocked until the GPU is free): a sheet of the other effects the PR changed and nobody has seen (las, prism, launch, shield torp, beam, bile, gauss, crit, afterglow). Ryan has the before and after image; he has not yet seen the 1.5x size in motion (clips in docs/shots/vent_fx_2026_11/clips).
+- Outside audit (R154): pass 1 (code health) LAUNCHED 23:05 UTC, pinned to da01a7a, as a fresh Fable 5.2 high-effort helper of the Board thread working in /home/claude/audit_pass1 (symptoms only). It delivers contrib/claude_fable/reviews/audit_pass1_code_health_2026_11.md on branch audit/pass1-code-health and opens one PR. When it lands: check every finding against the repo, write a verdict next to each (confirmed, wrong, cannot tell), merge. Pass 2 (graphics and effects) needs the PC with a free GPU: launch after ship round 6 lands; ask Ryan for the GPU stretch then. Pass 3 after both are merged and ChatGPT or Grok has poked at the confirmed list.
+- Ships #209 round 6: Opus thread since 20:58 UTC, branch opus/issue-209-r6. Working (Ryan's screenshots 22:30 UTC): opus209\out6 exists, it waits on its PC bake behind a GPU-idle wait. No branch yet at 23:10 UTC.
+- PC runner copy swapped 23:00 UTC: work217\tools\work_issue.bat now matches the repo (PR #320 model id). DeepSeek balance about $4.00; tell Ryan when it drops under $2.
 - Muse Crusade voice (PR #328 merged): wiring the voidsworn block into data.js NEM_VOICE is a small DeepSeek job after the tree jobs.
 - UI: battle screen merged (PR #314). Next, to propose to Ryan before starting (big): roll Lime Tactical (contrib/opus/briefs/ui_style.md) out to the title, campaign map, end screen with the #92 debrief, and menus.
 
@@ -116,7 +115,7 @@ Coding seat queue (released one at a time to the workhorse once #217 picks a win
 
 - #48 Glasswright design (contrib/muse/design/glasswright_species_2026_11/design.md): his read of the design text; Brin's pronoun (one word); close faction package question 2 on the design's youth-to-old gradient (yes or no).
 - Nov 9 21:30 UTC: the old thread's 21:40 UTC check-in is paused and the PC folder is attached (both done by Ryan).
-- Outside audit (R154): Ryan to OK the launch plan; pass 2 needs a GPU window on the PC.
+- Outside audit (R154): pass 2 needs a free GPU stretch on the PC; ask when ship round 6 has landed.
 - #221: OK to start a PC thread for the per-ship CPU trim (not urgent; the scene sits at 6.0 ms of the 12.5 ms gate).
 - S15 sound listen pass: one sitting, best once the #211 probe clips exist.
 - Round 7 pick and station look: when #198 and #199 land.
@@ -170,6 +169,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-09 23:15 UTC board thread (Fable 5.2): merged PR #331 (Hullbreakers tree, after run 2) and PR #327 (gun smoke, after run 7; stray puffs proved and removed). Shut #309. Filed #332 (Hegemony tree, started on Flash) and #333 (unseen weapon looks). Launched audit pass 1 pinned to da01a7a. Swapped the PC runner copy.
 - 2026-11-09 22:10 UTC board thread (Fable 5.2): PC folder attached 21:28; gun smoke run 7 started 21:30 (run 6 had made no captures). Reviewed PR #331 (Hullbreakers tree): three rows off their text, run 2 started 22:05. Outside audit ruled (R154), launch plan sent. Ship round 6 thread shows no PC output yet (watch).
 - 2026-11-09 21:20 UTC board thread (Fable 5.2, first run): took over (R152). Reviewed #281 run 6 (PR #327) by diff and clips: held, stray puffs traced to _rcs (R153), run 7 brief written. #329 and #209 round 6 still running, no PRs. HANDOFF PR #330 updated (seat, hold, AGENTS seat map). No PC folder in this thread yet.
 - 2026-11-09 04:05 UTC board thread: merged #280 (#122), #283 (#264 CI), #285 and #288 (Muse), #294 (#282). Ryan judged #209 rounds 1 and 2 and the UI concepts and mockups (R140 to R142). Started #209 rounds 2 and 3, #271 mockups, #24 on DeepSeek; filed #292, #296.
