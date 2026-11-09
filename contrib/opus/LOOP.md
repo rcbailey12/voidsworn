@@ -40,6 +40,7 @@ The board moved to a new thread on Fable 5.2 (R152). The Opus board thread stood
 - Gun smoke #281 (PR #327): run 6 reviewed, HELD (R153). 1.5x size is in; the stray puffs are still in its clips and are the hit reaction's braking thruster puffs (fx_ship.gd _rcs, bounding box corners), not weapon gas. Run 7 brief is on #281 (V4 Pro, branch work/issue-281-deepseekpro). NOT STARTED: needs the PC folder. Start it when the folder is attached and the GPU is not in a heavy #209 bake.
 - Tree effects #305: job 5 Hullbreakers FULL tree (#329) on DeepSeek since 20:40 UTC, cap 120 minutes, no branch yet at 21:10 UTC. Next one at a time: job 6 Hegemony full tree; job 7 the x rows of Glasswrights, Crusade, Eclipse, Chorus plus their final texts into data.js; job 8 mastery level effects; then the balance pass. Ryan still owes his one-sitting read of text_pass_nov9.md (phone page, artifact 250c3767).
 - Ships #209 round 6: Opus PC thread trig_01UHN6sJNKxooyXptyaG5NH7 since 20:58 UTC, branch opus/issue-209-r6, no branch yet at 21:10 UTC (R151: recipe, Hullbreaker kit weapons, concept paint).
+- Outside audit (R154, Ryan Nov 9 15:25 CST): three passes by fresh Fable 5.2 sessions; the Board launches, reviews with verdicts and merges. Plan: pass 1 (code health) pinned to main right after #329 merges; pass 2 (graphics and effects) on the PC after ship round 6 and gun smoke run 7 land; pass 3 (issues) after both are merged. Give the auditors symptoms only, never causes.
 - HANDOFF PR #330 MERGED 21:24 UTC (section 0 for Nov 9 afternoon, R152 seat, R153 hold, AGENTS.md seat map: Board row is Fable 5.2). Next 45-minute check is set for 22:02 UTC.
 - Still to do when no workhorse run is active and the PC folder is attached: copy tools/pc/work_issue.bat to work217\tools (PR #320 model id).
 - Muse Crusade voice (PR #328 merged): wiring the voidsworn block into data.js NEM_VOICE is a small DeepSeek job after the tree jobs.
@@ -114,7 +115,8 @@ Coding seat queue (released one at a time to the workhorse once #217 picks a win
 - UI redesign (R137): pick one of Muse's three warship-console directions when #270 lands; then #271's battle screen review round.
 
 - #48 Glasswright design (contrib/muse/design/glasswright_species_2026_11/design.md): his read of the design text; Brin's pronoun (one word); close faction package question 2 on the design's youth-to-old gradient (yes or no).
-- Nov 9 21:20 UTC: add Downloads\voidsworn_test to the new Board thread (Add folder button in the desktop app); switch off the old thread's 21:40 UTC check-in if it has not fired.
+- Nov 9 21:30 UTC: the old thread's 21:40 UTC check-in is paused (Ryan, screenshot). Downloads\voidsworn_test still does not show as attached to the Board thread (get_device_info connectedFolders is empty at 21:26 UTC); asked again.
+- Outside audit (R154): Ryan to OK the launch plan; pass 2 needs a GPU window on the PC.
 - #221: OK to start a PC thread for the per-ship CPU trim (not urgent; the scene sits at 6.0 ms of the 12.5 ms gate).
 - S15 sound listen pass: one sitting, best once the #211 probe clips exist.
 - Round 7 pick and station look: when #198 and #199 land.
