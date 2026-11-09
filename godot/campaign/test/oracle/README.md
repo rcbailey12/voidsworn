@@ -1,5 +1,11 @@
 # The campaign oracle, pinned
 
+Nov 8 2026, issue 24: re-copied campaign_run.js and campaign_meta.js for the
+Nemesis teaching loop (the lost meeting's lesson recorded per commander with
+its taught flag, the run debrief's Nemesis lesson row, and the map and meeting
+line that name the once-per-sector meeting as certain). Re-exported campaign
+tables; their checksums are unchanged.
+
 Nov 8 2026, issue 246: re-copied core.js for the loss back-fill. A profile
 saved before the Heat gate has no losses count; migrateMeta counts its
 run_end entries that were neither a win nor abandoned, writes the count only

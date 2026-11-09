@@ -1458,7 +1458,7 @@ func inheritanceSummary(run) -> Dictionary:
 		var total = favourOf(id); var tier = favourTier(id); var next = FAVOUR_TIERS[tier + 1] if tier + 1 < FAVOUR_TIERS.size() else null
 		cores.append({"id": id, "before": before, "gain": total - float(before), "total": total, "tier": tier, "next": next["at"] if next != null else null,
 			"remaining": float(next["at"]) - total if next != null else 0, "tierUp": total >= float(FAVOUR_TIERS[tier]["at"]) and float(before) < float(FAVOUR_TIERS[tier]["at"])})
-	return {"balance": balance, "affordable": affordable, "flown": flown, "shadow": shadow, "cores": cores}
+	return {"balance": balance, "affordable": affordable, "flown": flown, "shadow": shadow, "cores": cores, "nem": nemDebrief(run)}
 func endActions(run, nf) -> Array:
 	var acts = []
 	A(acts, "progTab", "legacy"); A(acts, "progTab", "variants")
@@ -2020,6 +2020,14 @@ func nemNodeIs(n) -> bool:
 	var N = nemActive()
 	if not jt(N) or jt(N.get("dead")) or float(N["met"]) >= float(RUN["sector"]) or n == null or (n["type"] != "battle" and n["type"] != "elite"): return false
 	return jt(RUN.get("nemStrike")) or float(n["col"]) >= float(RUN["map"]["cols"].size() - 3)
+# Job 7 step 7 (R85 Q5): the map tag and the one sentence that name the meeting as a certainty, not a chance.
+func nemNodeTag(n) -> String: return "Nemesis meeting" if nemNodeIs(n) else ""
+func nemMeetingLine(N0 = null) -> String:
+	var N = N0 if jt(N0) else nemActive()
+	if not jt(N): return ""
+	if jt(N.get("dead")): return nemFull(N) + " is dead. No hunter will meet you this sector."
+	if float(N["met"]) >= float(RUN["sector"]): return nemSay("You have met " + nemFull(N) + " this sector. That meeting is done; the next sector brings the next hunter.", N)
+	return nemSay("You will meet " + nemFull(N) + " this sector. One meeting every sector is certain, and it comes at the latest before the rest stop. The clock is only an accelerant: every fight you win moves it at his pace, and a full clock brings the meeting sooner, never later.", N)
 func nemBattleCfg() -> Dictionary:
 	var N = ensureNemesis(); var full = nemFull(); var tp = str(N["title"]) + " "; var i = full.find(tp)
 	var nm = (full.substr(0, i) + full.substr(i + tp.length())) if i >= 0 else full
@@ -2103,13 +2111,13 @@ func nemLessonText(N, w) -> String:
 	var V = NEM_VOICE.get(N.get("fac")) if jt(N) else null
 	if V is Dictionary and V.get("lessons") is Dictionary and jt(V["lessons"].get(w)): return nemSay(V["lessons"][w], N)
 	return (str(NEM_WEAK[w]["n"]) + ": " + str(NEM_WEAK[w]["d"])) if (w != "strike" and NEM_WEAK.has(w)) else ""
-func nemLessonAdd(N, w) -> String:
+func nemLessonAdd(N, w, taught: bool = false) -> String:
 	if not (N.get("lessons") is Array): N["lessons"] = []
 	for l in N["lessons"]:
 		if l is Dictionary and l.get("w") == w: return ""
 	var t = nemLessonText(N, w)
 	if t == "": return ""
-	N["lessons"].append({"w": w, "t": t, "sector": RUN["sector"]}); return t
+	N["lessons"].append({"w": w, "t": t, "sector": RUN["sector"], "taught": taught}); return t
 # each survival adds a scar (a portrait overlay keyed by how he was hurt) and a new epithet
 func nemScar(cause) -> void:
 	var N = nemActive(); var F = NEM_FAC[N["fac"]]
@@ -2172,11 +2180,11 @@ func nemAfterBattle(result: String, flagDead: bool, o: Dictionary = {}) -> Array
 			var names = ws.map(func(k): return str(NEM_WEAK[k]["n"]))
 			out.append("Your analysts piece together the engagement. " + ("Weaknesses" if ws.size() > 1 else "Weakness") + " found: " + ", ".join(PackedStringArray(names)) + ".")
 			for k in ws:
-				var lt = nemLessonAdd(N, k)
+				var lt = nemLessonAdd(N, k, true)
 				if lt != "": out.append("Lesson: " + lt)
 		else:
 			out.append("The engagement confirms what your analysts already held: the file on " + str(N["name"]) + " is complete.")
-			var ls = nemLessonAdd(N, "strike")
+			var ls = nemLessonAdd(N, "strike", true)
 			if ls != "": out.append("Lesson: " + ls)
 	if result == "win":
 		var fw = nemFoundMerge(o.get("found"))
@@ -2275,6 +2283,28 @@ func nemPanelData() -> Variant:
 			"lessons": (E["lessons"] if E.get("lessons") is Array else []).map(func(l): return l["t"])})
 	return {"fac": N["fac"], "name": nemFull(N), "scars": float(z0(N.get("scars"))), "back": (nemSay("He is back: you met him in sector " + _nem_secs(back) + ".", N) if back.size() > 0 else ""),
 		"lessons": (N["lessons"] if N.get("lessons") is Array else []).map(func(l): return l["t"]), "compound": nemCompound(N), "escapes": float(z0(RUN.get("nemEscapes"))), "earlier": earlier}
+# Job 7 step 7 (R85 Q3): the run debrief's Nemesis lesson row, keyed per commander. It reads the lesson log the lost meeting
+# wrote on the commander who fought it; a missing taught flag is an old save from before this step and reads as taught,
+# because every lesson the game records comes from a meeting that went against the player.
+func nemDebrief(run0 = null) -> Dictionary:
+	var run = run0 if jt(run0) else RUN
+	var reg = run.get("nems") if run is Dictionary and run.get("nems") is Dictionary else {}
+	var rows = []; var lessons = []; var met = 0
+	for fac in reg.keys():
+		var N = reg[fac]
+		if not (N is Dictionary) or not jt(N.get("persona")): continue
+		if float(z0(N.get("met"))) > 0.0 or float(z0(N.get("beaten"))) > 0.0 or float(z0(N.get("scars"))) > 0.0 or jt(N.get("dead")): met += 1
+		var ls = N["lessons"] if N.get("lessons") is Array else []
+		if ls.is_empty(): continue
+		var nm = nemFull(N); var ti = N.get("title"); var row = {"fac": fac, "name": nm, "title": ti, "lessons": []}
+		for l in ls:
+			var taught = not (l is Dictionary) or not l.has("taught") or jt(l.get("taught"))
+			var txt = str(l.get("t")) if l is Dictionary and l.get("t") != null else ""
+			var e = {"w": l.get("w") if l is Dictionary else null, "text": txt, "sector": l.get("sector") if l is Dictionary else null, "taught": taught}
+			row["lessons"].append(e)
+			lessons.append({"fac": fac, "name": nm, "title": ti, "w": e["w"], "text": txt, "sector": e["sector"], "taught": taught})
+		rows.append(row)
+	return {"met": met, "lessons": lessons, "rows": rows}
 # R41: finishing a faction's story arc (its Nemesis's last fight, beat 3) unlocks that faction's arc hull variant for every later run
 func arcComplete(fac) -> String:
 	var id = ARC_VARIANT.get(fac) if fac != null else null

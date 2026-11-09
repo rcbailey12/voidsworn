@@ -705,7 +705,7 @@ func _draw_overlay() -> void:
 				var ps = 38.0 * s; var pr = Rect2(base.x - 42.0 * s - ps, y - 12.0 * s, ps, ps)
 				overlay.draw_rect(pr.grow(2.0 * s), Color(0.02, 0.02, 0.03, 0.9)); overlay.draw_texture_rect(nt, pr, false)
 				overlay.draw_rect(pr.grow(2.0 * s), Color("#ff6b5a"), false, 1.5 * s)
-			_chip("NEMESIS", Vector2(base.x, y + 2.0 * s), int(12 * s), Color("#ff6b5a"), true); y += 18.0 * s
+			_chip(C.nemNodeTag(n).to_upper(), Vector2(base.x, y + 2.0 * s), int(12 * s), Color("#ff6b5a"), true); y += 18.0 * s
 		# intel line: danger band chip, board shape, reward
 		if fight and not done and _danger.has(id) and not _danger[id].is_empty():
 			var dg = _danger[id]; var sub = ""

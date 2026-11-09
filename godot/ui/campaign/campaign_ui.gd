@@ -745,9 +745,8 @@ func _nem_panel(v: VBoxContainer) -> void:
 	var ck = C.nemClockGet(); var dots = "●".repeat(int(floor(ck))) + ("◐" if fmod(ck, 1.0) != 0.0 else "") + "○".repeat(max(0, int(C.NEM_CLOCK) - int(ceil(ck))))   # #121: the run's clock
 	var met = float(N["met"]) >= float(C.RUN["sector"])
 	var tail = (" " + c("[b]His fleet is coming: your next fight is his.[/b]", BLOOD)) if C.jt(C.RUN.get("nemStrike")) else ((" " + c("(met this sector)", BONE3)) if met else "")
-	var pace = float(beh.get("clock", 1))
 	v.add_child(rich(c("Hunting you: ", BONE2) + c(dots, BLOOD) + c(" " + C.numstr(ck) + " of " + C.numstr(C.NEM_CLOCK), BONE3) + tail, 14))
-	v.add_child(lbl(C.nemSay("Each fight you win moves the clock " + (C.numstr(pace) + " steps" if pace != 1.0 else "one step") + "; when it fills, your next fight is against him. You meet him once each sector at the latest, at one of the last fights before the rest stop.", N), 13, BONE3))
+	v.add_child(lbl(C.nemMeetingLine(N), 13, BONE3))
 	# what grows him between fights (only the factions that have it)
 	if C.jt(beh.get("feeds")):
 		var fd = int(C.z0(N.get("fed"))); v.add_child(rich(c("Fed: ", BONE2) + c(str(fd) + " of 8", BLOOD) + c(C.nemSay(" (his fleet has " + str(min(32, 4 * fd)) + "% more hull; every ship you lose feeds him)", N), BONE3), 13))
@@ -1153,6 +1152,16 @@ func _end(d: Dictionary) -> Control:
 		for row in receipt["cores"]:
 			cv.add_child(lbl(str(C.PATRONS[row["id"]]["n"]) + ": +" + C.numstr(row["gain"]) + " sync. " + str(C.FAVOUR_TIERS[row["tier"]]["n"]) + (" (Tier up this run)" if row["tierUp"] else "") + ".", 17, Color(C.PATRONS[row["id"]]["col"])))
 			cv.add_child(lbl((C.numstr(row["total"]) + " sync. Full sync reached.") if row["next"] == null else (C.numstr(row["total"]) + " / " + C.numstr(row["next"]) + " sync. " + C.numstr(row["remaining"]) + " to " + str(C.FAVOUR_TIERS[int(row["tier"]) + 1]["n"]) + "."), 15, BONE3))
+	# Job 7 step 7 (R85 Q5): the run's Nemesis lesson, recorded on the commander who fought the lost meeting
+	var nz = receipt.get("nem") if receipt.get("nem") is Dictionary else {"met": 0, "lessons": []}
+	cv.add_child(lbl("Nemesis lesson", 20, GILT, font_semi))
+	var nl = nz.get("lessons") if nz.get("lessons") is Array else []
+	if nl.is_empty(): cv.add_child(lbl("No weakness was taught this run." if int(nz.get("met", 0)) > 0 else "No Nemesis meeting this run.", 16, BONE3))
+	for l in nl:
+		var NW = C.NEM_WEAK.get(l.get("w")) if l.get("w") != null else null
+		if NW != null: cv.add_child(rich("Nemesis lesson: [b]" + c(esc(l.get("name")), BLOOD) + "[/b] beat you and taught you a weakness: [b]" + c(esc(NW["n"]), GILT) + "[/b].", 17))
+		else: cv.add_child(rich("Nemesis lesson: [b]" + c(esc(l.get("name")), BLOOD) + "[/b] beat you.", 17))
+		if l.get("text") != null and str(l.get("text")) != "": cv.add_child(lbl(str(l["text"]), 15, BONE3))
 	var choices = flow(8)
 	add(choices, abtn("Choose doctrine", "progTab", "legacy")); add(choices, abtn("Choose hull rewards", "progTab", "variants"))
 	add(choices, abtn("View admiral line", "lineage" if flown["tree"] else "progTab", flown["id"] if flown["tree"] else "mastery")); sv.add_child(choices)
