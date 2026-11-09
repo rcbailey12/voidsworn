@@ -34,7 +34,7 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 
 - Job 7 progression DONE: #30 MERGED (PR #306, capstone mastery; 144 mastery texts missing, placeholders, list in the PR). #305 plan in draft PR #307 (thread done; spot checks passed: data.js Glasswrights carry Oct 29 drafts, eclipse.md still mentions shields). Five questions for Ryan in contrib/opus/plans/tree_effects_questions.md; board picks are all A (rewrite the 49 first, playtest switch opens trees, Grax 3 skills to boarding, callout plus log plus recap, rename Vorn's Command Interdiction strike). When Ryan answers: record in FINDINGS, merge #307 with the rulings, release the Muse text pass (also the 144 mastery texts), then DeepSeek plumbing plus the Glasswrights pilot.
 - Waiting on Ryan: #271 round 2 (board C bold, PR #301); #209 round 3 (board Hy3 plus tall tower and long top guns, PR #303); #305 questions.
-- Running: #281 vent puff options (DeepSeek on the PC since 07:36 UTC).
+- #281 run 1 (PR #309) not merged: 90 minute cap hit before any clip, and it carried PC-built ship assets (R144, fixed by PR #310, merged). Run 2 queued 09:57 UTC (cap 120 minutes, starts from run 1 fx files, force-pushes the same branch so PR #309 updates in place). #308 (HANDOFF) merged.
 - Muse: no activity since 03:27 UTC (#296, #256 check of #286). Needs Ryan to bump Rey.
 
 ## Earlier state (2026-11-09 06:50 UTC)
