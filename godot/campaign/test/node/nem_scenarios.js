@@ -118,6 +118,40 @@ forced(150,['hegemony','chorus','ithar']); RUN.sector=2; nemActive(); rec('w1',[
 // 24 saves: a pre-#121 save moves the clock and strike onto the run; a round trip keeps them
 forced(151,['hegemony','corsair','ithar']); delete RUN.nemClock; delete RUN.nemStrike; RUN.nems.hegemony.clock=2.5; RUN.nems.hegemony.strike=true; nemActive(); state('x1');
 SAVED_RUN=JSON.parse(JSON.stringify(RUN)); RUN=migrateRun(JSON.parse(JSON.stringify(SAVED_RUN))); nemActive(); state('x2');
+// ---------- issue 122: telemetry (signatures, the run escape counter, the compounding counter), the panel data, saves ----------
+function nemTel(){ return (META.tel||[]).filter(e=>/^nem_/.test(e.ev)).map(e=>({ev:e.ev,fac:e.fac,kind:e.kind,how:e.how,n:e.n,cap:e.cap,sector:e.sector})); }
+function tstate(tag){ rec(tag,{esc:RUN.nemEscapes,cmd:Object.keys(RUN.nems).sort().map(f=>[f,RUN.nems[f].signatures,RUN.nems[f].fed,RUN.nems[f].scars,!!RUN.nems[f].dead]),tel:nemTel()}); META.tel=[]; }
+// 25 (122-1) signatures carry the acting commander's faction and sector; each commander's own list, capped at 40
+forced(160,['ithar','corsair','hegemony']); META.tel=[]; tstate('y0'); rec('y1',nemAfterBattle('win',false,{fled:true})); tstate('y1');
+RUN.sector=2; nemActive(); RUN.credits=100; for(let i=0;i<8&&!RUN.nemStrike;i++) nemClockAdd(1); tstate('y2');
+var YA=RUN.nems.ithar; for(let i=0;i<41;i++) nemSignature('k'+i,YA); rec('y3',{len:YA.signatures.length,first:YA.signatures[0],last:YA.signatures[39],active:nemActive().fac,tagged:nemTel().filter(e=>e.fac==='ithar').length}); META.tel=[];
+// 26 (122-2) the run escape counter: escapes before the last sector only (flight or a flagship kill); deaths, revives and sector 3 flights never count
+forced(161,['ithar','corsair','hegemony']); tstate('z0'); nemAfterBattle('win',false,{fled:true}); tstate('z1');
+RUN.sector=2; nemActive(); nemAfterBattle('win',true,{cause:'big'}); tstate('z2'); RUN.sector=3; nemActive(); nemAfterBattle('win',true,{}); tstate('z3');
+forced(162,['ithar','corsair','ithar']); nemAfterBattle('win',false,{fled:true}); tstate('z4'); RUN.sector=2; nemActive(); nemAfterBattle('win',false,{}); tstate('z5'); RUN.sector=3; nemActive(); nemAfterBattle('win',true,{}); tstate('z6');
+forced(163,['hegemony','corsair','deathless']); RUN.sector=3; nemActive(); nemAfterBattle('win',true,{}); tstate('z7'); nemAfterBattle('win',true,{}); tstate('z8');
+forced(164,['hegemony','corsair','ithar']); RUN.sector=3; nemActive(); nemAfterBattle('win',false,{fled:true}); tstate('z9');
+forced(165,['ithar','corsair','ithar']); nemAfterBattle('loss',false,{}); RUN.sector=2; nemActive(); nemAfterBattle('retreat',false,{}); tstate('z10');
+// 27 (122-3) the Chorus fed counter is its commander's own: losses to another commander do not feed it; 3, then the cap of 8, then still 8
+forced(166,['hegemony','chorus','ithar']); rec('aa1',nemFeedLosses(5)); tstate('aa1'); RUN.sector=2; var AC=nemActive(); rec('aa2',AC.fed);
+rec('aa3',[nemFeedLosses(3),nemFeedLosses(10),nemFeedLosses(2)]); tstate('aa3'); rec('aa4',Object.keys(RUN.nems).sort().map(f=>[f,nemCompound(RUN.nems[f])]));
+rec('aa5',[nemCompound({fac:'corsair',fed:0,riches:2}),nemCompound({fac:'ithar',honed:1})]); RUN.sector=3; nemActive(); rec('aa6',nemFeedLosses(4)); tstate('aa6'); rec('aa7',nemTelSummary());
+// 28 (122-9) the two counters are not merged: the escapes sit on the run, fed on the Chorus commander
+forced(167,['ithar','chorus','hegemony']); nemAfterBattle('win',false,{fled:true}); RUN.sector=2; nemActive(); nemFeedLosses(3); tstate('ab1');
+rec('ab2',{onRun:'fed' in RUN,onCmd:Object.values(RUN.nems).filter(N=>'nemEscapes' in N).length}); nemAfterBattle('win',true,{cause:'big'}); tstate('ab3');
+// 29 (122-4, 122-5) the panel data: first sector, rotated (the earlier hunter still readable), the return with scars and lessons, then his death
+forced(168,['ithar','chorus','ithar']); rec('ac1',nemPanelData()); nemAfterBattle('win',false,{fled:true}); adv(); rec('ac2',nemPanelData());
+nemAfterBattle('loss',false,{}); rec('ac3',nemPanelData()); adv(); rec('ac4',nemPanelData()); nemAfterBattle('loss',false,{}); rec('ac5',nemPanelData()); nemAfterBattle('win',true,{}); rec('ac6',nemPanelData());
+// 30 saves: a save from before the escape counter rebuilds it from the scars (a revive's scar is not an escape); a round trip keeps it
+forced(169,['ithar','chorus','deathless']); nemAfterBattle('win',false,{fled:true}); delete RUN.nemEscapes; nemActive(); rec('ad1',RUN.nemEscapes);
+forced(170,['hegemony','corsair','deathless']); RUN.sector=3; nemActive(); nemAfterBattle('win',true,{}); delete RUN.nemEscapes; nemActive(); rec('ad2',RUN.nemEscapes);
+RUN.nemEscapes=1; SAVED_RUN=JSON.parse(JSON.stringify(RUN)); RUN=migrateRun(JSON.parse(JSON.stringify(SAVED_RUN))); nemActive(); rec('ad3',RUN.nemEscapes);
+fresh(171); toMap(); RUN.nems={}; RUN.nem=null; RUN.nemAssign=[null,null,null]; RUN.sector=2; delete RUN.nemClock; delete RUN.nemStrike; delete RUN.nemEscapes;
+RUN.nem={fac:'ithar',name:'Calek',title:'First Mirror',persona:NEM_FAC.ithar.personas[0],weak:['ion','slow'],revealed:['ion'],adapt:[],clock:1,met:1,beaten:2,scars:2,seen:{}}; ensureNemesis(); rec('ad4',{esc:RUN.nemEscapes,panel:nemPanelData()});
+// 31 the clock-full message through nemSay (an it, a she, and a she's raiders)
+forced(172,['chorus','hegemony','chorus']); RUN.nemClock=3; rec('ae1',nemClockAdd(1));
+forced(173,['hegemony','chorus','hegemony']); nemActive().g='f'; RUN.nemClock=3; rec('ae2',nemClockAdd(1));
+forced(174,['corsair','hegemony','corsair']); nemActive().g='f'; RUN.credits=100; RUN.nemClock=3; rec('ae3',nemClockAdd(1)); tstate('ae3');
 globalThis.__OUT=OUT;
 `);
 fs.writeFileSync(process.argv[2], __OUT.join('\n') + '\n');

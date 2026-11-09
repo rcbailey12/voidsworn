@@ -10,12 +10,12 @@ func rec(tag: String, x) -> void: OUT.append(tag + " " + JSM.canon(x, "", {}, tr
 func state(tag: String) -> void:
 	rec(tag, {"nem": C.RUN.get("nem"), "nemClock": C.RUN.get("nemClock"), "nemStrike": C.RUN.get("nemStrike"), "nemAssign": C.RUN.get("nemAssign"), "nems": C.RUN.get("nems"), "credits": C.RUN["credits"], "fleet": C.RUN["fleet"].map(func(s): return [s["uid"], s["hp"]]), "variants": C.META["variants"], "rng": JSM.rng_s & 0xFFFFFFFF})
 func setup(seed: int, fac: String) -> void:
-	C.UID = 1; JSM.rnd_seed(seed); C.META = C.defaultMeta(); C.META["backfilled"] = 1; C.META["wonFix41"] = 1; C.SAVED_RUN = null; C.RUN = null; C.B = null
+	C.UID = 1; JSM.rnd_seed(seed); C.META = C.defaultMeta(); C.META["backfilled"] = 1; C.META["wonFix41"] = 1; C.SAVED_RUN = null; C.RUN = null; C.B = null; C.tel_log = []   # the JS META reset clears its tel too
 	C.picked_admiral = "vex"; C.picked_faction = "voidsworn"; C.run_opt = {"alt": false, "cmdAlt": false, "heat": []}
 	C.titleScreen(); C.act("newRunScreen"); C.act("startRun"); C.act("pickAspect", C.W["aspOffer"][0]); C.act("closeModal")
 	C.RUN["nemAssign"] = [fac, fac, fac]; C.RUN["nems"] = {}; C.RUN["nem"] = null; C.nemActive(); state("new " + fac)
 func fresh(seed: int) -> void:
-	C.UID = 1; JSM.rnd_seed(seed); C.META = C.defaultMeta(); C.META["backfilled"] = 1; C.META["wonFix41"] = 1; C.SAVED_RUN = null; C.RUN = null; C.B = null
+	C.UID = 1; JSM.rnd_seed(seed); C.META = C.defaultMeta(); C.META["backfilled"] = 1; C.META["wonFix41"] = 1; C.SAVED_RUN = null; C.RUN = null; C.B = null; C.tel_log = []   # the JS META reset clears its tel too
 	C.picked_admiral = "vex"; C.picked_faction = "voidsworn"; C.run_opt = {"alt": false, "cmdAlt": false, "heat": []}
 	C.titleScreen(); C.act("newRunScreen"); C.act("startRun")
 func toMap() -> void:
@@ -77,6 +77,7 @@ func _init() -> void:
 	C.RUN = C.migrateRun(C.clone(C.SAVED_RUN)); C.ensureNemesis()
 	rec("n1", {"same": RB == JSM.canon({"a": C.RUN["nemAssign"], "n": C.RUN["nems"]}, "", {}, true), "size": C.RUN["nems"].size(), "fac": C.nemBattleCfg()["fac"], "scars": C.RUN["nems"][FA]["scars"], "revealed": C.RUN["nems"][FB]["revealed"]}); state("n1")
 	run_121()
+	run_122()
 	var a := OS.get_cmdline_user_args()
 	var fo = FileAccess.open(a[0], FileAccess.WRITE); fo.store_string("\n".join(OUT) + "\n"); fo.close()
 	print(OUT.size(), " records")
@@ -142,3 +143,56 @@ func run_121() -> void:
 	# 24 saves
 	forced(151, ["hegemony", "corsair", "ithar"]); C.RUN.erase("nemClock"); C.RUN.erase("nemStrike"); C.RUN["nems"]["hegemony"]["clock"] = 2.5; C.RUN["nems"]["hegemony"]["strike"] = true; C.nemActive(); state("x1")
 	C.SAVED_RUN = C.clone(C.RUN); C.RUN = C.migrateRun(C.clone(C.SAVED_RUN)); C.nemActive(); state("x2")
+
+# ---------- issue 122 (node/nem_scenarios.js sections 25 to 31, the same steps in the same order) ----------
+func nemTel() -> Array:
+	var o = []
+	for e in C.tel_log:
+		if str(e.get("ev", "")).begins_with("nem_"): o.append({"ev": e["ev"], "fac": e.get("fac"), "kind": e.get("kind"), "how": e.get("how"), "n": e.get("n"), "cap": e.get("cap"), "sector": e.get("sector")})
+	return o
+func tstate(tag: String) -> void:
+	var ks = C.RUN["nems"].keys(); ks.sort()
+	var cmd = []
+	for f in ks:
+		var N = C.RUN["nems"][f]; cmd.append([f, N.get("signatures"), N.get("fed"), N.get("scars"), C.jt(N.get("dead"))])
+	rec(tag, {"esc": C.RUN.get("nemEscapes"), "cmd": cmd, "tel": nemTel()}); C.tel_log = []
+func run_122() -> void:
+	# 25 (122-1)
+	forced(160, ["ithar", "corsair", "hegemony"]); C.tel_log = []; tstate("y0"); rec("y1", C.nemAfterBattle("win", false, {"fled": true})); tstate("y1")
+	C.RUN["sector"] = 2; C.nemActive(); C.RUN["credits"] = 100
+	var i = 0
+	while i < 8 and not C.jt(C.RUN.get("nemStrike")):
+		C.nemClockAdd(1); i += 1
+	tstate("y2")
+	var YA = C.RUN["nems"]["ithar"]
+	for k in range(41): C.nemSignature("k" + str(k), YA)
+	rec("y3", {"len": YA["signatures"].size(), "first": YA["signatures"][0], "last": YA["signatures"][39], "active": C.nemActive()["fac"], "tagged": nemTel().filter(func(e): return e["fac"] == "ithar").size()}); C.tel_log = []
+	# 26 (122-2)
+	forced(161, ["ithar", "corsair", "hegemony"]); tstate("z0"); C.nemAfterBattle("win", false, {"fled": true}); tstate("z1")
+	C.RUN["sector"] = 2; C.nemActive(); C.nemAfterBattle("win", true, {"cause": "big"}); tstate("z2"); C.RUN["sector"] = 3; C.nemActive(); C.nemAfterBattle("win", true, {}); tstate("z3")
+	forced(162, ["ithar", "corsair", "ithar"]); C.nemAfterBattle("win", false, {"fled": true}); tstate("z4"); C.RUN["sector"] = 2; C.nemActive(); C.nemAfterBattle("win", false, {}); tstate("z5"); C.RUN["sector"] = 3; C.nemActive(); C.nemAfterBattle("win", true, {}); tstate("z6")
+	forced(163, ["hegemony", "corsair", "deathless"]); C.RUN["sector"] = 3; C.nemActive(); C.nemAfterBattle("win", true, {}); tstate("z7"); C.nemAfterBattle("win", true, {}); tstate("z8")
+	forced(164, ["hegemony", "corsair", "ithar"]); C.RUN["sector"] = 3; C.nemActive(); C.nemAfterBattle("win", false, {"fled": true}); tstate("z9")
+	forced(165, ["ithar", "corsair", "ithar"]); C.nemAfterBattle("loss", false, {}); C.RUN["sector"] = 2; C.nemActive(); C.nemAfterBattle("retreat", false, {}); tstate("z10")
+	# 27 (122-3)
+	forced(166, ["hegemony", "chorus", "ithar"]); rec("aa1", C.nemFeedLosses(5)); tstate("aa1"); C.RUN["sector"] = 2; var AC = C.nemActive(); rec("aa2", AC["fed"])
+	rec("aa3", [C.nemFeedLosses(3), C.nemFeedLosses(10), C.nemFeedLosses(2)]); tstate("aa3")
+	var ks = C.RUN["nems"].keys(); ks.sort()
+	rec("aa4", ks.map(func(f): return [f, C.nemCompound(C.RUN["nems"][f])]))
+	rec("aa5", [C.nemCompound({"fac": "corsair", "fed": 0, "riches": 2}), C.nemCompound({"fac": "ithar", "honed": 1})]); C.RUN["sector"] = 3; C.nemActive(); rec("aa6", C.nemFeedLosses(4)); tstate("aa6"); rec("aa7", C.nemTelSummary())
+	# 28 (122-9)
+	forced(167, ["ithar", "chorus", "hegemony"]); C.nemAfterBattle("win", false, {"fled": true}); C.RUN["sector"] = 2; C.nemActive(); C.nemFeedLosses(3); tstate("ab1")
+	rec("ab2", {"onRun": C.RUN.has("fed"), "onCmd": C.RUN["nems"].values().filter(func(N): return N.has("nemEscapes")).size()}); C.nemAfterBattle("win", true, {"cause": "big"}); tstate("ab3")
+	# 29 (122-4, 122-5)
+	forced(168, ["ithar", "chorus", "ithar"]); rec("ac1", C.nemPanelData()); C.nemAfterBattle("win", false, {"fled": true}); adv(); rec("ac2", C.nemPanelData())
+	C.nemAfterBattle("loss", false, {}); rec("ac3", C.nemPanelData()); adv(); rec("ac4", C.nemPanelData()); C.nemAfterBattle("loss", false, {}); rec("ac5", C.nemPanelData()); C.nemAfterBattle("win", true, {}); rec("ac6", C.nemPanelData())
+	# 30 saves
+	forced(169, ["ithar", "chorus", "deathless"]); C.nemAfterBattle("win", false, {"fled": true}); C.RUN.erase("nemEscapes"); C.nemActive(); rec("ad1", C.RUN["nemEscapes"])
+	forced(170, ["hegemony", "corsair", "deathless"]); C.RUN["sector"] = 3; C.nemActive(); C.nemAfterBattle("win", true, {}); C.RUN.erase("nemEscapes"); C.nemActive(); rec("ad2", C.RUN["nemEscapes"])
+	C.RUN["nemEscapes"] = 1; C.SAVED_RUN = C.clone(C.RUN); C.RUN = C.migrateRun(C.clone(C.SAVED_RUN)); C.nemActive(); rec("ad3", C.RUN["nemEscapes"])
+	fresh(171); toMap(); C.RUN["nems"] = {}; C.RUN["nem"] = null; C.RUN["nemAssign"] = [null, null, null]; C.RUN["sector"] = 2; C.RUN.erase("nemClock"); C.RUN.erase("nemStrike"); C.RUN.erase("nemEscapes")
+	C.RUN["nem"] = {"fac": "ithar", "name": "Calek", "title": "First Mirror", "persona": C.NEM_FAC["ithar"]["personas"][0], "weak": ["ion", "slow"], "revealed": ["ion"], "adapt": [], "clock": 1, "met": 1, "beaten": 2, "scars": 2, "seen": {}}; C.ensureNemesis(); rec("ad4", {"esc": C.RUN["nemEscapes"], "panel": C.nemPanelData()})
+	# 31 the clock-full message through nemSay
+	forced(172, ["chorus", "hegemony", "chorus"]); C.RUN["nemClock"] = 3; rec("ae1", C.nemClockAdd(1))
+	forced(173, ["hegemony", "chorus", "hegemony"]); C.nemActive()["g"] = "f"; C.RUN["nemClock"] = 3; rec("ae2", C.nemClockAdd(1))
+	forced(174, ["corsair", "hegemony", "corsair"]); C.nemActive()["g"] = "f"; C.RUN["credits"] = 100; C.RUN["nemClock"] = 3; rec("ae3", C.nemClockAdd(1)); tstate("ae3")
