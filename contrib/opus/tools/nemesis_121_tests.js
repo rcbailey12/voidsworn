@@ -23,6 +23,7 @@ async function animWeapon(){} async function animExplode(){} function fxShieldBr
 var MODAL=''; modal=function(h){ MODAL=h; }; show=function(){}; toast=function(){};
 global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get B(){ return B; }, get MODAL(){ return MODAL; }, migrateRun, newRun, startBattle, rndSeed, META, ADMIRALS,
   nemActive, ensureNemesis, nemClockAdd, nemNodeIs, nemBattleCfg, nemAdapt, nemAfterBattle, nemLearn, nemSay, nemFull, nemPanel, nemFeedLosses, nemOpenLine, nemAdaptLine,
+  nemStrikeLine, nemAdaptWhyLine,
   afterBattle, NEM_CLOCK, NEM_WEAK, NEM_FAC, NEM_VOICE, NEM_LINES, NEM_BEAT_WORD, NEM_BEAT_COUNTER, NEM_ADAPT_FAC, W:window };
 `);
 const pickAdm = fac => Object.entries(T.ADMIRALS).find(([k, a]) => (a.fac || 'voidsworn') === fac)[0];
@@ -73,6 +74,18 @@ check('121-4 a strike brings the sector meeting forward; the hunter and the assi
   const R = forced(['hegemony', 'corsair', 'ithar']); T.nemAfterBattle('win', false, {}); R.sector = 2; const B0 = T.nemActive(); const early = earlyNode(R);
   const a0 = canon(R.nemAssign), off = !T.nemNodeIs(early); R.credits = 0; let i = 0; while (!R.nemStrike && i++ < 8) T.nemClockAdd(1);
   return off && R.nemStrike && T.nemNodeIs(early) && T.nemActive() === B0 && B0.fac === 'corsair' && canon(R.nemAssign) === a0; });
+// #282 (Muse, #274 design call 4): what crosses a sector advance is the full clock, not a pending strike. A clock filled after
+// this sector's meeting arms nothing; the next sector's first add arms the strike, when the incoming commander's met is 0.
+check('121-4 (#282) a full clock crosses the sector advance; the strike arms on the next sector first clock add', () => {
+  const R = forced(['hegemony', 'corsair', 'ithar']); R.fleet.forEach(s => { s.hp = 9999; });
+  T.nemAfterBattle('win', false, {});                                  // meet the sector 1 commander: met 1, clock 0
+  let i = 0; while (R.nemClock < T.NEM_CLOCK && i++ < 8) T.nemClockAdd(1);
+  const fullNoStrike = R.nemClock === T.NEM_CLOCK && !R.nemStrike;     // met this sector: the full clock arms nothing
+  advance(R);                                                          // the real boss advance into sector 2
+  const early = earlyNode(R);
+  const carried = R.sector === 2 && R.nemClock === T.NEM_CLOCK && !R.nemStrike && !T.nemNodeIs(early);
+  const line = T.nemClockAdd(1);                                       // the next sector's first clock add
+  return fullNoStrike && carried && R.nemStrike && T.nemNodeIs(early) && line !== '' && /found your trail/.test(line); });
 // 121-5: meeting side effects, per commander
 check('121-5 a win, a loss and a retreat reset the run clock and strike; only the commander met changes', () => {
   let ok = true;
@@ -183,7 +196,14 @@ check('saves: a legacy single-commander save (pre-#120 shape) keeps its clock on
   T.nemActive(); return R.nemClock === 3 && R.nemStrike === false && R.nems.hegemony === N && !('clock' in N); });
 check('the map card reads the run clock', () => {
   const R = forced(['hegemony', 'corsair', 'ithar']); R.nemClock = 2.5; const p = T.nemPanel(); R.nemStrike = true; const q = T.nemPanel();
-  return p.includes('●●◐○') && /your next fight is his/.test(q); });
+  return p.includes('●●◐○') && q.includes(T.nemStrikeLine(T.nemActive())); });
+// #282 (Muse condition 1b): the strike line and the modal reason go through nemSay for a female and a Chorus commander
+check('#282 the panel strike line and the modal adaptation reason read correctly for a she and an it', () => {
+  const R = forced(['hegemony', 'corsair', 'ithar']); const F = R.nems.hegemony; R.nemStrike = true;
+  F.g = 'f'; const pf = T.nemPanel(), lf = T.nemStrikeLine(F), wf = T.nemAdaptWhyLine('formation', F);
+  F.g = 'n'; const pn = T.nemPanel(), ln = T.nemStrikeLine(F), wn = T.nemAdaptWhyLine('hunger', { fac: 'chorus', g: 'n' });
+  return pf.includes(lf) && lf === 'Her fleet is coming: your next fight is her.' && wf === 'her own way of war'
+    && pn.includes(ln) && ln === 'Its fleet is coming: your next fight is its.' && wn === 'its own way of war'; });
 
 (async () => {
   for (const [name, fn] of tests) { try { const r = await fn(); if (r === true) pass++; else { fail++; console.log('FAIL  ' + name + ': returned ' + r); } } catch (e) { fail++; console.log('FAIL  ' + name + ': ' + (e && e.stack || e)); } }

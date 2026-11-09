@@ -136,6 +136,11 @@ func _rebuild() -> void:
 	var keep := {"retreat_v": retreat_btn.visible, "retreat_d": retreat_btn.disabled, "hint": hint.visible,
 		"banner": banner_lbl.text, "banner_col": banner_lbl.get_theme_color("font_color"), "banner_a": banner_lbl.modulate.a,
 		"toast": toast_lbl.text, "toast_a": toast_lbl.modulate.a}
+	# N5 (#282): a rebuild while the menu is open keeps its keyboard row. Read the row before the menu is thrown away.
+	var keep_row := -1
+	if menu != null and is_instance_valid(menu):
+		var mfo := get_viewport().gui_get_focus_owner()
+		if mfo != null and menu.is_ancestor_of(mfo): keep_row = maxi(0, mfo.get_index() - 1)
 	if _grid_btn != null and is_instance_valid(_grid_btn) and _grid_btn.get_parent() != null:
 		_grid_btn.get_parent().remove_child(_grid_btn)
 	plates_root.get_parent().remove_child(plates_root)
@@ -165,7 +170,8 @@ func _rebuild() -> void:
 	if _last.has("show_tipcard"):
 		callv("show_tipcard", _last["show_tipcard"])
 	if _last.has("show_menu"):
-		callv("show_menu", _last["show_menu"])
+		var sm: Array = _last["show_menu"]
+		show_menu(sm[0], sm[1], keep_row)
 	if _last.has("show_end"):
 		callv("show_end", _last["show_end"])
 	if bool(_last.get("letterbox", false)):
@@ -242,10 +248,10 @@ func _theme() -> Theme:
 	sf.border_color = BONE
 	sf.set_border_width_all(maxi(2, s(2)))
 	sf.set_corner_radius_all(s(4))
-	sf.expand_margin_left = 3
-	sf.expand_margin_right = 3
-	sf.expand_margin_top = 3
-	sf.expand_margin_bottom = 3
+	sf.expand_margin_left = s(3)
+	sf.expand_margin_right = s(3)
+	sf.expand_margin_top = s(3)
+	sf.expand_margin_bottom = s(3)
 	th.set_stylebox("focus", "Button", sf)
 	th.set_stylebox("disabled", "Button", sbd)
 	th.set_color("font_color", "Button", BONE)
@@ -1202,6 +1208,15 @@ func hide_tipcard() -> void:
 		tipcard = null
 
 
+# N4 (#282): the end card's focus grab retries once, so a transient focus holder that releases after the timer does not leave
+# Continue unfocused. The guard still refuses to steal focus from a menu opened meanwhile (the owner keeps it).
+func _grab_end_focus(first: Button, attempt := 1) -> void:
+	if not is_instance_valid(first) or not first.is_visible_in_tree(): return
+	if get_viewport().gui_get_focus_owner() == null: first.grab_focus()
+	elif attempt < 2:
+		get_tree().create_timer(0.75).timeout.connect(func() -> void: _grab_end_focus(first, attempt + 1), CONNECT_ONE_SHOT)
+
+
 func show_end(title: String, body: String, win: bool, external := false) -> void:
 	_last["show_end"] = [title, body, win, external]
 	endcard = PanelContainer.new()
@@ -1238,19 +1253,17 @@ func show_end(title: String, body: String, win: bool, external := false) -> void
 	# keyboard focus on the first button, after a beat: a Space still held down to hurry the last enemy turn must not
 	# press Continue the moment the card appears (the battle's own 0.5 s guard on Space, battle.gd _on_key)
 	var first := row.get_child(0) as Button
-	get_tree().create_timer(0.75).timeout.connect(func() -> void:
-		if is_instance_valid(first) and first.is_visible_in_tree() and get_viewport().gui_get_focus_owner() == null:
-			first.grab_focus())
+	get_tree().create_timer(0.75).timeout.connect(func() -> void: _grab_end_focus(first), CONNECT_ONE_SHOT)
 
 
 # the in-battle menu (Esc with nothing to cancel, or Menu in the top bar): items are [text, action, arg]
 var menu: PanelContainer
 
 
-func show_menu(title: String, items: Array) -> void:
+func show_menu(title: String, items: Array, row := -1) -> void:
 	# a toggle in the menu builds it again: keep the keyboard on the same row
-	var refocus := 0
-	if menu != null and is_instance_valid(menu):
+	var refocus := row if row >= 0 else 0
+	if row < 0 and menu != null and is_instance_valid(menu):
 		var fo := get_viewport().gui_get_focus_owner()
 		if fo != null and menu.is_ancestor_of(fo):
 			refocus = maxi(0, fo.get_index() - 1)   # row 0 is the title label

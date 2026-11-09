@@ -78,7 +78,7 @@ function nemPanel(){ const N=nemActive(); if(!N||!N.persona) return ''; const F=
     <p style="margin:2px 0 0;font-size:13.5px">Strengths: ${N.traits.map(t=>`<span class="blood" title="${esc(NEM_TRAITS[t].d)}">${esc(NEM_TRAITS[t].n)}</span>`).join(', ')}</p>
     <p class="muted" style="font-size:13px;margin:4px 0 0">${esc(nemSay(NF.beh.d,N))}</p>${nemWarnLine(N)}
     ${NF.beh.feeds?`<p style="font-size:13px;margin:2px 0 0">Fed on your losses: <span class="blood">${N.fed||0} of 8</span>${N.fed?` (+${Math.round(Math.min(.32,.04*N.fed)*100)}% hull)`:''}</p>`:''}${(N.loot||N.held)?`<p style="font-size:13px;margin:2px 0 0">${nemPr(N).He} holds <span class="gilt">${[N.loot?N.loot+' of your credits':'',N.held?'the '+esc(N.held.name):''].filter(Boolean).join(' and ')}</span>: it all comes back when ${nemPr(N).he} dies.</p>`:''}
-    <p class="num" style="margin:4px 0 0;font-size:14px">Hunting you: <span class="blood">${dots}</span>${RUN.nemStrike?' <b class="blood">His fleet is coming: your next fight is his.</b>':met?' <span class="dim">(met this sector)</span>':''}</p>
+    <p class="num" style="margin:4px 0 0;font-size:14px">Hunting you: <span class="blood">${dots}</span>${RUN.nemStrike?' <b class="blood">'+esc(nemStrikeLine(N))+'</b>':met?' <span class="dim">(met this sector)</span>':''}</p>
     <p class="muted" style="font-size:13px;margin:4px 0 0">${esc(nemSay('Every fight you win moves the clock on; when it fills, your next fight is against him. You meet him once each sector at the latest before the rest stop.',N))}</p>
     <div style="font-size:13.5px;margin-top:4px">Weaknesses: ${N.weak.map(w=>N.revealed.includes(w)?`<span class="gilt" title="${esc(NEM_WEAK[w].d)}">${esc(NEM_WEAK[w].n)}</span>`:'<span class="dim">unknown</span>').join(', ')}</div>
     ${N.adapt.length?`<div style="font-size:13.5px;margin-top:2px">Adapted: ${N.adapt.map(a=>`<span class="blood" title="${esc(nemAdaptDesc(a,N.fac))}">${esc(nemAdaptName(a,N.fac))}</span>`).join(', ')}</div>`:''}
@@ -311,9 +311,14 @@ function nemWarnLine(N){ const s=nemBeh().strike; if(RUN.nemStrike||N.met>=RUN.s
 function nemBeh(){ const N=nemActive(); return (N&&NEM_FAC[N.fac]&&NEM_FAC[N.fac].beh)||{}; }
 // the clock: returns a line to show when it fills (the next fight becomes his); his faction sets the pace (Deathless patient, Voidsworn zealous)
 // #121: the clock is the run's (RUN.nemClock), one for the whole run; the active commander's faction sets its pace
+// #282 (Muse, #274 design call 4): it is the full clock that crosses a sector advance, not a pending strike. nemClockAdd arms
+// the strike only when the active commander is unmet this sector, so a clock filled after this sector's meeting arms nothing
+// until the next sector's first add, when the incoming commander's met is 0.
 function nemClockGet(){ return RUN&&typeof RUN.nemClock==='number'?RUN.nemClock:0; }
 function nemClockAdd(n){ const N=ensureNemesis(); if(!N||N.dead) return ''; const step=n>0?n*(nemBeh().clock||1):n; RUN.nemClock=clamp(Math.round((nemClockGet()+step)*2)/2,0,NEM_CLOCK);
   if(RUN.nemClock>=NEM_CLOCK&&N.met<RUN.sector&&!RUN.nemStrike){ RUN.nemStrike=true; const extra=nemStrike(); return nemSay(`${nemFull()} has found your trail. Your next fight will be against his fleet.${extra?' '+extra:''}`,N); } return ''; } // #122: through nemSay (a she or an it read "his")
+// #282: the map card's strike line is text like the rest of the card: through nemSay so a she or an it reads right
+function nemStrikeLine(N){ return nemSay('His fleet is coming: your next fight is his.',N); }
 // what a full clock does on the map, by faction (always written on his card beforehand)
 function nemStrike(){ const N=nemActive(), s=nemBeh().strike;
   if(s==='raid'||s==='tithe') nemSignature(s,N);
@@ -336,6 +341,8 @@ function nemAdapt(force,N0){ const N=N0||nemActive(); if(!N||N.dead) return null
 function nemAdaptName(a,fac){ const T=NEM_ADAPT_FAC[fac]||{}; if(T.special&&T.special.id===a) return T.special.n; return T[a]||(NEM_ADAPT[a]&&NEM_ADAPT[a].n)||a; }
 function nemAdaptDesc(a,fac){ const T=NEM_ADAPT_FAC[fac]||{}; if(T.special&&T.special.id===a) return T.special.d; return (NEM_ADAPT[a]&&NEM_ADAPT[a].d)||''; }
 function nemAdaptWhy(a,fac){ const T=NEM_ADAPT_FAC[fac]||{}; if(T.special&&T.special.id===a) return 'his own way of war'; return (NEM_ADAPT[a]&&NEM_ADAPT[a].why)||''; }
+// #282: the sector modal's adaptation reason, through nemSay with the commander who adapted (the outgoing one)
+function nemAdaptWhyLine(a,N){ return nemSay(nemAdaptWhy(a,N&&N.fac),N); }
 // #121 (R101): his own lines from NEM_VOICE, through nemSay. A pool's line is chosen without the rules PRNG: the pick turns with how many
 // times you have met and hurt him and with the sector. A faction with no table (the Sunward Crusade) says nothing new and keeps NEM_LINES.
 function nemPersonaVoice(N){ const V=N&&NEM_VOICE[N.fac]; return (V&&V[N.persona])||null; }
@@ -666,7 +673,7 @@ function afterBattle(){
     saveRun(); mapScreen();
     const F=FACTIONS[RUN.map.fac];
     modal(`<h2>Sector ${roman(RUN.sector)}${RUN.map.region&&REGIONS[RUN.map.region]?`: ${esc(REGIONS[RUN.map.region].n)}`:''}</h2><p>With the flagship broken, the fleet jumps deeper. Fleet command expands: <b class="gilt">+3 command points</b>, and crews patch 40% of every hull during the transit.</p>
-      <p>Scanners confirm <b>${esc(F.n)}</b> ahead.</p>${na&&prev?`<p class="blood">Intelligence: ${esc(nemFull(prev))} has adapted to you: <b>${esc(nemAdaptName(na,prev.fac))}</b> (${esc(nemSay(nemAdaptWhy(na,prev.fac),prev))}). ${esc(nemAdaptDesc(na,prev.fac))}</p>${nemAdaptLine(prev,na)?`<p class="blood" style="font-size:14px">${esc(nemAdaptLine(prev,na))}</p>`:''}`:''}${(()=>{ const c=sectorCond(); return c?`<p class="gilt">Sector condition: <b>${esc(c.n)}</b>. <span class="muted">${esc(c.d)}</span></p>`:''; })()}<p class="muted">${esc(F.blurb)}</p><button class="primary" data-act="${RUN.sector===3?'beat3':'closeModal'}">Plot a course</button>`);
+      <p>Scanners confirm <b>${esc(F.n)}</b> ahead.</p>${na&&prev?`<p class="blood">Intelligence: ${esc(nemFull(prev))} has adapted to you: <b>${esc(nemAdaptName(na,prev.fac))}</b> (${esc(nemAdaptWhyLine(na,prev))}). ${esc(nemAdaptDesc(na,prev.fac))}</p>${nemAdaptLine(prev,na)?`<p class="blood" style="font-size:14px">${esc(nemAdaptLine(prev,na))}</p>`:''}`:''}${(()=>{ const c=sectorCond(); return c?`<p class="gilt">Sector condition: <b>${esc(c.n)}</b>. <span class="muted">${esc(c.d)}</span></p>`:''; })()}<p class="muted">${esc(F.blurb)}</p><button class="primary" data-act="${RUN.sector===3?'beat3':'closeModal'}">Plot a course</button>`);
     return;
   }
   mapScreen();
