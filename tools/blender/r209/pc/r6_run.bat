@@ -17,6 +17,18 @@ if not exist "%OUT%\glb" mkdir "%OUT%\glb"
 if not exist "%OUT%\close" mkdir "%OUT%\close"
 if not exist "%OUT%\godot\proj" mkdir "%OUT%\godot\proj"
 echo start %date% %time% > "%OUT%\time.txt"
+rem one GPU job at a time: wait (up to 90 minutes) until the 5080 is idle, in case another thread's GPU run is still going
+set /a W=0
+:gpuwait
+set U=0
+for /f %%U in ('nvidia-smi --query-gpu^=utilization.gpu --format^=csv^,noheader^,nounits 2^>nul') do set U=%%U
+if %U% LSS 15 goto gpufree
+set /a W+=1
+if %W% GEQ 90 goto gpufree
+timeout /t 60 /nobreak > nul
+goto gpuwait
+:gpufree
+echo gpu free after %W% min %date% %time% >> "%OUT%\time.txt"
 cd /d "%O%\repo"
 git log -1 --oneline > "%OUT%\git.txt" 2>&1
 "%B%" -b -P "%R%\bakeAb6.py" -- "%OUT%" "%B0%" none Ab6 4096 64 > "%OUT%\log_Ab6.txt" 2>&1
