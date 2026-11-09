@@ -54,7 +54,7 @@ def ramp(nt, x, a, b):
     n.inputs[1].default_value = a; n.inputs[2].default_value = b; return n.outputs[0]
 
 def make(band, group, b0ao=None):
-    """the procedural material for one band; group 'H' (hull atlas) or 'P' (parts atlas). Returns the material; its node tree keeps
+    """the procedural material for one band; group 'H' (hull atlas), 'P' (parts atlas) or 'G' (generated parts, parts atlas). Returns the material; its node tree keeps
     sockets for colour, roughness, metal and AO under the names used by the bake."""
     m = bpy.data.materials.new(f'p3_{band}_{group}'); m.use_nodes = True; nt = m.node_tree; nt.nodes.clear()
     out = node(nt, 'ShaderNodeOutputMaterial'); bs = node(nt, 'ShaderNodeBsdfPrincipled'); nt.links.new(bs.outputs[0], out.inputs[0])
@@ -71,6 +71,8 @@ def make(band, group, b0ao=None):
     dot = node(nt, 'ShaderNodeVectorMath', operation='DOT_PRODUCT'); nt.links.new(geo.outputs['Normal'], dot.inputs[0]); nt.links.new(bv.outputs['Normal'], dot.inputs[1])
     edge = math_(nt, 'MULTIPLY', math_(nt, 'SUBTRACT', 1, dot.outputs['Value']), 16)
     edge = math_(nt, 'MULTIPLY', edge, ramp(nt, n2.outputs['Fac'], .38, .62), clamp=True)          # broken-up wear, not a clean line
+    soft = group == 'G'   # generated hero parts: their lumpy surface reads as edges and cavities everywhere, so wear and grime are toned down
+    if soft: edge = math_(nt, 'MULTIPLY', edge, .2)
     # base: two tones in broad patches
     col = mixc(nt, lo, hi, ramp(nt, n1.outputs['Fac'], .40, .64))
     if band == 'rust':
@@ -80,7 +82,7 @@ def make(band, group, b0ao=None):
     # grime: cavities and corners (AO), then vertical streaks on side faces
     nz = node(nt, 'ShaderNodeSeparateXYZ'); nt.links.new(geo.outputs['Normal'], nz.inputs[0])
     side = math_(nt, 'SUBTRACT', 1, math_(nt, 'ABSOLUTE', nz.outputs['Z']))
-    grime = math_(nt, 'ADD', .42, math_(nt, 'MULTIPLY', ramp(nt, ao.outputs['AO'], .15, 1.0), .58))
+    grime = math_(nt, 'ADD', .70 if soft else .42, math_(nt, 'MULTIPLY', ramp(nt, ao.outputs['AO'], .15, 1.0), .30 if soft else .58))
     col = mulc(nt, col, grime)
     streak = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', ramp(nt, n3.outputs['Fac'], .50, .72), side), .30)
     col = mulc(nt, col, math_(nt, 'SUBTRACT', 1, streak))
@@ -130,7 +132,7 @@ def assign(objs, hull_objs, b0ao=None):
         r = o.get('role', 'part'); kind = o.get('kind'); me = o.data
         if r == 'interior': me.materials.clear(); me.materials.append(inter); continue
         if r == 'glow': me.materials.clear(); me.materials.append(glow); continue
-        g = 'H' if r == 'hull' else 'P'
+        g = 'H' if r == 'hull' else ('G' if str(kind).startswith('gen_') else 'P')
         if r == 'dark': me.materials.clear(); me.materials.append(M('dark', g)); continue
         if r == 'trim' and kind == 'band': me.materials.clear(); me.materials.append(M('ochre', g)); continue
         mw = o.matrix_world; nm = mw.to_3x3().inverted_safe().transposed(); ids = []

@@ -155,7 +155,7 @@ def main():
     pprox = [o for o in prox if o.get('role') not in ('interior', 'glow')]
     unwrap(painted + pprox, margin=.002)
     sc = bpy.context.scene; sc.cycles.samples = max(4, SAMPLES // 8); t1 = time.time()
-    hm = [m for (b, g), m in mats.items() if g == 'H']; pm = [m for (b, g), m in mats.items() if g == 'P']
+    hm = [m for (b, g), m in mats.items() if g == 'H']; pm = [m for (b, g), m in mats.items() if g in ('P', 'G')]
     himg, th = P3.bake_group([hull], hm, f'{CELL}_hull', RES, OUT)
     pimg, tp = P3.bake_group(painted, pm, f'{CELL}_parts', RES // 2, OUT, margin=4)
     if pprox:   # second pass: the hand proxies into the same atlas, with the generated parts out of the way
