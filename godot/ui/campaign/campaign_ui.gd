@@ -422,9 +422,20 @@ func _cmd_text(cmd, fac) -> String:
 	return str(t.get(fac, "")) if t != null else ""
 func _mastery_bar(id) -> Control:
 	var l = C.masteryLevel(id); var x = C.masteryXP(id); var thresholds = C.masteryThresholds(id); var nx = thresholds[l + 1] if l + 1 < thresholds.size() else null
-	var f = min(1.0, (x - float(thresholds[l])) / (float(nx) - float(thresholds[l]))) if nx != null else 1.0
+	var tree = C.LINEAGE_TREES.has(id); var build = C.lineageBuild(id) if tree else null; var has_cap = build != null and build["capstone"] != null
+	var label = ""; var right = ""; var f = 1.0
+	if has_cap:
+		var cm = C.capstoneMasteryLevel(id); var cm_next = C.capstoneMasteryNext(id)
+		var base = float(C.CAPSTONE_MASTERY_XP[cm - 1]) if cm > 0 else float(thresholds[thresholds.size() - 1])
+		label = "Capstone mastery " + str(cm) + "/" + str(C.CAPSTONE_MASTERY_XP.size())
+		right = (C.numstr(x) + "/" + C.numstr(cm_next) + ": next " + str(C.capstoneMasteryPerk(cm + 1)["n"]).to_lower()) if cm_next != null else "fully mastered"
+		f = min(1.0, (x - base) / (float(cm_next) - base)) if cm_next != null else 1.0
+	else:
+		label = "Mastery " + str(l) + "/" + str(thresholds.size() - 1)
+		right = (C.numstr(x) + "/" + C.numstr(nx) + ": next " + str(C.masteryPerk(l + 1)["n"]).to_lower()) if nx != null else ("Level 8 reached: choose a Command evolution" if tree else "mastered")
+		f = min(1.0, (x - float(thresholds[l])) / (float(nx) - float(thresholds[l]))) if nx != null else 1.0
 	var v = vbox(3)
-	v.add_child(rich(c("Mastery " + str(l) + "/" + str(thresholds.size() - 1), GILT) + " " + c((C.numstr(x) + "/" + C.numstr(nx) + ": next " + str(C.masteryPerk(l + 1)["n"]).to_lower()) if nx != null else "mastered", BONE3), 14))
+	v.add_child(rich(c(label, GILT) + " " + c(right, BONE3), 14))
 	var b = bar(f); b.get_child(0).color = GILT; v.add_child(b)
 	v.add_child(lbl(("Heir: 50%" if C.META["heirs"].get(C.or_(C.ADMIRALS[id].get("fac"), "voidsworn")) == id else "Shadow: 25%") + " XP while benched", 13, BONE3))
 	return v
@@ -1042,6 +1053,7 @@ func _legacy() -> Control:
 			var mc = flow()
 			for i in range(1, C.MASTERY_PERKS.size()):
 				var cv = card(false, 300); cv[1].add_child(lbl("Level " + str(i) + ": " + str(C.MASTERY_PERKS[i]["n"]), 19, BONE, font_semi)); cv[1].add_child(lbl(C.MASTERY_PERKS[i]["d"], 16, BONE2)); cv[1].add_child(lbl(C.numstr(C.MASTERY_XP[i]) + " mastery", 14, BONE3)); mc.add_child(cv[0])
+			var cv_m = card(false, 300); cv_m[1].add_child(lbl("Capstone mastery", 19, BONE, font_semi)); cv_m[1].add_child(lbl("Choose a Command evolution at level 8 (230 XP), then keep deepening it at 320, 440 and 600 XP.", 16, BONE2)); mc.add_child(cv_m[0])
 			v.add_child(mc)
 			for f in C.favFirst():
 				v.add_child(lbl(C.FACTIONS[f]["n"], 20, BONE, font_semi)); var ac = flow()
@@ -1136,7 +1148,13 @@ func _end(d: Dictionary) -> Control:
 	cv.add_child(lbl(str(C.ADMIRALS[flown["id"]]["n"]) + (": lineage tree" if flown["tree"] else ": admiral line"), 20, GILT, font_semi))
 	cv.add_child(lbl("+" + C.numstr(snapped(float(cy["mxGain"]), 0.01)) + " XP. Level " + str(flown["level"]) + ((" (was " + C.numstr(cy["mx0"]) + ")") if cy["mx1"] > cy["mx0"] else "") + ".", 17, BONE))
 	for perk in flown["earned"]: cv.add_child(lbl(str(perk["n"]) + " earned: " + str(perk["d"]), 16, GILT))
-	if flown["next"] == null: cv.add_child(lbl(C.numstr(flown["xp"]) + " XP. This line is at its current cap.", 16, BONE3))
+	if flown.get("hasCap", false):
+		if flown["next"] == null: cv.add_child(lbl(C.numstr(flown["xp"]) + " XP. This evolution is at full mastery.", 16, BONE3))
+		else: cv.add_child(lbl(C.numstr(flown["xp"]) + " / " + C.numstr(flown["next"]) + " XP. " + C.numstr(flown["remaining"]) + " XP to capstone mastery " + C.roman(int(flown["capLevel"]) + 1) + ".", 16, BONE3))
+		if int(flown["capLevel"]) > 0:
+			var cap_perk = C.CAPSTONE_MASTERY_PERKS[int(flown["capLevel"]) - 1]
+			cv.add_child(lbl("Capstone mastery " + C.roman(int(flown["capLevel"])) + ": " + str(cap_perk["d"]), 16, GILT))
+	elif flown["next"] == null: cv.add_child(lbl(C.numstr(flown["xp"]) + " XP. This line is at its current cap.", 16, BONE3))
 	else: cv.add_child(lbl(C.numstr(flown["xp"]) + " / " + C.numstr(flown["next"]) + " XP. " + C.numstr(flown["remaining"]) + " XP to level " + str(int(flown["level"]) + 1) + ": " + str(C.masteryPerk(int(flown["level"]) + 1)["n"]) + ".", 16, BONE3))
 	if flown["tree"]:
 		cv.add_child(lbl(str(flown["pending"]) + (" branch pick ready." if flown["pending"] == 1 else " branch picks ready.") + (" Command evolution ready." if flown["capstoneReady"] else ""), 17, GILT))
@@ -1144,7 +1162,8 @@ func _end(d: Dictionary) -> Control:
 	var sv = cv
 	sv.add_child(lbl("SHADOW LEARNING", 16, GILT, font_semi))
 	for row in receipt["shadow"]:
-		sv.add_child(lbl(str(C.ADMIRALS[row["id"]]["n"]) + ": +" + C.numstr(snapped(float(row["xp"]), 0.01)) + " shadow XP" + (" (heir rate)" if row["rate"] == 0.5 else "") + ". Total " + C.numstr(snapped(float(row["total"]), 0.01)) + " XP, level " + C.numstr(row["level"]) + ((", at current cap") if row["next"] == null else (", " + C.numstr(snapped(float(row["remaining"]), 0.01)) + " XP to level " + str(int(row["level"]) + 1))) + ".", 15, BONE2))
+		var snext = ((", fully mastered") if row.get("hasCap", false) else (", at current cap")) if row["next"] == null else ((", " + C.numstr(snapped(float(row["remaining"]), 0.01)) + " XP to capstone mastery " + C.roman(int(row.get("capLevel", 0)) + 1)) if row.get("hasCap", false) else (", " + C.numstr(snapped(float(row["remaining"]), 0.01)) + " XP to level " + str(int(row["level"]) + 1)))
+		sv.add_child(lbl(str(C.ADMIRALS[row["id"]]["n"]) + ": +" + C.numstr(snapped(float(row["xp"]), 0.01)) + " shadow XP" + (" (heir rate)" if row["rate"] == 0.5 else "") + ". Total " + C.numstr(snapped(float(row["total"]), 0.01)) + " XP, level " + C.numstr(row["level"]) + snext + ".", 15, BONE2))
 	if cy["mxOverflow"] > 0: sv.add_child(lbl(C.numstr(snapped(float(cy["mxOverflow"]), 0.01)) + " XP past this line's cap went to shadow learning.", 15, BONE3))
 	if cy["shadowBank"] > 0: sv.add_child(lbl(C.numstr(snapped(float(cy["shadowBank"]), 0.01)) + " shadow XP saved for an uncapped benched line.", 15, BONE3))
 	if not receipt.get("cores", []).is_empty():
@@ -1249,9 +1268,27 @@ func _lineage(id) -> Control:
 	capv.add_child(lbl("Level 8: Command evolution", 23, GILT, font_goth)); var capnodes = flow()
 	for n in nodes:
 		if n["branch"] == "cap": capnodes.add_child(_lineage_node(n))
-	capv.add_child(capnodes); v.add_child(cap)
+	capv.add_child(capnodes); capv.add_child(_capstone_mastery(id)); v.add_child(cap)
 	v.add_child(lbl("Reset clears all branch picks and the capstone. XP and trunk perks stay. This line has been reset " + C.numstr(build["respecs"]) + " times. You have " + C.numstr(C.z0(C.META.get("renown"))) + " renown.", 16, BONE3))
 	var row = hbox(); add(row, abtn("Reset line: " + C.numstr(C.lineageRespecCost(id)) + " renown", "offerRespec", id)); add(row, abtn("Back to Admiral mastery", "progTab", "mastery")); v.add_child(row)
+	return v
+# Job 7 step 14: the mastery levels on the chosen capstone evolution, in the same block as the evolution choice.
+func _capstone_mastery(id) -> Control:
+	var tree = C.LINEAGE_TREES[id]; var build = C.lineageBuild(id); var v = vbox(6)
+	if build["capstone"] == null:
+		v.add_child(lbl("Choose a Command evolution to open capstone mastery at 320, 440 and 600 XP.", 15, BONE3)); return v
+	var chosen = tree["capstones"][int(build["capstone"])]; var xp = C.masteryXP(id); var l = C.capstoneMasteryLevel(id); var nx = C.capstoneMasteryNext(id)
+	v.add_child(lbl("Capstone mastery: " + str(chosen["n"]), 20, GILT, font_semi))
+	v.add_child(lbl((C.numstr(xp) + " XP. This evolution is at full mastery.") if nx == null else (C.numstr(xp) + " / " + C.numstr(nx) + " XP. " + C.numstr(float(nx) - xp) + " XP to capstone mastery " + C.roman(l + 1) + "."), 15, BONE3))
+	var row = flow(10)
+	for i in range(C.CAPSTONE_MASTERY_PERKS.size()):
+		var earned = l > i; var cv = card(earned, 300)
+		cv[1].add_child(lbl("Mastery " + C.roman(i + 1) + (" (earned)" if earned else ""), 18, GILT if earned else BONE, font_semi))
+		cv[1].add_child(lbl(str(C.CAPSTONE_MASTERY_PERKS[i]["d"]), 15, BONE2))
+		cv[1].add_child(lbl(C.numstr(C.CAPSTONE_MASTERY_XP[i]) + " XP", 14, BONE3))
+		if not earned: cv[0].modulate.a = 0.55
+		row.add_child(cv[0])
+	v.add_child(row)
 	return v
 
 # ---------------- dialogs ----------------

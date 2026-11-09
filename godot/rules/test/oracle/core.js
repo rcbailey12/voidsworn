@@ -353,6 +353,14 @@ function masteryLevel(id){ const x=masteryXP(id); let l=0; for(let i=1;i<mastery
 // Tree choices are per admiral line. Reading a tree never mutates an old save.
 function masteryThresholds(id){ return LINEAGE_TREES[id]?LINEAGE_XP:MASTERY_XP; }
 function masteryPerk(level){ return MASTERY_PERKS[level]||(level===8?{n:'Command evolution',d:'Choose a capstone in Admiral mastery.'}:{n:'Lineage choice',d:'Choose a branch skill in Admiral mastery.'}); }
+// Job 7 step 14: capstone mastery. Choosing the level 8 evolution opens three more levels at 320, 440 and 600 XP.
+// The line still stops at 230 until an evolution is chosen, so an unmet tree never banks mastery it cannot show.
+function masteryXPCap(id){ const t=masteryThresholds(id); if(!LINEAGE_TREES[id]) return t[t.length-1];
+  return lineageBuild(id).capstone!=null?Math.max(t[t.length-1],CAPSTONE_MASTERY_XP[CAPSTONE_MASTERY_XP.length-1]):t[t.length-1]; }
+function capstoneMasteryLevel(id){ if(!LINEAGE_TREES[id]||lineageBuild(id).capstone==null) return 0; const x=masteryXP(id); let l=0;
+  for(let i=0;i<CAPSTONE_MASTERY_XP.length;i++) if(x>=CAPSTONE_MASTERY_XP[i]) l=i+1; return l; }
+function capstoneMasteryPerk(level){ return CAPSTONE_MASTERY_PERKS[level-1]||null; }
+function capstoneMasteryNext(id){ const l=capstoneMasteryLevel(id); return l>=CAPSTONE_MASTERY_XP.length?null:CAPSTONE_MASTERY_XP[l]; }
 function lineageBuild(id){
   const tree=LINEAGE_TREES[id], raw=(META.lineage||{})[id]||{}, picks=[], ranks={A:0,B:0,C:0};
   if(tree&&Array.isArray(raw.picks)) for(const key of raw.picks.slice(0,Math.max(0,Math.min(3,masteryLevel(id)-4)))){
