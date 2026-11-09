@@ -62,3 +62,5 @@ The parity harness and the campaign table exporter read these files, not the liv
 **Catching up:** when stream B changes a campaign rule, port the change to `godot/campaign/`, re-copy the six files from the new commit, run `node godot/campaign/test/node/export_campaign.js` to refresh `godot/campaign/data/campaign_tables.json`, run the parity test, and update the commit numbers above.
 
 Nov 3 2026, issue 88: re-copied data.js and ui3d.js for the text truth pass (one boon text corrected, two tutorial card texts corrected). No rules or numbers changed. Re-exported tables.
+
+Nov 8 2026, issue 121: re-copied data.js, core.js, battle.js and campaign_run.js (the run clock RUN.nemClock and RUN.nemStrike, per-commander adaptation, lessons and NEM_VOICE). Re-exported tables.

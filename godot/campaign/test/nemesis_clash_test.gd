@@ -18,9 +18,16 @@ func _init() -> void:
 	for fixture in fixtures:
 		c.RUN = fixture["run"].duplicate(true)
 		JSM.rnd_seed(int(fixture["seed"]))
-		var pick = c.nemAdapt(fixture["force"])
-		var n = c.RUN["nem"]
+		var who = fixture.get("who")
+		var n = c.RUN["nems"][who] if who != null else null
+		var pick = c.nemAdapt(fixture["force"], n) if who != null else c.nemAdapt(fixture["force"])   # #121: a registry case adapts the commander named
+		if who == null: n = c.RUN["nem"]
 		var got = {"pick": pick, "adapt": n["adapt"], "seen": n["seen"], "revealed": n["revealed"], "rng": JSM.rng_s & 0xFFFFFFFF}
+		if who != null:
+			var others = {}
+			for k in c.RUN["nems"].keys():
+				if k != who: others[k] = c.RUN["nems"][k]
+			got["others"] = others
 		if JSM.canon(got) != JSM.canon(fixture["expected"]):
 			printerr("FAIL: ", fixture["name"], " expected ", fixture["expected"], " got ", got)
 			quit(1); return

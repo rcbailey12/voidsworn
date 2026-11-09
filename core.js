@@ -426,7 +426,7 @@ function newRun(admiralId,fac,opt){
   // a Devoted patron sends a gift: one common boon from the first devoted patron watching this run
   { const dev=RUN.patrons.find(p=>favourTier(p)>=2); if(dev){ const pool=Object.keys(BOONS).filter(id=>BOONS[id].p===dev&&!BOONS[id].leg&&boonUseful(id,fleetKit())); if(pool.length){ const id=pick(pool); RUN.boons.push({id,r:favourTier(dev)>=3?1:0}); RUN.giftBoon=id; } } }
   RUN.map=genSector(1);
-  RUN.flags={}; if(typeof drawNemAssign==='function'){ RUN.nems={}; RUN.nemAssign=drawNemAssign(); RUN.nem=newNemesis(RUN.nemAssign[0]); } // B4: one hunter per story point, drawn once; the first is ready, the rest are created lazily
+  RUN.flags={}; if(typeof drawNemAssign==='function'){ RUN.nems={}; RUN.nemAssign=drawNemAssign(); RUN.nemClock=0; RUN.nemStrike=false; RUN.nem=newNemesis(RUN.nemAssign[0]); } // B4: one hunter per story point, drawn once; the first is ready, the rest are created lazily
   META.stats.runs++;
   saveRun();
 }

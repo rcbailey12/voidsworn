@@ -1879,7 +1879,8 @@ func applyNemesis(N) -> void: # battle.js applyNemesis (R42 and R49: traits, fac
 	if jt(N.get("last_beat")): bw = TB.NEM_BEAT_WORD.get(N["last_beat"]) if jt(TB.NEM_BEAT_WORD.get(N["last_beat"])) else N["last_beat"]
 	var cnt = TB.NEM_BEAT_COUNTER.get(N["last_beat"]) if N.get("last_beat") != null else null
 	var line = null
-	if jt(N.get("gloat")) and jt(L.get("gloat")): line = L["gloat"].get(N["gloat"])
+	if N.get("line") is String: line = N["line"]   # #121: the campaign's own NEM_VOICE line (cfg.nemesis.line) when it sends one
+	elif jt(N.get("gloat")) and jt(L.get("gloat")): line = L["gloat"].get(N["gloat"])
 	elif jt(N.get("met")) and jt(bw):
 		var tpl = L["again"] if ad.has(cnt) else (L["remember"] if jt(L.get("remember")) else L["again"])
 		var ts = String(tpl); var bi = ts.find("{beat}")   # JS replace: the first occurrence only
