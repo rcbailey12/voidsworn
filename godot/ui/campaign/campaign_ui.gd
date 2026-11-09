@@ -11,6 +11,7 @@ var teaching: Node
 const Map3D = preload("res://ui/campaign/map3d.gd")
 const ChoiceScript = preload("res://ui/campaign/choice_button.gd")
 const Crest = preload("res://ui/campaign/crest.gd")
+const UiScale = preload("res://ui/ui_scale.gd")
 
 const INK := Color("#0f1626")
 const IRON := Color("#182133")
@@ -102,7 +103,7 @@ func bind(campaign) -> void:
 	_dirty = true
 
 func _rescale() -> void:
-	k = clamp(get_viewport().get_visible_rect().size.y / 1080.0, 0.6, 2.5)
+	k = UiScale.k_for(get_viewport().get_visible_rect().size)   # the one shared law (ui_spec.md section 4); its ceiling was 2.5 here
 	theme_main = _make_theme(); root.theme = theme_main
 
 func px(v: float) -> int: return int(round(v * k))
@@ -572,7 +573,7 @@ func _map() -> Control:
 			t += "\n" + c("Reward: " + _reward_label(rw) + (" (rare or better)" if C.jt(rw.get("min")) else ""), rc)
 		var p = PanelContainer.new(); p.add_theme_stylebox_override("panel", _glass(Color(0.02, 0.03, 0.055, 0.86), fac_col(fac), "left", 3, 3, 9))
 		p.custom_minimum_size.x = px(340); var pv = vbox(2); p.add_child(pv)
-		pv.add_child(caps(("Elite fleet" if n["type"] == "elite" else "Next fight") + " · " + str(C.FACTIONS[fac]["n"] if C.FACTIONS.has(fac) else ""), 11, fac_col(fac)))
+		pv.add_child(caps(("Elite fleet" if n["type"] == "elite" else "Next fight") + " · " + str(C.FACTIONS[fac]["n"] if C.FACTIONS.has(fac) else ""), 12, fac_col(fac)))   # 12: the text floor (ui_spec.md 4.3; was 11)
 		pv.add_child(rich(t, 14)); prev.add_child(p)
 	main.add_child(prev)
 	var hint = c("Gold: next choices. Blue: still reachable. Faint: bypassed. Click a pulsing stop to fly; click again to skip.", BONE3)
@@ -596,7 +597,7 @@ func _intel_strip() -> Control:
 		var p = PanelContainer.new(); p.add_theme_stylebox_override("panel", _glass(Color(0.02, 0.03, 0.055, 0.8), col, "left", 3, 3, 8))
 		var v = vbox(2); p.add_child(v); p.mouse_filter = Control.MOUSE_FILTER_PASS
 		p.custom_minimum_size.x = px(w if w > 0.0 else (180.0 if head.length() < 18 else 230.0))
-		v.add_child(caps(head, 11, Color(col.lerp(BONE3, 0.45), 1.0))); v.add_child(rich(body, 15))
+		v.add_child(caps(head, 12, Color(col.lerp(BONE3, 0.45), 1.0))); v.add_child(rich(body, 15))   # head 12: the text floor (ui_spec.md 4.3; was 11)
 		if tip != "": p.tooltip_text = tip
 		return p
 	var hp = box.call("Hostile presence", "[b]" + c(esc(F["n"]), fac_col(m["fac"])) + "[/b]", fac_col(m["fac"]), str(F.get("blurb", "")))
@@ -640,7 +641,7 @@ func _wr_head(t: String) -> Control:   # a section rule: a gilt diamond, the nam
 	var line = _rule(Color(GILT, 0.55), 40); line.size_flags_horizontal = Control.SIZE_EXPAND_FILL; line.size_flags_vertical = Control.SIZE_SHRINK_CENTER; h.add_child(line)
 	m.add_child(h); return m
 func _readout(label: String, value: String, col: Color, right: bool = false) -> Control:
-	var v = vbox(0); var a = caps(label, 11, BONE3); var b = lbl(value, 32, col, font_semi, false)
+	var v = vbox(0); var a = caps(label, 12, BONE3); var b = lbl(value, 32, col, font_semi, false)   # label 12: the text floor (ui_spec.md 4.3; was 11)
 	if right: a.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT; b.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	v.add_child(a); v.add_child(b); return v
 func _brackets(c: Control) -> void:
@@ -1274,7 +1275,7 @@ func _modal(md: Dictionary) -> void:
 			if md["kind"] == "intro": p.call(F.get("blurb", ""), BONE2)
 			if md["kind"] == "sector" and d.get("adapt") != null and d.get("adaptFac") != null:   # #121 (A4): the commander who fought the sector just ended
 				var na = d["adapt"]; var nf = d["adaptFac"]
-				v.add_child(rich(c("Intelligence: " + esc(str(d.get("adaptWho", ""))) + " has adapted to you: [b]" + esc(C.nemAdaptName(na, nf)) + "[/b] (" + esc(C.nemAdaptWhy(na, nf)) + "). " + esc(C.nemAdaptDesc(na, nf)), BLOOD), 17))
+				v.add_child(rich(c("Intelligence: " + esc(str(d.get("adaptWho", ""))) + " has adapted to you: [b]" + esc(C.nemAdaptName(na, nf)) + "[/b] (" + esc(str(d.get("adaptWhy", C.nemAdaptWhy(na, nf)))) + "). " + esc(C.nemAdaptDesc(na, nf)), BLOOD), 17))
 				if str(d.get("adaptLine", "")) != "": v.add_child(rich(c(esc(str(d["adaptLine"])), BLOOD), 15))
 			if d["cond"] != null: v.add_child(rich(c("Sector condition: [b]" + esc(d["cond"]["n"]) + "[/b].", GILT) + " " + c(esc(d["cond"]["d"]), BONE2), 17))
 			if md["kind"] == "sector": p.call(F.get("blurb", ""), BONE2)

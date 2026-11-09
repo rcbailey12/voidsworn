@@ -90,7 +90,7 @@ func _panel(bg := IRON, border := IRON3, pad := 12.0) -> PanelContainer:
 
 func open(st) -> void:
 	story = st
-	k = clampf(get_viewport_rect().size.y / 1080.0, 0.6, 2.0)
+	k = load("res://ui/ui_scale.gd").k_for(get_viewport_rect().size)   # the one shared law (ui_spec.md section 4); its ceiling was 2.0 here
 	regular = _font("res://ui/battle/fonts/BarlowSemiCondensed-Regular.ttf")
 	semi = _font("res://ui/battle/fonts/BarlowSemiCondensed-SemiBold.ttf")
 	goth = load("res://ui/battle/brand.gd").display()  # Michroma headers (lore round 5; the blackletter is retired)

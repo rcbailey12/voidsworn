@@ -207,16 +207,16 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 	var tend = T0
 	match lk:
 		"macro":
-			tf = T0 + 0.2 + i * 0.08
+			tf = T0 + 0.2 + i * float(fx.timing.get("ripple", 0.08))
 			_muzzle_blast(fx, from, dir, tf, col, ka * (1.25 if w >= 3 else 1.0), MUZ_PX[clampi(w, 1, 3)] + 4.0)
-			var spd = SHELL_SPEED * fx.unit
+			var spd = float(fx.timing.get("shell_speed", SHELL_SPEED)) * fx.unit
 			ti = tf + dist / spd
 			fx.stk(from, tf, dist / spd, col.lerp(Color.WHITE, 0.3), 18.0, 9.0 * ka, 0.75 * ka * (1.2 if w >= 3 else 1.0), 0, dir * spd, 0.0, 0.0, 4.0 if w >= 3 else 3.4, 26.0)
 			fx.light(from + mn * 1.5 * ka, tf, 0.22, 7.8, col.lerp(Color.WHITE, 0.4), 0)
 			fx.shake(tf, 0.03, from)
 		"auto":
 			tf = T0 + 0.05 + i * 0.22
-			var spd = SHELL_SPEED * 1.3 * fx.unit
+			var spd = float(fx.timing.get("shell_speed", SHELL_SPEED)) * 1.3 * fx.unit
 			for b in 4:
 				var tb = tf + b * 0.05
 				var jit = fx.rdir() * 0.3 * kt
@@ -236,7 +236,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			ti = tf + dist / spd
 		"plasma":
 			tf = T0 + 0.12 + i * 0.16
-			var spd = SHELL_SPEED * 0.55 * fx.unit
+			var spd = float(fx.timing.get("shell_speed", SHELL_SPEED)) * 0.55 * fx.unit
 			var sz = (1.9 if w >= 3 else 1.5) * ka
 			_burst(fx, from + dir * 0.6 * ka, dir, tf, sz * 2.4, "flash", 0.22, col, 4.0, 30.0 if w >= 3 else 24.0)
 			fx.spr(from, tf, dist / spd, col, 2.0, sz * 1.6, sz * 1.6, 14, dir * spd, 0.0, 0.0, 0.0, 24.0 if w >= 3 else 19.0)
@@ -249,7 +249,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			ti = tf + dist / spd
 		"scatter":
 			tf = T0 + 0.1 + i * 0.1
-			var spd = SHELL_SPEED * 1.2 * fx.unit
+			var spd = float(fx.timing.get("shell_speed", SHELL_SPEED)) * 1.2 * fx.unit
 			_muzzle_blast(fx, from, dir, tf, Color(1, 0.6, 0.3), ka * 0.7, MUZ_PX[2])
 			fx.light(from + mn * 1.2 * ka, tf, 0.18, 6.5, Color(1, 0.65, 0.35), 0)
 			for b in 6:
@@ -274,9 +274,9 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			ti = tf + 0.03
 			tend = tf + 0.35
 		"lance", "ion", "pulsar", "doom":
-			var charge = 0.25 if lk != "doom" else 0.35
+			var charge = float(fx.timing.get("charge", 0.25)) if lk != "doom" else 0.35
 			tf = T0 + charge + i * 0.45
-			var dur = 0.7 if lk != "pulsar" else 0.45
+			var dur = float(fx.timing.get("lance", 0.7)) if lk != "pulsar" else 0.45
 			var wd = (2.4 if lk != "doom" else 1.6) * ka * (1.15 if w >= 3 else 1.0)
 			fx.spr(from, tf - charge, charge, col.lerp(Color.WHITE, 0.2), 9.0, 0.6 * ka, 5.0 * ka, 12, Vector3.ZERO, 0.0, 0.0, 0.0, 30.0)
 			fx.light(from + dir + mn * ka, tf - charge, charge, 6.0, col, 2)
@@ -314,7 +314,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 		"spine":
 			var wind = 0.3
 			tf = T0 + wind + i * (0.12 + fx.rng.randf() * 0.05)
-			var spd = SHELL_SPEED * 0.5 * fx.unit
+			var spd = float(fx.timing.get("shell_speed", SHELL_SPEED)) * 0.5 * fx.unit
 			fx.spr(from, tf - wind, wind, col, 1.4, 0.4 * ka, 1.6 * ka, 22)
 			fx.spr(from + dir * 0.5 * ka, tf, 0.25, col, 2.4, 0.8 * ka, 2.0 * ka, 18, Vector3.ZERO, 0.0, 0.0, 0.0, 22.0)
 			fx.light(from + mn * 1.2 * ka, tf, 0.3, 4.5, col, 1)
@@ -378,8 +378,12 @@ static func _weapon_shader(fx) -> Shader:
 		code = code.replace("vec3 core = mix(vec3(0.65, 0.76, 0.93), vec3(0.9, 0.83, 0.68), age);",
 			"vec3 core = mix(weapon_tint, vec3(0.9, 0.83, 0.68), age * 0.45);")
 		code = code.replace("ALPHA = gas.a * fade * soft", "ALPHA = gas.a * fade * soft * opacity * mix(1.0, 0.55, fx_calm)")
-		# Crop the empty atlas gutters, so the pixel floor measures the gas itself.
-		code = code.replace("// Half-texel gutter", "uv = (uv - vec2(0.5)) * vec2(0.36, 0.48) + vec2(0.5, mix(0.5, mix(0.72, 0.50, smoothstep(0.0, 12.0, frame)), vent));\n\t// Half-texel gutter")
+		# The atlas_rect above already frames the gas inside the baked cell. An extra UV crop (0.36 x 0.48) sampled only
+		# the gas CORE, so every muzzle and impact burst lost its soft edge and drew as a pale translucent square (#232).
+		# Sample the whole framed cell instead and grow the quad by the same 1/0.46, so the gas keeps the on-screen size
+		# the F3 pixel floor was tuned for.
+		code = code.replace("float size = max(extent, px_world(min_pixels, -view_c.z, PROJECTION_MATRIX));",
+			"float size = max(extent, px_world(min_pixels, -view_c.z, PROJECTION_MATRIX)) * 1.45;")
 		code = code.replace("float age = clamp(elapsed / max(lifetime, 0.001), 0.0, 1.0);",
 			"float age = looping > 0.5 ? 0.15 + 0.55 * (0.5 + 0.5 * sin(elapsed * 9.0 * mix(1.0, 0.35, fx_calm) + spin)) : clamp(elapsed / max(lifetime, 0.001), 0.0, 1.0);")
 		code = code.replace("float fade = 1.0 - smoothstep(0.70, 1.0, age);", "float fade = mix(1.0 - smoothstep(0.70, 1.0, age), pow(clamp(UV.y, 0.0, 1.0), 0.7), looping);")
@@ -830,7 +834,7 @@ static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float,
 	var sc: Color = Tg.fac["shield"] if Tg != null else Color(0.4, 0.7, 1.0)
 	var strength = 0.6 if light else (1.0 if w <= 2 else 1.4)
 	var spread = (9.0 if light else 14.0) * k
-	var life = 0.6
+	var life = float(fx.timing.get("shield", 0.6))
 	if torp:
 		strength = 2.2
 		spread = 26.0 * k

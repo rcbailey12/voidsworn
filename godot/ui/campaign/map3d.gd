@@ -671,7 +671,7 @@ func _fit(fr: Rect2) -> void:
 func _draw_overlay() -> void:
 	var C = _C()
 	if C == null or C.RUN == null or root3 == null: return
-	var av = _avail(); var s = clamp(ui.k, 0.6, 2.2)
+	var av = _avail(); var s = ui.k   # ui.k already follows the shared law (ui_scale.gd); this re-clamp at 2.2 is folded into it
 	var on_route = {}
 	for r in _routes:
 		for st in r["st"]["running"]: on_route[st["id"]] = [r, st]

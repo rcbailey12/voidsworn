@@ -41,6 +41,12 @@ var min_px = 1.0:
 var unit = 1.0
 var starboard_z = 1
 var compat := false
+# Issue 232 damage stress: a multiplier on the shipped damage caps (marks, section marks and persistent fire/smoke/vent
+# emitters). 1.0 is the shipped game; the stress bench sets 2 and 4 to find where the frame budget binds.
+var cap_k := 1.0
+# Issue 232 weapon timing sheet (E31): the effect-loop pins. These are the shipped values; the sheet bench sets a second
+# set (one alternate) without touching the game's defaults.
+var timing := {"ripple": 0.08, "shell_speed": 160.0, "lance": 0.7, "charge": 0.25, "shield": 0.6}
 var well = Vector3.INF     # the dead star, when the board has one (world.gd sets it): tidal deaths fall toward it
 var dstate = {}
 var manual = false
