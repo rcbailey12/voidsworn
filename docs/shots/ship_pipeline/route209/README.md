@@ -1,6 +1,6 @@
 # Issue 209 round 1: build-route comparison on the C15s Hullbreaker cruiser
 
-**Round 2 is in [round2/README.md](round2/README.md).** Found there: this round's B0 sat about 20 degrees off the ship axis (the turn was silently dropped on import), which also smeared the station table Arm A was lofted from.
+**Round 3 is in [round3/README.md](round3/README.md); round 2 is in [round2/README.md](round2/README.md).** Found in round 2: this round's B0 sat about 20 degrees off the ship axis (the turn was silently dropped on import), which also smeared the station table Arm A was lofted from.
 
 **Pick: B3 (generated parts on a hand-built core) climbs the ladder next, with Arm A beside it.** Sectioned generation (B1, B2) came back as generic crates that do not join into one hull, and the whole-hull control (B0) carries the concept's naval tells and melted surfaces. Ryan judges the sheets; there are no pass bars.
 
