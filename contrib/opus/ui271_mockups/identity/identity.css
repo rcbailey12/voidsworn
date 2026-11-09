@@ -1,0 +1,211 @@
+/* #271 identity round (FINDINGS R148): three identities for the same C Glass Shell bold layout.
+   Each one changes the typeface, the palette and the panel material. Layout, sizes and the ui_spec.md rules are untouched
+   (12 px floor, solid backing under all text, the bone/white focus ring, friend green and foe lavender families, alert red
+   for the Nemesis alone, faction colour only on crests and the 3 px strip).
+   Fonts: all SIL Open Font License, files in fonts/ with their OFL texts. */
+
+/* ------------------------------------------------------------ fonts */
+@font-face { font-family: SairaSC; src: url(fonts/SairaSemiCondensed-Regular.ttf); font-weight: 400; }
+@font-face { font-family: SairaSC; src: url(fonts/SairaSemiCondensed-Medium.ttf); font-weight: 500; }
+@font-face { font-family: SairaSC; src: url(fonts/SairaSemiCondensed-SemiBold.ttf); font-weight: 600; }
+@font-face { font-family: SairaSC; src: url(fonts/SairaSemiCondensed-Bold.ttf); font-weight: 700; }
+@font-face { font-family: SairaWide; src: url(fonts/Saira-VF.ttf); font-weight: 100 900; font-stretch: 50% 125%; }
+@font-face { font-family: JBMono; src: url(fonts/JetBrainsMono-VF.ttf); font-weight: 100 800; }
+@font-face { font-family: Chakra; src: url(fonts/ChakraPetch-Regular.ttf); font-weight: 400; }
+@font-face { font-family: Chakra; src: url(fonts/ChakraPetch-Medium.ttf); font-weight: 500; }
+@font-face { font-family: Chakra; src: url(fonts/ChakraPetch-SemiBold.ttf); font-weight: 600; }
+@font-face { font-family: Chakra; src: url(fonts/ChakraPetch-Bold.ttf); font-weight: 700; }
+@font-face { font-family: Azeret; src: url(fonts/AzeretMono-VF.ttf); font-weight: 100 900; }
+@font-face { font-family: Exo2; src: url(fonts/Exo2-VF.ttf); font-weight: 100 900; }
+@font-face { font-family: RHMono; src: url(fonts/RedHatMono-VF.ttf); font-weight: 300 700; }
+
+/* ============================================================ shared: the identity layer drives everything from variables */
+/* defaults at the lowest specificity, so each identity's own values (body.idN) win */
+body { --p-friend: var(--friend); --p-foe: var(--foe); --p-bone: var(--bone); --p-track: var(--track); --p-strack: var(--iron3);
+  --tag-foe-bg: rgba(40, 14, 70, 0.7); --tag-foe-fg: #e2d2ff; }
+/* the wider faces must not wrap the one-line top bar or the shield labels; roster names at 14 (still above the 12 floor) */
+.vC.bold .pane.flat .row > span { white-space: nowrap; }
+.vC.bold .pane.flat .row { gap: 10px !important; }
+.vC.bold .well .row.s12 span { white-space: nowrap; }
+.vC.bold .rr .grow.ell { font-size: 14px !important; }
+.vC.bold .pane { background: var(--pane-bg); backdrop-filter: var(--pane-filter); -webkit-backdrop-filter: var(--pane-filter);
+  border: var(--pane-edge); outline: none; box-shadow: var(--pane-shadow); border-radius: var(--pane-radius);
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut)); }
+.vC.bold .pane.flat, .vC.bold .pane.lite { background: var(--pane-bg); backdrop-filter: var(--pane-filter); -webkit-backdrop-filter: var(--pane-filter); }
+.vC.bold .pane::before { content: none; }
+.vC.bold .pane::after { content: none; }
+.vC.bold .well, .vC .lite .wellin, .vC.bold .pane.flat > .wellin { background: var(--well-bg); border: var(--well-edge); box-shadow: var(--well-shadow);
+  border-radius: var(--well-radius); }
+.vC.bold .reg { display: var(--reg-show); border-color: var(--reg); }
+.vC.bold .caps { font-family: var(--f-ui); color: var(--caps-fg); text-shadow: none; letter-spacing: var(--caps-ls); font-weight: var(--caps-w); }
+.vC.bold .big-round { font-family: var(--f-disp); font-weight: var(--disp-w); letter-spacing: var(--disp-ls); text-shadow: none;
+  font-stretch: var(--disp-stretch); color: var(--bone); }
+.vC.bold .h-ship { text-shadow: none; font-family: var(--f-body); }
+.vC.bold .rr { border-bottom: 1px solid var(--line); }
+.vC.bold .rule { background: var(--line); }
+.vC.bold .key { background: var(--key-bg); border: 1px solid var(--key-edge); color: var(--key-fg); font-family: var(--f-num); border-radius: var(--key-radius); }
+.vC.bold .btn { background: var(--btn-bg); border: 1px solid var(--btn-edge); color: var(--bone); border-radius: var(--btn-radius); font-family: var(--f-body); }
+.vC.bold .btn.off { background: var(--btn-off-bg); color: var(--bone3); border-color: var(--line); }
+.vC.bold .btn.off .key { color: var(--bone3); border-color: var(--line); }
+.vC.bold .btn.lit { color: var(--gilt); border-color: var(--gilt); box-shadow: var(--lit-shadow); background: var(--lit-bg); }
+.vC.bold .btn.primary { background: var(--primary-bg); color: var(--on-gilt); border-color: var(--gilt); box-shadow: var(--primary-shadow);
+  font-family: var(--f-ui); font-weight: 700; letter-spacing: var(--primary-ls); text-transform: var(--primary-tt); }
+.vC.bold .btn.primary .key { color: var(--on-gilt); border-color: var(--on-gilt-edge); background: var(--on-gilt-key); }
+.vC.bold .tag { font-family: var(--f-ui); border-radius: var(--tag-radius); }
+.vC.bold .tag.nem { box-shadow: var(--nem-glow); }
+.vC.bold .tag.foe { background: var(--tag-foe-bg); color: var(--tag-foe-fg); }
+.vC.bold .track i { box-shadow: none; }
+.vC.bold .track i.u { box-shadow: none; }
+.vC.bold .hbar i b, .vC.bold .sbar i b { box-shadow: var(--bar-glow); }
+.vC.bold .wrow { background: var(--row-bg); border-color: var(--line); border-radius: var(--row-radius); }
+.vC.bold .wrow.armed { border-color: var(--gilt); box-shadow: var(--lit-shadow); }
+.vC.bold .wrow .tok { border-color: var(--line2); border-radius: var(--key-radius); }
+.vC.bold .chip { color: var(--p-friend); background: var(--chip-bg); border-color: var(--chip-edge); box-shadow: none; border-radius: var(--tag-radius); }
+.vC.bold .dng { box-shadow: none; color: var(--tag-foe-fg); background: var(--tag-foe-bg); border-radius: var(--tag-radius); }
+.vC.bold .hexbadge, .vC.bold .movebadge { background: var(--strip-bg); color: var(--p-bone); box-shadow: none; border-radius: var(--tag-radius); }
+.vC.bold .hexbadge span { color: var(--p-bone); }
+.vC.bold .hexbadge .dim3 { color: var(--strip-dim); }
+.vC.bold .movebadge .gilt { color: var(--board-accent); }
+.vC.bold .movebadge .dim { color: var(--strip-dim); }
+.vC.bold .plate { background: var(--strip-bg); backdrop-filter: none; -webkit-backdrop-filter: none; border: 0; border-left: 3px solid var(--p-friend);
+  box-shadow: none; clip-path: var(--strip-clip); border-radius: var(--strip-radius); }
+.vC.bold .plate.e { border-left-color: var(--foe-ring); }
+.vC.bold .plate.nem { border-left-color: var(--alert); }
+.vC.bold .plate.sel { border-left-color: var(--board-accent); outline: 1px solid var(--board-accent); }
+.vC.bold .plate .pn { color: var(--p-friend); text-shadow: none; }
+.vC.bold .plate.e .pn { color: var(--p-foe); text-shadow: none; }
+.vC.bold .plate .hbar i { background: var(--p-track); }
+.vC.bold .plate .sbar i { background: var(--p-strack); }
+.vC.bold .plate .odds { background: var(--board-accent); color: var(--board-on-accent); }
+.vC.bold .plate .tag.up { background: var(--board-accent); color: var(--board-on-accent); }
+.vC.bold .nemb { box-shadow: var(--well-shadow); border-left: 3px solid var(--alert); }
+.vC.bold .ktip { background: var(--well-bg); }
+.vC.bold .heat .seg i.f { box-shadow: none; }
+.vC.bold .sbar i { background: var(--iron3); }
+.vC.bold .hbar i { background: var(--track); }
+
+/* ============================================================ 1. GRAPHITE SIGNAL
+   Feel: a quiet flight-deck instrument. Neutral graphite (no blue), white text, white is the one accent (the action, the
+   ship that is up); hue appears only where data lives. Type: Saira Semi Condensed, wide Saira caps, JetBrains Mono numbers.
+   Material: smoked glass with no tint, hairline edges, square corners, a short white index bar on each frame. */
+body.id1 {
+  --f-body: SairaSC, sans-serif; --f-ui: SairaSC, sans-serif; --f-disp: SairaWide, sans-serif; --f-num: JBMono, monospace;
+  --caps-ls: 0.16em; --caps-w: 600; --disp-w: 600; --disp-ls: 0.10em; --disp-stretch: 125%;
+  --primary-ls: 0.04em; --primary-tt: none;
+  --ink: #0b0c0e; --iron: #15171b; --iron2: #1e2126; --iron3: #2e3238;
+  --bone: #eef0f2; --bone2: #a9aeb5; --bone3: #757b83;
+  --gilt: #f4f6f8; --gilt2: #8b9097; --gilt-hover: #ffffff; --on-gilt: #0b0c0e; --on-gilt-edge: rgba(11,12,14,0.45); --on-gilt-key: rgba(11,12,14,0.08);
+  --verd: #66d1b6; --blood: #ff8a7a; --alert: #ff4b45; --ember: #f6b04c;
+  --shield: #5cc8ff; --hull: #ffb24a; --hull-low: #ff5a3c; --track: #2a2b2e;
+  --friend: #72f0a6; --foe: #bba2ff; --foe-ring: #9a6dff; --foe-bar: #b08cff;
+  --line: rgba(255,255,255,0.09); --line2: rgba(255,255,255,0.22); --reg: #f4f6f8; --reg-show: none;
+  --pane-bg: rgba(16, 17, 20, 0.50); --pane-filter: blur(18px) saturate(0.5) brightness(0.62);
+  --pane-edge: 1px solid rgba(255,255,255,0.13); --pane-shadow: 0 2px 18px rgba(0,0,0,0.45); --pane-radius: 0; --cut: 0px;
+  --well-bg: rgba(12, 13, 15, 0.92); --well-edge: 1px solid rgba(255,255,255,0.07); --well-shadow: none; --well-radius: 0;
+  --key-bg: rgba(255,255,255,0.06); --key-edge: rgba(255,255,255,0.30); --key-fg: #d8dbdf; --key-radius: 2px;
+  --btn-bg: rgba(255,255,255,0.05); --btn-edge: rgba(255,255,255,0.20); --btn-off-bg: rgba(255,255,255,0.02); --btn-radius: 0;
+  --lit-shadow: none; --lit-bg: rgba(255,255,255,0.07);
+  --primary-bg: #f4f6f8; --primary-shadow: none;
+  --tag-radius: 0; --row-radius: 0; --row-bg: rgba(255,255,255,0.03); --nem-glow: none; --bar-glow: none;
+  --caps-fg: #8d939a; --up-bg: rgba(255,255,255,0.08);
+  --strip-bg: rgba(11, 12, 14, 0.86); --strip-dim: #7d838b; --strip-clip: none; --strip-radius: 0;
+  --chip-bg: rgba(11, 12, 14, 0.86); --chip-edge: rgba(114,240,166,0.45);
+  --board-foe: #9a6dff; --board-foe2: #bba2ff; --board-accent: #f4f6f8; --board-on-accent: #0b0c0e;
+}
+/* the index bar: a short white rule on the top edge of each frame, the identity's one ornament */
+.id1.bold .pane { position: absolute; }
+.id1.bold .pane::before { content: ""; position: absolute; left: -1px; top: -1px; width: 28px; height: 2px; background: #f4f6f8; box-shadow: none; }
+.id1.bold .well .caps:first-child, .id1.bold .wellin .caps { color: #8d939a; }
+.id1.bold .tag.up { background: #f4f6f8; color: #0b0c0e; }
+.id1.bold .wrow .hit { color: #ffffff; font-weight: 700; }
+
+/* ============================================================ 2. LIME TACTICAL (Opus's pick)
+   Feel: a combat targeting computer. Black-olive slabs, cut corners and bracket marks, neon lime for what to do next.
+   Type: Chakra Petch (angular), Azeret Mono numbers. Material: matte near-solid panels with a fine scanline, 14 px
+   chamfers on two corners, lime corner brackets, backing strips with a slanted end. */
+body.id2 {
+  --f-body: Chakra, sans-serif; --f-ui: Chakra, sans-serif; --f-disp: Chakra, sans-serif; --f-num: Azeret, monospace;
+  --caps-ls: 0.18em; --caps-w: 700; --disp-w: 700; --disp-ls: 0.14em; --disp-stretch: 100%;
+  --primary-ls: 0.12em; --primary-tt: uppercase;
+  --ink: #090c09; --iron: #111611; --iron2: #182019; --iron3: #283228;
+  --bone: #e8eee0; --bone2: #a7b09d; --bone3: #7c8674;
+  --gilt: #c8f53a; --gilt2: #6f8a1c; --gilt-hover: #d9ff5c; --on-gilt: #0d1200; --on-gilt-edge: rgba(13,18,0,0.55); --on-gilt-key: rgba(255,255,255,0.22);
+  --verd: #59d6a8; --blood: #ff8a72; --alert: #ff4433; --ember: #ffb23e;
+  --shield: #4fc4ff; --hull: #ffad3b; --hull-low: #ff5530; --track: #2b2a20;
+  --friend: #5ff0a0; --foe: #c4a4ff; --foe-ring: #a06bff; --foe-bar: #b48cff;
+  --line: rgba(200,245,58,0.12); --line2: rgba(200,245,58,0.30); --reg: #c8f53a; --reg-show: block;
+  --pane-bg: repeating-linear-gradient(0deg, rgba(200,245,58,0.025) 0 1px, transparent 1px 4px), rgba(10, 13, 10, 0.80);
+  --pane-filter: blur(6px) brightness(0.55);
+  --pane-edge: 1px solid rgba(200,245,58,0.20); --pane-shadow: none; --pane-radius: 0; --cut: 14px;
+  --well-bg: rgba(8, 10, 8, 0.93); --well-edge: 1px solid rgba(200,245,58,0.10); --well-shadow: none; --well-radius: 0;
+  --key-bg: rgba(200,245,58,0.08); --key-edge: rgba(200,245,58,0.45); --key-fg: #d9f78a; --key-radius: 0;
+  --btn-bg: rgba(200,245,58,0.04); --btn-edge: rgba(200,245,58,0.28); --btn-off-bg: rgba(0,0,0,0.25); --btn-radius: 0;
+  --lit-shadow: inset 0 0 0 1px rgba(200,245,58,0.35); --lit-bg: rgba(200,245,58,0.08);
+  --primary-bg: #c8f53a; --primary-shadow: 0 0 16px rgba(200,245,58,0.35);
+  --tag-radius: 0; --row-radius: 0; --row-bg: rgba(200,245,58,0.025); --nem-glow: none; --bar-glow: none;
+  --caps-fg: #c8f53a; --up-bg: rgba(200,245,58,0.10);
+  --strip-bg: rgba(8, 10, 8, 0.88); --strip-dim: #8a9480; --strip-radius: 0;
+  --strip-clip: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  --chip-bg: rgba(8, 10, 8, 0.88); --chip-edge: rgba(95,240,160,0.45);
+  --board-foe: #a06bff; --board-foe2: #c4a4ff; --board-accent: #c8f53a; --board-on-accent: #0d1200;
+}
+/* the chamfer edge line and bracket corners */
+.id2.bold .pane::after { content: ""; position: absolute; left: 0; top: var(--cut); width: calc(var(--cut) * 1.4142 + 1px); height: 2px;
+  background: #c8f53a; transform-origin: 0 0; transform: rotate(-45deg); }
+.id2.bold .pane.flat::after { content: none; }
+.id2.bold .reg { width: 18px; height: 18px; }
+.id2.bold .reg.tr { border-top-width: 2px; border-right-width: 2px; }
+.id2.bold .reg.bl { border-bottom-width: 2px; border-left-width: 2px; }
+.id2.bold .well > .caps:first-child, .id2.bold .well .row > .caps:first-child { color: #c8f53a; }
+.id2.bold .well { border-left: 2px solid rgba(200,245,58,0.35); }
+.id2.bold .well.nemb { border-left: 3px solid var(--alert); }
+.id2.bold .btn.primary { clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
+.id2.bold .tag.up { background: #c8f53a; color: #0d1200; }
+.id2.bold .h-ship { text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; font-size: 20px; }
+
+/* ============================================================ 3. WHITE FROST
+   Feel: bright near-future glass. White frosted cards with ink text, cobalt for the next action; the board's own labels
+   stay on dark strips so the scene keeps its depth. Type: Exo 2, Red Hat Mono numbers. Material: frosted white glass,
+   8 px rounded corners, soft drop shadow, solid white wells. */
+body.id3 {
+  --f-body: Exo2, sans-serif; --f-ui: Exo2, sans-serif; --f-disp: Exo2, sans-serif; --f-num: RHMono, monospace;
+  --caps-ls: 0.14em; --caps-w: 700; --disp-w: 800; --disp-ls: 0.06em; --disp-stretch: 100%;
+  --primary-ls: 0.02em; --primary-tt: none;
+  --ink: #f2f5f9; --iron: #e6ebf2; --iron2: #dce3ec; --iron3: #cdd6e1;
+  --bone: #0f1722; --bone2: #3d4a5a; --bone3: #627083;
+  --gilt: #2453ff; --gilt2: #8ea7ff; --gilt-hover: #3a66ff; --on-gilt: #ffffff; --on-gilt-edge: rgba(255,255,255,0.6); --on-gilt-key: rgba(255,255,255,0.16);
+  --verd: #087a65; --blood: #c8402c; --alert: #e0261b; --ember: #a85a00;
+  --shield: #0777ad; --hull: #e88600; --hull-low: #c8361a; --track: #ece2d8;
+  --friend: #0b8446; --foe: #6a3ff0; --foe-ring: #7a4dff; --foe-bar: #7a4dff;
+  --line: rgba(15,23,34,0.10); --line2: rgba(15,23,34,0.22); --reg: #2453ff; --reg-show: none;
+  --pane-bg: rgba(236, 241, 247, 0.72); --pane-filter: blur(22px) saturate(1.2) brightness(1.25);
+  --pane-edge: 1px solid rgba(255,255,255,0.85); --pane-shadow: 0 10px 30px rgba(0,0,0,0.40); --pane-radius: 10px; --cut: 0px;
+  --well-bg: rgba(255, 255, 255, 0.93); --well-edge: 1px solid rgba(15,23,34,0.07); --well-shadow: 0 1px 2px rgba(15,23,34,0.08); --well-radius: 7px;
+  --key-bg: #eef2f7; --key-edge: rgba(15,23,34,0.25); --key-fg: #1d2836; --key-radius: 4px;
+  --btn-bg: #f4f7fb; --btn-edge: rgba(15,23,34,0.16); --btn-off-bg: rgba(15,23,34,0.03); --btn-radius: 6px;
+  --lit-shadow: none; --lit-bg: rgba(36,83,255,0.08);
+  --primary-bg: linear-gradient(180deg, #3a68ff, #2453ff); --primary-shadow: 0 4px 14px rgba(36,83,255,0.40);
+  --tag-radius: 4px; --row-radius: 5px; --row-bg: #f5f8fc; --nem-glow: none; --bar-glow: none;
+  --caps-fg: #5a6779; --up-bg: rgba(36,83,255,0.09);
+  --strip-bg: rgba(10, 16, 24, 0.84); --strip-dim: #8d99a8; --strip-clip: none; --strip-radius: 5px;
+  --chip-bg: rgba(255, 255, 255, 0.92); --chip-edge: rgba(14,154,82,0.45);
+  --board-foe: #9a6dff; --board-foe2: #c4a8ff; --board-accent: #6f93ff; --board-on-accent: #ffffff;
+  /* the board's strips stay dark: their text keeps the dark-surface colours */
+  --p-friend: #7cf0ab; --p-foe: #c9adff; --p-bone: #eef2f6; --p-track: #3a2a20; --p-strack: #2c3644;
+  --tag-foe-bg: #efe9ff; --tag-foe-fg: #5a2fe0;
+}
+.id3.bold .pane.flat, .id3.bold .pane.lite { border-radius: 10px; }
+.id3.bold .chip { color: #0b7d43; }
+.id3.bold .tag.up { background: #2453ff; color: #fff; }
+.id3.bold .tag.nem { color: #fff; }
+.id3.bold .hexbadge .dng, .id3.bold .plate .dng { background: rgba(40,14,70,0.75); color: #e2d2ff; }
+.id3.bold .wrow.no { opacity: 0.55; }
+.id3.bold .portrait { border-radius: 6px; }
+.id3.bold .track i { border-color: #0e9a52; }
+.id3.bold .track i.e { border-color: #7a4dff; }
+.id3.bold .track .sep { background: #8b97a6; }
+.id3.bold .heat .seg i { border-color: rgba(196,106,0,0.55); }
+.id3.bold .ghostkey, .id3.bold .hbar i u, .id3.bold .sbar i u {
+  background-image: repeating-linear-gradient(135deg, rgba(15,23,34,0.55) 0 2px, rgba(15,23,34,0) 2px 4px); }
+.id3.bold .plate .hbar i u, .id3.bold .plate .sbar i u {
+  background-image: repeating-linear-gradient(135deg, rgba(255,255,255,0.85) 0 2px, rgba(255,255,255,0) 2px 4px); }

@@ -38,7 +38,13 @@ check(/set_player\(settings\.get\("ui_scale", 1\.0\)\)/.test(read('godot/main/ma
 // 3. AC5: the battle theme draws a visible focus ring, and the menu and end card take keyboard focus
 const hud = read('godot/ui/battle/hud.gd');
 check(!/set_stylebox\("focus", "Button", StyleBoxEmpty/.test(hud), 'battle theme focus stylebox is not empty (AC5, ui_spec.md 6.2)');
-check(/set_stylebox\("focus", "Button", sf\)/.test(hud) && /sf\.draw_center = false/.test(hud) && /sf\.border_color = BONE/.test(hud), 'battle theme focus ring is the title screen ring: no fill, bone border');
+// #314 check condition 4: the ring has one source, glass_shell.gd focus_ring, installed by make_theme; hud.gd takes the
+// theme and does not set a focus stylebox of its own
+const gsh = read('godot/ui/theme/glass_shell.gd');
+const ringFn = (/static func focus_ring\([^)]*\)[^\n]*\n([\s\S]*?)\n\n/.exec(gsh) || [])[1] || '';
+check(/f\.draw_center = false/.test(ringFn) && /f\.border_color = BONE/.test(ringFn) && /set_border_width_all\(maxi\(2,/.test(ringFn), 'battle theme focus ring is the title screen ring: no fill, bone border, at least 2 px (glass_shell.gd focus_ring)');
+check(/th\.set_stylebox\("focus", "Button", focus_ring\(k\)\)/.test(gsh) && /GS\.make_theme\(/.test(hud), 'the battle theme takes its focus ring from glass_shell.gd make_theme');
+check(!/set_stylebox\("focus"/.test(hud), 'hud.gd sets no focus stylebox of its own (one source for the ring)');
 check(/func _button\([^)]*keys := false\)/.test(hud) && /Control\.FOCUS_ALL if keys else Control\.FOCUS_NONE/.test(hud), 'battle buttons take focus only when asked (keys)');
 check(/_button\(str\(it\[0\]\), str\(it\[1\]\), it\[2\] if it\.size\(\) > 2 else null, it == items\[0\], true\)/.test(hud), 'battle menu buttons take keyboard focus');
 check(/_button\("Continue", "continue", null, true, true\)/.test(hud) && /_button\("Fight again", "restart", null, true, true\)/.test(hud), 'end card buttons take keyboard focus');
