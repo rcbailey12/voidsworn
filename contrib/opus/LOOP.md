@@ -30,6 +30,10 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 7. Rewrite this file, set "Running: no", commit straight to main (this file and FINDINGS only, docs-only exception), push with timeout 90. Stop.
 8. One send_later check only when a job or a limit reset lands well before the next look. Never chain them.
 
+## Board handover (2026-11-09 21:08 UTC)
+
+The board moved to a new thread on Fable 5.2 (R152). The Opus board thread stood down; it holds no lock and has no check-ins pending. Start from HANDOFF.md section 0 (PR #330) and the state below.
+
 ## Current state (2026-11-09 21:05 UTC)
 
 - Tree effects #305: Chorus MERGED (PR #323, run 2 on top of Eclipse: 101 fixtures fire, 49 rows inert). Muse text pass MERGED (PR #324: every x and c row rewritten for all six factions, Grax boarding with renames First Over the Rail and Rush the Rail, Vorn's Command is Interdiction strike, eclipse.md skill texts shield-free, the 144 mastery texts in capstone_mastery_texts.md). Job 5 Hullbreakers FULL tree (#329) on DeepSeek since 20:40 UTC. Next one at a time: job 6 Hegemony full tree; job 7 the x rows of Glasswrights, Crusade, Eclipse, Chorus plus their final texts into data.js; job 8 mastery level effects; then the balance pass. Ryan still owes his one-sitting read of text_pass_nov9.md (offer it).
