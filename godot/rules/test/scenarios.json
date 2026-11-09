@@ -4205,5 +4205,798 @@
    "capstone": null
   },
   "note": "Eclipse: shared Frame Zero (nekhet:C:0:1) fires the flagship first miss again at half damage"
+ },
+ "t_choosebrood": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31701,
+  "admiral": "matriarch",
+  "fleet": [
+   "b_brood",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 1,
+  "treeChoices": {
+   "brood": "x01"
+  },
+  "lineage": {
+   "id": "matriarch",
+   "picks": [
+    "matriarch:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Matriarch Choose the Brood That Swells (matriarch:A:0:0) swells one brood and leaves the others"
+ },
+ "t_sporetide": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31702,
+  "admiral": "matriarch",
+  "fleet": [
+   "b_brood",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 1,
+  "lineage": {
+   "id": "matriarch",
+   "picks": [
+    "matriarch:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Matriarch Spores on the Tide (matriarch:A:0:1) places extra swarms up to 2 hexes out"
+ },
+ "t_everythroat": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31703,
+  "admiral": "matriarch",
+  "fleet": [
+   "b_brood",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 1,
+  "lineage": {
+   "id": "matriarch",
+   "picks": [
+    "matriarch:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Matriarch Every Throat Opens (matriarch:A:2:0) pays +25% to a still brood extra swarms"
+ },
+ "t_secondthroat": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31704,
+  "admiral": "matriarch",
+  "fleet": [
+   "b_brood",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 1,
+  "lineage": {
+   "id": "matriarch",
+   "picks": [
+    "matriarch:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Matriarch The Second Throat Bites (matriarch:A:2:1) pays +25% to a swarm on an already-hit target"
+ },
+ "t_rundown": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 31705,
+  "admiral": "razormaw",
+  "fleet": [
+   "b_razor",
+   "b_razor"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "razormaw",
+   "picks": [
+    "razormaw:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Razormaw Run Down the Slowest (razormaw:A:0:0) pays +20% against a slower target in the frenzy"
+ },
+ "t_razorprey": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31706,
+  "admiral": "razormaw",
+  "fleet": [
+   "b_razor",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 1,
+  "treeChoices": {
+   "enemy": "x03"
+  },
+  "lineage": {
+   "id": "razormaw",
+   "picks": [
+    "razormaw:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Razormaw One Prey in Both Throats (razormaw:A:1:0) names a prey and gains +1 movement toward it"
+ },
+ "t_frenzyfeeds": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 31707,
+  "admiral": "razormaw",
+  "fleet": [
+   "b_razor",
+   "b_razor",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion",
+   "h_picket"
+  ],
+  "cmdRound": 3,
+  "lineage": {
+   "id": "razormaw",
+   "picks": [
+    "razormaw:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Razormaw Frenzy Feeds the Throat (razormaw:A:2:0) gives 2 more hexes after a rear hit in the frenzy"
+ },
+ "t_breathbite": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 9,
+  "bot": "full",
+  "seed": 31713,
+  "admiral": "razormaw",
+  "fleet": [
+   "b_razor",
+   "b_razor",
+   "b_drone",
+   "b_drone",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 5,
+  "lineage": {
+   "id": "razormaw",
+   "picks": [
+    "razormaw:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Razormaw Breath Before the Bite (razormaw:A:2:1) costs a surrounded enemy 20 accuracy"
+ },
+ "t_throatred": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 31709,
+  "admiral": "razormaw",
+  "fleet": [
+   "b_razor",
+   "b_drone",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "razormaw",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Chorus: Razormaw The Throat Turns Red (razormaw:cap:0) pays +25% on the first shot after the frenzy"
+ },
+ "t_preyeverymouth": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31710,
+  "admiral": "razormaw",
+  "fleet": [
+   "b_razor",
+   "b_spitter",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 1,
+  "lineage": {
+   "id": "razormaw",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Chorus: Razormaw One Prey, Every Mouth (razormaw:cap:1) gives every ship a free turn toward the prey"
+ },
+ "t_growhurts": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 31711,
+  "admiral": "mending",
+  "fleet": [
+   "b_razor",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 3,
+  "treeChoices": {
+   "ship": "x01"
+  },
+  "lineage": {
+   "id": "mending",
+   "picks": [
+    "mending:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Mending Grow Where It Hurts (mending:A:0:0) sends one ship regrowth to one section"
+ },
+ "t_skinthick": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31712,
+  "admiral": "mending",
+  "fleet": [
+   "b_razor",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 1,
+  "treeChoices": {},
+  "lineage": {
+   "id": "mending",
+   "picks": [
+    "mending:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Mending Skin Grown Thick (mending:A:0:1) gives one ship regrowth as temporary hull"
+ },
+ "t_fleshknit": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31713,
+  "admiral": "mending",
+  "fleet": [
+   "b_razor",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 1,
+  "lineage": {
+   "id": "mending",
+   "picks": [
+    "mending:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Mending Flesh Knit for War (mending:A:2:0) pays +20% next round to a ship lifted above three quarters"
+ },
+ "t_refuseholes": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 31714,
+  "admiral": "mending",
+  "fleet": [
+   "b_drone",
+   "b_drone",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "lineage": {
+   "id": "mending",
+   "picks": [
+    "mending:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Mending The Throat Refuses Holes (mending:A:2:1) regrows the most damaged ship at each round start"
+ },
+ "t_tideend": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 3,
+  "bot": "full",
+  "seed": 31715,
+  "admiral": "mending",
+  "fleet": [
+   "b_razor",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 1,
+  "lineage": {
+   "id": "mending",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Chorus: Mending Tide Without End (mending:cap:0) heals a second time at half strength"
+ },
+ "t_tornback": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "seed": 31716,
+  "admiral": "mending",
+  "fleet": [
+   "b_drone",
+   "b_drone",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 3,
+  "lineage": {
+   "id": "mending",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Chorus: Mending What Was Torn Grows Back (mending:cap:1) restores a broken section and locks it"
+ },
+ "t_acidbeforeaim": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "seed": 31720,
+  "admiral": "voice",
+  "fleet": [
+   "b_spitter",
+   "b_spitter",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket",
+   "h_picket"
+  ],
+  "cmdRound": 3,
+  "lineage": {
+   "id": "voice",
+   "picks": [
+    "voice:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Voice Acid Before Aim (voice:A:0:0) spits at the nearest enemy"
+ },
+ "t_throatspits": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 10,
+  "bot": "full",
+  "seed": 31746,
+  "admiral": "voice",
+  "fleet": [
+   "b_brood"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 6,
+  "lineage": {
+   "id": "voice",
+   "picks": [
+    "voice:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Voice Every Throat Spits (voice:A:0:1) spits when no gun can bear"
+ },
+ "t_burnstays": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31719,
+  "admiral": "voice",
+  "fleet": [
+   "b_spitter",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "voice",
+   "picks": [
+    "voice:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Voice The Burn Stays (voice:A:1:0) deals 15% of the volley damage again next round"
+ },
+ "t_acidseams": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "seed": 31720,
+  "admiral": "voice",
+  "fleet": [
+   "b_spitter",
+   "b_spitter",
+   "b_razor"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket",
+   "h_picket"
+  ],
+  "cmdRound": 3,
+  "lineage": {
+   "id": "voice",
+   "picks": [
+    "voice:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Voice Acid Finds the Seams (voice:A:2:0) ignores armor below half hull"
+ },
+ "t_manymouths": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 31721,
+  "admiral": "voice",
+  "fleet": [
+   "b_spitter",
+   "b_spitter",
+   "b_spitter",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 3,
+  "lineage": {
+   "id": "voice",
+   "picks": [
+    "voice:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Voice Many Mouths at Once (voice:A:2:1) costs a target hit by four ships 20 accuracy"
+ },
+ "t_volleygrows": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31722,
+  "admiral": "voice",
+  "fleet": [
+   "b_spitter",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "voice",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Chorus: Voice The Volley That Grows (voice:cap:0) makes a ship that hit spit again at half damage"
+ },
+ "t_mouthdeep": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31723,
+  "admiral": "voice",
+  "fleet": [
+   "b_spitter",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {
+   "ship": "x01"
+  },
+  "lineage": {
+   "id": "voice",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Chorus: Voice Mouth of the Deep (voice:cap:1) fires every weapon twice at one target"
+ },
+ "t_broodreserve": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31724,
+  "admiral": "matriarch",
+  "fleet": [
+   "b_brood",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "lineage": {
+   "id": "matriarch",
+   "picks": [
+    "matriarch:B:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: shared Broods in Reserve (matriarch:B:0:1) holds a brood until round 2"
+ },
+ "t_firstthroat": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31725,
+  "admiral": "matriarch",
+  "fleet": [
+   "b_razor",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket",
+   "h_picket"
+  ],
+  "lineage": {
+   "id": "matriarch",
+   "picks": [
+    "matriarch:C:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: shared The First Throat Opens (matriarch:C:0:0) grants one more player activation after the flagship"
+ },
+ "t_throatdeep": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31726,
+  "admiral": "matriarch",
+  "fleet": [
+   "b_razor",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket"
+  ],
+  "lineage": {
+   "id": "matriarch",
+   "picks": [
+    "matriarch:C:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: shared Throat of the Deep (matriarch:C:0:1) gives +10 aim within 2 of the flagship"
  }
 }

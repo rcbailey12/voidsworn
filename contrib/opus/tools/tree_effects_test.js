@@ -1,5 +1,5 @@
 'use strict';
-// Issue #305 jobs 1 to 3 (tree skills in battle): every parity fixture must actually fire its pick.
+// Issue #305 jobs 1 to 4 (tree skills in battle): every parity fixture must actually fire its pick.
 // Runs the pinned rules oracle through the golden harness and reads B.treeStats from the last record.
 // The rules parity job proves the Godot twin writes the same records; this check proves the skill fired on the JS side.
 const fs = require('fs');
@@ -36,7 +36,16 @@ const WANT = {
   t_ecl_iterationkill: 'anuket:A:2:0', t_ecl_silentarchive: 'anuket:A:2:1', t_ecl_outshadow: 'anuket:cap:0', t_ecl_longcopy: 'anuket:cap:1',
   t_ecl_platesshadow: 'khepra:A:0:0', t_ecl_twicerestored: 'khepra:A:0:1', t_ecl_layersshift: 'khepra:A:1:1',
   t_ecl_nolayer: 'khepra:A:2:0', t_ecl_stillness: 'khepra:A:2:1', t_ecl_tenthousand: 'khepra:cap:0', t_ecl_restoredfleet: 'khepra:cap:1',
-  t_ecl_iterationswap: 'nekhet:B:0:1', t_ecl_flagshipindex: 'nekhet:C:0:0', t_ecl_framezero: 'nekhet:C:0:1'
+  t_ecl_iterationswap: 'nekhet:B:0:1', t_ecl_flagshipindex: 'nekhet:C:0:0', t_ecl_framezero: 'nekhet:C:0:1',
+  // job 4: The Chorus a and b rows
+  t_choosebrood: 'matriarch:A:0:0', t_sporetide: 'matriarch:A:0:1', t_everythroat: 'matriarch:A:2:0', t_secondthroat: 'matriarch:A:2:1',
+  t_rundown: 'razormaw:A:0:0', t_razorprey: 'razormaw:A:1:0', t_frenzyfeeds: 'razormaw:A:2:0', t_breathbite: 'razormaw:A:2:1',
+  t_throatred: 'razormaw:cap:0', t_preyeverymouth: 'razormaw:cap:1',
+  t_growhurts: 'mending:A:0:0', t_skinthick: 'mending:A:0:1', t_fleshknit: 'mending:A:2:0', t_refuseholes: 'mending:A:2:1',
+  t_tideend: 'mending:cap:0', t_tornback: 'mending:cap:1',
+  t_acidbeforeaim: 'voice:A:0:0', t_throatspits: 'voice:A:0:1', t_burnstays: 'voice:A:1:0', t_acidseams: 'voice:A:2:0',
+  t_manymouths: 'voice:A:2:1', t_volleygrows: 'voice:cap:0', t_mouthdeep: 'voice:cap:1',
+  t_broodreserve: 'matriarch:B:0:1', t_firstthroat: 'matriarch:C:0:0', t_throatdeep: 'matriarch:C:0:1'
 };
 const INERT = ['aelith:A:0:0', 'aelith:A:1:0', 'aelith:A:1:1', 'aelith:cap:1', 'aelith:cap:0',
   'vaelen:A:0:1', 'vaelen:A:1:0', 'vaelen:cap:0', 'thorne:A:1:0', 'thorne:A:1:1', 'thorne:cap:0',
@@ -50,7 +59,13 @@ const INERT = ['aelith:A:0:0', 'aelith:A:1:0', 'aelith:A:1:1', 'aelith:cap:1', '
   'nekhet:A:0:1', 'nekhet:A:1:0', 'nekhet:A:1:1', 'nekhet:B:0:0',
   'sekhmar:A:1:1', 'sekhmar:B:0:0',
   'anuket:A:1:0', 'anuket:B:0:0',
-  'khepra:A:1:0', 'khepra:B:0:0'];
+  'khepra:A:1:0', 'khepra:B:0:0',
+  // Chorus x and c rows wait for the Muse text pass (#311)
+  'matriarch:A:1:0', 'matriarch:A:1:1', 'matriarch:cap:0', 'matriarch:cap:1',
+  'razormaw:A:0:1', 'razormaw:A:1:1',
+  'mending:A:1:0', 'mending:A:1:1',
+  'voice:A:1:1',
+  'matriarch:B:0:0', 'razormaw:B:0:0', 'mending:B:0:0', 'voice:B:0:0'];
 let bad = 0;
 const scen = JSON.parse(fs.readFileSync(SCEN, 'utf8'));
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'treefx-'));

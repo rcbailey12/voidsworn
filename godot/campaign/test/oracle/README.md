@@ -1,5 +1,10 @@
 # The campaign oracle, pinned
 
+Nov 9 2026, issue 319 (tree skills job 4): re-copied battle.js, core.js and
+data.js for the Chorus TREE_FX rows, the H10 temporary hull and H17 extra
+activation hooks, and the new FX_CAPS key treeTempHp. Re-exported campaign
+tables; no existing campaign rule changed.
+
 Nov 9 2026, issue 315 (tree skills job 2): re-copied battle.js and data.js for
 the Sunward Crusade TREE_FX rows and the H4, H6, H12, H13 and H16 hooks.
 Re-exported campaign tables; no existing campaign rule changed.
