@@ -11,7 +11,7 @@ W = 1080; BG = (14, 15, 18); FG = (235, 235, 235); DIM = (160, 160, 165); STUDIO
 F = lambda s, b=False: ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans%s.ttf' % ('-Bold' if b else ''), s)
 NAMES = {'b0': 'B0  the concept as one generation (yaw fixed)', 'A': 'A round 1  hand build', 'A2s': 'Ab round 2  structure',
          'B3s': 'B3 round 2  core for the AI parts', 'A2': 'A round 2  detail rung', 'B3r2': 'B3 round 2  AI parts, detail rung',
-         'A3s': 'Ab3 round 3  rounded, layered armour'}
+         'A3s': 'Ab3 round 3  rounded, layered armour', 'A4s': 'Ab4 round 4  slab hull, silhouette first'}
 def load(c, v):
     p = os.path.join(D, f'{c}_{v}.png'); return Image.open(p).convert('RGBA') if os.path.exists(p) else None
 def flat(im):
@@ -51,7 +51,10 @@ def stack(parts, name):
 parts = [head(TITLE, 'Flat clay, no paint. Orange line: B0\'s outline over the new structure.')]
 # hero row: the concept and each cell at the concept's angle, 2 by 2
 c = Image.open(CONCEPT).convert('RGBA'); cb = Image.new('RGBA', c.size, BG + (255,)); cb.alpha_composite(c); con = cb.convert('RGB').crop((0, 100, 1024, 840))
-heroes = [load(x, 'hero') for x in CELLS]; hb = bbox([h for h in heroes if h is not None])
+HV = 'concept' if all(load(x, 'concept') is not None for x in CELLS) else 'hero'   # round 4: the concept's fitted camera
+if HV == 'concept': con = cb.convert('RGB')
+heroes = [load(x, HV) for x in CELLS]; hb = bbox([h for h in heroes if h is not None])
+if HV == 'concept': con = con.crop(hb)   # same frame as the cells: the concept and the renders line up pixel for pixel
 tiles = [('Concept', con)] + [(NAMES.get(x, x).split('  ')[0], flat(h.crop(hb))) for x, h in zip(CELLS, heroes) if h is not None]
 tiles.append(('Overlay', outline_over(heroes[-1].crop(hb), heroes[0].crop(hb))))
 for i in range(0, len(tiles), 2):

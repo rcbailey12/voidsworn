@@ -1,11 +1,11 @@
 # Issue 209 round 1: the same cameras, lights and exposure for every cell.
 # usage: blender -b CELL.blend -P render.py -- OUT_DIR CELL [--preview]
-# Views (bow on the left in all of them, like the concept):
+# Views (bow on the left in all of them, like the concept; round 4 adds 'concept', the concept's own fitted camera):
 #   hero   concept angle (front-port, above), paint and clay        side/top/below  orthographic, paint and clay (cut in thirds for the 9 cells)
 #   battle the battle camera's height angle at about 180 px of ship length (1080p), paint      break  the four break pieces pulled apart
 import os, sys, math, json
 import bpy, bmesh
-from mathutils import Vector
+from mathutils import Vector, Matrix
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 a = sys.argv[sys.argv.index('--') + 1:]
 OUT, CELL = a[0], a[1]; PREVIEW = '--preview' in a
@@ -56,9 +56,22 @@ views = [('hero', dict(loc=(1.22, 1.62, .80), look=target, lens=50, res=(1600, 9
          ('side', dict(loc=(0, 3, -.01), look=(0, 0, -.01), ortho=1.2, res=(2400, 1200))),
          ('top', dict(loc=(0, 0, 3), look=(0, 0, 0), ortho=1.2, res=(2400, 1200))),
          ('below', dict(loc=(0, 0, -3), look=(0, 0, 0), ortho=1.2, res=(2400, 1200)))]
+# round 4: the concept's own camera (fitted to the concept image by silhouette4.py; 1024 px square like the concept), so the render
+# lies pixel for pixel over the concept
+CAMJ = next((x.split('=', 1)[1] for x in a if x.startswith('--cam=')),
+            os.path.join(HERE, '..', '..', '..', 'docs', 'shots', 'ship_pipeline', 'route209', 'round4', 'concept_camera.json'))
+def concept_cam(name='concept'):
+    p = json.load(open(CAMJ))['camera']; az, el = math.radians(p['az']), math.radians(p['el'])
+    t = Vector(p.get('target', (0, 0, -.01))); d = Vector((math.cos(el) * math.cos(az), math.cos(el) * math.sin(az), math.sin(el)))
+    o = cam(name, t + d * p['dist'], t, lens=p['focal'] / 1024 * 36, res=(1024, 1024))
+    o.rotation_euler = (o.rotation_euler.to_matrix() @ Matrix.Rotation(math.radians(p['roll']), 3, 'Z')).to_euler()
+    o.data.sensor_fit = 'HORIZONTAL'; o.data.sensor_width = 36
+    o.data.shift_x = -(p['cx'] - 512) / 1024; o.data.shift_y = (p['cy'] - 512) / 1024
+    return o
+if os.path.exists(CAMJ): views = [('concept', None)] + views
 for nm, kw in views:
     if ONLY and nm not in ONLY: continue
-    o = cam(nm, **kw)
+    o = concept_cam() if nm == 'concept' else cam(nm, **kw)
     if nm == 'top': o.rotation_euler = (0, 0, math.radians(180))       # looking down, bow (+x) on the left
     if nm == 'below': o.rotation_euler = (math.radians(180), 0, 0)    # looking up, bow on the left
     for cl in (False, True):
