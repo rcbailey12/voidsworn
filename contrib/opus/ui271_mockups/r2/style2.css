@@ -1,0 +1,87 @@
+/* Round 2 additions on top of round 1's style.css (palette, type, panes, bars, keys unchanged). */
+
+/* ------------------------------------------------------------ material per variant */
+/* A, solid slab: no glass anywhere, bold adds trim only */
+.vA .pane { background: rgba(10, 15, 26, 0.95); }
+.vA.bold .pane { backdrop-filter: none; -webkit-backdrop-filter: none;
+  background: linear-gradient(180deg, rgba(22, 32, 52, 0.97), rgba(10, 15, 26, 0.97) 120px); }
+.vA.bold .slab { background: repeating-linear-gradient(0deg, rgba(200,225,255,0.025) 0 1px, transparent 1px 24px),
+  linear-gradient(180deg, rgba(22, 32, 52, 0.97), rgba(10, 15, 26, 0.97) 160px); }
+.slab .sec { padding: 10px 14px; border-top: 1px solid var(--line); position: relative; }
+.slab .sec:first-child { border-top: 0; }
+.vA.bold .slab .sec { border-top: 1px solid rgba(190, 220, 255, 0.22); }
+.vA.bold .slab .sec::before { content: ""; position: absolute; left: 0; top: -1px; width: 46px; height: 1px; background: rgba(236,246,255,0.9); box-shadow: 0 0 6px rgba(190,225,255,0.8); }
+
+/* B, glass cards: restrained is a heavier frost, bold is round 1's glass */
+.vB:not(.bold) .pane:not(.flat) { background: rgba(14, 21, 36, 0.78); backdrop-filter: blur(14px) brightness(0.8); -webkit-backdrop-filter: blur(14px) brightness(0.8); }
+.vB:not(.bold) .pane.flat { background: rgba(14, 21, 36, 0.80); backdrop-filter: blur(14px) brightness(0.8); -webkit-backdrop-filter: blur(14px) brightness(0.8); }
+
+/* C, glass shell with solid text wells */
+.shell { padding: 8px; display: flex; flex-direction: column; gap: 7px; }
+.vC:not(.bold) .shellp { background: rgba(30, 44, 70, 0.34); backdrop-filter: blur(16px) brightness(0.72) saturate(1.3); -webkit-backdrop-filter: blur(16px) brightness(0.72) saturate(1.3); border-color: rgba(190, 220, 255, 0.22); }
+.vC:not(.bold) .pane.flat, .vC:not(.bold) .pane.lite { background: rgba(26, 38, 60, 0.42); backdrop-filter: blur(14px) brightness(0.72); -webkit-backdrop-filter: blur(14px) brightness(0.72); }
+.well { background: rgba(9, 13, 23, 0.93); border: 1px solid rgba(230, 220, 196, 0.10); padding: 9px 12px; position: relative; }
+.bold .well { background: rgba(8, 12, 22, 0.90); border-color: rgba(190, 220, 255, 0.20); box-shadow: inset 0 1px 0 rgba(214, 236, 255, 0.10); }
+.vC .lite .wellin { background: rgba(9, 13, 23, 0.90); border: 1px solid rgba(230, 220, 196, 0.10); }
+
+/* ------------------------------------------------------------ top bar pieces */
+.heat { display: inline-flex; align-items: center; gap: 6px; }
+.heat .seg { display: flex; gap: 2px; }
+.heat .seg i { width: 7px; height: 12px; border: 1px solid rgba(240, 179, 90, 0.55); }
+.heat .seg i.f { background: var(--ember); border-color: var(--ember); }
+.bold .heat .seg i.f { box-shadow: 0 0 6px rgba(240, 179, 90, 0.7); }
+.unacted { display: flex; align-items: center; gap: 5px; height: 26px; padding: 0 8px; }
+.chip { display: inline-flex; align-items: center; gap: 5px; height: 20px; padding: 0 7px; font-size: 13px; font-weight: 600; color: var(--friend);
+  border: 1px solid rgba(143, 240, 160, 0.45); background: rgba(10, 30, 18, 0.55); white-space: nowrap; }
+.bold .chip { box-shadow: 0 0 8px rgba(143, 240, 160, 0.18); }
+
+/* ------------------------------------------------------------ the danger badge (roster rows, hovered hex) */
+.dng { display: inline-flex; align-items: center; gap: 3px; height: 16px; padding: 0 4px 0 3px; border: 1px solid var(--foe-ring); background: rgba(40, 14, 70, 0.75);
+  color: #e2d2ff; font-family: Oxanium; font-weight: 700; font-size: 12px; line-height: 1; }
+.dng svg { width: 10px; height: 10px; }
+.bold .dng { box-shadow: 0 0 8px rgba(166, 77, 255, 0.45); }
+
+/* ------------------------------------------------------------ weapon rows (one line each, fixed columns) */
+.wtab { display: grid; grid-template-columns: 24px 1fr 46px 44px 40px 44px; column-gap: 6px; align-items: center; }
+.wtab.hd { font-family: Oxanium; font-weight: 600; font-size: 12px; letter-spacing: 0.1em; color: var(--bone3); padding: 0 8px 3px; }
+.wrow { height: 30px; padding: 0 8px; border: 1px solid var(--line); background: rgba(18, 26, 44, 0.55); }
+.wrow + .wrow { margin-top: 4px; }
+.wrow .wn { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wrow .tok { font-family: Oxanium; font-weight: 700; font-size: 12px; color: var(--bone); border: 1px solid var(--line2); height: 18px; display: inline-flex; align-items: center; justify-content: center; }
+.wrow .hit { font-family: Oxanium; font-weight: 700; font-size: 14px; color: var(--gilt); text-align: right; }
+.wrow .exp { font-family: Oxanium; font-weight: 600; font-size: 14px; text-align: right; }
+.wrow .cost { font-family: Oxanium; font-weight: 600; font-size: 12px; text-align: right; color: var(--bone3); }
+.wrow .cost.cd { color: var(--ember); }
+.wrow.armed { border-color: var(--ember); }
+.bold .wrow.armed { box-shadow: inset 0 0 14px rgba(240,179,90,0.22), 0 0 8px rgba(240,179,90,0.25); }
+.wrow.no { opacity: 0.62; }
+.wrow.no .why { grid-column: 4 / 6; font-size: 12px; color: var(--bone3); text-align: right; white-space: nowrap; }
+.bold .wrow { background: rgba(30, 42, 66, 0.35); }
+.wrow .tok.hov { border-color: var(--gilt); color: var(--gilt); background: rgba(77, 61, 26, 0.55); }
+
+/* ------------------------------------------------------------ ghost expected markers */
+.hbar i u, .sbar i u { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(135deg, rgba(255,255,255,0.85) 0 2px, rgba(255,255,255,0) 2px 4px); }
+.hbar i u { background-color: rgba(255, 174, 66, 0.30); }
+.sbar i u { background-color: rgba(98, 204, 255, 0.30); }
+.ghostkey { display: inline-block; width: 18px; height: 8px; vertical-align: middle; background: repeating-linear-gradient(135deg, rgba(255,255,255,0.85) 0 2px, rgba(255,255,255,0) 2px 4px), rgba(255,174,66,0.3); }
+
+/* ------------------------------------------------------------ counted line in the End box (height always reserved) */
+.counted { height: 20px; display: flex; align-items: center; gap: 6px; font-size: 14px; }
+
+/* ------------------------------------------------------------ keyword tooltip (one layer, beside the hovered element) */
+.ktip { position: absolute; width: 300px; padding: 9px 12px 10px; background: rgba(9, 13, 23, 0.97); border: 1px solid var(--line2); border-left: 2px solid var(--gilt); z-index: 40; }
+.ktip .kw { font-family: Oxanium; font-weight: 700; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gilt); }
+.ktip .kd { font-size: 14px; line-height: 1.35; margin-top: 4px; }
+.ktip .kx { font-size: 12px; color: var(--bone3); margin-top: 5px; }
+.bold .ktip { box-shadow: 0 0 18px rgba(120,170,255,0.18); border-color: rgba(190, 220, 255, 0.45); border-left-color: var(--gilt); }
+.kword { border-bottom: 1px dotted rgba(230, 220, 196, 0.45); }
+
+/* ------------------------------------------------------------ board badges */
+.hexbadge { position: absolute; display: flex; align-items: center; gap: 6px; padding: 3px 7px; background: rgba(8, 12, 20, 0.9); border: 1px solid var(--foe-ring); font-size: 13px; white-space: nowrap; }
+.bold .hexbadge { box-shadow: 0 0 10px rgba(166,77,255,0.35); }
+.movebadge { position: absolute; padding: 3px 7px; background: rgba(8, 12, 20, 0.9); border: 1px solid var(--gilt2); font-size: 13px; white-space: nowrap; color: var(--bone); }
+
+/* 20 ships: the turn track pips shrink so the top bar keeps one line */
+.big-round, .caps { white-space: nowrap; }
+.n20 .track { gap: 1px; }
+.n20 .track i { width: 7px; height: 10px; }
