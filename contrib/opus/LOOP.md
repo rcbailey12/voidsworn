@@ -30,7 +30,9 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 7. Rewrite this file, set "Running: no", commit straight to main (this file and FINDINGS only, docs-only exception), push with timeout 90. Stop.
 8. One send_later check only when a job or a limit reset lands well before the next look. Never chain them.
 
-## Current state (2026-11-09 01:45 UTC)
+## Current state (2026-11-09 04:05 UTC)
+
+- Nov 8 late: Nemesis redesign DONE (#120 to #122 merged; #282 follow-ups merged as PR #294). #283 CI now runs campaign parity and the Nemesis scenarios. Ships: #209 round 1 (PR #287) and round 2 (PR #295) judged by Ryan (R140 structure first); round 3 (Ab3 plus the hybrid with AI hero parts) running on the PC since 03:50 UTC; #287, #295 and round 3 merge together as the record when the route is ruled. UI: R141 one consistent modern UI (Glass Bridge bold plus Chart Room, action-first); #271 round 1 mockups (PR #291) judged (2B best so far, R142); Muse #292 researches best tactics, strategy and roguelike UIs before round 2. Running: DeepSeek on #24 (Nemesis teaching loop); Muse #292, #296 (Crusade voice), #256 check of #286. Waiting for the GPU: #281 (vent puff options). Ryan: no playtest build until the new UI and first new hulls land.
 
 - Nov 8 evening: #120, #121 (PR #274) and #231 (PR #269) MERGED after Muse's outside checks (board fixed the cheap conditions; rest in #282). #232 merged (PR #275). #122 PR #280: PC checks all PASS on 30fc86d9 (board merged main into it), waiting on Muse #256 (also queued: #283, the #264 CI change). Threads: #209 round 1 on the PC (since 23:36 UTC); #230 plus #264 in the cloud (since 01:10 UTC; #283 is its first PR). Muse: #256 (checks), #270 (UI concepts, R137). Blocked behind GPU or merges: #281 (vent puff options, after #209), #282 (after #280), #271 (after #270 and Ryan's pick), #276 (after #209). The cloud sandbox has Godot 4.7.2 headless, so cloud threads can run parity themselves; the board still runs captures on the PC.
 
@@ -134,6 +136,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-09 04:05 UTC board thread: merged #280 (#122), #283 (#264 CI), #285 and #288 (Muse), #294 (#282). Ryan judged #209 rounds 1 and 2 and the UI concepts and mockups (R140 to R142). Started #209 rounds 2 and 3, #271 mockups, #24 on DeepSeek; filed #292, #296.
 - 2026-11-09 01:45 UTC board thread: merged #274 (#121) and #269 (#231) after Muse checks plus board fixes (Godot modal pronouns, 0.35 hull-low line); PC parity re-run PASS; merged main into #280 (#122) and ran its PC checks (all PASS, panel shots fine); Muse #279 merged (it closed #256 again; reopened). Filed #281 (vent puff options), #282 (Nemesis and UI follow-ups). Started the #230/#264 cloud thread.
 - 2026-11-08 23:55 UTC board thread: #232 merged (PR #275, DeepSeek Flash, first GPU job for the workhorse: 81 min, $0.20; pale square fixed, caps at the measured 4x step, flash test passes; timing sheets wait for Ryan's review round). #121 PR #274 and #231 PR #269 wait on Muse #256 (reopened). Threads running: #122 (cloud, R135), #209 round 1 (PC; it started without a Needs input stop). Filed #276 (ship design redo, R138), #270 and #271 (UI redesign, R137).
 - 2026-11-08 21:55 UTC board thread: merged #261 (Muse check of #248, GO), #248 (#120 done), #262 (#257 audit), #263 (#258 Foley research), #266 (#265 docs cleanup by Flash, board added the @AGENTS.md import). Filed #264 and #265. Times: the current_time tool runs about 20 minutes behind; use date -u.
