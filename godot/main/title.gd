@@ -3,6 +3,7 @@ extends CanvasLayer
 
 const HUD := preload("res://ui/battle/hud.gd")
 const Brand := preload("res://ui/battle/brand.gd")
+const UiScale := preload("res://ui/ui_scale.gd")
 
 var main: Node
 var k := 1.0
@@ -57,7 +58,7 @@ var _resize_t := -1.0
 func _build() -> void:
 	var vs := get_viewport().get_visible_rect().size
 	_built_vs = vs
-	k = clampf(vs.y / 1080.0, 0.6, 2.2)
+	k = UiScale.k_for(vs)
 	root = Control.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(root)
