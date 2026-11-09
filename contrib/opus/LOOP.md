@@ -30,12 +30,13 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 7. Rewrite this file, set "Running: no", commit straight to main (this file and FINDINGS only, docs-only exception), push with timeout 90. Stop.
 8. One send_later check only when a job or a limit reset lands well before the next look. Never chain them.
 
-## Current state (2026-11-09 19:40 UTC)
+## Current state (2026-11-09 20:45 UTC)
 
-- UI #271: Lime Tactical captured on the PC (opus271b\out_lime, real hulls, ui_check 21 of 21 in A and B, parse 6 of 6). Sent Ryan the mockup vs build 19:38 UTC. Rey's check of PR #314 (merged as PR #326, contrib/muse/reviews/opus_check_314.md): GO WITH CONDITIONS. Last-pass cloud thread trig_01B7U1XEMDzMu4EwXGKfE1Hr (19:50 UTC) does the four conditions plus notes; board ruling: drop "Likely kill." (S1). Then captures into out_final, merge.
-- Ships #209 (R150): Ab5 goes forward (PR #325). Ryan wants the route turned into a recipe new concepts flow through smoothly. Board's scope questions to Ryan (order: recipe first, concepts first or both; parts kit shared or per faction; Ab5 into the game first or weapons and paint first) were interrupted unanswered; ask again when he is back. No ship job running.
-- Gun smoke #281 (R150): keep the baked flipbooks; run 6 on V4 Pro since 19:36 UTC finds and removes the stray puffs in empty space, adds a distance check, makes the effects about 1.5x bigger (PR #327 updates in place).
-- Tree effects #305: Glasswrights, Crusade, Eclipse merged; Chorus run 2 since 18:37 UTC; then Hullbreakers, Hegemony one at a time. Muse text pass draft PR #324 growing.
+- Tree effects #305: Chorus MERGED (PR #323, run 2 on top of Eclipse: 101 fixtures fire, 49 rows inert). Muse text pass MERGED (PR #324: every x and c row rewritten for all six factions, Grax boarding with renames First Over the Rail and Rush the Rail, Vorn's Command is Interdiction strike, eclipse.md skill texts shield-free, the 144 mastery texts in capstone_mastery_texts.md). Job 5 Hullbreakers FULL tree (#329) on DeepSeek since 20:40 UTC. Next one at a time: job 6 Hegemony full tree; job 7 the x rows of Glasswrights, Crusade, Eclipse, Chorus plus their final texts into data.js; job 8 mastery level effects; then the balance pass. Ryan still owes his one-sitting read of text_pass_nov9.md (offer it).
+- Muse Crusade voice MERGED (PR #328, flee pool empty like Eclipse, beh.noFlee). Wiring the voidsworn block into data.js NEM_VOICE is a small DeepSeek job after the tree jobs.
+- UI #271: last pass done 20:12 UTC (Rey's four conditions, "Likely kill." removed). PC captures out_final queued 20:30 UTC; check ui_check, send Ryan one shot, merge PR #314.
+- Gun smoke #281: run 6 (V4 Pro) since 19:36 UTC: stray puffs, distance check, 1.5x size.
+- Ships #209: Ab5 forward (R150). Ryan's three scope questions (order, parts kit, Ab5 next) asked again 19:40 UTC, unanswered.
 
 ## Earlier state (2026-11-09 06:50 UTC)
 
