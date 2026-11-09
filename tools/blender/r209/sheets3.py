@@ -155,7 +155,7 @@ def lod_sheet(cells):
             parts.append(r)
         q = os.path.join(GOD, f'{c}_hand_20.png')
         if os.path.exists(q):
-            im = Image.open(q).convert('RGB'); parts += [note('Twenty copies, hand chain, the protocol camera (1080p):'), fitw(im.crop((0, 90, 1920, 990)), W)]
+            im = Image.open(q).convert('RGB'); parts += [note('Twenty copies, hand chain, the protocol camera (1080p):'), fitw(im.crop((360, 350, 1560, 800)), W)]
     stack(parts, 'lod.jpg')
 
 def maps_sheet(cell):
