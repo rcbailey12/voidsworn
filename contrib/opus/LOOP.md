@@ -36,7 +36,8 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 - Ships: #209 round 3 in draft PR #303. Board pick, sent to Ryan with paint.jpg: Hy3 (hand hull plus generated casemates and drum racks) with the hand LOD chain, hand-built bow guns, plus the concept's tall bridge tower and long top guns for silhouette; then the real gate scene. Ab3 is the fallback. Waiting on Ryan. #287, #295, #303 merge together as the record once he rules.
 - UI: #271 round 2 (draft PR #301), board pick C Glass Shell bold, waiting on Ryan.
 - FX: #281 (vent puff options) running on DeepSeek since 07:36 UTC, GPU now free.
-- Muse: #296 (Crusade voice) and #256 check of #286: no comment yet.
+- Muse: #296 (Crusade voice, filed 03:47 UTC) and #256 check of #286 (asked 02:50 UTC): no activity by 08:25 UTC; last Muse delivery was #292 at 03:27 UTC. Its watcher may need Ryan to bump Rey when he is up.
+- 08:25 UTC: #30 and #281 both still running on the PC (no PR yet). Cloud thread for #305 PLAN ONLY (tree_effects_plan.md plus Ryan scope questions, branch opus/issue-305) fires 08:30 UTC.
 
 ## Earlier state (2026-11-09 06:50 UTC)
 
