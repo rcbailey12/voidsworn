@@ -8,13 +8,13 @@
 
 Running: no
 Running since (UTC): 2026-11-08 12:35
-Last run finished (UTC): 2026-11-08 12:50
+Last run finished (UTC): 2026-11-09 21:20
 
 If "Running: no" and the start time is under 90 minutes old, another run is working: stop without changes. If it is older, the last run died: take over and say so in the log.
 
 ## Seats right now (Nov 7)
 
-- Opus: board owner, reviewer, merges, visual calls, issue writing, messages to Ryan; builds the opus jobs below. Sonnet subagents for routine checks, logs, staging.
+- Board: Fable 5.2 since Nov 9 21:06 UTC (R152): board owner, reviewer, merges, visual calls, issue writing, messages to Ryan. Opus 5.5: worker threads (ship rounds, screen builds, plans, hard coding).
 - Codex: DOWN until Ryan says. The PC watcher (codex_board.ps1) still queues any unblocked `codex` issue; those runs die on the usage limit. Keep every codex issue `blocked` until a live seat takes it.
 - Workhorse (#217, R127, R134): LIVE. OpenCode on the PC through tools/pc/work_issue.bat (copy in Downloads\voidsworn_test\work217\tools). DeepSeek V4 Flash for coding jobs, hard ones included (R134: beat V4 Pro and Kimi on #120); the hardest still go to Opus threads while the plan has room (R132). V4 Pro only as a second try on a job Flash fails; Kimi off. Start a run: drop a one-line queue job in Downloads\voidsworn_test\queue\ that `start`s a WORKHORSE_*.bat (see Known traps); two runs can share the PC. Every task now carries the R129 self-check list (PR #253).
 - Muse: runs on its own watcher (muse label). Council seats: Rey, DeepSeek, Qwen, Flash (ideation only), Grok (new free leg, Nov 7). ChatGPT down until about Nov 10; Argon blocked since Nov 5. For an independent checker leg on an Opus merge while ChatGPT is down, ask Ryan in the main chat and Rey runs it.
@@ -32,9 +32,20 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 
 ## Board handover (2026-11-09 21:08 UTC)
 
-The board moved to a new thread on Fable 5.2 (R152). The Opus board thread stood down; it holds no lock and has no check-ins pending. Start from HANDOFF.md section 0 (PR #330) and the state below.
+The board moved to a new thread on Fable 5.2 (R152). The Opus board thread stood down. Its last check-in (scheduled task "Board check: 281 run 6, Hullbreakers, ship r6", 21:40 UTC, bound to the old session) was still switched on at 21:15 UTC and the new thread is not allowed to switch it off: if it wakes the old thread, that thread changes nothing (PR #327 is on hold, R153). The new thread checks the board every 45 minutes (Ryan, Nov 9 15:05 CST) with one send_later per check.
 
-## Current state (2026-11-09 21:05 UTC)
+## Current state (2026-11-09 21:20 UTC)
+
+- Board thread (Fable 5.2) took over at 21:06 UTC. It has NO PC folder yet: Downloads\voidsworn_test is not attached and the thread cannot attach it itself (see Known traps). Until Ryan adds it, the board reviews and merges but cannot queue PC runs, read run logs or swap the PC runner copy.
+- Gun smoke #281 (PR #327): run 6 reviewed, HELD (R153). 1.5x size is in; the stray puffs are still in its clips and are the hit reaction's braking thruster puffs (fx_ship.gd _rcs, bounding box corners), not weapon gas. Run 7 brief is on #281 (V4 Pro, branch work/issue-281-deepseekpro). NOT STARTED: needs the PC folder. Start it when the folder is attached and the GPU is not in a heavy #209 bake.
+- Tree effects #305: job 5 Hullbreakers FULL tree (#329) on DeepSeek since 20:40 UTC, cap 120 minutes, no branch yet at 21:10 UTC. Next one at a time: job 6 Hegemony full tree; job 7 the x rows of Glasswrights, Crusade, Eclipse, Chorus plus their final texts into data.js; job 8 mastery level effects; then the balance pass. Ryan still owes his one-sitting read of text_pass_nov9.md (phone page, artifact 250c3767).
+- Ships #209 round 6: Opus PC thread trig_01UHN6sJNKxooyXptyaG5NH7 since 20:58 UTC, branch opus/issue-209-r6, no branch yet at 21:10 UTC (R151: recipe, Hullbreaker kit weapons, concept paint).
+- HANDOFF PR #330: board added the R152 seat and the R153 hold, plus the AGENTS.md seat map (Board row is Fable 5.2). Merge when parity is green.
+- Still to do when no workhorse run is active and the PC folder is attached: copy tools/pc/work_issue.bat to work217\tools (PR #320 model id).
+- Muse Crusade voice (PR #328 merged): wiring the voidsworn block into data.js NEM_VOICE is a small DeepSeek job after the tree jobs.
+- UI: battle screen merged (PR #314). Next, to propose to Ryan before starting (big): roll Lime Tactical (contrib/opus/briefs/ui_style.md) out to the title, campaign map, end screen with the #92 debrief, and menus.
+
+## Earlier state (2026-11-09 21:05 UTC)
 
 - Tree effects #305: Chorus MERGED (PR #323, run 2 on top of Eclipse: 101 fixtures fire, 49 rows inert). Muse text pass MERGED (PR #324: every x and c row rewritten for all six factions, Grax boarding with renames First Over the Rail and Rush the Rail, Vorn's Command is Interdiction strike, eclipse.md skill texts shield-free, the 144 mastery texts in capstone_mastery_texts.md). Job 5 Hullbreakers FULL tree (#329) on DeepSeek since 20:40 UTC. Next one at a time: job 6 Hegemony full tree; job 7 the x rows of Glasswrights, Crusade, Eclipse, Chorus plus their final texts into data.js; job 8 mastery level effects; then the balance pass. Ryan still owes his one-sitting read of text_pass_nov9.md (offer it).
 - Muse Crusade voice MERGED (PR #328, flee pool empty like Eclipse, beh.noFlee). Wiring the voidsworn block into data.js NEM_VOICE is a small DeepSeek job after the tree jobs.
@@ -103,7 +114,7 @@ Coding seat queue (released one at a time to the workhorse once #217 picks a win
 - UI redesign (R137): pick one of Muse's three warship-console directions when #270 lands; then #271's battle screen review round.
 
 - #48 Glasswright design (contrib/muse/design/glasswright_species_2026_11/design.md): his read of the design text; Brin's pronoun (one word); close faction package question 2 on the design's youth-to-old gradient (yes or no).
-- Nothing right now.
+- Nov 9 21:20 UTC: add Downloads\voidsworn_test to the new Board thread (Add folder button in the desktop app); switch off the old thread's 21:40 UTC check-in if it has not fired.
 - #221: OK to start a PC thread for the per-ship CPU trim (not urgent; the scene sits at 6.0 ms of the 12.5 ms gate).
 - S15 sound listen pass: one sitting, best once the #211 probe clips exist.
 - Round 7 pick and station look: when #198 and #199 land.
@@ -125,6 +136,8 @@ Result (Opus, Nov 7 night): PASS on three of four. (1) Godot ran on the 5080 thr
 
 ## Known traps
 
+- A new Board thread starts with no PC folder (Nov 9, R152 handover): device_request_folder_access is refused in auto mode, and so is switching off another session's scheduled task. Ryan adds Downloads\voidsworn_test with the Add folder button in the desktop app. Ask for it in the first message of a handover.
+- Braking thruster puffs (fx_ship.gd _rcs) sit at bounding box corners, so on thin or towered hulls they float in empty space (R153). Any capture of a hit shows them about a quarter second after impact. Do not mistake them for weapon gas.
 - CRLF clone trap on the PC (found by the #121 thread, Nov 8): a plain git clone there checks files out with CRLF (core.autocrlf), and then the campaign table export cannot read FNAMES from oracle\ui3d.js, so campaign parity and b1_tests fail for no reason. Always clone with git -c core.autocrlf=false clone.
 - GitHub closing words in any commit that lands on main (fix, fixes, close, closes, resolve, resolves followed by #N) close that issue or PR, even inside a LOOP or FINDINGS message: the board's own commit 1429ca3 ('runner model id fix #320') closed PR #320 on Nov 9. Write 'PR #N' or 'see #N' instead.
 - Standing issue #256 (Muse outside check) gets closed by any PR that says 'Closes #256'; reopen it and ask for 'Refs #256'.
@@ -153,6 +166,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-09 21:20 UTC board thread (Fable 5.2, first run): took over (R152). Reviewed #281 run 6 (PR #327) by diff and clips: held, stray puffs traced to _rcs (R153), run 7 brief written. #329 and #209 round 6 still running, no PRs. HANDOFF PR #330 updated (seat, hold, AGENTS seat map). No PC folder in this thread yet.
 - 2026-11-09 04:05 UTC board thread: merged #280 (#122), #283 (#264 CI), #285 and #288 (Muse), #294 (#282). Ryan judged #209 rounds 1 and 2 and the UI concepts and mockups (R140 to R142). Started #209 rounds 2 and 3, #271 mockups, #24 on DeepSeek; filed #292, #296.
 - 2026-11-09 01:45 UTC board thread: merged #274 (#121) and #269 (#231) after Muse checks plus board fixes (Godot modal pronouns, 0.35 hull-low line); PC parity re-run PASS; merged main into #280 (#122) and ran its PC checks (all PASS, panel shots fine); Muse #279 merged (it closed #256 again; reopened). Filed #281 (vent puff options), #282 (Nemesis and UI follow-ups). Started the #230/#264 cloud thread.
 - 2026-11-08 23:55 UTC board thread: #232 merged (PR #275, DeepSeek Flash, first GPU job for the workhorse: 81 min, $0.20; pale square fixed, caps at the measured 4x step, flash test passes; timing sheets wait for Ryan's review round). #121 PR #274 and #231 PR #269 wait on Muse #256 (reopened). Threads running: #122 (cloud, R135), #209 round 1 (PC; it started without a Needs input stop). Filed #276 (ship design redo, R138), #270 and #271 (UI redesign, R137).
