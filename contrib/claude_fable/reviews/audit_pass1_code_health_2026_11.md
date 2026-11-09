@@ -11,6 +11,26 @@
 - Effects find their place on a ship by guessing from the ship's bounding box. The gun and hangar points that the ship files are specified to carry are not read (finding 6).
 - 13 findings follow, most important first. I changed nothing. Two findings (1 and 3) are live defects that anyone can reproduce with the commands given.
 
+## Board verdicts (added by the Board after checking every finding against the repo, Nov 9 2026)
+
+| # | Finding | Verdict |
+|---|---|---|
+| 1 | Tree picks never reach the battle | CONFIRMED, live, reproduced by the Board; repair is issue 335 |
+| 2 | GitHub's checks never open the game | CONFIRMED |
+| 3 | Three copies of the rules files | CONFIRMED, live, reproduced; re-copy rides issue 335 |
+| 4 | PASS printed over failures | CONFIRMED |
+| 5 | Missing ship becomes a silent block | CONFIRMED (seen live Nov 9) |
+| 6 | Effects placed by box guesses | CONFIRMED; the ship files do carry the gun points (checked on the PC) |
+| 7 | Tree check proves a counter | CONFIRMED |
+| 8 | Runner commits everything | CONFIRMED |
+| 9 | Traps written down, not removed | CONFIRMED |
+| 10 | No standing capture set | CONFIRMED on the facts, cause agreed |
+| 11 | Hand-kept shader warm-up | CANNOT TELL without a PC trace |
+| 12 | Screens read save data directly | PARTLY CONFIRMED; Board disagrees on timing |
+| 13 | Status facts hand-copied | CONFIRMED |
+
+Eleven confirmed, one partly, one cannot tell, none wrong. Where the Board differs from the auditor: finding 6 (build the points into the new ship recipe instead of retrofitting hulls that will be replaced), finding 12 (do it with the screen rollout, not before), finding 11 (needs a PC trace before any work), finding 3 (of the two fixes offered, delete the copies). Each finding below carries its own verdict line. The auditor's text is unchanged.
+
 ## Pinned commit
 
 - Audited commit: `da01a7a1ca8c1936d297375dfb9398a7497ec4d5` (short `da01a7a`), "Tree skills in battle, job 5: the Ashfall Hullbreakers full tree (PR 331)".
@@ -43,6 +63,7 @@
 - Fix approach: pick one key shape and use it on both sides of the hand-off, in both twins (either store long keys, or build the long key inside `treeBuild`). Old saves hold short keys, so the reader must accept them. Then add one end-to-end check per twin: pick through `lineagePick`, start a run, start a battle, and require the skill in `B.tree`. As a rule for later jobs: a fixture's starting state should be produced by the real functions, not typed by hand.
 - Size: small for the key change (two lines per twin plus the oracle re-copy and parity). Medium for the end-to-end check, driven by needing it in JS and in Godot.
 - How to know it worked: the probe above returns four skills. In the game, a run with a tier 1 pick shows its "Lineage:" callout and log line in the first battle where it applies.
+- **Board verdict (Fable 5.2 Board, Nov 9 2026, checked against the repo):** CONFIRMED, and it is live. The Board reproduced it on main after PR 331 with its own probe (four picks through lineagePick, newRun, treeBuild: one skill back, the capstone; all four with long keys). The Godot half is confirmed by reading campaign.gd:1031 and rules.gd:3570, not by a run. Board's own miss: five tree jobs were merged on fixtures that type the long key by hand, the last one (PR 331) by this Board. Repair job filed ahead of pass 3 as issue 335 (treeBuild accepts the stored short key in both twins, plus one check per twin that picks through the campaign and starts a battle).
 
 ### 2. GitHub's checks never open the game the player sees
 
@@ -59,6 +80,7 @@
 - Fix approach: add one CI job that (a) imports the Godot project headless and loads every .gd file, failing on any script error, (b) runs the Godot checks that need no GPU through one list file (the campaign `*_test.gd` set, `effect_caps_test.gd`, `api_smoke.gd`, the headless fx checks), and (c) starts one headless bot battle and fails on any script error in the log. For GPU-only checks, keep one named PC .bat that writes one results file, and make "results file attached" part of every visual job's done test.
 - Size: medium. The parse and headless list are small; the driver is sorting 54 existing scripts into "headless, GPU, retired" and fixing the ones that have rotted.
 - How to know it worked: a pull request that breaks a line in hud.gd goes red on GitHub. The checks summary lists Godot game checks by name.
+- **Board verdict (Fable 5.2 Board, Nov 9 2026, checked against the repo):** CONFIRMED. checks.yml has the four test steps and nothing else, and the battle scene's event switch has no default branch (0 found in lines 1220 to 1450). Goes to pass 3 as written.
 
 ### 3. Three copies of the rules files, and nothing fails when one is left behind
 
@@ -75,6 +97,7 @@
 - Fix approach: either delete the copies and point both parity harnesses at the root files (the browser game is frozen, so a "pin" protects little), or keep them and add one sync script plus a hard check: the three copies must be byte-identical and both exported table files must match a fresh export, or the pull request fails. Split the drift guard in two: copies (must fail) and hand-copied look constants (report only).
 - Size: small. One script and one failing check; the driver is re-exporting the campaign tables once and re-running parity.
 - How to know it worked: `grep -c "Ram First" godot/campaign/data/campaign_tables.json` prints 0, and a pull request that edits data.js without the copies goes red.
+- **Board verdict (Fable 5.2 Board, Nov 9 2026, checked against the repo):** CONFIRMED, reproduced on main: "Ram First" is still in godot/campaign/data/campaign_tables.json (1 hit) and gone from data.js (0); the campaign oracle copies of battle.js and data.js differ from the root at lines 329 and 1830. Board's own miss: the PR 331 review compared the rules oracle copies with the root and never looked at the campaign copies. Board pick between the two fixes offered: delete the copies and point both parity harnesses at the root files (one source). The re-copy and re-export ride issue 335.
 
 ### 4. Several checks print PASS while they report failures in the same line
 
@@ -91,6 +114,7 @@
 - Fix approach: give the runner a fourth word. PASS means zero failures. KNOWN means only listed failures, and it is shown in its own colour with the count. Make the list shrink by itself (a listed id that passes is an error until it is removed). Tag each listed id as bug, opinion or stale and delete the opinion tests from the gate. Put a ceiling on the pack's CHECK count so it can only go down.
 - Size: small for the runner; medium for triaging the 46 ids one by one (that is judgment work, not typing).
 - How to know it worked: the checks table shows no PASS row with a failure count in it, and the known list is shorter each week.
+- **Board verdict (Fable 5.2 Board, Nov 9 2026, checked against the repo):** CONFIRMED. The rule at run_all_checks.js:94 and the ignored CHECK count at line 85 read as quoted; 46 listed failures on main today. Goes to pass 3; the triage of the 46 ids is Board work, not a coder job.
 
 ### 5. A missing ship turns into a plain block with no error, and the real ship files exist on one PC only
 
@@ -105,6 +129,7 @@
 - Fix approach: (a) make the fallback loud: when a hull is missing, print one error line and count it; every capture, probe and bench script exits non-zero if any ship on screen is a placeholder (some probes already look at `sv.a4`). (b) Give the runner one "get ship files" step used by every job: copy from the PC build folder and verify against the sha256 values already in `godot/assets/ships/manifest.json`. (c) Longer term, put the built ship files somewhere a fresh copy can fetch (release assets or large-file storage), with a double-click fetch .bat.
 - Size: small for (a) and (b). Large for (c), driven by about 10 MB per ship for 36 ships plus the high-detail sets, and Ryan's storage call.
 - How to know it worked: run any capture job on a fresh clone with the copy step removed; it stops with "placeholder hull" instead of producing pictures of blocks.
+- **Board verdict (Fable 5.2 Board, Nov 9 2026, checked against the repo):** CONFIRMED, and seen live on Nov 9: run 6 of issue 281 pushed with no real captures because its checkout had no gen hulls. ship_view.gd has no error call (0 found). Parts (a) and (b) go to pass 3; (c) is Ryan's storage call.
 
 ### 6. Effects find their place by guessing from the ship's box; the ship's own gun and hangar points are not read
 
@@ -122,6 +147,7 @@
 - Fix approach: one "attach point" service in fx_hull. Order of trust: an authored hard point for that weapon slot, bay or core; else a surface ray hit; else nothing (skip the effect and log it). Remove every fallback that returns a box point. Move the `_rcs`, wing launch and boarding origins onto it. Add one headless-capable check: for each hull, every attach point lies within a small distance of the hull's triangles.
 - Size: medium. The service is small; the driver is moving about 30 call sites and re-capturing each effect on thin, ring and tower hulls.
 - How to know it worked: the attach check passes for all 36 hulls, and on the Eclipse cruiser no puff, muzzle flash or launch starts in empty space in a close capture.
+- **Board verdict (Fable 5.2 Board, Nov 9 2026, checked against the repo):** CONFIRMED, and the part the auditor could not check is now checked: godot/assets/ships/manifest.json (in git) lists gun hard points for 33 of 36 ships, and the real D9_23.glb on the PC carries hp_w0_gauss_T_0, hp_eng_0, four hp_breach nodes and hp_core, while godot/ has no reader for hp_w, hp_bay, hp_breach or hp_core. One Board change to the plan: every hull is about to be rebuilt through the new ship recipe (R138, R151), so the recipe must write these points as a required output, and the attach point service is built to that contract instead of being fitted hull by hull to ships that will be replaced. Hard points per ship are few (one gun point on a frigate), so the surface ray stays as the second choice for extra shots.
 
 ### 7. The tree check proves a counter went up, not that the skill does what its text says; rows with text and no effect are allowed silently
 
@@ -136,6 +162,7 @@
 - Fix approach: (a) one generated check that walks `LINEAGE_TREES` and fails unless every row has an effect or sits on a dated waiting list, and that fails any fixture-less effect row. (b) In the game, mark waiting rows on the tree screen (greyed, "not active yet") from the same list, so text can never promise what the rules do not do. (c) For new rows, the fixture asserts one number the text names (the +25%, the one turn), not the callout.
 - Size: small for (a) and (b). Large for (c) across all rows; do it only for new and changed rows.
 - How to know it worked: deleting one `TREE_FX` line makes the check fail by name, and the tree screen greys that skill.
+- **Board verdict (Fable 5.2 Board, Nov 9 2026, checked against the repo):** CONFIRMED. The Board's own count on main matches (288 rows, 191 with an effect, 97 without). Direct evidence from the same day: the PR 331 review found three of 36 rows that fired their callout and did not do what their text says. Parts (a) and (b) go to pass 3; (c) is already the rule for new rows (issue 332's brief).
 
 ### 8. The agent runner commits everything it finds, even after a timeout, and the pull request text is the agent's own word
 
@@ -152,6 +179,7 @@
 - Fix approach: in the runner, after the agent stops: (a) if the exit code is not 0, push to a `-partial` branch that does not open a pull request; (b) refuse to commit when the change includes files over a size limit, files under ignored-by-policy folders, or tracked `.import` and `.uid` re-saves, and write the list to result.txt; (c) run the standing checks and parity itself and paste the real PASS and FAIL lines under the agent's report; (d) update the PR body on every push; (e) push without force and keep each run as its own commit.
 - Size: medium. Driven by batch-file work on Windows and one dry run per change.
 - How to know it worked: a dry run that is killed at the cap opens no pull request; a run that copies ship files in is refused with the file list; each PR body ends with check lines written by the runner.
+- **Board verdict (Fable 5.2 Board, Nov 9 2026, checked against the repo):** CONFIRMED. Lines 83, 93 and 99 of work_issue.bat read as quoted (exit code written and not used, git add -A, forced push), and work_issue.ps1:64 names core.js and campaign_meta.js only. Goes to pass 3 as one runner job with a dry run per change.
 
 ### 9. Known traps are written into LOOP.md instead of being removed in the code
 
@@ -166,6 +194,7 @@
 - Fix approach: add `.gitattributes` with LF for .js, .gd, .json, .sh and CRLF for .bat; make auto_pr and the runner write "Refs" and let the board close issues on merge; make `run_parity.sh`, `parity.bat` and `run_all_checks.js` stop with a clear message on a Node major other than 22. Then delete the matching lines from "Known traps".
 - Size: small. Three short edits; the driver is one fresh clone on the PC to confirm.
 - How to know it worked: a plain `git clone` on the PC passes campaign parity, and the "Known traps" list in LOOP.md loses three entries.
+- **Board verdict (Fable 5.2 Board, Nov 9 2026, checked against the repo):** CONFIRMED. No .gitattributes; auto_pr.yml:37 and 38 read as quoted; codex_issue.bat sets autocrlf after its clone. The Board takes the auditor's rule (the automation writes Refs and the Board closes the issue on merge), although Closes is handy on plain job PRs: one extra step per merge is cheaper than the trap.
 
 ### 10. Every visual job writes its own capture script; there is no standing before and after set for the Godot game
 
@@ -180,6 +209,7 @@
 - Fix approach: one standing capture set for Godot (the gallery reel plus about ten fixed battle moments, fixed seed, fixed clock, fixed cameras, three hull shapes: slab, ring, tower). One PC .bat makes "before" from main and "after" from the branch and writes one contact sheet plus a per-still difference number. Every effects job's done test is "the standing sheet, plus the one new still for this job". Rewrite the screenshot-verdict skill around that .bat.
 - Size: medium. Driven by making the reel deterministic (wreck physics runs on real time, per R118) and by GPU time on the PC.
 - How to know it worked: two runs of the .bat on the same commit give matching sheets, and a gun smoke change shows up as a difference only in the stills that contain gun smoke.
+- **Board verdict (Fable 5.2 Board, Nov 9 2026, checked against the repo):** CONFIRMED on the facts (the screenshot-verdict skill never mentions Godot; no standing capture set exists). The cause link is the auditor's inference and the Board agrees from first hand: the seven gun smoke runs were each judged on that run's own shots, and PR 327 changed eight other effects with no capture (issue 333). Pass 2 should say what the standing set must contain.
 
 ### 11. The shader warm-up is a hand-kept list, and nothing reports a shader that compiles mid-battle
 
@@ -194,6 +224,7 @@
 - Fix approach: after warm-up ends, set a flag; any shader or material created later through `_mat` (and the hull and death helpers) logs one line with its name and the frame time. Add a headless-capable check that plays the gallery reel and fails if that log is not empty. Then the warm-up list fixes itself: the log names what to add.
 - Size: small for the flag and log. Medium for the check, because pipeline compiles only happen on a real GPU, so the gate half must run on the PC.
 - How to know it worked: the frame trace of a first battle (the `--trace` bench from R118) shows no frame over 16.7 ms at the first use of each weapon, and the log is empty.
+- **Board verdict (Fable 5.2 Board, Nov 9 2026, checked against the repo):** CANNOT TELL from the repo. The mechanism is real (fx.gd:888 records a past case, and PR 327 added two more hand entries to the warm-up list after the pin), but whether any shader compiles mid-battle today needs a frame trace on the PC. Low priority: keep the small flag-and-log part for pass 3, drop the rest unless a trace shows a hitch.
 
 ### 12. Screens and story code read the save data directly by name, with a hand-kept "current Nemesis" alias
 
@@ -208,6 +239,7 @@
 - Fix approach: give the campaign a small read-only "view" API for screens (current Nemesis, lineage, fleet, flags) and move the story and battle readers to it. Add a text check that fails on `RUN[` or `run.get(` outside `godot/campaign/`. When a data shape changes, the old field is removed in the same change (after save migration), not kept as an alias.
 - Size: medium. Driven by about 200 read sites, most of them one-line swaps.
 - How to know it worked: the text check passes, and deleting the `RUN["nem"]` alias breaks no screen.
+- **Board verdict (Fable 5.2 Board, Nov 9 2026, checked against the repo):** PARTLY CONFIRMED. The direct reads are there as quoted (campaign.gd:1953, story.gd:141, battle.gd:4149). That they caused the stale Nemesis screens is inference. The Board disagrees on timing, not on the idea: every screen is about to be rebuilt in the new style (R149 rollout), so the read-only view API should be built as part of that rollout, screen by screen, with the text check as a report first and a hard failure once the rollout is done. Moving about 200 read sites now would be done twice.
 
 ### 13. Status facts are copied by hand into many documents, so the "read this first" pages disagree with the code and with each other
 
@@ -224,6 +256,7 @@
 - Fix approach: one source per fact. Board state lives only in LOOP.md; HANDOFF section 0 becomes a short pointer plus rulings that do not age. Counts and "latest record" lines in READMEs are either generated by the script that produces them or deleted. Add a cheap doc check to the standing checks: every repo path named in AGENTS.md, CLAUDE.md, HANDOFF.md and the three skills must exist, and a README may not state a scenario count that differs from scenarios.json.
 - Size: small. Driven by trimming, not writing.
 - How to know it worked: HANDOFF section 0 fits on one screen and has no job numbers older than a day; the doc check is a row in the checks table.
+- **Board verdict (Fable 5.2 Board, Nov 9 2026, checked against the repo):** CONFIRMED. HANDOFF.md:27 and godot/rules/test/README.md:66 read as quoted at the pin. Goes to pass 3 as a small docs job plus the doc check; the Board trims HANDOFF section 0 itself when the audits close.
 
 ## Patterns (root causes shared by several findings)
 
