@@ -30,11 +30,11 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 7. Rewrite this file, set "Running: no", commit straight to main (this file and FINDINGS only, docs-only exception), push with timeout 90. Stop.
 8. One send_later check only when a job or a limit reset lands well before the next look. Never chain them.
 
-## Current state (2026-11-09 20:45 UTC)
+## Current state (2026-11-09 21:05 UTC)
 
 - Tree effects #305: Chorus MERGED (PR #323, run 2 on top of Eclipse: 101 fixtures fire, 49 rows inert). Muse text pass MERGED (PR #324: every x and c row rewritten for all six factions, Grax boarding with renames First Over the Rail and Rush the Rail, Vorn's Command is Interdiction strike, eclipse.md skill texts shield-free, the 144 mastery texts in capstone_mastery_texts.md). Job 5 Hullbreakers FULL tree (#329) on DeepSeek since 20:40 UTC. Next one at a time: job 6 Hegemony full tree; job 7 the x rows of Glasswrights, Crusade, Eclipse, Chorus plus their final texts into data.js; job 8 mastery level effects; then the balance pass. Ryan still owes his one-sitting read of text_pass_nov9.md (offer it).
 - Muse Crusade voice MERGED (PR #328, flee pool empty like Eclipse, beh.noFlee). Wiring the voidsworn block into data.js NEM_VOICE is a small DeepSeek job after the tree jobs.
-- UI #271: last pass done 20:12 UTC (Rey's four conditions, "Likely kill." removed). PC captures out_final queued 20:30 UTC; check ui_check, send Ryan one shot, merge PR #314.
+- UI #271: battle screen MERGED 21:02 UTC (PR #314, Lime Tactical, Rey conditions met; out_final ui_check 21 of 21 in A and B, parse 6 of 6). Next (propose to Ryan before starting, it is big): roll the Lime Tactical style (contrib/opus/briefs/ui_style.md) out to the title, campaign map, end screen with the #92 debrief, and menus. PRs #291 and #301 (mockup rounds) stay open as the record.
 - Gun smoke #281: run 6 (V4 Pro) since 19:36 UTC: stray puffs, distance check, 1.5x size.
 - Ships #209 (R151): recipe first; a parts kit per faction (only invisible plumbing shared; Hullbreakers a scavenged mix); Ab5 weapons and paint first, "ensure it actually looks good". Round 6 PC thread trig_01UHN6sJNKxooyXptyaG5NH7 (20:58 UTC): Hullbreaker kit weapons to concept level, concept paint, docs/ship_pipeline/RECIPE.md plus one .bat per stage, tools/blender/kits/<faction>/, branch opus/issue-209-r6. Ryan got a phone page of every Nov 9 skill text (artifact 250c3767, 74 rewrites plus fixes plus mastery) for his one-sitting read.
 
