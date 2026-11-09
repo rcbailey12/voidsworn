@@ -4998,5 +4998,1139 @@
    "capstone": null
   },
   "note": "Chorus: shared Throat of the Deep (matriarch:C:0:1) gives +10 aim within 2 of the flagship"
+ },
+ "t_hb_runbigger": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33001,
+  "admiral": "grax",
+  "fleet": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [
+    "grax:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Grax Run at the Biggest Thing (grax:A:0:0) pays +15% when a burn ends closer to the largest enemy"
+ },
+ "t_hb_railboarding": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 29,
+  "admiral": "grax",
+  "fleet": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [
+    "grax:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Grax First Over the Rail (grax:A:0:1) boards at +25% after a 4 hex burn"
+ },
+ "t_hb_packcloses": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33003,
+  "admiral": "grax",
+  "fleet": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [
+    "grax:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Grax The Pack Closes (grax:A:1:0) gives +10 aim next to a friendly during the burn"
+ },
+ "t_hb_rushrail": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 33004,
+  "admiral": "grax",
+  "fleet": [
+   "c_raider",
+   "c_raider",
+   "c_marauder"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [
+    "grax:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Grax Rush the Rail (grax:A:1:1) boards after firing",
+  "attack_move": true
+ },
+ "t_hb_allscars": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33005,
+  "admiral": "grax",
+  "fleet": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [
+    "grax:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Grax All Scars Forward (grax:A:2:0) adds movement for enemies passed"
+ },
+ "t_hb_mawopens": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "seed": 33006,
+  "admiral": "grax",
+  "fleet": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [
+    "grax:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Grax The Maw Opens (grax:A:2:1) boosts the first ram of the burn"
+ },
+ "t_hb_burncarry": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33007,
+  "admiral": "grax",
+  "fleet": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Hullbreakers: Grax Burn Until the Hulls Meet (grax:cap:0) carries the burn to the next round"
+ },
+ "t_hb_warlordrun": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33008,
+  "admiral": "grax",
+  "fleet": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Hullbreakers: Grax Run of the Warlord (grax:cap:1) gives the flagship a second run"
+ },
+ "t_hb_knifeback": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "seed": 33009,
+  "admiral": "sable",
+  "fleet": [
+   "c_reaver",
+   "c_reaver",
+   "c_raider"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "sable",
+   "picks": [
+    "sable:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Sable Knife Finds the Back (sable:A:0:0) adds +15% rear damage in the hunt round"
+ },
+ "t_hb_darktorps": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33010,
+  "admiral": "sable",
+  "fleet": [
+   "c_reaver",
+   "c_reaver",
+   "c_raider"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "sable",
+   "picks": [
+    "sable:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Sable Torpedoes in the Dark (sable:A:0:1) halves torpedo interception"
+ },
+ "t_hb_cutturn": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "seed": 1,
+  "admiral": "sable",
+  "fleet": [
+   "c_reaver",
+   "c_reaver",
+   "c_raider"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 99,
+  "treeChoices": {},
+  "lineage": {
+   "id": "sable",
+   "picks": [
+    "sable:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Sable Cut and Turn (sable:A:1:0) grants a free turn after a rear hit"
+ },
+ "t_hb_secondknife": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "seed": 33012,
+  "admiral": "sable",
+  "fleet": [
+   "c_reaver",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 99,
+  "treeChoices": {},
+  "lineage": {
+   "id": "sable",
+   "picks": [
+    "sable:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Sable Second Knife (sable:A:1:1) reloads a missed torpedo at once"
+ },
+ "t_hb_smilecut": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33013,
+  "admiral": "sable",
+  "fleet": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "sable",
+   "picks": [
+    "sable:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Sable The Smile Before the Cut (sable:A:2:0) boosts the first ship to fire in the hunt round"
+ },
+ "t_hb_everyknife": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "seed": 33014,
+  "admiral": "sable",
+  "fleet": [
+   "c_raider",
+   "c_raider",
+   "c_raider",
+   "c_raider"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "sable",
+   "picks": [
+    "sable:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Sable Every Knife at Once (sable:A:2:1) marks a target rear hit by three ships"
+ },
+ "t_hb_darkknives": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 10,
+  "bot": "full",
+  "seed": 33015,
+  "admiral": "sable",
+  "fleet": [
+   "c_reaver",
+   "c_reaver",
+   "c_raider"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "sable",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Hullbreakers: Sable Dark Full of Knives (sable:cap:0) carries the hunt bonus to a rear shot next round"
+ },
+ "t_hb_cutfeeds": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33016,
+  "admiral": "sable",
+  "fleet": [
+   "c_reaver",
+   "c_reaver",
+   "c_raider"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "sable",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Hullbreakers: Sable The Cut That Feeds the Pack (sable:cap:1) moves every ship toward a rear arc"
+ },
+ "t_hb_patchedwing": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33017,
+  "admiral": "mott",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "mott",
+   "picks": [
+    "mott:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Mott Patched Wing (mott:A:0:0) makes a +25% wing that is removed after its strike"
+ },
+ "t_hb_hulkmore": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33018,
+  "admiral": "mott",
+  "fleet": [
+   "c_hulk",
+   "c_marauder"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "mott",
+   "picks": [
+    "mott:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Mott Hulk Holds More (mott:A:0:1) launches a wing from a non-carrier"
+ },
+ "t_hb_retasked": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 13,
+  "admiral": "mott",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "mott",
+   "picks": [
+    "mott:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Mott Re-Tasked Mid-Flight (mott:A:1:0) pays an extra wing on a fresh target"
+ },
+ "t_hb_wreckline": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33020,
+  "admiral": "mott",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "mott",
+   "picks": [
+    "mott:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Mott Launched from the Wreck Line (mott:A:1:1) pays wings from a carrier that did not move"
+ },
+ "t_hb_wholeyard": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33021,
+  "admiral": "mott",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "mott",
+   "picks": [
+    "mott:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Mott The Whole Yard Flies (mott:A:2:0) launches one more when all wings go"
+ },
+ "t_hb_screaming": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 33022,
+  "admiral": "mott",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "mott",
+   "picks": [
+    "mott:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Mott Wings Come Back Screaming (mott:A:2:1) pays an extra wing on an already hit target"
+ },
+ "t_hb_swarmscrap": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33023,
+  "admiral": "mott",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "mott",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Hullbreakers: Mott Swarm Over the Scrap Field (mott:cap:0) launches the extra wings twice"
+ },
+ "t_hb_privatewing": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33024,
+  "admiral": "mott",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "mott",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Hullbreakers: Mott Old Mott Private Wing (mott:cap:1) keeps a +20% first strike each round"
+ },
+ "t_hb_weldmatters": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 9,
+  "bot": "full",
+  "seed": 33025,
+  "admiral": "vesh",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 5,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vesh",
+   "picks": [
+    "vesh:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Vesh Weld What Matters (vesh:A:0:0) sends a repair share to the most damaged section"
+ },
+ "t_hb_patchguns": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 33026,
+  "admiral": "vesh",
+  "fleet": [
+   "c_reaver",
+   "c_reaver",
+   "c_raider"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 4,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vesh",
+   "picks": [
+    "vesh:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Vesh Patch Over the Guns (vesh:A:0:1) gives +10 aim to a repaired weapons section"
+ },
+ "t_hb_scrapfront": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 9,
+  "bot": "full",
+  "seed": 33027,
+  "admiral": "vesh",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 5,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vesh",
+   "picks": [
+    "vesh:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Vesh Scrap to the Front (vesh:A:1:0) gives the flagship share to another ship"
+ },
+ "t_hb_weldedfight": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 9,
+  "bot": "full",
+  "seed": 33028,
+  "admiral": "vesh",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 5,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vesh",
+   "picks": [
+    "vesh:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Vesh Welded While Fighting (vesh:A:1:1) fires one weapon at half damage after a repair"
+ },
+ "t_hb_doublebolted": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 9,
+  "bot": "full",
+  "seed": 33029,
+  "admiral": "vesh",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 5,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vesh",
+   "picks": [
+    "vesh:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Vesh Double-Bolted Plate (vesh:A:2:0) raises a patched section max"
+ },
+ "t_hb_packbites": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 9,
+  "bot": "full",
+  "seed": 33030,
+  "admiral": "vesh",
+  "fleet": [
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 5,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vesh",
+   "picks": [
+    "vesh:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Vesh The Pack Bites On (vesh:A:2:1) pays +15% next round after a lift above half hull"
+ },
+ "t_hb_weldedwhole": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 10,
+  "bot": "full",
+  "seed": 33031,
+  "admiral": "vesh",
+  "fleet": [
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 6,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vesh",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Hullbreakers: Vesh Welded Whole (vesh:cap:0) restores one destroyed section on every ship"
+ },
+ "t_hb_nothingbroken": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 33032,
+  "admiral": "vesh",
+  "fleet": [
+   "c_raider",
+   "c_raider"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 99,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vesh",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Hullbreakers: Vesh Nothing Stays Broken (vesh:cap:1) undoes the first lost section"
+ },
+ "t_hb_preyscent": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33033,
+  "admiral": "grax",
+  "fleet": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 99,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [
+    "grax:B:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: shared Prey Chosen by Scent (grax:B:0:0) names the prey at battle start"
+ },
+ "t_hb_loosepack": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33034,
+  "admiral": "grax",
+  "fleet": [
+   "c_raider"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 99,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [
+    "grax:B:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: shared Loose Pack, Wide Lanes (grax:B:0:1) gives +1 movement when the pack is clear"
+ },
+ "t_hb_firstscar": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 20,
+  "admiral": "grax",
+  "fleet": [
+   "c_raider",
+   "c_marauder",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 99,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [
+    "grax:C:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: shared The Flagship Takes the First Scar (grax:C:0:0) redirects a hit to the flagship"
+ },
+ "t_hb_trophystandard": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 33036,
+  "admiral": "grax",
+  "fleet": [
+   "c_marauder"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket"
+  ],
+  "cmdRound": 99,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [
+    "grax:C:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: shared Trophy Standard (grax:C:0:1) grants a free turn after a flagship kill"
  }
 }

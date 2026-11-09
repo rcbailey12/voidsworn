@@ -326,7 +326,7 @@ function startBattle(cfg){
      busy:false, log:[], fx:[], cfg, over:false, reviveUsed:false, inspect:null, showArcs:true, showThreat:false, called:null, wingSel:null, activeUnit:null, sector:RUN.sector}; { const sc=sectorCond(); B.cond=sc&&RUN&&RUN.map?RUN.map.cond:null; B.condRegen=(sc&&sc.regen)||1; }
   B.tree=treeBuild(); B.treeStats={}; B.treeChoices=cfg.treeChoices||null; B.treePending=[]; B.treeFlaw=null; B.treeLens=null; B.treeFlakSkip=null;
   B.treeReserve=[]; B.treePrey=null; B.treeNamedPrey=null; B.treeIronExtra=null;
-  B.tr={r:1,enemyShots:{},volleyHits:{},logged:{},falseHulls:0,glassUsed:0,firstLight:null,volleyPick:{},carrierHit:{},wingsDebt:{},standardUsed:0,ledgerUsed:0,escortUsed:{},frameZeroUsed:0,targeted:{},targetedLast:{},iterKill:{},indexTarget:null,swarmHitBy:{},volleyShips:{},volleyHit:{},burnStays:null,firstThroatUsed:0};
+  B.tr={r:1,enemyShots:{},volleyHits:{},logged:{},falseHulls:0,glassUsed:0,firstLight:null,volleyPick:{},carrierHit:{},wingsDebt:{},standardUsed:0,ledgerUsed:0,escortUsed:{},frameZeroUsed:0,targeted:{},targetedLast:{},iterKill:{},indexTarget:null,swarmHitBy:{},volleyShips:{},volleyHit:{},burnStays:null,firstThroatUsed:0,smileUsed:0,rearShips:{},wingStruck:{},hitRound:{},firstScarUsed:0,nothingSaved:0,scent:null,bigId:null};
   const s=RUN.sector;
   for(const ship of RUN.fleet){ if(ship.hp<=0) continue; B.units.push(makeUnit('player', ship.tpl, {ship})); }
   const eList = cfg.enemies || genEnemyFleet(cfg.fac, s, cfg.col, cfg.kind, cfg.arch, cfg.mod);
@@ -401,6 +401,7 @@ function startSideTurn(side){
     if(u.isSq) u.activated=false;
     u.braced=false; u.coverBy=null; u.postFire=false; u.postMp=0; u.pivotUsed=false; u.lockOn=false; u.focus=false; u.fullAhead=false; u.noTurn=false; u.evBuff=0; u.order=null; u.ramBoost=0;
     u.mp=Math.max(1,u.speed-u.st.engine); u.turnsLeft=u.turns;
+    if(side==='player'&&u.burnCarry){ u.mp+=u.burnCarry.mp||0; u.turnsLeft+=u.burnCarry.turns||0; } // Grax capstone 1: the last burn carries over
     for(const w of u.weapons){ w.fired=false; if(w.cdLeft>0) w.cdLeft--; if(w.off>0) w.off--; }
     if(u.abCd>0) u.abCd--;
     if(u.st.shieldOff>0) u.st.shieldOff--; else if(u.shMax>0){ const rg=u.regen*(((typeof B!=='undefined'&&B&&B.condRegen)||1)); for(let i=0;i<4;i++) if(!(u.regenLock&&u.regenLock[i])) u.sh[i]=Math.min(u.shMax,u.sh[i]+rg); }
@@ -437,13 +438,18 @@ function canEnd(u,q,r,occ){ if(!onBoard(q,r)||blocks(terr(q,r))) return false; c
 function computeReach(u){
   const map=new Map(), states=[];
   const baseMP=postFireMp(u), mb=treeMoveBonus(u); // Razormaw T2a: +1 movement, but only for a move that ends closer to the named prey
-  const occ=occMap(), R=moveRules(u), MP=baseMP+mb, noOver=!!u.postFire; // B4 step 3: after firing only the Ithar (or Slip the Net) may move, half what was left, no climbing or diving
-  const sk=s=>s.q+','+s.r+','+s.f+','+s.t;
-  const start={q:u.q,r:u.r,f:u.facing,t:0,cost:0,path:[]};
+  const scar=!!(treeSkill('allScars')&&u.side==='player'&&!u.isSq&&cmdActive(u.side,'surge')); // Grax T3a: +1 movement per enemy passed adjacent
+  const loose=!!(treeSkill('loosePack')&&u.side==='player'&&!u.isSq); // Hullbreakers shared B1b: +1 for a move that ends with no friendly within 2
+  const occ=occMap(), R=moveRules(u), MP=baseMP+mb+(scar?2:0)+(loose?1:0), noOver=!!u.postFire; // B4 step 3: after firing only the Ithar (or Slip the Net) may move, half what was left, no climbing or diving
+  const sk=s=>s.q+','+s.r+','+s.f+','+s.t+(scar?('|'+((s.passed||[]).join('-'))):'');
+  const passAdd=(s,nq,nr)=>{ if(!scar) return null; const out=(s.passed||[]).slice(); for(const e of alive('enemy')){ if(e.isSq) continue; if(hdist({q:nq,r:nr},e)===1&&!out.includes(e.id)) out.push(e.id); } out.sort(); return out; };
+  const friendlyNear2=(q,r)=>alive('player').some(x=>x.id!==u.id&&!x.isSq&&hdist({q,r},x)<=2);
+  const allowed=s=>s.cost<=baseMP+mb+(scar?Math.min(2,(s.passed||[]).length):0)+(loose&&!friendlyNear2(s.q,s.r)?1:0);
+  const start={q:u.q,r:u.r,f:u.facing,t:0,cost:0,path:[],passed:scar?[]:null};
   const seen=new Map([[sk(start),0]]); const queue=[start]; let qi=0;
   const pivotFree=R.pivot&&!u.pivotUsed;
   while(qi<queue.length){
-    const s=queue[qi++]; if(seen.get(sk(s))<s.cost) continue; states.push(s);
+    const s=queue[qi++]; if(seen.get(sk(s))<s.cost) continue; if(!allowed(s)) continue; states.push(s);
     if(s.cost>=MP) continue;
     const nexts=[];
     if(u.isSq){ for(let f=0;f<6;f++){ const d=DIRS[f]; const nq=s.q+d[0], nr=s.r+d[1];
@@ -458,11 +464,11 @@ function computeReach(u){
         if(over){ if(noOver) continue; c+=R.over; }
         if(s.cost+c>MP) continue;
         const st={q:nq,r:nr,f:s.f}; if(kind) st[kind]=1; if(kind==='slip') st.side=df===(s.f+1)%6?1:-1; if(over) st.over=over;
-        nexts.push({q:nq,r:nr,f:s.f,t:s.t,cost:s.cost+c,path:[...s.path,st],slips:(s.slips||0)+(kind==='slip'?1:0),revs:(s.revs||0)+(kind==='rev'?1:0),overs:(s.overs||0)+(over?1:0)}); }
+        nexts.push({q:nq,r:nr,f:s.f,t:s.t,cost:s.cost+c,path:[...s.path,st],slips:(s.slips||0)+(kind==='slip'?1:0),revs:(s.revs||0)+(kind==='rev'?1:0),overs:(s.overs||0)+(over?1:0),passed:passAdd(s,nq,nr)}); }
     }
     if(!u.isSq && !u.noTurn && s.t<u.turnsLeft){
       const tc=pivotFree&&s.t===0?0:1; if(s.cost+tc<=MP||tc===0)
-      for(const dd of [1,-1]){ const f=(s.f+dd+6)%6; nexts.push({q:s.q,r:s.r,f,t:s.t+1,cost:s.cost+tc,path:[...s.path,{q:s.q,r:s.r,f,rot:true}],slips:s.slips,revs:s.revs,overs:s.overs}); }
+      for(const dd of [1,-1]){ const f=(s.f+dd+6)%6; nexts.push({q:s.q,r:s.r,f,t:s.t+1,cost:s.cost+tc,path:[...s.path,{q:s.q,r:s.r,f,rot:true}],slips:s.slips,revs:s.revs,overs:s.overs,passed:s.passed}); }
     }
     for(const n of nexts){ const k=sk(n); if(seen.has(k)&&seen.get(k)<=n.cost) continue; seen.set(k,n.cost); queue.push(n); }
   }
@@ -478,7 +484,7 @@ async function moveUnit(u, state, opts){
   if(!inThisBattle(u)) return; const live=liveFrom(null);
   const path=state.path; let committed=false;
   const commit=()=>{ if(committed) return; committed=true; for(const st of path) if(!st.rot){ u.q=st.q; u.r=st.r; } u.facing=path.at(-1).f;
-    u.mp=Math.max(0,u.mp-state.cost); if(u.postFire) u.postMp=Math.max(0,(u.postMp||0)-state.cost); u.turnsLeft-=state.t; if(state.t>0&&moveRules(u).pivot) u.pivotUsed=true; u.moved=true; u.hexMoved=(u.hexMoved||0)+path.filter(p=>!p.rot).length; if(B.usage&&u.side==='player'&&!u.isSq) B.usage.moves++; treeAfterMove(u); };
+    u.mp=Math.max(0,u.mp-state.cost); if(u.postFire) u.postMp=Math.max(0,(u.postMp||0)-state.cost); u.turnsLeft-=state.t; if(state.t>0&&moveRules(u).pivot) u.pivotUsed=true; u.moved=true; u.hexMoved=(u.hexMoved||0)+path.filter(p=>!p.rot).length; if(u.treeWarlord===1){ u.treeWarlord=2; u.mp+=state.cost; u.postMp=Math.max(u.postMp||0,state.cost); } if(state.passed&&state.passed.length) treeFx(u,'allScars','the scars carry'); if(B.usage&&u.side==='player'&&!u.isSq) B.usage.moves++; treeAfterMove(u); };
   let lateP=null; const onLate=opts&&opts.onLate?()=>{ if(!live()) return; commit(); try{ lateP=Promise.resolve(opts.onLate()).catch(e=>console.error(e)); }catch(e){ console.error(e); } }:null;
   if(typeof animPath==='function'){ await animPath(u,path,onLate?{onLate}:undefined); if(B) B.prog=(B.prog||0)+1; if(lateP) await lateP; if(!live()) return; if(committed){ await treeHeldFire(u); objAfterMove(u); return; } } // one continuous burn
   else for(const st of path){
@@ -496,8 +502,8 @@ async function moveUnit(u, state, opts){
 function canFade(u){ return u.fac==='ithar'||!!(u.fx&&u.fx.fade); }
 function postFireMp(u){ return u.postFire?Math.min(u.mp,u.postMp||0):u.mp; }
 function freePivot(u){ return !!(moveRules(u).pivot&&!u.pivotUsed); }
-function canRotate(u){ return !u.dead && !u.isSq && !u.noTurn && u.turnsLeft>0 && (u.mp>0||freePivot(u)) && !u.braced; }
-async function rotateUnit(u,dir){ if(!canRotate(u)||!inThisBattle(u)) return; const live=liveFrom(u), f=(u.facing+dir+6)%6; if(freePivot(u)) u.pivotUsed=true; else u.mp--; u.turnsLeft--; u.moved=true; if(typeof animRotate==='function') await animRotate(u,f); if(!live()) return; u.facing=f; treeAfterMove(u); } // v53: facing commits after the live check, like moveUnit
+function canRotate(u){ return !u.dead && !u.isSq && !u.noTurn && (u.turnsLeft>0||u.treeFreeTurn>0) && (u.mp>0||freePivot(u)||u.treeFreeTurn>0) && !u.braced; }
+async function rotateUnit(u,dir){ if(!canRotate(u)||!inThisBattle(u)) return; const live=liveFrom(u), f=(u.facing+dir+6)%6; const free=u.treeFreeTurn>0; if(free) u.treeFreeTurn=0; else if(freePivot(u)) u.pivotUsed=true; else u.mp--; if(!free) u.turnsLeft--; u.moved=true; if(typeof animRotate==='function') await animRotate(u,f); if(!live()) return; u.facing=f; treeAfterMove(u); } // v53: facing commits after the live check, like moveUnit; a free turn (Sable T2a, shared C1b) costs nothing
 
 // ---------- B3 faction identity (Oct 26; numbers are Claude's calls, vetoable) ----------
 // One rule per faction on top of the drives (MOVE_RULES) and gates (FAC_GATES in data.js). Every rule keys off the hull's own faction (u.fac).
@@ -650,7 +656,7 @@ function aiStance(u){ if(!canStance(u)) return; const foe=u.side==='player'?'ene
   const st=torps||foeSq>mineSq+1?'screen':weak?'hunt':'strike'; if(st!==(u.stance||'strike')) setStance(u,st); }
 function wingPerks(p){ return (p&&p.ship&&p.ship.wingVet&&p.ship.wingVet.perks)||[]; }
 // screening wings near a torpedo's target shoot down part of the salvo (at impact, after point defense)
-function screenTorps(t,shots,res){ let shot=0; for(const s of alive(t.side)){ if(!s.isSq||wingStance(s)!=='screen'||hdist(s,t)>WING_SCREEN_R) continue; const p=B.units.find(x=>x.id===s.parent), ch=WING_SCREEN_TORP+(wingPerks(p).includes('pickets')?.2:0);
+function screenTorps(t,shots,res,mult){ const im=(mult==null?1:mult); let shot=0; for(const s of alive(t.side)){ if(!s.isSq||wingStance(s)!=='screen'||hdist(s,t)>WING_SCREEN_R) continue; const p=B.units.find(x=>x.id===s.parent), ch=(WING_SCREEN_TORP+(wingPerks(p).includes('pickets')?.2:0))*im;
     for(let i=0;i<shots.length;i++) if(shots[i]){ if(rnd()<ch){ shots[i]=false; shot++; } break; } }
   if(shot){ res.pd=(res.pd||0)+shot; try{ if(typeof fxText==='function') fxText(t,shot+' torpedo'+(shot>1?'es':'')+' shot down by wings','#bfe3ff',30); }catch(e){} } }
 // ---------- combat math ----------
@@ -684,8 +690,12 @@ function hitChance(u,w,t){
   { const sa=treeSkill('silentArchive'); if(sa&&u.side==='enemy'&&t.side==='player'&&!t.isSq&&cmdActive('player','hunt')&&!inArc(u,t,'F')) c-=sa.n; } // Ostrel T3b
   { const td=treeSkill('throatDeep'); if(td&&u.side==='player'&&!u.isSq){ const fg=B&&B.units.find(x=>x.pflag&&!x.dead); if(fg&&hdist(u,fg)<=2) c+=treeAddVal(u,'aim',td.n); } } // Chorus shared C1b
   { const bb=treeSkill('breathBite'); if(bb&&u.side==='enemy'&&cmdActive('player','surge')&&alive('player').filter(x=>!x.isSq&&hdist(x,u)===1).length>=2) c-=bb.n; } // Razormaw T3b
+  { const pc=treeSkill('packCloses'); if(pc&&u.side==='player'&&!u.isSq&&cmdActive(u.side,'surge')&&alive('player').some(x=>x!==u&&!x.isSq&&hdist(x,u)===1)) c+=treeAddVal(u,'aim',pc.n); } // Grax T2a
+  { const pg=treeSkill('patchGuns'); if(pg&&u.side==='player'&&!u.isSq&&u.treeAimGuns) c+=treeAddVal(u,'aim',u.treeAimGuns); } // Vesh T1b
+  { const ps=treeSkill('preyScent'); if(ps&&u.side==='player'&&!u.isSq&&B&&B.tr&&B.tr.scent===t.id) c+=treeAddVal(u,'aim',ps.n); } // Hullbreakers shared B1a
+  { const ek=treeSkill('everyKnife'); if(ek&&u.side==='enemy'&&u.treeKnifeRound===B.round) c-=ek.n; } // Sable T3b
   { if(u.side==='enemy'&&u.treeAcidAim) c-=20; } // Voice T3b: acid in the scanners
-  const surge=cmdActive(t.side,'surge'); // v53: the enemy's Surge Command (was a wrapper patched on below)
+  const surge=cmdActive(t.side,'surge')||!!(t.side==='player'&&t.burnCarry); // v53: the enemy's Surge Command, and Grax's carried burn
   if(w.k==='lance'&&u.fx&&u.fx.lanceSure) return surge?75:95; // One Clean Line (legendary)
   if(u.side==='player'&&!u.isSq&&!(u.sureUsed>0)&&runFx().firstSure) return surge?75:95; // the rangefinder relic: every ship's first attack of the battle
   const h=clamp(Math.round(c),5,95); return surge?Math.max(5,h-20):h;
@@ -712,6 +722,10 @@ function dmgMult(u,w,t,rear){
   if(u.side==='player'&&!u.isSq){ let add=0;
     { const rd=treeSkill('runDown'); if(rd&&cmdActive(u.side,'surge')&&t.speed<u.speed) add+=rd.n; } // Razormaw T1a: the slowest are run down
     { const trd=treeSkill('throatRed'); if(trd&&u.treeRedFirst) add+=trd.n; } // Razormaw capstone 1: first shot after the red frenzy
+    { const rB=treeSkill('runBigger'); if(rB&&cmdActive(u.side,'surge')&&u.treeBigStart!=null&&B&&B.tr&&B.tr.bigId){ const big=B.units.find(x=>x.id===B.tr.bigId&&!x.dead); if(big&&(u.hexMoved||0)>0&&hdist(u,big)<u.treeBigStart) add+=rB.n; } } // Grax T1a
+    { const sm=treeSkill('smileCut'); if(sm&&u.treeSmile) add+=sm.n; } // Sable T3a
+    { const pb=treeSkill('packBites'); if(pb&&u.treeDmgCarry&&u.treeDmgCarry.r===B.round) add+=pb.n; } // Vesh T3b
+    { if(u.treeHuntRearNext&&u.treeHuntRearNext.r===B.round) add+=u.treeHuntRearNext.n; } // Sable capstone 1
     if(u.treeDmgNext) add+=u.treeDmgNext; // Mending T3a: the new flesh is angry
     if(add) m+=treeAddVal(u,'dmgPct',add); }
   if(w.arc==='P'||w.arc==='S') m+=u.fx.broadPct||0;
@@ -719,7 +733,12 @@ function dmgMult(u,w,t,rear){
   if(w.k==='torp') m+=u.fx.torpPct||0;
   if(u.isSq) m+=u.sqPct||0;
   if(u.isSq&&u.treeBonus) m+=treeAddVal(u,'sqPct',u.treeBonus); // Ashgrove T1b: the chosen carrier's extra wing hits harder
+  if(u.isSq&&u.side==='player'&&B&&B.tr){
+    { const rt=treeSkill('reTasked'); if(rt&&u.extra&&!B.tr.wingStruck[t.id]) m+=treeAddVal(u,'sqPct',rt.n); } // Mott T2a
+    { const sc=treeSkill('screaming'); if(sc&&u.extra&&B.tr.hitRound[t.id]) m+=treeAddVal(u,'sqPct',sc.n); } // Mott T3b
+    { const pw=treeSkill('privateWing'); if(pw&&u.treePrivate&&u.treePrivateRound!==B.round) m+=treeAddVal(u,'sqPct',pw.n); } } // Mott capstone 2
   if(rear) m+=u.fx.rearPct||0;
+  { const kb=treeSkill('knifeBack'); if(kb&&rear&&u.side==='player'&&!u.isSq&&cmdActive(u.side,'hunt')) m+=treeAddVal(u,'rearPct',kb.n); } // Sable T1a
   if(rear&&t.nem&&nemWeak('flank')) m+=.25; // B4 Nemesis weakness: thin stern plating
   if(B&&B.nemChallenge&&((u.nemFlag&&t.id===B.nemDuel)||(u.id===B.nemDuel&&t.nemFlag))) m+=.2; // R42 Voidsworn Nemesis: the flagship duel
   if(u.nem&&B&&B.nem&&(B.nem.traits||[]).includes('zeal')&&hdist(u,t)===1) m+=.12; // R42 trait: zealots up close
@@ -794,7 +813,9 @@ function damageSection(t,sec,dmg,by){
   if(!t.sec||!t.sec[sec]||dmg<=0) return; const s=t.sec[sec];
   if(t.crewMax) t.crew=Math.max(0,t.crew-Math.round(dmg/t.maxHp*t.crewMax*.35));
   if(s.treeLock){ s.hp=Math.max(1,s.hp-dmg); return; } // Mending capstone 2: a section the tide grew back cannot be destroyed again
-  if(s.hp<=0) return; s.hp=Math.max(0,s.hp-dmg); if(s.hp>0||s.broken) return; s.broken=true; if(typeof fxSectionDown==='function') fxSectionDown(t,sec);
+  if(s.hp<=0) return; s.hp=Math.max(0,s.hp-dmg); if(s.hp>0||s.broken) return;
+  { const nb=treeSkill('nothingBroken'); if(nb&&t.side==='player'&&!B.tr.nothingSaved){ B.tr.nothingSaved=1; s.hp=s.max; treeFx(t,'nothingBroken','the weld holds'); return; } } // Vesh capstone 2: the first section loss of the battle is undone
+  s.broken=true; if(typeof fxSectionDown==='function') fxSectionDown(t,sec);
   if(sec==='prow') t.weapons.forEach(w=>{ if(w.arc==='F') w.off=999; });
   if(sec==='mid'){ t.weapons.forEach(w=>{ if(w.arc==='P'||w.arc==='S') w.off=999; }); if(t.shMax>0){ t.st.shieldOff=999; t.sh=[0,0,0,0]; } }
   if(sec==='eng'){ t.secSave={turns:t.turns,ev:t.ev}; t.st.engine=Math.max(0,t.speed-1); t.turns=Math.min(t.turns,1); t.ev=0; }
@@ -825,6 +846,7 @@ async function fireWeapon(u,wi,t,opts={}){ if(!inThisBattle(u)) return false; co
   if(B.usage&&u.side==='player'&&!opts.intercept){ const K=B.usage.kind=B.usage.kind||{}, kk=u.isSq?'sq':w.k; K[kk]=(K[kk]||0)+1; if(w.ion) B.usage.ion=(B.usage.ion||0)+1; } // B4: what the Nemesis learns from
   if(!opts.intercept&&!u.isSq&&w.k!=='flak'&&!u.postFire){ u.postFire=true; u.postMp=canFade(u)?Math.floor(u.mp/2):0; } // v54: firing ends normal movement
   if(!opts.intercept&&torpTravels(w,u)) return launchTorp(u,w,t,opts,live,keep,b0); // B3: torpedoes travel and strike next turn
+  if(!opts.intercept&&u.side==='player'&&!u.isSq){ const sm=treeSkill('smileCut'); if(sm&&cmdActive('player','hunt')&&!B.tr.smileUsed){ B.tr.smileUsed=1; u.treeSmile=1; } } // Sable T3a: the first ship to fire in the Command round
   // squadrons attacking capital ships run the flak gauntlet first
   if(u.isSq && !t.isSq && !opts.intercept){
     for(const d of alive(t.side)){
@@ -837,6 +859,7 @@ async function fireWeapon(u,wi,t,opts={}){ if(!inThisBattle(u)) return false; co
       if(u.dead){ return true; }
     }
   }
+  if(!opts.intercept && u.side==='enemy' && t.side==='player' && !t.isSq){ const fs=treeSkill('firstScar'); if(fs&&B.tr&&!B.tr.firstScarUsed){ const fg=B.units.find(x=>x.pflag&&!x.dead); if(fg&&fg!==t&&hdist(fg,t)===1){ t=fg; B.tr.firstScarUsed=1; treeFx(fg,'firstScar','the flagship takes the first scar'); } } } // Hullbreakers shared C1a
   const quad=shieldQuad(t,u), shBefore=(t.sh&&t.sh[quad])||0;
   const res={shield:0,hull:0,crits:0,hits:0,misses:0,sys:null};
   const called=opts.called&&!t.isSq&&!opts.intercept?opts.called:null;
@@ -873,11 +896,12 @@ async function fireWeapon(u,wi,t,opts={}){ if(!inThisBattle(u)) return false; co
   if(landed&&!opts.intercept&&u.side==='enemy'&&t.side==='player'&&t.shMax>0&&shBefore>0&&(t.sh[quad]||0)<=0){ const wa=treeSkill('wallAnswers'); if(wa&&cmdActive('player','iron')&&!t.treeAnswerUsed){ t.treeAnswerUsed=1; await treeWallAnswer(t,u); } } // H4 Thale T3b
   if(landed&&!opts.intercept&&u.side==='player'&&u.pflag&&!B.tr.ledgerUsed){ const fl=treeSkill('flagshipLedger'); if(fl){ const other=alive('player').find(x=>x!==u&&!x.isSq&&x.treeHasFired); if(other){ let wi=-1,bv=Infinity; for(let i=0;i<other.weapons.length;i++){ const w2=other.weapons[i]; if(w2.off||w2.k==='flak') continue; const v=w2.dmg*w2.shots; if(v<bv){ bv=v; wi=i; } } if(wi>=0){ const w2=other.weapons[wi]; let best=null,bs=-Infinity; for(const t2 of alive('enemy')){ const e=expectedVs(other,w2,t2); const v=e.hull+e.shield*.3; if(v>bs){ bs=v; best=t2; } } if(best&&canFire(other,w2,best)){ B.tr.ledgerUsed=1; if(await treeExtraShot(other,wi,best,{half:true})) treeFx(u,'flagshipLedger','the flagship calls in the debt'); } } } } } // H4 Vex shared C1a
   if(!opts.intercept&&u.side==='player'&&!u.isSq) u.treeRedFirst=0; // Razormaw capstone 1: the first shot spends it
+  { if(landed&&!opts.intercept&&u.side==='player'&&!u.isSq&&treeSkill('rushRail')&&cmdActive(u.side,'surge')&&!u.treeRushLogged&&alive('enemy').some(x=>!x.isSq&&hdist(u,x)===1)){ u.treeRushLogged=1; treeFx(u,'rushRail','rush the rail'); } } // Grax T2b: the rail is reachable even after firing
   return landed;
 }
 // point defense near the target picks off rockets (Corsair rocket trait); at fire time, or at impact for a travelling salvo
-function rocketDefense(w,t,shots,res){ if(!w.rockets||t.isSq) return; let shot=0; for(const d of alive(t.side)){ if(d.isSq||d.intercepts<=0||d.braced) continue; const fw=d.weapons.find(x=>x.k==='flak'&&!(x.off>0)); if(!fw||hdist(d,t)>fw.r) continue;
-    for(let i=0;i<shots.length&&d.intercepts>0;i++) if(shots[i]&&rnd()<.55){ shots[i]=false; d.intercepts--; shot++; } }
+function rocketDefense(w,t,shots,res,mult){ if(!w.rockets||t.isSq) return; const im=(mult==null?1:mult); let shot=0; for(const d of alive(t.side)){ if(d.isSq||d.intercepts<=0||d.braced) continue; const fw=d.weapons.find(x=>x.k==='flak'&&!(x.off>0)); if(!fw||hdist(d,t)>fw.r) continue;
+    for(let i=0;i<shots.length&&d.intercepts>0;i++) if(shots[i]&&rnd()<.55*im){ shots[i]=false; d.intercepts--; shot++; } }
   if(shot){ res.pd=shot; if(typeof fxText==='function') fxText(t,shot+' rocket'+(shot>1?'s':'')+' shot down','#bfe3ff',30); } }
 // the shots of one weapon land: damage, shields, criticals, callouts, the log line and a kill (shared by direct fire and torpedo impact)
 async function landVolley(u,w,t,o){ const quad=o.quad, shots=o.shots, called=o.called, res=o.res;
@@ -899,8 +923,18 @@ async function landVolley(u,w,t,o){ const quad=o.quad, shots=o.shots, called=o.c
     { const uc=treeSkill('uncopiedTarget'); if(uc&&u.side==='player'&&cmdActive(u.side,'hunt')&&!t.treeHitBattle) treeFx(u,'uncopiedTarget','the uncopied target is found'); } // Ostrel T2b
     { const rd=treeSkill('runDown'); if(rd&&u.side==='player'&&!u.isSq&&cmdActive(u.side,'surge')&&t.speed<u.speed) treeFx(t,'runDown','the slowest are run down'); } // Razormaw T1a
     { const as=treeSkill('acidSeams'); if(as&&B.volleyMul&&B.volleyMul.side==='player'&&u.side==='player'&&t.side==='enemy'&&t.hp<t.maxHp/2) treeFx(t,'acidSeams','the acid finds the seams'); } // Voice T3a
+    { const pc=treeSkill('packCloses'); if(pc&&u.side==='player'&&!u.isSq&&cmdActive(u.side,'surge')&&alive('player').some(x=>x!==u&&!x.isSq&&hdist(x,u)===1)) treeFx(u,'packCloses','the pack closes'); } // Grax T2a
+    { const pg=treeSkill('patchGuns'); if(pg&&u.side==='player'&&!u.isSq&&u.treeAimGuns) treeFx(u,'patchGuns','the patched guns find the mark'); } // Vesh T1b
+    { const ps=treeSkill('preyScent'); if(ps&&u.side==='player'&&!u.isSq&&B.tr&&B.tr.scent===t.id) treeFx(u,'preyScent','the named prey is scented'); } // Hullbreakers shared B1a
+    { const rB=treeSkill('runBigger'); if(rB&&u.side==='player'&&!u.isSq&&cmdActive(u.side,'surge')&&u.treeBigStart!=null&&B.tr&&B.tr.bigId){ const big=B.units.find(x=>x.id===B.tr.bigId&&!x.dead); if(big&&(u.hexMoved||0)>0&&hdist(u,big)<u.treeBigStart) treeFx(u,'runBigger','the biggest thing is closer'); } } // Grax T1a
+    { const sm=treeSkill('smileCut'); if(sm&&u.side==='player'&&!u.isSq&&u.treeSmile) treeFx(u,'smileCut','the first cut smiles'); } // Sable T3a
+    { const pb=treeSkill('packBites'); if(pb&&u.side==='player'&&!u.isSq&&u.treeDmgCarry&&u.treeDmgCarry.r===B.round) treeFx(u,'packBites','the pack bites on'); } // Vesh T3b
     const rq=treeIsRear(u,t,quad);
     if(rq&&quad!==2) treeFx(u,'debtHunts','side hits count as rear');
+    { const kb=treeSkill('knifeBack'); if(kb&&rq&&u.side==='player'&&!u.isSq&&cmdActive(u.side,'hunt')) treeFx(u,'knifeBack','the knife finds the back'); } // Sable T1a
+    { const ct=treeSkill('cutTurn'); if(ct&&rq&&u.side==='player'&&!u.isSq){ u.treeFreeTurn=1; treeFx(u,'cutTurn','cut and turn'); } } // Sable T2a
+    { const ek=treeSkill('everyKnife'); if(ek&&rq&&u.side==='player'&&!u.isSq){ const arr=B.tr.rearShips[t.id]||(B.tr.rearShips[t.id]=[]); if(!arr.includes(u.id)) arr.push(u.id); if(arr.length>=3&&t.treeKnifeRound==null){ t.treeKnifeRound=B.round+1; treeFx(t,'everyKnife','three knives find one back'); } } } // Sable T3b counter
+    { if(rq&&u.side==='player'&&!u.isSq&&u.treeHuntRearNext&&u.treeHuntRearNext.r===B.round){ treeFx(u,'darkKnives','the dark keeps its knives'); u.treeHuntRearNext=null; } } // Sable capstone 1: spent on the first rear shot
     { const cb=treeSkill('copiedBehind'); if(cb&&rq&&u.side==='player'&&cmdActive(u.side,'hunt')) treeFx(u,'copiedBehind','the copy strikes the rear'); } // Ostrel T1a
     { const ua=treeSkill('unseenArchive'); if(ua&&u.side==='player'&&cmdActive(u.side,'hunt')&&B.tr&&!B.tr.targetedLast[u.id]) treeFx(u,'unseenArchive','the unseen ship strikes'); } // Ostrel T1b
     let stMul=1;
@@ -911,6 +945,9 @@ async function landVolley(u,w,t,o){ const quad=o.quad, shots=o.shots, called=o.c
     { const ff=treeSkill('frenzyFeeds'); if(ff&&u.side==='player'&&!u.isSq&&cmdActive(u.side,'surge')&&rq&&!u.treeFrenzyMove){ u.treeFrenzyMove=1; u.mp=(u.mp||0)+ff.n; u.postMp=Math.max(u.postMp||0,ff.n); treeFx(u,'frenzyFeeds','the frenzy feeds the throat'); } } // Razormaw T3a
     { const wd=treeSkill('wingsDebt'); if(wd&&u.isSq&&u.side==='player'&&!B.tr.wingsDebt[u.parent]&&B.tr.carrierHit[u.parent]===t.id){ d*=1+treeAddVal(u,'sqPct',wd.n); B.tr.wingsDebt[u.parent]=1; treeFx(u,'wingsDebt','the wings settle the debt'); } } // Ashgrove T3b
     const r=applyHit(u,w,t,d,quad);
+    { if(u.isSq&&u.side==='player'&&u.extra){ const rt=treeSkill('reTasked'); if(rt&&!B.tr.wingStruck[t.id]) treeFx(u,'reTasked','the wing takes a fresh target'); const sc=treeSkill('screaming'); if(sc&&B.tr.hitRound[t.id]) treeFx(u,'screaming','the wing comes back screaming'); const pw=treeSkill('privateWing'); if(pw&&u.treePrivate&&u.treePrivateRound!==B.round){ u.treePrivateRound=B.round; treeFx(u,'privateWing','the private wing strikes first'); } } } // Mott T2a, T3b, capstone 2 callouts
+    { if(u.isSq&&u.side==='player'){ B.tr.wingStruck[t.id]=1; B.tr.hitRound[t.id]=1; } else if(u.side==='player') B.tr.hitRound[t.id]=1; } // Mott counters: which targets this round's hits and wings have found
+    if(u.treeSmile) u.treeSmile=0; // Sable T3a: the bonus belongs to the first shot only
     { const aw=treeSkill('arcsWarm'); if(aw&&u.side==='player'&&w.id==='doom'&&B.volleyMul&&B.volleyMul.side===u.side&&!o.intercept){ const near=alive('enemy').filter(x=>x!==t).sort((a,b)=>hdist(a,t)-hdist(b,t)||(a.id<b.id?-1:1)); const adj=near[0]||null; if(adj){ const rr=applyHit(u,w,adj,d*aw.n,shieldQuad(adj,u)); res.hull+=rr.hull; if(adj.hp<=0){ adj.killCause='big'; await killUnit(adj,u); } treeFx(u,'arcsWarm','the corona splashes'); } } } // Umbra T1a
     { const bs=treeSkill('burnStays'); if(bs&&B.volleyMul&&B.volleyMul.side==='player'&&u.side==='player'&&!u.isSq&&t.side==='enemy'){ B.tr.burnStays=B.tr.burnStays||{}; B.tr.burnStays[t.id]=(B.tr.burnStays[t.id]||0)+(r.hull||0); } } // Voice T2a: the burn stays
     if(rq&&u.side==='player'&&cmdActive(u.side,'hunt')) B.tr.iterKill[t.id]=1; // Ostrel T3a: mark the next hit this round
@@ -948,6 +985,7 @@ async function launchTorp(u,w,t,opts,live,keep,b0){
   fstat(u.fac,'shots'); if(syncOn(u,t)) fstat(u.fac,'syncShots');
   S.base=dmgMult(u,w,t,false)*TORP_WARHEAD; S.rearAdd=dmgMult(u,w,t,true)*TORP_WARHEAD-S.base; S.ghost=torpGhost(u,keep[2]); // multipliers as the preview showed them at launch
   { const pn=treeSkill('preyName'); if(pn&&u.side==='player'&&B.treePrey&&B.treePrey.r===B.round&&B.treePrey.id===t.id){ const b=treeAddVal(u,'torpPct',pn.n); S.base*=1+b; S.rearAdd*=1+b; treeFx(u,'preyName','the named prey pays'); } } // Malek T1a
+  { if(u.side==='player'&&cmdActive(u.side,'hunt')&&treeSkill('darkTorps')){ S.dark=1; treeFx(u,'darkTorps','the torpedoes come in unseen'); } } // Sable T1b
   { const ts=treeSkill('twoSalvos'); if(ts&&u.side==='player'&&u.treeTorpCarry){ S.base*=1+u.treeTorpCarry; S.rearAdd*=1+u.treeTorpCarry; u.treeTorpCarry=0; treeFx(u,'twoSalvos','the first torpedo keeps the salvo bonus'); } } // Malek T3b
   { const ow=treeSkill('oathWings'); if(ow&&u.side==='enemy'&&t.side==='player'&&cmdActive('player','scramble')&&alive('player').some(x=>!x.isSq&&(x.ab==='launch'||(x.fx&&x.fx.hive))&&hdist(x,t)<=2)){ S.oath=1; treeFx(t,'oathWings','the escort wall closes'); } } // Ashgrove capstone 2
   if(typeof animTorpLaunch==='function'){ try{ await animTorpLaunch(u,S); }catch(e){ console.warn(e); } if(!live()){ if(B===b0){ w.fired=keep[0]; w.cdLeft=keep[1]; u.sureUsed=keep[2]; u.postFire=keep[3]; u.postMp=keep[4]; } return false; } }
@@ -965,12 +1003,14 @@ async function torpImpact(S){ const live=liveFrom(null), w=S.w, g=S.ghost; g.q=S
   if(!t){ fstat(S.fac,orig&&!orig.dead?'torpDodge':'torpGone'); log(`${w.n} from ${g.name} run wide: ${orig&&!orig.dead?orig.name+' slipped out of the lane':'nothing left in the lane'}.`,'x'); try{ if(typeof fxFlash==='function') fxFlash(S.aim,'#ff9f3a'); }catch(e){} return; }
   const quad=shieldQuad(t,g), shBefore=(t.sh&&t.sh[quad])||0, res={shield:0,hull:0,crits:0,hits:0,misses:0,sys:null};
   const hc=clamp(hitChance(g,w,t)-pen+(t.nem&&nemWeak('torp')?15:0),5,95), shots=[]; for(let i=0;i<w.shots;i++) shots.push(rnd()*100<hc);
-  rocketDefense(w,t,shots,res); screenTorps(t,shots,res); // B4: screening wings beside the target thin the salvo
+  const im=S.dark?0.5:1; // Sable T1b: torpedoes fired in the dark are intercepted at half the usual chance
+  rocketDefense(w,t,shots,res,im); screenTorps(t,shots,res,im); // B4: screening wings beside the target thin the salvo
   { if(S.oath){ for(let i=0;i<shots.length;i++) if(shots[i]){ if(rnd()<WING_SCREEN_TORP){ shots[i]=false; res.pd=(res.pd||0)+1; } treeFx(g,'oathWings','the wall takes the salvo'); break; } } } // Ashgrove capstone 2
   try{ if(typeof animWeapon==='function') await animWeapon(g,w,t,shots); }catch(e){ console.warn(e); }
   if(!live()||t.dead) return;
   const d0=g.dealt||0, same=t===orig;
   await landVolley(g,w,t,{quad,shBefore,shots,called:same?S.called:null,res,torp:true,stray:!same,per:same?(rear=>S.base+(rear?S.rearAdd:0)):null,by:real||g});
+  { if(real&&!real.dead&&!res.hits) treeSecondKnife(real); } // Sable T2b: a torpedo that misses reloads one turn sooner than normal
   if(res.hits) fstat(S.fac,'torpHit'); if(real) real.dealt=(real.dealt||0)+(g.dealt||0)-d0; }
 async function resolveTorps(side){ if(!B||!B.torps||!B.torps.length) return; const b0=B, due=B.torps.filter(s=>s.side===side&&s.r<B.round); if(!due.length) return; B.torps=B.torps.filter(s=>!due.includes(s));
   for(const S of due){ if(B!==b0||B.over) return; await torpImpact(S); } if(B===b0) checkEnd(); }
@@ -991,14 +1031,17 @@ function ramFrom(u,st){ if(!st||st.stay) return null; const v=Object.assign({},u
 // rams hit hard but can't one-shot a healthy ship: at most 40% of the target's full hull (finishing a damaged ship is still possible),
 // the target's facing shield soaks part of it, and the rammer takes more back
 function ramEstimate(u,t,run){ const f=u.fx||{}, base=(14+46*u.size)*(RAM_FAC[u.fac]?1.2:1)*(run==null?1:run<=1?.75:run===2?1:1.15), quad=shieldQuad(t,u);
-  const raw=base*(1+(f.ramPct||0))*(u.ramBoost||1)*(quad===0?1:1.2)*(1-t.armor*.5), soak=Math.min(raw*.5,(t.sh&&t.sh[quad])||0);
+  const maw=treeSkill('mawOpens'), mawAdd=(maw&&u.side==='player'&&cmdActive(u.side,'surge')&&!u.treeMawUsed)?treeAddVal(u,'ramPct',maw.n):0; // Grax T3b: the first ram of the burn
+  const raw=base*(1+(f.ramPct||0)+mawAdd)*(u.ramBoost||1)*(quad===0?1:1.2)*(1-t.armor*.5), soak=Math.min(raw*.5,(t.sh&&t.sh[quad])||0);
   return {dmg:Math.round(Math.min(raw-soak,t.maxHp*(.4+Math.min(.3,f.ramCap||0)))), soak:Math.round(soak), recoil:Math.round(base*(RAM_FAC[u.fac]?.35:.5)*clamp(t.size/u.size,.5,1.6)*(1-u.armor*.5)*(1-Math.min(1,f.ramGuard||0))), sec:SEC_OF_QUAD[quad]}; }
 async function ramUnit(u){
+  const mawPre=!!(treeSkill('mawOpens')&&u.side==='player'&&cmdActive(u.side,'surge')&&!u.treeMawUsed); // Grax T3b
   const info=ramInfo(u); if(!info) return false; const t=info.t, live=liveFrom(u);
   if(typeof animPath==='function') await animPath(u,info.path,{charge:true}); else for(const p of info.path){ if(typeof animMove==='function') await animMove(u,p.q,p.r,p.f); }
   if(!live()) return false; // abandoned after a stall: the ram never lands
   for(const p of info.path){ u.q=p.q; u.r=p.r; } u.facing=info.path.at(-1).f; // v53: the ram commits its own run-up (animPath is presentation only)
   u.mp=0; u.turnsLeft=0; u.rammed=true; if(B.usage&&u.side==='player'){ B.usage.ram=(B.usage.ram||0)+1; for(const id of ['d_jugg','r_prow']) if(hasBoon(id)){ B.boonStats=B.boonStats||{}; B.boonStats[id]=(B.boonStats[id]||0)+1; } } const e=ramEstimate(u,t,info.path.length);
+  if(mawPre){ u.treeMawUsed=1; treeFx(u,'mawOpens','the maw opens'); } // Grax T3b: the first ram of the burn
   if(typeof fxRam==='function') await fxRam(u,t); if(!live()||t.dead) return false;
   const qd=shieldQuad(t,u); if(e.soak&&t.sh) t.sh[qd]=Math.max(0,t.sh[qd]-e.soak*1.5);
   t.hp-=e.dmg; u.dealt+=e.dmg; damageSection(t,e.sec,e.dmg,u); u.hp-=e.recoil; damageSection(u,'prow',e.recoil,t);
@@ -1008,12 +1051,15 @@ async function ramUnit(u){
   if(u.fx&&u.fx.ramSplash){ const sd=Math.round(e.dmg*u.fx.ramSplash); for(const x of B.units.filter(x=>!x.dead&&x!==t&&x.side===t.side&&hdist(x,t)===1)){ x.hp-=sd; boonFx(x,'r_shock','\u2212'+sd,-10); if(x.hp<=0) await killUnit(x,u); } }
   if(t.hp<=0){ t.killCause='big'; await killUnit(t,u); } if(u.hp<=0){ u.killCause='big'; await killUnit(u,t); } checkEnd(); return true;
 }
-function boardTargets(u){ if(!u||u.isSq||u.braced||u.boarded||u.dead||!u.crewMax||u.crew<Math.max(4,u.crewMax*.4)||u.weapons.some(w=>w.fired)) return [];
+function boardTargets(u){ if(!u||u.isSq||u.braced||u.boarded||u.dead||!u.crewMax||u.crew<Math.max(4,u.crewMax*.4)) return [];
+  if(u.weapons.some(w=>w.fired)){ const rr=treeSkill('rushRail'), wr=treeSkill('warlordRun'); const okB=(rr&&u.side==='player'&&cmdActive(u.side,'surge'))||(wr&&u.side==='player'&&u.pflag&&cmdActive(u.side,'surge')); if(!okB) return []; } // Grax T2b and capstone 2: board after firing
   return alive(u.side==='player'?'enemy':'player').filter(t=>!t.isSq&&hdist(u,t)===1); }
+// Grax T1b: a ship that crossed the burn at speed boards at +25% strength (boardPct room)
+function treeRailBonus(u){ if(!u||u.isSq||u.side!=='player') return 0; const r=treeSkill('railBoarding'); return (r&&cmdActive(u.side,'surge')&&(u.hexMoved||0)>=4)?treeAddVal(u,'boardPct',r.n):0; }
 // chance that a boarding action captures the target, from the same dice as boardUnit
 // one capture model everywhere: boardUnit rolls r in [0.75,1.25); capture when round(crew*mult*r*.38) >= defenders.
 // The shown chance is that roll's exact probability, so the number on the button is the real odds.
-function captureChance(u,t){ if(t&&t.boss) return 0; /* B1 (R4): sector flagships cannot be captured */ const s=u.crew*(BOARD_MULT[u.fac]||1)*(1+((u.fx&&u.fx.boardPct)||0))*.38; if(s<=0) return 0; const x=(t.crew-.5)/s; return Math.round(100*Math.max(0,Math.min(1,(1.25-x)/.5))); }
+function captureChance(u,t){ if(t&&t.boss) return 0; /* B1 (R4): sector flagships cannot be captured */ const s=u.crew*(BOARD_MULT[u.fac]||1)*(1+((u.fx&&u.fx.boardPct)||0)+treeRailBonus(u))*.38; if(s<=0) return 0; const x=(t.crew-.5)/s; return Math.round(100*Math.max(0,Math.min(1,(1.25-x)/.5))); }
 // why a selected ship can't shoot a target, in plain words
 function cantFireReason(s,t){ if(s.braced) return 'This ship is braced, so it holds fire this turn.';
   const ready=s.weapons.filter(w=>weaponReady(w)); if(!ready.length) return 'Every weapon on this ship has already fired this turn.';
@@ -1022,13 +1068,16 @@ function cantFireReason(s,t){ if(s.braced) return 'This ship is braced, so it ho
   const inA=inR.filter(w=>inArc(s,t,w.arc)); if(!inA.length){ const arcs=[...new Set(inR.map(w=>(ARC_NAME&&ARC_NAME[w.arc])||w.arc))].join(' or '); return `In range, but no ready gun points at it. Turn so it sits in your ${arcs} arc.`; }
   if(!los(s,t)) return 'Line of sight is blocked by asteroids or wreckage.';
   return 'None of the ready guns can reach that target right now.'; }
-function boardOdds(u,t){ const a=u.crew*(BOARD_MULT[u.fac]||1)*(1+((u.fx&&u.fx.boardPct)||0)), d=t.crew*(BOARD_MULT[t.fac]||1)*(t.repel?2.25:1.5); const p=captureChance(u,t); return {kill:Math.round(a*.38), loss:Math.round(d*.3), chance:p, capture:p>=50}; }
+function boardOdds(u,t){ const a=u.crew*(BOARD_MULT[u.fac]||1)*(1+((u.fx&&u.fx.boardPct)||0)+treeRailBonus(u)), d=t.crew*(BOARD_MULT[t.fac]||1)*(t.repel?2.25:1.5); const p=captureChance(u,t); return {kill:Math.round(a*.38), loss:Math.round(d*.3), chance:p, capture:p>=50}; }
 async function boardUnit(u,t){
   if(!boardTargets(u).includes(t)) return false;
+  const hadFired=u.weapons.some(w=>w.fired); // Grax T2b: boarded after firing this round
   if(B.usage&&u.side==='player') B.usage.board=(B.usage.board||0)+1; u.boarded=true; u.repel=true; u.mp=0; u.weapons.forEach(w=>w.fired=true);
   const live=liveFrom(u); if(typeof fxBoard==='function') await fxBoard(u,t); if(!live()||t.dead) return false; // abandoned after a stall: the boarders never land
   if(t.nem&&u.side==='player') nemTrip('board'); // R42: his thin crews show once you board
-  const a=u.crew*(BOARD_MULT[u.fac]||1)*(1+((u.fx&&u.fx.boardPct)||0))*(.75+rnd()*.5), d=t.crew*(BOARD_MULT[t.fac]||1)*(t.repel?2.25:1.5)*(.75+rnd()*.5);
+  { const rb=treeRailBonus(u); if(rb>0) treeFx(u,'railBoarding','over the rail'); } // Grax T1b
+  { if(hadFired&&treeSkill('rushRail')&&cmdActive(u.side,'surge')) treeFx(u,'rushRail','rush the rail'); } // Grax T2b
+  const a=u.crew*(BOARD_MULT[u.fac]||1)*(1+((u.fx&&u.fx.boardPct)||0)+treeRailBonus(u))*(.75+rnd()*.5), d=t.crew*(BOARD_MULT[t.fac]||1)*(t.repel?2.25:1.5)*(.75+rnd()*.5);
   const kill=Math.round(a*.38), loss=Math.min(u.crew-1,Math.round(d*.3)); t.crew=Math.max(0,t.crew-kill); u.crew=Math.max(1,u.crew-loss);
   const who=u.side==='player'?'p':'e';
   if(t.crew<=0&&(t.side==='player'||t.boss)&&!t.captured){ t.crew=Math.max(2,Math.round(t.crewMax*.15)); const s1=systemDamage(t), s2=systemDamage(t); if(typeof fxText==='function') fxText(t,'Holds the bridge','#f0b35a',-30);
@@ -1062,6 +1111,7 @@ async function killUnit(t,by){ if(t&&by&&!t.killedBy) t.killedBy=by.isSq?((B.uni
   const legion=legionCan(t); // B3 Deathless endless legion replaces the random reanimate for Deathless hulls; other reanimating hulls (Undying foes heat) keep the old roll
   if(!legion && t.reanimate && !t.reanimated && !t.pyre && !(t.fac==='deathless'&&t.t&&t.t.reanimate) && rnd()<(t.side==='enemy'?.2:.35)){ t.reanimated=true; t.hp=Math.round(t.maxHp*.3); if(typeof fxText==='function') fxText(t,'Rebuilding','#7dff9b',-30); log(`${t.name} reassembles itself from the wreckage.`,'e'); return; }
   t.dead=true; t.hp=0;
+  { const ts=treeSkill('trophyStandard'); if(ts&&by&&by.side==='player'&&by.pflag&&t.side==='enemy'){ for(const x of alive('player')) if(!x.isSq&&!x.dead) x.treeFreeTurn=1; treeFx(by,'trophyStandard','the trophy standard turns the fleet'); } } // Hullbreakers shared C1b
   if(legion){ t.reanimated=true; t.riseAt=B.round+1; B.legion[t.side].used++; log(`${t.name} falls, but its wreck is already reassembling. It rises next round.`,t.side==='player'?'p':'e'); try{ if(typeof fxText==='function') fxText(t,'Reassembling: rises next round','#7dff9b',-30); }catch(e){} }
   syncLose(t); chorusFeed(t,by); // B3: a dead anchor collapses Hegemony sync; Chorus feed on the kill
   if(by&&!t.isSq&&by.side!==t.side&&ownerFx(by).broodTithe){ const cs=alive(by.side).filter(x=>!x.isSq&&(x.ab==='launch'||(x.fx&&x.fx.hive))&&launchHexes(x).length).sort((a,b)=>hdist(a,t)-hdist(b,t)); if(cs.length){ const c=cs[0], h=launchHexes(c)[0], sq=makeWing(c,h,wingKind(c)); sq.mp=0; sq.weapons.forEach(w=>w.fired=true); boonFx(c,'h_brood','free wing',-30); } } // Brood Tithe
@@ -1232,6 +1282,9 @@ function treeAddVal(u,key,v){ const cap=FX_CAPS[key]; if(cap==null) return v; re
 // Eclipse (issue #305 job 3): H8 hull cut, H9 repair and H11 movement helpers, one place each.
 function treeFlagUnit(){ return B.units.find(x=>x.pflag&&!x.dead)||alive('player')[0]||null; }
 function treeMarkRepair(u){ if(B&&B.tree&&B.tree.length&&u&&u.side==='player'&&!u.isSq){ u.treeRepaired=1; u.treeRepairedRound=B.round; } }
+// Hullbreakers (issue #305 job 5): H2 a missed torpedo reloads one turn sooner than normal
+function treeSecondKnife(real){ if(!real||real.dead||real.side!=='player') return false; if(!treeSkill('secondKnife')) return false;
+  for(const rw of real.weapons){ if(rw.k==='torp'){ rw.cdLeft=Math.max(0,(rw.cdLeft||0)-1); treeFx(real,'secondKnife','the second knife comes free'); return true; } } return false; }
 function treeInEnemyRear(u){ for(const t of alive('enemy')){ if(!t.isSq&&shieldQuad(t,u)===2) return true; } return false; }
 function treeInEnemyFront(u){ for(const t of alive('enemy')){ if(!t.isSq&&inArc(t,u,'F')) return true; } return false; }
 function treeRearApproach(u){ let best=null,bd=1e9; for(const t of alive('enemy')){ if(t.isSq) continue; const d=hdist(u,t); if(d<bd||(d===bd&&best&&t.id<best.id)){ bd=d; best=t; } }
@@ -1252,6 +1305,8 @@ function treeChoice(kind){ const c=B&&B.treeChoices?B.treeChoices[kind]:null; if
   if(kind==='enemy'){ const l=alive('enemy').filter(x=>!x.isSq); return l.sort((a,b)=>b.maxHp-a.maxHp||(a.id<b.id?-1:1))[0]||null; }
   if(kind==='ship'||kind==='friend'){ const l=alive('player').filter(x=>!x.isSq); return l.sort((a,b)=>(a.hp/a.maxHp)-(b.hp/b.maxHp)||(a.id<b.id?-1:1))[0]||null; }
   if(kind==='reserve'){ const l=alive('player').filter(x=>!x.isSq&&!x.pflag); return l.sort((a,b)=>(a.hp/a.maxHp)-(b.hp/b.maxHp)||(a.id<b.id?-1:1))[0]||null; }
+  if(kind==='largest'){ const l=alive('player').filter(x=>!x.isSq&&x.ab!=='launch'&&!(x.hangar>0)); return l.sort((a,b)=>b.maxHp-a.maxHp||(a.id<b.id?-1:1))[0]||null; } // Mott T1b: the largest ship that is not a carrier
+  if(kind==='other'){ const l=alive('player').filter(x=>!x.isSq&&!x.pflag); return l.sort((a,b)=>(a.hp/a.maxHp)-(b.hp/b.maxHp)||(a.id<b.id?-1:1))[0]||null; } // Vesh T2a: a ship other than the flagship
   return null; }
 // Razormaw T2a: the named prey this round (null when the pick is absent or the prey is gone)
 function treePrey(){ const s=treeSkill('razorPrey'); if(!s||!B||!B.treeRazorPrey||B.treeRazorPrey.r!==B.round) return null; return B.units.find(x=>x.id===B.treeRazorPrey.id&&!x.dead)||null; }
@@ -1266,10 +1321,11 @@ function treeBestFacing(u){ const foe=u.side==='player'?'enemy':'player', foes=a
     if(score>bv){ bv=score; best=f; } } return bv>0?best:null; }
 // H3: once per player round start: counters, start facings, pending next-round heals, and the flagship lens pick
 function treeRoundStart(){ if(!B||!B.tree||!B.tree.length) return; B.tr=B.tr||{}; B.tr.enemyShots={}; B.tr.volleyHits={}; B.tr.logged={}; B.tr.volleyPick={}; B.tr.wingsDebt={}; B.tr.standardUsed=0; B.tr.escortUsed={};
+  B.tr.smileUsed=0; B.tr.rearShips={}; B.tr.wingStruck={}; B.tr.hitRound={};
   B.tr.targetedLast=B.tr.targeted||{}; B.tr.targeted={}; B.tr.iterKill={};
   B.tr.swarmHitBy={}; B.tr.volleyShips={}; B.tr.volleyHit={}; B.tr.burnStays=null;
   B.treeIronExtra=null;
-  for(const u of alive('player')) if(!u.isSq){ u.treeHuntNext=0; u.treeHuntCarry=0; u.treeTorpCarry=0; u.ironCarry=0; u.treeAimNext=0; u.treeRoundDmg=0; u.treeRoundFired=0; u.treeSilentMark=0; u.treeDmgNext=0; u.treeRedFirst=0; u.treeAcidAim=0; u.tempHp=0; u.treeFrenzyMove=0; u.treeVolleyHit=0; }
+  for(const u of alive('player')) if(!u.isSq){ u.treeHuntNext=0; u.treeHuntCarry=0; u.treeTorpCarry=0; u.ironCarry=0; u.treeAimNext=0; u.treeRoundDmg=0; u.treeRoundFired=0; u.treeSilentMark=0; u.treeDmgNext=0; u.treeRedFirst=0; u.treeAcidAim=0; u.tempHp=0; u.treeFrenzyMove=0; u.treeVolleyHit=0; u.treeSmile=0; u.treeAimGuns=0; u.treeFreeTurn=0; u.treeRushLogged=0; u.burnCarry=null; }
   if(B.treeReserve&&B.treeReserve.length&&B.round>=2){ const keep=[]; const rk=treeSkill('broodReserve')?'broodReserve':'debtsReserve';
     for(const id of B.treeReserve){ const u=B.units.find(x=>x.id===id); if(!u||u.dead) continue; const h=edgeHex('player'); u.treeOff=0; if(h){ u.q=h.q; u.r=h.r; } u.hp=u.maxHp; u.treeReserve=0; u.activated=false;
       treeFx(u,rk,'the reserve joins the line'); }
@@ -1285,6 +1341,7 @@ function treeRoundStart(){ if(!B||!B.tree||!B.tree.length) return; B.tr=B.tr||{}
       if(p.k==='salvoTwoHands'){ for(const id of (p.ids||[])){ const u=B.units.find(x=>x.id===id); if(u&&!u.dead&&!u.isSq) u.treeHuntCarry=p.pow||0; } treeFx(B.units.find(x=>x.pflag&&!x.dead)||alive('player')[0]||null,'salvoTwoHands','the held salvo pays now'); }
       if(p.k==='twoSalvos'){ for(const u of alive('player')) if(!u.isSq) u.treeTorpCarry=p.pow||0; treeFx(B.units.find(x=>x.pflag&&!x.dead)||alive('player')[0]||null,'twoSalvos','the next salvo keeps its bonus'); }
       if(p.k==='wingReserve'){ const u=B.units.find(x=>x.id===p.carrier); if(u&&!u.dead&&!u.isSq){ const hs=launchHexes(u); if(hs.length){ const sq=makeWing(u,hs[0],wingKind(u)); sq.extra=1; treeFx(u,'wingReserve','the held wing launches'); } } }
+      if(p.k==='swarmScrap'){ const s=treeSkill('swarmScrap'); let any=false; for(const id of (p.ids||[])){ const u=B.units.find(x=>x.id===id); if(!u||u.dead||u.isSq) continue; const hs=launchHexes(u); if(!hs.length) continue; const fs=alive('enemy'); hs.sort((a,b2)=>Math.min(...fs.map(f=>hdist(a,f)))-Math.min(...fs.map(f=>hdist(b2,f)))); const sq=makeWing(u,hs[0],wingKind(u)); sq.extra=1; any=true; } if(any&&s) treeFx(treeFlagUnit(),'swarmScrap','the swarm launches twice'); } // Mott capstone 1: the second launch after the player turn
       if(p.k==='fleshKnit'){ const s=treeSkill('fleshKnit'); for(const id of (p.ids||[])){ const u=B.units.find(x=>x.id===id); if(u&&!u.dead&&!u.isSq){ u.treeDmgNext=treeAddVal(u,'dmgPct',s.n); treeFx(u,'fleshKnit','the new flesh is angry'); } } }
       if(p.k==='tideEnd'){ const s=treeSkill('tideEnd'); const rp=(p.pow||0)*.5; let any=false;
         for(const u of alive('player')) if(!u.isSq){ const h=Math.min(u.maxHp-u.hp,Math.round(u.maxHp*rp)); if(h>0){ u.hp+=h; any=true; } if(u.sec) for(const k of Object.keys(u.sec)) repairSection(u,k,rp); }
@@ -1294,8 +1351,10 @@ function treeRoundStart(){ if(!B||!B.tree||!B.tree.length) return; B.tr=B.tr||{}
         if(any) treeFx(B.units.find(x=>x.pflag&&!x.dead)||alive('player')[0]||null,'burnStays','the burn stays'); }
       if(p.k==='manyMouths'){ const s=treeSkill('manyMouths'); for(const id of (p.ids||[])){ const u=B.units.find(x=>x.id===id); if(u&&!u.dead&&!u.isSq){ u.treeAcidAim=1; treeFx(u,'manyMouths','acid eats at the scanners'); } } }
       if(p.k==='noonRepeat'){ B.treeNoonRound=B.round; } // Umbria capstone 1: the volley repeats after this round start (treeRoundFx)
-      if(p.k==='layersShift'){ const fg=treeFlagUnit(); if(fg) for(const u of caps('player')){ if(u===fg) continue; if(treeStepToward(u,fg,1)) treeFx(u,'layersShift','the layer shifts'); } } }
+      if(p.k==='layersShift'){ const fg=treeFlagUnit(); if(fg) for(const u of caps('player')){ if(u===fg) continue; if(treeStepToward(u,fg,1)) treeFx(u,'layersShift','the layer shifts'); } }
+      if(p.k==='burnCarry'){ for(const u of alive('player')) if(!u.isSq) u.burnCarry={mp:p.pow||0,turns:p.turns||0}; treeFx(treeFlagUnit(),'burnCarry','the burn carries into the new round'); } }
     B.treePending=keep; }
+  { const big=alive('enemy').filter(x=>!x.isSq).sort((a,b)=>b.maxHp-a.maxHp||(a.id<b.id?-1:1))[0]||null; if(treeSkill('runBigger')){ B.tr.bigId=big?big.id:null; for(const u of alive('player')) if(!u.isSq) u.treeBigStart=big?hdist(u,big):0; } } // Grax T1a: the largest enemy at the start of the burn
   { const sc=treeSkill('stillnessCounted'); if(sc&&B.cmd&&B.cmd.id==='iron'&&B.cmd.round===B.round-1){ for(const u of caps('player')) if((u.hexMoved||0)===0){ u.treeAimNext=treeAddVal(u,'aim',sc.n); treeFx(u,'stillnessCounted','the stillness counts'); } } } // Seveth T3b
   { const os=treeSkill('outShadow'); if(os&&B.cmd&&B.cmd.id==='hunt'&&B.cmd.round===B.round-1){ const pow=cmdPow('hunt',B.cmd.tier); for(const u of caps('player')) if(treeInEnemyRear(u)||!B.tr.targetedLast[u.id]){ u.treeHuntCarry=pow; treeFx(u,'outShadow','the shadow holds a second round'); } } } // Ostrel capstone 1
   const foes=alive('enemy').filter(x=>!x.isSq);
@@ -1322,7 +1381,9 @@ function treeBattleStart(){ if(!B||!B.tree||!B.tree.length) return;
   const dr=treeSkill('debtsReserve');
   if(dr){ const who=treeChoice('reserve'); if(who){ who.treeOff=1; who.treeReserve=1; B.treeReserve=(B.treeReserve||[]).concat(who.id); treeFx(who,'debtsReserve','held in reserve'); } }
   const br=treeSkill('broodReserve');
-  if(br){ const who=treeChoice('brood'); if(who){ who.treeOff=1; who.treeReserve=1; B.treeReserve=(B.treeReserve||[]).concat(who.id); treeFx(who,'broodReserve','the brood is held back'); } } }
+  if(br){ const who=treeChoice('brood'); if(who){ who.treeOff=1; who.treeReserve=1; B.treeReserve=(B.treeReserve||[]).concat(who.id); treeFx(who,'broodReserve','the brood is held back'); } }
+  const ps=treeSkill('preyScent');
+  if(ps){ const e=treeChoice('enemy'); B.tr.scent=e?e.id:null; if(e) treeFx(treeFlagUnit()||e,'preyScent','the pack names its prey'); } } // Hullbreakers shared B1a: name the prey at battle start
 // called wherever a ship's facing changes (move, rotate): Vell's free turn, recorded angles and full-distance cover
 function treeAfterMove(u){ if(!B||!B.tree||!B.tree.length||!u||u.isSq) return;
   const mt=treeSkill('mirrorTurns');
@@ -1333,7 +1394,8 @@ function treeAfterMove(u){ if(!B||!B.tree||!B.tree.length||!u||u.isSq) return;
   if(rf&&cmdActive(u.side,'surge')&&u.mp<=0){ u.treeDeep=1; treeFx(u,'refraction','the reflection cannot be found beyond range 6'); }
   { const sa=treeSkill('silentArchive'); if(sa&&u.side==='player'&&cmdActive(u.side,'hunt')&&!u.treeSilentMark){ for(const t of alive('enemy')){ if(!t.isSq&&!inArc(t,u,'F')){ u.treeSilentMark=1; treeFx(u,'silentArchive','the archive hides the ship'); break; } } } }
   const tr=treeSkill('throatRed');
-  if(tr&&cmdActive(u.side,'surge')&&alive('enemy').some(x=>!x.isSq&&hdist(u,x)===1)) u.treeRedNext=1; } // Razormaw capstone 1: the red throat carries into next round
+  if(tr&&cmdActive(u.side,'surge')&&alive('enemy').some(x=>!x.isSq&&hdist(u,x)===1)) u.treeRedNext=1; // Razormaw capstone 1: the red throat carries into next round
+  { const lp=treeSkill('loosePack'); if(lp&&u.side==='player'&&(u.hexMoved||0)>0&&!alive('player').some(x=>x.id!==u.id&&!x.isSq&&hdist(x,u)<=2)) treeFx(u,'loosePack','the pack runs wide'); } } // Hullbreakers shared B1b
 function treeDeepBlocks(u,t){ const s=treeSkill('refraction'); return !!(s&&t&&t.treeDeep&&!u.isSq&&hdist(u,t)>s.n); }
 // Malek T3a: side arc hits on the ship's hunted target count as rear arc hits this round
 function treeIsRear(u,t,quad){ if(quad===2) return true; const s=treeSkill('debtHunts'); return !!(s&&u&&t&&u.side==='player'&&u.treePreyRear===t.id&&(quad===1||quad===3)); }
@@ -1424,7 +1486,9 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
     { const pn=treeSkill('preyName'); if(pn&&side==='player'){ const e=treeChoice('enemy'); B.treePrey=e?{id:e.id,r:B.round}:null; if(e) treeFx(B.units.find(x=>x.pflag&&!x.dead)||e,'preyName','the prey is entered by name'); } }
     { const st=treeSkill('salvoTwoHands'); if(st&&side==='player'){ const pl=alive('player').filter(x=>!x.isSq).slice().sort((a,b2)=>(a.hp/a.maxHp)-(b2.hp/b2.maxHp)||(a.id<b2.id?-1:1)); const half=pl.slice(0,Math.max(1,Math.ceil(pl.length/2))); for(const u of half) u.treeHuntNext=1; (B.treePending=B.treePending||[]).push({k:'salvoTwoHands',r:B.round,pow:cmdPow('hunt',tier),ids:half.map(u=>u.id)}); treeFx(B.units.find(x=>x.pflag&&!x.dead)||half[0]||null,'salvoTwoHands','half the salvo is held for next round'); } }
     { const ts=treeSkill('twoSalvos'); if(ts&&side==='player'){ (B.treePending=B.treePending||[]).push({k:'twoSalvos',r:B.round,pow:cmdPow('hunt',tier)}); treeFx(B.units.find(x=>x.pflag&&!x.dead)||alive('player')[0]||null,'twoSalvos','the next salvo keeps its bonus'); } }
-    { const np=treeSkill('namedPrey'); if(np&&side==='player'){ const e=treeChoice('enemy'); if(e){ B.treeNamedPrey={id:e.id,r:B.round}; for(const S of (B.torps||[])) if(S.side==='player'){ S.tid=e.id; S.aim={q:e.q,r:e.r}; } treeFx(e,'namedPrey','the named prey falls'); } } } }
+    { const np=treeSkill('namedPrey'); if(np&&side==='player'){ const e=treeChoice('enemy'); if(e){ B.treeNamedPrey={id:e.id,r:B.round}; for(const S of (B.torps||[])) if(S.side==='player'){ S.tid=e.id; S.aim={q:e.q,r:e.r}; } treeFx(e,'namedPrey','the named prey falls'); } } }
+    { const dk=treeSkill('darkKnives'); if(dk&&side==='player'){ const pow=cmdPow('hunt',tier); for(const u of caps('player')) u.treeHuntRearNext={r:B.round+1,n:pow}; } } // Sable capstone 1
+    { const cfd=treeSkill('cutFeeds'); if(cfd&&side==='player'){ for(const u of caps('player')){ const g=treeRearApproach(u); if(g&&treeStepToward(u,g,2)) treeFx(u,'cutFeeds','the cut feeds the pack'); } } } } // Sable capstone 2
   if(c.id==='iron'){ const rl=treeSkill('rechargeLit'); if(rl&&side==='player'&&!(B.treePending||[]).some(p=>p.k==='rechargeLit'&&p.r===B.round)) (B.treePending=B.treePending||[]).push({k:'rechargeLit',r:B.round}); for(const u of alive(side)) if(u.shMax) u.sh=u.sh.map(()=>u.shMax);
     { const ps=treeSkill('platesShadow'); if(ps&&side==='player'){ const who=treeChoice('ship'); B.treePlate=who?{id:who.id,r:B.round}:null; if(who) treeFx(who,'platesShadow','the wall stacks on '+who.name); } }
     { const rf=treeSkill('restoredFleet'); if(rf&&side==='player'){ for(const u of caps('player')) if(u.treeRepairedRound===B.round){ u.treeWallCarry={r:B.round+1,pow:cmdPow('iron',tier)}; treeFx(u,'restoredFleet','the restored hull keeps the wall'); } } }
@@ -1439,6 +1503,10 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
     const gh=(p&&treeSkill('growHurts'))?treeChoice('ship'):null;
     const sk=(p&&treeSkill('skinThick'))?treeChoice('ship'):null;
     const fk=p?treeSkill('fleshKnit'):null, te=p?treeSkill('tideEnd'):null, tb=p?treeSkill('tornBack'):null;
+    const weld=(p&&treeSkill('weldMatters'))?treeChoice('ship'):null, pgun=p?treeSkill('patchGuns'):null;
+    const front=(p&&treeSkill('scrapFront'))?treeChoice('other'):null, wfight=p?treeSkill('weldedFight'):null;
+    const bolted=p?treeSkill('doubleBolted'):null, bites=p?treeSkill('packBites'):null, whole=p?treeSkill('weldedWhole'):null;
+    const frontFlag=front?treeFlagUnit():null, frontShare=(front&&frontFlag&&front!==frontFlag)?Math.round(frontFlag.maxHp*rp*2):0;
     const flesh=[];
     const flag=contribute?treeFlagUnit():null;
     let chosen=(ninth||tenth||earlier||contribute)?treeChoice('ship'):null;
@@ -1451,15 +1519,19 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
       let heal=Math.round(u.maxHp*amt);
       if(contribute&&u===flag) heal=0;
       if(contribute&&u===chosen&&u!==flag) heal+=flagShare;
+      if(front&&u===frontFlag) heal=0;
+      if(front&&u===front&&u!==frontFlag) heal+=frontShare;
       const hp0=u.hp;
       const skin=!!(p&&sk&&u===sk);
       if(skin){ const skn=treeSkill('skinThick').n; const cap=FX_CAPS.treeTempHp||.2; const add=Math.max(0,Math.min(Math.round(u.maxHp*skn),Math.round(u.maxHp*cap)-(u.tempHp||0))); u.tempHp=(u.tempHp||0)+add; if(add>0) treeFx(u,'skinThick','the regrowth is grown thick'); if(typeof fxText==='function') fxText(u,'+'+add+' grown hull','#8ff0a0',-20); }
       else { u.hp=Math.min(u.maxHp,u.hp+heal); }
       const secFixed=[];
-      if(u.sec&&!skin){
+      if(u.sec&&!skin&&!(front&&u===frontFlag)){
         const torn=new Set();
         if(tb) for(const k of Object.keys(u.sec)){ const s=u.sec[k]; if(s.broken){ repairSection(u,k,1); s.treeLock=1; torn.add(k); treeFx(u,'tornBack','the torn section grows back'); } }
-        if(gh&&u===gh){ let best=null,bv=2; for(const k of Object.keys(u.sec)){ const s=u.sec[k]; if(s.broken) continue; const rr=s.hp/s.max; if(rr<bv){ bv=rr; best=k; } } if(best){ repairSection(u,best,amt); treeFx(u,'growHurts','the regrowth goes where it hurts'); } }
+        if(whole) for(const k of Object.keys(u.sec)){ const s=u.sec[k]; if(s.broken){ repairSection(u,k,1); torn.add(k); treeFx(u,'weldedWhole','the hull is welded whole'); break; } } // Vesh capstone 1
+        if(weld&&u===weld){ let best=null,bv=2; for(const k of Object.keys(u.sec)){ const s=u.sec[k]; if(s.broken) continue; const rr=s.hp/s.max; if(rr<bv){ bv=rr; best=k; } } if(best){ repairSection(u,best,amt); secFixed.push(best); treeFx(u,'weldMatters','the weld goes where it matters'); } } // Vesh T1a
+        else if(gh&&u===gh){ let best=null,bv=2; for(const k of Object.keys(u.sec)){ const s=u.sec[k]; if(s.broken) continue; const rr=s.hp/s.max; if(rr<bv){ bv=rr; best=k; } } if(best){ repairSection(u,best,amt); treeFx(u,'growHurts','the regrowth goes where it hurts'); } }
         else { let fixed=0; for(const k of Object.keys(u.sec)){ if(torn.has(k)) continue; const s=u.sec[k], h0=s.hp; repairSection(u,k,amt); if(s.hp>h0){ fixed++; secFixed.push(k); } }
           if(fixed&&typeof fxText==='function') fxText(u,fixed>1?fixed+' sections restored':'Section restored','#8ff0a0',-34); }
       }
@@ -1471,6 +1543,11 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
       if(p&&ninth&&u===chosen&&!firedNinth){ firedNinth=1; treeFx(u,'restoreNinth','the ninth frame is restored'); }
       if(p&&tenth&&u===chosen&&!firedTenth){ firedTenth=1; treeFx(u,'tenthFrame','the tenth frame is restored'); }
       if(p&&contribute&&u===chosen&&chosen!==flag&&!firedContrib){ firedContrib=1; treeFx(u,'copiesContribute','the flagship share is divided'); }
+      if(p&&pgun&&secFixed.some(k=>k==='prow'||k==='mid')){ u.treeAimGuns=treeAddVal(u,'aim',pgun.n); treeFx(u,'patchGuns','the patched guns find the mark'); } // Vesh T1b
+      if(p&&bolted&&secFixed.length){ if(!u.treeBolted) u.treeBolted={}; for(const k of secFixed){ if(u.treeBolted[k]) continue; u.treeBolted[k]=1; const s=u.sec[k], add=Math.round(s.max*bolted.n); s.max=s.max+add; s.hp=Math.min(s.max,s.hp+add); treeFx(u,'doubleBolted','the plate is double-bolted'); } } // Vesh T3a
+      if(p&&bites&&hp0<u.maxHp*.5&&u.hp>=u.maxHp*.5){ u.treeDmgCarry={r:B.round+1,n:bites.n}; treeFx(u,'packBites','the pack bites on'); } // Vesh T3b
+      if(p&&front&&u===front&&u!==frontFlag){ treeFx(u,'scrapFront','the scrap goes to the front'); } // Vesh T2a
+      if(p&&wfight&&(u.hp>hp0||secFixed.length)){ let bw=-1,bt2=null,bv=-1; for(let i=0;i<u.weapons.length;i++){ const w=u.weapons[i]; if(w.k==='flak'||w.off) continue; for(const t2 of alive(foe)){ if(!canFire(u,w,t2)) continue; const e=expectedVs(u,w,t2), v=e.hull+e.shield*.3; if(v>bv){ bv=v; bw=i; bt2=t2; } } } if(bw>=0&&bt2&&await treeExtraShot(u,bw,bt2,{half:true})) treeFx(u,'weldedFight','the weld fires while it is hot'); } // Vesh T2b
       if(p&&fk&&u.hp>u.maxHp*.75) flesh.push(u.id);
     }
     if(p&&fk&&flesh.length){ (B.treePending=B.treePending||[]).push({k:'fleshKnit',r:B.round,ids:flesh}); treeFx(B.units.find(x=>x.pflag&&!x.dead)||alive('player')[0]||null,'fleshKnit','the new flesh is angry'); } // Mending T3a
@@ -1479,7 +1556,9 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
   if(c.id==='surge'){ for(const u of alive(side).filter(x=>!x.isSq)){ u.mp=(u.mp||0)+cmdPow('surge',tier); u.turnsLeft=(u.turnsLeft||0)+(tier>=2?2:1); }
     if(side==='player'){
       { const rp=treeSkill('razorPrey'); if(rp){ const e=treeChoice('enemy'); B.treeRazorPrey=e?{id:e.id,r:B.round}:null; if(e) treeFx(B.units.find(x=>x.pflag&&!x.dead)||e,'razorPrey','the prey is named'); } } // Razormaw T2a
-      { const pm=treeSkill('preyEveryMouth'); if(pm){ const e=treeChoice('enemy'); B.treeRazorPrey=e?{id:e.id,r:B.round}:null; for(const u of alive('player')) if(!u.isSq) u.turnsLeft=(u.turnsLeft||0)+1; treeFx(B.units.find(x=>x.pflag&&!x.dead)||alive('player')[0]||null,'preyEveryMouth','every mouth turns to the prey'); } } } } // Razormaw capstone 2
+      { const pm=treeSkill('preyEveryMouth'); if(pm){ const e=treeChoice('enemy'); B.treeRazorPrey=e?{id:e.id,r:B.round}:null; for(const u of alive('player')) if(!u.isSq) u.turnsLeft=(u.turnsLeft||0)+1; treeFx(B.units.find(x=>x.pflag&&!x.dead)||alive('player')[0]||null,'preyEveryMouth','every mouth turns to the prey'); } } // Razormaw capstone 2
+      { const bc=treeSkill('burnCarry'); if(bc){ (B.treePending=B.treePending||[]).push({k:'burnCarry',r:B.round,pow:cmdPow('surge',tier),turns:tier>=2?2:1}); treeFx(treeFlagUnit(),'burnCarry','the burn will carry'); } } // Grax capstone 1
+      { const wr=treeSkill('warlordRun'); if(wr){ const pg=treeFlagUnit(); if(pg){ pg.treeWarlord=1; treeFx(pg,'warlordRun','the warlord runs again'); } } } } } // Grax capstone 2
   if(c.id==='scramble'){ const ct=treeSkill('castTwice')?treeChoice('carrier'):null, aloft=treeSkill('lensAloft');
     const fw=(side==='player'&&treeSkill('firstWave'))?treeChoice('carrier'):null;
     const esc=(side==='player'&&treeSkill('escortName'))?treeChoice('friend'):null;
@@ -1488,6 +1567,11 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
     const brood=(side==='player'&&treeSkill('chooseBrood'))?treeChoice('brood'):null;
     const spore=(side==='player')?treeSkill('sporeTide'):null;
     const every=(side==='player')?treeSkill('everyThroat'):null;
+    const patched=(side==='player')?treeSkill('patchedWing'):null, patchedPick=patched?treeChoice('carrier'):null;
+    const hulk=(side==='player')?treeSkill('hulkMore'):null, hulkPick=hulk?treeChoice('largest'):null;
+    const wreck=(side==='player')?treeSkill('wreckLine'):null, yard=(side==='player')?treeSkill('wholeYard'):null;
+    const priv=(side==='player')?treeSkill('privateWing'):null, privPick=priv?treeChoice('carrier'):null;
+    const scrap=(side==='player')?treeSkill('swarmScrap'):null;
     { const fs=treeSkill('flakSkip'); if(fs&&side==='player'){ const e=treeChoice('enemy'); B.treeFlakSkip=e?e.id:null; if(e&&e.weapons&&e.weapons.some(w=>w.k==='flak')) treeFx(e,'flakSkip','point defence cannot see the wings'); } }
     for(const u of alive(side).filter(x=>x.ab==='launch')){
       if(brood&&u.id!==brood.id) continue; // Matriarch T1a: the other broods release none extra
@@ -1495,15 +1579,22 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
       if(brood&&u.id===brood.id){ count+=1; treeFx(u,'chooseBrood','the chosen brood swells'); }
       if(aloft&&side==='player'&&(u.hexMoved||0)===0){ count+=1; treeFx(u,'lensAloft','one more wing aloft'); }
       if(gen&&(u.hexMoved||0)===0){ count+=1; treeFx(u,'generation','one more generation aloft'); }
+      if(yard&&(squadronsOf(u).length+count)>=(u.hangar||0)){ count+=1; treeFx(u,'wholeYard','the whole yard flies'); } // Mott T3a
       for(let k=0;k<count;k++){ let hs=(spore?treeLaunchHexes(u,spore.n||2):launchHexes(u)); if(!hs.length) break; const fs=alive(foe); hs.sort((a,b2)=>Math.min(...fs.map(f=>hdist(a,f)))-Math.min(...fs.map(f=>hdist(b2,f))));
         if(resv&&!resvDone&&k===count-1){ (B.treePending=B.treePending||[]).push({k:'wingReserve',r:B.round,carrier:u.id}); resvDone=1; treeFx(u,'wingReserve','one wing waits in reserve'); continue; }
         const sq=makeWing(u,hs[0],wingKind(u)); sq.extra=1;
         if(spore) treeFx(u,'sporeTide','the spores ride the tide'); // Matriarch T1b
         if(every&&(u.hexMoved||0)===0){ sq.treeBonus=every.n; treeFx(u,'everyThroat','the throat opens wide'); } // Matriarch T3a
         if(fw&&u.id===fw.id){ sq.treeBonus=treeSkill('firstWave').n; treeFx(u,'firstWave','the first wave owes the second'); }
+        if(wreck&&(u.hexMoved||0)===0){ sq.treeBonus=(sq.treeBonus||0)+wreck.n; treeFx(u,'wreckLine','the wings come off the wreck line'); } // Mott T2b
+        if(patchedPick&&u.id===patchedPick.id){ sq.treeBonus=(sq.treeBonus||0)+treeAddVal(sq,'sqPct',patched.n); sq.treeRemove=1; treeFx(u,'patchedWing','the patched wing flies'); } // Mott T1a
+        if(privPick&&u.id===privPick.id){ sq.treePrivate=1; treeFx(u,'privateWing','the private wing flies'); } // Mott capstone 2
         if(esc&&!escDone){ sq.escort=esc.id; sq.wingOrder={kind:'guard',id:esc.id}; escDone=1; treeFx(sq,'escortName','the escort is sworn to '+esc.name); }
         if(ct&&u.id===ct.id){ sq.treeTwice=1; const e=treeChoice('enemy'); if(e) sq.treeTgt=e.id; } try{ if(typeof fxFlash==='function') fxFlash(hs[0],'#f0b35a'); }catch(e){} } }
+    if(hulkPick&&side==='player'){ const hs=launchHexes(hulkPick); if(hs.length){ const fs=alive(foe); hs.sort((a,b2)=>Math.min(...fs.map(f=>hdist(a,f)))-Math.min(...fs.map(f=>hdist(b2,f)))); const sq=makeWing(hulkPick,hs[0],wingKind(hulkPick)); sq.extra=1; treeFx(hulkPick,'hulkMore','a wing comes off the spare racks'); } } // Mott T1b
     for(const s of alive(side).filter(x=>x.isSq)){ s.activated=false; s.mp=s.speed; s.weapons.forEach(w=>{ w.fired=false; w.cdLeft=0; }); } await swarmPhase(side);
+    if(side==='player'){ for(const sq of alive('player').filter(x=>x.isSq&&x.treeRemove)){ sq.dead=true; sq.hp=0; treeFx(sq,'patchedWing','the patched wing comes apart'); } } // Mott T1a: removed after its strike
+    if(scrap&&side==='player'){ const ids=alive(side).filter(x=>x.ab==='launch'&&!x.isSq).map(x=>x.id); if(ids.length){ (B.treePending=B.treePending||[]).push({k:'swarmScrap',r:B.round,ids}); treeFx(treeFlagUnit(),'swarmScrap','the swarm launches again after the last activation'); } } // Mott capstone 1: the second launch waits for the end of the player turn
     if(ct&&side==='player'){ for(const sq of alive(side).filter(x=>x.isSq&&x.treeTwice)){ const t=B.units.find(x=>x.id===sq.treeTgt); if(!t||t.dead||(t.hexMoved||0)!==0) continue; let fired=false; for(const w of sq.weapons) w.fired=false; for(let i=0;i<sq.weapons.length;i++){ if(t.dead||B.over) break; if(canFire(sq,sq.weapons[i],t)){ await fireWeapon(sq,i,t,{half:true}); fired=true; } } if(fired) treeFx(sq,'castTwice','the recorded strike repeats at half damage'); } } }
   if(B===bStart) checkEnd(); return true; }
 // enemy flagships carry a Command of their own: announced a round ahead, fired once, at power 2
