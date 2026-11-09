@@ -30,15 +30,13 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 7. Rewrite this file, set "Running: no", commit straight to main (this file and FINDINGS only, docs-only exception), push with timeout 90. Stop.
 8. One send_later check only when a job or a limit reset lands well before the next look. Never chain them.
 
-## Current state (2026-11-09 13:25 UTC)
+## Current state (2026-11-09 15:35 UTC)
 
-Ryan ruled at 07:08 CST (R145): ship Hy3 and Ab3 both forward plus "looks like a basic submarine" (silhouette); UI C bold; #305 all A; gun smoke Cone B.
-
-- Ships #209 round 4: PC thread (trig_01RttH7W6U1LeVGnmmoGM6o4, fires 13:35 UTC), silhouette first (concept outline scored per cell), cells Ab4 and Hy4, branch opus/issue-209-r4. #287, #295, #303 stay open as the record until the route is ruled.
-- UI #271 build: cloud thread (trig_015TZrt6UWzVnT2ZHcwVXmTQ, 13:36 UTC), branch opus/issue-271-build; the board runs its PC captures from docs/shots/ui_redesign/build/CAPTURES.md. Rey checks the code (R132).
-- Tree effects #305: plan MERGED (PR #307, answers recorded). Job 0 Muse text pass #311 (49 rewrites, Grax boarding, Vorn rename, eclipse shields, 144 mastery texts). Job 1 #312 plumbing plus Glasswrights pilot on DeepSeek since 13:30 UTC (cap 120).
-- Gun smoke #281 run 3 on DeepSeek since 13:15 UTC: Cone B only, one capture pass. PR #309 updates in place.
-- Muse idle since 03:27 UTC (#296, #256 check of #286); Ryan asked to bump Rey.
+- Tree effects: job 1 MERGED (PR #313: plumbing plus 21 Glasswrights skills, log line and panel count; the float callout and recap line are in code but not yet in a screenshot, check in job 2's shots). Job 2 Sunward Crusade #315 on DeepSeek since 15:33 UTC. Muse text pass #311 not started.
+- UI #271 build: draft PR #314 (cloud thread done). Board queued the PC captures 15:30 UTC (Downloads\voidsworn_test\opus271b\out, status.txt; the job's clone line was fixed to autocrlf=false). Rey asked for the outside check on #256.
+- Gun smoke #281: run 3 (PR #309) clean scope with clips, but the after still shows the big beige ball; not merged. Run 4 on DeepSeek since 15:32 UTC (puffs a third the size, tight hull-hit jet).
+- Ships #209 round 4: PC thread running since 13:36 UTC, no branch yet.
+- Muse: no activity since Ryan's 07:51 CST bump (#311, #296, #256).
 
 ## Earlier state (2026-11-09 06:50 UTC)
 
