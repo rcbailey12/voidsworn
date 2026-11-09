@@ -3260,5 +3260,950 @@
    "capstone": 0
   },
   "note": "Sunward: Thale Iron Testament (thale:cap:0) keeps the wall for a second round and half refills it"
+ },
+ "t_ecl_restoreninth": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31801,
+  "admiral": "nekhet",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "cmdRound": 3,
+  "lineage": {
+   "id": "nekhet",
+   "picks": [
+    "nekhet:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Nadir Restore from the Ninth Frame (nekhet:A:0:0) picks one ship for the full repair, others half"
+ },
+ "t_ecl_restoredbeyond": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31802,
+  "admiral": "nekhet",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "rounds": 5,
+  "cmdRound": 3,
+  "lineage": {
+   "id": "nekhet",
+   "picks": [
+    "nekhet:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Nadir Restored Beyond the Original (nekhet:A:2:0) gives a rebuilt section +20% section hull"
+ },
+ "t_ecl_copiescontribute": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31803,
+  "admiral": "nekhet",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe",
+   "d_jackal"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 3,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "nekhet",
+   "picks": [
+    "nekhet:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Nadir Every Copy Contributes (nekhet:A:2:1) divides the flagship repair share"
+ },
+ "t_ecl_tenthframe": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31804,
+  "admiral": "nekhet",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "cmdRound": 3,
+  "lineage": {
+   "id": "nekhet",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Eclipse: Nadir Tenth Frame (nekhet:cap:0) triples one ship repair and restores a broken section"
+ },
+ "t_ecl_earliercopy": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31805,
+  "admiral": "nekhet",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "cmdRound": 3,
+  "lineage": {
+   "id": "nekhet",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Eclipse: Nadir The Earlier Copy Returns (nekhet:cap:1) repairs every section of one ship"
+ },
+ "t_ecl_arcswarm": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31806,
+  "admiral": "sekhmar",
+  "fleet": [
+   "d_harvester",
+   "d_harvester",
+   "d_jackal",
+   "d_jackal"
+  ],
+  "enemies": [
+   "h_vanguard",
+   "h_vanguard",
+   "h_vanguard"
+  ],
+  "rounds": 5,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "sekhmar",
+   "picks": [
+    "sekhmar:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Umbra Arcs Written Warm (sekhmar:A:0:0) splashes a corona volley hit onto an adjacent enemy"
+ },
+ "t_ecl_noonchoice": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31807,
+  "admiral": "sekhmar",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 5,
+  "cmdRound": 3,
+  "lineage": {
+   "id": "sekhmar",
+   "picks": [
+    "sekhmar:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Umbra Noon Is a Choice (sekhmar:A:0:1) adds 15% to a volley before any ship moves or fires"
+ },
+ "t_ecl_copyfires": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31900,
+  "admiral": "sekhmar",
+  "fleet": [
+   "d_harvester",
+   "d_harvester",
+   "d_jackal",
+   "d_jackal"
+  ],
+  "enemies": [
+   "h_picket",
+   "h_interdictor",
+   "h_interdictor"
+  ],
+  "rounds": 5,
+  "cmdRound": 3,
+  "lineage": {
+   "id": "sekhmar",
+   "picks": [
+    "sekhmar:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Umbra The Copy Fires Again (sekhmar:A:1:0) fires one weapon at a new target after a volley kill"
+ },
+ "t_ecl_coronashadow": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "storm",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31809,
+  "admiral": "sekhmar",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 5,
+  "cmdRound": 3,
+  "lineage": {
+   "id": "sekhmar",
+   "picks": [
+    "sekhmar:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Umbra Corona Without Shadow (sekhmar:A:2:0) ignores terrain cover in the noon volley"
+ },
+ "t_ecl_everyframe": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31810,
+  "admiral": "sekhmar",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 5,
+  "cmdRound": 3,
+  "lineage": {
+   "id": "sekhmar",
+   "picks": [
+    "sekhmar:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Umbra Every Frame at Noon (sekhmar:A:2:1) gives an unmoved volley +25% damage and +10 aim"
+ },
+ "t_ecl_noonrepeat": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31811,
+  "admiral": "sekhmar",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 3,
+  "cmdRound": 1,
+  "lineage": {
+   "id": "sekhmar",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Eclipse: Umbra Noon That Does Not Pass (sekhmar:cap:0) fires the volley again at the next round start at half damage"
+ },
+ "t_ecl_onesuncopy": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31812,
+  "admiral": "sekhmar",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 3,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "sekhmar",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Eclipse: Umbra One Sun, Copied (sekhmar:cap:1) copies each volley onto the least hull enemy at half damage"
+ },
+ "t_ecl_copiedbehind": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31813,
+  "admiral": "anuket",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 7,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "anuket",
+   "picks": [
+    "anuket:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Ostrel Copied from Behind (anuket:A:0:0) adds 20% to rear hits in the hunt round"
+ },
+ "t_ecl_unseenarchive": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31814,
+  "admiral": "anuket",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "anuket",
+   "picks": [
+    "anuket:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Ostrel Unseen in the Archive (anuket:A:0:1) gives +15% to a ship not targeted last round"
+ },
+ "t_ecl_uncopiedtarget": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31815,
+  "admiral": "anuket",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "anuket",
+   "picks": [
+    "anuket:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Ostrel Strike the Uncopied Target (anuket:A:1:1) gives +15% on an enemy not yet hit this battle"
+ },
+ "t_ecl_iterationkill": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31813,
+  "admiral": "anuket",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 7,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "anuket",
+   "picks": [
+    "anuket:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Ostrel Iteration of the Kill (anuket:A:2:0) gives the hit after a rear hit +20%"
+ },
+ "t_ecl_silentarchive": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31813,
+  "admiral": "anuket",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 7,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "anuket",
+   "picks": [
+    "anuket:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Ostrel Silent in the Archive (anuket:A:2:1) gives +15 evasion outside every enemy front arc"
+ },
+ "t_ecl_outshadow": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31818,
+  "admiral": "anuket",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "anuket",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Eclipse: Ostrel Out of Every Shadow (anuket:cap:0) carries the hunt bonus into a second round"
+ },
+ "t_ecl_longcopy": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31819,
+  "admiral": "anuket",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 3,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "anuket",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Eclipse: Ostrel The Long Copy Strikes (anuket:cap:1) moves each ship 2 hexes toward a rear arc at Command time"
+ },
+ "t_ecl_platesshadow": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31820,
+  "admiral": "khepra",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "khepra",
+   "picks": [
+    "khepra:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Seveth Plates over Shadow (khepra:A:0:0) stacks the wall on one ship"
+ },
+ "t_ecl_twicerestored": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31821,
+  "admiral": "khepra",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "cmdRound": 3,
+  "lineage": {
+   "id": "khepra",
+   "picks": [
+    "khepra:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Seveth The Twice-Restored Order (khepra:A:0:1) gives a repaired ship 15% more cut during the wall"
+ },
+ "t_ecl_layersshift": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31822,
+  "admiral": "khepra",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe",
+   "d_jackal"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 3,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "khepra",
+   "picks": [
+    "khepra:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Seveth Layers Shift (khepra:A:1:1) shifts each ship 1 hex toward the flagship at the next round start"
+ },
+ "t_ecl_nolayer": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31823,
+  "admiral": "khepra",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "khepra",
+   "picks": [
+    "khepra:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Seveth No Layer Falls Alone (khepra:A:2:0) absorbs the first hit each ship takes during the wall"
+ },
+ "t_ecl_stillness": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 32004,
+  "admiral": "khepra",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe",
+   "d_jackal"
+  ],
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "rounds": 6,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "khepra",
+   "picks": [
+    "khepra:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Seveth Stillness Counted (khepra:A:2:1) gives a ship that stayed put +20 aim on its first shot next round"
+ },
+ "t_ecl_tenthousand": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31825,
+  "admiral": "khepra",
+  "fleet": [
+   "d_harvester",
+   "d_scythe",
+   "d_scythe",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_vanguard",
+   "h_vanguard",
+   "h_interdictor"
+  ],
+  "rounds": 5,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "khepra",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Eclipse: Seveth Wall of Ten Thousand Copies (khepra:cap:0) caps hull damage taken in a round at 25% of max hull"
+ },
+ "t_ecl_restoredfleet": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31826,
+  "admiral": "khepra",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "cmdRound": 3,
+  "lineage": {
+   "id": "khepra",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Eclipse: Seveth The Restored Fleet (khepra:cap:1) keeps the wall cut a second round for a ship repaired this round"
+ },
+ "t_ecl_iterationswap": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31827,
+  "admiral": "nekhet",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe",
+   "d_jackal"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 2,
+  "lineage": {
+   "id": "nekhet",
+   "picks": [
+    "nekhet:B:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: shared Iteration Swap (nekhet:B:0:1) swaps two ships at battle start"
+ },
+ "t_ecl_flagshipindex": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31828,
+  "admiral": "nekhet",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_jackal"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 7,
+  "lineage": {
+   "id": "nekhet",
+   "picks": [
+    "nekhet:C:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: shared The Flagship Hosts the Index (nekhet:C:0:0) gives the flagship +15% on an ally target this round"
+ },
+ "t_ecl_framezero": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31829,
+  "admiral": "nekhet",
+  "fleet": [
+   "d_scythe",
+   "d_jackal",
+   "d_jackal"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 6,
+  "lineage": {
+   "id": "nekhet",
+   "picks": [
+    "nekhet:C:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: shared Frame Zero (nekhet:C:0:1) fires the flagship first miss again at half damage"
  }
 }

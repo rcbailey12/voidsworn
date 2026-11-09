@@ -1,5 +1,5 @@
 'use strict';
-// Issue #305 jobs 1 and 2 (tree skills in battle): every parity fixture must actually fire its pick.
+// Issue #305 jobs 1 to 3 (tree skills in battle): every parity fixture must actually fire its pick.
 // Runs the pinned rules oracle through the golden harness and reads B.treeStats from the last record.
 // The rules parity job proves the Godot twin writes the same records; this check proves the skill fired on the JS side.
 const fs = require('fs');
@@ -26,7 +26,17 @@ const WANT = {
   t_escortname: 'ashgrove:A:0:0', t_firstwave: 'ashgrove:A:0:1', t_wingreserve: 'ashgrove:A:1:1',
   t_generation: 'ashgrove:A:2:0', t_wingsdebt: 'ashgrove:A:2:1', t_rollwings: 'ashgrove:cap:0', t_oathwings: 'ashgrove:cap:1',
   t_holdcounted: 'thale:A:0:0', t_oathstillness: 'thale:A:1:1', t_unpaid: 'thale:A:2:0', t_wallanswers: 'thale:A:2:1',
-  t_irontestament: 'thale:cap:0'
+  t_irontestament: 'thale:cap:0',
+  // job 3: the Eclipse a and b rows
+  t_ecl_restoreninth: 'nekhet:A:0:0', t_ecl_restoredbeyond: 'nekhet:A:2:0', t_ecl_copiescontribute: 'nekhet:A:2:1',
+  t_ecl_tenthframe: 'nekhet:cap:0', t_ecl_earliercopy: 'nekhet:cap:1',
+  t_ecl_arcswarm: 'sekhmar:A:0:0', t_ecl_noonchoice: 'sekhmar:A:0:1', t_ecl_copyfires: 'sekhmar:A:1:0',
+  t_ecl_coronashadow: 'sekhmar:A:2:0', t_ecl_everyframe: 'sekhmar:A:2:1', t_ecl_noonrepeat: 'sekhmar:cap:0', t_ecl_onesuncopy: 'sekhmar:cap:1',
+  t_ecl_copiedbehind: 'anuket:A:0:0', t_ecl_unseenarchive: 'anuket:A:0:1', t_ecl_uncopiedtarget: 'anuket:A:1:1',
+  t_ecl_iterationkill: 'anuket:A:2:0', t_ecl_silentarchive: 'anuket:A:2:1', t_ecl_outshadow: 'anuket:cap:0', t_ecl_longcopy: 'anuket:cap:1',
+  t_ecl_platesshadow: 'khepra:A:0:0', t_ecl_twicerestored: 'khepra:A:0:1', t_ecl_layersshift: 'khepra:A:1:1',
+  t_ecl_nolayer: 'khepra:A:2:0', t_ecl_stillness: 'khepra:A:2:1', t_ecl_tenthousand: 'khepra:cap:0', t_ecl_restoredfleet: 'khepra:cap:1',
+  t_ecl_iterationswap: 'nekhet:B:0:1', t_ecl_flagshipindex: 'nekhet:C:0:0', t_ecl_framezero: 'nekhet:C:0:1'
 };
 const INERT = ['aelith:A:0:0', 'aelith:A:1:0', 'aelith:A:1:1', 'aelith:cap:1', 'aelith:cap:0',
   'vaelen:A:0:1', 'vaelen:A:1:0', 'vaelen:cap:0', 'thorne:A:1:0', 'thorne:A:1:1', 'thorne:cap:0',
@@ -35,7 +45,12 @@ const INERT = ['aelith:A:0:0', 'aelith:A:1:0', 'aelith:A:1:1', 'aelith:cap:1', '
   'vex:A:0:0', 'vex:A:2:1', 'vex:cap:0', 'vex:cap:1',
   'malek:A:1:0', 'malek:A:1:1', 'malek:cap:0',
   'ashgrove:A:1:0',
-  'thale:A:0:1', 'thale:A:1:0', 'thale:cap:1'];
+  'thale:A:0:1', 'thale:A:1:0', 'thale:cap:1',
+  // Eclipse x and c rows wait for the Muse text pass (#311)
+  'nekhet:A:0:1', 'nekhet:A:1:0', 'nekhet:A:1:1', 'nekhet:B:0:0',
+  'sekhmar:A:1:1', 'sekhmar:B:0:0',
+  'anuket:A:1:0', 'anuket:B:0:0',
+  'khepra:A:1:0', 'khepra:B:0:0'];
 let bad = 0;
 const scen = JSON.parse(fs.readFileSync(SCEN, 'utf8'));
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'treefx-'));
