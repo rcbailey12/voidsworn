@@ -56,3 +56,16 @@ Round 1 bug fixed in `common.ai_align`: the yaw was set as an Euler angle on a g
 | `massing_sheet.py` | Structure compare now leads with the concept camera and ends with a cross-section row (front view). |
 | `sheets4.py`, `silsheet4.py` | Round 4 sheets (round 3's layouts at the concept camera) and `silhouette.jpg`. |
 | `pc/r4_queue.bat`, `pc/r4_run.bat` | The PC run: both cells baked, rendered, exported with the hand LOD chain, Godot bench beside Ab3 and Hy3. |
+
+## Round 5 (report: `docs/shots/ship_pipeline/route209/round5/README.md`)
+
+| File | What it does |
+|---|---|
+| `b0trace.py` | Slices B0 (yaw fixed) every 0.02 of the ship's length, fills each slice and fits one clean faceted half-section to it (flat deck, sharp deck edge, chamfered shoulder, slab side, two-facet tuck, flat belly): the traced station table armA5 starts from, plus the overlay sheet of every fit on its slice. Plain Python (numpy, scipy, PIL). |
+| `armA5.py` | Round 5 structure: the core hull lofted from the traced knot table `HK`; the raised forward deck, deckhouse tier, tower tier, hump, aft body, stern block, sponsons, modules and cargo blocks as flat-sided lofts (table `P`); the tall antenna tower and the aft sensor mast at heights read off the concept (`TOWER`, `MAST`); casemates and drum racks hand rebuilt at the generated parts' proportions (`casemate5`, `drum_rack`); round 3 and 4's plating re-laid on the new blocks (`plates5`). Reads `tune5_P.json` on import. |
+| `tune5.py` | Coordinate descent on the concept outline (round 4's scorer) plus a small B0 prior (B0's own outline from the side, above and ahead), over grouped hull numbers (deck lift, belly drop and width per region, bow rake, shoulder, stern length) and the block numbers; writes `tune5_P.json`. |
+| `tune5_P.json` | The tuned numbers every build reads (knot table, block table, the tune's scores and log). |
+| `bakeAb5.py` | `bakeAb4.py` on the round 5 blocks; one cell, Ab5, all hand built. |
+| `close5.py` | Close-ups of one casemate and one drum rack (port quarter, ahead, above; paint and clay), for Hy4's generated parts and Ab5's hand rebuilds. |
+| `sheets5.py` | Round 5 sheets (round 4's layouts with Ab4, Hy4 and Ab5) and `close_parts.jpg`. `silsheet4.py` and `massing_sheet.py` gained Ab5's names. |
+| `pc/r5_queue.bat`, `pc/r5_run.bat` | The PC run: bake, render, close-ups (Ab5 and round 4's Hy4), export with the hand LOD chain, Godot bench beside Ab4 and Hy4. |

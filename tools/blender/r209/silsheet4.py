@@ -9,7 +9,8 @@ D, CONCEPT, OUT = sys.argv[1:4]; CELLS = sys.argv[4].split(','); RD = sys.argv[5
 W = 1080; BG = (14, 15, 18); FG = (235, 235, 235); DIM = (160, 160, 165)
 F = lambda s, b=False: ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans%s.ttf' % ('-Bold' if b else ''), s)
 NAMES = {'B0': 'B0  the concept as one generation (reference)', 'Ab3': 'Ab3  round 3', 'Hy3': 'Hy3  round 3',
-         'Ab4': 'Ab4  round 4, slab hull', 'Hy4': 'Hy4  round 4, slab hull + AI parts'}
+         'Ab4': 'Ab4  round 4, slab hull', 'Hy4': 'Hy4  round 4, slab hull + AI parts',
+         'Ab5': 'Ab5  round 5, traced from B0, hand parts'}
 S = json.load(open(os.path.join(D, 'silhouette_scores.json'))); cam = json.load(open(os.path.join(D, 'concept_camera.json')))
 
 def head(t, s):
