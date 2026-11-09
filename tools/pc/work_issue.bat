@@ -15,7 +15,7 @@ set "ARM=%~2"
 set "MODE=%~3"
 set "MODEL="
 if /i "%ARM%"=="deepseek" set "MODEL=deepseek/deepseek-flash"
-if /i "%ARM%"=="deepseekpro" set "MODEL=deepseek/deepseek-pro"
+if /i "%ARM%"=="deepseekpro" set "MODEL=deepseek/deepseek-v4-pro"
 if /i "%ARM%"=="kimi" set "MODEL=moonshotai/kimi-k3.1-pro"
 if not defined MODEL (echo usage: work_issue.bat issue-number deepseek-deepseekpro-or-kimi [dryrun] & exit /b 2)
 if defined WORK_MODEL set "MODEL=%WORK_MODEL%"
