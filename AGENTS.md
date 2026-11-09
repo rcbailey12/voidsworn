@@ -15,7 +15,7 @@ It holds the goal, the full history, every piece of owner feedback word for word
   Ryan's PC), `muse` (Rey and its models), `opus` (Claude), `ryan` (waiting on Ryan), plus `blocked`.
 - Agents deliver by pushing a branch named `codex/issue-<number>`, `muse/issue-<number>`, `work/issue-<number>` (or `work/issue-<number>-<arm>`) or `opus/issue-<number>`. Never push to main (R75). The only exception is LOOP.md and FINDINGS, which are committed straight to main as a docs-only exception (R102).
   GitHub then opens the pull request by itself (.github/workflows/auto_pr.yml, for the agent branch shapes; other branches need a manual PR) and runs the checks on it
-  (.github/workflows/checks.yml: standing checks, no em dashes in changed files, Godot rules parity). Opus reviews and merges.
+  (.github/workflows/checks.yml: standing checks, no em dashes in changed files, Godot rules parity). The Board thread reviews and merges.
 - Codex stays local on Ryan's PC. `codex_board.bat` (Downloads\voidsworn_test) checks the board every 10 minutes and
   queues each new codex issue on lane B (tools/pc/codex_issue.bat): fresh checkout, Codex at the issue's effort, push.
   No Codex cloud tasks or cloud reviews: they run an older model than the local one. Codex is down until Ryan says, so every codex issue stays blocked and the watcher queue is inert.
@@ -32,15 +32,15 @@ It holds the goal, the full history, every piece of owner feedback word for word
 - Muse research, design and review jobs always include a blind Rey leg written before Rey reads the other legs (Ryan, Nov 3, R89). Write the Models line as: Rey writes a blind leg first, DeepSeek and Qwen write, Flash and Grok ideation only, Rey chairs; Argon blocked since Nov 5.
 - Questions for Ryan go to him directly in the agent's own chat, not as GitHub tags or comments (Ryan, Nov 2).
 
-## Who does what (seat map, Ryan and Opus, Nov 8 2026, FINDINGS R128)
+## Who does what (seat map, Ryan and Opus, Nov 8 2026, FINDINGS R128; Board seat moved to Fable 5.2 on Nov 9, R152)
 
-Match the job to the seat that is best at it, and keep the paid seats for what only they do well. The board (Opus) assigns by this table; LOOP.md says which seats are live today.
+Match the job to the seat that is best at it, and keep the paid seats for what only they do well. The board (Fable 5.2 since R152; older notes that say Opus for the board mean this seat) assigns by this table; LOOP.md says which seats are live today.
 
 | Work | Seat | Why |
 |---|---|---|
-| Board, PR review and merges, specs, visual calls, questions for Ryan | Opus (Claude, the project's Board thread) | the reviewer is the bottleneck; spend Claude on judgment, not bulk typing (2 or 3 threads at once) |
+| Board, PR review and merges, specs, visual calls, questions for Ryan | Fable 5.2 (Claude, the project's Board thread, R152) | the reviewer is the bottleneck; spend Claude on judgment, not bulk typing (2 or 3 threads at once) |
 | Well-specified coding: rules, campaign, UI, scripts, tests | Workhorse: DeepSeek V4.1 Flash in OpenCode on the PC (tools/pc/work_issue.bat) | merged on one review pass for $0.09 on #26 (R127) |
-| Hard or open-ended multi-file coding | Opus threads (the hardest jobs while the Claude plan has room, R132) | Kimi is off except a real job both DeepSeek models fail (R132, R134); it was slower and 50x the price per job on the API |
+| Hard or open-ended multi-file coding, ship rounds, screen builds, plans | Opus 5.5 worker threads (the hardest jobs while the Claude plan has room, R132, R152) | Kimi is off except a real job both DeepSeek models fail (R132, R134); it was slower and 50x the price per job on the API |
 | GPU and Blender work: bakes, renders, captures, benchmarks, exports | Codex on the PC (when Ryan un-parks Codex); until then Opus PC threads | Codex knows the pipeline tools; the workhorse is untested on GPU jobs |
 | Research, design text, audits, second-opinion reviews | Muse (Rey chairs; blind Rey leg; DeepSeek and Qwen write) | several models, an outside view |
 | Ideation and wide brainstorms | Flash and Grok (free), through Muse | cheap and broad |
