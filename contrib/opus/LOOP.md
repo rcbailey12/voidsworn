@@ -30,11 +30,11 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 7. Rewrite this file, set "Running: no", commit straight to main (this file and FINDINGS only, docs-only exception), push with timeout 90. Stop.
 8. One send_later check only when a job or a limit reset lands well before the next look. Never chain them.
 
-## Current state (2026-11-09 16:55 UTC)
+## Current state (2026-11-09 17:40 UTC)
 
 - Tree effects (#305): job 1 Glasswrights MERGED (PR #313), job 2 Sunward Crusade MERGED (PR #317, 25 skills, hooks H4 H6 H12 H13 H16; 46 fixtures fire, 26 rows inert). Job 3 Eclipse #318 and job 4 the Chorus #319 queued on DeepSeek 16:52 UTC (they touch the same files: merge one, then merge main into the other). Jobs 5 Hullbreakers and 6 Hegemony after those. Muse text pass #311 not started.
 - UI #271: Ryan (R148) agrees with the two fixes and says it "still feels very similar": the identity (font, palette, panels) is the old UI's. Cloud thread trig_01PeNYUnfk7jt3z12Wvekx72 (16:50 UTC) on branch opus/issue-271-build: the fix pass plus three distinct identity variants as mockups (docs/shots/ui_redesign/identity/). Then PC captures rerun, Ryan picks a variant, Rey checks, merge.
-- Gun smoke #281: run 4 (Flash, PR #309 updated 16:03 UTC) removed the ball but keeps straight line sparks (R146): fallback only. Run 5 (V4 Pro, baked flipbooks, branch work/issue-281-deepseekpro) running since 15:27 UTC.
+- Gun smoke #281: run 4 (Flash, PR #309) removed the ball but keeps straight line sparks (R146): fallback only. Run 5 (Pro) died in 3 seconds at 15:21 UTC: the runner mapped deepseekpro to deepseek/deepseek-pro, not a model id (fix: PR #320, deepseek-v4-pro). Relaunched 17:37 UTC with WORK_MODEL=deepseek/deepseek-v4-pro (baked flipbooks, branch work/issue-281-deepseekpro).
 - Ships #209: round 4 in draft PR #316 (82.5 percent outline). Round 5 PC thread since 15:52 UTC (hull traced from B0, 90 percent gate, hand-rebuilt casemates, R147).
 - Muse: still idle after Ryan's 07:51 CST bump (#311, #296, #256 with the #314 check request).
 
