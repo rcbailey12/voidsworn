@@ -32,10 +32,10 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 
 ## Current state (2026-11-09 07:35 UTC)
 
-- Progression: #27 MERGED (PR #302) and #29 MERGED (PR #304; trees for all six factions from contrib/muse/design/admiral_trees_2026_11, the finalized texts; faction_packages_2026_11 are first drafts, do not build from them). #30 (capstone mastery, last step) running on DeepSeek since 07:50 UTC. Board finding R143: no plan step makes tree skills work in battle; filed #305 (opus, blocked, plan first, Ryan answers scope questions before any build). Grax boarding restatement still open inside #305.
+- Progression: #27 MERGED (PR #302) and #29 MERGED (PR #304; trees for all six factions from contrib/muse/design/admiral_trees_2026_11, the finalized texts; faction_packages_2026_11 are first drafts, do not build from them). #30 (capstone mastery, last step) running on DeepSeek since 07:33 UTC. Board finding R143: no plan step makes tree skills work in battle; filed #305 (opus, blocked, plan first, Ryan answers scope questions before any build). Grax boarding restatement still open inside #305.
 - Ships: #209 round 3 in draft PR #303. Board pick, sent to Ryan with paint.jpg: Hy3 (hand hull plus generated casemates and drum racks) with the hand LOD chain, hand-built bow guns, plus the concept's tall bridge tower and long top guns for silhouette; then the real gate scene. Ab3 is the fallback. Waiting on Ryan. #287, #295, #303 merge together as the record once he rules.
 - UI: #271 round 2 (draft PR #301), board pick C Glass Shell bold, waiting on Ryan.
-- FX: #281 (vent puff options) running on DeepSeek since 07:55 UTC, GPU now free.
+- FX: #281 (vent puff options) running on DeepSeek since 07:36 UTC, GPU now free.
 - Muse: #296 (Crusade voice) and #256 check of #286: no comment yet.
 
 ## Earlier state (2026-11-09 06:50 UTC)
