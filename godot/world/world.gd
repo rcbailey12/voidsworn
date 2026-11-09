@@ -845,6 +845,8 @@ func _backdrop_scale(nm: String, s: float, p: Vector3, max_length := INF) -> flo
 	var length_cap := minf(max_length, 2.0 * sin(BACKDROP_ROCK_ANGLE * 0.5) * dist)
 	s = minf(s, length_cap / diameter)
 	var angle := 2.0 * asin(clampf(diameter * s / (2.0 * maxf(dist, 0.001)), 0.0, 1.0))
+	# AS1 and PL8 (R79): these two asserts check the clamp just above and stay as they are until the loom turntable
+	# (#236, R124) picks a profile; they are not a content gate (issue #230, environment_reconciliation.md section 7).
 	assert(angle <= BACKDROP_ROCK_ANGLE + 0.000001, "Backdrop rock exceeds 0.05 rad")
 	assert(_planet_ang == 0.0 or angle * 4.4 <= 2.0 * _planet_ang + 0.000001, "Backdrop rock exceeds planet scale margin")
 	return s
