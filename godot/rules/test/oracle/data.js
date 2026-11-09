@@ -860,6 +860,13 @@ const MASTERY_PERKS=[
   {n:'Flag captain',d:'Your flagship starts at Mk II, its captain two ranks up with a perk.'}];
 // Glasswrights test slice. Content: skill_tree_phase1_assembled_2026_10_29.md.
 const LINEAGE_XP=[0,6,16,30,50,75,110,160,230];
+// Job 7 step 14: capstone mastery. A chosen level 8 evolution keeps growing at 320, 440 and 600 XP.
+// The effect texts are placeholders: the tree pack carries no capstone mastery text yet.
+const CAPSTONE_MASTERY_XP=[320,440,600];
+const CAPSTONE_MASTERY_PERKS=[
+  {n:'Capstone mastery I',d:'Placeholder: the mastery effect for this evolution is not written yet.'},
+  {n:'Capstone mastery II',d:'Placeholder: the mastery effect for this evolution is not written yet.'},
+  {n:'Capstone mastery III',d:'Placeholder: the mastery effect for this evolution is not written yet.'}];
 const LINEAGE_TREES={
   "aelith": {
     "branches": {

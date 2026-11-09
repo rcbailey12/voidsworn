@@ -1,5 +1,9 @@
 # The rules oracle, pinned
 
+Nov 9 2026, issue 30 (progression step 14): re-copied data.js and core.js for
+capstone mastery (three levels at 320, 440 and 600 XP on a chosen lineage
+evolution). Combat rules and the checksum are unchanged. Re-exported rules tables.
+
 Nov 9 2026, issue 29 (progression step 13): re-copied data.js for the lineage
 tree rollout to the other five factions. Combat rules and the campaign tables'
 contents are unchanged. Re-exported rules tables.

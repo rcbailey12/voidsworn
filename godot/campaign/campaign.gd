@@ -20,7 +20,7 @@ const TABLES_PATH := "res://campaign/data/campaign_tables.json"
 # ---------------- tables ----------------
 var TB: Dictionary = {}
 var W_; var HULLS; var FACTIONS; var MODULES; var PERKS; var RELICS; var ADMIRALS; var RANKS; var RANK_XP; var PATRONS; var BOONS
-var BOON_FX; var BOON_D; var BOON_NEED; var RARITY; var ASPECTS; var HEAT; var HULL_VARIANTS; var MASTERY_XP; var MASTERY_PERKS; var LINEAGE_XP; var LINEAGE_TREES
+var BOON_FX; var BOON_D; var BOON_NEED; var RARITY; var ASPECTS; var HEAT; var HULL_VARIANTS; var MASTERY_XP; var MASTERY_PERKS; var LINEAGE_XP; var LINEAGE_TREES; var CAPSTONE_MASTERY_XP; var CAPSTONE_MASTERY_PERKS
 var FAVOUR_TIERS; var SECTOR_CONDS; var SECTOR_POOL; var EVENTS; var CAPTAINS; var SHIP_NAMES; var MORE_SHIP_NAMES; var FNAMES
 var MOD_NEED; var MOD_NAMES; var RELIC_NAMES; var RUN_WORD; var ENCOUNTERS; var ENC_POOL; var ENC_SPECIAL; var REGIONS; var FAC_REGION
 var REGION_BIOME; var ROCK_KINDS; var DEEP_MAPS; var FAC_MAP; var BEVENTS; var KILL_CAUSES; var FAC_WNAMES; var FAC_WTRAIT; var WTRAITS
@@ -64,7 +64,7 @@ var tel_log: Array = []     # a slim run log (events only), kept with the save; 
 # ======================= setup =======================
 # Every table the campaign reads. load_tables refuses to start when one is missing, and export_campaign.js fails when the oracle
 # lacks one (it also scans the campaign scripts for every TB table they read, so a new table cannot slip past this list).
-const REQUIRED_TABLES = ["ABILITIES", "ADMIRALS", "ARCHETYPES", "ARC_NAME", "ARC_VARIANT", "ASPECTS", "BEVENTS", "BOONS", "BOON_D", "BOON_FX", "BOON_NEED", "BOSS_DMG", "BOSS_ENC", "BOSS_FAC", "BOSS_SCALE", "CAPTAINS", "CAUSE_WORD", "CLASS_TRACK_MAX", "CMD_TEXT", "DEEP_MAPS", "ENCOUNTERS", "ENC_POOL", "ENC_SPECIAL", "EVENTS", "EVENT_FALLBACK", "FACTIONS", "FAC_GATES", "FAC_MAP", "FAC_REGION", "FAC_VERBS", "FAC_WNAMES", "FAC_WTRAIT", "FAVOUR_TIERS", "FNAMES", "FX_CAPS", "HEAT", "HULLS", "HULL_VARIANTS", "KILL_CAUSES", "KIND_WORD", "LEGACY", "MAP_NAME", "MASTERY_PERKS", "MASTERY_XP", "LINEAGE_XP", "LINEAGE_TREES", "MODULES", "MOD_NAMES", "MOD_NEED", "MORE_SHIP_NAMES", "NEM_ADAPT", "NEM_ADAPT_FAC", "NEM_BEAT_WORD", "NEM_CLOCK", "NEM_FAC", "NEM_LINES", "NEM_PERSONA", "NEM_TRAITS", "NEM_WEAK", "NODE_INFO", "NODE_MODS", "PATRONS", "PERKS", "RAMP", "RANKS", "RANK_XP", "RARITY", "REGIONS", "REGION_BIOME", "RELICS", "RELIC_NAMES", "REWARD_DEF", "ROCK_KINDS", "RUN_FACTIONS", "RUN_WORD", "SECTOR_CONDS", "SECTOR_POOL", "SHAPES", "SHIP_NAMES", "W", "WING_PERKS", "WING_XP", "WIN_TITLE", "WTRAITS"]
+const REQUIRED_TABLES = ["ABILITIES", "ADMIRALS", "ARCHETYPES", "ARC_NAME", "ARC_VARIANT", "ASPECTS", "BEVENTS", "BOONS", "BOON_D", "BOON_FX", "BOON_NEED", "BOSS_DMG", "BOSS_ENC", "BOSS_FAC", "BOSS_SCALE", "CAPTAINS", "CAUSE_WORD", "CLASS_TRACK_MAX", "CMD_TEXT", "DEEP_MAPS", "ENCOUNTERS", "ENC_POOL", "ENC_SPECIAL", "EVENTS", "EVENT_FALLBACK", "FACTIONS", "FAC_GATES", "FAC_MAP", "FAC_REGION", "FAC_VERBS", "FAC_WNAMES", "FAC_WTRAIT", "FAVOUR_TIERS", "FNAMES", "FX_CAPS", "HEAT", "HULLS", "HULL_VARIANTS", "KILL_CAUSES", "KIND_WORD", "LEGACY", "MAP_NAME", "MASTERY_PERKS", "MASTERY_XP", "LINEAGE_XP", "LINEAGE_TREES", "CAPSTONE_MASTERY_XP", "CAPSTONE_MASTERY_PERKS", "MODULES", "MOD_NAMES", "MOD_NEED", "MORE_SHIP_NAMES", "NEM_ADAPT", "NEM_ADAPT_FAC", "NEM_BEAT_WORD", "NEM_CLOCK", "NEM_FAC", "NEM_LINES", "NEM_PERSONA", "NEM_TRAITS", "NEM_WEAK", "NODE_INFO", "NODE_MODS", "PATRONS", "PERKS", "RAMP", "RANKS", "RANK_XP", "RARITY", "REGIONS", "REGION_BIOME", "RELICS", "RELIC_NAMES", "REWARD_DEF", "ROCK_KINDS", "RUN_FACTIONS", "RUN_WORD", "SECTOR_CONDS", "SECTOR_POOL", "SHAPES", "SHIP_NAMES", "W", "WING_PERKS", "WING_XP", "WIN_TITLE", "WTRAITS"]
 func load_tables(path: String = TABLES_PATH) -> String:
 	var txt = FileAccess.get_file_as_string(path)
 	var j = JSON.parse_string(txt)
@@ -80,6 +80,7 @@ func load_tables(path: String = TABLES_PATH) -> String:
 	W_ = TB.W; HULLS = TB.HULLS; FACTIONS = TB.FACTIONS; MODULES = TB.MODULES; PERKS = TB.PERKS; RELICS = TB.RELICS; ADMIRALS = TB.ADMIRALS
 	RANKS = TB.RANKS; RANK_XP = TB.RANK_XP; PATRONS = TB.PATRONS; BOONS = TB.BOONS; BOON_FX = TB.BOON_FX; BOON_D = TB.BOON_D; BOON_NEED = TB.BOON_NEED
 	RARITY = TB.RARITY; ASPECTS = TB.ASPECTS; HEAT = TB.HEAT; HULL_VARIANTS = TB.HULL_VARIANTS; MASTERY_XP = TB.MASTERY_XP; MASTERY_PERKS = TB.MASTERY_PERKS; LINEAGE_XP = TB.LINEAGE_XP; LINEAGE_TREES = TB.LINEAGE_TREES
+	CAPSTONE_MASTERY_XP = TB.CAPSTONE_MASTERY_XP; CAPSTONE_MASTERY_PERKS = TB.CAPSTONE_MASTERY_PERKS
 	FAVOUR_TIERS = TB.FAVOUR_TIERS; SECTOR_CONDS = TB.SECTOR_CONDS; SECTOR_POOL = TB.SECTOR_POOL; EVENTS = TB.EVENTS; CAPTAINS = TB.CAPTAINS
 	SHIP_NAMES = TB.SHIP_NAMES; MORE_SHIP_NAMES = TB.MORE_SHIP_NAMES; FNAMES = TB.FNAMES; MOD_NEED = TB.MOD_NEED; MOD_NAMES = TB.MOD_NAMES
 	RELIC_NAMES = TB.RELIC_NAMES; RUN_WORD = TB.RUN_WORD; ENCOUNTERS = TB.ENCOUNTERS; ENC_POOL = TB.ENC_POOL; ENC_SPECIAL = TB.ENC_SPECIAL
@@ -971,6 +972,23 @@ func masteryThresholds(id) -> Array: return LINEAGE_XP if LINEAGE_TREES.has(id) 
 func masteryPerk(level) -> Dictionary:
 	if level < MASTERY_PERKS.size(): return MASTERY_PERKS[level]
 	return {"n": "Command evolution", "d": "Choose a capstone in Admiral mastery."} if level == 8 else {"n": "Lineage choice", "d": "Choose a branch skill in Admiral mastery."}
+# Job 7 step 14: capstone mastery. Choosing the level 8 evolution opens three more levels at 320, 440 and 600 XP.
+# The line still stops at 230 until an evolution is chosen, so an unmet tree never banks mastery it cannot show.
+func masteryXPCap(id) -> float:
+	var t = masteryThresholds(id)
+	if not LINEAGE_TREES.has(id): return float(t[-1])
+	return maxf(float(t[-1]), float(CAPSTONE_MASTERY_XP[-1])) if lineageBuild(id)["capstone"] != null else float(t[-1])
+func capstoneMasteryLevel(id) -> int:
+	if not LINEAGE_TREES.has(id) or lineageBuild(id)["capstone"] == null: return 0
+	var x = masteryXP(id); var l = 0
+	for i in range(CAPSTONE_MASTERY_XP.size()):
+		if x >= float(CAPSTONE_MASTERY_XP[i]): l = i + 1
+	return l
+func capstoneMasteryPerk(level) -> Variant:
+	return CAPSTONE_MASTERY_PERKS[level - 1] if level >= 1 and level <= CAPSTONE_MASTERY_PERKS.size() else null
+func capstoneMasteryNext(id) -> Variant:
+	var l = capstoneMasteryLevel(id)
+	return null if l >= CAPSTONE_MASTERY_XP.size() else CAPSTONE_MASTERY_XP[l]
 func lineageBuild(id) -> Dictionary:
 	var tree = LINEAGE_TREES.get(id); var raw = or_(or_(META.get("lineage"), {}).get(id), {}); var picks = []; var ranks = {"A": 0, "B": 0, "C": 0}
 	if tree != null and raw is Dictionary and raw.get("picks") is Array:
@@ -1407,9 +1425,9 @@ func shadowAdmirals(fac, flown) -> Array:
 func shadowRate(id) -> float:
 	return 0.5 if META["heirs"].get(or_(ADMIRALS[id].get("fac"), "voidsworn")) == id else 0.25
 func masteryCredit(id, xp) -> Dictionary:
-	var thresholds = masteryThresholds(id); var cap = float(thresholds[-1]); var old = masteryXP(id); var total = old + xp
-	META["mastery"][id] = min(cap, total)
-	return {"xp": max(0.0, META["mastery"][id] - old), "overflow": max(0.0, total - cap)}
+	var cap = masteryXPCap(id); var old = masteryXP(id); var total = old + xp
+	META["mastery"][id] = max(old, min(cap, total))   # a reset evolution keeps its earned XP even when the cap drops back to 230
+	return {"xp": max(0.0, META["mastery"][id] - old), "overflow": max(0.0, total - max(cap, old))}
 func awardLineageXP(flown, fac, xp) -> Dictionary:
 	var active = masteryCredit(flown, xp); var shadow = []
 	for id in shadowAdmirals(fac, flown): shadow.append({"id": id, "xp": 0.0, "rate": shadowRate(id)})
@@ -1417,7 +1435,7 @@ func awardLineageXP(flown, fac, xp) -> Dictionary:
 	for row in shadow:
 		var gain = masteryCredit(row["id"], xp * shadowRate(row["id"])); row["xp"] += gain["xp"]; pool += gain["overflow"]
 	while pool > 0:
-		var open = shadow.filter(func(row): return masteryXP(row["id"]) < float(masteryThresholds(row["id"])[-1]))
+		var open = shadow.filter(func(row): return masteryXP(row["id"]) < masteryXPCap(row["id"]))
 		if open.is_empty(): break
 		var weight = 0.0
 		for row in open: weight += shadowRate(row["id"])
@@ -1428,8 +1446,10 @@ func awardLineageXP(flown, fac, xp) -> Dictionary:
 	return {"mxGain": active["xp"], "mxOverflow": active["overflow"], "shadow": shadow, "shadowBank": pool}
 func inheritanceLine(id) -> Dictionary:
 	var level = masteryLevel(id); var xp = masteryXP(id); var thresholds = masteryThresholds(id)
-	var next = thresholds[level + 1] if level + 1 < thresholds.size() else null
-	return {"id": id, "xp": xp, "level": level, "next": next, "remaining": 0 if next == null else max(0.0, float(next) - xp)}
+	var tree = LINEAGE_TREES.has(id); var build = lineageBuild(id) if tree else null; var has_cap = build != null and build["capstone"] != null
+	var cap_level = capstoneMasteryLevel(id) if tree else 0; var cap_next = capstoneMasteryNext(id) if tree else null
+	var next = cap_next if has_cap else (thresholds[level + 1] if level + 1 < thresholds.size() else null)
+	return {"id": id, "xp": xp, "level": level, "next": next, "remaining": 0 if next == null else max(0.0, float(next) - xp), "hasCap": has_cap, "capLevel": cap_level, "capNext": cap_next}
 func inheritanceSummary(run) -> Dictionary:
 	var cy = run["carry"]; var balance = float(z0(META.get("renown"))); var affordable = []
 	for id in LEGACY:
