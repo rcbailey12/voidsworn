@@ -2516,5 +2516,749 @@
    ],
    "capstone": null
   }
+ },
+ "t_heldaccount": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31501,
+  "admiral": "vex",
+  "fleet": [
+   "penitent",
+   "harrow"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket",
+   "h_picket"
+  ],
+  "cmdRound": 3,
+  "lineage": {
+   "id": "vex",
+   "picks": [
+    "vex:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Vex Held in the Account (vex:A:0:1) holds one ship free volley until after it moves"
+ },
+ "t_namedledger": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31502,
+  "admiral": "vex",
+  "fleet": [
+   "penitent",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "vex",
+   "picks": [
+    "vex:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Vex Named in the Ledger (vex:A:1:0) aims every gun at one named enemy"
+ },
+ "t_inheritedaim": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 31503,
+  "admiral": "vex",
+  "fleet": [
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 4,
+  "lineage": {
+   "id": "vex",
+   "picks": [
+    "vex:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Vex Inherited Aim (vex:A:1:1) pays +15% on a free volley from a ship that has not moved"
+ },
+ "t_everygun": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 31504,
+  "admiral": "vex",
+  "fleet": [
+   "penitent",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 4,
+  "lineage": {
+   "id": "vex",
+   "picks": [
+    "vex:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Vex Every Gun Sworn (vex:A:2:0) gives +10 aim to ships that share a volley target"
+ },
+ "t_sworndeploy": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 3,
+  "bot": "full",
+  "seed": 31505,
+  "admiral": "vex",
+  "fleet": [
+   "penitent",
+   "harrow"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket"
+  ],
+  "lineage": {
+   "id": "vex",
+   "picks": [
+    "vex:B:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: shared Sworn Deployment (vex:B:0:0) repositions one ship in its zone at battle start"
+ },
+ "t_debtsreserve": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 3,
+  "bot": "full",
+  "seed": 31506,
+  "admiral": "vex",
+  "fleet": [
+   "penitent",
+   "harrow"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket"
+  ],
+  "lineage": {
+   "id": "vex",
+   "picks": [
+    "vex:B:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: shared Debts in Reserve (vex:B:0:1) holds one ship back and brings it in at round 2"
+ },
+ "t_flagshipLedger": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31507,
+  "admiral": "vex",
+  "fleet": [
+   "penitent",
+   "harrow"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "lineage": {
+   "id": "vex",
+   "picks": [
+    "vex:C:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: shared Flagship Keeps the Ledger (vex:C:0:0) fires one more weapon at half damage"
+ },
+ "t_standardreroll": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 31508,
+  "admiral": "vex",
+  "fleet": [
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket",
+   "h_picket",
+   "h_picket"
+  ],
+  "lineage": {
+   "id": "vex",
+   "picks": [
+    "vex:C:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: shared Standard of the First Crusade (vex:C:0:1) rerolls one missed shot a round"
+ },
+ "t_preyname": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31509,
+  "admiral": "malek",
+  "fleet": [
+   "harrow",
+   "harrow"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "malek",
+   "picks": [
+    "malek:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Malek Prey Entered by Name (malek:A:0:0) pays +15% on torpedoes fired at the marked prey"
+ },
+ "t_salvotwohands": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31510,
+  "admiral": "malek",
+  "fleet": [
+   "harrow",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "malek",
+   "picks": [
+    "malek:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Malek Salvo in Two Hands (malek:A:0:1) moves the hunt bonus on half the fleet to next round"
+ },
+ "t_debthunts": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "seed": 31511,
+  "admiral": "malek",
+  "fleet": [
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "malek",
+   "picks": [
+    "malek:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Malek The Debt Hunts (malek:A:2:0) makes side hits count as rear hits on the hunted target"
+ },
+ "t_twosalvos": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31512,
+  "admiral": "malek",
+  "fleet": [
+   "harrow",
+   "harrow"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "malek",
+   "picks": [
+    "malek:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Malek Two Salvos Sworn (malek:A:2:1) carries the hunt bonus into the first torpedo next round"
+ },
+ "t_namedprey": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31513,
+  "admiral": "malek",
+  "fleet": [
+   "harrow",
+   "harrow"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "malek",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Sunward: Malek The Named Prey Falls (malek:cap:1) retargets travelling torpedoes and pays +25% on the prey"
+ },
+ "t_escortname": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31514,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "ashgrove",
+   "picks": [
+    "ashgrove:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Ashgrove Escort Sworn to a Name (ashgrove:A:0:0) gives an extra wing a guard order and it takes the first hit"
+ },
+ "t_firstwave": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31515,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "ashgrove",
+   "picks": [
+    "ashgrove:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Ashgrove First Wave Owes the Second (ashgrove:A:0:1) makes one carrier extra wing hit at +20%"
+ },
+ "t_wingreserve": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31516,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "ashgrove",
+   "picks": [
+    "ashgrove:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Ashgrove Held in Reserve (ashgrove:A:1:1) holds one extra wing and launches it next round"
+ },
+ "t_generation": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31517,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "ashgrove",
+   "picks": [
+    "ashgrove:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Ashgrove Every Generation Aloft (ashgrove:A:2:0) adds an extra wing from a launch ship that held still"
+ },
+ "t_wingsdebt": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31518,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "ashgrove",
+   "picks": [
+    "ashgrove:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Ashgrove Wings Settle the Debt (ashgrove:A:2:1) pays +30% on a wing strike at the carrier target"
+ },
+ "t_rollwings": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31519,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "ashgrove",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Sunward: Ashgrove The Roll of Wings (ashgrove:cap:0) ignites the struck ship and cuts its flak by 1 for the battle"
+ },
+ "t_oathwings": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "seed": 31520,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "penitent"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "ashgrove",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Sunward: Ashgrove Oath of Unbroken Wings (ashgrove:cap:1) screens torpedoes aimed at ships near a launch ship"
+ },
+ "t_holdcounted": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31521,
+  "admiral": "thale",
+  "fleet": [
+   "cathedral",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "thale",
+   "picks": [
+    "thale:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Thale Hold and Be Counted (thale:A:0:0) keeps the wall cut one more round on ships that held still"
+ },
+ "t_oathstillness": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31522,
+  "admiral": "thale",
+  "fleet": [
+   "cathedral",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "thale",
+   "picks": [
+    "thale:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Thale Oath of Stillness (thale:A:1:1) refills shields again for ships that held still"
+ },
+ "t_unpaid": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31523,
+  "admiral": "thale",
+  "fleet": [
+   "warden",
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard",
+   "h_vanguard"
+  ],
+  "cmdRound": 4,
+  "lineage": {
+   "id": "thale",
+   "picks": [
+    "thale:A:2:0"
+   ],
+   "capstone": null
+  },
+  "mod": "veteran",
+  "note": "Sunward: Thale Unpaid and Unbroken (thale:A:2:0) cuts 20 points more on ships below half hull"
+ },
+ "t_wallanswers": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31524,
+  "admiral": "thale",
+  "fleet": [
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "thale",
+   "picks": [
+    "thale:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Thale The Wall Answers (thale:A:2:1) fires a ship smallest weapon at the attacker when its facing empties"
+ },
+ "t_irontestament": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31525,
+  "admiral": "thale",
+  "fleet": [
+   "cathedral",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "thale",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Sunward: Thale Iron Testament (thale:cap:0) keeps the wall for a second round and half refills it"
  }
 }
