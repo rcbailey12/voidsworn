@@ -37,10 +37,10 @@ function mapScreen(){
   const nodes=Object.values(byId).map(n=>{ const x=PX(n), y=PY(n), av=avail.has(n.id), cur=RUN.pos===n.id, r=n.type==='boss'?26:19;
     const col = n.done?'#7d7768': n.type==='elite'||n.type==='boss'?'#e07a70': av?'#e6dcc4':'#8a8474';
     return `<g class="node ${av?'avail':''}" ${av?`data-act="enterNode" data-arg="${n.id}" tabindex="0" role="button" aria-label="${NODE_INFO[n.type].n}"`:''}>
-      <title>${NODE_INFO[n.type].n}${n.map&&MAP_NAME[n.map]&&(n.type==='battle'||n.type==='elite'||n.type==='boss')?' ('+MAP_NAME[n.map]+')':''}: ${n.enc&&ENCOUNTERS[n.enc]?ENCOUNTERS[n.enc].n+'. '+ENCOUNTERS[n.enc].d:NODE_INFO[n.type].d}${archLabel(n,(typeof nodeFaction==="function"?nodeFaction(n):m.fac))?' '+archLabel(n,(typeof nodeFaction==="function"?nodeFaction(n):m.fac))+'.':''}${n.mod&&NODE_MODS[n.mod]?' '+NODE_MODS[n.mod].n+': '+NODE_MODS[n.mod].d:''}</title>
+      <title>${nemNodeTag(n)?'Nemesis meeting (certain this sector). ':''}${NODE_INFO[n.type].n}${n.map&&MAP_NAME[n.map]&&(n.type==='battle'||n.type==='elite'||n.type==='boss')?' ('+MAP_NAME[n.map]+')':''}: ${n.enc&&ENCOUNTERS[n.enc]?ENCOUNTERS[n.enc].n+'. '+ENCOUNTERS[n.enc].d:NODE_INFO[n.type].d}${archLabel(n,(typeof nodeFaction==="function"?nodeFaction(n):m.fac))?' '+archLabel(n,(typeof nodeFaction==="function"?nodeFaction(n):m.fac))+'.':''}${n.mod&&NODE_MODS[n.mod]?' '+NODE_MODS[n.mod].n+': '+NODE_MODS[n.mod].d:''}</title>
       <circle cx="${x}" cy="${y}" r="${r}" fill="${n.done?'#1b2436':'#182133'}" class="ring" stroke="${cur?'#d0a64b':av?'rgba(208,166,75,.8)':'rgba(230,220,196,.18)'}" stroke-width="${cur||av?2.5:1.5}"/>
       ${av?`<circle cx="${x}" cy="${y}" r="${r+6}" fill="none" stroke="rgba(208,166,75,.35)" stroke-width="1"><animate attributeName="r" values="${r+3};${r+9};${r+3}" dur="2.4s" repeatCount="indefinite"/></circle>`:''}
-      ${nodeIcon(n.type,x,y,col)}${n.enc&&ENCOUNTERS[n.enc]&&!n.done?`<text x="${x}" y="${y+r+15}" text-anchor="middle" font-size="12.5" fill="${av?'#e6dcc4':'#8a8474'}" font-family="var(--ui)">${ENCOUNTERS[n.enc].n}${n.mod&&NODE_MODS[n.mod]?' \u00b7 '+NODE_MODS[n.mod].short:''}</text>`:''}${n.map&&MAP_NAME[n.map]&&!n.done&&(n.type==='battle'||n.type==='elite'||n.type==='boss')?`<text x="${x}" y="${y-r-7}" text-anchor="middle" font-size="10.5" fill="#7f8fa6" font-family="var(--ui)">${MAP_NAME[n.map]}</text>`:''}${rewardBadge(n,x,y,r,av)}${!n.done&&nemNodeIs(n)?`<text x="${x}" y="${y-r-20}" text-anchor="middle" font-size="12" font-weight="700" fill="#ff6b5a" font-family="var(--ui)">Nemesis</text>`:''}</g>`; }).join('');
+      ${nodeIcon(n.type,x,y,col)}${n.enc&&ENCOUNTERS[n.enc]&&!n.done?`<text x="${x}" y="${y+r+15}" text-anchor="middle" font-size="12.5" fill="${av?'#e6dcc4':'#8a8474'}" font-family="var(--ui)">${ENCOUNTERS[n.enc].n}${n.mod&&NODE_MODS[n.mod]?' \u00b7 '+NODE_MODS[n.mod].short:''}</text>`:''}${n.map&&MAP_NAME[n.map]&&!n.done&&(n.type==='battle'||n.type==='elite'||n.type==='boss')?`<text x="${x}" y="${y-r-7}" text-anchor="middle" font-size="10.5" fill="#7f8fa6" font-family="var(--ui)">${MAP_NAME[n.map]}</text>`:''}${rewardBadge(n,x,y,r,av)}${!n.done&&nemNodeTag(n)?`<text x="${x}" y="${y-r-20}" text-anchor="middle" font-size="12" font-weight="700" fill="#ff6b5a" font-family="var(--ui)">${nemNodeTag(n)}</text>`:''}</g>`; }).join('');
   const fleet=RUN.fleet.map(s=>{ const d=derive(s); return `<div class="shiprow"><span>${esc(s.name)}</span><span class="dim num">${s.hp}/${d.maxHp}</span>
     <span class="dim" style="grid-column:1/-1;font-size:13px">${clsName(HULLS[s.tpl].cls)} Mk ${roman(s.mk)}, ${rankName(s.cap)} ${esc(s.cap.name)}${s.cap.pending?' <span class="gilt">(promotion ready)</span>':''}</span>${hpBar(s.hp,d.maxHp)}</div>`; }).join('');
   const relics=RUN.relics.length?RUN.relics.map(r=>`<div style="margin-bottom:6px"><b>${esc(relicName(r))}</b><div class="muted" style="font-size:14px">${esc(RELICS[r].d)}</div></div>`).join(''):'<p class="dim">None yet. Elite fleets and flagships carry them.</p>';
@@ -79,7 +79,7 @@ function nemPanel(){ const N=nemActive(); if(!N||!N.persona) return ''; const F=
     <p class="muted" style="font-size:13px;margin:4px 0 0">${esc(nemSay(NF.beh.d,N))}</p>${nemWarnLine(N)}
     ${NF.beh.feeds?`<p style="font-size:13px;margin:2px 0 0">Fed on your losses: <span class="blood">${N.fed||0} of 8</span>${N.fed?` (+${Math.round(Math.min(.32,.04*N.fed)*100)}% hull)`:''}</p>`:''}${(N.loot||N.held)?`<p style="font-size:13px;margin:2px 0 0">${nemPr(N).He} holds <span class="gilt">${[N.loot?N.loot+' of your credits':'',N.held?'the '+esc(N.held.name):''].filter(Boolean).join(' and ')}</span>: it all comes back when ${nemPr(N).he} dies.</p>`:''}
     <p class="num" style="margin:4px 0 0;font-size:14px">Hunting you: <span class="blood">${dots}</span>${RUN.nemStrike?' <b class="blood">'+esc(nemStrikeLine(N))+'</b>':met?' <span class="dim">(met this sector)</span>':''}</p>
-    <p class="muted" style="font-size:13px;margin:4px 0 0">${esc(nemSay('Every fight you win moves the clock on; when it fills, your next fight is against him. You meet him once each sector at the latest before the rest stop.',N))}</p>
+    <p class="muted" style="font-size:13px;margin:4px 0 0">${esc(nemMeetingLine(N))}</p>
     <div style="font-size:13.5px;margin-top:4px">Weaknesses: ${N.weak.map(w=>N.revealed.includes(w)?`<span class="gilt" title="${esc(NEM_WEAK[w].d)}">${esc(NEM_WEAK[w].n)}</span>`:'<span class="dim">unknown</span>').join(', ')}</div>
     ${N.adapt.length?`<div style="font-size:13.5px;margin-top:2px">Adapted: ${N.adapt.map(a=>`<span class="blood" title="${esc(nemAdaptDesc(a,N.fac))}">${esc(nemAdaptName(a,N.fac))}</span>`).join(', ')}</div>`:''}
     ${N.last_beat?`<div class="muted" style="font-size:13px;margin-top:2px">${nemPr(N).He} remembers losing to your ${esc(NEM_BEAT_WORD[N.last_beat]||N.last_beat)}.</div>`:''}
@@ -328,6 +328,13 @@ function nemStrike(){ const N=nemActive(), s=nemBeh().strike;
   return ''; }
 // is this battle node his? (strike pending, or the last fight before the rest stop when he has not been met this sector)
 function nemNodeIs(n){ const N=nemActive(); if(!N||N.dead||N.met>=RUN.sector||!n||(n.type!=='battle'&&n.type!=='elite')) return false; return !!RUN.nemStrike||n.col>=(RUN.map.cols.length-3); }
+// Job 7 step 7 (R85 Q5): the map tag and the one sentence that name the meeting as a certainty, not a chance. The meeting
+// is mandatory once a sector and belongs to the sector's assigned hunter; the run's one clock only brings it sooner.
+function nemNodeTag(n){ return nemNodeIs(n)?'Nemesis meeting':''; }
+function nemMeetingLine(N0){ const N=N0||nemActive(); if(!N) return '';
+  if(N.dead) return `${nemFull(N)} is dead. No hunter will meet you this sector.`;
+  if(N.met>=RUN.sector) return nemSay(`You have met ${nemFull(N)} this sector. That meeting is done; the next sector brings the next hunter.`,N);
+  return nemSay(`You will meet ${nemFull(N)} this sector. One meeting every sector is certain, and it comes at the latest before the rest stop. The clock is only an accelerant: every fight you win moves it at his pace, and a full clock brings the meeting sooner, never later.`,N); }
 function nemBattleCfg(){ const N=ensureNemesis(); return {gloat:N.gloat||null,honed:N.honed||0,beaten:N.beaten||0,name:nemFull().replace(N.title+' ',''),title:N.title,fac:N.fac,persona:N.persona,traits:N.traits.slice(),weak:N.weak.slice(),revealed:N.revealed.slice(),adapt:N.adapt.slice(),scars:N.scars,fed:N.fed,riches:N.riches,last_beat:N.last_beat,g:N.g,met:N.beaten+N.scars>0,line:nemOpenLine(N)}; }
 // adaptation: once per sector (Chorus also after every meeting), read from how you fought (RUN.nem.seen); his faction names it, and when nothing
 // stood out he takes his faction's own special adaptation
@@ -358,7 +365,9 @@ function nemAdaptLine(N,a){ const V=N&&NEM_VOICE[N.fac], sp=NEM_ADAPT_FAC[N.fac]
 // R85 Q3, G2: a lost meeting records the lesson it taught on the commander met (N.lessons: {w, t, sector}), with the NEM_VOICE lesson
 // text for the weakness taught; when the file is already complete it teaches his faction's strike instead, once. No table: the weakness's own words.
 function nemLessonText(N,w){ const V=N&&NEM_VOICE[N.fac]; if(V&&V.lessons&&V.lessons[w]) return nemSay(V.lessons[w],N); return w!=='strike'&&NEM_WEAK[w]?`${NEM_WEAK[w].n}: ${NEM_WEAK[w].d}`:''; }
-function nemLessonAdd(N,w){ N.lessons=Array.isArray(N.lessons)?N.lessons:[]; if(N.lessons.some(l=>l.w===w)) return ''; const t=nemLessonText(N,w); if(!t) return ''; N.lessons.push({w,t,sector:RUN.sector}); return t; }
+// Job 7 step 7 (R85 Q3/Q5): a lesson is recorded on the commander who fought the meeting, with how it was learned so
+// the run debrief can say a lost meeting taught it. Lessons only ever come from a meeting that went against the player.
+function nemLessonAdd(N,w,taught){ N.lessons=Array.isArray(N.lessons)?N.lessons:[]; if(N.lessons.some(l=>l.w===w)) return ''; const t=nemLessonText(N,w); if(!t) return ''; N.lessons.push({w,t,sector:RUN.sector,taught:!!taught}); return t; }
 // each survival adds a scar (a portrait overlay keyed by how he was hurt) and a new epithet
 function nemScar(cause){ const N=nemActive(), F=NEM_FAC[N.fac]; N.scars++; N.scarKinds=N.scarKinds||[]; N.epithets=N.epithets||[]; N.scarKinds.push(cause||'blast'); const tag=cause==='fled'?'fled':['melt','flay','tidal'].includes(cause)?'burn':'wound', byC=((F.scarBy||{})[tag]||[]).filter(x=>!N.epithets.includes(x)), left=byC.length?byC:F.scars.filter(x=>!N.epithets.includes(x)); if(left.length){ N.epithet=pick(left); N.epithets.push(N.epithet); } } // scarKinds: how each scar was made (fled, big, cut, flay, melt, dark, blast, tidal), for the portrait overlays
 // after his battle: returns plain lines for the reward summary. fled = he withdrew (Corsair, Ithar); flagDead = his flagship was destroyed
@@ -377,8 +386,8 @@ function nemAfterBattle(result,flagDead,o){ const N=nemActive(); if(!N) return [
     // R1 (FR-2, Ryan's Q5 ruling, Codex PR #1): a lost meeting still teaches: what the fight itself uncovered, else one new weakness, never more
     const found=Array.isArray(o.found)?o.found.filter(k=>N.weak.includes(k)):[]; nemFoundMerge(found);
     const learned=[...new Set(found)]; const w=learned[0]||nemReveal();
-    if(w){ const ws=learned.length?learned:[w]; out.push(`Your analysts piece together the engagement. ${ws.length>1?'Weaknesses':'Weakness'} found: ${ws.map(k=>NEM_WEAK[k].n).join(', ')}.`); for(const k of ws){ const t=nemLessonAdd(N,k); if(t) out.push(`Lesson: ${t}`); } }
-    else { out.push(`The engagement confirms what your analysts already held: the file on ${N.name} is complete.`); const t=nemLessonAdd(N,'strike'); if(t) out.push(`Lesson: ${t}`); } }
+    if(w){ const ws=learned.length?learned:[w]; out.push(`Your analysts piece together the engagement. ${ws.length>1?'Weaknesses':'Weakness'} found: ${ws.map(k=>NEM_WEAK[k].n).join(', ')}.`); for(const k of ws){ const t=nemLessonAdd(N,k,true); if(t) out.push(`Lesson: ${t}`); } }
+    else { out.push(`The engagement confirms what your analysts already held: the file on ${N.name} is complete.`); const t=nemLessonAdd(N,'strike',true); if(t) out.push(`Lesson: ${t}`); } }
   if(result==='win'){ const fw=nemFoundMerge(o.found); if(fw.length) out.push(`Weakness confirmed: ${fw.map(k=>NEM_WEAK[k].n).join(', ')}.`); }
   if(beh.adaptFast){ const a=nemAdapt(false,N); if(a){ nemSignature('fast_adapt',N); out.push(`${P.He} learns from it at once: ${nemAdaptName(a,N.fac)} (${say(nemAdaptWhy(a,N.fac))}).`); const l=nemAdaptLine(N,a); if(l) out.push(l); } }
   return out; }
@@ -410,6 +419,18 @@ function nemPanelData(){ const N=nemActive(); if(!N||!N.persona) return null; co
   for(let i=0;i<Math.min(cur-1,a.length);i++){ const f=a[i], E=f&&reg[f]; if(!E||!E.persona||seen[f]) continue; seen[f]=1; const F=FACTIONS[f];
     earlier.push({fac:f,name:nemFull(E),faction:F?F.n:'',sectors:sps(f),line:`Sector ${secs(sps(f))}: ${nemStatus(E)}.`,lessons:(E.lessons||[]).map(l=>l.t)}); }
   return {fac:N.fac,name:nemFull(N),scars:N.scars||0,back:back.length?nemSay(`He is back: you met him in sector ${secs(back)}.`,N):'',lessons:(N.lessons||[]).map(l=>l.t),compound:nemCompound(N),escapes:RUN.nemEscapes||0,earlier}; }
+// Job 7 step 7 (R85 Q3): the run debrief's Nemesis lesson row, keyed per commander. It reads the lesson log the lost meeting
+// wrote on the commander who fought it; a missing taught flag is an old save from before this step and reads as taught,
+// because every lesson the game records comes from a meeting that went against the player.
+function nemDebrief(run0){ const run=run0||RUN, reg=(run&&run.nems)||{}, rows=[], lessons=[]; let met=0;
+  for(const fac of Object.keys(reg)){ const N=reg[fac]; if(!N||!N.persona) continue;
+    if((N.met||0)>0||(N.beaten||0)>0||(N.scars||0)>0||N.dead) met++;
+    const ls=Array.isArray(N.lessons)?N.lessons:[];
+    if(!ls.length) continue;
+    const name=nemFull(N), title=N.title, row={fac,name,title,lessons:[]};
+    for(const l of ls){ const e={w:l.w,text:l.t||'',sector:l.sector,taught:l.taught!==false}; row.lessons.push(e); lessons.push({fac,name,title,w:e.w,text:e.text,sector:e.sector,taught:e.taught}); }
+    rows.push(row); }
+  return {met,lessons,rows}; }
 // R41: finishing a faction's story arc (its Nemesis's last fight, beat 3) unlocks that faction's arc hull variant for every later run
 function arcComplete(fac){ const id=ARC_VARIANT[fac]; if(!id) return ''; META.variants=META.variants||{}; if(META.variants[id]) return ''; META.variants[id]=true; try{ tel('arc_unlock',{fac,id}); Persist.save({meta:true}); }catch(e){} return `Story complete: the ${HULL_VARIANTS[id].n} is now sold in your shipyards.`; }
 // the way you beat him last time, from that battle's usage (what he remembers and says)

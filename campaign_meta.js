@@ -255,7 +255,18 @@ function inheritanceSummary(run){
     shadow:cy.shadow.map(row=>({...line(row.id),...row,total:masteryXP(row.id)})),
     cores:Object.entries(run.coreSync||{}).filter(([p,before])=>PATRONS[p]&&favourOf(p)>before).map(([id,before])=>{
       const total=favourOf(id), tier=favourTier(id), next=FAVOUR_TIERS[tier+1];
-      return {id,before,gain:total-before,total,tier,next:next?next.at:null,remaining:next?next.at-total:0,tierUp:total>=FAVOUR_TIERS[tier].at&&before<FAVOUR_TIERS[tier].at}; })};
+      return {id,before,gain:total-before,total,tier,next:next?next.at:null,remaining:next?next.at-total:0,tierUp:total>=FAVOUR_TIERS[tier].at&&before<FAVOUR_TIERS[tier].at}; }),
+    nem:typeof nemDebrief==='function'?nemDebrief(run):{met:0,lessons:[],rows:[]}};
+}
+// Job 7 step 7 (R85 Q5): the run debrief's Nemesis lesson row, one line per lesson the lost meeting recorded on the
+// commander who fought it. Rows never vanish: an empty row keeps the frame and says which empty state it is.
+function nemLessonHtml(nz){
+  nz=nz||{met:0,lessons:[]}; const ls=Array.isArray(nz.lessons)?nz.lessons:[];
+  const body=ls.length?ls.map(l=>{ const NW=typeof NEM_WEAK!=='undefined'?NEM_WEAK[l.w]:null;
+    return NW?`<p>Nemesis lesson: <b class="blood">${esc(l.name)}</b> beat you and taught you a weakness: <b class="gilt">${esc(NW.n)}</b>.</p><p class="muted">${esc(l.text||'')}</p>`
+      :`<p>Nemesis lesson: <b class="blood">${esc(l.name)}</b> beat you. <span class="muted">${esc(l.text||'')}</span></p>`; }).join('')
+    :`<p class="dim">${nz.met?'No weakness was taught this run.':'No Nemesis meeting this run.'}</p>`;
+  return `<h3>Nemesis lesson</h3>${body}`;
 }
 function inheritanceHtml(run){
   const cy=run.carry, receipt=cy.inheritance, f=receipt.flown, fmt=n=>Math.round(n*100)/100;
@@ -270,6 +281,7 @@ function inheritanceHtml(run){
     <h3>Shadow learning</h3>${receipt.shadow.map(row=>`<p>${esc(ADMIRALS[row.id].n)}: +${fmt(row.xp)} shadow XP${row.rate===.5?' (heir rate)':''}. <span class="dim">Total ${fmt(row.total)} XP, level ${row.level}${row.next==null?', at current cap':`, ${fmt(row.remaining)} XP to level ${row.level+1}`}.</span></p>`).join('')}
     ${cy.mxOverflow?`<p class="dim">${fmt(cy.mxOverflow)} XP past the flown line's cap went to shadow learning.</p>`:''}${cy.shadowBank?`<p class="dim">${fmt(cy.shadowBank)} shadow XP saved for an uncapped benched line.</p>`:''}
     ${receipt.cores.length?`<h3>Core sync</h3>${receipt.cores.map(row=>`<p><b style="color:${PATRONS[row.id].col}">${esc(PATRONS[row.id].n)}</b>: +${row.gain} sync. <b>${esc(FAVOUR_TIERS[row.tier].n)}</b>${row.tierUp?' <span class="gilt">(Tier up this run)</span>':''}.<br><span class="dim">${row.next==null?`${row.total} sync. Full sync reached.`:`${row.total} / ${row.next} sync. ${row.remaining} to ${esc(FAVOUR_TIERS[row.tier+1].n)}.`}</span></p>`).join('')}`:''}
+    ${nemLessonHtml(receipt.nem)}
     <div class="row"><button data-act="progTab" data-arg="legacy">Choose doctrine</button><button data-act="progTab" data-arg="variants">Choose hull rewards</button><button data-act="${f.tree?'lineage':'progTab'}" data-arg="${f.tree?f.id:'mastery'}">View admiral line</button></div>
     <div id="heirChoice">${heirChoiceHtml(run.fac,run.admiral)}</div></section>`;
 }
