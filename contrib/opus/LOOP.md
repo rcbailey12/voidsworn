@@ -122,6 +122,7 @@ Result (Opus, Nov 7 night): PASS on three of four. (1) Godot ran on the 5080 thr
 ## Known traps
 
 - CRLF clone trap on the PC (found by the #121 thread, Nov 8): a plain git clone there checks files out with CRLF (core.autocrlf), and then the campaign table export cannot read FNAMES from oracle\ui3d.js, so campaign parity and b1_tests fail for no reason. Always clone with git -c core.autocrlf=false clone.
+- GitHub closing words in any commit that lands on main (fix, fixes, close, closes, resolve, resolves followed by #N) close that issue or PR, even inside a LOOP or FINDINGS message: the board's own commit 1429ca3 ('runner model id fix #320') closed PR #320 on Nov 9. Write 'PR #N' or 'see #N' instead.
 - Standing issue #256 (Muse outside check) gets closed by any PR that says 'Closes #256'; reopen it and ask for 'Refs #256'.
 
 - Starting a PC job without clicks (Nov 8): drop a .bat into Downloads\voidsworn_test\queue\ with device_commit_files; watcher_q.bat runs it from build\ within seconds and logs to queue\logs\. For a long run the queue job should only `start` the real .bat in its own window, so the queue stays free (q_flash246.bat is the example). Computer control on Explorer misfired again Nov 8 (dark masked screen), so prefer the queue.
