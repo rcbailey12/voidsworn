@@ -36,8 +36,8 @@ The board moved to a new thread on Fable 5.2 (R152). The Opus board thread stood
 
 ## Current state (2026-11-09 21:20 UTC)
 
-- Board thread (Fable 5.2) took over at 21:06 UTC. It has NO PC folder yet: Downloads\voidsworn_test is not attached and the thread cannot attach it itself (see Known traps). Until Ryan adds it, the board reviews and merges but cannot queue PC runs, read run logs or swap the PC runner copy.
-- Gun smoke #281 (PR #327): run 6 reviewed, HELD (R153). 1.5x size is in; the stray puffs are still in its clips and are the hit reaction's braking thruster puffs (fx_ship.gd _rcs, bounding box corners), not weapon gas. Run 7 brief is on #281 (V4 Pro, branch work/issue-281-deepseekpro). NOT STARTED: needs the PC folder. Start it when the folder is attached and the GPU is not in a heavy #209 bake.
+- Board thread (Fable 5.2) took over at 21:06 UTC. Ryan attached Downloads\voidsworn_test at 21:28 UTC (C:\Users\rcbai\Downloads\voidsworn_test), so the board can queue PC runs and read run folders.
+- Gun smoke #281 (PR #327): HELD (R153). Run 7 (V4 Pro) RUNNING since 21:30 UTC (WORKHORSE_PRO_281h.bat through the queue; run folder work217\issue-281-deepseekpro\20261109_153014, cap 120 minutes). Run 6 made no new captures (no godot/gen hulls in its checkout; the clips on the branch are run 5's) and guessed the afterglow; the board traced the stray puffs to the braking thruster puffs (fx_ship.gd _rcs, bounding box corners). Run 7 copies godot\gen and godot\assets\ships from run 5's checkout first, proves the cause, fixes it, recaptures. When it lands: look at after_close frames 28 to 38 before anything else.
 - Tree effects #305: job 5 Hullbreakers FULL tree (#329) on DeepSeek since 20:40 UTC, cap 120 minutes, no branch yet at 21:10 UTC. Next one at a time: job 6 Hegemony full tree; job 7 the x rows of Glasswrights, Crusade, Eclipse, Chorus plus their final texts into data.js; job 8 mastery level effects; then the balance pass. Ryan still owes his one-sitting read of text_pass_nov9.md (phone page, artifact 250c3767).
 - Ships #209 round 6: Opus PC thread trig_01UHN6sJNKxooyXptyaG5NH7 since 20:58 UTC, branch opus/issue-209-r6, no branch yet at 21:10 UTC (R151: recipe, Hullbreaker kit weapons, concept paint).
 - Outside audit (R154, Ryan Nov 9 15:25 CST): three passes by fresh Fable 5.2 sessions; the Board launches, reviews with verdicts and merges. Plan: pass 1 (code health) pinned to main right after #329 merges; pass 2 (graphics and effects) on the PC after ship round 6 and gun smoke run 7 land; pass 3 (issues) after both are merged. Give the auditors symptoms only, never causes.
@@ -115,7 +115,7 @@ Coding seat queue (released one at a time to the workhorse once #217 picks a win
 - UI redesign (R137): pick one of Muse's three warship-console directions when #270 lands; then #271's battle screen review round.
 
 - #48 Glasswright design (contrib/muse/design/glasswright_species_2026_11/design.md): his read of the design text; Brin's pronoun (one word); close faction package question 2 on the design's youth-to-old gradient (yes or no).
-- Nov 9 21:30 UTC: the old thread's 21:40 UTC check-in is paused (Ryan, screenshot). Downloads\voidsworn_test still does not show as attached to the Board thread (get_device_info connectedFolders is empty at 21:26 UTC); asked again.
+- Nov 9 21:30 UTC: the old thread's 21:40 UTC check-in is paused and the PC folder is attached (both done by Ryan).
 - Outside audit (R154): Ryan to OK the launch plan; pass 2 needs a GPU window on the PC.
 - #221: OK to start a PC thread for the per-ship CPU trim (not urgent; the scene sits at 6.0 ms of the 12.5 ms gate).
 - S15 sound listen pass: one sitting, best once the #211 probe clips exist.
@@ -138,6 +138,8 @@ Result (Opus, Nov 7 night): PASS on three of four. (1) Godot ran on the 5080 thr
 
 ## Known traps
 
+- A fresh workhorse checkout has no godot\gen hulls and no godot\assets\ships (both PC-built and ignored by git), so capture probes draw placeholder blocks (run 6 of #281 pushed with no new captures for this reason). Any capture job's brief must name a checkout to copy them from (for example work217\issue-281-deepseekpro\20261109_113656\repo\godot) and must say: if the probe shows blocks, stop and report.
+- A workhorse PR body and the docs README are not rewritten by later runs: read the newest run's own report in work217\issue-N-arm\<stamp>\out\last.md before judging what a run did.
 - A new Board thread starts with no PC folder (Nov 9, R152 handover): device_request_folder_access is refused in auto mode, and so is switching off another session's scheduled task. Ryan adds Downloads\voidsworn_test with the Add folder button in the desktop app. Ask for it in the first message of a handover.
 - Braking thruster puffs (fx_ship.gd _rcs) sit at bounding box corners, so on thin or towered hulls they float in empty space (R153). Any capture of a hit shows them about a quarter second after impact. Do not mistake them for weapon gas.
 - CRLF clone trap on the PC (found by the #121 thread, Nov 8): a plain git clone there checks files out with CRLF (core.autocrlf), and then the campaign table export cannot read FNAMES from oracle\ui3d.js, so campaign parity and b1_tests fail for no reason. Always clone with git -c core.autocrlf=false clone.
