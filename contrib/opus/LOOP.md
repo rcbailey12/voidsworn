@@ -30,13 +30,13 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 7. Rewrite this file, set "Running: no", commit straight to main (this file and FINDINGS only, docs-only exception), push with timeout 90. Stop.
 8. One send_later check only when a job or a limit reset lands well before the next look. Never chain them.
 
-## Current state (2026-11-09 18:40 UTC)
+## Current state (2026-11-09 19:25 UTC)
 
-- Tree effects (#305): Glasswrights (PR #313), Crusade (PR #317), Eclipse (PR #322, 29 skills) MERGED. Chorus run 1 (PR #323) clashed with Eclipse in about 50 places; run 2 on DeepSeek since 18:37 UTC redoes it on top of main (same branch, PR #323 updates). From here jobs go ONE AT A TIME (each touches the same hook points): Chorus, then Hullbreakers (Grax boarding text from #311), then Hegemony (Vorn rename from #311), then the x rows per faction as Muse delivers them.
-- Muse is back (after Ryan's bump): text pass #311 is draft PR #324, growing faction by faction (Glasswrights done: 15 rewrites plus 5 wording fixes); merge it when all six factions and the 144 mastery texts are in. Outside checks merged (PR #321, body changed to Refs #256): #286 is GO WITH CONDITIONS (DeepSeek's fail-open test holes, contrib/muse/reviews/opus_check_286.md), #283 GO, #280 GO WITH CONDITIONS. The auto_pr workflow appends "Closes #N" to every agent PR body: edit it to Refs before merging a #256 PR.
-- UI #271: Ryan picked Lime Tactical (R149). Cloud thread trig_01VMkukRN4YrQP8PaneFrNhN (18:05 UTC) puts it into the Godot theme on PR #314; then PC captures (out_lime; the PC bat now also copies godot/gen for real hulls), Rey's check, merge. The R148 fix-pass capture rerun (out_r148) ran at 17:55 UTC and is superseded.
-- Gun smoke #281: run 5 (V4 Pro, baked flipbooks) since 17:37 UTC. PR #320 MERGED; copy tools/pc/work_issue.bat to work217\tools when no workhorse run is active.
-- Ships #209: round 5 PC thread since 15:52 UTC; hull traced from B0 reached 90.4 percent (pushed 17:34 UTC to opus/issue-209-r5); parts, tower and sheets in progress.
+- Ships #209: round 5 in draft PR #325 (Ab5: hull traced from B0, 90.3 percent outline, the first hand build to beat B0's 88; tower and aft mast in; hand casemates clean where the generated ones crinkled; 20 ships use 12 percent of the 4K GPU room). Sent Ryan paint.jpg and the casemate close-up 19:20 UTC. Board pick: Ab5 forward; next is the game export plus the scene gate as its own job, then bigger bow guns and richer weathering to match the concept.
+- Gun smoke #281: run 5 (V4 Pro, PR #327) baked Mantaflow muzzle and impact flipbooks (tools/blender/vfx/bake_weapons.py); no line sparks; 20 ships 2.25 ms GPU; flash test PASS. Effects are clean but small at battle distance. Sent Ryan the sheet and the after clip 19:22 UTC. Waiting on his call; PR #309 (Flash runs 3 and 4) closes when #327 merges.
+- UI #271: Lime Tactical built on PR #314 (thread done 18:59 UTC). PC captures queued 19:16 UTC into opus271b\out_lime (real hulls via godot\gen). Then Ryan's look, Rey's check, merge.
+- Tree effects #305: Glasswrights, Crusade, Eclipse merged; Chorus run 2 since 18:37 UTC (one at a time from here). Muse text pass draft PR #324 growing.
+- Muse outside checks merged (PR #321). New Muse PR #326 (muse/issue-256) to read.
 
 ## Earlier state (2026-11-09 06:50 UTC)
 
