@@ -2,7 +2,7 @@
 
 Every change this pass makes to the finalized faction files, old text and new text, with the effect key or hook each rewrite rides on. Ruled by FINDINGS R145: every pick changes a battle, rewrites use the plan's existing effect keys (tree_effects_plan.md section 1) or listed hooks (section 3), no new mechanics. Chaired by Rey from five legs: blind Rey, DeepSeek and Qwen (writers), Flash and Grok (ideation).
 
-This file grows faction by faction. The Glasswrights pilot is first because board job #312 waits on its 12 Glasswright rewrites.
+This file grows faction by faction. The Glasswrights pilot is first because board job #312 waits on its Glasswright rewrites.
 
 ## Glasswrights (pilot, delivered first)
 
