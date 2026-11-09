@@ -1,0 +1,14 @@
+{
+ "ship": "",
+ "name": "",
+ "faction": "",
+ "concept": "",
+ "shape_ref_yaw": 22.0,
+ "concept_camera": "",
+ "hull": "",
+ "cell": "",
+ "outline_gate": 0.9,
+ "notes": "Fill parts with sockets for the faction kit (see tools/blender/kits/README.md). hull: the hull module (a copy of tools/blender/r209/armA5.py with this concept's block table); concept_camera: written by stage 3.",
+ "parts": [],
+ "tune": ""
+}

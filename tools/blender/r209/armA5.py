@@ -414,7 +414,7 @@ def build_geometry(hero=(), G=None):
             bpy.context.view_layer.objects.active = o; o.select_set(True); bpy.ops.object.modifier_apply(modifier=m.name); o.select_set(False)
     return S, Pl, list(hs_lib.PARTS), [], notes, []
 
-def load_tuned(path=os.path.join(HERE, 'tune5_P.json')):
+def load_tuned(path=os.environ.get('R209_TUNE_JSON') or os.path.join(HERE, 'tune5_P.json')):   # round 6: the recipe passes a ship's own tune file
     """the tuned numbers (tune5.py writes them; kept beside the script so every build reads the same shape)"""
     if not os.path.exists(path): return False
     d = json.load(open(path)); global HK

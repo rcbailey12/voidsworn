@@ -10,6 +10,9 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 a = sys.argv[sys.argv.index('--') + 1:]
 OUT, CELL = a[0], a[1]; PREVIEW = '--preview' in a
 ONLY = next((x.split('=', 1)[1].split(',') for x in a if x.startswith('--views=')), None)
+# round 6: --light=concept is a second rig for the paint compare only: one high key and a weak fill, like the concept painting's own
+# light (top-lit decks, dark sides); files get a _cl suffix. The studio rig stays the default for every other sheet.
+LIGHT = next((x.split('=', 1)[1] for x in a if x.startswith('--light=')), 'studio')
 os.makedirs(OUT, exist_ok=True)
 sc = bpy.context.scene
 
@@ -24,10 +27,12 @@ def setup():
                 cy.device = 'GPU'; break
             except Exception: pass
     cy.samples = 24 if PREVIEW else 96; cy.use_denoising = True
-    sc.view_settings.view_transform = 'AgX'; sc.view_settings.look = 'None'; sc.view_settings.exposure = 1.6
+    sc.view_settings.view_transform = 'AgX'; sc.view_settings.look = 'None'; sc.view_settings.exposure = 1.6 if LIGHT == 'studio' else .75
     w = bpy.data.worlds.new('w'); sc.world = w; w.use_nodes = True; bg = w.node_tree.nodes['Background']
     bg.inputs['Color'].default_value = (.035, .037, .042, 1); bg.inputs['Strength'].default_value = 1.0
-    for nm, rot, e, ang in (('key', (50, 0, 140), 4.0, 2), ('fill', (115, 0, -40), 1.0, 8), ('rim', (60, 0, -95), 2.2, 3)):
+    rig = (('key', (50, 0, 140), 4.0, 2), ('fill', (115, 0, -40), 1.0, 8), ('rim', (60, 0, -95), 2.2, 3)) if LIGHT == 'studio' else \
+          (('key', (28, 0, 165), 4.2, 3), ('fill', (100, 0, 60), .7, 10), ('rim', (65, 0, -95), 1.0, 3))
+    for nm, rot, e, ang in rig:
         L = bpy.data.lights.new(nm, 'SUN'); L.energy = e; L.angle = math.radians(ang); o = bpy.data.objects.new(nm, L); sc.collection.objects.link(o)
         o.rotation_euler = [math.radians(v) for v in rot]
     sc.render.film_transparent = False
@@ -42,7 +47,8 @@ def cam(name, loc, look, ortho=None, lens=50, res=(1600, 900)):
     return o
 
 def shot(name):
-    sc.render.filepath = os.path.join(OUT, f'{CELL}_{name}.png'); bpy.ops.render.render(write_still=True); print('[209] shot', name, flush=True)
+    sfx = '' if LIGHT == 'studio' else '_cl'
+    sc.render.filepath = os.path.join(OUT, f'{CELL}_{name}{sfx}.png'); bpy.ops.render.render(write_still=True); print('[209] shot', name, flush=True)
 
 def clay(on):
     vl = bpy.context.view_layer; vl.material_override = bpy.data.materials.get('clay') if on else None

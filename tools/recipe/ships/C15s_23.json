@@ -1,0 +1,287 @@
+{
+ "ship": "C15s_23",
+ "name": "Hullbreaker cruiser (Ashfall Hullbreakers)",
+ "faction": "hullbreakers",
+ "concept": "docs/ship_pipeline/concepts/C15s_23.webp",
+ "shape_ref": "Downloads/voidsworn_test/bakeoff/C15s_23_trellis.glb",
+ "shape_ref_yaw": 22.0,
+ "concept_camera": "docs/shots/ship_pipeline/route209/round4/concept_camera.json",
+ "hull": "armA6",
+ "tune": "tools/blender/r209/tune5_P.json",
+ "cell": "Ab6",
+ "outline_gate": 0.9,
+ "notes": "Weapon positions and sizes measured off the concept through its fitted camera (round 6 README, section 1). pos: ship frame, x to the bow, y to port, z up, length 1. seat: 'flank' finds y on the hull at (x, z); 'top' finds z on the deck at (x, y). pair: true adds the starboard mirror; variant_s gives the mirror its own salvage detail.",
+ "parts": [
+  {
+   "name": "casF",
+   "part": "casemate",
+   "seat": "flank",
+   "pos": [
+    0.338,
+    0,
+    -0.058
+   ],
+   "aim": [
+    0.25,
+    0.95,
+    -0.15
+   ],
+   "size": 0.098,
+   "pair": true,
+   "variant": 0,
+   "variant_s": 1,
+   "extra": {
+    "h": 0.92,
+    "barrel": 0.4
+   }
+  },
+  {
+   "name": "casA",
+   "part": "casemate",
+   "seat": "flank",
+   "pos": [
+    0.232,
+    0,
+    -0.058
+   ],
+   "aim": [
+    0.25,
+    0.95,
+    -0.15
+   ],
+   "size": 0.096,
+   "pair": true,
+   "variant": 1,
+   "variant_s": 2,
+   "extra": {
+    "h": 0.96,
+    "barrel": 0.55
+   }
+  },
+  {
+   "name": "bow",
+   "part": "bow_battery",
+   "seat": "top",
+   "pos": [
+    0.29,
+    0,
+    0.0
+   ],
+   "aim": [
+    1,
+    0,
+    0
+   ],
+   "size": 0.0085,
+   "extra": {
+    "gap": 0.026,
+    "barrel": 0.08,
+    "above": 0.0072,
+    "hood": 1.45
+   }
+  },
+  {
+   "name": "rackF",
+   "part": "drum_rack",
+   "seat": "top",
+   "pos": [
+    0.238,
+    0,
+    0.0
+   ],
+   "size": 0.1,
+   "variant": 0,
+   "extra": {
+    "n": 2,
+    "pitch": 0.046,
+    "r": 0.017,
+    "L": 0.09,
+    "zc": 0.066
+   }
+  },
+  {
+   "name": "rackM",
+   "part": "drum_rack",
+   "seat": "top",
+   "pos": [
+    0.104,
+    0.137,
+    0.0
+   ],
+   "size": 0.1,
+   "pair": true,
+   "variant": 0,
+   "variant_s": 1,
+   "extra": {
+    "n": 3,
+    "pitch": 0.045,
+    "stagger": 0.012,
+    "r": 0.019,
+    "L": 0.098,
+    "zc": 0.05
+   }
+  },
+  {
+   "name": "rackA",
+   "part": "drum_rack",
+   "seat": "top",
+   "pos": [
+    -0.214,
+    0,
+    0.0
+   ],
+   "size": 0.1,
+   "variant": 2,
+   "extra": {
+    "n": 2,
+    "pitch": 0.04,
+    "r": 0.017,
+    "L": 0.084,
+    "zc": 0.042
+   }
+  },
+  {
+   "name": "rackW",
+   "part": "drum_rack",
+   "seat": "top",
+   "pos": [
+    -0.052,
+    0.134,
+    0.0
+   ],
+   "size": 0.1,
+   "pair": true,
+   "variant": 1,
+   "variant_s": 2,
+   "extra": {
+    "n": 1,
+    "r": 0.017,
+    "L": 0.078,
+    "lift": 0.002
+   }
+  },
+  {
+   "name": "turA",
+   "part": "turret",
+   "seat": "top",
+   "pos": [
+    -0.332,
+    0.0,
+    0.0
+   ],
+   "aim": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "size": 0.014,
+   "pair": false,
+   "variant": 0,
+   "extra": {
+    "elev": 14
+   }
+  },
+  {
+   "name": "turS",
+   "part": "turret",
+   "seat": "top",
+   "pos": [
+    -0.448,
+    0.0,
+    0.0
+   ],
+   "aim": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "size": 0.012,
+   "pair": false,
+   "variant": 1,
+   "extra": {
+    "elev": 10
+   }
+  },
+  {
+   "name": "mkID",
+   "part": "marking",
+   "seat": "flank",
+   "pos": [
+    0.448,
+    0,
+    -0.072
+   ],
+   "pair": true,
+   "extra": {
+    "mark": "frame",
+    "w": 0.026,
+    "h": 0.018
+   }
+  },
+  {
+   "name": "mkTag",
+   "part": "marking",
+   "seat": "flank",
+   "pos": [
+    0.302,
+    0,
+    -0.04
+   ],
+   "pair": true,
+   "extra": {
+    "mark": "tag",
+    "w": 0.006,
+    "h": 0.026
+   }
+  },
+  {
+   "name": "mkTag2",
+   "part": "marking",
+   "seat": "flank",
+   "pos": [
+    0.17,
+    0,
+    -0.03
+   ],
+   "pair": true,
+   "extra": {
+    "mark": "frame",
+    "w": 0.018,
+    "h": 0.012,
+    "kind": "yellow",
+    "line": 0.0018
+   }
+  },
+  {
+   "name": "mkDisc",
+   "part": "marking",
+   "seat": "top",
+   "pos": [
+    0.44,
+    0.0,
+    0.0
+   ],
+   "extra": {
+    "mark": "disc",
+    "w": 0.022,
+    "above": 0.0
+   }
+  },
+  {
+   "name": "lamps",
+   "part": "marking",
+   "seat": "flank",
+   "pos": [
+    -0.262,
+    0,
+    0.024
+   ],
+   "pair": true,
+   "extra": {
+    "mark": "lamps",
+    "n": 7,
+    "step": 0.013
+   }
+  }
+ ]
+}
