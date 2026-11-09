@@ -30,13 +30,12 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 7. Rewrite this file, set "Running: no", commit straight to main (this file and FINDINGS only, docs-only exception), push with timeout 90. Stop.
 8. One send_later check only when a job or a limit reset lands well before the next look. Never chain them.
 
-## Current state (2026-11-09 19:25 UTC)
+## Current state (2026-11-09 19:40 UTC)
 
-- Ships #209: round 5 in draft PR #325 (Ab5: hull traced from B0, 90.3 percent outline, the first hand build to beat B0's 88; tower and aft mast in; hand casemates clean where the generated ones crinkled; 20 ships use 12 percent of the 4K GPU room). Sent Ryan paint.jpg and the casemate close-up 19:20 UTC. Board pick: Ab5 forward; next is the game export plus the scene gate as its own job, then bigger bow guns and richer weathering to match the concept.
-- Gun smoke #281: run 5 (V4 Pro, PR #327) baked Mantaflow muzzle and impact flipbooks (tools/blender/vfx/bake_weapons.py); no line sparks; 20 ships 2.25 ms GPU; flash test PASS. Effects are clean but small at battle distance. Sent Ryan the sheet and the after clip 19:22 UTC. Waiting on his call; PR #309 (Flash runs 3 and 4) closes when #327 merges.
-- UI #271: Lime Tactical built on PR #314 (thread done 18:59 UTC). PC captures queued 19:16 UTC into opus271b\out_lime (real hulls via godot\gen). Then Ryan's look, Rey's check, merge.
-- Tree effects #305: Glasswrights, Crusade, Eclipse merged; Chorus run 2 since 18:37 UTC (one at a time from here). Muse text pass draft PR #324 growing.
-- Muse outside checks merged (PR #321). New Muse PR #326 (muse/issue-256) to read.
+- UI #271: Lime Tactical captured on the PC (opus271b\out_lime, real hulls, ui_check 21 of 21 in A and B, parse 6 of 6). Sent Ryan the mockup vs build 19:38 UTC. Rey's check of PR #314 (merged as PR #326, contrib/muse/reviews/opus_check_314.md): GO WITH CONDITIONS. Last-pass cloud thread trig_01B7U1XEMDzMu4EwXGKfE1Hr (19:50 UTC) does the four conditions plus notes; board ruling: drop "Likely kill." (S1). Then captures into out_final, merge.
+- Ships #209 (R150): Ab5 goes forward (PR #325). Ryan wants the route turned into a recipe new concepts flow through smoothly. Board's scope questions to Ryan (order: recipe first, concepts first or both; parts kit shared or per faction; Ab5 into the game first or weapons and paint first) were interrupted unanswered; ask again when he is back. No ship job running.
+- Gun smoke #281 (R150): keep the baked flipbooks; run 6 on V4 Pro since 19:36 UTC finds and removes the stray puffs in empty space, adds a distance check, makes the effects about 1.5x bigger (PR #327 updates in place).
+- Tree effects #305: Glasswrights, Crusade, Eclipse merged; Chorus run 2 since 18:37 UTC; then Hullbreakers, Hegemony one at a time. Muse text pass draft PR #324 growing.
 
 ## Earlier state (2026-11-09 06:50 UTC)
 
