@@ -1254,7 +1254,7 @@ func _modal(md: Dictionary) -> void:
 			if md["kind"] == "intro": p.call(F.get("blurb", ""), BONE2)
 			if md["kind"] == "sector" and d.get("adapt") != null and d.get("adaptFac") != null:   # #121 (A4): the commander who fought the sector just ended
 				var na = d["adapt"]; var nf = d["adaptFac"]
-				v.add_child(rich(c("Intelligence: " + esc(str(d.get("adaptWho", ""))) + " has adapted to you: [b]" + esc(C.nemAdaptName(na, nf)) + "[/b] (" + esc(C.nemAdaptWhy(na, nf)) + "). " + esc(C.nemAdaptDesc(na, nf)), BLOOD), 17))
+				v.add_child(rich(c("Intelligence: " + esc(str(d.get("adaptWho", ""))) + " has adapted to you: [b]" + esc(C.nemAdaptName(na, nf)) + "[/b] (" + esc(str(d.get("adaptWhy", C.nemAdaptWhy(na, nf)))) + "). " + esc(C.nemAdaptDesc(na, nf)), BLOOD), 17))
 				if str(d.get("adaptLine", "")) != "": v.add_child(rich(c(esc(str(d["adaptLine"])), BLOOD), 15))
 			if d["cond"] != null: v.add_child(rich(c("Sector condition: [b]" + esc(d["cond"]["n"]) + "[/b].", GILT) + " " + c(esc(d["cond"]["d"]), BONE2), 17))
 			if md["kind"] == "sector": p.call(F.get("blurb", ""), BONE2)

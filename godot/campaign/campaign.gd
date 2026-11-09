@@ -2838,7 +2838,7 @@ func afterBattle() -> void:
 		saveRun(); mapScreen()
 		var acts = []; A(acts, "beat3" if float(RUN["sector"]) == 3 else "closeModal")
 		show_modal("sector", {"fac": RUN["map"]["fac"], "cond": sectorCond(), "region": RUN["map"].get("region"), "adapt": na if jt(prev) else null,
-			"adaptFac": prev.get("fac") if jt(prev) else null, "adaptWho": nemFull(prev) if jt(prev) else "", "adaptLine": nemAdaptLine(prev, na) if (jt(prev) and na != null) else ""}, acts)
+			"adaptFac": prev.get("fac") if jt(prev) else null, "adaptWho": nemFull(prev) if jt(prev) else "", "adaptLine": nemAdaptLine(prev, na) if (jt(prev) and na != null) else "", "adaptWhy": nemSay(nemAdaptWhy(na, prev.get("fac")), prev) if (jt(prev) and na != null) else ""}, acts)
 		return
 	mapScreen()
 
