@@ -1,0 +1,34 @@
+[
+  {
+    "clip": "after_battle.mp4",
+    "frames": 38,
+    "bytes": 97503,
+    "label": "after",
+    "range": "battle",
+    "look": ""
+  },
+  {
+    "clip": "after_close.mp4",
+    "frames": 38,
+    "bytes": 187559,
+    "label": "after",
+    "range": "close",
+    "look": ""
+  },
+  {
+    "clip": "before_battle.mp4",
+    "frames": 38,
+    "bytes": 94597,
+    "label": "before",
+    "range": "battle",
+    "look": "today"
+  },
+  {
+    "clip": "before_close.mp4",
+    "frames": 38,
+    "bytes": 185396,
+    "label": "before",
+    "range": "close",
+    "look": "today"
+  }
+]

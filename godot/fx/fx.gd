@@ -47,6 +47,9 @@ var cap_k := 1.0
 # Issue 232 weapon timing sheet (E31): the effect-loop pins. These are the shipped values; the sheet bench sets a second
 # set (one alternate) without touching the game's defaults.
 var timing := {"ripple": 0.08, "shell_speed": 160.0, "lance": 0.7, "charge": 0.25, "shield": 0.6}
+# Issue 281 vent gas: the shipped look is Cone B, a tight forward cone of gas and sparks along the barrel. "today" draws
+# the pre-Cone-B baked gas cell and is only set by the review capture to shoot the before stills; the game leaves it "".
+var vent_look := ""
 var well = Vector3.INF     # the dead star, when the board has one (world.gd sets it): tidal deaths fall toward it
 var dstate = {}
 var manual = false
@@ -163,6 +166,9 @@ func setup(opts := {}) -> void:
 	starboard_z = 1 if int(opts.get("starboard_z", 1)) >= 0 else -1
 	reduce_flashing = bool(opts.get("reduce_flashing", false))
 	min_px = float(opts.get("min_px", 1.0))
+	# Issue 281: the review capture can ask for the pre-Cone-B look to shoot the before stills; the game's default is the
+	# shipped Cone B (see fx_weapons._vent).
+	vent_look = String(opts.get("vent_look", OS.get_environment("VS_VENT_LOOK")))
 	var rich = quality != "low"
 	var soft = "#define SOFT\n" if rich else ""
 	var big = quality == "max"
