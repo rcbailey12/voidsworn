@@ -1,0 +1,198 @@
+@font-face { font-family: Barlow; src: url(BarlowSemiCondensed-Regular.ttf); font-weight: 400; }
+@font-face { font-family: Barlow; src: url(BarlowSemiCondensed-Medium.ttf); font-weight: 500; }
+@font-face { font-family: Barlow; src: url(BarlowSemiCondensed-SemiBold.ttf); font-weight: 600; }
+@font-face { font-family: Oxanium; src: url(Oxanium-Variable.ttf); font-weight: 200 800; }
+@font-face { font-family: Michroma; src: url(Michroma-Regular.ttf); }
+
+/* the locked palette (ui_spec.md 5.1): names and meanings never change */
+:root {
+  --ink: #0f1626; --iron: #182133; --iron2: #222d44; --iron3: #2d3a56;
+  --bone: #e6dcc4; --bone2: #b3aa95; --bone3: #7d7768;
+  --gilt: #d0a64b; --gilt2: #8c6d2c; --gilt-hover: #e2bb62; --on-gilt: #1c1405;
+  --verd: #5fb3a6; --blood: #e27f74; --alert: #ff6b5a; --ember: #f0b35a;
+  --shield: #62ccff; --hull: #ffae42; --hull-low: #ff5a3c; --track: #3a1d1d;
+  --friend: #8ff0a0; --foe: #c9a2ff; --foe-ring: #a64dff; --foe-bar: #b98cff;
+  --fac-own: #ff9a4a; --fac-foe: #d8664a;
+  /* material: restrained is the default */
+  --pane: rgba(10, 15, 26, 0.94);
+  --pane2: rgba(16, 23, 38, 0.96);
+  --line: rgba(230, 220, 196, 0.16);
+  --line2: rgba(230, 220, 196, 0.30);
+  --reg: rgba(230, 220, 196, 0.42);
+  --cut: 0px;
+  --plate: rgba(8, 12, 20, 0.82);
+}
+.bold {
+  --pane: radial-gradient(140% 70% at 0% 0%, rgba(205, 228, 255, 0.20), rgba(205, 228, 255, 0) 55%),
+    repeating-linear-gradient(0deg, rgba(200, 225, 255, 0.045) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(90deg, rgba(200, 225, 255, 0.045) 0 1px, transparent 1px 24px),
+    linear-gradient(165deg, rgba(110, 150, 210, 0.22) 0%, rgba(30, 44, 72, 0.30) 30%, rgba(10, 16, 30, 0.44) 70%, rgba(8, 12, 22, 0.52) 100%);
+  --pane2: rgba(20, 28, 46, 0.55);
+  --line: rgba(190, 220, 255, 0.24);
+  --line2: rgba(214, 236, 255, 0.55);
+  --reg: rgba(236, 246, 255, 0.95);
+  --cut: 18px;
+  --plate: rgba(14, 22, 38, 0.45);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: #000; }
+body { font-family: Barlow, sans-serif; font-weight: 400; color: var(--bone); font-size: 15px; line-height: 1.25;
+  font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; }
+#field { position: absolute; inset: 0; background: url(bg.png) 0 0 / 1920px 1080px no-repeat; }
+#ui { position: absolute; inset: 0; }
+
+/* ------------------------------------------------------------ panes */
+.pane { position: absolute; background: var(--pane); border: 1px solid var(--line); }
+.bold .pane { backdrop-filter: blur(20px) saturate(1.6) brightness(0.72); -webkit-backdrop-filter: blur(20px) saturate(1.6) brightness(0.72);
+  border-color: rgba(190, 220, 255, 0.34); outline: 1px solid rgba(190, 220, 255, 0.16); outline-offset: -6px; box-shadow: 0 0 22px rgba(120, 170, 255, 0.10);
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut)); }
+/* etched top edge on glass */
+.bold .pane::before { content: ""; position: absolute; left: var(--cut); right: 0; top: 0; height: 1px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.95), rgba(200,230,255,0.45) 30%, rgba(255,255,255,0.06) 75%); box-shadow: 0 0 8px rgba(190,225,255,0.8); }
+.bold .h-ship, .bold .big-round { text-shadow: 0 0 14px rgba(143,240,160,0.35); }
+.bold .caps { color: #b9cbe4; text-shadow: 0 0 8px rgba(160,200,255,0.35); }
+.bold .track i { box-shadow: 0 0 5px rgba(143,240,160,0.5); }
+.bold .track i.e { box-shadow: 0 0 5px rgba(166,77,255,0.6); }
+.bold .track i.u { box-shadow: 0 0 8px rgba(208,166,75,0.9); }
+.bold .rr { border-bottom: 1px solid rgba(190,220,255,0.07); }
+.bold .wpn.armed { box-shadow: inset 0 0 14px rgba(240,179,90,0.22), 0 0 8px rgba(240,179,90,0.25); }
+.bold .key { border-color: rgba(214,236,255,0.5); color: #d6e4f5; background: rgba(150,190,240,0.10); }
+/* the bevel line on a cut corner */
+.bold .pane::after { content: ""; position: absolute; left: 0; top: var(--cut); width: calc(var(--cut) * 1.4142 + 1px); height: 2px;
+  background: var(--line2); transform-origin: 0 0; transform: rotate(-45deg); }
+.pane.flat { clip-path: none !important; }
+.pane.flat::after { display: none; }
+/* registration corners (chart room) */
+.reg { position: absolute; width: 9px; height: 9px; border-color: var(--reg); border-style: solid; border-width: 0; pointer-events: none; }
+.reg.tr { top: -1px; right: -1px; border-top-width: 1px; border-right-width: 1px; }
+.reg.bl { bottom: -1px; left: -1px; border-bottom-width: 1px; border-left-width: 1px; }
+.bold .reg { width: 16px; height: 16px; }
+.bold .reg.tr { border-top-width: 2px; border-right-width: 2px; }
+.bold .reg.bl { border-bottom-width: 2px; border-left-width: 2px; }
+
+/* ------------------------------------------------------------ type */
+.caps { font-family: Oxanium; font-weight: 600; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--bone3); }
+.h-ship { font-family: Barlow; font-weight: 600; font-size: 21px; color: var(--friend); }
+.dim { color: var(--bone2); }
+.dim3 { color: var(--bone3); }
+.num { font-family: Oxanium; font-weight: 600; font-variant-numeric: tabular-nums; }
+.gilt { color: var(--gilt); }
+.verd { color: var(--verd); }
+.blood { color: var(--blood); }
+.ember { color: var(--ember); }
+.friend { color: var(--friend); }
+.foe { color: var(--foe); }
+.s12 { font-size: 12px; } .s13 { font-size: 13px; } .s14 { font-size: 14px; } .s15 { font-size: 15px; } .s17 { font-size: 17px; }
+.rule { height: 1px; background: var(--line); margin: 8px 0; }
+.bold .rule { background: linear-gradient(90deg, var(--line2), rgba(255,255,255,0.04)); }
+.row { display: flex; align-items: center; gap: 8px; }
+.grow { flex: 1; min-width: 0; }
+.ell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ------------------------------------------------------------ keys and buttons: rectangles, never pills */
+.key { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 18px; padding: 0 5px;
+  font-family: Oxanium; font-weight: 700; font-size: 12px; color: var(--bone2); border: 1px solid var(--line2); background: rgba(0,0,0,0.35); }
+.btn { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 10px; font-size: 14px; font-weight: 500;
+  color: var(--bone); background: rgba(24, 33, 51, 0.92); border: 1px solid var(--line2); white-space: nowrap; }
+.bold .btn { background: rgba(34, 46, 70, 0.55); }
+.btn.off { color: var(--bone3); border-color: var(--line); background: rgba(15, 22, 38, 0.6); }
+.btn.off .key { color: var(--bone3); border-color: var(--line); }
+.btn.lit { color: var(--gilt); border-color: var(--gilt2); }
+.btn.primary { background: var(--gilt); color: var(--on-gilt); border-color: var(--gilt); font-weight: 600; }
+.btn.primary .key { color: var(--on-gilt); border-color: rgba(28,20,5,0.5); background: rgba(255,255,255,0.18); }
+.bold .btn.primary { background: linear-gradient(180deg, #e7c26c, var(--gilt) 55%, #b88e38); box-shadow: 0 0 18px rgba(208,166,75,0.45), inset 0 1px 0 rgba(255,255,255,0.55); }
+.bold .btn.lit { box-shadow: inset 0 0 10px rgba(208,166,75,0.18); }
+.ico { width: 32px; padding: 0; justify-content: center; }
+
+/* ------------------------------------------------------------ bars: segmented, so length and count carry the value as well as colour */
+.hbar { display: flex; gap: 2px; height: 6px; }
+.hbar i { flex: 1; background: var(--track); position: relative; overflow: hidden; }
+.hbar i b { position: absolute; left: 0; top: 0; bottom: 0; background: var(--hull); }
+.hbar.low i b { background: var(--hull-low); }
+.sbar { display: flex; gap: 3px; height: 3px; margin-top: 2px; }
+.sbar i { flex: 1; background: var(--iron3); position: relative; overflow: hidden; }
+.sbar i b { position: absolute; left: 0; top: 0; bottom: 0; background: var(--shield); }
+.bold .hbar i b { box-shadow: 0 0 6px rgba(255,174,66,0.55); }
+.bold .sbar i b { box-shadow: 0 0 5px rgba(98,204,255,0.6); }
+.lowtag { font-family: Oxanium; font-weight: 700; font-size: 12px; color: var(--hull-low); letter-spacing: 0.08em; }
+
+/* ------------------------------------------------------------ tags */
+.tag { display: inline-flex; align-items: center; height: 18px; padding: 0 6px; font-family: Oxanium; font-weight: 700; font-size: 12px;
+  letter-spacing: 0.12em; text-transform: uppercase; }
+.tag.up { background: var(--gilt); color: var(--on-gilt); }
+.tag.nem { background: var(--alert); color: #1a0503; }
+.tag.foe { border: 1px solid var(--foe-ring); color: #e2d2ff; background: rgba(40, 14, 70, 0.7); }
+.tag.line { border: 1px solid var(--line2); color: var(--bone2); }
+.bold .tag.nem { box-shadow: 0 0 14px rgba(255,107,90,0.7); }
+
+/* ------------------------------------------------------------ in-world plates (backed, so they read on any sky) */
+.plate { position: absolute; transform: translateX(-50%); padding: 3px 7px 4px; background: var(--plate); border-left: 2px solid var(--friend);
+  min-width: 96px; white-space: nowrap; }
+.bold .plate { backdrop-filter: blur(8px) brightness(0.7); -webkit-backdrop-filter: blur(8px) brightness(0.7); border: 1px solid rgba(143,240,160,0.45); border-left-width: 3px; border-left-color: var(--friend); box-shadow: 0 0 10px rgba(143,240,160,0.18); }
+.bold .plate .pn { text-shadow: 0 0 8px rgba(143,240,160,0.45); }
+.bold .plate.e .pn { text-shadow: 0 0 8px rgba(201,162,255,0.5); }
+.plate.e { border-left-color: var(--foe-ring); }
+.bold .plate.e { border-color: rgba(166,77,255,0.55); border-left-color: var(--foe-ring); box-shadow: 0 0 10px rgba(166,77,255,0.25); }
+.plate .pn { font-size: 13px; font-weight: 600; color: var(--friend); line-height: 15px; }
+.plate.e .pn { color: var(--foe); }
+.plate .hbar { height: 4px; margin-top: 3px; }
+.plate .sbar { height: 2px; }
+.plate.sel { border-left-color: var(--gilt); outline: 1px solid var(--gilt2); }
+.plate.tgt { outline: 1px dashed var(--gilt); outline-offset: 3px; }
+.plate .odds { position: absolute; left: -2px; bottom: 100%; margin-bottom: 5px; background: var(--gilt); color: var(--on-gilt); font-family: Oxanium;
+  font-weight: 700; font-size: 12px; padding: 2px 5px; white-space: nowrap; }
+.plate.nem { border-left-color: var(--alert); }
+.plate .nemtag { height: 15px; margin-right: 5px; }
+
+/* ------------------------------------------------------------ log */
+.log .ln { display: grid; grid-template-columns: 30px 1fr; gap: 6px; font-size: 13px; line-height: 17px; padding: 3px 0; border-top: 1px solid rgba(230,220,196,0.06); }
+.log .ln:first-child { border-top: 0; }
+.log .r { font-family: Oxanium; font-weight: 600; font-size: 12px; color: var(--bone3); }
+.log .p { color: var(--verd); } .log .e { color: var(--blood); } .log .s { color: var(--gilt); } .log .x { color: var(--bone2); }
+
+/* ------------------------------------------------------------ steps */
+.steps { display: flex; align-items: stretch; gap: 0; }
+.step { display: flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border: 1px solid var(--line); background: rgba(15,22,38,0.5);
+  font-size: 14px; color: var(--bone2); }
+.step + .step { border-left: 0; }
+.step .sn { font-family: Oxanium; font-weight: 700; font-size: 12px; letter-spacing: 0.12em; color: var(--bone); }
+.step.now { border-color: var(--gilt); background: rgba(77, 61, 26, 0.55); color: var(--bone); }
+.step.now .sn { color: var(--gilt); }
+.step.done .sn { color: var(--verd); }
+.bold .step.now { box-shadow: inset 0 0 12px rgba(208,166,75,0.25); }
+
+/* ------------------------------------------------------------ weapon tiles */
+.wpn { border: 1px solid var(--line); background: rgba(18, 26, 44, 0.55); padding: 6px 8px; position: relative; }
+.wpn .wt { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; }
+.wpn .wd { font-size: 12px; color: var(--bone2); margin-top: 2px; }
+.wpn .wo { font-family: Oxanium; font-weight: 700; font-size: 13px; }
+.wpn.armed { border-color: var(--ember); }
+.wpn.no { opacity: 0.62; }
+.wpn.no .wo { color: var(--bone3); }
+.bold .wpn { background: rgba(30, 42, 66, 0.35); }
+
+/* ------------------------------------------------------------ turn track */
+.track { display: flex; gap: 2px; align-items: center; }
+.track i { width: 10px; height: 10px; border: 1px solid var(--friend); }
+.track i.d { background: var(--friend); opacity: 0.55; }
+.track i.u { background: var(--gilt); border-color: var(--gilt); }
+.track i.e { border-color: var(--foe-ring); }
+.track .sep { width: 10px; height: 1px; background: var(--bone3); margin: 0 3px; }
+
+/* ------------------------------------------------------------ nemesis block */
+.nemb { border-left: 3px solid var(--alert); }
+.bold .nemb { box-shadow: inset 3px 0 12px -6px rgba(255,107,90,0.7); }
+.portrait { width: 48px; height: 48px; object-fit: cover; border: 1px solid rgba(255,107,90,0.6); }
+.clock { display: inline-flex; gap: 2px; vertical-align: middle; }
+.clock i { width: 12px; height: 6px; border: 1px solid var(--alert); }
+.clock i.f { background: var(--alert); }
+
+.crest { width: 34px; height: 34px; }
+.crest.sm { width: 26px; height: 26px; }
+.facline { height: 2px; width: 26px; }
+.big-round { font-family: Oxanium; font-weight: 700; font-size: 22px; letter-spacing: 0.04em; }
+.bold .big-round { font-family: Michroma; font-weight: 400; font-size: 21px; letter-spacing: 0.02em; text-shadow: 0 0 12px rgba(230,220,196,0.35); }
+
+/* the field label in the corner of each mock (for the contact sheet; not part of the UI) */
+#stamp { position: absolute; z-index: 50; }
