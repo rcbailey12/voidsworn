@@ -1,5 +1,9 @@
 # The rules oracle, pinned
 
+Nov 9 2026, issue 315 (tree skills job 2): re-copied battle.js and data.js for
+the Sunward Crusade TREE_FX rows and the H4, H6, H12, H13 and H16 hooks.
+Re-exported rules tables; no existing rule or number changed.
+
 Nov 9 2026, issue 312 (tree skills job 1): re-copied battle.js, core.js and
 data.js for RUN.lineage, TREE_FX, B.tree and the Glasswrights pilot effects.
 Re-exported rules tables; no existing rule or number changed.

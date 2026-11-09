@@ -2789,7 +2789,33 @@ const TREE_FX={
   "aelith:B:0:0":{k:"deployRead"},"aelith:B:0:1":{k:"castCorrected"},"aelith:C:0:0":{k:"flagshipLens",n:10},"aelith:C:0:1":{k:"firstLight",n:10},
   "vaelen:B:0:0":{k:"deployRead"},"vaelen:B:0:1":{k:"castCorrected"},"vaelen:C:0:0":{k:"flagshipLens",n:10},"vaelen:C:0:1":{k:"firstLight",n:10},
   "thorne:B:0:0":{k:"deployRead"},"thorne:B:0:1":{k:"castCorrected"},"thorne:C:0:0":{k:"flagshipLens",n:10},"thorne:C:0:1":{k:"firstLight",n:10},
-  "mirelle:B:0:0":{k:"deployRead"},"mirelle:B:0:1":{k:"castCorrected"},"mirelle:C:0:0":{k:"flagshipLens",n:10},"mirelle:C:0:1":{k:"firstLight",n:10}
+  "mirelle:B:0:0":{k:"deployRead"},"mirelle:B:0:1":{k:"castCorrected"},"mirelle:C:0:0":{k:"flagshipLens",n:10},"mirelle:C:0:1":{k:"firstLight",n:10},
+  // Sunward Crusade (issue #305 job 2). The 25 a and b rows; the 10 x and 1 c rows stay inert until the Muse text pass (#311).
+  "vex:A:0:1":{k:"heldAccount"},
+  "vex:A:1:0":{k:"namedLedger"},
+  "vex:A:1:1":{k:"inheritedAim",n:.15},
+  "vex:A:2:0":{k:"everyGun",n:10},
+  "malek:A:0:0":{k:"preyName",n:.15},
+  "malek:A:0:1":{k:"salvoTwoHands"},
+  "malek:A:2:0":{k:"debtHunts"},
+  "malek:A:2:1":{k:"twoSalvos"},
+  "malek:cap:1":{k:"namedPrey",n:.25},
+  "ashgrove:A:0:0":{k:"escortName"},
+  "ashgrove:A:0:1":{k:"firstWave",n:.2},
+  "ashgrove:A:1:1":{k:"wingReserve"},
+  "ashgrove:A:2:0":{k:"generation"},
+  "ashgrove:A:2:1":{k:"wingsDebt",n:.3},
+  "ashgrove:cap:0":{k:"rollWings"},
+  "ashgrove:cap:1":{k:"oathWings"},
+  "thale:A:0:0":{k:"holdCounted"},
+  "thale:A:1:1":{k:"oathStillness"},
+  "thale:A:2:0":{k:"unpaid",n:.2},
+  "thale:A:2:1":{k:"wallAnswers"},
+  "thale:cap:0":{k:"ironTestament"},
+  "vex:B:0:0":{k:"swornDeploy"},"vex:B:0:1":{k:"debtsReserve"},"vex:C:0:0":{k:"flagshipLedger"},"vex:C:0:1":{k:"standardReroll"},
+  "malek:B:0:0":{k:"swornDeploy"},"malek:B:0:1":{k:"debtsReserve"},"malek:C:0:0":{k:"flagshipLedger"},"malek:C:0:1":{k:"standardReroll"},
+  "ashgrove:B:0:0":{k:"swornDeploy"},"ashgrove:B:0:1":{k:"debtsReserve"},"ashgrove:C:0:0":{k:"flagshipLedger"},"ashgrove:C:0:1":{k:"standardReroll"},
+  "thale:B:0:0":{k:"swornDeploy"},"thale:B:0:1":{k:"debtsReserve"},"thale:C:0:0":{k:"flagshipLedger"},"thale:C:0:1":{k:"standardReroll"}
 };
 // Patron favour: grows with every boon you take from a patron
 const FAVOUR_TIERS=[{at:0,n:'Listening'},{at:4,n:'Partial sync',d:'Its protocols are rare more often.'},{at:12,n:'Synced',d:'If it is in range of your run, you start with one of its protocols.'},{at:25,n:'Full sync',d:'Its protocols are never common.'}];

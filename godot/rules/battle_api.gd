@@ -212,6 +212,7 @@ func view() -> Dictionary:
 func _i_view() -> Dictionary:
 	var B = R.B; var us := []
 	for u in B["units"]:
+		if R.jt(u.get("treeOff")): continue   # issue #305: a reserve held off the field is not drawn or listed until it arrives
 		var ws := []
 		for i in range(u["weapons"].size()):
 			var w = u["weapons"][i]
