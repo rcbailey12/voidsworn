@@ -19,6 +19,12 @@ L_LINE = (-.02, -.22, .10)       # longitudinal break line: z, from x0 to x1 (sp
 DECKS = (-.065, .005)            # internal deck heights
 SKIN = .005                      # hull thickness (ship units; about 0.2 game units on a 41.6 unit hull)
 
+def set_break(t_lines, l_line, decks):
+    """round 2: the break lines follow each build's structural joints; stored on the scene so render.py cuts the same pieces"""
+    global T_LINES, L_LINE, DECKS
+    T_LINES, L_LINE, DECKS = tuple(t_lines), tuple(l_line), tuple(decks)
+    sc = bpy.context.scene; sc['r209_t_lines'] = list(T_LINES); sc['r209_l_line'] = list(L_LINE); sc['r209_decks'] = list(DECKS)
+
 def role(o, r):
     o['role'] = r; return o
 
@@ -217,9 +223,9 @@ def report(objs):
 # ---------------------------------------------------------------- normalise an AI mesh into the ship frame
 def ai_align(o, yaw_deg, length=1.0, centre=None):
     """rotate an imported AI mesh about z so its long axis is x, then scale and centre it"""
-    o.rotation_euler = (0, 0, math.radians(yaw_deg)); bpy.context.view_layer.update()
-    bpy.ops.object.select_all(action='DESELECT'); o.select_set(True); bpy.context.view_layer.objects.active = o
-    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    # round 2 fix: turn the mesh data itself. Round 1 set rotation_euler, but glTF imports use quaternion rotation mode, so the yaw
+    # was silently dropped and B0 (and the station table measured off it) sat about 20 degrees off the ship axis.
+    o.data.transform(Matrix.Rotation(math.radians(yaw_deg), 4, 'Z'))
     v = np.array([x.co[:] for x in o.data.vertices]); lo, hi = v.min(0), v.max(0)
     s = length / (hi[0] - lo[0]); c = (lo + hi) / 2 if centre is None else centre
     if centre is None:  # centre y on the hull's own midline (slab midpoints in a band around the waist), not on the lopsided bounding box

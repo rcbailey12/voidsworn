@@ -85,7 +85,8 @@ bpy.ops.object.select_all(action='DESELECT')
 for ob in meshes: ob.select_set(True)
 bpy.context.view_layer.objects.active = meshes[0]; bpy.ops.object.transform_apply(location=True, rotation=True, scale=True); bpy.ops.object.join()
 whole = bpy.context.view_layer.objects.active
-T1, T2 = max(C.T_LINES), min(C.T_LINES); zL = C.L_LINE[0]
+TL = list(sc['r209_t_lines']) if 'r209_t_lines' in sc else C.T_LINES; LL = list(sc['r209_l_line']) if 'r209_l_line' in sc else C.L_LINE
+T1, T2 = max(TL), min(TL); zL = LL[0]
 pieces = [('bow', [((T1, 0, 0), (1, 0, 0))], (.16, 0, 0)), ('aft', [((T2, 0, 0), (-1, 0, 0))], (-.16, 0, 0)),
           ('midup', [((T1, 0, 0), (-1, 0, 0)), ((T2, 0, 0), (1, 0, 0)), ((0, 0, zL), (0, 0, 1))], (0, 0, .06)),
           ('midlo', [((T1, 0, 0), (-1, 0, 0)), ((T2, 0, 0), (1, 0, 0)), ((0, 0, zL), (0, 0, -1))], (0, 0, -.06))]
