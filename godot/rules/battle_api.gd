@@ -520,8 +520,34 @@ func _i_threat_map(only_id = null) -> Dictionary:
 	var ck = str(only_id)
 	if not _threat_cache.has(ck): _threat_cache[ck] = _threat_map_raw(only_id)
 	return _threat_cache[ck].duplicate()
-func _threat_map_raw(only_id = null) -> Dictionary:
+# threat_both(): the threat map and, per hex, how many enemies can bring guns on it next turn (#271's reach hatching and
+# danger badges). One pass; the damage map is the same as threat_map's (parity reads threat_map). Read-only.
+func threat_both(only_id = null) -> Dictionary:
+	_enter()
+	var r = _i_threat_both(only_id); _leave(false); return r
+func _i_threat_both(only_id = null) -> Dictionary:
+	if _threat_ver != version: _threat_cache.clear(); _threat_ver = version
+	var ck = "both|" + str(only_id)
+	if not _threat_cache.has(ck):
+		var b = _threat_map_raw(only_id, true)
+		_threat_cache[ck] = b
+		_threat_cache[str(only_id)] = b["dmg"]
+	var c = _threat_cache[ck]
+	return {"dmg": c["dmg"].duplicate(), "n": c["n"].duplicate()}
+# preview_fire_at(id, wi, target_id, state): preview_fire as the ship would stand at one of compute_reach's states (the
+# planned hex): hit %, expected shield and hull damage, the facing hit, and whether the gun bears from there. Read-only.
+func preview_fire_at(id: String, wi: int, target_id: String, state: Dictionary) -> Dictionary:
+	_enter()
+	var r = _i_preview_fire_at(id, wi, target_id, state); _leave(false); return r
+func _i_preview_fire_at(id: String, wi: int, target_id: String, state: Dictionary) -> Dictionary:
+	var u = unit(id); var t = unit(target_id)
+	if u == null or t == null or wi < 0 or wi >= u["weapons"].size(): return {}
+	var v = R.stateView(u, state); var w = u["weapons"][wi]
+	var e = R.expectedVs(v, w, t)
+	return {"hit": R.hitChance(v, w, t), "shield": e.shield, "hull": e.hull, "quad": e.quad, "rear": e.rear, "bears": R.inReach(v, w, t) and R.weaponReady(w)}
+func _threat_map_raw(only_id = null, both := false) -> Variant:
 	var out := {}
+	var cnt := {}
 	var hexes = R.boardHexes()
 	var list = []
 	if only_id != null:
@@ -563,9 +589,11 @@ func _threat_map_raw(only_id = null) -> Dictionary:
 				if l == null:
 					l = R.los(v, n.h); lc["los"][n.k] = l
 				if l and val > float(per.get(n.k, 0.0)): per[n.k] = val
-		for k in per.keys(): out[k] = float(out.get(k, 0.0)) + per[k]
+		for k in per.keys():
+			out[k] = float(out.get(k, 0.0)) + per[k]
+			if both: cnt[k] = int(cnt.get(k, 0)) + 1
 	R.eval_end()
-	return out
+	return {"dmg": out, "n": cnt} if both else out
 # world_info(): what the scene needs to build the battlefield beyond view(): the biome (rock kind, planet, station look) and the battle seed.
 func world_info() -> Dictionary:
 	_enter()

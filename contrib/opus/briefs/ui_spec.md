@@ -120,6 +120,9 @@ Every UI colour is a named palette entry. A new colour in UI code is either one 
 | DANGER 1 to 4 | #7ddc6a, #d0a64b, #f0883a, #e2453a | map danger bands Easy, Even, Hard, Deadly (MP8; cut points re-ruled by the U-D Monte Carlo) |
 | core colours | PATRONS col (data) | a core's own name and its sync lines |
 | faction colours | section 5.4 | campaign map and crests only |
+| SHELL, SHELL_EDGE | ink rgb(9, 14, 24) at 38%; GILT at 30% | #271 Glass Shell: the see-through frame and its etched edge (contrib/opus/briefs/ui_style.md) |
+| WELL, WELL_EDGE | #0b111c (94% in a frame, 86% as a strip); IRON3 at 90% | #271: the solid backing under every line of text, and its border |
+| SHIELD_TRACK | #16304a | #271: the empty part of a shield bar |
 
 Recorded decisions:
 - The browser's `--blood` #d0493f is dead (H6) and stays out of the palette.
