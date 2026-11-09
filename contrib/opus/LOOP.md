@@ -30,10 +30,10 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 7. Rewrite this file, set "Running: no", commit straight to main (this file and FINDINGS only, docs-only exception), push with timeout 90. Stop.
 8. One send_later check only when a job or a limit reset lands well before the next look. Never chain them.
 
-## Current state (2026-11-09 15:35 UTC)
+## Current state (2026-11-09 16:05 UTC)
 
 - Tree effects: job 1 MERGED (PR #313: plumbing plus 21 Glasswrights skills, log line and panel count; the float callout and recap line are in code but not yet in a screenshot, check in job 2's shots). Job 2 Sunward Crusade #315 on DeepSeek since 15:33 UTC. Muse text pass #311 not started.
-- UI #271 build: draft PR #314 (cloud thread done). Board queued the PC captures 15:30 UTC (Downloads\voidsworn_test\opus271b\out, status.txt; the job's clone line was fixed to autocrlf=false). Rey asked for the outside check on #256.
+- UI #271 build: draft PR #314. PC captures done 15:25 UTC (Downloads\voidsworn_test\opus271b\out): parse 6 of 6 exit 0, ui_check 21 checks 0 failed in A and B (the window ran at 3840x2066, UI scale 1.913, so "1080" folders are really 4K). Build matches the C bold mockup closely. Board fixes before merge: End ship as the big filled gold button (mockup), the board-wide diagonal hatching is noisier than the mockup, and the capture showed grey stand-in hulls (ships_copy.txt empty; the hulls come from res://gen). Sent Ryan the mockup vs build at 16:05 UTC. Rey asked for the outside check on #256. #209 round 5 PC thread (trig_01UgSojQJ6nJ8b8jyNjWQ1wJ, 15:52 UTC): hull traced from B0, 90 percent outline gate, hand-rebuilt casemates (R147).
 - Gun smoke #281: run 3 (PR #309) and run 4 (Flash, since 15:32 UTC, smaller puffs) still use flat line sparks; Ryan (R146): "like Microsoft paint". Run 5 on DeepSeek V4 Pro since 15:27 UTC bakes muzzle and impact flipbooks with tools/blender/vfx (the #137 death route) and soft curved sparks, branch work/issue-281-deepseekpro. Run 4 is only a fallback.
 - Ships #209 round 4: PC thread running since 13:36 UTC, no branch yet.
 - Muse: no activity since Ryan's 07:51 CST bump (#311, #296, #256).
