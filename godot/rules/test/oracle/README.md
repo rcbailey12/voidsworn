@@ -1,5 +1,9 @@
 # The rules oracle, pinned
 
+Nov 9 2026, issue 312 (tree skills job 1): re-copied battle.js, core.js and
+data.js for RUN.lineage, TREE_FX, B.tree and the Glasswrights pilot effects.
+Re-exported rules tables; no existing rule or number changed.
+
 Nov 9 2026, issue 30 (progression step 14): re-copied data.js and core.js for
 capstone mastery (three levels at 320, 440 and 600 XP on a chosen lineage
 evolution). Combat rules and the checksum are unchanged. Re-exported rules tables.
