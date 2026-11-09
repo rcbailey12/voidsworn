@@ -241,7 +241,7 @@ def parts4(seat, hero=()):
     n0 = len(Pp); box('bridgeglass', (tx + .040, 0, z2 + .069), (.004, .060, .007), bevel=.0005); tag('dark', n0)
     antenna_tower(tx - .004, z2 + .078)
     # drums: fore pair on the raised deck, the sponson racks, the mid pair, the aft pair on the aft body
-    for s in (1, -1): drum(f'fdrum{s}', .214, s * .048, .017, .066, seat)
+    for s in (1, -1): drum(f'fdrum{s}', .222, s * .048, .017, .066, seat)   # tails clear the bow break line (x 0.178)
     for s in (1, -1):
         if 'drumrack' not in hero or True:   # hand racks always built; in the hybrid they become hidden proxies (far LODs)
             for k, yy in enumerate((.124, .156)): drum(f'sdrum{s}{k}', .092, s * yy, .0145, .085, seat)

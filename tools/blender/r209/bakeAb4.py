@@ -29,6 +29,7 @@ SMOOTH_TRIS = 12000     # the smooth copy: B0 decimated to this many faces, smoo
 INFO = {}
 KEEP_SRC = False
 B0_NORMALS = 'keep'   # 'keep': the generator's stored normals (tested best); 'turn': turn faces outward and rebuild normals from them
+AO_MISS, AO_KEEP = .25, float(os.environ.get('R209_AO_KEEP', .6))  # round 4: B0 cavity texels darker than AO_MISS are misses; the rest kept at AO_KEEP strength
 MAX_TILT = 40.0       # degrees: detail normals tilted further than this are bake errors (rays meeting B0 edge-on or from behind)
 
 def gpu():
@@ -120,6 +121,13 @@ def b0_bakes(hull):
     xy = d[steep, :2]; xy *= (math.sin(math.radians(MAX_TILT)) / np.maximum(np.linalg.norm(xy, axis=1, keepdims=True), 1e-6)); d[steep, :2] = xy; d[steep, 2] = cz
     nimg = bpy.data.images.new(f'{CELL}_normal', RES, RES, alpha=False); nimg.colorspace_settings.name = 'Non-Color'
     px = np.concatenate([d * .5 + .5, np.ones((len(d), 1), np.float32)], 1).astype(np.float32); nimg.pixels.foreach_set(px.ravel())
+    # round 4: the slab hull sits away from B0's melted surface in places (lower deck, sharper edges), so the AO rays there start
+    # under B0's shell and come back black (about a fifth of the hull's texels in the first PC run, printed as black smears).
+    # Texels darker than AO_MISS are taken as misses: cavity white and detail normal flat there; the rest of the cavity is
+    # softened by AO_KEEP so B0's grime reads as grime, not as holes.
+    ao = img_np(out['ao']); v = ao[:, 0].copy(); miss = v < AO_MISS; INFO['b0ao_miss_share'] = round(float(miss.mean()), 4)
+    v[miss] = 1.0; v = 1 - AO_KEEP * (1 - v); ao[:, :3] = v[:, None]; out['ao'].pixels.foreach_set(ao.ravel())
+    d[miss] = (0, 0, 1); px = np.concatenate([d * .5 + .5, np.ones((len(d), 1), np.float32)], 1).astype(np.float32); nimg.pixels.foreach_set(px.ravel())
     for k, im in (('normal', nimg), ('b0ao', out['ao'])):
         im.filepath_raw = os.path.join(OUT, f'{CELL}_{k}.png'); im.file_format = 'PNG'; im.save(); im.pack()
     tilt = np.degrees(np.arccos(np.clip(d[:, 2], -1, 1))); tilt_hi = np.degrees(np.arccos(np.clip(hi[:, 2], -1, 1)))

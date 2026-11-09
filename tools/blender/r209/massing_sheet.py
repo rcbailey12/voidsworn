@@ -69,4 +69,13 @@ for v, title in (('side', 'Side (port)'), ('top', 'Top'), ('below', 'Below')):
         if im is None: continue
         parts += [bar(NAMES.get(x, x)), thirds(flat(im.crop(bb)))]
     parts += [bar('Overlay: ' + NAMES.get(CELLS[-1], CELLS[-1]).split('  ')[0] + ' with B0 outline'), thirds(outline_over(ims[-1].crop(bb), ims[0].crop(bb)))]
+# round 4: the cross-section, looking aft from ahead of the bow (all cells side by side, same scale)
+fr = [load(x, 'front') for x in CELLS]
+if all(f is not None for f in fr):
+    bb = bbox(fr); parts.append(head('Front (cross-section)', 'Looking aft from ahead of the bow; same scale.'))
+    n = len(CELLS); tw = W // n - 6; row = Image.new('RGB', (W, 330), BG); d = ImageDraw.Draw(row)
+    for k, (x, im) in enumerate(zip(CELLS, fr)):
+        th = flat(im.crop(bb)); th.thumbnail((tw, 280)); row.paste(th, (k * (W // n) + 3 + (tw - th.width) // 2, 40))
+        d.text((k * (W // n) + 10, 8), NAMES.get(x, x).split('  ')[0], font=F(22, True), fill=FG)
+    parts.append(row)
 stack(parts, OUT)

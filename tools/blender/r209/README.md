@@ -42,3 +42,17 @@ Round 1 bug fixed in `common.ai_align`: the yaw was set as an Euler angle on a g
 | `godot/bench209r3.gd` | The cost run: twenty copies, three modes (LOD off, Godot auto LOD, hand chain by visibility range), 1080p and 3D at 4K, textures given mipmaps and VRAM compression on load; `quick` as a fifth argument for a logic test on a software renderer. |
 | `sheets3.py`, `report3.py` | The round 3 sheets (overview, paint against the concept, battle, close, break, LOD, maps) and the cost tables. |
 | `pc/r3_run.bat`, `pc/r3b_run.bat`, `pc/r3c_run.bat` and their queue jobs | The three PC runs (both cells; the hybrid again twice after two atlas fixes). |
+
+## Round 4 (report: `docs/shots/ship_pipeline/route209/round4/README.md`)
+
+| File | What it does |
+|---|---|
+| `silhouette4.py` | The concept camera and the silhouette score (plain Python). `fit`: fits a pinhole camera (azimuth, elevation, roll, distance, focal length, image centre) so B0's outline matches the concept's alpha outline, starting from round 3's hero camera; the result is fixed in `docs/shots/ship_pipeline/route209/round4/concept_camera.json`. `score`: overlap percent (intersection over union) per cell at that camera, plus the red / green overlay. `look`: a cell flat-shaded over the concept with a ruler along the ship, for reading positions off the concept. |
+| `sil_dump.py` | Dumps a cell's visible triangles (a glb's lod0, B0, a fresh build or a blend) for the score. |
+| `armA4.py` | Round 4 structure, silhouette first: flat deck with a sharp edge running level to the bow, slab sides, a straight tuck to a flat armoured belly, a raked overhanging bow (round in plan, blunt at the nose), the stepped superstructure (raised forward deck, deckhouse tier, tower tier, hump, long aft body, stern block), the tall antenna tower, bigger gun pods; round 3's plating and parts re-seated. All shape numbers in one table, `P`. |
+| `tune4.py` | Coordinate descent over `P` on the silhouette score, each number held to a range that keeps the design. |
+| `bakeAb4.py` | `bakeAb3.py` on the round 4 blocks; Hy4 takes Hy3's generated casemates and drum racks, bow guns hand-built. |
+| `render.py`, `flat_views.py` | Now also render the `concept` view: the fitted concept camera, 1024 px square, pixel for pixel over the concept. |
+| `massing_sheet.py` | Structure compare now leads with the concept camera and ends with a cross-section row (front view). |
+| `sheets4.py`, `silsheet4.py` | Round 4 sheets (round 3's layouts at the concept camera) and `silhouette.jpg`. |
+| `pc/r4_queue.bat`, `pc/r4_run.bat` | The PC run: both cells baked, rendered, exported with the hand LOD chain, Godot bench beside Ab3 and Hy3. |
