@@ -106,7 +106,10 @@ function godotSizes(files) {
   const rows = [];
   for (const f of files) {
     const t = read(f);
-    for (const m of t.matchAll(/font_size[a-z_]*"?\s*,\s*(?:"[A-Za-z]+"\s*,\s*)?(?:s|px|US\.px)\((\d+(?:\.\d+)?)/g)) rows.push({ v: +m[1], at: f + ':' + lineOf(t, m.index), how: 'font size' });
+    for (const m of t.matchAll(/font_size[a-z_]*"?\s*,\s*(?:"[A-Za-z]+"\s*,\s*)?(?:[A-Za-z_][A-Za-z0-9_]*\.)?(?:s|px)\((\d+(?:\.\d+)?)/g)) rows.push({ v: +m[1], at: f + ':' + lineOf(t, m.index), how: 'font size' });
+    // #282 (N1): the theme default form (`default_font_size = s(15)`) and raw integer overrides were not scanned before
+    for (const m of t.matchAll(/default_font_size\s*(?::=|=)\s*(?:(?:[A-Za-z_][A-Za-z0-9_]*\.)?(?:s|px)\(\s*)?(\d+(?:\.\d+)?)/g)) rows.push({ v: +m[1], at: f + ':' + lineOf(t, m.index), how: 'theme default' });
+    for (const m of t.matchAll(/(?:add_theme_font_size_override|set_font_size)\(\s*"[a-z_]*font_size"\s*,\s*(?:\s*"[A-Za-z]+"\s*,\s*)?(\d+(?:\.\d+)?)\s*\)/g)) rows.push({ v: +m[1], at: f + ':' + lineOf(t, m.index), how: 'raw font size' });
     for (const m of t.matchAll(/\b(lbl|_label|rich|rich_inline|gothic|caps)\(/g)) {
       if (/func\s+$/.test(t.slice(Math.max(0, m.index - 6), m.index))) continue;
       const a = args(t, m.index + m[0].length - 1);

@@ -46,9 +46,13 @@ const t = read('godot/main/title.gd');
 check(/sf\.draw_center = false/.test(t) && /sf\.border_color = HUD\.BONE/.test(t), 'title screen focus ring unchanged (the source of the battle ring)');
 
 // 4. TY6: no port text under the floor (a one-glyph ornament, like the side panel's gilt diamond, is not text)
-const low = diff.godotSizes(files).filter(r => r.v < MIN_TEXT && !(r.text && /^"[^\w\s]"$/.test(r.text)));
+const gs = diff.godotSizes(files);
+const low = gs.filter(r => r.v < MIN_TEXT && !(r.text && /^"[^\w\s]"$/.test(r.text)));
 for (const r of low) check(false, `text size ${r.v} under the ${MIN_TEXT} floor at ${r.at} (ui_spec.md 4.3)`);
-check(true, 'text floor scan ran');
+// #282 (N1): a real assertion that the scan read rows, so a regex that stops matching fails instead of passing silently
+check(gs.length >= 300, `text floor scan read ${gs.length} font size literals (expected at least 300; check godotSizes in ui_constants_diff.js)`);
+check(gs.some(r => r.at.startsWith('godot/ui/')) && gs.some(r => r.at.startsWith('godot/main/')), 'text floor scan covers font sizes in both godot/ui and godot/main');
+check(gs.some(r => r.how === 'theme default'), 'text floor scan reads the theme default font size form (default_font_size = s(15), N1)');
 
 // 5. HD9: one hull-low line in the port
 const lows = [...hud.matchAll(/HULL_LOW if \w+ < ([\d.]+)/g), ...read('godot/ui/campaign/campaign_ui.gd').matchAll(/BLOOD if f < ([\d.]+)/g)].map(m => +m[1]);
