@@ -64,3 +64,5 @@ The parity harness and the campaign table exporter read these files, not the liv
 Nov 3 2026, issue 88: re-copied data.js and ui3d.js for the text truth pass (one boon text corrected, two tutorial card texts corrected). No rules or numbers changed. Re-exported tables.
 
 Nov 8 2026, issue 121: re-copied data.js, core.js, battle.js and campaign_run.js (the run clock RUN.nemClock and RUN.nemStrike, per-commander adaptation, lessons and NEM_VOICE). Re-exported tables.
+
+Nov 8 2026, issue 122: re-copied core.js, campaign_meta.js and campaign_run.js (the run escape counter RUN.nemEscapes, the Chorus compounding counter telemetry, nemSignature tagged by the commander who acted, the Nemesis panel data nemPanelData, the run_end Nemesis record, the clock-full message through nemSay). Re-exported campaign tables; their checksum is unchanged (no data.js change).

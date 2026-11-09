@@ -1125,7 +1125,7 @@ func newRun(admiralId, fac, opt = {}) -> void:
 		if pool.size() > 0:
 			var id = pick(pool); RUN["boons"].append({"id": id, "r": 1 if favourTier(dev) >= 3 else 0}); RUN["giftBoon"] = id
 	RUN["map"] = genSector(1)
-	RUN["flags"] = {}; RUN["nems"] = {}; RUN["nemAssign"] = drawNemAssign(); RUN["nemClock"] = 0; RUN["nemStrike"] = false; RUN["nem"] = newNemesis(RUN["nemAssign"][0])   # B4: the first hunter is ready, the rest are created lazily
+	RUN["flags"] = {}; RUN["nems"] = {}; RUN["nemAssign"] = drawNemAssign(); RUN["nemClock"] = 0; RUN["nemStrike"] = false; RUN["nemEscapes"] = 0; RUN["nem"] = newNemesis(RUN["nemAssign"][0])   # B4: the first hunter is ready, the rest are created lazily
 	META["stats"]["runs"] = float(META["stats"]["runs"]) + 1
 	saveRun()
 func saveRun() -> void:
@@ -1488,7 +1488,7 @@ func endRun(victory: bool, abandoned: bool = false) -> void:
 		META["stats"]["losses"] = float(z0(META["stats"].get("losses"))) + 1
 	for f in RUN["fallen"]: META["fallen"].append(f)
 	if META["fallen"].size() > 80: META["fallen"] = META["fallen"].slice(META["fallen"].size() - 80)
-	tel("run_end", {"victory": victory, "abandoned": abandoned, "fac": RUN["fac"], "stats": s})
+	tel("run_end", {"victory": victory, "abandoned": abandoned, "fac": RUN["fac"], "stats": s, "nem": nemTelSummary()})   # #122: the run's Nemesis record
 	var hl = heatLevel(RUN.get("heat")); var ren = jsround(runRenown() * (1.0 + 0.1 * hl)); META["renown"] = float(z0(META.get("renown"))) + ren
 	var mx0 = masteryLevel(RUN["admiral"]); var mxEarned = (float(s["battles"]) - float(s["elites"]) - float(s["bosses"])) + float(s["elites"]) * 2 + float(s["bosses"]) * 5 + (10.0 if victory else 0.0)
 	var earnings = awardLineageXP(RUN["admiral"], RUN["fac"], mxEarned)
@@ -1898,6 +1898,13 @@ func nemMigrate() -> void:
 		RUN["nemClock"] = src["clock"] if (src is Dictionary and (src.get("clock") is float or src.get("clock") is int)) else 0
 		RUN["nemStrike"] = src is Dictionary and jt(src.get("strike"))
 	if not (RUN.get("nemStrike") is bool): RUN["nemStrike"] = jt(RUN.get("nemStrike"))
+	# #122: a save from before the escape counter rebuilds it from the scars his commanders carry (each escape left one; a revive's scar is
+	# not an escape), at most two a run. A sector 3 flight also scars, so a save made after one can count one escape too many.
+	if not (RUN.get("nemEscapes") is float or RUN.get("nemEscapes") is int):
+		var e = 0.0
+		for k in reg.keys():
+			if reg[k] is Dictionary: e += max(0.0, float(z0(reg[k].get("scars"))) - (1.0 if jt(reg[k].get("revived")) else 0.0))
+		RUN["nemEscapes"] = min(2.0, e)
 	for k in reg.keys():
 		if reg[k] is Dictionary:
 			reg[k].erase("clock"); reg[k].erase("strike")
@@ -1964,8 +1971,9 @@ func nemReveal() -> Variant:
 	if w != null: N["revealed"].append(w)
 	return w
 # R42: his faction behaviour firing (raid, tithe, flee, revive, feed, fast_adapt, reinforce, duel, challenge) is logged as a 'nem_signature' event
-func nemSignature(kind: String) -> void:
-	var N = nemActive()
+# #122: the event and his capped list (40, oldest dropped) belong to the commander who acted (the active one unless given), tagged with his faction
+func nemSignature(kind: String, N0 = null) -> void:
+	var N = N0 if jt(N0) else nemActive()
 	if not jt(N): return
 	if not (N.get("signatures") is Array): N["signatures"] = []
 	N["signatures"].append(kind)
@@ -1985,12 +1993,12 @@ func nemClockAdd(n) -> String:
 	RUN["nemClock"] = clampv(jsround((nemClockGet() + step) * 2) / 2.0, 0, NEM_CLOCK)
 	if float(RUN["nemClock"]) >= float(NEM_CLOCK) and float(N["met"]) < float(RUN["sector"]) and not jt(RUN.get("nemStrike")):
 		RUN["nemStrike"] = true; var extra = nemStrike()
-		return nemFull() + " has found your trail. Your next fight will be against his fleet." + ((" " + extra) if extra != "" else "")
+		return nemSay(nemFull() + " has found your trail. Your next fight will be against his fleet." + ((" " + extra) if extra != "" else ""), N)   # #122: through nemSay (a she or an it read "his")
 	return ""
 # what a full clock does on the map, by faction (always written on his card beforehand)
 func nemStrike() -> String:
 	var N = nemActive(); var st = nemBeh().get("strike")
-	if st == "raid" or st == "tithe": nemSignature(str(st))
+	if st == "raid" or st == "tithe": nemSignature(str(st), N)
 	if st == "raid":
 		if float(RUN["credits"]) >= 30:
 			var cr = jsround(float(RUN["credits"]) * 0.25); RUN["credits"] = float(RUN["credits"]) - cr; N["loot"] = float(z0(N.get("loot"))) + cr
@@ -2127,18 +2135,18 @@ func nemAfterBattle(result: String, flagDead: bool, o: Dictionary = {}) -> Array
 		if jt(o.get("fled")):
 			if beh.get("strike") == "raid": N["riches"] = float(z0(N.get("riches"))) + 1
 			if beh.get("strike") == "duel": N["honed"] = float(z0(N.get("honed"))) + 1
-			nemScar("fled"); nemSignature("flee")
+			nemScar("fled"); nemSignature("flee", N); nemEscape(N, "fled")
 			out.append(nemSay(nemFull() + " breaks off and runs before you can finish him." + (" He will come back richer." if beh.get("strike") == "raid" else (" He will be back with the same few ships, honed sharper." if beh.get("strike") == "duel" else " He will be back.")), N))
 			_speak(out, N, "flee")
 		elif flagDead and float(RUN["sector"]) >= 3 and jt(beh.get("revive")) and not jt(N.get("revived")):
-			N["revived"] = true; back = true; nemScar(o.get("cause") if jt(o.get("cause")) else "big"); nemSignature("revive"); N["met"] = float(RUN["sector"]) - 1
+			N["revived"] = true; back = true; nemScar(o.get("cause") if jt(o.get("cause")) else "big"); nemSignature("revive", N); N["met"] = float(RUN["sector"]) - 1
 			out.append(nemSay(nemFull() + "'s flagship is destroyed, and then the wreck begins to move. He is reassembling for one last fight.", N))
 			_speak(out, N, "fall_final")   # A1: the kill that triggers the revive
 		elif flagDead and float(RUN["sector"]) >= 3:
 			N["dead"] = true; out.append(nemSay(nemFull() + " is dead. The feud is over.", N))
 			if not jt(beh.get("revive")): _speak(out, N, "fall")   # A1: the Eclipse commander's second, permanent death says nothing
 		elif flagDead:   # R49: before the last sector every rival, the Deathless one too, withdraws like this
-			nemScar(o.get("cause") if jt(o.get("cause")) else "big"); out.append(nemSay(nemFull() + "'s flagship breaks apart, but he escapes, scarred and furious. He will be back.", N))
+			nemScar(o.get("cause") if jt(o.get("cause")) else "big"); nemEscape(N, "flagship"); out.append(nemSay(nemFull() + "'s flagship breaks apart, but he escapes, scarred and furious. He will be back.", N))
 			_speak(out, N, "fall")
 		else: out.append(nemSay(nemFull() + " withdraws to fight another day.", N))
 		# R49 fairness: what a Corsair raid took (credits and a towed ship) comes back when he dies
@@ -2176,7 +2184,7 @@ func nemAfterBattle(result: String, flagDead: bool, o: Dictionary = {}) -> Array
 	if jt(beh.get("adaptFast")):
 		var a = nemAdapt(false, N)
 		if a != null:
-			nemSignature("fast_adapt"); out.append(P["He"] + " learns from it at once: " + nemAdaptName(a, N["fac"]) + " (" + nemSay(nemAdaptWhy(a, N["fac"]), N) + ").")
+			nemSignature("fast_adapt", N); out.append(P["He"] + " learns from it at once: " + nemAdaptName(a, N["fac"]) + " (" + nemSay(nemAdaptWhy(a, N["fac"]), N) + ").")
 			var al = nemAdaptLine(N, a)
 			if al != "": out.append(al)
 	return out
@@ -2199,14 +2207,74 @@ func nemFoundMerge(list) -> Array:
 		if N["weak"].has(k) and not N["revealed"].has(k):
 			N["revealed"].append(k); out.append(k)
 	return out
-# the Chorus Nemesis grows from every ship you lose, anywhere
+# the Chorus Nemesis grows from every ship you lose while he is the one hunting you (his own counter, capped at 8)
 func nemFeedLosses(n) -> String:
 	var N = nemActive()
 	if not jt(N) or jt(N.get("dead")) or not jt(n) or not jt(nemBeh().get("feeds")): return ""
 	var f0 = float(z0(N.get("fed"))); N["fed"] = min(8.0, f0 + float(n))
 	if float(N["fed"]) == f0: return ""
-	nemSignature("feed")
+	nemSignature("feed", N); nemCompoundTel(N)
 	return nemFull() + " feeds on your losses: " + nemPr(N)["his"] + " fleet is now " + numstr(jsround(min(0.32, 0.04 * float(N["fed"])) * 100)) + "% tougher (fed " + numstr(N["fed"]) + " of 8)."
+# #122 telemetry (synthesis section 4, G3): two counters, never merged. The escape counter is the run's (RUN.nemEscapes): a commander
+# who escapes a meeting before the last sector (he flees, or his flagship dies and he withdraws), so at most two a run (SP1 and SP2);
+# a sector 3 flight, revive or death never counts. The compounding counter is the commander's own where his behaviour compounds: the
+# Chorus fed counter (N.fed, capped at 8). Other factions carry none (riches and honed stay as they are and are not re-counted).
+func nemEscape(N, how: String) -> void:
+	if RUN == null or float(or_(RUN.get("sector"), 1)) >= 3: return
+	RUN["nemEscapes"] = float(z0(RUN.get("nemEscapes"))) + 1
+	tel("nem_escape", {"fac": N["fac"], "how": how, "sector": RUN["sector"], "n": RUN["nemEscapes"]})
+func nemCompound(N) -> Variant:
+	if not (N is Dictionary) or not NEM_FAC.has(N.get("fac")): return null
+	var beh = NEM_FAC[N["fac"]].get("beh")
+	if beh is Dictionary and jt(beh.get("feeds")): return {"kind": "fed", "n": float(z0(N.get("fed"))), "cap": 8}
+	return null
+func nemCompoundTel(N) -> void:
+	var c = nemCompound(N)
+	if c == null: return
+	tel("nem_compound", {"fac": N["fac"], "kind": c["kind"], "n": c["n"], "cap": c["cap"], "sector": RUN["sector"]})
+# the run's Nemesis record for the run_end event: who hunted each story point, the escapes, and each compounding commander's counter
+func nemTelSummary() -> Variant:
+	if RUN == null: return null
+	var reg = RUN.get("nems") if RUN.get("nems") is Dictionary else {}; var comp = {}
+	for f in reg.keys():
+		var c = nemCompound(reg[f])
+		if c != null: comp[f] = c["n"]
+	return {"assign": (RUN["nemAssign"].duplicate() if RUN.get("nemAssign") is Array else []), "escapes": float(z0(RUN.get("nemEscapes"))), "compound": comp}
+# #122: what the Nemesis panel shows, as data; campaign_ui.gd _nem_panel and the browser's nemPanel only draw it.
+# cur: the current sector's assigned hunter (RUN.nemAssign[RUN.sector - 1]); back: the earlier sectors he hunted you in (a return);
+# earlier: every other commander of a story point already passed, in order, still readable after the rotation.
+func nemStatus(N) -> String:
+	if jt(N.get("dead")): return "dead"
+	if not jt(N.get("met")): return "never met"
+	if jt(N.get("scars")): return "escaped, scarred " + numstr(N["scars"]) + "x"
+	if jt(N.get("beaten")): return "beaten, withdrew"
+	return "drove you off"
+func _nem_sps(a: Array, f, cur: int) -> Array:
+	var o = []
+	for i in range(a.size()):
+		if a[i] == f and i < cur: o.append(i + 1)
+	return o
+func _nem_secs(l: Array) -> String:
+	var o = []
+	for i in l: o.append(roman(i))
+	return " and ".join(PackedStringArray(o))
+func nemPanelData() -> Variant:
+	var N = nemActive()
+	if not jt(N) or not jt(N.get("persona")): return null
+	var a = RUN["nemAssign"] if RUN.get("nemAssign") is Array else []; var cur = int(or_(RUN.get("sector"), 1)); var reg = RUN["nems"] if RUN.get("nems") is Dictionary else {}
+	var back = _nem_sps(a, N["fac"], cur).filter(func(i): return i < cur)
+	var earlier = []; var seen = {N["fac"]: 1}
+	for i in range(min(cur - 1, a.size())):
+		var f = a[i]
+		if not jt(f) or not reg.has(f) or seen.has(f): continue
+		var E = reg[f]
+		if not (E is Dictionary) or not jt(E.get("persona")): continue
+		seen[f] = 1; var F = FACTIONS.get(f)
+		var sp = _nem_sps(a, f, cur)
+		earlier.append({"fac": f, "name": nemFull(E), "faction": (F["n"] if F != null else ""), "sectors": sp, "line": "Sector " + _nem_secs(sp) + ": " + nemStatus(E) + ".",
+			"lessons": (E["lessons"] if E.get("lessons") is Array else []).map(func(l): return l["t"])})
+	return {"fac": N["fac"], "name": nemFull(N), "scars": float(z0(N.get("scars"))), "back": (nemSay("He is back: you met him in sector " + _nem_secs(back) + ".", N) if back.size() > 0 else ""),
+		"lessons": (N["lessons"] if N.get("lessons") is Array else []).map(func(l): return l["t"]), "compound": nemCompound(N), "escapes": float(z0(RUN.get("nemEscapes"))), "earlier": earlier}
 # R41: finishing a faction's story arc (its Nemesis's last fight, beat 3) unlocks that faction's arc hull variant for every later run
 func arcComplete(fac) -> String:
 	var id = ARC_VARIANT.get(fac) if fac != null else null

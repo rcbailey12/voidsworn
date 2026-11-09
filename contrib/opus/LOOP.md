@@ -30,7 +30,9 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 7. Rewrite this file, set "Running: no", commit straight to main (this file and FINDINGS only, docs-only exception), push with timeout 90. Stop.
 8. One send_later check only when a job or a limit reset lands well before the next look. Never chain them.
 
-## Current state (2026-11-08 21:55 UTC)
+## Current state (2026-11-09 01:45 UTC)
+
+- Nov 8 evening: #120, #121 (PR #274) and #231 (PR #269) MERGED after Muse's outside checks (board fixed the cheap conditions; rest in #282). #232 merged (PR #275). #122 PR #280: PC checks all PASS on 30fc86d9 (board merged main into it), waiting on Muse #256 (also queued: #283, the #264 CI change). Threads: #209 round 1 on the PC (since 23:36 UTC); #230 plus #264 in the cloud (since 01:10 UTC; #283 is its first PR). Muse: #256 (checks), #270 (UI concepts, R137). Blocked behind GPU or merges: #281 (vent puff options, after #209), #282 (after #280), #271 (after #270 and Ryan's pick), #276 (after #209). The cloud sandbox has Godot 4.7.2 headless, so cloud threads can run parity themselves; the board still runs captures on the PC.
 
 - Nov 8 afternoon: #120 MERGED (PR #248) after Muse's outside check (PR #261, GO, ten notes: keep RUN.nem as a maintained alias; campaign parity and Nemesis scenarios are not in CI, filed #264). #246 merged (PR #254). Muse #257 merged (entry-doc audit, COUNCIL.md; Ryan ruled NR1 to NR5 all A) and applied by Flash in #265 (PR #266 merged: CLAUDE.md now a pointer that imports AGENTS.md; HANDOFF history in docs/archive). Muse #258 merged (Foley licence and plan: XL with offload, US-only outputs; the GPU probe #211 is next when a GPU seat is free). Opus threads running: #231 (since 19:45 UTC), #121 (since 20:24 UTC, from the #120 branch; #120 has merged since, its PR must merge main). #256 waits blocked for their PRs.
 
@@ -132,6 +134,7 @@ Check ship files are unchanged first (git diff --stat <last build hash> origin/m
 
 ## Log (newest first, keep about 10)
 
+- 2026-11-09 01:45 UTC board thread: merged #274 (#121) and #269 (#231) after Muse checks plus board fixes (Godot modal pronouns, 0.35 hull-low line); PC parity re-run PASS; merged main into #280 (#122) and ran its PC checks (all PASS, panel shots fine); Muse #279 merged (it closed #256 again; reopened). Filed #281 (vent puff options), #282 (Nemesis and UI follow-ups). Started the #230/#264 cloud thread.
 - 2026-11-08 23:55 UTC board thread: #232 merged (PR #275, DeepSeek Flash, first GPU job for the workhorse: 81 min, $0.20; pale square fixed, caps at the measured 4x step, flash test passes; timing sheets wait for Ryan's review round). #121 PR #274 and #231 PR #269 wait on Muse #256 (reopened). Threads running: #122 (cloud, R135), #209 round 1 (PC; it started without a Needs input stop). Filed #276 (ship design redo, R138), #270 and #271 (UI redesign, R137).
 - 2026-11-08 21:55 UTC board thread: merged #261 (Muse check of #248, GO), #248 (#120 done), #262 (#257 audit), #263 (#258 Foley research), #266 (#265 docs cleanup by Flash, board added the @AGENTS.md import). Filed #264 and #265. Times: the current_time tool runs about 20 minutes behind; use date -u.
 - 2026-11-08 20:05 UTC board thread: #120 V4 Pro arm in (PR #255, $1.49, 81 min, same UI-reader gap plus RUN.nem never set for new runs): closed; Flash wins (R134). #254 (#246 Heat back-fill, Flash, 20 min) merged. #256 unblocked for #248. Muse got #257 and #258. PC jobs now start through the queue folder instead of clicks.

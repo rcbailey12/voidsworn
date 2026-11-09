@@ -713,13 +713,16 @@ func _side() -> Control:
 	else: v.add_child(lbl("None yet. Elite fleets and flagships carry them.", 14, BONE3))
 	return p
 # B4: the Nemesis card (clock, known weaknesses, adaptations) and the faction action button, as campaign_run.js nemPanel / verbPanel
+# #122: the card is the current sector's hunter (RUN.nemAssign[RUN.sector - 1]); his return, his lessons and the earlier hunters come
+# from C.nemPanelData() (the campaign rules decide what is shown; this file only draws it, so the UI redesign, R137, can redraw it)
 func _nem_panel(v: VBoxContainer) -> void:
 	var N = C.nemActive()
 	if not C.jt(N): return
 	var F = C.FACTIONS.get(N["fac"]); var NF = C.NEM_FAC.get(N["fac"], {}); var beh = NF.get("beh", {})
+	var D = C.nemPanelData()
 	v.add_child(_wr_head("Nemesis"))
 	if C.jt(N.get("dead")):
-		v.add_child(lbl(C.nemFull() + " is dead.", 14, BONE3)); return
+		v.add_child(lbl(C.nemFull() + " is dead.", 14, BONE3)); _nem_prior(v, D); return
 	var who = rich("[b]" + c(esc(C.nemFull()), BLOOD) + "[/b] " + c(esc(F["n"] if F != null else "") + ((", scarred %dx" % int(N["scars"])) if C.jt(N.get("scars")) else ""), BONE3), 15)
 	var P = C.NEM_PERSONA.get(N.get("persona")) if N.get("persona") != null else null
 	var head = vbox(2); head.size_flags_horizontal = Control.SIZE_EXPAND_FILL; head.add_child(who)
@@ -747,18 +750,18 @@ func _nem_panel(v: VBoxContainer) -> void:
 	v.add_child(lbl(C.nemSay("Each fight you win moves the clock " + (C.numstr(pace) + " steps" if pace != 1.0 else "one step") + "; when it fills, your next fight is against him. You meet him once each sector at the latest, at one of the last fights before the rest stop.", N), 13, BONE3))
 	# what grows him between fights (only the factions that have it)
 	if C.jt(beh.get("feeds")):
-		var fd = int(C.z0(N.get("fed"))); v.add_child(rich(c("Fed: ", BONE2) + c(str(fd) + " of 8", BLOOD) + c(" (his fleet has " + str(min(32, 4 * fd)) + "% more hull; every ship you lose feeds him)", BONE3), 13))
+		var fd = int(C.z0(N.get("fed"))); v.add_child(rich(c("Fed: ", BONE2) + c(str(fd) + " of 8", BLOOD) + c(C.nemSay(" (his fleet has " + str(min(32, 4 * fd)) + "% more hull; every ship you lose feeds him)", N), BONE3), 13))
 	if beh.get("strike") == "raid":
-		var rc = int(C.z0(N.get("riches"))); v.add_child(rich(c("Riches: ", BONE2) + c(str(rc), BLOOD) + c(" (" + ("no extra ships yet" if rc == 0 else str(rc) + " extra ship" + ("s" if rc > 1 else "") + " in his fleet") + "; each escape or ship he tows adds one)", BONE3), 13))
+		var rc = int(C.z0(N.get("riches"))); v.add_child(rich(c("Riches: ", BONE2) + c(str(rc), BLOOD) + c(C.nemSay(" (" + ("no extra ships yet" if rc == 0 else str(rc) + " extra ship" + ("s" if rc > 1 else "") + " in his fleet") + "; each escape or ship he tows adds one)", N), BONE3), 13))
 	if C.jt(N.get("loot")) or C.jt(N.get("held")):   # R49: what a raid took comes back when he dies
 		var hs = []
 		if C.jt(N.get("loot")): hs.append(C.numstr(N["loot"]) + " of your credits")
 		if C.jt(N.get("held")): hs.append("the " + str(N["held"]["name"]))
 		v.add_child(rich(c(C.nemPr(N)["He"] + " holds ", BONE2) + c(" and ".join(PackedStringArray(hs)), GILT) + c(": it all comes back when " + C.nemPr(N)["he"] + " dies.", BONE2), 13))
 	if beh.get("strike") == "duel" and C.jt(N.get("honed")):
-		var hn = min(3, int(N["honed"])); v.add_child(rich(c("Honed: ", BONE2) + c(str(hn) + " of 3", BLOOD) + c(" (his few ships aim " + str(3 * hn) + " better and carry " + str(10 * hn) + "% stronger shields)", BONE3), 13))
+		var hn = min(3, int(N["honed"])); v.add_child(rich(c("Honed: ", BONE2) + c(str(hn) + " of 3", BLOOD) + c(C.nemSay(" (his few ships aim " + str(3 * hn) + " better and carry " + str(10 * hn) + "% stronger shields)", N), BONE3), 13))
 	if C.jt(beh.get("revive")):   # R49: only in the last sector
-		v.add_child(rich(c("Comeback: ", BONE2) + (c("spent, the next kill is final", GILT) if C.jt(N.get("revived")) else c("in sector III his flagship rises once more after it falls; before that he withdraws like any rival", BLOOD)), 13))
+		v.add_child(rich(c("Comeback: ", BONE2) + (c("spent, the next kill is final", GILT) if C.jt(N.get("revived")) else c(C.nemSay("in sector III his flagship rises once more after it falls; before that he withdraws like any rival", N), BLOOD)), 13))
 	# weaknesses with what they do; adaptations in his faction's words with what they do
 	var ws = []; var unknown = 0
 	for w in N["weak"]:
@@ -772,6 +775,23 @@ func _nem_panel(v: VBoxContainer) -> void:
 		v.add_child(rich(c("Adapted: ", BONE2) + "; ".join(PackedStringArray(ad)), 13))
 	if C.jt(N.get("last_beat")):
 		v.add_child(lbl(C.nemPr(N)["He"] + " remembers losing to your " + str(C.NEM_BEAT_WORD.get(N["last_beat"], N["last_beat"])) + ".", 13, BONE3))
+	if D is Dictionary:
+		if str(D.get("back", "")) != "": v.add_child(lbl(str(D["back"]), 13, GILT))   # a return: the SP1 commander back at SP3
+		if D.get("lessons") is Array and D["lessons"].size() > 0: v.add_child(_nem_lessons(D["lessons"]))
+	_nem_prior(v, D)
+# #122: the lessons a commander taught you (lost meetings), one line, as the browser card
+func _nem_lessons(ls: Array) -> Control:
+	var parts = []
+	for t in ls: parts.append(c(esc(str(t)), BONE2))
+	return rich(c("Lessons: ", BONE2) + "; ".join(PackedStringArray(parts)), 13)
+# #122: the commanders of the story points already passed, still readable after the rotation (name, faction, how it went, lessons)
+func _nem_prior(v: VBoxContainer, D) -> void:
+	if not (D is Dictionary) or not (D.get("earlier") is Array) or D["earlier"].is_empty(): return
+	v.add_child(caps("Earlier hunters", 12, BONE3))
+	for E in D["earlier"]:
+		v.add_child(rich("[b]" + c(esc(str(E["name"])), BONE) + "[/b] " + c(esc(str(E["faction"])), BONE3), 14))
+		v.add_child(lbl(str(E["line"]), 13, BONE2))
+		if E.get("lessons") is Array and E["lessons"].size() > 0: v.add_child(_nem_lessons(E["lessons"]))
 # The Nemesis face (godot/portraits, R42): his stored portrait id (nem_<faction>_<1..6>) with one overlay per scar he carries, framed red-black.
 # The run stores how each scar was made (scarKinds: fled, big, cut, flay, melt, dark, blast, tidal); this maps them onto the portrait set's
 # overlays his faction can take (burn for blasts and melts, the faction's own kinds for the rest). Presentation only, no random draws.
