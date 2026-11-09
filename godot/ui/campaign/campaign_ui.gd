@@ -787,7 +787,7 @@ func _nem_lessons(ls: Array) -> Control:
 # #122: the commanders of the story points already passed, still readable after the rotation (name, faction, how it went, lessons)
 func _nem_prior(v: VBoxContainer, D) -> void:
 	if not (D is Dictionary) or not (D.get("earlier") is Array) or D["earlier"].is_empty(): return
-	v.add_child(caps("Earlier hunters", 11, BONE3))
+	v.add_child(caps("Earlier hunters", 12, BONE3))
 	for E in D["earlier"]:
 		v.add_child(rich("[b]" + c(esc(str(E["name"])), BONE) + "[/b] " + c(esc(str(E["faction"])), BONE3), 14))
 		v.add_child(lbl(str(E["line"]), 13, BONE2))
