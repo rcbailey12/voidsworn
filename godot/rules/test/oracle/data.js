@@ -900,7 +900,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Every Lens Aloft",
-              "d": "a carrier that held still this round launches one extra wing whose strike is also recorded for next round."
+              "d": "a carrier that held still this round launches one additional extra wing, and that wing strikes this round at the full strike again bonus."
             }
           ]
         ]
@@ -938,8 +938,8 @@ const LINEAGE_TREES={
     },
     "capstones": [
       {
-        "n": "Flight Remembered Perfectly",
-        "d": "the extra wings strike three times: the recorded strike, a corrected strike at full effect, and a final strike at half damage."
+        "n": "Flight Cast Perfectly",
+        "d": "during Starling flight, all wings striking the same target combine their attacks into a single simultaneous strike that ignores point defence and deals +25% damage to the target's most damaged section."
       },
       {
         "n": "The Forge Casts Ahead",
@@ -979,7 +979,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Long Light",
-              "d": "lance weapons in the volley gain +2 hexes of range."
+              "d": "lance weapons in the volley gain +2 hexes of range for any ship that has not turned this round."
             }
           ]
         ]
@@ -1101,7 +1101,7 @@ const LINEAGE_TREES={
       },
       {
         "n": "A Hundred False Hulls",
-        "d": "during the scatter round, the first two enemy volleys fired each round are wasted on false images."
+        "d": "in the scatter round, the first two enemy attacks are wasted on false images and automatically miss their targets."
       }
     ]
   },
@@ -1176,7 +1176,7 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "Ward of Clear Glass",
-        "d": "Prism ward lasts two rounds, and shields refill again at the start of the second round."
+        "d": "during Prism ward, an enemy ship that fires at a warded ship loses 20 accuracy on its next shot, once per enemy ship."
       },
       {
         "n": "Every Facet Lit",
@@ -2764,6 +2764,32 @@ const LINEAGE_TREES={
       }
     ]
   }
+};
+// Admiral tree effect numbers (issue #305 job 1: the plumbing and the Glasswrights pilot).
+// The pick key is the lineage key from LINEAGE_TREES; the text lives there and these numbers drive battle.
+// A row with no entry is inert (the 12 Glasswrights x and c rows wait for the Muse text pass, #311).
+const TREE_FX={
+  "aelith:A:0:1":{k:"castTwice",n:.5},
+  "aelith:A:2:0":{k:"flakSkip"},
+  "aelith:A:2:1":{k:"lensAloft"},
+  "vaelen:A:0:0":{k:"longFocus",n:.2},
+  "vaelen:A:1:1":{k:"recordedAngle"},
+  "vaelen:A:2:0":{k:"burnFlaw"},
+  "vaelen:A:2:1":{k:"longLight",n:2},
+  "vaelen:cap:1":{k:"flawForever",n:.15},
+  "thorne:A:0:0":{k:"twoImages",n:20},
+  "thorne:A:0:1":{k:"anglesRecorded",n:10},
+  "thorne:A:2:0":{k:"refraction",n:6},
+  "thorne:A:2:1":{k:"mirrorTurns"},
+  "thorne:cap:1":{k:"falseHulls",n:2},
+  "mirelle:A:1:0":{k:"rechargeLit"},
+  "mirelle:A:2:0":{k:"glassCorrected",n:.15},
+  "mirelle:A:2:1":{k:"hardLight"},
+  "mirelle:cap:0":{k:"wardGlass",n:20},
+  "aelith:B:0:0":{k:"deployRead"},"aelith:B:0:1":{k:"castCorrected"},"aelith:C:0:0":{k:"flagshipLens",n:10},"aelith:C:0:1":{k:"firstLight",n:10},
+  "vaelen:B:0:0":{k:"deployRead"},"vaelen:B:0:1":{k:"castCorrected"},"vaelen:C:0:0":{k:"flagshipLens",n:10},"vaelen:C:0:1":{k:"firstLight",n:10},
+  "thorne:B:0:0":{k:"deployRead"},"thorne:B:0:1":{k:"castCorrected"},"thorne:C:0:0":{k:"flagshipLens",n:10},"thorne:C:0:1":{k:"firstLight",n:10},
+  "mirelle:B:0:0":{k:"deployRead"},"mirelle:B:0:1":{k:"castCorrected"},"mirelle:C:0:0":{k:"flagshipLens",n:10},"mirelle:C:0:1":{k:"firstLight",n:10}
 };
 // Patron favour: grows with every boon you take from a patron
 const FAVOUR_TIERS=[{at:0,n:'Listening'},{at:4,n:'Partial sync',d:'Its protocols are rare more often.'},{at:12,n:'Synced',d:'If it is in range of your run, you start with one of its protocols.'},{at:25,n:'Full sync',d:'Its protocols are never common.'}];

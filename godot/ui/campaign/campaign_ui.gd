@@ -1234,6 +1234,22 @@ func _end(d: Dictionary) -> Control:
 	return cc
 
 # ---------------- lineage trees ----------------
+# issue #305: a lineage pick key (admiral:branch:tier:choice or admiral:cap:n) as its skill name
+func _tree_name(key: String) -> String:
+	var p = key.split(":")
+	if p.size() < 3: return key
+	var tree = C.LINEAGE_TREES.get(p[0])
+	if not tree is Dictionary: return key
+	if p[1] == "cap":
+		var c = int(p[2]); var caps = tree.get("capstones", [])
+		return str(caps[c]["n"]) if c < caps.size() else key
+	var t = int(p[2]); var c2 = int(p[3]) if p.size() > 3 else 0
+	var br = tree.get("branches", {}).get(p[1])
+	if not br is Dictionary: return key
+	var tiers = br.get("tiers", [])
+	if t >= tiers.size(): return key
+	var pair = tiers[t]
+	return str(pair[c2]["n"]) if c2 < pair.size() else key
 func _lineage_node(n) -> Control:
 	var chosen = n["state"] == "chosen"; var cv = card(chosen, 300); var col = cv[1]
 	col.add_child(lbl(n["n"], 19, GILT if chosen else BONE, font_semi)); col.add_child(lbl(n["d"], 16, BONE2))
@@ -1361,6 +1377,11 @@ func _modal(md: Dictionary) -> void:
 				p.call("Lost: " + ", ".join(PackedStringArray(ls)) + ".", BLOOD)
 			if d["extra"] != "": p.call(d["extra"], GILT)
 			if (R.get("boons") as Array).size() > 0 and (sm.get("boonStats", {}) as Dictionary).is_empty(): p.call("No protocol triggered this battle. Check the Fleet protocols section on a ship to see what sets each one off.", BONE3)
+			var tstats: Dictionary = sm.get("treeStats", {}) if sm.get("treeStats") is Dictionary else {}
+			if not tstats.is_empty():
+				var tks = tstats.keys(); tks.sort(); var tls = []
+				for key in tks: tls.append(_tree_name(str(key)) + " x" + C.numstr(tstats[key]))
+				p.call("Lineage in action: " + ", ".join(PackedStringArray(tls)) + ".", GILT)
 			if d["flagMoved"] != null: p.call("The admiral transfers the flag to the " + str(d["flagMoved"]["name"]) + ". Its aspect goes with it.", GILT)
 			for x in sm["xp"]: v.add_child(rich("• " + esc(x["cap"]) + " of the " + esc(x["ship"]) + ": +" + C.numstr(x["xp"]) + " experience" + ((" " + c("promoted to " + str(C.RANKS[int(x["rank"])]), GILT)) if x["up"] else ""), 16))
 			var rw = d["rw"]

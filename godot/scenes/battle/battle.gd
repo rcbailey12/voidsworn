@@ -1214,6 +1214,10 @@ func _play_event(e: Dictionary) -> void:
 				await wait(float(PACE["banner"]) + 140.0)
 		"log":
 			hud.add_log(str(e.get("text", "")), str(e.get("kind", "")) if e.get("kind") != null else "")
+		"float":
+			# rules.gd flt(): the boon and lineage callout over a ship (issue #305)
+			var dyv = e.get("dy")
+			_float(e.get("unit"), str(e.get("text", "")), Color(str(e.get("color", "#d0a64b"))), float(dyv) if dyv != null else 0.0)
 		"wing":
 			# a squadron appears beside its carrier: draw it now (the view after the batch fills in the rest)
 			if not views.has(e["unit"]):
@@ -3851,6 +3855,23 @@ static func _n(x) -> String:
 		return str(int(x))
 	return str(x)
 
+# issue #305: a lineage pick key (admiral:branch:tier:choice or admiral:cap:n) as its skill name
+func _tree_name(key: String) -> String:
+	var p = key.split(":")
+	if p.size() < 3: return key
+	var tree = TBL.get("LINEAGE_TREES", {}).get(p[0])
+	if not tree is Dictionary: return key
+	if p[1] == "cap":
+		var c = int(p[2]); var caps = tree.get("capstones", [])
+		return str(caps[c]["n"]) if c < caps.size() else key
+	var t = int(p[2]); var c2 = int(p[3]) if p.size() > 3 else 0
+	var br = tree.get("branches", {}).get(p[1])
+	if not br is Dictionary: return key
+	var tiers = br.get("tiers", [])
+	if t >= tiers.size(): return key
+	var pair = tiers[t]
+	return str(pair[c2]["n"]) if c2 < pair.size() else key
+
 
 func _weapon_desc(ru, rw, arc_name: String) -> String:
 	var mul := float(ru.get("dmg", 1.0)) if _jt(ru.get("dmg")) else 1.0
@@ -4003,6 +4024,13 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 			bb += "[color=%s]▌[/color][b]%s[/b]%s [color=#b3aa95]%s[/color]\n" % [pcol, str(B0.get("n", "")), (" [color=#d0a64b]×%d this battle[/color]" % int(stats[b["id"]])) if _jt(stats.get(b.get("id"))) else "", d]
 		if bb != "":
 			extra.append(["Fleet protocols", bb.strip_edges()])
+	if ru["side"] == "player" and not _jt(ru.get("isSq")):
+		var ts: Dictionary = Bs.get("treeStats", {}) if Bs.get("treeStats") is Dictionary else {}
+		if not ts.is_empty():
+			var keys = ts.keys(); keys.sort(); var tb := ""
+			for key in keys:
+				tb += "[b]%s[/b] [color=#d0a64b]×%d this battle[/color]\n" % [_tree_name(str(key)), int(ts[key])]
+			extra.append(["Admiral lineage", tb.strip_edges()])
 	if ru["side"] == "enemy":
 		var F = TBL.get("FACTIONS", {}).get(str(ru.get("fac")), {})
 		if F is Dictionary and str(F.get("blurb", "")) != "":

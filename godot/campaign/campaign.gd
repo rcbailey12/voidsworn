@@ -991,15 +991,16 @@ func capstoneMasteryNext(id) -> Variant:
 	return null if l >= CAPSTONE_MASTERY_XP.size() else CAPSTONE_MASTERY_XP[l]
 func lineageBuild(id) -> Dictionary:
 	var tree = LINEAGE_TREES.get(id); var raw = or_(or_(META.get("lineage"), {}).get(id), {}); var picks = []; var ranks = {"A": 0, "B": 0, "C": 0}
+	var lvl = 8 if playtestAll() else masteryLevel(id)   # R69 playtest switch (issue #305): every tree node is open while it is on
 	if tree != null and raw is Dictionary and raw.get("picks") is Array:
-		for key in raw["picks"].slice(0, maxi(0, mini(3, masteryLevel(id) - 4))):
+		for key in raw["picks"].slice(0, maxi(0, mini(3, lvl - 4))):
 			var node = str(key).split(":")
 			if node.size() != 3: break
 			var b = node[0]; var t = node[1]; var c = node[2]
 			if not tree["branches"].has(b) or str(ranks[b]) != t or not c in ["0", "1"] or int(t) >= tree["branches"][b]["tiers"].size(): break
 			picks.append(key); ranks[b] += 1
 	var capstone = raw.get("capstone") if raw is Dictionary else null
-	if tree == null or picks.size() != 3 or masteryLevel(id) < 8 or not (capstone is float or capstone is int) or (capstone != 0 and capstone != 1): capstone = null
+	if tree == null or picks.size() != 3 or lvl < 8 or not (capstone is float or capstone is int) or (capstone != 0 and capstone != 1): capstone = null
 	var respecs = raw.get("respecs", 0) if raw is Dictionary else 0
 	if not (respecs is float or respecs is int) or not is_finite(float(respecs)) or float(respecs) != floor(float(respecs)) or float(respecs) <= 0 or float(respecs) > 9007199254740991: respecs = 0
 	return {"picks": picks, "capstone": capstone, "respecs": respecs}
@@ -1007,7 +1008,7 @@ func lineageBetweenRuns() -> bool: return SAVED_RUN == null and (RUN == null or 
 func lineageNodes(id) -> Array:
 	var tree = LINEAGE_TREES.get(id)
 	if tree == null: return []
-	var build = lineageBuild(id); var ranks = {"A": 0, "B": 0, "C": 0}; var nodes = []; var level = masteryLevel(id)
+	var build = lineageBuild(id); var ranks = {"A": 0, "B": 0, "C": 0}; var nodes = []; var level = 8 if playtestAll() else masteryLevel(id)
 	for key in build["picks"]: ranks[str(key).substr(0, 1)] += 1
 	for b in tree["branches"].keys():
 		var tiers = tree["branches"][b]["tiers"]
@@ -1135,6 +1136,8 @@ func newRun(admiralId, fac, opt = {}) -> void:
 			f["mk"] = max(float(or_(f.get("mk"), 1)), 2); f["cap"]["rank"] = max(float(f["cap"]["rank"]), 2); f["cap"]["xp"] = max(float(f["cap"]["xp"]), float(RANK_XP[2]))
 			if f["cap"]["perks"].size() < 2: f["cap"]["perks"].append(pick(PERKS.keys().filter(func(p): return not f["cap"]["perks"].has(p))))
 			f["hp"] = derive(f)["maxHp"]
+	var lb = lineageBuild(admiralId)   # issue #305: a run snapshots the flown admiral's tree, because picks can only change between runs
+	RUN["lineage"] = {"id": admiralId, "picks": lb["picks"].duplicate(), "capstone": lb["capstone"]}
 	var dev = null
 	for p in RUN["patrons"]:
 		if favourTier(p) >= 2: dev = p; break
@@ -3124,7 +3127,7 @@ func finishBattle(result: String) -> void:
 	if result == "loss" and jt(B.get("withdraw")) and B["units"].any(func(u): return u["side"] == "player" and not jt(u.get("dead")) and not jt(u.get("isSq"))): result = "retreat"
 	if RUN.get("teachingGate") == true and B["units"].any(func(u): return jt(u.get("reinf"))): RUN["teachingReinforced"] = true
 	var cfg = B["cfg"]
-	var summary = {"cfg": cfg, "xp": [], "lost": [], "kills": 0, "rounds": B["round"], "prizes": [], "partial": jt(B.get("partial")), "boonStats": or_(B.get("boonStats"), {}).duplicate()}
+	var summary = {"cfg": cfg, "xp": [], "lost": [], "kills": 0, "rounds": B["round"], "prizes": [], "partial": jt(B.get("partial")), "boonStats": or_(B.get("boonStats"), {}).duplicate(), "treeStats": or_(B.get("treeStats"), {}).duplicate()}
 	var wingK = {}
 	for u in B["units"]:
 		if jt(u.get("parent")):

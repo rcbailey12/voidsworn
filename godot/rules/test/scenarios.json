@@ -1848,5 +1848,673 @@
   "rounds": 12,
   "bot": "full",
   "alt": false
+ },
+ "t_casttwice": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "note": "Tree fixture: Tamsa Cast Twice in Light (aelith:A:0:1) repeats an extra wing strike at half damage",
+  "seed": 31201,
+  "admiral": "aelith",
+  "fleet": [
+   "i_carrier",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_boss"
+  ],
+  "cmdRound": 4,
+  "treeChoices": {
+   "carrier": "x03",
+   "enemy": "x05"
+  },
+  "lineage": {
+   "id": "aelith",
+   "picks": [
+    "aelith:A:0:1"
+   ],
+   "capstone": null
+  }
+ },
+ "t_flakskip": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "note": "Tree fixture: Tamsa Flaw in the Flight Removed (aelith:A:2:0) skips one enemy point defence",
+  "seed": 31202,
+  "admiral": "aelith",
+  "fleet": [
+   "i_carrier",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_boss"
+  ],
+  "cmdRound": 4,
+  "treeChoices": {
+   "carrier": "x03",
+   "enemy": "x05"
+  },
+  "lineage": {
+   "id": "aelith",
+   "picks": [
+    "aelith:A:0:0",
+    "aelith:A:1:0",
+    "aelith:A:2:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t_lensaloft": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Tamsa Every Lens Aloft (aelith:A:2:1) adds an extra wing from a launch ship that held still",
+  "seed": 31203,
+  "admiral": "aelith",
+  "fleet": [
+   "i_carrier",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "aelith",
+   "picks": [
+    "aelith:A:0:0",
+    "aelith:A:1:0",
+    "aelith:A:2:1"
+   ],
+   "capstone": null
+  }
+ },
+ "t_longfocus": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Saro Focus Drawn Long (vaelen:A:0:0) pays +20% on volley shots past half range",
+  "seed": 31204,
+  "admiral": "vaelen",
+  "fleet": [
+   "i_song",
+   "i_song",
+   "i_song"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester",
+   "d_scythe_s"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "vaelen",
+   "picks": [
+    "vaelen:A:0:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t_recordedangle": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Saro The Recorded Angle (vaelen:A:1:1) turns a ship before the volley",
+  "seed": 31205,
+  "admiral": "vaelen",
+  "fleet": [
+   "i_song",
+   "i_song",
+   "i_song"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester",
+   "d_scythe_s"
+  ],
+  "cmdRound": 3,
+  "lineage": {
+   "id": "vaelen",
+   "picks": [
+    "vaelen:A:0:0",
+    "vaelen:A:1:1"
+   ],
+   "capstone": null
+  }
+ },
+ "t_burnflaw": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Saro Burning the Flaw Out (vaelen:A:2:0) makes the third volley hit ignore shields",
+  "seed": 31206,
+  "admiral": "vaelen",
+  "fleet": [
+   "i_song",
+   "i_song",
+   "i_blade"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "vaelen",
+   "picks": [
+    "vaelen:A:0:0",
+    "vaelen:A:1:1",
+    "vaelen:A:2:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t_longlight": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Saro Long Light (vaelen:A:2:1) adds 2 lance range to a ship that has not turned",
+  "seed": 31207,
+  "admiral": "vaelen",
+  "fleet": [
+   "i_song",
+   "i_song"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester"
+  ],
+  "cmdRound": 1,
+  "lineage": {
+   "id": "vaelen",
+   "picks": [
+    "vaelen:A:0:0",
+    "vaelen:A:1:1",
+    "vaelen:A:2:1"
+   ],
+   "capstone": null
+  }
+ },
+ "t_flawforever": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Saro The Flaw, Corrected Forever (vaelen:cap:1) keeps +15% lance damage on the volley target",
+  "seed": 31208,
+  "admiral": "vaelen",
+  "fleet": [
+   "i_song",
+   "i_song",
+   "i_song"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester",
+   "d_scythe_s"
+  ],
+  "cmdRound": 3,
+  "lineage": {
+   "id": "vaelen",
+   "picks": [
+    "vaelen:A:0:0",
+    "vaelen:A:1:1",
+    "vaelen:A:2:0"
+   ],
+   "capstone": 1
+  }
+ },
+ "t_twoimages": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Vell Two Images Appear (thorne:A:0:0) costs the first enemy shot at each ship 20 accuracy",
+  "seed": 31209,
+  "admiral": "thorne",
+  "fleet": [
+   "i_song",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "thorne",
+   "picks": [
+    "thorne:A:0:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t_angles": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "note": "Tree fixture: Vell Angles Recorded (thorne:A:0:1) gives evasion for ending movement on a new facing",
+  "seed": 31210,
+  "admiral": "thorne",
+  "fleet": [
+   "i_wisp",
+   "i_wisp",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_boss"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "thorne",
+   "picks": [
+    "thorne:A:0:1"
+   ],
+   "capstone": null
+  }
+ },
+ "t_refraction": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Vell Refraction Deepens (thorne:A:2:0) hides a ship that spent all its movement beyond range 6",
+  "seed": 31211,
+  "admiral": "thorne",
+  "fleet": [
+   "i_wisp",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_scythe_s"
+  ],
+  "cmdRound": 1,
+  "lineage": {
+   "id": "thorne",
+   "picks": [
+    "thorne:A:0:1",
+    "thorne:A:1:0",
+    "thorne:A:2:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t_mirrorturns": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Vell Every Mirror Turns (thorne:A:2:1) faces every ship free at the end of scatter movement",
+  "seed": 31212,
+  "admiral": "thorne",
+  "fleet": [
+   "i_wisp",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_scythe_s"
+  ],
+  "cmdRound": 1,
+  "lineage": {
+   "id": "thorne",
+   "picks": [
+    "thorne:A:0:1",
+    "thorne:A:1:0",
+    "thorne:A:2:1"
+   ],
+   "capstone": null
+  }
+ },
+ "t_falsehulls": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Vell A Hundred False Hulls (thorne:cap:1) wastes the first two enemy attacks",
+  "seed": 31213,
+  "admiral": "thorne",
+  "fleet": [
+   "i_song",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "thorne",
+   "picks": [
+    "thorne:A:0:0",
+    "thorne:A:1:0",
+    "thorne:A:2:0"
+   ],
+   "capstone": 1
+  }
+ },
+ "t_rechargelit": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "note": "Tree fixture: Brin Recharge While Lit (mirelle:A:1:0) recharges shields again at the next round start",
+  "seed": 31214,
+  "admiral": "mirelle",
+  "fleet": [
+   "i_song",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_scythe_s"
+  ],
+  "cmdRound": 1,
+  "lineage": {
+   "id": "mirelle",
+   "picks": [
+    "mirelle:A:0:0",
+    "mirelle:A:1:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t_glasscorrected": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "note": "Tree fixture: Brin Flaw in the Glass Corrected (mirelle:A:2:0) refills the first emptied facing",
+  "seed": 31215,
+  "admiral": "mirelle",
+  "fleet": [
+   "i_wisp",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "h_boss"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "mirelle",
+   "picks": [
+    "mirelle:A:0:0",
+    "mirelle:A:1:0",
+    "mirelle:A:2:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t_hardlight": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Brin Hard Light (mirelle:A:2:1) blocks the first section damage while a shield remains",
+  "seed": 31216,
+  "admiral": "mirelle",
+  "fleet": [
+   "i_song",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "mirelle",
+   "picks": [
+    "mirelle:A:0:0",
+    "mirelle:A:1:0",
+    "mirelle:A:2:1"
+   ],
+   "capstone": null
+  }
+ },
+ "t_wardglass": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Brin Ward of Clear Glass (mirelle:cap:0) reflects 20 accuracy onto the next shot of an enemy that fired at the ward",
+  "seed": 31217,
+  "admiral": "mirelle",
+  "fleet": [
+   "i_song",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "mirelle",
+   "picks": [
+    "mirelle:A:0:0",
+    "mirelle:A:1:0",
+    "mirelle:A:2:0"
+   ],
+   "capstone": 0
+  }
+ },
+ "t_deployread": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 2,
+  "bot": "full",
+  "note": "Tree fixture: shared Deployment Read from the Shards (vaelen:B:0:0) moves one ship in the deployment zone at battle start",
+  "seed": 31218,
+  "admiral": "vaelen",
+  "fleet": [
+   "i_song",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_scythe_s"
+  ],
+  "lineage": {
+   "id": "vaelen",
+   "picks": [
+    "vaelen:B:0:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t_castcorrected": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 2,
+  "bot": "full",
+  "note": "Tree fixture: shared Casting Corrected Before Battle (vaelen:B:0:1) swaps two ships at battle start",
+  "seed": 31219,
+  "admiral": "vaelen",
+  "fleet": [
+   "i_song",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_scythe_s"
+  ],
+  "lineage": {
+   "id": "vaelen",
+   "picks": [
+    "vaelen:B:0:1"
+   ],
+   "capstone": null
+  }
+ },
+ "t_flagshiplens": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: shared The Flagship Lens (vaelen:C:0:0) marks one enemy for lance aim each round",
+  "seed": 31220,
+  "admiral": "vaelen",
+  "fleet": [
+   "i_song",
+   "i_song"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "vaelen",
+   "picks": [
+    "vaelen:C:0:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t_firstlight": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: shared First Light Recorded (vaelen:C:0:1) gives the fleet +10 evasion against the first enemy to fire",
+  "seed": 31221,
+  "admiral": "vaelen",
+  "fleet": [
+   "i_song",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "vaelen",
+   "picks": [
+    "vaelen:C:0:1"
+   ],
+   "capstone": null
+  }
  }
 }

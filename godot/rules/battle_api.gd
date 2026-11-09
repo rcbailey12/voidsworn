@@ -110,6 +110,7 @@ func _i_new_battle_scenario(sc, seed_override: int = -1) -> void:
 	if R.jt(S.get("aspect")): run["aspect"] = S.aspect
 	if S.get("heat") != null: run["heat"] = S.heat.duplicate()
 	if S.get("class_track") != null: run["classTrack"] = S.class_track.duplicate()
+	if S.get("lineage") != null: run["lineage"] = S.lineage.duplicate(true)   # issue #305: the run snapshot of the flown admiral's tree
 	R.RUN = run
 	for t in S.fleet: run["fleet"].append(R.newShip(t, R.jt(S.get("vet"))))
 	run["flagUid"] = run["fleet"][0]["uid"]
@@ -121,6 +122,8 @@ func _i_new_battle_scenario(sc, seed_override: int = -1) -> void:
 	if R.jt(S.get("noStar")): cfg["noStar"] = true   # R1: campaign sector 1 never fields the dead star
 	for key in ["teachingGate", "teachingBattle", "edgeFeature", "arena", "storyMods"]:
 		if S.has(key): cfg[key] = S[key]
+	if S.get("treeChoices") != null: cfg["treeChoices"] = S.treeChoices.duplicate(true)   # issue #305: H1 answers for a fixture
+	if S.get("cmdRound") != null: cfg["cmdRound"] = S.cmdRound   # issue #305: pin the round the fixture uses the Command
 	if S.get("alt") != null: cfg["alt"] = S.alt   # passed through untouched, so new_battle's type-safe cfg.alt!==false is what decides (s41: a Dictionary)
 	if R.jt(S.get("campaign")):
 		cfg["campaign"] = true; cfg["event_force"] = S.get("event_force"); cfg["event_war"] = S.get("event_war")
@@ -638,7 +641,8 @@ func _ai_activate(u) -> void:
 				hp += p["hp"]; mx += p["maxHp"]
 				if p["hp"] < p["maxHp"] * 0.5: hurt = true
 			var hpR = hp / mx; var id = c["id"]; var off = id in ["barrage", "hunt", "scramble", "surge"]
-			if (off and (near >= 2 or R.B["round"] >= 4)) or (id == "restore" and hpR < 0.6) or (id == "iron" and (hurt or near >= 2)) or R.B["round"] >= 6:
+			var cf = R.B.get("cfg"); var cr = cf.get("cmdRound") if cf is Dictionary else null
+			if (cr != null and R.B["round"] == cr) or (cr == null and ((off and (near >= 2 or R.B["round"] >= 4)) or (id == "restore" and hpR < 0.6) or (id == "iron" and (hurt or near >= 2)) or R.B["round"] >= 6)):
 				command()
 	if gone.call(): return
 	if R.jt(u.get("ab")) and R.canAbility(u) and _can_use(u):

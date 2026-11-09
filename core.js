@@ -431,6 +431,8 @@ function newRun(admiralId,fac,opt){
   if(opt.cmdAlt&&RUN.mastery>=3){ const c=altCommand(admiralId); if(c) RUN.cmdOverride=c; }
   RUN.cpCap=Math.max(RUN.cpCap, fleetCP()+3); ensureFlagship();
   if(RUN.mastery>=4){ const f=flagshipOf(); if(f){ f.mk=Math.max(f.mk||1,2); f.cap.rank=Math.max(f.cap.rank,2); f.cap.xp=Math.max(f.cap.xp,RANK_XP[2]); if(f.cap.perks.length<2) f.cap.perks.push(pick(Object.keys(PERKS).filter(p=>!f.cap.perks.includes(p)))); f.hp=derive(f).maxHp; } }
+  // Issue #305: a run snapshots the flown admiral's tree, because picks can only change between runs.
+  { const b=lineageBuild(admiralId); RUN.lineage={id:admiralId,picks:b.picks.slice(),capstone:b.capstone}; }
   // a Devoted patron sends a gift: one common boon from the first devoted patron watching this run
   { const dev=RUN.patrons.find(p=>favourTier(p)>=2); if(dev){ const pool=Object.keys(BOONS).filter(id=>BOONS[id].p===dev&&!BOONS[id].leg&&boonUseful(id,fleetKit())); if(pool.length){ const id=pick(pool); RUN.boons.push({id,r:favourTier(dev)>=3?1:0}); RUN.giftBoon=id; } } }
   RUN.map=genSector(1);

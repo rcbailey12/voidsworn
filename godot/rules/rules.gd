@@ -20,7 +20,7 @@ var WPN; var ARC_NAME; var FAC_WNAMES; var FAC_WTRAIT; var HULLS; var MOVE_RULES
 var RANK_XP; var RELICS; var ADMIRALS; var SHIP_NAMES; var CAPTAINS; var MORE_SHIP_NAMES; var SECTOR_CONDS; var RARITY; var ASPECTS
 var DIRS; var PACE; var BLOCKING; var SHAPES; var BEVENTS; var ENC_ARENA; var FAC_MAP; var ENCOUNTERS; var CREW_MULT; var BOARD_MULT; var RAM_FAC
 var BOSS_FAC; var BOSS_SCALE; var BOSS_DMG; var RAMP; var ARENAS; var AXIS_SHAPES; var MOVE_BASE; var SEC_OF_QUAD; var CMD_POW; var BOSS_CMD; var FACTION_AI
-var ROCK_KINDS; var REGION_BIOME; var COMMANDS; var SEC_NAME; var QUAD_NAME; var FNAMES
+var ROCK_KINDS; var REGION_BIOME; var COMMANDS; var SEC_NAME; var QUAD_NAME; var FNAMES; var LINEAGE_TREES; var TREE_FX
 var BW = 30; var BH = 22; var CX = 2; var HEX_S = 10.0; var HEX_W = 0.0; var ENC_ROUNDS = 6
 var WELL_RIM = 3; var WELL_PULL = 5; var WELL_ASSIST = 6; var WELL_DMG = 7
 
@@ -83,6 +83,7 @@ func load_tables(path: String) -> String:
 	BOSS_FAC = TB.BOSS_FAC; BOSS_SCALE = TB.BOSS_SCALE; BOSS_DMG = TB.BOSS_DMG; RAMP = TB.RAMP; ARENAS = TB.ARENAS; AXIS_SHAPES = TB.AXIS_SHAPES
 	MOVE_BASE = TB.MOVE_BASE; SEC_OF_QUAD = TB.SEC_OF_QUAD; CMD_POW = TB.CMD_POW; BOSS_CMD = TB.BOSS_CMD; FACTION_AI = TB.FACTION_AI
 	ROCK_KINDS = TB.ROCK_KINDS; REGION_BIOME = TB.REGION_BIOME; COMMANDS = TB.COMMANDS; SEC_NAME = TB.SEC_NAME; QUAD_NAME = TB.QUAD_NAME; FNAMES = TB.get("FNAMES", {})
+	LINEAGE_TREES = TB.get("LINEAGE_TREES", {}); TREE_FX = TB.get("TREE_FX", {})
 	BW = int(TB.BW); BH = int(TB.BH); CX = int(TB.CX); HEX_S = float(TB.HEX_S); HEX_W = float(TB.HEX_W); ENC_ROUNDS = int(TB.ENC_ROUNDS)
 	WELL_RIM = int(TB.WELL_RIM); WELL_PULL = int(TB.WELL_PULL); WELL_ASSIST = int(TB.WELL_ASSIST); WELL_DMG = int(TB.WELL_DMG)
 	META = TB.META.duplicate(true)
@@ -1140,6 +1141,8 @@ func startBattle(cfg: Dictionary) -> void:
 		"resolve": {"player": 1, "enemy": 1}, "round": 1, "side": "player", "sel": null, "armed": null, "mode": null, "hover": null, "reach": null,
 		"busy": false, "log": [], "fx": [], "cfg": cfg, "over": false, "reviveUsed": false, "inspect": null, "showArcs": true, "showThreat": false, "called": null, "wingSel": null, "activeUnit": null, "sector": RUN["sector"]}
 	var scd = sectorCond(); B["cond"] = RUN["map"]["cond"] if jt(scd) and RUN != null and jt(RUN.get("map")) else null; B["condRegen"] = scd["regen"] if jt(scd) and jt(scd.get("regen")) else 1
+	B["tree"] = treeBuild(); B["treeStats"] = {}; B["treeChoices"] = cfg.get("treeChoices"); B["treePending"] = []; B["treeFlaw"] = null; B["treeLens"] = null; B["treeFlakSkip"] = null
+	B["tr"] = {"r": 1, "enemyShots": {}, "volleyHits": {}, "logged": {}, "falseHulls": 0, "glassUsed": 0, "firstLight": null}
 	var s = RUN["sector"]
 	for ship in RUN["fleet"]:
 		if ship["hp"] <= 0: continue
@@ -1253,6 +1256,7 @@ func startBattle(cfg: Dictionary) -> void:
 			if jt(u.get("transport")): tr.append(u)
 		deploy(tr, "enemy", func(h): return h.r <= bb.r0 + 1 and h.c >= 13 + CX and h.c <= 18 + CX)
 	clearSpawns()
+	treeBattleStart()
 	deployWings()
 	B["cp0"] = {"player": sideCP("player"), "enemy": sideCP("enemy")}
 	B["usage"] = {"fire": {}, "aim": 0, "ab": {}, "ord": {}, "cmd": 0, "moves": 0, "cant": {}}
@@ -1399,6 +1403,7 @@ func escortsBreak() -> void:
 	logm(String(boss["name"]) + " is burning. " + ("Its escorts break off and flee. " if esc.size() > 0 else "") + "Its shields falter and it can no longer repair itself.", "s")
 func startSideTurn(side) -> int:
 	var deaths = []
+	if side == "player": treeRoundStart()
 	if side == "player" and B["round"] > 1:
 		eventTick(); objectiveTick(deaths)
 	if side == "enemy":
@@ -1570,6 +1575,7 @@ func _commit(u, state, ctx: Dictionary) -> void:
 		if not jt(p.get("rot")): n += 1
 	u["hexMoved"] = z0(u.get("hexMoved")) + n
 	if jt(B.get("usage")) and u["side"] == "player" and not jt(u.get("isSq")): B["usage"]["moves"] = B["usage"]["moves"] + 1
+	treeAfterMove(u)
 # opts.onLate (fire on the move) runs inside the burn, after the ship is committed to its hex, exactly as the headless game does
 func moveUnit(u, state, opts = null) -> void:
 	if not inThisBattle(u): return
@@ -1596,6 +1602,7 @@ func rotateUnit(u, dir) -> void:
 	emit({"t": "move", "unit": u["id"], "path": [{"q": int(u["q"]), "r": int(u["r"]), "f": f, "rot": true}], "late_fire": false}); hook("rotate", u)
 	if not live.call(): return
 	u["facing"] = f
+	treeAfterMove(u)
 # ======================= B3 faction identity, travelling torpedoes, B4 Nemesis, verbs, wing doctrines, v54 doctrines =======================
 func canFade(u) -> bool: return u["fac"] == "ithar" or jt(g(u.get("fx"), "fade"))
 func postFireMp(u): return min(u["mp"], z0(u.get("postMp"))) if jt(u.get("postFire")) else u["mp"]
@@ -2226,6 +2233,7 @@ func readyList(u) -> Array:
 func inReach(u, w, t) -> bool:
 	var d = hdist(u, t)
 	if d < 1 or d > w["r"]: return false
+	if treeDeepBlocks(u, t): return false
 	if not inArc(u, t, w["arc"]): return false
 	return los(u, t)
 func canFire(u, w, t) -> bool:
@@ -2276,6 +2284,10 @@ func _hitChance_raw(u, w, t) -> float:
 			if not jt(x.get("dead")) and not is_same(x, t) and x["side"] == t["side"] and not jt(x.get("isSq")) and hdist(x, t) == 1:
 				c -= t["fx"]["lineEv"]; break
 	if B != null and B.get("mark") != null and B["mark"].get(u["side"]) != null and B["mark"][u["side"]]["r"] == B["round"] and B["mark"][u["side"]]["id"] == t.get("id"): c += 10
+	var tl = treeSkill("flagshipLens")
+	if tl != null and w["k"] == "lance" and u["side"] == "player" and B != null and B.get("treeLens") != null and B["treeLens"]["r"] == B["round"] and B["treeLens"]["id"] == t.get("id"): c += treeAddVal(u, "aim", tl["n"])
+	var f1 = treeSkill("firstLight")
+	if f1 != null and B != null and B.get("tr") != null and B["tr"].get("firstLight") == u.get("id") and t["side"] == "player": c -= float(f1["n"])
 	var surge = cmdActive(t["side"], "surge")
 	if w.get("k") == "lance" and jt(g(u.get("fx"), "lanceSure")): return 75.0 if surge else 95.0
 	if u["side"] == "player" and not jt(u.get("isSq")) and not (z0(u.get("sureUsed")) > 0) and jt(runFx().get("firstSure")): return 75.0 if surge else 95.0
@@ -2322,6 +2334,10 @@ func ionOf(att, w) -> float:
 func dmgMult(u, w, t, rear) -> float:
 	var m: float = u["dmg"]
 	var fx = u["fx"]
+	var lf = treeSkill("longFocus")
+	if lf != null and B != null and jt(B.get("volleyMul")) and B["volleyMul"]["side"] == u["side"] and not jt(u.get("isSq")) and hdist(u, t) > float(w["r"]) / 2.0: m += treeAddVal(u, "dmgPct", lf["n"])
+	var ff = treeSkill("flawForever")
+	if ff != null and w["k"] == "lance" and B != null and B.get("treeFlaw") != null and t["id"] == B["treeFlaw"]: m += treeAddVal(u, "dmgPct", ff["n"])
 	if w["arc"] == "P" or w["arc"] == "S": m += z0(fx.get("broadPct"))
 	if w["k"] == "lance": m += z0(fx.get("lancePct"))
 	if w["k"] == "torp": m += z0(fx.get("torpPct"))
@@ -2385,6 +2401,7 @@ func _expectedVs_raw(u, w, t) -> Dictionary:
 	return {"hit": hit, "raw": raw, "hull": hull, "shield": absorbed * ion, "quad": quad, "rear": rear}
 func applyHit(att, w, t, dmg: float, quad: int) -> Dictionary:
 	var of = ownerFx(att); var rear = quad == 2; var pierce = 1.0 if (w.get("k") == "lance" and jt(of.get("lanceSure"))) else z0(w.get("pierce")); var ion = ionVs(att, w, t)
+	if jt(t.get("_treePierce")): pierce = 1.0; t["_treePierce"] = 0
 	if not jt(t.get("isSq")):
 		if t.get("shHit") == null: t["shHit"] = [0, 0, 0, 0]
 		t["shHit"][quad] = 1
@@ -2392,8 +2409,11 @@ func applyHit(att, w, t, dmg: float, quad: int) -> Dictionary:
 			if t.get("regenLock") == null: t["regenLock"] = [0, 0, 0, 0]
 			t["regenLock"][quad] = 1
 	var shieldable: float = dmg * (1.0 - pierce); var through: float = dmg - shieldable
-	var s = z0(t["sh"][quad]); var absorbed: float = min(shieldable, float(s) / ion)
+	var s = z0(t["sh"][quad]); var sh0 = s; var absorbed: float = min(shieldable, float(s) / ion)
 	t["sh"][quad] = max(0, s - absorbed * ion); shieldable -= absorbed
+	var gc = treeSkill("glassCorrected")
+	if gc != null and t["side"] == "player" and cmdActive("player", "iron") and not jt(B["tr"].get("glassUsed")) and t["shMax"] > 0 and sh0 > 0 and t["sh"][quad] <= 0:
+		t["sh"][quad] = JSM.jsround(t["shMax"] * float(gc["n"])); B["tr"]["glassUsed"] = 1; treeFx(t, "glassCorrected", "the emptied facing refills")
 	var arm: float = max(0, t["armor"] - z0(t.get("shredded"))) * (1.0 - z0(w.get("armorPierce"))); var hull: float = (through + shieldable) * (1.0 - (arm * 0.5 if rear else arm))
 	hull *= braceMul(t)
 	hull *= cmdTaken(t) * guardMul(t)
@@ -2417,7 +2437,11 @@ func applyHit(att, w, t, dmg: float, quad: int) -> Dictionary:
 	if jt(of.get("pyre")) and not jt(t.get("isSq")) and t["hp"] < t["maxHp"] / 2.0: t["pyre"] = true
 	t["hp"] = t["hp"] - hull; att["dealt"] = att["dealt"] + hull
 	emit({"t": "hit", "unit": _uid(att), "target": t["id"], "quad": quad, "section": t["_calledSec"] if jt(t.get("_calledSec")) else SEC_OF_QUAD[quad], "shield": JSM.jsround(absorbed * ion), "hull": hull, "crit": crit})
-	damageSection(t, t["_calledSec"] if jt(t.get("_calledSec")) else SEC_OF_QUAD[quad], hull, att)
+	var hard = false
+	var hl = treeSkill("hardLight")
+	if hl != null and t["side"] == "player" and cmdActive("player", "iron") and not jt(t.get("treeHardUsed")) and t["shMax"] > 0 and sh0 > 0:
+		hard = true; t["treeHardUsed"] = 1; treeFx(t, "hardLight", "the shield holds the section")
+	if not hard: damageSection(t, t["_calledSec"] if jt(t.get("_calledSec")) else SEC_OF_QUAD[quad], hull, att)
 	return {"shield": JSM.jsround(absorbed * ion), "hull": hull, "crit": crit}
 func repairSection(t, sec, frac) -> bool:
 	var s = g(t.get("sec"), sec)
@@ -2511,6 +2535,8 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 	if jt(u.get("isSq")) and not jt(t.get("isSq")) and not jt(opts.get("intercept")):
 		for d in alive(t["side"]):
 			if jt(d.get("isSq")) or d["intercepts"] <= 0 or jt(d.get("braced")): continue
+			if treeSkill("flakSkip") != null and cmdActive(u["side"], "scramble") and B.get("treeFlakSkip") == d["id"]:
+				treeFx(d, "flakSkip", "point defence looks the wrong way"); continue
 			var fi = -1
 			for k in range(d["weapons"].size()):
 				if d["weapons"][k]["k"] == "flak" and eqn(d["weapons"][k].get("off"), 0):
@@ -2525,12 +2551,36 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 	var called = opts["called"] if jt(opts.get("called")) and not jt(t.get("isSq")) and not jt(opts.get("intercept")) else null
 	var su = u.get("sureUsed")
 	if not jt(opts.get("intercept")): u["sureUsed"] = keep[2]
-	var hc = hitChance(u, w, t); u["sureUsed"] = su   # the rangefinder relic reads the count from before this shot
+	var treePen = 0.0
+	if not jt(opts.get("intercept")) and u["side"] == "enemy" and t["side"] == "player":
+		if B["tr"].get("firstLight") == null:
+			var f1 = treeSkill("firstLight")
+			if f1 != null:
+				B["tr"]["firstLight"] = u["id"]; var fg = null
+				for x in B["units"]:
+					if jt(x.get("pflag")) and not jt(x.get("dead")): fg = x; break
+				treeFx(fg if fg != null else t, "firstLight", str(u["name"]) + " is recorded")
+		var wi2 = treeSkill("twoImages")
+		if wi2 != null and cmdActive("player", "surge") and not jt(B["tr"]["enemyShots"].get(t["id"])):
+			B["tr"]["enemyShots"][t["id"]] = 1; treePen += float(wi2["n"]); treeFx(t, "twoImages", "the image takes the shot")
+		if z0(u.get("treeAimDebuff")) > 0:
+			treePen += z0(u["treeAimDebuff"]); u["treeAimDebuff"] = 0; treeFx(t, "wardGlass", "the ward reflects the aim")
+	var hc = hitChance(u, w, t)
+	if treePen > 0: hc = max(5.0, hc - treePen)
+	var wg = treeSkill("wardGlass")
+	if not jt(opts.get("intercept")) and u["side"] == "enemy" and t["side"] == "player" and cmdActive("player", "iron") and wg != null and not jt(u.get("treeWardOnce")):
+		u["treeWardOnce"] = 1; u["treeAimDebuff"] = float(wg["n"])
+	u["sureUsed"] = su   # the rangefinder relic reads the count from before this shot
 	if not jt(opts.get("intercept")) and not jt(u.get("isSq")):
 		fstat(u["fac"], "shots")
 		if syncOn(u, t): fstat(u["fac"], "syncShots")
 	var shots = []
 	for i in range(int(w["shots"])): shots.append(rnd() * 100.0 < hc)
+	var fh = treeSkill("falseHulls")
+	if not jt(opts.get("intercept")) and u["side"] == "enemy" and fh != null and cmdActive("player", "surge") and z0(B["tr"].get("falseHulls")) < float(fh["n"]):
+		B["tr"]["falseHulls"] = z0(B["tr"].get("falseHulls")) + 1
+		for i in range(shots.size()): shots[i] = false
+		treeFx(u, "falseHulls", "the attack is wasted on a false image")
 	rocketDefense(w, t, shots, res)
 	emit({"t": "fire", "unit": u["id"], "weapon": wi, "weapon_id": w["id"], "kind": w["k"], "arc": w["arc"], "name": w.get("n"), "target": t["id"], "shots": shots.duplicate(), "pd": z0(res.get("pd")), "quad": quad}); hook("fire", u)
 	if B != null: B["prog"] = z0(B.get("prog")) + 1
@@ -2539,7 +2589,7 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 			w["fired"] = keep[0]; w["cdLeft"] = keep[1]; u["sureUsed"] = keep[2]; u["postFire"] = keep[3]; u["postMp"] = keep[4]
 		return false
 	if not jt(opts.get("intercept")): syncMarkShot(u, t)
-	return landVolley(u, w, t, {"quad": quad, "shBefore": shBefore, "shots": shots, "called": called, "res": res, "intercept": jt(opts.get("intercept"))})
+	return landVolley(u, w, t, {"quad": quad, "shBefore": shBefore, "shots": shots, "called": called, "res": res, "intercept": jt(opts.get("intercept")), "half": jt(opts.get("half"))})
 func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire and torpedo impact)
 	var quad = o["quad"]; var shots = o["shots"]; var called = o["called"]; var res = o["res"]; var shBefore = o["shBefore"]
 	if called != null:
@@ -2549,7 +2599,15 @@ func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire
 		if not h:
 			res.misses += 1; continue
 		res.hits += 1
+		var lfx = treeSkill("longFocus")
+		if lfx != null and B != null and jt(B.get("volleyMul")) and B["volleyMul"]["side"] == u["side"] and not jt(u.get("isSq")) and hdist(u, t) > float(w["r"]) / 2.0: treeFx(t, "longFocus", "the long focus bites")
+		var bf = treeSkill("burnFlaw")
+		if bf != null and B != null and jt(B.get("volleyMul")) and B["volleyMul"]["side"] == u["side"]:
+			var n3 = z0(B["tr"]["volleyHits"].get(t["id"])) + 1; B["tr"]["volleyHits"][t["id"]] = n3
+			if n3 >= 3: t["_treePierce"] = 1
+			treeFx(t, "burnFlaw", "the third hit passes the shields" if n3 >= 3 else "hits stack")
 		var d = (o["per"].call(quad == 2) if o.get("per") != null else dmgMult(u, w, t, quad == 2)) * (0.85 + rnd() * 0.3)
+		if jt(o.get("half")): d = d * 0.5
 		var r = applyHit(u, w, t, d, quad)
 		res.shield += r.shield; res.hull += r.hull
 		if r.crit:
@@ -3124,6 +3182,174 @@ func cmdTier() -> float:
 		if u["side"] == "player" and not jt(u.get("dead")) and jt(u.get("fx")) and jt(u["fx"].get("cmdTier")): bonus = 1
 		if u["side"] == "player" and not jt(u.get("isSq")) and not jt(u.get("transport")) and jt(u.get("dead")): lost = 1
 	return max(0, min(2, B["round"] - 1 + bonus + lost - (1 if heatOn("h_cmd") else 0)))
+# ---------- admiral tree effects (issue #305 job 1: H0 plumbing, H1 choice, H2 counters, H3 next round) ----------
+func treeBuild() -> Array:
+	var out = []; if RUN == null or RUN.get("lineage") == null: return out
+	var L = RUN["lineage"]; if not (L is Dictionary) or not LINEAGE_TREES.has(L.get("id")): return out
+	var picks = L.get("picks")
+	if picks is Array:
+		for key in picks:
+			if TREE_FX.has(key):
+				var s = TREE_FX[key].duplicate(true); s["key"] = key; out.append(s)
+	if L.get("capstone") != null:
+		var key = str(L["id"]) + ":cap:" + str(int(L["capstone"]))
+		if TREE_FX.has(key):
+			var s2 = TREE_FX[key].duplicate(true); s2["key"] = key; out.append(s2)
+	return out
+func treeSkill(k) -> Variant:
+	if B == null or B.get("tree") == null: return null
+	for s in B["tree"]:
+		if s.get("k") == k: return s
+	return null
+func treeHas(k) -> bool: return treeSkill(k) != null
+func treeName(key) -> String:
+	var p = str(key).split(":"); var id = p[0]; var b = p[1]
+	var tree = LINEAGE_TREES.get(id)
+	if tree == null: return str(key)
+	if b == "cap":
+		var c0 = int(p[2]); var caps = tree.get("capstones", [])
+		return str(caps[c0]["n"]) if c0 < caps.size() else str(key)
+	var t = int(p[2]); var c = int(p[3])
+	var br = tree["branches"].get(b)
+	if br == null: return str(key)
+	var tiers = br.get("tiers", [])
+	if t >= tiers.size(): return str(key)
+	var pair = tiers[t]
+	return str(pair[c]["n"]) if c < pair.size() else str(key)
+func treeFx(u, kind, txt) -> void:
+	var s = treeSkill(kind); if s == null or B == null: return
+	if B.get("treeStats") == null: B["treeStats"] = {}
+	B["treeStats"][s["key"]] = z0(B["treeStats"].get(s["key"])) + 1
+	if B.get("tr") == null: B["tr"] = {}
+	if B["tr"].get("logged") == null: B["tr"]["logged"] = {}
+	if not jt(B["tr"]["logged"].get(s["key"])):
+		B["tr"]["logged"][s["key"]] = 1; var nm = treeName(s["key"])
+		flt(u, nm + ": " + str(txt), "#e8c66a", -60)
+		logm("Lineage: " + nm + ". " + str(txt), "p" if (u != null and u.get("side") == "player") else "e")
+func treeAddVal(u, key, v) -> float:
+	if not TB.FX_CAPS.has(key): return float(v)
+	var have = z0(u["fx"].get(key)) if (u != null and jt(u.get("fx"))) else 0.0
+	return max(0.0, min(float(v), float(TB.FX_CAPS[key]) - have))
+func treeChoice(kind) -> Variant:
+	if B == null: return null
+	var tc = B.get("treeChoices"); var c = tc.get(kind) if tc is Dictionary else null
+	if c != null:
+		for x in B["units"]:
+			if x["id"] == c and not jt(x.get("dead")): return x
+	var l = []
+	if kind == "carrier":
+		for x in alive("player"):
+			if not jt(x.get("isSq")) and x.get("ab") == "launch": l.append(x)
+		JSM.ssort(l, func(a, b):
+			var d = z0(b.get("hangar")) - z0(a.get("hangar"))
+			if d != 0: return d
+			return -1.0 if str(a["id"]) < str(b["id"]) else 1.0)
+	elif kind == "enemy":
+		for x in alive("enemy"):
+			if not jt(x.get("isSq")): l.append(x)
+		JSM.ssort(l, func(a, b):
+			var d = b["maxHp"] - a["maxHp"]
+			if d != 0: return d
+			return -1.0 if str(a["id"]) < str(b["id"]) else 1.0)
+	elif kind == "ship" or kind == "friend":
+		for x in alive("player"):
+			if not jt(x.get("isSq")): l.append(x)
+		JSM.ssort(l, func(a, b):
+			var d = (a["hp"] / max(1.0, a["maxHp"])) - (b["hp"] / max(1.0, b["maxHp"]))
+			if d != 0: return d
+			return -1.0 if str(a["id"]) < str(b["id"]) else 1.0)
+	return l[0] if l.size() > 0 else null
+func treeBestFacing(u) -> Variant:
+	var foes = []
+	for t in alive("enemy" if u["side"] == "player" else "player"):
+		if not jt(t.get("dead")): foes.append(t)
+	if foes.size() == 0: return null
+	var best = null; var bv = 0.0
+	for f in range(6):
+		if f == int(u["facing"]): continue
+		var v = stateView(u, {"q": u["q"], "r": u["r"], "f": f}); var score = 0.0
+		for w in u["weapons"]:
+			if not weaponReady(w): continue
+			for t in foes:
+				if inReach(v, w, t):
+					var e = expectedVs(v, w, t); score += e["hull"] + e["shield"] * 0.3
+		if score > bv: bv = score; best = f
+	return best if bv > 0.0 else null
+func treeRoundStart() -> void:
+	if B == null or B.get("tree") == null or B["tree"].size() == 0: return
+	if B.get("tr") == null: B["tr"] = {}
+	B["tr"]["enemyShots"] = {}; B["tr"]["volleyHits"] = {}; B["tr"]["logged"] = {}
+	if B.get("treePending") != null and B["treePending"].size() > 0:
+		var keep = []
+		for p in B["treePending"]:
+			if p["r"] >= B["round"]: keep.append(p); continue
+			if p["k"] == "rechargeLit":
+				var s = treeSkill("rechargeLit"); var any = false
+				for u in alive("player"):
+					if jt(u.get("isSq")) or not jt(u.get("shMax")): continue
+					if z0(u["st"].get("shieldOff")) >= 99: continue
+					for i in range(4): u["sh"][i] = min(u["shMax"], u["sh"][i] + u["regen"])
+					any = true
+				if any and s != null:
+					var fu = null
+					for x in alive("player"):
+						if jt(x.get("pflag")) and not jt(x.get("dead")): fu = x; break
+					if fu == null: fu = alive("player")[0] if alive("player").size() > 0 else null
+					treeFx(fu, "rechargeLit", "shields recharge a second time")
+		B["treePending"] = keep
+	for u in alive("player"):
+		if not jt(u.get("isSq")):
+			u["treeStartFacing"] = u["facing"]; u["treeDeep"] = 0; u["treeAngleUsed"] = 0; u["treeMirrorUsed"] = 0
+	var ls = treeSkill("flagshipLens")
+	if ls != null:
+		var t = treeChoice("enemy"); B["treeLens"] = ({"r": B["round"], "id": t["id"]} if t != null else null)
+		if t != null:
+			var fg = null
+			for x in B["units"]:
+				if jt(x.get("pflag")) and not jt(x.get("dead")): fg = x; break
+			treeFx(fg if fg != null else t, "flagshipLens", "the lens marks " + str(t["name"]))
+func treeBattleStart() -> void:
+	if B == null or B.get("tree") == null or B["tree"].size() == 0: return
+	if treeSkill("deployRead") != null:
+		var who = treeChoice("ship")
+		if who != null:
+			var bb = boardBounds(); var occ = occMap(); var best = null; var bd = 1e9
+			for h in boardHexes():
+				var c = float(h["q"]) + floor(float(h["r"]) / 2.0)
+				if c > bb["c0"] + 2: continue
+				if blocks(terr(h["q"], h["r"])) or occ.has(hkey(h["q"], h["r"])): continue
+				var d = hdist(h, who)
+				if d > 0 and d < bd: bd = d; best = h
+			if best != null:
+				who["q"] = best["q"]; who["r"] = best["r"]; treeFx(who, "deployRead", "redeployed from the shards")
+	if treeSkill("castCorrected") != null:
+		var l = []
+		for x in alive("player"):
+			if not jt(x.get("isSq")): l.append(x)
+		if l.size() >= 2:
+			var a = l[0]; var b2 = l[1]; var q = a["q"]; var r = a["r"]
+			a["q"] = b2["q"]; a["r"] = b2["r"]; b2["q"] = q; b2["r"] = r; treeFx(a, "castCorrected", "the cast is corrected")
+func treeAfterMove(u) -> void:
+	if B == null or B.get("tree") == null or B["tree"].size() == 0 or u == null or jt(u.get("isSq")): return
+	if treeSkill("mirrorTurns") != null and cmdActive(u["side"], "surge") and not jt(u.get("treeMirrorUsed")):
+		var f = treeBestFacing(u); u["treeMirrorUsed"] = 1
+		if f != null and f != int(u["facing"]): u["facing"] = f
+		treeFx(u, "mirrorTurns", "the mirror turns")
+	if treeSkill("anglesRecorded") != null and cmdActive(u["side"], "surge") and not jt(u.get("treeAngleUsed")) and u.get("treeStartFacing") != null and u["facing"] != u["treeStartFacing"]:
+		u["treeAngleUsed"] = 1; u["evBuff"] = min(float(TB.FX_CAPS.ev), z0(u.get("evBuff")) + float(treeSkill("anglesRecorded")["n"])); treeFx(u, "anglesRecorded", "a false angle holds")
+	if treeSkill("refraction") != null and cmdActive(u["side"], "surge") and u["mp"] <= 0:
+		u["treeDeep"] = 1; treeFx(u, "refraction", "the reflection cannot be found beyond range 6")
+func treeDeepBlocks(u, t) -> bool:
+	var s = treeSkill("refraction")
+	return s != null and t != null and jt(t.get("treeDeep")) and not jt(u.get("isSq")) and hdist(u, t) > float(s["n"])
+func treeRecordedAngle(side) -> void:
+	if treeSkill("recordedAngle") == null or side != "player" or not cmdActive(side, "barrage"): return
+	for u in alive(side):
+		if jt(u.get("isSq")): continue
+		if not (u["turnsLeft"] >= u["turns"]): continue
+		var f = treeBestFacing(u)
+		if f == null or f == int(u["facing"]): continue
+		u["facing"] = f; treeFx(u, "recordedAngle", "the lens turns before the volley")
 func commandFor(side):
 	if side != "player": return null
 	if RUN != null and jt(RUN.get("cmdOverride")): return RUN["cmdOverride"]
@@ -3180,9 +3406,17 @@ func runCommand(side, c, tier) -> bool:
 	var foe = "enemy" if side == "player" else "player"; var bStart = B
 	for u in caps(side): flt(u, String(c["n"]), "#e8c66a" if side == "player" else "#ff8a6a", -44)
 	if c["id"] == "barrage":
+		treeRecordedAngle(side)
 		var b0 = B; var live = liveFrom(null); B["volleyMul"] = {"side": side, "m": 1.0 + cmdPow("barrage", tier)}
 		for u in caps(side):
 			if jt(B.get("over")) or not live.call(): break
+			var ll = treeSkill("longLight"); var bumped = 0.0
+			if ll != null and side == "player" and u["turnsLeft"] >= u["turns"]:
+				bumped = treeAddVal(u, "lanceRange", ll["n"])
+				if bumped > 0:
+					for w in u["weapons"]:
+						if w["k"] == "lance": w["r"] = w["r"] + bumped; w["opt"] = w["opt"] + bumped
+					treeFx(u, "longLight", "lances reach further")
 			var keep = []
 			for w in u["weapons"]: keep.append([w.get("fired"), w.get("cdLeft")])   # B-20 refits lack both; restored as undefined
 			var pf = [u.get("postFire"), u.get("postMp")]
@@ -3200,14 +3434,30 @@ func runCommand(side, c, tier) -> bool:
 				fireWeapon(u, i, ts[0])
 			for i in range(u["weapons"].size()):
 				u["weapons"][i]["fired"] = keep[i][0]; u["weapons"][i]["cdLeft"] = keep[i][1]
+			if bumped > 0:
+				for w in u["weapons"]:
+					if w["k"] == "lance": w["r"] = w["r"] - bumped; w["opt"] = w["opt"] - bumped
 			u["postFire"] = pf[0]; u["postMp"] = pf[1]
 		if is_same(B, b0): B["volleyMul"] = null
+		if treeSkill("flawForever") != null and side == "player" and B.get("tr") != null and B["tr"].get("volleyHits") != null:
+			var best = null; var bn = 0.0
+			for k in B["tr"]["volleyHits"].keys():
+				var n = z0(B["tr"]["volleyHits"][k]); if n > bn: bn = n; best = k
+			if best != null:
+				B["treeFlaw"] = best; var bt = null; var bf2 = null
+				for x in B["units"]:
+					if x["id"] == best: bt = x
+					if jt(x.get("pflag")) and not jt(x.get("dead")): bf2 = x
+				treeFx(bt if bt != null else bf2, "flawForever", "the flaw is marked for the battle")
 	if c["id"] == "hunt":
 		for u in alive(side):
 			for w in u["weapons"]:
 				if w["k"] == "torp":
 					w["cdLeft"] = 0; w["fired"] = false
 	if c["id"] == "iron":
+		if treeSkill("rechargeLit") != null and side == "player" and not (B.get("treePending") != null and B["treePending"].any(func(p): return p["k"] == "rechargeLit" and p["r"] == B["round"])):
+			if B.get("treePending") == null: B["treePending"] = []
+			B["treePending"].append({"k": "rechargeLit", "r": B["round"]})
 		for u in alive(side):
 			if jt(u.get("shMax")): u["sh"] = [u["shMax"], u["shMax"], u["shMax"], u["shMax"]]
 	if c["id"] == "restore":
@@ -3223,6 +3473,13 @@ func runCommand(side, c, tier) -> bool:
 		for u in caps(side):
 			u["mp"] = z0(u.get("mp")) + cmdPow("surge", tier); u["turnsLeft"] = z0(u.get("turnsLeft")) + (2 if tier >= 2 else 1)
 	if c["id"] == "scramble":
+		var ct = treeChoice("carrier") if treeSkill("castTwice") != null else null
+		var aloft = treeSkill("lensAloft")
+		if treeSkill("flakSkip") != null and side == "player":
+			var en = treeChoice("enemy"); B["treeFlakSkip"] = en["id"] if en != null else null
+			if en != null:
+				for w in en["weapons"]:
+					if w["k"] == "flak": treeFx(en, "flakSkip", "point defence cannot see the wings"); break
 		var cars = []
 		for u in alive(side):
 			if u.get("ab") == "launch": cars.append(u)
@@ -3231,15 +3488,35 @@ func runCommand(side, c, tier) -> bool:
 			if hs.size() == 0: continue
 			var fs = alive(foe)
 			JSM.ssort(hs, func(a, b2): return _mind(a, fs) - _mind(b2, fs))
+			var count = 2 if tier >= 2 else 1
+			if aloft != null and side == "player" and z0(u.get("hexMoved")) == 0: count += 1; treeFx(u, "lensAloft", "one more wing aloft")
 			var k = 0
-			while k < (2 if tier >= 2 else 1) and k < hs.size():
-				makeWing(u, hs[k], wingKind(u)); k += 1
+			while k < count and k < hs.size():
+				var sq = makeWing(u, hs[k], wingKind(u)); sq["extra"] = 1
+				if ct != null and u["id"] == ct["id"]:
+					sq["treeTwice"] = 1; var e = treeChoice("enemy")
+					if e != null: sq["treeTgt"] = e["id"]
+				k += 1
 		for sq in alive(side):
 			if not jt(sq.get("isSq")): continue
 			sq["activated"] = false; sq["mp"] = sq["speed"]
 			for w in sq["weapons"]:
 				w["fired"] = false; w["cdLeft"] = 0
 		swarmPhase(side)
+		if ct != null and side == "player":
+			for sq in alive(side):
+				if not jt(sq.get("isSq")) or not jt(sq.get("treeTwice")): continue
+				var tt = null
+				for x in B["units"]:
+					if x["id"] == sq.get("treeTgt"): tt = x; break
+				if tt == null or jt(tt.get("dead")) or z0(tt.get("hexMoved")) != 0: continue
+				var fired2 = false
+				for w in sq["weapons"]: w["fired"] = false
+				for i in range(sq["weapons"].size()):
+					if jt(tt.get("dead")) or jt(B.get("over")): break
+					if canFire(sq, sq["weapons"][i], tt):
+						fireWeapon(sq, i, tt, {"half": true}); fired2 = true
+				if fired2: treeFx(sq, "castTwice", "the recorded strike repeats at half damage")
 	if is_same(B, bStart): checkEnd()
 	return true
 func _mind(h, fs: Array, cap = null) -> float: # Math.min(...fs.map(f=>hdist(h,f))), or Math.min(cap, ...)

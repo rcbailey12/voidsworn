@@ -1,5 +1,8 @@
 # The campaign oracle, pinned
 
+Nov 9 2026, issue 312 (tree skills job 1): re-copied battle.js, core.js and
+data.js for the RUN.lineage snapshot and TREE_FX. Re-exported campaign tables.
+
 Nov 9 2026, issue 30 (progression step 14): re-copied data.js, core.js and
 campaign_meta.js for capstone mastery. A chosen level 8 evolution deepens at
 320, 440 and 600 XP; effect texts are placeholders until the tree pack carries
