@@ -15,7 +15,7 @@ function canonJ(v){
   const ks=Object.keys(v).filter(k=>v[k]!==null&&v[k]!==undefined&&typeof v[k]!=='function').sort();
   return '{'+ks.map(k=>JSON.stringify(k)+':'+canonJ(v[k])).join(',')+'}';
 }
-toast=function(){}; show=function(){}; modal=function(){};
+var MODAL=''; toast=function(){}; show=function(){}; modal=function(h){ MODAL=String(h); };
 const OUT=[];
 function rec(tag,x){ OUT.push(tag+' '+canonJ(x)); }
 function state(tag){ rec(tag,{nem:RUN.nem,nemClock:RUN.nemClock,nemStrike:RUN.nemStrike,nemAssign:RUN.nemAssign||null,nems:RUN.nems||null,credits:RUN.credits,fleet:RUN.fleet.map(s=>[s.uid,s.hp]),variants:META.variants,rng:RNG_S>>>0}); }
@@ -152,6 +152,19 @@ RUN.nem={fac:'ithar',name:'Calek',title:'First Mirror',persona:NEM_FAC.ithar.per
 forced(172,['chorus','hegemony','chorus']); RUN.nemClock=3; rec('ae1',nemClockAdd(1));
 forced(173,['hegemony','chorus','hegemony']); nemActive().g='f'; RUN.nemClock=3; rec('ae2',nemClockAdd(1));
 forced(174,['corsair','hegemony','corsair']); nemActive().g='f'; RUN.credits=100; RUN.nemClock=3; rec('ae3',nemClockAdd(1)); tstate('ae3');
+// ---------- issue 282: the strike line and the modal reason as text, and the full-clock carry ----------
+// 32 (#282) the panel strike line and the sector modal's adaptation reason read correctly for a female and a Chorus commander
+function textRun(seed,fac){ forced(seed,['corsair',fac,'ithar']); RUN.sector=2; const N=nemActive(); N.g=fac==='chorus'?'n':'f'; N.seen={}; N.adapt=[]; return N; }
+const TF=textRun(180,'hegemony'); rec('ag1',nemStrikeLine(TF)); const spellF=nemAdaptWhyLine('formation',TF); adv();
+rec('ag2',{why:spellF,shown:MODAL.includes(spellF)});
+const TC=textRun(181,'chorus'); rec('ag3',nemStrikeLine(TC)); const spellC=nemAdaptWhyLine('hunger',TC); adv();
+rec('ag4',{why:spellC,shown:MODAL.includes(spellC)});
+// 33 (#282) a full clock, not a pending strike, crosses the sector advance; the strike arms on the next sector's first clock add
+forced(182,['hegemony','corsair','ithar']); for(const x of RUN.fleet) x.hp=9999;
+nemAfterBattle('win',false,{}); let cc=0; while(RUN.nemClock<NEM_CLOCK&&cc++<8) nemClockAdd(1);
+rec('ah1',{clock:RUN.nemClock,strike:RUN.nemStrike,met:RUN.nems.hegemony.met}); adv(); const e2=earlyN();
+rec('ah2',{sector:RUN.sector,clock:RUN.nemClock,strike:RUN.nemStrike,node:nemNodeIs(e2)});
+rec('ah3',nemClockAdd(1)); rec('ah4',{clock:RUN.nemClock,strike:RUN.nemStrike,node:nemNodeIs(e2)});
 globalThis.__OUT=OUT;
 `);
 fs.writeFileSync(process.argv[2], __OUT.join('\n') + '\n');

@@ -267,7 +267,7 @@ func run(battle) -> void:
 	await get_tree().process_frame
 	var fo := get_viewport().gui_get_focus_owner()
 	var ring = fo.get_theme_stylebox("focus") if fo is Button else null
-	_note(fo is Button and b.hud.menu != null and b.hud.menu.is_ancestor_of(fo) and ring is StyleBoxFlat and not (ring as StyleBoxFlat).draw_center,
+	_note(fo is Button and b.hud.menu != null and b.hud.menu.is_ancestor_of(fo) and ring is StyleBoxFlat and not (ring as StyleBoxFlat).draw_center and (ring as StyleBoxFlat).get_border_width(SIDE_LEFT) >= 2,
 		"7_menu_focus: the menu's first button has keyboard focus and a visible focus ring (%s)" % (str((fo as Button).text) if fo is Button else "no focus"))
 	await _shot("7_menu_focus")
 	var row: Button = null
@@ -282,6 +282,9 @@ func run(battle) -> void:
 		var fo2 := get_viewport().gui_get_focus_owner()
 		_note(fo2 is Button and str(fo2.text).begins_with("Firing arcs"), "7_menu_focus: after a toggle the keyboard stays on its row (%s)" % (str(fo2.text) if fo2 is Button else "no focus"))
 		b.arcs_on = not b.arcs_on   # put the option back as it was (the toggle saved nothing: screenshot jobs keep their settings)
+	else:
+		# #282 (N2): a missing row must fail the run, not skip the refocus assertion silently
+		_note(false, "7_menu_focus: the Firing arcs row is missing from the menu")
 	b._on_key(KEY_ESCAPE)
 	await get_tree().process_frame
 	await get_tree().process_frame

@@ -196,3 +196,23 @@ func run_122() -> void:
 	forced(172, ["chorus", "hegemony", "chorus"]); C.RUN["nemClock"] = 3; rec("ae1", C.nemClockAdd(1))
 	forced(173, ["hegemony", "chorus", "hegemony"]); C.nemActive()["g"] = "f"; C.RUN["nemClock"] = 3; rec("ae2", C.nemClockAdd(1))
 	forced(174, ["corsair", "hegemony", "corsair"]); C.nemActive()["g"] = "f"; C.RUN["credits"] = 100; C.RUN["nemClock"] = 3; rec("ae3", C.nemClockAdd(1)); tstate("ae3")
+	run_282()
+
+# ---------- issue 282 (node/nem_scenarios.js section 32 and 33, the same steps) ----------
+func textRun(seed: int, fac: String) -> Variant:
+	forced(seed, ["corsair", fac, "ithar"]); C.RUN["sector"] = 2; var N = C.nemActive(); N["g"] = "n" if fac == "chorus" else "f"; N["seen"] = {}; N["adapt"] = []; return N
+func run_282() -> void:
+	# 32 (#282) the panel strike line and the sector modal's adaptation reason read correctly for a female and a Chorus commander
+	var TF = textRun(180, "hegemony"); rec("ag1", C.nemStrikeLine(TF)); var spellF = C.nemAdaptWhyLine("formation", TF); adv()
+	rec("ag2", {"why": spellF, "shown": str(C.modal_d["data"].get("adaptWhy", "")) == spellF})
+	var TC = textRun(181, "chorus"); rec("ag3", C.nemStrikeLine(TC)); var spellC = C.nemAdaptWhyLine("hunger", TC); adv()
+	rec("ag4", {"why": spellC, "shown": str(C.modal_d["data"].get("adaptWhy", "")) == spellC})
+	# 33 (#282) a full clock, not a pending strike, crosses the sector advance; the strike arms on the next sector's first clock add
+	forced(182, ["hegemony", "corsair", "ithar"])
+	for x in C.RUN["fleet"]: x["hp"] = 9999
+	C.nemAfterBattle("win", false, {}); var cc = 0
+	while C.RUN["nemClock"] < C.NEM_CLOCK and cc < 8:
+		C.nemClockAdd(1); cc += 1
+	rec("ah1", {"clock": C.RUN["nemClock"], "strike": C.jt(C.RUN.get("nemStrike")), "met": C.RUN["nems"]["hegemony"]["met"]}); adv(); var e2 = earlyN()
+	rec("ah2", {"sector": C.RUN["sector"], "clock": C.RUN["nemClock"], "strike": C.jt(C.RUN.get("nemStrike")), "node": C.nemNodeIs(e2)})
+	rec("ah3", C.nemClockAdd(1)); rec("ah4", {"clock": C.RUN["nemClock"], "strike": C.jt(C.RUN.get("nemStrike")), "node": C.nemNodeIs(e2)})

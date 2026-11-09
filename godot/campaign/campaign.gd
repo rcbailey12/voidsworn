@@ -1985,6 +1985,9 @@ func nemBeh() -> Dictionary:
 	return {}
 # the clock: returns a line to show when it fills (the next fight becomes his); his faction sets the pace (Deathless patient, Voidsworn zealous)
 # #121: the clock is the run's (RUN.nemClock), one for the whole run; the active commander's faction sets its pace
+# #282 (Muse, #274 design call 4): it is the full clock that crosses a sector advance, not a pending strike. nemClockAdd arms
+# the strike only when the active commander is unmet this sector, so a clock filled after this sector's meeting arms nothing
+# until the next sector's first add, when the incoming commander's met is 0.
 func nemClockGet() -> float: return float(RUN["nemClock"]) if (RUN != null and (RUN.get("nemClock") is float or RUN.get("nemClock") is int)) else 0.0
 func nemClockAdd(n) -> String:
 	var N = ensureNemesis()
@@ -1995,6 +1998,9 @@ func nemClockAdd(n) -> String:
 		RUN["nemStrike"] = true; var extra = nemStrike()
 		return nemSay(nemFull() + " has found your trail. Your next fight will be against his fleet." + ((" " + extra) if extra != "" else ""), N)   # #122: through nemSay (a she or an it read "his")
 	return ""
+# #282: the map card's strike line is text like the rest of the card: through nemSay so a she or an it reads right
+func nemStrikeLine(N) -> String:
+	return nemSay("His fleet is coming: your next fight is his.", N)
 # what a full clock does on the map, by faction (always written on his card beforehand)
 func nemStrike() -> String:
 	var N = nemActive(); var st = nemBeh().get("strike")
@@ -2069,6 +2075,9 @@ func nemAdaptWhy(a, fac) -> String:
 	var T = NEM_ADAPT_FAC.get(fac, {}) if fac != null else {}
 	if jt(T.get("special")) and T["special"]["id"] == a: return "his own way of war"
 	return str(NEM_ADAPT[a]["why"]) if NEM_ADAPT.has(a) else ""
+# #282: the sector modal's adaptation reason, through nemSay with the commander who adapted (the outgoing one)
+func nemAdaptWhyLine(a, N) -> String:
+	return nemSay(nemAdaptWhy(a, N.get("fac") if jt(N) else null), N)
 # #121 (R101): his own lines from NEM_VOICE, through nemSay. A pool's line is chosen without the rules PRNG: the pick turns with how many
 # times you have met and hurt him and with the sector. A faction with no table (the Sunward Crusade) says nothing new and keeps NEM_LINES.
 func nemPersonaVoice(N) -> Variant:
@@ -2936,7 +2945,7 @@ func afterBattle() -> void:
 		saveRun(); mapScreen()
 		var acts = []; A(acts, "beat3" if float(RUN["sector"]) == 3 else "closeModal")
 		show_modal("sector", {"fac": RUN["map"]["fac"], "cond": sectorCond(), "region": RUN["map"].get("region"), "adapt": na if jt(prev) else null,
-			"adaptFac": prev.get("fac") if jt(prev) else null, "adaptWho": nemFull(prev) if jt(prev) else "", "adaptLine": nemAdaptLine(prev, na) if (jt(prev) and na != null) else "", "adaptWhy": nemSay(nemAdaptWhy(na, prev.get("fac")), prev) if (jt(prev) and na != null) else ""}, acts)
+			"adaptFac": prev.get("fac") if jt(prev) else null, "adaptWho": nemFull(prev) if jt(prev) else "", "adaptLine": nemAdaptLine(prev, na) if (jt(prev) and na != null) else "", "adaptWhy": nemAdaptWhyLine(na, prev) if (jt(prev) and na != null) else ""}, acts)
 		return
 	mapScreen()
 
