@@ -37,6 +37,20 @@ are imported by the job's own import step.
 
 Pass bar as below (every ui_check.txt "0 failed", parse.txt exit 0 for all seven).
 
+Sandbox check (software renderer, grey placeholder hulls; layout and colours only), stills in sandbox/LIME_*.jpg:
+
+- A at 1920x1080: 21 checks, 0 failed (LIME_A1080_ui_check.txt; battle start, the planned move with odds, the target).
+- B at 1920x1080 with 20 ships: 21 checks, 0 failed, the fleet list with no scroll (LIME_B1080_20_ui_check.txt; battle
+  start, the tip card with Got it lit, the enemy turn, the menu with keyboard focus on Resume).
+- A at 2560x1440 (UI scale 1.33): 21 checks, 0 failed (LIME_A1440_ui_check.txt; the planned move with odds, scaled to
+  1920 wide). 4K does not fit the sandbox's memory with the software renderer, so
+  C and D on the PC cover it.
+- Three small fixes landed after A's sandbox run started and are in B's: Resume keeps dark text on lime while it has
+  the keyboard, the tip card's Got it is lit not filled, and only the ship that is up gets a filled lime tag (your
+  other ships get a mint outline).
+- Every changed script parse-checks (Godot 4.7.2 --check-only): the seven in the job plus main/title.gd and
+  main/campaign_fallback_ui.gd.
+
 ## R148 fix pass (Nov 9 2026): rerun done earlier (out_r148)
 
 Ryan agreed to two fixes (FINDINGS R148). Both are in this branch now:
