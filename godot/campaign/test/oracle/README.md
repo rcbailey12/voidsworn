@@ -1,5 +1,12 @@
 # The campaign oracle, pinned
 
+Nov 8 2026, issue 27 (progression step 11): re-copied campaign_run.js and
+campaign_meta.js for per run XP earnings by line in the F1 play log. Each
+finished run writes one run_xp event: the flown line's payout plus each
+benched line of the same faction with its shadow share. No Nemesis counter
+was added; the play log report reads the #122 run_end record. Re-exported
+campaign tables; their checksums are unchanged.
+
 Nov 8 2026, issue 24: re-copied campaign_run.js and campaign_meta.js for the
 Nemesis teaching loop (the lost meeting's lesson recorded per commander with
 its taught flag, the run debrief's Nemesis lesson row, and the map and meeting

@@ -409,6 +409,18 @@ function nemCompoundTel(N){ const c=nemCompound(N); if(!c) return; try{ tel('nem
 // the run's Nemesis record for the run_end event: who hunted each story point, the escapes, and each compounding commander's counter
 function nemTelSummary(){ if(!RUN) return null; const reg=RUN.nems||{}, comp={}; for(const f of Object.keys(reg)){ const c=nemCompound(reg[f]); if(c) comp[f]=c.n; }
   return {assign:(RUN.nemAssign||[]).slice(),escapes:RUN.nemEscapes||0,compound:comp}; }
+// Job 7 step 11: per run XP earnings by line, one event per finished run, saved with the profile in the play log.
+// A line is an admiral's lineage: the flown line earns its full payout and each benched line of the same faction earns
+// its shadow share (the row the debrief already shows). The F1 play log report reads these events for median XP per run
+// per line. No Nemesis counter is kept here: escapes and compounding are read from the #122 run_end record.
+function runXPTel(run,earnings,victory){
+  if(!run||!earnings) return null;
+  const lines=[{id:run.admiral,xp:earnings.mxGain||0}];
+  for(const row of earnings.shadow||[]) lines.push({id:row.id,xp:row.xp||0});
+  const rec={fac:run.fac,admiral:run.admiral,victory:!!victory,sector:run.sector||1,lines};
+  try{ tel('run_xp',rec); }catch(e){}
+  return rec;
+}
 // #122: what the Nemesis panel shows, as data; campaign_run.js nemPanel and the Godot panel (campaign_ui.gd) only draw it.
 // cur: the current sector's assigned hunter (RUN.nemAssign[RUN.sector - 1]); back: the earlier sectors he hunted you in (a return);
 // earlier: every other commander of a story point already passed, in order, still readable after the rotation.

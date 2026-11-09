@@ -1498,6 +1498,7 @@ func endRun(victory: bool, abandoned: bool = false) -> void:
 		earnings["mxGain"] = float(earnings["mxGain"]) + float(hx["xp"]); earnings["mxOverflow"] = float(earnings["mxOverflow"]) + float(hx["overflow"])
 		earnings["shadowBank"] = float(z0(META["shadowPool"].get(RUN["fac"]))) + float(hx["overflow"]) + hl; META["shadowPool"][RUN["fac"]] = earnings["shadowBank"]
 	var mx1 = masteryLevel(RUN["admiral"])
+	runXPTel(RUN, earnings, victory)   # Job 7 step 11: per run XP by line for the F1 play log report
 	if victory and hl > 0:
 		META["heatBest"] = or_(META.get("heatBest"), {}); META["heatBest"][RUN["fac"]] = max(float(z0(META["heatBest"].get(RUN["fac"]))), hl)
 	RUN["carry"] = {"ren": ren, "mx0": mx0, "mx1": mx1, "hl": hl}
@@ -2257,6 +2258,17 @@ func nemTelSummary() -> Variant:
 		var c = nemCompound(reg[f])
 		if c != null: comp[f] = c["n"]
 	return {"assign": (RUN["nemAssign"].duplicate() if RUN.get("nemAssign") is Array else []), "escapes": float(z0(RUN.get("nemEscapes"))), "compound": comp}
+# Job 7 step 11: per run XP earnings by line, one event per finished run, saved with the profile in the play log.
+# A line is an admiral's lineage: the flown line earns its full payout and each benched line of the same faction earns
+# its shadow share (the row the debrief already shows). The F1 play log report reads these events for median XP per run
+# per line. No Nemesis counter is kept here: escapes and compounding are read from the #122 run_end record.
+func runXPTel(run, earnings, victory) -> Dictionary:
+	if run == null or earnings == null: return {}
+	var lines = [{"id": run["admiral"], "xp": earnings["mxGain"]}]
+	for row in earnings.get("shadow", []): lines.append({"id": row["id"], "xp": row["xp"]})
+	var rec = {"fac": run["fac"], "admiral": run["admiral"], "victory": victory, "sector": run.get("sector", 1), "lines": lines}
+	tel("run_xp", rec)
+	return rec
 # #122: what the Nemesis panel shows, as data; campaign_ui.gd _nem_panel and the browser's nemPanel only draw it.
 # cur: the current sector's assigned hunter (RUN.nemAssign[RUN.sector - 1]); back: the earlier sectors he hunted you in (a return);
 # earlier: every other commander of a story point already passed, in order, still readable after the rotation.
