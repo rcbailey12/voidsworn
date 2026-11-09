@@ -2846,7 +2846,35 @@ const TREE_FX={
   "nekhet:B:0:1":{k:"iterationSwap"},"nekhet:C:0:0":{k:"flagshipIndex",n:.15},"nekhet:C:0:1":{k:"frameZero"},
   "sekhmar:B:0:1":{k:"iterationSwap"},"sekhmar:C:0:0":{k:"flagshipIndex",n:.15},"sekhmar:C:0:1":{k:"frameZero"},
   "anuket:B:0:1":{k:"iterationSwap"},"anuket:C:0:0":{k:"flagshipIndex",n:.15},"anuket:C:0:1":{k:"frameZero"},
-  "khepra:B:0:1":{k:"iterationSwap"},"khepra:C:0:0":{k:"flagshipIndex",n:.15},"khepra:C:0:1":{k:"frameZero"}
+  "khepra:B:0:1":{k:"iterationSwap"},"khepra:C:0:0":{k:"flagshipIndex",n:.15},"khepra:C:0:1":{k:"frameZero"},
+  // The Chorus (issue #305 job 4). The 26 a and b rows; the 9 x rows and the shared c row stay inert until the Muse text pass (#311).
+  "matriarch:A:0:0":{k:"chooseBrood"},
+  "matriarch:A:0:1":{k:"sporeTide",n:2},
+  "matriarch:A:2:0":{k:"everyThroat",n:.25},
+  "matriarch:A:2:1":{k:"secondThroat",n:.25},
+  "razormaw:A:0:0":{k:"runDown",n:.2},
+  "razormaw:A:1:0":{k:"razorPrey",n:1},
+  "razormaw:A:2:0":{k:"frenzyFeeds",n:2},
+  "razormaw:A:2:1":{k:"breathBite",n:20},
+  "razormaw:cap:0":{k:"throatRed",n:.25},
+  "razormaw:cap:1":{k:"preyEveryMouth",n:1},
+  "mending:A:0:0":{k:"growHurts"},
+  "mending:A:0:1":{k:"skinThick",n:.15},
+  "mending:A:2:0":{k:"fleshKnit",n:.2},
+  "mending:A:2:1":{k:"refuseHoles",n:.1},
+  "mending:cap:0":{k:"tideEnd"},
+  "mending:cap:1":{k:"tornBack"},
+  "voice:A:0:0":{k:"acidBeforeAim"},
+  "voice:A:0:1":{k:"throatSpits",n:.5},
+  "voice:A:1:0":{k:"burnStays",n:.15},
+  "voice:A:2:0":{k:"acidSeams"},
+  "voice:A:2:1":{k:"manyMouths",n:20},
+  "voice:cap:0":{k:"volleyGrows",n:.5},
+  "voice:cap:1":{k:"mouthDeep"},
+  "matriarch:B:0:1":{k:"broodReserve"},"matriarch:C:0:0":{k:"firstThroat"},"matriarch:C:0:1":{k:"throatDeep",n:10},
+  "razormaw:B:0:1":{k:"broodReserve"},"razormaw:C:0:0":{k:"firstThroat"},"razormaw:C:0:1":{k:"throatDeep",n:10},
+  "mending:B:0:1":{k:"broodReserve"},"mending:C:0:0":{k:"firstThroat"},"mending:C:0:1":{k:"throatDeep",n:10},
+  "voice:B:0:1":{k:"broodReserve"},"voice:C:0:0":{k:"firstThroat"},"voice:C:0:1":{k:"throatDeep",n:10}
 };
 // Patron favour: grows with every boon you take from a patron
 const FAVOUR_TIERS=[{at:0,n:'Listening'},{at:4,n:'Partial sync',d:'Its protocols are rare more often.'},{at:12,n:'Synced',d:'If it is in range of your run, you start with one of its protocols.'},{at:25,n:'Full sync',d:'Its protocols are never common.'}];

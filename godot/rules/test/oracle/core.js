@@ -187,7 +187,8 @@ const FX_CAPS={
   lineEv:20,burnEv:50,momCrit:50,taunt:8,
   ramSplash:1,igniteCh:1,sqIgnite:1,broadIgnite:1,spread:1,
   lastStand:1,hive:1,cmdTier:1,critSys:1,chainFire:1,pyre:1,bastion:1,
-  fireLong:1,wallBrace:1,chainSh:1,broodTithe:1,markLance:1,fade:1,endless:1,lanceSure:1
+  fireLong:1,wallBrace:1,chainSh:1,broodTithe:1,markLance:1,fade:1,endless:1,lanceSure:1,
+  treeTempHp:.2
 };
 function sumFx(list){const o={}; for(const fx of list){ if(!fx) continue; for(const k in fx) o[k]=(o[k]||0)+fx[k]; }
   // Clamp after summing so penalties offset bonuses regardless of source order.
