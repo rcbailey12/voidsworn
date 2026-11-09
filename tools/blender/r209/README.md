@@ -69,3 +69,15 @@ Round 1 bug fixed in `common.ai_align`: the yaw was set as an Euler angle on a g
 | `close5.py` | Close-ups of one casemate and one drum rack (port quarter, ahead, above; paint and clay), for Hy4's generated parts and Ab5's hand rebuilds. |
 | `sheets5.py` | Round 5 sheets (round 4's layouts with Ab4, Hy4 and Ab5) and `close_parts.jpg`. `silsheet4.py` and `massing_sheet.py` gained Ab5's names. |
 | `pc/r5_queue.bat`, `pc/r5_run.bat` | The PC run: bake, render, close-ups (Ab5 and round 4's Hy4), export with the hand LOD chain, Godot bench beside Ab4 and Hy4. |
+
+## Round 6 (report: `docs/shots/ship_pipeline/route209/round6/README.md`)
+
+| File | What it does |
+|---|---|
+| `armA6.py` | Ab5's hull (armA5) with every weapon from the Hullbreaker kit (`tools/blender/kits/hullbreakers/kit.py`) at the sockets in `tools/recipe/ships/C15s_23.json` (env `R209_SHIP` picks another ship file); armA5's other parts unchanged. Saves the gun aims into the blend for the recipe audit. |
+| `bakeAb6.py` | bakeAb5 with armA6, the Hullbreaker paint (`kits/hullbreakers/paint.py`), the shared one-pass audit, the parts atlas at full resolution and baked from one joined copy (Cycles re-syncs the scene once per baked object; 1,200 parts took hours, the joined copy 17 s). |
+| `close6.py` | weapon close-ups at the concept's own camera (4x, render border per weapon group), studio rig, concept rig and clay, so concept crops line up pixel for pixel. |
+| `preview6.py` | sandbox preview: build, paint with the procedural materials directly (no bake), CPU render of the concept camera and close-ups; `light=concept`, `albedo=1` (debug). |
+| `sheets6.py` | round 6 sheets: paint (with region colour samples), weapons, overview, battle, silhouette. |
+| `render.py` | gained `--light=concept` (the concept painting's light, files `_cl`), for the paint compare only. |
+| `pc/r6_*.bat`, `pc/r6b_*.bat`, `pc/r6c_*.bat` | the PC runs (r6 stopped in the slow parts bake; r6c is the one in the report). Each waits for an idle GPU first. |
