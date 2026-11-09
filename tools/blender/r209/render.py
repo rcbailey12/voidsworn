@@ -80,7 +80,7 @@ for ob in [ob for ob in sc.objects if ob.type == 'MESH']:
     for m in list(ob.modifiers):
         try: bpy.ops.object.modifier_apply(modifier=m.name)
         except Exception: ob.modifiers.remove(m)
-meshes = [ob for ob in sc.objects if ob.type == 'MESH']
+meshes = [ob for ob in sc.objects if ob.type == 'MESH' and not ob.hide_render]
 bpy.ops.object.select_all(action='DESELECT')
 for ob in meshes: ob.select_set(True)
 bpy.context.view_layer.objects.active = meshes[0]; bpy.ops.object.transform_apply(location=True, rotation=True, scale=True); bpy.ops.object.join()
