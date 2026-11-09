@@ -3,7 +3,7 @@
 # The chain is authored by rule from the full ship (so every LOD keeps the same UVs and paint):
 #   lod0  everything: hull with its skin, every part, the break structure inside (as rounds 1 and 2 measured)
 #   lod1  no interior (bulkheads, decks, ribs) and no hull skin (both are only seen once the ship breaks), parts under 0.012 of the
-#         ship's length dropped (bolts, lugs, slats, small accents), generated hero parts reduced to 40 percent
+#         ship's length dropped (bolts, lugs, slats, small accents); generated hero parts kept whole (reducing them threw spikes)
 #   lod2  parts under 0.028 dropped, parts over 300 triangles reduced to half, hull to half; in the hybrid the generated hero parts
 #         give way to the hand-built parts of the same slots (baked into the same atlas; generated meshes barely reduce, their UV
 #         islands are tiny)
@@ -13,7 +13,7 @@ import sys, os, json, bpy
 OUT = sys.argv[sys.argv.index('--') + 1]
 CELL = os.path.basename(OUT)[:-4]
 RULES = [dict(drop=0, interior=True, skin=True, gen=1, part=1, big=1e9, hull=1),
-         dict(drop=.012, interior=False, skin=False, gen=.40, part=1, big=1e9, hull=1),
+         dict(drop=.012, interior=False, skin=False, gen=1, part=1, big=1e9, hull=1),
          dict(drop=.028, interior=False, skin=False, gen=0, part=.50, big=300, hull=.50),
          dict(drop=.050, interior=False, skin=False, gen=0, part=.30, big=150, hull=.20)]
 

@@ -9,8 +9,9 @@ D, CONCEPT, OUT = sys.argv[1:4]; CELLS = (sys.argv[4] if len(sys.argv) > 4 else 
 TITLE = sys.argv[5] if len(sys.argv) > 5 else 'Issue 209 round 2: structure compare'
 W = 1080; BG = (14, 15, 18); FG = (235, 235, 235); DIM = (160, 160, 165); STUDIO = (52, 54, 60)
 F = lambda s, b=False: ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans%s.ttf' % ('-Bold' if b else ''), s)
-NAMES = {'b0': 'B0  the concept as one generation (yaw fixed)', 'A': 'A round 1  hand build', 'A2s': 'A round 2  corrected structure',
-         'B3s': 'B3 round 2  core for the AI parts', 'A2': 'A round 2  detail rung', 'B3r2': 'B3 round 2  AI parts, detail rung'}
+NAMES = {'b0': 'B0  the concept as one generation (yaw fixed)', 'A': 'A round 1  hand build', 'A2s': 'Ab round 2  structure',
+         'B3s': 'B3 round 2  core for the AI parts', 'A2': 'A round 2  detail rung', 'B3r2': 'B3 round 2  AI parts, detail rung',
+         'A3s': 'Ab3 round 3  rounded, layered armour'}
 def load(c, v):
     p = os.path.join(D, f'{c}_{v}.png'); return Image.open(p).convert('RGBA') if os.path.exists(p) else None
 def flat(im):
