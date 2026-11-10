@@ -30,7 +30,7 @@ What each beat is:
 - Aftermath: the glowing wound, cut line or shield scar cooling, and for deaths the coals and drifting halves. On the two big deaths only the first part is active (about 5 s on a cruiser, about 8 s on a capital: gas, embers, debris motion); the rest of the stated time is the passive coals shader, which R90 prices as cheap. This split form is the owner's ruling, 2026-11-10 (question 4).
 - Secondary explosions on cruiser and capital deaths: each at least 75 px, five per half, staggered 0.7 to 3.5 s after the split per API.md line 116, each one a separate flame element under the cap below. The 75 px floor is the owner's ruling, 2026-11-10 (question 6), splitting the chair's 60 and DeepSeek's 90. Today's floor is 24 px (fx_death.gd:1421), which reads as a blink.
 
-Ladder placement note: the shield row sits below the hull row on the flash column and above it on the body column. A shield flash is a surface strobe spread thin; the hull flash is a concentrated breach. The shield's spectacle is its ripple, which is the largest body of any weapon hit. Qwen's leg dissents and puts the shield flash above the hull flash; the chair holds that the flash ladder stays honest about concentration, and the ripple carries the shield row's size in its own column. This is question 3, still open with the owner at this revision; the table as printed follows the chair's placement.
+Ladder placement note: the shield row sits below the hull row on the flash column and above it on the body column. A shield flash is a surface strobe spread thin; the hull flash is a concentrated breach. The shield's spectacle is its ripple, which is the largest body of any weapon hit. Qwen's leg dissents and puts the shield flash above the hull flash; the chair holds that the flash ladder stays honest about concentration, and the ripple carries the shield row's size in its own column. Owner ruling, 2026-11-10 (question 3): the chair's placement stands, shield flash smaller and ripple bigger.
 
 ## Flame cap
 
@@ -80,7 +80,7 @@ Further links suggested by the DeepSeek, Qwen and Flash legs were self-marked un
 
 1. Flame cap. RULED: 0.70 s (owner split the chair's 0.60 and DeepSeek's 0.80; Qwen held 0.45).
 2. Ladder scale. RULED: the 1.4x ladder in this table, capital flash 423 px, over the compressed near-code scale (Flash and Qwen: capital flash 185 to 240 px).
-3. Shield placement. OPEN. (a) Shield flash smaller than hull flash, ripple bigger [CHAIR PICK, the placement printed in the table]. (b) Shield flash bigger than hull flash (Qwen).
+3. Shield placement. RULED: shield flash smaller than hull flash, ripple bigger (the chair pick, the placement printed in the table; over Qwen's shield flash bigger). With this ruling all six questions are answered and the table is final.
 4. Capital aftermath. RULED: 14.0 s total with about 8 s active and the rest the passive coals shader (the chair pick; over 10.0 s flat matching the API coal wording, and 8.0 s flat, Qwen's active window only).
 5. Hull light. RULED: torpedo rows and all deaths light nearby hulls (the chair pick; over lance and everything above, and every event).
 6. Secondary explosion floor. RULED: 75 px (owner split the chair's 60 and DeepSeek's 90; Flash held 42 to 48).
