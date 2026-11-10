@@ -241,8 +241,11 @@ func _rollout(dir: String) -> void:
 	if wi >= 0 and wi + 1 < a.size() and DisplayServer.get_name() != "headless":
 		var wh = a[wi + 1].split("x")
 		if wh.size() == 2:
-			var win = get_window(); win.mode = Window.MODE_WINDOWED; win.size = Vector2i(int(wh[0]), int(wh[1])); win.position = Vector2i(0, 0)
-			await _frames(20)
+			var want = Vector2i(int(wh[0]), int(wh[1])); var win = get_window()
+			for i in 10:   # the maximise can land after the first resize: set it again until the window holds the size
+				win.mode = Window.MODE_WINDOWED; await _frames(5)
+				win.size = want; win.position = Vector2i(0, 0); await _frames(10)
+				if Vector2i(get_viewport().get_visible_rect().size) == want: break
 	JSM.rnd_seed(344)
 	C.titleScreen(); C.act("newRunScreen"); C.act("startRun")
 	if C.page.get("kind") == "aspect": C.act("pickAspect", C.W["aspOffer"][0])
