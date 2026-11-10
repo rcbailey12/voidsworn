@@ -1,7 +1,7 @@
 # Issue 209 round 7: the sandbox preview (CPU Cycles, no bake). Builds a cell, paints it with the procedural materials directly and
 # renders the views the round 7 sheets need. The PC run (bakeAb6.py, render.py) is the full-quality version of the same pictures.
 # usage: python3.11 preview7.py OUT_DIR MODULE [name=TAG] [res=1024] [samples=16] [views=concept,side,top,...] [clay=0|1]
-#                               [light=studio|concept] [paint=paint] [crop=x0,y0,x1,y1] [save=1]
+#                               [light=studio|concept|game] [paint=paint] [crop=x0,y0,x1,y1] [save=1]
 #   views: concept (the concept's own fitted camera), side, top, below, front (orthographic, bow on the left), battle,
 #          cas, bow, drums, aft, hull (close-ups along the concept's viewing direction)
 #   crop:  for the concept view only: render just this box of the 1024 px concept frame, at res px per full frame (a close crop
@@ -29,10 +29,21 @@ bg.inputs['Color'].default_value = (.035, .037, .042, 1)
 # the same two rigs as render.py: the studio rig of every round, and the concept painting's own light (round 6)
 LIGHTS = {'studio': ((('key', (50, 0, 140), 4.0, 2), ('fill', (115, 0, -40), 1.0, 8), ('rim', (60, 0, -95), 2.2, 3)), 1.6),
           'concept': ((('key', (28, 0, 165), 4.2, 3), ('fill', (100, 0, 60), .7, 10), ('rim', (65, 0, -95), 1.0, 3)), .75)}
-rig, expo = LIGHTS[LIGHT]; sc.view_settings.exposure = expo
-for nm, rot, e, ang in rig:
-    L = bpy.data.lights.new(nm, 'SUN'); L.energy = e; L.angle = math.radians(ang); o = bpy.data.objects.new(nm, L); sc.collection.objects.link(o)
-    o.rotation_euler = [math.radians(v) for v in rot]
+if LIGHT == 'game':
+    # round 8: the game's own light (godot/render/look.gd), for tuning paint in the sandbox before a PC bake: key (1, .96, .90) at
+    # energy 2 from KEY_DIR, fill (.55, .65, .85) at a quarter of that from FILL_DIR, cool ambient (.86, .9, 1) at .5, AgX.
+    # Godot is y up with the board's z mirrored; the ship frame here is z up, so (x, y, z)_godot -> (x, -z, y). A Godot light of
+    # energy E lights a white diffuse face to E; a Blender sun needs E * pi for the same. The ambient is the world colour.
+    sc.view_settings.exposure = 0.0; bg.inputs['Color'].default_value = (.86 * .5, .9 * .5, 1.0 * .5, 1)
+    for nm, dg, col, e in (('key', (-.45, -.70, -.55), (1, .96, .90), 2.0), ('fill', (.6, -.2, .75), (.55, .65, .85), .5)):
+        d = Vector((dg[0], -dg[2], dg[1])).normalized()
+        L = bpy.data.lights.new(nm, 'SUN'); L.energy = e * math.pi; L.color = col; L.angle = math.radians(1.5)
+        o = bpy.data.objects.new(nm, L); sc.collection.objects.link(o); o.rotation_euler = d.to_track_quat('-Z', 'Y').to_euler()
+else:
+    rig, expo = LIGHTS[LIGHT]; sc.view_settings.exposure = expo
+    for nm, rot, e, ang in rig:
+        L = bpy.data.lights.new(nm, 'SUN'); L.energy = e; L.angle = math.radians(ang); o = bpy.data.objects.new(nm, L); sc.collection.objects.link(o)
+        o.rotation_euler = [math.radians(v) for v in rot]
 if CLAY:
     C.mats(); bpy.context.view_layer.material_override = bpy.data.materials.get('clay')
 CAMJ = os.path.join(HERE, '..', '..', '..', 'docs', 'shots', 'ship_pipeline', 'route209', 'round4', 'concept_camera.json')
@@ -78,7 +89,7 @@ for v in VIEWS:
         cam(v, T0 + d2 * 6, T0, ortho=400 / 180, res=(400, 260))
     else:
         tgt, dist = CLOSE[v]; cam(v, Vector(tgt) + D * dist, tgt, lens=50)
-    sfx = ('_clay' if CLAY else '') + ('_cl' if LIGHT == 'concept' else '') + ('_crop' if (v == 'concept' and 'crop' in kw) else '')
+    sfx = ('_clay' if CLAY else '') + ('_cl' if LIGHT == 'concept' else '') + ('_gl' if LIGHT == 'game' else '') + ('_crop' if (v == 'concept' and 'crop' in kw) else '')
     sc.render.filepath = os.path.join(OUT, f'{TAG}_{v}{sfx}.png'); bpy.ops.render.render(write_still=True)
     print('[prev] shot', v, round(time.time() - t0, 1), flush=True)
 if kw.get('save') == '1': bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, f'{TAG}.blend'))

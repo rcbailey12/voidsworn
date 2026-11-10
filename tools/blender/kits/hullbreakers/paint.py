@@ -19,6 +19,16 @@
 #            under each plate seam (run-off), and fades out toward the lower hull; on the decks it sits in soft plate-shaped patches
 #   lower    the lower hull (the tuck under the slab side and the belly) is dark olive, not black
 #   bow      dusty light decks, darker and redder sides; drums darker and cooler
+# Round 8 (Board brief, Nov 10; outside audit pass 2 finding 3 and R160: paint from the concept in layers, judged in the GAME's light):
+#   layer 1  region colours SAMPLED FROM THE CONCEPT (docs/shots/ship_pipeline/route209/round8/README.md, step 3), set so they keep
+#            their read under the game's own light (godot/render/look.gd: key energy 2 from above, AgX), not only in Blender:
+#            the up-facing hull of the red front is a deck red (REGION_DECK), the bow deck brighter than the midship tops, and
+#            the pale dust that went salmon pink in the game is cut to a thin dusting of the deck red itself
+#   layer 2  rust in the concept's big orange blotches (BLOTCH: about 0.03 to 0.06 of the ship's length, on the decks and the
+#            upper sides), not thin streaks
+#   layer 3  wear and grime from the ship's own shape, as before (plates, seams, edge wear, AO, run-off)
+#   not yet  CC0 material textures under the colour, the concept projected where its camera sees the ship, a light map, big
+#            far-reading markings (finding 3 items 1, 2, 4, 5): see the round 8 README, "not done"
 # The bake, the textured material and the band switch reuse paint3.py (same node labels, so bakeAb and export3 are unchanged).
 import os, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -31,14 +41,14 @@ import paint3 as P3
 from paint3 import node, math_, mixc, mulc, ramp, flat, bake_group, textured
 
 # linear albedo pairs (low, high) per band; see the README for the concept samples they were fitted to
-LIN = dict(rust=((.060, .0056, .0032), (.104, .0096, .0050)), gun=((.012, .013, .0145), (.021, .022, .024)),
+LIN = dict(rust=((.070, .0068, .0040), (.120, .0115, .0062)), gun=((.012, .013, .0145), (.021, .022, .024)),
            drum=((.0050, .0054, .0060), (.0090, .0095, .0105)),
            belly=((.066, .055, .030), (.090, .076, .041)), copper=((.090, .030, .016), (.150, .052, .026)),
            sleeve=((.030, .031, .034), (.050, .052, .058)), ochre=((.15, .090, .020), (.22, .14, .030)), rack=((.060, .011, .006), (.095, .018, .010)),
            hazard=((.36, .22, .015), (.44, .28, .02)), yellow=((.30, .19, .015), (.40, .26, .02)), white=((.36, .35, .32), (.46, .45, .41)), dark=((.004, .004, .005), (.007, .007, .008)),
            borrowed=((.040, .050, .062), (.050, .062, .076)), rustdk=((.022, .010, .008), (.034, .015, .011)))
 DUST = dict(rust=((.50, .29, .25), 1.0), rack=((.12, .05, .035), .4), gun=((.075, .072, .072), .55), drum=((.03, .031, .033), .05), sleeve=((.08, .08, .082), .4))
-PATCH = (.40, .072, .012)       # the concept's bright orange rust blooms
+PATCH = (.56, .090, .020)       # the concept's bright orange rust blooms (round 8: sampled from the concept's blotches, sRGB about 190, 82, 42)
 PATCH2 = (.075, .011, .004)      # their darker rim
 STREAK = (.050, .020, .010)     # rust run-off on gunmetal
 WORN = (.16, .15, .135)         # bare steel on worn edges
@@ -51,6 +61,14 @@ RUST_Z = (-.100, .004)          # side rust ramps in from the lower hull (none) 
 PANEL_BANDS = ('rust', 'gun', 'belly', 'rustdk')
 GRIT = ('rust', 'gun', 'belly', 'rustdk', 'rack', 'sleeve')
 ROUGH = dict(borrowed=.55, rust=.93, rack=.93, drum=.93, belly=.92)   # base roughness per band (default .86)
+# round 8, layer 1: deck reds from the concept (linear albedo before grime; sampled bow deck about sRGB 124, 85, 79 lit, the hump
+# 144, 84, 75, the tier tops 49, 33, 31). Bow deck forward of the bow break line, the midship tops behind it. Under the game's key
+# light (energy 2 from above) a deck reads about twice as bright as its albedo, so these sit well under the concept's lit values.
+REGION_DECK = dict(bow=(.135, .046, .036), mid=(.085, .027, .021))
+DECK_X = .178                   # the bow break line: the bow deck forward of it, the midship tops aft
+DECK_DUST = ((.30, .13, .10), .32)    # a thin dusting of a pale deck red (round 7's .50, .29, .25 at full cover went salmon pink in the game)
+# round 8, layer 2: the concept's big rust blotches (noise scale in ship lengths, coverage thresholds), decks and upper sides
+BLOTCH = dict(scale=20.0, lo=.52, hi=.61, side=.85)
 
 def make(band, group, b0ao=None):
     m = bpy.data.materials.new(f'p3_{band}_{group}'); m.use_nodes = True; nt = m.node_tree; nt.nodes.clear()
@@ -115,21 +133,27 @@ def make(band, group, b0ao=None):
         col = mulc(nt, col, math_(nt, 'SUBTRACT', 1, math_(nt, 'MULTIPLY', ramp(nt, noise(95, 2, .5), .66, .70), .45)))
     if panels and band != 'belly':   # each side plate a little darker toward its lower edge (stain gathers there)
         col = mulc(nt, col, math_(nt, 'SUBTRACT', 1, math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', math_(nt, 'SUBTRACT', 1, ramp(nt, rowf, .0, .45)), side), .20)))
+    if band == 'rust':        # round 8, layer 1: the deck red by region (bow deck, midship tops), on up-facing faces
+        bowsel = ramp(nt, xyz.outputs['X'], DECK_X - .01, DECK_X + .01)
+        dcol = mixc(nt, REGION_DECK['mid'], REGION_DECK['bow'], bowsel)
+        dcol = mulc(nt, dcol, math_(nt, 'ADD', .80, math_(nt, 'MULTIPLY', noise(3.0, 3), .40)))
+        if panels: dcol = mulc(nt, dcol, math_(nt, 'ADD', .82, math_(nt, 'MULTIPLY', pv, .36)))
+        col = mixc(nt, col, dcol, ramp(nt, up, .55, .85))
     if band in DUST:          # dust and bleach on up-facing faces (the concept's light pink-grey bow deck, grey aft deck)
-        dc, dk = DUST[band]      # round 7: the dust lies over most of a deck (a broad cover, thinner in patches), not in patches only
+        dc, dk = DECK_DUST if band == 'rust' else DUST[band]      # round 8: the rust decks get a thin dusting only
         dustf = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', math_(nt, 'POWER', up, 4.0), dk), math_(nt, 'ADD', .45, math_(nt, 'MULTIPLY', ramp(nt, noise(5, 3), .10, .55), .55)), clamp=True)
         col = mixc(nt, col, dc, dustf)
     if band in ('rust', 'rack'):
         # round 7: a gradient with streaks and run-off, not even specks. Decks: soft plate-shaped patches under a broad mask.
         # Sides: strongest under the deck edge, long thin streaks running down, heavier under each plate seam, gone by the lower hull.
-        blot = ramp(nt, noise(11, 3, .5), .46, .58)
+        blot = ramp(nt, noise(BLOTCH['scale'], 3, .55), BLOTCH['lo'], BLOTCH['hi'])        # round 8: the concept's big blotches
         speck = ramp(nt, noise(48, 6, .65), .57, .63)
         broad = ramp(nt, noise(2.5, 2), .28, .52)
-        if panels: blot = math_(nt, 'MULTIPLY', blot, math_(nt, 'ADD', .25, math_(nt, 'MULTIPLY', pv, .75)))
-        deck_r = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', up, broad), math_(nt, 'ADD', blot, math_(nt, 'MULTIPLY', speck, .22)))
+        if panels: blot = math_(nt, 'MULTIPLY', blot, math_(nt, 'ADD', .70, math_(nt, 'MULTIPLY', pv, .30)))
+        deck_r = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', up, math_(nt, 'ADD', .55, math_(nt, 'MULTIPLY', broad, .45))), math_(nt, 'ADD', blot, math_(nt, 'MULTIPLY', speck, .15)))
         zg = ramp(nt, xyz.outputs['Z'], RUST_Z[0], RUST_Z[1])
         strk = ramp(nt, stretched(55, 55, 1.0, 4, 3), .54, .72)
-        side_r = math_(nt, 'ADD', math_(nt, 'MULTIPLY', strk, .62 if panels else .30), math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', blot, zg), .70))
+        side_r = math_(nt, 'ADD', math_(nt, 'MULTIPLY', strk, .40 if panels else .30), math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', blot, zg), BLOTCH['side']))
         if panels: side_r = math_(nt, 'MULTIPLY', side_r, math_(nt, 'ADD', .55, math_(nt, 'MULTIPLY', runoff, .90)))
         side_r = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', side_r, zg), side)
         creep = 0.0
@@ -171,6 +195,7 @@ def make(band, group, b0ao=None):
     # rust and rack: metalness so the sheen takes the paint's own red instead of greying it (white sheen on a dark red read mauve;
     # round 7 raises it from .38 to .70 with a brighter base, because the bow sides still read pink under the key light)
     m0 = .45 if band in ('copper', 'borrowed') else (.70 if band in ('rust', 'rack') else .15)
+    if band == 'rust': m0 = math_(nt, 'SUBTRACT', .70, math_(nt, 'MULTIPLY', ramp(nt, up, .55, .85), .45))   # round 8: decks .25, sides .70
     if band in ('rust', 'rack'):      # dust and rust blooms are not metallic: they keep their own light colour
         m0 = math_(nt, 'MULTIPLY', m0, math_(nt, 'SUBTRACT', 1, math_(nt, 'MAXIMUM', math_(nt, 'MULTIPLY', dustf, .9), ramp(nt, bm, .30, .70)), clamp=True))
     metal = math_(nt, 'ADD', m0, math_(nt, 'MULTIPLY', edge, .65), clamp=True)
