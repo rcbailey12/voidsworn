@@ -1952,6 +1952,34 @@ func nemActive() -> Variant:
 		if not reg.has(fac): reg[fac] = newNemesis(fac)
 		RUN["nem"] = reg[fac]
 	return RUN.get("nem")
+# Issue 364: the Nemesis the run is fighting now, read with no side effect. A screen asks this instead of RUN.nem (the cache
+# nemActive keeps fresh) or a run dictionary's own "nem" field, so a reader can never show the commander of a sector already
+# passed. It resolves the run's current assignment against the commander registry and never migrates a save, creates or draws
+# a commander, or writes the cache. Pass run0 (a page's finished run) or leave it null for the current run. Null when the run
+# has no commander yet, or the assigned one has not been built. A save from before the registry (no nemAssign) answers its
+# one commander exactly as before.
+func nemRead(run0 = null) -> Variant:
+	var run = run0 if run0 is Dictionary else RUN
+	if not (run is Dictionary):
+		return null
+	if run.get("fleet") == null:
+		return run.get("nem")
+	var cur = run.get("nem")
+	var a = run.get("nemAssign")
+	if not (a is Array) or a.is_empty():
+		return cur
+	var i = int(or_(run.get("sector"), 1)) - 1
+	var fac = null
+	var j = min(i, a.size() - 1)
+	while j >= 0:
+		if jt(a[j]): fac = a[j]; break
+		j -= 1
+	if not jt(fac):
+		return cur
+	var reg = run.get("nems") if run.get("nems") is Dictionary else {}
+	if reg.has(fac) and reg[fac] is Dictionary:
+		return reg[fac]
+	return cur if (jt(cur) and str(cur.get("fac", "")) == str(fac)) else null
 func ensureNemesis() -> Variant: return nemActive()   # B4 saves get an R42 identity; the active commander resolves from the assignment
 # R42 gender for the story layer's pronouns: 'n' (it) for the Chorus, 'f' when his first name part is a feminine one, else 'm'. No random draw.
 func nemGender(fac, name: String) -> String:
