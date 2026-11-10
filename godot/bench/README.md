@@ -17,7 +17,7 @@ Copy `tools/pc/jobs/look_bench.bat` to `Downloads\voidsworn_test\` and double-cl
 
 ```
 look_bench.bat origin/opus/issue-365          the branch, against the baseline
-look_bench.bat origin/opus/issue-365 origin/main   the branch against main
+look_bench.bat origin/opus/issue-365 origin/main      the branch against main
 look_bench.bat origin/main none               one commit, no comparison
 look_bench.bat origin/main <commit> go        the same, but first wait for Downloads\voidsworn_test\look_bench\go.txt
 ```
@@ -69,7 +69,10 @@ python tools/pc/jobs/look_bench_sheets.py --after DIR [--before DIR2] --out SHEE
 - `render/ship_view.gd` runs its idle bob and station-keeping jets on the wall clock (`Time.get_ticks_msec`, lines 1277 and 1282):
   the bench turns ShipView processing off, so ships hold still and those jets are not drawn. Shake is off; hit pause and death
   slow motion stay on.
-- The tolerance and any still that does not repeat are measured by two runs of the same commit: `docs/shots/look_bench/README.md`.
+- Measured (`docs/shots/look_bench/README.md`): two runs after the first on a checkout match to the pixel on all 2,484 stills,
+  deaths and the storm included; the first run after an import is off by up to 1.63 levels on a few stills. The tolerance is
+  2.0 levels per still (the sheet maker's default). No still is exempt.
+- A warm pass plays every moment once at camera 170 before the kept ones and keeps nothing, so no pipeline is still compiling.
 
 ### Stops
 
