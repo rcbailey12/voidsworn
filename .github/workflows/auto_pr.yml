@@ -2,7 +2,7 @@
 # Nov 7 2026 (R110): the PR title comes from the issue, not the head commit (a branch created from main
 # used to copy main's last commit as the title, which mislabelled PRs #203 and #204). work/issue-<n>[-arm]
 # is the workhorse branch pattern (#217).
-# Codex on Ryan's PC (codex/issue-<n>) and Muse (muse/issue-<n>) only need to push; this opens the PR into main
+# Codex on Ryan's PC (codex/issue-<n>), Muse (muse/issue-<n>) and Claude worker threads (opus/issue-<n>, issue 359) only need to push; this opens the PR into main
 # and starts the checks on it. Opus reviews and merges.
 name: auto-pr
 on:
@@ -11,6 +11,7 @@ on:
       - 'codex/issue-*'
       - 'muse/issue-*'
       - 'work/issue-*'
+      - 'opus/issue-*'   # Claude worker branches (issue 359); '*' also matches the arm shape opus/issue-<n>-<arm>
 permissions:
   contents: read
   pull-requests: write
@@ -35,7 +36,19 @@ jobs:
             if [ -n "$arm" ]; then title="$title [$arm arm]"; fi
             body=$(printf '%s\n' "$TITLE" | tail -n +2)
             printf '%s\n\nOpened automatically from branch %s. Opus reviews and merges.\n' "$body" "$BRANCH" > body.md
-            grep -q "Closes #$n" body.md || printf '\nCloses #%s\n' "$n" >> body.md
+            # Claude-built work (opus/) gets an outside check before its issue may close, and standing issues stay open
+            # through every merge (256 is the outside-check issue; it was closed by merges twice on Nov 10): those PRs say
+            # "Refs #N", never a closing word. Add a standing issue to STANDING, space separated.
+            STANDING="256"
+            word="Closes"
+            case "$BRANCH" in opus/*) word="Refs" ;; esac
+            case " $STANDING " in *" $n "*) word="Refs" ;; esac
+            if [ "$word" = "Refs" ]; then
+              sed -i -E "s/\b([Cc]lose[sd]?|[Ff]ix(e[sd])?|[Rr]esolve[sd]?) #$n\b/Refs #$n/g" body.md
+              grep -q "Refs #$n" body.md || printf '\nRefs #%s\n' "$n" >> body.md
+            else
+              grep -q "Closes #$n" body.md || printf '\nCloses #%s\n' "$n" >> body.md
+            fi
             gh pr create -R "$REPO" --base main --head "$BRANCH" --title "$title" --body-file body.md
           else
             echo "PR already open for $BRANCH"

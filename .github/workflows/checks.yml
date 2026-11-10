@@ -58,3 +58,32 @@ jobs:
       - name: Nemesis scenarios (JS game and Godot, record by record)
         if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
         run: sh godot/campaign/test/run_nem_scenarios.sh
+  # Issue 359: GitHub opens the game the player sees (the battle scene, HUD, effects, world, story), not only the rules.
+  # Its own job, so it runs beside the parity job and has its own 30 minute limit. Each step runs even when an earlier
+  # one fails, so one red run shows every failure. Ship files (godot/gen) are never on GitHub: ships are placeholder blocks.
+  godot-game:
+    name: Godot game checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      XDG_DATA_HOME: ${{ github.workspace }}/.godot_user   # user:// for every Godot run here; never a real profile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Get Godot 4.7.2 (headless)
+        id: godot
+        run: |
+          curl -sSL --retry 3 --retry-all-errors -o godot.zip https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q godot.zip -d "$RUNNER_TEMP/godot"
+          echo "GODOT=$RUNNER_TEMP/godot/Godot_v4.7.2-stable_linux.x86_64" >> "$GITHUB_ENV"
+      # (a) typo insurance: compiles every .gd file and loads every .tscn under godot/ (nothing runs). No asset import is
+      # needed: no script or scene preloads a texture or sound. Fails on any file that does not load and on any SCRIPT ERROR.
+      - name: Load every Godot script and scene (typo check)
+        if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
+        run: |
+          "$GODOT" --headless --path godot --script res://tools/ci/load_all.gd 2>&1 | tee "$RUNNER_TEMP/load_all.log"; code=${PIPESTATUS[0]}
+          { echo '### Load every Godot script and scene'; grep -E '^load all:' "$RUNNER_TEMP/load_all.log"; } >> "$GITHUB_STEP_SUMMARY"
+          if grep -q 'SCRIPT ERROR' "$RUNNER_TEMP/load_all.log"; then echo "SCRIPT ERROR lines above"; exit 1; fi
+          exit $code
