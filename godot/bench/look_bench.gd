@@ -11,8 +11,9 @@ extends Node
 #   moments  every row of bench/look_moments.json (weapons on a hull and on a shield, shield states, death classes, one
 #            weapon on every weight, the eight PR 327 looks), each at the three cameras, as 30 frames a second strips:
 #            DIR/moments/<id>__c<cam>.png (cells side by side, 384x216 each; camera 170 is a 1 to 1 pixel crop).
-#   fleet    all 36 hulls of render/hull_table.gd AI_HULLS at the battle camera (170) at true pixel size over three skies
-#            (the darkest region, the brightest region, a storm map): DIR/fleet/<sky>/<nn>_<code>.png (400x240, 1 to 1).
+#   fleet    all 36 hulls of render/hull_table.gd AI_HULLS at the battle camera (170) at true pixel size over every
+#            region's sky and a storm map (the sheet maker names the darkest and brightest by measurement):
+#            DIR/fleet/<sky>/<nn>_<code>.png (400x240, 1 to 1).
 # DIR/bench.json lists every still with its effect time, the run's settings and warnings. The last line is
 # LOOK_BENCH_DONE. Stops with "LOOK_BENCH placeholder hull" (exit 3) if any ship would be drawn as a block (no built
 # hull: a checkout without godot/gen), so a bench never quietly draws blocks (issue 281 run 6).
@@ -46,10 +47,15 @@ const H := 1080
 const STEP := 1.0 / 60.0
 const GRID := 900          # every part starts on a multiple of this many drawn frames
 const FLEET_CELL := Vector2i(400, 240)
-# the three skies of the fleet sheet: name, biome (world/world_sky.gd region_for picks the region), terrain
+# the skies of the fleet sheet: every region of world/world_sky.gd (each biome is picked so region_for lands on it), then a
+# storm map. Which is darkest and brightest on screen is measured by the sheet maker (the region's own numbers do not say:
+# PC run 1 showed the "deep" region, faintest by its numbers, brighter behind the ships than the "nebula" region).
 const SKIES := [
-	["dark", {"rock": "carbon", "planet": 6}, false],     # the deep region: faintest nebula (neb 0.22), fewest stars
-	["bright", {"rock": "crystal", "planet": 2}, false],  # the nebula region: brightest, widest nebula (neb 1.0)
+	["frontier", {"rock": "stone", "planet": 4}, false],
+	["nebula", {"rock": "crystal", "planet": 2}, false],
+	["world", {"rock": "stone", "planet": 3}, false],
+	["boneyard", {"rock": "iron", "planet": 5}, false],
+	["deep", {"rock": "carbon", "planet": 6}, false],
 	["storm", {"rock": "ice", "planet": 7}, true],        # the gate scene's storm region, ion storm hexes on the ship
 ]
 const STORM_HEXES := ["0,0", "1,0", "-1,0", "0,1", "0,-1", "1,-1", "-1,1", "2,-1", "-2,1"]

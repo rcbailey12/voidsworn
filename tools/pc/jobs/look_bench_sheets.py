@@ -63,6 +63,17 @@ def diff(a, b):
     return sum(st.mean) / 3.0
 
 
+def sky_level(paths):
+    """Mean brightness (0-255, Rec. 601 luma) of the four 30x30 corners of every fleet cell: the sky behind the ships."""
+    vals = []
+    for p in paths:
+        im = Image.open(p).convert("L")
+        w, h = im.size
+        for box in [(0, 0, 30, 30), (w - 30, 0, w, 30), (0, h - 30, 30, h), (w - 30, h - 30, w, h)]:
+            vals.append(ImageStat.Stat(im.crop(box)).mean[0])
+    return sum(vals) / len(vals) if vals else 0.0
+
+
 def text(dr, xy, s, f=F, fill=FG):
     dr.text(xy, s, font=f, fill=fill)
 
@@ -197,6 +208,14 @@ def main():
     for s in fa:
         if s["sky"] not in skies:
             skies.append(s["sky"])
+    levels = {sky: sky_level([os.path.join(a.after, s["file"]) for s in fa if s["sky"] == sky]) for sky in skies}
+    plain = [k for k in skies if k != "storm"]
+    darkest = min(plain, key=lambda k: levels[k]) if plain else ""
+    brightest = max(plain, key=lambda k: levels[k]) if plain else ""
+    with open(os.path.join(a.out, "skies.txt"), "w", encoding="utf-8") as f:
+        f.write("Sky brightness behind the ships at the battle camera (mean of the cell corners, 0-255):\n")
+        for k in skies:
+            f.write("  %-9s %6.2f%s\n" % (k, levels[k], "   darkest" if k == darkest else ("   brightest" if k == brightest else "")))
     for sky in skies:
         items = [s for s in fa if s["sky"] == sky]
         if not items:
@@ -211,8 +230,9 @@ def main():
         sheet = Image.new("RGB", (W, H), BG)
         dr = ImageDraw.Draw(sheet)
         region = after[0].get("parts", {}).get("fleet_" + sky, {}).get("region", "")
-        text(dr, (8, 8), "Fleet at the battle camera (170), true pixel size, %s sky (%s region).  %s" % (
-            sky, region, ("before %s | after %s" % (lb, la)) if before else la), FB)
+        tag = " (DARKEST)" if sky == darkest else (" (BRIGHTEST)" if sky == brightest else "")
+        text(dr, (8, 8), "Fleet at the battle camera (170), true pixel size, %s sky%s, %s region, sky level %.1f.  %s" % (
+            sky, tag, region, levels[sky], ("before %s | after %s" % (lb, la)) if before else la), FB)
         for i, s in enumerate(items):
             x = (i % per) * (unit_w + 6)
             y = 40 + (i // per) * (ch + LABEL_H + 6)

@@ -48,11 +48,13 @@ python tools/pc/jobs/look_bench_sheets.py --after DIR [--before DIR2] --out SHEE
   four hexes), the camera at the game's own angle, centred on the target (on the attacker for muzzles and launches).
 - **Cells:** 384x216. Camera 170 is a 1 to 1 pixel crop of the 1920x1080 frame (true pixel size). Camera 60 is the middle
   768x432 shrunk to half, camera 26 the middle 1152x648 shrunk to a third.
-- **Fleet:** all 36 hulls of `render/hull_table.gd` `AI_HULLS` at camera 170, 1 to 1 pixels (400x240 cells), over three skies:
-  `dark` (the deep region, the faintest nebula), `bright` (the nebula region, the brightest and widest) and `storm` (ion storm
-  hexes on and around the ship). The 30 faction ships are set up exactly as the battle does (faction and class); the three craft
-  and three objects (S1_51, S2_23, B23_51, O1_37, O2_37, O3_11) are drawn from their hull files at a stated length (craft 2.56,
-  station 46, transport 17.6, beacon 8), since the battle draws craft procedurally and the station through the board.
+- **Fleet:** all 36 hulls of `render/hull_table.gd` `AI_HULLS` at camera 170, 1 to 1 pixels (400x240 cells), over the sky of
+  every region of `world/world_sky.gd` (frontier, nebula, world, boneyard, deep) and a storm map (ion storm hexes on and around
+  the ship). The sheet maker measures the sky behind the ships and names the darkest and the brightest (`skies.txt`): the
+  regions' own numbers do not say which is darker on screen. The 30 faction ships are set up exactly as the battle does
+  (faction and class); the three craft and three objects (S1_51, S2_23, B23_51, O1_37, O2_37, O3_11) are drawn from their hull
+  files at a stated length (craft 2.56, station 46, transport 17.6, beacon 8), since the battle draws craft procedurally and the
+  station through the board.
 - No hex grid and no HUD: world, ships and effects only (the audit probe's pattern). The whole battle scene is
   `scene_gate.tscn -- --still`.
 
