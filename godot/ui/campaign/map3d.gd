@@ -81,7 +81,7 @@ var _wake_samples: Array = []
 var _wake_mesh: ImmediateMesh
 var _wake_node: MeshInstance3D
 var _wake_material: StandardMaterial3D
-var _side_w := 380.0
+var _side_w := 392.0   # the side panel (380) plus its screen margin (12)
 var _rng := RandomNumberGenerator.new()
 var _cam_focus := Vector3.ZERO   # where the camera leans (eased); zero = the whole chart
 var _cam_zoom := 1.0             # 1 = the whole chart; smaller = closer (arrival and jump moves)

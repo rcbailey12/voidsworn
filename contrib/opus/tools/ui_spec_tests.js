@@ -61,7 +61,7 @@ check(gs.some(r => r.at.startsWith('godot/ui/')) && gs.some(r => r.at.startsWith
 check(gs.some(r => r.how === 'theme default'), 'text floor scan reads the theme default font size form (default_font_size = s(15), N1)');
 
 // 5. HD9: one hull-low line in the port
-const lows = [...hud.matchAll(/HULL_LOW if \w+ < ([\d.]+)/g), ...read('godot/ui/campaign/campaign_ui.gd').matchAll(/BLOOD if f < ([\d.]+)/g)].map(m => +m[1]);
+const lows = [...hud.matchAll(/HULL_LOW if \w+ < ([\d.]+)/g), ...read('godot/ui/campaign/campaign_ui.gd').matchAll(/(?:BLOOD|HULL_LOW) if f < ([\d.]+)/g)].map(m => +m[1]);
 check(lows.length >= 4 && lows.every(v => v === 0.35), `every hull-low line is 0.35: battle roster, nameplate and the campaign bars (HD9; found ${lows.join(', ')})`);
 
 // 6. the diff script still reads every named pair (a pattern that stopped matching is reported, not failed)

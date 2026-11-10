@@ -49,6 +49,21 @@ const FOE := Color("#c4a4ff")          # FOE family: enemy names
 const FOE_RING := Color("#a06bff")     # FOE family: rings, chip borders, danger badges
 const FOE_TEXT := Color("#e2d2ff")     # FOE family: text on the enemy chip
 const KEY_FG := Color("#d9f78a")       # key cap text (light lime, in the number face)
+# the campaign map (issue #344, UI rollout 1): colours the map and its pages share. ui_spec.md 5.1 names them; the values
+# stay the shipped ones except where they sat next to lime (DANGER_EASY and the repair field glyph move to FRIEND mint,
+# ui_spec.md 5.1 collision note; every band also prints its word, the second channel of ui_spec.md 5.2).
+const BLUE := Color("#62a8ff")         # B4 blue event options (an option your fleet qualifies for)
+const DANGER_EASY := FRIEND            # was #7ddc6a, a green next to the lime
+const DANGER_EVEN := Color("#d0a64b")
+const DANGER_HARD := Color("#f0883a")
+const DANGER_DEADLY := Color("#e2453a")
+const DANGER := [["Easy", DANGER_EASY], ["Even", DANGER_EVEN], ["Hard", DANGER_HARD], ["Deadly", DANGER_DEADLY]]
+# the kind of each map stop: its glyph and colour on the key, its ring on the 3D map
+const STOP := {"battle": ["◆", Color("#e8503e")], "elite": ["◆", Color("#ff3a2a")], "shipyard": ["■", Color("#d0a64b")],
+	"drydock": ["■", Color("#5fb3a6")], "field": ["✚", FRIEND], "event": ["●", Color("#62ccff")], "boss": ["✦", Color("#ff3a2a")]}
+const ROUTE_SAFE := Color("#62ccff")   # the planner's safest route to the flagship
+const ROUTE_RICH := Color("#e0b04a")   # the planner's richest route
+const SHADE := Color(0.035, 0.047, 0.035, 0.80)  # the dim layer behind a dialog: INK-toned, the scene only hints through
 # the material
 const WELL := Color("#080a08")         # the solid backing under every block of text (alpha WELL_A)
 const WELL_A := 0.93
