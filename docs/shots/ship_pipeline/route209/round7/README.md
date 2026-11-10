@@ -26,3 +26,25 @@ gun is aimed aft of the beam (owner rule); 8 degrees forward keeps a margin.
 
 Scored in the sandbox from the built geometry, same scorer and camera as rounds 4 to 6 (round 6's 90.1 from the PC glb reproduces
 here). The guns were not bent to the score: the aim comes from the concept, and the score happens to hold.
+
+## Step 2: texture and paint pass (first pass, on the Ab6 hull)
+
+![Hull side close crop: concept, Ab6, round 7 paint first pass](step2_hullside_first_pass.jpg)
+
+This is the paint code landing before the bow pass, so it can be reviewed on its own; the final paint sheets come after step 3,
+because the bow shape decides how the paint reads (see below). What changed in `tools/blender/kits/hullbreakers/paint.py`:
+
+- **Plate lines and panel breaks.** The hull (not the bolt-on parts) is cut into painted plates at the concept's scale: long plates
+  on the sides, smaller ones on the decks, big ones on the lower hull. A dark seam line between them, every plate its own tone and
+  sheen, each side plate a little darker toward its lower edge. The layout wraps round the bow and differs port to starboard.
+- **Rust as a gradient, not specks.** On the sides it is strongest under the deck edge, runs down in long thin streaks, gathers
+  under each plate seam and creeps out of the seams in broken stretches, and is gone by the lower hull. On the decks it sits in
+  soft plate-shaped patches. The even orange specks of round 6 are down to a trace.
+- **Dark olive lower hull.** The tuck under the slab side and the belly are olive, no longer near black.
+- **Bow sides darker and redder.** The pink read was a grey sheen on dark red. The red paint now carries more metalness (0.70,
+  was 0.38) with a brighter base, so the sheen takes the paint's own red.
+- **Grit.** Fine mottle, broad stains and sparse dark chips on the big surfaces, so no panel is one flat tone.
+- **Drums darker and cooler**, their ochre bands thinner and duller, as the concept's.
+
+All of it is baked into the same albedo and ORM atlases as before (seams also go into the occlusion channel, plate sheen into the
+roughness), so the bake, LOD and export steps are unchanged.

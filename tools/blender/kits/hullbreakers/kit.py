@@ -149,28 +149,35 @@ def casemate(s, seat, rnd):
 
 def bow_battery(s, seat, rnd):
     """the twin bow guns on the raised forward deck: heavy breech blocks under a slatted armour hood, fat recoil sleeves, long
-    barrels with ribbed muzzle shrouds and a glowing bore (the concept's orange muzzles), welded braces to the deck"""
+    barrels with ribbed muzzle shrouds and a glowing bore (the concept's orange muzzles), welded braces to the deck.
+    extra hooded: 1 when the hull has its own hood over the breeches (round 7): only the barrels, shrouds, bores and braces are built"""
     c = s.pos; a = s.aim; R = PB.frame(a); gap = s.extra.get('gap', .030); Lb = s.extra.get('barrel', .090); r = s.size
+    hooded = bool(s.extra.get('hooded'))
     i0 = PB.mark()
     for k in (-1, 1):
         y = k * gap; b0 = c + Vector((0, y, 0))
-        box(f'{s.name}breech{k}', b0 + Vector((-.012, 0, -.002)), (.036, r * 3.0, r * 2.6), bevel=.0012)
-        cyl(f'{s.name}rec{k}', b0 + a * .014, r * 1.45, .030, axis='X', seg=24, rot=R, bevel=.0008)
-        for j in range(3): cyl(f'{s.name}recr{k}{j}', b0 + a * (.004 + j * .010), r * 1.55, .0018, axis='X', seg=24, rot=R, bevel=0)
+        if not hooded:
+            box(f'{s.name}breech{k}', b0 + Vector((-.012, 0, -.002)), (.036, r * 3.0, r * 2.6), bevel=.0012)
+            cyl(f'{s.name}rec{k}', b0 + a * .014, r * 1.45, .030, axis='X', seg=24, rot=R, bevel=.0008)
+            for j in range(3): cyl(f'{s.name}recr{k}{j}', b0 + a * (.004 + j * .010), r * 1.55, .0018, axis='X', seg=24, rot=R, bevel=0)
+        else:      # a collar where the barrel leaves the hood's front face
+            cyl(f'{s.name}collar{k}', b0 + a * .031, r * 1.5, .005, axis='X', seg=24, rot=R, bevel=.0006)
         cyl(f'{s.name}brl{k}', b0 + a * (.029 + Lb / 2), r, Lb, axis='X', seg=24, rot=R, bevel=.0005)
         cyl(f'{s.name}shr{k}', b0 + a * (.029 + Lb - .010), r * 1.32, .020, axis='X', seg=24, rot=R, bevel=.0006)
         for j in range(3): cyl(f'{s.name}shrr{k}{j}', b0 + a * (.029 + Lb - .017 + j * .007), r * 1.40, .0015, axis='X', seg=24, rot=R, bevel=0)
         PB.register_gun(f'{s.name}brl{k}', a, (0, 0, 1))
-        z0 = seat.top(b0.x + .045, y, .02) or (b0.z - .02)                     # welded brace from the barrel down to the deck
-        tube(f'{s.name}brace{k}', b0 + a * .060 + Vector((0, 0, -r)), Vector((b0.x + .052, y, z0)), .0016, seg=6)
+        fa, fx = (.066, .082) if hooded else (.060, .052)                      # welded brace from the barrel down to the deck
+        z0 = (seat.top(b0.x + fx, y) if hooded else seat.top(b0.x + .045, y, .02)) or (b0.z - .02)
+        tube(f'{s.name}brace{k}', b0 + a * fa + Vector((0, 0, -r)), Vector((b0.x + fx, y, z0)), .0016, seg=6)
     PB.tag(i0, 'part', 'copper')
     i1 = PB.mark()   # the slatted armour hood over the breeches (the concept's louvred raised-deck front)
-    hw = gap + r * 2.4; zt = c.z + r * s.extra.get('hood', 1.9)
-    box(f'{s.name}hood', (c.x - .020, c.y, zt), (.050, 2 * hw, .005), rot=(0, math.radians(-8), 0), bevel=.0008)
-    for j in range(5):
-        box(f'{s.name}slat{j}', (c.x - .040 + j * .010, c.y, zt + .0035), (.006, 2 * hw - .004, .0018), rot=(0, math.radians(-8), 0), bevel=0)
-    for k in (-1, 1): box(f'{s.name}cheek{k}', (c.x - .016, k * hw, c.z + r * .5), (.040, .004, r * 3.0), bevel=.0006)
-    weld(f'{s.name}weld', [(c.x - .020, -hw + .006, zt + .0020), (c.x - .020, hw - .006, zt + .0020)], rnd=rnd)
+    if not hooded:
+        hw = gap + r * 2.4; zt = c.z + r * s.extra.get('hood', 1.9)
+        box(f'{s.name}hood', (c.x - .020, c.y, zt), (.050, 2 * hw, .005), rot=(0, math.radians(-8), 0), bevel=.0008)
+        for j in range(5):
+            box(f'{s.name}slat{j}', (c.x - .040 + j * .010, c.y, zt + .0035), (.006, 2 * hw - .004, .0018), rot=(0, math.radians(-8), 0), bevel=0)
+        for k in (-1, 1): box(f'{s.name}cheek{k}', (c.x - .016, k * hw, c.z + r * .5), (.040, .004, r * 3.0), bevel=.0006)
+        weld(f'{s.name}weld', [(c.x - .020, -hw + .006, zt + .0020), (c.x - .020, hw - .006, zt + .0020)], rnd=rnd)
     PB.tag(i1, 'part', 'hood')
     i2 = PB.mark()
     for k in (-1, 1):
@@ -198,7 +205,7 @@ def drum(name, c, r, L, aim=(1, 0, 0), variant=0, rnd=None):
     PB.tag(i0, 'part', 'drum')
     i1 = PB.mark()
     for k, f in enumerate((-.26, .30 if variant != 1 else .22)):
-        cyl(f'{name}band{k}', c + a * (L * f), r * 1.045, L * .085, axis='X', seg=28, rot=R, bevel=0)
+        cyl(f'{name}band{k}', c + a * (L * f), r * 1.045, L * .055, axis='X', seg=28, rot=R, bevel=0)   # round 7: thinner, as the concept's
     PB.tag(i1, 'trim', 'band')
     i2 = PB.mark()
     front = c + a * (L / 2 + (.0045 if variant == 2 else .0012))
