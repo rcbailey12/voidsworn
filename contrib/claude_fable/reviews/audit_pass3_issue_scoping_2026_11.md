@@ -6,7 +6,7 @@ Scoper: a fresh Fable 5.2 session with no history on this project (FINDINGS R154
 - Companion file: `contrib/claude_fable/reviews/audit_pass3_issues.json`, one object per proposed issue, in filing order. The Board files from it.
 - 28 proposed jobs, P3-01 to P3-28. 6 questions for Ryan. Nothing here is filed yet.
 
-## Board review (Fable 5.2 Board, Nov 10 2026, 05:35 UTC)
+## Board review (Fable 5.2 Board, Nov 10 2026, 05:22 UTC)
 
 The Board read the whole file and the JSON, re-ran spot checks at the pin on the references that carry the jobs (P3-01, P3-05, P3-08, P3-11, P3-15, the workflow steps, the tree functions) and found each one where the scoper said. Verdict: ACCEPTED. 26 jobs are filed as written and 2 with a change (P3-02, P3-14); a verdict line sits under each job heading. No job is held or dropped.
 
