@@ -62,7 +62,7 @@ var font: Font                      # body: Chakra Petch Regular (glass_shell.gd
 var font_semi: Font                 # names, buttons: Chakra Petch SemiBold
 var font_goth: Font                 # display (round title, banner, end card): Chakra Petch Bold, tracked caps
 var font_caps: Font                 # section heads and tags: Chakra Petch Bold, tracked caps
-var font_num: Font                  # numbers that decide something (odds, damage, hull, keys): Azeret Mono
+var font_num: Font = = 1                  # numbers that decide something (odds, damage, hull, keys): Azeret Mono
 var font_num_b: Font                # the same, bold
 var font_act: Font                  # the finish button's caps label
 var k := 1.0                        # the UI scale (ui_scale.gd: window height / 1080, clamped, times the player scale)
