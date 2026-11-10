@@ -1505,7 +1505,7 @@
   {
    "id": "p_missile_launch",
    "group": "PR 327 looks",
-   "label": "missile launch (Hullbreaker rockets)",
+   "label": "missile launch (Hullbreaker rockets; the first rocket leaves 0.45 s after the order)",
    "att": [
     "corsair",
     "Cruiser"
@@ -1522,7 +1522,7 @@
    "windows": [
     [
      "fire",
-     0.0,
+     0.4,
      12
     ]
    ],

@@ -4,7 +4,7 @@ extends Node
 # runs of the same commit give the same pictures and a change shows only where it lands.
 #
 #   godot --path godot --fixed-fps 60 --disable-vsync --resolution 1920x1080 res://bench/look_bench.tscn -- --out DIR
-#         [--part all|moments|fleet] [--only id1,id2] [--commit SHA] [--allow-blocks]
+#         [--part all|moments|fleet] [--only id1,id2] [--commit SHA] [--allow-blocks] [--no-warm]
 # --allow-blocks is for a cloud smoke run of the script only (no hulls there): it draws the blocks instead of stopping.
 #
 # Parts:
@@ -27,6 +27,8 @@ extends Node
 #     one frame, then a fixed 120 frames pass, so bake time on the PC shifts neither the shader clock nor the storm's;
 #   - render/ship_view.gd draws its idle bob and station-keeping jets on the wall clock (Time.get_ticks_msec): the
 #     bench turns ShipView processing off, so ships hold still (nothing else in a ShipView runs while parked).
+#   - before the moments, a warm pass plays every row once at camera 170 and keeps nothing, so no pipeline is still
+#     compiling (and drawn with Godot's general shader) while a kept still is taken;
 #   - shake is off (as the audit probe); hit pause and death slow motion stay on (they are part of the look).
 # The bench draws no hex grid and no HUD (world, ships and effects only); the battle scene with both is
 # bench/scene_gate.tscn --still.
@@ -462,6 +464,20 @@ func _moments_part() -> void:
 	DirAccess.make_dir_recursive_absolute(d)
 	var cams: Array = cfg.get("cameras", [170, 60, 26])
 	var cell := Vector2i(int(cfg["cell"][0]), int(cfg["cell"][1]))
+	# Warm pass: every row once at the battle camera, nothing saved. PC run 3: the first run after an import differed
+	# from the next one by up to 1.6 levels on the first moments to use a new effect (the macro, torpedo and plasma rows):
+	# Godot draws a pipeline it is still compiling with its general shader for a few frames. After this pass every
+	# pipeline the moments need is compiled, whatever the disk cache held.
+	if not args.has("no-warm"):
+		var wd := out.path_join("warm")
+		for row in cfg.get("rows", []):
+			if not only.is_empty() and not only.has(str(row["id"])):
+				continue
+			var okw: bool = await _moment(row, 170.0, cell, cell, wd, false)
+			if not okw:
+				return
+		_log("warm pass done")
+		await _grid()
 	for row in cfg.get("rows", []):
 		if not only.is_empty() and not only.has(str(row["id"])):
 			continue
@@ -482,7 +498,7 @@ func _hits(n: int, shield: bool, crit: bool) -> Array:
 	return h
 
 
-func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: String) -> bool:
+func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: String, keep := true) -> bool:
 	var id := str(row["id"])
 	_clear()
 	_make_fx()
@@ -572,6 +588,8 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		guard += 1
 	if wi < wins.size():
 		_warn("%s at %d: only %d of %d cells (a window never opened)" % [id, int(r), ci, total])
+	if not keep:
+		return true
 	var name := "%s__c%d.png" % [id, int(r)]
 	strip.save_png(d.path_join(name))
 	report["stills"].append({"part": "moments", "id": id, "cam": int(r), "file": "moments/" + name, "cells": cells,
