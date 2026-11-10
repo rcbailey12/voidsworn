@@ -4,7 +4,7 @@
 the big octagonal casemates with quilted mantlet sleeves and twin copper barrels, the long orange-muzzled bow guns under a slatted
 hood, strapped drum launchers with ochre bands in welded cradles, all crisp, junky and mismatched on purpose. The paint is much
 closer (red forward, gunmetal aft, orange rust blooms, grime toward the belly, worn edges, markings) but still reads lighter and
-pinker on the bow sides than the painted concept. The outline gate holds: 90.1 percent (Ab5 90.3).
+pinker on the bow sides than the painted concept (since fixed by the paint pass, section 2). The outline gate holds: 90.0 percent (Ab5 90.3).
 
 Ryan's rulings (R150, R151): "weapons and paint first. Let's ensure it actually looks good"; "there are still some gaps in the
 detail or approach with the weapons"; every faction gets its own parts kit, only invisible plumbing is shared, Hullbreakers
@@ -19,7 +19,7 @@ fitted concept camera (`round4/concept_camera.json`) to read its x, y, z and siz
 
 | Weapon | In the concept | Ab5 | Ab6 (Hullbreaker kit) |
 |---|---|---|---|
-| Bow casemates, 2 a side | octagonal armour plates about 0.10 wide and 0.10 tall (x 0.39 and 0.23, z -0.05), framed, corner braces; a large dark collar disc; a copper mantlet drum; a dark quilted (padded, strapped) tapered sleeve; twin thick copper barrels aimed forward and out | octagon 0.088 proud of the hull, a small drum turret, thin short barrels | `casemate`: octagonal housing 0.098 and 0.096 wide (buried behind, so it seats on the curved bow), raised frame and recessed field, ten frame bolts, four corner braces, patch plates and weld beads that differ on every casemate; dark collar disc with a bolt ring; copper ball and mantlet ring; quilted sleeve (five ring straps, fourteen lengthwise); front cap; twin copper barrels with fat recoil sleeves, clamp rings, muzzle rings and bores. Aimed 15 degrees forward of the beam, 9 degrees down |
+| Bow casemates, 2 a side | octagonal armour plates about 0.10 wide and 0.10 tall (x 0.39 and 0.23, z -0.05), framed, corner braces; a large dark collar disc; a copper mantlet drum; a dark quilted (padded, strapped) tapered sleeve; twin thick copper barrels aimed forward and out | octagon 0.088 proud of the hull, a small drum turret, thin short barrels | `casemate`: octagonal housing 0.098 and 0.096 wide (buried behind, so it seats on the curved bow), raised frame and recessed field, ten frame bolts, four corner braces, patch plates and weld beads that differ on every casemate; dark collar disc with a bolt ring; copper ball and mantlet ring; quilted sleeve (five ring straps, fourteen lengthwise); front cap; twin copper barrels with fat recoil sleeves, clamp rings, muzzle rings and bores. Aimed level, 15 degrees forward of the beam, as the concept reads |
 | Twin bow guns | two long thick barrels lying on the raised forward deck, glowing orange muzzles at its front edge, under a slatted (louvred) deck front | two short stubs | `bow_battery`: breech blocks under a slatted armour hood with cheek plates and a weld; ribbed recoil sleeves; barrels 0.08 long to the raised deck's front edge; ribbed muzzle shrouds; glowing bores; welded braces to the deck |
 | Drum launchers | big black drums (radius about 0.02, length about 0.1) with a woven or quilted skin, two faded yellow bands, a framed front with a dark launch mouth: a pair forward of the tower, a rack of three on each sponson, a pair aft on a railed platform | small plain drums (radius 0.011 to 0.017) | `drum_rack` / `drum`: strapped and ribbed body, two ochre bands, framed front with recessed launch mouth, tapered tail; drums in one rack deliberately mismatched (a slipped band and a patch; a shorter one with a salvaged conical nose); welded pipe cradles with cross beams, saddles, legs cut to the deck and a low cradle rail (the concept's red railings, kept as a rack frame, not a naval railing). Fore pair (r 0.017), a rack of three on each sponson (r 0.019), a waist drum each side, an aft pair |
 | Top turrets | small drum turrets with a barrel on the aft deck by the mast | none | `turret`: a squat welded Hullbreaker turret (sloped plate, patch, one heavy copper barrel) and a borrowed one (a clean faceted dome turret from another navy on a crude ten-sided adapter ring, blue-grey), both on the centreline, aimed forward |
@@ -35,13 +35,18 @@ aimed backward or into the ship. Matched pairs mirror exactly in place, size and
 | Cell | Overlap | Concept outline covered | Cell outside the concept |
 |---|---:|---:|---:|
 | Ab5 (round 5) | 90.3% | 96.6% | 6.8% |
-| **Ab6** | **90.1%** | 96.7% | 7.0% |
+| **Ab6** | **90.0%** | 96.7% | 7.1% |
 
 Scored from the PC's exported glb (lod0), same scorer and camera as rounds 4 and 5. The bigger weapons first cost the gate (88.2):
 the starboard casemates and racks, hidden in the concept, stood out past the bow and over the deck line at the concept camera. What
-brought it back: the forward casemates 0.05 aft of the concept's spot (x 0.338), their barrels shorter than the aft pair's, all four aimed a little lower, the racks at the
+brought it back: the forward casemates 0.05 aft of the concept's spot (x 0.338), the racks at the
 concept's measured heights, the waist drums Ab5 had (they fill the concept's outline by the tower), the aft turrets on the
 centreline. A tall angled gun by the tower (the concept's angled shape there) was tried and dropped: it cost more than it covered.
+
+Board review on PR 336 (Nov 9): "the score should not bend the guns". The casemates had been aimed 9 degrees down and the forward
+pair's barrels shortened to win back outline. Now all four aim level and 15 degrees forward of the beam, which is what the concept
+shows at its own camera (its barrels run down and to the right on screen: level and mostly outboard; a 33 degree forward aim pointed
+them straight at the camera), and the forward barrels are back to full length. The score is 90.0 (90.005), still on the gate.
 
 ## 2. Paint
 
@@ -97,13 +102,13 @@ Twenty copies, battle camera at 8 ship lengths, net of the empty studio; same se
 
 | Cell | LOD | Triangles drawn, 20 ships | GPU ms 1080p | GPU ms, 3D at 4K | Frame ms 1080p | Draw calls | Share of the 4K GPU room |
 |---|---|---:|---:|---:|---:|---:|---:|
-| Ab5 | hand chain | 3,721,200 | 0.52 | 0.82 | 0.63 | 54 | 12% |
-| **Ab6** | off | 9,421,200 | 1.09 | 1.58 | 1.26 | 40 | 22% |
-| **Ab6** | Godot auto | 4,609,392 | 0.59 | 1.10 | 0.72 | 44 | 16% |
-| **Ab6** | hand chain | 5,695,380 | 0.70 | 1.15 | 0.80 | 54 | 16% |
+| Ab5 | hand chain | 3,721,200 | 0.44 | 0.89 | 0.44 | 54 | 13% |
+| **Ab6** | off | 9,421,200 | 1.05 | 1.65 | 1.15 | 40 | 23% |
+| **Ab6** | Godot auto | 4,609,392 | 0.52 | 1.10 | 0.45 | 44 | 16% |
+| **Ab6** | hand chain | 5,695,380 | 0.66 | 1.19 | 0.55 | 54 | 17% |
 
 Ab6: 125,616 triangles, 4 surfaces; hand LOD chain 125,616 / 89,888 / 59,996 / 24,868. The kit adds about 38,500 triangles over Ab5
-(the quilted sleeves and drum straps are most of it). Reported, not capped (R111); twenty Ab6 take 16 percent of the 4K GPU room
+(the quilted sleeves and drum straps are most of it). Reported, not capped (R111); twenty Ab6 take 17 percent of the 4K GPU room (Ab5 13 in the same session; run-to-run noise is about 2 points)
 (R116 gate 12.5 ms).
 
 ## Effort in agent terms
@@ -117,7 +122,8 @@ Ab6: 125,616 triangles, 4 surfaces; hand LOD chain 125,616 / 89,888 / 59,996 / 2
 | PC run 2 (5080) | 1 | 8 min | bake 2 min, renders, close-ups, export, Godot |
 | PC run 3 (5080) | 1 | 7 min | paint retune |
 | Preview loop, paint pass (sandbox CPU) | 3 | about 1 min each | specks, base red, sheen |
-| PC run 4 (5080) | 1 | 7 min | the focused paint pass; every sheet here is from this run |
+| PC run 4 (5080) | 1 | 7 min | the focused paint pass |
+| PC runs 5 and 6 (5080) | 2 | 7 to 10 min each | casemates level (board review); run 6 is the one every sheet here is from |
 
 ## The question for Ryan
 
@@ -131,5 +137,5 @@ concepts redone and every ship through the recipe.
   `ships/C15s_23.json`, `ships/_template.json`), `tools/blender/r209/`: `armA6.py`, `bakeAb6.py`, `close6.py`, `preview6.py`
   (sandbox preview), `sheets6.py`, `render.py` (`--light=concept`), PC jobs `pc/r6*_queue.bat`, `pc/r6*_run.bat`.
 - Records here: `cells/Ab6.json` (build, audit, sockets), `bench209.json`, `silhouette_scores.json`, `paint_regions.json`.
-- PC: `Downloads\voidsworn_test\opus209\out6d\` (blend, maps, renders `r\`, close-ups `close\`, glbs `glb\`, Godot `godot\`); `out6b`
-  and `out6c` are the runs before the paint pass; `out6` holds the stopped first run's hull maps and Ab5's concept-rig renders.
+- PC: `Downloads\voidsworn_test\opus209\out6f\` (blend, maps, renders `r\`, close-ups `close\`, glbs `glb\`, Godot `godot\`); `out6b` to
+  `out6e` are the earlier runs; `out6` holds the stopped first run's hull maps and Ab5's concept-rig renders.

@@ -1,8 +1,8 @@
 {
  "cell": "Ab6",
  "route": "round 6: round 5 hull traced from B0 + Hullbreaker kit weapons (kits/hullbreakers) + Hullbreaker paint + B0 detail baked + concept paint baked",
- "build_seconds": 111.2,
- "geometry_seconds": 18.8,
+ "build_seconds": 99.5,
+ "geometry_seconds": 15.3,
  "audit": {
   "problems": [],
   "parts": 1207,
@@ -48,9 +48,9 @@
       -0.058
      ],
      "aim": [
-      0.252,
-      0.956,
-      -0.151
+      0.25,
+      0.968,
+      0.0
      ]
     },
     {
@@ -62,9 +62,9 @@
       -0.058
      ],
      "aim": [
-      0.252,
-      -0.956,
-      -0.151
+      0.25,
+      -0.968,
+      0.0
      ]
     },
     {
@@ -76,9 +76,9 @@
       -0.058
      ],
      "aim": [
-      0.252,
-      0.956,
-      -0.151
+      0.25,
+      0.968,
+      0.0
      ]
     },
     {
@@ -90,9 +90,9 @@
       -0.058
      ],
      "aim": [
-      0.252,
-      -0.956,
-      -0.151
+      0.25,
+      -0.968,
+      0.0
      ]
     },
     {
@@ -359,24 +359,24 @@
   "b0_faces_kept": 386352,
   "trim_outside": 0.01,
   "bake_device": "OPTIX",
-  "bake_hi_seconds": 8.4,
-  "bake_lo_seconds": 7.7,
-  "bake_ao_seconds": 12.6,
+  "bake_hi_seconds": 7.2,
+  "bake_lo_seconds": 7.3,
+  "bake_ao_seconds": 13.7,
   "detail_pixels_inverted_share": 0.0963,
   "detail_pixels_clamped_share": 0.0553,
   "b0ao_miss_share": 0.4433,
   "normal_tilt_mean_deg_detail": 5.79,
   "normal_tilt_mean_deg_raw": 28.8,
-  "b0_bake_total_seconds": 44.3,
-  "parts_bake_joined_seconds": 17.7,
-  "paint_bake_seconds": 43.4,
+  "b0_bake_total_seconds": 42.8,
+  "parts_bake_joined_seconds": 15.1,
+  "paint_bake_seconds": 37.3,
   "paint_bake_hull": {
-   "albedo": 11.3,
-   "orm": 11.5
+   "albedo": 10.3,
+   "orm": 9.1
   },
   "paint_bake_parts": {
-   "albedo": 8.2,
-   "orm": 8.2
+   "albedo": 7.0,
+   "orm": 6.8
   }
  },
  "res": 4096,
@@ -394,9 +394,9 @@
       -0.058
      ],
      "aim": [
-      0.252,
-      0.956,
-      -0.151
+      0.25,
+      0.968,
+      0.0
      ]
     },
     {
@@ -408,9 +408,9 @@
       -0.058
      ],
      "aim": [
-      0.252,
-      -0.956,
-      -0.151
+      0.25,
+      -0.968,
+      0.0
      ]
     },
     {
@@ -422,9 +422,9 @@
       -0.058
      ],
      "aim": [
-      0.252,
-      0.956,
-      -0.151
+      0.25,
+      0.968,
+      0.0
      ]
     },
     {
@@ -436,9 +436,9 @@
       -0.058
      ],
      "aim": [
-      0.252,
-      -0.956,
-      -0.151
+      0.25,
+      -0.968,
+      0.0
      ]
     },
     {

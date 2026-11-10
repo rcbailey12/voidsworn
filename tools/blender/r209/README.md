@@ -80,4 +80,4 @@ Round 1 bug fixed in `common.ai_align`: the yaw was set as an Euler angle on a g
 | `preview6.py` | sandbox preview: build, paint with the procedural materials directly (no bake), CPU render of the concept camera and close-ups; `light=concept`, `albedo=1` (debug). |
 | `sheets6.py` | round 6 sheets: paint (with region colour samples), weapons, overview, battle, silhouette. |
 | `render.py` | gained `--light=concept` (the concept painting's light, files `_cl`), for the paint compare only. |
-| `pc/r6_*.bat` to `pc/r6d_*.bat` | the PC runs (r6 stopped in the slow parts bake; r6d, after the paint pass, is the one in the report). Each waits for an idle GPU first. |
+| `pc/r6_*.bat` to `pc/r6f_*.bat` | the PC runs (r6 stopped in the slow parts bake; r6f, casemates level after the board review, is the one in the report). Each waits for an idle GPU first. |
