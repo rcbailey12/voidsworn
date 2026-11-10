@@ -87,3 +87,23 @@ jobs:
           { echo '### Load every Godot script and scene'; grep -E '^load all:' "$RUNNER_TEMP/load_all.log"; } >> "$GITHUB_STEP_SUMMARY"
           if grep -q 'SCRIPT ERROR' "$RUNNER_TEMP/load_all.log"; then echo "SCRIPT ERROR lines above"; exit 1; fi
           exit $code
+      # The game's fonts, crests, world and effect textures, imported as the editor would, so the checks below draw with
+      # them. Left out to keep this short (none is preloaded; the scripts load them at run time and carry on without them):
+      # music, audio, the painted portraits and fx/test results. This step never fails the job by itself.
+      - name: Import the game's fonts and textures (headless)
+        id: import
+        if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
+        continue-on-error: true
+        run: |
+          skip="godot/music godot/audio godot/fx/test godot/portraits/nemesis godot/portraits/alts godot/portraits/sheets godot/portraits/painted"
+          for d in $skip; do touch "$d/.gdignore"; done
+          timeout 900 "$GODOT" --headless --path godot --import > "$RUNNER_TEMP/import.log" 2>&1 || echo "import exit code $?"
+          for d in $skip; do rm -f "$d/.gdignore"; done
+          echo "imported files: $(find godot/.godot/imported -type f | wc -l)"
+      # (b) every headless check named in godot/tools/ci/godot_checks.txt (the list also proves it names every test script)
+      - name: Headless Godot checks from the list (godot/tools/ci/godot_checks.txt)
+        if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
+        run: |
+          sh godot/tools/ci/run_checks.sh 2>&1 | tee "$RUNNER_TEMP/run_checks.log"; code=${PIPESTATUS[0]}
+          { echo '### Godot checks from the list'; echo '```'; grep -E '^  [a-z0-9_]+: |^  list: |^Ran |^PASS|^FAIL' "$RUNNER_TEMP/run_checks.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          exit $code

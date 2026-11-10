@@ -1,0 +1,72 @@
+# Every GDScript file under godot/**/test/, one line each (issue 359 part b). GitHub fails if a file is missing here.
+# Format, fields split by | with no spaces around them, never an empty field (write -):
+#   class|script|setup|args|reason
+# class:
+#   headless  GitHub runs it: godot/tools/ci/run_checks.sh runs every headless line (setup step:... runs in its own named step)
+#   gpu       needs a window, the GPU or the built ship files (godot/gen): tools/pc/jobs/godot_gpu_checks.bat on Ryan's PC
+#   retired   kept in the repo but no longer a check (the reason says what replaced it)
+# setup (headless): - | fixture:<tool> (node contrib/opus/tools/<tool> writes the fixtures; {fixture} in args is that file)
+#   | userdir (user:// inside the checkout, the test refuses anything else) | step:<checks.yml step that already runs it>
+# setup (gpu): - | env:<NAME> (NAME is set to the output folder) | envpng:<NAME> (NAME is set to <output folder>\shot.png)
+#   | scene:<res path> (run that scene instead of --script) | compat (gl_compatibility renderer); several split by commas
+# args: what goes after "--"; {out} is the output folder (gpu), {repo} the clone root, {fixture} the fixture file; - for none
+headless|campaign/test/arc_hook_test.gd|-|-|story arc hook: arcs off or empty change nothing, test cards pay, flag and end; whole seeded runs, no window
+headless|campaign/test/capstone_mastery_test.gd|-|-|capstone mastery opens at 320, 440 and 600 XP; campaign data only
+headless|campaign/test/core_sync_test.gd|fixture:core_sync_tests.js|{fixture}|core sync announcements match the browser fixtures; its optional second arg (shots) is not used here
+headless|campaign/test/free_exit_test.gd|fixture:free_exit_tests.js|{fixture}|free exits match the live browser at entry, result and map
+headless|campaign/test/heat_test.gd|-|-|Heat after the first loss and the XP payout; campaign data only
+headless|campaign/test/inheritance_test.gd|fixture:inheritance_tests.js|{fixture}|inheritance receipts match the browser payouts and profiles
+headless|campaign/test/lineage_test.gd|-|-|lineage XP, tiers, locks, capstones, saves and resets for every faction
+headless|campaign/test/map_travel_test.gd|-|-|map reachability, lanes, flight at 30, 60 and 144 fps; no models or bakes needed
+headless|campaign/test/nem_scenarios.gd|step:Nemesis scenarios (JS game and Godot, record by record)|-|run by godot/campaign/test/run_nem_scenarios.sh in its own step
+headless|campaign/test/nemesis_clash_test.gd|fixture:nemesis_clash_tests.js|{fixture}|12482 Nemesis clash cases match the live browser
+headless|campaign/test/nemesis_teach_test.gd|fixture:nemesis_teach_tests.js|{fixture}|Nemesis teaching debrief and map line match the browser
+headless|campaign/test/onboarding_test.gd|userdir|-|onboarding tips, options and telemetry; refuses a user folder outside the checkout, so it gets one inside
+headless|campaign/test/parity_campaign.gd|step:Campaign parity (30 seeded runs, same as tools/pc/parity_campaign.bat)|-|run by godot/campaign/test/run_parity_campaign.sh in its own step
+headless|campaign/test/playtest_switch_test.gd|-|-|the playtest switch: off in the harnesses, on when the UI binds
+headless|campaign/test/save_test.gd|-|-|the campaign save is atomic and keeps a backup
+headless|campaign/test/shadow_xp_test.gd|fixture:shadow_xp_tests.js|{fixture}|shadow XP, heirs and saves match the browser overflow
+headless|campaign/test/story_beat3_test.gd|-|-|story beat 3 card text, choices and records; its optional shots folder is not used here
+headless|campaign/test/tree_handoff_test.gd|step:Tree hand-off (campaign picks reach the battle)|-|already its own step (issue 335)
+headless|rules/test/api_smoke.gd|-|-|plays scenario s1 through the rules API the battle scene uses, to its end
+headless|rules/test/effect_caps_test.gd|fixture:effect_caps_tests.js|{fixture}|effect cap sums and derives match the JS fixtures
+headless|rules/test/parity_main.gd|step:Rules parity against the browser game|-|run by godot/rules/test/run_parity.sh in its own step
+headless|rules/test/thread_test.gd|step:Rules parity against the browser game|-|run by godot/rules/test/run_parity.sh (threads: s4 and s23)
+headless|story/test/story_test.gd|-|-|story data, career records, battle voice over a real rules battle, story attached to whole campaign runs
+headless|portraits/test/portraits_check.gd|-|-|every admiral and Nemesis gets a face from the portrait index
+headless|music/test/music_check.gd|-|-|music player and tracks walk title, map, battle and victory
+headless|audio/test/audio_check.gd|-|-|sound data, real player starts, variants and the separate mutes
+headless|audio/test/salvo_check.gd|-|-|salvo sounds: counts real player starts and keeps the caps
+headless|audio/test/smoke_lifetime_check.gd|-|-|sound and debris lifetimes leave no freed node behind; no ship files needed
+headless|fx/test/damage_surface_check.gd|-|-|R80 damage contracts on box ships: stages, emitters and their caps, marks
+headless|fx/test/death_leap_check.gd|-|-|death sections, tiers, lifetime, cleanup and drift (issue 137)
+headless|fx/test/death_plane_check.gd|-|-|ShipView and effects together as battle.gd marks a ship dead; box ships
+headless|fx/test/destruction_staging_check.gd|-|-|staged deaths, class gating, flash limits and the hurry key
+headless|fx/test/destruction_steps_check.gd|-|-|break geometry: every open edge is sealed; DESTRUCTION_OUT unset, so no pictures
+headless|fx/test/fx_smoke.gd|-|-|every weapon look, the damage ladder, shield breaks and every death cause on box ships
+headless|fx/test/playtest_batch1_check.gd|-|-|presentation regressions with stand-in hull scenes, no ship files
+headless|fx/test/playtest_batch3_check.gd|-|-|hits keep the skin, heavy damage opens a break, exhaust stays in space
+headless|fx/test/squadron_check.gd|-|-|451 squadron and carrier checks on stand-in craft
+gpu|assets/ships/test/a4_shots.gd|scene:res://assets/ships/test/a4_shots.tscn|--out {out}|in-game ship sheet: needs the built ship files and a window
+gpu|campaign/test/capstone_mastery_shots.gd|-|{out}|campaign screenshots: needs a window
+gpu|campaign/test/debrief_mock_shots.gd|-|{out}|debrief mock screenshots for issue 92 (still open): needs a window
+gpu|campaign/test/heat_ui_shots.gd|-|{out}|run setup Heat card screenshots: needs a window
+gpu|campaign/test/nem_panel_shots.gd|-|{out} --no-tips|Nemesis panel screenshots (issue 122): needs a window
+gpu|campaign/test/nemesis_teach_shots.gd|-|{out}|Nemesis teaching screenshots: needs a window
+gpu|campaign/test/onboarding_visual.gd|compat|{repo}\.onboarding_checks\gpu_visual|renders the HUD tip card; writes inside the checkout only, as RUN_ONBOARDING_SHOTS.bat does
+gpu|campaign/test/r1_ui_shots.gd|-|{out}|R1 campaign screen screenshots: needs a window
+gpu|story/test/career_shots.gd|compat|{out}|Career screen screenshots: needs a window
+gpu|fx/test/damage_surface_probe.gd|env:DAMAGE_OUT|-|damage stills and 20 real hull frame cost: needs the GPU and the ship files
+gpu|fx/test/death_leap_probe.gd|env:DEATH_OUT|-|real-ship death recordings and a 4K profile: needs the GPU and the ship files
+gpu|fx/test/destruction_fleet_probe.gd|env:PROBE_OUT|-|Forward+ frame cost of 20 staged kills: needs the GPU
+gpu|fx/test/fx_breach_probe.gd|env:PROBE_OUT|-|breach close-ups on a real ship: needs the GPU and the ship files
+gpu|fx/test/fx_cost_probe.gd|-|-|hull rebuild cost on one real ship: runs without a window but needs the ship files
+gpu|fx/test/fx_inside_probe.gd|env:PROBE_OUT|-|inside of holes and wreck pieces: needs the GPU and the ship files
+gpu|fx/test/fx_marks_probe.gd|env:PROBE_OUT|-|every weapon mark on a real ship, timed and shot: needs the GPU and the ship files
+gpu|fx/test/fx_nozzle_probe.gd|env:PROBE_OUT|-|engine plumes on the built kit ships: needs the GPU and the ship files
+gpu|fx/test/fx_probe.gd|env:PROBE_OUT|-|damage ladder and a shield hit on a real ship: needs the ship files
+gpu|fx/test/fx_proj_probe.gd|envpng:PROBE_OUT|-|rocket and torpedo flight between box ships: waits on drawn frames, so it needs a renderer
+gpu|fx/test/fx_range_probe.gd|env:PROBE_OUT|-|every weapon at the battle camera's range: needs the GPU and the ship files
+gpu|fx/test/fx_react_probe.gd|env:PROBE_OUT|-|hit reactions per weapon weight, stills: needs the GPU and the ship files
+gpu|fx/test/squadron_probe.gd|env:SQUADRON_OUT|-|squadron close, reverse and battle camera evidence: needs the live renderer
+gpu|fx/test/vent_look_probe.gd|env:VENT_OUT|-|muzzle and vent gas recordings (issue 281): needs the GPU and the ship files
