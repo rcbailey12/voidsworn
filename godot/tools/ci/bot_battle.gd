@@ -7,6 +7,8 @@
 # mode). When the scene reports the end, the campaign takes the result through finish_battle, as in the game.
 # Fails (exit 1) on: any script error, any "unknown event" line from the battle scene, a battle that does not end
 # (softlock or the time limit), or a campaign that never reaches a battle. Fixed seed, no retries.
+# It always ends by itself: a watchdog (_process) fails the check on the first script error and at the time limit, even
+# when the script error has stopped _run for good (a script that does not compile used to leave it waiting forever).
 # Ship files: GitHub's checkout has no godot/gen, so every ship is the plain placeholder block. That is allowed here and
 # reported: the capture stop (render/placeholder_guard.gd, issue 350) belongs to picture scripts and is never called.
 extends SceneTree
@@ -18,7 +20,7 @@ const JSM = preload("res://rules/jsm.gd")
 const World = preload("res://world/world.gd")
 const PG = preload("res://render/placeholder_guard.gd")
 
-const LIMIT_S := 600.0   # real seconds for the whole check; GitHub's job limit is 30 minutes
+const LIMIT_S := 300.0   # real seconds for the whole check (it takes a few seconds); GitHub's job limit is 30 minutes
 
 
 class ErrLog extends Logger:
@@ -44,6 +46,7 @@ var api
 var requested := false
 var log := ErrLog.new()
 var t0 := 0
+var ended := false   # set when the check has printed its result and asked to quit
 
 
 func _init() -> void:
@@ -52,7 +55,24 @@ func _init() -> void:
 	_run.call_deferred()
 
 
+func _process(_delta: float) -> bool:
+	# The watchdog, called by the engine every frame whatever _run is doing. _run is a coroutine: a script error inside it
+	# stops it for good, and then nothing would ever call quit. On GitHub that made this step sit until the job's 30 minute
+	# limit, so a broken script showed as "cancelled" instead of failed (commit 138ff38). Now the first script error ends
+	# the check on the next frame, and so does the time limit if _run can no longer check it.
+	if ended:
+		return false
+	if log.script_errors > 0:
+		_fail("%d script error(s); the check stops at the first one" % log.script_errors)
+	elif (Time.get_ticks_msec() - t0) / 1000.0 > LIMIT_S + 5.0:
+		_fail("the check did not end in %d s" % int(LIMIT_S))
+	return false
+
+
 func _fail(why: String) -> void:
+	if ended:
+		return
+	ended = true
 	printerr("bot battle: FAIL: " + why)
 	for l in log.first:
 		printerr("  " + str(l))
@@ -132,6 +152,7 @@ func _run() -> void:
 	b.begin_with(api)
 	while not done[0]:
 		await process_frame
+		if ended: return   # the watchdog has already failed the check
 		if (Time.get_ticks_msec() - t0) / 1000.0 > LIMIT_S:
 			_fail("the battle did not end in %d s (phase %s, round %s)" % [int(LIMIT_S), str(api.phase), str(b.V.get("round") if b.V is Dictionary else "?")]); return
 	Engine.time_scale = 1.0
@@ -155,6 +176,7 @@ func _run() -> void:
 	if not C.jt(api.R.B.get("finished")) and res in ["win", "loss"]: bad.append("the campaign did not finish the battle")
 	if not bad.is_empty():
 		_fail("; ".join(PackedStringArray(bad))); return
+	ended = true
 	OS.remove_logger(log)
 	print("bot battle: PASS")
 	quit(0)

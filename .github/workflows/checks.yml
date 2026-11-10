@@ -59,8 +59,13 @@ jobs:
         if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
         run: sh godot/campaign/test/run_nem_scenarios.sh
   # Issue 359: GitHub opens the game the player sees (the battle scene, HUD, effects, world, story), not only the rules.
-  # Its own job, so it runs beside the parity job and has its own 30 minute limit. Each step runs even when an earlier
-  # one fails, so one red run shows every failure. Ship files (godot/gen) are never on GitHub: ships are placeholder blocks.
+  # Its own job, so it runs beside the parity job and has its own 30 minute limit. Ship files (godot/gen) are never on
+  # GitHub: ships are placeholder blocks.
+  # The load step is the gate: when a script or scene does not load, the job fails there in seconds and names the file,
+  # and the steps after it do not run (they would only repeat the same error, some by waiting out their time limits).
+  # When everything loads, the list step and the bot battle each run even if the other fails. Every step has its own
+  # time limit and the limits add up to under 27 minutes, so the job ends red by itself and is never cut off (shown as
+  # "cancelled") by the 30 minute limit: that happened on the broken test commit 138ff38.
   godot-game:
     name: Godot game checks
     runs-on: ubuntu-latest
@@ -81,38 +86,46 @@ jobs:
       # (a) typo insurance: compiles every .gd file and loads every .tscn under godot/ (nothing runs). No asset import is
       # needed: no script or scene preloads a texture or sound. Fails on any file that does not load and on any SCRIPT ERROR.
       - name: Load every Godot script and scene (typo check)
+        id: load
         if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
         run: |
-          "$GODOT" --headless --path godot --script res://tools/ci/load_all.gd 2>&1 | tee "$RUNNER_TEMP/load_all.log"; code=${PIPESTATUS[0]}
-          { echo '### Load every Godot script and scene'; grep -E '^load all:' "$RUNNER_TEMP/load_all.log"; } >> "$GITHUB_STEP_SUMMARY"
-          if grep -q 'SCRIPT ERROR' "$RUNNER_TEMP/load_all.log"; then echo "SCRIPT ERROR lines above"; exit 1; fi
-          exit $code
+          timeout -k 10 120 "$GODOT" --headless --path godot --script res://tools/ci/load_all.gd 2>&1 | tee "$RUNNER_TEMP/load_all.log"; code=${PIPESTATUS[0]}
+          { echo '### Load every Godot script and scene'; echo '```'; grep -E '^load all:' "$RUNNER_TEMP/load_all.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          bad=0
+          if grep -q 'SCRIPT ERROR' "$RUNNER_TEMP/load_all.log"; then echo "SCRIPT ERROR lines above"; bad=1; fi
+          if [ $code -ne 0 ]; then echo "load_all.gd ended with exit code $code (124 or 137 is its 120 s time limit)"; bad=1; fi
+          if [ $bad -ne 0 ]; then
+            echo 'The Godot checks after this step were not run: a file above does not load. Repair it first.' | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
       # The game's fonts, crests, world and effect textures, imported as the editor would, so the checks below draw with
       # them. Left out to keep this short (none is preloaded; the scripts load them at run time and carry on without them):
       # music, audio, the painted portraits and fx/test results. This step never fails the job by itself.
       - name: Import the game's fonts and textures (headless)
         id: import
-        if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.load.outcome == 'success' }}
         continue-on-error: true
         run: |
           skip="godot/music godot/audio godot/fx/test godot/portraits/nemesis godot/portraits/alts godot/portraits/sheets godot/portraits/painted"
           for d in $skip; do touch "$d/.gdignore"; done
-          timeout 900 "$GODOT" --headless --path godot --import > "$RUNNER_TEMP/import.log" 2>&1 || echo "import exit code $?"
+          timeout -k 10 300 "$GODOT" --headless --path godot --import > "$RUNNER_TEMP/import.log" 2>&1 || echo "import exit code $?"
           for d in $skip; do rm -f "$d/.gdignore"; done
           echo "imported files: $(find godot/.godot/imported -type f | wc -l)"
-      # (b) every headless check named in godot/tools/ci/godot_checks.txt (the list also proves it names every test script)
+      # (b) every headless check named in godot/tools/ci/godot_checks.txt (the list also proves it names every test script).
+      # run_checks.sh keeps the whole list inside a 780 s budget; a check the budget never reached counts as failed.
       - name: Headless Godot checks from the list (godot/tools/ci/godot_checks.txt)
-        if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.load.outcome == 'success' }}
         run: |
           sh godot/tools/ci/run_checks.sh 2>&1 | tee "$RUNNER_TEMP/run_checks.log"; code=${PIPESTATUS[0]}
           { echo '### Godot checks from the list'; echo '```'; grep -E '^  [a-z0-9_]+: |^  list: |^Ran |^PASS|^FAIL' "$RUNNER_TEMP/run_checks.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           exit $code
       # (c) one battle reached from a real campaign start, played to its end by the game's AI on both sides in the real
-      # battle scene. Fails on any script error and on any "unknown event" line. Fixed seed, no retry.
+      # battle scene. Fails on any script error and on any "unknown event" line. Fixed seed, no retry. The driver stops
+      # itself at the first script error and at 300 s; the 360 s limit here is the backstop.
       - name: Bot battle from a real campaign start (seed 359)
-        if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.load.outcome == 'success' }}
         run: |
-          timeout 900 "$GODOT" --headless --path godot --script res://tools/ci/bot_battle.gd -- --seed 359 2>&1 | tee "$RUNNER_TEMP/bot_battle.log"; code=${PIPESTATUS[0]}
+          timeout -k 10 360 "$GODOT" --headless --path godot --script res://tools/ci/bot_battle.gd -- --seed 359 2>&1 | tee "$RUNNER_TEMP/bot_battle.log"; code=${PIPESTATUS[0]}
           { echo '### Bot battle'; echo '```'; grep '^bot battle:' "$RUNNER_TEMP/bot_battle.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           if grep -qE 'SCRIPT ERROR|unknown event' "$RUNNER_TEMP/bot_battle.log"; then echo "SCRIPT ERROR or unknown event lines above"; exit 1; fi
           exit $code

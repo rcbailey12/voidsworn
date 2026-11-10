@@ -18,6 +18,7 @@ headless|campaign/test/heat_test.gd|-|-|Heat after the first loss and the XP pay
 headless|campaign/test/inheritance_test.gd|fixture:inheritance_tests.js|{fixture}|inheritance receipts match the browser payouts and profiles
 headless|campaign/test/lineage_test.gd|-|-|lineage XP, tiers, locks, capstones, saves and resets for every faction
 headless|campaign/test/map_travel_test.gd|-|-|map reachability, lanes, flight at 30, 60 and 144 fps; no models or bakes needed
+headless|campaign/test/nem_read_test.gd|step:Nemesis scenarios (JS game and Godot, record by record)|-|run by godot/campaign/test/run_nem_scenarios.sh in its own step (issue 364: Nemesis readers ask the campaign)
 headless|campaign/test/nem_scenarios.gd|step:Nemesis scenarios (JS game and Godot, record by record)|-|run by godot/campaign/test/run_nem_scenarios.sh in its own step
 headless|campaign/test/nemesis_clash_test.gd|fixture:nemesis_clash_tests.js|{fixture}|12482 Nemesis clash cases match the live browser
 headless|campaign/test/nemesis_teach_test.gd|fixture:nemesis_teach_tests.js|{fixture}|Nemesis teaching debrief and map line match the browser
@@ -68,5 +69,6 @@ gpu|fx/test/fx_probe.gd|env:PROBE_OUT|-|damage ladder and a shield hit on a real
 gpu|fx/test/fx_proj_probe.gd|envpng:PROBE_OUT|-|rocket and torpedo flight between box ships: waits on drawn frames, so it needs a renderer
 gpu|fx/test/fx_range_probe.gd|env:PROBE_OUT|-|every weapon at the battle camera's range: needs the GPU and the ship files
 gpu|fx/test/fx_react_probe.gd|env:PROBE_OUT|-|hit reactions per weapon weight, stills: needs the GPU and the ship files
+gpu|fx/test/ship_fire_probe.gd|env:VENT_OUT|-|a recipe ship firing its broadside, guns and gun smoke together (issue 209): needs the GPU and the ship built from its recipe export
 gpu|fx/test/squadron_probe.gd|env:SQUADRON_OUT|-|squadron close, reverse and battle camera evidence: needs the live renderer
 gpu|fx/test/vent_look_probe.gd|env:VENT_OUT|-|muzzle and vent gas recordings (issue 281): needs the GPU and the ship files
