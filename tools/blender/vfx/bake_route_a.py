@@ -4,8 +4,8 @@ pack can make both fire amounts (flash only; flash plus a short hot core) from o
 
 blender -b -t 8 -P bake_route_a.py -- OUT [--resolution 256] [--tile 512] [--kinds impact,flash] [--cpu]
 
-Writes OUT/<kind>/smoke_NN.png and fire_NN.png (16 cells each) and OUT/bake.json with the wall-clock seconds of each
-simulation and each render. --cpu is for a sandbox smoke test at a tiny resolution only. Caches stay in OUT.
+Writes OUT/<kind>/smoke_NN.png and fire_NN.png (16 cells each; firelo_NN and firehi_NN are the fire at half and at double
+strength) and OUT/bake.json with the wall-clock seconds of each simulation and each render. --cpu is for a sandbox smoke test at a tiny resolution only. Caches stay in OUT.
 Pack with pack_routes.py (route a). Today's bakes (bake_death.py, bake_weapons.py) are unchanged.
 """
 import argparse, json, pathlib, sys, time
@@ -40,9 +40,14 @@ for kind in a.kinds.split(','):
     r1 = rc.render_frames(sc, folder, 'smoke', True)
     rc.world(sc, False); light.hide_render = True; rc.fire_material(dom)
     r2 = rc.render_frames(sc, folder, 'fire', False)
+    # The same fire at half and at double strength (firelo_NN.png, firehi_NN.png), so the pack can pick another fire
+    # exposure (pack_routes.py --fire) without a second simulation. Their render time is recorded apart (extra_seconds).
+    r3 = 0.0
+    for name, strength in (('firelo', .8), ('firehi', 3.2)):
+        rc.fire_material(dom, strength=strength); r3 += rc.render_frames(sc, folder, name, False)
     cache_mb = sum(f.stat().st_size for f in (folder / 'cache').rglob('*') if f.is_file()) / 1e6
     records.append(dict(kind=kind, route='a', resolution=a.resolution, noise=True, noise_scale=2, flow='fire and smoke',
-                        frames=16, simulation_frames=rc.FRAMES, sim_seconds=round(sim, 1), render_seconds=round(r1 + r2, 1),
+                        frames=16, simulation_frames=rc.FRAMES, sim_seconds=round(sim, 1), render_seconds=round(r1 + r2, 1), extra_seconds=round(r3, 1),
                         cache_mb=round(cache_mb, 1), device=devices, tile=a.tile))
     print('ROUTE_A_DONE', json.dumps(records[-1]), flush=True)
     (out / 'bake.json').write_text(json.dumps(dict(route='a', records=records, seconds_this_call=round(time.time() - start, 1)), indent=2))

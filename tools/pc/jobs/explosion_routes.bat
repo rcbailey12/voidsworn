@@ -6,10 +6,12 @@ rem              64 cell sample) plus the switch-off look bench of every moment 
 rem       full   the real bakes (A at 256 cells with noise, B at 128 cells with three seeds; 512 pixel cells), the two
 rem              moments benched in all five looks, and the scene gate (R116) with the switch off and on
 rem       repack no bakes: pack the bakes of an earlier run (BAKESRC, its OUT folder) again, then bench, sheet and gate
+rem              FIREPASS (fire, firelo or firehi; default fire) picks which route A fire render is packed.
 rem OUT   the output folder (status.txt, times.txt, bake_a, bake_b, atlases_a, atlases_b, bench_*, gate_*, done.txt)
 rem Runs from this checkout (tools\pc\jobs\ inside it). Needs the PC-built hulls: copied (copy only) from FX_SHIPS, default
 rem Downloads\voidsworn_test\bench351\repo\godot. One GPU job at a time: waits until the card is idle (up to 60 minutes)
 rem before the bakes and before the benches. Nothing is deleted. done.txt is written whatever happens.
+rem Every look is benched twice and the second run is kept (the first goes to OUT\first\; docs/shots/look_bench/README.md).
 setlocal enabledelayedexpansion
 set "MODE=%~1"
 set "O=%~2"
@@ -29,6 +31,7 @@ set "BL=%VT%\blender\blender-4.5.14-windows-x64\blender.exe"
 set "PY=%USERPROFILE%\Downloads\ComfyUI_windows_portable\python_embeded\python.exe"
 set "TMO=%R%\tools\pc\tmo.bat"
 if "%FX_SHIPS%"=="" set "FX_SHIPS=%VT%\bench351\repo\godot"
+if "%FIREPASS%"=="" set "FIREPASS=fire"
 if /i not "%MODE%"=="smoke" (
   set "RA=256" & set "RB=128" & set "TILE=512" & set "LIM=5400"
 ) else (
@@ -65,7 +68,7 @@ for %%K in (impact flash) do (
 echo bakes done %date% %time% >> "%ST%"
 :pack
 echo pack start %date% %time% >> "%TM%"
-"%PY%" tools/blender/vfx/pack_routes.py "%BA%" "%O%\atlases_a" --route a > "%O%\pack_a.txt" 2>&1
+"%PY%" tools/blender/vfx/pack_routes.py "%BA%" "%O%\atlases_a" --route a --fire %FIREPASS% > "%O%\pack_a.txt" 2>&1
 echo pack a exit %ERRORLEVEL% >> "%ST%"
 "%PY%" tools/blender/vfx/pack_routes.py "%BB%" "%O%\atlases_b" --route b > "%O%\pack_b.txt" 2>&1
 echo pack b exit %ERRORLEVEL% >> "%ST%"
@@ -115,6 +118,9 @@ exit /b 0
 rem ---------------------------------------------------------------- :bench NAME ATLASDIR
 :bench
 set "VS_FX_ATLAS=%~2"
+if not exist "%O%\first" mkdir "%O%\first"
+echo bench %~1 first run start %date% %time% atlas=%~2 >> "%ST%"
+call "%TMO%" 1800 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 res://bench/look_bench.tscn -- --out "%O%\first\bench_%~1" --part moments --only %ONLY% --commit %SHA% > "%O%\first\bench_%~1_log.txt" 2>&1
 echo bench %~1 start %date% %time% atlas=%~2 >> "%ST%"
 call "%TMO%" 1800 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 res://bench/look_bench.tscn -- --out "%O%\bench_%~1" --part moments --only %ONLY% --commit %SHA% > "%O%\bench_%~1_log.txt" 2>&1
 echo bench %~1 exit %ERRORLEVEL% %date% %time% >> "%ST%"

@@ -1,6 +1,6 @@
 """Issue 353: pack the route A or route B renders into the game's flipbook atlases, in both fire amounts.
 
-python pack_routes.py BAKE_OUT DEST --route a|b
+python pack_routes.py BAKE_OUT DEST --route a|b [--fire fire|firelo|firehi]
 
 DEST/<amount>/ is laid out like godot/fx/atlases/ (death/small|cruiser|capital/flash_*.png, weapons/impact/impact_*.png),
 so the bench switch VS_FX_ATLAS=DEST/<amount> swaps just those two kinds. Amounts (R88, R158: flash and snuff out):
@@ -19,6 +19,7 @@ import numpy as np
 from PIL import Image, ImageFilter
 
 p = argparse.ArgumentParser(); p.add_argument('src'); p.add_argument('dst'); p.add_argument('--route', required=True, choices=['a', 'b'])
+p.add_argument('--fire', default='fire')   # route A: which fire render to pack (fire, or firelo / firehi: half / double strength)
 a = p.parse_args(); src = pathlib.Path(a.src); dst = pathlib.Path(a.dst); dst.mkdir(parents=True, exist_ok=True)
 FILL = .80
 AMOUNTS = {'flash': [1.0, .3] + [0.0] * 14, 'core': [1.0, .8, .55, .3, .12] + [0.0] * 11}
@@ -169,7 +170,7 @@ def preview(cells, path):
     sheet.save(path)
 
 
-bake = json.loads((src / 'bake.json').read_text()); manifest = dict(route=a.route, bake=bake, sets={})
+bake = json.loads((src / 'bake.json').read_text()); manifest = dict(route=a.route, fire_pass=a.fire if a.route == 'a' else 'authored', bake=bake, sets={})
 for kind in ['impact', 'flash']:
     runs = [(None, src / kind)] if a.route == 'a' else sorted((int(d.name[1:]), d) for d in (src / kind).glob('s*') if d.is_dir())
     for seed, folder in runs:
@@ -177,7 +178,7 @@ for kind in ['impact', 'flash']:
         tile = smoke[0].shape[0]
         smoke = [np.dstack([np.array(Image.fromarray(np.uint8(s[..., :3] * 255)).filter(ImageFilter.GaussianBlur(1.0)), np.float32) / 255,
                             np.array(Image.fromarray(np.uint8(s[..., 3] * 255)).filter(ImageFilter.GaussianBlur(1.0)), np.float32) / 255]) for s in smoke]
-        fire = [load(folder / ('fire_%02d.png' % i), 'RGB') for i in range(16)] if a.route == 'a' else None
+        fire = [load(folder / ('%s_%02d.png' % (a.fire, i)), 'RGB') for i in range(16)] if a.route == 'a' else None
         masks = [s[..., 3] > .1 for s in smoke] + ([f.max(-1) > .1 for f in fire] if fire else [])
         lo, side = frame_box(masks, tile)
         smoke = [crop(s, lo, side, tile) for s in smoke]
