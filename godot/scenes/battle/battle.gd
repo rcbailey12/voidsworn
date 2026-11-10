@@ -27,6 +27,7 @@ const Fx := preload("res://scenes/battle/fx_stub.gd")
 const Sfx := preload("res://audio/sfx.gd")
 const DeathAudio := preload("res://audio/death_audio.gd")
 const Backdrop := preload("res://render/backdrop.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
 const KEY_COL := Color(1.0, 0.96, 0.90)
@@ -4146,16 +4147,23 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 					var WP = TBL.get("WING_PERKS", {}).get(str(k), {})
 					parts.append("%s (%s)" % [str(WP.get("n", k)), str(WP.get("d", "")).trim_suffix(".")])
 				tr.append("Wing veterans: " + ", ".join(parts) + ".")
-		if _jt(ru.get("nem")) and _jt(Bs.get("nem")) and _jt(ru.get("nemFlag")):
-			tr.append("[color=#ff8a72]Your Nemesis commands from this ship.[/color]")
-			var kn: Array = []
-			var weak: Array = Bs["nem"]["weak"] if Bs["nem"].get("weak") is Array else []
-			for w in (Bs["nem"]["revealed"] if Bs["nem"].get("revealed") is Array else []):
-				if w in weak:
-					var NW = TBL.get("NEM_WEAK", {}).get(str(w), {})
-					kn.append("%s (%s)" % [str(NW.get("n", w)), str(NW.get("d", "")).trim_suffix(".")])
-			if not kn.is_empty():
-				tr.append("Known weaknesses: " + "; ".join(kn) + ".")
+		if _jt(ru.get("nem")) and _jt(ru.get("nemFlag")):
+			# Issue 364: ask the campaign for the current commander instead of trusting the battle's copy, when a campaign is here.
+			var host = get_parent().get("campaign") if get_parent() != null else null
+			var CN = host.get("C") if host != null and is_instance_valid(host) else null
+			var nem_now = CN.nemRead() if (CN != null and CN.has_method("nemRead")) else null
+			if not _jt(nem_now):
+				nem_now = Bs.get("nem")   # no campaign run (showcase or quick battle): the battle's own copy is the only source
+			if _jt(nem_now):
+				tr.append("[color=#ff8a72]Your Nemesis commands from this ship.[/color]")
+				var kn: Array = []
+				var weak: Array = nem_now["weak"] if nem_now.get("weak") is Array else []
+				for w in (nem_now.get("revealed") if nem_now.get("revealed") is Array else []):
+					if w in weak:
+						var NW = TBL.get("NEM_WEAK", {}).get(str(w), {})
+						kn.append("%s (%s)" % [str(NW.get("n", w)), str(NW.get("d", "")).trim_suffix(".")])
+				if not kn.is_empty():
+					tr.append("Known weaknesses: " + "; ".join(kn) + ".")
 		# helm: thrusters and the faction drive (ui3d.js driveLine)
 		if ru["side"] == "player":
 			var MR: Dictionary = R.moveRules(ru)
@@ -4693,6 +4701,8 @@ var fire_shots := 0
 
 
 func _snap(name: String) -> void:
+	if shots_dir != "" and PG.stop_if_any():
+		return
 	if DisplayServer.get_name() == "headless":
 		if move_frames == "":
 			print("[shots] (headless, not saved) ", name)
@@ -4948,6 +4958,8 @@ func _planet_shot() -> void:
 	cam.snap()
 	await get_tree().create_timer(1.0).timeout
 	await RenderingServer.frame_post_draw
+	if PG.stop_if_any():
+		return
 	get_viewport().get_texture().get_image().save_png(str(args["planet-shot"]))
 	print("[planet] shot saved ", args["planet-shot"])
 	_quit_report()
@@ -5075,6 +5087,8 @@ func _quit_report() -> void:
 
 
 func _quit(code := 0) -> void:
+	if code == 0 and shots_dir != "" and PG.stop_if_any():
+		code = 1
 	var m = get_node_or_null("/root/Main")
 	if m != null and m.has_method("quit_clean"):
 		m.quit_clean(code)

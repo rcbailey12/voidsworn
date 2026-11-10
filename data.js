@@ -876,7 +876,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Flight Paths in the Glass",
-              "d": "record each extra wing's strike path before launching; a wing that follows its recorded path exactly strikes at +15%."
+              "d": "an extra wing that strikes the target its carrier last fired at gains +15% damage."
             },
             {
               "n": "Cast Twice in Light",
@@ -886,11 +886,11 @@ const LINEAGE_TREES={
           [
             {
               "n": "The Replay Corrects",
-              "d": "after the first strike resolves, each extra wing may be retargeted freely for its strike-again, using what the glass recorded."
+              "d": "an extra wing's strike again against a target already hit this round gains +10% damage."
             },
             {
               "n": "Starlings in Formation",
-              "d": "extra wings that strike in the same order as their carriers are arranged gain +10 aim."
+              "d": "extra wings that strike the same target as another extra wing gain +10 aim."
             }
           ],
           [
@@ -939,11 +939,11 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "Flight Cast Perfectly",
-        "d": "during Starling flight, all wings striking the same target combine their attacks into a single simultaneous strike that ignores point defence and deals +25% damage to the target's most damaged section."
+        "d": "during Starling flight, wings striking the same target ignore its flak, its shields stop only the first wing hit, and wing hits after the first deal +25% damage to its most damaged section."
       },
       {
         "n": "The Forge Casts Ahead",
-        "d": "after the Command, one extra wing per carrier stays aloft and repeats its recorded strike at the start of next round."
+        "d": "after the Command, one extra wing per carrier strikes the same target again at the start of next round, at +15% damage."
       }
     ]
   },
@@ -959,13 +959,13 @@ const LINEAGE_TREES={
             },
             {
               "n": "One Lens, One Target",
-              "d": "a ship may fire its volley as a single shot at +25% damage instead of firing every gun."
+              "d": "choose one of your ships: it fires its whole volley at a single target you name, and its shots gain +25% damage against that target."
             }
           ],
           [
             {
               "n": "Light Arrives Together",
-              "d": "you may hold the volley until all your ships have moved, and fire lance shots in any order you choose."
+              "d": "during the volley, a shot at a target already hit by one of your other ships this round gains +15% damage."
             },
             {
               "n": "The Recorded Angle",
@@ -1018,7 +1018,7 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "Sun Through One Lens",
-        "d": "Burning glass may concentrate every ship's volley on one target, resolving as a single combined strike that ignores range penalties."
+        "d": "Burning glass may concentrate every ship's volley on one target; its shields stop only the first hit, and no shot suffers range falloff."
       },
       {
         "n": "The Flaw, Corrected Forever",
@@ -1044,11 +1044,11 @@ const LINEAGE_TREES={
           [
             {
               "n": "The Mirror Steps Aside",
-              "d": "during the scatter, a ship may pass through one enemy-held hex without stopping."
+              "d": "during the scatter, a ship may dive under one enemy-held hex at no extra cost."
             },
             {
               "n": "Light Split Three Ways",
-              "d": "during the scatter, a ship may split its movement, half before it fires and half after."
+              "d": "during the scatter, a ship may move its full remaining movement after it fires."
             }
           ],
           [
@@ -1097,7 +1097,7 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "The Fleet Is Elsewhere",
-        "d": "Scatter the light may be declared after the first enemy ship fires; your ships move immediately, interrupting the enemy turn."
+        "d": "the first time an enemy fires at your fleet this battle, every ship gains +2 movement and may turn once for free."
       },
       {
         "n": "A Hundred False Hulls",
@@ -1113,11 +1113,11 @@ const LINEAGE_TREES={
           [
             {
               "n": "Light Bent to the Weak Side",
-              "d": "you may give one ship's shield refill to the friendly ship with the lowest shields instead."
+              "d": "during the ward, the friendly ship with the lowest shields takes 20% less hull damage until the start of next round."
             },
             {
               "n": "Prisms Face the Fire",
-              "d": "a ship facing its nearest enemy refills +25% more shield during the ward."
+              "d": "a ship facing its nearest enemy gains shields above its maximum equal to 25% of its maximum shields during the ward."
             }
           ],
           [
@@ -1127,7 +1127,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "The Lens Rotates",
-              "d": "during the ward, a ship may change its facing after moving without losing the damage reduction."
+              "d": "during the ward, a ship that changes its facing gains +10 evasion until its next turn."
             }
           ],
           [
@@ -1180,7 +1180,7 @@ const LINEAGE_TREES={
       },
       {
         "n": "Every Facet Lit",
-        "d": "during the ward, shield strength refilled beyond a ship's maximum becomes temporary hull of hard light, up to +20%."
+        "d": "during the ward, each warded ship gains temporary hull equal to 20% of its maximum shields."
       }
     ]
   },
@@ -1192,7 +1192,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Ledger of Arcs",
-              "d": "a ship firing its volley from a broadside arc may split that volley between two targets in the same arc."
+              "d": "a ship firing its volley from a broadside arc gains +15% damage."
             },
             {
               "n": "Held in the Account",
@@ -1216,7 +1216,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Debt Comes Due",
-              "d": "you may delay the whole volley to the start of next round, when it fires before any enemy ship acts."
+              "d": "you may delay the whole volley to the start of next round; when it fires, every ship gains +20% damage."
             }
           ]
         ]
@@ -1255,11 +1255,11 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "The Grand Ledger",
-        "d": "once per battle, when Fire for effect is used, choose one enemy; every ship that can reach it fires, all damage is summed, and the target's shields are applied once to the total."
+        "d": "once per battle, when Fire for effect is used, choose one enemy; every ship that can reach it fires at it, and its shields stop only the first hit."
       },
       {
         "n": "The Last Account",
-        "d": "Fire for effect fires at the very start of the round, before movement, and each ship picks its own target."
+        "d": "after Fire for effect resolves, each ship that destroyed its target with the free volley fires one weapon again at a new target."
       }
     ]
   },
@@ -1281,11 +1281,11 @@ const LINEAGE_TREES={
           [
             {
               "n": "Torpedoes Run First",
-              "d": "during the salvo round, torpedoes resolve before all gun fire, so their kills open lanes for the fleet guns."
+              "d": "torpedoes fired during the salvo round strike at once instead of travelling."
             },
             {
               "n": "Rear Arc Reckoning",
-              "d": "during the salvo round, rear arc hits from any weapon, not only torpedoes, gain the hunter-killer rear arc bonus."
+              "d": "during the salvo round, rear arc hits from any weapon gain +15% damage."
             }
           ],
           [
@@ -1334,7 +1334,7 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "Salvo Without End",
-        "d": "Hunter's salvo reloads all torpedoes a second time at the end of the round."
+        "d": "during the salvo round, each ship may fire one torpedo a second time at half damage."
       },
       {
         "n": "The Named Prey Falls",
@@ -1360,7 +1360,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "The Account Splits",
-              "d": "each extra wing may strike a different target than the rest of its carrier's wings."
+              "d": "an extra wing that strikes a different target than its carrier's other wings gains +15% damage."
             },
             {
               "n": "Held in Reserve",
@@ -1433,13 +1433,13 @@ const LINEAGE_TREES={
             },
             {
               "n": "Screens Where the Debt Falls",
-              "d": "you may move up to half of one ship screen refill to a different friendly ship before the wall resolves."
+              "d": "you may shift the wall's protection: one chosen ship takes 20 points more hull damage reduction, and one other ship takes 20 points less."
             }
           ],
           [
             {
               "n": "Wall Declared Early",
-              "d": "Iron wall may be declared at the start of the round, before any ship moves or fires."
+              "d": "if Iron wall is declared before any of your ships has moved or fired this round, its damage reduction is 10 points stronger this round."
             },
             {
               "n": "Oath of Stillness",
@@ -1496,7 +1496,7 @@ const LINEAGE_TREES={
       },
       {
         "n": "The Wall That Moves",
-        "d": "during Iron wall, your ships may move at full speed without losing the damage reduction."
+        "d": "while Iron wall is active, your ships gain +1 movement."
       }
     ]
   },
@@ -2150,11 +2150,11 @@ const LINEAGE_TREES={
           [
             {
               "n": "The Brood Splits",
-              "d": "each extra swarm may strike a different target than the rest of its brood's swarms."
+              "d": "an extra swarm that strikes a different target than its brood's other swarms gains +15% damage."
             },
             {
               "n": "Spawned Before the Strike",
-              "d": "spawning happens before your ships move, so the new swarms can screen your movement this round."
+              "d": "a brood that moved this round has its extra swarms strike at +15% damage."
             }
           ],
           [
@@ -2175,7 +2175,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Roles Assigned at Hatching",
-              "d": "at battle start, give each ship a role (strike, screen, or mend); a ship may change its role once per battle."
+              "d": "at battle start, give each ship a role: strike (its shots gain +10 aim), screen (it gains +10 evasion), or mend (its repair and regrowth effects are 10% stronger); a ship may change its role once per battle."
             },
             {
               "n": "Broods in Reserve",
@@ -2203,11 +2203,11 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "Nine Throats, One Hunger",
-        "d": "Spawning surge releases an extra swarm from every ship that carries swarms, not only from broods."
+        "d": "when Spawning surge is used, choose one enemy; every extra swarm strikes it, and it takes +25% damage from swarm hits this round."
       },
       {
         "n": "The Brood Does Not Stop",
-        "d": "the extra swarms remain after the Command and strike once more at the start of next round before fading."
+        "d": "an extra swarm that destroys its target strikes another enemy at half damage in the same round."
       }
     ]
   },
@@ -2223,7 +2223,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Teeth at the Throat",
-              "d": "a ship that ends its frenzy movement behind an enemy strikes that enemy rear arc with its first shot this round."
+              "d": "a ship's first rear arc hit in the frenzy round gains +25% damage."
             }
           ],
           [
@@ -2233,7 +2233,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Scent in the Dark",
-              "d": "during the frenzy, a ship may change targets freely after each kill without losing the frenzy accuracy protection."
+              "d": "during the frenzy, a ship that changes targets after a kill gains +10 aim on its next shot."
             }
           ],
           [
@@ -2254,7 +2254,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Roles Assigned at Hatching",
-              "d": "at battle start, give each ship a role (strike, screen, or mend); a ship may change its role once per battle."
+              "d": "at battle start, give each ship a role: strike (its shots gain +10 aim), screen (it gains +10 evasion), or mend (its repair and regrowth effects are 10% stronger); a ship may change its role once per battle."
             },
             {
               "n": "Broods in Reserve",
@@ -2308,11 +2308,11 @@ const LINEAGE_TREES={
           [
             {
               "n": "The Tide Comes Early",
-              "d": "Regrowth tide may be used at the start of the round, before any fire is taken."
+              "d": "if Regrowth tide is used before any of your ships has taken damage this round, every repair is 10 points stronger."
             },
             {
               "n": "Growth Holds the Wound",
-              "d": "a section healed by the tide regrows at double rate again next round."
+              "d": "a section healed by the tide heals again at the next round start, for the same amount."
             }
           ],
           [
@@ -2333,7 +2333,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Roles Assigned at Hatching",
-              "d": "at battle start, give each ship a role (strike, screen, or mend); a ship may change its role once per battle."
+              "d": "at battle start, give each ship a role: strike (its shots gain +10 aim), screen (it gains +10 evasion), or mend (its repair and regrowth effects are 10% stronger); a ship may change its role once per battle."
             },
             {
               "n": "Broods in Reserve",
@@ -2391,7 +2391,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Spat in Two Rounds",
-              "d": "you may fire the volley in two halves, the second half after your ships move."
+              "d": "choose up to half your ships: they hold their spit in the volley and fire it at the start of next round at half damage."
             }
           ],
           [
@@ -2412,7 +2412,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Roles Assigned at Hatching",
-              "d": "at battle start, give each ship a role (strike, screen, or mend); a ship may change its role once per battle."
+              "d": "at battle start, give each ship a role: strike (its shots gain +10 aim), screen (it gains +10 evasion), or mend (its repair and regrowth effects are 10% stronger); a ship may change its role once per battle."
             },
             {
               "n": "Broods in Reserve",
@@ -2460,17 +2460,17 @@ const LINEAGE_TREES={
             },
             {
               "n": "Copies Triage the Damage",
-              "d": "assign the repair section by section in any order you choose; a section restored to full also clears all of its damage effects."
+              "d": "a section the Command repairs to full also clears its ship's fire and acid."
             }
           ],
           [
             {
               "n": "Iteration Runs During Fire",
-              "d": "a ship being rebuilt by the swarms may act normally this round; the rebuild never delays its fire."
+              "d": "a ship repaired by the Command gains +15% damage on its next shot this round."
             },
             {
               "n": "The Archive Answers First",
-              "d": "the swarms may be released at the very start of the round, before any ship moves or fires."
+              "d": "if Release the repair swarms is used before any of your ships has acted this round, every repair is 10 points stronger."
             }
           ],
           [
@@ -2491,7 +2491,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Formation Loaded from Archive",
-              "d": "choose one archived formation at battle start; ships that end their movement inside it gain +10 evasion that round."
+              "d": "ships that end their movement next to two friendly ships gain +10 evasion that round."
             },
             {
               "n": "Iteration Swap",
@@ -2549,7 +2549,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Target Archived Mid-Flight",
-              "d": "before the volley resolves, each ship may switch its target once."
+              "d": "before the volley resolves, each ship may choose its own target; a ship that chooses a target no other ship chose gains +10 aim against it."
             }
           ],
           [
@@ -2570,7 +2570,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Formation Loaded from Archive",
-              "d": "choose one archived formation at battle start; ships that end their movement inside it gain +10 evasion that round."
+              "d": "ships that end their movement next to two friendly ships gain +10 evasion that round."
             },
             {
               "n": "Iteration Swap",
@@ -2624,7 +2624,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "The Shadow Is a Position",
-              "d": "the Command round may be declared after movement, once you can see where your ships stand."
+              "d": "a ship that ends its movement in an enemy's rear arc gains +20% damage in the hunt round."
             },
             {
               "n": "Strike the Uncopied Target",
@@ -2649,7 +2649,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Formation Loaded from Archive",
-              "d": "choose one archived formation at battle start; ships that end their movement inside it gain +10 evasion that round."
+              "d": "ships that end their movement next to two friendly ships gain +10 evasion that round."
             },
             {
               "n": "Iteration Swap",
@@ -2703,7 +2703,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Wall Archived in Advance",
-              "d": "the wall may be declared at the start of the round, and its reduction applies from the first enemy shot of the round."
+              "d": "if Sunshade wall is declared before any of your ships has moved this round, its damage reduction is 10 points stronger this round."
             },
             {
               "n": "Layers Shift",
@@ -2728,7 +2728,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Formation Loaded from Archive",
-              "d": "choose one archived formation at battle start; ships that end their movement inside it gain +10 evasion that round."
+              "d": "ships that end their movement next to two friendly ships gain +10 evasion that round."
             },
             {
               "n": "Iteration Swap",
@@ -2772,20 +2772,36 @@ const TREE_FX={
   "aelith:A:0:1":{k:"castTwice",n:.5},
   "aelith:A:2:0":{k:"flakSkip"},
   "aelith:A:2:1":{k:"lensAloft"},
+  // Job 7a: the waiting Glasswrights rows (Muse text pass, PR 324).
+  "aelith:A:0:0":{k:"flightPaths",n:.15},
+  "aelith:A:1:0":{k:"replay",n:.1},
+  "aelith:A:1:1":{k:"starlings",n:10},
+  "aelith:cap:0":{k:"flightCast",n:.25},
+  "aelith:cap:1":{k:"forgeAhead",n:.15},
   "vaelen:A:0:0":{k:"longFocus",n:.2},
   "vaelen:A:1:1":{k:"recordedAngle"},
   "vaelen:A:2:0":{k:"burnFlaw"},
   "vaelen:A:2:1":{k:"longLight",n:2},
   "vaelen:cap:1":{k:"flawForever",n:.15},
+  "vaelen:A:0:1":{k:"oneLens",n:.25},
+  "vaelen:A:1:0":{k:"lightTogether",n:.15},
+  "vaelen:cap:0":{k:"sunLens"},
   "thorne:A:0:0":{k:"twoImages",n:20},
   "thorne:A:0:1":{k:"anglesRecorded",n:10},
   "thorne:A:2:0":{k:"refraction",n:6},
   "thorne:A:2:1":{k:"mirrorTurns"},
   "thorne:cap:1":{k:"falseHulls",n:2},
+  "thorne:A:1:0":{k:"mirrorAside"},
+  "thorne:A:1:1":{k:"splitThree"},
+  "thorne:cap:0":{k:"fleetElsewhere",n:2},
   "mirelle:A:1:0":{k:"rechargeLit"},
   "mirelle:A:2:0":{k:"glassCorrected",n:.15},
   "mirelle:A:2:1":{k:"hardLight"},
   "mirelle:cap:0":{k:"wardGlass",n:20},
+  "mirelle:A:0:0":{k:"weakSide",n:.2},
+  "mirelle:A:0:1":{k:"prismsFace",n:.25},
+  "mirelle:A:1:1":{k:"lensRotates",n:10},
+  "mirelle:cap:1":{k:"facetLit",n:.2},
   "aelith:B:0:0":{k:"deployRead"},"aelith:B:0:1":{k:"castCorrected"},"aelith:C:0:0":{k:"flagshipLens",n:10},"aelith:C:0:1":{k:"firstLight",n:10},
   "vaelen:B:0:0":{k:"deployRead"},"vaelen:B:0:1":{k:"castCorrected"},"vaelen:C:0:0":{k:"flagshipLens",n:10},"vaelen:C:0:1":{k:"firstLight",n:10},
   "thorne:B:0:0":{k:"deployRead"},"thorne:B:0:1":{k:"castCorrected"},"thorne:C:0:0":{k:"flagshipLens",n:10},"thorne:C:0:1":{k:"firstLight",n:10},
@@ -2812,6 +2828,18 @@ const TREE_FX={
   "thale:A:2:0":{k:"unpaid",n:.2},
   "thale:A:2:1":{k:"wallAnswers"},
   "thale:cap:0":{k:"ironTestament"},
+  // Job 7a: the waiting Sunward Crusade rows (Muse text pass, PR 324).
+  "vex:A:0:0":{k:"ledgerArcs",n:.15},
+  "vex:A:2:1":{k:"debtDue",n:.2},
+  "vex:cap:0":{k:"grandLedger"},
+  "vex:cap:1":{k:"lastAccount"},
+  "malek:A:1:0":{k:"torpFirst"},
+  "malek:A:1:1":{k:"rearReckoning",n:.15},
+  "malek:cap:0":{k:"salvoEnd"},
+  "ashgrove:A:1:0":{k:"accountSplits",n:.15},
+  "thale:A:0:1":{k:"screensShift",n:.2},
+  "thale:A:1:0":{k:"wallEarly",n:.1},
+  "thale:cap:1":{k:"wallMoves",n:1},
   "vex:B:0:0":{k:"swornDeploy"},"vex:B:0:1":{k:"debtsReserve"},"vex:C:0:0":{k:"flagshipLedger"},"vex:C:0:1":{k:"standardReroll"},
   "malek:B:0:0":{k:"swornDeploy"},"malek:B:0:1":{k:"debtsReserve"},"malek:C:0:0":{k:"flagshipLedger"},"malek:C:0:1":{k:"standardReroll"},
   "ashgrove:B:0:0":{k:"swornDeploy"},"ashgrove:B:0:1":{k:"debtsReserve"},"ashgrove:C:0:0":{k:"flagshipLedger"},"ashgrove:C:0:1":{k:"standardReroll"},
@@ -2847,6 +2875,14 @@ const TREE_FX={
   "sekhmar:B:0:1":{k:"iterationSwap"},"sekhmar:C:0:0":{k:"flagshipIndex",n:.15},"sekhmar:C:0:1":{k:"frameZero"},
   "anuket:B:0:1":{k:"iterationSwap"},"anuket:C:0:0":{k:"flagshipIndex",n:.15},"anuket:C:0:1":{k:"frameZero"},
   "khepra:B:0:1":{k:"iterationSwap"},"khepra:C:0:0":{k:"flagshipIndex",n:.15},"khepra:C:0:1":{k:"frameZero"},
+  // Job 7b: the waiting Eclipse rows (Muse text pass, PR 324).
+  "nekhet:A:0:1":{k:"copiesTriage"},
+  "nekhet:A:1:0":{k:"iterationFire",n:.15},
+  "nekhet:A:1:1":{k:"archiveFirst",n:.1},
+  "anuket:A:1:0":{k:"shadowPos",n:.2},
+  "khepra:A:1:0":{k:"wallEarly",n:.1},
+  "sekhmar:A:1:1":{k:"targetArchived",n:10},
+  "nekhet:B:0:0":{k:"eclFormation",n:10},"sekhmar:B:0:0":{k:"eclFormation",n:10},"anuket:B:0:0":{k:"eclFormation",n:10},"khepra:B:0:0":{k:"eclFormation",n:10},
   // The Chorus (issue #305 job 4). The 26 a and b rows; the 9 x rows and the shared c row stay inert until the Muse text pass (#311).
   "matriarch:A:0:0":{k:"chooseBrood"},
   "matriarch:A:0:1":{k:"sporeTide",n:2},
@@ -2875,6 +2911,13 @@ const TREE_FX={
   "razormaw:B:0:1":{k:"broodReserve"},"razormaw:C:0:0":{k:"firstThroat"},"razormaw:C:0:1":{k:"throatDeep",n:10},
   "mending:B:0:1":{k:"broodReserve"},"mending:C:0:0":{k:"firstThroat"},"mending:C:0:1":{k:"throatDeep",n:10},
   "voice:B:0:1":{k:"broodReserve"},"voice:C:0:0":{k:"firstThroat"},"voice:C:0:1":{k:"throatDeep",n:10},
+  // Job 7b: the waiting Chorus rows (Muse text pass, PR 324).
+  "matriarch:A:1:0":{k:"accountSplits",n:.15},
+  "matriarch:cap:0":{k:"nineThroats",n:.25},
+  "razormaw:A:0:1":{k:"teethThroat",n:.25},
+  "mending:A:1:0":{k:"tideEarly",n:.1},
+  "mending:A:1:1":{k:"growthWound"},
+  "voice:A:1:1":{k:"spatRounds"},
   // The Ashfall Hullbreakers (issue #305 job 5). All 36 rows, including the rewritten x and c rows (Muse PR 324).
   "grax:A:0:0":{k:"runBigger",n:.15},
   "grax:A:0:1":{k:"railBoarding",n:.25},

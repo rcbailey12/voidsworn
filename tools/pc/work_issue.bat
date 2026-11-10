@@ -7,6 +7,8 @@ rem Nothing is deleted anywhere. latest.txt in issue-<n>-<arm>\ names the newest
 rem After the agent finishes, its shots are copied into docs\shots\issue-<n>-<arm>\ so the evidence rides the PR, the change is
 rem committed and pushed, and GitHub opens the PR (auto_pr) and runs the checks. If the push fails: out\change.patch.
 rem dryrun: a free stand-in model (work\mock_llm.js) instead of the real one, and "git push --dry-run" instead of a push.
+rem After the agent stops the runner runs the standing checks and parity itself and pastes their rows into the commit text
+rem (#356): each check has its own time limit, a timeout is printed as a timeout, and a failed check never stops the push.
 rem Keys: DEEPSEEK_API_KEY and MOONSHOT_API_KEY, saved by work_setup.bat as user settings; read from the registry here, so a
 rem window that was open before setup (the watcher) still finds them.
 setlocal
@@ -21,8 +23,15 @@ if not defined MODEL (echo usage: work_issue.bat issue-number deepseek-deepseekp
 if defined WORK_MODEL set "MODEL=%WORK_MODEL%"
 rem The repo's bundled Node 22 first: the shell's Node 24 gives a false 4,048 pow differences in the parity math sweep (#217 trial)
 set "PATH=%USERPROFILE%\Downloads\voidsworn_test\node;C:\Program Files\nodejs;C:\Program Files\Git\cmd;%APPDATA%\npm;%PATH%"
+rem The same bundled Node 22 for the runner's own check step (a quoted full path survives the time-limit wrapper)
+set "NODE=node"
+if exist "%USERPROFILE%\Downloads\voidsworn_test\node\node.exe" set "NODE=%USERPROFILE%\Downloads\voidsworn_test\node\node.exe"
 rem WORK_CAP: the run's cap in seconds (default one hour; set it before calling for a bigger job)
 if not defined WORK_CAP set "WORK_CAP=3600"
+rem CHECK_CAP and PARITY_CAP: each runner check gets its own time limit (#356). A check that hangs is killed and its
+rem timeout is written into the commit text instead of eating the run.
+if not defined CHECK_CAP set "CHECK_CAP=900"
+if not defined PARITY_CAP set "PARITY_CAP=1500"
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 set "T=%~dp0"
 set "PS=powershell -NoProfile -ExecutionPolicy Bypass -File "%T%work_issue.ps1""
@@ -73,6 +82,8 @@ git checkout -q -B %BR%
 git log -1 --format=%%H > "%O%\base_commit.txt"
 %PS% prep %N% %ARM% "%R%" "%O%" "%G%" >> "%O%\result.txt" 2>&1
 if errorlevel 1 goto :prepfail
+rem Only capture jobs copy the ship files: the launcher sets WORK_SHIPS=1. They are large and every run keeps its checkout (Board, Nov 10).
+if defined WORK_SHIPS call "%T%get_ship_files.bat" "%VT%\build\godot" "%R%" "%R%\WORK_TASK.md" >> "%O%\ship_files.txt" 2>&1
 if /i "%MODE%"=="dryrun" (echo dry> "%O%\balance_before.txt") else (%PS% balance %ARM% "%O%\balance_before.txt" > nul)
 powershell -NoProfile -Command "(Get-Date).ToString('s')" > "%O%\time_start.txt"
 echo agent running %time% >> "%O%\result.txt"
@@ -94,6 +105,21 @@ git add -A
 git diff --cached --quiet
 if not errorlevel 1 goto :nochange
 git diff --cached --stat > "%O%\diffstat.txt"
+rem Runner checks (#356): after the agent stops, run the checks ourselves and keep their rows for the commit text.
+rem Each check has its own time limit through tmo.bat. A timeout is written as a timeout, and a failed check never
+rem stops the push: the FAIL rows ride in the text and every byte of the run is kept.
+call "%T%tmo.bat" %CHECK_CAP% "%NODE%" contrib\opus\tools\run_all_checks.js > "%O%\checks_node.txt" 2>&1
+set "NODE_EXIT=%ERRORLEVEL%"
+call "%T%tmo.bat" %PARITY_CAP% "%COMSPEC%" /c tools\pc\parity.bat nopause > "%O%\checks_parity.txt" 2>&1
+set "PARITY_EXIT=%ERRORLEVEL%"
+> "%O%\checks.txt" echo ## node contrib/opus/tools/run_all_checks.js ^(limit %CHECK_CAP% s^)
+if "%NODE_EXIT%"=="124" (echo TIMEOUT: node contrib/opus/tools/run_all_checks.js hit its %CHECK_CAP% s limit >> "%O%\checks.txt") else (echo exit %NODE_EXIT% >> "%O%\checks.txt")
+type "%O%\checks_node.txt" >> "%O%\checks.txt"
+>> "%O%\checks.txt" echo.
+>> "%O%\checks.txt" echo ## tools\pc\parity.bat nopause ^(limit %PARITY_CAP% s^)
+if "%PARITY_EXIT%"=="124" (echo TIMEOUT: tools\pc\parity.bat nopause hit its %PARITY_CAP% s limit >> "%O%\checks.txt") else (echo exit %PARITY_EXIT% >> "%O%\checks.txt")
+type "%O%\checks_parity.txt" >> "%O%\checks.txt"
+echo checks: node exit %NODE_EXIT%, parity exit %PARITY_EXIT% at %time% >> "%O%\result.txt"
 %PS% msg %N% %ARM% "%O%"
 git -c user.name="Ryan Bailey" -c user.email="rcbailey12@gmail.com" commit -q -F "%O%\commit.txt"
 if /i "%MODE%"=="dryrun" (git push --dry-run origin %BR% > "%O%\push.txt" 2>&1) else (git push -q -f origin %BR% > "%O%\push.txt" 2>&1)

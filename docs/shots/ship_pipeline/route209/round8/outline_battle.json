@@ -1,0 +1,33 @@
+{
+ "note": "outline_battle.py: overlap per third at the two battle cameras against B0 (the shape reference), not the concept.",
+ "cells": {
+  "Ab7": {
+   "game": {
+    "bow": 86.9,
+    "midship": 90.9,
+    "stern": 85.8,
+    "whole": 88.3
+   },
+   "studio": {
+    "bow": 75.5,
+    "midship": 90.7,
+    "stern": 89.2,
+    "whole": 86.1
+   }
+  },
+  "Ab8": {
+   "game": {
+    "bow": 85.2,
+    "midship": 90.9,
+    "stern": 85.8,
+    "whole": 87.7
+   },
+   "studio": {
+    "bow": 74.6,
+    "midship": 90.7,
+    "stern": 89.2,
+    "whole": 86.0
+   }
+  }
+ }
+}

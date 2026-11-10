@@ -6,6 +6,7 @@ extends SceneTree
 
 const FX := preload("res://fx/fx.gd")
 const SV := preload("res://render/ship_view.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 
 
 func _init() -> void:
@@ -60,6 +61,8 @@ func _run() -> void:
 		sv.name = "S%d" % n
 		w.add_child(sv)
 		sv.setup({"id": sv.name, "code": code, "fac": "voidsworn", "cls": "Cruiser", "facing": 0, "hp": 100, "maxHp": 100}, Vector3.ZERO, true)
+		if PG.stop_if_any():
+			return
 		var hp := sv.find_children("hp_eng*", "Node3D", true, false).size()
 		fx.add_ship(sv.name, sv, {"faction": "voidsworn", "cls": "Cruiser", "size": 1.0, "meshes": sv.meshes, "shielded": false})
 		var s = fx.ships[sv.name]
@@ -81,4 +84,4 @@ func _run() -> void:
 		fx.remove_ship(sv.name)
 		sv.queue_free()
 		await process_frame
-	quit()
+	PG.finish(0)

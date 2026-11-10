@@ -65,26 +65,27 @@ const WANT = {
   t_heg_cruisers: 'reyes:A:0:0', t_heg_launchorder: 'reyes:A:0:1', t_heg_secondwave: 'reyes:A:1:0', t_heg_rehearsed: 'reyes:A:1:1',
   t_heg_fullgroup: 'reyes:A:2:0', t_heg_escorts: 'reyes:A:2:1', t_heg_onetarget: 'reyes:cap:0', t_heg_standinggroup: 'reyes:cap:1',
   t_heg_columnstraight: 'maren:A:0:0', t_heg_overflow: 'maren:A:0:1', t_heg_bell: 'maren:A:1:0', t_heg_rotation: 'maren:A:1:1',
-  t_heg_columnendures: 'maren:A:2:0', t_heg_filedarmor: 'maren:A:2:1', t_heg_standardcovers: 'maren:cap:0', t_heg_flagshipstandard: 'maren:cap:1'
+  t_heg_columnendures: 'maren:A:2:0', t_heg_filedarmor: 'maren:A:2:1', t_heg_standardcovers: 'maren:cap:0', t_heg_flagshipstandard: 'maren:cap:1',
+  // job 7a: the first 26 waiting Glasswrights and Sunward rows
+  t7a_flightpaths: 'aelith:A:0:0', t7a_replay: 'aelith:A:1:0', t7a_starlings: 'aelith:A:1:1', t7a_flightcast: 'aelith:cap:0', t7a_forgeahead: 'aelith:cap:1',
+  t7a_onelens: 'vaelen:A:0:1', t7a_lighttogether: 'vaelen:A:1:0', t7a_sunlens: 'vaelen:cap:0',
+  t7a_mirroraside: 'thorne:A:1:0', t7a_splitthree: 'thorne:A:1:1', t7a_fleetelsewhere: 'thorne:cap:0',
+  t7a_weakside: 'mirelle:A:0:0', t7a_prismsface: 'mirelle:A:0:1', t7a_lensrotates: 'mirelle:A:1:1', t7a_facetlit: 'mirelle:cap:1',
+  t7a_ledgerarcs: 'vex:A:0:0', t7a_debtdue: 'vex:A:2:1', t7a_grandledger: 'vex:cap:0', t7a_lastaccount: 'vex:cap:1',
+  t7a_torpfirst: 'malek:A:1:0', t7a_rearreckoning: 'malek:A:1:1', t7a_salvoend: 'malek:cap:0',
+  t7a_accountsplits: 'ashgrove:A:1:0', t7a_screensshift: 'thale:A:0:1', t7a_wallearly: 'thale:A:1:0', t7a_wallmoves: 'thale:cap:1',
+  // job 7b: the waiting Eclipse and Chorus rows
+  t7b_ecl_formation_a: 'nekhet:B:0:0', t7b_ecl_formation_b: 'sekhmar:B:0:0', t7b_ecl_formation_c: 'anuket:B:0:0', t7b_ecl_formation_d: 'khepra:B:0:0',
+  t7b_ecl_shadow: 'anuket:A:1:0', t7b_ecl_wall: 'khepra:A:1:0', t7b_ecl_archive: 'nekhet:A:1:1', t7b_ecl_iterfire: 'nekhet:A:1:0', t7b_ecl_triage: 'nekhet:A:0:1', t7b_ecl_targetarchived: 'sekhmar:A:1:1',
+  t7b_ch_broodsplits: 'matriarch:A:1:0', t7b_ch_nine: 'matriarch:cap:0', t7b_ch_teeth: 'razormaw:A:0:1',
+  t7b_ch_tideearly: 'mending:A:1:0', t7b_ch_growth: 'mending:A:1:1', t7b_ch_spat: 'voice:A:1:1'
 };
-const INERT = ['aelith:A:0:0', 'aelith:A:1:0', 'aelith:A:1:1', 'aelith:cap:1', 'aelith:cap:0',
-  'vaelen:A:0:1', 'vaelen:A:1:0', 'vaelen:cap:0', 'thorne:A:1:0', 'thorne:A:1:1', 'thorne:cap:0',
-  'mirelle:A:0:0', 'mirelle:A:0:1', 'mirelle:A:1:1', 'mirelle:cap:1',
-  // Sunward x and c rows wait for the Muse text pass (#311)
-  'vex:A:0:0', 'vex:A:2:1', 'vex:cap:0', 'vex:cap:1',
-  'malek:A:1:0', 'malek:A:1:1', 'malek:cap:0',
-  'ashgrove:A:1:0',
-  'thale:A:0:1', 'thale:A:1:0', 'thale:cap:1',
-  // Eclipse x and c rows wait for the Muse text pass (#311)
-  'nekhet:A:0:1', 'nekhet:A:1:0', 'nekhet:A:1:1', 'nekhet:B:0:0',
-  'sekhmar:A:1:1', 'sekhmar:B:0:0',
-  'anuket:A:1:0', 'anuket:B:0:0',
-  'khepra:A:1:0', 'khepra:B:0:0',
-  // Chorus x and c rows wait for the Muse text pass (#311)
-  'matriarch:A:1:0', 'matriarch:A:1:1', 'matriarch:cap:0', 'matriarch:cap:1',
-  'razormaw:A:0:1', 'razormaw:A:1:1',
-  'mending:A:1:0', 'mending:A:1:1',
-  'voice:A:1:1',
+const INERT = [
+  // Eclipse and Chorus rows that still need a hook (job 7b)
+  'matriarch:A:1:1', // Spawned Before the Strike needs a Command declared after the brood moves; the harness bot always declares on its first activation
+  'matriarch:cap:1', // The Brood Does Not Stop needs the wing kill then retarget chain (H4 after a swarm kill)
+  'razormaw:A:1:1', // Scent in the Dark needs a per-ship kill then target-change counter (H2)
+  // Chorus shared B1a: roles need a battle-start role prompt and a change-role action in both twins and the Godot UI
   'matriarch:B:0:0', 'razormaw:B:0:0', 'mending:B:0:0', 'voice:B:0:0'];
 let bad = 0;
 const scen = JSON.parse(fs.readFileSync(SCEN, 'utf8'));
@@ -101,7 +102,7 @@ try {
     const stats = JSON.parse(last.state).b.treeStats || {};
     if (!(stats[key] >= 1)) { console.log('FAIL ' + name + ': ' + key + ' did not fire (treeStats ' + JSON.stringify(stats) + ')'); bad++; }
   }
-  // the Glasswrights x and c rows wait for the Muse text pass (#311): they must stay inert
+  // the Eclipse and Chorus x and c rows wait for job 7b: they must stay inert
   const src = fs.readFileSync(path.join(ROOT, 'data.js'), 'utf8');
   for (const key of INERT) if (src.includes('"' + key + '":')) { console.log('FAIL inert row has a TREE_FX entry: ' + key); bad++; }
   // The three Hullbreakers rows run 2 corrected: prove the effect, not just the callout.
@@ -210,6 +211,108 @@ try {
     { const rs = R('t_heg_stdforward'); let fwd = false; if (rs) for (let i = 1; i < rs.length; i++) { const a = S(rs[i - 1]), b = S(rs[i]); if (!(b.b.treeStats || {})['kassar:C:0:1']) continue; const fg = b.units.find(u => u.pflag && !u.dead); if (!fg) continue; for (const u of b.units) { if (u.side !== 'player' || u.isSq) continue; const o = a.units.find(x => x.id === u.id); if (!o || (u.q === o.q && u.r === o.r)) continue; if (hd(u, fg) <= hd(o, fg)) { fwd = true; break; } } if (fwd) break; } ok('Standard Borne Forward', fwd, 'a move toward the flagship gets the extra hex'); }
     { const rs = R('t_heg_sharedsolution'); let best = false; if (rs) { const s = S(rs[0]); const fg = s.units.find(u => u.anchor && u.side === 'player'); if (fg) { const sr = s.b.syncR && s.b.syncR.player ? s.b.syncR.player : 3; const near = s.units.filter(u => u.side === 'player' && !u.isSq && !u.dead && hd(u, fg) <= sr); best = near.length >= 2; } } ok('Shared Solution', !!(best && (S(rs[0]).b.treeStats || {})['kassar:A:1:0']), 'two or more synced ships share the best aim'); }
     { const rs = R('t_heg_colddrill'); let cold = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['kassar:A:1:1']) continue; if (s.units.some(u => u.side === 'player' && !u.isSq && (u.hexMoved || 0) === 0)) { cold = true; break; } } ok('Cold Drill', cold, 'a synced ship that has not moved fires with the drill aim'); }
+  }
+  { // Job 7a: prove the counts, limits and timing the final texts promise.
+    const R = name => { const out = path.join(tmp, 'j7a_' + name + '.jsonl'); const rr = spawnSync(process.execPath, [GOLDEN, 'scenario', name, out], { cwd: ROOT, encoding: 'utf8' }); if (rr.status !== 0) return null; return fs.readFileSync(out, 'utf8').trim().split('\n').map(l => JSON.parse(l)); };
+    const S = r => JSON.parse(r.state);
+    const ok = (name, cond, msg) => { if (cond) console.log('PASS ' + name + ': ' + msg); else { console.log('FAIL ' + name + ': ' + msg); bad++; } };
+    const keyStats = (rs, key) => { let p = 0, m = 0; for (const r of rs) { const v = (S(r).b.treeStats || {})[key] || 0; m = Math.max(m, v - p); p = v; } return { total: p, maxOneRound: m }; };
+    const cmdIdx = rs => { for (let i = 0; i < rs.length; i++) if (rs[i].actor === 'command player') return i; return -1; };
+    { const rs = R('t7a_flightcast'); let cap = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['aelith:cap:0']) continue; if (Object.values(s.b.tr.wingCap || {}).some(n => n >= 2)) { cap = true; break; } } ok('Flight Cast Perfectly', cap, 'a second wing hit on one target passes its shields'); }
+    { const rs = R('t7a_forgeahead'); let later = false; if (rs) { const ci = cmdIdx(rs); const cr = ci >= 0 ? S(rs[ci]).b.round : 0; for (let i = ci + 1; i < rs.length; i++) { const s = S(rs[i]); if (!(s.b.treeStats || {})['aelith:cap:1']) continue; if (s.b.round > cr && String(rs[i].actor).startsWith('fire') && s.units.some(u => u.side === 'player' && u.isSq)) { later = true; break; } } } ok('The Forge Casts Ahead', later, 'one extra wing per carrier strikes again at the start of the next round'); }
+    { const rs = R('t7a_onelens'); let one = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['vaelen:A:0:1']) continue; if (s.b.tr.oneLens && s.b.tr.oneLens.ship && s.b.tr.oneLens.tgt) { one = true; break; } } ok('One Lens, One Target', one, 'one chosen ship fires its volley at one named target'); }
+    { const rs = R('t7a_sunlens'); let first = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['vaelen:cap:0']) continue; if (s.b.tr.sunTarget && s.b.tr.sunFirstDone === 1) { first = true; break; } } ok('Sun Through One Lens', first, 'the concentrated volley stops at the first hit on the target shields'); }
+    { const rs = R('t7a_mirroraside'); let used = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['thorne:A:1:0']) continue; if (s.units.some(u => u.side === 'player' && !u.isSq && u.treeDiveUsed === 1)) { used = true; break; } } ok('The Mirror Steps Aside', used, 'one enemy-held hex is dived during the scatter'); }
+    { const rs = R('t7a_splitthree'); let full = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['thorne:A:1:1']) continue; if (s.units.some(u => u.side === 'player' && !u.isSq && u.postFire && (u.postMp || 0) >= 1)) { full = true; break; } } ok('Light Split Three Ways', full, 'the ship keeps movement to spend after it fires'); }
+    { const rs = R('t7a_fleetelsewhere'); const k = rs && keyStats(rs, 'thorne:cap:0'); let once = false; if (rs) for (const r of rs) { const s = S(r); if (s.b.tr.fleetElsewhere === 1) { once = true; break; } } ok('The Fleet Is Elsewhere', !!(k && k.total >= 1 && k.maxOneRound <= 1 && once), 'the first enemy shot grants movement once in the battle'); }
+    { const rs = R('t7a_weakside'); let low = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['mirelle:A:0:0']) continue; if (!s.b.treeWeakShip) continue; const caps = s.units.filter(u => u.side === 'player' && !u.isSq && !u.dead); const min = caps.slice().sort((a, b) => (a.sh || []).reduce((n, v) => n + v, 0) - (b.sh || []).reduce((n, v) => n + v, 0) || (a.id < b.id ? -1 : 1))[0]; if (min && min.id === s.b.treeWeakShip.id) { low = true; break; } } ok('Light Bent to the Weak Side', low, 'the ship with the lowest shields takes the cut'); }
+    { const rs = R('t7a_prismsface'); let over = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['mirelle:A:0:1']) continue; if (s.units.some(u => u.side === 'player' && !u.isSq && u.shMax > 0 && (u.sh || []).some(v => v > u.shMax))) { over = true; break; } } ok('Prisms Face the Fire', over, 'a ship facing its nearest enemy carries shields above its maximum'); }
+    { const rs = R('t7a_lensrotates'); let ev = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['mirelle:A:1:1']) continue; if (s.units.some(u => u.side === 'player' && !u.isSq && (u.evBuff || 0) >= 10)) { ev = true; break; } } ok('The Lens Rotates', ev, 'a facing change gives +10 evasion until its next turn'); }
+    { const rs = R('t7a_facetlit'); let temp = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['mirelle:cap:1']) continue; if (s.units.some(u => u.side === 'player' && !u.isSq && (u.tempHp || 0) > 0)) { temp = true; break; } } ok('Every Facet Lit', temp, 'a warded ship gains temporary hull'); }
+    { const rs = R('t7a_debtdue'); let later = false; if (rs) { const ci = cmdIdx(rs); const cr = ci >= 0 ? S(rs[ci]).b.round : 0; for (const r of rs) { const s = S(r); if ((s.b.treeStats || {})['vex:A:2:1'] && s.b.round > cr) { later = true; break; } } } ok('Debt Comes Due', later, 'the delayed volley fires at the start of the next round'); }
+    { const rs = R('t7a_grandledger'); let once = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['vex:cap:0']) continue; if (s.b.tr.grandUsed === 1) { once = true; break; } } ok('The Grand Ledger', once, 'the concentrated fire happens once in the battle'); }
+    { const rs = R('t7a_lastaccount'); const k = rs && keyStats(rs, 'vex:cap:1'); ok('The Last Account', !!(k && k.total >= 1), 'a ship that destroyed its volley target fires again'); }
+    { const rs = R('t7a_torpfirst'); let instant = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['malek:A:1:0']) continue; if (!(s.b.torps || []).some(t => t.side === 'player' && t.r === s.b.round)) { instant = true; break; } } ok('Torpedoes Run First', instant, 'no salvo from the salvo round is left travelling'); }
+    { const rs = R('t7a_salvoend'); let twice = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['malek:cap:0']) continue; const by = {}; for (const t of (s.b.torps || [])) if (t.side === 'player') by[t.by] = (by[t.by] || 0) + 1; if (Object.values(by).some(n => n >= 2)) { twice = true; break; } } ok('Salvo Without End', twice, 'one ship fires a second torpedo in the salvo round'); }
+    { const rs = R('t7a_screensshift'); let pair = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['thale:A:0:1']) continue; if (s.b.treeShiftUp && s.b.treeShiftDown && s.b.treeShiftUp.id !== s.b.treeShiftDown.id) { pair = true; break; } } ok('Screens Where the Debt Falls', pair, 'one ship takes more of the wall and one other takes less'); }
+    { const rs = R('t7a_wallearly'); let early = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['thale:A:1:0']) continue; if (s.b.cmd && s.b.treeWallEarly === s.b.cmd.round) { early = true; break; } } ok('Wall Declared Early', early, 'the wall is 10 points stronger when declared before any ship acts'); }
+    { const rs = R('t7a_wallmoves'); let up = false; if (rs) { const ci = cmdIdx(rs); if (ci > 0) { const a = S(rs[ci - 1]), b = S(rs[ci]); const caps = b.units.filter(u => u.side === 'player' && !u.isSq && !u.dead); up = caps.length > 0 && caps.every(u => { const o = a.units.find(x => x.id === u.id); return !o || (u.mp || 0) >= (o.mp || 0) + 1; }); } } ok('The Wall That Moves', up, 'every ship gains +1 movement while the wall is active'); }
+    // Job 7b: prove the numbers the Eclipse and Chorus texts promise.
+    {
+      const close = (a, b) => Math.abs(a - b) < 1e-9;
+      const mkCap = (id, side, extra) => Object.assign({ id, side, name: id, dead: false, isSq: false, extra: false, parent: null, q: 0, r: 0, facing: 0, dmg: 1, speed: 3, hexMoved: 0, maxHp: 100, hp: 100, fx: {}, aim: 0, ev: 0, lockOn: false, fullAhead: false, crewMax: 0, braced: false, sqPct: 0, weapons: [], sh: [0, 0, 0, 0], shMax: 0, st: {}, stance: 'strike' }, extra || {});
+      const W = { dmg: 10, shots: 1, r: 6, opt: 6, acc: 50, arc: 'F', k: 'gun', vsSq: 1, vsCap: 1, fall: 0, pierce: 0, ion: 1 };
+      {
+        const vm = require('vm');
+        const rules = ['data.js', 'core.js', 'battle.js'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8'));
+        const stubs = [
+          'function fxText(){} function fxShield(){} function fxFlash(){} function fxSectionDown(){}',
+          'function fxRam(){} function fxBoard(){} function onCapture(){} function fxShieldBreak(){} function fxWithdraw(){}',
+          'function toast(){} function banner(){} function log(){}',
+          'async function animWeapon(){} async function animTorpLaunch(){} async function animPath(){} async function animMove(){}',
+          'async function animRotate(){} async function animExplode(){} async function animNova(){} async function animBlink(){}'
+        ].join('\n');
+        const ctx = vm.createContext({ console });
+        vm.runInContext('Date.now=()=>0; globalThis.window={}; globalThis.document=undefined; globalThis.performance={now:()=>0};\n' + rules.join('\n') + '\n' + stubs + '\n' + [
+          'globalThis.__T7B={',
+          '  clear:()=>{ B={tree:[],treeStats:{},tr:{},units:[],round:1,cmd:null,volleyMul:null,treeNoon:false,treeDebtDue:0,treePermFile:null,treeIronExtra:null,treeWallEarly:0,cfg:null}; },',
+          '  tree:(k)=>{ B.tree=[Object.assign({key:k},TREE_FX[k])]; },',
+          '  mult:(u,w,t,rear)=>dmgMult(u,w,t,rear),',
+          '  hit:(u,w,t)=>hitChance(u,w,t),',
+          '  taken:(t)=>cmdTaken(t),',
+          '  push:(x)=>B.units.push(x),',
+          '  set:(k,v)=>{B[k]=v} };'
+        ].join('\n'), ctx);
+        const T = ctx.__T7B;
+        { T.clear(); T.tree('anuket:A:1:0'); T.set('round', 2); T.set('cmd', { id: 'hunt', side: 'player', round: 2, tier: 0 });
+          const u = mkCap('a', 'player'), t = mkCap('e', 'enemy'); const base = T.mult(u, W, t, false); u.treeShadowPos = 1; const boost = T.mult(u, W, t, false);
+          ok('The Shadow Is a Position number', close(boost / base, 1.2), 'ending in a rear arc pays +20% (' + base.toFixed(2) + ' to ' + boost.toFixed(2) + ')'); }
+        { T.clear(); T.tree('nekhet:A:1:0'); const u = mkCap('a', 'player'), t = mkCap('e', 'enemy'); u.treeIterFire = 0; const base = T.mult(u, W, t, false); u.treeIterFire = 0.15; const boost = T.mult(u, W, t, false);
+          ok('Iteration Runs During Fire number', close(boost / base, 1.15), 'a repaired ship fires at +15% (' + base.toFixed(2) + ' to ' + boost.toFixed(2) + ')'); }
+        { T.clear(); T.tree('razormaw:A:0:1'); T.set('round', 1); T.set('cmd', { id: 'surge', side: 'player', round: 1, tier: 0 });
+          const u = mkCap('a', 'player'), t = mkCap('e', 'enemy'); u.treeTeethUsed = 0; const boost = T.mult(u, W, t, true); u.treeTeethUsed = 1; const base = T.mult(u, W, t, true);
+          ok('Teeth at the Throat number', close(boost / base, 1.25), 'the first rear hit in the frenzy pays +25% (' + base.toFixed(2) + ' to ' + boost.toFixed(2) + ')'); }
+        { T.clear(); T.tree('matriarch:cap:0'); T.set('round', 1); T.set('tr', { swarmHunger: { r: 1, id: 'zzz' } });
+          const par = mkCap('p', 'player'); T.push(par);
+          const u = mkCap('a', 'player', { isSq: true, extra: true, parent: 'p' }), t = mkCap('e', 'enemy');
+          const base = T.mult(u, W, t, false); T.set('tr', { swarmHunger: { r: 1, id: 'e' } }); const boost = T.mult(u, W, t, false);
+          ok('Nine Throats One Hunger number', close(boost / base, 1.25), 'swarms on the chosen enemy pay +25% (' + base.toFixed(2) + ' to ' + boost.toFixed(2) + ')'); }
+        { T.clear(); T.tree('matriarch:A:1:0'); T.set('round', 1);
+          const par = mkCap('p', 'player'); T.push(par);
+          const u = mkCap('a', 'player', { isSq: true, extra: true, parent: 'p' }), t = mkCap('e', 'enemy');
+          T.set('tr', {}); const base = T.mult(u, W, t, false); T.set('tr', { wingTargets: { p: [{ sq: 'other', tid: 'othertgt' }] } }); const boost = T.mult(u, W, t, false);
+          ok('The Brood Splits number', close(boost / base, 1.15), 'a swarm on a different target pays +15% (' + base.toFixed(2) + ' to ' + boost.toFixed(2) + ')'); }
+        { T.clear(); T.tree('sekhmar:A:1:1'); T.set('terrain', {});
+          const u = mkCap('a', 'player'), t = mkCap('e', 'enemy', { q: 3, r: 0 }); u.treeAimTgt = null; const base = T.hit(u, W, t); u.treeAimTgt = 'e'; const boost = T.hit(u, W, t);
+          ok('Target Archived Mid-Flight number', close(boost - base, 10), 'the unshared target gains 10 aim (' + base.toFixed(0) + ' to ' + boost.toFixed(0) + ')'); }
+        { T.clear(); T.tree('khepra:A:1:0'); T.set('round', 2); T.set('cmd', { id: 'iron', side: 'player', round: 2, tier: 1 });
+          const t = mkCap('t', 'player', { shMax: 100, sh: [100, 100, 100, 100] });
+          T.set('treeWallEarly', 0); const base = T.taken(t); T.set('treeWallEarly', 2); const boost = T.taken(t);
+          ok('Wall Archived in Advance number', close(base - boost, 0.1), 'the early wall cuts 10 points more (' + base.toFixed(2) + ' to ' + boost.toFixed(2) + ')'); }
+      }
+      const forms = [['t7b_ecl_formation_a', 'nekhet:B:0:0'], ['t7b_ecl_formation_b', 'sekhmar:B:0:0'], ['t7b_ecl_formation_c', 'anuket:B:0:0'], ['t7b_ecl_formation_d', 'khepra:B:0:0']];
+      for (const [name, key] of forms) {
+        const rs = R(name); let hit = false;
+        if (rs) for (let i = 1; i < rs.length; i++) { const a = S(rs[i - 1]), b = S(rs[i]); if (!((b.b.treeStats || {})[key] >= 1)) continue; for (const u of b.units) { if (u.side !== 'player' || u.isSq) continue; const o = a.units.find(x => x.id === u.id); if (!o || o.treeEclForm || u.treeEclForm !== 1) continue; if ((u.evBuff || 0) - (o.evBuff || 0) >= 10) { hit = true; break; } } if (hit) break; }
+        ok('Formation Loaded from Archive (' + name + ')', hit, 'two friends close by add +10 evasion');
+      }
+      { const rs = R('t7b_ecl_archive'); const ci = rs ? cmdIdx(rs) : -1; let hit = false;
+        if (ci > 0) { const a = S(rs[ci - 1]), b = S(rs[ci]); for (const u of b.units) { if (u.side !== 'player' || u.isSq) continue; const o = a.units.find(x => x.id === u.id); if (!o) continue; if (Math.round(u.hp - o.hp) === Math.round(u.maxHp * 0.55) && u.hp < u.maxHp) { hit = true; break; } } }
+        ok('The Archive Answers First number', hit, 'the early restore heals 10 points more than the wall normally gives'); }
+      { const rs = R('t7b_ch_tideearly'); const ci = rs ? cmdIdx(rs) : -1; let hit = false;
+        if (ci > 0) { const a = S(rs[ci - 1]), b = S(rs[ci]); for (const u of b.units) { if (u.side !== 'player' || u.isSq) continue; const o = a.units.find(x => x.id === u.id); if (!o) continue; if (Math.round(u.hp - o.hp) === Math.round(u.maxHp * 0.45) && u.hp < u.maxHp) { hit = true; break; } } }
+        ok('The Tide Comes Early number', hit, 'the early restore heals 10 points more than the tide normally gives'); }
+      { const rs = R('t7b_ecl_triage'); const ci = rs ? cmdIdx(rs) : -1; let hit = false;
+        if (ci > 0) { const a = S(rs[ci - 1]), b = S(rs[ci]); for (const u of b.units) { if (u.side !== 'player' || u.isSq) continue; const o = a.units.find(x => x.id === u.id); if (!o) continue; const had = !!(o.st && (o.st.fire || o.st.acid)); const now = !!(u.st && (u.st.fire || u.st.acid)); let full = false; if (u.sec && o.sec) for (const k of Object.keys(u.sec)) { const sn = u.sec[k], so = o.sec[k]; if (sn && so && !sn.broken && sn.hp >= sn.max && so.hp < so.max) full = true; } if (had && !now && full) { hit = true; break; } } }
+        ok('Copies Triage the Damage number', hit, 'a section repaired to full clears the ship fire and acid'); }
+      { const rs = R('t7b_ch_growth'); let hit = false;
+        if (rs) for (let i = 1; i < rs.length; i++) { const b = S(rs[i]); if (!((b.b.treeStats || {})['mending:A:1:1'] >= 2)) continue; const a = S(rs[i - 1]); for (const u of b.units) { if (u.side !== 'player' || u.isSq) continue; const o = a.units.find(x => x.id === u.id); if (!o || !u.sec || !o.sec) continue; for (const k of Object.keys(u.sec)) if (u.sec[k].hp > o.sec[k].hp) { hit = true; break; } if (hit) break; } if (hit) break; }
+        ok('Growth Holds the Wound number', hit, 'a healed section heals again at the next round start'); }
+      { const rs = R('t7b_ch_spat'); const ci = rs ? cmdIdx(rs) : -1; let held = false, later = false;
+        if (ci >= 0) { const cs = S(rs[ci]); const pend = (cs.b.treePending || []).find(p => p.k === 'spatRounds'); held = !!pend; const heldIds = (pend && pend.ids) || []; const cr = cs.b.round; let tp = -1; for (let i = ci + 1; i < rs.length; i++) if (rs[i].actor === 'tick player' && S(rs[i]).b.round === cr + 1) { tp = i; break; }
+          if (tp >= 0) for (let i = tp + 1; i < rs.length; i++) { const act = rs[i].actor; if (act === 'round') break; if (heldIds.some(id => act === 'fire ' + id)) { later = true; break; } } }
+        ok('Spat in Two Rounds number', !!(held && later), 'the held spit fires at the next round start'); }
+    }
   }
   }
 } finally {

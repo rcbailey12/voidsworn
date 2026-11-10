@@ -9,6 +9,7 @@
 #   p3_return        sector III after a real sector advance: the Glasswright commander back, scarred; the Chorus commander earlier
 # Each state saves the full screen (<name>.png) and the side panel cropped (<name>_panel.png), scrolled so the Nemesis head is on top.
 extends SceneTree
+const PG := preload("res://render/placeholder_guard.gd")
 const CampaignScript = preload("res://campaign/campaign.gd")
 const UIScript = preload("res://ui/campaign/campaign_ui.gd")
 const BattleAPI = preload("res://rules/battle_api.gd")
@@ -50,6 +51,8 @@ func _side_scroll() -> Control:
 	return p
 
 func _shot(name: String) -> void:
+	if PG.stop_if_any():
+		return
 	C.mapScreen()
 	await _frames(8)
 	var sc = _side_scroll()
@@ -99,4 +102,4 @@ func _run() -> void:
 	await _advance()
 	await _shot("p3_return")
 	print("nem panel shots done")
-	quit(0)
+	PG.finish(0)

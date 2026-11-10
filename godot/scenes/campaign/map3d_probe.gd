@@ -4,6 +4,7 @@ extends Node
 const CampaignScript = preload("res://campaign/campaign.gd")
 const UIScript = preload("res://ui/campaign/campaign_ui.gd")
 const BattleAPI = preload("res://rules/battle_api.gd")   # the rules are reached only through the battle API (rules/API.md)
+const PG := preload("res://render/placeholder_guard.gd")
 const JSM = BattleAPI.JSM   # the shared JS maths and the one PRNG the rules and the campaign both draw from
 
 func _ready() -> void:
@@ -16,6 +17,8 @@ func _ready() -> void:
 	print("map3d size ", m.size, " vp ", m.vp.size, " cam ", m.cam.global_position, " current ", m.cam.current, " nodes ", m._nodes.size())
 	for id in m._nodes.keys().slice(0, 3): print("  node ", id, " world ", m._nodes[id]["pos"], " screen ", m.cam.unproject_position(m._nodes[id]["pos"]))
 	await RenderingServer.frame_post_draw
+	if PG.stop_if_any():
+		return
 	var a = OS.get_cmdline_user_args()
 	if a.size() > 0: get_viewport().get_texture().get_image().save_png(a[0])
 	var mid = C.RUN["map"]["cols"][3][0]["id"]
@@ -33,4 +36,4 @@ func _ready() -> void:
 	if a.size() > 0: get_viewport().get_texture().get_image().save_png(a[0].replace(".png", "_flying.png"))
 	await get_tree().create_timer(1.2).timeout
 	print("after the jump: page ", C.page["kind"], " pos ", C.RUN["pos"])
-	get_tree().quit()
+	PG.finish(0)

@@ -1,0 +1,32 @@
+{
+ "B0": {
+  "overlap": 88.0,
+  "concept_covered": 94.1,
+  "cell_outside": 6.9,
+  "triangles": 570189
+ },
+ "Ab3": {
+  "overlap": 79.9,
+  "concept_covered": 93.1,
+  "cell_outside": 15.1,
+  "triangles": 81940
+ },
+ "Hy3": {
+  "overlap": 79.2,
+  "concept_covered": 93.1,
+  "cell_outside": 15.8,
+  "triangles": 116275
+ },
+ "Ab4": {
+  "overlap": 82.5,
+  "concept_covered": 93.5,
+  "cell_outside": 12.5,
+  "triangles": 84408
+ },
+ "Hy4": {
+  "overlap": 82.5,
+  "concept_covered": 93.5,
+  "cell_outside": 12.5,
+  "triangles": 111704
+ }
+}

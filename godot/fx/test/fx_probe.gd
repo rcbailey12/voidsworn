@@ -3,6 +3,7 @@ extends SceneTree
 
 const FX := preload("res://fx/fx.gd")
 const SV := preload("res://render/ship_view.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 
 
 func _init() -> void:
@@ -42,6 +43,8 @@ func _run() -> void:
 	var pf := OS.get_environment("PROBE_FAC") if OS.get_environment("PROBE_FAC") != "" else "corsair"
 	var pc := OS.get_environment("PROBE_CLS") if OS.get_environment("PROBE_CLS") != "" else "Battle-barge"
 	sv.setup({"id": "C", "fac": pf, "cls": pc, "facing": 0}, Vector3(10, 0, 5))
+	if PG.stop_if_any():
+		return
 	var fx = FX.new()
 	world.add_child(fx)
 	fx.manual = true
@@ -75,4 +78,4 @@ func _run() -> void:
 	for i in 3:
 		await RenderingServer.frame_post_draw
 	vp.get_texture().get_image().save_png(OS.get_environment("PROBE_OUT"))
-	quit()
+	PG.finish(0)

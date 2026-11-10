@@ -1,0 +1,40 @@
+{
+ "cell": "A2s",
+ "route": "hand build, structure traced from B0 (yaw fixed) and the concept",
+ "rung": 0,
+ "build_seconds": 3.1,
+ "audit": {
+  "problems": [],
+  "parts": 127,
+  "crossing_break_lines": []
+ },
+ "break_fit": {
+  "T1_rays_missed": 0,
+  "T1_jag": 0.0168,
+  "T2_rays_missed": 0,
+  "T2_jag": 0.0172
+ },
+ "break_lines": {
+  "t_lines": [
+   0.178,
+   -0.125
+  ],
+  "l_line": [
+   -0.045,
+   -0.125,
+   0.178
+  ],
+  "decks": [
+   -0.1,
+   -0.035
+  ]
+ },
+ "hull_blocks": 13,
+ "hull_triangles_with_skin": 9064,
+ "hand_parts": 132,
+ "detail_parts": 0,
+ "triangles": 27264,
+ "objects": 170,
+ "surfaces": 6,
+ "draw_calls_merged": 6
+}

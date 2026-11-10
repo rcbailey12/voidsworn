@@ -12,8 +12,8 @@
 // presentation calls, exactly like sim3d.js.
 'use strict';
 const fs = require('fs'), path = require('path'), vm = require('vm'), crypto = require('crypto');
-// the rules oracle: the pinned copy in ../oracle (VS_ORACLE overrides, for example the live repo root when catching up a rules change)
-const ROOT = process.env.VS_ORACLE ? path.resolve(process.env.VS_ORACLE) : path.resolve(__dirname, '..', 'oracle');
+// the rules oracle: the root game files (VS_ORACLE overrides, for a build tree whose game files sit elsewhere)
+const ROOT = process.env.VS_ORACLE ? path.resolve(process.env.VS_ORACLE) : path.resolve(__dirname, '..', '..', '..', '..');
 Date.now = () => 0;
 global.require = require; global.Buffer = Buffer;
 global.window = {}; global.document = undefined; global.performance = { now: () => 0 };
@@ -188,11 +188,11 @@ function hex(v){ const b=Buffer.alloc(8); b.writeDoubleBE(v); return b.toString(
 `;
 
 console.debug = () => {}; // the game's swarm timing chatter
-// the browser also defines FNAMES (ui3d.js), which core.js shipName reads: pinned as oracle/fnames.js (or taken from ui3d.js beside a VS_ORACLE checkout)
-const fnamesSrc = () => { const f = path.join(ROOT, 'fnames.js'); if (fs.existsSync(f)) return fs.readFileSync(f, 'utf8'); const u = path.join(ROOT, 'ui3d.js'); if (fs.existsSync(u)) { const m = fs.readFileSync(u, 'utf8').match(/^const FNAMES=[\s\S]*?\};/m); if (m) return m[0]; } return ''; };
-// campaign_run.js functions battle.js calls when they exist (nemAdaptName): the browser always has them, so the harness does too (oracle/campaign_hooks.js,
-// or taken from campaign_run.js beside a VS_ORACLE checkout)
-const hooksSrc = () => { const f = path.join(ROOT, 'campaign_hooks.js'); if (fs.existsSync(f)) return fs.readFileSync(f, 'utf8'); const c = path.join(ROOT, 'campaign_run.js'); if (fs.existsSync(c)) { const m = fs.readFileSync(c, 'utf8').match(/^function nemAdaptName\(.*$/m); if (m) return m[0]; } return ''; };
+// the browser also defines FNAMES (ui3d.js), which core.js shipName reads: taken from the root ui3d.js, with the small extract beside this file as a fallback
+const fnamesSrc = () => { const u = path.join(ROOT, 'ui3d.js'); if (fs.existsSync(u)) { const m = fs.readFileSync(u, 'utf8').match(/^const FNAMES=[\s\S]*?\};/m); if (m) return m[0]; } const f = path.join(__dirname, 'fnames.js'); if (fs.existsSync(f)) return fs.readFileSync(f, 'utf8'); return ''; };
+// campaign_run.js functions battle.js calls when they exist (nemAdaptName): the browser always has them, so the harness does too (taken from the root
+// campaign_run.js, with the small extract beside this file as a fallback)
+const hooksSrc = () => { const c = path.join(ROOT, 'campaign_run.js'); if (fs.existsSync(c)) { const m = fs.readFileSync(c, 'utf8').match(/^function nemAdaptName\(.*$/m); if (m) return m[0]; } const f = path.join(__dirname, 'campaign_hooks.js'); if (fs.existsSync(f)) return fs.readFileSync(f, 'utf8'); return ''; };
 const files = ['data.js', 'core.js', 'battle.js'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8')).concat([fnamesSrc(), hooksSrc()]);
 vm.runInThisContext(files.join('\n') + '\n' + HARNESS + '\nglobalThis.__G={runScenario,threatScenario,rndSeed,rnd,get S(){ return RNG_S; }};', { filename: 'rules_bundle.js' });
 // COVER=1: count calls to the rules functions each scenario reaches (a coverage check for the golden scenarios; printed to stderr)

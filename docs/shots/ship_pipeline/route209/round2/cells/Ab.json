@@ -1,0 +1,51 @@
+{
+ "cell": "Ab",
+ "route": "hand build, structure traced from B0 (yaw fixed) and the concept",
+ "rung": 2,
+ "build_seconds": 36.6,
+ "audit": {
+  "problems": [],
+  "parts": 262,
+  "crossing_break_lines": []
+ },
+ "break_fit": {
+  "T1_rays_missed": 0,
+  "T1_jag": 0.0168,
+  "T2_rays_missed": 0,
+  "T2_jag": 0.0172
+ },
+ "break_lines": {
+  "t_lines": [
+   0.178,
+   -0.125
+  ],
+  "l_line": [
+   -0.045,
+   -0.125,
+   0.178
+  ],
+  "decks": [
+   -0.1,
+   -0.035
+  ]
+ },
+ "hull_blocks": 1,
+ "hull_triangles_with_skin": 9064,
+ "hand_parts": 267,
+ "detail_parts": 0,
+ "bake": {
+  "bake_source_triangles": 570189,
+  "bake_normal_seconds": 7.3,
+  "bake_ao_seconds": 11.7,
+  "bake_device": "OPTIX",
+  "bake_res": 4096,
+  "cage": 0.035,
+  "ray": 0.07,
+  "ao_distance": 0.025,
+  "bake_total_seconds": 22.5
+ },
+ "triangles": 41092,
+ "objects": 293,
+ "surfaces": 9,
+ "draw_calls_merged": 9
+}
