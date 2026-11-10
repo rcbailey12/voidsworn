@@ -80,13 +80,10 @@ const WANT = {
   t7b_ch_broodsplits: 'matriarch:A:1:0', t7b_ch_nine: 'matriarch:cap:0', t7b_ch_teeth: 'razormaw:A:0:1',
   t7b_ch_tideearly: 'mending:A:1:0', t7b_ch_growth: 'mending:A:1:1', t7b_ch_spat: 'voice:A:1:1'
 };
-const INERT = [
-  // Eclipse and Chorus rows that still need a hook (job 7b)
-  'matriarch:A:1:1', // Spawned Before the Strike needs a Command declared after the brood moves; the harness bot always declares on its first activation
-  'matriarch:cap:1', // The Brood Does Not Stop needs the wing kill then retarget chain (H4 after a swarm kill)
-  'razormaw:A:1:1', // Scent in the Dark needs a per-ship kill then target-change counter (H2)
-  // Chorus shared B1a: roles need a battle-start role prompt and a change-role action in both twins and the Godot UI
-  'matriarch:B:0:0', 'razormaw:B:0:0', 'mending:B:0:0', 'voice:B:0:0'];
+// Issue 361: one dated waiting list for the whole tree lane, shared with tree_table_walk_test.js.
+// This check only enforces the other half: a row on that list must have no TREE_FX entry.
+const { WAITING } = require('./tree_table_walk_test.js');
+const INERT = Object.keys(WAITING);
 let bad = 0;
 const scen = JSON.parse(fs.readFileSync(SCEN, 'utf8'));
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'treefx-'));
