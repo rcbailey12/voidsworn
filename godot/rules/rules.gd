@@ -4850,9 +4850,17 @@ func runCommand(side, c, tier) -> bool:
 		var srS = treeSkill("spatRounds") if side == "player" else null
 		var spatSet = {}
 		if srS != null:
-			var cc = []
+			var cc = []; var allN = 0
 			for xS in alive("player"):
-				if not jt(xS.get("isSq")) and not jt(xS.get("dead")): cc.append(xS)
+				if jt(xS.get("isSq")) or jt(xS.get("dead")): continue
+				allN += 1
+				var canS = false   # only ships with nothing to fire at now hold their spit; the default never holds a ship that could fire
+				for tS in alive(foe):
+					if jt(tS.get("isSq")): continue
+					for wS in xS["weapons"]:
+						if canFire(xS, wS, tS): canS = true; break
+					if canS: break
+				if not canS: cc.append(xS)
 			JSM.ssort(cc, func(a, b2):
 				var da = 0.0
 				for wA in a["weapons"]:
@@ -4863,7 +4871,7 @@ func runCommand(side, c, tier) -> bool:
 				var dd = db - da
 				if dd != 0: return dd
 				return -1.0 if str(a["id"]) < str(b2["id"]) else 1.0)
-			var take = max(1, int(ceil(float(cc.size()) / 2.0)))
+			var take = int(floor(float(allN) / 2.0))
 			for iS in range(min(take, cc.size())): spatSet[cc[iS]["id"]] = 1
 		var ta = treeSkill("targetArchived") if side == "player" else null
 		var taPick = {}
