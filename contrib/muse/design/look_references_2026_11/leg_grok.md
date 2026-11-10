@@ -1,0 +1,10 @@
+# #407 leg: Grok (ideation)
+
+Run record: Nov 10, 2026 09:36-09:39 CST, cloud browser, already signed in as Ryan Bailey (no sign-in step needed in this profile), no moderation refusal. Chat: https://grok.com/c/0dd5ba52-0941-4d77-a436-6156ef1fd085. PACK.md attached via the grant only. Ideation seat: leads, not evidence.
+
+Screening: a usable leg with two glitches the chair does not carry. (1) Its trails "reads at small size" paragraph ends by advising to avoid exactly the things it just said still register (short bright trails, solid flares, large beam cores); the sentence contradicts itself and is dropped. (2) Its third shield "direction" is deliberately an anti-direction (the persistent bubble shell, named a trap); the chair records it as a warning, not a direction. Its claim that Sins shields are faintly visible at rest conflicts with the other legs and is unsourced; not carried. Its Rogue Trader sector read (prow/stern/port/starboard, gap when a sector is down) matches the chair's sourced finding (four independent sectors) and is carried on the source, not on this leg.
+
+Directions it proposed (kept for the chair's pool):
+- Shields: "Edge-only" (invisible at rest, faint faction rim on zoom/hover/recent hit, dark gap on a down side; Rogue Trader + EVE restraint). "Directional arc" (translucent arc panels on the hit side only, jagged bright edge, dark gap when down; Rogue Trader + Star Citizen).
+- Trails/beams: "Core-and-fade" (solid bright cores, short fades at the ends; Sins + Squadrons bolts). "Flare-forward" (strong saturated engine flares and short plumes scaling with thrust, minimal trail; Star Citizen + Elite). "Ordnance streak" (short high-contrast torpedo trails ending in weapon-sized impact flashes; EVE + Rogue Trader).
+- Sky: "Calm wash" (soft low-contrast nebula fields, sparse stars; BFG + Squadrons). "Structured dark" (deep black, a few large low-detail features from remixed real data, muted; Elite-inspired). "Faction-tinted void" (neutral starfield with a very faint faction glow, subordinate to the effect palette; Sins + Rogue Trader).
