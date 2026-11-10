@@ -38,11 +38,73 @@ def flow(obj, kind, density, speed, coord=(0, 0, 0), on=2, temperature=0.0, fuel
     fs.flow_type = kind; fs.flow_behavior = 'INFLOW'; fs.density = density; fs.temperature = temperature
     if kind in ('FIRE', 'BOTH'):
         fs.fuel_amount = fuel
-    fs.surface_distance = 1.5
+    fs.surface_distance = 1.5; fs.volume_density = 1.0   # gas from the whole source, not only a thin shell at its surface
     fs.use_initial_velocity = True; fs.velocity_normal = speed; fs.velocity_coord = coord
     fs.use_inflow = True; fs.keyframe_insert('use_inflow', frame=1); fs.keyframe_insert('use_inflow', frame=on)
     fs.use_inflow = False; fs.keyframe_insert('use_inflow', frame=on + 1)
     return fs
+
+
+def lumpy(radius, location, rnd, subdivisions=2, amount=.3):
+    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=subdivisions, radius=radius, location=location); o = bpy.context.object
+    for v in o.data.vertices:   # a seeded, lumpy surface, so no source is a perfect ball
+        v.co *= 1.0 + rnd.uniform(-amount, amount)
+    return o
+
+
+def thrown(radius, ray, reach, travel, kind, density, on, rnd, temperature=0.0, fuel=0.0, drift=.4):
+    """One clump thrown out along a ray: a lumpy ball keyframed from the centre to `reach` along `ray` over `travel`
+    frames, fast first and then slowing, laying gas along its path while its inflow is on (frames 1 to `on`). The gas
+    also keeps `drift` of the clump's speed. The path is keyframed, so how far the gas reaches is set here and is not
+    left to the solver: the solver keeps the gas volume constant, so an outward push on one closed round source is
+    removed at once and the gas stays a small ball in a mostly empty grid (PC run 2 of issue 353: the gas of the first
+    route A bake spanned about an eighth of its 256 cells)."""
+    o = lumpy(radius, (0, 0, 0), rnd)
+    for f in range(1, travel + 1):
+        u = (f - 1) / max(travel - 1, 1); d = reach * (1 - (1 - u) ** 2)
+        o.location = tuple(d * c for c in ray); o.keyframe_insert('location', frame=f)
+    fs = flow(o, kind, density, 0.0, on=on, temperature=temperature, fuel=fuel)
+    fs.subframes = 4; fs.velocity_factor = drift
+    return o
+
+
+SHAPES = {
+    # clumps, reach of each clump as a share of the burst's reach, clump radius, core radius (0: none), flat ring
+    'burst': dict(n=10, reach=(.5, 1.0), radius=(.16, .30), core=.38, ring=False, even=True),
+    'shards': dict(n=6, reach=(.45, 1.0), radius=(.18, .32), core=.28, ring=False, even=False),
+    'sphere': dict(n=12, reach=(.75, 1.0), radius=(.18, .26), core=.40, ring=False, even=True),
+    'ring': dict(n=11, reach=(.9, 1.0), radius=(.17, .22), core=0.0, ring=True, even=True),
+}
+
+
+def burst(shape, cfg, rnd, fire=False):
+    """The flow objects of one burst: a lumpy core at the centre (on for the first frames) and clumps thrown out on
+    rays (SHAPES). The camera looks down Z, so the rays lie near the XY plane. cfg: reach (the farthest clump centre in
+    units; the 4 unit domain is 2 from centre to wall), travel and on (frames), density, more (extra clumps), and for
+    fire=True (route A) temperature and fuel: the core and a short-lived inner clump on every ray then carry fuel, so
+    the fire is a core and the roots of the streaks, burning out in the first frames."""
+    sh = SHAPES[shape]; objs = []; n = sh['n'] + cfg.get('more', 0)
+    tilt = (rnd.uniform(-.45, .45), rnd.uniform(-.45, .45)) if sh['ring'] else None
+    base = rnd.uniform(0, math.tau)
+    hot = dict(temperature=cfg.get('temperature', 0.0), fuel=cfg.get('fuel', 0.0))
+    if sh['core'] > 0:
+        o = lumpy(sh['core'], (0, 0, 0), rnd, subdivisions=3)
+        if fire:
+            flow(o, 'BOTH', cfg['density'], 0.0, on=3, **hot)
+        else:
+            flow(o, 'SMOKE', cfg['density'], 0.0, on=3)
+        objs.append(o)
+    for i in range(n):
+        th = base + (math.tau * i / n + rnd.uniform(-.2, .2) if sh['even'] else rnd.uniform(0, math.tau))
+        if sh['ring']:   # a flat ring, tilted a little off the camera plane
+            ray = (math.cos(th), math.sin(th), math.cos(th) * tilt[0] + math.sin(th) * tilt[1])
+        else:
+            ph = rnd.uniform(-.45, .45); ray = (math.cos(th) * math.cos(ph), math.sin(th) * math.cos(ph), math.sin(ph))
+        reach = cfg['reach'] * rnd.uniform(*sh['reach']); radius = rnd.uniform(*sh['radius'])
+        objs.append(thrown(radius, ray, reach, cfg['travel'], 'SMOKE', cfg['density'], cfg['on'], rnd))
+        if fire:
+            objs.append(thrown(radius * .8, ray, reach, cfg['travel'], 'BOTH', cfg['density'], 3, rnd, **hot))
+    return objs
 
 
 def bake(dom):

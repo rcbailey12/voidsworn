@@ -3,6 +3,8 @@ rem Issue 353, explosion pictures step 1: bake route A and route B, time the bak
 rem   explosion_routes.bat MODE OUT
 rem MODE  smoke  a small fair sample: A at 64 cells, B at 64, 192 pixel cells (checks every step end to end, times the
 rem              64 cell sample) plus the switch-off look bench of every moment and the fleet against the baseline run
+rem       frame  the same small bakes (256 pixel cells), pack, the two moments benched and the sheet; nothing else. A fast
+rem              look at how far the gas reaches in its grid and at the fire, before the long bakes
 rem       full   the real bakes (A at 256 cells with noise, B at 128 cells with three seeds; 512 pixel cells), the two
 rem              moments benched in all five looks, and the scene gate (R116) with the switch off and on
 rem       repack no bakes: pack the bakes of an earlier run (BAKESRC, its OUT folder) again, then bench, sheet and gate
@@ -32,11 +34,9 @@ set "PY=%USERPROFILE%\Downloads\ComfyUI_windows_portable\python_embeded\python.e
 set "TMO=%R%\tools\pc\tmo.bat"
 if "%FX_SHIPS%"=="" set "FX_SHIPS=%VT%\bench351\repo\godot"
 if "%FIREPASS%"=="" set "FIREPASS=fire"
-if /i not "%MODE%"=="smoke" (
-  set "RA=256" & set "RB=128" & set "TILE=512" & set "LIM=5400"
-) else (
-  set "RA=64" & set "RB=64" & set "TILE=192" & set "LIM=1200"
-)
+set "RA=256" & set "RB=128" & set "TILE=512" & set "LIM=5400"
+if /i "%MODE%"=="smoke" set "RA=64" & set "RB=64" & set "TILE=192" & set "LIM=1200"
+if /i "%MODE%"=="frame" set "RA=64" & set "RB=64" & set "TILE=256" & set "LIM=1200"
 echo res A %RA% B %RB% tile %TILE% limit %LIM% s >> "%ST%"
 
 rem ---- the PC-built hulls and import cache a fresh clone lacks (copy only, never over newer files)
@@ -85,6 +85,7 @@ call :bench b_core "%O%\atlases_b\core"
 "%PY%" tools/pc/jobs/explosion_routes_sheet.py --runs today="%O%\bench_today" a_flash="%O%\bench_a_flash" a_core="%O%\bench_a_core" b_flash="%O%\bench_b_flash" b_core="%O%\bench_b_core" --out "%O%\explosion_routes_sheet.jpg" --strips "%O%\strips" > "%O%\sheet.txt" 2>&1
 echo sheet exit %ERRORLEVEL% %date% %time% >> "%ST%"
 
+if /i "%MODE%"=="frame" goto finish
 if /i not "%MODE%"=="smoke" goto gate
 rem ---- smoke mode: the switch off, every moment and the fleet, against the accepted baseline run (base_f, 499aae8)
 set "VS_FX_ATLAS="
