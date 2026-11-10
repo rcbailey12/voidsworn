@@ -9,7 +9,11 @@ extends "res://fx/test/vent_look_probe.gd"
 #
 # Run (Ryan's PC; needs godot/gen with the ship built from its recipe export):
 #   godot --path godot --fixed-fps 60 --resolution 960x540 --script res://fx/test/ship_fire_probe.gd
-# Env: everything vent_look_probe.gd reads (VENT_OUT, VENT_ONLY=after, VENT_RANGE, VENT_W, VENT_H, VENT_FPS), plus
+# Env: everything vent_look_probe.gd reads (VENT_OUT, VENT_ONLY=after, VENT_W, VENT_H, VENT_FPS), plus
+#      VENT_RANGE here is a comma list of game, battle, close (default all three): game is the game's own default camera
+#      (camera_rig.gd r 170, b 0.98), so at 1920x1080 the ship is drawn at the size it is really played (audit pass 2,
+#      finding 4); battle (r 62) and close (r 22) are the gas probe's framings.
+#      frames are written as JPEG (frame_*.jpg) so the clip and the strip can be built anywhere without a raw reader. Also
 #      FIRE_FAC (corsair), FIRE_CLS (Cruiser), FIRE_KIND (the effect kind, scatter), FIRE_WEAPON (the data.js weapon, scatter),
 #      FIRE_SLOT (0: the port battery), FIRE_SHOTS (4), FIRE_TFAC, FIRE_TCLS (the target).
 # Prints [fire] lines, the parent's [vent] lines and VENT_DONE.
@@ -28,7 +32,7 @@ func _ship_reset() -> void:
 	# which world side is the attacker's port: ask the ship itself (a port weapon hard point), so the target is never
 	# placed on a guess
 	var slot := int(_env("FIRE_SLOT", "0"))
-	var hps := A.find_children("hp_w%d_*" % slot, "Node3D", true, false)
+	var hps: Array = (A as Node).find_children("hp_w%d_*" % slot, "Node3D", true, false)
 	var z := 0.0
 	for h in hps:
 		z += ((h as Node3D).global_position - A.global_position).z
@@ -122,3 +126,50 @@ func _crop_cam(kind: String) -> void:
 		cam.t = A.global_position + Vector3(2.5, 0.3, side * 2.5)
 		cam.r = 11.0
 	cam.snap()
+
+
+# the game's default camera: same angles and distance as camera_rig.gd's home view, aimed between the two ships
+func _game_cam() -> void:
+	cam.a = -PI / 2.0
+	cam.b = 0.98
+	cam.r = 170.0
+	cam.t = Vector3(1, 0, side * 15.0)
+	cam.snap()
+
+
+func _variant(v: Array) -> void:
+	fx.vent_look = str(v[1])
+	print("[vent] variant %s look='%s'" % [v[0], fx.vent_look])
+	_ship_reset()
+	await _wait(0.3)
+	var picks: PackedStringArray = _env("VENT_RANGE", "game,battle,close").split(",")
+	for p in picks:
+		var rn := String(p).strip_edges()
+		if rn == "game":
+			_game_cam()
+		elif rn == "battle":
+			_battle()
+		elif rn == "close":
+			_close_cam()
+		else:
+			print("[fire] unknown range %s skipped" % rn)
+			continue
+		await _wait(0.3)
+		await _pass(String(v[0]), rn)
+		# let the smoke of this pass clear before the next one
+		await _wait(2.5)
+	var stray: Array = fx.stray_spawns()
+	if not stray.is_empty():
+		print("[vent] STRAY_FAIL %s stray weapon/vent spawns away from any ship: %s" % [v[0], str(stray.slice(0, 8))])
+	else:
+		print("[vent] stray none %s" % v[0])
+
+
+# JPEG frames, not raw RGB: the clip and the contact strip are built after staging, with no Pillow needed on the PC
+func _raw_frame() -> void:
+	var img := vp.get_texture().get_image()
+	if img == null or img.is_empty():
+		return
+	img.convert(Image.FORMAT_RGB8)
+	img.save_jpg(rec_dir.path_join("frame_%05d.jpg" % frame_i), 0.9)
+	frame_i += 1
