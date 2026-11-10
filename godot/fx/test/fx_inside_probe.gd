@@ -18,6 +18,7 @@ const FX := preload("res://fx/fx.gd")
 const SV := preload("res://render/ship_view.gd")
 const LOOK := preload("res://render/look.gd")
 const CAMRIG := preload("res://render/camera_rig.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 
 var vp: SubViewport
 var world: Node3D
@@ -78,6 +79,8 @@ func _run() -> void:
 		var tag := ("%s_%s" % [fac, cls]).to_lower().replace("-", "")
 		var big := cls != "Frigate"
 		var sv: Node3D = _box(fac, cls) if box else _ship(fac, cls, big)
+		if not box and PG.stop_if_any():
+			return
 		if not warmed:
 			await fx.warmup(cam)
 			warmed = true
@@ -160,7 +163,7 @@ func _run() -> void:
 		for i in 240:
 			await _step()
 	print("[inside] done")
-	quit(0)
+	PG.finish(0)
 
 
 func _ship(fac: String, cls: String, big: bool) -> Node3D:
@@ -231,6 +234,8 @@ func _until(t: float) -> void:
 
 
 func _shot(from: Vector3, at: Vector3, name: String) -> void:
+	if PG.stop_if_any():
+		return
 	cam.current = true
 	fx.camera = cam
 	cam.look_at_from_position(from, at, Vector3.UP if absf((at - from).normalized().y) < 0.95 else Vector3.RIGHT)
@@ -241,6 +246,8 @@ func _shot(from: Vector3, at: Vector3, name: String) -> void:
 
 
 func _battle(at: Vector3, name: String) -> void:
+	if PG.stop_if_any():
+		return
 	rig.a = -PI / 2.0
 	rig.b = 0.98
 	rig.r = 170.0

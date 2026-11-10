@@ -2,6 +2,7 @@ extends SceneTree
 # Probe: fire rockets and a torpedo between two box ships and print the projectiles' positions over time.
 
 const FX := preload("res://fx/fx.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 
 
 func _init() -> void:
@@ -49,6 +50,8 @@ func _run() -> void:
 	fx.setup({"quality": "high"})
 	fx.add_ship("A", a, {"faction": OS.get_environment("PFAC") if OS.get_environment("PFAC") != "" else "corsair", "size": 1.3})
 	fx.add_ship("B", b, {"faction": "voidsworn", "size": 1.3})
+	if PG.stop_if_any():
+		return
 	var r: Dictionary = fx.volley("A", "torp", "B", {"weapon_id": "torp", "shots": [true, true], "hits": [{"shield": 5, "hull": 0}, {"shield": 5, "hull": 0}], "pd": 1})
 	print("volley ", r)
 	for i in 150:
@@ -62,4 +65,4 @@ func _run() -> void:
 			for p in list:
 				s += " [%s t0=%.2f t1=%.2f pos=%s mesh=%s]" % [p["lk"], p["t0"], p["t1"], str(p.get("pos", "-")), str(p["mesh"] != null and is_instance_valid(p["mesh"]))]
 			print(s)
-	quit()
+	PG.finish(0)

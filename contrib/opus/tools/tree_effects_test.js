@@ -65,16 +65,17 @@ const WANT = {
   t_heg_cruisers: 'reyes:A:0:0', t_heg_launchorder: 'reyes:A:0:1', t_heg_secondwave: 'reyes:A:1:0', t_heg_rehearsed: 'reyes:A:1:1',
   t_heg_fullgroup: 'reyes:A:2:0', t_heg_escorts: 'reyes:A:2:1', t_heg_onetarget: 'reyes:cap:0', t_heg_standinggroup: 'reyes:cap:1',
   t_heg_columnstraight: 'maren:A:0:0', t_heg_overflow: 'maren:A:0:1', t_heg_bell: 'maren:A:1:0', t_heg_rotation: 'maren:A:1:1',
-  t_heg_columnendures: 'maren:A:2:0', t_heg_filedarmor: 'maren:A:2:1', t_heg_standardcovers: 'maren:cap:0', t_heg_flagshipstandard: 'maren:cap:1'
+  t_heg_columnendures: 'maren:A:2:0', t_heg_filedarmor: 'maren:A:2:1', t_heg_standardcovers: 'maren:cap:0', t_heg_flagshipstandard: 'maren:cap:1',
+  // job 7a: the first 26 waiting Glasswrights and Sunward rows
+  t7a_flightpaths: 'aelith:A:0:0', t7a_replay: 'aelith:A:1:0', t7a_starlings: 'aelith:A:1:1', t7a_flightcast: 'aelith:cap:0', t7a_forgeahead: 'aelith:cap:1',
+  t7a_onelens: 'vaelen:A:0:1', t7a_lighttogether: 'vaelen:A:1:0', t7a_sunlens: 'vaelen:cap:0',
+  t7a_mirroraside: 'thorne:A:1:0', t7a_splitthree: 'thorne:A:1:1', t7a_fleetelsewhere: 'thorne:cap:0',
+  t7a_weakside: 'mirelle:A:0:0', t7a_prismsface: 'mirelle:A:0:1', t7a_lensrotates: 'mirelle:A:1:1', t7a_facetlit: 'mirelle:cap:1',
+  t7a_ledgerarcs: 'vex:A:0:0', t7a_debtdue: 'vex:A:2:1', t7a_grandledger: 'vex:cap:0', t7a_lastaccount: 'vex:cap:1',
+  t7a_torpfirst: 'malek:A:1:0', t7a_rearreckoning: 'malek:A:1:1', t7a_salvoend: 'malek:cap:0',
+  t7a_accountsplits: 'ashgrove:A:1:0', t7a_screensshift: 'thale:A:0:1', t7a_wallearly: 'thale:A:1:0', t7a_wallmoves: 'thale:cap:1'
 };
-const INERT = ['aelith:A:0:0', 'aelith:A:1:0', 'aelith:A:1:1', 'aelith:cap:1', 'aelith:cap:0',
-  'vaelen:A:0:1', 'vaelen:A:1:0', 'vaelen:cap:0', 'thorne:A:1:0', 'thorne:A:1:1', 'thorne:cap:0',
-  'mirelle:A:0:0', 'mirelle:A:0:1', 'mirelle:A:1:1', 'mirelle:cap:1',
-  // Sunward x and c rows wait for the Muse text pass (#311)
-  'vex:A:0:0', 'vex:A:2:1', 'vex:cap:0', 'vex:cap:1',
-  'malek:A:1:0', 'malek:A:1:1', 'malek:cap:0',
-  'ashgrove:A:1:0',
-  'thale:A:0:1', 'thale:A:1:0', 'thale:cap:1',
+const INERT = [
   // Eclipse x and c rows wait for the Muse text pass (#311)
   'nekhet:A:0:1', 'nekhet:A:1:0', 'nekhet:A:1:1', 'nekhet:B:0:0',
   'sekhmar:A:1:1', 'sekhmar:B:0:0',
@@ -101,7 +102,7 @@ try {
     const stats = JSON.parse(last.state).b.treeStats || {};
     if (!(stats[key] >= 1)) { console.log('FAIL ' + name + ': ' + key + ' did not fire (treeStats ' + JSON.stringify(stats) + ')'); bad++; }
   }
-  // the Glasswrights x and c rows wait for the Muse text pass (#311): they must stay inert
+  // the Eclipse and Chorus x and c rows wait for job 7b: they must stay inert
   const src = fs.readFileSync(path.join(ROOT, 'data.js'), 'utf8');
   for (const key of INERT) if (src.includes('"' + key + '":')) { console.log('FAIL inert row has a TREE_FX entry: ' + key); bad++; }
   // The three Hullbreakers rows run 2 corrected: prove the effect, not just the callout.
@@ -210,6 +211,32 @@ try {
     { const rs = R('t_heg_stdforward'); let fwd = false; if (rs) for (let i = 1; i < rs.length; i++) { const a = S(rs[i - 1]), b = S(rs[i]); if (!(b.b.treeStats || {})['kassar:C:0:1']) continue; const fg = b.units.find(u => u.pflag && !u.dead); if (!fg) continue; for (const u of b.units) { if (u.side !== 'player' || u.isSq) continue; const o = a.units.find(x => x.id === u.id); if (!o || (u.q === o.q && u.r === o.r)) continue; if (hd(u, fg) <= hd(o, fg)) { fwd = true; break; } } if (fwd) break; } ok('Standard Borne Forward', fwd, 'a move toward the flagship gets the extra hex'); }
     { const rs = R('t_heg_sharedsolution'); let best = false; if (rs) { const s = S(rs[0]); const fg = s.units.find(u => u.anchor && u.side === 'player'); if (fg) { const sr = s.b.syncR && s.b.syncR.player ? s.b.syncR.player : 3; const near = s.units.filter(u => u.side === 'player' && !u.isSq && !u.dead && hd(u, fg) <= sr); best = near.length >= 2; } } ok('Shared Solution', !!(best && (S(rs[0]).b.treeStats || {})['kassar:A:1:0']), 'two or more synced ships share the best aim'); }
     { const rs = R('t_heg_colddrill'); let cold = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['kassar:A:1:1']) continue; if (s.units.some(u => u.side === 'player' && !u.isSq && (u.hexMoved || 0) === 0)) { cold = true; break; } } ok('Cold Drill', cold, 'a synced ship that has not moved fires with the drill aim'); }
+  }
+  { // Job 7a: prove the counts, limits and timing the final texts promise.
+    const R = name => { const out = path.join(tmp, 'j7a_' + name + '.jsonl'); const rr = spawnSync(process.execPath, [GOLDEN, 'scenario', name, out], { cwd: ROOT, encoding: 'utf8' }); if (rr.status !== 0) return null; return fs.readFileSync(out, 'utf8').trim().split('\n').map(l => JSON.parse(l)); };
+    const S = r => JSON.parse(r.state);
+    const ok = (name, cond, msg) => { if (cond) console.log('PASS ' + name + ': ' + msg); else { console.log('FAIL ' + name + ': ' + msg); bad++; } };
+    const keyStats = (rs, key) => { let p = 0, m = 0; for (const r of rs) { const v = (S(r).b.treeStats || {})[key] || 0; m = Math.max(m, v - p); p = v; } return { total: p, maxOneRound: m }; };
+    const cmdIdx = rs => { for (let i = 0; i < rs.length; i++) if (rs[i].actor === 'command player') return i; return -1; };
+    { const rs = R('t7a_flightcast'); let cap = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['aelith:cap:0']) continue; if (Object.values(s.b.tr.wingCap || {}).some(n => n >= 2)) { cap = true; break; } } ok('Flight Cast Perfectly', cap, 'a second wing hit on one target passes its shields'); }
+    { const rs = R('t7a_forgeahead'); let later = false; if (rs) { const ci = cmdIdx(rs); const cr = ci >= 0 ? S(rs[ci]).b.round : 0; for (let i = ci + 1; i < rs.length; i++) { const s = S(rs[i]); if (!(s.b.treeStats || {})['aelith:cap:1']) continue; if (s.b.round > cr && String(rs[i].actor).startsWith('fire') && s.units.some(u => u.side === 'player' && u.isSq)) { later = true; break; } } } ok('The Forge Casts Ahead', later, 'one extra wing per carrier strikes again at the start of the next round'); }
+    { const rs = R('t7a_onelens'); let one = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['vaelen:A:0:1']) continue; if (s.b.tr.oneLens && s.b.tr.oneLens.ship && s.b.tr.oneLens.tgt) { one = true; break; } } ok('One Lens, One Target', one, 'one chosen ship fires its volley at one named target'); }
+    { const rs = R('t7a_sunlens'); let first = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['vaelen:cap:0']) continue; if (s.b.tr.sunTarget && s.b.tr.sunFirstDone === 1) { first = true; break; } } ok('Sun Through One Lens', first, 'the concentrated volley stops at the first hit on the target shields'); }
+    { const rs = R('t7a_mirroraside'); let used = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['thorne:A:1:0']) continue; if (s.units.some(u => u.side === 'player' && !u.isSq && u.treeDiveUsed === 1)) { used = true; break; } } ok('The Mirror Steps Aside', used, 'one enemy-held hex is dived during the scatter'); }
+    { const rs = R('t7a_splitthree'); let full = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['thorne:A:1:1']) continue; if (s.units.some(u => u.side === 'player' && !u.isSq && u.postFire && (u.postMp || 0) >= 1)) { full = true; break; } } ok('Light Split Three Ways', full, 'the ship keeps movement to spend after it fires'); }
+    { const rs = R('t7a_fleetelsewhere'); const k = rs && keyStats(rs, 'thorne:cap:0'); let once = false; if (rs) for (const r of rs) { const s = S(r); if (s.b.tr.fleetElsewhere === 1) { once = true; break; } } ok('The Fleet Is Elsewhere', !!(k && k.total >= 1 && k.maxOneRound <= 1 && once), 'the first enemy shot grants movement once in the battle'); }
+    { const rs = R('t7a_weakside'); let low = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['mirelle:A:0:0']) continue; if (!s.b.treeWeakShip) continue; const caps = s.units.filter(u => u.side === 'player' && !u.isSq && !u.dead); const min = caps.slice().sort((a, b) => (a.sh || []).reduce((n, v) => n + v, 0) - (b.sh || []).reduce((n, v) => n + v, 0) || (a.id < b.id ? -1 : 1))[0]; if (min && min.id === s.b.treeWeakShip.id) { low = true; break; } } ok('Light Bent to the Weak Side', low, 'the ship with the lowest shields takes the cut'); }
+    { const rs = R('t7a_prismsface'); let over = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['mirelle:A:0:1']) continue; if (s.units.some(u => u.side === 'player' && !u.isSq && u.shMax > 0 && (u.sh || []).some(v => v > u.shMax))) { over = true; break; } } ok('Prisms Face the Fire', over, 'a ship facing its nearest enemy carries shields above its maximum'); }
+    { const rs = R('t7a_lensrotates'); let ev = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['mirelle:A:1:1']) continue; if (s.units.some(u => u.side === 'player' && !u.isSq && (u.evBuff || 0) >= 10)) { ev = true; break; } } ok('The Lens Rotates', ev, 'a facing change gives +10 evasion until its next turn'); }
+    { const rs = R('t7a_facetlit'); let temp = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['mirelle:cap:1']) continue; if (s.units.some(u => u.side === 'player' && !u.isSq && (u.tempHp || 0) > 0)) { temp = true; break; } } ok('Every Facet Lit', temp, 'a warded ship gains temporary hull'); }
+    { const rs = R('t7a_debtdue'); let later = false; if (rs) { const ci = cmdIdx(rs); const cr = ci >= 0 ? S(rs[ci]).b.round : 0; for (const r of rs) { const s = S(r); if ((s.b.treeStats || {})['vex:A:2:1'] && s.b.round > cr) { later = true; break; } } } ok('Debt Comes Due', later, 'the delayed volley fires at the start of the next round'); }
+    { const rs = R('t7a_grandledger'); let once = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['vex:cap:0']) continue; if (s.b.tr.grandUsed === 1) { once = true; break; } } ok('The Grand Ledger', once, 'the concentrated fire happens once in the battle'); }
+    { const rs = R('t7a_lastaccount'); const k = rs && keyStats(rs, 'vex:cap:1'); ok('The Last Account', !!(k && k.total >= 1), 'a ship that destroyed its volley target fires again'); }
+    { const rs = R('t7a_torpfirst'); let instant = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['malek:A:1:0']) continue; if (!(s.b.torps || []).some(t => t.side === 'player' && t.r === s.b.round)) { instant = true; break; } } ok('Torpedoes Run First', instant, 'no salvo from the salvo round is left travelling'); }
+    { const rs = R('t7a_salvoend'); let twice = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['malek:cap:0']) continue; const by = {}; for (const t of (s.b.torps || [])) if (t.side === 'player') by[t.by] = (by[t.by] || 0) + 1; if (Object.values(by).some(n => n >= 2)) { twice = true; break; } } ok('Salvo Without End', twice, 'one ship fires a second torpedo in the salvo round'); }
+    { const rs = R('t7a_screensshift'); let pair = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['thale:A:0:1']) continue; if (s.b.treeShiftUp && s.b.treeShiftDown && s.b.treeShiftUp.id !== s.b.treeShiftDown.id) { pair = true; break; } } ok('Screens Where the Debt Falls', pair, 'one ship takes more of the wall and one other takes less'); }
+    { const rs = R('t7a_wallearly'); let early = false; if (rs) for (const r of rs) { const s = S(r); if (!(s.b.treeStats || {})['thale:A:1:0']) continue; if (s.b.cmd && s.b.treeWallEarly === s.b.cmd.round) { early = true; break; } } ok('Wall Declared Early', early, 'the wall is 10 points stronger when declared before any ship acts'); }
+    { const rs = R('t7a_wallmoves'); let up = false; if (rs) { const ci = cmdIdx(rs); if (ci > 0) { const a = S(rs[ci - 1]), b = S(rs[ci]); const caps = b.units.filter(u => u.side === 'player' && !u.isSq && !u.dead); up = caps.length > 0 && caps.every(u => { const o = a.units.find(x => x.id === u.id); return !o || (u.mp || 0) >= (o.mp || 0) + 1; }); } } ok('The Wall That Moves', up, 'every ship gains +1 movement while the wall is active'); }
   }
   }
 } finally {

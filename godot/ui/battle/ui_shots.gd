@@ -7,6 +7,8 @@ extends Node
 # and every top bar button (Grid (Z) included) must sit inside the top bar. Prints [ui-check] lines and writes
 # ui_check.txt in the folder. Presentation only: it never calls the rules except to read.
 
+const PG := preload("res://render/placeholder_guard.gd")
+
 var b
 var dir := ""
 var lines: Array = []
@@ -102,6 +104,8 @@ func _r(r: Rect2) -> String:
 
 
 func _shot(name: String) -> void:
+	if PG.stop_if_any():
+		return
 	await get_tree().create_timer(0.7).timeout
 	_check(name)
 	await b._snap(name)

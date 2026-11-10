@@ -5,6 +5,7 @@ extends SceneTree
 
 const FX := preload("res://fx/fx.gd")
 const SV := preload("res://render/ship_view.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 const BREACH := preload("res://fx/fx_breach.gd")
 const LOOKS := [["lance", 3], ["plasma", 2], ["macro", 3], ["gauss", 3], ["torp", 3], ["flak", 2], ["spine", 2], ["ion", 2], ["board", 2], ["ram", 3]]
 
@@ -41,6 +42,8 @@ func _run() -> void:
 	var pf := _env("PROBE_FAC", "corsair")
 	var pc := _env("PROBE_CLS", "Battle-barge")
 	sv.setup({"id": "C", "fac": pf, "cls": pc, "facing": 0}, Vector3.ZERO)
+	if PG.stop_if_any():
+		return
 	var fx = FX.new()
 	world.add_child(fx)
 	fx.manual = true
@@ -80,4 +83,4 @@ func _run() -> void:
 		res2 = BREACH.compute(_job(s, ents))
 		best2 = minf(best2, (Time.get_ticks_usec() - t2) / 1000.0)
 	print("COST stage %d all sections (%d entries) %.0f ms, tris after %d, phases %s" % [st, ents.size(), best2, _tris(res2), str(res2.get("phases", []))])
-	quit()
+	PG.finish(0)

@@ -1,6 +1,7 @@
 extends SceneTree
 # Forward+ GPU/CPU frame probe: 20 box ships, mixed staged kills, pooled aftermath.
 const FX := preload("res://fx/fx.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 var out := ""
 
 func _init() -> void:
@@ -49,6 +50,8 @@ func _run() -> void:
 		ship.add_child(mi)
 		fx.add_ship(str(i), ship, {"faction": "corsair", "cls": "Cruiser" if i % 2 == 0 else "Frigate", "size": 0.8 if i % 2 == 0 else 0.55, "meshes": [mi]})
 	await fx.warmup(cam)
+	if PG.stop_if_any():
+		return
 	# Prebuild all cuts before measuring the first death.
 	for frame in 540:
 		fx.step(1.0 / 60.0)
@@ -83,4 +86,4 @@ func _run() -> void:
 	print(line)
 	FileAccess.open(out.path_join("fleet.txt"), FileAccess.WRITE).store_line(line)
 	fx.release()
-	quit(0)
+	PG.finish(0)

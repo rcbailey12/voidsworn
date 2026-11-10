@@ -4,6 +4,7 @@ const FX := preload("res://fx/fx.gd")
 const SV := preload("res://render/ship_view.gd")
 const LOOK := preload("res://render/look.gd")
 const RIG := preload("res://render/camera_rig.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 var out: String
 var vp: SubViewport
 var world: Node3D
@@ -71,6 +72,8 @@ func _run() -> void:
 			for zoom in ["battle", "close"]:
 				if not OS.get_environment("DEATH_ZOOM").is_empty() and zoom != OS.get_environment("DEATH_ZOOM"): continue
 				var sv := _ship("C", cls, Vector3.ZERO, spec[0])
+				if PG.stop_if_any():
+					return
 				var s = fx.ship("C")
 				for i in 300: await _step()
 				while s.has_meta("cut_task"): await _step()
@@ -92,11 +95,13 @@ func _run() -> void:
 	fx.release()
 	SV.clear_static()
 	FX.clear_static()
-	quit(0)
+	PG.finish(0)
 
 func _interiors() -> void:
 	for faction in ["voidsworn", "hegemony", "corsair", "deathless", "ithar", "chorus"]:
 		var sv := _ship("C", "Cruiser" if faction != "chorus" else "Frigate", Vector3.ZERO, faction)
+		if PG.stop_if_any():
+			return
 		var s = fx.ship("C")
 		for i in 300: await _step()
 		while s.has_meta("cut_task"): await _step()
@@ -125,6 +130,8 @@ func _interiors() -> void:
 func _profile() -> void:
 	for i in 20:
 		_ship(str(i), "Battleship" if i == 7 else ("Cruiser" if i % 3 == 0 else "Frigate"), Vector3((i % 5 - 2) * 30.0, 0, (i / 5 - 1.5) * 26.0))
+	if PG.stop_if_any():
+		return
 	await fx.warmup(cam)
 	for i in 600: await _step()
 	for s in fx.ships.values():

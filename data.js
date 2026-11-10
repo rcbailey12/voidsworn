@@ -876,7 +876,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Flight Paths in the Glass",
-              "d": "record each extra wing's strike path before launching; a wing that follows its recorded path exactly strikes at +15%."
+              "d": "an extra wing that strikes the target its carrier last fired at gains +15% damage."
             },
             {
               "n": "Cast Twice in Light",
@@ -886,11 +886,11 @@ const LINEAGE_TREES={
           [
             {
               "n": "The Replay Corrects",
-              "d": "after the first strike resolves, each extra wing may be retargeted freely for its strike-again, using what the glass recorded."
+              "d": "an extra wing's strike again against a target already hit this round gains +10% damage."
             },
             {
               "n": "Starlings in Formation",
-              "d": "extra wings that strike in the same order as their carriers are arranged gain +10 aim."
+              "d": "extra wings that strike the same target as another extra wing gain +10 aim."
             }
           ],
           [
@@ -939,11 +939,11 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "Flight Cast Perfectly",
-        "d": "during Starling flight, all wings striking the same target combine their attacks into a single simultaneous strike that ignores point defence and deals +25% damage to the target's most damaged section."
+        "d": "during Starling flight, wings striking the same target ignore its flak, its shields stop only the first wing hit, and wing hits after the first deal +25% damage to its most damaged section."
       },
       {
         "n": "The Forge Casts Ahead",
-        "d": "after the Command, one extra wing per carrier stays aloft and repeats its recorded strike at the start of next round."
+        "d": "after the Command, one extra wing per carrier strikes the same target again at the start of next round, at +15% damage."
       }
     ]
   },
@@ -959,13 +959,13 @@ const LINEAGE_TREES={
             },
             {
               "n": "One Lens, One Target",
-              "d": "a ship may fire its volley as a single shot at +25% damage instead of firing every gun."
+              "d": "choose one of your ships: it fires its whole volley at a single target you name, and its shots gain +25% damage against that target."
             }
           ],
           [
             {
               "n": "Light Arrives Together",
-              "d": "you may hold the volley until all your ships have moved, and fire lance shots in any order you choose."
+              "d": "during the volley, a shot at a target already hit by one of your other ships this round gains +15% damage."
             },
             {
               "n": "The Recorded Angle",
@@ -1018,7 +1018,7 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "Sun Through One Lens",
-        "d": "Burning glass may concentrate every ship's volley on one target, resolving as a single combined strike that ignores range penalties."
+        "d": "Burning glass may concentrate every ship's volley on one target; its shields stop only the first hit, and no shot suffers range falloff."
       },
       {
         "n": "The Flaw, Corrected Forever",
@@ -1044,11 +1044,11 @@ const LINEAGE_TREES={
           [
             {
               "n": "The Mirror Steps Aside",
-              "d": "during the scatter, a ship may pass through one enemy-held hex without stopping."
+              "d": "during the scatter, a ship may dive under one enemy-held hex at no extra cost."
             },
             {
               "n": "Light Split Three Ways",
-              "d": "during the scatter, a ship may split its movement, half before it fires and half after."
+              "d": "during the scatter, a ship may move its full remaining movement after it fires."
             }
           ],
           [
@@ -1097,7 +1097,7 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "The Fleet Is Elsewhere",
-        "d": "Scatter the light may be declared after the first enemy ship fires; your ships move immediately, interrupting the enemy turn."
+        "d": "the first time an enemy fires at your fleet this battle, every ship gains +2 movement and may turn once for free."
       },
       {
         "n": "A Hundred False Hulls",
@@ -1113,11 +1113,11 @@ const LINEAGE_TREES={
           [
             {
               "n": "Light Bent to the Weak Side",
-              "d": "you may give one ship's shield refill to the friendly ship with the lowest shields instead."
+              "d": "during the ward, the friendly ship with the lowest shields takes 20% less hull damage until the start of next round."
             },
             {
               "n": "Prisms Face the Fire",
-              "d": "a ship facing its nearest enemy refills +25% more shield during the ward."
+              "d": "a ship facing its nearest enemy gains shields above its maximum equal to 25% of its maximum shields during the ward."
             }
           ],
           [
@@ -1127,7 +1127,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "The Lens Rotates",
-              "d": "during the ward, a ship may change its facing after moving without losing the damage reduction."
+              "d": "during the ward, a ship that changes its facing gains +10 evasion until its next turn."
             }
           ],
           [
@@ -1180,7 +1180,7 @@ const LINEAGE_TREES={
       },
       {
         "n": "Every Facet Lit",
-        "d": "during the ward, shield strength refilled beyond a ship's maximum becomes temporary hull of hard light, up to +20%."
+        "d": "during the ward, each warded ship gains temporary hull equal to 20% of its maximum shields."
       }
     ]
   },
@@ -1192,7 +1192,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Ledger of Arcs",
-              "d": "a ship firing its volley from a broadside arc may split that volley between two targets in the same arc."
+              "d": "a ship firing its volley from a broadside arc gains +15% damage."
             },
             {
               "n": "Held in the Account",
@@ -1216,7 +1216,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Debt Comes Due",
-              "d": "you may delay the whole volley to the start of next round, when it fires before any enemy ship acts."
+              "d": "you may delay the whole volley to the start of next round; when it fires, every ship gains +20% damage."
             }
           ]
         ]
@@ -1255,11 +1255,11 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "The Grand Ledger",
-        "d": "once per battle, when Fire for effect is used, choose one enemy; every ship that can reach it fires, all damage is summed, and the target's shields are applied once to the total."
+        "d": "once per battle, when Fire for effect is used, choose one enemy; every ship that can reach it fires at it, and its shields stop only the first hit."
       },
       {
         "n": "The Last Account",
-        "d": "Fire for effect fires at the very start of the round, before movement, and each ship picks its own target."
+        "d": "after Fire for effect resolves, each ship that destroyed its target with the free volley fires one weapon again at a new target."
       }
     ]
   },
@@ -1281,11 +1281,11 @@ const LINEAGE_TREES={
           [
             {
               "n": "Torpedoes Run First",
-              "d": "during the salvo round, torpedoes resolve before all gun fire, so their kills open lanes for the fleet guns."
+              "d": "torpedoes fired during the salvo round strike at once instead of travelling."
             },
             {
               "n": "Rear Arc Reckoning",
-              "d": "during the salvo round, rear arc hits from any weapon, not only torpedoes, gain the hunter-killer rear arc bonus."
+              "d": "during the salvo round, rear arc hits from any weapon gain +15% damage."
             }
           ],
           [
@@ -1334,7 +1334,7 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "Salvo Without End",
-        "d": "Hunter's salvo reloads all torpedoes a second time at the end of the round."
+        "d": "during the salvo round, each ship may fire one torpedo a second time at half damage."
       },
       {
         "n": "The Named Prey Falls",
@@ -1360,7 +1360,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "The Account Splits",
-              "d": "each extra wing may strike a different target than the rest of its carrier's wings."
+              "d": "an extra wing that strikes a different target than its carrier's other wings gains +15% damage."
             },
             {
               "n": "Held in Reserve",
@@ -1433,13 +1433,13 @@ const LINEAGE_TREES={
             },
             {
               "n": "Screens Where the Debt Falls",
-              "d": "you may move up to half of one ship screen refill to a different friendly ship before the wall resolves."
+              "d": "you may shift the wall's protection: one chosen ship takes 20 points more hull damage reduction, and one other ship takes 20 points less."
             }
           ],
           [
             {
               "n": "Wall Declared Early",
-              "d": "Iron wall may be declared at the start of the round, before any ship moves or fires."
+              "d": "if Iron wall is declared before any of your ships has moved or fired this round, its damage reduction is 10 points stronger this round."
             },
             {
               "n": "Oath of Stillness",
@@ -1496,7 +1496,7 @@ const LINEAGE_TREES={
       },
       {
         "n": "The Wall That Moves",
-        "d": "during Iron wall, your ships may move at full speed without losing the damage reduction."
+        "d": "while Iron wall is active, your ships gain +1 movement."
       }
     ]
   },
@@ -2772,20 +2772,36 @@ const TREE_FX={
   "aelith:A:0:1":{k:"castTwice",n:.5},
   "aelith:A:2:0":{k:"flakSkip"},
   "aelith:A:2:1":{k:"lensAloft"},
+  // Job 7a: the waiting Glasswrights rows (Muse text pass, PR 324).
+  "aelith:A:0:0":{k:"flightPaths",n:.15},
+  "aelith:A:1:0":{k:"replay",n:.1},
+  "aelith:A:1:1":{k:"starlings",n:10},
+  "aelith:cap:0":{k:"flightCast",n:.25},
+  "aelith:cap:1":{k:"forgeAhead",n:.15},
   "vaelen:A:0:0":{k:"longFocus",n:.2},
   "vaelen:A:1:1":{k:"recordedAngle"},
   "vaelen:A:2:0":{k:"burnFlaw"},
   "vaelen:A:2:1":{k:"longLight",n:2},
   "vaelen:cap:1":{k:"flawForever",n:.15},
+  "vaelen:A:0:1":{k:"oneLens",n:.25},
+  "vaelen:A:1:0":{k:"lightTogether",n:.15},
+  "vaelen:cap:0":{k:"sunLens"},
   "thorne:A:0:0":{k:"twoImages",n:20},
   "thorne:A:0:1":{k:"anglesRecorded",n:10},
   "thorne:A:2:0":{k:"refraction",n:6},
   "thorne:A:2:1":{k:"mirrorTurns"},
   "thorne:cap:1":{k:"falseHulls",n:2},
+  "thorne:A:1:0":{k:"mirrorAside"},
+  "thorne:A:1:1":{k:"splitThree"},
+  "thorne:cap:0":{k:"fleetElsewhere",n:2},
   "mirelle:A:1:0":{k:"rechargeLit"},
   "mirelle:A:2:0":{k:"glassCorrected",n:.15},
   "mirelle:A:2:1":{k:"hardLight"},
   "mirelle:cap:0":{k:"wardGlass",n:20},
+  "mirelle:A:0:0":{k:"weakSide",n:.2},
+  "mirelle:A:0:1":{k:"prismsFace",n:.25},
+  "mirelle:A:1:1":{k:"lensRotates",n:10},
+  "mirelle:cap:1":{k:"facetLit",n:.2},
   "aelith:B:0:0":{k:"deployRead"},"aelith:B:0:1":{k:"castCorrected"},"aelith:C:0:0":{k:"flagshipLens",n:10},"aelith:C:0:1":{k:"firstLight",n:10},
   "vaelen:B:0:0":{k:"deployRead"},"vaelen:B:0:1":{k:"castCorrected"},"vaelen:C:0:0":{k:"flagshipLens",n:10},"vaelen:C:0:1":{k:"firstLight",n:10},
   "thorne:B:0:0":{k:"deployRead"},"thorne:B:0:1":{k:"castCorrected"},"thorne:C:0:0":{k:"flagshipLens",n:10},"thorne:C:0:1":{k:"firstLight",n:10},
@@ -2812,6 +2828,18 @@ const TREE_FX={
   "thale:A:2:0":{k:"unpaid",n:.2},
   "thale:A:2:1":{k:"wallAnswers"},
   "thale:cap:0":{k:"ironTestament"},
+  // Job 7a: the waiting Sunward Crusade rows (Muse text pass, PR 324).
+  "vex:A:0:0":{k:"ledgerArcs",n:.15},
+  "vex:A:2:1":{k:"debtDue",n:.2},
+  "vex:cap:0":{k:"grandLedger"},
+  "vex:cap:1":{k:"lastAccount"},
+  "malek:A:1:0":{k:"torpFirst"},
+  "malek:A:1:1":{k:"rearReckoning",n:.15},
+  "malek:cap:0":{k:"salvoEnd"},
+  "ashgrove:A:1:0":{k:"accountSplits",n:.15},
+  "thale:A:0:1":{k:"screensShift",n:.2},
+  "thale:A:1:0":{k:"wallEarly",n:.1},
+  "thale:cap:1":{k:"wallMoves",n:1},
   "vex:B:0:0":{k:"swornDeploy"},"vex:B:0:1":{k:"debtsReserve"},"vex:C:0:0":{k:"flagshipLedger"},"vex:C:0:1":{k:"standardReroll"},
   "malek:B:0:0":{k:"swornDeploy"},"malek:B:0:1":{k:"debtsReserve"},"malek:C:0:0":{k:"flagshipLedger"},"malek:C:0:1":{k:"standardReroll"},
   "ashgrove:B:0:0":{k:"swornDeploy"},"ashgrove:B:0:1":{k:"debtsReserve"},"ashgrove:C:0:0":{k:"flagshipLedger"},"ashgrove:C:0:1":{k:"standardReroll"},
