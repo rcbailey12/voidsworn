@@ -9,6 +9,8 @@ extends Node
 #   bot <runs>      plays <runs> whole runs through the screens with the parity bot and quits; exit code 1 on any problem
 #   rollout <dir>   issue #344 (UI rollout 1, Lime Tactical): plays one seeded run through the campaign's own actions and
 #                   saves every campaign-map and between-battle page by name (see _rollout); add --no-tips for clean shots
+#   briefing <dir>  the campaign map's Briefing layout (FINDINGS R165): the same seeded run, the six pictures the brief asks
+#                   for (see _briefing)
 
 const CampaignScript = preload("res://campaign/campaign.gd")
 const UIScript = preload("res://ui/campaign/campaign_ui.gd")
@@ -34,6 +36,8 @@ func _ready() -> void:
 		C.save_path = "user://campaign_shots_save.json"; _mapshots(a[1]); return
 	if a.size() >= 2 and a[0] == "rollout":
 		C.save_path = "user://ui344_rollout_save.json"; _rollout(a[1]); return
+	if a.size() >= 2 and a[0] == "briefing":
+		C.save_path = "user://ui344_rollout_save.json"; _briefing(a[1]); return
 	if a.size() >= 2 and a[0] == "bot":
 		C.save_path = "user://campaign_bot_save.json"; _bot(int(a[1])); return
 	JSM.rnd_seed(int(Time.get_unix_time_from_system()) & 0xFFFFFFFF)   # the browser seeds its PRNG at random on load
@@ -244,8 +248,7 @@ func _ro_avail_types() -> Array:
 		var n = C.findNode(id)
 		if n != null: out.append(str(n["type"]))
 	return out
-func _rollout(dir: String) -> void:
-	_ro_dir = dir; DirAccess.make_dir_recursive_absolute(dir)
+func _ro_window() -> void:
 	# the project opens maximised (window/size/mode 2), which ignores --resolution: --win WxH sets the window to that exact size
 	var a := OS.get_cmdline_user_args(); var wi = a.find("--win")
 	if wi >= 0 and wi + 1 < a.size() and DisplayServer.get_name() != "headless":
@@ -256,6 +259,9 @@ func _rollout(dir: String) -> void:
 				win.mode = Window.MODE_WINDOWED; await _frames(5)
 				win.size = want; win.position = Vector2i(0, 0); await _frames(10)
 				if Vector2i(get_viewport().get_visible_rect().size) == want: break
+func _rollout(dir: String) -> void:
+	_ro_dir = dir; DirAccess.make_dir_recursive_absolute(dir)
+	await _ro_window()
 	JSM.rnd_seed(344)
 	C.titleScreen(); C.act("newRunScreen"); C.act("startRun")
 	if C.page.get("kind") == "aspect": C.act("pickAspect", C.W["aspOffer"][0])
@@ -296,6 +302,79 @@ func _rollout(dir: String) -> void:
 		f.store_string("seed 344, %d steps, window %s\n" % [steps, str(get_viewport().get_visible_rect().size)] + "\n".join(PackedStringArray(_ro_log)) + "\nnot reached: " + (", ".join(PackedStringArray(missing)) if missing.size() > 0 else "none") + "\n")
 		f.close()
 	print("rollout: ", _ro_log.size(), " pages; not reached: ", missing)
+	get_tree().quit(0)
+# ---------------- the campaign map's Briefing layout (FINDINGS R165): the pictures the brief asks for ----------------
+# The same seeded run as the rollout (seed 344), played through the campaign's own actions; nothing types a page state. The
+# hover, the pick and the two slide-overs are the screen's own functions, called the way the mouse and the keys call them.
+#   01_map_jump0          the map before the first jump
+#   02_map_three_routes   the map mid-run with three next jumps (the first route picked, as the screen opens)
+#   02b_route_two_picked  the second route picked (its row, its marker and the button follow)
+#   03_far_stop_hover     a stop further on, hovered: the one tip card
+#   03b_nemesis_stop_hover  a stop where the Nemesis meets you, hovered (when this run has one in view)
+#   04_dossier            the Dossier open
+#   05_map_key            the Map key open
+#   06_damaged_fleet      the map later in the run, with the fleet hurt
+func _br_play(until: Callable, max_steps: int) -> bool:
+	var steps = 0
+	while not C.ended and steps < max_steps:
+		if until.call(): return true
+		steps += 1
+		var kind = _ro_kind()
+		var acts = C.screen_acts().filter(func(x): return x[2] == 1)
+		var pick = _ro_pick(kind, acts)
+		if pick == null: _ro_log.append("stuck on " + kind); return false
+		C.act(pick[0], pick[1]); await _frames(1)
+	return until.call()
+func _br_hover(id: String) -> void:
+	var m = ui.map3d
+	get_viewport().warp_mouse(m._screen(m._nodes[id]["pos"] + Vector3(0, float(m._nodes[id]["top"]) * 0.4 * float(m._nodes[id]["sc"]), 0)))
+	await _frames(3); m._hot_by_key = false; m._set_hot(id); await _frames(6)
+func _briefing(dir: String) -> void:
+	_ro_dir = dir; DirAccess.make_dir_recursive_absolute(dir)
+	await _ro_window()
+	JSM.rnd_seed(344)
+	_ro_seen = {"fleet": true, "retreat": true}   # this run goes straight on: no fleet page detour, no retreat dialog
+	C.titleScreen(); C.act("newRunScreen"); C.act("startRun")
+	if C.page.get("kind") == "aspect": C.act("pickAspect", C.W["aspOffer"][0])
+	C.act("closeModal"); await _frames(2)
+	await _ro_shot("01_map_jump0")
+	var missing: Array = []
+	var on_map = func(): return C.modal_d == null and C.page.get("kind") == "map"
+	if await _br_play(func(): return on_map.call() and C.page["data"]["avail"].size() >= 3, 300):
+		await _ro_shot("02_map_three_routes")
+		ui.pick_route(str(C.page["data"]["avail"][1])); await _frames(3)
+		await _ro_shot("02b_route_two_picked")
+		ui.pick_route(str(C.page["data"]["avail"][0])); await _frames(2)
+		var m = ui.map3d; var far = ""; var nem = ""
+		var ids = m._kb_order.filter(func(id): return not C.page["data"]["avail"].has(id) and C.RUN.get("pos") != id and m._reachable.has(id))
+		for id in ids:   # a fight two or three jumps on, as the mockup's hovered stop; and one where the Nemesis meets you
+			var n = m._nodes[id]["n"]
+			if far == "" and n["type"] == "battle" and not m._nodes[id]["nem"] and float(n["col"]) >= float(C.findNode(C.RUN["pos"])["col"]) + 2: far = id
+			if nem == "" and m._nodes[id]["nem"]: nem = id
+		if far == "" and ids.size() > 0: far = ids[0]
+		if far != "":
+			await _br_hover(far); await _ro_shot("03_far_stop_hover")
+		else: missing.append("03_far_stop_hover")
+		if nem != "":
+			await _br_hover(nem); await _ro_shot("03b_nemesis_stop_hover")
+		else: missing.append("03b_nemesis_stop_hover")
+		m._set_hot("")
+		ui._open_overlay("dossier"); await _frames(4); await _ro_shot("04_dossier")
+		ui._open_overlay("key"); await _frames(4); await _ro_shot("05_map_key")
+		ui._close_overlay(); await _frames(4)
+	else: missing.append_array(["02_map_three_routes", "03_far_stop_hover", "04_dossier", "05_map_key"])
+	var hurt = func():
+		if not on_map.call() or ui.map3d.intel == null: return false
+		return ui.map3d.intel.fleet_condition()["hurt"]
+	var start = str(C.RUN.get("pos"))
+	if await _br_play(func(): return hurt.call() and str(C.RUN.get("pos")) != start, 300): await _ro_shot("06_damaged_fleet")
+	elif on_map.call(): await _ro_shot("06_damaged_fleet"); _ro_log.append("06_damaged_fleet: the fleet never met the hurt line in this run; the picture is the map where the run stood")
+	else: missing.append("06_damaged_fleet")
+	var f = FileAccess.open(dir.path_join("reached.txt"), FileAccess.WRITE)
+	if f != null:
+		f.store_string("briefing, seed 344, window %s\n" % str(get_viewport().get_visible_rect().size) + "\n".join(PackedStringArray(_ro_log)) + "\nnot reached: " + (", ".join(PackedStringArray(missing)) if missing.size() > 0 else "none") + "\n")
+		f.close()
+	print("briefing: ", _ro_log.size(), " pictures; not reached: ", missing)
 	get_tree().quit(0)
 func _ro_pick(kind: String, acts: Array):
 	var want = ["elite", "event", "shipyard", "drydock", "battle", "field", "boss"]

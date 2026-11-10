@@ -21,7 +21,8 @@ the look, never those rules.
 ## 1. The one idea
 
 A combat targeting computer. Black-olive slabs with cut corners and bracket marks; pale sage words; one loud colour,
-neon lime, that means "do this next". Every line of text sits on a solid backing. Faction colour is a small accent only.
+neon lime, that means "do this next". Every line of text sits on a solid backing (the campaign map is the one screen
+that drops the slabs and the backings: section 3 and section 8). Faction colour is a small accent only.
 
 R141 (Ryan, Nov 8): "one specific UI for the game that is consistent", "a modern, sci fi setting but one that is still
 focused on user actions and best practices". So: one look for every screen, no faction-themed screens.
@@ -62,7 +63,13 @@ focused on user actions and best practices". So: one look for every screen, no f
 - Dimming (a ship that has acted, a step that is off) fades the words and bars, never the backing: the well or row
   fill stays at its alpha.
 - Rule: if a string can land over the 3D scene, it is on a well, a strip or a tag. Floating callouts over ships
-  (damage numbers) are the one exception: they carry a dark outline instead, because they live for a second.
+  (damage numbers) are one exception: they carry a dark outline instead, because they live for a second.
+- **The campaign map exception (Ryan's pick of the Briefing layout, Nov 10 2026, FINDINGS R165).** Words on the campaign
+  map are plain text with a dark halo (`halo_text`: two dark outlines under the words, HALO #070907), with no strip or
+  tag behind them. Ryan on the strips and tags of rollout 1: "everything in a box or tag" was one of the tells to
+  remove. It holds because the map's backdrop is at half strength, only your stop and the next jumps carry words, and
+  the one box on the map is the hover tip (`tip`). It applies to the campaign map only; every other screen keeps the
+  rule above.
 
 ## 4. Type
 
@@ -113,6 +120,16 @@ Screens not yet rebuilt still carry the old values until they move onto glass_sh
 | WELL, WELL_EDGE | #080a08 (93% in a panel, 88% as a strip); lime at 35% | the backing under text; a well's left bar |
 | LINE | lime at 12% | row separators, a disabled button's edge |
 | SCAN | lime at 2.5% | the panel scanline |
+| BLUE | #62a8ff | B4 blue event options: an option your fleet qualifies for (the event dialog only) |
+| SHADE | #090c09 at 80% | the dim layer behind a dialog and behind the map's two slide-overs: the scene only hints through |
+| COLUMN, HAIR | #0b0e0b, #1c241c | the campaign map's flat briefing column, its slide-overs and the hover tip; the column's quiet edge and its rules |
+| ROW_LIT, ROW_HOVER | #161c16, #111611 | the picked route row (a slightly lighter fill); a route row under the pointer |
+| HALO | #070907 | the dark halo under plain words on the campaign map (section 3, the campaign map exception) |
+| PALE, PALE_CUT | sage at 20%, at 8% | a route on the map you cannot fly yet (one thin line); a route cut off or already flown |
+
+Retired with the Briefing build (R165), so they have no row: the map's danger band colours (DANGER), the stop glyph
+colours (STOP) and the route planner's blue and gold (ROUTE). Danger is four pips and its word (Easy, Even, Hard,
+Deadly): two channels, neither a colour (ui_spec.md 5.2). A stop is its 3D model. A route is lime or pale.
 
 What lime is for:
 - **Filled lime** is the next action and nothing else: the finish button (End ship), the UP tag, the odds tag on the
@@ -141,9 +158,11 @@ Other rules (unchanged):
 - In battle, faction colour never touches names, plates, bars or panels (ui_spec.md 5.4). The enemy's faction is its
   crest (22 px) and its name in plain BONE in the top bar; the Nemesis block shows the faction crest as his portrait
   until the battle carries his own portrait index.
-- On the campaign map and its screens, faction colour may appear as the 3 px strip accent and on crests, from
+- On the campaign's between-battle screens, faction colour may appear as the 3 px strip accent and on crests, from
   map3d_system LOOKS only. Never as a fill, never on body text, never as a panel's colour, and never lime-like enough
   to be read as the accent (a faction whose look is yellow-green shows it on the crest only).
+- The campaign map itself (the Briefing layout, R165) shows no faction colour in its words: faction and core names are
+  plain text. A faction's look stays on its 3D models and their lights.
 
 ## 7. Layout rules (any screen)
 
@@ -151,6 +170,9 @@ Other rules (unchanged):
   The battle column is the worked example: Nemesis, the ship that is up, 1 Move, 2 Fire, Orders, Target, 3 End.
 - The finishing action is fixed in the bottom right corner and never moves (End ship; on other screens Continue,
   Confirm, Launch). Text above it keeps its height when empty so the button does not jump.
+  The campaign map is the exception (R165): its one filled lime button, "JUMP TO <NAME>", sits in the briefing column
+  under the route list it acts on, flat and square (`jump_boxes`), with the Enter key cap. The two lines above it keep
+  their height, so it does not jump when another route is picked.
 - The finishing action is the screen's one filled lime slab: `finish_boxes` (flat lime, 10 px chamfers top left and
   bottom right, a soft lime glow) plus `gilt_sheen` (a thin top highlight), its label in `action_font` caps and its key
   cap after the label.
@@ -169,10 +191,28 @@ Other rules (unchanged):
   title and tagline text.
 - Title screen: the menu becomes one panel at the left third with a well per group; the game title in `display` caps
   (it may be larger and tracked wider); the menu rows are buttons with the sage focus ring; Start is the one lime slab.
-- Campaign map: the side panel becomes one panel with wells (sector, fleet, choices); the fight card is a well with the
-  faction accent strip; map labels are strips with the slanted end; the route you will take next is the one lime line.
-  The map's danger band green (DANGER 1 #7ddc6a) sits close to lime: it moves to FRIEND mint or takes its word as the
-  second channel when the map is rebuilt (ui_spec.md 5.1 collision note).
+- Campaign map: the Briefing layout (Ryan's pick, Nov 10 2026, R165; the spec is campaign_map_briefing.md, the picture
+  contrib/opus/ui_map_design/map_option_C_briefing.jpg). It replaces rollout 1's strips, tags and side panel, which
+  Ryan called "pretty busy" and "AI generated still".
+  - Left, one flat column 480 wide (`column`): no chamfers, brackets, scanline, wells or left bars. Padding 40, gaps on
+    an 8 px grid, one type ladder (12 the key cap, 13 meta and caps, 14 secondary, 15 body, 16 fleet names, 17 the
+    button, 18 and 20 names on the map, 22 route names, 28 and 30 numbers, 40 the sector's name). Top to bottom: where you are, the sector's name, who holds it and the sector
+    condition, the routes you can take as numbered rows (name, danger pips and word, what it is and against whom, the
+    reward and where it leads), two lines of detail for the picked route, the one filled lime button, the Nemesis in a
+    portrait and two or three lines, and the fleet at the foot (one line a ship, a thin hull bar that is sage when full
+    and takes the HULL colours when damaged).
+  - Right, the real 3D chart with the backdrop at half strength. Your stop and the next jumps keep full models; stops
+    further on are 70% size and under half brightness; stops behind you or cut off are dimmer still. No rings, halos,
+    hover glows or threat markers. The routes to the next jumps are solid lime lines with no bloom; every other route
+    is one thin pale line.
+  - Two colours on top of the sage text: lime is the next action and the next jumps (the routes, the square number
+    markers, the picked number, the button); ALERT red is the Nemesis (the word, the hunt clock, one small diamond over
+    a stop where he meets you and beside that route's name). Nothing else on the screen takes either.
+  - Words on the map are plain with a dark halo (section 3). Stops further on carry none: pointing at one, or reaching
+    it with the arrow keys, shows the one tip card.
+  - What the old screen showed and this one does not is one hover or one click away: the map's tip card, "Map key"
+    (the marks, the danger pips, this sector, your run, the controls, Map detail and Tips) and "Dossier" (everything the
+    long Nemesis block said). Both are flat slide-overs; Esc, Close or a click on the shade shuts them.
 - End screen and debrief: one panel, the R137 debrief order (ui_spec.md 10) in wells; Continue is the lime slab fixed
   bottom right; Victory in lime `display` caps, Defeat in BLOOD.
 - Menus: a well inside a panel with brackets and the bevel; rows are buttons with the sage focus ring (ui_spec.md 6).

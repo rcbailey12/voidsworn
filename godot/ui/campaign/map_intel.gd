@@ -8,10 +8,10 @@ extends RefCounted
 # RAMP.thin, boss scale), set against your fleet power (battle.js fleetPower). The fleet itself is rolled at the fight, so
 # this is the expected strength, not the exact one.
 
-const GS = preload("res://ui/theme/glass_shell.gd")
-# the band colours are glass_shell.gd's DANGER table (issue #344): Easy moved off the lime-like green to FRIEND mint, and every
-# band prints its word wherever it shows (ui_spec.md 5.1 collision note, 5.2). The cut points are unchanged (U-D re-rules them).
-const BANDS := [[0.8, "Easy", GS.DANGER_EASY], [1.05, "Even", GS.DANGER_EVEN], [1.4, "Hard", GS.DANGER_HARD], [99.0, "Deadly", GS.DANGER_DEADLY]]
+const View = preload("res://campaign/campaign_view.gd")   # the Nemesis is read through the view (C.nemRead): an estimate never resolves or creates him
+# The bands are words, shown with one to four pips (the Briefing build, FINDINGS R165): two channels, neither of them a colour
+# (ui_spec.md 5.2). The band colours left with the tags that wore them. The cut points are unchanged (U-D re-rules them).
+const BANDS := [[0.8, "Easy"], [1.05, "Even"], [1.4, "Hard"], [99.0, "Deadly"]]
 
 var C
 var ai_level := "veteran"     # the battle setting (godot/main settings "ai"); Standard meets 10% less
@@ -33,7 +33,7 @@ func danger(n: Dictionary) -> Dictionary:
 	var t = n["type"]
 	if not (t in ["battle", "elite", "boss"]): return {}
 	var R = C.TB["RAMP"]; var s = int(C.RUN["sector"]); var col = float(n["col"]); var kind = t
-	var nem = not C.jt(n.get("done")) and C.nemNodeIs(n)   # B4: the Nemesis fight is an elite fight, stronger for each scar and adaptation
+	var nem = not C.jt(n.get("done")) and View.nem_node_is(C, n)   # B4: the Nemesis fight is an elite fight, stronger for each scar and adaptation
 	if nem: kind = "elite"
 	var budget = ([0.0, 4.2, 9.5, 14.0][s] + col * (0.9 if s == 1 else (1.0 if s == 2 else 1.1))) * float(R["grow"][s])
 	if kind == "elite": budget *= 1.05
@@ -57,13 +57,15 @@ func danger(n: Dictionary) -> Dictionary:
 	if C.heatOn("h_elite"): threat *= 1.08; why.append(["Heat: Veteran escorts", 1.08])
 	if nem: threat = _nem_threat(threat, tough, why)
 	var ratio = threat / max(0.5, P)
-	for b in BANDS:
-		if ratio < b[0]: return {"ratio": ratio, "band": b[1], "col": b[2], "threat": threat, "power": P, "why": why}
+	for i in BANDS.size():
+		var b = BANDS[i]
+		if ratio < b[0]: return {"ratio": ratio, "band": b[1], "level": i + 1, "threat": threat, "power": P, "why": why}
 	return {}
 # The Nemesis's own growth (battle.js applyNemesis): damage per scar, each adaptation, his strength traits, the Chorus feeding on your
 # losses (hull), Corsair riches (one cheap hull each) and the Ithar duel fleet (fewer ships, all elite: about even).
 func _nem_threat(threat: float, tough: float, why: Array) -> float:
-	var N = C.nemActive(); var t = threat
+	var N = View.nem(C); var t = threat
+	if not C.jt(N): return t
 	var sc = float(C.z0(N.get("scars")))
 	if sc > 0: t *= 1.0 + 0.1 * sc; why.append(["his scars", 1.0 + 0.1 * sc])
 	var ad = N["adapt"].size()
@@ -77,7 +79,7 @@ func _nem_threat(threat: float, tough: float, why: Array) -> float:
 	if fed > 0: t *= 1.0 + fed; why.append(["fed on your losses", 1.0 + fed])
 	var hn = min(3.0, float(C.z0(N.get("honed"))))
 	if hn > 0: t *= 1.0 + 0.06 * hn; why.append(["honed", 1.0 + 0.06 * hn])
-	var raid = C.NEM_FAC.get(N["fac"], {}).get("beh", {}).get("strike") == "raid"   # R49: only a raider brings extra ships
+	var raid = View.nem_beh(C, N).get("strike") == "raid"   # R49: only a raider brings extra ships
 	var rich = (float(C.z0(N.get("riches"))) if raid else 0.0) + (1.0 if N["adapt"].has("riches") else 0.0)
 	if rich > 0:
 		var add = rich * 1.2 * tough   # a cheap hull is about 1.2 command points, at this sector's toughness
@@ -149,8 +151,8 @@ func routes_through(id: String) -> Array:
 		var a = x["st"]; var b = safe["st"]
 		if a["worst"] < b["worst"] or (a["worst"] == b["worst"] and (a["danger"] - a["repairs"] * 0.3) < (b["danger"] - b["repairs"] * 0.3)): safe = x
 		if x["st"]["value"] > rich["st"]["value"] or (x["st"]["value"] == rich["st"]["value"] and x["st"]["danger"] < rich["st"]["danger"]): rich = x
-	var out = [{"name": "Safest", "col": GS.ROUTE_SAFE, "path": safe["path"], "st": safe["st"]}]
-	if rich["path"] != safe["path"]: out.append({"name": "Richest", "col": GS.ROUTE_RICH, "path": rich["path"], "st": rich["st"]})
+	var out = [{"name": "Safest", "path": safe["path"], "st": safe["st"]}]
+	if rich["path"] != safe["path"]: out.append({"name": "Richest", "path": rich["path"], "st": rich["st"]})
 	return out
 # the fleet's condition: average hull, the most damaged ship, and whether that calls for a repair stop
 func fleet_condition() -> Dictionary:

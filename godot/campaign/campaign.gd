@@ -2002,9 +2002,11 @@ func nemSay(t, N) -> String:
 		out += str(t).substr(at, m.get_start() - at) + str(P[m.get_string()]); at = m.get_end()
 	return out + str(t).substr(at)
 # what the next win does when it fills his clock (the card's warning line, R7); "" when it does not
+# Issue 344: his behaviour is read from the commander given (nemBeh(N)), so a screen that read him with nemRead gets the line
+# without resolving anyone. Every caller passes the active commander, so the words are what they were.
 func nemWarnLine(N) -> String:
-	var st = nemBeh().get("strike")
-	if jt(RUN.get("nemStrike")) or float(N["met"]) >= float(RUN["sector"]) or nemClockGet() + float(or_(nemBeh().get("clock"), 1)) < float(NEM_CLOCK): return ""
+	var st = nemBeh(N).get("strike")
+	if jt(RUN.get("nemStrike")) or float(N["met"]) >= float(RUN["sector"]) or nemClockGet() + float(or_(nemBeh(N).get("clock"), 1)) < float(NEM_CLOCK): return ""
 	if st == "raid":
 		var crip = RUN["fleet"].size() >= 3 and RUN["fleet"].any(func(x): return x["uid"] != RUN["flagUid"] and float(x["hp"]) < float(derive(x)["maxHp"]) * 0.25)
 		return nemSay("Your next win fills his clock: he will raid", N) + " " + (numstr(jsround(float(RUN["credits"]) * 0.25)) + " credits" if float(RUN["credits"]) >= 30 else ("your most damaged ship (repair it above 25% hull, or keep 30 credits, to stop it)" if crip else "and find nothing to take")) + "."
@@ -2031,8 +2033,11 @@ func nemSignature(kind: String, N0 = null) -> void:
 	N["signatures"].append(kind)
 	if N["signatures"].size() > 40: N["signatures"].pop_front()
 	tel("nem_signature", {"fac": N["fac"], "kind": kind, "sector": RUN["sector"]})
-func nemBeh() -> Dictionary:
-	var N = nemActive()
+# Issue 344 (the campaign map only reads): nemBeh, nemNodeIs and nemPanelData take the commander a screen already read with
+# nemRead (N0). Given one, they resolve nothing: no migration, no new commander, no cache write. With none (every rules
+# caller, and the browser game's twin) they resolve the active commander first, exactly as before.
+func nemBeh(N0 = null) -> Dictionary:
+	var N = N0 if jt(N0) else nemActive()
 	if jt(N) and NEM_FAC.has(N["fac"]) and jt(NEM_FAC[N["fac"]].get("beh")): return NEM_FAC[N["fac"]]["beh"]
 	return {}
 # the clock: returns a line to show when it fills (the next fight becomes his); his faction sets the pace (Deathless patient, Voidsworn zealous)
@@ -2074,8 +2079,8 @@ func nemStrike() -> String:
 		return "The hunt wears on your fleet: every ship loses 6% of its hull."
 	return ""
 # is this battle node his? (strike pending, or the last fight before the rest stop when he has not been met this sector)
-func nemNodeIs(n) -> bool:
-	var N = nemActive()
+func nemNodeIs(n, N0 = null) -> bool:
+	var N = N0 if jt(N0) else nemActive()
 	if not jt(N) or jt(N.get("dead")) or float(N["met"]) >= float(RUN["sector"]) or n == null or (n["type"] != "battle" and n["type"] != "elite"): return false
 	return jt(RUN.get("nemStrike")) or float(n["col"]) >= float(RUN["map"]["cols"].size() - 3)
 # Job 7 step 7 (R85 Q5): the map tag and the one sentence that name the meeting as a certainty, not a chance.
@@ -2338,8 +2343,8 @@ func _nem_secs(l: Array) -> String:
 	var o = []
 	for i in l: o.append(roman(i))
 	return " and ".join(PackedStringArray(o))
-func nemPanelData() -> Variant:
-	var N = nemActive()
+func nemPanelData(N0 = null) -> Variant:
+	var N = N0 if jt(N0) else nemActive()
 	if not jt(N) or not jt(N.get("persona")): return null
 	var a = RUN["nemAssign"] if RUN.get("nemAssign") is Array else []; var cur = int(or_(RUN.get("sector"), 1)); var reg = RUN["nems"] if RUN.get("nems") is Dictionary else {}
 	var back = _nem_sps(a, N["fac"], cur).filter(func(i): return i < cur)

@@ -22,6 +22,9 @@ class CampaignProbe extends RefCounted:
 
 class UIProbe extends RefCounted:
 	var C = CampaignProbe.new()
+	var k := 1.0
+	var picked := ""
+	func pick_route(id): picked = str(id)
 
 class MapProbe extends Map:
 	var arrivals := 0
@@ -47,7 +50,7 @@ func _run():
 	for id in ["a", "b", "c", "d", "e", "f"]:
 		m._nodes[id] = {"n": {"done": false, "type": "battle"}, "pos": Vector3(10, 0, -30), "top": 3.0}
 	for e in C.RUN["map"]["edges"]:
-		m._lanes[e[0] + ">" + e[1]] = {"a": e[0], "b": e[1], "hazard": 1.0, "mat": m.sys.mat("LANE")}
+		m._lanes[e[0] + ">" + e[1]] = {"a": e[0], "b": e[1], "mat": m.sys.mat("LANE_FLAT")}
 
 	# A fork's whole abandoned branch goes dim, but a later merge stays lit.
 	m._find_reachable()
@@ -59,8 +62,10 @@ func _run():
 	var ghost = m._lanes["e>f"]["mat"]
 	var ahead = m._lanes["d>f"]["mat"]
 	var next = m._lanes["b>d"]["mat"]
-	check(ghost.get_shader_parameter("col").a < 0.1 and ghost.get_shader_parameter("hazard") == 0.0, "unreachable lanes have no hazard glow")
-	check(ahead.get_shader_parameter("col").a > 0.5 and next.get_shader_parameter("flow") == 1.0, "future routes stay lit and next choices flow")
+	# the Briefing build (FINDINGS R165): a next jump is the lime line, wider; a route ahead one thin pale line; a cut-off one fainter
+	check(ghost.get_shader_parameter("col").a < 0.1 and ghost.get_shader_parameter("px") < 1.0, "unreachable lanes are the faintest thin line")
+	check(is_equal_approx(ahead.get_shader_parameter("col").a, Map.GS.PALE) and ahead.get_shader_parameter("px") < 1.0, "future routes stay drawn as one thin pale line")
+	check(next.get_shader_parameter("col").a == 1.0 and next.get_shader_parameter("px") > 1.0 and next.get_shader_parameter("col").g > next.get_shader_parameter("col").b + 0.3, "next choices are the lime line, wider")
 	C.RUN["pos"] = null; m._find_reachable()
 	check(m._reachable.size() == 6, "entry reaches every connected stop")
 
