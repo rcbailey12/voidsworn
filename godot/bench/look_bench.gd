@@ -148,6 +148,15 @@ func _run() -> void:
 	_save_report()
 	_log("stills: %d, warnings: %d" % [report["stills"].size(), report["warnings"].size()])
 	print("LOOK_BENCH_DONE")
+	# a clean exit: drop the static caches and the effects' GPU resources while the rendering server is alive (the
+	# first PC run ended with an access violation after its last line)
+	_clear()
+	if fx != null and is_instance_valid(fx):
+		world.remove_child(fx)
+		fx.queue_free()
+	FX.clear_static()
+	SV.clear_static()
+	await get_tree().process_frame
 	get_tree().quit(0)
 
 
@@ -229,6 +238,15 @@ func _setup_view() -> void:
 	cam.input_enabled = false
 	cam.keyboard_enabled = false
 	cam.current = true
+	_make_fx()
+
+
+# A fresh effects system: every moment starts from the same empty state (no smoke, wrecks or debris left over from the
+# moment before, the effect clock at 0).
+func _make_fx() -> void:
+	if fx != null and is_instance_valid(fx):
+		world.remove_child(fx)   # _exit_tree releases its GPU resources and waits for its worker jobs
+		fx.queue_free()
 	fx = FX.new()
 	world.add_child(fx)
 	fx.manual = true
@@ -456,6 +474,10 @@ func _hits(n: int, shield: bool, crit: bool) -> Array:
 func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: String) -> bool:
 	var id := str(row["id"])
 	_clear()
+	_make_fx()
+	_cam(Vector3.ZERO, r)
+	if not headless:
+		await fx.warmup(cam)
 	await _step()
 	seed(2070)
 	fx.rng.seed = 11
