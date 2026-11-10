@@ -1,0 +1,7 @@
+Sky brightness behind the ships at the battle camera (mean of the cell corners, 0-255):
+  frontier   50.27   brightest
+  nebula     44.74
+  world      19.66   darkest
+  boneyard   37.14
+  deep       32.52
+  storm      64.81
