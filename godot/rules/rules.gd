@@ -3168,7 +3168,7 @@ func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire
 					if idLT2 != u["id"]: treeFx(u, "lightTogether", "the light arrives together"); break   # Saro T2a
 		var rrL = treeSkill("rearReckoning")
 		if rrL != null and rq and u["side"] == "player" and cmdActive(u["side"], "hunt"): treeFx(u, "rearReckoning", "the rear arc reckons")   # Malek T2b
-		if u["side"] == "player" and not jt(u.get("isSq")) and B != null and jt(B.get("volleyMul")) and B["volleyMul"]["side"] == u["side"] and not jt(o.get("intercept")):
+		if treeSkill("lightTogether") != null and u["side"] == "player" and not jt(u.get("isSq")) and not jt(o.get("intercept")):
 			var arrLT3 = B["tr"]["lightTgt"].get(t["id"]) if B["tr"]["lightTgt"].get(t["id"]) is Array else []
 			if not arrLT3.has(u["id"]): arrLT3.append(u["id"])
 			B["tr"]["lightTgt"][t["id"]] = arrLT3   # Saro T2a counter
@@ -5116,11 +5116,11 @@ func runCommand(side, c, tier) -> bool:
 		var shI = treeSkill("screensShift")
 		if shI != null and side == "player":
 			var upI = treeChoice("ship")
-			var downI = null; var bdr = 2.0
+			var downI = null; var bdr = -1.0   # the healthiest other ship gives up the 20 points
 			for xI2 in alive("player"):
 				if jt(xI2.get("isSq")) or jt(xI2.get("dead")) or (upI != null and xI2["id"] == upI["id"]): continue
 				var rrI = float(xI2["hp"]) / max(1.0, float(xI2["maxHp"]))
-				if downI == null or rrI < bdr or (rrI == bdr and str(xI2["id"]) < str(downI["id"])): bdr = rrI; downI = xI2
+				if downI == null or rrI > bdr or (rrI == bdr and str(xI2["id"]) < str(downI["id"])): bdr = rrI; downI = xI2
 			if upI != null: B["treeShiftUp"] = {"id": upI["id"], "r": B["round"]}; treeFx(upI, "screensShift", "the screens shift")
 			if downI != null: B["treeShiftDown"] = {"id": downI["id"], "r": B["round"]}   # Thale T1b
 		var weI = treeSkill("wallEarly")
