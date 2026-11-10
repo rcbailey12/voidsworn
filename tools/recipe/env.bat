@@ -16,6 +16,11 @@ set B0=%V%\bakeoff\%SHIP%_trellis.glb
 if not exist "%JOB%" mkdir "%JOB%"
 for /f "usebackq delims=" %%L in (`"%BPY%" "%RC%\ship.py" %SHIP% get hull`) do set HULL=%%L
 for /f "usebackq delims=" %%L in (`"%BPY%" "%RC%\ship.py" %SHIP% get cell`) do set CELL=%%L
+rem round 7: the bake builds with the ship's own hull module (bakeAb6.py reads R209_HULL); CODE is the ship folder's name in the game
+set R209_HULL=%HULL%
+set CODE=
+for /f "usebackq delims=" %%L in (`"%BPY%" "%RC%\ship.py" %SHIP% get game_code`) do set CODE=%%L
+if "%CODE%"=="" set CODE=%SHIP%
 set R209_SHIP=%RC%\ships\%SHIP%.json
 set R209_TUNE_JSON=
 for /f "usebackq delims=" %%L in (`"%BPY%" "%RC%\ship.py" %SHIP% get tune`) do set R209_TUNE_JSON=%REPO%\%%L

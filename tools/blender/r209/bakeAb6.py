@@ -11,7 +11,8 @@ import bpy, bmesh
 import numpy as np
 from mathutils import Vector
 import common as C
-import armA6 as A3   # round 6: round 5 blocks plus the Hullbreaker kit (the module keeps the A3 name so the steps read as in round 3)
+import importlib
+A3 = importlib.import_module(os.environ.get('R209_HULL') or 'armA6')   # the ship's hull module (round 7: armA7 through the recipe's env.bat; the default is round 6's)
 import paint as P3   # kits/hullbreakers/paint.py (armA6 puts the kit folders on the path)
 import plumbing as PB
 
@@ -151,7 +152,13 @@ def main():
     block_t = sum(C.tris(o) for o in S); plate_t = sum(C.tris(o) for o in Pl); gen_t = sum(C.tris(o) for o in gen)
     hull = join(S + Pl, 'hull_baked'); hull['role'] = 'hull'; hull['kind'] = 'hull'; unwrap([hull])
     made, fit = C.breakable([hull]); skin = hull.modifiers.get('skin'); skin.show_render = False; skin.show_viewport = False
-    nimg, b0ao = b0_bakes(hull)
+    if os.environ.get('R209_NO_B0'):      # sandbox test of the later stages without the shape reference: a flat detail normal, no cavity map
+        INFO['bake_device'] = gpu(); INFO['b0'] = 'skipped (R209_NO_B0)'; b0ao = None
+        nimg = bpy.data.images.new(f'{CELL}_hull_normal', 64, 64, alpha=False); nimg.colorspace_settings.name = 'Non-Color'
+        nimg.pixels.foreach_set(np.tile(np.array([.5, .5, 1, 1], np.float32), 64 * 64))
+        nimg.filepath_raw = os.path.join(OUT, f'{CELL}_hull_normal.png'); nimg.file_format = 'PNG'; nimg.save(); nimg.pack()
+    else:
+        nimg, b0ao = b0_bakes(hull)
     parts = hard + gen; allobj = [hull] + parts + made + prox
     mats = P3.assign(allobj, [hull], b0ao)
     lod_tags(parts + made + prox)

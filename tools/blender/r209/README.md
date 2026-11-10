@@ -78,6 +78,11 @@ Round 1 bug fixed in `common.ai_align`: the yaw was set as an Euler angle on a g
 | `bakeAb6.py` | bakeAb5 with armA6, the Hullbreaker paint (`kits/hullbreakers/paint.py`), the shared one-pass audit, the parts atlas at full resolution and baked from one joined copy (Cycles re-syncs the scene once per baked object; 1,200 parts took hours, the joined copy 17 s). |
 | `close6.py` | weapon close-ups at the concept's own camera (4x, render border per weapon group), studio rig, concept rig and clay, so concept crops line up pixel for pixel. |
 | `preview6.py` | sandbox preview: build, paint with the procedural materials directly (no bake), CPU render of the concept camera and close-ups; `light=concept`, `albedo=1` (debug). |
+| `armA7.py` | round 7: Ab7 = Ab6 with the bow pass (flat full-width bow deck with a sharp edge, slab sides to z -0.108, the bow gun hood, bow plates and fittings). Everything aft of x 0.178 is Ab6's. |
+| `preview7.py` | round 7 sandbox preview: `preview6.py` plus the side, top, below, front, battle and bow-side views, the close crop of the concept frame (`crop=`), and both light rigs. |
+| `sheets7.py` | the round 7 sheets (paint, hull side close crop, bow, weapons, overview, battle distance, silhouette) from the previews or the PC renders. |
+| `fire_clip.py` | the fire probe's raw frames (`godot/fx/test/ship_fire_probe.gd`) to a short clip per camera range. |
+| `pc/r7_queue.bat`, `pc/r7_run.bat` | the round 7 PC run: waits for `opus209\go7.txt`, then bake, renders, LOD and cost bench, the stage 7 game export with its check, and the battle capture of Ab7 firing. |
 | `sheets6.py` | round 6 sheets: paint (with region colour samples), weapons, overview, battle, silhouette. |
 | `render.py` | gained `--light=concept` (the concept painting's light, files `_cl`), for the paint compare only. |
 | `pc/r6_*.bat` to `pc/r6f_*.bat` | the PC runs (r6 stopped in the slow parts bake; r6f, casemates level after the board review, is the one in the report). Each waits for an idle GPU first. |
