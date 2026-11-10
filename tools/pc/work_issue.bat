@@ -82,7 +82,8 @@ git checkout -q -B %BR%
 git log -1 --format=%%H > "%O%\base_commit.txt"
 %PS% prep %N% %ARM% "%R%" "%O%" "%G%" >> "%O%\result.txt" 2>&1
 if errorlevel 1 goto :prepfail
-call "%T%get_ship_files.bat" "%VT%\build\godot" "%R%" "%R%\WORK_TASK.md" >> "%O%\ship_files.txt" 2>&1
+rem Only capture jobs copy the ship files: the launcher sets WORK_SHIPS=1. They are large and every run keeps its checkout (Board, Nov 10).
+if defined WORK_SHIPS call "%T%get_ship_files.bat" "%VT%\build\godot" "%R%" "%R%\WORK_TASK.md" >> "%O%\ship_files.txt" 2>&1
 if /i "%MODE%"=="dryrun" (echo dry> "%O%\balance_before.txt") else (%PS% balance %ARM% "%O%\balance_before.txt" > nul)
 powershell -NoProfile -Command "(Get-Date).ToString('s')" > "%O%\time_start.txt"
 echo agent running %time% >> "%O%\result.txt"
