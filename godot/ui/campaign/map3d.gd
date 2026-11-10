@@ -623,8 +623,15 @@ func _set_tier(d: Dictionary, tier: int) -> void:
 	if not d.has("parts"): d["parts"] = _parts(d["obj"])
 	var f: float = TIER_LIGHT[tier]; var layer = [1, LAYER_AHEAD, LAYER_BEHIND][tier]
 	var P = d["parts"]
+	# A model that changes its render layer while it is in the scene leaves the engine's light pairing out of step (it
+	# logged "indexing did not unpair geometries from light" when the sector was torn down). So the stop steps out of the
+	# scene, takes its new layer, and steps back in.
+	var obj: Node3D = d["obj"]; var par = obj.get_parent() if int(d.get("layer", 1)) != layer else null
+	if par != null: par.remove_child(obj)
+	d["layer"] = layer
 	for v in P["vis"]:
 		if is_instance_valid(v): v.layers = layer
+	if par != null: par.add_child(obj)
 	for l in P["lights"]:
 		if is_instance_valid(l[0]): l[0].light_energy = l[1] * f
 	for g in P["gains"]:
