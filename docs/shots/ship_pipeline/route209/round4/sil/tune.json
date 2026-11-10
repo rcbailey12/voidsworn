@@ -1,0 +1,413 @@
+{
+ "score": 0.8329,
+ "res": 512,
+ "seconds": 645,
+ "P": {
+  "W": 0.10799999999999998,
+  "xs": 0.255,
+  "xn": 0.504,
+  "nose_w": 0.019999999999999997,
+  "pw": 2.4,
+  "zd": 0.004,
+  "zd_nose": -0.01,
+  "zc": -0.104,
+  "flare": 0.003,
+  "over_c": 0.016,
+  "over_b": 0.03,
+  "wb": 0.094,
+  "zb": -0.14,
+  "zb_nose": -0.16800000000000004,
+  "x_aft": -0.112,
+  "aft_zc": -0.05,
+  "aft_zb": -0.06,
+  "aft_wb": 0.086,
+  "gl_x": [
+   0.408,
+   0.388,
+   0.13
+  ],
+  "gl_w": 0.07599999999999998,
+  "gl_z": [
+   0.042,
+   0.046,
+   0.05
+  ],
+  "t1_x": [
+   0.176,
+   -0.1
+  ],
+  "t1_w": 0.082,
+  "t1_z": 0.07799999999999999,
+  "t2_x": [
+   0.128,
+   0.0
+  ],
+  "t2_w": 0.058,
+  "t2_z": 0.08199999999999999,
+  "hump_x": [
+   -0.03,
+   -0.165
+  ],
+  "hump_w": 0.064,
+  "hump_z": 0.07300000000000001,
+  "ab_x": [
+   -0.11,
+   -0.442
+  ],
+  "ab_w": 0.07199999999999998,
+  "ab_z": 0.05,
+  "ab_r": 0.024,
+  "st_x": [
+   -0.436,
+   -0.5
+  ],
+  "st_w": 0.08,
+  "st_z": 0.062000000000000006,
+  "rail_zb": -0.11,
+  "cargo_z": [
+   -0.094,
+   -0.004
+  ]
+ },
+ "log": [
+  {
+   "start": 0.764918398835882
+  },
+  {
+   "round": 0,
+   "key": "W",
+   "value": 0.116,
+   "score": 0.7681,
+   "improved": true
+  },
+  {
+   "round": 0,
+   "key": "xn",
+   "value": 0.504,
+   "score": 0.7711,
+   "improved": true
+  },
+  {
+   "round": 0,
+   "key": "nose_w",
+   "value": 0.02,
+   "score": 0.7715,
+   "improved": true
+  },
+  {
+   "round": 0,
+   "key": "pw",
+   "value": 2.4,
+   "score": 0.7715,
+   "improved": false
+  },
+  {
+   "round": 0,
+   "key": "zd",
+   "value": 0.012,
+   "score": 0.7725,
+   "improved": true
+  },
+  {
+   "round": 0,
+   "key": "zd_nose",
+   "value": 0.0,
+   "score": 0.7752,
+   "improved": true
+  },
+  {
+   "round": 0,
+   "key": "zc",
+   "value": -0.104,
+   "score": 0.7752,
+   "improved": false
+  },
+  {
+   "round": 0,
+   "key": "zb",
+   "value": -0.148,
+   "score": 0.7809,
+   "improved": true
+  },
+  {
+   "round": 0,
+   "key": "zb_nose",
+   "value": -0.156,
+   "score": 0.7846,
+   "improved": true
+  },
+  {
+   "round": 0,
+   "key": "over_c",
+   "value": 0.016,
+   "score": 0.7846,
+   "improved": false
+  },
+  {
+   "round": 0,
+   "key": "over_b",
+   "value": 0.03,
+   "score": 0.7863,
+   "improved": true
+  },
+  {
+   "round": 0,
+   "key": "wb",
+   "value": 0.094,
+   "score": 0.7863,
+   "improved": false
+  },
+  {
+   "round": 0,
+   "key": "gl_top",
+   "value": 0.052,
+   "score": 0.7965,
+   "improved": true
+  },
+  {
+   "round": 0,
+   "key": "gl_w",
+   "value": 0.076,
+   "score": 0.7976,
+   "improved": true
+  },
+  {
+   "round": 0,
+   "key": "t1_z",
+   "value": 0.086,
+   "score": 0.7978,
+   "improved": true
+  },
+  {
+   "round": 0,
+   "key": "t2_z",
+   "value": 0.09,
+   "score": 0.7978,
+   "improved": false
+  },
+  {
+   "round": 0,
+   "key": "hump_z",
+   "value": 0.078,
+   "score": 0.8001,
+   "improved": true
+  },
+  {
+   "round": 0,
+   "key": "ab_z",
+   "value": 0.058,
+   "score": 0.8088,
+   "improved": true
+  },
+  {
+   "round": 0,
+   "key": "ab_w",
+   "value": 0.08,
+   "score": 0.8094,
+   "improved": true
+  },
+  {
+   "round": 0,
+   "key": "st_z",
+   "value": 0.072,
+   "score": 0.8144,
+   "improved": true
+  },
+  {
+   "round": 0,
+   "key": "st_w",
+   "value": 0.08,
+   "score": 0.8152,
+   "improved": true
+  },
+  {
+   "round": 0,
+   "key": "aft_zb",
+   "value": -0.06,
+   "score": 0.8172,
+   "improved": true
+  },
+  {
+   "round": 0,
+   "key": "rail_zb",
+   "value": -0.11,
+   "score": 0.8174,
+   "improved": true
+  },
+  {
+   "round": 0,
+   "key": "cargo_lo",
+   "value": -0.094,
+   "score": 0.8174,
+   "improved": false
+  },
+  {
+   "round": 1,
+   "key": "W",
+   "value": 0.108,
+   "score": 0.8191,
+   "improved": true
+  },
+  {
+   "round": 1,
+   "key": "xn",
+   "value": 0.504,
+   "score": 0.8191,
+   "improved": false
+  },
+  {
+   "round": 1,
+   "key": "nose_w",
+   "value": 0.02,
+   "score": 0.8191,
+   "improved": false
+  },
+  {
+   "round": 1,
+   "key": "pw",
+   "value": 2.4,
+   "score": 0.8191,
+   "improved": false
+  },
+  {
+   "round": 1,
+   "key": "zd",
+   "value": 0.004,
+   "score": 0.8197,
+   "improved": true
+  },
+  {
+   "round": 1,
+   "key": "zd_nose",
+   "value": -0.01,
+   "score": 0.8212,
+   "improved": true
+  },
+  {
+   "round": 1,
+   "key": "zc",
+   "value": -0.104,
+   "score": 0.8212,
+   "improved": false
+  },
+  {
+   "round": 1,
+   "key": "zb",
+   "value": -0.14,
+   "score": 0.8223,
+   "improved": true
+  },
+  {
+   "round": 1,
+   "key": "zb_nose",
+   "value": -0.168,
+   "score": 0.8228,
+   "improved": true
+  },
+  {
+   "round": 1,
+   "key": "over_c",
+   "value": 0.016,
+   "score": 0.8228,
+   "improved": false
+  },
+  {
+   "round": 1,
+   "key": "over_b",
+   "value": 0.03,
+   "score": 0.8228,
+   "improved": false
+  },
+  {
+   "round": 1,
+   "key": "wb",
+   "value": 0.094,
+   "score": 0.8228,
+   "improved": false
+  },
+  {
+   "round": 1,
+   "key": "gl_top",
+   "value": 0.05,
+   "score": 0.8232,
+   "improved": true
+  },
+  {
+   "round": 1,
+   "key": "gl_w",
+   "value": 0.076,
+   "score": 0.8232,
+   "improved": false
+  },
+  {
+   "round": 1,
+   "key": "t1_z",
+   "value": 0.078,
+   "score": 0.8238,
+   "improved": true
+  },
+  {
+   "round": 1,
+   "key": "t2_z",
+   "value": 0.082,
+   "score": 0.8266,
+   "improved": true
+  },
+  {
+   "round": 1,
+   "key": "hump_z",
+   "value": 0.073,
+   "score": 0.8269,
+   "improved": true
+  },
+  {
+   "round": 1,
+   "key": "ab_z",
+   "value": 0.05,
+   "score": 0.8303,
+   "improved": true
+  },
+  {
+   "round": 1,
+   "key": "ab_w",
+   "value": 0.072,
+   "score": 0.8309,
+   "improved": true
+  },
+  {
+   "round": 1,
+   "key": "st_z",
+   "value": 0.062,
+   "score": 0.8329,
+   "improved": true
+  },
+  {
+   "round": 1,
+   "key": "st_w",
+   "value": 0.08,
+   "score": 0.8329,
+   "improved": false
+  },
+  {
+   "round": 1,
+   "key": "aft_zb",
+   "value": -0.06,
+   "score": 0.8329,
+   "improved": false
+  },
+  {
+   "round": 1,
+   "key": "rail_zb",
+   "value": -0.11,
+   "score": 0.8329,
+   "improved": false
+  },
+  {
+   "round": 1,
+   "key": "cargo_lo",
+   "value": -0.094,
+   "score": 0.8329,
+   "improved": false
+  }
+ ]
+}

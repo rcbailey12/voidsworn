@@ -1,0 +1,52 @@
+{
+ "note": "Sandbox scores of the built geometry (sil_dump.py build), same scorer and camera as rounds 4 to 6. Round 6's 90.1 from the PC glb reproduces here as Ab6_lowered.",
+ "Ab6_lowered": {
+  "aim": [
+   0.25,
+   0.95,
+   -0.15
+  ],
+  "overlap": 90.1,
+  "concept_covered": 96.6,
+  "cell_outside": 7.0
+ },
+ "Ab6_r6e": {
+  "aim": [
+   0.55,
+   0.835,
+   0.0
+  ],
+  "overlap": 89.8,
+  "concept_covered": 96.6,
+  "cell_outside": 7.3
+ },
+ "Ab7_step1": {
+  "aim": [
+   0.14,
+   0.99,
+   0.0
+  ],
+  "overlap": 90.1,
+  "concept_covered": 96.6,
+  "cell_outside": 7.0
+ },
+ "pc_glb_note": "Round 7 final, scored in the sandbox from the PC glbs (out7/glb lod0 and the stage 7 game export), same scorer and camera.",
+ "pc_Ab6": {
+  "overlap": 90.0,
+  "concept_covered": 96.7,
+  "cell_outside": 7.1,
+  "triangles": 125616
+ },
+ "pc_Ab7": {
+  "overlap": 89.7,
+  "concept_covered": 96.4,
+  "cell_outside": 7.2,
+  "triangles": 127188
+ },
+ "pc_Ab7game": {
+  "overlap": 89.6,
+  "concept_covered": 96.3,
+  "cell_outside": 7.2,
+  "triangles": 102072
+ }
+}

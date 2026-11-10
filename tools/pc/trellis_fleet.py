@@ -43,6 +43,7 @@ try:
     except Exception as e: log('no signature', e)
     import glob
     CODES = 'B16_23,B19_11,B20_11,B21_11,B22_11,B23_51,C13s_23,C14s_23,C15s_23,C16s_23,D20_23,D21_23,D22_23,D9_23,H10_23,H4_11,H7_23,H8_23,H9_23,I11_37,I14_23,I15_11,I16_11,I8_37,O2_37,O3_11,S1_51,S2_23,V14_23,V15_37,V16_37,V17_37,V18_51,V1b_r_23'.split(',')
+    if os.environ.get('TRELLIS_CODES'): CODES = os.environ['TRELLIS_CODES'].split(',')   # the ship recipe's stage 2 runs one new concept
     def cutimg(code):
         fs = [f for f in glob.glob(os.path.join(PK, '*_cut.png')) if os.path.basename(f) == code + '_cut.png' or os.path.basename(f).endswith('_' + code + '_cut.png')]
         return sorted(fs, key=len)[0] if fs else None

@@ -1,0 +1,32 @@
+{
+ "B0": {
+  "overlap": 88.0,
+  "concept_covered": 94.1,
+  "cell_outside": 6.9,
+  "triangles": 570189
+ },
+ "Hy4": {
+  "overlap": 82.5,
+  "concept_covered": 93.5,
+  "cell_outside": 12.5,
+  "triangles": 111704
+ },
+ "Ab5": {
+  "overlap": 90.3,
+  "concept_covered": 96.6,
+  "cell_outside": 6.8,
+  "triangles": 87088
+ },
+ "A5s_blocks_only": {
+  "overlap": 84.0,
+  "concept_covered": 86.5,
+  "cell_outside": 3.2,
+  "triangles": 20260
+ },
+ "A4s_blocks_only": {
+  "overlap": 80.1,
+  "concept_covered": 86.6,
+  "cell_outside": 8.5,
+  "triangles": 23740
+ }
+}
