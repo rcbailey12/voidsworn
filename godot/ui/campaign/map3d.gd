@@ -849,7 +849,8 @@ func _draw_overlay() -> void:
 				if rg.has_point(lp): cost += 12.0   # a lime route under the words
 			if cost < best: best = cost; at = cands[ci]
 		taken.append(Rect2(at, Vector2(cw, m))); _words.append(taken.back())
-		GS.marker(overlay, at + Vector2(m, m) * 0.5, s, str(i + 1), ui.font_num_b, id == str(ui.picked))
+		var num = int(ui.route_num(id)) if ui.has_method("route_num") else i + 1   # the same number as its row
+		GS.marker(overlay, at + Vector2(m, m) * 0.5, s, str(num if num > 0 else i + 1), ui.font_num_b, id == str(ui.picked))
 		GS.halo_text(overlay, f20, Vector2(at.x + m + gp, at.y + m * 0.5 + (f20.get_ascent(fs) - f20.get_descent(fs)) * 0.5), nm, fs, ui.BONE, s)
 	if _flying:
 		var t2 = "In flight. Click or press Space to skip."; var fr = _free_rect()

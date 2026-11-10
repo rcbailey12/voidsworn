@@ -879,6 +879,10 @@ func _jump_button() -> Button:
 	b.pressed.connect(_jump)
 	_jump_btn = b
 	return b
+func route_num(id: String) -> int:   # the number a next jump wears in the list and on the map (0: not a next jump)
+	for r in _routes:
+		if r["id"] == id: return int(r["num"])
+	return 0
 # pick a next jump (a row click, its number key, or its stop on the map): the row lights, the button names it
 func pick_route(id: String) -> void:
 	if id == picked or not _routes.any(func(r): return r["id"] == id): return

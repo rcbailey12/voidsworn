@@ -342,9 +342,9 @@ func _briefing(dir: String) -> void:
 	var on_map = func(): return C.modal_d == null and C.page.get("kind") == "map"
 	if await _br_play(func(): return on_map.call() and C.page["data"]["avail"].size() >= 3, 300):
 		await _ro_shot("02_map_three_routes")
-		ui.pick_route(str(C.page["data"]["avail"][1])); await _frames(3)
+		ui.pick_route(str(ui._routes[1]["id"])); await _frames(3)
 		await _ro_shot("02b_route_two_picked")
-		ui.pick_route(str(C.page["data"]["avail"][0])); await _frames(2)
+		ui.pick_route(str(ui._routes[0]["id"])); await _frames(2)
 		var m = ui.map3d; var far = ""; var nem = ""
 		var ids = m._kb_order.filter(func(id): return not C.page["data"]["avail"].has(id) and C.RUN.get("pos") != id and m._reachable.has(id))
 		for id in ids:   # a fight two or three jumps on, as the mockup's hovered stop; and one where the Nemesis meets you

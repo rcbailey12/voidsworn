@@ -310,16 +310,24 @@ static func stop(C, n) -> Dictionary:
 	return row
 
 
-# The route rows of the briefing column: one per stop you can jump to now, in the campaign's own order (the order the
-# number keys 1, 2, 3 and the map markers use). Each is stop() plus num and then: the names of the stops that route leads
-# to, from the real map edges, each name once.
+# The route rows of the briefing column: one per stop you can jump to now, numbered from the outer orbit inward (the
+# stop's own place in its column, so 1, 2, 3 read across the map the way they read down the list; the number keys and the
+# map markers use the same numbers). Each is stop() plus num and then: the names of the stops that route leads to, from
+# the real map edges, each name once.
 static func routes(C) -> Array:
 	var out: Array = []
 	if C.RUN == null or C.page.get("kind") != "map": return out
-	var i := 0
+	var ids: Array = []
 	for id in C.page["data"]["avail"]:
+		if C.findNode(id) != null: ids.append(id)
+	var order := {}
+	for j in ids.size(): order[ids[j]] = j
+	ids.sort_custom(func(a, b):
+		var ya := float(C.z0(C.findNode(a).get("y"))); var yb := float(C.z0(C.findNode(b).get("y")))
+		return ya < yb if ya != yb else int(order[a]) < int(order[b]))
+	var i := 0
+	for id in ids:
 		var n = C.findNode(id)
-		if n == null: continue
 		i += 1
 		var row := stop(C, n)
 		row["num"] = i
