@@ -75,6 +75,10 @@ def concept_cam(name='concept'):
     o.data.shift_x = -(p['cx'] - 512) / 1024; o.data.shift_y = (p['cy'] - 512) / 1024
     return o
 if os.path.exists(CAMJ): views = [('concept', None)] + views
+# round 7 (R160: paint is judged on the far side too): the starboard side, on request only (--views=side_s,hero_s), so older runs
+# keep their file set. Bow on the right in side_s (the camera is not mirrored).
+if ONLY and 'side_s' in ONLY: views.append(('side_s', dict(loc=(0, -3, -.01), look=(0, 0, -.01), ortho=1.2, res=(2400, 1200))))
+if ONLY and 'hero_s' in ONLY: views.append(('hero_s', dict(loc=(1.22, -1.62, .80), look=target, lens=50, res=(1600, 900))))
 for nm, kw in views:
     if ONLY and nm not in ONLY: continue
     o = concept_cam() if nm == 'concept' else cam(nm, **kw)
