@@ -370,7 +370,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 # Weapon bursts use leap 1's atlas, flow interpolation, thickness lighting and
 # soft intersections. Only the palette and aspect differ from the death recipe.
 # Keep one derived shader per FX session, with the same three cached atlas maps.
-static func _weapon_shader(fx) -> Shader:
+static func _weapon_shader(fx, routed := false) -> Shader:
 	if not fx.dstate.has("weapon_flipbook_shader"):
 		var code: String = SH.DEATH_FLIPBOOK.replace("uniform float intensity = 1.0;",
 			"uniform float intensity = 1.0;\nuniform vec3 weapon_tint = vec3(0.9, 0.6, 0.3);\nuniform float opacity = 1.0;\nuniform float aspect = 1.0;\nuniform float spin = 0.0;\nuniform float vent = 0.0;\nuniform float vent_cone = 1.0;\nuniform float hot = 0.0;\nuniform float looping = 0.0;")
@@ -400,6 +400,9 @@ static func _weapon_shader(fx) -> Shader:
 		code = code.replace("(elapsed < lifetime ? 1.0 : 0.0)", "(elapsed < lifetime || looping > 0.5 ? 1.0 : 0.0)")
 
 		fx.dstate["weapon_flipbook_shader"] = fx.mat(code, 2, "#define COMPAT\n" if fx.compat else "").shader
+		fx.dstate["weapon_flipbook_code"] = code
+	if routed:   # issue 353, bench only: a candidate bake (fx_death.route_material) keeps its baked colour
+		return fx.mat(fx.dstate["weapon_flipbook_code"], 2, ("#define COMPAT\n" if fx.compat else "") + "#define ROUTE_BAKED\n").shader
 	return fx.dstate["weapon_flipbook_shader"]
 
 
@@ -417,7 +420,7 @@ static func _burst(fx, p: Vector3, axis: Vector3, T: float, size: float, kind: S
 		node.name = "fx_weapon_" + kind
 		# The vent helper offsets its atlas to put the tip on the sampled surface.
 		var mat: ShaderMaterial = node.material_override
-		mat.shader = _weapon_shader(fx)
+		mat.shader = _weapon_shader(fx, mat.has_meta("route"))
 		mat.set_shader_parameter("born", T)
 		mat.set_shader_parameter("weapon_tint", Vector3(col.r, col.g, col.b))
 		mat.set_shader_parameter("opacity", opacity)
@@ -436,6 +439,11 @@ const WATLAS_DIR := "res://fx/atlases/weapons/"
 # like the ship-death atlases so it reads at the same quality bar instead of a pale puff. The bake renders in the same
 # cell layout and channel names as the deaths, so the existing flow interpolation and thickness lighting apply unchanged.
 static func _weapon_gas_material(fx, kind: String) -> ShaderMaterial:
+	var rel := "weapons/" + kind + "/" + kind + "_"
+	if DEATH.route_texture(fx, rel + "color.png") != null:
+		var r: ShaderMaterial = DEATH.route_material(fx, SH.DEATH_FLIPBOOK, rel)
+		r.shader = _weapon_shader(fx, true)
+		return r
 	var m: ShaderMaterial = fx.mat(SH.DEATH_FLIPBOOK, 2, "#define COMPAT\n" if fx.compat else "")
 	for key in ["color", "flow", "thickness"]:
 		var path: String = WATLAS_DIR + kind + "/" + kind + "_" + key + ".png"
@@ -466,6 +474,10 @@ static func _weapon_gas(fx, p: Vector3, axis: Vector3, T: float, size: float, ki
 		m.set_shader_parameter("born", T)
 		m.set_shader_parameter("lifetime", life)
 		m.set_shader_parameter("extent", size * fx.unit)
+		if m.has_meta("route"):
+			# Issue 353, bench only: today's impact gas fills 52 of its 256 pixel cell, a candidate about four fifths, so
+			# the quad shrinks by the same share and the gas keeps today's size on screen (size is #352's call).
+			m.set_shader_parameter("extent", size * fx.unit * 0.25)
 		m.set_shader_parameter("intensity", strength)
 		m.set_shader_parameter("plasma", 1.0)
 		m.set_shader_parameter("hot", 1.0)

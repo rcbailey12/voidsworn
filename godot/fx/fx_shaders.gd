@@ -116,6 +116,9 @@ void vertex() {
 void fragment() {
 	float age = clamp(elapsed / max(lifetime, 0.001), 0.0, 1.0);
 	float frame = mix(age * 15.0, 3.0 + sqrt(age) * 12.0, plasma);
+#ifdef ROUTE_BAKED
+	frame = age * 15.0;
+#endif
 	float a = floor(frame); float b = min(a + 1.0, 15.0); float blend = fract(frame);
 	vec2 uv = atlas_rect.xy + vec2(UV.x, mix(UV.y, 1.0 - UV.y, directional)) * atlas_rect.zw;
 	vec2 fa = (texture(motion, cell_uv(uv, a)).rg - 0.5) * 0.25;
@@ -138,6 +141,11 @@ void fragment() {
 	// phases through flash_ok; an unbooked vent has no emissive pulse.
 	float pulse = plasma * (1.0 - smoothstep(0.12, 0.85, age)) + ignition * exp(-elapsed / 0.055);
 	ALBEDO += core * (0.9 + gas.r * 1.6) * pulse * intensity * fx_gain;
+#ifdef ROUTE_BAKED
+	// Issue 353, bench only: a candidate bake carries its own colour and its heat (thickness blue: 0 smoke, 1 fire).
+	// Smoke is shaded by the battle sun; fire glows by the caller's intensity. The game never defines ROUTE_BAKED.
+	ALBEDO = gas.rgb * mix(0.55 + 0.9 * lit, 1.2 * intensity, thick.b) * fx_gain;
+#endif
 	float fade = 1.0 - smoothstep(0.70, 1.0, age);
 	float soft = 1.0;
 #ifndef COMPAT

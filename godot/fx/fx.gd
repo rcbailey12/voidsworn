@@ -50,6 +50,10 @@ var timing := {"ripple": 0.08, "shell_speed": 160.0, "lance": 0.7, "charge": 0.2
 # Issue 281 vent gas: the shipped look is Cone B, a tight forward cone of gas and sparks along the barrel. "today" draws
 # the pre-Cone-B baked gas cell and is only set by the review capture to shoot the before stills; the game leaves it "".
 var vent_look := ""
+# Issue 353 (bench only): a folder laid out like res://fx/atlases/ holding candidate explosion bakes (VS_FX_ATLAS). A kind
+# found there is drawn from it with its baked colour (fx_death.route_texture); everything else is unchanged. The game
+# never sets it, so a normal game draws exactly what it drew before.
+var fx_atlas := ""
 # Issue 281 stray-puff guard: when a test sets check_radius, every weapon/vent/thruster gas spawn records its world
 # position and its source ship (fx_weapons.gd and fx_ship.gd call record_spawn), and stray_spawns() reports any that
 # landed more than a small share of that ship's hull length from its real plating (see record_spawn).
@@ -174,6 +178,7 @@ func setup(opts := {}) -> void:
 	# Issue 281: the review capture can ask for the pre-Cone-B look to shoot the before stills; the game's default is the
 	# shipped Cone B (see fx_weapons._vent).
 	vent_look = String(opts.get("vent_look", OS.get_environment("VS_VENT_LOOK")))
+	fx_atlas = String(opts.get("fx_atlas", OS.get_environment("VS_FX_ATLAS")))
 	var rich = quality != "low"
 	var soft = "#define SOFT\n" if rich else ""
 	var big = quality == "max"

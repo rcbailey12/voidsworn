@@ -143,6 +143,9 @@ static func atlas_band(length: float) -> String:
 
 # Load once per FX session. No image decode or shader compilation on a death frame.
 static func flipbook_material(fx, kind: String, band := "capital") -> ShaderMaterial:
+	var rel := "death/" + band + "/" + kind + "_"
+	if route_texture(fx, rel + "color.png") != null:
+		return route_material(fx, SH.DEATH_FLIPBOOK, rel)
 	var m: ShaderMaterial = fx.mat(SH.DEATH_FLIPBOOK, 2, "#define COMPAT\n" if fx.compat else "")
 	for key in ["color", "flow", "thickness"]:
 		var path: String = ATLAS_DIR + band + "/" + kind + "_" + key + ".png"
@@ -150,6 +153,30 @@ static func flipbook_material(fx, kind: String, band := "capital") -> ShaderMate
 		if not textures.has(path): textures[path] = load(path)
 		fx.dstate["death_atlases"] = textures
 		m.set_shader_parameter({"color": "atlas", "flow": "motion", "thickness": "thickness"}[key], textures[path])
+	return m
+
+
+# Issue 353, bench only (fx.fx_atlas, VS_FX_ATLAS): a candidate bake on disk, laid out like res://fx/atlases/. Returns
+# null when the switch is off or the file is not there, so only the kinds a candidate bakes are swapped.
+static func route_texture(fx, rel: String) -> Texture2D:
+	if String(fx.fx_atlas) == "":
+		return null
+	var path := String(fx.fx_atlas).path_join(rel)
+	var cache: Dictionary = fx.dstate.get("route_atlases", {})
+	if not cache.has(path):
+		var img: Image = Image.load_from_file(path) if FileAccess.file_exists(path) else null
+		cache[path] = ImageTexture.create_from_image(img) if img != null else null
+		fx.dstate["route_atlases"] = cache
+	return cache[path]
+
+
+# The candidate's three textures, drawn with its baked colour and heat (ROUTE_BAKED in the flipbook shader). The meta
+# tells the callers to sample the whole cell (the candidates fill about four fifths of it) and to keep the define.
+static func route_material(fx, code: String, rel: String) -> ShaderMaterial:
+	var m: ShaderMaterial = fx.mat(code, 2, ("#define COMPAT\n" if fx.compat else "") + "#define ROUTE_BAKED\n")
+	for key in ["color", "flow", "thickness"]:
+		m.set_shader_parameter({"color": "atlas", "flow": "motion", "thickness": "thickness"}[key], route_texture(fx, rel + key + ".png"))
+	m.set_meta("route", true)
 	return m
 
 
@@ -171,6 +198,8 @@ static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life
 	# The simulation occupies only about a fifth of each baked cell. Sampling
 	# its padded cell made a nominal 70-pixel core just 13 pixels wide.
 	m.set_shader_parameter("atlas_rect", Vector4(0.36, 0.40, 0.28, 0.44) if kind == "vent" else Vector4(0.38, 0.38, 0.24, 0.24))
+	if m.has_meta("route"):
+		m.set_shader_parameter("atlas_rect", Vector4(0.0, 0.0, 1.0, 1.0))
 	m.set_shader_parameter("tear_normal", n)
 	m.set_shader_parameter("velocity", velocity)
 	m.set_shader_parameter("min_pixels", 70.0 if kind == "flash" else 0.0)
