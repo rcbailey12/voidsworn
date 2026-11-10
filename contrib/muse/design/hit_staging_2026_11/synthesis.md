@@ -25,16 +25,16 @@ Delivered by Rey (chair). Legs: Rey blind (written first), DeepSeek (writer), Qw
 
 What each beat is:
 
-- Flash: the white core at peak, reached inside the first two frames, then decaying for the rest of the stated life. Torpedo rows and all deaths also cast light on nearby hulls during this beat.
+- Flash: the white core at peak, reached inside the first two frames, then decaying for the rest of the stated life. Torpedo rows and all deaths also cast light on nearby hulls during this beat (owner ruling, 2026-11-10, question 5: the heavy rows only, not lance or las).
 - Body: las and macro are a hot spark and a short gas puff. The lance body is the contact burn for as long as the beam dwells, plus a 0.30 s tail after it lifts. The shield body is the ripple disc expanding across the dome (156 px is the code's current 26 units at 6 px per unit, and its 1.10 s matches the code's shield life). The torpedo-on-hull body is gas, debris and the hot core inside the flame cap. Death bodies are the break-up itself: spin and pop for a frigate; power-down, tear, split, core flash and secondaries for cruiser and capital.
-- Aftermath: the glowing wound, cut line or shield scar cooling, and for deaths the coals and drifting halves. On the two big deaths only the first part is active (about 5 s on a cruiser, about 8 s on a capital: gas, embers, debris motion); the rest of the stated time is the passive coals shader, which R90 prices as cheap.
-- Secondary explosions on cruiser and capital deaths: each at least 60 px, five per half, staggered 0.7 to 3.5 s after the split per API.md line 116, each one a separate flame element under the cap below. Today's floor is 24 px (fx_death.gd:1421), which reads as a blink.
+- Aftermath: the glowing wound, cut line or shield scar cooling, and for deaths the coals and drifting halves. On the two big deaths only the first part is active (about 5 s on a cruiser, about 8 s on a capital: gas, embers, debris motion); the rest of the stated time is the passive coals shader, which R90 prices as cheap. This split form is the owner's ruling, 2026-11-10 (question 4).
+- Secondary explosions on cruiser and capital deaths: each at least 75 px, five per half, staggered 0.7 to 3.5 s after the split per API.md line 116, each one a separate flame element under the cap below. The 75 px floor is the owner's ruling, 2026-11-10 (question 6), splitting the chair's 60 and DeepSeek's 90. Today's floor is 24 px (fx_death.gd:1421), which reads as a blink.
 
-Ladder placement note: the shield row sits below the hull row on the flash column and above it on the body column. A shield flash is a surface strobe spread thin; the hull flash is a concentrated breach. The shield's spectacle is its ripple, which is the largest body of any weapon hit. Qwen's leg dissents and puts the shield flash above the hull flash; the chair holds that the flash ladder stays honest about concentration, and the ripple carries the shield row's size in its own column.
+Ladder placement note: the shield row sits below the hull row on the flash column and above it on the body column. A shield flash is a surface strobe spread thin; the hull flash is a concentrated breach. The shield's spectacle is its ripple, which is the largest body of any weapon hit. Qwen's leg dissents and puts the shield flash above the hull flash; the chair holds that the flash ladder stays honest about concentration, and the ripple carries the shield row's size in its own column. This is question 3, still open with the owner at this revision; the table as printed follows the chair's placement.
 
 ## Flame cap
 
-No single flame or hot-core element lives longer than 0.6 s anywhere in the table, and no hot core stays at full heat longer than 0.25 s. This is the chair's recommendation to the owner (question 1 below). It sits inside R88 (flash and snuff out), R158 (not a second of rolling fire) and R90 (the death budget lives in the first 2 s; the long tail is a cooling shader, not flame). Glowing wounds, coals, venting gas and drifting smoke are not flame and are not bound by the cap. Leg dissents: Qwen would cap at 0.45 s, DeepSeek at 0.80 s, Flash agrees at 0.60 s.
+No single flame or hot-core element lives longer than 0.70 s anywhere in the table, and no hot core stays at full heat longer than 0.25 s. Owner ruling, 2026-11-10 (question 1): 0.70 s, splitting the chair's 0.60 and DeepSeek's 0.80. It sits inside R88 (flash and snuff out), R158 (not a second of rolling fire) and R90 (the death budget lives in the first 2 s; the long tail is a cooling shader, not flame). Glowing wounds, coals, venting gas and drifting smoke are not flame and are not bound by the cap. Leg positions going into the ruling: Qwen 0.45 s, Flash 0.60 s, DeepSeek 0.80 s.
 
 ## Reduce-flashing variant (per row)
 
@@ -76,14 +76,14 @@ Further links suggested by the DeepSeek, Qwen and Flash legs were self-marked un
 - Flash (ideation): adopted its flash-life critique (a 0.24 to 0.32 s flash is a glowing orb, not a strobe; the torpedo flash living 76 percent as long as its own gas plume is the beige ball stated precisely) and its half-sine reduce-flashing envelope. Its near-code sizes are not adopted. Three of its code claims go beyond the pack evidence and are treated as inference, not fact (recorded in its leg file).
 - Grok (ideation): did not land. Its sign-in waited on a Google phone approval that had not completed when this was delivered, so the seat is recorded empty rather than filled by a substitute, per the model gates. If it lands later it will be added as a follow-up.
 
-## Questions for the owner (chair pick marked)
+## Questions for the owner: rulings recorded 2026-11-10
 
-1. Flame cap. (a) 0.45 s (Qwen). (b) 0.60 s [CHAIR PICK: enough frames to sell combustion weight, clearly inside flash and snuff out]. (c) 0.80 s (DeepSeek).
-2. Ladder scale. (a) The 1.4x ladder in this table, capital flash 423 px [CHAIR PICK: finding 2's complaint is that the heaviest moments have the least on screen]. (b) The compressed near-code scale (Flash and Qwen: capital flash 185 to 240 px).
-3. Shield placement. (a) Shield flash smaller than hull flash, ripple bigger [CHAIR PICK]. (b) Shield flash bigger than hull flash (Qwen).
-4. Capital aftermath. (a) 14.0 s total with about 8 s active and the rest the passive coals shader [CHAIR PICK: R90's tail at shader prices]. (b) 10.0 s flat, matching the API coal wording. (c) 8.0 s flat (Qwen's active window only).
-5. Hull light. (a) Torpedo rows and all deaths light nearby hulls [CHAIR PICK]. (b) Lance and everything above. (c) Every event.
-6. Secondary explosion floor. (a) 60 px [CHAIR PICK: reads as a pop against a 165 to 200 px hull without rivalling the core flash]. (b) 90 px (DeepSeek). (c) 42 to 48 px (Flash).
+1. Flame cap. RULED: 0.70 s (owner split the chair's 0.60 and DeepSeek's 0.80; Qwen held 0.45).
+2. Ladder scale. RULED: the 1.4x ladder in this table, capital flash 423 px, over the compressed near-code scale (Flash and Qwen: capital flash 185 to 240 px).
+3. Shield placement. OPEN. (a) Shield flash smaller than hull flash, ripple bigger [CHAIR PICK, the placement printed in the table]. (b) Shield flash bigger than hull flash (Qwen).
+4. Capital aftermath. RULED: 14.0 s total with about 8 s active and the rest the passive coals shader (the chair pick; over 10.0 s flat matching the API coal wording, and 8.0 s flat, Qwen's active window only).
+5. Hull light. RULED: torpedo rows and all deaths light nearby hulls (the chair pick; over lance and everything above, and every event).
+6. Secondary explosion floor. RULED: 75 px (owner split the chair's 60 and DeepSeek's 90; Flash held 42 to 48).
 
 ## Not checked
 
