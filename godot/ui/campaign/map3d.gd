@@ -956,7 +956,7 @@ func _fill_card(n: Dictionary) -> void:
 		var pr = ui.para(t, size, 18 if size <= 13 else 20, col, tw, 3, f); card_box.add_child(pr[0])
 	var done = C.jt(n.get("done")); var cut_off = not done and not _reachable.has(str(n["id"]))
 	add.call(S["name"], ui.BONE, ui.font_semi, 15)
-	add.call(S["what"] + (" (passed)" if done else ""), ui.BONE2)
+	add.call(str(S.get("what_tip", S["what"])) + (" (passed)" if done else ""), ui.BONE2)
 	var dg: Dictionary = _danger.get(str(n["id"]), {})
 	if S["fight"] and not done and not dg.is_empty():
 		var h = HBoxContainer.new(); h.add_theme_constant_override("separation", ui.px(8)); h.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -974,7 +974,13 @@ func _fill_card(n: Dictionary) -> void:
 		for r in _routes:
 			var st = r["st"]
 			var t = "%s way on: %d fight%s%s, %d repair stop%s, %d shipyard%s" % [r["name"], st["fights"], "" if st["fights"] == 1 else "s", (" (%d elite)" % st["elites"]) if st["elites"] > 0 else "", st["repairs"], "" if st["repairs"] == 1 else "s", st["shops"], "" if st["shops"] == 1 else "s"]
-			if r["name"] == "Richest": t = "Richest way on: %d fight%s, %d %s, %d refit%s, %d %s" % [st["fights"], "" if st["fights"] == 1 else "s", st["boons"], ui.term("boon") if st["boons"] == 1 else ui.term("boons"), st["refits"], "" if st["refits"] == 1 else "s", st["relics"], ui.term("relic")]
+			if r["name"] == "Richest":   # what it pays, the counts that are not zero
+				var pay: Array = ["%d fight%s" % [st["fights"], "" if st["fights"] == 1 else "s"]]
+				if st["boons"] > 0: pay.append("%d %s" % [st["boons"], ui.term("boon") if st["boons"] == 1 else ui.term("boons")])
+				if st["refits"] > 0: pay.append("%d refit%s" % [st["refits"], "" if st["refits"] == 1 else "s"])
+				if st["relics"] > 0: pay.append("%d %s" % [st["relics"], ui.term("relic")])
+				if st["shops"] > 0: pay.append("%d shipyard%s" % [st["shops"], "" if st["shops"] == 1 else "s"])
+				t = "Richest way on: " + ", ".join(PackedStringArray(pay))
 			t += ", worst " + str(st["worst_name"])
 			add.call(t, ui.BONE3)
 			if fc["hurt"] and not st["repair_before_boss"]: add.call("Your fleet is hurt and this way has no repair stop before the flagship.", ui.BONE2)

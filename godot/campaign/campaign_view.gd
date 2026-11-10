@@ -296,6 +296,7 @@ static func stop(C, n) -> Dictionary:
 	var who := fac_in_sentence(C, fac)
 	if row["nemesis"]:
 		row["what"] = "Nemesis meeting: an elite fight with " + str(C.nemPr(nem(C))["his"]) + " fleet"
+		row["what_tip"] = "Elite fight against " + str(C.nemFull(nem(C))) + "'s fleet"   # the tip says "The Nemesis meets you here" on its own red line
 	elif row["arch"] != "":
 		var adj := str(row["fac_name"]).trim_prefix("The ")
 		row["what"] = row["kind_word"] + " against " + _article(adj) + " " + adj + " " + str(row["arch"]).to_lower()
