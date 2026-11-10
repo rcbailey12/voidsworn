@@ -1,4 +1,4 @@
-// G3 campaign parity: loads the pinned JS game files (../oracle) headless, unchanged, with no-op presentation calls,
+// G3 campaign parity: loads the root JS game files headless, unchanged, with no-op presentation calls,
 // the same way godot/rules/test/node/golden.js and sim3d.js do. The browser page is replaced by small stubs; show() and
 // modal() record the HTML they are given so the harness can read the buttons a player would see.
 //
@@ -10,7 +10,7 @@
 // - Date.now() is 0 (ship ids x01, x02 ...), setTimeout runs nothing (toasts only), storage is empty.
 'use strict';
 const fs = require('fs'), path = require('path'), vm = require('vm');
-const ORACLE = process.env.VS_ORACLE ? path.resolve(process.env.VS_ORACLE) : path.resolve(__dirname, '..', 'oracle');
+const ORACLE = process.env.VS_ORACLE ? path.resolve(process.env.VS_ORACLE) : path.resolve(__dirname, '..', '..', '..', '..');
 const FILES = ['data.js', 'core.js', 'battle.js', 'campaign_meta.js', 'campaign_run.js', 'campaign3d.js'];
 
 // ui3d.js is presentation, but two of its tables reach the rules: FNAMES (ship names for non-Voidsworn fleets, read by

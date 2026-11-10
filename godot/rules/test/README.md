@@ -12,6 +12,10 @@ The battle rules in `godot/rules/` are a GDScript port of the game's `battle.js`
 - **In the cloud or on Linux:** `GODOT=/path/to/godot sh godot/rules/test/run_parity.sh [scenario ...]`.
 - **API smoke test:** `godot --headless --path godot --script res://rules/test/api_smoke.gd -- s1` plays a battle through `battle_api.gd` and prints the event counts.
 
+## Where the JS side comes from
+
+There is one copy of the rules files: the repo root (`battle.js`, `data.js`, `core.js`, `ui3d.js`, `campaign_run.js`). `node/golden.js` and `node/export_data.js` read them directly by default; set `VS_ORACLE` only when the game files sit in another tree. `FNAMES` is taken from the root `ui3d.js` and `nemAdaptName` from the root `campaign_run.js`; the small extracts `node/fnames.js` and `node/campaign_hooks.js` remain only as fallbacks.
+
 ## What it checks
 
 1. **Data.** `node/export_data.js` writes every data table from `data.js`, `core.js` and `battle.js` to `godot/rules/data/tables.json`. Nothing is copied by hand.
@@ -45,7 +49,7 @@ The battle rules in `godot/rules/` are a GDScript port of the game's `battle.js`
 
    - **Stream B step 13 (Nov 1, the R1 batch), no new golden (the count stays 48):** `cfg.noStar` is set on half the sector 1 battles of every sweep (sweep_gen.js, drawn last so the other fields are unchanged), which reaches both new shape branches; the veteran mid-move brace (`aiVetBrace`) is reached by every veteran golden and sweep battle whose ship moves under fire; `gsentry` is table data read by the Eclipse goldens that field Eclipse fleets (s9, s15, s19, s28, s39, s44).
 
-   Node runs the game's own `data.js`, `core.js` and `battle.js` unchanged (`node/golden.js`, from the pinned copy in `oracle/`). It writes a record at every one of these points, the same on both sides:
+   Node runs the game's own `data.js`, `core.js` and `battle.js` unchanged (`node/golden.js`, from the repo root). It writes a record at every one of these points, the same on both sides:
    - `start` (after setup), `move` (each burn, at the point the game draws it), `rotate`, `fire` (each weapon's volley, and each torpedo impact), `death`, `ram`, `board` (before the boarding rolls), `nova`, `blink`;
    - `ability`, `order`, `command <side>` and `wing order` after each of those actions;
    - `tick <side>` after each side's turn-start ticks, `end turn` (Classic mode), `end activation`, `activation` (after each enemy activation), `round` (after the round start and swarm phases), and `end <result>`.

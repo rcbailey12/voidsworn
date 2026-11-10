@@ -11,7 +11,7 @@ if exist "%HERE%godot\project.godot" set "GAME=%HERE%"
 if not defined GAME if exist "%HERE%..\..\godot\project.godot" set "GAME=%HERE%..\..\"
 if not defined GAME ( echo FAIL: cannot find the Godot project ^(godot\project.godot next to this file or two folders up^). & goto :end )
 set "PROJ=%GAME%godot\"
-rem the rules oracle is the pinned copy in godot\rules\test\oracle\ (see its README)
+rem the rules oracle is the root game files (battle.js, data.js, core.js); the node scripts read them there by default
 set "T=%PROJ%rules\test\"
 set "NODE=node"
 if exist "%GAME%..\node\node.exe" set "NODE=%GAME%..\node\node.exe"

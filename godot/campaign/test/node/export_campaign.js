@@ -1,4 +1,4 @@
-// G3 campaign: writes every data table the campaign uses, from the pinned oracle files, to godot/campaign/data/campaign_tables.json.
+// G3 campaign: writes every data table the campaign uses, from the root game files, to godot/campaign/data/campaign_tables.json.
 // Same encoding as G1's godot/rules/test/node/export_data.js: non-integer numbers as "#d:" + IEEE hex, a SHA-256 of the canonical form.
 // Tables that hold code are evaluated here, once per rarity, so Godot gets plain data with nothing copied by hand:
 //   BOON_FX[id][r] = BOONS[id].fx(RARITY[r].m), BOON_D[id][r] = BOONS[id].d(RARITY[r].m)
@@ -41,7 +41,7 @@ const missing = [...need].filter(n => out[n] === undefined).sort();
 if (missing.length) { console.error('export_campaign: FAIL, the oracle has no table for: ' + missing.join(', ') + ' (the campaign reads them; nothing written)'); process.exit(1); }
 const sum = crypto.createHash('sha256').update(canon(out)).digest('hex');
 const dest = process.argv[2] || path.resolve(__dirname, '..', '..', 'data', 'campaign_tables.json');
-fs.writeFileSync(dest, JSON.stringify({ sha256: sum, oracle: 'godot/campaign/test/oracle', tables: out }));
+fs.writeFileSync(dest, JSON.stringify({ sha256: sum, source: 'repo root', tables: out }));
 const fnFields = [...new Set(dropped.map(p => p.replace(/\[\d+\]/g, '[]').replace(/^(\w+)\.\w+\./, '$1.*.')))];
 console.log('exported', Object.keys(out).length, 'tables, sha256', sum.slice(0, 16));
 console.log('  skipped (state or code):', skipped.join(' '));

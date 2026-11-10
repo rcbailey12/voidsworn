@@ -1,13 +1,13 @@
 #!/bin/sh
 # G3 campaign parity, cloud / Linux twin of tools/pc/parity_campaign.bat. Same steps, same PASS/FAIL.
 #   GODOT=/path/to/godot sh godot/campaign/test/run_parity_campaign.sh [first_seed] [last_seed]     (default seeds 1 to 24)
-# 1. checks the campaign tables still match the pinned oracle (re-exports and compares the checksum);
-# 2. Node plays each seeded run with the pinned JS files (golden/), Godot plays the same runs (out/);
+# 1. checks the campaign tables still match the root game files (re-exports and compares the checksum);
+# 2. Node plays each seeded run with the root JS files (golden/), Godot plays the same runs (out/);
 # 3. compares them step by step and prints PASS, or the first step and field that differ.
 cd "$(dirname "$0")"; T=$(pwd); P=$(cd ../.. && pwd); G="${GODOT:-godot}"; F=0; A=${1:-1}; Z=${2:-24}
 mkdir -p golden out
 node node/export_campaign.js out/tables_check.json > /dev/null || F=$((F+1))
-if node -e "const a=require('./out/tables_check.json').sha256,b=require('../data/campaign_tables.json').sha256; process.exit(a===b?0:1)"; then echo "  tables: PASS (match the pinned oracle)"; else echo "  tables: FAIL (campaign_tables.json is stale: run node godot/campaign/test/node/export_campaign.js)"; F=$((F+1)); fi
+if node -e "const a=require('./out/tables_check.json').sha256,b=require('../data/campaign_tables.json').sha256; process.exit(a===b?0:1)"; then echo "  tables: PASS (match the root game files)"; else echo "  tables: FAIL (campaign_tables.json is stale: run node godot/campaign/test/node/export_campaign.js)"; F=$((F+1)); fi
 SEEDS=$(seq "$A" "$Z")
 for s in $SEEDS; do node node/golden_campaign.js "$s" "golden/c$s.jsonl" > /dev/null || { echo "  seed $s: the JS run did not finish"; F=$((F+1)); }; done
 "$G" --headless --path "$P" --script res://campaign/test/parity_campaign.gd -- "$T/out" $SEEDS > out/godot.log 2>&1

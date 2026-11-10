@@ -1,6 +1,6 @@
 @echo off
 rem Voidsworn campaign parity check (G3): plays 30 seeded full runs (title to the end screen) twice, once with the game's own
-rem JS campaign files in Node (the oracle, pinned in godot\campaign\test\oracle\) and once with the Godot port headless, using
+rem JS campaign files at the repo root in Node (the oracle) and once with the Godot port headless, using
 rem the same scripted player. Compares the campaign state after every click and prints PASS or FAIL with the first difference.
 rem Double-click it, or run "parity_campaign.bat nopause" from a watcher job. parity.bat calls it at the end.
 rem Works from Downloads\voidsworn_test\build\ (the repo's godot\ folder copied to build\godot\) or from a repo checkout.
@@ -30,7 +30,7 @@ for /L %%S in (1,1,30) do set "SEEDS=!SEEDS! %%S"
 
 echo.
 echo Campaign parity (G3)
-echo [1/3] Campaign tables still match the pinned JS files...
+echo [1/3] Campaign tables still match the root JS files...
 "%NODE%" "%T%node\export_campaign.js" "%T%out\tables_check.json" >> "%LOG%" 2>&1
 "%NODE%" -e "process.exit(require(process.argv[1]).sha256===require(process.argv[2]).sha256?0:1)" "%T%out\tables_check.json" "%PROJ%campaign\data\campaign_tables.json" >> "%LOG%" 2>&1
 if errorlevel 1 ( echo   FAIL: campaign_tables.json is stale & set /a FAILS+=1 ) else ( echo   PASS )
