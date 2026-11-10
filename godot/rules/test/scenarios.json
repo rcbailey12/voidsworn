@@ -8162,5 +8162,521 @@
    "picks": [],
    "capstone": 1
   }
+ },
+ "t7b_ecl_formation_a": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "fac_player": "deathless",
+  "admiral": "nekhet",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "rounds": 4,
+  "seed": 38203,
+  "lineage": {
+   "id": "nekhet",
+   "picks": [
+    "nekhet:B:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse B1a Formation Loaded from Archive (nekhet:B:0:0): two friends close by give +10 evasion"
+ },
+ "t7b_ecl_formation_b": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "fac_player": "deathless",
+  "admiral": "sekhmar",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "rounds": 4,
+  "seed": 38206,
+  "lineage": {
+   "id": "sekhmar",
+   "picks": [
+    "sekhmar:B:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse B1a Formation Loaded from Archive (sekhmar:B:0:0): two friends close by give +10 evasion"
+ },
+ "t7b_ecl_formation_c": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "fac_player": "deathless",
+  "admiral": "anuket",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "rounds": 4,
+  "seed": 38203,
+  "lineage": {
+   "id": "anuket",
+   "picks": [
+    "anuket:B:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse B1a Formation Loaded from Archive (anuket:B:0:0): two friends close by give +10 evasion"
+ },
+ "t7b_ecl_formation_d": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "fac_player": "deathless",
+  "admiral": "khepra",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "rounds": 4,
+  "seed": 38206,
+  "lineage": {
+   "id": "khepra",
+   "picks": [
+    "khepra:B:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse B1a Formation Loaded from Archive (khepra:B:0:0): two friends close by give +10 evasion"
+ },
+ "t7b_ecl_shadow": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "fac_player": "deathless",
+  "admiral": "anuket",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "rounds": 7,
+  "seed": 38207,
+  "lineage": {
+   "id": "anuket",
+   "picks": [
+    "anuket:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse Ostrel The Shadow Is a Position (anuket:A:1:0): ending in a rear arc pays in the hunt round"
+ },
+ "t7b_ecl_wall": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "fac_player": "deathless",
+  "admiral": "khepra",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "rounds": 4,
+  "seed": 38206,
+  "lineage": {
+   "id": "khepra",
+   "picks": [
+    "khepra:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse Seveth Wall Archived in Advance (khepra:A:1:0): an early wall is 10 points stronger"
+ },
+ "t7b_ecl_archive": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "fac_player": "deathless",
+  "admiral": "nekhet",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "cmdRound": 3,
+  "rounds": 5,
+  "seed": 38208,
+  "lineage": {
+   "id": "nekhet",
+   "picks": [
+    "nekhet:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse Nadir The Archive Answers First (nekhet:A:1:1): the restore before anyone acts is 10 points stronger"
+ },
+ "t7b_ecl_iterfire": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "fac_player": "deathless",
+  "admiral": "nekhet",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "cmdRound": 3,
+  "rounds": 5,
+  "seed": 38208,
+  "lineage": {
+   "id": "nekhet",
+   "picks": [
+    "nekhet:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse Nadir Iteration Runs During Fire (nekhet:A:1:0): a repaired ship fires at +15%"
+ },
+ "t7b_ecl_triage": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "fac_player": "deathless",
+  "admiral": "nekhet",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "fac": "chorus",
+  "enemies": [
+   "b_spitter",
+   "b_razor",
+   "b_drone"
+  ],
+  "cmdRound": 3,
+  "rounds": 5,
+  "seed": 38209,
+  "lineage": {
+   "id": "nekhet",
+   "picks": [
+    "nekhet:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse Nadir Copies Triage the Damage (nekhet:A:0:1): a section repaired to full clears fire and acid"
+ },
+ "t7b_ch_broodsplits": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "fac_player": "chorus",
+  "admiral": "matriarch",
+  "fleet": [
+   "b_brood",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 1,
+  "rounds": 5,
+  "seed": 38211,
+  "lineage": {
+   "id": "matriarch",
+   "picks": [
+    "matriarch:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus Matriarch The Brood Splits (matriarch:A:1:0): a swarm on a different target pays"
+ },
+ "t7b_ch_nine": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "fac_player": "chorus",
+  "admiral": "matriarch",
+  "fleet": [
+   "b_brood",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 1,
+  "rounds": 5,
+  "seed": 38212,
+  "lineage": {
+   "id": "matriarch",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Chorus Matriarch Nine Throats, One Hunger (matriarch:cap:0): every extra swarm strikes one enemy"
+ },
+ "t7b_ch_teeth": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "fac_player": "chorus",
+  "admiral": "razormaw",
+  "fleet": [
+   "b_razor",
+   "b_razor"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 2,
+  "rounds": 6,
+  "seed": 38215,
+  "lineage": {
+   "id": "razormaw",
+   "picks": [
+    "razormaw:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus Razormaw Teeth at the Throat (razormaw:A:0:1): the first rear hit in the frenzy pays"
+ },
+ "t7b_ch_tideearly": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "fac_player": "chorus",
+  "admiral": "mending",
+  "fleet": [
+   "b_drone",
+   "b_drone",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion",
+   "h_dominion"
+  ],
+  "cmdRound": 2,
+  "rounds": 5,
+  "seed": 38217,
+  "lineage": {
+   "id": "mending",
+   "picks": [
+    "mending:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus Mending The Tide Comes Early (mending:A:1:0): the restore before any damage is 10 points stronger"
+ },
+ "t7b_ch_growth": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "fac_player": "chorus",
+  "admiral": "mending",
+  "fleet": [
+   "b_razor",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 2,
+  "rounds": 6,
+  "seed": 38201,
+  "lineage": {
+   "id": "mending",
+   "picks": [
+    "mending:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus Mending Growth Holds the Wound (mending:A:1:1): a healed section heals again next round"
+ },
+ "t7b_ch_spat": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "fac_player": "chorus",
+  "admiral": "voice",
+  "fleet": [
+   "b_spitter",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "rounds": 5,
+  "seed": 38202,
+  "lineage": {
+   "id": "voice",
+   "picks": [
+    "voice:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus Voice Spat in Two Rounds (voice:A:1:1): half the ships hold their spit for next round"
+ },
+ "t7b_ecl_targetarchived": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "fac_player": "deathless",
+  "admiral": "sekhmar",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_jackal"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "rounds": 4,
+  "seed": 38201,
+  "lineage": {
+   "id": "sekhmar",
+   "picks": [
+    "sekhmar:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse Umbra Target Archived Mid-Flight (sekhmar:A:1:1): a target no other ship chose pays +10 aim"
  }
 }

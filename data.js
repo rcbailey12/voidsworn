@@ -2150,11 +2150,11 @@ const LINEAGE_TREES={
           [
             {
               "n": "The Brood Splits",
-              "d": "each extra swarm may strike a different target than the rest of its brood's swarms."
+              "d": "an extra swarm that strikes a different target than its brood's other swarms gains +15% damage."
             },
             {
               "n": "Spawned Before the Strike",
-              "d": "spawning happens before your ships move, so the new swarms can screen your movement this round."
+              "d": "a brood that moved this round has its extra swarms strike at +15% damage."
             }
           ],
           [
@@ -2175,7 +2175,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Roles Assigned at Hatching",
-              "d": "at battle start, give each ship a role (strike, screen, or mend); a ship may change its role once per battle."
+              "d": "at battle start, give each ship a role: strike (its shots gain +10 aim), screen (it gains +10 evasion), or mend (its repair and regrowth effects are 10% stronger); a ship may change its role once per battle."
             },
             {
               "n": "Broods in Reserve",
@@ -2203,11 +2203,11 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "Nine Throats, One Hunger",
-        "d": "Spawning surge releases an extra swarm from every ship that carries swarms, not only from broods."
+        "d": "when Spawning surge is used, choose one enemy; every extra swarm strikes it, and it takes +25% damage from swarm hits this round."
       },
       {
         "n": "The Brood Does Not Stop",
-        "d": "the extra swarms remain after the Command and strike once more at the start of next round before fading."
+        "d": "an extra swarm that destroys its target strikes another enemy at half damage in the same round."
       }
     ]
   },
@@ -2223,7 +2223,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Teeth at the Throat",
-              "d": "a ship that ends its frenzy movement behind an enemy strikes that enemy rear arc with its first shot this round."
+              "d": "a ship's first rear arc hit in the frenzy round gains +25% damage."
             }
           ],
           [
@@ -2233,7 +2233,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Scent in the Dark",
-              "d": "during the frenzy, a ship may change targets freely after each kill without losing the frenzy accuracy protection."
+              "d": "during the frenzy, a ship that changes targets after a kill gains +10 aim on its next shot."
             }
           ],
           [
@@ -2254,7 +2254,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Roles Assigned at Hatching",
-              "d": "at battle start, give each ship a role (strike, screen, or mend); a ship may change its role once per battle."
+              "d": "at battle start, give each ship a role: strike (its shots gain +10 aim), screen (it gains +10 evasion), or mend (its repair and regrowth effects are 10% stronger); a ship may change its role once per battle."
             },
             {
               "n": "Broods in Reserve",
@@ -2308,11 +2308,11 @@ const LINEAGE_TREES={
           [
             {
               "n": "The Tide Comes Early",
-              "d": "Regrowth tide may be used at the start of the round, before any fire is taken."
+              "d": "if Regrowth tide is used before any of your ships has taken damage this round, every repair is 10 points stronger."
             },
             {
               "n": "Growth Holds the Wound",
-              "d": "a section healed by the tide regrows at double rate again next round."
+              "d": "a section healed by the tide heals again at the next round start, for the same amount."
             }
           ],
           [
@@ -2333,7 +2333,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Roles Assigned at Hatching",
-              "d": "at battle start, give each ship a role (strike, screen, or mend); a ship may change its role once per battle."
+              "d": "at battle start, give each ship a role: strike (its shots gain +10 aim), screen (it gains +10 evasion), or mend (its repair and regrowth effects are 10% stronger); a ship may change its role once per battle."
             },
             {
               "n": "Broods in Reserve",
@@ -2391,7 +2391,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Spat in Two Rounds",
-              "d": "you may fire the volley in two halves, the second half after your ships move."
+              "d": "choose up to half your ships: they hold their spit in the volley and fire it at the start of next round at half damage."
             }
           ],
           [
@@ -2412,7 +2412,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Roles Assigned at Hatching",
-              "d": "at battle start, give each ship a role (strike, screen, or mend); a ship may change its role once per battle."
+              "d": "at battle start, give each ship a role: strike (its shots gain +10 aim), screen (it gains +10 evasion), or mend (its repair and regrowth effects are 10% stronger); a ship may change its role once per battle."
             },
             {
               "n": "Broods in Reserve",
@@ -2460,17 +2460,17 @@ const LINEAGE_TREES={
             },
             {
               "n": "Copies Triage the Damage",
-              "d": "assign the repair section by section in any order you choose; a section restored to full also clears all of its damage effects."
+              "d": "a section the Command repairs to full also clears its ship's fire and acid."
             }
           ],
           [
             {
               "n": "Iteration Runs During Fire",
-              "d": "a ship being rebuilt by the swarms may act normally this round; the rebuild never delays its fire."
+              "d": "a ship repaired by the Command gains +15% damage on its next shot this round."
             },
             {
               "n": "The Archive Answers First",
-              "d": "the swarms may be released at the very start of the round, before any ship moves or fires."
+              "d": "if Release the repair swarms is used before any of your ships has acted this round, every repair is 10 points stronger."
             }
           ],
           [
@@ -2491,7 +2491,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Formation Loaded from Archive",
-              "d": "choose one archived formation at battle start; ships that end their movement inside it gain +10 evasion that round."
+              "d": "ships that end their movement next to two friendly ships gain +10 evasion that round."
             },
             {
               "n": "Iteration Swap",
@@ -2549,7 +2549,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Target Archived Mid-Flight",
-              "d": "before the volley resolves, each ship may switch its target once."
+              "d": "before the volley resolves, each ship may choose its own target; a ship that chooses a target no other ship chose gains +10 aim against it."
             }
           ],
           [
@@ -2570,7 +2570,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Formation Loaded from Archive",
-              "d": "choose one archived formation at battle start; ships that end their movement inside it gain +10 evasion that round."
+              "d": "ships that end their movement next to two friendly ships gain +10 evasion that round."
             },
             {
               "n": "Iteration Swap",
@@ -2624,7 +2624,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "The Shadow Is a Position",
-              "d": "the Command round may be declared after movement, once you can see where your ships stand."
+              "d": "a ship that ends its movement in an enemy's rear arc gains +20% damage in the hunt round."
             },
             {
               "n": "Strike the Uncopied Target",
@@ -2649,7 +2649,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Formation Loaded from Archive",
-              "d": "choose one archived formation at battle start; ships that end their movement inside it gain +10 evasion that round."
+              "d": "ships that end their movement next to two friendly ships gain +10 evasion that round."
             },
             {
               "n": "Iteration Swap",
@@ -2703,7 +2703,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Wall Archived in Advance",
-              "d": "the wall may be declared at the start of the round, and its reduction applies from the first enemy shot of the round."
+              "d": "if Sunshade wall is declared before any of your ships has moved this round, its damage reduction is 10 points stronger this round."
             },
             {
               "n": "Layers Shift",
@@ -2728,7 +2728,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Formation Loaded from Archive",
-              "d": "choose one archived formation at battle start; ships that end their movement inside it gain +10 evasion that round."
+              "d": "ships that end their movement next to two friendly ships gain +10 evasion that round."
             },
             {
               "n": "Iteration Swap",
@@ -2875,6 +2875,14 @@ const TREE_FX={
   "sekhmar:B:0:1":{k:"iterationSwap"},"sekhmar:C:0:0":{k:"flagshipIndex",n:.15},"sekhmar:C:0:1":{k:"frameZero"},
   "anuket:B:0:1":{k:"iterationSwap"},"anuket:C:0:0":{k:"flagshipIndex",n:.15},"anuket:C:0:1":{k:"frameZero"},
   "khepra:B:0:1":{k:"iterationSwap"},"khepra:C:0:0":{k:"flagshipIndex",n:.15},"khepra:C:0:1":{k:"frameZero"},
+  // Job 7b: the waiting Eclipse rows (Muse text pass, PR 324).
+  "nekhet:A:0:1":{k:"copiesTriage"},
+  "nekhet:A:1:0":{k:"iterationFire",n:.15},
+  "nekhet:A:1:1":{k:"archiveFirst",n:.1},
+  "anuket:A:1:0":{k:"shadowPos",n:.2},
+  "khepra:A:1:0":{k:"wallEarly",n:.1},
+  "sekhmar:A:1:1":{k:"targetArchived",n:10},
+  "nekhet:B:0:0":{k:"eclFormation",n:10},"sekhmar:B:0:0":{k:"eclFormation",n:10},"anuket:B:0:0":{k:"eclFormation",n:10},"khepra:B:0:0":{k:"eclFormation",n:10},
   // The Chorus (issue #305 job 4). The 26 a and b rows; the 9 x rows and the shared c row stay inert until the Muse text pass (#311).
   "matriarch:A:0:0":{k:"chooseBrood"},
   "matriarch:A:0:1":{k:"sporeTide",n:2},
@@ -2903,6 +2911,13 @@ const TREE_FX={
   "razormaw:B:0:1":{k:"broodReserve"},"razormaw:C:0:0":{k:"firstThroat"},"razormaw:C:0:1":{k:"throatDeep",n:10},
   "mending:B:0:1":{k:"broodReserve"},"mending:C:0:0":{k:"firstThroat"},"mending:C:0:1":{k:"throatDeep",n:10},
   "voice:B:0:1":{k:"broodReserve"},"voice:C:0:0":{k:"firstThroat"},"voice:C:0:1":{k:"throatDeep",n:10},
+  // Job 7b: the waiting Chorus rows (Muse text pass, PR 324).
+  "matriarch:A:1:0":{k:"accountSplits",n:.15},
+  "matriarch:cap:0":{k:"nineThroats",n:.25},
+  "razormaw:A:0:1":{k:"teethThroat",n:.25},
+  "mending:A:1:0":{k:"tideEarly",n:.1},
+  "mending:A:1:1":{k:"growthWound"},
+  "voice:A:1:1":{k:"spatRounds"},
   // The Ashfall Hullbreakers (issue #305 job 5). All 36 rows, including the rewritten x and c rows (Muse PR 324).
   "grax:A:0:0":{k:"runBigger",n:.15},
   "grax:A:0:1":{k:"railBoarding",n:.25},
