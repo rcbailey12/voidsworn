@@ -14,8 +14,9 @@ It holds the goal, the full history, every piece of owner feedback word for word
 - Every job is an open GitHub issue: https://github.com/rcbailey12/voidsworn/issues. The label says who has it: `codex` (Codex on
   Ryan's PC), `muse` (Rey and its models), `opus` (Claude), `ryan` (waiting on Ryan), plus `blocked`.
 - Agents deliver by pushing a branch named `codex/issue-<number>`, `muse/issue-<number>`, `work/issue-<number>` (or `work/issue-<number>-<arm>`) or `opus/issue-<number>`. Never push to main (R75). The only exception is LOOP.md and FINDINGS, which are committed straight to main as a docs-only exception (R102).
-  GitHub then opens the pull request by itself (.github/workflows/auto_pr.yml, for the agent branch shapes; other branches need a manual PR) and runs the checks on it
-  (.github/workflows/checks.yml: standing checks, no em dashes in changed files, Godot rules parity). The Board thread reviews and merges.
+  GitHub then opens the pull request by itself (.github/workflows/auto_pr.yml, for the agent branch shapes; other branches need a manual PR), and the same push runs the checks once
+  (.github/workflows/checks.yml: standing checks, no em dashes in changed files, Godot rules parity, Godot game checks). The Board thread reviews and merges.
+  A branch whose name does not start with codex/, muse/, work/ or opus/ gets no automatic checks: open its pull request by hand, then start them by hand (Actions tab, "checks", "Run workflow", pick the branch; or `gh workflow run checks.yml --ref <branch>`).
 - Codex stays local on Ryan's PC. `codex_board.bat` (Downloads\voidsworn_test) checks the board every 10 minutes and
   queues each new codex issue on lane B (tools/pc/codex_issue.bat): fresh checkout, Codex at the issue's effort, push.
   No Codex cloud tasks or cloud reviews: they run an older model than the local one. Codex is down until Ryan says, so every codex issue stays blocked and the watcher queue is inert.

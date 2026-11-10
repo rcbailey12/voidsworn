@@ -20,7 +20,7 @@ const TABLES_PATH := "res://campaign/data/campaign_tables.json"
 # ---------------- tables ----------------
 var TB: Dictionary = {}
 var W_; var HULLS; var FACTIONS; var MODULES; var PERKS; var RELICS; var ADMIRALS; var RANKS; var RANK_XP; var PATRONS; var BOONS
-var BOON_FX; var BOON_D; var BOON_NEED; var RARITY; var ASPECTS; var HEAT; var HULL_VARIANTS; var MASTERY_XP; var MASTERY_PERKS; var LINEAGE_XP; var LINEAGE_TREES; var CAPSTONE_MASTERY_XP; var CAPSTONE_MASTERY_PERKS
+var BOON_FX; var BOON_D; var BOON_NEED; var RARITY; var ASPECTS; var HEAT; var HULL_VARIANTS; var MASTERY_XP; var MASTERY_PERKS; var LINEAGE_XP; var LINEAGE_TREES; var TREE_FX; var CAPSTONE_MASTERY_XP; var CAPSTONE_MASTERY_PERKS
 var FAVOUR_TIERS; var SECTOR_CONDS; var SECTOR_POOL; var EVENTS; var CAPTAINS; var SHIP_NAMES; var MORE_SHIP_NAMES; var FNAMES
 var MOD_NEED; var MOD_NAMES; var RELIC_NAMES; var RUN_WORD; var ENCOUNTERS; var ENC_POOL; var ENC_SPECIAL; var REGIONS; var FAC_REGION
 var REGION_BIOME; var ROCK_KINDS; var DEEP_MAPS; var FAC_MAP; var BEVENTS; var KILL_CAUSES; var FAC_WNAMES; var FAC_WTRAIT; var WTRAITS
@@ -64,7 +64,7 @@ var tel_log: Array = []     # a slim run log (events only), kept with the save; 
 # ======================= setup =======================
 # Every table the campaign reads. load_tables refuses to start when one is missing, and export_campaign.js fails when the oracle
 # lacks one (it also scans the campaign scripts for every TB table they read, so a new table cannot slip past this list).
-const REQUIRED_TABLES = ["ABILITIES", "ADMIRALS", "ARCHETYPES", "ARC_NAME", "ARC_VARIANT", "ASPECTS", "BEVENTS", "BOONS", "BOON_D", "BOON_FX", "BOON_NEED", "BOSS_DMG", "BOSS_ENC", "BOSS_FAC", "BOSS_SCALE", "CAPTAINS", "CAUSE_WORD", "CLASS_TRACK_MAX", "CMD_TEXT", "DEEP_MAPS", "ENCOUNTERS", "ENC_POOL", "ENC_SPECIAL", "EVENTS", "EVENT_FALLBACK", "FACTIONS", "FAC_GATES", "FAC_MAP", "FAC_REGION", "FAC_VERBS", "FAC_WNAMES", "FAC_WTRAIT", "FAVOUR_TIERS", "FNAMES", "FX_CAPS", "HEAT", "HULLS", "HULL_VARIANTS", "KILL_CAUSES", "KIND_WORD", "LEGACY", "MAP_NAME", "MASTERY_PERKS", "MASTERY_XP", "LINEAGE_XP", "LINEAGE_TREES", "CAPSTONE_MASTERY_XP", "CAPSTONE_MASTERY_PERKS", "MODULES", "MOD_NAMES", "MOD_NEED", "MORE_SHIP_NAMES", "NEM_ADAPT", "NEM_ADAPT_FAC", "NEM_BEAT_WORD", "NEM_CLOCK", "NEM_FAC", "NEM_LINES", "NEM_PERSONA", "NEM_TRAITS", "NEM_WEAK", "NODE_INFO", "NODE_MODS", "PATRONS", "PERKS", "RAMP", "RANKS", "RANK_XP", "RARITY", "REGIONS", "REGION_BIOME", "RELICS", "RELIC_NAMES", "REWARD_DEF", "ROCK_KINDS", "RUN_FACTIONS", "RUN_WORD", "SECTOR_CONDS", "SECTOR_POOL", "SHAPES", "SHIP_NAMES", "W", "WING_PERKS", "WING_XP", "WIN_TITLE", "WTRAITS"]
+const REQUIRED_TABLES = ["ABILITIES", "ADMIRALS", "ARCHETYPES", "ARC_NAME", "ARC_VARIANT", "ASPECTS", "BEVENTS", "BOONS", "BOON_D", "BOON_FX", "BOON_NEED", "BOSS_DMG", "BOSS_ENC", "BOSS_FAC", "BOSS_SCALE", "CAPTAINS", "CAUSE_WORD", "CLASS_TRACK_MAX", "CMD_TEXT", "DEEP_MAPS", "ENCOUNTERS", "ENC_POOL", "ENC_SPECIAL", "EVENTS", "EVENT_FALLBACK", "FACTIONS", "FAC_GATES", "FAC_MAP", "FAC_REGION", "FAC_VERBS", "FAC_WNAMES", "FAC_WTRAIT", "FAVOUR_TIERS", "FNAMES", "FX_CAPS", "HEAT", "HULLS", "HULL_VARIANTS", "KILL_CAUSES", "KIND_WORD", "LEGACY", "MAP_NAME", "MASTERY_PERKS", "MASTERY_XP", "LINEAGE_XP", "LINEAGE_TREES", "CAPSTONE_MASTERY_XP", "CAPSTONE_MASTERY_PERKS", "MODULES", "MOD_NAMES", "MOD_NEED", "MORE_SHIP_NAMES", "NEM_ADAPT", "NEM_ADAPT_FAC", "NEM_BEAT_WORD", "NEM_CLOCK", "NEM_FAC", "NEM_LINES", "NEM_PERSONA", "NEM_TRAITS", "NEM_WEAK", "NODE_INFO", "NODE_MODS", "PATRONS", "PERKS", "RAMP", "RANKS", "RANK_XP", "RARITY", "REGIONS", "REGION_BIOME", "RELICS", "RELIC_NAMES", "REWARD_DEF", "ROCK_KINDS", "RUN_FACTIONS", "RUN_WORD", "SECTOR_CONDS", "SECTOR_POOL", "SHAPES", "SHIP_NAMES", "TREE_FX", "W", "WING_PERKS", "WING_XP", "WIN_TITLE", "WTRAITS"]
 func load_tables(path: String = TABLES_PATH) -> String:
 	var txt = FileAccess.get_file_as_string(path)
 	var j = JSON.parse_string(txt)
@@ -79,7 +79,7 @@ func load_tables(path: String = TABLES_PATH) -> String:
 	if sum != j["sha256"]: return "campaign table checksum differs: " + sum + " vs " + str(j["sha256"])
 	W_ = TB.W; HULLS = TB.HULLS; FACTIONS = TB.FACTIONS; MODULES = TB.MODULES; PERKS = TB.PERKS; RELICS = TB.RELICS; ADMIRALS = TB.ADMIRALS
 	RANKS = TB.RANKS; RANK_XP = TB.RANK_XP; PATRONS = TB.PATRONS; BOONS = TB.BOONS; BOON_FX = TB.BOON_FX; BOON_D = TB.BOON_D; BOON_NEED = TB.BOON_NEED
-	RARITY = TB.RARITY; ASPECTS = TB.ASPECTS; HEAT = TB.HEAT; HULL_VARIANTS = TB.HULL_VARIANTS; MASTERY_XP = TB.MASTERY_XP; MASTERY_PERKS = TB.MASTERY_PERKS; LINEAGE_XP = TB.LINEAGE_XP; LINEAGE_TREES = TB.LINEAGE_TREES
+	RARITY = TB.RARITY; ASPECTS = TB.ASPECTS; HEAT = TB.HEAT; HULL_VARIANTS = TB.HULL_VARIANTS; MASTERY_XP = TB.MASTERY_XP; MASTERY_PERKS = TB.MASTERY_PERKS; LINEAGE_XP = TB.LINEAGE_XP; LINEAGE_TREES = TB.LINEAGE_TREES; TREE_FX = TB.TREE_FX
 	CAPSTONE_MASTERY_XP = TB.CAPSTONE_MASTERY_XP; CAPSTONE_MASTERY_PERKS = TB.CAPSTONE_MASTERY_PERKS
 	FAVOUR_TIERS = TB.FAVOUR_TIERS; SECTOR_CONDS = TB.SECTOR_CONDS; SECTOR_POOL = TB.SECTOR_POOL; EVENTS = TB.EVENTS; CAPTAINS = TB.CAPTAINS
 	SHIP_NAMES = TB.SHIP_NAMES; MORE_SHIP_NAMES = TB.MORE_SHIP_NAMES; FNAMES = TB.FNAMES; MOD_NEED = TB.MOD_NEED; MOD_NAMES = TB.MOD_NAMES
@@ -1016,10 +1016,12 @@ func lineageNodes(id) -> Array:
 			for c in range(tiers[t].size()):
 				var key = "%s:%d:%d" % [b, t, c]; var chosen = build["picks"].has(key); var locked = t < ranks[b]
 				var state = "chosen" if chosen else ("locked" if locked else ("available" if t == ranks[b] and build["picks"].size() < mini(3, level - 4) else "future"))
-				var node = tiers[t][c].duplicate(); node.merge({"key": str(id) + ":" + key, "branch": b, "tier": t + 1, "state": state}); nodes.append(node)
+				# Issue 361: a row the battle has no TREE_FX entry for does nothing yet. The tree screens mark it from this
+				# flag (UI rollout, group 4); the flag reads the same table the battle's treeBuild reads.
+				var node = tiers[t][c].duplicate(); node.merge({"key": str(id) + ":" + key, "branch": b, "tier": t + 1, "state": state, "waiting": not TREE_FX.has(str(id) + ":" + key)}); nodes.append(node)
 	for c in range(tree["capstones"].size()):
 		var state = "chosen" if build["capstone"] != null and build["capstone"] == c else ("locked" if build["capstone"] != null else ("available" if level >= 8 and build["picks"].size() == 3 else "future"))
-		var node = tree["capstones"][c].duplicate(); node.merge({"key": "%s:cap:%d" % [id, c], "branch": "cap", "tier": 1, "state": state}); nodes.append(node)
+		var node = tree["capstones"][c].duplicate(); node.merge({"key": "%s:cap:%d" % [id, c], "branch": "cap", "tier": 1, "state": state, "waiting": not TREE_FX.has("%s:cap:%d" % [id, c])}); nodes.append(node)
 	return nodes
 func lineageCanPick(key) -> bool:
 	var id = str(key).split(":")[0]
