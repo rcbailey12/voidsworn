@@ -60,8 +60,8 @@ const HAIR := Color("#1c241c")         # the column's quiet edge and the rules i
 const ROW_LIT := Color("#161c16")      # the picked route row: a slightly lighter fill
 const ROW_HOVER := Color("#111611")    # a route row under the pointer
 const HALO := Color("#070907")         # the dark halo under plain words on the map
-const PALE := 0.20                     # a route you cannot take yet: one thin sage line at this alpha
-const PALE_CUT := 0.08                 # a route that is cut off or already flown
+const PALE := 0.25                     # a route you cannot take yet: one thin sage line at this share of full strength, as the eye reads it
+const PALE_CUT := 0.10                 # a route that is cut off or already flown
 const GRID := 8.0                      # the spacing grid of the Briefing layout, at 1080
 # the material
 const WELL := Color("#080a08")         # the solid backing under every block of text (alpha WELL_A)

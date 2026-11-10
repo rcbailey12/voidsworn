@@ -298,7 +298,7 @@ func _tier_lights(sun) -> void:
 
 # a faint hint of the system's orbits: five rings at about 5 percent, not one per stop (the Briefing build)
 func _add_orbits() -> void:
-	for i in 5: sys.orbit(root3, lerp(R_IN, R_OUT, float(i) / 4.0), Color(GS.BONE, 0.05), 0.22)
+	for i in 5: sys.orbit(root3, lerp(R_IN, R_OUT, float(i) / 4.0), pale(0.06), 0.22)   # about 5 percent as the eye reads it
 
 # ---------------- stop scenes ----------------
 func _place_scene(obj: Node3D, place: String, d: Dictionary) -> float:   # the setting of the stop; returns the height of its top
@@ -463,6 +463,24 @@ func for_screen(want: Color) -> Color:
 	var out = Color(_srgb(best.x), _srgb(best.y), _srgb(best.z))   # the shader reads the colour as sRGB (source_color)
 	_shown_cache[key] = out
 	return Color(out, want.a)
+# A pale line: the sage at a share of its strength as the eye reads it on the dark chart. The line blends in linear light,
+# where an alpha of 0.2 shows as about half strength (the first PC capture did), so the alpha is found from the tone map.
+static var _pale_cache := {}
+func pale(share: float) -> Color:
+	var base = for_screen(Color(GS.BONE, 1.0))
+	if _pale_cache.has(share): return Color(base, _pale_cache[share])
+	var ex = env.tonemap_exposure if env != null else 1.0; var wh = env.tonemap_white if env != null else 6.0
+	var co = env.adjustment_contrast if env != null else 1.0; var sa = env.adjustment_saturation if env != null else 1.0
+	var lin = Vector3(_lin(base.r), _lin(base.g), _lin(base.b))
+	var zero = _shown(Vector3.ZERO, ex, wh, co, sa)   # what black shows as (the contrast setting moves it a little)
+	var want = (GS.BONE.r + GS.BONE.g + GS.BONE.b) / 3.0 * share
+	var lo = 0.0; var hi = 1.0
+	for i in 24:
+		var mid = (lo + hi) * 0.5; var o = _shown(lin * mid, ex, wh, co, sa) - zero
+		if (o.x + o.y + o.z) / 3.0 < want: lo = mid
+		else: hi = mid
+	_pale_cache[share] = (lo + hi) * 0.5
+	return Color(base, _pale_cache[share])
 # A route: one flat line in the chart plane along the curve the fleet flies. Lime and solid to a next jump, thin and pale
 # otherwise (_paint_lanes). No bloom, no halo, no flow, no hazard chevrons.
 func _add_lane(a: String, b: String) -> void:
@@ -500,8 +518,13 @@ func _patrol(fac: String, c: Vector3, r: float, sp: float) -> void:
 	if node == null:
 		var pm = PrismMesh.new(); pm.size = Vector3(0.5, 1.2, 0.2)
 		node = Node3D.new(); var m = sys.mi(pm, _mat(L["main"], 1.0)); m.rotation_degrees = Vector3(0, 0, -90); node.add_child(m)
-	var lt = OmniLight3D.new(); lt.light_color = L["light"]; lt.light_energy = 0.9; lt.omni_range = 3.0; node.add_child(lt)
-	if int(L["look"]) == 1: _sync_lights.append([lt, 0.9])
+	# a patrol is scenery, not a stop: it sits in the dim light tier so it never reads as part of your fleet or as a place to go
+	for v in node.find_children("*", "VisualInstance3D", true, false):
+		if not (v is Light3D): v.layers = LAYER_AHEAD
+		if v is Sprite3D: v.modulate = Color(v.modulate.r * 0.45, v.modulate.g * 0.45, v.modulate.b * 0.45, v.modulate.a)
+	node.scale *= 0.8
+	var lt = OmniLight3D.new(); lt.light_color = L["light"]; lt.light_energy = 0.3; lt.omni_range = 3.0; lt.light_cull_mask = LAYER_AHEAD; node.add_child(lt)
+	if int(L["look"]) == 1: _sync_lights.append([lt, 0.3])
 	root3.add_child(node)
 	_patrols.append([node, c + Vector3(0, 2.6, 0), r, sp, _rng.randf() * TAU])
 func _make_token() -> Node3D:   # your fleet at map scale: the flagship's real hull (A4's kit ship when it is in the build) and up to two escorts
@@ -612,8 +635,8 @@ func _set_tier(d: Dictionary, tier: int) -> void:
 	if first:   # the map opens with every stop already at its size
 		d["sc"] = TIER_SCALE[tier]; d["obj"].scale = Vector3.ONE * float(d["sc"])
 func _parts(root: Node) -> Dictionary:
-	var out = {"vis": [], "lights": [], "gains": [], "sprites": [], "std": []}
-	var stack = [root]; var seen = {}
+	var out = {"vis": [], "lights": [], "gains": [], "sprites": [], "std": [], "aabb": AABB()}
+	var stack = [root]; var seen = {}; var inv = root.global_transform.affine_inverse() if root.is_inside_tree() else Transform3D.IDENTITY
 	while not stack.is_empty():
 		var nd = stack.pop_back()
 		for ch in nd.get_children(): stack.append(ch)
@@ -621,6 +644,10 @@ func _parts(root: Node) -> Dictionary:
 		if nd is Sprite3D: out["sprites"].append([nd, nd.modulate])
 		if nd is VisualInstance3D: out["vis"].append(nd)
 		var m = nd.material_override if nd is GeometryInstance3D else null
+		# the model's own bounds, in the stop's space: solid meshes only (no glow, cloud or orbit sheets, no scattered rocks)
+		if nd is MeshInstance3D and nd.mesh != null and root.is_inside_tree() and not (m is ShaderMaterial and m.shader != null and m.shader.code.contains("blend_add")):
+			var bb: AABB = inv * nd.global_transform * nd.get_aabb()
+			if bb.size.length() < 16.0: out["aabb"] = bb if out["aabb"].size == Vector3.ZERO else out["aabb"].merge(bb)
 		if m == null or seen.has(m): continue
 		seen[m] = true
 		if m is ShaderMaterial and m.has_meta("map_mat") and m.shader != null:   # the map's own shaders: their brightness is "gain", "light" or "ember"
@@ -655,12 +682,12 @@ func _paint_lanes() -> void:
 		var nxt = R.get("pos") == L["a"] and av.has(L["b"])
 		var ahead = _reachable.has(L["a"]) and _reachable.has(L["b"])
 		var past = not trav and not nxt and not ahead
-		var col = Color(GS.BONE, GS.PALE); var w = 0.6
-		if trav or past: col = Color(GS.BONE, GS.PALE_CUT)
-		elif lit.has(k): col = Color(GS.BONE, 0.5)
-		if nxt: col = Color(GS.GILT, 1.0); w = 1.25
-		if _flying and k == str(R.get("pos")) + ">" + _flight_id: col = Color(GS.GILT_HOVER, 1.0); w = 1.25
-		L["mat"].set_shader_parameter("col", for_screen(col)); L["mat"].set_shader_parameter("px", w * kk)
+		var col = pale(GS.PALE); var w = 0.6
+		if trav or past: col = pale(GS.PALE_CUT)
+		elif lit.has(k): col = pale(0.5)
+		if nxt: col = for_screen(Color(GS.GILT, 1.0)); w = 1.25
+		if _flying and k == str(R.get("pos")) + ">" + _flight_id: col = for_screen(Color(GS.GILT_HOVER, 1.0)); w = 1.25
+		L["mat"].set_shader_parameter("col", col); L["mat"].set_shader_parameter("px", w * kk)
 
 func _arrive(new_sector: bool) -> void:   # the camera starts leaning on where the fleet is and settles back over the chart
 	var C = _C(); var pos = C.RUN.get("pos")
@@ -862,6 +889,12 @@ func _draw_overlay() -> void:
 # the screen box a stop's model takes, near enough for words to keep off it and for the focus ring to frame it
 func _body_rect(id: String, s: float) -> Rect2:
 	var d = _nodes[id]; var sc = float(d["sc"])
+	var bb: AABB = d["parts"]["aabb"] if d.has("parts") else AABB()
+	if bb.size != Vector3.ZERO and is_instance_valid(d["obj"]):   # the model's real bounds, projected
+		var xf: Transform3D = d["obj"].global_transform; var lo = Vector2(INF, INF); var hi = Vector2(-INF, -INF)
+		for i in 8:
+			var q = _screen(xf * bb.get_endpoint(i)); lo = Vector2(min(lo.x, q.x), min(lo.y, q.y)); hi = Vector2(max(hi.x, q.x), max(hi.y, q.y))
+		return Rect2(lo, hi - lo).grow(2.0 * s)
 	var c = _screen(d["pos"] + Vector3(0, float(d["top"]) * 0.45 * sc, 0))
 	var rx = max(26.0 * s, _screen(d["pos"]).distance_to(_screen(d["pos"] + cam.global_transform.basis.x * float(d["ring_r"]) * 1.1 * sc)))
 	var top = _screen(d["pos"] + Vector3(0, float(d["top"]) * sc, 0)); var bot = _screen(d["pos"])

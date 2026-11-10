@@ -64,7 +64,7 @@ func _run():
 	var next = m._lanes["b>d"]["mat"]
 	# the Briefing build (FINDINGS R165): a next jump is the lime line, wider; a route ahead one thin pale line; a cut-off one fainter
 	check(ghost.get_shader_parameter("col").a < 0.1 and ghost.get_shader_parameter("px") < 1.0, "unreachable lanes are the faintest thin line")
-	check(is_equal_approx(ahead.get_shader_parameter("col").a, Map.GS.PALE) and ahead.get_shader_parameter("px") < 1.0, "future routes stay drawn as one thin pale line")
+	check(ahead.get_shader_parameter("col").a > ghost.get_shader_parameter("col").a and ahead.get_shader_parameter("col").a < 0.3 and ahead.get_shader_parameter("px") < 1.0, "future routes stay drawn as one thin pale line, stronger than a cut-off one")
 	check(next.get_shader_parameter("col").a == 1.0 and next.get_shader_parameter("px") > 1.0 and next.get_shader_parameter("col").g > next.get_shader_parameter("col").b + 0.3, "next choices are the lime line, wider")
 	C.RUN["pos"] = null; m._find_reachable()
 	check(m._reachable.size() == 6, "entry reaches every connected stop")

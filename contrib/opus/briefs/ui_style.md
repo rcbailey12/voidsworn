@@ -125,7 +125,7 @@ Screens not yet rebuilt still carry the old values until they move onto glass_sh
 | COLUMN, HAIR | #0b0e0b, #1c241c | the campaign map's flat briefing column, its slide-overs and the hover tip; the column's quiet edge and its rules |
 | ROW_LIT, ROW_HOVER | #161c16, #111611 | the picked route row (a slightly lighter fill); a route row under the pointer |
 | HALO | #070907 | the dark halo under plain words on the campaign map (section 3, the campaign map exception) |
-| PALE, PALE_CUT | sage at 20%, at 8% | a route on the map you cannot fly yet (one thin line); a route cut off or already flown |
+| PALE, PALE_CUT | sage at 25%, at 10% (as the eye reads it; map3d.gd `pale` finds the alpha through the tone map) | a route on the map you cannot fly yet (one thin line); a route cut off or already flown |
 
 Retired with the Briefing build (R165), so they have no row: the map's danger band colours (DANGER), the stop glyph
 colours (STOP) and the route planner's blue and gold (ROUTE). Danger is four pips and its word (Easy, Even, Hard,
