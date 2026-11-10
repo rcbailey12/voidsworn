@@ -99,7 +99,7 @@ def smoke_material(dom, colour=(.30, .28, .34), density=4.0):
     return mat
 
 
-def fire_material(dom, density=4.0, strength=7.0):
+def fire_material(dom, density=4.0, strength=1.6):
     """Fire only: the flame field glows through a colour ramp (deep red to white); the smoke still absorbs, so fire
     behind thick smoke is hidden as it would be. Rendered on black with no lights."""
     mat = bpy.data.materials.new('route fire'); mat.use_nodes = True; nt = mat.node_tree; nt.nodes.clear()
@@ -113,8 +113,11 @@ def fire_material(dom, density=4.0, strength=7.0):
     el[0].position = 0.0; el[0].color = (.45, .05, .01, 1); el[1].position = 1.0; el[1].color = (1, .97, .9, 1)
     e = el.new(.35); e.color = (1, .32, .04, 1); e = el.new(.7); e.color = (1, .78, .30, 1)
     nt.links.new(fl.outputs['Fac'], ramp.inputs['Fac']); nt.links.new(ramp.outputs['Color'], vol.inputs['Emission Color'])
+    # Only the hottest part glows hard (flame squared), so the fire is a core inside the gas, not the whole ball.
+    sq = nt.nodes.new('ShaderNodeMath'); sq.operation = 'POWER'; sq.inputs[1].default_value = 2.0
+    nt.links.new(fl.outputs['Fac'], sq.inputs[0])
     em = nt.nodes.new('ShaderNodeMath'); em.operation = 'MULTIPLY'; em.inputs[1].default_value = strength
-    nt.links.new(fl.outputs['Fac'], em.inputs[0]); nt.links.new(em.outputs[0], vol.inputs['Emission Strength'])
+    nt.links.new(sq.outputs[0], em.inputs[0]); nt.links.new(em.outputs[0], vol.inputs['Emission Strength'])
     nt.links.new(vol.outputs[0], out.inputs['Volume'])
     dom.data.materials.clear(); dom.data.materials.append(mat)
     return mat

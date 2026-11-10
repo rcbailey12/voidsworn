@@ -5,8 +5,8 @@ python pack_routes.py BAKE_OUT DEST --route a|b
 DEST/<amount>/ is laid out like godot/fx/atlases/ (death/small|cruiser|capital/flash_*.png, weapons/impact/impact_*.png),
 so the bench switch VS_FX_ATLAS=DEST/<amount> swaps just those two kinds. Amounts (R88, R158: flash and snuff out):
   flash  the bright flash only: fire in the first cell, a trace in the second, then smoke and debris that thin.
-  core   the flash plus a short hot core: fire holds three cells and is gone after cell 6 of 16 (6/15 of the effect's
-         life: 0.17 s for the torpedo hit's 0.42 s impact gas, 0.08 s for the 0.20 s ship-death flash).
+  core   the flash plus a short hot core that cools over four cells and is gone from cell 5 of 16 (5/15 of the
+         effect's life: 0.14 s for the torpedo hit's 0.42 s impact gas, 0.07 s for the 0.20 s ship-death flash).
 Route B also writes core_s1/ and core_s2/ (seeds 1 and 2) and authors its hot core, colour ramp and sparks here.
 
 Channels match pack_death.py so the game's shader reads them: colour (RGB, straight alpha), motion (RG forward, BA
@@ -21,7 +21,7 @@ from PIL import Image, ImageFilter
 p = argparse.ArgumentParser(); p.add_argument('src'); p.add_argument('dst'); p.add_argument('--route', required=True, choices=['a', 'b'])
 a = p.parse_args(); src = pathlib.Path(a.src); dst = pathlib.Path(a.dst); dst.mkdir(parents=True, exist_ok=True)
 FILL = .80
-AMOUNTS = {'flash': [1.0, .35] + [0.0] * 14, 'core': [1.0, 1.0, 1.0, .75, .5, .25] + [0.0] * 10}
+AMOUNTS = {'flash': [1.0, .3] + [0.0] * 14, 'core': [1.0, .8, .55, .3, .12] + [0.0] * 11}
 BANDS = {'impact': [('weapons/impact', 1024)], 'flash': [('death/small', 1024), ('death/cruiser', 1536), ('death/capital', 2048)]}
 RAMP = [(0.0, (.45, .05, .01)), (.35, (1, .32, .04)), (.7, (1, .78, .30)), (1.0, (1, .97, .9))]   # as route_common.fire_material
 
@@ -91,27 +91,27 @@ def authored(kind, seed, tile, w):
     lump = 1 + sum(rnd.uniform(.015, .045) * np.cos(k * th + rnd.uniform(0, math.tau)) for k in range(3, 10))
     grain = .75 + .5 * value_noise(rnd, tile, 12)
     sparks = [dict(t=rnd.uniform(0, math.tau), s=rnd.uniform(.55, 1.0), om=rnd.uniform(-1.2, 1.2), k=rnd.uniform(1.8, 3.2),
-                   life=rnd.uniform(.45, .75)) for _ in range(30 if big else 18)]
+                   life=rnd.uniform(.3, .55)) for _ in range(16 if big else 10)]
     rad = max(.6, tile / 420)
     out = []
     for i in range(16):
         T = i / 15; img = np.zeros((tile, tile, 3), np.float32)
         if w[i] > 0:
-            rc = (.13 if big else .10) + (.24 if big else .18) * (1 - math.exp(-i / 2.2))
+            rc = (.27 if big else .22) * (1.0 + .3 * (1 - math.exp(-i / 2.0)))   # the flash is big at once, then the core spreads as it cools
             heat = w[i] * np.exp(-((r / lump) / rc) ** 2 * 1.6) * grain
             img += ramp(heat) * np.clip(heat * 1.4, 0, 1)[..., None]
         for sp in sparks:
-            for j in range(7):
+            for j in range(5):
                 t = T - j * .02
                 if t < 0 or t > sp['life']: continue
-                b = (1 - t / sp['life']) * (1 - j / 7)
+                b = (1 - t / sp['life']) * (1 - j / 5)
                 d = .85 * sp['s'] * (1 - math.exp(-sp['k'] * t)) / (1 - math.exp(-sp['k']))
                 ang = sp['t'] + sp['om'] * t; px = c + math.cos(ang) * d * tile / 2; py = c + math.sin(ang) * d * tile / 2
                 x0, x1 = int(max(0, px - 3 * rad)), int(min(tile, px + 3 * rad + 1)); y0, y1 = int(max(0, py - 3 * rad)), int(min(tile, py + 3 * rad + 1))
                 if x0 >= x1 or y0 >= y1: continue
                 g = np.exp(-(((xx[y0:y1, x0:x1] - px) ** 2 + (yy[y0:y1, x0:x1] - py) ** 2) / (2 * rad * rad)))
                 col = np.array([1, .85 - .4 * t, .55 - .45 * t], np.float32)
-                img[y0:y1, x0:x1] += g[..., None] * col * b * .9
+                img[y0:y1, x0:x1] += g[..., None] * col * b * .55
         out.append(img)
     return out
 
@@ -119,7 +119,7 @@ def authored(kind, seed, tile, w):
 def compose(smoke, fire):
     """Fire over lit smoke. Returns straight RGB, alpha and heat (the fire's share of the pixel)."""
     s_rgb, a_s = smoke[..., :3], smoke[..., 3]
-    fl = np.clip(fire.max(-1), 0, 1); fa = np.clip(fl * 1.25, 0, 1)
+    fl = np.clip(fire.max(-1), 0, 1); fa = np.clip((fl - .06) * 1.4, 0, 1)
     f_norm = np.clip(fire / np.maximum(fire.max(-1, keepdims=True), 1e-4), 0, 1)
     alpha = a_s + fa * (1 - a_s)
     pm = f_norm * fa[..., None] + s_rgb * (a_s * (1 - fa))[..., None]
@@ -189,7 +189,7 @@ for kind in ['impact', 'flash']:
                 smokes = smoke
             else:
                 fires = authored(kind, seed, tile, w)
-                warm = [np.array([1.0 + .6 * w[i], 1.0 + .1 * w[i], 1.0 - .25 * w[i]], np.float32) for i in range(16)]
+                warm = [np.array([1.0 + .25 * w[i], 1.0 + .05 * w[i], 1.0 - .1 * w[i]], np.float32) for i in range(16)]   # a little warm light from the core, no tan
                 smokes = [np.dstack([np.clip(s[..., :3] * warm[i], 0, 1), s[..., 3:]]) for i, s in enumerate(smoke)]
             cells = [compose(smokes[i], fires[i]) for i in range(16)]
             name = amount if seed in (None, 0) else '%s_s%d' % (amount, seed)

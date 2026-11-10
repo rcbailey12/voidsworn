@@ -5,6 +5,7 @@ rem MODE  smoke  a small fair sample: A at 64 cells, B at 64, 192 pixel cells (c
 rem              64 cell sample) plus the switch-off look bench of every moment and the fleet against the baseline run
 rem       full   the real bakes (A at 256 cells with noise, B at 128 cells with three seeds; 512 pixel cells), the two
 rem              moments benched in all five looks, and the scene gate (R116) with the switch off and on
+rem       repack no bakes: pack the bakes of an earlier run (BAKESRC, its OUT folder) again, then bench, sheet and gate
 rem OUT   the output folder (status.txt, times.txt, bake_a, bake_b, atlases_a, atlases_b, bench_*, gate_*, done.txt)
 rem Runs from this checkout (tools\pc\jobs\ inside it). Needs the PC-built hulls: copied (copy only) from FX_SHIPS, default
 rem Downloads\voidsworn_test\bench351\repo\godot. One GPU job at a time: waits until the card is idle (up to 60 minutes)
@@ -28,7 +29,7 @@ set "BL=%VT%\blender\blender-4.5.14-windows-x64\blender.exe"
 set "PY=%USERPROFILE%\Downloads\ComfyUI_windows_portable\python_embeded\python.exe"
 set "TMO=%R%\tools\pc\tmo.bat"
 if "%FX_SHIPS%"=="" set "FX_SHIPS=%VT%\bench351\repo\godot"
-if /i "%MODE%"=="full" (
+if /i not "%MODE%"=="smoke" (
   set "RA=256" & set "RB=128" & set "TILE=512" & set "LIM=5400"
 ) else (
   set "RA=64" & set "RB=64" & set "TILE=192" & set "LIM=1200"
@@ -43,6 +44,14 @@ call "%TMO%" 1800 "%G%" --headless --path "%R%\godot" --import > "%O%\import.txt
 echo imported %date% %time% >> "%ST%"
 
 rem ---- bakes: one Blender call per route and kind, each timed by the wall clock
+set "BA=%O%\bake_a"
+set "BB=%O%\bake_b"
+if /i not "%MODE%"=="repack" goto bakes
+set "BA=%BAKESRC%\bake_a"
+set "BB=%BAKESRC%\bake_b"
+echo repack from %BAKESRC% >> "%ST%"
+goto pack
+:bakes
 call :gpuwait
 echo bakes start %date% %time% >> "%ST%"
 for %%K in (impact flash) do (
@@ -54,10 +63,11 @@ for %%K in (impact flash) do (
   echo B %%K end !date! !time! exit !errorlevel! >> "%TM%"
 )
 echo bakes done %date% %time% >> "%ST%"
+:pack
 echo pack start %date% %time% >> "%TM%"
-"%PY%" tools/blender/vfx/pack_routes.py "%O%\bake_a" "%O%\atlases_a" --route a > "%O%\pack_a.txt" 2>&1
+"%PY%" tools/blender/vfx/pack_routes.py "%BA%" "%O%\atlases_a" --route a > "%O%\pack_a.txt" 2>&1
 echo pack a exit %ERRORLEVEL% >> "%ST%"
-"%PY%" tools/blender/vfx/pack_routes.py "%O%\bake_b" "%O%\atlases_b" --route b > "%O%\pack_b.txt" 2>&1
+"%PY%" tools/blender/vfx/pack_routes.py "%BB%" "%O%\atlases_b" --route b > "%O%\pack_b.txt" 2>&1
 echo pack b exit %ERRORLEVEL% >> "%ST%"
 echo pack end %date% %time% >> "%TM%"
 
@@ -72,7 +82,7 @@ call :bench b_core "%O%\atlases_b\core"
 "%PY%" tools/pc/jobs/explosion_routes_sheet.py --runs today="%O%\bench_today" a_flash="%O%\bench_a_flash" a_core="%O%\bench_a_core" b_flash="%O%\bench_b_flash" b_core="%O%\bench_b_core" --out "%O%\explosion_routes_sheet.jpg" --strips "%O%\strips" > "%O%\sheet.txt" 2>&1
 echo sheet exit %ERRORLEVEL% %date% %time% >> "%ST%"
 
-if /i "%MODE%"=="full" goto gate
+if /i not "%MODE%"=="smoke" goto gate
 rem ---- smoke mode: the switch off, every moment and the fleet, against the accepted baseline run (base_f, 499aae8)
 set "VS_FX_ATLAS="
 echo bench off_all start %date% %time% >> "%ST%"

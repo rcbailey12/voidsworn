@@ -14,7 +14,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 BG = (14, 15, 19); FG = (232, 234, 238); DIM = (150, 155, 162)
 LABELS = {
-    "today": "Today (64 cells, smoke only)",
+    "today": "Today: 64 cells, smoke only",
     "a_flash": "Route A, flash only",
     "a_core": "Route A, flash + hot core",
     "b_flash": "Route B, flash only",
@@ -58,13 +58,13 @@ def main():
     ap.add_argument("--strips")
     a = ap.parse_args()
     runs = [r.split("=", 1) for r in a.runs]
-    picks = {"w_torp_void_hull": [3, 6, 10], "d_cruiser": [2, 5, 9]}
+    picks = {"w_torp_void_hull": [2, 4, 8], "d_cruiser": [7, 9, 12]}
     for c in a.cells:
         k, v = c.split("=", 1)
         picks[k] = [int(x) for x in v.split(",")]
     data = {name: stills(d) for name, d in runs}
     F, FB, FS = font(17), font(24), font(14)
-    LW, CW, CH, GAP = 170, 384, 216, 4
+    LW, CW, CH, GAP = 250, 384, 216, 4
     cols = 5
     W = LW + cols * (CW + GAP)
     notes = open(a.notes, encoding="utf-8").read().splitlines() if a.notes else []
@@ -79,7 +79,7 @@ def main():
         y += 40
         first = data[runs[0][0]][0].get((mid, 170))
         times = first[1] if first else []
-        heads = ["camera 170, %+.2f s" % float(times[i].get("t", 0.0)) if i < len(times) else "camera 170" for i in picks[mid]]
+        heads = ["camera 170, t = %.2f s" % float(times[i].get("t", 0.0)) if i < len(times) else "camera 170" for i in picks[mid]]
         key = int(data[runs[0][0]][1].get(mid, {}).get("key", 4))
         heads += ["camera 60 (key)", "camera 26 (key)"]
         for k, h in enumerate(heads):
@@ -87,7 +87,8 @@ def main():
         y += 26
         for name, _ in runs:
             st, _ = data[name]
-            dr.text((10, y + 8), LABELS.get(name, name), font=F, fill=FG)
+            for li, part in enumerate(LABELS.get(name, name).split(", ")):
+                dr.text((10, y + 8 + li * 24), part + ("," if li == 0 and ", " in LABELS.get(name, name) else ""), font=F, fill=FG)
             k = 0
             for i in picks[mid]:
                 if (mid, 170) in st:

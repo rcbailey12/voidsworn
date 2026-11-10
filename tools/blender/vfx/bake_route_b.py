@@ -64,7 +64,7 @@ for kind in a.kinds.split(','):
             o.hide_render = True
         print('ROUTE_B_SIM_DONE', kind, seed, round(sim, 1), flush=True)
         devices = rc.render_setup(sc, a.tile, a.cpu)
-        rc.world(sc, True); rc.key_light(sc); rc.smoke_material(dom)
+        rc.world(sc, True); rc.key_light(sc); rc.smoke_material(dom, density=8.0)   # a denser body than A: it carries the shape alone
         r1 = rc.render_frames(sc, folder, 'smoke', True)
         cache_mb = sum(f.stat().st_size for f in (folder / 'cache').rglob('*') if f.is_file()) / 1e6
         records.append(dict(kind=kind, route='b', seed=seed, shape=shape, resolution=a.resolution, noise=False, flow='smoke only',
