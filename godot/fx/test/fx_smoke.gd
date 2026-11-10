@@ -39,6 +39,7 @@ func _run() -> void:
 	world.add_child(fx)
 	fx.manual = true
 	fx.setup({"camera": cam, "quality": "max"})
+	fx.check_radius = true
 	var facs := ["voidsworn", "hegemony", "corsair", "chorus", "ithar", "deathless"]
 	var x := -60.0
 	for f in facs:
@@ -71,6 +72,12 @@ func _run() -> void:
 		for i in 6:
 			fx.step(1.0 / 60.0)
 	for i in 240:
+		fx.step(1.0 / 60.0)
+	# Issue 281 run 7: land a real hull hit on the Eclipse (deathless) cruiser so the attitude-thruster braking puffs run
+	# (_rcs), and the stray guard records them against the ship's real plating.
+	fx.volley("hegemony_0", "torp", "deathless_1", {"weapon_id": "torp", "shots": [true],
+		"hits": [{"shield": 0, "hull": 30, "section": "mid", "crit": false}]})
+	for i in 120:
 		fx.step(1.0 / 60.0)
 	# damage ladder
 	for st in 5:
@@ -143,6 +150,10 @@ func _run() -> void:
 	if worst > 3:
 		push_error("flash cap broken: %d counted flashes in one second" % worst)
 		errors += 1
-	print("FX_SMOKE flashes counted=%d worst_per_second=%d" % [fl.size(), worst])
+	var stray: Array = fx.stray_spawns()
+	if not stray.is_empty():
+		push_error("stray weapon/vent spawns away from any ship: %s" % str(stray.slice(0, 8)))
+		errors += 1
+	print("FX_SMOKE flashes counted=%d worst_per_second=%d stray=%d spawns=%d" % [fl.size(), worst, stray.size(), fx.effect_spawns.size()])
 	print("FX_SMOKE particles=%d lights=%d wrecks=%d errors=%d" % [fx.particles_emitted(), fx.active_lights(), fx.dstate["wrecks"].size(), errors])
 	quit(1 if errors > 0 else 0)

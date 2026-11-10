@@ -4,6 +4,13 @@ extends CanvasLayer
 # be clicked through with it. Words for the buttons follow the browser's where known.
 
 const HUD := preload("res://ui/battle/hud.gd")
+# The palette this screen had before the battle HUD moved to Lime Tactical (R149, #271). The screen keeps it until its own
+# rollout moves it onto godot/ui/theme/glass_shell.gd (contrib/opus/briefs/ui_style.md section 8), so it never shows a
+# half-changed look.
+const T_GILT := Color("#d0a64b")
+const T_BONE2 := Color("#b3aa95")
+const T_IRON3 := Color("#2d3a56")
+const T_EMBER := Color("#f0b35a")
 const WORDS := {"newRunScreen": "New run", "continueRun": "Continue run", "startRun": "Launch", "enterNode": "Go to", "leaveYard": "Leave the shipyard",
 	"backMap": "Back to the map", "backShipyard": "Back to the shipyard", "repairAll": "Repair all", "repair": "Repair", "buyHull": "Buy hull", "buyMod": "Buy module",
 	"upgradeMk": "Upgrade", "sellShip": "Sell", "sellConfirm": "Sell it", "equip": "Equip", "unequip": "Unequip", "promote": "Promote", "fleetScreen": "Fleet",
@@ -28,7 +35,7 @@ func bind(campaign) -> void:
 
 
 func _ready() -> void:
-	k = clampf(get_viewport().get_visible_rect().size.y / 1080.0, 0.6, 2.2)
+	k = load("res://ui/ui_scale.gd").k_for(get_viewport().get_visible_rect().size)   # the one shared law (ui_spec.md section 4)
 	font_goth = load("res://ui/battle/brand.gd").display()  # the sci-fi display face (lore round 5)
 	root = Control.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -60,12 +67,12 @@ func _draw() -> void:
 	if C.modal_d != null:
 		_screen(C.modal_d, true)
 	for t in C.toasts:
-		box.add_child(_lbl(str(t), 16, HUD.EMBER))
+		box.add_child(_lbl(str(t), 16, T_EMBER))
 	C.toasts.clear()
 
 
 func _screen(s: Dictionary, modal: bool) -> void:
-	var h := _lbl(str(s.get("kind", "")).capitalize(), 30 if not modal else 23, HUD.GILT)
+	var h := _lbl(str(s.get("kind", "")).capitalize(), 30 if not modal else 23, T_GILT)
 	h.add_theme_font_override("font", font_goth)
 	box.add_child(h)
 	var facts := _facts(s.get("data", {}))
@@ -75,7 +82,7 @@ func _screen(s: Dictionary, modal: bool) -> void:
 		r.fit_content = true
 		r.text = facts
 		r.add_theme_font_size_override("normal_font_size", int(15 * k))
-		r.add_theme_color_override("default_color", HUD.BONE2)
+		r.add_theme_color_override("default_color", T_BONE2)
 		box.add_child(r)
 	var flow := HFlowContainer.new()
 	flow.add_theme_constant_override("h_separation", int(8 * k))
@@ -91,7 +98,7 @@ func _screen(s: Dictionary, modal: bool) -> void:
 		flow.add_child(b)
 	box.add_child(flow)
 	var line := ColorRect.new()
-	line.color = HUD.IRON3
+	line.color = T_IRON3
 	line.custom_minimum_size = Vector2(0, 1)
 	box.add_child(line)
 

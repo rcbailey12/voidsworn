@@ -1,5 +1,31 @@
 # The rules oracle, pinned
 
+Nov 9 2026, issue 332 (tree skills job 6): re-copied battle.js and data.js for
+the Hegemony Navy TREE_FX rows, the sync anchor reassignment, the column and
+flagship line effects and the second wave, patrol and out-of-arc shots.
+Re-exported rules tables; no existing rule or number changed.
+
+Nov 9 2026, issue 319 (tree skills job 4): re-copied battle.js, core.js and
+data.js for the Chorus TREE_FX rows, the H10 temporary hull and H17 extra
+activation hooks, and the new FX_CAPS key treeTempHp. Re-exported rules
+tables; no existing rule or number changed.
+
+Nov 9 2026, issue 315 (tree skills job 2): re-copied battle.js and data.js for
+the Sunward Crusade TREE_FX rows and the H4, H6, H12, H13 and H16 hooks.
+Re-exported rules tables; no existing rule or number changed.
+
+Nov 9 2026, issue 312 (tree skills job 1): re-copied battle.js, core.js and
+data.js for RUN.lineage, TREE_FX, B.tree and the Glasswrights pilot effects.
+Re-exported rules tables; no existing rule or number changed.
+
+Nov 9 2026, issue 30 (progression step 14): re-copied data.js and core.js for
+capstone mastery (three levels at 320, 440 and 600 XP on a chosen lineage
+evolution). Combat rules and the checksum are unchanged. Re-exported rules tables.
+
+Nov 9 2026, issue 29 (progression step 13): re-copied data.js for the lineage
+tree rollout to the other five factions. Combat rules and the campaign tables'
+contents are unchanged. Re-exported rules tables.
+
 Nov 8 2026, issue 246: re-copied core.js for the loss back-fill in migrateMeta.
 A profile saved before the Heat gate has no losses count; the count is rebuilt
 from its run_end log entries, and only written when above 0 so old fixtures
@@ -49,3 +75,5 @@ History: b71c8d7 (Oct 25, the sprint start), c7b1a78 (Oct 26), d8b47c6 (Oct 27),
 **Catching up:** when stream B changes the rules (`contrib/opus/compute/port_notes.md` lists each step), the change is ported to `godot/rules/` with a new golden scenario, then these files are re-copied from the new commit and this note is updated.
 
 Nov 3 2026, issue 88: re-copied data.js and ui3d.js for the text truth pass (one boon text corrected, two tutorial card texts corrected). No rules or numbers changed. Re-exported tables.
+
+Nov 8 2026, issue 121: re-copied data.js (NEM_VOICE, R101) and battle.js (the Nemesis opening line reads cfg.nemesis.line when the campaign sends one; no rule or number changed, every existing scenario takes the old path). Re-exported tables.

@@ -689,8 +689,24 @@ func _rcs(fx) -> void:
 			break
 		var rp: Vector3 = best[j][1]
 		var t: Vector3 = best[j][2]
-		var wp: Vector3 = to_world(rp)
-		var gv: Vector3 = dir_world(-t) * (5.0 + fx.rng.randf() * 3.0) * k
+		# Issue 281 run 7: a hull that does not fill its bounding box (the Eclipse disc and tower) leaves the box
+		# corner in empty space, so the old corner puff floated off the ship. Start each puff on the real plating: cast
+		# a ray from the corner, pushed a further L away from the hull centre, back toward it, and use the hit point.
+		# A corner whose ray misses has no plating behind it, so skip it.
+		var outward: Vector3 = rp - hull.c
+		var od: float = outward.length()
+		outward = outward / maxf(od, 1e-3)
+		var h: Dictionary = hull.ray(rp + outward * L, -outward)
+		if h.is_empty():
+			continue
+		var wp: Vector3 = to_world(h["p"])
+		var n: Vector3 = h["n"]
+		# The gas blows away from the plating, never into the hull.
+		var gd: Vector3 = -t
+		if gd.dot(n) < 0.15:
+			gd = n
+		var gv: Vector3 = dir_world(gd) * (5.0 + fx.rng.randf() * 3.0) * k
+		fx.record_spawn(self, wp)
 		fx.spr(wp, fx.now, 0.35, Color(0.85, 0.88, 0.95), 0.6, 0.12 * k, 0.9 * k, 7, gv, 2.5)
 		fx.spr(wp, fx.now, 0.06, Color(0.9, 0.95, 1.0), 1.5, 0.08 * k, 0.15 * k, 18)
 
@@ -871,7 +887,7 @@ func _dmg_request(fx) -> void:
 	for i in 3:
 		ents.append_array(_ents[i])
 	for e in _marks:
-		var cap: int = [2, 2, 3, 4, 4][stage[e.sec]]
+		var cap: int = int(round(float([2, 2, 3, 4, 4][stage[e.sec]]) * fx.cap_k))
 		var used := 0
 		for x in ents:
 			if x.look != "" and x.sec == e.sec: used += 1
@@ -1002,14 +1018,14 @@ func _place_mark(fx, e) -> void:
 	for o in _marks:
 		if o.sec == e.sec:
 			in_sec.append(o)
-	if in_sec.size() > BREACH.SEC_MARK_CAP:
+	if in_sec.size() > int(BREACH.SEC_MARK_CAP * fx.cap_k):
 		var drop = in_sec[0]
 		for o in in_sec:
 			if o != e and o.style in [BREACH.S_SHELL, BREACH.S_FLAK]:
 				drop = o
 				break
 		_marks.erase(drop)
-	while _marks.size() > BREACH.MARK_CAP:
+	while _marks.size() > int(BREACH.MARK_CAP * fx.cap_k):
 		_marks.pop_front()
 
 
@@ -1089,8 +1105,12 @@ func _set_burning(fx, on: bool) -> void:
 	_refresh_damage_emitters(fx)
 
 
-func damage_caps() -> Vector2i:
-	return Vector2i(1, 2) if weight <= 1 else (Vector2i(2, 3) if weight == 2 else Vector2i(3, 4))
+# Issue 232 E12/E13: the caps are now the 4x step measured on the #207 gate scene (the old EVE-derived 1x caps are in
+# the fx stress README). The renderer's three sections per ship bound the live count long before these caps, so the
+# visible board stays at the measured 2x/4x row; the 4x value is the measured-safe ceiling, not a new art pass.
+func damage_caps(k := 1.0) -> Vector2i:
+	var c := Vector2i(4, 8) if weight <= 1 else (Vector2i(8, 12) if weight == 2 else Vector2i(12, 16))
+	return Vector2i(maxi(1, int(round(c.x * k))), maxi(1, int(round(c.y * k))))
 
 
 func damage_counts() -> Dictionary:
@@ -1108,7 +1128,7 @@ func _refresh_damage_emitters(fx) -> void:
 	for e in _fading_emitters: e.node.queue_free()
 	_fading_emitters.clear()
 	var desired: Array = []
-	var caps := damage_caps()
+	var caps := damage_caps(fx.cap_k)
 	var fires := 0
 	var smoke := 0
 	if not fx.compat and not squadron:

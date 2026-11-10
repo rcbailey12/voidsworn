@@ -275,6 +275,7 @@ uniform float has_neb = 0.0;
 uniform float neb_gain = 1.0;
 uniform float seed = 0.0;
 uniform float star_k = 1.0;
+uniform float star_floor = 0.15;   // E18/BD8: brightness of a star seen through the nebula body
 uniform vec3 band_n = vec3(0.0, 1.0, 0.0);
 uniform float band = 0.6;
 uniform vec4 lamp[6];
@@ -339,7 +340,7 @@ void sky() {
 		float y = dot(d, band_n);
 		float bd = exp(-pow(y / 0.25, 2.0)) * band;
 		vec3 st = star_layer(d, 120.0, 0.955, 1.0, bd * 0.03) + star_layer(d, 300.0, 0.985, 0.55, bd * 0.012) + star_layer(d, 650.0, 0.994, 0.35, bd * 0.004);
-		col += st * star_k * mix(0.15, 1.0, T) * (1.0 - 0.6 * has_pano);
+		col += st * star_k * mix(star_floor, 1.0, T) * (1.0 - 0.6 * has_pano);
 		// the stars inside the gas, with halos
 		for (int k = 0; k < 6; k++) {
 			if (lamp[k].w <= 0.0) continue;

@@ -1,5 +1,45 @@
 # The campaign oracle, pinned
 
+Nov 9 2026, issue 332 (tree skills job 6): re-copied battle.js and data.js for
+the Hegemony Navy TREE_FX rows and Vorn's Command rename to Interdiction strike.
+Re-exported campaign tables; no existing campaign rule changed.
+
+Nov 9 2026, issue 319 (tree skills job 4): re-copied battle.js, core.js and
+data.js for the Chorus TREE_FX rows, the H10 temporary hull and H17 extra
+activation hooks, and the new FX_CAPS key treeTempHp. Re-exported campaign
+tables; no existing campaign rule changed.
+
+Nov 9 2026, issue 315 (tree skills job 2): re-copied battle.js and data.js for
+the Sunward Crusade TREE_FX rows and the H4, H6, H12, H13 and H16 hooks.
+Re-exported campaign tables; no existing campaign rule changed.
+
+Nov 9 2026, issue 312 (tree skills job 1): re-copied battle.js, core.js and
+data.js for the RUN.lineage snapshot and TREE_FX. Re-exported campaign tables.
+
+Nov 9 2026, issue 30 (progression step 14): re-copied data.js, core.js and
+campaign_meta.js for capstone mastery. A chosen level 8 evolution deepens at
+320, 440 and 600 XP; effect texts are placeholders until the tree pack carries
+them. Re-exported campaign tables.
+
+Nov 9 2026, issue 29 (progression step 13): re-copied data.js for the rollout
+of the lineage trees to the other five factions (20 admirals, Branch A tiers 1
+to 3, both capstones, and each faction's shared Branch B and C tier 1 sets) and
+campaign_meta.js for the lineage screen wording that no longer calls the slice
+a test. Re-exported campaign tables.
+
+Nov 8 2026, issue 27 (progression step 11): re-copied campaign_run.js and
+campaign_meta.js for per run XP earnings by line in the F1 play log. Each
+finished run writes one run_xp event: the flown line's payout plus each
+benched line of the same faction with its shadow share. No Nemesis counter
+was added; the play log report reads the #122 run_end record. Re-exported
+campaign tables; their checksums are unchanged.
+
+Nov 8 2026, issue 24: re-copied campaign_run.js and campaign_meta.js for the
+Nemesis teaching loop (the lost meeting's lesson recorded per commander with
+its taught flag, the run debrief's Nemesis lesson row, and the map and meeting
+line that name the once-per-sector meeting as certain). Re-exported campaign
+tables; their checksums are unchanged.
+
 Nov 8 2026, issue 246: re-copied core.js for the loss back-fill. A profile
 saved before the Heat gate has no losses count; migrateMeta counts its
 run_end entries that were neither a win nor abandoned, writes the count only
@@ -62,3 +102,7 @@ The parity harness and the campaign table exporter read these files, not the liv
 **Catching up:** when stream B changes a campaign rule, port the change to `godot/campaign/`, re-copy the six files from the new commit, run `node godot/campaign/test/node/export_campaign.js` to refresh `godot/campaign/data/campaign_tables.json`, run the parity test, and update the commit numbers above.
 
 Nov 3 2026, issue 88: re-copied data.js and ui3d.js for the text truth pass (one boon text corrected, two tutorial card texts corrected). No rules or numbers changed. Re-exported tables.
+
+Nov 8 2026, issue 121: re-copied data.js, core.js, battle.js and campaign_run.js (the run clock RUN.nemClock and RUN.nemStrike, per-commander adaptation, lessons and NEM_VOICE). Re-exported tables.
+
+Nov 8 2026, issue 122: re-copied core.js, campaign_meta.js and campaign_run.js (the run escape counter RUN.nemEscapes, the Chorus compounding counter telemetry, nemSignature tagged by the commander who acted, the Nemesis panel data nemPanelData, the run_end Nemesis record, the clock-full message through nemSay). Re-exported campaign tables; their checksum is unchanged (no data.js change).

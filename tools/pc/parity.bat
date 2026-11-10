@@ -28,8 +28,8 @@ echo Godot: %GODOT% >> "%LOG%"
 set FAILS=0
 set "GD="%GODOT%" --headless --path "%PROJ%." --script res://rules/test/parity_main.gd --"
 set "SCEN="
-"%NODE%" -e "console.log(Object.keys(require(process.argv[1])).join(' '))" "%T%scenarios.json" > "%T%out\scen.txt" 2>> "%LOG%"
-set /p SCEN=<"%T%out\scen.txt"
+rem one scenario name per line: a single space-joined line hit the cmd set /p limit (about 1024 chars) once the fixture count passed ~100
+"%NODE%" -e "console.log(Object.keys(require(process.argv[1])).join('\n'))" "%T%scenarios.json" > "%T%out\scen.txt" 2>> "%LOG%"
 
 echo.
 echo [1/5] Exporting the game's data tables for Godot...
@@ -50,8 +50,8 @@ echo [3/5] Math functions the rules use ^(sin, cos, atan2, exp, hypot, round, po
 if errorlevel 1 ( echo   FAIL & type "%T%out\math.txt" & set /a FAILS+=1 ) else ( echo   PASS )
 type "%T%out\math.txt" >> "%LOG%"
 
-echo [4/5] Seeded battles, every activation compared ^(state hash, PRNG state^): !SCEN!
-for %%B in (!SCEN!) do (
+echo [4/5] Seeded battles, every activation compared ^(state hash, PRNG state^): one name per line in out\scen.txt
+for /f "usebackq delims=" %%B in ("%T%out\scen.txt") do (
   if exist "%T%golden\%%B.jsonl" del "%T%golden\%%B.jsonl"
   if exist "%T%out\%%B.jsonl" del "%T%out\%%B.jsonl"
   "%NODE%" "%T%node\golden.js" scenario %%B "%T%golden\%%B.jsonl" >> "%LOG%" 2>&1

@@ -1,16 +1,19 @@
 {
   "data.js": [
     "Colossus",
-    "Matriarch"
+    "Matriarch",
+    "Chosen"
   ],
   "campaign_tables.json": [
     "Colossus",
-    "Matriarch"
+    "Matriarch",
+    "Chosen"
   ],
   "godot/rules/data/tables.json": [
     "Colossus",
     "Matriarch",
-    "relic"
+    "relic",
+    "Chosen"
   ],
   "godot/campaign/campaign.gd": [
     "relic"

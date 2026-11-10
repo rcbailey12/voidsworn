@@ -41,6 +41,20 @@ var min_px = 1.0:
 var unit = 1.0
 var starboard_z = 1
 var compat := false
+# Issue 232 damage stress: a multiplier on the shipped damage caps (marks, section marks and persistent fire/smoke/vent
+# emitters). 1.0 is the shipped game; the stress bench sets 2 and 4 to find where the frame budget binds.
+var cap_k := 1.0
+# Issue 232 weapon timing sheet (E31): the effect-loop pins. These are the shipped values; the sheet bench sets a second
+# set (one alternate) without touching the game's defaults.
+var timing := {"ripple": 0.08, "shell_speed": 160.0, "lance": 0.7, "charge": 0.25, "shield": 0.6}
+# Issue 281 vent gas: the shipped look is Cone B, a tight forward cone of gas and sparks along the barrel. "today" draws
+# the pre-Cone-B baked gas cell and is only set by the review capture to shoot the before stills; the game leaves it "".
+var vent_look := ""
+# Issue 281 stray-puff guard: when a test sets check_radius, every weapon/vent/thruster gas spawn records its world
+# position and its source ship (fx_weapons.gd and fx_ship.gd call record_spawn), and stray_spawns() reports any that
+# landed more than a small share of that ship's hull length from its real plating (see record_spawn).
+var check_radius := false
+var effect_spawns: Array = []
 var well = Vector3.INF     # the dead star, when the board has one (world.gd sets it): tidal deaths fall toward it
 var dstate = {}
 var manual = false
@@ -157,6 +171,9 @@ func setup(opts := {}) -> void:
 	starboard_z = 1 if int(opts.get("starboard_z", 1)) >= 0 else -1
 	reduce_flashing = bool(opts.get("reduce_flashing", false))
 	min_px = float(opts.get("min_px", 1.0))
+	# Issue 281: the review capture can ask for the pre-Cone-B look to shoot the before stills; the game's default is the
+	# shipped Cone B (see fx_weapons._vent).
+	vent_look = String(opts.get("vent_look", OS.get_environment("VS_VENT_LOOK")))
 	var rich = quality != "low"
 	var soft = "#define SOFT\n" if rich else ""
 	var big = quality == "max"
@@ -699,6 +716,34 @@ func ship(id: String) -> SHIP:
 	return ships.get(id, null)
 
 
+# Issue 281 stray-puff guard (fx/test/fx_smoke.gd and vent_look_probe.gd): a weapon, vent or thruster gas effect is
+# born on its source ship, so a spawn farther than a small share of that ship's hull length from its real plating is a
+# stray puff and fails the test. The distance is measured to the source hull's nearest surface sample (hull.sp, moved to
+# world space) at spawn time, so a source ship that later dies or leaves does not turn a valid earlier spawn stray.
+# `wide` is the wider limit for real muzzle and impact gas points, which sit off the barrel or along the hit normal past
+# the plating; the thruster gas (_rcs) uses the tight limit.
+func record_spawn(src: SHIP, p: Vector3, wide := false) -> void:
+	if not check_radius or src == null:
+		return
+	var h: HULL = src.hull
+	var limit: float = (0.30 if wide else 0.08) * float(h.L)
+	var nearest := INF
+	for i in h.sp.size():
+		var wp: Vector3 = src.to_world(h.sp[i])
+		var d: float = p.distance_to(wp)
+		if d < nearest:
+			nearest = d
+	effect_spawns.append([p, nearest, limit])
+
+
+func stray_spawns() -> Array:
+	var out: Array = []
+	for e in effect_spawns:
+		if float(e[1]) > float(e[2]):
+			out.append(e[0])
+	return out
+
+
 # ---------------------------------------------------------------- weapons, shields, deaths (API.md 3 to 6)
 
 func volley(attacker_id: String, kind: String, target_id: String, opts := {}) -> Dictionary:
@@ -886,6 +931,13 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	wburst.set_shader_parameter("born", now)
 	wburst.set_shader_parameter("intensity", 0.01)
 	mats.append(wburst)
+	# issue 281: the baked muzzle and impact gas atlases, warmed so the first macro muzzle or hull hit never compiles
+	# its pipeline mid-fight.
+	for wkind in ["muzzle", "impact"]:
+		var wgas: ShaderMaterial = WEAP._weapon_gas_material(self, wkind)
+		wgas.set_shader_parameter("born", now)
+		wgas.set_shader_parameter("intensity", 0.01)
+		mats.append(wgas)
 	DEATH.tear_particles(self, at, Vector3.UP, 0.1, Vector3.ZERO)
 	for i in mats.size():
 		# Pin generated hull shaders until release, even after the temporary warmup meshes go away.

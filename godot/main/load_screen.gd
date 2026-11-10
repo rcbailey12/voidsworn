@@ -1,6 +1,10 @@
 extends CanvasLayer
 # Draw the real scene under a cover so gameplay's material pipelines get warmed.
 
+var _load_label: Label
+var _load_us
+var _load_vs := Vector2.ZERO
+
 static func pipelines() -> int:
 	var count := 0
 	for key in [Performance.PIPELINE_COMPILATIONS_DRAW, Performance.PIPELINE_COMPILATIONS_SPECIALIZATION, Performance.PIPELINE_COMPILATIONS_CANVAS]:
@@ -15,11 +19,22 @@ func _ready() -> void:
 	add_child(cover)
 	var label := Label.new()
 	label.text = "Preparing the sector..."
-	label.add_theme_font_size_override("font_size", 24)
+	_load_us = load("res://ui/ui_scale.gd")   # the one shared scale law (ui_spec.md section 4); was a fixed 24 at every size
+	_load_label = label
+	_apply_load_size()
 	label.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	label.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	label.grow_vertical = Control.GROW_DIRECTION_BOTH
 	cover.add_child(label)
+
+# N3 (#282): follow a resize, as the other screens do, instead of freezing the scale at first layout
+func _apply_load_size() -> void:
+	_load_vs = get_viewport().get_visible_rect().size
+	_load_label.add_theme_font_size_override("font_size", _load_us.px(24, _load_us.k_for(_load_vs)))
+
+func _process(_dt: float) -> void:
+	if _load_label == null: return
+	if get_viewport().get_visible_rect().size != _load_vs: _apply_load_size()
 
 static func settle(tree: SceneTree) -> void:
 	if DisplayServer.get_name() == "headless": return

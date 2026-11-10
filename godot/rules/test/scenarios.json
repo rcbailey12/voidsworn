@@ -1848,5 +1848,5526 @@
   "rounds": 12,
   "bot": "full",
   "alt": false
+ },
+ "t_casttwice": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "note": "Tree fixture: Tamsa Cast Twice in Light (aelith:A:0:1) repeats an extra wing strike at half damage",
+  "seed": 31201,
+  "admiral": "aelith",
+  "fleet": [
+   "i_carrier",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_boss"
+  ],
+  "cmdRound": 4,
+  "treeChoices": {
+   "carrier": "x03",
+   "enemy": "x05"
+  },
+  "lineage": {
+   "id": "aelith",
+   "picks": [
+    "aelith:A:0:1"
+   ],
+   "capstone": null
+  }
+ },
+ "t_flakskip": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "note": "Tree fixture: Tamsa Flaw in the Flight Removed (aelith:A:2:0) skips one enemy point defence",
+  "seed": 31202,
+  "admiral": "aelith",
+  "fleet": [
+   "i_carrier",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_boss"
+  ],
+  "cmdRound": 4,
+  "treeChoices": {
+   "carrier": "x03",
+   "enemy": "x05"
+  },
+  "lineage": {
+   "id": "aelith",
+   "picks": [
+    "aelith:A:0:0",
+    "aelith:A:1:0",
+    "aelith:A:2:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t_lensaloft": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Tamsa Every Lens Aloft (aelith:A:2:1) adds an extra wing from a launch ship that held still",
+  "seed": 31203,
+  "admiral": "aelith",
+  "fleet": [
+   "i_carrier",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "aelith",
+   "picks": [
+    "aelith:A:0:0",
+    "aelith:A:1:0",
+    "aelith:A:2:1"
+   ],
+   "capstone": null
+  }
+ },
+ "t_longfocus": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Saro Focus Drawn Long (vaelen:A:0:0) pays +20% on volley shots past half range",
+  "seed": 31204,
+  "admiral": "vaelen",
+  "fleet": [
+   "i_song",
+   "i_song",
+   "i_song"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester",
+   "d_scythe_s"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "vaelen",
+   "picks": [
+    "vaelen:A:0:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t_recordedangle": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Saro The Recorded Angle (vaelen:A:1:1) turns a ship before the volley",
+  "seed": 31205,
+  "admiral": "vaelen",
+  "fleet": [
+   "i_song",
+   "i_song",
+   "i_song"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester",
+   "d_scythe_s"
+  ],
+  "cmdRound": 3,
+  "lineage": {
+   "id": "vaelen",
+   "picks": [
+    "vaelen:A:0:0",
+    "vaelen:A:1:1"
+   ],
+   "capstone": null
+  }
+ },
+ "t_burnflaw": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Saro Burning the Flaw Out (vaelen:A:2:0) makes the third volley hit ignore shields",
+  "seed": 31206,
+  "admiral": "vaelen",
+  "fleet": [
+   "i_song",
+   "i_song",
+   "i_blade"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "vaelen",
+   "picks": [
+    "vaelen:A:0:0",
+    "vaelen:A:1:1",
+    "vaelen:A:2:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t_longlight": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Saro Long Light (vaelen:A:2:1) adds 2 lance range to a ship that has not turned",
+  "seed": 31207,
+  "admiral": "vaelen",
+  "fleet": [
+   "i_song",
+   "i_song"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester"
+  ],
+  "cmdRound": 1,
+  "lineage": {
+   "id": "vaelen",
+   "picks": [
+    "vaelen:A:0:0",
+    "vaelen:A:1:1",
+    "vaelen:A:2:1"
+   ],
+   "capstone": null
+  }
+ },
+ "t_flawforever": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Saro The Flaw, Corrected Forever (vaelen:cap:1) keeps +15% lance damage on the volley target",
+  "seed": 31208,
+  "admiral": "vaelen",
+  "fleet": [
+   "i_song",
+   "i_song",
+   "i_song"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester",
+   "d_scythe_s"
+  ],
+  "cmdRound": 3,
+  "lineage": {
+   "id": "vaelen",
+   "picks": [
+    "vaelen:A:0:0",
+    "vaelen:A:1:1",
+    "vaelen:A:2:0"
+   ],
+   "capstone": 1
+  }
+ },
+ "t_twoimages": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Vell Two Images Appear (thorne:A:0:0) costs the first enemy shot at each ship 20 accuracy",
+  "seed": 31209,
+  "admiral": "thorne",
+  "fleet": [
+   "i_song",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "thorne",
+   "picks": [
+    "thorne:A:0:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t_angles": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "note": "Tree fixture: Vell Angles Recorded (thorne:A:0:1) gives evasion for ending movement on a new facing",
+  "seed": 31210,
+  "admiral": "thorne",
+  "fleet": [
+   "i_wisp",
+   "i_wisp",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_boss"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "thorne",
+   "picks": [
+    "thorne:A:0:1"
+   ],
+   "capstone": null
+  }
+ },
+ "t_refraction": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Vell Refraction Deepens (thorne:A:2:0) hides a ship that spent all its movement beyond range 6",
+  "seed": 31211,
+  "admiral": "thorne",
+  "fleet": [
+   "i_wisp",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_scythe_s"
+  ],
+  "cmdRound": 1,
+  "lineage": {
+   "id": "thorne",
+   "picks": [
+    "thorne:A:0:1",
+    "thorne:A:1:0",
+    "thorne:A:2:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t_mirrorturns": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Vell Every Mirror Turns (thorne:A:2:1) faces every ship free at the end of scatter movement",
+  "seed": 31212,
+  "admiral": "thorne",
+  "fleet": [
+   "i_wisp",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_scythe_s"
+  ],
+  "cmdRound": 1,
+  "lineage": {
+   "id": "thorne",
+   "picks": [
+    "thorne:A:0:1",
+    "thorne:A:1:0",
+    "thorne:A:2:1"
+   ],
+   "capstone": null
+  }
+ },
+ "t_falsehulls": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Vell A Hundred False Hulls (thorne:cap:1) wastes the first two enemy attacks",
+  "seed": 31213,
+  "admiral": "thorne",
+  "fleet": [
+   "i_song",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "thorne",
+   "picks": [
+    "thorne:A:0:0",
+    "thorne:A:1:0",
+    "thorne:A:2:0"
+   ],
+   "capstone": 1
+  }
+ },
+ "t_rechargelit": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "note": "Tree fixture: Brin Recharge While Lit (mirelle:A:1:0) recharges shields again at the next round start",
+  "seed": 31214,
+  "admiral": "mirelle",
+  "fleet": [
+   "i_song",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_scythe_s"
+  ],
+  "cmdRound": 1,
+  "lineage": {
+   "id": "mirelle",
+   "picks": [
+    "mirelle:A:0:0",
+    "mirelle:A:1:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t_glasscorrected": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "note": "Tree fixture: Brin Flaw in the Glass Corrected (mirelle:A:2:0) refills the first emptied facing",
+  "seed": 31215,
+  "admiral": "mirelle",
+  "fleet": [
+   "i_wisp",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "h_boss"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "mirelle",
+   "picks": [
+    "mirelle:A:0:0",
+    "mirelle:A:1:0",
+    "mirelle:A:2:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t_hardlight": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Brin Hard Light (mirelle:A:2:1) blocks the first section damage while a shield remains",
+  "seed": 31216,
+  "admiral": "mirelle",
+  "fleet": [
+   "i_song",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "mirelle",
+   "picks": [
+    "mirelle:A:0:0",
+    "mirelle:A:1:0",
+    "mirelle:A:2:1"
+   ],
+   "capstone": null
+  }
+ },
+ "t_wardglass": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: Brin Ward of Clear Glass (mirelle:cap:0) reflects 20 accuracy onto the next shot of an enemy that fired at the ward",
+  "seed": 31217,
+  "admiral": "mirelle",
+  "fleet": [
+   "i_song",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "mirelle",
+   "picks": [
+    "mirelle:A:0:0",
+    "mirelle:A:1:0",
+    "mirelle:A:2:0"
+   ],
+   "capstone": 0
+  }
+ },
+ "t_deployread": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 2,
+  "bot": "full",
+  "note": "Tree fixture: shared Deployment Read from the Shards (vaelen:B:0:0) moves one ship in the deployment zone at battle start",
+  "seed": 31218,
+  "admiral": "vaelen",
+  "fleet": [
+   "i_song",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_scythe_s"
+  ],
+  "lineage": {
+   "id": "vaelen",
+   "picks": [
+    "vaelen:B:0:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t_castcorrected": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 2,
+  "bot": "full",
+  "note": "Tree fixture: shared Casting Corrected Before Battle (vaelen:B:0:1) swaps two ships at battle start",
+  "seed": 31219,
+  "admiral": "vaelen",
+  "fleet": [
+   "i_song",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_scythe_s"
+  ],
+  "lineage": {
+   "id": "vaelen",
+   "picks": [
+    "vaelen:B:0:1"
+   ],
+   "capstone": null
+  }
+ },
+ "t_flagshiplens": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: shared The Flagship Lens (vaelen:C:0:0) marks one enemy for lance aim each round",
+  "seed": 31220,
+  "admiral": "vaelen",
+  "fleet": [
+   "i_song",
+   "i_song"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "vaelen",
+   "picks": [
+    "vaelen:C:0:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t_firstlight": {
+  "sector": 1,
+  "fac_player": "ithar",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "note": "Tree fixture: shared First Light Recorded (vaelen:C:0:1) gives the fleet +10 evasion against the first enemy to fire",
+  "seed": 31221,
+  "admiral": "vaelen",
+  "fleet": [
+   "i_song",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "vaelen",
+   "picks": [
+    "vaelen:C:0:1"
+   ],
+   "capstone": null
+  }
+ },
+ "t_heldaccount": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31501,
+  "admiral": "vex",
+  "fleet": [
+   "penitent",
+   "harrow"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket",
+   "h_picket"
+  ],
+  "cmdRound": 3,
+  "lineage": {
+   "id": "vex",
+   "picks": [
+    "vex:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Vex Held in the Account (vex:A:0:1) holds one ship free volley until after it moves"
+ },
+ "t_namedledger": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31502,
+  "admiral": "vex",
+  "fleet": [
+   "penitent",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "vex",
+   "picks": [
+    "vex:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Vex Named in the Ledger (vex:A:1:0) aims every gun at one named enemy"
+ },
+ "t_inheritedaim": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 31503,
+  "admiral": "vex",
+  "fleet": [
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 4,
+  "lineage": {
+   "id": "vex",
+   "picks": [
+    "vex:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Vex Inherited Aim (vex:A:1:1) pays +15% on a free volley from a ship that has not moved"
+ },
+ "t_everygun": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 31504,
+  "admiral": "vex",
+  "fleet": [
+   "penitent",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 4,
+  "lineage": {
+   "id": "vex",
+   "picks": [
+    "vex:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Vex Every Gun Sworn (vex:A:2:0) gives +10 aim to ships that share a volley target"
+ },
+ "t_sworndeploy": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 3,
+  "bot": "full",
+  "seed": 31505,
+  "admiral": "vex",
+  "fleet": [
+   "penitent",
+   "harrow"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket"
+  ],
+  "lineage": {
+   "id": "vex",
+   "picks": [
+    "vex:B:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: shared Sworn Deployment (vex:B:0:0) repositions one ship in its zone at battle start"
+ },
+ "t_debtsreserve": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 3,
+  "bot": "full",
+  "seed": 31506,
+  "admiral": "vex",
+  "fleet": [
+   "penitent",
+   "harrow"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket"
+  ],
+  "lineage": {
+   "id": "vex",
+   "picks": [
+    "vex:B:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: shared Debts in Reserve (vex:B:0:1) holds one ship back and brings it in at round 2"
+ },
+ "t_flagshipLedger": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31507,
+  "admiral": "vex",
+  "fleet": [
+   "penitent",
+   "harrow"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "lineage": {
+   "id": "vex",
+   "picks": [
+    "vex:C:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: shared Flagship Keeps the Ledger (vex:C:0:0) fires one more weapon at half damage"
+ },
+ "t_standardreroll": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 31508,
+  "admiral": "vex",
+  "fleet": [
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket",
+   "h_picket",
+   "h_picket"
+  ],
+  "lineage": {
+   "id": "vex",
+   "picks": [
+    "vex:C:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: shared Standard of the First Crusade (vex:C:0:1) rerolls one missed shot a round"
+ },
+ "t_preyname": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31509,
+  "admiral": "malek",
+  "fleet": [
+   "harrow",
+   "harrow"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "malek",
+   "picks": [
+    "malek:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Malek Prey Entered by Name (malek:A:0:0) pays +15% on torpedoes fired at the marked prey"
+ },
+ "t_salvotwohands": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31510,
+  "admiral": "malek",
+  "fleet": [
+   "harrow",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "malek",
+   "picks": [
+    "malek:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Malek Salvo in Two Hands (malek:A:0:1) moves the hunt bonus on half the fleet to next round"
+ },
+ "t_debthunts": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "seed": 31511,
+  "admiral": "malek",
+  "fleet": [
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "malek",
+   "picks": [
+    "malek:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Malek The Debt Hunts (malek:A:2:0) makes side hits count as rear hits on the hunted target"
+ },
+ "t_twosalvos": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31512,
+  "admiral": "malek",
+  "fleet": [
+   "harrow",
+   "harrow"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "malek",
+   "picks": [
+    "malek:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Malek Two Salvos Sworn (malek:A:2:1) carries the hunt bonus into the first torpedo next round"
+ },
+ "t_namedprey": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31513,
+  "admiral": "malek",
+  "fleet": [
+   "harrow",
+   "harrow"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "malek",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Sunward: Malek The Named Prey Falls (malek:cap:1) retargets travelling torpedoes and pays +25% on the prey"
+ },
+ "t_escortname": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31514,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "ashgrove",
+   "picks": [
+    "ashgrove:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Ashgrove Escort Sworn to a Name (ashgrove:A:0:0) gives an extra wing a guard order and it takes the first hit"
+ },
+ "t_firstwave": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31515,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "ashgrove",
+   "picks": [
+    "ashgrove:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Ashgrove First Wave Owes the Second (ashgrove:A:0:1) makes one carrier extra wing hit at +20%"
+ },
+ "t_wingreserve": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31516,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "ashgrove",
+   "picks": [
+    "ashgrove:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Ashgrove Held in Reserve (ashgrove:A:1:1) holds one extra wing and launches it next round"
+ },
+ "t_generation": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31517,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "ashgrove",
+   "picks": [
+    "ashgrove:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Ashgrove Every Generation Aloft (ashgrove:A:2:0) adds an extra wing from a launch ship that held still"
+ },
+ "t_wingsdebt": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31518,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "ashgrove",
+   "picks": [
+    "ashgrove:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Ashgrove Wings Settle the Debt (ashgrove:A:2:1) pays +30% on a wing strike at the carrier target"
+ },
+ "t_rollwings": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31519,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "ashgrove",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Sunward: Ashgrove The Roll of Wings (ashgrove:cap:0) ignites the struck ship and cuts its flak by 1 for the battle"
+ },
+ "t_oathwings": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "seed": 31520,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "penitent"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "ashgrove",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Sunward: Ashgrove Oath of Unbroken Wings (ashgrove:cap:1) screens torpedoes aimed at ships near a launch ship"
+ },
+ "t_holdcounted": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31521,
+  "admiral": "thale",
+  "fleet": [
+   "cathedral",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "thale",
+   "picks": [
+    "thale:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Thale Hold and Be Counted (thale:A:0:0) keeps the wall cut one more round on ships that held still"
+ },
+ "t_oathstillness": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31522,
+  "admiral": "thale",
+  "fleet": [
+   "cathedral",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "thale",
+   "picks": [
+    "thale:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Thale Oath of Stillness (thale:A:1:1) refills shields again for ships that held still"
+ },
+ "t_unpaid": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31523,
+  "admiral": "thale",
+  "fleet": [
+   "warden",
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard",
+   "h_vanguard"
+  ],
+  "cmdRound": 4,
+  "lineage": {
+   "id": "thale",
+   "picks": [
+    "thale:A:2:0"
+   ],
+   "capstone": null
+  },
+  "mod": "veteran",
+  "note": "Sunward: Thale Unpaid and Unbroken (thale:A:2:0) cuts 20 points more on ships below half hull"
+ },
+ "t_wallanswers": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31524,
+  "admiral": "thale",
+  "fleet": [
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "thale",
+   "picks": [
+    "thale:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Sunward: Thale The Wall Answers (thale:A:2:1) fires a ship smallest weapon at the attacker when its facing empties"
+ },
+ "t_irontestament": {
+  "sector": 1,
+  "fac_player": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31525,
+  "admiral": "thale",
+  "fleet": [
+   "cathedral",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "thale",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Sunward: Thale Iron Testament (thale:cap:0) keeps the wall for a second round and half refills it"
+ },
+ "t_ecl_restoreninth": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31801,
+  "admiral": "nekhet",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "cmdRound": 3,
+  "lineage": {
+   "id": "nekhet",
+   "picks": [
+    "nekhet:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Nadir Restore from the Ninth Frame (nekhet:A:0:0) picks one ship for the full repair, others half"
+ },
+ "t_ecl_restoredbeyond": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31802,
+  "admiral": "nekhet",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "rounds": 5,
+  "cmdRound": 3,
+  "lineage": {
+   "id": "nekhet",
+   "picks": [
+    "nekhet:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Nadir Restored Beyond the Original (nekhet:A:2:0) gives a rebuilt section +20% section hull"
+ },
+ "t_ecl_copiescontribute": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31803,
+  "admiral": "nekhet",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe",
+   "d_jackal"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 3,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "nekhet",
+   "picks": [
+    "nekhet:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Nadir Every Copy Contributes (nekhet:A:2:1) divides the flagship repair share"
+ },
+ "t_ecl_tenthframe": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31804,
+  "admiral": "nekhet",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "cmdRound": 3,
+  "lineage": {
+   "id": "nekhet",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Eclipse: Nadir Tenth Frame (nekhet:cap:0) triples one ship repair and restores a broken section"
+ },
+ "t_ecl_earliercopy": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31805,
+  "admiral": "nekhet",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "cmdRound": 3,
+  "lineage": {
+   "id": "nekhet",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Eclipse: Nadir The Earlier Copy Returns (nekhet:cap:1) repairs every section of one ship"
+ },
+ "t_ecl_arcswarm": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31806,
+  "admiral": "sekhmar",
+  "fleet": [
+   "d_harvester",
+   "d_harvester",
+   "d_jackal",
+   "d_jackal"
+  ],
+  "enemies": [
+   "h_vanguard",
+   "h_vanguard",
+   "h_vanguard"
+  ],
+  "rounds": 5,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "sekhmar",
+   "picks": [
+    "sekhmar:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Umbra Arcs Written Warm (sekhmar:A:0:0) splashes a corona volley hit onto an adjacent enemy"
+ },
+ "t_ecl_noonchoice": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31807,
+  "admiral": "sekhmar",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 5,
+  "cmdRound": 3,
+  "lineage": {
+   "id": "sekhmar",
+   "picks": [
+    "sekhmar:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Umbra Noon Is a Choice (sekhmar:A:0:1) adds 15% to a volley before any ship moves or fires"
+ },
+ "t_ecl_copyfires": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31900,
+  "admiral": "sekhmar",
+  "fleet": [
+   "d_harvester",
+   "d_harvester",
+   "d_jackal",
+   "d_jackal"
+  ],
+  "enemies": [
+   "h_picket",
+   "h_interdictor",
+   "h_interdictor"
+  ],
+  "rounds": 5,
+  "cmdRound": 3,
+  "lineage": {
+   "id": "sekhmar",
+   "picks": [
+    "sekhmar:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Umbra The Copy Fires Again (sekhmar:A:1:0) fires one weapon at a new target after a volley kill"
+ },
+ "t_ecl_coronashadow": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "storm",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31809,
+  "admiral": "sekhmar",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 5,
+  "cmdRound": 3,
+  "lineage": {
+   "id": "sekhmar",
+   "picks": [
+    "sekhmar:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Umbra Corona Without Shadow (sekhmar:A:2:0) ignores terrain cover in the noon volley"
+ },
+ "t_ecl_everyframe": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31810,
+  "admiral": "sekhmar",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 5,
+  "cmdRound": 3,
+  "lineage": {
+   "id": "sekhmar",
+   "picks": [
+    "sekhmar:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Umbra Every Frame at Noon (sekhmar:A:2:1) gives an unmoved volley +25% damage and +10 aim"
+ },
+ "t_ecl_noonrepeat": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31811,
+  "admiral": "sekhmar",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 3,
+  "cmdRound": 1,
+  "lineage": {
+   "id": "sekhmar",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Eclipse: Umbra Noon That Does Not Pass (sekhmar:cap:0) fires the volley again at the next round start at half damage"
+ },
+ "t_ecl_onesuncopy": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31812,
+  "admiral": "sekhmar",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 3,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "sekhmar",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Eclipse: Umbra One Sun, Copied (sekhmar:cap:1) copies each volley onto the least hull enemy at half damage"
+ },
+ "t_ecl_copiedbehind": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31813,
+  "admiral": "anuket",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 7,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "anuket",
+   "picks": [
+    "anuket:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Ostrel Copied from Behind (anuket:A:0:0) adds 20% to rear hits in the hunt round"
+ },
+ "t_ecl_unseenarchive": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31814,
+  "admiral": "anuket",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "anuket",
+   "picks": [
+    "anuket:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Ostrel Unseen in the Archive (anuket:A:0:1) gives +15% to a ship not targeted last round"
+ },
+ "t_ecl_uncopiedtarget": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31815,
+  "admiral": "anuket",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "anuket",
+   "picks": [
+    "anuket:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Ostrel Strike the Uncopied Target (anuket:A:1:1) gives +15% on an enemy not yet hit this battle"
+ },
+ "t_ecl_iterationkill": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31813,
+  "admiral": "anuket",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 7,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "anuket",
+   "picks": [
+    "anuket:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Ostrel Iteration of the Kill (anuket:A:2:0) gives the hit after a rear hit +20%"
+ },
+ "t_ecl_silentarchive": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31813,
+  "admiral": "anuket",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 7,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "anuket",
+   "picks": [
+    "anuket:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Ostrel Silent in the Archive (anuket:A:2:1) gives +15 evasion outside every enemy front arc"
+ },
+ "t_ecl_outshadow": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31818,
+  "admiral": "anuket",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "anuket",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Eclipse: Ostrel Out of Every Shadow (anuket:cap:0) carries the hunt bonus into a second round"
+ },
+ "t_ecl_longcopy": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31819,
+  "admiral": "anuket",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 3,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "anuket",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Eclipse: Ostrel The Long Copy Strikes (anuket:cap:1) moves each ship 2 hexes toward a rear arc at Command time"
+ },
+ "t_ecl_platesshadow": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31820,
+  "admiral": "khepra",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "khepra",
+   "picks": [
+    "khepra:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Seveth Plates over Shadow (khepra:A:0:0) stacks the wall on one ship"
+ },
+ "t_ecl_twicerestored": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31821,
+  "admiral": "khepra",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "cmdRound": 3,
+  "lineage": {
+   "id": "khepra",
+   "picks": [
+    "khepra:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Seveth The Twice-Restored Order (khepra:A:0:1) gives a repaired ship 15% more cut during the wall"
+ },
+ "t_ecl_layersshift": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31822,
+  "admiral": "khepra",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe",
+   "d_jackal"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 3,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "khepra",
+   "picks": [
+    "khepra:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Seveth Layers Shift (khepra:A:1:1) shifts each ship 1 hex toward the flagship at the next round start"
+ },
+ "t_ecl_nolayer": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31823,
+  "admiral": "khepra",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "khepra",
+   "picks": [
+    "khepra:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Seveth No Layer Falls Alone (khepra:A:2:0) absorbs the first hit each ship takes during the wall"
+ },
+ "t_ecl_stillness": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 32004,
+  "admiral": "khepra",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe",
+   "d_jackal"
+  ],
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "rounds": 6,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "khepra",
+   "picks": [
+    "khepra:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: Seveth Stillness Counted (khepra:A:2:1) gives a ship that stayed put +20 aim on its first shot next round"
+ },
+ "t_ecl_tenthousand": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31825,
+  "admiral": "khepra",
+  "fleet": [
+   "d_harvester",
+   "d_scythe",
+   "d_scythe",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_vanguard",
+   "h_vanguard",
+   "h_interdictor"
+  ],
+  "rounds": 5,
+  "cmdRound": 2,
+  "lineage": {
+   "id": "khepra",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Eclipse: Seveth Wall of Ten Thousand Copies (khepra:cap:0) caps hull damage taken in a round at 25% of max hull"
+ },
+ "t_ecl_restoredfleet": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31826,
+  "admiral": "khepra",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "cmdRound": 3,
+  "lineage": {
+   "id": "khepra",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Eclipse: Seveth The Restored Fleet (khepra:cap:1) keeps the wall cut a second round for a ship repaired this round"
+ },
+ "t_ecl_iterationswap": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31827,
+  "admiral": "nekhet",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe",
+   "d_jackal"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 2,
+  "lineage": {
+   "id": "nekhet",
+   "picks": [
+    "nekhet:B:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: shared Iteration Swap (nekhet:B:0:1) swaps two ships at battle start"
+ },
+ "t_ecl_flagshipindex": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31828,
+  "admiral": "nekhet",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_jackal"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 7,
+  "lineage": {
+   "id": "nekhet",
+   "picks": [
+    "nekhet:C:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: shared The Flagship Hosts the Index (nekhet:C:0:0) gives the flagship +15% on an ally target this round"
+ },
+ "t_ecl_framezero": {
+  "sector": 1,
+  "fac": "hegemony",
+  "fac_player": "deathless",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "seed": 31829,
+  "admiral": "nekhet",
+  "fleet": [
+   "d_scythe",
+   "d_jackal",
+   "d_jackal"
+  ],
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 6,
+  "lineage": {
+   "id": "nekhet",
+   "picks": [
+    "nekhet:C:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Eclipse: shared Frame Zero (nekhet:C:0:1) fires the flagship first miss again at half damage"
+ },
+ "t_choosebrood": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31701,
+  "admiral": "matriarch",
+  "fleet": [
+   "b_brood",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 1,
+  "treeChoices": {
+   "brood": "x01"
+  },
+  "lineage": {
+   "id": "matriarch",
+   "picks": [
+    "matriarch:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Matriarch Choose the Brood That Swells (matriarch:A:0:0) swells one brood and leaves the others"
+ },
+ "t_sporetide": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31702,
+  "admiral": "matriarch",
+  "fleet": [
+   "b_brood",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 1,
+  "lineage": {
+   "id": "matriarch",
+   "picks": [
+    "matriarch:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Matriarch Spores on the Tide (matriarch:A:0:1) places extra swarms up to 2 hexes out"
+ },
+ "t_everythroat": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31703,
+  "admiral": "matriarch",
+  "fleet": [
+   "b_brood",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 1,
+  "lineage": {
+   "id": "matriarch",
+   "picks": [
+    "matriarch:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Matriarch Every Throat Opens (matriarch:A:2:0) pays +25% to a still brood extra swarms"
+ },
+ "t_secondthroat": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31704,
+  "admiral": "matriarch",
+  "fleet": [
+   "b_brood",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 1,
+  "lineage": {
+   "id": "matriarch",
+   "picks": [
+    "matriarch:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Matriarch The Second Throat Bites (matriarch:A:2:1) pays +25% to a swarm on an already-hit target"
+ },
+ "t_rundown": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 31705,
+  "admiral": "razormaw",
+  "fleet": [
+   "b_razor",
+   "b_razor"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "razormaw",
+   "picks": [
+    "razormaw:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Razormaw Run Down the Slowest (razormaw:A:0:0) pays +20% against a slower target in the frenzy"
+ },
+ "t_razorprey": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31706,
+  "admiral": "razormaw",
+  "fleet": [
+   "b_razor",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 1,
+  "treeChoices": {
+   "enemy": "x03"
+  },
+  "lineage": {
+   "id": "razormaw",
+   "picks": [
+    "razormaw:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Razormaw One Prey in Both Throats (razormaw:A:1:0) names a prey and gains +1 movement toward it"
+ },
+ "t_frenzyfeeds": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 31707,
+  "admiral": "razormaw",
+  "fleet": [
+   "b_razor",
+   "b_razor",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion",
+   "h_picket"
+  ],
+  "cmdRound": 3,
+  "lineage": {
+   "id": "razormaw",
+   "picks": [
+    "razormaw:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Razormaw Frenzy Feeds the Throat (razormaw:A:2:0) gives 2 more hexes after a rear hit in the frenzy"
+ },
+ "t_breathbite": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 9,
+  "bot": "full",
+  "seed": 31713,
+  "admiral": "razormaw",
+  "fleet": [
+   "b_razor",
+   "b_razor",
+   "b_drone",
+   "b_drone",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 5,
+  "lineage": {
+   "id": "razormaw",
+   "picks": [
+    "razormaw:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Razormaw Breath Before the Bite (razormaw:A:2:1) costs a surrounded enemy 20 accuracy"
+ },
+ "t_throatred": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 31709,
+  "admiral": "razormaw",
+  "fleet": [
+   "b_razor",
+   "b_drone",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "razormaw",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Chorus: Razormaw The Throat Turns Red (razormaw:cap:0) pays +25% on the first shot after the frenzy"
+ },
+ "t_preyeverymouth": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31710,
+  "admiral": "razormaw",
+  "fleet": [
+   "b_razor",
+   "b_spitter",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 1,
+  "lineage": {
+   "id": "razormaw",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Chorus: Razormaw One Prey, Every Mouth (razormaw:cap:1) gives every ship a free turn toward the prey"
+ },
+ "t_growhurts": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 31711,
+  "admiral": "mending",
+  "fleet": [
+   "b_razor",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 3,
+  "treeChoices": {
+   "ship": "x01"
+  },
+  "lineage": {
+   "id": "mending",
+   "picks": [
+    "mending:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Mending Grow Where It Hurts (mending:A:0:0) sends one ship regrowth to one section"
+ },
+ "t_skinthick": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31712,
+  "admiral": "mending",
+  "fleet": [
+   "b_razor",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 1,
+  "treeChoices": {},
+  "lineage": {
+   "id": "mending",
+   "picks": [
+    "mending:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Mending Skin Grown Thick (mending:A:0:1) gives one ship regrowth as temporary hull"
+ },
+ "t_fleshknit": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31713,
+  "admiral": "mending",
+  "fleet": [
+   "b_razor",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 1,
+  "lineage": {
+   "id": "mending",
+   "picks": [
+    "mending:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Mending Flesh Knit for War (mending:A:2:0) pays +20% next round to a ship lifted above three quarters"
+ },
+ "t_refuseholes": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 31714,
+  "admiral": "mending",
+  "fleet": [
+   "b_drone",
+   "b_drone",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "lineage": {
+   "id": "mending",
+   "picks": [
+    "mending:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Mending The Throat Refuses Holes (mending:A:2:1) regrows the most damaged ship at each round start"
+ },
+ "t_tideend": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 3,
+  "bot": "full",
+  "seed": 31715,
+  "admiral": "mending",
+  "fleet": [
+   "b_razor",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 1,
+  "lineage": {
+   "id": "mending",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Chorus: Mending Tide Without End (mending:cap:0) heals a second time at half strength"
+ },
+ "t_tornback": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "seed": 31716,
+  "admiral": "mending",
+  "fleet": [
+   "b_drone",
+   "b_drone",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 3,
+  "lineage": {
+   "id": "mending",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Chorus: Mending What Was Torn Grows Back (mending:cap:1) restores a broken section and locks it"
+ },
+ "t_acidbeforeaim": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "seed": 31720,
+  "admiral": "voice",
+  "fleet": [
+   "b_spitter",
+   "b_spitter",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket",
+   "h_picket"
+  ],
+  "cmdRound": 3,
+  "lineage": {
+   "id": "voice",
+   "picks": [
+    "voice:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Voice Acid Before Aim (voice:A:0:0) spits at the nearest enemy"
+ },
+ "t_throatspits": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 10,
+  "bot": "full",
+  "seed": 31746,
+  "admiral": "voice",
+  "fleet": [
+   "b_brood"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 6,
+  "lineage": {
+   "id": "voice",
+   "picks": [
+    "voice:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Voice Every Throat Spits (voice:A:0:1) spits when no gun can bear"
+ },
+ "t_burnstays": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31719,
+  "admiral": "voice",
+  "fleet": [
+   "b_spitter",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "voice",
+   "picks": [
+    "voice:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Voice The Burn Stays (voice:A:1:0) deals 15% of the volley damage again next round"
+ },
+ "t_acidseams": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "seed": 31720,
+  "admiral": "voice",
+  "fleet": [
+   "b_spitter",
+   "b_spitter",
+   "b_razor"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket",
+   "h_picket"
+  ],
+  "cmdRound": 3,
+  "lineage": {
+   "id": "voice",
+   "picks": [
+    "voice:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Voice Acid Finds the Seams (voice:A:2:0) ignores armor below half hull"
+ },
+ "t_manymouths": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 31721,
+  "admiral": "voice",
+  "fleet": [
+   "b_spitter",
+   "b_spitter",
+   "b_spitter",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 3,
+  "lineage": {
+   "id": "voice",
+   "picks": [
+    "voice:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: Voice Many Mouths at Once (voice:A:2:1) costs a target hit by four ships 20 accuracy"
+ },
+ "t_volleygrows": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31722,
+  "admiral": "voice",
+  "fleet": [
+   "b_spitter",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 2,
+  "lineage": {
+   "id": "voice",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Chorus: Voice The Volley That Grows (voice:cap:0) makes a ship that hit spit again at half damage"
+ },
+ "t_mouthdeep": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 5,
+  "bot": "full",
+  "seed": 31723,
+  "admiral": "voice",
+  "fleet": [
+   "b_spitter",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {
+   "ship": "x01"
+  },
+  "lineage": {
+   "id": "voice",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Chorus: Voice Mouth of the Deep (voice:cap:1) fires every weapon twice at one target"
+ },
+ "t_broodreserve": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31724,
+  "admiral": "matriarch",
+  "fleet": [
+   "b_brood",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "lineage": {
+   "id": "matriarch",
+   "picks": [
+    "matriarch:B:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: shared Broods in Reserve (matriarch:B:0:1) holds a brood until round 2"
+ },
+ "t_firstthroat": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31725,
+  "admiral": "matriarch",
+  "fleet": [
+   "b_razor",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket",
+   "h_picket"
+  ],
+  "lineage": {
+   "id": "matriarch",
+   "picks": [
+    "matriarch:C:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: shared The First Throat Opens (matriarch:C:0:0) grants one more player activation after the flagship"
+ },
+ "t_throatdeep": {
+  "sector": 1,
+  "fac_player": "chorus",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 4,
+  "bot": "full",
+  "seed": 31726,
+  "admiral": "matriarch",
+  "fleet": [
+   "b_razor",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket"
+  ],
+  "lineage": {
+   "id": "matriarch",
+   "picks": [
+    "matriarch:C:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Chorus: shared Throat of the Deep (matriarch:C:0:1) gives +10 aim within 2 of the flagship"
+ },
+ "t_hb_runbigger": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33001,
+  "admiral": "grax",
+  "fleet": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [
+    "grax:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Grax Run at the Biggest Thing (grax:A:0:0) pays +15% when a burn ends closer to the largest enemy"
+ },
+ "t_hb_railboarding": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 29,
+  "admiral": "grax",
+  "fleet": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [
+    "grax:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Grax First Over the Rail (grax:A:0:1) boards at +25% after a 4 hex burn"
+ },
+ "t_hb_packcloses": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33003,
+  "admiral": "grax",
+  "fleet": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [
+    "grax:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Grax The Pack Closes (grax:A:1:0) gives +10 aim next to a friendly during the burn"
+ },
+ "t_hb_rushrail": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 33004,
+  "admiral": "grax",
+  "fleet": [
+   "c_raider",
+   "c_raider",
+   "c_marauder"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [
+    "grax:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Grax Rush the Rail (grax:A:1:1) boards after firing",
+  "attack_move": true
+ },
+ "t_hb_allscars": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33005,
+  "admiral": "grax",
+  "fleet": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [
+    "grax:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Grax All Scars Forward (grax:A:2:0) adds movement for enemies passed"
+ },
+ "t_hb_mawopens": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "seed": 33006,
+  "admiral": "grax",
+  "fleet": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [
+    "grax:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Grax The Maw Opens (grax:A:2:1) boosts the first ram of the burn"
+ },
+ "t_hb_burncarry": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33007,
+  "admiral": "grax",
+  "fleet": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Hullbreakers: Grax Burn Until the Hulls Meet (grax:cap:0) carries the burn to the next round"
+ },
+ "t_hb_warlordrun": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33008,
+  "admiral": "grax",
+  "fleet": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Hullbreakers: Grax Run of the Warlord (grax:cap:1) gives the flagship a second run"
+ },
+ "t_hb_knifeback": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "seed": 33009,
+  "admiral": "sable",
+  "fleet": [
+   "c_reaver",
+   "c_reaver",
+   "c_raider"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "sable",
+   "picks": [
+    "sable:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Sable Knife Finds the Back (sable:A:0:0) adds +15% rear damage in the hunt round"
+ },
+ "t_hb_darktorps": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33010,
+  "admiral": "sable",
+  "fleet": [
+   "c_reaver",
+   "c_reaver",
+   "c_raider"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "sable",
+   "picks": [
+    "sable:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Sable Torpedoes in the Dark (sable:A:0:1) halves torpedo interception"
+ },
+ "t_hb_cutturn": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "seed": 1,
+  "admiral": "sable",
+  "fleet": [
+   "c_reaver",
+   "c_reaver",
+   "c_raider"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 99,
+  "treeChoices": {},
+  "lineage": {
+   "id": "sable",
+   "picks": [
+    "sable:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Sable Cut and Turn (sable:A:1:0) grants a free turn after a rear hit"
+ },
+ "t_hb_secondknife": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 7,
+  "bot": "full",
+  "seed": 33012,
+  "admiral": "sable",
+  "fleet": [
+   "c_reaver",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 99,
+  "treeChoices": {},
+  "lineage": {
+   "id": "sable",
+   "picks": [
+    "sable:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Sable Second Knife (sable:A:1:1) reloads a missed torpedo at once"
+ },
+ "t_hb_smilecut": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33013,
+  "admiral": "sable",
+  "fleet": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "sable",
+   "picks": [
+    "sable:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Sable The Smile Before the Cut (sable:A:2:0) boosts the first ship to fire in the hunt round"
+ },
+ "t_hb_everyknife": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "seed": 33014,
+  "admiral": "sable",
+  "fleet": [
+   "c_raider",
+   "c_raider",
+   "c_raider",
+   "c_raider"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "sable",
+   "picks": [
+    "sable:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Sable Every Knife at Once (sable:A:2:1) marks a target rear hit by three ships"
+ },
+ "t_hb_darkknives": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 10,
+  "bot": "full",
+  "seed": 33015,
+  "admiral": "sable",
+  "fleet": [
+   "c_reaver",
+   "c_reaver",
+   "c_raider"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "sable",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Hullbreakers: Sable Dark Full of Knives (sable:cap:0) carries the hunt bonus to a rear shot next round"
+ },
+ "t_hb_cutfeeds": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33016,
+  "admiral": "sable",
+  "fleet": [
+   "c_reaver",
+   "c_reaver",
+   "c_raider"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "sable",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Hullbreakers: Sable The Cut That Feeds the Pack (sable:cap:1) moves every ship toward a rear arc"
+ },
+ "t_hb_patchedwing": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33017,
+  "admiral": "mott",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "mott",
+   "picks": [
+    "mott:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Mott Patched Wing (mott:A:0:0) makes a +25% wing that is removed after its strike"
+ },
+ "t_hb_hulkmore": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33018,
+  "admiral": "mott",
+  "fleet": [
+   "c_hulk",
+   "c_marauder"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "mott",
+   "picks": [
+    "mott:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Mott Hulk Holds More (mott:A:0:1) launches a wing from a non-carrier"
+ },
+ "t_hb_retasked": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 13,
+  "admiral": "mott",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "mott",
+   "picks": [
+    "mott:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Mott Re-Tasked Mid-Flight (mott:A:1:0) pays an extra wing on a fresh target"
+ },
+ "t_hb_wreckline": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33020,
+  "admiral": "mott",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "mott",
+   "picks": [
+    "mott:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Mott Launched from the Wreck Line (mott:A:1:1) pays wings from a carrier that did not move"
+ },
+ "t_hb_wholeyard": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33021,
+  "admiral": "mott",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "mott",
+   "picks": [
+    "mott:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Mott The Whole Yard Flies (mott:A:2:0) launches one more when all wings go"
+ },
+ "t_hb_screaming": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 33022,
+  "admiral": "mott",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "mott",
+   "picks": [
+    "mott:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Mott Wings Come Back Screaming (mott:A:2:1) pays an extra wing on an already hit target"
+ },
+ "t_hb_swarmscrap": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33023,
+  "admiral": "mott",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "mott",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Hullbreakers: Mott Swarm Over the Scrap Field (mott:cap:0) launches the extra wings twice"
+ },
+ "t_hb_privatewing": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33024,
+  "admiral": "mott",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "mott",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Hullbreakers: Mott Old Mott Private Wing (mott:cap:1) keeps a +20% first strike each round"
+ },
+ "t_hb_weldmatters": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 9,
+  "bot": "full",
+  "seed": 33025,
+  "admiral": "vesh",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 5,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vesh",
+   "picks": [
+    "vesh:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Vesh Weld What Matters (vesh:A:0:0) sends a repair share to the most damaged section"
+ },
+ "t_hb_patchguns": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 33026,
+  "admiral": "vesh",
+  "fleet": [
+   "c_reaver",
+   "c_reaver",
+   "c_raider"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 4,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vesh",
+   "picks": [
+    "vesh:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Vesh Patch Over the Guns (vesh:A:0:1) gives +10 aim to a repaired weapons section"
+ },
+ "t_hb_scrapfront": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 9,
+  "bot": "full",
+  "seed": 33027,
+  "admiral": "vesh",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 5,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vesh",
+   "picks": [
+    "vesh:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Vesh Scrap to the Front (vesh:A:1:0) gives the flagship share to another ship"
+ },
+ "t_hb_weldedfight": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 9,
+  "bot": "full",
+  "seed": 33028,
+  "admiral": "vesh",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 5,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vesh",
+   "picks": [
+    "vesh:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Vesh Welded While Fighting (vesh:A:1:1) fires one weapon at half damage after a repair"
+ },
+ "t_hb_doublebolted": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 9,
+  "bot": "full",
+  "seed": 33029,
+  "admiral": "vesh",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 5,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vesh",
+   "picks": [
+    "vesh:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Vesh Double-Bolted Plate (vesh:A:2:0) raises a patched section max"
+ },
+ "t_hb_packbites": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 9,
+  "bot": "full",
+  "seed": 33030,
+  "admiral": "vesh",
+  "fleet": [
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 5,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vesh",
+   "picks": [
+    "vesh:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: Vesh The Pack Bites On (vesh:A:2:1) pays +15% next round after a lift above half hull"
+ },
+ "t_hb_weldedwhole": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 10,
+  "bot": "full",
+  "seed": 33031,
+  "admiral": "vesh",
+  "fleet": [
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 6,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vesh",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Hullbreakers: Vesh Welded Whole (vesh:cap:0) restores one destroyed section on every ship"
+ },
+ "t_hb_nothingbroken": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 33032,
+  "admiral": "vesh",
+  "fleet": [
+   "c_raider",
+   "c_raider"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "cmdRound": 99,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vesh",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Hullbreakers: Vesh Nothing Stays Broken (vesh:cap:1) undoes the first lost section"
+ },
+ "t_hb_preyscent": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33033,
+  "admiral": "grax",
+  "fleet": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 99,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [
+    "grax:B:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: shared Prey Chosen by Scent (grax:B:0:0) names the prey at battle start"
+ },
+ "t_hb_loosepack": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33034,
+  "admiral": "grax",
+  "fleet": [
+   "c_raider"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 99,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [
+    "grax:B:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: shared Loose Pack, Wide Lanes (grax:B:0:1) gives +1 movement when the pack is clear"
+ },
+ "t_hb_firstscar": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 20,
+  "admiral": "grax",
+  "fleet": [
+   "c_raider",
+   "c_marauder",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "cmdRound": 99,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [
+    "grax:C:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: shared The Flagship Takes the First Scar (grax:C:0:0) redirects a hit to the flagship"
+ },
+ "t_hb_trophystandard": {
+  "sector": 1,
+  "fac_player": "corsair",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 33036,
+  "admiral": "grax",
+  "fleet": [
+   "c_marauder"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket"
+  ],
+  "cmdRound": 99,
+  "treeChoices": {},
+  "lineage": {
+   "id": "grax",
+   "picks": [
+    "grax:C:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hullbreakers: shared Trophy Standard (grax:C:0:1) grants a free turn after a flagship kill"
+ },
+ "t_heg_widenet": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33201,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [
+    "kassar:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Kassar Wide Net: sync radius +1"
+ },
+ "t_heg_secondvolley": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33202,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_dominion",
+   "h_vanguard"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_boss"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [
+    "kassar:A:0:0",
+    "kassar:A:0:1"
+   ],
+   "capstone": 0
+  },
+  "note": "Hegemony Kassar Second Volley: one more synced ship fires out of arc"
+ },
+ "t_heg_sharedsolution": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33203,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [
+    "kassar:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Kassar Shared Solution: synced ships use the best aim"
+ },
+ "t_heg_colddrill": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33204,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [
+    "kassar:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Kassar Cold Drill: an unmoved synced ship fires at +10 aim"
+ },
+ "t_heg_rollingfire": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33205,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [
+    "kassar:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Kassar Rolling Fire: a synced kill lets another synced ship fire once"
+ },
+ "t_heg_irontempo": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 10,
+  "bot": "full",
+  "seed": 33206,
+  "admiral": "kassar",
+  "fleet": [
+   "h_picket",
+   "h_dominion",
+   "h_interdictor"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor"
+  ],
+  "cmdRound": 99,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [
+    "kassar:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Kassar Iron Tempo: the largest remaining ship becomes the anchor"
+ },
+ "t_heg_livingrelay": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33207,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Hegemony Kassar Living Relay: sync radius doubled"
+ },
+ "t_heg_onevoice": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33208,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Hegemony Kassar One Voice: every synced ship fires at one target, shields stop the first hit"
+ },
+ "t_heg_formation": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33209,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [
+    "kassar:B:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony shared B1a Formation: ending next to two friends gives +10 aim"
+ },
+ "t_heg_drill": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33210,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [
+    "kassar:B:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony shared B1b Drill Revision: one ship repositions up to 2 hexes once"
+ },
+ "t_heg_beacon": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33211,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [
+    "kassar:C:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony shared C1a Beacon: the flagship stamps one enemy each round"
+ },
+ "t_heg_stdforward": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33212,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [
+    "kassar:C:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony shared C1b Standard Borne Forward: +1 movement toward the flagship"
+ },
+ "t_heg_filedtriplicate": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33213,
+  "admiral": "vorn",
+  "fleet": [
+   "h_dominion",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vorn",
+   "picks": [
+    "vorn:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Vorn Target Filed in Triplicate: +10 crit on the filed target"
+ },
+ "t_heg_strikebook": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33214,
+  "admiral": "vorn",
+  "fleet": [
+   "h_dominion",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vorn",
+   "picks": [
+    "vorn:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Vorn Strike by the Book: +15% if speed is at least the last firer"
+ },
+ "t_heg_crossfire": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33215,
+  "admiral": "vorn",
+  "fleet": [
+   "h_dominion",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vorn",
+   "picks": [
+    "vorn:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Vorn Cross-Referenced Fire: second hits on a target gain +15%"
+ },
+ "t_heg_filedbefore": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 33216,
+  "admiral": "vorn",
+  "fleet": [
+   "h_dominion",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_dominion",
+   "h_picket"
+  ],
+  "cmdRound": 3,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vorn",
+   "picks": [
+    "vorn:A:1:1"
+   ],
+   "capstone": 1
+  },
+  "note": "Hegemony Vorn Filed Before Movement: firing before moving gains +10 crit",
+  "boons": [
+   {
+    "id": "a_crit",
+    "r": 2
+   }
+  ]
+ },
+ "t_heg_totalinterdiction": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 33217,
+  "admiral": "vorn",
+  "fleet": [
+   "h_dominion",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_boss"
+  ],
+  "cmdRound": 3,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vorn",
+   "picks": [
+    "vorn:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Vorn Total Interdiction: three ships on one target gives +30%"
+ },
+ "t_heg_sevenbreach": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 33218,
+  "admiral": "vorn",
+  "fleet": [
+   "h_dominion",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_boss"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vorn",
+   "picks": [
+    "vorn:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Vorn Standard Seven Breach: a crit shuts down the struck section",
+  "boons": [
+   {
+    "id": "a_crit",
+    "r": 2
+   }
+  ]
+ },
+ "t_heg_permanentfile": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33219,
+  "admiral": "vorn",
+  "fleet": [
+   "h_dominion",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vorn",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Hegemony Vorn Permanent File: strike targets keep the bonus next round"
+ },
+ "t_heg_oneorder": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33220,
+  "admiral": "vorn",
+  "fleet": [
+   "h_dominion",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vorn",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Hegemony Vorn One Order Every Gun: every ship fires one weapon again at half"
+ },
+ "t_heg_cruisers": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33225,
+  "admiral": "reyes",
+  "fleet": [
+   "h_vanguard",
+   "h_dominion",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "reyes",
+   "picks": [
+    "reyes:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Reyes Cruisers Filed as Carriers: a ship without a hangar launches a wing"
+ },
+ "t_heg_launchorder": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33226,
+  "admiral": "reyes",
+  "fleet": [
+   "h_vanguard",
+   "h_dominion",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "reyes",
+   "picks": [
+    "reyes:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Reyes Launch Order Published: the first wing to strike gains +20%"
+ },
+ "t_heg_secondwave": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33227,
+  "admiral": "reyes",
+  "fleet": [
+   "h_vanguard",
+   "h_dominion",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "reyes",
+   "picks": [
+    "reyes:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Reyes Second Wave on Schedule: extra wings are held to next round"
+ },
+ "t_heg_rehearsed": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33228,
+  "admiral": "reyes",
+  "fleet": [
+   "h_vanguard",
+   "h_dominion",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "reyes",
+   "picks": [
+    "reyes:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Reyes Procedure Rehearsed: every extra wing gains +10 aim on the strike again"
+ },
+ "t_heg_fullgroup": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 33229,
+  "admiral": "reyes",
+  "fleet": [
+   "h_dominion"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_boss"
+  ],
+  "cmdRound": 1,
+  "treeChoices": {},
+  "lineage": {
+   "id": "reyes",
+   "picks": [
+    "reyes:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Reyes Full Group Assembled: every launch ship launches one more"
+ },
+ "t_heg_escorts": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33230,
+  "admiral": "reyes",
+  "fleet": [
+   "h_vanguard",
+   "h_dominion",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "reyes",
+   "picks": [
+    "reyes:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Reyes Registry of Escorts: the screen cuts enemy wing damage"
+ },
+ "t_heg_onetarget": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33231,
+  "admiral": "reyes",
+  "fleet": [
+   "h_vanguard",
+   "h_dominion",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "reyes",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Hegemony Reyes One Target Every Wing Filed: wings file on one enemy at +35%"
+ },
+ "t_heg_standinggroup": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33232,
+  "admiral": "reyes",
+  "fleet": [
+   "h_vanguard",
+   "h_dominion",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "reyes",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Hegemony Reyes Standing Strike Group: a patrol wing strikes an enemy entering range"
+ },
+ "t_heg_columnstraight": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33237,
+  "admiral": "maren",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 1,
+  "treeChoices": {},
+  "lineage": {
+   "id": "maren",
+   "picks": [
+    "maren:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Maren Column Filed Straight: a line of three overcharges shields"
+ },
+ "t_heg_overflow": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33238,
+  "admiral": "maren",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "maren",
+   "picks": [
+    "maren:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Maren Overflow by Regulation: full shields give +10 evasion"
+ },
+ "t_heg_bell": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33239,
+  "admiral": "maren",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "maren",
+   "picks": [
+    "maren:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Maren Wall at the Bell: the first hit each round deals no hull"
+ },
+ "t_heg_rotation": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 10,
+  "bot": "full",
+  "seed": 33240,
+  "admiral": "maren",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "maren",
+   "picks": [
+    "maren:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Maren Standard Rotation: a ship swaps with an adjacent friend once"
+ },
+ "t_heg_columnendures": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33241,
+  "admiral": "maren",
+  "fleet": [
+   "h_picket",
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "maren",
+   "picks": [
+    "maren:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Maren The Column Endures: the first emptied facing refills to 25%"
+ },
+ "t_heg_filedarmor": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33242,
+  "admiral": "maren",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "maren",
+   "picks": [
+    "maren:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Maren Filed in Armor: an un-fired ship takes 15 less hull"
+ },
+ "t_heg_standardcovers": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33243,
+  "admiral": "maren",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "maren",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Hegemony Maren The Standard Covers All: every ship takes 20% less hull"
+ },
+ "t_heg_flagshipstandard": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33244,
+  "admiral": "maren",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "maren",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Hegemony Maren The Flagship Holds the Standard: the flagship joins every line, 10% overcharge"
  }
 }

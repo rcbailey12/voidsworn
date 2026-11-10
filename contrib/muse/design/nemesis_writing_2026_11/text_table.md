@@ -60,7 +60,7 @@ corsair: {
   cunning: {
     meet: ['Nice fleet. The pack already picked which part to take.', 'You brought scrap. The trap is set.'],
     win: ['Told you. The best piece comes off first.', 'The pack got the angle. You got the leftovers.'],
-    flee: ['Not worth the teeth. The pack comes back richer.', 'This scrap is not ready. We take it later.'],
+    flee: ['Not worth the scrap. The pack comes back richer.', 'This scrap is not ready. We take it later.'],
     fall: ['The pack breaks. Someone else takes the trophy.', 'A bad trade. The scrap stays yours.'],
     again: 'Last time you won with {beat}. The pack knows that trick now.',
     remember: 'Last time you won with {beat}. The pack remembers the angle.'

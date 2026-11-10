@@ -316,6 +316,9 @@ func _make_sky(env: Environment) -> void:
 	m.set_shader_parameter("band_n", setting["band_n"])
 	m.set_shader_parameter("band", float(setting["band"]))
 	m.set_shader_parameter("star_k", float(setting["stars"]))
+	# Issue 232 E18/BD8 sheet: the live star occlusion floor, overridable for the density sweep (default 0.15).
+	var sf := OS.get_environment("VS_STAR_FLOOR")
+	m.set_shader_parameter("star_floor", float(sf) if sf != "" else 0.15)
 	m.set_shader_parameter("sun_dir", SUN.normalized())
 	m.set_shader_parameter("turn", Basis(Vector3.UP, -_yaw))
 	# the panorama always rides on the sky material (shown only on the dead-star board): the battle keeps one Environment

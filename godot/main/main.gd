@@ -183,6 +183,8 @@ func _capture_window(spec: String) -> void:
 
 
 func _apply_settings() -> void:
+	# the player's UI scale (R2, ui_spec.md 4.4): 1.0 until the settings entry ships; a missing key reads as 1.0
+	load("res://ui/ui_scale.gd").set_player(settings.get("ui_scale", 1.0))
 	# screenshot and capture jobs keep the window the command line asked for (--resolution), so every frame is one size
 	var capture: bool = args.has("shots") or args.has("breach-shots") or args.has("move-frames") or args.has("title-shot") or args.has("career-shot")
 	if capture and args.has("window") and DisplayServer.get_name() != "headless":

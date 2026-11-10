@@ -42,7 +42,7 @@ func _sb(bg: Color, border: Color, bw := 1, rad := 4, pad := 10.0) -> StyleBoxFl
 
 func open(st) -> void:
 	story = st
-	k = clampf(get_viewport_rect().size.y / 1080.0, 0.6, 2.0)
+	k = load("res://ui/ui_scale.gd").k_for(get_viewport_rect().size)   # the one shared law (ui_spec.md section 4); its ceiling was 2.0 here
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var regular := _font("res://ui/battle/fonts/BarlowSemiCondensed-Regular.ttf")

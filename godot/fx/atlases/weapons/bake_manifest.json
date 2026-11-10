@@ -1,0 +1,54 @@
+{
+  "muzzle": {
+    "frames": 16,
+    "grid": 4,
+    "tile": 512,
+    "flow_range_uv": 0.125,
+    "max_alpha": 241,
+    "nonempty_frames": 16
+  },
+  "impact": {
+    "frames": 16,
+    "grid": 4,
+    "tile": 512,
+    "flow_range_uv": 0.125,
+    "max_alpha": 228,
+    "nonempty_frames": 16
+  },
+  "source": {
+    "records": [
+      {
+        "kind": "muzzle",
+        "resolution": 64,
+        "frames": 16,
+        "simulation_frames": 32,
+        "buoyancy": 0,
+        "gravity": [
+          0,
+          0,
+          0
+        ],
+        "device": [
+          "NVIDIA GeForce RTX 5080"
+        ]
+      },
+      {
+        "kind": "impact",
+        "resolution": 64,
+        "frames": 16,
+        "simulation_frames": 32,
+        "buoyancy": 0,
+        "gravity": [
+          0,
+          0,
+          0
+        ],
+        "device": [
+          "NVIDIA GeForce RTX 5080"
+        ]
+      }
+    ],
+    "seconds": 53.84376120567322
+  },
+  "size_class": 1024
+}

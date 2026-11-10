@@ -103,8 +103,8 @@ async function pBotFull(u){
   if(canStance(u)) aiStance(u); // the bot picks wing stances like the enemy does (ACT.stance: no action wrapper)
   if(canCommand('player')&&!B.busy){ const c=commandFor('player'); const pl=alive('player').filter(x=>!x.isSq), en=alive('enemy').filter(x=>!x.isSq);
     if(c&&pl.length&&en.length){ const near=en.filter(e=>pl.some(p=>hdist(p,e)<=8)).length, hpR=pl.reduce((a,p)=>a+p.hp,0)/pl.reduce((a,p)=>a+p.maxHp,0), hurt=pl.some(p=>p.hp<p.maxHp*.5);
-      const id=c.id, off=['barrage','hunt','scramble','surge'].includes(id);
-      if((off&&(near>=2||B.round>=4))||(id==='restore'&&hpR<.6)||(id==='iron'&&(hurt||near>=2))||B.round>=6) await actF(()=>useCommand('player')); } }
+      const id=c.id, off=['barrage','hunt','scramble','surge'].includes(id), cr=(B.cfg&&B.cfg.cmdRound!=null)?B.cfg.cmdRound:null;
+      if((cr!=null&&B.round===cr)||(cr==null&&((off&&(near>=2||B.round>=4))||(id==='restore'&&hpR<.6)||(id==='iron'&&(hurt||near>=2))||B.round>=6))) await actF(()=>useCommand('player')); } }
   if(gone()) return;
   if(u.ab&&canAbility(u)&&canUseF(u)){ let arg;
     if(u.ab==='launch'){ const hs=launchHexes(u); arg=hs.length?{hex:hs[0],kind:u.fac==='voidsworn'?(rnd()<.5?'fighter':'bomber'):wingKind(u)}:null; }
@@ -150,11 +150,14 @@ async function runScenario(S){
   UID=1; rndSeed(S.seed); AI_LEVEL=S.ai||'veteran';
   RUN={admiral:S.admiral,fac:S.fac_player||'voidsworn',credits:0,cpCap:40,sector:S.sector,relics:(S.relics||[]).slice(),inventory:[],fleet:[],boons:(S.boons||[]).map(b=>Object.assign({},b)),patrons:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[]};
   if(S.aspect) RUN.aspect=S.aspect; if(S.heat) RUN.heat=S.heat.slice(); if(S.class_track) RUN.classTrack=Object.assign({},S.class_track);
+  if(S.lineage) RUN.lineage=JSON.parse(JSON.stringify(S.lineage)); // issue #305: the run snapshot of the flown admiral's tree
   for(const t of S.fleet) RUN.fleet.push(newShip(t,!!S.vet)); RUN.flagUid=RUN.fleet[0].uid;
   const rec=[]; let turn=0; TM={acts:[],rounds:{}}; SNAPMS=0;
   HOOK=(kind,u)=>{ if(B) rec.push(snap(turn++,kind+(u?' '+u.id:''))); };
   const cfg={kind:S.kind,fac:S.fac,col:S.col==null?3:S.col,seed:S.seed,obj:S.obj,shape:S.shape,map:S.map,dep:S.dep,enemies:S.enemies?S.enemies.map(tpl=>({tpl})):undefined};
   if(S.arch) cfg.arch=S.arch; if(S.mod) cfg.mod=S.mod; if(S.nemesis) cfg.nemesis=JSON.parse(JSON.stringify(S.nemesis)); if(S.verb) cfg.verb=S.verb; if(S.noStar) cfg.noStar=true;
+  if(S.treeChoices) cfg.treeChoices=JSON.parse(JSON.stringify(S.treeChoices));
+  if(S.cmdRound!=null) cfg.cmdRound=S.cmdRound;
   for(const key of ['teachingGate','teachingBattle','edgeFeature','arena','storyMods']) if(S[key]!=null) cfg[key]=S[key];
   startBattle(cfg);
   if(S.campaign){ B.campaign=true; B.event=rollBattleEvent(cfg,S.event_war?(cfg.kind!=='boss'?(rnd()<.6?'reinf_enemy':'reinf_ally'):null):(S.event_force||null)); } // campaign3d.js battleScreen (event_war: the sector at war)

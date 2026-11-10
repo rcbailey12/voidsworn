@@ -187,7 +187,8 @@ const FX_CAPS={
   lineEv:20,burnEv:50,momCrit:50,taunt:8,
   ramSplash:1,igniteCh:1,sqIgnite:1,broadIgnite:1,spread:1,
   lastStand:1,hive:1,cmdTier:1,critSys:1,chainFire:1,pyre:1,bastion:1,
-  fireLong:1,wallBrace:1,chainSh:1,broodTithe:1,markLance:1,fade:1,endless:1,lanceSure:1
+  fireLong:1,wallBrace:1,chainSh:1,broodTithe:1,markLance:1,fade:1,endless:1,lanceSure:1,
+  treeTempHp:.2
 };
 function sumFx(list){const o={}; for(const fx of list){ if(!fx) continue; for(const k in fx) o[k]=(o[k]||0)+fx[k]; }
   // Clamp after summing so penalties offset bonuses regardless of source order.
@@ -353,6 +354,14 @@ function masteryLevel(id){ const x=masteryXP(id); let l=0; for(let i=1;i<mastery
 // Tree choices are per admiral line. Reading a tree never mutates an old save.
 function masteryThresholds(id){ return LINEAGE_TREES[id]?LINEAGE_XP:MASTERY_XP; }
 function masteryPerk(level){ return MASTERY_PERKS[level]||(level===8?{n:'Command evolution',d:'Choose a capstone in Admiral mastery.'}:{n:'Lineage choice',d:'Choose a branch skill in Admiral mastery.'}); }
+// Job 7 step 14: capstone mastery. Choosing the level 8 evolution opens three more levels at 320, 440 and 600 XP.
+// The line still stops at 230 until an evolution is chosen, so an unmet tree never banks mastery it cannot show.
+function masteryXPCap(id){ const t=masteryThresholds(id); if(!LINEAGE_TREES[id]) return t[t.length-1];
+  return lineageBuild(id).capstone!=null?Math.max(t[t.length-1],CAPSTONE_MASTERY_XP[CAPSTONE_MASTERY_XP.length-1]):t[t.length-1]; }
+function capstoneMasteryLevel(id){ if(!LINEAGE_TREES[id]||lineageBuild(id).capstone==null) return 0; const x=masteryXP(id); let l=0;
+  for(let i=0;i<CAPSTONE_MASTERY_XP.length;i++) if(x>=CAPSTONE_MASTERY_XP[i]) l=i+1; return l; }
+function capstoneMasteryPerk(level){ return CAPSTONE_MASTERY_PERKS[level-1]||null; }
+function capstoneMasteryNext(id){ const l=capstoneMasteryLevel(id); return l>=CAPSTONE_MASTERY_XP.length?null:CAPSTONE_MASTERY_XP[l]; }
 function lineageBuild(id){
   const tree=LINEAGE_TREES[id], raw=(META.lineage||{})[id]||{}, picks=[], ranks={A:0,B:0,C:0};
   if(tree&&Array.isArray(raw.picks)) for(const key of raw.picks.slice(0,Math.max(0,Math.min(3,masteryLevel(id)-4)))){
@@ -423,10 +432,12 @@ function newRun(admiralId,fac,opt){
   if(opt.cmdAlt&&RUN.mastery>=3){ const c=altCommand(admiralId); if(c) RUN.cmdOverride=c; }
   RUN.cpCap=Math.max(RUN.cpCap, fleetCP()+3); ensureFlagship();
   if(RUN.mastery>=4){ const f=flagshipOf(); if(f){ f.mk=Math.max(f.mk||1,2); f.cap.rank=Math.max(f.cap.rank,2); f.cap.xp=Math.max(f.cap.xp,RANK_XP[2]); if(f.cap.perks.length<2) f.cap.perks.push(pick(Object.keys(PERKS).filter(p=>!f.cap.perks.includes(p)))); f.hp=derive(f).maxHp; } }
+  // Issue #305: a run snapshots the flown admiral's tree, because picks can only change between runs.
+  { const b=lineageBuild(admiralId); RUN.lineage={id:admiralId,picks:b.picks.slice(),capstone:b.capstone}; }
   // a Devoted patron sends a gift: one common boon from the first devoted patron watching this run
   { const dev=RUN.patrons.find(p=>favourTier(p)>=2); if(dev){ const pool=Object.keys(BOONS).filter(id=>BOONS[id].p===dev&&!BOONS[id].leg&&boonUseful(id,fleetKit())); if(pool.length){ const id=pick(pool); RUN.boons.push({id,r:favourTier(dev)>=3?1:0}); RUN.giftBoon=id; } } }
   RUN.map=genSector(1);
-  RUN.flags={}; if(typeof drawNemAssign==='function'){ RUN.nems={}; RUN.nemAssign=drawNemAssign(); RUN.nem=newNemesis(RUN.nemAssign[0]); } // B4: one hunter per story point, drawn once; the first is ready, the rest are created lazily
+  RUN.flags={}; if(typeof drawNemAssign==='function'){ RUN.nems={}; RUN.nemAssign=drawNemAssign(); RUN.nemClock=0; RUN.nemStrike=false; RUN.nemEscapes=0; RUN.nem=newNemesis(RUN.nemAssign[0]); } // B4: one hunter per story point, drawn once; the first is ready, the rest are created lazily
   META.stats.runs++;
   saveRun();
 }
