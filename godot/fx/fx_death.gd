@@ -35,6 +35,16 @@ class DeathTimeline:
 
 const ATLAS_DIR := "res://fx/atlases/death/"
 
+# Issue 354: where the visible gas starts inside the baked vent picture. Measured on today's pictures
+# (godot/fx/atlases/death/{small,cruiser,capital}/vent_color.png): in frame 0 the gas runs down to row 0.90 of the crop,
+# and the crop is rows 0.40 to 0.84 of the cell, so its lower edge (the root the gas vents from) sits 0.40 of the crop
+# height from the picture centre. The directional flip puts that lower edge at the +up end of the quad, so a picture
+# whose root is on the plating has its centre 0.40 of its height along the surface normal from that plating. The old
+# fixed share of the ship's length (0.42 of 0.85 L) offset the picture centre, and the gas root was another 0.40 of the
+# picture height further out, so the gas floated off the hull. P3-16 (issue 365) rebakes these pictures and must redo
+# this number.
+const VENT_ROOT_FRAC := 0.40
+
 const SLAG := """
 shader_type spatial;
 render_mode unshaded, cull_disabled, depth_draw_opaque;
@@ -153,9 +163,10 @@ static func flipbook_material(fx, kind: String, band := "capital") -> ShaderMate
 	return m
 
 
-static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life: float, velocity := Vector3.ZERO, strength := 1.0, band := "capital") -> Node3D:
+static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life: float, velocity := Vector3.ZERO, strength := 1.0, band := "capital", src = null, root_on_surface := false) -> Node3D:
 	var mi := MeshInstance3D.new()
 	mi.name = "fx_baked_" + kind
+	mi.set_meta("fx_picture_kind", kind)
 	var quad := QuadMesh.new()
 	quad.size = Vector2.ONE
 	mi.mesh = quad
@@ -171,13 +182,25 @@ static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life
 	# The simulation occupies only about a fifth of each baked cell. Sampling
 	# its padded cell made a nominal 70-pixel core just 13 pixels wide.
 	m.set_shader_parameter("atlas_rect", Vector4(0.36, 0.40, 0.28, 0.44) if kind == "vent" else Vector4(0.38, 0.38, 0.24, 0.24))
-	m.set_shader_parameter("tear_normal", n)
+	# A death vent is rooted on the real plating: the gas leaves the ship outward, so the picture is turned to put its
+	# measured root on the hull and its plume along +n. Weapons keep the old tip-on-the-surface offset.
+	var up: Vector3 = -n if (root_on_surface and kind == "vent") else n
+	m.set_shader_parameter("tear_normal", up)
 	m.set_shader_parameter("velocity", velocity)
 	m.set_shader_parameter("min_pixels", 70.0 if kind == "flash" else 0.0)
 	mi.material_override = m
 	fx.add_child(mi)
-	mi.global_position = p + (n * size * 0.42 if kind == "vent" else Vector3.ZERO)
+	if root_on_surface and kind == "vent":
+		mi.global_position = p + n * size * VENT_ROOT_FRAC
+		mi.set_meta("gas_root", p)
+	else:
+		mi.global_position = p + (n * size * 0.42 if kind == "vent" else Vector3.ZERO)
+		mi.set_meta("gas_root", mi.global_position)
 	fx.later(fx.now + life + 0.1, fx.free_effect.bind(weakref(mi)))
+	# Every picture the death spawns is entered in the stray puff guard. The root is the point the gas leaves, not the
+	# picture centre, so a floating picture cannot pass just because its frame happens to be near the hull.
+	if src != null:
+		fx.record_spawn(src, mi.get_meta("gas_root"))
 	return mi
 
 
@@ -1038,11 +1061,16 @@ static func _power_down(s) -> void:
 
 static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
 	if not is_instance_valid(s.root) or s.has_meta("death_hidden") or fx.quality == "low": return
+	# Issue 354: the gas root is the real plating, found the same way as the braking puffs since PR 327: cast from
+	# outside, a further L along the tear normal, back toward the hull. A ray that misses has no plating behind it, so
+	# skip the vent rather than float it beside the ship.
+	var hit: Dictionary = s.hull.ray(lp + ln * s.hull.L, -ln)
+	if hit.is_empty(): return
 	var pose: Transform3D = s.xf() * s.get_meta("death_motion", Transform3D.IDENTITY)
-	var p: Vector3 = pose * lp
-	var n: Vector3 = (pose.basis * ln).normalized()
+	var p: Vector3 = pose * (hit["p"] as Vector3)
+	var n: Vector3 = (pose.basis * (hit["n"] as Vector3)).normalized()
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
-	var jet := flipbook(fx, p, n, s.hull.L * 0.85, "vent", 0.65 if s.death_big else 0.30, inherited + n * s.hull.L * 0.12, 1.3, atlas_band(s.hull.L))
+	var jet := flipbook(fx, p, n, s.hull.L * 0.85, "vent", 0.65 if s.death_big else 0.30, inherited + n * s.hull.L * 0.12, 1.3, atlas_band(s.hull.L), s, true)
 	# The ignition and its light share one booking. Calm mode keeps dark gas.
 	if fx.flash_ok(fx.now):
 		(jet.material_override as ShaderMaterial).set_shader_parameter("ignition", 1.0)
@@ -1301,13 +1329,13 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		var release_t := T + release_delay
 		if node is RigidBody3D:
 			if release_delay <= 0.0:
-				_release_section(fx, wreck, node, vel, ang, piece_mats, h.L, s.death_big, i)
+				_release_section(fx, wreck, node, vel, ang, piece_mats, h.L, s.death_big, i, s)
 			else:
 				wreck["fires"].append({"node": node, "vel": inherited, "ang": Vector3.ZERO, "until": release_t})
-				fx.later(release_t, _release_section.bind(fx, wreck, node, vel, ang, piece_mats, h.L, true, i))
+				fx.later(release_t, _release_section.bind(fx, wreck, node, vel, ang, piece_mats, h.L, true, i, s))
 		else:
 			wreck["fires"].append({"node": node, "vel": inherited, "ang": Vector3.ZERO, "until": release_t})
-			fx.later(release_t, _release_section.bind(fx, wreck, node, vel, ang, piece_mats, h.L, s.death_big, i))
+			fx.later(release_t, _release_section.bind(fx, wreck, node, vel, ang, piece_mats, h.L, s.death_big, i, s))
 		if organic:
 			if pc.has("cap_mat"):
 				(pc["cap_mat"] as ShaderMaterial).set_shader_parameter("heat", 0.0)
@@ -1324,7 +1352,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 	if not wreck["nodes"].is_empty():
 		var lip: Node3D = wreck["nodes"][0]
 		flash_site = lip.to_global(lip.get_meta("tear_site", Vector3.ZERO))
-	_core_flash(fx, flash_site, R, 70.0, tint)
+	_core_flash(fx, flash_site, R, 70.0, tint, null, Vector3.ZERO, s)
 	if pieces.is_empty():
 		# Craft have no pre-cut job. Keep one pooled physical shard plus a visible ember.
 		spawn_debris(fx, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3))
@@ -1345,21 +1373,21 @@ static func _organic_spill(fx, p: Vector3, L: float, tint: Color) -> void:
 	fx.spr(p, fx.now, 0.45, tint, 1.8, L * 0.025, L * 0.16, 20, Vector3.ZERO, 0.0, 0.0, 0.0, 28.0)
 
 
-static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: Node3D = null, local_p := Vector3.ZERO) -> void:
+static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: Node3D = null, local_p := Vector3.ZERO, src = null) -> void:
 	if is_instance_valid(node): p = node.to_global(local_p)
 	if not p.is_finite() or R <= 0.0: return
 	# Only this booking can produce a bright baked flash or its event light.
 	if fx.flash_ok(fx.now):
-		var flash := flipbook(fx, p, Vector3.UP, R * 3.0, "flash", 0.20, Vector3.ZERO, 6.0, atlas_band(R / 0.16))
+		var flash := flipbook(fx, p, Vector3.UP, R * 3.0, "flash", 0.20, Vector3.ZERO, 6.0, atlas_band(R / 0.16), src)
 		(flash.material_override as ShaderMaterial).set_shader_parameter("min_pixels", px)
 		fx.light(p, fx.now, 0.12, 9.0, Color(0.65, 0.75, 0.91), 0)
 	else:
-		flipbook(fx, p, Vector3.UP, R * 2.8, "cool", 0.65, Vector3.ZERO, 0.5, atlas_band(R / 0.16))
+		flipbook(fx, p, Vector3.UP, R * 2.8, "cool", 0.65, Vector3.ZERO, 0.5, atlas_band(R / 0.16), src)
 
 
 # A released section has its own cooling clock. Neighbouring sections remain
 # attached until their cut beat. The last cut releases the final pair together.
-static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, ang: Vector3, mats: Array, L: float, big: bool, index: int) -> void:
+static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, ang: Vector3, mats: Array, L: float, big: bool, index: int, src = null) -> void:
 	if not is_instance_valid(node) or node.is_queued_for_deletion(): return
 	if node is RigidBody3D:
 		node.freeze = false
@@ -1371,10 +1399,10 @@ static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, 
 	wreck["cut_events"].append({"section": index, "t": fx.now})
 	if wreck.get("organic", false): return
 	if fx.quality != "low":
-		flipbook(fx, node.to_global(node.get_meta("tear_site", Vector3.ZERO)), vel.normalized(), L * 0.5, "cool", 1.1, vel * 0.65, 0.7, atlas_band(L))
+		flipbook(fx, node.to_global(node.get_meta("tear_site", Vector3.ZERO)), vel.normalized(), L * 0.5, "cool", 1.1, vel * 0.65, 0.7, atlas_band(L), src)
 	# Exactly two secondary opportunities on capitals, never a per-piece fire loop.
 	if big and index in [1, 2]:
-		fx.later(fx.now + 0.08, _secondary.bind(fx, weakref(node), node.get_meta("tear_site", Vector3.ZERO), L, Color(0.65, 0.75, 0.91)))
+		fx.later(fx.now + 0.08, _secondary.bind(fx, weakref(node), node.get_meta("tear_site", Vector3.ZERO), L, Color(0.65, 0.75, 0.91), src))
 
 
 # Bounded samples from the actual cut, biased to its visible lip. No geometry work
@@ -1415,10 +1443,10 @@ static func _edge_sites(pc: Dictionary, cen: Vector3, view: Vector3, count: int)
 	return sites
 
 
-static func _secondary(fx, node_ref: WeakRef, lp: Vector3, L: float, tint: Color) -> void:
+static func _secondary(fx, node_ref: WeakRef, lp: Vector3, L: float, tint: Color, src = null) -> void:
 	var node := node_ref.get_ref() as Node3D
 	if not is_instance_valid(node) or node.is_queued_for_deletion(): return
-	_core_flash(fx, node.to_global(lp), L * 0.06, 24.0, tint)
+	_core_flash(fx, node.to_global(lp), L * 0.06, 24.0, tint, null, Vector3.ZERO, src)
 
 
 static func _cap_wrecks(fx) -> void:
