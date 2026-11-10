@@ -21,6 +21,7 @@ fs.readdirSync(__dirname).filter(f => f.endsWith('_tests.js') || f === 'campaign
 add(OPUS + 'progression_telemetry_test.js'); // #27 step 11: per run XP by line and the F1 play log report
 add(OPUS + 'tree_effects_test.js'); // #305 jobs 1 to 4: every Glasswrights, Sunward, Eclipse and Chorus parity fixture actually fires its pick
 add(OPUS + 'tree_handoff_test.js'); // #335: a tree pick made through the real campaign reaches the battle in both twins
+add(OPUS + 'tree_table_walk_test.js'); // #361: every LINEAGE_TREES row is hand-off tested through the real functions or on the dated waiting list
 add(OPUS + 'oracle_copy_test.js'); // #335 finding 3: the oracle copies and campaign tables match the root game files (hard, not optional)
 add('godot/campaign/test/node/nem_assign_enum.js'); // #120 R-Q1: the exact assignment constraints (quick mode) gate every PR
 add(OPUS + 'naming_lint_game.test.js');

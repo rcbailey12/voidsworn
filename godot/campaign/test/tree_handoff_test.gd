@@ -58,5 +58,30 @@ func _init() -> void:
 			if fx == null: continue
 			check(got.has(fx["k"]), fac + ": " + key + " (" + str(fx["k"]) + ") did not reach B.tree (got " + str(got.keys()) + ")")
 			check(got.get(fx["k"]) == key, fac + ": " + str(fx["k"]) + " reached B.tree under key " + str(got.get(fx["k"])) + ", not " + key)
-	print("PASS: real campaign picks reach the battle for all six factions (four skills each)." if failures == 0 else "FAIL: %d tree hand-off check(s) failed" % failures)
+	# Issue 361: lineageNodes marks a row with no battle effect as waiting, from the same TREE_FX table the battle reads.
+	# The campaign copy and the battle copy are the same exported table; a node with no entry is waiting, nothing else is.
+	var fx_missing := 0
+	for fx_key in api.R.TREE_FX.keys():
+		if not c.TREE_FX.has(fx_key): fx_missing += 1
+	check(fx_missing == 0 and c.TREE_FX.size() == api.R.TREE_FX.size(), "the campaign TREE_FX table is the battle TREE_FX table (" + str(fx_missing) + " rows missing)")
+	var row_total := 0
+	for id in c.LINEAGE_TREES.keys():
+		var tree = c.LINEAGE_TREES[id]
+		for b in tree["branches"].keys():
+			for pair in tree["branches"][b]["tiers"]: row_total += pair.size()
+		row_total += tree["capstones"].size()
+	var node_count := 0
+	var waiting_seen := 0
+	var active_seen := 0
+	for id in c.LINEAGE_TREES.keys():
+		c.META["mastery"][str(id)] = 230
+		for n in c.lineageNodes(str(id)):
+			var key := str(n["key"])
+			var expected: bool = not api.R.TREE_FX.has(key)
+			check(n.has("waiting") and bool(n["waiting"]) == expected, "waiting flag for " + key)
+			node_count += 1
+			if bool(n.get("waiting", false)): waiting_seen += 1
+			else: active_seen += 1
+	check(node_count == row_total, "lineageNodes walks every tree row (walked " + str(node_count) + " of " + str(row_total) + ")")
+	print("PASS: real campaign picks reach the battle for all six factions (four skills each); lineageNodes marks " + str(waiting_seen) + " waiting rows and " + str(active_seen) + " active rows from the battle TREE_FX table." if failures == 0 else "FAIL: %d tree hand-off and waiting check(s) failed" % failures)
 	quit(0 if failures == 0 else 1)
