@@ -2,24 +2,27 @@
  "ship": "C15s_23",
  "name": "Hullbreaker cruiser (Ashfall Hullbreakers)",
  "faction": "hullbreakers",
+ "game_ship": "c_marauder",
+ "game_code": "C15s_23",
+ "length_world": 14.5,
  "concept": "docs/ship_pipeline/concepts/C15s_23.webp",
  "shape_ref": "Downloads/voidsworn_test/bakeoff/C15s_23_trellis.glb",
  "shape_ref_yaw": 22.0,
  "concept_camera": "docs/shots/ship_pipeline/route209/round4/concept_camera.json",
- "hull": "armA6",
+ "hull": "armA7",
  "tune": "tools/blender/r209/tune5_P.json",
  "cell": "Ab7",
  "outline_gate": 0.9,
- "notes": "Weapon positions and sizes measured off the concept through its fitted camera (round 6 README, section 1). pos: ship frame, x to the bow, y to port, z up, length 1. seat: 'flank' finds y on the hull at (x, z); 'top' finds z on the deck at (x, y). pair: true adds the starboard mirror; variant_s gives the mirror its own salvage detail. Casemates (board review on PR 336, R156): aimed level, 15 degrees forward of the beam as the concept reads (the game's own rest direction for port and starboard mounts); the outline score is not allowed to bend the guns.",
+ "notes": "Weapon positions and sizes measured off the concept through its fitted camera (round 6 README, section 1). pos: ship frame, x to the bow, y to port, z up, length 1. seat: 'flank' finds y on the hull at (x, z); 'top' finds z on the deck at (x, y). pair: true adds the starboard mirror; variant_s gives the mirror its own salvage detail. Casemates (board review on PR 336, R156): aimed level, 15 degrees forward of the beam as the concept reads (the game's own rest direction for port and starboard mounts); the outline score is not allowed to bend the guns. Round 7: the forward pair back toward the concept's spot (x 0.356; round 6 had pulled it aft to 0.338 for the score), both pairs flat on the new slab side (proud 0.004). Game export (round 7): game_ship is the ship's id in data.js (its weapon list is the slot order), game_code the ship folder's name in godot/assets/ships. A socket's slot (slot_s for its starboard mirror) says which weapon slot its muzzles fire for: the casemates are the port and starboard scatter batteries (0, 1), the forward and sponson drum racks the torpedoes (2), the two top turrets the flak (3). Sockets with no slot (the twin bow guns, the waist and aft drums) get no hard point.",
  "parts": [
   {
    "name": "casF",
    "part": "casemate",
    "seat": "flank",
    "pos": [
-    0.338,
+    0.356,
     0,
-    -0.058
+    -0.054
    ],
    "aim": [
     0.25,
@@ -32,8 +35,11 @@
    "variant_s": 1,
    "extra": {
     "h": 0.92,
-    "barrel": 0.52
-   }
+    "barrel": 0.52,
+    "proud": 0.004
+   },
+   "slot": 0,
+   "slot_s": 1
   },
   {
    "name": "casA",
@@ -42,7 +48,7 @@
    "pos": [
     0.232,
     0,
-    -0.058
+    -0.054
    ],
    "aim": [
     0.25,
@@ -55,15 +61,18 @@
    "variant_s": 2,
    "extra": {
     "h": 0.96,
-    "barrel": 0.55
-   }
+    "barrel": 0.55,
+    "proud": 0.004
+   },
+   "slot": 0,
+   "slot_s": 1
   },
   {
    "name": "bow",
    "part": "bow_battery",
    "seat": "top",
    "pos": [
-    0.29,
+    0.336,
     0,
     0.0
    ],
@@ -72,12 +81,16 @@
     0,
     0
    ],
-   "size": 0.0085,
+   "size": 0.0105,
    "extra": {
-    "gap": 0.026,
-    "barrel": 0.08,
-    "above": 0.0072,
-    "hood": 1.45
+    "gap": 0.028,
+    "barrel": 0.046,
+    "above": 0.0165,
+    "seat_at": [
+     0.41,
+     0.026
+    ],
+    "hooded": 1
    }
   },
   {
@@ -97,7 +110,8 @@
     "r": 0.017,
     "L": 0.09,
     "zc": 0.066
-   }
+   },
+   "slot": 2
   },
   {
    "name": "rackM",
@@ -119,7 +133,9 @@
     "r": 0.019,
     "L": 0.098,
     "zc": 0.05
-   }
+   },
+   "slot": 2,
+   "slot_s": 2
   },
   {
    "name": "rackA",
@@ -179,7 +195,8 @@
    "variant": 0,
    "extra": {
     "elev": 14
-   }
+   },
+   "slot": 3
   },
   {
    "name": "turS",
@@ -200,7 +217,8 @@
    "variant": 1,
    "extra": {
     "elev": 10
-   }
+   },
+   "slot": 3
   },
   {
    "name": "mkID",
@@ -257,14 +275,14 @@
    "part": "marking",
    "seat": "top",
    "pos": [
-    0.44,
-    0.0,
+    0.455,
+    0.03,
     0.0
    ],
    "extra": {
     "mark": "disc",
     "w": 0.022,
-    "above": 0.0
+    "above": 0.0012
    }
   },
   {

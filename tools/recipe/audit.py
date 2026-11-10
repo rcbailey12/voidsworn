@@ -10,4 +10,6 @@ out = sys.argv[sys.argv.index('--') + 1]
 objs = [o for o in bpy.context.scene.objects if o.type == 'MESH']
 hull = [o for o in objs if o.get('role') == 'hull']; parts = [o for o in objs if o.get('role') not in ('hull', 'glow', 'interior')]
 guns = [(n, Vector(a)) for n, a in json.loads(bpy.context.scene.get('r209_guns', '[]'))]   # aims recorded by the hull module
-au = PB.audit(hull, parts, guns); au['guns'] = len(guns); json.dump(au, open(out, 'w'), indent=1); print('[audit]', json.dumps(au)[:2000])
+sc = bpy.context.scene      # the build's own break lines travel in the blend (common.set_break); the module defaults are an older hull's
+tl = tuple(sc['r209_t_lines']) if 'r209_t_lines' in sc else None; ll = tuple(sc['r209_l_line']) if 'r209_l_line' in sc else None
+au = PB.audit(hull, parts, guns, t_lines=tl, l_line=ll); au['guns'] = len(guns); json.dump(au, open(out, 'w'), indent=1); print('[audit]', json.dumps(au)[:2000])

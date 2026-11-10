@@ -97,33 +97,35 @@ def quilted(name, base, aim, L, r0, r1, rings=5, straps=12, seg=28):
 def casemate(s, seat, rnd):
     """bow casemate: an octagonal armour housing bolted onto the flank (framed, recessed field, corner braces, patch plates), a dark
     collar disc with a bolt ring, a copper ball and mantlet ring, the quilted sleeve, a front cap and twin long copper barrels with
-    recoil sleeves and muzzle rings. s.pos: the hull surface point at the plate centre; s.size: plate width; s.aim: barrel aim."""
+    recoil sleeves and muzzle rings. s.pos: the hull surface point at the plate centre; s.size: plate width; s.aim: barrel aim;
+    extra proud: the housing's stand-off from the hull."""
     W = s.size; Hh = W * s.extra.get('h', .97); ch = W * .23; n = s.normal; c = s.pos
     nn, u, v = _basis(n)
+    dp = s.extra.get('proud', .010) - .010      # round 7: how far the housing stands off the hull (0.010 on a curved flank; less on a slab side)
     i0 = PB.mark()
-    _poly_prism(f'{s.name}house', c, n, _octagon(W, Hh, ch), -s.extra.get('bury', .035), .010)   # buried in the hull behind
-    _ring_prism(f'{s.name}frame', c, n, _octagon(W, Hh, ch), _octagon(W * .84, Hh * .84, ch * .8), .010, .0155)
+    _poly_prism(f'{s.name}house', c, n, _octagon(W, Hh, ch), -s.extra.get('bury', .035), .010 + dp)   # buried in the hull behind
+    _ring_prism(f'{s.name}frame', c, n, _octagon(W, Hh, ch), _octagon(W * .84, Hh * .84, ch * .8), .010 + dp, .0155 + dp)
     for k, (a, b) in enumerate(((-1, -1), (1, -1), (1, 1), (-1, 1))):       # corner braces from the frame toward the collar
-        p0 = c + u * (a * W * .36) + v * (b * Hh * .36) + nn * .011; p1 = c + u * (a * W * .24) + v * (b * Hh * .24) + nn * .017
+        p0 = c + u * (a * W * .36) + v * (b * Hh * .36) + nn * (.011 + dp); p1 = c + u * (a * W * .24) + v * (b * Hh * .24) + nn * (.017 + dp)
         tube(f'{s.name}brace{k}', p0, p1, .0014, seg=6)
         cyl(f'{s.name}bfoot{k}', p0, .0026, .003, axis='X', seg=8, rot=PB.frame(nn), bevel=0)
     for k in range(10):                                                        # frame bolts
-        t = 2 * math.pi * (k + .5) / 10; p = c + u * (math.cos(t) * W * .46) + v * (math.sin(t) * Hh * .46) + nn * .0158
+        t = 2 * math.pi * (k + .5) / 10; p = c + u * (math.cos(t) * W * .46) + v * (math.sin(t) * Hh * .46) + nn * (.0158 + dp)
         cyl(f'{s.name}fb{k}', p, .0016, .0015, axis='X', seg=6, rot=PB.frame(nn), bevel=0)
     # salvage: one or two crooked patch plates on the field, a weld bead along the housing's top edge (different per casemate)
     for k in range(1 + s.variant % 2):
         a, b = rnd.uniform(-.28, .28) * W, rnd.choice((-1, 1)) * rnd.uniform(.25, .32) * Hh
-        patch(f'{s.name}patch{k}', c + u * a + v * b + nn * .010, nn, W * rnd.uniform(.16, .24), Hh * rnd.uniform(.10, .15), ang=rnd.uniform(-.12, .12))
-    top = [c + u * (x * W) + v * (Hh / 2 + .0008) + nn * .002 for x in (-.26, -.05, .12, .26)]
+        patch(f'{s.name}patch{k}', c + u * a + v * b + nn * (.010 + dp), nn, W * rnd.uniform(.16, .24), Hh * rnd.uniform(.10, .15), ang=rnd.uniform(-.12, .12))
+    top = [c + u * (x * W) + v * (Hh / 2 + .0008) + nn * (.002 + dp) for x in (-.26, -.05, .12, .26)]
     weld(f'{s.name}weldtop', top[:2 + s.variant % 3], rnd=rnd)
     PB.tag(i0, 'part', 'casemate_plate')
     i1 = PB.mark()
-    cyl(f'{s.name}collar', c + nn * .019, W * .31, .006, axis='X', seg=40, rot=PB.frame(nn), bevel=.0008)
+    cyl(f'{s.name}collar', c + nn * (.019 + dp), W * .31, .006, axis='X', seg=40, rot=PB.frame(nn), bevel=.0008)
     for k in range(14):
-        t = 2 * math.pi * k / 14; p = c + u * (math.cos(t) * W * .28) + v * (math.sin(t) * W * .28) + nn * .0225
+        t = 2 * math.pi * k / 14; p = c + u * (math.cos(t) * W * .28) + v * (math.sin(t) * W * .28) + nn * (.0225 + dp)
         cyl(f'{s.name}cb{k}', p, .0013, .0016, axis='X', seg=6, rot=PB.frame(nn), bevel=0)
     PB.tag(i1, 'part', 'gun_dark')
-    i2 = PB.mark(); a = s.aim; base = c + nn * .021
+    i2 = PB.mark(); a = s.aim; base = c + nn * (.021 + dp)
     sphere(f'{s.name}ball', base + a * .002, W * .235, seg=24, squash=1.0)
     cyl(f'{s.name}mant', base + a * (W * .17), W * .245, W * .10, axis='X', seg=32, rot=PB.frame(a), bevel=.0008)
     PB.tag(i2, 'part', 'copper_dark')
@@ -139,7 +141,7 @@ def casemate(s, seat, rnd):
         cyl(f'{s.name}rec{k}c', b0 + a * (Lb * .34), W * .068, Lb * .035, axis='X', seg=20, rot=R, bevel=0)       # its clamp ring
         cyl(f'{s.name}brl{k}', b0 + a * (Lb * .55), W * .043, Lb * .9, axis='X', seg=20, rot=R, bevel=.0004)
         cyl(f'{s.name}mz{k}', b0 + a * (Lb * .98), W * .056, Lb * .07, axis='X', seg=20, rot=R, bevel=.0004)       # muzzle ring
-        PB.register_gun(f'{s.name}brl{k}', a, nn)
+        PB.register_gun(f'{s.name}brl{k}', a, nn, tip=b0 + a * (Lb * 1.016), socket=s.name, radius=W * .043)
     PB.tag(i4, 'part', 'copper')
     i5 = PB.mark()
     for k in (-1, 1):
@@ -165,7 +167,7 @@ def bow_battery(s, seat, rnd):
         cyl(f'{s.name}brl{k}', b0 + a * (.029 + Lb / 2), r, Lb, axis='X', seg=24, rot=R, bevel=.0005)
         cyl(f'{s.name}shr{k}', b0 + a * (.029 + Lb - .010), r * 1.32, .020, axis='X', seg=24, rot=R, bevel=.0006)
         for j in range(3): cyl(f'{s.name}shrr{k}{j}', b0 + a * (.029 + Lb - .017 + j * .007), r * 1.40, .0015, axis='X', seg=24, rot=R, bevel=0)
-        PB.register_gun(f'{s.name}brl{k}', a, (0, 0, 1))
+        PB.register_gun(f'{s.name}brl{k}', a, (0, 0, 1), tip=b0 + a * (.029 + Lb + .0005), socket=s.name, radius=r)
         fa, fx = (.066, .082) if hooded else (.060, .052)                      # welded brace from the barrel down to the deck
         z0 = (seat.top(b0.x + fx, y) if hooded else seat.top(b0.x + .045, y, .02)) or (b0.z - .02)
         tube(f'{s.name}brace{k}', b0 + a * fa + Vector((0, 0, -r)), Vector((b0.x + fx, y, z0)), .0016, seg=6)
@@ -215,6 +217,7 @@ def drum(name, c, r, L, aim=(1, 0, 0), variant=0, rnd=None):
     cyl(f'{name}mouthr', front + a * .0012, r * .52, .0022, axis='X', seg=24, rot=R, bevel=0)
     PB.tag(i3, 'part', 'gun')
     i4 = PB.mark(); cyl(f'{name}mouth', front + a * .0026, r * .40, .0012, axis='X', seg=20, rot=R, bevel=0); PB.tag(i4, 'dark')
+    return front + a * .0032      # the launch mouth (a muzzle point for the game export)
 
 def drum_rack(s, seat, rnd):
     """drums in a welded pipe cradle: s.extra n (drums), pitch (along y), stagger (x step per drum, outward), r, L, lift (cradle height
@@ -227,14 +230,15 @@ def drum_rack(s, seat, rnd):
     zc = e['zc'] if 'zc' in e else zdeck + lift + r * .95                   # 'zc': the drums' axis height, when the concept sets it
     i0 = PB.mark()
     for x, y, k in zip(xs, ys, range(n)):
-        drum(f'{s.name}d{k}', (x, y, zc), r, L, (1, 0, 0), variant=(s.variant + k) % 3 if e.get('mixed', True) else 0, rnd=rnd)
+        mouth = drum(f'{s.name}d{k}', (x, y, zc), r, L, (1, 0, 0), variant=(s.variant + k) % 3 if e.get('mixed', True) else 0, rnd=rnd)
+        PB.register_gun(f'{s.name}d{k}', (1, 0, 0), (0, 0, 1), tip=mouth, socket=s.name, radius=r * .40)
     i1 = PB.mark()
     y0, y1 = min(ys) - r * 1.15, max(ys) + r * 1.15; xm = sum(xs) / n
     for f in (-.30, .26):                                                       # cross beams and saddles
         xb = xm + f * L
         box(f'{s.name}beam{f}', (xb, (y0 + y1) / 2, zc - r * .78), (.008, y1 - y0, .006), bevel=.0008)
         for x, y, k in zip(xs, ys, range(n)):
-            box(f'{s.name}sad{f}{k}', (x + f * L, y, zc - r * .62), (.009, r * 1.3, .006), bevel=.0008)
+            box(f'{s.name}sad{f}{k}', (xb, y, zc - r * .62), (.009, r * 1.3, .006), bevel=.0008)      # round 7: on the beam, also in a staggered rack
         for yy in (y0, y1, (y0 + y1) / 2):                                      # legs cut to the deck under each foot
             zf = seat.top(xb, yy) or zdeck
             if zc - r * .78 - zf > .002: box(f'{s.name}leg{f}{yy:.3f}', (xb, yy, (zc - r * .78 + zf) / 2), (.006, .006, zc - r * .78 - zf + .002), bevel=.0006)
@@ -274,7 +278,8 @@ def turret(s, seat, rnd):
     cyl(f'{s.name}rec', pivot + ad * Lb * .12, rb * 1.6, Lb * .24, axis='X', seg=16, rot=R, bevel=.0004)
     cyl(f'{s.name}brl', pivot + ad * Lb * .55, rb, Lb * .9, axis='X', seg=16, rot=R, bevel=.0004)
     cyl(f'{s.name}mz', pivot + ad * Lb * .98, rb * 1.3, Lb * .07, axis='X', seg=16, rot=R, bevel=0)
-    PB.register_gun(f'{s.name}brl', ad, (0, 0, 1)); PB.tag(i2, 'part', 'copper' if s.variant == 0 else 'gun')
+    PB.register_gun(f'{s.name}brl', ad, (0, 0, 1), tip=pivot + ad * Lb * 1.015, socket=s.name, radius=rb)
+    PB.tag(i2, 'part', 'copper' if s.variant == 0 else 'gun')
 
 def marking(s, seat, rnd):
     """painted markings as thin decal plates seated on the hull (the bake paints them into the parts atlas): extra 'mark' is

@@ -32,6 +32,8 @@ SCALE = dict(
 
 # ---------------------------------------------------------------------------------------------------------------- tags and registry
 GUNS = []      # (name, aim, socket normal) for the audit
+MUZZLES = []   # round 7: one record per weapon muzzle (name, socket, tip, aim, normal, radius); the game export's hard points
+ENGINES = []   # round 7: one record per engine exit (name, pos, dir, radius)
 
 def mark():
     return len(hs_lib.PARTS)
@@ -42,8 +44,28 @@ def tag(since, role='part', kind=None):
         o['role'] = role
         if kind: o['kind'] = kind
 
-def register_gun(name, aim, normal=None):
+def register_gun(name, aim, normal=None, tip=None, socket=None, radius=None):
+    """every barrel and launch mouth a kit builds: the audit reads the aim; with tip (the muzzle point) and socket (the socket's
+    name) it also becomes a weapon hard point in the game export (tools/recipe/export7.py)"""
     GUNS.append((name, Vector(aim).normalized(), Vector(normal).normalized() if normal is not None else None))
+    if tip is not None:
+        MUZZLES.append(dict(name=name, socket=socket, tip=[round(v, 5) for v in tip], aim=[round(v, 5) for v in Vector(aim).normalized()],
+                            normal=[round(v, 5) for v in (Vector(normal).normalized() if normal is not None else Vector((0, 0, 1)))],
+                            radius=round(radius or 0.0, 5)))
+
+def register_engine(name, pos, direction, radius):
+    ENGINES.append(dict(name=name, pos=[round(v, 5) for v in pos], dir=[round(v, 5) for v in Vector(direction).normalized()], radius=round(radius, 5)))
+
+def clear_registry():
+    GUNS.clear(); MUZZLES.clear(); ENGINES.clear()
+
+def hardpoint_data(sockets):
+    """what the game export needs from the build: every muzzle with its socket's weapon slot and side, and the engine exits.
+    A hull module stores this on the scene (scene['r209_hp']) so it travels in the saved blend."""
+    by = {s.name: s for s in sockets}; out = []
+    for m in MUZZLES:
+        s = by.get(m['socket']); out.append(dict(m, part=s.part if s else None, slot=getattr(s, 'slot', None) if s else None, side=s.side if s else 0))
+    return dict(muzzles=out, engines=list(ENGINES))
 
 def aim_ok(aim, normal=None):
     """owner rule: guns aim forward or out to the side, never backward (x < -0.05) and never into the ship (against the mount normal)"""
@@ -71,15 +93,17 @@ class Socket:
 
 def sockets_from(path_or_dict):
     """the ship's placement file (tools/recipe/ships/<ship>.json, 'parts' list). Each entry: name, part, pos, normal, aim, size,
-    variant, extra, and pair: true to add the starboard mirror (matched pairs mirror exactly)"""
+    variant, extra, and pair: true to add the starboard mirror (matched pairs mirror exactly); slot (and slot_s for the mirror):
+    the 0-based weapon slot of the game ship's data.js weapon list this socket's muzzles fire for (none: no hard point)"""
     d = json.load(open(path_or_dict)) if isinstance(path_or_dict, str) else path_or_dict
     out = []
     for e in d['parts']:
         s = Socket(e['name'], e['part'], e['pos'], e.get('normal', (0, 0, 1)), e.get('aim', (1, 0, 0)), 1 if e.get('pair') else e.get('side', 0),
                    e.get('size', .05), e.get('variant', 0), e.get('extra'))
-        s.seat_mode = e.get('seat', 'abs'); out.append(s)
+        s.seat_mode = e.get('seat', 'abs'); s.slot = e.get('slot'); out.append(s)       # slot: the game weapon slot this socket serves
         if e.get('pair'):
-            m = s.mirrored(e['name'] + '_s'); m.variant = e.get('variant_s', s.variant); m.seat_mode = s.seat_mode; out.append(m)
+            m = s.mirrored(e['name'] + '_s'); m.variant = e.get('variant_s', s.variant); m.seat_mode = s.seat_mode
+            m.slot = e.get('slot_s', s.slot); out.append(m)
     return out
 
 class Seat:
@@ -112,7 +136,8 @@ class Seat:
 
 def resolve(sockets, seat):
     """seat each socket on the real hull: 'flank' finds y (and a level outward normal) at (x, z) on the socket's side; 'top' finds the
-    deck height under (x, y) and adds extra['above']; 'abs' keeps pos as given"""
+    deck height under (x, y) and adds extra['above'] (extra['seat_at'] = [x, y] reads the deck height there instead, for a part
+    that comes out from under a hood onto a lower deck); 'abs' keeps pos as given"""
     for s in sockets:
         mode = getattr(s, 'seat_mode', 'abs')
         if mode == 'flank':
@@ -122,7 +147,7 @@ def resolve(sockets, seat):
             if n.y * sd < 0: n = -n
             s.normal = n.normalized()
         elif mode == 'top':
-            z = seat.top(s.pos.x, s.pos.y)
+            at = s.extra.get('seat_at', (s.pos.x, s.pos.y)); z = seat.top(at[0], at[1])
             if z is None: raise RuntimeError(f'socket {s.name}: no deck at x {s.pos.x} y {s.pos.y}')
             s.pos.z = z + s.extra.get('above', 0.0); s.normal = Vector((0, 0, 1))
     return sockets

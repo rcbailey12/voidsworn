@@ -33,17 +33,17 @@ from paint3 import node, math_, mixc, mulc, ramp, flat, bake_group, textured
 # linear albedo pairs (low, high) per band; see the README for the concept samples they were fitted to
 LIN = dict(rust=((.060, .0056, .0032), (.104, .0096, .0050)), gun=((.012, .013, .0145), (.021, .022, .024)),
            drum=((.0050, .0054, .0060), (.0090, .0095, .0105)),
-           belly=((.040, .034, .019), (.058, .049, .027)), copper=((.090, .030, .016), (.150, .052, .026)),
+           belly=((.066, .055, .030), (.090, .076, .041)), copper=((.090, .030, .016), (.150, .052, .026)),
            sleeve=((.030, .031, .034), (.050, .052, .058)), ochre=((.15, .090, .020), (.22, .14, .030)), rack=((.060, .011, .006), (.095, .018, .010)),
            hazard=((.36, .22, .015), (.44, .28, .02)), yellow=((.30, .19, .015), (.40, .26, .02)), white=((.36, .35, .32), (.46, .45, .41)), dark=((.004, .004, .005), (.007, .007, .008)),
            borrowed=((.040, .050, .062), (.050, .062, .076)), rustdk=((.022, .010, .008), (.034, .015, .011)))
-DUST = dict(rust=((.40, .215, .18), 1.0), rack=((.12, .05, .035), .4), gun=((.075, .072, .072), .55), drum=((.03, .031, .033), .12), sleeve=((.08, .08, .082), .4))
+DUST = dict(rust=((.50, .29, .25), 1.0), rack=((.12, .05, .035), .4), gun=((.075, .072, .072), .55), drum=((.03, .031, .033), .05), sleeve=((.08, .08, .082), .4))
 PATCH = (.40, .072, .012)       # the concept's bright orange rust blooms
 PATCH2 = (.075, .011, .004)      # their darker rim
 STREAK = (.050, .020, .010)     # rust run-off on gunmetal
 WORN = (.16, .15, .135)         # bare steel on worn edges
-GRIME_LOW = (.066, .052, .029)  # the concept's dark olive lower hull
-Z_GRIME = (-.128, -.086)        # grime ramps in from z0 (full) to z1 (none): the slab side stays red, the tuck under it goes olive
+GRIME_LOW = (.100, .078, .042)  # the concept's dark olive lower hull
+Z_GRIME = (-.114, -.094)        # grime ramps in from z0 (full) to z1 (none): the slab side stays red, the tuck under it goes olive
 # round 7: painted plates on the hull. (length, height) of a plate in ship lengths: side faces, decks, the lower hull
 PANEL = dict(side=(.088, .043), deck=(.054, .047), belly=(.120, .064))
 SEAM = .0012                    # seam line width
@@ -71,7 +71,7 @@ def make(band, group, b0ao=None):
     # lower hull by (x, y). The run along the side is x minus a share of |y|, so the plates wrap round the bow instead of smearing,
     # and port and starboard get different layouts (nothing on a Hullbreaker ship matches).
     panels = group == 'H' and band in PANEL_BANDS
-    seam = pv = runoff = None
+    seam = pv = runoff = None; dustf = 0.0; bm = 0.0
     if panels:
         def brick(vec, L, H, mortar=SEAM / 2, smooth=.1):
             b = node(nt, 'ShaderNodeTexBrick', offset=.5, offset_frequency=2); nt.links.new(vec, b.inputs['Vector'])
@@ -102,11 +102,11 @@ def make(band, group, b0ao=None):
     edge = math_(nt, 'MULTIPLY', edge, ramp(nt, noise(4, 2), .35, .65))                # and only in some areas (handled, scraped)
     clean = band in ('borrowed', 'dark', 'white', 'hazard', 'yellow')
     if band == 'borrowed': edge = math_(nt, 'MULTIPLY', edge, .25)
-    if band == 'drum': edge = math_(nt, 'MULTIPLY', edge, .14)                        # strapped drums: wear on the rims, not every strap
+    if band == 'drum': edge = math_(nt, 'MULTIPLY', edge, .08)                        # strapped drums: wear on the rims, not every strap
     # base: two tones in broad patches, a finer mottle on top
     col = mixc(nt, lo, hi, ramp(nt, noise(3.0, 3), .38, .66))
     col = mulc(nt, col, math_(nt, 'ADD', .82, math_(nt, 'MULTIPLY', noise(18, 4), .36)))
-    sd = .50 if band in ('rust', 'rack') else .62                                    # round 7: darker, redder bow sides
+    sd = .80 if band in ('rust', 'rack') else .54                                    # round 7: darker, redder bow sides
     col = mulc(nt, col, math_(nt, 'ADD', sd, math_(nt, 'MULTIPLY', up, 1 - sd)))     # sides darker than decks (the concept's read)
     if panels: col = mulc(nt, col, math_(nt, 'ADD', .80, math_(nt, 'MULTIPLY', pv, .40)))   # every plate its own tone
     if band in GRIT:          # round 7: surface grit (fine mottle), broad stains, sparse dark chips: the concept's paint is never one flat tone
@@ -116,19 +116,20 @@ def make(band, group, b0ao=None):
     if panels and band != 'belly':   # each side plate a little darker toward its lower edge (stain gathers there)
         col = mulc(nt, col, math_(nt, 'SUBTRACT', 1, math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', math_(nt, 'SUBTRACT', 1, ramp(nt, rowf, .0, .45)), side), .20)))
     if band in DUST:          # dust and bleach on up-facing faces (the concept's light pink-grey bow deck, grey aft deck)
-        dc, dk = DUST[band]
-        col = mixc(nt, col, dc, math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', math_(nt, 'POWER', up, 4.0), dk), ramp(nt, noise(5, 3), .00, .42)))
+        dc, dk = DUST[band]      # round 7: the dust lies over most of a deck (a broad cover, thinner in patches), not in patches only
+        dustf = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', math_(nt, 'POWER', up, 4.0), dk), math_(nt, 'ADD', .45, math_(nt, 'MULTIPLY', ramp(nt, noise(5, 3), .10, .55), .55)), clamp=True)
+        col = mixc(nt, col, dc, dustf)
     if band in ('rust', 'rack'):
         # round 7: a gradient with streaks and run-off, not even specks. Decks: soft plate-shaped patches under a broad mask.
         # Sides: strongest under the deck edge, long thin streaks running down, heavier under each plate seam, gone by the lower hull.
-        blot = ramp(nt, noise(11, 3, .5), .50, .62)
+        blot = ramp(nt, noise(11, 3, .5), .46, .58)
         speck = ramp(nt, noise(48, 6, .65), .57, .63)
         broad = ramp(nt, noise(2.5, 2), .28, .52)
         if panels: blot = math_(nt, 'MULTIPLY', blot, math_(nt, 'ADD', .25, math_(nt, 'MULTIPLY', pv, .75)))
         deck_r = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', up, broad), math_(nt, 'ADD', blot, math_(nt, 'MULTIPLY', speck, .22)))
         zg = ramp(nt, xyz.outputs['Z'], RUST_Z[0], RUST_Z[1])
-        strk = ramp(nt, stretched(55, 55, 1.0, 4, 3), .58, .74)
-        side_r = math_(nt, 'ADD', math_(nt, 'MULTIPLY', strk, .70), math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', blot, zg), .45))
+        strk = ramp(nt, stretched(55, 55, 1.0, 4, 3), .54, .72)
+        side_r = math_(nt, 'ADD', math_(nt, 'MULTIPLY', strk, .62 if panels else .30), math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', blot, zg), .70))
         if panels: side_r = math_(nt, 'MULTIPLY', side_r, math_(nt, 'ADD', .55, math_(nt, 'MULTIPLY', runoff, .90)))
         side_r = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', side_r, zg), side)
         creep = 0.0
@@ -169,7 +170,10 @@ def make(band, group, b0ao=None):
     if panels: rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', math_(nt, 'SUBTRACT', pv, .5), .12), clamp=True)   # plates differ in sheen
     # rust and rack: metalness so the sheen takes the paint's own red instead of greying it (white sheen on a dark red read mauve;
     # round 7 raises it from .38 to .70 with a brighter base, because the bow sides still read pink under the key light)
-    metal = math_(nt, 'ADD', .45 if band in ('copper', 'borrowed') else (.70 if band in ('rust', 'rack') else .15), math_(nt, 'MULTIPLY', edge, .65), clamp=True)
+    m0 = .45 if band in ('copper', 'borrowed') else (.70 if band in ('rust', 'rack') else .15)
+    if band in ('rust', 'rack'):      # dust and rust blooms are not metallic: they keep their own light colour
+        m0 = math_(nt, 'MULTIPLY', m0, math_(nt, 'SUBTRACT', 1, math_(nt, 'MAXIMUM', math_(nt, 'MULTIPLY', dustf, .9), ramp(nt, bm, .30, .70)), clamp=True))
+    metal = math_(nt, 'ADD', m0, math_(nt, 'MULTIPLY', edge, .65), clamp=True)
     nt.links.new(col, bs.inputs['Base Color']); nt.links.new(rough, bs.inputs['Roughness']); nt.links.new(metal, bs.inputs['Metallic'])
     orm = node(nt, 'ShaderNodeCombineColor'); orm.label = 'ORM'
     occ = ao.outputs['AO']
@@ -184,7 +188,7 @@ def make(band, group, b0ao=None):
 FWD = -.100     # the concept's red ends where the aft body starts (behind the deckhouse tier)
 
 def hull_band(c, n):
-    if n.z < -.5 or c.z < -.150 or (c.z < -.098 and n.z < -.12): return 'belly'   # round 7: the tuck under the slab side is lower hull too
+    if n.z < -.5 or c.z < -.150 or (c.z < -.106 and n.z < -.12): return 'belly'   # round 7: the tuck under the slab side is lower hull too
     ay = abs(c.y)
     if -.110 < c.x < .180 and ay > .099 and c.z < .050: return 'gun'          # sponsons and module blocks: the concept's dark side block
     if c.x > FWD: return 'rust'

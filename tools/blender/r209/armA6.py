@@ -46,6 +46,7 @@ def other_parts(seat):
     for nm, (y, z, r) in (('main', (0, -.004, .026)), ('portb', (.044, -.004, .016)), ('stbdb', (-.044, -.004, .016))):
         n0 = len(Pp); A5.B_engine((xs + .002, y, z), r, .036 if r > .02 else .026); tag('part', n0, 'engine')
         n0 = len(Pp); cyl(f'glow{nm}', (xs - .036 if r > .02 else xs - .027, y, z), r * .9, .002, axis='X', seg=32, bevel=0); tag('glow', n0)
+        PB.register_engine(nm, (xs - .037 if r > .02 else xs - .028, y, z), (-1, 0, 0), r * .9)     # round 7: the engine exit, for the game export
     (xa, xb), (za, zb_), wo = p['cg_x'], p['cg_z'], p['cg_out']
     for s in (1, -1):
         n0 = len(Pp); wi = .090
@@ -85,12 +86,13 @@ def other_parts(seat):
 
 def build_geometry(hero=(), G=None):
     """structure, plates, armA5's other parts, then the weapons from the Hullbreaker kit at the placement file's sockets"""
-    bpy.ops.wm.read_factory_settings(use_empty=True); hs_lib.PARTS.clear(); GUNS.clear(); PB.GUNS.clear(); C.set_break(**BREAK)
+    bpy.ops.wm.read_factory_settings(use_empty=True); hs_lib.PARTS.clear(); GUNS.clear(); PB.clear_registry(); C.set_break(**BREAK)
     S = structure5(); Pl = plates5(S); seat = A3.Seat(S + Pl); notes = []
     other_parts(seat)
     ship = json.load(open(SHIP)); socks = PB.resolve(PB.sockets_from(ship), PB.Seat(S + Pl))
     bad = HB.build(socks, PB.Seat(S + Pl))
     for n, a, nn in PB.GUNS: GUNS.append((n, a))
+    bpy.context.scene['r209_hp'] = json.dumps(PB.hardpoint_data(socks))      # round 7: muzzles and engine exits for the game export
     notes.append(dict(kit=HB.FACTION, sockets=[dict(name=s.name, part=s.part, pos=[round(v, 4) for v in s.pos], aim=[round(v, 3) for v in s.aim]) for s in socks],
                       guns_badly_aimed=bad))
     for o in hs_lib.PARTS:
