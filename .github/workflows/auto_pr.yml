@@ -2,8 +2,9 @@
 # Nov 7 2026 (R110): the PR title comes from the issue, not the head commit (a branch created from main
 # used to copy main's last commit as the title, which mislabelled PRs #203 and #204). work/issue-<n>[-arm]
 # is the workhorse branch pattern (#217).
-# Codex on Ryan's PC (codex/issue-<n>), Muse (muse/issue-<n>) and Claude worker threads (opus/issue-<n>, issue 359) only need to push; this opens the PR into main
-# and starts the checks on it. Opus reviews and merges.
+# Codex on Ryan's PC (codex/issue-<n>), Muse (muse/issue-<n>) and Claude worker threads (opus/issue-<n>, issue 359) only need to push; this opens the PR into main.
+# The same push starts checks.yml by itself, once (issue 359). This file no longer starts the checks: doing both ran them
+# twice on every push. The Board reviews and merges.
 name: auto-pr
 on:
   push:
@@ -15,12 +16,11 @@ on:
 permissions:
   contents: read
   pull-requests: write
-  actions: write
 jobs:
   open-pr:
     runs-on: ubuntu-latest
     steps:
-      - name: Open the PR if there isn't one, then run the checks
+      - name: Open the PR if there isn't one (the push itself starts the checks)
         env:
           GH_TOKEN: ${{ github.token }}
           BRANCH: ${{ github.ref_name }}
@@ -54,4 +54,3 @@ jobs:
           else
             echo "PR already open for $BRANCH"
           fi
-          gh workflow run checks.yml -R "$REPO" --ref "$BRANCH"

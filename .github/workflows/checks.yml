@@ -1,8 +1,22 @@
-# Automatic checks on every pull request (Ryan, Nov 2 2026, FINDINGS R75).
-# Every PR from Muse, Codex or anyone else gets a pass or fail mark before Opus reviews it.
+# Automatic checks on every agent branch (Ryan, Nov 2 2026, FINDINGS R75). One run per push since issue 359.
+# Every push to a codex/, muse/, work/ or opus/ branch gets a pass or fail mark on its head commit, and the pull request
+# of that branch shows it, before the Board reviews it.
+# Why this starts on "push" and not on "pull_request" (Nov 10 2026): auto_pr.yml opens the pull request with GitHub's own
+# token, and GitHub holds every pull_request run of a bot-opened pull request until a person approves it. Nobody did, so
+# that run never started a job, and when the pull request was merged it turned into a failed run with no jobs: one
+# failure email per pull request. auto_pr.yml started a second run by hand to get round that, so every later push ran
+# all the checks twice. A push made with a person's token (the PC, Muse, a Claude thread) starts this workflow once.
+# A branch with any other name gets no automatic run: open its pull request by hand and start the checks by hand
+# (Actions tab, "checks", "Run workflow", pick the branch; or: gh workflow run checks.yml --ref <branch>).
+# Each job merges main into its checkout first, so it tests what would land, as the old pull_request runs did.
 name: checks
 on:
-  pull_request:
+  push:
+    branches:
+      - 'codex/**'
+      - 'muse/**'
+      - 'work/**'
+      - 'opus/**'
   workflow_dispatch:
 concurrency:
   group: checks-${{ github.ref }}
@@ -16,13 +30,24 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      # Test what would land: main merged into the branch. If they conflict, the checks run on the branch alone and say so
+      # (GitHub will not merge a conflicting pull request anyway; merging main into the branch and pushing runs them again).
+      - name: Merge main in (test the branch as it would land)
+        if: github.ref != 'refs/heads/main'
+        run: |
+          git config user.name "checks"; git config user.email "checks@users.noreply.github.com"
+          if git merge -q --no-edit origin/main; then
+            echo "Testing ${GITHUB_SHA::7} merged with main $(git rev-parse --short origin/main)."
+          else
+            git merge --abort 2>/dev/null || true
+            echo "::warning::main could not be merged into this branch (a conflict), so these checks ran on the branch alone. Merge main into the branch and push again."
+          fi
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - name: No em dashes in changed text files (house rule)
-        if: github.event_name == 'pull_request'
         run: |
-          files=$(git diff --name-only --diff-filter=AM origin/${{ github.base_ref }}...HEAD | grep -E '\.(md|txt|js|gd|json|bat|py)$' || true)
+          files=$(git diff --name-only --diff-filter=AM origin/main...HEAD | grep -E '\.(md|txt|js|gd|json|bat|py)$' || true)
           bad=""
           for f in $files; do [ -f "$f" ] && grep -l "$(printf '\342\200\224')" "$f" && bad="$bad $f"; done
           if [ -n "$bad" ]; then echo "Em dashes found in:$bad"; exit 1; fi
@@ -35,6 +60,20 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Test what would land: main merged into the branch. If they conflict, the checks run on the branch alone and say so
+      # (GitHub will not merge a conflicting pull request anyway; merging main into the branch and pushing runs them again).
+      - name: Merge main in (test the branch as it would land)
+        if: github.ref != 'refs/heads/main'
+        run: |
+          git config user.name "checks"; git config user.email "checks@users.noreply.github.com"
+          if git merge -q --no-edit origin/main; then
+            echo "Testing ${GITHUB_SHA::7} merged with main $(git rev-parse --short origin/main)."
+          else
+            git merge --abort 2>/dev/null || true
+            echo "::warning::main could not be merged into this branch (a conflict), so these checks ran on the branch alone. Merge main into the branch and push again."
+          fi
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -74,6 +113,20 @@ jobs:
       XDG_DATA_HOME: ${{ github.workspace }}/.godot_user   # user:// for every Godot run here; never a real profile
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Test what would land: main merged into the branch. If they conflict, the checks run on the branch alone and say so
+      # (GitHub will not merge a conflicting pull request anyway; merging main into the branch and pushing runs them again).
+      - name: Merge main in (test the branch as it would land)
+        if: github.ref != 'refs/heads/main'
+        run: |
+          git config user.name "checks"; git config user.email "checks@users.noreply.github.com"
+          if git merge -q --no-edit origin/main; then
+            echo "Testing ${GITHUB_SHA::7} merged with main $(git rev-parse --short origin/main)."
+          else
+            git merge --abort 2>/dev/null || true
+            echo "::warning::main could not be merged into this branch (a conflict), so these checks ran on the branch alone. Merge main into the branch and push again."
+          fi
       - uses: actions/setup-node@v4
         with:
           node-version: 22

@@ -59,6 +59,8 @@ gpu|campaign/test/r1_ui_shots.gd|-|{out}|R1 campaign screen screenshots: needs a
 gpu|story/test/career_shots.gd|compat|{out}|Career screen screenshots: needs a window
 gpu|fx/test/damage_surface_probe.gd|env:DAMAGE_OUT|-|damage stills and 20 real hull frame cost: needs the GPU and the ship files
 gpu|fx/test/death_leap_probe.gd|env:DEATH_OUT|-|real-ship death recordings and a 4K profile: needs the GPU and the ship files
+gpu|fx/test/death_spawn_check.gd|-|-|death pictures sit on the plating and every one is recorded (issue 354): runs without a window but needs the ship files
+gpu|fx/test/death_vent_strip_probe.gd|env:DV_OUT|-|strip of the death vent beat at the battle camera and the closest camera (issue 354): needs the GPU and the ship files
 gpu|fx/test/destruction_fleet_probe.gd|env:PROBE_OUT|-|Forward+ frame cost of 20 staged kills: needs the GPU
 gpu|fx/test/fx_breach_probe.gd|env:PROBE_OUT|-|breach close-ups on a real ship: needs the GPU and the ship files
 gpu|fx/test/fx_cost_probe.gd|-|-|hull rebuild cost on one real ship: runs without a window but needs the ship files
