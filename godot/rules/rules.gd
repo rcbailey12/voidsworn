@@ -3696,7 +3696,9 @@ func treeBuild() -> Array:
 	var L = RUN["lineage"]; if not (L is Dictionary) or not LINEAGE_TREES.has(L.get("id")): return out
 	var picks = L.get("picks")
 	if picks is Array:
-		for key in picks:
+		for pick in picks:
+			var key = str(pick)
+			if not key.begins_with(str(L["id"]) + ":"): key = str(L["id"]) + ":" + key  # #335: old saves and the campaign store short picks ("A:0:0"); TREE_FX is keyed "admiral:A:0:0"
 			if TREE_FX.has(key):
 				var s = TREE_FX[key].duplicate(true); s["key"] = key; out.append(s)
 	if L.get("capstone") != null:
