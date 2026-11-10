@@ -6,6 +6,16 @@ Scoper: a fresh Fable 5.2 session with no history on this project (FINDINGS R154
 - Companion file: `contrib/claude_fable/reviews/audit_pass3_issues.json`, one object per proposed issue, in filing order. The Board files from it.
 - 28 proposed jobs, P3-01 to P3-28. 6 questions for Ryan. Nothing here is filed yet.
 
+## Board review (Fable 5.2 Board, Nov 10 2026, 05:35 UTC)
+
+The Board read the whole file and the JSON, re-ran spot checks at the pin on the references that carry the jobs (P3-01, P3-05, P3-08, P3-11, P3-15, the workflow steps, the tree functions) and found each one where the scoper said. Verdict: ACCEPTED. 26 jobs are filed as written and 2 with a change (P3-02, P3-14); a verdict line sits under each job heading. No job is held or dropped.
+
+- The scoper's order changes are accepted (section 5): the placeholder stop first beside the bench, death puffs and the readability pass right after the bench, trails and beams ahead of shields, the copy deletion between tree jobs.
+- Old issues (section 8): 233, 235, 236, 237, 333, 139 and 199 are retired with a pointer to the job that replaces each. 140 stays open until Ryan answers question 5. 234 and 238 move from the codex label to opus and stay as filler. 92 is relabelled when UI rollout group 2 is filed.
+- Could-not-decide list (section 11), Board calls: 1 file it small; 2 the "not active yet" mark goes with UI rollout group 4; 3 and 4 seats as proposed, with the stated fallback; 5 keep 234 as filler; 6 no sky job now (it is not a numbered finding; recorded in LOOP.md); 7 no light map rebakes for old hulls; 8 shields on one recipe ship first; 9 two explosion routes, not three; 10 the Board applies both workflow patches.
+- Questions for Ryan (section 7): question 1, the Board goes with A (ship files stay on the PC, one copy step) until the first recipe ships are in the game, since it costs nothing; questions 3, 5 and 6 are put to Ryan; 2 and 4 are picked on their sheets.
+- What the Board did not check: it did not re-trace every line number in jobs 16 to 28 (all blocked behind earlier jobs; each is re-read at its pin when it is released).
+
 ## 1. Summary (plain words)
 
 - **28 jobs.** 11 for the cheap coder (the DeepSeek workhorse), 15 for Opus worker threads (12 of them need the PC), 1 for Muse, 1 for the Board itself. 11 can be filed open today. 17 are filed blocked, each behind a named job, a pick or the ship round.
@@ -134,6 +144,8 @@ Sizes are in agent runs and review rounds, from the board's own history: a small
 
 ### 1. P3-01: Placeholder hulls fail loudly, and one get-ship-files step for every capture job
 
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN. Checked: godot/render/ship_view.gd has no error call on a missing hull. Released to the workhorse beside the tree job (different files).**
+
 Seat: DeepSeek workhorse (label opus). Labels: opus. Covers: pass1 F5.
 
 ```
@@ -169,6 +181,8 @@ Done when: a missing hull prints one error line naming the hull and is counted; 
 - **Risk if done badly:** If the stop is too eager the game or GitHub's parity run stops wherever hulls are absent (GitHub has none). If it is too weak, a scene with some hulls missing still passes. A copy step that deletes or mirrors could remove files on Ryan's PC: copy only.
 
 ### 2. P3-02: Look bench: one standing capture set at the three real cameras (replaces issue 333)
+
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE WITH A CHANGE. The GPU is the Board's for the night of Nov 9 to 10 (R160), so no go file is needed tonight; on any other day it waits for Ryan's window. It runs as a helper inside the Board thread, which has the PC folder (R160 lesson), after the ship round 7 sheets.**
 
 Seat: Opus worker thread with PC work through the queue (label opus), then the outside check on issue 256. Labels: opus. Covers: pass1 F10, pass2 P8, pass2 P4 (the standing fleet sheet).
 
@@ -211,6 +225,8 @@ Done when: one double-click .bat makes, from any commit: (a) the moments sheet: 
 
 ### 3. P3-03: Hit and death staging table: sizes in pixels and times in seconds for every big moment
 
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN. Muse takes it after the ledger (issue 343). It does not wait for question 6: Muse picks its own reference games and Ryan's names fold in when he gives them.**
+
 Seat: Muse (label muse). Labels: muse. Covers: pass2 P2, pass2 P1 (fire limits), M2.
 
 ```
@@ -242,6 +258,8 @@ Done when: one table with a row per event (las hit, macro hit, lance hit, torped
 - **Risk if done badly:** Sizes invented without looking at the captures cannot be built, or break R88. Then P3-17 builds to the wrong targets.
 
 ### 4. P3-04: Explosion pictures, step 1: bake two routes, measure the bake time, one sheet for the pick
+
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN. Two routes, as R160 says; no third route.**
 
 Seat: Opus worker thread with PC work through the queue (label opus), then the outside check on issue 256. Labels: opus, blocked. Covers: pass2 P1 (step 1: price the routes).
 
@@ -276,6 +294,8 @@ Done when: two candidate routes exist for the weapon impact and the capital deat
 
 ### 5. P3-05: Death puffs sit on the plating, and the stray puff check covers every death kind
 
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN. Checked: record_spawn has 0 hits in godot/fx/fx_death.gd; the vent offset is at line 179.**
+
 Seat: DeepSeek workhorse (label opus). Labels: opus, blocked. Covers: pass2 P9.
 
 ```
@@ -309,6 +329,8 @@ Done when: every picture fx_death spawns (the vent kind, the flash kind and any 
 
 ### 6. P3-06: Sort the known-failure list into bug, opinion, ruled-not-built or stale (before any shrink rule)
 
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN. The Board does it. ADM-2 (passing at the audit pin, failing at 34565f3 behind a PASS row) is sorted here first.**
+
 Seat: the Board thread itself (label opus). Labels: opus. Covers: pass1 F4 (step 1: sort the list), M1 (the 46).
 
 ```
@@ -338,6 +360,8 @@ Done when: each of the 50 listed ids carries one tag (bug, opinion, ruled-not-bu
 - **Risk if done badly:** Tagging a real defect as opinion removes it from the gate for good.
 
 ### 7. P3-07: Runner 1: the runner runs the checks itself and pastes the real lines into every pull request
+
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN.**
 
 Seat: DeepSeek workhorse (label opus). Labels: opus. Covers: pass1 F8 (check lines, task text), pass1 F9 (closing word in the runner).
 
@@ -369,6 +393,8 @@ Done when: after the agent stops, the runner itself runs node contrib/opus/tools
 - **Risk if done badly:** A check step that hangs eats the run's time cap. A runner that stops after the agent finished loses a paid run's work.
 
 ### 8. P3-08: Three known traps removed in code: line endings, closing words, Node version
+
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN. Checked: there is no .gitattributes at the pin. The Board applies the workflow patch.**
 
 Seat: DeepSeek workhorse (label opus). Labels: opus. Covers: pass1 F9, pass1 F8 (pull request text refreshed on each push).
 
@@ -402,6 +428,8 @@ Done when: .gitattributes sets LF for .js, .gd, .json, .sh, .md and .py and CRLF
 
 ### 9. P3-09: The checks table tells the truth: no PASS over failures, a known list that can only shrink
 
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN.**
+
 Seat: DeepSeek workhorse (label opus). Labels: opus, blocked. Covers: pass1 F4 (step 2: the runner), pass1 F3 (the drift guard row).
 
 ```
@@ -431,6 +459,8 @@ Done when: the table has four words: PASS (zero failures inside the row), KNOWN 
 - **Risk if done badly:** A shrink rule before the sort deletes real defects. A wording change that flips GitHub's checks red on main blocks every open pull request.
 
 ### 10. P3-10: GitHub's checks open the game: load every script, run the headless checks, play one bot battle
+
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN. An Opus cloud thread when a slot frees; if slots stay full, part (a) alone goes to the workhorse.**
 
 Seat: Opus worker thread, cloud only (label opus), then the outside check on issue 256. Labels: opus. Covers: pass1 F2, M1 (F2 totals).
 
@@ -465,6 +495,8 @@ Done when: (a) a step imports the Godot project headless and loads every .gd fil
 
 ### 11. P3-11: One copy of the rules files: delete both oracle folders and point every harness at the root
 
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN. Checked: export_campaign.js, campaign.gd, oracle_copy_test.js, the drift guard and tools/test_onboarding.js all name the oracle folders.**
+
 Seat: DeepSeek workhorse (label opus). Labels: opus, blocked. Covers: pass1 F3, M5.
 
 ```
@@ -498,6 +530,8 @@ Done when: no oracle folder exists; both parity harnesses, the Nemesis scenarios
 
 ### 12. P3-12: Tree table walk: every skill row is tested or on a dated waiting list, and waiting rows are flagged
 
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN.**
+
 Seat: DeepSeek workhorse (label opus). Labels: opus, blocked. Covers: pass1 F7.
 
 ```
@@ -530,6 +564,8 @@ Done when: one generated check walks LINEAGE_TREES and fails by name unless ever
 
 ### 13. P3-13: Battle camera readability pass: every faction readable at the size it is really played
 
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN. Light map rebakes for the old hulls stay out (R158).**
+
 Seat: Opus worker thread with PC work through the queue (label opus), then the outside check on issue 256. Labels: opus, blocked. Covers: pass2 P4.
 
 ```
@@ -561,6 +597,8 @@ Done when: on the bench fleet sheet (all 36 ships, true pixel size, camera 170, 
 
 ### 14. P3-14: Hard point contract, and the audit items the ship recipe must keep for every ship
 
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE WITH A CHANGE. Round 7 has pushed the stage 7 export with hard points and its check (steps 3 and 4 on opus/issue-209-r7, PC run started Nov 10 04:48 UTC). This job starts after PR 341 merges and builds only what is still missing.**
+
 Seat: Opus worker thread (label opus), then the outside check on issue 256. Labels: opus. Covers: pass1 F6 (the contract), pass2 P13 (second camera), pass2 P3 (far side and underside stills, licences), pass2 P4 (light sizes for new ships).
 
 ```
@@ -591,6 +629,8 @@ Done when: (1) the contract names every point type the game needs and its axes: 
 - **Risk if done badly:** A contract that covers guns only reopens detached effects ship by ship (wing launches, braking puffs, boarding). A gate that keeps one number lets the next wrong bow through.
 
 ### 15. P3-15: Nemesis readers ask the campaign, so a stale cached commander cannot reach a screen
+
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN. Checked: story.gd lines 141, 261, 295 and battle.gd line 4149 read the cached field.**
 
 Seat: DeepSeek workhorse (label opus). Labels: opus. Covers: pass1 F12 (the small job), M1 (F12 counts).
 
@@ -625,6 +665,8 @@ Done when: the four direct readers of the cached field (godot/story/story.gd lin
 
 ### 16. P3-16: Explosion pictures, step 2: rebake every explosion by the picked route
 
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN.**
+
 Seat: Opus worker thread with PC work through the queue (label opus), then the outside check on issue 256. Labels: opus, blocked. Covers: pass2 P1 (step 2: the build), pass2 P8 (look numbers in data, no shader text patch).
 
 ```
@@ -656,6 +698,8 @@ Done when: every explosion picture the game plays (weapon impact, muzzle gas, de
 
 ### 17. P3-17: Big hits and ship deaths restaged in three beats, built to the staging table
 
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN.**
+
 Seat: Opus worker thread with PC work through the queue (label opus), then the outside check on issue 256. Labels: opus, blocked. Covers: pass2 P2 (the build).
 
 ```
@@ -685,6 +729,8 @@ Done when: each event in the staging table is built to its size in pixels at cam
 - **Risk if done badly:** The shrink ratchet in reverse: everything huge, and a 20 ship battle becomes unreadable. Flash safety.
 
 ### 18. P3-18: One kit of trails, beams and flares: no bare hairlines, plain cones, bars or tubes
+
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN. The Board accepts moving it ahead of the shield jobs.**
 
 Seat: Opus worker thread with PC work through the queue (label opus), then the outside check on issue 256. Labels: opus, blocked. Covers: pass2 P5, pass2 P7.
 
@@ -716,6 +762,8 @@ Done when: no bare hairline in any bench still; sparks have a bright head and a 
 
 ### 19. P3-19: Nebula and ion storm hexes with depth: measure two routes against the gate, pick, build (replaces issue 139)
 
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN.**
+
 Seat: Opus worker thread with PC work through the queue (label opus), then the outside check on issue 256. Labels: opus, blocked. Covers: pass2 P10.
 
 ```
@@ -746,6 +794,8 @@ Done when: step 1, then stop for Ryan's pick: the gate scene on a multi-patch ne
 - **Risk if done badly:** Full-screen fog breaks the 12.5 ms gate on a multi-patch map at 4K. Fog hides the ships.
 
 ### 20. P3-20: Board planet and rocks from real data (replaces issue 140)
+
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN. Waits on Ryan's answer to question 5.**
 
 Seat: Opus worker thread with PC work through the queue (label opus), then the outside check on issue 256. Labels: opus, blocked. Covers: pass2 P11.
 
@@ -779,6 +829,8 @@ Done when: the board planet is built from two public domain sources mixed, warpe
 
 ### 21. P3-21: Attach point service: effects start on the ship, never on a guessed box point
 
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN.**
+
 Seat: Opus worker thread with PC work through the queue (label opus), then the outside check on issue 256. Labels: opus, blocked. Covers: pass1 F6 (the build).
 
 ```
@@ -811,6 +863,8 @@ Done when: one attach point service in fx_hull with this order of trust: an auth
 
 ### 22. P3-22: Shield model: a skin that hugs the hull, shows its four sides and has a resting state
 
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN. One recipe ship first; the old hulls keep the fallback.**
+
 Seat: Opus worker thread with PC work through the queue (label opus), then the outside check on issue 256. Labels: opus, blocked. Covers: pass2 P6.
 
 ```
@@ -841,6 +895,8 @@ Done when: the shield is a surface built from the ship's own shape, pushed out a
 
 ### 23. P3-23: Shield surface look: energy with depth instead of flat line art
 
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN.**
+
 Seat: Opus worker thread with PC work through the queue (label opus), then the outside check on issue 256. Labels: opus, blocked. Covers: pass2 P15.
 
 ```
@@ -869,6 +925,8 @@ Done when: the pattern shows only near a hit and fades with distance; the backgr
 - **Risk if done badly:** A screen-bending pass costs on every shield hit in a 20 ship volley.
 
 ### 24. P3-24: The station as one built set piece through the ship recipe (replaces issue 199)
+
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN.**
 
 Seat: Opus worker thread with PC work through the queue (label opus), then the outside check on issue 256. Labels: opus, blocked. Covers: pass2 P12.
 
@@ -900,6 +958,8 @@ Done when: one station built through the ship recipe with its own parts kit: at 
 
 ### 25. P3-25: Save hand-offs: a real save and load in the tree hand-off check, and one cross-twin load check
 
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN. Small; "cannot by design, recorded" is an allowed outcome for the cross-twin half (R33).**
+
 Seat: DeepSeek workhorse (label opus). Labels: opus. Covers: M3, pass1 F1 (the outside check addition: a real save).
 
 ```
@@ -928,6 +988,8 @@ Done when: (1) in each twin the hand-off check saves with the game's real save f
 - **Risk if done badly:** Low. The danger is a check that looks like a save test and still copies the run in memory.
 
 ### 26. P3-26: Entry documents: one source per fact, and a doc check in the standing checks
+
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN.**
 
 Seat: DeepSeek workhorse (label opus). Labels: opus. Covers: pass1 F13.
 
@@ -959,6 +1021,8 @@ Done when: a doc check row in the standing checks: every repo path named in AGEN
 
 ### 27. P3-27: Late shader log: name any shader that is first built in the middle of a battle
 
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN.**
+
 Seat: DeepSeek workhorse (label opus). Labels: opus, blocked. Covers: pass1 F11 (the flag and log only).
 
 ```
@@ -987,6 +1051,8 @@ Done when: after warm-up ends a flag is set; any shader or material created late
 - **Risk if done badly:** Low. A log line inside a hot path could itself cost frame time: log once per name.
 
 ### 28. P3-28: Runner 2: a failed run opens no pull request, unwanted files are refused, pushes do not erase earlier runs
+
+**Board verdict (Fable 5.2 Board, Nov 10 2026): FILE AS WRITTEN.**
 
 Seat: Opus worker thread (label opus), then the outside check on issue 256. Labels: opus, blocked. Covers: pass1 F8 (partial runs, refuse list, safe push).
 
