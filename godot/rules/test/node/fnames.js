@@ -1,4 +1,4 @@
-// ui3d.js FNAMES at e80a6a0 (lore round 8 names)
+// ui3d.js FNAMES (lore round 8 names). This extract is a fallback: the harness reads the root ui3d.js first.
 const FNAMES={hegemony:['HNS Dominator','HNS Relentless','HNS Sovereign','HNS Comptroller','HNS Allocation','HNS Forecast','HNS Adjudicator','HNS Vigilance','HNS Tyrant','HNS Resolute'],
   corsair:['Rust Maw','Gutter Queen','Red Tally','Scrapjaw','Ashen Grin','Cold Trail','Cinder Wolf','Bad Omen','Salvage Right','Bent Crown'],
   chorus:['Node Ashk','Brood Vessel Ul','Shrieker','Mawling','Gorebloom','Sac-mother','Sour Spine','Tidehunger','Wet Maw','Crawling Gut'],

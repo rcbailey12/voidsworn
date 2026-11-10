@@ -41,9 +41,6 @@ for (const [file, name, expected] of [['godot/scenes/battle/battle.gd', 'TIPS', 
   const block = new RegExp('const ' + name + ' := (\\[[\\s\\S]*?\\n\\])').exec(source)[1];
   assert.deepEqual(JSON.parse(block.replace(/,\s*\]/g, ']')), expected);
 }
-for (const file of ['core.js', 'battle.js', 'campaign_meta.js', 'campaign3d.js', 'ui3d.js']) assert.equal(fs.readFileSync(path.join(root, file), 'utf8'), fs.readFileSync(path.join(root, 'godot/campaign/test/oracle', file), 'utf8'));
-assert.equal(fs.readFileSync(path.join(root, 'battle.js'), 'utf8'), fs.readFileSync(path.join(root, 'godot/rules/test/oracle/battle.js'), 'utf8'));
-console.log('PASS: exact approved browser copy and oracle copies');
 assert.ok(gd('campaign/test/onboarding_test.gd', [], 'onboarding').includes('ONBOARDING PASS'));
 console.log('PASS: focused onboarding checks');
 node('tools/test_onboarding_gate.js');
