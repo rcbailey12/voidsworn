@@ -9,12 +9,12 @@
  "shape_ref": "Downloads/voidsworn_test/bakeoff/C15s_23_trellis.glb",
  "shape_ref_yaw": 22.0,
  "concept_camera": "docs/shots/ship_pipeline/route209/round4/concept_camera.json",
- "hull": "armA7",
+ "hull": "armA8",
  "tune": "tools/blender/r209/tune5_P.json",
  "bake": "bakeAb6.py",
- "cell": "Ab7",
+ "cell": "Ab8",
  "outline_gate": 0.9,
- "notes": "Weapon positions and sizes measured off the concept through its fitted camera (round 6 README, section 1). pos: ship frame, x to the bow, y to port, z up, length 1. seat: 'flank' finds y on the hull at (x, z); 'top' finds z on the deck at (x, y). pair: true adds the starboard mirror; variant_s gives the mirror its own salvage detail. Casemates (board review on PR 336, R156): aimed level, 15 degrees forward of the beam as the concept reads (the game's own rest direction for port and starboard mounts); the outline score is not allowed to bend the guns. Round 7: the forward pair back toward the concept's spot (x 0.356; round 6 had pulled it aft to 0.338 for the score), both pairs flat on the new slab side (proud 0.004). Game export (round 7): game_ship is the ship's id in data.js (its weapon list is the slot order), game_code the ship folder's name in godot/assets/ships. A socket's slot (slot_s for its starboard mirror) says which weapon slot its muzzles fire for: the casemates are the port and starboard scatter batteries (0, 1), the forward and sponson drum racks the torpedoes (2), the two top turrets the flak (3). Sockets with no slot (the twin bow guns, the waist and aft drums) get no hard point.",
+ "notes": "Weapon positions and sizes measured off the concept through its fitted camera (round 6 README, section 1). pos: ship frame, x to the bow, y to port, z up, length 1. seat: 'flank' finds y on the hull at (x, z); 'top' finds z on the deck at (x, y). pair: true adds the starboard mirror; variant_s gives the mirror its own salvage detail. Casemates: aimed level, 8 degrees forward of the beam (Board ruling on PR 341, round 8; round 7 had 15 from round 6's last commit); the outline score is not allowed to bend the guns. Round 8: the bow guns sit at a fixed height (seat abs, z 0.0095) with their collar at the new hood face (x 0.386) and the muzzles at x 0.448, from the bow fit (tools/blender/r209/fit8.py). Round 7: the forward pair back toward the concept's spot (x 0.356; round 6 had pulled it aft to 0.338 for the score), both pairs flat on the new slab side (proud 0.004). Game export (round 7): game_ship is the ship's id in data.js (its weapon list is the slot order), game_code the ship folder's name in godot/assets/ships. A socket's slot (slot_s for its starboard mirror) says which weapon slot its muzzles fire for: the casemates are the port and starboard scatter batteries (0, 1), the forward and sponson drum racks the torpedoes (2), the two top turrets the flak (3). Sockets with no slot (the twin bow guns, the waist and aft drums) get no hard point.",
  "parts": [
   {
    "name": "casF",
@@ -26,8 +26,8 @@
     -0.054
    ],
    "aim": [
-    0.25,
-    0.968,
+    0.139,
+    0.99,
     0.0
    ],
    "size": 0.098,
@@ -52,8 +52,8 @@
     -0.054
    ],
    "aim": [
-    0.25,
-    0.968,
+    0.139,
+    0.99,
     0.0
    ],
    "size": 0.096,
@@ -71,11 +71,11 @@
   {
    "name": "bow",
    "part": "bow_battery",
-   "seat": "top",
+   "seat": "abs",
    "pos": [
-    0.336,
+    0.355,
     0,
-    0.0
+    0.0095
    ],
    "aim": [
     1,
@@ -85,12 +85,7 @@
    "size": 0.0105,
    "extra": {
     "gap": 0.028,
-    "barrel": 0.046,
-    "above": 0.0165,
-    "seat_at": [
-     0.41,
-     0.026
-    ],
+    "barrel": 0.064,
     "hooded": 1
    }
   },
