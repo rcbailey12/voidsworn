@@ -1,6 +1,6 @@
 extends RefCounted
 # Voidsworn campaign (G3): the rules of a run and its screen flow, a GDScript port of the browser game's core.js (run parts),
-# campaign_run.js, campaign_meta.js and campaign3d.js (pinned copies in test/oracle/). Same names, same order, same maths as the JS.
+# campaign_run.js, campaign_meta.js and campaign3d.js (the root game files). Same names, same order, same maths as the JS.
 #
 # How the screens work: every place the JS calls show(html) or modal(html), this port calls page()/modal() with a screen kind,
 # the data the screen needs and its buttons, in the same order as the browser's buttons: [act, arg, enabled]. The Godot UI
