@@ -51,9 +51,9 @@ for %%S in (ui/theme/glass_shell.gd campaign/campaign_view.gd ui/campaign/choice
 )
 echo parse done %date% %time% >> "%O%\status.txt"
 rem ---- the captures: one seeded run played through the campaign's own actions, every page saved by name
-call "%TMO%" 1500 "%GD%" --path "%R%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 res://scenes/campaign/campaign.tscn -- rollout "%O%\1080" --no-tips > "%O%\log_1080.txt" 2>&1
+call "%TMO%" 1500 "%GD%" --path "%R%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 res://scenes/campaign/campaign.tscn -- rollout "%O%\1080" --no-tips --win 1920x1080 > "%O%\log_1080.txt" 2>&1
 echo 1080 done %date% %time% >> "%O%\status.txt"
-call "%TMO%" 1500 "%GD%" --path "%R%\godot" --rendering-method forward_plus --windowed --resolution 2560x1440 res://scenes/campaign/campaign.tscn -- rollout "%O%\1440" --no-tips > "%O%\log_1440.txt" 2>&1
+call "%TMO%" 1500 "%GD%" --path "%R%\godot" --rendering-method forward_plus --windowed --resolution 2560x1440 res://scenes/campaign/campaign.tscn -- rollout "%O%\1440" --no-tips --win 2560x1440 > "%O%\log_1440.txt" 2>&1
 echo 1440 done %date% %time% >> "%O%\status.txt"
 :finish
 echo all done %date% %time% >> "%O%\status.txt"

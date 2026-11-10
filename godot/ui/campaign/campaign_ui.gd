@@ -1029,7 +1029,7 @@ func _fleet(d: Dictionary) -> Control:
 func _shipyard() -> Control:
 	var v = vbox(10); var R = C.RUN; var n = C.page["data"]["node"]; var st = n["stock"]; var pm = C.priceMult(); var cp = C.fleetCP()
 	var head = hbox(); head.add_child(gothic("Shipyard")); head.add_child(spacer())
-	head.add_child(_readout("Credits", C.numstr(R["credits"]), BONE, true)); head.add_child(_readout("Command points", C.numstr(cp) + "/" + C.numstr(R["cpCap"]), BONE, true))
+	head.add_child(_readout("Credits", C.numstr(R["credits"]), BONE, true)); var gp = Control.new(); gp.custom_minimum_size.x = px(28); head.add_child(gp); head.add_child(_readout("Command points", C.numstr(cp) + "/" + C.numstr(R["cpCap"]), BONE, true))
 	var rb = abtn("Refits", "yardFleet")
 	if rb != null: rb.size_flags_vertical = Control.SIZE_SHRINK_CENTER; head.add_child(rb)
 	v.add_child(head)   # Leave shipyard is the finishing action, fixed at the bottom right (_page_finish)

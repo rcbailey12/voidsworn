@@ -236,6 +236,13 @@ func _ro_avail_types() -> Array:
 	return out
 func _rollout(dir: String) -> void:
 	_ro_dir = dir; DirAccess.make_dir_recursive_absolute(dir)
+	# the project opens maximised (window/size/mode 2), which ignores --resolution: --win WxH sets the window to that exact size
+	var a := OS.get_cmdline_user_args(); var wi = a.find("--win")
+	if wi >= 0 and wi + 1 < a.size() and DisplayServer.get_name() != "headless":
+		var wh = a[wi + 1].split("x")
+		if wh.size() == 2:
+			var win = get_window(); win.mode = Window.MODE_WINDOWED; win.size = Vector2i(int(wh[0]), int(wh[1])); win.position = Vector2i(0, 0)
+			await _frames(20)
 	JSM.rnd_seed(344)
 	C.titleScreen(); C.act("newRunScreen"); C.act("startRun")
 	if C.page.get("kind") == "aspect": C.act("pickAspect", C.W["aspOffer"][0])
