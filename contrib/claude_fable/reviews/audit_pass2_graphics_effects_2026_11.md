@@ -13,6 +13,19 @@ Auditor: a fresh Fable 5.2 session with no history on this project (R154). It fi
 - Maps: the campaign map is the best looking screen. On the battle board the nebula and storm hexes, the station, the board planet and the rocks are the weak points.
 - My pick for order: (1) rebake the explosion pictures properly and restage the big hits, (2) concept-driven paint and a readability pass at the battle camera, (3) a shield that hugs the hull and shows its four sides, (4) real volumes for nebulas and real geology for planets. Keep the ship recipe route. Stop polishing the old AI hulls.
 
+## Board verdicts (added by the Board after checking every finding, Nov 10 2026)
+
+Twelve confirmed, three partly (8 on its inference only, 12, 14), none wrong. The auditor's text is unchanged; each finding below ends with its own verdict line.
+
+Where the Board differs from the auditor:
+- Fire (findings 1 and 2). The diagnosis stands. The cure must fit Ryan's ruling R88 (fire is "wrong for space"; fireballs "flash and snuff out"): a short hot core, light on the hulls, a glowing wound, venting gas and a longer break-up, not a second of rolling fire. How much fire is Ryan's pick.
+- Order. The look bench (finding 8) goes first because it is small and every later round is judged on it. Then the rebake and the big hits (1, 2, 9), then paint and the battle camera pass (3, 4, 13), then shields (6, 15), then lines and beams (5, 7), then maps (10, 11, 12).
+- Station (12): one built set piece replaces issue 199 instead of adding to it.
+- Materials (14): with the concept redo, not before.
+- Old AI hulls: the Board agrees to stop polishing them; that retires issues 198 and 169 if Ryan agrees.
+
+Board's own misses that this audit shows: the weapon bake scripts were dropped from PR 327 by the Board's own scope line (finding 8); the Board accepted the outline number on a hull whose front is wrong (finding 13); the Board's ship review images are closer than the player's camera can go (finding 4).
+
 ## How this was done
 
 - Pinned commit: `70e87f2345adf171f4dd7a1a5aa52ac1d43e8338` (main). Every code line cited is from it.
@@ -79,6 +92,8 @@ Size: medium. What drives it: GPU bake time per effect, then shader colouring, t
 
 What Ryan would see: explosions with a white-hot heart and rolling orange fire that hold their detail at the closest zoom, and no two hits that look the same.
 
+Board verdict (Fable 5.2 Board, Nov 10 2026, checked against the repo and the images): CONFIRMED. The Board measured the two picture sheets itself: the gas spans 55 of 256 pixels in the weapon impact cells and 91 of 512 in the capital death flash, and bake_death.py reads as quoted (64 cells, noise off, smoke only). This also means the seven gun smoke runs (issue 281) were tuning how a too-small picture is drawn. The Board takes the rebake (bigger grid, detail on, gas filling the cell, more frames, several seeds, a heat channel, a source shape per event). One change: the fire. Ryan ruled on Nov 3 (R88) that fire "looks more detailed than everything else and wrong for space" and that fireballs "flash and snuff out". So the hot core is a short flash that cools fast, not rolling orange fire that holds. How much fire is Ryan's pick, on a sheet.
+
 ### 2. The biggest moments have no fire, no light and no aftermath
 
 Area: weapons and hits (torpedo, heavy hits, ship deaths).
@@ -109,6 +124,8 @@ Size: medium. What drives it: it depends on finding 1, then captures at three ca
 
 What Ryan would see: a torpedo strike that is the biggest thing on screen for a second and leaves a burning crater. A ship death that reads as an event from the default camera.
 
+Board verdict (Fable 5.2 Board, Nov 10 2026, checked against the repo and the images): CONFIRMED on screen (the Board opened fx_01 and fx_18: a tan cloud for a few frames, a cruiser death with a pale puff and almost no light). The cause is the auditor's inference and the Board agrees, with its own part in it: run 4 of issue 281 was told by the Board to make the puff a third of its size. The three-beat staging and the size ladder go to pass 3. Same change as finding 1: under R88 the weight comes from the flash, the light on nearby hulls, the glowing wound that cools, venting gas, sparks and a longer break-up chain, with fire that snuffs out; not from a second of fire.
+
 ### 3. Ship paint is one flat faction colour, so the concept's colours and glow are lost
 
 Area: ships.
@@ -136,6 +153,8 @@ Approach: paint from the concept, in layers.
 Size: medium for each faction's first ship, then small per ship. What drives it: one paint recipe per faction and a bake per ship.
 
 What Ryan would see: Chorus ships with glowing orange sacs, Hegemony ships with their blue strips, and Ab6 with the concept's deep red, dark grime and panel variety.
+
+Board verdict (Fable 5.2 Board, Nov 10 2026, checked against the repo and the images): CONFIRMED. bakemat4.py lines 4 and 21 read as quoted, and round 6 says itself that it paints from computed masks. This is the same thing Ryan said on Nov 9 (R156: "now it's a texture and paint pass"). The layered route (concept colours projected or sampled by region, real material textures under them, computed wear only as the top layer, a light map, a few large markings) is sent to the running ship round 7 as the way to do its paint step. Free texture sources need their licence lines checked when used (the auditor says it did not check them online).
 
 ### 4. At the battle camera dark ships vanish and pale ships burn out
 
@@ -165,6 +184,8 @@ Size: small to medium. What drives it: look data and light rig changes are small
 
 What Ryan would see: at the default zoom he can tell every ship and every faction apart without reading the tags.
 
+Board verdict (Fable 5.2 Board, Nov 10 2026, checked against the repo and the images): CONFIRMED. The Board opened ships_04: frigates are small dark marks, the Glasswright cruiser is a white shape with a halo. camera_rig.gd and look.gd read as quoted. Board's own miss: its review images for ship rounds, including the one sent to Ryan for round 6, are close-ups the player's camera cannot reach. From now on every ship sheet leads with the battle camera at true pixel size. Goes to pass 3 with the standing 36-ship sheet.
+
 ### 5. Thin ruler lines are a basic building block of hits
 
 Area: weapons and hits, and shield breaks.
@@ -192,6 +213,8 @@ Approach: stop using the bare line for sparks and wakes.
 Size: small to medium. What drives it: one new tail shape, then replacing the callers, then captures.
 
 What Ryan would see: no hairlines anywhere. Sparks that look like hot metal thrown off.
+
+Board verdict (Fable 5.2 Board, Nov 10 2026, checked against the repo and the images): CONFIRMED. Hairlines are visible in the Board's own look at sh_01 (cells 2 to 5) and the streak calls read as quoted. Which call draws which line is the auditor's medium-sure part. Goes to pass 3 together with finding 7 (one kit of trails, beams and flares).
 
 ### 6. Shields have no resting state and are one balloon for four facings
 
@@ -222,6 +245,8 @@ Size: medium. What drives it: making the shield surface for 36 ships, the new sh
 
 What Ryan would see: at a glance, which side of a ship is open. Hits that splash on a skin close to the hull.
 
+Board verdict (Fable 5.2 Board, Nov 10 2026, checked against the repo and the images): CONFIRMED. sh_01 shows no shield at rest, the whole bubble lighting for one hit and the whole bubble breaking; fx_ship.gd lines 315 and 752 and fx_hull.gd line 569 read as quoted. Goes to pass 3 as an Opus job (new surface per ship, new shader), after the ship recipe can emit the shield surface with the hull.
+
 ### 7. Shells, bolts and beams are plain cones, bars and tubes
 
 Area: weapons and hits.
@@ -249,6 +274,8 @@ Approach: a small kit of authored parts.
 Size: small to medium. What drives it: about eight looks to rebuild, each with captures at three cameras.
 
 What Ryan would see: weapons that can be told apart by shape, with a visible muzzle, flight and landing.
+
+Board verdict (Fable 5.2 Board, Nov 10 2026, checked against the repo and the images): CONFIRMED on the code (the shell is one streak call, the sprite shader discards outside a disc). The Board opened one of the six images named here (the shell in fx_01); the rest it takes from the auditor. Goes to pass 3 with finding 5.
 
 ### 8. Looks are tuned as numbers in code and judged from cameras the player does not use
 
@@ -279,6 +306,8 @@ Size: small. What drives it: one scene and one job file.
 
 What Ryan would see: fewer rounds. Every sheet he is sent is at the cameras he plays from.
 
+Board verdict (Fable 5.2 Board, Nov 10 2026, checked against the repo and the images): CONFIRMED on the facts, and one of them is the Board's own miss: tools/blender/vfx/bake_weapons.py and pack_weapons.py are not on main. Runs 5 and 6 of issue 281 carried them; the Board's run 7 brief gave the scope as godot/fx and the shots folder only, so run 7 left them out and PR 327 merged without them. They are being restored from the PC run folder in their own pull request. The link to many review rounds is inference; the Board agrees from first hand. The look bench (fixed moments, the three real cameras, 30 frames a second sheets, before and after) is small and makes every later visual round cheaper, so the Board puts it first in pass 3; it replaces issue 333.
+
 ### 9. Death puffs are placed off the hull by their own offset
 
 Area: weapons and hits.
@@ -299,6 +328,8 @@ Approach: place the picture so the root of the gas, not the middle of the pictur
 Size: small.
 
 What Ryan would see: no pale balls in empty space near a dying ship.
+
+Board verdict (Fable 5.2 Board, Nov 10 2026, checked against the repo and the images): CONFIRMED. fx_18 cell 2 shows the pale ball clear of the hull; fx_death.gd lines 179 and 1045 read as quoted (0.42 times 0.85 of the ship's length), and record_spawn has only the three callers listed. Small job for pass 3: root the gas on the plating and add the death puffs to the stray guard.
 
 ### 10. Nebula and ion storm hexes are small flat puffs, not volumes
 
@@ -326,6 +357,8 @@ Size: medium. What drives it: GPU cost testing on the gate scene, and the look a
 
 What Ryan would see: ships sliding into glowing gas that has depth, and storms that flash from inside.
 
+Board verdict (Fable 5.2 Board, Nov 10 2026, checked against the repo and the images): CONFIRMED. The nebula in map_11 is a few small purple puffs; world_living.gd reads as quoted. This is open issue 139 already; the fog volume route is allowed at the top tier by R90. Pass 3 rewrites 139 with this approach and a cost report against the R116 gate.
+
 ### 11. The board planet and the rocks are smooth noise with no geology
 
 Area: maps.
@@ -350,6 +383,8 @@ Approach: start from real data, which is free.
 Size: medium. What drives it: download and remix jobs on the PC, one planet type at a time, and the cost at 4K.
 
 What Ryan would see: a planet with real terrain when he zooms to it, and asteroid fields with sharp, varied rock.
+
+Board verdict (Fable 5.2 Board, Nov 10 2026, checked against the repo and the images): CONFIRMED. map_11: the board planet is a smooth beige ball with soft blotches. This is open issue 140 already. Starting from public domain planet data and scanned CC0 rocks is new and the Board takes it, with each source's credit line checked when it is downloaded.
 
 ### 12. The station reads as a low pale slab
 
@@ -376,6 +411,8 @@ Size: medium. What drives it: one recipe run with its own parts kit.
 
 What Ryan would see: a station that looms over the fleets and is worth fighting round.
 
+Board verdict (Fable 5.2 Board, Nov 10 2026, checked against the repo and the images): PARTLY CONFIRMED. The code facts hold (a station piece is 14 units, a cruiser is 23.2). The Board did not open the three station images, and the cause is the auditor's inference; it matches Ryan's own words in R109. Board pick: build the station as one set piece through the ship recipe, which replaces open issue 199 (a detail pass on the current pieces) instead of adding to it.
+
 ### 13. The ship outline gate passes a hull whose front is wrong
 
 Area: ships (round 6, branch `opus/issue-209-r6`).
@@ -400,6 +437,8 @@ Approach: keep the gate and add three cheap checks.
 Size: small for the checks. Medium for the front round, about the size of round 5.
 
 What Ryan would see: Ab6 with the concept's flat wedge front.
+
+Board verdict (Fable 5.2 Board, Nov 10 2026, checked against the repo and the images): CONFIRMED, and against the Board's own review: the Board accepted "90.1 percent" on PR 336 while the front is the wrong shape, which Ryan said the same day (R156: "the front is still very much off from the concept"). One outline number from one camera cannot see a wrong deck line or bow face. The per-third score, the inner edge check and the blink sheet are sent to the running round 7, whose step 3 is the front.
 
 ### 14. Chorus, Glasswrights and Eclipse need their own surface materials
 
@@ -427,6 +466,8 @@ Size: medium. What drives it: three shaders and their look rounds.
 
 What Ryan would see: three factions that look like different things, not different colours of the same thing.
 
+Board verdict (Fable 5.2 Board, Nov 10 2026, checked against the repo and the images): PARTLY CONFIRMED. The pictures and the two quoted lines hold; the approach is the auditor's inference. Board on timing: do these three materials with the concept redo for those factions (R138), not before, so paint and material are designed once.
+
 ### 15. Shield and shield-hit surfaces read as flat line art
 
 Area: shields.
@@ -453,6 +494,8 @@ Approach, on top of finding 6:
 Size: small to medium once finding 6 is done.
 
 What Ryan would see: a shield that looks like energy with depth, and a ship he can still see through it.
+
+Board verdict (Fable 5.2 Board, Nov 10 2026, checked against the repo and the images): CONFIRMED. sh_01 shows the even hexagon wire and thin ring outlines; the shield shader's render mode reads as quoted. Follows finding 6 in pass 3.
 
 ## Best approach, area by area
 
