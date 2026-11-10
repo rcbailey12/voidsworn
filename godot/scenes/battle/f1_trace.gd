@@ -7,6 +7,7 @@ extends Node
 # and, when not headless, a screenshot per step. Presentation only: it never calls the rules directly except to read.
 
 const JSM = preload("res://rules/jsm.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 const SKIP_U := {"t": 1, "ship": 1}
 const SKIP_B := {"units": 1, "cfg": 1, "prog": 1}
 
@@ -57,6 +58,8 @@ func _rec(action: String, before: Dictionary, after: Dictionary, note := "") -> 
 
 # a short clip: a JPG per rendered frame (run with --fixed-fps 30, so 30 frames are one second of game time)
 func _clip(name: String, secs: float) -> void:
+	if PG.stop_if_any():
+		return
 	if DisplayServer.get_name() == "headless":
 		return
 	var d := dir.path_join("clip_" + name)
@@ -96,6 +99,8 @@ var arrivals := 0
 
 
 func _shot(name: String) -> void:
+	if PG.stop_if_any():
+		return
 	await get_tree().create_timer(0.6 / maxf(Engine.time_scale, 1.0)).timeout
 	# every still: no two ship names overlap, and a hover tip never sits on the activation card
 	var ov: int = b.hud.plate_name_overlaps()
@@ -426,4 +431,4 @@ func _finish() -> void:
 		t.store_string("F1 acceptance trace: %d checks, %d failed\n\n%s\n" % [lines.size(), fails, "\n".join(PackedStringArray(lines))])
 	print("[f1-trace] pace ", JSON.stringify(b.pace_stats()))
 	print("[f1-trace] %d checks, %d failed" % [lines.size(), fails])
-	b.get_tree().quit(1 if fails > 0 else 0)
+	PG.finish(1 if fails > 0 else 0)

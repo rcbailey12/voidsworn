@@ -49,6 +49,7 @@ extends Node
 const BattleScene := preload("res://scenes/battle/battle.tscn")
 const API := preload("res://rules/battle_api.gd")
 const BL := preload("res://world/board_look.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 const SV := preload("res://render/ship_view.gd")
 
 const RES := Vector2i(1920, 1080)
@@ -155,12 +156,12 @@ func _volley() -> void:
 func _run() -> void:
 	if args.has("still"):
 		await _still_run()
-		get_tree().quit(0)
+		PG.finish(0)
 		return
 	# Issue 232: the E6/E24 worst-case salvo flash test (per-frame screen luminance, WCAG 2.3.1 counting).
 	if args.has("flash"):
 		await _flash_run()
-		get_tree().quit(0)
+		PG.finish(0)
 		return
 	var sessions := int(args.get("sessions", 3))
 	var modes: Array = MODES.duplicate()
@@ -181,6 +182,8 @@ func _run() -> void:
 			order.reverse()
 		for m in order:
 			var row: Dictionary = await _mode(str(m), s)
+			if PG.stop_if_any():
+				return
 			row["session"] = s + 1
 			if not report["modes"].has(m):
 				report["modes"][m] = []
@@ -189,7 +192,7 @@ func _run() -> void:
 			_save()
 	_save()
 	print("[scene_gate] DONE")
-	get_tree().quit(0)
+	PG.finish(0)
 
 
 func _settle(fx) -> void:
@@ -206,6 +209,8 @@ func _settle(fx) -> void:
 func _still_run() -> void:
 	rng.seed = 2070
 	await _build("still", 4207)
+	if PG.stop_if_any():
+		return
 	_apply("base")
 	var fx = b.gfx
 	if fx == null:
@@ -289,6 +294,8 @@ func _apply_damage_stress() -> void:
 func _flash_run() -> void:
 	rng.seed = 2320
 	await _build("flash", 4232)
+	if PG.stop_if_any():
+		return
 	_apply("base")
 	var fx = b.gfx
 	if fx == null:
@@ -668,6 +675,8 @@ func _mode(mode: String, s: int) -> Dictionary:
 	volleys_on = false
 	volley_t = 0.0
 	await _build(mode, 4207)
+	if PG.stop_if_any():
+		return {}
 	_apply(mode)
 	if mode == "caps":
 		_apply_damage_stress()
@@ -835,6 +844,8 @@ func _post() -> void:
 
 
 func _shot(name: String) -> void:
+	if PG.stop_if_any():
+		return
 	await _post()
 	var img := get_viewport().get_texture().get_image()
 	if img != null and not img.is_empty():

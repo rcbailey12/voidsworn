@@ -1,6 +1,7 @@
 # Step 10 screenshots: the run setup Heat card before and after the first loss.
 #   godot --path godot --resolution 1920x1080 --script res://campaign/test/heat_ui_shots.gd -- <out dir>
 extends SceneTree
+const PG := preload("res://render/placeholder_guard.gd")
 const CampaignScript = preload("res://campaign/campaign.gd")
 const UIScript = preload("res://ui/campaign/campaign_ui.gd")
 const BattleAPI = preload("res://rules/battle_api.gd")
@@ -41,6 +42,8 @@ func _scroll_to(needle: String) -> void:
 			return
 
 func _shot(name: String) -> void:
+	if PG.stop_if_any():
+		return
 	await _frames(8)
 	if DisplayServer.get_name() == "headless":
 		print("built ", name, " (", C.page.get("kind"), ")"); return
@@ -63,4 +66,4 @@ func _run() -> void:
 	await _frames(4); _scroll_to("Heat")
 	await _shot("heat_02_after_one_loss")
 	print("heat ui shots done")
-	quit(0)
+	PG.finish(0)

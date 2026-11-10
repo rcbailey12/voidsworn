@@ -2,6 +2,7 @@ extends SceneTree
 # Close, reverse, battle-camera and motion evidence, using the live renderer.
 const SV := preload("res://render/ship_view.gd")
 const FX := preload("res://fx/fx.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 const CASES := [["voidsworn", "Sunward Crusade", "bomber", "Carrier"], ["hegemony", "Hegemony Navy", "fighter", "Battleship"], ["corsair", "Ashfall Hullbreakers", "bomber", "Carrier"], ["chorus", "The Chorus", "spore", "Carrier"], ["ithar", "The Glasswrights", "fighter", "Carrier"], ["deathless", "Eclipse", "", "Tomb-ark"]]
 var vp: SubViewport
 var world: Node3D
@@ -70,7 +71,7 @@ func _run() -> void:
 	SV.clear_static()
 	FX.clear_static()
 	print("SQUADRON_CAPTURE_COMPLETE " + out)
-	quit()
+	PG.finish(0)
 
 func _view(fac: String, cls: String, kind: String, at: Vector3):
 	var sv := SV.new()
@@ -81,6 +82,8 @@ func _view(fac: String, cls: String, kind: String, at: Vector3):
 	return sv
 
 func _still(name: String) -> void:
+	if PG.stop_if_any():
+		return
 	for frame in 3: await RenderingServer.frame_post_draw
 	var err := vp.get_texture().get_image().save_png(out.path_join(name + ".png"))
 	if err != OK:
@@ -93,7 +96,7 @@ func _capture(c: Array) -> void:
 	var carrier = _view(fac, c[3], "", Vector3(24, 0, 5))
 	if not carrier.a4:
 		push_error("Real carrier asset missing: " + fac)
-		quit(3)
+		PG.finish(3)
 		return
 	fx.add_ship(fac + "_carrier", carrier, {"faction": fac, "cls": c[3], "meshes": carrier.meshes, "shielded": false})
 	fx._later.clear()

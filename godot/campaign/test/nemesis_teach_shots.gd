@@ -4,6 +4,7 @@
 #   map_certain   sector I map: the assigned hunter named, the once-per-sector meeting called certain, the "Nemesis meeting" tags
 #   debrief_lesson the run-end debrief after losing that meeting: the Nemesis lesson row, recorded against the commander who fought it
 extends SceneTree
+const PG := preload("res://render/placeholder_guard.gd")
 const CampaignScript = preload("res://campaign/campaign.gd")
 const UIScript = preload("res://ui/campaign/campaign_ui.gd")
 const BattleAPI = preload("res://rules/battle_api.gd")
@@ -49,6 +50,8 @@ func _covered(n: Node) -> bool:
 	return false
 
 func _shot(name: String, needle: String, crop := false) -> void:
+	if PG.stop_if_any():
+		return
 	await _frames(8)
 	var sc = _scroll_for(needle) if needle != "" else null
 	await _frames(4)
@@ -84,4 +87,4 @@ func _run() -> void:
 	C.endRun(false, false)
 	await _shot("debrief_lesson", "Nemesis lesson", false)
 	print("nemesis teach shots done")
-	quit(0)
+	PG.finish(0)
