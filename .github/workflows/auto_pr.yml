@@ -44,7 +44,8 @@ jobs:
             case "$BRANCH" in opus/*) word="Refs" ;; esac
             case " $STANDING " in *" $n "*) word="Refs" ;; esac
             if [ "$word" = "Refs" ]; then
-              sed -i -E "s/\b([Cc]lose[sd]?|[Ff]ix(e[sd])?|[Rr]esolve[sd]?) #$n\b/Refs #$n/g" body.md
+              # any case, with or without a colon: GitHub reads "CLOSES #N" and "Closes: #N" as closing words too
+              sed -i -E "s/\b(close[sd]?|fix(e[sd])?|resolve[sd]?):?[[:space:]]+#$n\b/Refs #$n/Ig" body.md
               grep -q "Refs #$n" body.md || printf '\nRefs #%s\n' "$n" >> body.md
             else
               grep -q "Closes #$n" body.md || printf '\nCloses #%s\n' "$n" >> body.md
