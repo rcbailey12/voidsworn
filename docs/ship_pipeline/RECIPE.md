@@ -122,7 +122,7 @@ The section fits in stage 3 (`b0trace.py`) are generic; turning them into the hu
 (smoothed and squared up), and the block table is a design step: which blocks the concept has. That is the one creative step left
 in the recipe, and the next change makes it data.
 
-## The worked example: C15s_23, Ab7 (issue 209 rounds 6 and 7)
+## The worked example: C15s_23, Ab8 (issue 209 rounds 6 to 8)
 
 - Ship file: `tools/recipe/ships/C15s_23.json`; hull module `armA7` (round 5's traced hull with round 7's bow pass, plus the
   kit; `armA6` is the same ship before the bow pass); tune `tools/blender/r209/tune5_P.json`; concept camera
@@ -132,4 +132,14 @@ in the recipe, and the next change makes it data.
 - The outline gate after round 7 reads 89.7 percent (scored from the PC glb; the game export 89.6), under the 90 gate: the bow
   pass cost 0.3 against Ab6's 90.0. Per third (`outline_thirds.py`, audit pass 2 finding 13): bow 90.3 (Ab6 91.0), midship 90.7,
   stern 85.1. Stage 4 exits on the gate FAIL; that is the honest reading, and R156 puts the bow's look ahead of the score.
+- Round 8 (`docs/shots/ship_pipeline/route209/round8/README.md`): hull module `armA8` (the bow third fitted by
+  `tools/blender/r209/fit8.py` to the concept outline and its traced near deck edge, numbers in `fit8_bow.json`). Outline after
+  round 8: bow third 91.5, whole 90.3 (over the 90 gate), bow inner edges within 6 px 46.4 percent. Stage 7 PASS, 101,892
+  triangles, 28 hard points.
+- Stage 5 lesson (round 8): thin plates and edge-on bevels can bake from the wrong side. A bevelled deck lip that `smart_project`
+  unwraps as one island seen edge-on, or a thin plate whose top and underside share texels, takes the underside's paint (the
+  belly) on the top. Build deck lips with square edges, turn inside-out plates outward, and give downward faces high on the ship
+  their region's band in `paint.py`. Check the bow deck in the concept-rig render after every bake.
+- Stage 5 paint check: `tools/blender/r209/preview7.py ... light=game` renders under the game's key, fill and ambient, so a colour
+  that goes pink or salmon in the game shows up in the sandbox before a PC bake. Confirm in the game capture.
 - `shape_ref_yaw` 22.0 is the C15s_23 value (its shape reference turned into the ship frame); a new ship measures its own.
