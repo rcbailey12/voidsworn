@@ -40,6 +40,7 @@ const SUN_R := 5.0           # the Hollow Sun's shadow (the black hole)
 const CAM_DIR := Vector3(0.0, 0.79, 0.62)
 const TOKEN_OFF := Vector3(0.0, 1.8, 3.0)   # where the fleet holds over a stop (above it, toward the camera)
 
+const GS = preload("res://ui/theme/glass_shell.gd")   # Lime Tactical pieces for the map words (issue #344)
 var ui                        # campaign_ui.gd
 var intel
 var sys                       # map3d_system.gd
@@ -115,7 +116,7 @@ func _ready() -> void:
 	var fill = DirectionalLight3D.new(); fill.rotation_degrees = Vector3(-38, 150, 0); fill.light_energy = 0.32; fill.light_color = Color(0.62, 0.72, 1.0); vp.add_child(fill)
 	cam = Camera3D.new(); cam.fov = 36.0; cam.near = 0.5; cam.far = 4000.0; vp.add_child(cam)
 	overlay = Control.new(); overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE; overlay.draw.connect(_draw_overlay); add_child(overlay)
-	card = PanelContainer.new(); card.visible = false; card.mouse_filter = Control.MOUSE_FILTER_IGNORE; add_child(card)
+	card = PanelContainer.new(); card.visible = false; card.mouse_filter = Control.MOUSE_FILTER_IGNORE; add_child(card); card.z_index = 5   # above the map page's wells (the key, the fight cards), which are drawn later
 	card_text = RichTextLabel.new(); card_text.bbcode_enabled = true; card_text.fit_content = true; card_text.scroll_active = false; card_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.add_child(card_text)
 
@@ -475,8 +476,8 @@ func _token_home() -> Vector3:
 	return _at(pp.x + deg_to_rad(16.0), R_OUT + 6.0) + Vector3(0, 3.0, 0)   # just before the first jump, clear of the first stop
 
 # ---------------- state ----------------
-func campaign_glyph(t: String) -> String:
-	var g = ui.STOP_GLYPH.get(t, ["", "#b3aa95"])
+func campaign_glyph(t: String) -> Color:   # the stop kind's colour (glass_shell.gd STOP)
+	var g = GS.STOP.get(t, ["", GS.BONE2])
 	return g[1]
 func _avail() -> Array:
 	var C = _C()
@@ -513,8 +514,8 @@ func _refresh() -> void:
 		var rc = Color(tg.lerp(Color(0.68, 0.84, 1.0), 0.65), 0.72); var dash = 0.0; var fill = 0.5
 		if done: rc = Color(0.5, 0.5, 0.55, 0.16)
 		if bypassed: rc = Color(0.32, 0.37, 0.45, 0.08); fill = 0.0
-		if av.has(id): rc = Color(1.0, 0.76, 0.34, 0.95); dash = 1.0; fill = 1.0
-		if C.RUN.get("pos") == id: rc = Color(1.0, 0.88, 0.55, 1.0); fill = 0.6
+		if av.has(id): rc = Color(ui.GILT, 0.95); dash = 1.0; fill = 1.0   # Lime Tactical (#344): lime is the next action, the stops you can jump to
+		if C.RUN.get("pos") == id: rc = Color(ui.FRIEND, 1.0); fill = 0.6   # where your fleet is: FRIEND mint, your side
 		d["rmat"].set_shader_parameter("col", rc); d["rmat"].set_shader_parameter("dash", dash); d["rmat"].set_shader_parameter("fill", fill)
 		d["orbit"].material_override.set_shader_parameter("col", Color(0.7, 0.8, 1.0, 0.06 if bypassed else (0.16 if done else 0.45)))
 	if _hot != "": _routes = intel.routes_through(_hot)
@@ -543,11 +544,12 @@ func _paint_lanes() -> void:
 		if R.get("pos") == null and av.has(L["b"]): nxt = false
 		var ahead = _reachable.has(L["a"]) and _reachable.has(L["b"])
 		var past = not trav and not nxt and not ahead
-		var col = Color(0.74, 0.57, 0.29, 0.4) if trav else (Color(1.0, 0.78, 0.38, 1.0) if nxt else Color(0.53, 0.74, 1.0, 0.58))
+		# the route you will take next is the one lime line (ui_style.md 8); travelled lanes are dim sage, reachable ones calm blue
+		var col = Color(ui.BONE3, 0.45) if trav else (Color(ui.GILT, 1.0) if nxt else Color(0.53, 0.74, 1.0, 0.58))
 		if past: col = Color(0.28, 0.33, 0.42, 0.055)
 		var flow = 1.0 if nxt else 0.0
 		if lit.has(k) and not past: col = Color(lit[k], 1.0); flow = 1.0
-		if _flying and k == str(R.get("pos")) + ">" + _flight_id: col = Color(1.0, 0.9, 0.64, 1.0); flow = 1.0
+		if _flying and k == str(R.get("pos")) + ">" + _flight_id: col = Color(GS.GILT_HOVER, 1.0); flow = 1.0
 		L["mat"].set_shader_parameter("col", col); L["mat"].set_shader_parameter("flow", flow)
 		L["mat"].set_shader_parameter("glow", 1.4 if flow > 0.0 else (0.35 if past else 0.8))
 		L["mat"].set_shader_parameter("hazard", 0.0 if trav or past or C.jt(Bn.get("done")) else L["hazard"])
@@ -686,55 +688,55 @@ func _draw_overlay() -> void:
 		if id != _hot and not fr_lab.has_point(base): continue
 		var fight = n["type"] in ["battle", "elite", "boss"]
 		var bypassed = not done and C.RUN.get("pos") != id and not _reachable.has(id)
-		var col = ui.BONE if av.has(id) else Color(0.74, 0.8, 0.88)
-		if done: col = Color(0.45, 0.44, 0.42)
-		if bypassed: col = Color(0.3, 0.34, 0.4)
+		var col = ui.BONE if av.has(id) else ui.BONE2
+		if done or bypassed: col = ui.BONE3
+		var acc = ui.GILT if av.has(id) else (ui.fac_col(C.nodeFaction(n)) if fight and not done and n["type"] != "boss" else (ui.BLOOD if n["type"] == "boss" else ui.IRON3))
 		var y = base.y + 30.0 * s + dy.get(id, 0.0)
 		var name = ""
 		if C.jt(n.get("enc")) and C.ENCOUNTERS.has(n["enc"]) and not done: name = str(C.ENCOUNTERS[n["enc"]]["n"])
 		elif not fight: name = str(C.NODE_INFO[n["type"]]["n"])
 		elif n["type"] == "boss": name = "Sector flagship"
-		if name != "": _text(name, Vector2(base.x, y), int(15 * s), col, ui.font_semi); y += 17.0 * s
+		if name != "": _strip_text(name, Vector2(base.x, y), int(15 * s), col, acc, av.has(id), ui.font_semi); y += 21.0 * s
 		if bypassed:
-			if id == _hot: _text("BYPASSED", Vector2(base.x, y), int(11 * s), col, ui.font_caps)
+			if id == _hot: _chip("BYPASSED", Vector2(base.x, y + 2.0 * s), int(12 * s), ui.BONE3)
 			continue
-		if C.RUN.get("pos") == id and not _flying: _text("FLEET HERE", top + Vector2(0, -18.0 * s), int(11 * s), ui.GILT, ui.font_caps)
+		if C.RUN.get("pos") == id and not _flying: _chip("FLEET HERE", top + Vector2(0, -18.0 * s), int(12 * s), ui.FRIEND, true)
 		if fight and not done and C.nemNodeIs(n):   # B4: his fight is marked before you commit
 			var nt = ui.nem_portrait()   # his framed face beside his fight's tags (godot/portraits, R42), when the painting exists
 			if nt != null and (av.has(id) or id == _hot):   # his face beside the fights you can take now (every fight is his when the clock is full)
 				var ps = 38.0 * s; var pr = Rect2(base.x - 42.0 * s - ps, y - 12.0 * s, ps, ps)
 				overlay.draw_rect(pr.grow(2.0 * s), Color(0.02, 0.02, 0.03, 0.9)); overlay.draw_texture_rect(nt, pr, false)
-				overlay.draw_rect(pr.grow(2.0 * s), Color("#ff6b5a"), false, 1.5 * s)
-			_chip(C.nemNodeTag(n).to_upper(), Vector2(base.x, y + 2.0 * s), int(12 * s), Color("#ff6b5a"), true); y += 18.0 * s
+				overlay.draw_rect(pr.grow(2.0 * s), ui.ALERT, false, 1.5 * s)
+			_chip(C.nemNodeTag(n).to_upper(), Vector2(base.x, y + 2.0 * s), int(12 * s), ui.ALERT, true, true); y += 19.0 * s
 		# intel line: danger band chip, board shape, reward
 		if fight and not done and _danger.has(id) and not _danger[id].is_empty():
 			var dg = _danger[id]; var sub = ""
 			if C.jt(n.get("shape")) and n["shape"] != "open" and C.SHAPES.has(n["shape"]): sub = str(C.SHAPES[n["shape"]]).to_lower()
 			if C.jt(n.get("mod")) and C.NODE_MODS.has(n["mod"]): sub = (sub + " · " if sub != "" else "") + str(C.NODE_MODS[n["mod"]]["short"]).to_lower()
-			_chip(dg["band"].to_upper(), Vector2(base.x, y + 2.0 * s), int(11 * s), dg["col"]); y += 17.0 * s
-			if sub != "" and _detail(id): _text(sub, Vector2(base.x, y), int(12 * s), Color(0.6, 0.66, 0.75)); y += 14.0 * s
+			_chip(dg["band"].to_upper(), Vector2(base.x, y + 2.0 * s), int(12 * s), dg["col"]); y += 19.0 * s   # the band's word rides with its colour (ui_spec.md 5.2)
+			if sub != "" and _detail(id): _text(sub, Vector2(base.x, y), int(12 * s), ui.BONE2); y += 14.0 * s
 		var rw = n.get("rw")
 		if rw is Dictionary and not done:
 			if rw.get("k") == "boon" and C.PATRONS.has(rw.get("p")):
 				var P = C.PATRONS[rw["p"]]; var pc = Color(P["col"]); var bp = top + Vector2(0, -6.0 * s)
 				overlay.draw_circle(bp, 9.5 * s, pc); overlay.draw_arc(bp, 9.5 * s, 0, TAU, 24, ui.INK, 2.0 * s, true)
 				_text(str(P["glyph"]), bp + Vector2(0, 4.5 * s), int(12 * s), ui.INK, ui.font_semi)
-				if _detail(id): _text(str(P["short"]) + (" ★" if C.jt(rw.get("min")) else ""), Vector2(base.x, y), int(12 * s), pc if av.has(id) else Color(0.55, 0.53, 0.5))
+				if _detail(id): _text(str(P["short"]) + (" ★" if C.jt(rw.get("min")) else ""), Vector2(base.x, y), int(12 * s), pc if av.has(id) else ui.BONE3)
 			elif _detail(id):
 				var lab = ui._reward_label(rw)
-				if lab != "": _text(lab, Vector2(base.x, y), int(12 * s), Color("#bfb6a0") if av.has(id) else Color("#7f7a6e"))
-		if fight and C.jt(n.get("map")) and C.MAP_NAME.has(n["map"]) and not done and id == _hot: _text(str(C.MAP_NAME[n["map"]]).to_upper(), top + Vector2(0, -20.0 * s), int(10 * s), Color(0.62, 0.7, 0.82), ui.font_caps)
+				if lab != "": _text(lab, Vector2(base.x, y), int(12 * s), ui.BONE2 if av.has(id) else ui.BONE3)
+		if fight and C.jt(n.get("map")) and C.MAP_NAME.has(n["map"]) and not done and id == _hot: _chip(str(C.MAP_NAME[n["map"]]).to_upper(), top + Vector2(0, -22.0 * s), int(12 * s), ui.BONE2)
 
 		# running totals along the lit routes
 		if on_route.has(id):
 			var rr = on_route[id]; var st = rr[1]
 			var t = "%d fight%s · %d repair%s" % [st["fights"], "" if st["fights"] == 1 else "s", st["repairs"], "" if st["repairs"] == 1 else "s"]
-			_chip(t, top + Vector2(0, -36.0 * s), int(11 * s), rr[0]["col"], true)
+			_chip(t, top + Vector2(0, -38.0 * s), int(12 * s), rr[0]["col"], true)
 	if _flying:
 		_text("IN FLIGHT  |  Click or press Space to skip", Vector2(_free_rect().get_center().x, _free_rect().end.y - 14.0 * s), int(16 * s), ui.BONE, ui.font_semi)
 	if has_focus() and av.size() > 0 and not _flying:
 		var fid = av[_focus % av.size()]
-		var fp = _screen(_nodes[fid]["pos"]); overlay.draw_arc(fp, 30.0 * ui.k, 0, TAU, 40, ui.GILT, 2.0, true)
+		var fp = _screen(_nodes[fid]["pos"]); overlay.draw_arc(fp, 30.0 * ui.k, 0, TAU, 40, ui.BONE, max(2.0, 2.0 * ui.k), true)   # the focus ring is sage (ui_spec.md 6)
 # Label stacks under the stops must not print over each other: each stack, top to bottom on screen, moves down below any
 # stack it would overlap (a short way at most; the text never changes).
 # What each stop prints under it, by priority (Opus, R51 round 2): its name, then the Nemesis and danger tags; the
@@ -755,10 +757,10 @@ func _label_shifts(s: float) -> Dictionary:
 		if cam.is_position_behind(d["pos"]): continue
 		var done = C.jt(n.get("done")); var fight = n["type"] in ["battle", "elite", "boss"]
 		var h = 0.0; var nm = _label_name(n)
-		if nm != "": h += 17.0
-		if fight and not done and C.nemNodeIs(n): h += 18.0
+		if nm != "": h += 21.0
+		if fight and not done and C.nemNodeIs(n): h += 19.0
 		if fight and not done and _danger.has(id) and not _danger[id].is_empty():
-			h += 17.0
+			h += 19.0
 			if ((C.jt(n.get("shape")) and n["shape"] != "open") or C.jt(n.get("mod"))) and _detail(id): h += 14.0
 		if n.get("rw") is Dictionary and not done and _detail(id): h += 14.0
 		if h <= 0.0: continue
@@ -791,15 +793,23 @@ func _text(t: String, at: Vector2, size: int, col: Color, fnt: Font = null) -> v
 	overlay.draw_string(f, o + Vector2(0, max(1.0, size / 10.0)), t, HORIZONTAL_ALIGNMENT_LEFT, -1, size, Color(0, 0, 0, 0.55))   # a soft drop shadow
 	overlay.draw_string_outline(f, o, t, HORIZONTAL_ALIGNMENT_LEFT, -1, size, max(3, int(size / 3.5)), Color(0.0, 0.005, 0.015, 0.82))   # a dark outline keeps labels legible
 	overlay.draw_string(f, o, t, HORIZONTAL_ALIGNMENT_LEFT, -1, size, col)
-var _chip_sb: StyleBoxFlat = null
-func _chip(t: String, at: Vector2, size: int, col: Color, outline: bool = false) -> void:   # a small rounded coloured tag
+# Map words are strips and tags (ui_style.md 3 and 8): a stop's name sits on a strip with a slanted right end and a 3 px accent
+# (lime for a stop you can jump to now, with a lime edge all round; the faction's colour for a fight; quiet for the rest);
+# the small labels (danger band, NEMESIS, FLEET HERE, route totals) are square tags, filled for a state, outlined for a kind.
+func _strip_text(t: String, at: Vector2, size: int, col: Color, accent: Color, lit: bool, fnt: Font = null) -> void:
+	var f = fnt if fnt != null else ui.font
+	var w = f.get_string_size(t, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x; var h = size * 1.35
+	var sb = GS.strip(ui.k, accent, Color(ui.GILT, 0.7) if lit else Color(0, 0, 0, 0))
+	var r = Rect2(at.x - w * 0.5 - sb.content_margin_left, at.y - h * 0.78, w + sb.content_margin_left + sb.content_margin_right, h)
+	overlay.draw_style_box(sb, r)
+	overlay.draw_string(f, Vector2(at.x - w * 0.5, at.y), t, HORIZONTAL_ALIGNMENT_LEFT, -1, size, col)
+func _chip(t: String, at: Vector2, size: int, col: Color, outline: bool = false, filled: bool = false) -> void:   # a small square tag
 	var f = ui.font_caps if ui.font_caps != null else ui.font_semi; var w = f.get_string_size(t, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x; var h = size * 1.45
-	var r = Rect2(at.x - w * 0.5 - size * 0.55, at.y - h * 0.78, w + size * 1.1, h)
-	if _chip_sb == null: _chip_sb = StyleBoxFlat.new(); _chip_sb.anti_aliasing = true
-	_chip_sb.bg_color = Color(col.darkened(0.78), 0.9); _chip_sb.border_color = Color(col, 0.95 if outline else 0.7)
-	_chip_sb.set_border_width_all(max(1, int(round(1.5 if outline else 1.0)))); _chip_sb.set_corner_radius_all(int(h * 0.5))
-	overlay.draw_style_box(_chip_sb, r)
-	overlay.draw_string(f, Vector2(at.x - w * 0.5, at.y), t, HORIZONTAL_ALIGNMENT_LEFT, -1, size, col.lightened(0.12))
+	var r = Rect2(at.x - w * 0.5 - size * 0.5, at.y - h * 0.78, w + size * 1.0, h)
+	var sb = GS.tag(ui.k, col, filled)
+	if not filled and outline: sb.set_border_width_all(max(1, ui.px(1)) + 1)
+	overlay.draw_style_box(sb, r)
+	overlay.draw_string(f, Vector2(at.x - w * 0.5, at.y), t, HORIZONTAL_ALIGNMENT_LEFT, -1, size, ui.INK if filled else col.lightened(0.12))
 func _node_at(sp: Vector2) -> String:
 	var best = ""; var bd = 1e9
 	for id in _nodes:
@@ -819,7 +829,7 @@ func _update_card() -> void:
 	var C = _C(); var n = C.findNode(_hot)
 	if n == null:
 		card.visible = false; return
-	var csb = ui._glass(Color(0.022, 0.033, 0.06, 0.95), Color(ui.GILT, 0.85), "top", 2, 4, 13, 16); csb.shadow_color = Color(0, 0, 0, 0.6)
+	var csb = GS.well(ui.k, Color(0, 0, 0, 0), 13, 11); csb.border_color = ui.GILT2; csb.set_border_width_all(1); csb.border_width_left = max(2, ui.px(2))   # a solid well, the tooltip's dim lime edge (glass_shell make_theme)
 	card.add_theme_stylebox_override("panel", csb)
 	card_text.add_theme_font_size_override("normal_font_size", ui.px(15)); card_text.add_theme_font_size_override("bold_font_size", ui.px(15))
 	card_text.custom_minimum_size.x = ui.px(380)
@@ -836,9 +846,9 @@ func _update_card() -> void:
 # scars, what feeds or enriches him, adaptations with their effect, weaknesses you have found with their effect,
 # what he remembers beating him with, and what this win will do to him.
 func _nem_card(N: Dictionary) -> String:
-	var C = _C(); var t = ""; var red = Color("#ff6b5a")
+	var C = _C(); var t = ""; var red = ui.ALERT
 	var P = C.NEM_PERSONA.get(N.get("persona")) if N.get("persona") != null else null
-	if P != null: t += "\n" + _cc(ui.esc(P["n"]) + ":", ui.GILT) + " " + _cc(ui.esc(P["d"]), ui.BONE2)
+	if P != null: t += "\n" + _cc(ui.esc(P["n"]) + ":", ui.BONE) + " " + _cc(ui.esc(P["d"]), ui.BONE2)
 	if N.get("traits") is Array and N["traits"].size() > 0:
 		var ts = []
 		for tr in N["traits"]:
@@ -857,7 +867,7 @@ func _nem_card(N: Dictionary) -> String:
 		t += "\n" + _cc("Adapted: ", ui.BONE2) + "; ".join(PackedStringArray(ad))
 	var ws = []; var unknown = 0
 	for w in N.get("weak", []):
-		if N.get("revealed", []).has(w) and C.NEM_WEAK.has(w): ws.append(_cc(ui.esc(C.NEM_WEAK[w]["n"]), ui.GILT) + _cc(" (" + ui.esc(str(C.NEM_WEAK[w].get("d", "")).trim_suffix(".")) + ")", ui.BONE3))
+		if N.get("revealed", []).has(w) and C.NEM_WEAK.has(w): ws.append(_cc(ui.esc(C.NEM_WEAK[w]["n"]), ui.VERD) + _cc(" (" + ui.esc(str(C.NEM_WEAK[w].get("d", "")).trim_suffix(".")) + ")", ui.BONE3))
 		else: unknown += 1
 	if unknown > 0: ws.append(_cc("%d unknown (beat him to learn one)" % unknown, ui.BONE3))
 	if not ws.is_empty(): t += "\n" + _cc("Weaknesses: ", ui.BONE2) + "; ".join(PackedStringArray(ws))
@@ -869,17 +879,17 @@ func _cc(t, col) -> String: return "[color=" + ui.hexs(col) + "]" + str(t) + "[/
 func _card_bb(n: Dictionary) -> String:
 	var C = _C(); var I = C.NODE_INFO[n["type"]]
 	var fight = n["type"] in ["battle", "elite", "boss"]
-	var t = "[b]" + _cc(str(I["n"]).to_upper(), ui.BLOOD if n["type"] in ["elite", "boss"] else ui.GILT) + "[/b]"
+	var t = "[b]" + _cc(str(I["n"]).to_upper(), ui.BLOOD if n["type"] in ["elite", "boss"] else ui.BONE) + "[/b]"
 	if fight and C.jt(n.get("map")) and C.MAP_NAME.has(n["map"]): t += "  " + _cc(str(C.MAP_NAME[n["map"]]), ui.BONE3)
 	if C.jt(n.get("done")): t += "  " + _cc("(passed)", ui.BONE3)
 	var nem = fight and not C.jt(n.get("done")) and C.nemNodeIs(n)
 	if nem:
 		var N = C.nemActive()
-		t += "\n[b]" + _cc("Nemesis: " + ui.esc(C.nemFull()) + "'s fleet", Color("#ff6b5a")) + "[/b] " + _cc("(" + ui.esc(C.FACTIONS[N["fac"]]["n"]) + ", an elite fight)", ui.BONE3)
+		t += "\n[b]" + _cc("Nemesis: " + ui.esc(C.nemFull()) + "'s fleet", ui.ALERT) + "[/b] " + _cc("(" + ui.esc(C.FACTIONS[N["fac"]]["n"]) + ", an elite fight)", ui.BONE3)
 		t += _nem_card(N)
 	elif fight:
 		var fac = C.nodeFaction(n)
-		if C.FACTIONS.has(fac): t += "\n" + _cc(ui.esc(C.FACTIONS[fac]["n"]), Color(C.FACTIONS[fac].get("glow", "#e07a70"))) + ((" " + _cc("(rival raiders)", ui.BONE3)) if fac != C.RUN["map"]["fac"] else "")
+		if C.FACTIONS.has(fac): t += "\n" + _cc(ui.esc(C.FACTIONS[fac]["n"]), ui.fac_col(fac)) + ((" " + _cc("(rival raiders)", ui.BONE3)) if fac != C.RUN["map"]["fac"] else "")
 	if fight:
 		var dg = _danger.get(n["id"], {})
 		if not dg.is_empty():
@@ -898,7 +908,7 @@ func _card_bb(n: Dictionary) -> String:
 	if fight:
 		var al = ui._arch_label(n, C.nodeFaction(n))
 		if al != "": t += "\n" + _cc(ui.esc(al) + ": " + ui.esc(C.ARCHETYPES[C.effArch(n["arch"], C.nodeFaction(n))]["d"]), ui.BLOOD)
-	if C.jt(n.get("mod")) and C.NODE_MODS.has(n["mod"]): t += "\n" + _cc(ui.esc(C.NODE_MODS[n["mod"]]["n"]) + ": " + ui.esc(C.NODE_MODS[n["mod"]]["d"]), ui.GILT)
+	if C.jt(n.get("mod")) and C.NODE_MODS.has(n["mod"]): t += "\n" + _cc(ui.esc(C.NODE_MODS[n["mod"]]["n"]) + ": " + ui.esc(C.NODE_MODS[n["mod"]]["d"]), ui.EMBER)
 	var rw = n.get("rw")
 	if rw is Dictionary and not C.jt(n.get("done")):
 		var rc = Color(C.PATRONS[rw["p"]]["col"]) if rw.get("k") == "boon" and C.PATRONS.has(rw.get("p")) else ui.BONE2

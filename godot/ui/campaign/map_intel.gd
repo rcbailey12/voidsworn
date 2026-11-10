@@ -8,7 +8,10 @@ extends RefCounted
 # RAMP.thin, boss scale), set against your fleet power (battle.js fleetPower). The fleet itself is rolled at the fight, so
 # this is the expected strength, not the exact one.
 
-const BANDS := [[0.8, "Easy", Color("#7ddc6a")], [1.05, "Even", Color("#d0a64b")], [1.4, "Hard", Color("#f0883a")], [99.0, "Deadly", Color("#e2453a")]]
+const GS = preload("res://ui/theme/glass_shell.gd")
+# the band colours are glass_shell.gd's DANGER table (issue #344): Easy moved off the lime-like green to FRIEND mint, and every
+# band prints its word wherever it shows (ui_spec.md 5.1 collision note, 5.2). The cut points are unchanged (U-D re-rules them).
+const BANDS := [[0.8, "Easy", GS.DANGER_EASY], [1.05, "Even", GS.DANGER_EVEN], [1.4, "Hard", GS.DANGER_HARD], [99.0, "Deadly", GS.DANGER_DEADLY]]
 
 var C
 var ai_level := "veteran"     # the battle setting (godot/main settings "ai"); Standard meets 10% less
@@ -146,8 +149,8 @@ func routes_through(id: String) -> Array:
 		var a = x["st"]; var b = safe["st"]
 		if a["worst"] < b["worst"] or (a["worst"] == b["worst"] and (a["danger"] - a["repairs"] * 0.3) < (b["danger"] - b["repairs"] * 0.3)): safe = x
 		if x["st"]["value"] > rich["st"]["value"] or (x["st"]["value"] == rich["st"]["value"] and x["st"]["danger"] < rich["st"]["danger"]): rich = x
-	var out = [{"name": "Safest", "col": Color("#62ccff"), "path": safe["path"], "st": safe["st"]}]
-	if rich["path"] != safe["path"]: out.append({"name": "Richest", "col": Color("#e0b04a"), "path": rich["path"], "st": rich["st"]})
+	var out = [{"name": "Safest", "col": GS.ROUTE_SAFE, "path": safe["path"], "st": safe["st"]}]
+	if rich["path"] != safe["path"]: out.append({"name": "Richest", "col": GS.ROUTE_RICH, "path": rich["path"], "st": rich["st"]})
 	return out
 # the fleet's condition: average hull, the most damaged ship, and whether that calls for a repair stop
 func fleet_condition() -> Dictionary:
