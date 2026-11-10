@@ -138,7 +138,7 @@ func _fill(t: String, run) -> String:
 	var rival := ""
 	if run is Dictionary:
 		flag = Career.flagship_name(run)
-		var nem = run.get("nem")
+		var nem = C.nemRead(run) if C != null else run.get("nem")
 		if nem is Dictionary:
 			rival = preload("res://story/tokens.gd").full_name(nem)
 	return t.replace("{flagship}", flag if flag != "" else "the flagship").replace("{rival}", rival if rival != "" else "the enemy commander").replace("{enemy}", "the enemy")
@@ -258,7 +258,7 @@ func arc_context(run = null) -> Dictionary:
 				fallen = str(f.get("name", ""))
 				break
 	var last: Dictionary = career.last_run_of(fac)
-	return {"nem": run.get("nem"), "flags": run.get("flags", {}) if run.get("flags") is Dictionary else {}, "seed": int(float(run.get("t0", 0))) % 100000,
+	return {"nem": C.nemRead(run) if C != null else run.get("nem"), "flags": run.get("flags", {}) if run.get("flags") is Dictionary else {}, "seed": int(float(run.get("t0", 0))) % 100000,
 		"first_lost": first_lost, "best_captain": best, "fallen_name": fallen, "flagship": Career.flagship_name(run), "you": admiral_name(str(run.get("admiral", ""))),
 		"prior_flagship": str(last.get("flagship", "")) if not bool(last.get("victory", true)) else "",
 		"prior_loss": not last.is_empty() and not bool(last.get("victory", false)), "prior_win": bool(last.get("victory", false)),
@@ -292,7 +292,7 @@ func arc_end(won: bool, choices: Dictionary = {}) -> Dictionary:
 	if C == null or not (C.RUN is Dictionary):
 		return {}
 	var run: Dictionary = C.RUN
-	var nem = run.get("nem")
+	var nem = C.nemRead(run)
 	var rival: String = preload("res://story/tokens.gd").full_name(nem)
 	if choices.is_empty() and str(career.P.get("live", {}).get("key", "")) == career.run_key(run):
 		choices = career.P["live"].get("arc_choices", {}).duplicate()

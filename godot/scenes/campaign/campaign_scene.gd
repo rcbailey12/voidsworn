@@ -44,10 +44,20 @@ func _frames(n: int = 3) -> void:
 	for i in range(n): await get_tree().process_frame
 func _shot(dir: String, name: String) -> void:
 	await _frames(4)
+	# Issue 351 (audit pass 2 P8): the sector map draws under the "Preparing the sector..." cover (main/load_screen.gd); wait
+	# until it lifts, or the still is the loading screen (the mapshots tool's last still was)
+	var t0 = Time.get_ticks_msec()
+	while _covered(get_tree().root) and Time.get_ticks_msec() - t0 < 60000: await get_tree().process_frame
 	if C.page.get("kind") == "map" and ui.use_3d_map: await get_tree().create_timer(2.2).timeout   # the 3D map's arrival camera settles first
 	await RenderingServer.frame_post_draw
 	var img = get_viewport().get_texture().get_image()
 	img.save_png(dir.path_join(name + ".png")); print("shot ", name)
+
+func _covered(n: Node) -> bool:
+	if n.get_script() != null and str(n.get_script().resource_path).ends_with("load_screen.gd"): return true
+	for ch in n.get_children():
+		if _covered(ch): return true
+	return false
 
 # A scripted run that visits every screen kind once and saves a picture of each.
 func _shots(dir: String) -> void:

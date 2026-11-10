@@ -1,0 +1,165 @@
+{
+ "cell": "Hy3",
+ "route": "hand structure rung 3 (rounded, layered armour) + hand parts + AI hero parts + B0 detail baked + concept paint baked",
+ "build_seconds": 685.1,
+ "geometry_seconds": 56.7,
+ "audit": {
+  "problems": [],
+  "parts": 179,
+  "crossing_break_lines": [],
+  "plates_crossing_break_lines": []
+ },
+ "break_fit": {
+  "T1_rays_missed": 0,
+  "T1_jag": 0.0168,
+  "T2_rays_missed": 0,
+  "T2_jag": 0.0172
+ },
+ "break_lines": {
+  "t_lines": [
+   0.178,
+   -0.125
+  ],
+  "l_line": [
+   -0.045,
+   -0.125,
+   0.178
+  ],
+  "decks": [
+   -0.1,
+   -0.035
+  ]
+ },
+ "block_triangles": 7896,
+ "plate_triangles": 15776,
+ "plates": 46,
+ "hero_parts": [
+  "hcasemate_0p",
+  "hcasemate_0s",
+  "hcasemate_1p",
+  "hcasemate_1s",
+  "hbowguns",
+  "hdrums_sp",
+  "hdrums_ss"
+ ],
+ "hero_triangles": 47999,
+ "generations": [
+  {
+   "part": "hcasemate_0p",
+   "source": "p_casemate.glb",
+   "tris_raw": 588425,
+   "tris": 6000,
+   "stretch": [
+    0.093,
+    0.105,
+    0.093
+   ]
+  },
+  {
+   "part": "hcasemate_0s",
+   "source": "p_casemate.glb",
+   "tris_raw": 588425,
+   "tris": 6000,
+   "stretch": [
+    0.093,
+    0.105,
+    0.093
+   ]
+  },
+  {
+   "part": "hcasemate_1p",
+   "source": "p_casemate.glb",
+   "tris_raw": 588425,
+   "tris": 6000,
+   "stretch": [
+    0.093,
+    0.105,
+    0.093
+   ]
+  },
+  {
+   "part": "hcasemate_1s",
+   "source": "p_casemate.glb",
+   "tris_raw": 588425,
+   "tris": 6000,
+   "stretch": [
+    0.093,
+    0.105,
+    0.093
+   ]
+  },
+  {
+   "part": "hbowguns",
+   "source": "p_bowguns.glb",
+   "tris_raw": 585581,
+   "tris": 7999,
+   "stretch": [
+    0.134,
+    0.189,
+    0.109
+   ]
+  },
+  {
+   "part": "hdrums_sp",
+   "source": "p_drumrack.glb",
+   "tris_raw": 585379,
+   "tris": 8000,
+   "stretch": [
+    0.089,
+    0.084,
+    0.09
+   ]
+  },
+  {
+   "part": "hdrums_ss",
+   "source": "p_drumrack.glb",
+   "tris_raw": 585379,
+   "tris": 8000,
+   "stretch": [
+    0.089,
+    0.084,
+    0.09
+   ]
+  }
+ ],
+ "hand_parts": 177,
+ "proxies": 112,
+ "bake": {
+  "b0_faces_turned": 0,
+  "b0_triangles_faces": 570189,
+  "b0_faces_kept": 379902,
+  "trim_outside": 0.01,
+  "bake_device": "OPTIX",
+  "bake_hi_seconds": 6.9,
+  "bake_lo_seconds": 6.8,
+  "bake_ao_seconds": 10.3,
+  "detail_pixels_inverted_share": 0.0883,
+  "detail_pixels_clamped_share": 0.0571,
+  "normal_tilt_mean_deg_detail": 6.67,
+  "normal_tilt_mean_deg_raw": 27.29,
+  "b0_bake_total_seconds": 36.5,
+  "paint_bake_seconds": 575.2,
+  "paint_bake_hull": {
+   "albedo": 7.7,
+   "orm": 8.2
+  },
+  "paint_bake_parts": {
+   "albedo": 197.7,
+   "orm": 197.2,
+   "proxies": {
+    "albedo": 73.0,
+    "orm": 72.5
+   },
+   "generated": {
+    "albedo": 8.3,
+    "orm": 8.5
+   }
+  }
+ },
+ "res": 4096,
+ "parts_res": 2048,
+ "triangles": 116275,
+ "objects": 210,
+ "surfaces": 5,
+ "draw_calls_merged": 5
+}

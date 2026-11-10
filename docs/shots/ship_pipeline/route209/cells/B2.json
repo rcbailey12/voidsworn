@@ -1,0 +1,211 @@
+{
+ "cell": "B2",
+ "build_seconds": 144.9,
+ "audit": {
+  "problems": [],
+  "parts": 54,
+  "crossing_break_lines": [
+   "collar2",
+   "collar3"
+  ]
+ },
+ "break_fit": {
+  "T1_rays_missed": 0,
+  "T1_jag": 0.0338,
+  "T2_rays_missed": 0,
+  "T2_jag": 0.0116
+ },
+ "generations": [
+  {
+   "part": "b2_s0",
+   "source": "b2_s0.glb",
+   "tris_raw": 565233,
+   "tris": 49499,
+   "stretch": [
+    0.193,
+    0.534,
+    0.281
+   ]
+  },
+  {
+   "part": "b2_s1",
+   "source": "b2_s1.glb",
+   "tris_raw": 562300,
+   "tris": 49500,
+   "stretch": [
+    0.186,
+    0.642,
+    0.233
+   ]
+  },
+  {
+   "part": "b2_s2",
+   "source": "b2_s2.glb",
+   "tris_raw": 563655,
+   "tris": 46500,
+   "stretch": [
+    0.172,
+    0.405,
+    0.31
+   ]
+  },
+  {
+   "part": "b2_s3",
+   "source": "b2_s3.glb",
+   "tris_raw": 598056,
+   "tris": 47999,
+   "stretch": [
+    0.179,
+    0.515,
+    0.55
+   ]
+  },
+  {
+   "part": "b2_s4",
+   "source": "b2_s4.glb",
+   "tris_raw": 591139,
+   "tris": 49500,
+   "stretch": [
+    0.178,
+    0.683,
+    0.464
+   ]
+  },
+  {
+   "part": "b2_s5",
+   "source": "b2_s5.glb",
+   "tris_raw": 570809,
+   "tris": 57000,
+   "stretch": [
+    0.211,
+    0.61,
+    0.566
+   ]
+  },
+  {
+   "part": "casemate_0p",
+   "source": "p_casemate.glb",
+   "tris_raw": 588425,
+   "tris": 15000,
+   "stretch": [
+    0.098,
+    0.115,
+    0.093
+   ]
+  },
+  {
+   "part": "casemate_0s",
+   "source": "p_casemate.glb",
+   "tris_raw": 588425,
+   "tris": 15000,
+   "stretch": [
+    0.098,
+    0.115,
+    0.093
+   ]
+  },
+  {
+   "part": "casemate_1p",
+   "source": "p_casemate.glb",
+   "tris_raw": 588425,
+   "tris": 15000,
+   "stretch": [
+    0.098,
+    0.115,
+    0.093
+   ]
+  },
+  {
+   "part": "casemate_1s",
+   "source": "p_casemate.glb",
+   "tris_raw": 588425,
+   "tris": 15000,
+   "stretch": [
+    0.098,
+    0.115,
+    0.093
+   ]
+  },
+  {
+   "part": "drums_f",
+   "source": "p_drumrack.glb",
+   "tris_raw": 585379,
+   "tris": 20000,
+   "stretch": [
+    0.074,
+    0.177,
+    0.118
+   ]
+  },
+  {
+   "part": "drums_m",
+   "source": "p_drumrack.glb",
+   "tris_raw": 585379,
+   "tris": 20000,
+   "stretch": [
+    0.1,
+    0.208,
+    0.134
+   ]
+  },
+  {
+   "part": "drums_a",
+   "source": "p_drumrack.glb",
+   "tris_raw": 585379,
+   "tris": 20000,
+   "stretch": [
+    0.068,
+    0.151,
+    0.107
+   ]
+  },
+  {
+   "part": "bowguns",
+   "source": "p_bowguns.glb",
+   "tris_raw": 585581,
+   "tris": 11999,
+   "stretch": [
+    0.133,
+    0.188,
+    0.106
+   ]
+  },
+  {
+   "part": "cargo_p",
+   "source": "p_cargo.glb",
+   "tris_raw": 586874,
+   "tris": 20000,
+   "stretch": [
+    0.134,
+    0.085,
+    0.172
+   ]
+  },
+  {
+   "part": "cargo_s",
+   "source": "p_cargo.glb",
+   "tris_raw": 586874,
+   "tris": 20000,
+   "stretch": [
+    0.134,
+    0.085,
+    0.172
+   ]
+  },
+  {
+   "part": "sternblock",
+   "source": "p_sternblock.glb",
+   "tris_raw": 591672,
+   "tris": 24999,
+   "stretch": [
+    0.078,
+    0.247,
+    0.179
+   ]
+  }
+ ],
+ "triangles": 1536166,
+ "objects": 85,
+ "surfaces": 5,
+ "draw_calls_merged": 5
+}
