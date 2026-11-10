@@ -1,5 +1,10 @@
 # The rules oracle, pinned
 
+Nov 9 2026, issue 332 (tree skills job 6): re-copied battle.js and data.js for
+the Hegemony Navy TREE_FX rows, the sync anchor reassignment, the column and
+flagship line effects and the second wave, patrol and out-of-arc shots.
+Re-exported rules tables; no existing rule or number changed.
+
 Nov 9 2026, issue 319 (tree skills job 4): re-copied battle.js, core.js and
 data.js for the Chorus TREE_FX rows, the H10 temporary hull and H17 extra
 activation hooks, and the new FX_CAPS key treeTempHp. Re-exported rules

@@ -215,7 +215,7 @@ Object.assign(ADMIRALS.ashgrove,{fac:'voidsworn',cmd:{id:'scramble',n:'Scramble 
 Object.assign(ADMIRALS.thale,{fac:'voidsworn',cmd:{id:'iron',n:'Iron wall',d:'All shields refill and your ships take 40% less hull damage this round.'}});
 Object.assign(ADMIRALS,{
   kassar:{fac:'hegemony',n:'First Admiral Ilsa Kassar',doc:'Fire discipline',d:'Batteries fire one extra shot per volley, but every gun hits 5% lighter.',fx:{battShots:1,dmgPct:-.05},start:['h_vanguard','h_picket'],cost:0,cmd:{id:'barrage',n:'Synchronized broadside',d:'Every ship fires a free volley at the best target its guns can reach, right now.'}},
-  vorn:{fac:'hegemony',n:'Commodore Dace Vorn',doc:'Precision fire',d:'+10 aim and +10% critical-hit chance.',fx:{aim:10,crit:10},start:['h_interdictor','h_interdictor','h_picket','h_picket'],cost:30,cmd:{id:'hunt',n:'Reload and strike',d:'Torpedoes reload at once and every ship deals +30% damage this round.'}},
+  vorn:{fac:'hegemony',n:'Commodore Dace Vorn',doc:'Precision fire',d:'+10 aim and +10% critical-hit chance.',fx:{aim:10,crit:10},start:['h_interdictor','h_interdictor','h_picket','h_picket'],cost:30,cmd:{id:'hunt',n:'Interdiction strike',d:'Every ship deals +30% damage this round.'}},
   reyes:{fac:'hegemony',n:'Fleet Marshal Corin Reyes',doc:'Strike group',d:'Squadrons deal +10% damage and launch ships hold +1 wing. Squadron hull +25%.',fx:{sqPct:.1,hangar:1,sqHp:.25},start:['h_vanguard','h_picket','h_picket'],cost:45,cmd:{id:'scramble',n:'Launch the strike group',d:'Every launch ship sends out an extra wing if there is room, then all squadrons strike again with +50% damage this round.'}},
   maren:{fac:'hegemony',n:'Line Admiral Oskar Maren',doc:'Armored column',d:'All ships +15% hull and +10% shields.',fx:{hpPct:.15,shPct:.1},start:['h_dominion','h_picket'],cost:80,cmd:{id:'iron',n:'Shield wall order',d:'All shields refill and your ships take 40% less hull damage this round.'}},
   grax:{fac:'corsair',n:'Warlord Grax Ironmaw',doc:'Fast assault',d:'+1 speed for every ship and +10% damage.',fx:{speed:1,dmgPct:.1},start:['c_marauder','c_reaver','c_reaver'],cost:0,cmd:{id:'surge',n:'Full burn',d:'Every ship gains +2 movement and +1 turn, and enemy fire loses 20 accuracy against you this round.'}},
@@ -1518,21 +1518,21 @@ const LINEAGE_TREES={
           [
             {
               "n": "Shared Solution",
-              "d": "synced ships share their best aim modifier."
+              "d": "each synced ship fires with the best aim modifier any synced ship has."
             },
             {
               "n": "Cold Drill",
-              "d": "sync forms at round start even if the flagship has not moved."
+              "d": "a synced ship that has not moved this round fires at +10 aim."
             }
           ],
           [
             {
               "n": "Rolling Fire",
-              "d": "a kill by a synced ship lets another synced ship fire immediately, once per round."
+              "d": "once per round, when a synced ship kills an enemy, another synced ship that has not yet fired this round may fire one weapon at once at a new target."
             },
             {
               "n": "Iron Tempo",
-              "d": "sync survives the flagship's first crippling hit each battle."
+              "d": "the first time the sync anchor is destroyed or captured, the largest remaining Hegemony ship becomes the new anchor for the rest of the battle."
             }
           ]
         ]
@@ -1543,7 +1543,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Formation Filed Before Battle",
-              "d": "choose one standard formation at battle start; ships that end their movement inside it gain +10 aim that round."
+              "d": "ships that end their movement next to two friendly ships gain +10 aim that round."
             },
             {
               "n": "Drill Revision One",
@@ -1571,11 +1571,11 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "Living Relay",
-        "d": "the flagship projects sync from its position at double radius, and sync no longer requires line of sight to the flagship."
+        "d": "the flagship projects sync from its position at double radius."
       },
       {
         "n": "One Voice",
-        "d": "once per battle, every synced ship fires at one target simultaneously, resolving as a single combined strike."
+        "d": "once per battle, every synced ship fires at one named target, and its shields stop only the first hit."
       }
     ]
   },
@@ -1591,7 +1591,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Strike by the Book",
-              "d": "during the strike round, ships that fire in ascending speed order gain +15% damage."
+              "d": "during the strike round, a ship gains +15% damage if its speed is at least the speed of the last ship that fired this round."
             }
           ],
           [
@@ -1601,13 +1601,13 @@ const LINEAGE_TREES={
             },
             {
               "n": "Filed Before Movement",
-              "d": "the strike may be declared before movement, and ships that move into range during the round keep the full bonus."
+              "d": "during Interdiction strike, a ship that fires before it has moved this round gains +10 crit chance."
             }
           ],
           [
             {
               "n": "Total Interdiction",
-              "d": "during the strike round, your ships may split their fire freely, and any target hit by three or more ships takes +30% damage from every hit that round."
+              "d": "during Interdiction strike, any target hit by three or more of your ships takes +30% damage from every hit that round."
             },
             {
               "n": "Standard Seven Breach",
@@ -1622,7 +1622,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Formation Filed Before Battle",
-              "d": "choose one standard formation at battle start; ships that end their movement inside it gain +10 aim that round."
+              "d": "ships that end their movement next to two friendly ships gain +10 aim that round."
             },
             {
               "n": "Drill Revision One",
@@ -1654,7 +1654,7 @@ const LINEAGE_TREES={
       },
       {
         "n": "One Order, Every Gun",
-        "d": "Interdiction strike may be declared at the start of a round, and your ships fire before the fastest enemy ship that round."
+        "d": "during Interdiction strike, every ship may fire one weapon a second time at half damage."
       }
     ]
   },
@@ -1666,7 +1666,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Cruisers Filed as Carriers",
-              "d": "during the launch, choose one cruiser; it launches a wing as if it were a carrier, in addition to the carriers extra wings."
+              "d": "during the launch, choose one ship without a hangar; it launches one wing this Command."
             },
             {
               "n": "Launch Order Published",
@@ -1676,17 +1676,17 @@ const LINEAGE_TREES={
           [
             {
               "n": "Second Wave on Schedule",
-              "d": "you may hold all extra wings and launch them at the start of next round instead, striking then at full effect."
+              "d": "you may hold all extra wings and launch them at the start of next round instead; they strike then at normal damage, and the Command's strike bonus does not carry over."
             },
             {
               "n": "Procedure Rehearsed",
-              "d": "after the first strike resolves, each extra wing may be reassigned to a new target for its strike again."
+              "d": "every extra wing's strike again this Command gains +10 aim."
             }
           ],
           [
             {
               "n": "Full Group Assembled",
-              "d": "if every carrier launches an extra wing, each carrier launches one more, but all extra wings must strike the single filed target."
+              "d": "if every launch ship launches an extra wing, each launch ship launches one more, but all extra wings must strike the single filed target."
             },
             {
               "n": "Registry of Escorts",
@@ -1701,7 +1701,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Formation Filed Before Battle",
-              "d": "choose one standard formation at battle start; ships that end their movement inside it gain +10 aim that round."
+              "d": "ships that end their movement next to two friendly ships gain +10 aim that round."
             },
             {
               "n": "Drill Revision One",
@@ -1733,7 +1733,7 @@ const LINEAGE_TREES={
       },
       {
         "n": "Standing Strike Group",
-        "d": "after the Command, one extra wing per carrier stays on patrol and strikes the first enemy that enters its carrier range each round."
+        "d": "after the Command, one extra wing per launch ship stays on patrol; the first time an enemy ship moves within its launch ship's range each round, it strikes that enemy at once."
       }
     ]
   },
@@ -1745,31 +1745,31 @@ const LINEAGE_TREES={
           [
             {
               "n": "Column Filed Straight",
-              "d": "during the wall, ships in a line of three or more adjacent friendly ships refill +25% more shield."
+              "d": "during the wall, ships that end their movement in a straight line of three or more friendly ships gain shields above their maximum equal to 25% of their maximum shields."
             },
             {
               "n": "Overflow by Regulation",
-              "d": "during the wall, shield refill beyond a ship's maximum flows to the adjacent friendly ship with the lowest shields."
+              "d": "during the wall, a ship that is at full shields gains +10 evasion until its next turn."
             }
           ],
           [
             {
               "n": "Wall at the Bell",
-              "d": "the wall may be declared at the very start of the round, before any ship moves or fires."
+              "d": "while the wall is active, the first hit against your fleet each round deals no hull damage."
             },
             {
               "n": "Standard Rotation",
-              "d": "during the wall, a ship may swap hexes with an adjacent friendly ship without losing the damage reduction."
+              "d": "during the wall, once per ship, a ship may swap hexes with an adjacent friendly ship."
             }
           ],
           [
             {
               "n": "The Column Endures",
-              "d": "while the wall is active, the first ship each round to have its shields emptied immediately refills to 25%."
+              "d": "while the wall is active, the first ship each round to have a shield facing emptied immediately refills that facing to 25%."
             },
             {
               "n": "Filed in Armor",
-              "d": "during the wall, a ship that does not fire this round reduces hull damage by a further 15%."
+              "d": "during the wall, a ship that has not fired yet when it is hit takes 15 points less hull damage."
             }
           ]
         ]
@@ -1780,7 +1780,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Formation Filed Before Battle",
-              "d": "choose one standard formation at battle start; ships that end their movement inside it gain +10 aim that round."
+              "d": "ships that end their movement next to two friendly ships gain +10 aim that round."
             },
             {
               "n": "Drill Revision One",
@@ -1808,11 +1808,11 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "The Standard Covers All",
-        "d": "Shield wall order also refills the shields of each ship adjacent to a ship in the column at half strength, even if that ship is not in the line."
+        "d": "while Shield wall order is active, every ship takes a further 20% less hull damage."
       },
       {
         "n": "The Flagship Holds the Standard",
-        "d": "while the wall is active, the flagship counts as part of every friendly line for column effects, and ships in a line with the flagship refill +10% more shield."
+        "d": "while the wall is active, the flagship counts as part of any friendly line, and ships in a line with the flagship gain shields above their maximum equal to 10% of their maximum shields."
       }
     ]
   },
@@ -1827,18 +1827,18 @@ const LINEAGE_TREES={
               "d": "ships that end their burn movement closer to the largest enemy than they started gain +15% damage this round."
             },
             {
-              "n": "Ram First",
-              "d": "a ship that moves at least 4 hexes during the burn may ram with no accuracy penalty."
+              "n": "First Over the Rail",
+              "d": "a ship that moves at least 4 hexes during the burn boards at +25% strength."
             }
           ],
           [
             {
               "n": "The Pack Closes",
-              "d": "during the burn, your ships may pass through hexes held by friendly ships."
+              "d": "during the burn, a ship that ends its movement next to a friendly ship gains +10 aim this round."
             },
             {
-              "n": "Ram Rush",
-              "d": "a ship that ends its burn movement adjacent to an enemy may ram it immediately instead of firing this round."
+              "n": "Rush the Rail",
+              "d": "a ship that ends its burn movement adjacent to an enemy may board it even if it has already fired this round."
             }
           ],
           [
@@ -1863,7 +1863,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Loose Pack, Wide Lanes",
-              "d": "your ships never block each other's movement or firing lanes."
+              "d": "a ship gains +1 movement on a move that ends with no friendly ship within 2 hexes."
             }
           ]
         ]
@@ -1887,11 +1887,11 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "Burn Until the Hulls Meet",
-        "d": "Full burn movement and accuracy protection carry into next round movement phase."
+        "d": "Full burn movement, turns and accuracy protection carry into the next round."
       },
       {
         "n": "Run of the Warlord",
-        "d": "when Full burn is declared, the flagship may move twice, and may ram after each move."
+        "d": "when Full burn is declared, the flagship may move twice, and may board after each move."
       }
     ]
   },
@@ -1907,7 +1907,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Torpedoes in the Dark",
-              "d": "torpedoes fired this round are screened at -20 effect, as if the firing ships were never seen."
+              "d": "torpedoes fired this round are intercepted at half the usual chance: enemy flak and screen wings roll at half effect."
             }
           ],
           [
@@ -1923,7 +1923,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "The Smile Before the Cut",
-              "d": "during the Command round, ships that begin their activation behind an enemy act before that enemy."
+              "d": "each round during the Command, the first of your ships to activate gains +20% damage on its first shot."
             },
             {
               "n": "Every Knife at Once",
@@ -1942,7 +1942,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Loose Pack, Wide Lanes",
-              "d": "your ships never block each other's movement or firing lanes."
+              "d": "a ship gains +1 movement on a move that ends with no friendly ship within 2 hexes."
             }
           ]
         ]
@@ -1986,13 +1986,13 @@ const LINEAGE_TREES={
             },
             {
               "n": "Hulk Holds More",
-              "d": "one of your largest ships may launch an extra wing during the Command even though it is not a carrier, using its held wing space."
+              "d": "choose one of your largest ships that is not a carrier; it launches one extra wing during the Command, from the Hulk's spare racks."
             }
           ],
           [
             {
               "n": "Re-Tasked Mid-Flight",
-              "d": "after the first strike resolves, each extra wing may switch to a new target for its strike again."
+              "d": "an extra wing that strikes a target no other wing struck this round gains +20% damage."
             },
             {
               "n": "Launched from the Wreck Line",
@@ -2002,11 +2002,11 @@ const LINEAGE_TREES={
           [
             {
               "n": "The Whole Yard Flies",
-              "d": "every ship with any hangar space launches an extra wing during the Command, not only carriers."
+              "d": "a launch ship that launches all its wings this Command launches one more extra wing."
             },
             {
               "n": "Wings Come Back Screaming",
-              "d": "the strike again keeps the full +50% bonus even when it hits a new target across the field."
+              "d": "an extra wing's strike again gains +15% damage when it hits a target already hit this round."
             }
           ]
         ]
@@ -2021,7 +2021,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Loose Pack, Wide Lanes",
-              "d": "your ships never block each other's movement or firing lanes."
+              "d": "a ship gains +1 movement on a move that ends with no friendly ship within 2 hexes."
             }
           ]
         ]
@@ -2045,11 +2045,11 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "Swarm Over the Scrap Field",
-        "d": "Release the swarm launches the extra wings twice, once at the start of your turn and once at its end."
+        "d": "Release the swarm launches the extra wings twice: once when the Command is used, and once after your last activation this round."
       },
       {
         "n": "Old Mott Private Wing",
-        "d": "choose one carrier; its extra wing stays launched for the rest of the battle and strikes at half damage at the start of each round."
+        "d": "choose one launch ship; its extra wing stays for the battle and gains +20% damage on its first strike each round."
       }
     ]
   },
@@ -2065,7 +2065,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Patch Over the Guns",
-              "d": "each repaired ship chooses where its repair lands first: weapon sections or engine sections."
+              "d": "a ship whose weapons section is repaired by the Command gains +10 aim this round."
             }
           ],
           [
@@ -2075,7 +2075,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Welded While Fighting",
-              "d": "a section patched by the Command works at full effect in the same round it is patched."
+              "d": "a ship repaired by the Command may fire one weapon at half damage at once."
             }
           ],
           [
@@ -2100,7 +2100,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Loose Pack, Wide Lanes",
-              "d": "your ships never block each other's movement or firing lanes."
+              "d": "a ship gains +1 movement on a move that ends with no friendly ship within 2 hexes."
             }
           ]
         ]
@@ -2128,7 +2128,7 @@ const LINEAGE_TREES={
       },
       {
         "n": "Nothing Stays Broken",
-        "d": "Patch and weld may be declared at the start of the enemy turn, landing before the first hit that would cripple one of your ships that turn."
+        "d": "the first time one of your ships would lose a section this battle, that section is not broken and is restored to full."
       }
     ]
   },
@@ -2874,7 +2874,81 @@ const TREE_FX={
   "matriarch:B:0:1":{k:"broodReserve"},"matriarch:C:0:0":{k:"firstThroat"},"matriarch:C:0:1":{k:"throatDeep",n:10},
   "razormaw:B:0:1":{k:"broodReserve"},"razormaw:C:0:0":{k:"firstThroat"},"razormaw:C:0:1":{k:"throatDeep",n:10},
   "mending:B:0:1":{k:"broodReserve"},"mending:C:0:0":{k:"firstThroat"},"mending:C:0:1":{k:"throatDeep",n:10},
-  "voice:B:0:1":{k:"broodReserve"},"voice:C:0:0":{k:"firstThroat"},"voice:C:0:1":{k:"throatDeep",n:10}
+  "voice:B:0:1":{k:"broodReserve"},"voice:C:0:0":{k:"firstThroat"},"voice:C:0:1":{k:"throatDeep",n:10},
+  // The Ashfall Hullbreakers (issue #305 job 5). All 36 rows, including the rewritten x and c rows (Muse PR 324).
+  "grax:A:0:0":{k:"runBigger",n:.15},
+  "grax:A:0:1":{k:"railBoarding",n:.25},
+  "grax:A:1:0":{k:"packCloses",n:10},
+  "grax:A:1:1":{k:"rushRail"},
+  "grax:A:2:0":{k:"allScars",n:2},
+  "grax:A:2:1":{k:"mawOpens",n:.3},
+  "grax:cap:0":{k:"burnCarry"},
+  "grax:cap:1":{k:"warlordRun"},
+  "sable:A:0:0":{k:"knifeBack",n:.15},
+  "sable:A:0:1":{k:"darkTorps"},
+  "sable:A:1:0":{k:"cutTurn"},
+  "sable:A:1:1":{k:"secondKnife"},
+  "sable:A:2:0":{k:"smileCut",n:.2},
+  "sable:A:2:1":{k:"everyKnife",n:20},
+  "sable:cap:0":{k:"darkKnives"},
+  "sable:cap:1":{k:"cutFeeds"},
+  "mott:A:0:0":{k:"patchedWing",n:.25},
+  "mott:A:0:1":{k:"hulkMore"},
+  "mott:A:1:0":{k:"reTasked",n:.2},
+  "mott:A:1:1":{k:"wreckLine",n:.15},
+  "mott:A:2:0":{k:"wholeYard"},
+  "mott:A:2:1":{k:"screaming",n:.15},
+  "mott:cap:0":{k:"swarmScrap"},
+  "mott:cap:1":{k:"privateWing",n:.2},
+  "vesh:A:0:0":{k:"weldMatters"},
+  "vesh:A:0:1":{k:"patchGuns",n:10},
+  "vesh:A:1:0":{k:"scrapFront"},
+  "vesh:A:1:1":{k:"weldedFight"},
+  "vesh:A:2:0":{k:"doubleBolted",n:.2},
+  "vesh:A:2:1":{k:"packBites",n:.15},
+  "vesh:cap:0":{k:"weldedWhole"},
+  "vesh:cap:1":{k:"nothingBroken"},
+  "grax:B:0:0":{k:"preyScent",n:10},"grax:B:0:1":{k:"loosePack"},"grax:C:0:0":{k:"firstScar"},"grax:C:0:1":{k:"trophyStandard"},
+  "sable:B:0:0":{k:"preyScent",n:10},"sable:B:0:1":{k:"loosePack"},"sable:C:0:0":{k:"firstScar"},"sable:C:0:1":{k:"trophyStandard"},
+  "mott:B:0:0":{k:"preyScent",n:10},"mott:B:0:1":{k:"loosePack"},"mott:C:0:0":{k:"firstScar"},"mott:C:0:1":{k:"trophyStandard"},
+  "vesh:B:0:0":{k:"preyScent",n:10},"vesh:B:0:1":{k:"loosePack"},"vesh:C:0:0":{k:"firstScar"},"vesh:C:0:1":{k:"trophyStandard"},
+  // The Hegemony Navy (issue #305 job 6). All 36 rows, including the rewritten x and c rows (Muse PR 324).
+  "kassar:A:0:0":{k:"wideNet",n:1},
+  "kassar:A:0:1":{k:"secondVolley"},
+  "kassar:A:1:0":{k:"sharedSolution"},
+  "kassar:A:1:1":{k:"coldDrill",n:10},
+  "kassar:A:2:0":{k:"rollingFire"},
+  "kassar:A:2:1":{k:"ironTempo"},
+  "kassar:cap:0":{k:"livingRelay"},
+  "kassar:cap:1":{k:"oneVoice"},
+  "vorn:A:0:0":{k:"filedTriplicate",n:10},
+  "vorn:A:0:1":{k:"strikeBook",n:.15},
+  "vorn:A:1:0":{k:"crossFire",n:.15},
+  "vorn:A:1:1":{k:"filedBefore",n:10},
+  "vorn:A:2:0":{k:"totalInterdiction",n:.3},
+  "vorn:A:2:1":{k:"sevenBreach"},
+  "vorn:cap:0":{k:"permanentFile"},
+  "vorn:cap:1":{k:"oneOrder"},
+  "reyes:A:0:0":{k:"cruisersCarriers"},
+  "reyes:A:0:1":{k:"launchOrder",n:.2},
+  "reyes:A:1:0":{k:"secondWave"},
+  "reyes:A:1:1":{k:"rehearsed",n:10},
+  "reyes:A:2:0":{k:"fullGroup"},
+  "reyes:A:2:1":{k:"escorts",n:.25},
+  "reyes:cap:0":{k:"oneTarget",n:.35},
+  "reyes:cap:1":{k:"standingGroup"},
+  "maren:A:0:0":{k:"columnStraight",n:.25},
+  "maren:A:0:1":{k:"overflow",n:10},
+  "maren:A:1:0":{k:"bell"},
+  "maren:A:1:1":{k:"rotation"},
+  "maren:A:2:0":{k:"columnEndures",n:.25},
+  "maren:A:2:1":{k:"filedArmor",n:15},
+  "maren:cap:0":{k:"standardCovers",n:.2},
+  "maren:cap:1":{k:"flagshipStandard",n:.1},
+  "kassar:B:0:0":{k:"formation",n:10},"kassar:B:0:1":{k:"drillRevision"},"kassar:C:0:0":{k:"beacon",n:10},"kassar:C:0:1":{k:"standardForward",n:1},
+  "vorn:B:0:0":{k:"formation",n:10},"vorn:B:0:1":{k:"drillRevision"},"vorn:C:0:0":{k:"beacon",n:10},"vorn:C:0:1":{k:"standardForward",n:1},
+  "reyes:B:0:0":{k:"formation",n:10},"reyes:B:0:1":{k:"drillRevision"},"reyes:C:0:0":{k:"beacon",n:10},"reyes:C:0:1":{k:"standardForward",n:1},
+  "maren:B:0:0":{k:"formation",n:10},"maren:B:0:1":{k:"drillRevision"},"maren:C:0:0":{k:"beacon",n:10},"maren:C:0:1":{k:"standardForward",n:1}
 };
 // Patron favour: grows with every boon you take from a patron
 const FAVOUR_TIERS=[{at:0,n:'Listening'},{at:4,n:'Partial sync',d:'Its protocols are rare more often.'},{at:12,n:'Synced',d:'If it is in range of your run, you start with one of its protocols.'},{at:25,n:'Full sync',d:'Its protocols are never common.'}];
