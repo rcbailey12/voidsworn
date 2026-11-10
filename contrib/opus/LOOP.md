@@ -155,6 +155,9 @@ Result (Opus, Nov 7 night): PASS on three of four. (1) Godot ran on the 5080 thr
 
 ## Known traps
 
+- GitHub failure emails that are not failures (found Nov 10 14:55 UTC): a pull request opened by auto_pr.yml is opened by github-actions[bot], so its `pull_request` run of checks.yml never starts a job and flips to 'failure' with zero jobs when the PR merges. The real checks are the workflow_dispatch run on the same commit. The check-runs API hides this (it shows the latest run per name); to see it list actions/runs?head_sha=<sha>. Before merging, read the workflow_dispatch run's jobs. The #359 helper is changing the triggers in PR #400 so each push gives exactly one real run.
+- The PC queue runs one job at a time: a long GPU job in queue\running\ (for example a helper's bake) holds every later .bat, including the workhorse launchers, until it ends. Check queue\running\ before assuming a workhorse run failed to start.
+
 - Jobs 1 to 5 of #305 left the campaign oracle copies alone or refreshed them by hand; #332 (running) was briefed before the audit and does not name godot/campaign/test/oracle or campaign_tables.json. When its PR lands, check those copies; #335 re-syncs them either way.
 - A fresh workhorse checkout has no godot\gen hulls and no godot\assets\ships (both PC-built and ignored by git), so capture probes draw placeholder blocks (run 6 of #281 pushed with no new captures for this reason). Any capture job's brief must name a checkout to copy them from (for example work217\issue-281-deepseekpro\20261109_113656\repo\godot) and must say: if the probe shows blocks, stop and report.
 - A workhorse PR body and the docs README are not rewritten by later runs: read the newest run's own report in work217\issue-N-arm\<stamp>\out\last.md before judging what a run did.
