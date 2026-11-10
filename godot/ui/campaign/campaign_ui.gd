@@ -1078,8 +1078,8 @@ func _map_key() -> Control:
 		for hh in S["heat"]: hs.append("[b]" + esc(hh["n"]) + "[/b] " + esc(str(hh["d"]).trim_suffix(".")))
 		body.add_child(_over_text("[b]Heat " + C.numstr(S["heat_level"]) + "[/b] " + "; ".join(PackedStringArray(hs)) + ".", 14))
 	head.call("Your run")
-	var A = RN["admiral"]
-	body.add_child(_over_text("[b]" + esc(_admiral_title(A["id"])) + "[/b] " + esc(A["doc"].to_lower()), 14))
+	var A = RN["admiral"]; var HH = View.header(C)
+	body.add_child(_over_text("[b]" + esc(_admiral_title(A["id"])) + "[/b] " + esc(A["doc"].to_lower()) + ". Sector " + HH["sector_roman"] + " of III, " + str(HH["fights"]) + " fight" + ("" if HH["fights"] == 1 else "s") + " won this run.", 14))
 	if not RN["aspect"].is_empty(): body.add_child(_over_text("[b]Flagship " + esc(RN["aspect"]["ship"]) + ": " + esc(RN["aspect"]["n"]) + "[/b] " + esc(RN["aspect"]["d"]), 14))
 	if not FA.is_empty(): body.add_child(_over_text("[b]Faction action: " + esc(FA["n"]) + "[/b] " + esc(FA["d"]) + " " + esc("Used this sector." if FA["used"] else FA["cost"] + "."), 14))
 	if RN["boons"].size() > 0:
