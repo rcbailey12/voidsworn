@@ -772,7 +772,7 @@ function renderText(r) {
   L.push('== Summary ==');
   L.push('vendored pairs: ' + r.summary.vendoredPairs + ' compared, ' + r.summary.vendoredEqual + ' identical, ' + r.summary.vendoredDiffering + ' differing');
   L.push('pin claims: ' + r.summary.pinClaimsChecked + ' file checks against pinned content, ' + r.summary.pinClaimsHeld + ' held' + (r.summary.pinExceptions ? ' (including ' + r.summary.pinExceptions + ' disclosed exception)' : '') + ', ' + r.summary.pinClaimsFailed + ' contradicted');
-  L.push('constants: ' + r.summary.constCompared + ' entries compared, ' + r.summary.constMatched + ' matched, ' + r.summary.constDiffered + ' differed, ' + r.summary.constOnlyBrowser + ' browser-only, ' + r.summary.constOnlyGodot + ' godot-only');
+  L.push('DRIFT SUMMARY: constants ' + r.summary.constCompared + ' compared, ' + r.summary.constMatched + ' matched, ' + r.summary.constDiffered + ' differed, ' + r.summary.constOnlyBrowser + ' browser-only, ' + r.summary.constOnlyGodot + ' godot-only');
   return L.join('\n') + '\n';
 }
 
