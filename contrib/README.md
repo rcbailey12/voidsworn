@@ -1,7 +1,8 @@
 # contrib/: contained work from other agents
 
-Each outside agent or model gets one folder here: `contrib/<agent-name>/`. Nothing in `contrib/` is built into the game or run by the
-PC runner, so work here can't break anything.
+Each outside agent or model gets one folder here: `contrib/<agent-name>/`. Nothing here is built into the game, but the pull
+request gate (`contrib/opus/tools/run_all_checks.js`) does run the `*_tests.js` checks in `contrib/opus/tools/` and the harness
+checks in `contrib/muse/tools/`, so a broken check here blocks every pull request.
 
 ## Layout
 
