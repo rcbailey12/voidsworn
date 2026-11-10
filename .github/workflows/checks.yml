@@ -107,3 +107,12 @@ jobs:
           sh godot/tools/ci/run_checks.sh 2>&1 | tee "$RUNNER_TEMP/run_checks.log"; code=${PIPESTATUS[0]}
           { echo '### Godot checks from the list'; echo '```'; grep -E '^  [a-z0-9_]+: |^  list: |^Ran |^PASS|^FAIL' "$RUNNER_TEMP/run_checks.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           exit $code
+      # (c) one battle reached from a real campaign start, played to its end by the game's AI on both sides in the real
+      # battle scene. Fails on any script error and on any "unknown event" line. Fixed seed, no retry.
+      - name: Bot battle from a real campaign start (seed 359)
+        if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
+        run: |
+          timeout 900 "$GODOT" --headless --path godot --script res://tools/ci/bot_battle.gd -- --seed 359 2>&1 | tee "$RUNNER_TEMP/bot_battle.log"; code=${PIPESTATUS[0]}
+          { echo '### Bot battle'; echo '```'; grep '^bot battle:' "$RUNNER_TEMP/bot_battle.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          if grep -qE 'SCRIPT ERROR|unknown event' "$RUNNER_TEMP/bot_battle.log"; then echo "SCRIPT ERROR or unknown event lines above"; exit 1; fi
+          exit $code
