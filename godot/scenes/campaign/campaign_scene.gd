@@ -7,6 +7,8 @@ extends Node
 #   mapshots <dir>  the sector map only, at fixed angles, for before/after sets (R51): the start of a run, a hover card,
 #                   a closer view and low quality (when the map has them), and the start of sector II
 #   bot <runs>      plays <runs> whole runs through the screens with the parity bot and quits; exit code 1 on any problem
+#   rollout <dir>   issue #344 (UI rollout 1, Lime Tactical): plays one seeded run through the campaign's own actions and
+#                   saves every campaign-map and between-battle page by name (see _rollout); add --no-tips for clean shots
 
 const CampaignScript = preload("res://campaign/campaign.gd")
 const UIScript = preload("res://ui/campaign/campaign_ui.gd")
@@ -30,6 +32,8 @@ func _ready() -> void:
 		C.save_path = "user://campaign_shots_save.json"; _shots(a[1]); return
 	if a.size() >= 2 and a[0] == "mapshots":
 		C.save_path = "user://campaign_shots_save.json"; _mapshots(a[1]); return
+	if a.size() >= 2 and a[0] == "rollout":
+		C.save_path = "user://ui344_rollout_save.json"; _rollout(a[1]); return
 	if a.size() >= 2 and a[0] == "bot":
 		C.save_path = "user://campaign_bot_save.json"; _bot(int(a[1])); return
 	JSM.rnd_seed(int(Time.get_unix_time_from_system()) & 0xFFFFFFFF)   # the browser seeds its PRNG at random on load
@@ -169,3 +173,135 @@ func _bot(runs: int) -> void:
 		print("run %d: %d steps, %s" % [r + 1, steps, "ended" if C.ended else "DID NOT END"])
 		if not C.ended: bad += 1
 	get_tree().quit(1 if bad > 0 else 0)
+
+# ---------------- issue #344: the UI rollout 1 captures ----------------
+# Every page is reached by playing: the run starts from the title through the campaign's own actions (newRunScreen,
+# startRun, pickAspect), moves on the map with enterNode, fights with the campaign's battle actions (the stub battle's
+# win, the same path the parity bot takes) and answers each dialog with its own buttons. Nothing types a page state.
+# The driver prefers stops of a kind it has not pictured yet, so one seeded run shows every page. Files (<dir>/<name>.png):
+#   01_map (the campaign map as the player sees it), 01b_map_hover, 01c_side_panel (crop), 02_intro, 03_map_elite_card,
+#   04_map_boss_card, 05_battle_retreat, 06_reward_victory, 07_reward_<boon|mod|relic|prize|salvage>, 08_shipyard,
+#   09_fleet, 10_event, 11_event_result, 12_drydock, 13_promote, 14_sector (with the Nemesis adaptation when one is told),
+#   15_map_sector2. reached.txt lists what was reached, and what was not (a page this seed's run never offers).
+var _ro_dir := ""
+var _ro_seen := {}
+var _ro_log: Array = []
+func _ro_shot(name: String, crop_side := false) -> void:
+	_close_story_dialogs()
+	await _frames(4)
+	var t0 = Time.get_ticks_msec()   # the map draws under a "Preparing the sector" cover (main/load_screen.gd) until its sky is baked
+	while _ro_covered(get_tree().root) and Time.get_ticks_msec() - t0 < 420000: await get_tree().process_frame
+	_close_story_dialogs()   # the story layer's own prompts (Name your flagship) open once the cover lifts
+	for t in ui.toast_box.get_children(): t.queue_free()   # news toasts from the step before fade in seconds; they would cover the page
+	await _frames(2)
+	if C.page.get("kind") == "map" and C.modal_d == null and ui.use_3d_map: await get_tree().create_timer(2.4).timeout   # the arrival camera settles
+	await _frames(2)
+	_ro_log.append("%s  page=%s modal=%s sector=%s" % [name, C.page.get("kind"), (C.modal_d["kind"] if C.modal_d != null else "-"), str(C.RUN.get("sector")) if C.RUN != null else "-"])
+	if DisplayServer.get_name() == "headless":   # a smoke run in the cloud: the page builds, there is nothing to draw
+		print("built ", name); return
+	await RenderingServer.frame_post_draw
+	var img = get_viewport().get_texture().get_image()
+	img.save_png(_ro_dir.path_join(name + ".png")); print("shot ", name)
+	if crop_side:
+		var host = _ro_find_shell()
+		if host != null:
+			var r = Rect2i(Vector2i(host.global_position), Vector2i(host.size)).intersection(Rect2i(Vector2i.ZERO, img.get_size()))
+			if r.size.x > 0 and r.size.y > 0: img.get_region(r).save_png(_ro_dir.path_join(name.replace("01_map", "01c_side_panel") + ".png"))
+func _ro_covered(n: Node) -> bool:
+	if n.get_script() != null and str(n.get_script().resource_path).ends_with("load_screen.gd") and (not (n is CanvasItem) or n.visible): return true
+	for ch in n.get_children():
+		if _ro_covered(ch): return true
+	return false
+func _ro_find_shell() -> Control:   # the map's side panel: the widest shell panel at the right edge
+	var best: Control = null
+	for n in _ro_all(ui):
+		if n is PanelContainer and n.custom_minimum_size.x > 0 and n.is_visible_in_tree() and n.get_global_rect().end.x > get_viewport().get_visible_rect().size.x - 40:
+			if best == null or n.size.y > best.size.y: best = n
+	return best
+func _ro_all(n: Node) -> Array:
+	var out = [n]
+	for ch in n.get_children(): out.append_array(_ro_all(ch))
+	return out
+func _ro_kind() -> String: return C.modal_d["kind"] if C.modal_d != null else str(C.page["kind"])
+func _ro_has(acts: Array, name: String, arg = null):
+	for x in acts:
+		if x[0] == name and (arg == null or x[1] == str(arg)): return x
+	return null
+func _ro_avail_types() -> Array:
+	var out = []
+	if C.page.get("kind") != "map": return out
+	for id in C.page["data"]["avail"]:
+		var n = C.findNode(id)
+		if n != null: out.append(str(n["type"]))
+	return out
+func _rollout(dir: String) -> void:
+	_ro_dir = dir; DirAccess.make_dir_recursive_absolute(dir)
+	JSM.rnd_seed(344)
+	C.titleScreen(); C.act("newRunScreen"); C.act("startRun")
+	if C.page.get("kind") == "aspect": C.act("pickAspect", C.W["aspOffer"][0])
+	if _ro_kind() == "intro": await _ro_shot("02_intro"); _ro_seen["intro"] = true
+	C.act("closeModal"); await _frames(2)
+	await _ro_shot("01_map", true)
+	if ui.use_3d_map:   # the hover card over a fight you can take
+		var m = ui.map3d; var tgt = ""
+		for id in C.page["data"]["avail"]:
+			if C.findNode(id)["type"] in ["battle", "elite"]: tgt = id; break
+		if tgt == "": tgt = C.page["data"]["avail"][0]
+		get_viewport().warp_mouse(m._screen(m._nodes[tgt]["pos"])); await _frames(3); m._set_hot(tgt); await _frames(6)
+		await _ro_shot("01b_map_hover"); m._set_hot("")
+	var steps = 0
+	var names = {"victory": "06_reward_victory", "boon": "07_reward_boon", "mod": "07_reward_mod", "relic": "07_reward_relic", "prize": "07_reward_prize",
+		"salvage": "07_reward_salvage", "shipyard": "08_shipyard", "fleet": "09_fleet", "event": "10_event", "event_result": "11_event_result",
+		"drydock": "12_drydock", "promote": "13_promote", "sector": "14_sector", "retreat": "05_battle_retreat"}
+	while not C.ended and steps < 900:
+		steps += 1
+		var kind = _ro_kind()
+		if C.RUN != null and int(C.RUN["sector"]) >= 2 and kind == "map":
+			await _ro_shot("15_map_sector2"); break
+		if kind == "map":
+			var ty = _ro_avail_types()
+			if not _ro_seen.has("elite_card") and ty.has("elite"): _ro_seen["elite_card"] = true; await _ro_shot("03_map_elite_card")
+			if not _ro_seen.has("boss_card") and ty.has("boss"): _ro_seen["boss_card"] = true; await _ro_shot("04_map_boss_card")
+		elif names.has(kind) and not _ro_seen.has(kind):
+			_ro_seen[kind] = true; await _ro_shot(names[kind])
+		var acts = C.screen_acts().filter(func(x): return x[2] == 1)
+		var pick = _ro_pick(kind, acts)
+		if pick == null: _ro_log.append("stuck on " + kind); break
+		C.act(pick[0], pick[1]); await _frames(1)
+	var want = ["01_map", "01b_map_hover", "02_intro", "03_map_elite_card", "04_map_boss_card", "05_battle_retreat", "06_reward_victory", "08_shipyard", "09_fleet", "10_event", "11_event_result", "14_sector", "15_map_sector2"]
+	var got = _ro_log.map(func(l): return l.split(" ")[0])
+	var missing = want.filter(func(w): return not got.has(w))
+	var f = FileAccess.open(dir.path_join("reached.txt"), FileAccess.WRITE)
+	if f != null:
+		f.store_string("seed 344, %d steps, window %s\n" % [steps, str(get_viewport().get_visible_rect().size)] + "\n".join(PackedStringArray(_ro_log)) + "\nnot reached: " + (", ".join(PackedStringArray(missing)) if missing.size() > 0 else "none") + "\n")
+		f.close()
+	print("rollout: ", _ro_log.size(), " pages; not reached: ", missing)
+	get_tree().quit(0)
+func _ro_pick(kind: String, acts: Array):
+	var want = ["elite", "event", "shipyard", "drydock", "battle", "field", "boss"]
+	match kind:
+		"map":
+			if not _ro_seen.has("fleet") and _ro_has(acts, "fleetScreen") != null: return _ro_has(acts, "fleetScreen")
+			var best = null; var bi = 99
+			for x in acts:
+				if x[0] != "enterNode": continue
+				var t = str(C.findNode(x[1])["type"]); var i = want.find(t)
+				if t in ["event", "shipyard", "drydock", "elite"] and _ro_seen.has(t if t != "elite" else "elite_fought"): i += 10
+				if i >= 0 and i < bi: bi = i; best = x
+			if best != null and C.findNode(best[1])["type"] == "elite": _ro_seen["elite_fought"] = true
+			return best if best != null else _ro_has(acts, "enterNode")
+		"fleet":
+			return _ro_has(acts, "backMap") if _ro_has(acts, "backMap") != null else _ro_has(acts, "backShipyard")
+		"shipyard":
+			if not _ro_seen.has("fleet") and _ro_has(acts, "yardFleet") != null: return _ro_has(acts, "yardFleet")
+			return _ro_has(acts, "leaveYard")
+		"battle":
+			if not _ro_seen.has("retreat") and _ro_has(acts, "c3retreat") != null: return _ro_has(acts, "c3retreat")
+			return _ro_has(acts, "battle", "win")
+		"retreat": return _ro_has(acts, "c3retreatNo")
+		"prize": return _ro_has(acts, "prizeConfirm")
+		"boon":
+			var t = _ro_has(acts, "takeBoon"); return t if t != null else acts[0]
+		"sell", "abandon": return _ro_has(acts, "closeModal")
+	return acts[0] if acts.size() > 0 else null
+
