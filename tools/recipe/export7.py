@@ -107,6 +107,10 @@ for o in src:
         if md.name == 'skin': c.modifiers.remove(md); continue
         try: bpy.ops.object.modifier_apply(modifier=md.name)
         except Exception: c.modifiers.remove(md)
+    if UNBAKED:      # test only: one plain material per role, so the glb splits hull from parts as a baked one does (the check measures
+        c.data.materials.clear()       # the breach anchors' clearance from the parts surfaces)
+        nm = CODE + ('_hull' if o.get('role') == 'hull' else '_parts'); c.data.materials.append(bpy.data.materials.get(nm) or bpy.data.materials.new(nm))
+        for f in c.data.polygons: f.material_index = 0
     keep.append(c)
 bpy.ops.object.select_all(action='DESELECT')
 for c in keep: c.select_set(True)
@@ -124,9 +128,8 @@ def occlusion_group():
     return ng
 
 maps = {}
-if UNBAKED:      # test only: plain materials so the glb still loads; no maps
-    for i, s in enumerate(J.material_slots):
-        m = bpy.data.materials.new(f'{CODE}_unbaked_{i}'); m.use_nodes = True; s.material = m
+if UNBAKED:      # test only: the plain role materials set before the join (<CODE>_hull, <CODE>_parts) so the glb still loads; no maps
+    for s in J.material_slots: s.material.use_nodes = True
 else:
     tex = [s.material for s in J.material_slots if s.material and s.material.get('p3_textured')]
     hullm = next((m for m in tex if any(n.type == 'NORMAL_MAP' for n in m.node_tree.nodes)), None)

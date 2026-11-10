@@ -148,7 +148,9 @@ def main():
     hero = A3.HERO_SLOTS if CELL.startswith('Hy') else ()
     S, Pl, hard, gen, notes, prox = A3.build_geometry(hero, GEN)
     t_geo = time.time() - t0
-    au = PB.audit(S + Pl, [o for o in hard if o.get('role') != 'glow'] + gen, A3.GUNS); au['plates_crossing_break_lines'] = A3.plate_crossing(Pl)
+    sc0 = bpy.context.scene      # the build's own guns (with mount normals) and break lines, passed explicitly (Muse note on PR 341)
+    au = PB.audit(S + Pl, [o for o in hard if o.get('role') != 'glow'] + gen, A3.GUNS, t_lines=tuple(sc0['r209_t_lines']), l_line=tuple(sc0['r209_l_line']))
+    au['plates_crossing_break_lines'] = A3.plate_crossing(Pl)
     block_t = sum(C.tris(o) for o in S); plate_t = sum(C.tris(o) for o in Pl); gen_t = sum(C.tris(o) for o in gen)
     hull = join(S + Pl, 'hull_baked'); hull['role'] = 'hull'; hull['kind'] = 'hull'; unwrap([hull])
     made, fit = C.breakable([hull]); skin = hull.modifiers.get('skin'); skin.show_render = False; skin.show_viewport = False

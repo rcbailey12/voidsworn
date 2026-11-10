@@ -165,7 +165,7 @@ def lod_size(objs):
 # ---------------------------------------------------------------------------------------------------------------- audit
 def audit(hull_objs, part_objs, guns=(), t_lines=None, l_line=None):
     """common.audit's checks in one pass (a kit adds hundreds of small parts; the pairwise version rebuilt a tree per part):
-    parts that neither touch the hull nor another part (floating), parts across a break line, guns aimed backward"""
+    parts that neither intersect (or lie within .002 of) the hull nor intersect another part (floating), parts across a break line, guns aimed backward"""
     import bmesh
     from mathutils.bvhtree import BVHTree
     import common as C
@@ -193,7 +193,9 @@ def audit(hull_objs, part_objs, guns=(), t_lines=None, l_line=None):
             h = T.find_nearest(o.matrix_world @ v.co)
             if h[0] is not None: dmin = min(dmin, h[3])
         if dmin > .002: probs.append(f'part {o.name} floats {dmin * 41.6:.2f} game units off the hull')
-    # what the floating test proves: every part touches the hull or touches another part. A part resting only on another part is
-    # excused, so a chain of parts can hang off one that touches the hull; it does not prove each part sits on a real mount.
+    # what the floating test proves: every part intersects the hull or another part (BVH overlap: faces that cross), or has a
+    # sampled vertex within .002 of the hull. A part resting exactly on another part without crossing its faces is not excused by
+    # it. A part intersecting only another part is excused, so a chain of parts can hang off one that meets the hull; it does not
+    # prove each part sits on a real mount.
     return dict(problems=probs, parts=len(allp), crossing_break_lines=sorted(set(cross)),
                 guns_with_normals=sum(1 for g in guns if len(g) > 2 and g[2] is not None), guns_into_ship=into)

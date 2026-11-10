@@ -3,8 +3,9 @@ rem Ship recipe, stage 7: the game export, automated (issue 209 round 7; FINDING
 rem From the baked ship (stage 5) and the ship json, with no hand steps, this writes the game's ship folder into
 rem Downloads\voidsworn_test\recipe\SHIP\export\CODE\ : CODE.glb (one ship node with a child node per hard point: hp_w per weapon
 rem muzzle, hp_eng, hp_breach, hp_core) and the 2048 map set (export7.py). Then it reads the glb back and checks it
-rem (check_export.py): FAIL when a weapon slot of the ship's data.js weapon list has no hard point, or a hard point is off the mesh.
-rem Last, it proves the check itself can fail (check_export_selftest.py: three broken copies must all be refused).
+rem (check_export.py): FAIL when a weapon slot of the ship's data.js weapon list has no hard point, a hard point is off the mesh,
+rem or the six breach anchors break their contract (count, sections, clearance from parts, outward normal); see RECIPE.md.
+rem Last, it proves the check itself can fail (check_export_selftest.py: nine broken copies must all be refused, each for its reason).
 rem It never copies into the game on its own. To install a checked export, set INSTALL_TO to a Godot project folder (the folder
 rem that holds project.godot) before running this: the files it replaces are first copied to export\replaced_DATE\, and the old
 rem ship's wreck and damage files are moved there too (they belong to the old hull). Nothing is deleted.

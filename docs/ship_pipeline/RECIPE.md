@@ -27,10 +27,10 @@ shape can be judged); stage 6 fails when the LOD export or the Godot bench does 
 | 1. Concept in | `1_concept_in.bat` | checks `docs\ship_pipeline\concepts\<ship>.webp`, starts `tools\recipe\ships\<ship>.json` from the template (asks the faction), writes the concept with its outline | `concept.png` | seconds |
 | 2. AI shape reference | `2_shape_ref.bat` | TRELLIS.2 turns the concept cut-out into one whole-hull mesh: a shape reference and a source of surface grime, never shipped. Every current concept already has one | `bakeoff\<ship>_trellis.glb` | 2 to 4 min |
 | 3. Traced hull and the outline gate | `3_trace_hull.bat` | slices the shape reference and fits clean faceted sections (`b0trace.py`); tunes the hull module's numbers on the concept outline with a pull toward the shape reference (`tune5.py`); scores the outline at the concept's own camera. Gate: 90 percent overlap | `sil\sil_<cell>.png`, PASS or FAIL | 10 to 25 min (tune) |
-| 4. Faction parts kit | `4_parts_kit.bat` | builds the hull with the faction kit's parts at the ship's sockets, audits it (`audit.py`: nothing floats, nothing crosses the build's own break lines, no gun aimed backward or into the ship against its mount normal), proves the audit can fail (`audit_selftest.py`: three broken copies refused), re-scores the gate with the parts on, renders clay close-ups at the concept camera | `build\<cell>.blend`, `audit.json`, `clay\` | about 5 min |
+| 4. Faction parts kit | `4_parts_kit.bat` | builds the hull with the faction kit's parts at the ship's sockets, audits it (`audit.py`: nothing floats, nothing crosses the build's own break lines, no gun aimed backward or into the ship against its mount normal), proves the audit can fail (`audit_selftest.py`: five broken copies refused, each for its own reason), re-scores the gate with the parts on, renders clay close-ups at the concept camera | `build\<cell>.blend`, `audit.json`, `clay\` | about 5 min |
 | 5. Paint bake | `5_paint_bake.bat` | the bake script named by the ship json's `bake` (`bakeAb6.py` for C15s_23; it builds whichever hull module `hull` names, so any ship whose hull module follows `armA5` to `armA7` uses it; a ship with its own bake names it there): the faction paint and the shape reference's grime baked to atlases (hull albedo, ORM, detail normal; parts albedo, ORM), renders at the concept camera (studio and concept light) and the fixed views, weapon close-ups | `<cell>.blend`, maps, `r\`, `close\` | 30 to 40 min |
 | 6. LOD | `6_lod.bat` | the hand LOD chain (lod0 to lod3 sharing one set of atlases, small parts drop out by size) and the Godot cost bench (twenty copies, 1080p and 3D at 4K). Costs are reported, never capped (R111) | `glb\<cell>.glb`, `godot\` | about 3 min |
-| 7. Game export | `7_export.bat` | writes the game's ship folder from the baked ship and the ship json, with no hand steps: the ship glb with a node per hard point, and the 2048 map set. Then reads the glb back and checks it: FAIL when a weapon slot of the ship's `data.js` weapon list has no hard point, or a hard point is off the mesh. Then proves the check can fail (three broken copies must be refused). Details below | `recipe\<ship>\export\<code>\` | about a minute |
+| 7. Game export | `7_export.bat` | writes the game's ship folder from the baked ship and the ship json, with no hand steps: the ship glb with a node per hard point, and the 2048 map set. Then reads the glb back and checks it: FAIL when a weapon slot of the ship's `data.js` weapon list has no hard point, a hard point is off the mesh, or the breach anchors break their contract. Then proves the check can fail (nine broken copies must be refused, each for its own reason). Details below | `recipe\<ship>\export\<code>\` | about a minute |
 
 Ryan's review rounds sit after stage 3 (shape), after stage 5 (weapons and paint, the close-up and paint sheets) and after
 stage 6 (cost). Opus builds the sheets from the stage outputs (`tools/blender/r209/sheets7pc.py` since round 7: the battle camera
@@ -56,14 +56,16 @@ weapons read like the concept and the outline stays at 90 percent or better.
 
 ## What the stage 4 audit proves, and what it does not
 
-- **Floating:** every part touches the hull or touches another part. A part resting only on another part is excused, so a chain of
-  parts can hang off one that touches the hull; the test does not prove that each part sits on its own mount (that is the
+- **Floating:** every part intersects the hull or another part (BVH overlap: faces that cross), or has a sampled vertex within
+  0.002 of the hull. A part resting exactly on another part without crossing its faces is not excused. A part intersecting only
+  another part is excused, so a chain of parts can hang off one that meets the hull; the test does not prove that each part sits on its own mount (that is the
   placement rule, checked by eye on the clay close-ups).
 - **Break lines:** the build's own (`common.set_break` writes them into the blend as `r209_t_lines` and `r209_l_line`). With none in
-  the blend the audit fails; it never falls back to an older hull's lines.
+  the blend, or with either list empty, the audit fails; it never falls back to an older hull's lines.
 - **Guns:** each gun carries its aim and its mount's outward normal (`plumbing.register_gun`, kept by the hull module in
-  `r209_guns`). A gun aimed backward (x below -0.05) or into the ship (aim against the mount normal) is a problem; with no normals at
-  all the audit fails, because the into-the-ship test could not run.
+  `r209_guns`). A gun aimed backward (x below -0.05) or into the ship (aim against the mount normal) is a problem; when any gun lacks
+  its normal the audit fails (it names the guns), because the into-the-ship test could not run for them (Muse check of PR 341,
+  condition 1).
 
 ## Stage 7: the game export (issue 209 round 7; FINDINGS R155, R156)
 
@@ -89,11 +91,19 @@ What it writes (`tools/recipe/export7.py`), in the game's frame (+X bow, +Y up, 
 
 The check (`tools/recipe/check_export.py`, plain Python) reads the written glb the way the game will. It fails the export when: a
 weapon slot has no hard point, or a weapon hard point names a slot, weapon or arc `data.js` does not have; a hard point is more
-than 0.012 of the ship's length off the mesh (`hp_core` must be inside the hull's box); a weapon rests aimed backward, a port
-mount sits to starboard or the other way round, a forward weapon does not point forward, an engine does not point aft; `hp_eng`,
-`hp_breach` or `hp_core` is missing; a map the glb names is not in the folder. `check_export_selftest.py` then breaks three
-copies of the real export (a slot's points removed, a point moved off the hull, a gun turned aft) and the check must refuse all
-three.
+than 0.012 of the ship's length off the mesh (the length is the x extent of the glb's mesh box, so the limit scales with the
+ship; `hp_core` must be inside the hull's box); a weapon rests aimed backward, a port
+mount sits to starboard or the other way round, a forward weapon does not point forward, an engine does not point aft; a weapon
+point lacks one of the eight extras in the table above or its extras slot, weapon or arc disagree with its name; `hp_eng` or
+`hp_core` is missing; a map the glb names is not in the folder. And it holds the breach contract of the table above (Muse check of
+PR 341, condition 2): exactly six `hp_breach` anchors, one port and one starboard (`extras.side`, and sitting on that side) in each
+section (`extras.section`: prow, mid, eng), each at least 0.03 (ship frame, `export7.BREACH_CLEAR`) from every part surface (the
+glb's surfaces other than `<code>_hull`; parts and glow), and +Y pointing out of its own side (its z component along that side at
+least 0.5). `check_export_selftest.py` then breaks nine copies of the real export (a slot's points removed, a point moved 0.05 of
+the ship's length off the hull, a gun turned aft, a port point mirrored to starboard, `hp_core` removed, a weapon's
+`extras.socket` removed, a breach anchor removed, a breach anchor moved onto a muzzle, a breach anchor turned to face in) and the
+check must refuse all nine, each for its own reason. An `unbaked=1` test export now names its surfaces `<code>_hull` and
+`<code>_parts` too, so the clearance is measured in the sandbox as on a baked ship.
 
 Stage 7 never copies into the game on its own (the build's ship folder is shared). Set `INSTALL_TO` to a Godot project folder to
 install a checked export there: what it replaces is copied to `export\replaced_<date>\` first, and the old ship's wreck and damage
