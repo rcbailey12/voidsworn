@@ -1,0 +1,6 @@
+{
+ "note": "Sandbox scores of the built geometry (sil_dump.py build), same scorer and camera as rounds 4 to 6. Round 6's 90.1 from the PC glb reproduces here as Ab6_lowered.",
+ "Ab6_lowered": {"aim": [0.25, 0.95, -0.15], "overlap": 90.1, "concept_covered": 96.6, "cell_outside": 7.0},
+ "Ab6_r6e": {"aim": [0.55, 0.835, 0.0], "overlap": 89.8, "concept_covered": 96.6, "cell_outside": 7.3},
+ "Ab7_step1": {"aim": [0.14, 0.99, 0.0], "overlap": 90.1, "concept_covered": 96.6, "cell_outside": 7.0}
+}
