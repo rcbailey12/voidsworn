@@ -19,7 +19,7 @@ import numpy as np
 from PIL import Image, ImageFilter
 
 p = argparse.ArgumentParser(); p.add_argument('src'); p.add_argument('dst'); p.add_argument('--route', required=True, choices=['a', 'b'])
-p.add_argument('--fire', default='fire')   # route A: which fire render to pack (fire, or firelo / firehi: half / double strength)
+p.add_argument('--fire', default='fire')   # route A: which fire render to pack (fire, or firelo / firehi: 0.4 / 2.8 times the strength)
 a = p.parse_args(); src = pathlib.Path(a.src); dst = pathlib.Path(a.dst); dst.mkdir(parents=True, exist_ok=True)
 FILL = .80
 AMOUNTS = {'flash': [1.0, .3] + [0.0] * 14, 'core': [1.0, .8, .55, .3, .12] + [0.0] * 11}

@@ -72,8 +72,8 @@ SHAPES = {
     # clumps, reach of each clump as a share of the burst's reach, clump radius, core radius (0: none), flat ring
     'burst': dict(n=10, reach=(.5, 1.0), radius=(.16, .30), core=.38, ring=False, even=True),
     'shards': dict(n=6, reach=(.45, 1.0), radius=(.18, .32), core=.28, ring=False, even=False),
-    'sphere': dict(n=12, reach=(.75, 1.0), radius=(.18, .26), core=.40, ring=False, even=True),
-    'ring': dict(n=11, reach=(.9, 1.0), radius=(.17, .22), core=0.0, ring=True, even=True),
+    'sphere': dict(n=12, reach=(.55, 1.0), radius=(.15, .30), core=.40, ring=False, even=True),
+    'ring': dict(n=11, reach=(.78, 1.0), radius=(.14, .26), core=0.0, ring=True, even=True),
 }
 
 
@@ -95,15 +95,16 @@ def burst(shape, cfg, rnd, fire=False):
             flow(o, 'SMOKE', cfg['density'], 0.0, on=3)
         objs.append(o)
     for i in range(n):
-        th = base + (math.tau * i / n + rnd.uniform(-.2, .2) if sh['even'] else rnd.uniform(0, math.tau))
+        th = base + (math.tau * i / n + rnd.uniform(-.3, .3) if sh['even'] else rnd.uniform(0, math.tau))
         if sh['ring']:   # a flat ring, tilted a little off the camera plane
             ray = (math.cos(th), math.sin(th), math.cos(th) * tilt[0] + math.sin(th) * tilt[1])
         else:
             ph = rnd.uniform(-.45, .45); ray = (math.cos(th) * math.cos(ph), math.sin(th) * math.cos(ph), math.sin(ph))
         reach = cfg['reach'] * rnd.uniform(*sh['reach']); radius = rnd.uniform(*sh['radius'])
-        objs.append(thrown(radius, ray, reach, cfg['travel'], 'SMOKE', cfg['density'], cfg['on'], rnd))
+        travel = cfg['travel'] + rnd.choice((-1, 0, 0, 1, 2))   # uneven arrival, so the burst is not a neat flower
+        objs.append(thrown(radius, ray, reach, travel, 'SMOKE', cfg['density'], min(cfg['on'], travel - 1), rnd))
         if fire:
-            objs.append(thrown(radius * .8, ray, reach, cfg['travel'], 'BOTH', cfg['density'], 3, rnd, **hot))
+            objs.append(thrown(radius * .8, ray, reach, travel, 'BOTH', cfg['density'], 3, rnd, **hot))
     return objs
 
 
@@ -161,9 +162,11 @@ def smoke_material(dom, colour=(.30, .28, .34), density=4.0):
     return mat
 
 
-def fire_material(dom, density=4.0, strength=1.6):
-    """Fire only: the flame field glows through a colour ramp (deep red to white); the smoke still absorbs, so fire
-    behind thick smoke is hidden as it would be. Rendered on black with no lights."""
+def fire_material(dom, density=1.0, strength=5.0):
+    """Fire only: the flame field glows through a colour ramp (deep red to white), rendered on black with no lights. The
+    smoke absorbs only a little here (a quarter of the smoke pass), so the glow adds up through the depth of the gas and
+    the middle of the burst is the brightest: at full absorption only the cool outer skin showed, as one flat dull tan
+    over the whole gas (PC run 3 of issue 353: 0.40 of full brightness at most)."""
     mat = bpy.data.materials.new('route fire'); mat.use_nodes = True; nt = mat.node_tree; nt.nodes.clear()
     out = nt.nodes.new('ShaderNodeOutputMaterial'); vol = nt.nodes.new('ShaderNodeVolumePrincipled')
     den = nt.nodes.new('ShaderNodeAttribute'); den.attribute_name = 'density'

@@ -79,7 +79,7 @@ def main():
     ap.add_argument("--quality", type=int, default=86)
     a = ap.parse_args()
     runs = [r.split("=", 1) for r in a.runs]
-    picks = {"w_torp_void_hull": [2, 4, 8], "d_cruiser": [7, 9, 12]}
+    picks = {"w_torp_void_hull": [2, 4, 8], "d_cruiser": [7, 8, 9]}
     for k, v in pairs(a.cells).items():
         picks[k] = [int(x) for x in v.split(",")]
     keys = {k: int(v) for k, v in pairs(a.key).items()}
