@@ -715,6 +715,7 @@ function hitChance(u,w,t){
   { const pr=treeSkill('rehearsed'); if(pr&&u.isSq&&u.side==='player'&&u.extra&&cmdActive('player','scramble')) c+=treeAddVal(u,'aim',pr.n); } // Reyes T2b
   { const bc=treeSkill('beacon'); if(bc&&u.side==='player'&&!u.isSq&&B&&B.tr&&B.tr.beacon&&B.tr.beacon.r===B.round&&B.tr.beacon.id===t.id) c+=treeAddVal(u,'aim',bc.n); } // Hegemony shared C1a
   { const fm=treeSkill('formation'); if(fm&&u.side==='player'&&!u.isSq&&u.treeFormation) c+=treeAddVal(u,'aim',fm.n); } // Hegemony shared B1a
+  { const ta=treeSkill('targetArchived'); if(ta&&u.treeAimTgt&&t.id===u.treeAimTgt) c+=treeAddVal(u,'aim',ta.n); } // Umbra T2b: a target no other ship chose
   { const ek=treeSkill('everyKnife'); if(ek&&u.side==='enemy'&&u.treeKnifeRound===B.round) c-=ek.n; } // Sable T3b
   { if(u.side==='enemy'&&u.treeAcidAim) c-=20; } // Voice T3b: acid in the scanners
   const surge=cmdActive(t.side,'surge')||!!(t.side==='player'&&t.burnCarry); // v53: the enemy's Surge Command, and Grax's carried burn
@@ -753,6 +754,8 @@ function dmgMult(u,w,t,rear){
     { const pb=treeSkill('packBites'); if(pb&&u.treeDmgCarry&&u.treeDmgCarry.r===B.round) add+=pb.n; } // Vesh T3b
     { if(u.treeHuntRearNext&&u.treeHuntRearNext.r===B.round) add+=u.treeHuntRearNext.n; } // Sable capstone 1
     if(u.treeDmgNext) add+=u.treeDmgNext; // Mending T3a: the new flesh is angry
+    { const sp=treeSkill('shadowPos'); if(sp&&u.treeShadowPos&&cmdActive(u.side,'hunt')) add+=sp.n; } // Ostrel T2a: the shadow is a position
+    if(u.treeIterFire) add+=u.treeIterFire; // Nadir T2a: the rebuild does not wait
     { const sb=treeSkill('strikeBook'); if(sb&&cmdActive(u.side,'hunt')&&B&&B.tr&&B.tr.strikeSpeed!=null&&u.speed>=B.tr.strikeSpeed) add+=sb.n; } // Vorn T1b
     { const cf=treeSkill('crossFire'); if(cf&&cmdActive(u.side,'hunt')&&B&&B.tr&&(B.tr.crossHits[t.id]||0)>=1) add+=cf.n; } // Vorn T2a
     { const ti=treeSkill('totalInterdiction'); if(ti&&cmdActive(u.side,'hunt')&&B&&B.tr&&B.tr.totalShips[t.id]&&Object.keys(B.tr.totalShips[t.id]).length>=3) add+=ti.n; } // Vorn T3a
@@ -771,8 +774,10 @@ function dmgMult(u,w,t,rear){
   if(u.isSq&&u.side==='player'&&u.extra&&B&&B.tr){
     { const fp=treeSkill('flightPaths'); if(fp){ const par=B.units.find(x=>x.id===u.parent); if(par&&B.tr.carrierLast&&B.tr.carrierLast[par.id]===t.id) m+=treeAddVal(u,'sqPct',fp.n); } } // Tamsa T1a
     { const rp=treeSkill('replay'); if(rp&&B.tr.strikeAgain===B.round&&B.tr.hitRound[t.id]) m+=treeAddVal(u,'sqPct',rp.n); } // Tamsa T2a
-    { const asp=treeSkill('accountSplits'); if(asp){ const arr=(B.tr.wingTargets&&B.tr.wingTargets[u.parent])||[]; if(arr.some(x=>x.sq!==u.id&&x.tid!==t.id)) m+=treeAddVal(u,'sqPct',asp.n); } } } // Ashgrove T2a
+    { const asp=treeSkill('accountSplits'); if(asp){ const arr=(B.tr.wingTargets&&B.tr.wingTargets[u.parent])||[]; if(arr.some(x=>x.sq!==u.id&&x.tid!==t.id)) m+=treeAddVal(u,'sqPct',asp.n); } } // Ashgrove T2a, Matriarch T2a: a split strike pays
+    { const nt=treeSkill('nineThroats'); if(nt&&B.tr.swarmHunger&&B.tr.swarmHunger.r===B.round&&B.tr.swarmHunger.id===t.id) m+=treeAddVal(u,'sqPct',nt.n); } } // Matriarch capstone 1: every throat on one hunger
   if(rear) m+=u.fx.rearPct||0;
+  { const tt=treeSkill('teethThroat'); if(tt&&rear&&u.side==='player'&&!u.isSq&&cmdActive(u.side,'surge')&&!u.treeTeethUsed) m+=treeAddVal(u,'rearPct',tt.n); } // Razormaw T1b: the first rear hit in the frenzy
   { const rr=treeSkill('rearReckoning'); if(rr&&rear&&u.side==='player'&&cmdActive(u.side,'hunt')) m+=treeAddVal(u,'rearPct',rr.n); } // Malek T2b
   { const kb=treeSkill('knifeBack'); if(kb&&rear&&u.side==='player'&&!u.isSq&&cmdActive(u.side,'hunt')) m+=treeAddVal(u,'rearPct',kb.n); } // Sable T1a
   if(rear&&t.nem&&nemWeak('flank')) m+=.25; // B4 Nemesis weakness: thin stern plating
@@ -998,6 +1003,7 @@ async function landVolley(u,w,t,o){ const quad=o.quad, shots=o.shots, called=o.c
     { const sm=treeSkill('smileCut'); if(sm&&u.side==='player'&&!u.isSq&&u.treeSmile) treeFx(u,'smileCut','the first cut smiles'); } // Sable T3a
     { const pb=treeSkill('packBites'); if(pb&&u.side==='player'&&!u.isSq&&u.treeDmgCarry&&u.treeDmgCarry.r===B.round) treeFx(u,'packBites','the pack bites on'); } // Vesh T3b
     const rq=treeIsRear(u,t,quad);
+    { if(rq&&u.side==='player'&&!u.isSq&&cmdActive(u.side,'surge')&&!u.treeTeethUsed){ u.treeTeethUsed=1; treeFx(u,'teethThroat','the teeth find the throat'); } } // Razormaw T1b: the first rear hit spends the bonus
     if(rq&&quad!==2) treeFx(u,'debtHunts','side hits count as rear');
     { const kb=treeSkill('knifeBack'); if(kb&&rq&&u.side==='player'&&!u.isSq&&cmdActive(u.side,'hunt')) treeFx(u,'knifeBack','the knife finds the back'); } // Sable T1a
     { const ct=treeSkill('cutTurn'); if(ct&&rq&&u.side==='player'&&!u.isSq){ u.treeFreeTurn=1; treeFx(u,'cutTurn','cut and turn'); } } // Sable T2a
@@ -1022,6 +1028,7 @@ async function landVolley(u,w,t,o){ const quad=o.quad, shots=o.shots, called=o.c
     { const ff=treeSkill('frenzyFeeds'); if(ff&&u.side==='player'&&!u.isSq&&cmdActive(u.side,'surge')&&rq&&!u.treeFrenzyMove){ u.treeFrenzyMove=1; u.mp=(u.mp||0)+ff.n; u.postMp=Math.max(u.postMp||0,ff.n); treeFx(u,'frenzyFeeds','the frenzy feeds the throat'); } } // Razormaw T3a
     { const wd=treeSkill('wingsDebt'); if(wd&&u.isSq&&u.side==='player'&&!B.tr.wingsDebt[u.parent]&&B.tr.carrierHit[u.parent]===t.id){ d*=1+treeAddVal(u,'sqPct',wd.n); B.tr.wingsDebt[u.parent]=1; treeFx(u,'wingsDebt','the wings settle the debt'); } } // Ashgrove T3b
     const r=applyHit(u,w,t,d,quad);
+    if(u.treeIterFire) u.treeIterFire=0; // Nadir T2a: the bonus belongs to the next shot only
     if(flightSec&&t._calledSec===flightSec) t._calledSec=null;
     { const fp=treeSkill('flightPaths'); if(fp&&u.isSq&&u.extra&&u.side==='player'){ const par=B.units.find(x=>x.id===u.parent); if(par&&B.tr.carrierLast&&B.tr.carrierLast[par.id]===t.id) treeFx(u,'flightPaths','the wing follows the glass'); } } // Tamsa T1a
     { const rp=treeSkill('replay'); if(rp&&u.isSq&&u.extra&&u.side==='player'&&B.tr.strikeAgain===B.round&&B.tr.hitRound[t.id]===1) treeFx(u,'replay','the replay corrects'); } // Tamsa T2a
@@ -1395,6 +1402,9 @@ async function treeRoundFx(){ if(!B||B.over) return;
   if(B.treeDebtRound===B.round){ B.treeDebtRound=0; const b0=B; B.volleyMul={side:'player',m:1+(B.treeDebtPow||0)}; B.treeDebtDue=1;
     try{ for(const u of alive('player').filter(x=>!x.isSq)){ if(B.over) break; await treeFreeVolleyShip(u,'enemy',false); } } finally{ B.treeDebtDue=0; if(B===b0) B.volleyMul=null; }
     if(B===b0&&!B.over) treeFx(treeFlagUnit(),'debtDue','the interest comes due'); }
+  if(B.treeSpatRound&&B.treeSpatRound===B.round){ B.treeSpatRound=0; const b0=B; B.volleyMul={side:'player',m:1};
+    try{ for(const id of (B.treeSpatIds||[])){ const u=B.units.find(x=>x.id===id&&!x.dead&&!x.isSq); if(!u||B.over) continue; await treeFreeVolleyShip(u,'enemy',true); } } finally{ if(B===b0) B.volleyMul=null; }
+    if(B===b0&&!B.over) treeFx(treeFlagUnit(),'spatRounds','the held spit spits now'); } // Voice T2b: the held half volley fires at half damage
   if(B.treeNoonRound&&B.treeNoonRound===B.round){ B.treeNoonRound=0; const b0=B; B.volleyMul={side:'player',m:1};
     try{ for(const u of alive('player').filter(x=>!x.isSq)){ if(B.over) break; await treeFreeVolleyShip(u,'enemy',true); } } finally{ if(B===b0) B.volleyMul=null; }
     if(B===b0&&!B.over) treeFx(treeFlagUnit(),'noonRepeat','the noon volley returns'); } }
@@ -1489,10 +1499,11 @@ function treeRoundStart(){ if(!B||!B.tree||!B.tree.length) return; B.tr=B.tr||{}
   B.tr.crossHits={}; B.tr.totalShips={}; B.tr.hitDuringStrike={}; B.tr.bellUsed=0; B.tr.columnUsed=0; B.tr.firstStopTarget=null; B.tr.firstStopDone=0;
   B.tr.wingFiled=null; B.tr.escortScreen=0; B.tr.beacon=null;
   B.tr.wingTgt={}; B.tr.wingTargets={}; B.tr.lightTgt={}; B.tr.wingCap={}; B.tr.wingCapFirst={};
+  B.tr.swarmHunger=null;
   B.tr.sunTarget=null; B.tr.sunFirstDone=0; B.tr.grandTarget=null; B.tr.grandFirstDone=0; B.tr.oneLens=null;
   B.treeWeakShip=null; B.treeShiftUp=null; B.treeShiftDown=null; B.treeWallEarly=0;
   B.treeIronExtra=null;
-  for(const u of alive('player')) if(!u.isSq){ u.treeHuntNext=0; u.treeHuntCarry=0; u.treeTorpCarry=0; u.ironCarry=0; u.treeAimNext=0; u.treeRoundDmg=0; u.treeRoundFired=0; u.treeSilentMark=0; u.treeDmgNext=0; u.treeRedFirst=0; u.treeAcidAim=0; u.tempHp=0; u.treeFrenzyMove=0; u.treeVolleyHit=0; u.treeSmile=0; u.treeAimGuns=0; u.treeFreeTurn=0; u.treeRushLogged=0; u.burnCarry=null; u.treeFormation=0; u.treeRotUsed=0; u.treeOverflowUsed=0; u.treeDiveUsed=0; u.treeLensRot=0; u.treeWardFacing=null; u.treeSalvoUsed=0; }
+  for(const u of alive('player')) if(!u.isSq){ u.treeHuntNext=0; u.treeHuntCarry=0; u.treeTorpCarry=0; u.ironCarry=0; u.treeAimNext=0; u.treeRoundDmg=0; u.treeRoundFired=0; u.treeSilentMark=0; u.treeDmgNext=0; u.treeRedFirst=0; u.treeAcidAim=0; u.tempHp=0; u.treeFrenzyMove=0; u.treeVolleyHit=0; u.treeSmile=0; u.treeAimGuns=0; u.treeFreeTurn=0; u.treeRushLogged=0; u.burnCarry=null; u.treeFormation=0; u.treeRotUsed=0; u.treeOverflowUsed=0; u.treeDiveUsed=0; u.treeLensRot=0; u.treeWardFacing=null; u.treeSalvoUsed=0; u.treeShadowPos=0; u.treeEclForm=0; u.treeTeethUsed=0; u.treeIterFire=0; u.treeAimTgt=null; u.treeHpStart=u.hp; }
   if(B.treeReserve&&B.treeReserve.length&&B.round>=2){ const keep=[]; const rk=treeSkill('broodReserve')?'broodReserve':'debtsReserve';
     for(const id of B.treeReserve){ const u=B.units.find(x=>x.id===id); if(!u||u.dead) continue; const h=edgeHex('player'); u.treeOff=0; if(h){ u.q=h.q; u.r=h.r; } u.hp=u.maxHp; u.treeReserve=0; u.activated=false;
       treeFx(u,rk,'the reserve joins the line'); }
@@ -1517,6 +1528,10 @@ function treeRoundStart(){ if(!B||!B.tree||!B.tree.length) return; B.tr=B.tr||{}
         for(const id in (p.map||{})){ const t=B.units.find(x=>x.id===id); if(!t||t.dead) continue; const d=Math.round((p.map[id]||0)*s.n); if(d<=0) continue; any=true; t.hp=Math.max(1,t.hp-d); if(typeof fxText==='function') fxText(t,'Acid \u2212'+d,'#c8e04a',-16); log(`${t.name} takes ${d} acid damage from the last volley.`,t.side==='player'?'e':'p'); }
         if(any) treeFx(B.units.find(x=>x.pflag&&!x.dead)||alive('player')[0]||null,'burnStays','the burn stays'); }
       if(p.k==='manyMouths'){ const s=treeSkill('manyMouths'); for(const id of (p.ids||[])){ const u=B.units.find(x=>x.id===id); if(u&&!u.dead&&!u.isSq){ u.treeAcidAim=1; treeFx(u,'manyMouths','acid eats at the scanners'); } } }
+      if(p.k==='spatRounds'){ B.treeSpatRound=B.round; B.treeSpatIds=p.ids||[]; } // Voice T2b: the held spit fires after this round start (treeRoundFx)
+      if(p.k==='growthWound'){ const s=treeSkill('growthWound'); let any=false;
+        for(const e of (p.list||[])){ const u=B.units.find(x=>x.id===e.id); if(!u||u.dead||!u.sec||!u.sec[e.sec]) continue; const sec=u.sec[e.sec]; if(sec.broken) continue; repairSection(u,e.sec,e.amt); any=true; }
+        if(any&&s) treeFx(B.units.find(x=>x.pflag&&!x.dead)||alive('player')[0]||null,'growthWound','the wound holds its growth'); } // Mending T2b: the section heals again
       if(p.k==='noonRepeat'){ B.treeNoonRound=B.round; } // Umbria capstone 1: the volley repeats after this round start (treeRoundFx)
       if(p.k==='debtDue'){ B.treeDebtRound=B.round; B.treeDebtPow=p.pow||0; } // Vex T3b: the delayed volley fires now
       if(p.k==='forgeAhead'){ B.treeForgeRound=B.round; B.treeForgeList=p.list||[]; } // Tamsa capstone 2: the forge strikes now
@@ -1580,6 +1595,8 @@ function treeAfterMove(u){ if(!B||!B.tree||!B.tree.length||!u||u.isSq) return;
   { const lp=treeSkill('loosePack'); if(lp&&u.side==='player'&&(u.hexMoved||0)>0&&!alive('player').some(x=>x.id!==u.id&&!x.isSq&&hdist(x,u)<=2)) treeFx(u,'loosePack','the pack runs wide'); } // Hullbreakers shared B1b
   if(u.side==='player'&&!u.isSq){
     if(treeSkill('formation')&&alive('player').filter(x=>x!==u&&!x.isSq&&hdist(x,u)===1).length>=2){ u.treeFormation=1; treeFx(u,'formation','the formation is filed'); }
+    { const ef=treeSkill('eclFormation'); if(ef&&!u.treeEclForm&&alive('player').filter(x=>x!==u&&!x.isSq&&hdist(x,u)===1).length>=2){ u.treeEclForm=1; u.evBuff=Math.min(FX_CAPS.ev||45,(u.evBuff||0)+ef.n); treeFx(u,'eclFormation','the formation holds'); } } // Eclipse shared B1a: two friends close by give evasion
+    { const sp=treeSkill('shadowPos'); if(sp&&cmdActive(u.side,'hunt')&&!u.treeShadowPos&&treeInEnemyRear(u)){ u.treeShadowPos=1; treeFx(u,'shadowPos','the shadow is a position'); } } // Ostrel T2a: ending in a rear arc pays
     if(cmdActive(u.side,'iron')){
       const cs=treeSkill('columnStraight'); if(cs&&treeInColumn(u)){ if(treeShieldOver(u,cs.n)>0) treeFx(u,'columnStraight','the column adds shield'); }
       const fs=treeSkill('flagshipStandard'); if(fs&&treeInFlagLine(u)){ if(treeShieldOver(u,fs.n)>0) treeFx(u,'flagshipStandard','the flagship holds the line'); }
@@ -1659,18 +1676,24 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
     const sun=(side==='player')?treeSkill('sunLens'):null; const sunT=sun?treeChoice('enemy'):null; if(sun&&sunT){ B.tr.sunTarget=sunT.id; B.tr.sunFirstDone=0; treeFx(sunT,'sunLens','the sun goes through one lens'); } // Saro capstone 1
     const grand=(side==='player'&&treeSkill('grandLedger')&&!B.tr.grandUsed)?treeSkill('grandLedger'):null; const grandT=grand?treeChoice('enemy'):null; if(grand&&grandT){ B.tr.grandUsed=1; B.tr.grandTarget=grandT.id; B.tr.grandFirstDone=0; treeFx(grandT,'grandLedger','the grand ledger opens'); } // Vex capstone 1
     const lastA=(side==='player')?treeSkill('lastAccount'):null;
+    const srS=(side==='player')?treeSkill('spatRounds'):null; const spatSet={};
+    if(srS){ const cc=alive('player').filter(x=>!x.isSq&&!x.dead); const pick=cc.slice().sort((a,b2)=>{ const da=a.weapons.reduce((n,w)=>n+(w.k==='flak'?0:w.dmg*w.shots),0), db=b2.weapons.reduce((n,w)=>n+(w.k==='flak'?0:w.dmg*w.shots),0); return db-da||(a.id<b2.id?-1:1); }).slice(0,Math.max(1,Math.ceil(cc.length/2))); for(const u of pick) spatSet[u.id]=1; } // Voice T2b: the strongest half holds its spit
+    const ta=(side==='player')?treeSkill('targetArchived'):null; const taPick={}, taCount={};
+    if(ta){ for(const u of alive('player').filter(x=>!x.isSq&&!x.dead)){ let own=null,ov=-Infinity; for(const t of alive(foe)){ if(t.isSq) continue; for(const w of u.weapons){ if(canFire(u,w,t)){ const e=expectedVs(u,w,t); const v=e.hull+e.shield*.3; if(v>ov){ ov=v; own=t; } } } } if(own){ taPick[u.id]=own.id; taCount[own.id]=(taCount[own.id]||0)+1; } } } // Umbra T2b: every ship picks its own target before the volley
     try{ for(const u of alive(side).filter(x=>!x.isSq)){ if(B.over||!live()) break; let firedAny=false;
+      if(spatSet[u.id]) continue;
       if(held&&!heldOnce&&u.id===held.id&&(u.hexMoved||0)===0){ u.treeHeld=1; heldOnce=1; treeFx(u,'heldAccount','the volley is held for the move'); continue; }
       const ll=treeSkill('longLight'); let bumped=0; if(ll&&side==='player'&&u.turnsLeft>=u.turns){ bumped=treeAddVal(u,'lanceRange',ll.n); if(bumped>0){ for(const w of u.weapons) if(w.k==='lance'){ w.r+=bumped; w.opt+=bumped; } treeFx(u,'longLight','lances reach further'); } }
       let own=null; if(eg){ let ov=-Infinity; for(const t of alive(foe)){ if(t.isSq) continue; for(const w of u.weapons){ if(canFire(u,w,t)){ const e=expectedVs(u,w,t); const v=e.hull+e.shield*.3; if(v>ov){ ov=v; own=t; } } } }
         if(own){ const n=(B.tr.volleyPick&&B.tr.volleyPick[own.id])||0; if(n>0){ u.treeAimPlus=treeAddVal(u,'aim',eg.n); treeFx(u,'everyGun','a shared solution'); } B.tr.volleyPick[own.id]=n+1; } }
+      if(ta&&taPick[u.id]){ const tid=taPick[u.id]; if((taCount[tid]||0)===1){ u.treeAimTgt=tid; treeFx(u,'targetArchived','the archived target is unshared'); } } // Umbra T2b
       const keep=u.weapons.map(w=>[w.fired,w.cdLeft]), pf=[u.postFire,u.postMp]; u.weapons.forEach(w=>{ w.fired=false; w.cdLeft=0; });
       const foesBefore=alive(foe).length;
       u.treeVolleyHit=0;
       for(let i=0;i<u.weapons.length;i++){ if(B.over||!live()||u.dead) break; const w=u.weapons[i]; const ts=alive(foe).filter(t=>canFire(u,w,t)); if(!ts.length) continue; firedAny=true; const val=t=>{ const e=expectedVs(u,w,t); return e.hull+e.shield*.3+(e.hull>=t.hp?25:0); }; ts.sort((a,b2)=>val(b2)-val(a));
         let pick=ts[0]; if(olS&&u.id===olS.id&&olT&&canFire(u,w,olT)) pick=olT; else if(sunT&&canFire(u,w,sunT)) pick=sunT; else if(grandT&&canFire(u,w,grandT)) pick=grandT; else if(named&&canFire(u,w,named)) pick=named; else if(acid){ pick=ts.slice().sort((a,b2)=>hdist(u,a)-hdist(u,b2)||(a.id<b2.id?-1:1))[0]; treeFx(u,'acidBeforeAim','the nearest enemy is chosen'); } else if(eg&&own&&canFire(u,w,own)) pick=own; // Voice T1a: the nearest enemy instead of the best target
         await fireWeapon(u,i,pick); }
-      u.treeAimPlus=0;
+      u.treeAimPlus=0; if(ta) u.treeAimTgt=null;
       u.weapons.forEach((w,i)=>{ w.fired=keep[i][0]; w.cdLeft=keep[i][1]; }); if(bumped>0) for(const w of u.weapons) if(w.k==='lance'){ w.r-=bumped; w.opt-=bumped; } u.postFire=pf[0]; u.postMp=pf[1];
       if(spits&&!firedAny&&!u.dead&&!B.over) await treeSpit(u); // Voice T1b: a throat that cannot bear still spits
       if(grows&&u.treeVolleyHit&&!u.dead&&!B.over){ let bw=-1,bt2=null,bv=-1; for(let i=0;i<u.weapons.length;i++){ const w=u.weapons[i]; if(w.k==='flak'||w.off) continue; for(const t of alive(foe)){ if(!canFire(u,w,t)) continue; const e=expectedVs(u,w,t), v=e.hull+e.shield*.3; if(v>bv){ bv=v; bw=i; bt2=t; } } }
@@ -1682,6 +1705,7 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
       if(side==='player'&&lastA&&!u.dead&&!B.over&&alive(foe).length<foesBefore){ let bt=null,bv=-Infinity; for(const t2 of alive(foe)){ if(t2.isSq) continue; for(const w2 of u.weapons){ if(!canFire(u,w2,t2)) continue; const e=expectedVs(u,w2,t2); const v=e.hull+e.shield*.3; if(v>bv){ bv=v; bt=t2; } } }
         if(bt){ let wi=-1; for(let i=0;i<u.weapons.length;i++){ if(canFire(u,u.weapons[i],bt)){ wi=i; break; } } if(wi>=0&&await treeExtraShot(u,wi,bt,{})) treeFx(u,'lastAccount','the last account is paid'); } } // Vex capstone 2
     }
+    if(srS){ const ids=Object.keys(spatSet); if(ids.length){ (B.treePending=B.treePending||[]).push({k:'spatRounds',r:B.round,ids}); treeFx(treeFlagUnit(),'spatRounds','half the spits are held'); } } // Voice T2b
     { const ov=treeSkill('oneVoice'); if(ov&&side==='player'&&!B.treeOneVoiceUsed){ const e=treeChoice('enemy'); if(e){ B.treeOneVoiceUsed=1; B.tr.firstStopTarget=e.id; B.tr.firstStopDone=0;
         for(const u of alive('player').filter(x=>!x.isSq&&!x.dead&&inSync(x))){ if(B.over||e.dead) break; await treeVolleyAt(u,e); }
         B.tr.firstStopTarget=null; treeFx(treeFlagUnit(),'oneVoice','every synced ship fires as one'); } } } } finally{ if(B===b0) B.volleyMul=null; }
@@ -1723,7 +1747,11 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
     { const wm=treeSkill('wallMoves'); if(wm&&side==='player'){ for(const u of caps('player')){ if(u.dead) continue; const add=treeAddVal(u,'speed',wm.n); u.mp=(u.mp||0)+add; u.postMp=(u.postMp||0)+add; } treeFx(treeFlagUnit(),'wallMoves','the wall moves'); } } // Thale capstone 2
   }
   if(c.id==='restore'){
-    const rp=cmdPow('restore',tier), p=(side==='player');
+    let rp=cmdPow('restore',tier); const p=(side==='player');
+    const triage=p?treeSkill('copiesTriage'):null, iterFire=p?treeSkill('iterationFire'):null, growth=p?treeSkill('growthWound'):null;
+    const arch=p?treeSkill('archiveFirst'):null, tideE=p?treeSkill('tideEarly'):null;
+    if(p&&arch&&alive('player').every(x=>x.isSq||((x.hexMoved||0)===0&&!x.treeRoundFired))){ rp+=arch.n; treeFx(treeFlagUnit(),'archiveFirst','the archive answers first'); } // Nadir T2b
+    if(p&&tideE&&alive('player').every(x=>x.isSq||x.hp>=(x.treeHpStart!=null?x.treeHpStart:x.hp))){ rp+=tideE.n; treeFx(treeFlagUnit(),'tideEarly','the tide comes early'); } // Mending T2a
     const ninth=p?treeSkill('restoreNinth'):null, beyond=p?treeSkill('restoredBeyond'):null, contribute=p?treeSkill('copiesContribute'):null;
     const tenth=p?treeSkill('tenthFrame'):null, earlier=p?treeSkill('earlierCopy'):null;
     const gh=(p&&treeSkill('growHurts'))?treeChoice('ship'):null;
@@ -1733,7 +1761,7 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
     const front=(p&&treeSkill('scrapFront'))?treeChoice('other'):null, wfight=p?treeSkill('weldedFight'):null;
     const bolted=p?treeSkill('doubleBolted'):null, bites=p?treeSkill('packBites'):null, whole=p?treeSkill('weldedWhole'):null;
     const frontFlag=front?treeFlagUnit():null, frontShare=(front&&frontFlag&&front!==frontFlag)?Math.round(frontFlag.maxHp*rp*2):0;
-    const flesh=[];
+    const flesh=[]; const gwList=[];
     const flag=contribute?treeFlagUnit():null;
     let chosen=(ninth||tenth||earlier||contribute)?treeChoice('ship'):null;
     if(contribute&&chosen===flag) chosen=alive('player').filter(x=>!x.isSq&&x!==flag).sort((a,b)=>(a.hp/a.maxHp)-(b.hp/b.maxHp)||(a.id<b.id?-1:1))[0]||flag;
@@ -1748,6 +1776,7 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
       if(front&&u===frontFlag) heal=0;
       if(front&&u===front&&u!==frontFlag) heal+=frontShare;
       const hp0=u.hp;
+      const secFullBefore=new Set(); if(u.sec) for(const k of Object.keys(u.sec)){ const s=u.sec[k]; if(!s.broken&&s.hp>=s.max) secFullBefore.add(k); }
       const skin=!!(p&&sk&&u===sk);
       if(skin){ const skn=treeSkill('skinThick').n; const cap=FX_CAPS.treeTempHp||.2; const add=Math.max(0,Math.min(Math.round(u.maxHp*skn),Math.round(u.maxHp*cap)-(u.tempHp||0))); u.tempHp=(u.tempHp||0)+add; if(add>0) treeFx(u,'skinThick','the regrowth is grown thick'); if(typeof fxText==='function') fxText(u,'+'+add+' grown hull','#8ff0a0',-20); }
       else { u.hp=Math.min(u.maxHp,u.hp+heal); }
@@ -1764,6 +1793,9 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
       if(p&&earlier&&u===chosen){ for(const k of Object.keys(u.sec||{})) repairSection(u,k,rp); u.hp=Math.min(u.maxHp,u.hp+Math.round(u.maxHp*rp)); if(!firedEarlier){ firedEarlier=1; treeFx(u,'earlierCopy','the earlier copy returns'); } }
       if(tenth&&u===chosen&&chosenBroken&&u.sec&&u.sec[chosenBroken]){ const s=u.sec[chosenBroken]; s.broken=false; s.hp=s.max; }
       if(u.hp>hp0||secFixed.length) treeMarkRepair(u);
+      if(p&&triage&&u.sec){ let toFull=false; for(const k of Object.keys(u.sec)){ const s=u.sec[k]; if(!s.broken&&s.hp>=s.max&&!secFullBefore.has(k)){ toFull=true; break; } } if(toFull&&(u.st.fire||u.st.acid)){ u.st.fire=0; u.st.acid=0; treeFx(u,'copiesTriage','the copies triage the damage'); } } // Nadir T1b
+      if(p&&iterFire&&(u.hp>hp0||secFixed.length)){ u.treeIterFire=treeAddVal(u,'dmgPct',iterFire.n); treeFx(u,'iterationFire','the rebuild does not wait'); } // Nadir T2a
+      if(p&&growth&&secFixed.length){ for(const k of secFixed) gwList.push({id:u.id,sec:k,amt}); } // Mending T2b: the same amount will heal again
       if(typeof fxText==='function'&&!skin) fxText(u,'+'+Math.round(u.maxHp*rp)+' hull','#8ff0a0',-20);
       if(p&&beyond&&secFixed.length){ if(!u.treeRebuilt) u.treeRebuilt={}; for(const k of secFixed){ if(u.treeRebuilt[k]) continue; u.treeRebuilt[k]=1; const s=u.sec[k], add=Math.round(s.max*beyond.n); s.max=s.max+add; s.hp=Math.min(s.max,s.hp+add); treeFx(u,'restoredBeyond','the section is rebuilt stronger'); } }
       if(p&&ninth&&u===chosen&&!firedNinth){ firedNinth=1; treeFx(u,'restoreNinth','the ninth frame is restored'); }
@@ -1777,6 +1809,7 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
       if(p&&fk&&u.hp>u.maxHp*.75) flesh.push(u.id);
     }
     if(p&&fk&&flesh.length){ (B.treePending=B.treePending||[]).push({k:'fleshKnit',r:B.round,ids:flesh}); treeFx(B.units.find(x=>x.pflag&&!x.dead)||alive('player')[0]||null,'fleshKnit','the new flesh is angry'); } // Mending T3a
+    if(p&&growth&&gwList.length){ (B.treePending=B.treePending||[]).push({k:'growthWound',r:B.round,list:gwList}); treeFx(treeFlagUnit(),'growthWound','the wound will hold its growth'); } // Mending T2b
     if(p&&te){ (B.treePending=B.treePending||[]).push({k:'tideEnd',r:B.round,pow:rp}); treeFx(B.units.find(x=>x.pflag&&!x.dead)||alive('player')[0]||null,'tideEnd','the tide will come again'); } // Mending capstone 1
   }
   if(c.id==='surge'){ for(const u of alive(side).filter(x=>!x.isSq)){ u.mp=(u.mp||0)+cmdPow('surge',tier); u.turnsLeft=(u.turnsLeft||0)+(tier>=2?2:1); }
@@ -1786,6 +1819,8 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
       { const bc=treeSkill('burnCarry'); if(bc){ (B.treePending=B.treePending||[]).push({k:'burnCarry',r:B.round,pow:cmdPow('surge',tier),turns:tier>=2?2:1}); treeFx(treeFlagUnit(),'burnCarry','the burn will carry'); } } // Grax capstone 1
       { const wr=treeSkill('warlordRun'); if(wr){ const pg=treeFlagUnit(); if(pg){ pg.treeWarlord=1; treeFx(pg,'warlordRun','the warlord runs again'); } } } } } // Grax capstone 2
   if(c.id==='scramble'){ const ct=treeSkill('castTwice')?treeChoice('carrier'):null, aloft=treeSkill('lensAloft');
+    const nine=(side==='player')?treeSkill('nineThroats'):null; const nineT=nine?treeChoice('enemy'):null;
+    if(nine&&nineT){ B.tr.swarmHunger={r:B.round,id:nineT.id}; treeFx(nineT,'nineThroats','nine throats choose one hunger'); } // Matriarch capstone 1
     const fw=(side==='player'&&treeSkill('firstWave'))?treeChoice('carrier'):null;
     const esc=(side==='player'&&treeSkill('escortName'))?treeChoice('friend'):null;
     const gen=(side==='player')?treeSkill('generation'):null;
@@ -1823,6 +1858,7 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
       for(let k=0;k<count;k++){ let hs=(spore?treeLaunchHexes(u,spore.n||2):(allLaunch?treeLaunchHexes(u,2):launchHexes(u))); if(!hs.length) break; const fs=alive(foe); hs.sort((a,b2)=>Math.min(...fs.map(f=>hdist(a,f)))-Math.min(...fs.map(f=>hdist(b2,f))));
         if(resv&&!resvDone&&k===count-1){ (B.treePending=B.treePending||[]).push({k:'wingReserve',r:B.round,carrier:u.id}); resvDone=1; treeFx(u,'wingReserve','one wing waits in reserve'); continue; }
         const sq=makeWing(u,hs[0],wingKind(u)); sq.extra=1;
+        if(nine&&nineT) sq.wingOrder={kind:'strike',id:nineT.id}; // Matriarch capstone 1: every extra swarm hunts the one hunger
         if((fullG||oneTgt)&&filedT){ sq.wingOrder={kind:'strike',id:filedT.id}; treeFx(sq,fullG?'fullGroup':'oneTarget','the wings file on '+filedT.name); }
         if(oneTgt&&filedT) B.tr.wingFiled={r:B.round,id:filedT.id};
         if(stand&&!patrolMarked[u.id]){ sq.treePatrol=1; patrolMarked[u.id]=1; treeFx(sq,'standingGroup','the wing stays on patrol'); }
