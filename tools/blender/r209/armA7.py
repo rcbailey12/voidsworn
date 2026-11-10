@@ -175,7 +175,7 @@ def build_geometry(hero=(), G=None):
     A6.other_parts(seat); bow_fittings(PB.Seat(S + Pl))
     ship = json.load(open(SHIP)); socks = PB.resolve(PB.sockets_from(ship), PB.Seat(S + Pl))
     bad = HB.build(socks, PB.Seat(S + Pl))
-    for n, a, nn in PB.GUNS: GUNS.append((n, a))
+    for n, a, nn in PB.GUNS: GUNS.append((n, a, nn))       # the mount normal travels with the gun (Muse condition 2, R158)
     bpy.context.scene['r209_hp'] = json.dumps(PB.hardpoint_data(socks))      # muzzles and engine exits for the game export
     notes.append(dict(kit=HB.FACTION, bow='round 7 bow pass (armA7)', guns_badly_aimed=bad,
                       sockets=[dict(name=s.name, part=s.part, pos=[round(v, 4) for v in s.pos], aim=[round(v, 3) for v in s.aim],
@@ -191,7 +191,7 @@ if __name__ == '__main__':
     out = a[0]; cell = a[1] if len(a) > 1 else 'Ab7'; t0 = time.time()
     S, Pl, hard, gen, notes, prox = build_geometry()
     rep = C.report(S + Pl + hard)
-    bpy.context.scene['r209_guns'] = json.dumps([(n, list(a)) for n, a in GUNS])   # the audit (tools/recipe/audit.py) reads the aims
+    bpy.context.scene['r209_guns'] = json.dumps([(g[0], list(g[1]), list(g[2]) if len(g) > 2 and g[2] is not None else None) for g in GUNS])   # the audit (tools/recipe/audit.py) reads aims and mount normals
     os.makedirs(out, exist_ok=True); bpy.ops.wm.save_as_mainfile(filepath=os.path.join(out, f'{cell}.blend'))
     meta = dict(cell=cell, plates=len(Pl), plate_crossing=plate_crossing(Pl), seconds=round(time.time() - t0, 1), notes=notes, **rep)
     json.dump(meta, open(os.path.join(out, f'{cell}_build.json'), 'w'), indent=1)

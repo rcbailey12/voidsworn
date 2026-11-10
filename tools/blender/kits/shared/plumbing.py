@@ -170,7 +170,11 @@ def audit(hull_objs, part_objs, guns=(), t_lines=None, l_line=None):
     from mathutils.bvhtree import BVHTree
     import common as C
     t_lines = C.T_LINES if t_lines is None else t_lines; l_line = C.L_LINE if l_line is None else l_line
-    probs = [f'gun {nm} aims backward (x {d.x:+.2f})' for nm, d in guns if d.x < -.05]; cross = []
+    probs = []; cross = []; into = 0
+    for g in guns:      # (name, aim) or (name, aim, mount normal): with the normal the into-the-ship rule is tested too (aim_ok)
+        nm, d = g[0], Vector(g[1]); nn = Vector(g[2]) if len(g) > 2 and g[2] is not None else None
+        if d.x < -.05: probs.append(f'gun {nm} aims backward (x {d.x:+.2f})')
+        elif nn is not None and not aim_ok(d, nn): probs.append(f'gun {nm} aims into the ship (aim . mount normal {d.normalized().dot(nn.normalized()):+.2f})'); into += 1
     T = C.bvh(hull_objs); allp = list(part_objs)
     bm = bmesh.new(); owner = []; dg = bpy.context.evaluated_depsgraph_get()
     for k, o in enumerate(allp):
@@ -189,4 +193,7 @@ def audit(hull_objs, part_objs, guns=(), t_lines=None, l_line=None):
             h = T.find_nearest(o.matrix_world @ v.co)
             if h[0] is not None: dmin = min(dmin, h[3])
         if dmin > .002: probs.append(f'part {o.name} floats {dmin * 41.6:.2f} game units off the hull')
-    return dict(problems=probs, parts=len(allp), crossing_break_lines=sorted(set(cross)))
+    # what the floating test proves: every part touches the hull or touches another part. A part resting only on another part is
+    # excused, so a chain of parts can hang off one that touches the hull; it does not prove each part sits on a real mount.
+    return dict(problems=probs, parts=len(allp), crossing_break_lines=sorted(set(cross)),
+                guns_with_normals=sum(1 for g in guns if len(g) > 2 and g[2] is not None), guns_into_ship=into)

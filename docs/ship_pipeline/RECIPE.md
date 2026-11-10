@@ -9,18 +9,33 @@ asks for the ship id once (the concept's file name, for example `C15s_23`), writ
 `Downloads\voidsworn_test\recipe\<ship>\`, and ends with a plain PASS, FAIL or "done" line. Nothing is deleted. Heavy steps run on
 the 5080; all tools are free and local.
 
+**Must already be on the PC before the first run** (the recipe does not install these): Blender 4.5.14 at
+`Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\`, Godot 4.7.2 (the console build) at
+`Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe`, and, for stage 2 only, the TRELLIS.2 venv at
+`Downloads\trellis2\code\venv\`. Pillow and scipy go into Blender's own python on the first run of any stage (`env.bat`, before
+stage 1 writes the concept).
+
+**Every stage stops on its own failure** (Muse's check of round 6, condition 4; R158): each step's output or its own success line in
+its log is checked, the stage prints `Stage N FAILED: ...` with the log to read, and exits non-zero. No stage prints "done" after a
+failed step. Stage 2 fails when the shape reference is still missing; stages 3 and 5 refuse to start without it; stage 4 fails when
+the build is not written, when the audit lists any problem or any part across a break line, or when the audit's self-test lets a
+broken build through; stages 3 and 4 exit non-zero when the outline gate fails (stage 4 still makes the clay close-ups first, so the
+shape can be judged); stage 6 fails when the LOD export or the Godot bench does not finish; stage 7 as below.
+
 | Stage | File | What it does | Output | Time on the PC |
 |---|---|---|---|---|
 | 1. Concept in | `1_concept_in.bat` | checks `docs\ship_pipeline\concepts\<ship>.webp`, starts `tools\recipe\ships\<ship>.json` from the template (asks the faction), writes the concept with its outline | `concept.png` | seconds |
 | 2. AI shape reference | `2_shape_ref.bat` | TRELLIS.2 turns the concept cut-out into one whole-hull mesh: a shape reference and a source of surface grime, never shipped. Every current concept already has one | `bakeoff\<ship>_trellis.glb` | 2 to 4 min |
 | 3. Traced hull and the outline gate | `3_trace_hull.bat` | slices the shape reference and fits clean faceted sections (`b0trace.py`); tunes the hull module's numbers on the concept outline with a pull toward the shape reference (`tune5.py`); scores the outline at the concept's own camera. Gate: 90 percent overlap | `sil\sil_<cell>.png`, PASS or FAIL | 10 to 25 min (tune) |
-| 4. Faction parts kit | `4_parts_kit.bat` | builds the hull with the faction kit's parts at the ship's sockets, audits it (nothing floats, nothing crosses a break line, no gun aimed backward or into the ship), re-scores the gate with the parts on, renders clay close-ups at the concept camera | `build\<cell>.blend`, `audit.json`, `clay\` | about 5 min |
-| 5. Paint bake | `5_paint_bake.bat` | the faction paint and the shape reference's grime baked to atlases (hull albedo, ORM, detail normal; parts albedo, ORM), renders at the concept camera (studio and concept light) and the fixed views, weapon close-ups | `<cell>.blend`, maps, `r\`, `close\` | 30 to 40 min |
+| 4. Faction parts kit | `4_parts_kit.bat` | builds the hull with the faction kit's parts at the ship's sockets, audits it (`audit.py`: nothing floats, nothing crosses the build's own break lines, no gun aimed backward or into the ship against its mount normal), proves the audit can fail (`audit_selftest.py`: three broken copies refused), re-scores the gate with the parts on, renders clay close-ups at the concept camera | `build\<cell>.blend`, `audit.json`, `clay\` | about 5 min |
+| 5. Paint bake | `5_paint_bake.bat` | the bake script named by the ship json's `bake` (`bakeAb6.py` for C15s_23; it builds whichever hull module `hull` names, so any ship whose hull module follows `armA5` to `armA7` uses it; a ship with its own bake names it there): the faction paint and the shape reference's grime baked to atlases (hull albedo, ORM, detail normal; parts albedo, ORM), renders at the concept camera (studio and concept light) and the fixed views, weapon close-ups | `<cell>.blend`, maps, `r\`, `close\` | 30 to 40 min |
 | 6. LOD | `6_lod.bat` | the hand LOD chain (lod0 to lod3 sharing one set of atlases, small parts drop out by size) and the Godot cost bench (twenty copies, 1080p and 3D at 4K). Costs are reported, never capped (R111) | `glb\<cell>.glb`, `godot\` | about 3 min |
 | 7. Game export | `7_export.bat` | writes the game's ship folder from the baked ship and the ship json, with no hand steps: the ship glb with a node per hard point, and the 2048 map set. Then reads the glb back and checks it: FAIL when a weapon slot of the ship's `data.js` weapon list has no hard point, or a hard point is off the mesh. Then proves the check can fail (three broken copies must be refused). Details below | `recipe\<ship>\export\<code>\` | about a minute |
 
 Ryan's review rounds sit after stage 3 (shape), after stage 5 (weapons and paint, the close-up and paint sheets) and after
-stage 6 (cost). Opus builds the sheets from the stage outputs (`tools/blender/r209/sheets6.py`).
+stage 6 (cost). Opus builds the sheets from the stage outputs (`tools/blender/r209/sheets7pc.py` since round 7: the battle camera
+first, then paint region by region, the bow with the outline per third and the inner edge check from `outline_thirds.py`, the far
+side, weapons, overview and the firing capture).
 
 ## What a ship needs (the per-ship data)
 
@@ -38,6 +53,17 @@ Socket positions and sizes are measured off the concept through the fitted camer
 onto a plane at a plausible height, read x, y and z (round 6 README, section 1, has the C15s numbers and the method). Then the
 gate decides: a part that pokes outside the concept's outline at the concept camera costs overlap, so sizes settle where the
 weapons read like the concept and the outline stays at 90 percent or better.
+
+## What the stage 4 audit proves, and what it does not
+
+- **Floating:** every part touches the hull or touches another part. A part resting only on another part is excused, so a chain of
+  parts can hang off one that touches the hull; the test does not prove that each part sits on its own mount (that is the
+  placement rule, checked by eye on the clay close-ups).
+- **Break lines:** the build's own (`common.set_break` writes them into the blend as `r209_t_lines` and `r209_l_line`). With none in
+  the blend the audit fails; it never falls back to an older hull's lines.
+- **Guns:** each gun carries its aim and its mount's outward normal (`plumbing.register_gun`, kept by the hull module in
+  `r209_guns`). A gun aimed backward (x below -0.05) or into the ship (aim against the mount normal) is a problem; with no normals at
+  all the audit fails, because the into-the-ship test could not run.
 
 ## Stage 7: the game export (issue 209 round 7; FINDINGS R155, R156)
 
@@ -103,6 +129,7 @@ in the recipe, and the next change makes it data.
   `docs/shots/ship_pipeline/route209/round4/concept_camera.json`; game ship `c_marauder`, game code `C15s_23`.
 - Kit: `tools/blender/kits/hullbreakers/kit.py` and `paint.py`.
 - Reports and sheets: `docs/shots/ship_pipeline/route209/round6/README.md`, `docs/shots/ship_pipeline/route209/round7/README.md`.
-- The outline gate after round 7 reads 89.7 percent, under the 90 gate: the bow pass and the casemates' concept spacing cost
-  0.3 (round 7 README, step 3, shows both versions). Stage 4 prints FAIL for it; that is the honest reading, and R156 puts the
-  bow's look ahead of the score.
+- The outline gate after round 7 reads 89.7 percent (scored from the PC glb; the game export 89.6), under the 90 gate: the bow
+  pass cost 0.3 against Ab6's 90.0. Per third (`outline_thirds.py`, audit pass 2 finding 13): bow 90.3 (Ab6 91.0), midship 90.7,
+  stern 85.1. Stage 4 exits on the gate FAIL; that is the honest reading, and R156 puts the bow's look ahead of the score.
+- `shape_ref_yaw` 22.0 is the C15s_23 value (its shape reference turned into the ship frame); a new ship measures its own.

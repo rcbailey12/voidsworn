@@ -142,10 +142,11 @@ for v in ('top', 'below'):
 stack(fs, 'far_side.jpg')
 
 # ---- (f) weapons
-wp = [head('Weapons', 'Casemates level, 8 degrees forward of the beam. Same crop of the concept camera in every row: concept, Ab6, Ab7, Ab7 clay.')]
+wp = [head('Weapons', 'Same crop of the concept camera in every row: concept, Ab6, Ab7 (and Ab7 clay).', ['Casemates level, about 15 degrees forward of the beam (aim 0.25, 0.97, 0).'])]
 for k, (b, t) in CLOSE.items():
     cl = (lambda d, c: P(d + '/close', f'{c}_{k}_clay.png')) if k in ('cas', 'bow') else None
-    ims = [lab(crop1024(C, b), t + ': concept', 26), lab(P(R6 + '/close', f'Ab6_{k}_concept.png'), 'Ab6', 26), lab(P(R7 + '/close', f'Ab7_{k}_concept.png'), 'Ab7', 26)]
+    wp.append(text([t], 28, FG))
+    ims = [lab(crop1024(C, b), 'concept', 26), lab(P(R6 + '/close', f'Ab6_{k}_concept.png'), 'Ab6', 26), lab(P(R7 + '/close', f'Ab7_{k}_concept.png'), 'Ab7', 26)]
     if cl: ims.append(lab(cl(R7, 'Ab7'), 'Ab7 clay', 26))
     wp.append(row(ims))
 stack(wp, 'weapons.jpg')

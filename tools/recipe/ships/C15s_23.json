@@ -11,6 +11,7 @@
  "concept_camera": "docs/shots/ship_pipeline/route209/round4/concept_camera.json",
  "hull": "armA7",
  "tune": "tools/blender/r209/tune5_P.json",
+ "bake": "bakeAb6.py",
  "cell": "Ab7",
  "outline_gate": 0.9,
  "notes": "Weapon positions and sizes measured off the concept through its fitted camera (round 6 README, section 1). pos: ship frame, x to the bow, y to port, z up, length 1. seat: 'flank' finds y on the hull at (x, z); 'top' finds z on the deck at (x, y). pair: true adds the starboard mirror; variant_s gives the mirror its own salvage detail. Casemates (board review on PR 336, R156): aimed level, 15 degrees forward of the beam as the concept reads (the game's own rest direction for port and starboard mounts); the outline score is not allowed to bend the guns. Round 7: the forward pair back toward the concept's spot (x 0.356; round 6 had pulled it aft to 0.338 for the score), both pairs flat on the new slab side (proud 0.004). Game export (round 7): game_ship is the ship's id in data.js (its weapon list is the slot order), game_code the ship folder's name in godot/assets/ships. A socket's slot (slot_s for its starboard mirror) says which weapon slot its muzzles fire for: the casemates are the port and starboard scatter batteries (0, 1), the forward and sponson drum racks the torpedoes (2), the two top turrets the flak (3). Sockets with no slot (the twin bow guns, the waist and aft drums) get no hard point.",
