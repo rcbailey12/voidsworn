@@ -44,7 +44,7 @@ jobs:
           curl -sSL -o godot.zip https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
           unzip -q godot.zip -d "$RUNNER_TEMP/godot"
           echo "GODOT=$RUNNER_TEMP/godot/Godot_v4.7.2-stable_linux.x86_64" >> "$GITHUB_ENV"
-      # The three Godot checks below each run even when an earlier one fails, so one red run shows every failure.
+      # The Godot checks below each run even when an earlier one fails, so one red run shows every failure.
       # Each script prints PASS or FAIL and exits 1 on any FAIL, which fails this job and the PR (issue #264).
       - name: Rules parity against the browser game
         if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
@@ -52,6 +52,9 @@ jobs:
       - name: Campaign parity (30 seeded runs, same as tools/pc/parity_campaign.bat)
         if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
         run: sh godot/campaign/test/run_parity_campaign.sh 1 30
+      - name: Tree hand-off (campaign picks reach the battle)
+        if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
+        run: '"$GODOT" --headless --path godot --script res://campaign/test/tree_handoff_test.gd'
       - name: Nemesis scenarios (JS game and Godot, record by record)
         if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
         run: sh godot/campaign/test/run_nem_scenarios.sh

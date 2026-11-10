@@ -1309,7 +1309,7 @@ const CMD_HOLD='Once per battle. Each round you hold it, it gets stronger (full 
 // ---------- admiral tree effects (issue #305 job 1: H0 plumbing, H1 choice, H2 counters, H3 next round) ----------
 // One place builds the player's live skills from the run snapshot; one helper per hook is called from one place.
 function treeBuild(){ const L=(typeof RUN!=='undefined'&&RUN&&RUN.lineage)||null; if(!L||!LINEAGE_TREES[L.id]) return [];
-  const out=[]; for(const key of (L.picks||[])){ const fx=TREE_FX[key]; if(fx) out.push(Object.assign({key},fx)); }
+  const out=[]; for(const pick of (L.picks||[])){ const p=String(pick), key=p.indexOf(L.id+':')===0?p:L.id+':'+p, fx=TREE_FX[key]; if(fx) out.push(Object.assign({key},fx)); } // #335: old saves and the campaign store short picks ("A:0:0"); TREE_FX is keyed "admiral:A:0:0"
   if(L.capstone!=null){ const key=L.id+':cap:'+L.capstone, fx=TREE_FX[key]; if(fx) out.push(Object.assign({key},fx)); } return out; }
 function treeSkill(k){ return B&&B.tree?B.tree.find(s=>s.k===k):null; }
 function treeHas(k){ return !!treeSkill(k); }
