@@ -3,6 +3,7 @@ extends SceneTree
 # outside the checkout: DAMAGE_OUT, DAMAGE_MODE=capture|fleet, DAMAGE_LABEL.
 const FX := preload("res://fx/fx.gd")
 const SV := preload("res://render/ship_view.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 const CASES := [["hegemony", "Cruiser", 0.8], ["deathless", "Battleship", 1.0],
 	["chorus", "Cruiser", 0.8], ["ithar", "Cruiser", 0.8], ["voidsworn", "Cruiser", 0.8]]
 var vp: SubViewport
@@ -60,7 +61,7 @@ func _run() -> void:
 	await process_frame
 	SV.clear_static()
 	FX.clear_static()
-	quit()
+	PG.finish(0)
 
 func _ship(sid: String, c: Array, pos: Vector3):
 	var sv := SV.new()
@@ -90,6 +91,8 @@ func _flush(s) -> void:
 		if s._dmg_task >= 0: s.flush_damage(fx)
 
 func _still(name: String) -> void:
+	if PG.stop_if_any():
+		return
 	for i in 4:
 		await RenderingServer.frame_post_draw
 	vp.get_texture().get_image().save_png(out.path_join(name + ".png"))

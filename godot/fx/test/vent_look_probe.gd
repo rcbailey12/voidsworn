@@ -17,6 +17,7 @@ const FX := preload("res://fx/fx.gd")
 const SV := preload("res://render/ship_view.gd")
 const LOOK := preload("res://render/look.gd")
 const CAMRIG := preload("res://render/camera_rig.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 const WORLD_PATH := "res://world/world.gd"
 const HEX_S := 10.0
 const HEX_W := 17.320508
@@ -107,6 +108,8 @@ func _run() -> void:
 		"unit": 1.0})
 	fx.check_radius = true
 	_ship_reset()
+	if PG.stop_if_any():
+		return
 	await fx.warmup(cam)
 	var only := _env("VENT_ONLY", "")
 	for v in VARIANTS:
@@ -114,7 +117,7 @@ func _run() -> void:
 			continue
 		await _variant(v)
 	print("VENT_DONE")
-	quit(0)
+	PG.finish(0)
 
 
 func _variant(v: Array) -> void:
@@ -285,6 +288,8 @@ func _grab_stills() -> void:
 
 
 func _raw_frame() -> void:
+	if PG.stop_if_any():
+		return
 	var img := vp.get_texture().get_image()
 	if img == null or img.is_empty():
 		return
@@ -296,6 +301,8 @@ func _raw_frame() -> void:
 
 
 func _still(kind: String) -> void:
+	if PG.stop_if_any():
+		return
 	DirAccess.make_dir_recursive_absolute(out.path_join("stills"))
 	var img := vp.get_texture().get_image()
 	if img == null or img.is_empty():

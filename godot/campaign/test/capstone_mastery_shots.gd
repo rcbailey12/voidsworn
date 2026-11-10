@@ -1,6 +1,7 @@
 # Step 14 screenshots: capstone mastery on a flown evolution, at 320 and 440 XP, plus the admiral bar.
 #   godot --path godot --resolution 1920x1080 --script res://campaign/test/capstone_mastery_shots.gd -- <out dir>
 extends SceneTree
+const PG := preload("res://render/placeholder_guard.gd")
 const CampaignScript = preload("res://campaign/campaign.gd")
 const UIScript = preload("res://ui/campaign/campaign_ui.gd")
 const BattleAPI = preload("res://rules/battle_api.gd")
@@ -41,6 +42,8 @@ func _scroll_to(needle: String) -> void:
 			return
 
 func _shot(name: String) -> void:
+	if PG.stop_if_any():
+		return
 	await _frames(8)
 	if DisplayServer.get_name() == "headless":
 		print("built ", name, " (", C.page.get("kind"), ")"); return
@@ -70,4 +73,4 @@ func _run() -> void:
 	await _frames(4); _scroll_to("Saro of Long Focus")
 	await _shot("capstone_03_bar_and_mastery_tab")
 	print("capstone mastery shots done")
-	quit(0)
+	PG.finish(0)

@@ -21,6 +21,7 @@ extends Node
 const FX := preload("res://fx/fx.gd")
 const LOOK := preload("res://render/look.gd")
 const SV := preload("res://render/ship_view.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 const WORLD_PATH := "res://world/world.gd"
 
 const FLAGS := [
@@ -568,6 +569,8 @@ func _unhandled_input(ev: InputEvent) -> void:
 
 
 func _process_shots() -> void:
+	if PG.stop_if_any():
+		return
 	if shot_queue.is_empty():
 		if pending == 0 and (waiting.is_empty() or clock > REEL_LEN + 4.0):
 			for w in waiting:
@@ -593,6 +596,8 @@ func _process_shots() -> void:
 
 
 func _capture(path: String) -> void:
+	if PG.stop_if_any():
+		return
 	pending += 1
 	await _frame_drawn()
 	await _frame_drawn()
@@ -605,6 +610,8 @@ func _capture(path: String) -> void:
 
 
 func _process_bench() -> void:
+	if PG.stop_if_any():
+		return
 	if fleet.is_empty():
 		_set_cam("orbit", clock)
 	else:
@@ -656,6 +663,8 @@ var clip_n := 0
 
 # --clip: a JPG every second frame of the running battle (F3's 20-ship clip), then quit
 func _process_clip() -> void:
+	if PG.stop_if_any():
+		return
 	var t0 := float(args.get("clip-from", "3"))
 	var t1 := t0 + float(args.get("clip-len", "9"))
 	if clock >= t0 and clock <= t1 and frame_n % 2 == 0:

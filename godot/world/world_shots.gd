@@ -18,6 +18,7 @@ extends Node
 
 const BattleScene := preload("res://scenes/battle/battle.tscn")
 const API := preload("res://rules/battle_api.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 const BL := preload("res://world/board_look.gd")
 
 # name, enemy faction, map, shape, biome {rock, planet, station}, seed
@@ -81,7 +82,7 @@ func _run() -> void:
 		f.store_string(JSON.stringify(bench, "  "))
 		print("[world_shots] bench ", JSON.stringify(bench))
 	print("[world_shots] done")
-	get_tree().quit(0)
+	PG.finish(0)
 
 
 func _case(c: Array) -> void:
@@ -312,6 +313,8 @@ func _settle() -> void:
 func _snap(n: String) -> void:
 	if DisplayServer.get_name() == "headless":
 		print("[world_shots] (headless) ", n)
+		return
+	if PG.stop_if_any():
 		return
 	await RenderingServer.frame_post_draw
 	var img := get_viewport().get_texture().get_image()

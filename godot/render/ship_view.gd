@@ -5,6 +5,7 @@ extends Node3D
 const HT := preload("res://render/hull_table.gd")
 const CRAFT := preload("res://render/squadron_craft.gd")
 const WING := preload("res://render/squadron_wing.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 var squad_kind := ""
 
 var u: Dictionary
@@ -116,6 +117,9 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	if not made:
 		# no built hull (a copy of the project without gen/): a plain block, as an ArrayMesh like every real hull, since
 		# G4's fx reads surface formats and arrays from the ship's meshes (primitive meshes have no surface_get_format)
+		var pc := code if code != "" else "%s|%s" % [fac, cls]
+		push_error("placeholder hull: %s" % pc)
+		PG.note(pc)
 		var bm := BoxMesh.new()
 		bm.size = Vector3(1, 0.25, 0.35)
 		var am := ArrayMesh.new()

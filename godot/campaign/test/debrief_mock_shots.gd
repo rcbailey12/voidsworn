@@ -10,6 +10,7 @@
 # Nemesis met and beaten once, Oath-Captain Malek Draven named heir. Rows whose per-run data is not recorded yet (the
 # Nemesis lesson log, #24 and #122) show the spec's line shapes filled from the run's own Nemesis.
 extends SceneTree
+const PG := preload("res://render/placeholder_guard.gd")
 const CampaignScript = preload("res://campaign/campaign.gd")
 const UIScript = preload("res://ui/campaign/campaign_ui.gd")
 const BattleAPI = preload("res://rules/battle_api.gd")
@@ -39,6 +40,8 @@ func _frames(n: int) -> void:
 	for i in range(n): await process_frame
 
 func _shot(name: String) -> void:
+	if PG.stop_if_any():
+		return
 	await _frames(8)
 	if DisplayServer.get_name() == "headless":
 		print("built ", name); return
@@ -103,7 +106,7 @@ func _run() -> void:
 	_show(_mock(d, nem, true))
 	await _scroll(layer, false); await _shot("mock_first_top")
 	print("debrief mock shots done")
-	quit(0)
+	PG.finish(0)
 
 func _show(c: Control) -> void:
 	for ch in layer.get_children():

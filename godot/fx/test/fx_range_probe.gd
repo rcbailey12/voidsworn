@@ -20,6 +20,7 @@ const WEAP := preload("res://fx/fx_weapons.gd")
 const SV := preload("res://render/ship_view.gd")
 const LOOK := preload("res://render/look.gd")
 const CAMRIG := preload("res://render/camera_rig.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 const WORLD_PATH := "res://world/world.gd"
 const HEX_S := 10.0
 const HEX_W := 17.320508
@@ -145,6 +146,8 @@ func _run() -> void:
 			var t_cls: String = CAPITAL[fam[4]] if big else "Frigate"
 			var a := _ship("A", fam[1], a_cls, _hex(-3, 0), 0, big)
 			var t := _ship("T", fam[4], t_cls, _hex(2, 0), 2, big)
+			if PG.stop_if_any():
+				return
 			if not warmed:
 				await fx.warmup(cam)
 				warmed = true
@@ -173,7 +176,7 @@ func _run() -> void:
 		mx = maxi(mx, c)
 	print("FLASH_MAX %d (counted flashes %d)" % [mx, fl.size()])
 	print("[range] done")
-	quit(0)
+	PG.finish(0)
 
 
 func _ship(id: String, fac: String, cls: String, pos: Vector3, facing: int, flag: bool) -> Node3D:

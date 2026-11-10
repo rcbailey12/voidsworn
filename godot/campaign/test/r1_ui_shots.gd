@@ -5,6 +5,7 @@
 # c1 a shipyard with the starting fleet, c2 the same shipyard with a sector flagship hull in the fleet (no shop price).
 # t1, a0, t2 (when the build has the playtest switch): the title and the admiral screen with "everything unlocked" on, then the title with it off.
 extends SceneTree
+const PG := preload("res://render/placeholder_guard.gd")
 const CampaignScript = preload("res://campaign/campaign.gd")
 const UIScript = preload("res://ui/campaign/campaign_ui.gd")
 const BattleAPI = preload("res://rules/battle_api.gd")
@@ -28,6 +29,8 @@ func _frames(n: int) -> void:
 	for i in range(n): await process_frame
 
 func _shot(name: String) -> void:
+	if PG.stop_if_any():
+		return
 	await _frames(8)
 	if DisplayServer.get_name() == "headless":   # cloud smoke run: the screens build, there is nothing to capture
 		print("built ", name, " (", C.page.get("kind"), ")"); return
@@ -54,4 +57,4 @@ func _run() -> void:
 	C.shipyardScreen(yard); await _shot("c1_shipyard")
 	C.RUN["fleet"].append(C.newShip("c_boss")); C.shipyardScreen(yard); await _shot("c2_shipyard_flagship_hull")
 	print("r1 ui shots done")
-	quit(0)
+	PG.finish(0)
