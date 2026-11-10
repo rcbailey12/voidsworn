@@ -1,5 +1,9 @@
 # The campaign oracle, pinned
 
+Nov 9 2026, issue 332 (tree skills job 6): re-copied battle.js and data.js for
+the Hegemony Navy TREE_FX rows and Vorn's Command rename to Interdiction strike.
+Re-exported campaign tables; no existing campaign rule changed.
+
 Nov 9 2026, issue 319 (tree skills job 4): re-copied battle.js, core.js and
 data.js for the Chorus TREE_FX rows, the H10 temporary hull and H17 extra
 activation hooks, and the new FX_CAPS key treeTempHp. Re-exported campaign

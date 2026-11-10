@@ -6132,5 +6132,1242 @@
    "capstone": null
   },
   "note": "Hullbreakers: shared Trophy Standard (grax:C:0:1) grants a free turn after a flagship kill"
+ },
+ "t_heg_widenet": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33201,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [
+    "kassar:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Kassar Wide Net: sync radius +1"
+ },
+ "t_heg_secondvolley": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33202,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_dominion",
+   "h_vanguard"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_boss"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [
+    "kassar:A:0:0",
+    "kassar:A:0:1"
+   ],
+   "capstone": 0
+  },
+  "note": "Hegemony Kassar Second Volley: one more synced ship fires out of arc"
+ },
+ "t_heg_sharedsolution": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33203,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [
+    "kassar:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Kassar Shared Solution: synced ships use the best aim"
+ },
+ "t_heg_colddrill": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33204,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [
+    "kassar:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Kassar Cold Drill: an unmoved synced ship fires at +10 aim"
+ },
+ "t_heg_rollingfire": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33205,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [
+    "kassar:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Kassar Rolling Fire: a synced kill lets another synced ship fire once"
+ },
+ "t_heg_irontempo": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 10,
+  "bot": "full",
+  "seed": 33206,
+  "admiral": "kassar",
+  "fleet": [
+   "h_picket",
+   "h_dominion",
+   "h_interdictor"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor"
+  ],
+  "cmdRound": 99,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [
+    "kassar:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Kassar Iron Tempo: the largest remaining ship becomes the anchor"
+ },
+ "t_heg_livingrelay": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33207,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Hegemony Kassar Living Relay: sync radius doubled"
+ },
+ "t_heg_onevoice": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33208,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Hegemony Kassar One Voice: every synced ship fires at one target, shields stop the first hit"
+ },
+ "t_heg_formation": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33209,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [
+    "kassar:B:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony shared B1a Formation: ending next to two friends gives +10 aim"
+ },
+ "t_heg_drill": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33210,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [
+    "kassar:B:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony shared B1b Drill Revision: one ship repositions up to 2 hexes once"
+ },
+ "t_heg_beacon": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33211,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [
+    "kassar:C:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony shared C1a Beacon: the flagship stamps one enemy each round"
+ },
+ "t_heg_stdforward": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33212,
+  "admiral": "kassar",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "kassar",
+   "picks": [
+    "kassar:C:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony shared C1b Standard Borne Forward: +1 movement toward the flagship"
+ },
+ "t_heg_filedtriplicate": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33213,
+  "admiral": "vorn",
+  "fleet": [
+   "h_dominion",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vorn",
+   "picks": [
+    "vorn:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Vorn Target Filed in Triplicate: +10 crit on the filed target"
+ },
+ "t_heg_strikebook": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33214,
+  "admiral": "vorn",
+  "fleet": [
+   "h_dominion",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vorn",
+   "picks": [
+    "vorn:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Vorn Strike by the Book: +15% if speed is at least the last firer"
+ },
+ "t_heg_crossfire": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33215,
+  "admiral": "vorn",
+  "fleet": [
+   "h_dominion",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vorn",
+   "picks": [
+    "vorn:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Vorn Cross-Referenced Fire: second hits on a target gain +15%"
+ },
+ "t_heg_filedbefore": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 33216,
+  "admiral": "vorn",
+  "fleet": [
+   "h_dominion",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_dominion",
+   "h_picket"
+  ],
+  "cmdRound": 3,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vorn",
+   "picks": [
+    "vorn:A:1:1"
+   ],
+   "capstone": 1
+  },
+  "note": "Hegemony Vorn Filed Before Movement: firing before moving gains +10 crit",
+  "boons": [
+   {
+    "id": "a_crit",
+    "r": 2
+   }
+  ]
+ },
+ "t_heg_totalinterdiction": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 33217,
+  "admiral": "vorn",
+  "fleet": [
+   "h_dominion",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_boss"
+  ],
+  "cmdRound": 3,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vorn",
+   "picks": [
+    "vorn:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Vorn Total Interdiction: three ships on one target gives +30%"
+ },
+ "t_heg_sevenbreach": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 33218,
+  "admiral": "vorn",
+  "fleet": [
+   "h_dominion",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_boss"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vorn",
+   "picks": [
+    "vorn:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Vorn Standard Seven Breach: a crit shuts down the struck section",
+  "boons": [
+   {
+    "id": "a_crit",
+    "r": 2
+   }
+  ]
+ },
+ "t_heg_permanentfile": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33219,
+  "admiral": "vorn",
+  "fleet": [
+   "h_dominion",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vorn",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Hegemony Vorn Permanent File: strike targets keep the bonus next round"
+ },
+ "t_heg_oneorder": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33220,
+  "admiral": "vorn",
+  "fleet": [
+   "h_dominion",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "vorn",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Hegemony Vorn One Order Every Gun: every ship fires one weapon again at half"
+ },
+ "t_heg_cruisers": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33225,
+  "admiral": "reyes",
+  "fleet": [
+   "h_vanguard",
+   "h_dominion",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "reyes",
+   "picks": [
+    "reyes:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Reyes Cruisers Filed as Carriers: a ship without a hangar launches a wing"
+ },
+ "t_heg_launchorder": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33226,
+  "admiral": "reyes",
+  "fleet": [
+   "h_vanguard",
+   "h_dominion",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "reyes",
+   "picks": [
+    "reyes:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Reyes Launch Order Published: the first wing to strike gains +20%"
+ },
+ "t_heg_secondwave": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33227,
+  "admiral": "reyes",
+  "fleet": [
+   "h_vanguard",
+   "h_dominion",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "reyes",
+   "picks": [
+    "reyes:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Reyes Second Wave on Schedule: extra wings are held to next round"
+ },
+ "t_heg_rehearsed": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33228,
+  "admiral": "reyes",
+  "fleet": [
+   "h_vanguard",
+   "h_dominion",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "reyes",
+   "picks": [
+    "reyes:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Reyes Procedure Rehearsed: every extra wing gains +10 aim on the strike again"
+ },
+ "t_heg_fullgroup": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 8,
+  "bot": "full",
+  "seed": 33229,
+  "admiral": "reyes",
+  "fleet": [
+   "h_dominion"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_boss"
+  ],
+  "cmdRound": 1,
+  "treeChoices": {},
+  "lineage": {
+   "id": "reyes",
+   "picks": [
+    "reyes:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Reyes Full Group Assembled: every launch ship launches one more"
+ },
+ "t_heg_escorts": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33230,
+  "admiral": "reyes",
+  "fleet": [
+   "h_vanguard",
+   "h_dominion",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "reyes",
+   "picks": [
+    "reyes:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Reyes Registry of Escorts: the screen cuts enemy wing damage"
+ },
+ "t_heg_onetarget": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33231,
+  "admiral": "reyes",
+  "fleet": [
+   "h_vanguard",
+   "h_dominion",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "reyes",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Hegemony Reyes One Target Every Wing Filed: wings file on one enemy at +35%"
+ },
+ "t_heg_standinggroup": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33232,
+  "admiral": "reyes",
+  "fleet": [
+   "h_vanguard",
+   "h_dominion",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "reyes",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Hegemony Reyes Standing Strike Group: a patrol wing strikes an enemy entering range"
+ },
+ "t_heg_columnstraight": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33237,
+  "admiral": "maren",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 1,
+  "treeChoices": {},
+  "lineage": {
+   "id": "maren",
+   "picks": [
+    "maren:A:0:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Maren Column Filed Straight: a line of three overcharges shields"
+ },
+ "t_heg_overflow": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33238,
+  "admiral": "maren",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "maren",
+   "picks": [
+    "maren:A:0:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Maren Overflow by Regulation: full shields give +10 evasion"
+ },
+ "t_heg_bell": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33239,
+  "admiral": "maren",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "maren",
+   "picks": [
+    "maren:A:1:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Maren Wall at the Bell: the first hit each round deals no hull"
+ },
+ "t_heg_rotation": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 10,
+  "bot": "full",
+  "seed": 33240,
+  "admiral": "maren",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "maren",
+   "picks": [
+    "maren:A:1:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Maren Standard Rotation: a ship swaps with an adjacent friend once"
+ },
+ "t_heg_columnendures": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33241,
+  "admiral": "maren",
+  "fleet": [
+   "h_picket",
+   "h_dominion",
+   "h_vanguard",
+   "h_interdictor"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_interdictor"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "maren",
+   "picks": [
+    "maren:A:2:0"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Maren The Column Endures: the first emptied facing refills to 25%"
+ },
+ "t_heg_filedarmor": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33242,
+  "admiral": "maren",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "maren",
+   "picks": [
+    "maren:A:2:1"
+   ],
+   "capstone": null
+  },
+  "note": "Hegemony Maren Filed in Armor: an un-fired ship takes 15 less hull"
+ },
+ "t_heg_standardcovers": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33243,
+  "admiral": "maren",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "maren",
+   "picks": [],
+   "capstone": 0
+  },
+  "note": "Hegemony Maren The Standard Covers All: every ship takes 20% less hull"
+ },
+ "t_heg_flagshipstandard": {
+  "sector": 1,
+  "fac_player": "hegemony",
+  "obj": "rout",
+  "shape": "compact",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 6,
+  "bot": "full",
+  "seed": 33244,
+  "admiral": "maren",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "cmdRound": 2,
+  "treeChoices": {},
+  "lineage": {
+   "id": "maren",
+   "picks": [],
+   "capstone": 1
+  },
+  "note": "Hegemony Maren The Flagship Holds the Standard: the flagship joins every line, 10% overcharge"
  }
 }
