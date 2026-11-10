@@ -1,0 +1,14 @@
+{
+ "Ab5": {
+  "overlap": 90.3,
+  "concept_covered": 96.6,
+  "cell_outside": 6.8,
+  "triangles": 87088
+ },
+ "Ab6": {
+  "overlap": 90.0,
+  "concept_covered": 96.7,
+  "cell_outside": 7.1,
+  "triangles": 125616
+ }
+}

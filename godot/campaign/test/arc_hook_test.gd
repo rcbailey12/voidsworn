@@ -45,7 +45,9 @@ func play(seed: int, mode: String) -> Dictionary:
 		if C.RUN != null:
 			maxs = max(maxs, int(C.RUN["sector"]))
 			if C.modal_d == null or not C.jt(C.modal_d["data"].get("ev", {}).get("arc")): trail.append(JSM.sha256(JSM.canon(C.RUN, "", {"t0": 1, "flags": 1, "credits": 1}, true)))
-		if C.modal_d != null and C.modal_d["kind"] == "event" and C.jt(C.cur_event.get("arc")):
+		# only this test's own cards (ids arc_<fac>_<beat>a); the approved story beat 3 card is also marked arc and is played like any event
+		var own: bool = C.cur_event is Dictionary and C.jt(C.cur_event.get("arc")) and str(C.cur_event.get("id", "")).begins_with("arc_%s_" % C.RUN["fac"]) if C.RUN != null else false
+		if C.modal_d != null and C.modal_d["kind"] == "event" and own:
 			var cr0 = float(C.RUN["credits"]); var node0 = C.RUN.get("curNode"); var nd0 = C.findNode(node0) if node0 != null else null; var done0 = C.jt(nd0.get("done")) if nd0 != null else false
 			check(C.screen_acts()[1][2] == 0, "an arc option the player cannot afford is disabled")
 			C.act("eventChoice", "0")
@@ -55,7 +57,8 @@ func play(seed: int, mode: String) -> Dictionary:
 			check(C.RUN.get("curNode") == node0 and (nd0 == null or C.jt(nd0.get("done")) == done0), "an arc card completes no map node")
 			check(C.modal_d != null and C.modal_d["kind"] == "event_result" and C.modal_d["data"]["lines"][0] == "You took it.", "the result opens with the card's outcome line")
 			continue
-		var acts = C.screen_acts().filter(func(x): return x[2] == 1 and not (x[0] in ["legacy", "help", "saveQuit", "title", "abandonRun"]))
+		# "lineage" opens the skill tree, a menu whose only way back is the title screen the bot may not press (tree picks have their own check, tree_handoff_test.gd)
+		var acts = C.screen_acts().filter(func(x): return x[2] == 1 and not (x[0] in ["legacy", "help", "saveQuit", "title", "abandonRun", "lineage"]))
 		if streak >= 8:
 			var go = acts.filter(func(x): return not (x[0] in STAY))
 			if go.size() > 0: acts = go
@@ -63,7 +66,7 @@ func play(seed: int, mode: String) -> Dictionary:
 		s = (s * 1103515245 + 12345) % 2147483648
 		var x = acts[(s >> 16) % acts.size()]
 		if x[0] == "battle": x = ["battle", "loss" if (s >> 16) % 40 == 0 else "win", 1]
-		if x[0] == "eventChoice" and C.jt(C.cur_event.get("arc")): continue
+		if x[0] == "eventChoice" and own: continue
 		streak = streak + 1 if x[0] in STAY else 0
 		C.act(x[0], x[1])
 	return {"canon": JSM.canon(C.META, "", {"updated": 1, "runAt": 1}, true) + str(JSM.rng_s), "trail": trail, "sector": maxs, "ended": C.ended}
@@ -79,8 +82,12 @@ func _init() -> void:
 		shown.clear(); chosen.clear(); ended.clear()
 		var d = play(seed, "on")
 		check(d["ended"], "seed %d: the run with arc cards ends" % seed)
-		check(shown.size() == d["sector"] and shown == range(1, d["sector"] + 1), "seed %d: one card per sector reached (%s, sector %d)" % [seed, str(shown), d["sector"]])
-		check(chosen.size() == shown.size(), "seed %d: the story hears every choice" % seed)
+		# sector 3 opens the approved story beat 3 card (campaign.gd showBeat3) in place of the arc source's beat 3, so the
+		# test's own cards cover sectors 1 and 2 only; the story hears the beat 3 choice too
+		var own_n: int = mini(int(d["sector"]), 2)
+		check(shown == range(1, own_n + 1), "seed %d: one card per sector reached, beat 3 is the approved card (%s, sector %d)" % [seed, str(shown), d["sector"]])
+		var own_chosen: Array = chosen.filter(func(c): return str(c[0]).get_slice("_", 2).trim_suffix("a").is_valid_int())   # this test's ids: arc_<fac>_<beat>a
+		check(own_chosen.size() == shown.size() and chosen.size() == shown.size() + (1 if d["sector"] >= 3 else 0), "seed %d: the story hears every choice (%d)" % [seed, chosen.size()])
 		check(ended.size() == (1 if d["sector"] >= 3 else 0), "seed %d: arc_end only after beat 3 (%s)" % [seed, str(ended)])
 		print("seed %d: sector %d, cards %s, end %s" % [seed, d["sector"], str(shown), str(ended)])
 	print("arc hook: " + ("PASS" if fails == 0 else "FAIL (%d)" % fails))

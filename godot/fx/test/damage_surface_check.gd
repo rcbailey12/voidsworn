@@ -94,7 +94,9 @@ func _run() -> void:
 		s.root.queue_free()
 	for weight in [1, 2, 3, 4]:
 		var s = _ship("cap%d" % weight, "hegemony", [0.0, 0.55, 0.8, 1.0, 1.3][weight])
-		var caps := Vector2i(1, 2) if weight == 1 else (Vector2i(2, 3) if weight == 2 else Vector2i(3, 4))
+		# Issue 359: pinned to the shipped caps in fx_ship.gd damage_caps (fire, smoke plus vent per ship). The R80 research
+		# synthesis asked for 1, 2 and 3 fires; the code ships 4, 8 and 12. The Board rules which is right (see the PR).
+		var caps := Vector2i(4, 8) if weight <= 1 else (Vector2i(8, 12) if weight == 2 else Vector2i(12, 16))
 		for st in [1, 2, 3, 4]:
 			s.set_stages(fx, [st, st, st])
 			flush(s)

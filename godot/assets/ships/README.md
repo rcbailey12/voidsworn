@@ -58,6 +58,15 @@ Empty nodes under the ship node, each with glTF `extras` (Godot imports them as 
 `slot`, `weapon` (data.js weapon kind), `radius` (mount radius, ship units). No mount ever rests aimed backward (CLAUDE.md), and the build
 refuses one: port (P) mounts sit at z < 0 and starboard (S) mounts at z > 0 (checked when the file is written).
 
+## Recipe ships (the ship recipe's stage 7, Nov 10 2026)
+
+A ship built by the ship recipe (`docs/ship_pipeline/RECIPE.md`, `tools/recipe/7_export.bat`) arrives in the same folder layout and
+frame, with the same hard point names, written and checked by the export itself. Until its remaining pieces are built it differs
+from an A4 ship in this: three surfaces (`<CODE>_hull`, `<CODE>_parts`, `<CODE>_glow`) and two atlases (`<CODE>_base`, `_orm`,
+`_normal` for the hull; `<CODE>_parts_base`, `_parts_orm` for the parts), no `_emissive` map (the glow surface has an emissive
+factor), no `skin_<n>` patches, no `_wreck.glb` and no `_damage.glb`. Weapon hard points sit on the barrel muzzles, one per
+barrel, so a ship has many more of them than an A4 ship (the C15s cruiser: 18 gun points, 3 engines, 6 breach anchors, 1 core).
+
 ## Wreck and death pieces
 
 `<CODE>_wreck.glb` has one root node `<CODE>_wreck` and children `chunk_00`, `chunk_01`, ... Each chunk:

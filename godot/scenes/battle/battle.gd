@@ -1437,6 +1437,16 @@ func _play_event(e: Dictionary) -> void:
 			await wait(300.0)
 		"end":
 			pass
+		_:
+			# Issue 359: an event kind with no branch above is logged once per kind instead of being dropped silently, so a
+			# new rules event the screen does not draw shows up in the log and fails GitHub's bot battle check.
+			# nem_signature is read by the story voice above and draws nothing here, so it is not reported.
+			var kind := str(e["t"])
+			var seen: Dictionary = get_meta("unknown_events", {})
+			if kind != "nem_signature" and not seen.has(kind):
+				seen[kind] = true
+				set_meta("unknown_events", seen)
+				push_warning("battle: unknown event kind \"%s\" (no branch in battle.gd _play_event)" % kind)
 
 
 # the battle log: the rules' own log lines (G1 log events, word for word as the game); the scene's own lines are kept
@@ -4147,16 +4157,23 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 					var WP = TBL.get("WING_PERKS", {}).get(str(k), {})
 					parts.append("%s (%s)" % [str(WP.get("n", k)), str(WP.get("d", "")).trim_suffix(".")])
 				tr.append("Wing veterans: " + ", ".join(parts) + ".")
-		if _jt(ru.get("nem")) and _jt(Bs.get("nem")) and _jt(ru.get("nemFlag")):
-			tr.append("[color=#ff8a72]Your Nemesis commands from this ship.[/color]")
-			var kn: Array = []
-			var weak: Array = Bs["nem"]["weak"] if Bs["nem"].get("weak") is Array else []
-			for w in (Bs["nem"]["revealed"] if Bs["nem"].get("revealed") is Array else []):
-				if w in weak:
-					var NW = TBL.get("NEM_WEAK", {}).get(str(w), {})
-					kn.append("%s (%s)" % [str(NW.get("n", w)), str(NW.get("d", "")).trim_suffix(".")])
-			if not kn.is_empty():
-				tr.append("Known weaknesses: " + "; ".join(kn) + ".")
+		if _jt(ru.get("nem")) and _jt(ru.get("nemFlag")):
+			# Issue 364: ask the campaign for the current commander instead of trusting the battle's copy, when a campaign is here.
+			var host = get_parent().get("campaign") if get_parent() != null else null
+			var CN = host.get("C") if host != null and is_instance_valid(host) else null
+			var nem_now = CN.nemRead() if (CN != null and CN.has_method("nemRead")) else null
+			if not _jt(nem_now):
+				nem_now = Bs.get("nem")   # no campaign run (showcase or quick battle): the battle's own copy is the only source
+			if _jt(nem_now):
+				tr.append("[color=#ff8a72]Your Nemesis commands from this ship.[/color]")
+				var kn: Array = []
+				var weak: Array = nem_now["weak"] if nem_now.get("weak") is Array else []
+				for w in (nem_now.get("revealed") if nem_now.get("revealed") is Array else []):
+					if w in weak:
+						var NW = TBL.get("NEM_WEAK", {}).get(str(w), {})
+						kn.append("%s (%s)" % [str(NW.get("n", w)), str(NW.get("d", "")).trim_suffix(".")])
+				if not kn.is_empty():
+					tr.append("Known weaknesses: " + "; ".join(kn) + ".")
 		# helm: thrusters and the faction drive (ui3d.js driveLine)
 		if ru["side"] == "player":
 			var MR: Dictionary = R.moveRules(ru)
