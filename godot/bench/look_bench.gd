@@ -23,8 +23,8 @@ extends Node
 #     2070 before every moment), and every worker job (hull damage rebuilds, death cuts) is waited for before each step;
 #   - run with --fixed-fps 60: then the engine's own clock (shader TIME, physics, timers, world_living's clock) also
 #     moves exactly 1/60 s per drawn frame, so wreck physics (R118, real time in the game) is frame-locked here;
-#   - every part starts on a fixed frame grid after its world is built twice (the second build reuses the baked sky),
-#     so bake time on the PC does not shift the shader clock;
+#   - every part's world is built twice: the first build bakes; the second, on a fixed frame grid, reuses the bakes in
+#     one frame, then a fixed 120 frames pass, so bake time on the PC shifts neither the shader clock nor the storm's;
 #   - render/ship_view.gd draws its idle bob and station-keeping jets on the wall clock (Time.get_ticks_msec): the
 #     bench turns ShipView processing off, so ships hold still (nothing else in a ShipView runs while parked).
 #   - shake is off (as the audit probe); hit pause and death slow motion stay on (they are part of the look).
@@ -263,17 +263,21 @@ func _hex(q: int, r: int) -> Vector3:
 	return Vector3(HEX_W * (q + r / 2.0), 0, 1.5 * HEX_S * r)
 
 
-# Build the world twice: the first build bakes the sky and planet (seconds on the PC, cached after), the second reuses
-# the bakes inside one frame, so the world's own clocks start on a known frame. Then wait for the frame grid.
+# Build the world twice: the first build bakes the sky and planet (seconds on the PC, cached after); then wait for the
+# frame grid; then the second build reuses the bakes inside one frame, and a fixed 120 frames pass. So the shader clock
+# (TIME) and the world's own clocks (world_living's storm and gas) stand at the same values on every run.
 func _world(biome: Dictionary, terrain: Dictionary, units: Array) -> void:
 	for pass_i in 2:
 		if wld != null and is_instance_valid(wld):
+			world.remove_child(wld)
 			wld.queue_free()
 			wld = null
 			await get_tree().process_frame
 		if not ResourceLoader.exists(WORLD_PATH):
 			_warn("no world script")
 			return
+		if pass_i == 1:
+			await _grid()
 		wld = load(WORLD_PATH).new()
 		world.add_child(wld)
 		wld.build({"map": {}, "terrain": terrain, "units": units, "round": 1},
@@ -290,8 +294,9 @@ func _world(biome: Dictionary, terrain: Dictionary, units: Array) -> void:
 				await get_tree().process_frame
 	_log("world: %s" % str(wld.setting.get("region", "?")))
 	if int(wld.pending_bakes) > 0:
-		_warn("world rebuild did not reuse the bake (pending %d)" % int(wld.pending_bakes))
-	await _grid()
+		_warn("world rebuild did not reuse the bake (pending %d): this part's stills may not repeat" % int(wld.pending_bakes))
+	for k in 120:
+		await get_tree().process_frame
 
 
 func _grid() -> void:
