@@ -108,7 +108,7 @@ func t_data() -> void:
 					rl_missing.append("%s.%s.%s" % [f, p, k])
 				n_lines += 1
 	ok(rl_missing.is_empty(), "data: Nemesis pools complete for all six factions (%d lines) %s" % [n_lines, str(rl_missing.slice(0, 6))])
-	ok(not _read("res://story/data/rival_lines.json").contains("—"), "data: rival_lines.json has no em dashes")
+	ok(not _read("res://story/data/rival_lines.json").contains("\u2014"), "data: rival_lines.json has no em dashes")
 	var T = JSON.parse_string(_read("res://story/data/titles.json"))
 	var n_ok := true
 	for t in T["titles"] + [T["fallback"]]:
@@ -398,7 +398,7 @@ func _play(C, rng: RandomNumberGenerator, max_steps: int) -> int:
 	var steps := 0
 	while not C.ended and steps < max_steps:
 		steps += 1
-		var acts: Array = C.screen_acts().filter(func(x): return int(x[2]) == 1 and x[0] not in ["abandonRun", "title", "saveQuit", "legacy", "help", "c3retreat", "progTab", "discardBrokenRun"])
+		var acts: Array = C.screen_acts().filter(func(x): return int(x[2]) == 1 and x[0] not in ["abandonRun", "title", "saveQuit", "legacy", "help", "c3retreat", "progTab", "discardBrokenRun", "lineage"])   # lineage: the skill tree menu, whose only way out is progTab
 		if acts.is_empty():
 			return -steps
 		var battle: Array = acts.filter(func(x): return x[0] == "battle")

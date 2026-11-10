@@ -1437,6 +1437,16 @@ func _play_event(e: Dictionary) -> void:
 			await wait(300.0)
 		"end":
 			pass
+		_:
+			# Issue 359: an event kind with no branch above is logged once per kind instead of being dropped silently, so a
+			# new rules event the screen does not draw shows up in the log and fails GitHub's bot battle check.
+			# nem_signature is read by the story voice above and draws nothing here, so it is not reported.
+			var kind := str(e["t"])
+			var seen: Dictionary = get_meta("unknown_events", {})
+			if kind != "nem_signature" and not seen.has(kind):
+				seen[kind] = true
+				set_meta("unknown_events", seen)
+				push_warning("battle: unknown event kind \"%s\" (no branch in battle.gd _play_event)" % kind)
 
 
 # the battle log: the rules' own log lines (G1 log events, word for word as the game); the scene's own lines are kept
