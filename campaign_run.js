@@ -351,7 +351,7 @@ function nemAdaptWhy(a,fac){ const T=NEM_ADAPT_FAC[fac]||{}; if(T.special&&T.spe
 // #282: the sector modal's adaptation reason, through nemSay with the commander who adapted (the outgoing one)
 function nemAdaptWhyLine(a,N){ return nemSay(nemAdaptWhy(a,N&&N.fac),N); }
 // #121 (R101): his own lines from NEM_VOICE, through nemSay. A pool's line is chosen without the rules PRNG: the pick turns with how many
-// times you have met and hurt him and with the sector. A faction with no table (the Sunward Crusade) says nothing new and keeps NEM_LINES.
+// times you have met and hurt him and with the sector. Every faction has a table (#395 added the Sunward Crusade); a faction without one would say nothing new and keep NEM_LINES.
 function nemPersonaVoice(N){ const V=N&&NEM_VOICE[N.fac]; return (V&&V[N.persona])||null; }
 function nemPickLine(arr,N){ if(!Array.isArray(arr)||!arr.length) return ''; return arr[((N.beaten||0)+(N.scars||0)+((RUN&&RUN.sector)||1))%arr.length]; }
 function nemSpeak(N,slot){ const P=nemPersonaVoice(N), t=P?nemSay(nemPickLine(P[slot],N),N):''; return t?`${nemFull(N)}: "${t}"`:''; }
