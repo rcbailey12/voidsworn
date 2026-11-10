@@ -48,7 +48,7 @@ LIN = dict(rust=((.070, .0068, .0040), (.120, .0115, .0062)), gun=((.012, .013, 
            hazard=((.36, .22, .015), (.44, .28, .02)), yellow=((.30, .19, .015), (.40, .26, .02)), white=((.36, .35, .32), (.46, .45, .41)), dark=((.004, .004, .005), (.007, .007, .008)),
            borrowed=((.040, .050, .062), (.050, .062, .076)), rustdk=((.022, .010, .008), (.034, .015, .011)))
 DUST = dict(rust=((.50, .29, .25), 1.0), rack=((.12, .05, .035), .4), gun=((.075, .072, .072), .55), drum=((.03, .031, .033), .05), sleeve=((.08, .08, .082), .4))
-PATCH = (.56, .090, .020)       # the concept's bright orange rust blooms (round 8: sampled from the concept's blotches, sRGB about 190, 82, 42)
+PATCH = (.46, .074, .017)       # the concept's bright orange rust blooms (round 8: sampled from the concept's blotches, sRGB about 190, 82, 42)
 PATCH2 = (.075, .011, .004)      # their darker rim
 STREAK = (.050, .020, .010)     # rust run-off on gunmetal
 WORN = (.16, .15, .135)         # bare steel on worn edges
@@ -64,7 +64,7 @@ ROUGH = dict(borrowed=.55, rust=.93, rack=.93, drum=.93, belly=.92)   # base rou
 # round 8, layer 1: deck reds from the concept (linear albedo before grime; sampled bow deck about sRGB 124, 85, 79 lit, the hump
 # 144, 84, 75, the tier tops 49, 33, 31). Bow deck forward of the bow break line, the midship tops behind it. Under the game's key
 # light (energy 2 from above) a deck reads about twice as bright as its albedo, so these sit well under the concept's lit values.
-REGION_DECK = dict(bow=(.135, .046, .036), mid=(.085, .027, .021))
+REGION_DECK = dict(bow=(.110, .036, .028), mid=(.070, .021, .016))
 DECK_X = .178                   # the bow break line: the bow deck forward of it, the midship tops aft
 DECK_DUST = ((.30, .13, .10), .32)    # a thin dusting of a pale deck red (round 7's .50, .29, .25 at full cover went salmon pink in the game)
 # round 8, layer 2: the concept's big rust blotches (noise scale in ship lengths, coverage thresholds), decks and upper sides
@@ -213,7 +213,10 @@ def make(band, group, b0ao=None):
 FWD = -.100     # the concept's red ends where the aft body starts (behind the deckhouse tier)
 
 def hull_band(c, n):
-    if n.z < -.5 or c.z < -.150 or (c.z < -.106 and n.z < -.12): return 'belly'   # round 7: the tuck under the slab side is lower hull too
+    # round 8: a downward face high on the ship (a deck plate's or the deck lip's underside) is not lower hull. The hull is one
+    # joined mesh unwrapped by smart_project, and a thin plate becomes one island whose top and underside land on the same texels;
+    # painting the underside as belly turned the bow deck plates olive (rounds 7 and 8's first bake). They take their region's band.
+    if (n.z < -.5 and c.z < -.06) or c.z < -.150 or (c.z < -.106 and n.z < -.12): return 'belly'   # round 7: the tuck under the slab side is lower hull too
     ay = abs(c.y)
     if -.110 < c.x < .180 and ay > .099 and c.z < .050: return 'gun'          # sponsons and module blocks: the concept's dark side block
     if c.x > FWD: return 'rust'

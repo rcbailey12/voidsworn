@@ -75,6 +75,39 @@ def plates8(S):
     return Pl
 
 
+def deck_lip8():
+    """armA7.deck_lip without the bevel. With its 0.0008 bevel the thin lip was one smooth UV island (top, bevels, sides and bottom
+    all within smart_project's 60 degree limit), projected edge-on: the whole bow deck top took one line of texels, shared with
+    the lip's underside (painted as belly). That, not the paint, made the bow deck read olive in rounds 7 and 8's first bake.
+    Square edges split it into a top island of its own."""
+    secs = []
+    for x in [x for x in A5.stations() if x >= .214]:
+        k = knot(x); w = max(k['Ws'], k['Wd']) + .003; zt = k['zt']
+        secs.append((x, [(w, zt + .0014), (w, zt - .0032), (-w, zt - .0032), (-w, zt + .0014)]))
+    o = A5.loft('decklip', secs, bevel=0); return A5.hull_obj(o, 'core')
+
+
+A7.deck_lip = deck_lip8
+
+
+def orient_out(objs):
+    """round 8: turn any plate whose faces point inward. bmesh's normal recalculation sometimes turns a thin deck plate inside out
+    ('top' plates on the bow deck: their top faces pointed down). The paint then took them for the belly (the olive bow deck of
+    rounds 7 and 8's first bake, under Blender's two-sided light) and the game culled their tops (the deck under them showed).
+    The test: a closed plate with outward faces has a positive signed volume."""
+    import bmesh
+    n = 0
+    for o in objs:
+        bm = bmesh.new(); bm.from_mesh(o.data); bm.faces.ensure_lookup_table(); vol = 0.0
+        for f in bm.faces:
+            vs = [v.co for v in f.verts]
+            for i in range(1, len(vs) - 1): vol += vs[0].dot(vs[i].cross(vs[i + 1]))
+        if vol < 0:
+            bmesh.ops.reverse_faces(bm, faces=bm.faces[:]); bm.to_mesh(o.data); o.data.update(); n += 1
+        bm.free()
+    return n
+
+
 def bow_fittings8(seat):
     """armA7's bow fittings with the deck hatch beside the hood brought inboard of the narrower deck edge"""
     h = A7.HOOD; Pp = hs_lib.PARTS
@@ -116,13 +149,13 @@ def bow_fittings8(seat):
 def build_geometry(hero=(), G=None):
     """armA7.build_geometry on the fitted bow"""
     bpy.ops.wm.read_factory_settings(use_empty=True); hs_lib.PARTS.clear(); GUNS.clear(); PB.clear_registry(); C.set_break(**BREAK)
-    S = A7.structure7(); Pl = plates8(S); seat = A3.Seat(S + Pl); notes = []
+    S = A7.structure7(); Pl = plates8(S); flipped = orient_out(Pl); seat = A3.Seat(S + Pl); notes = []
     A6.other_parts(seat); bow_fittings8(PB.Seat(S + Pl))
     ship = json.load(open(SHIP)); socks = PB.resolve(PB.sockets_from(ship), PB.Seat(S + Pl))
     bad = HB.build(socks, PB.Seat(S + Pl))
     for n, a, nn in PB.GUNS: GUNS.append((n, a, nn))
     bpy.context.scene['r209_hp'] = json.dumps(PB.hardpoint_data(socks))
-    notes.append(dict(kit=HB.FACTION, bow='round 8 fitted bow (armA8, fit8.py)', guns_badly_aimed=bad,
+    notes.append(dict(kit=HB.FACTION, bow='round 8 fitted bow (armA8, fit8.py)', guns_badly_aimed=bad, plates_turned_outward=flipped,
                       sockets=[dict(name=s.name, part=s.part, pos=[round(v, 4) for v in s.pos], aim=[round(v, 3) for v in s.aim],
                                     normal=[round(v, 3) for v in s.normal], side=s.side) for s in socks]))
     for o in hs_lib.PARTS:
