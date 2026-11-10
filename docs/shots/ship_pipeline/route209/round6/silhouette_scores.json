@@ -6,9 +6,9 @@
   "triangles": 87088
  },
  "Ab6": {
-  "overlap": 90.1,
+  "overlap": 90.0,
   "concept_covered": 96.7,
-  "cell_outside": 7.0,
+  "cell_outside": 7.1,
   "triangles": 125616
  }
 }
