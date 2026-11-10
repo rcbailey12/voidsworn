@@ -496,8 +496,9 @@ const NEM_BEAT_WORD={lance:'lances',torp:'torpedoes',sq:'your wings',ram:'rams',
 // R101 (#173, adopted Nov 4 2026; built in #121): the commanders' own lines, per faction and persona, spoken through nemSay (pronouns
 // swapped at runtime, {beat} replaced with a NEM_BEAT_WORD value). meet opens his battle; win, flee and fall close it (fall_final: an Eclipse
 // commander destroyed in the last sector, rising once more); again and remember replace NEM_LINES' when he has met you; adapt is said when
-// he adapts; lessons are the debrief teaching a lost meeting records on the commander met. The Sunward Crusade has no table yet: its
-// commanders keep NEM_LINES. Pasted as adopted from contrib/muse/design/nemesis_writing_2026_11/text_table.md.
+// he adapts; lessons are the debrief teaching a lost meeting records on the commander met. All six factions have a block: the five
+// adopted in contrib/muse/design/nemesis_writing_2026_11/text_table.md, plus the Sunward Crusade pasted word for word from
+// contrib/muse/design/nemesis_writing_2026_11/crusade_voice.md (#395).
 const NEM_VOICE = {
 hegemony: {
   methodical: {
@@ -761,6 +762,58 @@ deathless: {
     anchor: 'A proud flagship draws fire. Target it when the archive holds.',
     slow: 'Worn engines limit repositioning. Cut the path and keep pressure.',
     strike: 'The Eclipse strike is a tithe on a half-speed clock: when it fills, every ship you have loses 6% hull. Finish the fight before the clock fills.'
+  }
+},
+voidsworn: {
+  zealous: {
+    meet: ['The oath brought us here. Your hull will burn before the dawn watch ends.', 'Who carries the dawn? We do. And you are what we burn to keep it.'],
+    win: ['The debt is paid in fire. Your name goes on the hull in chalk.', 'Dawn breaks over the broken line. The debt was collected.'],
+    flee: [],
+    fall: ['The flagship burns and the oath holds. Chalk the name.', 'The oath does not end with the hull. Chalk my name and keep burning.'],
+    again: 'Last time you won with {beat}. The charge comes the same way, only harder.',
+    remember: 'Last time you won with {beat}. The name is chalked. The debt is not forgotten.'
+  },
+  proud: {
+    meet: ['This flagship leads the dawn watch. Answer the oath or break against it.', 'You face the front of the line. We come no other way.'],
+    win: ['The front held. It always holds. Your fleet broke against the oath.', 'You saw the dawn line. You could not break it.'],
+    flee: [],
+    fall: ['The front falls. Chalk the name and let the line close over the gap.', 'A proud hull breaks. The brand stays. The Crusade does not stop for one name.'],
+    again: 'Last time you won with {beat}. The front is braced for it now.',
+    remember: 'Last time you won with {beat}. The front has not forgotten.'
+  },
+  cruel: {
+    meet: ['The crippled ships go first. The cold takes the rest.', 'Your weakest hulls are marked. The brand goes where the frost is thinnest.'],
+    win: ['The broken ones went down first. The rest followed into the cold.', 'A slow burn. Each hull chalked, each name spoken. The debt collects.'],
+    flee: [],
+    fall: ['The brand goes cold. The broken ones get their dawn after all.', 'A bad end. The Roll of Vesper takes the name. The cold keeps the rest.'],
+    again: 'Last time you won with {beat}. The crippled ones are watched now.',
+    remember: 'Last time you won with {beat}. The chalk still marks the finish.'
+  },
+  methodical: {
+    meet: ['Screens up, names chalked. The dawn watch sets the pace.', 'The line advances under oath. Every gun is laid, every screen is set.'],
+    win: ['The line held. The guns were laid by hand and the oath was kept.', 'Steady fire, steady screens. The debt was collected in order.'],
+    flee: [],
+    fall: ['The hull goes dark. Add my name to the chalk and keep the watch.', 'The line breaks at one point. The rest holds. Chalk the name and close the gap.'],
+    again: 'Last time you won with {beat}. The line has drilled against it.',
+    remember: 'Last time you won with {beat}. The chalk mark is still on the hull.'
+  },
+  adapt: {
+    shields: 'Screen drills are re-sworn. Your lances will spend themselves.',
+    pd: 'Spark flak is up. Your torpedoes burn short.',
+    armor: 'Riveted plate is fitted. Your ram meets iron and frost.',
+    evasion: 'The Oath of speed is sworn. Your batteries will find cold space.',
+    aim: 'Hand-laid sights are set. Your evasive burn is read by eye, not machine.',
+    special: 'Fervour is up. Guns deal 8% more damage.'
+  },
+  lessons: {
+    flank: 'Thin stern plating gives way under rear fire. Hit the rear while the charge is committed.',
+    ion: 'Brittle shield emitters fail under focused ion fire. Strip the shields before the line settles.',
+    torp: 'Poor point defense leaves torpedoes a clear path. Launch after the escorts commit to the line.',
+    board: 'Green boarding crews lose to prepared defenders. Board only after the escorts are split.',
+    brawl: 'Long-gun doctrine struggles at close range. Close in and force the brawl.',
+    anchor: 'A proud flagship holds the line together. Get the flagship under 60% hull and the escorts break and run.',
+    slow: 'Worn engines limit repositioning. Cut the retreat path and keep pressure.',
+    strike: 'The Crusade strike is a challenge: the enemy flagship singles out yours, and the pair deal 20% more damage to each other. Screen your flagship; if your flagship falls, the challenge moves to your strongest ship.'
   }
 }
 };
