@@ -2,6 +2,9 @@
  "ship": "",
  "name": "",
  "faction": "",
+ "game_ship": "",
+ "game_code": "",
+ "length_world": 0,
  "concept": "",
  "shape_ref_yaw": 22.0,
  "shape_ref_yaw_note": "22.0 is the C15s_23 value (its shape reference turned into the ship frame, common.ai_align); measure each new shape reference's own yaw, do not keep 22.0",
@@ -9,7 +12,7 @@
  "hull": "",
  "cell": "",
  "outline_gate": 0.9,
- "notes": "Fill parts with sockets for the faction kit (see tools/blender/kits/README.md). hull: the hull module (a copy of tools/blender/r209/armA5.py with this concept's block table); concept_camera: written by stage 3.",
+ "notes": "Fill parts with sockets for the faction kit (see tools/blender/kits/README.md). hull: the hull module (a copy of tools/blender/r209/armA5.py with this concept's block table); concept_camera: written by stage 3. Stage 7 (the game export): game_ship is the ship's id in data.js, game_code its folder name in godot/assets/ships, length_world its class length; give each weapon socket a slot (and slot_s for the starboard mirror), the 0-based weapon slot of the data.js weapon list its muzzles fire for.",
  "parts": [],
  "tune": "",
  "bake": "bakeAb6.py"
