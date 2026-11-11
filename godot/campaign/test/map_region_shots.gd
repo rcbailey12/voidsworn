@@ -34,6 +34,16 @@ class Driver extends Scene:
 		var scroll = ui._rail_host.find_child("FleetScroll", true, false)
 		var orders = ui._rail_host.find_child("OrdersScroll", true, false)
 		var item = {"name": name, "seed": seed_now, "sector": C.RUN["sector"], "region": C.RUN["map"]["region"], "p50_ms": times[120], "p95_ms": times[228], "frames": times.size(), "texture_bytes": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TEXTURE_MEM_USED), "fleet_rows": floori(scroll.size.y / ui.px(36)), "next_jumps": ui._routes.size()}
+		var groups: Array = []
+		for id in ui.map3d._nodes:
+			var data = ui.map3d._nodes[id]; var fleet = data["obj"].get_node_or_null("EnemyFleet")
+			if fleet == null: continue
+			var members: Array = []
+			for ship in fleet.get_children():
+				members.append({"class": ship.get_child(0).u["cls"], "length": ship.get_child(0).L * ship.scale.x, "position": str(ship.position), "heading": ship.rotation.y})
+			groups.append({"id": id, "kind": data["n"]["type"], "level": fleet.get_meta("danger_level"), "members": members})
+		item["fight_groups"] = groups
+		item["scenery_geometry"] = _geometry(ui.map3d.region_scenery)
 		item["orders_overflow_px"] = maxf(0, orders.get_child(0).get_combined_minimum_size().y - orders.size.y)
 		if name.begins_with("four_routes") and (item["fleet_rows"] < mini(3, C.RUN["fleet"].size()) or item["orders_overflow_px"] > 1):
 			push_error("Four-route fork does not fit three fleet lines and all routes"); failed = true
@@ -76,6 +86,26 @@ class Driver extends Scene:
 		var file = FileAccess.open(_ro_dir.path_join("metrics.json"), FileAccess.WRITE)
 		file.store_string(JSON.stringify({"resolution": "1920x1080", "renderer": RenderingServer.get_current_rendering_method(), "vsync": "off", "states": evidence}, "\t")); file.close()
 		get_tree().quit(1 if failed else 0)
+	func _geometry(node: Node) -> Dictionary:
+		var triangles := 0; var vertices := 0; var unique := {}; var bytes := 0
+		var stack = [node]
+		while not stack.is_empty():
+			var child = stack.pop_back(); stack.append_array(child.get_children())
+			var mesh: Mesh = null; var instances := 1
+			if child is MeshInstance3D: mesh = child.mesh
+			elif child is MultiMeshInstance3D: mesh = child.multimesh.mesh; instances = child.multimesh.instance_count
+			if mesh == null: continue
+			for surface in mesh.get_surface_count():
+				var arrays = mesh.surface_get_arrays(surface)
+				if mesh is ArrayMesh and mesh.surface_get_primitive_type(surface) != Mesh.PRIMITIVE_TRIANGLES: continue
+				var count = arrays[Mesh.ARRAY_VERTEX].size()
+				var indices = arrays[Mesh.ARRAY_INDEX].size() if arrays[Mesh.ARRAY_INDEX] != null else 0
+				vertices += count * instances; triangles += (indices if indices > 0 else count) / 3 * instances
+				if not unique.has(mesh.get_instance_id()):
+					# Position + normal + color for generated rocks; array storage, excluding driver overhead.
+					bytes += count * 40 + indices * 4
+			unique[mesh.get_instance_id()] = true
+		return {"instanced_triangles": triangles, "instanced_vertices": vertices, "unique_meshes": unique.size(), "estimated_mesh_bytes": bytes}
 	func _words(node: Node, out: Array):
 		if node is Control and node.is_visible_in_tree():
 			var rect = node.get_global_rect(); var parent = node.get_parent()

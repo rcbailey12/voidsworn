@@ -665,11 +665,17 @@ static func dead_hull(split: bool) -> String:
 	if not split: return HULL
 	return HULL.replace("void fragment() {", """
 uniform float cut_side = 1.0;
-uniform float cut_x = 0.0;
+uniform vec3 cut_origin = vec3(0.0);
+uniform vec3 cut_normal = vec3(1.0, 0.0, 0.0);
 void fragment() {
 	vec3 world = (INV_VIEW_MATRIX * vec4(VERTEX, 1.0)).xyz;
-	if ((world.x - cut_x) * cut_side < 0.0) discard;
+	if (dot(world - cut_origin, cut_normal) * cut_side < 0.0) discard;
 """)
+
+# No circular polar ice mask or ocean specular disc on the Briefing landmark.
+# Warped continents and drifting clouds describe one continuous surface.
+static func briefing_world() -> String:
+	return PLANET.replace("col = mix(col, vec3(0.95), smoothstep(0.78, 0.9, abs(p.y)));", "").replace("vec3(0.92)", "vec3(0.32, 0.36, 0.4)").replace("ALBEDO = col;", "ALBEDO = col * 0.55;").replace("SPECULAR = 0.3;", "SPECULAR = 0.0;")
 
 static func hollow_rock() -> String:
 	return ROCK_HI.replace("void fragment() {", """
