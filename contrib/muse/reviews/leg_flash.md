@@ -1,81 +1,100 @@
-# #495 Flash IDEATION leg: the eight playbooks
+# Leg: Flash (ideation), issue #486 cinematic audit
 
-Chair header: run Nov 11, 2026, 11:09 to 11:11 CST, gemini.google.com, Flash model confirmed in the picker ("All-around help, 3.8, Flash"), session already signed in as Ryan Bailey, no verification step demanded. All nine files attached (PACK_FLASH.md plus the eight playbooks). Reply completed in full, no continuation needed. Filed verbatim below.
-
-Chair screening notes (not part of the leg): (1) The frigate "ribbon of fire 0.0 to 0.72 s" against the 0.70 s flame cap is a marginal catch: the 0.72 s figure is the whole death window, not a flame life; weighed as weak in the synthesis. (2) The "authored split-hull death beat" tell describes the playbook text as written; R186 and issue 484 already attack the same tidiness from the build side, so the leg is evidence the playbook text still teaches the clean split. (3) The 90 percent outline gate framing matches ships.md's own numbers; checked at chair against src_ships.md.
+Landed Nov 11, 2026, 10:35 to 10:41 CST at gemini.google.com (chat https://gemini.google.com/app/939365882f260614). Sign-in required a Google number-match prompt; Ryan approved it (Yes, then 31) and the runner resumed; the account showed as Ryan Bailey (Pro), the standing unverified Pro observation, gates unchanged. PACK.md attached by grant. Chair screening notes: (1) Flash's Finding 1 proposes relaxing the 0.70 s flame cap itself; that cap is an owner ruling (fire is wrong for space, flash and snuff out), so the chair does NOT adopt the relaxation as written: the adopted form is DeepSeek's and Grok's, separating flame from matter inside the cap, with the cap question itself flagged for Ryan in the synthesis. (2) Its "missed tell" (dead stillness between turns, no idle behaviour) is a genuine addition no other leg raised and is adopted. Raw leg text follows, unedited except this header.
 
 ---
 
-1. Top Eight Rules That Read as Arbitrary or Reasonless
+1. Top Eight Findings (Ideation Short Form)
 
-Flame cap: "No flame or hot core lives longer than 0.70 s, and none stays at full heat longer than 0.25 s."
-playbooks/effects.md, section 1.
-What it stops or why it looks invented: Attributed to Ryan. Capping all fire at 0.70 s and full heat at 0.25 s universally flattens lingering engine bleeds, heavy slag burns, and slow capital ruptures into uniform, twitchy snaps.
+Finding 1: The 0.70s Flame/Heat Cap Enforces Disappearing Explosions
 
-Strict color ceiling: "Two colours over pale sage text. Lime means the next action and what it acts on. Red is the Nemesis only. A third colour needs a ruling."
-playbooks/screens.md, section 2.
-What it stops or why it looks invented: Arbitrarily bans standard tactical status signifiers such as amber warnings or neutral hull readouts without individual executive dispensations.
+What the player sees/hears now: Capital ship deaths and heavy torpedo detonations flash white and vanish almost instantly; clouds disperse into clean, empty vacuum within a second.
 
-Single button limit: "One filled button per screen: the lime one that says what happens next, with its key cap."
-playbooks/screens.md, section 2.
-What it stops or why it looks invented: Forbids direct secondary confirmations, cancellations, or lateral navigation tabs from having equal visual affordance.
+What a film would do instead: As seen in The Expanse and Battlestar Galactica, massive detonations produce heavy, lingering fire, superheated expanding debris, and persistent smoldering wreckage that glows and casts light across neighboring hulls for 10-20 seconds.
 
-Engine stern footprint quota: "The engine group fills between a quarter and a half of the stern face."
-playbooks/concepts_round2.md, section "Spaceship logic: the gate every picture passes before Ryan sees it", line 3.
-What it stops or why it looks invented: The 25 to 50 percent stern bounding box is an unverified geometrical mandate that outlaws needle drives, sprawling outrigger thrusters, and heavily shielded rear hulls.
+The loosening proposed: Relax effects.md Section 1 ("no flame or hot core lives longer than 0.70 s, and none stays at full heat longer than 0.25 s"). Allow core thermal embers, venting gases, and slag clouds on capital deaths to linger for 6.0-12.0 seconds at decaying intensity, utilizing slow alpha/color ramps instead of repetitive bright strobing to remain safely under the 3-flash WCAG ceiling.
 
-Mandatory audio permutation count: "At least four takes of anything heard often, never the same one twice in a row."
-playbooks/sound.md, section 1.
-What it stops or why it looks invented: Four is an arbitrary asset multiplier imposed equally on simple UI blips and massive secondary hull tears without measuring memory budget or repetition fatigue.
+Finding 2: The Perfect Untouchable Shield Bubble
 
-Rigid outline capture gate: "90 percent of the concept's outline at the concept's own camera. FAIL means not ready for parts."
-playbooks/ships.md, section 4.
-What it stops or why it looks invented: Mechanically disqualifies functional 3D mesh translations that make minor, necessary geometric repairs to perspective flaws in 2D concept sketches.
+What the player sees/hears now: A rigid, static honeycomb ellipsoid wraps the ship; weapon impacts generate a disconnected generic puff on the perimeter without localized deflection, surface rippling, or visual degradation at low shield HP.
 
-Proportion aspect clamp: "Fixed proportions per class. Stated as length : beam : height in each sheet below."
-playbooks/concepts_round2.md, section "Spaceship logic: the gate every picture passes before Ryan sees it", line 9.
-What it stops or why it looks invented: Forcing exact dimensional ratios across all ships of a class destroys faction silhouette diversity, turning every cruiser into the exact same spatial footprint.
+What a film would do instead: Like Star Trek or Sins of a Solar Empire II, shields remain invisible until struck, upon which energy flares violently at the exact point of impact, diffusing across local hexagonal facets before bleeding into the hull as capacity drops.
 
-Fixed class breach anchor table: "Breach anchors by class (the base count; each faction's sheet says how they are placed)."
-playbooks/factions.md, section "Breach anchors by class".
-What it stops or why it looks invented: Assigns rigid numeric integer counts (2, 3, 4, 6, 8) to classes despite simultaneously asserting that hard points must never come from a constant.
+The loosening proposed: Strip the permanent static ellipsoid overlay. Implement localized impact blooms and directional mesh displacement at the hit vector, with a shader variable driving cell jitter and darkening/flickering as shield integrity depletes below 30%.
 
-2. Contradictions Spotted
+Finding 3: Fixed Synthetic Audio Salvos and Symmetrical Layer Pitching
 
-Inside playbooks/concepts_round2.md (Internal):
-Section "Spaceship logic", line 8 dictates that features like an upright ring are lost under the battle camera, mandating that the designer "lay it flat or turn it up." Conversely, under the Eclipse design sheets, variant E1 explicitly commands that the broken ring "stands upright ahead of it... and never lies flat."
+What the player sees/hears now: Every shot within a weapon burst fires with mechanical regularity, identical sound profiles, and zero dynamic distance falloff or acoustic weight differentiation between a frigate battery and a dreadnought battery.
 
-Inside playbooks/concepts_round2.md (Internal):
-Section "Spaceship logic", line 1 establishes that "The forward weapon is built the faction's own way, and is never a long barrel on the tip of the nose." However, the Sunward Crusade grammar in the very same file commands: "The lance is one long weapon on the centre line at the bow."
+What a film would do instead: In Star Wars or Dune, projectile barrages have natural human/mechanical cadence stagger, barrel-cycle variance, acoustic interior resonance, and distinct bass punch depending on hull displacement.
 
-Between playbooks/ships.md and playbooks/factions.md:
-playbooks/ships.md section 4 states that hard point breach anchor counts come from class and faction, "never from a constant." In contrast, playbooks/factions.md establishes a hard, static numeric constant table under "Breach anchors by class" (Escort 2, Destroyer 3, Cruiser 4, Capital 6, Flagship 8).
+The loosening proposed: Loosen cues.json fixed salvo gaps (gap: 0.045, pj: 0.03). Introduce pitch jitter up to ±0.15, trigger acoustic ducking on the master weapons bus during heavy hits (duck: 0.5-0.75), and mandate non-linear stagger across individual turret barrels.
 
-Between playbooks/effects.md and playbooks/deaths_and_hits.md:
-playbooks/effects.md section 1 explicitly enforces a strict, universal flame cap where "no flame or hot core lives longer than 0.70 s." Yet playbooks/deaths_and_hits.md specifies that during a frigate death, the hull spins while "trailing a curling ribbon of fire, then gas" over a window of 0.0 to 0.72 s.
+Finding 4: Uniform White Bar Beams with Zero Thermal Life
 
-Between playbooks/PROGRAM.md and playbooks/screens.md:
-playbooks/PROGRAM.md section "Decisions: made, and still owed" (decision 4) dictates that the orders sheet interface look has been decided as "Map first, then all: every other screen follows it." However, playbooks/screens.md section 8 lists the battle HUD styling as an unresolved open question for Ryan, directing that "Until he rules, the HUD keeps its slabs."
+What the player sees/hears now: Energy lances and ion beams draw razor-straight, flat-shaded bars edge-to-edge across the screen with hard on/off cutoffs and no beam decay or optical bloom.
 
-3. Missed Tells
+What a film would do instead: In Babylon 5 and Homeworld, heavy beam weapons ramp up with optical focal blooming, shudder slightly along their vector with an unstable incandescent core, and leave a searing ionized path that dissipates over 1-2 seconds.
 
-The 90 Percent Outline Gate (playbooks/ships.md, section 4):
-Measures silhouette pixel overlap between a 2D drawing and a 3D model. Obeying it literally rewards inflating inert geometry to cover drawing errors and penalizes functional adjustments that improve readability at the actual play camera.
+The loosening proposed: Loosen the instantaneous beam rendering. Introduce a 0.15s beam aperture flare/charge ramp, core noise/wiggle shaders, and a glowing lingering trail along the shot path that cools from white-hot to dull cherry-red.
 
-The Exact Weapon Mount Contract (playbooks/concepts_round2.md, section "Spaceship logic", line 1):
-Mandates showing only the exact functional mount count from data.js and nothing else that looks like an installation. Obeying this literally creates barren, toy-like capital hulls with huge swaths of vacant plating punctuated by three or four isolated turrets.
+Finding 5: Decoupled Single-Puff Kinetic Hull Impacts
 
-Single Filled Button Rule (playbooks/screens.md, section 2):
-Specifies exactly one filled lime button per screen. Obeying this mechanically passes UI validation scripts but creates confusing, unreadable interfaces where critical concurrent paths look like disabled ghost text.
+What the player sees/hears now: Macro-cannons, railguns, and autocannons spawn an identical beige smoke puff and a tiny static glow pip at the ship's center or root node, regardless of caliber or projectile velocity.
 
-Authored Split-Hull Death Beat (playbooks/deaths_and_hits.md, section "A death in three beats"):
-Mandates that every dying cruiser split cleanly into two capped halves. Obeying this literally guarantees repetitive, staged battlefields where every large wreck looks like an identical diorama model parted down a seam.
+What a film would do instead: In The Expanse, kinetic slugs punch jagged entry holes, kick off high-velocity spall and spark cones perpendicular to the armor plate, shatter exterior fixtures, and leave molten gouges.
 
-Check Destruction Raycast Guard (playbooks/effects.md, section 4):
-Enforces that every particle puff and jet roots via raycast directly onto hull geometry. This passes unit checks against floating puffs, but prevents realistic volumetric blowouts, wide shockwaves, and expansive debris fields that naturally expand outward from hull impacts.
+The loosening proposed: Implement directional velocity to hit VFX. Align cone spall and high-speed directional sparks with the incoming strike angle, leaving persistent decal wounds that cool over 3.0s instead of spawning symmetrical circular puffs.
+
+Finding 6: Symmetrical, Scheduled Chain Blasts on Ship Destruction
+
+What the player sees/hears now: Dying hulls step through perfectly rhythmic, evenly spaced secondary explosions walking down the spine before snapping into halves.
+
+What a film would do instead: Capital ship deaths in Return of the Jedi feature uneven, asymmetric structural failures, internal fuel ruptures venting violent directional fire, followed by irregular pauses, secondary blasts, and catastrophic structural tears.
+
+The loosening proposed: Loosen the rigid timing table in deaths_and_hits.md (e.g., Cruiser beats locked at 0.5s, 0.8s, 1.1s). Inject ±35% randomized interval variance and spatial offset along bulkhead breach zones, mixing sharp structural ruptures with dull internal hull groans.
+
+Finding 7: Single Scale Comet Tracers and Universal Munitions
+
+What the player sees/hears now: Small escort craft fire projectiles nearly as large as their own chassis; dreadnought batteries fire tracers that share identical velocity, width, and illumination profiles.
+
+What a film would do instead: Fleet engagements in Battlestar Galactica contrast needle-thin, high-velocity point-defense flak screens with massive, slow-burning heavy ordnance shells that illuminate the hulls firing them.
+
+The loosening proposed: Implement weapon-class scaling factors. Downscale point-defense and frigate tracer geometry/glow radii by 50% while expanding capital heavy macro shells and torpedoes, allowing heavy ordnance to cast real-time local point-light onto adjacent ship geometry.
+
+Finding 8: Sterile Post-Engagement Battlefield Space
+
+What the player sees/hears now: Once an effect duration elapses, the hex returns to a pristine, sterile board; no atmospheric venting, particulate dust, or drifting structural debris remains.
+
+What a film would do instead: Spaces after engagements in Homeworld or The Expanse are littered with floating particulate clouds, cooling hull fragments, frozen venting gas, and scarred navigation hazards.
+
+The loosening proposed: Permit low-cost persistent particulate fields. Leave low-density GPU drift clouds (cold vapor, small tumbling shards) on hexes where capital kills or torpedo strikes occurred, persisting for several turns without violating performance budgets.
+
+2. The Staged Tell the Writers' Framing Is Likely to Miss
+
+The Synchronized Turn Reset and Static Posture Tell:
+The writers focus extensively on the execution of active verbs (the hit, the beam, the break). What they will likely miss is the dead stillness between turns. In real space operations, a vessel is never static; it maintains slight station-keeping thruster firings, RCS puff corrections, and rotational inertial trim. Currently, all ships stop dead on the hex center, extinguish their drives instantly, and sit motionless with uniform running lights. This immediately exposes the board game beneath the simulation. Ships need subtle, continuous idle behaviors, micro-drifts within the hex bounds, faint gyroscopic attitude corrections, and heat-radiator shimmer during weapon cooldown phases.
+
+3. Movement Devices Shortlist (Hex Tactics from Above)
+
+Devices That Suit the Game:
+
+Vector Decoupling / Drift While Turned (LOOK): The ship rotates its nose toward the movement vector or final tactical facing while the hull's momentum continues translating along the original path, showing vacuum mechanics without altering the underlying hex destination.
+
+Thruster-Driven Pitch and Yaw Couplets (LOOK): RCS thruster jets fire on opposing corners of the hull (e.g., bow-left, stern-right) to initiate yaw, firing reverse pairs to arrest rotation, rather than snapping rotational degrees.
+
+Asymmetrical Class Inertia / Staggered Turn Inception (LOOK): Frigates pivot instantly and dart away; capital ships experience an engine spin-up delay, slow rotational ramp-up, and lingering braking burns before coming to a stop.
+
+Retro-Burn Braking Maneuvers (LOOK): Instead of gliding to a dead stop, ships fire bow retro-thrusters or execute an end-of-move braking burn to decelerate into the destination hex.
+
+Devices That Do NOT Suit the Game:
+
+Aerodynamic Banking and Rolling: Tilting hulls along the longitudinal axis into turns like an atmospheric fighter or naval boat. This reads as aircraft in an ocean, violating the vacuum aesthetic.
+
+Full 180° Flip-and-Burn Deceleration: While realistic in The Expanse, executing a complete flip-and-burn over a 1-to-2 hex hop in a 1.5-second turn playback creates disorienting visual spinning and ruins weapon-facing comprehension from an overhead tactical camera.
+
+Continuous Arc Curvature (Car-Like Cornering): Smoothing paths into gentle highway curves causes ships to clip hex edges and visually disconnect from the underlying hex grid rules.
 
 4. One-Line Verdict
 
-The playbooks currently form a transitional, reactive mandate collection: heavily burdened by patchwork negative prohibitions, yet anchored by clear staging instincts that need consolidating into a single coherent standard.
-
-Leg filed. Flash, IDEATION seat, issue 495.
+Relax the rigid sub-second flame and timing clamps to allow asymmetrical secondary burns, lingering slag, and directional spall to accumulate on hulls.

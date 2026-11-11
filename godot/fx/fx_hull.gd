@@ -104,7 +104,21 @@ uniform vec4 fx_tears[64]; // square rotation, phase 3, phase 4, unused
 uniform vec3 fx_burnt_cell = vec3(1.0);
 uniform float fx_power = 1.0;
 uniform bool fx_organic = false;
+uniform int fx_scorch_count = 0;
+uniform vec4 fx_scorch[8]; // issue 484: a death's wound (centre, reach) on a wreck piece
+uniform float fx_scorch_heat = 0.0;
 varying vec3 fx_hull_p;
+float fx_scorch_at(vec3 p) {
+	float s = 0.0;
+	for (int i = 0; i < 8; i++) {
+		if (i >= fx_scorch_count) { break; }
+		float R = max(fx_scorch[i].w, 0.0001);
+		vec3 q = (p - fx_scorch[i].xyz) / R;
+		float wob = 0.20 * sin(dot(q, vec3(7.1, 3.3, 5.9))) + 0.12 * sin(dot(q, vec3(-4.3, 13.7, 9.1))) + 0.10 * (burnt_hash(floor(q * 14.0)) - 0.5);
+		s = max(s, 1.0 - smoothstep(0.2, 1.0, length(q) + wob));
+	}
+	return s;
+}
 float fx_mouth_edge(int i, vec3 p) {
 	vec3 d = p - fx_mouths[i].xyz;
 	vec3 n = fx_axes[i].xyz;
@@ -221,6 +235,15 @@ for (int i = 0; i < 64; i++) {
 """, """
 ALBEDO *= (1.0 - fx_soot * 0.94) * (1.0 - fx_weather * (0.25 + 0.65 * burnt_hash(fx_hull_p * 1.7)));
 EMISSION *= (1.0 - fx_soot) * clamp(fx_power, 0.0, 1.0);
+if (fx_scorch_count > 0) {
+	// issue 484: soot black at the wound, heat-stained bronze further out, embers that cool with the torn faces
+	float fx_sc = fx_scorch_at(fx_hull_p);
+	// bench round 1: a strong bronze ring read as brown cardboard on a white hull; keep the stain faint and the soot dark
+	ALBEDO *= mix(vec3(1.0), vec3(0.80, 0.72, 0.70), smoothstep(0.0, 0.35, fx_sc)) * (1.0 - 0.9 * smoothstep(0.25, 0.75, fx_sc));
+	ROUGHNESS = mix(ROUGHNESS, 1.0, fx_sc);
+	float fx_em = smoothstep(0.65, 1.0, fx_sc) * step(0.72, burnt_hash(floor(fx_hull_p / max(fx_burnt_cell, vec3(0.001)) * 5.0)));
+	EMISSION += vec3(1.0, 0.30, 0.05) * fx_em * clamp(fx_scorch_heat, 0.0, 1.0) * 2.0;
+}
 // Mirrored ship models reverse raster winding; keep their outside as the outside.
 if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
 	ALBEDO = vec3(0.0); METALLIC = 0.0; SPECULAR = 0.0; ROUGHNESS = 1.0;
