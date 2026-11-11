@@ -3,32 +3,10 @@ extends Control
 # Presentation only: it reads the campaign state and calls campaign.act("enterNode", id) like any button, so the bot, the
 # parity test and the rules never see it. Its own randomness uses a local generator, never the rules' random numbers.
 #
-# R51 look (Sins of a Solar Empire 2 star system, map3d_system.gd and map3d_shaders.gd):
-# - The Hollow Sun sits at the centre, always in view: a dead black star ringed in slow fire, its glow the system's light,
-#   a battlefield debris ring round it. The sector's seven jumps sweep round it from left to right: each column of stops
-#   is a bearing from the sun, each stop sits on its own orbit (inner stops nearer the sun), orbit lines drawn faintly.
-# - Each stop is a real place: a planet with an atmosphere rim and a moon, a station, an asteroid field along its orbit,
-#   a nebula pocket, a wreck field; shipyards, drydocks and repair tenders are built structures; the sector flagship is
-#   the enemy flagship hull.
-# - Jump lanes are glowing ribbons; the lanes you can take pulse toward the destination; route lanes take the route's colour.
-# - A rich sky (three star layers, the galaxy's band, nebula and dust in the sector's colours), near stars and nebula
-#   sheets at depth for parallax; smooth zoom (wheel, + and -) and pan (right or middle drag, WASD), Home resets.
-# - Faction looks from lore round 3 (colours only, R51): rival halos, threat markers, patrols, the flagship.
-# - Quality: "high" or "low" (fewer debris pieces, stars, cloud octaves); ui.map_quality, toggled on the map screen.
-#
-# The Briefing build (Ryan's pick, Nov 10 2026, FINDINGS R165; contrib/opus/briefs/campaign_map_briefing.md) keeps the scene
-# (the black hole and its disc, the nebula and starfield, the 3D models at the stops, the curved routes) and takes the
-# clutter off it:
-# - the backdrop (sky, near stars, embers, the enemy's light) at about half strength; five faint orbit rings instead of one
-#   per stop;
-# - your stop and the next jumps keep full models; R170 sets stops ahead to 85% size and 75% light, and cut-off stops to
-#   half of that (three light tiers, one render layer each, the Hollow Sun's light split to match);
-# - no rings, halos, hover glows, threat holograms or patrol glows; the routes to the next jumps are solid lime lines, every
-#   other route one thin pale line, cut-off routes fainter; no blue routes, no bloom on a route;
-# - words on the map are plain with a dark halo: the stop you hold ("Your fleet is here"), and a square lime number marker
-#   and a name at each next jump (the picked one filled). One small red diamond over a stop where the Nemesis meets you.
-#   Stops further on carry no words; pointing at one (or reaching it with the arrow keys) shows the one tip card.
-# - R170 adds one sage type glyph above every stop ahead, and a sector-by-sector approach to the Hollow Sun.
+# Briefing map, R165/R170/R174: one fall inward across the three sectors, with routes as the only chart lines.
+# Fight stops show the enemy's real hulls; services and events keep their models. Every stop ahead has a sage type icon.
+# Next jumps have full models and lime routes; ahead is 85% size and 75% light, cut off is half of each.
+# The rail, captions, hover cards and controls retain the Briefing layout.
 #
 # Useful (unchanged in what it knows): the route planner on hover (safest and richest routes to the flagship with running totals), danger
 # bands per fight for your fleet as it is now, fight type and board shape, rewards, the hover card, keyboard focus.
@@ -93,6 +71,7 @@ var _flight_id := ""
 var _flight_curve: Curve3D
 var _flight_time := 0.0
 var _flight_rotation := Quaternion.IDENTITY
+var _flight_heights := Vector2.ZERO
 var _arrival_tween: Tween
 var _engine_mounts: Array[Vector3] = []
 var _wake_samples: Array = []
@@ -150,22 +129,18 @@ func set_quality(qv: String) -> void:
 	if qv == quality: return
 	quality = qv; _sig = ""   # rebuild with the new detail
 	if visible: sync()
-# where a stop sits: [bearing (radians), orbit radius]
+# Presentation coordinates only. The route graph, node records and random streams stay in the campaign.
 func _polar(n: Dictionary) -> Vector2:
-	var ncols = 7
-	if _C() != null and _C().RUN != null: ncols = max(2, _C().RUN["map"]["cols"].size())
-	var look = System.sector_look(int(_C().RUN.get("sector", 1)))
-	var angle: Vector2 = look["angle"]; var radius: Vector2 = look["radius"]
-	var progress = float(n["col"]) / float(ncols - 1)
-	var th = deg_to_rad(angle.x - angle.y * progress)
-	# The final stop settles onto the inner edge in the well. The graph and node records never move.
-	var r = lerpf(radius.x, radius.y, 1.0 - float(n["y"]))
-	return Vector2(th, lerpf(r, radius.x, progress * float(look["infall"])))
+	var p = _pos(n)
+	return Vector2(atan2(-p.z, p.x), Vector2(p.x, p.z).length())
 func _outer_radius() -> float:
-	return System.sector_look(int(_C().RUN.get("sector", 1)))["radius"].y
-func _at(th: float, r: float) -> Vector3: return Vector3(cos(th) * r, 0.0, -sin(th) * r)
+	return System.sector_look(int(_C().RUN.get("sector", 1)))["extent"]
 func _pos(n: Dictionary) -> Vector3:
-	var p = _polar(n); return _at(p.x, p.y)
+	return System.stop_position(n, _C().RUN["map"]["cols"].size(), int(_C().RUN.get("sector", 1)))
+func _entry_pos() -> Vector3:
+	var first = _pos({"col": 0, "y": 0.5})
+	var next = _pos({"col": 1, "y": 0.5})
+	return first - (next - first).normalized() * 16.0
 
 # ---------------- building the sector ----------------
 func sync() -> void:
@@ -279,7 +254,6 @@ func _build(sig: String) -> void:
 	_rng.seed = hash(base_sig) + 7
 	for col in m["cols"]:
 		for n in col: _add_node(n)
-	_add_orbits()
 	# the enemy's light over the far end of the system, where its flagship waits
 	var L = System.look(fac); var bpos = _pos(m["cols"][m["cols"].size() - 1][0])
 	root3.add_child(sys.mi(sys.flat(44, 44), sys.mat("TERR", {"col": Color(L["main"], 0.18 * BACKDROP_K)}), bpos + Vector3(0, -0.3, 0)))
@@ -304,72 +278,48 @@ func _tier_lights(sun) -> void:
 		l.light_cull_mask = LAYER_AHEAD if i == 1 else LAYER_BEHIND
 		sun.get_parent().add_child(l); l.position = sun.position
 
-# a faint hint of the system's orbits: five rings at about 5 percent, not one per stop (the Briefing build)
-func _add_orbits() -> void:
-	for i in 5: sys.orbit(root3, lerp(sys.approach["radius"].x, sys.approach["radius"].y, float(i) / 4.0), pale(0.06), 0.22)   # about 5 percent as the eye reads it
-
 # ---------------- stop scenes ----------------
-func _place_scene(obj: Node3D, place: String, d: Dictionary) -> float:   # the setting of the stop; returns the height of its top
-	var pal = System.PLANETS[_rng.randi() % System.PLANETS.size()]
-	match place:
-		"planet":
-			var body = sys.planet(obj, pal, 2.2, Vector3(0.0, 2.1, -0.3))
-			sys.moon(obj, body.position, 3.3, 0.4)   # the moon's orbit stays inside the stop (neighbours sit 7.7 or more away)
-			return 4.5
-		"station":
-			var L = System.look(d["fac"])   # one clear object: the station alone (R51 round 3, no planet jammed in behind it)
-			var st = props.station(obj, L["base"].lerp(Color(0.6, 0.59, 0.57), 0.85), L["main"].lerp(Color(0.5, 0.5, 0.5), 0.4))   # neutral, slightly warm grey; the accent toned down (no purple cast)
-			st.position = Vector3(0.5, 2.3, 0.3); st.rotation_degrees = Vector3(14, 0, -10); st.scale = Vector3.ONE * 0.85
-			_spinners.append([st, Vector3.UP, 0.035]); _spinners.append([st.get_node("ring"), Vector3.UP, 0.22])
-			return 5.2
-		"belt":
-			props.belt(obj, d["theta"], d["r"], d["pos"], _rng.randi() % 3)
-			return 3.0
-		"graveyard":
-			var wf = ["voidsworn", "hegemony", "corsair", "deathless"][_rng.randi() % 4]
-			var wr = _wreck(wf, "Cruiser", 7.0)
-			var hk = null if wr != null else _hull(wf, "Cruiser", 6.5)
-			if wr != null:
-				wr.position = Vector3(0, 1.6, 0); wr.rotation_degrees = Vector3(14, _rng.randf() * 360.0, 24); obj.add_child(wr)
-			elif hk != null:
-				hk.position = Vector3(0, 1.3, 0); hk.rotation_degrees = Vector3(18, _rng.randf() * 360.0, 32); obj.add_child(hk)
-			else:
-				var bx = BoxMesh.new(); bx.size = Vector3(3.2, 0.6, 0.9)
-				var hb = sys.mi(bx, sys.std(Color(0.2, 0.19, 0.18), 0.0, 0.6, 0.6), Vector3(0, 1.3, 0)); hb.rotation_degrees = Vector3(15, 30, 25); obj.add_child(hb)
-			sys.wreck_scraps(obj, 46 if quality != "low" else 16, 1.6)
-			sys.glow(obj, Color(1.0, 0.42, 0.14, 1.0), 2.2, Vector3(0.7, 1.4, 0.2), 2.4, 0.9, 1.0)
-			var lt = OmniLight3D.new(); lt.light_color = Color(1.0, 0.4, 0.15); lt.light_energy = 1.2; lt.omni_range = 4.0; lt.position = Vector3(0.6, 1.5, 0); obj.add_child(lt)
-			return 3.0
-		"storm":
-			sys.clouds(obj, Color(0.3, 0.55, 1.0), Color(0.7, 0.35, 1.0), 7 if quality != "low" else 4, 1.0, Vector3(0, 1.8, 0), 0.75, 1.0)
-			var lt2 = OmniLight3D.new(); lt2.light_color = Color(0.5, 0.65, 1.0); lt2.light_energy = 1.0; lt2.omni_range = 5.0; lt2.position = Vector3(0, 1.8, 0); obj.add_child(lt2)
-			return 3.6
-	# open space: a faint dust pocket, nothing that crowds the marker
-	sys.clouds(obj, Color(0.4, 0.45, 0.6), Color(0.3, 0.32, 0.45), 3, 0.8, Vector3(0, 1.2, 0), 0.35)
-	return 2.6
+# Bows point toward the preceding leg, where the player approaches from. ShipView's bow is local +X.
+func _enemy_fleet(obj: Node3D, n: Dictionary, fac: String) -> float:
+	var t = str(n["type"])
+	var before = _pos({"col": maxf(-1.0, float(n["col"]) - 1.0), "y": 0.5})
+	var toward = (before - _pos(n)).normalized()
+	var heading = atan2(-toward.z, toward.x)
+	var formation = Node3D.new(); formation.name = "EnemyFleet"; formation.rotation.y = heading
+	obj.add_child(formation)
+	var cls = "Cruiser" if t == "elite" else "Destroyer"
+	var length = 6.6 if t == "elite" else 5.8
+	if t == "boss":
+		var tpl = _C().FACTIONS[fac].get("boss")
+		cls = str(_C().HULLS[tpl]["cls"]); length = 12.0
+	var lead = _hull(fac, cls, length)
+	if lead != null:
+		lead.name = "Leader"; lead.position = Vector3(0, 1.8, 0); formation.add_child(lead)
+	if t != "boss":
+		for i in 2:
+			var escort = _hull(fac, "Frigate", 3.8)
+			if escort == null: continue
+			escort.name = "Escort%d" % i
+			escort.position = Vector3(-2.0 - float(i) * 0.5, 1.5, -2.4 if i == 0 else 2.4)
+			escort.rotation.y = -0.08 if i == 0 else 0.12
+			formation.add_child(escort)
+	# A local neutral key keeps dark hulls readable even in the well. The normal stop tiers dim it too.
+	var fill = OmniLight3D.new(); fill.light_color = Color(0.82, 0.87, 1.0)
+	fill.light_energy = 8.0; fill.omni_range = 16.0; fill.omni_attenuation = 0.5
+	fill.position = Vector3(-2, 5, 6); fill.shadow_enabled = false; obj.add_child(fill)
+	return 4.6 if t == "boss" else 3.6
+
 var _base_sig := ""
 func _add_node(n: Dictionary) -> void:
 	_rng.seed = hash(_base_sig + "|" + str(n["id"]))
-	var C = _C(); var pp = _polar(n); var p = _at(pp.x, pp.y); var obj = Node3D.new(); obj.position = p; root3.add_child(obj)
+	var C = _C(); var pp = _polar(n); var p = _pos(n); var obj = Node3D.new(); obj.position = p; root3.add_child(obj)
 	var t = n["type"]; var mats = []; var top = 2.0
 	var gold = Color("#d0a64b"); var teal = Color("#5fb3a6"); var cyan = Color("#62ccff")
 	var fight = t in ["battle", "elite", "boss"]
 	var nfac = C.nodeFaction(n) if fight else ""
 	var d = {"n": n, "pos": p, "theta": pp.x, "r": pp.y, "fac": nfac if nfac != "" else str(C.RUN["map"]["fac"])}
-	if fight and t != "boss":
-		top = _place_scene(obj, str(n.get("map", "")), d)
-		top += 0.4
-	elif t == "boss":
-		var fac = C.RUN["map"]["fac"]; var btpl = C.FACTIONS[fac].get("boss"); var cls = str(C.HULLS[btpl].get("cls", "Battleship")) if btpl != null and C.HULLS.has(btpl) else "Battleship"
-		var L = System.look(fac)
-		var bh = _hull(fac, cls, 12.0)
-		if bh != null:
-			bh.position = Vector3(0, 2.2, 0); bh.rotation_degrees = Vector3(0, 180, 0); obj.add_child(bh)   # it faces back down the sector, at you
-		else:
-			var m3 = _mat(L["base"], 0.0, 0.8, 0.3); mats.append(m3); obj.add_child(sys.mi(sys.sphere(2.2), m3, Vector3(0, 2.4, 0)))
-		var l = OmniLight3D.new(); l.light_color = L["light"]; l.light_energy = 2.0; l.omni_range = 12.0; l.position = Vector3(0, 3.5, 0); obj.add_child(l)
-		if int(L["look"]) == 1: _sync_lights.append([l, 2.0])
-		top = 4.6
+	if fight:
+		top = _enemy_fleet(obj, n, d["fac"])
 	else:
 		match t:
 			"shipyard":
@@ -414,7 +364,7 @@ func _add_node(n: Dictionary) -> void:
 				sys.glow(obj, cyan, 3.4, Vector3(0, 1.8, 0), 2.2, 0.8, 1.0)
 				top = 3.2
 	# a soft cool fill over built stops, so their plating reads on the side away from the Hollow Sun
-	if t in ["shipyard", "drydock", "field"] or str(n.get("map", "")) in ["station", "graveyard"]:
+	if t in ["shipyard", "drydock", "field"]:
 		var fl = OmniLight3D.new(); fl.light_color = Color(0.7, 0.78, 1.0); fl.light_energy = 2.4; fl.omni_range = 16.0; fl.omni_attenuation = 1.1
 		fl.position = Vector3(3.0, 5.0, 4.5); fl.shadow_enabled = false; obj.add_child(fl)
 		var ky = OmniLight3D.new(); ky.light_color = Color(1.0, 0.9, 0.78); ky.light_energy = 1.1; ky.omni_range = 15.0; ky.omni_attenuation = 1.0   # a faint key from the camera's side
@@ -502,8 +452,7 @@ func _add_lane(a: String, b: String) -> void:
 	_lanes[a + ">" + b] = {"a": a, "b": b, "mi": mi, "mat": mat}
 # the way in: before a sector's first jump the fleet waits off the chart's edge, and a lime line runs from it to each first stop
 func _add_entry_lanes() -> void:
-	var C = _C(); var n0 = C.RUN["map"]["cols"][0][0]; var pp = _polar(n0)
-	var from = _at(pp.x + deg_to_rad(16.0), _outer_radius() + 6.0)
+	var C = _C(); var from = _entry_pos()
 	for n in C.RUN["map"]["cols"][0]:
 		if not _nodes.has(n["id"]): continue
 		var curve: Curve3D = sys.lane_curve(from, _nodes[n["id"]]["pos"]); var L := curve.get_baked_length()
@@ -579,8 +528,7 @@ func _engine_positions() -> Array:
 func _token_home() -> Vector3:
 	var C = _C(); var pos = C.RUN.get("pos")
 	if pos != null and _nodes.has(pos): return _nodes[pos]["pos"] + TOKEN_OFF + Vector3(0, _nodes[pos]["top"], 0)
-	var n0 = C.RUN["map"]["cols"][0][0]; var pp = _polar(n0)
-	return _at(pp.x + deg_to_rad(16.0), _outer_radius() + 6.0) + Vector3(0, 3.0, 0)   # just before the first jump, clear of the first stop
+	return _entry_pos() + Vector3(0, 3.0, 0)   # just before the first jump, clear of the first stop
 
 # ---------------- state ----------------
 func _avail() -> Array:
@@ -605,6 +553,9 @@ func _refresh() -> void:
 	_kb_order.clear()
 	for id in _nodes:
 		var d = _nodes[id]; var n = d["n"]; var done = C.jt(n.get("done"))
+		if n["type"] in ["battle", "elite", "boss"] and d["fac"] != C.nodeFaction(n):
+			root3.remove_child(d["obj"]); d["obj"].queue_free()
+			_add_node(n); d = _nodes[id]
 		var current = C.RUN.get("pos") == id
 		var bypassed = not current and not done and not _reachable.has(id)
 		# your stop and the next jumps keep full models; stops further on are smaller and darker; behind you or cut off, dimmer still
@@ -642,7 +593,9 @@ func _set_tier(d: Dictionary, tier: int) -> void:
 		if is_instance_valid(v): v.layers = layer
 	if par != null: par.add_child(obj)
 	for l in P["lights"]:
-		if is_instance_valid(l[0]): l[0].light_energy = l[1] * f
+		if is_instance_valid(l[0]):
+			l[0].light_energy = l[1] * f
+			l[0].light_cull_mask = layer
 	for g in P["gains"]:
 		g[0].set_shader_parameter(g[1], g[2] * f); g[0].set_meta("dimk", f)
 	for sp in P["sprites"]:
@@ -684,9 +637,10 @@ func _route_lanes() -> Dictionary:   # the lanes of the safest way on through th
 	for i in range(p.size() - 1): out[str(p[i]) + ">" + str(p[i + 1])] = true
 	return out
 # The routes: lime and solid to a next jump (the one line you can fly now), one thin pale line for every other route, fainter
-# when it is cut off or already flown. Two channels, colour and width (ui_spec.md 5.2). No blue routes.
+# when it is cut off. Routes behind the fleet are hidden. Two channels, colour and width (ui_spec.md 5.2). No blue routes.
 func _paint_lanes() -> void:
 	var C = _C(); var R = C.RUN; var av = _avail(); var lit = _route_lanes(); var kk = float(ui.k) if ui != null and ui.get("k") != null else 1.0
+	var current_col = int(_nodes[R["pos"]]["n"]["col"]) if R.get("pos") != null and _nodes.has(R["pos"]) else -1
 	for k in _lanes:
 		var L = _lanes[k]
 		if L["a"] == "@":
@@ -694,6 +648,8 @@ func _paint_lanes() -> void:
 			L["mat"].set_shader_parameter("col", for_screen(Color(GS.GILT_HOVER if (_flying and _flight_id == L["b"]) else GS.GILT, 1.0))); L["mat"].set_shader_parameter("px", 1.25 * kk)
 			continue
 		var A = _nodes[L["a"]]["n"]; var Bn = _nodes[L["b"]]["n"]
+		var behind = int(A["col"]) < current_col
+		if L.has("mi"): L["mi"].visible = not behind
 		var trav = C.jt(A.get("done")) and (C.jt(Bn.get("done")) or R.get("pos") == L["b"])
 		var nxt = R.get("pos") == L["a"] and av.has(L["b"])
 		var ahead = _reachable.has(L["a"]) and _reachable.has(L["b"])
@@ -1106,7 +1062,9 @@ func fly_to(id: String) -> void:
 	_flying = true; card.visible = false; _drag = false
 	_flight_id = id; _flight_time = 0.0; _flight_rotation = token.quaternion
 	var a = token.position; var b = _nodes[id]["pos"] + TOKEN_OFF + Vector3(0, _nodes[id]["top"], 0)
-	_flight_curve = sys.lane_curve(a - TOKEN_OFF, b - TOKEN_OFF)
+	var from = a - TOKEN_OFF; from.y = 0.0
+	_flight_curve = sys.lane_curve(from, _nodes[id]["pos"])
+	_flight_heights = Vector2(a.y - TOKEN_OFF.y, b.y - TOKEN_OFF.y)
 	_wake_samples.clear(); _set_hot(""); _paint_lanes()
 	_uz_t = 1.0; _pan_t = Vector3.ZERO
 	grab_focus()
@@ -1121,7 +1079,7 @@ static func _flight_distance(t: float) -> float:
 
 func _flight_point(distance: float) -> Vector3:
 	var p := _flight_curve.sample_baked(_flight_curve.get_baked_length() * distance) + TOKEN_OFF
-	p.y += pow(sin(PI * distance), 2.0) * 1.2
+	p.y += lerpf(_flight_heights.x, _flight_heights.y, distance) + pow(sin(PI * distance), 2.0) * 1.2
 	return p
 
 func _advance_flight(delta: float) -> void:
