@@ -20,6 +20,11 @@ const FLOOK := preload("res://fx/faction_look.gd")
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
 const LIGHT_K := 0.9
 const LIGHT_REACH := 30.0   # an event light's standing reach in world units (hexes are 17.3 across)
+# Issue 461: a light given its own reach also falls off more slowly (Godot's omni light dims as distance to the power of
+# its attenuation). Bench round 1: at the standing 1.2 a torpedo's light changed a cruiser parked 15 units away by under
+# 1 percent, so the reach alone lit nothing; at 0.6 the neighbour is lit about five times as much.
+const LIGHT_ATTEN := 1.2
+const REACH_ATTEN := 0.6
 const FLASH_WINDOW := 0.12   # flashes this close are one event (a salvo landing together)
 const FLASH_CAP := 3         # counted flashes in any rolling second (WCAG 2.3.1 general flash threshold)
 const FLASH_I := 4.0         # sprite intensity from which a short flash-like sprite counts (dimmer pops are free)
@@ -241,7 +246,7 @@ func setup(opts := {}) -> void:
 		l.shadow_enabled = false
 		l.visible = false
 		l.omni_range = LIGHT_REACH * unit
-		l.omni_attenuation = 1.2
+		l.omni_attenuation = LIGHT_ATTEN
 		add_child(l)
 		_lpool.append(l)
 	phys_root = Node3D.new()
@@ -786,6 +791,7 @@ func _update_lights() -> void:
 			l.light_energy = float(ev[k][1]) * LIGHT_K
 			l.light_color = ev[k][2]
 			l.omni_range = (float(ev[k][3]) if float(ev[k][3]) > 0.0 else LIGHT_REACH) * unit
+			l.omni_attenuation = REACH_ATTEN if float(ev[k][3]) > 0.0 else LIGHT_ATTEN
 			l.visible = true
 		else:
 			l.visible = false
