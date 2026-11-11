@@ -1783,7 +1783,9 @@ static func _smoke_clump(fx, src, p: Vector3, n: Vector3, px: float, life: float
 		var size: float = px * (r.randf_range(0.85, 1.05) if j == 0 else r.randf_range(0.32, 0.68))
 		var dir: Vector3 = (n * r.randf_range(0.3, 1.0) + side * r.randf_range(0.2, 1.1) + fx.rdir() * 0.25).normalized()
 		var vel: Vector3 = dir * units * r.randf_range(0.10, 0.45) / maxf(life, 0.3)
-		var seed_i: int = 0 if r.randf() < 0.65 else r.randi_range(1, 2)
+		# the round baked seeds (s1, s2) read as a flower of equal puffs: the big picture is always the lopsided s0, and
+		# only a small one may use a round seed, stretched
+		var seed_i: int = 0 if (j == 0 or r.randf() < 0.75) else r.randi_range(1, 2)
 		var look := {"seed": seed_i, "spin": r.randf() * TAU, "tone": r.randf_range(0.5, 1.3),
 			"shape": Vector2(r.randf_range(1.2, 1.6), r.randf_range(0.6, 0.85)) if seed_i != 0 else Vector2(r.randf_range(0.85, 1.25), r.randf_range(0.85, 1.25))}
 		var t: float = delay + (0.0 if j == 0 else r.randf_range(0.04, 0.32))
@@ -2128,7 +2130,8 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		if cause == "tidal" and fx.well != Vector3.INF:
 			vel += (fx.well - center).normalized() * 3.0 * k
 		vel.y = 0.0
-		var ang: Vector3 = fx.rdir() * ((0.22 if is_main else 0.35) if s.death_big else (1.1 if is_main else 1.6))
+		# issue 484: the biggest piece of a big hull turns slowly, so it stays readable as the ship's main wreck
+		var ang: Vector3 = fx.rdir() * ((0.14 if is_main else 0.35) if s.death_big else (1.1 if is_main else 1.6))
 		var release_delay := 0.0
 		if s.death_big and not organic:
 			var timeline: DeathTimeline = s.get_meta("death_timeline")
@@ -2243,10 +2246,11 @@ static func _throw_frags(fx, s, wreck: Dictionary, plan: Dictionary, lip_ref: We
 		var dw: Vector3 = (frame.basis * d).normalized()
 		dw.y *= 0.25
 		var v: Vector3 = inherited + dw.normalized() * L * fx.rng.randf_range(0.16, 0.34) * (0.7 if chip else 1.0)
-		# they fly for 12 s (several hull lengths, well spread), then rest, so a long battle does not move them forever
-		wreck["fires"].append({"node": nd, "vel": v, "ang": fx.rdir() * fx.rng.randf_range(1.2, 3.0), "until": fx.now + 12.0, "frag": true})
-	# a cloud of torn plates of several sizes, spreading and thinning between the pieces
-	var p: Vector3 = frame * bc
+		# they fly for 8 s (a few hull lengths, well spread), then rest, so a long battle does not move them forever
+		wreck["fires"].append({"node": nd, "vel": v, "ang": fx.rdir() * fx.rng.randf_range(1.2, 3.0), "until": fx.now + 8.0, "frag": true})
+	# a cloud of torn plates of several sizes, spreading and thinning between the pieces; born just outside the bite, so
+	# the plates (physics bodies) never start inside a wreck piece's collider and kick it into a spin
+	var p: Vector3 = frame * (bc + out_l * float(bite["ry"]) * 1.2)
 	var big := tl.tier == "capital"
 	# Issue 484 profiling: each plate is a physics body; keep the cloud lean (it adds to the plates at the break)
 	spawn_debris(fx, p, inherited, 10 if big else 7, L * 0.012)
