@@ -26,6 +26,27 @@ const FLASH_SCREEN := 0.06   # ... and only when it covers at least this share o
 const FLASH_LIGHT := 8.0     # light peak from which a decaying event light counts (it lights a big patch of hull)
 const FLASH_KINDS := [0, 2, 12, 13, 24]   # includes the distance-readable death core
 
+# --- the flash counter's assumptions, all in one place (issue 504; W3C Understanding SC 2.3.1)
+# W3C counts a general flash only when "the combined area of flashes occurring concurrently" passes ".006 steradians
+# within any 10 degree visual field on the screen (25% of any 10 degree visual field on the screen) at typical viewing
+# distance". That is a viewing angle, so it depends on the screen and how far away the player sits, not on pixels.
+# The defaults are the cautious end of a desk set-up: a 32 inch 16:9 screen seen from 24 inches. A bigger screen or a
+# closer seat makes the 10 degree box smaller on screen, so set these to the real set-up (setup opts "screen_in",
+# "view_in") only when it is known; smaller numbers here are never safer than the truth.
+var flash_screen_in := 32.0         # screen diagonal, inches
+var flash_aspect := 16.0 / 9.0      # screen width over height
+var flash_view_in := 24.0           # eye to screen, inches
+const FLASH_FIELD_DEG := 10.0       # W3C's visual field
+const FLASH_FIELD_SHARE := 0.25     # share of that field that may flash at once
+# The 10 degree box is tested on a lattice with steps of a quarter of its side, and each tested box is one step wider
+# than the real one (so any real box, wherever it sits, lies inside a tested one: areas are rounded up, never down).
+const FLASH_GRID_DIV := 4
+var flash_cands: Array = []         # bright sprites drawn recently: [T, life, x, y, d] (viewport pixels)
+var flash_area_log: Array = []      # tests: every bright-flash request [T, x, y, d, lit_max, counted 0/1, drawn bright 0/1]
+# (x, y, d are -1 when unknown, lit_max -1 when not measured). The staging of death beats is tested on these requests;
+# flash_log stays the record of counted flashes, the safety events.
+var flash_area_logging := false
+
 # --- settings (API.md 1, 8)
 var quality = "max"
 var reduce_flashing = false:
@@ -182,6 +203,8 @@ func setup(opts := {}) -> void:
 	unit = float(opts.get("unit", 1.0))
 	starboard_z = 1 if int(opts.get("starboard_z", 1)) >= 0 else -1
 	reduce_flashing = bool(opts.get("reduce_flashing", false))
+	flash_screen_in = float(opts.get("screen_in", flash_screen_in))
+	flash_view_in = float(opts.get("view_in", flash_view_in))
 	min_px = float(opts.get("min_px", 1.0))
 	# Issue 281: the review capture can ask for the pre-Cone-B look to shoot the before stills; the game's default is the
 	# shipped Cone B (see fx_weapons._vent).
@@ -358,10 +381,17 @@ func spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1:
 		drag := 0.0, spin := 0.0, acc := 0.0, px := 0.0) -> void:
 	# every bright, short, flash-like sprite goes through the flash budget here, whoever calls it (muzzle cores, beam
 	# contact, secondary pops, death flames): refused or in reduce-flashing mode it becomes a soft lift with no peak
-	if i >= FLASH_I and life <= 0.6 and FLASH_KINDS.has(kind) and (reduce_flashing or (_flash_sized(p, maxf(s0, s1), px) and not flash_ok(t))):
+	# Issue 504: the counter adds this sprite's lit area to the bright ones around it (flash_at).
+	if i >= FLASH_I and life <= 0.6 and FLASH_KINDS.has(kind) and (reduce_flashing or not flash_at(p, t, maxf(s0, s1), px, life)):
 		kind = 18
 		i = minf(i, 3.0) * 0.4
 		life = maxf(life * 3.0, 0.4)
+	_emit_spr(p, t, life, col, i, s0, s1, kind, vel, drag, spin, acc, px)
+
+
+# The sprite itself, after the flash decision (pop books its own, so it must not be booked twice).
+func _emit_spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1: float, kind: int, vel := Vector3.ZERO,
+		drag := 0.0, spin := 0.0, acc := 0.0, px := 0.0) -> void:
 	var pool: POOLS.Pool = pools["smk"] if SMOKY.has(kind) else pools["spr"]
 	pool.emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life), Vector4(col.r, col.g, col.b, i),
 		Vector4(s0 * unit, s1 * unit, kind, minf(rng.randf(), 0.999) + floorf(clampf(px, 0.0, 4000.0))), Vector4(0.0, acc, drag, spin)))
@@ -425,9 +455,26 @@ func rcone(axis: Vector3, spread: float) -> Vector3:
 # this one included. Volleys book impacts ahead of time, so a flash already booked later than T must also keep its own
 # trailing second within the cap once T is in it; that is the second loop (without it a late booking could break the
 # cap for a flash booked earlier).
-func flash_ok(T: float) -> bool:
+#
+# Issue 504: flash_ok(T) still counts unconditionally (a flash whose area is unknown always counts: the vent ignition,
+# the death core, a big light). Given where it is (p, its world size, its pixel floor, its life) a counted flash is also
+# remembered for the area sums of flash_at, so a small flash beside it adds up with it.
+func flash_ok(T: float, p := Vector3.INF, size := 0.0, px := 0.0, life := FLASH_WINDOW) -> bool:
 	if reduce_flashing:
 		return false
+	var ok := _flash_count(T)
+	var c := PackedFloat64Array([-1.0, -1.0, -1.0])
+	if p != Vector3.INF:
+		var cd := _flash_disc(p, size, px)
+		if not cd.is_empty():
+			c = cd
+			if ok:
+				_flash_remember(T, life, c)
+	_flash_note(T, c, -1.0, 1 if ok else 0, 1 if ok else 0)
+	return ok
+
+
+func _flash_count(T: float) -> bool:
 	var near := PackedFloat64Array()
 	for f in _flashes:
 		if absf(f - T) < FLASH_WINDOW:
@@ -467,14 +514,138 @@ func flash_ok(T: float) -> bool:
 	return true
 
 
+# Issue 504: the flash counter by area, as W3C counts it. Ask to draw one bright, short flash (world size `size`, pixel
+# floor `px` at 1080 lines, bright for `life` seconds) at p at time T. True: draw it bright. False: draw the calm
+# version (same size and colour, slower rise, lower peak; its light rises softly too, see light()).
+# How it decides:
+#  1. Its lit area is a disc as wide as the sprite is drawn (the pixel floor counts), rounded up to whole pixels. The
+#     baked flashes' sizes are their widest lit extent with bloom, so the disc is larger than the real fireball.
+#  2. A flash within FLASH_WINDOW of a counted flash is part of that flash (free), as before.
+#  3. Otherwise every bright flash whose bright time overlaps this one's is added up inside each 10 degree box that
+#     could hold this one. Each flash adds the smaller of its disc area and its bounding square's overlap with the box,
+#     which is never less than the real overlap. If any box holds more than a quarter of a 10 degree box, this is a
+#     general flash: it is counted against FLASH_CAP (three in any rolling second) like any other, or refused.
+#  4. Small flashes far apart never add up; small flashes close together do.
+# Reduce flashing: false at once, as on main (nothing is booked or remembered).
+func flash_at(p: Vector3, T: float, size: float, px := 0.0, life := FLASH_WINDOW) -> bool:
+	if reduce_flashing:
+		return false
+	if camera == null or not is_instance_valid(camera):
+		return flash_ok(T)   # no camera: every bright flash counts, as on main
+	var t0 := Time.get_ticks_usec()
+	var c := _flash_disc(p, size, px)
+	if c.is_empty():
+		pend("flash", t0)
+		return true   # behind the camera: not on screen
+	for f in _flashes:
+		if absf(f - T) < FLASH_WINDOW:
+			_flash_remember(T, life, c)
+			_flash_note(T, c, -1.0, 0, 1)
+			pend("flash", t0)
+			return true
+	var lit := _flash_lit_max(T, life, c)
+	var bright := true
+	var counted := 0
+	if lit > flash_quarter_px2():
+		bright = _flash_count(T)
+		counted = 1 if bright else 0
+	if bright:
+		_flash_remember(T, life, c)
+	_flash_note(T, c, lit, counted, 1 if bright else 0)
+	pend("flash", t0)
+	return bright
+
+
+# The side of a 10 degree box in viewport pixels (rounded down, so the box and its quarter are never overstated).
+# Assumes the game fills the screen's height; in a smaller window the real box is bigger, so this stays cautious.
+func flash_box_px() -> float:
+	var vh := _flash_vh()
+	var screen_h := flash_screen_in / sqrt(1.0 + flash_aspect * flash_aspect)
+	var side_in := 2.0 * flash_view_in * tan(deg_to_rad(FLASH_FIELD_DEG) * 0.5)
+	return floorf(vh * side_in / screen_h)
+
+
+func flash_quarter_px2() -> float:
+	var s := flash_box_px()
+	return FLASH_FIELD_SHARE * s * s
+
+
+func _flash_vh() -> float:
+	if camera != null and is_instance_valid(camera) and camera.is_inside_tree():
+		return maxf(camera.get_viewport().get_visible_rect().size.y, 1.0)
+	return 1080.0
+
+
+# Where a flash sits on screen and how wide it is drawn: [x, y, d] in viewport pixels, or empty when behind the camera.
+func _flash_disc(p: Vector3, size: float, px: float) -> PackedFloat64Array:
+	if camera == null or not is_instance_valid(camera) or not camera.is_inside_tree() or camera.is_position_behind(p):
+		return PackedFloat64Array()
+	var d := maxf(camera.global_position.distance_to(p), 0.01)
+	var h := 2.0 * d * tan(deg_to_rad(camera.fov) * 0.5)
+	var shown := maxf(size * unit / h, maxf(px, 14.0) * min_px / 1080.0)   # the same drawn size _flash_sized uses
+	var sp := camera.unproject_position(p)
+	return PackedFloat64Array([sp.x, sp.y, ceilf(shown * _flash_vh())])
+
+
+func _flash_remember(T: float, life: float, c: PackedFloat64Array) -> void:
+	flash_cands.append(PackedFloat64Array([T, maxf(life, FLASH_WINDOW), c[0], c[1], c[2]]))
+	if flash_cands.size() > 48:
+		var keep: Array = []
+		for e in flash_cands:
+			if float(e[0]) + float(e[1]) > now - 1.0:
+				keep.append(e)
+		flash_cands = keep
+
+
+func _flash_note(T: float, c: PackedFloat64Array, lit: float, counted: int, bright: int) -> void:
+	if flash_area_logging:
+		flash_area_log.append([T, c[0], c[1], c[2], lit, counted, bright])
+
+
+# The most lit area any 10 degree box around c can hold from the bright flashes that overlap c in time (c included).
+func _flash_lit_max(T: float, life: float, c: PackedFloat64Array) -> float:
+	var l := maxf(life, FLASH_WINDOW)
+	var cur: Array = [PackedFloat64Array([T, l, c[0], c[1], c[2]])]
+	for e in flash_cands:
+		if float(e[0]) < T + l and T < float(e[0]) + float(e[1]):
+			cur.append(e)
+	var S := flash_box_px()
+	var g := maxf(floorf(S / FLASH_GRID_DIV), 1.0)
+	var B := S + g
+	var r := float(c[2]) * 0.5
+	var best := 0.0
+	var kx0 := floori((c[0] - r - B) / g)
+	var kx1 := floori((c[0] + r) / g)
+	var ky0 := floori((c[1] - r - B) / g)
+	var ky1 := floori((c[1] + r) / g)
+	for kx in range(kx0, kx1 + 1):
+		var ox := kx * g
+		for ky in range(ky0, ky1 + 1):
+			var oy := ky * g
+			var sum := 0.0
+			for e in cur:
+				var er := float(e[4]) * 0.5
+				var wx := minf(ox + B, float(e[2]) + er) - maxf(ox, float(e[2]) - er)
+				if wx <= 0.0:
+					continue
+				var wy := minf(oy + B, float(e[3]) + er) - maxf(oy, float(e[3]) - er)
+				if wy <= 0.0:
+					continue
+				sum += minf(wx * wy, PI * 0.25 * float(e[4]) * float(e[4]))
+			best = maxf(best, sum)
+	return best
+
+
 # A bright pop (impact flash, explosion core) through the budget: the full flash, or a ring and a gentle lift.
 # F3 round 2: a pop smaller on screen than the WCAG area threshold (6% of the screen height, `_flash_sized`, the same
 # rule spr uses) is not a counted flash and never waits on the budget; before, every pop booked a flash, so in a busy
 # fight most hits (and a dying ship's cook-off) used up the 3 a second and drew as faint lifts, and the kill's own blast
 # was refused. `px` is the pop's own pixel floor (see spr).
 func pop(p: Vector3, T: float, col: Color, size: float, i: float, n := Vector3.UP, life := 0.14, px := 0.0) -> void:
-	if not reduce_flashing and (not _flash_sized(p, size, px) or flash_ok(T)):
-		spr(p, T, life, col, i, size * 0.6, size, 0, Vector3.ZERO, 0.0, 0.0, 0.0, px)
+	# Issue 504: one booking by area (flash_at), whatever its brightness (as on main: every pop is a candidate); the
+	# bright sprite is then drawn without a second booking.
+	if not reduce_flashing and flash_at(p, T, size, px, life):
+		_emit_spr(p, T, life, col, i, size * 0.6, size, 0, Vector3.ZERO, 0.0, 0.0, 0.0, px)
 	else:
 		spr(p, T, maxf(life * 3.0, 0.4), col, minf(i, 3.0) * 0.4, size * 0.5, size * 1.2, 18, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.8)
 		ring(p, n, T, 0.5, col, 1.2, size * 0.3, size * 1.4, 2, 0.0, 0.0, px)
@@ -486,13 +657,23 @@ func pop(p: Vector3, T: float, col: Color, size: float, i: float, n := Vector3.U
 # A big decaying light is a flash on the hulls it lights: it goes through the budget like a sprite (merging with the
 # pop it comes with). A refused flash draws no light at all: a light that goes with a flash the budget turned down
 # (within FLASH_WINDOW of it) is dropped, whatever its size. In reduce-flashing mode decay lights rise lower and slower.
+#
+# Issue 504: a light that goes with a refused flash is no longer dropped. It keeps its colour and place and rises softly
+# (shape 3: a 0.1 s or longer rise, then the same fall) at most just under the peak that counts, so the hulls around a
+# refused flash are still lit without a sharp step. Reduce flashing is untouched (its own path below).
 func light(p: Vector3, t: float, life: float, peak: float, col: Color, shape := 0) -> void:
 	if shape == 0 and not reduce_flashing:
+		var refused := false
 		for f in _refused:
 			if absf(f - t) < FLASH_WINDOW:
-				return
-		if peak >= FLASH_LIGHT and not flash_ok(t):
-			return
+				refused = true
+				break
+		if not refused and peak >= FLASH_LIGHT and not flash_ok(t):
+			refused = true
+		if refused:
+			shape = 3
+			peak = minf(peak, FLASH_LIGHT * 0.9)
+			life = maxf(life * 1.8, 0.4)
 	if reduce_flashing and shape == 0:
 		peak *= 0.45
 		life *= 1.8
@@ -535,6 +716,7 @@ func _update_lights() -> void:
 			0: I = pow(1.0 - u, 2.0)
 			1: I = smoothstep(0.0, 0.08, u) * (1.0 - smoothstep(0.85, 1.0, u)) * (1.0 if reduce_flashing else 0.88 + 0.12 * sin(now * 50.0))
 			2: I = u * u
+			3: I = smoothstep(0.0, 0.25, u) if u < 0.25 else pow(1.0 - (u - 0.25) / 0.75, 2.0)   # issue 504: soft rise
 		ev.append([e[0], I * float(e[3]), e[4]])
 	_lev = keep
 	var ks: Array = []
