@@ -1943,7 +1943,7 @@ function makeWing(u,h,kind){ const fx=u.side==='player'?sumFx(fleetFxList()):{};
   sq.fac=u.fac; sq.q=h.q; sq.r=h.r; sq.facing=u.facing; sq.name=`${HULLS[kind].n} (${u.side==='player'?u.name:u.t.n.split(' ').slice(-1)[0]})`; B.units.push(sq); return sq; }
 // carriers open the battle with their wings already in flight; launching only replaces losses
 function deployWings(){ for(const u of B.units.filter(x=>(x.ab==='launch'||(x.fx&&x.fx.hive))&&!x.dead&&!x.isSq&&!x.treeOff)){ const foes=alive(u.side==='player'?'enemy':'player'), sec=B.sector||1, bossWings=u.side==='enemy'&&u.t.boss;
-  u.spare=bossWings?Math.max(0,sec-1):(u.fx&&u.fx.endless)?99:(u.hangar||0)+(wingPerks(u).includes('reserve')?1:0); /* a sector flagship's air wing grows with the sector: 1 wing in sector I, 2 in II, 3 in III */ // v41: one spare wing per hangar slot (was two): carriers keep their opening wings, but losses end sooner
+  u.spare=bossWings?Math.max(0,sec-1):(u.fx&&u.fx.endless)?99:(u.hangar||0)+(wingPerks(u).includes('reserve')?1:0)+((u.fx&&u.fx.spareWings)||0); /* a sector flagship's air wing grows with the sector: 1 wing in sector I, 2 in II, 3 in III */ // v41: one spare wing per hangar slot (was two): carriers keep their opening wings, but losses end sooner
   for(let i=0;i<(bossWings?Math.min(u.hangar||0,sec):(u.hangar||0));i++){ const hs=launchHexes(u); if(!hs.length) break; hs.sort((a,b)=>Math.min(99,...foes.map(f=>hdist(a,f)))-Math.min(99,...foes.map(f=>hdist(b,f))));
     makeWing(u,hs[0],wingKind(u,i)); } }
   /* fighter screen against carrier-heavy fleets, flown off the biggest escorts */

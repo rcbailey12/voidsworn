@@ -1,0 +1,32 @@
+{
+	"renderer": "forward_plus",
+	"resolution": "(1920.0, 1080.0)",
+	"sectors": [
+		{
+			"frames": 240,
+			"jump_col": 0,
+			"next_jumps": 3,
+			"p50_ms": 2.625,
+			"p95_ms": 2.826,
+			"sector": 1
+		},
+		{
+			"frames": 240,
+			"jump_col": 0,
+			"next_jumps": 4,
+			"p50_ms": 3.425,
+			"p95_ms": 4.101,
+			"sector": 2
+		},
+		{
+			"frames": 240,
+			"jump_col": 0,
+			"next_jumps": 3,
+			"p50_ms": 3.098,
+			"p95_ms": 3.354,
+			"sector": 3
+		}
+	],
+	"seed": 344,
+	"vsync": "off"
+}

@@ -18,28 +18,6 @@ col += vec3(0.018, 0.004, 0.001) * near_sun * map_heat;
 if (!AT_CUBEMAP_PASS) {
 """).replace("col += st * star_k", "col += st * (1.0 - map_star_void * near_sun) * star_k")
 
-# Tangential images of background stars only. This sheet never samples or distorts the stops or their routes.
-const STAR_ARCS := """
-shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-uniform float gain = 0.2;
-void vertex() {
-	MODELVIEW_MATRIX = VIEW_MATRIX * mat4(INV_VIEW_MATRIX[0], INV_VIEW_MATRIX[1], INV_VIEW_MATRIX[2], MODEL_MATRIX[3]);
-	MODELVIEW_MATRIX *= mat4(vec4(length(MODEL_MATRIX[0].xyz), 0, 0, 0), vec4(0, length(MODEL_MATRIX[1].xyz), 0, 0), vec4(0, 0, length(MODEL_MATRIX[2].xyz), 0), vec4(0, 0, 0, 1));
-}
-void fragment() {
-	vec2 p = (UV - 0.5) * 2.0;
-	float r = length(p);
-	float a = atan(p.y, p.x);
-	float row = floor(r * 42.0);
-	float h = fract(sin(row * 127.1) * 43758.5453);
-	float radial = exp(-pow((fract(r * 42.0) - 0.5) * 12.0, 2.0));
-	float tangential = pow(max(sin(a * (8.0 + floor(h * 12.0)) + h * 70.0), 0.0), 42.0);
-	float band = smoothstep(0.32, 0.42, r) * (1.0 - smoothstep(0.8, 0.98, r));
-	ALBEDO = vec3(0.55, 0.68, 0.8) * radial * tangential * band * gain;
-}
-"""
-
 const INFALL := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;

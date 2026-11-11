@@ -323,7 +323,7 @@ func boon_fx(id, m: float) -> Dictionary:
 		"s_ion": return {"ionPlus": 0.22 * m}
 		"s_regen": return {"stormRegen": 0.18 * m}
 		"s_ev": return {"ev": JSM.jsround(6.0 * m)}
-		"h_hatch": return {"hangar": 3 if m >= 2 else (2 if m >= 1.5 else 1)}
+		"h_hatch": return {"hangar": 1, "spareWings": 2 if m >= 2 else (1 if m >= 1.5 else 0)}
 		"h_wings": return {"sqPct": 0.25 * m}
 		"h_chitin": return {"sqHp": 0.3 * m}
 		"h_board": return {"boardPct": 0.25 * m}
@@ -339,7 +339,7 @@ func boon_fx(id, m: float) -> Dictionary:
 		"r_jink": return {"burnEv": JSM.jsround(15.0 * m)}
 		"r_shock": return {"ramSplash": 0.25 * m}
 		"e_war": return {"torpPct": 0.25 * m}
-		"e_reload": return {"torpCd": 3 if m >= 2 else (2 if m >= 1.5 else 1)}
+		"e_reload": return {"torpCd": 1, "torpPct": 0.2 if m >= 2 else (0.1 if m >= 1.5 else 0)}
 		"e_kindle": return {"igniteCh": 0.12 * m, "fireDmg": JSM.jsround(4.0 * m)}
 		"e_chain": return {"chainBoom": JSM.jsround(20.0 * m), "chainFire": 1 if m >= 2 else 0}
 		"e_hunt": return {"huntPct": 0.2 * m, "pyre": 1}
@@ -353,7 +353,7 @@ func boon_fx(id, m: float) -> Dictionary:
 		"s_chain": return {"chainSh": m / 3.0}
 		"h_brood": return {"broodTithe": 1, "broodRepair": 0.1 * (m - 1)}
 		"a_mark": return {"markLance": m}
-		"r_slip": return {"fade": 0.5 * m}
+		"r_slip": return {"fade": 0.9 if m >= 2 else (0.7 if m >= 1.5 else 0.5)}
 		"e_spread": return {"spread": 0.3 * m}
 		"L_iron": return {"lastStand": 1}
 		"L_storm": return {"stormRegen": 1}
@@ -5651,7 +5651,7 @@ func deployWings() -> void:
 		if (x.get("ab") == "launch" or jt(g(x.get("fx"), "hive"))) and not jt(x.get("dead")) and not jt(x.get("isSq")) and not jt(x.get("treeOff")): carriers.append(x)
 	for u in carriers:
 		var foes = alive("enemy" if u["side"] == "player" else "player"); var sec = B["sector"] if jt(B.get("sector")) else 1; var bossWings: bool = u["side"] == "enemy" and jt(u["t"].get("boss"))
-		u["spare"] = max(0, sec - 1) if bossWings else (99 if jt(g(u.get("fx"), "endless")) else z0(u.get("hangar")) + (1 if wingPerks(u).has("reserve") else 0))
+		u["spare"] = max(0, sec - 1) if bossWings else (99 if jt(g(u.get("fx"), "endless")) else z0(u.get("hangar")) + (1 if wingPerks(u).has("reserve") else 0) + z0(g(u.get("fx"), "spareWings")))
 		var n = min(z0(u.get("hangar")), sec) if bossWings else z0(u.get("hangar"))
 		for i in range(int(n)):
 			var hs = launchHexes(u)

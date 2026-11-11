@@ -28,6 +28,7 @@ var C
 var ui
 var fails := 0
 var lines: Array = []
+var fleet_coverage := {}
 
 
 func check(ok: bool, what: String) -> void:
@@ -88,6 +89,33 @@ func read_screen() -> void:
 	ui._open_overlay("dossier"); ui.render(); await frames(1)
 	ui._open_overlay("key"); ui.render(); await frames(1)
 	ui._close_overlay(); ui.render(); await frames(1)
+	read_fleets()
+
+
+# Read the actual built models, not a second list of what each stop should render.
+func read_fleets() -> void:
+	var same := true; var oriented := true; var tiers := true; var count := 0
+	for id in ui.map3d._nodes:
+		var d = ui.map3d._nodes[id]; var n = d["n"]
+		if n["type"] not in ["battle", "elite", "boss"]: continue
+		count += 1
+		var fleet = d["obj"].get_node_or_null("EnemyFleet")
+		var expected = View.stop(C, n)["fac"]
+		if fleet == null: same = false; continue
+		var ships = fleet.get_children()
+		if ships.size() != (1 if n["type"] == "boss" else 3): same = false
+		for ship in ships:
+			if ship.get_child(0).u["fac"] != expected: same = false
+		var previous = ui.map3d._pos({"col": float(n["col"]) - 1.0, "y": 0.5})
+		if fleet.basis.x.dot((previous - d["pos"]).normalized()) < 0.99: oriented = false
+		var tier = int(d["tier"])
+		if not is_equal_approx(float(d["sc"]), ui.map3d.TIER_SCALE[tier]): tiers = false
+		for light in d["parts"]["lights"]:
+			if not is_equal_approx(light[0].light_energy, light[1] * ui.map3d.TIER_LIGHT[tier]) or light[0].light_cull_mask != d["layer"]: tiers = false
+		fleet_coverage[str(n["type"])] = true
+		if expected != C.RUN["map"]["fac"]: fleet_coverage["rival"] = true
+	check(count > 3 and same, "built fight fleets have the same faction as the rail and three hulls, or one capital")
+	check(oriented and tiers, "enemy bows face the player's approach and models and lights use the stop tiers")
 
 
 func parity(tag: String) -> void:
@@ -127,6 +155,21 @@ func _run() -> void:
 	check(snap() == s1, "sector 1: building the map page, every pick, every tip card, the Dossier and the Map key changed nothing")
 	parity("sector 1")
 
+	# Teaching changes the named opponent while the graph stays the same. Use its real setter and history function.
+	C.set_teaching_tips(true)
+	var teaching_snap := snap()
+	await read_screen()
+	check(snap() == teaching_snap, "teaching enabled: rebuilding the named enemy fleets only reads")
+	var first = C.RUN["map"]["cols"][0][0]
+	C.teachingBattle({"kind": "battle", "node": first["id"]})
+	var next_snap := snap()
+	await read_screen()
+	check(snap() == next_snap, "teaching history advanced: fleets refresh to the newly named opponent without changing the run")
+	C.set_teaching_tips(false)
+	var tips_off_snap := snap()
+	await read_screen()
+	check(snap() == tips_off_snap, "teaching disabled: sector and rival fleets return without changing the run")
+
 	# the clock one step from full, by the campaign's own function (the warning line then has words)
 	var guard := 0
 	while C.nemClockGet() + float(C.or_(View.nem_beh(C, C.nemRead()).get("clock"), 1)) < float(C.NEM_CLOCK) and guard < 20:
@@ -163,6 +206,7 @@ func _run() -> void:
 	C.nemActive()
 	check(C.RUN["nems"].has(fac) and snap() != s4, "the campaign's own nemActive does build the record on that state: a reader that called it would fail the two rows above")
 
+	check(fleet_coverage.has("battle") and fleet_coverage.has("elite") and fleet_coverage.has("boss") and fleet_coverage.has("rival"), "fleet checks covered ordinary, elite, capital and rival encounters")
 	for l in lines: print(l)
 	print("Map read-only: " + ("PASS" if fails == 0 else "FAIL (%d)" % fails) + " (%d checks)" % lines.size())
 	ui.queue_free(); await process_frame
