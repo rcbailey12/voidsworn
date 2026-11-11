@@ -54,6 +54,7 @@ const MOVE_LEAD := [250.0, 450.0]
 const MOVE_CAP := 7000.0
 const MOVE_ROT := [0.6, 1.1]
 const MOVE_SQUAD := 0.35
+const MOVE_SK_MAX := 1.4     # the size scale runs past battleship at half slope (dreadnought 1.25, bosses up to 1.4), by eye
 const MOVE_CRUISE := 0.8      # a hull cruises a hex in this share of its hex time; building and bleeding speed fill the rest
 const TIPS := [
 	["select", "Moving and facing", "This is the ship that is up. Click a blue hex to plan its move, and turn it with Q and E before you confirm. A ship that stays in the same hex is easier to hit: enemy shots against it get +10 to their hit chance. Moving 3 or more hexes gives -5 instead. Or Brace: the ship can move first, then digs in: it takes less hull damage and does not take the +10, but bracing ends its turn, so it cannot move or fire again this turn."],
@@ -1498,7 +1499,11 @@ func _play_move(id, path: Array, charge: bool) -> void:
 	burns_live += 1
 	if burns_live > 1 and args.has("move-trace"):
 		print("[move] overlap: %s starts while %d other move(s) burn" % [str(id), burns_live - 1])
-	var sk := clampf((size - 0.5) / 0.45, 0.0, 1.0)   # escort 0 .. battleship and up 1 (F2: speed, spin and ramps by size)
+	# escort 0, battleship 1, and on past it at half the slope (issue 505: a dreadnought about 1.25, a titan or an ark up
+	# to 1.4): speed, spin and ramps by size, so the biggest hulls are the slowest to start, turn and stop, while their
+	# moves grow by about a second rather than two (the first strips' full slope made a dreadnought's move 40% longer)
+	var sk := (size - 0.5) / 0.45
+	sk = clampf(sk if sk <= 1.0 else 1.0 + (sk - 1.0) * 0.5, 0.0, MOVE_SK_MAX)
 	var fk := pow(float(MOVE_PER.get(str(u.get("fac", "")), 1.0)), 0.35)   # a faction flavour, kept inside the ruled range
 	# F2 (R64, Ryan Nov 1): about twice as slow, every ship at its own true pace on both sides; only Enter or Space (or the
 	# Speed: fast setting) hurries a move. The old B2 timing stays behind --movement segments for before and after shots.
@@ -1537,10 +1542,11 @@ func _play_move(id, path: Array, charge: bool) -> void:
 		if skip:
 			sv.speed_k = float(PACE["skip"])
 		if eng_on:
-			# The main drive follows flight speed (G4 fx engine level: idle, 2 full burn).
-			gfx.set_engine(str(id), lerpf(ENGINE_IDLE, 2.0, float(sv.thrust)) if cin else clampf(1.0 + float(sv.thrust), 0.5, 2.2))
-		if args.has("speed-trace"):   # F2 proof: the hull's speed (hexes a second), spin (degrees a second) and drive
-			print("[speed] %s %.3f %.2f %.0f %.2f" % [str(id), game_t - t_move, sv._vel.length() / board.HW, rad_to_deg(sv._yaw_v), float(sv.thrust)])
+			# The main drive follows the forward push (issue 505: a burn to gain speed, a hot low glow while coasting;
+			# G4 fx engine level: idle, 2 full burn)
+			gfx.set_engine(str(id), _drive_level(float(sv.thrust)) if cin else clampf(1.0 + float(sv.thrust), 0.5, 2.2))
+		if args.has("speed-trace"):   # the hull's speed (hexes a second), spin (degrees a second), drive and jets
+			print("[speed] %s %.3f %.2f %.0f %.2f retro %.2f side %.2f aft %.2f turn %.2f" % [str(id), game_t - t_move, sv._vel.length() / board.HW, rad_to_deg(sv._yaw_v), float(sv.thrust), sv.jet_retro, sv.jet_side, sv.jet_aft, sv.jet_turn])
 		if move_frames != "":
 			await _snap("f")
 		else:
@@ -1557,6 +1563,15 @@ func _play_move(id, path: Array, charge: bool) -> void:
 # Weights share the move's time (the B2 pace is unchanged): a turn step weighs PACE.rot, a heavier hull spending a little
 # more of its time on a turn; a run weighs its steps plus a little for its thrust-up and thrust-down.
 const ENGINE_IDLE := 0.35     # the main drive at rest or coasting: a pilot glow, the full plume only when it pushes
+
+
+# the battle's drive level for a flown move. fx_ship.gd reads a level within 0.05 of 1.0 as "moving, no level given"
+# and jumps it to 1.6 (audit finding 14); a continuous level passes that band twice a move, so it steps over it.
+func _drive_level(thrust: float) -> float:
+	var l := lerpf(ENGINE_IDLE, 2.0, thrust)
+	if absf(l - 1.0) <= 0.05:
+		l = 0.94 if l < 1.0 else 1.06
+	return l
 
 
 # hulls big enough for the flip-and-burn test (R55, --flip-burn): cruisers and up

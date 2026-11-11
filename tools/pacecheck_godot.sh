@@ -2,7 +2,8 @@
 # F2 pace check for the Godot battle (feel pass, Nov 1; replaces the retired 12 s target and 15 s round limit, R64).
 # Plays three bot battles headless at 60 fixed frames a second (real game speed, outcomes as the rules decide) and checks
 # every move against Ryan's movement ruling, then reports the enemy's time per round (report only: no round limit now).
-#   - each hull's cruise pace is 500 to 950 ms a hex (ruled: roughly 560 to 860 by size, a small faction flavour on top);
+#   - each hull's cruise pace is 500 to 1250 ms a hex (560 for an escort, 860 for a battleship, and on past it for
+#     dreadnoughts and bosses up to about 1100 since issue 505, a small faction flavour on top);
 #   - no move runs longer than 7 s at normal speed;
 #   - ships move one at a time (never two burns at once);
 #   - enemy moves play at the ship's own pace (no squeeze on the enemy's turn): speed 1.00 unless hurried.
@@ -27,7 +28,7 @@ bad = []
 hull = [x for x in mv if x[2] != 'Squadron']
 for x in hull:
     per, dur, spd = int(x[7]), float(x[6]), float(x[8])
-    if spd >= 0.99 and not (500 <= per <= 950): bad.append('%s %s pace %d ms a hex' % (x[0], x[2], per))
+    if spd >= 0.99 and not (500 <= per <= 1250): bad.append('%s %s pace %d ms a hex' % (x[0], x[2], per))
     if spd >= 0.99 and dur > 7.05: bad.append('%s %s move %.2f s' % (x[0], x[2], dur))
     if x[1] == 'enemy' and spd < 0.99: bad.append('%s enemy move squeezed (speed %.2f)' % (x[0], spd))
 ov = len(re.findall(r'^\[move\] overlap', txt, re.M))
