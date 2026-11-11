@@ -3710,29 +3710,23 @@ func _tree_shots(kind: String) -> void:
 			await get_tree().process_frame
 		while hud.ask_panel != null and is_instance_valid(hud.ask_panel):
 			_on_action("ask", "strike")
-			await get_tree().create_timer(0.4).timeout
-		bot = true
-		var got := false
-		while not ended and not got:
-			for f in floats:
-				var l: Label = f["lbl"]
-				if is_instance_valid(l) and l.text.begins_with("Roles Assigned") and l.text.contains("+10 aim") and f["t"] > 0.25:
-					got = true
-			await get_tree().process_frame
-		if got:
-			await _snap("tree_role_callout")
-			bot = false
-			hud.toggle_log()
-			await get_tree().create_timer(0.5).timeout
-			await _snap("tree_role_log")
-			hud.toggle_log()
-			while busy or api.phase != "player":
+			for i in 30:
+				var shown := false
+				for f in floats:
+					var l: Label = f["lbl"]
+					if is_instance_valid(l) and l.text.begins_with("Roles Assigned") and f["t"] > 0.3:
+						shown = true
+				if shown: break
 				await get_tree().process_frame
-			select(_first_player())
-			await get_tree().create_timer(1.0).timeout
-			hud._show_dtip()   # the "more on hover" layer: the Admiral lineage block counts each skill this battle
-			await get_tree().create_timer(0.5).timeout
-			await _snap("tree_role_count")
+			if hud.ask_panel == null or not is_instance_valid(hud.ask_panel):
+				break
+		await _snap("tree_role_callout")   # the callout over the ship and the log line (bottom left)
+		await get_tree().create_timer(1.5).timeout
+		select(_first_player())
+		await get_tree().create_timer(1.0).timeout
+		hud._show_dtip()   # the "more on hover" layer: the Admiral lineage block counts each skill this battle
+		await get_tree().create_timer(0.5).timeout
+		await _snap("tree_role_count")
 	_quit_report()
 
 
