@@ -1,6 +1,10 @@
 """Issue 353: pack the route A or route B renders into the game's flipbook atlases, in both fire amounts.
 
 python pack_routes.py BAKE_OUT DEST --route a|b [--fire fire|firelo|firehi]
+python pack_routes.py BAKE_OUT godot/fx/atlases/rebake --route b --production
+
+Production writes only the picked hot core, all three seeds, with 128/384 px weapon cells and 384/512/768 px death
+cells. Its first two cells reach the flash diameter immediately; later cells retain route B's small cooling core.
 
 DEST/<amount>/ is laid out like godot/fx/atlases/ (death/small|cruiser|capital/flash_*.png, weapons/impact/impact_*.png),
 so the bench switch VS_FX_ATLAS=DEST/<amount> swaps just those two kinds. Amounts (R88, R158: flash and snuff out):
@@ -20,10 +24,17 @@ from PIL import Image, ImageFilter
 
 p = argparse.ArgumentParser(); p.add_argument('src'); p.add_argument('dst'); p.add_argument('--route', required=True, choices=['a', 'b'])
 p.add_argument('--fire', default='fire')   # route A: which fire render to pack (fire, or firelo / firehi: 0.4 / 2.8 times the strength)
+p.add_argument('--production', action='store_true', help='Pack the picked B core at staging-table native cell sizes (issue 426)')
 a = p.parse_args(); src = pathlib.Path(a.src); dst = pathlib.Path(a.dst); dst.mkdir(parents=True, exist_ok=True)
 FILL = .80
 AMOUNTS = {'flash': [1.0, .3] + [0.0] * 14, 'core': [1.0, .8, .55, .3, .12] + [0.0] * 11}
 BANDS = {'impact': [('weapons/impact', 1024)], 'flash': [('death/small', 1024), ('death/cruiser', 1536), ('death/capital', 2048)]}
+if a.production:
+    if a.route != 'b':
+        p.error('Production uses route B only')
+    AMOUNTS = {'core': AMOUNTS['core']}
+    BANDS = {'impact': [('weapons/impact', 1536), ('weapons/macro', 512)],
+             'flash': [('death/small', 1536), ('death/cruiser', 2048), ('death/capital', 3072)]}
 RAMP = [(0.0, (.45, .05, .01)), (.35, (1, .32, .04)), (.7, (1, .78, .30)), (1.0, (1, .97, .9))]   # as route_common.fire_material
 
 
@@ -99,6 +110,8 @@ def authored(kind, seed, tile, w):
         T = i / 15; img = np.zeros((tile, tile, 3), np.float32)
         if w[i] > 0:
             rc = (.27 if big else .22) * (1.0 + .3 * (1 - math.exp(-i / 2.0)))   # the flash is big at once, then the core spreads as it cools
+            if a.production and kind == 'flash' and i <= 1:
+                rc = .70   # immediate flash fills the cell, followed by the picked small orange core
             heat = w[i] * np.exp(-((r / lump) / rc) ** 2 * 1.6) * grain
             img += ramp(heat) * np.clip(heat * 1.4, 0, 1)[..., None]
         for sp in sparks:
@@ -129,7 +142,7 @@ def compose(smoke, fire):
     return np.clip(rgb, 0, 1), alpha, heat
 
 
-def write_set(kind, cells, folder_root):
+def write_set(kind, cells, folder_root, bands=None, prefix=None):
     """cells: 16 (rgb, alpha, heat). Writes the three atlases for every band of this kind. Returns sizes in bytes."""
     tile = cells[0][1].shape[0]; atl = [np.zeros((tile * 4, tile * 4, 4), np.uint8) for _ in range(3)]
     alphas = [np.uint8(np.clip(al, 0, 1) * 255) for _, al, _ in cells]
@@ -142,10 +155,10 @@ def write_set(kind, cells, folder_root):
         tau = -np.log(np.maximum(1 - al, .005)) / 5.3
         atl[2][y:y + tile, x:x + tile] = np.uint8(np.clip(np.stack([tau, rgb.mean(-1), heat, al], -1), 0, 1) * 255)
     sizes = {}
-    for rel, pixels in BANDS[kind]:
+    for rel, pixels in (bands if bands is not None else BANDS[kind]):
         folder = folder_root / rel; folder.mkdir(parents=True, exist_ok=True); total = 0
         for arr, suffix in zip(atl, ['color', 'flow', 'thickness']):
-            target = folder / (kind + '_' + suffix + '.png')
+            target = folder / ((prefix or kind) + '_' + suffix + '.png')
             Image.fromarray(arr).resize((pixels, pixels), Image.Resampling.BILINEAR).save(target, optimize=True); total += target.stat().st_size
         sizes[rel] = total
     return sizes
@@ -170,7 +183,7 @@ def preview(cells, path):
     sheet.save(path)
 
 
-bake = json.loads((src / 'bake.json').read_text()); manifest = dict(route=a.route, fire_pass=a.fire if a.route == 'a' else 'authored', bake=bake, sets={})
+bake = json.loads((src / 'bake.json').read_text()); manifest = dict(route=a.route, production=a.production, fire_pass=a.fire if a.route == 'a' else 'authored', bake=bake, sets={})
 for kind in ['impact', 'flash']:
     runs = [(None, src / kind)] if a.route == 'a' else sorted((int(d.name[1:]), d) for d in (src / kind).glob('s*') if d.is_dir())
     for seed, folder in runs:
@@ -193,11 +206,18 @@ for kind in ['impact', 'flash']:
                 warm = [np.array([1.0 + .25 * w[i], 1.0 + .05 * w[i], 1.0 - .1 * w[i]], np.float32) for i in range(16)]   # a little warm light from the core, no tan
                 smokes = [np.dstack([np.clip(s[..., :3] * warm[i], 0, 1), s[..., 3:]]) for i, s in enumerate(smoke)]
             cells = [compose(smokes[i], fires[i]) for i in range(16)]
-            name = amount if seed in (None, 0) else '%s_s%d' % (amount, seed)
+            name = ('s%d' % seed) if a.production else (amount if seed in (None, 0) else '%s_s%d' % (amount, seed))
             sizes = write_set(kind, cells, dst / name)
             preview(cells, dst / ('preview_%s_%s.png' % (kind, name)))
             manifest['sets']['%s/%s' % (name, kind)] = dict(fill_of_256=fill_of(cells), crop_side=side, tile=tile, bytes=sizes,
                                                            fire_cells=[round(x, 2) for x in w])
+            if a.production and kind == 'impact':
+                # The body keeps B's tight core. Only a booked flash gets the wide first-cell ignition.
+                flash_fire = authored('flash', seed, tile, w)
+                flash_cells = [compose(smokes[i], flash_fire[i]) for i in range(16)]
+                flash_sizes = write_set('impact', flash_cells, dst / name, prefix='flash')
+                manifest['sets'][name + '/weapon_flash'] = dict(fill_of_256=fill_of(flash_cells), tile=tile, bytes=flash_sizes,
+                                                               fire_cells=[round(x, 2) for x in w])
             print('PACKED', a.route, name, kind, manifest['sets']['%s/%s' % (name, kind)]['fill_of_256'], sizes, flush=True)
 (dst / 'route_manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
 print('PACK_DONE', a.route, flush=True)

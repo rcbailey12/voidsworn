@@ -1,0 +1,364 @@
+{
+  "route": "b",
+  "production": true,
+  "fire_pass": "authored",
+  "bake": {
+    "route": "b",
+    "records": [
+      {
+        "kind": "impact",
+        "route": "b",
+        "seed": 0,
+        "shape": "shards",
+        "resolution": 128,
+        "noise": false,
+        "flow": "smoke only",
+        "frames": 16,
+        "simulation_frames": 32,
+        "sim_seconds": 94.3,
+        "render_seconds": 52.2,
+        "cache_mb": 74.0,
+        "device": [
+          "NVIDIA GeForce RTX 5080"
+        ],
+        "tile": 768
+      },
+      {
+        "kind": "impact",
+        "route": "b",
+        "seed": 1,
+        "shape": "sphere",
+        "resolution": 128,
+        "noise": false,
+        "flow": "smoke only",
+        "frames": 16,
+        "simulation_frames": 32,
+        "sim_seconds": 103.3,
+        "render_seconds": 50.6,
+        "cache_mb": 93.1,
+        "device": [
+          "NVIDIA GeForce RTX 5080"
+        ],
+        "tile": 768
+      },
+      {
+        "kind": "impact",
+        "route": "b",
+        "seed": 2,
+        "shape": "ring",
+        "resolution": 128,
+        "noise": false,
+        "flow": "smoke only",
+        "frames": 16,
+        "simulation_frames": 32,
+        "sim_seconds": 100.5,
+        "render_seconds": 50.3,
+        "cache_mb": 92.1,
+        "device": [
+          "NVIDIA GeForce RTX 5080"
+        ],
+        "tile": 768
+      },
+      {
+        "kind": "flash",
+        "route": "b",
+        "seed": 0,
+        "shape": "shards",
+        "resolution": 128,
+        "noise": false,
+        "flow": "smoke only",
+        "frames": 16,
+        "simulation_frames": 32,
+        "sim_seconds": 107.5,
+        "render_seconds": 50.2,
+        "cache_mb": 80.7,
+        "device": [
+          "NVIDIA GeForce RTX 5080"
+        ],
+        "tile": 768
+      },
+      {
+        "kind": "flash",
+        "route": "b",
+        "seed": 1,
+        "shape": "sphere",
+        "resolution": 128,
+        "noise": false,
+        "flow": "smoke only",
+        "frames": 16,
+        "simulation_frames": 32,
+        "sim_seconds": 119.1,
+        "render_seconds": 50.5,
+        "cache_mb": 89.0,
+        "device": [
+          "NVIDIA GeForce RTX 5080"
+        ],
+        "tile": 768
+      },
+      {
+        "kind": "flash",
+        "route": "b",
+        "seed": 2,
+        "shape": "ring",
+        "resolution": 128,
+        "noise": false,
+        "flow": "smoke only",
+        "frames": 16,
+        "simulation_frames": 32,
+        "sim_seconds": 106.8,
+        "render_seconds": 50.7,
+        "cache_mb": 91.7,
+        "device": [
+          "NVIDIA GeForce RTX 5080"
+        ],
+        "tile": 768
+      }
+    ],
+    "seconds_this_call": 937.1
+  },
+  "sets": {
+    "s0/impact": {
+      "fill_of_256": 209,
+      "crop_side": 768,
+      "tile": 768,
+      "bytes": {
+        "weapons/impact": 2573287,
+        "weapons/macro": 393577
+      },
+      "fire_cells": [
+        1.0,
+        0.8,
+        0.55,
+        0.3,
+        0.12,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "s0/weapon_flash": {
+      "fill_of_256": 210,
+      "tile": 768,
+      "bytes": {
+        "weapons/impact": 2940740,
+        "weapons/macro": 464340
+      },
+      "fire_cells": [
+        1.0,
+        0.8,
+        0.55,
+        0.3,
+        0.12,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "s1/impact": {
+      "fill_of_256": 187,
+      "crop_side": 732,
+      "tile": 768,
+      "bytes": {
+        "weapons/impact": 4333359,
+        "weapons/macro": 626360
+      },
+      "fire_cells": [
+        1.0,
+        0.8,
+        0.55,
+        0.3,
+        0.12,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "s1/weapon_flash": {
+      "fill_of_256": 208,
+      "tile": 768,
+      "bytes": {
+        "weapons/impact": 4625814,
+        "weapons/macro": 683683
+      },
+      "fire_cells": [
+        1.0,
+        0.8,
+        0.55,
+        0.3,
+        0.12,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "s2/impact": {
+      "fill_of_256": 198,
+      "crop_side": 768,
+      "tile": 768,
+      "bytes": {
+        "weapons/impact": 4143891,
+        "weapons/macro": 614037
+      },
+      "fire_cells": [
+        1.0,
+        0.8,
+        0.55,
+        0.3,
+        0.12,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "s2/weapon_flash": {
+      "fill_of_256": 215,
+      "tile": 768,
+      "bytes": {
+        "weapons/impact": 4407262,
+        "weapons/macro": 666667
+      },
+      "fire_cells": [
+        1.0,
+        0.8,
+        0.55,
+        0.3,
+        0.12,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "s0/flash": {
+      "fill_of_256": 210,
+      "crop_side": 714,
+      "tile": 768,
+      "bytes": {
+        "death/small": 4099909,
+        "death/cruiser": 6834615,
+        "death/capital": 12785449
+      },
+      "fire_cells": [
+        1.0,
+        0.8,
+        0.55,
+        0.3,
+        0.12,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "s1/flash": {
+      "fill_of_256": 208,
+      "crop_side": 709,
+      "tile": 768,
+      "bytes": {
+        "death/small": 4967820,
+        "death/cruiser": 8331050,
+        "death/capital": 15185328
+      },
+      "fire_cells": [
+        1.0,
+        0.8,
+        0.55,
+        0.3,
+        0.12,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "s2/flash": {
+      "fill_of_256": 215,
+      "crop_side": 767,
+      "tile": 768,
+      "bytes": {
+        "death/small": 4582443,
+        "death/cruiser": 7664342,
+        "death/capital": 14895579
+      },
+      "fire_cells": [
+        1.0,
+        0.8,
+        0.55,
+        0.3,
+        0.12,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  }
+}

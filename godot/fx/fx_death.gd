@@ -34,6 +34,9 @@ class DeathTimeline:
 			{"name": "structural_break", "at": cut}, {"name": "drift_and_cool", "at": 1.6 if big else 0.85}]
 
 const ATLAS_DIR := "res://fx/atlases/death/"
+# One pixel at the staging camera (r 170, vertical FOV 45, 1080 lines). The floor holds distant events readable;
+# the world extent lets them grow naturally as the player zooms in.
+const STAGING_UNITS_PER_PIXEL := 2.0 * 170.0 * tan(PI / 8.0) / 1080.0
 
 # Issue 354: where the visible gas starts inside the baked vent picture. Measured on today's pictures
 # (godot/fx/atlases/death/{small,cruiser,capital}/vent_color.png): in frame 0 the gas runs down to row 0.90 of the crop,
@@ -166,9 +169,15 @@ static func flipbook_material(fx, kind: String, band := "capital") -> ShaderMate
 	return m
 
 
-# Issue 353, bench only (fx.fx_atlas, VS_FX_ATLAS): a candidate bake on disk, laid out like res://fx/atlases/. Returns
-# null when the switch is off or the file is not there, so only the kinds a candidate bakes are swapped.
-static func route_texture(fx, rel: String) -> Texture2D:
+# Production seeds load imported resources. The optional comparison folder loads external PNGs and returns null
+# for missing kinds. Production callers never depend on VS_FX_ATLAS.
+static func route_texture(fx, rel: String, seed_index := -1) -> Texture2D:
+	if seed_index >= 0:
+		var path := "res://fx/atlases/rebake/s%d/" % seed_index + rel
+		var textures: Dictionary = fx.dstate.get("production_atlases", {})
+		if not textures.has(path): textures[path] = load(path)
+		fx.dstate["production_atlases"] = textures
+		return textures[path]
 	if String(fx.fx_atlas) == "":
 		return null
 	var path := String(fx.fx_atlas).path_join(rel)
@@ -180,17 +189,17 @@ static func route_texture(fx, rel: String) -> Texture2D:
 	return cache[path]
 
 
-# The candidate's three textures, drawn with its baked colour and heat (ROUTE_BAKED in the flipbook shader). The meta
-# tells the callers to sample the whole cell (the candidates fill about four fifths of it) and to keep the define.
-static func route_material(fx, code: String, rel: String) -> ShaderMaterial:
+# Three maps with baked colour and heat. The meta tells callers to sample the whole cell and keep the shader define.
+static func route_material(fx, code: String, rel: String, production := false, seed_index := -1) -> ShaderMaterial:
 	var m: ShaderMaterial = fx.mat(code, 2, ("#define COMPAT\n" if fx.compat else "") + "#define ROUTE_BAKED\n")
+	if production and seed_index < 0: seed_index = fx.rng.randi_range(0, 2)
 	for key in ["color", "flow", "thickness"]:
-		m.set_shader_parameter({"color": "atlas", "flow": "motion", "thickness": "thickness"}[key], route_texture(fx, rel + key + ".png"))
+		m.set_shader_parameter({"color": "atlas", "flow": "motion", "thickness": "thickness"}[key], route_texture(fx, rel + key + ".png", seed_index))
 	m.set_meta("route", true)
 	return m
 
 
-static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life: float, velocity := Vector3.ZERO, strength := 1.0, band := "capital", src = null, root_on_surface := false) -> Node3D:
+static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life: float, velocity := Vector3.ZERO, strength := 1.0, band := "capital", src = null, root_on_surface := false, staged := false) -> Node3D:
 	var mi := MeshInstance3D.new()
 	mi.name = "fx_baked_" + kind
 	mi.set_meta("fx_picture_kind", kind)
@@ -200,6 +209,10 @@ static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	mi.extra_cull_margin = size * 3.0 + velocity.length() * life
 	var m := flipbook_material(fx, kind, band)
+	if staged:
+		m = route_material(fx, SH.DEATH_FLIPBOOK, "death/" + band + "/flash_", true)
+		m.set_shader_parameter("size_divisor", 0.80)
+		mi.extra_cull_margin = 100.0
 	m.set_shader_parameter("born", fx.now)
 	m.set_shader_parameter("lifetime", life)
 	m.set_shader_parameter("extent", size)
@@ -1405,8 +1418,26 @@ static func _organic_spill(fx, p: Vector3, L: float, tint: Color) -> void:
 static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: Node3D = null, local_p := Vector3.ZERO, src = null) -> void:
 	if is_instance_valid(node): p = node.to_global(local_p)
 	if not p.is_finite() or R <= 0.0: return
+	# Main core flashes use the approved row. Secondaries keep their staging until issue 366.
+	var staged: bool = px >= 70.0 and (src == null or not src.squadron)
+	var band := atlas_band(float(src.hull.L) if src != null else R / 0.16)
+	# Pixel targets, normal/soft life, then normal/soft size calibration including the battle look's bloom.
+	var row: Array = {"small": [216.0, 0.18, 0.55, 2.45, 0.96], "cruiser": [302.0, 0.20, 0.60, 1.97, 0.96], "capital": [423.0, 0.22, 0.65, 1.37, 0.96]}[band]
+	if staged: px = float(row[0])
+	var allowed: bool = fx.flash_ok(fx.now)
+	if staged:
+		var soft: bool = fx.reduce_flashing or not allowed
+		var life: float = float(row[2] if soft else row[1])
+		var flash := flipbook(fx, p, Vector3.UP, 0.0, "flash", life, Vector3.ZERO, 1.25 if soft else 6.0, band, src, false, true)
+		var mat := flash.material_override as ShaderMaterial
+		mat.set_shader_parameter("min_pixels", px)
+		mat.set_shader_parameter("extent", px * STAGING_UNITS_PER_PIXEL)
+		mat.set_shader_parameter("size_divisor", float(row[4] if soft else row[3]))
+		mat.set_shader_parameter("soft_flash", 1.0 if soft else 0.0)
+		if allowed and not soft: fx.light(p, fx.now, float(row[1]), 9.0, Color(0.65, 0.75, 0.91), 0)
+		return
 	# Only this booking can produce a bright baked flash or its event light.
-	if fx.flash_ok(fx.now):
+	if allowed:
 		var flash := flipbook(fx, p, Vector3.UP, R * 3.0, "flash", 0.20, Vector3.ZERO, 6.0, atlas_band(R / 0.16), src)
 		(flash.material_override as ShaderMaterial).set_shader_parameter("min_pixels", px)
 		fx.light(p, fx.now, 0.12, 9.0, Color(0.65, 0.75, 0.91), 0)

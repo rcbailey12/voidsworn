@@ -120,9 +120,20 @@ func _run() -> void:
 		get_tree().quit(2)
 		return
 	cfg = parsed
+	# Issue 426: a capital flash is 423 px, taller than the usual 216 px crop. Keep full source pixels at camera 170.
+	# Single hits and longer windows make the flash/body clocks measurable without the next shell hiding them.
+	if args.has("rebake"):
+		cfg["cell"] = [640, 480]
+		cfg["crop"] = {"170": [640, 480], "60": [1280, 960], "26": [1920, 1080]}
+		for row in cfg["rows"]:
+			if row.get("do", "") == "volley":
+				row["shots"] = 1
+				row["windows"] = [["impact", -0.07, 34]]
+			elif row.get("do", "") == "death":
+				row["windows"] = [["split", -0.03, 25]]
 	var fm := FileAccess.open(out.path_join("moments.json"), FileAccess.WRITE)   # the rows this run used, for the sheet maker
 	if fm != null:
-		fm.store_string(f)
+		fm.store_string(JSON.stringify(cfg, " ") if args.has("rebake") else f)
 		fm.close()
 	report["commit"] = str(args.get("commit", ""))
 	report["godot"] = Engine.get_version_info().get("string", "")
