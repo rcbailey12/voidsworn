@@ -1745,7 +1745,7 @@ static func _pic(fx, src, p: Vector3, rel: String, px: float, life: float, divis
 # white (always the softened picture).
 static func _blast(fx, src, p: Vector3, n: Vector3, px: float, tint: Color, frame = null, pale := false) -> void:
 	if not p.is_finite(): return
-	var soft: bool = pale or fx.reduce_flashing or (fx._flash_sized(p, 0.0, px) and not fx.flash_ok(fx.now))
+	var soft: bool = pale or fx.reduce_flashing or not fx.flash_at(p, fx.now, px * STAGING_UNITS_PER_PIXEL, px, 0.16)
 	_pic(fx, src, p, "weapons/impact/flash_", px, 0.50 if soft else 0.16, 0.97 if soft else 3.0, 1.25 if soft else 5.2, soft, "flash", frame)
 	_smoke_clump(fx, src, p, n, px * 0.9, 0.70, frame, 0.06, 2, 3)
 	fx.light(p + n * 0.6, fx.now, 0.40 if soft else 0.25, 5.0, tint, 0)
@@ -2282,7 +2282,7 @@ static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: 
 	# Pixel targets, normal/soft life, then normal/soft size calibration including the battle look's bloom.
 	var row: Array = {"small": [216.0, 0.18, 0.55, 2.45, 0.96], "cruiser": [302.0, 0.20, 0.60, 1.97, 0.96], "capital": [423.0, 0.22, 0.65, 1.37, 0.96]}[band]
 	if staged: px = float(row[0])
-	var allowed: bool = fx.flash_ok(fx.now)
+	var allowed: bool = fx.flash_ok(fx.now, p, px * STAGING_UNITS_PER_PIXEL if staged else R * 3.0, px, float(row[1]))
 	if staged:
 		var soft: bool = fx.reduce_flashing or not allowed
 		var life: float = float(row[2] if soft else row[1])
@@ -2292,7 +2292,7 @@ static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: 
 		mat.set_shader_parameter("extent", px * STAGING_UNITS_PER_PIXEL)
 		mat.set_shader_parameter("size_divisor", float(row[4] if soft else row[3]))
 		mat.set_shader_parameter("soft_flash", 1.0 if soft else 0.0)
-		if allowed and not soft: fx.light(p, fx.now, float(row[1]), 9.0, Color(0.65, 0.75, 0.91), 0)
+		if not fx.reduce_flashing: fx.light(p, fx.now, float(row[1]), 9.0, Color(0.65, 0.75, 0.91), 0)
 		return
 	# Only this booking can produce a bright baked flash or its event light.
 	if allowed:

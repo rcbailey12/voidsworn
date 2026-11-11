@@ -568,6 +568,9 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	elif what == "death":
 		fx.death("T", str(row.get("cause", "blast")))
 	var anchors := {"fire": t_ev, "event": t_ev, "impact": t_ev + (float(impacts[0]) if impacts.size() > 0 else 0.6)}
+	# Issue 504: a row may fire a second volley from A at T during the event ("also": [seconds after the event, kind,
+	# weapon]), for example a torpedo landing on a dying capital; the "also" anchor is that volley's first impact.
+	var also: Array = row.get("also", [])
 	var wins: Array = []
 	var total := 0
 	for wv in row.get("windows", [["impact", -0.07, 12]]):
@@ -584,7 +587,15 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 			var sh = fx.ships.get("T")
 			var split_t: float = float(sh.get_meta("death_split", t_ev + 1.0)) if sh != null else t_ev + 1.0
 			anchors["split"] = split_t
+		if also.size() >= 3 and not anchors.has("also_fired") and fx.now + 1e-4 >= t_ev + float(also[0]):
+			anchors["also_fired"] = fx.now
+			var ares: Dictionary = fx.volley("A", str(also[1]), "T", {"weapon_id": str(also[2]), "shots": [true], "hits": _hits(1, false, false)})
+			var aimp: Array = ares.get("impacts", [])
+			anchors["also"] = fx.now + (float(aimp[0]) if aimp.size() > 0 else 0.6)
+			_log("%s: also volley %s at %.3f, impact at %.3f" % [id, str(also[1]), fx.now - t_ev, float(anchors["also"]) - t_ev])
 		var start: float = float(anchors.get(w["anchor"], t_ev)) + float(w["at"])
+		if w["anchor"] == "also" and not anchors.has("also"):
+			start = INF
 		var take := false
 		if int(w["got"]) == 0:
 			take = fx.now + 1e-4 >= start

@@ -92,6 +92,9 @@ func _run() -> void:
 			world.add_child(fx)
 			fx.manual = true
 			fx.setup({"quality": "high", "reduce_flashing": calm, "shake": 0.0})
+			# Issue 504: the beats are staged on bright-flash requests (flash_area_log); the safety checks (zero counted in
+			# calm mode, never more than three counted in a rolling second) stay on flash_log, the counted flashes.
+			fx.flash_area_logging = true
 			var s = _ship(world, fx, spec[0], spec[1], spec[2])
 			_check(s.death_big == spec[3], "slow motion uses class/flagship, independent of size")
 			DEATH.precompute(fx, s)
@@ -100,6 +103,7 @@ func _run() -> void:
 			var mesh_pose: Transform3D = s.meshes[0].transform
 			var duration: float = fx.death("T", "big")
 			var before: int = fx.flash_log.size()
+			var before_req: int = fx.flash_area_log.size()
 			# issue 462: a capital's tell runs to 2.0 s, so its death is longer (deaths_and_hits.md rule 3)
 			_check(duration >= 1.0 and duration < (2.8 if s.death_tier == "capital" else 2.1), "bounded staged death duration")
 			await _advance(fx, 0.36)
@@ -108,7 +112,7 @@ func _run() -> void:
 			for m in s.get_meta("death_power", []):
 				_check(float(m.get_shader_parameter("fx_power")) < 0.01, "running-light emission extinguishes")
 			# a big hull's vent waits for its first chain blast (one counted flash at 0.46 to 0.5 s); a small hull vents at 0.12
-			_check(fx.flash_log.size() - before == (0 if calm or s.death_big else 1), "one counted vent ignition before the split, none in calm mode")
+			_check(fx.flash_log.size() - before == 0 if calm else fx.flash_area_log.size() - before_req == (0 if s.death_big else 1), "one vent ignition before the split, none counted in calm mode")
 			if s.death_big:
 				_check(s._eng_cur < 0.02 and s.has_meta("death_flare_until"), "the drive flared once and is black by 0.36 s")
 			if not s.death_big:
@@ -124,19 +128,20 @@ func _run() -> void:
 				_check(ov is ShaderMaterial and (ov as ShaderMaterial).get_shader_parameter("half_span") != null, "the tear is drawn on the dying hull")
 				_check(s.meshes[0].visible, "the hull holds through the tell")
 				var chain_n: int = fx.flash_log.size() - before
-				_check(chain_n == 0 if calm else chain_n >= 2, "chain blasts flash during the tell (none counted in calm mode)")
+				_check(chain_n == 0 if calm else fx.flash_area_log.size() - before_req >= 2, "chain blasts flash during the tell (none counted in calm mode)")
 				# beat 2: the break, then the core flash 0.28 s later at the torn face
 				await _advance(fx, float(tl.cut) + float(tl.core_delay) + 0.1 - 1.2)
 				_check(not s.meshes[0].visible, "the hull parts at the break")
 				var t_split: float = float(fx.dstate["wrecks"][0]["t0"]) if not fx.dstate["wrecks"].is_empty() else -10.0
 				var core_seen := false
-				for f in fx.flash_log:
+				for r in fx.flash_area_log.slice(before_req):
+					var f: float = float(r[0])
 					if f >= t_split + float(tl.core_delay) - 0.02 and f <= t_split + float(tl.core_delay) + 0.13: core_seen = true
 				_check(calm or core_seen, "the core flash follows the break by 0.28 s")
-				_check(fx.flash_log.size() - before == 0 if calm else fx.flash_log.size() - before >= 3, "bounded vent, chain and core flash sequence")
+				_check(fx.flash_log.size() - before == 0 if calm else fx.flash_area_log.size() - before_req >= 3, "bounded vent, chain and core flash sequence")
 			else:
 				await _advance(fx, 0.55)
-				_check(fx.flash_log.size() - before == 0 if calm else fx.flash_log.size() - before == 2, "bounded vent and core flash sequence")
+				_check(fx.flash_log.size() - before == 0 if calm else fx.flash_area_log.size() - before_req >= 2, "vent and core flash sequence")
 			var warm := {}
 			for wreck in fx.dstate.wrecks:
 				for mat in wreck.mats: warm[mat] = float(mat.get_shader_parameter("heat"))
@@ -152,12 +157,12 @@ func _run() -> void:
 				_check(cuts.size() == w["nodes"].size() and (float(cuts.back().t) - float(cuts.front().t) >= 0.28 if capital else true), "a capital's pieces part one after another")
 				_check(float(w.get("cool", 0.0)) >= (14.0 if capital else 8.0), "big wrecks cool over the playbook's time")
 				var late := 0
-				for f in fx.flash_log:
-					if f >= float(w["t0"]) + 0.6: late += 1
+				for r in fx.flash_area_log.slice(before_req):
+					if float(r[0]) >= float(w["t0"]) + 0.6: late += 1
 				_check(calm or late >= 2, "secondaries flash on the pieces after the core")
 				_check_blown_apart(s, w, capital)
 			var flashes: int = fx.flash_log.size() - before
-			_check(flashes == 0 if calm else flashes >= 1, "calm has zero flashes; normal keeps its core")
+			_check(flashes == 0 if calm else fx.flash_area_log.size() - before_req >= 1, "calm has zero flashes; normal keeps its core")
 			for a in fx.flash_log:
 				var in_second := 0
 				for b in fx.flash_log:

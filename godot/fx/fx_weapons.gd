@@ -415,7 +415,7 @@ static func _burst(fx, p: Vector3, axis: Vector3, T: float, size: float, kind: S
 	var power: float = strength
 	var duration: float = life
 	if kind == "flash" and strength >= fx.FLASH_I:
-		if fx.reduce_flashing or (fx._flash_sized(p, size, px) and not fx.flash_ok(T)):
+		if fx.reduce_flashing or not fx.flash_at(p, T, size, px, life):
 			power = 1.25
 			duration = maxf(life, 0.4)
 	var seed: float = fx.rng.randf()
@@ -1076,7 +1076,7 @@ static func _staged_hit(fx, src, p: Vector3, T: float, torpedo: bool) -> void:
 	var flash_px: float = (154.0 if torpedo else 56.0) * target_scale
 	var body_px: float = (140.0 if torpedo else 48.0) * target_scale
 	var life := 0.16 if torpedo else 0.12
-	var soft: bool = fx.reduce_flashing or (fx._flash_sized(p, 0.0, flash_px) and not fx.flash_ok(T))
+	var soft: bool = fx.reduce_flashing or not fx.flash_at(p, T, flash_px * DEATH.STAGING_UNITS_PER_PIXEL, flash_px, life)
 	for body in [false, true]:
 		var rel: String = ("weapons/impact/" if torpedo else "weapons/macro/") + ("impact_" if body else "flash_")
 		var at: float = T + (0.025 if body else 0.0)
