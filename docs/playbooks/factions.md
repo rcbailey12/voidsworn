@@ -167,20 +167,43 @@ execution is off" and "Start over with a new idea". So: the idea of grown, livin
 
 ---
 
-## The concept redo (program decision 2, replaced Nov 10)
+## The concept redo: where each flagship stands (Nov 11 2026)
 
-The order Ryan set: the build pipeline was proven first (ship rounds 7 and 8, PR 401); now every faction's concepts are redone
-from the current lore, direction first ("Direction first, then fleets"), and only then built.
+The order Ryan set: the build pipeline was proven first (ship rounds 7 and 8, PR 401); then every faction's concepts are redone
+from the current lore, direction first ("Direction first, then fleets"), and only then built. Four rounds of pictures later
+(FINDINGS R172, R176, R178, R180), this is the state. A flagship marked SETTLED is the reference for its whole fleet.
 
-1. **Directions.** For each faction, three directions below. Each is drawn once as a hero capital ship with one escort beside
-   it for scale: a three-quarter view from the front and slightly above (the battle camera's side of the ship), on a plain
-   dark background, lit from the upper left, same framing for all eighteen pictures. Rendered by Muse's image models from
-   these words and the faction's sheet above (issue filed with this document).
-2. **Pick.** The Board lays each faction's three out on one sheet. Ryan picks one per faction, or mixes two.
-3. **Fleets.** The picked direction becomes a full fleet in three views per ship, to the concept standard
-   (contrib/muse/design/concept_standard_2026_11/standard.md): the written feature table first, then the views.
-4. **Build.** Hulls go through tools/recipe on the PC. The finished battle uses the first two fleets through: the Hullbreakers
-   and whichever tidy-up faction (Hegemony or Sunward) is ready first.
+| Faction | State | The reference picture | What Ryan said, and what is still to fix |
+|---|---|---|---|
+| Sunward Crusade | SETTLED | contrib/codex/design/concept_round4_2026_11/voidsworn_S7_sheet.jpg | "I agree with s1bs four flak barrels with s1as heavy barrels." A black iron dagger, an organ-pipe bank of ember radiators on the rear spine, seven heavy barrels a side, four flak turrets in pairs, one large lance. |
+| Hegemony Navy | SETTLED | contrib/codex/design/concept_round4_2026_11/hegemony_H7_sheet.jpg | "Agree with h5 redrawn by codex, makes it more unique." A wedge bow, then two parallel rails with the hangar between them; blue light lines; real surface detail (the plain version "almost looks like a shrimp in water"). |
+| Eclipse | Flagship SETTLED; ring cruiser open | contrib/codex/design/concept_round2_2026_11/deathless_E4_sheet.jpg (flagship) | "I like where we're going with Eclipse." The crescent bow with the doom cannon through its focus. "I still really like the Annulus version from before but that can be its own ship too": the cruiser (Eclipse zenith) is a ring ship; Codex's first try (round 4, E7) drew a spoked wheel; it must be a broken ring of separate plates round a core (round 1, contrib/muse/design/concept_directions_2026_11/deathless_C.jpg). |
+| The Glasswrights | OPEN: full prism | Route: contrib/codex/design/concept_round4_2026_11/ithar_G7_sheet.jpg; the look to keep: contrib/muse/design/concept_directions_2026_11/ithar_B.jpg | "It feels like we're forcing the crystal shape... Prism from before was more unique and different. Do we go full prism shape?" The Board's answer: yes. The ship is one long prism of real glass with light inside, in a silver frame that carries engines, emitter and lens weapons. A crystal on a hull ("looks weird and out of place") and a hull shaped like a crystal are both out. It matches the lore: Glasswright hulls are optical memory, and the last ship drifts "lit only by its own stored light". Waiting for Ryan's word on G7 and Muse's three (issue 467). |
+| Ashfall Hullbreakers | OPEN: the original, patched together | Route: contrib/codex/design/concept_round4_2026_11/corsair_A7_sheet.jpg; the character to keep: docs/ship_pipeline/concepts/C19_51.webp | "wildly off from our prior concept... which I thought was much stronger overall with variation and patched together shapes". Stacked mismatched slabs, red oxide and black, racks, a stepped lopsided outline; never a tube or a tidy brick; no camouflage colours. Waiting for Ryan's word on A7 and Muse's three. |
+| The Chorus | OPEN: grown, not built | Nearest: contrib/muse/design/concept_round3_2026_11/chorus_C4_sheet.jpg | "Chorus doesn't look quite organic enough." No straight lines, seams or bands; whale-scale; weapons are organs you can see. Waiting for Muse's three (issue 467). |
+
+**The method that works (use it for every later ship).**
+1. Write the ship before drawing it: its exact weapons from data.js and where each sits, its engines, its proportions, and the
+   twelve-line gate (docs/playbooks/concepts_round2.md). Round 1 failed because no picture was told how many guns the ship has.
+2. A design sheet first (top view above side view, flat on, same scale), then the beauty view made FROM that sheet. The battle
+   camera looks down, so the identity must read in the top view.
+3. It must read as armed from above at thumbnail size: barrels plain to see, ordered, never scattered (R176).
+4. Codex's built-in image tool holds a layout and a weapon count and keeps one hand across factions; it is the tool for
+   finals. Muse's image models give variety and are better at organic subjects, but drift on layout and colour. Use Muse to
+   explore, Codex to settle.
+5. **Start from what was already liked (R180).** When a faction had a picture Ryan liked (the round 1 Prism, the original
+   Pyre-Barge), the new brief starts from that picture and names what to keep. Two rounds were lost by designing the
+   Glasswrights and the Hullbreakers afresh and sanding off what made them theirs.
+6. The Board reviews every sheet against the gate before Ryan sees it, and says plainly which fail.
+
+**Next.** The finished battle is Sunward against Eclipse (R180), so those two fleets come first: a fleet brief per faction
+(every class in data.js, each derived from the flagship's grammar: what it keeps, what it drops, its weapons), drawn as design
+sheets by Codex, picked by Ryan, then built through tools/recipe (docs/playbooks/ships.md).
+
+## Round 1 directions (Nov 10; kept for the record, not picked: R172)
+
+These eighteen were drawn once by Muse (contrib/muse/design/concept_directions_2026_11/). Read them as history: what was
+tried first and why it was not enough.
 
 ### Sunward Crusade: three directions
 
