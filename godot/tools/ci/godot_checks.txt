@@ -49,6 +49,7 @@ headless|fx/test/fx_smoke.gd|-|-|every weapon look, the damage ladder, shield br
 headless|fx/test/playtest_batch1_check.gd|-|-|presentation regressions with stand-in hull scenes, no ship files
 headless|fx/test/playtest_batch3_check.gd|-|-|hits keep the skin, heavy damage opens a break, exhaust stays in space
 headless|fx/test/squadron_check.gd|-|-|451 squadron and carrier checks on stand-in craft
+headless|scenes/battle/test/wing_cancel_test.gd|-|-|UI-5 (issue 387): the battle screen clears its armed wing on a ship pick, the roster, Escape and Cancel
 gpu|assets/ships/test/a4_shots.gd|scene:res://assets/ships/test/a4_shots.tscn|--out {out}|in-game ship sheet: needs the built ship files and a window
 gpu|campaign/test/capstone_mastery_shots.gd|-|{out}|campaign screenshots: needs a window
 gpu|campaign/test/debrief_mock_shots.gd|-|{out}|debrief mock screenshots for issue 92 (still open): needs a window

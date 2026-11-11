@@ -3042,6 +3042,7 @@ func _cancel(why: String) -> void:
 	plan_k = ""
 	target = ""
 	atk = null
+	wing_sel = ""
 	sfx.play("ui_cancel")
 	_refresh_ui()
 

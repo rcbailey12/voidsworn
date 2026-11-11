@@ -142,6 +142,18 @@ check(lows.length >= 4 && lows.every(v => v === 0.35), `every hull-low line is 0
   console.log(`NOTE direct save reads left in campaign_ui.gd ${direct[0]}, map3d.gd ${direct[1]} (finding 12 report; they move with their screen groups)`);
 }
 
+// 8. issue 387 (UI-5): the battle screen clears its armed wing on every cancel path. The behaviour check is
+// godot/scenes/battle/test/wing_cancel_test.gd, run by godot/tools/ci/run_checks.sh on GitHub. These are the structure
+// guards, so the clearing cannot be dropped silently from the Node-only standing checks.
+{
+  const bg = read('godot/scenes/battle/battle.gd');
+  const body = name => (new RegExp('func ' + name + '\\([^)]*\\)[^\\n]*\\n([\\s\\S]*?)\\n\\n\\n').exec(bg) || [])[1] || '';
+  check(/wing_sel = ""/.test(body('select')), 'battle select() clears the armed wing (UI-5, issue 387)');
+  check(/wing_sel = ""/.test(body('_cancel')), 'battle _cancel() clears the armed wing (UI-5, issue 387)');
+  check(/elif wing_sel != "":[\s\S]*?wing_sel = ""/.test((bg.match(/KEY_ESCAPE:[\s\S]*?KEY_TAB:/) || [''])[0]), 'battle Escape clears the armed wing (UI-5, issue 387)');
+  check(fs.existsSync(path.join(ROOT, 'godot/scenes/battle/test/wing_cancel_test.gd')) && /headless\|scenes\/battle\/test\/wing_cancel_test\.gd\|/.test(read('godot/tools/ci/godot_checks.txt')), 'the headless UI-5 behaviour check is listed in godot/tools/ci/godot_checks.txt');
+}
+
 // 6. the diff script still reads every named pair (a pattern that stopped matching is reported, not failed)
 const r = diff.build();
 const stale = r.pairs.filter(p => /NOT FOUND/.test(p.a.v + p.b.v));
