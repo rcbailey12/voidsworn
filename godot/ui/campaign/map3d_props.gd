@@ -65,7 +65,7 @@ func light(parent: Node3D, pos: Vector3, col: Color, size: float = 0.5, blink: b
 	if blink: blinkers.append([g, sys.rng.randf() * TAU, sys.rng.randf_range(1.4, 2.6)])
 	return g
 func spot(parent: Node3D, pos: Vector3, target: Vector3, col: Color, energy: float = 3.0, rng: float = 6.0) -> void:   # a work floodlight
-	var s = SpotLight3D.new(); s.light_color = col; s.light_energy = energy; s.spot_range = rng; s.spot_angle = 32.0; s.spot_attenuation = 0.8
+	var s = SpotLight3D.new(); s.light_color = col; s.light_energy = energy * float(sys.approach["local_fill"]); s.spot_range = rng; s.spot_angle = 32.0; s.spot_attenuation = 0.8
 	s.shadow_enabled = false; parent.add_child(s)
 	var dv = target - pos
 	s.transform = Transform3D(Basis.looking_at(dv.normalized(), Vector3.UP if abs(dv.normalized().y) < 0.95 else Vector3.RIGHT) if dv.length() > 0.01 else Basis(), pos)

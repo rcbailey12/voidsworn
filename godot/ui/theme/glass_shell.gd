@@ -641,6 +641,48 @@ static func diamond(ci: CanvasItem, center: Vector2, r: float, col: Color) -> vo
 	ci.draw_colored_polygon(PackedVector2Array([center + Vector2(0, -r), center + Vector2(r, 0), center + Vector2(0, r), center + Vector2(-r, 0)]), col)
 
 
+# The same 16-unit paths as ui_map_design/mockup_gen.py glyph(), shared by the map and its key.
+const STOP_ICON_PX := 18.0
+const STOP_ICON_GAP := 7.0
+const STOP_ICON_FADED := 0.5
+const STOP_ICONS := {"battle": "Fight", "elite": "Elite fight", "shipyard": "Shipyard", "repair": "Repairs", "event": "Event", "boss": "Sector flagship"}
+
+static func stop_icon(ci: CanvasItem, center: Vector2, kind: String, k: float, opacity := 1.0) -> void:
+	if kind in ["field", "drydock"]: kind = "repair"
+	var paths: Array = []
+	var dot := 0.0
+	match kind:
+		"battle", "elite", "boss":
+			var r := 7.0 if kind == "boss" else 6.5
+			paths.append(PackedVector2Array([Vector2(0, -r), Vector2(r, 0), Vector2(0, r), Vector2(-r, 0), Vector2(0, -r)]))
+			if kind == "elite": dot = 2.8
+			if kind == "boss": paths.append(PackedVector2Array([Vector2(-3.6, 0), Vector2(3.6, 0)])); paths.append(PackedVector2Array([Vector2(0, -3.6), Vector2(0, 3.6)]))
+		"shipyard": paths.append(PackedVector2Array([Vector2(-5.5, -5.5), Vector2(5.5, -5.5), Vector2(5.5, 5.5), Vector2(-5.5, 5.5), Vector2(-5.5, -5.5)]))
+		"repair", "event":
+			var circle := PackedVector2Array()
+			for i in 33: circle.append(Vector2(cos(TAU * i / 32.0), sin(TAU * i / 32.0)) * 6.2)
+			paths.append(circle)
+			if kind == "repair": paths.append(PackedVector2Array([Vector2(-3.2, 0), Vector2(3.2, 0)])); paths.append(PackedVector2Array([Vector2(0, -3.2), Vector2(0, 3.2)]))
+			else: dot = 1.4
+	var unit := STOP_ICON_PX / 16.0 * k
+	for pass_i in 2:
+		var col := Color(HALO, 0.95 * opacity) if pass_i == 0 else Color(BONE, opacity)
+		var width := (5.5 if pass_i == 0 else 1.5) * unit
+		for path in paths:
+			var points := PackedVector2Array()
+			for point in path: points.append(center + point * unit)
+			# Solid strokes keep the retained briefing column visible in Windows Forward+.
+			ci.draw_polyline(points, col, width, false)
+		if dot > 0.0:
+			if kind == "elite": diamond(ci, center, dot * unit, col)
+			else: ci.draw_circle(center, dot * unit, col, true, -1.0, false)
+
+static func stop_key(kind: String, k: float) -> Control:
+	var c := Control.new(); c.custom_minimum_size = Vector2(px(34, k), px(26, k)); c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	c.draw.connect(func(): stop_icon(c, c.size * 0.5, kind, k))
+	return c
+
+
 # a thin hull bar for the briefing column: one line, the lit part in col
 static func thin_bar(k: float, f: float, col: Color, w := 72.0, h := 3.0, track := IRON3) -> Control:
 	var c := Control.new()

@@ -21,13 +21,14 @@ extends Control
 # clutter off it:
 # - the backdrop (sky, near stars, embers, the enemy's light) at about half strength; five faint orbit rings instead of one
 #   per stop;
-# - your stop and the next jumps keep full models; stops further on are smaller and lit at under half; stops behind you or
-#   cut off are dimmer still (three light tiers, one render layer each, the Hollow Sun's light split to match);
+# - your stop and the next jumps keep full models; R170 sets stops ahead to 85% size and 75% light, and cut-off stops to
+#   half of that (three light tiers, one render layer each, the Hollow Sun's light split to match);
 # - no rings, halos, hover glows, threat holograms or patrol glows; the routes to the next jumps are solid lime lines, every
 #   other route one thin pale line, cut-off routes fainter; no blue routes, no bloom on a route;
 # - words on the map are plain with a dark halo: the stop you hold ("Your fleet is here"), and a square lime number marker
 #   and a name at each next jump (the picked one filled). One small red diamond over a stop where the Nemesis meets you.
 #   Stops further on carry no words; pointing at one (or reaching it with the arrow keys) shows the one tip card.
+# - R170 adds one sage type glyph above every stop ahead, and a sector-by-sector approach to the Hollow Sun.
 #
 # Useful (unchanged in what it knows): the route planner on hover (safest and richest routes to the flagship with running totals), danger
 # bands per fight for your fleet as it is now, fight type and board shape, rewards, the hover card, keyboard focus.
@@ -42,12 +43,7 @@ const SHIP_VIEW := "res://render/ship_view.gd"
 const HT_PATH := "res://render/hull_table.gd"
 const CamRig := preload("res://render/camera_rig.gd")
 
-# the layout round the sun: column c of n sits at bearing ANG0 - ANG_SPAN * c / (n - 1) (degrees; 90 = far side),
-# a stop's orbit radius runs from R_OUT (y = 0) to R_IN (y = 1)
-const ANG0 := 190.0
-const ANG_SPAN := 200.0
-const R_IN := 21.0
-const R_OUT := 52.0
+# Sector framing lives in System.APPROACH; the route graph stays in RUN.
 const RING_R := 2.4          # the ring round each stop
 const SUN_R := 5.0           # the Hollow Sun's shadow (the black hole)
 const CAM_DIR := Vector3(0.0, 0.79, 0.62)
@@ -59,8 +55,8 @@ const COL_W := 480.0          # the briefing column over the left of the chart (
 const BACKDROP_K := 0.5       # the backdrop's strength in the Briefing build ("dimmed about half")
 const LAYER_AHEAD := 2        # render layer of the stops further on (lit by the Hollow Sun at TIER_LIGHT[1])
 const LAYER_BEHIND := 4       # render layer of the stops behind you or cut off (TIER_LIGHT[2])
-const TIER_LIGHT := [1.0, 0.45, 0.18]   # your stop and the next jumps, stops further on, stops behind or cut off
-const TIER_SCALE := [1.0, 0.7, 0.6]
+const TIER_LIGHT := [1.0, 0.75, 0.375]   # cut-off stops have half the ahead brightness
+const TIER_SCALE := [1.0, 0.85, 0.425]
 var ui                        # campaign_ui.gd
 var intel
 var sys                       # map3d_system.gd
@@ -116,6 +112,7 @@ var _arrive_t := 0.0
 var _last_pos = null
 var loading := false
 var sector_world: Node3D
+var _fill: DirectionalLight3D
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -133,7 +130,7 @@ func _ready() -> void:
 	env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY   # metal plating picks up the nebula and the stars
 	env.adjustment_enabled = true; env.adjustment_contrast = 1.06; env.adjustment_saturation = 1.08
 	var we = WorldEnvironment.new(); we.environment = env; vp.add_child(we)
-	var fill = DirectionalLight3D.new(); fill.rotation_degrees = Vector3(-38, 150, 0); fill.light_energy = 0.32; fill.light_color = Color(0.62, 0.72, 1.0); vp.add_child(fill)
+	_fill = DirectionalLight3D.new(); _fill.rotation_degrees = Vector3(-38, 150, 0); _fill.light_color = Color(0.62, 0.72, 1.0); vp.add_child(_fill)
 	cam = Camera3D.new(); cam.fov = 36.0; cam.near = 0.5; cam.far = 4000.0; vp.add_child(cam)
 	overlay = Control.new(); overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE; overlay.draw.connect(_draw_overlay); add_child(overlay)
 	card = PanelContainer.new(); card.visible = false; card.mouse_filter = Control.MOUSE_FILTER_IGNORE; add_child(card)
@@ -157,8 +154,15 @@ func set_quality(qv: String) -> void:
 func _polar(n: Dictionary) -> Vector2:
 	var ncols = 7
 	if _C() != null and _C().RUN != null: ncols = max(2, _C().RUN["map"]["cols"].size())
-	var th = deg_to_rad(ANG0 - ANG_SPAN * float(n["col"]) / float(ncols - 1))
-	return Vector2(th, R_IN + (1.0 - float(n["y"])) * (R_OUT - R_IN))
+	var look = System.sector_look(int(_C().RUN.get("sector", 1)))
+	var angle: Vector2 = look["angle"]; var radius: Vector2 = look["radius"]
+	var progress = float(n["col"]) / float(ncols - 1)
+	var th = deg_to_rad(angle.x - angle.y * progress)
+	# The final stop settles onto the inner edge in the well. The graph and node records never move.
+	var r = lerpf(radius.x, radius.y, 1.0 - float(n["y"]))
+	return Vector2(th, lerpf(r, radius.x, progress * float(look["infall"])))
+func _outer_radius() -> float:
+	return System.sector_look(int(_C().RUN.get("sector", 1)))["radius"].y
 func _at(th: float, r: float) -> Vector3: return Vector3(cos(th) * r, 0.0, -sin(th) * r)
 func _pos(n: Dictionary) -> Vector3:
 	var p = _polar(n); return _at(p.x, p.y)
@@ -189,10 +193,10 @@ func _load_sector(sig: String) -> void:
 	await get_tree().process_frame
 	_build(sig)
 	_last_pos = _C().RUN.get("pos")
-	_arrive(true)
 	_refresh()
 	await sector_world.wait_ready()
 	await Loading.settle(get_tree())
+	_arrive(true)
 	cover.queue_free()
 	loading = false
 	# Changes made during loading get their own covered rebuild.
@@ -258,6 +262,8 @@ func _build(sig: String) -> void:
 	var base_sig = sig.trim_suffix("|" + quality)   # High and Low draw the same system: each stop reseeds from its own id
 	_base_sig = base_sig; _rng.seed = hash(base_sig)
 	sys = System.new(); sys.rng = _rng; sys.q = 1.0 if quality != "low" else 0.0; sys.backdrop_k = BACKDROP_K
+	sys.set_sector(int(C.RUN["sector"]))
+	env.ambient_light_energy = sys.approach["ambient"]; _fill.light_energy = sys.approach["fill"]
 	props = Props.new(sys); _spinners.clear(); _drones.clear()
 	sector_world = World.new(); root3.add_child(sector_world)
 	var shell := get_tree().root.get_node_or_null("Main")
@@ -265,7 +271,7 @@ func _build(sig: String) -> void:
 	sector_world.prepare_sector(env, C.RUN, bake_quality)
 	env.background_energy_multiplier = BACKDROP_K   # the sky (nebula, stars, its sun) at about half: it stops fighting the routes and the words
 	# The baked nebula's broad red haze still competed with the routes in the first capture. Quiet just the gas again.
-	(env.sky.sky_material as ShaderMaterial).set_shader_parameter("neb_gain", BACKDROP_K)
+	sys.approach_sky(env)
 	sys.sector_world = sector_world
 	sys.backdrop(root3, fac, max(1.0, ui.k))
 	var hs = sys.hollow_sun(root3, SUN_R); _debris = hs["debris"]
@@ -294,13 +300,13 @@ func _tier_lights(sun) -> void:
 	sun.light_cull_mask = 0xFFFFF & ~(LAYER_AHEAD | LAYER_BEHIND)
 	for i in [1, 2]:
 		var l = OmniLight3D.new(); l.light_color = sun.light_color; l.light_energy = sun.light_energy * TIER_LIGHT[i]
-		l.omni_range = sun.omni_range; l.omni_attenuation = sun.omni_attenuation; l.shadow_enabled = false
+		l.omni_range = sun.omni_range; l.omni_attenuation = sun.omni_attenuation; l.shadow_enabled = sun.shadow_enabled and float(sys.approach["infall"]) > 0.0
 		l.light_cull_mask = LAYER_AHEAD if i == 1 else LAYER_BEHIND
 		sun.get_parent().add_child(l); l.position = sun.position
 
 # a faint hint of the system's orbits: five rings at about 5 percent, not one per stop (the Briefing build)
 func _add_orbits() -> void:
-	for i in 5: sys.orbit(root3, lerp(R_IN, R_OUT, float(i) / 4.0), pale(0.06), 0.22)   # about 5 percent as the eye reads it
+	for i in 5: sys.orbit(root3, lerp(sys.approach["radius"].x, sys.approach["radius"].y, float(i) / 4.0), pale(0.06), 0.22)   # about 5 percent as the eye reads it
 
 # ---------------- stop scenes ----------------
 func _place_scene(obj: Node3D, place: String, d: Dictionary) -> float:   # the setting of the stop; returns the height of its top
@@ -413,6 +419,7 @@ func _add_node(n: Dictionary) -> void:
 		fl.position = Vector3(3.0, 5.0, 4.5); fl.shadow_enabled = false; obj.add_child(fl)
 		var ky = OmniLight3D.new(); ky.light_color = Color(1.0, 0.9, 0.78); ky.light_energy = 1.1; ky.omni_range = 15.0; ky.omni_attenuation = 1.0   # a faint key from the camera's side
 		ky.position = Vector3(-2.0, 7.0, 8.0); ky.shadow_enabled = false; obj.add_child(ky)
+		fl.light_energy *= float(sys.approach["local_fill"]); ky.light_energy *= float(sys.approach["local_fill"])
 	# no ring, halo or hover glow under a stop (the Briefing build): the list and the map's words say what you can do there
 	var big = RING_R * (1.55 if t == "boss" else 1.0)
 	var rival = null
@@ -487,7 +494,7 @@ func pale(share: float) -> Color:
 # otherwise (_paint_lanes). No bloom, no halo, no flow, no hazard chevrons.
 func _add_lane(a: String, b: String) -> void:
 	var A = _nodes[a]["pos"]; var B = _nodes[b]["pos"]
-	var curve := System.route_curve(A, B); var L := curve.get_baked_length()
+	var curve: Curve3D = sys.lane_curve(A, B); var L := curve.get_baked_length()
 	var trim_a = _nodes[a]["ring_r"] * 1.05; var trim_b = _nodes[b]["ring_r"] * 1.05
 	var mat = sys.mat("LANE_FLAT", {"col": Color(GS.BONE, GS.PALE), "px": 0.6})
 	var mi = sys.mi(sys.route_ribbon(curve, 1.6, trim_a, trim_b), mat, Vector3(0, 0.12, 0)); mi.extra_cull_margin = L
@@ -496,10 +503,10 @@ func _add_lane(a: String, b: String) -> void:
 # the way in: before a sector's first jump the fleet waits off the chart's edge, and a lime line runs from it to each first stop
 func _add_entry_lanes() -> void:
 	var C = _C(); var n0 = C.RUN["map"]["cols"][0][0]; var pp = _polar(n0)
-	var from = _at(pp.x + deg_to_rad(16.0), R_OUT + 6.0)
+	var from = _at(pp.x + deg_to_rad(16.0), _outer_radius() + 6.0)
 	for n in C.RUN["map"]["cols"][0]:
 		if not _nodes.has(n["id"]): continue
-		var curve := System.route_curve(from, _nodes[n["id"]]["pos"]); var L := curve.get_baked_length()
+		var curve: Curve3D = sys.lane_curve(from, _nodes[n["id"]]["pos"]); var L := curve.get_baked_length()
 		var mat = sys.mat("LANE_FLAT", {"col": Color(GS.GILT, 1.0), "px": 1.25})
 		var mi = sys.mi(sys.route_ribbon(curve, 1.6, 2.0, _nodes[n["id"]]["ring_r"] * 1.05), mat, Vector3(0, 0.12, 0)); mi.extra_cull_margin = L
 		root3.add_child(mi)
@@ -573,7 +580,7 @@ func _token_home() -> Vector3:
 	var C = _C(); var pos = C.RUN.get("pos")
 	if pos != null and _nodes.has(pos): return _nodes[pos]["pos"] + TOKEN_OFF + Vector3(0, _nodes[pos]["top"], 0)
 	var n0 = C.RUN["map"]["cols"][0][0]; var pp = _polar(n0)
-	return _at(pp.x + deg_to_rad(16.0), R_OUT + 6.0) + Vector3(0, 3.0, 0)   # just before the first jump, clear of the first stop
+	return _at(pp.x + deg_to_rad(16.0), _outer_radius() + 6.0) + Vector3(0, 3.0, 0)   # just before the first jump, clear of the first stop
 
 # ---------------- state ----------------
 func _avail() -> Array:
@@ -701,13 +708,16 @@ func _paint_lanes() -> void:
 func _arrive(new_sector: bool) -> void:   # the camera starts leaning on where the fleet is and settles back over the chart
 	var C = _C(); var pos = C.RUN.get("pos")
 	var at = _nodes[pos]["pos"] if pos != null and _nodes.has(pos) else _token_home()
-	if new_sector: _cam_focus = at; _cam_zoom = 0.62
+	if new_sector:
+		_fit(_free_rect())
+		_cam_focus = _fit_target.lerp(sys.sun_pos, float(sys.approach["arrival_lean"]))
+		_cam_zoom = sys.approach["arrival_zoom"]
 	_arrive_t = 0.0
 	_uz_t = 1.0; _pan_t = Vector3.ZERO
 	if _arrival_tween != null: _arrival_tween.kill()
 	var tw = create_tween(); _arrival_tween = tw; tw.set_trans(Tween.TRANS_SINE); tw.set_ease(Tween.EASE_IN_OUT)
-	tw.tween_property(self, "_cam_zoom", 1.0, 1.6 if new_sector else 1.1)
-	tw.parallel().tween_property(self, "_cam_focus", Vector3.ZERO, 1.6 if new_sector else 1.1)
+	tw.tween_property(self, "_cam_zoom", 1.0, float(sys.approach["arrival_seconds"]) if new_sector else 1.1)
+	tw.parallel().tween_property(self, "_cam_focus", Vector3.ZERO, float(sys.approach["arrival_seconds"]) if new_sector else 1.1)
 
 func _process(delta: float) -> void:
 	if not visible or _C() == null or _C().RUN == null or root3 == null: return
@@ -796,7 +806,9 @@ func _fit(fr: Rect2) -> void:
 	for id in _nodes:   # the node's scene and its labels: a little wider than the ring, up to the region name, down to the chips
 		var p = _nodes[id]["pos"]
 		for d in [Vector3(-5.0, 0, 0), Vector3(5.0, 0, 0), Vector3(0, _nodes[id]["top"] + 2.6, -1.0), Vector3(0, 0, 5.0)]: pts.append(p + d)
-	for d in [Vector3(-SUN_R * 3.0, 0, 0), Vector3(SUN_R * 3.0, 0, 0), Vector3(0, SUN_R * 1.9, SUN_R * 2.3), Vector3(0, 0, SUN_R * 3.9)]: pts.append(d)   # the Hollow Sun and its disc stay in frame
+	if bool(sys.approach["fit_sun"]):
+		var sr = SUN_R * float(sys.approach["sun_scale"])
+		for d in [Vector3(-sr * 3.0, 0, 0), Vector3(sr * 3.0, 0, 0), Vector3(0, sr * 1.9, sr * 2.3), Vector3(0, 0, sr * 3.9)]: pts.append(sys.sun_pos + d)
 	if _C().RUN.get("pos") == null:   # the fleet waiting before the first jump, its escorts and its words
 		for d in [Vector3(-8.0, 0, 0), Vector3(6.0, 0, 0), Vector3(0, 0, 9.0), Vector3(0, 4.0, 0)]: pts.append(_token_home() + d)
 	var lo = Vector3(INF, 0, INF); var hi = Vector3(-INF, 0, -INF)
@@ -812,22 +824,33 @@ func _fit(fr: Rect2) -> void:
 		var off = _ground((a + b) * 0.5) - _ground(fr.get_center())
 		tgt += Vector3(off.x, 0, off.z); dist *= clamp(lerp(1.0, k, 0.8), 0.6, 1.6)
 	_fit_target = tgt; _fit_dist = dist
+	cam.position = tgt + CAM_DIR * dist; cam.look_at(tgt, Vector3.UP)
+	sys.sky_direction(cam, env)
 # The words on the map (the Briefing build). Plain text with a dark halo, no strip or tag behind it (GS.halo_text; the
-# campaign map exception to ui_style.md 3). Only three things are written: where your fleet is, each next jump (a square lime
-# number marker, the same 1, 2, 3 as the route list, and the stop's name) and, over a stop where the Nemesis meets you, one
-# small red diamond. A stop further on carries nothing; its tip card shows on hover or keyboard focus (_update_card).
+# campaign map exception to ui_style.md 3). Current and next stops keep their captions. Every other stop has a type glyph;
+# a Nemesis meeting adds its red diamond above it. The tip card shows on hover or keyboard focus (_update_card).
 func _draw_overlay() -> void:
 	var C = _C()
-	if C == null or C.RUN == null or root3 == null: return
+	if C == null or C.RUN == null or root3 == null or cam.position.length_squared() < 1.0: return
 	var av = _avail(); var s: float = ui.k; var pos = C.RUN.get("pos")
 	var left = float(ui.px(COL_W)) + 8.0 * s
-	for id in _nodes:   # the Nemesis marks
-		var d = _nodes[id]
-		if not d["nem"] or cam.is_position_behind(d["pos"]): continue
-		var tp = _screen(d["pos"] + Vector3(0, (float(d["top"]) + 0.6) * float(d["sc"]), 0))
-		if tp.x > left: GS.diamond(overlay, tp + Vector2(0, -8.0 * s), 5.0 * s, ui.ALERT)
 	_words.clear()
-	var taken: Array = []   # what the words must keep off: the models of your stop and the next jumps, and the words placed so far
+	var taken: Array = []   # icons, star, models and captions all share the same exclusion list
+	var sun_rect := _sun_rect()
+	taken.append(sun_rect); _words.append(sun_rect)
+	for id in _nodes:   # type glyphs over each model; the Nemesis stays above its glyph
+		var d = _nodes[id]
+		if cam.is_position_behind(d["pos"]): continue
+		var tp = _screen(d["pos"] + Vector3(0, (float(d["top"]) + 0.6) * float(d["sc"]), 0))
+		tp.y -= (GS.STOP_ICON_PX * 0.5 + GS.STOP_ICON_GAP) * s
+		var faded = int(d["tier"]) == 2
+		var icon_scale = s * (GS.STOP_ICON_FADED if faded else 1.0)
+		if tp.x > left:
+			if id != pos:
+				GS.stop_icon(overlay, tp, str(d["n"]["type"]), icon_scale, GS.STOP_ICON_FADED if faded else 1.0)
+				var icon_box = Rect2(tp - Vector2.ONE * 12.0 * icon_scale, Vector2.ONE * 24.0 * icon_scale)
+				taken.append(icon_box); _words.append(icon_box)
+			if d["nem"]: GS.diamond(overlay, tp + Vector2(0, -20.0 * s), 5.0 * s, ui.ALERT)
 	var bodies = av.duplicate()
 	if pos != null: bodies.append(pos)
 	for id in bodies:
@@ -846,6 +869,7 @@ func _draw_overlay() -> void:
 				taken.append(Rect2(_screen(token.position) - Vector2(60.0, 40.0) * s, Vector2(120.0, 80.0) * s))
 			if nm != "":
 				var w = f18.get_string_size(nm, HORIZONTAL_ALIGNMENT_LEFT, -1, int(18 * s)).x
+				if Rect2(here.x - w * 0.5, y - 18.0 * s, w, 46.0 * s).intersects(sun_rect): y = sun_rect.end.y + 24.0 * s
 				GS.halo_text(overlay, f18, Vector2(here.x - w * 0.5, y), nm, int(18 * s), ui.BONE, s)
 				taken.append(Rect2(here.x - w * 0.5, y - 18.0 * s, w, 24.0 * s)); _words.append(taken.back()); y += 22.0 * s
 			var sub = "Your fleet is here"; var w2 = f14.get_string_size(sub, HORIZONTAL_ALIGNMENT_LEFT, -1, int(14 * s)).x
@@ -857,7 +881,7 @@ func _draw_overlay() -> void:
 	var from = _nodes[pos]["pos"] if (pos != null and _nodes.has(pos)) else (Vector3(token.position.x, 0.0, token.position.z) if token != null else Vector3.ZERO)
 	for id in av:
 		if not _nodes.has(id): continue
-		var cv := System.route_curve(from, _nodes[id]["pos"]); var cl = cv.get_baked_length()
+		var cv: Curve3D = sys.lane_curve(from, _nodes[id]["pos"]); var cl = cv.get_baked_length()
 		for j in 25: lane_pts.append(_screen(cv.sample_baked(cl * float(j) / 24.0)))
 	for i in av.size():
 		var id = av[i]
@@ -877,6 +901,7 @@ func _draw_overlay() -> void:
 		var at: Vector2 = cands[0]; var best = 1e9
 		for ci in cands.size():
 			var r = Rect2(cands[ci], Vector2(cw, m)); var cost = float(ci)
+			if r.intersects(sun_rect): cost += 1000000.0
 			if r.position.x < left or r.end.x > size.x - 8.0 * s or r.position.y < 8.0 * s or r.end.y > size.y - 8.0 * s: cost += 1000.0
 			for t in taken:
 				if r.intersects(t): cost += 200.0   # another model, or words already placed
@@ -884,6 +909,10 @@ func _draw_overlay() -> void:
 			for lp in lane_pts:
 				if rg.has_point(lp): cost += 12.0   # a lime route under the words
 			if cost < best: best = cost; at = cands[ci]
+		# A zoomed view can leave every nearby candidate on the disc. Place the caption in clear map space instead.
+		if Rect2(at, Vector2(cw, m)).intersects(sun_rect):
+			at.x = maxf(left, sun_rect.position.x - cw - 12.0 * s)
+			if Rect2(at, Vector2(cw, m)).intersects(sun_rect): at.y = sun_rect.end.y + 12.0 * s
 		taken.append(Rect2(at, Vector2(cw, m))); _words.append(taken.back())
 		var num = int(ui.route_num(id)) if ui.has_method("route_num") else i + 1   # the same number as its row
 		GS.marker(overlay, at + Vector2(m, m) * 0.5, s, str(num if num > 0 else i + 1), ui.font_num_b, id == str(ui.picked))
@@ -895,6 +924,13 @@ func _draw_overlay() -> void:
 	if has_focus() and _hot_by_key and _hot != "" and _nodes.has(_hot) and not _flying:   # keyboard focus: the sage ring (ui_spec.md 6)
 		var br = _body_rect(_hot, s).grow(3.0 * s)
 		overlay.draw_rect(br, ui.BONE, false, max(2.0, 2.0 * s))
+
+func _sun_rect() -> Rect2:
+	var r = SUN_R * float(sys.approach["sun_scale"]) * float(sys.approach["disc_outer"])
+	var centre = _screen(sys.sun_pos)
+	var rx = absf(_screen(sys.sun_pos + Vector3(r, 0, 0)).x - centre.x)
+	var ry = absf(_screen(sys.sun_pos + Vector3(0, 0, r)).y - centre.y)
+	return Rect2(centre - Vector2(rx, ry), Vector2(rx, ry) * 2.0).grow(ui.px(12))
 # the screen box a stop's model takes, near enough for words to keep off it and for the focus ring to frame it
 func _body_rect(id: String, s: float) -> Rect2:
 	var d = _nodes[id]; var sc = float(d["sc"])
@@ -1014,9 +1050,9 @@ func pan_by(v: Vector3) -> void:
 func reset_view() -> void:
 	_uz_t = 1.0; _pan_t = Vector3.ZERO
 func _clamp_pan() -> void:
-	var lim = (R_OUT + 6.0) * (1.25 - _uz_t * 0.6)
+	var lim = (_outer_radius() + 6.0) * (1.25 - _uz_t * 0.6)
 	if _pan_t.length() > lim: _pan_t = _pan_t.normalized() * lim
-	if _uz_t >= 0.999: _pan_t = _pan_t.limit_length(R_OUT * 0.5)
+	if _uz_t >= 0.999: _pan_t = _pan_t.limit_length(_outer_radius() * 0.5)
 func _gui_input(e: InputEvent) -> void:
 	if loading or _flying or backdrop: return
 	if e is InputEventMouseMotion:
@@ -1070,7 +1106,7 @@ func fly_to(id: String) -> void:
 	_flying = true; card.visible = false; _drag = false
 	_flight_id = id; _flight_time = 0.0; _flight_rotation = token.quaternion
 	var a = token.position; var b = _nodes[id]["pos"] + TOKEN_OFF + Vector3(0, _nodes[id]["top"], 0)
-	_flight_curve = System.route_curve(a - TOKEN_OFF, b - TOKEN_OFF)
+	_flight_curve = sys.lane_curve(a - TOKEN_OFF, b - TOKEN_OFF)
 	_wake_samples.clear(); _set_hot(""); _paint_lanes()
 	_uz_t = 1.0; _pan_t = Vector3.ZERO
 	grab_focus()
@@ -1134,7 +1170,7 @@ func _make_wake() -> void:
 	_wake_material.vertex_color_use_as_albedo = true
 	_wake_material.albedo_color = System.look(_C().RUN["fac"])["light"]
 	_wake_node = sys.mi(_wake_mesh, _wake_material)
-	_wake_node.extra_cull_margin = R_OUT * 3.0
+	_wake_node.extra_cull_margin = _outer_radius() * 3.0
 	root3.add_child(_wake_node)
 
 func _update_wake() -> void:

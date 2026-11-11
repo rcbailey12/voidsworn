@@ -1062,6 +1062,9 @@ func _map_key() -> Control:
 	body.add_child(_key_mark("nem", "The Nemesis meets you at this stop."))
 	body.add_child(_over_text("Stops further on are smaller and darker. Point at any stop for its card: what it is, its danger, its reward and the route on from it.", 14))
 	head.call("Stops")
+	for icon_kind in GS.STOP_ICONS:
+		var icon_row = row0(8); icon_row.add_child(GS.stop_key(icon_kind, k)); icon_row.add_child(tl(GS.STOP_ICONS[icon_kind], 14, 26, BONE))
+		body.add_child(icon_row)
 	var LEG = {"battle": "a fight, pays its reward", "elite": "veteran fleet, drops " + term("relic"), "shipyard": "buy, repair, upgrade", "drydock": "free repairs", "field": "every ship patches 20%", "event": "anything can happen", "boss": "ends the sector"}
 	var st: Array = []
 	for kk in C.NODE_INFO.keys(): st.append("[b]" + esc(C.NODE_INFO[kk]["n"]) + "[/b] " + esc(LEG.get(kk, "")))
