@@ -1,7 +1,7 @@
 extends SceneTree
-# Issue 521 captures (adapted from contrib/opus/reviews/movement_capture/capture.gd, issue 505): the production battle
+# Issue 521 captures (adapted from capture.gd beside it, issue 505; PC job files in Downloads\voidsworn_test\opus521): the production battle
 # scene, scenario s1 (warden, penitent, ascendant on a belt, seed 487), camera 170.
-#   --kind long   : each class flies the longest, most diagonal legal move it has. The capture gives every player ship 8
+#   --kind long   : each class flies the legal pure run (no turns) with the most sidesteps, then the longest reach. The capture gives every player ship 8
 #                   movement points first (both before and after, so a several-hex diagonal exists for each class; a
 #                   dreadnought has 2 in the scenario). The rules choose the route; the production move command plays it.
 #   --kind turn | straight : the issue 505 moves (battle._maneuver_score), for the carried timings.
@@ -38,9 +38,12 @@ func _long_score(battle_, id: String, path: Array) -> float:
 			return -1e9
 		n += 1
 		slips += 1 if bool(st.get("slip", false)) else 0
-	if n < 2 or slips == 0:
+	if n < 2 or slips < 2:
 		return -1e9
-	return n * 100.0 + slips * 10.0
+	# the most sidesteps first (the case Ryan saw skating), then the longest straight-line distance
+	var a: Vector3 = battle_.board.hex_world(battle_.VU[id]["q"], battle_.VU[id]["r"])
+	var b: Vector3 = battle_.board.hex_world(path[-1]["q"], path[-1]["r"])
+	return slips * 1000.0 + a.distance_to(b)
 
 
 func run() -> void:
@@ -176,7 +179,8 @@ func _kill() -> Array:
 	while battle.game_t - t0 < 4.4:
 		await process_frame
 		tel.append({"t": battle.game_t - t0, "fx_t": (float(gfx.now) - fx0) if gfx != null else 0.0,
-			"fx_speed": _f(gfx, "_speed"), "slow_left": _f(gfx, "_death_slow_left"), "cut_in": not (battle.cine_saved as Dictionary).is_empty(), "frame": n})
+			"fx_speed": _f(gfx, "_speed"), "slow_left": _f(gfx, "_death_slow_left"), "cut_in": not (battle.cine_saved as Dictionary).is_empty(), "frame": n,
+			"screen": [battle.cam.unproject_position(sv.position + Vector3(0, 2, 0)).x, battle.cam.unproject_position(sv.position + Vector3(0, 2, 0)).y]})
 		if n % 3 == 0:
 			await RenderingServer.frame_post_draw
 			root.get_texture().get_image().save_jpg(folder.path_join("%05d.jpg" % n), 0.9)
