@@ -123,27 +123,27 @@ check('121-9 scars and epithets on the commander met; a lost meeting records its
   const out = T.nemAfterBattle('loss', false, {}); const w = B.revealed[B.revealed.length - 1];
   return scar && B.scars === 0 && B.lessons.length === 1 && B.lessons[0].w === w && B.lessons[0].t === T.NEM_VOICE.corsair.lessons[w] && B.lessons[0].sector === 2
     && out.includes('Lesson: ' + T.NEM_VOICE.corsair.lessons[w]) && canon(A) === A0 && A.lessons.length === 0; });
-check('121-9 a full file teaches the faction strike lesson once; a Crusade commander (no table) records the weakness itself', () => {
+check('121-9 a full file teaches the faction strike lesson once; a Crusade commander records his table lesson for the weakness', () => {
   const R = forced(['hegemony', 'voidsworn', 'ithar'], 'corsair'); const A = R.nems.hegemony; A.revealed = A.weak.slice();
   T.nemAfterBattle('loss', false, {}); T.nemAfterBattle('loss', false, {}); const strike = A.lessons.length === 1 && A.lessons[0].w === 'strike' && A.lessons[0].t === T.NEM_VOICE.hegemony.lessons.strike;
   R.sector = 2; const V = T.nemActive(); T.nemAfterBattle('loss', false, {}); const w = V.lessons[0] && V.lessons[0].w;
-  return strike && V.lessons.length === 1 && V.lessons[0].t === T.NEM_WEAK[w].n + ': ' + T.NEM_WEAK[w].d; });
+  return strike && V.lessons.length === 1 && V.lessons[0].t === T.NEM_VOICE.voidsworn.lessons[w]; });
 // 121-10 and 121-11: NEM_VOICE structure and content rules
 const PRON = /\b(he|she|his|her|him|hers)\b/i, FEM = /\b(she|her|hers)\b/i;
-check('121-10 NEM_VOICE is complete for the five tabled factions; the Crusade has no table and keeps NEM_LINES', () => {
+check('121-10 NEM_VOICE is complete for all six tabled factions, the Crusade included', () => {
   const V = T.NEM_VOICE, bad = [];
-  if (canon(Object.keys(V).sort()) !== canon(['chorus', 'corsair', 'deathless', 'hegemony', 'ithar'])) bad.push('keys');
+  if (canon(Object.keys(V).sort()) !== canon(['chorus', 'corsair', 'deathless', 'hegemony', 'ithar', 'voidsworn'])) bad.push('keys');
   for (const f of Object.keys(V)) {
     for (const p of T.NEM_FAC[f].personas) { const P = V[f][p]; if (!P) { bad.push(f + ' ' + p); continue; }
       for (const k of ['meet', 'win', 'fall']) if (!Array.isArray(P[k]) || !P[k].length) bad.push(f + p + k);
-      if (!Array.isArray(P.flee) || (f !== 'deathless' && !P.flee.length)) bad.push(f + p + 'flee');
+      if (!Array.isArray(P.flee) || (f !== 'deathless' && f !== 'voidsworn' && !P.flee.length)) bad.push(f + p + 'flee');
       for (const k of ['again', 'remember']) if (typeof P[k] !== 'string') bad.push(f + p + k);
       if (f === 'deathless' && (!Array.isArray(P.fall_final) || !P.fall_final.length)) bad.push(f + p + 'fall_final'); }
     for (const a of ['shields', 'pd', 'armor', 'evasion', 'aim', 'special']) if (typeof V[f].adapt[a] !== 'string') bad.push(f + ' adapt ' + a);
     for (const w of Object.keys(T.NEM_WEAK).concat('strike')) if (typeof V[f].lessons[w] !== 'string') bad.push(f + ' lesson ' + w);
   }
-  const R = forced(['voidsworn', 'hegemony', 'ithar'], 'corsair'); const N = T.nemActive();
-  if (T.nemOpenLine(N) !== null || T.nemBattleCfg().line !== null || T.nemAdaptLine(N, 'shields') !== '') bad.push('crusade fallback');
+  const R = forced(['voidsworn', 'hegemony', 'ithar'], 'corsair'); const N = T.nemActive(); const P = V.voidsworn[N.persona];
+  if (!P || !P.meet.includes(T.nemOpenLine(N)) || T.nemBattleCfg().line !== T.nemOpenLine(N) || T.nemAdaptLine(N, 'shields') !== T.nemFull(N) + ': "' + V.voidsworn.adapt.shields + '"') bad.push('crusade voice');
   if (bad.length) throw new Error(bad.join(', ')); return true; });
 check('121-11 content rules: {beat} in again and remember; Chorus no gendered pronouns, no song or choir; Eclipse never flees; lessons pronoun-free; no persona reads', () => {
   const V = T.NEM_VOICE, bad = [];
