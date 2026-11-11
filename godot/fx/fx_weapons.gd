@@ -87,6 +87,9 @@ const FLAME_CAP := 0.70                    # owner ruling: no flame lives longer
 # How far a torpedo hit's light carries (world units; hexes are 17.3 across): about two hexes, so the hulls near it are
 # lit for the length of the flash (audit item 11).
 const TORP_LIGHT_REACH := 36.0
+# The baked flash a _burst draws blooms past its pixel floor by about half again at the battle camera (bench round 1:
+# a 40 px floor drew about 60 px of lit area), so ladder sizes are asked of it at this share.
+const BURST_PX_K := 0.65
 # Issue 281 run 6 (R150): the baked muzzle and impact gas read better about 1.5x bigger than run 5 shipped them.
 const WEAPON_GAS_SCALE := 1.5
 
@@ -440,7 +443,8 @@ static func _burst(fx, p: Vector3, axis: Vector3, T: float, size: float, kind: S
 	var power: float = strength
 	var duration: float = life
 	if kind == "flash" and strength >= fx.FLASH_I:
-		if fx.reduce_flashing or not fx.flash_at(p, T, size, px, life):
+		# issue 461: booked at the size it is drawn, bloom included (the pixel floor over BURST_PX_K), never smaller
+		if fx.reduce_flashing or not fx.flash_at(p, T, size, px / BURST_PX_K, life):
 			power = 1.25
 			duration = maxf(life, 0.4)
 	var seed: float = fx.rng.randf()
@@ -1090,8 +1094,10 @@ static func _shell_hit(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col
 	var tint := Color(0.94, 0.67, 0.33)
 	if lk == "macro":
 		_staged_hit(fx, Tg, p, T, false, gk * (1.14 if w >= 3 else 1.0))
+		# a hot white bite at the plate under the baked picture, so a macro hit reads bigger than a las hit
+		_burst(fx, p + n * 0.3 * k, n, T, 1.6 * k, "flash", 0.12, Color(1.0, 0.86, 0.62), 4.2, px * BURST_PX_K)
 	else:
-		_burst(fx, p + n * 0.3 * k, n, T, 1.6 * k, "flash", 0.12, tint, 4.2, px)
+		_burst(fx, p + n * 0.3 * k, n, T, 1.6 * k, "flash", 0.12, tint, 4.2, px * BURST_PX_K)
 	_note(fx, "flash", fam, Vector3.ZERO, n, 0.12, px)
 	var skip: Vector3 = _outward(n, (dir - n * 2.0 * dir.dot(n)) * 0.8 + n * 0.35, 0.25)
 	var ejecta := Color(0.95, 0.58, 0.24)
@@ -1120,7 +1126,7 @@ static func _energy_hit(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, co
 	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
 	var px := ladder_px(lk, w, tg)
 	var hot: Color = col.lerp(Color.WHITE, 0.55)
-	_burst(fx, p + n * 0.3 * k, n, T, 1.4 * k, "flash", 0.08 if lk == "las" else 0.12, hot, 4.2, px)
+	_burst(fx, p + n * 0.3 * k, n, T, 1.4 * k, "flash", 0.08 if lk == "las" else 0.12, hot, 4.2, px * BURST_PX_K)
 	_note(fx, "flash", "energy", Vector3.ZERO, n, 0.08, px)
 	# the splash: a ring flat on the plate racing outward, faint
 	fx.ring(p + n * 0.08 * k, n, T, 0.35, col, 1.2, 0.3 * k, 2.6 * k * (1.0 + 0.25 * float(w - 1)), 2, 0.0, 0.0, px * 1.2)
@@ -1261,7 +1267,7 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 				nj = Tg.dir_world(hit["n"])
 		last = pj
 		if j % 2 == 0:
-			_burst(fx, pj + nj * 0.3 * k, nj, at, 4.0 * k, "flash", 0.16, col.lerp(Color(1.0, 0.72, 0.38), 0.55), 4.2, px)
+			_burst(fx, pj + nj * 0.3 * k, nj, at, 4.0 * k, "flash", 0.16, col.lerp(Color(1.0, 0.72, 0.38), 0.55), 4.2, px * BURST_PX_K)
 			_note(fx, "flash", "lance", Vector3.ZERO, nj, 0.16, px)
 		fx.spr(pj + nj * 0.2 * k, at, 0.18, col, 3.0, 1.2 * k, 1.6 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.45)
 		_heat_spot(fx, pj + nj * 0.1 * k, at, k, 0.55, "lance", 5.0, 1.5)
@@ -1310,7 +1316,7 @@ static func _gauss_punch(fx, Tg, tg: Dictionary, T: float, dir: Vector3, col: Co
 	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
 	var tint := Color(0.78,0.86,0.94)
 	var px: float = float(LADDER_PX["shell"][clampi(w, 1, 3)]) * float(tg.get("gk", 1.0)) * float(tg.get("tk", 1.0))
-	_burst(fx,p+n*0.35*k,n,T,4.5*k,"flash",0.14,tint,4.5,px)
+	_burst(fx,p+n*0.35*k,n,T,4.5*k,"flash",0.14,tint,4.5,px * BURST_PX_K)
 	_note(fx, "flash", "shell", Vector3.ZERO, n, 0.14, px)
 	_throw_sparks(fx,p,n,n,T,k,Color(0.93,0.66,0.35),12,20.0,0.6,"shell")
 	if Tg != null:
