@@ -99,11 +99,14 @@ Fixed in nebula_motion_spec.md section 4: the flash response is full within 0.46
 - **ST10 documented**: tools/blender/hs/STATION_KIT.md rewritten against the kit as it is after #183, #195 and the
   #199 re-spec: stages, which checks fail and which report, how each run starts.
 
-## 7. AS1 and PL8: the backdrop rock asserts stay
+## 7. AS1 and PL8: report visual tuning (R191, supersedes the original section)
 
-The two asserts in `_backdrop_scale` (world.gd: no backdrop rock over 0.05 rad, and 4.4 times a rock's angle within
-twice the planet's angular radius) stay unchanged until the loom turntable (#236 E-B, R124) picks a profile. They
-check the clamp written just above them, so they cannot fire unless the clamp is edited; a comment now says so.
+Ryan's R191 (4) purpose: background rocks never read bigger than a planet or loom over the fleet. The 0.05 rad
+rock angle and planet diameter 4.4 times a rock's angle are tuning targets judged by eye, not hard limits.
+`world.gd` keeps the existing size tuning and reports the largest measured backdrop rock angle and the corresponding
+planet/rock diameter ratio, beside their targets, once per map build. No planet or no backdrop rocks reports n/a.
+The two visual asserts are removed; all crash, save and correctness guards remain. Judge the loom turntable and
+the captures, rather than treating these numbers as an acceptance gate.
 
 ## 8. The motion capture the board runs on the PC (AS10, AS14, NB8)
 
@@ -122,6 +125,12 @@ nebula_storm and deep_storm (nebula, storm, fields), frontier_belt (belt fields)
 Each view gives `<case>_<run>_cine_m_<view>_sheet.jpg` (7 frames, 5 s apart, left to right, top to bottom),
 `_diff.jpg` (first against last frame, brightened; the log gives the share of pixels that changed) and `_first.jpg`.
 
+Refs #520 PC completion: the job now runs the existing merged checkout, copies assets from `build/godot` without
+deleting anything, and keeps logs in `%TEMP%/env230-520`. Final pictures are named on the image and at most 720 px
+tall. The harness waits for warm-up, suppresses the opening camera glide, disables capture input and verifies a
+stationary camera and a 1920x1080 frame. It stops on placeholder hulls. Captures and the measured verdict are indexed
+in `contrib/opus/reviews/env230_report.md` and `docs/shots/env230/`.
+
 ## 9. The question for Ryan (after the capture; the board asks it with the sheets)
 
 Debris rocks and the backdrop rock fields never turn today; only wreck pieces turn, slowly. Which should ship?
@@ -132,7 +141,7 @@ promised debris "drifting slowly" and rejected a near-static field as frozen, an
 20 to 40 s turns read busy at battle distance. The answer sets `TUMBLE_K` and the rock shader default, and closes
 AS14 and AS10.
 
-## 10. Not checked
+## 10. Original pass limitations (Nov 9; PC completion in env230_report.md)
 
 - No in-game frame was looked at by this pass (cloud thread, R135): every look claim waits on section 8.
 - Why rock tumble was removed from ROCK_SHADER (the history before Nov 8 is not in this clone).

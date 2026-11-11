@@ -56,12 +56,13 @@ Rules:
 - Keep scratch output (logs, temp files) out of this folder, in the system temp folder.
 - Save the screenshots your report links to in $out\shots (create it). The reviewer sees that folder.
 - Finish with a short report: what you changed (files), each check you ran and its result (paste the PASS or FAIL lines),
-  anything you skipped and why. That report becomes the pull request description, so write it for a reviewer.
+  anything you skipped and why. Your report goes at the top of the pull request description; the runner runs the standing
+  checks and parity itself after you stop and adds their real rows under it, so write it for a reviewer.
 
 Before you finish, check how your change reaches the rest of the game (the reviewer checks all five, so do it first):
 - Callers: search the whole repo for every function, constant and save field you changed or added, and check or fix each use.
 - Saves: a player profile or run save written before your change must still load and behave; say how you checked.
-- Twins: rules that exist in both the JS (core.js, campaign_meta.js) and Godot (godot/) must change on both sides; parity proves it.
+- Twins: rules that live in both the JS root files (battle.js, data.js and core.js) and the Godot port must change on both sides. The root files are the only copy (the oracle folders were deleted in PR 381). If you change one of them, re-export both tables (godot/rules/data/tables.json and godot/campaign/data/campaign_tables.json) and run contrib/opus/tools/oracle_copy_test.js last; rules parity and campaign parity prove the two sides match.
 - UI: every screen that shows what you changed (campaign map, intel, panels, HUD) must read the new value the same way.
 - CI: a new test file must be added to contrib/opus/tools/run_all_checks.js, or GitHub never runs it; say which checks GitHub runs.
 Put one line per item in your report with what you found.
@@ -155,8 +156,10 @@ elseif ($mode -eq 'msg') {
   if (-not $last) { $last = '(the agent left no final report; see board log on the PC)' }
   if ($last.Length -gt 6000) { $last = $last.Substring(0, 6000) + "`n(report cut at 6000 characters; full text on Ryan's PC in the run's out\last.md)" }
   $stats = Read-Txt (Join-Path $out 'stats.txt')
+  $checks = Read-Txt (Join-Path $out 'checks.txt')
+  if (-not $checks) { $checks = '(the runner wrote no check output for this run; see the run folder on the PC)' }
   $fence = '```'
-  $msg = "Workhorse $arm arm (issue #$n): $title`n`n$last`n`n## Run stats (runner)`n`n$fence`n$stats`n$fence`n`nCloses #$n`n"
+  $msg = "Workhorse $arm arm (issue #$n): $title`n`n$last`n`n## Checks run by the runner`n`n$fence`n$checks`n$fence`n`n## Run stats (runner)`n`n$fence`n$stats`n$fence`n`nRefs #$n`n"
   [IO.File]::WriteAllText((Join-Path $out 'commit.txt'), $msg, $utf8)
 }
 else { Write-Host 'usage: work_issue.ps1 prep|balance|keycheck|lasttext|stats|msg ...'; exit 2 }

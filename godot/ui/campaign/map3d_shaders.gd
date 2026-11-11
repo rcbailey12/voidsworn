@@ -3,6 +3,37 @@ extends RefCounted
 # Every shader uses only TIME and its own uniforms (no global uniforms), so the map never depends on the battle world's
 # globals. HDR colours above 1 feed the map's glow (bloom).
 
+static func map_sky() -> String:
+	return preload("res://world/world_sky.gd").SKY.replace("uniform float neb_gain = 1.0;", """
+uniform float neb_gain = 1.0;
+uniform vec3 map_sun_dir = vec3(0.0, 0.0, -1.0);
+uniform float map_saturation = 1.0;
+uniform float map_heat = 0.0;
+uniform float map_star_void = 0.0;
+""").replace("if (!AT_CUBEMAP_PASS) {", """
+float near_sun = pow(max(dot(EYEDIR, map_sun_dir), 0.0), 20.0);
+col = mix(vec3(dot(col, vec3(0.2126, 0.7152, 0.0722))), col, map_saturation);
+col *= mix(1.0, near_sun, map_heat);
+col += vec3(0.018, 0.004, 0.001) * near_sun * map_heat;
+if (!AT_CUBEMAP_PASS) {
+""").replace("col += st * star_k", "col += st * (1.0 - map_star_void * near_sun) * star_k")
+
+const INFALL := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+uniform float gain = 0.5;
+uniform vec3 centre = vec3(0.0);
+varying float heat;
+void vertex() {
+	vec3 p = MODEL_MATRIX[3].xyz - centre;
+	float phase = fract(TIME * 0.06 + INSTANCE_CUSTOM.r);
+	// Instance positions are in the ring's local space. Shrink their orbit toward its centre, then recycle.
+	VERTEX += inverse(mat3(MODEL_MATRIX)) * (-p * phase * 0.6);
+	heat = sin(phase * 3.14159265);
+}
+void fragment() { ALBEDO = vec3(0.7, 0.25, 0.06) * gain * heat; }
+"""
+
 const NOISE := """
 float mh3(vec3 p) { p = fract(p * 0.3183099 + vec3(0.11, 0.17, 0.13)); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
 float mn3(vec3 x) {
@@ -295,6 +326,23 @@ void fragment() {
 }
 """
 
+# A route in the Briefing build (FINDINGS R165): one flat, solid line along the ribbon's centre, a fixed width on the screen
+# (px is its half width in pixels), in exactly the colour it is given. No halo, no flow, no chevrons, and never brighter
+# than its colour, so it cannot bloom.
+const LANE_FLAT := """
+shader_type spatial;
+render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+uniform vec4 col : source_color = vec4(1.0);
+uniform float px = 0.6;
+void fragment() {
+	float d = abs(UV.x - 0.5) / max(fwidth(UV.x), 0.00001);
+	float line = 1.0 - smoothstep(px - 0.5, px + 0.5, d);
+	float ends = smoothstep(0.0, 0.02, UV.y) * smoothstep(1.0, 0.98, UV.y);
+	ALBEDO = col.rgb;
+	ALPHA = col.a * line * ends;
+}
+"""
+
 # The ring round a stop, drawn on a flat quad: a crisp circle with tick marks, a faint fill, turning dashes when you can
 # jump there (dash = 1), a soft pulse. r = ring radius as a fraction of the quad's half size.
 const RING := """
@@ -332,6 +380,7 @@ uniform vec3 b : source_color = vec3(0.7, 0.4, 1.0);
 uniform float gain = 0.6;
 uniform float seed = 0.0;
 uniform float storm = 0.0;
+uniform float storm_rate = 3.0;
 uniform float oct = 4.0;
 void vertex() {
 	MODELVIEW_MATRIX = VIEW_MATRIX * mat4(INV_VIEW_MATRIX[0], INV_VIEW_MATRIX[1], INV_VIEW_MATRIX[2], MODEL_MATRIX[3]);
@@ -347,7 +396,7 @@ void fragment() {
 	vec3 c = mix(a, b, smoothstep(0.4, 0.8, n));
 	float fl = 0.0;
 	if (storm > 0.0) {
-		float k = floor(TIME * 3.0 + seed * 7.0);
+		float k = floor(TIME * storm_rate + seed * 7.0);
 		fl = step(0.86, fract(sin(k * 12.9898 + seed) * 43758.5453)) * storm * smoothstep(0.55, 0.75, n);
 	}
 	ALBEDO = c * m * gain * (1.0 + fl * 3.0);
@@ -405,6 +454,7 @@ uniform float r_in = 1.0;
 uniform float r_out = 3.0;
 uniform float spin = 0.3;
 uniform float gain = 1.0;
+uniform float exposure_gain = 1.0;
 uniform float front_cut = 0.0;
 uniform vec3 hole_center = vec3(0.0);
 varying vec3 vL;
@@ -429,6 +479,7 @@ void fragment() {
 	c = mix(c, c * vec3(0.8, 0.95, 1.25), clamp(dop, 0.0, 1.0) * 0.4);
 	if (dens < 0.035) { discard; }
 	ALBEDO = c * dens * gain;
+	ALBEDO *= exposure_gain;
 }
 """
 
@@ -441,6 +492,7 @@ uniform float r_in = 1.0;
 uniform float r_out = 3.0;
 uniform float spin = 0.3;
 uniform float gain = 1.0;
+uniform float exposure_gain = 1.0;
 uniform vec3 hole_center = vec3(0.0);
 varying vec3 vL;
 varying vec3 vW;
@@ -464,6 +516,7 @@ void fragment() {
 	vec3 toFrag = vW - CAMERA_POSITION_WORLD;
 	float front = smoothstep(0.0, 0.08 * length(toHole), length(toHole) - length(toFrag));
 	ALBEDO = c * dens * gain * front * 0.9;
+	ALBEDO *= exposure_gain;
 }
 """
 
@@ -567,6 +620,7 @@ uniform float scale = 3.0;
 uniform float windows = 0.12;
 uniform float metal = 0.6;
 uniform float glow = 0.0;
+uniform float gain = 1.0;   // the brightness of its own light (windows, accent glow, rim): a stop further on is dimmer
 varying vec3 lp;
 varying vec3 ln;
 void vertex() { lp = VERTEX; ln = NORMAL; }
@@ -602,9 +656,32 @@ void fragment() {
 	float wmask = strip * cluster * step(1.0 - windows * 3.0, mh2(c1 + 7.3));
 	// a warm rim from the Hollow Sun's disc, so the silhouette reads at full-map distance
 	float fr = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 3.5);
-	EMISSION = win_col * wmask * 1.6 + accent * glow * (1.0 - seam) * 0.6 + vec3(1.0, 0.62, 0.34) * fr * 0.22;
+	EMISSION = (win_col * wmask * 1.6 + accent * glow * (1.0 - seam) * 0.6 + vec3(1.0, 0.62, 0.34) * fr * 0.22) * gain;
 }
 """
+
+# Neutral map wrecks reuse the plated hull shader, clipped into two solid-ended halves.
+static func dead_hull(split: bool) -> String:
+	if not split: return HULL
+	return HULL.replace("void fragment() {", """
+uniform float cut_side = 1.0;
+uniform vec3 cut_origin = vec3(0.0);
+uniform vec3 cut_normal = vec3(1.0, 0.0, 0.0);
+void fragment() {
+	vec3 world = (INV_VIEW_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	if (dot(world - cut_origin, cut_normal) * cut_side < 0.0) discard;
+""")
+
+# No circular polar ice mask or ocean specular disc on the Briefing landmark.
+# Warped continents and drifting clouds describe one continuous surface.
+static func briefing_world() -> String:
+	return PLANET.replace("col = mix(col, vec3(0.95), smoothstep(0.78, 0.9, abs(p.y)));", "").replace("vec3(0.92)", "vec3(0.32, 0.36, 0.4)").replace("ALBEDO = col;", "ALBEDO = col * 0.55;").replace("SPECULAR = 0.3;", "SPECULAR = 0.0;")
+
+static func hollow_rock() -> String:
+	return ROCK_HI.replace("void fragment() {", """
+void fragment() {
+	if (length(lp.xz) < 0.34 + 0.045 * sin(lp.y * 16.0)) discard;
+""")
 
 # Solar arrays: dark blue cells in a silver grid, a glossy sheen.
 const SOLAR := """
@@ -702,6 +779,7 @@ render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabl
 """ + NOISE + """
 uniform float r_shadow = 0.25;
 uniform float gain = 1.0;
+uniform float exposure_gain = 1.0;
 uniform float spin = 0.3;
 uniform float tilt_dir = 0.0;   // screen angle of the disc's long axis (radians); arcs sit across it
 void vertex() {
@@ -734,6 +812,7 @@ void fragment() {
 	// the photon ring: thin, sharp, hugging the shadow, a little brighter on the approaching side
 	float ring = exp(-pow((th - 1.02) / 0.011, 2.0)) * 3.2 * (1.0 + 0.25 * beam) + exp(-pow((th - 1.06) / 0.05, 2.0)) * 0.35;
 	ALBEDO = (c * arc + vec3(1.0, 0.88, 0.68) * ring) * gain;
+	ALBEDO *= exposure_gain;
 }
 """
 

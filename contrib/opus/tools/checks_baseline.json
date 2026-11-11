@@ -1,57 +1,221 @@
 {
-  "recordedDate": "2026-11-01",
-  "namingHardHits": 0,
-  "knownFindingsFailures": [
-    "ADM-1",
-    "ADM-2",
-    "ADM-5",
-    "ADM-6",
-    "AI-1",
-    "AI-3",
-    "AI-4",
-    "AI-5",
-    "BF-1",
-    "BF-10",
-    "BF-2",
-    "BF-3",
-    "BF-6",
-    "BF-7",
-    "BF-8",
-    "BF-9",
-    "BN-1",
-    "BN-2",
-    "BN-5",
-    "DRIFT-5",
-    "ECO-2",
-    "ECO-3",
-    "ECO-4",
-    "EVT-1",
-    "EVT-3",
-    "KIT-1",
-    "KIT-2",
-    "KIT-3",
-    "KIT-4",
-    "MOD-2",
-    "MOD-4",
-    "NEM-3",
-    "NEM-4",
-    "NEM-5",
-    "NEM-6",
-    "PP-2",
-    "PROG-6",
-    "ROS-4",
-    "ROS-5",
-    "ROS-6",
-    "ROS-9",
-    "RWD-2",
-    "RWD-5",
-    "RWD-7",
-    "SQ-1",
-    "UI-5",
-    "UI-7",
-    "UI-8",
-    "WPN-2",
-    "WPN-5"
-  ],
-  "knownFindingsNote": "Muse's findings suite asserts its own proposals; most failures are opinions or ruled-but-unbuilt items (recommendation section 4: 72 assertions = 11 bugs, 9 probable, 11 ruled, 41 opinions). Known set recorded Nov 1; the check fails only on a new failure."
+ "recordedDate": "2026-11-01",
+ "updatedDate": "2026-11-10",
+ "namingHardHits": 0,
+ "checksCeiling": 14,
+ "driftDifferedCeiling": 12,
+ "knownFindingsFailures": [
+  "EVT-1",
+  "KIT-1",
+  "KIT-3",
+  "MOD-2",
+  "NEM-6",
+  "ROS-9",
+  "UI-5"
+ ],
+ "knownFindingsNote": "Muse's findings suite asserts its own proposals. Sorted by the Board on Nov 10 2026 (issue 355) and trimmed by issue 358: the 26 opinion tests and the 5 stale tests are out of the gate, leaving the listed bug ids and the 3 ruled-not-built ids as the only accepted failures. UI-5 is tagged stale-for-browser in issue 387: its findings test reads the frozen browser screen, and the product's Godot check is godot/scenes/battle/test/wing_cancel_test.gd. A listed id that passes, or no longer runs, fails the row until it is taken off this list. checksCeiling and driftDifferedCeiling may only go down; a count above either fails the row.",
+ "knownFindingsTriage": {
+  "ADM-1": {
+   "tag": "opinion",
+   "reason": "duplicate admiral passives are a design proposal; the trees now set admirals apart"
+  },
+  "ADM-2": {
+   "tag": "stale",
+   "reason": "Vorn's Command became Interdiction strike by ruling R145 (Hegemony has no torpedoes), so its text rightly drops the torpedo reload; the test predates the ruling, which is why it flipped from pass to fail with no signal"
+  },
+  "AI-1": {
+   "tag": "stale",
+   "reason": "the test can no longer build its scenario (the ship fires on the move, after which brace is not legal)"
+  },
+  "AI-3": {
+   "tag": "opinion",
+   "reason": "AI quality proposal: death-cliff weight by ship value"
+  },
+  "AI-4": {
+   "tag": "opinion",
+   "reason": "AI quality proposal: a ship with only a reloading torpedo should kite"
+  },
+  "AI-5": {
+   "tag": "opinion",
+   "reason": "AI quality proposal: wing launch should weigh the launch hex threat"
+  },
+  "BF-1": {
+   "tag": "bug",
+   "reason": "ambush deployment clears most of the rock that defines the ring and lanes shapes",
+   "issue": 386
+  },
+  "BF-10": {
+   "tag": "opinion",
+   "reason": "rout lists archipelago twice, which doubles its weight; may be intended, a data tidy at most"
+  },
+  "BF-2": {
+   "tag": "opinion",
+   "reason": "boss boards delete 45 percent of rock on purpose (code in startBattle); changing it is a design call"
+  },
+  "BF-3": {
+   "tag": "stale",
+   "reason": "browser terrain colours; the Godot game draws terrain as models"
+  },
+  "BF-6": {
+   "tag": "opinion",
+   "reason": "hold never rolls a strip arena: a design proposal"
+  },
+  "BF-7": {
+   "tag": "opinion",
+   "reason": "the lanes barrier runs along the advance: that is what makes lanes; a design proposal"
+  },
+  "BF-8": {
+   "tag": "bug",
+   "reason": "enemy reinforcements spawn on the wrong side of round arenas",
+   "issue": 386
+  },
+  "BF-9": {
+   "tag": "opinion",
+   "reason": "debris against nebula numbers: balance"
+  },
+  "BN-1": {
+   "tag": "opinion",
+   "reason": "three ram protocols share one job: design"
+  },
+  "BN-2": {
+   "tag": "opinion",
+   "reason": "legendary explosion against the epic: balance"
+  },
+  "BN-5": {
+   "tag": "opinion",
+   "reason": "the hunger patron sits in one duo: content proposal"
+  },
+  "DRIFT-5": {
+   "tag": "stale",
+   "reason": "touch wording in the frozen browser screen; the game is PC only (owner ruling, Oct 24)"
+  },
+  "ECO-2": {
+   "tag": "opinion",
+   "reason": "brood carrier price: balance"
+  },
+  "ECO-3": {
+   "tag": "opinion",
+   "reason": "decommission pays by template, not hull condition: economy design"
+  },
+  "ECO-4": {
+   "tag": "bug",
+   "reason": "prize ransom skips the shop price multiplier",
+   "issue": 385
+  },
+  "EVT-1": {
+   "tag": "bug",
+   "reason": "Issue 385 check: the game is already correct. eventFlags stores the chosen option key (campaign_run.js:247, campaign.gd:1840) and both gates name their choices: the saboteur gate has need.flagK ['question','enlist'] (data.js:408) and the Hegemony verb has freeK ['question','enlist'] (data.js:825), with flagIs reading them (campaign_run.js:245, campaign.gd:1837). The R1 fix landed in this shape. The findings test still calls needMet({flag:'defector'}) with no flagK, so it measures the pre-R1 shape and fails. Left listed until the Muse test is updated to read the real gate; no game change made here.",
+   "issue": 385
+  },
+  "KIT-1": {
+   "tag": "ruled-not-built",
+   "reason": "the approved Chorus shipyard repair prohibition is coded nowhere"
+  },
+  "KIT-2": {
+   "tag": "opinion",
+   "reason": "ionpulse does nothing against two shieldless factions: balance and roster design"
+  },
+  "KIT-3": {
+   "tag": "ruled-not-built",
+   "reason": "Eclipse still carries the banned green tomb styling in data.js; colours are settled with the concept redo (issue 276)"
+  },
+  "KIT-4": {
+   "tag": "opinion",
+   "reason": "lance in the name of a battery-kind weapon: naming"
+  },
+  "MOD-2": {
+   "tag": "bug",
+   "reason": "cogitator is a key in both MODULES and RELICS. Issue 385 checked every lookup: keep() validates relics against RELICS and inventory against MODULES, modName/relicName and all reward, shop and save paths pass the right id, so no lookup can return the wrong one. The collision is a naming hazard, not a live bug; the duplicate-perk half of the test is opinion. Left on the list because the test still fails on the duplicate-perk half, which this job does not change.",
+   "issue": 385
+  },
+  "MOD-4": {
+   "tag": "opinion",
+   "reason": "damcon against prow on price: balance"
+  },
+  "NEM-3": {
+   "tag": "bug",
+   "reason": "two adaptations granted in one sector visit; the cap compares a cumulative budget",
+   "issue": 384
+  },
+  "NEM-4": {
+   "tag": "bug",
+   "reason": "nemStrike does nothing for four factions; only raid and tithe are built",
+   "issue": 384
+  },
+  "NEM-5": {
+   "tag": "bug",
+   "reason": "the raid warning and the strike disagree on what can be taken",
+   "issue": 384
+  },
+  "NEM-6": {
+   "tag": "bug",
+   "reason": "a no-retreat Nemesis flagship kill in sectors 1 and 2 never registers and the debrief says he escapes",
+   "issue": 384
+  },
+  "PP-2": {
+   "tag": "bug",
+   "reason": "a pure-hive fleet counts as zero carriers for the point-defence adaptation",
+   "issue": 384
+  },
+  "PROG-6": {
+   "tag": "bug",
+   "reason": "newRun launches an unowned admiral; only the screen checks ownership",
+   "issue": 385
+  },
+  "ROS-4": {
+   "tag": "opinion",
+   "reason": "the Eclipse boss as a rescaled harvester: roster design, goes with the concept redo"
+  },
+  "ROS-5": {
+   "tag": "opinion",
+   "reason": "three variants with no trade: balance"
+  },
+  "ROS-6": {
+   "tag": "opinion",
+   "reason": "warden and picket nearly the same ship: roster design"
+  },
+  "ROS-9": {
+   "tag": "ruled-not-built",
+   "reason": "ruled: spread focus, ionpulse and frenzy beyond one hull"
+  },
+  "RWD-2": {
+   "tag": "bug",
+   "reason": "six core protocols ignore the rarity multiplier and two cap at Rare",
+   "issue": 385
+  },
+  "RWD-5": {
+   "tag": "opinion",
+   "reason": "credit node against declining a boon: balance arithmetic"
+  },
+  "RWD-7": {
+   "tag": "opinion",
+   "reason": "four modules never drop as salvage (they are sold in the shop): content proposal"
+  },
+  "SQ-1": {
+   "tag": "opinion",
+   "reason": "spore wing close to the bomber: roster design"
+  },
+  "UI-5": {
+   "tag": "stale-for-browser",
+   "reason": "Issue 387: the findings test drives the frozen browser screen (ui3d.js), which is not the product and is not changed. The Godot battle screen's own cancel paths are checked by godot/scenes/battle/test/wing_cancel_test.gd (headless, listed in godot/tools/ci/godot_checks.txt): select, the roster pick and Escape already cleared wing_sel, and the Cancel button path (_cancel) did not, so battle.gd now clears wing_sel there too. The browser findings test still fails, so the id stays listed.",
+   "issue": 387
+  },
+  "UI-7": {
+   "tag": "stale",
+   "reason": "the browser help line; the Godot battle screen was rebuilt (PR 314)"
+  },
+  "UI-8": {
+   "tag": "opinion",
+   "reason": "auto-facing ignores shield strength on a tie: a quality proposal for the facing helper (also present in the Godot screen)"
+  },
+  "WPN-2": {
+   "tag": "opinion",
+   "reason": "turbo and gauss share a damage line: weapon design"
+  },
+  "WPN-5": {
+   "tag": "opinion",
+   "reason": "a Rear arc name no weapon uses and an overwritten evMult: dead data, harmless"
+  }
+ },
+ "knownFindingsTriageDate": "2026-11-10"
 }

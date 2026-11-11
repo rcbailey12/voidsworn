@@ -144,9 +144,15 @@ check('run_end carries the run Nemesis record (assignment, escapes, compounding 
   return JSON.stringify(S) === JSON.stringify({ assign: ['chorus', 'ithar', 'hegemony'], escapes: 1, compound: { chorus: 2 } })
     && /tel\('run_end',\{[^\n]*nem:typeof nemTelSummary==='function'\?nemTelSummary\(\):null/.test(src) && /tel\("run_end", \{[^\n]*"nem": nemTelSummary\(\)/.test(gd); });
 // the drawing is separate from the logic (R137: the panel's look will be redone)
-check('the Godot panel draws the return, lessons and earlier hunters from C.nemPanelData() and does not rebuild them', () => {
-  const ui = fs.readFileSync(path.join(ROOT, 'godot/ui/campaign/campaign_ui.gd'), 'utf8'); const i = ui.indexOf('func _nem_panel('), j = ui.indexOf('\nfunc nem_portrait(');
-  const body = ui.slice(i, j); return i > 0 && body.includes('C.nemPanelData()') && !/nemAssign|\.lessons\b|\["lessons"\]\[/.test(body.replace(/D\["lessons"\]|E\["lessons"\]|E\.get\("lessons"\)|D\.get\("lessons"\)/g, '')); });
+// issue #344 (the Briefing layout): the long Nemesis block is the Dossier; campaign_view.gd nem_dossier builds its lines and
+// asks C.nemPanelData(N) with the commander it read (C.nemRead), so drawing never resolves one. The screen only draws lines.
+check('the Godot Dossier draws the return, lessons and earlier hunters from C.nemPanelData and does not rebuild them', () => {
+  const view = fs.readFileSync(path.join(ROOT, 'godot/campaign/campaign_view.gd'), 'utf8'), ui = fs.readFileSync(path.join(ROOT, 'godot/ui/campaign/campaign_ui.gd'), 'utf8');
+  const i = view.indexOf('static func nem_dossier('), j = view.indexOf('\n# -', view.indexOf('static func nem_panel('));
+  const body = view.slice(i, j); const k = ui.indexOf('func _dossier('), l = ui.indexOf('\nfunc _bb_safe(');
+  const draw = ui.slice(k, l);
+  return i > 0 && j > i && k > 0 && l > k && body.includes('C.nemPanelData(N)') && draw.includes('View.nem_dossier(C)')
+    && !/nemAssign|\.lessons\b|\["lessons"\]\[/.test((body + draw).replace(/D\["lessons"\]|E\["lessons"\]|E\.get\("lessons"\)|D\.get\("lessons"\)/g, '')); });
 
 (async () => {
   for (const [name, fn] of tests) { try { const r = await fn(); if (r === true) pass++; else { fail++; console.log('FAIL  ' + name + ': returned ' + r); } } catch (e) { fail++; console.log('FAIL  ' + name + ': ' + (e && e.stack || e)); } }

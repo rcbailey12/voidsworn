@@ -26,6 +26,37 @@ const FLASH_SCREEN := 0.06   # ... and only when it covers at least this share o
 const FLASH_LIGHT := 8.0     # light peak from which a decaying event light counts (it lights a big patch of hull)
 const FLASH_KINDS := [0, 2, 12, 13, 24]   # includes the distance-readable death core
 
+# --- the flash counter's assumptions, all in one place (issue 504; W3C Understanding SC 2.3.1)
+# W3C counts a general flash only when "the combined area of flashes occurring concurrently" passes ".006 steradians
+# within any 10 degree visual field on the screen (25% of any 10 degree visual field on the screen) at typical viewing
+# distance". That is a viewing angle, so it depends on the screen and how far away the player sits, not on pixels.
+# The defaults are the cautious end of a desk set-up: a 32 inch 16:9 screen seen from 24 inches. A bigger screen or a
+# closer seat makes the 10 degree box smaller on screen, so set these to the real set-up (setup opts "screen_in",
+# "view_in") only when it is known; smaller numbers here are never safer than the truth.
+var flash_screen_in := 32.0         # screen diagonal, inches
+var flash_aspect := 16.0 / 9.0      # screen width over height
+var flash_view_in := 24.0           # eye to screen, inches
+const FLASH_FIELD_DEG := 10.0       # W3C's visual field
+# The limit itself (flash_limit_px2): the smaller of two readings of the guideline, so the stricter one always holds:
+#  - its own number, ".006 steradians", turned into screen pixels through the screen size and distance above (one
+#    pixel at the screen centre spans pixel pitch / distance radians, so 0.006 sr is 0.006 / (that)^2 pixels);
+#  - a quarter of its own rectangle estimate of the field ("a 341 x 256 pixel rectangle" at 1024 x 768, so 10 degrees
+#    wide and 256/341 of that tall), at the same scale.
+# Default set-up at 1080 lines: 16,376 px2 by the steradians, 15,606 px2 by the rectangle; the rectangle's is used.
+# (A quarter of a 10 by 10 degree square, 20,880 px2, would be 27 to 34 percent too generous: never use it.)
+const FLASH_SR := 0.006             # W3C: the combined flashing area allowed in any 10 degree field
+const FLASH_W3C_BOX := Vector2(341.0, 256.0)   # W3C's rectangle estimate of a 10 degree field at 1024 x 768
+const FLASH_W3C_SHARE := 0.25       # W3C: "25% of any 10 degree visual field"
+# Where flashes are gathered: a 10 by 10 degree square tested on a lattice with steps of a quarter of its side, each
+# tested square one step wider than that (so any real field, wherever it sits, lies inside a tested one). A bigger
+# window only gathers more flash area against the same limit, which is the safe direction.
+const FLASH_GRID_DIV := 4
+var flash_cands: Array = []         # bright sprites drawn recently: [T, life, x, y, d] (viewport pixels)
+var flash_area_log: Array = []      # tests: every bright-flash request [T, x, y, d, lit_max, counted 0/1, drawn bright 0/1, life]
+# (x, y, d are -1 when unknown, lit_max -1 when not measured). The staging of death beats is tested on these requests;
+# flash_log stays the record of counted flashes, the safety events.
+var flash_area_logging := false
+
 # --- settings (API.md 1, 8)
 var quality = "max"
 var reduce_flashing = false:
@@ -47,6 +78,17 @@ var cap_k := 1.0
 # Issue 232 weapon timing sheet (E31): the effect-loop pins. These are the shipped values; the sheet bench sets a second
 # set (one alternate) without touching the game's defaults.
 var timing := {"ripple": 0.08, "shell_speed": 160.0, "lance": 0.7, "charge": 0.25, "shield": 0.6}
+# Issue 281 vent gas: the shipped look is Cone B, a tight forward cone of gas and sparks along the barrel. "today" draws
+# the pre-Cone-B baked gas cell and is only set by the review capture to shoot the before stills; the game leaves it "".
+var vent_look := ""
+# Optional comparison folder (VS_FX_ATLAS). The production macro, torpedo and death cores load the picked B atlases
+# directly from fx/atlases/rebake; they require no environment switch.
+var fx_atlas := ""
+# Issue 281 stray-puff guard: when a test sets check_radius, every weapon/vent/thruster gas spawn records its world
+# position and its source ship (fx_weapons.gd and fx_ship.gd call record_spawn), and stray_spawns() reports any that
+# landed more than a small share of that ship's hull length from its real plating (see record_spawn).
+var check_radius := false
+var effect_spawns: Array = []
 var well = Vector3.INF     # the dead star, when the board has one (world.gd sets it): tidal deaths fall toward it
 var dstate = {}
 var manual = false
@@ -88,6 +130,14 @@ var _punches: Array = []    # [t, amount] (F3 zoom punch)
 var _kick = 0.0             # the zoom punch now (share of the field of view taken off)
 var _fov_base = -1.0        # the camera's own field of view, under the punch
 var _fov_set = -1.0         # what the punch last wrote
+# Issue 462, a Board proposal for Ryan's eye (deaths_and_hits.md, capital row): straight after a capital's core flash the
+# whole scene dims a little for a fifth of a second. Off by default (setup option "scene_dim" or VS_DEATH_DIM=1) and
+# never under reduce flashing.
+var scene_dim := false
+const DIM_LIFE := 0.20
+const DIM_DEPTH := 0.35
+var _dim_veil: MeshInstance3D = null
+var _dim_t0 := -1.0
 
 static var _globals_added := false
 static var _live_ids: Array = []    # instance ids of live fx nodes (ids, not references, so nothing is kept alive)
@@ -115,6 +165,7 @@ func _exit_tree() -> void:
 # tasks are waited for first: an unawaited WorkerThreadPool task keeps its job (hull materials and textures) alive
 # until the process ends, after the rendering server is gone (G2: "RenderingServer is null" at exit, a crash risk).
 func release() -> void:
+	_end_dim()
 	for id in ships:
 		var s = ships[id]
 		s.wait_damage()
@@ -162,7 +213,14 @@ func setup(opts := {}) -> void:
 	unit = float(opts.get("unit", 1.0))
 	starboard_z = 1 if int(opts.get("starboard_z", 1)) >= 0 else -1
 	reduce_flashing = bool(opts.get("reduce_flashing", false))
+	flash_screen_in = float(opts.get("screen_in", flash_screen_in))
+	flash_view_in = float(opts.get("view_in", flash_view_in))
 	min_px = float(opts.get("min_px", 1.0))
+	# Issue 281: the review capture can ask for the pre-Cone-B look to shoot the before stills; the game's default is the
+	# shipped Cone B (see fx_weapons._vent).
+	vent_look = String(opts.get("vent_look", OS.get_environment("VS_VENT_LOOK")))
+	fx_atlas = String(opts.get("fx_atlas", OS.get_environment("VS_FX_ATLAS")))
+	scene_dim = bool(opts.get("scene_dim", OS.get_environment("VS_DEATH_DIM") == "1"))
 	var rich = quality != "low"
 	var soft = "#define SOFT\n" if rich else ""
 	var big = quality == "max"
@@ -238,6 +296,7 @@ func step(delta: float) -> void:
 	_run_later()
 	t0 = pend("later", t0)
 	_update_feel(delta)
+	_update_dim()
 	for id in ships:
 		(ships[id] as SHIP).update(self, dt)
 	t0 = pend("ships", t0)
@@ -332,10 +391,17 @@ func spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1:
 		drag := 0.0, spin := 0.0, acc := 0.0, px := 0.0) -> void:
 	# every bright, short, flash-like sprite goes through the flash budget here, whoever calls it (muzzle cores, beam
 	# contact, secondary pops, death flames): refused or in reduce-flashing mode it becomes a soft lift with no peak
-	if i >= FLASH_I and life <= 0.6 and FLASH_KINDS.has(kind) and (reduce_flashing or (_flash_sized(p, maxf(s0, s1), px) and not flash_ok(t))):
+	# Issue 504: the counter adds this sprite's lit area to the bright ones around it (flash_at).
+	if i >= FLASH_I and life <= 0.6 and FLASH_KINDS.has(kind) and (reduce_flashing or not flash_at(p, t, maxf(s0, s1), px, life)):
 		kind = 18
 		i = minf(i, 3.0) * 0.4
 		life = maxf(life * 3.0, 0.4)
+	_emit_spr(p, t, life, col, i, s0, s1, kind, vel, drag, spin, acc, px)
+
+
+# The sprite itself, after the flash decision (pop books its own, so it must not be booked twice).
+func _emit_spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1: float, kind: int, vel := Vector3.ZERO,
+		drag := 0.0, spin := 0.0, acc := 0.0, px := 0.0) -> void:
 	var pool: POOLS.Pool = pools["smk"] if SMOKY.has(kind) else pools["spr"]
 	pool.emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life), Vector4(col.r, col.g, col.b, i),
 		Vector4(s0 * unit, s1 * unit, kind, minf(rng.randf(), 0.999) + floorf(clampf(px, 0.0, 4000.0))), Vector4(0.0, acc, drag, spin)))
@@ -399,9 +465,26 @@ func rcone(axis: Vector3, spread: float) -> Vector3:
 # this one included. Volleys book impacts ahead of time, so a flash already booked later than T must also keep its own
 # trailing second within the cap once T is in it; that is the second loop (without it a late booking could break the
 # cap for a flash booked earlier).
-func flash_ok(T: float) -> bool:
+#
+# Issue 504: flash_ok(T) still counts unconditionally (a flash whose area is unknown always counts: the vent ignition,
+# the death core, a big light). Given where it is (p, its world size, its pixel floor, its life) a counted flash is also
+# remembered for the area sums of flash_at, so a small flash beside it adds up with it.
+func flash_ok(T: float, p := Vector3.INF, size := 0.0, px := 0.0, life := FLASH_WINDOW) -> bool:
 	if reduce_flashing:
 		return false
+	var ok := _flash_count(T)
+	var c := PackedFloat64Array([-1.0, -1.0, -1.0])
+	if p != Vector3.INF:
+		var cd := _flash_disc(p, size, px)
+		if not cd.is_empty():
+			c = cd
+			if ok:
+				_flash_remember(T, life, c)
+	_flash_note(T, c, -1.0, 1 if ok else 0, 1 if ok else 0, life)
+	return ok
+
+
+func _flash_count(T: float) -> bool:
 	var near := PackedFloat64Array()
 	for f in _flashes:
 		if absf(f - T) < FLASH_WINDOW:
@@ -441,14 +524,167 @@ func flash_ok(T: float) -> bool:
 	return true
 
 
+# Issue 504: the flash counter by area, as W3C counts it. Ask to draw one bright, short flash (world size `size`, pixel
+# floor `px` at 1080 lines, bright for `life` seconds) at p at time T. True: draw it bright. False: draw the calm
+# version (same size and colour, slower rise, lower peak; its light rises softly too, see light()).
+# How it decides:
+#  1. Its lit area is a disc as wide as the sprite is drawn (the pixel floor counts), rounded up to whole pixels. The
+#     baked flashes' sizes are their widest lit extent with bloom, so the disc is larger than the real fireball.
+#  2. A flash within FLASH_WINDOW of a counted flash is part of that flash (free), as before.
+#  3. Otherwise every bright flash whose bright time overlaps this one's is added up inside each 10 degree box that
+#     could hold this one. Each flash adds the smaller of its disc area and its bounding square's overlap with the box,
+#     which is never less than the real overlap. If any box holds more than flash_limit_px2 (the guideline's 0.006 sr), this is a
+#     general flash: it is counted against FLASH_CAP (three in any rolling second) like any other, or refused.
+#  4. Small flashes far apart never add up; small flashes close together do.
+# Reduce flashing: false at once, as on main (nothing is booked or remembered).
+func flash_at(p: Vector3, T: float, size: float, px := 0.0, life := FLASH_WINDOW) -> bool:
+	if reduce_flashing:
+		return false
+	if camera == null or not is_instance_valid(camera):
+		return flash_ok(T)   # no camera: every bright flash counts, as on main
+	var t0 := Time.get_ticks_usec()
+	var c := _flash_disc(p, size, px)
+	if c.is_empty():
+		pend("flash", t0)
+		return true   # behind the camera: not on screen
+	for f in _flashes:
+		if absf(f - T) < FLASH_WINDOW:
+			_flash_remember(T, life, c)
+			_flash_note(T, c, -1.0, 0, 1, life)
+			pend("flash", t0)
+			return true
+	var lit := _flash_lit_max(T, life, c)
+	var bright := true
+	var counted := 0
+	if lit > flash_limit_px2():
+		bright = _flash_count(T)
+		counted = 1 if bright else 0
+	if bright:
+		_flash_remember(T, life, c)
+	_flash_note(T, c, lit, counted, 1 if bright else 0, life)
+	pend("flash", t0)
+	return bright
+
+
+# The side of a 10 degree box in viewport pixels (rounded down, so the box and the limit are never overstated).
+# Assumes the game fills the screen's height; in a smaller window the real box is bigger, so this stays cautious.
+func flash_box_px() -> float:
+	var vh := _flash_vh()
+	var screen_h := flash_screen_in / sqrt(1.0 + flash_aspect * flash_aspect)
+	var side_in := 2.0 * flash_view_in * tan(deg_to_rad(FLASH_FIELD_DEG) * 0.5)
+	return floorf(vh * side_in / screen_h)
+
+
+# The most flash area allowed at once in any 10 degree field, in viewport pixels (see FLASH_SR above): the smaller of the
+# guideline's steradian figure and a quarter of its rectangle estimate. Both are rounded down.
+func flash_limit_px2() -> float:
+	var vh := _flash_vh()
+	var screen_h := flash_screen_in / sqrt(1.0 + flash_aspect * flash_aspect)
+	var rad_per_px := (screen_h / vh) / flash_view_in
+	var by_sr := floorf(FLASH_SR / (rad_per_px * rad_per_px))
+	var w := flash_box_px()
+	var h := floorf(w * FLASH_W3C_BOX.y / FLASH_W3C_BOX.x)
+	var by_box := floorf(FLASH_W3C_SHARE * w * h)
+	return minf(by_sr, by_box)
+
+
+func _flash_vh() -> float:
+	if camera != null and is_instance_valid(camera) and camera.is_inside_tree():
+		return maxf(camera.get_viewport().get_visible_rect().size.y, 1.0)
+	return 1080.0
+
+
+# Where a flash sits on screen and how wide it is drawn: [x, y, d] in viewport pixels, or empty when behind the camera.
+func _flash_disc(p: Vector3, size: float, px: float) -> PackedFloat64Array:
+	if camera == null or not is_instance_valid(camera) or not camera.is_inside_tree() or camera.is_position_behind(p):
+		return PackedFloat64Array()
+	var d := maxf(camera.global_position.distance_to(p), 0.01)
+	var h := 2.0 * d * tan(deg_to_rad(camera.fov) * 0.5)
+	var shown := maxf(size * unit / h, maxf(px, 14.0) * min_px / 1080.0)   # the same drawn size _flash_sized uses
+	var sp := camera.unproject_position(p)
+	return PackedFloat64Array([sp.x, sp.y, ceilf(shown * _flash_vh())])
+
+
+func _flash_remember(T: float, life: float, c: PackedFloat64Array) -> void:
+	flash_cands.append(PackedFloat64Array([T, maxf(life, FLASH_WINDOW), c[0], c[1], c[2]]))
+	if flash_cands.size() > 48:
+		var keep: Array = []
+		for e in flash_cands:
+			if float(e[0]) + float(e[1]) > now - 1.0:
+				keep.append(e)
+		flash_cands = keep
+
+
+func _flash_note(T: float, c: PackedFloat64Array, lit: float, counted: int, bright: int, life := FLASH_WINDOW) -> void:
+	if flash_area_logging:
+		flash_area_log.append([T, c[0], c[1], c[2], lit, counted, bright, maxf(life, FLASH_WINDOW)])
+
+
+# The most lit area any 10 degree box around c can hold from the bright flashes that overlap c in time (c included).
+func _flash_lit_max(T: float, life: float, c: PackedFloat64Array) -> float:
+	var l := maxf(life, FLASH_WINDOW)
+	var S := flash_box_px()
+	var g := maxf(floorf(S / FLASH_GRID_DIV), 1.0)
+	var B := S + g
+	var r := float(c[2]) * 0.5
+	# the bright flashes that overlap c in time and could share a tested box with it, as rectangles (c included)
+	var rx0 := PackedFloat64Array([c[0] - r])
+	var rx1 := PackedFloat64Array([c[0] + r])
+	var ry0 := PackedFloat64Array([c[1] - r])
+	var ry1 := PackedFloat64Array([c[1] + r])
+	var cap := PackedFloat64Array([PI * 0.25 * c[2] * c[2]])
+	var reach := r + B
+	for e in flash_cands:
+		if float(e[0]) < T + l and T < float(e[0]) + float(e[1]):
+			var er := float(e[4]) * 0.5
+			if absf(float(e[2]) - c[0]) < reach + er and absf(float(e[3]) - c[1]) < reach + er:
+				rx0.append(float(e[2]) - er)
+				rx1.append(float(e[2]) + er)
+				ry0.append(float(e[3]) - er)
+				ry1.append(float(e[3]) + er)
+				cap.append(PI * 0.25 * float(e[4]) * float(e[4]))
+	var n := cap.size()
+	# cheap case: all of them together are under the limit, so no box can be over it (still an upper bound)
+	var total := 0.0
+	for j in n:
+		total += cap[j]
+	if total <= flash_limit_px2():
+		return total
+	var best := 0.0
+	var kx0 := floori((c[0] - r - B) / g)
+	var kx1 := floori((c[0] + r) / g)
+	var ky0 := floori((c[1] - r - B) / g)
+	var ky1 := floori((c[1] + r) / g)
+	# per column of boxes, each flash's x overlap once; then each row adds its y overlap
+	var wx := PackedFloat64Array()
+	wx.resize(n)
+	for kx in range(kx0, kx1 + 1):
+		var ox := kx * g
+		for j in n:
+			wx[j] = minf(ox + B, rx1[j]) - maxf(ox, rx0[j])
+		for ky in range(ky0, ky1 + 1):
+			var oy := ky * g
+			var sum := 0.0
+			for j in n:
+				if wx[j] > 0.0:
+					var wy := minf(oy + B, ry1[j]) - maxf(oy, ry0[j])
+					if wy > 0.0:
+						sum += minf(wx[j] * wy, cap[j])
+			if sum > best:
+				best = sum
+	return best
+
+
 # A bright pop (impact flash, explosion core) through the budget: the full flash, or a ring and a gentle lift.
 # F3 round 2: a pop smaller on screen than the WCAG area threshold (6% of the screen height, `_flash_sized`, the same
 # rule spr uses) is not a counted flash and never waits on the budget; before, every pop booked a flash, so in a busy
 # fight most hits (and a dying ship's cook-off) used up the 3 a second and drew as faint lifts, and the kill's own blast
 # was refused. `px` is the pop's own pixel floor (see spr).
 func pop(p: Vector3, T: float, col: Color, size: float, i: float, n := Vector3.UP, life := 0.14, px := 0.0) -> void:
-	if not reduce_flashing and (not _flash_sized(p, size, px) or flash_ok(T)):
-		spr(p, T, life, col, i, size * 0.6, size, 0, Vector3.ZERO, 0.0, 0.0, 0.0, px)
+	# Issue 504: one booking by area (flash_at), whatever its brightness (as on main: every pop is a candidate); the
+	# bright sprite is then drawn without a second booking.
+	if not reduce_flashing and flash_at(p, T, size, px, life):
+		_emit_spr(p, T, life, col, i, size * 0.6, size, 0, Vector3.ZERO, 0.0, 0.0, 0.0, px)
 	else:
 		spr(p, T, maxf(life * 3.0, 0.4), col, minf(i, 3.0) * 0.4, size * 0.5, size * 1.2, 18, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.8)
 		ring(p, n, T, 0.5, col, 1.2, size * 0.3, size * 1.4, 2, 0.0, 0.0, px)
@@ -460,13 +696,23 @@ func pop(p: Vector3, T: float, col: Color, size: float, i: float, n := Vector3.U
 # A big decaying light is a flash on the hulls it lights: it goes through the budget like a sprite (merging with the
 # pop it comes with). A refused flash draws no light at all: a light that goes with a flash the budget turned down
 # (within FLASH_WINDOW of it) is dropped, whatever its size. In reduce-flashing mode decay lights rise lower and slower.
+#
+# Issue 504: a light that goes with a refused flash is no longer dropped. It keeps its colour and place and rises softly
+# (shape 3: a 0.1 s or longer rise, then the same fall) at most just under the peak that counts, so the hulls around a
+# refused flash are still lit without a sharp step. Reduce flashing is untouched (its own path below).
 func light(p: Vector3, t: float, life: float, peak: float, col: Color, shape := 0) -> void:
 	if shape == 0 and not reduce_flashing:
+		var refused := false
 		for f in _refused:
 			if absf(f - t) < FLASH_WINDOW:
-				return
-		if peak >= FLASH_LIGHT and not flash_ok(t):
-			return
+				refused = true
+				break
+		if not refused and peak >= FLASH_LIGHT and not flash_ok(t):
+			refused = true
+		if refused:
+			shape = 3
+			peak = minf(peak, FLASH_LIGHT * 0.9)
+			life = maxf(life * 1.8, 0.4)
 	if reduce_flashing and shape == 0:
 		peak *= 0.45
 		life *= 1.8
@@ -509,6 +755,7 @@ func _update_lights() -> void:
 			0: I = pow(1.0 - u, 2.0)
 			1: I = smoothstep(0.0, 0.08, u) * (1.0 - smoothstep(0.85, 1.0, u)) * (1.0 if reduce_flashing else 0.88 + 0.12 * sin(now * 50.0))
 			2: I = u * u
+			3: I = smoothstep(0.0, 0.25, u) if u < 0.25 else pow(1.0 - (u - 0.25) / 0.75, 2.0)   # issue 504: soft rise
 		ev.append([e[0], I * float(e[3]), e[4]])
 	_lev = keep
 	var ks: Array = []
@@ -652,6 +899,59 @@ func _update_punch() -> void:
 		_fov_set = -1.0
 
 
+# Issue 462: the scene dim after a capital's core flash (see scene_dim). A black veil a hair in front of the camera fades
+# in over a quarter of the dip and out over the rest, so the whole frame (sky, ships, effects) loses a little light
+# whatever environment the scene uses. A second dip during one is ignored.
+func dim_scene(t: float) -> void:
+	if not scene_dim or reduce_flashing or _dim_t0 >= 0.0:
+		return
+	if camera == null or not is_instance_valid(camera):
+		return
+	if _dim_veil == null or not is_instance_valid(_dim_veil):
+		_dim_veil = MeshInstance3D.new()
+		_dim_veil.name = "fx_scene_dim"
+		var q := QuadMesh.new()
+		var d: float = maxf(camera.near * 2.0, 0.06)
+		var h: float = 2.0 * d * tan(deg_to_rad(camera.fov) * 0.5) * 1.3
+		q.size = Vector2(h * 3.0, h)
+		_dim_veil.mesh = q
+		var m := StandardMaterial3D.new()
+		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		m.no_depth_test = true
+		m.render_priority = 127
+		m.albedo_color = Color(0, 0, 0, 0)
+		_dim_veil.material_override = m
+		_dim_veil.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		camera.add_child(_dim_veil)
+		_dim_veil.position = Vector3(0, 0, -d)
+	_dim_veil.visible = true
+	_dim_t0 = t
+
+
+func _update_dim() -> void:
+	if _dim_t0 < 0.0:
+		return
+	if _dim_veil == null or not is_instance_valid(_dim_veil) or reduce_flashing:
+		_end_dim()
+		return
+	var u: float = (now - _dim_t0) / DIM_LIFE
+	if u >= 1.0:
+		_end_dim()
+		return
+	if u < 0.0:
+		return
+	var k: float = u / 0.25 if u < 0.25 else 1.0 - (u - 0.25) / 0.75
+	(_dim_veil.material_override as StandardMaterial3D).albedo_color = Color(0, 0, 0, DIM_DEPTH * clampf(k, 0.0, 1.0))
+
+
+func _end_dim() -> void:
+	if _dim_veil != null and is_instance_valid(_dim_veil):
+		(_dim_veil.material_override as StandardMaterial3D).albedo_color = Color(0, 0, 0, 0)
+		_dim_veil.visible = false
+	_dim_t0 = -1.0
+
+
 # ---------------------------------------------------------------- ships (API.md 2)
 
 func add_ship(id: String, root: Node3D, info := {}) -> void:
@@ -659,7 +959,8 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 		remove_ship(id)
 	var s = SHIP.new()
 	s.setup(self, id, root, info)
-	s.set_meta("death_cut_count", 3 if bool(info.get("flagship", false)) or String(info.get("cls", "")) in ["Battleship", "Dreadnought", "Super-dreadnought", "Battle-barge", "Ark", "Tomb-ark"] else 2)
+	# Issue 462 (deaths_and_hits.md): a cruiser parts into two halves, a capital into three pieces.
+	s.set_meta("death_cut_count", 2 if s.death_tier == "capital" else 1)
 	ships[id] = s
 	DEATH.add_collider(self, s)
 	# cut the hull for its death on a worker thread, staggered so a battle start does not stall
@@ -703,6 +1004,36 @@ func faction_info(f: String) -> Dictionary:
 
 func ship(id: String) -> SHIP:
 	return ships.get(id, null)
+
+
+# Issue 281 stray-puff guard (fx/test/fx_smoke.gd and vent_look_probe.gd): a weapon, vent or thruster gas effect is
+# born on its source ship, so a spawn farther than a small share of that ship's hull length from its real plating is a
+# stray puff and fails the test. The distance is measured to the source hull's nearest surface sample (hull.sp, moved to
+# world space) at spawn time, so a source ship that later dies or leaves does not turn a valid earlier spawn stray.
+# `wide` is the wider limit for real muzzle and impact gas points, which sit off the barrel or along the hit normal past
+# the plating; the thruster gas (_rcs) uses the tight limit.
+# `frame` (issue 462): for a picture born on a drifting wreck piece, the transform from the ship's own space to that
+# piece's place in the world now; the hull samples are moved with the piece.
+func record_spawn(src: SHIP, p: Vector3, wide := false, frame = null) -> void:
+	if not check_radius or src == null:
+		return
+	var h: HULL = src.hull
+	var limit: float = (0.30 if wide else 0.08) * float(h.L)
+	var nearest := INF
+	for i in h.sp.size():
+		var wp: Vector3 = (frame as Transform3D) * h.sp[i] if frame is Transform3D else src.to_world(h.sp[i])
+		var d: float = p.distance_to(wp)
+		if d < nearest:
+			nearest = d
+	effect_spawns.append([p, nearest, limit])
+
+
+func stray_spawns() -> Array:
+	var out: Array = []
+	for e in effect_spawns:
+		if float(e[1]) > float(e[2]):
+			out.append(e[0])
+	return out
 
 
 # ---------------------------------------------------------------- weapons, shields, deaths (API.md 3 to 6)
@@ -884,6 +1215,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			baked.set_shader_parameter("intensity", 0.01)
 			mats.append(baked)
 	mats.append(DEATH.power_material(HULL.damage_material(StandardMaterial3D.new(), Transform3D.IDENTITY, {}, 1.0)))
+	mats.append(mat(SH.TEAR, 1))   # issue 462: the dying hull's tear overlay
 	# issue 220: the torpedo and rocket bodies (drive glow, star torpedo body, exhaust plume) and the weapon bursts' atlas
 	# shader: their first launch or hit compiled them mid-fight (a 53 ms frame with 3 surface pipelines at the gate scene)
 	mats.append_array([mat(WEAP.DRIVE, 1), mat(WEAP.STAR_BODY)])
@@ -892,6 +1224,19 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	wburst.set_shader_parameter("born", now)
 	wburst.set_shader_parameter("intensity", 0.01)
 	mats.append(wburst)
+	# issue 281: the baked muzzle and impact gas atlases, warmed so the first macro muzzle or hull hit never compiles
+	# its pipeline mid-fight.
+	for wkind in ["muzzle", "impact"]:
+		var wgas: ShaderMaterial = WEAP._weapon_gas_material(self, wkind)
+		wgas.set_shader_parameter("born", now)
+		wgas.set_shader_parameter("intensity", 0.01)
+		mats.append(wgas)
+	for rel in ["weapons/impact/impact_", "weapons/impact/flash_", "weapons/macro/impact_", "weapons/macro/flash_", "death/small/flash_", "death/cruiser/flash_", "death/capital/flash_"]:
+		for variant in 3:
+			var production := DEATH.route_material(self, SH.DEATH_FLIPBOOK, rel, true, variant)
+			production.set_shader_parameter("born", now)
+			production.set_shader_parameter("intensity", 0.01)
+			mats.append(production)
 	DEATH.tear_particles(self, at, Vector3.UP, 0.1, Vector3.ZERO)
 	for i in mats.size():
 		# Pin generated hull shaders until release, even after the temporary warmup meshes go away.

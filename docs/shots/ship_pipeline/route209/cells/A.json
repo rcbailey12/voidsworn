@@ -1,0 +1,22 @@
+{
+ "cell": "A",
+ "route": "hand build on AI massing underlay",
+ "build_seconds": 9.1,
+ "audit": {
+  "problems": [],
+  "parts": 159,
+  "crossing_break_lines": []
+ },
+ "break_fit": {
+  "T1_rays_missed": 0,
+  "T1_jag": 0.0154,
+  "T2_rays_missed": 0,
+  "T2_jag": 0.0148
+ },
+ "hand_parts": 162,
+ "detail_parts": 132,
+ "triangles": 95570,
+ "objects": 320,
+ "surfaces": 6,
+ "draw_calls_merged": 6
+}

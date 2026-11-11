@@ -24,6 +24,7 @@ var squadron = false
 var shielded = true
 var flagship = false
 var death_big = false     # R73: class, not draw scale, decides kill slow motion
+var death_tier = ""       # issue 462: "cruiser" or "capital" (deaths_and_hits.md rows), "" for small hulls and craft
 var hull: HULL
 var dead = false
 var gone = false
@@ -113,6 +114,9 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	shielded = bool(info.get("shielded", fac["shielded"])) and not squadron
 	flagship = bool(info.get("flagship", false))
 	death_big = flagship or String(info.get("cls", "")) in ["Cruiser", "Carrier", "Battleship", "Dreadnought", "Super-dreadnought", "Battle-barge", "Bio-titan", "Ark", "Tomb-ark"]
+	# Issue 462: the playbook's capital row covers carriers, barges and the capital classes; a flagship of a smaller
+	# class dies as a cruiser.
+	death_tier = ("capital" if String(info.get("cls", "")) in ["Carrier", "Battleship", "Dreadnought", "Super-dreadnought", "Battle-barge", "Bio-titan", "Ark", "Tomb-ark"] else "cruiser") if death_big else ""
 	var sz = float(info.get("size", 0.8))
 	weight = 0 if squadron else (1 if sz < 0.65 else (2 if sz < 0.9 else (3 if sz < 1.1 else 4)))
 	if flagship:
@@ -299,8 +303,12 @@ func update(fx, dt: float) -> void:
 	# the drive glows full only while the ship thrusts (moving, or a burn G2 asks for with set_engine above cruise); a
 	# parked ship keeps a dim pilot glow and a short, faint trail (Ryan, r12: engines glowed and trailed at rest)
 	var want = 0.0 if dead else ((engine_level if absf(engine_level - 1.0) > 0.05 else 1.6) if _moving > 0.0 else (engine_level if engine_level > 1.05 else IDLE_GLOW * engine_level))
+	# Issue 462, the tell: a dying big hull's drive flares once (fx_death sets the flare) and holds it for two frames,
+	# then goes black fast.
+	if dead and fx.now < float(get_meta("death_flare_until", -1.0)):
+		want = _eng_cur
 	# rise gently, drop fast: a burn's plume cuts off within about 0.1 s instead of fading over half a second (G2)
-	_eng_cur = lerpf(_eng_cur, want, clampf(dt * (4.0 if want > _eng_cur else 14.0), 0.0, 1.0))
+	_eng_cur = lerpf(_eng_cur, want, clampf(dt * (4.0 if want > _eng_cur else (30.0 if dead else 14.0)), 0.0, 1.0))
 	if _eng_mat != null:
 		var g := clampf(_eng_cur, 0.0, 2.0)
 		if fx.now < _stutter_until:
@@ -546,6 +554,8 @@ var _brk_at := 0.0              # when the thrusters start braking
 func hit_react(fx, impulse: float, lp: Vector3, ldir: Vector3) -> void:
 	if dead or gone or impulse <= 0.0:
 		return
+	# Issue 462: where the last hit landed (hull space), so a death can open its tear from the side that was hit.
+	set_meta("last_hit", [lp, ldir, fx.now])
 	var wi := clampi(weight, 0, 4)
 	var m: float = REACT_MASS[wi]
 	var L: float = maxf(hull.L, 1.0)
@@ -689,8 +699,24 @@ func _rcs(fx) -> void:
 			break
 		var rp: Vector3 = best[j][1]
 		var t: Vector3 = best[j][2]
-		var wp: Vector3 = to_world(rp)
-		var gv: Vector3 = dir_world(-t) * (5.0 + fx.rng.randf() * 3.0) * k
+		# Issue 281 run 7: a hull that does not fill its bounding box (the Eclipse disc and tower) leaves the box
+		# corner in empty space, so the old corner puff floated off the ship. Start each puff on the real plating: cast
+		# a ray from the corner, pushed a further L away from the hull centre, back toward it, and use the hit point.
+		# A corner whose ray misses has no plating behind it, so skip it.
+		var outward: Vector3 = rp - hull.c
+		var od: float = outward.length()
+		outward = outward / maxf(od, 1e-3)
+		var h: Dictionary = hull.ray(rp + outward * L, -outward)
+		if h.is_empty():
+			continue
+		var wp: Vector3 = to_world(h["p"])
+		var n: Vector3 = h["n"]
+		# The gas blows away from the plating, never into the hull.
+		var gd: Vector3 = -t
+		if gd.dot(n) < 0.15:
+			gd = n
+		var gv: Vector3 = dir_world(gd) * (5.0 + fx.rng.randf() * 3.0) * k
+		fx.record_spawn(self, wp)
 		fx.spr(wp, fx.now, 0.35, Color(0.85, 0.88, 0.95), 0.6, 0.12 * k, 0.9 * k, 7, gv, 2.5)
 		fx.spr(wp, fx.now, 0.06, Color(0.9, 0.95, 1.0), 1.5, 0.08 * k, 0.15 * k, 18)
 

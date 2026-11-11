@@ -65,7 +65,7 @@ func light(parent: Node3D, pos: Vector3, col: Color, size: float = 0.5, blink: b
 	if blink: blinkers.append([g, sys.rng.randf() * TAU, sys.rng.randf_range(1.4, 2.6)])
 	return g
 func spot(parent: Node3D, pos: Vector3, target: Vector3, col: Color, energy: float = 3.0, rng: float = 6.0) -> void:   # a work floodlight
-	var s = SpotLight3D.new(); s.light_color = col; s.light_energy = energy; s.spot_range = rng; s.spot_angle = 32.0; s.spot_attenuation = 0.8
+	var s = SpotLight3D.new(); s.light_color = col; s.light_energy = energy * float(sys.approach["local_fill"]); s.spot_range = rng; s.spot_angle = 32.0; s.spot_attenuation = 0.8
 	s.shadow_enabled = false; parent.add_child(s)
 	var dv = target - pos
 	s.transform = Transform3D(Basis.looking_at(dv.normalized(), Vector3.UP if abs(dv.normalized().y) < 0.95 else Vector3.RIGHT) if dv.length() > 0.01 else Basis(), pos)
@@ -220,11 +220,12 @@ func _icosphere(sub: int) -> Array:
 			nf += [[tri[0], a, c], [tri[1], b, a], [tri[2], c, b], [a, b, c]]
 		f = nf
 	return [v, f]
-func rock_meshes() -> Array:
-	var key = "hi" if q > 0.5 else "lo"
+func rock_meshes(landmark: bool = false) -> Array:
+	var subdivisions = (5 if landmark else 4) if q > 0.5 else (4 if landmark else 3)
+	var key = str(subdivisions)
 	if _rock_cache.has(key): return _rock_cache[key]
 	var out = []
-	var base = _icosphere(3 if q > 0.5 else 2)
+	var base = _icosphere(subdivisions)
 	for variant in 6:
 		var r = RandomNumberGenerator.new(); r.seed = 9100 + variant * 31
 		var nz = FastNoiseLite.new(); nz.seed = 77 + variant; nz.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH; nz.frequency = 1.1
@@ -232,10 +233,12 @@ func rock_meshes() -> Array:
 		var el = Vector3(r.randf_range(0.8, 1.4), r.randf_range(0.6, 0.95), r.randf_range(0.75, 1.15))
 		var craters = []
 		for i in r.randi_range(5, 11): craters.append([Vector3(r.randfn(), r.randfn(), r.randfn()).normalized(), r.randf_range(0.18, 0.5), r.randf_range(0.05, 0.14)])
+		for i in r.randi_range(14, 22): craters.append([Vector3(r.randfn(), r.randfn(), r.randfn()).normalized(), r.randf_range(0.045, 0.14), r.randf_range(0.009, 0.035)])
 		var vs = []; var cd = []
 		for p in base[0]:
 			var dirv: Vector3 = p
 			var k = 1.0 + nz.get_noise_3dv(dirv * 1.3) * 0.32 + nz.get_noise_3dv(dirv * 4.0 + Vector3(9, 1, 3)) * 0.07
+			k += (1.0 - absf(nz.get_noise_3dv(dirv * 8.0))) * 0.018
 			var dep = 0.0
 			for c in craters:
 				var ang = acos(clamp(dirv.dot(c[0]), -1.0, 1.0)); var u = ang / c[1]
@@ -256,6 +259,41 @@ func rock_meshes() -> Array:
 func rock_mat(kind: int) -> ShaderMaterial:
 	var tints = [Color(0.36, 0.33, 0.31), Color(0.33, 0.32, 0.32), Color(0.55, 0.6, 0.66)]
 	return sys.mat("ROCK_HI", {"tint": tints[kind % 3], "kind": float(kind % 3), "q": q})
+
+# Region scenery reuses the same plated parts and displaced rock meshes as stops.
+func region_rocks(parent: Node3D, count: int, spread: float) -> void:
+	var meshes = rock_meshes()
+	for k in meshes.size():
+		var items: Array = []
+		for i in maxi(1, count / meshes.size()):
+			var at = Vector3(sys.rng.randfn() * spread, sys.rng.randfn() * 0.8, sys.rng.randfn() * spread)
+			items.append([Transform3D(sys.rand_basis(sys.rng.randf_range(0.3, 1.15)), at), 0.0])
+		sys.scatter(parent, meshes[k], rock_mat(0), items)
+
+func mining_rig(parent: Node3D, scale_value: float) -> Node3D:
+	var rig = Node3D.new(); parent.add_child(rig); rig.scale = Vector3.ONE * scale_value
+	var material = hull_mat(Color(0.29, 0.28, 0.26), Color(0.35, 0.32, 0.25), 4, 0)
+	truss(rig, Vector3(-2.4, 0, 0), Vector3(2.4, 0, 0), 0.45, material, 5)
+	for x in [-2.0, 2.0]:
+		part(rig, box(1.1, 0.65, 1.2), material, Vector3(x, 0.4, 0))
+		beam(rig, Vector3(x, 0, 0), Vector3(x * 0.65, -1.2, 0.8), 0.16, material)
+		light(rig, Vector3(x, 0.85, 0), Color(0.7, 0.55, 0.3), 0.42)
+	return rig
+
+func hollow_asteroid(parent: Node3D) -> void:
+	# An open crater cut all the way through, with an irregular stone lip and dark tunnel wall.
+	var shader = Shader.new(); shader.code = preload("res://ui/campaign/map3d_shaders.gd").hollow_rock()
+	var material = ShaderMaterial.new(); material.shader = shader
+	var rock = part(parent, rock_meshes(true)[2], material); rock.scale = Vector3(12, 9, 10)
+	var wall = TorusMesh.new(); wall.inner_radius = 3.2; wall.outer_radius = 5.0; wall.rings = 64; wall.ring_segments = 20
+	part(parent, wall, rock_mat(0), Vector3(0, 5.6, 0), Vector3(25, 0, 0))
+	var rig = mining_rig(parent, 1.8); rig.position = Vector3(2.8, 6.3, 0.8); rig.rotation.z = -0.18
+	truss(parent, Vector3(-4, 6.3, 0), Vector3(5, 6.3, 0), 0.65, hull_mat(Color(0.25, 0.25, 0.26), Color(0.4, 0.35, 0.27), 4, 0))
+
+func storm_core(parent: Node3D) -> void:
+	var bolt = sys.std(Color(0.22, 0.35, 0.65), 0.3, 0, 1)
+	var points = [Vector3(-4, 2, 0), Vector3(-1.5, 2.2, -1), Vector3(-2.2, 2.3, 1), Vector3(1.2, 2.2, 0), Vector3(3, 2, 2)]
+	for i in points.size() - 1: beam(parent, points[i], points[i + 1], 0.08, bolt)
 # an asteroid field along the sun orbit through a stop, a few big rocks at the stop itself
 func belt(parent: Node3D, theta: float, r: float, node_pos: Vector3, kind: int) -> void:
 	var meshes = rock_meshes(); var m = rock_mat(kind)

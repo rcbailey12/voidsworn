@@ -1,6 +1,6 @@
 # Campaign parity test (G3)
 
-Node runs the pinned JS game files (`oracle/`, unchanged) and Godot runs `campaign.gd`; both play the same seeded runs with the same scripted player and write one record per click. `node/compare_campaign.js` stops at the first step and field that differ. There is no tolerance: numbers compare as exact doubles in canonical form (keys sorted, null and undefined left out, integers plain, other numbers as IEEE hex).
+Node runs the root JS game files (`data.js`, `core.js`, `battle.js`, `campaign_meta.js`, `campaign_run.js`, `campaign3d.js`) and Godot runs `campaign.gd`; both play the same seeded runs with the same scripted player and write one record per click. There is no pinned copy; set `VS_ORACLE` only when the game files sit in another tree. `FNAMES` and `TIPS` are read from the root `ui3d.js`. `node/compare_campaign.js` stops at the first step and field that differ. There is no tolerance: numbers compare as exact doubles in canonical form (keys sorted, null and undefined left out, integers plain, other numbers as IEEE hex).
 
 - PC: `tools\pc\parity_campaign.bat` (30 runs). Linux: `GODOT=... sh godot/campaign/test/run_parity_campaign.sh [first] [last]`.
 - Files: `node/env.js` (loads the oracle headless), `node/golden_campaign.js` (the JS side), `parity_campaign.gd` (the Godot side), `node/compare_campaign.js`, `node/export_campaign.js` (the tables), `node/coverage.js` (what the runs exercised).

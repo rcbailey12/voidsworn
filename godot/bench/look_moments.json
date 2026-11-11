@@ -1,0 +1,1965 @@
+{
+ "about": "Look bench moments (issue 351). One row per moment; a later job adds a moment by adding a row. Read by godot/bench/look_bench.gd. Fields: id (file name), group, label, att and tgt ([faction, class]), do (volley, break, death), kind and weapon (fx.volley), shots (default: the look's own count), on (hull or shield), shield_left (shield points left before the hit, of 5), crit (first shot is a crit; every other row has no crit), cause (death), focus (the ship the camera centres on), fx (effect switches for this row, set by name on the effects system: scene_dim, reduce_flashing), windows ([anchor, seconds after it, frames at 30 a second]; anchors: fire, impact, event, split), key (the cell shown on the overview sheet).",
+ "cameras": [
+  170,
+  60,
+  26
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "170": [
+   384,
+   216
+  ],
+  "60": [
+   768,
+   432
+  ],
+  "26": [
+   1152,
+   648
+  ]
+ },
+ "rows": [
+  {
+   "id": "w_hbattery_void_hull",
+   "group": "weapon on hull",
+   "label": "macro (voidsworn) on a hull",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hbattery",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_turret_void_hull",
+   "group": "weapon on hull",
+   "label": "las (voidsworn) on a hull",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "turret",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_lance_void_hull",
+   "group": "weapon on hull",
+   "label": "lance (voidsworn) on a hull",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "lance",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_torp_void_hull",
+   "group": "weapon on hull",
+   "label": "torpedo (voidsworn) on a hull",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_hturbo_hege_hull",
+   "group": "weapon on hull",
+   "label": "plasma (hegemony) on a hull",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hturbo",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_ion_hege_hull",
+   "group": "weapon on hull",
+   "label": "ion beam (hegemony) on a hull",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "ion",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_autocannon_hege_hull",
+   "group": "weapon on hull",
+   "label": "autocannon (hegemony) on a hull",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "autocannon",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_flak_hege_hull",
+   "group": "weapon on hull",
+   "label": "flak (Hegemony) (hegemony) on a hull",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "flak",
+   "weapon": "flak",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_scatter_cors_hull",
+   "group": "weapon on hull",
+   "label": "scatter (corsair) on a hull",
+   "att": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "scatter",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_torp_cors_hull",
+   "group": "weapon on hull",
+   "label": "rockets (corsair) on a hull",
+   "att": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_flak_cors_hull",
+   "group": "weapon on hull",
+   "label": "flak (Hullbreakers) (corsair) on a hull",
+   "att": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "flak",
+   "weapon": "flak",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_bioplasma_chor_hull",
+   "group": "weapon on hull",
+   "label": "bile spine (chorus) on a hull",
+   "att": [
+    "chorus",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "bio",
+   "weapon": "bioplasma",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_tendril_chor_hull",
+   "group": "weapon on hull",
+   "label": "tendril (chorus) on a hull",
+   "att": [
+    "chorus",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "bio",
+   "weapon": "tendril",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_spores_chor_hull",
+   "group": "weapon on hull",
+   "label": "spores (chorus) on a hull",
+   "att": [
+    "chorus",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "flak",
+   "weapon": "spores",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_shard_itha_hull",
+   "group": "weapon on hull",
+   "label": "prism (ithar) on a hull",
+   "att": [
+    "ithar",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "shard",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_pulsar_itha_hull",
+   "group": "weapon on hull",
+   "label": "pulsar (ithar) on a hull",
+   "att": [
+    "ithar",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "pulsar",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_startorp_itha_hull",
+   "group": "weapon on hull",
+   "label": "star torpedo (ithar) on a hull",
+   "att": [
+    "ithar",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "startorp",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_gauss_deat_hull",
+   "group": "weapon on hull",
+   "label": "gauss (deathless) on a hull",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "gauss",
+   "weapon": "gauss",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_doom_deat_hull",
+   "group": "weapon on hull",
+   "label": "doom beam (deathless) on a hull",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "doom",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_gsentry_deat_hull",
+   "group": "weapon on hull",
+   "label": "sentry flak (deathless) on a hull",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "flak",
+   "weapon": "gsentry",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_hbattery_void_shield",
+   "group": "weapon on shield",
+   "label": "macro (voidsworn) on a shield",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hbattery",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_turret_void_shield",
+   "group": "weapon on shield",
+   "label": "las (voidsworn) on a shield",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "turret",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_lance_void_shield",
+   "group": "weapon on shield",
+   "label": "lance (voidsworn) on a shield",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "lance",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_torp_void_shield",
+   "group": "weapon on shield",
+   "label": "torpedo (voidsworn) on a shield",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_hturbo_hege_shield",
+   "group": "weapon on shield",
+   "label": "plasma (hegemony) on a shield",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hturbo",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_ion_hege_shield",
+   "group": "weapon on shield",
+   "label": "ion beam (hegemony) on a shield",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "ion",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_autocannon_hege_shield",
+   "group": "weapon on shield",
+   "label": "autocannon (hegemony) on a shield",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "autocannon",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_flak_hege_shield",
+   "group": "weapon on shield",
+   "label": "flak (Hegemony) (hegemony) on a shield",
+   "att": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "flak",
+   "weapon": "flak",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_scatter_cors_shield",
+   "group": "weapon on shield",
+   "label": "scatter (corsair) on a shield",
+   "att": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "scatter",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_torp_cors_shield",
+   "group": "weapon on shield",
+   "label": "rockets (corsair) on a shield",
+   "att": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_flak_cors_shield",
+   "group": "weapon on shield",
+   "label": "flak (Hullbreakers) (corsair) on a shield",
+   "att": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "flak",
+   "weapon": "flak",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_bioplasma_chor_shield",
+   "group": "weapon on shield",
+   "label": "bile spine (chorus) on a shield",
+   "att": [
+    "chorus",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "bio",
+   "weapon": "bioplasma",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_tendril_chor_shield",
+   "group": "weapon on shield",
+   "label": "tendril (chorus) on a shield",
+   "att": [
+    "chorus",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "bio",
+   "weapon": "tendril",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_spores_chor_shield",
+   "group": "weapon on shield",
+   "label": "spores (chorus) on a shield",
+   "att": [
+    "chorus",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "flak",
+   "weapon": "spores",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_shard_itha_shield",
+   "group": "weapon on shield",
+   "label": "prism (ithar) on a shield",
+   "att": [
+    "ithar",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "shard",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_pulsar_itha_shield",
+   "group": "weapon on shield",
+   "label": "pulsar (ithar) on a shield",
+   "att": [
+    "ithar",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "pulsar",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_startorp_itha_shield",
+   "group": "weapon on shield",
+   "label": "star torpedo (ithar) on a shield",
+   "att": [
+    "ithar",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "startorp",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_gauss_deat_shield",
+   "group": "weapon on shield",
+   "label": "gauss (deathless) on a shield",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "gauss",
+   "weapon": "gauss",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_doom_deat_shield",
+   "group": "weapon on shield",
+   "label": "doom beam (deathless) on a shield",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "doom",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "w_gsentry_deat_shield",
+   "group": "weapon on shield",
+   "label": "sentry flak (deathless) on a shield",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "flak",
+   "weapon": "gsentry",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "s_hit",
+   "group": "shield states",
+   "label": "shield hit: gauss on a Hegemony shield",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "gauss",
+   "weapon": "gauss",
+   "shots": 2,
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "s_low",
+   "group": "shield states",
+   "label": "shield low (1 of 5 left), light hit. The effects code has no low-shield look yet",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "turret",
+   "shots": 2,
+   "on": "shield",
+   "shield_left": 1,
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "s_break",
+   "group": "shield states",
+   "label": "shield break: Hegemony shield collapses",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "break",
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     -0.03,
+     12
+    ]
+   ],
+   "key": 3
+  },
+  {
+   "id": "d_frigate",
+   "group": "deaths",
+   "label": "death, small class: Hullbreaker frigate (blast)",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "corsair",
+    "Frigate"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.0,
+     6
+    ],
+    [
+     "split",
+     -0.03,
+     8
+    ],
+    [
+     "split",
+     1.0,
+     2
+    ]
+   ],
+   "key": 8
+  },
+  {
+   "id": "d_destroyer",
+   "group": "deaths",
+   "label": "death, small class: Hegemony destroyer (blast)",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Destroyer"
+   ],
+   "do": "death",
+   "cause": "blast",
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.0,
+     6
+    ],
+    [
+     "split",
+     -0.03,
+     8
+    ],
+    [
+     "split",
+     1.0,
+     2
+    ]
+   ],
+   "key": 8
+  },
+  {
+   "id": "d_cruiser",
+   "group": "deaths",
+   "label": "death, big class: Sunward cruiser (big)",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "big",
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.0,
+     6
+    ],
+    [
+     "split",
+     -0.03,
+     8
+    ],
+    [
+     "split",
+     1.0,
+     2
+    ]
+   ],
+   "key": 8
+  },
+  {
+   "id": "d_capital",
+   "group": "deaths",
+   "label": "death, capital: Hegemony super-dreadnought (cut)",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Super-dreadnought"
+   ],
+   "do": "death",
+   "cause": "cut",
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.0,
+     6
+    ],
+    [
+     "split",
+     -0.03,
+     8
+    ],
+    [
+     "split",
+     1.0,
+     2
+    ]
+   ],
+   "key": 8
+  },
+  {
+   "id": "d_chorus",
+   "group": "deaths",
+   "label": "death, organic: Chorus cruiser (rupture)",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "melt",
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.0,
+     6
+    ],
+    [
+     "split",
+     -0.03,
+     8
+    ],
+    [
+     "split",
+     1.0,
+     2
+    ]
+   ],
+   "key": 8
+  },
+  {
+   "id": "d_hulk",
+   "group": "deaths",
+   "label": "death, burn-out: Eclipse cruiser goes dark (hulk)",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "dark",
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.0,
+     6
+    ],
+    [
+     "split",
+     -0.03,
+     8
+    ],
+    [
+     "split",
+     1.0,
+     2
+    ]
+   ],
+   "key": 8
+  },
+  {
+   "id": "d_cruiser_beats",
+   "group": "death beats (issue 462)",
+   "label": "cruiser death in three beats: Sunward cruiser, torpedo kill (big)",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "big",
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.02,
+     1
+    ],
+    [
+     "event",
+     0.52,
+     1
+    ],
+    [
+     "event",
+     0.82,
+     1
+    ],
+    [
+     "event",
+     1.12,
+     1
+    ],
+    [
+     "event",
+     1.45,
+     1
+    ],
+    [
+     "event",
+     1.67,
+     1
+    ],
+    [
+     "event",
+     2.83,
+     1
+    ],
+    [
+     "event",
+     6.0,
+     1
+    ]
+   ],
+   "key": 5
+  },
+  {
+   "id": "d_cruiser_beats_cut",
+   "group": "death beats (issue 462)",
+   "label": "cruiser death in three beats: Sunward cruiser, lance kill (cut)",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "cut",
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.02,
+     1
+    ],
+    [
+     "event",
+     0.52,
+     1
+    ],
+    [
+     "event",
+     0.82,
+     1
+    ],
+    [
+     "event",
+     1.12,
+     1
+    ],
+    [
+     "event",
+     1.45,
+     1
+    ],
+    [
+     "event",
+     1.67,
+     1
+    ],
+    [
+     "event",
+     2.83,
+     1
+    ],
+    [
+     "event",
+     6.0,
+     1
+    ]
+   ],
+   "key": 5
+  },
+  {
+   "id": "d_cruiser_beats_calm",
+   "group": "death beats (issue 462)",
+   "label": "cruiser death in three beats, reduce flashing on (big)",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "big",
+   "focus": "target",
+   "fx": {
+    "reduce_flashing": true
+   },
+   "windows": [
+    [
+     "event",
+     0.02,
+     1
+    ],
+    [
+     "event",
+     0.52,
+     1
+    ],
+    [
+     "event",
+     0.82,
+     1
+    ],
+    [
+     "event",
+     1.12,
+     1
+    ],
+    [
+     "event",
+     1.45,
+     1
+    ],
+    [
+     "event",
+     1.67,
+     1
+    ],
+    [
+     "event",
+     2.83,
+     1
+    ],
+    [
+     "event",
+     6.0,
+     1
+    ]
+   ],
+   "key": 5
+  },
+  {
+   "id": "d_capital_beats",
+   "group": "death beats (issue 462)",
+   "label": "capital death in three beats: Hegemony super-dreadnought, torpedo kill (big), scene dim off",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Super-dreadnought"
+   ],
+   "do": "death",
+   "cause": "big",
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.05,
+     1
+    ],
+    [
+     "event",
+     0.87,
+     1
+    ],
+    [
+     "event",
+     1.57,
+     1
+    ],
+    [
+     "event",
+     1.92,
+     1
+    ],
+    [
+     "event",
+     2.1,
+     1
+    ],
+    [
+     "event",
+     2.3,
+     1
+    ],
+    [
+     "event",
+     2.54,
+     1
+    ],
+    [
+     "event",
+     6.0,
+     1
+    ]
+   ],
+   "key": 5
+  },
+  {
+   "id": "d_capital_beats_dim",
+   "group": "death beats (issue 462)",
+   "label": "capital death in three beats, the scene dim proposal on",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Super-dreadnought"
+   ],
+   "do": "death",
+   "cause": "big",
+   "focus": "target",
+   "fx": {
+    "scene_dim": true
+   },
+   "windows": [
+    [
+     "event",
+     0.05,
+     1
+    ],
+    [
+     "event",
+     0.87,
+     1
+    ],
+    [
+     "event",
+     1.57,
+     1
+    ],
+    [
+     "event",
+     1.92,
+     1
+    ],
+    [
+     "event",
+     2.1,
+     1
+    ],
+    [
+     "event",
+     2.3,
+     1
+    ],
+    [
+     "event",
+     2.54,
+     1
+    ],
+    [
+     "event",
+     6.0,
+     1
+    ]
+   ],
+   "key": 6
+  },
+  {
+   "id": "k_macro_frigate",
+   "group": "one weapon, every weight",
+   "label": "macro battery (Sunward battleship) on an Eclipse frigate",
+   "att": [
+    "voidsworn",
+    "Battleship"
+   ],
+   "tgt": [
+    "deathless",
+    "Frigate"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hbattery",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "k_macro_destroyer",
+   "group": "one weapon, every weight",
+   "label": "macro battery (Sunward battleship) on an Eclipse destroyer",
+   "att": [
+    "voidsworn",
+    "Battleship"
+   ],
+   "tgt": [
+    "deathless",
+    "Destroyer"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hbattery",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "k_macro_cruiser",
+   "group": "one weapon, every weight",
+   "label": "macro battery (Sunward battleship) on an Eclipse cruiser",
+   "att": [
+    "voidsworn",
+    "Battleship"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hbattery",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "k_macro_tombark",
+   "group": "one weapon, every weight",
+   "label": "macro battery (Sunward battleship) on an Eclipse tomb-ark",
+   "att": [
+    "voidsworn",
+    "Battleship"
+   ],
+   "tgt": [
+    "deathless",
+    "Tomb-ark"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hbattery",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "p_las_muzzle",
+   "group": "PR 327 looks",
+   "label": "las muzzle (Sunward turret)",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "turret",
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0.0,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "p_prism_muzzle",
+   "group": "PR 327 looks",
+   "label": "prism muzzle (Glasswright shard)",
+   "att": [
+    "ithar",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "shard",
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0.0,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "p_missile_launch",
+   "group": "PR 327 looks",
+   "label": "missile launch (Hullbreaker rockets; the first rocket leaves 0.45 s after the order)",
+   "att": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0.4,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "p_torp_shield",
+   "group": "PR 327 looks",
+   "label": "torpedo on a shield (Sunward torpedo on Hegemony)",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "shield",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "p_lance_burn",
+   "group": "PR 327 looks",
+   "label": "lance burn on a hull (Sunward lance)",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "lance",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     0.05,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "p_bile_hit",
+   "group": "PR 327 looks",
+   "label": "Chorus bile hit (bioplasma on a hull)",
+   "att": [
+    "chorus",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "bio",
+   "weapon": "bioplasma",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "p_gauss_exit",
+   "group": "PR 327 looks",
+   "label": "gauss exit (Eclipse gauss through a hull)",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "chorus",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "gauss",
+   "weapon": "gauss",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "p_crit",
+   "group": "PR 327 looks",
+   "label": "crit (one macro shell lands a crit)",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hbattery",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4,
+   "crit": true,
+   "shots": 1
+  }
+ ]
+}

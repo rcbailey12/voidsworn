@@ -110,3 +110,7 @@ low view of the rock fields, and writes a contact sheet (a frame every 5 s for 3
 image per view. Variants come from environment switches; the shipped run sets none. The exact runs are in
 `tools/pc/jobs/env230_motion.bat` and the #230 PR body. For NB8 the sheet compares shipped against `VS_GAS_FLAT=1`
 on the storm and nebula maps; the question for Ryan's look is whether the layered rates read as depth or as noise.
+
+Refs #520: PC capture results and the named option sheets are in `contrib/opus/reviews/env230_report.md` and
+`docs/shots/env230/`. The job runs the merged checkout, checks camera stability and 1920x1080 frames, stops on
+placeholder ships, and labels and sizes the final images to at most 720 px tall.

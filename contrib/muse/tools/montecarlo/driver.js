@@ -172,7 +172,7 @@ function mcFreshStats(cfg){ return {fac:cfg.fac,admiral:cfg.admiral,ai:cfg.ai,se
 async function mcRunOne(cfg){
   const S=mcFreshStats(cfg);
   try{
-    META=defaultMeta(); AI_LEVEL=cfg.ai; SPEED=0;
+    META=defaultMeta(); if(cfg.admiral) META.admirals[cfg.admiral]=true; AI_LEVEL=cfg.ai; SPEED=0;
     mcRestoreBaseHullCosts();
     if(cfg.priceMult&&cfg.priceMult!==1) for(const id of Object.keys(HULLS)){ const h=HULLS[id]; if(h.cost!=null&&factionOfTpl(id)===cfg.fac) h.cost=Math.max(5,Math.round(h.cost*cfg.priceMult/5)*5); }
     rndSeed(cfg.seed>>>0);
@@ -206,7 +206,7 @@ async function mcRunOne(cfg){
 // Direct offer sampler for the boon rarity grid: real rollBoonOffer calls on a
 // scaffold run with controlled sector, favour and held boons.
 function mcSampleBoons(cfg){
-  META=defaultMeta(); SPEED=0;
+  META=defaultMeta(); META.admirals[cfg.admiral||'vex']=true; SPEED=0;
   rndSeed(cfg.seed>>>0);
   newRun(cfg.admiral||'vex',cfg.fac||'voidsworn',{});
   RUN.sector=cfg.sector; RUN.patrons=[cfg.patron,...Object.keys(PATRONS).filter(p=>p!==cfg.patron).slice(0,3)];

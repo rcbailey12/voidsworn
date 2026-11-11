@@ -2,8 +2,9 @@
 # Nov 7 2026 (R110): the PR title comes from the issue, not the head commit (a branch created from main
 # used to copy main's last commit as the title, which mislabelled PRs #203 and #204). work/issue-<n>[-arm]
 # is the workhorse branch pattern (#217).
-# Codex on Ryan's PC (codex/issue-<n>) and Muse (muse/issue-<n>) only need to push; this opens the PR into main
-# and starts the checks on it. Opus reviews and merges.
+# Codex on Ryan's PC (codex/issue-<n>), Muse (muse/issue-<n>) and Claude worker threads (opus/issue-<n>, issue 359) only need to push; this opens the PR into main.
+# The same push starts checks.yml by itself, once (issue 359). This file no longer starts the checks: doing both ran them
+# twice on every push. The Board reviews and merges.
 name: auto-pr
 on:
   push:
@@ -11,15 +12,20 @@ on:
       - 'codex/issue-*'
       - 'muse/issue-*'
       - 'work/issue-*'
+      - 'opus/issue-*'   # Claude worker branches (issue 359); '*' also matches the arm shape opus/issue-<n>-<arm>
+# One run at a time per branch, in order (never cancelled): Muse pushes a new branch and its first commit a second apart,
+# and two runs racing each other both saw no pull request, so the slower one failed on 'already exists' (Nov 10, PR 409).
+concurrency:
+  group: auto-pr-${{ github.ref }}
+  cancel-in-progress: false
 permissions:
   contents: read
   pull-requests: write
-  actions: write
 jobs:
   open-pr:
     runs-on: ubuntu-latest
     steps:
-      - name: Open the PR if there isn't one, then run the checks
+      - name: Open the PR if there isn't one (the push itself starts the checks)
         env:
           GH_TOKEN: ${{ github.token }}
           BRANCH: ${{ github.ref_name }}
@@ -35,9 +41,25 @@ jobs:
             if [ -n "$arm" ]; then title="$title [$arm arm]"; fi
             body=$(printf '%s\n' "$TITLE" | tail -n +2)
             printf '%s\n\nOpened automatically from branch %s. Opus reviews and merges.\n' "$body" "$BRANCH" > body.md
-            grep -q "Closes #$n" body.md || printf '\nCloses #%s\n' "$n" >> body.md
-            gh pr create -R "$REPO" --base main --head "$BRANCH" --title "$title" --body-file body.md
+            # Claude-built work (opus/) gets an outside check before its issue may close, and standing issues stay open
+            # through every merge (256 is the outside-check issue; it was closed by merges twice on Nov 10): those PRs say
+            # "Refs #N", never a closing word. Add a standing issue to STANDING, space separated.
+            STANDING="256"
+            word="Closes"
+            case "$BRANCH" in opus/*) word="Refs" ;; esac
+            case " $STANDING " in *" $n "*) word="Refs" ;; esac
+            if [ "$word" = "Refs" ]; then
+              # any case, with or without a colon: GitHub reads "CLOSES #N" and "Closes: #N" as closing words too
+              sed -i -E "s/\b(close[sd]?|fix(e[sd])?|resolve[sd]?):?[[:space:]]+#$n\b/Refs #$n/Ig" body.md
+              grep -q "Refs #$n" body.md || printf '\nRefs #%s\n' "$n" >> body.md
+            else
+              grep -q "Closes #$n" body.md || printf '\nCloses #%s\n' "$n" >> body.md
+            fi
+            # If another run opened it in the meantime, that is a pass, not a failure.
+            gh pr create -R "$REPO" --base main --head "$BRANCH" --title "$title" --body-file body.md || {
+              sleep 3
+              [ "$(gh pr list -R "$REPO" --head "$BRANCH" --state open --json number --jq 'length')" != "0" ] && echo "PR for $BRANCH was opened by another run"
+            }
           else
             echo "PR already open for $BRANCH"
           fi
-          gh workflow run checks.yml -R "$REPO" --ref "$BRANCH"

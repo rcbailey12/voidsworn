@@ -7,6 +7,8 @@ extends Node
 # and every top bar button (Grid (Z) included) must sit inside the top bar. Prints [ui-check] lines and writes
 # ui_check.txt in the folder. Presentation only: it never calls the rules except to read.
 
+const PG := preload("res://render/placeholder_guard.gd")
+
 var b
 var dir := ""
 var lines: Array = []
@@ -34,8 +36,9 @@ func _note(ok: bool, what: String) -> void:
 func _parts() -> Array:
 	var h = b.hud
 	var out: Array = []
+	# #271: the activation card is the End block inside the shell (the ship panel), checked by _check_shell
 	var named := [["top bar", h.top], ["fleet list", h.roster], ["ship panel", h.panel], ["battle log", h.log_panel],
-		["activation card", h.card], ["turn strip", h.phase], ["legend", h.legend], ["hover tip", h.tip], ["tip card", h.tipcard],
+		["unacted set", h.unacted], ["turn strip", h.phase], ["legend", h.legend], ["hover tip", h.tip], ["tip card", h.tipcard],
 		["enemy chip", h.aichip]]
 	for n in named:
 		var c = n[1]
@@ -79,6 +82,16 @@ func _check(name: String) -> void:
 			nb += 1
 			if not tr.encloses((c as Button).get_global_rect()):
 				bad.append("top bar button \"%s\" is cut off %s" % [(c as Button).text, _r((c as Button).get_global_rect())])
+	# #271: the End block sits inside the shell at its bottom (End ship fixed in the bottom right corner), and the fleet
+	# list shows every ship with no scroll at 1080 lines or more
+	var h = b.hud
+	if h.card.visible:
+		var pr: Rect2 = h.panel.get_global_rect().grow(1.0)
+		var cr: Rect2 = h.card.get_global_rect()
+		if not pr.encloses(cr) or absf(cr.end.y - (vs.y - h.s(16))) > 2.0:
+			bad.append("the End block is not at the bottom of the shell %s in %s" % [_r(cr), _r(pr)])
+	if vs.y >= 1079.0 and h.roster_sc.get_v_scroll_bar().visible:
+		bad.append("the fleet list scrolls (%d rows)" % h.roster_box.get_child_count())
 	var gb = b.board.get("_look_btn") if b.board != null else null
 	if gb != null and is_instance_valid(gb) and (gb as Button).visible and (gb as Button).get_parent() != b.hud.top_row:
 		bad.append("the Grid (Z) button is not in the top bar")
@@ -91,6 +104,8 @@ func _r(r: Rect2) -> String:
 
 
 func _shot(name: String) -> void:
+	if PG.stop_if_any():
+		return
 	await get_tree().create_timer(0.7).timeout
 	_check(name)
 	await b._snap(name)
@@ -219,6 +234,23 @@ func run(battle) -> void:
 		b._on_click()
 		await _idle()
 		_check_fire_tips("planned move")
+		# #271: the Move step with a planned move, the pointer on an enemy: the Fire block reads the odds from the planned hex
+		var pe := ""
+		for e in b.V["units"]:
+			if e["side"] == "enemy" and not e["dead"] and not e["squadron"]:
+				for wi in (b.api.unit(b.sel)["weapons"] as Array).size():
+					if b.api.in_reach(b.sel, wi, e["id"], b.plan):
+						pe = e["id"]
+						break
+			if pe != "":
+				break
+		if pe != "":
+			b._hover_uid = ""
+			b._on_hover(b.cam.unproject_position(b.board.hex_world(int(b.VU[pe]["q"]), int(b.VU[pe]["r"]))))
+			b._refresh_ui()
+			_note(b.plan != null, "5a_planned_move_odds: a move planned, the pointer on %s" % b._name(pe))
+			await _shot("5a_planned_move_odds")
+			_hover_hex(int(best.q), int(best.r))
 		_hover_hex(int(best.q), int(best.r))
 		b._on_click()
 		await _idle()
@@ -267,7 +299,7 @@ func run(battle) -> void:
 	await get_tree().process_frame
 	var fo := get_viewport().gui_get_focus_owner()
 	var ring = fo.get_theme_stylebox("focus") if fo is Button else null
-	_note(fo is Button and b.hud.menu != null and b.hud.menu.is_ancestor_of(fo) and ring is StyleBoxFlat and not (ring as StyleBoxFlat).draw_center,
+	_note(fo is Button and b.hud.menu != null and b.hud.menu.is_ancestor_of(fo) and ring is StyleBoxFlat and not (ring as StyleBoxFlat).draw_center and (ring as StyleBoxFlat).get_border_width(SIDE_LEFT) >= 2,
 		"7_menu_focus: the menu's first button has keyboard focus and a visible focus ring (%s)" % (str((fo as Button).text) if fo is Button else "no focus"))
 	await _shot("7_menu_focus")
 	var row: Button = null
@@ -282,6 +314,9 @@ func run(battle) -> void:
 		var fo2 := get_viewport().gui_get_focus_owner()
 		_note(fo2 is Button and str(fo2.text).begins_with("Firing arcs"), "7_menu_focus: after a toggle the keyboard stays on its row (%s)" % (str(fo2.text) if fo2 is Button else "no focus"))
 		b.arcs_on = not b.arcs_on   # put the option back as it was (the toggle saved nothing: screenshot jobs keep their settings)
+	else:
+		# #282 (N2): a missing row must fail the run, not skip the refocus assertion silently
+		_note(false, "7_menu_focus: the Firing arcs row is missing from the menu")
 	b._on_key(KEY_ESCAPE)
 	await get_tree().process_frame
 	await get_tree().process_frame

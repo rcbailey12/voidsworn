@@ -3,20 +3,12 @@ extends Control
 # Presentation only: it reads the campaign state and calls campaign.act("enterNode", id) like any button, so the bot, the
 # parity test and the rules never see it. Its own randomness uses a local generator, never the rules' random numbers.
 #
-# R51 look (Sins of a Solar Empire 2 star system, map3d_system.gd and map3d_shaders.gd):
-# - The Hollow Sun sits at the centre, always in view: a dead black star ringed in slow fire, its glow the system's light,
-#   a battlefield debris ring round it. The sector's seven jumps sweep round it from left to right: each column of stops
-#   is a bearing from the sun, each stop sits on its own orbit (inner stops nearer the sun), orbit lines drawn faintly.
-# - Each stop is a real place: a planet with an atmosphere rim and a moon, a station, an asteroid field along its orbit,
-#   a nebula pocket, a wreck field; shipyards, drydocks and repair tenders are built structures; the sector flagship is
-#   the enemy flagship hull.
-# - Jump lanes are glowing ribbons; the lanes you can take pulse toward the destination; route lanes take the route's colour.
-# - A rich sky (three star layers, the galaxy's band, nebula and dust in the sector's colours), near stars and nebula
-#   sheets at depth for parallax; smooth zoom (wheel, + and -) and pan (right or middle drag, WASD), Home resets.
-# - Faction looks from lore round 3 (colours only, R51): rival halos, threat markers, patrols, the flagship.
-# - Quality: "high" or "low" (fewer debris pieces, stars, cloud octaves); ui.map_quality, toggled on the map screen.
+# Briefing map, R165/R170/R174: one fall inward across the three sectors, with routes as the only chart lines.
+# Fight stops show the enemy's real hulls; services and events keep their models. Every stop ahead has a sage type icon.
+# Next jumps have full models and lime routes; ahead is 85% size and 75% light, cut off is half of each.
+# The rail, captions, hover cards and controls retain the Briefing layout.
 #
-# Useful (unchanged): the route planner on hover (safest and richest routes to the flagship with running totals), danger
+# Useful (unchanged in what it knows): the route planner on hover (safest and richest routes to the flagship with running totals), danger
 # bands per fight for your fleet as it is now, fight type and board shape, rewards, the hover card, keyboard focus.
 # Hull models come from G2's render/ship_view.gd (the PC's gen/ assets); without them a simple shape stands in.
 
@@ -29,17 +21,22 @@ const SHIP_VIEW := "res://render/ship_view.gd"
 const HT_PATH := "res://render/hull_table.gd"
 const CamRig := preload("res://render/camera_rig.gd")
 
-# the layout round the sun: column c of n sits at bearing ANG0 - ANG_SPAN * c / (n - 1) (degrees; 90 = far side),
-# a stop's orbit radius runs from R_OUT (y = 0) to R_IN (y = 1)
-const ANG0 := 190.0
-const ANG_SPAN := 200.0
-const R_IN := 21.0
-const R_OUT := 52.0
+# Sector framing lives in System.APPROACH; the route graph stays in RUN.
 const RING_R := 2.4          # the ring round each stop
 const SUN_R := 5.0           # the Hollow Sun's shadow (the black hole)
 const CAM_DIR := Vector3(0.0, 0.79, 0.62)
 const TOKEN_OFF := Vector3(0.0, 1.8, 3.0)   # where the fleet holds over a stop (above it, toward the camera)
 
+const GS = preload("res://ui/theme/glass_shell.gd")   # Lime Tactical pieces for the map words (issue #344)
+const View = preload("res://campaign/campaign_view.gd")   # the stop's words and the Nemesis, read only
+const COL_W := 540.0          # the briefing column over the left of the chart (campaign_ui.gd)
+const BACKDROP_K := 0.5       # the backdrop's strength in the Briefing build ("dimmed about half")
+const LAYER_AHEAD := 2        # render layer of the stops further on (lit by the Hollow Sun at TIER_LIGHT[1])
+const LAYER_BEHIND := 4       # render layer of the stops behind you or cut off (TIER_LIGHT[2])
+const LAYER_SCENERY := 8
+var region_scenery: Node3D
+const TIER_LIGHT := [1.0, 0.75, 0.375]   # cut-off stops have half the ahead brightness
+const TIER_SCALE := [1.0, 0.85, 0.425]
 var ui                        # campaign_ui.gd
 var intel
 var sys                       # map3d_system.gd
@@ -52,9 +49,10 @@ var cam: Camera3D
 var env: Environment
 var root3: Node3D
 var token: Node3D
+var sheet_veil: TextureRect
 var overlay: Control
-var card: PanelContainer
-var card_text: RichTextLabel
+var card: PanelContainer      # the hover tip: the only box on the map
+var card_box: VBoxContainer
 var quality := "high"         # "high" or "low" (ui.map_quality)
 var backdrop := false         # true: drawn behind another page (no labels, no hover, no input)
 var _sig := ""
@@ -67,6 +65,7 @@ var _hot := ""
 var _routes: Array = []       # routes through the hovered node (map_intel.routes_through)
 var _danger := {}             # id -> danger dict (cached per refresh)
 var _focus := 0
+var _kb := -1                 # the stop the arrow keys are on (an index into _kb_order)
 var _t := 0.0
 var _flying := false
 const FLIGHT_SECONDS := 2.4
@@ -75,13 +74,13 @@ var _flight_id := ""
 var _flight_curve: Curve3D
 var _flight_time := 0.0
 var _flight_rotation := Quaternion.IDENTITY
+var _flight_heights := Vector2.ZERO
 var _arrival_tween: Tween
 var _engine_mounts: Array[Vector3] = []
 var _wake_samples: Array = []
 var _wake_mesh: ImmediateMesh
 var _wake_node: MeshInstance3D
 var _wake_material: StandardMaterial3D
-var _side_w := 380.0
 var _rng := RandomNumberGenerator.new()
 var _cam_focus := Vector3.ZERO   # where the camera leans (eased); zero = the whole chart
 var _cam_zoom := 1.0             # 1 = the whole chart; smaller = closer (arrival and jump moves)
@@ -95,6 +94,7 @@ var _arrive_t := 0.0
 var _last_pos = null
 var loading := false
 var sector_world: Node3D
+var _fill: DirectionalLight3D
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -112,12 +112,16 @@ func _ready() -> void:
 	env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY   # metal plating picks up the nebula and the stars
 	env.adjustment_enabled = true; env.adjustment_contrast = 1.06; env.adjustment_saturation = 1.08
 	var we = WorldEnvironment.new(); we.environment = env; vp.add_child(we)
-	var fill = DirectionalLight3D.new(); fill.rotation_degrees = Vector3(-38, 150, 0); fill.light_energy = 0.32; fill.light_color = Color(0.62, 0.72, 1.0); vp.add_child(fill)
+	_fill = DirectionalLight3D.new(); _fill.rotation_degrees = Vector3(-38, 150, 0); _fill.light_color = Color(0.62, 0.72, 1.0); vp.add_child(_fill)
 	cam = Camera3D.new(); cam.fov = 36.0; cam.near = 0.5; cam.far = 4000.0; vp.add_child(cam)
+	sheet_veil = TextureRect.new(); sheet_veil.texture = GS.sheet_veil(); sheet_veil.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	sheet_veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); sheet_veil.anchor_right = 0.43; sheet_veil.mouse_filter = Control.MOUSE_FILTER_IGNORE; add_child(sheet_veil)
 	overlay = Control.new(); overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE; overlay.draw.connect(_draw_overlay); add_child(overlay)
 	card = PanelContainer.new(); card.visible = false; card.mouse_filter = Control.MOUSE_FILTER_IGNORE; add_child(card)
-	card_text = RichTextLabel.new(); card_text.bbcode_enabled = true; card_text.fit_content = true; card_text.scroll_active = false; card_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	card.add_child(card_text)
+	card_box = VBoxContainer.new(); card_box.add_theme_constant_override("separation", 0); card_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(card_box)
+	mouse_exited.connect(func():   # the pointer left the chart (onto the briefing column, say): no stop is pointed at
+		if not _hot_by_key and not _flying and intel != null: _set_hot(""))
 
 func _C(): return ui.C
 func _apply_quality() -> void:
@@ -130,18 +134,22 @@ func set_quality(qv: String) -> void:
 	if qv == quality: return
 	quality = qv; _sig = ""   # rebuild with the new detail
 	if visible: sync()
-# where a stop sits: [bearing (radians), orbit radius]
+# Presentation coordinates only. The route graph, node records and random streams stay in the campaign.
 func _polar(n: Dictionary) -> Vector2:
-	var ncols = 7
-	if _C() != null and _C().RUN != null: ncols = max(2, _C().RUN["map"]["cols"].size())
-	var th = deg_to_rad(ANG0 - ANG_SPAN * float(n["col"]) / float(ncols - 1))
-	return Vector2(th, R_IN + (1.0 - float(n["y"])) * (R_OUT - R_IN))
-func _at(th: float, r: float) -> Vector3: return Vector3(cos(th) * r, 0.0, -sin(th) * r)
+	var p = _pos(n)
+	return Vector2(atan2(-p.z, p.x), Vector2(p.x, p.z).length())
+func _outer_radius() -> float:
+	return System.sector_look(int(_C().RUN.get("sector", 1)))["extent"]
 func _pos(n: Dictionary) -> Vector3:
-	var p = _polar(n); return _at(p.x, p.y)
+	return System.stop_position(n, _C().RUN["map"]["cols"].size(), int(_C().RUN.get("sector", 1)))
+func _entry_pos() -> Vector3:
+	var first = _pos({"col": 0, "y": 0.5})
+	var next = _pos({"col": 1, "y": 0.5})
+	return first - (next - first).normalized() * 16.0
 
 # ---------------- building the sector ----------------
 func sync() -> void:
+	sheet_veil.visible = not backdrop
 	var C = _C()
 	if C == null or C.RUN == null: return
 	if intel == null or intel.C != C: intel = Intel.new(C)
@@ -149,7 +157,7 @@ func sync() -> void:
 	if ui.get("map_quality") != null and str(ui.map_quality) != quality:
 		quality = str(ui.map_quality); _sig = ""
 	var m = C.RUN["map"]
-	var sig = str(C.RUN["sector"]) + "|" + str(m.get("fac")) + "|" + str(m["edges"].hash()) + "|" + quality
+	var sig = str(C.RUN["sector"]) + "|" + str(m.get("fac")) + "|" + str(m["edges"].hash()) + "|" + str(m.get("region")) + "|" + quality
 	if sig != _sig:
 		if not loading: _load_sector(sig)
 		return
@@ -166,10 +174,10 @@ func _load_sector(sig: String) -> void:
 	await get_tree().process_frame
 	_build(sig)
 	_last_pos = _C().RUN.get("pos")
-	_arrive(true)
 	_refresh()
 	await sector_world.wait_ready()
 	await Loading.settle(get_tree())
+	_arrive(true)
 	cover.queue_free()
 	loading = false
 	# Changes made during loading get their own covered rebuild.
@@ -232,108 +240,206 @@ func _build(sig: String) -> void:
 	if root3 != null: root3.queue_free()
 	root3 = Node3D.new(); vp.add_child(root3)
 	_nodes.clear(); _lanes.clear(); _patrols.clear(); _sync_lights.clear()
-	var base_sig = sig.trim_suffix("|" + quality)   # High and Low draw the same system: each stop reseeds from its own id
+	var base_sig = str(C.RUN["sector"]) + "|" + str(fac) + "|" + str(m["edges"].hash())   # preserve each stop's existing seed
 	_base_sig = base_sig; _rng.seed = hash(base_sig)
-	sys = System.new(); sys.rng = _rng; sys.q = 1.0 if quality != "low" else 0.0
+	sys = System.new(); sys.rng = _rng; sys.q = 1.0 if quality != "low" else 0.0; sys.backdrop_k = BACKDROP_K
+	sys.set_sector(int(C.RUN["sector"]))
+	sys.region = str(m.get("region", ""))
+	env.ambient_light_energy = sys.approach["ambient"]; _fill.light_energy = sys.approach["fill"]
 	props = Props.new(sys); _spinners.clear(); _drones.clear()
 	sector_world = World.new(); root3.add_child(sector_world)
 	var shell := get_tree().root.get_node_or_null("Main")
 	var bake_quality := str(shell.settings.get("quality", "max")) if shell != null else "max"
 	sector_world.prepare_sector(env, C.RUN, bake_quality)
+	env.background_energy_multiplier = BACKDROP_K   # the sky (nebula, stars, its sun) at about half: it stops fighting the routes and the words
+	# The baked nebula's broad red haze still competed with the routes in the first capture. Quiet just the gas again.
+	sys.approach_sky(env)
 	sys.sector_world = sector_world
 	sys.backdrop(root3, fac, max(1.0, ui.k))
 	var hs = sys.hollow_sun(root3, SUN_R); _debris = hs["debris"]
+	_tier_lights(hs.get("light"))
 	_rng.seed = hash(base_sig) + 7
 	for col in m["cols"]:
 		for n in col: _add_node(n)
-	_add_orbits()
 	# the enemy's light over the far end of the system, where its flagship waits
 	var L = System.look(fac); var bpos = _pos(m["cols"][m["cols"].size() - 1][0])
-	root3.add_child(sys.mi(sys.flat(44, 44), sys.mat("TERR", {"col": Color(L["main"], 0.18)}), bpos + Vector3(0, -0.3, 0)))
+	root3.add_child(sys.mi(sys.flat(44, 44), sys.mat("TERR", {"col": Color(L["main"], 0.18 * BACKDROP_K)}), bpos + Vector3(0, -0.3, 0)))
 	for e in m["edges"]: _add_lane(e[0], e[1])
+	_add_entry_lanes()
 	_add_patrols()
+	_build_region()
 	token = _make_token(); root3.add_child(token); _token_sig = _fleet_sig()
 	token.position = _token_home()
 	_make_wake()
-	_focus = 0
+	_focus = 0; _kb = -1
 	_fit_key = ""
 
-# faint orbit lines round the sun through every stop, brighter arcs near the stops
-func _add_orbits() -> void:
-	var radii = {}
-	for id in _nodes: radii[snappedf(_nodes[id]["r"], 0.01)] = true
-	for r in radii.keys(): sys.orbit(root3, r, Color(0.55, 0.66, 0.88, 0.16), 0.28)
-	for id in _nodes:
-		var d = _nodes[id]; var span = 7.5 / d["r"]
-		d["orbit"] = sys.orbit_arc(root3, d["r"], d["theta"] - span, d["theta"] + span, Color(0.7, 0.8, 1.0, 0.45), 0.36)
-	sys.orbit(root3, SUN_R * 4.05, Color(1.0, 0.5, 0.25, 0.12), 0.25, 90.0)   # the edge of the debris ring
+# The Hollow Sun lights the stops in three tiers. A light cannot be dimmer for one model than for the next, so each tier has
+# its own render layer and its own copy of the sun's light: the full one (with the shadows) for your stop and the next jumps,
+# two weaker ones for the stops further on and the stops behind you.
+func _tier_lights(sun) -> void:
+	if not (sun is OmniLight3D): return
+	sun.light_cull_mask = 0xFFFFF & ~(LAYER_AHEAD | LAYER_BEHIND | LAYER_SCENERY)
+	for i in [1, 2]:
+		var l = OmniLight3D.new(); l.light_color = sun.light_color; l.light_energy = sun.light_energy * TIER_LIGHT[i]
+		l.omni_range = sun.omni_range; l.omni_attenuation = sun.omni_attenuation; l.shadow_enabled = sun.shadow_enabled and float(sys.approach["infall"]) > 0.0
+		l.light_cull_mask = LAYER_AHEAD if i == 1 else LAYER_BEHIND
+		sun.get_parent().add_child(l); l.position = sun.position
+	var scenery_light = OmniLight3D.new(); scenery_light.light_color = sun.light_color; scenery_light.light_energy = sun.light_energy * 0.5
+	scenery_light.omni_range = sun.omni_range; scenery_light.omni_attenuation = sun.omni_attenuation
+	scenery_light.light_cull_mask = LAYER_SCENERY; sun.get_parent().add_child(scenery_light); scenery_light.position = sun.position
+
+# The place belongs to the whole map. Its own seed cannot perturb stop models or the rules stream.
+# Both sides of the route band stay open; all dressing sits below and outside its full lane width.
+func _region_point(t: float, side: float = 1.0, gap: float = 12.0) -> Vector3:
+	var columns = _C().RUN["map"]["cols"].size()
+	return System.stop_position({"col": t * (columns - 1), "y": 1.0 if side > 0 else 0.0}, columns, int(_C().RUN["sector"])) + Vector3(0, -5, side * gap)
+
+func _dead_hull(parent: Node3D, length: float, split: bool = false, fac: String = "hegemony", cls: String = "Battleship") -> Node3D:
+	var body = Node3D.new(); parent.add_child(body)
+	body.set_meta("wreck", {"fac": fac, "cls": cls, "length": length, "split": split})
+	var gap = length * 0.045
+	for half in ([-1.0, 1.0] if split else [0.0]):
+		var hull = _hull(fac, cls, length)
+		if hull == null: continue
+		body.add_child(hull); hull.position.x = half * gap
+		var shader = Shader.new(); shader.code = System.SH.dead_hull(split)
+		var material = ShaderMaterial.new(); material.shader = shader
+		var graveyard = sys.region == "boneyard"
+		var base = Color(0.4, 0.39, 0.37) if fac == "hegemony" else Color(0.36, 0.3, 0.25)
+		var accent = Color(0.42, 0.44, 0.45) if fac == "hegemony" else Color(0.4, 0.32, 0.24)
+		material.set_shader_parameter("base", base if graveyard else Color(0.24, 0.25, 0.27))
+		material.set_shader_parameter("accent", accent if graveyard else Color(0.28, 0.29, 0.3))
+		material.set_shader_parameter("windows", 0.0); material.set_shader_parameter("gain", 0.3 if graveyard else 0.18)
+		material.set_shader_parameter("metal", 0.25 if graveyard else 0.6)
+		if split:
+			material.set_shader_parameter("cut_side", half)
+			material.set_shader_parameter("cut_origin", body.to_global(Vector3(half * gap, 0, 0)))
+			material.set_shader_parameter("cut_normal", body.global_basis.x.normalized())
+		var stack = [hull]
+		while not stack.is_empty():
+			var node = stack.pop_back(); stack.append_array(node.get_children())
+			if node is MeshInstance3D: node.material_override = material
+			elif node is Sprite3D or node is Light3D: node.visible = false
+		# A solid torn bulkhead seals each half. Decks and ribs read through the break.
+		if split:
+			props.part(body, props.box(0.12, length * 0.11, length * 0.23), props.hull_mat(Color(0.13, 0.12, 0.11), Color(0.22, 0.19, 0.16), 5, 0), Vector3(half * gap, 0, 0))
+			for deck in 3:
+				props.beam(body, Vector3(half * (gap + 0.08), (deck - 1) * length * 0.035, -length * 0.11), Vector3(half * (gap + 0.08), (deck - 1) * length * 0.035, length * 0.11), 0.1, props.hull_mat(Color(0.2, 0.17, 0.14), Color(0.28, 0.23, 0.18), 5, 0))
+	return body
+
+func _build_region() -> void:
+	region_scenery = Node3D.new(); region_scenery.name = "RegionScenery"; root3.add_child(region_scenery)
+	region_scenery.set_meta("region", sys.region)
+	if not System.REGION_SCENERY.has(sys.region): return
+	region_scenery.set_meta("scenery", System.REGION_SCENERY[sys.region])
+	_rng.seed = hash(_base_sig + "|region|" + sys.region)
+	var landmark = Node3D.new(); landmark.name = "Landmark"; region_scenery.add_child(landmark)
+	landmark.position = _region_point(0.53, 1, 14)
+	var grey = Color(0.28, 0.3, 0.33); var lamp = Color(0.55, 0.65, 0.72)
+	match sys.region:
+		"boneyard":
+			# Ten distinct dead ships, two fleets and four classes. No dominant centrepiece.
+			for i in 10:
+				var field = Node3D.new(); field.name = "Grave%d" % i; landmark.add_child(field)
+				var at = _region_point(0.38 + (i % 5) * 0.085 + _rng.randf_range(-0.015, 0.015), 1, 8 + (i / 5) * 10 + _rng.randf_range(-2, 2))
+				field.global_position = at
+				field.rotation = Vector3(_rng.randf_range(-0.28, 0.28), _rng.randf_range(-PI, PI), _rng.randf_range(-0.3, 0.3))
+				var classes = ["Battleship", "Cruiser", "Destroyer", "Frigate"]
+				var lengths = [12.0, 10.5, 8.0, 5.5, 7.0, 11.0, 9.0, 6.0, 5.0, 7.5]
+				_dead_hull(field, lengths[i], i % 3 == 0, "hegemony" if i % 2 == 0 else "corsair", classes[i % 4])
+				sys.wreck_scraps(field, 14 if quality != "low" else 6, 4.5)
+				if i in [0, 3, 6]: sys.glow(field, Color(0.8, 0.24, 0.05), 0.8, Vector3(0, 0.4, 0), 3.0, 0.28, 0.25)
+		"nebula":
+			for i in 11:
+				var bank = sys.clouds(region_scenery, Color(0.32, 0.16, 0.65), Color(0.08, 0.32, 0.65), 3 if quality != "low" else 2, 10.0, _region_point(float(i) / 10.0, 1, 4), 0.55, 0.12)
+				bank.position.y = -13
+				for cloud in bank.get_children(): cloud.material_override.set_shader_parameter("storm_rate", 0.45)
+			sys.clouds(landmark, Color(0.3, 0.2, 0.7), Color(0.12, 0.42, 0.8), 8 if quality != "low" else 4, 5.0, Vector3.ZERO, 0.6, 0.22)
+			sys.glow(landmark, Color(0.28, 0.45, 0.85), 13, Vector3.ZERO, 3.5, 0.38, 0.1)
+			props.storm_core(landmark)
+		"world":
+			landmark.position.x += 22; landmark.position.z -= 2
+			var planet = sys.planet(landmark, System.PLANETS[1], 10.5, Vector3.ZERO)
+			# The contested planet uses the shared procedural surface with visible night settlements.
+			planet.get_node("spin").material_override = sys.mat("PLANET", {"a": Color(0.25, 0.3, 0.23), "b": Color(0.045, 0.09, 0.16), "atmo": Color(0.25, 0.38, 0.52), "kind": 1.0, "seed": 17.0, "sun_pos": sys.sun_pos, "night": 0.12})
+			var surface = planet.get_node("spin").material_override
+			var shader = Shader.new(); shader.code = System.SH.briefing_world()
+			surface.shader = shader
+			for cloud in planet.get_node("spin").get_children():
+				var cloud_shader = Shader.new(); cloud_shader.code = System.SH.CLOUDS.replace("vec3(0.95)", "vec3(0.22, 0.25, 0.28)")
+				cloud.material_override.shader = cloud_shader
+			for i in 3:
+				var station = props.station(landmark, grey, lamp); station.scale = Vector3.ONE * 0.36
+				station.position = Vector3(-15 + i * 13, -1, 9 if i == 1 else -9)
+		"frontier":
+			props.hollow_asteroid(landmark)
+			for i in 14:
+				var field = Node3D.new(); region_scenery.add_child(field); field.position = _region_point(float(i) / 13.0, 1.0 if i % 3 != 0 else -1.0, 14)
+				props.region_rocks(field, 22 if quality != "low" else 8, 3.5 if i % 3 == 0 else 2.0)
+				if i in [2, 6, 10]: props.mining_rig(field, 1.1)
+		"deep":
+			landmark.visible = false
+			for i in 3:
+				var dead = Node3D.new(); region_scenery.add_child(dead); dead.position = _region_point(0.2 + i * 0.28, 1, 20)
+				_dead_hull(dead, 3.5)
+				if i == 1:
+					var beacon = props.light(dead, Vector3(0, 0.6, 0), lamp, 0.6, true)
+					props.blinkers.back()[2] = 7.0
+	var parts = _parts(region_scenery)
+	var fill = DirectionalLight3D.new(); fill.rotation_degrees = Vector3(-48, -28, 0); fill.light_color = Color(0.65, 0.72, 0.8)
+	fill.light_energy = 0.8; fill.light_cull_mask = LAYER_SCENERY; region_scenery.add_child(fill)
+	for visual in parts["vis"]: visual.layers = LAYER_SCENERY
+	for light in parts["lights"]: light[0].light_energy *= 0.4; light[0].light_cull_mask = LAYER_SCENERY
+	for gain in parts["gains"]: gain[0].set_shader_parameter(gain[1], gain[2] * 0.4); gain[0].set_meta("dimk", 0.4)
+	for material in parts["std"]: material[0].emission_energy_multiplier *= 0.4
 
 # ---------------- stop scenes ----------------
-func _place_scene(obj: Node3D, place: String, d: Dictionary) -> float:   # the setting of the stop; returns the height of its top
-	var pal = System.PLANETS[_rng.randi() % System.PLANETS.size()]
-	match place:
-		"planet":
-			var body = sys.planet(obj, pal, 2.2, Vector3(0.0, 2.1, -0.3))
-			sys.moon(obj, body.position, 3.3, 0.4)   # the moon's orbit stays inside the stop (neighbours sit 7.7 or more away)
-			return 4.5
-		"station":
-			var L = System.look(d["fac"])   # one clear object: the station alone (R51 round 3, no planet jammed in behind it)
-			var st = props.station(obj, L["base"].lerp(Color(0.6, 0.59, 0.57), 0.85), L["main"].lerp(Color(0.5, 0.5, 0.5), 0.4))   # neutral, slightly warm grey; the accent toned down (no purple cast)
-			st.position = Vector3(0.5, 2.3, 0.3); st.rotation_degrees = Vector3(14, 0, -10); st.scale = Vector3.ONE * 0.85
-			_spinners.append([st, Vector3.UP, 0.035]); _spinners.append([st.get_node("ring"), Vector3.UP, 0.22])
-			return 5.2
-		"belt":
-			props.belt(obj, d["theta"], d["r"], d["pos"], _rng.randi() % 3)
-			return 3.0
-		"graveyard":
-			var wf = ["voidsworn", "hegemony", "corsair", "deathless"][_rng.randi() % 4]
-			var wr = _wreck(wf, "Cruiser", 7.0)
-			var hk = null if wr != null else _hull(wf, "Cruiser", 6.5)
-			if wr != null:
-				wr.position = Vector3(0, 1.6, 0); wr.rotation_degrees = Vector3(14, _rng.randf() * 360.0, 24); obj.add_child(wr)
-			elif hk != null:
-				hk.position = Vector3(0, 1.3, 0); hk.rotation_degrees = Vector3(18, _rng.randf() * 360.0, 32); obj.add_child(hk)
-			else:
-				var bx = BoxMesh.new(); bx.size = Vector3(3.2, 0.6, 0.9)
-				var hb = sys.mi(bx, sys.std(Color(0.2, 0.19, 0.18), 0.0, 0.6, 0.6), Vector3(0, 1.3, 0)); hb.rotation_degrees = Vector3(15, 30, 25); obj.add_child(hb)
-			sys.wreck_scraps(obj, 46 if quality != "low" else 16, 1.6)
-			sys.glow(obj, Color(1.0, 0.42, 0.14, 1.0), 2.2, Vector3(0.7, 1.4, 0.2), 2.4, 0.9, 1.0)
-			var lt = OmniLight3D.new(); lt.light_color = Color(1.0, 0.4, 0.15); lt.light_energy = 1.2; lt.omni_range = 4.0; lt.position = Vector3(0.6, 1.5, 0); obj.add_child(lt)
-			return 3.0
-		"storm":
-			sys.clouds(obj, Color(0.3, 0.55, 1.0), Color(0.7, 0.35, 1.0), 7 if quality != "low" else 4, 1.0, Vector3(0, 1.8, 0), 0.75, 1.0)
-			var lt2 = OmniLight3D.new(); lt2.light_color = Color(0.5, 0.65, 1.0); lt2.light_energy = 1.0; lt2.omni_range = 5.0; lt2.position = Vector3(0, 1.8, 0); obj.add_child(lt2)
-			return 3.6
-	# open space: a faint dust pocket, nothing that crowds the marker
-	sys.clouds(obj, Color(0.4, 0.45, 0.6), Color(0.3, 0.32, 0.45), 3, 0.8, Vector3(0, 1.2, 0), 0.35)
-	return 2.6
+# Bows point toward the preceding leg, where the player approaches from. ShipView's bow is local +X.
+func _enemy_fleet(obj: Node3D, n: Dictionary, fac: String) -> float:
+	var t = str(n["type"])
+	var before = _pos({"col": maxf(-1.0, float(n["col"]) - 1.0), "y": 0.5})
+	var toward = (before - _pos(n)).normalized()
+	var heading = atan2(-toward.z, toward.x)
+	var formation = Node3D.new(); formation.name = "EnemyFleet"; formation.rotation.y = heading
+	obj.add_child(formation)
+	var level = int(intel.danger(n).get("level", 1))
+	formation.set_meta("danger_level", level)
+	var group = System.fight_group(n, int(_C().RUN["sector"]), level)
+	for i in group.size():
+		var member = group[i]; var cls = member["cls"]
+		if cls == "capital": cls = str(_C().HULLS[_C().FACTIONS[fac]["boss"]]["cls"])
+		var ship = _hull(fac, cls, member["length"])
+		if ship == null: continue
+		ship.name = "Leader" if i == 0 else "Escort%d" % i
+		ship.position = member["at"]; ship.rotation.y = member["yaw"]
+		formation.add_child(ship); _map_ship_rim(ship)
+	# A local neutral key keeps dark hulls readable even in the well. The normal stop tiers dim it too.
+	var fill = OmniLight3D.new(); fill.light_color = Color(0.82, 0.87, 1.0)
+	fill.light_energy = 8.0; fill.omni_range = 16.0; fill.omni_attenuation = 0.5
+	fill.position = Vector3(-2, 5, 6); fill.shadow_enabled = false; obj.add_child(fill)
+	return 4.0 if t == "boss" else 3.2
+
+func _map_ship_rim(hull: Node3D) -> void:
+	for mesh in hull.find_children("*", "MeshInstance3D", true, false):
+		if mesh.mesh == null: continue
+		for surface in mesh.mesh.get_surface_count():
+			var source = mesh.get_active_material(surface)
+			if source is BaseMaterial3D:
+				var material = source.duplicate(); material.rim_enabled = true; material.rim = maxf(material.rim, 0.28); material.rim_tint = 0.15
+				mesh.set_surface_override_material(surface, material)
+
 var _base_sig := ""
 func _add_node(n: Dictionary) -> void:
 	_rng.seed = hash(_base_sig + "|" + str(n["id"]))
-	var C = _C(); var pp = _polar(n); var p = _at(pp.x, pp.y); var obj = Node3D.new(); obj.position = p; root3.add_child(obj)
+	var C = _C(); var pp = _polar(n); var p = _pos(n); var obj = Node3D.new(); obj.position = p; root3.add_child(obj)
 	var t = n["type"]; var mats = []; var top = 2.0
 	var gold = Color("#d0a64b"); var teal = Color("#5fb3a6"); var cyan = Color("#62ccff")
 	var fight = t in ["battle", "elite", "boss"]
 	var nfac = C.nodeFaction(n) if fight else ""
 	var d = {"n": n, "pos": p, "theta": pp.x, "r": pp.y, "fac": nfac if nfac != "" else str(C.RUN["map"]["fac"])}
-	if fight and t != "boss":
-		top = _place_scene(obj, str(n.get("map", "")), d)
-		var tm = sys.threat(obj, Vector3(0, top + 0.9, 0), 2.0 if t == "battle" else 2.5, nfac, t == "elite"); mats.append(tm.material_override)
-		d["threat"] = tm.material_override
-		top += 1.6
-	elif t == "boss":
-		var fac = C.RUN["map"]["fac"]; var btpl = C.FACTIONS[fac].get("boss"); var cls = str(C.HULLS[btpl].get("cls", "Battleship")) if btpl != null and C.HULLS.has(btpl) else "Battleship"
-		var L = System.look(fac)
-		var bh = _hull(fac, cls, 12.0)
-		if bh != null:
-			bh.position = Vector3(0, 2.2, 0); bh.rotation_degrees = Vector3(0, 180, 0); obj.add_child(bh)   # it faces back down the sector, at you
-		else:
-			var m3 = _mat(L["base"], 0.0, 0.8, 0.3); mats.append(m3); obj.add_child(sys.mi(sys.sphere(2.2), m3, Vector3(0, 2.4, 0)))
-		sys.halo(obj, fac, RING_R * 1.75)
-		sys.glow(obj, L["light"], 9.0, Vector3(0, 2.4, 0), 3.0, 0.35, 1.0 if int(L["look"]) == 1 else 0.0)
-		var l = OmniLight3D.new(); l.light_color = L["light"]; l.light_energy = 2.0; l.omni_range = 12.0; l.position = Vector3(0, 3.5, 0); obj.add_child(l)
-		if int(L["look"]) == 1: _sync_lights.append([l, 2.0])
-		top = 4.6
+	if fight:
+		top = _enemy_fleet(obj, n, d["fac"])
 	else:
 		match t:
 			"shipyard":
@@ -378,35 +484,102 @@ func _add_node(n: Dictionary) -> void:
 				sys.glow(obj, cyan, 3.4, Vector3(0, 1.8, 0), 2.2, 0.8, 1.0)
 				top = 3.2
 	# a soft cool fill over built stops, so their plating reads on the side away from the Hollow Sun
-	if t in ["shipyard", "drydock", "field"] or str(n.get("map", "")) in ["station", "graveyard"]:
+	if t in ["shipyard", "drydock", "field"]:
 		var fl = OmniLight3D.new(); fl.light_color = Color(0.7, 0.78, 1.0); fl.light_energy = 2.4; fl.omni_range = 16.0; fl.omni_attenuation = 1.1
 		fl.position = Vector3(3.0, 5.0, 4.5); fl.shadow_enabled = false; obj.add_child(fl)
 		var ky = OmniLight3D.new(); ky.light_color = Color(1.0, 0.9, 0.78); ky.light_energy = 1.1; ky.omni_range = 15.0; ky.omni_attenuation = 1.0   # a faint key from the camera's side
 		ky.position = Vector3(-2.0, 7.0, 8.0); ky.shadow_enabled = false; obj.add_child(ky)
-	# the ring round the stop (its colour says what you can do there) and, for a rival raider, a halo in the rival's look
+		fl.light_energy *= float(sys.approach["local_fill"]); ky.light_energy *= float(sys.approach["local_fill"])
+	# no ring, halo or hover glow under a stop (the Briefing build): the list and the map's words say what you can do there
 	var big = RING_R * (1.55 if t == "boss" else 1.0)
-	var rmat = sys.mat("RING", {"col": Color(1, 1, 1, 0.25), "r": 0.8})
-	var ring2 = sys.mi(sys.flat(big * 2.5, big * 2.5), rmat, Vector3(0, 0.06, 0)); ring2.extra_cull_margin = big; obj.add_child(ring2)
 	var rival = null
 	if t == "battle" and C.RUN.get("foes") != null:
 		var f = C.nodeFaction(n)
 		if f != C.RUN["map"]["fac"] and C.FACTIONS.has(f): rival = f
-	if rival != null: sys.halo(obj, rival, big * 1.22)
-	var hg = sys.glow(obj, Color(1.0, 0.86, 0.55, 1.0), big * 3.4, Vector3(0, 0.4, 0), 2.6, 0.0)   # the hover glow (eased in _process)
-	d.merge({"obj": obj, "ring": ring2, "rmat": rmat, "mats": mats, "top": top, "rival": rival, "ring_r": big, "hg": hg, "hk": 0.0})
+	d.merge({"obj": obj, "mats": mats, "top": top, "rival": rival, "ring_r": big, "tier": -1, "sc": 1.0, "nem": false})
 	_nodes[n["id"]] = d
 func _torus(r0: float, r1: float) -> TorusMesh:
 	var t = TorusMesh.new(); t.inner_radius = r0; t.outer_radius = r1; t.rings = 48; t.ring_segments = 8; return t
+# The chart is tone mapped (ACES, then the contrast and saturation set in _ready), which washes a saturated colour toward
+# white: lime drawn as lime comes out a pale yellow, and no longer matches the lime of the marker and the button. This
+# finds the colour to draw so that the screen shows the colour asked for, as near as the tone map can reach, and never
+# brighter than 1.0 in any channel (so a route cannot bloom). One search per colour, then cached.
+static var _shown_cache := {}
+static func _lin(v: float) -> float: return v / 12.92 if v <= 0.04045 else pow((v + 0.055) / 1.055, 2.4)
+static func _srgb(v: float) -> float:
+	v = clampf(v, 0.0, 1.0)
+	return v * 12.92 if v <= 0.0031308 else 1.055 * pow(v, 1.0 / 2.4) - 0.055
+static func _aces_curve(x: float) -> float: return (x * (x + 0.0245786) - 0.000090537) / (x * (0.983729 * x + 0.432951) + 0.238081)
+static func _shown(lin: Vector3, exposure: float, white: float, contrast: float, sat: float) -> Vector3:   # linear in, what the screen shows (sRGB 0..1)
+	var c = lin * exposure * 1.8
+	var v = Vector3(_aces_curve(0.59719 * c.x + 0.35458 * c.y + 0.04823 * c.z), _aces_curve(0.07600 * c.x + 0.90834 * c.y + 0.01566 * c.z), _aces_curve(0.02840 * c.x + 0.13383 * c.y + 0.83777 * c.z))
+	var o = Vector3(1.60475 * v.x - 0.53108 * v.y - 0.07367 * v.z, -0.10208 * v.x + 1.10813 * v.y - 0.00605 * v.z, -0.00327 * v.x - 0.07276 * v.y + 1.07602 * v.z) / _aces_curve(white * 1.8)
+	var sr = Vector3(_srgb(o.x), _srgb(o.y), _srgb(o.z))
+	sr = (sr - Vector3.ONE * 0.5) * contrast + Vector3.ONE * 0.5
+	var g = (sr.x + sr.y + sr.z) / 3.0
+	sr = Vector3(g, g, g) + (sr - Vector3(g, g, g)) * sat
+	return Vector3(clampf(sr.x, 0.0, 1.0), clampf(sr.y, 0.0, 1.0), clampf(sr.z, 0.0, 1.0))
+func for_screen(want: Color) -> Color:
+	var key = want.to_html(false)
+	if _shown_cache.has(key): return Color(_shown_cache[key], want.a)
+	var ex = env.tonemap_exposure if env != null else 1.0; var wh = env.tonemap_white if env != null else 6.0
+	var co = env.adjustment_contrast if env != null else 1.0; var sa = env.adjustment_saturation if env != null else 1.0
+	var target = Vector3(want.r, want.g, want.b)
+	var best = Vector3(_lin(want.r), _lin(want.g), _lin(want.b)); var bd = 1e9
+	var lo = Vector3.ZERO; var hi = Vector3.ONE
+	for stage in 3:   # a coarse grid, then twice finer round the best
+		var n = 12; var at = best
+		for i in n + 1:
+			for j in n + 1:
+				for l in n + 1:
+					var x = Vector3(lerpf(lo.x, hi.x, float(i) / n), lerpf(lo.y, hi.y, float(j) / n), lerpf(lo.z, hi.z, float(l) / n))
+					var d = _shown(x, ex, wh, co, sa).distance_squared_to(target)
+					if d < bd: bd = d; at = x
+		best = at
+		var span = (hi - lo) / float(n)
+		lo = Vector3(maxf(0.0, best.x - span.x), maxf(0.0, best.y - span.y), maxf(0.0, best.z - span.z))
+		hi = Vector3(minf(1.0, best.x + span.x), minf(1.0, best.y + span.y), minf(1.0, best.z + span.z))
+	var out = Color(_srgb(best.x), _srgb(best.y), _srgb(best.z))   # the shader reads the colour as sRGB (source_color)
+	_shown_cache[key] = out
+	return Color(out, want.a)
+# A pale line: the sage at a share of its strength as the eye reads it on the dark chart. The line blends in linear light,
+# where an alpha of 0.2 shows as about half strength (the first PC capture did), so the alpha is found from the tone map.
+static var _pale_cache := {}
+func pale(share: float) -> Color:
+	var base = for_screen(Color(GS.BONE, 1.0))
+	if _pale_cache.has(share): return Color(base, _pale_cache[share])
+	var ex = env.tonemap_exposure if env != null else 1.0; var wh = env.tonemap_white if env != null else 6.0
+	var co = env.adjustment_contrast if env != null else 1.0; var sa = env.adjustment_saturation if env != null else 1.0
+	var lin = Vector3(_lin(base.r), _lin(base.g), _lin(base.b))
+	var zero = _shown(Vector3.ZERO, ex, wh, co, sa)   # what black shows as (the contrast setting moves it a little)
+	var want = (GS.BONE.r + GS.BONE.g + GS.BONE.b) / 3.0 * share
+	var lo = 0.0; var hi = 1.0
+	for i in 24:
+		var mid = (lo + hi) * 0.5; var o = _shown(lin * mid, ex, wh, co, sa) - zero
+		if (o.x + o.y + o.z) / 3.0 < want: lo = mid
+		else: hi = mid
+	_pale_cache[share] = (lo + hi) * 0.5
+	return Color(base, _pale_cache[share])
+# A route: one flat line in the chart plane along the curve the fleet flies. Lime and solid to a next jump, thin and pale
+# otherwise (_paint_lanes). No bloom, no halo, no flow, no hazard chevrons.
 func _add_lane(a: String, b: String) -> void:
 	var A = _nodes[a]["pos"]; var B = _nodes[b]["pos"]
-	var curve := System.route_curve(A, B); var L := curve.get_baked_length()
+	var curve: Curve3D = sys.lane_curve(A, B); var L := curve.get_baked_length()
 	var trim_a = _nodes[a]["ring_r"] * 1.05; var trim_b = _nodes[b]["ring_r"] * 1.05
-	var tb = _nodes[b]["n"]["type"]
-	var hazard = 1.0 if tb in ["elite", "boss"] else 0.0
-	var mat = sys.mat("LANE", {"col": Color(0.8, 0.85, 1.0, 0.35), "flow": 0.0, "hazard": hazard, "len": L - trim_a - trim_b, "glow": 1.0})
-	var mi = sys.mi(sys.route_ribbon(curve, 1.3, trim_a, trim_b), mat, Vector3(0, 0.12, 0)); mi.extra_cull_margin = L
+	var mat = sys.mat("LANE_FLAT", {"col": Color(GS.BONE, GS.PALE), "px": 0.6})
+	var mi = sys.mi(sys.route_ribbon(curve, 1.6, trim_a, trim_b), mat, Vector3(0, 0.12, 0)); mi.extra_cull_margin = L
 	root3.add_child(mi)
-	_lanes[a + ">" + b] = {"a": a, "b": b, "mi": mi, "mat": mat, "hazard": hazard}
+	_lanes[a + ">" + b] = {"a": a, "b": b, "mi": mi, "mat": mat}
+# the way in: before a sector's first jump the fleet waits off the chart's edge, and a lime line runs from it to each first stop
+func _add_entry_lanes() -> void:
+	var C = _C(); var from = _entry_pos()
+	for n in C.RUN["map"]["cols"][0]:
+		if not _nodes.has(n["id"]): continue
+		var curve: Curve3D = sys.lane_curve(from, _nodes[n["id"]]["pos"]); var L := curve.get_baked_length()
+		var mat = sys.mat("LANE_FLAT", {"col": Color(GS.MAP_EMBER, 1.0), "px": 1.25})
+		var mi = sys.mi(sys.route_ribbon(curve, 1.6, 2.0, _nodes[n["id"]]["ring_r"] * 1.05), mat, Vector3(0, 0.12, 0)); mi.extra_cull_margin = L
+		root3.add_child(mi)
+		_lanes["@>" + str(n["id"])] = {"a": "@", "b": str(n["id"]), "mi": mi, "mat": mat}
 func _add_patrols() -> void:   # enemy patrols: one round each rival raider stop, two of the sector's own fleet in the far half
 	var C = _C(); var fac = C.RUN["map"]["fac"]
 	for id in _nodes:
@@ -423,9 +596,13 @@ func _patrol(fac: String, c: Vector3, r: float, sp: float) -> void:
 	if node == null:
 		var pm = PrismMesh.new(); pm.size = Vector3(0.5, 1.2, 0.2)
 		node = Node3D.new(); var m = sys.mi(pm, _mat(L["main"], 1.0)); m.rotation_degrees = Vector3(0, 0, -90); node.add_child(m)
-	var lt = OmniLight3D.new(); lt.light_color = L["light"]; lt.light_energy = 0.9; lt.omni_range = 3.0; node.add_child(lt)
-	sys.glow(node, L["light"], 1.4, Vector3(-0.9, 0, 0), 2.2, 0.9, 1.0 if int(L["look"]) == 1 else 0.0)
-	if int(L["look"]) == 1: _sync_lights.append([lt, 0.9])
+	# a patrol is scenery, not a stop: it sits in the dim light tier so it never reads as part of your fleet or as a place to go
+	for v in node.find_children("*", "VisualInstance3D", true, false):
+		if not (v is Light3D): v.layers = LAYER_AHEAD
+		if v is Sprite3D: v.modulate = Color(v.modulate.r * 0.45, v.modulate.g * 0.45, v.modulate.b * 0.45, v.modulate.a)
+	node.scale *= 0.8
+	var lt = OmniLight3D.new(); lt.light_color = L["light"]; lt.light_energy = 0.3; lt.omni_range = 3.0; lt.light_cull_mask = LAYER_AHEAD; node.add_child(lt)
+	if int(L["look"]) == 1: _sync_lights.append([lt, 0.3])
 	root3.add_child(node)
 	_patrols.append([node, c + Vector3(0, 2.6, 0), r, sp, _rng.randf() * TAU])
 func _make_token() -> Node3D:   # your fleet at map scale: the flagship's real hull (A4's kit ship when it is in the build) and up to two escorts
@@ -452,7 +629,7 @@ func _make_token() -> Node3D:   # your fleet at map scale: the flagship's real h
 		if e != null:
 			e.position = Vector3(-3.8, -0.4, 3.0 if i == 0 else -3.0); t.add_child(e)
 			_add_engine_mounts(e)
-	sys.glow(t, L["light"], 3.6, stern, 2.0, 1.4)
+	sys.glow(t, L["light"], 3.6, stern, 2.0, 0.6)
 	var l = OmniLight3D.new(); l.light_color = L["light"]; l.light_energy = 2.4; l.omni_range = 9.0; l.position = stern; t.add_child(l)
 	return t
 
@@ -471,13 +648,9 @@ func _engine_positions() -> Array:
 func _token_home() -> Vector3:
 	var C = _C(); var pos = C.RUN.get("pos")
 	if pos != null and _nodes.has(pos): return _nodes[pos]["pos"] + TOKEN_OFF + Vector3(0, _nodes[pos]["top"], 0)
-	var n0 = C.RUN["map"]["cols"][0][0]; var pp = _polar(n0)
-	return _at(pp.x + deg_to_rad(16.0), R_OUT + 6.0) + Vector3(0, 3.0, 0)   # just before the first jump, clear of the first stop
+	return _entry_pos() + Vector3(0, 3.0, 0)   # just before the first jump, clear of the first stop
 
 # ---------------- state ----------------
-func campaign_glyph(t: String) -> String:
-	var g = ui.STOP_GLYPH.get(t, ["", "#b3aa95"])
-	return g[1]
 func _avail() -> Array:
 	var C = _C()
 	return C.page["data"]["avail"] if C.page["kind"] == "map" else []
@@ -497,87 +670,152 @@ func _refresh() -> void:
 	var C = _C(); var av = _avail(); _card_key = ""
 	_find_reachable()
 	_danger.clear()
+	_kb_order.clear()
 	for id in _nodes:
 		var d = _nodes[id]; var n = d["n"]; var done = C.jt(n.get("done"))
+		if n["type"] in ["battle", "elite", "boss"] and (d["fac"] != C.nodeFaction(n) or d["obj"].get_node("EnemyFleet").get_meta("danger_level") != int(intel.danger(n).get("level", 1))):
+			root3.remove_child(d["obj"]); d["obj"].queue_free()
+			_add_node(n); d = _nodes[id]
 		var current = C.RUN.get("pos") == id
 		var bypassed = not current and not done and not _reachable.has(id)
-		for m in d["mats"]:   # a passed stop's lights go dark
-			if m is ShaderMaterial: m.set_shader_parameter("dim", 0.1 if bypassed else (0.2 if done and not current else 1.0)); continue
-			var c0: Color = m.get_meta("c0"); var e0: float = m.get_meta("e0")
-			m.albedo_color = c0.lerp(Color(0.15, 0.17, 0.2), 0.85) if bypassed or done and not current else c0
-			if m.emission_enabled: m.emission_energy_multiplier = e0 * (0.06 if bypassed else (0.15 if done and not current else 1.0))
+		# your stop and the next jumps keep full models; stops further on are smaller and darker; behind you or cut off, dimmer still
+		_set_tier(d, 0 if (current or av.has(id)) else (2 if (done or bypassed) else 1))
 		if not done: _danger[id] = intel.danger(n)
-		if d.has("threat") and _danger.has(id) and not _danger[id].is_empty(): d["threat"].set_shader_parameter("col", Color(_danger[id]["col"]))   # the marker takes the danger band's colour
-		# the ring says what you can do with the stop: gilt where you can jump now, bright where the fleet is, faint ahead, grey behind
-		var tg = Color(campaign_glyph(n["type"]))   # stops ahead: a ring in their kind's colour, so no ring is plain
-		var rc = Color(tg.lerp(Color(0.68, 0.84, 1.0), 0.65), 0.72); var dash = 0.0; var fill = 0.5
-		if done: rc = Color(0.5, 0.5, 0.55, 0.16)
-		if bypassed: rc = Color(0.32, 0.37, 0.45, 0.08); fill = 0.0
-		if av.has(id): rc = Color(1.0, 0.76, 0.34, 0.95); dash = 1.0; fill = 1.0
-		if C.RUN.get("pos") == id: rc = Color(1.0, 0.88, 0.55, 1.0); fill = 0.6
-		d["rmat"].set_shader_parameter("col", rc); d["rmat"].set_shader_parameter("dash", dash); d["rmat"].set_shader_parameter("fill", fill)
-		d["orbit"].material_override.set_shader_parameter("col", Color(0.7, 0.8, 1.0, 0.06 if bypassed else (0.16 if done else 0.45)))
-	if _hot != "": _routes = intel.routes_through(_hot)
+		d["nem"] = not done and n["type"] in ["battle", "elite"] and View.nem_node_is(C, n)
+		if not done or current: _kb_order.append(id)
+	_kb_order.sort_custom(func(a, b):
+		var na = _nodes[a]["n"]; var nb = _nodes[b]["n"]
+		return float(na["col"]) < float(nb["col"]) if float(na["col"]) != float(nb["col"]) else float(na["y"]) < float(nb["y"]))
+	if _hot != "" and not av.has(_hot): _routes = intel.routes_through(_hot)
 	_paint_lanes()
 	var fsig = _fleet_sig()
 	if token != null and fsig != _token_sig and not _flying:   # the fleet changed (a hull bought, sold or lost): redraw the token
 		_token_sig = fsig; var p0 = token.position; token.queue_free(); token = _make_token(); root3.add_child(token); token.position = p0
 	if not _flying and token != null: token.position = _token_home()
 	overlay.queue_redraw()
+var _kb_order: Array = []     # the stops the arrow keys walk, by column then height
+# One stop's tier: its render layer (which copy of the sun's light reaches it), its own lights, glows and lit windows, and the
+# size it eases to (_process). The parts are gathered once per stop.
+func _set_tier(d: Dictionary, tier: int) -> void:
+	if int(d.get("tier", -1)) == tier: return
+	var first = int(d.get("tier", -1)) < 0
+	d["tier"] = tier
+	if not d.has("parts"): d["parts"] = _parts(d["obj"])
+	var f: float = TIER_LIGHT[tier]; var layer = [1, LAYER_AHEAD, LAYER_BEHIND][tier]
+	var P = d["parts"]
+	# A model that changes its render layer while it is in the scene leaves the engine's light pairing out of step (it
+	# logged "indexing did not unpair geometries from light" when the sector was torn down). So the stop steps out of the
+	# scene, takes its new layer, and steps back in.
+	var obj: Node3D = d["obj"]; var par = obj.get_parent() if int(d.get("layer", 1)) != layer else null
+	if par != null: par.remove_child(obj)
+	d["layer"] = layer
+	for v in P["vis"]:
+		if is_instance_valid(v): v.layers = layer
+	if par != null: par.add_child(obj)
+	for l in P["lights"]:
+		if is_instance_valid(l[0]):
+			l[0].light_energy = l[1] * f
+			l[0].light_cull_mask = layer
+	for g in P["gains"]:
+		g[0].set_shader_parameter(g[1], g[2] * f); g[0].set_meta("dimk", f)
+	for sp in P["sprites"]:
+		if is_instance_valid(sp[0]): sp[0].modulate = Color(sp[1].r * f, sp[1].g * f, sp[1].b * f, sp[1].a)
+	for m in P["std"]: m[0].emission_energy_multiplier = m[1] * f
+	if first:   # the map opens with every stop already at its size
+		d["sc"] = TIER_SCALE[tier]; d["obj"].scale = Vector3.ONE * float(d["sc"])
+func _parts(root: Node) -> Dictionary:
+	var out = {"vis": [], "lights": [], "gains": [], "sprites": [], "std": [], "aabb": AABB()}
+	var stack = [root]; var seen = {}; var inv = root.global_transform.affine_inverse() if root.is_inside_tree() else Transform3D.IDENTITY
+	while not stack.is_empty():
+		var nd = stack.pop_back()
+		for ch in nd.get_children(): stack.append(ch)
+		if nd is Light3D: out["lights"].append([nd, nd.light_energy]); continue
+		if nd is Sprite3D: out["sprites"].append([nd, nd.modulate])
+		if nd is VisualInstance3D: out["vis"].append(nd)
+		var m = nd.material_override if nd is GeometryInstance3D else null
+		# the model's own bounds, in the stop's space: solid meshes only (no glow, cloud or orbit sheets, no scattered rocks)
+		if nd is MeshInstance3D and nd.mesh != null and root.is_inside_tree() and not (m is ShaderMaterial and m.shader != null and m.shader.code.contains("blend_add")):
+			var bb: AABB = inv * nd.global_transform * nd.get_aabb()
+			if bb.size.length() < 16.0: out["aabb"] = bb if out["aabb"].size == Vector3.ZERO else out["aabb"].merge(bb)
+		if m == null or seen.has(m): continue
+		seen[m] = true
+		if m is ShaderMaterial and m.has_meta("map_mat") and m.shader != null:   # the map's own shaders: their brightness is "gain", "light" or "ember"
+			for u in m.shader.get_shader_uniform_list():
+				if not (str(u["name"]) in ["gain", "light", "ember"]): continue
+				var b = m.get_shader_parameter(u["name"])
+				if b == null: b = RenderingServer.shader_get_parameter_default(m.shader.get_rid(), u["name"])
+				if b is float or b is int: out["gains"].append([m, str(u["name"]), float(b)])
+		elif m is StandardMaterial3D and m.emission_enabled: out["std"].append([m, m.emission_energy_multiplier])
+	return out
 var _token_sig := ""
 func _fleet_sig() -> String: return str(_C().RUN["fleet"].map(func(x): return str(x["uid"]) + str(x["tpl"]))) + str(_C().RUN.get("flagUid"))
-func _route_lanes() -> Dictionary:   # lane key -> route colour (the first route wins a shared lane)
+func _route_lanes() -> Dictionary:   # the lanes of the safest way on through the stop you point at (they read a little brighter)
 	var out = {}
-	for r in _routes:
-		var p = [_C().RUN.get("pos")] + r["path"] if _C().RUN.get("pos") != null else r["path"]
-		for i in range(p.size() - 1):
-			var k = str(p[i]) + ">" + str(p[i + 1])
-			if not out.has(k): out[k] = r["col"]
+	if _routes.is_empty(): return out
+	var r = _routes[0]
+	var p = [_C().RUN.get("pos")] + r["path"] if _C().RUN.get("pos") != null else r["path"]
+	for i in range(p.size() - 1): out[str(p[i]) + ">" + str(p[i + 1])] = true
 	return out
+# The routes: lime and solid to a next jump (the one line you can fly now), one thin pale line for every other route, fainter
+# when it is cut off. Routes behind the fleet are hidden. Two channels, colour and width (ui_spec.md 5.2). No blue routes.
 func _paint_lanes() -> void:
-	var C = _C(); var R = C.RUN; var av = _avail(); var lit = _route_lanes()
+	var C = _C(); var R = C.RUN; var av = _avail(); var lit = _route_lanes(); var kk = float(ui.k) if ui != null and ui.get("k") != null else 1.0
+	var current_col = int(_nodes[R["pos"]]["n"]["col"]) if R.get("pos") != null and _nodes.has(R["pos"]) else -1
 	for k in _lanes:
-		var L = _lanes[k]; var A = _nodes[L["a"]]["n"]; var Bn = _nodes[L["b"]]["n"]
+		var L = _lanes[k]
+		if L["a"] == "@":
+			if L.has("mi"): L["mi"].visible = R.get("pos") == null and av.has(L["b"])
+			L["mat"].set_shader_parameter("col", for_screen(Color(GS.MAP_EMBER, 1.0))); L["mat"].set_shader_parameter("px", 1.25 * kk)
+			continue
+		var A = _nodes[L["a"]]["n"]; var Bn = _nodes[L["b"]]["n"]
+		var behind = int(A["col"]) < current_col
+		if L.has("mi"): L["mi"].visible = not behind
 		var trav = C.jt(A.get("done")) and (C.jt(Bn.get("done")) or R.get("pos") == L["b"])
 		var nxt = R.get("pos") == L["a"] and av.has(L["b"])
-		if R.get("pos") == null and av.has(L["b"]): nxt = false
 		var ahead = _reachable.has(L["a"]) and _reachable.has(L["b"])
 		var past = not trav and not nxt and not ahead
-		var col = Color(0.74, 0.57, 0.29, 0.4) if trav else (Color(1.0, 0.78, 0.38, 1.0) if nxt else Color(0.53, 0.74, 1.0, 0.58))
-		if past: col = Color(0.28, 0.33, 0.42, 0.055)
-		var flow = 1.0 if nxt else 0.0
-		if lit.has(k) and not past: col = Color(lit[k], 1.0); flow = 1.0
-		if _flying and k == str(R.get("pos")) + ">" + _flight_id: col = Color(1.0, 0.9, 0.64, 1.0); flow = 1.0
-		L["mat"].set_shader_parameter("col", col); L["mat"].set_shader_parameter("flow", flow)
-		L["mat"].set_shader_parameter("glow", 1.4 if flow > 0.0 else (0.35 if past else 0.8))
-		L["mat"].set_shader_parameter("hazard", 0.0 if trav or past or C.jt(Bn.get("done")) else L["hazard"])
+		var col = pale(GS.PALE); var w = 0.6
+		if trav or past: col = pale(GS.PALE_CUT)
+		elif lit.has(k): col = pale(0.5)
+		if nxt: col = for_screen(Color(GS.MAP_EMBER, 1.0)); w = 1.25
+		if _flying and k == str(R.get("pos")) + ">" + _flight_id: col = for_screen(Color(GS.MAP_EMBER, 1.0)); w = 1.25
+		L["mat"].set_shader_parameter("col", col); L["mat"].set_shader_parameter("px", w * kk)
 
 func _arrive(new_sector: bool) -> void:   # the camera starts leaning on where the fleet is and settles back over the chart
 	var C = _C(); var pos = C.RUN.get("pos")
 	var at = _nodes[pos]["pos"] if pos != null and _nodes.has(pos) else _token_home()
-	if new_sector: _cam_focus = at; _cam_zoom = 0.62
+	if new_sector:
+		_fit(_free_rect())
+		_cam_focus = _fit_target.lerp(sys.sun_pos, float(sys.approach["arrival_lean"]))
+		_cam_zoom = sys.approach["arrival_zoom"]
 	_arrive_t = 0.0
 	_uz_t = 1.0; _pan_t = Vector3.ZERO
 	if _arrival_tween != null: _arrival_tween.kill()
 	var tw = create_tween(); _arrival_tween = tw; tw.set_trans(Tween.TRANS_SINE); tw.set_ease(Tween.EASE_IN_OUT)
-	tw.tween_property(self, "_cam_zoom", 1.0, 1.6 if new_sector else 1.1)
-	tw.parallel().tween_property(self, "_cam_focus", Vector3.ZERO, 1.6 if new_sector else 1.1)
+	tw.tween_property(self, "_cam_zoom", 1.0, float(sys.approach["arrival_seconds"]) if new_sector else 1.1)
+	tw.parallel().tween_property(self, "_cam_focus", Vector3.ZERO, float(sys.approach["arrival_seconds"]) if new_sector else 1.1)
 
 func _process(delta: float) -> void:
 	if not visible or _C() == null or _C().RUN == null or root3 == null: return
 	_t += delta
 	var mp = get_local_mouse_position() / size.max(Vector2.ONE) - Vector2(0.5, 0.5)
 	mp = mp.clamp(Vector2(-0.5, -0.5), Vector2(0.5, 0.5))
-	var fr = _free_rect(); var fk = str(size) + "|" + _sig + "|" + str(fr.position.round()) + str(fr.size.round())
-	if fk != _fit_key: _fit_key = fk; _fit(fr)
+	# the frame is fitted again when the fleet leaves the sector's edge (the waiting fleet no longer has to be in it)
+	var fr = _free_rect(); var fk0 = str(size) + "|" + _sig + "|" + str(fr.position.round()) + str(fr.size.round()); var fk = fk0 + "|" + str(_C().RUN.get("pos") == null)
+	if fk != _fit_key:
+		var snap = not _fit_key.begins_with(fk0)   # a new sector or window: no easing
+		_fit_key = fk; _fit(fr)
+		if snap or _fit_dist_now <= 0.0: _fit_target_now = _fit_target; _fit_dist_now = _fit_dist
+	var fe = 1.0 - exp(-delta * 2.5)
+	_fit_target_now = _fit_target_now.lerp(_fit_target, fe); _fit_dist_now = lerpf(_fit_dist_now, _fit_dist, fe)
 	_pan_keyboard(delta)
 	if _flying: _advance_flight(delta)
 	# the player's zoom and pan ease in; the arrival and jump moves layer on top
 	var ke = 1.0 - exp(-delta * 7.0)
 	_uz = lerp(_uz, _uz_t, ke); _pan = _pan.lerp(_pan_t, ke)
-	var dist = _fit_dist * _cam_zoom * _uz
+	var dist = _fit_dist_now * _cam_zoom * _uz
 	var drift = Vector3(sin(_t * 0.05) * 1.0, sin(_t * 0.037) * 0.4, cos(_t * 0.043) * 0.7)   # small: the fitted frame must hold
-	var base_t = _fit_target + _pan
+	var base_t = _fit_target_now + _pan
 	var target = base_t.lerp(_cam_focus, clamp((1.0 - _cam_zoom) / 0.4, 0.0, 1.0)) if _cam_focus != Vector3.ZERO else base_t
 	cam.position = target + CAM_DIR * dist + drift * _cam_zoom * _uz + Vector3(mp.x * 1.4, -mp.y * 0.9, 0) * _uz
 	cam.look_at(target, Vector3.UP)
@@ -592,7 +830,7 @@ func _process(delta: float) -> void:
 		for b in props.blinkers:   # running lights and welding sparks
 			if is_instance_valid(b[0]):
 				var ph = fmod(_t + b[1], b[2]) / b[2]
-				b[0].material_override.set_shader_parameter("gain", 0.25 + 1.6 * exp(-ph * 9.0))
+				b[0].material_override.set_shader_parameter("gain", (0.25 + 1.6 * exp(-ph * 9.0)) * float(b[0].material_override.get_meta("dimk", 1.0)))
 	var sync_k = 0.7 + 0.5 * sin(_t * 2.4)   # the Hegemony lights keep one beat
 	for sl in _sync_lights:
 		if is_instance_valid(sl[0]): sl[0].light_energy = sl[1] * sync_k
@@ -607,16 +845,9 @@ func _process(delta: float) -> void:
 		if sp != null: sp.rotate_y(delta * 0.3)
 		var sp2 = o.get_node_or_null("spin2")
 		if sp2 != null: sp2.rotate_y(delta * 0.8)
-		var bob = o.get_node_or_null("bob")
-		if bob != null:
-			bob.position.y = _nodes[id]["top"] - 0.7 + sin(_t * 1.6 + _nodes[id]["theta"] * 3.0) * 0.12
-		var av = _avail().has(id)
-		var k = 1.0 + (0.05 * sin(_t * 2.6) if av else 0.0) + (0.1 if id == _hot else 0.0)
-		_nodes[id]["ring"].scale = Vector3(k, 1, k)
-		_nodes[id]["rmat"].set_shader_parameter("hot", 1.0 if id == _hot else 0.0)
-		var hk = lerp(float(_nodes[id]["hk"]), 1.0 if id == _hot else 0.0, 1.0 - exp(-delta * 10.0)); _nodes[id]["hk"] = hk
-		_nodes[id]["hg"].visible = hk > 0.01
-		if hk > 0.01: _nodes[id]["hg"].material_override.set_shader_parameter("gain", hk * (0.32 if av else 0.2))
+		var ts: float = TIER_SCALE[clampi(int(_nodes[id]["tier"]), 0, 2)]   # a stop eases to its tier's size when you jump
+		if absf(float(_nodes[id]["sc"]) - ts) > 0.001:
+			_nodes[id]["sc"] = lerpf(float(_nodes[id]["sc"]), ts, 1.0 - exp(-delta * 6.0)); o.scale = Vector3.ONE * float(_nodes[id]["sc"])
 	for pt in _patrols:
 		var a = pt[4] + _t * pt[3]
 		var p = pt[1] + Vector3(cos(a) * pt[2], sin(_t * 0.7 + pt[4]) * 0.3, sin(a) * pt[2] * 0.6)
@@ -637,12 +868,10 @@ func _screen(p: Vector3) -> Vector2: return cam.unproject_position(p)
 var _fit_key := ""
 var _fit_target := Vector3(0, 0, 0.5)
 var _fit_dist := 100.0
-func _free_rect() -> Rect2:   # left of the side panel, below the title and intel strip, above the legend and the fight previews
-	var L = float(ui.px(28)); var Rr = size.x - float(ui.px(_side_w)) - float(ui.px(28)); var T = float(ui.px(170)); var Bt = size.y - float(ui.px(170))
-	if ui.has_method("map_free_y"):
-		var fy: Vector2 = ui.map_free_y()
-		if fy.x > 0.0: T = fy.x + float(ui.px(12))
-		if fy.y > 0.0: Bt = fy.y - float(ui.px(8))
+var _fit_target_now := Vector3(0, 0, 0.5)   # the frame in use, eased toward the fitted one
+var _fit_dist_now := -1.0
+func _free_rect() -> Rect2:   # right of the briefing column, clear of the text buttons (top right) and the purse (bottom right)
+	var L = float(ui.px(COL_W + 96.0)); var Rr = size.x - float(ui.px(72)); var T = float(ui.px(104)); var Bt = size.y - float(ui.px(128))
 	return Rect2(L, T, max(100.0, Rr - L), max(100.0, Bt - T))
 func _ground(sp: Vector2) -> Vector3:
 	var o = cam.project_ray_origin(sp); var d = cam.project_ray_normal(sp)
@@ -653,8 +882,11 @@ func _fit(fr: Rect2) -> void:
 	for id in _nodes:   # the node's scene and its labels: a little wider than the ring, up to the region name, down to the chips
 		var p = _nodes[id]["pos"]
 		for d in [Vector3(-5.0, 0, 0), Vector3(5.0, 0, 0), Vector3(0, _nodes[id]["top"] + 2.6, -1.0), Vector3(0, 0, 5.0)]: pts.append(p + d)
-	for d in [Vector3(-SUN_R * 3.0, 0, 0), Vector3(SUN_R * 3.0, 0, 0), Vector3(0, SUN_R * 1.9, SUN_R * 2.3), Vector3(0, 0, SUN_R * 3.9)]: pts.append(d)   # the Hollow Sun and its disc stay in frame
-	if _C().RUN.get("pos") == null: pts.append(_token_home())   # the fleet waiting before the first jump
+	if bool(sys.approach["fit_sun"]):
+		var sr = SUN_R * float(sys.approach["sun_scale"])
+		for d in [Vector3(-sr * 3.0, 0, 0), Vector3(sr * 3.0, 0, 0), Vector3(0, sr * 1.9, sr * 2.3), Vector3(0, 0, sr * 3.9)]: pts.append(sys.sun_pos + d)
+	if _C().RUN.get("pos") == null:   # the fleet waiting before the first jump, its escorts and its words
+		for d in [Vector3(-8.0, 0, 0), Vector3(6.0, 0, 0), Vector3(0, 0, 9.0), Vector3(0, 4.0, 0)]: pts.append(_token_home() + d)
 	var lo = Vector3(INF, 0, INF); var hi = Vector3(-INF, 0, -INF)
 	for id in _nodes:
 		var p = _nodes[id]["pos"]; lo = Vector3(min(lo.x, p.x), 0, min(lo.z, p.z)); hi = Vector3(max(hi.x, p.x), 0, max(hi.z, p.z))
@@ -668,261 +900,217 @@ func _fit(fr: Rect2) -> void:
 		var off = _ground((a + b) * 0.5) - _ground(fr.get_center())
 		tgt += Vector3(off.x, 0, off.z); dist *= clamp(lerp(1.0, k, 0.8), 0.6, 1.6)
 	_fit_target = tgt; _fit_dist = dist
+	cam.position = tgt + CAM_DIR * dist; cam.look_at(tgt, Vector3.UP)
+	sys.sky_direction(cam, env)
+# The words on the map (the Briefing build). Plain text with a dark halo, no strip or tag behind it (GS.halo_text; the
+# campaign map exception to ui_style.md 3). Current and next stops keep their captions. Every other stop has a type glyph;
+# a Nemesis meeting adds its red diamond above it. The tip card shows on hover or keyboard focus (_update_card).
 func _draw_overlay() -> void:
 	var C = _C()
-	if C == null or C.RUN == null or root3 == null: return
-	var av = _avail(); var s = ui.k   # ui.k already follows the shared law (ui_scale.gd); this re-clamp at 2.2 is folded into it
-	var on_route = {}
-	for r in _routes:
-		for st in r["st"]["running"]: on_route[st["id"]] = [r, st]
-	var dy = _label_shifts(s)
-	var fr0 = _free_rect(); var fr_lab = Rect2(fr0.position + Vector2(40.0 * s, 10.0 * s), fr0.size - Vector2(80.0 * s, 80.0 * s))
-	for id in _nodes:
-		var d = _nodes[id]; var n = d["n"]; var done = C.jt(n.get("done"))
+	if C == null or C.RUN == null or root3 == null or cam.position.length_squared() < 1.0: return
+	var av = _avail(); var s: float = ui.k; var pos = C.RUN.get("pos")
+	var left = float(ui.px(COL_W)) + 8.0 * s
+	_words.clear()
+	var taken: Array = []   # icons, star, models and captions all share the same exclusion list
+	var sun_rect := _sun_rect()
+	taken.append(sun_rect); _words.append(sun_rect)
+	for id in _nodes:   # type glyphs over each model; the Nemesis stays above its glyph
+		var d = _nodes[id]
 		if cam.is_position_behind(d["pos"]): continue
-		var base = _screen(d["pos"]); var top = _screen(d["pos"] + Vector3(0, d["top"] + 0.6, 0))
-		# zoomed or panned: a stop whose labels would run under the briefing, the key, the fight cards or the side panel
-		# prints no labels (its 3D scene stays; hover still shows its card)
-		if id != _hot and not fr_lab.has_point(base): continue
-		var fight = n["type"] in ["battle", "elite", "boss"]
-		var bypassed = not done and C.RUN.get("pos") != id and not _reachable.has(id)
-		var col = ui.BONE if av.has(id) else Color(0.74, 0.8, 0.88)
-		if done: col = Color(0.45, 0.44, 0.42)
-		if bypassed: col = Color(0.3, 0.34, 0.4)
-		var y = base.y + 30.0 * s + dy.get(id, 0.0)
-		var name = ""
-		if C.jt(n.get("enc")) and C.ENCOUNTERS.has(n["enc"]) and not done: name = str(C.ENCOUNTERS[n["enc"]]["n"])
-		elif not fight: name = str(C.NODE_INFO[n["type"]]["n"])
-		elif n["type"] == "boss": name = "Sector flagship"
-		if name != "": _text(name, Vector2(base.x, y), int(15 * s), col, ui.font_semi); y += 17.0 * s
-		if bypassed:
-			if id == _hot: _text("BYPASSED", Vector2(base.x, y), int(11 * s), col, ui.font_caps)
-			continue
-		if C.RUN.get("pos") == id and not _flying: _text("FLEET HERE", top + Vector2(0, -18.0 * s), int(11 * s), ui.GILT, ui.font_caps)
-		if fight and not done and C.nemNodeIs(n):   # B4: his fight is marked before you commit
-			var nt = ui.nem_portrait()   # his framed face beside his fight's tags (godot/portraits, R42), when the painting exists
-			if nt != null and (av.has(id) or id == _hot):   # his face beside the fights you can take now (every fight is his when the clock is full)
-				var ps = 38.0 * s; var pr = Rect2(base.x - 42.0 * s - ps, y - 12.0 * s, ps, ps)
-				overlay.draw_rect(pr.grow(2.0 * s), Color(0.02, 0.02, 0.03, 0.9)); overlay.draw_texture_rect(nt, pr, false)
-				overlay.draw_rect(pr.grow(2.0 * s), Color("#ff6b5a"), false, 1.5 * s)
-			_chip("NEMESIS", Vector2(base.x, y + 2.0 * s), int(12 * s), Color("#ff6b5a"), true); y += 18.0 * s
-		# intel line: danger band chip, board shape, reward
-		if fight and not done and _danger.has(id) and not _danger[id].is_empty():
-			var dg = _danger[id]; var sub = ""
-			if C.jt(n.get("shape")) and n["shape"] != "open" and C.SHAPES.has(n["shape"]): sub = str(C.SHAPES[n["shape"]]).to_lower()
-			if C.jt(n.get("mod")) and C.NODE_MODS.has(n["mod"]): sub = (sub + " · " if sub != "" else "") + str(C.NODE_MODS[n["mod"]]["short"]).to_lower()
-			_chip(dg["band"].to_upper(), Vector2(base.x, y + 2.0 * s), int(11 * s), dg["col"]); y += 17.0 * s
-			if sub != "" and _detail(id): _text(sub, Vector2(base.x, y), int(12 * s), Color(0.6, 0.66, 0.75)); y += 14.0 * s
-		var rw = n.get("rw")
-		if rw is Dictionary and not done:
-			if rw.get("k") == "boon" and C.PATRONS.has(rw.get("p")):
-				var P = C.PATRONS[rw["p"]]; var pc = Color(P["col"]); var bp = top + Vector2(0, -6.0 * s)
-				overlay.draw_circle(bp, 9.5 * s, pc); overlay.draw_arc(bp, 9.5 * s, 0, TAU, 24, ui.INK, 2.0 * s, true)
-				_text(str(P["glyph"]), bp + Vector2(0, 4.5 * s), int(12 * s), ui.INK, ui.font_semi)
-				if _detail(id): _text(str(P["short"]) + (" ★" if C.jt(rw.get("min")) else ""), Vector2(base.x, y), int(12 * s), pc if av.has(id) else Color(0.55, 0.53, 0.5))
-			elif _detail(id):
-				var lab = ui._reward_label(rw)
-				if lab != "": _text(lab, Vector2(base.x, y), int(12 * s), Color("#bfb6a0") if av.has(id) else Color("#7f7a6e"))
-		if fight and C.jt(n.get("map")) and C.MAP_NAME.has(n["map"]) and not done and id == _hot: _text(str(C.MAP_NAME[n["map"]]).to_upper(), top + Vector2(0, -20.0 * s), int(10 * s), Color(0.62, 0.7, 0.82), ui.font_caps)
-
-		# running totals along the lit routes
-		if on_route.has(id):
-			var rr = on_route[id]; var st = rr[1]
-			var t = "%d fight%s · %d repair%s" % [st["fights"], "" if st["fights"] == 1 else "s", st["repairs"], "" if st["repairs"] == 1 else "s"]
-			_chip(t, top + Vector2(0, -36.0 * s), int(11 * s), rr[0]["col"], true)
+		var tp = _screen(d["pos"] + Vector3(0, (float(d["top"]) + 0.6) * float(d["sc"]), 0))
+		tp.y -= (GS.STOP_ICON_PX * 0.5 + GS.STOP_ICON_GAP) * s
+		var faded = int(d["tier"]) == 2
+		var icon_scale = s * (GS.STOP_ICON_FADED if faded else 1.0)
+		if tp.x > left:
+			if id != pos:
+				GS.stop_icon(overlay, tp, str(d["n"]["type"]), icon_scale, GS.STOP_ICON_FADED if faded else 1.0)
+				var icon_box = Rect2(tp - Vector2.ONE * 12.0 * icon_scale, Vector2.ONE * 24.0 * icon_scale)
+				taken.append(icon_box); _words.append(icon_box)
+			if d["nem"]: GS.diamond(overlay, tp + Vector2(0, -20.0 * s), 5.0 * s, GS.NEM)
+	var bodies = _nodes.keys()   # larger enemy groups also keep captions off models farther on
+	for id in bodies:
+		if _nodes.has(id) and not cam.is_position_behind(_nodes[id]["pos"]): taken.append(_body_rect(id, s))
+	# where your fleet is
+	var f18: Font = GS.sheet_medium(); var f14: Font = GS.sheet_body()
+	if not _flying:
+		var here = Vector2.ZERO; var nm = ""
+		if pos != null and _nodes.has(pos): here = _screen(_nodes[pos]["pos"]); nm = View.here_name(C)
+		elif pos == null and token != null: here = _screen(Vector3(token.position.x, 0.0, token.position.z))
+		if here != Vector2.ZERO and here.x > left:
+			var y = here.y + 44.0 * s
+			if token != null:   # under the fleet's hulls: the flagship and the two escorts off its quarters
+				for off in [Vector3.ZERO, Vector3(-3.8, -0.4, 3.0), Vector3(-3.8, -0.4, -3.0)]: y = max(y, _screen(token.position + off).y + 34.0 * s)
+				here.x = lerp(here.x, _screen(token.position).x, 0.5)
+				taken.append(Rect2(_screen(token.position) - Vector2(60.0, 40.0) * s, Vector2(120.0, 80.0) * s))
+			if nm != "":
+				var w = f18.get_string_size(nm, HORIZONTAL_ALIGNMENT_LEFT, -1, int(21 * s)).x
+				if Rect2(here.x - w * 0.5, y - 18.0 * s, w, 46.0 * s).intersects(sun_rect): y = sun_rect.end.y + 24.0 * s
+				GS.halo_text(overlay, f18, Vector2(here.x - w * 0.5, y), nm, int(21 * s), GS.TEXT, s)
+				taken.append(Rect2(here.x - w * 0.5, y - 18.0 * s, w, 24.0 * s)); _words.append(taken.back()); y += 22.0 * s
+			var sub = "Your fleet is here"; var w2 = f14.get_string_size(sub, HORIZONTAL_ALIGNMENT_LEFT, -1, int(17 * s)).x
+			GS.halo_text(overlay, f14, Vector2(here.x - w2 * 0.5, y), sub, int(17 * s), GS.TEXT2, s)
+			taken.append(Rect2(here.x - w2 * 0.5, y - 14.0 * s, w2, 18.0 * s))
+	# the next jumps: marker and name as one caption, under the model unless something is in the way
+	var f20: Font = GS.sheet_medium(); var fs = int(21 * s); var m = 34.0 * s; var gp = 14.0 * s
+	var lane_pts: Array = []   # points along the lime routes: a caption sits off them when it can
+	var from = _nodes[pos]["pos"] if (pos != null and _nodes.has(pos)) else (Vector3(token.position.x, 0.0, token.position.z) if token != null else Vector3.ZERO)
+	for id in av:
+		if not _nodes.has(id): continue
+		var cv: Curve3D = sys.lane_curve(from, _nodes[id]["pos"]); var cl = cv.get_baked_length()
+		for j in 25: lane_pts.append(_screen(cv.sample_baked(cl * float(j) / 24.0)))
+	for i in av.size():
+		var id = av[i]
+		if not _nodes.has(id) or cam.is_position_behind(_nodes[id]["pos"]): continue
+		var base = _screen(_nodes[id]["pos"])
+		if base.x < left: continue   # panned under the briefing column: its row still names it
+		var nm = View.stop_name(C, _nodes[id]["n"])
+		var tw = f20.get_string_size(nm, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
+		var cw = m + gp + tw
+		var body = _body_rect(id, s)
+		var cy = body.get_center().y - m * 0.5
+		# beside the model first (as the mockup sets a name beside its marker), then under it, over it, and the four corners
+		var cands = [Vector2(body.end.x + 8.0 * s, cy), Vector2(body.position.x - 8.0 * s - cw, cy),
+			Vector2(base.x - cw * 0.5, body.end.y + 6.0 * s), Vector2(base.x - cw * 0.5, body.position.y - 6.0 * s - m),
+			Vector2(body.end.x + 4.0 * s, body.end.y + 2.0 * s), Vector2(body.position.x - 4.0 * s - cw, body.end.y + 2.0 * s),
+			Vector2(body.end.x + 4.0 * s, body.position.y - 2.0 * s - m), Vector2(body.position.x - 4.0 * s - cw, body.position.y - 2.0 * s - m)]
+		# Full-size fleets can fill all eight nearby slots. Search farther before covering an icon or another model.
+		for dy in [-64.0, 64.0, -128.0, 128.0]:
+			cands.append(Vector2(body.end.x + 8.0 * s, cy + dy * s))
+			cands.append(Vector2(body.position.x - 8.0 * s - cw, cy + dy * s))
+		var at: Vector2 = cands[0]; var best = 1e9
+		for ci in cands.size():
+			var r = Rect2(cands[ci], Vector2(cw, m)); var cost = float(ci)
+			if r.intersects(sun_rect): cost += 1000000.0
+			if r.position.x < left or r.end.x > size.x - 8.0 * s or r.position.y < 8.0 * s or r.end.y > size.y - 8.0 * s: cost += 1000.0
+			for t in taken:
+				if r.intersects(t): cost += 200.0   # another model, or words already placed
+			var rg = r.grow(5.0 * s)
+			for lp in lane_pts:
+				if rg.has_point(lp): cost += 12.0   # a lime route under the words
+			if cost < best: best = cost; at = cands[ci]
+		# A zoomed view can leave every nearby candidate on the disc. Place the caption in clear map space instead.
+		if Rect2(at, Vector2(cw, m)).intersects(sun_rect):
+			at.x = maxf(left, sun_rect.position.x - cw - 12.0 * s)
+			if Rect2(at, Vector2(cw, m)).intersects(sun_rect): at.y = sun_rect.end.y + 12.0 * s
+		taken.append(Rect2(at, Vector2(cw, m))); _words.append(taken.back())
+		var num = int(ui.route_num(id)) if ui.has_method("route_num") else i + 1   # the same number as its row
+		GS.marker(overlay, at + Vector2(m, m) * 0.5, s, str(num if num > 0 else i + 1), ui.font_num_b, id == str(ui.picked))
+		GS.halo_text(overlay, f20, Vector2(at.x + m + gp, at.y + m * 0.5 + (f20.get_ascent(fs) - f20.get_descent(fs)) * 0.5), nm, fs, GS.TEXT, s)
 	if _flying:
-		_text("IN FLIGHT  |  Click or press Space to skip", Vector2(_free_rect().get_center().x, _free_rect().end.y - 14.0 * s), int(16 * s), ui.BONE, ui.font_semi)
-	if has_focus() and av.size() > 0 and not _flying:
-		var fid = av[_focus % av.size()]
-		var fp = _screen(_nodes[fid]["pos"]); overlay.draw_arc(fp, 30.0 * ui.k, 0, TAU, 40, ui.GILT, 2.0, true)
-# Label stacks under the stops must not print over each other: each stack, top to bottom on screen, moves down below any
-# stack it would overlap (a short way at most; the text never changes).
-# What each stop prints under it, by priority (Opus, R51 round 2): its name, then the Nemesis and danger tags; the
-# secondary lines (board shape and modifier, reward, the place type) show on hover, on keyboard focus or zoomed in.
-# Nothing is lost: the hover card and the fight previews carry all of it.
-var _crowded := {}   # stops whose label stack still touches another after the shift: they keep to name and tags at zoom
-func _detail(id: String) -> bool: return id == _hot or (_uz < 0.72 and not _crowded.has(id))
-func _label_name(n: Dictionary) -> String:
-	var C = _C(); var done = C.jt(n.get("done")); var fight = n["type"] in ["battle", "elite", "boss"]
-	if C.jt(n.get("enc")) and C.ENCOUNTERS.has(n["enc"]) and not done: return str(C.ENCOUNTERS[n["enc"]]["n"])
-	if not fight: return str(C.NODE_INFO[n["type"]]["n"])
-	if n["type"] == "boss": return "Sector flagship"
-	return ""
-func _label_shifts(s: float) -> Dictionary:
-	var C = _C(); var items = []
-	for id in _nodes:
-		var d = _nodes[id]; var n = d["n"]
-		if cam.is_position_behind(d["pos"]): continue
-		var done = C.jt(n.get("done")); var fight = n["type"] in ["battle", "elite", "boss"]
-		var h = 0.0; var nm = _label_name(n)
-		if nm != "": h += 17.0
-		if fight and not done and C.nemNodeIs(n): h += 18.0
-		if fight and not done and _danger.has(id) and not _danger[id].is_empty():
-			h += 17.0
-			if ((C.jt(n.get("shape")) and n["shape"] != "open") or C.jt(n.get("mod"))) and _detail(id): h += 14.0
-		if n.get("rw") is Dictionary and not done and _detail(id): h += 14.0
-		if h <= 0.0: continue
-		var b = _screen(d["pos"]); var w = max(90.0 * s, ui.font_semi.get_string_size(nm, HORIZONTAL_ALIGNMENT_LEFT, -1, int(15 * s)).x + 8.0 * s)
-		items.append([b.y, id, Rect2(b.x - w * 0.5, b.y + 17.0 * s, w, h * s)])
-	items.sort_custom(func(a, b): return a[0] < b[0])
-	var placed = []; var out = {}; var crowd = {}
-	for it in items:
-		var r: Rect2 = it[2]; var shift = 0.0
-		for k in 6:
-			var hit = false
-			for p in placed:
-				if r.intersects(p):
-					var mv = p.end.y + 3.0 * s - r.position.y
-					if shift + mv > 70.0 * s: break
-					r.position.y += mv; shift += mv; hit = true
-			if not hit: break
-		var still = false
-		for p in placed:
-			if r.intersects(p): still = true
-		if still: crowd[it[1]] = true
-		placed.append(r)
-		if shift > 0.0: out[it[1]] = shift
-	_crowded = crowd
-	return out
-func _text(t: String, at: Vector2, size: int, col: Color, fnt: Font = null) -> void:
-	var f = fnt if fnt != null else ui.font
-	var w = f.get_string_size(t, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
-	var o = Vector2(at.x - w * 0.5, at.y)
-	overlay.draw_string(f, o + Vector2(0, max(1.0, size / 10.0)), t, HORIZONTAL_ALIGNMENT_LEFT, -1, size, Color(0, 0, 0, 0.55))   # a soft drop shadow
-	overlay.draw_string_outline(f, o, t, HORIZONTAL_ALIGNMENT_LEFT, -1, size, max(3, int(size / 3.5)), Color(0.0, 0.005, 0.015, 0.82))   # a dark outline keeps labels legible
-	overlay.draw_string(f, o, t, HORIZONTAL_ALIGNMENT_LEFT, -1, size, col)
-var _chip_sb: StyleBoxFlat = null
-func _chip(t: String, at: Vector2, size: int, col: Color, outline: bool = false) -> void:   # a small rounded coloured tag
-	var f = ui.font_caps if ui.font_caps != null else ui.font_semi; var w = f.get_string_size(t, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x; var h = size * 1.45
-	var r = Rect2(at.x - w * 0.5 - size * 0.55, at.y - h * 0.78, w + size * 1.1, h)
-	if _chip_sb == null: _chip_sb = StyleBoxFlat.new(); _chip_sb.anti_aliasing = true
-	_chip_sb.bg_color = Color(col.darkened(0.78), 0.9); _chip_sb.border_color = Color(col, 0.95 if outline else 0.7)
-	_chip_sb.set_border_width_all(max(1, int(round(1.5 if outline else 1.0)))); _chip_sb.set_corner_radius_all(int(h * 0.5))
-	overlay.draw_style_box(_chip_sb, r)
-	overlay.draw_string(f, Vector2(at.x - w * 0.5, at.y), t, HORIZONTAL_ALIGNMENT_LEFT, -1, size, col.lightened(0.12))
+		var t2 = "In flight. Click or press Space to skip."; var fr = _free_rect()
+		var w3 = f14.get_string_size(t2, HORIZONTAL_ALIGNMENT_LEFT, -1, int(17 * s)).x
+		GS.halo_text(overlay, f14, Vector2(fr.get_center().x - w3 * 0.5, fr.end.y + 40.0 * s), t2, int(17 * s), GS.TEXT2, s)
+	if has_focus() and _hot_by_key and _hot != "" and _nodes.has(_hot) and not _flying:   # keyboard focus: the sage ring (ui_spec.md 6)
+		var br = _body_rect(_hot, s).grow(3.0 * s)
+		overlay.draw_rect(br, GS.TEXT, false, max(2.0, 2.0 * s))
+
+func _sun_rect() -> Rect2:
+	var r = SUN_R * float(sys.approach["sun_scale"]) * float(sys.approach["disc_outer"])
+	var centre = _screen(sys.sun_pos)
+	var rx = absf(_screen(sys.sun_pos + Vector3(r, 0, 0)).x - centre.x)
+	var ry = absf(_screen(sys.sun_pos + Vector3(0, 0, r)).y - centre.y)
+	return Rect2(centre - Vector2(rx, ry), Vector2(rx, ry) * 2.0).grow(ui.px(12))
+# the screen box a stop's model takes, near enough for words to keep off it and for the focus ring to frame it
+func _body_rect(id: String, s: float) -> Rect2:
+	var d = _nodes[id]; var sc = float(d["sc"])
+	var bb: AABB = d["parts"]["aabb"] if d.has("parts") else AABB()
+	if bb.size != Vector3.ZERO and is_instance_valid(d["obj"]):   # the model's real bounds, projected
+		var xf: Transform3D = d["obj"].global_transform; var lo = Vector2(INF, INF); var hi = Vector2(-INF, -INF)
+		for i in 8:
+			var q = _screen(xf * bb.get_endpoint(i)); lo = Vector2(min(lo.x, q.x), min(lo.y, q.y)); hi = Vector2(max(hi.x, q.x), max(hi.y, q.y))
+		return Rect2(lo, hi - lo).grow(2.0 * s)
+	var c = _screen(d["pos"] + Vector3(0, float(d["top"]) * 0.45 * sc, 0))
+	var rx = max(26.0 * s, _screen(d["pos"]).distance_to(_screen(d["pos"] + cam.global_transform.basis.x * float(d["ring_r"]) * 1.1 * sc)))
+	var top = _screen(d["pos"] + Vector3(0, float(d["top"]) * sc, 0)); var bot = _screen(d["pos"])
+	var y0 = min(top.y, c.y - rx * 0.6); var y1 = max(bot.y + 10.0 * s, c.y + rx * 0.6)
+	return Rect2(c.x - rx, y0, rx * 2.0, y1 - y0)
 func _node_at(sp: Vector2) -> String:
 	var best = ""; var bd = 1e9
 	for id in _nodes:
 		var d = _nodes[id]
 		if cam.is_position_behind(d["pos"]): continue
-		var c = _screen(d["pos"] + Vector3(0, d["top"] * 0.4, 0))
-		var r = max(34.0 * ui.k, _screen(d["pos"]).distance_to(_screen(d["pos"] + cam.global_transform.basis.x * d["ring_r"] * 1.15)))
+		var sc = float(d["sc"])
+		var c = _screen(d["pos"] + Vector3(0, d["top"] * 0.4 * sc, 0))
+		var r = max(30.0 * ui.k, _screen(d["pos"]).distance_to(_screen(d["pos"] + cam.global_transform.basis.x * d["ring_r"] * 1.15 * sc)))
 		var dd = sp.distance_to(c)
 		if dd < r and dd < bd:
 			bd = dd; best = id
 	return best
 var _card_key := ""
 var _hot_by_key := false
+var _words: Array = []        # where the map's words were drawn last frame: the tip card keeps off them when it can
+# The tip card: the one box on the map. It shows for a stop that is not your stop or a next jump (the route list already says
+# everything about those), on hover or when the arrow keys reach it: the name, what it is and against whom, the danger as
+# four pips and a word (or the stop's one-line note), a modifier or an unusual board, the reward, the Nemesis line in red
+# where true, and the safest and the richest way on from it to the flagship (the old hover card's route planner).
 func _update_card() -> void:
-	if _hot == "" or _flying:
+	var C = _C()
+	if _hot == "" or _flying or not _nodes.has(_hot) or _avail().has(_hot) or C.RUN.get("pos") == _hot or C.modal_d != null:
 		card.visible = false; return
-	var C = _C(); var n = C.findNode(_hot)
-	if n == null:
-		card.visible = false; return
-	var csb = ui._glass(Color(0.022, 0.033, 0.06, 0.95), Color(ui.GILT, 0.85), "top", 2, 4, 13, 16); csb.shadow_color = Color(0, 0, 0, 0.6)
-	card.add_theme_stylebox_override("panel", csb)
-	card_text.add_theme_font_size_override("normal_font_size", ui.px(15)); card_text.add_theme_font_size_override("bold_font_size", ui.px(15))
-	card_text.custom_minimum_size.x = ui.px(380)
-	var ck = _hot + "|" + str(_routes.size()) + "|" + str(_danger.get(_hot, {}).get("ratio", 0))
-	if ck != _card_key:   # the text only changes with the node, its routes or its danger
-		_card_key = ck; card_text.text = _card_bb(n)
+	var ck = _hot + "|" + str(_routes.size()) + "|" + str(_danger.get(_hot, {}).get("ratio", 0)) + "|" + str(ui.k)
+	if ck != _card_key:   # the words only change with the stop, its routes or its danger
+		_card_key = ck; _fill_card(_nodes[_hot]["n"])
 	card.visible = true; card.reset_size()
-	var anchor = get_local_mouse_position() if not _hot_by_key else _screen(_nodes[_hot]["pos"]) if _nodes.has(_hot) else get_local_mouse_position()   # keyboard focus: beside the node
-	var mp = anchor + Vector2(ui.px(24), ui.px(16))
-	if mp.x + card.size.x > size.x - ui.px(_side_w): mp.x = anchor.x - card.size.x - ui.px(18)
-	mp.y = clamp(mp.y, 8, size.y - card.size.y - 8)
-	card.position = mp
-# The Nemesis on his fight's card (the fields the war-room card carries, short): persona, strengths with their effect,
-# scars, what feeds or enriches him, adaptations with their effect, weaknesses you have found with their effect,
-# what he remembers beating him with, and what this win will do to him.
-func _nem_card(N: Dictionary) -> String:
-	var C = _C(); var t = ""; var red = Color("#ff6b5a")
-	var P = C.NEM_PERSONA.get(N.get("persona")) if N.get("persona") != null else null
-	if P != null: t += "\n" + _cc(ui.esc(P["n"]) + ":", ui.GILT) + " " + _cc(ui.esc(P["d"]), ui.BONE2)
-	if N.get("traits") is Array and N["traits"].size() > 0:
-		var ts = []
-		for tr in N["traits"]:
-			if C.NEM_TRAITS.has(tr): ts.append(_cc(ui.esc(C.NEM_TRAITS[tr]["n"]), red) + _cc(" (" + ui.esc(str(C.NEM_TRAITS[tr]["d"]).trim_suffix(".")) + ")", ui.BONE3))
-		if not ts.is_empty(): t += "\n" + _cc("Strengths: ", ui.BONE2) + "; ".join(PackedStringArray(ts))
-	var extra = []
-	if C.jt(N.get("scars")): extra.append("scarred %dx" % int(N["scars"]))
-	if C.jt(N.get("fed")): extra.append("fed %d of 8 (+%d%% hull)" % [int(N["fed"]), min(32, 4 * int(N["fed"]))])
-	if C.jt(N.get("riches")): extra.append("%d extra ship%s from riches" % [int(N["riches"]), "" if int(N["riches"]) == 1 else "s"])
-	if C.jt(N.get("honed")): extra.append("honed %d of 3" % min(3, int(N["honed"])))
-	if C.jt(N.get("gloat")): extra.append("gloating after his last win")
-	if not extra.is_empty(): t += "\n" + _cc(ui.esc(", ".join(PackedStringArray(extra))), ui.BONE3)
-	if N.get("adapt") is Array and N["adapt"].size() > 0:
-		var ad = []
-		for a in N["adapt"]: ad.append(_cc(ui.esc(C.nemAdaptName(a, N["fac"])), red) + _cc(" (" + ui.esc(C.nemAdaptDesc(a, N["fac"]).trim_suffix(".")) + ")", ui.BONE3))
-		t += "\n" + _cc("Adapted: ", ui.BONE2) + "; ".join(PackedStringArray(ad))
-	var ws = []; var unknown = 0
-	for w in N.get("weak", []):
-		if N.get("revealed", []).has(w) and C.NEM_WEAK.has(w): ws.append(_cc(ui.esc(C.NEM_WEAK[w]["n"]), ui.GILT) + _cc(" (" + ui.esc(str(C.NEM_WEAK[w].get("d", "")).trim_suffix(".")) + ")", ui.BONE3))
-		else: unknown += 1
-	if unknown > 0: ws.append(_cc("%d unknown (beat him to learn one)" % unknown, ui.BONE3))
-	if not ws.is_empty(): t += "\n" + _cc("Weaknesses: ", ui.BONE2) + "; ".join(PackedStringArray(ws))
-	if C.jt(N.get("last_beat")): t += "\n" + _cc(C.nemPr(N)["He"] + " remembers losing to your " + str(C.NEM_BEAT_WORD.get(N["last_beat"], N["last_beat"])) + ".", ui.BONE3)
-	var warn = C.nemWarnLine(N)
-	if warn != "": t += "\n" + _cc(ui.esc(warn), red)
-	return t
-func _cc(t, col) -> String: return "[color=" + ui.hexs(col) + "]" + str(t) + "[/color]"
-func _card_bb(n: Dictionary) -> String:
-	var C = _C(); var I = C.NODE_INFO[n["type"]]
-	var fight = n["type"] in ["battle", "elite", "boss"]
-	var t = "[b]" + _cc(str(I["n"]).to_upper(), ui.BLOOD if n["type"] in ["elite", "boss"] else ui.GILT) + "[/b]"
-	if fight and C.jt(n.get("map")) and C.MAP_NAME.has(n["map"]): t += "  " + _cc(str(C.MAP_NAME[n["map"]]), ui.BONE3)
-	if C.jt(n.get("done")): t += "  " + _cc("(passed)", ui.BONE3)
-	var nem = fight and not C.jt(n.get("done")) and C.nemNodeIs(n)
-	if nem:
-		var N = C.nemActive()
-		t += "\n[b]" + _cc("Nemesis: " + ui.esc(C.nemFull()) + "'s fleet", Color("#ff6b5a")) + "[/b] " + _cc("(" + ui.esc(C.FACTIONS[N["fac"]]["n"]) + ", an elite fight)", ui.BONE3)
-		t += _nem_card(N)
-	elif fight:
-		var fac = C.nodeFaction(n)
-		if C.FACTIONS.has(fac): t += "\n" + _cc(ui.esc(C.FACTIONS[fac]["n"]), Color(C.FACTIONS[fac].get("glow", "#e07a70"))) + ((" " + _cc("(rival raiders)", ui.BONE3)) if fac != C.RUN["map"]["fac"] else "")
-	if fight:
-		var dg = _danger.get(n["id"], {})
-		if not dg.is_empty():
-			t += "\n[b]" + _cc("Danger: " + dg["band"], dg["col"]) + "[/b] " + _cc("(their strength about %d%% of your fleet's)" % int(round(dg["ratio"] * 100.0)), ui.BONE3)
-			var wy = dg.get("why", [])
-			if not wy.is_empty():   # what moved the number
-				var ps = []
-				for w in wy: ps.append("%s %s%d%%" % [w[0], "+" if w[1] >= 1.0 else "", int(round((w[1] - 1.0) * 100.0))])
-				t += "\n   " + _cc("Includes: " + ", ".join(PackedStringArray(ps)) + ".", ui.BONE3)
-	if C.jt(n.get("enc")) and C.ENCOUNTERS.has(n["enc"]):
-		var E = C.ENCOUNTERS[n["enc"]]
-		t += "\n[b]" + ui.esc(E["n"]) + "[/b]" + ((" " + _cc("· " + str(C.SHAPES[n["shape"]]).to_lower(), ui.BONE3)) if C.jt(n.get("shape")) and n["shape"] != "open" and C.SHAPES.has(n["shape"]) else "")
-		t += "\n" + _cc(ui.esc(E["d"]), ui.BONE2)
-	elif n["type"] == "boss": t += "\n" + _cc("The sector’s command ship and its escort.", ui.BONE2)
-	else: t += "\n" + _cc(ui.esc(I["d"]), ui.BONE2)
-	if fight:
-		var al = ui._arch_label(n, C.nodeFaction(n))
-		if al != "": t += "\n" + _cc(ui.esc(al) + ": " + ui.esc(C.ARCHETYPES[C.effArch(n["arch"], C.nodeFaction(n))]["d"]), ui.BLOOD)
-	if C.jt(n.get("mod")) and C.NODE_MODS.has(n["mod"]): t += "\n" + _cc(ui.esc(C.NODE_MODS[n["mod"]]["n"]) + ": " + ui.esc(C.NODE_MODS[n["mod"]]["d"]), ui.GILT)
-	var rw = n.get("rw")
-	if rw is Dictionary and not C.jt(n.get("done")):
-		var rc = Color(C.PATRONS[rw["p"]]["col"]) if rw.get("k") == "boon" and C.PATRONS.has(rw.get("p")) else ui.BONE2
-		t += "\n" + _cc("Reward: " + ui._reward_label(rw) + (" (rare or better)" if C.jt(rw.get("min")) else ""), rc)
-	# the routes through this node to the flagship
-	if not _routes.is_empty() and not C.jt(n.get("done")):
-		t += "\n\n[b]" + _cc("ROUTES TO THE FLAGSHIP", ui.GILT) + "[/b]"
-		t += "\n" + _cc("Safest: the mildest worst fight, then the least danger in all (repair stops count toward it). Richest: the most rewards (" + ui.term("relic") + " 4, " + ui.term("boon") + " 3, refit 2, shipyard 2, credits 1, event 1).", ui.BONE3)
+	# beside the stop: right and below it first (as the mockup's), else whichever corner covers the least of the map's words
+	var base = _screen(_nodes[_hot]["pos"]); var dx = float(ui.px(24)); var dy = float(ui.px(20)); var cs = card.size
+	var at = base + Vector2(dx, dy); var best = 1e12
+	for c in [base + Vector2(dx, dy), base + Vector2(dx, -dy - cs.y), base + Vector2(-dx - cs.x, dy), base + Vector2(-dx - cs.x, -dy - cs.y)]:
+		var r = Rect2(c, cs); var cost = 0.0
+		if r.position.x < float(ui.px(COL_W + 8.0)) or r.end.x > size.x - ui.px(16) or r.position.y < ui.px(8) or r.end.y > size.y - ui.px(8): cost += 1e9
+		for w in _words:
+			var ov = r.intersection(w); cost += ov.size.x * ov.size.y
+		if cost < best: best = cost; at = c
+	at.x = clamp(at.x, float(ui.px(COL_W + 8.0)), size.x - cs.x - float(ui.px(8)))
+	at.y = clamp(at.y, float(ui.px(8)), size.y - cs.y - float(ui.px(8)))
+	card.position = at.round()
+func _fill_card(n: Dictionary) -> void:
+	var C = _C(); var S = View.stop(C, n)
+	for ch in card_box.get_children(): card_box.remove_child(ch); ch.queue_free()
+	card.add_theme_stylebox_override("panel", GS.tip(ui.k))
+	var tw = 320.0   # the tip's text width at 1080: a small card, long lines wrap
+	card_box.custom_minimum_size.x = ui.px(tw)
+	var add = func(t: String, col: Color, f: Font = null, size: float = 17):
+		var pr = ui.para(t, size, 24, col, tw, 3, f); card_box.add_child(pr[0])
+	var done = C.jt(n.get("done")); var cut_off = not done and not _reachable.has(str(n["id"]))
+	add.call(S["name"], GS.TEXT, GS.sheet_medium(), 21)
+	add.call(str(S.get("what_tip", S["what"])) + (" (passed)" if done else ""), GS.TEXT2)
+	var dg: Dictionary = _danger.get(str(n["id"]), {})
+	if S["fight"] and not done and not dg.is_empty():
+		var h = HBoxContainer.new(); h.add_theme_constant_override("separation", ui.px(8)); h.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		h.add_child(GS.pips(ui.k, float(dg["level"]))); h.add_child(ui.tl(str(dg["band"]), 17, 24, GS.TEXT)); card_box.add_child(h)
+	var extra: Array = []
+	if S["mod"] != "": extra.append(S["mod"])
+	if S["shape"] != "": extra.append(S["shape"] + " board")
+	if S["place"] != "": extra.append(S["place"])
+	if not extra.is_empty() and not done: add.call(", ".join(PackedStringArray(extra)), GS.TEXT2)
+	if S["reward"] != "": add.call("Reward " + S["reward"], GS.TEXT2)
+	if S["nemesis"]: add.call("The Nemesis meets you here", GS.NEM)
+	if cut_off: add.call("Cut off: no route leads here now", GS.TEXT2)
+	if not _routes.is_empty() and not done and not cut_off:
 		var fc = intel.fleet_condition()
 		for r in _routes:
 			var st = r["st"]
-			t += "\n[b]" + _cc(r["name"], r["col"]) + "[/b]  " + "%d fight%s%s, %d repair stop%s, %d shipyard%s" % [st["fights"], "" if st["fights"] == 1 else "s", (" (%d elite)" % st["elites"]) if st["elites"] > 0 else "", st["repairs"], "" if st["repairs"] == 1 else "s", st["shops"], "" if st["shops"] == 1 else "s"]
-			t += "\n   " + _cc(("%d " + ui.term("boon") + "%s, %d refit%s, %d %s, %d credit reward%s, %d event%s · worst fight: ") % [st["boons"], "" if st["boons"] == 1 else "s", st["refits"], "" if st["refits"] == 1 else "s", st["relics"], ui.term("relic") if st["relics"] == 1 else ui.term("relics"), st["credits"], "" if st["credits"] == 1 else "s", st["events"], "" if st["events"] == 1 else "s"], ui.BONE3) + _cc(st["worst_name"], Intel.BANDS[st["worst"]][2])
-			if fc["hurt"] and not st["repair_before_boss"]: t += "\n   " + _cc("Your fleet is hurt and this route has no repair stop before the flagship.", ui.BLOOD)
-	if _avail().has(n["id"]): t += "\n" + _cc("Click to jump here.", ui.BONE3)
-	return t
+			var t = "%s way on: %d fight%s%s, %d repair stop%s, %d shipyard%s" % [r["name"], st["fights"], "" if st["fights"] == 1 else "s", (" (%d elite)" % st["elites"]) if st["elites"] > 0 else "", st["repairs"], "" if st["repairs"] == 1 else "s", st["shops"], "" if st["shops"] == 1 else "s"]
+			if r["name"] == "Richest":   # what it pays, the counts that are not zero
+				var pay: Array = ["%d fight%s" % [st["fights"], "" if st["fights"] == 1 else "s"]]
+				if st["boons"] > 0: pay.append("%d %s" % [st["boons"], ui.term("boon") if st["boons"] == 1 else ui.term("boons")])
+				if st["refits"] > 0: pay.append("%d refit%s" % [st["refits"], "" if st["refits"] == 1 else "s"])
+				if st["relics"] > 0: pay.append("%d %s" % [st["relics"], ui.term("relic")])
+				if st["shops"] > 0: pay.append("%d shipyard%s" % [st["shops"], "" if st["shops"] == 1 else "s"])
+				t = "Richest way on: " + ", ".join(PackedStringArray(pay))
+			t += ", worst " + str(st["worst_name"])
+			add.call(t, GS.TEXT2)
+			if fc["hurt"] and not st["repair_before_boss"]: add.call("Your fleet is hurt and this way has no repair stop before the flagship.", GS.TEXT2)
 
-# ---------------- input: hover, click (the camera leans in, the fleet flies, then the jump), zoom and pan, keys ----------------
+# ---------------- input: hover and click pick a route, a double click or Enter flies it; zoom and pan; keys ----------------
 func _set_hot(h: String) -> void:
 	if h == _hot: return
 	_hot = h
-	_routes = intel.routes_through(h) if (h != "" and intel != null) else []
+	var next = h != "" and _avail().has(h)
+	_routes = intel.routes_through(h) if (h != "" and intel != null and not next) else []
 	_paint_lanes()
-	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if _avail().has(h) else Control.CURSOR_ARROW
+	if next and ui != null and ui.has_method("pick_route"): ui.pick_route(h)   # pointing at a next jump picks its row
+	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if next else Control.CURSOR_ARROW
 const ZOOM_MIN := 0.38
 const ZOOM_MAX := 1.2
 func _pan_keyboard(delta: float) -> void:
@@ -941,9 +1129,9 @@ func pan_by(v: Vector3) -> void:
 func reset_view() -> void:
 	_uz_t = 1.0; _pan_t = Vector3.ZERO
 func _clamp_pan() -> void:
-	var lim = (R_OUT + 6.0) * (1.25 - _uz_t * 0.6)
+	var lim = (_outer_radius() + 6.0) * (1.25 - _uz_t * 0.6)
 	if _pan_t.length() > lim: _pan_t = _pan_t.normalized() * lim
-	if _uz_t >= 0.999: _pan_t = _pan_t.limit_length(R_OUT * 0.5)
+	if _uz_t >= 0.999: _pan_t = _pan_t.limit_length(_outer_radius() * 0.5)
 func _gui_input(e: InputEvent) -> void:
 	if loading or _flying or backdrop: return
 	if e is InputEventMouseMotion:
@@ -960,22 +1148,28 @@ func _gui_input(e: InputEvent) -> void:
 			zoom_by(1.0 / 0.88, e.position); accept_event()
 		elif e.pressed and e.button_index == MOUSE_BUTTON_LEFT:
 			var id = _node_at(e.position)
-			if id != "" and _avail().has(id):
-				accept_event(); fly_to(id)
+			if id != "" and _avail().has(id):   # a click picks the route; a double click flies it (so does Enter or the lime button)
+				accept_event()
+				if ui.has_method("pick_route"): ui.pick_route(id)
+				if e.double_click: fly_to(id)
 			elif e.double_click: reset_view()
 	elif e is InputEventKey and e.pressed:
 		match e.keycode:
 			KEY_HOME: reset_view(); accept_event(); return
 			KEY_EQUAL, KEY_PLUS, KEY_KP_ADD: zoom_by(0.88); accept_event(); return
 			KEY_MINUS, KEY_KP_SUBTRACT: zoom_by(1.0 / 0.88); accept_event(); return
-		var av = _avail()
-		if av.is_empty(): return
-		if e.keycode in [KEY_RIGHT, KEY_DOWN, KEY_TAB]:
-			_focus = (_focus + 1) % av.size(); _hot_by_key = true; _set_hot(av[_focus]); accept_event()
-		elif e.keycode in [KEY_LEFT, KEY_UP]:
-			_focus = (_focus - 1 + av.size()) % av.size(); _hot_by_key = true; _set_hot(av[_focus]); accept_event()
+		if e.keycode in [KEY_RIGHT, KEY_DOWN, KEY_LEFT, KEY_UP]:   # the arrow keys walk every stop still ahead: a next jump is picked, any other shows its tip
+			if _kb_order.is_empty(): return
+			var cur = _kb_order.find(_hot) if _hot != "" else -1
+			if cur < 0:
+				var p0 = str(ui.picked) if ui.get("picked") != null else ""
+				cur = _kb_order.find(p0)
+				_kb = max(0, cur)
+			else: _kb = (cur + (1 if e.keycode in [KEY_RIGHT, KEY_DOWN] else -1) + _kb_order.size()) % _kb_order.size()
+			_hot_by_key = true; _set_hot(_kb_order[_kb]); accept_event()
 		elif e.keycode in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE]:
-			if not e.echo: accept_event(); fly_to(av[_focus % av.size()])
+			var pk = str(ui.picked) if ui.get("picked") != null else ""
+			if not e.echo and pk != "": accept_event(); fly_to(pk)
 func _input(e: InputEvent) -> void:
 	# Consume the skip before a side-panel button can start another action.
 	if not _flying or not is_visible_in_tree(): return
@@ -991,7 +1185,9 @@ func fly_to(id: String) -> void:
 	_flying = true; card.visible = false; _drag = false
 	_flight_id = id; _flight_time = 0.0; _flight_rotation = token.quaternion
 	var a = token.position; var b = _nodes[id]["pos"] + TOKEN_OFF + Vector3(0, _nodes[id]["top"], 0)
-	_flight_curve = System.route_curve(a - TOKEN_OFF, b - TOKEN_OFF)
+	var from = a - TOKEN_OFF; from.y = 0.0
+	_flight_curve = sys.lane_curve(from, _nodes[id]["pos"])
+	_flight_heights = Vector2(a.y - TOKEN_OFF.y, b.y - TOKEN_OFF.y)
 	_wake_samples.clear(); _set_hot(""); _paint_lanes()
 	_uz_t = 1.0; _pan_t = Vector3.ZERO
 	grab_focus()
@@ -1006,7 +1202,7 @@ static func _flight_distance(t: float) -> float:
 
 func _flight_point(distance: float) -> Vector3:
 	var p := _flight_curve.sample_baked(_flight_curve.get_baked_length() * distance) + TOKEN_OFF
-	p.y += pow(sin(PI * distance), 2.0) * 1.2
+	p.y += lerpf(_flight_heights.x, _flight_heights.y, distance) + pow(sin(PI * distance), 2.0) * 1.2
 	return p
 
 func _advance_flight(delta: float) -> void:
@@ -1055,7 +1251,7 @@ func _make_wake() -> void:
 	_wake_material.vertex_color_use_as_albedo = true
 	_wake_material.albedo_color = System.look(_C().RUN["fac"])["light"]
 	_wake_node = sys.mi(_wake_mesh, _wake_material)
-	_wake_node.extra_cull_margin = R_OUT * 3.0
+	_wake_node.extra_cull_margin = _outer_radius() * 3.0
 	root3.add_child(_wake_node)
 
 func _update_wake() -> void:

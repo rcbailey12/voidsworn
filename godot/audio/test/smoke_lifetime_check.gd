@@ -46,10 +46,7 @@ func _run() -> void:
 	death.spawn_debris(fx, Vector3.ZERO, Vector3.ZERO, 1, 0.1)
 	fx.dstate["debris_mat"] = null
 	death.spawn_debris(fx, Vector3.ZERO, Vector3.ZERO, 1, 0.1)
-	# An early-cleared fireball must not leave a freed node in the FX queue.
-	death.fireball(fx, Vector3.ZERO, 1.0, 0.0, 0.1, Color.WHITE)
-	for child in fx.get_children():
-		if child.name == "fx_fireball": child.free()
+	# (The early-cleared fireball case was removed with fx_death.fireball itself, which the game no longer has; issue 359.)
 	fx.now = 1.0; fx._run_later()
 	fx.free()
 	await process_frame

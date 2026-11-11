@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 'use strict';
 /*
- * oracle_drift_guard.js: one-command drift check for the Godot port's vendored JS oracles
- * and its hand-copied render/world constants.
+ * oracle_drift_guard.js: one-command drift check for the Godot port's hand-copied
+ * render/world constants, plus a hash record of the root rules files.
  *
  * Run from the repo clone root:
  *   node contrib/muse/tools/oracle_drift/oracle_drift_guard.js
@@ -11,14 +11,13 @@
  * Machine-readable output:
  *   node oracle_drift_guard.js --json
  *
+ * Since issue 360 the rules and campaign harnesses read the root game files directly,
+ * so there are no vendored JS oracle copies left to compare.
+ *
  * What it checks:
- *   (a) battle.js, data.js and core.js at the repo root vs godot/rules/test/oracle/
- *       vs godot/campaign/test/oracle/: SHA-256 equality, and for differing pairs a
- *       line-level diff summary (added / removed line counts, first differing lines).
- *   (b) The pin claims in the two oracle READMEs: the commit each README says its files
- *       were copied from, verified against git history when git is available, plus
- *       whether the vendored copies still match the live root files.
- *   (c) Hand-copied constants (FAC3D, AI_HULLS, CLS_LEN, FINISH, BIOMES, ROCKS, PLANETS):
+ *   (a) battle.js, data.js and core.js at the repo root: SHA-256, size and line count,
+ *       for the record.
+ *   (b) Hand-copied constants (FAC3D, AI_HULLS, CLS_LEN, FINISH, BIOMES, ROCKS, PLANETS):
  *       browser definitions vs Godot definitions, values compared entry by entry.
  *
  * The guard reports facts. It does not edit anything and it exits 0 on a completed run
@@ -141,8 +140,6 @@ function diffLines(aText, bText) {
 
 const ORACLE_DIRS = [
   { id: 'root', rel: '' },
-  { id: 'rules-oracle', rel: 'godot/rules/test/oracle' },
-  { id: 'campaign-oracle', rel: 'godot/campaign/test/oracle' },
 ];
 const VENDORED_FILES = ['battle.js', 'data.js', 'core.js'];
 
@@ -196,10 +193,7 @@ function gitHead(root) {
 }
 
 function checkPinClaims(root) {
-  const suites = [
-    { id: 'rules-oracle', dir: 'godot/rules/test/oracle' },
-    { id: 'campaign-oracle', dir: 'godot/campaign/test/oracle' },
-  ];
+  const suites = [];
   const out = { head: gitHead(root), suites: [] };
   for (const s of suites) {
     const dirAbs = path.join(root, s.dir);
@@ -734,6 +728,7 @@ function renderText(r) {
   }
   L.push('');
   L.push('== (b) README pin claims ==');
+  L.push('  no pinned copies: the harnesses read the root game files directly (issue 360)');
   for (const s of r.pins.suites) {
     L.push(s.id + ':');
     if (!s.readmes.length) L.push('  no README found');
@@ -777,7 +772,7 @@ function renderText(r) {
   L.push('== Summary ==');
   L.push('vendored pairs: ' + r.summary.vendoredPairs + ' compared, ' + r.summary.vendoredEqual + ' identical, ' + r.summary.vendoredDiffering + ' differing');
   L.push('pin claims: ' + r.summary.pinClaimsChecked + ' file checks against pinned content, ' + r.summary.pinClaimsHeld + ' held' + (r.summary.pinExceptions ? ' (including ' + r.summary.pinExceptions + ' disclosed exception)' : '') + ', ' + r.summary.pinClaimsFailed + ' contradicted');
-  L.push('constants: ' + r.summary.constCompared + ' entries compared, ' + r.summary.constMatched + ' matched, ' + r.summary.constDiffered + ' differed, ' + r.summary.constOnlyBrowser + ' browser-only, ' + r.summary.constOnlyGodot + ' godot-only');
+  L.push('DRIFT SUMMARY: constants ' + r.summary.constCompared + ' compared, ' + r.summary.constMatched + ' matched, ' + r.summary.constDiffered + ' differed, ' + r.summary.constOnlyBrowser + ' browser-only, ' + r.summary.constOnlyGodot + ' godot-only');
   return L.join('\n') + '\n';
 }
 

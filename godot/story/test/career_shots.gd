@@ -5,6 +5,7 @@ extends SceneTree
 
 const Career = preload("res://story/career.gd")
 const StoryScript = preload("res://story/story.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 
 
 func _B(kind: String, lost: int, kills: int, us: Dictionary) -> Dictionary:
@@ -56,7 +57,7 @@ func _initialize() -> void:
 	await _settle()
 	_save(out.path_join("rename.png"))
 	print("career_shots: wrote ", out)
-	quit(0)
+	PG.finish(0)
 
 
 func _settle() -> void:
@@ -66,6 +67,8 @@ func _settle() -> void:
 
 
 func _save(p: String) -> void:
+	if PG.stop_if_any():
+		return
 	var img := root.get_texture().get_image()
 	img.save_png(p)
 

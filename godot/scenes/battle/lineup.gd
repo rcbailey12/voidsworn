@@ -6,6 +6,7 @@ extends Node3D
 const HT := preload("res://render/hull_table.gd")
 const ShipView := preload("res://render/ship_view.gd")
 const Board := preload("res://render/board.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 
 var out := ""
 
@@ -102,6 +103,8 @@ func _ready() -> void:
 	var cx := maxx * 0.5
 	if out == "":
 		return
+	if PG.stop_if_any():
+		return
 	DirAccess.make_dir_recursive_absolute(out)
 	for view in ["top", "side", "threequarter"]:
 		var off := 0.0
@@ -130,4 +133,4 @@ func _ready() -> void:
 		c.queue_free()
 	await get_tree().process_frame
 	ShipView.clear_static()
-	get_tree().quit()
+	PG.finish(0)

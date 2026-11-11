@@ -1,0 +1,10 @@
+briefing, seed 344, window (2560.0, 1440.0)
+01_map_jump0  page=map modal=- sector=1
+02_map_three_routes  page=map modal=- sector=1
+02b_route_two_picked  page=map modal=- sector=1
+03_far_stop_hover  page=map modal=- sector=1
+03b_nemesis_stop_hover  page=map modal=- sector=1
+04_dossier  page=map modal=- sector=1
+05_map_key  page=map modal=- sector=1
+06_damaged_fleet  page=map modal=- sector=1
+not reached: none

@@ -215,7 +215,7 @@ Object.assign(ADMIRALS.ashgrove,{fac:'voidsworn',cmd:{id:'scramble',n:'Scramble 
 Object.assign(ADMIRALS.thale,{fac:'voidsworn',cmd:{id:'iron',n:'Iron wall',d:'All shields refill and your ships take 40% less hull damage this round.'}});
 Object.assign(ADMIRALS,{
   kassar:{fac:'hegemony',n:'First Admiral Ilsa Kassar',doc:'Fire discipline',d:'Batteries fire one extra shot per volley, but every gun hits 5% lighter.',fx:{battShots:1,dmgPct:-.05},start:['h_vanguard','h_picket'],cost:0,cmd:{id:'barrage',n:'Synchronized broadside',d:'Every ship fires a free volley at the best target its guns can reach, right now.'}},
-  vorn:{fac:'hegemony',n:'Commodore Dace Vorn',doc:'Precision fire',d:'+10 aim and +10% critical-hit chance.',fx:{aim:10,crit:10},start:['h_interdictor','h_interdictor','h_picket','h_picket'],cost:30,cmd:{id:'hunt',n:'Reload and strike',d:'Torpedoes reload at once and every ship deals +30% damage this round.'}},
+  vorn:{fac:'hegemony',n:'Commodore Dace Vorn',doc:'Precision fire',d:'+10 aim and +10% critical-hit chance.',fx:{aim:10,crit:10},start:['h_interdictor','h_interdictor','h_picket','h_picket'],cost:30,cmd:{id:'hunt',n:'Interdiction strike',d:'Every ship deals +30% damage this round.'}},
   reyes:{fac:'hegemony',n:'Fleet Marshal Corin Reyes',doc:'Strike group',d:'Squadrons deal +10% damage and launch ships hold +1 wing. Squadron hull +25%.',fx:{sqPct:.1,hangar:1,sqHp:.25},start:['h_vanguard','h_picket','h_picket'],cost:45,cmd:{id:'scramble',n:'Launch the strike group',d:'Every launch ship sends out an extra wing if there is room, then all squadrons strike again with +50% damage this round.'}},
   maren:{fac:'hegemony',n:'Line Admiral Oskar Maren',doc:'Armored column',d:'All ships +15% hull and +10% shields.',fx:{hpPct:.15,shPct:.1},start:['h_dominion','h_picket'],cost:80,cmd:{id:'iron',n:'Shield wall order',d:'All shields refill and your ships take 40% less hull damage this round.'}},
   grax:{fac:'corsair',n:'Warlord Grax Ironmaw',doc:'Fast assault',d:'+1 speed for every ship and +10% damage.',fx:{speed:1,dmgPct:.1},start:['c_marauder','c_reaver','c_reaver'],cost:0,cmd:{id:'surge',n:'Full burn',d:'Every ship gains +2 movement and +1 turn, and enemy fire loses 20 accuracy against you this round.'}},
@@ -496,8 +496,9 @@ const NEM_BEAT_WORD={lance:'lances',torp:'torpedoes',sq:'your wings',ram:'rams',
 // R101 (#173, adopted Nov 4 2026; built in #121): the commanders' own lines, per faction and persona, spoken through nemSay (pronouns
 // swapped at runtime, {beat} replaced with a NEM_BEAT_WORD value). meet opens his battle; win, flee and fall close it (fall_final: an Eclipse
 // commander destroyed in the last sector, rising once more); again and remember replace NEM_LINES' when he has met you; adapt is said when
-// he adapts; lessons are the debrief teaching a lost meeting records on the commander met. The Sunward Crusade has no table yet: its
-// commanders keep NEM_LINES. Pasted as adopted from contrib/muse/design/nemesis_writing_2026_11/text_table.md.
+// he adapts; lessons are the debrief teaching a lost meeting records on the commander met. All six factions have a block: the five
+// adopted in contrib/muse/design/nemesis_writing_2026_11/text_table.md, plus the Sunward Crusade pasted word for word from
+// contrib/muse/design/nemesis_writing_2026_11/crusade_voice.md (#395).
 const NEM_VOICE = {
 hegemony: {
   methodical: {
@@ -762,6 +763,58 @@ deathless: {
     slow: 'Worn engines limit repositioning. Cut the path and keep pressure.',
     strike: 'The Eclipse strike is a tithe on a half-speed clock: when it fills, every ship you have loses 6% hull. Finish the fight before the clock fills.'
   }
+},
+voidsworn: {
+  zealous: {
+    meet: ['The oath brought us here. Your hull will burn before the dawn watch ends.', 'Who carries the dawn? We do. And you are what we burn to keep it.'],
+    win: ['The debt is paid in fire. Your name goes on the hull in chalk.', 'Dawn breaks over the broken line. The debt was collected.'],
+    flee: [],
+    fall: ['The flagship burns and the oath holds. Chalk the name.', 'The oath does not end with the hull. Chalk my name and keep burning.'],
+    again: 'Last time you won with {beat}. The charge comes the same way, only harder.',
+    remember: 'Last time you won with {beat}. The name is chalked. The debt is not forgotten.'
+  },
+  proud: {
+    meet: ['This flagship leads the dawn watch. Answer the oath or break against it.', 'You face the front of the line. We come no other way.'],
+    win: ['The front held. It always holds. Your fleet broke against the oath.', 'You saw the dawn line. You could not break it.'],
+    flee: [],
+    fall: ['The front falls. Chalk the name and let the line close over the gap.', 'A proud hull breaks. The brand stays. The Crusade does not stop for one name.'],
+    again: 'Last time you won with {beat}. The front is braced for it now.',
+    remember: 'Last time you won with {beat}. The front has not forgotten.'
+  },
+  cruel: {
+    meet: ['The crippled ships go first. The cold takes the rest.', 'Your weakest hulls are marked. The brand goes where the frost is thinnest.'],
+    win: ['The broken ones went down first. The rest followed into the cold.', 'A slow burn. Each hull chalked, each name spoken. The debt collects.'],
+    flee: [],
+    fall: ['The brand goes cold. The broken ones get their dawn after all.', 'A bad end. The Roll of Vesper takes the name. The cold keeps the rest.'],
+    again: 'Last time you won with {beat}. The crippled ones are watched now.',
+    remember: 'Last time you won with {beat}. The chalk still marks the finish.'
+  },
+  methodical: {
+    meet: ['Screens up, names chalked. The dawn watch sets the pace.', 'The line advances under oath. Every gun is laid, every screen is set.'],
+    win: ['The line held. The guns were laid by hand and the oath was kept.', 'Steady fire, steady screens. The debt was collected in order.'],
+    flee: [],
+    fall: ['The hull goes dark. Add my name to the chalk and keep the watch.', 'The line breaks at one point. The rest holds. Chalk the name and close the gap.'],
+    again: 'Last time you won with {beat}. The line has drilled against it.',
+    remember: 'Last time you won with {beat}. The chalk mark is still on the hull.'
+  },
+  adapt: {
+    shields: 'Screen drills are re-sworn. Your lances will spend themselves.',
+    pd: 'Spark flak is up. Your torpedoes burn short.',
+    armor: 'Riveted plate is fitted. Your ram meets iron and frost.',
+    evasion: 'The Oath of speed is sworn. Your batteries will find cold space.',
+    aim: 'Hand-laid sights are set. Your evasive burn is read by eye, not machine.',
+    special: 'Fervour is up. Guns deal 8% more damage.'
+  },
+  lessons: {
+    flank: 'Thin stern plating gives way under rear fire. Hit the rear while the charge is committed.',
+    ion: 'Brittle shield emitters fail under focused ion fire. Strip the shields before the line settles.',
+    torp: 'Poor point defense leaves torpedoes a clear path. Launch after the escorts commit to the line.',
+    board: 'Green boarding crews lose to prepared defenders. Board only after the escorts are split.',
+    brawl: 'Long-gun doctrine struggles at close range. Close in and force the brawl.',
+    anchor: 'A proud flagship holds the line together. Get the flagship under 60% hull and the escorts break and run.',
+    slow: 'Worn engines limit repositioning. Cut the retreat path and keep pressure.',
+    strike: 'The Crusade strike is a challenge: the enemy flagship singles out yours, and the pair deal 20% more damage to each other. Screen your flagship; if your flagship falls, the challenge moves to your strongest ship.'
+  }
 }
 };
 // ---------- B4 faction campaign verbs: one small action per faction, once per sector, from the map ----------
@@ -860,6 +913,13 @@ const MASTERY_PERKS=[
   {n:'Flag captain',d:'Your flagship starts at Mk II, its captain two ranks up with a perk.'}];
 // Glasswrights test slice. Content: skill_tree_phase1_assembled_2026_10_29.md.
 const LINEAGE_XP=[0,6,16,30,50,75,110,160,230];
+// Job 7 step 14: capstone mastery. A chosen level 8 evolution keeps growing at 320, 440 and 600 XP.
+// The effect texts are placeholders: the tree pack carries no capstone mastery text yet.
+const CAPSTONE_MASTERY_XP=[320,440,600];
+const CAPSTONE_MASTERY_PERKS=[
+  {n:'Capstone mastery I',d:'Placeholder: the mastery effect for this evolution is not written yet.'},
+  {n:'Capstone mastery II',d:'Placeholder: the mastery effect for this evolution is not written yet.'},
+  {n:'Capstone mastery III',d:'Placeholder: the mastery effect for this evolution is not written yet.'}];
 const LINEAGE_TREES={
   "aelith": {
     "branches": {
@@ -869,7 +929,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "Flight Paths in the Glass",
-              "d": "record each extra wing's strike path before launching; a wing that follows its recorded path exactly strikes at +15%."
+              "d": "an extra wing that strikes the target its carrier last fired at gains +15% damage."
             },
             {
               "n": "Cast Twice in Light",
@@ -879,11 +939,11 @@ const LINEAGE_TREES={
           [
             {
               "n": "The Replay Corrects",
-              "d": "after the first strike resolves, each extra wing may be retargeted freely for its strike-again, using what the glass recorded."
+              "d": "an extra wing's strike again against a target already hit this round gains +10% damage."
             },
             {
               "n": "Starlings in Formation",
-              "d": "extra wings that strike in the same order as their carriers are arranged gain +10 aim."
+              "d": "extra wings that strike the same target as another extra wing gain +10 aim."
             }
           ],
           [
@@ -893,7 +953,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Every Lens Aloft",
-              "d": "a carrier that held still this round launches one extra wing whose strike is also recorded for next round."
+              "d": "a carrier that held still this round launches one additional extra wing, and that wing strikes this round at the full strike again bonus."
             }
           ]
         ]
@@ -931,12 +991,12 @@ const LINEAGE_TREES={
     },
     "capstones": [
       {
-        "n": "Flight Remembered Perfectly",
-        "d": "the extra wings strike three times: the recorded strike, a corrected strike at full effect, and a final strike at half damage."
+        "n": "Flight Cast Perfectly",
+        "d": "during Starling flight, wings striking the same target ignore its flak, its shields stop only the first wing hit, and wing hits after the first deal +25% damage to its most damaged section."
       },
       {
         "n": "The Forge Casts Ahead",
-        "d": "after the Command, one extra wing per carrier stays aloft and repeats its recorded strike at the start of next round."
+        "d": "after the Command, one extra wing per carrier strikes the same target again at the start of next round, at +15% damage."
       }
     ]
   },
@@ -952,13 +1012,13 @@ const LINEAGE_TREES={
             },
             {
               "n": "One Lens, One Target",
-              "d": "a ship may fire its volley as a single shot at +25% damage instead of firing every gun."
+              "d": "choose one of your ships: it fires its whole volley at a single target you name, and its shots gain +25% damage against that target."
             }
           ],
           [
             {
               "n": "Light Arrives Together",
-              "d": "you may hold the volley until all your ships have moved, and fire lance shots in any order you choose."
+              "d": "during the volley, a shot at a target already hit by one of your other ships this round gains +15% damage."
             },
             {
               "n": "The Recorded Angle",
@@ -972,7 +1032,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "Long Light",
-              "d": "lance weapons in the volley gain +2 hexes of range."
+              "d": "lance weapons in the volley gain +2 hexes of range for any ship that has not turned this round."
             }
           ]
         ]
@@ -1011,7 +1071,7 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "Sun Through One Lens",
-        "d": "Burning glass may concentrate every ship's volley on one target, resolving as a single combined strike that ignores range penalties."
+        "d": "Burning glass may concentrate every ship's volley on one target; its shields stop only the first hit, and no shot suffers range falloff."
       },
       {
         "n": "The Flaw, Corrected Forever",
@@ -1037,11 +1097,11 @@ const LINEAGE_TREES={
           [
             {
               "n": "The Mirror Steps Aside",
-              "d": "during the scatter, a ship may pass through one enemy-held hex without stopping."
+              "d": "during the scatter, a ship may dive under one enemy-held hex at no extra cost."
             },
             {
               "n": "Light Split Three Ways",
-              "d": "during the scatter, a ship may split its movement, half before it fires and half after."
+              "d": "during the scatter, a ship may move its full remaining movement after it fires."
             }
           ],
           [
@@ -1090,11 +1150,11 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "The Fleet Is Elsewhere",
-        "d": "Scatter the light may be declared after the first enemy ship fires; your ships move immediately, interrupting the enemy turn."
+        "d": "the first time an enemy fires at your fleet this battle, every ship gains +2 movement and may turn once for free."
       },
       {
         "n": "A Hundred False Hulls",
-        "d": "during the scatter round, the first two enemy volleys fired each round are wasted on false images."
+        "d": "in the scatter round, the first two enemy attacks are wasted on false images and automatically miss their targets."
       }
     ]
   },
@@ -1106,11 +1166,11 @@ const LINEAGE_TREES={
           [
             {
               "n": "Light Bent to the Weak Side",
-              "d": "you may give one ship's shield refill to the friendly ship with the lowest shields instead."
+              "d": "during the ward, the friendly ship with the lowest shields takes 20% less hull damage until the start of next round."
             },
             {
               "n": "Prisms Face the Fire",
-              "d": "a ship facing its nearest enemy refills +25% more shield during the ward."
+              "d": "a ship facing its nearest enemy gains shields above its maximum equal to 25% of its maximum shields during the ward."
             }
           ],
           [
@@ -1120,7 +1180,7 @@ const LINEAGE_TREES={
             },
             {
               "n": "The Lens Rotates",
-              "d": "during the ward, a ship may change its facing after moving without losing the damage reduction."
+              "d": "during the ward, a ship that changes its facing gains +10 evasion until its next turn."
             }
           ],
           [
@@ -1169,14 +1229,1822 @@ const LINEAGE_TREES={
     "capstones": [
       {
         "n": "Ward of Clear Glass",
-        "d": "Prism ward lasts two rounds, and shields refill again at the start of the second round."
+        "d": "during Prism ward, an enemy ship that fires at a warded ship loses 20 accuracy on its next shot, once per enemy ship."
       },
       {
         "n": "Every Facet Lit",
-        "d": "during the ward, shield strength refilled beyond a ship's maximum becomes temporary hull of hard light, up to +20%."
+        "d": "during the ward, each warded ship gains temporary hull equal to 20% of its maximum shields."
+      }
+    ]
+  },
+  "vex": {
+    "branches": {
+      "A": {
+        "n": "The Inherited Line",
+        "tiers": [
+          [
+            {
+              "n": "Ledger of Arcs",
+              "d": "a ship firing its volley from a broadside arc gains +15% damage."
+            },
+            {
+              "n": "Held in the Account",
+              "d": "you may hold one ship volley when the Command is declared and fire it after that ship moves this round."
+            }
+          ],
+          [
+            {
+              "n": "Named in the Ledger",
+              "d": "before the volley, name one enemy; every ship may aim its volley at the named enemy even if another target is closer."
+            },
+            {
+              "n": "Inherited Aim",
+              "d": "a ship that has not moved this round fires its volley at +15% damage."
+            }
+          ],
+          [
+            {
+              "n": "Every Gun Sworn",
+              "d": "each ship chooses its own volley target freely, ignoring the best target rule, and ships that choose the same target gain +10 aim against it."
+            },
+            {
+              "n": "Debt Comes Due",
+              "d": "you may delay the whole volley to the start of next round; when it fires, every ship gains +20% damage."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Sworn Deployment",
+              "d": "after seeing the enemy deployment, place one of your ships anywhere in your deployment zone."
+            },
+            {
+              "n": "Debts in Reserve",
+              "d": "hold one ship off the field; it enters at full strength at the start of round 2 at any edge of your deployment zone."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "Flagship Keeps the Ledger",
+              "d": "once per battle, the flagship may order one other ship that has already fired to fire one weapon again at half damage."
+            },
+            {
+              "n": "Standard of the First Crusade",
+              "d": "once per round, one ship within 2 hexes of the flagship may reroll a missed shot."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "The Grand Ledger",
+        "d": "once per battle, when Fire for effect is used, choose one enemy; every ship that can reach it fires at it, and its shields stop only the first hit."
+      },
+      {
+        "n": "The Last Account",
+        "d": "after Fire for effect resolves, each ship that destroyed its target with the free volley fires one weapon again at a new target."
+      }
+    ]
+  },
+  "malek": {
+    "branches": {
+      "A": {
+        "n": "The Hunter Ledger",
+        "tiers": [
+          [
+            {
+              "n": "Prey Entered by Name",
+              "d": "when the salvo begins, mark one enemy; torpedoes fired at the mark this round gain +15% damage."
+            },
+            {
+              "n": "Salvo in Two Hands",
+              "d": "you may hold the damage bonus for up to half your ships and spend it next round instead of this one."
+            }
+          ],
+          [
+            {
+              "n": "Torpedoes Run First",
+              "d": "torpedoes fired during the salvo round strike at once instead of travelling."
+            },
+            {
+              "n": "Rear Arc Reckoning",
+              "d": "during the salvo round, rear arc hits from any weapon gain +15% damage."
+            }
+          ],
+          [
+            {
+              "n": "The Debt Hunts",
+              "d": "during the salvo round, a ship that starts its activation closer to its target than any other friendly ship treats side arc hits on that target as rear arc hits."
+            },
+            {
+              "n": "Two Salvos Sworn",
+              "d": "the salvo damage bonus also covers the first torpedo each ship fires next round."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Sworn Deployment",
+              "d": "after seeing the enemy deployment, place one of your ships anywhere in your deployment zone."
+            },
+            {
+              "n": "Debts in Reserve",
+              "d": "hold one ship off the field; it enters at full strength at the start of round 2 at any edge of your deployment zone."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "Flagship Keeps the Ledger",
+              "d": "once per battle, the flagship may order one other ship that has already fired to fire one weapon again at half damage."
+            },
+            {
+              "n": "Standard of the First Crusade",
+              "d": "once per round, one ship within 2 hexes of the flagship may reroll a missed shot."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "Salvo Without End",
+        "d": "during the salvo round, each ship may fire one torpedo a second time at half damage."
+      },
+      {
+        "n": "The Named Prey Falls",
+        "d": "when the salvo is declared, choose one enemy; every torpedo in the fleet may retarget to it, and it takes +25% damage from all hits this round."
+      }
+    ]
+  },
+  "ashgrove": {
+    "branches": {
+      "A": {
+        "n": "Wings on the Ledger",
+        "tiers": [
+          [
+            {
+              "n": "Escort Sworn to a Name",
+              "d": "an extra wing may be assigned as escort to one named friendly ship instead of striking, intercepting fire aimed at it this round."
+            },
+            {
+              "n": "First Wave Owes the Second",
+              "d": "choose the launch order carrier by carrier; the last carrier to launch has its extra wing strike at +20% damage."
+            }
+          ],
+          [
+            {
+              "n": "The Account Splits",
+              "d": "an extra wing that strikes a different target than its carrier's other wings gains +15% damage."
+            },
+            {
+              "n": "Held in Reserve",
+              "d": "you may keep one extra wing unlaunched; it launches free at the start of next round and strikes then."
+            }
+          ],
+          [
+            {
+              "n": "Every Generation Aloft",
+              "d": "a carrier that has not moved this round launches one additional extra wing."
+            },
+            {
+              "n": "Wings Settle the Debt",
+              "d": "an extra wing striking the same target as its carrier guns gains +30% damage and is screened at half effect, once per carrier."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Sworn Deployment",
+              "d": "after seeing the enemy deployment, place one of your ships anywhere in your deployment zone."
+            },
+            {
+              "n": "Debts in Reserve",
+              "d": "hold one ship off the field; it enters at full strength at the start of round 2 at any edge of your deployment zone."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "Flagship Keeps the Ledger",
+              "d": "once per battle, the flagship may order one other ship that has already fired to fire one weapon again at half damage."
+            },
+            {
+              "n": "Standard of the First Crusade",
+              "d": "once per round, one ship within 2 hexes of the flagship may reroll a missed shot."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "The Roll of Wings",
+        "d": "during Scramble all wings, every squadron strike ignites the struck enemy section and reduces the target point defence by 1 for the rest of the battle."
+      },
+      {
+        "n": "Oath of Unbroken Wings",
+        "d": "during Scramble all wings, extra wings may form an escort wall across the fleet, granting every friendly ship within 2 hexes of a carrier +25% screen refill and intercepting the first torpedo fired at each escorted ship this round."
+      }
+    ]
+  },
+  "thale": {
+    "branches": {
+      "A": {
+        "n": "The Iron Account",
+        "tiers": [
+          [
+            {
+              "n": "Hold and Be Counted",
+              "d": "a ship that does not move during Iron wall keeps the damage reduction for one extra round."
+            },
+            {
+              "n": "Screens Where the Debt Falls",
+              "d": "you may shift the wall's protection: one chosen ship takes 20 points more hull damage reduction, and one other ship takes 20 points less."
+            }
+          ],
+          [
+            {
+              "n": "Wall Declared Early",
+              "d": "if Iron wall is declared before any of your ships has moved or fired this round, its damage reduction is 10 points stronger this round."
+            },
+            {
+              "n": "Oath of Stillness",
+              "d": "during Iron wall, a ship that holds its position refills its shields again at half strength at round end."
+            }
+          ],
+          [
+            {
+              "n": "Unpaid and Unbroken",
+              "d": "during Iron wall, ships below half hull take 60% less hull damage instead of 40%."
+            },
+            {
+              "n": "The Wall Answers",
+              "d": "while Iron wall is active, a ship whose shields are emptied by a hit fires its smallest weapon at the attacker, once per ship per battle."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Sworn Deployment",
+              "d": "after seeing the enemy deployment, place one of your ships anywhere in your deployment zone."
+            },
+            {
+              "n": "Debts in Reserve",
+              "d": "hold one ship off the field; it enters at full strength at the start of round 2 at any edge of your deployment zone."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "Flagship Keeps the Ledger",
+              "d": "once per battle, the flagship may order one other ship that has already fired to fire one weapon again at half damage."
+            },
+            {
+              "n": "Standard of the First Crusade",
+              "d": "once per round, one ship within 2 hexes of the flagship may reroll a missed shot."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "Iron Testament",
+        "d": "Iron wall lasts two rounds, and shields refill again at half strength at the start of the second round."
+      },
+      {
+        "n": "The Wall That Moves",
+        "d": "while Iron wall is active, your ships gain +1 movement."
+      }
+    ]
+  },
+  "kassar": {
+    "branches": {
+      "A": {
+        "n": "Synchrony",
+        "tiers": [
+          [
+            {
+              "n": "Wide Net",
+              "d": "synchronized fire radius +1 hex."
+            },
+            {
+              "n": "Second Volley",
+              "d": "the first synced target each round may be fired on by one additional synced ship out of arc."
+            }
+          ],
+          [
+            {
+              "n": "Shared Solution",
+              "d": "each synced ship fires with the best aim modifier any synced ship has."
+            },
+            {
+              "n": "Cold Drill",
+              "d": "a synced ship that has not moved this round fires at +10 aim."
+            }
+          ],
+          [
+            {
+              "n": "Rolling Fire",
+              "d": "once per round, when a synced ship kills an enemy, another synced ship that has not yet fired this round may fire one weapon at once at a new target."
+            },
+            {
+              "n": "Iron Tempo",
+              "d": "the first time the sync anchor is destroyed or captured, the largest remaining Hegemony ship becomes the new anchor for the rest of the battle."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Formation Filed Before Battle",
+              "d": "ships that end their movement next to two friendly ships gain +10 aim that round."
+            },
+            {
+              "n": "Drill Revision One",
+              "d": "once per battle, after the enemy has moved, reposition one of your ships up to 2 hexes."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "Flagship Registry Beacon",
+              "d": "once per round, the flagship may stamp one enemy; your ships gain +10 aim against the stamped enemy."
+            },
+            {
+              "n": "Standard Borne Forward",
+              "d": "ships that move toward the flagship this round gain +1 movement."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "Living Relay",
+        "d": "the flagship projects sync from its position at double radius."
+      },
+      {
+        "n": "One Voice",
+        "d": "once per battle, every synced ship fires at one named target, and its shields stop only the first hit."
+      }
+    ]
+  },
+  "vorn": {
+    "branches": {
+      "A": {
+        "n": "Filed Interdiction",
+        "tiers": [
+          [
+            {
+              "n": "Target Filed in Triplicate",
+              "d": "when the strike begins, file one enemy as the interdicted target; your hits on it gain +10 crit chance."
+            },
+            {
+              "n": "Strike by the Book",
+              "d": "during the strike round, a ship gains +15% damage if its speed is at least the speed of the last ship that fired this round."
+            }
+          ],
+          [
+            {
+              "n": "Cross-Referenced Fire",
+              "d": "during the strike round, the second and later hits on the same target gain +15% damage."
+            },
+            {
+              "n": "Filed Before Movement",
+              "d": "during Interdiction strike, a ship that fires before it has moved this round gains +10 crit chance."
+            }
+          ],
+          [
+            {
+              "n": "Total Interdiction",
+              "d": "during Interdiction strike, any target hit by three or more of your ships takes +30% damage from every hit that round."
+            },
+            {
+              "n": "Standard Seven Breach",
+              "d": "during the strike round, a critical hit also shuts down the struck section's weapons for one round."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Formation Filed Before Battle",
+              "d": "ships that end their movement next to two friendly ships gain +10 aim that round."
+            },
+            {
+              "n": "Drill Revision One",
+              "d": "once per battle, after the enemy has moved, reposition one of your ships up to 2 hexes."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "Flagship Registry Beacon",
+              "d": "once per round, the flagship may stamp one enemy; your ships gain +10 aim against the stamped enemy."
+            },
+            {
+              "n": "Standard Borne Forward",
+              "d": "ships that move toward the flagship this round gain +1 movement."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "Interdiction, Permanent File",
+        "d": "any target hit during Interdiction strike takes the strike damage bonus again from all your fire next round."
+      },
+      {
+        "n": "One Order, Every Gun",
+        "d": "during Interdiction strike, every ship may fire one weapon a second time at half damage."
+      }
+    ]
+  },
+  "reyes": {
+    "branches": {
+      "A": {
+        "n": "Strike Group Procedure",
+        "tiers": [
+          [
+            {
+              "n": "Cruisers Filed as Carriers",
+              "d": "during the launch, choose one ship without a hangar; it launches one wing this Command."
+            },
+            {
+              "n": "Launch Order Published",
+              "d": "publish the strike order before launching; the first wing to strike gains +20% damage."
+            }
+          ],
+          [
+            {
+              "n": "Second Wave on Schedule",
+              "d": "you may hold all extra wings and launch them at the start of next round instead; they strike then at normal damage, and the Command's strike bonus does not carry over."
+            },
+            {
+              "n": "Procedure Rehearsed",
+              "d": "every extra wing's strike again this Command gains +10 aim."
+            }
+          ],
+          [
+            {
+              "n": "Full Group Assembled",
+              "d": "if every launch ship launches an extra wing, each launch ship launches one more, but all extra wings must strike the single filed target."
+            },
+            {
+              "n": "Registry of Escorts",
+              "d": "extra wings may instead form a screen over your fleet, cutting enemy wing damage by 25% this round."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Formation Filed Before Battle",
+              "d": "ships that end their movement next to two friendly ships gain +10 aim that round."
+            },
+            {
+              "n": "Drill Revision One",
+              "d": "once per battle, after the enemy has moved, reposition one of your ships up to 2 hexes."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "Flagship Registry Beacon",
+              "d": "once per round, the flagship may stamp one enemy; your ships gain +10 aim against the stamped enemy."
+            },
+            {
+              "n": "Standard Borne Forward",
+              "d": "ships that move toward the flagship this round gain +1 movement."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "One Target, Every Wing Filed",
+        "d": "designate one enemy before the launch; all extra wings must strike it, and it takes +35% damage from all wing hits this round."
+      },
+      {
+        "n": "Standing Strike Group",
+        "d": "after the Command, one extra wing per launch ship stays on patrol; the first time an enemy ship moves within its launch ship's range each round, it strikes that enemy at once."
+      }
+    ]
+  },
+  "maren": {
+    "branches": {
+      "A": {
+        "n": "Column Standard",
+        "tiers": [
+          [
+            {
+              "n": "Column Filed Straight",
+              "d": "during the wall, ships that end their movement in a straight line of three or more friendly ships gain shields above their maximum equal to 25% of their maximum shields."
+            },
+            {
+              "n": "Overflow by Regulation",
+              "d": "during the wall, a ship that is at full shields gains +10 evasion until its next turn."
+            }
+          ],
+          [
+            {
+              "n": "Wall at the Bell",
+              "d": "while the wall is active, the first hit against your fleet each round deals no hull damage."
+            },
+            {
+              "n": "Standard Rotation",
+              "d": "during the wall, once per ship, a ship may swap hexes with an adjacent friendly ship."
+            }
+          ],
+          [
+            {
+              "n": "The Column Endures",
+              "d": "while the wall is active, the first ship each round to have a shield facing emptied immediately refills that facing to 25%."
+            },
+            {
+              "n": "Filed in Armor",
+              "d": "during the wall, a ship that has not fired yet when it is hit takes 15 points less hull damage."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Formation Filed Before Battle",
+              "d": "ships that end their movement next to two friendly ships gain +10 aim that round."
+            },
+            {
+              "n": "Drill Revision One",
+              "d": "once per battle, after the enemy has moved, reposition one of your ships up to 2 hexes."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "Flagship Registry Beacon",
+              "d": "once per round, the flagship may stamp one enemy; your ships gain +10 aim against the stamped enemy."
+            },
+            {
+              "n": "Standard Borne Forward",
+              "d": "ships that move toward the flagship this round gain +1 movement."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "The Standard Covers All",
+        "d": "while Shield wall order is active, every ship takes a further 20% less hull damage."
+      },
+      {
+        "n": "The Flagship Holds the Standard",
+        "d": "while the wall is active, the flagship counts as part of any friendly line, and ships in a line with the flagship gain shields above their maximum equal to 10% of their maximum shields."
+      }
+    ]
+  },
+  "grax": {
+    "branches": {
+      "A": {
+        "n": "The Scar Run",
+        "tiers": [
+          [
+            {
+              "n": "Run at the Biggest Thing",
+              "d": "ships that end their burn movement closer to the largest enemy than they started gain +15% damage this round."
+            },
+            {
+              "n": "First Over the Rail",
+              "d": "a ship that moves at least 4 hexes during the burn boards at +25% strength."
+            }
+          ],
+          [
+            {
+              "n": "The Pack Closes",
+              "d": "during the burn, a ship that ends its movement next to a friendly ship gains +10 aim this round."
+            },
+            {
+              "n": "Rush the Rail",
+              "d": "a ship that ends its burn movement adjacent to an enemy may board it even if it has already fired this round."
+            }
+          ],
+          [
+            {
+              "n": "All Scars Forward",
+              "d": "during the burn, a ship gains +1 movement for each enemy ship it passes adjacent to, up to +2."
+            },
+            {
+              "n": "The Maw Opens",
+              "d": "during the burn, the first ram by each ship deals +30% damage."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Prey Chosen by Scent",
+              "d": "at battle start, name the pack's prey; your ships gain +10 aim against it."
+            },
+            {
+              "n": "Loose Pack, Wide Lanes",
+              "d": "a ship gains +1 movement on a move that ends with no friendly ship within 2 hexes."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "The Flagship Takes the First Scar",
+              "d": "once per battle, the flagship may take a hit aimed at an adjacent friendly ship onto itself."
+            },
+            {
+              "n": "Trophy Standard",
+              "d": "after the flagship lands a kill, every friendly ship may turn once for free."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "Burn Until the Hulls Meet",
+        "d": "Full burn movement, turns and accuracy protection carry into the next round."
+      },
+      {
+        "n": "Run of the Warlord",
+        "d": "when Full burn is declared, the flagship may move twice, and may board after each move."
+      }
+    ]
+  },
+  "sable": {
+    "branches": {
+      "A": {
+        "n": "Scars Behind the Prey",
+        "tiers": [
+          [
+            {
+              "n": "Knife Finds the Back",
+              "d": "during the Command round, rear arc hits gain +15% damage on top of the Command bonus."
+            },
+            {
+              "n": "Torpedoes in the Dark",
+              "d": "torpedoes fired this round are intercepted at half the usual chance: enemy flak and screen wings roll at half effect."
+            }
+          ],
+          [
+            {
+              "n": "Cut and Turn",
+              "d": "a ship that lands a rear arc hit this round may turn once for free after firing."
+            },
+            {
+              "n": "Second Knife",
+              "d": "torpedoes that miss this round reload one turn sooner than normal."
+            }
+          ],
+          [
+            {
+              "n": "The Smile Before the Cut",
+              "d": "each round during the Command, the first of your ships to activate gains +20% damage on its first shot."
+            },
+            {
+              "n": "Every Knife at Once",
+              "d": "if three or more of your ships hit the same target rear arc this round, that target's weapons lose 20 accuracy next round."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Prey Chosen by Scent",
+              "d": "at battle start, name the pack's prey; your ships gain +10 aim against it."
+            },
+            {
+              "n": "Loose Pack, Wide Lanes",
+              "d": "a ship gains +1 movement on a move that ends with no friendly ship within 2 hexes."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "The Flagship Takes the First Scar",
+              "d": "once per battle, the flagship may take a hit aimed at an adjacent friendly ship onto itself."
+            },
+            {
+              "n": "Trophy Standard",
+              "d": "after the flagship lands a kill, every friendly ship may turn once for free."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "Dark Full of Knives",
+        "d": "the Command damage bonus also applies to the first shot each ship fires next round, if that shot comes from a rear arc."
+      },
+      {
+        "n": "The Cut That Feeds the Pack",
+        "d": "when the Command is declared, every ship may immediately move 2 hexes toward the nearest enemy rear arc."
+      }
+    ]
+  },
+  "mott": {
+    "branches": {
+      "A": {
+        "n": "Junkyard Wings",
+        "tiers": [
+          [
+            {
+              "n": "Patched Wing",
+              "d": "choose one carrier; its extra wing is patched together from scrap, strikes at +25% damage, and is removed after its strike."
+            },
+            {
+              "n": "Hulk Holds More",
+              "d": "choose one of your largest ships that is not a carrier; it launches one extra wing during the Command, from the Hulk's spare racks."
+            }
+          ],
+          [
+            {
+              "n": "Re-Tasked Mid-Flight",
+              "d": "an extra wing that strikes a target no other wing struck this round gains +20% damage."
+            },
+            {
+              "n": "Launched from the Wreck Line",
+              "d": "carriers that did not move this round launch their extra wings at +15% damage."
+            }
+          ],
+          [
+            {
+              "n": "The Whole Yard Flies",
+              "d": "a launch ship that launches all its wings this Command launches one more extra wing."
+            },
+            {
+              "n": "Wings Come Back Screaming",
+              "d": "an extra wing's strike again gains +15% damage when it hits a target already hit this round."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Prey Chosen by Scent",
+              "d": "at battle start, name the pack's prey; your ships gain +10 aim against it."
+            },
+            {
+              "n": "Loose Pack, Wide Lanes",
+              "d": "a ship gains +1 movement on a move that ends with no friendly ship within 2 hexes."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "The Flagship Takes the First Scar",
+              "d": "once per battle, the flagship may take a hit aimed at an adjacent friendly ship onto itself."
+            },
+            {
+              "n": "Trophy Standard",
+              "d": "after the flagship lands a kill, every friendly ship may turn once for free."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "Swarm Over the Scrap Field",
+        "d": "Release the swarm launches the extra wings twice: once when the Command is used, and once after your last activation this round."
+      },
+      {
+        "n": "Old Mott Private Wing",
+        "d": "choose one launch ship; its extra wing stays for the battle and gains +20% damage on its first strike each round."
+      }
+    ]
+  },
+  "vesh": {
+    "branches": {
+      "A": {
+        "n": "Scar Welding",
+        "tiers": [
+          [
+            {
+              "n": "Weld What Matters",
+              "d": "instead of spreading the repair evenly, you may put one ship's entire repair share onto its single most damaged section."
+            },
+            {
+              "n": "Patch Over the Guns",
+              "d": "a ship whose weapons section is repaired by the Command gains +10 aim this round."
+            }
+          ],
+          [
+            {
+              "n": "Scrap to the Front",
+              "d": "you may take the flagship's repair share and give it to any one other ship, doubled."
+            },
+            {
+              "n": "Welded While Fighting",
+              "d": "a ship repaired by the Command may fire one weapon at half damage at once."
+            }
+          ],
+          [
+            {
+              "n": "Double-Bolted Plate",
+              "d": "a section patched by the Command gains +20% section hull for the rest of the battle."
+            },
+            {
+              "n": "The Pack Bites On",
+              "d": "a ship that the Command brings back above half hull gains +15% damage next round."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Prey Chosen by Scent",
+              "d": "at battle start, name the pack's prey; your ships gain +10 aim against it."
+            },
+            {
+              "n": "Loose Pack, Wide Lanes",
+              "d": "a ship gains +1 movement on a move that ends with no friendly ship within 2 hexes."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "The Flagship Takes the First Scar",
+              "d": "once per battle, the flagship may take a hit aimed at an adjacent friendly ship onto itself."
+            },
+            {
+              "n": "Trophy Standard",
+              "d": "after the flagship lands a kill, every friendly ship may turn once for free."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "Welded Whole",
+        "d": "Patch and weld restores one destroyed section on every ship to full strength, not merely patched function."
+      },
+      {
+        "n": "Nothing Stays Broken",
+        "d": "the first time one of your ships would lose a section this battle, that section is not broken and is restored to full."
+      }
+    ]
+  },
+  "matriarch": {
+    "branches": {
+      "A": {
+        "n": "Too Many Mouths",
+        "tiers": [
+          [
+            {
+              "n": "Choose the Brood That Swells",
+              "d": "one brood releases two extra swarms instead of one, and the other broods release none extra."
+            },
+            {
+              "n": "Spores on the Tide",
+              "d": "extra swarms may be placed up to 2 hexes from their brood instead of adjacent to it."
+            }
+          ],
+          [
+            {
+              "n": "The Brood Splits",
+              "d": "an extra swarm that strikes a different target than its brood's other swarms gains +15% damage."
+            },
+            {
+              "n": "Spawned Before the Strike",
+              "d": "a brood that moved this round has its extra swarms strike at +15% damage."
+            }
+          ],
+          [
+            {
+              "n": "Every Throat Opens",
+              "d": "a brood that did not move this round has its extra swarms strike at +25% damage."
+            },
+            {
+              "n": "The Second Throat Bites",
+              "d": "a swarm striking a target already hit by another swarm this round gains +25% damage."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Roles Assigned at Hatching",
+              "d": "at battle start, give each ship a role: strike (its shots gain +10 aim), screen (it gains +10 evasion), or mend (its repair and regrowth effects are 10% stronger); a ship may change its role once per battle."
+            },
+            {
+              "n": "Broods in Reserve",
+              "d": "hold one brood off the field; it enters, grown and ready, at the start of round 2."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "The First Throat Opens",
+              "d": "once per battle, one other ship may act immediately after the flagship finishes its activation."
+            },
+            {
+              "n": "Throat of the Deep",
+              "d": "ships within 2 hexes of the flagship gain +10 aim."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "Nine Throats, One Hunger",
+        "d": "when Spawning surge is used, choose one enemy; every extra swarm strikes it, and it takes +25% damage from swarm hits this round."
+      },
+      {
+        "n": "The Brood Does Not Stop",
+        "d": "an extra swarm that destroys its target strikes another enemy at half damage in the same round."
+      }
+    ]
+  },
+  "razormaw": {
+    "branches": {
+      "A": {
+        "n": "The Hunting Throat",
+        "tiers": [
+          [
+            {
+              "n": "Run Down the Slowest",
+              "d": "during the frenzy, your ships gain +20% damage against targets slower than themselves."
+            },
+            {
+              "n": "Teeth at the Throat",
+              "d": "a ship's first rear arc hit in the frenzy round gains +25% damage."
+            }
+          ],
+          [
+            {
+              "n": "One Prey in Both Throats",
+              "d": "name one prey when the frenzy begins; ships moving toward the prey gain +1 movement."
+            },
+            {
+              "n": "Scent in the Dark",
+              "d": "during the frenzy, a ship that changes targets after a kill gains +10 aim on its next shot."
+            }
+          ],
+          [
+            {
+              "n": "Frenzy Feeds the Throat",
+              "d": "a ship that lands a rear arc hit during the frenzy may immediately move 2 more hexes."
+            },
+            {
+              "n": "Breath Before the Bite",
+              "d": "during the frenzy, an enemy adjacent to two or more of your ships loses a further 20 accuracy."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Roles Assigned at Hatching",
+              "d": "at battle start, give each ship a role: strike (its shots gain +10 aim), screen (it gains +10 evasion), or mend (its repair and regrowth effects are 10% stronger); a ship may change its role once per battle."
+            },
+            {
+              "n": "Broods in Reserve",
+              "d": "hold one brood off the field; it enters, grown and ready, at the start of round 2."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "The First Throat Opens",
+              "d": "once per battle, one other ship may act immediately after the flagship finishes its activation."
+            },
+            {
+              "n": "Throat of the Deep",
+              "d": "ships within 2 hexes of the flagship gain +10 aim."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "The Throat Turns Red",
+        "d": "ships that end the frenzy round adjacent to an enemy gain +25% damage on the first shot they fire next round."
+      },
+      {
+        "n": "One Prey, Every Mouth",
+        "d": "when the frenzy is declared, every ship may move directly toward the named prey, ignoring its turn limit once."
+      }
+    ]
+  },
+  "mending": {
+    "branches": {
+      "A": {
+        "n": "The Mending Throat",
+        "tiers": [
+          [
+            {
+              "n": "Grow Where It Hurts",
+              "d": "you may assign one ship's entire regrowth to a single damaged section."
+            },
+            {
+              "n": "Skin Grown Thick",
+              "d": "a ship may take its regrowth as temporary extra hull, up to +15%, instead of repairing damage."
+            }
+          ],
+          [
+            {
+              "n": "The Tide Comes Early",
+              "d": "if Regrowth tide is used before any of your ships has taken damage this round, every repair is 10 points stronger."
+            },
+            {
+              "n": "Growth Holds the Wound",
+              "d": "a section healed by the tide heals again at the next round start, for the same amount."
+            }
+          ],
+          [
+            {
+              "n": "Flesh Knit for War",
+              "d": "a ship the tide brings above three quarters hull gains +20% damage next round."
+            },
+            {
+              "n": "The Throat Refuses Holes",
+              "d": "while any of your ships is below half hull, the most damaged ship regrows 10% at each round start until it passes half."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Roles Assigned at Hatching",
+              "d": "at battle start, give each ship a role: strike (its shots gain +10 aim), screen (it gains +10 evasion), or mend (its repair and regrowth effects are 10% stronger); a ship may change its role once per battle."
+            },
+            {
+              "n": "Broods in Reserve",
+              "d": "hold one brood off the field; it enters, grown and ready, at the start of round 2."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "The First Throat Opens",
+              "d": "once per battle, one other ship may act immediately after the flagship finishes its activation."
+            },
+            {
+              "n": "Throat of the Deep",
+              "d": "ships within 2 hexes of the flagship gain +10 aim."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "Tide Without End",
+        "d": "Regrowth tide heals a second time at the end of the round, at half strength."
+      },
+      {
+        "n": "What Was Torn Grows Back",
+        "d": "the tide restores destroyed sections to full function, and a section restored this way cannot be destroyed again this battle."
+      }
+    ]
+  },
+  "voice": {
+    "branches": {
+      "A": {
+        "n": "The Acid Throat",
+        "tiers": [
+          [
+            {
+              "n": "Acid Before Aim",
+              "d": "each ship may spit its volley at the nearest enemy instead of the best target."
+            },
+            {
+              "n": "Every Throat Spits",
+              "d": "a ship whose guns cannot bear may still spit once at half damage at the nearest enemy in range."
+            }
+          ],
+          [
+            {
+              "n": "The Burn Stays",
+              "d": "an enemy hit by the volley takes acid damage at the start of next round equal to 15% of the volley damage it took."
+            },
+            {
+              "n": "Spat in Two Rounds",
+              "d": "choose up to half your ships: they hold their spit in the volley and fire it at the start of next round at half damage."
+            }
+          ],
+          [
+            {
+              "n": "Acid Finds the Seams",
+              "d": "volley hits ignore armor on targets below half hull."
+            },
+            {
+              "n": "Many Mouths at Once",
+              "d": "before the volley resolves, each ship may switch its target once; if four or more ships spit at one target, that target loses 20 accuracy next round as acid eats at its scanners."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Roles Assigned at Hatching",
+              "d": "at battle start, give each ship a role: strike (its shots gain +10 aim), screen (it gains +10 evasion), or mend (its repair and regrowth effects are 10% stronger); a ship may change its role once per battle."
+            },
+            {
+              "n": "Broods in Reserve",
+              "d": "hold one brood off the field; it enters, grown and ready, at the start of round 2."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "The First Throat Opens",
+              "d": "once per battle, one other ship may act immediately after the flagship finishes its activation."
+            },
+            {
+              "n": "Throat of the Deep",
+              "d": "ships within 2 hexes of the flagship gain +10 aim."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "The Volley That Grows",
+        "d": "after the volley, every ship that hit with its first spit spits again at half damage."
+      },
+      {
+        "n": "Mouth of the Deep",
+        "d": "choose one ship; it spits with every weapon it carries, twice, at any single target in range."
+      }
+    ]
+  },
+  "nekhet": {
+    "branches": {
+      "A": {
+        "n": "Iteration of the Whole Hull",
+        "tiers": [
+          [
+            {
+              "n": "Restore from the Ninth Frame",
+              "d": "restore one ship from its archived state for the full repair amount, and every other ship receives half the normal swarm repair."
+            },
+            {
+              "n": "Copies Triage the Damage",
+              "d": "a section the Command repairs to full also clears its ship's fire and acid."
+            }
+          ],
+          [
+            {
+              "n": "Iteration Runs During Fire",
+              "d": "a ship repaired by the Command gains +15% damage on its next shot this round."
+            },
+            {
+              "n": "The Archive Answers First",
+              "d": "if Release the repair swarms is used before any of your ships has acted this round, every repair is 10 points stronger."
+            }
+          ],
+          [
+            {
+              "n": "Restored Beyond the Original",
+              "d": "a section rebuilt by the swarms carries the next iteration plating, gaining +20% section hull for the rest of the battle."
+            },
+            {
+              "n": "Every Copy Contributes",
+              "d": "the flagship repair share may be divided among any number of friendly ships."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Formation Loaded from Archive",
+              "d": "ships that end their movement next to two friendly ships gain +10 evasion that round."
+            },
+            {
+              "n": "Iteration Swap",
+              "d": "once per battle, swap the positions of two of your ships, as the Archive substitutes a corrected version of the plan."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "The Flagship Hosts the Index",
+              "d": "once per round, the flagship may copy another friendly ship's target and fire at it at +15% damage."
+            },
+            {
+              "n": "Frame Zero",
+              "d": "the flagship's first missed shot each battle is recorded and fired again at half damage."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "Tenth Frame",
+        "d": "choose one ship when the Command is declared; that ship's repair is tripled, and one destroyed section on it returns to full function."
+      },
+      {
+        "n": "The Earlier Copy Returns",
+        "d": "choose one damaged ship; it is repaired for the full repair amount on every section, all its damaged sections are patched."
+      }
+    ]
+  },
+  "sekhmar": {
+    "branches": {
+      "A": {
+        "n": "Corona Iteration",
+        "tiers": [
+          [
+            {
+              "n": "Arcs Written Warm",
+              "d": "a volley hit from a corona arc splashes 25% of its damage onto one enemy adjacent to the target."
+            },
+            {
+              "n": "Noon Is a Choice",
+              "d": "you may fire the volley at the start of the round, before movement, at +15% damage."
+            }
+          ],
+          [
+            {
+              "n": "The Copy Fires Again",
+              "d": "a ship whose volley destroys its target may fire one weapon at a new target."
+            },
+            {
+              "n": "Target Archived Mid-Flight",
+              "d": "before the volley resolves, each ship may choose its own target; a ship that chooses a target no other ship chose gains +10 aim against it."
+            }
+          ],
+          [
+            {
+              "n": "Corona Without Shadow",
+              "d": "the volley ignores evasion granted by terrain and cover."
+            },
+            {
+              "n": "Every Frame at Noon",
+              "d": "a ship that did not move fires its volley at +25% damage and +10 aim."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Formation Loaded from Archive",
+              "d": "ships that end their movement next to two friendly ships gain +10 evasion that round."
+            },
+            {
+              "n": "Iteration Swap",
+              "d": "once per battle, swap the positions of two of your ships, as the Archive substitutes a corrected version of the plan."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "The Flagship Hosts the Index",
+              "d": "once per round, the flagship may copy another friendly ship's target and fire at it at +15% damage."
+            },
+            {
+              "n": "Frame Zero",
+              "d": "the flagship's first missed shot each battle is recorded and fired again at half damage."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "Noon That Does Not Pass",
+        "d": "Noon volley fires again next round, at half damage, from every ship."
+      },
+      {
+        "n": "One Sun, Copied",
+        "d": "every ship's volley is also copied onto the enemy with the least remaining hull, at half damage."
+      }
+    ]
+  },
+  "anuket": {
+    "branches": {
+      "A": {
+        "n": "The Long Copy Hunt",
+        "tiers": [
+          [
+            {
+              "n": "Copied from Behind",
+              "d": "during the Command round, rear arc hits gain +20% damage on top of the Command bonus."
+            },
+            {
+              "n": "Unseen in the Archive",
+              "d": "during the Command round, a ship that was not targeted last round gains a further +15% damage."
+            }
+          ],
+          [
+            {
+              "n": "The Shadow Is a Position",
+              "d": "a ship that ends its movement in an enemy's rear arc gains +20% damage in the hunt round."
+            },
+            {
+              "n": "Strike the Uncopied Target",
+              "d": "during the Command round, hits on an enemy that has not yet been hit this battle gain +15% damage."
+            }
+          ],
+          [
+            {
+              "n": "Iteration of the Kill",
+              "d": "during the Command round, when one of your ships lands a rear arc hit, the next hit on that target this round gains +20% damage."
+            },
+            {
+              "n": "Silent in the Archive",
+              "d": "during the Command round, any ship that ends its activation outside enemy front arcs gains +15 evasion until next round."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Formation Loaded from Archive",
+              "d": "ships that end their movement next to two friendly ships gain +10 evasion that round."
+            },
+            {
+              "n": "Iteration Swap",
+              "d": "once per battle, swap the positions of two of your ships, as the Archive substitutes a corrected version of the plan."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "The Flagship Hosts the Index",
+              "d": "once per round, the flagship may copy another friendly ship's target and fire at it at +15% damage."
+            },
+            {
+              "n": "Frame Zero",
+              "d": "the flagship's first missed shot each battle is recorded and fired again at half damage."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "Out of Every Shadow",
+        "d": "the Command bonus covers two consecutive rounds for any ship that ends each round in a rear arc or not targeted that round."
+      },
+      {
+        "n": "The Long Copy Strikes",
+        "d": "when the Command is declared, each ship may first move 2 hexes toward an enemy rear arc."
+      }
+    ]
+  },
+  "khepra": {
+    "branches": {
+      "A": {
+        "n": "Layered Iterations",
+        "tiers": [
+          [
+            {
+              "n": "Plates over Shadow",
+              "d": "during the wall, you may stack the wall on one ship: that ship takes 75% less hull damage this round, and every other ship takes 25% less instead of 50%."
+            },
+            {
+              "n": "The Twice-Restored Order",
+              "d": "a ship that has already been repaired earlier in this battle takes a further 15% less hull damage during the wall."
+            }
+          ],
+          [
+            {
+              "n": "Wall Archived in Advance",
+              "d": "if Sunshade wall is declared before any of your ships has moved this round, its damage reduction is 10 points stronger this round."
+            },
+            {
+              "n": "Layers Shift",
+              "d": "during the wall, at round end each ship may shift 1 hex toward the flagship without losing the wall damage reduction."
+            }
+          ],
+          [
+            {
+              "n": "No Layer Falls Alone",
+              "d": "while the wall is active, the first hit each ship takes in a battle is absorbed by its layered plates, once per ship."
+            },
+            {
+              "n": "Stillness Counted",
+              "d": "during the wall, a ship that does not move gains +20 aim on its first shot next round."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Formation Loaded from Archive",
+              "d": "ships that end their movement next to two friendly ships gain +10 evasion that round."
+            },
+            {
+              "n": "Iteration Swap",
+              "d": "once per battle, swap the positions of two of your ships, as the Archive substitutes a corrected version of the plan."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "The Flagship Hosts the Index",
+              "d": "once per round, the flagship may copy another friendly ship's target and fire at it at +15% damage."
+            },
+            {
+              "n": "Frame Zero",
+              "d": "the flagship's first missed shot each battle is recorded and fired again at half damage."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "Wall of Ten Thousand Copies",
+        "d": "while the wall is active, hull damage each ship takes in a round cannot exceed 25% of its maximum hull."
+      },
+      {
+        "n": "The Restored Fleet",
+        "d": "while the wall is active, a ship repaired this round keeps the wall hull damage reduction into next round after the wall ends."
       }
     ]
   }
+};
+// Admiral tree effect numbers (issue #305 job 1: the plumbing and the Glasswrights pilot).
+// The pick key is the lineage key from LINEAGE_TREES; the text lives there and these numbers drive battle.
+// A row with no entry is inert (the 12 Glasswrights x and c rows wait for the Muse text pass, #311).
+const TREE_FX={
+  "aelith:A:0:1":{k:"castTwice",n:.5},
+  "aelith:A:2:0":{k:"flakSkip"},
+  "aelith:A:2:1":{k:"lensAloft"},
+  // Job 7a: the waiting Glasswrights rows (Muse text pass, PR 324).
+  "aelith:A:0:0":{k:"flightPaths",n:.15},
+  "aelith:A:1:0":{k:"replay",n:.1},
+  "aelith:A:1:1":{k:"starlings",n:10},
+  "aelith:cap:0":{k:"flightCast",n:.25},
+  "aelith:cap:1":{k:"forgeAhead",n:.15},
+  "vaelen:A:0:0":{k:"longFocus",n:.2},
+  "vaelen:A:1:1":{k:"recordedAngle"},
+  "vaelen:A:2:0":{k:"burnFlaw"},
+  "vaelen:A:2:1":{k:"longLight",n:2},
+  "vaelen:cap:1":{k:"flawForever",n:.15},
+  "vaelen:A:0:1":{k:"oneLens",n:.25},
+  "vaelen:A:1:0":{k:"lightTogether",n:.15},
+  "vaelen:cap:0":{k:"sunLens"},
+  "thorne:A:0:0":{k:"twoImages",n:20},
+  "thorne:A:0:1":{k:"anglesRecorded",n:10},
+  "thorne:A:2:0":{k:"refraction",n:6},
+  "thorne:A:2:1":{k:"mirrorTurns"},
+  "thorne:cap:1":{k:"falseHulls",n:2},
+  "thorne:A:1:0":{k:"mirrorAside"},
+  "thorne:A:1:1":{k:"splitThree"},
+  "thorne:cap:0":{k:"fleetElsewhere",n:2},
+  "mirelle:A:1:0":{k:"rechargeLit"},
+  "mirelle:A:2:0":{k:"glassCorrected",n:.15},
+  "mirelle:A:2:1":{k:"hardLight"},
+  "mirelle:cap:0":{k:"wardGlass",n:20},
+  "mirelle:A:0:0":{k:"weakSide",n:.2},
+  "mirelle:A:0:1":{k:"prismsFace",n:.25},
+  "mirelle:A:1:1":{k:"lensRotates",n:10},
+  "mirelle:cap:1":{k:"facetLit",n:.2},
+  "aelith:B:0:0":{k:"deployRead"},"aelith:B:0:1":{k:"castCorrected"},"aelith:C:0:0":{k:"flagshipLens",n:10},"aelith:C:0:1":{k:"firstLight",n:10},
+  "vaelen:B:0:0":{k:"deployRead"},"vaelen:B:0:1":{k:"castCorrected"},"vaelen:C:0:0":{k:"flagshipLens",n:10},"vaelen:C:0:1":{k:"firstLight",n:10},
+  "thorne:B:0:0":{k:"deployRead"},"thorne:B:0:1":{k:"castCorrected"},"thorne:C:0:0":{k:"flagshipLens",n:10},"thorne:C:0:1":{k:"firstLight",n:10},
+  "mirelle:B:0:0":{k:"deployRead"},"mirelle:B:0:1":{k:"castCorrected"},"mirelle:C:0:0":{k:"flagshipLens",n:10},"mirelle:C:0:1":{k:"firstLight",n:10},
+  // Sunward Crusade (issue #305 job 2). The 25 a and b rows; the 10 x and 1 c rows stay inert until the Muse text pass (#311).
+  "vex:A:0:1":{k:"heldAccount"},
+  "vex:A:1:0":{k:"namedLedger"},
+  "vex:A:1:1":{k:"inheritedAim",n:.15},
+  "vex:A:2:0":{k:"everyGun",n:10},
+  "malek:A:0:0":{k:"preyName",n:.15},
+  "malek:A:0:1":{k:"salvoTwoHands"},
+  "malek:A:2:0":{k:"debtHunts"},
+  "malek:A:2:1":{k:"twoSalvos"},
+  "malek:cap:1":{k:"namedPrey",n:.25},
+  "ashgrove:A:0:0":{k:"escortName"},
+  "ashgrove:A:0:1":{k:"firstWave",n:.2},
+  "ashgrove:A:1:1":{k:"wingReserve"},
+  "ashgrove:A:2:0":{k:"generation"},
+  "ashgrove:A:2:1":{k:"wingsDebt",n:.3},
+  "ashgrove:cap:0":{k:"rollWings"},
+  "ashgrove:cap:1":{k:"oathWings"},
+  "thale:A:0:0":{k:"holdCounted"},
+  "thale:A:1:1":{k:"oathStillness"},
+  "thale:A:2:0":{k:"unpaid",n:.2},
+  "thale:A:2:1":{k:"wallAnswers"},
+  "thale:cap:0":{k:"ironTestament"},
+  // Job 7a: the waiting Sunward Crusade rows (Muse text pass, PR 324).
+  "vex:A:0:0":{k:"ledgerArcs",n:.15},
+  "vex:A:2:1":{k:"debtDue",n:.2},
+  "vex:cap:0":{k:"grandLedger"},
+  "vex:cap:1":{k:"lastAccount"},
+  "malek:A:1:0":{k:"torpFirst"},
+  "malek:A:1:1":{k:"rearReckoning",n:.15},
+  "malek:cap:0":{k:"salvoEnd"},
+  "ashgrove:A:1:0":{k:"accountSplits",n:.15},
+  "thale:A:0:1":{k:"screensShift",n:.2},
+  "thale:A:1:0":{k:"wallEarly",n:.1},
+  "thale:cap:1":{k:"wallMoves",n:1},
+  "vex:B:0:0":{k:"swornDeploy"},"vex:B:0:1":{k:"debtsReserve"},"vex:C:0:0":{k:"flagshipLedger"},"vex:C:0:1":{k:"standardReroll"},
+  "malek:B:0:0":{k:"swornDeploy"},"malek:B:0:1":{k:"debtsReserve"},"malek:C:0:0":{k:"flagshipLedger"},"malek:C:0:1":{k:"standardReroll"},
+  "ashgrove:B:0:0":{k:"swornDeploy"},"ashgrove:B:0:1":{k:"debtsReserve"},"ashgrove:C:0:0":{k:"flagshipLedger"},"ashgrove:C:0:1":{k:"standardReroll"},
+  "thale:B:0:0":{k:"swornDeploy"},"thale:B:0:1":{k:"debtsReserve"},"thale:C:0:0":{k:"flagshipLedger"},"thale:C:0:1":{k:"standardReroll"},
+  // Eclipse (issue #305 job 3). The a and b rows; the 6 x and 1 c rows stay inert until the Muse text pass (#311).
+  "nekhet:A:0:0":{k:"restoreNinth"},
+  "nekhet:A:2:0":{k:"restoredBeyond",n:.2},
+  "nekhet:A:2:1":{k:"copiesContribute"},
+  "nekhet:cap:0":{k:"tenthFrame"},
+  "nekhet:cap:1":{k:"earlierCopy"},
+  "sekhmar:A:0:0":{k:"arcsWarm",n:.25},
+  "sekhmar:A:0:1":{k:"noonChoice",n:.15},
+  "sekhmar:A:1:0":{k:"copyFires"},
+  "sekhmar:A:2:0":{k:"coronaShadow"},
+  "sekhmar:A:2:1":{k:"everyFrame",n:.25,a:10},
+  "sekhmar:cap:0":{k:"noonRepeat"},
+  "sekhmar:cap:1":{k:"oneSunCopied"},
+  "anuket:A:0:0":{k:"copiedBehind",n:.2},
+  "anuket:A:0:1":{k:"unseenArchive",n:.15},
+  "anuket:A:1:1":{k:"uncopiedTarget",n:.15},
+  "anuket:A:2:0":{k:"iterationKill",n:.2},
+  "anuket:A:2:1":{k:"silentArchive",n:15},
+  "anuket:cap:0":{k:"outShadow"},
+  "anuket:cap:1":{k:"longCopy"},
+  "khepra:A:0:0":{k:"platesShadow"},
+  "khepra:A:0:1":{k:"twiceRestored",n:.15},
+  "khepra:A:1:1":{k:"layersShift"},
+  "khepra:A:2:0":{k:"noLayer"},
+  "khepra:A:2:1":{k:"stillnessCounted",n:20},
+  "khepra:cap:0":{k:"tenThousand",n:.25},
+  "khepra:cap:1":{k:"restoredFleet"},
+  "nekhet:B:0:1":{k:"iterationSwap"},"nekhet:C:0:0":{k:"flagshipIndex",n:.15},"nekhet:C:0:1":{k:"frameZero"},
+  "sekhmar:B:0:1":{k:"iterationSwap"},"sekhmar:C:0:0":{k:"flagshipIndex",n:.15},"sekhmar:C:0:1":{k:"frameZero"},
+  "anuket:B:0:1":{k:"iterationSwap"},"anuket:C:0:0":{k:"flagshipIndex",n:.15},"anuket:C:0:1":{k:"frameZero"},
+  "khepra:B:0:1":{k:"iterationSwap"},"khepra:C:0:0":{k:"flagshipIndex",n:.15},"khepra:C:0:1":{k:"frameZero"},
+  // Job 7b: the waiting Eclipse rows (Muse text pass, PR 324).
+  "nekhet:A:0:1":{k:"copiesTriage"},
+  "nekhet:A:1:0":{k:"iterationFire",n:.15},
+  "nekhet:A:1:1":{k:"archiveFirst",n:.1},
+  "anuket:A:1:0":{k:"shadowPos",n:.2},
+  "khepra:A:1:0":{k:"wallEarly",n:.1},
+  "sekhmar:A:1:1":{k:"targetArchived",n:10},
+  "nekhet:B:0:0":{k:"eclFormation",n:10},"sekhmar:B:0:0":{k:"eclFormation",n:10},"anuket:B:0:0":{k:"eclFormation",n:10},"khepra:B:0:0":{k:"eclFormation",n:10},
+  // The Chorus (issue #305 job 4). The 26 a and b rows; the 9 x rows and the shared c row stay inert until the Muse text pass (#311).
+  "matriarch:A:0:0":{k:"chooseBrood"},
+  "matriarch:A:0:1":{k:"sporeTide",n:2},
+  "matriarch:A:2:0":{k:"everyThroat",n:.25},
+  "matriarch:A:2:1":{k:"secondThroat",n:.25},
+  "razormaw:A:0:0":{k:"runDown",n:.2},
+  "razormaw:A:1:0":{k:"razorPrey",n:1},
+  "razormaw:A:2:0":{k:"frenzyFeeds",n:2},
+  "razormaw:A:2:1":{k:"breathBite",n:20},
+  "razormaw:cap:0":{k:"throatRed",n:.25},
+  "razormaw:cap:1":{k:"preyEveryMouth",n:1},
+  "mending:A:0:0":{k:"growHurts"},
+  "mending:A:0:1":{k:"skinThick",n:.15},
+  "mending:A:2:0":{k:"fleshKnit",n:.2},
+  "mending:A:2:1":{k:"refuseHoles",n:.1},
+  "mending:cap:0":{k:"tideEnd"},
+  "mending:cap:1":{k:"tornBack"},
+  "voice:A:0:0":{k:"acidBeforeAim"},
+  "voice:A:0:1":{k:"throatSpits",n:.5},
+  "voice:A:1:0":{k:"burnStays",n:.15},
+  "voice:A:2:0":{k:"acidSeams"},
+  "voice:A:2:1":{k:"manyMouths",n:20},
+  "voice:cap:0":{k:"volleyGrows",n:.5},
+  "voice:cap:1":{k:"mouthDeep"},
+  "matriarch:B:0:1":{k:"broodReserve"},"matriarch:C:0:0":{k:"firstThroat"},"matriarch:C:0:1":{k:"throatDeep",n:10},
+  "razormaw:B:0:1":{k:"broodReserve"},"razormaw:C:0:0":{k:"firstThroat"},"razormaw:C:0:1":{k:"throatDeep",n:10},
+  "mending:B:0:1":{k:"broodReserve"},"mending:C:0:0":{k:"firstThroat"},"mending:C:0:1":{k:"throatDeep",n:10},
+  "voice:B:0:1":{k:"broodReserve"},"voice:C:0:0":{k:"firstThroat"},"voice:C:0:1":{k:"throatDeep",n:10},
+  // Job 7b: the waiting Chorus rows (Muse text pass, PR 324).
+  "matriarch:A:1:0":{k:"accountSplits",n:.15},
+  "matriarch:cap:0":{k:"nineThroats",n:.25},
+  "razormaw:A:0:1":{k:"teethThroat",n:.25},
+  "mending:A:1:0":{k:"tideEarly",n:.1},
+  "mending:A:1:1":{k:"growthWound"},
+  "voice:A:1:1":{k:"spatRounds"},
+  // The Ashfall Hullbreakers (issue #305 job 5). All 36 rows, including the rewritten x and c rows (Muse PR 324).
+  "grax:A:0:0":{k:"runBigger",n:.15},
+  "grax:A:0:1":{k:"railBoarding",n:.25},
+  "grax:A:1:0":{k:"packCloses",n:10},
+  "grax:A:1:1":{k:"rushRail"},
+  "grax:A:2:0":{k:"allScars",n:2},
+  "grax:A:2:1":{k:"mawOpens",n:.3},
+  "grax:cap:0":{k:"burnCarry"},
+  "grax:cap:1":{k:"warlordRun"},
+  "sable:A:0:0":{k:"knifeBack",n:.15},
+  "sable:A:0:1":{k:"darkTorps"},
+  "sable:A:1:0":{k:"cutTurn"},
+  "sable:A:1:1":{k:"secondKnife"},
+  "sable:A:2:0":{k:"smileCut",n:.2},
+  "sable:A:2:1":{k:"everyKnife",n:20},
+  "sable:cap:0":{k:"darkKnives"},
+  "sable:cap:1":{k:"cutFeeds"},
+  "mott:A:0:0":{k:"patchedWing",n:.25},
+  "mott:A:0:1":{k:"hulkMore"},
+  "mott:A:1:0":{k:"reTasked",n:.2},
+  "mott:A:1:1":{k:"wreckLine",n:.15},
+  "mott:A:2:0":{k:"wholeYard"},
+  "mott:A:2:1":{k:"screaming",n:.15},
+  "mott:cap:0":{k:"swarmScrap"},
+  "mott:cap:1":{k:"privateWing",n:.2},
+  "vesh:A:0:0":{k:"weldMatters"},
+  "vesh:A:0:1":{k:"patchGuns",n:10},
+  "vesh:A:1:0":{k:"scrapFront"},
+  "vesh:A:1:1":{k:"weldedFight"},
+  "vesh:A:2:0":{k:"doubleBolted",n:.2},
+  "vesh:A:2:1":{k:"packBites",n:.15},
+  "vesh:cap:0":{k:"weldedWhole"},
+  "vesh:cap:1":{k:"nothingBroken"},
+  "grax:B:0:0":{k:"preyScent",n:10},"grax:B:0:1":{k:"loosePack"},"grax:C:0:0":{k:"firstScar"},"grax:C:0:1":{k:"trophyStandard"},
+  "sable:B:0:0":{k:"preyScent",n:10},"sable:B:0:1":{k:"loosePack"},"sable:C:0:0":{k:"firstScar"},"sable:C:0:1":{k:"trophyStandard"},
+  "mott:B:0:0":{k:"preyScent",n:10},"mott:B:0:1":{k:"loosePack"},"mott:C:0:0":{k:"firstScar"},"mott:C:0:1":{k:"trophyStandard"},
+  "vesh:B:0:0":{k:"preyScent",n:10},"vesh:B:0:1":{k:"loosePack"},"vesh:C:0:0":{k:"firstScar"},"vesh:C:0:1":{k:"trophyStandard"},
+  // The Hegemony Navy (issue #305 job 6). All 36 rows, including the rewritten x and c rows (Muse PR 324).
+  "kassar:A:0:0":{k:"wideNet",n:1},
+  "kassar:A:0:1":{k:"secondVolley"},
+  "kassar:A:1:0":{k:"sharedSolution"},
+  "kassar:A:1:1":{k:"coldDrill",n:10},
+  "kassar:A:2:0":{k:"rollingFire"},
+  "kassar:A:2:1":{k:"ironTempo"},
+  "kassar:cap:0":{k:"livingRelay"},
+  "kassar:cap:1":{k:"oneVoice"},
+  "vorn:A:0:0":{k:"filedTriplicate",n:10},
+  "vorn:A:0:1":{k:"strikeBook",n:.15},
+  "vorn:A:1:0":{k:"crossFire",n:.15},
+  "vorn:A:1:1":{k:"filedBefore",n:10},
+  "vorn:A:2:0":{k:"totalInterdiction",n:.3},
+  "vorn:A:2:1":{k:"sevenBreach"},
+  "vorn:cap:0":{k:"permanentFile"},
+  "vorn:cap:1":{k:"oneOrder"},
+  "reyes:A:0:0":{k:"cruisersCarriers"},
+  "reyes:A:0:1":{k:"launchOrder",n:.2},
+  "reyes:A:1:0":{k:"secondWave"},
+  "reyes:A:1:1":{k:"rehearsed",n:10},
+  "reyes:A:2:0":{k:"fullGroup"},
+  "reyes:A:2:1":{k:"escorts",n:.25},
+  "reyes:cap:0":{k:"oneTarget",n:.35},
+  "reyes:cap:1":{k:"standingGroup"},
+  "maren:A:0:0":{k:"columnStraight",n:.25},
+  "maren:A:0:1":{k:"overflow",n:10},
+  "maren:A:1:0":{k:"bell"},
+  "maren:A:1:1":{k:"rotation"},
+  "maren:A:2:0":{k:"columnEndures",n:.25},
+  "maren:A:2:1":{k:"filedArmor",n:15},
+  "maren:cap:0":{k:"standardCovers",n:.2},
+  "maren:cap:1":{k:"flagshipStandard",n:.1},
+  "kassar:B:0:0":{k:"formation",n:10},"kassar:B:0:1":{k:"drillRevision"},"kassar:C:0:0":{k:"beacon",n:10},"kassar:C:0:1":{k:"standardForward",n:1},
+  "vorn:B:0:0":{k:"formation",n:10},"vorn:B:0:1":{k:"drillRevision"},"vorn:C:0:0":{k:"beacon",n:10},"vorn:C:0:1":{k:"standardForward",n:1},
+  "reyes:B:0:0":{k:"formation",n:10},"reyes:B:0:1":{k:"drillRevision"},"reyes:C:0:0":{k:"beacon",n:10},"reyes:C:0:1":{k:"standardForward",n:1},
+  "maren:B:0:0":{k:"formation",n:10},"maren:B:0:1":{k:"drillRevision"},"maren:C:0:0":{k:"beacon",n:10},"maren:C:0:1":{k:"standardForward",n:1}
 };
 // Patron favour: grows with every boon you take from a patron
 const FAVOUR_TIERS=[{at:0,n:'Listening'},{at:4,n:'Partial sync',d:'Its protocols are rare more often.'},{at:12,n:'Synced',d:'If it is in range of your run, you start with one of its protocols.'},{at:25,n:'Full sync',d:'Its protocols are never common.'}];
@@ -1232,7 +3100,7 @@ const BOONS={
   s_regen:{p:'storm',n:'Storm Mantle',d:m=>`Each turn, working shield generators restore an extra ${boonPct(.18*m)} of each facing's strength.`,fx:m=>({stormRegen:.18*m})},
   s_ev:{p:'storm',n:'Lightning Reflex',d:m=>`+${Math.round(6*m)} evasion across the fleet.`,fx:m=>({ev:Math.round(6*m)})},
   // The Hunger
-  h_hatch:{p:'hunger',n:'Swarm Hatch',d:m=>`Launch ships field ${m>=1.5?'two extra wings':'an extra wing'}.`,fx:m=>({hangar:m>=1.5?2:1})},
+  h_hatch:{p:'hunger',n:'Swarm Hatch',d:m=>`Launch ships field an extra wing${m>=1.5?` and carry ${m>=2?'2 more spare wings':'1 more spare wing'}`:''}.`,fx:m=>({hangar:1,spareWings:m>=2?2:(m>=1.5?1:0)})},
   h_wings:{p:'hunger',n:'Ravenous Wings',d:m=>`Squadrons deal +${boonPct(.25*m)} damage.`,fx:m=>({sqPct:.25*m})},
   h_chitin:{p:'hunger',n:'Hardened Chitin',d:m=>`Squadrons have +${boonPct(.3*m)} hull.`,fx:m=>({sqHp:.3*m})},
   h_board:{p:'hunger',n:'Boarding Frenzy',d:m=>`Boarding parties fight as ${boonPct(.25*m)} more crew, and a boarding that does not take the ship always sabotages a system.`,fx:m=>({boardPct:.25*m})},
@@ -1251,7 +3119,7 @@ const BOONS={
   r_shock:{p:'rook',n:'Shockwave',d:m=>`Rams also hit every other enemy next to the target for ${boonPct(.25*m)} of the ram damage.`,fx:m=>({ramSplash:.25*m})},
   // The Ember Choir
   e_war:{p:'ember',n:'Incendiary Warheads',d:m=>`Torpedoes deal +${boonPct(.25*m)} damage.`,fx:m=>({torpPct:.25*m})},
-  e_reload:{p:'ember',n:'Hot Tubes',d:m=>`Torpedo reload time -${m>=1.5?2:1} turn${m>=1.5?'s':''}, to a minimum of 1.${m>=1.5?' Current torpedoes gain 1 turn.':''}`,fx:m=>({torpCd:m>=1.5?2:1})},
+  e_reload:{p:'ember',n:'Hot Tubes',d:m=>`Torpedo reload time -1 turn, to a minimum of 1.${m>=1.5?` Torpedoes deal +${m>=2?'20':'10'}% damage.`:''}`,fx:m=>({torpCd:1,torpPct:m>=2?.2:(m>=1.5?.1:0)})},
   e_kindle:{p:'ember',n:'Kindling',d:m=>`Hull hits have a ${boonPct(.12*m)} chance to start a fire (fires burn ${6+Math.round(4*m)} a turn for 2 turns).`,fx:m=>({igniteCh:.12*m,fireDmg:Math.round(4*m)})},
   e_chain:{p:'ember',n:'Chain Reaction',d:m=>`Enemy ships you destroy explode, dealing ${Math.round(20*m)} damage to every enemy within 2 hexes.${m>=2?' Epic: the blast sets them burning.':''}`,fx:m=>({chainBoom:Math.round(20*m),chainFire:m>=2?1:0})},
   e_hunt:{p:'ember',n:'Funeral Pyre',d:m=>`+${boonPct(.2*m)} damage against ships already below half hull; hits there stop passive regrowth, feeding and reassembly.`,fx:m=>({huntPct:.2*m,pyre:1})},
@@ -1266,12 +3134,12 @@ const BOONS={
 // B4 step 3: rule-changing boons (one per patron) and a legendary per patron. A legendary is offered at an elite or flagship reward once you
 // hold two boons from that patron (Hades style), always in the third slot; it never rolls otherwise (leg:true keeps it out of every normal pool).
 Object.assign(BOONS,{
-  i_wall:{p:'iron',n:'Shield Wall',d:()=>'Bracing covers every ship next to the braced ship too: they take the brace’s hull cut until its next turn.',fx:()=>({wallBrace:1})},
-  s_chain:{p:'storm',n:'Chain Lightning',d:()=>'When your fire knocks out an enemy shield facing, the two facings beside it lose a third of their strength.',fx:()=>({chainSh:1})},
-  h_brood:{p:'hunger',n:'Brood Harvest',d:()=>'Each enemy capital ship your fleet destroys lets your nearest carrier launch a free wing, if it has a free hex beside it.',fx:()=>({broodTithe:1})},
-  a_mark:{p:'star',n:'Marked for Death',d:()=>'Each round, the first enemy ship your lances hit is marked: your whole fleet aims 10 better against it until the round ends.',fx:()=>({markLance:1})},
-  r_slip:{p:'rook',n:'Slip the Net',d:()=>'Your ships may move after firing, up to half the movement they had left (without climbing over or diving under).',fx:()=>({fade:1})},
-  e_spread:{p:'ember',n:'Spread Pattern',d:()=>'If a torpedo finds no target, enemy ships within 1 hex of its aim hex take 30% of one torpedo\u2019s damage.',fx:()=>({spread:.3})},
+  i_wall:{p:'iron',n:'Shield Wall',d:m=>`Bracing covers every ship next to the braced ship too: they take the brace’s hull cut${m>1?` and an extra ${boonPct(.1*(m-1))} hull cut`:''} until its next turn.`,fx:m=>({wallBrace:1,wallPlus:.1*(m-1)})},
+  s_chain:{p:'storm',n:'Chain Lightning',d:m=>`When your fire knocks out an enemy shield facing, the two facings beside it lose ${Math.round(m/3*100)}% of their strength.`,fx:m=>({chainSh:m/3})},
+  h_brood:{p:'hunger',n:'Brood Harvest',d:m=>`Each enemy capital ship your fleet destroys lets your nearest carrier launch a free wing, if it has a free hex beside it${m>1?`, and repairs ${boonPct(.1*(m-1))} of its hull`:''}.`,fx:m=>({broodTithe:1,broodRepair:.1*(m-1)})},
+  a_mark:{p:'star',n:'Marked for Death',d:m=>`Each round, the first enemy ship your lances hit is marked: your whole fleet aims ${Math.round(10*m)} better against it until the round ends.`,fx:m=>({markLance:m})},
+  r_slip:{p:'rook',n:'Slip the Net',d:m=>`Your ships may move after firing, up to ${m>=2?'90% of':m>=1.5?'70% of':'half'} the movement they had left (without climbing over or diving under).`,fx:m=>({fade:m>=2?.9:(m>=1.5?.7:.5)})},
+  e_spread:{p:'ember',n:'Spread Pattern',d:m=>`If a torpedo finds no target, enemy ships within 1 hex of its aim hex take ${boonPct(.3*m)} of one torpedo\u2019s damage.`,fx:m=>({spread:.3*m})},
   L_iron:{p:'iron',leg:1,n:'Unbreakable',d:()=>'Legendary. Every ship survives its first killing blow each battle at 1 hull.',fx:()=>({lastStand:1})},
   L_storm:{p:'storm',leg:1,n:'Eye of the Storm',d:()=>'Legendary. Working shield generators refill every facing at the start of your turn, before storm damage.',fx:()=>({stormRegen:1})},
   L_hunger:{p:'hunger',leg:1,n:'The Endless Swarm',d:()=>'Legendary. Launch ships field two more wings and carry 99 spares.',fx:()=>({hangar:2,endless:1})},

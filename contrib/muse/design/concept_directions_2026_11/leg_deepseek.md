@@ -1,0 +1,5 @@
+# #417 leg: DeepSeek (writer)
+
+Run record: Nov 10, 2026 19:32-19:36 CST, cloud browser, signed out, DeepThink ON and Search OFF verified before and after sending. Chat: https://chat.deepseek.com/a/chat/s/5068fae5-1f7d-437e-93b6-ed23038c6ce7. PACK.md attached via the grant only.
+
+Screening: complete prompt set for all 18 directions, clean, no invented content beyond the brief. Its prompts are structurally identical to the chair's (same framing block, same bans) and its 18 risk lines agree with the blind leg on every faction's main failure mode. Two of its guards were sharper than the chair's drafts and are noted for the fleet briefs: Hegemony C, "the rest are hull-tethered drones" against the halo becoming a fleet (the chair's first Drone Mother attempt did fail this way, drawing fighter jets); Chorus C, chains of wording around "only hide and bone over a ghost outline". The delivered prompts.md records the prompts actually used for generation (the chair's, cross-checked against this leg, Qwen's and Grok's); this leg's full text is preserved in the run chat linked above.

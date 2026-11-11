@@ -7,7 +7,7 @@ process.env.VS_ORACLE = path.resolve(__dirname, '../../..');
 require('../../../godot/campaign/test/node/env.js').load(`
 globalThis.shadowXPTest = () => {
   const ok = require('assert'), fixtures = [];
-  META = migrateMeta(defaultMeta());
+  META = migrateMeta(defaultMeta()); META.admirals.vaelen = true;
   newRun('vaelen', 'ithar'); RUN.stats.battles = 8; endRun(false);
   ok.equal(masteryXP('vaelen'), 8);
   ok.equal(masteryXP('aelith'), 2, 'benched same faction earns a quarter');
@@ -48,7 +48,7 @@ globalThis.shadowXPTest = () => {
     const result = awardLineageXP(flown, fac, xp);
     const after = Object.values(META.mastery).reduce((a,b)=>a+b,0)+META.shadowPool[fac];
     ok.ok(Math.abs(after-prior-earned)<1e-9, name + ': no XP vanishes');
-    for (const id of [flown, ...ids]) ok.ok(masteryXP(id)<=masteryThresholds(id).slice(-1)[0], name + ': respects caps');
+    for (const id of [flown, ...ids]) ok.ok(masteryXP(id)<=Math.max(masteryXPCap(id),(meta.mastery[id]||0)), name + ': respects caps without losing prior XP');
     if (name === 'fractional') ok.equal(masteryXP(ids[0]), .25, 'keep fractional earnings');
     if (name === 'all capped') ok.equal(META.shadowPool.ithar, 15, 'save all overflow');
     fixtures.push({name, meta, xp, flown, fac, result, expected:JSON.parse(JSON.stringify(META))});

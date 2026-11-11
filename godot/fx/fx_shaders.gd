@@ -94,6 +94,13 @@ uniform float directional = 0.0;
 uniform float ignition = 0.0;
 uniform vec4 atlas_rect = vec4(0.0, 0.0, 1.0, 1.0);
 uniform float min_pixels = 0.0;
+uniform float size_divisor = 1.0;
+uniform float soft_flash = 0.0;
+// Issue 484 (owner: the secondaries' smoke "looks a little too even and weird"): a picture can be turned, stretched and
+// toned so a cluster of them never repeats one round shape. Defaults leave every other caller as it was.
+uniform float pic_spin = 0.0;
+uniform vec2 pic_shape = vec2(1.0);
+uniform float smoke_tone = 1.0;
 varying float elapsed;
 varying float particle_depth;
 vec2 cell_uv(vec2 uv, float frame) {
@@ -106,16 +113,23 @@ void vertex() {
 	vec3 view_c = (VIEW_MATRIX * vec4(centre, 1.0)).xyz;
 	particle_depth = -view_c.z;
 	float size = max(extent, px_world(min_pixels, -view_c.z, PROJECTION_MATRIX));
+	size /= size_divisor;
 	vec2 axis = (VIEW_MATRIX * vec4(tear_normal, 0.0)).xy;
 	axis = length(axis) > 0.01 ? normalize(axis) : vec2(0.0, 1.0);
 	vec2 up = mix(vec2(0.0, 1.0), axis, directional);
 	vec2 right = vec2(up.y, -up.x);
-	vec2 offset = (right * VERTEX.x * mix(1.0, 0.6, directional) + up * VERTEX.y) * size;
+	vec2 local = vec2(VERTEX.x, VERTEX.y) * pic_shape;
+	local = vec2(local.x * cos(pic_spin) - local.y * sin(pic_spin), local.x * sin(pic_spin) + local.y * cos(pic_spin));
+	vec2 offset = (right * local.x * mix(1.0, 0.6, directional) + up * local.y) * size;
 	POSITION = PROJECTION_MATRIX * vec4(view_c + vec3(offset, 0.0), 1.0);
 }
 void fragment() {
 	float age = clamp(elapsed / max(lifetime, 0.001), 0.0, 1.0);
 	float frame = mix(age * 15.0, 3.0 + sqrt(age) * 12.0, plasma);
+#ifdef ROUTE_BAKED
+	// A softened flash keeps the same first-cell diameter while it rises, then cools through the sequence.
+	frame = mix(age, max(0.0, (age - 0.5) * 2.0), soft_flash) * 15.0;
+#endif
 	float a = floor(frame); float b = min(a + 1.0, 15.0); float blend = fract(frame);
 	vec2 uv = atlas_rect.xy + vec2(UV.x, mix(UV.y, 1.0 - UV.y, directional)) * atlas_rect.zw;
 	vec2 fa = (texture(motion, cell_uv(uv, a)).rg - 0.5) * 0.25;
@@ -138,6 +152,12 @@ void fragment() {
 	// phases through flash_ok; an unbooked vent has no emissive pulse.
 	float pulse = plasma * (1.0 - smoothstep(0.12, 0.85, age)) + ignition * exp(-elapsed / 0.055);
 	ALBEDO += core * (0.9 + gas.r * 1.6) * pulse * intensity * fx_gain;
+#ifdef ROUTE_BAKED
+	// Route B keeps the baked colour and heat: smoke sees the sun, the short core emits light.
+	ALBEDO = gas.rgb * mix(0.55 + 0.9 * lit, 1.2 * intensity, thick.b) * fx_gain;
+	ALBEDO *= mix(smoke_tone, 1.0, clamp(thick.b, 0.0, 1.0));
+	ALBEDO *= mix(1.0, sin(age * 3.14159265), soft_flash);
+#endif
 	float fade = 1.0 - smoothstep(0.70, 1.0, age);
 	float soft = 1.0;
 #ifndef COMPAT
@@ -1710,6 +1730,59 @@ void fragment() {
 	float d = abs(dot(cut_p - cut_at, cut_axis) + tear);
 	float line = 1.0 - smoothstep(width * 0.15, max(width, 0.0001), d);
 	ALBEDO = clamp(glow * line * smoothstep(0.0, 0.7, u) * 1.6 * fx_gain, 0.0, 8.0);
+}
+"""
+
+# Issue 462, the tell: a tear along one or two break lines (a capital has two), drawn as an overlay on the dying hull. It
+# grows across the hull from the hit side (grow, half_span: -1 at the hit side, +1 across), white-hot at its moving tip
+# and ember behind, at least two pixels wide at any camera. straight = 1 for a lance cut (the beam's own line).
+const TEAR := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+""" + COMMON + """
+uniform mat4 frame;
+uniform vec2 open_a = vec2(0.3, 1.33);
+uniform vec3 cut_at = vec3(0.0);
+uniform vec3 cut_axis = vec3(1.0, 0.0, 0.0);
+uniform vec2 open_b = vec2(-1.0, 1.0);
+uniform vec3 cut_at_b = vec3(0.0);
+uniform vec3 cut_axis_b = vec3(1.0, 0.0, 0.0);
+uniform vec3 grow = vec3(0.0, 0.0, -1.0);
+uniform float half_span = 1.0;
+uniform float width = 0.1;
+uniform float straight = 0.0;
+uniform vec3 tip = vec3(1.0, 0.94, 0.82);
+uniform vec3 ember = vec3(1.0, 0.36, 0.07);
+varying vec3 cut_p;
+varying float view_d;
+void vertex() {
+	cut_p = (frame * vec4(VERTEX, 1.0)).xyz;
+	view_d = -(MODELVIEW_MATRIX * vec4(VERTEX, 1.0)).z;
+}
+vec3 tear_line(vec3 at, vec3 axis, vec2 open, float pxw) {
+	float u = (scene_t - open.x) / max(open.y - open.x, 0.0001);
+	if (u <= 0.0) { return vec3(0.0); }
+	float w = max(width, pxw * 3.2);
+	float wig = (1.0 - straight) * (sin(dot(cut_p, vec3(1.7, 8.3, 5.1))) * 0.6 + sin(dot(cut_p, vec3(5.3, 2.9, 11.7))) * 0.4);
+	float d = abs(dot(cut_p - at, axis) + wig * w * 0.9);
+	float s = dot(cut_p - at, grow) / max(half_span, 0.001);
+	float front = mix(-1.15, 1.15, clamp(u, 0.0, 1.0));
+	float behind = front - s;
+	if (behind < 0.0) { return vec3(0.0); }
+	float core = 1.0 - smoothstep(w * 0.3, w, d);
+	float halo = 1.0 - smoothstep(w, w * 4.0, d);
+	float hot = exp(-behind * behind / 0.04) * (1.0 - smoothstep(1.0, 1.25, u));
+	float age = clamp(behind / 2.3, 0.0, 1.0);
+	vec3 c = mix(ember * 1.4, ember * vec3(0.7, 0.45, 0.35), age);
+	c = mix(c, tip * 2.4, hot);
+	return c * (core * 3.6 + halo * 0.9) * smoothstep(0.0, 0.06, u);
+}
+void fragment() {
+	float pxw = px_world(1.0, view_d, PROJECTION_MATRIX);
+	vec3 col = tear_line(cut_at, cut_axis, open_a, pxw);
+	if (open_b.x >= 0.0) { col += tear_line(cut_at_b, cut_axis_b, open_b, pxw); }
+	if (dot(col, col) < 1e-6) { discard; }
+	ALBEDO = clamp(col * fx_gain, 0.0, 8.0);
 }
 """
 

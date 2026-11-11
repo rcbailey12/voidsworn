@@ -1,0 +1,15 @@
+# Qwen writer leg, issue #352 (2026-11-10 06:51-07:23 CST, Qwen3.8-Max, both gates passed)
+
+Chat: https://chat.qwen.ai/c/478e452c-1730-4f44-b742-fb083043f569
+Run note: the Access Verification slider blocked the first send; the runner's own attempts failed, the bot-challenge specialist cleared it, PACK.md hit a "Parsing failed" and was re-attached cleanly through the grant, and the model had reverted to Qwen3.7-Plus after verification, so Qwen3.8-Max was re-selected and both gates re-passed before sending. Single reply, no parallel responses.
+
+Chair screening notes: internally consistent and tightly argued, but its absolute scale contradicts the job's own evidence. Its flash ladder (12 to 240 px) sits at or below today's code floors: its las flash of 12 px is under the code's existing 34 px floor (HIT_PX), and its death bodies (1.30 and 1.80 s) silently drop the API.md:116 skeleton it elsewhere quotes (split at 1.38 s, secondaries staggered 0.7 to 3.5 s, coals about 10 s). The chair does not adopt its sizes or its death times. Adopted from Qwen: the size measure refinement (a ring or ripple counts at its outer edge, not its stroke width; converges with DeepSeek); the observation that HIT_PX floors (34/46/56 px) exceed the world-space flash quads for light weapons (1.4 to 1.8 units is 8 to 11 px), so the floor is the real size today and the table must be written in on-screen pixels; the active-versus-passive split for the capital aftermath (active aftermath winds down, the cheap coals shader runs on to the R90 tail); hull-light spill scoped to torpedoes and deaths; reduce-flashing softening only the flash beat, matching the limiter's actual scope in code. Its flag on finding 2's "quarter of a second" torpedo wording (flash 0.32 plus gas 0.42 is 0.74 s alive; the quarter second is the visible peak) is adopted as an imprecision note. Its extra video links are self-marked UNVERIFIED and are not carried into the synthesis as references.
+
+## Reply summary
+
+- Ladder by flash: las 12 (0.03 s), macro 18 (1.50), lance 28 (1.56), torp hull 56 (2.00), torp shield 76 (1.36), frigate death 100 (1.32), cruiser death 150 (1.50), capital death 240 (1.60). Shield placed ABOVE hull on flash diameter (dissent from the chair).
+- Bodies 0.18 to 1.80 s; aftermaths 0.60 to 8.00 s.
+- Flame cap: 0.45 s (dissent; chair recommends 0.60).
+- Reduce flashing: flash beat only, soft glow at same size, flat 0.40 s on every row.
+- API.md:116 gaps: jets and tear (smoke-only bake, temperature 0, citing bake_death.py:26, a cite the chair did not independently verify), core flash (70 px floor, fx_18 stillness), contained volume suppressed by the limiter and pale when present, secondaries (24 px floor), edge fires/gas (no fire baked, off-hull offset), running lights sub-pixel at battle camera, coals invisible on dark hulls.
+- Owner questions: flame cap (pick 0.45), shield ordering (pick shield bigger), capital aftermath (pick 8 s active plus passive coals), frigate three beats (pick full three), hull light (pick torpedoes and deaths), reduce flashing scope (pick flash beat only).

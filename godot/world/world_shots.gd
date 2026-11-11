@@ -25,6 +25,7 @@ extends Node
 
 const BattleScene := preload("res://scenes/battle/battle.tscn")
 const API := preload("res://rules/battle_api.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 const BL := preload("res://world/board_look.gd")
 
 # name, enemy faction, map, shape, biome {rock, planet, station}, seed
@@ -88,7 +89,7 @@ func _run() -> void:
 		f.store_string(JSON.stringify(bench, "  "))
 		print("[world_shots] bench ", JSON.stringify(bench))
 	print("[world_shots] done")
-	get_tree().quit(0)
+	PG.finish(0)
 
 
 func _case(c: Array) -> void:
@@ -98,6 +99,9 @@ func _case(c: Array) -> void:
 	b.args["quality"] = str(args.get("quality", "max"))
 	b.args["no-tips"] = true
 	add_child(b)
+	# Suppress the opening glide after _ready(), so this does not launch battle.gd's own shots routine.
+	if args.has("motion"):
+		b.args["shots"] = true
 	b.tips_off = true
 	var sc := {"seed": int(c[5]), "sector": 1, "admiral": "vex", "fleet": ["penitent", "harrow", "warden", "warden"], "fac": c[1],
 		"obj": "rout", "shape": c[3], "map": c[2], "dep": "line", "kind": "battle"}
@@ -119,8 +123,13 @@ func _case(c: Array) -> void:
 	var t_build := (Time.get_ticks_usec() - t0) / 1000.0
 	# let the warm-up, the world's own bakes and the ships settle
 	var w0 := Time.get_ticks_msec()
-	while (b.warming or b.busy) and Time.get_ticks_msec() - w0 < 20000:
+	var warm_limit := 120000 if args.has("motion") else 20000
+	while (b.warming or b.busy) and Time.get_ticks_msec() - w0 < warm_limit:
 		await get_tree().process_frame
+	if args.has("motion") and (b.warming or b.busy):
+		push_error("Motion capture stopped: battle warm-up did not finish")
+		get_tree().quit(1)
+		return
 	for k in 90:
 		await get_tree().process_frame
 	if b.hud != null:
@@ -296,6 +305,13 @@ func _looks(b, name: String, home: Dictionary) -> void:
 func _motion(b, name: String, home: Dictionary) -> void:
 	var cam = b.cam
 	var secs := float(args["motion"]) if str(args["motion"]) != "true" else 30.0
+	# Player window settings can override the command line while the battle loads. Capture at the requested size.
+	if DisplayServer.get_name() != "headless":
+		get_window().mode = Window.MODE_WINDOWED
+		get_window().size = Vector2i(1920, 1080)
+		await _settle()
+	cam.input_enabled = false
+	b.set_process_unhandled_input(false)
 	var every := maxf(0.5, float(args.get("every", "5")))
 	var tag := str(args.get("tag", "shipped"))
 	BL.set_look("cine", false)
@@ -327,6 +343,7 @@ func _motion(b, name: String, home: Dictionary) -> void:
 		cam.snap()
 		await _settle()
 		var base := "%s_%s_cine_m_%s" % [name, tag, v[0]]
+		var locked: Transform3D = cam.global_transform
 		var frames: Array = []
 		var t0 := Time.get_ticks_msec()
 		var k := 0
@@ -334,8 +351,16 @@ func _motion(b, name: String, home: Dictionary) -> void:
 			var due := t0 + int(k * every * 1000.0)
 			while Time.get_ticks_msec() < due:
 				await get_tree().process_frame
+			if not cam.global_transform.is_equal_approx(locked):
+				push_error("Motion capture stopped: camera moved during " + base)
+				get_tree().quit(1)
+				return
 			var img: Image = await _grab()
 			if img != null:
+				if img.get_size() != Vector2i(1920, 1080):
+					push_error("Motion capture stopped: expected 1920x1080, got " + str(img.get_size()))
+					get_tree().quit(1)
+					return
 				frames.append(img)
 			k += 1
 			if k * every > secs + 0.001:
@@ -352,6 +377,8 @@ func _motion(b, name: String, home: Dictionary) -> void:
 func _grab() -> Image:
 	if DisplayServer.get_name() == "headless":
 		await get_tree().process_frame
+		return null
+	if PG.stop_if_any():
 		return null
 	await RenderingServer.frame_post_draw
 	return get_viewport().get_texture().get_image()
@@ -431,6 +458,8 @@ func _settle() -> void:
 func _snap(n: String) -> void:
 	if DisplayServer.get_name() == "headless":
 		print("[world_shots] (headless) ", n)
+		return
+	if PG.stop_if_any():
 		return
 	await RenderingServer.frame_post_draw
 	var img := get_viewport().get_texture().get_image()

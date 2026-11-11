@@ -1,0 +1,142 @@
+{
+ "cell": "B3",
+ "build_seconds": 94.5,
+ "audit": {
+  "problems": [],
+  "parts": 49,
+  "crossing_break_lines": []
+ },
+ "break_fit": {
+  "T1_rays_missed": 0,
+  "T1_jag": 0.0154,
+  "T2_rays_missed": 0,
+  "T2_jag": 0.0148
+ },
+ "generations": [
+  {
+   "part": "casemate_0p",
+   "source": "p_casemate.glb",
+   "tris_raw": 588425,
+   "tris": 15000,
+   "stretch": [
+    0.098,
+    0.115,
+    0.093
+   ]
+  },
+  {
+   "part": "casemate_0s",
+   "source": "p_casemate.glb",
+   "tris_raw": 588425,
+   "tris": 15000,
+   "stretch": [
+    0.098,
+    0.115,
+    0.093
+   ]
+  },
+  {
+   "part": "casemate_1p",
+   "source": "p_casemate.glb",
+   "tris_raw": 588425,
+   "tris": 15000,
+   "stretch": [
+    0.098,
+    0.115,
+    0.093
+   ]
+  },
+  {
+   "part": "casemate_1s",
+   "source": "p_casemate.glb",
+   "tris_raw": 588425,
+   "tris": 15000,
+   "stretch": [
+    0.098,
+    0.115,
+    0.093
+   ]
+  },
+  {
+   "part": "drums_f",
+   "source": "p_drumrack.glb",
+   "tris_raw": 585379,
+   "tris": 20000,
+   "stretch": [
+    0.074,
+    0.177,
+    0.118
+   ]
+  },
+  {
+   "part": "drums_m",
+   "source": "p_drumrack.glb",
+   "tris_raw": 585379,
+   "tris": 20000,
+   "stretch": [
+    0.1,
+    0.208,
+    0.134
+   ]
+  },
+  {
+   "part": "drums_a",
+   "source": "p_drumrack.glb",
+   "tris_raw": 585379,
+   "tris": 20000,
+   "stretch": [
+    0.068,
+    0.151,
+    0.107
+   ]
+  },
+  {
+   "part": "bowguns",
+   "source": "p_bowguns.glb",
+   "tris_raw": 585581,
+   "tris": 11999,
+   "stretch": [
+    0.133,
+    0.188,
+    0.106
+   ]
+  },
+  {
+   "part": "cargo_p",
+   "source": "p_cargo.glb",
+   "tris_raw": 586874,
+   "tris": 20000,
+   "stretch": [
+    0.134,
+    0.085,
+    0.172
+   ]
+  },
+  {
+   "part": "cargo_s",
+   "source": "p_cargo.glb",
+   "tris_raw": 586874,
+   "tris": 20000,
+   "stretch": [
+    0.134,
+    0.085,
+    0.172
+   ]
+  },
+  {
+   "part": "sternblock",
+   "source": "p_sternblock.glb",
+   "tris_raw": 591672,
+   "tris": 24999,
+   "stretch": [
+    0.078,
+    0.247,
+    0.179
+   ]
+  }
+ ],
+ "triangles": 223862,
+ "objects": 75,
+ "surfaces": 5,
+ "draw_calls_merged": 5
+}

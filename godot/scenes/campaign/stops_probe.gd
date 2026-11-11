@@ -6,6 +6,7 @@ extends Node
 const CampaignScript = preload("res://campaign/campaign.gd")
 const UIScript = preload("res://ui/campaign/campaign_ui.gd")
 const BattleAPI = preload("res://rules/battle_api.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 const JSM = BattleAPI.JSM
 
 # kind -> how to recognise it: [node type, map place or ""]
@@ -40,9 +41,11 @@ func _ready() -> void:
 		m.set_process(true); m.overlay.visible = true; ui.page_box.visible = true
 		if done.size() >= KINDS.size() + 1: break
 	print("stops shot: ", done.keys())
-	get_tree().quit()
+	PG.finish(0)
 
 func _shoot(m, ui, at: Vector3, dist: float, path: String, top: float) -> void:
+	if PG.stop_if_any():
+		return
 	m.set_process(false); m.overlay.visible = false; m.card.visible = false; ui.page_box.visible = false
 	var dir = Vector3(0.38, 0.5, 0.78).normalized()
 	m.cam.position = at + dir * dist; m.cam.look_at(at, Vector3.UP)

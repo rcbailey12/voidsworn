@@ -31,7 +31,24 @@ function record(id, detail) {
 // async and MUST NOT interleave, because they share one battle context and
 // each replaces B for the next.
 const queue = [];
+// Out of the gate (issue 358, sorted by issue 355): the opinion tests assert
+// Muse's own proposals and the stale tests assert a game the code no longer
+// matches. Neither is a defect gate. They stay in this file as a reading list
+// but do not count toward the suite summary or the runner's pass/fail lines.
+const OUT_OF_GATE = new Set([
+  // opinion (26)
+  'ADM-1', 'AI-3', 'AI-4', 'AI-5', 'BF-2', 'BF-6', 'BF-7', 'BF-9', 'BF-10',
+  'BN-1', 'BN-2', 'BN-5', 'ECO-2', 'ECO-3', 'KIT-2', 'KIT-4', 'MOD-4',
+  'ROS-4', 'ROS-5', 'ROS-6', 'RWD-5', 'RWD-7', 'SQ-1', 'UI-8', 'WPN-2', 'WPN-5',
+  // stale (5)
+  'ADM-2', 'AI-1', 'BF-3', 'DRIFT-5', 'UI-7',
+]);
 function test(id, fn) {
+  const code = id.split(/\s+/)[0];
+  if (OUT_OF_GATE.has(code)) {
+    console.log('SKIP ' + id + ' (out of the gate)');
+    return;
+  }
   checks++;
   queue.push([id, fn]);
 }

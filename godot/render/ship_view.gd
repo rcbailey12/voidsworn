@@ -5,6 +5,7 @@ extends Node3D
 const HT := preload("res://render/hull_table.gd")
 const CRAFT := preload("res://render/squadron_craft.gd")
 const WING := preload("res://render/squadron_wing.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 var squad_kind := ""
 
 var u: Dictionary
@@ -116,6 +117,9 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	if not made:
 		# no built hull (a copy of the project without gen/): a plain block, as an ArrayMesh like every real hull, since
 		# G4's fx reads surface formats and arrays from the ship's meshes (primitive meshes have no surface_get_format)
+		var pc := code if code != "" else "%s|%s" % [fac, cls]
+		push_error("placeholder hull: %s" % pc)
+		PG.note(pc)
 		var bm := BoxMesh.new()
 		bm.size = Vector3(1, 0.25, 0.35)
 		var am := ArrayMesh.new()
@@ -246,7 +250,7 @@ func _ring() -> void:
 	ring.mesh = tm
 	var m := StandardMaterial3D.new()
 	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	m.albedo_color = Color(0.82, 0.65, 0.29)
+	m.albedo_color = Color(0.78, 0.96, 0.23)
 	m.emission_enabled = true
 	ring.material_override = m
 	ring.position.y = -0.3
@@ -255,7 +259,7 @@ func _ring() -> void:
 	add_child(ring)
 
 
-# the footprint under every ship (B1 markers): a green ring under yours, a broken violet hex under the enemy's
+# the footprint under every ship (B1 markers): a mint ring under yours, a broken violet hex under the enemy's
 var marker: MeshInstance3D
 var marker_friend := -1
 
@@ -295,7 +299,8 @@ func set_marker(friend: bool) -> void:
 	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	m.cull_mode = BaseMaterial3D.CULL_DISABLED
-	m.albedo_color = Color(0.42, 1.0, 0.55, 0.85) if friend else Color(0.62, 0.22, 1.0, 0.9)
+	# your ring is the HUD's FRIEND mint (glass_shell.gd, R149: moved off green so it never reads as the lime accent)
+	m.albedo_color = Color(0.32, 0.94, 0.77, 0.85) if friend else Color(0.62, 0.22, 1.0, 0.9)
 	marker.material_override = m
 	marker.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	marker.position.y = -0.25
@@ -361,7 +366,7 @@ func flee() -> void:
 	ring.visible = false
 
 
-func set_selected(on: bool, col := Color(0.82, 0.65, 0.29)) -> void:
+func set_selected(on: bool, col := Color(0.78, 0.96, 0.23)) -> void:   # lime: the ship that is up (R149)
 	ring.visible = on
 	(ring.material_override as StandardMaterial3D).albedo_color = col
 	ring.rotation.y = -rotation.y
@@ -454,6 +459,7 @@ func busy() -> bool:
 # Every thruster follows the hull's real acceleration in its own frame: the main drive lights only while it pushes the
 # ship ahead on a forward run; braking and backing off use the forward-facing retro jets at the bow; stopping a back-off
 # uses small aft jets, never the main drive; sideways pushes use lateral jets in matched bow and stern pairs. No banking.
+# (That is the old segments mode, now a debug flag; the default flown move is play_glide below, issue 505.)
 var mass := 0.5
 var cinematic := true
 var thrust := 0.0             # main drive 0..1, only while it is actually pushing; the battle feeds G4's engine level
@@ -755,17 +761,25 @@ func _emit(kind: String, f: Callable) -> void:
 	f.call()
 
 
-# ---------------------------------------------------------------- continuous curved flight (R76, Ryan Nov 2)
-# Keep F2's mass-dependent speed profile and total move duration on both sides. Translation fills that
-# timeline, with the bow following the spline, a gentle bank, and final facing eased in over its last quarter.
-# Rules sidesteps and back-offs are curved drifts. The main drive follows speed; RCS is brief and dim on turns.
-# The older spin windows below still determine the agreed timing and animate rotation-only commands.
+# ---------------------------------------------------------------- flown movement (issue 505; R76 read by its purpose, R189)
+# Ryan, Nov 11: "I don't want things to look jerky ... Thrusters should be involved when it makes sense on braking and
+# turns. Same with shuffle, it should make sense in space with how they would fly." So a move is flown, never steered:
+#   - the hull slides along one smooth curve through the rules' hexes (same route, same end hex), its speed built and
+#     bled on eased ramps; a bigger hull takes longer (mass runs past 1 for dreadnoughts, titans and arks);
+#   - the heading is flown on its own, separately from the path: every rules turn is a spin at the ship's own rate,
+#     started by one pair of turning jets and stopped by the opposite pair. A turn before the run is flown first and the
+#     hull sets off as the nose comes round (point, then burn); a turn at a corner is centred on the hull's passage there
+#     (a big one brings the hull to rest while it swings); the final facing starts while the hull brakes and finishes
+#     after. Sidesteps and back-offs keep the heading: the hull slides on side or retro jets. No roll into turns;
+#   - every light has a cause (_glide_thrusters): the main drive from forward acceleration (a hard burn to gain speed, a
+#     low hot glow while coasting), retro jets at the bow while it slows, side jets while it is pushed sideways, aft jets
+#     to stop a back-off. Every jet level ramps; nothing switches on or off in one frame.
 # steps: [{"kind": "turn", "yaw": target (unwrapped), "w"} | {"kind": "move", "p": Vector3 (height included), "w"}], w in
 # hexes of the move's time (one hex at cruise is one unit); unit_s the seconds a unit takes (the battle's pace), opts.cap
-# the longest a move may take. path_dur is the move's length once set up.
+# the longest a move may take. path_dur is the move's length once set up. Every number below is a tuning value chosen by
+# eye from the issue 505 strips, not a limit.
 var glide := false
-var glide_bank := 0.0        # roll about the bow, shared with the hit-reaction layer
-var gl_headings := PackedFloat64Array()
+var glide_bank := 0.0        # roll about the bow, shared with the hit-reaction layer (always 0 now: no roll into turns)
 var gl_final_yaw := 0.0
 var gl_motion_time := 0.0
 var gl_ds: PackedFloat32Array = PackedFloat32Array()   # distance along the curve on an even time grid (motion time)
@@ -776,16 +790,30 @@ var gl_T := 1.0               # the move's timeline length (units); p in 0..1 ru
 var gl_yaw0 := 0.0
 var gl_ta := 0.3
 var gl_p := 0.0
-var gl_vpk := 0.0
+var gl_vpk := 0.0             # this move's peak speed, forward acceleration and spin acceleration (per p), for the jets
+var gl_apk := 0.0
+var gl_yapk := 0.0
+var gl_hexd := 1.0
 var _gl_run := {}
-const GL_BLEND := 0.45        # how far (units) a mid-path spin reaches either side of its corner
-const GL_LEAD := 0.55         # a spin before the first run: the hull sets off this far through it
-const GL_TRAIL := 0.6         # a spin after the last run starts this far (of its own length) before the hull arrives
+# what the drive and the jets are doing now (0..1; side and turn signed), for captures and the speed trace
+var jet_retro := 0.0
+var jet_side := 0.0
+var jet_aft := 0.0
+var jet_turn := 0.0
+var jet_count := 0            # puffs fired by this ship (frame cost evidence)
+const MASS_MAX := 1.4         # the size scale runs past 1 for the biggest hulls (issue 505 item 5; battle.gd MOVE_SK_MAX)
+const GL_TR := [0.7, 1.7]     # units to build cruise speed from rest, escort and battleship (extended past 1 by mass)
 const GL_SPIN := 2.4          # a turn step's weight to units of the move's timeline (the motion's own ramps add as much)
+const GL_POINT := 0.5         # a turn before the run: the hull sets off when the nose is within this many radians (29 deg)
+const GL_TRAIL := 0.45        # a turn after the run starts this share of its own length before the hull arrives
+const GL_DWELL := 0.4         # a big turn at a corner (two steps or more): the hull rests this share of the spin there
+const GL_COAST := 0.15        # the drive while coasting under way (battle level about 0.6 of 2): hot, never dark
+const JET_ON := 0.18          # a jet fires above this level; its puffs carry the level, so they fade in and out
+const JET_K := 10.0           # how fast a jet level follows its push (1/s): short ramps, never one-frame switches
 
 
 func play_glide(steps: Array, unit_s: float, opts := {}) -> void:
-	mass = clampf(float(opts.get("mass", 0.5)), 0.0, 1.0)
+	mass = clampf(float(opts.get("mass", 0.5)), 0.0, MASS_MAX)
 	cinematic = true
 	glide = true
 	segs = []
@@ -800,9 +828,13 @@ func play_glide(steps: Array, unit_s: float, opts := {}) -> void:
 		if st["kind"] == "turn":
 			var a1 := float(st["yaw"])
 			if not last_turn:
-				groups.append({"k": pts.size() - 1, "w": 0.0, "d": 0.0})
-			groups[-1]["w"] = float(groups[-1]["w"]) + float(st["w"])
+				groups.append({"k": pts.size() - 1, "w": 0.0, "d": 0.0, "n": 0.0, "ws": 0.0})
+			groups[-1]["ws"] = float(groups[-1]["ws"]) + float(st["w"])
+			groups[-1]["n"] = float(groups[-1]["n"]) + maxf(absf(angle_difference(la, a1)) / (PI / 3.0), 0.5)
 			groups[-1]["d"] = float(groups[-1]["d"]) + angle_difference(la, a1)
+			# the spin lasts as long as its net angle needs at this ship's rate (the rules' route can turn one way and
+			# back inside one group: +60, -60, +60 is flown as one 60 degree spin, not a slow 180 degree crawl)
+			groups[-1]["w"] = float(groups[-1]["ws"]) / float(groups[-1]["n"]) * (0.0 if absf(float(groups[-1]["d"])) < 0.01 else maxf(absf(float(groups[-1]["d"])) / (PI / 3.0), 0.5))
 			la = a1
 			last_turn = true
 		else:
@@ -813,7 +845,7 @@ func play_glide(steps: Array, unit_s: float, opts := {}) -> void:
 		pts.append(Vector3(lp.x, 0.0, lp.z))
 	var n_pts := pts.size()
 	# 2. the curve and its speed limits: cruise everywhere, slower at a corner (by how far the course or the heading
-	#    swings there), zero at the ends and where the course reverses
+	#    swings there), zero at the ends, where the course reverses and where a big turn is flown at a corner
 	var run := {"pts": pts}
 	_prep_run(run)
 	_gl_run = run
@@ -822,7 +854,8 @@ func play_glide(steps: Array, unit_s: float, opts := {}) -> void:
 	for i in n_pts - 1:
 		hexd += Vector2((pts[i + 1] as Vector3).x - (pts[i] as Vector3).x, (pts[i + 1] as Vector3).z - (pts[i] as Vector3).z).length()
 	hexd = maxf(hexd / maxf(n_pts - 1, 1), 1.0)   # the hex spacing: the cruise speed is one hex a unit
-	var tr := lerpf(0.8, 1.6, mass)             # units to build cruise speed from rest
+	gl_hexd = hexd
+	var tr := lerpf(GL_TR[0], GL_TR[1], mass)   # units to build cruise speed from rest
 	var amax := hexd / tr
 	var ns := cum.size()
 	var vl := PackedFloat32Array()
@@ -831,6 +864,7 @@ func play_glide(steps: Array, unit_s: float, opts := {}) -> void:
 		vl[i] = hexd
 	vl[0] = 0.0
 	vl[ns - 1] = 0.0
+	var dwell_at := {}        # point index -> units the hull rests there while a big turn swings it
 	for k in range(1, n_pts - 1):
 		var din: Vector3 = (pts[k] as Vector3) - (pts[k - 1] as Vector3)
 		var dout: Vector3 = (pts[k + 1] as Vector3) - (pts[k] as Vector3)
@@ -843,35 +877,60 @@ func play_glide(steps: Array, unit_s: float, opts := {}) -> void:
 		for g in groups:
 			if int(g["k"]) == k:
 				r = minf(r, lerpf(1.0, 0.3, clampf(absf(float(g["d"])) / (TAU / 3.0), 0.0, 1.0)))
+				if absf(float(g["d"])) > PI / 3.0 + 0.1:
+					r = 0.0
+					dwell_at[k] = float(g["w"]) * GL_SPIN * GL_DWELL
 		vl[k * 16] = minf(vl[k * 16], hexd * r)
-	# 3. the speed profile, leg by leg (a reversal of course splits the move: the hull comes to rest there)
+	# 3. the speed profile, leg by leg (a reversal of course or a big turn splits the move: the hull comes to rest there)
 	gl_ds = PackedFloat32Array()
 	var cuts: Array = [0]
 	for k in range(1, n_pts - 1):
 		if vl[k * 16] <= 0.0:
 			cuts.append(k * 16)
 	cuts.append(ns - 1)
+	var hold_mid := {}        # point index -> motion time (units) at the middle of its rest
 	if n_pts > 1 and float(cum[ns - 1]) > 1e-4:
 		for ci in cuts.size() - 1:
 			var leg := _gl_leg(cum, vl, int(cuts[ci]), int(cuts[ci + 1]), amax, tr)
 			var off: float = gl_ds[gl_ds.size() - 1] if gl_ds.size() > 0 else 0.0
 			for i in range(0 if gl_ds.is_empty() else 1, leg.size()):
 				gl_ds.append(off + leg[i])
+			var kc := int(cuts[ci + 1]) / 16
+			if dwell_at.has(kc) and ci < cuts.size() - 2:
+				var nh := maxi(int(round(float(dwell_at[kc]) / gl_dtg)), 1)
+				hold_mid[kc] = (gl_ds.size() - 1 + nh * 0.5) * gl_dtg
+				var dlast: float = gl_ds[gl_ds.size() - 1]
+				for i in nh:
+					gl_ds.append(dlast)
 	var t_motion := float(maxi(gl_ds.size() - 1, 0)) * gl_dtg
-	# 4. the timeline: a spin before the first run, the motion, a spin after the last run; spins at a corner are timed to
-	#    the hull's passage through it
-	gl_ta = lerpf(0.3, 0.45, mass)
+	# 4. the timeline: the heading is flown on its own. A spin before the first run, then the motion once the nose is
+	#    nearly round; spins at a corner centred on the hull's passage (or its rest) there; a spin after the last run
+	#    starting while the hull still brakes. Each spin runs at the ship's own turn-in-place rate.
+	gl_ta = clampf(lerpf(0.3, 0.45, mass), 0.3, 0.5)
 	gl_turns = []
 	var lead_u := 0.0
+	var lead_d := 0.0
 	var trail_u := 0.0
 	for g in groups:
 		if int(g["k"]) == 0 and n_pts > 1:
 			lead_u = float(g["w"]) * GL_SPIN
+			lead_d = absf(float(g["d"]))
 		elif int(g["k"]) == n_pts - 1 and n_pts > 1:
 			trail_u += float(g["w"]) * GL_SPIN
-	gl_tm0 = lead_u * GL_LEAD
+	gl_tm0 = 0.0
+	if lead_u > 0.0:
+		# point, then burn: set off when the nose is within GL_POINT of the new heading (the drive builds slowly anyway)
+		var want := 1.0 - GL_POINT / maxf(lead_d, GL_POINT * 1.5)
+		var lo := 0.0
+		var hi := 1.0
+		for _i in 24:
+			var mid := (lo + hi) * 0.5
+			if _spin(mid) < want:
+				lo = mid
+			else:
+				hi = mid
+		gl_tm0 = lead_u * clampf(hi, 0.35, 0.9)
 	var t_end := gl_tm0 + t_motion
-	# a spin after the last run starts while the hull is still braking into its hex
 	var t_trail0 := maxf(t_end - minf(trail_u * GL_TRAIL, minf(tr, t_motion * 0.5)), gl_tm0)
 	var t_cursor := 0.0   # (rotation only: spins one after another)
 	for g in groups:
@@ -885,18 +944,14 @@ func play_glide(steps: Array, unit_s: float, opts := {}) -> void:
 		elif k == n_pts - 1:
 			gl_turns.append({"t0": t_trail0, "t1": t_trail0 + su, "d": float(g["d"])})
 		else:
-			var tc := gl_tm0 + _gl_time_at(float(cum[mini(k * 16, ns - 1)]))
-			var half := su * 0.5 + GL_BLEND
-			gl_turns.append({"t0": maxf(tc - half, 0.0), "t1": tc + half, "d": float(g["d"])})
+			var tc := gl_tm0 + (float(hold_mid[k]) if hold_mid.has(k) else _gl_time_at(float(cum[mini(k * 16, ns - 1)])))
+			gl_turns.append({"t0": maxf(tc - su * 0.5, 0.0), "t1": maxf(tc - su * 0.5, 0.0) + su, "d": float(g["d"])})
 	gl_T = maxf(t_end, 1e-3)
 	for t in gl_turns:
 		gl_T = maxf(gl_T, float(t["t1"]))
 	gl_yaw0 = cur_yaw
 	gl_final_yaw = la
 	gl_motion_time = t_motion
-	# R76: keep F2's total duration, but spend it on one continuous flight. The bow follows the
-	# curve instead of the rules' sidestep heading. Unwrap tangents once so crossing PI cannot snap.
-	gl_headings = PackedFloat64Array()
 	if n_pts > 1:
 		var old_length: float = run["len"]
 		if n_pts > 2 and Vector2((pts[-1] as Vector3).x - (pts[-2] as Vector3).x, (pts[-1] as Vector3).z - (pts[-2] as Vector3).z).length() < 0.01:
@@ -905,24 +960,10 @@ func play_glide(steps: Array, unit_s: float, opts := {}) -> void:
 			run["pts"] = pts.duplicate()
 			run["pts"].pop_back()
 			run["land"] = true
-		var travel: Vector3 = pts[1] - pts[0]
-		var bow := Vector3(cos(gl_yaw0), 0, -sin(gl_yaw0))
-		if travel.length() > 0.01 and travel.normalized().dot(bow) < 0.7:
-			# A side or back-off becomes a shallow curved drift through the same hex centres.
-			run["drift"] = travel.cross(Vector3.UP).normalized() * minf(travel.length(), hexd) * 0.45
 		run["smooth"] = true
 		_prep_run(run)
 		for i in gl_ds.size():
 			gl_ds[i] *= float(run["len"]) / old_length
-		var heading := gl_yaw0
-		var length: float = run["len"]
-		for i in 257:
-			var distance := length * i / 256.0
-			var tangent := _curve_at(run, minf(distance + hexd * 0.08, length)) - _curve_at(run, maxf(distance - hexd * 0.08, 0.0))
-			if Vector2(tangent.x, tangent.z).length() > 1e-4:
-				heading += angle_difference(heading, atan2(-tangent.z, tangent.x))
-			gl_headings.append(heading)
-		gl_final_yaw = heading + angle_difference(heading, la)
 	gl_p = 0.0
 	# the move takes as long as its own physics needs at the battle's pace (one unit = unit_s seconds), so a spin or a
 	# ramp lasts the same whatever else is in the move; only a move past the cap is played faster as a whole
@@ -933,11 +974,20 @@ func play_glide(steps: Array, unit_s: float, opts := {}) -> void:
 	_prev_yaw = cur_yaw
 	_yaw_v = 0.0
 	_yaw_a = 0.0
-	# Normalize the drive glow by this flight's peak speed.
+	thrust = 0.0
+	jet_retro = 0.0
+	jet_side = 0.0
+	jet_aft = 0.0
+	jet_turn = 0.0
+	# this flight's peaks, so the drive and the jets read the push as a share of the hardest push in the move
 	gl_vpk = 0.0
-	for k in range(1, 200):
-		var dd := _gl_deriv(k / 200.0)
-		gl_vpk = maxf(gl_vpk, (dd[1] as Vector3).length())
+	gl_apk = 0.0
+	gl_yapk = 0.0
+	for k in range(0, 241):
+		var fo := _gl_force(k / 240.0)
+		gl_vpk = maxf(gl_vpk, (fo[0] as Vector3).length())
+		gl_apk = maxf(gl_apk, (fo[1] as Vector3).length())
+		gl_yapk = maxf(gl_yapk, absf(_gl_yaw_acc(k / 240.0)))
 
 
 # one leg's distance along the curve on the time grid (from rest to rest between samples i0 and i1): cruise one hex a
@@ -1050,17 +1100,11 @@ func _gl_dist(t: float) -> float:
 
 func _gl_pose(p: float) -> Array:
 	var t := p * gl_T
-	var distance := _gl_dist(p * gl_motion_time)
+	# the travel runs on its own clock from gl_tm0 (it is not stretched over the spins: a turn first, then the burn)
+	var distance := _gl_dist(t - gl_tm0)
 	var pos: Vector3 = _curve_at(_gl_run, distance) if gl_ds.size() > 0 else (_gl_run["pts"][0] as Vector3)
 	if _gl_run.get("land", false):
-		pos.y *= 1.0 - smoothstep(0.7, 1.0, p)
-	if not gl_headings.is_empty():
-		var x := clampf(distance / float(_gl_run["len"]) * 256.0, 0.0, 256.0)
-		var i := mini(int(x), 255)
-		var yaw := cubic_interpolate(gl_headings[i], gl_headings[i + 1], gl_headings[maxi(i - 1, 0)], gl_headings[mini(i + 2, 256)], x - i)
-		yaw = lerpf(gl_yaw0, yaw, smoothstep(0.0, 0.18, p))
-		yaw = lerpf(yaw, gl_final_yaw, smoothstep(0.76, 1.0, p))
-		return [pos, yaw]
+		pos.y *= 1.0 - smoothstep(0.7, 1.0, clampf((t - gl_tm0) / maxf(gl_motion_time, 1e-4), 0.0, 1.0))
 	var yaw := gl_yaw0
 	for tn in gl_turns:
 		yaw += float(tn["d"]) * _spin((t - float(tn["t0"])) / maxf(float(tn["t1"]) - float(tn["t0"]), 1e-4))
@@ -1098,6 +1142,53 @@ func _gl_deriv(p: float) -> Array:
 	var ya := (float(a2[1]) - 2.0 * float(a1[1]) + float(a0[1])) / (e * e)
 	return [a1, v, ac, yv, ya]
 
+# the hull's velocity and acceleration (timeline units) for the jets: from the smooth speed profile along the path (its
+# first and second differences over a few grid steps) and the bend of the curve, not from the second difference of the
+# position (that carries the curve's arc-length ripple and lit the jets at random while cruising)
+func _gl_force(p: float) -> Array:
+	if gl_ds.size() < 2:
+		return [Vector3.ZERO, Vector3.ZERO]
+	var tm := p * gl_T - gl_tm0
+	var h := 3.0 * gl_dtg
+	var s0 := _gl_dist(tm - h)
+	var s1 := _gl_dist(tm)
+	var s2 := _gl_dist(tm + h)
+	var sp := (s2 - s0) / (2.0 * h)
+	var spp := (s2 - 2.0 * s1 + s0) / (h * h)
+	var len: float = _gl_run["len"]
+	var dl := gl_hexd * 0.12
+	var t0 := _gl_tan(clampf(s1 - dl, 0.0, len))
+	var t1 := _gl_tan(clampf(s1, 0.0, len))
+	var t2 := _gl_tan(clampf(s1 + dl, 0.0, len))
+	var bend := (t2 - t0) / (2.0 * dl)
+	return [t1 * sp, t1 * spp + bend * sp * sp]
+
+
+func _gl_tan(d: float) -> Vector3:
+	var len: float = _gl_run["len"]
+	var e := gl_hexd * 0.05
+	var v := _curve_at(_gl_run, minf(d + e, len)) - _curve_at(_gl_run, maxf(d - e, 0.0))
+	v.y = 0.0
+	return v.normalized() if v.length() > 1e-6 else Vector3.ZERO
+
+
+func _gl_yaw_acc(p: float) -> float:
+	var t := p * gl_T
+	var a := 0.0
+	for tn in gl_turns:
+		var w := maxf(float(tn["t1"]) - float(tn["t0"]), 1e-4)
+		var x := (t - float(tn["t0"])) / w
+		if x > 0.0 and x < 1.0:
+			var ta := gl_ta
+			var vmax := 1.0 / (1.0 - ta)
+			# the spin's acceleration (per unit of its window, squared): a sine pulse up over ta, down over the last ta
+			if x < ta:
+				a += float(tn["d"]) * vmax * 0.5 * PI / ta * sin(PI * x / ta) / (w * w)
+			elif x > 1.0 - ta:
+				a -= float(tn["d"]) * vmax * 0.5 * PI / ta * sin(PI * (1.0 - x) / ta) / (w * w)
+	return a
+
+
 func _glide_step(dt: float) -> void:
 	var dts := dt / maxf(speed_k, 0.05)   # Enter or Space hurries a move already under way
 	gl_p = minf(gl_p + dts / path_dur, 1.0)
@@ -1107,10 +1198,8 @@ func _glide_step(dt: float) -> void:
 		cur_yaw = float(fin[1])
 		rotation.y = cur_yaw
 		glide_bank = 0.0
-		rotation.x = 0.0
 		path_dur = 0.0
 		glide = false
-		thrust = 0.0
 		_vel = Vector3.ZERO
 		_acc = Vector3.ZERO
 		_yaw_v = 0.0
@@ -1124,30 +1213,67 @@ func _glide_step(dt: float) -> void:
 	_acc = (d[2] as Vector3) / (path_dur * path_dur)
 	_yaw_v = float(d[3]) / path_dur
 	_yaw_a = float(d[4]) / (path_dur * path_dur)
-	var bank := clampf(-_yaw_v * 0.12, -deg_to_rad(4.0), deg_to_rad(4.0)) * sin(PI * gl_p)
-	glide_bank = lerpf(glide_bank, bank, 1.0 - exp(-dts * 5.0))
-	rotation.x = glide_bank
+	# no roll into turns: nothing in space leans a hull into a turn (issue 505 item 4). ShipView never writes the root's
+	# roll or pitch (fx/API.md: G4's hit reactions own them); glide_bank stays 0 for fx_ship's read of it
+	glide_bank = 0.0
 	_prev_pos = position
 	_prev_yaw = cur_yaw
 	_glide_thrusters(d, dts)
 
 
-# Drive and small steering puffs (+x is the bow).
+# The drive and the jets, from the forces on the hull (+x is the bow). All in the ship's own frame, each as a share of
+# this move's hardest push, each level eased (JET_K) so nothing lights or dies in one frame:
+#   main drive: forward push while the hull is not backing (a hard burn), and a low hot glow while it coasts;
+#   retro jets at the bow: backward push (braking, or setting off on a back-off);
+#   aft jets: forward push while the hull backs (stopping a back-off; the main drive stays low);
+#   side jets, a matched bow and stern pair: sideways push (slides, the drift at a dogleg);
+#   turning jets, bow one way and stern the other: spin acceleration (one pair starts a turn, the opposite pair stops it).
 func _glide_thrusters(d: Array, dts: float) -> void:
 	for k in _puff_cd.keys():
 		_puff_cd[k] = float(_puff_cd[k]) - dts
-	# The main drive carries the flight. Matched RCS pairs give short visible
-	# steering puffs, with quiet gaps between bursts.
-	thrust = clampf((d[1] as Vector3).length() / maxf(gl_vpk, 1e-4), 0.0, 1.0)
-	if absf(_yaw_v) > 0.06 and float(_puff_cd.get("gl_turn", 0.0)) <= 0.0:
-		_couple_puffs(signf(_yaw_v), 0.85)
-		_puff_cd["gl_turn"] = 0.24
+	var yw := float((d[0] as Array)[1])
+	var bow := Vector3(cos(yw), 0, -sin(yw))
+	var stb := Vector3(sin(yw), 0, cos(yw))       # the ship's +z
+	var fo := _gl_force(gl_p)
+	var v: Vector3 = fo[0]
+	var a: Vector3 = fo[1]
+	var ak := 1.0 / maxf(gl_apk, 1e-4)
+	var fwd := a.dot(bow) * ak
+	var lat := a.dot(stb) * ak
+	var v_fwd := v.dot(bow) / maxf(gl_vpk, 1e-4)
+	var backing := v_fwd < -0.05
+	var turn := _gl_yaw_acc(gl_p) / gl_yapk if gl_yapk > 1e-6 else 0.0
+	var e := 1.0 - exp(-dts * JET_K)
+	var burn := 0.0 if backing else clampf(fwd, 0.0, 1.0)
+	# the coast glow follows the forward part of the speed: a ship sliding sideways or backing is not coasting on its drive
+	var want := maxf(burn, GL_COAST * smoothstep(0.0, 0.3, maxf(v_fwd, 0.0)))
+	thrust = lerpf(thrust, want, 1.0 - exp(-dts * (8.0 if want > thrust else 5.0)))
+	jet_retro = lerpf(jet_retro, clampf(-fwd, 0.0, 1.0), e)
+	jet_aft = lerpf(jet_aft, clampf(fwd, 0.0, 1.0) if backing else 0.0, e)
+	# fewer, clearer jets: while the turning pair works, the side pair stays quiet
+	jet_side = lerpf(jet_side, clampf(lat, -1.0, 1.0) * (1.0 - clampf(absf(turn), 0.0, 1.0)), e)
+	jet_turn = lerpf(jet_turn, clampf(turn, -1.0, 1.0), e)
+	if jet_retro > JET_ON:
+		_emit_jet("retro", _retro_puffs.bind(jet_retro))
+	if jet_aft > JET_ON:
+		_emit_jet("aft", _aft_puffs.bind(jet_aft))
+	if absf(jet_side) > JET_ON:
+		_emit_jet("side", _side_puffs.bind(signf(jet_side), absf(jet_side)))
+	if absf(jet_turn) > JET_ON:
+		_emit_jet("couple", _couple_puffs.bind(signf(jet_turn), absf(jet_turn)))
+
+
+# a jet under way is a stream of puffs: one every 0.07 s (a capital's every 0.1 s, longer and bigger)
+func _emit_jet(kind: String, f: Callable) -> void:
+	if float(_puff_cd.get(kind, 0.0)) > 0.0:
+		return
+	_puff_cd[kind] = lerpf(0.07, 0.1, clampf(mass / MASS_MAX, 0.0, 1.0))
+	f.call()
 
 
 func snap_to(p: Vector3, yaw: float) -> void:
 	path_dur = 0.0
 	glide_bank = 0.0
-	rotation.x = 0.0
 	glide = false
 	segs = []
 	path_yaws = []
@@ -1186,6 +1312,7 @@ func _side_puffs(sgn: float, k: float) -> void:
 
 
 func _puff(at: Vector3, dir: Vector3, k := 1.0) -> void:
+	jet_count += 1
 	if dead or not visible or DisplayServer.get_name() == "headless":
 		return
 	var sp := Sprite3D.new()
@@ -1196,12 +1323,14 @@ func _puff(at: Vector3, dir: Vector3, k := 1.0) -> void:
 	sp.material_override = _puff_mat()
 	sp.modulate = Color(0.85, 0.88, 0.95, 0.75 * k)  # G4's hit-reaction RCS colour (fx_ship._rcs)
 	# a jet reads at battle zoom: about 5% of the hull's length as it leaves the nozzle, three times that as it spreads
-	sp.pixel_size = clampf(L * 0.07, 1.4, 2.8) / 64.0 * (0.6 + 0.4 * k)
+	# (in a flown move a capital's jets are bigger and last longer: a heavy burn, not a puff)
+	var mk := clampf(mass / MASS_MAX, 0.0, 1.0) if glide else 0.0
+	sp.pixel_size = clampf(L * lerpf(0.07, 0.1, mk), 1.4, lerpf(2.8, 4.6, mk)) / 64.0 * (0.6 + 0.4 * k)
 	sp.top_level = true
 	add_child(sp)
 	sp.global_position = to_global(at + dir.normalized() * maxf(L, 6.0) * 0.03)  # just outside the hull, not inside it
 	var vw: Vector3 = global_transform.basis.orthonormalized() * dir.normalized()
-	puffs.append({"n": sp, "t": 0.0, "v": vw * maxf(L, 6.0) * 0.8 * (0.6 + 0.4 * k) + _vel * 0.6, "s": sp.pixel_size, "a": 0.75 * k, "life": 0.28 if glide else 0.4})
+	puffs.append({"n": sp, "t": 0.0, "v": vw * maxf(L, 6.0) * 0.8 * (0.6 + 0.4 * k) + _vel * 0.6, "s": sp.pixel_size, "a": 0.75 * k, "life": lerpf(0.3, 0.55, mk) if glide else 0.4})
 
 
 static var _pm: StandardMaterial3D = null
@@ -1248,6 +1377,14 @@ func _process(dt: float) -> void:
 		hull.active = not dead and visible
 	if path_dur > 0.0 and glide:
 		_glide_step(dt)
+	elif thrust + jet_retro + jet_aft + absf(jet_side) + absf(jet_turn) > 0.0 and path_dur <= 0.0:
+		# after a flown move the drive and jet levels fade out (no puffs are fired; the last ones fade on their own)
+		var k := exp(-dt * JET_K)
+		thrust = thrust * k if thrust > 0.01 else 0.0
+		jet_retro = jet_retro * k if jet_retro > 0.01 else 0.0
+		jet_aft = jet_aft * k if jet_aft > 0.01 else 0.0
+		jet_side = jet_side * k if absf(jet_side) > 0.01 else 0.0
+		jet_turn = jet_turn * k if absf(jet_turn) > 0.01 else 0.0
 	elif path_dur > 0.0 and not segs.is_empty():
 		_seg_step(dt)
 	elif path_dur > 0.0:

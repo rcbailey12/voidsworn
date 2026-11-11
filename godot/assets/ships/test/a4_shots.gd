@@ -20,6 +20,7 @@ const HT := preload("res://render/hull_table.gd")
 const ShipView := preload("res://render/ship_view.gd")
 const A4P := preload("res://assets/ships/a4_props.gd")
 const CamRig := preload("res://render/camera_rig.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
 const KEY_COL := Color(1.0, 0.96, 0.90)
@@ -65,7 +66,7 @@ func _ready() -> void:
 	await _run()
 	print("[a4shots] done")
 	ShipView.clear_static()
-	get_tree().quit(0)
+	PG.finish(0)
 
 
 # the battle's world (battle.gd _build_world and _apply_quality "max", then G4's look.apply), without the board
@@ -305,6 +306,8 @@ func _settle() -> void:
 
 
 func _snap(name: String) -> void:
+	if PG.stop_if_any():
+		return
 	await RenderingServer.frame_post_draw
 	var img := get_viewport().get_texture().get_image()
 	var p := out.path_join(("%s_%s.jpg" % [tag, name]) if tag != "" else ("%s.jpg" % name))

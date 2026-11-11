@@ -91,8 +91,25 @@ ACT.startRun=()=>{ if(!admiralOwned(pickedAdmiral)) return; const ml=masteryLeve
 const runOpt={alt:false,cmdAlt:false,heat:[]};
 // Heat opens after the first loss; a winner from an older profile keeps it open too.
 function heatUnlocked(){ const s=META.stats||{}; return (s.losses||0)>0||(s.wins||0)>0; }
-function masteryBar(id){ const l=masteryLevel(id), x=masteryXP(id), thresholds=masteryThresholds(id), nx=thresholds[l+1]; const f=nx?Math.min(1,(x-thresholds[l])/(nx-thresholds[l])):1;
-  return `<div style="margin:6px 0 2px;font-size:13px"><span class="gilt">Mastery ${l}/${thresholds.length-1}</span> <span class="dim num">${nx?`${x}/${nx}: next ${esc(masteryPerk(l+1).n.toLowerCase())}`:'mastered'}</span><div class="bar" style="margin-top:3px"><i style="width:${Math.round(f*100)}%;background:var(--gilt)"></i></div></div>`; }
+function masteryBar(id){ const l=masteryLevel(id), x=masteryXP(id), thresholds=masteryThresholds(id), nx=thresholds[l+1];
+  const tree=!!LINEAGE_TREES[id], build=tree?lineageBuild(id):null, hasCap=!!build&&build.capstone!=null; let label, right, f;
+  if(hasCap){ const cm=capstoneMasteryLevel(id), cmNext=capstoneMasteryNext(id), base=cm>0?CAPSTONE_MASTERY_XP[cm-1]:thresholds[thresholds.length-1];
+    label=`Capstone mastery ${cm}/${CAPSTONE_MASTERY_XP.length}`;
+    right=cmNext?`${x}/${cmNext}: next ${esc(capstoneMasteryPerk(cm+1).n.toLowerCase())}`:'fully mastered';
+    f=cmNext?Math.min(1,(x-base)/(cmNext-base)):1; }
+  else { label=`Mastery ${l}/${thresholds.length-1}`;
+    right=nx?`${x}/${nx}: next ${esc(masteryPerk(l+1).n.toLowerCase())}`:(tree?'Level 8 reached: choose a Command evolution':'mastered');
+    f=nx?Math.min(1,(x-thresholds[l])/(nx-thresholds[l])):1; }
+  return `<div style="margin:6px 0 2px;font-size:13px"><span class="gilt">${label}</span> <span class="dim num">${right}</span><div class="bar" style="margin-top:3px"><i style="width:${Math.round(f*100)}%;background:var(--gilt)"></i></div></div>`; }
+// Job 7 step 14: the mastery levels on the chosen capstone evolution, in the same block as the evolution choice.
+function capstoneMasteryHtml(id){
+  const tree=LINEAGE_TREES[id]; if(!tree) return '';
+  const build=lineageBuild(id);
+  if(build.capstone==null) return `<p class="dim">Choose a Command evolution to open capstone mastery at 320, 440 and 600 XP.</p>`;
+  const chosen=tree.capstones[build.capstone], xp=masteryXP(id), l=capstoneMasteryLevel(id), next=capstoneMasteryNext(id);
+  const rows=CAPSTONE_MASTERY_PERKS.map((p,i)=>`<div class="card ${l>i?'sel':''}" style="margin-bottom:10px;${l<=i?'opacity:.55;':''}"><h3>Mastery ${roman(i+1)}${l>i?' (earned)':''}</h3><p>${esc(p.d)}</p><p class="dim num">${CAPSTONE_MASTERY_XP[i]} XP</p></div>`).join('');
+  return `<h3 style="margin-top:18px">Capstone mastery: ${esc(chosen.n)}</h3><p class="dim">${next==null?`${xp} XP. This evolution is at full mastery.`:`${xp} / ${next} XP. ${next-xp} XP to capstone mastery ${roman(l+1)}.`}</p><div class="cards">${rows}</div>`;
+}
 function runOptionsHtml(){ const id=pickedAdmiral, a=ADMIRALS[id], ml=masteryLevel(id), parts=[];
   if(ml>=1){ const ap=altFleetPlan(id,pickedFaction), alt=ap.fleet.map(t=>HULLS[t].n).join(', ')+(ap.mod?` (the carrier starts with a ${MODULES[ap.mod].n.toLowerCase()})`:''), std=a.start.map(t=>HULLS[equivHull(t,pickedFaction)].n).join(', ');
     parts.push(`<div class="card"><h3>Starting fleet</h3><button class="choice ${!runOpt.alt?'sel':''}" data-act="optAlt" data-arg="0"><b>Standard</b><small>${esc(std)}</small></button><button class="choice ${runOpt.alt?'sel':''}" data-act="optAlt" data-arg="1"><b>Alternate</b><small>${esc(alt)}</small></button></div>`); }
@@ -132,7 +149,7 @@ function legacyScreen(){
   // R1 (PROG-2): the Legacy unlocks get a screen again (the purchase handler had no button since the screen was folded into Progression)
   if(progTab==='legacy'){ body=`<p class="lede">Spend renown on lasting advantages for every later run. <span class="gilt num">You have ${META.renown||0} renown.</span></p><div class="cards">${Object.entries(LEGACY).map(([id,u])=>{ const own=!!META.unlocked[id], lock=u.req&&!META.unlocked[u.req];
       return `<div class="card ${own?'sel':''}"><h3>${esc(u.n)}</h3><p class="dim" style="font-size:13.5px">${esc(u.group)}</p><p>${esc(u.d)}</p><div class="foot">${own?'<span class="verd">Unlocked</span>':lock?`<span class="dim">Needs ${esc(LEGACY[u.req].n)} first</span>`:`<button ${(META.renown||0)>=u.cost?'':'disabled'} data-act="buyLegacy" data-arg="${id}">Unlock for ${u.cost} renown</button>`}</div></div>`; }).join('')}</div>`; }
-  if(progTab==='mastery'){ body=`<p class="lede">Every run levels up the admiral who led it: 1 per battle won, 2 per elite, 5 per flagship and 10 for a victory.</p><div class="cards">${MASTERY_PERKS.slice(1).map((m,i)=>`<div class="card"><h3>Level ${i+1}: ${esc(m.n)}</h3><p>${esc(m.d)}</p><p class="dim num">${MASTERY_XP[i+1]} mastery</p></div>`).join('')}</div>`+
+  if(progTab==='mastery'){ body=`<p class="lede">Every run levels up the admiral who led it: 1 per battle won, 2 per elite, 5 per flagship and 10 for a victory.</p><div class="cards">${MASTERY_PERKS.slice(1).map((m,i)=>`<div class="card"><h3>Level ${i+1}: ${esc(m.n)}</h3><p>${esc(m.d)}</p><p class="dim num">${MASTERY_XP[i+1]} mastery</p></div>`).join('')}<div class="card"><h3>Capstone mastery</h3><p>Choose a Command evolution at level 8 (230 XP), then keep deepening it at 320, 440 and 600 XP.</p></div></div>`+
       favFirst().map(f=>`<h3 style="margin:20px 0 8px">${esc(FACTIONS[f].n)}</h3><div class="cards">${Object.entries(ADMIRALS).filter(([id,a])=>(a.fac||'voidsworn')===f).map(([id,a])=>`<div class="card"><h3>${esc(a.n)}</h3><p class="gilt" style="font-size:14px">${esc(a.doc)}</p>${masteryBar(id)}<p class="dim">${META.heirs[a.fac||'voidsworn']===id?'Heir: 50%':'Shadow: 25%'} XP while benched</p>${LINEAGE_TREES[id]?`<button data-act="lineage" data-arg="${id}">View lineage tree</button>`:''}</div>`).join('')}</div>`).join(''); }
   if(progTab==='favour'){ body=`<p class="lede">Every protocol you take raises your sync with that core (rare protocols count double, epic triple).</p><div class="cards">${FAVOUR_TIERS.slice(1).map(t=>`<div class="card"><h3>${esc(t.n)} <span class="dim num">${t.at}+</span></h3><p>${esc(t.d)}</p></div>`).join('')}</div><div style="margin-top:14px">`+
       Object.entries(PATRONS).map(([p,P])=>{ const f=favourOf(p), t=favourTier(p), nx=FAVOUR_TIERS[t+1]; return `<div class="favrow"><div class="sg" style="background:${P.col}">${P.glyph}</div><div><b>${esc(P.n)}</b><div class="dim" style="font-size:13px">${esc(P.theme)}</div></div><div class="num" style="text-align:right"><b style="color:${P.col}">${esc(FAVOUR_TIERS[t].n)}</b><div class="dim" style="font-size:12.5px">${f}${nx?` / ${nx.at}`:''}</div></div></div>`; }).join('')+'</div>'; }
@@ -153,14 +170,14 @@ ACT.buyVariant=id=>{ const v=HULL_VARIANTS[id]; META.variants=META.variants||{};
 ACT.buyLegacy=id=>{ const u=LEGACY[id]; if(!u||META.unlocked[id]||(u.req&&!META.unlocked[u.req])||(META.renown||0)<u.cost) return; META.renown-=u.cost; META.unlocked[id]=true; Persist.save({meta:true}); legacyScreen(); };
 ACT.buyAdmiral=id=>{ const a=ADMIRALS[id]; if(!a||admiralOwned(id)||(META.renown||0)<a.cost) return; META.renown-=a.cost; META.admirals[id]=true; try{ tel('admiral_buy',{id,cost:a.cost}); }catch(e){} Persist.save({meta:true}); ACT.pickAdmiral(id); }; // R1 (PROG-2): bought on the admiral screen, where locked admirals show
 
-// ---------- Glasswright lineage test slice ----------
+// ---------- lineage trees ----------
 function lineageScreen(id){
   const tree=LINEAGE_TREES[id]; if(!tree) return;
   const build=lineageBuild(id), nodes=lineageNodes(id), level=masteryLevel(id), pending=Math.max(0,Math.min(3,level-4)-build.picks.length);
   const nodeHtml=n=>`<div class="card ${n.state==='chosen'?'sel':''}" style="margin-bottom:10px;${n.state==='locked'?'opacity:.55;':''}"><h3>${esc(n.n)}</h3><p>${esc(n.d)}</p><button data-act="offerLineage" data-arg="${n.key}" ${lineageCanPick(n.key)?'':'disabled'}>${{chosen:'Recorded',locked:'Locked until reset',available:'Choose this skill',future:'Not yet available'}[n.state]}</button></div>`;
-  show(`<div class="screen"><div class="page"><h2 class="gothic">${esc(ADMIRALS[id].n)}</h2><p class="lede">Recorded in the glass. One pick at each of levels 5, 6 and 7. Choose a branch, then one skill at its next tier. Its partner locks until you reset this line.</p>${masteryBar(id)}<p class="gilt">${pending} branch pick${pending===1?'':'s'} ready. Capstone at level 8 (230 XP).</p><p class="dim">Command skills and capstones use ${esc(ADMIRALS[id].cmd.n)}, the primary Command. Fleet and flagship branches have their first tier in this test slice.</p>${lineageBetweenRuns()?'':'<p class="blood">Finish or abandon your saved run before changing this line.</p>'}
+  show(`<div class="screen"><div class="page"><h2 class="gothic">${esc(ADMIRALS[id].n)}</h2><p class="lede">Recorded in the glass. One pick at each of levels 5, 6 and 7. Choose a branch, then one skill at its next tier. Its partner locks until you reset this line.</p>${masteryBar(id)}<p class="gilt">${pending} branch pick${pending===1?'':'s'} ready. Capstone at level 8 (230 XP).</p><p class="dim">Command skills and capstones use ${esc(ADMIRALS[id].cmd.n)}, the primary Command. Fleet and flagship branches open their first tier.</p>${lineageBetweenRuns()?'':'<p class="blood">Finish or abandon your saved run before changing this line.</p>'}
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:18px"><section><h3>Trunk: levels 1 to 4</h3>${MASTERY_PERKS.slice(1).map((m,i)=>`<div class="card" style="margin-bottom:10px"><h3>${i+1}. ${esc(m.n)}</h3><p>${esc(m.d)}</p><p class="dim">${MASTERY_XP[i+1]} XP: ${level>i?'earned':'not yet earned'}</p></div>`).join('')}</section>${Object.entries(tree.branches).map(([b,branch])=>`<section><h3>${b==='A'?'[+] Command':b==='B'?'[=] Fleet':'[*] Flagship and line'}: ${esc(branch.n)}</h3>${branch.tiers.map((pair,t)=>`<h4>Tier ${t+1}</h4>${nodes.filter(n=>n.branch===b&&n.tier===t+1).map(nodeHtml).join('')}`).join('')}</section>`).join('')}</div>
-  <section style="border:2px solid var(--gilt);padding:16px;margin:20px 0"><h3>Level 8: Command evolution</h3><div class="cards">${nodes.filter(n=>n.branch==='cap').map(nodeHtml).join('')}</div></section><p class="dim">Reset clears all branch picks and the capstone. XP and trunk perks stay. This line has been reset ${build.respecs} time${build.respecs===1?'':'s'}. You have ${META.renown||0} renown.</p><div class="row"><button data-act="offerRespec" data-arg="${id}" ${lineageCanRespec(id)?'':'disabled'}>Reset line: ${lineageRespecCost(id)} renown</button><button data-act="progTab" data-arg="mastery">Back to Admiral mastery</button></div></div></div>`);
+  <section style="border:2px solid var(--gilt);padding:16px;margin:20px 0"><h3>Level 8: Command evolution</h3><div class="cards">${nodes.filter(n=>n.branch==='cap').map(nodeHtml).join('')}</div>${capstoneMasteryHtml(id)}</section><p class="dim">Reset clears all branch picks and the capstone. XP and trunk perks stay. This line has been reset ${build.respecs} time${build.respecs===1?'':'s'}. You have ${META.renown||0} renown.</p><div class="row"><button data-act="offerRespec" data-arg="${id}" ${lineageCanRespec(id)?'':'disabled'}>Reset line: ${lineageRespecCost(id)} renown</button><button data-act="progTab" data-arg="mastery">Back to Admiral mastery</button></div></div></div>`);
 }
 ACT.lineage=id=>lineageScreen(id);
 ACT.offerLineage=key=>{ if(!lineageCanPick(key)) return; const n=lineageNodes(key.split(':')[0]).find(n=>n.key===key); modal(`<h2>Record ${esc(n.n)}?</h2><p>${esc(n.d)}</p><p class="dim">The other skill at this tier locks until you pay to reset this line.</p><div class="row"><button class="primary" data-act="confirmLineage" data-arg="${key}">Confirm choice</button><button data-act="closeModal">Back</button></div>`); };
@@ -215,16 +232,16 @@ function nextFacPick(){ const won=(META.stats.wonFacs||[]), pool=RUN_FACTIONS.fi
 function shadowAdmirals(fac, flown){ return Object.keys(ADMIRALS).filter(id=>(ADMIRALS[id].fac||'voidsworn')===fac&&id!==flown); }
 function shadowRate(id){ return META.heirs[(ADMIRALS[id].fac||'voidsworn')]===id?.5:.25; }
 function masteryCredit(id, xp){
-  const thresholds=masteryThresholds(id), cap=thresholds[thresholds.length-1], old=masteryXP(id), total=old+xp;
-  META.mastery[id]=Math.min(cap,total);
-  return {xp:Math.max(0,META.mastery[id]-old),overflow:Math.max(0,total-cap)};
+  const cap=masteryXPCap(id), old=masteryXP(id), total=old+xp;
+  META.mastery[id]=Math.max(old,Math.min(cap,total)); // a reset evolution keeps its earned XP even when the cap drops back to 230
+  return {xp:Math.max(0,META.mastery[id]-old),overflow:Math.max(0,total-Math.max(cap,old))};
 }
 function awardLineageXP(flown, fac, xp){
   const active=masteryCredit(flown,xp), shadow=shadowAdmirals(fac,flown).map(id=>({id,xp:0,rate:shadowRate(id)}));
   let pool=(META.shadowPool[fac]||0)+active.overflow;
   for(const row of shadow){ const gain=masteryCredit(row.id,xp*shadowRate(row.id)); row.xp+=gain.xp; pool+=gain.overflow; }
   while(pool>0){
-    const open=shadow.filter(row=>masteryXP(row.id)<masteryThresholds(row.id).slice(-1)[0]);
+    const open=shadow.filter(row=>masteryXP(row.id)<masteryXPCap(row.id));
     if(!open.length) break;
     const weight=open.reduce((n,row)=>n+shadowRate(row.id),0), budget=pool; pool=0;
     for(const row of open){ const gain=masteryCredit(row.id,budget*shadowRate(row.id)/weight); row.xp+=gain.xp; pool+=gain.overflow; }
@@ -247,15 +264,28 @@ function inheritanceSummary(run){
     affordable.push({id,n:u.n,cost:u.cost,kind:'Doctrine',fresh:u.cost>balance-cy.ren});
   for(const [id,u] of Object.entries(HULL_VARIANTS)) if(!u.arc&&!(META.variants||{})[id]&&u.cost<=balance)
     affordable.push({id,n:u.n,cost:u.cost,kind:FACTIONS[HULLS[u.base].fac].n+' hull',fresh:u.cost>balance-cy.ren});
-  const line=id=>{ const level=masteryLevel(id), xp=masteryXP(id), next=masteryThresholds(id)[level+1];
-    return {id,xp,level,next:next==null?null:next,remaining:next==null?0:Math.max(0,next-xp)}; };
+  const line=id=>{ const level=masteryLevel(id), xp=masteryXP(id), tree=!!LINEAGE_TREES[id], build=tree?lineageBuild(id):null, hasCap=!!build&&build.capstone!=null;
+    const capLevel=tree?capstoneMasteryLevel(id):0, capNext=tree?capstoneMasteryNext(id):null;
+    const next=hasCap?capNext:masteryThresholds(id)[level+1];
+    return {id,xp,level,next:next==null?null:next,remaining:next==null?0:Math.max(0,next-xp),hasCap,capLevel,capNext}; };
   const flown=line(run.admiral), tree=!!LINEAGE_TREES[run.admiral], build=lineageBuild(run.admiral), nodes=tree?lineageNodes(run.admiral):[];
   return {balance,affordable,flown:{...flown,tree,pending:tree?Math.max(0,Math.min(3,flown.level-4)-build.picks.length):0,
     capstoneReady:tree&&nodes.some(n=>n.branch==='cap'&&n.state==='available'),chosen:nodes.filter(n=>n.state==='chosen').map(n=>n.n),earned:MASTERY_PERKS.slice(cy.mx0+1,Math.min(4,cy.mx1)+1)},
     shadow:cy.shadow.map(row=>({...line(row.id),...row,total:masteryXP(row.id)})),
     cores:Object.entries(run.coreSync||{}).filter(([p,before])=>PATRONS[p]&&favourOf(p)>before).map(([id,before])=>{
       const total=favourOf(id), tier=favourTier(id), next=FAVOUR_TIERS[tier+1];
-      return {id,before,gain:total-before,total,tier,next:next?next.at:null,remaining:next?next.at-total:0,tierUp:total>=FAVOUR_TIERS[tier].at&&before<FAVOUR_TIERS[tier].at}; })};
+      return {id,before,gain:total-before,total,tier,next:next?next.at:null,remaining:next?next.at-total:0,tierUp:total>=FAVOUR_TIERS[tier].at&&before<FAVOUR_TIERS[tier].at}; }),
+    nem:typeof nemDebrief==='function'?nemDebrief(run):{met:0,lessons:[],rows:[]}};
+}
+// Job 7 step 7 (R85 Q5): the run debrief's Nemesis lesson row, one line per lesson the lost meeting recorded on the
+// commander who fought it. Rows never vanish: an empty row keeps the frame and says which empty state it is.
+function nemLessonHtml(nz){
+  nz=nz||{met:0,lessons:[]}; const ls=Array.isArray(nz.lessons)?nz.lessons:[];
+  const body=ls.length?ls.map(l=>{ const NW=typeof NEM_WEAK!=='undefined'?NEM_WEAK[l.w]:null;
+    return NW?`<p>Nemesis lesson: <b class="blood">${esc(l.name)}</b> beat you and taught you a weakness: <b class="gilt">${esc(NW.n)}</b>.</p><p class="muted">${esc(l.text||'')}</p>`
+      :`<p>Nemesis lesson: <b class="blood">${esc(l.name)}</b> beat you. <span class="muted">${esc(l.text||'')}</span></p>`; }).join('')
+    :`<p class="dim">${nz.met?'No weakness was taught this run.':'No Nemesis meeting this run.'}</p>`;
+  return `<h3>Nemesis lesson</h3>${body}`;
 }
 function inheritanceHtml(run){
   const cy=run.carry, receipt=cy.inheritance, f=receipt.flown, fmt=n=>Math.round(n*100)/100;
@@ -265,11 +295,13 @@ function inheritanceHtml(run){
     ${receipt.affordable.length?`<ul>${receipt.affordable.map(u=>`<li>${esc(u.n)}: ${u.cost} renown <span class="dim">(${esc(u.kind)})</span>${u.fresh?' <span class="gilt">Newly affordable</span>':''}</li>`).join('')}</ul>`:'<p class="dim">No unowned doctrine or hull reward is affordable yet. Your renown stays saved.</p>'}
     <h3>${esc(ADMIRALS[f.id].n)}: ${f.tree?'lineage tree':'admiral line'}</h3><p>+${fmt(cy.mxGain)} XP. Level ${f.level}${cy.mx1>cy.mx0?` (was ${cy.mx0})`:''}.</p>
     ${f.earned.map(perk=>`<p class="gilt">${esc(perk.n)} earned: ${esc(perk.d)}</p>`).join('')}
-    <p class="dim">${f.next==null?`${fmt(f.xp)} XP. This line is at its current cap.`:`${fmt(f.xp)} / ${f.next} XP. ${fmt(f.remaining)} XP to level ${f.level+1}: ${esc(masteryPerk(f.level+1).n)}.`}</p>
+    <p class="dim">${f.hasCap?(f.next==null?`${fmt(f.xp)} XP. This evolution is at full mastery.`:`${fmt(f.xp)} / ${f.next} XP. ${fmt(f.remaining)} XP to capstone mastery ${roman(f.capLevel+1)}.`):(f.next==null?`${fmt(f.xp)} XP. This line is at its current cap.`:`${fmt(f.xp)} / ${f.next} XP. ${fmt(f.remaining)} XP to level ${f.level+1}: ${esc(masteryPerk(f.level+1).n)}.`)}</p>
+    ${f.hasCap&&f.capLevel?`<p class="dim">Capstone mastery ${roman(f.capLevel)}/III. ${esc(CAPSTONE_MASTERY_PERKS[f.capLevel-1].d)}</p>`:''}
     ${f.tree?`<p class="gilt">${f.pending} branch pick${f.pending===1?'':'s'} ready.${f.capstoneReady?' Command evolution ready.':''}</p><p class="dim">Recorded skills: ${f.chosen.length?f.chosen.map(esc).join(', '):'None yet'}.</p>`:''}
-    <h3>Shadow learning</h3>${receipt.shadow.map(row=>`<p>${esc(ADMIRALS[row.id].n)}: +${fmt(row.xp)} shadow XP${row.rate===.5?' (heir rate)':''}. <span class="dim">Total ${fmt(row.total)} XP, level ${row.level}${row.next==null?', at current cap':`, ${fmt(row.remaining)} XP to level ${row.level+1}`}.</span></p>`).join('')}
+    <h3>Shadow learning</h3>${receipt.shadow.map(row=>`<p>${esc(ADMIRALS[row.id].n)}: +${fmt(row.xp)} shadow XP${row.rate===.5?' (heir rate)':''}. <span class="dim">Total ${fmt(row.total)} XP, level ${row.level}${row.next==null?(row.hasCap?', fully mastered':', at current cap'):(row.hasCap?`, ${fmt(row.remaining)} XP to capstone mastery ${roman(row.capLevel+1)}` : `, ${fmt(row.remaining)} XP to level ${row.level+1}`)}.</span></p>`).join('')}
     ${cy.mxOverflow?`<p class="dim">${fmt(cy.mxOverflow)} XP past the flown line's cap went to shadow learning.</p>`:''}${cy.shadowBank?`<p class="dim">${fmt(cy.shadowBank)} shadow XP saved for an uncapped benched line.</p>`:''}
     ${receipt.cores.length?`<h3>Core sync</h3>${receipt.cores.map(row=>`<p><b style="color:${PATRONS[row.id].col}">${esc(PATRONS[row.id].n)}</b>: +${row.gain} sync. <b>${esc(FAVOUR_TIERS[row.tier].n)}</b>${row.tierUp?' <span class="gilt">(Tier up this run)</span>':''}.<br><span class="dim">${row.next==null?`${row.total} sync. Full sync reached.`:`${row.total} / ${row.next} sync. ${row.remaining} to ${esc(FAVOUR_TIERS[row.tier+1].n)}.`}</span></p>`).join('')}`:''}
+    ${nemLessonHtml(receipt.nem)}
     <div class="row"><button data-act="progTab" data-arg="legacy">Choose doctrine</button><button data-act="progTab" data-arg="variants">Choose hull rewards</button><button data-act="${f.tree?'lineage':'progTab'}" data-arg="${f.tree?f.id:'mastery'}">View admiral line</button></div>
     <div id="heirChoice">${heirChoiceHtml(run.fac,run.admiral)}</div></section>`;
 }
@@ -288,6 +320,7 @@ function endRun(victory, abandoned){
   if(hl>0){ const hx=masteryCredit(RUN.admiral,hl*2); /* R63: +2 XP per Heat point to the flown line, +1 to the faction shadow pool; cap overflow joins the pool */
     earnings.mxGain+=hx.xp; earnings.mxOverflow+=hx.overflow; earnings.shadowBank=(META.shadowPool[RUN.fac]||0)+hx.overflow+hl; META.shadowPool[RUN.fac]=earnings.shadowBank; }
   const mx1=masteryLevel(RUN.admiral);
+  if(typeof runXPTel==='function') runXPTel(RUN,earnings,victory); // Job 7 step 11: per run XP by line for the F1 play log report
   if(victory&&hl){ META.heatBest=META.heatBest||{}; META.heatBest[RUN.fac]=Math.max(META.heatBest[RUN.fac]||0,hl); }
   RUN.carry={ren,...earnings,mx0,mx1,hl};
   RUN.carry.inheritance=inheritanceSummary(RUN);

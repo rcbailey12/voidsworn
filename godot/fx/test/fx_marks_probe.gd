@@ -9,6 +9,7 @@ extends SceneTree
 
 const FX := preload("res://fx/fx.gd")
 const SV := preload("res://render/ship_view.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 const BREACH := preload("res://fx/fx_breach.gd")
 
 const LOOKS := [["lance", 3], ["plasma", 2], ["macro", 3], ["gauss", 3], ["torp", 3], ["flak", 2], ["spine", 2], ["ion", 2], ["board", 2], ["ram", 3], ["auto", 2]]
@@ -56,6 +57,8 @@ func _run() -> void:
 	var pf := _env("PROBE_FAC", "corsair")
 	var pc := _env("PROBE_CLS", "Battle-barge")
 	sv.setup({"id": "C", "fac": pf, "cls": pc, "facing": 0}, Vector3.ZERO)
+	if PG.stop_if_any():
+		return
 	var fx = FX.new()
 	world.add_child(fx)
 	fx.manual = true
@@ -187,7 +190,7 @@ func _run() -> void:
 					vp.get_texture().get_image().save_png("%s/%s_%s.png" % [out, nm.replace("_cooled", ""), "tac" if pass_i == 1 else "tacf"])
 	print("MARKS_COST total %.1f ms for %d marks one at a time; hull tris %d" % [total_ms, LOOKS.size(), h.tri_count])
 	if only != "":
-		quit()
+		PG.finish(0)
 		return
 	# then all of them at once (the section budget decides what stays), seen from above
 	s._marks.clear()
@@ -210,4 +213,4 @@ func _run() -> void:
 	for i in 3:
 		await RenderingServer.frame_post_draw
 	vp.get_texture().get_image().save_png("%s/all_tac.png" % out)
-	quit()
+	PG.finish(0)

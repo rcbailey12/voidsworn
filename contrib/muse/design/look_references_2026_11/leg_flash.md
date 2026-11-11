@@ -1,0 +1,10 @@
+# #407 leg: Flash (ideation)
+
+Run record: Nov 10, 2026 09:36-09:39 CST, cloud browser, Gemini 3.8 Flash per the picker, already signed in, no phone prompt. Chat: https://gemini.google.com/app/b2d84ef24c95cf73. PACK.md attached via the grant only. Ideation seat: leads, not evidence.
+
+Screening: the leg is fluent and its directions are usable, but several per-game specifics are over-specified inventions and are NOT carried into the synthesis as fact: the Sins 2 "segmented bubble mesh across the impacted quadrant", Rogue Trader's "planar flash over the defending quadrant", BFG's "collapse as an omnidirectional burst", and Elite's "energy lattice distortion" are the leg's phrasings, not sourced behaviour (compare the chair's research notes). Two claims it marked UNSOURCED itself (Star Citizen trails and sky). Its structural reads are sound and agree with the other legs: mesh and hex detail dies at 60 to 200 px; rim arcs and flat flashes survive; a down side reads only when hits start landing on the hull while other arcs still answer.
+
+Directions it proposed (kept for the chair's direction pool):
+- Shields: "Quadrant Wire-Rim" (faint faction arc on hover, sharp perimeter arc flash on impact, dead black gap on the dropped quadrant; Sins 2 + Rogue Trader). "Segmented Energy Shell" (flat polygonal plates on the struck flank that shatter and leave a dark silhouette; Sins 2). "Convex Shock-Lattice" (thick curved shock bands travelling along the flank; BFG + EVE).
+- Trails/beams: "Dense Lance and Vector Ribbon" (flat-shaded tapering ribbons; thick two-tone beam rods ending in broad flash discs; Sins 2 + EVE). "Heavy Plasma Core and Lance Strike" (short teardrop plumes; heavy beams burning over a second with emitter coronas; BFG + Rogue Trader). "Tapered Filament and Pulse Rod" (thin anchors for small ships, bold ribbons for capitals, rectangular snap-on beams; Sins 2).
+- Sky: "Macroscopic Planetary Horizon" (one huge soft planet curve at the field's edge, near-black elsewhere). "Deep Cold Void" (ink-black, desaturated cold washes; Elite + EVE). "Subdued Broad-Band Nebula" (massive low-detail curtain gradients, no focal points; EVE + Sins 2).

@@ -55,8 +55,8 @@ for (const [name, v] of [['living debris rock', living], ['plain debris rock', p
 // 5. BD16: zone tints of record (section 4)
 const zt = /const ZONE_TINT := \{"neb": Color\(0\.69, 0\.49, 1\.0, ([\d.]+)\), "debris": Color\(0\.83, 0\.75, 0\.53, ([\d.]+)\), "storm": Color\(1\.0, 0\.91, 0\.4, ([\d.]+)\)\}/.exec(board);
 check(zt && zt[1] === '0.075' && zt[2] === '0.065' && zt[3] === '0.065', 'ZONE_TINT alphas are 0.075, 0.065, 0.065; change reconciliation section 4 with them');
-// 6. AS1 and PL8 stay until the loom turntable (section 7)
-check(has(world, 'assert(angle <= BACKDROP_ROCK_ANGLE + 0.000001') && has(world, 'angle * 4.4 <= 2.0 * _planet_ang'), 'the AS1 and PL8 backdrop asserts stay until #236 picks a profile (R124)');
+// 6. R191 (4): visual tuning reports must never stop a map build (section 7).
+check(!/assert\([^\n]*(?:BACKDROP_ROCK_ANGLE|_planet_ang)/.test(world) && has(world, 'AS1 largest backdrop rock') && has(world, 'PL8 planet/rock diameter'), 'AS1 and PL8 report measured values and targets instead of asserting (R191)');
 // 7. ST3 and ST5: reported, not asserted (section 6)
 check(!/assert abs\(hi\[0\] - lo\[0\] - 46\)/.test(kit) && !/assert hi\[2\] >= 15/.test(kit), 'ST3: station length and skyline are reported, not asserted');
 check(!/assert tops ==/.test(kit) && !/assert max\(v\.co\.z for v in bpy\.data\.objects\['gantry_crossbeam'\]/.test(kit) && !/assert max\(v\.co\.z for v in bpy\.data\.objects\['secondary_process_column'\]/.test(kit), 'ST3: R94 detail heights are reported, not asserted');

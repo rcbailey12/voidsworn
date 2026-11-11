@@ -9,6 +9,7 @@ extends SceneTree
 
 const FX := preload("res://fx/fx.gd")
 const SV := preload("res://render/ship_view.gd")
+const PG := preload("res://render/placeholder_guard.gd")
 
 const SHOTS := [["lance", "lance", "lance"], ["laser", "battery", "plasma"], ["hbattery", "battery", "macro"],
 	["gauss", "gauss", "gauss"], ["torp", "torp", "torp"], ["ram", "torp", "ram"]]
@@ -67,6 +68,8 @@ func _run() -> void:
 		a.setup({"id": "A" + sd[0], "fac": "voidsworn", "cls": "Cruiser", "facing": 3}, Vector3(0, 0, i * 120.0 + 60.0))
 		fx.add_ship("A" + sd[0], a, {"faction": "voidsworn", "cls": "Cruiser", "size": 0.8, "meshes": a.meshes})
 		a.visible = false
+	if PG.stop_if_any():
+		return
 	for i in 30:
 		fx.step(1.0 / 60.0)
 		await process_frame
@@ -127,4 +130,4 @@ func _run() -> void:
 			print("REACT %s %s roll=%.2f yaw=%.2f pitch=%.2f deg drift=%.2f%% of length settle=%.2f s" % [sd[2], sh[2], peak.x, peak.y, peak.z, drift * 100.0, settle])
 	if csv != null:
 		csv.close()
-	quit()
+	PG.finish(0)

@@ -12,6 +12,10 @@ The battle rules in `godot/rules/` are a GDScript port of the game's `battle.js`
 - **In the cloud or on Linux:** `GODOT=/path/to/godot sh godot/rules/test/run_parity.sh [scenario ...]`.
 - **API smoke test:** `godot --headless --path godot --script res://rules/test/api_smoke.gd -- s1` plays a battle through `battle_api.gd` and prints the event counts.
 
+## Where the JS side comes from
+
+There is one copy of the rules files: the repo root (`battle.js`, `data.js`, `core.js`, `ui3d.js`, `campaign_run.js`). `node/golden.js` and `node/export_data.js` read them directly by default; set `VS_ORACLE` only when the game files sit in another tree. `FNAMES` is taken from the root `ui3d.js` and `nemAdaptName` from the root `campaign_run.js`; the small extracts `node/fnames.js` and `node/campaign_hooks.js` remain only as fallbacks.
+
 ## What it checks
 
 1. **Data.** `node/export_data.js` writes every data table from `data.js`, `core.js` and `battle.js` to `godot/rules/data/tables.json`. Nothing is copied by hand.
@@ -43,9 +47,9 @@ The battle rules in `godot/rules/` are a GDScript port of the game's `battle.js`
    - **s48 (Oct 27, stream B steps 7 and 7b, pass 3 tuning):** Sable (rear hits +50%) against a Chorus fleet with the new regrowth, bite .08 and feed cap .12. Voidsworn rake .4, Ithar evade 18, Malek +50% and the last arc variant fixes are carried by the existing goldens for those factions, admirals and hulls. Every value in this step is a table the port reads, so no rule code changed.
    - **Stream B steps 9 to 12 and 9b (Oct 31 and Nov 1), no new golden:** steps 9 and 9b ease `RAMP` (sector 2 and 3 enemy budgets), which every generated-fleet golden in sectors 2 and 3 and every sweep battle reads through the tables. Steps 10 and 12 are strings only (lore round 8). G1 applied the godot/rules rows of `rename_map_final.md` to rules.gd. The battle log is part of every record's state, so the goldens check this mirroring word for word: a log line left in the old wording fails parity at its first record. A separate check confirms that every logged or floating string in rules.gd exists word for word in the new battle.js, core.js and data.js. Step 11 is a browser-only fix.
 
-   - **Stream B step 13 (Nov 1, the R1 batch), no new golden (the count stays 48):** `cfg.noStar` is set on half the sector 1 battles of every sweep (sweep_gen.js, drawn last so the other fields are unchanged), which reaches both new shape branches; the veteran mid-move brace (`aiVetBrace`) is reached by every veteran golden and sweep battle whose ship moves under fire; `gsentry` is table data read by the Eclipse goldens that field Eclipse fleets (s9, s15, s19, s28, s39, s44).
+   - **Stream B step 13 (Nov 1, the R1 batch), no new golden:** `cfg.noStar` is set on half the sector 1 battles of every sweep (sweep_gen.js, drawn last so the other fields are unchanged), which reaches both new shape branches; the veteran mid-move brace (`aiVetBrace`) is reached by every veteran golden and sweep battle whose ship moves under fire; `gsentry` is table data read by the Eclipse goldens that field Eclipse fleets (s9, s15, s19, s28, s39, s44).
 
-   Node runs the game's own `data.js`, `core.js` and `battle.js` unchanged (`node/golden.js`, from the pinned copy in `oracle/`). It writes a record at every one of these points, the same on both sides:
+   Node runs the game's own `data.js`, `core.js` and `battle.js` unchanged (`node/golden.js`, from the repo root). It writes a record at every one of these points, the same on both sides:
    - `start` (after setup), `move` (each burn, at the point the game draws it), `rotate`, `fire` (each weapon's volley, and each torpedo impact), `death`, `ram`, `board` (before the boarding rolls), `nova`, `blink`;
    - `ability`, `order`, `command <side>` and `wing order` after each of those actions;
    - `tick <side>` after each side's turn-start ticks, `end turn` (Classic mode), `end activation`, `activation` (after each enemy activation), `round` (after the round start and swarm phases), and `end <result>`.
@@ -61,9 +65,10 @@ The battle rules in `godot/rules/` are a GDScript port of the game's `battle.js`
 
 5. **Timing (report only).** Enemy think time per activation in the scenarios marked `timing` (s4, s5, s23): the AI's `aiUnit` only, with no snapshots and no startup. It reports the average, the worst, and the total per round, for Node and for Godot. The game bar is a worst enemy think under about 0.5 s on the PC.
 
-## Latest record
+## Results
 
-`contrib/opus/enginetest/results/g1_parity_2026-10-27/README.md`, headline at 7b7f398, the final pin. The oracle is byte-identical to stream B 8e81d75 (steps 0 to 12 and 9b, lore round 8 strings included; B is frozen). On Ryan's PC (lane B) and in the cloud: 48 of 48 golden battles, maths (316,090 inputs), PRNG, threat maps, threads and hard stop all PASS. The seed 11 sweep (200 battles) has 0 differences. On the PC, every enemy think time is inside the 0.5 s bar (worst 0.405 s, s23). Not covered, by design: the JS-only tooltip helpers and the encounter rolls, which G3 owns. Sweeps so far: 2,300 unique battles, 0 differences.
+Parity results are kept in `contrib/opus/enginetest/results/`, each folder named for its date and pin. This page states no
+counts: the pull request checks run the parity on every push.
 
 ## Files
 

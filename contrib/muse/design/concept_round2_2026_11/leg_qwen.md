@@ -1,0 +1,13 @@
+# #429 leg: Qwen (writer seat), screened summary
+
+Run: Nov 10, 2026 21:17-21:26 CST, chat.qwen.ai. Both model gates passed: the selector showed Qwen3.8-Max before the prompt was submitted and the chat header still showed Qwen3.8-Max after generation. No CAPTCHA appeared. Chat: https://chat.qwen.ai/c/37ff7e01-70cc-4ad4-80fb-88731ee77287
+
+Chair screening. Qwen returned TWO parallel responses and asked which was preferred; the runner did not choose, per the standing rule. This file is a summary of both; the full texts live in the chat above. Both responses are complete for all eighteen variations, neither derailed, and both keep the hero mount counts exact (Crusade 4, Hegemony 4, Hullbreakers 4, Glasswrights 5, Eclipse 4, Chorus 4) and the Chorus sac count at three total, agreeing with DeepSeek and against Flash's six.
+
+Response 1 is the stronger draft. Its additions the chair adopted: escorts specified as their own ships with their own proportions and closed mount sets (a Sunward frigate with one lance only; a Hegemony two-module wedge with ion prongs and flak; a Pack Hunter with a small torpedo cluster and flak; a Glasswright optic-cutter with one bow lens and one lens turret; a fan-alone Eclipse frigate with one gauss; Chorus bio-escorts with one throat and one spore patch), the line "keep panel and hatch scale the same real size on both ships" for gate line 10, chalk rendered as "tally marks and name-like strokes only, no readable text" (the sheet spec says no text), Hegemony drones as "unarmed faceted blocks, no wings, no cockpit, no guns", the A3 guard that trophy sections have "their old guns removed or sealed flat so they do not read as weapons", and the G2 guard that side prisms are "stored-light capacitors, not extra guns".
+
+Response 2 is terser and counts installations explicitly ("exactly four weapon installations and nothing else that looks like a gun"). Its useful guards the chair adopted: S1's note that radiator fins could be misread as barrels, answered by naming them organ pipes and not weapons; S3's "the radiators are not on top" as its own sentence; H2's guard against the slab growing a bridge tower out of boredom.
+
+One divergence, not adopted: Response 1's G1 makes the spinal crystal's forward optic "a housing for the two forward pulsars, not an extra weapon". The grammar is explicit that the prism lies on the centre line and its forward end is the lance, with the two pulsar lenses flanking the bow; the chair prompts follow the grammar and DeepSeek on this point.
+
+Risk calls across both responses track the blind leg: gate line 1 (counts) dominates, with line 4 (spine) on S2, H3 and E2, line 2 (blocked guns) on A2, E1 and E3, and line 11 on C1 (bloom reading as a flower or sea creature).

@@ -110,6 +110,7 @@ func _i_new_battle_scenario(sc, seed_override: int = -1) -> void:
 	if R.jt(S.get("aspect")): run["aspect"] = S.aspect
 	if S.get("heat") != null: run["heat"] = S.heat.duplicate()
 	if S.get("class_track") != null: run["classTrack"] = S.class_track.duplicate()
+	if S.get("lineage") != null: run["lineage"] = S.lineage.duplicate(true)   # issue #305: the run snapshot of the flown admiral's tree
 	R.RUN = run
 	for t in S.fleet: run["fleet"].append(R.newShip(t, R.jt(S.get("vet"))))
 	run["flagUid"] = run["fleet"][0]["uid"]
@@ -121,6 +122,8 @@ func _i_new_battle_scenario(sc, seed_override: int = -1) -> void:
 	if R.jt(S.get("noStar")): cfg["noStar"] = true   # R1: campaign sector 1 never fields the dead star
 	for key in ["teachingGate", "teachingBattle", "edgeFeature", "arena", "storyMods"]:
 		if S.has(key): cfg[key] = S[key]
+	if S.get("treeChoices") != null: cfg["treeChoices"] = S.treeChoices.duplicate(true)   # issue #305: H1 answers for a fixture
+	if S.get("cmdRound") != null: cfg["cmdRound"] = S.cmdRound   # issue #305: pin the round the fixture uses the Command
 	if S.get("alt") != null: cfg["alt"] = S.alt   # passed through untouched, so new_battle's type-safe cfg.alt!==false is what decides (s41: a Dictionary)
 	if R.jt(S.get("campaign")):
 		cfg["campaign"] = true; cfg["event_force"] = S.get("event_force"); cfg["event_war"] = S.get("event_war")
@@ -209,6 +212,7 @@ func view() -> Dictionary:
 func _i_view() -> Dictionary:
 	var B = R.B; var us := []
 	for u in B["units"]:
+		if R.jt(u.get("treeOff")): continue   # issue #305: a reserve held off the field is not drawn or listed until it arrives
 		var ws := []
 		for i in range(u["weapons"].size()):
 			var w = u["weapons"][i]
@@ -520,8 +524,34 @@ func _i_threat_map(only_id = null) -> Dictionary:
 	var ck = str(only_id)
 	if not _threat_cache.has(ck): _threat_cache[ck] = _threat_map_raw(only_id)
 	return _threat_cache[ck].duplicate()
-func _threat_map_raw(only_id = null) -> Dictionary:
+# threat_both(): the threat map and, per hex, how many enemies can bring guns on it next turn (#271's reach hatching and
+# danger badges). One pass; the damage map is the same as threat_map's (parity reads threat_map). Read-only.
+func threat_both(only_id = null) -> Dictionary:
+	_enter()
+	var r = _i_threat_both(only_id); _leave(false); return r
+func _i_threat_both(only_id = null) -> Dictionary:
+	if _threat_ver != version: _threat_cache.clear(); _threat_ver = version
+	var ck = "both|" + str(only_id)
+	if not _threat_cache.has(ck):
+		var b = _threat_map_raw(only_id, true)
+		_threat_cache[ck] = b
+		_threat_cache[str(only_id)] = b["dmg"]
+	var c = _threat_cache[ck]
+	return {"dmg": c["dmg"].duplicate(), "n": c["n"].duplicate()}
+# preview_fire_at(id, wi, target_id, state): preview_fire as the ship would stand at one of compute_reach's states (the
+# planned hex): hit %, expected shield and hull damage, the facing hit, and whether the gun bears from there. Read-only.
+func preview_fire_at(id: String, wi: int, target_id: String, state: Dictionary) -> Dictionary:
+	_enter()
+	var r = _i_preview_fire_at(id, wi, target_id, state); _leave(false); return r
+func _i_preview_fire_at(id: String, wi: int, target_id: String, state: Dictionary) -> Dictionary:
+	var u = unit(id); var t = unit(target_id)
+	if u == null or t == null or wi < 0 or wi >= u["weapons"].size(): return {}
+	var v = R.stateView(u, state); var w = u["weapons"][wi]
+	var e = R.expectedVs(v, w, t)
+	return {"hit": R.hitChance(v, w, t), "shield": e.shield, "hull": e.hull, "quad": e.quad, "rear": e.rear, "bears": R.inReach(v, w, t) and R.weaponReady(w)}
+func _threat_map_raw(only_id = null, both := false) -> Variant:
 	var out := {}
+	var cnt := {}
 	var hexes = R.boardHexes()
 	var list = []
 	if only_id != null:
@@ -563,9 +593,11 @@ func _threat_map_raw(only_id = null) -> Dictionary:
 				if l == null:
 					l = R.los(v, n.h); lc["los"][n.k] = l
 				if l and val > float(per.get(n.k, 0.0)): per[n.k] = val
-		for k in per.keys(): out[k] = float(out.get(k, 0.0)) + per[k]
+		for k in per.keys():
+			out[k] = float(out.get(k, 0.0)) + per[k]
+			if both: cnt[k] = int(cnt.get(k, 0)) + 1
 	R.eval_end()
-	return out
+	return {"dmg": out, "n": cnt} if both else out
 # world_info(): what the scene needs to build the battlefield beyond view(): the biome (rock kind, planet, station look) and the battle seed.
 func world_info() -> Dictionary:
 	_enter()
@@ -638,7 +670,8 @@ func _ai_activate(u) -> void:
 				hp += p["hp"]; mx += p["maxHp"]
 				if p["hp"] < p["maxHp"] * 0.5: hurt = true
 			var hpR = hp / mx; var id = c["id"]; var off = id in ["barrage", "hunt", "scramble", "surge"]
-			if (off and (near >= 2 or R.B["round"] >= 4)) or (id == "restore" and hpR < 0.6) or (id == "iron" and (hurt or near >= 2)) or R.B["round"] >= 6:
+			var cf = R.B.get("cfg"); var cr = cf.get("cmdRound") if cf is Dictionary else null
+			if (cr != null and R.B["round"] == cr) or (cr == null and ((off and (near >= 2 or R.B["round"] >= 4)) or (id == "restore" and hpR < 0.6) or (id == "iron" and (hurt or near >= 2)) or R.B["round"] >= 6)):
 				command()
 	if gone.call(): return
 	if R.jt(u.get("ab")) and R.canAbility(u) and _can_use(u):

@@ -7,11 +7,11 @@
 //   node export_data.js <out.json>
 'use strict';
 const fs = require('fs'), path = require('path'), vm = require('vm'), crypto = require('crypto');
-// the rules oracle: the pinned copy in ../oracle (VS_ORACLE overrides, for example the live repo root when catching up a rules change)
-const ROOT = process.env.VS_ORACLE ? path.resolve(process.env.VS_ORACLE) : path.resolve(__dirname, '..', 'oracle');
+// the rules oracle: the root game files (VS_ORACLE overrides, for a build tree whose game files sit elsewhere)
+const ROOT = process.env.VS_ORACLE ? path.resolve(process.env.VS_ORACLE) : path.resolve(__dirname, '..', '..', '..', '..');
 global.window = {}; global.document = undefined; global.performance = { now: () => 0 };
-// the browser also defines FNAMES (ui3d.js), which core.js shipName reads: pinned as oracle/fnames.js (or taken from ui3d.js beside a VS_ORACLE checkout)
-const fnamesSrc = () => { const f = path.join(ROOT, 'fnames.js'); if (fs.existsSync(f)) return fs.readFileSync(f, 'utf8'); const u = path.join(ROOT, 'ui3d.js'); if (fs.existsSync(u)) { const m = fs.readFileSync(u, 'utf8').match(/^const FNAMES=[\s\S]*?\};/m); if (m) return m[0]; } return ''; };
+// the browser also defines FNAMES (ui3d.js), which core.js shipName reads: taken from the root ui3d.js, with the small extract beside this file as a fallback
+const fnamesSrc = () => { const u = path.join(ROOT, 'ui3d.js'); if (fs.existsSync(u)) { const m = fs.readFileSync(u, 'utf8').match(/^const FNAMES=[\s\S]*?\};/m); if (m) return m[0]; } const f = path.join(__dirname, 'fnames.js'); if (fs.existsSync(f)) return fs.readFileSync(f, 'utf8'); return ''; };
 const srcs = ['data.js', 'core.js', 'battle.js'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8')).concat([fnamesSrc()]);
 const names = [];
 for (const s of srcs) { const re = /^(?:const|let)\s+([A-Z_][A-Z0-9_]*)\s*=/gm; let m; while ((m = re.exec(s))) if (!names.includes(m[1])) names.push(m[1]); }
