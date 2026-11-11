@@ -1,10 +1,23 @@
 # Open work ledger (FINDINGS R194)
 
-Kept by the Board. One row for every open issue and every parked pull request. Read at every board check. Rows were written after reading each issue, its comments and the state of every issue it waits on (Nov 11 2026, 21:10 UTC, first Opus 5.5 Board thread). Ryan: "The station is a good example of something we already aligned on but is still sitting there. I don't want to lose prior work because of everything else going on."
+Kept by the Board. One row for every open issue and every parked pull request. Read at every board check. Rows were written after reading each issue, its comments and the state of every issue it waits on (Nov 11 2026, 21:10 UTC, first Opus 5.5 Board thread; updated 21:50 UTC after Ryan's picks, R201 and R202). Ryan: "The station is a good example of something we already aligned on but is still sitting there. I don't want to lose prior work because of everything else going on."
 
 Verdicts: START NOW (agreed, nothing real in the way); WAITING ON (the named thing, checked true today); FOLD INTO (another issue); CLOSE (done or superseded, by what); STANDING (stays open on purpose).
 
 Counts today: 44 open issues, 4 open pull requests. Most rows in the first table still carry a "blocked" label whose reason has lapsed; the Board removes the label when each job is launched.
+
+## Running now (21:50 UTC Nov 11)
+
+| # | Seat | What |
+|---|---|---|
+| 461 | Opus worker | Hits (brief rewritten: absorbs 507 build 2 and its four carried items) |
+| 521 | Opus worker | Kill moment held with slow motion, and the main engine for long moves (R195); new issue from 507 |
+| 363 | DeepSeek workhorse | Hard point contract |
+| 520 | Codex | Finish PR 286 with its PC motion capture and R191's rock-cap wording; new issue |
+| 517, 522, 523 | Muse (Ryan starts, in this order) | Round 8b; round 8c (S10, E11, E12, G18: Ryan passed only A16 and A17, R201); the station concept (feeds 373) |
+| 256 | Muse | Outside checks of PRs 513, 512, 491, 474 (after the three above) |
+
+Closed with Ryan's yes (R201): 365, 366, 193, 194, PRs 291 and 301. The rows below for those are history.
 
 ## Agreed and waiting: blocker lapsed, start now (in the Board's order)
 
