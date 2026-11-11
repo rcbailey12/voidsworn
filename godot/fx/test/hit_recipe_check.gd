@@ -11,7 +11,7 @@ extends SceneTree
 #   5. light on neighbours: a torpedo hit's light reaches about two hexes;
 #   6. reduce flashing: the same hits book and count no flash at all;
 #   7. a lance kill on a big hull breaks on the beam's own line, clean (no kink, almost no teeth);
-#   9. a hit flash yields the last of the three flashes a second to a death's core (fx.flash_at yield_last);
+#   9. gun hits never spend the three flashes a second that deaths' core flashes need (fx.flash_at yield_last);
 #   8. the engine core flickers 0.95 to 1.0 only (issue 504's finding), and wounds are kept past the old cap of 12.
 #   godot --headless --path godot --script res://fx/test/hit_recipe_check.gd
 
@@ -246,7 +246,7 @@ func _lance_kill() -> void:
 	await process_frame
 
 
-# 9. a hit that would need counting yields the last slot of the second to a death's core
+# 9. a gun hit that would need counting is drawn soft; deaths keep the budget
 func _yield_check() -> void:
 	var wf: Array = _world(false)
 	var world: Node3D = wf[0]
@@ -254,12 +254,15 @@ func _yield_check() -> void:
 	await _advance(fx, 0.2)
 	var T: float = fx.now
 	fx.flash_ok(T)
-	fx.flash_ok(T + 0.3)
 	var big: float = 200.0   # px: over the limit on its own
-	var hit_ok: bool = fx.flash_at(Vector3.ZERO, T + 0.6, 0.0, big, 0.16, true)
+	var hit_ok: bool = fx.flash_at(Vector3.ZERO, T + 0.3, 0.0, big, 0.16, true)
+	var hit2_ok: bool = fx.flash_at(Vector3.ZERO, T + 0.5, 0.0, big, 0.16, true)
 	var core_ok: bool = fx.flash_at(Vector3.ZERO, T + 0.62, 0.0, big, 0.16)
-	_check(not hit_ok, "a hit flash that would take the last slot of the second is drawn soft")
-	_check(core_ok, "the slot stays free for a death's core flash")
+	var core2_ok: bool = fx.flash_at(Vector3.ZERO, T + 0.8, 0.0, big, 0.16)
+	_check(not hit_ok and not hit2_ok, "gun hit flashes that would need counting are drawn soft")
+	_check(core_ok and core2_ok, "the second's slots stay free for deaths' core flashes")
+	var small_ok: bool = fx.flash_at(Vector3(40, 0, 0), T + 0.9, 0.0, 40.0, 0.16, true)
+	_check(small_ok, "a gun hit under the limit stays bright")
 	var worst := 0
 	for a in fx.flash_log:
 		var n := 0

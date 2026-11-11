@@ -1354,7 +1354,7 @@ static func _staged_hit(fx, src, p: Vector3, T: float, torpedo: bool, ks := 1.0)
 	var flash_px: float = (float(LADDER_PX["torp"]) if torpedo else float(LADDER_PX["shell"][2])) * target_scale * ks
 	var body_px: float = (140.0 if torpedo else 48.0) * target_scale * ks
 	var life := 0.16 if torpedo else 0.12
-	var soft: bool = fx.reduce_flashing or not fx.flash_at(p, T, flash_px * DEATH.STAGING_UNITS_PER_PIXEL, flash_px, life, src != null)
+	var soft: bool = fx.reduce_flashing or not fx.flash_at(p, T, flash_px * DEATH.STAGING_UNITS_PER_PIXEL, flash_px, life, src != null and not torpedo)
 	var spin: float = fx.rng.randf() * TAU
 	var shape := Vector2(fx.rng.randf_range(0.9, 1.25), fx.rng.randf_range(0.85, 1.1))
 	for body in [false, true]:

@@ -796,13 +796,16 @@ func _mode(mode: String, s: int) -> Dictionary:
 		"buffer_mb": Performance.get_monitor(Performance.RENDER_BUFFER_MEM_USED) / 1048576.0}
 	if b.gfx != null and "flash_area_log" in b.gfx:
 		var req := 0
+		var yielded := 0
 		var refused: Array = []
 		var counted := 0
 		for e in b.gfx.flash_area_log:
 			req += 1
 			if int(e[5]) == 1:
 				counted += 1
-			if int(e[6]) == 0:
+			if e.size() > 8 and int(e[8]) == 1:
+				yielded += 1
+			elif int(e[6]) == 0:
 				refused.append(int(float(e[3])))
 		refused.sort()
 		# every counted or refused flash in order: [seconds into the measured frames, drawn px, counted, drawn bright]
@@ -812,9 +815,9 @@ func _mode(mode: String, s: int) -> Dictionary:
 			tmin = minf(tmin, float(e[0]))
 		for e in b.gfx.flash_area_log:
 			if int(e[5]) == 1 or int(e[6]) == 0:
-				events.append([snappedf(float(e[0]) - tmin, 0.001), int(float(e[3])), int(e[5]), int(e[6])])
+				events.append([snappedf(float(e[0]) - tmin, 0.001), int(float(e[3])), int(e[5]), int(e[6]), int(e[8]) if e.size() > 8 else 0])
 		row["flash_events"] = events
-		row["flash"] = {"requests": req, "counted": counted, "refused": refused.size(), "refused_px": refused,
+		row["flash"] = {"requests": req, "counted": counted, "refused": refused.size(), "refused_px": refused, "gun_hits_yielded": yielded,
 			"counted_log": b.gfx.flash_log.size() - fl0, "limit_px2": b.gfx.flash_limit_px2() if b.gfx.has_method("flash_limit_px2") else 0.0}
 		b.gfx.set("flash_area_logging", false)
 	for k in cols:
