@@ -849,8 +849,14 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 # (1.38 s on a cruiser, 2.0 s on a capital); if it is not done by the break, the ship breaks along the cut it already had
 # (cut_prev), never stalls. Only big hulls killed by a lance pay for it.
 static func _lance_recut(fx, s) -> void:
-	if s.has_meta("cut_task") or not is_instance_valid(s.root):
-		return   # a cut is already running: break along it
+	if not is_instance_valid(s.root):
+		return
+	if s.has_meta("cut_task"):
+		# a damage refresh of the cut is still running (bench round 1: a damaged ship nearly always has one): leave it to
+		# finish on its own and start the lance cut beside it. If the refresh had not finished, the ship breaks along the
+		# last finished cut (cut_prev) only if the lance cut is late; otherwise it waits for the lance cut.
+		_collect_later(fx, int(s.get_meta("cut_task")))
+		s.remove_meta("cut_task")
 	var h = s.hull
 	# with no recent hit on record, a per-ship point a little off the middle (an even split reads as sliced, Ryan, Nov 11)
 	var lp: Vector3 = h.c + Vector3(h.L * (0.12 if hash(str(s.id)) % 2 == 0 else -0.12), 0.0, 0.0)
@@ -867,6 +873,7 @@ static func _lance_recut(fx, s) -> void:
 		s.remove_meta("cut_job")
 	var t0 := Time.get_ticks_usec()
 	precompute(fx, s, "cut")
+	fx.notes.append("lance recut %s" % str(s.id))
 	fx.pend("lance_recut", t0)
 
 
