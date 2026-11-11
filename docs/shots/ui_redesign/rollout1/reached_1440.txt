@@ -1,0 +1,20 @@
+seed 344, 48 steps, window (2560.0, 1440.0)
+02_intro  page=map modal=intro sector=1
+01_map  page=map modal=- sector=1
+01b_map_hover  page=map modal=- sector=1
+09_fleet  page=fleet modal=- sector=1
+05_battle_retreat  page=battle modal=retreat sector=1
+06_reward_victory  page=battle modal=victory sector=1
+07_reward_salvage  page=battle modal=salvage sector=1
+13_promote  page=battle modal=promote sector=1
+10_event  page=map modal=event sector=1
+11_event_result  page=map modal=event_result sector=1
+07_reward_prize  page=battle modal=prize sector=1
+03_map_elite_card  page=map modal=- sector=1
+07_reward_boon  page=battle modal=boon sector=1
+07_reward_relic  page=battle modal=relic sector=1
+08_shipyard  page=shipyard modal=- sector=1
+04_map_boss_card  page=map modal=- sector=1
+14_sector  page=map modal=sector sector=2.0
+15_map_sector2  page=map modal=- sector=2.0
+not reached: none

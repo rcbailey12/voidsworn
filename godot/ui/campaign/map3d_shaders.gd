@@ -295,6 +295,23 @@ void fragment() {
 }
 """
 
+# A route in the Briefing build (FINDINGS R165): one flat, solid line along the ribbon's centre, a fixed width on the screen
+# (px is its half width in pixels), in exactly the colour it is given. No halo, no flow, no chevrons, and never brighter
+# than its colour, so it cannot bloom.
+const LANE_FLAT := """
+shader_type spatial;
+render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+uniform vec4 col : source_color = vec4(1.0);
+uniform float px = 0.6;
+void fragment() {
+	float d = abs(UV.x - 0.5) / max(fwidth(UV.x), 0.00001);
+	float line = 1.0 - smoothstep(px - 0.5, px + 0.5, d);
+	float ends = smoothstep(0.0, 0.02, UV.y) * smoothstep(1.0, 0.98, UV.y);
+	ALBEDO = col.rgb;
+	ALPHA = col.a * line * ends;
+}
+"""
+
 # The ring round a stop, drawn on a flat quad: a crisp circle with tick marks, a faint fill, turning dashes when you can
 # jump there (dash = 1), a soft pulse. r = ring radius as a fraction of the quad's half size.
 const RING := """
@@ -567,6 +584,7 @@ uniform float scale = 3.0;
 uniform float windows = 0.12;
 uniform float metal = 0.6;
 uniform float glow = 0.0;
+uniform float gain = 1.0;   // the brightness of its own light (windows, accent glow, rim): a stop further on is dimmer
 varying vec3 lp;
 varying vec3 ln;
 void vertex() { lp = VERTEX; ln = NORMAL; }
@@ -602,7 +620,7 @@ void fragment() {
 	float wmask = strip * cluster * step(1.0 - windows * 3.0, mh2(c1 + 7.3));
 	// a warm rim from the Hollow Sun's disc, so the silhouette reads at full-map distance
 	float fr = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 3.5);
-	EMISSION = win_col * wmask * 1.6 + accent * glow * (1.0 - seam) * 0.6 + vec3(1.0, 0.62, 0.34) * fr * 0.22;
+	EMISSION = (win_col * wmask * 1.6 + accent * glow * (1.0 - seam) * 0.6 + vec3(1.0, 0.62, 0.34) * fr * 0.22) * gain;
 }
 """
 

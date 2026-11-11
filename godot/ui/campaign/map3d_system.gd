@@ -39,6 +39,7 @@ const PLANETS := [
 ]
 
 var q := 1.0                 # 1 high quality, 0 low
+var backdrop_k := 1.0        # the backdrop's strength (near stars, embers in the debris ring); map3d sets 0.5 for the Briefing build
 var rng: RandomNumberGenerator
 var sun_pos := Vector3(0, 1.0, 0)
 var _shaders := {}
@@ -51,7 +52,7 @@ static func text_col(fac) -> Color: return look(fac)["text"]
 func _sh(name: String) -> Shader:
 	if not _shaders.has(name):
 		var codes = {"SKY": SH.SKY, "STARPTS": SH.STARPTS, "NEB_SHEET": SH.NEB_SHEET, "GLOW": SH.GLOW,
-			"PLANET": SH.PLANET, "ATMO": SH.ATMO, "ROCK": SH.ROCK, "ORBIT": SH.ORBIT, "LANE": SH.LANE, "RING": SH.RING, "CLOUD": SH.CLOUD,
+			"PLANET": SH.PLANET, "ATMO": SH.ATMO, "ROCK": SH.ROCK, "ORBIT": SH.ORBIT, "LANE": SH.LANE, "LANE_FLAT": SH.LANE_FLAT, "RING": SH.RING, "CLOUD": SH.CLOUD,
 			"HULL": SH.HULL, "SOLAR": SH.SOLAR, "RADIATOR": SH.RADIATOR, "ROCK_HI": SH.ROCK_HI, "CLOUDS": SH.CLOUDS,
 			"HALO": SH.HALO, "TERR": SH.TERR, "BH_DISC": SH.BH_DISC, "BH_FRONT": SH.BH_FRONT, "BH_LENS": SH.BH_LENS, "BH_SHADOW": SH.BH_SHADOW, "BH_LENSED": SH.BH_LENSED, "THREAT": SH.THREAT}
 		var s = Shader.new(); s.code = codes[name]; _shaders[name] = s
@@ -59,6 +60,7 @@ func _sh(name: String) -> Shader:
 func mat(name: String, params: Dictionary = {}) -> ShaderMaterial:
 	var m = ShaderMaterial.new(); m.shader = _sh(name)
 	for k in params: m.set_shader_parameter(k, params[k])
+	m.set_meta("map_mat", true)   # one of the map's own shaders: map3d dims a stop's by "gain", "light" or "ember"
 	return m
 func mi(mesh: Mesh, m: Material, at: Vector3 = Vector3.ZERO, sc: Vector3 = Vector3.ONE) -> MeshInstance3D:
 	var n = MeshInstance3D.new(); n.mesh = mesh; n.material_override = m; n.position = at; n.scale = sc
@@ -180,7 +182,7 @@ func backdrop(parent: Node3D, fac: String, px_scale: float) -> void:
 		var t = rng.randf()
 		var c = Color(0.65, 0.76, 1.0).lerp(Color(1.0, 0.86, 0.68), t)
 		var b = pow(rng.randf(), 3.0)
-		st.set_color(Color(c.r * (0.25 + b), c.g * (0.25 + b), c.b * (0.25 + b), 0.4 + b * 0.9)); st.add_vertex(d * r)
+		st.set_color(Color(c.r * (0.25 + b) * backdrop_k, c.g * (0.25 + b) * backdrop_k, c.b * (0.25 + b) * backdrop_k, 0.4 + b * 0.9)); st.add_vertex(d * r)
 	var pts = MeshInstance3D.new(); pts.mesh = st.commit(); pts.material_override = mat("STARPTS", {"px": px_scale}); pts.extra_cull_margin = 2000.0
 	pts.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF; parent.add_child(pts)
 	# The directional sky owns the nebula across the entire view. Finite sheets
@@ -223,13 +225,13 @@ func hollow_sun(parent: Node3D, core_r: float = 5.0) -> Dictionary:
 			var a = rng.randf() * TAU; var r = lerp(r0, r1, pow(rng.randf(), 0.8)) + sin(a * 5.0) * 0.6
 			var p = Vector3(cos(a) * r, rng.randfn() * 0.35, -sin(a) * r)
 			items.append([Transform3D(rand_basis(rng.randf_range(0.05, 0.32) * (2.2 if rng.randf() < 0.04 else 1.0)), p), 1.0 if rng.randf() < 0.12 else 0.0])
-		scatter(deb, lib[k], mat("ROCK", {"tint": Color(0.16, 0.14, 0.13), "metal": 0.05, "ember": 1.0}), items)
+		scatter(deb, lib[k], mat("ROCK", {"tint": Color(0.16, 0.14, 0.13), "metal": 0.05, "ember": backdrop_k}), items)
 	var plate = BoxMesh.new(); plate.size = Vector3(1.0, 0.06, 0.6)
 	var items2 = []
 	for i in nk[1]:
 		var a = rng.randf() * TAU; var r = lerp(r0, r1, rng.randf())
 		items2.append([Transform3D(rand_basis(rng.randf_range(0.2, 0.75)), Vector3(cos(a) * r, rng.randfn() * 0.3, -sin(a) * r)), 1.0 if rng.randf() < 0.18 else 0.0])
-	scatter(deb, plate, mat("ROCK", {"tint": Color(0.3, 0.29, 0.28), "metal": 0.7, "ember": 1.0}), items2)
+	scatter(deb, plate, mat("ROCK", {"tint": Color(0.3, 0.29, 0.28), "metal": 0.7, "ember": backdrop_k}), items2)
 	var girder = BoxMesh.new(); girder.size = Vector3(1.6, 0.07, 0.07)
 	var items3 = []
 	for i in nk[2]:
@@ -240,8 +242,8 @@ func hollow_sun(parent: Node3D, core_r: float = 5.0) -> Dictionary:
 	if q > 0.5:
 		for i in 14:
 			var a = rng.randf() * TAU; var r = lerp(r0, r1, rng.randf())
-			glow(deb, Color(1.0, 0.45, 0.15, 1.0), rng.randf_range(0.5, 1.1), Vector3(cos(a) * r, rng.randfn() * 0.2, -sin(a) * r), 2.0, 1.4)
-	return {"root": root, "debris": deb}
+			glow(deb, Color(1.0, 0.45, 0.15, 1.0), rng.randf_range(0.5, 1.1), Vector3(cos(a) * r, rng.randfn() * 0.2, -sin(a) * r), 2.0, 1.4 * backdrop_k)
+	return {"root": root, "debris": deb, "light": l}
 
 # ---------------------------------------------------------------- orbits
 func orbit(parent: Node3D, r: float, col: Color, w: float = 0.3, ticks: float = 0.0) -> MeshInstance3D:
@@ -258,6 +260,7 @@ func planet(parent: Node3D, pal: Array, radius: float, at: Vector3, with_atmo: b
 	var p = mi(sphere(radius, seg, seg / 2), mat("PLANET", {"a": pal[1], "b": pal[2], "atmo": pal[3], "kind": float(pal[0]), "seed": rng.randf() * 40.0, "q": q, "sun_pos": sun_pos}))
 	if sector_world != null:
 		p.material_override = sector_world.surface_material((sun_pos - parent.global_position - at).normalized())
+		p.material_override.set_meta("map_mat", true)   # its "light" follows the stop's tier (map3d _set_tier)
 	p.name = "spin"; p.rotation = Vector3(deg_to_rad(rng.randf_range(-20, 20)), 0, deg_to_rad(rng.randf_range(-25, 25))); body.add_child(p)
 	if q > 0.5: p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	if int(pal[0]) in [0, 1, 3]:   # a cloud layer drifting over rock, ocean and ice worlds

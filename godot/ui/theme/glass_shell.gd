@@ -49,6 +49,20 @@ const FOE := Color("#c4a4ff")          # FOE family: enemy names
 const FOE_RING := Color("#a06bff")     # FOE family: rings, chip borders, danger badges
 const FOE_TEXT := Color("#e2d2ff")     # FOE family: text on the enemy chip
 const KEY_FG := Color("#d9f78a")       # key cap text (light lime, in the number face)
+# the campaign pages (issue #344, UI rollout 1). The map's danger band colours, stop glyph colours and route planner colours
+# left with the Briefing build (FINDINGS R165): danger is four pips and a word, a stop is its 3D model, a route is lime or pale.
+const BLUE := Color("#62a8ff")         # B4 blue event options (an option your fleet qualifies for)
+const SHADE := Color(0.035, 0.047, 0.035, 0.80)  # the dim layer behind a dialog: INK-toned, the scene only hints through
+# the campaign map's Briefing layout (FINDINGS R165, contrib/opus/briefs/campaign_map_briefing.md): one flat column and plain
+# words on the chart. Two colours on top of the sage text: lime for the next action and the next jumps, ALERT for the Nemesis.
+const COLUMN := Color("#0b0e0b")       # the flat briefing column and the map's one box (the hover tip)
+const HAIR := Color("#1c241c")         # the column's quiet edge and the rules inside it
+const ROW_LIT := Color("#161c16")      # the picked route row: a slightly lighter fill
+const ROW_HOVER := Color("#111611")    # a route row under the pointer
+const HALO := Color("#070907")         # the dark halo under plain words on the map
+const PALE := 0.25                     # a route you cannot take yet: one thin sage line at this share of full strength, as the eye reads it
+const PALE_CUT := 0.10                 # a route that is cut off or already flown
+const GRID := 8.0                      # the spacing grid of the Briefing layout, at 1080
 # the material
 const WELL := Color("#080a08")         # the solid backing under every block of text (alpha WELL_A)
 const WELL_A := 0.93
@@ -493,4 +507,147 @@ static func seg_bar(k: float, f: float, col: Color, track: Color, h := 5.0, cell
 						c.draw_line(a0, a1, Color(col, 0.95), maxf(1.0, float(px(1, k))))
 						x += step)
 	c.resized.connect(func() -> void: c.queue_redraw())
+	return c
+
+# ---------------------------------------------------------------- the Briefing layout (campaign map, FINDINGS R165)
+
+# the flat column: a solid fill and a 1 px quiet edge on its right. No chamfers, brackets, scanline or wells.
+static func column(k: float, edge_right := true) -> StyleBoxFlat:
+	var s := StyleBoxFlat.new()
+	s.bg_color = COLUMN
+	s.border_color = HAIR
+	s.set_border_width_all(0)
+	if edge_right:
+		s.border_width_right = maxi(1, px(1, k))
+	else:
+		s.border_width_left = maxi(1, px(1, k))
+	s.set_corner_radius_all(0)
+	return s
+
+
+# a flat fill with no edge (a route row, a hull bar track)
+static func flat(col: Color, pad_x := 0.0, pad_y := 0.0, k := 1.0) -> StyleBoxFlat:
+	var s := StyleBoxFlat.new()
+	s.bg_color = col
+	s.set_border_width_all(0)
+	s.set_corner_radius_all(0)
+	s.content_margin_left = px(pad_x, k)
+	s.content_margin_right = px(pad_x, k)
+	s.content_margin_top = px(pad_y, k)
+	s.content_margin_bottom = px(pad_y, k)
+	return s
+
+
+# a 1 px rule in the quiet edge colour
+static func rule(k: float) -> ColorRect:
+	var r := ColorRect.new()
+	r.color = HAIR
+	r.custom_minimum_size = Vector2(0, maxi(1, px(1, k)))
+	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return r
+
+
+# a route row: transparent, a slightly lighter fill when it is the picked one, a hint under the pointer
+static func row_boxes(k: float, picked: bool, pad_x := 40.0, pad_y := 14.0) -> Dictionary:
+	var n := flat(ROW_LIT if picked else Color(0, 0, 0, 0), pad_x, pad_y, k)
+	var h := flat(ROW_LIT if picked else ROW_HOVER, pad_x, pad_y, k)
+	return {"normal": n, "hover": h, "pressed": h, "disabled": n}
+
+
+# a plain text button ("Map key", "Dossier", "Fleet and refits"): words only, secondary sage, primary sage under the pointer.
+# It keeps the shared focus ring from make_theme.
+static func plain_button(b: Button, k: float, size := 15.0, f: Font = null) -> void:
+	var e := StyleBoxEmpty.new()
+	for st in ["normal", "hover", "pressed", "disabled"]:
+		b.add_theme_stylebox_override(st, e)
+	b.add_theme_color_override("font_color", BONE2)
+	b.add_theme_color_override("font_hover_color", BONE)
+	b.add_theme_color_override("font_pressed_color", BONE)
+	b.add_theme_color_override("font_focus_color", BONE)
+	b.add_theme_color_override("font_disabled_color", BONE3)
+	b.add_theme_font_size_override("font_size", px(size, k))
+	b.add_theme_font_override("font", f if f != null else body())
+	b.focus_mode = Control.FOCUS_ALL
+	b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+
+
+# the one filled lime button of the Briefing layout ("JUMP TO RELAY"): flat lime, square, no glow
+static func jump_boxes(k: float) -> Dictionary:
+	var n := flat(GILT, 20.0, 0.0, k)
+	var h := flat(GILT_HOVER, 20.0, 0.0, k)
+	var d := flat(Color("#1a2109"), 20.0, 0.0, k)
+	return {"normal": n, "hover": h, "pressed": h, "disabled": d}
+
+
+# the key cap on the lime button: dark text on a light dark wash, no edge
+static func keycap_flat(k: float) -> StyleBoxFlat:
+	var s := flat(Color(ON_GILT, 0.16), 7.0, 2.0, k)
+	return s
+
+
+# the map's hover tip, the only box on the map: the column's fill and a quiet edge
+static func tip(k: float) -> StyleBoxFlat:
+	var s := flat(COLUMN, 12.0, 8.0, k)
+	s.border_color = IRON3
+	s.set_border_width_all(maxi(1, px(1, k)))
+	return s
+
+
+# pips: n of total lit (a half shows as a half), for the danger of a fight (four, sage) and the hunt clock (four, ALERT)
+static func pips(k: float, n: float, on := BONE, w := 5.0, h := 12.0, gap := 3.0, total := 4, off := IRON3) -> Control:
+	var c := Control.new()
+	c.custom_minimum_size = Vector2(px(w, k) * total + px(gap, k) * (total - 1), px(h, k))
+	c.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	c.draw.connect(func() -> void: draw_pips(c, Vector2.ZERO, k, n, on, w, h, gap, total, off))
+	return c
+
+
+static func draw_pips(ci: CanvasItem, at: Vector2, k: float, n: float, on := BONE, w := 5.0, h := 12.0, gap := 3.0, total := 4, off := IRON3) -> void:
+	var pw := float(px(w, k))
+	var ph := float(px(h, k))
+	var pg := float(px(gap, k))
+	for i in total:
+		var r := Rect2(at.x + float(i) * (pw + pg), at.y, pw, ph)
+		ci.draw_rect(r, off)
+		var f := clampf(n - float(i), 0.0, 1.0)
+		if f > 0.0:
+			ci.draw_rect(Rect2(r.position, Vector2(pw * f, ph)), on)
+
+
+# plain words on the map with a dark halo, no strip or tag behind them (the campaign map exception, ui_style.md 3).
+# at is the left end of the baseline.
+static func halo_text(ci: CanvasItem, f: Font, at: Vector2, t: String, size: int, col: Color, k: float) -> void:
+	ci.draw_string_outline(f, at, t, HORIZONTAL_ALIGNMENT_LEFT, -1, size, maxi(6, px(10, k)), Color(HALO, 0.5))
+	ci.draw_string_outline(f, at, t, HORIZONTAL_ALIGNMENT_LEFT, -1, size, maxi(3, px(5, k)), Color(HALO, 0.92))
+	ci.draw_string(f, at, t, HORIZONTAL_ALIGNMENT_LEFT, -1, size, col)
+
+
+# the square number marker of a next jump on the map (the same 1, 2, 3 as the route rows): filled lime with dark text
+# for the picked one, outlined for the others
+static func marker(ci: CanvasItem, center: Vector2, k: float, label: String, f: Font, picked: bool, side := 34.0) -> void:
+	var s := float(px(side, k))
+	var r := Rect2(center - Vector2(s, s) * 0.5, Vector2(s, s))
+	ci.draw_rect(r, GILT if picked else INK)
+	ci.draw_rect(r.grow(-float(px(1, k))), GILT, false, float(maxi(2, px(2, k))))
+	var fs := px(17, k)
+	var w := f.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
+	var base := center.y + (f.get_ascent(fs) - f.get_descent(fs)) * 0.5
+	ci.draw_string(f, Vector2(center.x - w * 0.5, base), label, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, ON_GILT if picked else GILT)
+
+
+# a small filled diamond: the Nemesis mark (ALERT) over a stop, beside a route row
+static func diamond(ci: CanvasItem, center: Vector2, r: float, col: Color) -> void:
+	ci.draw_colored_polygon(PackedVector2Array([center + Vector2(0, -r), center + Vector2(r, 0), center + Vector2(0, r), center + Vector2(-r, 0)]), col)
+
+
+# a thin hull bar for the briefing column: one line, the lit part in col
+static func thin_bar(k: float, f: float, col: Color, w := 72.0, h := 3.0, track := IRON3) -> Control:
+	var c := Control.new()
+	c.custom_minimum_size = Vector2(px(w, k), px(h, k))
+	c.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	c.draw.connect(func() -> void:
+		c.draw_rect(Rect2(Vector2.ZERO, c.size), track)
+		c.draw_rect(Rect2(Vector2.ZERO, Vector2(c.size.x * clampf(f, 0.0, 1.0), c.size.y)), col))
 	return c
