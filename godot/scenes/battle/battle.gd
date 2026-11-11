@@ -1798,8 +1798,13 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		elif fam == "torp":
 			sfx.torp(fac, from)
 		else:
-			sfx.gun(str(e["kind"]), fam == "sq", null if fam == "sq" else fam if fam in ["spine", "glob", "plasma", "las", "tracer", "needle", "rail"] else "shell", from)
+			# issue 506: one gun cue per shot, on the fire times the fx layer used for its muzzle effects
+			var style = null if fam == "sq" else fam if fam in ["spine", "glob", "plasma", "las", "tracer", "needle", "rail"] else "shell"
+			var fires: Array = r.get("fires", [])
+			for i in mini(fires.size(), n):
+				sfx.gun(str(e["kind"]), fam == "sq", style, from, float(fires[i]))
 		var imp: Array = r.get("impacts", [])
+		var tfac := str(VU.get(t_id, {}).get("fac", ""))
 		for k in hits.size():
 			var at: float = float(imp[k]) if k < imp.size() else 0.3
 			var h: Dictionary = hits[k]
@@ -1808,7 +1813,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 				if float(h["shield"]) > 0 and float(h["hull"]) <= 0:
 					sfx.shield(_pos(t_id))
 				else:
-					sfx.hit(_pos(t_id), h["crit"]))
+					sfx.impact(fam, tfac, _pos(t_id), bool(h["crit"])))
 		total = _fx_wait(float(r.get("done", 0.6)), imp, sp, dying.has(str(t_id)), btot)
 	elif fam in ["lance", "ion"]:
 		sfx.lance(fam == "ion", fac, from)
@@ -1833,13 +1838,11 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	else:
 		total = n * 0.07 + 0.49
 		var style = null if fam == "sq" else fam if fam in ["spine", "glob", "plasma", "las", "tracer", "needle", "rail"] else "shell"
-		sfx.gun(str(e["kind"]), fam == "sq", style, from)
 		for i in n:
 			var dl := i * 0.07 * sp
 			var off := Vector3(randf_range(-1, 1), randf_range(-0.3, 0.6), randf_range(-1, 1)) * 0.25 * float(VU.get(a_id, {}).get("size", 0.5)) * 10.0
 			fx.bolt(from + off, to, col, 0.24 * sp, dl, 1.1 if fam != "rail" else 1.5, not shots[i])
-			if i % 2 == 1:
-				sfx.gun(str(e["kind"]), fam == "sq", style, from)
+			sfx.gun(str(e["kind"]), fam == "sq", style, from, dl)
 			if shots[i] and hi < hits.size():
 				_schedule_impact(t_id, hits[hi], dl + 0.24 * sp, L, shield_col, fam)
 				hi += 1
@@ -1937,6 +1940,7 @@ func _torp_clear(id: String) -> void:
 
 
 func _schedule_impact(t_id, h: Dictionary, delay: float, L: float, shield_col: Color, fam: String) -> void:
+	var tfac := str(VU.get(t_id, {}).get("fac", ""))
 	get_tree().create_timer(maxf(delay, 0.001)).timeout.connect(func() -> void:
 		_apply_hit(h)
 		var sv = views.get(t_id)
@@ -1951,10 +1955,8 @@ func _schedule_impact(t_id, h: Dictionary, delay: float, L: float, shield_col: C
 			_flash(p, 5.0 + L * 0.3 + (8.0 if fam == "torp" else 0.0), Color(1.0, 0.62, 0.3), 0.3)
 			if fam == "torp":
 				sfx.boom(0.8, p)
-			elif fam in ["lance", "ion"]:
-				sfx.hit(p, true)
 			else:
-				sfx.hit(p, h["crit"]))
+				sfx.impact(fam, tfac, p, bool(h["crit"])))
 
 
 func _apply_hit(h: Dictionary) -> void:

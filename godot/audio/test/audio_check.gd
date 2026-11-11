@@ -84,6 +84,17 @@ func _run() -> void:
 		for l in c.layers:
 			if l.has("s"):
 				_ok(s.clips.has(l.s), name + " clip exists: " + l.s)
+	# issue 506: the weapon and the struck faction choose the hull-hit cue
+	_ok(s.impact_cue("las", "hegemony") == "hit_las", "a las hit plays hit_las, not hit")
+	_ok(s.impact_cue("lance", "hegemony") == "hit_las", "a lance hit plays hit_las")
+	_ok(s.impact_cue("plasma", "hegemony") == "hit_plasma", "a plasma hit plays hit_plasma")
+	_ok(s.impact_cue("rail", "hegemony") == "hit_rail", "a rail hit plays hit_rail")
+	_ok(s.impact_cue("gauss", "hegemony") == "hit_rail", "a gauss hit plays hit_rail")
+	_ok(s.impact_cue("ion", "hegemony") == "hit_ion", "an ion hit plays hit_ion")
+	_ok(s.impact_cue("shell", "hegemony") == "hit", "a shell hit keeps hit")
+	_ok(s.impact_cue("las", "chorus") == "hit_wet", "a hit on Chorus plays hit_wet")
+	_ok(s.impact_cue("las", "ithar") == "hit_glass", "a hit on Glasswright plays hit_glass")
+	_ok(s.impact_cue("las", "hegemony", true) == "hit_heavy", "a critical keeps hit_heavy")
 	var mi := AudioServer.get_bus_index("music")
 	var si := AudioServer.get_bus_index("sfx")
 	m.set_volume(0.7)
