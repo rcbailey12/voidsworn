@@ -1,0 +1,12 @@
+# Qwen leg, issue 522 (writer seat): RAN, DERAILED, NOT ADOPTED
+
+Chair header: LANDED Nov 11, 2026. Gates passed at every checkpoint (selector Qwen3.8-Max before both turns after a Temporary Chat detour reverted it to Qwen3.7-Plus and the runner re-selected; header still Qwen3.8-Max after generation; no slider). The pack demonstrably arrived: Qwen confirmed all six attachments parsed and correctly noted that the four source sheets named in the pack were not attached (true, and not blocking). The turn 1 holding turn drew two parallel responses; the runner chose neither, as instructed; both were correct holding summaries.
+
+The final reply is nevertheless a wholesale derailment of the same family as its #274, #311-remainder and #445 legs, and it is NOT adopted and NOT re-run (DeepSeek's on-brief set plus the two ideation legs cover the council). What it produced, in place of prompts for the four actual ships:
+
+- One invented template ship description (a "slab-built bar" thousands of metres long, dry-plate quads with cylindrical caps, a horn tower with sails, rope mesh, a barbed-wire spiral pattern, a four-metre-tall worker figure in the foreground) pasted into all four ships with names and a few nouns swapped. Eclipse's crescent and ring and the Glasswright ship are all described as the same bar. It invents faction names not in the pack ("Nocturn flagship", "Fixture carrier").
+- Sheet prompts demanding white-background five-view pencil line drawings, against the house form (top above side, flat, dark grey, photographic) stated in the pack.
+- House rule breaches inside its own text: em dashes, naval language (forecastle, starboard), and a closing note that is word salad ("The depth charge stays deliberate with every mound").
+- Its one sound instinct matches the pack it was given (crop first, plates at one to two metres, return to M1 if smooth) but at template level, not this job's level.
+
+Nothing from this leg is used. The full verbatim text is preserved in the browser task report for task 97b02215-bf81-586c-8897-014cc15b33e1 (chat ceeae72b-353f-4dff-a2f4-324b1b17d0a8 on chat.qwen.ai). Pattern note for the chair: Qwen's legs succeed on tight mechanical scopes with the pack embedded in the conversation (#486, #495, #500, #517) and derail into template invention on open generation-brief scopes (#445, #522, and the pack-loss case #515). Writer seats on concept rounds should not be assigned to it again without a narrower brief.
