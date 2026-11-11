@@ -2104,6 +2104,40 @@ var kill_hold_until := -1.0   # game_t when the kill cut-in lets go; -1 when non
 var _kill_hold_n := 0
 
 
+# Issue 521 (Board review of PR 525): while a kill cut-in holds, the camera frames the DYING ship, not the attacker and
+# target pair (that wide shot left a dreadnought's death a speck): a low three-quarter view on the target, close enough
+# that the hull fills about KILL_FILL of the screen height (a capital more), on whichever quarter is nearest the current
+# view so the camera never whips round, eased in over the first beat (the rig's slow easing). _cine_release eases back.
+const KILL_FILL := [0.45, 0.62]   # the hull's length as a share of the screen height: a cruiser, a capital
+const KILL_BETA := 1.12           # the camera's angle down from straight up (64 degrees: low, still above the board)
+
+
+func _kill_frame(id) -> void:
+	var sv = views.get(id)
+	if sv == null:
+		return
+	if cine_saved.is_empty():
+		cine_saved = {"a": cam.a, "b": cam.b, "r": cam.r, "t": cam.t}
+	var cap: bool = float(VU.get(id, {}).get("size", 0.6)) > 0.8 or bool(VU.get(id, {}).get("flagship", false))
+	var fill: float = KILL_FILL[1] if cap else KILL_FILL[0]
+	var span := 2.0 * tan(deg_to_rad(cam.fov) * 0.5)   # screen height per unit of distance
+	var cur: float = cam.a
+	var best := cur
+	var off := INF
+	for q in [PI / 4.0, 3.0 * PI / 4.0, -PI / 4.0, -3.0 * PI / 4.0]:
+		var cand: float = float(sv.cur_yaw) + q
+		cand = cur + angle_difference(cur, cand)
+		if absf(cand - cur) < off:
+			off = absf(cand - cur)
+			best = cand
+	cam.a = best
+	cam.b = KILL_BETA
+	cam.r = clampf(maxf(float(sv.L), 6.0) / (fill * span), cam.min_r, 200.0)
+	cam.t = Vector3(sv.position.x, 0.0, sv.position.z)
+	cam.slow_until = cam._clock + 1.2
+	hud.letterbox(true)
+
+
 func _kill_hold(core_in: float) -> void:
 	var hold := 1.6 * speed
 	if core_in >= 0.0 and not skip:
@@ -2119,6 +2153,8 @@ func _kill_hold(core_in: float) -> void:
 func _kill_let_go() -> void:
 	kill_hold_until = -1.0
 	_kill_hold_n += 1
+	if not cine_saved.is_empty():
+		cam.slow_until = cam._clock + 0.9   # back to the board view on the slow easing, not a snap out of the close-up
 	_cine_release()
 
 
@@ -2136,8 +2172,7 @@ func _play_death(e: Dictionary) -> void:
 	var sv = views.get(id)
 	var cined := false
 	if sv != null and _cine_wants("kill", e.get("by"), id) and cine_saved.is_empty():
-		var by = e.get("by") if e.get("by") != null and views.has(e.get("by")) else id
-		_cine_frame(by, id)
+		_kill_frame(id)
 		cined = true
 	var cause := str(e.get("cause", "blast"))
 	var friend := _side(id) == "player"

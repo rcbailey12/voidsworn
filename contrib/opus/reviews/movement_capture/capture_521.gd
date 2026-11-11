@@ -179,10 +179,10 @@ func _kill() -> Array:
 	while battle.game_t - t0 < 4.4:
 		await process_frame
 		tel.append({"t": battle.game_t - t0, "fx_t": (float(gfx.now) - fx0) if gfx != null else 0.0,
-			"fx_speed": _f(gfx, "_speed"), "slow_left": _f(gfx, "_death_slow_left"), "cut_in": not (battle.cine_saved as Dictionary).is_empty(), "frame": n,
+			"fx_speed": _f(gfx, "_speed"), "slow_left": _f(gfx, "_death_slow_left"), "cut_in": not (battle.cine_saved as Dictionary).is_empty(), "frame": n, "cam_r": float(battle.cam._cr),
 			"screen": [battle.cam.unproject_position(sv.position + Vector3(0, 2, 0)).x, battle.cam.unproject_position(sv.position + Vector3(0, 2, 0)).y]})
 		if n % 3 == 0:
 			await RenderingServer.frame_post_draw
 			root.get_texture().get_image().save_jpg(folder.path_join("%05d.jpg" % n), 0.9)
 		n += 1
-	return [{"cls": cls, "kind": kind, "target": tid, "by": by, "core_flash_fx_s": core_at, "telemetry": tel}]
+	return [{"cls": cls, "kind": kind, "target": tid, "by": by, "hull_L": float(sv.L), "core_flash_fx_s": core_at, "telemetry": tel}]

@@ -144,7 +144,7 @@ for kind, cls, tier in (('kill_cruiser', 'Cruiser', 'cruiser'), ('kill_capital',
             n = min(have, key=lambda n: abs(byn.get(n, {'t': 99})['t'] - want))
             p = byn[n]
             sx, sy = p.get('screen', [960, 540])
-            cw, ch = 760, 570   # a box around the dying ship, the same aspect as the cells
+            cw, ch = 1440, 1080   # the full screen height (4:3 around the dying ship): its share of the screen as played
             x0 = int(min(max(sx - cw / 2, 0), 1920 - cw)); y1 = int(min(max(sy - ch / 2, 0), 1080 - ch))
             sheet.paste(Image.open(folder / ('%05d.jpg' % n)).crop((x0, y1, x0 + cw, y1 + ch)).resize((FW, FH)), (i * 213, y0 + 20))
             text(d, (i * 213 + 3, y0 + 20 + FH + 1), 't %.2f s  %s' % (p['t'], 'CUT-IN' if p['cut_in'] else 'board view'))
