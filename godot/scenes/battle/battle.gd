@@ -3716,7 +3716,7 @@ func _tree_shots(kind: String) -> void:
 		while not ended and not got:
 			for f in floats:
 				var l: Label = f["lbl"]
-				if is_instance_valid(l) and l.text.begins_with("Roles Assigned") and f["t"] > 0.25:
+				if is_instance_valid(l) and l.text.begins_with("Roles Assigned") and l.text.contains("+10 aim") and f["t"] > 0.25:
 					got = true
 			await get_tree().process_frame
 		if got:
@@ -3726,8 +3726,12 @@ func _tree_shots(kind: String) -> void:
 			await get_tree().create_timer(0.5).timeout
 			await _snap("tree_role_log")
 			hud.toggle_log()
+			while busy or api.phase != "player":
+				await get_tree().process_frame
 			select(_first_player())
 			await get_tree().create_timer(1.0).timeout
+			hud._show_dtip()   # the "more on hover" layer: the Admiral lineage block counts each skill this battle
+			await get_tree().create_timer(0.5).timeout
 			await _snap("tree_role_count")
 	_quit_report()
 
@@ -4169,7 +4173,7 @@ func _panel_info() -> Dictionary:
 					"tip": {"strike": "Wings range out and strike.", "screen": "Wings stay within 2 hexes, hunt craft first and shoot down torpedoes aimed at ships beside them.", "hunt": "Wings range 4 hexes further, +20% against crippled ships, easier to hit."}[stn]})
 		if str(u.get("role", "")) != "" and u.get("role") != null:   # issue 529: Roles Assigned at Hatching, one change per battle
 			var rn := str(u["role"]).capitalize()
-			orders.append({"text": ("Role: %s, change" % rn) if bool(u.get("canRole")) else ("Role: %s" % rn), "act": "role", "on": _can_act() and bool(u.get("canRole")),
+			orders.append({"text": "Role: %s" % rn, "act": "role", "on": _can_act() and bool(u.get("canRole")),
 				"tip": "This ship's role: strike +10 aim, screen +10 evasion, mend 10% stronger repair and regrowth. A ship may change its role once per battle."})
 		orders.append({"text": "Turn left (Q)", "act": "rotl", "on": can})
 		orders.append({"text": "Turn right (E)", "act": "rotr", "on": can})
