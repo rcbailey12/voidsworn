@@ -366,19 +366,19 @@ func stop_all() -> void:
 
 # ---- the game's cue helpers (sfx.js) ----
 
-func gun(k: String, sq: bool, style, pos = null) -> void:
+func gun(k: String, sq: bool, style, pos = null, delay := 0.0) -> void:
 	if sq:
-		play("gun_sq", {"pos": pos})
+		play("gun_sq", {"pos": pos, "delay": delay})
 		return
 	if k == "flak":
-		play("gun_flak", {"pos": pos})
+		play("gun_flak", {"pos": pos, "delay": delay})
 		return
 	if style == "twin":
-		play("gun_shell", {"pos": pos, "gain": 0.8})
-		play("gun_shell", {"pos": pos, "gain": 0.6, "delay": 0.05})
+		play("gun_shell", {"pos": pos, "gain": 0.8, "delay": delay})
+		play("gun_shell", {"pos": pos, "gain": 0.6, "delay": delay + 0.05})
 		return
 	var n := "gun_" + (str(style) if style != null else "shell")
-	play(n if cues.has(n) else "gun_shell", {"pos": pos})
+	play(n if cues.has(n) else "gun_shell", {"pos": pos, "delay": delay})
 
 
 func lance(ion: bool, fac: String, pos = null) -> void:
@@ -392,6 +392,27 @@ func torp(fac: String, pos = null) -> void:
 
 func hit(pos = null, heavy := false) -> void:
 	play("hit_heavy" if heavy else "hit", {"pos": pos})
+
+
+# Issue 506: the weapon family and the struck faction choose the hull-hit cue. One table, easy to edit. A critical
+# keeps the heavy cue instead of the family cue, so it never doubles the voices; shield hits keep their own cue.
+const HIT_BY_WEAPON := {
+	"las": "hit_las", "lance": "hit_las", "plasma": "hit_plasma",
+	"rail": "hit_rail", "gauss": "hit_rail", "ion": "hit_ion",
+}
+const HIT_BY_TARGET := {"chorus": "hit_wet", "ithar": "hit_glass"}
+
+
+func impact_cue(fam: String, target_fac: String, heavy := false) -> String:
+	if heavy:
+		return "hit_heavy"
+	if HIT_BY_TARGET.has(target_fac):
+		return str(HIT_BY_TARGET[target_fac])
+	return str(HIT_BY_WEAPON.get(fam, "hit"))
+
+
+func impact(fam: String, target_fac: String, pos = null, heavy := false) -> void:
+	play(impact_cue(fam, target_fac, heavy), {"pos": pos})
 
 
 func shield(pos = null, big := false) -> void:

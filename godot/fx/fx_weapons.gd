@@ -103,7 +103,7 @@ static func _volley_entry(fx, aid: String, kind: String, tid: String, opts: Dict
 	var A = fx.ship(aid)
 	var Tg = fx.ship(tid)
 	if A == null or Tg == null:
-		return {"impacts": [], "done": 0.0}
+		return {"impacts": [], "fires": [], "done": 0.0}
 	var from_c: Vector3 = A.to_world(A.hull.c)
 	return _volley(fx, A, from_c, kind, Tg, Tg.to_world(Tg.hull.c), opts)
 
@@ -142,6 +142,7 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 		for i in maxi(shots.size(), 1):
 			mounts.append({"p": from_c, "n": (to_c - from_c).normalized()})
 	var impacts: Array = []
+	var fires: Array = []
 	var done = 0.0
 	var hj = 0
 	var total = shots.size()
@@ -162,10 +163,11 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 				str(hd.get("section", ""))])
 		var r = _shot(fx, lk, kind, w, i, total, from, m["n"], tgt, T0, col, fac, A, Tg, hd, ka, kt, faction)
 		impacts.append(float(r[0]) - T0)
+		fires.append(float(r[2]) - T0)
 		done = maxf(done, float(r[1]) - T0)
 		if Tg != null and hit:
 			Tg.busy_until = maxf(Tg.busy_until, float(r[0]))
-	return {"impacts": impacts, "done": done}
+	return {"impacts": impacts, "fires": fires, "done": done}
 
 
 # Where a shot ends: the shield bubble, the hull (section, facing), or past the target for a miss.
@@ -197,7 +199,7 @@ static func _target(fx, Tg, to_c: Vector3, from: Vector3, hit: bool, hd: Diction
 	return out
 
 
-# One shot: fire, travel, impact. Returns [impact time, end time] on the effect clock.
+# One shot: fire, travel, impact. Returns [impact time, end time, fire time] on the effect clock.
 static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Vector3, mn: Vector3, tg: Dictionary, T0: float,
 		col: Color, fac: Dictionary, A, Tg, hd: Dictionary, ka: float, kt: float, faction := "voidsworn") -> Array:
 	var to: Vector3 = tg["p"]
@@ -355,8 +357,10 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			fx.shake(tf, 0.08, from)
 			ti = tf + dist / (650.0 * fx.unit)
 		"guns", "bombs", "sporeb":
-			ti = _strafe(fx, lk, from, to, T0 + i * 0.15, col, fac, ka, kt, i, faction)
+			tf = T0 + i * 0.15
+			ti = _strafe(fx, lk, from, to, tf, col, fac, ka, kt, i, faction)
 		_:
+			tf = T0 + 0.3
 			ti = T0 + 0.3
 	if tend < ti:
 		tend = ti
@@ -364,7 +368,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 		_impact(fx, lk, w, Tg, tg, ti, col, dir, hd, kt, tend - ti)
 	else:
 		_miss_fade(fx, lk, tg, ti, col, dir, kt)
-	return [ti, tend + 0.3]
+	return [ti, tend + 0.3, tf]
 
 
 # Weapon bursts use leap 1's atlas, flow interpolation, thickness lighting and
