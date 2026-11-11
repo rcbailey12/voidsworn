@@ -766,9 +766,21 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 	var rx: float = L * (0.09 if capital else 0.12)
 	# centred a little into the bigger of the two pieces, so the bite eats mostly into it and the small one stays small
 	var bat: Vector3 = (breaks[bi]["at"] as Vector3) + Vector3.RIGHT * rx * 0.5 * (-1.0 if float(sizes[bi]) > float(sizes[bi + 1]) else 1.0)
-	var out_dir := Vector3(0.0, 0.55, zs).normalized()
-	var hit: Dictionary = h.ray(bat + out_dir * L * 2.0, -out_dir)
-	var bc: Vector3 = hit.get("p", bat + Vector3(0.0, H * 0.3, zs * W * 0.4))
+	var out_dir := Vector3(0.0, 0.3, zs).normalized()
+	# the bite's centre is a real hull sample: the one furthest out to the hit side near the break (bench round 3: a ray
+	# toward the hull could hit a mast tip with no plating round it, and the core flash then floated off the hull)
+	var bc: Vector3 = bat + Vector3(0.0, H * 0.3, zs * W * 0.4)
+	var best := -INF
+	for i in h.sp.size():
+		var q: Vector3 = h.sp[i]
+		if absf(q.x - bat.x) > rx * 0.6: continue
+		var score: float = (q - bat).dot(out_dir) - absf(q.x - bat.x) * 0.5
+		if score > best:
+			best = score
+			bc = q
+	if best == -INF:
+		var hit: Dictionary = h.ray(bat + out_dir * L * 2.0, -out_dir)
+		bc = hit.get("p", bc)
 	var ry: float = maxf(W, H) * (0.48 if capital else 0.55)
 	var subs := PackedVector3Array()
 	var nsub := 6 if capital else 4
