@@ -30,24 +30,28 @@ for /L %%S in (1,1,30) do set "SEEDS=!SEEDS! %%S"
 
 echo.
 echo Campaign parity (G3)
-echo [1/3] Campaign tables still match the root JS files...
+echo [1/4] Campaign tables still match the root JS files...
 "%NODE%" "%T%node\export_campaign.js" "%T%out\tables_check.json" >> "%LOG%" 2>&1
 "%NODE%" -e "process.exit(require(process.argv[1]).sha256===require(process.argv[2]).sha256?0:1)" "%T%out\tables_check.json" "%PROJ%campaign\data\campaign_tables.json" >> "%LOG%" 2>&1
 if errorlevel 1 ( echo   FAIL: campaign_tables.json is stale & set /a FAILS+=1 ) else ( echo   PASS )
 
-echo [2/3] Playing 30 seeded runs in the JS game and in Godot...
+echo [2/4] Playing 30 seeded runs in the JS game and in Godot...
 for /L %%S in (1,1,30) do "%NODE%" "%T%node\golden_campaign.js" %%S "%T%golden\c%%S.jsonl" >> "%LOG%" 2>&1
 "%GODOT%" --headless --path "%PROJ%." --script res://campaign/test/parity_campaign.gd -- "%T%out" !SEEDS! >> "%LOG%" 2>&1
 
-echo [3/3] Comparing every click ^(buttons on screen, campaign state, saved copy, PRNG state^)...
+echo [3/4] Comparing every click ^(buttons on screen, campaign state, saved copy, PRNG state^)...
 for /L %%S in (1,1,30) do (
   "%NODE%" "%T%node\compare_campaign.js" "%T%golden\c%%S.jsonl" "%T%out\c%%S.jsonl" > "%T%out\cmp.txt" 2>&1
   if errorlevel 1 ( echo   run %%S: FAIL & type "%T%out\cmp.txt" & set /a FAILS+=1 ) else ( echo   run %%S: PASS )
   type "%T%out\cmp.txt" >> "%LOG%"
 )
 
+echo [4/4] Cross-twin save hand-off ^(fixed seed and step count, record by record^)...
+"%NODE%" "%T%node\cross_twin_handoff_test.js" "%GODOT%" 1 40 >> "%LOG%" 2>&1
+if errorlevel 1 ( echo   FAIL & set /a FAILS+=1 ) else ( echo   PASS )
+
 echo.
-if %FAILS%==0 ( echo PASS: the Godot campaign matches the game on all 30 seeded runs. & echo PASS >> "%LOG%" ) else ( echo FAIL: %FAILS% check^(s^) differ. Details above and in %LOG% & echo FAIL >> "%LOG%" )
+if %FAILS%==0 ( echo PASS: the Godot campaign matches the game on all 30 seeded runs, and the cross-twin save hand-off check passes. & echo PASS >> "%LOG%" ) else ( echo FAIL: %FAILS% check^(s^) differ. Details above and in %LOG% & echo FAIL >> "%LOG%" )
 :end
 echo.
 if /i not "%~1"=="nopause" pause
