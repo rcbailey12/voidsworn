@@ -11,7 +11,10 @@ effect: a weapon hit, a shield response, a trail, a death.
   the battle camera: for example a torpedo on a hull flashes 154 px for 0.16 s, a cruiser death flashes 302 px for 0.20 s.
   Each step up the ladder is about 1.4 times the one below, so a bigger event always reads bigger.
 - Flame cap: no flame or hot core lives longer than 0.70 s, and none stays at full heat longer than 0.25 s (owner ruling).
-  Flash and snuff out, never rolling fire.
+  Flash and snuff out, never rolling fire. Flame only (R193): sparks, debris, gas, dust and embers live longer, and scorch
+  stays (deaths_and_hits.md, "The hits, upgraded").
+- Numbers in this playbook and the staging table are starting points judged by eye in a moving fight, not gates (R187).
+  Checks protect crashes, saves, comfort and frame rate.
 - Shields: invisible at rest, a faint edge glow on zoom, hover or a recent hit, a downed side reads as a dark gap, and they
   keep faction colours (R163; Oct 24).
 - Directions already researched for the next options sheets (contrib/muse/design/look_references_2026_11/synthesis.md):
@@ -41,7 +44,8 @@ effect: a weapon hit, a shield response, a trail, a death.
 
 ## 4. The checks that prove it
 
-- The bench strip at camera 170 shows the effect at the table's size within 15 percent, at the table's time within two frames.
+- The bench strip at camera 170 shows the effect, with its measured size and time beside the table's row. The row is a
+  starting point (R187): a difference judged better by eye in a moving fight is reported, not failed.
 - godot/fx/test/check_destruction.bat and the stray puff guard pass: every spawned picture is recorded and sits on the hull
   (death_spawn_check.gd, PR 404).
 - Frame time on the bench is reported against the baseline. Costs are reported; a regression is the Board's call.

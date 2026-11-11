@@ -3,7 +3,8 @@ extends SceneTree
 # Box ships at the battle camera, headless. Asserts:
 #   1. the ladder: las, macro, lance, torpedo on a hull, torpedo on a shield are each plainly bigger than the step before
 #      (flash, then the shield ripple, the biggest body of any hit), and a hit is sized by the gun as well as the target;
-#   2. each weapon family has its own recipe (shell, energy, lance, torpedo, bio: different sets of thrown matter);
+#   2. each weapon family has its own recipe (shell chips and a skipping spark cone, an energy splash that runs along the
+#      plate, a lance burn that crawls, torpedo gas and debris, an ion burn with no molten spray);
 #   3. thrown matter lives longer than flame: no hit flash lives past the 0.70 s flame cap, sparks stay under a second,
 #      debris and gas live past a second (R193, "Flame only");
 #   4. direction: every spark, chip, puff and ember leaves along the plate's outward side (nothing sprays into the ship);
@@ -196,12 +197,20 @@ func _recipes(seen: Dictionary) -> void:
 	var to_life: Dictionary = kinds.get("torp", [{}, {}])[1]
 	_check(float(to_life.get("debris", 0.0)) > 1.0 and float(to_life.get("gas", 0.0)) >= 2.0 and float(to_life.get("heat", 0.0)) >= 3.0,
 		"torpedo: debris, gas and the wound's glow outlive the flame (%s)" % str(to_life))
-	var sigs := {}
-	for wid in ["turret", "hbattery", "lance", "torp", "bioplasma"]:
-		var keys: Array = (kinds.get(wid, [{}, {}])[0] as Dictionary).keys()
-		keys.sort()
-		sigs[str(keys)] = true
-	_check(sigs.size() >= 4, "the families' recipes differ (%d distinct sets of matter)" % sigs.size())
+	# the shell's sparks skip up off the plate in a cone; the energy splash skates along it
+	var up_shell := _mean_up(seen.get("hbattery", []))
+	var up_las := _mean_up(seen.get("turret", []))
+	_check(up_las < 0.45 and up_shell > up_las + 0.15, "shell sparks skip off the plate (mean outward share %.2f), the energy splash runs along it (%.2f)" % [up_shell, up_las])
+
+
+func _mean_up(log: Array) -> float:
+	var sum := 0.0
+	var n := 0
+	for e in log:
+		if e["what"] == "spark" and (e["v"] as Vector3).length() > 1e-4:
+			sum += (e["v"] as Vector3).normalized().dot((e["n"] as Vector3).normalized())
+			n += 1
+	return sum / maxf(1.0, float(n))
 
 
 # 7. a lance kill cuts clean on the beam's line

@@ -19,8 +19,11 @@ approach." This page is the upgrade. Every fire and flash below is route B with 
 
 1. **Light, then matter, then dark.** A white flash first, fire seen through gas second, cooling coals last. In that order,
    every time, so the eye learns it.
-2. **Flash and snuff out.** No flame lives longer than 0.70 s; no hot core holds full heat longer than 0.25 s (owner ruling).
-   The dark gap after a flash is what makes the next one read. Never rolling fire.
+2. **Flash and snuff out: flame only.** No flame lives longer than 0.70 s; no hot core holds full heat longer than 0.25 s
+   (owner ruling: fire is wrong for space). The dark gap after a flash is what makes the next one read. Never rolling fire.
+   The cap is for flame alone (Ryan, R193, "Flame only"): sparks, debris, gas, dust and cooling embers live their own,
+   longer lives, and scorch stays (see "The hits, upgraded"). Ryan's reason (R187): the old guidance made battles "more
+   restricted and less realistic and cinematic than it should be".
 3. **A bigger ship dies longer, not just larger.** A frigate is gone in under a second. A cruiser takes about three and a
    half. A capital takes about four and a half and leaves a wreck that glows for a quarter of a minute.
 4. **It starts on the ship.** Every jet, tear, flash and blast sits on a hard point, a breach anchor or the surface the shot
@@ -113,7 +116,9 @@ Until a faction's hulls are rebuilt it uses the shared cruiser, capital and frig
 
 ## The hits, upgraded
 
-One ladder, each step plainly bigger than the last at the battle camera: las, macro, lance, torpedo, death.
+One ladder, each step plainly bigger than the last at the battle camera: las, macro, lance, torpedo, death. Built in issue
+461 (contrib/opus/reviews/hits_report.md). The sizes below are starting points judged by eye in a moving fight, not gates
+(R187): checks protect crashes, saves, comfort (reduce flashing, the flash counter) and frame rate, never a look.
 
 | Hit | Flash | Body | What stays |
 |---|---|---|---|
@@ -125,9 +130,30 @@ One ladder, each step plainly bigger than the last at the battle camera: las, ma
 
 Three upgrades run through all of them:
 1. **Wounds.** Every hull hit leaves a mark that glows and cools, then stays as a scar. A ship that has been in a fight
-   looks like it.
-2. **Light on neighbours.** Torpedo hits and every death light the hulls around them for the length of the flash.
+   looks like it. (Built: a hot spot that cools over 1.5 s for energy, 2.5 s for shells, 3 s along a lance's line and 4 s
+   for a torpedo, over the hull mark of R43; a ship keeps 24 marks, 8 a section, where it kept 12 and 4.)
+2. **Light on neighbours.** Torpedo hits and every death light the hulls around them for the length of the flash. (Built:
+   a torpedo's light reaches about two hexes, 36 units; a death's core flash 1.5, 2 and 3 hexes for a frigate, cruiser and
+   capital; every other light keeps the standing 30 units, about 1.7 hexes.)
 3. **Direction.** Sparks and debris leave the surface along its outward side, in a cone. Nothing sprays into the ship.
+   (Built: every thrown piece is lifted off the plate's normal; a shell's spark cone follows the shell's own path
+   reflected off the plate, so it skips.)
+
+How each family's hit is built (godot/fx/fx_weapons.gd, `family_of`):
+- **Shell** (macro, autocannon, scatter, craft guns, flak, gauss): a short white bite, a cone of sparks that skips off the
+  plate, torn chips, a puff of dust that hangs, embers, a dent that glows and cools.
+- **Energy** (las, plasma, prism): one or two frames of white, a splash that runs out along the plate (a flat ring and
+  drops skating over it), a little vapour, a short scorch. Prism adds a rainbow glint; plasma throws blue slag.
+- **Lance** (lance, ion, pulsar, doom, needle): the contact burn crawls along the hull while the beam dwells, pulsing at
+  the lance size and spraying molten metal; a third of a second of tail when it lifts; the line glows about three
+  seconds. The ion beam burns blue-white with crawling arcs and throws no molten metal.
+- **Torpedo**: the baked flash and fire through gas, then torn plates thrown in a cone, sparks, gas and dust that hang
+  for seconds, embers, a wound that cools over four seconds, light on the hulls about two hexes round.
+- **Bio** (Chorus): the wet splash with bile drops and an acid fume that hangs while the acid eats.
+
+Sizes follow the gun as well as the target: a hit's flash is its row's size times the firing hull's band (small 0.85,
+cruiser 1.0, capital 1.2) times the hit hull's band (small 0.8, cruiser 1.0, capital 1.2). Matter lives: sparks 0.35 to
+0.9 s, debris 1 to 4 s, gas and dust 2 to 4 s, embers 1.4 to 3 s; no flash past 0.70 s.
 
 Faction weapons take the nearest row and their faction's matter: the Glasswright prism lance is a lance with a white core and a
 rainbow fringe; ion fire is a macro hit in blue-white with arcs and no debris; Chorus acid is a torpedo row with the melt
