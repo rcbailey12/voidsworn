@@ -177,6 +177,11 @@ func c(text: String, col: Color) -> String: return "[color=" + hexs(col) + "]" +
 func n_(text: String, col: Color = BONE) -> String: return "[code]" + c(text, col) + "[/code]"   # a number in rich text: the number face
 # a page or dialog title: Chakra Petch Bold caps, tracked (GS.display); the size argument keeps the old scale (x 0.7)
 func gothic(text: String, size: float = 52) -> Label: return lbl(text.to_upper(), size * 0.7, BONE, font_goth, true)
+func _readout(label: String, value: String, col: Color, right: bool = false) -> Control:   # a big number: Azeret Mono, its label in caps
+	var v = vbox(0); var a = caps(label, 12, BONE3); var b = num(value, 28, col)   # label 12: the text floor (ui_spec.md 4.3)
+	if right: a.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT; b.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	v.add_child(a); v.add_child(b); return v
+
 func vbox(sep: float = 8) -> VBoxContainer:
 	var v = VBoxContainer.new(); v.add_theme_constant_override("separation", px(sep)); return v
 func hbox(sep: float = 10) -> HBoxContainer:
@@ -598,7 +603,7 @@ func _aspect() -> Control:
 # hover or one click away: the map's hover tip, the Map key and the Dossier (the two slide-overs below).
 # Every fact comes through campaign_view.gd, which only reads; every size is on the mockup's ladder (13, 14, 15, 18, 20, 22,
 # 28 to 30, 40) and every gap on an 8 px grid, at the 1080 design height.
-const COL_W := 480.0
+const COL_W := 540.0
 const COL_PAD := 40.0
 const OVER_W := 520.0            # the Dossier and the Map key slide-overs
 var picked := ""                 # the next jump picked in the route list (a stop's id); the map and the list share it
@@ -607,24 +612,20 @@ var _routes: Array = []          # View.routes(C), each with its danger (map_int
 var _rows: Array = []            # [{id, btn, num}] the route rows of the last render
 var _jump_btn: Button = null
 var _jump_lbl: Label = null
-var _detail: Label = null
+var _rail_host: Control
+var _rail_pending := false
 func caps(text: String, size: float = 12, col: Color = BONE3) -> Label: return lbl(text.to_upper(), size, col, font_caps, false)
 # a well holding a block of a dialog: [PanelContainer, VBoxContainer]; bar is the left bar's colour
 func blk(bar_col: Color = Color(0, 0, 0, 0), sep: float = 5, pad_x: float = 12, pad_y: float = 9) -> Array:
 	var p = PanelContainer.new(); p.add_theme_stylebox_override("panel", GS.well(k, Color(0, 0, 0, 0), pad_x, pad_y, bar_col))
 	p.mouse_filter = Control.MOUSE_FILTER_PASS
 	var v = vbox(sep); p.add_child(v); return [p, v]
-func _readout(label: String, value: String, col: Color, right: bool = false) -> Control:   # a big number: Azeret Mono, its label in caps
-	var v = vbox(0); var a = caps(label, 12, BONE3); var b = num(value, 28, col)   # label 12: the text floor (ui_spec.md 4.3)
-	if right: a.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT; b.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	v.add_child(a); v.add_child(b); return v
-
 # One line of text in a fixed line box (its size and its line height, as the mockup writes them), so the column's heights add
 # up exactly and every baseline sits where the grid puts it. expand: the line takes the row's free width and trims with an
 # ellipsis; otherwise it is as wide as its words.
-func tl(text: String, size: float, lh: float, col: Color = BONE, f: Font = null, expand: bool = false) -> Control:
+func tl(text: String, size: float, lh: float, col: Color = GS.TEXT, f: Font = null, expand: bool = false) -> Control:
 	var w = Control.new(); w.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var ff = f if f != null else font
+	var ff = f if f != null else GS.sheet_body()
 	var l = Label.new(); l.text = text; l.add_theme_font_override("font", ff); l.add_theme_font_size_override("font_size", px(size)); l.add_theme_color_override("font_color", col)
 	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER; l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if expand:
@@ -636,7 +637,7 @@ func tl(text: String, size: float, lh: float, col: Color = BONE, f: Font = null,
 # A paragraph in fixed line boxes: wraps to width w (at 1080), shows at most max_lines and trims the rest with an ellipsis.
 # Returns [Label, lines shown]. The label's height is lines x lh, so a caller can add it up.
 func para(text: String, size: float, lh: float, col: Color, w: float, max_lines: int = 2, f: Font = null) -> Array:
-	var ff = f if f != null else font
+	var ff = f if f != null else GS.sheet_body()
 	var l = Label.new(); l.text = text; l.add_theme_font_override("font", ff); l.add_theme_font_size_override("font_size", px(size)); l.add_theme_color_override("font_color", col)
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; l.max_lines_visible = max_lines; l.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	var fh = ff.get_height(px(size))
@@ -662,8 +663,9 @@ func row0(sep: float = 0) -> HBoxContainer:   # a row whose parts keep the mouse
 # a plain text button in a fixed line box (GS.plain_button): words only
 func tbtn(text: String, size: float, lh: float, cb: Callable, tip_t: String = "") -> Control:
 	var w = Control.new()
-	var b = Button.new(); b.text = text; GS.plain_button(b, k, size)
-	w.custom_minimum_size = Vector2(ceil(font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, px(size)).x) + 2.0, px(lh))
+	var b = Button.new(); b.text = text; b.alignment = HORIZONTAL_ALIGNMENT_LEFT; GS.plain_button(b, k, maxf(17, size), GS.sheet_body())
+	b.add_theme_color_override("font_color", GS.TEXT2); b.add_theme_color_override("font_hover_color", GS.TEXT); b.add_theme_color_override("font_focus_color", GS.TEXT)
+	w.custom_minimum_size = Vector2(ceil(GS.sheet_body().get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, px(size)).x) + 2.0, px(lh))
 	if tip_t != "": b.tooltip_text = tip_t
 	b.pressed.connect(cb); w.add_child(b); b.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); w.set_meta("button", b)
 	return w
@@ -684,7 +686,7 @@ func danger_of(n) -> Dictionary:
 
 func _map() -> Control:
 	var wrap = Control.new(); wrap.set_anchors_preset(Control.PRESET_FULL_RECT); wrap.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var th = theme_main.duplicate(); th.set_stylebox("panel", "TooltipPanel", GS.tip(k)); th.set_font_size("font_size", "TooltipLabel", px(14)); th.set_color("font_color", "TooltipLabel", BONE2)
+	var th = GS.sheet_theme(k); th.set_stylebox("panel", "TooltipPanel", GS.tip(k)); th.set_font_size("font_size", "TooltipLabel", px(17)); th.set_color("font_color", "TooltipLabel", GS.TEXT2)
 	wrap.theme = th
 	if map3d != null and map3d.intel == null: map3d.sync()
 	_routes = View.routes(C)
@@ -693,16 +695,17 @@ func _map() -> Control:
 	# the right side: plain text buttons top right, the purse bottom right (the chart itself is map3d.gd, under this page)
 	var top = row0(36); top.anchor_left = 1.0; top.anchor_right = 1.0; top.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	top.offset_right = -px(48); top.offset_top = px(44)
-	top.add_child(tbtn("Map key", 15, 22, func(): _open_overlay("key"), "What the marks mean, this sector, your run, the controls."))
-	if not _find(_acts, "saveQuit", "").is_empty(): top.add_child(tbtn("Save and quit", 15, 22, func(): C.act("saveQuit", "")))
+	top.add_child(tbtn("Map key", 17, 24, func(): _open_overlay("key"), "What the marks mean, this sector, your run, the controls."))
+	if not _find(_acts, "saveQuit", "").is_empty(): top.add_child(tbtn("Save and quit", 17, 24, func(): C.act("saveQuit", "")))
 	wrap.add_child(top)
 	var P = View.purse(C)
-	var purse = _baseline_row([["Credits", font, 14, BONE2], [12], [C.numstr(P["credits"]), font_num_b, 28, BONE], [48],
-		["Command points", font, 14, BONE2], [12], [C.numstr(P["cp"]), font_num_b, 28, BONE], [0], ["/" + C.numstr(P["cp_cap"]), font_num, 28, BONE3]], 32)
+	var purse = _baseline_row([["Credits", GS.sheet_body(), 17, GS.TEXT2], [12], [C.numstr(P["credits"]), font_num_b, 28, GS.TEXT], [48],
+		["Command points", GS.sheet_body(), 17, GS.TEXT2], [12], [C.numstr(P["cp"]), font_num_b, 28, GS.TEXT], [0], ["/" + C.numstr(P["cp_cap"]), font_num, 28, GS.TEXT2]], 32)
 	purse.anchor_left = 1.0; purse.anchor_right = 1.0; purse.anchor_top = 1.0; purse.anchor_bottom = 1.0
 	purse.offset_right = -px(48); purse.offset_left = purse.offset_right - purse.custom_minimum_size.x; purse.offset_bottom = -px(40); purse.offset_top = purse.offset_bottom - purse.custom_minimum_size.y
 	wrap.add_child(purse)
-	wrap.add_child(_briefing_column())
+	_rail_host = Control.new(); _rail_host.set_anchors_preset(Control.PRESET_FULL_RECT); _rail_host.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	wrap.add_child(_rail_host); _rail_host.add_child(_briefing_column())
 	if _overlay == "dossier": wrap.add_child(_slide_over(_dossier(), COL_W))
 	elif _overlay == "key": wrap.add_child(_slide_over(_map_key(), -1.0))
 	return wrap
@@ -713,9 +716,11 @@ func _baseline_row(parts: Array, lh: float) -> Control:
 	for p in parts:
 		if p.size() == 1: w += px(p[0])
 		else: w += ceil(p[1].get_string_size(p[0], HORIZONTAL_ALIGNMENT_LEFT, -1, px(p[2])).x); big = max(big, px(p[2]))
-	c.custom_minimum_size = Vector2(w, px(lh))
+	c.custom_minimum_size = Vector2(w, px(lh)); c.set_meta("sheet_parts", parts)
 	c.draw.connect(func():
 		var bf: Font = font_num_b
+		for p in parts:
+			if p.size() > 1 and px(p[2]) == big: bf = p[1]; break
 		var base = c.size.y * 0.5 + (bf.get_ascent(big) - bf.get_descent(big)) * 0.5
 		var x = 0.0
 		for p in parts:
@@ -724,131 +729,129 @@ func _baseline_row(parts: Array, lh: float) -> Control:
 			x += ceil(p[1].get_string_size(p[0], HORIZONTAL_ALIGNMENT_LEFT, -1, px(p[2])).x))
 	return c
 
-# The briefing column. Its heights are added up before it is built (every line is a fixed line box), so the fleet list can
-# take a tighter row or scroll when the fleet is large instead of running off the screen.
+# Orders sheet: an unboxed rail. The route group can scroll in extreme cases; the fleet stays at the foot.
+func _sheet_words(text: String, size: float, col: Color = GS.TEXT, medium := false) -> Label:
+	return lbl(text, maxf(17, size), col, GS.sheet_medium() if medium else GS.sheet_body())
+
+# Fit names by wrapping whole words, keeping Big Shoulders at or above 28 px.
+func _sheet_name(text: String, size: float, width: float, lines := 2) -> Label:
+	var f = GS.sheet_name(); var fs = size; var t = text.to_upper()
+	while fs > 28 and (f.get_multiline_string_size(t, HORIZONTAL_ALIGNMENT_LEFT, px(width), px(fs)).y > f.get_height(px(fs)) * lines + 1 or Array(t.split(" ")).any(func(w): return f.get_string_size(w, HORIZONTAL_ALIGNMENT_LEFT, -1, px(fs)).x > px(width))): fs -= 1
+	var l = lbl(t, fs, GS.TEXT, f); l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; l.custom_minimum_size.x = px(width)
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	return l
+
+func _sheet_rule() -> Control:
+	var line = ColorRect.new(); line.color = GS.SHEET_HAIR; line.custom_minimum_size.y = px(1); line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return line
+
+func _approach_strip(H: Dictionary) -> Control:
+	var h = row0(16)
+	for i in 3:
+		var v = vbox(4); var on = i + 1 == H["sector"]
+		var bar = ColorRect.new(); bar.color = GS.MAP_EMBER if on else GS.TEXT3; bar.custom_minimum_size = Vector2(px(58), px(4 if on else 1)); bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		v.add_child(bar); v.add_child(tl(["I", "II", "III"][i], 17, 22, GS.MAP_EMBER if on else GS.TEXT2, font_num))
+		h.add_child(v)
+	var star = Control.new(); star.custom_minimum_size = Vector2(px(18), px(24)); star.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	star.draw.connect(func(): star.draw_arc(Vector2(px(9), px(8)), px(7), 0, TAU, 32, GS.MAP_EMBER, px(1.5), true))
+	h.add_child(star); h.add_child(_sheet_words("Jump %d of %d" % [H["jump"], H["jumps"]], 19, GS.TEXT2, true))
+	return h
+
+func _condition_line(S: Dictionary) -> String:
+	var short = {"Ion season": "shields recharge 25% slower.", "Dark sector": "nebula hexes give -15 to hit.", "Wreck belt": "salvage pays 15% more.", "War zone": "reinforcements; fights pay 20% more.", "Scarcity": "repairs restore 25% less."}
+	return str(S["cond_n"]) + ": " + str(short.get(S["cond_n"], S["cond_d"])) if S["cond_n"] != "" else ""
+
 func _briefing_column() -> Control:
-	var H = View.header(C); var S = View.sector_notes(C); var N = View.nemesis(C); var FA = View.faction_action(C)
-	var fleet = View.fleet_rows(C)
+	var H = View.header(C); var S = View.sector_notes(C); var N = View.nemesis(C); var fleet = View.fleet_rows(C)
 	var cw = COL_W - COL_PAD * 2.0
-	var col = PanelContainer.new(); col.add_theme_stylebox_override("panel", GS.column(k)); col.mouse_filter = Control.MOUSE_FILTER_STOP
-	col.anchor_bottom = 1.0; col.offset_right = px(COL_W); col.custom_minimum_size.x = px(COL_W); col.clip_contents = true
-	var v = VBoxContainer.new(); v.add_theme_constant_override("separation", 0); col.add_child(v)
-	var used = 0.0   # the height spent so far, at 1080
-	# 1. where you are
-	v.add_child(gap(40)); used += 40
-	var meta = row0(24)
-	meta.add_child(tl("SECTOR %s OF III" % H["sector_roman"], 13, 16, BONE2, font_num)); meta.add_child(tl("JUMP %d OF %d" % [H["jump"], H["jumps"]], 13, 16, BONE2, font_num))
-	v.add_child(padded(meta)); v.add_child(gap(8)); used += 24
-	# 2. the sector's name, in the display face (it steps down a size when a long name would not fit the column)
-	var name_t = (H["region"] if H["region"] != "" else "Sector " + H["sector_roman"]).to_upper(); var ns = 40.0
-	while ns > 26.0 and font_goth.get_string_size(name_t, HORIZONTAL_ALIGNMENT_LEFT, -1, px(ns)).x > px(cw): ns -= 2.0
-	v.add_child(padded(tl(name_t, ns, 44, BONE, font_goth, true))); v.add_child(gap(8)); used += 52
-	# 3. who holds it and the sector condition, one sentence each
-	var sent = "Held by " + S["holder"] + "."
-	if S["cond_n"] != "": sent += " " + S["cond_n"] + ": " + S["cond_d"].substr(0, 1).to_lower() + S["cond_d"].substr(1)
-	var sp = para(sent, 15, 22, BONE2, cw, 3); sp[0].mouse_filter = Control.MOUSE_FILTER_STOP
-	sp[0].tooltip_text = _wrap_words(S["holder"] + ". " + S["holder_blurb"] + (("\n" + S["cond_n"] + ". " + S["cond_d"]) if S["cond_n"] != "" else ""))
-	v.add_child(padded(sp[0])); used += sp[1] * 22.0
-	# 4. the routes: one numbered row per next jump
-	v.add_child(gap(24)); used += 24
-	var here = View.here_name(C)
-	v.add_child(padded(tl((("Routes from " + here) if here != "" else "Routes into the sector").to_upper(), 13, 16, BONE2, font_caps, true)))
-	v.add_child(gap(8)); used += 24
-	_rows.clear()
-	for r in _routes: v.add_child(_route_row(r)); used += 96
-	# The picked route's whole objective, up to three lines. The full fight details stay on hover.
-	v.add_child(gap(8))
-	var dp = para("", 14, 20, BONE2, cw, 3); _detail = dp[0]; _detail.custom_minimum_size.y = px(60); _detail.mouse_filter = Control.MOUSE_FILTER_STOP
-	_detail.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
-	v.add_child(padded(_detail)); used += 68
-	# 5. the one filled lime button
-	v.add_child(gap(16)); v.add_child(padded(_jump_button())); used += 72
-	# 6. the Nemesis: a portrait, a name and two or three lines; the rest behind "Dossier"
-	var nem_h = 0.0; var nem_box: Control = null
+	var col = MarginContainer.new(); col.name = "OrdersSheet"; col.mouse_filter = Control.MOUSE_FILTER_PASS
+	col.anchor_bottom = 1.0; col.offset_right = px(COL_W)
+	for side in ["left", "right"]: col.add_theme_constant_override("margin_" + side, px(COL_PAD))
+	col.add_theme_constant_override("margin_top", px(40)); col.add_theme_constant_override("margin_bottom", px(28))
+	var v = vbox(0); col.add_child(v)
+	var sc = ScrollContainer.new(); sc.name = "OrdersScroll"; sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var upper = vbox(0); upper.size_flags_horizontal = Control.SIZE_EXPAND_FILL; sc.add_child(upper); v.add_child(sc)
+	upper.add_child(_approach_strip(H)); upper.add_child(gap(8))
+	upper.add_child(_sheet_name(H["region"] if H["region"] != "" else "Sector " + H["sector_roman"], 70, cw, 1))
+	upper.add_child(_sheet_words("Held by " + "the " + str(S["holder"]).trim_prefix("The "), 21, GS.TEXT, true))
+	upper.add_child(gap(4)); var cond = _sheet_words(_condition_line(S), 19, GS.TEXT2); cond.tooltip_text = _wrap_words(S["cond_d"]); upper.add_child(cond)
+	upper.add_child(gap(28)); _rows.clear()
+	for r in _routes:
+		upper.add_child(_route_row(r)); upper.add_child(gap(16))
 	if not N.is_empty():
-		var nb = _nemesis_block(N, cw); nem_box = nb[0]; nem_h = nb[1]
-		v.add_child(gap(24)); v.add_child(padded(GS.rule(k))); v.add_child(gap(24)); v.add_child(padded(nem_box)); used += 49 + nem_h
-	# 7. the fleet, at the foot of the column
-	var grow = Control.new(); grow.size_flags_vertical = Control.SIZE_EXPAND_FILL; grow.mouse_filter = Control.MOUSE_FILTER_IGNORE; v.add_child(grow)
-	v.add_child(padded(GS.rule(k))); v.add_child(gap(24))
-	var fh = row0(0); fh.add_child(tl("FLEET", 13, 16, BONE2, font_caps)); fh.add_child(spacer())
+		v.add_child(gap(12)); v.add_child(_sheet_rule()); v.add_child(gap(16)); v.add_child(_nemesis_block(N, cw)[0]); v.add_child(gap(16))
+	v.add_child(_sheet_rule()); v.add_child(gap(12))
+	var list = vbox(0); list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for ship in fleet: list.add_child(_fleet_line(ship, 36))
+	var fleet_scroll = ScrollContainer.new(); fleet_scroll.name = "FleetScroll"; fleet_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	# Seven standard 36 px lines fit at the foot. Larger fleets scroll without shrinking the text.
+	fleet_scroll.custom_minimum_size.y = px(36 * mini(7, fleet.size())); fleet_scroll.add_child(list); v.add_child(fleet_scroll)
+	v.add_child(gap(6))
 	var pend = View.promotion_waiting(C)
-	if not _find(_acts, "fleetScreen", "").is_empty():
-		var fb = tbtn("Promote captains and refit" if pend else "Fleet and refits", 14, 16, func(): C.act("fleetScreen", ""), "Captains, perks, refits and the hold.")
-		if pend: fb.get_meta("button").add_theme_color_override("font_color", BONE)
-		fh.add_child(fb)
-	v.add_child(padded(fh))
-	var foot = 24.0 + 1.0 + 24.0 + 16.0 + 32.0   # the gap above the rule, the rule, the gap, the head, the bottom margin
-	var hurt_t = ""
+	var fleet_tip = "Captains, perks, refits, the hold and your faction purchase."
 	if map3d != null and map3d.intel != null:
 		var fc = map3d.intel.fleet_condition()
 		if fc["hurt"]:
-			var any_rep = false
-			for pth in map3d.intel.all_paths():
-				if map3d.intel.path_stats(pth)["repair_before_boss"]: any_rep = true
-			hurt_t = "Fleet hull at %d%%. " % int(round(fc["avg"] * 100.0)) + ("Plan a repair stop before the flagship." if any_rep else "No repair stop is left on any route to the flagship.")
-	if hurt_t != "": foot += 28.0
-	if not FA.is_empty(): foot += 36.0
-	var room = get_viewport().get_visible_rect().size.y / max(0.01, k) - used - foot
-	var n = fleet.size(); var rh = 32.0
-	for cand in [32.0, 28.0, 24.0]:
-		rh = cand
-		if n * cand <= room: break
-	var list = VBoxContainer.new(); list.add_theme_constant_override("separation", 0)
-	for s in fleet: list.add_child(_fleet_line(s, rh))
-	if n * rh > room:   # a fleet too large even at the tight row: the list scrolls inside what is left
-		var sc = ScrollContainer.new(); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; sc.custom_minimum_size.y = px(max(48.0, floor(room / rh) * rh))
-		list.size_flags_horizontal = Control.SIZE_EXPAND_FILL; sc.add_child(list); v.add_child(padded(sc))
-	else: v.add_child(padded(list))
-	if hurt_t != "":
-		v.add_child(gap(8)); v.add_child(padded(tl(hurt_t, 14, 20, BONE2, null, true)))
-	if not FA.is_empty():
-		v.add_child(gap(16)); v.add_child(padded(_action_line(FA)))
-	v.add_child(gap(32))
-	_show_pick()
+			var repairs = map3d.intel.all_paths().any(func(path): return map3d.intel.path_stats(path)["repair_before_boss"])
+			fleet_tip += "\nFleet hull at %d%%. " % int(round(fc["avg"] * 100)) + ("Plan a repair stop before the flagship." if repairs else "No repair stop remains before the flagship.")
+	v.add_child(tbtn("Promote captains and refit" if pend else "Fleet and refits", 17, 26, func(): C.act("fleetScreen", ""), _wrap_words(fleet_tip)))
+	# Give the routes their full height first. The fleet scrolls in whole standard rows in the space left.
+	var fit_fleet = func():
+		if not is_instance_valid(v) or v.size.y <= 0: return
+		var fixed = 0.0
+		for child in v.get_children():
+			if child != sc and child != fleet_scroll: fixed += child.get_combined_minimum_size().y
+		var lines = clampi(int(floor((v.size.y - fixed - upper.get_combined_minimum_size().y) / px(36))), 1, mini(7, maxi(1, fleet.size())))
+		fleet_scroll.custom_minimum_size.y = px(36 * lines)
+	upper.minimum_size_changed.connect(func(): fit_fleet.call_deferred())
+	v.resized.connect(func(): fit_fleet.call_deferred())
+	fit_fleet.call_deferred()
 	return col
-# One route row: the number (the same 1, 2, 3 as the map's markers), the stop's name with its danger at the right, what it
-# is and against whom, then the reward and where the route leads. Click it, press its number, or point at its stop on the
-# map to pick it; Enter (or a double click) jumps.
+
+func _objective_line(r: Dictionary) -> String:
+	var short = {"Engagement": "Break their fleet to make it flee.", "Ambush": "Break the fleets closing in from both sides.", "Hold the station": "Keep enemies off the station through round 6.", "Hunt": "Destroy their flagship before round 6 ends.", "Intercept": "Destroy the transports before they escape.", "Breakthrough": "Get your ships onto the far jump hexes.", "Relay": "Hold the relay, unopposed, for 3 rounds.", "Decapitation": "Destroy their flagship to scatter the fleet.", "Sector flagship": "Beat the command ship to end the sector."}
+	return str(short.get(r["name"], str(r["objective"]).split(". ")[0].trim_suffix(".") + ".")) if r["objective"] != "" else ""
+
 func _route_row(r: Dictionary) -> Control:
-	var b = Button.new(); b.custom_minimum_size = Vector2(px(COL_W), px(96)); b.focus_mode = Control.FOCUS_ALL; b.clip_contents = true
-	b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	var cw = COL_W - COL_PAD * 2.0; var on = r["id"] == picked
+	var v = vbox(0); var b = Button.new(); b.name = "Route" + str(r["num"]); b.focus_mode = Control.FOCUS_ALL; b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	for st in ["normal", "hover", "pressed", "disabled", "focus"]: b.add_theme_stylebox_override(st, StyleBoxEmpty.new())
 	var h = row0(20); b.add_child(h); h.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	h.offset_left = px(COL_PAD); h.offset_right = -px(COL_PAD); h.offset_top = px(12); h.offset_bottom = -px(12)
-	var numw = tl(str(r["num"]), 30, 36, BONE3, font_num_b); numw.custom_minimum_size.x = px(24); numw.size_flags_vertical = Control.SIZE_SHRINK_BEGIN; h.add_child(numw)
-	var tv = VBoxContainer.new(); tv.add_theme_constant_override("separation", 0); tv.size_flags_horizontal = Control.SIZE_EXPAND_FILL; tv.mouse_filter = Control.MOUSE_FILTER_IGNORE; h.add_child(tv)
-	var l1 = row0(8); l1.add_child(tl(r["name"], 22, 28, BONE, font_semi, true))
-	if r["nemesis"]: l1.add_child(_nem_mark(28))
+	var numw = _baseline_row([[str(r["num"]), GS.sheet_name(), 132 if on else 36, GS.MAP_EMBER if on else GS.TEXT]], 132 if on else 42)
+	numw.custom_minimum_size.x = px(60 if on else 20); numw.size_flags_vertical = Control.SIZE_SHRINK_BEGIN; h.add_child(numw)
+	var tv = vbox(0); tv.size_flags_horizontal = Control.SIZE_EXPAND_FILL; tv.mouse_filter = Control.MOUSE_FILTER_IGNORE; h.add_child(tv)
+	var nw = cw - (80 if on else 40)
+	var title = _sheet_name(r["name"], 54 if on else 32, nw)
 	var dg: Dictionary = r.get("danger", {})
-	if r["fight"] and not dg.is_empty():
-		l1.add_child(GS.pips(k, float(dg["level"]))); l1.add_child(tl(str(dg["band"]), 14, 28, BONE))
-	elif not r["fight"]: l1.add_child(tl("No fight", 14, 28, BONE2))
-	tv.add_child(l1)
-	tv.add_child(tl(r["what"], 15, 24, BONE2, null, true))
-	var l3 = row0(6)
-	if r["reward"] != "": l3.add_child(tl("Reward", 14, 20, BONE3)); l3.add_child(tl(r["reward"], 14, 20, BONE)); l3.add_child(hgap(14))
-	elif r["kind"] == "event": l3.add_child(tl("Reward", 14, 20, BONE3)); l3.add_child(tl("Unknown", 14, 20, BONE)); l3.add_child(hgap(14))
-	if r["then"].size() > 0: l3.add_child(tl("Then", 14, 20, BONE3)); l3.add_child(tl(" or ".join(PackedStringArray(r["then"])), 14, 20, BONE, null, true))
-	else: l3.add_child(tl("Ends the sector" if r["kind"] == "boss" else "", 14, 20, BONE3, null, true))
-	tv.add_child(l3)
-	var l3w = 0.0   # a row that has to trim its words says them in full on hover
-	for ch in l3.get_children(): l3w += ch.custom_minimum_size.x + px(6)
-	var then_w = font.get_string_size(" or ".join(PackedStringArray(r["then"])), HORIZONTAL_ALIGNMENT_LEFT, -1, px(14)).x
-	if l3w + then_w > px(COL_W - COL_PAD * 2.0 - 44.0) or font.get_string_size(r["what"], HORIZONTAL_ALIGNMENT_LEFT, -1, px(15)).x > px(COL_W - COL_PAD * 2.0 - 44.0):
-		b.tooltip_text = _wrap_words(r["what"] + ((".\nReward: " + r["reward"]) if r["reward"] != "" else "") + ((".\nThen: " + " or ".join(PackedStringArray(r["then"]))) if r["then"].size() > 0 else "") + ".")
+	tv.add_child(title)
+	if on:
+		var what = str(r["what"]).replace("Fight against ", "Fight ").replace("Elite fight against ", "Elite fight ")
+		tv.add_child(_sheet_words(what, 20, GS.TEXT, true))
+		var danger = row0(10)
+		if r["fight"] and not dg.is_empty(): danger.add_child(GS.sheet_pips(k, float(dg["level"]), GS.TEXT, 10)); danger.add_child(_sheet_words(str(dg["band"]), 19, GS.TEXT2))
+		elif not r["fight"]: danger.add_child(_sheet_words("No fight", 19, GS.TEXT2))
+		tv.add_child(danger)
+	else:
+		var note = (str(dg.get("band", "")) + " fight." if r["fight"] else "No fight")
+		if r["fight"] and r["reward"] != "": note += " Pays " + str(r["reward"])
+		tv.add_child(_sheet_words(note, 18, GS.TEXT2))
+	b.custom_minimum_size.y = maxf(px(132 if on else 62), tv.get_combined_minimum_size().y)
+	# Children get their final widths before the minimum height is used, including a wrapped long name.
+	tv.minimum_size_changed.connect(func(): if is_instance_valid(b): b.custom_minimum_size.y = maxf(px(132 if on else 62), tv.get_combined_minimum_size().y))
 	var id = str(r["id"])
-	b.pressed.connect(func(): pick_route(id))
-	b.focus_entered.connect(func(): pick_route(id))
+	b.pressed.connect(func(): pick_route(id)); b.focus_entered.connect(func(): pick_route(id))
 	b.gui_input.connect(func(e: InputEvent):
 		var enter = e is InputEventKey and e.pressed and not e.echo and e.keycode in [KEY_ENTER, KEY_KP_ENTER]
 		var dbl = e is InputEventMouseButton and e.pressed and e.double_click and e.button_index == MOUSE_BUTTON_LEFT
 		if enter or dbl: pick_route(id); b.accept_event(); _jump())
-	_rows.append({"id": id, "btn": b, "num": numw.get_meta("label")})
-	return b
-func _nem_mark(lh: float) -> Control:   # the Nemesis mark beside a route's name: the same small red diamond as on the map
-	var c = Control.new(); c.custom_minimum_size = Vector2(px(12), px(lh)); c.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	c.draw.connect(func(): GS.diamond(c, c.size * 0.5, px(5), ALERT))
-	return c
+	b.tooltip_text = _wrap_words(_detail_text(r)); v.add_child(b)
+	if on:
+		v.add_child(gap(8)); v.add_child(_sheet_words(_objective_line(r), 20)); v.add_child(gap(4))
+		var reward = row0(10); reward.add_child(tl("Pays", 19, 28, GS.TEXT3, GS.sheet_body()))
+		reward.add_child(_sheet_words(str(r["reward"]) if r["reward"] != "" else ("Unknown" if r["kind"] == "event" else "Repairs" if r["kind"] in ["field", "drydock"] else "Shipyard access"), 19)); v.add_child(reward)
+		v.add_child(gap(16)); v.add_child(_jump_button())
+	_rows.append({"id": id, "btn": b, "num": numw})
+	return v
 # the detail under the list for the picked route: the objective, the enemy's archetype, a modifier, the board, the estimate
 func _detail_text(r: Dictionary) -> String:
 	var parts: Array = []
@@ -870,15 +873,30 @@ func _detail_text(r: Dictionary) -> String:
 		parts.append(t + ".")
 	return " ".join(PackedStringArray(parts))
 func _jump_button() -> Button:
-	var b = Button.new(); b.custom_minimum_size.y = px(56); b.focus_mode = Control.FOCUS_ALL; b.set_meta("finish", true)
+	var cur = {}
+	for r in _routes:
+		if r["id"] == picked: cur = r
+	var b = Button.new(); b.name = "JumpAction"; b.custom_minimum_size.y = px(56); b.focus_mode = Control.FOCUS_ALL; b.set_meta("finish", true)
 	b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	var jb = GS.jump_boxes(k)
-	for st in ["normal", "hover", "pressed", "disabled"]: b.add_theme_stylebox_override(st, jb[st])
-	var h = row0(12); b.add_child(h); h.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); h.offset_left = px(20); h.offset_right = -px(20)
-	var lw = tl("", 17, 56, GS.ON_GILT, font_act, true); _jump_lbl = lw.get_meta("label"); h.add_child(lw)
-	var kc = lbl("ENTER", 12, GS.ON_GILT, font_num_b, false); kc.add_theme_stylebox_override("normal", GS.keycap_flat(k)); kc.size_flags_vertical = Control.SIZE_SHRINK_CENTER; h.add_child(kc)
-	b.pressed.connect(_jump)
-	_jump_btn = b
+	var jb = GS.sheet_jump_boxes(k)
+	for st in ["normal", "hover", "pressed", "disabled", "focus"]: b.add_theme_stylebox_override(st, jb["hover" if st == "focus" else st])
+	var h = row0(12); b.add_child(h); h.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); h.offset_left = px(16); h.offset_right = -px(16)
+	var text = "JUMP TO " + str(cur.get("name", "")).to_upper(); var fs = 34.0
+	while fs > 28 and GS.sheet_name().get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, px(fs)).x > px(COL_W - COL_PAD * 2 - 132): fs -= 1
+	var lw = tl(text, fs, 56, GS.MAP_EMBER, GS.sheet_name(), true); _jump_lbl = lw.get_meta("label"); h.add_child(lw)
+	var key = tl("Enter", 19, 56, GS.MAP_EMBER, GS.sheet_body()); h.add_child(key)
+	var arrow = tl("", 19, 56, GS.MAP_EMBER, GS.sheet_body()); arrow.custom_minimum_size.x = px(12); h.add_child(arrow)
+	var action_label = _jump_lbl
+	var paint = func():
+		var active = b.is_hovered() or b.has_focus(); var col = GS.ON_EMBER if active else GS.MAP_EMBER
+		action_label.add_theme_color_override("font_color", col); key.get_meta("label").add_theme_color_override("font_color", col)
+		arrow.queue_redraw()
+	arrow.draw.connect(func():
+		var col = GS.ON_EMBER if b.is_hovered() or b.has_focus() else GS.MAP_EMBER
+		var ctr = arrow.size * 0.5; arrow.draw_colored_polygon(PackedVector2Array([ctr + Vector2(-px(5), -px(6)), ctr + Vector2(px(6), 0), ctr + Vector2(-px(5), px(6))]), col))
+	for sig in [b.mouse_entered, b.mouse_exited, b.focus_entered, b.focus_exited]: sig.connect(paint)
+	b.disabled = cur.is_empty() or _find(_acts, "enterNode", picked).is_empty() or _find(_acts, "enterNode", picked)[2] == 0
+	b.pressed.connect(_jump); _jump_btn = b
 	return b
 func route_num(id: String) -> int:   # the number a next jump wears in the list and on the map (0: not a next jump)
 	for r in _routes:
@@ -889,95 +907,60 @@ func pick_route(id: String) -> void:
 	if id == picked or not _routes.any(func(r): return r["id"] == id): return
 	picked = id; _show_pick()
 func _show_pick() -> void:
+	if not _rail_pending and is_instance_valid(_rail_host):
+		_rail_pending = true; call_deferred("_rebuild_rail")
+func _rebuild_rail() -> void:
+	_rail_pending = false
+	if not is_instance_valid(_rail_host) or C.page.get("kind") != "map": return
+	var focus = get_viewport().gui_get_focus_owner(); var restore = ""
 	for r in _rows:
-		if not is_instance_valid(r["btn"]): continue
-		var on = r["id"] == picked; var rb = GS.row_boxes(k, on)
-		for st in ["normal", "hover", "pressed", "disabled"]: r["btn"].add_theme_stylebox_override(st, rb[st])
-		r["num"].add_theme_color_override("font_color", GILT if on else BONE3)
-	var cur = {}
-	for r in _routes:
-		if r["id"] == picked: cur = r
-	if is_instance_valid(_jump_lbl): _jump_lbl.text = ("JUMP TO " + str(cur["name"]).to_upper()) if not cur.is_empty() else "NO ROUTE"
-	if is_instance_valid(_jump_btn): _jump_btn.disabled = cur.is_empty() or _find(_acts, "enterNode", picked).is_empty() or _find(_acts, "enterNode", picked)[2] == 0
-	if is_instance_valid(_detail):
-		var t = _detail_text(cur) if not cur.is_empty() else ""
-		var objective = str(cur["objective"]) if not cur.is_empty() else ""
-		# A long objective keeps whole sentences; its full wording and the other fight details stay in the tooltip.
-		while _lines_of(objective, font, px(14), px(COL_W - COL_PAD * 2.0), 4) > 3 and objective.contains(". "):
-			objective = objective.substr(0, objective.rfind(". ") + 1)
-		_detail.text = objective
-		_detail.tooltip_text = _wrap_words(t.replace(". ", ".\n")) if t != "" else ""
+		if r["btn"] == focus: restore = r["id"]
+	for child in _rail_host.get_children(): _rail_host.remove_child(child); child.queue_free()
+	_rail_host.add_child(_briefing_column())
+	if restore != "":
+		for r in _rows:
+			if r["id"] == restore: r["btn"].grab_focus()
 func _jump() -> void:
 	if picked == "" or C.modal_d != null or _overlay != "" or _find(_acts, "enterNode", picked).is_empty(): return
 	if map3d != null and map3d.visible and not map3d.backdrop: map3d.fly_to(picked)   # the fleet flies the route, then the campaign enters the stop
 	else: C.act("enterNode", picked)
 # The Nemesis block: [control, its height at 1080]
 func _nemesis_block(N: Dictionary, cw: float) -> Array:
-	var h = row0(20)
-	var tex = nem_portrait()
-	var tw = cw
+	var v = vbox(8); var h = row0(16); var tex = nem_portrait()
 	if tex != null:
+		var frame = PanelContainer.new(); var sb = _sb(Color(0, 0, 0, 0), GS.NEM, 2, 0, 2); frame.add_theme_stylebox_override("panel", sb)
 		var tr = TextureRect.new(); tr.texture = tex; tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-		tr.custom_minimum_size = Vector2(px(88), px(88)); tr.size_flags_vertical = Control.SIZE_SHRINK_BEGIN; tr.mouse_filter = Control.MOUSE_FILTER_IGNORE; h.add_child(tr)
-		tw = cw - 108.0
-	var v = VBoxContainer.new(); v.add_theme_constant_override("separation", 0); v.size_flags_horizontal = Control.SIZE_EXPAND_FILL; v.mouse_filter = Control.MOUSE_FILTER_IGNORE; h.add_child(v)
-	var hd = row0(0); hd.add_child(tl("Nemesis".to_upper(), 13, 16, ALERT, font_caps)); hd.add_child(spacer())
-	hd.add_child(tbtn("Dossier", 14, 16, func(): _open_overlay("dossier"), "Strengths, weaknesses and how this hunter works."))
-	v.add_child(hd); v.add_child(gap(4)); var hh = 20.0
-	v.add_child(tl(N["full"], 20, 26, BONE, font_semi, true)); hh += 26.0
-	var one = N["fac_name"] + ((". " + N["persona_n"] + ": " + N["persona_d"].substr(0, 1).to_lower() + N["persona_d"].substr(1)) if N["persona_n"] != "" else ".")
-	var op = para(one, 14, 20, BONE2, tw, 2); v.add_child(op[0]); hh += op[1] * 20.0
-	if not N["dead"]:
-		v.add_child(gap(8)); var cl = row0(10)
-		cl.add_child(tl("Hunt clock", 14, 16, BONE2)); cl.add_child(GS.pips(k, float(N["clock"]), ALERT, 16.0, 6.0, 3.0, int(N["clock_max"])))
-		cl.add_child(_baseline_row([[C.numstr(N["clock"]), font_num, 14, BONE], [0], ["/" + C.numstr(N["clock_max"]), font_num, 14, BONE3]], 16))
-		v.add_child(cl); hh += 24.0
-	if N["status"] != "":
-		v.add_child(gap(4)); var st = para(N["status"], 14, 20, BONE, tw, 2); st[0].mouse_filter = Control.MOUSE_FILTER_STOP; st[0].tooltip_text = _wrap_words(N["status"]); v.add_child(st[0]); hh += 4.0 + st[1] * 20.0
-	return [h, max(hh, 88.0 if tex != null else 0.0)]
-# One ship of the fleet: the flagship's star, its name, its class, a thin hull bar and its hull in the number face. A full
-# bar is pale sage; a damaged one takes the HULL colours (HULL_LOW under the one hull-low line, 0.35). The rest of the old
-# row (ready or damaged, the captain, free slots, a promotion) is on hover and on the fleet page.
+		frame.custom_minimum_size = Vector2(px(64), px(64)); frame.size_flags_vertical = Control.SIZE_SHRINK_BEGIN; frame.add_child(tr); h.add_child(frame)
+	var tv = vbox(0); tv.size_flags_horizontal = Control.SIZE_EXPAND_FILL; h.add_child(tv)
+	var hd = row0(0); hd.add_child(_sheet_words("Nemesis", 17, GS.NEM, true)); hd.add_child(spacer()); hd.add_child(tbtn("Dossier", 17, 22, func(): _open_overlay("dossier")))
+	tv.add_child(hd); tv.add_child(_sheet_name(N["full"], 32, cw - 80)); v.add_child(h)
+	var clock = row0(16); clock.add_child(GS.sheet_pips(k, float(N["clock"]), GS.NEM, 12))
+	clock.add_child(_baseline_row([["Hunt clock ", GS.sheet_body(), 17, GS.TEXT2], [C.numstr(N["clock"]), font_num, 17, GS.TEXT], [" of ", GS.sheet_body(), 17, GS.TEXT2], [C.numstr(N["clock_max"]), font_num, 17, GS.TEXT]], 24)); v.add_child(clock)
+	if N["dead"] or N["strike"]: v.add_child(_sheet_words("Hunter defeated" if N["dead"] else "Strike incoming", 17, GS.NEM))
+	return [v, v.get_combined_minimum_size().y / k]
+
 func _fleet_line(s: Dictionary, rh: float) -> Control:
-	var f = float(s["frac"])
-	var h = hbox(16); h.mouse_filter = Control.MOUSE_FILTER_STOP; h.custom_minimum_size.y = px(rh); h.alignment = BoxContainer.ALIGNMENT_BEGIN
-	var lh = min(22.0, rh)
-	var left = row0(0); left.size_flags_horizontal = Control.SIZE_EXPAND_FILL; left.size_flags_vertical = Control.SIZE_SHRINK_END
-	if s["flagship"]: left.add_child(tl("★", 12, lh, BONE)); left.add_child(hgap(6))
-	var room = px(COL_W - COL_PAD * 2.0 - 16.0 - 72.0 - 16.0 - 64.0) - (px(18) if s["flagship"] else 0)
-	var nw = font_semi.get_string_size(s["name"], HORIZONTAL_ALIGNMENT_LEFT, -1, px(16)).x
-	var cls_t = s["cls"] + " Mk " + s["mk"]
-	if nw + px(10) + font.get_string_size(cls_t, HORIZONTAL_ALIGNMENT_LEFT, -1, px(14)).x > room: cls_t = "Mk " + s["mk"]   # a long name keeps its Mark; the class is on hover
-	if nw + px(10) + font.get_string_size(cls_t, HORIZONTAL_ALIGNMENT_LEFT, -1, px(14)).x > room: cls_t = ""
-	left.add_child(tl(s["name"], 16, lh, BONE, font_semi, cls_t == ""))
-	if cls_t != "": left.add_child(hgap(10)); left.add_child(tl(cls_t, 14, lh, BONE3))
-	h.add_child(left)
-	var bar = GS.thin_bar(k, f, BONE2 if f >= 0.999 else (HULL_LOW if f < 0.35 else HULL)); bar.size_flags_vertical = Control.SIZE_SHRINK_END
-	var bw = Control.new(); bw.custom_minimum_size = Vector2(px(72), px(lh)); bw.size_flags_vertical = Control.SIZE_SHRINK_END; bw.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bw.add_child(bar); bar.set_anchors_and_offsets_preset(Control.PRESET_HCENTER_WIDE); bar.offset_top = -px(1); bar.offset_bottom = px(2); h.add_child(bw)
-	var hp = _baseline_row([[C.numstr(s["hp"]), font_num, 14, BONE], [0], ["/" + C.numstr(s["max_hp"]), font_num, 14, BONE3]], lh)
-	var hw = Control.new(); hw.custom_minimum_size = Vector2(px(64), px(lh)); hw.size_flags_vertical = Control.SIZE_SHRINK_END; hw.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hw.add_child(hp); hp.anchor_left = 1.0; hp.anchor_right = 1.0; hp.offset_left = -hp.custom_minimum_size.x; hp.offset_right = 0; hp.offset_bottom = px(lh); h.add_child(hw)
-	var tip_t = [s["name"] + ", " + s["cls"] + " Mk " + s["mk"], ("Ready" if f >= 0.7 else ("Damaged" if f >= 0.4 else "Crippled")) + ": hull " + C.numstr(s["hp"]) + " of " + C.numstr(s["max_hp"]), s["captain"]]
-	if s["free_slots"] > 0 and s["hold"] > 0: tip_t.append("A refit in the hold fits a free slot")
-	elif s["free_slots"] > 0: tip_t.append("%d free slot%s" % [s["free_slots"], "" if s["free_slots"] == 1 else "s"])
-	if s["promotion"]: tip_t.append("Promotion ready")
-	h.tooltip_text = "\n".join(PackedStringArray(tip_t))
+	var h = hbox(16); h.mouse_filter = Control.MOUSE_FILTER_STOP; h.custom_minimum_size.y = px(rh)
+	if s["flagship"]:
+		var diamond = Control.new(); diamond.custom_minimum_size = Vector2(px(10), px(rh)); diamond.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		diamond.draw.connect(func(): GS.diamond(diamond, Vector2(px(5), px(rh) * 0.5), px(5), GS.MAP_EMBER)); h.add_child(diamond)
+	var hp = C.numstr(s["hp"]) + " / " + C.numstr(s["max_hp"])
+	var hw = ceil(font_num.get_string_size(hp, HORIZONTAL_ALIGNMENT_LEFT, -1, px(19)).x)
+	var available = COL_W - COL_PAD * 2 - 16 - hw / k - (26 if s["flagship"] else 0)
+	h.add_child(_sheet_name(s["name"], 28, available, 3))
+	var figures = _baseline_row([[C.numstr(s["hp"]), font_num, 19, (HULL_LOW if float(s["frac"]) < 0.35 else HULL) if float(s["frac"]) < 0.999 else GS.TEXT], [" / " + C.numstr(s["max_hp"]), font_num, 19, GS.TEXT]], rh)
+	figures.size_flags_vertical = Control.SIZE_SHRINK_CENTER; h.add_child(figures)
+	h.tooltip_text = _wrap_words(s["name"] + ", " + s["cls"] + " Mk " + s["mk"] + "\n" + s["captain"] + ("\nPromotion ready" if s["promotion"] else ""))
 	return h
-# The faction action in one line: its name and its cost; what it does is on hover and in the Map key. A click uses it.
+
+# The purchase now lives at the top of Fleet and refits. It still calls the campaign's unchanged factionVerb action.
 func _action_line(FA: Dictionary) -> Control:
-	var found = _find(_acts, "factionVerb", "")
-	var on = not found.is_empty() and found[2] == 1
-	var b = Button.new(); b.custom_minimum_size.y = px(20); b.focus_mode = Control.FOCUS_ALL; b.disabled = not on
-	for st in ["normal", "hover", "pressed", "disabled"]: b.add_theme_stylebox_override(st, StyleBoxEmpty.new())
-	if on: b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	var h = row0(0); b.add_child(h); h.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	h.add_child(tl("Faction action: ", 14, 20, BONE2)); h.add_child(tl(FA["n"], 14, 20, BONE if on else BONE3)); h.add_child(hgap(12))
-	var right = "Ready for your next battle" if FA["armed"] else ("Used this sector" if FA["used"] else FA["cost_short"])
-	var rw = tl(right, 14, 20, BONE2, font if (FA["armed"] or FA["used"]) else font_num, true); rw.get_meta("label").horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT; h.add_child(rw)
-	b.tooltip_text = _wrap_words(FA["n"] + ". " + FA["d"] + "\n" + ("Used this sector." if FA["used"] else FA["cost"] + "."))
-	b.pressed.connect(func(): C.act("factionVerb", ""))
-	return b
+	var v = vbox(6)
+	v.add_child(lbl(FA["n"], 22, BONE, font_semi)); v.add_child(lbl(FA["d"], 18, BONE2))
+	var b = Button.new(); b.focus_mode = Control.FOCUS_ALL; b.disabled = not C.verbCanUse()
+	b.text = "Used this sector" if FA["used"] else str(FA["cost"])
+	b.pressed.connect(func(): C.act("factionVerb", "")); v.add_child(b)
+	return v
 
 # ---------------- the two slide-overs: the Dossier and the Map key ----------------
 func _open_overlay(which: String) -> void:
@@ -1004,15 +987,14 @@ func _slide_over(body: Control, left_at: float) -> Control:
 	return host
 func _over_head(kicker: String, kicker_col: Color, title: String) -> Control:
 	var v = VBoxContainer.new(); v.add_theme_constant_override("separation", 0)
-	var h = row0(0); h.add_child(tl(kicker.to_upper(), 13, 16, kicker_col, font_caps)); h.add_child(spacer())
-	h.add_child(tbtn("Close", 14, 16, _close_overlay, "Esc"))
+	var h = row0(0); h.add_child(tl(kicker, 17, 24, kicker_col, GS.sheet_medium())); h.add_child(spacer())
+	h.add_child(tbtn("Close", 17, 24, _close_overlay, "Esc"))
 	v.add_child(h); v.add_child(gap(8))
-	var ts = 28.0
-	while ts > 20.0 and font_goth.get_string_size(title.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, px(ts)).x > px(OVER_W - COL_PAD * 2.0): ts -= 2.0
-	v.add_child(tl(title.to_upper(), ts, 32, BONE, font_goth, true))
+	v.add_child(_sheet_name(title, 32, OVER_W - COL_PAD * 2) if kicker == "Nemesis" else _sheet_words(title, 28, GS.TEXT, true))
 	return v
-func _over_text(bb: String, size: float = 15, col: Color = BONE2) -> RichTextLabel:
-	var r = rich(c(bb, col).replace("[b]", "[b][color=" + hexs(BONE) + "]").replace("[/b]", "[/color][/b]"), size)
+func _over_text(bb: String, size: float = 17, col: Color = GS.TEXT2) -> RichTextLabel:
+	var r = rich(c(bb, col).replace("[b]", "[b][color=" + hexs(GS.TEXT) + "]").replace("[/b]", "[/color][/b]"), size)
+	r.add_theme_font_override("normal_font", GS.sheet_body()); r.add_theme_font_override("bold_font", GS.sheet_medium())
 	r.add_theme_constant_override("line_separation", px(3)); r.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return r
 func _over_scroll(v: VBoxContainer) -> ScrollContainer:
@@ -1022,25 +1004,25 @@ func _over_scroll(v: VBoxContainer) -> ScrollContainer:
 # comeback, weaknesses, adaptations, lessons, earlier hunters), unchanged in wording, from View.nem_dossier.
 func _dossier() -> Control:
 	var N = View.nemesis(C); var v = VBoxContainer.new(); v.add_theme_constant_override("separation", 0)
-	if N.is_empty(): v.add_child(_over_head("Nemesis", ALERT, "No hunter")); return v
-	v.add_child(_over_head("Nemesis", ALERT, N["full"])); v.add_child(gap(16))
+	if N.is_empty(): v.add_child(_over_head("Nemesis", GS.NEM, "No hunter")); return v
+	v.add_child(_over_head("Nemesis", GS.NEM, N["full"])); v.add_child(gap(16))
 	var top = row0(20); var tex = nem_portrait()
 	if tex != null:
 		var tr = TextureRect.new(); tr.texture = tex; tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 		tr.custom_minimum_size = Vector2(px(120), px(120)); tr.size_flags_vertical = Control.SIZE_SHRINK_BEGIN; top.add_child(tr)
 	var tv = VBoxContainer.new(); tv.add_theme_constant_override("separation", 0); tv.size_flags_horizontal = Control.SIZE_EXPAND_FILL; top.add_child(tv)
-	tv.add_child(tl(N["fac_name"] + ((", scarred %dx" % N["scars"]) if N["scars"] > 0 else ""), 15, 22, BONE, font_semi, true))
-	if N["persona_n"] != "": tv.add_child(para(N["persona_n"] + ": " + N["persona_d"], 15, 22, BONE2, OVER_W - COL_PAD * 2.0 - (140.0 if tex != null else 0.0), 3)[0])
+	tv.add_child(tl(N["fac_name"] + ((", scarred %dx" % N["scars"]) if N["scars"] > 0 else ""), 17, 24, GS.TEXT, GS.sheet_medium(), true))
+	if N["persona_n"] != "": tv.add_child(para(N["persona_n"] + ": " + N["persona_d"], 17, 24, GS.TEXT2, OVER_W - COL_PAD * 2.0 - (140.0 if tex != null else 0.0), 3)[0])
 	if not N["dead"]:
 		tv.add_child(gap(8)); var cl = row0(10)
-		cl.add_child(tl("Hunt clock", 14, 16, BONE2)); cl.add_child(GS.pips(k, float(N["clock"]), ALERT, 16.0, 6.0, 3.0, int(N["clock_max"])))
-		cl.add_child(_baseline_row([[C.numstr(N["clock"]), font_num, 14, BONE], [0], ["/" + C.numstr(N["clock_max"]), font_num, 14, BONE3]], 16)); tv.add_child(cl)
+		cl.add_child(tl("Hunt clock", 17, 24, GS.TEXT2)); cl.add_child(GS.pips(k, float(N["clock"]), GS.NEM, 16.0, 6.0, 3.0, int(N["clock_max"])))
+		cl.add_child(_baseline_row([[C.numstr(N["clock"]), font_num, 17, GS.TEXT], [0], ["/" + C.numstr(N["clock_max"]), font_num, 17, GS.TEXT2]], 24)); tv.add_child(cl)
 	v.add_child(top); v.add_child(gap(24)); v.add_child(GS.rule(k)); v.add_child(gap(16))
 	var body = VBoxContainer.new(); body.add_theme_constant_override("separation", px(12))
 	for ln in View.nem_dossier(C):
 		match ln[0]:
-			"head": body.add_child(gap(4)); body.add_child(tl(str(ln[1]).to_upper(), 13, 16, BONE2, font_caps))
-			"warn": body.add_child(_over_text(esc(ln[1]), 15, BONE))
+			"head": body.add_child(gap(4)); body.add_child(tl(str(ln[1]), 17, 24, GS.TEXT2, GS.sheet_medium()))
+			"warn": body.add_child(_over_text(esc(ln[1]), 17, GS.TEXT))
 			_: body.add_child(_over_text(_bb_safe(ln[1])))
 	v.add_child(_over_scroll(body))
 	return v
@@ -1052,59 +1034,59 @@ func _bb_safe(t: String) -> String:   # the view marks names with [b]; every oth
 func _map_key() -> Control:
 	var S = View.sector_notes(C); var RN = View.run_notes(C); var FA = View.faction_action(C)
 	var v = VBoxContainer.new(); v.add_theme_constant_override("separation", 0)
-	v.add_child(_over_head("Sector map", BONE2, "Map key")); v.add_child(gap(16)); v.add_child(GS.rule(k)); v.add_child(gap(16))
+	v.add_child(_over_head("Sector map", GS.TEXT2, "Map key")); v.add_child(gap(16)); v.add_child(GS.rule(k)); v.add_child(gap(16))
 	var body = VBoxContainer.new(); body.add_theme_constant_override("separation", px(8))
-	var head = func(t: String): body.add_child(gap(8)); body.add_child(tl(t.to_upper(), 13, 16, BONE2, font_caps))
-	body.add_child(tl("On the map".to_upper(), 13, 16, BONE2, font_caps))
+	var head = func(t: String): body.add_child(gap(8)); body.add_child(tl(t, 17, 24, GS.TEXT2, GS.sheet_medium()))
+	body.add_child(tl("On the map", 17, 24, GS.TEXT2, GS.sheet_medium()))
 	body.add_child(_key_mark("marker", "Your next jumps, numbered as in the route list. The filled one is picked."))
-	body.add_child(_key_mark("lime", "A route you can fly now."))
-	body.add_child(_key_mark("pale", "Every other route. Fainter: cut off or already flown."))
+	body.add_child(_key_mark("ember", "A route you can fly now."))
+	body.add_child(_key_mark("pale", "Every other route. Fainter: cut off. Flown routes are hidden."))
 	body.add_child(_key_mark("nem", "The Nemesis meets you at this stop."))
-	body.add_child(_over_text("Stops further on are smaller and darker. Point at any stop for its card: what it is, its danger, its reward and the route on from it.", 14))
+	body.add_child(_over_text("Stops further on are smaller and darker. Point at any stop for its card: what it is, its danger, its reward and the route on from it.", 17))
 	head.call("Stops")
 	for icon_kind in GS.STOP_ICONS:
-		var icon_row = row0(8); icon_row.add_child(GS.stop_key(icon_kind, k)); icon_row.add_child(tl(GS.STOP_ICONS[icon_kind], 14, 26, BONE))
+		var icon_row = row0(8); icon_row.add_child(GS.stop_key(icon_kind, k)); icon_row.add_child(tl(GS.STOP_ICONS[icon_kind], 17, 26, GS.TEXT))
 		body.add_child(icon_row)
 	var LEG = {"battle": "a fight, pays its reward", "elite": "veteran fleet, drops " + term("relic"), "shipyard": "buy, repair, upgrade", "drydock": "free repairs", "field": "every ship patches 20%", "event": "anything can happen", "boss": "ends the sector"}
 	var st: Array = []
 	for kk in C.NODE_INFO.keys(): st.append("[b]" + esc(C.NODE_INFO[kk]["n"]) + "[/b] " + esc(LEG.get(kk, "")))
-	body.add_child(_over_text(". ".join(PackedStringArray(st)) + ".", 14))
+	body.add_child(_over_text(". ".join(PackedStringArray(st)) + ".", 17))
 	head.call("Danger against your fleet now")
-	var dr = row0(16)
+	var dr = vbox(8)
 	for i in 4:
-		var it = row0(8); it.add_child(GS.pips(k, float(i + 1))); it.add_child(tl(Map3D.Intel.BANDS[i][1], 14, 20, BONE)); dr.add_child(it)
+		var it = row0(8); it.add_child(GS.pips(k, float(i + 1))); it.add_child(tl(Map3D.Intel.BANDS[i][1], 17, 24, GS.TEXT)); dr.add_child(it)
 	body.add_child(dr)
-	body.add_child(_over_text("An estimate of the enemy's strength against the fleet you have now. It moves as your fleet is hurt or grows.", 14))
+	body.add_child(_over_text("An estimate of the enemy's strength against the fleet you have now. It moves as your fleet is hurt or grows.", 17))
 	head.call("This sector")
-	body.add_child(_over_text("[b]" + esc(S["holder"]) + "[/b] hold it. " + esc(S["holder_blurb"]), 14))
-	if S["cond_n"] != "": body.add_child(_over_text("[b]" + esc(S["cond_n"]) + "[/b] " + esc(S["cond_d"]), 14))
-	if S["rivals"].size() > 0: body.add_child(_over_text("[b]Rival raiders[/b] " + esc(", ".join(PackedStringArray(S["rivals"]))) + ". About one ordinary fight in five comes from a rival outside the sector's main enemy; its row and its card say so.", 14))
+	body.add_child(_over_text("[b]" + esc(S["holder"]) + "[/b] hold it. " + esc(S["holder_blurb"]), 17))
+	if S["cond_n"] != "": body.add_child(_over_text("[b]" + esc(S["cond_n"]) + "[/b] " + esc(S["cond_d"]), 17))
+	if S["rivals"].size() > 0: body.add_child(_over_text("[b]Rival raiders[/b] " + esc(", ".join(PackedStringArray(S["rivals"]))) + ". About one ordinary fight in five comes from a rival outside the sector's main enemy; its row and its card say so.", 17))
 	var cs: Array = []
 	for p in S["cores"]: cs.append(esc(p["short"]))
-	body.add_child(_over_text("[b]" + term("patrons", true) + " in range[/b] " + ", ".join(PackedStringArray(cs)) + ". Win at a stop carrying a " + term("patron") + "'s " + term("sigil") + " and that " + term("patron") + " offers a " + term("boon") + ".", 14))
+	body.add_child(_over_text("[b]" + term("patrons", true) + " in range[/b] " + ", ".join(PackedStringArray(cs)) + ". Win at a stop carrying a " + term("patron") + "'s " + term("sigil") + " and that " + term("patron") + " offers a " + term("boon") + ".", 17))
 	if S["heat"].size() > 0:
 		var hs: Array = []
 		for hh in S["heat"]: hs.append("[b]" + esc(hh["n"]) + "[/b] " + esc(str(hh["d"]).trim_suffix(".")))
-		body.add_child(_over_text("[b]Heat " + C.numstr(S["heat_level"]) + "[/b] " + "; ".join(PackedStringArray(hs)) + ".", 14))
+		body.add_child(_over_text("[b]Heat " + C.numstr(S["heat_level"]) + "[/b] " + "; ".join(PackedStringArray(hs)) + ".", 17))
 	head.call("Your run")
 	var A = RN["admiral"]; var HH = View.header(C)
-	body.add_child(_over_text("[b]" + esc(_admiral_title(A["id"])) + "[/b] " + esc(A["doc"].to_lower()) + ". Sector " + HH["sector_roman"] + " of III, " + str(HH["fights"]) + " fight" + ("" if HH["fights"] == 1 else "s") + " won this run.", 14))
-	if not RN["aspect"].is_empty(): body.add_child(_over_text("[b]Flagship " + esc(RN["aspect"]["ship"]) + ": " + esc(RN["aspect"]["n"]) + "[/b] " + esc(RN["aspect"]["d"]), 14))
-	if not FA.is_empty(): body.add_child(_over_text("[b]Faction action: " + esc(FA["n"]) + "[/b] " + esc(FA["d"]) + " " + esc("Used this sector." if FA["used"] else FA["cost"] + "."), 14))
+	body.add_child(_over_text("[b]" + esc(_admiral_title(A["id"])) + "[/b] " + esc(A["doc"].to_lower()) + ". Sector " + HH["sector_roman"] + " of III, " + str(HH["fights"]) + " fight" + ("" if HH["fights"] == 1 else "s") + " won this run.", 17))
+	if not RN["aspect"].is_empty(): body.add_child(_over_text("[b]Flagship " + esc(RN["aspect"]["ship"]) + ": " + esc(RN["aspect"]["n"]) + "[/b] " + esc(RN["aspect"]["d"]), 17))
+	if not FA.is_empty(): body.add_child(_over_text("[b]Faction action: " + esc(FA["n"]) + "[/b] " + esc(FA["d"]) + " " + esc("Used this sector." if FA["used"] else FA["cost"] + "."), 17))
 	if RN["boons"].size() > 0:
-		for b in RN["boons"]: body.add_child(_over_text("[b]" + esc(b["n"]) + "[/b] " + esc(b["tier"]) + ". " + esc(b["d"]), 14))
-	else: body.add_child(_over_text("[b]" + term("boons", true) + "[/b] None yet. Win at a stop carrying a " + term("patron") + "'s " + term("sigil") + " to earn one.", 14))
+		for b in RN["boons"]: body.add_child(_over_text("[b]" + esc(b["n"]) + "[/b] " + esc(b["tier"]) + ". " + esc(b["d"]), 17))
+	else: body.add_child(_over_text("[b]" + term("boons", true) + "[/b] None yet. Win at a stop carrying a " + term("patron") + "'s " + term("sigil") + " to earn one.", 17))
 	if RN["relics"].size() > 0:
-		for r in RN["relics"]: body.add_child(_over_text("[b]" + esc(r["n"]) + "[/b] " + esc(r["d"]), 14))
-	else: body.add_child(_over_text("[b]" + term("relics", true) + "[/b] None yet. Elite fleets and flagships carry it.", 14))
-	if RN["hold"] > 0: body.add_child(_over_text(str(RN["hold"]) + " refit" + ("s" if RN["hold"] > 1 else "") + " in the hold.", 14))
+		for r in RN["relics"]: body.add_child(_over_text("[b]" + esc(r["n"]) + "[/b] " + esc(r["d"]), 17))
+	else: body.add_child(_over_text("[b]" + term("relics", true) + "[/b] None yet. Elite fleets and flagships carry it.", 17))
+	if RN["hold"] > 0: body.add_child(_over_text(str(RN["hold"]) + " refit" + ("s" if RN["hold"] > 1 else "") + " in the hold.", 17))
 	head.call("Controls")
-	body.add_child(_over_text("Click a route, press its number, or point at its stop to pick it. Enter, the lime button or a double click flies it; click or Space skips the flight. Scroll to zoom, right-drag or WASD to pan, Home to reset.", 14))
+	body.add_child(_over_text("Click a route, press its number, or point at its stop to pick it. Enter, the jump button or a double click flies it; click or Space skips the flight. Scroll to zoom, right-drag or WASD to pan, Home to reset.", 17))
 	head.call("Settings")
 	var sr = row0(32)
-	sr.add_child(tbtn("Map detail: " + ("High" if map_quality != "low" else "Low"), 14, 20, func(): set_map_quality("low" if map_quality != "low" else "high"),
+	sr.add_child(tbtn("Map detail: " + ("High" if map_quality != "low" else "Low"), 17, 24, func(): set_map_quality("low" if map_quality != "low" else "high"),
 		"High draws the full star system. Low draws fewer stars, clouds and debris\nfor a smoother map on slower machines."))
-	sr.add_child(tbtn("Tips: " + ("off" if CampaignTips.is_off() else "on"), 14, 20, _toggle_tips, "Teaching tips on the campaign screens."))
+	sr.add_child(tbtn("Tips: " + ("off" if CampaignTips.is_off() else "on"), 17, 24, _toggle_tips, "Teaching tips on the campaign screens."))
 	body.add_child(sr)
 	v.add_child(_over_scroll(body))
 	return v
@@ -1116,11 +1098,11 @@ func _key_mark(kind: String, text: String) -> Control:   # one row of the key: t
 	m.draw.connect(func():
 		var ctr = m.size * 0.5
 		if kind == "marker": GS.marker(m, ctr, k, "1", font_num_b, true)
-		elif kind == "lime": m.draw_line(Vector2(0, ctr.y), Vector2(m.size.x, ctr.y), GILT, max(2.0, px(2.5)), true)
-		elif kind == "pale": m.draw_line(Vector2(0, ctr.y), Vector2(m.size.x, ctr.y), Color(BONE, GS.PALE), max(1.0, px(1)), true)
-		else: GS.diamond(m, ctr, px(5), ALERT))
+		elif kind == "ember": m.draw_line(Vector2(0, ctr.y), Vector2(m.size.x, ctr.y), GS.MAP_EMBER, max(2.0, px(2.5)), true)
+		elif kind == "pale": m.draw_line(Vector2(0, ctr.y), Vector2(m.size.x, ctr.y), Color(GS.TEXT, GS.PALE), max(1.0, px(1)), true)
+		else: GS.diamond(m, ctr, px(5), GS.NEM))
 	h.add_child(m)
-	var p = para(text, 14, 20, BONE2, OVER_W - COL_PAD * 2.0 - 56.0, 2); p[0].size_flags_vertical = Control.SIZE_SHRINK_CENTER; h.add_child(p[0])
+	var p = para(text, 17, 24, GS.TEXT2, OVER_W - COL_PAD * 2.0 - 56.0, 2); p[0].size_flags_vertical = Control.SIZE_SHRINK_CENTER; h.add_child(p[0])
 	return h
 func _reward_label(rw) -> String: return View.reward_label(C, rw)
 # The Nemesis face (godot/portraits, R42): his stored portrait id (nem_<faction>_<1..6>) with one overlay per scar he carries, framed red-black.
@@ -1218,6 +1200,8 @@ func _fleet(d: Dictionary) -> Control:
 	v.add_child(head)   # Done is the finishing action, fixed at the bottom right of the screen (_page_finish)
 	v.add_child(lbl("Refits can be moved between ships freely. Mark upgrades and repairs happen at shipyards and drydocks.", 18, BONE2))
 	var R = C.RUN
+	var FA = View.faction_action(C)
+	if not FA.is_empty(): v.add_child(_action_line(FA))
 	if R["inventory"].size() > 0:
 		v.add_child(sec_head("In the hold"))
 		var inv = flow()

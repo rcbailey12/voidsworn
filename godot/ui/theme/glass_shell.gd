@@ -77,6 +77,59 @@ const CUT := 14.0                      # the panel chamfer (top left and bottom 
 const BTN_CUT := 10.0                  # the finish button's chamfer
 const BRACKET := 18.0                  # the lime corner brackets (top right and bottom left), 2 px lines
 
+# Orders sheet, campaign map only (R176). The old names above still serve the other screens.
+const MAP_EMBER := Color("#ff8a3a")
+const TEXT := Color("#f0eade")
+const TEXT2 := Color("#c4beb0")
+const TEXT3 := Color("#969084")
+const NEM := Color("#ff6050")
+const ON_EMBER := Color("#100c08")
+const SHEET_HAIR := Color("#48443c")
+
+static func sheet_name() -> Font:
+	return _variant("sheet800", _font_file("BigShouldersDisplay-VF.ttf"), 0, 800)
+
+static func sheet_body() -> Font:
+	return _font_file("Barlow-Regular.ttf")
+
+static func sheet_medium() -> Font:
+	return _font_file("Barlow-Medium.ttf")
+
+# One smooth veil, never a panel. Almost constant beneath the words, clear by 43% of the window.
+static func sheet_veil() -> Texture2D:
+	var g := Gradient.new()
+	g.offsets = PackedFloat32Array([0.0, 0.62, 1.0])
+	g.colors = PackedColorArray([Color(0, 0, 0, 0.96), Color(0, 0, 0, 0.94), Color(0, 0, 0, 0)])
+	var t := GradientTexture2D.new(); t.gradient = g; t.width = 1024; t.height = 1
+	t.fill_from = Vector2.ZERO; t.fill_to = Vector2.RIGHT
+	return t
+
+# Empty square outlines remain visible; partial clock steps fill a proportional part of a square.
+static func sheet_pips(k: float, n: float, col: Color, side := 10.0) -> Control:
+	var c := Control.new(); c.custom_minimum_size = Vector2(px(side * 4 + 12, k), px(side, k)); c.size_flags_vertical = Control.SIZE_SHRINK_CENTER; c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	c.draw.connect(func():
+		for i in 4:
+			var r := Rect2(Vector2(px(i * (side + 4), k), 0), Vector2.ONE * px(side, k))
+			c.draw_rect(r, TEXT3, false, maxi(1, px(1, k)))
+			var f := clampf(n - i, 0, 1)
+			if f > 0: c.draw_rect(Rect2(r.position, Vector2(r.size.x * f, r.size.y)), col))
+	return c
+
+static func sheet_jump_boxes(k: float) -> Dictionary:
+	var n := flat(Color(0, 0, 0, 0), 16.0, 0.0, k)
+	n.border_color = MAP_EMBER; n.set_border_width_all(maxi(2, px(2, k)))
+	var h := flat(MAP_EMBER, 16.0, 0.0, k)
+	h.border_color = MAP_EMBER; h.set_border_width_all(maxi(2, px(2, k)))
+	return {"normal": n, "hover": h, "pressed": h, "disabled": n}
+
+static func sheet_theme(k: float) -> Theme:
+	var th := make_theme(k, sheet_body(), sheet_medium(), 17)
+	var track := flat(Color(0, 0, 0, 0), 0, 0, k)
+	var thumb := flat(Color(TEXT3, 0.5), 0, 0, k); thumb.content_margin_left = px(2, k); thumb.content_margin_right = px(2, k)
+	th.set_stylebox("scroll", "VScrollBar", track)
+	for state in ["grabber", "grabber_highlight", "grabber_pressed"]: th.set_stylebox(state, "VScrollBar", thumb)
+	return th
+
 # ---------------------------------------------------------------- type (OFL, godot/ui/theme/fonts)
 # Chakra Petch (angular) for every word, Azeret Mono for numbers that decide something (odds, damage, hull, keys).
 const FONT_DIR := "res://ui/theme/fonts/"
@@ -628,12 +681,12 @@ static func halo_text(ci: CanvasItem, f: Font, at: Vector2, t: String, size: int
 static func marker(ci: CanvasItem, center: Vector2, k: float, label: String, f: Font, picked: bool, side := 34.0) -> void:
 	var s := float(px(side, k))
 	var r := Rect2(center - Vector2(s, s) * 0.5, Vector2(s, s))
-	ci.draw_rect(r, GILT if picked else INK)
-	ci.draw_rect(r.grow(-float(px(1, k))), GILT, false, float(maxi(2, px(2, k))))
+	ci.draw_rect(r, MAP_EMBER if picked else INK)
+	ci.draw_rect(r.grow(-float(px(1, k))), MAP_EMBER, false, float(maxi(2, px(2, k))))
 	var fs := px(17, k)
 	var w := f.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
 	var base := center.y + (f.get_ascent(fs) - f.get_descent(fs)) * 0.5
-	ci.draw_string(f, Vector2(center.x - w * 0.5, base), label, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, ON_GILT if picked else GILT)
+	ci.draw_string(f, Vector2(center.x - w * 0.5, base), label, HORIZONTAL_ALIGNMENT_LEFT, -1, fs, ON_EMBER if picked else MAP_EMBER)
 
 
 # a small filled diamond: the Nemesis mark (ALERT) over a stop, beside a route row

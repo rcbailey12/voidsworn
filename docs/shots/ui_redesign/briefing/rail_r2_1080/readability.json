@@ -1,0 +1,6315 @@
+{
+	"failures": [],
+	"states": [
+		{
+			"fleet_lines": 3,
+			"fleet_visible_rows": 3,
+			"name": "sector_1",
+			"overlaps": [],
+			"scale": 1.0,
+			"words": [
+				{
+					"color": "ff8a3a",
+					"rect": [
+						40.0,
+						48.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "I"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						114.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "II"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						188.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "III"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						296.0,
+						43.0,
+						93.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Jump 1 of 7"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						78.0,
+						461.0,
+						84.0
+					],
+					"size": 70.0,
+					"text": "OLD BATTLEFIELD"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						162.0,
+						461.0,
+						26.0
+					],
+					"size": 21.0,
+					"text": "Held by the Ashfall Hullbreakers"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						40.0,
+						192.0,
+						461.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Ion season: shields recharge 25% slower."
+				},
+				{
+					"colors": [
+						"ff8a3a"
+					],
+					"rect": [
+						40.0,
+						243.0,
+						60.0,
+						132.0
+					],
+					"size": 132,
+					"text": "1"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						243.0,
+						381.0,
+						66.0
+					],
+					"size": 54.0,
+					"text": "RELAY"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						309.0,
+						381.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Fight an Ashfall Hullbreakers hulk den"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						182.0,
+						333.0,
+						39.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Easy"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						383.0,
+						461.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Hold the relay, unopposed, for 3 rounds."
+				},
+				{
+					"color": "969084",
+					"rect": [
+						40.0,
+						411.0,
+						40.0,
+						28.0
+					],
+					"size": 19.0,
+					"text": "Pays"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						90.0,
+						413.0,
+						134.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Signal of Kharon"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						56.0,
+						455.0,
+						346.0,
+						56.0
+					],
+					"size": 34.0,
+					"text": "JUMP TO RELAY"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						414.0,
+						455.0,
+						47.0,
+						56.0
+					],
+					"size": 19.0,
+					"text": "Enter"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						527.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "2"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						527.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "BREAKTHROUGH"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						566.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Signal of Astra"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						605.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "3"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						605.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "UNKNOWN SIGNAL"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						644.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "No fight"
+				},
+				{
+					"color": "ff6050",
+					"rect": [
+						120.0,
+						787.0,
+						65.0,
+						21.0
+					],
+					"size": 17.0,
+					"text": "Nemesis"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						809.0,
+						381.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "HIGH NADIR ESSANE"
+				},
+				{
+					"colors": [
+						"c4beb0",
+						"f0eade",
+						"c4beb0",
+						"f0eade"
+					],
+					"rect": [
+						116.0,
+						859.0,
+						151.0,
+						24.0
+					],
+					"size": 17,
+					"text": "Hunt clock 0.5 of 4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						66.0,
+						913.0,
+						306.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "COLD FURY"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						388.0,
+						912.0,
+						113.0,
+						36.0
+					],
+					"size": 19,
+					"text": "135 / 135"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						949.0,
+						358.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "EDGE OF WINTER"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						414.0,
+						948.0,
+						87.0,
+						36.0
+					],
+					"size": 19,
+					"text": "98 / 98"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						985.0,
+						358.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "BLACK ANVIL"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						414.0,
+						984.0,
+						87.0,
+						36.0
+					],
+					"size": 19,
+					"text": "50 / 50"
+				}
+			]
+		},
+		{
+			"fleet_lines": 3,
+			"fleet_visible_rows": 3,
+			"name": "route_1",
+			"overlaps": [],
+			"scale": 1.0,
+			"words": [
+				{
+					"color": "ff8a3a",
+					"rect": [
+						40.0,
+						48.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "I"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						114.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "II"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						188.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "III"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						296.0,
+						43.0,
+						93.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Jump 1 of 7"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						78.0,
+						461.0,
+						84.0
+					],
+					"size": 70.0,
+					"text": "OLD BATTLEFIELD"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						162.0,
+						461.0,
+						26.0
+					],
+					"size": 21.0,
+					"text": "Held by the Ashfall Hullbreakers"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						40.0,
+						192.0,
+						461.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Ion season: shields recharge 25% slower."
+				},
+				{
+					"colors": [
+						"ff8a3a"
+					],
+					"rect": [
+						40.0,
+						243.0,
+						60.0,
+						132.0
+					],
+					"size": 132,
+					"text": "1"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						243.0,
+						381.0,
+						66.0
+					],
+					"size": 54.0,
+					"text": "RELAY"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						309.0,
+						381.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Fight an Ashfall Hullbreakers hulk den"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						182.0,
+						333.0,
+						39.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Easy"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						383.0,
+						461.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Hold the relay, unopposed, for 3 rounds."
+				},
+				{
+					"color": "969084",
+					"rect": [
+						40.0,
+						411.0,
+						40.0,
+						28.0
+					],
+					"size": 19.0,
+					"text": "Pays"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						90.0,
+						413.0,
+						134.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Signal of Kharon"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						56.0,
+						455.0,
+						346.0,
+						56.0
+					],
+					"size": 34.0,
+					"text": "JUMP TO RELAY"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						414.0,
+						455.0,
+						47.0,
+						56.0
+					],
+					"size": 19.0,
+					"text": "Enter"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						527.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "2"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						527.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "BREAKTHROUGH"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						566.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Signal of Astra"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						605.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "3"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						605.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "UNKNOWN SIGNAL"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						644.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "No fight"
+				},
+				{
+					"color": "ff6050",
+					"rect": [
+						120.0,
+						787.0,
+						65.0,
+						21.0
+					],
+					"size": 17.0,
+					"text": "Nemesis"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						809.0,
+						381.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "HIGH NADIR ESSANE"
+				},
+				{
+					"colors": [
+						"c4beb0",
+						"f0eade",
+						"c4beb0",
+						"f0eade"
+					],
+					"rect": [
+						116.0,
+						859.0,
+						151.0,
+						24.0
+					],
+					"size": 17,
+					"text": "Hunt clock 0.5 of 4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						66.0,
+						913.0,
+						306.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "COLD FURY"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						388.0,
+						912.0,
+						113.0,
+						36.0
+					],
+					"size": 19,
+					"text": "135 / 135"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						949.0,
+						358.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "EDGE OF WINTER"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						414.0,
+						948.0,
+						87.0,
+						36.0
+					],
+					"size": 19,
+					"text": "98 / 98"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						985.0,
+						358.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "BLACK ANVIL"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						414.0,
+						984.0,
+						87.0,
+						36.0
+					],
+					"size": 19,
+					"text": "50 / 50"
+				}
+			]
+		},
+		{
+			"fleet_lines": 3,
+			"fleet_visible_rows": 3,
+			"name": "route_2",
+			"overlaps": [],
+			"scale": 1.0,
+			"words": [
+				{
+					"color": "ff8a3a",
+					"rect": [
+						40.0,
+						48.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "I"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						114.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "II"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						188.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "III"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						296.0,
+						43.0,
+						93.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Jump 1 of 7"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						78.0,
+						461.0,
+						84.0
+					],
+					"size": 70.0,
+					"text": "OLD BATTLEFIELD"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						162.0,
+						461.0,
+						26.0
+					],
+					"size": 21.0,
+					"text": "Held by the Ashfall Hullbreakers"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						40.0,
+						192.0,
+						461.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Ion season: shields recharge 25% slower."
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						243.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "1"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						243.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "RELAY"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						282.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Signal of Kharon"
+				},
+				{
+					"colors": [
+						"ff8a3a"
+					],
+					"rect": [
+						40.0,
+						321.0,
+						60.0,
+						132.0
+					],
+					"size": 132,
+					"text": "2"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						321.0,
+						381.0,
+						66.0
+					],
+					"size": 54.0,
+					"text": "BREAKTHROUGH"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						387.0,
+						381.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Fight an Ashfall Hullbreakers hulk convoy"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						182.0,
+						411.0,
+						39.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Easy"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						461.0,
+						461.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Get your ships onto the far jump hexes."
+				},
+				{
+					"color": "969084",
+					"rect": [
+						40.0,
+						489.0,
+						40.0,
+						28.0
+					],
+					"size": 19.0,
+					"text": "Pays"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						90.0,
+						491.0,
+						120.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Signal of Astra"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						56.0,
+						533.0,
+						346.0,
+						56.0
+					],
+					"size": 34.0,
+					"text": "JUMP TO BREAKTHROUGH"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						414.0,
+						533.0,
+						47.0,
+						56.0
+					],
+					"size": 19.0,
+					"text": "Enter"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						605.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "3"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						605.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "UNKNOWN SIGNAL"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						644.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "No fight"
+				},
+				{
+					"color": "ff6050",
+					"rect": [
+						120.0,
+						787.0,
+						65.0,
+						21.0
+					],
+					"size": 17.0,
+					"text": "Nemesis"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						809.0,
+						381.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "HIGH NADIR ESSANE"
+				},
+				{
+					"colors": [
+						"c4beb0",
+						"f0eade",
+						"c4beb0",
+						"f0eade"
+					],
+					"rect": [
+						116.0,
+						859.0,
+						151.0,
+						24.0
+					],
+					"size": 17,
+					"text": "Hunt clock 0.5 of 4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						66.0,
+						913.0,
+						306.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "COLD FURY"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						388.0,
+						912.0,
+						113.0,
+						36.0
+					],
+					"size": 19,
+					"text": "135 / 135"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						949.0,
+						358.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "EDGE OF WINTER"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						414.0,
+						948.0,
+						87.0,
+						36.0
+					],
+					"size": 19,
+					"text": "98 / 98"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						985.0,
+						358.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "BLACK ANVIL"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						414.0,
+						984.0,
+						87.0,
+						36.0
+					],
+					"size": 19,
+					"text": "50 / 50"
+				}
+			]
+		},
+		{
+			"fleet_lines": 3,
+			"fleet_visible_rows": 3,
+			"name": "route_3",
+			"overlaps": [],
+			"scale": 1.0,
+			"words": [
+				{
+					"color": "ff8a3a",
+					"rect": [
+						40.0,
+						48.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "I"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						114.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "II"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						188.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "III"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						296.0,
+						43.0,
+						93.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Jump 1 of 7"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						78.0,
+						461.0,
+						84.0
+					],
+					"size": 70.0,
+					"text": "OLD BATTLEFIELD"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						162.0,
+						461.0,
+						26.0
+					],
+					"size": 21.0,
+					"text": "Held by the Ashfall Hullbreakers"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						40.0,
+						192.0,
+						461.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Ion season: shields recharge 25% slower."
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						243.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "1"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						243.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "RELAY"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						282.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Signal of Kharon"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						321.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "2"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						321.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "BREAKTHROUGH"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						360.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Signal of Astra"
+				},
+				{
+					"colors": [
+						"ff8a3a"
+					],
+					"rect": [
+						40.0,
+						399.0,
+						60.0,
+						132.0
+					],
+					"size": 132,
+					"text": "3"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						399.0,
+						381.0,
+						66.0
+					],
+					"size": 54.0,
+					"text": "UNKNOWN SIGNAL"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						465.0,
+						381.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Event: anything can happen"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						120.0,
+						489.0,
+						66.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "No fight"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						539.0,
+						461.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Something is out there."
+				},
+				{
+					"color": "969084",
+					"rect": [
+						40.0,
+						567.0,
+						40.0,
+						28.0
+					],
+					"size": 19.0,
+					"text": "Pays"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						90.0,
+						569.0,
+						77.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Unknown"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						56.0,
+						611.0,
+						346.0,
+						56.0
+					],
+					"size": 34.0,
+					"text": "JUMP TO UNKNOWN SIGNAL"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						414.0,
+						611.0,
+						47.0,
+						56.0
+					],
+					"size": 19.0,
+					"text": "Enter"
+				},
+				{
+					"color": "ff6050",
+					"rect": [
+						120.0,
+						787.0,
+						65.0,
+						21.0
+					],
+					"size": 17.0,
+					"text": "Nemesis"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						809.0,
+						381.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "HIGH NADIR ESSANE"
+				},
+				{
+					"colors": [
+						"c4beb0",
+						"f0eade",
+						"c4beb0",
+						"f0eade"
+					],
+					"rect": [
+						116.0,
+						859.0,
+						151.0,
+						24.0
+					],
+					"size": 17,
+					"text": "Hunt clock 0.5 of 4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						66.0,
+						913.0,
+						306.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "COLD FURY"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						388.0,
+						912.0,
+						113.0,
+						36.0
+					],
+					"size": 19,
+					"text": "135 / 135"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						949.0,
+						358.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "EDGE OF WINTER"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						414.0,
+						948.0,
+						87.0,
+						36.0
+					],
+					"size": 19,
+					"text": "98 / 98"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						985.0,
+						358.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "BLACK ANVIL"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						414.0,
+						984.0,
+						87.0,
+						36.0
+					],
+					"size": 19,
+					"text": "50 / 50"
+				}
+			]
+		},
+		{
+			"fleet_lines": 3,
+			"fleet_visible_rows": 3,
+			"name": "action_hover",
+			"overlaps": [],
+			"scale": 1.0,
+			"words": [
+				{
+					"color": "ff8a3a",
+					"rect": [
+						40.0,
+						48.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "I"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						114.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "II"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						188.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "III"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						296.0,
+						43.0,
+						93.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Jump 1 of 7"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						78.0,
+						461.0,
+						84.0
+					],
+					"size": 70.0,
+					"text": "OLD BATTLEFIELD"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						162.0,
+						461.0,
+						26.0
+					],
+					"size": 21.0,
+					"text": "Held by the Ashfall Hullbreakers"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						40.0,
+						192.0,
+						461.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Ion season: shields recharge 25% slower."
+				},
+				{
+					"colors": [
+						"ff8a3a"
+					],
+					"rect": [
+						40.0,
+						243.0,
+						60.0,
+						132.0
+					],
+					"size": 132,
+					"text": "1"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						243.0,
+						381.0,
+						66.0
+					],
+					"size": 54.0,
+					"text": "RELAY"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						309.0,
+						381.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Fight an Ashfall Hullbreakers hulk den"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						182.0,
+						333.0,
+						39.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Easy"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						383.0,
+						461.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Hold the relay, unopposed, for 3 rounds."
+				},
+				{
+					"color": "969084",
+					"rect": [
+						40.0,
+						411.0,
+						40.0,
+						28.0
+					],
+					"size": 19.0,
+					"text": "Pays"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						90.0,
+						413.0,
+						134.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Signal of Kharon"
+				},
+				{
+					"color": "100c08",
+					"rect": [
+						56.0,
+						455.0,
+						346.0,
+						56.0
+					],
+					"size": 34.0,
+					"text": "JUMP TO RELAY"
+				},
+				{
+					"color": "100c08",
+					"rect": [
+						414.0,
+						455.0,
+						47.0,
+						56.0
+					],
+					"size": 19.0,
+					"text": "Enter"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						527.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "2"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						527.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "BREAKTHROUGH"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						566.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Signal of Astra"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						605.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "3"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						605.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "UNKNOWN SIGNAL"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						644.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "No fight"
+				},
+				{
+					"color": "ff6050",
+					"rect": [
+						120.0,
+						787.0,
+						65.0,
+						21.0
+					],
+					"size": 17.0,
+					"text": "Nemesis"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						809.0,
+						381.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "HIGH NADIR ESSANE"
+				},
+				{
+					"colors": [
+						"c4beb0",
+						"f0eade",
+						"c4beb0",
+						"f0eade"
+					],
+					"rect": [
+						116.0,
+						859.0,
+						151.0,
+						24.0
+					],
+					"size": 17,
+					"text": "Hunt clock 0.5 of 4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						66.0,
+						913.0,
+						306.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "COLD FURY"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						388.0,
+						912.0,
+						113.0,
+						36.0
+					],
+					"size": 19,
+					"text": "135 / 135"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						949.0,
+						358.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "EDGE OF WINTER"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						414.0,
+						948.0,
+						87.0,
+						36.0
+					],
+					"size": 19,
+					"text": "98 / 98"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						985.0,
+						358.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "BLACK ANVIL"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						414.0,
+						984.0,
+						87.0,
+						36.0
+					],
+					"size": 19,
+					"text": "50 / 50"
+				}
+			]
+		},
+		{
+			"fleet_lines": 3,
+			"fleet_visible_rows": 3,
+			"name": "action_focus",
+			"overlaps": [],
+			"scale": 1.0,
+			"words": [
+				{
+					"color": "ff8a3a",
+					"rect": [
+						40.0,
+						48.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "I"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						114.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "II"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						188.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "III"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						296.0,
+						43.0,
+						93.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Jump 1 of 7"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						78.0,
+						461.0,
+						84.0
+					],
+					"size": 70.0,
+					"text": "OLD BATTLEFIELD"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						162.0,
+						461.0,
+						26.0
+					],
+					"size": 21.0,
+					"text": "Held by the Ashfall Hullbreakers"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						40.0,
+						192.0,
+						461.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Ion season: shields recharge 25% slower."
+				},
+				{
+					"colors": [
+						"ff8a3a"
+					],
+					"rect": [
+						40.0,
+						243.0,
+						60.0,
+						132.0
+					],
+					"size": 132,
+					"text": "1"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						243.0,
+						381.0,
+						66.0
+					],
+					"size": 54.0,
+					"text": "RELAY"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						309.0,
+						381.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Fight an Ashfall Hullbreakers hulk den"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						182.0,
+						333.0,
+						39.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Easy"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						383.0,
+						461.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Hold the relay, unopposed, for 3 rounds."
+				},
+				{
+					"color": "969084",
+					"rect": [
+						40.0,
+						411.0,
+						40.0,
+						28.0
+					],
+					"size": 19.0,
+					"text": "Pays"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						90.0,
+						413.0,
+						134.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Signal of Kharon"
+				},
+				{
+					"color": "100c08",
+					"rect": [
+						56.0,
+						455.0,
+						346.0,
+						56.0
+					],
+					"size": 34.0,
+					"text": "JUMP TO RELAY"
+				},
+				{
+					"color": "100c08",
+					"rect": [
+						414.0,
+						455.0,
+						47.0,
+						56.0
+					],
+					"size": 19.0,
+					"text": "Enter"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						527.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "2"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						527.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "BREAKTHROUGH"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						566.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Signal of Astra"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						605.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "3"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						605.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "UNKNOWN SIGNAL"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						644.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "No fight"
+				},
+				{
+					"color": "ff6050",
+					"rect": [
+						120.0,
+						787.0,
+						65.0,
+						21.0
+					],
+					"size": 17.0,
+					"text": "Nemesis"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						809.0,
+						381.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "HIGH NADIR ESSANE"
+				},
+				{
+					"colors": [
+						"c4beb0",
+						"f0eade",
+						"c4beb0",
+						"f0eade"
+					],
+					"rect": [
+						116.0,
+						859.0,
+						151.0,
+						24.0
+					],
+					"size": 17,
+					"text": "Hunt clock 0.5 of 4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						66.0,
+						913.0,
+						306.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "COLD FURY"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						388.0,
+						912.0,
+						113.0,
+						36.0
+					],
+					"size": 19,
+					"text": "135 / 135"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						949.0,
+						358.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "EDGE OF WINTER"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						414.0,
+						948.0,
+						87.0,
+						36.0
+					],
+					"size": 19,
+					"text": "98 / 98"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						985.0,
+						358.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "BLACK ANVIL"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						414.0,
+						984.0,
+						87.0,
+						36.0
+					],
+					"size": 19,
+					"text": "50 / 50"
+				}
+			]
+		},
+		{
+			"fleet_lines": 2,
+			"fleet_visible_rows": 2,
+			"name": "sector_2",
+			"overlaps": [],
+			"scale": 1.0,
+			"words": [
+				{
+					"color": "c4beb0",
+					"rect": [
+						40.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "I"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						114.0,
+						48.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "II"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						188.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "III"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						296.0,
+						43.0,
+						93.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Jump 1 of 7"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						78.0,
+						461.0,
+						84.0
+					],
+					"size": 70.0,
+					"text": "CONTESTED WORLD"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						162.0,
+						461.0,
+						26.0
+					],
+					"size": 21.0,
+					"text": "Held by the Hegemony Navy"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						40.0,
+						192.0,
+						461.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Dark sector: nebula hexes give -15 to hit."
+				},
+				{
+					"colors": [
+						"ff8a3a"
+					],
+					"rect": [
+						40.0,
+						243.0,
+						60.0,
+						132.0
+					],
+					"size": 132,
+					"text": "1"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						243.0,
+						381.0,
+						66.0
+					],
+					"size": 54.0,
+					"text": "RELAY"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						309.0,
+						381.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Fight Hegemony Navy"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						182.0,
+						333.0,
+						55.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Deadly"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						383.0,
+						461.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Hold the relay, unopposed, for 3 rounds."
+				},
+				{
+					"color": "969084",
+					"rect": [
+						40.0,
+						411.0,
+						40.0,
+						28.0
+					],
+					"size": 19.0,
+					"text": "Pays"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						90.0,
+						413.0,
+						120.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Signal of Astra"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						56.0,
+						455.0,
+						346.0,
+						56.0
+					],
+					"size": 34.0,
+					"text": "JUMP TO RELAY"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						414.0,
+						455.0,
+						47.0,
+						56.0
+					],
+					"size": 19.0,
+					"text": "Enter"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						527.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "2"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						527.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "UNKNOWN SIGNAL"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						566.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "No fight"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						605.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "3"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						605.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "BREAKTHROUGH"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						644.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Deadly fight. Pays Signal of Astra"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						683.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						683.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "HOLD THE STATION"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						722.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Deadly fight. Pays Signal of Crucible"
+				},
+				{
+					"color": "ff6050",
+					"rect": [
+						120.0,
+						823.0,
+						65.0,
+						21.0
+					],
+					"size": 17.0,
+					"text": "Nemesis"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						845.0,
+						381.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "APEX DROG MAW"
+				},
+				{
+					"colors": [
+						"c4beb0",
+						"f0eade",
+						"c4beb0",
+						"f0eade"
+					],
+					"rect": [
+						116.0,
+						895.0,
+						151.0,
+						24.0
+					],
+					"size": 17,
+					"text": "Hunt clock 0.5 of 4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						66.0,
+						949.0,
+						306.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "COLD FURY"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						388.0,
+						948.0,
+						113.0,
+						36.0
+					],
+					"size": 19,
+					"text": "135 / 135"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						985.0,
+						358.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "BLACK ANVIL"
+				},
+				{
+					"colors": [
+						"ffad3b",
+						"f0eade"
+					],
+					"rect": [
+						414.0,
+						984.0,
+						87.0,
+						36.0
+					],
+					"size": 19,
+					"text": "40 / 50"
+				}
+			]
+		},
+		{
+			"fleet_lines": 2,
+			"fleet_visible_rows": 2,
+			"name": "sector_3",
+			"overlaps": [],
+			"scale": 1.0,
+			"words": [
+				{
+					"color": "c4beb0",
+					"rect": [
+						40.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "I"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						114.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "II"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						188.0,
+						48.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "III"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						296.0,
+						43.0,
+						93.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Jump 1 of 7"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						78.0,
+						461.0,
+						84.0
+					],
+					"size": 70.0,
+					"text": "ION NEBULA"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						162.0,
+						461.0,
+						26.0
+					],
+					"size": 21.0,
+					"text": "Held by the Chorus"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						40.0,
+						192.0,
+						461.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Scarcity: repairs restore 25% less."
+				},
+				{
+					"colors": [
+						"ff8a3a"
+					],
+					"rect": [
+						40.0,
+						243.0,
+						60.0,
+						132.0
+					],
+					"size": 132,
+					"text": "1"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						243.0,
+						381.0,
+						66.0
+					],
+					"size": 54.0,
+					"text": "BREAKTHROUGH"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						309.0,
+						381.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Fight a Chorus bloat pod"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						182.0,
+						333.0,
+						41.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Even"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						383.0,
+						461.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Get your ships onto the far jump hexes."
+				},
+				{
+					"color": "969084",
+					"rect": [
+						40.0,
+						411.0,
+						40.0,
+						28.0
+					],
+					"size": 19.0,
+					"text": "Pays"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						90.0,
+						413.0,
+						112.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Signal of Vyre"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						56.0,
+						455.0,
+						346.0,
+						56.0
+					],
+					"size": 34.0,
+					"text": "JUMP TO BREAKTHROUGH"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						414.0,
+						455.0,
+						47.0,
+						56.0
+					],
+					"size": 19.0,
+					"text": "Enter"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						527.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "2"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						527.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "DECAPITATION"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						566.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Even fight. Pays Refit"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						605.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "3"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						605.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "RELAY"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						644.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Even fight. Pays Signal of Vyre"
+				},
+				{
+					"color": "ff6050",
+					"rect": [
+						120.0,
+						823.0,
+						65.0,
+						21.0
+					],
+					"size": 17.0,
+					"text": "Nemesis"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						845.0,
+						381.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "ELDER THROAT THRUMMING MAW"
+				},
+				{
+					"colors": [
+						"c4beb0",
+						"f0eade",
+						"c4beb0",
+						"f0eade"
+					],
+					"rect": [
+						116.0,
+						895.0,
+						151.0,
+						24.0
+					],
+					"size": 17,
+					"text": "Hunt clock 2.5 of 4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						949.0,
+						332.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "VANGUARD CRUISER"
+				},
+				{
+					"colors": [
+						"ffad3b",
+						"f0eade"
+					],
+					"rect": [
+						388.0,
+						948.0,
+						113.0,
+						36.0
+					],
+					"size": 19,
+					"text": "148 / 161"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						66.0,
+						985.0,
+						306.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "DOMINION DREADNOUGHT"
+				},
+				{
+					"colors": [
+						"ffad3b",
+						"f0eade"
+					],
+					"rect": [
+						388.0,
+						984.0,
+						113.0,
+						36.0
+					],
+					"size": 19,
+					"text": "117 / 230"
+				}
+			]
+		},
+		{
+			"fleet_lines": 3,
+			"fleet_visible_rows": 2,
+			"name": "four_routes",
+			"overlaps": [],
+			"scale": 1.0,
+			"words": [
+				{
+					"color": "ff8a3a",
+					"rect": [
+						40.0,
+						48.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "I"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						114.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "II"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						188.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "III"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						296.0,
+						43.0,
+						93.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Jump 1 of 7"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						78.0,
+						461.0,
+						84.0
+					],
+					"size": 70.0,
+					"text": "CONTESTED WORLD"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						162.0,
+						461.0,
+						26.0
+					],
+					"size": 21.0,
+					"text": "Held by the Chorus"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						40.0,
+						192.0,
+						461.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Wreck belt: salvage pays 15% more."
+				},
+				{
+					"colors": [
+						"ff8a3a"
+					],
+					"rect": [
+						40.0,
+						243.0,
+						60.0,
+						132.0
+					],
+					"size": 132,
+					"text": "1"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						243.0,
+						381.0,
+						66.0
+					],
+					"size": 54.0,
+					"text": "BREAKTHROUGH"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						309.0,
+						381.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Fight the Chorus"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						182.0,
+						333.0,
+						39.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Easy"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						383.0,
+						461.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Get your ships onto the far jump hexes."
+				},
+				{
+					"color": "969084",
+					"rect": [
+						40.0,
+						411.0,
+						40.0,
+						28.0
+					],
+					"size": 19.0,
+					"text": "Pays"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						90.0,
+						413.0,
+						144.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Signal of Crucible"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						56.0,
+						455.0,
+						346.0,
+						56.0
+					],
+					"size": 34.0,
+					"text": "JUMP TO BREAKTHROUGH"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						414.0,
+						455.0,
+						47.0,
+						56.0
+					],
+					"size": 19.0,
+					"text": "Enter"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						527.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "2"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						527.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "RELAY"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						566.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Repairs"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						605.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "3"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						605.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "HUNT"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						644.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Signal of Crucible"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						683.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						683.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "DECAPITATION"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						722.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Credits"
+				},
+				{
+					"color": "ff6050",
+					"rect": [
+						120.0,
+						823.0,
+						65.0,
+						21.0
+					],
+					"size": 17.0,
+					"text": "Nemesis"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						845.0,
+						381.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "HIGH NADIR ULIX"
+				},
+				{
+					"colors": [
+						"c4beb0",
+						"f0eade",
+						"c4beb0",
+						"f0eade"
+					],
+					"rect": [
+						116.0,
+						895.0,
+						151.0,
+						24.0
+					],
+					"size": 17,
+					"text": "Hunt clock 0.5 of 4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						66.0,
+						949.0,
+						306.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "LONG WATCH"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						388.0,
+						948.0,
+						113.0,
+						36.0
+					],
+					"size": 19,
+					"text": "135 / 135"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						985.0,
+						358.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "COLD FURY"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						414.0,
+						984.0,
+						87.0,
+						36.0
+					],
+					"size": 19,
+					"text": "85 / 85"
+				}
+			]
+		},
+		{
+			"fleet_lines": 3,
+			"fleet_visible_rows": 2,
+			"name": "four_route_1",
+			"overlaps": [],
+			"scale": 1.0,
+			"words": [
+				{
+					"color": "ff8a3a",
+					"rect": [
+						40.0,
+						48.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "I"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						114.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "II"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						188.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "III"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						296.0,
+						43.0,
+						93.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Jump 1 of 7"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						78.0,
+						461.0,
+						84.0
+					],
+					"size": 70.0,
+					"text": "CONTESTED WORLD"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						162.0,
+						461.0,
+						26.0
+					],
+					"size": 21.0,
+					"text": "Held by the Chorus"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						40.0,
+						192.0,
+						461.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Wreck belt: salvage pays 15% more."
+				},
+				{
+					"colors": [
+						"ff8a3a"
+					],
+					"rect": [
+						40.0,
+						243.0,
+						60.0,
+						132.0
+					],
+					"size": 132,
+					"text": "1"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						243.0,
+						381.0,
+						66.0
+					],
+					"size": 54.0,
+					"text": "BREAKTHROUGH"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						309.0,
+						381.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Fight the Chorus"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						182.0,
+						333.0,
+						39.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Easy"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						383.0,
+						461.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Get your ships onto the far jump hexes."
+				},
+				{
+					"color": "969084",
+					"rect": [
+						40.0,
+						411.0,
+						40.0,
+						28.0
+					],
+					"size": 19.0,
+					"text": "Pays"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						90.0,
+						413.0,
+						144.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Signal of Crucible"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						56.0,
+						455.0,
+						346.0,
+						56.0
+					],
+					"size": 34.0,
+					"text": "JUMP TO BREAKTHROUGH"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						414.0,
+						455.0,
+						47.0,
+						56.0
+					],
+					"size": 19.0,
+					"text": "Enter"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						527.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "2"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						527.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "RELAY"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						566.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Repairs"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						605.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "3"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						605.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "HUNT"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						644.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Signal of Crucible"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						683.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						683.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "DECAPITATION"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						722.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Credits"
+				},
+				{
+					"color": "ff6050",
+					"rect": [
+						120.0,
+						823.0,
+						65.0,
+						21.0
+					],
+					"size": 17.0,
+					"text": "Nemesis"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						845.0,
+						381.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "HIGH NADIR ULIX"
+				},
+				{
+					"colors": [
+						"c4beb0",
+						"f0eade",
+						"c4beb0",
+						"f0eade"
+					],
+					"rect": [
+						116.0,
+						895.0,
+						151.0,
+						24.0
+					],
+					"size": 17,
+					"text": "Hunt clock 0.5 of 4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						66.0,
+						949.0,
+						306.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "LONG WATCH"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						388.0,
+						948.0,
+						113.0,
+						36.0
+					],
+					"size": 19,
+					"text": "135 / 135"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						985.0,
+						358.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "COLD FURY"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						414.0,
+						984.0,
+						87.0,
+						36.0
+					],
+					"size": 19,
+					"text": "85 / 85"
+				}
+			]
+		},
+		{
+			"fleet_lines": 3,
+			"fleet_visible_rows": 2,
+			"name": "four_route_2",
+			"overlaps": [],
+			"scale": 1.0,
+			"words": [
+				{
+					"color": "ff8a3a",
+					"rect": [
+						40.0,
+						48.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "I"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						114.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "II"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						188.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "III"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						296.0,
+						43.0,
+						93.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Jump 1 of 7"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						78.0,
+						461.0,
+						84.0
+					],
+					"size": 70.0,
+					"text": "CONTESTED WORLD"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						162.0,
+						461.0,
+						26.0
+					],
+					"size": 21.0,
+					"text": "Held by the Chorus"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						40.0,
+						192.0,
+						461.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Wreck belt: salvage pays 15% more."
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						243.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "1"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						243.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "BREAKTHROUGH"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						282.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Signal of Crucible"
+				},
+				{
+					"colors": [
+						"ff8a3a"
+					],
+					"rect": [
+						40.0,
+						321.0,
+						60.0,
+						132.0
+					],
+					"size": 132,
+					"text": "2"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						321.0,
+						381.0,
+						66.0
+					],
+					"size": 54.0,
+					"text": "RELAY"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						387.0,
+						381.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Fight a Chorus bloat pod"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						182.0,
+						411.0,
+						39.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Easy"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						461.0,
+						461.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Hold the relay, unopposed, for 3 rounds."
+				},
+				{
+					"color": "969084",
+					"rect": [
+						40.0,
+						489.0,
+						40.0,
+						28.0
+					],
+					"size": 19.0,
+					"text": "Pays"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						90.0,
+						491.0,
+						63.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Repairs"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						56.0,
+						533.0,
+						346.0,
+						56.0
+					],
+					"size": 34.0,
+					"text": "JUMP TO RELAY"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						414.0,
+						533.0,
+						47.0,
+						56.0
+					],
+					"size": 19.0,
+					"text": "Enter"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						605.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "3"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						605.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "HUNT"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						644.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Signal of Crucible"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						683.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						683.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "DECAPITATION"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						722.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Credits"
+				},
+				{
+					"color": "ff6050",
+					"rect": [
+						120.0,
+						823.0,
+						65.0,
+						21.0
+					],
+					"size": 17.0,
+					"text": "Nemesis"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						845.0,
+						381.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "HIGH NADIR ULIX"
+				},
+				{
+					"colors": [
+						"c4beb0",
+						"f0eade",
+						"c4beb0",
+						"f0eade"
+					],
+					"rect": [
+						116.0,
+						895.0,
+						151.0,
+						24.0
+					],
+					"size": 17,
+					"text": "Hunt clock 0.5 of 4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						66.0,
+						949.0,
+						306.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "LONG WATCH"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						388.0,
+						948.0,
+						113.0,
+						36.0
+					],
+					"size": 19,
+					"text": "135 / 135"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						985.0,
+						358.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "COLD FURY"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						414.0,
+						984.0,
+						87.0,
+						36.0
+					],
+					"size": 19,
+					"text": "85 / 85"
+				}
+			]
+		},
+		{
+			"fleet_lines": 3,
+			"fleet_visible_rows": 2,
+			"name": "four_route_3",
+			"overlaps": [],
+			"scale": 1.0,
+			"words": [
+				{
+					"color": "ff8a3a",
+					"rect": [
+						40.0,
+						48.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "I"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						114.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "II"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						188.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "III"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						296.0,
+						43.0,
+						93.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Jump 1 of 7"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						78.0,
+						461.0,
+						84.0
+					],
+					"size": 70.0,
+					"text": "CONTESTED WORLD"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						162.0,
+						461.0,
+						26.0
+					],
+					"size": 21.0,
+					"text": "Held by the Chorus"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						40.0,
+						192.0,
+						461.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Wreck belt: salvage pays 15% more."
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						243.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "1"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						243.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "BREAKTHROUGH"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						282.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Signal of Crucible"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						321.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "2"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						321.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "RELAY"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						360.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Repairs"
+				},
+				{
+					"colors": [
+						"ff8a3a"
+					],
+					"rect": [
+						40.0,
+						399.0,
+						60.0,
+						132.0
+					],
+					"size": 132,
+					"text": "3"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						399.0,
+						381.0,
+						66.0
+					],
+					"size": 54.0,
+					"text": "HUNT"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						465.0,
+						381.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Fight the Chorus"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						182.0,
+						489.0,
+						39.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Easy"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						539.0,
+						461.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Destroy their flagship before round 6 ends."
+				},
+				{
+					"color": "969084",
+					"rect": [
+						40.0,
+						567.0,
+						40.0,
+						28.0
+					],
+					"size": 19.0,
+					"text": "Pays"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						90.0,
+						569.0,
+						144.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Signal of Crucible"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						56.0,
+						611.0,
+						346.0,
+						56.0
+					],
+					"size": 34.0,
+					"text": "JUMP TO HUNT"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						414.0,
+						611.0,
+						47.0,
+						56.0
+					],
+					"size": 19.0,
+					"text": "Enter"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						683.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						683.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "DECAPITATION"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						722.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Credits"
+				},
+				{
+					"color": "ff6050",
+					"rect": [
+						120.0,
+						823.0,
+						65.0,
+						21.0
+					],
+					"size": 17.0,
+					"text": "Nemesis"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						845.0,
+						381.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "HIGH NADIR ULIX"
+				},
+				{
+					"colors": [
+						"c4beb0",
+						"f0eade",
+						"c4beb0",
+						"f0eade"
+					],
+					"rect": [
+						116.0,
+						895.0,
+						151.0,
+						24.0
+					],
+					"size": 17,
+					"text": "Hunt clock 0.5 of 4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						66.0,
+						949.0,
+						306.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "LONG WATCH"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						388.0,
+						948.0,
+						113.0,
+						36.0
+					],
+					"size": 19,
+					"text": "135 / 135"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						985.0,
+						358.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "COLD FURY"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						414.0,
+						984.0,
+						87.0,
+						36.0
+					],
+					"size": 19,
+					"text": "85 / 85"
+				}
+			]
+		},
+		{
+			"fleet_lines": 3,
+			"fleet_visible_rows": 2,
+			"name": "four_route_4",
+			"overlaps": [],
+			"scale": 1.0,
+			"words": [
+				{
+					"color": "ff8a3a",
+					"rect": [
+						40.0,
+						48.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "I"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						114.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "II"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						188.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "III"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						296.0,
+						43.0,
+						93.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Jump 1 of 7"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						78.0,
+						461.0,
+						84.0
+					],
+					"size": 70.0,
+					"text": "CONTESTED WORLD"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						162.0,
+						461.0,
+						26.0
+					],
+					"size": 21.0,
+					"text": "Held by the Chorus"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						40.0,
+						192.0,
+						461.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Wreck belt: salvage pays 15% more."
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						243.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "1"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						243.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "BREAKTHROUGH"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						282.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Signal of Crucible"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						321.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "2"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						321.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "RELAY"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						360.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Repairs"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						399.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "3"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						399.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "HUNT"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						438.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Signal of Crucible"
+				},
+				{
+					"colors": [
+						"ff8a3a"
+					],
+					"rect": [
+						40.0,
+						477.0,
+						60.0,
+						132.0
+					],
+					"size": 132,
+					"text": "4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						477.0,
+						381.0,
+						66.0
+					],
+					"size": 54.0,
+					"text": "DECAPITATION"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						543.0,
+						381.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Fight a Chorus brood swarm"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						182.0,
+						567.0,
+						39.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Easy"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						617.0,
+						461.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Destroy their flagship to scatter the fleet."
+				},
+				{
+					"color": "969084",
+					"rect": [
+						40.0,
+						645.0,
+						40.0,
+						28.0
+					],
+					"size": 19.0,
+					"text": "Pays"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						90.0,
+						647.0,
+						60.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Credits"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						56.0,
+						689.0,
+						346.0,
+						56.0
+					],
+					"size": 34.0,
+					"text": "JUMP TO DECAPITATION"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						414.0,
+						689.0,
+						47.0,
+						56.0
+					],
+					"size": 19.0,
+					"text": "Enter"
+				},
+				{
+					"color": "ff6050",
+					"rect": [
+						120.0,
+						823.0,
+						65.0,
+						21.0
+					],
+					"size": 17.0,
+					"text": "Nemesis"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						845.0,
+						381.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "HIGH NADIR ULIX"
+				},
+				{
+					"colors": [
+						"c4beb0",
+						"f0eade",
+						"c4beb0",
+						"f0eade"
+					],
+					"rect": [
+						116.0,
+						895.0,
+						151.0,
+						24.0
+					],
+					"size": 17,
+					"text": "Hunt clock 0.5 of 4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						66.0,
+						949.0,
+						306.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "LONG WATCH"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						388.0,
+						948.0,
+						113.0,
+						36.0
+					],
+					"size": 19,
+					"text": "135 / 135"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						985.0,
+						358.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "COLD FURY"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						414.0,
+						984.0,
+						87.0,
+						36.0
+					],
+					"size": 19,
+					"text": "85 / 85"
+				}
+			]
+		},
+		{
+			"fleet_lines": 7,
+			"fleet_visible_rows": 1,
+			"name": "long_names_fleet_7",
+			"overlaps": [],
+			"scale": 1.0,
+			"words": [
+				{
+					"color": "ff8a3a",
+					"rect": [
+						40.0,
+						48.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "I"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						114.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "II"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						188.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "III"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						296.0,
+						43.0,
+						93.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Jump 1 of 7"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						78.0,
+						461.0,
+						83.0
+					],
+					"size": 69.0,
+					"text": "ASTEROID FRONTIER"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						161.0,
+						461.0,
+						26.0
+					],
+					"size": 21.0,
+					"text": "Held by the Chorus"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						40.0,
+						191.0,
+						461.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Wreck belt: salvage pays 15% more."
+				},
+				{
+					"colors": [
+						"ff8a3a"
+					],
+					"rect": [
+						40.0,
+						242.0,
+						60.0,
+						132.0
+					],
+					"size": 132,
+					"text": "1"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						242.0,
+						381.0,
+						66.0
+					],
+					"size": 54.0,
+					"text": "UNKNOWN SIGNAL"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						308.0,
+						381.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Fight the Chorus"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						182.0,
+						332.0,
+						39.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Easy"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						382.0,
+						461.0,
+						51.0
+					],
+					"size": 20.0,
+					"text": "Get ships off the far edge: a ship that ends its move on a green hex jumps clear."
+				},
+				{
+					"color": "969084",
+					"rect": [
+						40.0,
+						437.0,
+						40.0,
+						28.0
+					],
+					"size": 19.0,
+					"text": "Pays"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						90.0,
+						439.0,
+						144.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Signal of Crucible"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						56.0,
+						481.0,
+						346.0,
+						56.0
+					],
+					"size": 34.0,
+					"text": "JUMP TO UNKNOWN SIGNAL"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						414.0,
+						481.0,
+						47.0,
+						56.0
+					],
+					"size": 19.0,
+					"text": "Enter"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						553.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "2"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						553.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "RELAY"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						592.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Repairs"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						631.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "3"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						631.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "HUNT"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						670.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Signal of Crucible"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						709.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						709.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "DECAPITATION"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						748.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Credits"
+				},
+				{
+					"color": "ff6050",
+					"rect": [
+						120.0,
+						820.0,
+						65.0,
+						21.0
+					],
+					"size": 17.0,
+					"text": "Nemesis"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						842.0,
+						381.0,
+						81.0
+					],
+					"size": 32.0,
+					"text": " WARDEN OF THE ROLL BERTHOLD HARROWGATE THE FROST-SCARRED"
+				},
+				{
+					"colors": [
+						"c4beb0",
+						"f0eade",
+						"c4beb0",
+						"f0eade"
+					],
+					"rect": [
+						116.0,
+						931.0,
+						151.0,
+						24.0
+					],
+					"size": 17,
+					"text": "Hunt clock 0.5 of 4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						66.0,
+						985.0,
+						319.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "RESOLVE OF THE REACH"
+				},
+				{
+					"colors": [
+						"ffad3b",
+						"f0eade"
+					],
+					"rect": [
+						401.0,
+						984.0,
+						100.0,
+						36.0
+					],
+					"size": 19,
+					"text": "98 / 135"
+				}
+			]
+		},
+		{
+			"fleet_lines": 12,
+			"fleet_visible_rows": 1,
+			"name": "long_names_fleet_12",
+			"overlaps": [],
+			"scale": 1.0,
+			"words": [
+				{
+					"color": "ff8a3a",
+					"rect": [
+						40.0,
+						48.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "I"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						114.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "II"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						188.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "III"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						296.0,
+						43.0,
+						93.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Jump 1 of 7"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						78.0,
+						461.0,
+						83.0
+					],
+					"size": 69.0,
+					"text": "ASTEROID FRONTIER"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						161.0,
+						461.0,
+						26.0
+					],
+					"size": 21.0,
+					"text": "Held by the Chorus"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						40.0,
+						191.0,
+						461.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Wreck belt: salvage pays 15% more."
+				},
+				{
+					"colors": [
+						"ff8a3a"
+					],
+					"rect": [
+						40.0,
+						242.0,
+						60.0,
+						132.0
+					],
+					"size": 132,
+					"text": "1"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						242.0,
+						381.0,
+						66.0
+					],
+					"size": 54.0,
+					"text": "UNKNOWN SIGNAL"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						308.0,
+						381.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Fight the Chorus"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						182.0,
+						332.0,
+						39.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Easy"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						382.0,
+						461.0,
+						51.0
+					],
+					"size": 20.0,
+					"text": "Get ships off the far edge: a ship that ends its move on a green hex jumps clear."
+				},
+				{
+					"color": "969084",
+					"rect": [
+						40.0,
+						437.0,
+						40.0,
+						28.0
+					],
+					"size": 19.0,
+					"text": "Pays"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						90.0,
+						439.0,
+						144.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Signal of Crucible"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						56.0,
+						481.0,
+						346.0,
+						56.0
+					],
+					"size": 34.0,
+					"text": "JUMP TO UNKNOWN SIGNAL"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						414.0,
+						481.0,
+						47.0,
+						56.0
+					],
+					"size": 19.0,
+					"text": "Enter"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						553.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "2"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						553.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "RELAY"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						592.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Repairs"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						631.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "3"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						631.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "HUNT"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						670.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Signal of Crucible"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						709.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						709.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "DECAPITATION"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						748.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Credits"
+				},
+				{
+					"color": "ff6050",
+					"rect": [
+						120.0,
+						820.0,
+						65.0,
+						21.0
+					],
+					"size": 17.0,
+					"text": "Nemesis"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						842.0,
+						381.0,
+						81.0
+					],
+					"size": 32.0,
+					"text": " WARDEN OF THE ROLL BERTHOLD HARROWGATE THE FROST-SCARRED"
+				},
+				{
+					"colors": [
+						"c4beb0",
+						"f0eade",
+						"c4beb0",
+						"f0eade"
+					],
+					"rect": [
+						116.0,
+						931.0,
+						151.0,
+						24.0
+					],
+					"size": 17,
+					"text": "Hunt clock 0.5 of 4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						66.0,
+						985.0,
+						319.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "RESOLVE OF THE REACH"
+				},
+				{
+					"colors": [
+						"ffad3b",
+						"f0eade"
+					],
+					"rect": [
+						401.0,
+						984.0,
+						100.0,
+						36.0
+					],
+					"size": 19,
+					"text": "98 / 135"
+				}
+			]
+		},
+		{
+			"fleet_lines": 12,
+			"fleet_visible_rows": 1,
+			"name": "fleet_overflow_scrolled",
+			"overlaps": [],
+			"scale": 1.0,
+			"words": [
+				{
+					"color": "ff8a3a",
+					"rect": [
+						40.0,
+						48.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "I"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						114.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "II"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						188.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "III"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						296.0,
+						43.0,
+						93.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Jump 1 of 7"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						78.0,
+						461.0,
+						83.0
+					],
+					"size": 69.0,
+					"text": "ASTEROID FRONTIER"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						161.0,
+						461.0,
+						26.0
+					],
+					"size": 21.0,
+					"text": "Held by the Chorus"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						40.0,
+						191.0,
+						461.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Wreck belt: salvage pays 15% more."
+				},
+				{
+					"colors": [
+						"ff8a3a"
+					],
+					"rect": [
+						40.0,
+						242.0,
+						60.0,
+						132.0
+					],
+					"size": 132,
+					"text": "1"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						242.0,
+						381.0,
+						66.0
+					],
+					"size": 54.0,
+					"text": "UNKNOWN SIGNAL"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						308.0,
+						381.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Fight the Chorus"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						182.0,
+						332.0,
+						39.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Easy"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						382.0,
+						461.0,
+						51.0
+					],
+					"size": 20.0,
+					"text": "Get ships off the far edge: a ship that ends its move on a green hex jumps clear."
+				},
+				{
+					"color": "969084",
+					"rect": [
+						40.0,
+						437.0,
+						40.0,
+						28.0
+					],
+					"size": 19.0,
+					"text": "Pays"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						90.0,
+						439.0,
+						144.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Signal of Crucible"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						56.0,
+						481.0,
+						346.0,
+						56.0
+					],
+					"size": 34.0,
+					"text": "JUMP TO UNKNOWN SIGNAL"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						414.0,
+						481.0,
+						47.0,
+						56.0
+					],
+					"size": 19.0,
+					"text": "Enter"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						553.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "2"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						553.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "RELAY"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						592.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Repairs"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						631.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "3"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						631.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "HUNT"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						670.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Signal of Crucible"
+				},
+				{
+					"colors": [
+						"f0eade"
+					],
+					"rect": [
+						40.0,
+						709.0,
+						20.0,
+						42.0
+					],
+					"size": 36,
+					"text": "4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						80.0,
+						709.0,
+						421.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "DECAPITATION"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						80.0,
+						748.0,
+						421.0,
+						22.0
+					],
+					"size": 18.0,
+					"text": "Easy fight. Pays Credits"
+				},
+				{
+					"color": "ff6050",
+					"rect": [
+						120.0,
+						820.0,
+						65.0,
+						21.0
+					],
+					"size": 17.0,
+					"text": "Nemesis"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						842.0,
+						381.0,
+						81.0
+					],
+					"size": 32.0,
+					"text": " WARDEN OF THE ROLL BERTHOLD HARROWGATE THE FROST-SCARRED"
+				},
+				{
+					"colors": [
+						"c4beb0",
+						"f0eade",
+						"c4beb0",
+						"f0eade"
+					],
+					"rect": [
+						116.0,
+						931.0,
+						151.0,
+						24.0
+					],
+					"size": 17,
+					"text": "Hunt clock 0.5 of 4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						985.0,
+						345.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "HNS ASCENDANCY"
+				},
+				{
+					"colors": [
+						"ff5530",
+						"f0eade"
+					],
+					"rect": [
+						401.0,
+						984.0,
+						100.0,
+						36.0
+					],
+					"size": 19,
+					"text": "40 / 135"
+				}
+			]
+		},
+		{
+			"fleet_lines": 7,
+			"fleet_visible_rows": 7,
+			"name": "fleet_seven_lines",
+			"overlaps": [],
+			"scale": 1.0,
+			"words": [
+				{
+					"color": "ff8a3a",
+					"rect": [
+						40.0,
+						48.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "I"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						114.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "II"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						188.0,
+						45.0,
+						58.0,
+						22.0
+					],
+					"size": 17.0,
+					"text": "III"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						296.0,
+						43.0,
+						97.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Jump 0 of 7"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						78.0,
+						461.0,
+						84.0
+					],
+					"size": 70.0,
+					"text": "OLD BATTLEFIELD"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						162.0,
+						461.0,
+						26.0
+					],
+					"size": 21.0,
+					"text": "Held by the Ashfall Hullbreakers"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						40.0,
+						192.0,
+						461.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Ion season: shields recharge 25% slower."
+				},
+				{
+					"colors": [
+						"ff8a3a"
+					],
+					"rect": [
+						40.0,
+						243.0,
+						60.0,
+						132.0
+					],
+					"size": 132,
+					"text": "1"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						243.0,
+						381.0,
+						66.0
+					],
+					"size": 54.0,
+					"text": "ENGAGEMENT"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						309.0,
+						381.0,
+						51.0
+					],
+					"size": 20.0,
+					"text": "Fight a Glasswrights aperture host (rival raiders)"
+				},
+				{
+					"color": "c4beb0",
+					"rect": [
+						182.0,
+						360.0,
+						39.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Easy"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						391.0,
+						461.0,
+						24.0
+					],
+					"size": 20.0,
+					"text": "Break their fleet to make it flee."
+				},
+				{
+					"color": "969084",
+					"rect": [
+						40.0,
+						419.0,
+						40.0,
+						28.0
+					],
+					"size": 19.0,
+					"text": "Pays"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						90.0,
+						421.0,
+						63.0,
+						23.0
+					],
+					"size": 19.0,
+					"text": "Repairs"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						56.0,
+						463.0,
+						346.0,
+						56.0
+					],
+					"size": 34.0,
+					"text": "JUMP TO ENGAGEMENT"
+				},
+				{
+					"color": "ff8a3a",
+					"rect": [
+						414.0,
+						463.0,
+						47.0,
+						56.0
+					],
+					"size": 19.0,
+					"text": "Enter"
+				},
+				{
+					"color": "ff6050",
+					"rect": [
+						120.0,
+						643.0,
+						65.0,
+						21.0
+					],
+					"size": 17.0,
+					"text": "Nemesis"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						120.0,
+						665.0,
+						381.0,
+						39.0
+					],
+					"size": 32.0,
+					"text": "HIGH NADIR ESSANE"
+				},
+				{
+					"colors": [
+						"c4beb0",
+						"f0eade",
+						"c4beb0",
+						"f0eade"
+					],
+					"rect": [
+						116.0,
+						715.0,
+						129.0,
+						24.0
+					],
+					"size": 17,
+					"text": "Hunt clock 0 of 4"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						66.0,
+						769.0,
+						306.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "RESOLVE OF THE REACH"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						388.0,
+						768.0,
+						113.0,
+						36.0
+					],
+					"size": 19,
+					"text": "135 / 135"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						805.0,
+						358.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "THORN OF THE REACH"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						414.0,
+						804.0,
+						87.0,
+						36.0
+					],
+					"size": 19,
+					"text": "85 / 85"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						841.0,
+						358.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "REMEMBERED NOON"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						414.0,
+						840.0,
+						87.0,
+						36.0
+					],
+					"size": 19,
+					"text": "50 / 50"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						877.0,
+						332.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "SILENT PROCESSION"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						388.0,
+						876.0,
+						113.0,
+						36.0
+					],
+					"size": 19,
+					"text": "135 / 135"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						913.0,
+						332.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "RELENTLESS EMBER"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						388.0,
+						912.0,
+						113.0,
+						36.0
+					],
+					"size": 19,
+					"text": "135 / 135"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						949.0,
+						332.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "WARMTH RECALLED"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						388.0,
+						948.0,
+						113.0,
+						36.0
+					],
+					"size": 19,
+					"text": "135 / 135"
+				},
+				{
+					"color": "f0eade",
+					"rect": [
+						40.0,
+						985.0,
+						332.0,
+						34.0
+					],
+					"size": 28.0,
+					"text": "BROOD VESSEL OM"
+				},
+				{
+					"colors": [
+						"f0eade",
+						"f0eade"
+					],
+					"rect": [
+						388.0,
+						984.0,
+						113.0,
+						36.0
+					],
+					"size": 19,
+					"text": "135 / 135"
+				}
+			]
+		}
+	]
+}

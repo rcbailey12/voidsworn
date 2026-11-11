@@ -29,7 +29,7 @@ const TOKEN_OFF := Vector3(0.0, 1.8, 3.0)   # where the fleet holds over a stop 
 
 const GS = preload("res://ui/theme/glass_shell.gd")   # Lime Tactical pieces for the map words (issue #344)
 const View = preload("res://campaign/campaign_view.gd")   # the stop's words and the Nemesis, read only
-const COL_W := 480.0          # the briefing column over the left of the chart (campaign_ui.gd)
+const COL_W := 540.0          # the briefing column over the left of the chart (campaign_ui.gd)
 const BACKDROP_K := 0.5       # the backdrop's strength in the Briefing build ("dimmed about half")
 const LAYER_AHEAD := 2        # render layer of the stops further on (lit by the Hollow Sun at TIER_LIGHT[1])
 const LAYER_BEHIND := 4       # render layer of the stops behind you or cut off (TIER_LIGHT[2])
@@ -47,6 +47,7 @@ var cam: Camera3D
 var env: Environment
 var root3: Node3D
 var token: Node3D
+var sheet_veil: TextureRect
 var overlay: Control
 var card: PanelContainer      # the hover tip: the only box on the map
 var card_box: VBoxContainer
@@ -111,6 +112,8 @@ func _ready() -> void:
 	var we = WorldEnvironment.new(); we.environment = env; vp.add_child(we)
 	_fill = DirectionalLight3D.new(); _fill.rotation_degrees = Vector3(-38, 150, 0); _fill.light_color = Color(0.62, 0.72, 1.0); vp.add_child(_fill)
 	cam = Camera3D.new(); cam.fov = 36.0; cam.near = 0.5; cam.far = 4000.0; vp.add_child(cam)
+	sheet_veil = TextureRect.new(); sheet_veil.texture = GS.sheet_veil(); sheet_veil.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	sheet_veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); sheet_veil.anchor_right = 0.43; sheet_veil.mouse_filter = Control.MOUSE_FILTER_IGNORE; add_child(sheet_veil)
 	overlay = Control.new(); overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE; overlay.draw.connect(_draw_overlay); add_child(overlay)
 	card = PanelContainer.new(); card.visible = false; card.mouse_filter = Control.MOUSE_FILTER_IGNORE; add_child(card)
 	card_box = VBoxContainer.new(); card_box.add_theme_constant_override("separation", 0); card_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -144,6 +147,7 @@ func _entry_pos() -> Vector3:
 
 # ---------------- building the sector ----------------
 func sync() -> void:
+	sheet_veil.visible = not backdrop
 	var C = _C()
 	if C == null or C.RUN == null: return
 	if intel == null or intel.C != C: intel = Intel.new(C)
@@ -456,7 +460,7 @@ func _add_entry_lanes() -> void:
 	for n in C.RUN["map"]["cols"][0]:
 		if not _nodes.has(n["id"]): continue
 		var curve: Curve3D = sys.lane_curve(from, _nodes[n["id"]]["pos"]); var L := curve.get_baked_length()
-		var mat = sys.mat("LANE_FLAT", {"col": Color(GS.GILT, 1.0), "px": 1.25})
+		var mat = sys.mat("LANE_FLAT", {"col": Color(GS.MAP_EMBER, 1.0), "px": 1.25})
 		var mi = sys.mi(sys.route_ribbon(curve, 1.6, 2.0, _nodes[n["id"]]["ring_r"] * 1.05), mat, Vector3(0, 0.12, 0)); mi.extra_cull_margin = L
 		root3.add_child(mi)
 		_lanes["@>" + str(n["id"])] = {"a": "@", "b": str(n["id"]), "mi": mi, "mat": mat}
@@ -645,7 +649,7 @@ func _paint_lanes() -> void:
 		var L = _lanes[k]
 		if L["a"] == "@":
 			if L.has("mi"): L["mi"].visible = R.get("pos") == null and av.has(L["b"])
-			L["mat"].set_shader_parameter("col", for_screen(Color(GS.GILT_HOVER if (_flying and _flight_id == L["b"]) else GS.GILT, 1.0))); L["mat"].set_shader_parameter("px", 1.25 * kk)
+			L["mat"].set_shader_parameter("col", for_screen(Color(GS.MAP_EMBER, 1.0))); L["mat"].set_shader_parameter("px", 1.25 * kk)
 			continue
 		var A = _nodes[L["a"]]["n"]; var Bn = _nodes[L["b"]]["n"]
 		var behind = int(A["col"]) < current_col
@@ -657,8 +661,8 @@ func _paint_lanes() -> void:
 		var col = pale(GS.PALE); var w = 0.6
 		if trav or past: col = pale(GS.PALE_CUT)
 		elif lit.has(k): col = pale(0.5)
-		if nxt: col = for_screen(Color(GS.GILT, 1.0)); w = 1.25
-		if _flying and k == str(R.get("pos")) + ">" + _flight_id: col = for_screen(Color(GS.GILT_HOVER, 1.0)); w = 1.25
+		if nxt: col = for_screen(Color(GS.MAP_EMBER, 1.0)); w = 1.25
+		if _flying and k == str(R.get("pos")) + ">" + _flight_id: col = for_screen(Color(GS.MAP_EMBER, 1.0)); w = 1.25
 		L["mat"].set_shader_parameter("col", col); L["mat"].set_shader_parameter("px", w * kk)
 
 func _arrive(new_sector: bool) -> void:   # the camera starts leaning on where the fleet is and settles back over the chart
@@ -806,13 +810,13 @@ func _draw_overlay() -> void:
 				GS.stop_icon(overlay, tp, str(d["n"]["type"]), icon_scale, GS.STOP_ICON_FADED if faded else 1.0)
 				var icon_box = Rect2(tp - Vector2.ONE * 12.0 * icon_scale, Vector2.ONE * 24.0 * icon_scale)
 				taken.append(icon_box); _words.append(icon_box)
-			if d["nem"]: GS.diamond(overlay, tp + Vector2(0, -20.0 * s), 5.0 * s, ui.ALERT)
+			if d["nem"]: GS.diamond(overlay, tp + Vector2(0, -20.0 * s), 5.0 * s, GS.NEM)
 	var bodies = av.duplicate()
 	if pos != null: bodies.append(pos)
 	for id in bodies:
 		if _nodes.has(id) and not cam.is_position_behind(_nodes[id]["pos"]): taken.append(_body_rect(id, s))
 	# where your fleet is
-	var f18: Font = ui.font_semi; var f14: Font = ui.font
+	var f18: Font = GS.sheet_medium(); var f14: Font = GS.sheet_body()
 	if not _flying:
 		var here = Vector2.ZERO; var nm = ""
 		if pos != null and _nodes.has(pos): here = _screen(_nodes[pos]["pos"]); nm = View.here_name(C)
@@ -824,15 +828,15 @@ func _draw_overlay() -> void:
 				here.x = lerp(here.x, _screen(token.position).x, 0.5)
 				taken.append(Rect2(_screen(token.position) - Vector2(60.0, 40.0) * s, Vector2(120.0, 80.0) * s))
 			if nm != "":
-				var w = f18.get_string_size(nm, HORIZONTAL_ALIGNMENT_LEFT, -1, int(18 * s)).x
+				var w = f18.get_string_size(nm, HORIZONTAL_ALIGNMENT_LEFT, -1, int(21 * s)).x
 				if Rect2(here.x - w * 0.5, y - 18.0 * s, w, 46.0 * s).intersects(sun_rect): y = sun_rect.end.y + 24.0 * s
-				GS.halo_text(overlay, f18, Vector2(here.x - w * 0.5, y), nm, int(18 * s), ui.BONE, s)
+				GS.halo_text(overlay, f18, Vector2(here.x - w * 0.5, y), nm, int(21 * s), GS.TEXT, s)
 				taken.append(Rect2(here.x - w * 0.5, y - 18.0 * s, w, 24.0 * s)); _words.append(taken.back()); y += 22.0 * s
-			var sub = "Your fleet is here"; var w2 = f14.get_string_size(sub, HORIZONTAL_ALIGNMENT_LEFT, -1, int(14 * s)).x
-			GS.halo_text(overlay, f14, Vector2(here.x - w2 * 0.5, y), sub, int(14 * s), ui.BONE2, s)
+			var sub = "Your fleet is here"; var w2 = f14.get_string_size(sub, HORIZONTAL_ALIGNMENT_LEFT, -1, int(17 * s)).x
+			GS.halo_text(overlay, f14, Vector2(here.x - w2 * 0.5, y), sub, int(17 * s), GS.TEXT2, s)
 			taken.append(Rect2(here.x - w2 * 0.5, y - 14.0 * s, w2, 18.0 * s))
 	# the next jumps: marker and name as one caption, under the model unless something is in the way
-	var f20: Font = ui.font_semi; var fs = int(20 * s); var m = 34.0 * s; var gp = 14.0 * s
+	var f20: Font = GS.sheet_medium(); var fs = int(21 * s); var m = 34.0 * s; var gp = 14.0 * s
 	var lane_pts: Array = []   # points along the lime routes: a caption sits off them when it can
 	var from = _nodes[pos]["pos"] if (pos != null and _nodes.has(pos)) else (Vector3(token.position.x, 0.0, token.position.z) if token != null else Vector3.ZERO)
 	for id in av:
@@ -872,14 +876,14 @@ func _draw_overlay() -> void:
 		taken.append(Rect2(at, Vector2(cw, m))); _words.append(taken.back())
 		var num = int(ui.route_num(id)) if ui.has_method("route_num") else i + 1   # the same number as its row
 		GS.marker(overlay, at + Vector2(m, m) * 0.5, s, str(num if num > 0 else i + 1), ui.font_num_b, id == str(ui.picked))
-		GS.halo_text(overlay, f20, Vector2(at.x + m + gp, at.y + m * 0.5 + (f20.get_ascent(fs) - f20.get_descent(fs)) * 0.5), nm, fs, ui.BONE, s)
+		GS.halo_text(overlay, f20, Vector2(at.x + m + gp, at.y + m * 0.5 + (f20.get_ascent(fs) - f20.get_descent(fs)) * 0.5), nm, fs, GS.TEXT, s)
 	if _flying:
 		var t2 = "In flight. Click or press Space to skip."; var fr = _free_rect()
-		var w3 = f14.get_string_size(t2, HORIZONTAL_ALIGNMENT_LEFT, -1, int(15 * s)).x
-		GS.halo_text(overlay, f14, Vector2(fr.get_center().x - w3 * 0.5, fr.end.y + 40.0 * s), t2, int(15 * s), ui.BONE2, s)
+		var w3 = f14.get_string_size(t2, HORIZONTAL_ALIGNMENT_LEFT, -1, int(17 * s)).x
+		GS.halo_text(overlay, f14, Vector2(fr.get_center().x - w3 * 0.5, fr.end.y + 40.0 * s), t2, int(17 * s), GS.TEXT2, s)
 	if has_focus() and _hot_by_key and _hot != "" and _nodes.has(_hot) and not _flying:   # keyboard focus: the sage ring (ui_spec.md 6)
 		var br = _body_rect(_hot, s).grow(3.0 * s)
-		overlay.draw_rect(br, ui.BONE, false, max(2.0, 2.0 * s))
+		overlay.draw_rect(br, GS.TEXT, false, max(2.0, 2.0 * s))
 
 func _sun_rect() -> Rect2:
 	var r = SUN_R * float(sys.approach["sun_scale"]) * float(sys.approach["disc_outer"])
@@ -946,23 +950,23 @@ func _fill_card(n: Dictionary) -> void:
 	card.add_theme_stylebox_override("panel", GS.tip(ui.k))
 	var tw = 320.0   # the tip's text width at 1080: a small card, long lines wrap
 	card_box.custom_minimum_size.x = ui.px(tw)
-	var add = func(t: String, col: Color, f: Font = null, size: float = 13):
-		var pr = ui.para(t, size, 18 if size <= 13 else 20, col, tw, 3, f); card_box.add_child(pr[0])
+	var add = func(t: String, col: Color, f: Font = null, size: float = 17):
+		var pr = ui.para(t, size, 24, col, tw, 3, f); card_box.add_child(pr[0])
 	var done = C.jt(n.get("done")); var cut_off = not done and not _reachable.has(str(n["id"]))
-	add.call(S["name"], ui.BONE, ui.font_semi, 15)
-	add.call(str(S.get("what_tip", S["what"])) + (" (passed)" if done else ""), ui.BONE2)
+	add.call(S["name"], GS.TEXT, GS.sheet_medium(), 21)
+	add.call(str(S.get("what_tip", S["what"])) + (" (passed)" if done else ""), GS.TEXT2)
 	var dg: Dictionary = _danger.get(str(n["id"]), {})
 	if S["fight"] and not done and not dg.is_empty():
 		var h = HBoxContainer.new(); h.add_theme_constant_override("separation", ui.px(8)); h.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		h.add_child(GS.pips(ui.k, float(dg["level"]))); h.add_child(ui.tl(str(dg["band"]), 13, 18, ui.BONE)); card_box.add_child(h)
+		h.add_child(GS.pips(ui.k, float(dg["level"]))); h.add_child(ui.tl(str(dg["band"]), 17, 24, GS.TEXT)); card_box.add_child(h)
 	var extra: Array = []
 	if S["mod"] != "": extra.append(S["mod"])
 	if S["shape"] != "": extra.append(S["shape"] + " board")
 	if S["place"] != "": extra.append(S["place"])
-	if not extra.is_empty() and not done: add.call(", ".join(PackedStringArray(extra)), ui.BONE3)
-	if S["reward"] != "": add.call("Reward " + S["reward"], ui.BONE2)
-	if S["nemesis"]: add.call("The Nemesis meets you here", ui.ALERT)
-	if cut_off: add.call("Cut off: no route leads here now", ui.BONE3)
+	if not extra.is_empty() and not done: add.call(", ".join(PackedStringArray(extra)), GS.TEXT2)
+	if S["reward"] != "": add.call("Reward " + S["reward"], GS.TEXT2)
+	if S["nemesis"]: add.call("The Nemesis meets you here", GS.NEM)
+	if cut_off: add.call("Cut off: no route leads here now", GS.TEXT2)
 	if not _routes.is_empty() and not done and not cut_off:
 		var fc = intel.fleet_condition()
 		for r in _routes:
@@ -976,8 +980,8 @@ func _fill_card(n: Dictionary) -> void:
 				if st["shops"] > 0: pay.append("%d shipyard%s" % [st["shops"], "" if st["shops"] == 1 else "s"])
 				t = "Richest way on: " + ", ".join(PackedStringArray(pay))
 			t += ", worst " + str(st["worst_name"])
-			add.call(t, ui.BONE3)
-			if fc["hurt"] and not st["repair_before_boss"]: add.call("Your fleet is hurt and this way has no repair stop before the flagship.", ui.BONE2)
+			add.call(t, GS.TEXT2)
+			if fc["hurt"] and not st["repair_before_boss"]: add.call("Your fleet is hurt and this way has no repair stop before the flagship.", GS.TEXT2)
 
 # ---------------- input: hover and click pick a route, a double click or Enter flies it; zoom and pan; keys ----------------
 func _set_hot(h: String) -> void:

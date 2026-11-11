@@ -68,10 +68,10 @@ func _run():
 	var ghost = m._lanes["e>f"]["mat"]
 	var ahead = m._lanes["d>f"]["mat"]
 	var next = m._lanes["b>d"]["mat"]
-	# the Briefing build (FINDINGS R165): a next jump is the lime line, wider; a route ahead one thin pale line; a cut-off one fainter
+	# the Briefing build (FINDINGS R165): a next jump is the ember line, wider; a route ahead one thin pale line; a cut-off one fainter
 	check(ghost.get_shader_parameter("col").a < 0.1 and ghost.get_shader_parameter("px") < 1.0, "unreachable lanes are the faintest thin line")
 	check(ahead.get_shader_parameter("col").a > ghost.get_shader_parameter("col").a and ahead.get_shader_parameter("col").a < 0.3 and ahead.get_shader_parameter("px") < 1.0, "future routes stay drawn as one thin pale line, stronger than a cut-off one")
-	check(next.get_shader_parameter("col").a == 1.0 and next.get_shader_parameter("px") > 1.0 and next.get_shader_parameter("col").g > next.get_shader_parameter("col").b + 0.3, "next choices are the lime line, wider")
+	check(next.get_shader_parameter("col").a == 1.0 and next.get_shader_parameter("px") > 1.0 and next.get_shader_parameter("col").is_equal_approx(m.for_screen(Color(Map.GS.MAP_EMBER, 1.0))), "next choices use the ember palette and a wider line")
 	check(not m._lanes["a>b"]["mi"].visible and not m._lanes["a>c"]["mi"].visible, "every route behind the fleet is hidden")
 	check(m._lanes["b>d"]["mi"].visible and m._lanes["d>f"]["mi"].visible, "next and future routes stay visible")
 	C.RUN["pos"] = null; m._find_reachable()

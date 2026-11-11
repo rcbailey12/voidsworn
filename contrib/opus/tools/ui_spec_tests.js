@@ -61,8 +61,9 @@ check(gs.some(r => r.at.startsWith('godot/ui/')) && gs.some(r => r.at.startsWith
 check(gs.some(r => r.how === 'theme default'), 'text floor scan reads the theme default font size form (default_font_size = s(15), N1)');
 
 // 5. HD9: one hull-low line in the port
-const lows = [...hud.matchAll(/HULL_LOW if \w+ < ([\d.]+)/g), ...read('godot/ui/campaign/campaign_ui.gd').matchAll(/(?:BLOOD|HULL_LOW) if f < ([\d.]+)/g)].map(m => +m[1]);
-check(lows.length >= 4 && lows.every(v => v === 0.35), `every hull-low line is 0.35: battle roster, nameplate and the campaign bars (HD9; found ${lows.join(', ')})`);
+const campaignHull = read('godot/ui/campaign/campaign_ui.gd');
+const lows = [...hud.matchAll(/HULL_LOW if \w+ < ([\d.]+)/g), ...campaignHull.matchAll(/(?:BLOOD|HULL_LOW) if f < ([\d.]+)/g), ...campaignHull.matchAll(/HULL_LOW if float\(s\["frac"\]\) < ([\d.]+)/g)].map(m => +m[1]);
+check(lows.length >= 4 && lows.every(v => v === 0.35), `every hull-low line is 0.35: battle roster, nameplate, campaign bars and hull figures (HD9; found ${lows.join(', ')})`);
 
 // 7. issue #344 (UI rollout 1): the campaign pages are in Lime Tactical, and the campaign map is the Briefing layout
 // (Ryan's pick, FINDINGS R165; contrib/opus/briefs/campaign_map_briefing.md). These are code-structure checks: they read
@@ -87,19 +88,26 @@ check(lows.length >= 4 && lows.every(v => v === 0.35), `every hull-low line is 0
   // the Briefing layout: the map screen's own section of campaign_ui.gd
   const sec = (cui.match(/# -+ the sector map: the Briefing layout[\s\S]*?\n(?=# -+ ship cards, fleet, shipyard)/) || [''])[0];
   check(sec.length > 4000, 'campaign_ui.gd has the Briefing layout section (the map screen)');
-  check(/const COL_W := 480\.0/.test(sec) && /const COL_PAD := 40\.0/.test(sec) && /GS\.column\(k\)/.test(sec), 'the briefing column is 480 wide with 40 padding on the flat column of glass_shell.gd');
-  check(!/shell_panel\(|GS\.frame_marks|GS\.well\(k, GILT|GS\.strip\(|GS\.finish_boxes|GS\.lit_boxes/.test(sec.replace(/func blk\([\s\S]*?\n(?=func )/, '')), 'no chamfers, brackets, scanline, lit wells or strips on the map screen (brief: one flat column)');
-  check((sec.match(/GS\.jump_boxes\(k\)/g) || []).length === 1 && /func _jump_button\(/.test(sec), 'the map screen has one filled lime button, the jump button (R148)');
-  // lime on the map screen: the picked number, the jump button, the key's samples. Nothing else may take GILT.
-  const giltUses = sec.split('\n').filter(l => /\bGILT\b/.test(l) && !/^\s*#/.test(l));
-  check(giltUses.length <= 3 && giltUses.every(l => /GILT if on else BONE3|"lime": m\.draw_line|kind == "lime"/.test(l)), `lime in the map screen's code is only the picked number and the key's sample line (found ${giltUses.length} lines)`);
-  const redUses = sec.split('\n').filter(l => /\bALERT\b/.test(l) && !/^\s*#/.test(l));
-  check(redUses.length >= 3 && redUses.every(l => /Nemesis|_nem_mark|GS\.diamond|GS\.pips\(k, float\(N\["clock"\]\)|_over_head\("Nemesis"/.test(l)), `red in the map screen's code is only the Nemesis (found ${redUses.length} lines)`);
-  check(!/\b(BLOOD|VERD|EMBER|FRIEND|BLUE)\b/.test(sec.replace(/#.*$/gm, '')) && !/fac_col\(|PATRONS\[[^\]]*\]\["col"\]/.test(sec), 'no third accent on the map screen: no faction or core colours in body text, no BLOOD, VERD, EMBER, FRIEND or BLUE');
-  // one type ladder: every size literal in the section is on it
-  const ladder = new Set([12, 13, 14, 15, 16, 17, 18, 20, 22, 26, 28, 30, 40]);
-  const sizes = [...sec.matchAll(/\b(?:tl|para|tbtn|_over_text)\((?:[^()]|\([^()]*\))*?, (\d+(?:\.\d+)?), (?:\d+|lh|16|20)/g)].map(m => +m[1]);
-  check(sizes.length >= 40 && sizes.every(v => ladder.has(v)), `every text size on the map screen is on the one ladder (${[...new Set(sizes)].sort((a, b) => a - b).join(', ')})`);
+  const fn = name => { const at = sec.indexOf('func ' + name + '('); return at < 0 ? '' : sec.slice(at).split(/\n(?=func )/)[0]; };
+  const orders = sec.slice(sec.indexOf('func _sheet_words'), sec.indexOf('func _open_overlay'));
+  check(/const COL_W := 540\.0/.test(sec) && /const COL_PAD := 40\.0/.test(sec) && /MarginContainer.new/.test(fn('_briefing_column')) && !/PanelContainer|GS\.column/.test(fn('_briefing_column')), 'orders sheet is an unboxed rail with 40 px margins');
+  check(/sheet_veil\.anchor_right = 0\.43/.test(m3) && /GS\.sheet_veil/.test(m3) && /0\.96/.test(gsh2), 'a smooth dark veil reaches 43 percent of the map, below its words');
+  check(/#ff8a3a/.test(gsh2) && /#f0eade/.test(gsh2) && /#c4beb0/.test(gsh2) && /#969084/.test(gsh2) && /#ff6050/.test(gsh2), 'orders sheet palette matches the approved ember, text and Nemesis colors');
+  check(!/\bGILT\b|\bGILT2\b|GS\.row_boxes|GS\.jump_boxes|GS\.keycap_flat|GS\.thin_bar/.test(orders + m3), 'no lime, key badges, row fills or hull bars on the orders sheet or map');
+  check(/sheet_jump_boxes/.test(fn('_jump_button')) && /px\(56\)/.test(fn('_jump_button')) && /focus/.test(fn('_jump_button')), 'the jump action is a 56 px square ember outline with a filled hover and focus state');
+  const jumpStyle = gsh2.slice(gsh2.indexOf('static func sheet_jump_boxes'), gsh2.indexOf('# ---------------------------------------------------------------- type', gsh2.indexOf('static func sheet_jump_boxes')));
+  check(/set_border_width_all\(maxi\(2/.test(jumpStyle) && !/corner_radius|shadow/.test(jumpStyle), 'the action has a 2 px edge, no rounded corners and no shadow');
+  for (const [file, family] of [['BigShouldersDisplay-VF.ttf','Big Shoulders'], ['Barlow-Regular.ttf','Barlow'], ['Barlow-Medium.ttf','Barlow'], ['AzeretMono-VF.ttf','Azeret Mono']]) {
+    check(fs.existsSync(path.join(ROOT,'godot/ui/theme/fonts',file)) && fs.statSync(path.join(ROOT,'godot/ui/theme/fonts',file)).size > 50000, family + ' font exists: ' + file);
+  }
+  check(/sheet_body\(\)/.test(fn('_sheet_words')) && /maxf\(17, size\)/.test(fn('_sheet_words')) && /sheet_medium\(\)/.test(fn('_sheet_words')), 'sentences use Barlow at a minimum of 17 px');
+  check(/sheet_name\(\)/.test(fn('_sheet_name')) && /fs > 28/.test(fn('_sheet_name')) && /to_upper/.test(fn('_sheet_name')) && !/OVERRUN_TRIM|clip_text/.test(fn('_sheet_name')), 'names use Big Shoulders in capitals, wrap without trimming, and stay at least 28 px');
+  check(/_sheet_name\(H\["region"\].*, 70/.test(orders) && /54 if on else 32/.test(orders) && /132 if on else 36/.test(orders), 'the region, selected route and other routes use the approved size hierarchy');
+  check(/font_num, 19/.test(fn('_fleet_line')) && /_sheet_name\(s\["name"\], 28/.test(fn('_fleet_line')) && !/thin_bar|flagship.*tl\(/.test(fn('_fleet_line')), 'fleet names and hull figures have separate space, Azeret figures and a diamond flagship mark');
+  check(/mini\(7, fleet.size\(\)\)/.test(orders) && /FleetScroll/.test(orders) && /OrdersScroll/.test(orders), 'large fleets and extreme route cases scroll without shrinking text');
+  check(/for r in _routes:/.test(fn('_briefing_column')) && /if on:/.test(fn('_route_row')) && /_jump_button\(\)/.test(fn('_route_row')) && !/\["then"\]/.test(fn('_route_row')), 'routes stay in number order, expand in place and keep the action directly below the selection');
+  check(/_action_line\(FA\)/.test(cui.slice(cui.indexOf('func _fleet('), cui.indexOf('func _shipyard'))) && !/_action_line|faction_action/.test(fn('_briefing_column')) && /C\.act\("factionVerb"/.test(fn('_action_line')), 'the unchanged faction purchase action lives in Fleet and refits');
+  check(/GS\.sheet_pips/.test(fn('_route_row')) && /GS\.sheet_pips/.test(fn('_nemesis_block')) && !/persona_d/.test(fn('_nemesis_block')), 'danger and hunt use square pips; the trait sentence stays in the Dossier');
   check(/View\.routes\(C\)/.test(sec) && /View\.nemesis\(C\)/.test(sec) && /View\.nem_dossier\(C\)/.test(sec) && /View\.sector_notes\(C\)/.test(sec) && /View\.fleet_rows\(C\)/.test(sec) && /View\.purse\(C\)/.test(sec), 'the map screen reads routes, the Nemesis, the sector, the fleet and the purse through the view');
   check(!/\bR\[|C\.RUN\[|C\.RUN\.get\(|\bR\.get\(/.test(sec), 'the map screen reads no save field by name (everything comes through campaign_view.gd)');
   check(/func _dossier\(/.test(sec) && /func _map_key\(/.test(sec) && /func _slide_over\(/.test(sec), 'the Dossier and the Map key are the two slide-overs');
@@ -116,7 +124,7 @@ check(lows.length >= 4 && lows.every(v => v === 0.35), `every hull-low line is 0
   check(/const TIER_LIGHT := \[1\.0, 0\.75, 0\.375\]/.test(m3) && /const TIER_SCALE := \[1\.0, 0\.85, 0\.425\]/.test(m3) && /func _set_tier\(/.test(m3), 'R170: stops ahead are 85% size and 75% brightness; cut-off stops have half of each');
   check(!/sys\.halo\(|sys\.threat\(|"RING"|_strip_text|func _chip\(|GS\.strip\(|GS\.tag\(/.test(m3), 'no rings, halos, threat holograms, strips or tags on the map');
   check(/"LANE_FLAT"/.test(m3) && !/sys\.mat\("LANE",/.test(m3) && /const LANE_FLAT := /.test(msh) && !/hazard|flow|halo/.test((msh.match(/const LANE_FLAT := """[\s\S]*?"""/) || [''])[0]), 'routes are flat lines: no flow, hazard chevrons or halo');
-  check(/for_screen\(Color\(GS\.GILT, 1\.0\)\); w = 1\.25/.test(m3) && /pale\(GS\.PALE\)/.test(m3) && /pale\(GS\.PALE_CUT\)/.test(m3) && !/0\.53, 0\.74, 1\.0/.test(m3), 'routes to the next jumps are lime and wider; every other route is one thin pale line, cut-off ones fainter; no blue routes');
+  check(/for_screen\(Color\(GS\.MAP_EMBER, 1\.0\)\); w = 1\.25/.test(m3) && /pale\(GS\.PALE\)/.test(m3) && /pale\(GS\.PALE_CUT\)/.test(m3) && !/0\.53, 0\.74, 1\.0/.test(m3), 'routes to the next jumps are ember and wider; every other route is one thin pale line, cut-off ones fainter; no blue routes');
   check(/GS\.halo_text\(overlay/.test(m3) && /GS\.marker\(overlay/.test(m3) && /GS\.diamond\(overlay/.test(m3), 'map words are plain text with a dark halo, next jumps carry the square number marker, Nemesis stops the red diamond');
   const mapSizes = [...m3.matchAll(/int\((\d+(?:\.\d+)?) \* s\)/g)].map(m => +m[1]);
   check(mapSizes.length >= 5 && mapSizes.every(v => v >= MIN_TEXT), `map words are at or above the text floor (found ${mapSizes.join(', ')})`);
