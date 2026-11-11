@@ -6,8 +6,8 @@
 
 ## Lock
 
-Running: no
-Running since (UTC): 2026-11-08 12:35
+Running: yes (new Board thread, Opus 5.5)
+Running since (UTC): 2026-11-11 20:55
 Last run finished (UTC): 2026-11-10 13:00
 
 If "Running: no" and the start time is under 90 minutes old, another run is working: stop without changes. If it is older, the last run died: take over and say so in the log.
