@@ -2193,6 +2193,11 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		vel.y = 0.0
 		# issue 484: the biggest piece of a big hull turns slowly, so it stays readable as the ship's main wreck
 		var ang: Vector3 = fx.rdir() * ((0.14 if is_main else 0.35) if s.death_big else (1.1 if is_main else 1.6))
+		if s.death_big and not organic:
+			# Issue 461 (Board, on 484's cruiser at 6.0 s: "the big bow piece reads dim"): the main pieces tumbled on a
+			# random axis and by 6 s showed the key light their dark bellies. They now turn mostly about the vertical, with
+			# a slight roll and pitch, so their plated tops stay lit while they drift and turn.
+			ang = Vector3(ang.x * 0.25, signf(ang.y + 0.001) * maxf(absf(ang.y), 0.08), ang.z * 0.25)
 		var release_delay := 0.0
 		if s.death_big and not organic:
 			var timeline: DeathTimeline = s.get_meta("death_timeline")
