@@ -46,6 +46,23 @@ func _run():
 	var m = MapProbe.new(); m.ui = UIProbe.new(); root.add_child(m)
 	root.size = Vector2i(1920, 1080); m.size = Vector2(1920, 1080)
 	var C = m.ui.C
+	# The renderer consumes this plan directly. Exercise every difficulty and stop kind,
+	# including an unrelated call between visits to the same stop.
+	for sector in [1, 2, 3]:
+		for kind in ["battle", "elite", "boss"]:
+			for level in [1, 2, 3, 4]:
+				var formations := {}
+				for id in ["one", "two", "three", "four"]:
+					var n = {"id": id, "type": kind}
+					var group = System.fight_group(n, sector, level)
+					System.fight_group({"id": "unrelated", "type": "battle"}, 3, 4)
+					check(group == System.fight_group(n, sector, level), "formation is stable across visits and other stop builds")
+					check(group.size() == 1 if kind == "boss" else (group.size() == 3 if kind == "elite" or level > 1 else group.size() in [1, 2]), "group size follows stop kind and difficulty")
+					for escort in group.slice(1):
+						check(escort["length"] < group[0]["length"] * 0.56, "three ships never share the lead's size")
+						check(escort["at"].x < group[0]["at"].x - 1.0 and escort["at"].y < group[0]["at"].y, "escorts sit behind and below the lead")
+					formations[var_to_str(group)] = true
+				check(formations.size() == 4, "different stops at the same difficulty never repeat a formation")
 	m.root3 = Node3D.new(); m.add_child(m.root3)
 	m.token = Node3D.new(); m.root3.add_child(m.token)
 	m.cam = Camera3D.new(); m.cam.fov = 36.0; m.cam.position = Vector3(0, 60, 70); m.root3.add_child(m.cam)

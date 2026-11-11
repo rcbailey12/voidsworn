@@ -122,7 +122,7 @@ check(lows.length >= 4 && lows.every(v => v === 0.35), `every hull-low line is 0
   check(/GS\.region_emblem/.test(fn('_briefing_column')) && /GS\.region_emblem/.test(fn('_map_key')) && /2\.0 \* k/.test(gsh2), 'region emblems use the shared line artwork on the rail and Map key');
   check(/Battles take place among/.test(fn('_map_key')) && /C\.REGIONS\[region\]\["route"\]/.test(fn('_map_key')), 'the region battle-setting line comes from the live region routes');
   check(/Flown routes are hidden/.test(fn('_map_key')) && !/Flown routes are fainter/.test(fn('_map_key')), 'the Map key states that flown routes are hidden');
-  check(/formation\.scale = Vector3\.ONE \* 1\.25/.test(m3) && /_map_ship_rim\(lead\)/.test(m3) && /_map_ship_rim\(escort\)/.test(m3), 'fight models are a quarter larger and both leader and escorts get a faint rim');
+  check(/System\.fight_group\(/.test(m3) && /_map_ship_rim\(ship\)/.test(m3), 'fight models use the seeded group plan and every member gets a faint rim; live sizes and counts are checked by map_readonly and map_travel');
   check(/minimum_lines = mini\(3/.test(orders) && /54 if _routes.size\(\) >= 4/.test(orders) && /gap\(8 if _routes.size\(\) >= 4/.test(orders), 'four-route forks tighten unchosen rows and reserve three fleet lines');
   check(!/_add_orbits|sys\.orbit\(|sys\.orbit_arc\(/.test(m3) && !/STAR_ARCS/.test(system + msh), 'R174: no orbit guides or background star arcs are built around the sun');
   check(/const STOP_ICON_PX := 24\.0/.test(gsh2) && /GS\.stop_icon\(/.test(m3) && /GS\.stop_key\(/.test(sec), 'R174: map and Map key share the 24 px icon and its scaled halo');

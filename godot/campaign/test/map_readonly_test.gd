@@ -29,6 +29,7 @@ var ui
 var fails := 0
 var lines: Array = []
 var fleet_coverage := {}
+var fleet_shapes := {}
 
 
 func check(ok: bool, what: String) -> void:
@@ -95,6 +96,7 @@ func read_screen() -> void:
 # Read the actual built models, not a second list of what each stop should render.
 func read_fleets() -> void:
 	var same := true; var oriented := true; var tiers := true; var count := 0
+	var groups := true; var wedge := true; var stable := true; var compact := true
 	for id in ui.map3d._nodes:
 		var d = ui.map3d._nodes[id]; var n = d["n"]
 		if n["type"] not in ["battle", "elite", "boss"]: continue
@@ -103,9 +105,33 @@ func read_fleets() -> void:
 		var expected = View.stop(C, n)["fac"]
 		if fleet == null: same = false; continue
 		var ships = fleet.get_children()
-		if ships.size() != (1 if n["type"] == "boss" else 3): same = false
+		var level = int(ui.map3d.intel.danger(n)["level"])
+		var kind = str(n["type"])
+		if kind == "boss":
+			if ships.size() != 1 or ships[0].get_child(0).u["cls"] != C.HULLS[C.FACTIONS[expected]["boss"]]["cls"]: groups = false
+		elif kind == "elite":
+			if ships.size() != 3 or ships[0].get_child(0).u["cls"] != "Cruiser": groups = false
+		elif level == 1:
+			if ships.size() not in [1, 2] or ships[0].get_child(0).u["cls"] not in ["Frigate", "Destroyer"]: groups = false
+		else:
+			if ships.size() != 3 or ships[0].get_child(0).u["cls"] not in ["Destroyer", "Cruiser"]: groups = false
+		var lead_length = ships[0].get_child(0).L * ships[0].scale.x
+		var shape: Array = []
 		for ship in ships:
 			if ship.get_child(0).u["fac"] != expected: same = false
+			var length = ship.get_child(0).L * ship.scale.x
+			shape.append([ship.get_child(0).u["cls"], ship.position, ship.rotation, length])
+			if ship != ships[0]:
+				if length > lead_length * 0.56: groups = false
+				if ship.position.x >= ships[0].position.x - 1.0 or is_equal_approx(ship.position.y, ships[0].position.y): wedge = false
+		if ships.size() == 3:
+			if ships[1].position.z * ships[2].position.z >= 0 or is_equal_approx(ships[1].position.x, ships[2].position.x): wedge = false
+		var key = str(C.RUN["sector"]) + "|" + str(id) + "|" + expected + "|" + str(level) + "|" + kind
+		var signature = var_to_str(shape)
+		if fleet_shapes.has(key) and fleet_shapes[key] != signature: stable = false
+		fleet_shapes[key] = signature
+		var bounds = ui.map3d._parts(fleet)["aabb"].size
+		if maxf(bounds.x, bounds.z) > (12.0 if kind == "boss" else 9.0): compact = false
 		var previous = ui.map3d._pos({"col": float(n["col"]) - 1.0, "y": 0.5})
 		if fleet.basis.x.dot((previous - d["pos"]).normalized()) < 0.99: oriented = false
 		var tier = int(d["tier"])
@@ -114,7 +140,10 @@ func read_fleets() -> void:
 			if not is_equal_approx(light[0].light_energy, light[1] * ui.map3d.TIER_LIGHT[tier]) or light[0].light_cull_mask != d["layer"]: tiers = false
 		fleet_coverage[str(n["type"])] = true
 		if expected != C.RUN["map"]["fac"]: fleet_coverage["rival"] = true
-	check(count > 3 and same, "built fight fleets have the same faction as the rail and three hulls, or one capital")
+	check(count > 3 and same, "built fight fleets have the same faction as the rail")
+	check(groups, "actual group counts and classes follow stop kind and danger, with escorts less than 56% of lead length")
+	check(wedge and compact, "actual escorts trail in a staggered wedge with height differences, within a single stop footprint")
+	check(stable, "repeated stop builds keep the same seeded group transforms")
 	check(oriented and tiers, "enemy bows face the player's approach and models and lights use the stop tiers")
 
 
@@ -227,10 +256,19 @@ func _run() -> void:
 		check(parts["vis"].all(func(v): return v.layers == ui.map3d.LAYER_SCENERY) and parts["lights"].all(func(l): return l[0].light_cull_mask == ui.map3d.LAYER_SCENERY), region + ": scenery lighting is isolated from the stops")
 		var landmark = scenery.get_node("Landmark"); var built := false
 		match region:
-			"boneyard": built = landmark.get_child(0).get_child_count() >= 8 and scenery.get_child_count() >= 16
+			"boneyard":
+				var wrecks: Array = []; var factions := {}; var classes := {}; var broken := 0
+				for grave in landmark.get_children():
+					for body in grave.get_children():
+						if not body.has_meta("wreck"): continue
+						var wreck = body.get_meta("wreck"); wrecks.append(float(wreck["length"]))
+						factions[wreck["fac"]] = true; classes[wreck["cls"]] = true
+						if wreck["split"] and body.get_child_count() >= 8: broken += 1
+				wrecks.sort()
+				built = wrecks.size() >= 8 and wrecks.size() <= 12 and factions.size() >= 2 and classes.size() >= 3 and broken >= 2 and wrecks[-1] <= wrecks[-2] * 2.0
 			"nebula": built = parts["vis"].size() >= 20 and landmark.get_child_count() >= 4
-			"world": built = landmark.has_node("body/spin") and landmark.get_child_count() == 4 and landmark.get_node("body/spin").mesh.radius > 10
-			"frontier": built = landmark.get_child(0).material_override.shader.code.contains("discard") and scenery.get_child_count() >= 15
+			"world": built = landmark.has_node("body/spin") and landmark.get_child_count() == 4 and landmark.get_node("body/spin").mesh.radius > 10 and not landmark.get_node("body/spin").material_override.shader.code.contains("abs(p.y)")
+			"frontier": built = landmark.get_child(0).material_override.shader.code.contains("discard") and landmark.get_child(0).mesh.surface_get_array_index_len(0) >= 20480 * 3 and scenery.get_child_count() >= 15
 			"deep": built = not landmark.visible and scenery.get_child_count() == 5 and is_zero_approx(ui.map3d.env.sky.sky_material.get_shader_parameter("neb_gain")) and ui.map3d.props.blinkers.any(func(b): return is_equal_approx(b[2], 7.0))
 		check(built, region + ": the expected landmark and dressing were actually built")
 		seen_regions[region] = true

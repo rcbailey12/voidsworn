@@ -295,17 +295,27 @@ func _region_point(t: float, side: float = 1.0, gap: float = 12.0) -> Vector3:
 	var columns = _C().RUN["map"]["cols"].size()
 	return System.stop_position({"col": t * (columns - 1), "y": 1.0 if side > 0 else 0.0}, columns, int(_C().RUN["sector"])) + Vector3(0, -5, side * gap)
 
-func _dead_hull(parent: Node3D, length: float, split: bool = false) -> Node3D:
+func _dead_hull(parent: Node3D, length: float, split: bool = false, fac: String = "hegemony", cls: String = "Battleship") -> Node3D:
 	var body = Node3D.new(); parent.add_child(body)
+	body.set_meta("wreck", {"fac": fac, "cls": cls, "length": length, "split": split})
+	var gap = length * 0.045
 	for half in ([-1.0, 1.0] if split else [0.0]):
-		var hull = _hull("hegemony", "Battleship", length)
+		var hull = _hull(fac, cls, length)
 		if hull == null: continue
-		body.add_child(hull); hull.position.x = half * 1.4
+		body.add_child(hull); hull.position.x = half * gap
 		var shader = Shader.new(); shader.code = System.SH.dead_hull(split)
 		var material = ShaderMaterial.new(); material.shader = shader
-		material.set_shader_parameter("base", Color(0.24, 0.25, 0.27)); material.set_shader_parameter("accent", Color(0.28, 0.29, 0.3))
-		material.set_shader_parameter("windows", 0.0); material.set_shader_parameter("gain", 0.18)
-		material.set_shader_parameter("cut_side", half); material.set_shader_parameter("cut_x", parent.global_position.x + half * 1.4)
+		var graveyard = sys.region == "boneyard"
+		var base = Color(0.4, 0.39, 0.37) if fac == "hegemony" else Color(0.36, 0.3, 0.25)
+		var accent = Color(0.42, 0.44, 0.45) if fac == "hegemony" else Color(0.4, 0.32, 0.24)
+		material.set_shader_parameter("base", base if graveyard else Color(0.24, 0.25, 0.27))
+		material.set_shader_parameter("accent", accent if graveyard else Color(0.28, 0.29, 0.3))
+		material.set_shader_parameter("windows", 0.0); material.set_shader_parameter("gain", 0.3 if graveyard else 0.18)
+		material.set_shader_parameter("metal", 0.25 if graveyard else 0.6)
+		if split:
+			material.set_shader_parameter("cut_side", half)
+			material.set_shader_parameter("cut_origin", body.to_global(Vector3(half * gap, 0, 0)))
+			material.set_shader_parameter("cut_normal", body.global_basis.x.normalized())
 		var stack = [hull]
 		while not stack.is_empty():
 			var node = stack.pop_back(); stack.append_array(node.get_children())
@@ -313,9 +323,9 @@ func _dead_hull(parent: Node3D, length: float, split: bool = false) -> Node3D:
 			elif node is Sprite3D or node is Light3D: node.visible = false
 		# A solid torn bulkhead seals each half. Decks and ribs read through the break.
 		if split:
-			props.part(body, props.box(0.18, length * 0.11, length * 0.23), props.hull_mat(Color(0.13, 0.12, 0.11), Color(0.22, 0.19, 0.16), 5, 0), Vector3(half * 1.4, 0, 0))
+			props.part(body, props.box(0.12, length * 0.11, length * 0.23), props.hull_mat(Color(0.13, 0.12, 0.11), Color(0.22, 0.19, 0.16), 5, 0), Vector3(half * gap, 0, 0))
 			for deck in 3:
-				props.beam(body, Vector3(half * 1.55, (deck - 1) * length * 0.035, -length * 0.11), Vector3(half * 1.55, (deck - 1) * length * 0.035, length * 0.11), 0.16, material)
+				props.beam(body, Vector3(half * (gap + 0.08), (deck - 1) * length * 0.035, -length * 0.11), Vector3(half * (gap + 0.08), (deck - 1) * length * 0.035, length * 0.11), 0.1, props.hull_mat(Color(0.2, 0.17, 0.14), Color(0.28, 0.23, 0.18), 5, 0))
 	return body
 
 func _build_region() -> void:
@@ -329,13 +339,17 @@ func _build_region() -> void:
 	var grey = Color(0.28, 0.3, 0.33); var lamp = Color(0.55, 0.65, 0.72)
 	match sys.region:
 		"boneyard":
-			_dead_hull(landmark, 29, true)
-			for i in 4: sys.glow(landmark, Color(0.8, 0.24, 0.05), 1.0, Vector3(_rng.randf_range(-1.1, 1.1), 0.6, _rng.randf_range(-2.5, 2.5)), 3.0, 0.28, 0.25)
-			for i in 15:
-				var field = Node3D.new(); region_scenery.add_child(field); field.position = _region_point(float(i) / 14.0, 1.0 if i % 3 != 0 else -1.0, _rng.randf_range(10, 19))
-				sys.wreck_scraps(field, 12 if quality != "low" else 5, 3.5)
-				if i % 3 == 0: _dead_hull(field, _rng.randf_range(3, 6))
-				_spinners.append([field, Vector3(0.3, 0.8, 0.2).normalized(), _rng.randf_range(0.008, 0.018)])
+			# Ten distinct dead ships, two fleets and four classes. No dominant centrepiece.
+			for i in 10:
+				var field = Node3D.new(); field.name = "Grave%d" % i; landmark.add_child(field)
+				var at = _region_point(0.38 + (i % 5) * 0.085 + _rng.randf_range(-0.015, 0.015), 1, 8 + (i / 5) * 10 + _rng.randf_range(-2, 2))
+				field.global_position = at
+				field.rotation = Vector3(_rng.randf_range(-0.28, 0.28), _rng.randf_range(-PI, PI), _rng.randf_range(-0.3, 0.3))
+				var classes = ["Battleship", "Cruiser", "Destroyer", "Frigate"]
+				var lengths = [12.0, 10.5, 8.0, 5.5, 7.0, 11.0, 9.0, 6.0, 5.0, 7.5]
+				_dead_hull(field, lengths[i], i % 3 == 0, "hegemony" if i % 2 == 0 else "corsair", classes[i % 4])
+				sys.wreck_scraps(field, 14 if quality != "low" else 6, 4.5)
+				if i in [0, 3, 6]: sys.glow(field, Color(0.8, 0.24, 0.05), 0.8, Vector3(0, 0.4, 0), 3.0, 0.28, 0.25)
 		"nebula":
 			for i in 11:
 				var bank = sys.clouds(region_scenery, Color(0.32, 0.16, 0.65), Color(0.08, 0.32, 0.65), 3 if quality != "low" else 2, 10.0, _region_point(float(i) / 10.0, 1, 4), 0.55, 0.12)
@@ -350,7 +364,7 @@ func _build_region() -> void:
 			# The contested planet uses the shared procedural surface with visible night settlements.
 			planet.get_node("spin").material_override = sys.mat("PLANET", {"a": Color(0.25, 0.3, 0.23), "b": Color(0.045, 0.09, 0.16), "atmo": Color(0.25, 0.38, 0.52), "kind": 1.0, "seed": 17.0, "sun_pos": sys.sun_pos, "night": 0.12})
 			var surface = planet.get_node("spin").material_override
-			var shader = Shader.new(); shader.code = System.SH.PLANET.replace("vec3(0.92)", "vec3(0.32, 0.36, 0.4)").replace("ALBEDO = col;", "ALBEDO = col * 0.55;")
+			var shader = Shader.new(); shader.code = System.SH.briefing_world()
 			surface.shader = shader
 			for cloud in planet.get_node("spin").get_children():
 				var cloud_shader = Shader.new(); cloud_shader.code = System.SH.CLOUDS.replace("vec3(0.95)", "vec3(0.22, 0.25, 0.28)")
@@ -389,30 +403,22 @@ func _enemy_fleet(obj: Node3D, n: Dictionary, fac: String) -> float:
 	var heading = atan2(-toward.z, toward.x)
 	var formation = Node3D.new(); formation.name = "EnemyFleet"; formation.rotation.y = heading
 	obj.add_child(formation)
-	formation.scale = Vector3.ONE * 1.25
-	var cls = "Cruiser" if t == "elite" else "Destroyer"
-	var length = 6.6 if t == "elite" else 5.8
-	if t == "boss":
-		var tpl = _C().FACTIONS[fac].get("boss")
-		cls = str(_C().HULLS[tpl]["cls"]); length = 12.0
-	var lead = _hull(fac, cls, length)
-	if lead != null:
-		lead.name = "Leader"; lead.position = Vector3(0, 1.8, 0); formation.add_child(lead)
-		_map_ship_rim(lead)
-	if t != "boss":
-		for i in 2:
-			var escort = _hull(fac, "Frigate", 3.8)
-			if escort == null: continue
-			escort.name = "Escort%d" % i
-			escort.position = Vector3(-2.0 - float(i) * 0.5, 1.5, -2.4 if i == 0 else 2.4)
-			escort.rotation.y = -0.08 if i == 0 else 0.12
-			formation.add_child(escort)
-			_map_ship_rim(escort)
+	var level = int(intel.danger(n).get("level", 1))
+	formation.set_meta("danger_level", level)
+	var group = System.fight_group(n, int(_C().RUN["sector"]), level)
+	for i in group.size():
+		var member = group[i]; var cls = member["cls"]
+		if cls == "capital": cls = str(_C().HULLS[_C().FACTIONS[fac]["boss"]]["cls"])
+		var ship = _hull(fac, cls, member["length"])
+		if ship == null: continue
+		ship.name = "Leader" if i == 0 else "Escort%d" % i
+		ship.position = member["at"]; ship.rotation.y = member["yaw"]
+		formation.add_child(ship); _map_ship_rim(ship)
 	# A local neutral key keeps dark hulls readable even in the well. The normal stop tiers dim it too.
 	var fill = OmniLight3D.new(); fill.light_color = Color(0.82, 0.87, 1.0)
 	fill.light_energy = 8.0; fill.omni_range = 16.0; fill.omni_attenuation = 0.5
 	fill.position = Vector3(-2, 5, 6); fill.shadow_enabled = false; obj.add_child(fill)
-	return (4.6 if t == "boss" else 3.6) * 1.25
+	return 4.0 if t == "boss" else 3.2
 
 func _map_ship_rim(hull: Node3D) -> void:
 	for mesh in hull.find_children("*", "MeshInstance3D", true, false):
@@ -667,7 +673,7 @@ func _refresh() -> void:
 	_kb_order.clear()
 	for id in _nodes:
 		var d = _nodes[id]; var n = d["n"]; var done = C.jt(n.get("done"))
-		if n["type"] in ["battle", "elite", "boss"] and d["fac"] != C.nodeFaction(n):
+		if n["type"] in ["battle", "elite", "boss"] and (d["fac"] != C.nodeFaction(n) or d["obj"].get_node("EnemyFleet").get_meta("danger_level") != int(intel.danger(n).get("level", 1))):
 			root3.remove_child(d["obj"]); d["obj"].queue_free()
 			_add_node(n); d = _nodes[id]
 		var current = C.RUN.get("pos") == id

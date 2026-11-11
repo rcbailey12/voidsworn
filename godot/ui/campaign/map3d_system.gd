@@ -27,8 +27,27 @@ const APPROACH := [
 		"fit_sun": true, "arrival_zoom": 0.88, "arrival_lean": 0.16, "arrival_seconds": 1.2},
 ]
 var approach: Dictionary = APPROACH[0]
-const REGION_SCENERY := {"boneyard": "broken_capital", "nebula": "storm_core", "world": "contested_planet", "frontier": "hollow_asteroid", "deep": "far_derelicts"}
+const REGION_SCENERY := {"boneyard": "fleet_graveyard", "nebula": "storm_core", "world": "contested_planet", "frontier": "hollow_asteroid", "deep": "far_derelicts"}
 var region := ""
+
+# A stop owns its formation seed. Danger only selects the lead class and escort count;
+# rebuilding or visiting another stop cannot change its heading, height or spacing.
+static func fight_group(n: Dictionary, sector: int, danger: int) -> Array:
+	var random := RandomNumberGenerator.new()
+	random.seed = hash(str(sector) + "|" + str(n["id"]) + "|group")
+	var kind = str(n["type"])
+	var lead = "Frigate" if danger == 1 else ("Destroyer" if danger == 2 else "Cruiser")
+	var length = 4.4 if danger == 1 else (4.8 if danger == 2 else 5.4)
+	var escort_roll = random.randi_range(0, 1)
+	var escorts = escort_roll if danger == 1 else 2
+	if kind == "elite": lead = "Cruiser"; length = 5.6; escorts = 2
+	if kind == "boss": lead = "capital"; length = 9.0; escorts = 0
+	var group := [{"cls": lead, "length": length, "at": Vector3(0.35, 1.8, 0), "yaw": random.randf_range(-0.07, 0.07)}]
+	for i in escorts:
+		group.append({"cls": "Frigate", "length": random.randf_range(1.8, 2.3),
+			"at": Vector3(-2.0 - i * 0.55 + random.randf_range(-0.25, 0.2), random.randf_range(1.25, 1.65), (-1.0 if i == 0 else 1.0) * random.randf_range(1.6, 2.0)),
+			"yaw": random.randf_range(-0.18, 0.18)})
+	return group
 
 static func sector_look(sector: int) -> Dictionary:
 	return APPROACH[clampi(sector - 1, 0, APPROACH.size() - 1)]

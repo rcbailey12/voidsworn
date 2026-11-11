@@ -220,11 +220,12 @@ func _icosphere(sub: int) -> Array:
 			nf += [[tri[0], a, c], [tri[1], b, a], [tri[2], c, b], [a, b, c]]
 		f = nf
 	return [v, f]
-func rock_meshes() -> Array:
-	var key = "hi" if q > 0.5 else "lo"
+func rock_meshes(landmark: bool = false) -> Array:
+	var subdivisions = (5 if landmark else 4) if q > 0.5 else (4 if landmark else 3)
+	var key = str(subdivisions)
 	if _rock_cache.has(key): return _rock_cache[key]
 	var out = []
-	var base = _icosphere(3 if q > 0.5 else 2)
+	var base = _icosphere(subdivisions)
 	for variant in 6:
 		var r = RandomNumberGenerator.new(); r.seed = 9100 + variant * 31
 		var nz = FastNoiseLite.new(); nz.seed = 77 + variant; nz.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH; nz.frequency = 1.1
@@ -232,10 +233,12 @@ func rock_meshes() -> Array:
 		var el = Vector3(r.randf_range(0.8, 1.4), r.randf_range(0.6, 0.95), r.randf_range(0.75, 1.15))
 		var craters = []
 		for i in r.randi_range(5, 11): craters.append([Vector3(r.randfn(), r.randfn(), r.randfn()).normalized(), r.randf_range(0.18, 0.5), r.randf_range(0.05, 0.14)])
+		for i in r.randi_range(14, 22): craters.append([Vector3(r.randfn(), r.randfn(), r.randfn()).normalized(), r.randf_range(0.045, 0.14), r.randf_range(0.009, 0.035)])
 		var vs = []; var cd = []
 		for p in base[0]:
 			var dirv: Vector3 = p
 			var k = 1.0 + nz.get_noise_3dv(dirv * 1.3) * 0.32 + nz.get_noise_3dv(dirv * 4.0 + Vector3(9, 1, 3)) * 0.07
+			k += (1.0 - absf(nz.get_noise_3dv(dirv * 8.0))) * 0.018
 			var dep = 0.0
 			for c in craters:
 				var ang = acos(clamp(dirv.dot(c[0]), -1.0, 1.0)); var u = ang / c[1]
@@ -281,7 +284,7 @@ func hollow_asteroid(parent: Node3D) -> void:
 	# An open crater cut all the way through, with an irregular stone lip and dark tunnel wall.
 	var shader = Shader.new(); shader.code = preload("res://ui/campaign/map3d_shaders.gd").hollow_rock()
 	var material = ShaderMaterial.new(); material.shader = shader
-	var rock = part(parent, rock_meshes()[2], material); rock.scale = Vector3(12, 9, 10)
+	var rock = part(parent, rock_meshes(true)[2], material); rock.scale = Vector3(12, 9, 10)
 	var wall = TorusMesh.new(); wall.inner_radius = 3.2; wall.outer_radius = 5.0; wall.rings = 64; wall.ring_segments = 20
 	part(parent, wall, rock_mat(0), Vector3(0, 5.6, 0), Vector3(25, 0, 0))
 	var rig = mining_rig(parent, 1.8); rig.position = Vector3(2.8, 6.3, 0.8); rig.rotation.z = -0.18
