@@ -42,7 +42,7 @@ const FLASH_FIELD_SHARE := 0.25     # share of that field that may flash at once
 # than the real one (so any real box, wherever it sits, lies inside a tested one: areas are rounded up, never down).
 const FLASH_GRID_DIV := 4
 var flash_cands: Array = []         # bright sprites drawn recently: [T, life, x, y, d] (viewport pixels)
-var flash_area_log: Array = []      # tests: every bright-flash request [T, x, y, d, lit_max, counted 0/1, drawn bright 0/1]
+var flash_area_log: Array = []      # tests: every bright-flash request [T, x, y, d, lit_max, counted 0/1, drawn bright 0/1, life]
 # (x, y, d are -1 when unknown, lit_max -1 when not measured). The staging of death beats is tested on these requests;
 # flash_log stays the record of counted flashes, the safety events.
 var flash_area_logging := false
@@ -470,7 +470,7 @@ func flash_ok(T: float, p := Vector3.INF, size := 0.0, px := 0.0, life := FLASH_
 			c = cd
 			if ok:
 				_flash_remember(T, life, c)
-	_flash_note(T, c, -1.0, 1 if ok else 0, 1 if ok else 0)
+	_flash_note(T, c, -1.0, 1 if ok else 0, 1 if ok else 0, life)
 	return ok
 
 
@@ -540,7 +540,7 @@ func flash_at(p: Vector3, T: float, size: float, px := 0.0, life := FLASH_WINDOW
 	for f in _flashes:
 		if absf(f - T) < FLASH_WINDOW:
 			_flash_remember(T, life, c)
-			_flash_note(T, c, -1.0, 0, 1)
+			_flash_note(T, c, -1.0, 0, 1, life)
 			pend("flash", t0)
 			return true
 	var lit := _flash_lit_max(T, life, c)
@@ -551,7 +551,7 @@ func flash_at(p: Vector3, T: float, size: float, px := 0.0, life := FLASH_WINDOW
 		counted = 1 if bright else 0
 	if bright:
 		_flash_remember(T, life, c)
-	_flash_note(T, c, lit, counted, 1 if bright else 0)
+	_flash_note(T, c, lit, counted, 1 if bright else 0, life)
 	pend("flash", t0)
 	return bright
 
@@ -597,42 +597,63 @@ func _flash_remember(T: float, life: float, c: PackedFloat64Array) -> void:
 		flash_cands = keep
 
 
-func _flash_note(T: float, c: PackedFloat64Array, lit: float, counted: int, bright: int) -> void:
+func _flash_note(T: float, c: PackedFloat64Array, lit: float, counted: int, bright: int, life := FLASH_WINDOW) -> void:
 	if flash_area_logging:
-		flash_area_log.append([T, c[0], c[1], c[2], lit, counted, bright])
+		flash_area_log.append([T, c[0], c[1], c[2], lit, counted, bright, maxf(life, FLASH_WINDOW)])
 
 
 # The most lit area any 10 degree box around c can hold from the bright flashes that overlap c in time (c included).
 func _flash_lit_max(T: float, life: float, c: PackedFloat64Array) -> float:
 	var l := maxf(life, FLASH_WINDOW)
-	var cur: Array = [PackedFloat64Array([T, l, c[0], c[1], c[2]])]
-	for e in flash_cands:
-		if float(e[0]) < T + l and T < float(e[0]) + float(e[1]):
-			cur.append(e)
 	var S := flash_box_px()
 	var g := maxf(floorf(S / FLASH_GRID_DIV), 1.0)
 	var B := S + g
 	var r := float(c[2]) * 0.5
+	# the bright flashes that overlap c in time and could share a tested box with it, as rectangles (c included)
+	var rx0 := PackedFloat64Array([c[0] - r])
+	var rx1 := PackedFloat64Array([c[0] + r])
+	var ry0 := PackedFloat64Array([c[1] - r])
+	var ry1 := PackedFloat64Array([c[1] + r])
+	var cap := PackedFloat64Array([PI * 0.25 * c[2] * c[2]])
+	var reach := r + B
+	for e in flash_cands:
+		if float(e[0]) < T + l and T < float(e[0]) + float(e[1]):
+			var er := float(e[4]) * 0.5
+			if absf(float(e[2]) - c[0]) < reach + er and absf(float(e[3]) - c[1]) < reach + er:
+				rx0.append(float(e[2]) - er)
+				rx1.append(float(e[2]) + er)
+				ry0.append(float(e[3]) - er)
+				ry1.append(float(e[3]) + er)
+				cap.append(PI * 0.25 * float(e[4]) * float(e[4]))
+	var n := cap.size()
+	# cheap case: all of them together are under the quarter, so no box can be over it (still an upper bound)
+	var total := 0.0
+	for j in n:
+		total += cap[j]
+	if total <= flash_quarter_px2():
+		return total
 	var best := 0.0
 	var kx0 := floori((c[0] - r - B) / g)
 	var kx1 := floori((c[0] + r) / g)
 	var ky0 := floori((c[1] - r - B) / g)
 	var ky1 := floori((c[1] + r) / g)
+	# per column of boxes, each flash's x overlap once; then each row adds its y overlap
+	var wx := PackedFloat64Array()
+	wx.resize(n)
 	for kx in range(kx0, kx1 + 1):
 		var ox := kx * g
+		for j in n:
+			wx[j] = minf(ox + B, rx1[j]) - maxf(ox, rx0[j])
 		for ky in range(ky0, ky1 + 1):
 			var oy := ky * g
 			var sum := 0.0
-			for e in cur:
-				var er := float(e[4]) * 0.5
-				var wx := minf(ox + B, float(e[2]) + er) - maxf(ox, float(e[2]) - er)
-				if wx <= 0.0:
-					continue
-				var wy := minf(oy + B, float(e[3]) + er) - maxf(oy, float(e[3]) - er)
-				if wy <= 0.0:
-					continue
-				sum += minf(wx * wy, PI * 0.25 * float(e[4]) * float(e[4]))
-			best = maxf(best, sum)
+			for j in n:
+				if wx[j] > 0.0:
+					var wy := minf(oy + B, ry1[j]) - maxf(oy, ry0[j])
+					if wy > 0.0:
+						sum += minf(wx[j] * wy, cap[j])
+			if sum > best:
+				best = sum
 	return best
 
 
