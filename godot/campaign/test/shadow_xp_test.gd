@@ -12,6 +12,7 @@ func _init() -> void:
 	var c = Campaign.new(); var error = c.load_tables()
 	if error != "": printerr(error); quit(1); return
 	c.fixed_clock = true
+	c.META["admirals"]["vaelen"] = true
 	c.newRun("vaelen", "ithar"); c.RUN["stats"]["battles"] = 8; c.endRun(false)
 	check(c.masteryXP("vaelen") == 8 and c.masteryXP("aelith") == 2 and c.masteryXP("vex") == 0, "quarter rate and faction scope")
 	c.act("nameHeir", "vex"); c.act("nameHeir", "vaelen")

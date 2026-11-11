@@ -29,7 +29,9 @@ func settle() -> void:
 
 func choose(c, fac: String, i: int) -> void:
 	var row: Dictionary = c.TB.STORY_BEAT3[fac]
-	c.newRun(row["spotlights"].keys()[0], fac); c.RUN["sector"] = 3
+	var id = row["spotlights"].keys()[0]
+	c.META["admirals"][id] = true  # the harness owns the admiral it flies
+	c.newRun(id, fac); c.RUN["sector"] = 3
 	c.mapScreen(); c.showBeat3(); c.act("eventChoice", str(i))
 
 func real_battle(c, api, extra := {}) -> Dictionary:
@@ -143,6 +145,7 @@ func _initialize() -> void:
 		for id in c.ADMIRALS:
 			if c.ADMIRALS[id]["fac"] != fac: continue
 			count += 1
+			c.META["admirals"][id] = true  # the harness owns the admiral it flies
 			c.newRun(id, fac); c.RUN["sector"] = 3
 			c.mapScreen()
 			check(c.showBeat3(), str(id) + " opens decision")
@@ -155,6 +158,7 @@ func _initialize() -> void:
 		check(count == 4, str(fac) + " four admirals")
 		for i in range(2):
 			var id = row["spotlights"].keys()[0]
+			c.META["admirals"][id] = true  # the harness owns the admiral it flies
 			c.newRun(id, fac); c.RUN["sector"] = 3; c.mapScreen(); c.showBeat3()
 			c.act("eventChoice", str(i))
 			check(c.RUN["flags"].get(row["id"]) == str(i), str(fac) + " shipped choice id")
@@ -169,7 +173,9 @@ func _initialize() -> void:
 			check(text_of(ui).contains(row["debrief"]), str(fac) + " battle debrief renders")
 			if i == 0: await shot(str(fac) + "_battle_debrief")
 		for won in [false, true]:
-			c.newRun(row["spotlights"].keys()[0], fac); c.RUN["sector"] = 3
+			var id = row["spotlights"].keys()[0]
+			c.META["admirals"][id] = true  # the harness owns the admiral it flies
+			c.newRun(id, fac); c.RUN["sector"] = 3
 			c.endRun(won)
 			await settle()
 			check(text_of(ui).contains(row["learning"]), str(fac) + " learning renders after " + str(won))

@@ -9,7 +9,7 @@ const ROOT = path.resolve(__dirname, '..', '..', '..');
 process.env.VS_ORACLE = ROOT;
 require(path.join(ROOT, 'godot/campaign/test/node/env.js')).load(`
 globalThis.progressionTelemetryTest = () => {
-  META = migrateMeta(defaultMeta()); META.unlocked = {};
+  META = migrateMeta(defaultMeta()); META.unlocked = {}; META.admirals.vaelen = true;
   const batch = [
     { admiral: 'vaelen', fac: 'ithar', battles: 8, victory: false },
     { admiral: 'vaelen', fac: 'ithar', battles: 8, victory: false },

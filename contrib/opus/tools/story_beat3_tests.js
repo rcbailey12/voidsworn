@@ -5,7 +5,7 @@ const ROOT = path.resolve(__dirname, '../../..');
 process.env.VS_ORACLE = ROOT;
 require(path.join(ROOT, 'godot/campaign/test/node/env.js')).load(`
 globalThis.story55={table:STORY_BEAT3,admirals:ADMIRALS,card:beat3Card,
-  start(fac,id){newRun(id,fac);RUN.sector=3;},
+  start(fac,id){META.admirals[id]=true;newRun(id,fac);RUN.sector=3;},
   decision(){showBeat3();},
   choose(i){ACT.eventChoice(String(i));},
   end(won){endRun(won);},

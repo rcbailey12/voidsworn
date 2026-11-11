@@ -11,6 +11,7 @@ globalThis.inheritanceTest = () => {
   for (const name of ['loss', 'victory', 'abandon', 'trunk', 'capstone', 'all capped', 'empty']) {
     META = migrateMeta(defaultMeta()); SAVED_RUN = null;
     const flown = name === 'empty' ? 'vex' : 'vaelen';
+    META.admirals[flown] = true;
     const fac = ADMIRALS[flown].fac || 'voidsworn';
     META.renown = name === 'empty' ? 0 : 18;
     META.unlocked.chest1 = name !== 'empty';

@@ -420,11 +420,9 @@ function altCommand(admiralId){ const a=ADMIRALS[admiralId], fac=a.fac||'voidswo
 function newRun(admiralId,fac,opt){
   opt=opt||{}; const adm=ADMIRALS[admiralId]; if(!adm) return;
   // R1 (PROG-6): an admiral you do not own cannot launch. The screen checks this too; the rules function is the gate now.
-  // The shipped browser build has no process, so the gate is live there. Node rule harnesses call newRun directly with
-  // fixture admirals they have not bought, so they keep their own setup (the findings sandbox has no process and does test the gate).
+  // Harnesses that start a run with an admiral they have not bought grant that ownership in their own setup first.
   const owned=typeof admiralOwned==='function'?admiralOwned(admiralId):(!!(META.admirals&&META.admirals[admiralId])||!(adm.cost>0));
-  const nodeHarness=typeof process!=='undefined'&&!!(process.versions&&process.versions.node);
-  if(!owned&&!nodeHarness){ RUN=null; return; }
+  if(!owned){ RUN=null; return; }
   fac=RUN_FACTIONS.includes(fac)?fac:'voidsworn';
   RUN = {fac, foes:shuffle(RUN_FACTIONS.filter(f=>f!==fac)), admiral:admiralId, credits:120, cpCap:10, sector:1, relics:[], inventory:[], fleet:[], pos:null,
     stats:{battles:0,elites:0,bosses:0,kills:0,lost:0}, t0:Date.now(), fallen:[], ambush:false, over:false, boons:[], patrons:shuffle(Object.keys(PATRONS)).slice(0,4), aspect:null, flagUid:null, nem:null};

@@ -18,6 +18,7 @@ func _init() -> void:
 	var fixtures = JSON.parse_string(FileAccess.get_file_as_string(args[0]))
 	for f in fixtures:
 		c.META = c.migrateMeta(f["meta"]); c.SAVED_RUN = null
+		c.META["admirals"][f["flown"]] = true
 		c.newRun(f["flown"], f["fac"]); c.RUN["stats"] = f["stats"].duplicate(true); c.RUN["sector"] = f["sector"]
 		c.endRun(f["victory"], f["abandoned"])
 		check(c.page["kind"] == "end", f["name"] + ": end screen")

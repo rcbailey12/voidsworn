@@ -7,7 +7,7 @@ process.env.VS_ORACLE = path.resolve(__dirname, '../../..');
 require('../../../godot/campaign/test/node/env.js').load(`
 globalThis.shadowXPTest = () => {
   const ok = require('assert'), fixtures = [];
-  META = migrateMeta(defaultMeta());
+  META = migrateMeta(defaultMeta()); META.admirals.vaelen = true;
   newRun('vaelen', 'ithar'); RUN.stats.battles = 8; endRun(false);
   ok.equal(masteryXP('vaelen'), 8);
   ok.equal(masteryXP('aelith'), 2, 'benched same faction earns a quarter');

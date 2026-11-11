@@ -48,13 +48,13 @@ func _init() -> void:
 	check(c.capstoneMasteryNext("vaelen") == null, "600 XP is full mastery")
 
 	# XP past 230 deepens the chosen evolution on a real run instead of spilling at once
-	c.META = c.migrateMeta(c.defaultMeta()); c.META["mastery"]["vaelen"] = 300.0; evo(c, "vaelen")
+	c.META = c.migrateMeta(c.defaultMeta()); c.META["admirals"]["vaelen"] = true; c.META["mastery"]["vaelen"] = 300.0; evo(c, "vaelen")
 	c.newRun("vaelen", "ithar"); c.RUN["stats"]["battles"] = 8; c.endRun(false); c.RUN = null
 	check(c.masteryXP("vaelen") == 308.0, "XP past 230 deepens the chosen evolution")
 	check(c.capstoneMasteryLevel("vaelen") == 0, "308 XP is still below mastery 1")
 
 	# without an evolution the same run still stops at 230
-	c.META = c.migrateMeta(c.defaultMeta()); c.META["mastery"]["vaelen"] = 229.0
+	c.META = c.migrateMeta(c.defaultMeta()); c.META["admirals"]["vaelen"] = true; c.META["mastery"]["vaelen"] = 229.0
 	c.newRun("vaelen", "ithar"); c.RUN["stats"]["battles"] = 8; c.endRun(false); c.RUN = null
 	check(c.masteryXP("vaelen") == 230.0, "an unmet line stops at 230")
 	check(c.capstoneMasteryLevel("vaelen") == 0, "an unmet line shows no mastery")
