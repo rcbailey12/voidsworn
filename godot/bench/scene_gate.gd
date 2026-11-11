@@ -248,6 +248,11 @@ func _still_run() -> void:
 				fx.death(deaths[d], "big" if d == 2 else "blast")
 				side_ids["player"].erase(deaths[d])
 				side_ids["enemy"].erase(deaths[d])
+		if film > 0 and close_t != Vector3.INF:
+			# the battle's own camera follows the selected ship; hold the film on the third death's place every step
+			b.cam.t = close_t
+			b.cam.r = float(args.get("film_r", 170.0))
+			b.cam.snap()
 		fx.step(1.0 / 60.0)
 		await get_tree().process_frame
 		# Issue 461: --film N also keeps every Nth step as a 1280x720 jpg (film_<step>.jpg), so the same fixed-clock fight
