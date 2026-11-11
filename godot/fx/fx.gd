@@ -105,8 +105,7 @@ var _fov_set = -1.0         # what the punch last wrote
 var scene_dim := false
 const DIM_LIFE := 0.20
 const DIM_DEPTH := 0.35
-var _dim_env: Environment = null
-var _dim_base := 1.0
+var _dim_veil: MeshInstance3D = null
 var _dim_t0 := -1.0
 
 static var _globals_added := false
@@ -679,27 +678,40 @@ func _update_punch() -> void:
 		_fov_set = -1.0
 
 
-# Issue 462: the scene dim after a capital's core flash (see scene_dim). The environment the camera draws with is dimmed
-# through its exposure and put back exactly when the dip ends; a second dip during one is ignored.
+# Issue 462: the scene dim after a capital's core flash (see scene_dim). A black veil a hair in front of the camera fades
+# in over a quarter of the dip and out over the rest, so the whole frame (sky, ships, effects) loses a little light
+# whatever environment the scene uses. A second dip during one is ignored.
 func dim_scene(t: float) -> void:
 	if not scene_dim or reduce_flashing or _dim_t0 >= 0.0:
 		return
-	var e: Environment = null
-	if camera != null and is_instance_valid(camera) and camera.environment != null:
-		e = camera.environment
-	elif is_inside_tree() and get_viewport() != null and get_viewport().find_world_3d() != null:
-		e = get_viewport().find_world_3d().environment
-	if e == null:
+	if camera == null or not is_instance_valid(camera):
 		return
-	_dim_env = e
-	_dim_base = e.tonemap_exposure
+	if _dim_veil == null or not is_instance_valid(_dim_veil):
+		_dim_veil = MeshInstance3D.new()
+		_dim_veil.name = "fx_scene_dim"
+		var q := QuadMesh.new()
+		var d: float = maxf(camera.near * 2.0, 0.06)
+		var h: float = 2.0 * d * tan(deg_to_rad(camera.fov) * 0.5) * 1.3
+		q.size = Vector2(h * 3.0, h)
+		_dim_veil.mesh = q
+		var m := StandardMaterial3D.new()
+		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		m.no_depth_test = true
+		m.render_priority = 127
+		m.albedo_color = Color(0, 0, 0, 0)
+		_dim_veil.material_override = m
+		_dim_veil.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		camera.add_child(_dim_veil)
+		_dim_veil.position = Vector3(0, 0, -d)
+	_dim_veil.visible = true
 	_dim_t0 = t
 
 
 func _update_dim() -> void:
 	if _dim_t0 < 0.0:
 		return
-	if _dim_env == null or reduce_flashing:
+	if _dim_veil == null or not is_instance_valid(_dim_veil) or reduce_flashing:
 		_end_dim()
 		return
 	var u: float = (now - _dim_t0) / DIM_LIFE
@@ -708,15 +720,14 @@ func _update_dim() -> void:
 		return
 	if u < 0.0:
 		return
-	# down in a quarter of the dip, back over the rest
-	var k := u / 0.25 if u < 0.25 else 1.0 - (u - 0.25) / 0.75
-	_dim_env.tonemap_exposure = _dim_base * (1.0 - DIM_DEPTH * clampf(k, 0.0, 1.0))
+	var k: float = u / 0.25 if u < 0.25 else 1.0 - (u - 0.25) / 0.75
+	(_dim_veil.material_override as StandardMaterial3D).albedo_color = Color(0, 0, 0, DIM_DEPTH * clampf(k, 0.0, 1.0))
 
 
 func _end_dim() -> void:
-	if _dim_env != null and _dim_t0 >= 0.0:
-		_dim_env.tonemap_exposure = _dim_base
-	_dim_env = null
+	if _dim_veil != null and is_instance_valid(_dim_veil):
+		(_dim_veil.material_override as StandardMaterial3D).albedo_color = Color(0, 0, 0, 0)
+		_dim_veil.visible = false
 	_dim_t0 = -1.0
 
 

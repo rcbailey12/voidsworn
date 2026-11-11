@@ -1187,7 +1187,7 @@ static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
 	var p: Vector3 = pose * (hit["p"] as Vector3)
 	var n: Vector3 = (pose.basis * (hit["n"] as Vector3)).normalized()
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
-	var jet := flipbook(fx, p, n, s.hull.L * (0.6 if s.death_big else 0.85), "vent", 0.65 if s.death_big else 0.30, inherited + n * s.hull.L * 0.12, 1.3, atlas_band(s.hull.L), s, true)
+	var jet := flipbook(fx, p, n, s.hull.L * (0.35 if s.death_big else 0.85), "vent", 0.65 if s.death_big else 0.30, inherited + n * s.hull.L * 0.12, 1.3, atlas_band(s.hull.L), s, true)
 	# The ignition and its light share one booking. Calm mode keeps dark gas. On a big hull the vent opens 0.04 s
 	# before the first chain blast, so the two are one counted flash (FLASH_WINDOW).
 	if fx.flash_ok(fx.now):
@@ -1420,7 +1420,7 @@ static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: 
 	var body_px := 380.0 if capital else 260.0
 	_pic(fx, s, p, "weapons/impact/impact_", body_px, 2.0 if capital else 1.6, 0.80, 2.0, false, "impact", frame)
 	if fx.quality != "low":
-		var gas := flipbook(fx, p, Vector3.UP, s.hull.L * (1.0 if capital else 0.9), "cool", 3.6 if capital else 3.0, s.get_meta("death_velocity", Vector3.ZERO) * 0.5, 0.6, atlas_band(s.hull.L), null)
+		var gas := flipbook(fx, p, Vector3.UP, s.hull.L * (0.8 if capital else 0.7), "cool", 3.6 if capital else 3.0, s.get_meta("death_velocity", Vector3.ZERO) * 0.5, 0.38, atlas_band(s.hull.L), null)
 		(gas.material_override as ShaderMaterial).set_shader_parameter("born", fx.now + 0.45)
 		gas.set_meta("spawn_frame", frame)
 		fx.record_spawn(s, p, false, frame)
