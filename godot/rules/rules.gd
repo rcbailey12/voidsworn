@@ -323,7 +323,7 @@ func boon_fx(id, m: float) -> Dictionary:
 		"s_ion": return {"ionPlus": 0.22 * m}
 		"s_regen": return {"stormRegen": 0.18 * m}
 		"s_ev": return {"ev": JSM.jsround(6.0 * m)}
-		"h_hatch": return {"hangar": 2 if m >= 1.5 else 1}
+		"h_hatch": return {"hangar": 3 if m >= 2 else (2 if m >= 1.5 else 1)}
 		"h_wings": return {"sqPct": 0.25 * m}
 		"h_chitin": return {"sqHp": 0.3 * m}
 		"h_board": return {"boardPct": 0.25 * m}
@@ -339,7 +339,7 @@ func boon_fx(id, m: float) -> Dictionary:
 		"r_jink": return {"burnEv": JSM.jsround(15.0 * m)}
 		"r_shock": return {"ramSplash": 0.25 * m}
 		"e_war": return {"torpPct": 0.25 * m}
-		"e_reload": return {"torpCd": 2 if m >= 1.5 else 1}
+		"e_reload": return {"torpCd": 3 if m >= 2 else (2 if m >= 1.5 else 1)}
 		"e_kindle": return {"igniteCh": 0.12 * m, "fireDmg": JSM.jsround(4.0 * m)}
 		"e_chain": return {"chainBoom": JSM.jsround(20.0 * m), "chainFire": 1 if m >= 2 else 0}
 		"e_hunt": return {"huntPct": 0.2 * m, "pyre": 1}
@@ -349,12 +349,12 @@ func boon_fx(id, m: float) -> Dictionary:
 		"d_burnswarm": return {"sqIgnite": 0.3}
 		"d_hunter": return {"momCrit": 25}
 		"d_inferno": return {"broadIgnite": 0.4, "fireLong": 1, "fireDmg": 4}
-		"i_wall": return {"wallBrace": 1}
-		"s_chain": return {"chainSh": 1}
-		"h_brood": return {"broodTithe": 1}
-		"a_mark": return {"markLance": 1}
-		"r_slip": return {"fade": 1}
-		"e_spread": return {"spread": 0.3}
+		"i_wall": return {"wallBrace": 1, "wallPlus": 0.1 * (m - 1)}
+		"s_chain": return {"chainSh": m / 3.0}
+		"h_brood": return {"broodTithe": 1, "broodRepair": 0.1 * (m - 1)}
+		"a_mark": return {"markLance": m}
+		"r_slip": return {"fade": 0.5 * m}
+		"e_spread": return {"spread": 0.3 * m}
 		"L_iron": return {"lastStand": 1}
 		"L_storm": return {"stormRegen": 1}
 		"L_hunger": return {"hangar": 2, "endless": 1}
@@ -2190,7 +2190,7 @@ func braceMul(t) -> float:
 	if jt(t.get("coverBy")) and B != null:
 		for c in B["units"]:
 			if c["id"] == t["coverBy"]:
-				if not jt(c.get("dead")) and jt(c.get("braced")): return max(0.15, 1.0 - 0.4 - z0(g(c.get("fx"), "bracePlus")))
+				if not jt(c.get("dead")) and jt(c.get("braced")): return max(0.15, 1.0 - 0.4 - z0(g(c.get("fx"), "bracePlus")) - z0(g(c.get("fx"), "wallPlus")))
 				break
 	return 1.0
 func aiHurtW(u, prof) -> float:
@@ -2419,7 +2419,7 @@ func _hitChance_raw(u, w, t) -> float:
 		for x in B["units"]:
 			if not jt(x.get("dead")) and not is_same(x, t) and x["side"] == t["side"] and not jt(x.get("isSq")) and hdist(x, t) == 1:
 				c -= t["fx"]["lineEv"]; break
-	if B != null and B.get("mark") != null and B["mark"].get(u["side"]) != null and B["mark"][u["side"]]["r"] == B["round"] and B["mark"][u["side"]]["id"] == t.get("id"): c += 10
+	if B != null and B.get("mark") != null and B["mark"].get(u["side"]) != null and B["mark"][u["side"]]["r"] == B["round"] and B["mark"][u["side"]]["id"] == t.get("id"): c += float(B["mark"][u["side"]].get("aim", 10.0))
 	var tl = treeSkill("flagshipLens")
 	if tl != null and w["k"] == "lance" and u["side"] == "player" and B != null and B.get("treeLens") != null and B["treeLens"]["r"] == B["round"] and B["treeLens"]["id"] == t.get("id"): c += treeAddVal(u, "aim", tl["n"])
 	var f1 = treeSkill("firstLight")
@@ -2862,7 +2862,9 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 		var kk = "sq" if jt(u.get("isSq")) else w["k"]; B["usage"]["kind"][kk] = z0(B["usage"]["kind"].get(kk)) + 1
 		if jt(w.get("ion")): B["usage"]["ion"] = z0(B["usage"].get("ion")) + 1
 	if not jt(opts.get("intercept")) and not jt(u.get("isSq")) and w["k"] != "flak" and not jt(u.get("postFire")):
-		u["postFire"] = true; u["postMp"] = (u["mp"] if treeFullFade(u) else floor(u["mp"] / 2.0)) if canFade(u) else 0
+		u["postFire"] = true
+		var ff = z0(g(u.get("fx"), "fade")); if ff <= 0.0: ff = 0.5
+		u["postMp"] = (u["mp"] if treeFullFade(u) else floor(u["mp"] * ff)) if canFade(u) else 0
 		if treeFullFade(u): treeFx(u, "splitThree", "the light splits three ways")
 	if not jt(opts.get("intercept")) and u["side"] == "player" and not jt(u.get("isSq")) and (u.get("ab") == "launch" or z0(u.get("hangar")) > 0): B["tr"]["carrierLast"][u["id"]] = t["id"]   # Tamsa T1a
 	if not jt(opts.get("intercept")) and torpTravels(w, u):   # B3: torpedoes travel and strike next turn
@@ -3283,7 +3285,8 @@ func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire
 			emit({"t": "shield_down", "unit": t["id"], "quad": quad}); flt(t, "Shields down", "#9fe2ff", -40)
 		if t["shMax"] > 0 and t["sh"][quad] <= 0.5:
 			if jt(ownerFx(u).get("chainSh")) and shBefore > 0.5 and not jt(t.get("dead")) and t.get("sh") != null:
-				for qq in [(quad + 1) % 4, (quad + 3) % 4]: t["sh"][qq] = JSM.jsround(t["sh"][qq] * 2.0 / 3.0)
+				var csh = z0(ownerFx(u).get("chainSh"))
+				for qq in [(quad + 1) % 4, (quad + 3) % 4]: t["sh"][qq] = JSM.jsround(t["sh"][qq] * (1.0 - csh))
 				boonFx(t, "s_chain", "chain lightning", -62)
 			var ar = ownerFx(u).get("arcShort")
 			if jt(ar) and shBefore > 0.5 and not jt(t.get("dead")):
@@ -3305,7 +3308,7 @@ func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire
 	if res.hits > 0 and w.get("k") == "lance" and not jt(o.get("intercept")) and jt(ownerFx(u).get("markLance")) and B != null and not jt(t.get("dead")):
 		if B.get("mark") == null: B["mark"] = {}
 		if B["mark"].get(u["side"]) == null or B["mark"][u["side"]]["r"] != B["round"]:
-			B["mark"][u["side"]] = {"id": t["id"], "r": B["round"]}; boonFx(t, "a_mark", "marked", -62)
+			B["mark"][u["side"]] = {"id": t["id"], "r": B["round"], "aim": 10.0 * float(ownerFx(u)["markLance"])}; boonFx(t, "a_mark", "marked", -62)
 	var tail = ": " + ", ".join(parts) + "." + ((" " + String(res.sys) + "!") if jt(res.sys) else "")
 	if jt(o.get("torp")): logm("Torpedoes from " + String(u["name"]) + " reach " + String(t["name"]) + (" (a stray hit in the lane)" if jt(o.get("stray")) else "") + tail, pp(u))
 	else: logm(String(u["name"]) + " " + ("intercepts with" if jt(o.get("intercept")) else "fires") + " " + tv(w.get("n")) + " at " + String(t["name"]) + tail, pp(u))
@@ -3529,6 +3532,10 @@ func killUnit(t, by, defer_tail: bool = false) -> void:
 		if cs.size() > 0:
 			var c = cs[0]; var h = launchHexes(c)[0]; var sq = makeWing(c, h, wingKind(c)); sq["mp"] = 0
 			for w in sq["weapons"]: w["fired"] = true
+			var rep = z0(ownerFx(by).get("broodRepair"))
+			if rep > 0.0:
+				var heal = min(c["maxHp"] - c["hp"], JSM.jsround(c["maxHp"] * rep))
+				if heal > 0.0: c["hp"] = c["hp"] + heal; flt(c, "+" + ns(heal) + " hull", "#8ff0a0", -20)
 			boonFx(c, "h_brood", "free wing", -30)
 	if t["side"] == "player" and not jt(t.get("isSq")) and not jt(t.get("transport")):
 		var av = runFx().get("avenge")

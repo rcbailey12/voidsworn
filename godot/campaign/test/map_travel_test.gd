@@ -79,6 +79,25 @@ func _run():
 		var ribbon: ArrayMesh = m.sys.route_ribbon(curve, 1.3, 2.4, 2.4)
 		for vertex in ribbon.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]: check(vertex.is_finite(), "ribbon vertices are finite at both qualities")
 	check(absf(Map._flight_distance(0.01)) < 0.0001 and absf(1.0 - Map._flight_distance(0.99)) < 0.0001, "flight accelerates and brakes from rest")
+	# Every sector's visible lane and flight bend together. In the well the flagship is the closest stop to the star.
+	var old_cols = C.RUN["map"]["cols"]
+	C.RUN["map"]["cols"] = [[], [], [], [], [], [], []]
+	for sector in [1, 2, 3]:
+		C.RUN["sector"] = sector; m.sys.set_sector(sector)
+		var graph_before = JSON.stringify(C.RUN["map"])
+		var points: Array = []
+		for col in 7: points.append(m._pos({"col": col, "y": 0.5}))
+		check(JSON.stringify(C.RUN["map"]) == graph_before, "sector framing leaves the route graph unchanged")
+		if sector == 3:
+			for i in 6:
+				for y in [0.0, 0.5, 1.0]: check(points[6].distance_to(m.sys.sun_pos) < m._pos({"col": i, "y": y}).distance_to(m.sys.sun_pos), "the last stop in the well is nearest the star at every lane height")
+		C.RUN["pos"] = "a"; C.page["data"]["avail"] = ["b"]
+		m.token.position = a + Map.TOKEN_OFF
+		var expected = m.sys.lane_curve(a, m._nodes["b"]["pos"] + Vector3(0, 3, 0))
+		m.fly_to("b")
+		check(m._flight_curve.sample_baked(m._flight_curve.get_baked_length() * 0.5).is_equal_approx(expected.sample_baked(expected.get_baked_length() * 0.5)), "sector %d flight follows the rendered lane" % sector)
+		m._finish_flight()
+	C.RUN["map"]["cols"] = old_cols
 
 	for fps in [30, 60, 144]:
 		C.acts.clear(); C.RUN["pos"] = "a"; C.page["data"]["avail"] = ["b"]

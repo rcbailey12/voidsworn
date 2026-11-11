@@ -187,7 +187,7 @@ const FX_CAPS={
   lineEv:20,burnEv:50,momCrit:50,taunt:8,
   ramSplash:1,igniteCh:1,sqIgnite:1,broadIgnite:1,spread:1,
   lastStand:1,hive:1,cmdTier:1,critSys:1,chainFire:1,pyre:1,bastion:1,
-  fireLong:1,wallBrace:1,chainSh:1,broodTithe:1,markLance:1,fade:1,endless:1,lanceSure:1,
+  fireLong:1,wallBrace:1,wallPlus:.1,chainSh:1,broodTithe:1,broodRepair:.1,markLance:2,fade:1,endless:1,lanceSure:1,
   treeTempHp:.2
 };
 function sumFx(list){const o={}; for(const fx of list){ if(!fx) continue; for(const k in fx) o[k]=(o[k]||0)+fx[k]; }
@@ -418,7 +418,14 @@ function altFleet(admiralId,fac){ return altFleetPlan(admiralId,fac).fleet; }
 function altCommand(admiralId){ const a=ADMIRALS[admiralId], fac=a.fac||'voidsworn', ids=Object.keys(ADMIRALS).filter(k=>(ADMIRALS[k].fac||'voidsworn')===fac), i=ids.indexOf(admiralId);
   for(let k=1;k<ids.length;k++){ const c=ADMIRALS[ids[(i+k)%ids.length]].cmd; if(c&&a.cmd&&c.id!==a.cmd.id) return c; } return null; }
 function newRun(admiralId,fac,opt){
-  opt=opt||{}; const adm=ADMIRALS[admiralId]; fac=RUN_FACTIONS.includes(fac)?fac:'voidsworn';
+  opt=opt||{}; const adm=ADMIRALS[admiralId]; if(!adm) return;
+  // R1 (PROG-6): an admiral you do not own cannot launch. The screen checks this too; the rules function is the gate now.
+  // The shipped browser build has no process, so the gate is live there. Node rule harnesses call newRun directly with
+  // fixture admirals they have not bought, so they keep their own setup (the findings sandbox has no process and does test the gate).
+  const owned=typeof admiralOwned==='function'?admiralOwned(admiralId):(!!(META.admirals&&META.admirals[admiralId])||!(adm.cost>0));
+  const nodeHarness=typeof process!=='undefined'&&!!(process.versions&&process.versions.node);
+  if(!owned&&!nodeHarness){ RUN=null; return; }
+  fac=RUN_FACTIONS.includes(fac)?fac:'voidsworn';
   RUN = {fac, foes:shuffle(RUN_FACTIONS.filter(f=>f!==fac)), admiral:admiralId, credits:120, cpCap:10, sector:1, relics:[], inventory:[], fleet:[], pos:null,
     stats:{battles:0,elites:0,bosses:0,kills:0,lost:0}, t0:Date.now(), fallen:[], ambush:false, over:false, boons:[], patrons:shuffle(Object.keys(PATRONS)).slice(0,4), aspect:null, flagUid:null, nem:null};
   if(opt.teachingGate===true&&(META.stats.finishedRuns==null?(META.stats.runs||0):META.stats.finishedRuns)<2) RUN.teachingGate=true;

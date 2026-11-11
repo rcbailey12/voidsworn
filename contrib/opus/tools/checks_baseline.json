@@ -5,15 +5,12 @@
  "checksCeiling": 14,
  "driftDifferedCeiling": 12,
  "knownFindingsFailures": [
-  "ECO-4",
   "EVT-1",
   "KIT-1",
   "KIT-3",
   "MOD-2",
   "NEM-6",
-  "PROG-6",
   "ROS-9",
-  "RWD-2",
   "UI-5"
  ],
  "knownFindingsNote": "Muse's findings suite asserts its own proposals. Sorted by the Board on Nov 10 2026 (issue 355) and trimmed by issue 358: the 26 opinion tests and the 5 stale tests are out of the gate, leaving the 13 bug ids and the 3 ruled-not-built ids as the only accepted failures. A listed id that passes, or no longer runs, fails the row until it is taken off this list. checksCeiling and driftDifferedCeiling may only go down; a count above either fails the row.",
@@ -107,7 +104,7 @@
   },
   "EVT-1": {
    "tag": "bug",
-   "reason": "the defector flag records presence, not the option that wrote it",
+   "reason": "Issue 385 check: the game is already correct. eventFlags stores the chosen option key (campaign_run.js:247, campaign.gd:1840) and both gates name their choices: the saboteur gate has need.flagK ['question','enlist'] (data.js:408) and the Hegemony verb has freeK ['question','enlist'] (data.js:825), with flagIs reading them (campaign_run.js:245, campaign.gd:1837). The R1 fix landed in this shape. The findings test still calls needMet({flag:'defector'}) with no flagK, so it measures the pre-R1 shape and fails. Left listed until the Muse test is updated to read the real gate; no game change made here.",
    "issue": 385
   },
   "KIT-1": {
@@ -128,7 +125,7 @@
   },
   "MOD-2": {
    "tag": "bug",
-   "reason": "cogitator is a key in both MODULES and RELICS (the collision half; the duplicate-perk half is opinion)",
+   "reason": "cogitator is a key in both MODULES and RELICS. Issue 385 checked every lookup: keep() validates relics against RELICS and inventory against MODULES, modName/relicName and all reward, shop and save paths pass the right id, so no lookup can return the wrong one. The collision is a naming hazard, not a live bug; the duplicate-perk half of the test is opinion. Left on the list because the test still fails on the duplicate-perk half, which this job does not change.",
    "issue": 385
   },
   "MOD-4": {

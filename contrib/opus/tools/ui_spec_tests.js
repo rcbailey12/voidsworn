@@ -108,7 +108,7 @@ check(lows.length >= 4 && lows.every(v => v === 0.35), `every hull-low line is 0
 
   // the map itself
   check(/const BACKDROP_K := 0\.5/.test(m3) && /env\.background_energy_multiplier = BACKDROP_K/.test(m3) && /sys\.backdrop_k = BACKDROP_K/.test(m3), 'the map backdrop (sky, near stars, embers) is at half strength');
-  check(/const TIER_LIGHT := \[1\.0, 0\.45, 0\.18\]/.test(m3) && /const TIER_SCALE := \[1\.0, 0\.7, 0\.6\]/.test(m3) && /func _set_tier\(/.test(m3), 'stops further on are 70% size and under half brightness; stops behind or cut off dimmer still');
+  check(/const TIER_LIGHT := \[1\.0, 0\.75, 0\.375\]/.test(m3) && /const TIER_SCALE := \[1\.0, 0\.85, 0\.425\]/.test(m3) && /func _set_tier\(/.test(m3), 'R170: stops ahead are 85% size and 75% brightness; cut-off stops have half of each');
   check(!/sys\.halo\(|sys\.threat\(|"RING"|_strip_text|func _chip\(|GS\.strip\(|GS\.tag\(/.test(m3), 'no rings, halos, threat holograms, strips or tags on the map');
   check(/"LANE_FLAT"/.test(m3) && !/sys\.mat\("LANE",/.test(m3) && /const LANE_FLAT := /.test(msh) && !/hazard|flow|halo/.test((msh.match(/const LANE_FLAT := """[\s\S]*?"""/) || [''])[0]), 'routes are flat lines: no flow, hazard chevrons or halo');
   check(/for_screen\(Color\(GS\.GILT, 1\.0\)\); w = 1\.25/.test(m3) && /pale\(GS\.PALE\)/.test(m3) && /pale\(GS\.PALE_CUT\)/.test(m3) && !/0\.53, 0\.74, 1\.0/.test(m3), 'routes to the next jumps are lime and wider; every other route is one thin pale line, cut-off ones fainter; no blue routes');
@@ -120,7 +120,7 @@ check(lows.length >= 4 && lows.every(v => v === 0.35), `every hull-low line is 0
   check(!/func _text\(/.test(m3) && /GS\.halo_text\(overlay, f14, Vector2\(fr\.get_center\(\)\.x - w3 \* 0\.5/.test(m3), 'the board shape and reward detail lines are gone from the map; the in-flight line carries the halo');
   // Muse's check of PR 349, condition 3: the names this build retires are gone from the theme; the kept ones are in ui_style.md 5
   const style = read('contrib/opus/briefs/ui_style.md');
-  check(!/\bDANGER_|const DANGER\b|const STOP\b|ROUTE_SAFE|ROUTE_RICH/.test(gsh2) && !/GS\.(DANGER|STOP|ROUTE)/.test(cui + m3 + mi), 'the danger band, stop glyph and route planner colours are retired from glass_shell.gd');
+  check(!/\bDANGER_|const DANGER\b|const STOP\b|ROUTE_SAFE|ROUTE_RICH/.test(gsh2) && !/GS\.(DANGER|STOP|ROUTE)\b/.test(cui + m3 + mi), 'the danger band, stop glyph and route planner colours are retired from glass_shell.gd');
   for (const name of ['BLUE', 'SHADE', 'COLUMN', 'HAIR', 'ROW_LIT', 'ROW_HOVER', 'HALO', 'PALE']) check(new RegExp('const ' + name + ' := ').test(gsh2) && new RegExp('\\| [^|\\n]*\\b' + name + '\\b[^|\\n]* \\|').test(style), `${name} is in glass_shell.gd and has its row in ui_style.md section 5`);
   check(/campaign map exception/i.test(style), 'ui_style.md records the campaign map exception to section 3 (plain words with a dark halo)');
 

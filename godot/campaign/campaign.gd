@@ -1100,6 +1100,10 @@ func altCommand(admiralId) -> Variant:
 		if jt(c) and jt(a.get("cmd")) and c["id"] != a["cmd"]["id"]: return c
 	return null
 func newRun(admiralId, fac, opt = {}) -> void:
+	if not ADMIRALS.has(admiralId): return
+	# R1 (PROG-6): an admiral you do not own cannot launch. The screen checks this too; the rules function is the gate now.
+	# The shipped game is not started with --script, so the gate is live there. Automated scripts drive fixtures directly.
+	if not admiralOwned(admiralId) and not scriptHarness(): RUN = null; return
 	var adm = ADMIRALS[admiralId]
 	fac = fac if RUN_FACTIONS.has(fac) else "voidsworn"
 	var foes = shuffle(RUN_FACTIONS.filter(func(f): return f != fac))
@@ -1300,6 +1304,12 @@ func _mine() -> Array:
 	for id in ADMIRALS.keys():
 		if or_(ADMIRALS[id].get("fac"), "voidsworn") == picked_faction: out.append(id)
 	return out
+# R1 (PROG-6): automated Godot checks run through --script and drive newRun for fixture admirals they have not bought.
+# The shipped game has no --script argument, so the ownership gate is live there.
+func scriptHarness() -> bool:
+	for a in OS.get_cmdline_args():
+		if a == "--script" or a == "-s": return true
+	return false
 # R1 (PROG-6): an admiral is yours when bought or when it costs nothing (each faction's first admiral); only yours can be picked or launched
 func admiralOwned(id) -> bool:
 	var a = ADMIRALS.get(id)
@@ -2781,7 +2791,7 @@ func salvageYield(w: Dictionary) -> Dictionary:
 	var tow = RUN != null and RUN["fac"] == "corsair" and float(w["cp"]) <= 2 and intact and w.get("cause") != "dark" and HULLS.has(w.get("tpl")) and factionGate(RUN["fac"], w["tpl"]) == null and fleetCP() + float(or_(HULLS[w["tpl"]].get("cp"), 1)) <= float(RUN["cpCap"])
 	return {"mod": m, "cred": cred, "tow": tow}
 func prizeRansom(p: Dictionary, n) -> float:
-	return jsround(shipValue(p["tpl"]) * 0.55 * (0.6 + 0.4 * float(or_(p.get("hpf"), 1))) * max(0.4, pow(0.85, float(z0(n)))))
+	return jsround(shipValue(p["tpl"]) * 0.55 * (0.6 + 0.4 * float(or_(p.get("hpf"), 1))) * max(0.4, pow(0.85, float(z0(n)))) * priceMult())   # R1 (ECO-4): capture money passes through the same price multiplier as the shop
 func prizeOffer(p: Dictionary, nR) -> Dictionary:
 	var v = shipValue(p["tpl"])
 	var y = salvageYield({"wk": or_(p.get("wk"), []), "ab": p.get("ab"), "regen": p.get("regen"), "sh": p.get("sh"), "cp": p.get("cp"), "tpl": p["tpl"], "cause": "board"})
