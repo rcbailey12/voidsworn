@@ -605,7 +605,7 @@ function salvageYield(w){ const pool=modulePool(), has=m=>pool.includes(m)&&MODU
 // learn; outside review, Oct 25); strip = the refit plus 15%; scrap (full fleet) = 35%. No upkeep for kept prizes (Ryan, R23).
 // R23 (Oct 25): ONE screen for every prize of the battle, values side by side, a default per prize, one confirm. Only the player's own
 // picks are saved (RUN.reward.prizeSel), so a reload shows the same screen with the same picks; defaults are worked out fresh each time.
-function prizeRansom(p,n){ return Math.round(shipValue(p.tpl)*.55*(.6+.4*(p.hpf||1))*Math.max(.4,Math.pow(.85,n||0))); }
+function prizeRansom(p,n){ return Math.round(shipValue(p.tpl)*.55*(.6+.4*(p.hpf||1))*Math.max(.4,Math.pow(.85,n||0))*priceMult()); } // R1 (ECO-4): capture money passes through the same price multiplier as the shop
 function prizeOffer(p,nR){ const v=shipValue(p.tpl), y=salvageYield({wk:p.wk||[],ab:p.ab,regen:p.regen,sh:p.sh,cp:p.cp,tpl:p.tpl,cause:'board'});
   const pool=modulePool(), mod=y.mod||(pool.length?pool[Math.floor((v*7+(p.cp||1)*13)%pool.length)]:null);
   return {fits:fleetCP()+(p.cp||1)<=RUN.cpCap,ransom:prizeRansom(p,nR==null?RUN.ransoms:nR),strip:{mod,cred:Math.round(v*.15)}}; }
