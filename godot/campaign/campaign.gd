@@ -1874,7 +1874,7 @@ func newNemesis(fac0 = null) -> Dictionary:
 	var weakPool = NEM_WEAK.keys().filter(func(k): return not (k == "anchor" and (jt(beh.get("noFlee")) or jt(beh.get("revive")))) and not (clash.has(k) and traits.has(clash[k])))   # zealots and the Deathless never break
 	var g = nemGender(fac, name)
 	var weak = shuffle(weakPool).slice(0, 2)
-	return {"fac": fac, "name": name, "g": g, "title": title, "persona": persona, "traits": traits, "portrait": portrait, "weak": weak, "revealed": [], "adapt": [], "met": 0,
+	return {"fac": fac, "name": name, "g": g, "title": title, "persona": persona, "traits": traits, "portrait": portrait, "weak": weak, "revealed": [], "adapt": [], "adaptSector": 0, "met": 0,
 		"beaten": 0, "scars": 0, "scarKinds": [], "epithets": [], "epithet": null, "last_beat": null, "fed": 0, "riches": 0, "loot": 0, "held": null, "gloat": null, "honed": 0,
 		"revived": false, "dead": false, "seen": {}, "signatures": [], "lessons": []}   # #121: no clock or strike here (they are the run's)
 # R1 (NEM-7): what a pre-persona save keeps when it gets its new identity: everything the rival has built up
@@ -2008,8 +2008,8 @@ func nemWarnLine(N) -> String:
 	var st = nemBeh().get("strike")
 	if jt(RUN.get("nemStrike")) or float(N["met"]) >= float(RUN["sector"]) or nemClockGet() + float(or_(nemBeh().get("clock"), 1)) < float(NEM_CLOCK): return ""
 	if st == "raid":
-		var crip = RUN["fleet"].size() >= 3 and RUN["fleet"].any(func(x): return x["uid"] != RUN["flagUid"] and float(x["hp"]) < float(derive(x)["maxHp"]) * 0.25)
-		return nemSay("Your next win fills his clock: he will raid", N) + " " + (numstr(jsround(float(RUN["credits"]) * 0.25)) + " credits" if float(RUN["credits"]) >= 30 else ("your most damaged ship (repair it above 25% hull, or keep 30 credits, to stop it)" if crip else "and find nothing to take")) + "."
+		var canTow = RUN["fleet"].size() >= 3   # NEM-5: the warning names the tow when the fleet is big enough, since the fight can cripple a ship before the strike lands
+		return nemSay("Your next win fills his clock: he will raid", N) + " " + (numstr(jsround(float(RUN["credits"]) * 0.25)) + " credits" if float(RUN["credits"]) >= 30 else ("your most damaged ship (repair it above 25% hull, or keep 30 credits, to stop it)" if canTow else "and find nothing to take")) + "."
 	if st == "tithe": return "Your next win fills the clock: every ship will lose 6% of its hull (never below 1)."
 	return nemSay("Your next win fills the clock: your next fight will be his.", N)
 func nemFull(N0 = null) -> String:
@@ -2074,6 +2074,11 @@ func nemStrike() -> String:
 	if st == "tithe":
 		for x in RUN["fleet"]: x["hp"] = max(1.0, float(x["hp"]) - jsround(float(derive(x)["maxHp"]) * 0.06))
 		return "The hunt wears on your fleet: every ship loses 6% of its hull."
+	# NEM-4: the four battle strikes are ruled effects that land in the meeting (rules.gd applyNemesis / campaign.gd's round 3 reinforcement); the clock line names the one coming
+	if st == "duel": return "He will meet you with a small elite fleet, keep his range and cut out your damaged ships."
+	if st == "swarm": return "He will come at you in numbers, and his swarm grows tougher with every ship you lose."
+	if st == "reinforce": return "His line will bring reinforcements in round 3; end the fight before the line doubles."
+	if st == "challenge": return "His flagship will challenge yours to single combat; screen your flagship."
 	return ""
 # is this battle node his? (strike pending, or the last fight before the rest stop when he has not been met this sector)
 func nemNodeIs(n) -> bool:
@@ -2100,6 +2105,7 @@ func nemAdapt(force: bool = false, N0 = null) -> Variant:
 	var N = N0 if jt(N0) else nemActive()
 	if not jt(N) or jt(N.get("dead")): return null
 	var fast = jt(NEM_FAC.get(N.get("fac"), {}).get("beh", {}).get("adaptFast")); var cap = max(0.0, float(RUN["sector"]) - 1.0) + ((float(N["beaten"]) + float(N["scars"])) if fast else 0.0)
+	if not force and float(z0(N.get("adaptSector"))) == float(RUN["sector"]): return null   # NEM-3: one adaptation a sector, not a cumulative budget spent twice in one visit
 	if N["adapt"].size() >= min(cap, 6.0) and not force: return null
 	var s = N["seen"] if N.get("seen") is Dictionary else {}
 	var sp = NEM_ADAPT_FAC[N["fac"]].get("special") if NEM_ADAPT_FAC.has(N["fac"]) else null
@@ -2115,7 +2121,7 @@ func nemAdapt(force: bool = false, N0 = null) -> Variant:
 		var rest = score.keys().filter(func(k): return not blocked.has(k) and not N["adapt"].has(k))
 		if rest.size() > 0: pickA = rest[0]
 	if pickA == null: return null
-	N["adapt"].append(pickA); N["seen"] = {}; return pickA
+	N["adapt"].append(pickA); N["adaptSector"] = RUN["sector"]; N["seen"] = {}; return pickA
 func nemAdaptName(a, fac) -> String:
 	var T = NEM_ADAPT_FAC.get(fac, {}) if fac != null else {}
 	if jt(T.get("special")) and T["special"]["id"] == a: return str(T["special"]["n"])
@@ -2253,6 +2259,7 @@ func nemAfterBattle(result: String, flagDead: bool, o: Dictionary = {}) -> Array
 		var fw = nemFoundMerge(o.get("found"))
 		if not fw.is_empty(): out.append("Weakness confirmed: " + ", ".join(PackedStringArray(fw.map(func(k): return str(NEM_WEAK[k]["n"])))) + ".")
 	if jt(beh.get("adaptFast")):
+		N["adaptSector"] = 0
 		var a = nemAdapt(false, N)
 		if a != null:
 			nemSignature("fast_adapt", N); out.append(P["He"] + " learns from it at once: " + nemAdaptName(a, N["fac"]) + " (" + nemSay(nemAdaptWhy(a, N["fac"]), N) + ").")

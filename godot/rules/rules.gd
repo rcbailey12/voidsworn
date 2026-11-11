@@ -1181,9 +1181,11 @@ func startBattle(cfg: Dictionary) -> void:
 	var nCar0 = 0
 	for sh in RUN["fleet"]:
 		if sh["hp"] > 0 and HULLS.has(sh["tpl"]) and jt(HULLS[sh["tpl"]].get("hangar")): nCar0 += 1
+	var hiveFlag: bool = RUN.get("aspect") == "hive" and not RUN["fleet"].any(func(sh): return sh["uid"] == RUN["flagUid"] and float(sh["hp"]) > 0.0 and HULLS.has(sh["tpl"]) and jt(HULLS[sh["tpl"]].get("hangar")))   # PP-2: a hive flagship flies a wing with no hangar, so it is a carrier hull too
 	var adm = ADMIRALS.get(RUN["admiral"])
 	var carDoc: bool = (adm != null and jt(adm.get("cmd")) and adm["cmd"]["id"] == "scramble") or RUN.get("aspect") == "hive"
-	var nCar = nCar0 + (1 if carDoc and nCar0 >= 1 else 0)
+	var carriers = nCar0 + (1 if hiveFlag else 0)
+	var nCar = carriers + (1 if carDoc and carriers >= 1 else 0)
 	if nCar >= 2 and not jt(cfg.get("enemies")):
 		var pd = "spores" if cfg["fac"] == "chorus" else "flak"; var cand = []
 		for u in B["units"]:
