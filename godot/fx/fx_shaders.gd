@@ -1725,6 +1725,59 @@ void fragment() {
 }
 """
 
+# Issue 462, the tell: a tear along one or two break lines (a capital has two), drawn as an overlay on the dying hull. It
+# grows across the hull from the hit side (grow, half_span: -1 at the hit side, +1 across), white-hot at its moving tip
+# and ember behind, at least two pixels wide at any camera. straight = 1 for a lance cut (the beam's own line).
+const TEAR := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+""" + COMMON + """
+uniform mat4 frame;
+uniform vec2 open_a = vec2(0.3, 1.33);
+uniform vec3 cut_at = vec3(0.0);
+uniform vec3 cut_axis = vec3(1.0, 0.0, 0.0);
+uniform vec2 open_b = vec2(-1.0, 1.0);
+uniform vec3 cut_at_b = vec3(0.0);
+uniform vec3 cut_axis_b = vec3(1.0, 0.0, 0.0);
+uniform vec3 grow = vec3(0.0, 0.0, -1.0);
+uniform float half_span = 1.0;
+uniform float width = 0.1;
+uniform float straight = 0.0;
+uniform vec3 tip = vec3(1.0, 0.94, 0.82);
+uniform vec3 ember = vec3(1.0, 0.36, 0.07);
+varying vec3 cut_p;
+varying float view_d;
+void vertex() {
+	cut_p = (frame * vec4(VERTEX, 1.0)).xyz;
+	view_d = -(MODELVIEW_MATRIX * vec4(VERTEX, 1.0)).z;
+}
+vec3 tear_line(vec3 at, vec3 axis, vec2 open, float pxw) {
+	float u = (scene_t - open.x) / max(open.y - open.x, 0.0001);
+	if (u <= 0.0) { return vec3(0.0); }
+	float w = max(width, pxw * 3.2);
+	float wig = (1.0 - straight) * (sin(dot(cut_p, vec3(1.7, 8.3, 5.1))) * 0.6 + sin(dot(cut_p, vec3(5.3, 2.9, 11.7))) * 0.4);
+	float d = abs(dot(cut_p - at, axis) + wig * w * 0.9);
+	float s = dot(cut_p - at, grow) / max(half_span, 0.001);
+	float front = mix(-1.15, 1.15, clamp(u, 0.0, 1.0));
+	float behind = front - s;
+	if (behind < 0.0) { return vec3(0.0); }
+	float core = 1.0 - smoothstep(w * 0.3, w, d);
+	float halo = 1.0 - smoothstep(w, w * 4.0, d);
+	float hot = exp(-behind * behind / 0.04) * (1.0 - smoothstep(1.0, 1.25, u));
+	float age = clamp(behind / 2.3, 0.0, 1.0);
+	vec3 c = mix(ember * 1.4, ember * vec3(0.7, 0.45, 0.35), age);
+	c = mix(c, tip * 2.4, hot);
+	return c * (core * 3.6 + halo * 0.9) * smoothstep(0.0, 0.06, u);
+}
+void fragment() {
+	float pxw = px_world(1.0, view_d, PROJECTION_MATRIX);
+	vec3 col = tear_line(cut_at, cut_axis, open_a, pxw);
+	if (open_b.x >= 0.0) { col += tear_line(cut_at_b, cut_axis_b, open_b, pxw); }
+	if (dot(col, col) < 1e-6) { discard; }
+	ALBEDO = clamp(col * fx_gain, 0.0, 8.0);
+}
+"""
+
 const NOISE3 := """
 // r5: a better hash (Hoskins' hash13), quintic fades and rotated octaves; the old product hash and cubic fade drew a
 // diagonal lattice through the fireballs once their emission amplified the noise (r4 g21: a grid of hard diamonds)

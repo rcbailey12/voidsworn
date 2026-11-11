@@ -513,6 +513,12 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	var id := str(row["id"])
 	_clear()
 	_make_fx()
+	# Issue 462: a row may set effect switches (for example the capital death's scene dim, or reduce flashing). Set by
+	# name so a commit without the switch simply ignores it.
+	var opts = row.get("fx", {})
+	if opts is Dictionary:
+		for k in opts:
+			fx.set(str(k), opts[k])
 	_cam(Vector3.ZERO, r)
 	if not headless:
 		await fx.warmup(cam)

@@ -99,6 +99,14 @@ var _punches: Array = []    # [t, amount] (F3 zoom punch)
 var _kick = 0.0             # the zoom punch now (share of the field of view taken off)
 var _fov_base = -1.0        # the camera's own field of view, under the punch
 var _fov_set = -1.0         # what the punch last wrote
+# Issue 462, a Board proposal for Ryan's eye (deaths_and_hits.md, capital row): straight after a capital's core flash the
+# whole scene dims a little for a fifth of a second. Off by default (setup option "scene_dim" or VS_DEATH_DIM=1) and
+# never under reduce flashing.
+var scene_dim := false
+const DIM_LIFE := 0.20
+const DIM_DEPTH := 0.35
+var _dim_veil: MeshInstance3D = null
+var _dim_t0 := -1.0
 
 static var _globals_added := false
 static var _live_ids: Array = []    # instance ids of live fx nodes (ids, not references, so nothing is kept alive)
@@ -126,6 +134,7 @@ func _exit_tree() -> void:
 # tasks are waited for first: an unawaited WorkerThreadPool task keeps its job (hull materials and textures) alive
 # until the process ends, after the rendering server is gone (G2: "RenderingServer is null" at exit, a crash risk).
 func release() -> void:
+	_end_dim()
 	for id in ships:
 		var s = ships[id]
 		s.wait_damage()
@@ -178,6 +187,7 @@ func setup(opts := {}) -> void:
 	# shipped Cone B (see fx_weapons._vent).
 	vent_look = String(opts.get("vent_look", OS.get_environment("VS_VENT_LOOK")))
 	fx_atlas = String(opts.get("fx_atlas", OS.get_environment("VS_FX_ATLAS")))
+	scene_dim = bool(opts.get("scene_dim", OS.get_environment("VS_DEATH_DIM") == "1"))
 	var rich = quality != "low"
 	var soft = "#define SOFT\n" if rich else ""
 	var big = quality == "max"
@@ -253,6 +263,7 @@ func step(delta: float) -> void:
 	_run_later()
 	t0 = pend("later", t0)
 	_update_feel(delta)
+	_update_dim()
 	for id in ships:
 		(ships[id] as SHIP).update(self, dt)
 	t0 = pend("ships", t0)
@@ -667,6 +678,59 @@ func _update_punch() -> void:
 		_fov_set = -1.0
 
 
+# Issue 462: the scene dim after a capital's core flash (see scene_dim). A black veil a hair in front of the camera fades
+# in over a quarter of the dip and out over the rest, so the whole frame (sky, ships, effects) loses a little light
+# whatever environment the scene uses. A second dip during one is ignored.
+func dim_scene(t: float) -> void:
+	if not scene_dim or reduce_flashing or _dim_t0 >= 0.0:
+		return
+	if camera == null or not is_instance_valid(camera):
+		return
+	if _dim_veil == null or not is_instance_valid(_dim_veil):
+		_dim_veil = MeshInstance3D.new()
+		_dim_veil.name = "fx_scene_dim"
+		var q := QuadMesh.new()
+		var d: float = maxf(camera.near * 2.0, 0.06)
+		var h: float = 2.0 * d * tan(deg_to_rad(camera.fov) * 0.5) * 1.3
+		q.size = Vector2(h * 3.0, h)
+		_dim_veil.mesh = q
+		var m := StandardMaterial3D.new()
+		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		m.no_depth_test = true
+		m.render_priority = 127
+		m.albedo_color = Color(0, 0, 0, 0)
+		_dim_veil.material_override = m
+		_dim_veil.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		camera.add_child(_dim_veil)
+		_dim_veil.position = Vector3(0, 0, -d)
+	_dim_veil.visible = true
+	_dim_t0 = t
+
+
+func _update_dim() -> void:
+	if _dim_t0 < 0.0:
+		return
+	if _dim_veil == null or not is_instance_valid(_dim_veil) or reduce_flashing:
+		_end_dim()
+		return
+	var u: float = (now - _dim_t0) / DIM_LIFE
+	if u >= 1.0:
+		_end_dim()
+		return
+	if u < 0.0:
+		return
+	var k: float = u / 0.25 if u < 0.25 else 1.0 - (u - 0.25) / 0.75
+	(_dim_veil.material_override as StandardMaterial3D).albedo_color = Color(0, 0, 0, DIM_DEPTH * clampf(k, 0.0, 1.0))
+
+
+func _end_dim() -> void:
+	if _dim_veil != null and is_instance_valid(_dim_veil):
+		(_dim_veil.material_override as StandardMaterial3D).albedo_color = Color(0, 0, 0, 0)
+		_dim_veil.visible = false
+	_dim_t0 = -1.0
+
+
 # ---------------------------------------------------------------- ships (API.md 2)
 
 func add_ship(id: String, root: Node3D, info := {}) -> void:
@@ -674,7 +738,8 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 		remove_ship(id)
 	var s = SHIP.new()
 	s.setup(self, id, root, info)
-	s.set_meta("death_cut_count", 3 if bool(info.get("flagship", false)) or String(info.get("cls", "")) in ["Battleship", "Dreadnought", "Super-dreadnought", "Battle-barge", "Ark", "Tomb-ark"] else 2)
+	# Issue 462 (deaths_and_hits.md): a cruiser parts into two halves, a capital into three pieces.
+	s.set_meta("death_cut_count", 2 if s.death_tier == "capital" else 1)
 	ships[id] = s
 	DEATH.add_collider(self, s)
 	# cut the hull for its death on a worker thread, staggered so a battle start does not stall
@@ -726,14 +791,16 @@ func ship(id: String) -> SHIP:
 # world space) at spawn time, so a source ship that later dies or leaves does not turn a valid earlier spawn stray.
 # `wide` is the wider limit for real muzzle and impact gas points, which sit off the barrel or along the hit normal past
 # the plating; the thruster gas (_rcs) uses the tight limit.
-func record_spawn(src: SHIP, p: Vector3, wide := false) -> void:
+# `frame` (issue 462): for a picture born on a drifting wreck piece, the transform from the ship's own space to that
+# piece's place in the world now; the hull samples are moved with the piece.
+func record_spawn(src: SHIP, p: Vector3, wide := false, frame = null) -> void:
 	if not check_radius or src == null:
 		return
 	var h: HULL = src.hull
 	var limit: float = (0.30 if wide else 0.08) * float(h.L)
 	var nearest := INF
 	for i in h.sp.size():
-		var wp: Vector3 = src.to_world(h.sp[i])
+		var wp: Vector3 = (frame as Transform3D) * h.sp[i] if frame is Transform3D else src.to_world(h.sp[i])
 		var d: float = p.distance_to(wp)
 		if d < nearest:
 			nearest = d
@@ -927,6 +994,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			baked.set_shader_parameter("intensity", 0.01)
 			mats.append(baked)
 	mats.append(DEATH.power_material(HULL.damage_material(StandardMaterial3D.new(), Transform3D.IDENTITY, {}, 1.0)))
+	mats.append(mat(SH.TEAR, 1))   # issue 462: the dying hull's tear overlay
 	# issue 220: the torpedo and rocket bodies (drive glow, star torpedo body, exhaust plume) and the weapon bursts' atlas
 	# shader: their first launch or hit compiled them mid-fight (a 53 ms frame with 3 surface pipelines at the gate scene)
 	mats.append_array([mat(WEAP.DRIVE, 1), mat(WEAP.STAR_BODY)])
