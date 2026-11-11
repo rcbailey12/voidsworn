@@ -1,5 +1,5 @@
 {
- "about": "Look bench moments (issue 351). One row per moment; a later job adds a moment by adding a row. Read by godot/bench/look_bench.gd. Fields: id (file name), group, label, att and tgt ([faction, class]), do (volley, break, death), kind and weapon (fx.volley), shots (default: the look's own count), on (hull or shield), shield_left (shield points left before the hit, of 5), crit (first shot is a crit; every other row has no crit), cause (death), focus (the ship the camera centres on), fx (effect switches for this row, set by name on the effects system: scene_dim, reduce_flashing), windows ([anchor, seconds after it, frames at 30 a second]; anchors: fire, impact, event, split), key (the cell shown on the overview sheet). near ([faction, class, dx, dz]: a third ship parked beside the target, issue 461), engine (0 to 1: the engine level for every ship in the row, issue 461); do idle fires nothing.",
+ "about": "Look bench moments (issue 351). One row per moment; a later job adds a moment by adding a row. Read by godot/bench/look_bench.gd. Fields: id (file name), group, label, att and tgt ([faction, class]), do (volley, break, death), kind and weapon (fx.volley), shots (default: the look's own count), on (hull or shield), shield_left (shield points left before the hit, of 5), crit (first shot is a crit; every other row has no crit), cause (death), focus (the ship the camera centres on), fx (effect switches for this row, set by name on the effects system: scene_dim, reduce_flashing), windows ([anchor, seconds after it, frames at 30 a second]; anchors: fire, impact, event, split), key (the cell shown on the overview sheet). near ([faction, class, dx, dz]: a third ship parked beside the target, issue 461), engine (0 to 1: the engine level for every ship in the row, issue 461); do idle fires nothing; focus attacker_engines centres on the attacker's engine nozzles.",
  "cameras": [
   170,
   60,
@@ -2196,8 +2196,8 @@
    "near": [
     "hegemony",
     "Cruiser",
-    0,
-    24
+    -4,
+    15
    ],
    "do": "volley",
    "kind": "torp",
@@ -2216,10 +2216,10 @@
   {
    "id": "e_engine_close",
    "group": "hits (issue 461)",
-   "label": "engine cores at full burn (flicker check): Hegemony super-dreadnought",
+   "label": "engine cores at full burn (flicker check): Hegemony cruiser, centred on its engines",
    "att": [
     "hegemony",
-    "Super-dreadnought"
+    "Cruiser"
    ],
    "tgt": [
     "deathless",
@@ -2227,7 +2227,7 @@
    ],
    "do": "idle",
    "engine": 1.0,
-   "focus": "attacker",
+   "focus": "attacker_engines",
    "windows": [
     [
      "event",

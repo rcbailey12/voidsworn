@@ -546,6 +546,14 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		for sid in fx.ships.keys():
 			fx.set_engine(str(sid), float(row["engine"]))
 	var focus: Vector3 = (A if str(row.get("focus", "target")) == "attacker" else T).global_position
+	# Issue 461: "attacker_engines" centres on the mean of the attacker's engine nozzles (the engine flicker rows)
+	if str(row.get("focus", "")) == "attacker_engines" and fx.ship("A") != null:
+		var sa = fx.ship("A")
+		var sum := Vector3.ZERO
+		for nz in sa.hull.nozzles:
+			sum += sa.to_world(nz["p"])
+		if sa.hull.nozzles.size() > 0:
+			focus = sum / float(sa.hull.nozzles.size())
 	_cam(focus, r)
 	for k in 72:   # 1.2 s: engines up, the first damage and cut jobs done
 		await _step()
