@@ -7,8 +7,10 @@ engine does the travelling), R189 (never sudden, jerky or stop-start; it must fe
 ## What Ryan will see
 
 Pictures (each 1280 x 470, code name on the top line, before above after), in docs/shots/kill_moment/:
-- K521_kill_cruiser.jpg, K521_kill_capital.jpg: the kill cut-in on main lets go at 1.6 s, before the core flash; after,
-  it holds through the flash and a short slow-motion beat, then comes back to the board.
+- K521_kill_cruiser.jpg, K521_kill_capital.jpg: the kill cut-in on main is a wide shot that lets go at 1.6 s, before
+  the core flash; after, the camera closes on the dying ship, holds through the core flash and a short slow-motion beat,
+  then eases back to the board. The strip cells show the full screen height around the ship (its real share of the
+  screen).
 - M521_frigate_long_diagonal.jpg, M521_cruiser_long_diagonal.jpg, M521_dreadnought_long_diagonal.jpg: the same ruled
   route of four sidesteps in a row. On main the hull skates sideways with its nose 60 degrees off its course the whole
   way; after, it swings its nose onto the course, burns, coasts, and turns back to its ruled facing while it brakes.
@@ -16,6 +18,14 @@ Pictures (each 1280 x 470, code name on the top line, before above after), in do
 
 ## A. The kill moment (audit item 7)
 
+- The cut-in frames the dying ship (Board review of PR 525: the old attacker-and-target shot left a dreadnought's
+  death a speck in the held frames). battle.gd `_kill_frame`: a low three-quarter view (64 degrees down from straight
+  up) on the target, close enough that its hull fills about 0.4 of the screen height for a cruiser and about half for a
+  capital (`KILL_FILL` 0.85 and 1.0 of the hull length before the three-quarter view shortens it; measured at true
+  size on the PC: cruiser L 23 at 33 units, dreadnought L 43 at 52 units). Of the four three-quarter views it takes one
+  with no other hull between the camera and the target, nearest the current view, so it never swings far. It eases in
+  on the camera rig's slow easing over the first 1.2 s (settled before a cruiser's flash at 1.67 s) and eases back out
+  over 0.9 s when the hold lets go. Volley, lance and torpedo cut-ins keep the old side-on pair shot.
 - battle.gd `_play_death`: when the kill takes the cut-in, the hold is now the time to the core flash (read from fx,
   `death_core_at`) plus the slow-motion beat (0.48 s) plus 0.35 s on the wreck. Measured on the PC: a cruiser's cut-in
   lets go at 2.48 s (was 1.6; flash at 1.67), a capital's at 3.10 s (was 1.6; flash at 2.28). The next event waits while
@@ -108,9 +118,6 @@ for every class; the rules choose the route.
 
 - A straight back-off of two hexes stays on retro jets (slow), not nose first: flown nose first, a heavy hull would spin
   half round and back for two hexes. Board's pick: keep it.
-- The cut-in for a kill frames the attacker and the target side-on from up to 200 units out, so the dying ship is small
-  in it (see K521_kill_cruiser.jpg). Holding longer makes that more noticeable; a closer kill framing would be a
-  follow-up, not part of this job.
 - Moves are a little longer (enemy move time a round 5.9 to 6.5 s in s24): nose-first adds the turns a ship in space
   would make, and the one-hex slides are slower on purpose.
 
@@ -121,5 +128,5 @@ for every class; the rules choose the route.
 ## Where things are
 
 - Capture and strip tools: contrib/opus/reviews/movement_capture/capture_521.gd and pack_521.py; PC folder
-  Downloads\voidsworn_test\opus521\ (own clone in repo\, raw frames raw_r1\ and raw_r2\, strips out_r1\ and out_r2\; r2
-  is the final code). Nothing else on the PC was changed except the queue files q521_r1.bat and q521_r2.bat.
+  Downloads\voidsworn_test\opus521\ (own clone in repo\, raw frames and strips per round: r2 is the final movement
+  code, r4 the final kill framing; run3.bat recaptures only the kills). Nothing else on the PC was changed except the queue files q521_r1.bat to q521_r4.bat.
