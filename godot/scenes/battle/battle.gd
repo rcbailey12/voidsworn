@@ -2108,7 +2108,8 @@ var _kill_hold_n := 0
 # target pair (that wide shot left a dreadnought's death a speck): a low three-quarter view on the target, close enough
 # that the hull fills about KILL_FILL of the screen height (a capital more), on whichever quarter is nearest the current
 # view so the camera never whips round, eased in over the first beat (the rig's slow easing). _cine_release eases back.
-const KILL_FILL := [0.45, 0.62]   # the hull's length as a share of the screen height: a cruiser, a capital
+const KILL_FILL := [0.85, 1.0]    # the hull's length against the screen height before the three-quarter view shortens it
+                                  # (on screen about 0.4 of the height for a cruiser, about half for a capital): cruiser, capital
 const KILL_BETA := 1.12           # the camera's angle down from straight up (64 degrees: low, still above the board)
 
 
@@ -2121,19 +2122,34 @@ func _kill_frame(id) -> void:
 	var cap: bool = float(VU.get(id, {}).get("size", 0.6)) > 0.8 or bool(VU.get(id, {}).get("flagship", false))
 	var fill: float = KILL_FILL[1] if cap else KILL_FILL[0]
 	var span := 2.0 * tan(deg_to_rad(cam.fov) * 0.5)   # screen height per unit of distance
+	var rr := clampf(maxf(float(sv.L), 6.0) / (fill * span), cam.min_r, 200.0)
+	var tp := Vector3(sv.position.x, 0.0, sv.position.z)
+	# the four three-quarter views (bow and stern quarters, either side): one with no other hull between the camera and
+	# the dying ship, nearest the current view (so the camera never swings far)
 	var cur: float = cam.a
 	var best := cur
-	var off := INF
+	var score := INF
 	for q in [PI / 4.0, 3.0 * PI / 4.0, -PI / 4.0, -3.0 * PI / 4.0]:
-		var cand: float = float(sv.cur_yaw) + q
-		cand = cur + angle_difference(cur, cand)
-		if absf(cand - cur) < off:
-			off = absf(cand - cur)
+		var cand: float = cur + angle_difference(cur, float(sv.cur_yaw) + q)
+		var eye := tp + Vector3(cos(cand) * sin(KILL_BETA), cos(KILL_BETA), -sin(cand) * sin(KILL_BETA)) * rr
+		var blocked := 0.0
+		for oid in views:
+			var ov = views[oid]
+			if oid == id or ov == null or ov.dead or not ov.visible:
+				continue
+			var o: Vector3 = ov.position
+			var seg := tp - eye
+			var k := clampf((o - eye).dot(seg) / maxf(seg.length_squared(), 1e-4), 0.0, 1.0)
+			if (eye + seg * k).distance_to(o) < float(ov.L) * 0.6 + float(sv.L) * 0.15 and k < 0.92:
+				blocked += 1.0
+		var sc := blocked * 10.0 + absf(cand - cur)
+		if sc < score:
+			score = sc
 			best = cand
 	cam.a = best
 	cam.b = KILL_BETA
-	cam.r = clampf(maxf(float(sv.L), 6.0) / (fill * span), cam.min_r, 200.0)
-	cam.t = Vector3(sv.position.x, 0.0, sv.position.z)
+	cam.r = rr
+	cam.t = tp
 	cam.slow_until = cam._clock + 1.2
 	hud.letterbox(true)
 
