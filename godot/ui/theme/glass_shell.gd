@@ -735,6 +735,40 @@ static func stop_key(kind: String, k: float) -> Control:
 	c.draw.connect(func(): stop_icon(c, c.size * 0.5, kind, k))
 	return c
 
+# Region emblems share the stop icons' simple outlines. Coordinates use a 40 px canvas.
+const REGION_EMBLEMS := ["boneyard", "nebula", "world", "frontier", "deep"]
+static func region_emblem(kind: String, k: float) -> Control:
+	var c := Control.new(); c.name = "RegionEmblem"; c.custom_minimum_size = Vector2(px(40, k), px(40, k))
+	c.size_flags_vertical = Control.SIZE_SHRINK_CENTER; c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	c.set_meta("region", kind)
+	c.draw.connect(func(): draw_region_emblem(c, c.size * 0.5, kind, k))
+	return c
+
+static func draw_region_emblem(ci: CanvasItem, center: Vector2, kind: String, k: float) -> void:
+	var paths: Array = []
+	var ellipse = func(at: Vector2, radius: Vector2, tilt: float = 0.0) -> PackedVector2Array:
+		var points := PackedVector2Array()
+		for i in 49: points.append(at + (Vector2(cos(TAU * i / 48.0), sin(TAU * i / 48.0)) * radius).rotated(tilt))
+		return points
+	match kind:
+		"boneyard":
+			paths.append(PackedVector2Array([Vector2(-3, -6), Vector2(-12, -6), Vector2(-17, 0), Vector2(-12, 6), Vector2(-3, 6), Vector2(-6, 2), Vector2(-2, -1), Vector2(-3, -6)]))
+			paths.append(PackedVector2Array([Vector2(4, -7), Vector2(15, -5), Vector2(16, 6), Vector2(4, 7), Vector2(7, 2), Vector2(3, -2), Vector2(4, -7)]))
+		"nebula":
+			paths.append(PackedVector2Array([Vector2(-7, 7), Vector2(-12, 7), Vector2(-16, 3), Vector2(-15, -3), Vector2(-10, -6), Vector2(-5, -5), Vector2(-3, -12), Vector2(5, -14), Vector2(11, -9), Vector2(11, -4), Vector2(16, -1), Vector2(17, 4), Vector2(12, 7), Vector2(8, 7)]))
+			paths.append(PackedVector2Array([Vector2(2, -5), Vector2(-4, 4), Vector2(2, 4), Vector2(-1, 15), Vector2(9, 1), Vector2(3, 1)]))
+		"world": paths.append(ellipse.call(Vector2.ZERO, Vector2(10, 10))); paths.append(ellipse.call(Vector2.ZERO, Vector2(18, 5), -0.45))
+		"frontier":
+			for rock in [[Vector2(-10, 5), 7.0], [Vector2(8, 8), 6.0], [Vector2(3, -10), 7.0]]:
+				var points := PackedVector2Array()
+				for i in 7: points.append(rock[0] + Vector2(cos(TAU * i / 6.0), sin(TAU * i / 6.0)) * rock[1] * (0.85 if i % 2 == 0 else 1.0))
+				paths.append(points)
+		"deep": paths.append(ellipse.call(Vector2.ZERO, Vector2(15, 15))); paths.append(ellipse.call(Vector2(4, -3), Vector2(1.5, 1.5)))
+	for path in paths:
+		var points := PackedVector2Array()
+		for point in path: points.append(center + point * k)
+		ci.draw_polyline(points, TEXT2, maxf(1.0, 2.0 * k), false)
+
 
 # a thin hull bar for the briefing column: one line, the lit part in col
 static func thin_bar(k: float, f: float, col: Color, w := 72.0, h := 3.0, track := IRON3) -> Control:

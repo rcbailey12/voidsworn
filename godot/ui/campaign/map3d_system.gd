@@ -27,6 +27,8 @@ const APPROACH := [
 		"fit_sun": true, "arrival_zoom": 0.88, "arrival_lean": 0.16, "arrival_seconds": 1.2},
 ]
 var approach: Dictionary = APPROACH[0]
+const REGION_SCENERY := {"boneyard": "broken_capital", "nebula": "storm_core", "world": "contested_planet", "frontier": "hollow_asteroid", "deep": "far_derelicts"}
+var region := ""
 
 static func sector_look(sector: int) -> Dictionary:
 	return APPROACH[clampi(sector - 1, 0, APPROACH.size() - 1)]
@@ -46,11 +48,11 @@ func set_sector(sector: int) -> void:
 func approach_sky(env: Environment) -> void:
 	var m: ShaderMaterial = env.sky.sky_material
 	var sh := Shader.new(); sh.code = SH.map_sky(); m.shader = sh
-	m.set_shader_parameter("neb_gain", approach["nebula"])
+	m.set_shader_parameter("neb_gain", 0.0 if region == "deep" else approach["nebula"])
 	m.set_shader_parameter("map_saturation", approach["saturation"])
 	m.set_shader_parameter("map_heat", approach["heat"])
 	m.set_shader_parameter("map_star_void", approach["star_void"])
-	m.set_shader_parameter("star_k", float(m.get_shader_parameter("star_k")) * float(approach["stars"]))
+	m.set_shader_parameter("star_k", float(m.get_shader_parameter("star_k")) * float(approach["stars"]) * (0.67 if region == "deep" else 1.0))
 	m.set_shader_parameter("sun_k", 0.0)
 	m.set_shader_parameter("lamp", PackedVector4Array([Vector4.ZERO, Vector4.ZERO, Vector4.ZERO, Vector4.ZERO, Vector4.ZERO, Vector4.ZERO]))
 
@@ -234,7 +236,8 @@ func backdrop(parent: Node3D, fac: String, px_scale: float) -> void:
 		var t = rng.randf()
 		var c = Color(0.65, 0.76, 1.0).lerp(Color(1.0, 0.86, 0.68), t)
 		var b = pow(rng.randf(), 3.0)
-		st.set_color(Color(c.r * (0.25 + b) * backdrop_k, c.g * (0.25 + b) * backdrop_k, c.b * (0.25 + b) * backdrop_k, 0.4 + b * 0.9)); st.add_vertex(d * r)
+		var strength = backdrop_k * (0.67 if region == "deep" else 1.0)
+		st.set_color(Color(c.r * (0.25 + b) * strength, c.g * (0.25 + b) * strength, c.b * (0.25 + b) * strength, 0.4 + b * 0.9)); st.add_vertex(d * r)
 	var pts = MeshInstance3D.new(); pts.mesh = st.commit(); pts.material_override = mat("STARPTS", {"px": px_scale}); pts.extra_cull_margin = 2000.0
 	pts.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF; parent.add_child(pts)
 	# The directional sky owns the nebula across the entire view. Finite sheets
