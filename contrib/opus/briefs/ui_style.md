@@ -216,3 +216,30 @@ Other rules (unchanged):
 - End screen and debrief: one panel, the R137 debrief order (ui_spec.md 10) in wells; Continue is the lime slab fixed
   bottom right; Victory in lime `display` caps, Defeat in BLOOD.
 - Menus: a well inside a panel with brackets and the bevel; rows are buttons with the sage focus ring (ui_spec.md 6).
+
+
+## Orders sheet (campaign map; other screens follow)
+
+Ryan picked R2 (FINDINGS R174, R176). The campaign map now takes this treatment. Every other screen keeps Lime Tactical until its own job, including the Fleet screen that holds the moved faction purchase.
+
+| Name | Value | Use |
+|---|---|---|
+| EMBER (GS.MAP_EMBER) | #ff8a3a | Chosen route numeral, jump action, available routes, number boxes, current approach leg |
+| TEXT | #f0eade | Names, rules, figures |
+| TEXT2 | #c4beb0 | Supporting sentences |
+| TEXT3 | #969084 | Joining words only, such as Pays; empty pip outlines |
+| NEM | #ff6050 | The Nemesis only |
+
+The older GS.EMBER token remains unchanged for other screens. The map uses GS.MAP_EMBER. Stop models retain their own light and faction colors.
+
+- Big Shoulders Display variable, weight 800: capitalized names, route numerals and the action only. Region 70, chosen route name 54 and numeral 132, other route names 32 and numerals 36, Nemesis 32, ship names 28, action 34. Names wrap whole words and fit down to 28, never below it.
+- Barlow Regular and Medium: sentences, labels and joining words, in sentence case. Body 18 to 21, never below 17 at the 1080 design height. Azeret Mono: hull, hunt clock and purse figures. Fonts and their OFL texts live in godot/ui/theme/fonts/.
+- No rail panel or edge. A smooth black veil covers the scene below the words, 96% black at the left edge, 94% under the rail, fading to clear by 43% of the window. The stronger veil is the readability pass. Map words sit above it, with the existing dark halo.
+- Every corner is square. No pills, key badges, rounded portraits, text glow or text shadow. The action is the only rail box: a 2 px ember outline, 56 px high, filled ember with dark words on hover or keyboard focus.
+- The approach strip uses three bars and I, II, III, a ring for the star and a sentence case jump count. Region, holder and one short condition follow. The Map key keeps every condition's full wording.
+- Routes always stay in number order. The picked route expands in place with its danger pips and word, one objective sentence, Pays and the reward, then its action. Other routes take two lines. Future stops are shown by the map, without a then line on the rail.
+- The square 64 px Nemesis portrait has a 2 px NEM edge. Name and hunt pips remain on the rail. Traits, persona and the longer status explanations live in the Dossier.
+- Fleet names and hull figures occupy separate columns, without classes or bars. An ember diamond marks the flagship. Damaged hull uses the existing damage color. Up to seven standard 36 px rows fit at the foot. The rail reserves the full route group first, then fits whole fleet rows into the space left. Extra rows, and names wrapping to multiple lines, scroll in the fleet area. The upper route group can scroll for extreme combinations without moving the fleet off screen.
+- The faction purchase lives at the top of Fleet and refits: name, effect sentence, price or Used this sector. The same factionVerb action and affordability check govern it; its explanation remains in the Map key.
+- Route and stop labels use Barlow Medium 21 with the dark halo, and Your fleet is here uses Barlow 17. Purse labels use Barlow and figures use Azeret Mono.
+- Every sentence and figure on the rail must measure at least 4.5:1 against captured backgrounds from sectors I and III. Capture at 1920x1080 and 2560x1440, with four routes, each selection, action hover/focus, long names and an overflowing fleet. Use res://ui/campaign/rail_orders_shots.gd to repeat those captures. The fixture names explicitly distinguish long-name and fleet stress states from the real seeded run.
