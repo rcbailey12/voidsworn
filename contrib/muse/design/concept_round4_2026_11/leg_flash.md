@@ -1,0 +1,14 @@
+# Flash leg, issue #467 (ideation, screened summary)
+
+Landed Nov 11, 2026 about 07:19 CST (Gemini, signed in as Ryan Bailey, Pro showing in the account, Flash model selected; sign-in needed a code plus a number-match prompt, page number 20, relayed to Ryan). Full prompts for G7, G8, G9 and C8 plus risk lines for all nine, as the ideation scope asked. The full text sits in the browser task record; this file is the chair's screened summary with the passages that matter quoted in brief.
+
+Risk calls: line 1 for G7 (glass prism reads as crystal artifact or civilian transport unless the frame mounts read as heavy weaponry), line 11 plus line 1 for G8 (the pointed shard invites naval ornament), line 9 for G9 (the wedge broadens into a pancake; it calls for an exact 5.5:1 against the brief's 4:1 or longer), line 11 plus line 1 for A7, line 4 plus line 7 for A8 (three hulls fused can come out crooked, thrust axis off), line 2 plus line 12 for A9 (cages drift over the scatter racks; camo creep), line 11 plus line 12 for C7 (organic push produces fish tails, fins, segmented limbs, face clusters), the Never list for C8, line 1 for C9 (scarring buries the organs). Its A8, A9 and C7 risk calls differ from the blind leg's and are the better calls on A9 (cages over guns is the sharper risk than balance).
+
+Adopted: its G7/G9 sheet structure (monolithic glass, frame on the three edges, mounts in strict sequence, side faces bare) agrees with DeepSeek's and needs no choosing between them; its C8 wording "osteoderm plates... never forming a complete vertebrae, ribcage, or vertebral skeleton" is a good guard phrasing.
+
+Screening catches:
+1. Chorus colour, again: its C8 sheet and beauty run on "murky yellow-green bioluminescence" and "sickly yellow-green" throats, the same drift as DeepSeek's bile green and Grok's yellow-green thrust. Three legs made the same move independently. The chair still keeps AMBER, the colour of the picked C4 base and every delivered Chorus sheet; noted as a three-leg consensus the chair is overruling on base-consistency grounds, and flagged in the README so the Board can overrule the chair if it prefers bile.
+2. Its C8 brood sacs "show embryonic forms" with "bioluminescent dendrite tendrils trailing". Not adopted: the delivered Chorus grammar keeps sacs as smooth swellings under the hide; visible embryos are a new note nobody asked for.
+3. Its G8 sheet adds a "bow armoured iris ring" as a fitting beyond the two collar lenses; not adopted (five weapons and no others means the emitter face is glass, not a sixth fitting).
+4. Its C8 beauty gives the escort "no bone plates" while Grok's C8 beauty escort carries none either but DeepSeek's escort has a few small plates; chair follows DeepSeek (a few small plates), since a boneless escort contradicts "same family" less than it helps. Minor.
+5. It names the heroes by their data class names (the Unfinished, the Ninefold Maw). Correct names, no issue.
