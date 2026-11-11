@@ -18,3 +18,7 @@ orange, corners are square, the spaced grey capitals are gone, bars become pips,
 
 The map's own labels keep today's typeface in these mockups (they come from the capture); in a build they follow the picked option.
 rail_mockup_gen.py regenerates the pictures (it expects the fonts in a local folder; paths at the top).
+
+**Ryan's pick (Nov 10, 21:39 CST): R2, with a readability pass.** The pass is R2b_orders_sheet_readable.jpg (full size:
+R2b_orders_sheet_readable_1080.png): larger sentences, three text strengths instead of five greys, the action as the one
+outlined box, hull as figures with their word. The build spec is contrib/opus/briefs/campaign_rail_orders_sheet.md.

@@ -42,6 +42,11 @@ checklist for any model that takes the Board's seat.
    gun. The arcs decide the place: F fires forward on the centre line at the bow; P and S are one battery on each flank,
    amidships, firing outward; T is a turret on the upper centre line with a clear field. Flak is one small cluster on top.
    Each mount is one large, deliberate installation with a visible base, not a row of scattered barrels.
+   **And it must read as armed (Ryan on the first round 2 sheets, R176: "It's really hard to tell if there's any guns right
+   now so it barely looks like a warship").** A battery or turret shows its barrels, heavy and plain, pointing where it fires;
+   the forward gun is the largest object on the bow; the ship looks armed in the top view at thumbnail size. Flak may be drawn
+   as two to four small matching turrets in symmetric pairs (still one flak system). Ordered, never scattered; gun ports are
+   dark, never lit like windows.
 2. **Nothing blocks a gun and no gun aims backward or into the ship.**
 3. **One thrust axis.** Engines are at the stern, in line with the length of the ship, sized to push it (the engine group
    fills between a quarter and a half of the stern face). Nothing glows like an engine anywhere else.

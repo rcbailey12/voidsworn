@@ -160,7 +160,47 @@ def r3():
     t='Jump to Relay'; f=SPSC(30); tw=d.textlength(t,font=f); d.text((bx-tw/2,by-6),t,font=f,fill=EMBER)
     t2='press Enter'; f2=SP(16,'Italic'); d.text((bx-d.textlength(t2,font=f2)/2,by+34),t2,font=f2,fill=DIM)
     return im
-for name,fn in [('R1',r1),('R2',r2),('R3',r3)]:
+
+# ---------- R2b: orders sheet after the readability pass ----------
+def r2b():
+    TXT=(240,234,222); SEC=(196,190,176); TER=(150,144,132)
+    im=dark_left(820,1.08); d=ImageDraw.Draw(im); x=52; R=500
+    y=40
+    for i,lab in enumerate(['I','II','III']):
+        x0=x+i*80; col=EMBER if i==0 else TER
+        d.line((x0,y+8,x0+62,y+8),fill=col,width=4 if i==0 else 2); d.text((x0,y+16),lab,font=BARC(20),fill=col)
+    d.ellipse((x+244,y,x+260,y+16),outline=EMBER,width=2); d.text((x+276,y-4),'Jump 1 of 7',font=BAR(19,'Medium'),fill=SEC)
+    d.text((x-3,86),'OLD BATTLEFIELD',font=BSD(70,800),fill=TXT)
+    d.text((x,170),'Held by the Ashfall Hullbreakers',font=BAR(21,'Medium'),fill=TXT)
+    y=para(d,x,202,'Ion season: storms sweep every battlefield, and shields recharge 25% slower for both sides.',BAR(19),SEC,R-x,26)
+    y+=22
+    d.text((x-6,y-20),'1',font=BSD(132,800),fill=EMBER)
+    d.text((x+78,y),'RELAY',font=BSD(54,700),fill=TXT)
+    d.text((x+80,y+62),'Fight a Hullbreaker hulk den',font=BAR(20,'Medium'),fill=TXT)
+    pips(d,x+80,y+98,1,4,TXT,10,4,TER); d.text((x+144,y+90),'Easy',font=BAR(19,'Medium'),fill=SEC)
+    y+=136
+    y=para(d,x,y,'Hold a ship beside the relay, with no enemy near it, at the start of 3 rounds.',BAR(20),TXT,R-x,28); y+=6
+    d.text((x,y),'Pays',font=BAR(19),fill=TER); d.text((x+48,y),'Signal of Kharon',font=BAR(19,'Medium'),fill=TXT)
+    d.text((x+210,y),'then',font=BAR(19),fill=TER); d.text((x+256,y),'a shipyard',font=BAR(19,'Medium'),fill=TXT); y+=42
+    d.rectangle((x,y,R,y+56),outline=EMBER,width=2)
+    d.text((x+16,y+8),'JUMP TO RELAY',font=BSD(34,700),fill=EMBER); rtext(d,R-38,y+16,'Enter',BAR(19,'Medium'),EMBER); d.polygon([(R-28,y+20),(R-14,y+28),(R-28,y+36)],fill=EMBER); y+=56+26
+    for n,name,meta in [('2','BREAKTHROUGH','Fight, easy.  Pays Signal of Astra'),('3','UNKNOWN SIGNAL','No fight.  Anything can happen')]:
+        d.text((x,y-2),n,font=BSD(36,700),fill=SEC); d.text((x+36,y),name,font=BSD(32,600),fill=TXT); y+=38
+        d.text((x+36,y),meta,font=BAR(18),fill=SEC); y+=36
+    y+=6; d.line((x,y,R,y),fill=(70,64,56)); y+=18
+    im.paste(portrait.resize((64,64)),(x,y)); d.rectangle((x,y,x+63,y+63),outline=RED,width=2)
+    d.text((x+80,y-4),'Nemesis, hunting you',font=BAR(17,'Medium'),fill=RED); d.text((x+80,y+18),'HIGH NADIR ESSANE',font=BSD(32,700),fill=TXT); rtext(d,R,y-4,'Dossier',BAR(17),TER)
+    y+=74; d.text((x,y),'Eclipse. Cruel: finishes crippled ships first.',font=BAR(18),fill=SEC); y+=30
+    pips(d,x,y+4,0.5,4,RED,13,5,TER); d.text((x+84,y),'Hunt clock 0.5 of 4',font=BAR(18),fill=SEC)
+    y=H-152; d.line((x,y-14,R,y-14),fill=(70,64,56))
+    for name,cls,hp,mx,flag in FLEET:
+        d.text((x,y),name.upper(),font=BSD(28,600),fill=TXT)
+        d.text((x+214,y+5),cls,font=BAR(17),fill=SEC); rtext(d,R,y+3,hp+' hull',MONO(18,600),TXT)
+        if flag: d.text((x+340,y+5),'flagship',font=BAR(17,'Medium'),fill=EMBER)
+        y+=34
+    y+=8; d.text((x,y),'Faction action: keep the dawn watch',font=BAR(18),fill=SEC); rtext(d,R,y+1,'40 credits',MONO(16),SEC)
+    return im
+for name,fn in [('R1',r1),('R2',r2),('R3',r3),('R2b',r2b)]:
     im=fn(); im.save(f'out/{name}.png'); im.resize((1280,720),Image.LANCZOS).save(f'out/{name}_small.jpg',quality=88)
 
 names={'R1':'R1  Keep and correct: same layout, the tells removed','R2':'R2  Orders sheet: no panel, one big focus','R3':'R3  Chart margin: details sit on the map'}
