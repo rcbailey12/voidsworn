@@ -246,6 +246,73 @@ Use case: stylized-concept. One cinematic beauty view of EXACT Eclipse E4 Tomb-a
 Preserve broad flat horizontal crescent bow with two forward horns, thick continuous archive hull behind crescent, overlapping dark violet-black shade plates with very THIN green-white rim lines. Crescent is a flat lateral shield held forward, not a vertical claw, ring or detached object. Doom cannon seated on centreline in crescent focus, projecting forward between horns, largest bow installation, dark massive muzzle with only one tiny green light deep inside. Two huge twin-barrel gauss turrets in single file on UPPER CENTRELINE behind crescent, muzzles forward, aft turret elevated and aimed slightly upward so shots clear front turret; ONE small compact aft flak turret, total FOUR installations. No extra weapons. One low aft command block and one small integrated sensor cluster. Three dark thick engine cones horizontally across stern on real mounts, left/right symmetry, thin green rim on rear-facing apertures, no flame or hoop.
 ONE escort about quarter hero length: a simpler short thick violet fan wedge with a shallow curved forward shade, ONE single-barrel forward gauss mount, ONE small flak mount, one low command unit, two dark stern drives. This is a distinct smaller ship, no huge crescent horns, no doom cannon, no pair of large centreline turrets. Fine access hatches and plate seams same real size across both ships. Capital has many more panels. No windows.
 Finely painted production concept, neutral lighting makes dark armour and mechanical bases readable, green confined to thin rims and tiny doom core. No shooting, debris, explosions, planets, nebula, other ships, pooled green glow, bones, ribs, skulls, vertical spindle disc, mast, keel, naval fittings, wings, cockpit, logos, text or watermark.
+## Issue 435: round 3 armed H4 and A4, Nov 11 2026
+
+Built-in `image_gen__imagegen` only. Each call used `referenced_image_paths`; sources and selected outputs are listed in README.md. Exact call prompts follow.
+
+### H4 sheet, try 1
+
+Reference: Muse hegemony_H1_sheet.jpg.
+
+```text
+Use case: stylized-concept. Asset: H4 Hegemony Navy Dominion dreadnought design sheet. Use the supplied Muse H1 picture as family reference: preserve the pale modular Kit Wedge, wedge forward and rectangular spine modules aft, but redraw as a convincing armed warship. Exactly TWO orthographic views, TOP above, SIDE below, SAME scale, BOW TO THE RIGHT (reverse reference direction), stern left. Plain dark grey background, no text, no loose drones. Refined realistic hard surface concept art.
+Canvas 1536x1024. Both ships from x=110 stern to x=1420 bow, length 1310px INCLUDING weapons and engine housings. Top view overall beam 292px (4.5:1), centered y=300. Side overall height 146px, centered y=770 (L:B:H=4.5:1:0.5). Preserve these proportions strictly, generous empty gap between views.
+Exactly FOUR weapon installations: ONE huge paired ion-prong cannon on the centreline bow, the largest object on the bow, thick armoured prongs 240px long and 32px wide each, dark tips, firing RIGHT. TWO identical heavy twin-barrel turbolaser turrets, one on each lateral flank amidships, with visible armoured rotating bases, long thick twin barrels 130px long and 16px wide each, pointing OUTWARD in the top view (upper turret points UP, lower turret DOWN), both clear of the hull silhouette. They are matched lateral guns, NOT two guns pointing along the spine. ONE low compact four-short-barrel flak turret on upper centreline behind the bow, pointing forward RIGHT, clearly separate from the single low protected command block. A single small flush sensor cluster beside command. No other gun-like structures.
+A continuous backbone and three closed bulkhead seams at module necks. One hangar only: one dark lateral bay mouth, visible in side, with closed plain panels elsewhere. Flat powerful rectangular blue-white engine nozzles at LEFT stern, no thin hoops, engine apertures total 35 percent of stern cross-section. Symmetric pale-grey immaculate armour, steel blue trim, a single thin implant-blue strip down each flank, cool light only. No tall fins, mast, windows, ornament, naval deck tiers, wings, cockpit, rust or warm glow. Top view must clearly show bow prongs, TWO lateral heavy turrets and ONE central flak at 384px thumbnail width. Match geometry and weapon positions between the views.
+```
+
+### H4 sheet, try 2
+
+Reference: H4 try 1.
+
+```text
+Use case: precise-object-edit. Revise the supplied H4 concept sheet, preserving pale Kit Wedge family, two-view layout, right-facing bow, four weapon installations, modular spine, flat rectangular stern engines, single hangar, single command block and thin blue trim. No text.
+Correct gate line 2: side view must show the SAME lateral twin turrets as top view. Broadside gun barrels point straight toward/away from side-view camera, so show two dark circular muzzles on the visible flank turret, NOT long barrels pointing to the right. Hidden opposite turret must be occluded. No second raised gun above the visible turret. Keep the flak as the ONE small centreline forward-pointing gun.
+Correct proportions: both ships x=90 to1440, length1350. Top-view hull body maximum width230, plus lateral gun projections35 each side, TOTAL beam300px. Each broadside turret has a wide base nested partly in the hull, with two chunky outward barrels: base at y=190 and y=390 about x=780; overall top ship from y=140 to440. Side ship height150px total at y=690 to840. L:B:H=4.5:1:0.5. Shorten the outward gun projection so total beam is300, while using thick legible barrels. Ion prongs remain huge thick twin bow weapons, one installation. Symmetry exact except single hangar. Match dimensions and positions between views. Refined evenly lit hard surface concept sheet, flat orthographic TOP then SIDE, dark grey.
+```
+
+### H4 sheet, try 3, delivered
+
+Reference: H4 try 2.
+
+```text
+Use case: precise-object-edit. Final correction of supplied H4 TOP/SIDE sheet. Keep everything unchanged except two fixes. Gate 1 requires LONG twin barrels: extend the two matching flank turrets' barrels in TOP view to 75 pixels exposed length, 14px thickness, pointing straight outward up/down. Their bases stay at x830. Target length1418px, total beam370px including barrels, 3.83:1; body beam230px. This deliberate broader armed envelope is acceptable; long guns matter. Gate 2 and same-ship consistency: REMOVE the floating extra turret visible above the main side-view flank turret at x780 y665. The visible side-view turret with two round dark muzzles remains, its barrels point out toward camera. The far flank turret is completely hidden behind the opaque hull; no other raised turret there. Single small forward flak at x1050 remains. Single low command block at x900 remains. Side height to be about158px. Both ships bow right, flat top above, side below, same scale. All other modular wedge shape, huge bow ion prongs, one dark hangar, engines, pale grey and blue strip invariant. No text.
+```
+
+### H4 beauty, try 1, delivered
+
+Reference: H4 delivered sheet original PNG.
+
+```text
+Use case: stylized-concept. H4 Hegemony Navy beauty concept, use attached final design sheet as exact hero reference. One Dominion dreadnought and exactly ONE smaller escort frigate, three-quarter from FRONT and ABOVE so the top plan and weapon layout are readable. Bow faces lower right, stern upper left. Near-black empty space, no text, no diagram. Detailed realistic painted hard surface concept art in a restrained studio-lit Sunward-trial style.
+Preserve hero: low pale-grey Kit Wedge bow, long modular rectangular spine aft, huge twin thick ion prongs as largest bow structure, TWO identical amidships flank turrets with long twin barrels aiming laterally OUTWARD (never backward or into hull), ONE small centreline four-barrel flak, one protected low command block with flush sensor, one dark flank hangar, no loose drones. One thin implant-blue line down each flank and flat substantial rectangular blue-white stern thrusters. NO additional guns, no fins, towers, rust or warm lights. Three closed module break seams.
+Escort: 30 percent hero length, its own compact pale-grey single-module narrow wedge hull, one small forward twin ion installation and one small flak mount only, smaller rectangular engine bank. NOT a miniature Dominion: no broadside turret modules, no long stack of reactor modules, no hangar. Reuse the SAME hatch and armour-panel real dimensions so hero has many more panels. Place escort below-left of hero with clear gap, comparable angle. Both fully within frame. No stars bright enough to compete, no lens flare, no combat beams.
+```
+
+### A4 sheet, try 1
+
+Reference: Muse corsair_A1_sheet.jpg.
+
+```text
+Use case: stylized-concept. Asset A4 Ashfall Hullbreakers Warlord's Pyre-Barge design sheet. Use supplied Muse A1 Scrap Brick as family reference. Preserve its blunt heavy bolted brick, long central slab, low silhouette, scavenged plates, brow listening gear and folded boarding claws. Redraw ARMED, replacing yellow/olive camouflage with rust, bare steel, soot, old bone-white and old pale-grey paint. No camouflage pattern.
+Two flat ORTHOGRAPHIC views only: TOP above, SIDE below, same ship same scale, BOW RIGHT, stern LEFT (reverse reference). Plain dark grey, no text. Canvas1536x1024. Target length1330px x100 to1430, beam380px top y150 to530, side height342px y620 to962; L:B:H 3.5:1:0.9. Engines included. Fine realistic painted hard surface concept, crisp silhouette, worn seams, bolted mounts, not toy.
+Exactly FOUR weapon installations: ONE giant heavy-torpedo cluster at the blunt right bow, SIX large dark launch tubes in one visible armoured rack, forward RIGHT, the largest object on the bow (cluster220px long,140px across). TWO scatter batteries amidships, ONE on each opposing flank, symmetric about thrust axis: each ONE big visible armoured rack of EIGHT short chunky barrels, with exposed barrel projections75px and diameter16px, pointing straight OUTWARD UP/DOWN in TOP, mounted clear of the hull on sturdy welded saddles. No forward-pointing scatter battery. ONE small low centreline flak turret with four short barrels pointing right. No other guns.
+One continuous armoured spine, three closed structural joining seams with heavy chained patch braces. One low protected command block; ONE grouped sensor array of two small listening dishes and wake scoops on the bow brow, not multiple towers. Boarding claws folded under bow, not weapon barrels. Exactly TWO hangar mouths TOTAL, one per flank low beneath the scatter installation, dark deep recesses. In SIDE show ONLY the near-side hangar and the near-side scatter rack with dark ROUND MUZZLES facing camera, far rack hidden by hull. Do not draw far-side hangar on the top deck. Top view may show small angled lip of both flank hangars.
+Three chunky mismatched stern engine bells LEFT, central bell larger but overall thrust balanced, substantial cylinders; apertures total35 percent stern area, dim red-orange only at rear. Patch plating uneven, guns symmetric. Dim red running lamps sparse. No mast, railings, keel, cranes, funnels, aircraft fins, glowing windows, fresh paint, yellow/olive, loose ships or drones. Weapon clusters must read at 384px thumbnail width.
+```
+
+### A4 sheet, try 2, delivered
+
+Reference: A4 try 1.
+
+```text
+Use case: precise-object-edit. Correct supplied A4 Scrap Brick sheet, preserving rust/steel patchwork, brick silhouette, three rear engine bells, single flak, exactly two eight-barrel outward scatter racks, two hangar doors total, grouped listening sensors, chain seams and folded claws. No text, top above side below, bow RIGHT. Gate 8 requires FLAT ORTHOGRAPHIC TOP view: remove perspective from the bow torpedo rack. Top view torpedo tubes must be nine long parallel cylindrical tubes in ONE armoured cluster, horizontal left-to-right, firing RIGHT; viewed directly from above, their dark circular muzzle faces are not visible, just dark tip slots at right edge. NO circular muzzle array facing the viewer in top view. Side view also shows tube lengths pointing right, with one near-side outward scatter battery showing eight dark round muzzles.
+Keep top ship total length1480px x25 to1505 and overall beam430px y100 to530. Make lower SIDE view taller, height370px from y600 to970, keeping SAME length1480 and same x positions of all mounts; target measured L:B:H=3.44:1:0.86. Enlarge thick armoured hull depth vertically, not by adding towers. Add one clearly identifiable LOW protected command block on the top spine just aft of the grouped bow sensor cluster (x1090), distinct from centreline flak x850. Three engines remain left, one central larger, mechanically balanced. No extra guns or hangar doors, no yellow or olive, no keel, mast, wings or naval details.
+```
+
+### A4 beauty, try 1
+
+Reference: A4 delivered sheet original PNG.
 # Issue 440 prompt record
 
 ### s1b_beauty_prompt
@@ -261,6 +328,14 @@ Exactly ONE smaller escort frigate beside capital, about one quarter its length,
 undefined
 ```
 
+
+### A4 beauty, try 2, delivered (issue 435)
+
+Reference: A4 beauty try 1, exec-2ae70b0c-2747-4cdf-83fa-45180d4909c6.png.
+
+```text
+Use case: precise-object-edit. Correct ONE weapon direction in supplied A4 beauty. Keep ship, escort, lighting, colours, view and all other details invariant. Gate line2: nothing blocks a gun and no gun aims into ship. The FAR scatter rack on the upper silhouette currently points down-left across the top deck, INTO THE SHIP. Rotate ONLY this far rack's eight barrels 180 degrees so they project UP-RIGHT OUTWARD AWAY FROM THE DECK into open black space beyond upper silhouette. Keep near-side eight-barrel rack pointing down-left out into space. These two racks must be opposing outward broadsides. No extra racks. Keep bow torpedo cluster and single flak unchanged. No text.
+```
 ## Issue 440: S1 armed redraws, Nov 11 2026
 
 Built-in image_gen only. All sources kept in `C:/Users/rcbai/.codex/generated_images/01a1c936-d3df-7c51-a31e-eadf827f5424/`.
