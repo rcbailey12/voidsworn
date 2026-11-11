@@ -32,6 +32,7 @@ globalThis.treeHandoffTest = () => {
     for (const k of Object.keys(STORE)) delete STORE[k];
     RUN = null; SAVED_RUN = null;   // picks are made between runs, as the game allows
     META = migrateMeta(defaultMeta());
+    META.admirals[id] = true;       // the harness owns the admiral it flies
     META.mastery[id] = 230;         // level 8: three branch picks and a capstone are earned
     for (const key of keys) ok(lineagePick(key) === true, fac + ': lineagePick(' + key + ') was refused');
     newRun(id, fac);                // newRun ends in saveRun, so the real save function has run

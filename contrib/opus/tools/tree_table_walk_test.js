@@ -72,6 +72,7 @@ globalThis.treeTableWalk = () => {
     }
     RUN = null; SAVED_RUN = null;   // picks are made between runs, as the game allows
     META = migrateMeta(defaultMeta());
+    META.admirals[r.id] = true;     // the harness owns the admiral it flies
     META.mastery[r.id] = 230;       // level 8: three branch picks and a capstone are earned
     let refused = false;
     for (const k of prereq(r)) {

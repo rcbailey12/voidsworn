@@ -7,7 +7,7 @@ process.env.VS_ORACLE = path.resolve(__dirname, '../../..');
 require('../../../godot/campaign/test/node/env.js').load(`
 globalThis.heatTest = () => {
   const ok = require('assert');
-  META = migrateMeta(defaultMeta()); runOpt.heat = [];
+  META = migrateMeta(defaultMeta()); META.admirals.vaelen = true; runOpt.heat = [];
   ok.equal(heatUnlocked(), false, 'a fresh profile has Heat closed');
   ok.ok(!runOptionsHtml().includes('data-act="optHeat"'), 'a fresh profile sees no Heat control');
   ok.ok(runOptionsHtml().includes('Lose a run to unlock Heat'), 'the locked card says how Heat opens');
@@ -17,7 +17,7 @@ globalThis.heatTest = () => {
   ok.equal(heatUnlocked(), true, 'one loss opens Heat');
   ok.ok(runOptionsHtml().includes('data-act="optHeat"'), 'one loss shows the Heat control');
 
-  META = migrateMeta(defaultMeta()); newRun('vaelen', 'ithar'); endRun(false, true);
+  META = migrateMeta(defaultMeta()); META.admirals.vaelen = true; newRun('vaelen', 'ithar'); endRun(false, true);
   ok.equal(META.stats.losses || 0, 0, 'an abandoned run is not a recorded loss');
   ok.equal(heatUnlocked(), false, 'an abandoned run does not open Heat');
 
@@ -36,7 +36,7 @@ globalThis.heatTest = () => {
   ] }));
   ok.ok(!('losses' in META.stats), 'a log with no real loss leaves the count absent so old fixtures stay unchanged');
 
-  META = migrateMeta(defaultMeta()); META.stats.losses = 1; runOpt.heat = [];
+  META = migrateMeta(defaultMeta()); META.admirals.vaelen = true; META.stats.losses = 1; runOpt.heat = [];
   newRun('vaelen', 'ithar', {heat: ['h_hunted']});
   ok.equal(heatLevel(RUN.heat), 2, 'h_hunted is two Heat points');
   RUN.stats.battles = 0; endRun(false);
@@ -45,7 +45,7 @@ globalThis.heatTest = () => {
   ok.equal(META.shadowPool.ithar, 2, 'the faction shadow pool gets 1 XP per Heat point');
   ok.equal(META.stats.losses, 2, 'the paid run also records its loss');
 
-  META = migrateMeta(defaultMeta()); META.stats.losses = 1; META.mastery.vaelen = 229;
+  META = migrateMeta(defaultMeta()); META.admirals.vaelen = true; META.stats.losses = 1; META.mastery.vaelen = 229;
   newRun('vaelen', 'ithar', {heat: ['h_flag']}); RUN.stats.battles = 0; endRun(false);
   ok.equal(masteryXP('vaelen'), 230, 'Heat XP respects the line cap');
   ok.equal(META.shadowPool.ithar, 2, 'cap overflow joins the shadow pool with the pool point');

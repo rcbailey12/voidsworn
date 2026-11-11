@@ -41,13 +41,13 @@ globalThis.capstoneMasteryTest = () => {
   ok.equal(capstoneMasteryNext('vaelen'), null, '600 XP is full mastery');
 
   // XP past 230 deepens the chosen evolution on a real run instead of spilling at once
-  META = migrateMeta(defaultMeta()); META.mastery.vaelen = 300; evo('vaelen');
+  META = migrateMeta(defaultMeta()); META.admirals.vaelen = true; META.mastery.vaelen = 300; evo('vaelen');
   newRun('vaelen', 'ithar'); RUN.stats.battles = 8; endRun(false);
   ok.equal(masteryXP('vaelen'), 308, 'XP past 230 deepens the chosen evolution');
   ok.equal(capstoneMasteryLevel('vaelen'), 0, '308 XP is still below mastery 1');
 
   // without an evolution the same run still stops at 230 and spills the rest to shadow learning
-  META = migrateMeta(defaultMeta()); META.mastery.vaelen = 229;
+  META = migrateMeta(defaultMeta()); META.admirals.vaelen = true; META.mastery.vaelen = 229;
   newRun('vaelen', 'ithar'); RUN.stats.battles = 8; endRun(false);
   ok.equal(masteryXP('vaelen'), 230, 'an unmet line stops at 230');
   ok.equal(capstoneMasteryLevel('vaelen'), 0, 'an unmet line shows no mastery');

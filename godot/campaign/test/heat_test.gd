@@ -28,7 +28,7 @@ func _init() -> void:
 	c.admiralScreen()
 	check(has_act(c, "optHeat"), "one loss shows the Heat control")
 
-	c.META = c.migrateMeta(c.defaultMeta()); c.newRun("vaelen", "ithar"); c.endRun(false, true)
+	c.META = c.migrateMeta(c.defaultMeta()); c.META["admirals"]["vaelen"] = true; c.newRun("vaelen", "ithar"); c.endRun(false, true)
 	check(float(c.z0(c.META["stats"].get("losses"))) == 0 and not c.heatUnlocked(), "an abandoned run is not a recorded loss")
 
 	c.META = c.defaultMeta()
@@ -52,7 +52,7 @@ func _init() -> void:
 	c.load_save_text(JSON.stringify(saved))
 	check(c.META["stats"].get("losses") == 2 and c.heatUnlocked(), "a saved pre-gate profile back-fills from its saved run log on load")
 
-	c.META = c.migrateMeta(c.defaultMeta()); c.META["stats"]["losses"] = 1
+	c.META = c.migrateMeta(c.defaultMeta()); c.META["admirals"]["vaelen"] = true; c.META["stats"]["losses"] = 1
 	c.newRun("vaelen", "ithar", {"heat": ["h_hunted"]})
 	check(c.heatLevel(c.RUN["heat"]) == 2, "h_hunted is two Heat points")
 	c.RUN["stats"]["battles"] = 0; c.endRun(false)
@@ -61,7 +61,7 @@ func _init() -> void:
 	check(c.META["shadowPool"]["ithar"] == 2, "the faction shadow pool gets 1 XP per Heat point")
 	check(c.META["stats"]["losses"] == 2, "the paid run also records its loss")
 
-	c.META = c.migrateMeta(c.defaultMeta()); c.META["stats"]["losses"] = 1; c.META["mastery"]["vaelen"] = 229
+	c.META = c.migrateMeta(c.defaultMeta()); c.META["admirals"]["vaelen"] = true; c.META["stats"]["losses"] = 1; c.META["mastery"]["vaelen"] = 229
 	c.newRun("vaelen", "ithar", {"heat": ["h_flag"]}); c.RUN["stats"]["battles"] = 0; c.endRun(false)
 	check(c.masteryXP("vaelen") == 230, "Heat XP respects the line cap")
 	check(c.META["shadowPool"]["ithar"] == 2, "cap overflow joins the shadow pool with the pool point")

@@ -8,7 +8,7 @@ with sync_playwright() as p:
     pg.goto(PAGE, wait_until='commit'); pg.wait_for_function("!!document.querySelector('.title .menu')", timeout=150000, polling=1000)
     bad=[]
     for fac,adm in [('ithar','aelith'),('chorus','matriarch'),('hegemony','reyes'),('corsair','mott'),('deathless','nekhet'),('voidsworn','vex')]:
-        r=pg.evaluate("""(()=>{ newRun('%s','%s'); RUN.credits=2000; const n=RUN.map.cols[3].find(x=>x.type==='shipyard')||RUN.map.cols[3][0]; RUN.curNode=n.id; shipyardScreen(n);
+        r=pg.evaluate("""(()=>{ for(const k of ['aelith','matriarch','reyes','mott','nekhet','vex']) META.admirals[k]=true; newRun('%s','%s'); RUN.credits=2000; const n=RUN.map.cols[3].find(x=>x.type==='shipyard')||RUN.map.cols[3][0]; RUN.curNode=n.id; shipyardScreen(n);
           const t=document.getElementById('app').innerText; const buys=[...document.querySelectorAll('#app button')].filter(x=>/^Buy/.test(x.innerText)); 
           RUN.inventory=['auspex']; fleetScreen(); const t2=document.getElementById('app').innerText; const fits=[...document.querySelectorAll('#app button')].filter(x=>/^Fit to/.test(x.innerText)).length;
           return {nan:/NaN/.test(t)||/NaN/.test(t2), buys:buys.length, buyEnabled:buys.filter(x=>!x.disabled).length, fits, slots:RUN.fleet.map(s=>s.tpl+':'+HULLS[s.tpl].slots)}; })()"""%(adm,fac))

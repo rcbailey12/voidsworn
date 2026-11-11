@@ -46,6 +46,7 @@ func _init() -> void:
 		var keys: Array = cases[fac][1]
 		c.RUN = null; c.SAVED_RUN = null; c.B = null
 		c.META = c.defaultMeta()
+		c.META["admirals"][id] = true       # the harness owns the admiral it flies
 		c.META["mastery"][id] = 230        # level 8: three branch picks and a capstone are earned
 		for key in keys:
 			check(c.lineagePick(key) == true, fac + ": lineagePick(" + key + ") was refused")

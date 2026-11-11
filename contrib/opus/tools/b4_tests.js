@@ -20,7 +20,7 @@ global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get B(){ return B; 
   setStance, canStance, wingStance, aiStance, killUnit, dmgMult, hitChance, genSector, META, RUN_FACTIONS, ADMIRALS, mapScreen, eventScreen, shipyardScreen, boonStep, NEM_FAC, nemFull, nemFeedLosses, startSideTurn, NEM_PERSONA, NEM_BEAT_WORD, nemBeatOf, ARC_VARIANT, HULL_VARIANTS, ACT, nemTargetBonus, nemDuelTarget, nemFoundMerge, landVolley, nemScar, nemPanel, W };
 `);
 const pickAdm = fac => Object.entries(T.ADMIRALS).find(([k, a]) => (a.fac || 'voidsworn') === fac)[0];
-const fresh = (fac, adm) => { T.META.unlocked = {}; T.newRun(adm || pickAdm(fac), fac); return T.RUN; };
+const fresh = (fac, adm) => { T.META.unlocked = {}; const pick = adm || pickAdm(fac); T.META.admirals[pick] = true; T.newRun(pick, fac); return T.RUN; };
 
 check('20 new events plus blue options on the old ones; every option of every event applies and writes a flag', () => {
   const bad = []; let n = 0;
