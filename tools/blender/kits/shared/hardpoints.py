@@ -94,11 +94,15 @@ def faction_key(name):
 
 
 def band(cls):
-    return BAND.get(cls, 'M')
+    if cls not in BAND:
+        raise ValueError(f'unknown hull class {cls!r}: add it to BAND and BREACH_BASE in hardpoints.py (Board, issue 363: never a silent default)')
+    return BAND[cls]
 
 
 def breach_base(cls):
-    return BREACH_BASE.get(cls, 4)
+    if cls not in BREACH_BASE:
+        raise ValueError(f'unknown hull class {cls!r}: add it to BREACH_BASE in hardpoints.py (Board, issue 363: never a silent default)')
+    return BREACH_BASE[cls]
 
 
 def breach_adjust(cls, faction):

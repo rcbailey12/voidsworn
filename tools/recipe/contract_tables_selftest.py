@@ -25,6 +25,10 @@ def main():
     for cls, fac, want in table:
         ok(H.expected_breach(cls, fac) == want, f'breach {cls} {fac}: {H.expected_breach(cls, fac)}, expected {want}')
     ok(H.expected_breach('Cruiser', 'hullbreakers') == 5, 'the ship json name hullbreakers reads as the corsair sheet (+1)')
+    try:
+        H.expected_breach('Corvette', 'corsair'); ok(False, 'an unknown class must fail, not default')
+    except ValueError:
+        ok(True, 'an unknown class fails loudly (no silent default)')
     ok(H.faction_key('Glasswrights') == 'ithar' and H.faction_key('The Chorus') == 'chorus', 'sheet names resolve to the data.js fac value')
 
     for n in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9):
