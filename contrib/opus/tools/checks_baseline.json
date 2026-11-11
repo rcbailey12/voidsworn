@@ -5,8 +5,6 @@
  "checksCeiling": 14,
  "driftDifferedCeiling": 12,
  "knownFindingsFailures": [
-  "BF-1",
-  "BF-8",
   "ECO-4",
   "EVT-1",
   "KIT-1",
