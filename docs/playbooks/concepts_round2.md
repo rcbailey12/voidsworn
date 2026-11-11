@@ -82,6 +82,24 @@ checklist for any model that takes the Board's seat.
     many more of them than an escort and size reads at a glance.
 11. **Space, not sea, not air.** No keels, masts, cranes, portholes in rows, funnels, railings, stepped decks; no wings, tail
     fins or cockpit canopies.
+    **The naval pass (Ryan on round 5, R185: "I don't understand the random things hanging off, it reads as naval. We need
+    to do a full pass across all ships and factions so not naval").** A sea ship has a top and a bottom: everything sits on
+    a deck, and the hull below is a smooth boat shape. That profile is the tell, more than any single part. So, for every
+    ship of every faction:
+    - **No boat profile.** In the side view the underside is never a curved hull with a keel line under a flat deck. It is
+      a flat armoured belly with hard chines, or the ship is the same above and below its centre line (a blade, a lens, a
+      wedge, a ring).
+    - **The belly is worked.** Thruster pods, sensor housings, radiators, a hangar door or armour belts sit on the
+      underside. If the top view holds every weapon and fitting and the belly is bare, the ship reads as a boat.
+    - **No deck house.** No stack of cabins rising from a deck amidships; the command block is low and sunk into the hull.
+    - **No ship's prow.** No raked, raised or pointed bow that would cut water. Bows are blunt, forked, wedge-flat or open.
+    - **Nothing hangs off the ship.** No chains, cages, anchors, fenders, nets, boats or cargo dangling over the sides or
+      under the hull. Cargo and trophies are bolted or strapped flat against the hull.
+    - **Turrets are not battleship turrets.** No tall round gun houses with long thin twin barrels standing on a deck
+      (Ryan on H8: "the hegemony guns look weird and almost cartoonish"). Guns are low, armoured, sunk into the hull's
+      own shape, with short thick barrels in proportion to the ship.
+    - Still out, as before: masts, funnels, cranes, railings, portholes in rows, flight decks, lifeboats.
+    The Board checks every sheet against this list before Ryan sees it, the side view first.
 12. **The faction's sheet holds.** Its colours, its one accent light, and its "Never" list (docs/playbooks/factions.md).
 
 ## How round 2 is drawn
