@@ -50,9 +50,8 @@ var timing := {"ripple": 0.08, "shell_speed": 160.0, "lance": 0.7, "charge": 0.2
 # Issue 281 vent gas: the shipped look is Cone B, a tight forward cone of gas and sparks along the barrel. "today" draws
 # the pre-Cone-B baked gas cell and is only set by the review capture to shoot the before stills; the game leaves it "".
 var vent_look := ""
-# Issue 353 (bench only): a folder laid out like res://fx/atlases/ holding candidate explosion bakes (VS_FX_ATLAS). A kind
-# found there is drawn from it with its baked colour (fx_death.route_texture); everything else is unchanged. The game
-# never sets it, so a normal game draws exactly what it drew before.
+# Optional comparison folder (VS_FX_ATLAS). The production macro, torpedo and death cores load the picked B atlases
+# directly from fx/atlases/rebake; they require no environment switch.
 var fx_atlas := ""
 # Issue 281 stray-puff guard: when a test sets check_radius, every weapon/vent/thruster gas spawn records its world
 # position and its source ship (fx_weapons.gd and fx_ship.gd call record_spawn), and stray_spawns() reports any that
@@ -943,6 +942,12 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		wgas.set_shader_parameter("born", now)
 		wgas.set_shader_parameter("intensity", 0.01)
 		mats.append(wgas)
+	for rel in ["weapons/impact/impact_", "weapons/impact/flash_", "weapons/macro/impact_", "weapons/macro/flash_", "death/small/flash_", "death/cruiser/flash_", "death/capital/flash_"]:
+		for variant in 3:
+			var production := DEATH.route_material(self, SH.DEATH_FLIPBOOK, rel, true, variant)
+			production.set_shader_parameter("born", now)
+			production.set_shader_parameter("intensity", 0.01)
+			mats.append(production)
 	DEATH.tear_particles(self, at, Vector3.UP, 0.1, Vector3.ZERO)
 	for i in mats.size():
 		# Pin generated hull shaders until release, even after the temporary warmup meshes go away.

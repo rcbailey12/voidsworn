@@ -94,6 +94,8 @@ uniform float directional = 0.0;
 uniform float ignition = 0.0;
 uniform vec4 atlas_rect = vec4(0.0, 0.0, 1.0, 1.0);
 uniform float min_pixels = 0.0;
+uniform float size_divisor = 1.0;
+uniform float soft_flash = 0.0;
 varying float elapsed;
 varying float particle_depth;
 vec2 cell_uv(vec2 uv, float frame) {
@@ -106,6 +108,7 @@ void vertex() {
 	vec3 view_c = (VIEW_MATRIX * vec4(centre, 1.0)).xyz;
 	particle_depth = -view_c.z;
 	float size = max(extent, px_world(min_pixels, -view_c.z, PROJECTION_MATRIX));
+	size /= size_divisor;
 	vec2 axis = (VIEW_MATRIX * vec4(tear_normal, 0.0)).xy;
 	axis = length(axis) > 0.01 ? normalize(axis) : vec2(0.0, 1.0);
 	vec2 up = mix(vec2(0.0, 1.0), axis, directional);
@@ -117,7 +120,8 @@ void fragment() {
 	float age = clamp(elapsed / max(lifetime, 0.001), 0.0, 1.0);
 	float frame = mix(age * 15.0, 3.0 + sqrt(age) * 12.0, plasma);
 #ifdef ROUTE_BAKED
-	frame = age * 15.0;
+	// A softened flash keeps the same first-cell diameter while it rises, then cools through the sequence.
+	frame = mix(age, max(0.0, (age - 0.5) * 2.0), soft_flash) * 15.0;
 #endif
 	float a = floor(frame); float b = min(a + 1.0, 15.0); float blend = fract(frame);
 	vec2 uv = atlas_rect.xy + vec2(UV.x, mix(UV.y, 1.0 - UV.y, directional)) * atlas_rect.zw;
@@ -142,9 +146,9 @@ void fragment() {
 	float pulse = plasma * (1.0 - smoothstep(0.12, 0.85, age)) + ignition * exp(-elapsed / 0.055);
 	ALBEDO += core * (0.9 + gas.r * 1.6) * pulse * intensity * fx_gain;
 #ifdef ROUTE_BAKED
-	// Issue 353, bench only: a candidate bake carries its own colour and its heat (thickness blue: 0 smoke, 1 fire).
-	// Smoke is shaded by the battle sun; fire glows by the caller's intensity. The game never defines ROUTE_BAKED.
+	// Route B keeps the baked colour and heat: smoke sees the sun, the short core emits light.
 	ALBEDO = gas.rgb * mix(0.55 + 0.9 * lit, 1.2 * intensity, thick.b) * fx_gain;
+	ALBEDO *= mix(1.0, sin(age * 3.14159265), soft_flash);
 #endif
 	float fade = 1.0 - smoothstep(0.70, 1.0, age);
 	float soft = 1.0;

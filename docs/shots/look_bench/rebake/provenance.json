@@ -1,0 +1,40 @@
+{
+  "head": "35362216e671fea1a46514a5343e90d75d275fce",
+  "working_tree": true,
+  "source_sha256": {
+    "godot/fx/fx.gd": "d413ee381fac2a2bc5a7cc95fe35a1dc4dd03199206024a74073cdaa69021ab8",
+    "godot/fx/fx_death.gd": "78a8932edc4514b522f87425cb28858b2efcf5eb4a318c247c9f39f03388e5a6",
+    "godot/fx/fx_weapons.gd": "365cccfa821ca2ebb66597e62eb745c42ee72ce828933ba6b06f18103d6c7bf5",
+    "godot/fx/fx_shaders.gd": "fbe03d265635c870bd6c578a64adffebe35af286b3cfdd6a3d5cbf992fd8b8bb",
+    "godot/bench/look_bench.gd": "1afc5b61866607e18fa0f153a43e40a66a7668b4c311ae75e61d1bc76fd75894",
+    "godot/bench/rebake_measure.gd": "f3b1012f6459dbee58d23067026e9cf6b1c84a744a11fae5c33b854621b7aab1",
+    "tools/blender/vfx/bake_route_b.py": "38f691fbb97457dcde30d848bcc42b11f670efe3527d57e110adc0cecfe5db07",
+    "tools/blender/vfx/route_common.py": "bd17fb8b76614c617c1150d66c3fb9d3d4e3bd550ea34692084406fd8c7279bc",
+    "tools/blender/vfx/pack_routes.py": "4e3a08fa08c74ca5d939818beb97fe36eba3403dd218465980fc46d1a376b9c3"
+  },
+  "before_run": "before_wide (second)",
+  "after_run": "after_final (second)",
+  "measure_run": "measure_final (warm system hidden, fresh FX system)",
+  "costs": {
+    "base": {
+      "before_ms": 5.4325,
+      "after_ms": 5.4115,
+      "delta_ms": -0.020999999999999908
+    },
+    "deaths": {
+      "before_ms": 5.5535,
+      "after_ms": 5.6655,
+      "delta_ms": 0.1120000000000001
+    },
+    "res_2160": {
+      "before_ms": 5.050500154495239,
+      "after_ms": 5.063000202178955,
+      "delta_ms": 0.01250004768371582
+    }
+  },
+  "texture_mb": {
+    "before": 1349.6171875,
+    "after": 1601.74462890625,
+    "delta": 252.12744140625
+  }
+}

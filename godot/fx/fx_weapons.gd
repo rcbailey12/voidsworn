@@ -934,13 +934,16 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 		var size := ((3.8 if light else (5.6 if w <= 2 else 7.0)) if old else
 			(1.4 if light else (1.6 if w <= 2 else 1.8))) * k
 		var tint: Color = col if lk in ["las", "prism", "plasma", "pflak", "mflak", "gflak"] else Color(0.94, 0.67, 0.33)
-		_burst(fx, p+n*0.35*k, n, T, size, "flash", 0.24 if light else 0.32,
-			tint, 4.2 if old else 3.6, HIT_PX[clampi(w,1,3)])
+		if lk == "macro":
+			_staged_hit(fx, Tg, p, T, false)
+		else:
+			_burst(fx, p+n*0.35*k, n, T, size, "flash", 0.24 if light else 0.32,
+				tint, 4.2 if old else 3.6, HIT_PX[clampi(w,1,3)])
 		# The gas keeps the old call size so the before stills match; the baked impact is a tight normal burst.
 		var gas_size := (3.8 if light else (5.6 if w <= 2 else 7.0)) * k
 		if old:
 			_vent(fx, p+n*0.5*k, n, T+0.025, gas_size*0.85, 0.38, tint, 0.9, n*4.0*k, 0.55, 1.0, w, Tg)
-		else:
+		elif lk != "macro":
 			_weapon_gas(fx, p+n*0.4*k, n, T+0.025, size * 1.4 * WEAPON_GAS_SCALE, "impact", 0.34, tint, 1.6, n*3.0*k, 0.8, 0.0, 0.0, Tg)
 		var ejecta := tint if substance == "ithar" else Color(0.91,0.56,0.25)
 		if substance == "chorus": ejecta = Tg.fac.damage_glow
@@ -1061,15 +1064,50 @@ static func _gauss_punch(fx, Tg, tg: Dictionary, T: float, dir: Vector3, col: Co
 	if w>=3: fx.hit_pause(T,3)
 
 
+# The production route uses native cells and the shared baked-colour shader, without the weapon shader's legacy 1.45x.
+# Flash and body are separate clocks: the body can drift as gas after its authored core has cooled.
+static func _staged_hit(fx, src, p: Vector3, T: float, torpedo: bool) -> void:
+	var band := DEATH.atlas_band(float(src.hull.L)) if src != null else "cruiser"
+	var target_scale: float = {"small": 0.8, "cruiser": 1.0, "capital": 1.2}[band]
+	var flash_px: float = (154.0 if torpedo else 56.0) * target_scale
+	var body_px: float = (140.0 if torpedo else 48.0) * target_scale
+	var life := 0.16 if torpedo else 0.12
+	var soft: bool = fx.reduce_flashing or (fx._flash_sized(p, 0.0, flash_px) and not fx.flash_ok(T))
+	for body in [false, true]:
+		var rel: String = ("weapons/impact/" if torpedo else "weapons/macro/") + ("impact_" if body else "flash_")
+		var at: float = T + (0.025 if body else 0.0)
+		var duration: float = (0.90 if torpedo else 0.50) if body else ((0.50 if torpedo else 0.42) if soft else life)
+		fx.later(at, func l_staged_hit() -> void:
+			var mi := MeshInstance3D.new()
+			mi.name = "fx_staged_body" if body else "fx_staged_flash"
+			mi.set_meta("fx_picture_kind", "impact" if body else "flash")
+			mi.set_meta("gas_root", p)
+			var quad := QuadMesh.new()
+			quad.size = Vector2.ONE
+			mi.mesh = quad
+			mi.extra_cull_margin = 100.0
+			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			var mat := DEATH.route_material(fx, SH.DEATH_FLIPBOOK, rel, true)
+			mat.set_shader_parameter("born", at)
+			mat.set_shader_parameter("lifetime", duration)
+			mat.set_shader_parameter("extent", (body_px if body else flash_px) * DEATH.STAGING_UNITS_PER_PIXEL)
+			mat.set_shader_parameter("min_pixels", body_px if body else flash_px)
+			# The flash's lit extent includes bloom; the body retains the native gas framing.
+			mat.set_shader_parameter("size_divisor", 0.80 if body else ((0.97 if torpedo else 0.98) if soft else 3.0))
+			mat.set_shader_parameter("intensity", 2.0 if body else (1.25 if soft else 5.2))
+			mat.set_shader_parameter("soft_flash", 1.0 if soft and not body else 0.0)
+			mi.material_override = mat
+			fx.add_child(mi)
+			mi.global_position = p
+			fx.record_spawn(src, p)
+			fx.later(at + duration + 0.1, fx.free_effect.bind(weakref(mi)))
+		)
+
+
 static func _big_hit(fx, Tg, tg: Dictionary, T: float, k: float, col: Color, star: bool) -> void:
 	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
 	var tint: Color = Color(0.88,0.90,0.94) if star else Color(0.94,0.62,0.25)
-	_burst(fx,p+n*k,n,T,12.0*k,"flash",0.32,tint,5.2,60.0)
-	if _old_look(fx):
-		_vent(fx,p+n*k,n,T+0.04,10.0*k,0.55,tint,1.1,n*7.0*k,0.8,1.0,3,Tg)
-	else:
-		_weapon_gas(fx,p+n*0.5*k,n,T+0.04,4.6*k*WEAPON_GAS_SCALE,"impact",0.42,tint,2.0,n*5.0*k,0.85,0.0,0.0,Tg)
-	_burst(fx,p+n*1.5*k,n,T+0.20,12.0*k,"cool",0.8,tint,0.75,0.0,n*3.0*k,0.5)
+	_staged_hit(fx, Tg, p, T, true)
 	var organic: bool = Tg != null and Tg.faction == "chorus"
 	var debris_col: Color = Tg.fac.damage_glow if organic else tint.lerp(Color(0.93,0.48,0.20),0.5)
 	_impact_sparks(fx,p+n*0.2*k,n,T,k,debris_col,18,24.0)
