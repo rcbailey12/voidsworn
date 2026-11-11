@@ -25,6 +25,18 @@ if "%CAMJ%"=="" (set CAMJ=%JOB%\concept_camera.json) else (set CAMJ=%REPO%\%CAMJ
 if errorlevel 1 (echo Stage 4 FAILED: the outline could not be scored. See %JOB%\log_sil.txt & goto bad)
 "%BPY%" "%RC%\ship.py" %SHIP% gate "%JOB%\sil\silhouette_scores.json"
 set GATE=%errorlevel%
+rem Issue 363: the standing checks with the parts on: outline per third and inner edges, and the second camera (the game
+rem battle camera at r 170) against the B0 shape reference.
+"%BPY%" "%R%\outline_thirds.py" "%JOB%\concept.png" "%CAMJ%" "%JOB%\sil" %CELL%="%JOB%\%CELL%.npz" > "%JOB%\log_thirds4.txt" 2>&1
+if errorlevel 1 (echo Stage 4 FAILED: the outline per third and inner edge check did not run. See %JOB%\log_thirds4.txt & goto bad)
+"%BPY%" "%RC%\standing.py" outline --ship "%R209_SHIP%" --job "%JOB%" > "%JOB%\log_standing4.txt" 2>&1
+if errorlevel 1 (type "%JOB%\log_standing4.txt" & echo Stage 4 FAILED: the standing outline check did not pass. See %JOB%\log_standing4.txt & goto bad)
+type "%JOB%\log_standing4.txt"
+"%BPY%" "%R%\outline_battle.py" "%JOB%\sil" ref="%JOB%\b0.npz" %CELL%="%JOB%\%CELL%.npz" > "%JOB%\log_battle.txt" 2>&1
+if errorlevel 1 (echo Stage 4 FAILED: the second-camera outline score did not run. See %JOB%\log_battle.txt & goto bad)
+"%BPY%" "%RC%\standing.py" battle --ship "%R209_SHIP%" --job "%JOB%" > "%JOB%\log_standing_battle.txt" 2>&1
+if errorlevel 1 (type "%JOB%\log_standing_battle.txt" & echo Stage 4 FAILED: the second-camera outline score is incomplete. See %JOB%\log_standing_battle.txt & goto bad)
+type "%JOB%\log_standing_battle.txt"
 "%B%" -b "%JOB%\build\%CELL%.blend" -P "%R%\close6.py" -- "%JOB%\clay" %CELL% 32 > "%JOB%\log_clay.txt" 2>&1
 echo Close-ups in %JOB%\clay
 if not "%GATE%"=="0" (echo Stage 4: audit PASS, outline gate FAILED. & goto bad)

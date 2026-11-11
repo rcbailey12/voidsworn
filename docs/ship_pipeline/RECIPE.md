@@ -26,11 +26,11 @@ shape can be judged); stage 6 fails when the LOD export or the Godot bench does 
 |---|---|---|---|---|
 | 1. Concept in | `1_concept_in.bat` | checks `docs\ship_pipeline\concepts\<ship>.webp`, starts `tools\recipe\ships\<ship>.json` from the template (asks the faction), writes the concept with its outline | `concept.png` | seconds |
 | 2. AI shape reference | `2_shape_ref.bat` | TRELLIS.2 turns the concept cut-out into one whole-hull mesh: a shape reference and a source of surface grime, never shipped. Every current concept already has one | `bakeoff\<ship>_trellis.glb` | 2 to 4 min |
-| 3. Traced hull and the outline gate | `3_trace_hull.bat` | slices the shape reference and fits clean faceted sections (`b0trace.py`); tunes the hull module's numbers on the concept outline with a pull toward the shape reference (`tune5.py`); scores the outline at the concept's own camera. Gate: 90 percent overlap | `sil\sil_<cell>.png`, PASS or FAIL | 10 to 25 min (tune) |
-| 4. Faction parts kit | `4_parts_kit.bat` | builds the hull with the faction kit's parts at the ship's sockets, audits it (`audit.py`: nothing floats, nothing crosses the build's own break lines, no gun aimed backward or into the ship against its mount normal), proves the audit can fail (`audit_selftest.py`: five broken copies refused, each for its own reason), re-scores the gate with the parts on, renders clay close-ups at the concept camera | `build\<cell>.blend`, `audit.json`, `clay\` | about 5 min |
-| 5. Paint bake | `5_paint_bake.bat` | the bake script named by the ship json's `bake` (`bakeAb6.py` for C15s_23; it builds whichever hull module `hull` names, so any ship whose hull module follows `armA5` to `armA7` uses it; a ship with its own bake names it there): the faction paint and the shape reference's grime baked to atlases (hull albedo, ORM, detail normal; parts albedo, ORM), renders at the concept camera (studio and concept light) and the fixed views, weapon close-ups | `<cell>.blend`, maps, `r\`, `close\` | 30 to 40 min |
+| 3. Traced hull and the outline gate | `3_trace_hull.bat` | slices the shape reference and fits clean faceted sections (`b0trace.py`); tunes the hull module's numbers on the concept outline with a pull toward the shape reference (`tune5.py`); scores the outline at the concept's own camera, then the outline per third and the inner edge check (`outline_thirds.py`; standing gate `standing.py outline`). Gate: 90 percent overlap, and each third at least `outline_third_slack` (default 5) below it | `sil\sil_<cell>.png`, `sil\outline_thirds.json`, PASS or FAIL | 10 to 25 min (tune) |
+| 4. Faction parts kit | `4_parts_kit.bat` | builds the hull with the faction kit's parts at the ship's sockets, audits it (`audit.py`: nothing floats, nothing crosses the build's own break lines, no gun aimed backward or into the ship against its mount normal), proves the audit can fail (`audit_selftest.py`: five broken copies refused, each for its own reason), re-scores the gate and the per-third and inner edge checks with the parts on, scores the outline from the second camera (`outline_battle.py`: the game battle camera at r 170 and the studio battle camera, against the B0 shape reference), renders clay close-ups at the concept camera | `build\<cell>.blend`, `audit.json`, `sil\outline_thirds.json`, `sil\outline_battle.json`, `clay\` | about 5 min |
+| 5. Paint bake | `5_paint_bake.bat` | the bake script named by the ship json's `bake` (`bakeAb6.py` for C15s_23; it builds whichever hull module `hull` names, so any ship whose hull module follows `armA5` to `armA7` uses it; a ship with its own bake names it there): the faction paint and the shape reference's grime baked to atlases (hull albedo, ORM, detail normal; parts albedo, ORM), renders at the concept camera (studio and concept light), the fixed views (top and below, the underside still) and the far side (starboard, `side_s`, on request in `render.py`), weapon close-ups, the concept and model blink sheet (`blink.py`), then the standing paint, licence and light checks | `<cell>.blend`, maps, `r\`, `close\`, `bow_blink.gif` | 30 to 40 min |
 | 6. LOD | `6_lod.bat` | the hand LOD chain (lod0 to lod3 sharing one set of atlases, small parts drop out by size) and the Godot cost bench (twenty copies, 1080p and 3D at 4K). Costs are reported, never capped (R111) | `glb\<cell>.glb`, `godot\` | about 3 min |
-| 7. Game export | `7_export.bat` | writes the game's ship folder from the baked ship and the ship json, with no hand steps: the ship glb with a node per hard point, and the 2048 map set. Then reads the glb back and checks it: FAIL when a weapon slot of the ship's `data.js` weapon list has no hard point, a hard point is off the mesh, or the breach anchors break their contract. Then proves the check can fail (nine broken copies must be refused, each for its own reason). Details below | `recipe\<ship>\export\<code>\` | about a minute |
+| 7. Game export | `7_export.bat` | runs every standing ship check (`standing.py all`), then writes the game's ship folder from the baked ship and the ship json, with no hand steps: the ship glb with a node per hard point, the 2048 map set and `manifest_entry.json` with the point counts. Then reads the glb back and checks it: FAIL when any required point is missing (a weapon slot, an engine, a hangar mouth, the core, the braking and boarding origins), the breach count for the class and faction is wrong, a hard point is off the mesh, or the manifest entry disagrees. Then proves the check can fail (every broken copy must be refused, each for its own reason). Details below and in `HARDPOINTS.md` | `recipe\<ship>\export\<code>\` | about a minute |
 
 Ryan's review rounds sit after stage 3 (shape), after stage 5 (weapons and paint, the close-up and paint sheets) and after
 stage 6 (cost). Opus builds the sheets from the stage outputs (`tools/blender/r209/sheets7pc.py` since round 7: the battle camera
@@ -44,7 +44,11 @@ side, weapons, overview and the firing capture).
 - `faction`: picks the kit, `tools/blender/kits/<faction>/` (see `tools/blender/kits/README.md`);
 - `hull`: the hull module, a Python file that builds the hull blocks; `tune`: its tuned numbers (written by stage 3);
 - `concept_camera`: the camera fitted to the concept (stage 3 fits one when this is empty);
-- `outline_gate`: 0.90;
+- `outline_gate`: 0.90; `outline_third_slack`: 5.0, how far below the gate one third (bow, midship, stern) may score;
+- `lights`: the window and trim lights the bake writes, each in pixels across on a 70 px ship (for example
+  `{"windows": 2.5, "trim": 2.0}`); empty while the paint has no light map. `light_min_px`: 2.0, the smallest a light may be;
+- `game_ship` and `game_code`: the ship's id in `data.js` and the folder name in `godot/assets/ships` (stage 7); `length_world`:
+  its class length;
 - `parts`: the sockets, one per weapon or marking: `part` (a kit part), `seat` (`flank`: find the hull side at x and z; `top`:
   find the deck at x and y), `pos`, `aim`, `size`, `pair` (adds the exact starboard mirror), `variant` and `variant_s` (each
   twin's own salvage detail), `extra` (the part's own numbers: barrel length, drum count, rack height).
@@ -70,7 +74,9 @@ weapons read like the concept and the outline stays at 90 percent or better.
 ## Stage 7: the game export (issue 209 round 7; FINDINGS R155, R156)
 
 The recipe writes the hard points as a required output, and the effects are built to that contract (outside audit pass 1,
-finding 6: today the effects guess gun positions from the hull's box and read only the engine points).
+finding 6: today the effects guess gun positions from the hull's box and read only the engine points). The contract itself,
+every point type, its axes and the smallest required set per class, is `docs/ship_pipeline/HARDPOINTS.md`; the one count
+table is `tools/blender/kits/shared/hardpoints.py` and both the writer and the checker read it.
 
 What the ship json adds for it: `game_ship` (the ship's id in `data.js`; its weapon list is the slot order), `game_code` (the
 folder name in `godot/assets/ships`), `length_world`, and on each weapon socket a `slot` (and `slot_s` for the starboard mirror):
@@ -81,51 +87,84 @@ What it writes (`tools/recipe/export7.py`), in the game's frame (+X bow, +Y up, 
 | Output | What |
 |---|---|
 | `<code>.glb` | one ship node, one mesh with three surfaces (`<code>_hull`, `<code>_parts`, `<code>_glow`), and an empty child node per hard point. The maps are outside the glb, by relative URI, as the A4 ships have them |
-| `hp_w<slot>_<weapon>_<arc>_<n>` | one per weapon muzzle: the barrel tips and launch mouths the kit registers while it builds (`plumbing.register_gun`), so a hard point is always on a real barrel. Node -Z along the barrel, +Y away from the hull. The weapon and arc are read from `data.js`, never typed. Extras: kind, size, arc, arc_deg, slot, weapon, radius, socket |
+| `hp_w<slot>_<weapon>_<arc>_<n>` | one per weapon muzzle: the barrel tips the kit registers while it builds (`plumbing.register_gun`), so a hard point is always on a real barrel. Node -Z along the barrel, +Y away from the hull. The weapon and arc are read from `data.js`, never typed. Extras: kind, size, arc, arc_deg, slot, weapon, radius, socket |
 | `hp_eng_<n>` | one per engine exit (the hull module registers them): -Z out of the bell, `extras.radius` |
-| `hp_breach_<n>` | six breach anchors on open hull, two per section (prow, mid, eng), each at least 0.03 from every part; +Y is the outward normal |
+| `hp_bay_<n>` | one per hangar mouth the hull module registers (`plumbing.register_bay`): -Z the launch direction, `extras.hangar` |
+| `hp_breach_<n>` | the breach anchors for the hull's class and faction (one table, never a constant): spread over prow, mid and eng, sides balanced, each at least 0.03 from every part; +Y the outward normal. Placement follows the faction sheet (for example the Hullbreakers uneven, the Sunward broadside deck line) |
 | `hp_core` | the hull's centre of mass |
+| `hp_rcs_<n>` | two braking puff origins, one port and one starboard on the forward half: -Z the braking thrust, `extras.side` |
+| `hp_board_<n>` | two boarding origins, one port and one starboard on the mid hull: -Z out toward the target, `extras.side` |
 | `<code>_base.jpg`, `_orm.jpg`, `_normal.jpg` | the hull atlas at 2048 |
-| `<code>_parts_base.jpg`, `_parts_orm.jpg` | the parts atlas at 2048 |
+| `<code>_parts_base.jpg`, `<code>_parts_orm.jpg` | the parts atlas at 2048 |
+| `manifest_entry.json` | the ship's manifest entry: class, band, length and the point counts (gun, engine, bay, breach, core, rcs, board) |
 | `<code>_export.json`, `<code>_check.json` | every hard point, the weapon slots, triangles, every file with size and sha256; the check's result |
 
 The check (`tools/recipe/check_export.py`, plain Python) reads the written glb the way the game will. It fails the export when: a
-weapon slot has no hard point, or a weapon hard point names a slot, weapon or arc `data.js` does not have; a hard point is more
-than 0.012 of the ship's length off the mesh (the length is the x extent of the glb's mesh box, so the limit scales with the
-ship; `hp_core` must be inside the hull's box); a weapon rests aimed backward, a port
+weapon slot has no hard point, or a weapon hard point names a slot, weapon or arc `data.js` does not have; a required point is
+missing (a weapon point for every slot, `hp_core`, `hp_eng`, two `hp_rcs`, two `hp_board`, and `hp_bay` when `data.js` gives the
+ship a hangar); the breach count is not the class and faction count, the anchors do not cover the sections the count needs, or the
+sides are more than one apart; a hard point is more than 0.012 of the ship's length off the mesh (the length is the x extent of the
+glb's mesh box, so the limit scales with the ship; `hp_core` must be inside the hull's box); a weapon rests aimed backward, a port
 mount sits to starboard or the other way round, a forward weapon does not point forward, an engine does not point aft; a weapon
-point lacks one of the eight extras in the table above or its extras slot, weapon or arc disagree with its name; `hp_eng` or
-`hp_core` is missing; a map the glb names is not in the folder. And it holds the breach contract of the table above (Muse check of
-PR 341, condition 2): exactly six `hp_breach` anchors, one port and one starboard (`extras.side`, and sitting on that side) in each
-section (`extras.section`: prow, mid, eng), each at least 0.03 (ship frame, `export7.BREACH_CLEAR`) from every part surface (the
-glb's surfaces other than `<code>_hull`; parts and glow), and +Y pointing out of its own side (its z component along that side at
-least 0.5). `check_export_selftest.py` then breaks nine copies of the real export (a slot's points removed, a point moved 0.05 of
-the ship's length off the hull, a gun turned aft, a port point mirrored to starboard, `hp_core` removed, a weapon's
-`extras.socket` removed, a breach anchor removed, a breach anchor moved onto a muzzle, a breach anchor turned to face in) and the
-check must refuse all nine, each for its own reason. An `unbaked=1` test export now names its surfaces `<code>_hull` and
-`<code>_parts` too, so the clearance is measured in the sandbox as on a baked ship.
+point lacks one of the eight extras in the table above or its extras slot, weapon or arc disagree with its name; a breach anchor
+is closer than 0.03 (ship frame, `export7.BREACH_CLEAR`) to a part surface, or +Y is not its outward normal; the manifest entry is
+missing or its counts disagree; a map the glb names is not in the folder. `check_export_selftest.py` then breaks copies of the real
+export (a slot's points removed, a point moved 0.05 of the ship's length off the hull, a gun turned aft, a port point mirrored to
+starboard, `hp_core` removed, a weapon's `extras.socket` removed, an engine, rcs and board origin removed, a breach anchor removed,
+a breach anchor moved onto a muzzle, a breach anchor turned to face in) and the check must refuse every copy, each for its own
+reason. `contract_selftest.py` proves the same check on the round 7 ship (C15s_23) in the sandbox, with its real `data.js` weapon
+list and the 5 anchors the cruiser of the Hullbreakers gets from the table. An `unbaked=1` test export names its surfaces
+`<code>_hull` and `<code>_parts` too, so the clearance is measured in the sandbox as on a baked ship.
 
 Stage 7 never copies into the game on its own (the build's ship folder is shared). Set `INSTALL_TO` to a Godot project folder to
-install a checked export there: what it replaces is copied to `export\replaced_<date>\` first, and the old ship's wreck and damage
-files are moved there too, because they belong to the old hull. Nothing is deleted.
+install a checked export there: what it replaces is copied to `export\replaced_<date>\` first, the old ship's wreck and damage
+files are moved there too (they belong to the old hull), and `manifest_entry.json` is merged into
+`assets/ships/manifest.json`. Nothing is deleted.
 
 **Not written yet (exactly what is left of the A4 set):**
 
 1. `<code>_wreck.glb`: the death pieces (the hull cut along its authored break lines into chunks with cut faces).
-2. `<code>_damage.glb` and the `skin_<n>` hull patches in the ship glb: the breach holes and per-weapon damage. The six
-   `hp_breach` anchors are already there for it.
+2. `<code>_damage.glb` and the `skin_<n>` hull patches in the ship glb: the breach holes and per-weapon damage. The `hp_breach`
+   anchors (one per section and side, the class and faction count) are already there for it.
 3. `<code>_emissive.jpg`: the glow (engine throats, muzzles, lamps) is its own surface with an emissive factor, not a map.
 4. One surface: the A4 ships have one mesh surface and one map set; a recipe ship has two atlases (hull, parts), so three surfaces.
    Merging them into one atlas is a bake-stage change (stage 5), not an export change.
-5. `manifest.json` and `ships.json` rows in `godot/assets/ships`, and the R116 scene gate with the ship in a real battle.
-6. The effects reading `hp_w` (the attach point service of audit finding 6): today the game still fires from its guessed side
-   mounts, so gun smoke does not start at the barrels yet.
+5. `ships.json` rows in `godot/assets/ships` (the manifest entry is written by stage 7), and the R116 scene gate with the ship in
+   a real battle.
+6. The effects reading the points (the attach point service of audit finding 6): today the game still fires from its guessed side
+   mounts and its box corners, so gun smoke does not start at the barrels, wings launch from the box centre, braking puffs sit on
+   box corners and boarding picks its own point. The contract `HARDPOINTS.md` states the reader rules; that service is its own job.
+
+## Standing checks every ship keeps (issue 363)
+
+These are not one-off sheets. Every stage writes them into the job folder and stage 7 refuses to export a ship without them
+(`tools/recipe/standing.py all`):
+
+| Check | Where it runs | What it proves |
+|---|---|---|
+| outline per third, inner edge | stages 3 and 4 (`outline_thirds.py`) | the outline overlap for bow, midship and stern separately, each at least the gate minus `outline_third_slack`, and every third has the inner edge distances (median px and share within 6 px), so a wrong third cannot hide in the whole-ship average |
+| outline from the second camera | stage 4 (`outline_battle.py`) | the same overlap per third at the game's battle camera (r 170) and the studio battle camera, against the B0 shape reference; this is the angle the player uses, not the concept camera |
+| blink sheet | stage 5 (`blink.py`) | `bow_blink.gif`: the concept and the model at the fitted concept camera, alternating, so the bow can be flipped in front of Ryan |
+| paint sides | stage 5 (`render.py`: concept, `below`, `side_s`) | the concept side, the underside and the far (starboard) side stills all exist; paint is judged on all three, not only the side the concept shows |
+| texture licences | stage 5 (`standing.py licences`) | every downloaded texture under the job's `textures/` has its own line in `licences.json`: file, source, licence (CC0, CC-BY, CC-BY-SA, public domain or own work) and what it is used for |
+| light sizes | stages 5 and 7 (`standing.py lights`) | every window and trim light declared in the ship json's `lights` is at least `light_min_px` (2.0) pixels across on a 70 px ship at the battle camera; an empty `lights` block passes because the present paint has no light map |
+
+Round 7 delivered the first four as one-off scripts and sheets (`outline_thirds.py`, `sheets7pc.py`'s `bow_blink.gif` and
+`far_side.jpg`); round 8 added the second camera (`outline_battle.py`). This job makes all of them standing stages and adds
+the licence and light size checks. A ship's job folder therefore always holds `sil/outline_thirds.json`,
+`sil/outline_battle.json`, `bow_blink.gif`, the paint side stills and `licences.json` (when textures are used).
+
+The two new checks need the painter to record what it did. A bake that downloads a texture puts a copy (or a same-named
+placeholder) in the job's `textures/` folder and writes `licences.json` with one entry per file: `file`, `source` (a URL or
+"own work"), `licence` (CC0, CC-BY, CC-BY-SA, public domain or own work) and `used` (what the texture is for). A bake that
+writes window or trim lights puts their size in pixels across on a 70 px ship into the ship json's `lights` block, for
+example `{"windows": 2.5, "trim": 2.0}`. Empty `lights` means the paint has no such lights yet, not that the rule is waived.
 
 ## What is generic now and what is not yet
 
 | Generic (any concept, any faction) | Per ship today | Next |
 |---|---|---|
-| stages 1, 2, 5, 6, 7; the outline gate; the fitted concept camera; the shared plumbing (sockets, seating, scale rules, audit, tags, the muzzle and engine registry); bake, LOD chain, cost bench; the game export, its hard points and its check | the hull module's block table (C15s: raised forward deck, deckhouse and tower tiers, hump, aft body, stern block, sponsons, modules, cargo blocks; `armA5.py`); the sockets in the ship json | a block table as data in the ship json, so a new hull needs no Python; the wreck and damage glbs and the scene gate (stage 7, list above) |
+| stages 1, 2, 5, 6, 7; the outline gate and the standing checks (per third, inner edge, second camera, paint sides, blink sheet, licences, light sizes); the fitted concept camera; the shared plumbing (sockets, seating, scale rules, audit, tags, the muzzle, engine and bay registry); the hard point contract and its one count table (`kits/shared/hardpoints.py`); bake, LOD chain, cost bench; the game export, its hard points and its check | the hull module's block table (C15s: raised forward deck, deckhouse and tower tiers, hump, aft body, stern block, sponsons, modules, cargo blocks; `armA5.py`); the sockets in the ship json | a block table as data in the ship json, so a new hull needs no Python; the wreck and damage glbs and the scene gate (stage 7, list above) |
 | the Hullbreaker kit and paint (`kits/hullbreakers/`) | | a kit per faction: Sunward Crusade, Glasswrights, Eclipse, Chorus, Hegemony Navy, each with its own shape language and paint |
 
 The section fits in stage 3 (`b0trace.py`) are generic; turning them into the hull module's knot table was a hand step in round 5
@@ -144,8 +183,12 @@ in the recipe, and the next change makes it data.
   stern 85.1. Stage 4 exits on the gate FAIL; that is the honest reading, and R156 puts the bow's look ahead of the score.
 - Round 8 (`docs/shots/ship_pipeline/route209/round8/README.md`): hull module `armA8` (the bow third fitted by
   `tools/blender/r209/fit8.py` to the concept outline and its traced near deck edge, numbers in `fit8_bow.json`). Outline after
-  round 8: bow third 91.5, whole 90.3 (over the 90 gate), bow inner edges within 6 px 46.4 percent. Stage 7 PASS, 101,892
-  triangles, 28 hard points.
+  round 8: bow third 91.5, midship 90.6, stern 85.0 (the per-third floor at gate 90 and slack 5 is 85.0), whole 90.3 (over the
+  90 gate), bow inner edges within 6 px 46.4 percent. Second camera (`outline_battle.json`): game camera bow 85.2, midship 90.9,
+  stern 85.8, whole 87.7; studio camera bow 74.6, midship 90.7, stern 89.2, whole 86.0 (against B0, not the concept).
+- The round 7 game export has 28 hard points: 18 gun muzzles (its 4 weapon slots), 3 engines, 6 breach anchors and 1 core. Under
+  the contract the ship gets 5 breach anchors (Cruiser, 4 from the class table, +1 for the Hullbreakers) plus 2 braking origins and
+  2 boarding origins, so a PC re-export (stage 7) is needed before this ship matches the contract; this job did not run one.
 - Stage 5 lesson (round 8): thin plates and edge-on bevels can bake from the wrong side. A bevelled deck lip that `smart_project`
   unwraps as one island seen edge-on, or a thin plate whose top and underside share texels, takes the underside's paint (the
   belly) on the top. Build deck lips with square edges, turn inside-out plates outward, and give downward faces high on the ship
