@@ -1325,7 +1325,7 @@ func _puff(at: Vector3, dir: Vector3, k := 1.0) -> void:
 	# a jet reads at battle zoom: about 5% of the hull's length as it leaves the nozzle, three times that as it spreads
 	# (in a flown move a capital's jets are bigger and last longer: a heavy burn, not a puff)
 	var mk := clampf(mass / MASS_MAX, 0.0, 1.0) if glide else 0.0
-	sp.pixel_size = clampf(L * 0.07, 1.4, lerpf(2.8, 4.2, mk)) / 64.0 * (0.6 + 0.4 * k)
+	sp.pixel_size = clampf(L * lerpf(0.07, 0.1, mk), 1.4, lerpf(2.8, 4.6, mk)) / 64.0 * (0.6 + 0.4 * k)
 	sp.top_level = true
 	add_child(sp)
 	sp.global_position = to_global(at + dir.normalized() * maxf(L, 6.0) * 0.03)  # just outside the hull, not inside it
