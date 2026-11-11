@@ -12,7 +12,8 @@ feel like an explosion or major hit happened. It feels like they're just getting
 
 The same content as four short pictures (each 340 px tall): docs/shots/look_bench/deaths/cruiser_wreck_before.jpg,
 cruiser_wreck_after.jpg, capital_wreck_before.jpg, capital_wreck_after.jpg. Cells are the bench's camera 170 frames at 0.73
-of true size (true pixels clipped the 6 s wreck, which spreads wider than a 320 px cell).
+of true size (true pixels clipped the 6 s wreck, which spreads wider than a 320 px cell). Second pass: "before" is main
+4d13a0cb (bench run main_r4), "after" is code commit 66cebf4 (bench run after_r5), the code on this branch's head.
 
 ## What Ryan will see
 
@@ -46,8 +47,8 @@ made per ship on the main thread just before the existing worker cut (fx_death.g
    hull's own open kit edges stay plain.
 6. Scorch. The hull damage shader gets up to eight wound spots (fx_scorch): soot black at the wound, a faint heat stain
    further out, sparse embers that cool with the torn faces. Off (count 0) for every live ship.
-7. Debris. At the core: 12 small and 5 medium torn plates (capital 18 and 8) from the existing pool, on top of the plates
-   at the break.
+7. Debris. At the core: 7 small and 3 medium torn plates (capital 10 and 4) from the existing pool, born just outside the
+   bite, on top of the plates at the break.
 
 Also from the issue 462 list: the cruiser's chain blasts are drawn at 100 px (were 80), and the pale vent puff beside a big
 hull is gone (its sparks stay). The Chorus rupture cut is warped by waves so it no longer breaks on flat Voronoi planes.
@@ -57,13 +58,31 @@ lace; a wide bronze scorch ring that turned white hulls cardboard brown; long wh
 Round 2 shortened the petals, made the bite one shape and the chips compact, made the scorch darker and smaller, and started
 fragments cooler. Round 3 stopped petals on the hull's own kit seams.
 
+## Second pass: look fixes (the Board and Ryan)
+
+- Charred faces (the Board: a capital's middle piece showed a big flat tan grid face, a clean slab again). Torn faces are
+  now charred black with the heat in their cracks and seams, and the deck ribs glow a third as much; no face reads as an
+  even bright panel whichever way the piece turns. See the capital's 6.0 s cell.
+- Secondary smoke (Ryan: "the secondary explosion smoke looks a little too even and weird"). Every blast's smoke, the
+  chain blasts', the secondaries' and the core body, is now a clump of two to four pictures, seeded per ship: one large
+  and the others a third to two thirds of it, born at staggered times, all on the blast point but drifting at different
+  speeds into one side, turned, stretched and toned differently. The big one is always the lopsided baked seed (s0); the
+  round seeds (s1, s2, a flower of equal puffs) are only used small and stretched. Secondaries vary 76 to 140 px, land up
+  to 40 percent of a step early or late, and pick random plating (clumps and gaps) instead of the most spread out spots.
+  The flash limit and reduce flashing are untouched: every flash still books through flash_ok and falls back to its soft
+  twin. See the capital's 2.80 s cell.
+- The biggest piece of a big hull turns more slowly, so it stays readable as the main wreck.
+
 ## What falls short (blunt)
 
-- Lance kills are not cleaner. The cut is prepared before the ship dies, when the killing weapon is unknown, so a lance kill
-  breaks the same torn way (its tear still draws straight and its faces still cool longest). Doing it properly means a
-  second prepared cut per ship (double the worker cost) or a cut on the death frame; I chose neither.
-- The capital's middle piece can tumble so its cut face looks at the camera by 6 s: then the strip shows a big flat tan
-  face (the glowing deck face of issue 462, cooling). Its rim is ragged but the face itself reads flat.
+- The capital's 2.32 s cell still shows a ring of round puffs. That one is not the secondaries: it is the approved core
+  flash picture itself (death/capital/flash_, route B), which picks one of three baked seeds at random and two of them are
+  the round flower. The same fix applies (always the lopsided seed, turned); I did not make it because the bench budget for
+  this pass was spent and it changes an approved picture, so it needs its own look.
+- Frame time is close to main, not equal: about 0.3 ms a frame more on average and a worst frame up to 5.4 ms (below).
+- Open: lance kills are not cleaner. The cut is prepared before the ship dies, when the killing weapon is unknown, so a
+  lance kill breaks the same torn way (its tear still draws straight and its faces still cool longest). Doing it properly
+  means a second prepared cut per ship (double the worker cost) or a cut on the death frame; left as it is (the Board).
 - At camera 60 a capital's deck shows short light sticks after the break. Round 3 removed the petals on kit seams; what
   is left looks like the hull's own kit detail, but I did not prove it on a closer sheet.
 - The bite is clear at camera 60 and on the capital at 170; on the cruiser at 170 (hull about 30 px wide) it reads as a
@@ -72,19 +91,51 @@ fragments cooler. Round 3 stopped petals on the hull's own kit seams.
   path, no new flashes).
 - After the last bench round, the PC death spawn check failed on round 3's code: on one real hull the bite's ray hit a
   part with no plating samples round it, so the core flash, its gas and body sat 4.0 units from the plating (limit 1.86).
-  Fixed after the bench: the bite centre is now a real hull sample. The strips are round 3's pictures, so on that hull the
-  bite may now sit a little lower on the side than pictured.
+  Fixed: the bite centre is now a real hull sample (the second pass's pictures show it). The PC death spawn check now
+  passes: 33 pictures, 33 recorded, 0 stray.
 
-## Cost
+## Cost (second pass: profiled, then brought back)
 
-- Worker cut (sandbox CPU, a 48 by 64 capsule hull, old cut against new on the same hull): 57 to 99 ms became 128 to 254
-  ms. It runs on the worker thread ahead of the death, as before; nothing new runs on the death frame except building up to
-  ten small fragment nodes from prebuilt meshes.
-- Cap geometry per wreck: about 1,400 to 3,200 vertices became 7,700 to 16,800 (torn rims, petals, long ribs, fragment
-  caps). Under a megabyte per prepared ship; no new textures.
-- Pieces: 2 or 3 main pieces as before, plus 4 to 10 fragments without physics bodies.
-- 20-death fleet probe (check_destruction, RTX 5080), main at the time: avg 1.331 ms, p99 2.543, max 3.145, fx p99 1.393.
-  The branch's run stopped at the death spawn failure above before the probe; see the hand-off for the rerun.
+The Board held the merge on frame time. Measured with a profiling copy of the fleet probe (20 box ships, a death every
+20 frames, RTX 5080; the fx.pend timer split per frame and every frame over 4 ms), main and the branch in the same PC
+session, two runs each.
+
+Where the first pass (7272e94) spent the extra, totals over the 660 measured frames, main against the branch:
+
+| Part | main | 7272e94 | What it was |
+|---|---:|---:|---|
+| Break-up on the death frame | 21 ms | 37 ms | picking secondary sites (a fracture-plan test for 400 hull samples per piece) on the death frame, plus the fragments |
+| Wreck update every frame | 65 ms | 142 ms | setting the heat of every glowing face (now up to a dozen per wreck) and the scorch on every frame, forever |
+| Plates (physics bodies) | 6 ms | 11 ms | 17 more plates per cruiser death |
+| Throwing fragments | 0 | 5.5 ms | ten small node moves per death, cheap |
+
+Torn-face geometry (about 5x the vertices) did not show up as a cost: it is built on the worker ahead of time and the
+probe frames that were slow were all CPU death-frame or per-frame update work.
+
+What changed: secondary sites are picked on the worker cut ahead of the death; faces and scorch are set 15 times a second
+and a wreck that has gone cold is never visited again; 10 instead of 17 plates per cruiser at the core (14 instead of 26
+on a capital), born just outside the bite; rim plates and long ribs under 1.5 px at camera 170 are not built; fragments
+stop drifting after 8 s.
+
+| 20-death fleet probe | avg ms | p99 ms | worst ms | fx p99 ms |
+|---|---:|---:|---:|---:|
+| main 4d13a0cb, run 1 | 1.353 | 2.973 | 3.525 | 1.621 |
+| main 4d13a0cb, run 2 | 1.305 | 2.732 | 2.940 | 1.543 |
+| first pass 7272e94 (earlier session) | 1.856 to 2.414 | 4.522 to 6.654 | 6.105 to 14.340 | 3.061 to 3.923 |
+| this branch 66cebf4, run 1 | 1.604 | 3.148 | 3.742 | 1.429 |
+| this branch 66cebf4, run 2 | 1.819 | 3.917 | 5.413 | 1.639 |
+| this branch 66cebf4, check_destruction's own probe | 1.604 | 2.987 | 3.390 | 1.468 |
+
+Death-frame work is now at main's level (break-up 18 ms total against main's 20 to 21). What is left is about 0.3 ms a
+frame on average: the wreck update still visits more pieces (100 to 117 ms total against 65 to 68) and the extra pieces,
+plates and smoke pictures draw. The worst frame is 3.4 to 5.4 ms against main's 2.9 to 3.5: the 5.4 ms was one run's
+frames 467 to 525, a cluster of overlapping wrecks with no single fx cause over 0.65 ms. Nothing of the look was given up
+for this except fewer core plates and fragments that come to rest after 8 s.
+
+- Worker cut (sandbox CPU, old cut against new on the same hull): 57 to 99 ms became 128 to 254 ms, plus the secondary
+  sites now. It runs on the worker thread ahead of the death, as before.
+- Cap geometry per wreck: about 1,400 to 3,200 vertices became 7,700 to 16,800. Under a megabyte per prepared ship; no
+  new textures.
 
 ## Checks
 
@@ -95,7 +146,9 @@ fragments cooler. Round 3 stopped petals on the hull's own kit seams.
   are near equal (smallest over 0.72 of the largest by side skin; a capital's neighbours within 0.88), the bite is missing
   or under 0.12 of the length, fewer than three fragments fly, or the first piece's torn end is one straight line across
   the beam. Main fails it.
-- Look bench on Ryan's PC: three rounds of the cruiser, lance cruiser and capital rows at cameras 170 and 60, 0 warnings.
-  Evidence under Downloads\voidsworn_test\opus484\lb\ (runs\main_r1, runs\after_r1 to after_r3).
+- Look bench on Ryan's PC: three rounds in the first pass and two in the second (cruiser, lance cruiser and capital rows at
+  cameras 170 and 60), 0 warnings. Evidence under Downloads\voidsworn_test\opus484\lb\ (runs\main_r1, main_r4,
+  after_r1 to after_r5); fleet profiles in opus484\prof_p1 to prof_p3; check_destruction on 66cebf4 in
+  opus484\checks_after_c5.txt: all pass, DEATH_SPAWN 33 pictures, 0 stray.
 - Known in the PC check log, main too: death_spawn_check reads a missing `directional` uniform as a float (16 script errors
   on main); not from this branch.
