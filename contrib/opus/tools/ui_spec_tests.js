@@ -107,6 +107,11 @@ check(lows.length >= 4 && lows.every(v => v === 0.35), `every hull-low line is 0
   check(/func pick_route\(/.test(sec) && /KEY_KP_1/.test(cui) && /pick_route\(str\(_routes\[rn\]\["id"\]\)\)/.test(cui), 'a route is picked by its row, its number key or its stop on the map');
 
   // the map itself
+  const system = read('godot/ui/campaign/map3d_system.gd');
+  check(!/_add_orbits|sys\.orbit\(|sys\.orbit_arc\(/.test(m3) && !/STAR_ARCS/.test(system + msh), 'R174: no orbit guides or background star arcs are built around the sun');
+  check(/const STOP_ICON_PX := 24\.0/.test(gsh2) && /GS\.stop_icon\(/.test(m3) && /GS\.stop_key\(/.test(sec), 'R174: map and Map key share the 24 px icon and its scaled halo');
+  check(/func _enemy_fleet\(/.test(m3) && /if fight:\s+top = _enemy_fleet/.test(m3) && !/_place_scene/.test(m3), 'R174: every fight uses an enemy fleet, without battlefield scenery');
+  check(/L\["mi"\]\.visible = not behind/.test(m3), 'R174: routes behind the fleet are hidden');
   check(/const BACKDROP_K := 0\.5/.test(m3) && /env\.background_energy_multiplier = BACKDROP_K/.test(m3) && /sys\.backdrop_k = BACKDROP_K/.test(m3), 'the map backdrop (sky, near stars, embers) is at half strength');
   check(/const TIER_LIGHT := \[1\.0, 0\.75, 0\.375\]/.test(m3) && /const TIER_SCALE := \[1\.0, 0\.85, 0\.425\]/.test(m3) && /func _set_tier\(/.test(m3), 'R170: stops ahead are 85% size and 75% brightness; cut-off stops have half of each');
   check(!/sys\.halo\(|sys\.threat\(|"RING"|_strip_text|func _chip\(|GS\.strip\(|GS\.tag\(/.test(m3), 'no rings, halos, threat holograms, strips or tags on the map');

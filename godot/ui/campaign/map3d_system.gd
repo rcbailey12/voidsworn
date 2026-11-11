@@ -1,6 +1,6 @@
 extends RefCounted
 # The star system behind the 3D sector map (G3, R51): the Hollow Sun at the centre (a dead black star ringed in slow fire,
-# a battlefield debris ring round it), orbit lines, the sky and its parallax layers, and the place each stop sits in
+# a battlefield debris ring round it), the sky and its parallax layers, and the place each stop sits in
 # (planets with atmospheres and moons, stations, asteroid fields, nebula pockets, wreck fields). Presentation only:
 # its randomness is the map's own generator, never the rules' PRNG.
 #
@@ -10,26 +10,33 @@ const SH := preload("res://ui/campaign/map3d_shaders.gd")
 
 # One presentation table, indexed by RUN.sector. Distances, light and atmosphere never enter the run or its PRNG.
 const APPROACH := [
-	{"sun_scale": 0.6, "sun_pos": Vector3(0, 1, 0), "disc_outer": 2.5, "disc_gain": 0.28, "lens_gain": 0.4, "star_exposure": 0.1,
+	{"sun_scale": 0.6, "sun_pos": Vector3(76, 1, -39), "disc_outer": 2.5, "disc_gain": 0.28, "lens_gain": 0.4, "star_exposure": 0.1,
 		"sun_energy": 0.8, "sun_color": Color(0.65, 0.76, 1.0), "planet_floor": 0.28, "ambient": 0.42, "fill": 0.42, "local_fill": 1.0, "nebula": 0.5, "saturation": 0.5,
-		"stars": 1.0, "star_void": 0.0, "heat": 0.0, "bent_stars": 0.0, "debris": 0.3, "ember": 0.16,
-		"ring_inner": 3.2, "ring_outer": 4.2, "infall": 0.0, "radius": Vector2(21, 52), "angle": Vector2(190, 200), "bend": 0.2,
+		"stars": 1.0, "star_void": 0.0, "heat": 0.0, "debris": 0.3, "ember": 0.16,
+		"ring_inner": 3.2, "ring_outer": 4.2, "infall": 0.0, "extent": 110.0, "start": Vector3(-48, 0, 26), "run": 96.0, "slope": -50.0, "curve": 0.0, "lane_width": 64.0, "bend": 0.0,
 		"fit_sun": true, "arrival_zoom": 0.88, "arrival_lean": 0.16, "arrival_seconds": 1.2},
-	{"sun_scale": 1.3, "sun_pos": Vector3(8, 1, -5), "disc_outer": 3.0, "disc_gain": 0.55, "lens_gain": 0.7, "star_exposure": 0.2,
+	{"sun_scale": 1.3, "sun_pos": Vector3(18, 1, -6), "disc_outer": 3.0, "disc_gain": 0.55, "lens_gain": 0.7, "star_exposure": 0.2,
 		"sun_energy": 5.0, "sun_color": Color(1.0, 0.7, 0.48), "planet_floor": 0.08, "ambient": 0.28, "fill": 0.22, "local_fill": 0.45, "nebula": 0.28, "saturation": 0.65,
-		"stars": 0.7, "star_void": 0.65, "heat": 0.08, "bent_stars": 0.045, "debris": 1.0, "ember": 0.3,
-		"ring_inner": 3.3, "ring_outer": 5.2, "infall": 0.0, "radius": Vector2(20, 49), "angle": Vector2(190, 190), "bend": 0.1,
+		"stars": 0.7, "star_void": 0.65, "heat": 0.08, "debris": 1.0, "ember": 0.3,
+		"ring_inner": 3.3, "ring_outer": 5.2, "infall": 0.0, "extent": 135.0, "start": Vector3(-112, 0, 26), "run": 96.0, "slope": -128.0, "curve": 84.0, "lane_width": 80.0, "bend": 0.08,
 		"fit_sun": true, "arrival_zoom": 0.88, "arrival_lean": 0.16, "arrival_seconds": 1.2},
-	{"sun_scale": 2.2, "sun_pos": Vector3(36, 1, -26), "disc_outer": 3.2, "disc_gain": 1.1, "lens_gain": 1.15, "star_exposure": 1.0,
+	{"sun_scale": 2.2, "sun_pos": Vector3(88, 1, -5), "disc_outer": 3.2, "disc_gain": 1.1, "lens_gain": 1.15, "star_exposure": 1.0,
 		"sun_energy": 11.0, "sun_color": Color(1.0, 0.62, 0.34), "planet_floor": 0.015, "ambient": 0.1, "fill": 0.06, "local_fill": 0.12, "nebula": 0.065, "saturation": 0.3,
-		"stars": 0.28, "star_void": 0.95, "heat": 0.8, "bent_stars": 0.14, "debris": 0.65, "ember": 0.5,
-		"ring_inner": 3.3, "ring_outer": 4.8, "infall": 1.0, "radius": Vector2(21, 46), "angle": Vector2(190, 154), "bend": -0.16,
-		"fit_sun": false, "arrival_zoom": 0.88, "arrival_lean": 0.16, "arrival_seconds": 1.2},
+		"stars": 0.28, "star_void": 0.95, "heat": 0.8, "debris": 0.65, "ember": 0.5,
+		"ring_inner": 3.3, "ring_outer": 4.8, "infall": 1.0, "extent": 115.0, "start": Vector3(-48, 0, 24), "run": 96.0, "slope": -180.0, "curve": 152.0, "lane_width": 84.0, "bend": -0.16,
+		"fit_sun": true, "arrival_zoom": 0.88, "arrival_lean": 0.16, "arrival_seconds": 1.2},
 ]
 var approach: Dictionary = APPROACH[0]
 
 static func sector_look(sector: int) -> Dictionary:
 	return APPROACH[clampi(sector - 1, 0, APPROACH.size() - 1)]
+
+# Constant lane width avoids squeezing the last forks into the disc. Only presentation coordinates change.
+static func stop_position(n: Dictionary, columns: int, sector: int) -> Vector3:
+	var a = sector_look(sector)
+	var t = float(n["col"]) / float(maxi(2, columns) - 1)
+	return a["start"] + Vector3(float(a["run"]) * t, 0,
+		float(a["slope"]) * t + float(a["curve"]) * t * t + (float(n["y"]) - 0.5) * float(a["lane_width"]))
 
 func set_sector(sector: int) -> void:
 	approach = sector_look(sector)
@@ -93,7 +100,7 @@ static func text_col(fac) -> Color: return look(fac)["text"]
 
 func _sh(name: String) -> Shader:
 	if not _shaders.has(name):
-		var codes = {"SKY": SH.SKY, "INFALL": SH.INFALL, "STAR_ARCS": SH.STAR_ARCS, "STARPTS": SH.STARPTS, "NEB_SHEET": SH.NEB_SHEET, "GLOW": SH.GLOW,
+		var codes = {"SKY": SH.SKY, "INFALL": SH.INFALL, "STARPTS": SH.STARPTS, "NEB_SHEET": SH.NEB_SHEET, "GLOW": SH.GLOW,
 			"PLANET": SH.PLANET, "ATMO": SH.ATMO, "ROCK": SH.ROCK, "ORBIT": SH.ORBIT, "LANE": SH.LANE, "LANE_FLAT": SH.LANE_FLAT, "RING": SH.RING, "CLOUD": SH.CLOUD,
 			"HULL": SH.HULL, "SOLAR": SH.SOLAR, "RADIATOR": SH.RADIATOR, "ROCK_HI": SH.ROCK_HI, "CLOUDS": SH.CLOUDS,
 			"HALO": SH.HALO, "TERR": SH.TERR, "BH_DISC": SH.BH_DISC, "BH_FRONT": SH.BH_FRONT, "BH_LENS": SH.BH_LENS, "BH_SHADOW": SH.BH_SHADOW, "BH_LENSED": SH.BH_LENSED, "THREAT": SH.THREAT}
@@ -292,9 +299,6 @@ func hollow_sun(parent: Node3D, core_r: float = 5.0) -> Dictionary:
 		for i in 14:
 			var a = rng.randf() * TAU; var r = lerp(r0, r1, rng.randf())
 			glow(deb, Color(1.0, 0.45, 0.15, 1.0), rng.randf_range(0.5, 1.1), Vector3(cos(a) * r, rng.randfn() * 0.2, -sin(a) * r), 2.0, float(approach["ember"]))
-	if float(approach["bent_stars"]) > 0.0:
-		var arcs = mi(quad(1, 1), mat("STAR_ARCS", {"gain": approach["bent_stars"]}), Vector3(0, 0, -core_r), Vector3.ONE * core_r * 7.0)
-		arcs.extra_cull_margin = core_r * 7.0; root.add_child(arcs)
 	if float(approach["infall"]) > 0.0:
 		var dust: Array = []
 		for i in (320 if q > 0.5 else 100):
