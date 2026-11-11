@@ -459,6 +459,7 @@ func busy() -> bool:
 # Every thruster follows the hull's real acceleration in its own frame: the main drive lights only while it pushes the
 # ship ahead on a forward run; braking and backing off use the forward-facing retro jets at the bow; stopping a back-off
 # uses small aft jets, never the main drive; sideways pushes use lateral jets in matched bow and stern pairs. No banking.
+# (That is the old segments mode, now a debug flag; the default flown move is play_glide below, issue 505.)
 var mass := 0.5
 var cinematic := true
 var thrust := 0.0             # main drive 0..1, only while it is actually pushing; the battle feeds G4's engine level
@@ -1193,7 +1194,6 @@ func _glide_step(dt: float) -> void:
 		cur_yaw = float(fin[1])
 		rotation.y = cur_yaw
 		glide_bank = 0.0
-		rotation.x = 0.0
 		path_dur = 0.0
 		glide = false
 		_vel = Vector3.ZERO
@@ -1209,8 +1209,9 @@ func _glide_step(dt: float) -> void:
 	_acc = (d[2] as Vector3) / (path_dur * path_dur)
 	_yaw_v = float(d[3]) / path_dur
 	_yaw_a = float(d[4]) / (path_dur * path_dur)
-	glide_bank = 0.0              # no roll into turns: nothing in space leans a hull into a turn (issue 505 item 4)
-	rotation.x = glide_bank
+	# no roll into turns: nothing in space leans a hull into a turn (issue 505 item 4). ShipView never writes the root's
+	# roll or pitch (fx/API.md: G4's hit reactions own them); glide_bank stays 0 for fx_ship's read of it
+	glide_bank = 0.0
 	_prev_pos = position
 	_prev_yaw = cur_yaw
 	_glide_thrusters(d, dts)
@@ -1269,7 +1270,6 @@ func _emit_jet(kind: String, f: Callable) -> void:
 func snap_to(p: Vector3, yaw: float) -> void:
 	path_dur = 0.0
 	glide_bank = 0.0
-	rotation.x = 0.0
 	glide = false
 	segs = []
 	path_yaws = []
