@@ -238,7 +238,8 @@ EMISSION *= (1.0 - fx_soot) * clamp(fx_power, 0.0, 1.0);
 if (fx_scorch_count > 0) {
 	// issue 484: soot black at the wound, heat-stained bronze further out, embers that cool with the torn faces
 	float fx_sc = fx_scorch_at(fx_hull_p);
-	ALBEDO *= mix(vec3(1.0), vec3(0.66, 0.46, 0.42), smoothstep(0.05, 0.4, fx_sc)) * (1.0 - 0.92 * smoothstep(0.3, 0.8, fx_sc));
+	// bench round 1: a strong bronze ring read as brown cardboard on a white hull; keep the stain faint and the soot dark
+	ALBEDO *= mix(vec3(1.0), vec3(0.80, 0.72, 0.70), smoothstep(0.0, 0.35, fx_sc)) * (1.0 - 0.9 * smoothstep(0.25, 0.75, fx_sc));
 	ROUGHNESS = mix(ROUGHNESS, 1.0, fx_sc);
 	float fx_em = smoothstep(0.65, 1.0, fx_sc) * step(0.72, burnt_hash(floor(fx_hull_p / max(fx_burnt_cell, vec3(0.001)) * 5.0)));
 	EMISSION += vec3(1.0, 0.30, 0.05) * fx_em * clamp(fx_scorch_heat, 0.0, 1.0) * 2.0;

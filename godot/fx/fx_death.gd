@@ -692,7 +692,7 @@ static func _plan_assign(plan: Dictionary, q: Vector3) -> int:
 	for bi in breaks.size():
 		var f := _break_f(breaks[bi], q)
 		if f > 0.0: main += 1
-		if not chips.is_empty() and absf(f) < float(chips["band"]) and _wave_sum(chips["waves"], q) > 0.0:
+		if not chips.is_empty() and absf(f) < float(chips["band"]):
 			var seeds: PackedVector3Array = chips["seeds"]
 			var best := -1
 			var bd := INF
@@ -776,7 +776,8 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 		var a := TAU * (float(j) + r.randf_range(-0.3, 0.3)) / float(nsub)
 		subs.append(bc + Vector3(cos(a) * rx * 0.6, 0.0, 0.0) + (Vector3(0.0, sin(a), 0.0) - out_dir * r.randf_range(0.1, 0.6)) * ry * 0.6)
 	var n_main := sizes.size()
-	var bite := {"c": bc, "rx": rx, "ry": ry, "waves": _waves(r, L * 0.5, 0.35, 3), "subs": subs, "first": n_main,
+	# a torn rim, but one bite: two long waves (round 1's three waves holed a capital's deck like lace)
+	var bite := {"c": bc, "rx": rx, "ry": ry, "waves": _waves(r, L, 0.22, 2), "subs": subs, "first": n_main,
 		"out": out_dir}
 	# 4. chips along each break
 	var per := 2
@@ -784,13 +785,13 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 	for b in breaks:
 		for j in per:
 			chip_seeds.append((b["at"] as Vector3) + (b["side"] as Vector3) * W * r.randf_range(-0.5, 0.5) * (-zs if j == 0 else zs) + Vector3.UP * H * r.randf_range(-0.4, 0.4))
-	var chips := {"seeds": chip_seeds, "per": per, "band": L * 0.03, "reach": maxf(W, H) * 0.32, "waves": _waves(r, L * 0.6, 1.0, 2), "first": n_main + nsub}
+	var chips := {"seeds": chip_seeds, "per": per, "band": L * 0.03, "reach": minf(maxf(W, H) * 0.25, L * 0.05), "first": n_main + nsub}
 	# 5. scorch on the plating round the wound: the bite and both sides of each break, fading over about a hull width
-	var scorch: Array = [Vector4(bc.x, bc.y, bc.z, rx + W * 0.9)]
+	var scorch: Array = [Vector4(bc.x, bc.y, bc.z, rx + minf(W, L * 0.12) * 0.6)]
 	for b in breaks:
 		for side in [-1.0, 1.0]:
 			var p: Vector3 = (b["at"] as Vector3) + (b["side"] as Vector3) * W * 0.3 * side + Vector3.UP * H * 0.2
-			scorch.append(Vector4(p.x, p.y, p.z, W * 0.75))
+			scorch.append(Vector4(p.x, p.y, p.z, minf(W, L * 0.12) * 0.5))
 	return {"seeds": seeds, "sizes": sizes, "breaks": breaks, "bite": bite, "chips": chips, "n_main": n_main,
 		"n_frag": nsub + chip_seeds.size(), "bite_break": bi, "scorch": scorch}
 
@@ -1198,7 +1199,7 @@ static func _cap_outline(cap: Dictionary, outline: PackedVector3Array, bounds: A
 		_section_structure(cap, polygon, centre, x, y, inward, depth, radius, bool(pc.get("organic", false)), ragged)
 	# Issue 484: a torn rim, not a clean outline: plating peeled outward in bent petals, some still glowing.
 	if ragged and outline.size() >= 6 and radius > bounds.size.length() * 0.05:
-		_cap_petals(cap, outline, centre, inward, radius, quantum, bool(pc.get("organic", false)))
+		_cap_petals(cap, outline, centre, inward, radius, quantum, bool(pc.get("organic", false)), bounds.size.length())
 	pc["cap_loops"] = int(pc["cap_loops"]) + 1
 
 
@@ -1210,7 +1211,7 @@ static func _rand01(p: Vector3, k: float) -> float:
 # Bent plates peeled out from the torn rim: each spans a stretch of the outline, leans out of the face and away from
 # its middle, and ends in a torn tooth. Half keep a hot rim (the slag rim glow), half are scorched dark plate. A Chorus
 # rim gets torn flaps of skin instead (the organic slag colour).
-static func _cap_petals(cap: Dictionary, outline: PackedVector3Array, centre: Vector3, inward: Vector3, radius: float, quantum: float, organic: bool) -> void:
+static func _cap_petals(cap: Dictionary, outline: PackedVector3Array, centre: Vector3, inward: Vector3, radius: float, quantum: float, organic: bool, span_len: float) -> void:
 	var m := outline.size()
 	var step := maxi(1, m / 26)
 	var i := 0
@@ -1226,12 +1227,13 @@ static func _cap_petals(cap: Dictionary, outline: PackedVector3Array, centre: Ve
 			radial -= inward * radial.dot(inward)
 			radial = radial.normalized() if radial.length() > 1e-6 else Vector3.ZERO
 			var out := (radial * lerpf(0.4, 0.9, _rand01(mid, 3.0)) - inward * lerpf(0.5, 1.0, _rand01(mid, 4.0))).normalized()
-			var reach := minf(radius * lerpf(0.10, 0.30, _rand01(b, 5.0)), a.distance_to(b) * 2.5 + radius * 0.06)
+			# bench round 1: long petals on a capital's big faces read as white lace; keep them short plates
+			var reach := minf(minf(radius * lerpf(0.06, 0.18, _rand01(b, 5.0)), a.distance_to(b) * 1.6 + radius * 0.03), span_len * 0.025)
 			var along := b - a
 			var a2 := a + out * reach * lerpf(0.55, 1.0, _rand01(a, 6.0)) + along * 0.12
 			var b2 := b + out * reach * lerpf(0.35, 0.85, _rand01(b, 7.0)) - along * 0.18
 			var tooth := (a2 + b2) * 0.5 + out * reach * lerpf(0.15, 0.45, _rand01(mid, 8.0)) + along * (_rand01(mid, 9.0) - 0.5) * 0.4
-			var col := Color(0.3, 1.0 if _rand01(mid, 10.0) < 0.5 else 0.3, 0, 1)
+			var col := Color(0.3, 1.0 if _rand01(mid, 10.0) < 0.3 else 0.2, 0, 1)
 			if organic: col = Color(0.3, 0.0, 0, 1)
 			_cap_tri(cap, a, b, b2, col)
 			_cap_tri(cap, a, b2, a2, col)
@@ -2104,10 +2106,11 @@ static func _make_frags(fx, s, wreck: Dictionary, pieces: Array, n_main: int, xf
 		if pc.has("cap_mat"):
 			var cm := pc["cap_mat"] as ShaderMaterial
 			cm.set_shader_parameter("heat", 0.0)
-			cm.set_shader_parameter("face_glow", 1.0)
+			cm.set_shader_parameter("face_glow", 0.5)
 			if fx.quality != "low":
 				wreck["mats"].append(cm)
-				wreck["heat_births"][cm] = T
+				# small fragments start past white heat and go dark in about half the big pieces' time
+				wreck["heat_births"][cm] = T - float(wreck.get("cool", WRECK_COOL)) * 0.35
 		wreck["scorch_mats"].append_array(pc.get("hull_mats", []))
 		wreck["frags"].append(node)
 		wreck["fires"].append({"node": node, "vel": inherited, "ang": Vector3.ZERO, "until": hold_until})
