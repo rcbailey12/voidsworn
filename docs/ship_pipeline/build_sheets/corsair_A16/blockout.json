@@ -1,0 +1,488 @@
+{
+  "code": "corsair_A16",
+  "cls": "Battle-barge",
+  "name": "Warlord's Pyre-Barge",
+  "length": 26.0,
+  "game_draw_multiplier": 1.6,
+  "big": true,
+  "beauty": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\repo\\contrib\\muse\\design\\concept_round8_2026_11\\corsair_A16_beauty.jpg",
+  "features": [
+    {
+      "id": "I1",
+      "kind": "intake",
+      "station": 0.12,
+      "offset": 0.115,
+      "height": -0.015,
+      "aim": [
+        1,
+        0,
+        0
+      ],
+      "size": [
+        0.105,
+        0.105,
+        0.105
+      ],
+      "evidence": "Visible; dimensions are blockout interpretation"
+    },
+    {
+      "id": "I2",
+      "kind": "intake",
+      "station": 0.12,
+      "offset": -0.115,
+      "height": -0.015,
+      "aim": [
+        1,
+        0,
+        0
+      ],
+      "size": [
+        0.105,
+        0.105,
+        0.105
+      ],
+      "evidence": "Visible; dimensions are blockout interpretation"
+    },
+    {
+      "id": "D1",
+      "kind": "dish",
+      "station": 0.23,
+      "offset": 0.055,
+      "height": 0.13,
+      "aim": [
+        0.95,
+        0,
+        0.32
+      ],
+      "size": [
+        0.055,
+        0.055,
+        0.055
+      ],
+      "evidence": "Visible; dimensions are blockout interpretation"
+    },
+    {
+      "id": "D2",
+      "kind": "dish",
+      "station": 0.23,
+      "offset": -0.055,
+      "height": 0.13,
+      "aim": [
+        0.95,
+        0,
+        0.32
+      ],
+      "size": [
+        0.055,
+        0.055,
+        0.055
+      ],
+      "evidence": "Visible; dimensions are blockout interpretation"
+    },
+    {
+      "id": "H1",
+      "kind": "hook",
+      "station": 0.08,
+      "offset": 0.105,
+      "height": -0.14,
+      "aim": [
+        1,
+        0,
+        -0.2
+      ],
+      "size": [
+        0.14,
+        0.025,
+        0.045
+      ],
+      "evidence": "Visible paired boarding claws; hinge and hidden actuator TO BE DESIGNED"
+    },
+    {
+      "id": "H2",
+      "kind": "hook",
+      "station": 0.08,
+      "offset": -0.105,
+      "height": -0.14,
+      "aim": [
+        1,
+        0,
+        -0.2
+      ],
+      "size": [
+        0.14,
+        0.025,
+        0.045
+      ],
+      "evidence": "Visible paired boarding claws; hinge and hidden actuator TO BE DESIGNED"
+    },
+    {
+      "id": "C1",
+      "kind": "chain",
+      "station": 0.45,
+      "offset": 0.125,
+      "height": 0.09,
+      "aim": [
+        1,
+        0,
+        0
+      ],
+      "size": [
+        0.52,
+        0.008,
+        0.008
+      ],
+      "evidence": "Two upper runs visible; underside return and attachment hardware TO BE DESIGNED"
+    },
+    {
+      "id": "C2",
+      "kind": "chain",
+      "station": 0.45,
+      "offset": -0.125,
+      "height": 0.09,
+      "aim": [
+        1,
+        0,
+        0
+      ],
+      "size": [
+        0.52,
+        0.008,
+        0.008
+      ],
+      "evidence": "Two upper runs visible; underside return and attachment hardware TO BE DESIGNED"
+    },
+    {
+      "id": "G1",
+      "kind": "single_gun",
+      "station": 0.55,
+      "offset": 0.24,
+      "height": -0.025,
+      "aim": [
+        0.7,
+        0.714,
+        0
+      ],
+      "size": [
+        0.065,
+        0.027,
+        0.027
+      ],
+      "evidence": "Port lower single-barrel mount; see annotated beauty inventory"
+    },
+    {
+      "id": "G2",
+      "kind": "single_gun",
+      "station": 0.78,
+      "offset": 0.235,
+      "height": -0.025,
+      "aim": [
+        0.35,
+        0.93675,
+        0
+      ],
+      "size": [
+        0.065,
+        0.027,
+        0.027
+      ],
+      "evidence": "Port lower single-barrel mount; see annotated beauty inventory"
+    },
+    {
+      "id": "T1",
+      "kind": "twin_gun",
+      "station": 0.57,
+      "offset": 0.2,
+      "height": 0.075,
+      "aim": [
+        0.82,
+        0.572,
+        0
+      ],
+      "size": [
+        0.07,
+        0.022,
+        0.022
+      ],
+      "evidence": "Port twin battery stand-ins; mount geometry simplified"
+    },
+    {
+      "id": "T2",
+      "kind": "twin_gun",
+      "station": 0.76,
+      "offset": 0.24,
+      "height": 0.075,
+      "aim": [
+        0.82,
+        0.572,
+        0
+      ],
+      "size": [
+        0.07,
+        0.022,
+        0.022
+      ],
+      "evidence": "Port twin battery stand-ins; mount geometry simplified"
+    },
+    {
+      "id": "T3",
+      "kind": "twin_gun",
+      "station": 0.86,
+      "offset": 0.2,
+      "height": 0.075,
+      "aim": [
+        0.82,
+        0.572,
+        0
+      ],
+      "size": [
+        0.07,
+        0.022,
+        0.022
+      ],
+      "evidence": "Port twin battery stand-ins; mount geometry simplified"
+    },
+    {
+      "id": "F1",
+      "kind": "single_gun",
+      "station": 0.2,
+      "offset": -0.18,
+      "height": 0.04,
+      "aim": [
+        1,
+        0,
+        0
+      ],
+      "size": [
+        0.07,
+        0.025,
+        0.025
+      ],
+      "evidence": "Five distinct far-flank single mounts visible; see inventory. Hidden lower battery TO BE DESIGNED"
+    },
+    {
+      "id": "F2",
+      "kind": "single_gun",
+      "station": 0.29,
+      "offset": -0.2,
+      "height": 0.04,
+      "aim": [
+        0.9,
+        -0.4359,
+        0
+      ],
+      "size": [
+        0.07,
+        0.025,
+        0.025
+      ],
+      "evidence": "Five distinct far-flank single mounts visible; see inventory. Hidden lower battery TO BE DESIGNED; rest aim forward/outboard to clear other fittings"
+    },
+    {
+      "id": "F3",
+      "kind": "single_gun",
+      "station": 0.42,
+      "offset": -0.23,
+      "height": 0.04,
+      "aim": [
+        1,
+        0,
+        0
+      ],
+      "size": [
+        0.07,
+        0.025,
+        0.025
+      ],
+      "evidence": "Five distinct far-flank single mounts visible; see inventory. Hidden lower battery TO BE DESIGNED"
+    },
+    {
+      "id": "F4",
+      "kind": "single_gun",
+      "station": 0.49,
+      "offset": -0.21,
+      "height": 0.04,
+      "aim": [
+        1,
+        0,
+        0
+      ],
+      "size": [
+        0.07,
+        0.025,
+        0.025
+      ],
+      "evidence": "Five distinct far-flank single mounts visible; see inventory. Hidden lower battery TO BE DESIGNED"
+    },
+    {
+      "id": "F5",
+      "kind": "single_gun",
+      "station": 0.61,
+      "offset": -0.23,
+      "height": 0.04,
+      "aim": [
+        1,
+        0,
+        0
+      ],
+      "size": [
+        0.07,
+        0.025,
+        0.025
+      ],
+      "evidence": "Five distinct far-flank single mounts visible; see inventory. Hidden lower battery TO BE DESIGNED"
+    },
+    {
+      "id": "V1",
+      "kind": "twin_gun",
+      "station": 0.72,
+      "offset": -0.21,
+      "height": 0.12,
+      "aim": [
+        1,
+        0,
+        0
+      ],
+      "size": [
+        0.065,
+        0.021,
+        0.021
+      ],
+      "evidence": "Two far upper twin mounts visible beside the launcher"
+    },
+    {
+      "id": "V2",
+      "kind": "twin_gun",
+      "station": 0.8,
+      "offset": -0.18,
+      "height": 0.12,
+      "aim": [
+        0.9,
+        -0.4359,
+        0
+      ],
+      "size": [
+        0.065,
+        0.021,
+        0.021
+      ],
+      "evidence": "Two far upper twin mounts visible beside the launcher; rest aim forward/outboard to clear other fittings"
+    },
+    {
+      "id": "U",
+      "kind": "single_gun",
+      "station": 0.82,
+      "offset": 0,
+      "height": 0.245,
+      "aim": [
+        1,
+        0,
+        0
+      ],
+      "size": [
+        0.105,
+        0.04,
+        0.04
+      ],
+      "evidence": "One roof turret. Beauty barrel reads aft; rest aim changed forward to satisfy standard"
+    },
+    {
+      "id": "R",
+      "kind": "launcher",
+      "station": 0.6,
+      "offset": 0,
+      "height": 0.17,
+      "aim": [
+        1,
+        0,
+        0
+      ],
+      "size": [
+        0.115,
+        0.13,
+        0.065
+      ],
+      "evidence": "One rack, ten mouths in two rows of five; rack back TO BE DESIGNED"
+    },
+    {
+      "id": "E1",
+      "kind": "engine",
+      "station": 0.93,
+      "offset": 0.245,
+      "height": 0.005,
+      "aim": [
+        -1,
+        0,
+        0
+      ],
+      "size": [
+        0.14,
+        0.145,
+        0.145
+      ],
+      "evidence": "Port large exit and far shoulder pod visible; far exit TO BE DESIGNED"
+    },
+    {
+      "id": "E2",
+      "kind": "engine",
+      "station": 0.93,
+      "offset": -0.245,
+      "height": 0.005,
+      "aim": [
+        -1,
+        0,
+        0
+      ],
+      "size": [
+        0.14,
+        0.145,
+        0.145
+      ],
+      "evidence": "Port large exit and far shoulder pod visible; far exit TO BE DESIGNED"
+    },
+    {
+      "id": "A",
+      "kind": "engine",
+      "station": 0.95,
+      "offset": 0.12,
+      "height": 0.2,
+      "aim": [
+        -1,
+        0,
+        0
+      ],
+      "size": [
+        0.085,
+        0.075,
+        0.075
+      ],
+      "evidence": "One upper port cylindrical aft unit visible; far equivalent TO BE DESIGNED"
+    },
+    {
+      "id": "e",
+      "kind": "engine",
+      "station": 0.94,
+      "offset": 0.255,
+      "height": -0.11,
+      "aim": [
+        -1,
+        0,
+        0
+      ],
+      "size": [
+        0.07,
+        0.065,
+        0.065
+      ],
+      "evidence": "One lower port exit visible; far equivalent TO BE DESIGNED"
+    }
+  ],
+  "version": "2026-11-11 v1",
+  "frame": "+X bow, +Y port, +Z up",
+  "station_origin": "Forward-most claw tip; overall length includes fittings",
+  "unresolved": [
+    "Belly skin, internal decks, break lines and belly fittings TO BE DESIGNED",
+    "Unseen starboard lower battery, engine end plumbing and chain returns TO BE DESIGNED",
+    "All dimensions and stations are a proposed blockout interpretation of the accepted beauty",
+    "Annotated beauty inventory pins the visible mounts; concealed barrels and far lower weapons stay open"
+  ]
+}

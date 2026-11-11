@@ -1,0 +1,32 @@
+[
+  {
+    "model": "qwen_image_edit_2511_fp8mixed.safetensors",
+    "lora": "Qwen-Image-Edit-2511-Lightning-8steps-V1.0-bf16.safetensors",
+    "steps": 8,
+    "cfg": 1,
+    "seed": 532,
+    "denoise": 0.25,
+    "sampler": "euler",
+    "scheduler": "simple",
+    "guides": "Image 1: Blender orthographic render, Image 3: fixed image-space edge guide",
+    "style": "Image 2: accepted corsair_A16 beauty",
+    "controlnet": "No ControlNet weights installed; multi-reference guidance pilot only",
+    "structural_lock": "Unproven. Pixel comparison and feature review required before acceptance",
+    "verdict": "REJECTED: material/style transfer ineffective at 0.25 denoise; small fitting edges changed, no verified structure lock. Clean Blender fallback used for both ships."
+  },
+  {
+    "model": "qwen_image_edit_2511_fp8mixed.safetensors",
+    "lora": "Qwen-Image-Edit-2511-Lightning-8steps-V1.0-bf16.safetensors",
+    "steps": 8,
+    "cfg": 1,
+    "seed": 532,
+    "denoise": 0.65,
+    "sampler": "euler",
+    "scheduler": "simple",
+    "guides": "Image 1: Blender orthographic render, Image 3: fixed image-space edge guide",
+    "style": "Image 2: accepted corsair_A16 beauty",
+    "controlnet": "No ControlNet weights installed; multi-reference guidance pilot only",
+    "structural_lock": "Unproven. Pixel comparison and feature review required before acceptance",
+    "verdict": "REJECTED: isolated fitting wear with hull still clay; dish feeds and mount edges drift. Clean Blender fallback used."
+  }
+]

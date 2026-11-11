@@ -1,0 +1,24 @@
+{
+  "code": "corsair_A16",
+  "result": "PASS",
+  "errors": [],
+  "length_from_game": 26.0,
+  "model_length": 26.0,
+  "length_error_percent": 0.0,
+  "scale_difference_percent": 0,
+  "rendered_length_pixels": {
+    "side": 1000,
+    "top": 1000
+  },
+  "rendered_length_difference_percent": 0.0,
+  "features": 26,
+  "outline": {
+    "overlap": 90.2,
+    "concept_covered": 95.6,
+    "cell_outside": 5.9,
+    "triangles": 4836
+  },
+  "outline_unrounded_percent": 90.18264161708855,
+  "barrel_intersections": [],
+  "limitations": "Geometry consistency check only. Beauty identity, small fitting counts and open design still require visual review"
+}

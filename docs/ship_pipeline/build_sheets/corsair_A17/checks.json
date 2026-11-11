@@ -1,0 +1,24 @@
+{
+  "code": "corsair_A17",
+  "result": "PASS",
+  "errors": [],
+  "length_from_game": 14.5,
+  "model_length": 14.5,
+  "length_error_percent": 0.0,
+  "scale_difference_percent": 0,
+  "rendered_length_pixels": {
+    "side": 1000,
+    "top": 1000
+  },
+  "rendered_length_difference_percent": 0.0,
+  "features": 22,
+  "outline": {
+    "overlap": 91.0,
+    "concept_covered": 95.2,
+    "cell_outside": 4.6,
+    "triangles": 4024
+  },
+  "outline_unrounded_percent": 91.00985438620597,
+  "barrel_intersections": [],
+  "limitations": "Geometry consistency check only. Beauty identity, small fitting counts and open design still require visual review"
+}

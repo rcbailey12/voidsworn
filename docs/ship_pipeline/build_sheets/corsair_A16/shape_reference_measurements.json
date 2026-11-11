@@ -1,0 +1,12 @@
+{
+  "code": "corsair_A16",
+  "triangles": 2851592,
+  "principal_extents": [
+    1.0038215347409118,
+    0.5922690014151586,
+    0.35223497869961884
+  ],
+  "beam_length_ratio": 0.5900142414936578,
+  "height_length_ratio": 0.3508940249927307,
+  "note": "AI whole-hull guide only. PCA axes are unsigned. Not an authority for hidden features or counts."
+}
