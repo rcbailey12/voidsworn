@@ -994,6 +994,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			baked.set_shader_parameter("intensity", 0.01)
 			mats.append(baked)
 	mats.append(DEATH.power_material(HULL.damage_material(StandardMaterial3D.new(), Transform3D.IDENTITY, {}, 1.0)))
+	mats.append(mat(SH.TEAR, 1))   # issue 462: the dying hull's tear overlay
 	# issue 220: the torpedo and rocket bodies (drive glow, star torpedo body, exhaust plume) and the weapon bursts' atlas
 	# shader: their first launch or hit compiled them mid-fight (a 53 ms frame with 3 surface pipelines at the gate scene)
 	mats.append_array([mat(WEAP.DRIVE, 1), mat(WEAP.STAR_BODY)])

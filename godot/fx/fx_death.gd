@@ -178,6 +178,9 @@ static func setup_physics(fx) -> void:
 	var m = ShaderMaterial.new()
 	m.shader = sh
 	st["debris_mat"] = m
+	# Issue 462: the tear's shader is made here, at battle load, not on the first death frame (a 63 ms first death on
+	# the fleet probe before this).
+	st["tear_mat"] = fx.mat(SH.TEAR, 1)
 	st["debris_shapes"] = []
 	st["debris_meshes"] = []
 	var r = RandomNumberGenerator.new()
@@ -1282,7 +1285,7 @@ static func _tell(fx, s, T: float, tl: DeathTimeline, cause: String, seeds: Pack
 	var g := _grow_dir(fx, s, axis)
 	var half: float = absf(g.y) * h.H * 0.5 + absf(g.z) * h.W * 0.5 + absf(g.x) * h.L * 0.5 + 0.05
 	s.set_meta("death_grow", [g, half, at, axis])
-	var m: ShaderMaterial = fx.mat(SH.TEAR, 1)
+	var m: ShaderMaterial = (fx.dstate["tear_mat"] as ShaderMaterial).duplicate() if fx.dstate.has("tear_mat") else fx.mat(SH.TEAR, 1)
 	m.set_shader_parameter("open_a", Vector2(T + tl.tear_open, T + tl.tear_full))
 	m.set_shader_parameter("cut_at", at)
 	m.set_shader_parameter("cut_axis", axis)
