@@ -981,8 +981,9 @@ static func _throw_sparks(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k
 		var drag: float = fx.rng.randf_range(0.8, 2.6)
 		var life: float = fx.rng.randf_range(SPARK_LIFE.x, SPARK_LIFE.y)
 		var t: float = T + fx.rng.randf() * 0.04
-		fx.spr(p, t, life, col, 2.2, 0.08 * k, 0.03 * k, 19, v, drag)
-		fx.stk(p, t, life * 0.7, col, 2.0, 0.16 * k, 0.03 * k, 1, v, drag, 0.0, 0.0, 3.0)
+		# pixel floors so a spark still reads as a point with a short trail at the battle camera (170)
+		fx.spr(p, t, life, col, 2.4, 0.08 * k, 0.03 * k, 19, v, drag, 0.0, 0.0, 3.0)
+		fx.stk(p, t, life * 0.7, col, 2.0, 0.16 * k, 0.03 * k, 1, v, drag, 0.0, 1.6, 7.0)
 		_note(fx, "spark", fam, v, n, life)
 
 
@@ -993,7 +994,7 @@ static func _throw_debris(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k
 		var d := _outward(n, fx.rcone(axis, 0.65), 0.25)
 		var v: Vector3 = d * fx.rng.randf_range(speed * 0.35, speed) * k
 		var life: float = fx.rng.randf_range(DEBRIS_LIFE.x, DEBRIS_LIFE.y)
-		fx.shd(p + n * 0.1 * k, T + fx.rng.randf() * 0.04, life, v, fx.rng.randf_range(0.55, 1.0) * size * k, heat,
+		fx.shd(p + n * 0.1 * k, T + fx.rng.randf() * 0.04, life, v, fx.rng.randf_range(0.8, 1.6) * size * k, heat,
 			fx.rng.randf_range(2.0, 7.0), 0.12, 2.0 if glass else 0.0)
 		_note(fx, "debris", fam, v, n, life)
 
@@ -1018,13 +1019,13 @@ static func _embers(fx, p: Vector3, n: Vector3, T: float, k: float, count: int, 
 		var d := _outward(n, fx.rcone(n, 0.85), 0.2)
 		var v: Vector3 = d * fx.rng.randf_range(0.6, 3.2) * k * fx.unit
 		var life: float = fx.rng.randf_range(EMBER_LIFE.x, EMBER_LIFE.y)
-		fx.spr(p, T + fx.rng.randf() * 0.12, life, col, 1.8, 0.07 * k, 0.04 * k, 19, v, 1.4)
+		fx.spr(p, T + fx.rng.randf() * 0.12, life, col, 2.2, 0.07 * k, 0.04 * k, 19, v, 1.4, 0.0, 0.0, 3.0)
 		_note(fx, "ember", fam, v, n, life)
 
 
 # The hot spot on the plate: white-hot, then orange, red and out over the family's time (no flicker). The mark the hit
 # cut into the hull (fx_breach, R43) stays after it as the scar.
-static func _heat_spot(fx, p: Vector3, T: float, k: float, size: float, fam: String, px := 6.0, i := 1.3) -> void:
+static func _heat_spot(fx, p: Vector3, T: float, k: float, size: float, fam: String, px := 6.0, i := 2.0) -> void:
 	var life: float = float(HEAT_LIFE.get(fam, 2.0))
 	fx.spr(p, T + 0.04, life, Color(1, 0.5, 0.15), i, size * k, size * k * 0.8, 21, Vector3.ZERO, 0.0, 0.0, 0.0, px)
 	_note(fx, "heat", fam, Vector3.ZERO, Vector3.UP, life, px)
@@ -1136,15 +1137,17 @@ static func _energy_hit(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, co
 		var v: Vector3 = d * fx.rng.randf_range(5.0, 13.0) * k * fx.unit
 		var life: float = fx.rng.randf_range(SPARK_LIFE.x, SPARK_LIFE.y)
 		var c: Color = col if lk != "plasma" else PLASMA_HOT
-		fx.spr(p + n * 0.05 * k, T + fx.rng.randf() * 0.03, life, c, 2.0, 0.07 * k, 0.03 * k, 19, v, 3.2)
-		fx.stk(p + n * 0.05 * k, T, life * 0.6, c, 1.6, 0.12 * k, 0.025 * k, 1, v, 3.2, 0.0, 0.0, 2.5)
+		fx.spr(p + n * 0.05 * k, T + fx.rng.randf() * 0.03, life, c, 2.2, 0.07 * k, 0.03 * k, 19, v, 3.2, 0.0, 0.0, 2.5)
+		fx.stk(p + n * 0.05 * k, T, life * 0.6, c, 1.6, 0.12 * k, 0.025 * k, 1, v, 3.2, 0.0, 1.4, 5.0)
 		_note(fx, "spark", "energy", v, n, life)
 	if lk == "prism":
 		for j in 3:
 			fx.spr(p + n * 0.2 * k, T + j * 0.04, 0.35, col, 2.6, 0.5 * k, 0.9 * k, 16, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.6)
 	if lk == "plasma":
 		_throw_debris(fx, p, n, n, T, k, 2 + w, 5.0, 0.12, 1.0, "energy")
-	_gas_cloud(fx, p + n * 0.2 * k, n, T, k, col.lerp(Color(0.4, 0.4, 0.42), 0.7), 1, 1.2 + 0.4 * float(w), "energy", 0.22)
+	if lk == "plasma":
+		# a little slag vapour; las and prism leave no smoke (playbook: "A tiny hot spark. No smoke.")
+		_gas_cloud(fx, p + n * 0.2 * k, n, T, k, Color(0.36, 0.40, 0.46), 1, 1.4, "energy", 0.2)
 	_heat_spot(fx, p + n * 0.12 * k, T, k, 0.7 * (1.0 + 0.3 * float(w - 1)), "energy", 5.0 + 1.5 * float(w))
 	fx.light(p + n * 2.0 * k, T, 0.18, 5.0 if w <= 1 else HULL_LIGHT, col, 0)
 	fx.shake(T, 0.03 if w <= 1 else 0.06, p)
@@ -1258,7 +1261,7 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 				nj = Tg.dir_world(hit["n"])
 		last = pj
 		if j % 2 == 0:
-			_burst(fx, pj + nj * 0.3 * k, nj, at, 4.0 * k, "flash", 0.16, col.lerp(Color.WHITE, 0.4), 4.2, px)
+			_burst(fx, pj + nj * 0.3 * k, nj, at, 4.0 * k, "flash", 0.16, col.lerp(Color(1.0, 0.72, 0.38), 0.55), 4.2, px)
 			_note(fx, "flash", "lance", Vector3.ZERO, nj, 0.16, px)
 		fx.spr(pj + nj * 0.2 * k, at, 0.18, col, 3.0, 1.2 * k, 1.6 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.45)
 		_heat_spot(fx, pj + nj * 0.1 * k, at, k, 0.55, "lance", 5.0, 1.5)
