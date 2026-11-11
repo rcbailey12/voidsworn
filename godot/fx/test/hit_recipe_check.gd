@@ -11,6 +11,7 @@ extends SceneTree
 #   5. light on neighbours: a torpedo hit's light reaches about two hexes;
 #   6. reduce flashing: the same hits book and count no flash at all;
 #   7. a lance kill on a big hull breaks on the beam's own line, clean (no kink, almost no teeth);
+#  10. a torpedo on a shield draws and books at its row's size;
 #   9. gun hits never spend the three flashes a second that deaths' core flashes need (fx.flash_at yield_last);
 #   8. the engine core flickers 0.95 to 1.0 only (issue 504's finding), and wounds are kept past the old cap of 12.
 #   godot --headless --path godot --script res://fx/test/hit_recipe_check.gd
@@ -121,6 +122,7 @@ func _run() -> void:
 		await process_frame
 	_recipes(seen)
 	await _yield_check()
+	await _shield_torp_check()
 	await _lance_kill()
 	# 8. the engine core flicker and the scar cap
 	_check(SH.SPRITE.find("flick(0.95 + 0.05 * vnoise(vec2(scene_t * 31.0") >= 0, "engine cores flicker 0.95 to 1.0 only")
@@ -271,6 +273,35 @@ func _yield_check() -> void:
 				n += 1
 		worst = maxi(worst, n)
 	_check(worst <= 3, "still never more than three counted flashes in a second")
+	fx.release()
+	world.queue_free()
+	await process_frame
+
+
+# 10. a torpedo on a shield draws and books at its row (110 px times the gun and the target), not half again bigger
+func _shield_torp_check() -> void:
+	var wf: Array = _world(false)
+	var world: Node3D = wf[0]
+	var fx = wf[1]
+	_ship(world, fx, "A", "Cruiser", 1.0, Vector3(0, 0, 30), "voidsworn")
+	_ship(world, fx, "T", "Cruiser", 1.0, Vector3(0, 0, -30), "hegemony")
+	await _advance(fx, 0.8)
+	var Tg = fx.ship("T")
+	_check(Tg.shielded and Tg._shield_mat != null, "the Hegemony box ship has its shield up")
+	fx.dstate["hit_logging"] = true
+	fx.dstate["hit_log"] = []
+	var n0: int = fx.flash_area_log.size()
+	fx.volley("A", "torp", "T", {"weapon_id": "torp", "shots": [true], "hits": [{"shield": 8, "hull": 0, "section": "mid", "crit": false}]})
+	await _advance(fx, 2.5)
+	var row_px := 0.0
+	for e in fx.dstate["hit_log"]:
+		if e["what"] == "flash" and e["fam"] == "shield":
+			row_px = float(e["px"])
+	var booked := 0.0
+	for r in fx.flash_area_log.slice(n0):
+		booked = maxf(booked, float(r[3]))
+	print("  shield torpedo: row %.0f px, booked %.0f px, limit disc %.0f px" % [row_px, booked, 2.0 * sqrt(fx.flash_limit_px2() / PI)])
+	_check(row_px > 0.0 and booked > 0.0 and booked <= row_px * 1.05 + 1.0, "a torpedo on a shield books at its row's size, not bigger")
 	fx.release()
 	world.queue_free()
 	await process_frame

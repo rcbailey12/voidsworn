@@ -8,8 +8,10 @@ effect: a weapon hit, a shield response, a trail, a death.
 - Ryan, Nov 10, on the explosion routes sheet: "Far right in both for sure. We need to upgrade the effects a bit but it's the
   right approach." The far right column is **route B with flash plus hot core** (R170). Every explosion is built that way.
 - Sizes and times come from Muse's staging table, contrib/muse/design/hit_staging_2026_11/synthesis.md, measured at 1080 at
-  the battle camera: for example a torpedo on a hull flashes 154 px for 0.16 s, a cruiser death flashes 302 px for 0.20 s.
-  Each step up the ladder is about 1.4 times the one below, so a bigger event always reads bigger.
+  the battle camera: for example a torpedo on a hull flashes 140 px for 0.16 s (154 in the staging table; issue 461 built
+  it at 140 so a lone torpedo stays under the flash counter's limit), a cruiser death flashes 302 px for 0.20 s. Each
+  step up the ladder reads plainly bigger than the one below (the built steps, deaths_and_hits.md "The hits, upgraded":
+  las 40, macro 56, lance 78, torpedo 140, a torpedo on a shield's ripple 156), so a bigger event always reads bigger.
 - Flame cap: no flame or hot core lives longer than 0.70 s, and none stays at full heat longer than 0.25 s (owner ruling).
   Flash and snuff out, never rolling fire. Flame only (R193): sparks, debris, gas, dust and embers live longer, and scorch
   stays (deaths_and_hits.md, "The hits, upgraded").

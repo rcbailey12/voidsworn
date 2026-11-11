@@ -44,7 +44,7 @@ Times are seconds from the killing blow. Sizes are at 1080 at the battle camera.
 
 | Beat | When | What the player sees |
 |---|---|---|
-| 1. The tell | 0.0 | The killing hit plays its own row (a torpedo on the hull: 154 px flash). |
+| 1. The tell | 0.0 | The killing hit plays its own row (a torpedo on the hull: 140 px flash, issue 461). |
 | | 0.0 to 0.3 | The ship dies inside: engines flare once, about a third brighter for two frames, then go black; running lights go out bow to stern. This must be plain at camera 170. |
 | | 0.3 to 1.38 | A glowing tear opens along the break line, growing from the side that was hit, white-hot at its tip and ember behind. Three chain blasts walk along it at about 0.5, 0.8 and 1.1 s, each at least 75 px, each a flash with a hot core that is gone in a quarter second. Narrow jets of fire, then gas, vent from the breach anchors. |
 | 2. The break | 1.38 | The hull parts into two capped halves, pushed apart along the tear, each starting a slow tumble. |
@@ -151,13 +151,24 @@ How each family's hit is built (godot/fx/fx_weapons.gd, `family_of`):
   for seconds, embers, a wound that cools over four seconds, light on the hulls about two hexes round.
 - **Bio** (Chorus): the wet splash with bile drops and an acid fume that hangs while the acid eats.
 
+The needle (the Glasswright light beam turret) is drawn as a lance burn but sized from the energy row (40 to 52 px): it is
+a light gun, and a lance-sized burn would outrank the macro.
+
+A lance kill on a big hull (cruiser class and up, not Chorus) re-cuts the hull on the death frame along the beam's line:
+the break nearest the beam lies on the beam's point, square-ish to the beam (within 34 degrees), with no kink and almost
+no teeth, and a smaller bite. On a two-piece hull the cut is kept between 0.3 and 0.7 of the length so neither half is a
+sliver; with no recent hit on record it falls 0.12 of the length off the middle (an even split reads as sliced). Small
+hulls and the Chorus keep their own cuts. Lifting either limit is a look call, not a rule.
+
 Sizes follow the gun as well as the target: a hit's flash is its row's size times the firing hull's band (small 0.85,
 cruiser 1.0, capital 1.2) times the hit hull's band (small 0.8, cruiser 1.0, capital 1.2). Matter lives: sparks 0.35 to
 0.9 s, debris 1 to 4 s, gas and dust 2 to 4 s, embers 1.4 to 3 s; no flash past 0.70 s.
 
 Faction weapons take the nearest row and their faction's matter: the Glasswright prism lance is a lance with a white core and a
-rainbow fringe; ion fire is a macro hit in blue-white with arcs and no debris; Chorus acid is a torpedo row with the melt
-look.
+rainbow fringe; the ion beam is a lance burn in blue-white with crawling arcs and no molten metal (built so in issue 461; this line once
+said a macro hit); Chorus acid is a torpedo row with the melt
+look (built in issue 461 as its own wet splash with bile drops and an acid fume that hangs, at the bio size; the
+Glasswright prism shard gun is the energy row with a rainbow glint).
 
 ## What Ryan will be shown
 

@@ -74,6 +74,8 @@ const HULL_LIGHT := 7.9                    # a hit's light on the plate (just un
 # the 20-ship storm gate deaths' core flashes were then turned soft behind them (bench round 2). At 140 px a lone
 # torpedo on a cruiser is under the limit and stays bright without spending the budget; a capital's gun or a capital
 # target still makes it bigger (and counted).
+# The needle (the Glasswright light beam turret) is drawn as a lance burn (family "lance") but sized from the energy row:
+# it is a light gun, and a lance-sized burn on it would outrank the macro on the ladder.
 const LADDER_PX := {"energy": [0.0, 40.0, 46.0, 52.0], "shell": [0.0, 44.0, 56.0, 64.0], "lance": [0.0, 70.0, 74.0, 78.0],
 	"torp": 140.0, "torp_shield": 110.0, "torp_ripple": 156.0}
 # ... scaled by the gun that fired (the firing hull's band) and by the ship hit (its band): a frigate's battery on a
@@ -1224,7 +1226,8 @@ static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float,
 	if torp:
 		spx = float(LADDER_PX["torp_shield"]) * gt * (0.65 if lk == "rockets" else 1.0)
 		rpx = float(LADDER_PX["torp_ripple"]) * gt * (0.65 if lk == "rockets" else 1.0)
-	_burst(fx,p+n*0.25*k,n,T,(3.2 if light else (9.0 if torp else 5.0))*k,"flash",0.30,sc,3.2 if not torp else 4.2,spx,
+	# asked at the row's size less the bloom, like every hull hit, so it draws (and books) at its row (Muse's check of 524)
+	_burst(fx,p+n*0.25*k,n,T,(3.2 if light else (9.0 if torp else 5.0))*k,"flash",0.30,sc,3.2 if not torp else 4.2,spx * BURST_PX_K,
 		Vector3.ZERO,1.0,1.0,not torp)
 	_note(fx, "flash", "shield", Vector3.ZERO, n, 0.30, spx)
 	fx.ring(p,n,T,0.55 if not torp else 0.9,sc,1.4,0.5*k,(5.0 if not torp else 14.0)*k,2,0.0,0.0,rpx)
