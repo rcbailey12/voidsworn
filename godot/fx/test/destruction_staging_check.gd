@@ -30,6 +30,52 @@ func _ship(world: Node3D, fx, cls: String, size: float, flagship := false):
 	fx.add_ship("T", r, {"faction": "voidsworn", "cls": cls, "size": size, "flagship": flagship, "meshes": [mi]})
 	return fx.ship("T")
 
+# Issue 484 (owner, Nov 11: "straight lines and even halves"): a big death's wreck is blown apart, not sliced. Fails
+# when the main pieces are near-equal, the bite of hull where the core went off is missing, or the break is one straight
+# line square across the hull.
+func _check_blown_apart(s, w: Dictionary, capital: bool) -> void:
+	var job: Dictionary = s.get_meta("cut_job", {})
+	var plan: Dictionary = job.get("plan", {})
+	_check(not plan.is_empty(), "a big hull breaks on a fracture plan")
+	if plan.is_empty(): return
+	var pieces: Array = job.get("out", [])
+	var n_main: int = int(plan["n_main"])
+	var L: float = s.hull.L
+	# piece size by its share of the hull's side skin (even along the box's length; a slanted break makes the pieces'
+	# end to end extents overlap, so extents would hide the difference)
+	var sizes: Array = []
+	for i in n_main:
+		var area := 0.0
+		for sd in pieces[i]["surfs"]:
+			var v: PackedVector3Array = sd["arrays"][Mesh.ARRAY_VERTEX]
+			var idx: PackedInt32Array = sd["arrays"][Mesh.ARRAY_INDEX]
+			for t in range(0, idx.size() - 2, 3):
+				var c: Vector3 = (v[idx[t + 1]] - v[idx[t]]).cross(v[idx[t + 2]] - v[idx[t]])
+				if absf(c.normalized().x) < 0.9: area += c.length() * 0.5   # the side skin, not the box's end faces
+		sizes.append(area)
+	sizes.sort()
+	_check(float(sizes[0]) <= float(sizes.back()) * 0.72, "the pieces are plainly uneven (smallest %.1f, largest %.1f)" % [sizes[0], sizes.back()])
+	if capital:
+		_check(float(sizes[1]) <= float(sizes[2]) * 0.88 and float(sizes[0]) <= float(sizes[1]) * 0.88, "a capital's three pieces are three different sizes (%s)" % str(sizes))
+	# the bite: hull fragments cut out where the core went off, a real share of the length, thrown out as pieces
+	var subs: int = (plan["bite"]["subs"] as PackedVector3Array).size()
+	var bite_box := AABB()
+	var bite_n := 0
+	for i in range(n_main, n_main + subs):
+		for p in (pieces[i]["pts"] as PackedVector3Array):
+			bite_box = AABB(p, Vector3.ZERO) if bite_n == 0 else bite_box.expand(p)
+			bite_n += 1
+	_check(bite_n > 0 and bite_box.size.x >= L * 0.12, "a bite of hull is missing where the core went off (%.2f of the length)" % (bite_box.size.x / L))
+	_check((w.get("frags", []) as Array).size() >= 3, "the bite's fragments fly as their own pieces")
+	# no straight line: across the beam, the torn end of the first piece wanders along the length
+	var bins := {}
+	for p in (pieces[0]["pts"] as PackedVector3Array):
+		var b := int(floor((p.z - s.hull.box.position.z) / maxf(s.hull.W, 0.001) * 4.0))
+		bins[b] = maxf(float(bins.get(b, -INF)), p.x)
+	var ends: Array = bins.values()
+	ends.sort()
+	_check(ends.size() >= 2 and float(ends.back()) - float(ends[0]) >= L * 0.05, "the break is not one straight line square across the hull")
+
 func _advance(fx, seconds: float) -> void:
 	var end: float = fx.now + seconds
 	while fx.now < end:
@@ -114,6 +160,7 @@ func _run() -> void:
 				for r in fx.flash_area_log.slice(before_req):
 					if float(r[0]) >= float(w["t0"]) + 0.6: late += 1
 				_check(calm or late >= 2, "secondaries flash on the pieces after the core")
+				_check_blown_apart(s, w, capital)
 			var flashes: int = fx.flash_log.size() - before
 			_check(flashes == 0 if calm else fx.flash_area_log.size() - before_req >= 1, "calm has zero flashes; normal keeps its core")
 			for a in fx.flash_log:

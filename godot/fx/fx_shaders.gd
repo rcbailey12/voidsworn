@@ -96,6 +96,11 @@ uniform vec4 atlas_rect = vec4(0.0, 0.0, 1.0, 1.0);
 uniform float min_pixels = 0.0;
 uniform float size_divisor = 1.0;
 uniform float soft_flash = 0.0;
+// Issue 484 (owner: the secondaries' smoke "looks a little too even and weird"): a picture can be turned, stretched and
+// toned so a cluster of them never repeats one round shape. Defaults leave every other caller as it was.
+uniform float pic_spin = 0.0;
+uniform vec2 pic_shape = vec2(1.0);
+uniform float smoke_tone = 1.0;
 varying float elapsed;
 varying float particle_depth;
 vec2 cell_uv(vec2 uv, float frame) {
@@ -113,7 +118,9 @@ void vertex() {
 	axis = length(axis) > 0.01 ? normalize(axis) : vec2(0.0, 1.0);
 	vec2 up = mix(vec2(0.0, 1.0), axis, directional);
 	vec2 right = vec2(up.y, -up.x);
-	vec2 offset = (right * VERTEX.x * mix(1.0, 0.6, directional) + up * VERTEX.y) * size;
+	vec2 local = vec2(VERTEX.x, VERTEX.y) * pic_shape;
+	local = vec2(local.x * cos(pic_spin) - local.y * sin(pic_spin), local.x * sin(pic_spin) + local.y * cos(pic_spin));
+	vec2 offset = (right * local.x * mix(1.0, 0.6, directional) + up * local.y) * size;
 	POSITION = PROJECTION_MATRIX * vec4(view_c + vec3(offset, 0.0), 1.0);
 }
 void fragment() {
@@ -148,6 +155,7 @@ void fragment() {
 #ifdef ROUTE_BAKED
 	// Route B keeps the baked colour and heat: smoke sees the sun, the short core emits light.
 	ALBEDO = gas.rgb * mix(0.55 + 0.9 * lit, 1.2 * intensity, thick.b) * fx_gain;
+	ALBEDO *= mix(smoke_tone, 1.0, clamp(thick.b, 0.0, 1.0));
 	ALBEDO *= mix(1.0, sin(age * 3.14159265), soft_flash);
 #endif
 	float fade = 1.0 - smoothstep(0.70, 1.0, age);

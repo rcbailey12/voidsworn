@@ -1,6 +1,55 @@
-# Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 10, 2026, 19:30 CST)
+# Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 11, 2026, 11:44 CST)
 
-## 0. Status at Nov 11, 2026, 07:30 CST (13:30 UTC; read this first)
+## 0. Status at Nov 11, 2026, 11:44 CST (17:44 UTC; read this first)
+
+**For the next Board thread (Opus 5.5).** The morning added three things on top of section 0a below. Read contrib/opus/LOOP.md "Current state" top lines for the live detail and FINDINGS R183 to R193 for Ryan's words.
+
+**1. Your first job: the rulebook (issue 492, R190).** Ryan: "Those old hard coded rules with no context or detail artifically restricing us are exactly what I'm worried about across the board... All this old context and decisions living in GitHub is something I want to ensure we have in a clean state moving forward". All four sweep legs are delivered and nothing is decided yet:
+- contrib/opus/reviews/rules_sweep/register_findings.json and .md (the findings log as 514 rules) and register_docs.json and .md (playbooks, briefs, plans and agent files as 313 rules, with a LIVE, PARTLY STALE or HISTORY verdict per document). Every quote in both was checked word for word; `said_by` in the first is NOT reliable (it marked the Board's R123 as Ryan's): re-check who set a rule before asking Ryan about it.
+- Muse's outside sweep, the report named rules_sweep_2026_11 under contrib/muse/reviews (the outside sweep: thirty rules to challenge, contradictions, stale documents, the shape of the rulebook, and where the Board itself is the problem). It arrives with PR 509 (merge when green); its five leg files are named rules_sweep_2026_11_leg_ and the model's name.
+- contrib/codex/reviews/rules_sweep_checks.md and .json (the rules that live in checks, tests and code comments, and which checks each audit fix would trip). Merged.
+What to do is written in issue 492: decide every REWORD, RETIRE and contradiction against its source; Board-written and agent-written rules you fix without asking; Ryan's own calls that would change go to him in short batches, his words beside the proposed wording (his first batch is R191); write the rulebook (one new file in docs, named RULEBOOK) by area, each rule with its reason; move superseded briefs, plans and specs to docs/archive/ with a note of what replaced each (nothing is deleted; FINDINGS.md stays as history with a header); bring the playbooks, AGENTS.md, CLAUDE.md, this file, the three skills and the checks into line; then a second Muse run and a Codex check of the result.
+
+**2. The cinematic audit is done and its builds are running (R186 to R193).** The list Ryan picked from: contrib/opus/reviews/cinematic_audit_top10.md (five root causes, ten items, pictures in docs/shots/cinematic_audit/top10/). His picks (R193): the flash counter counts by area as its guideline does; the kill camera holds and slow motion plays; the 0.70 s cap is for flame only; build in the Board's order. Movement is to be read by R189: never sudden, jerky or stop-start, and it must feel like space; thrusters and slides wherever a ship in space would use them.
+- MERGED: death beats (issue 462) and blown-apart wrecks (issue 484).
+- RUNNING: issue 504 (flash counter) and issue 505 (movement), two Opus workers launched from the previous Board thread; that thread reviews and merges those two and then goes quiet. Issue 506 (sound routing) is with the DeepSeek workhorse on the PC (branch work/issue-506-deepseek).
+- HELD in issue 507: hits (after 504 merges), the kill moment (after 505 merges), sound weight. Then shields, once Ryan has picked a shield look. Small-ship deaths are issue 463; the hit ladder is issue 461.
+
+**3. Ship concepts (R183 to R185, R192).** SETTLED: Sunward S8, the Eclipse crescent flagship E4 and ring cruiser E8, the Chorus flagship C9 (C8 becomes the bladeback cruiser). OPEN, with Muse issue 500 drawing them by image-to-image edit: the Hullbreaker flagship is the ORIGINAL concept (docs/ship_pipeline/concepts/C19_51.webp) with only its three sea parts changed; the Glasswright flagship is the G13 base made beautiful ("artistic, thoughtful in creation and looking to create beauty with function"); Hegemony H9 re-rendered in a realistic style. When it lands: look at every picture, send Ryan named pictures with an honest read.
+
+**The whole program, track by track (so nothing is lost in the change of thread).** The plan itself is docs/playbooks/PROGRAM.md: one finished battle, Sunward Crusade against Eclipse, and a playbook per area. Every open issue on the board appears in this table once. Ryan, Nov 11: "the whole idea was to use the fable resets to set us up for success going forward and start with a clean, new fresh state that has been designed and architected for the game given what we uncovered".
+
+| Track | Its playbook | Built or settled | Next, in order | Open issues |
+|---|---|---|---|---|
+| The rules of the project itself | the rulebook (to be written), then AGENTS.md | four sweeps delivered, R186 to R193 | decide, write the rulebook, archive, align every playbook and check; THEN CLEAN THE ISSUE BOARD (below) | 492, 216 |
+| Battle effects | docs/playbooks/effects.md, deaths_and_hits.md | explosions rebaked; death beats; blown-apart wrecks; the audit list | flash counter (504), hits (507), small-ship deaths (463), hit ladder (461), shields that react, beams, light on neighbours | 504, 507, 461, 463, 366, 365, 367, 370, 371, 372, 376, 234 |
+| Movement | contrib/opus/briefs/movement_spec.md (being rewritten by 505) | the movement audit; R189 | movement build (505), then the kill moment (507), then the audit's smaller items (weight, the star's pull, climbs, faction pace) | 505 |
+| Sound | docs/playbooks/sound.md | sources and palettes studied; the audit's two sound items | routing (506), sound weight (507), the listening page for Ryan, the sound redo | 506, 211 |
+| Ship concepts | docs/playbooks/factions.md, concepts_round2.md | Sunward S8, Eclipse E4 and E8, Chorus C9 settled | Muse round 7 (500) for Hullbreakers, Glasswrights, Hegemony; then a fleet brief per faction, Sunward and Eclipse first (every class in data.js, drawn by editing the flagship picture) | 500, 276, 250 |
+| Ship builds | docs/playbooks/ships.md, docs/ship_pipeline/RECIPE.md | the build route is proven (ship rounds 7 and 8, PR 401); breakable by design (R98) | build the Sunward and Eclipse fleets through the recipe once their sheets are picked; fix the export check that still demands exactly six breach anchors (R164) | 363, 373, 209, 194, 193 |
+| Space and the board | docs/playbooks/PROGRAM.md track 3 (no playbook of its own yet: write one) | the dead-star board; the rock cap reworded to its purpose (R191) | option sheets owed to Ryan (sky, planet, trails); planet and rocks from real data; nebula and storm hexes; terrain effects | 369, 368, 230, 100, 238, 221 |
+| Screens | docs/playbooks/screens.md, contrib/opus/briefs/campaign_rail_orders_sheet.md | the ember orders-sheet look; the campaign rail; lime retired (R191) | the battle screen in the ember look (a picture to Ryan first), one shield colour, then debrief and the rest | 271, 362, 92 |
+| Campaign map | docs/playbooks/screens.md | map rounds 3 to 4c in the game | one pass later: graveyard wrecks look too whole | none |
+| Rules of play and campaign content | the browser oracle and godot/rules; docs/playbooks/PROGRAM.md | known-bug batches cleared; protocol values ruled (R179, R182) | admiral tree skills in battle; the story beats of runs 3 to 5 | 305, 41, 42, 43, 44 |
+| Tooling and checks | AGENTS.md, .github/workflows | checks run on every agent branch | the runner and trap fixes; the outside check of Opus-coded changes | 357, 377, 256 |
+
+**Clean the issue board as part of the rulebook job.** About forty-five issues are open and several were written before this week's rulings. For each: keep it and rewrite its brief to the current rules; fold it into a newer issue; or close it as done or superseded, with one line saying by what. Known candidates to check first: 365 (explosion rebake: PR 455 did this), 366 (deaths in three beats: 462 and 484 are merged, 461 and 463 remain), 367, 371 and 372 (now audit items 12 and 3), 276 (the concept redo is under way), 271 (its brief predates the ember look), and three parked mockup pull requests (286, 291, 301). Nothing is deleted: closed issues stay readable.
+
+**Still owed to Ryan (he is waiting on the Board for these, not the other way round):** the battle screen as a picture in the ember look; option sheets for the shield look, the sky, the planet and the trails; the sound listening page; fleet sheets for Sunward and Eclipse; the rulebook's batches of his own old calls.
+
+**What this morning taught the Board (carry these into the rulebook).**
+- Record the problem Ryan was reacting to, in his words, beside every rule. A bare "never X" gets built to the letter (R189).
+- When Ryan likes a picture, the next job edits that picture. Never brief a liked design in words alone (R192).
+- A number in a playbook is a starting point judged by eye in a moving fight, not a gate. Checks protect crashes, saves, comfort and frame rate.
+- A rule that says the game does something needs a capture or a check that proves it, or the words "not built yet".
+- Put the code name on every picture sent to Ryan; send pictures one per item, none taller than 720 px.
+- Check the arithmetic yourself: the Board told Ryan the flash counter was "13 times" too strict; by viewing angle it is 5 to 7 (R193).
+
+**Usage.** The Claude five-hour limit was hit at 11:25 CST with the Board and three Opus workers running; run two workers at most. Codex gives about 100 minutes of work per five-hour window. Muse is started by Ryan.
+
+**Starter line for the new thread:** "You are the Board for rcbailey12/voidsworn. Read HANDOFF.md section 0, then contrib/opus/LOOP.md 'Current state', then FINDINGS from R183 on. Your first job is the rulebook, issue 492. Run a board check and tell me what needs my pick."
+
+## 0a. Status at Nov 11, 2026, 07:30 CST (13:30 UTC; still true except where section 0 above says otherwise)
 
 **Read in this order:** this section; contrib/opus/LOOP.md "Current state" (the live board: what is running, what waits on Ryan, how each seat is launched); docs/playbooks/PROGRAM.md (the plan and the decisions made and owed); the playbook for the area you are working in; contrib/opus/FINDINGS.md from R170 on (Ryan's rulings of Nov 10 and 11, in his words).
 
