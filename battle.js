@@ -24,8 +24,16 @@ const BEVENTS={
   reinf_ally:{n:'Friendly reinforcements',warn:'Fleet command: a friendly ship will join you at the start of round {r}, on your side of the field.',go:'A friendly ship jumps in to help. It returns to its own patrol after the battle.'},
   flare:{n:'Solar flare',warn:'The star is flaring. At the start of round {r} every ship on both sides loses its shields for that round.',go:'Solar flare! Every shield on the field is down this round.'}};
 function rollBattleEvent(cfg,force){ if(!cfg||cfg.teachingGate===true&&cfg.teachingBattle===1||cfg.kind==='boss') return null; if(cfg.teachingGate===true&&cfg.teachingBattle===2) force='reinf_enemy'; if(!force&&rnd()>.45) return null; return {k:force&&BEVENTS[force]?force:pick(Object.keys(BEVENTS)),warnR:2,r:ri(3,4)}; }
-function edgeHex(side){ const bb=boardBounds(), mr=Math.floor((bb.r0+bb.r1)/2), occ=occMap(), c=side==='player'?bb.c0+1:bb.c1-1; let best=null,bd=1e9;
-  for(const h of boardHexes()){ const hc=h.q+Math.floor(h.r/2); if(Math.abs(hc-c)>1||blocks(terr(h.q,h.r))||occ.has(hkey(h.q,h.r))) continue; const d=Math.abs(h.r-mr)+Math.abs(hc-c)*.5; if(d<bd){bd=d;best=h;} } return best; }
+function edgeHex(side){ const bb=boardBounds(), hs=boardHexes(), occ=occMap();
+  if(B&&B.approach&&hs.length){ // round and square arenas bring the fleets in at an angle, so the edge is along that angle, not the board columns; the score is the distance along that bearing, so the pick is the free hex furthest out on the fleet's own side (Board, Nov 11: the cosine alone could pick a hex beside the centre)
+    const mine=B.units.filter(u=>u.side===side&&!u.isSq&&!u.dead&&!u.treeOff);
+    if(mine.length){ let cx=0,cz=0; for(const h of hs){ const p=hexXZ(h); cx+=p.x; cz+=p.z; } cx/=hs.length; cz/=hs.length;
+      let mx=0,mz=0; for(const u of mine){ const p=hexXZ(u); mx+=p.x; mz+=p.z; } mx/=mine.length; mz/=mine.length;
+      const ang=Math.atan2(mz-cz,mx-cx), dx=Math.cos(ang), dz=Math.sin(ang); let best=null,bd=-1e9;
+      for(const h of hs){ if(blocks(terr(h.q,h.r))||occ.has(hkey(h.q,h.r))) continue; const p=hexXZ(h), ux=p.x-cx, uz=p.z-cz, dist=Math.hypot(ux,uz); if(!dist) continue;
+        const score=ux*dx+uz*dz; if(score>bd){bd=score;best=h;} } if(best) return best; } }
+  const mr=Math.floor((bb.r0+bb.r1)/2), c=side==='player'?bb.c0+1:bb.c1-1; let best=null,bd=1e9;
+  for(const h of hs){ const hc=h.q+Math.floor(h.r/2); if(Math.abs(hc-c)>1||blocks(terr(h.q,h.r))||occ.has(hkey(h.q,h.r))) continue; const d=Math.abs(h.r-mr)+Math.abs(hc-c)*.5; if(d<bd){bd=d;best=h;} } return best; }
 function cheapHull(fac){ const F=FACTIONS[fac]||FACTIONS.voidsworn; return F.roster.filter(id=>HULLS[id]&&!HULLS[id].boss&&HULLS[id].ab!=='launch').sort((a,b)=>(HULLS[a].cp||1)-(HULLS[b].cp||1)||HULLS[a].hp-HULLS[b].hp)[0]||F.roster[0]; }
 function eventTick(){ const e=B.event; if(!e||e.done||B.over) return; const E=BEVENTS[e.k];
   if(B.round>=e.warnR&&!e.warned){ e.warned=true; const m=E.warn.replace('{r}',e.r); log(m,'x'); try{ if(typeof toast==='function') toast(m); }catch(x){} }
@@ -297,7 +305,11 @@ function wellTick(u,dq){ const W=B&&B.well; if(!W||u.isSq||u.dead) return; const
 function aiWellScore(u,v){ const W=B&&B.well; if(!W||u.isSq) return 0; const d=hdist(v,W); return d<=WELL_RIM?-45:d<=WELL_PULL?-6:0; }
 function B0small(cfg){ if(typeof process!=='undefined'&&process.env&&process.env.NOCOMPACT) return false; return cfg.kind!=='boss'&&!!(RUN&&RUN.fleet)&&RUN.fleet.filter(x=>x.hp>0).length<=2; }
 // no fleet starts boxed in: clear rocks and wrecks around each ship and along a lane toward the enemy
-function clearSpawns(){ if(process_env('NOCLEAR')==='1') return; const T=B.terrain; let n=0; const clr=(q,r)=>{ const k=hkey(q,r), t=T[k]; if(t==='rock'||t==='hulk'){ delete T[k]; n++; } };
+function clearSpawns(){ if(process_env('NOCLEAR')==='1') return; const T=B.terrain; let n=0;
+  const midR=Math.floor(BH/2), mid=offToAx(Math.floor(BW/2),midR);
+  // Q11 (Oct 29): clearing is shape-aware, so a shape's defining centre terrain is never deleted
+  const def=(q,r)=> B.shape==='ring'?hdist({q,r},mid)<=2 : B.shape==='lanes'?(r===midR||r===midR-1) : false;
+  const clr=(q,r)=>{ const k=hkey(q,r), t=T[k]; if((t==='rock'||t==='hulk')&&!def(q,r)){ delete T[k]; n++; } };
   const near=(h,R)=>{ for(let dq=-R;dq<=R;dq++) for(let dr=Math.max(-R,-dq-R);dr<=Math.min(R,-dq+R);dr++) clr(h.q+dq,h.r+dr); };
   for(const side of ['player','enemy']){ const mine=B.units.filter(u=>u.side===side&&!u.isSq&&!u.transport), foes=B.units.filter(u=>u.side!==side&&!u.isSq); if(!mine.length||!foes.length) continue;
     const cq=foes.reduce((a,u)=>a+u.q,0)/foes.length, cr=foes.reduce((a,u)=>a+u.r,0)/foes.length, tgt={q:Math.round(cq),r:Math.round(cr)};

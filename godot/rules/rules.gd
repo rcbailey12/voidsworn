@@ -495,9 +495,32 @@ func cheapHull(fac) -> Variant:
 	JSM.ssort(l, _cmpCheap)
 	return l[0] if l.size() > 0 else F["roster"][0]
 func edgeHex(side) -> Variant:
-	var bb = boardBounds(); var mr = floor((bb.r0 + bb.r1) / 2.0); var occ = occMap(); var c: float = bb.c0 + 1 if side == "player" else bb.c1 - 1
+	var bb = boardBounds(); var hs = boardHexes(); var occ = occMap()
+	if B != null and jt(B.get("approach")) and hs.size() > 0: # round and square arenas bring the fleets in at an angle, so the edge is along that angle, not the board columns
+		var mine = []
+		for u in B["units"]:
+			if u["side"] == side and not jt(u.get("isSq")) and not jt(u.get("dead")) and not jt(u.get("treeOff")): mine.append(u)
+		if mine.size() > 0:
+			var cx = 0.0; var cz = 0.0
+			for h in hs:
+				var p = hexXZ(h); cx += p.x; cz += p.z
+			cx /= hs.size(); cz /= hs.size()
+			var mx = 0.0; var mz = 0.0
+			for u in mine:
+				var p = hexXZ(u); mx += p.x; mz += p.z
+			mx /= mine.size(); mz /= mine.size()
+			var ang = JSM.atan2(mz - cz, mx - cx); var dx = JSM.cos(ang); var dz = JSM.sin(ang)
+			var best2: Variant = null; var bd2 = -1e9
+			for h in hs:
+				if blocks(terr(h.q, h.r)) or occ.has(hkey(h.q, h.r)): continue
+				var p = hexXZ(h); var ux: float = p.x - cx; var uz: float = p.z - cz; var dist = JSM.hypot([ux, uz])
+				if dist == 0.0: continue
+				var score: float = ux * dx + uz * dz   # distance along the bearing: the free hex furthest out on the fleet's own side
+				if score > bd2: bd2 = score; best2 = h
+			if best2 != null: return best2
+	var mr = floor((bb.r0 + bb.r1) / 2.0); var c: float = bb.c0 + 1 if side == "player" else bb.c1 - 1
 	var best: Variant = null; var bd = 1e9
-	for h in boardHexes():
+	for h in hs:
 		var hc: float = h.q + floor(h.r / 2.0)
 		if absf(hc - c) > 1 or blocks(terr(h.q, h.r)) or occ.has(hkey(h.q, h.r)): continue
 		var d: float = absf(h.r - mr) + absf(hc - c) * 0.5
@@ -1004,9 +1027,15 @@ func B0small(cfg) -> bool:
 	return n <= 2
 func clearSpawns() -> void:
 	var T = B["terrain"]; var cnt = [0]
+	var midR = floori(BH / 2.0); var mid = offToAx(floori(BW / 2.0), midR)
+	# Q11 (Oct 29): clearing is shape-aware, so a shape's defining centre terrain is never deleted
+	var def = func(q, r):
+		if B.get("shape") == "ring": return hdist({"q": q, "r": r}, mid) <= 2
+		if B.get("shape") == "lanes": return r == midR or r == midR - 1
+		return false
 	var clr = func(q, r):
 		var k = hkey(q, r); var t = T.get(k)
-		if t == "rock" or t == "hulk":
+		if (t == "rock" or t == "hulk") and not def.call(q, r):
 			T.erase(k); cnt[0] += 1
 	var near = func(h, R):
 		for dq in range(-R, R + 1):
