@@ -17,4 +17,7 @@ for s in $SEEDS; do N=$((N+1))
   if [ ! -f "out/c$s.jsonl" ]; then echo "  seed $s: FAIL (Godot wrote nothing; see godot/campaign/test/out/godot.log)"; F=$((F+1)); continue; fi
   if node node/compare_campaign.js "golden/c$s.jsonl" "out/c$s.jsonl" > out/cmp.txt; then echo "  seed $s: $(cat out/cmp.txt)"; rm -f "out/c$s.jsonl" "golden/c$s.jsonl"; else echo "  seed $s: $(cat out/cmp.txt)"; F=$((F+1)); fi
   done
-if [ $F -eq 0 ]; then echo "PASS: the Godot campaign matches the game on all $N seeded runs."; else echo "FAIL: $F check(s) differ."; exit 1; fi
+# issue 374: one cross-twin check of the save hand-off at a fixed seed and step count. The one-line ruling on the
+# by-design split and the record-by-record comparison are inside the script.
+if node node/cross_twin_handoff_test.js "$G" 1 40; then :; else F=$((F+1)); fi
+if [ $F -eq 0 ]; then echo "PASS: the Godot campaign matches the game on all $N seeded runs, and the cross-twin save hand-off check passes."; else echo "FAIL: $F check(s) differ."; exit 1; fi
