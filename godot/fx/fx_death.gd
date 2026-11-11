@@ -792,7 +792,7 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 		for side in [-1.0, 1.0]:
 			var p: Vector3 = (b["at"] as Vector3) + (b["side"] as Vector3) * W * 0.3 * side + Vector3.UP * H * 0.2
 			scorch.append(Vector4(p.x, p.y, p.z, minf(W, L * 0.12) * 0.5))
-	return {"seeds": seeds, "sizes": sizes, "breaks": breaks, "bite": bite, "chips": chips, "n_main": n_main,
+	return {"L": L, "seeds": seeds, "sizes": sizes, "breaks": breaks, "bite": bite, "chips": chips, "n_main": n_main,
 		"n_frag": nsub + chip_seeds.size(), "bite_break": bi, "scorch": scorch}
 
 
@@ -935,7 +935,7 @@ static func _cut(job: Dictionary) -> Array:
 	var pieces: Array = []
 	for c in ns:
 		pieces.append({"surfs": [], "pts": PackedVector3Array(), "edge": PackedVector3Array(), "n": 0, "organic": job.get("organic", false),
-			"ragged": bool(job.get("ragged", false)), "frag": c >= n_main, "scorch": plan.get("scorch", [])})
+			"ragged": bool(job.get("ragged", false)), "frag": c >= n_main, "scorch": plan.get("scorch", []), "plan": plan})
 	for sd in job["surfs"]:
 		var arr: Array = sd["arrays"]
 		var xf: Transform3D = sd["xf"]
@@ -1188,7 +1188,9 @@ static func _cap_outline(cap: Dictionary, outline: PackedVector3Array, bounds: A
 			_cap_rib(cap, a, a + tangent * radius * 0.12 + inward * depth * 0.35, -inward, maxf(radius * 0.012, quantum * 2.0))
 	# Short cross members sit on the solid face. Clip each one to the real
 	# outline so decks and bone ribs cannot stick outside a narrow fragment.
-	var ragged := bool(pc.get("ragged", false))
+	# Bench round 2: the hull's own open edges (kit parts, old holes) are capped too; only loops on the new break or the
+	# bite get the torn rim, or every kit seam sprouted petals.
+	var ragged := bool(pc.get("ragged", false)) and _loop_torn(pc.get("plan", {}), outline)
 	if ragged:
 		# issue 484: the real torn rim, for the flash and fire sites (the cap also holds petals and long ribs that stick
 		# out past the hull, and a site there floats beside the wreck)
@@ -1201,6 +1203,27 @@ static func _cap_outline(cap: Dictionary, outline: PackedVector3Array, bounds: A
 	if ragged and outline.size() >= 6 and radius > bounds.size.length() * 0.05:
 		_cap_petals(cap, outline, centre, inward, radius, quantum, bool(pc.get("organic", false)), bounds.size.length())
 	pc["cap_loops"] = int(pc["cap_loops"]) + 1
+
+
+# True when a cap loop lies on the fracture plan's breaks or bite (a quarter of its points or more); with no plan
+# (a Chorus rupture) every loop is a tear.
+static func _loop_torn(plan: Dictionary, outline: PackedVector3Array) -> bool:
+	if plan.is_empty(): return true
+	var L: float = float(plan.get("L", 1.0))
+	var bite: Dictionary = plan["bite"]
+	var hits := 0
+	var tried := 0
+	for i in range(0, outline.size(), maxi(1, outline.size() / 16)):
+		var q := outline[i]
+		tried += 1
+		var on := false
+		for b in plan["breaks"]:
+			if absf(_break_f(b, q)) < L * 0.06: on = true
+		if not on and not bite.is_empty():
+			var d: Vector3 = q - (bite["c"] as Vector3)
+			on = Vector2(d.x / float(bite["rx"]), Vector2(d.y, d.z).length() / float(bite["ry"])).length_squared() < 2.2
+		if on: hits += 1
+	return hits * 4 >= tried
 
 
 # A repeatable 0..1 value for a point (the same hull breaks the same way in a replay).
