@@ -54,7 +54,7 @@ const MOVE_LEAD := [250.0, 450.0]
 const MOVE_CAP := 7000.0
 const MOVE_ROT := [0.6, 1.1]
 const MOVE_SQUAD := 0.35
-const MOVE_SK_MAX := 1.8     # the size scale runs past battleship (dreadnought 1.5, bosses up to 1.8), chosen by eye
+const MOVE_SK_MAX := 1.4     # the size scale runs past battleship at half slope (dreadnought 1.25, bosses up to 1.4), by eye
 const MOVE_CRUISE := 0.8      # a hull cruises a hex in this share of its hex time; building and bleeding speed fill the rest
 const TIPS := [
 	["select", "Moving and facing", "This is the ship that is up. Click a blue hex to plan its move, and turn it with Q and E before you confirm. A ship that stays in the same hex is easier to hit: enemy shots against it get +10 to their hit chance. Moving 3 or more hexes gives -5 instead. Or Brace: the ship can move first, then digs in: it takes less hull damage and does not take the +10, but bracing ends its turn, so it cannot move or fire again this turn."],
@@ -1499,9 +1499,11 @@ func _play_move(id, path: Array, charge: bool) -> void:
 	burns_live += 1
 	if burns_live > 1 and args.has("move-trace"):
 		print("[move] overlap: %s starts while %d other move(s) burn" % [str(id), burns_live - 1])
-	# escort 0, battleship 1, and on past it (issue 505: a dreadnought 1.5, a titan or an ark up to 1.8): speed, spin and
-	# ramps by size, so the biggest hulls are the slowest to start, turn and stop
-	var sk := clampf((size - 0.5) / 0.45, 0.0, MOVE_SK_MAX)
+	# escort 0, battleship 1, and on past it at half the slope (issue 505: a dreadnought about 1.25, a titan or an ark up
+	# to 1.4): speed, spin and ramps by size, so the biggest hulls are the slowest to start, turn and stop, while their
+	# moves grow by about a second rather than two (the first strips' full slope made a dreadnought's move 40% longer)
+	var sk := (size - 0.5) / 0.45
+	sk = clampf(sk if sk <= 1.0 else 1.0 + (sk - 1.0) * 0.5, 0.0, MOVE_SK_MAX)
 	var fk := pow(float(MOVE_PER.get(str(u.get("fac", "")), 1.0)), 0.35)   # a faction flavour, kept inside the ruled range
 	# F2 (R64, Ryan Nov 1): about twice as slow, every ship at its own true pace on both sides; only Enter or Space (or the
 	# Speed: fast setting) hurries a move. The old B2 timing stays behind --movement segments for before and after shots.

@@ -32,9 +32,10 @@ func _init() -> void:
 	var out := {}
 	var spin_in_place := {}
 	for c in CLASSES:
-		var sk := clampf((float(c[1]) - 0.5) / 0.45, 0.0, 1.8 if strict else 1.0)
+		var sk := (float(c[1]) - 0.5) / 0.45     # as battle.gd: past battleship at half the slope (main stops at 1)
+		sk = clampf(sk if sk <= 1.0 else 1.0 + (sk - 1.0) * 0.5, 0.0, 1.4 if strict else 1.0)
 		var rows := {}
-		for mv in ["inplace", "straight", "turn", "final", "corner", "corner2", "side", "back"]:
+		for mv in ["inplace", "straight", "turn", "final", "corner", "zigzag", "corner2", "side", "back"]:
 			if mv == "corner2" and sk > 0.9:
 				continue   # battleships and up have one turn a round (data.js tn 1): no 120 degree corner
 			var r := _fly(c, sk, mv)
@@ -75,9 +76,10 @@ static func _dir(f: int) -> Vector3:
 
 
 # the glide steps battle.gd _glide_steps makes for each move, from facing 0 at the origin: "F<f>" a step to the next hex
-# along facing f (the heading does not change), "T" a 60 degree turn to starboard
+# along facing f (the heading does not change), "T" a 60 degree turn to starboard, "U" one back to port (the rules' route
+# can hold both: "zigzag" is a real route the capture found, +60, -60, +60, then ahead)
 const MOVES := {"inplace": ["T"], "straight": ["F0", "F0", "F0"], "turn": ["T", "F1", "F1"], "final": ["F0", "F0", "T"],
-	"corner": ["F0", "T", "F1"], "corner2": ["F0", "T", "T", "F2"], "side": ["F1"], "back": ["F3"]}
+	"corner": ["F0", "T", "F1"], "zigzag": ["T", "U", "T", "F1"], "corner2": ["F0", "T", "T", "F2"], "side": ["F1"], "back": ["F3"]}
 
 
 func _steps(mv: String, sk: float) -> Array:
@@ -86,8 +88,8 @@ func _steps(mv: String, sk: float) -> Array:
 	var out: Array = []
 	var yaw := 0.0
 	for s in MOVES[mv]:
-		if s == "T":
-			yaw += -deg_to_rad(60.0)
+		if s == "T" or s == "U":
+			yaw += -deg_to_rad(60.0) * (1.0 if s == "T" else -1.0)
 			out.append({"kind": "turn", "yaw": yaw, "w": w})
 		else:
 			p += _dir(int(s.substr(1))) * HEX
@@ -205,6 +207,9 @@ func _check(cls: String, mv: String, r: Dictionary, inplace_peak: float) -> void
 		"side":
 			if maxf(peak.call("side", 0.0, 1.0), peak.call("side", 0.0, 1.0, -1.0)) < 0.4:
 				fails.append("%s: a sidestep has no side jets" % tag)
+		"zigzag":
+			if float(r["peak_turn"]) < inplace_peak * 0.9:
+				fails.append("%s: a zigzag route's net 60 degree turn crawls at %.0f deg/s (in place %.0f)" % [tag, r["peak_turn"], inplace_peak])
 		"inplace", "turn", "final", "corner", "corner2":
 			if peak.call("tj", 0.0, 1.0) < 0.4 or peak.call("tj", 0.0, 1.0, -1.0) < 0.4:
 				fails.append("%s: the turn is not started and stopped by opposite turning jets" % tag)

@@ -801,7 +801,7 @@ var jet_side := 0.0
 var jet_aft := 0.0
 var jet_turn := 0.0
 var jet_count := 0            # puffs fired by this ship (frame cost evidence)
-const MASS_MAX := 1.8         # the size scale runs past 1 for the biggest hulls (issue 505 item 5)
+const MASS_MAX := 1.4         # the size scale runs past 1 for the biggest hulls (issue 505 item 5; battle.gd MOVE_SK_MAX)
 const GL_TR := [0.7, 1.7]     # units to build cruise speed from rest, escort and battleship (extended past 1 by mass)
 const GL_SPIN := 2.4          # a turn step's weight to units of the move's timeline (the motion's own ramps add as much)
 const GL_POINT := 0.5         # a turn before the run: the hull sets off when the nose is within this many radians (29 deg)
@@ -828,9 +828,13 @@ func play_glide(steps: Array, unit_s: float, opts := {}) -> void:
 		if st["kind"] == "turn":
 			var a1 := float(st["yaw"])
 			if not last_turn:
-				groups.append({"k": pts.size() - 1, "w": 0.0, "d": 0.0})
-			groups[-1]["w"] = float(groups[-1]["w"]) + float(st["w"])
+				groups.append({"k": pts.size() - 1, "w": 0.0, "d": 0.0, "n": 0.0, "ws": 0.0})
+			groups[-1]["ws"] = float(groups[-1]["ws"]) + float(st["w"])
+			groups[-1]["n"] = float(groups[-1]["n"]) + maxf(absf(angle_difference(la, a1)) / (PI / 3.0), 0.5)
 			groups[-1]["d"] = float(groups[-1]["d"]) + angle_difference(la, a1)
+			# the spin lasts as long as its net angle needs at this ship's rate (the rules' route can turn one way and
+			# back inside one group: +60, -60, +60 is flown as one 60 degree spin, not a slow 180 degree crawl)
+			groups[-1]["w"] = float(groups[-1]["ws"]) / float(groups[-1]["n"]) * (0.0 if absf(float(groups[-1]["d"])) < 0.01 else maxf(absf(float(groups[-1]["d"])) / (PI / 3.0), 0.5))
 			la = a1
 			last_turn = true
 		else:
@@ -1237,12 +1241,12 @@ func _glide_thrusters(d: Array, dts: float) -> void:
 	var fwd := a.dot(bow) * ak
 	var lat := a.dot(stb) * ak
 	var v_fwd := v.dot(bow) / maxf(gl_vpk, 1e-4)
-	var spd := v.length() / maxf(gl_vpk, 1e-4)
 	var backing := v_fwd < -0.05
 	var turn := _gl_yaw_acc(gl_p) / gl_yapk if gl_yapk > 1e-6 else 0.0
 	var e := 1.0 - exp(-dts * JET_K)
 	var burn := 0.0 if backing else clampf(fwd, 0.0, 1.0)
-	var want := maxf(burn, GL_COAST * smoothstep(0.0, 0.3, spd) * (0.0 if backing else 1.0))
+	# the coast glow follows the forward part of the speed: a ship sliding sideways or backing is not coasting on its drive
+	var want := maxf(burn, GL_COAST * smoothstep(0.0, 0.3, maxf(v_fwd, 0.0)))
 	thrust = lerpf(thrust, want, 1.0 - exp(-dts * (8.0 if want > thrust else 5.0)))
 	jet_retro = lerpf(jet_retro, clampf(-fwd, 0.0, 1.0), e)
 	jet_aft = lerpf(jet_aft, clampf(fwd, 0.0, 1.0) if backing else 0.0, e)
