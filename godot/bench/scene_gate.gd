@@ -40,7 +40,9 @@ extends Node
 # steps from the session-1 seed, three deaths at steps 260, 320 and 380), with every worker job (hull rebuilds, death
 # cuts) waited for before each step, so the same code draws the same moments; writes still_<step>_wide.png (the gate
 # view) and still_<step>_close.png (the third death's ship, close) at steps 200, 300, 400 and 470. For before and
-# after sheets of a change that must not show.
+# after sheets of a change that must not show. --film N (issue 461): with --still, also film_<step>.jpg every N steps
+# (960x540), a short film of the same fixed-clock fight. --trace and the base and deaths rows also report the flash
+# counter's requests, counted and refused flashes (row "flash", issue 461).
 # Not in the default list (run with --modes): the 3D scene drawn at more pixels than the 1080p window, so the cost at
 # Ryan's real screens shows whatever monitor the window sits on (the HUD stays at 1080p):
 #   res_1440     3D at 2560x1440 (scaling_3d_scale 1.333)
@@ -229,6 +231,7 @@ func _still_run() -> void:
 		if deaths.size() > 2 and str(id) == str(deaths[2]) and sv != null and is_instance_valid(sv):
 			close_t = Vector3(sv.global_position.x, 0, sv.global_position.z)
 	var shots := [200, 300, 400, 470]
+	var film := int(args.get("film", 0))
 	for st in 471:
 		_settle(fx)
 		if st % 21 == 0:
@@ -240,6 +243,13 @@ func _still_run() -> void:
 				side_ids["enemy"].erase(deaths[d])
 		fx.step(1.0 / 60.0)
 		await get_tree().process_frame
+		# Issue 461: --film N also keeps every Nth step of the wide view as a 960x540 jpg (film_<step>.jpg), so the same
+		# fixed-clock fight can be played back as a short film for before and after.
+		if film > 0 and st % film == 0:
+			var fimg := get_viewport().get_texture().get_image()
+			if fimg != null and not fimg.is_empty():
+				fimg.resize(960, 540, Image.INTERPOLATE_LANCZOS)
+				fimg.save_jpg(out.path_join("film_%03d.jpg" % st), 0.9)
 		if st in shots:
 			await _shot("still_%03d_wide.png" % st)
 			if close_t != Vector3.INF:
@@ -712,6 +722,14 @@ func _mode(mode: String, s: int) -> Dictionary:
 	var obj0 := int(Performance.get_monitor(Performance.OBJECT_COUNT))
 	if b.gfx != null:
 		b.gfx.prof_take()
+	# Issue 461: every bright-flash request in the measured frames, so the report can say how often the flash counter
+	# refused one in the 20-ship storm battle and how big the refused ones were drawn (they still draw at full size and
+	# colour, with a slower rise). Logging is set by name, so an older commit without it is simply not logged.
+	var fl0 := 0
+	if b.gfx != null and "flash_area_log" in b.gfx:
+		b.gfx.set("flash_area_logging", true)
+		(b.gfx.flash_area_log as Array).clear()
+		fl0 = b.gfx.flash_log.size()
 	vol_looks.clear()
 	for i in n:
 		if mode == "deaths" and b.gfx != null:
@@ -764,6 +782,20 @@ func _mode(mode: String, s: int) -> Dictionary:
 		"vram_mb": Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0,
 		"texture_mb": Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED) / 1048576.0,
 		"buffer_mb": Performance.get_monitor(Performance.RENDER_BUFFER_MEM_USED) / 1048576.0}
+	if b.gfx != null and "flash_area_log" in b.gfx:
+		var req := 0
+		var refused: Array = []
+		var counted := 0
+		for e in b.gfx.flash_area_log:
+			req += 1
+			if int(e[5]) == 1:
+				counted += 1
+			if int(e[6]) == 0:
+				refused.append(int(float(e[3])))
+		refused.sort()
+		row["flash"] = {"requests": req, "counted": counted, "refused": refused.size(), "refused_px": refused,
+			"counted_log": b.gfx.flash_log.size() - fl0, "limit_px2": b.gfx.flash_limit_px2() if b.gfx.has_method("flash_limit_px2") else 0.0}
+		b.gfx.set("flash_area_logging", false)
 	for k in cols:
 		var arr: Array = cols[k]
 		var srt := arr.duplicate()

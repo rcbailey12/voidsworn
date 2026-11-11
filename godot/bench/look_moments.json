@@ -1,5 +1,5 @@
 {
- "about": "Look bench moments (issue 351). One row per moment; a later job adds a moment by adding a row. Read by godot/bench/look_bench.gd. Fields: id (file name), group, label, att and tgt ([faction, class]), do (volley, break, death), kind and weapon (fx.volley), shots (default: the look's own count), on (hull or shield), shield_left (shield points left before the hit, of 5), crit (first shot is a crit; every other row has no crit), cause (death), focus (the ship the camera centres on), fx (effect switches for this row, set by name on the effects system: scene_dim, reduce_flashing), windows ([anchor, seconds after it, frames at 30 a second]; anchors: fire, impact, event, split), key (the cell shown on the overview sheet).",
+ "about": "Look bench moments (issue 351). One row per moment; a later job adds a moment by adding a row. Read by godot/bench/look_bench.gd. Fields: id (file name), group, label, att and tgt ([faction, class]), do (volley, break, death), kind and weapon (fx.volley), shots (default: the look's own count), on (hull or shield), shield_left (shield points left before the hit, of 5), crit (first shot is a crit; every other row has no crit), cause (death), focus (the ship the camera centres on), fx (effect switches for this row, set by name on the effects system: scene_dim, reduce_flashing), windows ([anchor, seconds after it, frames at 30 a second]; anchors: fire, impact, event, split), key (the cell shown on the overview sheet). near ([faction, class, dx, dz]: a third ship parked beside the target, issue 461), engine (0 to 1: the engine level for every ship in the row, issue 461); do idle fires nothing.",
  "cameras": [
   170,
   60,
@@ -1960,6 +1960,282 @@
    "key": 4,
    "crit": true,
    "shots": 1
+  },
+  {
+   "id": "g_battery_frigate",
+   "group": "hits (issue 461)",
+   "label": "gun size: a Sunward frigate's macro battery on an Eclipse cruiser",
+   "att": [
+    "voidsworn",
+    "Frigate"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "battery",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "g_battery_battleship",
+   "group": "hits (issue 461)",
+   "label": "gun size: a Sunward battleship's macro battery on an Eclipse cruiser",
+   "att": [
+    "voidsworn",
+    "Battleship"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "battery",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.07,
+     12
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "x_macro_linger",
+   "group": "hits (issue 461)",
+   "label": "what a macro hit throws and leaves, to 6 s",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "hbattery",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     3
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     1.5,
+     1
+    ],
+    [
+     "impact",
+     2.5,
+     1
+    ],
+    [
+     "impact",
+     4.0,
+     1
+    ],
+    [
+     "impact",
+     6.0,
+     1
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "x_lance_linger",
+   "group": "hits (issue 461)",
+   "label": "what a lance burn throws and leaves, to 6 s",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "lance",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     3
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     1.5,
+     1
+    ],
+    [
+     "impact",
+     2.5,
+     1
+    ],
+    [
+     "impact",
+     4.0,
+     1
+    ],
+    [
+     "impact",
+     6.0,
+     1
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "x_torp_linger",
+   "group": "hits (issue 461)",
+   "label": "what a torpedo hit throws and leaves, to 6 s",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     3
+    ],
+    [
+     "impact",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     0.8,
+     1
+    ],
+    [
+     "impact",
+     1.5,
+     1
+    ],
+    [
+     "impact",
+     2.5,
+     1
+    ],
+    [
+     "impact",
+     4.0,
+     1
+    ],
+    [
+     "impact",
+     6.0,
+     1
+    ]
+   ],
+   "key": 3
+  },
+  {
+   "id": "x_torp_neighbour",
+   "group": "hits (issue 461)",
+   "label": "a torpedo hit lights the Hegemony cruiser parked beside its target",
+   "att": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "near": [
+    "hegemony",
+    "Cruiser",
+    0,
+    24
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "on": "hull",
+   "focus": "target",
+   "windows": [
+    [
+     "impact",
+     -0.03,
+     8
+    ]
+   ],
+   "key": 3
+  },
+  {
+   "id": "e_engine_close",
+   "group": "hits (issue 461)",
+   "label": "engine cores at full burn (flicker check): Hegemony super-dreadnought",
+   "att": [
+    "hegemony",
+    "Super-dreadnought"
+   ],
+   "tgt": [
+    "deathless",
+    "Frigate"
+   ],
+   "do": "idle",
+   "engine": 1.0,
+   "focus": "attacker",
+   "windows": [
+    [
+     "event",
+     0.0,
+     16
+    ]
+   ],
+   "key": 0
   }
  ]
 }
