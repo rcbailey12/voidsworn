@@ -266,7 +266,11 @@ static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life
 	mi.extra_cull_margin = size * 3.0 + velocity.length() * life
 	var m := flipbook_material(fx, kind, band)
 	if staged:
-		m = route_material(fx, SH.DEATH_FLIPBOOK, "death/" + band + "/flash_", true)
+		# Issue 461 (carried from issue 484, Board comment on 507): the core flash always uses the lopsided baked seed
+		# (s0), turned at random. Two of the three seeds are the round "flower" of equal puffs, which read as a ring of
+		# identical puffs at about 2.3 s on a capital death ("a little too even and weird", Ryan, Nov 11).
+		m = route_material(fx, SH.DEATH_FLIPBOOK, "death/" + band + "/flash_", true, 0)
+		m.set_shader_parameter("pic_spin", fx.rng.randf() * TAU)
 		m.set_shader_parameter("size_divisor", 0.80)
 		mi.extra_cull_margin = 100.0
 	m.set_shader_parameter("born", fx.now)
@@ -734,6 +738,26 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 	if last is Array and last.size() >= 3 and fx.now - float(last[2]) < 6.0:
 		var lz: float = ((last[0] as Vector3) - h.c).z
 		if absf(lz) > W * 0.05: zs = signf(lz)
+	# Issue 461 (carried from 484): a lance kill cuts clean on the beam's own line (deaths_and_hits.md, "What killed it":
+	# the tear is the cut, two clean halves). The beam's point and direction (hull space) are set by _lance_recut on the
+	# death frame; the break nearest the beam lies on it, square-ish to the beam, with no kink and almost no teeth.
+	var lance = s.get_meta("lance_line", [])
+	var lance_on: bool = lance is Array and lance.size() >= 2
+	var lance_b := -1
+	if lance_on:
+		var lx: float = ((lance[0] as Vector3).x - x0) / L
+		if sizes.size() == 2:
+			var lu := clampf(lx, 0.3, 0.7)
+			sizes = [lu, 1.0 - lu]
+			lance_b = 0
+		else:
+			var acc := 0.0
+			var bd := INF
+			for i in sizes.size() - 1:
+				acc += float(sizes[i])
+				if absf(acc - lx) < bd:
+					bd = absf(acc - lx)
+					lance_b = i
 	# 2. the breaks: tilted, kinked, torn
 	var breaks: Array = []
 	var u := 0.0
@@ -747,6 +771,15 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 		var pitch := deg_to_rad(r.randf_range(10.0, 22.0)) * (1.0 if r.randf() < 0.5 else -1.0)
 		var k := r.randf_range(0.45, 0.8) * (1.0 if r.randf() < 0.5 else -1.0)
 		var amp := L * 0.03
+		if i == lance_b:
+			# the plane holds the beam's line: its normal is across the beam, kept within 34 degrees of square to the hull
+			var pn: Vector3 = (lance[1] as Vector3).cross(Vector3.UP)
+			pn = pn.normalized() if pn.length() > 0.05 else Vector3.RIGHT
+			if pn.x < 0.0: pn = -pn
+			yaw = clampf(atan2(pn.z, pn.x), -deg_to_rad(34.0), deg_to_rad(34.0))
+			pitch = 0.0
+			k = 0.0
+			amp = L * 0.004
 		# keep each break inside its two pieces: the tilt, the kink and the teeth together reach at most `room`
 		var reach: float = absf(tan(yaw)) * W * 0.5 + absf(tan(pitch)) * H * 0.5 + absf(k) * W * 0.5 + amp * 1.6
 		var fit := minf(1.0, room / maxf(reach, 0.0001))
@@ -766,7 +799,7 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 	var bi := 0
 	if breaks.size() > 1:
 		bi = 0 if float(sizes[0]) + float(sizes[1]) >= float(sizes[1]) + float(sizes[2]) else 1
-	var rx: float = L * (0.09 if capital else 0.12)
+	var rx: float = L * (0.09 if capital else 0.12) * (0.6 if lance_on else 1.0)
 	# centred a little into the bigger of the two pieces, so the bite eats mostly into it and the small one stays small
 	var bat: Vector3 = (breaks[bi]["at"] as Vector3) + Vector3.RIGHT * rx * 0.5 * (-1.0 if float(sizes[bi]) > float(sizes[bi + 1]) else 1.0)
 	var out_dir := Vector3(0.0, 0.3, zs).normalized()
@@ -809,6 +842,32 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 			scorch.append(Vector4(p.x, p.y, p.z, minf(W, L * 0.12) * 0.5))
 	return {"L": L, "seeds": seeds, "sizes": sizes, "breaks": breaks, "bite": bite, "chips": chips, "n_main": n_main,
 		"n_frag": nsub + chip_seeds.size(), "bite_break": bi, "scorch": scorch}
+
+
+# Issue 461 (carried from 484: "the cut is prepared before the killing weapon is known"). A lance kill re-cuts the hull on
+# the death frame along the beam's line (fracture_plan reads "lance_line"). The cut runs on a worker during the tell
+# (1.38 s on a cruiser, 2.0 s on a capital); if it is not done by the break, the ship breaks along the cut it already had
+# (cut_prev), never stalls. Only big hulls killed by a lance pay for it.
+static func _lance_recut(fx, s) -> void:
+	if s.has_meta("cut_task") or not is_instance_valid(s.root):
+		return   # a cut is already running: break along it
+	var h = s.hull
+	# with no recent hit on record, a per-ship point a little off the middle (an even split reads as sliced, Ryan, Nov 11)
+	var lp: Vector3 = h.c + Vector3(h.L * (0.12 if hash(str(s.id)) % 2 == 0 else -0.12), 0.0, 0.0)
+	var ld: Vector3 = Vector3(0.0, 0.0, -float(h.stb_z))
+	var last = s.get_meta("last_hit", [])
+	if last is Array and last.size() >= 3 and fx.now - float(last[2]) < 2.0:
+		lp = last[0]
+		ld = last[1]
+	s.set_meta("lance_line", [lp, ld])
+	if s.has_meta("cut_job"):
+		var old: Dictionary = s.get_meta("cut_job")
+		if old.get("out") != null:
+			s.set_meta("cut_prev", old)
+		s.remove_meta("cut_job")
+	var t0 := Time.get_ticks_usec()
+	precompute(fx, s, "cut")
+	fx.pend("lance_recut", t0)
 
 
 # Gather the hull's surfaces on the main thread (mesh arrays come from the rendering server), then cut on a worker.
@@ -1418,6 +1477,8 @@ static func _death_inner(fx, s, cause: String) -> float:
 	var inherited := Vector3.ZERO
 	if "_vel" in s.root: inherited = s.root.get("_vel")
 	s.set_meta("death_velocity", inherited)
+	if cause == "cut" and s.death_big and s.faction != "chorus":
+		_lance_recut(fx, s)
 	if not s.has_meta("cut_task") and not s.has_meta("cut_job"):
 		precompute(fx, s, cause)
 	var job: Dictionary = s.get_meta("cut_job", {})
@@ -2271,6 +2332,10 @@ static func _organic_spill(fx, p: Vector3, L: float, tint: Color) -> void:
 	fx.spr(p, fx.now, 0.45, tint, 1.8, L * 0.025, L * 0.16, 20, Vector3.ZERO, 0.0, 0.0, 0.0, 28.0)
 
 
+# Issue 461: how far a death's core flash lights the hulls round it (world units; hexes are 17.3 across).
+const CORE_LIGHT_REACH := {"small": 26.0, "cruiser": 35.0, "capital": 52.0}
+
+
 static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: Node3D = null, local_p := Vector3.ZERO, src = null, band_override := "", frame = null) -> void:
 	if is_instance_valid(node): p = node.to_global(local_p)
 	if not p.is_finite() or R <= 0.0: return
@@ -2292,13 +2357,15 @@ static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: 
 		mat.set_shader_parameter("extent", px * STAGING_UNITS_PER_PIXEL)
 		mat.set_shader_parameter("size_divisor", float(row[4] if soft else row[3]))
 		mat.set_shader_parameter("soft_flash", 1.0 if soft else 0.0)
-		if not fx.reduce_flashing: fx.light(p, fx.now, float(row[1]), 9.0, Color(0.65, 0.75, 0.91), 0)
+		# Issue 461 (audit item 11): the core flash lights the hulls round it, about two hexes for a cruiser and three for
+		# a capital, for the length of the flash (deaths_and_hits.md, beat 2)
+		if not fx.reduce_flashing: fx.light(p, fx.now, float(row[1]), 9.0, Color(0.65, 0.75, 0.91), 0, CORE_LIGHT_REACH[band])
 		return
 	# Only this booking can produce a bright baked flash or its event light.
 	if allowed:
 		var flash := flipbook(fx, p, Vector3.UP, R * 3.0, "flash", 0.20, Vector3.ZERO, 6.0, atlas_band(R / 0.16), src)
 		(flash.material_override as ShaderMaterial).set_shader_parameter("min_pixels", px)
-		fx.light(p, fx.now, 0.12, 9.0, Color(0.65, 0.75, 0.91), 0)
+		fx.light(p, fx.now, 0.12, 9.0, Color(0.65, 0.75, 0.91), 0, CORE_LIGHT_REACH[band])
 	else:
 		flipbook(fx, p, Vector3.UP, R * 2.8, "cool", 0.65, Vector3.ZERO, 0.5, atlas_band(R / 0.16), src)
 

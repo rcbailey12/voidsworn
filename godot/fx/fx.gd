@@ -19,6 +19,7 @@ const DEATH := preload("res://fx/fx_death.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
 const LIGHT_K := 0.9
+const LIGHT_REACH := 30.0   # an event light's standing reach in world units (hexes are 17.3 across)
 const FLASH_WINDOW := 0.12   # flashes this close are one event (a salvo landing together)
 const FLASH_CAP := 3         # counted flashes in any rolling second (WCAG 2.3.1 general flash threshold)
 const FLASH_I := 4.0         # sprite intensity from which a short flash-like sprite counts (dimmer pops are free)
@@ -114,7 +115,7 @@ var rng = RandomNumberGenerator.new()
 
 # --- lights
 var _lpool: Array = []
-var _lev: Array = []        # [pos, t0, life, peak, col, shape]
+var _lev: Array = []        # [pos, t0, life, peak, col, shape, reach]
 var _lsrc: Array = []       # persistent: {node, off, col, base, flick, seed}
 
 # --- feel
@@ -239,7 +240,7 @@ func setup(opts := {}) -> void:
 		l.light_energy = 0.0
 		l.shadow_enabled = false
 		l.visible = false
-		l.omni_range = 30.0 * unit
+		l.omni_range = LIGHT_REACH * unit
 		l.omni_attenuation = 1.2
 		add_child(l)
 		_lpool.append(l)
@@ -700,7 +701,10 @@ func pop(p: Vector3, T: float, col: Color, size: float, i: float, n := Vector3.U
 # Issue 504: a light that goes with a refused flash is no longer dropped. It keeps its colour and place and rises softly
 # (shape 3: a 0.1 s or longer rise, then the same fall) at most just under the peak that counts, so the hulls around a
 # refused flash are still lit without a sharp step. Reduce flashing is untouched (its own path below).
-func light(p: Vector3, t: float, life: float, peak: float, col: Color, shape := 0) -> void:
+# Issue 461 (audit item 11): `reach` is how far the light carries, in world units (0: the pool's standing 30, about 1.7
+# hexes). A torpedo hit and a death's core flash pass two to three hexes, so the hulls round them are lit for the length
+# of the flash. Reach changes only how far the light falls off, never its peak, so the flash counter's rules are the same.
+func light(p: Vector3, t: float, life: float, peak: float, col: Color, shape := 0, reach := 0.0) -> void:
 	if shape == 0 and not reduce_flashing:
 		var refused := false
 		for f in _refused:
@@ -716,7 +720,7 @@ func light(p: Vector3, t: float, life: float, peak: float, col: Color, shape := 
 	if reduce_flashing and shape == 0:
 		peak *= 0.45
 		life *= 1.8
-	_lev.append([p, t, life, peak, col, shape])
+	_lev.append([p, t, life, peak, col, shape, reach])
 
 
 # Whether a sprite of this size at p is big enough on screen to count as a flash (WCAG counts flashes by area; small
@@ -756,7 +760,7 @@ func _update_lights() -> void:
 			1: I = smoothstep(0.0, 0.08, u) * (1.0 - smoothstep(0.85, 1.0, u)) * (1.0 if reduce_flashing else 0.88 + 0.12 * sin(now * 50.0))
 			2: I = u * u
 			3: I = smoothstep(0.0, 0.25, u) if u < 0.25 else pow(1.0 - (u - 0.25) / 0.75, 2.0)   # issue 504: soft rise
-		ev.append([e[0], I * float(e[3]), e[4]])
+		ev.append([e[0], I * float(e[3]), e[4], float(e[6]) if e.size() > 6 else 0.0])
 	_lev = keep
 	var ks: Array = []
 	for s in _lsrc:
@@ -769,18 +773,19 @@ func _update_lights() -> void:
 		var fl = 1.0 - float(s["flick"]) * (0.5 + 0.5 * sin(now * 23.0 + float(s["seed"])) * sin(now * 7.1 + float(s["seed"]) * 2.0))
 		if reduce_flashing:
 			fl = 1.0 - float(s["flick"]) * 0.3 * (0.5 + 0.5 * sin(now * 2.0 + float(s["seed"])))
-		ev.append([n.global_transform * (s["off"] as Vector3), float(s["base"]) * fl, s["col"]])
+		ev.append([n.global_transform * (s["off"] as Vector3), float(s["base"]) * fl, s["col"], 0.0])
 	_lsrc = ks
 	# brightest first, nearer lights count more when the pool is short
 	for e in ev:
 		e.append(float(e[1]) / (1.0 + (e[0] as Vector3).distance_to(cp) / (200.0 * unit)))
-	ev.sort_custom(func(a: Array, b: Array) -> bool: return float(a[3]) > float(b[3]))
+	ev.sort_custom(func(a: Array, b: Array) -> bool: return float(a[4]) > float(b[4]))
 	for k in _lpool.size():
 		var l: OmniLight3D = _lpool[k]
 		if k < ev.size() and float(ev[k][1]) > 0.03:
 			l.position = ev[k][0]
 			l.light_energy = float(ev[k][1]) * LIGHT_K
 			l.light_color = ev[k][2]
+			l.omni_range = (float(ev[k][3]) if float(ev[k][3]) > 0.0 else LIGHT_REACH) * unit
 			l.visible = true
 		else:
 			l.visible = false

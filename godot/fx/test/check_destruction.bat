@@ -24,6 +24,8 @@ if errorlevel 1 goto failed
 if errorlevel 1 goto failed
 "%G%" --headless --path godot --script res://fx/test/flash_area_check.gd --log-file "%RESULT%\flash_area.log"
 if errorlevel 1 goto failed
+"%G%" --headless --path godot --script res://fx/test/hit_recipe_check.gd --log-file "%RESULT%\hit_recipe.log"
+if errorlevel 1 goto failed
 "%G%" --headless --path godot --script res://fx/test/death_spawn_check.gd --log-file "%RESULT%\death_spawn.log"
 if errorlevel 1 goto failed
 "%G%" --headless --path godot --script res://fx/test/playtest_batch1_check.gd --log-file "%RESULT%\playtest_batch1.log"

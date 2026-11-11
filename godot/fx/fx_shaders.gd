@@ -343,7 +343,9 @@ void fragment() {
 		base = vCol.rgb * (0.8 + 0.4 * n);
 		if (k == 20) { add = vCol.rgb * 0.35 * alpha * (0.5 + n); }
 	} else if (k == 4 || k == 11) {
-		float fl = flick(0.85 + 0.15 * vnoise(vec2(scene_t * 31.0, seed * 9.0)), scene_t, seed);
+		// issue 461 (found by the issue 504 worker): the engine core's fast flicker swings 0.95 to 1.0, not 0.85 to 1.0, so
+		// the white centre can never add up to a general flash at the close cameras (60 and 26) with many engines on screen
+		float fl = flick(0.95 + 0.05 * vnoise(vec2(scene_t * 31.0, seed * 9.0)), scene_t, seed);
 		if (k == 11) { fl *= mix(cough(scene_t, seed), 0.7, fx_calm); }
 		add = (vCol.rgb * exp(-r * r * 4.0) + vec3(1.0, 0.95, 0.8) * exp(-r * r * 14.0) * 1.6) * I * fl;
 	} else if (k == 5) {
