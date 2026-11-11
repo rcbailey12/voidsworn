@@ -5,6 +5,13 @@ Issue 405, the ships track of docs/playbooks/PROGRAM.md. Written by the Board (F
 the owner's ship rulings in AGENTS.md. One sheet per faction. A concept, a three-view sheet (contrib/muse/design/concept_standard_2026_11/standard.md),
 a hull build and a blob sweep are all judged against the sheet for that faction.
 
+Ryan, Nov 10 2026, 18:44 CST: "all the factions shapes and stuff came before we redesigned them so I think it's worth just a full
+update and pass based on the current faction lore and story". And earlier the same day: "I think all the concepts need reworking.
+Hegemony and Sunward aren't TERRIBLY off, hullbreakers is okay but glasswrights, eclipse and chorus all need serious work. We wanted
+to prove the building pipeline worked first and then redo all the concepts and builds." So every concept in
+docs/ship_pipeline/concepts/ is history, not a target. The sheets below state what holds for each faction whatever direction is
+picked; the section "The concept redo" at the end gives three directions per faction for Ryan to pick from.
+
 Ryan, Nov 10 2026 (R164), on hard points: "It should vary by size of ship, faction, etc. We want things to be on theme."
 
 ## Rules for every faction
@@ -97,72 +104,133 @@ class and faction (issue 363), never from a constant.
 
 ## The Glasswrights (`ithar`)
 
-**In one line:** a silver needle carrying sails of light.
+Ryan, Nov 10: "I like the idea-ish but it comes off looking as almost insect like. I think we go with a different idea but in a
+similar vane." So the paired wing and petal vanes go. What stays is the idea underneath: a people of optical engineers whose
+ships catch, store and release light.
 
-- **Silhouette:** a slender spindle hull with two to four huge crystal vanes, like fans or petals. The vanes are most of the
-  ship's outline. Symmetric.
-- **Shape language:** grown crystal and drawn silver. Facets, lenses, mirrors that turn to catch light. No plates, no rivets.
-- **Colours:** clear crystal, silver, a rainbow fringe on every edge, and a stored light glowing deep inside the hull.
-- **Guns sit:** in the lens bays along the spindle. The prism lance is the hull's own stored light let out through a bow
-  lens: a white core with a rainbow fringe. Vanes carry no guns.
-- **Engines:** no flame. A soft white bloom at the stern lens.
-- **How it breaks:** it shatters. Vanes shear off first as whole panes, then the spindle snaps at a lens bay and the stored
-  light spills out. Inside: crystal lattice and light, no decks to speak of. One fewer breach anchor than the base count, all
-  on the spindle; each vane is its own break piece.
-- **Never:** rust, smoke, armour plate, flame. No rigging, no masts: a vane is a crystal pane, not a sail on a spar.
-- **What the present concepts get wrong:** the vanes are drawn as cloth sails (soft folds, I16_11 has a mast), and several are
-  lopsided. Make them rigid faceted panes in matched pairs. The vanes are the hardest material in the game to build: see the
-  note on the finished battle below.
+**In one line:** an instrument for light, built as a warship.
+
+- **Who they are (lore 6.1):** the Starwrights who stayed flesh; the finest optical engineers who ever lived. They built the
+  collectors, mirrors and beam lines that carried a star's light across a system, and watched that machine kill their sun.
+- **Shape language:** engineered optics: mirrors, lenses, prisms, rings, trusses. Rigid, geometric, symmetric about the long
+  axis. Cut and faceted, never soft. Nothing that reads as a wing, a petal, a sail or a body.
+- **Colours:** clear crystal and silver, a rainbow fringe on cut edges, a stored light glowing deep inside.
+- **Guns sit:** on the optical axis. The prism lance is the hull's stored light let out through the bow optic: a white core
+  with a rainbow fringe. Smaller lenses along the hull are the secondary guns.
+- **Engines:** no flame. A soft white bloom at the stern optic.
+- **How it breaks:** it shatters. Optics crack and shear off as whole panes or rings, then the hull snaps at a lens bay and the
+  stored light spills out. One fewer breach anchor than the base count; each large optic is its own break piece.
+- **Never:** paired wings or petals, cloth-like sails, masts and rigging, anything insect-like, rust, smoke, flame.
 
 ## Eclipse (`deathless`)
 
-**In one line:** a black sunshade with a ring of pale fire behind it.
+Ryan, Nov 10: "Shapes are the biggest issue. They look like just giant spinning tops, at least capital ships. I like the green
+glow but it should be on brand with eclipse". This overrides the lore bible's colour line for ships (white-gold and
+violet-white): the green stays, as the light of an eclipse.
 
-- **Silhouette:** a broad layered fan, half-disc or ring, with the ship sheltering behind it. Seen from the front it is a dark
-  disc with a thin bright corona. Symmetric.
-- **Shape language:** shield plates in overlapping bands, eclipse rings around the engines. The old carved-bone ribs become
-  shield-plate bands and rings on the next dressing pass; the shapes stay.
-- **Colours:** dark violet-black plates, a white-gold corona, violet-white inner glow.
-- **Guns sit:** behind the shade's rim, firing through gaps between plates, and in the central spire.
-- **Engines:** no flaming bells. A ring of white-gold light, like the sun behind a moon.
-- **How it breaks:** in layers. The shade's plates peel away band by band, then the ring separates from the core. Inside:
-  archive vaults, dark stone-like decks, violet light. Breach anchors sit on the shade's bands, spaced around the arc.
-- **Never:** green light (the present concepts are all green: that is the retired look), bone and skulls, flame.
-- **What the present concepts get wrong:** every one glows green, and D9_23 is a ribcage. Recolour to violet and white-gold;
-  turn ribs into plate bands. D21_23 (the half-disc) and D22_23 (the ring) are the shapes to build the fleet around.
+**In one line:** a black shade with a thin ring of green-white fire at its edge.
+
+- **Who they are (lore 7.1):** the Starwrights who uploaded. Machine bodies in a system they made dark, each with a small core
+  of trapped light, all that is left of their sun.
+- **The green, on brand:** a real total eclipse shows a faint green ring in the sun's corona. That is the Eclipse green: a
+  thin, cold green-white line along the rim of every shade plate, and the trapped light core seen through gaps. Never a
+  pooled glow inside ribs or sockets, which reads as undead.
+- **Shape language:** sunshades and heat shields: broad layered plates with the ship sheltering behind them. The shade always
+  faces the enemy, like a shield held forward. Wide and flat, or a forward-facing arc or ring.
+- **Colours:** dark violet-black plates, the green-white corona line, a small bright core.
+- **Guns sit:** behind the shade's rim, firing through gaps between plates.
+- **Engines:** no flaming bells. An eclipse ring of pale light.
+- **How it breaks:** in layers. Shade plates peel away band by band, then the body behind is bare. Inside: archive vaults,
+  dark decks, the core's light. Breach anchors sit on the shade's bands.
+- **Never:** a disc or cone on a vertical spindle (the spinning top), a spire through the centre of a disc, bone, ribs,
+  skulls, green pooled in hollows, flame.
 
 ## The Chorus (`chorus`)
 
-**In one line:** a grown thing with lit sacs, hungry.
+Ryan, Nov 10, picked every fault at once: "Reads as cartoon bugs or grubs", "Metal bits and wrong colours", "Idea is right,
+execution is off" and "Start over with a new idea". So: the idea of grown, living ships stays; the grub is gone.
 
-- **Silhouette:** a segmented grub or a swollen sac trailing tendrils. Rounded, never straight-edged. Symmetric where a body
-  would be.
-- **Shape language:** grown, not built: ridges, pores, veins, glowing sacs, scar tissue that regrows. No panels, no pipes, no
-  metal at all.
-- **Colours:** dark olive-brown flesh, ochre chitin, bile yellow-green light from inside the sacs.
-- **Guns sit:** in mouths, spines and sacs: a weapon is an organ. Brood sacs along the flanks for the wings.
-- **Engines:** no nozzles. Pulsing vents or trailing tendrils with a yellow-green glow.
-- **How it breaks:** it bursts and tears. Sacs rupture first, then the body tears between segments. Inside: flesh and bone
-  (R98), wet and lit from within. Breach anchors sit on the sacs and segment joins; one more than the base count on the big
-  ones, because every sac is a place to burst.
-- **Never:** metal masts, antennas, conning towers, hull plates, red or magenta flesh.
-- **What the present concepts get wrong:** B20, B21 and B16 carry small metal towers and antennas on their backs: remove them.
-  B16_23 is magenta-red: bring it to olive and ochre. B22_11 is cut off by its own shadow and needs a full redraw.
+**In one line:** something vast and eyeless that was grown as a weapon and never stopped growing.
+
+- **Who they are (lore 5.1):** not a people: a weapon the Fleshwrights grew to destroy Eclipse, engineered flesh that lives on
+  starlight, eats anything, endures the cold and breeds without end. It consumed its makers and became one swarm with one
+  appetite. The Fleshwrights were kin to the Glasswrights, so a Chorus ship may echo a Glasswright shape in flesh.
+- **Shape language:** grown, not built. Scale and menace first: slow, heavy, deep-sea. Hide, membrane, chitin ridges, light
+  inside the body. Symmetric where a body would be, ragged where it has been scarred and regrown.
+- **Colours:** dark olive-brown hide, ochre bone and chitin, bile yellow-green light from inside.
+- **Guns sit:** in throats, spines and sacs: a weapon is an organ. Brood sacs along the flanks for the wings.
+- **Engines:** no nozzles. Pulsing vents or trailing membranes with a yellow-green glow.
+- **How it breaks:** it bursts and tears. Sacs rupture first, then the body tears open. Inside: flesh and bone (R98), wet and
+  lit from within. One more breach anchor than the base count on the big ones.
+- **Never:** grub or caterpillar segments, anything cute or round-cheeked, legs, eyes, a face, any metal (no masts, antennas,
+  towers or plates), red or magenta flesh.
 
 ---
 
-## The finished battle: which fleet faces the Hullbreakers
+## The concept redo (program decision 2, replaced Nov 10)
 
-The Hullbreakers are one side (their barge and cruiser are the furthest along). The other side is Ryan's pick (program
-decision 2). The Board's order of preference, with the reason:
+The order Ryan set: the build pipeline was proven first (ship rounds 7 and 8, PR 401); now every faction's concepts are redone
+from the current lore, direction first ("Direction first, then fleets"), and only then built.
 
-1. **Hegemony Navy.** Pale grey and blue against soot and rust is the strongest contrast in the game at the battle camera, so
-   every hit, shield and death reads. Hard, flat, repeated shapes are what the ship recipe already does well, and one module
-   set makes three hulls. Lowest risk, fastest proof.
-2. **Sunward Crusade.** The game's own name-bearers and a strong look, but black iron against rust on a dark sky is dark on
-   dark: the battle would lean on the ember light alone to be read.
-3. **The Glasswrights.** The most beautiful result if it works. Clear crystal with a light inside is a new material and a
-   new way of breaking, so it is the riskiest first proof. Better as the second battle, once the recipe is proven.
+1. **Directions.** For each faction, three directions below. Each is drawn once as a hero capital ship with one escort beside
+   it for scale: a three-quarter view from the front and slightly above (the battle camera's side of the ship), on a plain
+   dark background, lit from the upper left, same framing for all eighteen pictures. Rendered by Muse's image models from
+   these words and the faction's sheet above (issue filed with this document).
+2. **Pick.** The Board lays each faction's three out on one sheet. Ryan picks one per faction, or mixes two.
+3. **Fleets.** The picked direction becomes a full fleet in three views per ship, to the concept standard
+   (contrib/muse/design/concept_standard_2026_11/standard.md): the written feature table first, then the views.
+4. **Build.** Hulls go through tools/recipe on the PC. The finished battle uses the first two fleets through: the Hullbreakers
+   and whichever tidy-up faction (Hegemony or Sunward) is ready first.
 
-Eclipse and the Chorus are not offered for the first battle: Eclipse needs its whole colour redo first, and the Chorus needs
-a flesh pipeline the recipe does not have yet.
+### Sunward Crusade: three directions
+
+- **A. Oath Blade.** The long black dagger kept and cleaned up: a spine of radiator spires glowing ember, long broadside gun
+  decks, the names of the dead chalked in frost white down both flanks.
+- **B. Forge.** Blunt and heavy. A slab prow, and the reactor's heat shed through stacked radiator fins along the flanks that
+  glow like a forge, with only a few short spires. Broadside-heavy, brutal, less cathedral.
+- **C. Reach Militia.** A navy pooled from a written-off frontier: mining and farm-moon haulers rebuilt as warships. Boxy
+  cargo-frame bones, black iron plate laid over them, gun decks cut into the sides, radiator towers added. The story shows.
+
+### Hegemony Navy: three directions
+
+- **A. Clean Wedge.** The flat pale wedge with one low fin, rows of identical turrets and blue lines pulsing in time.
+- **B. Module Line.** The Registry builds every ship from one kit: identical modules clipped along a spine. A frigate is two
+  modules, a capital is eight, with ion prongs on the bow module. The sameness is the point, and it breaks module by module.
+- **C. Drone Mother.** A smooth pale hull with open racks along its flanks and a halo of small drones holding perfect
+  formation around it. Few guns of its own; the calm is the threat.
+
+### Ashfall Hullbreakers: three directions
+
+- **A. Scrap Brick.** Today's look without the sea-ship parts: a lopsided bolted brick with listening dishes, wake-sniffer
+  scoops and boarding claws.
+- **B. Pack Hunter.** The ship shaped like its makers: a heavy head with listening dishes for ears and sniffer intakes, a great
+  shoulder hump, and boarding jaws at the bow that open sideways. Lean, leaning forward, still plated in stolen hull.
+- **C. Den Ship.** A burned-out rock from the Ashfall belt, hollowed and fitted with engines chained to the stone, gun pits
+  and kennel decks. Rock and scrap together; it runs dark.
+
+### The Glasswrights: three directions (a new idea in the same vein)
+
+- **A. Collector.** One great forward-facing mirror dish of rigid hexagonal facets, ringed around a slim silver hull, like the
+  collectors their ancestors built. The lance fires from the dish's focus.
+- **B. Prism.** The hull is the optic: one long cut crystal shard, three-sided, with light moving inside it and small mirror
+  fins. No vanes at all. The hardest and most plainly a weapon.
+- **C. Beam Line.** A row of three to five lens rings held in a silver truss along one axis, an optical bench in space. Light
+  passes ring to ring and leaves as the lance.
+
+### Eclipse: three directions (no spinning tops)
+
+- **A. Crescent.** A huge thin crescent shade, a partial eclipse, with the ship's body tucked inside its curve. Head-on it is
+  a black crescent with a green-white rim.
+- **B. Fan.** Overlapping shade plates swept back from the bow like a folded parasol or an arrowhead of shields. Wide and
+  flat, the ship sheltering behind.
+- **C. Annulus.** A monumental broken ring of plates around a bright core, facing forward like a ring eclipse, its pieces
+  drifting and being refitted by tiny drones (the lore's "greatest minds"). The body is a slim spar behind the ring.
+
+### The Chorus: three directions (no grubs)
+
+- **A. Leviathan.** Deep-sea scale: a vast, eyeless, smooth-hided body with chitin ridges and light glowing through it from
+  inside, long and slow, with its escorts like pilot fish.
+- **B. Bloom.** A starlight feeder: a dark core with a crown of membranes that open toward the light, like a sea lily or a
+  fungus, bile-green in the throat. The Glasswright collector, grown in flesh by their lost kin.
+- **C. Overgrowth.** Flesh and ochre bone grown over the shape of what it ate: the outline of a swallowed warship still
+  readable under the hide, with no metal showing anywhere. Ragged, scarred, the most frightening up close.
