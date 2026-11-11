@@ -543,7 +543,11 @@ func _flash_count(T: float) -> bool:
 #     general flash: it is counted against FLASH_CAP (three in any rolling second) like any other, or refused.
 #  4. Small flashes far apart never add up; small flashes close together do.
 # Reduce flashing: false at once, as on main (nothing is booked or remembered).
-func flash_at(p: Vector3, T: float, size: float, px := 0.0, life := FLASH_WINDOW) -> bool:
+# Issue 461: `yield_last` (weapon hits and muzzles): a flash that would have to be counted while the second up to T
+# already holds FLASH_CAP - 1 counted flashes is drawn soft instead, so the last slot stays free for a death's core
+# flash (in the 20-ship storm gate hits had taken the slot and a cruiser's core was turned soft). The limit, the window
+# and the cap are unchanged; a hit only ever asks for less.
+func flash_at(p: Vector3, T: float, size: float, px := 0.0, life := FLASH_WINDOW, yield_last := false) -> bool:
 	if reduce_flashing:
 		return false
 	if camera == null or not is_instance_valid(camera):
@@ -563,13 +567,28 @@ func flash_at(p: Vector3, T: float, size: float, px := 0.0, life := FLASH_WINDOW
 	var bright := true
 	var counted := 0
 	if lit > flash_limit_px2():
-		bright = _flash_count(T)
-		counted = 1 if bright else 0
+		if yield_last and _flash_held(T) >= FLASH_CAP - 1:
+			bright = false
+			_refused.append(T)
+			if _refused.size() > 64:
+				_refused = _refused.slice(32)
+		else:
+			bright = _flash_count(T)
+			counted = 1 if bright else 0
 	if bright:
 		_flash_remember(T, life, c)
 	_flash_note(T, c, lit, counted, 1 if bright else 0, life)
 	pend("flash", t0)
 	return bright
+
+
+# Counted flashes in the trailing second up to T (issue 461, for yield_last).
+func _flash_held(T: float) -> int:
+	var c := 0
+	for f in _flashes:
+		if f > T - 1.0 and f <= T:
+			c += 1
+	return c
 
 
 # The side of a 10 degree box in viewport pixels (rounded down, so the box and the limit are never overstated).

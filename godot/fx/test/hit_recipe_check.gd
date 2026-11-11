@@ -11,6 +11,7 @@ extends SceneTree
 #   5. light on neighbours: a torpedo hit's light reaches about two hexes;
 #   6. reduce flashing: the same hits book and count no flash at all;
 #   7. a lance kill on a big hull breaks on the beam's own line, clean (no kink, almost no teeth);
+#   9. a hit flash yields the last of the three flashes a second to a death's core (fx.flash_at yield_last);
 #   8. the engine core flickers 0.95 to 1.0 only (issue 504's finding), and wounds are kept past the old cap of 12.
 #   godot --headless --path godot --script res://fx/test/hit_recipe_check.gd
 
@@ -119,6 +120,7 @@ func _run() -> void:
 		world.queue_free()
 		await process_frame
 	_recipes(seen)
+	await _yield_check()
 	await _lance_kill()
 	# 8. the engine core flicker and the scar cap
 	_check(SH.SPRITE.find("flick(0.95 + 0.05 * vnoise(vec2(scene_t * 31.0") >= 0, "engine cores flicker 0.95 to 1.0 only")
@@ -239,6 +241,33 @@ func _lance_kill() -> void:
 		_check(absf((b["n"] as Vector3).y) < 1e-3, "the lance cut is not pitched")
 	await _advance(fx, 5.0)
 	_check(fx.dstate.has("wrecks") and not (fx.dstate["wrecks"] as Array).is_empty(), "the lance kill breaks up")
+	fx.release()
+	world.queue_free()
+	await process_frame
+
+
+# 9. a hit that would need counting yields the last slot of the second to a death's core
+func _yield_check() -> void:
+	var wf: Array = _world(false)
+	var world: Node3D = wf[0]
+	var fx = wf[1]
+	await _advance(fx, 0.2)
+	var T: float = fx.now
+	fx.flash_ok(T)
+	fx.flash_ok(T + 0.3)
+	var big: float = 200.0   # px: over the limit on its own
+	var hit_ok: bool = fx.flash_at(Vector3.ZERO, T + 0.6, 0.0, big, 0.16, true)
+	var core_ok: bool = fx.flash_at(Vector3.ZERO, T + 0.62, 0.0, big, 0.16)
+	_check(not hit_ok, "a hit flash that would take the last slot of the second is drawn soft")
+	_check(core_ok, "the slot stays free for a death's core flash")
+	var worst := 0
+	for a in fx.flash_log:
+		var n := 0
+		for b in fx.flash_log:
+			if float(b) > float(a) - 1.0 and float(b) <= float(a):
+				n += 1
+		worst = maxi(worst, n)
+	_check(worst <= 3, "still never more than three counted flashes in a second")
 	fx.release()
 	world.queue_free()
 	await process_frame
