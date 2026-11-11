@@ -515,7 +515,7 @@ func edgeHex(side) -> Variant:
 				if blocks(terr(h.q, h.r)) or occ.has(hkey(h.q, h.r)): continue
 				var p = hexXZ(h); var ux: float = p.x - cx; var uz: float = p.z - cz; var dist = JSM.hypot([ux, uz])
 				if dist == 0.0: continue
-				var score: float = (ux * dx + uz * dz) / dist
+				var score: float = ux * dx + uz * dz   # distance along the bearing: the free hex furthest out on the fleet's own side
 				if score > bd2: bd2 = score; best2 = h
 			if best2 != null: return best2
 	var mr = floor((bb.r0 + bb.r1) / 2.0); var c: float = bb.c0 + 1 if side == "player" else bb.c1 - 1
