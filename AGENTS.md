@@ -3,7 +3,7 @@
 Embers of the Hollow Sun (repo name voidsworn) is a hex fleet-tactics roguelite. The product is the Godot 4 port in `godot/`, played on
 Ryan's Windows PC only; the browser JS game is the rules oracle, frozen except for rules fixes. The owner is Ryan. He is not a coder:
 he judges work by screenshots. Start with HANDOFF.md section 0 and contrib/opus/FINDINGS.md (fixed Nov 7, R110; the rest of this file
-is reviewed in #216).
+is reviewed in #216). The plan and the per-area recipes are in `docs/playbooks/` (PROGRAM.md first).
 
 ## Auditing? Follow `docs/REVIEW_PROTOCOL.md` exactly (mandatory), then `docs/ship_pipeline/AUDIT_BRIEF.md`
 
@@ -19,7 +19,7 @@ It holds the goal, the full history, every piece of owner feedback word for word
   A branch whose name does not start with codex/, muse/, work/ or opus/ gets no automatic checks: open its pull request by hand, then start them by hand (Actions tab, "checks", "Run workflow", pick the branch; or `gh workflow run checks.yml --ref <branch>`).
 - Codex stays local on Ryan's PC. `codex_board.bat` (Downloads\voidsworn_test) checks the board every 10 minutes and
   queues each new codex issue on lane B (tools/pc/codex_issue.bat): fresh checkout, Codex at the issue's effort, push.
-  No Codex cloud tasks or cloud reviews: they run an older model than the local one. Codex is down until Ryan says, so every codex issue stays blocked and the watcher queue is inert.
+  No Codex cloud tasks or cloud reviews: they run an older model than the local one. Codex was un-parked on Nov 10 2026 (R170): the Board launches each Codex job itself through the PC queue (contrib/opus/LOOP.md says how), and new codex issues also carry `blocked` so the old watcher cannot run them a second time.
 - Every issue opens with this fixed block, so any agent can pick it up without asking:
   ```
   Owner: codex | muse | opus
@@ -39,7 +39,7 @@ Match the job to the seat that is best at it, and keep the paid seats for what o
 
 | Work | Seat | Why |
 |---|---|---|
-| Board, PR review and merges, specs, visual calls, questions for Ryan | Fable 5.2 (Claude, the project's Board thread, R152) | the reviewer is the bottleneck; spend Claude on judgment, not bulk typing (2 or 3 threads at once) |
+| Board, PR review and merges, specs, visual calls, questions for Ryan | Claude, the project's Board thread (Fable 5.2 for the Nov 9 and 10 design window, R152; Opus for the build-out, R169) | the reviewer is the bottleneck; spend Claude on judgment, not bulk typing (2 or 3 threads at once) |
 | Well-specified coding: rules, campaign, UI, scripts, tests | Workhorse: DeepSeek V4.1 Flash in OpenCode on the PC (tools/pc/work_issue.bat) | merged on one review pass for $0.09 on #26 (R127) |
 | Hard or open-ended multi-file coding, ship rounds, screen builds, plans | Opus 5.5 worker threads (the hardest jobs while the Claude plan has room, R132, R152) | Kimi is off except a real job both DeepSeek models fail (R132, R134); it was slower and 50x the price per job on the API |
 | GPU and Blender work: bakes, renders, captures, benchmarks, exports | Codex on the PC (when Ryan un-parks Codex); until then Opus PC threads | Codex knows the pipeline tools; the workhorse is untested on GPU jobs |
