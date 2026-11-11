@@ -1401,8 +1401,8 @@ static func _blast(fx, src, p: Vector3, n: Vector3, px: float, tint: Color, fram
 	if not p.is_finite(): return
 	var soft: bool = pale or fx.reduce_flashing or (fx._flash_sized(p, 0.0, px) and not fx.flash_ok(fx.now))
 	_pic(fx, src, p, "weapons/impact/flash_", px, 0.50 if soft else 0.16, 0.97 if soft else 3.0, 1.25 if soft else 5.2, soft, "flash", frame)
-	var body := _pic(fx, src, p, "weapons/impact/impact_", px * 0.9, 0.70, 0.80, 2.0, false, "impact", frame)
-	(body.material_override as ShaderMaterial).set_shader_parameter("born", fx.now + 0.025)
+	fx.later(fx.now + 0.06, func l_blast_body() -> void:
+		_pic(fx, src, p, "weapons/impact/impact_", px * 0.9, 0.70, 0.80, 2.0, false, "impact", frame))
 	fx.light(p + n * 0.6, fx.now, 0.40 if soft else 0.25, 5.0, tint, 0)
 	if fx.quality != "low":
 		var k: float = px * STAGING_UNITS_PER_PIXEL / 10.0
@@ -1421,7 +1421,9 @@ static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: 
 	var capital := tl.tier == "capital"
 	_core_flash(fx, p, R, 70.0, tint, null, Vector3.ZERO, s, tl.tier, frame)
 	var body_px := 380.0 if capital else 260.0
-	_pic(fx, s, p, "weapons/impact/impact_", body_px, 2.0 if capital else 1.6, 0.80, 2.0, false, "impact", frame)
+	# light first, then matter: the body is born as the core's full heat ends, so its smoke never covers the flash
+	fx.later(fx.now + 0.12, func l_core_body() -> void:
+		_pic(fx, s, p, "weapons/impact/impact_", body_px, 2.0 if capital else 1.6, 0.80, 2.0, false, "impact", frame))
 	if fx.quality != "low":
 		var gas := flipbook(fx, p, Vector3.UP, s.hull.L * (0.8 if capital else 0.7), "cool", 3.6 if capital else 3.0, s.get_meta("death_velocity", Vector3.ZERO) * 0.5, 0.38, atlas_band(s.hull.L), null)
 		(gas.material_override as ShaderMaterial).set_shader_parameter("born", fx.now + 0.45)
@@ -1810,7 +1812,7 @@ static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, 
 	wreck["cut_events"].append({"section": index, "t": fx.now})
 	if wreck.get("organic", false): return
 	if fx.quality != "low":
-		flipbook(fx, node.to_global(node.get_meta("tear_site", Vector3.ZERO)), vel.normalized(), L * 0.5, "cool", 1.1, vel * 0.65, 0.7, atlas_band(L), src)
+		flipbook(fx, node.to_global(node.get_meta("tear_site", Vector3.ZERO)), vel.normalized(), L * (0.35 if big else 0.5), "cool", 1.1, vel * 0.65, 0.4 if big else 0.7, atlas_band(L), src)
 	# Big hulls' secondaries are scheduled once per kill (_schedule_secondaries), never a per-piece fire loop.
 
 

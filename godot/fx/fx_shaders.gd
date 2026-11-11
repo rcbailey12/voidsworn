@@ -1754,7 +1754,7 @@ void vertex() {
 vec3 tear_line(vec3 at, vec3 axis, vec2 open, float pxw) {
 	float u = (scene_t - open.x) / max(open.y - open.x, 0.0001);
 	if (u <= 0.0) { return vec3(0.0); }
-	float w = max(width, pxw * 2.6);
+	float w = max(width, pxw * 3.2);
 	float wig = (1.0 - straight) * (sin(dot(cut_p, vec3(1.7, 8.3, 5.1))) * 0.6 + sin(dot(cut_p, vec3(5.3, 2.9, 11.7))) * 0.4);
 	float d = abs(dot(cut_p - at, axis) + wig * w * 0.9);
 	float s = dot(cut_p - at, grow) / max(half_span, 0.001);
