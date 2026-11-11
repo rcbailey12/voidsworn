@@ -8,6 +8,48 @@ extends RefCounted
 
 const SH := preload("res://ui/campaign/map3d_shaders.gd")
 
+# One presentation table, indexed by RUN.sector. Distances, light and atmosphere never enter the run or its PRNG.
+const APPROACH := [
+	{"sun_scale": 0.6, "sun_pos": Vector3(0, 1, 0), "disc_outer": 2.5, "disc_gain": 0.28, "lens_gain": 0.4, "star_exposure": 0.1,
+		"sun_energy": 0.8, "sun_color": Color(0.65, 0.76, 1.0), "planet_floor": 0.28, "ambient": 0.42, "fill": 0.42, "local_fill": 1.0, "nebula": 0.5, "saturation": 0.5,
+		"stars": 1.0, "star_void": 0.0, "heat": 0.0, "bent_stars": 0.0, "debris": 0.3, "ember": 0.16,
+		"ring_inner": 3.2, "ring_outer": 4.2, "infall": 0.0, "radius": Vector2(21, 52), "angle": Vector2(190, 200), "bend": 0.2,
+		"fit_sun": true, "arrival_zoom": 0.88, "arrival_lean": 0.16, "arrival_seconds": 1.2},
+	{"sun_scale": 1.3, "sun_pos": Vector3(8, 1, -5), "disc_outer": 3.0, "disc_gain": 0.55, "lens_gain": 0.7, "star_exposure": 0.2,
+		"sun_energy": 5.0, "sun_color": Color(1.0, 0.7, 0.48), "planet_floor": 0.08, "ambient": 0.28, "fill": 0.22, "local_fill": 0.45, "nebula": 0.28, "saturation": 0.65,
+		"stars": 0.7, "star_void": 0.65, "heat": 0.08, "bent_stars": 0.045, "debris": 1.0, "ember": 0.3,
+		"ring_inner": 3.3, "ring_outer": 5.2, "infall": 0.0, "radius": Vector2(20, 49), "angle": Vector2(190, 190), "bend": 0.1,
+		"fit_sun": true, "arrival_zoom": 0.88, "arrival_lean": 0.16, "arrival_seconds": 1.2},
+	{"sun_scale": 2.2, "sun_pos": Vector3(36, 1, -26), "disc_outer": 3.2, "disc_gain": 1.1, "lens_gain": 1.15, "star_exposure": 1.0,
+		"sun_energy": 11.0, "sun_color": Color(1.0, 0.62, 0.34), "planet_floor": 0.015, "ambient": 0.1, "fill": 0.06, "local_fill": 0.12, "nebula": 0.065, "saturation": 0.3,
+		"stars": 0.28, "star_void": 0.95, "heat": 0.8, "bent_stars": 0.14, "debris": 0.65, "ember": 0.5,
+		"ring_inner": 3.3, "ring_outer": 4.8, "infall": 1.0, "radius": Vector2(21, 46), "angle": Vector2(190, 154), "bend": -0.16,
+		"fit_sun": false, "arrival_zoom": 0.88, "arrival_lean": 0.16, "arrival_seconds": 1.2},
+]
+var approach: Dictionary = APPROACH[0]
+
+static func sector_look(sector: int) -> Dictionary:
+	return APPROACH[clampi(sector - 1, 0, APPROACH.size() - 1)]
+
+func set_sector(sector: int) -> void:
+	approach = sector_look(sector)
+	sun_pos = approach["sun_pos"]
+
+# Reuse the world's baked nebula, with a map-only shader variant. Battle skies are unchanged.
+func approach_sky(env: Environment) -> void:
+	var m: ShaderMaterial = env.sky.sky_material
+	var sh := Shader.new(); sh.code = SH.map_sky(); m.shader = sh
+	m.set_shader_parameter("neb_gain", approach["nebula"])
+	m.set_shader_parameter("map_saturation", approach["saturation"])
+	m.set_shader_parameter("map_heat", approach["heat"])
+	m.set_shader_parameter("map_star_void", approach["star_void"])
+	m.set_shader_parameter("star_k", float(m.get_shader_parameter("star_k")) * float(approach["stars"]))
+	m.set_shader_parameter("sun_k", 0.0)
+	m.set_shader_parameter("lamp", PackedVector4Array([Vector4.ZERO, Vector4.ZERO, Vector4.ZERO, Vector4.ZERO, Vector4.ZERO, Vector4.ZERO]))
+
+func sky_direction(cam: Camera3D, env: Environment) -> void:
+	(env.sky.sky_material as ShaderMaterial).set_shader_parameter("map_sun_dir", (sun_pos - cam.global_position).normalized())
+
 # Faction looks (lore rounds 3 and 4). base: hull and dark tone; main: the faction colour; light: its lights and glows;
 # text: a readable colour for its name on the dark UI; look: 0 plain, 1 lights pulse in step, 2 rainbow edges, 3 corona.
 const LOOKS := {
@@ -51,7 +93,7 @@ static func text_col(fac) -> Color: return look(fac)["text"]
 
 func _sh(name: String) -> Shader:
 	if not _shaders.has(name):
-		var codes = {"SKY": SH.SKY, "STARPTS": SH.STARPTS, "NEB_SHEET": SH.NEB_SHEET, "GLOW": SH.GLOW,
+		var codes = {"SKY": SH.SKY, "INFALL": SH.INFALL, "STAR_ARCS": SH.STAR_ARCS, "STARPTS": SH.STARPTS, "NEB_SHEET": SH.NEB_SHEET, "GLOW": SH.GLOW,
 			"PLANET": SH.PLANET, "ATMO": SH.ATMO, "ROCK": SH.ROCK, "ORBIT": SH.ORBIT, "LANE": SH.LANE, "LANE_FLAT": SH.LANE_FLAT, "RING": SH.RING, "CLOUD": SH.CLOUD,
 			"HULL": SH.HULL, "SOLAR": SH.SOLAR, "RADIATOR": SH.RADIATOR, "ROCK_HI": SH.ROCK_HI, "CLOUDS": SH.CLOUDS,
 			"HALO": SH.HALO, "TERR": SH.TERR, "BH_DISC": SH.BH_DISC, "BH_FRONT": SH.BH_FRONT, "BH_LENS": SH.BH_LENS, "BH_SHADOW": SH.BH_SHADOW, "BH_LENSED": SH.BH_LENSED, "THREAT": SH.THREAT}
@@ -98,15 +140,18 @@ func ribbon(a: Vector3, b: Vector3, w: float) -> ArrayMesh:
 	return st.commit()
 # The lane and the fleet share this curve. Bend outward with the orbital flow,
 # including radial hops, rather than cutting straight across the system.
-static func route_curve(a: Vector3, b: Vector3) -> Curve3D:
+static func route_curve(a: Vector3, b: Vector3, centre := Vector3.ZERO, bend := 0.16) -> Curve3D:
 	var curve := Curve3D.new()
 	curve.bake_interval = 0.12
 	var middle := (a + b) * 0.5
-	var outward := Vector3(middle.x, 0, middle.z).normalized()
-	var control := middle + outward * minf(a.distance_to(b) * 0.16, 6.0)
+	var outward := Vector3(middle.x - centre.x, 0, middle.z - centre.z).normalized()
+	var control := middle + outward * clampf(a.distance_to(b) * bend, -6.0, 6.0)
 	curve.add_point(a, Vector3.ZERO, (control - a) * (2.0 / 3.0))
 	curve.add_point(b, (control - b) * (2.0 / 3.0), Vector3.ZERO)
 	return curve
+
+func lane_curve(a: Vector3, b: Vector3) -> Curve3D:
+	return route_curve(a, b, sun_pos, float(approach["bend"]))
 
 func route_ribbon(curve: Curve3D, w: float, trim_a: float, trim_b: float) -> ArrayMesh:
 	var length := curve.get_baked_length()
@@ -174,7 +219,7 @@ func sky(env: Environment, fac: String, seed_v: int) -> void:
 	env.sky = s; env.background_mode = Environment.BG_SKY
 func backdrop(parent: Node3D, fac: String, px_scale: float) -> void:
 	# near stars on a shell round the chart: they slide against the sky as the camera moves
-	var n = 4200 if q > 0.5 else 1400
+	var n = int((4200 if q > 0.5 else 1400) * float(approach["stars"]))
 	var st = SurfaceTool.new(); st.begin(Mesh.PRIMITIVE_POINTS)
 	for i in n:
 		var d = Vector3(rng.randfn(), rng.randfn() * 0.8, rng.randfn()).normalized()
@@ -195,29 +240,33 @@ func backdrop(parent: Node3D, fac: String, px_scale: float) -> void:
 # Returns {"root", "debris"} (the debris turns in map3d's _process).
 const DISC_TILT := -40.0     # degrees about x: the disc's near side rises toward the camera, close to edge-on, so the lens arcs read
 func hollow_sun(parent: Node3D, core_r: float = 5.0) -> Dictionary:
+	core_r *= float(approach["sun_scale"])
 	var root = Node3D.new(); root.name = "HollowSun"; root.position = sun_pos; parent.add_child(root)
 	var cm = StandardMaterial3D.new(); cm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED; cm.albedo_color = Color.BLACK
 	root.add_child(mi(sphere(core_r, 48, 24), cm))   # the shadow writes depth: what passes behind it is hidden
 	var tilt = Node3D.new(); tilt.rotation = Vector3(deg_to_rad(DISC_TILT), 0, deg_to_rad(6.0)); root.add_child(tilt)
-	var r_in = core_r * 1.25; var r_out = core_r * 3.0   # the lens (4.0 core radii) must reach past the disc or its edge folds
+	var r_in = core_r * 1.25; var r_out = core_r * float(approach["disc_outer"])
 	var dmesh = arc_mesh((r_in + r_out) * 0.5, r_out - r_in, 0.0, TAU, 192 if q > 0.5 else 96)
-	var disc = mi(dmesh, mat("BH_DISC", {"r_in": r_in, "r_out": r_out, "spin": 0.3, "gain": 0.55}))
+	var disc = mi(dmesh, mat("BH_DISC", {"r_in": r_in, "r_out": r_out, "spin": 0.3, "gain": approach["disc_gain"], "exposure_gain": approach["star_exposure"]}))
 	disc.extra_cull_margin = r_out; tilt.add_child(disc)
 	# the lensed arcs over and under the shadow and the photon ring (a camera-facing quad at the centre, behind the near
 	# half of the disc). G4's screen-space lens is not used here: on the map's free camera it folded the disc at the
 	# lens edge and would bend the stops round the hole.
-	var lz = mi(quad(1, 1), mat("BH_LENSED", {"r_shadow": 1.0 / 2.0, "gain": 0.7}), Vector3.ZERO, Vector3.ONE * core_r * 4.0)
+	var lz = mi(quad(1, 1), mat("BH_LENSED", {"r_shadow": 1.0 / 2.0, "gain": approach["lens_gain"], "exposure_gain": approach["star_exposure"]}), Vector3.ZERO, Vector3.ONE * core_r * 4.0)
 	lz.extra_cull_margin = core_r * 4.0; root.add_child(lz)
-	var front = mi(dmesh, mat("BH_FRONT", {"r_in": r_in, "r_out": r_out, "spin": 0.3, "hole_center": sun_pos, "gain": 0.55}))
+	var front = mi(dmesh, mat("BH_FRONT", {"r_in": r_in, "r_out": r_out, "spin": 0.3, "hole_center": sun_pos, "gain": approach["disc_gain"], "exposure_gain": approach["star_exposure"]}))
 	front.material_override.render_priority = 10; front.extra_cull_margin = r_out; tilt.add_child(front)
 	glow(root, Color(1.0, 0.45, 0.15, 1.0), r_out * 2.6, Vector3.ZERO, 3.0, 0.1)
 	var l = OmniLight3D.new(); l.light_color = Color(1.0, 0.62, 0.34); l.light_energy = 5.0; l.omni_range = 150.0; l.omni_attenuation = 0.55
+	l.light_energy = approach["sun_energy"]
+	l.light_color = approach["sun_color"]
 	l.shadow_enabled = q > 0.5; l.shadow_blur = 2.0; l.shadow_bias = 0.08; l.shadow_normal_bias = 1.5   # High: soft shadows from the disc's light
 	l.omni_shadow_mode = OmniLight3D.SHADOW_CUBE; root.add_child(l)
 	# the battlefield debris ring: rock, torn hull plates and girders, some still smouldering
 	var deb = Node3D.new(); deb.name = "debris"; deb.rotation = Vector3(deg_to_rad(-4.0), 0, deg_to_rad(3.0)); root.add_child(deb)
-	var r0 = core_r * 3.0; var r1 = core_r * 3.9
+	var r0 = core_r * float(approach["ring_inner"]); var r1 = core_r * float(approach["ring_outer"])
 	var nk = [520, 420, 160] if q > 0.5 else [140, 110, 40]
+	for i in nk.size(): nk[i] = int(nk[i] * float(approach["debris"]))
 	var lib = rocks_lib()
 	for k in lib.size():
 		var items = []
@@ -225,13 +274,13 @@ func hollow_sun(parent: Node3D, core_r: float = 5.0) -> Dictionary:
 			var a = rng.randf() * TAU; var r = lerp(r0, r1, pow(rng.randf(), 0.8)) + sin(a * 5.0) * 0.6
 			var p = Vector3(cos(a) * r, rng.randfn() * 0.35, -sin(a) * r)
 			items.append([Transform3D(rand_basis(rng.randf_range(0.05, 0.32) * (2.2 if rng.randf() < 0.04 else 1.0)), p), 1.0 if rng.randf() < 0.12 else 0.0])
-		scatter(deb, lib[k], mat("ROCK", {"tint": Color(0.16, 0.14, 0.13), "metal": 0.05, "ember": backdrop_k}), items)
+		scatter(deb, lib[k], mat("ROCK", {"tint": Color(0.16, 0.14, 0.13), "metal": 0.05, "ember": approach["ember"]}), items)
 	var plate = BoxMesh.new(); plate.size = Vector3(1.0, 0.06, 0.6)
 	var items2 = []
 	for i in nk[1]:
 		var a = rng.randf() * TAU; var r = lerp(r0, r1, rng.randf())
 		items2.append([Transform3D(rand_basis(rng.randf_range(0.2, 0.75)), Vector3(cos(a) * r, rng.randfn() * 0.3, -sin(a) * r)), 1.0 if rng.randf() < 0.18 else 0.0])
-	scatter(deb, plate, mat("ROCK", {"tint": Color(0.3, 0.29, 0.28), "metal": 0.7, "ember": backdrop_k}), items2)
+	scatter(deb, plate, mat("ROCK", {"tint": Color(0.3, 0.29, 0.28), "metal": 0.7, "ember": approach["ember"]}), items2)
 	var girder = BoxMesh.new(); girder.size = Vector3(1.6, 0.07, 0.07)
 	var items3 = []
 	for i in nk[2]:
@@ -242,7 +291,16 @@ func hollow_sun(parent: Node3D, core_r: float = 5.0) -> Dictionary:
 	if q > 0.5:
 		for i in 14:
 			var a = rng.randf() * TAU; var r = lerp(r0, r1, rng.randf())
-			glow(deb, Color(1.0, 0.45, 0.15, 1.0), rng.randf_range(0.5, 1.1), Vector3(cos(a) * r, rng.randfn() * 0.2, -sin(a) * r), 2.0, 1.4 * backdrop_k)
+			glow(deb, Color(1.0, 0.45, 0.15, 1.0), rng.randf_range(0.5, 1.1), Vector3(cos(a) * r, rng.randfn() * 0.2, -sin(a) * r), 2.0, float(approach["ember"]))
+	if float(approach["bent_stars"]) > 0.0:
+		var arcs = mi(quad(1, 1), mat("STAR_ARCS", {"gain": approach["bent_stars"]}), Vector3(0, 0, -core_r), Vector3.ONE * core_r * 7.0)
+		arcs.extra_cull_margin = core_r * 7.0; root.add_child(arcs)
+	if float(approach["infall"]) > 0.0:
+		var dust: Array = []
+		for i in (320 if q > 0.5 else 100):
+			var a = rng.randf() * TAU; var r = rng.randf_range(r0, r1)
+			dust.append([Transform3D(rand_basis(rng.randf_range(0.03, 0.12)), Vector3(cos(a) * r, rng.randfn() * 1.2, sin(a) * r)), rng.randf()])
+		scatter(deb, plate, mat("INFALL", {"gain": approach["ember"], "centre": sun_pos}), dust)
 	return {"root": root, "debris": deb, "light": l}
 
 # ---------------------------------------------------------------- orbits
@@ -260,6 +318,11 @@ func planet(parent: Node3D, pal: Array, radius: float, at: Vector3, with_atmo: b
 	var p = mi(sphere(radius, seg, seg / 2), mat("PLANET", {"a": pal[1], "b": pal[2], "atmo": pal[3], "kind": float(pal[0]), "seed": rng.randf() * 40.0, "q": q, "sun_pos": sun_pos}))
 	if sector_world != null:
 		p.material_override = sector_world.surface_material((sun_pos - parent.global_position - at).normalized())
+		var shader := Shader.new()
+		shader.code = preload("res://world/world_planet.gd").SPHERE.replace("uniform float light = 1.0;", "uniform float light = 1.0;\nuniform float map_floor = 0.0;").replace("ALBEDO = col * light;", "ALBEDO = (col + ground * map_floor) * light;")
+		p.material_override.shader = shader
+		p.material_override.set_shader_parameter("map_floor", approach["planet_floor"])
+		p.material_override.set_shader_parameter("sun_col", approach["sun_color"])
 		p.material_override.set_meta("map_mat", true)   # its "light" follows the stop's tier (map3d _set_tier)
 	p.name = "spin"; p.rotation = Vector3(deg_to_rad(rng.randf_range(-20, 20)), 0, deg_to_rad(rng.randf_range(-25, 25))); body.add_child(p)
 	if q > 0.5: p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON

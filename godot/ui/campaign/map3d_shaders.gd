@@ -3,6 +3,59 @@ extends RefCounted
 # Every shader uses only TIME and its own uniforms (no global uniforms), so the map never depends on the battle world's
 # globals. HDR colours above 1 feed the map's glow (bloom).
 
+static func map_sky() -> String:
+	return preload("res://world/world_sky.gd").SKY.replace("uniform float neb_gain = 1.0;", """
+uniform float neb_gain = 1.0;
+uniform vec3 map_sun_dir = vec3(0.0, 0.0, -1.0);
+uniform float map_saturation = 1.0;
+uniform float map_heat = 0.0;
+uniform float map_star_void = 0.0;
+""").replace("if (!AT_CUBEMAP_PASS) {", """
+float near_sun = pow(max(dot(EYEDIR, map_sun_dir), 0.0), 20.0);
+col = mix(vec3(dot(col, vec3(0.2126, 0.7152, 0.0722))), col, map_saturation);
+col *= mix(1.0, near_sun, map_heat);
+col += vec3(0.018, 0.004, 0.001) * near_sun * map_heat;
+if (!AT_CUBEMAP_PASS) {
+""").replace("col += st * star_k", "col += st * (1.0 - map_star_void * near_sun) * star_k")
+
+# Tangential images of background stars only. This sheet never samples or distorts the stops or their routes.
+const STAR_ARCS := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+uniform float gain = 0.2;
+void vertex() {
+	MODELVIEW_MATRIX = VIEW_MATRIX * mat4(INV_VIEW_MATRIX[0], INV_VIEW_MATRIX[1], INV_VIEW_MATRIX[2], MODEL_MATRIX[3]);
+	MODELVIEW_MATRIX *= mat4(vec4(length(MODEL_MATRIX[0].xyz), 0, 0, 0), vec4(0, length(MODEL_MATRIX[1].xyz), 0, 0), vec4(0, 0, length(MODEL_MATRIX[2].xyz), 0), vec4(0, 0, 0, 1));
+}
+void fragment() {
+	vec2 p = (UV - 0.5) * 2.0;
+	float r = length(p);
+	float a = atan(p.y, p.x);
+	float row = floor(r * 42.0);
+	float h = fract(sin(row * 127.1) * 43758.5453);
+	float radial = exp(-pow((fract(r * 42.0) - 0.5) * 12.0, 2.0));
+	float tangential = pow(max(sin(a * (8.0 + floor(h * 12.0)) + h * 70.0), 0.0), 42.0);
+	float band = smoothstep(0.32, 0.42, r) * (1.0 - smoothstep(0.8, 0.98, r));
+	ALBEDO = vec3(0.55, 0.68, 0.8) * radial * tangential * band * gain;
+}
+"""
+
+const INFALL := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+uniform float gain = 0.5;
+uniform vec3 centre = vec3(0.0);
+varying float heat;
+void vertex() {
+	vec3 p = MODEL_MATRIX[3].xyz - centre;
+	float phase = fract(TIME * 0.06 + INSTANCE_CUSTOM.r);
+	// Instance positions are in the ring's local space. Shrink their orbit toward its centre, then recycle.
+	VERTEX += inverse(mat3(MODEL_MATRIX)) * (-p * phase * 0.6);
+	heat = sin(phase * 3.14159265);
+}
+void fragment() { ALBEDO = vec3(0.7, 0.25, 0.06) * gain * heat; }
+"""
+
 const NOISE := """
 float mh3(vec3 p) { p = fract(p * 0.3183099 + vec3(0.11, 0.17, 0.13)); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
 float mn3(vec3 x) {
@@ -422,6 +475,7 @@ uniform float r_in = 1.0;
 uniform float r_out = 3.0;
 uniform float spin = 0.3;
 uniform float gain = 1.0;
+uniform float exposure_gain = 1.0;
 uniform float front_cut = 0.0;
 uniform vec3 hole_center = vec3(0.0);
 varying vec3 vL;
@@ -446,6 +500,7 @@ void fragment() {
 	c = mix(c, c * vec3(0.8, 0.95, 1.25), clamp(dop, 0.0, 1.0) * 0.4);
 	if (dens < 0.035) { discard; }
 	ALBEDO = c * dens * gain;
+	ALBEDO *= exposure_gain;
 }
 """
 
@@ -458,6 +513,7 @@ uniform float r_in = 1.0;
 uniform float r_out = 3.0;
 uniform float spin = 0.3;
 uniform float gain = 1.0;
+uniform float exposure_gain = 1.0;
 uniform vec3 hole_center = vec3(0.0);
 varying vec3 vL;
 varying vec3 vW;
@@ -481,6 +537,7 @@ void fragment() {
 	vec3 toFrag = vW - CAMERA_POSITION_WORLD;
 	float front = smoothstep(0.0, 0.08 * length(toHole), length(toHole) - length(toFrag));
 	ALBEDO = c * dens * gain * front * 0.9;
+	ALBEDO *= exposure_gain;
 }
 """
 
@@ -720,6 +777,7 @@ render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabl
 """ + NOISE + """
 uniform float r_shadow = 0.25;
 uniform float gain = 1.0;
+uniform float exposure_gain = 1.0;
 uniform float spin = 0.3;
 uniform float tilt_dir = 0.0;   // screen angle of the disc's long axis (radians); arcs sit across it
 void vertex() {
@@ -752,6 +810,7 @@ void fragment() {
 	// the photon ring: thin, sharp, hugging the shadow, a little brighter on the approaching side
 	float ring = exp(-pow((th - 1.02) / 0.011, 2.0)) * 3.2 * (1.0 + 0.25 * beam) + exp(-pow((th - 1.06) / 0.05, 2.0)) * 0.35;
 	ALBEDO = (c * arc + vec3(1.0, 0.88, 0.68) * ring) * gain;
+	ALBEDO *= exposure_gain;
 }
 """
 

@@ -54,6 +54,7 @@ gpu|campaign/test/capstone_mastery_shots.gd|-|{out}|campaign screenshots: needs 
 gpu|campaign/test/debrief_mock_shots.gd|-|{out}|debrief mock screenshots for issue 92 (still open): needs a window
 gpu|campaign/test/heat_ui_shots.gd|-|{out}|run setup Heat card screenshots: needs a window
 gpu|campaign/test/nem_panel_shots.gd|-|{out} --no-tips|Nemesis panel screenshots (issue 122): needs a window
+gpu|campaign/test/map_approach_shots.gd|-|{out} --no-tips|sector approach at a matched jump, three route choices, far tip and uncapped frame times (issue 420)
 gpu|campaign/test/nemesis_teach_shots.gd|-|{out}|Nemesis teaching screenshots: needs a window
 gpu|campaign/test/onboarding_visual.gd|compat|{repo}\.onboarding_checks\gpu_visual|renders the HUD tip card; writes inside the checkout only, as RUN_ONBOARDING_SHOTS.bat does
 gpu|campaign/test/r1_ui_shots.gd|-|{out}|R1 campaign screen screenshots: needs a window
