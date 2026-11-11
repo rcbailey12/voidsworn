@@ -120,3 +120,69 @@ Near-black quiet space with sparse dim stars. Restrained neutral light makes bla
 ```
 
 
+# Issue 440 prompt record
+
+### s1b_beauty_prompt
+
+```text
+Use case: stylized-concept. Make one landscape cinematic beauty view from the FRONT and ABOVE of the exact S1b battleship in reference Image 1 (top/side sheet). Keep ONE black iron dagger, widest at rear third, continuous thick spine and flat belly, fine rivets and frost-white abstract chalk scratches. ONE graded organ-pipe ember radiator bank over rear spine, ONE low command block just forward with tiny flat sensor, exactly TWO huge horizontally paired stern engine bells, never third engine. Proportions about5:1:0.7. Bow nearest camera, stern recedes. Exact weapons: ONE massive long heavy dark axial bow lance on a braced mount; ONE dark recessed broadside gun gallery per flank with exactly SIX short thick barrels projecting straight OUTWARD, never lit; exactly FOUR small identical flak turrets in TWO symmetric shoulder PAIRS, one pair immediately ahead of command and one pair further forward. Each round flak base has exactly TWO SHORT parallel forward-facing barrels. Four twin turrets total, eight flak barrels total, all four bases visible from above. No centreline turret. All barrels clear and unlit, outward or forward, no backward guns. Main broadside barrels must read immediately as guns. Ember light only in solid radiator fins, two engine bells, tiny command windows. No lit dome, extra guns, mast, funnel, stepped decks, keel, cathedral, cross, statue, wings or tail.
+Exactly ONE smaller escort frigate beside capital, about one quarter its length, SHORT blade of same family but simpler distinct hull, one bow lance, one small dark gallery with exactly THREE barrels per SIDE, two small stern engines, low command, no flak or tall radiator bank. Fewer details, shared real hatch/rivet sizes. Both full ships clearly separated inside frame. Near-black quiet space, sparse dim stars, restrained NEUTRAL rim light reveals black iron and dark gun barrels, only ember emission. No firing, explosions, planets, blue, rust, gold, text, logos or watermark. Detailed believable production concept painting matching sheet.
+```
+
+### s1b_beauty_retry_prompt
+
+```text
+undefined
+```
+
+## Issue 440: S1 armed redraws, Nov 11 2026
+
+Built-in image_gen only. All sources kept in `C:/Users/rcbai/.codex/generated_images/01a1c936-d3df-7c51-a31e-eadf827f5424/`.
+
+### s1a_prompt
+
+```text
+Use case: precise-object-edit. Redraw reference Image 1, the picked S1 Sunward Crusade Oath Blade battleship design sheet, as S1a with unmistakably visible weapons. Keep the exact black iron dagger identity, widest at rear third, continuous thick spine, riveted plates and fine abstract frost-white chalk scratches, graded ember radiator fins like organ pipes on rear spine, one low command block immediately ahead of radiators, two big horizontally paired stern engine bells. Preserve approximately 5 length : 1 beam : 0.7 total height, both views same scale. Landscape 1536x1024 sheet, flat orthographic TOP above and SIDE below, bow RIGHT, plain dark grey, no text. Keep whole ship inside frame with margin. Correct side projection: the horizontally paired engine bells overlap in side view, not vertically stacked.
+CRITICAL: replace EACH orange window gallery with ONE DARK gun deck holding exactly SEVEN thick short dark iron cannon barrels in a single longitudinal row. Top view: seven barrels project perpendicular OUTWARD from the upper flank toward top of image, seven mirrored barrels from lower flank toward bottom; every muzzle clearly BREAKS the hull outline. Broadside cannons must be readable at thumbnail size. The galleries and ALL weapons have ZERO orange lights. Side view shows seven dark circular muzzle apertures facing viewer, in one recessed gallery, not windows. No extra gun rows.
+Enlarge the ONE axial bow lance into a long HEAVY BARREL with a thick braced mount, biggest single object on the forward bow, points RIGHT, dark muzzle, no glow. Remove the lit dome completely. In its place amidships fit EXACTLY ONE large clear quad flak turret: FOUR SHORT parallel forward-pointing barrels in a two-by-two cluster on ONE ROUND armoured base. Top shows four individual short barrels aimed right with clear foredeck ahead; side shows one turret at same position. No lit dome, no sensors shaped as guns. One small flat sensor integrated in command block. Ember light ONLY in radiators, stern engines, and a few tiny command windows. No other emission. No extra guns beyond the two galleries, lance and one flak turret. All barrels point outward or forward, NEVER backwards or into hull. No mast, funnel, stepped decks, sea-ship hull, keel, cathedral, cross, statue, aircraft wing, tail, rust, blue, gold, labels or watermark. Crisp believable production concept art with evenly lit readable dark weapons.
+```
+
+### s1a_retry_prompt
+
+```text
+Use case: precise-object-edit. Make ONLY weapon-count corrections to this exact S1a top and side spaceship sheet. Keep every silhouette, proportion, radiator, command block, engine, lance, dark gallery, lighting and material as is. Top above, side below, bow RIGHT, no text. The top currently has SIX broadside barrels on EACH flank but side has SEVEN muzzle holes. Give TOP exactly SEVEN evenly spaced outward-facing thick short barrels on EACH flank, in ONE row per flank, breaking the silhouette; preserve the same longitudinal gallery length and the seven SIDE muzzle holes. Correct the SINGLE amidships flak turret: top currently shows three barrels, must have FOUR. Draw FOUR short parallel barrels side by side in one horizontal planar row, all pointing RIGHT, all FOUR separately visible from above, on the SAME single round armoured base. Side projection naturally overlaps those four barrels and shows one barrel profile, NOT two stacked rows. No lights on weapons. Keep large braced bow lance, two horizontally paired stern engines occluded in SIDE, organ-pipe ember radiator bank, black iron rivets and frost scratches. Do not add any other guns, masts, funnels, stepped decks, text or objects.
+```
+
+### s1a_final_prompt
+
+```text
+Use case: precise-object-edit. Change ONLY the single circular flak turret in the UPPER TOP view. It currently has FIVE parallel short barrels pointing RIGHT. REMOVE the lowest barrel and its socket completely, leaving EXACTLY FOUR short parallel barrels, clearly countable, on the same round armoured base. Four means 4, no fifth socket, no fifth barrel. Do not change anything else in either view. Keep seven outward heavy barrels per flank, seven side muzzle holes, large braced bow lance, radiators, command block, two engines, materials, scale, plain background, no text. Lower SIDE view remains unchanged, one overlapping flak barrel profile. Top above side below, bow right. No new objects.
+```
+
+### s1a_beauty_prompt
+
+```text
+Use case: stylized-concept. Make a landscape cinematic beauty view of EXACT S1a battleship in reference Image 1, which is its approved top/side sheet. Three-quarter from FRONT and ABOVE, entire ship visible, bow nearest camera, stern farther. Preserve black iron dagger widest at rear third, rivets and fine frost-white abstract chalk scratches, ONE graded bank of ember radiator fins like organ pipes on rear spine, TWO huge horizontally paired stern engine bells, ONE low command block just ahead of radiators with tiny flat integrated sensor. Weapons: ONE huge heavy forward bow lance on a braced mount, largest single bow object, dark muzzle; ONE dark recessed heavy battery gallery per flank, each with SEVEN short thick black gun barrels projecting straight OUTBOARD, silhouette-breaking and clear; ONE round armoured amidships flak turret with exactly FOUR short barrels pointing forward. No glowing weapon ports, no lit dome, no extra guns. Ember emission ONLY solid radiators, stern engines and a few tiny command windows. Match reference proportions about 5:1:0.7. Flat armoured belly, no keel, mast, funnel, stepped decks, cathedral, cross, statue, railings, wings or tail. Guns never backwards or into hull.
+Beside capital is exactly ONE escort FRIGATE about quarter length, a different simpler SHORT blade of same black-iron family: one bow lance and one small dark gun gallery with THREE outward barrels per SIDE, low command block, two small stern engines, no flak or tall radiator bank. Same real hatch/rivet scale, fewer parts, not a capital miniaturized. Both full ships separate within frame, near-black quiet space, sparse dim stars, neutral rim light makes black iron and dark weapons readable, ember is only glow colour. No firing, explosions, planets, labels, text, logo or watermark. Detailed believable production concept painting, structure over spectacle.
+```
+
+### s1a_beauty_retry_prompt
+
+```text
+Use case: precise-object-edit. Correct this beauty painting to match the supplied S1a design sheet (Image 2). Image 1 is edit target. Change ONLY three count mistakes on the BIG ship: (1) its round flak turret has six muzzle holes, replace entire barrel cluster with exactly FOUR short forward-facing barrels arranged TWO BY TWO, four dark circular muzzle holes total, no other holes; (2) stern has three engine housings, remove the small uppermost third engine, keep ONLY the two big side-by-side engine bells matching the sheet, no extra engine behind radiators; (3) near broadside gallery has eight cannons, reduce to SEVEN evenly spaced dark outward barrels. Keep the whole rest of the painting unchanged: same long heavy braced bow lance, one low command block, graded ember radiator bank, frost scratched riveted iron dagger, one separate small escort with three gallery barrels and one lance, near-black space, camera from front above, both full ships within frame. No new guns, text or objects. Engines, radiators, small command windows are the only orange light. All weapon muzzles dark.
+```
+
+### s1b_prompt
+
+```text
+Use case: precise-object-edit. Redraw reference Image 1, the picked S1 Oath Blade Sunward Crusade battleship, as S1b, an unmistakably armed warship. Keep black riveted iron dagger hull widest at rear third, continuous thick spine, frost-white abstract hairline chalk scratches, ONE graded ember radiator bank like organ pipes at rear spine, ONE low command block immediately ahead of radiators with small flat integrated sensor, TWO huge horizontally paired stern engine bells. About 5 length : 1 beam : 0.7 height, including barrels. Landscape two-view sheet: strict flat orthographic TOP above, SIDE below, bow RIGHT, equal scale and aligned endpoints. Plain dark grey, no text, whole ship in frame with margin. In SIDE the horizontal engine pair is occluded, never vertically stacked.
+Replace both rows of orange windows with DARK gun galleries. Each gallery has a single row of SEVEN SHORT THICK DARK barrels sticking straight OUTBOARD: upper flank barrels point toward image top, mirrored lower flank barrels toward image bottom. Barrels clearly break hull outline, top view reads armed at thumbnail size. Dark circular end-on muzzles in side gallery, no orange in galleries. Enlarge ONE bow centreline lance into a long HEAVY dark barrel on a thick braced mount, biggest single object on bow, pointing right, dark muzzle. Remove lit dome completely.
+S1b flak: EXACTLY FOUR small matching round armoured turrets in TWO symmetric PAIRS on top shoulders. One mirrored pair immediately FORWARD of command block, the other mirrored pair FURTHER FORWARD along the shoulders. Each turret has exactly TWO short parallel forward-facing barrels, aimed RIGHT, with open foredeck in front. Two upper shoulder turrets and their two lower shoulder mirrors. All four round bases and all eight short barrels clearly visible in TOP; strict SIDE naturally hides far pair, leaving two turret profiles at matching length positions. No centreline flak turret, no fifth turret, no scattered mounts. No weapons besides two seven-barrel galleries, one bow lance and four paired flak turrets. All guns dark unlit, never backward or into hull. Ember only radiators, stern engines, tiny command windows. No mast, funnel, stepped decks, keel, sea-ship stem, cathedral, statue, cross, wings, tail, rust, gold, blue, letters or watermark. Detailed crisp production concept, evenly lit so dark weapons read.
+```
+
+### s1b_retry_prompt
+
+```text
+undefined
+```
+

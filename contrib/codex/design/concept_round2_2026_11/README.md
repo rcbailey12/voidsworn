@@ -1,3 +1,89 @@
+# Issue 440: S1 with visible weapons
+
+Ryan picked S1 with fixes (FINDINGS R176). These two takes preserve its rear radiator signature and replace the lit gun ports and dome with plainly armed installations.
+**My pick is S1b:** the two mirrored flak pairs reinforce the ordered broadside layout and keep the centreline clear. S1a gives a stronger single turret silhouette.
+Both top views read as armed in inspected 384-pixel-wide thumbnails. Ryan and the Board still choose the take.
+
+| S1a: one quad flak turret | S1b: four twin flak turrets |
+|---|---|
+| ![S1a design sheet](voidsworn_S1a_sheet.jpg) | ![S1b design sheet](voidsworn_S1b_sheet.jpg) |
+| ![S1a beauty](voidsworn_S1a_beauty.jpg) | ![S1b beauty](voidsworn_S1b_beauty.jpg) |
+
+## Tries and visible checks
+
+| Picture | Tries | Result |
+|---|---:|---|
+| S1a sheet | 3 | Seven heavy barrels per flank, one round four-barrel flak turret, one enlarged braced lance |
+| S1a beauty | 2 | Corrected extra engine, extra gallery barrel and six-barrel flak; final has two engines, seven near-side guns and four flak muzzles |
+| S1b sheet | 2 | Six heavy barrels per flank, four matching twin flak turrets in two mirrored pairs; corrected side flak overlap and proportions |
+| S1b beauty | 2 | Corrected five gallery guns to six per flank and shifted camera to an oblique front view; four twin flak turrets retained |
+
+S1a sheet try 1 showed six plan barrels but seven side muzzles, and three flak barrels. Try 2 fixed the galleries but drew five flak barrels. Try 3 removed the fifth.
+S1b uses six gallery barrels, within the brief's six-to-eight allowance, even though the first prompt asked for seven.
+The top and side now agree on each take's gallery count and flak positions. The horizontal engine pair correctly overlaps in side view.
+All weapons are dark, with the lance forward and gallery guns outward. No dome, extra gun rows, backwards guns, naval masts, funnels or stepped decks were observed.
+The ember organ-pipe rear radiator bank, two big engines, low command block, riveted black iron and frost-white scratches remain.
+Each beauty is derived from its final sheet and includes one simpler escort with a bow lance and three near-side gallery barrels.
+Far-side beauty guns can be occluded; the design sheet establishes their count.
+
+### Measured proportions
+
+Approximate manual extents on the final JPGs, uncertainty about 4 pixels per edge.
+Length includes lance and engine housings, excludes glow; beam includes projecting guns; height includes radiators.
+These are concept measurements, not a traced engineering plan.
+
+| Sheet | Plan x bounds | Plan y bounds | Side y bounds | L / B / H pixels | L:B:H |
+|---|---|---|---|---|---|
+| S1a | 27 to 1514 | 178 to 472 | 616 to 817 | 1487 / 294 / 201 | 5.06:1:0.68 |
+| S1b | 30 to 1510 | 100 to 370 | 422 to 639 | 1480 / 270 / 217 | 5.48:1:0.80 |
+
+S1a is closest to 5:1:0.7. S1b is about 10 percent more slender and its height-to-beam ratio is higher; do not treat it as an exact dimensional reference.
+Both retain the rear-wide dagger plan. The exaggerated lance is deliberately the largest bow object.
+
+## Tool and source lineage
+
+Built-in `image_gen__imagegen` through the signed-in session, local reference PNGs accepted. No API/CLI fallback or local GPU tools.
+System.Drawing only resized and converted the generated art to JPG; thumbnail checks were simple resizes.
+The four new JPGs have longest side 1536 and are below 700,000 bytes.
+Existing S1, S2 and S3 trial pictures and text are retained below as history; the old trial recommendation is superseded by Ryan's S1 pick.
+Exact prompts, including failed tries, are in [prompts.md](prompts.md).
+
+Original sources are preserved under `C:/Users/rcbai/.codex/generated_images/01a1c936-d3df-7c51-a31e-eadf827f5424/`.
+
+| Picture or earlier try | Original PNG basename |
+|---|---|
+| S1a sheet try 1 | exec-72c6bd06-9763-42a7-b977-559d8d18f704.png |
+| S1a sheet try 2 | exec-9c3e60a2-e2ca-4f69-9b46-9491a6b5044d.png |
+| S1a final sheet | exec-a91171e2-4daa-4393-bd53-9c551d0921f7.png |
+| S1a beauty try 1 | exec-cb0ab65b-c88b-46b1-b611-41b1785028bf.png |
+| S1a final beauty | exec-502d2d2b-3dfc-4277-a967-87c1c8684a02.png |
+| S1b sheet try 1 | exec-5b6e1061-a503-48b7-b65b-be7aff21987a.png |
+| S1b final sheet | exec-0d292542-48d8-4384-b3b9-0afddd000e75.png |
+| S1b beauty try 1 | exec-fce1cc68-3066-40ec-9224-6fdc4031182f.png |
+| S1b final beauty | exec-1e50ce20-2356-4031-bc2e-3fa475291428.png |
+
+Each sheet's first call referenced the original S1 PNG from issue 431, `exec-fc1002ba-9517-4a40-9715-80785b13d692.png`, in the older source folder recorded below.
+Later sheet corrections reference the previous try. Each beauty starts from its final sheet; the S1a correction used both its beauty and its sheet.
+
+## Issue 440 validation and Board copies
+
+- Standing checks: `node contrib/opus/tools/run_all_checks.js`, exit 0; 41 PASS, 2 KNOWN, no FAIL or SKIP.
+- Known findings: KIT-1, KIT-3, ROS-9, MOD-2, EVT-1, NEM-6, UI-5. Oracle drift: 12 baseline constant differences.
+- Log: `%TEMP%/voidsworn-issue-440-standing-checks.log`.
+- Separate GPU renders, game captures and parity suites skipped because this changes concept art and its notes only.
+- All four JPGs decoded successfully, longest side 1536, sizes 131,313 to 195,575 bytes. Board copies match by SHA256.
+- Markdown em dash scan and `git diff --check` passed. Only the four new JPGs, README.md and prompts.md changed for this task.
+- Nine built-in image calls completed: S1a sheet 3, S1a beauty 2, S1b sheet 2, S1b beauty 2. No picture exceeded three tries.
+- No commit, push or deletion.
+
+Board copies:
+[S1a sheet](C:/Users/rcbai/Downloads/voidsworn_test/board/issue-440/shots/voidsworn_S1a_sheet.jpg),
+[S1a beauty](C:/Users/rcbai/Downloads/voidsworn_test/board/issue-440/shots/voidsworn_S1a_beauty.jpg),
+[S1b sheet](C:/Users/rcbai/Downloads/voidsworn_test/board/issue-440/shots/voidsworn_S1b_sheet.jpg),
+[S1b beauty](C:/Users/rcbai/Downloads/voidsworn_test/board/issue-440/shots/voidsworn_S1b_beauty.jpg).
+
+---
+
 # Sunward flagship image trial, issue #431
 
 Six pictures made with Codex's built-in image tool: three design sheets and their reference-based beauty views.
