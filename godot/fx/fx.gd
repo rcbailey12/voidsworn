@@ -37,9 +37,19 @@ var flash_screen_in := 32.0         # screen diagonal, inches
 var flash_aspect := 16.0 / 9.0      # screen width over height
 var flash_view_in := 24.0           # eye to screen, inches
 const FLASH_FIELD_DEG := 10.0       # W3C's visual field
-const FLASH_FIELD_SHARE := 0.25     # share of that field that may flash at once
-# The 10 degree box is tested on a lattice with steps of a quarter of its side, and each tested box is one step wider
-# than the real one (so any real box, wherever it sits, lies inside a tested one: areas are rounded up, never down).
+# The limit itself (flash_limit_px2): the smaller of two readings of the guideline, so the stricter one always holds:
+#  - its own number, ".006 steradians", turned into screen pixels through the screen size and distance above (one
+#    pixel at the screen centre spans pixel pitch / distance radians, so 0.006 sr is 0.006 / (that)^2 pixels);
+#  - a quarter of its own rectangle estimate of the field ("a 341 x 256 pixel rectangle" at 1024 x 768, so 10 degrees
+#    wide and 256/341 of that tall), at the same scale.
+# Default set-up at 1080 lines: 16,376 px2 by the steradians, 15,606 px2 by the rectangle; the rectangle's is used.
+# (A quarter of a 10 by 10 degree square, 20,880 px2, would be 27 to 34 percent too generous: never use it.)
+const FLASH_SR := 0.006             # W3C: the combined flashing area allowed in any 10 degree field
+const FLASH_W3C_BOX := Vector2(341.0, 256.0)   # W3C's rectangle estimate of a 10 degree field at 1024 x 768
+const FLASH_W3C_SHARE := 0.25       # W3C: "25% of any 10 degree visual field"
+# Where flashes are gathered: a 10 by 10 degree square tested on a lattice with steps of a quarter of its side, each
+# tested square one step wider than that (so any real field, wherever it sits, lies inside a tested one). A bigger
+# window only gathers more flash area against the same limit, which is the safe direction.
 const FLASH_GRID_DIV := 4
 var flash_cands: Array = []         # bright sprites drawn recently: [T, life, x, y, d] (viewport pixels)
 var flash_area_log: Array = []      # tests: every bright-flash request [T, x, y, d, lit_max, counted 0/1, drawn bright 0/1, life]
@@ -523,7 +533,7 @@ func _flash_count(T: float) -> bool:
 #  2. A flash within FLASH_WINDOW of a counted flash is part of that flash (free), as before.
 #  3. Otherwise every bright flash whose bright time overlaps this one's is added up inside each 10 degree box that
 #     could hold this one. Each flash adds the smaller of its disc area and its bounding square's overlap with the box,
-#     which is never less than the real overlap. If any box holds more than a quarter of a 10 degree box, this is a
+#     which is never less than the real overlap. If any box holds more than flash_limit_px2 (the guideline's 0.006 sr), this is a
 #     general flash: it is counted against FLASH_CAP (three in any rolling second) like any other, or refused.
 #  4. Small flashes far apart never add up; small flashes close together do.
 # Reduce flashing: false at once, as on main (nothing is booked or remembered).
@@ -546,7 +556,7 @@ func flash_at(p: Vector3, T: float, size: float, px := 0.0, life := FLASH_WINDOW
 	var lit := _flash_lit_max(T, life, c)
 	var bright := true
 	var counted := 0
-	if lit > flash_quarter_px2():
+	if lit > flash_limit_px2():
 		bright = _flash_count(T)
 		counted = 1 if bright else 0
 	if bright:
@@ -556,7 +566,7 @@ func flash_at(p: Vector3, T: float, size: float, px := 0.0, life := FLASH_WINDOW
 	return bright
 
 
-# The side of a 10 degree box in viewport pixels (rounded down, so the box and its quarter are never overstated).
+# The side of a 10 degree box in viewport pixels (rounded down, so the box and the limit are never overstated).
 # Assumes the game fills the screen's height; in a smaller window the real box is bigger, so this stays cautious.
 func flash_box_px() -> float:
 	var vh := _flash_vh()
@@ -565,9 +575,17 @@ func flash_box_px() -> float:
 	return floorf(vh * side_in / screen_h)
 
 
-func flash_quarter_px2() -> float:
-	var s := flash_box_px()
-	return FLASH_FIELD_SHARE * s * s
+# The most flash area allowed at once in any 10 degree field, in viewport pixels (see FLASH_SR above): the smaller of the
+# guideline's steradian figure and a quarter of its rectangle estimate. Both are rounded down.
+func flash_limit_px2() -> float:
+	var vh := _flash_vh()
+	var screen_h := flash_screen_in / sqrt(1.0 + flash_aspect * flash_aspect)
+	var rad_per_px := (screen_h / vh) / flash_view_in
+	var by_sr := floorf(FLASH_SR / (rad_per_px * rad_per_px))
+	var w := flash_box_px()
+	var h := floorf(w * FLASH_W3C_BOX.y / FLASH_W3C_BOX.x)
+	var by_box := floorf(FLASH_W3C_SHARE * w * h)
+	return minf(by_sr, by_box)
 
 
 func _flash_vh() -> float:
@@ -626,11 +644,11 @@ func _flash_lit_max(T: float, life: float, c: PackedFloat64Array) -> float:
 				ry1.append(float(e[3]) + er)
 				cap.append(PI * 0.25 * float(e[4]) * float(e[4]))
 	var n := cap.size()
-	# cheap case: all of them together are under the quarter, so no box can be over it (still an upper bound)
+	# cheap case: all of them together are under the limit, so no box can be over it (still an upper bound)
 	var total := 0.0
 	for j in n:
 		total += cap[j]
-	if total <= flash_quarter_px2():
+	if total <= flash_limit_px2():
 		return total
 	var best := 0.0
 	var kx0 := floori((c[0] - r - B) / g)

@@ -10,7 +10,8 @@ extends SceneTree
 # Asserts, for each staging:
 #   1. never more than three counted flashes in any rolling second (fx.flash_log);
 #   2. brute force: every flash drawn bright without being counted is re-measured on a 4 px raster of exact disc
-#      coverage, with the 10 degree box slid over every 4 px position; none may hold more than a quarter of the box
+#      coverage, with the 10 degree box slid over every 4 px position; none may hold more than the limit (0.006 sr, or a quarter of W3C's
+#      341 by 256 rectangle estimate, whichever is smaller)
 #      (so no uncounted general flash was drawn);
 #   3. the counter's own area is never below the brute-force area (it rounds up, never down);
 #   4. reduce flashing: the same staging counts zero flashes and books nothing.
@@ -102,7 +103,7 @@ func _stage(staging: String, calm: bool) -> Dictionary:
 	while fx.now < t0 + 6.0:
 		if staging == "salvo":
 			# five waves of sixteen heavy shell hits, 0.3 s apart, all inside one 10 degree box: each wave alone is
-			# sixteen small flashes that add up past the quarter, so the counter must count it or turn part of it down
+			# sixteen small flashes that add up past the limit, so the counter must count it or turn part of it down
 			var wave: int = int(floorf((fx.now - t0) / 0.3 + 1e-6))
 			if wave < 5 and not torp_done and fx.now >= t0 + wave * 0.3 and int(fx.get_meta("wave", -1)) < wave:
 				fx.set_meta("wave", wave)
@@ -138,7 +139,7 @@ func _stage(staging: String, calm: bool) -> Dictionary:
 	if calm:
 		_check(fx.flash_log.is_empty() and log.is_empty() and ("flash_cands" not in fx or fx.flash_cands.is_empty()), "%s calm: nothing counted or booked" % staging)
 	# 2 and 3. the brute force, against every measured request
-	var quarter: float = 0.25 * S * S
+	var limit: float = fx.flash_limit_px2() if fx.has_method("flash_limit_px2") else 15606.0   # the counter's own limit (0.006 sr, W3C's rectangle)
 	var uncounted_over := 0
 	var over_counted := 0
 	var measured := 0
@@ -150,12 +151,12 @@ func _stage(staging: String, calm: bool) -> Dictionary:
 			continue
 		measured += 1
 		var brute := _brute(log, i, S)
-		worst_ratio = maxf(worst_ratio, brute / quarter)
+		worst_ratio = maxf(worst_ratio, brute / limit)
 		if float(r[4]) < brute * 0.97:
 			below += 1
-		if int(r[5]) == 0 and int(r[6]) == 1 and brute > quarter * 1.02:
+		if int(r[5]) == 0 and int(r[6]) == 1 and brute > limit * 1.02:
 			uncounted_over += 1
-		if int(r[5]) == 1 and brute <= quarter:
+		if int(r[5]) == 1 and brute <= limit:
 			over_counted += 1
 	_check(uncounted_over == 0, "%s: %d flashes drawn bright uncounted while the brute force finds a general flash" % [staging, uncounted_over])
 	_check(below == 0, "%s: the counter measured less area than the brute force %d times" % [staging, below])
@@ -173,8 +174,8 @@ func _stage(staging: String, calm: bool) -> Dictionary:
 		for f in refused_at:
 			if absf(float(f) - 1.75) < 0.03: torp_bright = 0
 	print("FLASH_AREA_TIMES staging=%s counted_at=%s refused_at=%s" % [staging, str(counted_at), str(refused_at)])
-	print("FLASH_AREA staging=%s calm=%s box_px=%d quarter_px2=%d requests=%d measured=%d counted=%d refused=%d worst_per_second=%d uncounted_over=%d over_counted=%d counter_below_brute=%d brute_max_share=%.2f torpedo_drawn_bright=%d counter_us_per_frame=%.1f counter_us_total=%d counter_us_worst_frame=%d" % [
-		staging, calm, int(S), int(quarter), log.size(), measured, fx.flash_log.size(), refused, worst, uncounted_over, over_counted, below, worst_ratio, torp_bright, float(flash_us) / maxf(frames, 1), flash_us, flash_us_max])
+	print("FLASH_AREA staging=%s calm=%s box_px=%d limit_px2=%d requests=%d measured=%d counted=%d refused=%d worst_per_second=%d uncounted_over=%d over_counted=%d counter_below_brute=%d brute_max_share=%.2f torpedo_drawn_bright=%d counter_us_per_frame=%.1f counter_us_total=%d counter_us_worst_frame=%d" % [
+		staging, calm, int(S), int(limit), log.size(), measured, fx.flash_log.size(), refused, worst, uncounted_over, over_counted, below, worst_ratio, torp_bright, float(flash_us) / maxf(frames, 1), flash_us, flash_us_max])
 	for r in log:
 		print("FLASH_AREA_REQ %s t=%.3f x=%.0f y=%.0f d=%.0f lit=%.0f counted=%d bright=%d" % [staging, float(r[0]) - t0, float(r[1]), float(r[2]), float(r[3]), float(r[4]), int(r[5]), int(r[6])])
 	fx.release()
