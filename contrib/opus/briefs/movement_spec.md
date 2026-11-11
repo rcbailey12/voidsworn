@@ -25,6 +25,8 @@ change any of them for a better look, and says so with a strip.
   ever); it slows at a corner by how far the course bends.
 - **The heading is flown on its own.** It does not follow the curve. Every rules turn is a spin at the ship's own
   turn-in-place rate, eased in and out:
+  - a spin lasts as long as its net angle needs: the rules' route can turn one way and back inside one group (+60,
+    -60, +60 is a real route); that is flown as one 60 degree spin, and a group that nets to nothing costs no time;
   - a turn before the run: the spin goes first and the hull sets off when the nose is within about 29 degrees of the
     new heading (`GL_POINT` 0.5 rad): point, then burn, with a little overlap so it never reads as stop-start;
   - a turn at a corner: centred on the hull's passage through the corner; a turn of two steps or more brings the hull
@@ -53,7 +55,7 @@ smooth speed profile along the path and the bend of the curve (`_gl_force`), and
 - Every level eases toward its push at `JET_K` 10 a second (the drive rises at 8 and falls at 5): nothing switches on or
   off in one frame. A jet fires above `JET_ON` 0.18; its puffs carry the level, so they fade in and out with the push.
 - A jet under way is a stream of puffs, one every 0.07 s (0.1 s on the biggest hulls). Puffs are bigger and last longer
-  on a big hull (life 0.3 to 0.55 s, size up to 4.2 instead of 2.8 at the top of the size scale): a capital's retro burn
+  on a big hull (life 0.3 to 0.55 s; size 7 to 10 percent of hull length, capped at 2.8 to 4.6, by size): a capital's retro burn
   is a heavy plume, not a puff.
 - At the end of a move the levels fade out (no new puffs); the battle sets the drive back to its parked level.
 - The battle's drive level steps over the 0.95 to 1.05 band that fx_ship.gd reads as "moving, no level given"
@@ -61,18 +63,20 @@ smooth speed profile along the path and the bend of the curve (`_gl_force`), and
 
 ## 3. Weight
 
-- One size scale `sk` (battle.gd): 0 for an escort, 1 for a battleship, and on past it: a dreadnought 1.5, titans and
-  arks up to 1.8 (`MOVE_SK_MAX`). Before issue 505 it stopped at 1, so every hull from battleship up moved alike.
+- One size scale `sk` (battle.gd): 0 for an escort, 1 for a battleship, and on past it at half the slope: a dreadnought
+  about 1.25, titans and arks up to 1.4 (`MOVE_SK_MAX`). Before issue 505 it stopped at 1, so every hull from battleship
+  up moved alike. The first strips used the full slope (a dreadnought 1.5): its moves ran 1.6 to 2.3 s longer than
+  before, more than "a little", so the slope past battleship was halved (now 0.8 to 1.3 s longer).
 - Cruise time per hex: 560 ms for an escort to 860 ms for a battleship, on past it by the same line (a dreadnought
-  about 1010 ms), times the faction factor to its 0.35 power (`MOVE_PER`, unchanged); the hull cruises a hex in 80
+  about 940 ms), times the faction factor to its 0.35 power (`MOVE_PER`, unchanged); the hull cruises a hex in 80
   percent of that (`MOVE_CRUISE`).
 - Time to build cruise from rest: 0.7 units for an escort to 1.7 for a battleship (`GL_TR`), on past it (a dreadnought
-  about 2.2 units); the stop is the same curve.
+  about 1.95 units); the stop is the same curve.
 - Turn: a 60 degree step weighs 0.6 hexes of time for an escort to 1.1 for a battleship (`MOVE_ROT`), on past it, times
   `GL_SPIN` 2.4; the spin builds and bleeds over 30 to 50 percent of its time by size (`gl_ta`).
 - Measured (headless, godot/scenes/battle/test/movement_flight_check.gd, 60 frames a second): a frigate reaches speed in
-  0.43 s, stops in 0.37 s and turns at up to 133 degrees a second; a cruiser 1.07 s, 0.85 s, 76; a battleship 1.58 s,
-  1.25 s, 59; a dreadnought 2.32 s, 1.80 s, 45. The captured numbers are in contrib/opus/reviews/movement_build_report.md.
+  0.43 s, stops in 0.37 s and turns at up to 133 degrees a second; a cruiser 1.07 s, 0.85 s, 76; a battleship 1.55 s,
+  1.22 s, 59; a dreadnought 1.87 s, 1.52 s, 53. The captured numbers are in contrib/opus/reviews/movement_build_report.md.
 - Cap: no move runs longer than 7 s at normal speed (`MOVE_CAP`); a longer one plays faster as a whole.
 
 ## 4. Unchanged

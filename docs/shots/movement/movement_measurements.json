@@ -1,0 +1,808 @@
+[
+ {
+  "class": "Frigate",
+  "kind": "straight",
+  "path": [
+   {
+    "f": 5.0,
+    "q": 2.0,
+    "r": 17.0
+   },
+   {
+    "f": 5.0,
+    "q": 3.0,
+    "r": 16.0
+   },
+   {
+    "f": 5.0,
+    "q": 4.0,
+    "r": 15.0
+   },
+   {
+    "f": 5.0,
+    "q": 5.0,
+    "r": 14.0
+   }
+  ],
+  "before": {
+   "move_s": 2.533,
+   "to_95pct_speed_s": 0.517,
+   "stop_95_to_5pct_s": 0.433,
+   "peak_speed_units_s": 36.21,
+   "peak_turn_deg_s": 0.0,
+   "max_roll_deg": 0.0,
+   "peak_live_jet_sprites": 2,
+   "mean_frame_ms_moving": 2.97,
+   "end_xyz": [
+    -47.631,
+    0.0,
+    52.5
+   ],
+   "end_yaw": 1.0472
+  },
+  "after": {
+   "move_s": 2.467,
+   "to_95pct_speed_s": 0.467,
+   "stop_95_to_5pct_s": 0.383,
+   "peak_speed_units_s": 36.15,
+   "peak_turn_deg_s": 0.0,
+   "max_roll_deg": 0.0,
+   "peak_live_jet_sprites": 10,
+   "mean_frame_ms_moving": 3.11,
+   "end_xyz": [
+    -47.631,
+    0.0,
+    52.5
+   ],
+   "end_yaw": 1.0472
+  },
+  "same_end": true
+ },
+ {
+  "class": "Cruiser",
+  "kind": "straight",
+  "path": [
+   {
+    "f": 5.0,
+    "q": 0.0,
+    "r": 18.0
+   },
+   {
+    "f": 5.0,
+    "q": 1.0,
+    "r": 17.0
+   },
+   {
+    "f": 5.0,
+    "q": 2.0,
+    "r": 16.0
+   },
+   {
+    "f": 5.0,
+    "q": 3.0,
+    "r": 15.0
+   }
+  ],
+  "before": {
+   "move_s": 3.8,
+   "to_95pct_speed_s": 1.067,
+   "stop_95_to_5pct_s": 0.85,
+   "peak_speed_units_s": 27.55,
+   "peak_turn_deg_s": 0.0,
+   "max_roll_deg": 0.0,
+   "peak_live_jet_sprites": 2,
+   "mean_frame_ms_moving": 3.19,
+   "end_xyz": [
+    -73.612,
+    0.0,
+    67.5
+   ],
+   "end_yaw": 1.0472
+  },
+  "after": {
+   "move_s": 3.8,
+   "to_95pct_speed_s": 1.083,
+   "stop_95_to_5pct_s": 0.867,
+   "peak_speed_units_s": 27.67,
+   "peak_turn_deg_s": 0.0,
+   "max_roll_deg": 0.0,
+   "peak_live_jet_sprites": 12,
+   "mean_frame_ms_moving": 3.34,
+   "end_xyz": [
+    -73.612,
+    0.0,
+    67.5
+   ],
+   "end_yaw": 1.0472
+  },
+  "same_end": true
+ },
+ {
+  "class": "Dreadnought",
+  "kind": "straight",
+  "path": [
+   {
+    "f": 5.0,
+    "q": 0.0,
+    "r": 20.0
+   },
+   {
+    "f": 5.0,
+    "q": 1.0,
+    "r": 19.0
+   },
+   {
+    "f": 5.0,
+    "q": 2.0,
+    "r": 18.0
+   }
+  ],
+  "before": {
+   "move_s": 4.1,
+   "to_95pct_speed_s": 1.55,
+   "stop_95_to_5pct_s": 1.217,
+   "peak_speed_units_s": 23.28,
+   "peak_turn_deg_s": 0.0,
+   "max_roll_deg": 0.0,
+   "peak_live_jet_sprites": 2,
+   "mean_frame_ms_moving": 3.09,
+   "end_xyz": [
+    -64.952,
+    0.0,
+    112.5
+   ],
+   "end_yaw": 1.0472
+  },
+  "after": {
+   "move_s": 4.933,
+   "to_95pct_speed_s": 2.017,
+   "stop_95_to_5pct_s": 1.567,
+   "peak_speed_units_s": 21.37,
+   "peak_turn_deg_s": 0.0,
+   "max_roll_deg": 0.0,
+   "peak_live_jet_sprites": 12,
+   "mean_frame_ms_moving": 3.3,
+   "end_xyz": [
+    -64.952,
+    0.0,
+    112.5
+   ],
+   "end_yaw": 1.0472
+  },
+  "same_end": true
+ },
+ {
+  "class": "Frigate",
+  "kind": "turn",
+  "path": [
+   {
+    "f": 0,
+    "q": 1.0,
+    "r": 18.0,
+    "rot": true
+   },
+   {
+    "f": 5,
+    "q": 1.0,
+    "r": 18.0,
+    "rot": true
+   },
+   {
+    "f": 4,
+    "q": 1.0,
+    "r": 18.0,
+    "rot": true
+   },
+   {
+    "f": 4,
+    "q": 1.0,
+    "r": 17.0
+   },
+   {
+    "f": 4,
+    "q": 1.0,
+    "r": 16.0
+   },
+   {
+    "f": 4,
+    "q": 1.0,
+    "r": 15.0
+   }
+  ],
+  "before": {
+   "move_s": 3.2,
+   "to_95pct_speed_s": 0.8,
+   "stop_95_to_5pct_s": 0.667,
+   "peak_speed_units_s": 23.53,
+   "peak_turn_deg_s": 178.6,
+   "max_roll_deg": 2.117,
+   "peak_live_jet_sprites": 4,
+   "mean_frame_ms_moving": 3.0,
+   "end_xyz": [
+    -108.253,
+    0.0,
+    67.5
+   ],
+   "end_yaw": 2.0944
+  },
+  "after": {
+   "move_s": 2.35,
+   "to_95pct_speed_s": 0.833,
+   "stop_95_to_5pct_s": 0.383,
+   "peak_speed_units_s": 36.0,
+   "peak_turn_deg_s": 122.9,
+   "max_roll_deg": 0.0,
+   "peak_live_jet_sprites": 10,
+   "mean_frame_ms_moving": 3.09,
+   "end_xyz": [
+    -108.253,
+    0.0,
+    67.5
+   ],
+   "end_yaw": 2.0944
+  },
+  "same_end": true
+ },
+ {
+  "class": "Cruiser",
+  "kind": "turn",
+  "path": [
+   {
+    "f": 4,
+    "q": -1.0,
+    "r": 19.0,
+    "rot": true
+   },
+   {
+    "f": 3,
+    "q": -1.0,
+    "r": 19.0,
+    "rot": true
+   },
+   {
+    "f": 3,
+    "q": -2.0,
+    "r": 19.0
+   },
+   {
+    "f": 3,
+    "q": -3.0,
+    "r": 19.0
+   }
+  ],
+  "before": {
+   "move_s": 4.017,
+   "to_95pct_speed_s": 1.717,
+   "stop_95_to_5pct_s": 1.367,
+   "peak_speed_units_s": 17.82,
+   "peak_turn_deg_s": 191.7,
+   "max_roll_deg": 2.951,
+   "peak_live_jet_sprites": 4,
+   "mean_frame_ms_moving": 3.24,
+   "end_xyz": [
+    -142.894,
+    0.0,
+    127.5
+   ],
+   "end_yaw": 3.1416
+  },
+  "after": {
+   "move_s": 4.333,
+   "to_95pct_speed_s": 2.867,
+   "stop_95_to_5pct_s": 0.867,
+   "peak_speed_units_s": 27.67,
+   "peak_turn_deg_s": 72.3,
+   "max_roll_deg": 0.0,
+   "peak_live_jet_sprites": 10,
+   "mean_frame_ms_moving": 2.99,
+   "end_xyz": [
+    -142.894,
+    0.0,
+    127.5
+   ],
+   "end_yaw": 3.1416
+  },
+  "same_end": true
+ },
+ {
+  "class": "Dreadnought",
+  "kind": "turn",
+  "path": [
+   {
+    "f": 4,
+    "q": -1.0,
+    "r": 21.0,
+    "rot": true
+   },
+   {
+    "f": 4,
+    "q": -1.0,
+    "r": 20.0
+   },
+   {
+    "f": 4,
+    "q": -1.0,
+    "r": 19.0
+   }
+  ],
+  "before": {
+   "move_s": 4.45,
+   "to_95pct_speed_s": 2.033,
+   "stop_95_to_5pct_s": 1.6,
+   "peak_speed_units_s": 17.83,
+   "peak_turn_deg_s": 60.9,
+   "max_roll_deg": 2.961,
+   "peak_live_jet_sprites": 4,
+   "mean_frame_ms_moving": 3.24,
+   "end_xyz": [
+    -108.253,
+    0.0,
+    127.5
+   ],
+   "end_yaw": 2.0944
+  },
+  "after": {
+   "move_s": 5.35,
+   "to_95pct_speed_s": 3.117,
+   "stop_95_to_5pct_s": 1.467,
+   "peak_speed_units_s": 19.65,
+   "peak_turn_deg_s": 49.1,
+   "max_roll_deg": 0.0,
+   "peak_live_jet_sprites": 12,
+   "mean_frame_ms_moving": 3.13,
+   "end_xyz": [
+    -108.253,
+    0.0,
+    127.5
+   ],
+   "end_yaw": 2.0944
+  },
+  "same_end": true
+ },
+ {
+  "class": "Frigate",
+  "kind": "final",
+  "path": [
+   {
+    "f": 5.0,
+    "q": 2.0,
+    "r": 17.0
+   },
+   {
+    "f": 5.0,
+    "q": 3.0,
+    "r": 16.0
+   },
+   {
+    "f": 5.0,
+    "q": 4.0,
+    "r": 15.0
+   },
+   {
+    "f": 5.0,
+    "q": 5.0,
+    "r": 14.0
+   },
+   {
+    "f": 0,
+    "q": 5.0,
+    "r": 14.0,
+    "rot": true
+   },
+   {
+    "f": 1,
+    "q": 5.0,
+    "r": 14.0,
+    "rot": true
+   }
+  ],
+  "before": {
+   "move_s": 3.55,
+   "to_95pct_speed_s": 0.717,
+   "stop_95_to_5pct_s": 0.6,
+   "peak_speed_units_s": 26.03,
+   "peak_turn_deg_s": 211.2,
+   "max_roll_deg": 1.698,
+   "peak_live_jet_sprites": 4,
+   "mean_frame_ms_moving": 3.06,
+   "end_xyz": [
+    -47.631,
+    0.0,
+    52.5
+   ],
+   "end_yaw": 5.236
+  },
+  "after": {
+   "move_s": 3.533,
+   "to_95pct_speed_s": 0.467,
+   "stop_95_to_5pct_s": 0.383,
+   "peak_speed_units_s": 36.15,
+   "peak_turn_deg_s": 122.9,
+   "max_roll_deg": 0.0,
+   "peak_live_jet_sprites": 16,
+   "mean_frame_ms_moving": 3.02,
+   "end_xyz": [
+    -47.631,
+    0.0,
+    52.5
+   ],
+   "end_yaw": 5.236
+  },
+  "same_end": true
+ },
+ {
+  "class": "Cruiser",
+  "kind": "final",
+  "path": [
+   {
+    "f": 5.0,
+    "q": 0.0,
+    "r": 18.0
+   },
+   {
+    "f": 5.0,
+    "q": 1.0,
+    "r": 17.0
+   },
+   {
+    "f": 5.0,
+    "q": 2.0,
+    "r": 16.0
+   },
+   {
+    "f": 0,
+    "q": 2.0,
+    "r": 16.0,
+    "rot": true
+   }
+  ],
+  "before": {
+   "move_s": 3.717,
+   "to_95pct_speed_s": 1.25,
+   "stop_95_to_5pct_s": 1.0,
+   "peak_speed_units_s": 23.56,
+   "peak_turn_deg_s": 100.7,
+   "max_roll_deg": 1.669,
+   "peak_live_jet_sprites": 4,
+   "mean_frame_ms_moving": 3.12,
+   "end_xyz": [
+    -82.272,
+    0.0,
+    82.5
+   ],
+   "end_yaw": 6.2832
+  },
+  "after": {
+   "move_s": 3.917,
+   "to_95pct_speed_s": 1.083,
+   "stop_95_to_5pct_s": 0.867,
+   "peak_speed_units_s": 27.67,
+   "peak_turn_deg_s": 72.3,
+   "max_roll_deg": 0.0,
+   "peak_live_jet_sprites": 20,
+   "mean_frame_ms_moving": 3.13,
+   "end_xyz": [
+    -82.272,
+    0.0,
+    82.5
+   ],
+   "end_yaw": 6.2832
+  },
+  "same_end": true
+ },
+ {
+  "class": "Dreadnought",
+  "kind": "final",
+  "path": [
+   {
+    "f": 5.0,
+    "q": 0.0,
+    "r": 20.0
+   },
+   {
+    "f": 5.0,
+    "q": 1.0,
+    "r": 19.0
+   },
+   {
+    "f": 0,
+    "q": 1.0,
+    "r": 19.0,
+    "rot": true
+   }
+  ],
+  "before": {
+   "move_s": 4.15,
+   "to_95pct_speed_s": 1.9,
+   "stop_95_to_5pct_s": 1.5,
+   "peak_speed_units_s": 18.72,
+   "peak_turn_deg_s": 90.2,
+   "max_roll_deg": 1.714,
+   "peak_live_jet_sprites": 4,
+   "mean_frame_ms_moving": 3.09,
+   "end_xyz": [
+    -73.612,
+    0.0,
+    127.5
+   ],
+   "end_yaw": 6.2832
+  },
+  "after": {
+   "move_s": 5.433,
+   "to_95pct_speed_s": 1.9,
+   "stop_95_to_5pct_s": 1.467,
+   "peak_speed_units_s": 19.73,
+   "peak_turn_deg_s": 49.1,
+   "max_roll_deg": 0.0,
+   "peak_live_jet_sprites": 24,
+   "mean_frame_ms_moving": 3.17,
+   "end_xyz": [
+    -73.612,
+    0.0,
+    127.5
+   ],
+   "end_yaw": 6.2832
+  },
+  "same_end": true
+ },
+ {
+  "class": "Frigate",
+  "kind": "side",
+  "path": [
+   {
+    "f": 5.0,
+    "q": 2.0,
+    "r": 18.0,
+    "side": 1,
+    "slip": 1
+   },
+   {
+    "f": 5.0,
+    "q": 3.0,
+    "r": 18.0,
+    "side": 1,
+    "slip": 1
+   },
+   {
+    "f": 5.0,
+    "q": 4.0,
+    "r": 18.0,
+    "side": 1,
+    "slip": 1
+   }
+  ],
+  "before": {
+   "move_s": 2.05,
+   "to_95pct_speed_s": 0.517,
+   "stop_95_to_5pct_s": 0.433,
+   "peak_speed_units_s": 36.45,
+   "peak_turn_deg_s": 335.5,
+   "max_roll_deg": 1.882,
+   "peak_live_jet_sprites": 4,
+   "mean_frame_ms_moving": 3.27,
+   "end_xyz": [
+    -30.311,
+    0.0,
+    112.5
+   ],
+   "end_yaw": 1.0472
+  },
+  "after": {
+   "move_s": 1.983,
+   "to_95pct_speed_s": 0.467,
+   "stop_95_to_5pct_s": 0.383,
+   "peak_speed_units_s": 36.21,
+   "peak_turn_deg_s": 0.0,
+   "max_roll_deg": 0.0,
+   "peak_live_jet_sprites": 16,
+   "mean_frame_ms_moving": 2.98,
+   "end_xyz": [
+    -30.311,
+    0.0,
+    112.5
+   ],
+   "end_yaw": 1.0472
+  },
+  "same_end": true
+ },
+ {
+  "class": "Cruiser",
+  "kind": "side",
+  "path": [
+   {
+    "f": 5.0,
+    "q": 0.0,
+    "r": 19.0,
+    "side": 1,
+    "slip": 1
+   },
+   {
+    "f": 5.0,
+    "q": 1.0,
+    "r": 19.0,
+    "side": 1,
+    "slip": 1
+   }
+  ],
+  "before": {
+   "move_s": 2.533,
+   "to_95pct_speed_s": 1.067,
+   "stop_95_to_5pct_s": 0.85,
+   "peak_speed_units_s": 28.07,
+   "peak_turn_deg_s": 287.3,
+   "max_roll_deg": 2.641,
+   "peak_live_jet_sprites": 4,
+   "mean_frame_ms_moving": 3.32,
+   "end_xyz": [
+    -73.612,
+    0.0,
+    127.5
+   ],
+   "end_yaw": 1.0472
+  },
+  "after": {
+   "move_s": 2.533,
+   "to_95pct_speed_s": 1.083,
+   "stop_95_to_5pct_s": 0.867,
+   "peak_speed_units_s": 27.67,
+   "peak_turn_deg_s": 0.0,
+   "max_roll_deg": 0.0,
+   "peak_live_jet_sprites": 20,
+   "mean_frame_ms_moving": 3.27,
+   "end_xyz": [
+    -73.612,
+    0.0,
+    127.5
+   ],
+   "end_yaw": 1.0472
+  },
+  "same_end": true
+ },
+ {
+  "class": "Dreadnought",
+  "kind": "side",
+  "path": [
+   {
+    "f": 5.0,
+    "q": 0.0,
+    "r": 21.0,
+    "side": 1,
+    "slip": 1
+   }
+  ],
+  "before": {
+   "move_s": 2.567,
+   "to_95pct_speed_s": 1.183,
+   "stop_95_to_5pct_s": 0.9,
+   "peak_speed_units_s": 16.71,
+   "peak_turn_deg_s": 294.5,
+   "max_roll_deg": 3.825,
+   "peak_live_jet_sprites": 4,
+   "mean_frame_ms_moving": 3.3,
+   "end_xyz": [
+    -73.612,
+    0.0,
+    157.5
+   ],
+   "end_yaw": 1.0472
+  },
+  "after": {
+   "move_s": 3.183,
+   "to_95pct_speed_s": 1.45,
+   "stop_95_to_5pct_s": 1.083,
+   "peak_speed_units_s": 13.15,
+   "peak_turn_deg_s": 0.0,
+   "max_roll_deg": 0.0,
+   "peak_live_jet_sprites": 22,
+   "mean_frame_ms_moving": 3.31,
+   "end_xyz": [
+    -73.612,
+    0.0,
+    157.5
+   ],
+   "end_yaw": 1.0472
+  },
+  "same_end": true
+ },
+ {
+  "class": "Frigate",
+  "kind": "back",
+  "path": [
+   {
+    "f": 5.0,
+    "q": 0.0,
+    "r": 19.0,
+    "rev": 1
+   },
+   {
+    "f": 5.0,
+    "q": -1.0,
+    "r": 20.0,
+    "rev": 1
+   }
+  ],
+  "before": {
+   "move_s": 1.567,
+   "to_95pct_speed_s": 0.517,
+   "stop_95_to_5pct_s": 0.433,
+   "peak_speed_units_s": 36.73,
+   "peak_turn_deg_s": 814.8,
+   "max_roll_deg": 2.446,
+   "peak_live_jet_sprites": 4,
+   "mean_frame_ms_moving": 3.05,
+   "end_xyz": [
+    -99.593,
+    0.0,
+    142.5
+   ],
+   "end_yaw": 1.0472
+  },
+  "after": {
+   "move_s": 1.5,
+   "to_95pct_speed_s": 0.467,
+   "stop_95_to_5pct_s": 0.383,
+   "peak_speed_units_s": 36.17,
+   "peak_turn_deg_s": 0.0,
+   "max_roll_deg": 0.0,
+   "peak_live_jet_sprites": 10,
+   "mean_frame_ms_moving": 2.86,
+   "end_xyz": [
+    -99.593,
+    0.0,
+    142.5
+   ],
+   "end_yaw": 1.0472
+  },
+  "same_end": true
+ },
+ {
+  "class": "Cruiser",
+  "kind": "back",
+  "path": [
+   {
+    "f": 5.0,
+    "q": -2.0,
+    "r": 20.0,
+    "rev": 1
+   }
+  ],
+  "before": {
+   "move_s": 1.883,
+   "to_95pct_speed_s": 0.867,
+   "stop_95_to_5pct_s": 0.683,
+   "peak_speed_units_s": 22.39,
+   "peak_turn_deg_s": 655.3,
+   "max_roll_deg": 3.791,
+   "peak_live_jet_sprites": 4,
+   "mean_frame_ms_moving": 3.38,
+   "end_xyz": [
+    -116.913,
+    0.0,
+    142.5
+   ],
+   "end_yaw": 1.0472
+  },
+  "after": {
+   "move_s": 1.9,
+   "to_95pct_speed_s": 0.867,
+   "stop_95_to_5pct_s": 0.667,
+   "peak_speed_units_s": 21.38,
+   "peak_turn_deg_s": 0.0,
+   "max_roll_deg": 0.0,
+   "peak_live_jet_sprites": 12,
+   "mean_frame_ms_moving": 3.18,
+   "end_xyz": [
+    -116.913,
+    0.0,
+    142.5
+   ],
+   "end_yaw": 1.0472
+  },
+  "same_end": true
+ },
+ {
+  "class": "Dreadnought",
+  "kind": "back",
+  "unavailable": true
+ }
+]
