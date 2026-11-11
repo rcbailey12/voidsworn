@@ -24,7 +24,7 @@
 **Where things stand.**
 - Campaign map: rounds 3, 4a and 4b are in the game (the approach to the star over three sectors, routes only, fight stops show the enemy, five region landmarks and emblems). Round 4c (issue 470) answers Ryan's four notes of R181. The left rail is the orders sheet (PR 464). Next screen: the battle screen.
 - Effects: every explosion is rebaked by route B (PR 455). Next: deaths in three beats (issue 462, an Opus worker), then the hit ladder (461) and small-ship deaths (463).
-- Ship concepts: Sunward, Hegemony and the Eclipse flagship are settled; Glasswrights (full prism), Hullbreakers (the original, patched together) and the Chorus (grown, not built) are in round 4 (Muse issue 467; Codex's takes are in contrib/codex/design/concept_round4_2026_11/). Then the Sunward and Eclipse fleets.
+- Ship concepts (state after Ryan's 07:31 CST review, R183; the table is in docs/playbooks/factions.md): the Eclipse crescent flagship is settled. Sunward and Hegemony have their bodies but are being redrawn at the bow (no more big gun on the tip of every nose; Hegemony heavier), the Eclipse ring cruiser is being redrawn with the ring lying flat, and the Hullbreakers get their rocket racks on the top deck: Codex round 5. The Glasswrights are scrapped and start fresh from the lore, and the Chorus (grown, not built) is still open: Muse issue 467. Then the Sunward and Eclipse fleets.
 - Rules: the workhorse cleared the known-bug batches; protocol values are ruled (R179); checks on main are green.
 - Sound: sources and palettes studied (contrib/muse/design/sound_sources_2026_11/synthesis.md); the listening page for Ryan is still to build.
 
