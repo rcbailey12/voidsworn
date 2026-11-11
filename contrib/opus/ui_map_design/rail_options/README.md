@@ -19,6 +19,10 @@ orange, corners are square, the spaced grey capitals are gone, bars become pips,
 The map's own labels keep today's typeface in these mockups (they come from the capture); in a build they follow the picked option.
 rail_mockup_gen.py regenerates the pictures (it expects the fonts in a local folder; paths at the top).
 
-**Ryan's pick (Nov 10, 21:39 CST): R2, with a readability pass.** The pass is R2b_orders_sheet_readable.jpg (full size:
-R2b_orders_sheet_readable_1080.png): larger sentences, three text strengths instead of five greys, the action as the one
+**Ryan's pick (Nov 10, 21:39 CST): R2, with a readability pass.** The pass is R2b_orders_sheet_readable.jpg : larger sentences, three text strengths instead of five greys, the action as the one
 outlined box, hull as figures with their word. The build spec is contrib/opus/briefs/campaign_rail_orders_sheet.md.
+
+**Trim (Ryan, 21:47 CST):** "there's text covering the flagship text in bottom left. I don't know what faction action is either. We
+don't need to over explain EVERYTHING in this one UI." The reference for the build is now R2c_orders_sheet_trimmed.jpg (full size:
+R2c_orders_sheet_trimmed_1080.png): one-line condition, one-sentence objective, no "then" line, no Nemesis trait sentence, fleet as
+name and hull figure only with an ember diamond on the flagship, and the faction action moved to the Fleet and refits screen.

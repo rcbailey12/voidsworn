@@ -1,8 +1,8 @@
 # Campaign map: the left rail as an orders sheet (R2, picked by Ryan Nov 10 2026)
 
 Written by the Board (Fable 5.2), Nov 11 2026. FINDINGS R174 and R176. The reference picture is
-contrib/opus/ui_map_design/rail_options/R2b_orders_sheet_readable_1080.png (a mockup over the real round 3 capture, after the
-readability pass Ryan asked for). Build to the picture and to the rules below; where they differ, the rules win.
+contrib/opus/ui_map_design/rail_options/R2c_orders_sheet_trimmed_1080.png (a mockup over the real round 3 capture, after the
+readability pass and the trim Ryan asked for). Build to the picture and to the rules below; where they differ, the rules win.
 
 ## What Ryan said
 
@@ -10,6 +10,8 @@ readability pass Ryan asked for). Build to the picture and to the rules below; w
 - "I don't want to stray TOO far from here. I like the actual map itself and where we're going. It's more the lefthand rail, the
   text, etc."
 - On the three options: "R2, let's just do a readability pass on it as well. But I like the direction."
+- On the readability pass (21:47 CST): "Yep much better on UI but one note that there's text covering the flagship text in bottom
+  left. I don't know what faction action is either. We don't need to over explain EVERYTHING in this one UI."
 - Scope: "Map first, then all": this look is proven on the campaign map, then every other screen follows it in later jobs.
 
 ## What made the old rail read as AI-made (do not bring any of it back)
@@ -50,30 +52,42 @@ Add the font files and their OFL licence texts to godot/ui/theme/fonts/. Chakra 
 
 **Square.** Every corner is square. No pills, no rounded cards, no key badges, no drop shadows, no glows on text.
 
+## Say less (Ryan: "We don't need to over explain EVERYTHING in this one UI")
+
+The rail holds only what the player needs to pick a route. Everything else is one click or one hover away, where it is today
+(the stop's tip card, the Dossier, Fleet and refits, the Map key). When in doubt, leave it off the rail.
+
 ## The layout, top to bottom (sizes at 1080; scale with the UI scale as today)
 
 1. **Approach strip.** Three short bars marked I, II, III and a ring for the star. The current leg is ember and thicker. Beside
    it "Jump 1 of 7" (Barlow Medium 19, TEXT2). This replaces "SECTOR I OF III".
 2. **Region.** The region name, Big Shoulders 70, weight 800, TEXT. Under it "Held by the Ashfall Hullbreakers" (Barlow Medium 21,
-   TEXT), then the sector condition as a sentence (Barlow 19, TEXT2).
+   TEXT), then the sector condition cut to ONE short line that states the effect (Barlow 19, TEXT2): "Ion season: shields
+   recharge 25% slower." The full wording stays in the Map key.
 3. **The chosen route, large.** The route under the cursor (keyboard, number key or hover; route 1 by default) is expanded IN
    PLACE; the list always stays in number order. Its numeral in ember (Big Shoulders 132), its name (54), "Fight a ..." or the
-   event line (Barlow Medium 20, TEXT), danger as four square pips and the word (never a bar), the objective as a sentence
-   (Barlow 20, TEXT), then "Pays X then Y" (19; the joining words in TEXT3, the things in TEXT).
+   event line (Barlow Medium 20, TEXT), danger as four square pips and the word (never a bar), the objective as ONE short
+   sentence (Barlow 20, TEXT), then "Pays X" (19; "Pays" in TEXT3, the reward in TEXT). No "then ..." line: the map shows
+   what comes next.
 4. **The action**, directly under the chosen route: a square ember outline 2 px, 56 px tall, "JUMP TO RELAY" in ember (Big
    Shoulders 34) on the left, "Enter" and a small solid arrow on the right. On hover or focus it fills ember with near-black
    words. This is the only box on the rail.
-5. **The other routes**, two lines each: numeral and name (Big Shoulders 36 and 32, TEXT), then one summary sentence (Barlow 18,
-   TEXT2), for example "Fight, easy. Pays Signal of Astra".
-6. A hairline, then **the Nemesis**: square portrait 64 px with a 2 px NEM edge; "Nemesis, hunting you" (Barlow Medium 17, NEM);
-   the name (Big Shoulders 32); one sentence (Barlow 18, TEXT2); the hunt clock as four square pips with the words "Hunt clock
-   0.5 of 4". "Dossier" at the right (TEXT3).
-7. At the foot, a hairline, then **the fleet**: one line per ship: name (Big Shoulders 28), class (Barlow 17, TEXT2), "flagship"
-   in ember on the flagship's line, hull as a figure with its word ("135 hull"; when damaged "98 of 135 hull" with the first
-   figure in the game's existing damage colour). No bars. Then the faction action line and its price.
-8. **On the map:** the number boxes and the routes you can take are ember; route and stop labels are Barlow Medium 21 with the
+5. **The other routes**, two lines each: numeral and name (Big Shoulders 36 and 32, TEXT), then one short line (Barlow 18,
+   TEXT2): "Easy fight. Pays Signal of Astra" or "No fight".
+6. A hairline, then **the Nemesis**: square portrait 64 px with a 2 px NEM edge; the word "Nemesis" (Barlow Medium 17, NEM); the
+   name (Big Shoulders 32); the hunt clock as four square pips with "Hunt clock 0.5 of 4". "Dossier" at the right (TEXT3). The
+   trait sentence is NOT on the rail; it is in the Dossier.
+7. At the foot, a hairline, then **the fleet**: one line per ship: the name (Big Shoulders 28) on the left and its hull figure
+   (Azeret Mono 19) at the right edge, and nothing between them, so nothing can overlap. The flagship is marked by a small
+   solid ember diamond before its name, not by a word. A damaged ship shows "98 / 135" with the first figure in the game's
+   existing damage colour. No class, no bars. Then "Fleet and refits" (TEXT3).
+8. **The faction action leaves the rail.** (Keep the dawn watch and its five siblings: a once-per-sector purchase that helps the
+   next battle. Ryan did not know what it was.) Move it into the Fleet and refits screen, as a row at the top with its name, what
+   it does in one sentence, and its price or "Used this sector". Its key and its behaviour do not change. The Map key keeps its
+   explanation.
+9. **On the map:** the number boxes and the routes you can take are ember; route and stop labels are Barlow Medium 21 with the
    dark halo; "Your fleet is here" in Barlow 17.
-9. **Bottom right:** credits and command points keep their place: labels Barlow, figures Azeret.
+10. **Bottom right:** credits and command points keep their place: labels Barlow, figures Azeret.
 
 ## The readability pass (Ryan asked for it; these are checks, not wishes)
 
@@ -82,7 +96,8 @@ Add the font files and their OFL licence texts to godot/ui/theme/fonts/. Chakra 
   sector III (the brightest backdrop) as well as sector I. If the gradient is not enough there, strengthen the gradient, do not
   add a panel.
 - Big Shoulders is never used for a sentence and never below 28 px. No text is set in capitals except names in Big Shoulders.
-- Long cases fit without overlap or cut-off words: four routes; the longest route and region names in the game; a Nemesis with
+- Nothing overlaps anything, at any fleet size or name length (Ryan caught hull figures printed over the word flagship in the
+  first mockup). Long cases fit without overlap or cut-off words: four routes; the longest route and region names in the game; a Nemesis with
   the longest name; a fleet of the largest size the rail must show (say how many lines fit, and what happens beyond that).
 - Captured at 1920x1080 and 2560x1440.
 

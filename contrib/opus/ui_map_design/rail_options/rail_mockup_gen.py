@@ -200,7 +200,43 @@ def r2b():
         y+=34
     y+=8; d.text((x,y),'Faction action: keep the dawn watch',font=BAR(18),fill=SEC); rtext(d,R,y+1,'40 credits',MONO(16),SEC)
     return im
-for name,fn in [('R1',r1),('R2',r2),('R3',r3),('R2b',r2b)]:
+
+# ---------- R2c: trimmed (Ryan: do not explain everything; fleet text overlap fixed; faction action off the rail) ----------
+def r2c():
+    TXT=(240,234,222); SEC=(196,190,176); TER=(150,144,132)
+    im=dark_left(820,1.08); d=ImageDraw.Draw(im); x=52; R=500
+    y=40
+    for i,lab in enumerate(['I','II','III']):
+        x0=x+i*80; col=EMBER if i==0 else TER
+        d.line((x0,y+8,x0+62,y+8),fill=col,width=4 if i==0 else 2); d.text((x0,y+16),lab,font=BARC(20),fill=col)
+    d.ellipse((x+244,y,x+260,y+16),outline=EMBER,width=2); d.text((x+276,y-4),'Jump 1 of 7',font=BAR(19,'Medium'),fill=SEC)
+    d.text((x-3,86),'OLD BATTLEFIELD',font=BSD(70,800),fill=TXT)
+    d.text((x,170),'Held by the Ashfall Hullbreakers',font=BAR(21,'Medium'),fill=TXT)
+    d.text((x,202),'Ion season: shields recharge 25% slower.',font=BAR(19),fill=SEC)
+    y=262
+    d.text((x-6,y-20),'1',font=BSD(132,800),fill=EMBER)
+    d.text((x+78,y),'RELAY',font=BSD(54,700),fill=TXT)
+    d.text((x+80,y+62),'Fight a Hullbreaker hulk den',font=BAR(20,'Medium'),fill=TXT)
+    pips(d,x+80,y+98,1,4,TXT,10,4,TER); d.text((x+144,y+90),'Easy',font=BAR(19,'Medium'),fill=SEC)
+    y+=140
+    y=para(d,x,y,'Hold a ship beside the relay for 3 rounds.',BAR(20),TXT,R-x,28); y+=4
+    d.text((x,y),'Pays',font=BAR(19),fill=TER); d.text((x+48,y),'Signal of Kharon',font=BAR(19,'Medium'),fill=TXT); y+=44
+    d.rectangle((x,y,R,y+56),outline=EMBER,width=2)
+    d.text((x+16,y+8),'JUMP TO RELAY',font=BSD(34,700),fill=EMBER); rtext(d,R-38,y+16,'Enter',BAR(19,'Medium'),EMBER); d.polygon([(R-28,y+20),(R-14,y+28),(R-28,y+36)],fill=EMBER); y+=56+34
+    for n,name,meta in [('2','BREAKTHROUGH','Easy fight. Pays Signal of Astra'),('3','UNKNOWN SIGNAL','No fight')]:
+        d.text((x,y-2),n,font=BSD(36,700),fill=SEC); d.text((x+36,y),name,font=BSD(32,600),fill=TXT); y+=38
+        d.text((x+36,y),meta,font=BAR(18),fill=SEC); y+=42
+    y=H-322; d.line((x,y,R,y),fill=(70,64,56)); y+=22
+    im.paste(portrait.resize((64,64)),(x,y)); d.rectangle((x,y,x+63,y+63),outline=RED,width=2)
+    d.text((x+80,y-2),'Nemesis',font=BAR(17,'Medium'),fill=RED); d.text((x+80,y+20),'HIGH NADIR ESSANE',font=BSD(32,700),fill=TXT); rtext(d,R,y-2,'Dossier',BAR(17),TER)
+    y+=78; pips(d,x,y+4,0.5,4,RED,13,5,TER); d.text((x+84,y),'Hunt clock 0.5 of 4',font=BAR(18),fill=SEC)
+    y=H-166; d.line((x,y-18,R,y-18),fill=(70,64,56))
+    for name,cls,hp,mx,flag in FLEET:
+        if flag: d.polygon([(x,y+17),(x+7,y+10),(x+14,y+17),(x+7,y+24)],fill=EMBER)
+        d.text((x+24,y),name.upper(),font=BSD(28,600),fill=TXT); rtext(d,R,y+3,hp,MONO(19,600),TXT); y+=36
+    d.text((x+24,y+4),'Fleet and refits',font=BAR(17),fill=TER)
+    return im
+for name,fn in [('R1',r1),('R2',r2),('R3',r3),('R2b',r2b),('R2c',r2c)]:
     im=fn(); im.save(f'out/{name}.png'); im.resize((1280,720),Image.LANCZOS).save(f'out/{name}_small.jpg',quality=88)
 
 names={'R1':'R1  Keep and correct: same layout, the tells removed','R2':'R2  Orders sheet: no panel, one big focus','R3':'R3  Chart margin: details sit on the map'}
