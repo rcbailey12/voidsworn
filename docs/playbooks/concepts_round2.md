@@ -44,9 +44,21 @@ checklist for any model that takes the Board's seat.
    Each mount is one large, deliberate installation with a visible base, not a row of scattered barrels.
    **And it must read as armed (Ryan on the first round 2 sheets, R176: "It's really hard to tell if there's any guns right
    now so it barely looks like a warship").** A battery or turret shows its barrels, heavy and plain, pointing where it fires;
-   the forward gun is the largest object on the bow; the ship looks armed in the top view at thumbnail size. Flak may be drawn
-   as two to four small matching turrets in symmetric pairs (still one flak system). Ordered, never scattered; gun ports are
-   dark, never lit like windows.
+   the ship looks armed in the top view at thumbnail size. Flak may be drawn as two to four small matching turrets in
+   symmetric pairs (still one flak system). Ordered, never scattered; gun ports are dark, never lit like windows.
+   **The forward weapon is built the faction's own way, and is never a long barrel on the tip of the nose (Ryan on round 4,
+   R183: "same giant gun directly on nose. It's good to have forward facing but it always looks the same across factions").**
+   An earlier wording of this line ("the forward gun is the largest object on the bow") caused exactly that and is
+   withdrawn. The side and top weapons carry the armed look; the forward weapon is part of the bow's shape:
+   - Sunward Crusade: the lance is an ember-lit emitter recessed between the two halves of a split prow; nothing sticks out
+     past the prow tips.
+   - Hegemony Navy: the ion weapon is a recessed emitter trench across a blunt, armoured bow face. No prongs, no barrels.
+   - Eclipse: the doom weapon is a green-lit aperture between the horns of the crescent (flagship) or in the gap of the
+     ring (ring cruiser).
+   - Ashfall Hullbreakers: the heavy torpedo is tube mouths set low in the bow armour, either side of the ram plate. Their
+     rocket racks sit on the top deck (Ryan, R183: "rockets need to be on top to fit the scrapped together theme").
+   - The Glasswrights: twin lens apertures in the shoulders of the bow, either side of the centre line.
+   - The Chorus: throats inside the bloom.
 2. **Nothing blocks a gun and no gun aims backward or into the ship.**
 3. **One thrust axis.** Engines are at the stern, in line with the length of the ship, sized to push it (the engine group
    fills between a quarter and a half of the stern face). Nothing glows like an engine anywhere else.
@@ -59,6 +71,11 @@ checklist for any model that takes the Board's seat.
    guns still balance about the thrust axis.
 8. **Designed from above first.** The plan view (top) carries the identity, because the battle camera looks down. The side
    view confirms it. Then the beauty view.
+   **No two factions share an outline from above (R183).** Round 4 drew four factions as the same long bar with a gun on
+   the tip, told apart only by paint. Each faction owns a plan shape: Sunward a broad-shouldered blade with a forked prow;
+   Hegemony a heavy, thick wedge on twin rails; Eclipse a crescent or a broken ring; Hullbreakers stepped, lopsided blocks;
+   the Chorus a grown body with no straight line; the Glasswrights still open. A feature that only shows from the side or
+   the front (an upright ring, lenses standing across the axis) is lost under the battle camera: lay it flat or turn it up.
 9. **Fixed proportions per class.** Stated as length : beam : height in each sheet below. The escort is a smaller ship of the
    same grammar with fewer parts, never the capital shrunk.
 10. **One scale.** Windows, hatches, plates and lights are the same real size on every ship of a faction, so a capital has

@@ -28,9 +28,9 @@ His scope answers:
 ## The finished battle (what "final" means here)
 
 - **Board**: the dead-star gravity-well board (owner ruling, Oct 24).
-- **Fleets**: about six to eight ships. One side is the Ashfall Hullbreakers, because their two hulls are the furthest along
-  (battle-barge C19_51, cruiser C15s_23 through the ship recipe, PR 401). The other side is Ryan's pick from an options
-  sheet (decision 2 below). Each fleet needs one capital, one cruiser or destroyer and one escort through the ship recipe.
+- **Fleets**: about six to eight ships a side. **Sunward Crusade against Eclipse** (Ryan, Nov 11 2026, R180; this replaces the
+  first plan of the Hullbreakers plus one other). Both have a settled flagship (docs/playbooks/factions.md) and look nothing
+  alike. Each fleet needs one capital, one cruiser or destroyer and one escort through the ship recipe.
 - **Ships**: built by tools/recipe with real thickness, break lines and interiors (R98), hard points by hull class and faction
   theme (R164 item 4, issue 363), concepts in three views (issue 398).
 - **Effects**: every big moment staged to Muse's table (contrib/muse/design/hit_staging_2026_11/synthesis.md): explosions by
@@ -152,14 +152,24 @@ A playbook is done when a model that has never seen this repo ships the next ite
 - If the limit is hit with no reset used, nothing stops: DeepSeek, Muse and Codex keep running the rows that are theirs, and
   the Board's picks wait in LOOP.md.
 
-## Decisions Ryan owes, in the order they will arrive
+## Decisions: made, and still owed (Nov 11 2026)
 
-1. Explosion route A or B (from the 353 sheet).
-2. The second fleet for the finished battle (from the faction theme sheets).
-3. The Briefing map in the game: yes, or what to change (R165).
-4. Shield look (from the shield options sheet).
-5. Backdrop strength for battles (from the sky sheet).
-6. Planet (from three options).
-7. Trails, beams and flares (from the kit sheet).
-8. Whether the battle HUD takes the Briefing map's calmer treatment.
-9. Sound scope.
+Made (his words are in FINDINGS):
+1. Explosions: route B with flash plus hot core (R170). Rebaked and merged; "Explosions are looking much better" (R180).
+2. The finished battle's fleets: Sunward against Eclipse (R180).
+3. The campaign map: the Briefing layout over the real 3D scene (R165), the approach to the star, routes only, fight stops
+   show the enemy, regions as scenery with a landmark and an emblem (R170, R174, R181). "I really like the new map approaches."
+4. The interface look: the orders sheet (R176, R177), proven on the map's left rail; "Map first, then all": every other
+   screen follows it. Rule: say less.
+5. Sound scope: weapons, hits and deaths, buttons and menus, ambience, music; clean and tactical; never thin, cheesy or
+   harsh (R171).
+6. Flagship directions for Sunward, Hegemony and Eclipse (R180). The four leftover picks of issue 396 (R182).
+
+Owed, in the order they will arrive:
+1. Glasswrights, Hullbreakers and Chorus flagships (concept round 4), and the Eclipse ring cruiser.
+2. The Sunward and Eclipse fleets (one sheet per class), then each built hull.
+3. Death beats: the cruiser and capital deaths (issue 462), with the scene dim on a capital's death on or off.
+4. The battle screen in the orders sheet look (options first where the layout is in question).
+5. Shield look (from a shield options sheet). 6. Backdrop strength for battles (from a sky sheet). 7. Planet. 8. Trails,
+   beams and flares. 9. The sound listening page.
+
