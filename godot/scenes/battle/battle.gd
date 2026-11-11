@@ -1530,7 +1530,11 @@ func _play_move(id, path: Array, charge: bool) -> void:
 		# and spins add to it), capped
 		# issue 521: a move flown only on thrusters (a one-hex slide, a straight back-off) is slower and gentler than a burn
 		var jets_only: bool = not gsteps.is_empty() and bool((gsteps[-1] as Dictionary).get("thrusters", false))
-		sv.play_glide(gsteps, per * MOVE_CRUISE * (SLIDE_PACE if jets_only else 1.0) * (0.72 if charge else 1.0) * mv_speed / 1000.0, {"mass": sk, "cap": MOVE_CAP / 1000.0 * mv_speed})
+		var gopts := {"mass": sk, "cap": MOVE_CAP / 1000.0 * mv_speed}
+		if not gsteps.is_empty() and bool((gsteps[-1] as Dictionary).get("nose_first", false)):
+			gopts["point"] = NF_POINT
+			gopts["trail"] = NF_TRAIL
+		sv.play_glide(gsteps, per * MOVE_CRUISE * (SLIDE_PACE if jets_only else 1.0) * (0.72 if charge else 1.0) * mv_speed / 1000.0, gopts)
 		dur = sv.path_dur / maxf(mv_speed, 1e-3)
 	else:
 		sv.play_path(keys, yaws, alts, s, dur * mv_speed, {"mass": mass})
@@ -1663,6 +1667,9 @@ const LEG_TOL := 0.55        # hex centres within this share of a hex of a strai
 const LEG_PULL := 0.6        # inside a leg the hull is drawn this share of the way onto the straight line, so it still
                              # passes inside every hex of the ruled route (a hex centre is at most 0.2 hex off its line)
 const ASTERN := 2.1          # radians: a run this far behind both the heading and the final facing is backed on retro jets
+const NF_POINT := 0.75       # a nose-first move sets off when the nose is within 43 degrees of its course (the burn
+                             # starts while the nose is still coming round, so the turn and the run overlap)
+const NF_TRAIL := 0.7        # and starts its turn to the final facing earlier while it brakes (section 1's 0.45)
 const SLIDE_PACE := 1.45     # a move flown only on thrusters (a one-hex slide, a straight back-off) takes this many times
                              # the burn's time per hex: visibly slower and gentler than the main engine
 
@@ -1720,6 +1727,7 @@ func _nose_first(rsteps: Array, p0: Vector3, yaw0: float, yaw_end: float, sk: fl
 		out.append({"kind": "turn", "yaw": h + angle_difference(h, yaw_end), "w": _turn_w(h, yaw_end, sk)})
 	if not out.is_empty():
 		out[-1]["thrusters"] = not engine
+		out[-1]["nose_first"] = true
 	return out
 
 

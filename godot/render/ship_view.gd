@@ -806,6 +806,7 @@ const GL_TR := [0.7, 1.7]     # units to build cruise speed from rest, escort an
 const GL_SPIN := 2.4          # a turn step's weight to units of the move's timeline (the motion's own ramps add as much)
 const GL_POINT := 0.5         # a turn before the run: the hull sets off when the nose is within this many radians (29 deg)
 const GL_TRAIL := 0.45        # a turn after the run starts this share of its own length before the hull arrives
+# (battle.gd passes its own "point" and "trail" for a move flown nose first, issue 521: NF_POINT, NF_TRAIL)
 const GL_DWELL := 0.4         # a big turn at a corner (two steps or more): the hull rests this share of the spin there
 const GL_COAST := 0.15        # the drive while coasting under way (battle level about 0.6 of 2): hot, never dark
 const JET_ON := 0.18          # a jet fires above this level; its puffs carry the level, so they fade in and out
@@ -921,7 +922,8 @@ func play_glide(steps: Array, unit_s: float, opts := {}) -> void:
 	gl_tm0 = 0.0
 	if lead_u > 0.0:
 		# point, then burn: set off when the nose is within GL_POINT of the new heading (the drive builds slowly anyway)
-		var want := 1.0 - GL_POINT / maxf(lead_d, GL_POINT * 1.5)
+		var pt := float(opts.get("point", GL_POINT))
+		var want := 1.0 - pt / maxf(lead_d, pt * 1.5)
 		var lo := 0.0
 		var hi := 1.0
 		for _i in 24:
@@ -932,7 +934,7 @@ func play_glide(steps: Array, unit_s: float, opts := {}) -> void:
 				hi = mid
 		gl_tm0 = lead_u * clampf(hi, 0.35, 0.9)
 	var t_end := gl_tm0 + t_motion
-	var t_trail0 := maxf(t_end - minf(trail_u * GL_TRAIL, minf(tr, t_motion * 0.5)), gl_tm0)
+	var t_trail0 := maxf(t_end - minf(trail_u * float(opts.get("trail", GL_TRAIL)), minf(tr, t_motion * 0.5)), gl_tm0)
 	var t_cursor := 0.0   # (rotation only: spins one after another)
 	for g in groups:
 		var k := int(g["k"])

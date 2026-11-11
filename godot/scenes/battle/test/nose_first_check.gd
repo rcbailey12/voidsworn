@@ -105,7 +105,11 @@ func _fly(c: Array, sk: float, name: String) -> Dictionary:
 	var steps: Array = B._glide_steps(sv, path, sk)
 	var jets_only: bool = not steps.is_empty() and bool((steps[-1] as Dictionary).get("thrusters", false))
 	var per := lerpf(MOVE_HEX[0], MOVE_HEX[1], sk)
-	sv.play_glide(steps, per * B.MOVE_CRUISE * (B.SLIDE_PACE if jets_only else 1.0) / 1000.0, {"mass": sk, "cap": 7.0})
+	var gopts := {"mass": sk, "cap": 7.0}
+	if not steps.is_empty() and bool((steps[-1] as Dictionary).get("nose_first", false)):
+		gopts["point"] = B.NF_POINT
+		gopts["trail"] = B.NF_TRAIL
+	sv.play_glide(steps, per * B.MOVE_CRUISE * (B.SLIDE_PACE if jets_only else 1.0) / 1000.0, gopts)
 	var dt := 1.0 / 60.0
 	var t := 0.0
 	var tel: Array = []
