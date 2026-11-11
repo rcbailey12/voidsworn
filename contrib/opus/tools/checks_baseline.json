@@ -15,7 +15,7 @@
   "ROS-9",
   "UI-5"
  ],
- "knownFindingsNote": "Muse's findings suite asserts its own proposals. Sorted by the Board on Nov 10 2026 (issue 355) and trimmed by issue 358: the 26 opinion tests and the 5 stale tests are out of the gate, leaving the 13 bug ids and the 3 ruled-not-built ids as the only accepted failures. A listed id that passes, or no longer runs, fails the row until it is taken off this list. checksCeiling and driftDifferedCeiling may only go down; a count above either fails the row.",
+ "knownFindingsNote": "Muse's findings suite asserts its own proposals. Sorted by the Board on Nov 10 2026 (issue 355) and trimmed by issue 358: the 26 opinion tests and the 5 stale tests are out of the gate, leaving the listed bug ids and the 3 ruled-not-built ids as the only accepted failures. UI-5 is tagged stale-for-browser in issue 387: its findings test reads the frozen browser screen, and the product's Godot check is godot/scenes/battle/test/wing_cancel_test.gd. A listed id that passes, or no longer runs, fails the row until it is taken off this list. checksCeiling and driftDifferedCeiling may only go down; a count above either fails the row.",
  "knownFindingsTriage": {
   "ADM-1": {
    "tag": "opinion",
@@ -198,8 +198,8 @@
    "reason": "spore wing close to the bomber: roster design"
   },
   "UI-5": {
-   "tag": "bug",
-   "reason": "a selected wing stays armed after cancel; the test reads the frozen browser screen, the Godot screen has the same field and is checked in the job",
+   "tag": "stale-for-browser",
+   "reason": "Issue 387: the findings test drives the frozen browser screen (ui3d.js), which is not the product and is not changed. The Godot battle screen's own cancel paths are checked by godot/scenes/battle/test/wing_cancel_test.gd (headless, listed in godot/tools/ci/godot_checks.txt): select, the roster pick and Escape already cleared wing_sel, and the Cancel button path (_cancel) did not, so battle.gd now clears wing_sel there too. The browser findings test still fails, so the id stays listed.",
    "issue": 387
   },
   "UI-7": {
