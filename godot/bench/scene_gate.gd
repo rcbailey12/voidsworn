@@ -41,7 +41,8 @@ extends Node
 # cuts) waited for before each step, so the same code draws the same moments; writes still_<step>_wide.png (the gate
 # view) and still_<step>_close.png (the third death's ship, close) at steps 200, 300, 400 and 470. For before and
 # after sheets of a change that must not show. --film N (issue 461): with --still, also film_<step>.jpg every N steps
-# (960x540), a short film of the same fixed-clock fight. --trace and the base and deaths rows also report the flash
+# (1280x720), a short film of the same fixed-clock fight at the battle camera (r 170, or --film_r R), centred where the
+# third death happens (the close stills are skipped). --trace and the base and deaths rows also report the flash
 # counter's requests, counted and refused flashes (row "flash", issue 461).
 # Not in the default list (run with --modes): the 3D scene drawn at more pixels than the 1080p window, so the cost at
 # Ryan's real screens shows whatever monitor the window sits on (the HUD stays at 1080p):
@@ -232,6 +233,12 @@ func _still_run() -> void:
 			close_t = Vector3(sv.global_position.x, 0, sv.global_position.z)
 	var shots := [200, 300, 400, 470]
 	var film := int(args.get("film", 0))
+	if film > 0 and close_t != Vector3.INF:
+		# the film is shot at the battle camera (r 170 unless --film_r), centred where the third death happens
+		b.cam.t = close_t
+		b.cam.r = float(args.get("film_r", 170.0))
+		b.cam.snap()
+		keep = {"t": b.cam.t, "r": b.cam.r}
 	for st in 471:
 		_settle(fx)
 		if st % 21 == 0:
@@ -243,16 +250,16 @@ func _still_run() -> void:
 				side_ids["enemy"].erase(deaths[d])
 		fx.step(1.0 / 60.0)
 		await get_tree().process_frame
-		# Issue 461: --film N also keeps every Nth step of the wide view as a 960x540 jpg (film_<step>.jpg), so the same
-		# fixed-clock fight can be played back as a short film for before and after.
+		# Issue 461: --film N also keeps every Nth step as a 1280x720 jpg (film_<step>.jpg), so the same fixed-clock fight
+		# can be played back as a short film for before and after.
 		if film > 0 and st % film == 0:
 			var fimg := get_viewport().get_texture().get_image()
 			if fimg != null and not fimg.is_empty():
-				fimg.resize(960, 540, Image.INTERPOLATE_LANCZOS)
+				fimg.resize(1280, 720, Image.INTERPOLATE_LANCZOS)
 				fimg.save_jpg(out.path_join("film_%03d.jpg" % st), 0.9)
 		if st in shots:
 			await _shot("still_%03d_wide.png" % st)
-			if close_t != Vector3.INF:
+			if close_t != Vector3.INF and film <= 0:
 				b.cam.t = close_t
 				b.cam.r = 70.0
 				b.cam.snap()
