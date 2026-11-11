@@ -805,6 +805,15 @@ func _mode(mode: String, s: int) -> Dictionary:
 			if int(e[6]) == 0:
 				refused.append(int(float(e[3])))
 		refused.sort()
+		# every counted or refused flash in order: [seconds into the measured frames, drawn px, counted, drawn bright]
+		var events: Array = []
+		var tmin := INF
+		for e in b.gfx.flash_area_log:
+			tmin = minf(tmin, float(e[0]))
+		for e in b.gfx.flash_area_log:
+			if int(e[5]) == 1 or int(e[6]) == 0:
+				events.append([snappedf(float(e[0]) - tmin, 0.001), int(float(e[3])), int(e[5]), int(e[6])])
+		row["flash_events"] = events
 		row["flash"] = {"requests": req, "counted": counted, "refused": refused.size(), "refused_px": refused,
 			"counted_log": b.gfx.flash_log.size() - fl0, "limit_px2": b.gfx.flash_limit_px2() if b.gfx.has_method("flash_limit_px2") else 0.0}
 		b.gfx.set("flash_area_logging", false)
