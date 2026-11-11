@@ -47,3 +47,27 @@ Blind Rey leg written first, from the lore alone, before any picture (leg_rey.md
 ## What Ryan compares
 
 Three fresh flagships against G9, the round 4 Wedge he called the best so far. G10 tells the flagship's story and has the best beauty. G11 has the best top view, the view the game is played from. G12 is the boldest idea with the weakest drawing. All three carry the faction's identity from above, which no earlier round managed without a crystal.
+
+---
+
+# The Hullbreaker mixes (issue #477)
+
+Ryan on round 4 (Nov 11, 2026, FINDINGS R184): "A mix of a 7 and a9 is where I'm at. I don't like the giant grey block in a7 but rest is good." Plus his standing note from the same morning: rockets need to be on top to fit the scrapped together theme. So both mixes below keep A7's body and A9's dress in different proportions, rebuild the bow from patched slabs with no single large plain plate anywhere, put exactly two launchers on the top deck as cast-block objects from two different ships, and set the heavy torpedo as flush tube mouths low in the bow armour, nothing sticking out of the nose (the new gate line 1). The rack-doubling fault of rounds 3 and 4 did NOT recur in either mix: no flank racks, no extra tube rows on the heroes.
+
+## A11. A7's body, A9's dress
+
+Sheet: corsair_A11_sheet.jpg. Beauty: corsair_A11_beauty.jpg.
+
+Chair verdict: this is the mix Ryan described, landed at first try. The grey block is gone; the bow is stepped red and black slabs running down to a blunt point. The two top launchers are the largest things on the deck and plainly strangers to each other: an olive box angled out to port at the bow, a big rust-brown box angled out to starboard aft. The pale trophy slab is chained flat on top with an X of chain. Chains with hanging cages run down the flank. The beauty's escort is a proper single salvaged section with one launcher and one cage.
+
+Marked failures: the port launcher is painted OLIVE GREEN, a camouflage-adjacent colour the brief bans (one launcher's old paint; the hull itself stays red oxide and black). The torpedo mouths never settle at the brief's four: three over two on the sheet's side view, six in two rows of three in the beauty, all flush and low with nothing protruding, so the no-nose-bundle rule holds while the count wanders. The side view grows two extra small engine bells (five in profile, three in plan). Small red lit strips along the hull sides, inherited from A7.
+
+## A12. A9's body, A7's weight
+
+Sheet: corsair_A12_sheet.jpg. Beauty: corsair_A12_beauty.jpg.
+
+Chair verdict: the comparison Ryan asked for, and it shows its own answer. The chains and cages are the best of any Hullbreaker picture, the deck is dense and the outline steps, but the plan still reads closer to A9's length than to a 3:1 barge (line 9, partial, the failure every leg predicted), and the trophy doubled: TWO pale slabs chained on top where the brief says one. The stern launcher sits at the very stern edge angled up over the engines, and amidships drum clusters could be misread as loose tube rows at thumbnail size (line 1, partial).
+
+## Council and method
+
+Blind Rey leg first (leg477_rey.md). DeepSeek wrote (leg477_deepseek.md). Flash and Grok ideation (leg477_flash.md, leg477_grok.md): all four agreed before generation that A11's risk was line 1 (it held), A12's was line 9 (it partially failed), and A11 is the likelier flagship. One screening note: Flash's own full prompts for A12 were rejected by the chair before generation because they specified the banned grey nose plate, salvage cranes, a white background and an invented weapon; its risk lines and verdict were sound and are filed. Generation was image to image from the round 4 sheets (A11 from corsair_A7_sheet.jpg, A12 from corsair_A9_sheet.jpg), beauties from the accepted sheets. Prompts as used are appended in prompts.md.

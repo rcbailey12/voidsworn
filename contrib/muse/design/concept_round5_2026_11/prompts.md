@@ -29,3 +29,9 @@ Try 1 used the writer leg's G12-alt prompt as written in leg_deepseek.md and was
 ## Beauties
 
 Each beauty was generated image to image from its accepted sheet, with the writer leg's beauty prompt for that route (leg_deepseek.md) as the text. Escorts as specified there: G10 a short open frame with one dome and one small vessel; G11 a short hull with a small mirror patch, one dome and one light strip; G12 a short bench with one vessel and one lens. Outcomes (one shrunk copy each on G11 and G12, a proper family escort on G10) are scored in the README and the chair's gate notes.
+
+---
+
+# Prompts, issue #477 (the Hullbreaker mixes)
+
+The chair prompts are the DeepSeek writer leg's (leg477_deepseek.md, reproduced there in full), used as written: A11's sheet prompt with the attached round 4 corsair_A7_sheet.jpg as the reference picture, A12's with corsair_A9_sheet.jpg. No chair amendments were needed; both sheets were accepted at try 1, and each beauty used the writer leg's beauty prompt with its accepted sheet attached. Flash's alternative A12 prompts were not used (see leg477_flash.md for the screening record).
