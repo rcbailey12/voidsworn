@@ -444,12 +444,13 @@ static func _weapon_shader(fx, routed := false) -> Shader:
 
 
 static func _burst(fx, p: Vector3, axis: Vector3, T: float, size: float, kind: String, life: float, col: Color,
-		strength := 3.0, px := 0.0, velocity := Vector3.ZERO, opacity := 1.0, aspect := 1.0) -> void:
+		strength := 3.0, px := 0.0, velocity := Vector3.ZERO, opacity := 1.0, aspect := 1.0, gun := true) -> void:
 	var power: float = strength
 	var duration: float = life
 	if kind == "flash" and strength >= fx.FLASH_I:
 		# issue 461: booked at the size it is drawn, bloom included (the pixel floor over BURST_PX_K), never smaller
-		if fx.reduce_flashing or not fx.flash_at(p, T, size, px / BURST_PX_K, life, true):
+		# gun flashes yield the budget to deaths and torpedoes (fx.flash_at yield_last); a torpedo's (gun false) books it
+		if fx.reduce_flashing or not fx.flash_at(p, T, size, px / BURST_PX_K, life, gun):
 			power = 1.25
 			duration = maxf(life, 0.4)
 	var seed: float = fx.rng.randf()
@@ -1223,7 +1224,8 @@ static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float,
 	if torp:
 		spx = float(LADDER_PX["torp_shield"]) * gt * (0.65 if lk == "rockets" else 1.0)
 		rpx = float(LADDER_PX["torp_ripple"]) * gt * (0.65 if lk == "rockets" else 1.0)
-	_burst(fx,p+n*0.25*k,n,T,(3.2 if light else (9.0 if torp else 5.0))*k,"flash",0.30,sc,3.2 if not torp else 4.2,spx)
+	_burst(fx,p+n*0.25*k,n,T,(3.2 if light else (9.0 if torp else 5.0))*k,"flash",0.30,sc,3.2 if not torp else 4.2,spx,
+		Vector3.ZERO,1.0,1.0,not torp)
 	_note(fx, "flash", "shield", Vector3.ZERO, n, 0.30, spx)
 	fx.ring(p,n,T,0.55 if not torp else 0.9,sc,1.4,0.5*k,(5.0 if not torp else 14.0)*k,2,0.0,0.0,rpx)
 	_note(fx, "ripple", "shield", Vector3.ZERO, n, 0.9, rpx)
