@@ -5,7 +5,7 @@ Ryan's Windows PC only; the browser JS game is the rules oracle, frozen except f
 he judges work by screenshots. Start with HANDOFF.md section 0 and contrib/opus/FINDINGS.md (fixed Nov 7, R110; the rest of this file
 is reviewed in #216).
 
-## Auditing? Follow `docs/REVIEW_PROTOCOL.md` exactly (mandatory). Then `docs/ship_pipeline/TEXTURE_PASS.md` (current), then `docs/ship_pipeline/AUDIT_BRIEF.md`
+## Auditing? Follow `docs/REVIEW_PROTOCOL.md` exactly (mandatory), then `docs/ship_pipeline/AUDIT_BRIEF.md`
 
 It holds the goal, the full history, every piece of owner feedback word for word, the open issues and the questions we want answered.
 

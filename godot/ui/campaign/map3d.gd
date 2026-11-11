@@ -264,6 +264,8 @@ func _build(sig: String) -> void:
 	var bake_quality := str(shell.settings.get("quality", "max")) if shell != null else "max"
 	sector_world.prepare_sector(env, C.RUN, bake_quality)
 	env.background_energy_multiplier = BACKDROP_K   # the sky (nebula, stars, its sun) at about half: it stops fighting the routes and the words
+	# The baked nebula's broad red haze still competed with the routes in the first capture. Quiet just the gas again.
+	(env.sky.sky_material as ShaderMaterial).set_shader_parameter("neb_gain", BACKDROP_K)
 	sys.sector_world = sector_world
 	sys.backdrop(root3, fac, max(1.0, ui.k))
 	var hs = sys.hollow_sun(root3, SUN_R); _debris = hs["debris"]

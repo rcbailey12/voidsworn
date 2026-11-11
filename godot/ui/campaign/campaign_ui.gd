@@ -756,10 +756,11 @@ func _briefing_column() -> Control:
 	v.add_child(gap(8)); used += 24
 	_rows.clear()
 	for r in _routes: v.add_child(_route_row(r)); used += 96
-	# what the old fight card said beyond the row, for the picked route only: two lines at most, the rest on hover
+	# The picked route's whole objective, up to three lines. The full fight details stay on hover.
 	v.add_child(gap(8))
-	var dp = para("", 14, 20, BONE2, cw, 2); _detail = dp[0]; _detail.custom_minimum_size.y = px(40); _detail.mouse_filter = Control.MOUSE_FILTER_STOP
-	v.add_child(padded(_detail)); used += 48
+	var dp = para("", 14, 20, BONE2, cw, 3); _detail = dp[0]; _detail.custom_minimum_size.y = px(60); _detail.mouse_filter = Control.MOUSE_FILTER_STOP
+	_detail.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
+	v.add_child(padded(_detail)); used += 68
 	# 5. the one filled lime button
 	v.add_child(gap(16)); v.add_child(padded(_jump_button())); used += 72
 	# 6. the Nemesis: a portrait, a name and two or three lines; the rest behind "Dossier"
@@ -900,7 +901,12 @@ func _show_pick() -> void:
 	if is_instance_valid(_jump_btn): _jump_btn.disabled = cur.is_empty() or _find(_acts, "enterNode", picked).is_empty() or _find(_acts, "enterNode", picked)[2] == 0
 	if is_instance_valid(_detail):
 		var t = _detail_text(cur) if not cur.is_empty() else ""
-		_detail.text = t; _detail.tooltip_text = _wrap_words(t.replace(". ", ".\n")) if t != "" else ""
+		var objective = str(cur["objective"]) if not cur.is_empty() else ""
+		# A long objective keeps whole sentences; its full wording and the other fight details stay in the tooltip.
+		while _lines_of(objective, font, px(14), px(COL_W - COL_PAD * 2.0), 4) > 3 and objective.contains(". "):
+			objective = objective.substr(0, objective.rfind(". ") + 1)
+		_detail.text = objective
+		_detail.tooltip_text = _wrap_words(t.replace(". ", ".\n")) if t != "" else ""
 func _jump() -> void:
 	if picked == "" or C.modal_d != null or _overlay != "" or _find(_acts, "enterNode", picked).is_empty(): return
 	if map3d != null and map3d.visible and not map3d.backdrop: map3d.fly_to(picked)   # the fleet flies the route, then the campaign enters the stop
