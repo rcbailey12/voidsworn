@@ -125,9 +125,12 @@ void fragment() {
 	float temperature = hot * hot;
 	vec3 metal = mix(vec3(0.38, 0.035, 0.018), vec3(0.95, 0.40, 0.09), smoothstep(0.2, 0.65, temperature));
 	metal = mix(metal, vec3(0.94, 0.84, 0.64), smoothstep(0.65, 1.0, temperature));
-	// Issue 462: with face_glow on (a big hull's death) the whole torn face shows its decks hot, the deck ribs brightest,
-	// white, then orange, then dull red, then dark as heat falls.
-	float face = face_glow * (rib ? 1.5 : 0.32 + 0.25 * coarse) * smoothstep(0.0, 0.08, temperature);
+	// Issue 462: with face_glow on (a big hull's death) the torn face glows as it cools: white, orange, dull red, dark.
+	// Issue 484 (the Board, Nov 11: a capital's middle piece showed a big flat tan grid face, a clean slab again): the face
+	// is charred black and the heat sits in its cracks and seams, never as an even bright panel.
+	float vein = pow(1.0 - abs(sin(dot(p, vec3(23.1, 9.7, 17.3)) + coarse * 7.0)), 10.0)
+		+ pow(1.0 - abs(sin(dot(p, vec3(-7.9, 29.3, 11.1)) + n * 1.5)), 14.0) * 0.6;
+	float face = face_glow * (rib ? 0.45 : vein * 1.4) * smoothstep(0.0, 0.08, temperature);
 	ALBEDO = base + (organic ? vec3(0.0) : metal * (rim * 3.2 + face) * temperature * fx_gain);
 }
 """
@@ -304,9 +307,9 @@ static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life
 
 # Two bounded GPU emitters. Each particle is born in world space, with zero drag,
 # zero acceleration and a cone centred on the sampled thermal-tear normal.
-static func tear_particles(fx, p: Vector3, n: Vector3, L: float, inherited: Vector3) -> void:
+static func tear_particles(fx, p: Vector3, n: Vector3, L: float, inherited: Vector3, sparks_only := false) -> void:
 	if fx.quality == "low" or DisplayServer.get_name() == "headless": return
-	for sparks in [false, true]:
+	for sparks in ([true] if sparks_only else [false, true]):
 		var emitter := GPUParticles3D.new()
 		emitter.name = "fx_tear_sparks" if sparks else "fx_vent_cone"
 		emitter.amount = 32 if sparks else 12
@@ -621,6 +624,193 @@ static func seeds_for(s, cause: String, r: RandomNumberGenerator) -> PackedVecto
 	return out
 
 
+# ---------------------------------------------------------------- issue 484: blown apart, not sliced
+# Owner, Nov 11: "the wreckage comes out looking too clean at the end. It's like straight lines and even halves." The
+# old cut gave each triangle to its nearest seed, so a cruiser broke on one flat plane square to its length into two
+# near-equal halves that would fit back together. The fracture plan below replaces that for big hulls:
+# - uneven pieces: a cruiser parts about a third from one end, a capital into roughly a half, a third and a fifth, in a
+#   per-ship order (seeded by the ship's id, so a replay breaks the same way);
+# - no straight line: each break is tilted well off square (yaw and pitch), kinked into a V across the beam (two planes
+#   meeting at an angle) and torn by a sum of waves (teeth about a twentieth of the length deep);
+# - a bite: where the core goes off (on the break, on the side last hit), an ellipsoid of hull, its rim torn by waves,
+#   is cut out as four to six separate fragments that the core flash throws out tumbling;
+# - chips: a few small wedges along each break, thrown out with the bite.
+# Everything is a plain function of the triangle's centre, so the worker labels triangles exactly as before (no
+# triangle splitting): the break's raggedness comes from the waves and the hull's own triangles.
+
+# A few random plane waves: [direction * wave number, phase, amplitude]. Mostly across the hull (small x part), so the
+# teeth run along the break.
+static func _waves(r: RandomNumberGenerator, L: float, amp: float, count: int) -> Array:
+	var out: Array = []
+	var lam := L * 0.16
+	var a := amp
+	for i in count:
+		var d := Vector3(r.randf_range(-0.35, 0.35), r.randf_range(-1.0, 1.0), r.randf_range(-1.0, 1.0)).normalized()
+		out.append([d * (TAU / maxf(lam, 0.0001)), r.randf() * TAU, a])
+		lam *= 0.5
+		a *= 0.55
+	return out
+
+
+static func _wave_sum(waves: Array, q: Vector3) -> float:
+	var v := 0.0
+	for w in waves:
+		v += sin((w[0] as Vector3).dot(q) + float(w[1])) * float(w[2])
+	return v
+
+
+# The signed distance (roughly) to one break: positive on its +x side.
+static func _break_f(b: Dictionary, q: Vector3) -> float:
+	var d: Vector3 = q - (b["at"] as Vector3)
+	return d.dot(b["n"]) - float(b["k"]) * absf(d.dot(b["side"]) - float(b["zk"])) + _wave_sum(b["waves"], q)
+
+
+# The main piece a point belongs to (0 at the hull's low x end), ignoring the bite and the chips.
+static func _plan_main(plan: Dictionary, q: Vector3) -> int:
+	var i := 0
+	for b in plan["breaks"]:
+		if _break_f(b, q) > 0.0: i += 1
+	return i
+
+
+# The piece a triangle centre belongs to: a bite fragment, a chip, or a main piece.
+static func _plan_assign(plan: Dictionary, q: Vector3) -> int:
+	var bite: Dictionary = plan["bite"]
+	if not bite.is_empty():
+		var d: Vector3 = q - (bite["c"] as Vector3)
+		var e := Vector2(d.x / float(bite["rx"]), Vector2(d.y, d.z).length() / float(bite["ry"])).length_squared()
+		if e + _wave_sum(bite["waves"], q) < 1.0:
+			var subs: PackedVector3Array = bite["subs"]
+			var best := 0
+			var bd := INF
+			for j in subs.size():
+				var dd := q.distance_squared_to(subs[j])
+				if dd < bd:
+					bd = dd
+					best = j
+			return int(bite["first"]) + best
+	var chips: Dictionary = plan["chips"]
+	var breaks: Array = plan["breaks"]
+	var main := 0
+	for bi in breaks.size():
+		var f := _break_f(breaks[bi], q)
+		if f > 0.0: main += 1
+		if not chips.is_empty() and absf(f) < float(chips["band"]):
+			var seeds: PackedVector3Array = chips["seeds"]
+			var best := -1
+			var bd := INF
+			for j in range(bi * int(chips["per"]), (bi + 1) * int(chips["per"])):
+				var dd := q.distance_squared_to(seeds[j])
+				if dd < bd:
+					bd = dd
+					best = j
+			if best >= 0 and bd < float(chips["reach"]) * float(chips["reach"]): return int(chips["first"]) + best
+	return main
+
+
+static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
+	var h = s.hull
+	var L: float = h.L
+	var W: float = maxf(h.W, L * 0.06)
+	var H: float = maxf(h.H, L * 0.04)
+	var x0: float = h.box.position.x
+	var capital: bool = s.death_tier == "capital" or int(s.get_meta("death_cut_count", 1)) >= 2
+	# 1. uneven pieces, in order along x
+	var sizes: Array = []
+	if capital:
+		sizes = [0.50 + r.randf_range(-0.02, 0.02), 0.30 + r.randf_range(-0.02, 0.02)]
+		sizes.append(1.0 - float(sizes[0]) - float(sizes[1]))
+		for i in range(sizes.size() - 1, 0, -1):
+			var j := r.randi_range(0, i)
+			var t = sizes[i]
+			sizes[i] = sizes[j]
+			sizes[j] = t
+	else:
+		var small := r.randf_range(0.31, 0.37)
+		sizes = [small, 1.0 - small] if r.randf() < 0.5 else [1.0 - small, small]
+	# the side that was hit (the bite and the scorch sit there); with no recent hit, a per-ship side
+	var zs := 1.0 if r.randf() < 0.5 else -1.0
+	var last = s.get_meta("last_hit", [])
+	if last is Array and last.size() >= 3 and fx.now - float(last[2]) < 6.0:
+		var lz: float = ((last[0] as Vector3) - h.c).z
+		if absf(lz) > W * 0.05: zs = signf(lz)
+	# 2. the breaks: tilted, kinked, torn
+	var breaks: Array = []
+	var u := 0.0
+	var seeds := PackedVector3Array()
+	for i in sizes.size():
+		seeds.append(Vector3(x0 + (u + float(sizes[i]) * 0.5) * L, h.c.y, h.c.z))
+		u += float(sizes[i])
+		if i == sizes.size() - 1: break
+		var room: float = 0.45 * minf(float(sizes[i]), float(sizes[i + 1])) * L
+		var yaw := deg_to_rad(r.randf_range(20.0, 34.0)) * (1.0 if r.randf() < 0.5 else -1.0)
+		var pitch := deg_to_rad(r.randf_range(10.0, 22.0)) * (1.0 if r.randf() < 0.5 else -1.0)
+		var k := r.randf_range(0.45, 0.8) * (1.0 if r.randf() < 0.5 else -1.0)
+		var amp := L * 0.03
+		# keep each break inside its two pieces: the tilt, the kink and the teeth together reach at most `room`
+		var reach: float = absf(tan(yaw)) * W * 0.5 + absf(tan(pitch)) * H * 0.5 + absf(k) * W * 0.5 + amp * 1.6
+		var fit := minf(1.0, room / maxf(reach, 0.0001))
+		yaw = atan(tan(yaw) * fit)
+		pitch = atan(tan(pitch) * fit)
+		k *= fit
+		amp *= maxf(fit, 0.5)
+		var n := Vector3(cos(yaw), 0.0, sin(yaw)).rotated(Vector3(-sin(yaw), 0.0, cos(yaw)), pitch).normalized()
+		var side := Vector3(-n.z, 0.0, n.x).normalized()
+		var zk := r.randf_range(-0.25, 0.25) * W
+		# the V kink moves the break's mean line along the hull by k times the mean distance from its crease; move the
+		# break back by that much so the pieces keep their planned sizes
+		var mean_off := k * (W * 0.25 + zk * zk / W) / maxf(n.x, 0.2)
+		breaks.append({"at": Vector3(x0 + u * L - mean_off, h.c.y, h.c.z), "n": n, "side": side,
+			"zk": zk, "k": k, "waves": _waves(r, L, amp, 3)})
+	# 3. the bite: on the core's break (a capital: the break beside its biggest piece), on the side that was hit
+	var bi := 0
+	if breaks.size() > 1:
+		bi = 0 if float(sizes[0]) + float(sizes[1]) >= float(sizes[1]) + float(sizes[2]) else 1
+	var rx: float = L * (0.09 if capital else 0.12)
+	# centred a little into the bigger of the two pieces, so the bite eats mostly into it and the small one stays small
+	var bat: Vector3 = (breaks[bi]["at"] as Vector3) + Vector3.RIGHT * rx * 0.5 * (-1.0 if float(sizes[bi]) > float(sizes[bi + 1]) else 1.0)
+	var out_dir := Vector3(0.0, 0.3, zs).normalized()
+	# the bite's centre is a real hull sample: the one furthest out to the hit side near the break (bench round 3: a ray
+	# toward the hull could hit a mast tip with no plating round it, and the core flash then floated off the hull)
+	var bc: Vector3 = bat + Vector3(0.0, H * 0.3, zs * W * 0.4)
+	var best := -INF
+	for i in h.sp.size():
+		var q: Vector3 = h.sp[i]
+		if absf(q.x - bat.x) > rx * 0.6: continue
+		var score: float = (q - bat).dot(out_dir) - absf(q.x - bat.x) * 0.5
+		if score > best:
+			best = score
+			bc = q
+	if best == -INF:
+		var hit: Dictionary = h.ray(bat + out_dir * L * 2.0, -out_dir)
+		bc = hit.get("p", bc)
+	var ry: float = maxf(W, H) * (0.48 if capital else 0.55)
+	var subs := PackedVector3Array()
+	var nsub := 6 if capital else 4
+	for j in nsub:
+		var a := TAU * (float(j) + r.randf_range(-0.3, 0.3)) / float(nsub)
+		subs.append(bc + Vector3(cos(a) * rx * 0.6, 0.0, 0.0) + (Vector3(0.0, sin(a), 0.0) - out_dir * r.randf_range(0.1, 0.6)) * ry * 0.6)
+	var n_main := sizes.size()
+	# a torn rim, but one bite: two long waves (round 1's three waves holed a capital's deck like lace)
+	var bite := {"c": bc, "rx": rx, "ry": ry, "waves": _waves(r, L, 0.22, 2), "subs": subs, "first": n_main,
+		"out": out_dir}
+	# 4. chips along each break
+	var per := 2
+	var chip_seeds := PackedVector3Array()
+	for b in breaks:
+		for j in per:
+			chip_seeds.append((b["at"] as Vector3) + (b["side"] as Vector3) * W * r.randf_range(-0.5, 0.5) * (-zs if j == 0 else zs) + Vector3.UP * H * r.randf_range(-0.4, 0.4))
+	var chips := {"seeds": chip_seeds, "per": per, "band": L * 0.03, "reach": minf(maxf(W, H) * 0.25, L * 0.05), "first": n_main + nsub}
+	# 5. scorch on the plating round the wound: the bite and both sides of each break, fading over about a hull width
+	var scorch: Array = [Vector4(bc.x, bc.y, bc.z, rx + minf(W, L * 0.12) * 0.6)]
+	for b in breaks:
+		for side in [-1.0, 1.0]:
+			var p: Vector3 = (b["at"] as Vector3) + (b["side"] as Vector3) * W * 0.3 * side + Vector3.UP * H * 0.2
+			scorch.append(Vector4(p.x, p.y, p.z, minf(W, L * 0.12) * 0.5))
+	return {"L": L, "seeds": seeds, "sizes": sizes, "breaks": breaks, "bite": bite, "chips": chips, "n_main": n_main,
+		"n_frag": nsub + chip_seeds.size(), "bite_break": bi, "scorch": scorch}
+
+
 # Gather the hull's surfaces on the main thread (mesh arrays come from the rendering server), then cut on a worker.
 static func precompute(fx, s, cause := "blast") -> void:
 	if s.weight <= 0 or s.has_meta("cut_task") or s.has_meta("cut_job"):
@@ -634,6 +824,13 @@ static func precompute(fx, s, cause := "blast") -> void:
 	var r = RandomNumberGenerator.new()
 	r.seed = hash(s.id) + 3
 	var seeds = seeds_for(s, cause, r)
+	# Issue 484: a big hull is blown apart, not sliced. Its pieces follow a fracture plan (uneven pieces, kinked and
+	# torn breaks, a bite of hull gone where the core goes off, chips along the break); the seeds stay one per main
+	# piece for the older readers.
+	var plan := {}
+	if s.death_big and s.faction != "chorus":
+		plan = fracture_plan(fx, s, r)
+		seeds = plan["seeds"]
 	var inv: Transform3D = s.root.global_transform.affine_inverse()
 	var surfs: Array = []
 	for m in s.meshes:
@@ -645,12 +842,18 @@ static func precompute(fx, s, cause := "blast") -> void:
 			var mat: Material = mi.get_active_material(si)
 			surfs.append({"arrays": s.current_arrays(mi, si), "xf": xf, "mat": mat, "fmt": (mi.mesh as ArrayMesh).surface_get_format(si) if mi.mesh is ArrayMesh else 0})
 	var job = {"seeds": seeds, "surfs": surfs, "cause": cause, "organic": s.faction == "chorus", "out": null,
-		"mesh_on_worker": DisplayServer.get_name() != "headless"}
+		"mesh_on_worker": DisplayServer.get_name() != "headless", "plan": plan,
+		"ragged": s.death_big, "warp": _waves(r, s.hull.L, s.hull.L * 0.05, 3) if s.faction == "chorus" else [],
+		"sites": s.death_big and s.faction != "chorus", "sp": s.hull.sp, "sn": s.hull.sn}
 	s.set_meta("cut_job", job)
 	_init_dirs()
 	var tid = WorkerThreadPool.add_task(func() -> void:
 		var pieces := _cut(job)
 		_piece_hulls(pieces)
+		if bool(job.get("sites", false)):
+			var n_main: int = int(job["plan"]["n_main"]) if not (job["plan"] as Dictionary).is_empty() else pieces.size()
+			for i in mini(n_main, pieces.size()):
+				pieces[i]["sec_sites"] = _piece_sites_in(job["sp"], job["sn"], job["seeds"], pieces[i]["cen"], 5, job["plan"], i)
 		# issue 220: the pieces' geometry is uploaded here on the worker (as the hull rebuild's meshes are, fx_breach
 		# compute): on the main thread it cost 20 to 85 ms frames in battle, once per ship and after every cut refresh.
 		# Materials stay on the main thread (_prebuild). A headless run builds it all in _prebuild instead.
@@ -718,6 +921,15 @@ static func _piece_materials(am: ArrayMesh, pc: Dictionary, weathered := false) 
 		var hull_mat := HULL.damage_material(sd["mat"], Transform3D.IDENTITY, {}, float(pc.get("section_scale", 1.0)), bool(pc.get("organic", false)))
 		hull_mat.set_shader_parameter("fx_power", 0.0)
 		hull_mat.set_shader_parameter("fx_weather", 0.8 if weathered else 0.0)
+		# issue 484: blackened, heat-stained plating round the wound (fx_hull.gd DAMAGE_UNIFORMS, fx_scorch)
+		var scorch: Array = pc.get("scorch", [])
+		if not scorch.is_empty():
+			hull_mat.set_shader_parameter("fx_scorch_count", mini(scorch.size(), 8))
+			hull_mat.set_shader_parameter("fx_scorch", scorch.slice(0, 8))
+			hull_mat.set_shader_parameter("fx_scorch_heat", 0.0)
+			var hm: Array = pc.get("hull_mats", [])
+			hm.append(hull_mat)
+			pc["hull_mats"] = hm
 		if si < am.get_surface_count():
 			am.surface_set_material(si, hull_mat)
 		si += 1
@@ -733,10 +945,17 @@ static func _piece_materials(am: ArrayMesh, pc: Dictionary, weathered := false) 
 
 static func _cut(job: Dictionary) -> Array:
 	var seeds: PackedVector3Array = job["seeds"]
+	var plan: Dictionary = job.get("plan", {})
+	var warp: Array = job.get("warp", [])
 	var ns = seeds.size()
+	var n_main = ns
+	if not plan.is_empty():
+		n_main = int(plan["n_main"])
+		ns = n_main + int(plan["n_frag"])
 	var pieces: Array = []
 	for c in ns:
-		pieces.append({"surfs": [], "pts": PackedVector3Array(), "edge": PackedVector3Array(), "n": 0, "organic": job.get("organic", false)})
+		pieces.append({"surfs": [], "pts": PackedVector3Array(), "edge": PackedVector3Array(), "n": 0, "organic": job.get("organic", false),
+			"ragged": bool(job.get("ragged", false)), "frag": c >= n_main, "scorch": plan.get("scorch", []), "plan": plan})
 	for sd in job["surfs"]:
 		var arr: Array = sd["arrays"]
 		var xf: Transform3D = sd["xf"]
@@ -762,19 +981,25 @@ static func _cut(job: Dictionary) -> Array:
 			var best = 0
 			var bd = 1e18
 			var bd2 = 1e18
-			for c in ns:
-				var dd = q.distance_squared_to(seeds[c])
-				if dd < bd:
-					bd2 = bd
-					bd = dd
-					best = c
-				elif dd < bd2:
-					bd2 = dd
+			if not plan.is_empty():
+				best = _plan_assign(plan, q)
+			else:
+				# issue 484: a Chorus rupture tears along warped lines, not flat Voronoi planes
+				var qw: Vector3 = q
+				if not warp.is_empty(): qw = q + Vector3(1.0, 0.4, 0.6) * _wave_sum(warp, q)
+				for c in ns:
+					var dd = qw.distance_squared_to(seeds[c])
+					if dd < bd:
+						bd2 = bd
+						bd = dd
+						best = c
+					elif dd < bd2:
+						bd2 = dd
 			buckets[best].append(a)
 			buckets[best].append(cc if flip else b)
 			buckets[best].append(b if flip else cc)
 			var pc: Dictionary = pieces[best]
-			if (pc["edge"] as PackedVector3Array).size() < 64 and sqrt(bd2) - sqrt(bd) < 0.6:
+			if plan.is_empty() and (pc["edge"] as PackedVector3Array).size() < 64 and sqrt(bd2) - sqrt(bd) < 0.6:
 				var edge: PackedVector3Array = pc["edge"]
 				edge.append(q)
 				pc["edge"] = edge
@@ -983,12 +1208,88 @@ static func _cap_outline(cap: Dictionary, outline: PackedVector3Array, bounds: A
 			_cap_rib(cap, a, a + tangent * radius * 0.12 + inward * depth * 0.35, -inward, maxf(radius * 0.012, quantum * 2.0))
 	# Short cross members sit on the solid face. Clip each one to the real
 	# outline so decks and bone ribs cannot stick outside a narrow fragment.
-	if radius > bounds.size.length() * 0.025:
-		_section_structure(cap, polygon, centre, x, y, inward, depth, radius, bool(pc.get("organic", false)))
+	# Bench round 2: the hull's own open edges (kit parts, old holes) are capped too; only loops on the new break or the
+	# bite get the torn rim, or every kit seam sprouted petals.
+	var ragged := bool(pc.get("ragged", false)) and _loop_torn(pc.get("plan", {}), outline)
+	if ragged:
+		# issue 484: the real torn rim, for the flash and fire sites (the cap also holds petals and long ribs that stick
+		# out past the hull, and a site there floats beside the wreck)
+		var lip: PackedVector3Array = pc.get("lip", PackedVector3Array())
+		for i in range(0, outline.size(), maxi(1, outline.size() / 48)):
+			if lip.size() < 512: lip.append(inset[i])
+		pc["lip"] = lip
+		_section_structure(cap, polygon, centre, x, y, inward, depth, radius, bool(pc.get("organic", false)), ragged)
+	# Issue 484: a torn rim, not a clean outline: plating peeled outward in bent petals, some still glowing.
+	if ragged and outline.size() >= 6 and radius > bounds.size.length() * 0.05:
+		_cap_petals(cap, outline, centre, inward, radius, quantum, bool(pc.get("organic", false)), bounds.size.length())
 	pc["cap_loops"] = int(pc["cap_loops"]) + 1
 
 
-static func _section_structure(cap: Dictionary, polygon: PackedVector2Array, centre: Vector3, x: Vector3, y: Vector3, inward: Vector3, depth: float, radius: float, organic: bool) -> void:
+# True when a cap loop lies on the fracture plan's breaks or bite (a quarter of its points or more); with no plan
+# (a Chorus rupture) every loop is a tear.
+static func _loop_torn(plan: Dictionary, outline: PackedVector3Array) -> bool:
+	if plan.is_empty(): return true
+	var L: float = float(plan.get("L", 1.0))
+	var bite: Dictionary = plan["bite"]
+	var hits := 0
+	var tried := 0
+	for i in range(0, outline.size(), maxi(1, outline.size() / 16)):
+		var q := outline[i]
+		tried += 1
+		var on := false
+		for b in plan["breaks"]:
+			if absf(_break_f(b, q)) < L * 0.06: on = true
+		if not on and not bite.is_empty():
+			var d: Vector3 = q - (bite["c"] as Vector3)
+			on = Vector2(d.x / float(bite["rx"]), Vector2(d.y, d.z).length() / float(bite["ry"])).length_squared() < 2.2
+		if on: hits += 1
+	return hits * 4 >= tried
+
+
+# A repeatable 0..1 value for a point (the same hull breaks the same way in a replay).
+static func _rand01(p: Vector3, k: float) -> float:
+	return fposmod(sin(p.dot(Vector3(12.9898, 78.233, 37.719)) + k * 17.31) * 43758.5453, 1.0)
+
+
+# Bent plates peeled out from the torn rim: each spans a stretch of the outline, leans out of the face and away from
+# its middle, and ends in a torn tooth. Half keep a hot rim (the slag rim glow), half are scorched dark plate. A Chorus
+# rim gets torn flaps of skin instead (the organic slag colour).
+static func _cap_petals(cap: Dictionary, outline: PackedVector3Array, centre: Vector3, inward: Vector3, radius: float, quantum: float, organic: bool, span_len: float) -> void:
+	var m := outline.size()
+	var step := maxi(1, m / 26)
+	var i := 0
+	var made := 0
+	while i < m and made < 28:
+		var span := step * (1 + int(_rand01(outline[i], 1.0) * 2.0))
+		var j := (i + span) % m
+		var a := outline[i]
+		var b := outline[j]
+		if a.distance_to(b) > quantum * 3.0 and _rand01(a, 2.0) < 0.62:
+			var mid := (a + b) * 0.5
+			var radial := mid - centre
+			radial -= inward * radial.dot(inward)
+			radial = radial.normalized() if radial.length() > 1e-6 else Vector3.ZERO
+			var out := (radial * lerpf(0.4, 0.9, _rand01(mid, 3.0)) - inward * lerpf(0.5, 1.0, _rand01(mid, 4.0))).normalized()
+			# bench round 1: long petals on a capital's big faces read as white lace; keep them short plates
+			var reach := minf(minf(radius * lerpf(0.06, 0.18, _rand01(b, 5.0)), a.distance_to(b) * 1.6 + radius * 0.03), span_len * 0.025)
+			# under a pixel and a half at the battle camera nobody sees it: skip the geometry
+			if reach < STAGING_UNITS_PER_PIXEL * 1.5:
+				i += maxi(span, 1)
+				continue
+			var along := b - a
+			var a2 := a + out * reach * lerpf(0.55, 1.0, _rand01(a, 6.0)) + along * 0.12
+			var b2 := b + out * reach * lerpf(0.35, 0.85, _rand01(b, 7.0)) - along * 0.18
+			var tooth := (a2 + b2) * 0.5 + out * reach * lerpf(0.15, 0.45, _rand01(mid, 8.0)) + along * (_rand01(mid, 9.0) - 0.5) * 0.4
+			var col := Color(0.3, 1.0 if _rand01(mid, 10.0) < 0.3 else 0.2, 0, 1)
+			if organic: col = Color(0.3, 0.0, 0, 1)
+			_cap_tri(cap, a, b, b2, col)
+			_cap_tri(cap, a, b2, a2, col)
+			_cap_tri(cap, a2, b2, tooth, col)
+			made += 1
+		i += maxi(span, 1)
+
+
+static func _section_structure(cap: Dictionary, polygon: PackedVector2Array, centre: Vector3, x: Vector3, y: Vector3, inward: Vector3, depth: float, radius: float, organic: bool, ragged := false) -> void:
 	var lo := polygon[0]
 	var hi := lo
 	for p in polygon:
@@ -1013,6 +1314,15 @@ static func _section_structure(cap: Dictionary, polygon: PackedVector2Array, cen
 				var pa := centre + x * a.x * 0.982 + y * a.y * 0.982 + inward * depth * 0.72
 				var pb := centre + x * b.x * 0.982 + y * b.y * 0.982 + inward * depth * 0.72
 				var width := minf(radius * 0.018, a.distance_to(b) * 0.045)
+				if ragged:
+					# issue 484: some decks and ribs run long, bent out past the torn skin
+					var r1 := _rand01(pa, 11.0)
+					if r1 < 0.55:
+						var dir := (pb - pa).normalized()
+						var ext := radius * lerpf(0.10, 0.28, _rand01(pb, 12.0))
+						if ext < STAGING_UNITS_PER_PIXEL * 1.5: ext = 0.0
+						if r1 < 0.27: pb += dir * ext - inward * ext * 0.55
+						else: pa += -dir * ext - inward * ext * 0.55
 				if organic:
 					var mid := pa.lerp(pb, 0.5) - inward * radius * 0.035
 					_cap_bone(cap, pa, mid, -inward, width, width * 1.3)
@@ -1114,8 +1424,12 @@ static func _death_inner(fx, s, cause: String) -> float:
 	var seeds: PackedVector3Array = job.get("seeds", PackedVector3Array())
 	var at: Vector3 = (seeds[0] + seeds[1]) * 0.5 if seeds.size() >= 2 else s.hull.c
 	var axis: Vector3 = (seeds[1] - seeds[0]).normalized() if seeds.size() >= 2 else Vector3.RIGHT
+	var lines := _break_lines(job)
+	if not lines.is_empty():
+		at = lines[0][0]
+		axis = lines[0][1]
 	if s.death_big:
-		_tell(fx, s, T, timeline, cause, seeds)
+		_tell(fx, s, T, timeline, cause, seeds, lines)
 	else:
 		_cracks(fx, s, T + 0.06, timeline.vent + 0.10, Color(0.62, 0.73, 0.91), at, axis)
 	var hit: Dictionary = s.hull.ray(at + Vector3.UP * s.hull.L, Vector3.DOWN)
@@ -1186,6 +1500,12 @@ static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
 	# skip the vent rather than float it beside the ship.
 	var hit: Dictionary = s.hull.ray(lp + ln * s.hull.L, -ln)
 	if hit.is_empty(): return
+	if s.death_big:
+		# issue 484: no pale vent puff beside a big hull (the issue 462 report); its first chain blast follows at once
+		# and the tear's sparks stay.
+		var pose_b: Transform3D = s.xf() * s.get_meta("death_motion", Transform3D.IDENTITY)
+		tear_particles(fx, pose_b * (hit["p"] as Vector3), (pose_b.basis * (hit["n"] as Vector3)).normalized(), s.hull.L, s.get_meta("death_velocity", Vector3.ZERO), true)
+		return
 	var pose: Transform3D = s.xf() * s.get_meta("death_motion", Transform3D.IDENTITY)
 	var p: Vector3 = pose * (hit["p"] as Vector3)
 	var n: Vector3 = (pose.basis * (hit["n"] as Vector3)).normalized()
@@ -1278,10 +1598,14 @@ static func _grow_dir(fx, s, axis: Vector3) -> Vector3:
 # Beat 1. A glowing tear on the hull's break line(s), growing from the hit side, white-hot at its tip and ember behind;
 # chain blasts walk along it behind the tip; a capital shudders. Older hulls have no authored break lines, so the line
 # is the game's own cut plane (the bisector of the prepared pieces, issue 167's fallback).
-static func _tell(fx, s, T: float, tl: DeathTimeline, cause: String, seeds: PackedVector3Array) -> void:
+static func _tell(fx, s, T: float, tl: DeathTimeline, cause: String, seeds: PackedVector3Array, lines: Array = []) -> void:
 	var h = s.hull
 	var at: Vector3 = (seeds[0] + seeds[1]) * 0.5 if seeds.size() >= 2 else h.c
 	var axis: Vector3 = (seeds[1] - seeds[0]).normalized() if seeds.size() >= 2 else Vector3.RIGHT
+	if not lines.is_empty():
+		# issue 484: the tear runs on the fracture plan's tilted breaks (the bite's break first)
+		at = lines[0][0]
+		axis = lines[0][1]
 	var g := _grow_dir(fx, s, axis)
 	var half: float = absf(g.y) * h.H * 0.5 + absf(g.z) * h.W * 0.5 + absf(g.x) * h.L * 0.5 + 0.05
 	s.set_meta("death_grow", [g, half, at, axis])
@@ -1291,10 +1615,15 @@ static func _tell(fx, s, T: float, tl: DeathTimeline, cause: String, seeds: Pack
 	m.set_shader_parameter("cut_axis", axis)
 	if seeds.size() >= 3:
 		# the second line of a capital opens a little later and finishes with the first
+		var at_b: Vector3 = (seeds[1] + seeds[2]) * 0.5
+		var axis_b: Vector3 = (seeds[2] - seeds[1]).normalized()
+		if lines.size() >= 2:
+			at_b = lines[1][0]
+			axis_b = lines[1][1]
 		m.set_shader_parameter("open_b", Vector2(T + tl.tear_open + 0.35, T + tl.tear_full))
-		m.set_shader_parameter("cut_at_b", (seeds[1] + seeds[2]) * 0.5)
-		m.set_shader_parameter("cut_axis_b", (seeds[2] - seeds[1]).normalized())
-		s.set_meta("death_line_b", [(seeds[1] + seeds[2]) * 0.5, (seeds[2] - seeds[1]).normalized()])
+		m.set_shader_parameter("cut_at_b", at_b)
+		m.set_shader_parameter("cut_axis_b", axis_b)
+		s.set_meta("death_line_b", [at_b, axis_b])
 	m.set_shader_parameter("grow", g)
 	m.set_shader_parameter("half_span", half)
 	m.set_shader_parameter("width", maxf(h.L * 0.010, 0.02))
@@ -1312,6 +1641,19 @@ static func _tell(fx, s, T: float, tl: DeathTimeline, cause: String, seeds: Pack
 			mi.material_overlay = local
 	for i in tl.chain.size():
 		fx.later(T + float(tl.chain[i]), _chain_blast.bind(fx, s, i, tl, cause, T))
+
+
+# The fracture plan's breaks as [at, normal] lines, the bite's break first; empty for the old seed cut.
+static func _break_lines(job: Dictionary) -> Array:
+	var plan: Dictionary = job.get("plan", {})
+	if plan.is_empty(): return []
+	var brs: Array = plan["breaks"]
+	var out: Array = []
+	var first := int(plan["bite_break"])
+	if first < brs.size(): out.append([brs[first]["at"], brs[first]["n"]])
+	for i in brs.size():
+		if i != first: out.append([brs[i]["at"], brs[i]["n"]])
+	return out
 
 
 # Where a point of the tear sits on the plating: on line A (or B for a capital's odd blasts), at s_frac across.
@@ -1354,7 +1696,8 @@ static func _chain_blast(fx, s, i: int, tl: DeathTimeline, cause: String, T: flo
 	var p: Vector3 = pose * (hit["p"] as Vector3)
 	var n: Vector3 = (pose.basis * (hit["n"] as Vector3)).normalized()
 	var melt := cause == "melt"
-	_blast(fx, s, p, n, 80.0 if s.death_tier == "cruiser" else 84.0, Color(0.55, 0.65, 0.12) if melt else Color(1.0, 0.62, 0.28), pose, melt)
+	# issue 484: the cruiser's chain blasts measured 24 to 57 px on the strip against a 75 px floor; drawn at 100 now
+	_blast(fx, s, p, n, 100.0 if s.death_tier == "cruiser" else 84.0, Color(0.55, 0.65, 0.12) if melt else Color(1.0, 0.62, 0.28), pose, melt)
 	# a narrow jet of fire, then gas, from the opened plating
 	if fx.quality != "low":
 		var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
@@ -1365,7 +1708,7 @@ static func _chain_blast(fx, s, i: int, tl: DeathTimeline, cause: String, T: flo
 
 # One staged picture from the route B pictures (the rebake of issue 426), sized in pixels at the battle camera. `frame`
 # maps the source ship's own space to the world where the picture is born (a drifting wreck piece), for the stray guard.
-static func _pic(fx, src, p: Vector3, rel: String, px: float, life: float, divisor: float, intensity: float, soft: bool, kind: String, frame = null, velocity := Vector3.ZERO) -> MeshInstance3D:
+static func _pic(fx, src, p: Vector3, rel: String, px: float, life: float, divisor: float, intensity: float, soft: bool, kind: String, frame = null, velocity := Vector3.ZERO, look := {}) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
 	mi.name = "fx_beat_" + kind
 	mi.set_meta("fx_picture_kind", kind)
@@ -1376,7 +1719,10 @@ static func _pic(fx, src, p: Vector3, rel: String, px: float, life: float, divis
 	mi.mesh = quad
 	mi.extra_cull_margin = 100.0
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var mat := route_material(fx, SH.DEATH_FLIPBOOK, rel, true)
+	var mat := route_material(fx, SH.DEATH_FLIPBOOK, rel, true, int(look.get("seed", -1)))
+	mat.set_shader_parameter("pic_spin", float(look.get("spin", 0.0)))
+	mat.set_shader_parameter("pic_shape", look.get("shape", Vector2.ONE))
+	mat.set_shader_parameter("smoke_tone", float(look.get("tone", 1.0)))
 	mat.set_shader_parameter("born", fx.now)
 	mat.set_shader_parameter("lifetime", life)
 	mat.set_shader_parameter("extent", px * STAGING_UNITS_PER_PIXEL)
@@ -1401,13 +1747,54 @@ static func _blast(fx, src, p: Vector3, n: Vector3, px: float, tint: Color, fram
 	if not p.is_finite(): return
 	var soft: bool = pale or fx.reduce_flashing or (fx._flash_sized(p, 0.0, px) and not fx.flash_ok(fx.now))
 	_pic(fx, src, p, "weapons/impact/flash_", px, 0.50 if soft else 0.16, 0.97 if soft else 3.0, 1.25 if soft else 5.2, soft, "flash", frame)
-	fx.later(fx.now + 0.06, func l_blast_body() -> void:
-		_pic(fx, src, p, "weapons/impact/impact_", px * 0.9, 0.70, 0.80, 2.0, false, "impact", frame))
+	_smoke_clump(fx, src, p, n, px * 0.9, 0.70, frame, 0.06, 2, 3)
 	fx.light(p + n * 0.6, fx.now, 0.40 if soft else 0.25, 5.0, tint, 0)
 	if fx.quality != "low":
 		var k: float = px * STAGING_UNITS_PER_PIXEL / 10.0
 		for j in 5:
 			fx.stk(p + n * 0.1, fx.now, 0.35 + fx.rng.randf() * 0.25, tint.lerp(Color(1, 0.9, 0.6), 0.4), 5.0, 0.05, 0.10, 1, fx.rcone(n, 0.7) * (8.0 + fx.rng.randf() * 10.0) * k, 2.0)
+
+
+# Issue 484 (owner, Nov 11, on the secondaries: "the secondary explosion smoke looks a little too even and weird"). One
+# body picture per blast drew the same round puff, the same size, born together round the hull. Now each blast's smoke
+# is a small clump: two to four pictures, one large and the rest a third to two thirds of it, born at staggered times,
+# all on the blast point (rule 4: it starts on the ship) but drifting at different speeds into one side of the blast,
+# turned and stretched differently, some darker. The asymmetric baked seed (s0, "shards") is preferred; the round seeds
+# are stretched when used. Seeded per ship, so a replay matches. Fire stays inside the cap: lives only shrink.
+static func _death_rng(s) -> RandomNumberGenerator:
+	if s == null or not (s is Object) or not s.has_method("set_meta"):
+		return RandomNumberGenerator.new()
+	if not s.has_meta("death_rng"):
+		var r := RandomNumberGenerator.new()
+		r.seed = hash(str(s.id)) + 101
+		s.set_meta("death_rng", r)
+	return s.get_meta("death_rng")
+
+
+static func _smoke_clump(fx, src, p: Vector3, n: Vector3, px: float, life: float, frame, delay: float, lo: int, hi: int) -> void:
+	if not p.is_finite(): return
+	var r := _death_rng(src)
+	var count := r.randi_range(lo, hi)
+	var side := Vector3(r.randf_range(-1.0, 1.0), 0.0, r.randf_range(-1.0, 1.0))
+	if side.length() < 0.1: side = Vector3.RIGHT
+	side = (side - n * side.dot(n)).normalized()
+	var units: float = px * STAGING_UNITS_PER_PIXEL
+	for j in count:
+		var size: float = px * (r.randf_range(0.85, 1.05) if j == 0 else r.randf_range(0.32, 0.68))
+		var dir: Vector3 = (n * r.randf_range(0.3, 1.0) + side * r.randf_range(0.2, 1.1) + fx.rdir() * 0.25).normalized()
+		var vel: Vector3 = dir * units * r.randf_range(0.10, 0.45) / maxf(life, 0.3)
+		# the round baked seeds (s1, s2) read as a flower of equal puffs: the big picture is always the lopsided s0, and
+		# only a small one may use a round seed, stretched
+		var seed_i: int = 0 if (j == 0 or r.randf() < 0.75) else r.randi_range(1, 2)
+		var look := {"seed": seed_i, "spin": r.randf() * TAU, "tone": r.randf_range(0.5, 1.3),
+			"shape": Vector2(r.randf_range(1.2, 1.6), r.randf_range(0.6, 0.85)) if seed_i != 0 else Vector2(r.randf_range(0.85, 1.25), r.randf_range(0.85, 1.25))}
+		var t: float = delay + (0.0 if j == 0 else r.randf_range(0.04, 0.32))
+		var l: float = life * r.randf_range(0.75, 1.0)
+		fx.later(fx.now + t, _smoke_one.bind(fx, src, p, size, l, frame, vel, look))
+
+
+static func _smoke_one(fx, src, p: Vector3, px: float, life: float, frame, vel: Vector3, look: Dictionary) -> void:
+	_pic(fx, src, p, "weapons/impact/impact_", px, life, 0.80, 2.0, false, "impact", frame, vel, look)
 
 
 # Beat 2's flash: 0.28 s after the break, on the lip of the torn face. The core (route B, the tier's own row), the body
@@ -1422,8 +1809,9 @@ static func _big_core(fx, s, node_ref: WeakRef, local: Vector3, R: float, tint: 
 	_core_flash(fx, p, R, 70.0, tint, null, Vector3.ZERO, s, tl.tier, frame)
 	var body_px := 380.0 if capital else 260.0
 	# light first, then matter: the body is born as the core's full heat ends, so its smoke never covers the flash
-	fx.later(fx.now + 0.12, func l_core_body() -> void:
-		_pic(fx, s, p, "weapons/impact/impact_", body_px, 2.0 if capital else 1.6, 0.80, 2.0, false, "impact", frame))
+	var away_l: Vector3 = (s.get_meta("death_grow", [Vector3.UP])[0] as Vector3)
+	var away_w: Vector3 = (s.xf().basis * away_l).normalized() if away_l.length() > 0.01 else Vector3.UP
+	_smoke_clump(fx, s, p, (away_w + Vector3.UP * 0.5).normalized(), body_px, 2.0 if capital else 1.6, frame, 0.12, 3, 3)
 	if fx.quality != "low":
 		var gas := flipbook(fx, p, Vector3.UP, s.hull.L * (0.8 if capital else 0.7), "cool", 3.6 if capital else 3.0, s.get_meta("death_velocity", Vector3.ZERO) * 0.5, 0.38, atlas_band(s.hull.L), null)
 		(gas.material_override as ShaderMaterial).set_shader_parameter("born", fx.now + 0.45)
@@ -1460,13 +1848,22 @@ static func _schedule_secondaries(fx, s, wreck: Dictionary, pieces: Array, seeds
 		if sites.is_empty(): continue
 		for k in groups:
 			if made >= tl.secondaries: break
-			var t := T + tl.sec_from + (tl.sec_to - tl.sec_from) * (float(k) / maxf(groups - 1, 1)) + j * 0.05
+			# issue 484: not an even beat; each group lands up to 40 percent of a step early or late (seeded per ship)
+			var step_t: float = (tl.sec_to - tl.sec_from) / maxf(groups - 1, 1)
+			var jit: float = _death_rng(s).randf_range(-0.4, 0.4) * step_t if k > 0 else _death_rng(s).randf_range(0.0, 0.3) * step_t
+			var t := T + tl.sec_from + step_t * k + jit + j * 0.05
 			fx.later(t, _secondary_on.bind(fx, s, weakref(node), sites[k % sites.size()]))
 			made += 1
 
 
 # Up to five sites on one piece's own plating, facing up toward the battle camera, spread apart.
-static func _piece_sites(h, seeds: PackedVector3Array, cen: Vector3, count: int) -> PackedVector3Array:
+static func _piece_sites(h, seeds: PackedVector3Array, cen: Vector3, count: int, plan := {}, index := -1) -> PackedVector3Array:
+	return _piece_sites_in(h.sp, h.sn, seeds, cen, count, plan, index)
+
+
+# The same on plain arrays, so the worker cut can do it ahead of the death (issue 484 profiling: 2.4 ms per big break on
+# the death frame in the sandbox).
+static func _piece_sites_in(sp: PackedVector3Array, sn: PackedVector3Array, seeds: PackedVector3Array, cen: Vector3, count: int, plan := {}, index := -1) -> PackedVector3Array:
 	var own := 0
 	var best := INF
 	for i in seeds.size():
@@ -1474,31 +1871,45 @@ static func _piece_sites(h, seeds: PackedVector3Array, cen: Vector3, count: int)
 		if d < best:
 			best = d
 			own = i
+	if not plan.is_empty() and index >= 0: own = index
 	var cand := PackedVector3Array()
-	for i in range(0, h.sp.size(), maxi(1, h.sp.size() / 400)):
-		var q: Vector3 = h.sp[i]
-		if h.sn[i].y < 0.25: continue
+	for i in range(0, sp.size(), maxi(1, sp.size() / 400)):
+		var q: Vector3 = sp[i]
+		if sn[i].y < 0.25: continue
 		var mine := 0
-		var bd := INF
-		for k in seeds.size():
-			var d := q.distance_to(seeds[k])
-			if d < bd:
-				bd = d
-				mine = k
+		if not plan.is_empty():
+			# issue 484: the plan's own pieces; never a site in the bite (that plating is gone)
+			if _plan_assign(plan, q) != _plan_main(plan, q): continue
+			mine = _plan_main(plan, q)
+		else:
+			var bd := INF
+			for k in seeds.size():
+				var d := q.distance_to(seeds[k])
+				if d < bd:
+					bd = d
+					mine = k
 		if mine == own or seeds.size() < 2: cand.append(q)
 	var out := PackedVector3Array()
 	if cand.is_empty(): return out
-	out.append(cand[cand.size() / 2])
-	while out.size() < count and out.size() < cand.size():
-		var far := cand[0]
-		var fd := -1.0
-		for q in cand:
-			var nd := INF
-			for o in out: nd = minf(nd, q.distance_to(o))
-			if nd > fd:
-				fd = nd
-				far = q
-		out.append(far)
+	if plan.is_empty():
+		out.append(cand[cand.size() / 2])
+		while out.size() < count and out.size() < cand.size():
+			var far := cand[0]
+			var fd := -1.0
+			for q in cand:
+				var nd := INF
+				for o in out: nd = minf(nd, q.distance_to(o))
+				if nd > fd:
+					fd = nd
+					far = q
+			out.append(far)
+		return out
+	# issue 484: not spread as far apart as possible (that made an even ring of blasts); random plating, seeded by the
+	# piece, so blasts come in clumps and gaps
+	var r := RandomNumberGenerator.new()
+	r.seed = hash(Vector3i((cen * 100.0).round())) + index
+	while out.size() < count:
+		out.append(cand[r.randi_range(0, cand.size() - 1)])
 	return out
 
 
@@ -1507,7 +1918,8 @@ static func _secondary_on(fx, s, node_ref: WeakRef, ship_p: Vector3) -> void:
 	if not is_instance_valid(node) or node.is_queued_for_deletion(): return
 	var frame: Transform3D = node.global_transform * Transform3D(Basis.IDENTITY, -(node.get_meta("piece_cen", Vector3.ZERO) as Vector3))
 	var p: Vector3 = frame * ship_p
-	_blast(fx, s, p, frame.basis.y.normalized(), 78.0, Color(1.0, 0.6, 0.26), frame)
+	# issue 484: secondaries vary plainly in size (the playbook floor is 75 px)
+	_blast(fx, s, p, frame.basis.y.normalized(), _death_rng(s).randf_range(76.0, 140.0), Color(1.0, 0.6, 0.26), frame)
 
 
 static func _hide_ship(s) -> void:
@@ -1607,6 +2019,9 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		s.remove_meta("cut_task")
 	var pieces: Array = job.get("out", []) if job.get("out") != null else []
 	var seeds: PackedVector3Array = job.get("seeds", PackedVector3Array())
+	var plan: Dictionary = job.get("plan", {})
+	var n_main: int = int(plan["n_main"]) if not plan.is_empty() else pieces.size()
+	n_main = mini(n_main, pieces.size())
 	var xf: Transform3D = s.xf() * s.get_meta("death_motion", Transform3D.IDENTITY)
 	center = xf * h.c
 	_hide_ship(s)
@@ -1622,12 +2037,14 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 	var wreck = {"id": s.id, "t0": T, "nodes": [], "mats": [], "lights": [], "fires": [], "speed": 1.0, "organic": organic, "heat_births": {}, "cut_events": []}
 	var main_i = -1
 	var main_n = -1
-	for i in pieces.size():
+	for i in n_main:
 		if int(pieces[i]["n"]) > main_n:
 			main_n = int(pieces[i]["n"])
 			main_i = i
 	var phys = bool(fx.dstate.get("physics_on", false))
-	for i in pieces.size():
+	wreck["frags"] = []
+	wreck["scorch_mats"] = []
+	for i in n_main:
 		var pc: Dictionary = pieces[i]
 		if (pc["surfs"] as Array).is_empty():
 			continue
@@ -1672,8 +2089,16 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		node.global_transform = Transform3D(xf.basis, xf * cen)
 		node.set_meta("piece_cen", cen)
 		if s.death_big and not organic:
-			node.set_meta("sec_sites", _piece_sites(h, seeds, cen, 5))
-		if s.death_big and not organic and seeds.size() >= 2:
+			node.set_meta("sec_sites", pc["sec_sites"] if pc.has("sec_sites") else _piece_sites(h, seeds, cen, 5, plan, i))
+		wreck["scorch_mats"].append_array(pc.get("hull_mats", []))
+		if not plan.is_empty() and not (plan["breaks"] as Array).is_empty():
+			# issue 484: the seam this piece's torn face belongs to (the bite's break where it has one)
+			var brs: Array = plan["breaks"]
+			var seam_b: int = clampi(int(plan["bite_break"]) if i in [int(plan["bite_break"]), int(plan["bite_break"]) + 1] else mini(i, brs.size() - 1), 0, brs.size() - 1)
+			pc["split_at"] = brs[seam_b]["at"]
+			pc["split_axis"] = brs[seam_b]["n"]
+			pc["split_width"] = h.L * 0.12
+		elif s.death_big and not organic and seeds.size() >= 2:
 			var seam := mini(i, seeds.size() - 2)
 			pc["split_at"] = (seeds[seam] + seeds[seam + 1]) * 0.5
 			pc["split_axis"] = (seeds[seam + 1] - seeds[seam]).normalized()
@@ -1705,11 +2130,12 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		if cause == "tidal" and fx.well != Vector3.INF:
 			vel += (fx.well - center).normalized() * 3.0 * k
 		vel.y = 0.0
-		var ang: Vector3 = fx.rdir() * ((0.22 if is_main else 0.35) if s.death_big else (1.1 if is_main else 1.6))
+		# issue 484: the biggest piece of a big hull turns slowly, so it stays readable as the ship's main wreck
+		var ang: Vector3 = fx.rdir() * ((0.14 if is_main else 0.35) if s.death_big else (1.1 if is_main else 1.6))
 		var release_delay := 0.0
 		if s.death_big and not organic:
 			var timeline: DeathTimeline = s.get_meta("death_timeline")
-			release_delay = mini(i, pieces.size() - 2) * timeline.spacing
+			release_delay = mini(i, n_main - 2) * timeline.spacing
 		var release_t := T + release_delay
 		if node is RigidBody3D:
 			if release_delay <= 0.0:
@@ -1738,7 +2164,21 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		# Beat 2: the core flash comes 0.28 s after the halves part, at the lip of the torn face; then beat 3.
 		var tl: DeathTimeline = s.get_meta("death_timeline")
 		var lip: Node3D = wreck["nodes"][0]
-		fx.later(T + tl.core_delay, _big_core.bind(fx, s, weakref(lip), lip.get_meta("tear_site", Vector3.ZERO), R, tint, cause, tl))
+		var local: Vector3 = lip.get_meta("tear_site", Vector3.ZERO)
+		if not plan.is_empty():
+			# issue 484: the core goes off in the bite, on the piece nearest it; the bite's fragments and a cloud of
+			# plates fly out from there.
+			var bc: Vector3 = plan["bite"]["c"]
+			var bd := INF
+			for nd in wreck["nodes"]:
+				var dd: float = (nd.get_meta("piece_cen", Vector3.ZERO) as Vector3).distance_to(bc)
+				if dd < bd:
+					bd = dd
+					lip = nd
+			local = bc - (lip.get_meta("piece_cen", Vector3.ZERO) as Vector3)
+			_make_frags(fx, s, wreck, pieces, n_main, xf, inherited, T, T + tl.core_delay)
+			fx.later(T + tl.core_delay, _throw_frags.bind(fx, s, wreck, plan, weakref(lip), tl))
+		fx.later(T + tl.core_delay, _big_core.bind(fx, s, weakref(lip), local, R, tint, cause, tl))
 		_schedule_secondaries(fx, s, wreck, pieces, seeds, T, tl)
 		return
 	var flash_site := center
@@ -1750,6 +2190,71 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		# Craft have no pre-cut job. Keep one pooled physical shard plus a visible ember.
 		spawn_debris(fx, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3))
 		fx.spr(center, T, 5.0, tint, 1.2, R * 0.3, R * 0.05, 19, xf.basis.x * 2.0, 0.25, 0.0, 0.0, 12.0)
+
+
+# Issue 484: the bite's fragments and the chips along the break, as real pieces of the hull (capped, glowing faces,
+# scorched plating). They ride with the wreck until the core flash, then fly out from the bite, tumbling fast. They
+# are kinematic (no physics bodies): the 20-death fleet probe keeps its collider count.
+static func _make_frags(fx, s, wreck: Dictionary, pieces: Array, n_main: int, xf: Transform3D, inherited: Vector3, T: float, hold_until: float) -> void:
+	var job: Dictionary = s.get_meta("cut_job", {})
+	var pre: Array = job.get("meshes", [])
+	var geo: Array = job.get("geo", [])
+	for i in range(n_main, pieces.size()):
+		var pc: Dictionary = pieces[i]
+		if (pc["surfs"] as Array).is_empty(): continue
+		var am: ArrayMesh = pre[i] if i < pre.size() else (_piece_materials(geo[i], pc) if i < geo.size() else _piece_mesh(pc))
+		var cen: Vector3 = pc["cen"] if pc.has("cen") else Vector3.ZERO
+		var node := Node3D.new()
+		node.name = "fx_wreck_frag_%s_%d" % [s.id, i]
+		fx.phys_root.add_child(node)
+		node.global_transform = Transform3D(xf.basis, xf * cen)
+		node.set_meta("piece_cen", cen)
+		node.set_meta("chip", i >= n_main + int(job.get("plan", {}).get("bite", {}).get("subs", PackedVector3Array()).size()))
+		var mi := MeshInstance3D.new()
+		mi.mesh = am
+		mi.position = -cen
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		node.add_child(mi)
+		if pc.has("cap_mat"):
+			var cm := pc["cap_mat"] as ShaderMaterial
+			cm.set_shader_parameter("heat", 0.0)
+			cm.set_shader_parameter("face_glow", 0.5)
+			if fx.quality != "low":
+				wreck["mats"].append(cm)
+				# small fragments start past white heat and go dark in about half the big pieces' time
+				wreck["heat_births"][cm] = T - float(wreck.get("cool", WRECK_COOL)) * 0.35
+		wreck["scorch_mats"].append_array(pc.get("hull_mats", []))
+		wreck["frags"].append(node)
+		wreck["fires"].append({"node": node, "vel": inherited, "ang": Vector3.ZERO, "until": hold_until})
+
+
+static func _throw_frags(fx, s, wreck: Dictionary, plan: Dictionary, lip_ref: WeakRef, tl: DeathTimeline) -> void:
+	var lip := lip_ref.get_ref() as Node3D
+	if not is_instance_valid(lip) or lip.is_queued_for_deletion(): return
+	var frame: Transform3D = lip.global_transform * Transform3D(Basis.IDENTITY, -(lip.get_meta("piece_cen", Vector3.ZERO) as Vector3))
+	var bite: Dictionary = plan["bite"]
+	var bc: Vector3 = bite["c"]
+	var out_l: Vector3 = bite["out"]
+	var L: float = s.hull.L
+	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
+	for nd in wreck["frags"]:
+		if not is_instance_valid(nd): continue
+		var cen: Vector3 = nd.get_meta("piece_cen", Vector3.ZERO)
+		var chip: bool = nd.get_meta("chip", false)
+		var d: Vector3 = (cen - bc).normalized() * 0.6 + out_l * (0.5 if chip else 1.0)
+		d += Vector3(fx.rng.randf_range(-0.3, 0.3), 0.0, fx.rng.randf_range(-0.3, 0.3))
+		var dw: Vector3 = (frame.basis * d).normalized()
+		dw.y *= 0.25
+		var v: Vector3 = inherited + dw.normalized() * L * fx.rng.randf_range(0.16, 0.34) * (0.7 if chip else 1.0)
+		# they fly for 8 s (a few hull lengths, well spread), then rest, so a long battle does not move them forever
+		wreck["fires"].append({"node": nd, "vel": v, "ang": fx.rdir() * fx.rng.randf_range(1.2, 3.0), "until": fx.now + 8.0, "frag": true})
+	# a cloud of torn plates of several sizes, spreading and thinning between the pieces; born just outside the bite, so
+	# the plates (physics bodies) never start inside a wreck piece's collider and kick it into a spin
+	var p: Vector3 = frame * (bc + out_l * float(bite["ry"]) * 1.2)
+	var big := tl.tier == "capital"
+	# Issue 484 profiling: each plate is a physics body; keep the cloud lean (it adds to the plates at the break)
+	spawn_debris(fx, p, inherited, 10 if big else 7, L * 0.012)
+	spawn_debris(fx, p, inherited, 4 if big else 3, L * 0.03)
 
 
 # A fast radial spill of luminous spores and darker membrane clots, near the board.
@@ -1820,7 +2325,8 @@ static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, 
 # or unbounded hull scan is added to a death frame.
 static func _edge_sites(pc: Dictionary, cen: Vector3, view: Vector3, count: int) -> PackedVector3Array:
 	var src: PackedVector3Array = pc.get("edge", PackedVector3Array())
-	if pc.has("cap"): src = pc["cap"][Mesh.ARRAY_VERTEX]
+	if pc.has("lip"): src = pc["lip"]
+	elif pc.has("cap"): src = pc["cap"][Mesh.ARRAY_VERTEX]
 	if src.is_empty(): src = pc.get("pts", PackedVector3Array())
 	var candidates := PackedVector3Array()
 	for i in range(0, src.size(), maxi(1, src.size() / 128)):
@@ -1864,6 +2370,9 @@ static func _cap_wrecks(fx) -> void:
 static func _free_wreck(w: Dictionary) -> void:
 	for l in w["lights"]:
 		l["on"] = false
+	for n in w.get("frags", []):
+		if is_instance_valid(n):
+			(n as Node).queue_free()
 	for n in w["nodes"]:
 		if is_instance_valid(n):
 			(n as Node).queue_free()
@@ -1894,10 +2403,24 @@ static func update(fx, dt: float) -> void:
 		w["speed"] = speed
 		var age: float = fx.now - float(w["t0"])
 		# Heat fades over a few seconds. The cold opaque cap remains.
-		for m in w["mats"]:
-			var birth: float = w.get("heat_births", {}).get(m, INF)
-			var heat := 0.0 if birth == INF else clampf(1.0 - (fx.now - birth) / float(w.get("cool", WRECK_COOL)), 0.0, 1.0)
-			(m as ShaderMaterial).set_shader_parameter("heat", heat)
+		# Issue 484 profiling: a wreck now has up to a dozen glowing faces and its scorched plating. Heat falls by about a
+		# tenth a second, so faces are set 15 times a second, not every frame, and a wreck that has gone cold is never
+		# visited again (material updates also cost the renderer).
+		var cool_t: float = float(w.get("cool", WRECK_COOL))
+		if not bool(w.get("cold", false)) and fx.now >= float(w.get("heat_next", -INF)):
+			w["heat_next"] = fx.now + 1.0 / 15.0
+			var births: Dictionary = w.get("heat_births", {})
+			var any_warm := false
+			for m in w["mats"]:
+				var birth: float = births.get(m, INF)
+				var heat := 0.0 if birth == INF else clampf(1.0 - (fx.now - birth) / cool_t, 0.0, 1.0)
+				(m as ShaderMaterial).set_shader_parameter("heat", heat)
+				if heat > 0.0 or birth == INF: any_warm = true
+			var scorch_heat := clampf(1.0 - age / cool_t, 0.0, 1.0)
+			for m in w.get("scorch_mats", []):
+				(m as ShaderMaterial).set_shader_parameter("fx_scorch_heat", scorch_heat)
+			# cold for good once every face has cooled and nothing is still waiting for its release
+			if not any_warm and scorch_heat == 0.0 and age > 1.0: w["cold"] = true
 		var gate = exp(-maxf(age, 0.0) / 3.5)
 		for f in w["fires"]:
 			if f.has("mat"):
