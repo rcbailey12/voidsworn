@@ -193,6 +193,8 @@ func _ready() -> void:
 		tips_off = true   # screenshot jobs: no onboarding tip card covering the top of the screen
 	if args.has("movement"):
 		movement = str(args["movement"])
+	if args.has("reduce-motion"):
+		reduce_motion = true
 	_build_world()
 	sfx = Sfx.new()
 	sfx.name = "Sfx"
@@ -1526,7 +1528,9 @@ func _play_move(id, path: Array, charge: bool) -> void:
 	elif cin:
 		# the glide sets its own length from its physics at this pace (cruise MOVE_CRUISE of the hex time; ramps, corners
 		# and spins add to it), capped
-		sv.play_glide(gsteps, per * MOVE_CRUISE * (0.72 if charge else 1.0) * mv_speed / 1000.0, {"mass": sk, "cap": MOVE_CAP / 1000.0 * mv_speed})
+		# issue 521: a move flown only on thrusters (a one-hex slide, a straight back-off) is slower and gentler than a burn
+		var jets_only: bool = not gsteps.is_empty() and bool((gsteps[-1] as Dictionary).get("thrusters", false))
+		sv.play_glide(gsteps, per * MOVE_CRUISE * (SLIDE_PACE if jets_only else 1.0) * (0.72 if charge else 1.0) * mv_speed / 1000.0, {"mass": sk, "cap": MOVE_CAP / 1000.0 * mv_speed})
 		dur = sv.path_dur / maxf(mv_speed, 1e-3)
 	else:
 		sv.play_path(keys, yaws, alts, s, dur * mv_speed, {"mass": mass})
@@ -1619,21 +1623,125 @@ func _move_segments(sv, path: Array, mass: float, flip_ok := false) -> Array:
 
 # F2: the path as glide steps for ship_view.gd play_glide (one continuous motion): each turn step a target heading and
 # its weight (a 60 degree turn weighs MOVE_ROT hexes, more for a bigger hull, so it spins slower), each translation step
-# its hex (with the height of a climb over a rock or a dive under a ship) and a weight of one hex
+# its hex (with the height of a climb over a rock or a dive under a ship) and a weight of one hex.
+# Issue 521 (R195, Ryan: "engines should be clearly stronger and more used for movement than the thrusters... for one tile
+# over, it tracks but not when they're going like 3-10 tiles down just almost skating on thrusters"): a move of more than
+# one hex is flown nose first on the main engine (_nose_first), and only a one-hex slide stays on the side or retro jets.
+# Presentation only: the hexes passed, the end hex and the final facing are the rules' own.
 func _glide_steps(sv, path: Array, sk: float) -> Array:
 	var out: Array = []
 	var la: float = sv.cur_yaw
 	for st in path:
 		var a: float = la + angle_difference(la, ShipView.yaw_of(st["f"]))
 		if _jt(st.get("rot")):
-			out.append({"kind": "turn", "yaw": a, "w": lerpf(MOVE_ROT[0], MOVE_ROT[1], sk) * maxf(absf(angle_difference(la, a)) / (PI / 3.0), 0.5)})
+			out.append({"kind": "turn", "yaw": a, "w": _turn_w(la, a, sk)})
 		else:
 			var ov := float(st.get("over", 0)) if st.get("over") != null else 0.0
 			var p: Vector3 = board.hex_world(st["q"], st["r"])
 			p.y = (9.0 if ov > 0 else -7.5) if ov != 0.0 else 0.0
-			out.append({"kind": "move", "p": p, "w": 1.0})
+			out.append({"kind": "move", "p": p, "w": 1.0, "slide": _jt(st.get("slip")) or _jt(st.get("rev"))})
 		la = a
+	var n_hex := 0
+	for g in out:
+		n_hex += 1 if g["kind"] == "move" else 0
+	if n_hex <= 1:
+		if n_hex == 1:
+			for g in out:
+				if g["kind"] == "move" and bool(g["slide"]):
+					out[-1]["thrusters"] = true
+		return out
+	return _nose_first(out, sv.position, float(sv.cur_yaw), la, sk)
+
+
+func _turn_w(a0: float, a1: float, sk: float) -> float:
+	return lerpf(MOVE_ROT[0], MOVE_ROT[1], sk) * maxf(absf(angle_difference(a0, a1)) / (PI / 3.0), 0.5)
+
+
+# Issue 521 tuning values (judged by eye on the issue 521 strips; movement_spec.md section 1):
+const LEG_TOL := 0.55        # hex centres within this share of a hex of a straight line fly as one leg (a zigzag of two
+                             # hex directions is one straight diagonal run, not a heading change every hex)
+const LEG_PULL := 0.6        # inside a leg the hull is drawn this share of the way onto the straight line, so it still
+                             # passes inside every hex of the ruled route (a hex centre is at most 0.2 hex off its line)
+const ASTERN := 2.1          # radians: a run this far behind both the heading and the final facing is backed on retro jets
+const SLIDE_PACE := 1.45     # a move flown only on thrusters (a one-hex slide, a straight back-off) takes this many times
+                             # the burn's time per hex: visibly slower and gentler than the main engine
+
+
+# A move of two hexes or more as the ship would fly it: the route's hex centres are split into straight legs; the nose
+# comes round onto each leg before the burn (a turn before the run, or at a corner), the main engine does the travelling,
+# and the ship turns to the rules' final facing while it brakes (play_glide's trailing turn). A one-hex leg that the
+# rules flew as a sidestep or back-off stays a slide on the heading of the leg before it (the dogleg drift); a run
+# straight astern of both the heading and the final facing is backed on retro jets.
+# Returns the glide steps; "thrusters" in the last step's dict says the whole move is flown on thrusters.
+func _nose_first(rsteps: Array, p0: Vector3, yaw0: float, yaw_end: float, sk: float) -> Array:
+	var pts: Array = [Vector3(p0.x, 0.0, p0.z)]
+	var slide: Array = []
+	for g in rsteps:
+		if g["kind"] == "move":
+			pts.append(g["p"])
+			slide.append(bool(g.get("slide", false)))
+	var flat: Array = []
+	for q in pts:
+		flat.append(Vector2((q as Vector3).x, (q as Vector3).z))
+	var hexd := 0.0
+	for i in flat.size() - 1:
+		hexd += ((flat[i + 1] as Vector2) - (flat[i] as Vector2)).length()
+	hexd = maxf(hexd / maxf(flat.size() - 1, 1), 1.0)
+	var keep := {0: true, flat.size() - 1: true}
+	_rdp(flat, 0, flat.size() - 1, LEG_TOL * hexd, keep)
+	var idx: Array = keep.keys()
+	idx.sort()
+	var out: Array = []
+	var h := yaw0
+	var engine := false
+	for li in idx.size() - 1:
+		var i0 := int(idx[li])
+		var i1 := int(idx[li + 1])
+		var d: Vector2 = (flat[i1] as Vector2) - (flat[i0] as Vector2)
+		var head := h
+		if d.length() > 1e-3 and not (i1 - i0 == 1 and bool(slide[i0])):
+			var tgt := atan2(-d.y, d.x)   # ShipView's yaw: the bow is (cos yaw, 0, -sin yaw)
+			if not (absf(angle_difference(h, tgt)) > ASTERN and absf(angle_difference(yaw_end, tgt)) > ASTERN):
+				head = h + angle_difference(h, tgt)
+				engine = true
+		if absf(angle_difference(h, head)) > 0.02:
+			out.append({"kind": "turn", "yaw": head, "w": _turn_w(h, head, sk)})
+		h = head
+		var ln := d.normalized() if d.length() > 1e-3 else Vector2.ZERO
+		for i in range(i0 + 1, i1 + 1):
+			var q: Vector3 = pts[i]
+			if i < i1:
+				var rel: Vector2 = (flat[i] as Vector2) - (flat[i0] as Vector2)
+				var on: Vector2 = (flat[i0] as Vector2) + ln * rel.dot(ln)
+				var pulled: Vector2 = (flat[i] as Vector2).lerp(on, LEG_PULL)
+				q = Vector3(pulled.x, q.y, pulled.y)
+			out.append({"kind": "move", "p": q, "w": 1.0})
+	if absf(angle_difference(h, yaw_end)) > 0.02:
+		out.append({"kind": "turn", "yaw": h + angle_difference(h, yaw_end), "w": _turn_w(h, yaw_end, sk)})
+	if not out.is_empty():
+		out[-1]["thrusters"] = not engine
 	return out
+
+
+# Ramer-Douglas-Peucker: keep the points that stand more than tol off the straight line between kept points
+func _rdp(flat: Array, i0: int, i1: int, tol: float, keep: Dictionary) -> void:
+	if i1 - i0 < 2:
+		return
+	var a: Vector2 = flat[i0]
+	var b: Vector2 = flat[i1]
+	var ab := b - a
+	var worst := -1.0
+	var wi := -1
+	for i in range(i0 + 1, i1):
+		var p: Vector2 = flat[i]
+		var dev := (p - a).length() if ab.length() < 1e-3 else absf(ab.cross(p - a)) / ab.length()
+		if dev > worst:
+			worst = dev
+			wi = i
+	if worst > tol:
+		keep[wi] = true
+		_rdp(flat, i0, wi, tol, keep)
+		_rdp(flat, wi, i1, tol, keep)
 
 
 # How long a G4 volley holds the battle, as `total` (the caller waits total * sp): the effect's own length scaled by the
@@ -1978,13 +2086,51 @@ func _impact(t_id, h: Dictionary, col: Color) -> void:
 	sfx.hit(sv.position, h.get("crit", false))
 
 
+# Issue 521 (audit item 7; R193, Ryan's pick "Hold and slow", which replaces the Board's R123): the cut-in for a kill
+# holds until just after the core flash (a cruiser's at 1.66 s, a capital's at 2.28 s) and the slow-motion beat plays
+# at the flash (fx.gd kill_slowmo, R73). A key or a click lets both go; under reduce motion the beat is off and the hold
+# ends just after the flash. Hurried (Enter or Space) or with no core flash, the old 1.6 s at the battle's pace stays.
+const KILL_AFTER := 0.35      # seconds the cut-in stays on the wreck after the flash (and after the beat, when it plays)
+var reduce_motion := false    # settings key reduce_motion (ui_spec.md 7.6; the switch itself is UI follow-up job A)
+var kill_hold_until := -1.0   # game_t when the kill cut-in lets go; -1 when none holds
+var _kill_hold_n := 0
+
+
+func _kill_hold(core_in: float) -> void:
+	var hold := 1.6 * speed
+	if core_in >= 0.0 and not skip:
+		hold = core_in + KILL_AFTER + (0.0 if reduce_motion else 0.48)   # fx.gd DEATH_SLOW_S, played at about a third
+	_kill_hold_n += 1
+	var n := _kill_hold_n
+	kill_hold_until = game_t + hold
+	get_tree().create_timer(hold).timeout.connect(func() -> void:
+		if n == _kill_hold_n:
+			_kill_let_go())
+
+
+func _kill_let_go() -> void:
+	kill_hold_until = -1.0
+	_kill_hold_n += 1
+	_cine_release()
+
+
+# a key or a click while a kill cut-in holds: the camera comes back and the slow-motion beat ends now
+func _kill_skip() -> void:
+	if kill_hold_until < 0.0:
+		return
+	if gfx != null and gfx.has_method("skip_death_slowmo"):
+		gfx.skip_death_slowmo()
+	_kill_let_go()
+
+
 func _play_death(e: Dictionary) -> void:
 	var id = e["unit"]
 	var sv = views.get(id)
+	var cined := false
 	if sv != null and _cine_wants("kill", e.get("by"), id) and cine_saved.is_empty():
 		var by = e.get("by") if e.get("by") != null and views.has(e.get("by")) else id
 		_cine_frame(by, id)
-		get_tree().create_timer(1.6 * speed).timeout.connect(_cine_release)
+		cined = true
 	var cause := str(e.get("cause", "blast"))
 	var friend := _side(id) == "player"
 	var sq := bool(VU.get(id, {}).get("squadron", false))
@@ -1995,9 +2141,16 @@ func _play_death(e: Dictionary) -> void:
 	var p: Vector3 = sv.position + Vector3(0, 2, 0)
 	var big := L >= 14.0
 	if gfx != null and gfx.has_method("death"):
+		if "kill_slowmo" in gfx:
+			gfx.kill_slowmo = not reduce_motion
 		var t: float = float(gfx.death(str(id), cause))
 		if skip and gfx.has_method("hurry_death"):
 			gfx.hurry_death()
+		var core_in := -1.0
+		if gfx.has_method("death_core_at") and float(gfx.death_core_at(str(id))) >= 0.0:
+			core_in = float(gfx.death_core_at(str(id))) - float(gfx.now)
+		if cined:
+			_kill_hold(core_in)
 		death_audio.fx = gfx
 		death_audio.watch(str(id), p)
 		sv.dead = true
@@ -2010,7 +2163,12 @@ func _play_death(e: Dictionary) -> void:
 		var pk := clampf(speed, 0.25 if skip else 0.5, 1.0)
 		var floor_k := clampf(speed / 0.35, 0.35, 1.0)   # under the round budget a big hull's hold shrinks too
 		await get_tree().create_timer(maxf((0.8 if big else 0.3) * floor_k, t * 0.6 * minf(pk, floor_k))).timeout
+		# issue 521: the next event waits while a kill cut-in still holds (a key or a click lets it go)
+		while kill_hold_until > 0.0 and game_t < kill_hold_until and not ended:
+			await get_tree().process_frame
 		return
+	if cined:
+		_kill_hold(-1.0)
 	_flash(p, 14.0 + L * 1.6, Color(1.0, 0.65, 0.3), 0.9)
 	_flash(p + Vector3(L * 0.25, 1, 0), 8.0 + L * 0.8, Color(1.0, 0.85, 0.6), 0.5, 0.15 * speed)
 	_flash(p - Vector3(L * 0.25, 0, 1), 8.0 + L * 0.8, Color(1.0, 0.5, 0.2), 0.6, 0.3 * speed)
@@ -2335,6 +2493,8 @@ func _clear_overlay() -> void:
 
 
 func _overlay() -> void:
+	if quitting or board == null or not is_instance_valid(board):
+		return
 	if board != null and board.has_method("set_danger"):
 		board.set_danger(_danger_bands())
 	if not _can_act():
@@ -2650,6 +2810,8 @@ func _unhandled_input(e: InputEvent) -> void:
 		return
 	if opening and ((e is InputEventMouseButton and (e as InputEventMouseButton).pressed) or (e is InputEventKey and (e as InputEventKey).pressed)):
 		_end_opening()
+	if kill_hold_until > 0.0 and ((e is InputEventMouseButton and (e as InputEventMouseButton).pressed and (e as InputEventMouseButton).button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]) or (e is InputEventKey and (e as InputEventKey).pressed and not (e as InputEventKey).echo)):
+		_kill_skip()
 	if e is InputEventMouseButton or e is InputEventMouseMotion:
 		if e is InputEventMouseButton and hud.over_ui((e as InputEventMouseButton).position) and (e as InputEventMouseButton).pressed:
 			return
@@ -3688,7 +3850,7 @@ func _toggle_opt(k: String) -> void:
 # ---------------------------------------------------------------- HUD refresh
 
 func _refresh_ui() -> void:
-	if api == null or V.is_empty():
+	if api == null or V.is_empty() or quitting or not is_instance_valid(hud):
 		return
 	if sel != "" and (not VU.has(sel) or VU[sel]["dead"]):
 		sel = ""
@@ -5114,7 +5276,14 @@ func _quit_report() -> void:
 	_quit()
 
 
+# Issue 521 (carried item 4 of the issue 505 report): _quit frees the scene's children and waits two frames; a command
+# still awaiting (the capture's end_activation) then resumed into _refresh_ui and _overlay on the freed HUD and board, a
+# script error and then a crash on shutdown. Once quitting, neither draws.
+var quitting := false
+
+
 func _quit(code := 0) -> void:
+	quitting = true
 	if code == 0 and shots_dir != "" and PG.stop_if_any():
 		code = 1
 	var m = get_node_or_null("/root/Main")

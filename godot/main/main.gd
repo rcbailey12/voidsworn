@@ -216,6 +216,7 @@ func _settings_to_battle(b: Node) -> void:
 	b.cine = str(settings.get("cine", "key"))
 	b._sync_teaching_switch()
 	b.set_fx_opts(bool(settings["reduce_flashing"]), float(settings["shake"]))
+	b.reduce_motion = bool(settings.get("reduce_motion", false))   # issue 521: no key in old settings reads off
 
 
 func _on_battle_option(key: String, value) -> void:

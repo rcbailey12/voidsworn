@@ -809,6 +809,7 @@ const GL_TRAIL := 0.45        # a turn after the run starts this share of its ow
 const GL_DWELL := 0.4         # a big turn at a corner (two steps or more): the hull rests this share of the spin there
 const GL_COAST := 0.15        # the drive while coasting under way (battle level about 0.6 of 2): hot, never dark
 const JET_ON := 0.18          # a jet fires above this level; its puffs carry the level, so they fade in and out
+const PUFF_MIN := 2.4         # issue 521: the smallest jet in a flown move, in world units (a frigate's jets read at r 170)
 const JET_K := 10.0           # how fast a jet level follows its push (1/s): short ramps, never one-frame switches
 
 
@@ -1325,12 +1326,14 @@ func _puff(at: Vector3, dir: Vector3, k := 1.0) -> void:
 	# a jet reads at battle zoom: about 5% of the hull's length as it leaves the nozzle, three times that as it spreads
 	# (in a flown move a capital's jets are bigger and last longer: a heavy burn, not a puff)
 	var mk := clampf(mass / MASS_MAX, 0.0, 1.0) if glide else 0.0
-	sp.pixel_size = clampf(L * lerpf(0.07, 0.1, mk), 1.4, lerpf(2.8, 4.6, mk)) / 64.0 * (0.6 + 0.4 * k)
+	# issue 521 (carried item 2): in a flown move no jet starts smaller than PUFF_MIN world units, about 18 px at the
+	# battle camera (r 170), so a frigate's small jets read; the bigger hulls were already past it
+	sp.pixel_size = clampf(L * lerpf(0.07, 0.1, mk), PUFF_MIN if glide else 1.4, lerpf(2.8, 4.6, mk)) / 64.0 * (0.6 + 0.4 * k)
 	sp.top_level = true
 	add_child(sp)
 	sp.global_position = to_global(at + dir.normalized() * maxf(L, 6.0) * 0.03)  # just outside the hull, not inside it
 	var vw: Vector3 = global_transform.basis.orthonormalized() * dir.normalized()
-	puffs.append({"n": sp, "t": 0.0, "v": vw * maxf(L, 6.0) * 0.8 * (0.6 + 0.4 * k) + _vel * 0.6, "s": sp.pixel_size, "a": 0.75 * k, "life": lerpf(0.3, 0.55, mk) if glide else 0.4})
+	puffs.append({"n": sp, "t": 0.0, "v": vw * maxf(L, 6.0) * 0.8 * (0.6 + 0.4 * k) + _vel * 0.6, "s": sp.pixel_size, "a": 0.75 * k, "life": lerpf(0.4, 0.55, mk) if glide else 0.4})
 
 
 static var _pm: StandardMaterial3D = null
