@@ -380,6 +380,7 @@ uniform vec3 b : source_color = vec3(0.7, 0.4, 1.0);
 uniform float gain = 0.6;
 uniform float seed = 0.0;
 uniform float storm = 0.0;
+uniform float storm_rate = 3.0;
 uniform float oct = 4.0;
 void vertex() {
 	MODELVIEW_MATRIX = VIEW_MATRIX * mat4(INV_VIEW_MATRIX[0], INV_VIEW_MATRIX[1], INV_VIEW_MATRIX[2], MODEL_MATRIX[3]);
@@ -395,7 +396,7 @@ void fragment() {
 	vec3 c = mix(a, b, smoothstep(0.4, 0.8, n));
 	float fl = 0.0;
 	if (storm > 0.0) {
-		float k = floor(TIME * 3.0 + seed * 7.0);
+		float k = floor(TIME * storm_rate + seed * 7.0);
 		fl = step(0.86, fract(sin(k * 12.9898 + seed) * 43758.5453)) * storm * smoothstep(0.55, 0.75, n);
 	}
 	ALBEDO = c * m * gain * (1.0 + fl * 3.0);
@@ -658,6 +659,23 @@ void fragment() {
 	EMISSION = (win_col * wmask * 1.6 + accent * glow * (1.0 - seam) * 0.6 + vec3(1.0, 0.62, 0.34) * fr * 0.22) * gain;
 }
 """
+
+# Neutral map wrecks reuse the plated hull shader, clipped into two solid-ended halves.
+static func dead_hull(split: bool) -> String:
+	if not split: return HULL
+	return HULL.replace("void fragment() {", """
+uniform float cut_side = 1.0;
+uniform float cut_x = 0.0;
+void fragment() {
+	vec3 world = (INV_VIEW_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	if ((world.x - cut_x) * cut_side < 0.0) discard;
+""")
+
+static func hollow_rock() -> String:
+	return ROCK_HI.replace("void fragment() {", """
+void fragment() {
+	if (length(lp.xz) < 0.34 + 0.045 * sin(lp.y * 16.0)) discard;
+""")
 
 # Solar arrays: dark blue cells in a silver grid, a glossy sheen.
 const SOLAR := """

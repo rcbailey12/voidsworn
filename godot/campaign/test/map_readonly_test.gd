@@ -207,6 +207,35 @@ func _run() -> void:
 	check(C.RUN["nems"].has(fac) and snap() != s4, "the campaign's own nemActive does build the record on that state: a reader that called it would fail the two rows above")
 
 	check(fleet_coverage.has("battle") and fleet_coverage.has("elite") and fleet_coverage.has("boss") and fleet_coverage.has("rival"), "fleet checks covered ordinary, elite, capital and rival encounters")
+	var seen_regions := {}
+	for seed_value in range(1, 101):
+		fresh(seed_value)
+		var region = str(C.RUN["map"]["region"])
+		if seen_regions.has(region): continue
+		var unchanged = snap()
+		await read_screen()
+		var scenery = ui.map3d.region_scenery
+		check(snap() == unchanged, region + ": region scenery and emblem leave the run, saves and random streams unchanged")
+		check(scenery != null and scenery.get_meta("region") == region and scenery.get_meta("scenery") == ui.map3d.System.REGION_SCENERY[region], region + ": generated region selects its actual scenery")
+		var emblem = ui._rail_host.find_child("RegionEmblem", true, false)
+		check(emblem != null and emblem.get_meta("region") == region and ui.GS.REGION_EMBLEMS.has(region), region + ": matching emblem is built on the rail")
+		ui._open_overlay("key"); await frames(2)
+		var key_emblems = ui.find_children("RegionEmblem", "Control", true, false)
+		check(key_emblems.size() == 2 and key_emblems.all(func(e): return e.get_meta("region") == region), region + ": Map key uses the same emblem")
+		ui._close_overlay()
+		var parts = ui.map3d._parts(scenery)
+		check(parts["vis"].all(func(v): return v.layers == ui.map3d.LAYER_SCENERY) and parts["lights"].all(func(l): return l[0].light_cull_mask == ui.map3d.LAYER_SCENERY), region + ": scenery lighting is isolated from the stops")
+		var landmark = scenery.get_node("Landmark"); var built := false
+		match region:
+			"boneyard": built = landmark.get_child(0).get_child_count() >= 8 and scenery.get_child_count() >= 16
+			"nebula": built = parts["vis"].size() >= 20 and landmark.get_child_count() >= 4
+			"world": built = landmark.has_node("body/spin") and landmark.get_child_count() == 4 and landmark.get_node("body/spin").mesh.radius > 10
+			"frontier": built = landmark.get_child(0).material_override.shader.code.contains("discard") and scenery.get_child_count() >= 15
+			"deep": built = not landmark.visible and scenery.get_child_count() == 5 and is_zero_approx(ui.map3d.env.sky.sky_material.get_shader_parameter("neb_gain")) and ui.map3d.props.blinkers.any(func(b): return is_equal_approx(b[2], 7.0))
+		check(built, region + ": the expected landmark and dressing were actually built")
+		seen_regions[region] = true
+		if seen_regions.size() == C.REGIONS.size(): break
+	check(seen_regions.size() == 5 and C.REGIONS.keys().all(func(key): return ui.GS.REGION_EMBLEMS.has(key) and ui.map3d.System.REGION_SCENERY.has(key)), "every live region has scenery and an emblem")
 	for l in lines: print(l)
 	print("Map read-only: " + ("PASS" if fails == 0 else "FAIL (%d)" % fails) + " (%d checks)" % lines.size())
 	ui.queue_free(); await process_frame

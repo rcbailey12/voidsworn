@@ -753,7 +753,7 @@ func _approach_strip(H: Dictionary) -> Control:
 		v.add_child(bar); v.add_child(tl(["I", "II", "III"][i], 17, 22, GS.MAP_EMBER if on else GS.TEXT2, font_num))
 		h.add_child(v)
 	var star = Control.new(); star.custom_minimum_size = Vector2(px(18), px(24)); star.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	star.draw.connect(func(): star.draw_arc(Vector2(px(9), px(8)), px(7), 0, TAU, 32, GS.MAP_EMBER, px(1.5), true))
+	star.draw.connect(func(): star.draw_arc(Vector2(px(9), px(8)), px(7), 0, TAU, 32, GS.MAP_EMBER, px(1.5), false))
 	h.add_child(star); h.add_child(_sheet_words("Jump %d of %d" % [H["jump"], H["jumps"]], 19, GS.TEXT2, true))
 	return h
 
@@ -772,12 +772,15 @@ func _briefing_column() -> Control:
 	var sc = ScrollContainer.new(); sc.name = "OrdersScroll"; sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var upper = vbox(0); upper.size_flags_horizontal = Control.SIZE_EXPAND_FILL; sc.add_child(upper); v.add_child(sc)
 	upper.add_child(_approach_strip(H)); upper.add_child(gap(8))
-	upper.add_child(_sheet_name(H["region"] if H["region"] != "" else "Sector " + H["sector_roman"], 70, cw, 1))
+	var region_line = row0(12)
+	var region_name = _sheet_name(H["region"] if H["region"] != "" else "Sector " + H["sector_roman"], 70, cw - 52, 1)
+	region_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL; region_line.add_child(region_name)
+	region_line.add_child(GS.region_emblem(_region_key(H["region"]), k)); upper.add_child(region_line)
 	upper.add_child(_sheet_words("Held by " + "the " + str(S["holder"]).trim_prefix("The "), 21, GS.TEXT, true))
 	upper.add_child(gap(4)); var cond = _sheet_words(_condition_line(S), 19, GS.TEXT2); cond.tooltip_text = _wrap_words(S["cond_d"]); upper.add_child(cond)
 	upper.add_child(gap(28)); _rows.clear()
 	for r in _routes:
-		upper.add_child(_route_row(r)); upper.add_child(gap(16))
+		upper.add_child(_route_row(r)); upper.add_child(gap(8 if _routes.size() >= 4 else 16))
 	if not N.is_empty():
 		v.add_child(gap(12)); v.add_child(_sheet_rule()); v.add_child(gap(16)); v.add_child(_nemesis_block(N, cw)[0]); v.add_child(gap(16))
 	v.add_child(_sheet_rule()); v.add_child(gap(12))
@@ -801,7 +804,8 @@ func _briefing_column() -> Control:
 		var fixed = 0.0
 		for child in v.get_children():
 			if child != sc and child != fleet_scroll: fixed += child.get_combined_minimum_size().y
-		var lines = clampi(int(floor((v.size.y - fixed - upper.get_combined_minimum_size().y) / px(36))), 1, mini(7, maxi(1, fleet.size())))
+		var minimum_lines = mini(3, maxi(1, fleet.size()))
+		var lines = clampi(int(floor((v.size.y - fixed - upper.get_combined_minimum_size().y) / px(36))), minimum_lines, mini(7, maxi(1, fleet.size())))
 		fleet_scroll.custom_minimum_size.y = px(36 * lines)
 	upper.minimum_size_changed.connect(func(): fit_fleet.call_deferred())
 	v.resized.connect(func(): fit_fleet.call_deferred())
@@ -817,7 +821,7 @@ func _route_row(r: Dictionary) -> Control:
 	var v = vbox(0); var b = Button.new(); b.name = "Route" + str(r["num"]); b.focus_mode = Control.FOCUS_ALL; b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	for st in ["normal", "hover", "pressed", "disabled", "focus"]: b.add_theme_stylebox_override(st, StyleBoxEmpty.new())
 	var h = row0(20); b.add_child(h); h.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	var numw = _baseline_row([[str(r["num"]), GS.sheet_name(), 132 if on else 36, GS.MAP_EMBER if on else GS.TEXT]], 132 if on else 42)
+	var numw = _baseline_row([[str(r["num"]), GS.sheet_name(), 132 if on else 36, GS.MAP_EMBER if on else GS.TEXT]], 132 if on else 36)
 	numw.custom_minimum_size.x = px(60 if on else 20); numw.size_flags_vertical = Control.SIZE_SHRINK_BEGIN; h.add_child(numw)
 	var tv = vbox(0); tv.size_flags_horizontal = Control.SIZE_EXPAND_FILL; tv.mouse_filter = Control.MOUSE_FILTER_IGNORE; h.add_child(tv)
 	var nw = cw - (80 if on else 40)
@@ -835,9 +839,10 @@ func _route_row(r: Dictionary) -> Control:
 		var note = (str(dg.get("band", "")) + " fight." if r["fight"] else "No fight")
 		if r["fight"] and r["reward"] != "": note += " Pays " + str(r["reward"])
 		tv.add_child(_sheet_words(note, 18, GS.TEXT2))
-	b.custom_minimum_size.y = maxf(px(132 if on else 62), tv.get_combined_minimum_size().y)
+	var row_height = 132 if on else (54 if _routes.size() >= 4 else 62)
+	b.custom_minimum_size.y = maxf(px(row_height), tv.get_combined_minimum_size().y)
 	# Children get their final widths before the minimum height is used, including a wrapped long name.
-	tv.minimum_size_changed.connect(func(): if is_instance_valid(b): b.custom_minimum_size.y = maxf(px(132 if on else 62), tv.get_combined_minimum_size().y))
+	tv.minimum_size_changed.connect(func(): if is_instance_valid(b): b.custom_minimum_size.y = maxf(px(row_height), tv.get_combined_minimum_size().y))
 	var id = str(r["id"])
 	b.pressed.connect(func(): pick_route(id)); b.focus_entered.connect(func(): pick_route(id))
 	b.gui_input.connect(func(e: InputEvent):
@@ -1037,6 +1042,13 @@ func _map_key() -> Control:
 	v.add_child(_over_head("Sector map", GS.TEXT2, "Map key")); v.add_child(gap(16)); v.add_child(GS.rule(k)); v.add_child(gap(16))
 	var body = VBoxContainer.new(); body.add_theme_constant_override("separation", px(8))
 	var head = func(t: String): body.add_child(gap(8)); body.add_child(tl(t, 17, 24, GS.TEXT2, GS.sheet_medium()))
+	var region = _region_key(View.header(C)["region"])
+	if C.REGIONS.has(region):
+		var place = row0(12); place.add_child(GS.region_emblem(region, k)); place.add_child(tl(C.REGIONS[region]["n"], 22, 40, GS.TEXT, GS.sheet_medium())); body.add_child(place)
+		var places: Array = []; var names = {"graveyard": "wreck fields", "belt": "asteroid belts", "storm": "ion storms", "station": "stations", "planet": "planets"}
+		for route in C.REGIONS[region]["route"]:
+			if not places.has(names[route]): places.append(names[route])
+		body.add_child(_over_text("Battles take place among " + ", ".join(PackedStringArray(places)) + ".", 17))
 	body.add_child(tl("On the map", 17, 24, GS.TEXT2, GS.sheet_medium()))
 	body.add_child(_key_mark("marker", "Your next jumps, numbered as in the route list. The filled one is picked."))
 	body.add_child(_key_mark("ember", "A route you can fly now."))
@@ -1090,6 +1102,10 @@ func _map_key() -> Control:
 	body.add_child(sr)
 	v.add_child(_over_scroll(body))
 	return v
+func _region_key(region_name: String) -> String:
+	for key in C.REGIONS:
+		if C.REGIONS[key]["n"] == region_name: return key
+	return ""
 func _toggle_tips() -> void:
 	teaching.toggle(); _dirty = true
 func _key_mark(kind: String, text: String) -> Control:   # one row of the key: the mark as the map draws it, then what it means
@@ -1098,8 +1114,8 @@ func _key_mark(kind: String, text: String) -> Control:   # one row of the key: t
 	m.draw.connect(func():
 		var ctr = m.size * 0.5
 		if kind == "marker": GS.marker(m, ctr, k, "1", font_num_b, true)
-		elif kind == "ember": m.draw_line(Vector2(0, ctr.y), Vector2(m.size.x, ctr.y), GS.MAP_EMBER, max(2.0, px(2.5)), true)
-		elif kind == "pale": m.draw_line(Vector2(0, ctr.y), Vector2(m.size.x, ctr.y), Color(GS.TEXT, GS.PALE), max(1.0, px(1)), true)
+		elif kind == "ember": m.draw_line(Vector2(0, ctr.y), Vector2(m.size.x, ctr.y), GS.MAP_EMBER, max(2.0, px(2.5)), false)
+		elif kind == "pale": m.draw_line(Vector2(0, ctr.y), Vector2(m.size.x, ctr.y), Color(GS.TEXT, GS.PALE), max(1.0, px(1)), false)
 		else: GS.diamond(m, ctr, px(5), GS.NEM))
 	h.add_child(m)
 	var p = para(text, 17, 24, GS.TEXT2, OVER_W - COL_PAD * 2.0 - 56.0, 2); p[0].size_flags_vertical = Control.SIZE_SHRINK_CENTER; h.add_child(p[0])

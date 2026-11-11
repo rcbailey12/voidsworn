@@ -33,6 +33,8 @@ const COL_W := 540.0          # the briefing column over the left of the chart (
 const BACKDROP_K := 0.5       # the backdrop's strength in the Briefing build ("dimmed about half")
 const LAYER_AHEAD := 2        # render layer of the stops further on (lit by the Hollow Sun at TIER_LIGHT[1])
 const LAYER_BEHIND := 4       # render layer of the stops behind you or cut off (TIER_LIGHT[2])
+const LAYER_SCENERY := 8
+var region_scenery: Node3D
 const TIER_LIGHT := [1.0, 0.75, 0.375]   # cut-off stops have half the ahead brightness
 const TIER_SCALE := [1.0, 0.85, 0.425]
 var ui                        # campaign_ui.gd
@@ -155,7 +157,7 @@ func sync() -> void:
 	if ui.get("map_quality") != null and str(ui.map_quality) != quality:
 		quality = str(ui.map_quality); _sig = ""
 	var m = C.RUN["map"]
-	var sig = str(C.RUN["sector"]) + "|" + str(m.get("fac")) + "|" + str(m["edges"].hash()) + "|" + quality
+	var sig = str(C.RUN["sector"]) + "|" + str(m.get("fac")) + "|" + str(m["edges"].hash()) + "|" + str(m.get("region")) + "|" + quality
 	if sig != _sig:
 		if not loading: _load_sector(sig)
 		return
@@ -238,10 +240,11 @@ func _build(sig: String) -> void:
 	if root3 != null: root3.queue_free()
 	root3 = Node3D.new(); vp.add_child(root3)
 	_nodes.clear(); _lanes.clear(); _patrols.clear(); _sync_lights.clear()
-	var base_sig = sig.trim_suffix("|" + quality)   # High and Low draw the same system: each stop reseeds from its own id
+	var base_sig = str(C.RUN["sector"]) + "|" + str(fac) + "|" + str(m["edges"].hash())   # preserve each stop's existing seed
 	_base_sig = base_sig; _rng.seed = hash(base_sig)
 	sys = System.new(); sys.rng = _rng; sys.q = 1.0 if quality != "low" else 0.0; sys.backdrop_k = BACKDROP_K
 	sys.set_sector(int(C.RUN["sector"]))
+	sys.region = str(m.get("region", ""))
 	env.ambient_light_energy = sys.approach["ambient"]; _fill.light_energy = sys.approach["fill"]
 	props = Props.new(sys); _spinners.clear(); _drones.clear()
 	sector_world = World.new(); root3.add_child(sector_world)
@@ -264,6 +267,7 @@ func _build(sig: String) -> void:
 	for e in m["edges"]: _add_lane(e[0], e[1])
 	_add_entry_lanes()
 	_add_patrols()
+	_build_region()
 	token = _make_token(); root3.add_child(token); _token_sig = _fleet_sig()
 	token.position = _token_home()
 	_make_wake()
@@ -275,12 +279,106 @@ func _build(sig: String) -> void:
 # two weaker ones for the stops further on and the stops behind you.
 func _tier_lights(sun) -> void:
 	if not (sun is OmniLight3D): return
-	sun.light_cull_mask = 0xFFFFF & ~(LAYER_AHEAD | LAYER_BEHIND)
+	sun.light_cull_mask = 0xFFFFF & ~(LAYER_AHEAD | LAYER_BEHIND | LAYER_SCENERY)
 	for i in [1, 2]:
 		var l = OmniLight3D.new(); l.light_color = sun.light_color; l.light_energy = sun.light_energy * TIER_LIGHT[i]
 		l.omni_range = sun.omni_range; l.omni_attenuation = sun.omni_attenuation; l.shadow_enabled = sun.shadow_enabled and float(sys.approach["infall"]) > 0.0
 		l.light_cull_mask = LAYER_AHEAD if i == 1 else LAYER_BEHIND
 		sun.get_parent().add_child(l); l.position = sun.position
+	var scenery_light = OmniLight3D.new(); scenery_light.light_color = sun.light_color; scenery_light.light_energy = sun.light_energy * 0.5
+	scenery_light.omni_range = sun.omni_range; scenery_light.omni_attenuation = sun.omni_attenuation
+	scenery_light.light_cull_mask = LAYER_SCENERY; sun.get_parent().add_child(scenery_light); scenery_light.position = sun.position
+
+# The place belongs to the whole map. Its own seed cannot perturb stop models or the rules stream.
+# Both sides of the route band stay open; all dressing sits below and outside its full lane width.
+func _region_point(t: float, side: float = 1.0, gap: float = 12.0) -> Vector3:
+	var columns = _C().RUN["map"]["cols"].size()
+	return System.stop_position({"col": t * (columns - 1), "y": 1.0 if side > 0 else 0.0}, columns, int(_C().RUN["sector"])) + Vector3(0, -5, side * gap)
+
+func _dead_hull(parent: Node3D, length: float, split: bool = false) -> Node3D:
+	var body = Node3D.new(); parent.add_child(body)
+	for half in ([-1.0, 1.0] if split else [0.0]):
+		var hull = _hull("hegemony", "Battleship", length)
+		if hull == null: continue
+		body.add_child(hull); hull.position.x = half * 1.4
+		var shader = Shader.new(); shader.code = System.SH.dead_hull(split)
+		var material = ShaderMaterial.new(); material.shader = shader
+		material.set_shader_parameter("base", Color(0.24, 0.25, 0.27)); material.set_shader_parameter("accent", Color(0.28, 0.29, 0.3))
+		material.set_shader_parameter("windows", 0.0); material.set_shader_parameter("gain", 0.18)
+		material.set_shader_parameter("cut_side", half); material.set_shader_parameter("cut_x", parent.global_position.x + half * 1.4)
+		var stack = [hull]
+		while not stack.is_empty():
+			var node = stack.pop_back(); stack.append_array(node.get_children())
+			if node is MeshInstance3D: node.material_override = material
+			elif node is Sprite3D or node is Light3D: node.visible = false
+		# A solid torn bulkhead seals each half. Decks and ribs read through the break.
+		if split:
+			props.part(body, props.box(0.18, length * 0.11, length * 0.23), props.hull_mat(Color(0.13, 0.12, 0.11), Color(0.22, 0.19, 0.16), 5, 0), Vector3(half * 1.4, 0, 0))
+			for deck in 3:
+				props.beam(body, Vector3(half * 1.55, (deck - 1) * length * 0.035, -length * 0.11), Vector3(half * 1.55, (deck - 1) * length * 0.035, length * 0.11), 0.16, material)
+	return body
+
+func _build_region() -> void:
+	region_scenery = Node3D.new(); region_scenery.name = "RegionScenery"; root3.add_child(region_scenery)
+	region_scenery.set_meta("region", sys.region)
+	if not System.REGION_SCENERY.has(sys.region): return
+	region_scenery.set_meta("scenery", System.REGION_SCENERY[sys.region])
+	_rng.seed = hash(_base_sig + "|region|" + sys.region)
+	var landmark = Node3D.new(); landmark.name = "Landmark"; region_scenery.add_child(landmark)
+	landmark.position = _region_point(0.53, 1, 14)
+	var grey = Color(0.28, 0.3, 0.33); var lamp = Color(0.55, 0.65, 0.72)
+	match sys.region:
+		"boneyard":
+			_dead_hull(landmark, 29, true)
+			for i in 4: sys.glow(landmark, Color(0.8, 0.24, 0.05), 1.0, Vector3(_rng.randf_range(-1.1, 1.1), 0.6, _rng.randf_range(-2.5, 2.5)), 3.0, 0.28, 0.25)
+			for i in 15:
+				var field = Node3D.new(); region_scenery.add_child(field); field.position = _region_point(float(i) / 14.0, 1.0 if i % 3 != 0 else -1.0, _rng.randf_range(10, 19))
+				sys.wreck_scraps(field, 12 if quality != "low" else 5, 3.5)
+				if i % 3 == 0: _dead_hull(field, _rng.randf_range(3, 6))
+				_spinners.append([field, Vector3(0.3, 0.8, 0.2).normalized(), _rng.randf_range(0.008, 0.018)])
+		"nebula":
+			for i in 11:
+				var bank = sys.clouds(region_scenery, Color(0.32, 0.16, 0.65), Color(0.08, 0.32, 0.65), 3 if quality != "low" else 2, 10.0, _region_point(float(i) / 10.0, 1, 4), 0.55, 0.12)
+				bank.position.y = -13
+				for cloud in bank.get_children(): cloud.material_override.set_shader_parameter("storm_rate", 0.45)
+			sys.clouds(landmark, Color(0.3, 0.2, 0.7), Color(0.12, 0.42, 0.8), 8 if quality != "low" else 4, 5.0, Vector3.ZERO, 0.6, 0.22)
+			sys.glow(landmark, Color(0.28, 0.45, 0.85), 13, Vector3.ZERO, 3.5, 0.38, 0.1)
+			props.storm_core(landmark)
+		"world":
+			landmark.position.x += 22; landmark.position.z -= 2
+			var planet = sys.planet(landmark, System.PLANETS[1], 10.5, Vector3.ZERO)
+			# The contested planet uses the shared procedural surface with visible night settlements.
+			planet.get_node("spin").material_override = sys.mat("PLANET", {"a": Color(0.25, 0.3, 0.23), "b": Color(0.045, 0.09, 0.16), "atmo": Color(0.25, 0.38, 0.52), "kind": 1.0, "seed": 17.0, "sun_pos": sys.sun_pos, "night": 0.12})
+			var surface = planet.get_node("spin").material_override
+			var shader = Shader.new(); shader.code = System.SH.PLANET.replace("vec3(0.92)", "vec3(0.32, 0.36, 0.4)").replace("ALBEDO = col;", "ALBEDO = col * 0.55;")
+			surface.shader = shader
+			for cloud in planet.get_node("spin").get_children():
+				var cloud_shader = Shader.new(); cloud_shader.code = System.SH.CLOUDS.replace("vec3(0.95)", "vec3(0.22, 0.25, 0.28)")
+				cloud.material_override.shader = cloud_shader
+			for i in 3:
+				var station = props.station(landmark, grey, lamp); station.scale = Vector3.ONE * 0.36
+				station.position = Vector3(-15 + i * 13, -1, 9 if i == 1 else -9)
+		"frontier":
+			props.hollow_asteroid(landmark)
+			for i in 14:
+				var field = Node3D.new(); region_scenery.add_child(field); field.position = _region_point(float(i) / 13.0, 1.0 if i % 3 != 0 else -1.0, 14)
+				props.region_rocks(field, 22 if quality != "low" else 8, 3.5 if i % 3 == 0 else 2.0)
+				if i in [2, 6, 10]: props.mining_rig(field, 1.1)
+		"deep":
+			landmark.visible = false
+			for i in 3:
+				var dead = Node3D.new(); region_scenery.add_child(dead); dead.position = _region_point(0.2 + i * 0.28, 1, 20)
+				_dead_hull(dead, 3.5)
+				if i == 1:
+					var beacon = props.light(dead, Vector3(0, 0.6, 0), lamp, 0.6, true)
+					props.blinkers.back()[2] = 7.0
+	var parts = _parts(region_scenery)
+	var fill = DirectionalLight3D.new(); fill.rotation_degrees = Vector3(-48, -28, 0); fill.light_color = Color(0.65, 0.72, 0.8)
+	fill.light_energy = 0.8; fill.light_cull_mask = LAYER_SCENERY; region_scenery.add_child(fill)
+	for visual in parts["vis"]: visual.layers = LAYER_SCENERY
+	for light in parts["lights"]: light[0].light_energy *= 0.4; light[0].light_cull_mask = LAYER_SCENERY
+	for gain in parts["gains"]: gain[0].set_shader_parameter(gain[1], gain[2] * 0.4); gain[0].set_meta("dimk", 0.4)
+	for material in parts["std"]: material[0].emission_energy_multiplier *= 0.4
 
 # ---------------- stop scenes ----------------
 # Bows point toward the preceding leg, where the player approaches from. ShipView's bow is local +X.
@@ -291,6 +389,7 @@ func _enemy_fleet(obj: Node3D, n: Dictionary, fac: String) -> float:
 	var heading = atan2(-toward.z, toward.x)
 	var formation = Node3D.new(); formation.name = "EnemyFleet"; formation.rotation.y = heading
 	obj.add_child(formation)
+	formation.scale = Vector3.ONE * 1.25
 	var cls = "Cruiser" if t == "elite" else "Destroyer"
 	var length = 6.6 if t == "elite" else 5.8
 	if t == "boss":
@@ -299,6 +398,7 @@ func _enemy_fleet(obj: Node3D, n: Dictionary, fac: String) -> float:
 	var lead = _hull(fac, cls, length)
 	if lead != null:
 		lead.name = "Leader"; lead.position = Vector3(0, 1.8, 0); formation.add_child(lead)
+		_map_ship_rim(lead)
 	if t != "boss":
 		for i in 2:
 			var escort = _hull(fac, "Frigate", 3.8)
@@ -307,11 +407,21 @@ func _enemy_fleet(obj: Node3D, n: Dictionary, fac: String) -> float:
 			escort.position = Vector3(-2.0 - float(i) * 0.5, 1.5, -2.4 if i == 0 else 2.4)
 			escort.rotation.y = -0.08 if i == 0 else 0.12
 			formation.add_child(escort)
+			_map_ship_rim(escort)
 	# A local neutral key keeps dark hulls readable even in the well. The normal stop tiers dim it too.
 	var fill = OmniLight3D.new(); fill.light_color = Color(0.82, 0.87, 1.0)
 	fill.light_energy = 8.0; fill.omni_range = 16.0; fill.omni_attenuation = 0.5
 	fill.position = Vector3(-2, 5, 6); fill.shadow_enabled = false; obj.add_child(fill)
-	return 4.6 if t == "boss" else 3.6
+	return (4.6 if t == "boss" else 3.6) * 1.25
+
+func _map_ship_rim(hull: Node3D) -> void:
+	for mesh in hull.find_children("*", "MeshInstance3D", true, false):
+		if mesh.mesh == null: continue
+		for surface in mesh.mesh.get_surface_count():
+			var source = mesh.get_active_material(surface)
+			if source is BaseMaterial3D:
+				var material = source.duplicate(); material.rim_enabled = true; material.rim = maxf(material.rim, 0.28); material.rim_tint = 0.15
+				mesh.set_surface_override_material(surface, material)
 
 var _base_sig := ""
 func _add_node(n: Dictionary) -> void:
@@ -811,8 +921,7 @@ func _draw_overlay() -> void:
 				var icon_box = Rect2(tp - Vector2.ONE * 12.0 * icon_scale, Vector2.ONE * 24.0 * icon_scale)
 				taken.append(icon_box); _words.append(icon_box)
 			if d["nem"]: GS.diamond(overlay, tp + Vector2(0, -20.0 * s), 5.0 * s, GS.NEM)
-	var bodies = av.duplicate()
-	if pos != null: bodies.append(pos)
+	var bodies = _nodes.keys()   # larger enemy groups also keep captions off models farther on
 	for id in bodies:
 		if _nodes.has(id) and not cam.is_position_behind(_nodes[id]["pos"]): taken.append(_body_rect(id, s))
 	# where your fleet is
@@ -858,6 +967,10 @@ func _draw_overlay() -> void:
 			Vector2(base.x - cw * 0.5, body.end.y + 6.0 * s), Vector2(base.x - cw * 0.5, body.position.y - 6.0 * s - m),
 			Vector2(body.end.x + 4.0 * s, body.end.y + 2.0 * s), Vector2(body.position.x - 4.0 * s - cw, body.end.y + 2.0 * s),
 			Vector2(body.end.x + 4.0 * s, body.position.y - 2.0 * s - m), Vector2(body.position.x - 4.0 * s - cw, body.position.y - 2.0 * s - m)]
+		# Full-size fleets can fill all eight nearby slots. Search farther before covering an icon or another model.
+		for dy in [-64.0, 64.0, -128.0, 128.0]:
+			cands.append(Vector2(body.end.x + 8.0 * s, cy + dy * s))
+			cands.append(Vector2(body.position.x - 8.0 * s - cw, cy + dy * s))
 		var at: Vector2 = cands[0]; var best = 1e9
 		for ci in cands.size():
 			var r = Rect2(cands[ci], Vector2(cw, m)); var cost = float(ci)

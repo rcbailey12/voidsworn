@@ -256,6 +256,41 @@ func rock_meshes() -> Array:
 func rock_mat(kind: int) -> ShaderMaterial:
 	var tints = [Color(0.36, 0.33, 0.31), Color(0.33, 0.32, 0.32), Color(0.55, 0.6, 0.66)]
 	return sys.mat("ROCK_HI", {"tint": tints[kind % 3], "kind": float(kind % 3), "q": q})
+
+# Region scenery reuses the same plated parts and displaced rock meshes as stops.
+func region_rocks(parent: Node3D, count: int, spread: float) -> void:
+	var meshes = rock_meshes()
+	for k in meshes.size():
+		var items: Array = []
+		for i in maxi(1, count / meshes.size()):
+			var at = Vector3(sys.rng.randfn() * spread, sys.rng.randfn() * 0.8, sys.rng.randfn() * spread)
+			items.append([Transform3D(sys.rand_basis(sys.rng.randf_range(0.3, 1.15)), at), 0.0])
+		sys.scatter(parent, meshes[k], rock_mat(0), items)
+
+func mining_rig(parent: Node3D, scale_value: float) -> Node3D:
+	var rig = Node3D.new(); parent.add_child(rig); rig.scale = Vector3.ONE * scale_value
+	var material = hull_mat(Color(0.29, 0.28, 0.26), Color(0.35, 0.32, 0.25), 4, 0)
+	truss(rig, Vector3(-2.4, 0, 0), Vector3(2.4, 0, 0), 0.45, material, 5)
+	for x in [-2.0, 2.0]:
+		part(rig, box(1.1, 0.65, 1.2), material, Vector3(x, 0.4, 0))
+		beam(rig, Vector3(x, 0, 0), Vector3(x * 0.65, -1.2, 0.8), 0.16, material)
+		light(rig, Vector3(x, 0.85, 0), Color(0.7, 0.55, 0.3), 0.42)
+	return rig
+
+func hollow_asteroid(parent: Node3D) -> void:
+	# An open crater cut all the way through, with an irregular stone lip and dark tunnel wall.
+	var shader = Shader.new(); shader.code = preload("res://ui/campaign/map3d_shaders.gd").hollow_rock()
+	var material = ShaderMaterial.new(); material.shader = shader
+	var rock = part(parent, rock_meshes()[2], material); rock.scale = Vector3(12, 9, 10)
+	var wall = TorusMesh.new(); wall.inner_radius = 3.2; wall.outer_radius = 5.0; wall.rings = 64; wall.ring_segments = 20
+	part(parent, wall, rock_mat(0), Vector3(0, 5.6, 0), Vector3(25, 0, 0))
+	var rig = mining_rig(parent, 1.8); rig.position = Vector3(2.8, 6.3, 0.8); rig.rotation.z = -0.18
+	truss(parent, Vector3(-4, 6.3, 0), Vector3(5, 6.3, 0), 0.65, hull_mat(Color(0.25, 0.25, 0.26), Color(0.4, 0.35, 0.27), 4, 0))
+
+func storm_core(parent: Node3D) -> void:
+	var bolt = sys.std(Color(0.22, 0.35, 0.65), 0.3, 0, 1)
+	var points = [Vector3(-4, 2, 0), Vector3(-1.5, 2.2, -1), Vector3(-2.2, 2.3, 1), Vector3(1.2, 2.2, 0), Vector3(3, 2, 2)]
+	for i in points.size() - 1: beam(parent, points[i], points[i + 1], 0.08, bolt)
 # an asteroid field along the sun orbit through a stop, a few big rocks at the stop itself
 func belt(parent: Node3D, theta: float, r: float, node_pos: Vector3, kind: int) -> void:
 	var meshes = rock_meshes(); var m = rock_mat(kind)
