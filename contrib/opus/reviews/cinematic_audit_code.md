@@ -292,7 +292,7 @@ death sounds identical and is cut short; the owner's slow-motion beat (R73) is n
    hot for a moment; small idle drifts differ ship to ship.
 3. **Where.** godot/render/ship_view.gd:1132 bank clamped to 4 degrees, scaled by `sin(PI * gl_p)`; movement_spec.md calls
    these numbers "ASSUMED", to be settled by the capture round of #233. Engine drop: godot/fx/fx_ship.gd:311 (rate 14 a
-   second on a drop, "a burn's plume cuts off within about 0.1 s"), 302 (0.4 s hold). Idle bob: ship_view.gd:1287, one
+   second on a drop, "a burn's plume cuts off within about 0.1 s"), 302 (0.4 s hold). Idle bob: ship_view.gd:1286, one
    sine at 0.6 rad/s, 0.25 units, only the phase differs.
 4. **Why.** The 4 degrees is a spec number; I could not find a capture that set it. The fast cut-off was a G2 choice for
    readability.
