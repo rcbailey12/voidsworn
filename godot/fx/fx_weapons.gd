@@ -69,8 +69,13 @@ const HULL_LIGHT := 7.9                    # a hit's light on the plate (just un
 # pixels at 1080 at the battle camera, for a cruiser's gun on a cruiser. Starting points judged by eye in a moving fight,
 # not gates (R187, R193). Every bright hit flash books the flash counter by area (fx.flash_at); a refused one keeps its
 # size and colour with a slower rise.
+# The torpedo's flash is 140 px, not the playbook's 154: a single 154 px flash is over the flash counter's limit on its
+# own (15,606 px2 at 1080, a disc about 141 px across), so every torpedo took one of the three flashes a second, and in
+# the 20-ship storm gate deaths' core flashes were then turned soft behind them (bench round 2). At 140 px a lone
+# torpedo on a cruiser is under the limit and stays bright without spending the budget; a capital's gun or a capital
+# target still makes it bigger (and counted).
 const LADDER_PX := {"energy": [0.0, 40.0, 46.0, 52.0], "shell": [0.0, 44.0, 56.0, 64.0], "lance": [0.0, 70.0, 74.0, 78.0],
-	"torp": 154.0, "torp_shield": 110.0, "torp_ripple": 156.0}
+	"torp": 140.0, "torp_shield": 110.0, "torp_ripple": 156.0}
 # ... scaled by the gun that fired (the firing hull's band) and by the ship hit (its band): a frigate's battery on a
 # capital is a small bright bite, a battleship's on a frigate a big one.
 const GUN_K := {"small": 0.85, "cruiser": 1.0, "capital": 1.2}

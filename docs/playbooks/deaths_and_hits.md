@@ -125,7 +125,7 @@ One ladder, each step plainly bigger than the last at the battle camera: las, ma
 | Las | 40 px, one or two frames of white. | A tiny hot spark. No smoke. | A small scorch that glows for about a second and a half. |
 | Macro | 56 px. | A punch: a short cone of sparks off the plate and a brief hot spot. No fireball. | A dent that glows and cools over about two and a half seconds. |
 | Lance | 78 px each pulse. | A contact burn that stays lit and crawls along the hull while the beam dwells, spraying molten metal; a third of a second of tail when it lifts. | A cut line that glows for about three seconds, then a dark scar. |
-| Torpedo on a hull | 154 px for 0.16 s, and it lights the hulls near it. | 140 px: fire seen through gas, then gas; debris sprays off the surface. | A wound that glows and cools over about four seconds, then a dark crater that stays. |
+| Torpedo on a hull | 140 px for 0.16 s (built at 140, not 154: a lone 154 px flash is over the flash counter's limit and spent the budget deaths need, issue 461), and it lights the hulls near it. | 140 px: fire seen through gas, then gas; debris sprays off the surface. | A wound that glows and cools over about four seconds, then a dark crater that stays. |
 | Torpedo on a shield | 110 px. | The ripple: 156 px, the biggest body of any hit. | A shield scar for about a second. (The shield's own look is Ryan's pick from Muse's three directions.) |
 
 Three upgrades run through all of them:
