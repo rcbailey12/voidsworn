@@ -3100,7 +3100,7 @@ const BOONS={
   s_regen:{p:'storm',n:'Storm Mantle',d:m=>`Each turn, working shield generators restore an extra ${boonPct(.18*m)} of each facing's strength.`,fx:m=>({stormRegen:.18*m})},
   s_ev:{p:'storm',n:'Lightning Reflex',d:m=>`+${Math.round(6*m)} evasion across the fleet.`,fx:m=>({ev:Math.round(6*m)})},
   // The Hunger
-  h_hatch:{p:'hunger',n:'Swarm Hatch',d:m=>`Launch ships field ${m>=1.5?'two extra wings':'an extra wing'}.`,fx:m=>({hangar:m>=1.5?2:1})},
+  h_hatch:{p:'hunger',n:'Swarm Hatch',d:m=>`Launch ships field ${m>=2?'three extra wings':m>=1.5?'two extra wings':'an extra wing'}.`,fx:m=>({hangar:m>=2?3:(m>=1.5?2:1)})},
   h_wings:{p:'hunger',n:'Ravenous Wings',d:m=>`Squadrons deal +${boonPct(.25*m)} damage.`,fx:m=>({sqPct:.25*m})},
   h_chitin:{p:'hunger',n:'Hardened Chitin',d:m=>`Squadrons have +${boonPct(.3*m)} hull.`,fx:m=>({sqHp:.3*m})},
   h_board:{p:'hunger',n:'Boarding Frenzy',d:m=>`Boarding parties fight as ${boonPct(.25*m)} more crew, and a boarding that does not take the ship always sabotages a system.`,fx:m=>({boardPct:.25*m})},
@@ -3119,7 +3119,7 @@ const BOONS={
   r_shock:{p:'rook',n:'Shockwave',d:m=>`Rams also hit every other enemy next to the target for ${boonPct(.25*m)} of the ram damage.`,fx:m=>({ramSplash:.25*m})},
   // The Ember Choir
   e_war:{p:'ember',n:'Incendiary Warheads',d:m=>`Torpedoes deal +${boonPct(.25*m)} damage.`,fx:m=>({torpPct:.25*m})},
-  e_reload:{p:'ember',n:'Hot Tubes',d:m=>`Torpedo reload time -${m>=1.5?2:1} turn${m>=1.5?'s':''}, to a minimum of 1.${m>=1.5?' Current torpedoes gain 1 turn.':''}`,fx:m=>({torpCd:m>=1.5?2:1})},
+  e_reload:{p:'ember',n:'Hot Tubes',d:m=>`Torpedo reload time -${m>=2?3:m>=1.5?2:1} turn${m>=1.5?'s':''}, to a minimum of 1.${m>=1.5?' Current torpedoes reload '+(m>=2?2:1)+' turn'+(m>=2?'s':'')+' sooner.':''}`,fx:m=>({torpCd:m>=2?3:(m>=1.5?2:1)})},
   e_kindle:{p:'ember',n:'Kindling',d:m=>`Hull hits have a ${boonPct(.12*m)} chance to start a fire (fires burn ${6+Math.round(4*m)} a turn for 2 turns).`,fx:m=>({igniteCh:.12*m,fireDmg:Math.round(4*m)})},
   e_chain:{p:'ember',n:'Chain Reaction',d:m=>`Enemy ships you destroy explode, dealing ${Math.round(20*m)} damage to every enemy within 2 hexes.${m>=2?' Epic: the blast sets them burning.':''}`,fx:m=>({chainBoom:Math.round(20*m),chainFire:m>=2?1:0})},
   e_hunt:{p:'ember',n:'Funeral Pyre',d:m=>`+${boonPct(.2*m)} damage against ships already below half hull; hits there stop passive regrowth, feeding and reassembly.`,fx:m=>({huntPct:.2*m,pyre:1})},
@@ -3134,12 +3134,12 @@ const BOONS={
 // B4 step 3: rule-changing boons (one per patron) and a legendary per patron. A legendary is offered at an elite or flagship reward once you
 // hold two boons from that patron (Hades style), always in the third slot; it never rolls otherwise (leg:true keeps it out of every normal pool).
 Object.assign(BOONS,{
-  i_wall:{p:'iron',n:'Shield Wall',d:()=>'Bracing covers every ship next to the braced ship too: they take the brace’s hull cut until its next turn.',fx:()=>({wallBrace:1})},
-  s_chain:{p:'storm',n:'Chain Lightning',d:()=>'When your fire knocks out an enemy shield facing, the two facings beside it lose a third of their strength.',fx:()=>({chainSh:1})},
-  h_brood:{p:'hunger',n:'Brood Harvest',d:()=>'Each enemy capital ship your fleet destroys lets your nearest carrier launch a free wing, if it has a free hex beside it.',fx:()=>({broodTithe:1})},
-  a_mark:{p:'star',n:'Marked for Death',d:()=>'Each round, the first enemy ship your lances hit is marked: your whole fleet aims 10 better against it until the round ends.',fx:()=>({markLance:1})},
-  r_slip:{p:'rook',n:'Slip the Net',d:()=>'Your ships may move after firing, up to half the movement they had left (without climbing over or diving under).',fx:()=>({fade:1})},
-  e_spread:{p:'ember',n:'Spread Pattern',d:()=>'If a torpedo finds no target, enemy ships within 1 hex of its aim hex take 30% of one torpedo\u2019s damage.',fx:()=>({spread:.3})},
+  i_wall:{p:'iron',n:'Shield Wall',d:m=>`Bracing covers every ship next to the braced ship too: they take the brace’s hull cut${m>1?` and an extra ${boonPct(.1*(m-1))} hull cut`:''} until its next turn.`,fx:m=>({wallBrace:1,wallPlus:.1*(m-1)})},
+  s_chain:{p:'storm',n:'Chain Lightning',d:m=>`When your fire knocks out an enemy shield facing, the two facings beside it lose ${Math.round(m/3*100)}% of their strength.`,fx:m=>({chainSh:m/3})},
+  h_brood:{p:'hunger',n:'Brood Harvest',d:m=>`Each enemy capital ship your fleet destroys lets your nearest carrier launch a free wing, if it has a free hex beside it${m>1?`, and repairs ${boonPct(.1*(m-1))} of its hull`:''}.`,fx:m=>({broodTithe:1,broodRepair:.1*(m-1)})},
+  a_mark:{p:'star',n:'Marked for Death',d:m=>`Each round, the first enemy ship your lances hit is marked: your whole fleet aims ${Math.round(10*m)} better against it until the round ends.`,fx:m=>({markLance:m})},
+  r_slip:{p:'rook',n:'Slip the Net',d:m=>`Your ships may move after firing, up to ${m>=2?'all':m>=1.5?'three quarters of':'half'} the movement they had left (without climbing over or diving under).`,fx:m=>({fade:.5*m})},
+  e_spread:{p:'ember',n:'Spread Pattern',d:m=>`If a torpedo finds no target, enemy ships within 1 hex of its aim hex take ${boonPct(.3*m)} of one torpedo\u2019s damage.`,fx:m=>({spread:.3*m})},
   L_iron:{p:'iron',leg:1,n:'Unbreakable',d:()=>'Legendary. Every ship survives its first killing blow each battle at 1 hull.',fx:()=>({lastStand:1})},
   L_storm:{p:'storm',leg:1,n:'Eye of the Storm',d:()=>'Legendary. Working shield generators refill every facing at the start of your turn, before storm damage.',fx:()=>({stormRegen:1})},
   L_hunger:{p:'hunger',leg:1,n:'The Endless Swarm',d:()=>'Legendary. Launch ships field two more wings and carry 99 spares.',fx:()=>({hangar:2,endless:1})},

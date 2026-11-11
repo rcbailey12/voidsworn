@@ -701,7 +701,7 @@ function hitChance(u,w,t){
   if(u.nem&&nemWeak('brawl')&&d<=2) c-=10; // B4 Nemesis weakness: long-gun doctrine
   if(t.isSq&&wingStance(t)==='hunt') c+=10; // B4 hunting wings fly exposed
   if(t.fx&&t.fx.lineEv&&B&&B.units.some(x=>!x.dead&&x!==t&&x.side===t.side&&!x.isSq&&hdist(x,t)===1)) c-=t.fx.lineEv; // Unbroken Line, Epic
-  if(B&&B.mark&&B.mark[u.side]&&B.mark[u.side].r===B.round&&B.mark[u.side].id===t.id) c+=10; // Marked for Death
+  if(B&&B.mark&&B.mark[u.side]&&B.mark[u.side].r===B.round&&B.mark[u.side].id===t.id) c+=(B.mark[u.side].aim||10); // Marked for Death (RWD-2: aim scales with rarity)
   { const fl=treeSkill('flagshipLens'); if(fl&&w.k==='lance'&&u.side==='player'&&B&&B.treeLens&&B.treeLens.r===B.round&&B.treeLens.id===t.id) c+=treeAddVal(u,'aim',fl.n); } // Brin shared C1a
   { const f1=treeSkill('firstLight'); if(f1&&B&&B.tr&&B.tr.firstLight===u.id&&t.side==='player') c-=f1.n; } // Brin shared C1b
   { const ef=treeSkill('everyFrame'); if(ef&&u.side==='player'&&!u.isSq&&B&&B.volleyMul&&B.volleyMul.side===u.side&&(u.hexMoved||0)===0) c+=treeAddVal(u,'aim',ef.a); } // Umbra T3b
@@ -898,7 +898,7 @@ async function fireWeapon(u,wi,t,opts={}){ if(!inThisBattle(u)) return false; co
   if(!opts.intercept){ w.fired=true; if(w.cd) w.cdLeft=w.cd; if(u.side==='player'&&!u.isSq){ u.sureUsed=(u.sureUsed||0)+1; u.treeHasFired=1; u.treeRoundFired=1; } }
   if(B.usage&&u.side==='player'&&!opts.intercept&&!u.isSq){ const k=(ARC_NAME&&ARC_NAME[w.arc])||String(w.arc); B.usage.fire[k]=(B.usage.fire[k]||0)+1; if(opts.called) B.usage.aim++; }
   if(B.usage&&u.side==='player'&&!opts.intercept){ const K=B.usage.kind=B.usage.kind||{}, kk=u.isSq?'sq':w.k; K[kk]=(K[kk]||0)+1; if(w.ion) B.usage.ion=(B.usage.ion||0)+1; } // B4: what the Nemesis learns from
-  if(!opts.intercept&&!u.isSq&&w.k!=='flak'&&!u.postFire){ u.postFire=true; u.postMp=canFade(u)?(treeFullFade(u)?u.mp:Math.floor(u.mp/2)):0; if(treeFullFade(u)) treeFx(u,'splitThree','the light splits three ways'); } // v54: firing ends normal movement
+  if(!opts.intercept&&!u.isSq&&w.k!=='flak'&&!u.postFire){ u.postFire=true; u.postMp=canFade(u)?(treeFullFade(u)?u.mp:Math.floor(u.mp*((u.fx&&u.fx.fade)||.5))):0; if(treeFullFade(u)) treeFx(u,'splitThree','the light splits three ways'); } // v54: firing ends normal movement (RWD-2: Slip the Net fade fraction scales with rarity)
   if(!opts.intercept&&u.side==='player'&&!u.isSq&&(u.ab==='launch'||(u.hangar||0)>0)) B.tr.carrierLast[u.id]=t.id; // Tamsa T1a: the carrier's last-fired target
   if(!opts.intercept&&torpTravels(w,u)){ // B3: torpedoes travel and strike next turn
     const r=await launchTorp(u,w,t,opts,live,keep,b0);
@@ -1057,7 +1057,7 @@ async function landVolley(u,w,t,o){ const quad=o.quad, shots=o.shots, called=o.c
   { const rw=treeSkill('rollWings'); if(rw&&u.isSq&&u.side==='player'&&cmdActive('player','scramble')&&res.hits>0&&!o.intercept&&!t.dead){ t.st.fire=Math.max(t.st.fire||0,2); t.st.fireDmg=Math.max(t.st.fireDmg||6,6); t.treeFlakDown=(t.treeFlakDown||0)+1; treeFx(u,'rollWings','the wing sets it burning'); } } // Ashgrove capstone 1
   if(res.hits&&B.nem){ if(t.nem&&u.side==='player'){ if(quad===2) nemTrip('flank'); if((w.ion||w.k==='lance')&&res.shield>0) nemTrip('ion'); if(o.torp) nemTrip('torp'); } if(u.nem&&t.side==='player'&&!u.isSq&&hdist(u,t)<=2) nemTrip('brawl'); } // R42
   if(res.shield>0){ if(typeof fxShield==='function') fxShield(t,quad); if(typeof fxText==='function') fxText(t,'−'+res.shield+' shield','#62ccff',-18); if(t.shMax>0&&t.sh[quad]<=.5){ if(typeof fxShieldBreak==='function') fxShieldBreak(t,quad); if(typeof fxText==='function') fxText(t,'Shields down','#9fe2ff',-40);
-      if(ownerFx(u).chainSh&&o.shBefore>.5&&!t.dead&&t.sh){ for(const qq of [(quad+1)%4,(quad+3)%4]) t.sh[qq]=Math.round(t.sh[qq]*2/3); boonFx(t,'s_chain','chain lightning',-62); } // Chain Lightning
+      if(ownerFx(u).chainSh&&o.shBefore>.5&&!t.dead&&t.sh){ const csh=ownerFx(u).chainSh; for(const qq of [(quad+1)%4,(quad+3)%4]) t.sh[qq]=Math.round(t.sh[qq]*(1-csh)); boonFx(t,'s_chain','chain lightning',-62); } // Chain Lightning (RWD-2: chainSh scales with rarity)
       const ar=ownerFx(u).arcShort; if(ar&&o.shBefore>.5&&!t.dead){ t.hp-=ar; res.hull+=ar; u.dealt+=ar; boonFx(t,'s_arc','−'+ar,-56); } } }
   if(res.hull>0&&typeof fxText==='function') fxText(t,'−'+res.hull+' hull',res.crits?'#ffd27a':'#ffae42',0);
   if(res.hits===0&&typeof fxText==='function') fxText(t,'Miss','#9a9384',0);
@@ -1069,7 +1069,7 @@ async function landVolley(u,w,t,o){ const quad=o.quad, shots=o.shots, called=o.c
   else { if(res.shield) parts.push(`${res.shield} to ${QUAD_NAME[quad]} shields`); if(res.hull) parts.push(`${res.hull} hull`); if(!res.shield&&!res.hull) parts.push('no damage'); }
   if(res.crits) parts.push(res.crits>1?`${res.crits} criticals`:'critical');
   if(!o.torp&&!o.intercept&&res.hull>0&&t.side!==u.side){ const bite=chorusBiteEst(u,t,res.hull); if(bite) chorusRegrow(u,bite,'Bites'); } // v54 Chorus doctrine
-  if(res.hits>0&&w.k==='lance'&&!o.intercept&&ownerFx(u).markLance&&B&&(!(B.mark=B.mark||{})[u.side]||B.mark[u.side].r!==B.round)&&!t.dead){ B.mark[u.side]={id:t.id,r:B.round}; boonFx(t,'a_mark','marked',-62); } // Marked for Death
+  if(res.hits>0&&w.k==='lance'&&!o.intercept&&ownerFx(u).markLance&&B&&(!(B.mark=B.mark||{})[u.side]||B.mark[u.side].r!==B.round)&&!t.dead){ B.mark[u.side]={id:t.id,r:B.round,aim:10*(ownerFx(u).markLance||1)}; boonFx(t,'a_mark','marked',-62); } // Marked for Death
   log(o.torp?`Torpedoes from ${u.name} reach ${t.name}${o.stray?' (a stray hit in the lane)':''}: ${parts.join(', ')}.${res.sys?' '+res.sys+'!':''}`:`${u.name} ${o.intercept?'intercepts with':'fires'} ${w.n} at ${t.name}: ${parts.join(', ')}.${res.sys?' '+res.sys+'!':''}`, who);
   if(!o.torp&&res.hits>0&&t.braced&&!t.dead&&!u.dead&&!o.intercept&&t.side!==u.side){ const rp=ownerFx(t).riposte; if(rp){ u.hp-=rp; t.dealt=(t.dealt||0)+rp; boonFx(u,'i_brace','−'+rp,-40); if(u.hp<=0) await killUnit(u,t); } } // Iron Discipline: braced ships strike back
   if(t.hp<=0){ t.killCause=killCauseOf(w,t); await killUnit(t,o.by||u); }
@@ -1214,7 +1214,7 @@ async function killUnit(t,by){ if(t&&by&&!t.killedBy) t.killedBy=by.isSq?((B.uni
     const cand=alive('player').filter(x=>x!==by&&!x.isSq&&!x.dead&&inSync(x)&&!x.weapons.some(w=>w.fired)); let bu=null,bt=null,bi=-1,bs=-1e18;
     for(const x of cand){ for(let i=0;i<x.weapons.length;i++){ const w=x.weapons[i]; if(w.k==='flak'||w.off||w.cdLeft) continue; for(const e of alive('enemy')){ if(e.isSq||e===t||e.dead) continue; if(!canFire(x,w,e)) continue; const v=expectedVs(x,w,e), sc=v.hull+v.shield*.3; if(sc>bs){ bs=sc; bu=x; bt=e; bi=i; } } } }
     if(bu&&bt&&await treeExtraShot(bu,bi,bt,{})) treeFx(bu,'rollingFire','another synced ship fires at once'); } } // Kassar T3a
-  if(by&&!t.isSq&&by.side!==t.side&&ownerFx(by).broodTithe){ const cs=alive(by.side).filter(x=>!x.isSq&&(x.ab==='launch'||(x.fx&&x.fx.hive))&&launchHexes(x).length).sort((a,b)=>hdist(a,t)-hdist(b,t)); if(cs.length){ const c=cs[0], h=launchHexes(c)[0], sq=makeWing(c,h,wingKind(c)); sq.mp=0; sq.weapons.forEach(w=>w.fired=true); boonFx(c,'h_brood','free wing',-30); } } // Brood Tithe
+  if(by&&!t.isSq&&by.side!==t.side&&ownerFx(by).broodTithe){ const cs=alive(by.side).filter(x=>!x.isSq&&(x.ab==='launch'||(x.fx&&x.fx.hive))&&launchHexes(x).length).sort((a,b)=>hdist(a,t)-hdist(b,t)); if(cs.length){ const c=cs[0], h=launchHexes(c)[0], sq=makeWing(c,h,wingKind(c)); sq.mp=0; sq.weapons.forEach(w=>w.fired=true); const rep=ownerFx(by).broodRepair||0; if(rep>0){ const heal=Math.min(c.maxHp-c.hp,Math.round(c.maxHp*rep)); if(heal>0){ c.hp+=heal; if(typeof fxText==='function') fxText(c,'+'+heal+' hull','#8ff0a0',-20); } } boonFx(c,'h_brood','free wing',-30); } } // Brood Tithe (RWD-2: broodRepair scales with rarity)
   if(t.side==='player'&&!t.isSq&&!t.transport){ const av=runFx().avenge; if(av){ for(const x of alive('player')) if(!x.isSq&&x.hp<x.maxHp){ const h=Math.min(x.maxHp-x.hp,Math.round(x.maxHp*av)); x.hp+=h; if(typeof fxText==='function') fxText(x,'+'+h+' hull','#8ff0a0',-20); } log(`The fleet rallies around the loss of ${t.name}.`,'s'); } }
   if(by&&by.side==='player'&&!t.isSq&&runFx().bloodied){ const k=by.isSq?B.units.find(x=>x.id===by.parent):by; if(k&&!k.dead){ k.bloodied=Math.min(3,(k.bloodied||0)+1); if(typeof fxText==='function') fxText(k,'Bloodied +'+Math.round(15*k.bloodied)+'%','#ff9f3a',-36); } }
   if(!t.isSq && t.size>=.7 && !legion && !blocks(B.terrain[hkey(t.q,t.r)])){ B.terrain[hkey(t.q,t.r)]='hulk'; t.hulk=true; log(`The wreck of ${t.name} drifts in place, blocking movement and fire.`,'x'); if(typeof refreshBlockTint==='function') setTimeout(()=>refreshBlockTint(),1200); }
@@ -1323,7 +1323,7 @@ function giveOrder(u,o){ if(B.usage&&u.side==='player') B.usage.ord[o]=(B.usage.
 // v54 doctrine (decided): a Voidsworn hull that braces also covers one adjacent ally facing the same way (the most damaged); the Shield Wall boon covers every neighbour
 function braceCover(u){ const wall=!!(u.fx&&u.fx.wallBrace); if(u.fac!=='voidsworn'&&!wall) return []; let near=B.units.filter(x=>!x.dead&&x!==u&&x.side===u.side&&!x.isSq&&hdist(x,u)===1&&(wall||x.facing===u.facing));
   if(!wall) near=near.sort((a,b)=>a.hp/a.maxHp-b.hp/b.maxHp).slice(0,1); for(const x of near){ x.coverBy=u.id; try{ if(typeof fxText==='function') fxText(x,'Covered','#7fd6c8',-24); }catch(e){} } return near; }
-function braceMul(t){ if(t.braced) return Math.max(.15,1-.4-((t.fx&&t.fx.bracePlus)||0)); if(t.coverBy&&B){ const c=B.units.find(x=>x.id===t.coverBy); if(c&&!c.dead&&c.braced) return Math.max(.15,1-.4-((c.fx&&c.fx.bracePlus)||0)); } return 1; }
+function braceMul(t){ if(t.braced) return Math.max(.15,1-.4-((t.fx&&t.fx.bracePlus)||0)); if(t.coverBy&&B){ const c=B.units.find(x=>x.id===t.coverBy); if(c&&!c.dead&&c.braced) return Math.max(.15,1-.4-((c.fx&&c.fx.bracePlus)||0)-((c.fx&&c.fx.wallPlus)||0)); } return 1; }
 function abilityCd(u){ return Math.max(1, ABILITIES[u.ab].cd-(u.fx.cdMod||0)); }
 // ---------- squadrons fight on their own: swarm weapons that persist until shot down ----------
 // nothing may wait forever: if an action outlives its limit, record what was running, save, and carry on
