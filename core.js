@@ -177,7 +177,7 @@ function newShip(tpl, vet){ const fac=factionOfTpl(tpl); const s={uid:newId(), t
 // Godot reads this same table through both table exporters.
 const FX_CAPS={
   hpPct:2,shPct:2,regenPct:2,armor:1,dmgPct:2,
-  speed:4,turns:3,aim:50,ev:50,crit:50,hangar:6,
+  speed:4,turns:3,aim:50,ev:50,crit:50,hangar:6,spareWings:2,
   battShots:3,flakPlus:3,torpCd:3,cdMod:3,prowRange:3,lanceRange:3,longAim:6,
   lancePct:2,torpPct:2,broadPct:2,sqPct:2,sqHp:2,rearPct:2,prowPct:2,
   stillPct:2,huntPct:2,boardPct:2,ramPct:2,momPct:.25,critMul:1.5,
