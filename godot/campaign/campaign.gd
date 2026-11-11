@@ -2215,8 +2215,6 @@ func nemAfterBattle(result: String, flagDead: bool, o: Dictionary = {}) -> Array
 			nemScar("fled"); nemSignature("flee", N); nemEscape(N, "fled")
 			out.append(nemSay(nemFull() + " breaks off and runs before you can finish him." + (" He will come back richer." if beh.get("strike") == "raid" else (" He will be back with the same few ships, honed sharper." if beh.get("strike") == "duel" else " He will be back.")), N))
 			_speak(out, N, "flee")
-		elif flagDead and jt(beh.get("noFlee")) and not jt(beh.get("revive")):
-			N["dead"] = true; out.append(nemSay(nemFull() + " is dead. The feud is over.", N)); _speak(out, N, "fall")   # NEM-6: a commander who never retreats cannot escape a flagship kill, in any sector
 		elif flagDead and float(RUN["sector"]) >= 3 and jt(beh.get("revive")) and not jt(N.get("revived")):
 			N["revived"] = true; back = true; nemScar(o.get("cause") if jt(o.get("cause")) else "big"); nemSignature("revive", N); N["met"] = float(RUN["sector"]) - 1
 			out.append(nemSay(nemFull() + "'s flagship is destroyed, and then the wreck begins to move. He is reassembling for one last fight.", N))
