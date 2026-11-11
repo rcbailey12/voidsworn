@@ -642,7 +642,7 @@ static func diamond(ci: CanvasItem, center: Vector2, r: float, col: Color) -> vo
 
 
 # The same 16-unit paths as ui_map_design/mockup_gen.py glyph(), shared by the map and its key.
-const STOP_ICON_PX := 18.0
+const STOP_ICON_PX := 24.0
 const STOP_ICON_GAP := 7.0
 const STOP_ICON_FADED := 0.5
 const STOP_ICONS := {"battle": "Fight", "elite": "Elite fight", "shipyard": "Shipyard", "repair": "Repairs", "event": "Event", "boss": "Sector flagship"}
