@@ -99,6 +99,15 @@ var _punches: Array = []    # [t, amount] (F3 zoom punch)
 var _kick = 0.0             # the zoom punch now (share of the field of view taken off)
 var _fov_base = -1.0        # the camera's own field of view, under the punch
 var _fov_set = -1.0         # what the punch last wrote
+# Issue 462, a Board proposal for Ryan's eye (deaths_and_hits.md, capital row): straight after a capital's core flash the
+# whole scene dims a little for a fifth of a second. Off by default (setup option "scene_dim" or VS_DEATH_DIM=1) and
+# never under reduce flashing.
+var scene_dim := false
+const DIM_LIFE := 0.20
+const DIM_DEPTH := 0.35
+var _dim_env: Environment = null
+var _dim_base := 1.0
+var _dim_t0 := -1.0
 
 static var _globals_added := false
 static var _live_ids: Array = []    # instance ids of live fx nodes (ids, not references, so nothing is kept alive)
@@ -126,6 +135,7 @@ func _exit_tree() -> void:
 # tasks are waited for first: an unawaited WorkerThreadPool task keeps its job (hull materials and textures) alive
 # until the process ends, after the rendering server is gone (G2: "RenderingServer is null" at exit, a crash risk).
 func release() -> void:
+	_end_dim()
 	for id in ships:
 		var s = ships[id]
 		s.wait_damage()
@@ -178,6 +188,7 @@ func setup(opts := {}) -> void:
 	# shipped Cone B (see fx_weapons._vent).
 	vent_look = String(opts.get("vent_look", OS.get_environment("VS_VENT_LOOK")))
 	fx_atlas = String(opts.get("fx_atlas", OS.get_environment("VS_FX_ATLAS")))
+	scene_dim = bool(opts.get("scene_dim", OS.get_environment("VS_DEATH_DIM") == "1"))
 	var rich = quality != "low"
 	var soft = "#define SOFT\n" if rich else ""
 	var big = quality == "max"
@@ -253,6 +264,7 @@ func step(delta: float) -> void:
 	_run_later()
 	t0 = pend("later", t0)
 	_update_feel(delta)
+	_update_dim()
 	for id in ships:
 		(ships[id] as SHIP).update(self, dt)
 	t0 = pend("ships", t0)
@@ -667,6 +679,47 @@ func _update_punch() -> void:
 		_fov_set = -1.0
 
 
+# Issue 462: the scene dim after a capital's core flash (see scene_dim). The environment the camera draws with is dimmed
+# through its exposure and put back exactly when the dip ends; a second dip during one is ignored.
+func dim_scene(t: float) -> void:
+	if not scene_dim or reduce_flashing or _dim_t0 >= 0.0:
+		return
+	var e: Environment = null
+	if camera != null and is_instance_valid(camera) and camera.environment != null:
+		e = camera.environment
+	elif is_inside_tree() and get_viewport() != null and get_viewport().find_world_3d() != null:
+		e = get_viewport().find_world_3d().environment
+	if e == null:
+		return
+	_dim_env = e
+	_dim_base = e.tonemap_exposure
+	_dim_t0 = t
+
+
+func _update_dim() -> void:
+	if _dim_t0 < 0.0:
+		return
+	if _dim_env == null or reduce_flashing:
+		_end_dim()
+		return
+	var u: float = (now - _dim_t0) / DIM_LIFE
+	if u >= 1.0:
+		_end_dim()
+		return
+	if u < 0.0:
+		return
+	# down in a quarter of the dip, back over the rest
+	var k := u / 0.25 if u < 0.25 else 1.0 - (u - 0.25) / 0.75
+	_dim_env.tonemap_exposure = _dim_base * (1.0 - DIM_DEPTH * clampf(k, 0.0, 1.0))
+
+
+func _end_dim() -> void:
+	if _dim_env != null and _dim_t0 >= 0.0:
+		_dim_env.tonemap_exposure = _dim_base
+	_dim_env = null
+	_dim_t0 = -1.0
+
+
 # ---------------------------------------------------------------- ships (API.md 2)
 
 func add_ship(id: String, root: Node3D, info := {}) -> void:
@@ -674,7 +727,8 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 		remove_ship(id)
 	var s = SHIP.new()
 	s.setup(self, id, root, info)
-	s.set_meta("death_cut_count", 3 if bool(info.get("flagship", false)) or String(info.get("cls", "")) in ["Battleship", "Dreadnought", "Super-dreadnought", "Battle-barge", "Ark", "Tomb-ark"] else 2)
+	# Issue 462 (deaths_and_hits.md): a cruiser parts into two halves, a capital into three pieces.
+	s.set_meta("death_cut_count", 2 if s.death_tier == "capital" else 1)
 	ships[id] = s
 	DEATH.add_collider(self, s)
 	# cut the hull for its death on a worker thread, staggered so a battle start does not stall
@@ -726,14 +780,16 @@ func ship(id: String) -> SHIP:
 # world space) at spawn time, so a source ship that later dies or leaves does not turn a valid earlier spawn stray.
 # `wide` is the wider limit for real muzzle and impact gas points, which sit off the barrel or along the hit normal past
 # the plating; the thruster gas (_rcs) uses the tight limit.
-func record_spawn(src: SHIP, p: Vector3, wide := false) -> void:
+# `frame` (issue 462): for a picture born on a drifting wreck piece, the transform from the ship's own space to that
+# piece's place in the world now; the hull samples are moved with the piece.
+func record_spawn(src: SHIP, p: Vector3, wide := false, frame = null) -> void:
 	if not check_radius or src == null:
 		return
 	var h: HULL = src.hull
 	var limit: float = (0.30 if wide else 0.08) * float(h.L)
 	var nearest := INF
 	for i in h.sp.size():
-		var wp: Vector3 = src.to_world(h.sp[i])
+		var wp: Vector3 = (frame as Transform3D) * h.sp[i] if frame is Transform3D else src.to_world(h.sp[i])
 		var d: float = p.distance_to(wp)
 		if d < nearest:
 			nearest = d

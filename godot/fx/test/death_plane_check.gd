@@ -74,7 +74,8 @@ func _run() -> void:
 					_check(w.nodes.size() >= 4 and w.get("organic", false), "Chorus spills several real skin fragments")
 					_check(w.lights.is_empty() and fx.flash_log.is_empty() and fx.dstate.debris.is_empty(), "Chorus spill has no metal fire, core flash or plates")
 				elif spec[1] == "Cruiser" and spec[3] == "blast":
-					_check(w.nodes.size() == 3, "ordinary cruiser blast has three sealed sections")
+					# issue 462 (deaths_and_hits.md): a cruiser parts into two capped halves
+					_check(w.nodes.size() == 2, "ordinary cruiser blast has two sealed halves")
 				fx.remove_ship("plane")
 				sv.die(false)
 				_check(not sv.visible and sv.position.y == 0.0, "fallback death hides in place")

@@ -1,5 +1,5 @@
 {
- "about": "Look bench moments (issue 351). One row per moment; a later job adds a moment by adding a row. Read by godot/bench/look_bench.gd. Fields: id (file name), group, label, att and tgt ([faction, class]), do (volley, break, death), kind and weapon (fx.volley), shots (default: the look's own count), on (hull or shield), shield_left (shield points left before the hit, of 5), crit (first shot is a crit; every other row has no crit), cause (death), focus (the ship the camera centres on), windows ([anchor, seconds after it, frames at 30 a second]; anchors: fire, impact, event, split), key (the cell shown on the overview sheet).",
+ "about": "Look bench moments (issue 351). One row per moment; a later job adds a moment by adding a row. Read by godot/bench/look_bench.gd. Fields: id (file name), group, label, att and tgt ([faction, class]), do (volley, break, death), kind and weapon (fx.volley), shots (default: the look's own count), on (hull or shield), shield_left (shield points left before the hit, of 5), crit (first shot is a crit; every other row has no crit), cause (death), focus (the ship the camera centres on), fx (effect switches for this row, set by name on the effects system: scene_dim, reduce_flashing), windows ([anchor, seconds after it, frames at 30 a second]; anchors: fire, impact, event, split), key (the cell shown on the overview sheet).",
  "cameras": [
   170,
   60,
@@ -1345,6 +1345,307 @@
     ]
    ],
    "key": 8
+  },
+  {
+   "id": "d_cruiser_beats",
+   "group": "death beats (issue 462)",
+   "label": "cruiser death in three beats: Sunward cruiser, torpedo kill (big)",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "big",
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.02,
+     1
+    ],
+    [
+     "event",
+     0.2,
+     1
+    ],
+    [
+     "event",
+     0.55,
+     1
+    ],
+    [
+     "event",
+     1.12,
+     1
+    ],
+    [
+     "event",
+     1.45,
+     1
+    ],
+    [
+     "event",
+     1.7,
+     1
+    ],
+    [
+     "event",
+     2.7,
+     1
+    ],
+    [
+     "event",
+     6.0,
+     1
+    ]
+   ],
+   "key": 5
+  },
+  {
+   "id": "d_cruiser_beats_cut",
+   "group": "death beats (issue 462)",
+   "label": "cruiser death in three beats: Sunward cruiser, lance kill (cut)",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "cut",
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.02,
+     1
+    ],
+    [
+     "event",
+     0.2,
+     1
+    ],
+    [
+     "event",
+     0.55,
+     1
+    ],
+    [
+     "event",
+     1.12,
+     1
+    ],
+    [
+     "event",
+     1.45,
+     1
+    ],
+    [
+     "event",
+     1.7,
+     1
+    ],
+    [
+     "event",
+     2.7,
+     1
+    ],
+    [
+     "event",
+     6.0,
+     1
+    ]
+   ],
+   "key": 5
+  },
+  {
+   "id": "d_cruiser_beats_calm",
+   "group": "death beats (issue 462)",
+   "label": "cruiser death in three beats, reduce flashing on (big)",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "voidsworn",
+    "Cruiser"
+   ],
+   "do": "death",
+   "cause": "big",
+   "focus": "target",
+   "fx": {
+    "reduce_flashing": true
+   },
+   "windows": [
+    [
+     "event",
+     0.02,
+     1
+    ],
+    [
+     "event",
+     0.2,
+     1
+    ],
+    [
+     "event",
+     0.55,
+     1
+    ],
+    [
+     "event",
+     1.12,
+     1
+    ],
+    [
+     "event",
+     1.45,
+     1
+    ],
+    [
+     "event",
+     1.7,
+     1
+    ],
+    [
+     "event",
+     2.7,
+     1
+    ],
+    [
+     "event",
+     6.0,
+     1
+    ]
+   ],
+   "key": 5
+  },
+  {
+   "id": "d_capital_beats",
+   "group": "death beats (issue 462)",
+   "label": "capital death in three beats: Hegemony super-dreadnought, torpedo kill (big), scene dim off",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Super-dreadnought"
+   ],
+   "do": "death",
+   "cause": "big",
+   "focus": "target",
+   "windows": [
+    [
+     "event",
+     0.05,
+     1
+    ],
+    [
+     "event",
+     0.55,
+     1
+    ],
+    [
+     "event",
+     1.22,
+     1
+    ],
+    [
+     "event",
+     1.92,
+     1
+    ],
+    [
+     "event",
+     2.1,
+     1
+    ],
+    [
+     "event",
+     2.3,
+     1
+    ],
+    [
+     "event",
+     2.5,
+     1
+    ],
+    [
+     "event",
+     6.0,
+     1
+    ]
+   ],
+   "key": 5
+  },
+  {
+   "id": "d_capital_beats_dim",
+   "group": "death beats (issue 462)",
+   "label": "capital death in three beats, the scene dim proposal on",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Super-dreadnought"
+   ],
+   "do": "death",
+   "cause": "big",
+   "focus": "target",
+   "fx": {
+    "scene_dim": true
+   },
+   "windows": [
+    [
+     "event",
+     0.05,
+     1
+    ],
+    [
+     "event",
+     0.55,
+     1
+    ],
+    [
+     "event",
+     1.22,
+     1
+    ],
+    [
+     "event",
+     1.92,
+     1
+    ],
+    [
+     "event",
+     2.1,
+     1
+    ],
+    [
+     "event",
+     2.3,
+     1
+    ],
+    [
+     "event",
+     2.5,
+     1
+    ],
+    [
+     "event",
+     6.0,
+     1
+    ]
+   ],
+   "key": 6
   },
   {
    "id": "k_macro_frigate",

@@ -67,7 +67,8 @@ func _run() -> void:
 	for pic in pictures:
 		var kind: String = pic["kind"]
 		kinds[kind] = int(kinds.get(kind, 0)) + 1
-		var d: float = _nearest(pic["root"], samples)
+		# Issue 462: a picture born on a drifting wreck piece carries that piece's frame; its hull samples move with it.
+		var d: float = _nearest(pic["root"], samples) if pic["frame"] == null else _nearest(pic["root"], _moved(hull, pic["frame"]))
 		var ok: bool = d <= limit
 		print("%s %s root %.3f from the hull (limit %.3f)" % ["PASS" if ok else "FAIL", kind, d, limit])
 		if not ok:
@@ -126,7 +127,7 @@ func _scan() -> void:
 				break
 		if seen:
 			continue
-		pictures.append({"node": node, "kind": kind, "root": _picture_root(node)})
+		pictures.append({"node": node, "kind": kind, "root": _picture_root(node), "frame": node.get_meta("spawn_frame", null)})
 
 
 # The root is worked out from the picture as it is drawn, never from the spawn bookkeeping: the vent's visible gas
@@ -181,6 +182,13 @@ func _measure_root(m: ShaderMaterial) -> float:
 	var share: float = (float(low) / float(cell) - r.y) / r.w - 0.5
 	print("vent atlas root %.3f of the picture height (%s)" % [share, path])
 	return share
+
+
+func _moved(hull, frame: Transform3D) -> PackedVector3Array:
+	var out := PackedVector3Array()
+	for p in hull.sp:
+		out.append(frame * p)
+	return out
 
 
 func _nearest(p: Vector3, samples: PackedVector3Array) -> float:

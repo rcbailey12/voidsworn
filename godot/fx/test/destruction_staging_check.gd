@@ -38,7 +38,7 @@ func _advance(fx, seconds: float) -> void:
 
 func _run() -> void:
 	for spec in [["Frigate", 1.5, false, false], ["Destroyer", 1.5, false, false],
-		["Cruiser", 0.4, false, true], ["Destroyer", 0.4, true, true], ["Squadron", 0.1, false, false]]:
+		["Cruiser", 0.4, false, true], ["Destroyer", 0.4, true, true], ["Battleship", 1.0, false, true], ["Squadron", 0.1, false, false]]:
 		for calm in [false, true]:
 			var world := Node3D.new()
 			root.add_child(world)
@@ -54,19 +54,43 @@ func _run() -> void:
 			var mesh_pose: Transform3D = s.meshes[0].transform
 			var duration: float = fx.death("T", "big")
 			var before: int = fx.flash_log.size()
-			_check(duration >= 1.0 and duration < 2.1, "bounded staged death duration")
+			# issue 462: a capital's tell runs to 2.0 s, so its death is longer (deaths_and_hits.md rule 3)
+			_check(duration >= 1.0 and duration < (2.8 if s.death_tier == "capital" else 2.1), "bounded staged death duration")
 			await _advance(fx, 0.36)
 			_check(s.meshes[0].visible, "hull remains through power-down/death spin")
 			_check(s._eng_cur < 0.02, "engines extinguish before split")
 			for m in s.get_meta("death_power", []):
 				_check(float(m.get_shader_parameter("fx_power")) < 0.01, "running-light emission extinguishes")
-			_check(fx.flash_log.size() - before == (0 if calm else 1), "one counted vent ignition before the split, none in calm mode")
+			# a big hull's vent waits for its first chain blast (one counted flash at 0.46 to 0.5 s); a small hull vents at 0.12
+			_check(fx.flash_log.size() - before == (0 if calm or s.death_big else 1), "one counted vent ignition before the split, none in calm mode")
+			if s.death_big:
+				_check(s._eng_cur < 0.02 and s.has_meta("death_flare_until"), "the drive flared once and is black by 0.36 s")
 			if not s.death_big:
 				_check(s.meshes[0].transform != mesh_pose, "small hull spins before break")
 				_check(s.root.transform == root_pose, "death spin does not move the rules/view root")
 				_check(fx._pauses.is_empty() and fx._death_slow_left == 0.0, "small kills have no hit pause/slow motion")
-			await _advance(fx, (1.45 if s.death_big else 0.55))
-			_check(fx.flash_log.size() - before == 0 if calm else fx.flash_log.size() - before in ([2, 3, 4] if s.death_big else [2]), "bounded vent and core flash sequence")
+			if s.death_big:
+				# Issue 462, beat 1: the tear is drawn on the hull and chain blasts flash along it before the break.
+				var tl = s.get_meta("death_timeline")
+				_check(tl.tier == ("capital" if spec[0] == "Battleship" else "cruiser"), "the class picks the cruiser or capital row")
+				await _advance(fx, 1.2 - 0.36)
+				var ov = s.meshes[0].material_overlay
+				_check(ov is ShaderMaterial and (ov as ShaderMaterial).get_shader_parameter("half_span") != null, "the tear is drawn on the dying hull")
+				_check(s.meshes[0].visible, "the hull holds through the tell")
+				var chain_n: int = fx.flash_log.size() - before
+				_check(chain_n == 0 if calm else chain_n >= 2, "chain blasts flash during the tell (none counted in calm mode)")
+				# beat 2: the break, then the core flash 0.28 s later at the torn face
+				await _advance(fx, float(tl.cut) + float(tl.core_delay) + 0.1 - 1.2)
+				_check(not s.meshes[0].visible, "the hull parts at the break")
+				var t_split: float = float(fx.dstate["wrecks"][0]["t0"]) if not fx.dstate["wrecks"].is_empty() else -10.0
+				var core_seen := false
+				for f in fx.flash_log:
+					if f >= t_split + float(tl.core_delay) - 0.02 and f <= t_split + float(tl.core_delay) + 0.13: core_seen = true
+				_check(calm or core_seen, "the core flash follows the break by 0.28 s")
+				_check(fx.flash_log.size() - before == 0 if calm else fx.flash_log.size() - before >= 3, "bounded vent, chain and core flash sequence")
+			else:
+				await _advance(fx, 0.55)
+				_check(fx.flash_log.size() - before == 0 if calm else fx.flash_log.size() - before == 2, "bounded vent and core flash sequence")
 			var warm := {}
 			for wreck in fx.dstate.wrecks:
 				for mat in wreck.mats: warm[mat] = float(mat.get_shader_parameter("heat"))
@@ -75,9 +99,16 @@ func _run() -> void:
 			_check(fx.dstate["wrecks"].size() == 1, "one lingering wreck record per kill")
 			var w: Dictionary = fx.dstate["wrecks"][0]
 			if s.death_big:
+				var capital: bool = s.death_tier == "capital"
+				_check(int(s.get_meta("death_cut_count")) == (2 if capital else 1), "a cruiser parts in two, a capital in three")
 				_check(w["nodes"].size() == int(s.get_meta("death_cut_count")) + 1, "capital has two or three sealed cuts")
 				var cuts: Array = w["cut_events"]
-				_check(cuts.size() == w["nodes"].size() and float(cuts.back().t) - float(cuts.front().t) >= 0.78, "structural releases span 0.8 seconds")
+				_check(cuts.size() == w["nodes"].size() and (float(cuts.back().t) - float(cuts.front().t) >= 0.28 if capital else true), "a capital's pieces part one after another")
+				_check(float(w.get("cool", 0.0)) >= (14.0 if capital else 8.0), "big wrecks cool over the playbook's time")
+				var late := 0
+				for f in fx.flash_log:
+					if f >= float(w["t0"]) + 0.6: late += 1
+				_check(calm or late >= 2, "secondaries flash on the pieces after the core")
 			var flashes: int = fx.flash_log.size() - before
 			_check(flashes == 0 if calm else flashes >= 1, "calm has zero flashes; normal keeps its core")
 			for a in fx.flash_log:
