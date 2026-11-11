@@ -223,8 +223,9 @@ func _lance_kill() -> void:
 	if not s.death_big:
 		_check(false, "the lance kill check needs a big hull")
 		return
+	# the ship's own first cut is still on its worker (or not yet collected) when the lance kills it, as in a battle
 	DEATH.precompute(fx, s)
-	await _advance(fx, 1.5)
+	await _advance(fx, 0.1)
 	var lp: Vector3 = s.hull.c + Vector3(s.hull.L * 0.2, 0.0, s.hull.W * 0.5)
 	s.set_meta("last_hit", [lp, Vector3(0, 0, -1), fx.now])
 	fx.death("T", "cut")
