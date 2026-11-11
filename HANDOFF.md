@@ -1,6 +1,6 @@
-# Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 11, 2026, 11:50 CST)
+# Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 11, 2026, 11:44 CST)
 
-## 0. Status at Nov 11, 2026, 11:50 CST (17:50 UTC; read this first)
+## 0. Status at Nov 11, 2026, 11:44 CST (17:44 UTC; read this first)
 
 **For the next Board thread (Opus 5.5).** The morning added three things on top of section 0a below. Read contrib/opus/LOOP.md "Current state" top lines for the live detail and FINDINGS R183 to R193 for Ryan's words.
 
