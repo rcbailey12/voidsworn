@@ -227,6 +227,11 @@ func _rebuild() -> void:
 		show_menu(sm[0], sm[1], keep_row)
 	if _last.has("show_end"):
 		callv("show_end", _last["show_end"])
+	if _last.has("show_ask"):
+		var sa: Array = _last["show_ask"]
+		ask_panel = null   # the old panel went with the old root
+		ask_key = ""
+		show_ask(sa[0])
 	if bool(_last.get("letterbox", false)):
 		letterbox(true)
 	if bool(_last.get("loading", false)):
@@ -2542,6 +2547,50 @@ func loading(on: bool) -> void:
 		load_cover = null
 
 
+# Issue 529: a tree prompt (a "you may" skill's yes or no, a Chorus role). Small and plain, in the menu's panel style: the
+# skill's name, one line that says what the choice does, and two or three buttons. Keys 1 to 3 pick (battle.gd), arrows and
+# Enter work on the focused button. It stays until answered: the rules hold the open prompt (view().ask).
+var ask_panel: PanelContainer
+var ask_key := ""
+
+
+func show_ask(a: Dictionary) -> void:
+	var key := "%s|%s|%s" % [str(a.get("kind")), str(a.get("key")), str(a.get("id", ""))]
+	if ask_panel != null and is_instance_valid(ask_panel) and ask_key == key:
+		return
+	hide_ask()
+	_last["show_ask"] = [a]
+	ask_key = key
+	var mw := _modal(26, 18)
+	ask_panel = mw[0]
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", s(8))
+	v.custom_minimum_size = Vector2(s(380), 0)
+	(mw[1] as Control).add_child(v)
+	var t := _label(str(a.get("n", "")).to_upper(), 20, GILT, font_goth)
+	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(t)
+	var q := _label(str(a.get("q", "")), 16, BONE)
+	q.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	q.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	q.custom_minimum_size = Vector2(s(380), 0)
+	v.add_child(q)
+	var opts: Array = a.get("opts", [])
+	for i in opts.size():
+		var o: Dictionary = opts[i]
+		v.add_child(_button("%d   %s" % [i + 1, str(o.get("n", ""))], "ask", str(o.get("id", "")), i == 0, true))
+	if opts.size() > 0:
+		(v.get_child(2) as Button).grab_focus.call_deferred()
+
+
+func hide_ask() -> void:
+	_last.erase("show_ask")
+	ask_key = ""
+	if ask_panel != null:
+		ask_panel.queue_free()
+		ask_panel = null
+
+
 func hide_menu() -> void:
 	_last.erase("show_menu")
 	if menu != null:
@@ -2678,7 +2727,7 @@ func _card_room() -> float:
 
 
 func over_ui(p: Vector2) -> bool:
-	for c in [top, roster, panel, log_panel, tipcard, endcard, menu, legend, unacted]:
+	for c in [top, roster, panel, log_panel, tipcard, endcard, menu, ask_panel, legend, unacted]:
 		if c != null and is_instance_valid(c) and c.visible and c.get_global_rect().has_point(p):
 			return true
 	return false

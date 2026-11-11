@@ -33,6 +33,7 @@ headless|campaign/test/tree_handoff_test.gd|step:Tree hand-off (campaign picks r
 headless|rules/test/api_smoke.gd|-|-|plays scenario s1 through the rules API the battle scene uses, to its end
 headless|rules/test/effect_caps_test.gd|fixture:effect_caps_tests.js|{fixture}|effect cap sums and derives match the JS fixtures
 headless|rules/test/parity_main.gd|step:Rules parity against the browser game|-|run by godot/rules/test/run_parity.sh in its own step
+headless|rules/test/tree_prompt_test.gd|-|-|issue 529: the you-may yes or no prompt and the Chorus role prompts through the rules API, answers and save shape
 headless|rules/test/thread_test.gd|step:Rules parity against the browser game|-|run by godot/rules/test/run_parity.sh (threads: s4 and s23)
 headless|story/test/story_test.gd|-|-|story data, career records, battle voice over a real rules battle, story attached to whole campaign runs
 headless|portraits/test/portraits_check.gd|-|-|every admiral and Nemesis gets a face from the portrait index
