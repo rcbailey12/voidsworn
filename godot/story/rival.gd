@@ -3,7 +3,8 @@ extends RefCounted
 # you beat him last time, so each run's Nemesis sounds different. Presentation only: lines are picked with a hash of his
 # name, the moment and a seed (never the rules PRNG).
 #
-# The Nemesis dictionary it reads is the campaign's RUN.nem (the battle's B.nem carries the same fields):
+# The Nemesis dictionary it reads is the campaign's current commander, read through C.nemRead (the campaign's own
+# resolver is C.nemActive; the battle's B.nem carries the same fields):
 #   name, title, fac                 (B4, today)
 #   scars, beaten                    (B4, today: times his flagship broke and he escaped; times you beat him)
 #   adapt, seen                      (B4, today: what he adapted to; what he saw you use this sector)

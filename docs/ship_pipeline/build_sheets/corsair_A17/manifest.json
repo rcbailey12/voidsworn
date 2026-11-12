@@ -1,0 +1,776 @@
+{
+ "code": "corsair_A17",
+ "sheet_version": 3,
+ "routes_note": "kit = the Hullbreakers parts kit (tools/blender/kits/hullbreakers/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
+ "turret_marking": "R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).",
+ "parts": [
+  {
+   "id": "SL1",
+   "kind": "slit",
+   "what": "vision slit 0.6 x 0.12",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hump"
+   ]
+  },
+  {
+   "id": "HS1",
+   "kind": "hatch",
+   "what": "square hatch 0.4",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "stern_hatch"
+   ]
+  },
+  {
+   "id": "SL2",
+   "kind": "slit",
+   "what": "vision slit 0.6 x 0.12",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hump"
+   ]
+  },
+  {
+   "id": "HS2",
+   "kind": "hatch",
+   "what": "square hatch 0.4",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "stern_hatch"
+   ]
+  },
+  {
+   "id": "I1",
+   "kind": "intake",
+   "what": "scoop drum with a grille, 0.8 across, 2.1 deep",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "scoops"
+   ]
+  },
+  {
+   "id": "D1",
+   "kind": "dish",
+   "what": "listening dish, 1.9 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "ears"
+   ]
+  },
+  {
+   "id": "I2",
+   "kind": "intake",
+   "what": "scoop drum with a grille, 0.8 across, 2.1 deep",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "scoops"
+   ]
+  },
+  {
+   "id": "D2",
+   "kind": "dish",
+   "what": "listening dish, 1.9 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "ears"
+   ]
+  },
+  {
+   "id": "J1",
+   "kind": "claw",
+   "what": "jaw prong, 2.6 long, hooked tip",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "jaws"
+   ]
+  },
+  {
+   "id": "J3",
+   "kind": "claw",
+   "what": "jaw prong, 2.3 long, hooked tip",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "jaws"
+   ]
+  },
+  {
+   "id": "J2",
+   "kind": "claw",
+   "what": "jaw prong, 2.6 long, hooked tip",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "jaws"
+   ]
+  },
+  {
+   "id": "J4",
+   "kind": "claw",
+   "what": "jaw prong, 2.3 long, hooked tip",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "jaws"
+   ]
+  },
+  {
+   "id": "PH0",
+   "kind": "pipe",
+   "what": "pipe run, 0.09 bore",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "jaw_pipes"
+   ]
+  },
+  {
+   "id": "PH1",
+   "kind": "pipe",
+   "what": "pipe run, 0.09 bore",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "jaw_pipes"
+   ]
+  },
+  {
+   "id": "PH2",
+   "kind": "pipe",
+   "what": "pipe run, 0.09 bore",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "jaw_pipes"
+   ]
+  },
+  {
+   "id": "R1",
+   "kind": "launcher",
+   "what": "rocket rack, 2 by 3 cells",
+   "count": 6,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "brow_rack"
+   ]
+  },
+  {
+   "id": "T1",
+   "kind": "gun",
+   "what": "twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "crest_gun"
+   ],
+   "turret": true,
+   "pivot_object": "T1_turret",
+   "arc_lo": -180.0,
+   "arc_hi": 180.0
+  },
+  {
+   "id": "T2",
+   "kind": "gun",
+   "what": "twin belly turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "belly_turret"
+   ],
+   "turret": true,
+   "pivot_object": "T2_turret",
+   "arc_lo": -180.0,
+   "arc_hi": 180.0
+  },
+  {
+   "id": "P1",
+   "kind": "gun",
+   "what": "twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "deck_guns"
+   ],
+   "turret": true,
+   "pivot_object": "P1_turret",
+   "arc_lo": 30.0,
+   "arc_hi": 150.0
+  },
+  {
+   "id": "P2",
+   "kind": "gun",
+   "what": "twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "deck_guns"
+   ],
+   "turret": true,
+   "pivot_object": "P2_turret",
+   "arc_lo": 30.0,
+   "arc_hi": 150.0
+  },
+  {
+   "id": "P3",
+   "kind": "gun",
+   "what": "twin casemate",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "flank_casemates"
+   ],
+   "turret": false
+  },
+  {
+   "id": "S1",
+   "kind": "gun",
+   "what": "twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "deck_guns"
+   ],
+   "turret": true,
+   "pivot_object": "S1_turret",
+   "arc_lo": -150.0,
+   "arc_hi": -30.0
+  },
+  {
+   "id": "S2",
+   "kind": "gun",
+   "what": "twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "deck_guns"
+   ],
+   "turret": true,
+   "pivot_object": "S2_turret",
+   "arc_lo": -150.0,
+   "arc_hi": -30.0
+  },
+  {
+   "id": "S3",
+   "kind": "gun",
+   "what": "twin casemate",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "flank_casemates"
+   ],
+   "turret": false
+  },
+  {
+   "id": "E1",
+   "kind": "engine",
+   "what": "engine, bell 1.2 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "E2",
+   "kind": "engine",
+   "what": "engine, bell 1.0 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "E3",
+   "kind": "engine",
+   "what": "engine, bell 0.9 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "E4",
+   "kind": "engine",
+   "what": "engine, bell 1.1 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "E5",
+   "kind": "engine",
+   "what": "engine, bell 0.9 across",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "E6",
+   "kind": "engine",
+   "what": "engine, bell 0.9 across",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "Q1",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "bow_thrusters"
+   ]
+  },
+  {
+   "id": "Q2",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "bow_thrusters"
+   ]
+  },
+  {
+   "id": "Q3",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "stern_thrusters"
+   ]
+  },
+  {
+   "id": "Q4",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "stern_thrusters"
+   ]
+  },
+  {
+   "id": "AN1",
+   "kind": "antenna",
+   "what": "antenna array, 1.3 tall, 3 whips",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "antennas"
+   ]
+  },
+  {
+   "id": "AN2",
+   "kind": "antenna",
+   "what": "antenna array, 1.0 tall, 2 whips",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "antennas"
+   ]
+  },
+  {
+   "id": "VSp",
+   "kind": "vent",
+   "what": "louvre panel 0.5 x 0.5",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "stern_vents"
+   ]
+  },
+  {
+   "id": "L0p",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L1p",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L2p",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L3p",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L4p",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "LHp",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "VSs",
+   "kind": "vent",
+   "what": "louvre panel 0.5 x 0.5",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "stern_vents"
+   ]
+  },
+  {
+   "id": "L0s",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L1s",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L2s",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L3s",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L4s",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "LHs",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "HB1",
+   "kind": "hatchbox",
+   "what": "framed deck box 0.3 x 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "head_hatchboxes"
+   ]
+  },
+  {
+   "id": "HB2",
+   "kind": "hatchbox",
+   "what": "framed deck box 0.2 x 0.2",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "head_hatchboxes"
+   ]
+  },
+  {
+   "id": "HB3",
+   "kind": "hatchbox",
+   "what": "framed deck box 0.2 x 0.2",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "head_hatchboxes"
+   ]
+  },
+  {
+   "id": "HB4",
+   "kind": "hatchbox",
+   "what": "framed deck box 0.6 x 0.6",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hump_hatchboxes"
+   ]
+  },
+  {
+   "id": "HB5",
+   "kind": "hatchbox",
+   "what": "framed deck box 0.5 x 0.4",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hump_hatchboxes"
+   ]
+  },
+  {
+   "id": "HB6",
+   "kind": "hatchbox",
+   "what": "framed deck box 0.4 x 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hump_hatchboxes"
+   ]
+  }
+ ],
+ "masses": [
+  {
+   "name": "Base hull (head and flank tier)",
+   "route": "hand-built"
+  },
+  {
+   "name": "Lower hull band",
+   "route": "hand-built"
+  },
+  {
+   "name": "Head brow (step 1)",
+   "route": "hand-built"
+  },
+  {
+   "name": "Head crown (step 2)",
+   "route": "hand-built"
+  },
+  {
+   "name": "Flank block 1 port",
+   "route": "hand-built"
+  },
+  {
+   "name": "Flank block 2 port",
+   "route": "hand-built"
+  },
+  {
+   "name": "Flank block 3 port",
+   "route": "hand-built"
+  },
+  {
+   "name": "Flank block 4 port",
+   "route": "hand-built"
+  },
+  {
+   "name": "Flank block 5 port",
+   "route": "hand-built"
+  },
+  {
+   "name": "Flank block 1 starboard",
+   "route": "hand-built"
+  },
+  {
+   "name": "Flank block 2 starboard",
+   "route": "hand-built"
+  },
+  {
+   "name": "Flank block 3 starboard",
+   "route": "hand-built"
+  },
+  {
+   "name": "Flank block 4 starboard",
+   "route": "hand-built"
+  },
+  {
+   "name": "Flank block 5 starboard",
+   "route": "hand-built"
+  },
+  {
+   "name": "U1 neck block",
+   "route": "hand-built"
+  },
+  {
+   "name": "U2 fore block",
+   "route": "hand-built"
+  },
+  {
+   "name": "U3 ramp block",
+   "route": "hand-built"
+  },
+  {
+   "name": "U4 mid block",
+   "route": "hand-built"
+  },
+  {
+   "name": "U5 saddle block",
+   "route": "hand-built"
+  },
+  {
+   "name": "U6 aft block",
+   "route": "hand-built"
+  },
+  {
+   "name": "Engine block",
+   "route": "hand-built"
+  },
+  {
+   "name": "Ear bracket port",
+   "route": "hand-built"
+  },
+  {
+   "name": "Ear bracket starboard",
+   "route": "hand-built"
+  },
+  {
+   "name": "Rack plinth",
+   "route": "hand-built"
+  }
+ ],
+ "break_pieces": [
+  {
+   "name": "bow piece",
+   "stations": "0.0 to 33.2 percent",
+   "bounded_by": [
+    "B-1"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "midships piece 1",
+   "stations": "33.2 to 82.7 percent",
+   "bounded_by": [
+    "B-1",
+    "B-2"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "stern piece",
+   "stations": "82.7 to 100.0 percent",
+   "bounded_by": [
+    "B-2"
+   ],
+   "full_interior": true
+  }
+ ],
+ "insides": "full interiors throughout the hull, hidden until a piece breaks (R215); every break piece carries its share"
+}

@@ -243,7 +243,7 @@ func _build_engines(fx) -> void:
 			Vector4(r * 2.8, r * 2.8, 11 if corsair else 4, fx.rng.randf()), Vector4(1.0, 0, 0, 0)))
 		var acc = fac.get("accent")
 		if acc is Color:
-			# a corona round the core in the faction's second colour (faction look data, accent; none in use yet)
+			# a corona round the core in the faction's second colour (faction look data, accent; four factions set one)
 			b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0), Vector4(0, 0, 0, 1.0), Vector4(acc.r, acc.g, acc.b, 0.9),
 				Vector4(r * 5.0, r * 5.0, 4, fx.rng.randf()), Vector4(1.0, 0, 0, 0)))
 		rb.add(rs, POOLS.pack(Vector4(np.x, np.y, np.z, 3 if corsair else 0), Vector4(nd.x, nd.y, nd.z, plume), Vector4(eng.r, eng.g, eng.b, 0.9),

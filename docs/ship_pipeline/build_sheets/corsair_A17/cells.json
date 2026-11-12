@@ -1,0 +1,498 @@
+{
+ "rows": [
+  {
+   "cell": "bow/top",
+   "id": "head",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "head_hatchboxes",
+   "built": 3,
+   "listed": 3,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "scoops",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "ears",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "jaws",
+   "built": 4,
+   "listed": 4,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "brow_rack",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "head_plates",
+   "built": 2,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "head",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "head_face",
+   "built": 3,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "scoops",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "ears",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "jaws",
+   "built": 4,
+   "listed": 4,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "head_plates",
+   "built": 2,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "bow_thrusters",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "lamps",
+   "built": 12,
+   "listed": 12,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/below",
+   "id": "jaws",
+   "built": 4,
+   "listed": 4,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/below",
+   "id": "jaw_pipes",
+   "built": 3,
+   "listed": 3,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/below",
+   "id": "head_plates",
+   "built": 2,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/below",
+   "id": "belly_plates",
+   "built": 2,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "hump",
+   "built": 3,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "hump_hatchboxes",
+   "built": 3,
+   "listed": 3,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "deck_guns",
+   "built": 4,
+   "listed": 4,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "crest_gun",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "patches",
+   "built": 8,
+   "listed": 8,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "rust_plates",
+   "built": 5,
+   "listed": 3,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "hump",
+   "built": 3,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "deck_guns",
+   "built": 4,
+   "listed": 4,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "flank_casemates",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "patches",
+   "built": 8,
+   "listed": 8,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "rust_plates",
+   "built": 5,
+   "listed": 3,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "flank_ribs",
+   "built": 6,
+   "listed": 6,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "lamps",
+   "built": 12,
+   "listed": 12,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/below",
+   "id": "belly_turret",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/below",
+   "id": "belly_plates",
+   "built": 2,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "engines",
+   "built": 6,
+   "listed": 6,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "engine_block",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "antennas",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "stern_hatch",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "flank_casemates",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "flank_ribs",
+   "built": 6,
+   "listed": 6,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "lamps",
+   "built": 12,
+   "listed": 12,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "engines",
+   "built": 6,
+   "listed": 6,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "engine_block",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "stern_hatch",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "stern_vents",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/side",
+   "id": "stern_thrusters",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/below",
+   "id": "belly_plates",
+   "built": 2,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/below",
+   "id": "engines",
+   "built": 6,
+   "listed": 6,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  }
+ ],
+ "failing": 0,
+ "structure": [
+  {
+   "cell": "bow/top",
+   "concept": 5,
+   "build": 9
+  },
+  {
+   "cell": "bow/side",
+   "concept": 5,
+   "build": 7
+  },
+  {
+   "cell": "bow/below",
+   "concept": null,
+   "build": 2
+  },
+  {
+   "cell": "mid/top",
+   "concept": 7,
+   "build": 13
+  },
+  {
+   "cell": "mid/side",
+   "concept": 7,
+   "build": 10
+  },
+  {
+   "cell": "mid/below",
+   "concept": null,
+   "build": 2
+  },
+  {
+   "cell": "stern/top",
+   "concept": 5,
+   "build": 9
+  },
+  {
+   "cell": "stern/side",
+   "concept": 6,
+   "build": 7
+  },
+  {
+   "cell": "stern/below",
+   "concept": null,
+   "build": 3
+  }
+ ],
+ "ratios": {
+  "concept": {
+   "env_LB": 2.04,
+   "env_LH": 3.54,
+   "hull_LB": 2.75,
+   "hull_LH": 4.06
+  },
+  "build": {
+   "env_LB": 1.92,
+   "env_LH": 2.71,
+   "hull_LB": 2.84,
+   "hull_LH": 3.82
+  }
+ }
+}

@@ -35,8 +35,12 @@ func _run() -> void:
 			fx.step(1.0/60.0)
 			await process_frame
 		var start: float = fx.now
-		# issue 462: a capital's tell runs to 2.0 s, the break releases its three pieces 0.3 s apart
-		check(is_equal_approx(fx.death("T", "blast"), 2.67), "capital timeline is bounded at 2.67 s")
+		# Issue 462: a capital's tell runs to 2.0 s, the break releases its three pieces 0.3 s apart. The wait is the
+		# ship's own death timeline (fx_death.gd DeathTimeline), never a typed 2.67 s.
+		var dur: float = fx.death("T", "blast")
+		var tl = s.get_meta("death_timeline")
+		check(tl != null and is_equal_approx(dur, float(tl.end)), "capital death runs to its own timeline end (%.2f s)" % dur)
+		check(tl != null and dur > float(tl.cut), "capital death outlasts its break")
 		for i in 180:
 			fx.step(1.0/60.0)
 			await process_frame

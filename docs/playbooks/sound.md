@@ -26,7 +26,7 @@ What that means for every sound:
   breech blocks, hull groans, pressure.
 - **A ladder, like the pictures.** Las, macro, lance, torpedo, death: each plainly heavier than the last, matching
   docs/playbooks/deaths_and_hits.md beat for beat (the tell, the break, the wreck).
-- **Variation.** At least four takes of anything heard often, never the same one twice in a row.
+- **Variation.** Four takes is the starting count for anything heard often, never the same one twice in a row (RULEBOOK 8.4).
 - **A quiet bed.** Ambience and music sit low under the fight; menus click softly; nothing competes with a torpedo.
 - **Faction voices.** Each faction's guns and engines share a family of sound (iron and fire for the Crusade, clean
   electrical hum for the Hegemony, rattling junk for the Hullbreakers, glass and tone for the Glasswrights, a low held note
