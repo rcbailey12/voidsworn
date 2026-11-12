@@ -47,6 +47,7 @@ headless|fx/test/death_plane_check.gd|-|-|ShipView and effects together as battl
 headless|fx/test/destruction_staging_check.gd|-|-|staged deaths, class gating, flash limits and the hurry key
 headless|fx/test/kill_slowmo_check.gd|-|-|issue 521: the kill slow-motion beat starts at the core flash of cruiser and capital kills, never for small hulls or under reduce motion, and a key or click ends it
 headless|fx/test/destruction_steps_check.gd|-|-|break geometry: every open edge is sealed; DESTRUCTION_OUT unset, so no pictures
+headless|fx/test/authored_interiors_check.gd|-|-|issue 557: authored GLB interiors and seams reach damage and death; moving a seam changes piece ownership; old hulls keep fallback
 headless|fx/test/flash_area_check.gd|-|-|issue 504: the flash counter by area on a staged worst second, checked against a brute-force area count; zero in calm mode
 headless|fx/test/fx_smoke.gd|-|-|every weapon look, the damage ladder, shield breaks and every death cause on box ships
 headless|fx/test/playtest_batch1_check.gd|-|-|presentation regressions with stand-in hull scenes, no ship files
@@ -74,6 +75,8 @@ gpu|fx/test/destruction_fleet_probe.gd|env:PROBE_OUT|-|Forward+ frame cost of 20
 gpu|fx/test/fx_breach_probe.gd|env:PROBE_OUT|-|breach close-ups on a real ship: needs the GPU and the ship files
 gpu|fx/test/fx_cost_probe.gd|-|-|hull rebuild cost on one real ship: runs without a window but needs the ship files
 gpu|fx/test/fx_inside_probe.gd|env:PROBE_OUT|-|inside of holes and wreck pieces: needs the GPU and the ship files
+gpu|fx/test/authored_interiors_probe.gd|-|{out}|issue 557 comparison: INTERIORS_EXPORTS must name authored;legacy;moved export folders prepared from one baked hull
+gpu|fx/test/authored_interiors_bench.gd|-|--out {out} --modes base,res_2160,deaths|issue 557: INTERIORS_BENCH_SCENE names one installed test hull; #207 scene with its Hullbreaker capital visual replaced
 gpu|fx/test/fx_marks_probe.gd|env:PROBE_OUT|-|every weapon mark on a real ship, timed and shot: needs the GPU and the ship files
 gpu|fx/test/fx_nozzle_probe.gd|env:PROBE_OUT|-|engine plumes on the built kit ships: needs the GPU and the ship files
 gpu|fx/test/fx_probe.gd|env:PROBE_OUT|-|damage ladder and a shield hit on a real ship: needs the ship files
