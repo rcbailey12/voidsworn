@@ -3,6 +3,41 @@
 Issue 405, ships track. Written by the Board (Fable 5.2), Nov 11 2026, after Ryan's review of the eighteen round 1 direction
 pictures (contrib/muse/design/concept_directions_2026_11/). Read docs/playbooks/factions.md first: this page narrows it.
 
+## Image rounds now (Nov 11 2026, R192 to R207): read this first
+
+The gate below still holds for every picture. Rounds 3 to 8 added these rules for how a picture is made and judged:
+
+1. **One concept style (R197).** Ryan: "Generally that style and tone is exactly how we should look at the concepts for our
+   ships across fsctions. Pretty realistic and detailed to help with the builds. We should merge what we have already today
+   for the factions to match that style of concept so we avoid the same issue we saw with hegemony cartoon since this style
+   is how it should look in game." The reference is contrib/muse/design/concept_directions_2026_11/corsair_A.jpg: a
+   photograph of a real large built object, many small plates and fittings that give scale, real materials, working
+   machinery. Each faction keeps its own palette and character. A picture that reads as an illustration, a toy or a cartoon
+   fails, whatever its shape. This is gate line 13.
+2. **Ryan judges the style, side by side (R198).** Ryan: "It's semi realistic but not quite." The Board's eye proved looser
+   than his: show the picture beside corsair_A.jpg and let him say; never declare a picture in style.
+3. **Edit the liked picture; never redescribe it (R192).** Ryan: "Can we use our prior concept from before all these rounds as
+   the base? Or just use that?" Six Hullbreaker rounds were lost because a liked picture was described in words and redrawn,
+   each copy losing more. When Ryan likes a picture, the next job edits that picture (image to image, the changes listed,
+   everything else untouched), and a result that drifted in mass, silhouette or character fails however good it looks.
+4. **Find the picture he means before using it (R196).** The Board once took "our prior concept" to mean the wrong picture
+   and three rounds were drawn against it. Show the picture with its code name and get his yes first.
+5. **Colour alone never sends a picture back (R204).** Ryan: "we can fix color ourselves rather than get stuck in a loop with
+   color fixes with image generation." Colour is set in the build sheet's colour notes and the paint stage.
+6. **When image to image cannot reach the style without breaking the shape, stop** (R204 (3), R206 (2): H12, S10 and G18).
+   The shape goes through the Opus build-sheet route: a blockout locked to the liked shape, dressed in the style.
+7. **A filed Muse issue is never edited once Ryan may have started it (R200).** Rey keeps to the list it read; new scope is
+   a new issue (round 8b was split from round 8 for this reason).
+8. **The picture is not the end (R203, R207).** An accepted picture sets the look; the build sheet (standard.md, made by an
+   Opus worker, R205) is what is built from, and the builder corrects what would not work as a built object (Ryan: "Use it
+   to guide, not the very final exact design"). docs/playbooks/ships.md carries the build side.
+9. **The Glasswrights' first rule (R192, R196)**: "artistic, thoughtful in creation and looking to create beauty with
+   function, even in these warships"; lenses grown into one continuous skin, "like a work of art or blown glass, though able
+   to rotate". docs/playbooks/factions.md holds the faction sheets and the current picks.
+
+Everything from here down is the round 2 record: the gate is live, the per-faction grammars and variations are history (the
+current picks are in docs/playbooks/factions.md).
+
 ## What Ryan said (Nov 10 2026, 20:16 CST)
 
 1. Glasswrights: "Prism is the closest but it still needs a ton of work. It doesn't look like an actual ship, really? We can
@@ -74,7 +109,8 @@ checklist for any model that takes the Board's seat.
    **No two factions share an outline from above (R183).** Round 4 drew four factions as the same long bar with a gun on
    the tip, told apart only by paint. Each faction owns a plan shape: Sunward a broad-shouldered blade with a forked prow;
    Hegemony a heavy, thick wedge on twin rails; Eclipse a crescent or a broken ring; Hullbreakers stepped, lopsided blocks;
-   the Chorus a grown body with no straight line; the Glasswrights still open. A feature that only shows from the side or
+   the Chorus a grown body with no straight line; the Glasswrights a leaf of cut glass on a silver spine and rim (G13, carried
+   by G15, R192, R196). A feature that only shows from the side or
    the front (an upright ring, lenses standing across the axis) is lost under the battle camera: lay it flat or turn it up.
 9. **Fixed proportions per class.** Stated as length : beam : height in each sheet below. The escort is a smaller ship of the
    same grammar with fewer parts, never the capital shrunk.
@@ -101,6 +137,8 @@ checklist for any model that takes the Board's seat.
     - Still out, as before: masts, funnels, cranes, railings, portholes in rows, flight decks, lifeboats.
     The Board checks every sheet against this list before Ryan sees it, the side view first.
 12. **The faction's sheet holds.** Its colours, its one accent light, and its "Never" list (docs/playbooks/factions.md).
+13. **The one concept style (R197).** Realistic and detailed, judged by Ryan beside corsair_A.jpg (R198). See the top of this
+    page.
 
 ## How round 2 is drawn
 
@@ -109,8 +147,9 @@ For each variation below Muse's image models make **two pictures of the same shi
   lit evenly, no text. This is the picture that is checked against the gate.
 - **The beauty view**: three-quarter from the front and above, the hero with one escort of its family, on near black.
 
-Up to three tries each. The Board reviews every sheet against the twelve lines, sends failures back with the line quoted, and
-only then lays out three per faction for Ryan. The design sheet, not the beauty view, is what a build is later traced from.
+Up to three tries each. The Board reviews every sheet against the thirteen lines, sends failures back with the line quoted, and
+only then lays out three per faction for Ryan. (Round 2 history. Since R203 a build is made from an Opus build sheet that
+passes standard.md, guided by the accepted picture, never traced from it: R207, R213.)
 
 The hero of each faction is its capital, with its real weapon list:
 

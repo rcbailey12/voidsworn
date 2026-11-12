@@ -3,7 +3,8 @@
 Embers of the Hollow Sun (repo name voidsworn) is a hex fleet-tactics roguelite. The product is the Godot 4 port in `godot/`, played on
 Ryan's Windows PC only; the browser JS game is the rules oracle, frozen except for rules fixes. The owner is Ryan. He is not a coder:
 he judges work by screenshots. Start with HANDOFF.md section 0 and contrib/opus/FINDINGS.md (fixed Nov 7, R110; the rest of this file
-is reviewed in #216). The plan and the per-area recipes are in `docs/playbooks/` (PROGRAM.md first).
+is reviewed in #216). The plan and the per-area recipes are in `docs/playbooks/` (PROGRAM.md first). The rules in force, each
+with its reason, are in `docs/RULEBOOK.md` (issue 492): where this file and the rulebook disagree, the rulebook wins.
 
 ## Auditing? Follow `docs/REVIEW_PROTOCOL.md` exactly (mandatory), then `docs/ship_pipeline/AUDIT_BRIEF.md`
 
