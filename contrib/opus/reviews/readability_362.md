@@ -1,0 +1,154 @@
+# Issue 362: battle camera readability pass (Opus worker report, Nov 12 2026)
+
+Branch opus/issue-362, PR 580. Game change: `godot/render/look.gd` (per faction hull numbers, READ; the rim light hook) and
+`godot/render/look_rim.gd` (new: the rim light). No rebakes, no change to ship_view.gd or godot/fx/. Evidence:
+`docs/shots/look_bench/readability/` (README.md has the band, stated first in commit 18d9dcee before any measurement).
+
+## Answer first
+
+- Every one of the 30 faction ships now sits inside the stated band (lit side 100 to 190) on the darkest sky, the brightest
+  sky and the storm map: 105 to 181 after, against 63 to 216 before (18 of 30 were outside).
+- No hull is lost on the darkest sky: at least 86 percent of every outline is lit (before: 55 percent for the Eclipse
+  Tomb-ark, 63 to 74 for the other Eclipse ships).
+- Glasswrights stop burning out: lit side 206 to 216 down to 160 to 180, glow halo 36 down to 17 at most, line detail up
+  (spread 10 to 20, now 18 to 26), clipped pixels 1.1 percent at most (rule: 2).
+- No effect or shield look changed by accident: outside the hulls the bench moments differ only where a hull itself moved
+  (capital death pieces) or where a hull's own glow sits behind a shield bubble (details below).
+- Scene gate (R116, 12.5 ms): GPU at 4K 5.44 to 5.45 ms, frame median at 1080p 4.67 to 4.50 ms (run to run noise). No late
+  shaders.
+- Ryan's eye is the judge of "can tell every faction apart": `phone_world_1.jpg` to `_5.jpg`.
+
+## The band and the rules (stated before any change)
+
+docs/shots/look_bench/readability/README.md, top section: lit side = mean level of the brightest quarter of a hull's
+interior pixels (75th to 98th percentile, Rec. 709 luminance of the drawn sRGB values); band 100 to 190; clip at most 2
+percent of hull pixels; edge on the darkest sky at least 60 percent of outline pixels 12 levels above the sky just outside.
+After the first measurement I added two reported numbers (halo, lines), because the clip rule did not catch the
+Glasswright burn-out: their hulls sat at about 215, under the clip level, and the white showed as glow off the hull. That
+addition is marked as made after the first measurement.
+
+## How it was measured (real functions, battle camera, true pixel size)
+
+- `pc/readability_probe.gd` extends the look bench script (`godot/bench/look_bench.gd`) and draws its fleet part exactly as
+  the bench does (AI_HULLS, ShipView set up as the battle does, camera 170, 400x240 crops at 1 to 1), then one more frame per
+  ship with only the hull surfaces drawn unshaded white: the hull mask. Copied into the PC checkout for the run only, never
+  committed under godot/.
+- `measure.py` reads each still with its mask. `sheets.py` makes the sheets and the table.
+- Ryan's PC (RTX 5080, Godot 4.7.2, 1920x1080, `--fixed-fps 60`), hulls copied from `audit2\repo\godot` (the bench
+  default). Each commit run twice, the second kept (RULEBOOK 12.5). Before = main b7cacdc4; after = ad7daade (game files as
+  5244d3ec). No placeholder hull on any run.
+
+## What was wrong (from the before numbers and the materials)
+
+- Glasswrights: every A4 hull carries the glTF emissive strength 4.0. On most hulls the emissive map is windows and
+  engines (about 1 percent of texels over 0.2); on the Glasswright hulls it is the "stored light" over 21 to 32 percent of
+  the hull, so the hull glows at 1.2 to 2.4 in linear light, above the glow threshold (0.8): a white hull with a halo. The
+  baked finish adds to it (metal about .37, roughness about .30 in the ORM map; bakemat4.py asks .55 and .10).
+- Dark hulls: Sunward black iron, Hullbreaker rust and Eclipse violet-black sit at 63 to 118. The old fix (hull_fix in
+  fx/faction_looks.json) used Godot's material rim, which Godot multiplies by the albedo
+  (scene_forward_clustered.glsl: `diffuse_light *= albedo`), so on a near-black hull it adds almost nothing.
+- Hegemony: pale grey at 192 to 211, above the band.
+
+## What changed
+
+1. `look.gd` READ: per faction numbers laid on the hull material in LOOK.hull (lift in linear light, rim, emission scale,
+   metal scale, specular). They replace hull_fix for the six factions (hull_fix stays as the fallback). Damaged and dying
+   hulls keep them (fx_hull.gd `_exterior` copies albedo, rim, metallic, specular and emission energy; checked headless).
+   Final: Sunward lift 1.45; Hegemony 0.4; Hullbreakers 1.5; Chorus 1.9 (about its old 1.35 sRGB lift); Glasswrights
+   lift 0.4, glow 0.15 of its baked strength, metal 0.4, specular 0.3; Eclipse lift 4.5, metal 0.7. The dark factions sit
+   near the band's low end and the pale ones below its top, so each keeps its value and colour.
+2. The rim light (`look_rim.gd`, made by LOOK.apply beside the key light): a back light from the camera's own line of sight
+   beyond the ships, tipped up 20 degrees, specular strong (light_specular 8) and diffuse weak (energy 0.35). Only the far
+   outline of a hull faces it and the camera at once, at a grazing angle, so the hull gets a bright edge. It follows the
+   camera every frame. It lights only render layer 16, which only hull surfaces join (material meta `look_hull`, or a damage
+   material made from one): rocks, planet, board and craft keep their light. No shadows, no new shader.
+3. KEY_ENERGY (2.0) and the glow threshold (0.8) are unchanged: both move every accepted look at once, and the Glasswright
+   halo was the hull's own glow, not the threshold.
+
+## Calibration (two cheap probe runs before the final)
+
+- Calibration 1 (`data/rows_calibration1.json`, 8 variants): a back light from behind and above mirrored on every flat deck
+  (Glasswright Ark lit 241 with a halo of 78; Eclipse cruiser 202). Moved to the line of sight.
+- Calibration 2 (`data/rows_calibration2.json`, 8 variants): lift scale 0.7, 1, 1.4, 2; rim tip 20, 30, 45 degrees;
+  specular 4 and 16. Tip 20 kept every outline at 0.93 or more on the darkest sky while the Ark (185) and the Eclipse fans
+  stayed in band; 30 and 45 lit flat faces again. The first lifts put the dark factions mid-band: rust read pink and
+  Eclipse lavender in the preview, so the final lifts are lower (step 1 above).
+
+## Per faction (lit side min to max; full per ship table: docs/shots/look_bench/readability/table.md)
+
+| Faction | Darkest sky before / after | Brightest before / after | Storm before / after | Edge darkest, worst ship, before / after |
+|---|---|---|---|---|
+| Hegemony Navy | 192-211 / 156-180 | 192-211 / 156-180 | 192-211 / 156-180 | 0.95 / 0.91 |
+| Sunward Crusade | 82-118 / 105-156 | 81-118 / 105-157 | 82-119 / 105-156 | 0.70 / 0.86 |
+| Ashfall Hullbreakers | 89-115 / 122-151 | 89-115 / 122-151 | 90-115 / 122-151 | 0.79 / 0.90 |
+| Chorus | 128-155 / 134-157 | 128-155 / 134-157 | 128-155 / 133-157 | 0.96 / 0.96 |
+| Glasswrights | 206-216 / 160-180 | 206-216 / 160-181 | 204-216 / 159-177 | 1.00 / 1.00 |
+| Eclipse | 63-74 / 116-134 | 63-74 / 116-134 | 70-119 / 126-150 | 0.55 / 0.87 |
+
+Craft and objects (not held to the band): the three craft are drawn by render/squadron_craft.gd in battle (not through
+LOOK.hull, so neither change reaches them); the bench draws them with Hegemony numbers, so on the sheet the spore reads
+darker (104 to 80). The station is drawn by the board (assets/ships/a4_props.gd), not LOOK.hull, in battle.
+
+## Moments check (no effect or shield changed by accident)
+
+The look bench moments part (61 rows, three cameras, 2,388 cells), main against the branch, each the second run.
+- The bench's own compare: 1,850 of 2,388 cells over the 2.0 tolerance, as expected: nearly every cell has a hull in it.
+  Sheets on the PC: `opus362\sheets_moments_before_2_vs_moments_after_2\` (Board: open the shield and deaths overviews).
+- `pc/moments_diff.py` separates hull from everything else: the hull mask is what differs in each strip's first cell (taken
+  before every effect starts), grown 3 pixels; then the difference outside it. Noise floor (main run 1 against run 2):
+  0.00 on every cell. After: mean off-hull difference 0.03 (weapon on hull) to 0.69 (capital death beats); 50 of 2,388
+  cells over 2.0 off the hull (`data/moments_diff_after_summary.txt`).
+- The 50, looked at one by one (`moments_worst_off_hull.jpg`): capital death beats (13.9 at most): the Hegemony
+  super-dreadnought's halves drift out of their first-cell place and are the new grey, hull not effect. Torpedo, lance,
+  battery and doom hits on a Hegemony shield (4.0 at most): the shield and the hit are drawn the same; the soft glow
+  around the bubble is a little dimmer because the hull under the bubble is darker (glow sums everything bright behind it).
+  Macro on the Tomb-ark at camera 60 and 26: the Tomb-ark fills the frame, so there is almost no off-hull area.
+- Seen on the overviews: fire, smoke, flashes, shells, beams, shield bubbles and shield breaks unchanged; hulls under them
+  greyer (Hegemony) or lighter (Eclipse). The Eclipse burn-out hulk still goes dark, from a lighter start.
+
+## Scene gate (R116: 12.5 ms; godot/bench/scene_gate.tscn, modes base and res_2160, 3 sessions, two launches each)
+
+| | GPU ms at 4K (median of 6) | Frame ms at 1080p (median of 6) |
+|---|---|---|
+| Before (b7cacdc4) | 5.44 | 4.67 |
+| After (ad7daade) | 5.45 | 4.50 |
+
+Late shaders after warm-up: 0 in every session. Data: `data/gate/`.
+
+## Checks run
+
+- Headless in the sandbox (Godot 4.7.2 Linux): death_plane_check, fx_smoke, late_shader_check, smoke_lifetime_check,
+  playtest_batch1_check, playtest_batch3_check, damage_surface_check, authored_interiors_check, destruction_staging_check,
+  kill_slowmo_check, wing_cancel_test, movement_flight_check, nose_first_check, squadron_check, death_leap_check,
+  flash_area_check: all PASS (death_leap_check needs `--import` first, as on GitHub). A headless script proved: the rim light
+  is made once and reused, hull surfaces join layer 16 and a plain mesh does not, a damage material made from a hull
+  material keeps the layer and the capped emission.
+- No data.js, battle.js or core.js change: no oracle copies or tables to refresh.
+
+## Self-check (R129)
+
+- Callers: LOOK.apply in battle.gd, look_bench.gd, scene_gate (through battle.gd), fx gallery and three fx probes, a4_shots:
+  all get the rim light (opt out: `{"rim": false}`). LOOK.hull in ship_view.gd and the gallery. scenes/battle/lineup.gd
+  builds its own lights: its ships get the READ numbers, no rim light.
+- Saves: none. Twins: the browser game has no look parity. UI: 2D panels untouched (the rim light lights 3D hulls only).
+- GitHub: the standing checks and Godot checks run on the push (PR 580).
+
+## Unsure, and for the Board
+
+1. Faction colour: Eclipse now reads dark violet-grey rather than violet-black, and the Hullbreaker rust is lighter (warmer
+   pink in places). Both are inside the band by a margin; lowering Eclipse lift to about 3.5 and Hullbreakers to 1.2 would
+   keep them in (estimated 105 to 115 at the bottom) and darker. One probe run (about two minutes of GPU) tells.
+2. The rim light at close range: on the Tomb-ark at camera 60 it draws a thin white line along the inner ring ridge. Ryan
+   zooms in for effects; worth his look.
+3. hull_fix in fx/faction_looks.json is now only the fallback for a faction READ does not name. godot/fx/ was out of my
+   scope; folding the two into one place is a small follow-up.
+4. Craft (squadron_craft.gd) and the board's station and hulks (a4_props.gd) do not go through LOOK.hull, so they get
+   neither change.
+5. Window and trim light sizes for a 70 pixel ship stay with the ship recipe (issue 363's line), as the issue says.
+6. A playbook line is owed by the Board if this becomes standing practice: "every ship change is judged on the readability
+   probe's band first" (docs/playbooks/ships.md or effects.md; outside my Deliver to line).
+
+## PC
+
+Folder `Downloads\voidsworn_test\opus362` (sparse clone, the hull copies, runs, zips). Queue files used:
+q_opus362_a, _z1, _z2, _c2, _b, _c, _d. Nothing deleted.
