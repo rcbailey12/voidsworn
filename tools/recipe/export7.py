@@ -11,29 +11,38 @@
 #   hp_w<slot>_<weapon>_<arc>_<n>   one per weapon muzzle of every socket that has a "slot" in the ship json (the barrel tips and
 #                                   launch mouths the kit registered while building): node -Z along the barrel, +Y away from the hull
 #   hp_eng_<n>                      one per engine exit: -Z out of the bell (aft), extras.radius the bell radius
-#   hp_breach_<n>                   breach anchors on open hull, clear of parts: two per section (prow, mid, eng), port and starboard;
-#                                   +Y is the outward surface normal
+#   hp_bay_<n>                      one per hangar mouth the hull module registers (register_bay): -Z the launch direction
+#   hp_breach_<n>                   breach anchors on open hull, clear of parts, counted by class and faction from one table
+#                                   (tools/blender/kits/shared/hardpoints.py; docs/ship_pipeline/HARDPOINTS.md): +Y the outward
+#                                   surface normal, spread over prow, mid and eng
 #   hp_core                         the hull's centre of mass
+#   hp_rcs_<n>                      braking puff origins: two, one port and one starboard on the forward half, -Z the braking thrust
+#   hp_board_<n>                    boarding origins: two, one port and one starboard on the mid hull, -Z out toward the target
 # The weapon kind and arc of each slot are read from the game's own data.js (the ship json names the ship: "game_ship"), so the
 # names can never drift from the rules. tools/recipe/check_export.py then reads the written glb back and fails the export when a
-# weapon slot has no hard point or a hard point is off the mesh.
+# required point is missing (including the breach count for the hull's class and faction) or a hard point is off the mesh.
+# The export also writes manifest_entry.json for this ship: the point counts, class, band and files, ready to merge into
+# godot/assets/ships/manifest.json.
 # usage: blender -b CELL.blend -P export7.py -- SHIP_JSON OUT_DIR [maps=2048] [unbaked=1]
 #   unbaked=1 is for testing the geometry and hard points on a build that has not been baked (no maps are written and the
 #   export json says so; check_export.py fails such a folder unless it is told the same).
-import os, sys, json, math, struct, hashlib, shutil, time
+import os, sys, json, math, struct, hashlib, shutil, time, random
 import bpy, bmesh
 import numpy as np
 from mathutils import Vector, Matrix
 from mathutils.bvhtree import BVHTree
 
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.normpath(os.path.join(HERE, '..', '..'))
+SHARED = os.path.normpath(os.path.join(REPO, 'tools', 'blender', 'kits', 'shared'))
+sys.path.insert(0, SHARED)
+import hardpoints as HP_CONTRACT
 a = sys.argv[sys.argv.index('--') + 1:]
 SHIPJ, OUT = a[0], a[1]; kw = dict(x.split('=', 1) for x in a[2:] if '=' in x)
 MAPS = int(kw.get('maps', 2048)); UNBAKED = kw.get('unbaked') == '1'
 ship = json.load(open(SHIPJ)); CODE = ship.get('game_code') or ship['ship']; GAME = ship.get('game_ship')
 ARC_DEG = {'F': 30, 'T': 135, 'P': 60, 'S': 60}       # as tools/blender/a4/ships.py: half-angle of the firing arc from the rest direction
 MOUNT_SIZE = dict(casemate='M', drum_rack='M', turret='S', bow_battery='M')   # a socket's "mount" key overrides
-BREACH_SECTIONS = (('prow', .215, .47), ('mid', -.10, .16), ('eng', -.44, -.14))   # x ranges; two anchors each (port, starboard)
+BREACH_SECTIONS = (('prow', .215, .47), ('mid', -.10, .16), ('eng', -.44, -.14))   # x ranges
 BREACH_CLEAR = .030                                  # an anchor keeps this far from every part
 
 def status(text):      # the stage file reads this (a Blender exit code is not something to lean on)
@@ -47,6 +56,10 @@ sys.path.insert(0, HERE)
 import gamedata
 try: WEAPONS = gamedata.weapons(GAME)      # [(kind, arc), ...] in slot order, from the game's data.js
 except ValueError as e: die(str(e))
+CLS = gamedata.ship_attr(GAME, 'cls', default='Cruiser')
+FAC = gamedata.ship_attr(GAME, 'fac', default=ship.get('faction'))
+HANGAR = int(gamedata.ship_attr(GAME, 'hangar', default=0) or 0)
+EXPECTED_BREACH = HP_CONTRACT.expected_breach(CLS, FAC)
 sc = bpy.context.scene
 if 'r209_hp' not in sc: die('this blend has no hard point data (scene r209_hp): rebuild it with the current hull module')
 HP = json.loads(sc['r209_hp'])
@@ -77,27 +90,63 @@ def core_point(bm):
     if abs(vol) < 1e-9: die('the hull has no volume')
     c /= vol; return Vector((c.x, 0.0, c.z))
 
+def hull_side_point(x0, x1, s, z0, avoid=(), clear=BREACH_CLEAR):
+    """the side-hull point (ray in from the side) nearest (x0..x1, z0) among those at least clear from every part.
+    Returns (loc, outward normal, clearance) or None. z0 is the section's preferred side height (the faction's placement)."""
+    best = None; xm = (x0 + x1) / 2
+    for x in np.linspace(x0, x1, 25):
+        for z in np.linspace(-.115, .020, 17):
+            loc, nrm, _, _ = HT.ray_cast(Vector((x, s * .6, z)), Vector((0, -s, 0)), 1.2)
+            if loc is None or nrm.y * s < .55: continue             # a side face, facing out
+            d = PT.find_nearest(loc)[3] if PT else 9.0
+            if d is None: d = 9.0
+            if d < clear: continue
+            if any((loc.x - a.x) ** 2 + (loc.z - a.z) ** 2 < .0025 for a in avoid): continue
+            off = (loc.x - xm) ** 2 + 4 * (loc.z - z0) ** 2
+            if best is None or off < best[0]: best = (off, loc.copy(), nrm.copy(), d)
+    return None if best is None else (best[1], best[2].normalized(), round(best[3], 4))
+
+
 def breach_anchors():
-    """open hull, clear of parts: per section and side, the side-hull point (ray in from the side) nearest the middle of the
-    section's side among those at least BREACH_CLEAR from every part"""
-    out = []
-    for sec, x0, x1 in BREACH_SECTIONS:
-        for s in (1, -1):
-            best = None; xm = (x0 + x1) / 2
-            for x in np.linspace(x0, x1, 21):
-                for z in np.linspace(-.115, .020, 13):
-                    loc, nrm, _, _ = HT.ray_cast(Vector((x, s * .6, z)), Vector((0, -s, 0)), 1.2)
-                    if loc is None or nrm.y * s < .55: continue             # a side face, facing out
-                    d = PT.find_nearest(loc)[3] if PT else 9.0
-                    if d is None: d = 9.0
-                    if d < BREACH_CLEAR: continue
-                    off = (x - xm) ** 2 + 4 * (z + .050) ** 2
-                    if best is None or off < best[0]: best = (off, loc.copy(), nrm.copy(), d)
-            if best is None: die(f'no open hull for a breach anchor in the {sec} section, side {s}')
-            out.append(dict(section=sec, side=s, p=best[1], n=best[2].normalized(), clear=round(best[3], 4)))
+    """open hull, clear of parts, in the class and faction layout from the contract (hardpoints.breach_layout): the side-hull
+    point nearest each section's middle and the faction's preferred side height, at least BREACH_CLEAR from every part."""
+    n = EXPECTED_BREACH
+    if n <= 0: return []
+    zpref = HP_CONTRACT.FACTION_Z.get(HP_CONTRACT.faction_key(FAC))
+    out = []; avoid = []
+    for i, (sec, side) in enumerate(HP_CONTRACT.breach_layout(n)):
+        x0, x1 = next((a, b) for s, a, b in BREACH_SECTIONS if s == sec)
+        s = 1 if side == 'P' else -1                  # Blender frame: +y is port
+        z0 = zpref if zpref is not None else -.050
+        xm = (x0 + x1) / 2
+        if HP_CONTRACT.faction_key(FAC) == 'corsair':     # uneven by theme, but the same unevenness every export
+            rng = random.Random(f'{CODE}:{sec}:{side}:{i}')
+            xm += rng.uniform(-.055, .055); z0 += rng.uniform(-.035, .035)
+        got = hull_side_point(xm - (x1 - x0) / 2, xm + (x1 - x0) / 2, s, z0, avoid)
+        if got is None: got = hull_side_point(x0, x1, s, z0, avoid)
+        if got is None: die(f'no open hull for a breach anchor in the {sec} section, side {side}')
+        loc, nrm, cl = got
+        avoid.append(loc)
+        out.append(dict(section=sec, side=s, p=loc, n=nrm, clear=cl))
     return out
 
-CORE = core_point(hbm); BREACH = breach_anchors(); hbm.free()
+
+def origin_points(kind, x0, x1, z0):
+    """one port and one starboard hull origin of a new point type (rcs braking puffs, board parties), derived from the hull
+    surface; the signed side is +1 port, -1 starboard. clear=0: an origin may sit under a part (it is not a breach anchor)."""
+    out = []
+    for s in (1, -1):
+        got = hull_side_point(x0, x1, s, z0, clear=0.0)
+        if got is None: die(f'no hull for an {kind} origin on the {"port" if s > 0 else "starboard"} side')
+        loc, nrm, _ = got
+        out.append(dict(side=s, p=loc, n=nrm))
+    return out
+
+CORE = core_point(hbm); BREACH = breach_anchors()
+REQUIRED = HP_CONTRACT.required_points(WEAPONS, CLS, FAC, HANGAR)
+RCS = origin_points('rcs', .16, .36, .000) if REQUIRED['rcs'] else []
+BOARD = origin_points('board', -.12, .14, -.030) if REQUIRED['board'] else []
+hbm.free()
 if pbm: pbm.free()
 
 keep = []
@@ -179,14 +228,28 @@ for m in HP['muzzles']:
     HPS.append(dict(name=f'{key}_{k}', p=m['tip'], fwd=m['aim'], up=m['normal'], extras=ex)); by_slot.setdefault(slot, []).append(f'{key}_{k}')
 for k, e in enumerate(sorted(HP['engines'], key=lambda e: (-e['radius'], -e['pos'][1]))):
     HPS.append(dict(name=f'hp_eng_{k}', p=e['pos'], fwd=e['dir'], up=(0, 0, 1), extras=dict(kind='engine', radius=float(e['radius']), engine=e['name'])))
+for k, b in enumerate(HP.get('bays', [])):
+    HPS.append(dict(name=f'hp_bay_{k}', p=b['pos'], fwd=b['dir'], up=(0, 0, 1), extras=dict(kind='bay', hangar=int(b.get('hangar') or 0))))
 for k, b in enumerate(BREACH):
     f = Vector((1, 0, 0)) if abs(b['n'].x) < .9 else Vector((0, 0, 1))
     HPS.append(dict(name=f'hp_breach_{k}', p=list(b['p']), fwd=list(f), up=list(b['n']),
                     extras=dict(kind='breach', radius=0.0, section=b['section'], side='P' if b['side'] > 0 else 'S', clear=b['clear'])))
 HPS.append(dict(name='hp_core', p=list(CORE), fwd=(0, 1, 0), up=(0, 0, 1), extras=dict(kind='core')))   # identity in the game frame
+for k, b in enumerate(RCS):
+    HPS.append(dict(name=f'hp_rcs_{k}', p=list(b['p']), fwd=(1, 0, 0), up=(0, 0, 1),
+                    extras=dict(kind='rcs', side='P' if b['side'] > 0 else 'S', radius=0.0)))
+for k, b in enumerate(BOARD):
+    HPS.append(dict(name=f'hp_board_{k}', p=list(b['p']), fwd=(0, b['side'], 0), up=(0, 0, 1),
+                    extras=dict(kind='board', side='P' if b['side'] > 0 else 'S', radius=0.0)))
 for h in HPS: empty(h['name'], h['p'], h['fwd'], h['up'], h['extras'])
+kinds = {}
+for h in HPS: kinds[h['extras']['kind']] = kinds.get(h['extras']['kind'], 0) + 1
+counts = {k: kinds.get(k, 0) for k in ('gun', 'engine', 'bay', 'breach', 'core', 'rcs', 'board')}
+req_probs = HP_CONTRACT.missing_required(counts, WEAPONS, CLS, FAC, HANGAR)
+if req_probs: die('; '.join(req_probs))
 missing = [f'slot {i} ({wk} {arc})' for i, (wk, arc) in enumerate(WEAPONS) if i not in by_slot]
 J['length_world'] = float(ship.get('length_world', 0) or 0); J['recipe_cell'] = ship.get('cell', ''); J['faction'] = ship.get('faction', '')
+J['cls'] = CLS; J['band'] = HP_CONTRACT.band(CLS)
 
 # ---------------------------------------------------------------------------------------------------------------- write
 tmp = os.path.join(OUT, '_gltf_source'); os.makedirs(tmp, exist_ok=True)      # the exporter's own files; kept (nothing is deleted)
@@ -228,19 +291,22 @@ for fn in sorted(os.listdir(OUT)):
     p = os.path.join(OUT, fn)
     if os.path.isfile(p) and fn.startswith(CODE) and not fn.endswith(('_export.json', '_check.json')):
         files[fn] = dict(bytes=os.path.getsize(p), sha256=hashlib.sha256(open(p, 'rb').read()).hexdigest())
-kinds = {}
-for h in HPS: kinds[h['extras']['kind']] = kinds.get(h['extras']['kind'], 0) + 1
-rep = dict(ship=ship['ship'], code=CODE, cell=ship.get('cell'), game_ship=GAME, faction=ship.get('faction'), unbaked=UNBAKED, maps=0 if UNBAKED else MAPS,
+manifest = dict(name=ship.get('name') or CODE, faction=FAC, cls=CLS, band=HP_CONTRACT.band(CLS),
+                length_world=float(ship.get('length_world', 0) or 0), hardpoints={k: v for k, v in counts.items() if v},
+                breaches=counts['breach'], files=files, pc_path=f'godot/assets/ships/{CODE}/')
+json.dump(manifest, open(os.path.join(OUT, 'manifest_entry.json'), 'w'), indent=1)
+rep = dict(ship=ship['ship'], code=CODE, cell=ship.get('cell'), game_ship=GAME, faction=ship.get('faction'), cls=CLS,
+           band=HP_CONTRACT.band(CLS), expected_breach=EXPECTED_BREACH, unbaked=UNBAKED, maps=0 if UNBAKED else MAPS,
            triangles=TRIS, surfaces=len([s for s in J.material_slots if s.material]),
            weapons=[dict(slot=i, weapon=wk, arc=arc, hard_points=by_slot.get(i, [])) for i, (wk, arc) in enumerate(WEAPONS)],
-           slots_without_hard_points=missing, hardpoints=kinds,
+           slots_without_hard_points=missing, hardpoints=counts,
            hard_points=[dict(name=h['name'], p=[round(float(v), 5) for v in h['p']], fwd=[round(float(v), 4) for v in h['fwd']],
                              up=[round(float(v), 4) for v in h['up']], frame='ship (x bow, y port, z up)', **h['extras']) for h in HPS],
-           files=files, seconds=round(time.time() - t0, 1),
+           manifest=manifest, files=files, seconds=round(time.time() - t0, 1),
            not_written=['<CODE>_wreck.glb (the death pieces)', '<CODE>_damage.glb and the skin_<n> hull patches (breach damage)',
                         '<CODE>_emissive.jpg (the glow is its own surface with an emissive factor, no map)'])
 json.dump(rep, open(os.path.join(OUT, CODE + '_export.json'), 'w'), indent=1)
-print('[export7]', CODE, 'triangles', TRIS, 'hard points', json.dumps(kinds), 'files', sorted(files), flush=True)
+print('[export7]', CODE, 'triangles', TRIS, 'hard points', json.dumps(counts), 'files', sorted(files), flush=True)
 if missing:
     die('no hard point for ' + ', '.join(missing))
 status('WRITTEN ' + CODE + ('  (unbaked test: no maps)' if UNBAKED else ''))

@@ -336,7 +336,7 @@ function startBattle(cfg){
   if(cfg.kind==='boss') for(const k of Object.keys(T)) if(T[k]==='rock'&&rnd()<.45) delete T[k]; // flagship duels need firing lanes, not a maze
   B={seed, units:[], terrain:T, map:TERRAIN_META, shape, enc, arena:ARENA.kind, biome:cfg.biome||(RUN&&RUN.map&&RUN.map.biome)||rollBiome(null), approach, well:shape==='deadstar'&&TERRAIN_META.deadstar?{q:TERRAIN_META.deadstar.q,r:TERRAIN_META.deadstar.r}:null, deployMode:enc==='ambush'?'ambush':['defend','hunt','intercept','break'].includes(enc)?'line':(cfg.dep||'line'), resolve:{player:1,enemy:1}, round:1, side:'player', sel:null, armed:null, mode:null, hover:null, reach:null,
      busy:false, log:[], fx:[], cfg, over:false, reviveUsed:false, inspect:null, showArcs:true, showThreat:false, called:null, wingSel:null, activeUnit:null, sector:RUN.sector}; { const sc=sectorCond(); B.cond=sc&&RUN&&RUN.map?RUN.map.cond:null; B.condRegen=(sc&&sc.regen)||1; }
-  B.tree=treeBuild(); B.treeStats={}; B.treeChoices=cfg.treeChoices||null; B.treePending=[]; B.treeFlaw=null; B.treeLens=null; B.treeFlakSkip=null;
+  B.tree=treeBuild(); B.treeStats={}; B.treeChoices=cfg.treeChoices||null; if(cfg.treeMay) B.treeMay=Object.assign({},cfg.treeMay); B.treePending=[]; B.treeFlaw=null; B.treeLens=null; B.treeFlakSkip=null;
   B.treeReserve=[]; B.treePrey=null; B.treeNamedPrey=null; B.treeIronExtra=null; B.treeFiled=null; B.treePermFile=null;
   B.treeOneVoiceUsed=0; B.treeDrillUsed=0; B.treeStrikeRound=0; B.treeDebtRound=0; B.treeForgeRound=0;
   B.tr={r:1,enemyShots:{},volleyHits:{},logged:{},falseHulls:0,glassUsed:0,firstLight:null,volleyPick:{},carrierHit:{},wingsDebt:{},standardUsed:0,ledgerUsed:0,escortUsed:{},frameZeroUsed:0,targeted:{},targetedLast:{},iterKill:{},indexTarget:null,swarmHitBy:{},volleyShips:{},volleyHit:{},burnStays:null,firstThroatUsed:0,smileUsed:0,rearShips:{},wingStruck:{},hitRound:{},firstScarUsed:0,nothingSaved:0,scent:null,bigId:null,
@@ -422,7 +422,7 @@ function startSideTurn(side){
     if(u.abCd>0) u.abCd--;
     if(u.st.shieldOff>0) u.st.shieldOff--; else if(u.shMax>0){ const rg=u.regen*(((typeof B!=='undefined'&&B&&B.condRegen)||1)); for(let i=0;i<4;i++) if(!(u.regenLock&&u.regenLock[i])) u.sh[i]=Math.min(u.shMax,u.sh[i]+rg); }
     ithChargeTurn(u); u.regenLock=null; // B3 Ithar prism charge (after the normal regen); an ion lock lasts one turn start
-    if(u.hullRegen && u.hp<u.maxHp && !u.pyre){ u.hp=Math.min(u.maxHp,u.hp+u.hullRegen); treeMarkRepair(u); }
+    if(u.hullRegen && u.hp<u.maxHp && !u.pyre){ const mm=treeRoleMul(u), hr=mm!==1?Math.round(u.hullRegen*mm):u.hullRegen; u.hp=Math.min(u.maxHp,u.hp+hr); treeMarkRepair(u); if(mm!==1) treeFx(u,'roles','mend: the regrowth is 10% stronger'); }
     if(u.st.acid>0&&!u.isSq){ u.st.acid--; u.hp-=4; if(typeof fxText==='function') fxText(u,'Acid \u22124','#c8e04a',-12); if(u.hp<=0){ u.hp=0; burned=true; log(`${u.name} dissolves.`, u.side==='player'?'e':'p'); u.killCause='melt'; queueDeath(u,deaths); } }
     if(u.st.fire>0&&!u.dead){ const fd=u.st.fireDmg||6; u.st.fire--; u.hp-=fd; if(typeof fxText==='function') fxText(u,'Fire \u2212'+fd,'#f08a4b'); if(u.hp<=0){ u.hp=0; burned=true; log(`${u.name} burns out.`, u.side==='player'?'e':'p'); u.killCause='dark'; queueDeath(u,deaths); } if(!u.st.fire) u.st.fireDmg=0; }
     u.hexMoved=0; if(u.fx&&u.fx.stormRegen&&u.shMax>0&&!(u.st.shieldOff>0)){ for(let i=0;i<4;i++) u.sh[i]=Math.min(u.shMax,u.sh[i]+Math.round(u.shMax*u.fx.stormRegen)); }
@@ -570,7 +570,7 @@ function chorusFeed(t,by){ if(!B||!t||t.isSq) return; const side=by?by.side:(t.s
   for(const u of B.units){ if(u.dead||u.side!==side||u.isSq||u.fac!=='chorus'||u.pyre||u.hp>=u.maxHp) continue; const share=u===killer?FEED_KILL:hdist(u,t)<=FEED_R?FEED_NEAR:0; if(!share) continue;
     chorusRegrow(u,Math.round(u.maxHp*share),'Feeds'); } }
 // one cap for everything a Chorus hull regrows from feeding and biting (FEED_CAP of max hull per round)
-function chorusRegrow(u,amt,label){ if(!u||u.dead||u.pyre||amt<=0) return 0; if(u.fedR!==B.round){ u.fedR=B.round; u.fed=0; } const room=Math.max(0,Math.round(u.maxHp*FEED_CAP)-u.fed), h=Math.min(room,u.maxHp-u.hp,amt); if(h<=0) return 0;
+function chorusRegrow(u,amt,label){ if(!u||u.dead||u.pyre||amt<=0) return 0; { const mm=treeRoleMul(u); if(mm!==1){ amt=Math.round(amt*mm); treeFx(u,'roles','mend: the regrowth is 10% stronger'); } } if(u.fedR!==B.round){ u.fedR=B.round; u.fed=0; } const room=Math.max(0,Math.round(u.maxHp*FEED_CAP)-u.fed), h=Math.min(room,u.maxHp-u.hp,amt); if(h<=0) return 0;
   u.hp+=h; u.fed+=h; fstat('chorus','feed',h); try{ if(typeof fxText==='function') fxText(u,(label||'Feeds')+' +'+h,'#d6d24a',-26); }catch(e){} return h; }
 // v54 doctrine (decided): a Chorus hull that deals hull damage at 1 to 2 hexes regrows CHORUS_BITE of it, inside the same per-round cap
 const CHORUS_BITE=.08; // pass 3 tuning: .12 to .08 (pass 2: .2 to .12)
@@ -700,7 +700,7 @@ function rakeBonus(u,w){ if(!u||u.isSq||!(w.arc==='P'||w.arc==='S')||(u.hexMoved
 function hitChance(u,w,t){
   const d=hdist(u,t), over=Math.max(0,d-w.opt-(u.fx.longAim||0));
   const noFall=!!(u.side==='player'&&B&&B.tr&&B.tr.sunTarget===t.id&&B.volleyMul&&B.volleyMul.side==='player'); // Saro capstone 1: no range falloff
-  let c=w.acc+u.aim+(u.lockOn?15:0)-(u.fullAhead?15:0)-(noFall?0:over*w.fall)-Math.min(45,t.ev+(t.evBuff||0))*(w.evMult||1); // evasion caps at 45
+  let c=w.acc+u.aim+(u.lockOn?15:0)-(u.fullAhead?15:0)-(noFall?0:over*w.fall)-Math.min(45,t.ev+(t.evBuff||0)+treeScreenEv(t))*(w.evMult||1); // evasion caps at 45 (issue 529: the screen role adds inside the cap)
   if(t.isSq && w.k!=='flak' && w.k!=='sq') c-=15;
   const noShadow=!!(treeSkill('coronaShadow')&&B&&B.volleyMul&&B.volleyMul.side===u.side); // Umbra T3a: the noon volley ignores terrain cover
   if(!noShadow){ if(terr(t.q,t.r)==='neb') c-=15;
@@ -731,6 +731,8 @@ function hitChance(u,w,t){
   { const ta=treeSkill('targetArchived'); if(ta&&u.treeAimTgt&&t.id===u.treeAimTgt) c+=treeAddVal(u,'aim',ta.n); } // Umbra T2b: a target no other ship chose
   { const ek=treeSkill('everyKnife'); if(ek&&u.side==='enemy'&&u.treeKnifeRound===B.round) c-=ek.n; } // Sable T3b
   { if(u.side==='enemy'&&u.treeAcidAim) c-=20; } // Voice T3b: acid in the scanners
+  { const rl=treeSkill('roles'); if(rl&&treeRole(u)==='strike') c+=treeAddVal(u,'aim',rl.n); } // Chorus shared B1a: the strike role
+  c+=treeScentAim(u,t); // Razormaw T2b: the next shot after a kill in the frenzy
   const surge=cmdActive(t.side,'surge')||!!(t.side==='player'&&t.burnCarry); // v53: the enemy's Surge Command, and Grax's carried burn
   if(w.k==='lance'&&u.fx&&u.fx.lanceSure) return surge?75:95; // One Clean Line (legendary)
   if(u.side==='player'&&!u.isSq&&!(u.sureUsed>0)&&runFx().firstSure) return surge?75:95; // the rangefinder relic: every ship's first attack of the battle
@@ -957,6 +959,8 @@ async function fireWeapon(u,wi,t,opts={}){ if(!inThisBattle(u)) return false; co
   let hc=hitChance(u,w,t); if(treePen) hc=Math.max(5,hc-treePen);
   { if(starAim>0){ hc=Math.min(95,hc+starAim); treeFx(u,'starlings','the starlings form up'); } }
   { if(u.treeAimNext){ hc=Math.min(95,hc+u.treeAimNext); treeFx(u,'stillnessCounted','the stillness counts'); u.treeAimNext=0; } } // Seveth T3b
+  if(!opts.intercept&&u.treeScent&&u.side==='player'&&!u.isSq){ if(treeScentAim(u,t)>0) treeFx(u,'scentDark','the scent leads to new prey'); u.treeScent=null; } // Razormaw T2b: spent on the next shot
+  { const rl=treeSkill('roles'); if(rl&&!opts.intercept){ if(treeRole(u)==='strike') treeFx(u,'roles','strike: +10 aim'); else if(u.side==='enemy'&&treeRole(t)==='screen') treeFx(t,'roles','screen: +10 evasion'); } } // Chorus shared B1a
   { const eg=treeSkill('everyGun'); if(eg&&u.treeAimPlus){ hc=Math.min(95,hc+u.treeAimPlus); treeFx(u,'everyGun','a shared solution'); u.treeAimPlus=0; } } // Vex T3a: ships on one target share the solution
   { const bb=treeSkill('breathBite'); if(bb&&!opts.intercept&&u.side==='enemy'&&cmdActive('player','surge')&&alive('player').filter(x=>!x.isSq&&hdist(x,u)===1).length>=2) treeFx(t,'breathBite','the throat has no room'); } // Razormaw T3b
   { const td=treeSkill('throatDeep'); if(td&&!opts.intercept&&u.side==='player'&&!u.isSq){ const fg=B.units.find(x=>x.pflag&&!x.dead); if(fg&&hdist(u,fg)<=2) treeFx(u,'throatDeep','the deep throat guides the shot'); } } // Chorus shared C1b
@@ -1219,6 +1223,7 @@ async function killUnit(t,by){ if(t&&by&&!t.killedBy) t.killedBy=by.isSq?((B.uni
   const legion=legionCan(t); // B3 Deathless endless legion replaces the random reanimate for Deathless hulls; other reanimating hulls (Undying foes heat) keep the old roll
   if(!legion && t.reanimate && !t.reanimated && !t.pyre && !(t.fac==='deathless'&&t.t&&t.t.reanimate) && rnd()<(t.side==='enemy'?.2:.35)){ t.reanimated=true; t.hp=Math.round(t.maxHp*.3); if(typeof fxText==='function') fxText(t,'Rebuilding','#7dff9b',-30); log(`${t.name} reassembles itself from the wreckage.`,'e'); return; }
   t.dead=true; t.hp=0;
+  { if(by&&by.side==='player'&&t.side==='enemy'){ if(!by.isSq&&treeSkill('scentDark')&&cmdActive('player','surge')) by.treeScent={r:B.round,from:t.id}; if(by.isSq&&by.extra&&treeSkill('broodNoStop')) by.treeNoStopKill={r:B.round,id:t.id}; } } // Razormaw T2b, Matriarch capstone 2: the kill is recorded
   { const ts=treeSkill('trophyStandard'); if(ts&&by&&by.side==='player'&&by.pflag&&t.side==='enemy'){ for(const x of alive('player')) if(!x.isSq&&!x.dead) x.treeFreeTurn=1; treeFx(by,'trophyStandard','the trophy standard turns the fleet'); } } // Hullbreakers shared C1b
   if(legion){ t.reanimated=true; t.riseAt=B.round+1; B.legion[t.side].used++; log(`${t.name} falls, but its wreck is already reassembling. It rises next round.`,t.side==='player'?'p':'e'); try{ if(typeof fxText==='function') fxText(t,'Reassembling: rises next round','#7dff9b',-30); }catch(e){} }
   syncLose(t); chorusFeed(t,by); // B3: a dead anchor collapses Hegemony sync; Chorus feed on the kill
@@ -1430,6 +1435,47 @@ function treeChoice(kind){ const c=B&&B.treeChoices?B.treeChoices[kind]:null; if
   if(kind==='largest'){ const l=alive('player').filter(x=>!x.isSq&&x.ab!=='launch'&&!(x.hangar>0)); return l.sort((a,b)=>b.maxHp-a.maxHp||(a.id<b.id?-1:1))[0]||null; } // Mott T1b: the largest ship that is not a carrier
   if(kind==='other'){ const l=alive('player').filter(x=>!x.isSq&&!x.pflag); return l.sort((a,b)=>(a.hp/a.maxHp)-(b.hp/b.maxHp)||(a.id<b.id?-1:1))[0]||null; } // Vesh T2a: a ship other than the flagship
   return null; }
+// Issue 529: the yes or no prompt for a "you may" skill (TREE_MAY). treeMay(k) is the picked skill unless the player answered no;
+// with no answer (the bot, the sims and every test that does not answer) it is the skill, which is what the pick did before the prompt.
+function treeMay(k){ const s=treeSkill(k); if(!s) return null; const m=B&&B.treeMay; return (m&&m[s.key]===false)?null:s; }
+// Opens the next unanswered prompt for the player's Command in B.treeAsk (plain data, so a saved battle keeps it); true while one is open.
+function treeAskCommand(side){ if(!B) return false; if(B.treeAsk) return true; if(side!=='player'||B.over||!B.tree||!B.tree.length) return false; const c=commandFor(side); if(!c) return false;
+  for(const s of B.tree){ const m=TREE_MAY[s.k]; if(!m||m.cmd!==c.id) continue; if(B.treeMay&&B.treeMay[s.key]!=null) continue;
+    B.treeAsk={kind:'may',key:s.key,n:treeName(s.key),q:m.q,opts:[{id:'yes',n:m.yes},{id:'no',n:m.no}],then:'command'}; return true; }
+  return false; }
+// Roles Assigned at Hatching (the four Chorus B:0:0 rows): strike +10 aim, screen +10 evasion, mend 10% stronger repair and regrowth
+function treeRole(u){ return (u&&!u.isSq&&u.side==='player'&&u.treeRole&&treeSkill('roles'))?u.treeRole:null; }
+function treeRoleMul(u){ const s=treeSkill('roles'); return (s&&treeRole(u)==='mend')?1+s.m:1; }
+function treeScreenEv(t){ const s=treeSkill('roles'); return (s&&treeRole(t)==='screen')?treeAddVal(t,'ev',s.n):0; }
+function treeCanChangeRole(u){ return !!(B&&!B.over&&treeSkill('roles')&&u&&!u.dead&&!u.isSq&&u.side==='player'&&u.treeRole&&!u.treeRoleChanged); }
+function treeSetRole(u,role,change){ const s=treeSkill('roles'); if(!s||!u||u.dead||u.isSq||u.side!=='player'||!TREE_ROLES.some(r=>r.id===role)) return false;
+  if(change){ if(!treeCanChangeRole(u)||u.treeRole===role) return false; u.treeRoleChanged=1; }
+  u.treeRole=role; treeFx(u,'roles',(change?'the role changes to ':'the role is ')+role); return true; }
+// the battle-start role prompt: one ship at a time, each asked once
+function treeRoleAsk(){ if(!B) return false; if(B.treeAsk) return true; const s=treeSkill('roles'); if(!s||B.over) return false;
+  for(const u of alive('player')){ if(u.isSq||(B.treeRoleAsked&&B.treeRoleAsked[u.id])) continue; (B.treeRoleAsked=B.treeRoleAsked||{})[u.id]=1;
+    B.treeAsk={kind:'role',key:s.key,id:u.id,n:treeName(s.key),q:'Give '+u.name+' a role for this battle.',opts:TREE_ROLES.map(r=>({id:r.id,n:r.n+': '+r.d}))}; return true; }
+  return false; }
+// the change-role action: once per battle per ship, the two other roles or keep the one it has
+function treeRoleChangeAsk(u){ if(!B) return false; if(B.treeAsk||!treeCanChangeRole(u)) return false; const s=treeSkill('roles');
+  const opts=TREE_ROLES.filter(r=>r.id!==u.treeRole).map(r=>({id:r.id,n:r.n+': '+r.d})); opts.push({id:'keep',n:'Keep '+u.treeRole});
+  B.treeAsk={kind:'rolechange',key:s.key,id:u.id,n:treeName(s.key),q:u.name+' may change its role once this battle.',opts}; return true; }
+// the player's answer to the open prompt; false when no prompt is open or the answer is not one of its choices
+function treeAnswer(opt){ const a=B&&B.treeAsk; if(!a||!a.opts.some(o=>o.id===opt)) return false; B.treeAsk=null;
+  if(a.kind==='may'){ (B.treeMay=B.treeMay||{})[a.key]=(opt==='yes'); const o=a.opts.find(x=>x.id===opt); try{ log(`Lineage: ${a.n}. ${o.n}.`,'p'); }catch(e){} return true; }
+  if(opt==='keep') return true;
+  const u=B.units.find(x=>x.id===a.id); if(!u) return true; return treeSetRole(u,opt,a.kind==='rolechange'); }
+// Scent in the Dark: a kill in the frenzy points the ship's next shot at a new target
+function treeScentAim(u,t){ const sd=treeSkill('scentDark'); return (sd&&u&&t&&u.side==='player'&&!u.isSq&&u.treeScent&&u.treeScent.r===B.round&&u.treeScent.from!==t.id&&cmdActive('player','surge'))?treeAddVal(u,'aim',sd.n):0; }
+// The Brood Does Not Stop: an extra swarm that destroyed its target strikes another enemy at half damage, once a round
+async function treeNoStop(s){ const ns=treeSkill('broodNoStop'), k=s&&s.treeNoStopKill; if(!ns||!k) return false; s.treeNoStopKill=null;
+  if(s.dead||B.over||k.r!==B.round||s.treeNoStopR===B.round) return false; const dead=B.units.find(x=>x.id===k.id); if(!dead||!dead.dead) return false;
+  const keep=s.weapons.map(w=>[w.fired,w.cdLeft]); s.weapons.forEach(w=>{ w.fired=false; w.cdLeft=0; }); let bt=null,bv=0;
+  try{ for(const t of alive(s.side==='player'?'enemy':'player')){ if(t.id===k.id) continue; let v=0; for(const w of s.weapons){ if(canFire(s,w,t)){ const e=expectedVs(s,w,t); v+=e.hull+e.shield*.3; } } if(v>bv){ bv=v; bt=t; } } }
+  finally{ s.weapons.forEach((w,i)=>{ w.fired=keep[i][0]; w.cdLeft=keep[i][1]; }); }
+  if(!bt) return false; s.treeNoStopR=B.round; let fired=false;
+  for(let i=0;i<s.weapons.length;i++){ if(bt.dead||s.dead||B.over) break; if(await treeExtraShot(s,i,bt,{half:true})) fired=true; }
+  s.treeNoStopKill=null; if(fired) treeFx(s,'broodNoStop','the brood strikes again'); return fired; }
 // Razormaw T2a: the named prey this round (null when the pick is absent or the prey is gone)
 function treePrey(){ const s=treeSkill('razorPrey'); if(!s||!B||!B.treeRazorPrey||B.treeRazorPrey.r!==B.round) return null; return B.units.find(x=>x.id===B.treeRazorPrey.id&&!x.dead)||null; }
 function treeMoveBonus(u){ if(!u||u.isSq||u.side!=='player') return 0; const s=treeSkill('razorPrey'); return (s&&treePrey())?s.n:0; }
@@ -1591,6 +1637,8 @@ function treeBattleStart(){ if(!B||!B.tree||!B.tree.length) return;
   if(dr){ const who=treeChoice('reserve'); if(who){ who.treeOff=1; who.treeReserve=1; B.treeReserve=(B.treeReserve||[]).concat(who.id); treeFx(who,'debtsReserve','held in reserve'); } }
   const br=treeSkill('broodReserve');
   if(br){ const who=treeChoice('brood'); if(who){ who.treeOff=1; who.treeReserve=1; B.treeReserve=(B.treeReserve||[]).concat(who.id); treeFx(who,'broodReserve','the brood is held back'); } }
+  const rl=treeSkill('roles');
+  if(rl){ const pre=(B.cfg&&B.cfg.treeRoles)||{}; for(const u of alive('player')){ if(u.isSq) continue; u.treeRole=TREE_ROLES.some(r=>r.id===pre[u.id])?pre[u.id]:'strike'; } treeFx(treeFlagUnit(),'roles','roles assigned at hatching'); } // Chorus shared B1a: strike by default; the prompt or a fixture may answer
   const ps=treeSkill('preyScent');
   if(ps){ const e=treeChoice('enemy'); B.tr.scent=e?e.id:null; if(e) treeFx(treeFlagUnit()||e,'preyScent','the pack names its prey'); } } // Hullbreakers shared B1a: name the prey at battle start
 // called wherever a ship's facing changes (move, rotate): Vell's free turn, recorded angles and full-distance cover
@@ -1673,11 +1721,11 @@ async function useCommand(side){ if(!canCommand(side)) return false; const c=com
   return runCommand(side,c,tier); }
 async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'player', bStart=B;
   for(const u of alive(side)) if(!u.isSq&&typeof fxText==='function') fxText(u,c.n,side==='player'?'#e8c66a':'#ff8a6a',-44);
-  if(c.id==='barrage'){ { const dd=treeSkill('debtDue'); if(dd&&side==='player'){ (B.treePending=B.treePending||[]).push({k:'debtDue',r:B.round,pow:cmdPow('barrage',tier)}); treeFx(treeFlagUnit(),'debtDue','the account waits a round'); if(B===bStart) checkEnd(); return true; } } // Vex T3b: the volley is delayed
+  if(c.id==='barrage'){ { const dd=treeMay('debtDue'); if(dd&&side==='player'){ (B.treePending=B.treePending||[]).push({k:'debtDue',r:B.round,pow:cmdPow('barrage',tier)}); treeFx(treeFlagUnit(),'debtDue','the account waits a round'); if(B===bStart) checkEnd(); return true; } } // Vex T3b: the volley is delayed
     treeRecordedAngle(side); const b0=B, live=liveFrom(null); B.volleyMul={side,m:1+cmdPow('barrage',tier)};
     B.treeNoon=!!(treeSkill('noonChoice')&&side==='player'&&!alive('player').some(x=>!x.isSq&&((x.hexMoved||0)>0||x.treeRoundFired)));
     const cf=treeSkill('copyFires'), osc=treeSkill('oneSunCopied');
-    const held=(side==='player'&&treeSkill('heldAccount'))?treeChoice('ship'):null; let heldOnce=0;
+    const held=(side==='player'&&treeMay('heldAccount'))?treeChoice('ship'):null; let heldOnce=0;
     const named=(side==='player'&&treeSkill('namedLedger'))?treeChoice('enemy'):null; if(named) treeFx(named,'namedLedger','the volley is aimed by name');
     const eg=(side==='player')?treeSkill('everyGun'):null;
     const acid=(side==='player')?treeSkill('acidBeforeAim'):null;
@@ -1729,7 +1777,7 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
   if(c.id==='hunt'){ { const lc=treeSkill('longCopy'); if(lc&&side==='player'){ for(const u of caps('player')){ const g=treeRearApproach(u); if(g&&treeStepToward(u,g,2)) treeFx(u,'longCopy','the long copy strikes'); } } } // Ostrel capstone 2
     for(const u of alive(side)) for(const w of u.weapons) if(w.k==='torp'){ w.cdLeft=0; w.fired=false; }
     { const pn=treeSkill('preyName'); if(pn&&side==='player'){ const e=treeChoice('enemy'); B.treePrey=e?{id:e.id,r:B.round}:null; if(e) treeFx(B.units.find(x=>x.pflag&&!x.dead)||e,'preyName','the prey is entered by name'); } }
-    { const st=treeSkill('salvoTwoHands'); if(st&&side==='player'){ const pl=alive('player').filter(x=>!x.isSq).slice().sort((a,b2)=>(a.hp/a.maxHp)-(b2.hp/b2.maxHp)||(a.id<b2.id?-1:1)); const half=pl.slice(0,Math.max(1,Math.ceil(pl.length/2))); for(const u of half) u.treeHuntNext=1; (B.treePending=B.treePending||[]).push({k:'salvoTwoHands',r:B.round,pow:cmdPow('hunt',tier),ids:half.map(u=>u.id)}); treeFx(B.units.find(x=>x.pflag&&!x.dead)||half[0]||null,'salvoTwoHands','half the salvo is held for next round'); } }
+    { const st=treeMay('salvoTwoHands'); if(st&&side==='player'){ const pl=alive('player').filter(x=>!x.isSq).slice().sort((a,b2)=>(a.hp/a.maxHp)-(b2.hp/b2.maxHp)||(a.id<b2.id?-1:1)); const half=pl.slice(0,Math.max(1,Math.ceil(pl.length/2))); for(const u of half) u.treeHuntNext=1; (B.treePending=B.treePending||[]).push({k:'salvoTwoHands',r:B.round,pow:cmdPow('hunt',tier),ids:half.map(u=>u.id)}); treeFx(B.units.find(x=>x.pflag&&!x.dead)||half[0]||null,'salvoTwoHands','half the salvo is held for next round'); } }
     { const ts=treeSkill('twoSalvos'); if(ts&&side==='player'){ (B.treePending=B.treePending||[]).push({k:'twoSalvos',r:B.round,pow:cmdPow('hunt',tier)}); treeFx(B.units.find(x=>x.pflag&&!x.dead)||alive('player')[0]||null,'twoSalvos','the next salvo keeps its bonus'); } }
     { const np=treeSkill('namedPrey'); if(np&&side==='player'){ const e=treeChoice('enemy'); if(e){ B.treeNamedPrey={id:e.id,r:B.round}; for(const S of (B.torps||[])) if(S.side==='player'){ S.tid=e.id; S.aim={q:e.q,r:e.r}; } treeFx(e,'namedPrey','the named prey falls'); } } }
     { const dk=treeSkill('darkKnives'); if(dk&&side==='player'){ const pow=cmdPow('hunt',tier); for(const u of caps('player')) u.treeHuntRearNext={r:B.round+1,n:pow}; } } // Sable capstone 1
@@ -1745,7 +1793,7 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
         const cs=treeSkill('columnStraight'); if(cs&&treeInColumn(u)){ if(treeShieldOver(u,cs.n)>0) treeFx(u,'columnStraight','the column adds shield'); }
         const fs=treeSkill('flagshipStandard'); if(fs&&treeInFlagLine(u)){ if(treeShieldOver(u,fs.n)>0) treeFx(u,'flagshipStandard','the flagship holds the line'); }
         if(treeSkill('rotation')) treeRotSwap(u); } } } // Hegemony column, overflow and flagship line
-    { const ps=treeSkill('platesShadow'); if(ps&&side==='player'){ const who=treeChoice('ship'); B.treePlate=who?{id:who.id,r:B.round}:null; if(who) treeFx(who,'platesShadow','the wall stacks on '+who.name); } }
+    { const ps=treeMay('platesShadow'); if(ps&&side==='player'){ const who=treeChoice('ship'); B.treePlate=who?{id:who.id,r:B.round}:null; if(who) treeFx(who,'platesShadow','the wall stacks on '+who.name); } }
     { const rf=treeSkill('restoredFleet'); if(rf&&side==='player'){ for(const u of caps('player')) if(u.treeRepairedRound===B.round){ u.treeWallCarry={r:B.round+1,pow:cmdPow('iron',tier)}; treeFx(u,'restoredFleet','the restored hull keeps the wall'); } } }
     { const ls=treeSkill('layersShift'); if(ls&&side==='player') (B.treePending=B.treePending||[]).push({k:'layersShift',r:B.round}); }
     { const hc=treeSkill('holdCounted'); if(hc&&side==='player') (B.treePending=B.treePending||[]).push({k:'holdCounted',r:B.round,pow:cmdPow('iron',tier)}); }
@@ -1755,7 +1803,7 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
     { const ws=treeSkill('weakSide'); if(ws&&side==='player'){ const cand=alive('player').filter(x=>!x.isSq&&!x.dead).sort((a,b2)=>{ const sa=(a.sh||[]).reduce((n,v)=>n+v,0), sb=(b2.sh||[]).reduce((n,v)=>n+v,0); return sa-sb||(a.id<b2.id?-1:1); })[0]; if(cand){ B.treeWeakShip={id:cand.id,r:B.round}; treeFx(cand,'weakSide','the weak side takes the light'); } } } // Brin T1a
     { const pf=treeSkill('prismsFace'); if(pf&&side==='player'){ for(const u of caps('player')){ if(u.dead) continue; const foes=alive('enemy').filter(x=>!x.isSq&&!x.dead); if(!foes.length) continue; let near=null,nd=1e9; for(const f of foes){ const d=hdist(u,f); if(d<nd){ nd=d; near=f; } } const want=near?treeFacingTo(u,near):null; if(want!=null&&u.facing===want&&treeShieldOver(u,pf.n)>0) treeFx(u,'prismsFace','the prisms face the fire'); } } } // Brin T1b
     { const fl=treeSkill('facetLit'); if(fl&&side==='player'){ for(const u of caps('player')){ if(!(u.shMax>0)) continue; const room=Math.max(0,Math.round(u.maxHp*(FX_CAPS.treeTempHp||.2))-(u.tempHp||0)); const add=Math.max(0,Math.min(Math.round(u.shMax*fl.n),room)); if(add>0){ u.tempHp=(u.tempHp||0)+add; treeFx(u,'facetLit','the facets are lit'); } } } } // Brin capstone 2
-    { const sh=treeSkill('screensShift'); if(sh&&side==='player'){ const up=treeChoice('ship'); const down=alive('player').filter(x=>!x.isSq&&!x.dead&&(!up||x.id!==up.id)).sort((a,b2)=>(b2.hp/b2.maxHp)-(a.hp/a.maxHp)||(a.id<b2.id?-1:1))[0]; /* the healthiest other ship gives up the 20 points */ if(up){ B.treeShiftUp={id:up.id,r:B.round}; treeFx(up,'screensShift','the screens shift'); } if(down) B.treeShiftDown={id:down.id,r:B.round}; } } // Thale T1b
+    { const sh=treeMay('screensShift'); if(sh&&side==='player'){ const up=treeChoice('ship'); const down=alive('player').filter(x=>!x.isSq&&!x.dead&&(!up||x.id!==up.id)).sort((a,b2)=>(b2.hp/b2.maxHp)-(a.hp/a.maxHp)||(a.id<b2.id?-1:1))[0]; /* the healthiest other ship gives up the 20 points */ if(up){ B.treeShiftUp={id:up.id,r:B.round}; treeFx(up,'screensShift','the screens shift'); } if(down) B.treeShiftDown={id:down.id,r:B.round}; } } // Thale T1b
     { const we=treeSkill('wallEarly'); if(we&&side==='player'&&alive('player').every(x=>x.isSq||((x.hexMoved||0)===0&&!x.treeRoundFired))){ B.treeWallEarly=B.round; treeFx(treeFlagUnit(),'wallEarly','the wall is declared early'); } } // Thale T2a
     { const wm=treeSkill('wallMoves'); if(wm&&side==='player'){ for(const u of caps('player')){ if(u.dead) continue; const add=treeAddVal(u,'speed',wm.n); u.mp=(u.mp||0)+add; u.postMp=(u.postMp||0)+add; } treeFx(treeFlagUnit(),'wallMoves','the wall moves'); } } // Thale capstone 2
   }
@@ -1767,11 +1815,11 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
     if(p&&tideE&&alive('player').every(x=>x.isSq||x.hp>=(x.treeHpStart!=null?x.treeHpStart:x.hp))){ rp+=tideE.n; treeFx(treeFlagUnit(),'tideEarly','the tide comes early'); } // Mending T2a
     const ninth=p?treeSkill('restoreNinth'):null, beyond=p?treeSkill('restoredBeyond'):null, contribute=p?treeSkill('copiesContribute'):null;
     const tenth=p?treeSkill('tenthFrame'):null, earlier=p?treeSkill('earlierCopy'):null;
-    const gh=(p&&treeSkill('growHurts'))?treeChoice('ship'):null;
+    const gh=(p&&treeMay('growHurts'))?treeChoice('ship'):null;
     const sk=(p&&treeSkill('skinThick'))?treeChoice('ship'):null;
     const fk=p?treeSkill('fleshKnit'):null, te=p?treeSkill('tideEnd'):null, tb=p?treeSkill('tornBack'):null;
-    const weld=(p&&treeSkill('weldMatters'))?treeChoice('ship'):null, pgun=p?treeSkill('patchGuns'):null;
-    const front=(p&&treeSkill('scrapFront'))?treeChoice('other'):null, wfight=p?treeSkill('weldedFight'):null;
+    const weld=(p&&treeMay('weldMatters'))?treeChoice('ship'):null, pgun=p?treeSkill('patchGuns'):null;
+    const front=(p&&treeMay('scrapFront'))?treeChoice('other'):null, wfight=p?treeSkill('weldedFight'):null;
     const bolted=p?treeSkill('doubleBolted'):null, bites=p?treeSkill('packBites'):null, whole=p?treeSkill('weldedWhole'):null;
     const frontFlag=front?treeFlagUnit():null, frontShare=(front&&frontFlag&&front!==frontFlag)?Math.round(frontFlag.maxHp*rp*2):0;
     const flesh=[]; const gwList=[];
@@ -1788,6 +1836,7 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
       if(contribute&&u===chosen&&u!==flag) heal+=flagShare;
       if(front&&u===frontFlag) heal=0;
       if(front&&u===front&&u!==frontFlag) heal+=frontShare;
+      { const mm=p?treeRoleMul(u):1; if(mm!==1){ heal=Math.round(heal*mm); amt*=mm; treeFx(u,'roles','mend: the repair is 10% stronger'); } } // Chorus shared B1a: the mend role
       const hp0=u.hp;
       const secFullBefore=new Set(); if(u.sec) for(const k of Object.keys(u.sec)){ const s=u.sec[k]; if(!s.broken&&s.hp>=s.max) secFullBefore.add(k); }
       const skin=!!(p&&sk&&u===sk);
@@ -1837,10 +1886,10 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
     const fw=(side==='player'&&treeSkill('firstWave'))?treeChoice('carrier'):null;
     const esc=(side==='player'&&treeSkill('escortName'))?treeChoice('friend'):null;
     const gen=(side==='player')?treeSkill('generation'):null;
-    const resv=(side==='player')?treeSkill('wingReserve'):null; let resvDone=0, escDone=0;
+    const resv=(side==='player')?treeMay('wingReserve'):null; let resvDone=0, escDone=0;
     const brood=(side==='player'&&treeSkill('chooseBrood'))?treeChoice('brood'):null;
     const spore=(side==='player')?treeSkill('sporeTide'):null;
-    const every=(side==='player')?treeSkill('everyThroat'):null;
+    const every=(side==='player')?treeSkill('everyThroat'):null, spawned=(side==='player')?treeSkill('spawnedStrike'):null;
     const patched=(side==='player')?treeSkill('patchedWing'):null, patchedPick=patched?treeChoice('carrier'):null;
     const hulk=(side==='player')?treeSkill('hulkMore'):null, hulkPick=hulk?treeChoice('largest'):null;
     const wreck=(side==='player')?treeSkill('wreckLine'):null, yard=(side==='player')?treeSkill('wholeYard'):null;
@@ -1848,7 +1897,7 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
     const scrap=(side==='player')?treeSkill('swarmScrap'):null;
     const cru=(side==='player'&&treeSkill('cruisersCarriers'))?treeChoice('largest'):null;
     const launchOrd=(side==='player')?treeSkill('launchOrder'):null;
-    const secondW=(side==='player')?treeSkill('secondWave'):null;
+    const secondW=(side==='player')?treeMay('secondWave'):null;
     const fullG=(side==='player')?treeSkill('fullGroup'):null;
     const escortScr=(side==='player')?treeSkill('escorts'):null;
     const oneTgt=(side==='player')?treeSkill('oneTarget'):null;
@@ -1879,6 +1928,7 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
         if(spore) treeFx(u,'sporeTide','the spores ride the tide'); // Matriarch T1b
         if(every&&(u.hexMoved||0)===0){ sq.treeBonus=every.n; treeFx(u,'everyThroat','the throat opens wide'); } // Matriarch T3a
         if(fw&&u.id===fw.id){ sq.treeBonus=treeSkill('firstWave').n; treeFx(u,'firstWave','the first wave owes the second'); }
+        if(spawned&&(u.hexMoved||0)>0){ sq.treeBonus=(sq.treeBonus||0)+spawned.n; treeFx(u,'spawnedStrike','spawned before the strike'); } // Matriarch T2b: a brood that moved this round
         if(wreck&&(u.hexMoved||0)===0){ sq.treeBonus=(sq.treeBonus||0)+wreck.n; treeFx(u,'wreckLine','the wings come off the wreck line'); } // Mott T2b
         if(patchedPick&&u.id===patchedPick.id){ sq.treeBonus=(sq.treeBonus||0)+treeAddVal(sq,'sqPct',patched.n); sq.treeRemove=1; treeFx(u,'patchedWing','the patched wing flies'); } // Mott T1a
         if(privPick&&u.id===privPick.id){ sq.treePrivate=1; treeFx(u,'privateWing','the private wing flies'); } // Mott capstone 2
@@ -1935,7 +1985,8 @@ function sqPlan(s){ const ord=sqOrder(s); let foes=alive(s.side==='player'?'enem
   if(carrier){ let hm=null,hd=hdist(s,carrier); for(const st of states){ const d=hdist(stateView(s,st),carrier); if(d<hd){hd=d;hm=st;} } if(hm) return {st:hm,t:null,attack:false}; }
   return null; }
 async function sqAct(s){ const live=liveFrom(s); const p=sqPlan(s); if(!p) return; if(!p.st.stay) await moveUnit(s,p.st); if(!live()||!p.attack||s.dead||p.t.dead) return;
-  for(let i=0;i<s.weapons.length;i++){ if(p.t.dead||s.dead||!live()) break; if(canFire(s,s.weapons[i],p.t)) await fireWeapon(s,i,p.t); } }
+  for(let i=0;i<s.weapons.length;i++){ if(p.t.dead||s.dead||!live()) break; if(canFire(s,s.weapons[i],p.t)) await fireWeapon(s,i,p.t); }
+  if(s.treeNoStopKill&&live()) await treeNoStop(s); } // Matriarch capstone 2
 async function swarmPhase(side){ const b0=B; for(const s of alive(side).filter(x=>x.isSq&&!x.activated)){ if(B!==b0||B.over) return; const t0=(typeof performance!=='undefined'?performance.now():0); if(await stallGuard(sqAct(s),15000,'squadron',{name:s.name,sq:s.t.sq,q:s.q,r:s.r})==='stall'&&B===b0) log(`${s.t&&s.t.n||s.name}: orders lost in interference.`,'x'); s.activated=true; if(typeof console!=='undefined'&&console.debug) console.debug('[swarm] '+side+' '+s.id+' '+Math.round((typeof performance!=='undefined'?performance.now():0)-t0)+'ms'); } }
 function makeWing(u,h,kind){ const fx=u.side==='player'?sumFx(fleetFxList()):{};
   const sq=makeUnit(u.side, kind, {parent:u.id, fac:u.fac, sqPct:(u.fx.sqPct||0), sqHp:fx.sqHp||0, scale:u.side==='enemy'?1+.1*(B.sector-1):1});
