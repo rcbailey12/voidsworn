@@ -56,6 +56,7 @@ func _follow() -> void:
 
 func _on_added(n: Node) -> void:
 	if n is GeometryInstance3D:
+		# Guard: a hull whose material is set a frame or more after it enters the scene is missed here and loses its rim.
 		_mark.call_deferred(n)
 
 

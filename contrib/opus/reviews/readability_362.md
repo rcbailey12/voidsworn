@@ -54,9 +54,19 @@ addition is marked as made after the first measurement.
 1. `look.gd` READ: per faction numbers laid on the hull material in LOOK.hull (lift in linear light, rim, emission scale,
    metal scale, specular). They replace hull_fix for the six factions (hull_fix stays as the fallback). Damaged and dying
    hulls keep them (fx_hull.gd `_exterior` copies albedo, rim, metallic, specular and emission energy; checked headless).
-   Final: Sunward lift 1.45; Hegemony 0.4; Hullbreakers 1.5; Chorus 1.9 (about its old 1.35 sRGB lift); Glasswrights
-   lift 0.4, glow 0.15 of its baked strength, metal 0.4, specular 0.3; Eclipse lift 4.5, metal 0.7. The dark factions sit
+   Final: Sunward lift 1.45; Hegemony 0.4; Hullbreakers 1.25; Chorus 1.9 (about its old 1.35 sRGB lift); Glasswrights
+   lift 0.4, glow 0.15 of its baked strength, metal 0.4, specular 0.3; Eclipse lift 3.2, metal 0.7. The dark factions sit
    near the band's low end and the pale ones below its top, so each keeps its value and colour.
+   Ryan's ruling (Nov 12, R227), on phone_world_1.jpg: "slightly darker for eclipse, maybe somewhere in the middle? tone it
+   slightly down for hullbreakers, again somewhere in the middle-ish?" So Eclipse 4.5 to 3.2 (before: about 1.6 to 1.9 in
+   linear light, hull_fix 1.3 sRGB) and Hullbreakers 1.5 to 1.25 (before: 1.0). Picked from the measured slopes (each ship's
+   lit side at lift 4.5 and 9 for Eclipse, 1.5 and 3 for Hullbreakers, rim tip 20; calibration 2 and the after run):
+   estimated Eclipse 105 to 121 on the darkest sky and 111 to 144 on the storm (the Tomb-ark D9 the lowest, about 105,
+   level with Sunward's 105) and Hullbreakers 114 to 144 on both; the worst outline on the darkest sky about 0.82. Eclipse
+   3.0 would put D9 at about 103, inside the band by less than the estimate's error, so 3.2 is the darkest middle value I
+   trust to stay in. Job E (below) measures it, with Eclipse 3.0 and 3.5 and Hullbreakers 1.2 and 1.3 beside it as
+   fallbacks. The numbers in "Answer first", the table below and the sheets are still the 4.5 and 1.5 run until job E
+   comes back.
 2. The rim light (`look_rim.gd`, made by LOOK.apply beside the key light): a back light from the camera's own line of sight
    beyond the ships, tipped up 20 degrees, specular strong (light_specular 8) and diffuse weak (energy 0.35). Only the far
    outline of a hull faces it and the camera at once, at a grazing angle, so the hull gets a bright edge. It follows the
@@ -75,6 +85,8 @@ addition is marked as made after the first measurement.
   Eclipse lavender in the preview, so the final lifts are lower (step 1 above).
 
 ## Per faction (lit side min to max; full per ship table: docs/shots/look_bench/readability/table.md)
+
+Measured at Eclipse 4.5 and Hullbreakers 1.5 (ad7daade); job E replaces the two rows.
 
 | Faction | Darkest sky before / after | Brightest before / after | Storm before / after | Edge darkest, worst ship, before / after |
 |---|---|---|---|---|
@@ -135,9 +147,9 @@ Late shaders after warm-up: 0 in every session. Data: `data/gate/`.
 
 ## Unsure, and for the Board
 
-1. Faction colour: Eclipse now reads dark violet-grey rather than violet-black, and the Hullbreaker rust is lighter (warmer
-   pink in places). Both are inside the band by a margin; lowering Eclipse lift to about 3.5 and Hullbreakers to 1.2 would
-   keep them in (estimated 105 to 115 at the bottom) and darker. One probe run (about two minutes of GPU) tells.
+1. Faction colour: Eclipse read dark violet-grey rather than violet-black at 4.5, and the Hullbreaker rust lighter (warmer
+   pink in places) at 1.5. Ryan ruled on Nov 12 (R227): about halfway back, now 3.2 and 1.25 (step 1 above); job E
+   measures it.
 2. The rim light at close range: on the Tomb-ark at camera 60 it draws a thin white line along the inner ring ridge. Ryan
    zooms in for effects; worth his look.
 3. hull_fix in fx/faction_looks.json is now only the fallback for a faction READ does not name. godot/fx/ was out of my
@@ -148,7 +160,25 @@ Late shaders after warm-up: 0 in every session. Data: `data/gate/`.
 6. A playbook line is owed by the Board if this becomes standing practice: "every ship change is judged on the readability
    probe's band first" (docs/playbooks/ships.md or effects.md; outside my Deliver to line).
 
+## Job E (R227 lifts): what the Board queues and what comes back
+
+- Queue: copy `contrib/opus/reviews/readability_362/pc/job_e.bat` from origin/opus/issue-362 into
+  `%USERPROFILE%\Downloads\voidsworn_test\opus362\` and put a queue file `q_opus362_e.bat` in the PC queue that runs
+  `call "%USERPROFILE%\Downloads\voidsworn_test\opus362\job_e.bat"`. run362.bat there is unchanged; its probe step fetches
+  the branch and copies variants_e.json by itself. One GPU job: the probe twice (three skies), then one bracket run (two
+  skies, two variants). Writes only under opus362\, deletes nothing.
+- Done when status.txt has "job e done". Stage back three zips from `opus362\zips\`: probe_e_2.zip, probe_ealt_1.zip and
+  probe_before_2.zip (the newest of each name; zip362 adds a number if the name exists).
+- Then in the sandbox (the worker, from contrib/opus/reviews/readability_362, each zip unpacked into its own new folder):
+  `python3 -I measure.py E2 --out data/rows_after_r227.json`, `python3 -I measure.py EALT --out data/rows_r227_bracket.json`,
+  `python3 -I measure.py BEFORE2 --out /tmp/rows_before_check.json` (must match data/rows_before_main_b7cacdc4.json), then
+  `python3 -I sheets.py --before BEFORE2 --after E2 --rows-before data/rows_before_main_b7cacdc4.json --rows-after
+  data/rows_after_r227.json --out docs/shots/look_bench/readability/`: the new phone_world_1.jpg (and _2 to _5, the fleet
+  sheets and table.md), before (main) against after at camera 170. The per faction table above gets its after column from
+  the new rows, all six factions. If Eclipse or Hullbreakers fall out of the band, the bracket rows give the darkest value
+  that stays in.
+
 ## PC
 
 Folder `Downloads\voidsworn_test\opus362` (sparse clone, the hull copies, runs, zips). Queue files used:
-q_opus362_a, _z1, _z2, _c2, _b, _c, _d. Nothing deleted.
+q_opus362_a, _z1, _z2, _c2, _b, _c, _d; then _e for job E (R227 lifts). Nothing deleted.
