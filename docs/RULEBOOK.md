@@ -488,6 +488,10 @@ Why: a run is meant to be lost; the debrief names what the death bought (contrib
 
 9.13 **After a battle: one prize screen, one confirm; a prize may open for detail before the confirm.** Set: Ryan (R23, R216).
 
+9.14 **A fleet too big for the battle sheet shows its first ships (at least two lines) and folds the rest into "and N more",
+with a hover that lists them.** Why: the narrower sheet (R218) cannot list twenty ships. Set: Ryan, Nov 11 (R220: "yes that's
+fine").
+
 ## 10. The campaign map, space and the board
 
 10.1 **The battle board is a cinematic scene, not a board game**: no grey plate, living terrain, a faint grid only near the
