@@ -34,6 +34,7 @@ extends Node
 # bench/scene_gate.tscn --still.
 
 const FX := preload("res://fx/fx.gd")
+const HULL := preload("res://fx/fx_hull.gd")
 const WEAP := preload("res://fx/fx_weapons.gd")
 const SV := preload("res://render/ship_view.gd")
 const HT := preload("res://render/hull_table.gd")
@@ -156,14 +157,18 @@ func _run() -> void:
 		_placeholder("no built hull file for " + ", ".join(bad))
 		return
 	_setup_view()
+	HULL.reset_late()   # issue 376: count only the shaders first built after a warm-up in this run
 	var part := str(args.get("part", "all"))
 	if part == "all" or part == "fleet":
 		await _fleet_part()
 	if part == "all" or part == "moments":
 		await _moments_part()
 	report["pipelines_compiled"] = _pipelines()
-	report["late_shader_counter"] = "not present at this commit (issue 376)"
-	_log("late shader counter (issue 376): not present at this commit; pipelines compiled in this run: %d" % _pipelines())
+	report["late_shaders_after_warmup"] = HULL.late_shader_count()
+	report["late_shader_names"] = HULL.late_shader_names()
+	_log("late shaders after warm-up (issue 376): %d; pipelines compiled in this run: %d" % [HULL.late_shader_count(), _pipelines()])
+	for line in HULL.late_shader_names():
+		_log("  late shader " + str(line))
 	_save_report()
 	_log("stills: %d, warnings: %d" % [report["stills"].size(), report["warnings"].size()])
 	print("LOOK_BENCH_DONE")
@@ -269,6 +274,9 @@ func _make_fx() -> void:
 	fx = FX.new()
 	world.add_child(fx)
 	fx.manual = true
+	# Issue 376: a fresh effects system builds the warm-up's own pool and death materials again. That is this bench
+	# warming a new moment, not a shader first built mid-battle, so the late log stays off until the moment's warm-up.
+	HULL.pause_late_watch()
 	fx.setup({"camera": cam, "quality": "max", "reduce_flashing": false, "shake": 0.0, "unit": 1.0, "seed": 20261026})
 
 

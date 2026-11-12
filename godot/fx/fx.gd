@@ -253,15 +253,32 @@ func setup(opts := {}) -> void:
 # One Shader per distinct source (materials share it): identical shaders compile once, not once per material.
 var _shaders := {}
 
+# Issue 376: names for the shader sources that are constants in fx_shaders.gd, so a late shader's log line says
+# "mat SPRITE" instead of a hash. Built once on the first late shader.
+var _shader_names := {}
 
-func _mat(code: String, prio := 0, defines := "") -> ShaderMaterial:
+
+func _shader_name(code: String) -> String:
+	if _shader_names.is_empty():
+		var scr: Script = load("res://fx/fx_shaders.gd")
+		var consts: Dictionary = scr.get_script_constant_map()
+		for k in consts:
+			if consts[k] is String:
+				_shader_names[consts[k]] = k
+	return str(_shader_names.get(code, "code " + str(code.hash())))
+
+
+func _mat(code: String, prio := 0, defines := "", label := "") -> ShaderMaterial:
 	var key := str(code.hash()) + "|" + defines
 	var s: Shader = _shaders.get(key)
 	if s == null:
+		var name := label
+		if name == "":
+			name = "mat " + _shader_name(code) + ("" if defines == "" else " " + defines.strip_edges())
 		if defines != "":
 			var nl = code.find("\n", code.find("render_mode"))
 			code = code.substr(0, nl + 1) + defines + code.substr(nl + 1)
-		s = HULL.shared_shader(code)
+		s = HULL.shared_shader(code, name)
 		_shaders[key] = s
 	var m = ShaderMaterial.new()
 	m.shader = s
@@ -269,8 +286,17 @@ func _mat(code: String, prio := 0, defines := "") -> ShaderMaterial:
 	return m
 
 
-func mat(code: String, prio := 0, defines := "") -> ShaderMaterial:
-	return _mat(code, prio, defines)
+func mat(code: String, prio := 0, defines := "", label := "") -> ShaderMaterial:
+	return _mat(code, prio, defines, label)
+
+
+# Issue 376: how many distinct shaders were first built after the warm-up ended, and their names with frame and time.
+func late_shader_count() -> int:
+	return HULL.late_shader_count()
+
+
+func late_shader_names() -> Array:
+	return HULL.late_shader_names()
 
 
 # ---------------------------------------------------------------- clock
@@ -1215,6 +1241,9 @@ func particles_emitted() -> int:
 func warmup(cam: Camera3D, frames := 4) -> void:
 	if cam == null:
 		return
+	# Issue 376: a warm-up builds shaders by design, and a bench may warm more than once, so the late log is off while
+	# this runs and on again when it ends. Anything built after this is a miss in the hand-kept list.
+	HULL.pause_late_watch()
 	# The temporary PBR adapter is queried for uniforms at death too. Keep its
 	# shader alive so that query never recompiles it for each new ship.
 	_shaders["hull_exterior"] = HULL.shared_shader(HULL.EXTERIOR)
@@ -1390,3 +1419,4 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	for i in frames:
 		await RenderingServer.frame_post_draw
 	tmp.queue_free()
+	HULL.start_late_watch()

@@ -178,6 +178,7 @@ static func setup_physics(fx) -> void:
 	(st["bounce"] as PhysicsMaterial).friction = 0.4
 	var sh = Shader.new()
 	sh.code = DEBRIS_BODY
+	HULL.note_late("death debris body")
 	var m = ShaderMaterial.new()
 	m.shader = sh
 	st["debris_mat"] = m
@@ -215,7 +216,7 @@ static func flipbook_material(fx, kind: String, band := "capital") -> ShaderMate
 	var rel := "death/" + band + "/" + kind + "_"
 	if route_texture(fx, rel + "color.png") != null:
 		return route_material(fx, SH.DEATH_FLIPBOOK, rel)
-	var m: ShaderMaterial = fx.mat(SH.DEATH_FLIPBOOK, 2, "#define COMPAT\n" if fx.compat else "")
+	var m: ShaderMaterial = fx.mat(SH.DEATH_FLIPBOOK, 2, "#define COMPAT\n" if fx.compat else "", "flipbook " + band + "/" + kind)
 	for key in ["color", "flow", "thickness"]:
 		var path: String = ATLAS_DIR + band + "/" + kind + "_" + key + ".png"
 		var textures: Dictionary = fx.dstate.get("death_atlases", {})
@@ -247,7 +248,7 @@ static func route_texture(fx, rel: String, seed_index := -1) -> Texture2D:
 
 # Three maps with baked colour and heat. The meta tells callers to sample the whole cell and keep the shader define.
 static func route_material(fx, code: String, rel: String, production := false, seed_index := -1) -> ShaderMaterial:
-	var m: ShaderMaterial = fx.mat(code, 2, ("#define COMPAT\n" if fx.compat else "") + "#define ROUTE_BAKED\n")
+	var m: ShaderMaterial = fx.mat(code, 2, ("#define COMPAT\n" if fx.compat else "") + "#define ROUTE_BAKED\n", "route " + rel)
 	if production and seed_index < 0: seed_index = fx.rng.randi_range(0, 2)
 	for key in ["color", "flow", "thickness"]:
 		m.set_shader_parameter({"color": "atlas", "flow": "motion", "thickness": "thickness"}[key], route_texture(fx, rel + key + ".png", seed_index))
@@ -980,7 +981,7 @@ static func _piece_materials(am: ArrayMesh, pc: Dictionary, weathered := false) 
 		si += 1
 	if pc.has("cap"):
 		var mat := ShaderMaterial.new()
-		mat.shader = HULL.shared_shader(SLAG)
+		mat.shader = HULL.shared_shader(SLAG, "death piece slag")
 		mat.set_shader_parameter("organic", pc.get("organic", false))
 		mat.set_shader_parameter("section_scale", pc.get("section_scale", 1.0))
 		am.surface_set_material(mini(si, am.get_surface_count() - 1), mat)
@@ -1498,7 +1499,7 @@ static func power_material(mat: ShaderMaterial) -> ShaderMaterial:
 	code = code.replace("uniform float fx_power = 1.0;", "uniform float fx_power = 1.0;\nuniform float death_age = 0.0;\nuniform float death_start = 0.0;\nuniform vec2 death_span = vec2(0.0, 1.0);\nuniform vec3 death_axis = vec3(1.0, 0.0, 0.0);\nuniform vec3 death_steps = vec3(3.0, 0.055, 0.18);")
 	var band := "floor(clamp((dot(fx_hull_p, death_axis) - death_span.x) / death_span.y, 0.0, 0.999) * death_steps.x) * death_steps.y"
 	code = code.replace("clamp(fx_power, 0.0, 1.0)", "(1.0 - smoothstep(" + band + ", " + band + " + death_steps.z, death_age))")
-	mat.shader = HULL.shared_shader(code)
+	mat.shader = HULL.shared_shader(code, "death power down " + str(code.hash()))
 	return mat
 
 
