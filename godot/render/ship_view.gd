@@ -1296,28 +1296,48 @@ func snap_to(p: Vector3, yaw: float) -> void:
 # nearest it, else the plating a ray finds on that side at that station, else no puff (logged and counted). Before
 # this, the puff sat at the box spot itself, which on the barge and other hulls that do not fill their box is empty space.
 func _couple_puffs(sgn: float, k: float) -> void:
-	# a positive yaw acceleration needs the bow pushed to -z and the stern to +z: the bow's +z jet and the stern's -z jet
-	var bx := L * 0.4
-	_puff(Vector3(bx, 0.2, half_w * sgn), Vector3(0, 0, sgn), k, Vector3(0, 0, sgn))
-	_puff(Vector3(-bx, 0.2, -half_w * sgn), Vector3(0, 0, -sgn), k, Vector3(0, 0, -sgn))
+	_jets("couple", sgn, k)
 
 
 func _retro_puffs(k: float) -> void:
-	var bx := L * 0.5
-	_puff(Vector3(bx, 0.2, half_w * 0.45), Vector3(1, 0, 0.25), k, Vector3(1, 0, 0))
-	_puff(Vector3(bx, 0.2, -half_w * 0.45), Vector3(1, 0, -0.25), k, Vector3(1, 0, 0))
+	_jets("retro", 1.0, k)
 
 
 func _aft_puffs(k: float) -> void:
-	var bx := -L * 0.48
-	_puff(Vector3(bx, half_h * 0.6, half_w * 0.7), Vector3(-1, 0, 0.2), k * 0.8, Vector3(-1, 0, 0))
-	_puff(Vector3(bx, half_h * 0.6, -half_w * 0.7), Vector3(-1, 0, -0.2), k * 0.8, Vector3(-1, 0, 0))
+	_jets("aft", 1.0, k)
 
 
 func _side_puffs(sgn: float, k: float) -> void:
-	# pushing the hull to +z vents gas to -z from the jets on that side, a matched pair at bow and stern (no spin)
-	for bx in [L * 0.36, -L * 0.36]:
-		_puff(Vector3(bx, 0.2, -half_w * sgn), Vector3(0, 0, -sgn), k, Vector3(0, 0, -sgn))
+	_jets("side", sgn, k)
+
+
+func _jets(kind: String, sgn: float, k: float) -> void:
+	for j in jet_aims(kind, sgn, L, half_w, half_h):
+		_puff(j[0], j[1], k * float(j[3]), j[2])
+
+
+# Every movement jet, one row each: [aim, gas direction, the side it vents from, strength], in this node's frame.
+# One source for the jets and for the attach check (fx/test/attach_check.gd walks every row).
+static func jet_aims(kind: String, sgn: float, l: float, hw: float, hh: float) -> Array:
+	match kind:
+		"couple":
+			# a positive yaw acceleration needs the bow pushed to -z and the stern to +z: the bow's +z jet and the stern's -z jet
+			var bx := l * 0.4
+			return [[Vector3(bx, 0.2, hw * sgn), Vector3(0, 0, sgn), Vector3(0, 0, sgn), 1.0],
+				[Vector3(-bx, 0.2, -hw * sgn), Vector3(0, 0, -sgn), Vector3(0, 0, -sgn), 1.0]]
+		"retro":
+			var bx := l * 0.5
+			return [[Vector3(bx, 0.2, hw * 0.45), Vector3(1, 0, 0.25), Vector3(1, 0, 0), 1.0],
+				[Vector3(bx, 0.2, -hw * 0.45), Vector3(1, 0, -0.25), Vector3(1, 0, 0), 1.0]]
+		"aft":
+			var bx := -l * 0.48
+			return [[Vector3(bx, hh * 0.6, hw * 0.7), Vector3(-1, 0, 0.2), Vector3(-1, 0, 0), 0.8],
+				[Vector3(bx, hh * 0.6, -hw * 0.7), Vector3(-1, 0, -0.2), Vector3(-1, 0, 0), 0.8]]
+		"side":
+			# pushing the hull to +z vents gas to -z from the jets on that side, a matched pair at bow and stern (no spin)
+			return [[Vector3(l * 0.36, 0.2, -hw * sgn), Vector3(0, 0, -sgn), Vector3(0, 0, -sgn), 1.0],
+				[Vector3(-l * 0.36, 0.2, -hw * sgn), Vector3(0, 0, -sgn), Vector3(0, 0, -sgn), 1.0]]
+	return []
 
 
 # The attach point service for this hull: fx_ship.setup hands over its own; a ShipView with no effects system makes one.

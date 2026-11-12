@@ -530,8 +530,18 @@ func _mount_row(side: String) -> Array:
 		else:
 			from = Vector3(x, c.y + 0.15 * H, c.z - dir.z * (W + 5.0))
 		var h = ray(from, dir)
-		# issue 370: a station whose ray misses has no plating there; it is left out (it used to fall back to a point on
-		# the bounding box, which on a hull that does not fill its box is empty space)
+		# issue 370: a station whose ray misses (a spire, a ring's hole) used to fall back to a point on the bounding box,
+		# which on a hull that does not fill its box is empty space. Now it takes the seen surface sample (a ray hit)
+		# nearest the station whose plating faces that side, or is left out when no plating faces that side at all.
+		if h.is_empty():
+			var bd := INF
+			for i in sp.size():
+				if sn[i].dot(-dir) < 0.25:
+					continue
+				var dd := absf(sp[i].x - x)
+				if dd < bd:
+					bd = dd
+					h = {"p": sp[i], "n": sn[i]}
 		if not h.is_empty():
 			out.append(h)
 	return out
@@ -842,6 +852,15 @@ func bay(i: int, toward_local: Vector3) -> Dictionary:
 	d.y = 0.0
 	var out := (d.normalized() + Vector3.UP).normalized() if d.length() > 1e-4 else Vector3.UP
 	var h := surface(core, out)
+	if h.is_empty():
+		h = surface(core, Vector3.UP)   # a ring's hole or a wing's gaps: the deck seen from straight above
+	if h.is_empty() and tm != null:
+		var bs := -INF
+		for j in sp.size():   # the seen sample (a ray hit) that faces most up and toward the craft's way
+			var sc: float = sn[j].dot(out)
+			if sc > bs:
+				bs = sc
+				h = {"p": sp[j], "n": sn[j]}
 	if h.is_empty():
 		_took("bay", "skip")
 		return {}
