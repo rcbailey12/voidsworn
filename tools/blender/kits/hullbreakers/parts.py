@@ -4,6 +4,7 @@
 #   engine_bell   a bell with a throat, an inner cone, cooling rings, gimbal struts, a banded housing and a mount collar
 #   gun           a turret ring (or a flank sponson plate and ball), a faceted housing, a mantlet on trunnions, breeches,
 #                 barrels with recoil sleeves, muzzle brakes and dark bores
+#   claw_arm      an articulated grabber arm: shoulder hinge on a bracket, box segments, knuckles, rams, a forked pincer
 #   launch_tube   a tube with depth, a thick (optionally hooded) lip, a dark bore and clamp bands; optional grille
 #   rocket_rack   a framed box of cells, each a short tube with a rocket nose set back in it, on a trunnion yoke and ring
 # Pure geometry: mathutils only, no bpy, scale free (sizes are parameters), so the build-sheet kit (world units) and the
@@ -333,6 +334,33 @@ def launch_tube(r, depth, lip=0.18, hood=0.0, bands=2, grille=False, seg=24, wal
     for i in range(bands):
         x = -depth * (0.35 + 0.45 * i / max(1, bands - 1)) if bands > 1 else -depth * 0.5
         p.add('band%d' % i, 'mount', 'iron', ring_band(x, ro, r * 0.22, r * 0.08, seg))
+    # R224 and R217 (issue 532: A16's front tubes measured 0.45 of the hull's triangles per square unit and 0.29 of its edge
+    # features): the tube carries the hull's detail level. Rings stand inside the bore (stepped liners), a ring of bolts on
+    # the lip, and armour stiffeners run along the barrel between the clamp bands.
+    tr = r * 0.07
+    for i, f in enumerate((0.18, 0.42, 0.68)):
+        x = -depth * f
+        p.add('ring%d' % i, 'mount', 'iron', revolve([(x - r * 0.06, r + 0.005), (x - r * 0.06, r - tr), (x + r * 0.06, r - tr),
+                                                      (x + r * 0.06, r + 0.005)], seg, closed=True))
+    nb = max(10, int(seg * 0.75))
+    rb = ro + r * lip * 0.3
+    for i in range(nb):
+        a = 2 * math.pi * (i + 0.5) / nb
+        c, sn = math.cos(a), math.sin(a)
+        p.add('bolt%d' % i, 'mount', 'iron', rod((-r * 0.04, rb * c, rb * sn), (r * 0.06, rb * c, rb * sn), r * 0.045, 6))
+    for i in range(8):
+        a = 2 * math.pi * (i + 0.25) / 8
+        c, sn = math.cos(a), math.sin(a)
+        p.add('stiff%d' % i, 'mount', 'steel', rod((-depth * 0.97, (ro + r * 0.03) * c, (ro + r * 0.03) * sn),
+                                                  (-r * 0.3, (ro + r * 0.03) * c, (ro + r * 0.03) * sn), r * 0.05, 4))
+    # each clamp band is bolted: a bolt head between each pair of stiffeners, standing off the band
+    for i in range(bands):
+        x = -depth * (0.35 + 0.45 * i / max(1, bands - 1)) if bands > 1 else -depth * 0.5
+        rr = ro + r * 0.07         # the band stands r * 0.08 proud: each bolt head sits in its top face
+        for j in range(8):
+            a = 2 * math.pi * (j + 0.75) / 8
+            c, sn = math.cos(a), math.sin(a)
+            p.add('bolt_b%d_%d' % (i, j), 'mount', 'iron', rod((x, rr * c, rr * sn), (x, (rr + r * 0.05) * c, (rr + r * 0.05) * sn), r * 0.05, 6))
     if grille:
         n = 5
         for i in range(n):
@@ -407,15 +435,16 @@ def rocket_rack(rows, cols, cell=0.4, depth=1.8, yoke=True, variant=0, seg=12):
 # crosses a seam (a cut gun reads as sliced): it rides whole with one piece. Every other kind is structure (plates,
 # ribs, rails, hatches, vents, lamps, pipes, openings such as the launch bay) and may tear across a seam. The sheet kit
 # stamps each part's objects with part_kind and machine from here; the stage 4 audit reads them (tools/recipe/audit.py).
-MACHINES = ('gun', 'spinal', 'rack', 'tube', 'engine', 'thruster', 'claw', 'prong', 'antenna', 'dish')
+MACHINES = ('gun', 'spinal', 'rack', 'tube', 'engine', 'thruster', 'claw', 'claw_arm', 'prong', 'antenna', 'dish')
 
 SUBPARTS = {
     'engine': ['housing', 'collar', 'band', 'bell', 'lining', 'throat_glow', 'cone', 'cool', 'strut'],
     'gun': ['ring|plate', 'housing', 'mantlet', 'breech', 'tube', 'clamp', 'bore', 'vent'],
-    'tube': ['tube', 'bore', 'band'],
+    'tube': ['tube', 'bore', 'band', 'ring', 'bolt', 'stiff'],
     'rack': ['box', 'frame', 'div', 'cell', 'nose', 'bore', 'cheek', 'yoke', 'ring'],
     'dish': ['bowl', 'rib', 'feed', 'strut', 'yoke', 'post', 'base'],
     'claw': ['hinge', 'arm', 'joint', 'ram', 'finger'],
+    'claw_arm': ['bracket', 'hinge', 'plate', 'pin', 'arm', 'rivet', 'ram', 'joint', 'wrist', 'finger'],
     'prong': ['knuckle', 'blade', 'spine', 'joint', 'hook'],
     'chain': ['link', 'lug'],
     'hatch': ['rim', 'door', 'seam', 'hinge'],
@@ -425,7 +454,7 @@ SUBPARTS = {
     'thruster': ['block', 'nozzle'],
     'antenna': ['base', 'mast', 'whip', 'pod'],
     'pipe': ['run', 'flange'],
-    'bay': ['rim', 'leaf', 'seam', 'hinge'],
+    'bay': ['rim', 'leaf', 'seam', 'hinge', 'ram', 'frame', 'stiff', 'rail', 'bracket', 'rivet'],
     'slit': ['frame', 'glass'],
     'plate': ['slab', 'step', 'bevel', 'rivet'],
     'patch': ['slab', 'lift', 'rivet'],
@@ -521,6 +550,69 @@ def claw(hinge_r, segs, w=0.45, fingers=3, ram=True):
             L = (u1 - u0).length
             p.add('finger%d%d' % (f, j), 'body', 'steel', moved(prism([(0.0, octa(w * t0, w * 0.1, w * 0.03)), (L, octa(max(0.005, w * t1), w * 0.06, 0.0))]), M))
     p.fit = dict(tip=P(pts[-1] + d * w * 1.2))
+    return p
+
+
+def claw_arm(segs, w=0.42, hook=1.0, fork=0.45, rivets=4):
+    """an articulated boarding grabber arm (R229, Ryan Nov 12 on A17: "the front claws or grabbers ... are more like 4
+    independent prongs"): the concept's arms are jointed machines, not blades. Origin at the shoulder hinge (axis across
+    the ship, local Y); segs: local points from the shoulder through each knuckle to the wrist. Sub-parts: a shoulder
+    hinge drum between two hinge plates on a mounting bracket; armoured box segments (tapered, bevelled) with a bolted top
+    plate; a knuckle at every joint (drum, side hinge plates, pin caps); a hydraulic ram (cylinder and rod) across each
+    joint; a forked pincer at the wrist, two hooked fingers that curl toward hook (+1 down, -1 up) in the arm's plane."""
+    p = Part('claw_arm')
+    th = w * 0.36
+    rh = th * 1.35
+    pts = [Vector((0, 0, 0))] + [Vector(q) for q in segs]
+    # shoulder: bracket behind the hinge (the mount), the hinge drum, a plate on each side with a pin cap
+    p.add('bracket', 'mount', 'iron', block(-rh * 2.2, -rh * 0.2, w * 0.75, rh * 1.05, rh * 0.3))
+    p.add('hinge', 'mount', 'iron', moved(revolve([(-w * 0.62, rh * 0.85), (-w * 0.58, rh), (w * 0.58, rh), (w * 0.62, rh * 0.85)], 16, cap0=True, cap1=True),
+                                          Matrix.Rotation(math.pi / 2, 4, 'Z')))
+    for s_ in (1, -1):
+        p.add('plate_s%d' % (s_ > 0), 'mount', 'steel', block(-rh * 1.3, rh * 1.1, w * 0.06, rh * 1.25, rh * 0.25, yo=s_ * w * 0.7))
+        p.add('pin_s%d' % (s_ > 0), 'mount', 'steel', rod((0, s_ * w * 0.76, 0), (0, s_ * w * 0.86, 0), rh * 0.45, 8))
+    n = len(pts) - 1
+    for i in range(n):
+        a, b = pts[i], pts[i + 1]
+        d = b - a; L = d.length
+        if L < 1e-6:
+            continue
+        k0 = 1.0 - 0.3 * i / n; k1 = 1.0 - 0.3 * (i + 1) / n
+        M = frame(a, d, (0, 0, 1) if abs(d.normalized().z) < 0.9 else (1, 0, 0))
+        p.add('arm%d' % i, 'body', 'steel', moved(prism([(rh * 0.6, octa(w * 0.45 * k0, th * k0, th * 0.4)), (L - rh * 0.5, octa(w * 0.42 * k1, th * k1, th * 0.35))]), M))
+        p.add('armplate%d' % i, 'body', 'soot', moved(block(L * 0.18, L * 0.78, w * 0.4 * k1, th * 0.22, th * 0.08, zo=th * k0 * 0.95), M))
+        for j in range(rivets):
+            x = L * (0.24 + 0.48 * j / max(1, rivets - 1))
+            for s_ in (1, -1):
+                p.add('rivet%d%d%d' % (i, j, s_ > 0), 'body', 'iron', moved(rod((x, s_ * w * 0.3 * k1, th * k0 * 1.12), (x, s_ * w * 0.3 * k1, th * k0 * 1.22), th * 0.13, 6), M))
+        # the ram: a cylinder on the segment's top, its rod reaching back across the joint behind it
+        r0 = M @ Vector((-rh * 0.4, 0, th * k0 * 1.9)); r1 = M @ Vector((L * 0.62, 0, th * k1 * 1.35))
+        p.add('ram_cyl%d' % i, 'body', 'iron', rod(r0.lerp(r1, 0.42), r1, th * 0.36, 10))
+        p.add('ram_rod%d' % i, 'body', 'steel', rod(r0, r0.lerp(r1, 0.46), th * 0.2, 8))
+        p.add('ram_lug%d' % i, 'body', 'steel', moved(block(L * 0.55, L * 0.7, th * 0.3, th * 0.45, th * 0.08, zo=th * k1 * 1.05), M))
+        if i < n - 1:
+            rk = rh * k1
+            p.add('joint%d' % i, 'body', 'iron', moved(revolve([(-w * 0.55, rk * 0.9), (-w * 0.5, rk), (w * 0.5, rk), (w * 0.55, rk * 0.9)], 14, cap0=True, cap1=True),
+                                                       Matrix.Translation(b) @ Matrix.Rotation(math.pi / 2, 4, 'Z')))
+            for s_ in (1, -1):
+                p.add('kplate%d%d' % (i, s_ > 0), 'body', 'steel', moved(block(-rk * 1.2, rk * 1.2, w * 0.05, rk * 1.1, rk * 0.3, yo=s_ * w * 0.6), Matrix.Translation(b)))
+                p.add('kpin%d%d' % (i, s_ > 0), 'body', 'steel', rod(b + Vector((0, s_ * w * 0.64, 0)), b + Vector((0, s_ * w * 0.74, 0)), rk * 0.4, 8))
+    # the pincer: a wrist block and two hooked fingers forking in the arm's vertical plane
+    d = (pts[-1] - pts[-2]).normalized()
+    up = Vector((0, 0, 1)) - d * d.z; up = up.normalized() if up.length > 1e-6 else Vector((1, 0, 0))
+    side = d.cross(up).normalized()
+    Mw = frame(pts[-1], d, up)
+    p.add('wrist', 'body', 'iron', moved(block(-th * 0.6, th * 0.8, w * 0.34, th * 0.95, th * 0.3), Mw))
+    for f, sg in enumerate((1, -1)):
+        a = pts[-1] + d * th * 0.7 + up * sg * th * 0.6
+        b = a + d * w * fork * 2.0 + up * sg * w * fork * 0.55
+        c = b + d * w * 0.75 - up * sg * w * 0.5 + up * (-hook) * w * 0.18
+        e = c - up * sg * w * 0.32 + d * w * 0.06
+        for j, (u0, u1, t0, t1) in enumerate(((a, b, 0.2, 0.16), (b, c, 0.16, 0.1), (c, e, 0.1, 0.02))):
+            M = frame(u0, u1 - u0, side)
+            L = (u1 - u0).length
+            p.add('finger%d%d' % (f, j), 'body', 'steel', moved(prism([(0.0, octa(w * 0.16, w * t0 * 0.8, w * 0.03)), (L, octa(w * 0.12, max(0.005, w * t1 * 0.8), 0.0))]), M))
+    p.fit = dict(tip=P(pts[-1] + d * w * 2.4))
     return p
 
 
@@ -681,6 +773,32 @@ def bay(w, l, leaves=2):
         x = -l / 2 + l * (i + 0.5) / 3
         for s in (1, -1):
             p.add('hinge%d%d' % (i, s > 0), 'body', 'iron', rod((x - 0.2, s * w / 2, 0.12), (x + 0.2, s * w / 2, 0.12), 0.06, 8))
+            # the door ram: from the rim, outboard of the hinge, to the leaf
+            p.add('ram%d%d' % (i, s > 0), 'body', 'steel', rod((x + 0.28, s * (w / 2 + 0.06), 0.1), (x + 0.28, s * (w / 2 - 0.35), 0.16), 0.035, 6))
+    # R224 (issue 532: A16's bay measured 0.18 of the hull's triangles per square unit): frames, rails and inner structure.
+    # Each leaf is a framed panel with stiffeners across it; guide rails run the length of both sides on brackets; the rim
+    # carries a row of rivets; a transverse frame closes each end of the well.
+    for i in range(leaves):
+        y0 = -w / 2 + w * i / leaves + 0.03; y1 = -w / 2 + w * (i + 1) / leaves - 0.03; yc = (y0 + y1) / 2; hw = (y1 - y0) / 2
+        for s in (1, -1):
+            p.add('frame%d%s' % (i, 'a' if s > 0 else 'b'), 'body', 'iron', block(-l / 2 + 0.06, l / 2 - 0.06, 0.05, 0.03, 0.01, yo=yc + s * (hw - 0.07), zo=0.15))
+        for k in range(5):
+            x = -l / 2 + l * (k + 0.5) / 5
+            p.add('stiff%d%d' % (i, k), 'body', 'steel', rod((x, y0 + 0.08, 0.15), (x, y1 - 0.08, 0.15), 0.035, 4))
+    for s in (1, -1):
+        yr = s * (w / 2 + 0.2)
+        p.add('rail%s' % ('a' if s > 0 else 'b'), 'body', 'iron', block(-l / 2 - 0.05, l / 2 + 0.05, 0.05, 0.05, 0.015, yo=yr, zo=0.14))
+        for k in range(6):
+            x = -l / 2 + l * (k + 0.5) / 6
+            p.add('bracket%d%s' % (k, 'a' if s > 0 else 'b'), 'body', 'steel', block(x - 0.06, x + 0.06, 0.07, 0.07, 0.01, yo=yr, zo=0.06))
+    for e in (1, -1):
+        p.add('endframe%s' % ('a' if e > 0 else 'b'), 'body', 'iron', block(e * (l / 2 - 0.02) - 0.05, e * (l / 2 - 0.02) + 0.05, w / 2 + 0.1, 0.05, 0.015, zo=0.12))
+    nr = max(8, int((l + w) / 0.25))
+    for k in range(nr):
+        f = (k + 0.5) / nr
+        for s in (1, -1):
+            for (x, y) in (((-l / 2 + l * f), s * (w / 2 + 0.07)), (s * (l / 2 + 0.07), (-w / 2 + w * f))):
+                p.add('rivet%d%s%d' % (k, 'a' if s > 0 else 'b', abs(x) > l / 2), 'body', 'iron', rod((x, y, 0.08), (x, y, 0.115), 0.025, 6))
     # rotate so +Z is out: the block axis (X) became Z above
     return p
 
