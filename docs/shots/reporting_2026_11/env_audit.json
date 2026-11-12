@@ -1,0 +1,190 @@
+{
+  "item": "Batch audit: ST4, PL12, BD2",
+  "station": {
+    "source": {
+      "folder": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-195\\shots",
+      "detail_audit": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-195\\shots\\detail_audit.json",
+      "detail_gpu": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-195\\shots\\detail_gpu.json"
+    },
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "renderer": "forward_plus",
+    "resolution": [
+      3840,
+      2160
+    ],
+    "metric": "paired median viewport GPU ms; station shown minus hidden",
+    "target_ms": 0.35,
+    "ceiling_ms": 1,
+    "variants": {
+      "fleet": {
+        "triangles_roundtrip": 11636,
+        "parts": 98,
+        "guns": 8,
+        "median_delta_ms": 0.0439999103546143,
+        "paired_range_ms": [
+          -0.0159999132156372,
+          0.0479999780654907
+        ],
+        "pairs": 5
+      },
+      "refinery": {
+        "triangles_roundtrip": 6656,
+        "parts": 61,
+        "guns": 0,
+        "median_delta_ms": 0.0380001068115234,
+        "paired_range_ms": [
+          -0.00499999523162842,
+          0.0830000638961792
+        ],
+        "pairs": 5
+      }
+    }
+  },
+  "planet_bake": {
+    "adapter": "NVIDIA GeForce RTX 5080",
+    "cache_max": 24,
+    "cold": true,
+    "renderer": "forward_plus",
+    "rows": [
+      {
+        "cache": "C:/Users/rcbai/AppData/Local/Temp/vs238_bake_1192063_4101",
+        "kind": 4,
+        "pass_a_ms": 2869,
+        "pass_a_ok": true,
+        "pass_b_ms": 1490,
+        "pass_b_ok": true,
+        "planet_index": 5,
+        "seed": 4101,
+        "size": [
+          4096,
+          2048
+        ],
+        "total_ms": 4359
+      },
+      {
+        "cache": "C:/Users/rcbai/AppData/Local/Temp/vs238_bake_5568436_4102",
+        "kind": 5,
+        "pass_a_ms": 2711,
+        "pass_a_ok": true,
+        "pass_b_ms": 1216,
+        "pass_b_ok": true,
+        "planet_index": 6,
+        "seed": 4102,
+        "size": [
+          4096,
+          2048
+        ],
+        "total_ms": 3927
+      },
+      {
+        "cache": "C:/Users/rcbai/AppData/Local/Temp/vs238_bake_9507989_4103",
+        "kind": 0,
+        "pass_a_ms": 2330,
+        "pass_a_ok": true,
+        "pass_b_ms": 1179,
+        "pass_b_ok": true,
+        "planet_index": 7,
+        "seed": 4103,
+        "size": [
+          4096,
+          2048
+        ],
+        "total_ms": 3509
+      },
+      {
+        "cache": "C:/Users/rcbai/AppData/Local/Temp/vs238_bake_13030115_4104",
+        "kind": 0,
+        "pass_a_ms": 2334,
+        "pass_a_ok": true,
+        "pass_b_ms": 1190,
+        "pass_b_ok": true,
+        "planet_index": 0,
+        "seed": 4104,
+        "size": [
+          4096,
+          2048
+        ],
+        "total_ms": 3524
+      },
+      {
+        "cache": "C:/Users/rcbai/AppData/Local/Temp/vs238_bake_16565967_4105",
+        "kind": 1,
+        "pass_a_ms": 2073,
+        "pass_a_ok": true,
+        "pass_b_ms": 1077,
+        "pass_b_ok": true,
+        "planet_index": 1,
+        "seed": 4105,
+        "size": [
+          4096,
+          2048
+        ],
+        "total_ms": 3150
+      },
+      {
+        "cache": "C:/Users/rcbai/AppData/Local/Temp/vs238_bake_19730703_4106",
+        "kind": 0,
+        "pass_a_ms": 2340,
+        "pass_a_ok": true,
+        "pass_b_ms": 1185,
+        "pass_b_ok": true,
+        "planet_index": 2,
+        "seed": 4106,
+        "size": [
+          4096,
+          2048
+        ],
+        "total_ms": 3525
+      },
+      {
+        "cache": "C:/Users/rcbai/AppData/Local/Temp/vs238_bake_23268846_4107",
+        "kind": 2,
+        "pass_a_ms": 2274,
+        "pass_a_ok": true,
+        "pass_b_ms": 1561,
+        "pass_b_ok": true,
+        "planet_index": 3,
+        "seed": 4107,
+        "size": [
+          4096,
+          2048
+        ],
+        "total_ms": 3835
+      },
+      {
+        "cache": "C:/Users/rcbai/AppData/Local/Temp/vs238_bake_27118488_4108",
+        "kind": 3,
+        "pass_a_ms": 2600,
+        "pass_a_ok": true,
+        "pass_b_ms": 1246,
+        "pass_b_ok": true,
+        "planet_index": 4,
+        "seed": 4108,
+        "size": [
+          4096,
+          2048
+        ],
+        "total_ms": 3846
+      }
+    ],
+    "wait_cap_ms": 20000,
+    "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\work217\\issue-238-deepseek\\20261112_014512\\repo\\docs\\shots\\reporting_2026_11\\planet_bake_timings.json",
+    "min_ms": 3150,
+    "median_ms": 3680,
+    "max_ms": 4359,
+    "all_ok": true,
+    "note": "Cold means a fresh VS_WORLD_CACHE folder and a cleared in-memory cache for every seed; both planet passes are timed at the shipped 4096 by 2048 max size."
+  },
+  "sky_steps": {
+    "loader_steps": {
+      "max": 48,
+      "high": 40,
+      "low": 26
+    },
+    "shader_default": 40,
+    "loop_cap": 64,
+    "all_within_loop_cap": true,
+    "max_equals_default_high": true,
+    "note": "world.gd passes steps into the bake params for every quality; world_sky.gd divides the march by steps and breaks at i >= steps, inside a 64 iteration loop cap. The shader default (40) is the high tier value; it is never the value a bake uses because the loader always passes one."
+  }
+}

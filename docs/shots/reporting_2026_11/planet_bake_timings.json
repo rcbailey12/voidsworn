@@ -1,0 +1,129 @@
+{
+  "adapter": "NVIDIA GeForce RTX 5080",
+  "cache_max": 24,
+  "cold": true,
+  "renderer": "forward_plus",
+  "rows": [
+    {
+      "cache": "C:/Users/rcbai/AppData/Local/Temp/vs238_bake_1192063_4101",
+      "kind": 4,
+      "pass_a_ms": 2869,
+      "pass_a_ok": true,
+      "pass_b_ms": 1490,
+      "pass_b_ok": true,
+      "planet_index": 5,
+      "seed": 4101,
+      "size": [
+        4096,
+        2048
+      ],
+      "total_ms": 4359
+    },
+    {
+      "cache": "C:/Users/rcbai/AppData/Local/Temp/vs238_bake_5568436_4102",
+      "kind": 5,
+      "pass_a_ms": 2711,
+      "pass_a_ok": true,
+      "pass_b_ms": 1216,
+      "pass_b_ok": true,
+      "planet_index": 6,
+      "seed": 4102,
+      "size": [
+        4096,
+        2048
+      ],
+      "total_ms": 3927
+    },
+    {
+      "cache": "C:/Users/rcbai/AppData/Local/Temp/vs238_bake_9507989_4103",
+      "kind": 0,
+      "pass_a_ms": 2330,
+      "pass_a_ok": true,
+      "pass_b_ms": 1179,
+      "pass_b_ok": true,
+      "planet_index": 7,
+      "seed": 4103,
+      "size": [
+        4096,
+        2048
+      ],
+      "total_ms": 3509
+    },
+    {
+      "cache": "C:/Users/rcbai/AppData/Local/Temp/vs238_bake_13030115_4104",
+      "kind": 0,
+      "pass_a_ms": 2334,
+      "pass_a_ok": true,
+      "pass_b_ms": 1190,
+      "pass_b_ok": true,
+      "planet_index": 0,
+      "seed": 4104,
+      "size": [
+        4096,
+        2048
+      ],
+      "total_ms": 3524
+    },
+    {
+      "cache": "C:/Users/rcbai/AppData/Local/Temp/vs238_bake_16565967_4105",
+      "kind": 1,
+      "pass_a_ms": 2073,
+      "pass_a_ok": true,
+      "pass_b_ms": 1077,
+      "pass_b_ok": true,
+      "planet_index": 1,
+      "seed": 4105,
+      "size": [
+        4096,
+        2048
+      ],
+      "total_ms": 3150
+    },
+    {
+      "cache": "C:/Users/rcbai/AppData/Local/Temp/vs238_bake_19730703_4106",
+      "kind": 0,
+      "pass_a_ms": 2340,
+      "pass_a_ok": true,
+      "pass_b_ms": 1185,
+      "pass_b_ok": true,
+      "planet_index": 2,
+      "seed": 4106,
+      "size": [
+        4096,
+        2048
+      ],
+      "total_ms": 3525
+    },
+    {
+      "cache": "C:/Users/rcbai/AppData/Local/Temp/vs238_bake_23268846_4107",
+      "kind": 2,
+      "pass_a_ms": 2274,
+      "pass_a_ok": true,
+      "pass_b_ms": 1561,
+      "pass_b_ok": true,
+      "planet_index": 3,
+      "seed": 4107,
+      "size": [
+        4096,
+        2048
+      ],
+      "total_ms": 3835
+    },
+    {
+      "cache": "C:/Users/rcbai/AppData/Local/Temp/vs238_bake_27118488_4108",
+      "kind": 3,
+      "pass_a_ms": 2600,
+      "pass_a_ok": true,
+      "pass_b_ms": 1246,
+      "pass_b_ok": true,
+      "planet_index": 4,
+      "seed": 4108,
+      "size": [
+        4096,
+        2048
+      ],
+      "total_ms": 3846
+    }
+  ],
+  "wait_cap_ms": 20000
+}
