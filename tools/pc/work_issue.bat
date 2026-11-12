@@ -1,6 +1,6 @@
 @echo off
 rem Workhorse (#217, Opus, Nov 7 2026): one job-board issue, one model, OpenCode headless on Ryan's PC. Nobody watches the run.
-rem Usage: work_issue.bat <issue number> <arm: deepseek, deepseekpro or kimi> [dryrun]   (WORK_MODEL overrides the arm's model id)
+rem Usage: work_issue.bat <issue number> <arm: deepseek, deepseekpro, kimi or kimicode> [dryrun]   (WORK_MODEL overrides the arm's model id)
 rem Each run gets its own folder, Downloads\voidsworn_test\work217\issue-<n>-<arm>\<date_time>\, holding repo\ (a fresh clone of
 rem main on branch work/issue-<n>-<arm>) and out\ (OpenCode events, the agent's report, run stats, balances, shots).
 rem latest.txt in issue-<n>-<arm>\ names the newest run folder.
@@ -41,7 +41,9 @@ set "MODEL="
 if /i "%ARM%"=="deepseek" set "MODEL=deepseek/deepseek-flash"
 if /i "%ARM%"=="deepseekpro" set "MODEL=deepseek/deepseek-v4-pro"
 if /i "%ARM%"=="kimi" set "MODEL=moonshotai/kimi-k3.1-pro"
-if not defined MODEL (echo usage: work_issue.bat issue-number deepseek-deepseekpro-or-kimi [dryrun] & exit /b 2)
+rem kimicode: the Kimi Code plan (Ryan, Nov 12, issue 597); its key only works on api.kimi.com/coding/v1 (work\opencode.json)
+if /i "%ARM%"=="kimicode" set "MODEL=kimicode/kimi-for-coding"
+if not defined MODEL (echo usage: work_issue.bat issue-number deepseek-deepseekpro-kimi-or-kimicode [dryrun] & exit /b 2)
 if defined WORK_MODEL set "MODEL=%WORK_MODEL%"
 rem The repo's bundled Node 22 first: the shell's Node 24 gives a false 4,048 pow differences in the parity math sweep (#217 trial)
 set "PATH=%USERPROFILE%\Downloads\voidsworn_test\node;C:\Program Files\nodejs;C:\Program Files\Git\cmd;%APPDATA%\npm;%PATH%"
@@ -108,12 +110,16 @@ set "OPENCODE_CONFIG=%T%work\opencode.json"
 if /i "%MODE%"=="dryrun" goto :drysetup
 call :getkey DEEPSEEK_API_KEY
 call :getkey MOONSHOT_API_KEY
+call :getkey KIMI_CODE_API_KEY
+if /i "%ARM%"=="kimicode" if not defined KIMI_CODE_API_KEY (echo no Kimi Code key saved: run KIMI_CODE_KEY.bat >> "%O%\result.txt" & exit /b 3)
+if /i "%ARM%"=="kimicode" goto :clone
 if /i not "%ARM%"=="kimi" if not defined DEEPSEEK_API_KEY (echo no DeepSeek key saved: run WORKHORSE_SETUP.bat >> "%O%\result.txt" & exit /b 3)
 if /i "%ARM%"=="kimi" if not defined MOONSHOT_API_KEY (echo no Moonshot key saved: run WORKHORSE_SETUP.bat >> "%O%\result.txt" & exit /b 3)
 goto :clone
 :drysetup
 set "DEEPSEEK_API_KEY=dry"
 set "MOONSHOT_API_KEY=dry"
+set "KIMI_CODE_API_KEY=dry"
 set "OPENCODE_CONFIG=%T%work\opencode_mock.json"
 start "workhorse stand-in model" /min "C:\Program Files\nodejs\node.exe" "%T%work\mock_llm.js" 8765 "%O%\mock_log.txt" %WORK_DRY_SCENARIO%
 rem wait until the stand-in is listening (an earlier one may still hold the port for a few seconds)
