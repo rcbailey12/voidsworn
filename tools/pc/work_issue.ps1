@@ -12,7 +12,7 @@
 #   work_issue.ps1 commit  <repo> <out> <branch> <real|dry|test>  one commit that keeps the branch's earlier tip, checked before push
 #   work_issue.ps1 confirm <repo> <out> <branch> <real|dry|test>  after the push: GitHub's branch must carry exactly out\diffstat.txt
 #   work_issue.ps1 tidy    <run folder> <root> <settings> <ok> <dry>  run folder size; removes repo\ only if Ryan's setting allows
-# Keys come from the environment (DEEPSEEK_API_KEY, MOONSHOT_API_KEY) and are never written to any file.
+# Keys come from the environment (DEEPSEEK_API_KEY, MOONSHOT_API_KEY, KIMI_CODE_API_KEY) and are never written to any file.
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $utf8 = New-Object System.Text.UTF8Encoding($false)
@@ -22,6 +22,7 @@ function Arm-Info($arm) {
   switch ($arm) {
     { $_ -in 'deepseek','deepseekpro' } { return @{ base = 'https://api.deepseek.com'; key = $env:DEEPSEEK_API_KEY; models = 'https://api.deepseek.com/models'; bal = 'https://api.deepseek.com/user/balance' } }
     'kimi'     { return @{ base = 'https://api.moonshot.ai/v1'; key = $env:MOONSHOT_API_KEY; models = 'https://api.moonshot.ai/v1/models'; bal = 'https://api.moonshot.ai/v1/users/me/balance' } }
+    'kimicode' { return @{ base = 'https://api.kimi.com/coding/v1'; key = $env:KIMI_CODE_API_KEY; models = 'https://api.kimi.com/coding/v1/models'; bal = $null } }   # plan quota, no balance endpoint (issue 597)
     default    { throw "unknown arm $arm" }
   }
 }
@@ -141,6 +142,7 @@ $($i.body)
 }
 elseif ($mode -eq 'balance') {
   $arm = $args[1]; $file = $args[2]; $a = Arm-Info $arm; $v = 'unknown'
+  if (-not $a.bal) { [IO.File]::WriteAllText($file, 'plan (no balance)', [Text.Encoding]::ASCII); Write-Host 'plan (no balance)'; exit 0 }
   try {
     $r = Invoke-RestMethod -UseBasicParsing -TimeoutSec 30 -Headers @{ Authorization = "Bearer $($a.key)" } -Uri $a.bal
     if ($arm -like 'deepseek*') { $b = $r.balance_infos | Select-Object -First 1; $v = "$($b.total_balance) $($b.currency)" }

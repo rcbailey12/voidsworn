@@ -127,8 +127,9 @@ agents-09.
 | Concept pictures by image to image, research, design text, outside checks | Muse (Rey chairs); Ryan starts every run | several models, an outside view (R128) |
 | Ideation | Flash and Grok, through Muse | free and broad |
 
-No Fable helpers: Ryan's Fable allowance is spent ("I just used the final fable reset", R180). Kimi is off and was never fairly
-tested (only the pay-as-you-go tier, R164). Codex's weekly usage is watched at every board check (it was at 19 percent with
+No Fable helpers: Ryan's Fable allowance is spent ("I just used the final fable reset", R180). Kimi was never fairly tested
+(only the pay-as-you-go tier, R164); Ryan took the Kimi Code plan on Nov 12, and it gets one head-to-head job against DeepSeek
+(arm kimicode, issue 597) before it holds a seat. Codex's weekly usage is watched at every board check (it was at 19 percent with
 six days to its reset on Nov 11, R219): when it runs low, code jobs go to the DeepSeek workhorse and Opus workers, and Codex
 keeps only what needs it. Ids: R128, R180e, R205, R206, R219, agents-12.
 
