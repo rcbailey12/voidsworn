@@ -218,6 +218,8 @@ func _build_ledger() -> void:
 	ledger.keys_bb = keys_text()
 	ledger.act.connect(func(n: String, arg: Variant) -> void: action.emit(n, arg))
 	ledger.hover_tip.connect(_ledger_tip)
+	# the board's hover tip belongs to the board: it goes when the pointer comes onto the sheet (the board gets no motion there)
+	ledger.mouse_entered.connect(func() -> void: tip.visible = false)
 
 
 # the window changed size: build every part again at the new scale and put back what each part showed. The battle log's
