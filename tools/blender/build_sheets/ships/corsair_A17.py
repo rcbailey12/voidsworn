@@ -20,9 +20,9 @@ BEAUTY = 'contrib/muse/design/concept_round8_2026_11/corsair_A17_beauty.jpg'
 # pinched behind it, then the lean body
 # the base hull (flank tier): the narrow head (x 6.2 to 4.3) then the body; the jaw mouth is cut in under the head face
 HULL = [
-    (6.2, 1.25, 1.25, -0.5, 0.82, 0.42, 0.22),
-    (5.95, 1.42, 1.42, -0.66, 0.98, 0.46, 0.28),
-    (4.35, 1.48, 1.48, -0.8, 1.02, 0.46, 0.3),
+    (6.2, 1.5, 1.5, -0.55, 1.3, 0.4, 0.22),
+    (5.95, 1.65, 1.65, -0.7, 1.48, 0.42, 0.28),
+    (4.35, 1.7, 1.7, -0.82, 1.52, 0.42, 0.3),
     (4.05, 2.15, 2.2, -1.6, 0.42, 0.42, 0.45),
     (0.0, 2.3, 2.35, -1.6, 0.45, 0.42, 0.45),
     (-4.6, 2.3, 2.35, -1.6, 0.45, 0.42, 0.45),
@@ -49,19 +49,19 @@ def build(K):
     K.mass('Lower hull band', K.loft('A17_lowband', [(3.9, 2.0, 2.05, -1.64, -1.0, 0.0, 0.22), (-5.2, 2.0, 2.05, -1.64, -1.0, 0.0, 0.22)], 'soot2',
                                      plates=dict(PL, seed=18, faces=[3, 4, 5, 6, 7, 0], inv='belly_plates')), 'dark soot', note='the belly steps in under the flank tier')
     # ---------------- the head: brow, crown, face panels ----------------
-    K.mass('Head brow (step 1)', K.loft('A17_brow', [(6.05, 1.0, 1.0, 0.85, 1.1, 0.18, 0), (5.7, 1.18, 1.18, 0.85, 1.26, 0.22, 0),
-                                                     (4.45, 1.2, 1.2, 0.85, 1.3, 0.22, 0)], 'pale', plates=dict(PL, seed=27, faces=[0, 1, 2, 3], inv='head_plates')),
+    K.mass('Head brow (step 1)', K.loft('A17_brow', [(6.05, 1.2, 1.2, 1.4, 1.62, 0.18, 0), (5.7, 1.35, 1.35, 1.4, 1.75, 0.22, 0),
+                                                     (4.45, 1.38, 1.38, 1.4, 1.8, 0.22, 0)], 'pale', plates=dict(PL, seed=27, faces=[0, 1, 2, 3], inv='head_plates')),
            'pale grey trophy plate', note='the first roof step, sloped at its front')
-    K.mass('Head crown (step 2)', K.loft('A17_crown', [(5.35, 0.7, 0.7, 1.2, 1.38, 0.1, 0), (5.15, 0.78, 0.78, 1.2, 1.48, 0.12, 0),
-                                                       (4.55, 0.78, 0.78, 1.2, 1.48, 0.12, 0)], 'soot'), 'soot', note='the second step')
-    K.loft('A17_mouth_roof', [(6.1, 0.9, 0.9, -0.62, -0.46, 0.04, 0.04), (4.45, 1.1, 1.1, -0.82, -0.62, 0.04, 0.06)], 'dark')
+    K.mass('Head crown (step 2)', K.loft('A17_crown', [(5.35, 0.75, 0.75, 1.72, 1.88, 0.1, 0), (5.15, 0.82, 0.82, 1.72, 1.98, 0.12, 0),
+                                                       (4.55, 0.82, 0.82, 1.72, 1.98, 0.12, 0)], 'soot'), 'soot', note='the second step')
+    K.loft('A17_mouth_roof', [(6.1, 1.2, 1.2, -0.67, -0.5, 0.04, 0.04), (4.45, 1.35, 1.35, -0.84, -0.66, 0.04, 0.06)], 'dark')
     K.mark('head', 'hull', ['bevel', 'step', 'overhang'])
-    for i, (y, w) in enumerate(((0.5, 0.8), (-0.5, 0.8))):
-        K.patch('FP%d' % i, (6.21, y, 0.12), (1, 0, 0), w, 1.0, ang=0.03 * (1 if i else -1), lift=0.015, t=0.05, m='iron', inv='head_face')
-    for i, y in enumerate((1.0, 0.0, -1.0)):
-        K.box('A17_strap%d' % i, 6.17, 6.3, y - 0.05, y + 0.05, -0.42, 0.66, 'steel')
+    for i, (y, w) in enumerate(((0.6, 0.95), (-0.6, 0.95))):
+        K.patch('FP%d' % i, (6.21, y, 0.38), (1, 0, 0), w, 1.45, ang=0.03 * (1 if i else -1), lift=0.015, t=0.05, m='iron', inv='head_face')
+    for i, y in enumerate((1.2, 0.0, -1.2)):
+        K.box('A17_strap%d' % i, 6.17, 6.3, y - 0.05, y + 0.05, -0.45, 1.12, 'steel')
     K.mark('head_face', 'plate', ['slab', 'step', 'bevel', 'rivet'])
-    K.box('A17_rust_brow', 5.75, 5.95, -0.3, 0.3, 1.2, 1.26, 'rust')
+    K.box('A17_rust_brow', 5.75, 5.95, -0.3, 0.3, 1.7, 1.76, 'rust')
 
     # ---------------- the body: flank blocks (both sides, junky and unmatched) and the stepped top blocks ----------------
     import random
@@ -116,22 +116,25 @@ def build(K):
     K.mark('rust_plates', 'plate', ['slab', 'step', 'bevel', 'rivet'])
 
     # ---------------- head fittings: scoop drums, ears, prongs, hoses ----------------
-    for side, fi, r in ((1, 'I1', 0.4), (-1, 'I2', 0.36)):
-        y = 1.72 * side
+    for side, fi, r in ((1, 'I1', 0.42), (-1, 'I2', 0.38)):
+        y = 1.88 * side
         K.box('A17_%s_saddle' % fi, 4.35, 6.0, min(y * 0.78, y), max(y * 0.78, y), -0.78, -0.42, 'steel', ch=0.06)
         K.tube(fi, (6.35, y, -0.42), r, 2.1, grille=True, bands=4, inv='scoops', what='scoop drum with a grille',
                note='%s scoop drum on the head flank%s' % ('port' if side > 0 else 'starboard', ', the larger' if side > 0 else ''))
-        K.dish('D%d' % (1 if side > 0 else 2), (4.85, y + 0.12 * side, -0.42 + r * 1.12), 0.55, yaw=35 * side, pitch=8, post=1.25, inv='ears',
-               note='%s ear, listening dish bolted to the top of its scoop drum' % ('port' if side > 0 else 'starboard'))
-        K.allow_touch('D%d' % (1 if side > 0 else 2), fi, 'the ear dish is bolted to the top of its scoop drum, as in the concept')
+        # the ears (the beauty): big dishes, about the head's height across, standing out from brackets at the head's upper corners
+        K.mass('Ear bracket %s' % ('port' if side > 0 else 'starboard'),
+               K.box('A17_ear_bracket_%d' % (1 if side > 0 else 2), 4.5, 5.4, min(side * 1.45, side * 2.3), max(side * 1.45, side * 2.3), 0.95, 1.3, 'iron', ch=0.08),
+               'iron', note='bracket out from the head\'s upper corner')
+        K.dish('D%d' % (1 if side > 0 else 2), (4.95, 2.02 * side, 1.3), 0.95, yaw=45 * side, pitch=8, post=0.85, inv='ears',
+               note='%s ear, a big listening dish standing out at the head\'s upper corner' % ('port' if side > 0 else 'starboard'))
     for side, fi, fo in ((1, 'J1', 'J3'), (-1, 'J2', 'J4')):
         s_ = 'port' if side > 0 else 'starboard'
-        K.prong(fi, (4.4, 0.82 * side, -1.32), 2.6, width=0.36, thick=0.11, hook=0.3, yaw=-3 * side, droop=0.06, inv='jaws',
-                housing=(3.95, 4.6, 0.82 * side - 0.26, 0.82 * side + 0.26, -1.52, -1.17), note='%s lower prong, a long flat blade with a hooked tip' % s_)
-        K.prong(fo, (4.55, 1.14 * side, -1.0), 2.3, width=0.3, thick=0.1, hook=0.26, yaw=-2 * side, droop=0.14, inv='jaws',
-                housing=(4.15, 4.85, 1.14 * side - 0.24, 1.14 * side + 0.24, -1.14, -0.86), note='%s upper prong, over and outboard of the lower' % s_)
-    for i, y in enumerate((0.3, 0.0, -0.3)):
-        K.pipe('PH%d' % i, [(6.0, y, -0.6), (5.1, y, -0.72), (4.4, y, -1.1), (3.6, y, -1.72)], r=0.06, inv='jaw_pipes')
+        K.prong(fi, (4.4, 0.7 * side, -1.32), 2.6, width=0.7, thick=0.09, hook=0.3, yaw=-3 * side, droop=0.06, inv='jaws',
+                housing=(3.95, 4.6, 0.7 * side - 0.4, 0.7 * side + 0.4, -1.52, -1.17), note='%s lower prong, a long flat blade with a hooked tip' % s_)
+        K.prong(fo, (4.55, 1.34 * side, -1.0), 2.3, width=0.55, thick=0.08, hook=0.26, yaw=-2 * side, droop=0.14, inv='jaws',
+                housing=(4.15, 4.85, 1.34 * side - 0.3, 1.34 * side + 0.3, -1.14, -0.86), note='%s upper prong, over and outboard of the lower' % s_)
+    for i, y in enumerate((0.15, 0.0, -0.15)):
+        K.pipe('PH%d' % i, [(6.0, y, -0.6), (5.1, y, -0.72), (4.4, y, -1.1), (3.6, y, -1.72)], r=0.045, inv='jaw_pipes')
 
     # ---------------- chains ----------------
     K.chain('C1', [(2.45, 2.55, -0.4), (2.45, 2.25, 0.5), (2.45, 1.45, 0.8), (2.45, -1.45, 0.8), (2.45, -2.25, 0.5), (2.45, -2.6, -0.4)],
@@ -140,15 +143,15 @@ def build(K):
             link=0.18, r=0.028, inv='hump_chain', note='girdle in the gap between the mid and saddle blocks')
 
     # ---------------- weapons, by data.js slot ----------------
-    K.mass('Rack plinth', K.box('A17_plinth', 0.95, 2.1, -0.72, 0.72, 0.8, 1.32, 'iron', ch=0.12), 'iron', note='lifts the rocket pod clear over the neck turrets')
-    K.launcher('R1', (1.95, 0.0, 1.32), 2, 3, cell=0.33, depth=1.0, pitch=8, slot='F', weapon='torp', inv='brow_rack',
+    K.mass('Rack plinth', K.box('A17_plinth', 0.95, 2.1, -0.72, 0.72, 0.8, 1.7, 'iron', ch=0.12), 'iron', note='lifts the rocket pod clear over the neck turrets')
+    K.launcher('R1', (1.95, 0.0, 1.7), 2, 3, cell=0.33, depth=1.0, pitch=10, slot='F', weapon='torp', inv='brow_rack',
                note='rattle-rocket pod on the fore block, firing over the head')
     K.gun('T1', (-4.6, 0.0, 1.52), 0, 8, barrels=2, cal=0.09, blen=1.25, size=0.85, slot='T', weapon='flak', inv='crest_gun', note='aft block twin, all round')
     K.gun('T2', (-1.0, 0.0, -1.64), 0, 8, barrels=2, cal=0.08, blen=1.1, size=0.75, normal=(0, 0, -1), slot='T', weapon='flak', inv='belly_turret',
           note='belly twin, covers below')
     for side, sl in ((1, 'P'), (-1, 'S')):
-        K.box('A17_barbette_%s1' % sl, 2.9, 3.6, min(side * 0.25, side * 0.95), max(side * 0.25, side * 0.95), 0.7, 1.18, 'iron', ch=0.1)
-        K.gun('%s1' % sl, (3.25, side * 0.6, 1.18), side * 40, 2, barrels=2, cal=0.08, blen=1.1, size=0.75, slot=sl, weapon='scatter', inv='deck_guns',
+        K.box('A17_barbette_%s1' % sl, 2.9, 3.6, min(side * 0.25, side * 0.95), max(side * 0.25, side * 0.95), 0.7, 1.78, 'iron', ch=0.1)
+        K.gun('%s1' % sl, (3.25, side * 0.6, 1.78), side * 40, 2, barrels=2, cal=0.08, blen=1.1, size=0.75, slot=sl, weapon='scatter', inv='deck_guns',
               note='neck block twin turret on a low barbette')
         K.gun('%s2' % sl, (-1.0, side * 1.4 + 0.1, 1.3), side * 25, 3, barrels=2, cal=0.08, blen=1.15, size=0.75, slot=sl, weapon='scatter', inv='deck_guns',
               variant=1, note='mid block twin turret, superfiring')
@@ -171,9 +174,9 @@ def build(K):
         for i, x in enumerate((3.3, 1.85, 0.2, -1.6, -3.4)):
             K.lamp('L%d%s' % (i, 'p' if side > 0 else 's'), (x, max(sy(x - 0.1, side), sy(x + 0.1, side), key=abs) + 0.02 * side, -0.88), (0, side, 0), inv='lamps')
         K.lamp('LH%s' % ('p' if side > 0 else 's'), (-3.4, 2.15 if side > 0 else -2.05, 1.18), (0, side, 0), inv='lamps')
-    K.hatchbox('HB1', (4.95, 0.0, 1.48), 0.35, 0.3, 0.12, inv='head_hatchboxes', note='framed box on the crown')
-    K.hatchbox('HB2', (5.55, 0.7, 1.26), 0.25, 0.25, 0.1, inv='head_hatchboxes', note='framed box on the brow, port')
-    K.hatchbox('HB3', (5.55, -0.7, 1.26), 0.22, 0.22, 0.1, inv='head_hatchboxes', note='framed box on the brow, starboard')
+    K.hatchbox('HB1', (4.95, 0.0, 1.98), 0.35, 0.3, 0.12, inv='head_hatchboxes', note='framed box on the crown')
+    K.hatchbox('HB2', (5.55, 0.85, 1.76), 0.25, 0.25, 0.1, inv='head_hatchboxes', note='framed box on the brow, port')
+    K.hatchbox('HB3', (5.55, -0.85, 1.76), 0.22, 0.22, 0.1, inv='head_hatchboxes', note='framed box on the brow, starboard')
     K.hatchbox('HB4', (0.35, 0.0, 1.2), 0.6, 0.55, 0.18, inv='hump_hatchboxes', note='framed box on the ramp block')
     K.hatchbox('HB5', (-1.6, 0.35, 1.3), 0.4, 0.45, 0.15, inv='hump_hatchboxes', note='framed box on the mid block')
     K.hatchbox('HB6', (-5.3, 1.1, 1.52), 0.35, 0.4, 0.14, inv='hump_hatchboxes', note='framed box on the aft block')
@@ -228,7 +231,7 @@ def build(K):
     K.change('The jaws are four long flat prongs with hooked tips, reaching forward from the lower bow like a fork', 'the concept\'s prongs; round 3\'s read as hands with fingers')
     K.change('Guns laid out as matched batteries by game slot', 'the picture scatters guns; scatter P and S are mirrored (a neck block turret, a mid block turret superfiring, a flank casemate per side), flak on the aft block and the belly, the rocket pod on the fore block')
     K.change('Engines are squat drums in two columns a side, exits level, no bell touching another', 'the concept\'s stacked cluster; the fit check found round 2\'s bells inside each other')
-    K.change('Ear dishes bolted to the tops of the scoop drums', 'as the concept shows them')
+    K.change('The head follows the beauty: a big, tall, boxy front block over the neck, big ear dishes standing out at its upper corners, broad flat prongs', 'the Board on round 3b: Ryan judges against the accepted picture, which draws the head larger than the round 8 sheet')
     K.change('Forward rocket pod, belly flak turret and four attitude thrusters added', 'data.js gives a forward rocket slot (torp F); the belly needs cover; a ship in space needs thrusters')
     K.change('Chains are taut girdles of real links in the gaps between blocks', 'a slack chain cannot drape in space (R185); the girdles sit on the break lines')
     K.change('Crystal shard removed', 'Ryan, R197')
@@ -237,8 +240,8 @@ def build(K):
     # ---------- the fit report's fix column (round 2 clashes) ----------
     K.fix('Engine bells E1 to E6 inside each other; E2 and E5 exhausts on their neighbours', 'two columns a side, exits level at -7.25, centres spaced by the sum of the bell radii plus the lip')
     K.fix('P2 and S2 barrels striking the hump at every aft bearing', 'the mid block turrets now stand on the block top and superfire; the blocks behind them are no taller than their barrels')
-    K.fix('P1 and S1 barrels through the ear dishes D1 and D2', 'the neck block turrets stand inboard of the drums; the ears are bolted to the drum tops, out of every arc')
-    K.fix('Ear dishes D1 and D2 had no mount on the hull', 'each dish is bolted to its scoop drum (a declared mount on another part)')
+    K.fix('P1 and S1 barrels through the ear dishes D1 and D2', 'the neck turrets stand inboard on barbettes high enough to fire over the head and the ears')
+    K.fix('Ear dishes D1 and D2 had no mount on the hull', 'each dish stands on an armoured bracket out from the head\'s upper corner')
     K.fix('Q1 and Q2 bow thrusters inside the scoop drums, their exhaust on the drum ribs', 'bow thrusters on the body flank behind the drums, firing clear outboard')
     K.fix('Jaw blades inside the hull and the jaw housing', 'four prongs, each hinged in its own housing in the mouth, the blades clear of the hull')
     K.fix('C2 girdle through the P2 and S2 turret rings', 'C2 runs in the gap between the mid and saddle blocks, clear of every ring')
