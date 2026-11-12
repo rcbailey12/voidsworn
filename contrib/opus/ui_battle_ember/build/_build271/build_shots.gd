@@ -152,6 +152,9 @@ func _run() -> void:
 			await process_frame
 			if bt.api.phase != "player":
 				break
+		# opus_check_544 condition 2: stop at the first enemy phase (waiting for idle here ran the whole battle to its end card)
+		if bt.api.phase != "player" or bt.ended:
+			break
 		await us._idle()
 		if bt.api.phase == "player" and bt.sel == "":
 			bt._next_ship()

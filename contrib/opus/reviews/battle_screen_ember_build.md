@@ -14,7 +14,7 @@ right, the last three log lines bottom right. hud.gd keeps the battle's whole HU
 sheet; the menu, the end card, the tip card, hover tips, banners, toasts and floats are restyled in the same look (near-black
 square boxes with a hairline edge, Big Shoulders titles, the ember outline for a dialog's one action).
 
-- No panels: a smooth veil from the left (94%, full under the words, fading by 45% of the width) and two soft dark corners.
+- No panels: a smooth veil from the left (94%, full under the words, fading by 30% of the width or just past the sheet, whichever is further; R218 narrowed it from 45%) and two soft dark corners. The sheet is 380 px wide at 1080 from a 40 px margin (R218: about a fifth of the screen, was 560 px).
 - One box: the 56 px ember action ("FIRE THE OATH LANCE Enter"), filled ember under the pointer.
 - Names on the board: the ship that is up (ember) and the target (red if it is the Nemesis); a hovered ship and the enemy
   acting now while they are; every other name on hover. No bars, strips or tags on the board.
@@ -103,7 +103,7 @@ the shield plan; nothing lime in any visible control. It also proves each functi
 every order, Turn Q and E, Next ship, Command, End ship, every fleet line, Menu, Log, the prompt's two choices), that a click
 on the action sends the battle's confirm, that clicks on the sheet stay off the board and clicks in the clear part reach it.
 
-How the fleet fits: lines at 36 px (34 when tight). With the target moment's three-gun ship, 5 lines fit at 1080; past
+How the fleet fits: lines at 36 px (34 when tight). With the target moment's three-gun ship, 3 of 3 lines show at 1080; past
 that the ship that is up and the ships still to act keep their lines and the rest fold into "and N more" (hover lists every
 ship with its hull; Tab and the board still reach them). A very full sheet (six guns and every order) first folds the guns
 that cannot fire into one line, then the fleet becomes one summary line ("Fleet 20 ships, 9 to act").
@@ -124,20 +124,15 @@ signatures, but the prompt now draws in the shot's place in the sheet instead of
 resolved in favour of the sheet). battle.gd's PR 533 code (keys 1 to 3, the click guard, `_on_action("ask")`, the role
 order) works unchanged against it; tree_prompt_test, wing_cancel_test and the readability check's prompt moment pass.
 
-## Pictures (docs/shots/ui_battle_ember/build/): NOT YET MADE
+## Pictures (docs/shots/ui_battle_ember/build/)
 
-Blocked on Ryan's PC: its disk was full when the capture job started (Nov 11 19:39 CST; robocopy error 112, "There is not
-enough space on the disk", from the first file, before this job had written anything but a shallow clone of main into
-opus271b2\main). Nothing was deleted. Once there is room, queue opus271b2\b271_job1.bat again (or a copy under a new name)
-and run make_build_pictures.py on opus271b2\out. Main now has PR 533, so the before of the prompt moment is captured too.
-
-### When made
-
-
-before_* and after_* for three moments: 1_target (your turn with a target), 2_prompt (a "you may" prompt; the before is PR
-533's own picture, main having no prompt), 3_enemy (the enemy's turn). 1280 wide, the code name on a strip under the picture,
-none taller than 720 px; the 1080 frames in full_1080/. Made by contrib/opus/ui_battle_ember/build/ (build_shots.gd on the PC
-through build271_shots.bat, then make_build_pictures.py), seed 7, the Nemesis demo battle, the same steps in both builds.
+Made on Ryan's PC (RTX 5080, 1920x1080, real hulls) after the disk was cleared, by build271_shots via b271_job2.bat into
+opus271b2\out5 at head c7a36bb1 (the narrowed sheet, R218), then make_build_pictures.py. before_* and after_* for three
+moments: 1_target (your turn with a target), 2_prompt (a "you may" prompt; the before is main's own prompt since PR 533),
+3_enemy (the enemy's turn). 1280 wide strips (the whole frame, never cropped) with the code name under them, none taller than
+720 px; the 1080 frames in full_1080/. Seed 7, the Nemesis demo battle, the same steps in both builds. The third moment
+first landed on the battle-over card (the shot script waited for idle and ran the battle to its end); the script now stops
+at the first enemy phase (opus_check_544 condition 2) and the third pair is retaken.
 
 ## Tests run
 
@@ -150,6 +145,8 @@ through build271_shots.bat, then make_build_pictures.py), seed 7, the Nemesis de
 ## For the Board and Ryan
 
 - Ryan's defaults block (ui_spec.md 7.5) is unchanged by this job; the E1 values that sit beside it are in the report.
-- The fleet at the foot shows 5 lines at most at the target moment; a 20-ship fleet folds the rest. If Ryan wants every
-  ship always listed, the next option is a second column or a fleet page on F.
+- The fleet at the foot shows its first ships (at least two lines on the narrower sheet) and folds the rest into "and N
+  more" with a hover that lists them; Ryan said this is fine (R220, RULEBOOK 9.14).
+- The old lime shell is still built inside a node that is never shown, because ui_shots.gd, f1_trace.gd, bench/scene_gate.gd
+  and story_beat3_test read it. The Board accepts it as tracked debt (opus_check_544 condition 4); its removal is its own job.
 - Muse's outside check (issue 256) before merge, per the brief.

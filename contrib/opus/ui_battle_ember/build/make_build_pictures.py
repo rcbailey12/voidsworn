@@ -26,10 +26,10 @@ def font(repo, size):
 
 def picture(src, text, repo, dst):
     img = Image.open(src).convert("RGB")
-    img = img.resize((1280, round(img.height * 1280 / img.width)), Image.LANCZOS)
-    img = img.crop((0, 0, 1280, min(img.height, 676)))   # 676 + the 44 px strip = 720
+    # the whole frame, never cropped (opus_check_544: a crop sliced the fleet list): scaled to 676 tall, centred, + the 44 px strip = 720
+    img = img.resize((round(img.width * 676 / img.height), 676), Image.LANCZOS)
     out = Image.new("RGB", (1280, img.height + 44), (8, 8, 8))
-    out.paste(img, (0, 0))
+    out.paste(img, ((1280 - img.width) // 2, 0))
     ImageDraw.Draw(out).text((16, img.height + 5), text, font=font(repo, 30), fill=(255, 138, 58))
     out.save(dst, quality=90)
     return out.size
