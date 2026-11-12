@@ -63,7 +63,12 @@ The rest of this page is the Nov 11 morning design; where it disagrees with the 
    matter is the faction's.
 
 Recipe ships carry authored interiors and weak joints in the GLB (`RECIPE.md`, stage 7, issue 557). The fracture prefers
-those joints with the current ragged tear, bite and chips; wounds and pieces expose the authored rooms. A ship without
+those joints with the current ragged tear, bite and chips; wounds and pieces expose the authored rooms. Issue 600 (RULEBOOK
+5.17): the tear follows each seam's authored plan path from the export, torn by waves, never a straight slice; every
+machine rides whole with its piece (its box comes from the export); and the plating and the insides under it tear at the
+same ragged line (triangles across the tear are split along it, the narrow strip it runs through is blown away), so no
+deck or bulkhead is left whole across a break or sticks out of the wreck. `fx/test/death_seam_check.gd` kills A16 and
+counts both: zero. A ship without
 that record keeps the #167 fallback. Main wreck bodies retain their split altitude (linear Y lock, zero Y release
 velocity), while tumbling freely, so physics cannot push the readable wreck under the board. This does not constrain all
 small fragments; `death_plane_check.gd` protects the existing behavior.
