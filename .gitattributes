@@ -1,0 +1,11 @@
+# Line endings are set once here, not in each clone or runner (issue 357).
+# A plain clone on the PC must read the same bytes as the oracle: LF for the
+# code and data the rules and Godot read, CRLF for Windows batch files because
+# cmd needs them. core.autocrlf is not consulted for these paths.
+*.js   text eol=lf
+*.gd   text eol=lf
+*.json text eol=lf
+*.sh   text eol=lf
+*.md   text eol=lf
+*.py   text eol=lf
+*.bat  text eol=crlf
