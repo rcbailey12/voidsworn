@@ -131,21 +131,28 @@ def build(K):
         K.tube(fi, (6.35, y, -0.42), r, 2.1, grille=True, bands=4, inv='scoops', what='scoop drum with a grille',
                note='%s scoop drum on the head flank%s' % ('port' if side > 0 else 'starboard', ', the larger' if side > 0 else ''))
         # the ears (the beauty): big dishes, about the head's height across, standing out from brackets at the head's upper corners
-        # Board on PR 611 (R207): the concept's ears are smaller bowls (a little under the face's height across) set lower on
-        # the head's shoulders, turned forward and outward
+        # Board on PR 611 (R207, R229): measured on the whole beauty (not the bow crop), each ear is about three quarters of
+        # the head's flank height across (1.6), set low on the head's shoulders, turned forward and outward
         K.mass('Ear bracket %s' % ('port' if side > 0 else 'starboard'),
-               K.box('A17_ear_bracket_%d' % (1 if side > 0 else 2), 4.55, 5.25, min(side * 1.5, side * 2.45), max(side * 1.5, side * 2.45), 0.08, 0.34, 'iron', ch=0.06),
+               K.box('A17_ear_bracket_%d' % (1 if side > 0 else 2), 4.35, 5.15, min(side * 1.5, side * 2.75), max(side * 1.5, side * 2.75), 0.06, 0.3, 'iron', ch=0.06),
                'iron', note='bracket out from the head\'s shoulder')
-        K.dish('D%d' % (1 if side > 0 else 2), (4.9, 2.2 * side, 0.34), 0.62, yaw=40 * side, pitch=8, post=1.1, inv='ears',
+        K.dish('D%d' % (1 if side > 0 else 2), (4.75, 2.4 * side, 0.3), 0.8, yaw=40 * side, pitch=8, post=1.1, inv='ears',
                note='%s ear, a listening dish on the head\'s shoulder, turned forward and outward' % ('port' if side > 0 else 'starboard'))
+    # R229 (Ryan, Nov 12: "the front claws or grabbers are coming out differently ... more like 4 independent prongs"; the
+    # bow crop had cut them off): four articulated grabber arms, a pair a side as in the whole beauty and the sheet's side
+    # view: an upper arm and a lower arm from under the jaw, each two segments with a knuckle and rams, running forward and
+    # down; their forked pincers close toward each other (the upper hooks down, the lower up) to pin a hull for boarding
     for side, fi, fo in ((1, 'J1', 'J3'), (-1, 'J2', 'J4')):
         s_ = 'port' if side > 0 else 'starboard'
-        K.prong(fi, (4.4, 0.7 * side, -1.32), 2.6, width=0.7, thick=0.09, hook=0.3, yaw=-3 * side, droop=0.06, inv='jaws',
-                housing=(3.95, 4.6, 0.7 * side - 0.4, 0.7 * side + 0.4, -1.52, -1.17), note='%s lower prong, a long flat blade with a hooked tip' % s_)
-        K.prong(fo, (4.55, 1.34 * side, -1.0), 2.3, width=0.55, thick=0.08, hook=0.26, yaw=-2 * side, droop=0.14, inv='jaws',
-                housing=(4.15, 4.85, 1.34 * side - 0.3, 1.34 * side + 0.3, -1.14, -0.86), note='%s upper prong, over and outboard of the lower' % s_)
+        K.claw_arm(fi, (4.35, 0.55 * side, -1.45), [(5.45, 0.6 * side, -1.88), (6.3, 0.74 * side, -1.74)], w=0.54, hook=-1.0, fork=0.3,
+                   inv='jaws', housing=(3.95, 4.5, 0.55 * side - 0.36, 0.55 * side + 0.36, -1.68, -1.2),
+                   note='%s lower grabber arm: shoulder under the jaw, knuckle low and forward, pincer hooking up' % s_)
+        K.claw_arm(fo, (4.6, 1.52 * side, -1.3), [(5.6, 1.58 * side, -1.56), (6.4, 1.38 * side, -1.56)], w=0.48, hook=1.0, fork=0.3,
+                   inv='jaws', housing=(4.15, 4.8, 1.52 * side - 0.32, 1.52 * side + 0.32, -1.5, -1.08),
+                   note='%s upper grabber arm: over and outboard of the lower, pincer hooking down' % s_)
+    # the hoses feed the arms' rams from the jaw machinery, over the arm shoulders into the body's front face (R229)
     for i, y in enumerate((0.15, 0.0, -0.15)):
-        K.pipe('PH%d' % i, [(6.0, y, -0.6), (5.1, y, -0.72), (4.4, y, -1.1), (3.6, y, -1.72)], r=0.045, inv='jaw_pipes')
+        K.pipe('PH%d' % i, [(6.0, y, -0.6), (5.1, y, -0.72), (4.55, y, -0.92), (3.95, y, -0.98)], r=0.045, inv='jaw_pipes')
 
     # chains cut (R221: Ryan, "there's no purpose"; every part has a job, ships.md 2c)
 
@@ -201,9 +208,9 @@ def build(K):
     K.deck_box('head', 0.0, 4.4, 5.9, 0.75)
     for i, x in enumerate((5.4, 4.0, 2.05, 0.8, -1.9, -4.7)):  # F2 off the B-1 seam station (a bulkhead face on the tear)
         K.bulkhead('F%d' % i, x)
-    K.room('jaw_machinery', 'machinery', 4.45, 5.6, -0.75, 0.75, -0.6, -0.1, note='prong rams and winches over the mouth')
+    K.room('jaw_machinery', 'machinery', 4.45, 5.6, -0.75, 0.75, -0.6, -0.1, note='grabber arm rams and winches over the mouth')
     K.room('listening_bridge', 'bridge', 4.5, 5.7, -0.7, 0.7, 0.05, 0.55, note='listening room and bridge in the head')
-    K.room('boarding_kennels', 'crew', 2.5, 3.9, -1.6, 1.6, -1.45, -0.88, note='boarding gangs behind the prongs')
+    K.room('boarding_kennels', 'crew', 2.5, 3.9, -1.6, 1.6, -1.45, -0.88, note='boarding gangs behind the grabbers')
     K.room('loot_hold', 'hold', 0.85, 2.4, -1.7, 1.7, -1.45, -0.88, note='neck hold')
     K.room('rocket_magazine', 'magazine', 1.05, 2.0, -0.6, 0.6, 0.34, 0.7, note='under the rocket pod, in the fore block')
     K.room('crew_decks', 'crew', -1.65, -0.55, -1.3, 1.5, 0.34, 1.05, note='in the mid block')
@@ -216,7 +223,7 @@ def build(K):
     K.armour('top blocks', 0.2, '')
     K.armour('belly', 0.25, 'flat armoured belly, the band stepping in')
     K.armour('engine end', 0.15, 'thinnest')
-    K.break_line('B-1', 2.45, 'the neck seam behind the neck turrets: the head and prongs tear off, opening the kennels and the hold',
+    K.break_line('B-1', 2.45, 'the neck seam behind the neck turrets: the head and grabbers tear off, opening the kennels and the hold',
                  path=[(2.6, 0.78), (2.2, 0.2), (2.7, -0.4), (2.25, -1.0), (2.65, -1.6)])
     # R226 (RULEBOOK 5.17): the seam runs along the weld between the saddle and aft blocks, kinked round the antennas AN1 and
     # AN2 ahead of it and the aft twin T1 and the stern thrusters Q3 and Q4 behind it, so every machine rides whole
@@ -238,7 +245,7 @@ def build(K):
     K.change('Long and low, to the concept\'s measured proportions', 'the Board on round 3: the build was short, tall and round; the hull is now length to beam 2.75 and length to height about 4 like the round 8 sheet, at the data.js length')
     K.change('The body is stacked angular blocks: a base hull, flank blocks, six top blocks stepping up toward the stern with gaps and undercuts', 'the concept\'s dense stack of armoured blocks; round 3 was one smooth body with plates stuck on')
     K.change('The head is narrow, chamfered and stepped, a face overhanging a cut-in jaw mouth, the scoop drums on its flanks', 'Ryan R217: "the front is also just a flat block"')
-    K.change('The jaws are four long flat prongs with hooked tips, reaching forward from the lower bow like a fork', 'the concept\'s prongs; round 3\'s read as hands with fingers')
+    K.change('The jaws are four articulated grabber arms (two segments, knuckles, rams, forked pincers), a pair a side closing toward each other', 'Ryan, R229: the round 3b flat prongs came from a bow crop that cut the grabbers off; the whole beauty and the sheet\'s side view show jointed arms (new kit part claw_arm)')
     K.change('Guns laid out as matched batteries by game slot', 'the picture scatters guns; scatter P and S are mirrored (a neck block turret, a mid block turret superfiring, a flank casemate per side), flak on the aft block and the belly, the rocket pod on the fore block')
     K.change('Engines are squat drums in two columns a side, exits level, no bell touching another', 'the concept\'s stacked cluster; the fit check found round 2\'s bells inside each other')
     K.change('The head follows the beauty: a big, tall, boxy front block over the neck, big ear dishes standing out at its upper corners, broad flat prongs', 'the Board on round 3b: Ryan judges against the accepted picture, which draws the head larger than the round 8 sheet')
@@ -248,7 +255,7 @@ def build(K):
     K.change('Crystal shard removed', 'Ryan, R197')
     K.change('The face is a narrower panel inside a deep bevel frame (corner and brow planes plated), with a lower lip over the mouth',
              'Ryan R217 on A17: "the front is also just a flat block which does not match the concept"; the beauty\'s head is chamfered all round, not a flat end (A17 build, issue 532)')
-    K.change('Ear dishes smaller (1.24 across, was 1.9), lower on the head\'s shoulders, turned forward and outward, rusted grey', 'the Board on PR 611 (R207): the concept\'s ears are plain bowls a little under the face\'s height, not big white discs at the head\'s top corners (A17 build, issue 532)')
+    K.change('Ear dishes 1.6 across (were 1.9), lower on the head\'s shoulders, turned forward and outward, rusted grey', 'the Board on PR 611 (R207, R229): measured on the whole beauty, each ear is about three quarters of the head\'s flank height across and sits at the rear of the head\'s shoulder; not a white disc high on the top corner (A17 build, issue 532)')
     K.change('Neck block raised from 0.78 to 1.12', 'in the beauty the deck behind the head steps down only a little; at 0.78 the head stood on the neck like a separate box (A17 build, issue 532)')
     K.change('Aft seam B-2 moved forward to the weld between the saddle and aft blocks, kinked round the antennas, T1 and the stern thrusters',
              'R226 (RULEBOOK 5.17): a machine never crosses a seam; at -4.75 the seam cut T1, Q3 and Q4 (A17 build, issue 532)')

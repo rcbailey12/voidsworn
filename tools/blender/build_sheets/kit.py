@@ -608,6 +608,18 @@ class Kit:
         self.features.append(dict(id=fid, kind='claw', what='%s, %d segments, %d fingers' % (name, len(pts), fingers), count=1,
                                   pos=tuple(h), aim=(0.0, -60.0), src=src, note=note, tip=tuple(part.fit['tip'][1]), inv=[inv] if isinstance(inv, str) else list(inv)))
 
+    def claw_arm(self, fid, shoulder, pts, w=0.42, hook=1.0, fork=0.45, src='picture', note='', inv=(), housing=None):
+        """an articulated grabber arm from the kit (R229): shoulder hinge at `shoulder` (axis across the ship), knuckles
+        through pts (world), a forked pincer at the last point curling toward hook (+1 down, -1 up). housing (x0, x1, y0,
+        y1, z0, z1): the armoured box the shoulder bracket bolts into, part of the arm's mount"""
+        h = Vector(shoulder)
+        if housing:
+            self.box(fid + '_housing', *housing, 'steel', ch=0.08, grp=fid).__setitem__('role', 'mount')
+        part = HP.claw_arm([Vector(q) - h for q in pts], w=w, hook=hook, fork=fork)
+        part = self.emit(fid, part, Matrix.Translation(h), inv, keep_r=w)
+        self.features.append(dict(id=fid, kind='claw', what='grabber arm, %d segments, knuckles, rams, forked pincer' % len(pts), count=1,
+                                  pos=tuple(h), aim=(0.0, 0.0), src=src, note=note, tip=tuple(part.fit['tip'][1]), inv=[inv] if isinstance(inv, str) else list(inv)))
+
     def prong(self, fid, root, length, width=0.4, thick=0.12, hook=0.35, yaw=0.0, droop=0.0, joints=2, src='picture', note='', inv=(),
               housing=None):
         """a long flat jaw prong from the kit, hinged at root, reaching forward (yaw toward port +)"""

@@ -142,6 +142,8 @@ global learning and shaping the approach". So the method, for every ship of ever
   lump). The sheet reports the concept's and the build's length to beam to height ratios, and the per-cell table adds a
   structure count: distinct masses, tiers and steps per cell, concept against build. A part list that passes over the wrong
   massing is not a pass.
+- Build and judge from the whole concept and every sheet view first. A crop is only for close comparison after the whole
+  view matches (R229, Ryan Nov 12: the A17 grabbers were lost to a bow crop).
 - The builder never grades its own sheet alone: the Board (or another model) judges the side-by-side before Ryan sees it
   (RULEBOOK 2.2, R219).
 
