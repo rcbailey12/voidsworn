@@ -32,6 +32,7 @@ var mounts = {}                    # "port", "stb", "top" -> Array of {p, n}
 var tri_count = 0
 var authored := false
 var seams: Array = []             # version 1, transformed into this hull analysis frame
+var machines: Array = []          # issue 600: {name, kind, box (AABB)} from the export, in this hull analysis frame
 var _rng = RandomNumberGenerator.new()
 var stb_z = 1.0                    # +1: root +Z is starboard (G2), -1: +Z is port
 # the attach point service (issue 370)
@@ -390,6 +391,7 @@ static func interior_material(mat: Material) -> bool:
 func _authored(root: Node3D) -> void:
 	authored = false
 	seams.clear()
+	machines.clear()
 	var nodes: Array = [root]
 	nodes.append_array(root.find_children("*", "Node3D", true, false))
 	for nd in nodes:
@@ -411,7 +413,27 @@ func _authored(root: Node3D) -> void:
 				"n": (xf.basis.inverse().transposed() * Vector3(n[0], n[1], n[2])).normalized()}
 			if seam.has("span"):
 				row["span"] = [ (xf * Vector3(seam["span"][0], 0, 0)).x, (xf * Vector3(seam["span"][1], 0, 0)).x ]
+			# issue 600 (R226): a transverse seam's plan path, [x, z] points in the GLB ship frame; the death cut follows it
+			var path = seam.get("path", [])
+			if path is Array and path.size() >= 2 and not seam.has("span"):
+				var pp := PackedVector2Array()
+				for q in path:
+					var w: Vector3 = xf * Vector3(float(q[0]), 0.0, float(q[1]))
+					pp.append(Vector2(w.x, w.z))
+				if pp[pp.size() - 1].y < pp[0].y: pp.reverse()   # always from -z to +z
+				row["path"] = pp
 			seams.append(row)
+		# issue 600 (R226, RULEBOOK 5.17): each machine's box (gun, turret ring, engine, claw, mast...), so the death rides it
+		# whole with one piece. Boxes go through the node transform as eight corners.
+		for m in contract.get("machines", []):
+			var lo: Array = m.get("lo", [])
+			var hi: Array = m.get("hi", [])
+			if lo.size() != 3 or hi.size() != 3: continue
+			var bb := AABB()
+			for k in 8:
+				var p := Vector3(float(hi[0] if k & 1 else lo[0]), float(hi[1] if k & 2 else lo[1]), float(hi[2] if k & 4 else lo[2]))
+				bb = AABB(xf * p, Vector3.ZERO) if k == 0 else bb.expand(xf * p)
+			machines.append({"name": str(m.get("name", "")), "kind": str(m.get("kind", "")), "box": bb})
 		authored = not seams.is_empty()
 		return
 

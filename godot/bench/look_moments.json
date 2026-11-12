@@ -1648,6 +1648,45 @@
    "key": 6
   },
   {
+   "id": "d_a16_barge",
+   "group": "deaths",
+   "label": "death, authored insides (issue 600): Hullbreaker battle-barge A16 (C19_51), torpedo kill (big)",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "corsair",
+    "Battle-barge"
+   ],
+   "do": "death",
+   "cause": "big",
+   "focus": "target",
+   "windows": [
+    [
+     "split",
+     0.3,
+     1
+    ],
+    [
+     "split",
+     1.5,
+     1
+    ],
+    [
+     "split",
+     3.0,
+     1
+    ],
+    [
+     "event",
+     8.0,
+     1
+    ]
+   ],
+   "key": 2
+  },
+  {
    "id": "k_macro_frigate",
    "group": "one weapon, every weight",
    "label": "macro battery (Sunward battleship) on an Eclipse frigate",
