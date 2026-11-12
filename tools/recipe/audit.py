@@ -29,12 +29,16 @@ for g in json.loads(sc.get('r209_guns', '[]')):        # (name, aim) or (name, a
     guns.append((g[0], Vector(g[1]), Vector(g[2]) if len(g) > 2 and g[2] is not None else None))
 fail = []
 L_LINE = tuple(sc.get('r209_l_line', ()))
+# issue 618: a build sheet may author several longitudinal seams (r209_l_lines, JSON, the contract's home for them); an older
+# build has at most the one r209_l_line
+L_LINES = [tuple(v) for v in json.loads(sc['r209_l_lines'])] if 'r209_l_lines' in sc else ([L_LINE] if L_LINE else [])
 if 'r209_t_lines' not in sc:
     fail.append('the build has no break lines of its own (r209_t_lines); the audit will not fall back to an older hull\'s')
 elif not len(sc['r209_t_lines']):
     fail.append('the build\'s break lines are empty (r209_t_lines): an empty list tests no break line')
-if L_LINE and (len(L_LINE) != 3 or not L_LINE[1] < L_LINE[2]):
-    fail.append(f'the build\'s longitudinal seam r209_l_line is not one [z, x0, x1] with x0 below x1: {list(L_LINE)}')
+for ll in L_LINES:
+    if len(ll) != 3 or not ll[1] < ll[2]:
+        fail.append(f'the build\'s longitudinal seam is not one [z, x0, x1] with x0 below x1: {list(ll)}')
 if not hull: fail.append('no hull object (role hull) in the build')
 if not guns: fail.append('no guns recorded (r209_guns is empty)')
 else:
@@ -44,8 +48,8 @@ if fail:
     au = dict(result='FAIL', failures=fail, problems=[], crossing_break_lines=[], guns=len(guns), guns_with_normals=sum(g[2] is not None for g in guns))
 else:
     T_PATHS = json.loads(sc.get('r209_t_paths', 'null')) or None      # a seam's plan path, written by the build sheet contract
-    au = PB.audit(hull, parts, guns, t_lines=tuple(sc['r209_t_lines']), l_line=L_LINE, t_paths=T_PATHS)
-    au['guns'] = len(guns); au['break_lines'] = dict(t_lines=list(sc['r209_t_lines']), l_line=list(L_LINE))
+    au = PB.audit(hull, parts, guns, t_lines=tuple(sc['r209_t_lines']), l_line=L_LINE, t_paths=T_PATHS, l_lines=L_LINES)
+    au['guns'] = len(guns); au['break_lines'] = dict(t_lines=list(sc['r209_t_lines']), l_line=list(L_LINE), l_lines=[list(v) for v in L_LINES])
     au['result'] = 'FAIL' if (au['problems'] or au['crossing_break_lines']) else 'PASS'
 json.dump(au, open(out, 'w'), indent=1)
 print('[audit]', json.dumps(au)[:2000], flush=True)

@@ -13,12 +13,14 @@
 #   hull and parts            role 'hull' (masses, plates); every other     unchanged: export7 joins role 'hull' as the hull
 #                             role is a part (mount, turn, body, ...)       surface and everything else but interiors as parts
 #   seams                     K.break_line rows: kind 'trans' at x, with    scene r209_t_lines (x), r209_t_paths (JSON: the plan
-#                             its plan path of (x, y) across the beam;      path of each, or null) and r209_l_line ([z, x0, x1]
-#                             kind 'long' along a path of (x, z)            or [] when the sheet authors no longitudinal seam)
+#                             its plan path of (x, y) across the beam;      path of each, or null), r209_l_lines (JSON: one
+#                             kind 'long' along a path of (x, z), any       [z, x0, x1] per longitudinal seam, each inside one
+#                             number, each in one compartment               compartment) and r209_l_line (the first, or [])
 #   part kinds                each part's objects: part_kind and machine    unchanged: the stage 4 audit reads machine (R226)
 #                             (the faction kit's MACHINES)
 #   gun and launcher mounts   kit fit records (muzzles, barrel aim, bore,  scene r209_hp muzzles (slot = the data.js index of the
-#                             mount normal, slot letter and weapon)         sheet's weapon and arc) and r209_guns (aim, normal)
+#                             mount normal, slot letter and weapon)         sheet's weapon and arc; a pair listed twice is dealt
+#                                                                           in build order, slot_map) and r209_guns (aim, normal)
 #   turrets                   pivot empties <id>_turret, turning meshes     unchanged hierarchy; the pivot's slot letter becomes
 #                             as children (R219)                            the data.js slot index
 #   engines                   K.engine: the bell exit centre and radius     scene r209_hp engines (aft, the open bell's centre)
@@ -50,12 +52,25 @@ def _bbox(objs):
     return lo, hi
 
 
-def slot_index(weapons, letter, weapon, fid):
-    """the data.js slot of a sheet gun: its weapon and arc letter must name exactly one entry of the ship's weapon list"""
-    hits = [i for i, (wk, arc) in enumerate(weapons) if wk == weapon and arc == letter]
-    if len(hits) != 1:
-        raise ContractError(f'{fid}: weapon {weapon!r} arc {letter!r} names {len(hits)} slots of the data.js list {weapons}')
-    return hits[0]
+def slot_map(weapons, mounts):
+    """the data.js slot of every sheet gun and launcher, mounts = [(id, arc letter, weapon)] in the sheet's build order.
+    A weapon and arc that name one slot give it to every mount of that pair (a battery of several guns fires as one slot).
+    A pair that data.js lists more than once (issue 618: Eclipse d_boss and d_harvester carry 'gauss T' twice) deals its
+    mounts over those slots in build order, the first mounts to the first slot, so each slot gets its own guns; fewer mounts
+    than slots is refused by name. A pair data.js does not list is refused by name."""
+    out = {}; groups = {}
+    for fid, letter, weapon in mounts:
+        groups.setdefault((weapon, letter), []).append(fid)
+    for (weapon, letter), fids in groups.items():
+        hits = [i for i, (wk, arc) in enumerate(weapons) if wk == weapon and arc == letter]
+        if not hits:
+            raise ContractError(f'{fids[0]}: weapon {weapon!r} arc {letter!r} names 0 slots of the data.js list {weapons}')
+        if len(fids) < len(hits):
+            raise ContractError(f'{", ".join(fids)}: weapon {weapon!r} arc {letter!r} names {len(hits)} slots of the data.js list {weapons} '
+                                f'but the sheet mounts only {len(fids)}')
+        for k, fid in enumerate(fids):
+            out[fid] = hits[k * len(hits) // len(fids)]
+    return out
 
 
 def _scale_scene(sc, s):
@@ -105,32 +120,39 @@ def to_recipe(K, ship):
     trans = sorted((r for r in breaks if r.get('orient', 'trans') == 'trans'), key=lambda r: r['x'])
     t_lines = [r['x'] * s for r in trans]
     t_paths = [[[px * s, py * s] for px, py in r['path']] if r.get('path') else None for r in trans]
+    # longitudinal seams (issue 618, R225 (c)): a ship may author several, each inside one transverse compartment, because the
+    # game weakens the compartment its span sits in (fx_death.gd: every span seam, the compartment of its midpoint); one that
+    # runs across a transverse seam would weaken two pieces at once, so it is refused by name
     longs = [r for r in breaks if r.get('orient') == 'long']
-    if len(longs) > 1:
-        raise ContractError(f'{len(longs)} longitudinal seams ({", ".join(r["name"] for r in longs)}): format version 1 holds one')
-    l_line = []
-    if longs:
-        pts = longs[0].get('path') or []
-        if len(pts) < 2: raise ContractError(f'longitudinal seam {longs[0]["name"]} has no path of (x, z) points')
-        l_line = [sum(p[1] for p in pts) / len(pts) * s, min(p[0] for p in pts) * s, max(p[0] for p in pts) * s]
+    l_lines = []
+    for r in longs:
+        pts = r.get('path') or []
+        if len(pts) < 2: raise ContractError(f'longitudinal seam {r["name"]} has no path of (x, z) points')
+        z, x0, x1 = sum(p[1] for p in pts) / len(pts), min(p[0] for p in pts), max(p[0] for p in pts)
+        cut = [t['name'] for t in trans if x0 < t['x'] < x1]
+        if cut: raise ContractError(f'longitudinal seam {r["name"]} ({x0} to {x1}) runs across the transverse seam {", ".join(cut)}: one compartment each')
+        l_lines.append([z * s, x0 * s, x1 * s])
+    l_lines.sort(key=lambda v: v[1])
+    l_line = list(l_lines[0]) if l_lines else []   # the first, for the older readers of one seam (render.py, the bake); r209_l_lines is the home
     if not t_lines: raise ContractError('the sheet authors no transverse seam')
-    sc['r209_t_lines'] = t_lines; sc['r209_l_line'] = l_line; sc['r209_t_paths'] = json.dumps(t_paths)
+    sc['r209_t_lines'] = t_lines; sc['r209_l_line'] = l_line; sc['r209_l_lines'] = json.dumps(l_lines); sc['r209_t_paths'] = json.dumps(t_paths)
 
     # gun and launcher mounts, engines
     feats = {f['id']: f for f in K.features}
+    slots = slot_map(weapons, [(fd['id'], fd['slot'], feats.get(fd['id'], {}).get('weapon')) for fd in K.fitdata if fd['kind'] in ('gun', 'launcher')])
     hp = dict(muzzles=[], engines=[], bays=[]); guns = []
     for fd in K.fitdata:
         fid = fd['id']; f = feats.get(fid, {})
         if fd['kind'] == 'gun':
             if 'aim' not in fd: raise ContractError(f'{fid}: the kit recorded no barrel aim')
-            slot = slot_index(weapons, fd['slot'], f.get('weapon'), fid)
+            slot = slots[fid]
             part = 'casemate' if fd.get('mount') == 'casemate' else 'turret'
             for i, m in enumerate(fd['muzzles']):
                 hp['muzzles'].append(dict(name=f'{fid}_{i}', socket=fid, tip=P(m), aim=list(fd['aim']), normal=list(fd['up']),
                                           radius=float(fd.get('bore', 0)) * s, slot=slot, part=part))
             guns.append([fid, list(fd['aim']), list(fd['up'])])
         elif fd['kind'] == 'launcher':
-            slot = slot_index(weapons, fd['slot'], f.get('weapon'), fid)
+            slot = slots[fid]
             ap = fd['apertures']; aim = list(ap[0]['dir'])
             for i, e in enumerate(ap):
                 hp['muzzles'].append(dict(name=f'{fid}_{i}', socket=fid, tip=P(e['pos']), aim=list(e['dir']), normal=[0.0, 0.0, 1.0],
@@ -155,10 +177,11 @@ def to_recipe(K, ship):
     pivots = [o for o in sc.objects if o.type == 'EMPTY' and o.get('turret')]
     for pv in pivots:
         fid = pv.name[:-len('_turret')] if pv.name.endswith('_turret') else pv.name
-        pv['slot'] = slot_index(weapons, str(pv.get('slot')), str(pv.get('weapon')), fid); pv['socket'] = fid
+        if fid not in slots: raise ContractError(f'turret {pv.name} has no gun record in the sheet')
+        pv['slot'] = slots[fid]; pv['socket'] = fid
 
     sc['r209_length_world'] = float(K.length); sc['r209_sheet'] = K.code; sc['r209_scale'] = s
-    return dict(sheet=K.code, model_length=round(L, 5), scale=s, length_world=K.length, t_lines=[round(x, 5) for x in t_lines], l_line=l_line,
+    return dict(sheet=K.code, model_length=round(L, 5), scale=s, length_world=K.length, t_lines=[round(x, 5) for x in t_lines], l_line=l_line, l_lines=l_lines,
                 muzzles=len(hp['muzzles']), guns=len(guns), engines=len(hp['engines']), bays=len(hp['bays']), points=len(pts),
                 turrets=sorted(pv.name for pv in pivots), interior_objects=sum(o.get('role') == 'interior' for o in sc.objects),
-                slots={f'{wk} {arc}': i for i, (wk, arc) in enumerate(weapons)})
+                slots=[f'{i} {wk} {arc}' for i, (wk, arc) in enumerate(weapons)])

@@ -102,15 +102,17 @@ hull_src = [o for o in src if o.get('role') == 'hull']; part_src = [o for o in s
 if not hull_src: die('no hull in this blend')
 if not any(o.get('role') == 'interior' for o in src): die('no authored interior in this blend')
 if not sc.get('r209_t_lines'): die('no authored break seams in this blend')
-longitudinal = list(sc.get('r209_l_line', []))
-if longitudinal and len(longitudinal) != 3: die('invalid authored longitudinal break seam')
+# issue 618: a build sheet may author several longitudinal seams, each in one compartment (r209_l_lines, the contract's home);
+# an older build has at most the one r209_l_line
+longitudinal = json.loads(sc['r209_l_lines']) if 'r209_l_lines' in sc else ([list(sc['r209_l_line'])] if list(sc.get('r209_l_line', [])) else [])
+if any(len(v) != 3 for v in longitudinal): die('invalid authored longitudinal break seam')
 # Version 1 is defined in RECIPE.md stage 7. Store geometry and seams together in the GLB.
 T_PATHS = json.loads(sc.get('r209_t_paths', 'null')) or [None] * len(sc['r209_t_lines'])
 # a transverse seam's plan path (R226: it kinks round machines), when the build has one: [x, z] points in the GLB ship frame
 seams = [dict(p=[float(x), 0, 0], n=[1, 0, 0], **({'path': [[float(px), float(-py)] for px, py in pth]} if pth else {}))
          for x, pth in sorted(zip(sc['r209_t_lines'], T_PATHS), key=lambda t: t[0])]
-if longitudinal:
-    z, x0, x1 = map(float, longitudinal)
+for v in longitudinal:
+    z, x0, x1 = map(float, v)
     seams.append(dict(p=[0, z, 0], n=[0, 1, 0], span=[x0, x1]))
 destruction = dict(version=1, seams=seams, interior_materials=[])
 

@@ -286,14 +286,17 @@ def build(K):
     K.armour('flank belt', 0.3, 'over the vaults and magazines')
     K.armour('belly and skirt', 0.25, '')
     K.armour('stern feathers', 0.15, 'thinnest; they peel first')
+    # issue 618 (R226): B-1 kinks aft round the projector's breech collars (A1 runs from 4.5), so the projector rides whole with the bow
     K.break_line('B-1', 5.2, 'the crescent root seam: the shade and the projector tear away from the neck, opening the capacitor bank',
-                 path=[(5.4, 1.4), (4.8, 0.6), (5.6, -0.2), (4.9, -0.9), (5.5, -1.6)])
+                 path=[(5.5, 1.6), (4.3, 1.05), (4.1, 0.3), (4.35, -0.4), (4.15, -1.05), (5.4, -1.6)])
     K.break_line('B-2', -7.5, 'at the band collar: the stern (feathers and drives) tears away, opening the engine room and the aft vault',
-                 path=[(-7.2, 1.8), (-7.8, 1.0), (-7.1, 0.1), (-7.9, -0.8), (-7.3, -1.8)])
+                 path=[(-8.02, 2.5), (-8.02, 1.9), (-7.4, 1.1), (-7.95, 0.2), (-7.2, -0.7), (-8.02, -1.8), (-8.02, -2.5)])   # issue 618 (R226): aft of the collar thrusters Q2
     K.break_line('B-3', 0.0, 'the dorsal tiers peel off band by band along their base, taking the batteries, laying the dark decks bare',
                  path=[(1.3, 1.5), (-0.8, 1.35), (-2.6, 1.55), (-4.2, 1.35), (-5.4, 1.5)], kind='long')
-    K.break_line('B-4', 9.0, 'the crescent\'s upper layers peel from the lower blade, band by band, then the blade splits at a horn root',
-                 path=[(5.8, 0.5), (7.5, 0.3), (9.5, 0.05), (11.0, -0.35), (12.5, -0.9)], kind='long')
+    # issue 618: the game's longitudinal seam is one level plane over its compartment (RECIPE.md, format version 1); B-4 lies at 0.9,
+    # over the projector's collars (top 0.74, R226) and through the crescent's root, where the upper and root layers sit on the blade
+    K.break_line('B-4', 9.0, 'the crescent\'s upper layers peel from the lower blade at the root, band by band, over the projector',
+                 path=[(5.8, 0.9), (7.5, 0.92), (9.5, 0.9), (11.0, 0.88), (12.5, 0.9)], kind='long')
     K.inside.append(dict(kind='note', name='insides', note='Full interiors throughout the hull (R215), hidden until a piece breaks. Eclipse breaks in layers (factions.md): shade plates peel band by band, then the body behind is bare; deaths blow it apart unevenly, a ragged bite where the core goes (R186).'))
     K.point('core', 'hp_core', (-4.2, 0, 0.1))
     # eight breach anchors on the shade bands (Tomb-ark base 8, Eclipse +0): prow 3, mid 3, engine 2, alternating sides
@@ -303,6 +306,9 @@ def build(K):
         K.point('breach', 'hp_breach_%d' % i, (x, y, z), side=side, section=sec, note='on a shade band')
     K.point('rcs', 'hp_rcs_0', (1.6, surf(1.6, 1, 0.95), 0.95), side='port'); K.point('rcs', 'hp_rcs_1', (1.6, surf(1.6, -1, 0.95), 0.95), side='stbd')
     K.point('rcs', 'hp_rcs_2', (-7.5, 2.1, 0.0), side='port'); K.point('rcs', 'hp_rcs_3', (-7.5, -2.1, 0.0), side='stbd')
+    # issue 618: the boarding origins the game contract needs (HARDPOINTS.md: one a side, mid hull): the flanks over the belt,
+    # between the strip lights, where the reclaim swarms leave the dark decks
+    K.point('board', 'hp_board_0', (-2.4, surf(-2.4, 1, 0.95), 0.95), side='port'); K.point('board', 'hp_board_1', (-2.4, surf(-2.4, -1, 0.95), 0.95), side='stbd')
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
     K.change('The engine cluster is a diamond of four', 'the side view and the beauty show three bells stacked, the plan shows two side by side; a diamond of four is the one layout that reads as all three pictures, and keeps the stern wide and flat')

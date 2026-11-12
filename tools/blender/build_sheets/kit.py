@@ -735,7 +735,8 @@ class Kit:
                     what='firing lane')
         self.fitdata.append(dict(id=fid, kind='gun', slot=slot, pivot=tuple(fd['pivot'][1]), up=(0, 0, 1), mount='spinal', ring=tuple(p),
                                  rest_yaw=0.0, reach=fd['reach'], band=(-10, 0, 10, 20), muzzles=[tuple(m[1]) for m in fd['muzzles']],
-                                 cal=r, hous_r=fd['radius'], rest_pitch=0.0, lanes=[lane]))
+                                 cal=r, hous_r=fd['radius'], rest_pitch=0.0, lanes=[lane],
+                                 aim=tuple(fd['aim'][1]), bore=fd.get('bore', r)))   # aim, bore: what the recipe's hard points read (issue 618)
         self.features.append(dict(id=fid, kind='gun', what='spinal %s (fixed)' % ('arc emitter' if getattr(part, 'type', '') == 'corona_arc' else 'projector'), count=1, pos=tuple(p), aim=(0.0, 0.0), slot=slot,
                                   weapon=weapon, src=src, note=note, muzzle=[tuple(m[1]) for m in fd['muzzles']], normal=(1, 0, 0),
                                   fixed=True, inv=[inv] if isinstance(inv, str) else list(inv)))

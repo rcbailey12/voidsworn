@@ -75,6 +75,39 @@ def _zrev(profile, n, phase=0.0, **kw):
     return revolve(profile, n, axis='Z', phase=phase, **kw)
 
 
+# ---------------------------------------------------------------------------------------------------- plate courses
+PANEL = (0.2, 0.4)   # world units across and along: the small end of the hull's plate sizes (the sheets' PL run 0.2 to 0.32 by 0.45 to 0.75)
+
+
+def panels(p, tag, role, mats, x0, x1, r, n, phase, skip=(), th=0.022, size=PANEL, seed=0):
+    """issue 618 (R224, measured): plate courses on the flat faces of an n-sided revolve (radius r to its corners, phase as
+    revolve's) from x0 to x1, at the hull's own plate size in world units, so a big part carries the hull's detail density as
+    a small one does: each plate a thin chamfered slab with a gap round it, its thickness varied plate to plate. skip: face
+    indices to leave bare (a conduit runs there). One comp per material."""
+    ap = r * math.cos(math.pi / n); fw = 2 * r * math.sin(math.pi / n)
+    across = max(1, int(round(fw / size[0]))); along = max(1, int(round((x1 - x0) / size[1])))
+    g = min(0.025, fw / across * 0.12, (x1 - x0) / along * 0.12)
+    acc = {m: ([], []) for m in mats}
+    for k in range(n):
+        if k in skip: continue
+        a = 2 * math.pi * (k + 0.5) / n + phase
+        nv = Vector((0, math.cos(a), math.sin(a))); tv = Vector((0, -math.sin(a), math.cos(a)))
+        for i in range(along):
+            xa = x0 + (x1 - x0) * i / along + g; xb = x0 + (x1 - x0) * (i + 1) / along - g
+            for j in range(across):
+                ta = -fw / 2 + fw * j / across + g; tb = -fw / 2 + fw * (j + 1) / across - g
+                h = th * (0.7 + 0.6 * (((k * 7 + i * 13 + j * 5 + seed) * 2654435761) % 1000) / 1000.0)
+                e = min(h * 0.8, (xb - xa) * 0.2, (tb - ta) * 0.2)
+                base = [(xa, ta), (xb, ta), (xb, tb), (xa, tb)]
+                top = [(xa + e, ta + e), (xb - e, ta + e), (xb - e, tb - e), (xa + e, tb - e)]
+                V = [Vector((x, 0, 0)) + nv * (ap - 0.004) + tv * t for x, t in base] + [Vector((x, 0, 0)) + nv * (ap + h) + tv * t for x, t in top]
+                F = [(3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
+                m = mats[(i + j + k + seed) % len(mats)]
+                VV, FF = acc[m]; o = len(VV); VV.extend(tuple(v) for v in V); FF.extend(tuple(q + o for q in f) for f in F)
+    for m, (VV, FF) in acc.items():
+        if FF: p.add('%s_plate_%s' % (tag, m), role, m, (VV, FF))
+
+
 # ---------------------------------------------------------------------------------------------------- engine
 def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.6, rings=3, struts=6, nose='flat', seg=24):
     """the eclipse engine; exhaust leaves along -X; origin at the centre of the bell's exit plane.
@@ -94,6 +127,11 @@ def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.6, rings=
     inner = [(x, max(rt * 0.8, r - t * 1.4)) for (x, r) in reversed(outer)]
     p.add('bell', 'body', 'gunv', revolve(outer + lip + inner[1:], seg, closed=True, phase=math.pi / seg))
     # the corona: a thin bright ring just inside the lip, and the black shade disc set back inside it
+    # issue 618 (R224): stiffener rings round the bell's back, as many as its size carries (the bell itself is a smooth surface)
+    for i in range(max(1, int(round(bl / 0.22)))):
+        u = (i + 0.6) / (max(1, int(round(bl / 0.22))) + 0.4); x = xt * (1 - u); rr = rt + (r_exit - rt) * (1 - x / xt) ** 1.3
+        p.add('bellring%d' % i, 'body', 'gunv', revolve([(x + 0.03, rr - 0.005), (x + 0.03, rr + t * 0.7), (x - 0.03, rr + t * 0.7), (x - 0.03, rr - 0.005)],
+                                                        seg, closed=True, phase=math.pi / seg))
     p.add('corona', 'body', 'corona', revolve([(-t * 0.2, r_exit - t * 0.65), (t * 0.4, r_exit - t * 0.65), (t * 0.4, r_exit - t * 1.25),
                                                (-t * 0.2, r_exit - t * 1.25)], seg, closed=True))
     p.add('shade', 'body', 'dark', revolve([(xt * 0.35, 0.001), (xt * 0.35, r_exit * 0.86), (xt * 0.55, r_exit * 0.8), (xt * 0.9, rt * 0.7)],
@@ -108,6 +146,7 @@ def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.6, rings=
         x = xt + r_exit * 0.3 + (body_len - r_exit * 0.3 - br * 0.35) * (i + 0.5) / nb
         p.add('rib%d' % i, 'mount', 'gunv', revolve([(x - br * 0.05, br * 0.99), (x - br * 0.05, br * 1.05), (x + br * 0.05, br * 1.05), (x + br * 0.05, br * 0.99)],
                                                     8, closed=True, phase=math.pi / 8))
+    panels(p, 'housing', 'mount', ('shade2', 'violet', 'shade'), xt + r_exit * 0.28, xf - br * 0.47, br, 8, math.pi / 8)   # issue 618, R224
     p.add('collar', 'mount', 'mauve', revolve([(xf - br * 0.45, br * 0.98), (xf - br * 0.45, br * 1.12), (xf - br * 0.22, br * 1.12),
                                                (xf - br * 0.22, br * 0.98)], 8, closed=True, phase=math.pi / 8))
     for i in range(struts):
@@ -395,12 +434,17 @@ def spinal(length, r=0.55, collar_r=None, collar_len=None, block_len=None, block
         p.add('breech%d' % i, 'mount', 'mauve' if i % 2 == 0 else 'violet',
               revolve([(a, rs[i] * 0.7), (a, rs[i]), (b - 0.08, rs[i]), (b - 0.02, rs[i] * 0.93), (b - 0.02, rs[i] * 0.7)], seg, closed=True, phase=ph))
         p.add('breechgap%d' % i, 'mount', 'dark', revolve([(b - 0.03, rs[i] * 0.72), (b + 0.03, rs[i] * 0.72)], seg, cap0=True, cap1=True, phase=ph))
+        panels(p, 'breech%d' % i, 'mount', ('mauve', 'violet', 'shade2'), a + 0.06, b - 0.1, rs[i], seg, ph, seed=3 + i)   # issue 618, R224
     x0, x1 = cl, length - bl
     n = 3
     for i in range(n):
         a = x0 + (x1 - x0) * i / n; b = x0 + (x1 - x0) * (i + 1) / n
         ri = r * (1.0 - 0.04 * i)
         p.add('segment%d' % i, 'body', 'violet' if i % 2 else 'mauve', revolve([(a, ri), (b, ri)], seg, cap0=True, cap1=True, phase=ph))
+        # issue 618 (R224): plate courses on the column's faces at the hull's plate size, clear of the disc banks and the
+        # four feed conduits (they run on faces 0, 2, 4, 6 of an 8-sided column)
+        panels(p, 'segment%d' % i, 'body', ('violet', 'mauve', 'shade2'), a + 0.1 + min(0.07, (b - a) * 0.05) * 4, b - 0.04, ri, seg, ph,
+               skip=tuple(range(0, seg, 2)) if seg == 8 else (), seed=i)
         # a capacitor bank: three thin discs stacked across the joint, the middle one widest (it stores the blow)
         dw = min(0.07, (b - a) * 0.05)
         for k, (dx, rk) in enumerate(((-dw * 2.4, 1.18), (0.0, 1.3), (dw * 2.4, 1.18))):
@@ -416,6 +460,7 @@ def spinal(length, r=0.55, collar_r=None, collar_len=None, block_len=None, block
                                                (length - bl * 0.25, brr * 0.82)], seg, closed=True, phase=ph))
     p.add('emitterband', 'body', 'violet', revolve([(x1 + bl * 0.35, brr * 0.99), (x1 + bl * 0.35, brr * 1.06), (x1 + bl * 0.5, brr * 1.06),
                                                    (x1 + bl * 0.5, brr * 0.99)], seg, closed=True, phase=ph))
+    panels(p, 'emitter', 'body', ('violet', 'mauve'), x1 + bl * 0.53, length - bl * 0.14, brr, seg, ph, seed=9)   # issue 618, R224
     p.add('shade', 'body', 'dark', revolve([(length - bl * 0.25, brr * 0.82), (length - bl * 0.3, brr * 0.5), (length - bl * 0.32, 0.001)], 24))
     p.add('corona', 'body', 'corona', revolve([(length - bl * 0.03, brr * 0.84), (length - bl * 0.03, brr * 0.9), (length + bl * 0.015, brr * 0.9),
                                                (length + bl * 0.015, brr * 0.84)], 24, closed=True))
@@ -433,9 +478,12 @@ def spinal(length, r=0.55, collar_r=None, collar_len=None, block_len=None, block
         for j, (u, v) in enumerate(zip(pts, pts[1:])):
             rw = brr * 0.11 * (1 - 0.17 * j)
             p.add('horn%d_%d' % (k, j), 'body', 'gunv' if j < 3 else 'steel', rod(u, v, rw, 6, rw * 0.82))
-    tip = length - bl * 0.05 + hl
+    # the muzzle (the hard point the game fires from) is the lens at the crest's centre, where the arc leaves: it sits on the
+    # emitter's own mesh (issue 618: the horns' meeting point ahead of it is open space, half a crest radius off the mesh, which
+    # the export check refuses); reach still runs to the horn tips, so the fit check's lane and arcs see the whole crown
+    tip = length - bl * 0.24
     p.fit = dict(muzzles=[P((tip, 0, 0))], pivot=P((length - 0.05, 0, 0)), trunnion=P((length - 0.05, 0, 0)), reach=hl + 0.05,
-                 aim=D((1, 0, 0)), up=D((0, 0, 1)), mount='spinal', radius=brr * 1.08)
+                 aim=D((1, 0, 0)), up=D((0, 0, 1)), mount='spinal', radius=brr * 1.08, bore=brr * 0.82)
     return p
 
 
