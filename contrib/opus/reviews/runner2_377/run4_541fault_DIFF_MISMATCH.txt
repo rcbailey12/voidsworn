@@ -1,0 +1,9 @@
+DIFF MISMATCH before the push (issue 377): the commit to push does not carry the staged change.
+agent HEAD 400e35714c9ae982a1e1f1ddc5030720666b279e, commit to push 400e35714c9ae982a1e1f1ddc5030720666b279e
+
+staged (out\diffstat.txt):
+1	0	tools/pc/codex_issue.bat
+1	0	tools/pc/work/merge377_note.txt
+1	0	tools/pc/work_issue.ps1
+
+in the commit to push:

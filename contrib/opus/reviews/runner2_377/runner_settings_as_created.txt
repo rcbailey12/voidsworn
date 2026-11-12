@@ -1,0 +1,3 @@
+# Workhorse runner settings (issue 377). The runner only reads this file; Ryan changes it with WORKHORSE_CLEANUP.bat.
+# remove_repo_copy_after_push=yes: after a push the runner has checked, it removes that run's repo copy and keeps out.
+remove_repo_copy_after_push=no
