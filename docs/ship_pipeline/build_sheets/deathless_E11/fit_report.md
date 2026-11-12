@@ -1,4 +1,4 @@
-# deathless_E11 fit report (second sheet (R221 weapons); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
+# deathless_E11 fit report (third sheet (R221 weapons, pass 2); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
 
 Made by `tools/blender/build_sheets/clash.py` on the built blockout (it runs inside every `build.py ... render` and on its own
 with `build.py <code> <out> fit`). What it tests, on every part of every type:
@@ -35,7 +35,7 @@ The first complete E11 layout, built with the Eclipse kit and run through the ch
 | ARC | T1 | T2 | 2 | fire blocked by T2 (slot T): T2_mount_shade; blocked bearings -175, 175 |
 | SWEEP | F1 | HB1 | 13 | turning through its arc hits HB1_mount_mauve; blocked bearings -30 to 30 |
 
-## How second sheet (R221 weapons) fixed them
+## How third sheet (R221 weapons, pass 2) fixed them
 
 | Clash (before) | Fix |
 |---|---|
@@ -46,7 +46,7 @@ While designing, the check also caught (and the design fixed): deck hatches and 
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 244 objects, 29 parts, 672 close pairs, 483 rays, 5 guns, 4 turrets swept, 8 cones, 15 apertures, 1 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 243 objects, 29 parts, 670 close pairs, 475 rays, 5 guns, 4 turrets swept, 8 cones, 15 apertures, 1 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 

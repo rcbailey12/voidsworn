@@ -1,6 +1,6 @@
 # deathless_E12: Eclipse zenith (the ring cruiser), build sheet
 
-Eclipse (deathless) | class Cruiser | version 3 (third sheet (R221 weapons)), 2026-11-12 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\opus532e\w\w1\deathless_E12\deathless_E12_blockout.blend`
+Eclipse (deathless) | class Cruiser | version 4 (fourth sheet (R221 weapons, pass 2)), 2026-11-12 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\opus532e\w\w3\deathless_E12\deathless_E12_blockout.blend`
 
 **Length 14.5 world units** (data.js d_harvester (cls 'Cruiser'); length from godot/render/hull_table.gd CLS_LEN['Cruiser'] = 14.5 (drawn x SHIP_K 1.6 = 23.2 on the board)). Frame: +X bow, +Y port, +Z up; station % from the prow tip; offset + port / - starboard; height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.
 
@@ -15,8 +15,8 @@ Eclipse (deathless) | class Cruiser | version 3 (third sheet (R221 weapons)), 20
 | beam top | 8.475 |
 | beam bow | 8.475 |
 | beam disagreement percent | 0.0 |
-| height side | 2.525 |
-| height bow | 2.525 |
+| height side | 2.513 |
+| height bow | 2.513 |
 | height disagreement percent | 0.0 |
 | widest at station percent | 44.6 |
 | hull beam | 2.96 |
@@ -144,7 +144,7 @@ Eclipse breaks in layers (factions.md): the ring arcs peel away first, band by b
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 456 objects, 30 parts, 302 close pairs, 360 rays, 4 guns, 3 turrets swept, 7 cones, 10 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 457 objects, 30 parts, 314 close pairs, 360 rays, 4 guns, 3 turrets swept, 7 cones, 10 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -158,7 +158,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **Three engines side by side in one row.** the plan and the beauty show three across; the side view stacks them, which the plan cannot; one row keeps the block broad and low.
 - **Engines are eclipse rings, not flame.** factions.md: "no flaming bells. An eclipse ring of pale light".
 - **Arcs are real box sections, 0.42 deep.** the side view draws the ring as a line; the beauty shows thick box sections with open bays, which carry frames and machinery.
-- **Weapons built from the lore, not the picture's generic turrets (R221).** Ryan: "their turrets look the same as hullbreakers"; the picture draws box turrets with round twin barrels. The null cannons are rail guns firing through the slot of a crescent shade, the null spire a tall sentry spire with needle rails, the emitter a crown of electrode horns round the crest's black disc (tools/blender/kits/eclipse/README.md).
+- **Weapons built from the lore, not the picture's generic turrets (R221).** Ryan: "their turrets look the same as hullbreakers"; the picture draws box turrets with round twin barrels. The null cannons are rail guns (slim round rail pairs with banded collars) firing through the slot of a thin arched crescent shade, the null spire a tall slim banded sentry spire with needle rails, all in the hull's curved, layered, banded language (pass 2: "super blocky"), the emitter a crown of electrode horns round the crest's black disc (tools/blender/kits/eclipse/README.md).
 - **Weapons by data.js slot.** d_harvester: gauss T twice on the spine saddles, doom F the bow emitter, gsentry T the null spire on the block roof (the picture's small green-lit turret).
 - **Thrusters, hatches and heat panels added.** a ship in space needs thrusters; the picture shows no underside.
 

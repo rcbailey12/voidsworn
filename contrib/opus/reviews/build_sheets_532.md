@@ -338,3 +338,28 @@ nothing deleted. The outline overlays were not refitted (cameras and hulls uncha
   bells as on the second sheet.
 - Still different from the concepts (each README): surface and colour (paint stage), E11's crescent a little narrower and the
   projector shaft shorter, E12's near block and straight struts.
+
+## Pass 2: the hull's language, not boxes (Nov 12 2026, after 07:40 CST)
+
+Ryan, through the Board: at full-ship distance the turrets "read chunky, more box than crescent", and "The eclipse weapons look
+super blocky in comparison to the rest of the ship." So the weapons now share the hull's shape language and detail level
+(RULEBOOK 5.16), judged at the beauty camera beside the hull. Lore designs, turret empties and properties unchanged.
+
+- **Null cannon:** a thin arched crescent shade, three bevelled plates with narrow seams (the E12 ring's broken plates), a
+  second layer stepped in on its face, two plate courses across it, horns swept back and down, the corona line along the
+  crest; slim round rails (octagonal section) banded with round collars like the hull's band collar, 1.3 times longer, reaching
+  well past the shade to a thin shock ring; capacitor banks as low layered crescent fins; a small oval shell on a thin round
+  foot; rod yokes. No square frames, boxes or hex drums left.
+- **Null shredder:** the same shade language, smaller; five thin round needles with two banded collars each; oval shell.
+- **Null spire:** a slim round spire with banded collars and the green sights, an oval head pod, a layered crescent fin.
+- **Corona arc:** unchanged (its octagonal collars and capacitor column already follow the concept's projector).
+- **E11 barbettes** slimmed to the turret feet (0.95 and 1.0 half-width to 0.7 and 0.72).
+
+Fit zero on both, LANE included (E11 243 objects, 475 rays; E12 457 objects, 360 rays), every turret free to turn 180 either
+way, inventory 0 failing with every job kept (weapon sub-parts now include `layer` and `collar`). PC run `opus532e\w\w3`, GPU
+read twice at 0 percent first, nothing deleted.
+
+Judged at the beauty camera beside the hull: the turrets now read as curved hoods with a green crest and long thin banded
+rails, in step with the crescent and the banded body rather than as boxes on it. Still: from ahead the shade reads as one
+smooth hood (its seams and plate courses are fine at that distance and the flat colour hides them; the paint stage carries
+the plate contrast); on E12 the saddles under the cannons are still the larger mass.

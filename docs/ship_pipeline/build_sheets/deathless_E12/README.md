@@ -1,10 +1,11 @@
-# deathless_E12 build sheet: Eclipse zenith, the ring cruiser (third sheet: R221 weapons)
+# deathless_E12 build sheet: Eclipse zenith, the ring cruiser (fourth sheet: R221 weapons, pass 2)
 
 Eclipse cruiser, class Cruiser, **14.5 world units** (godot/render/hull_table.gd CLS_LEN['Cruiser']; data.js `d_harvester`:
 gauss T, gauss T, doom F, gsentry T). Accepted picture: contrib/muse/design/concept_round8c_2026_11/deathless_E12_beauty.jpg
 and _sheet.jpg (R206). Designer of record: Opus (R205, R207). Issue 532. Rendered on Ryan's PC (Blender 4.5, GPU), blockout
-`C:\Users\rcbai\Downloads\voidsworn_test\opus532e\w\w2\deathless_E12\deathless_E12_blockout.blend`; the model is 14.56 long.
-Third sheet (R221): the weapons rebuilt from the lore, the null cannons and null spire a size up so they read; the hull, ring,
+`C:\Users\rcbai\Downloads\voidsworn_test\opus532e\w\w3\deathless_E12\deathless_E12_blockout.blend`; the model is 14.56 long.
+Third and fourth sheets (R221): the weapons rebuilt from the lore, a size up so they read, then (pass 2) in the hull's
+own curved, layered, banded language; the hull, ring,
 engines and both cameras are unchanged from the second.
 
 ![deathless_E12 preview](preview.jpg)
@@ -18,10 +19,15 @@ actual weapons they use per lore Bible and faction rules." The concept draws gen
 build follows the lore instead (RULEBOOK 4.11, ships.md 2c; the design lines are in `tools/blender/kits/eclipse/README.md`).
 None is a breech-and-barrel cannon. The sheet's weapon row shows each beside its lore line.
 
+Pass 2 (Ryan, 07:40 and 07:41 CST: the turrets "read chunky" and "look super blocky in comparison to the rest of the ship"):
+every weapon is rebuilt in the hull's own language and detail level (RULEBOOK 5.16): thin curved crescent shades of seamed,
+bevelled, layered plates with plate courses, slim round rails and needles banded like the hull's collars, small oval shells
+and round feet; no boxes, square frames or hex drums. Judged at the beauty camera beside the hull.
+
 | Weapon | Mounts | Lore and rules | Built as |
 |---|---|---|---|
-| ![](weapon_gauss.jpg) Null cannon (gauss) | T1, T2 | 3 shots, 6 damage, ignores half of armour; the effect lights coils breech to muzzle, a near invisible slug, a shock ring | a rail gun: two flat rail pairs in stepped square accelerator frames, an open fork and shock plate, through the slot of an upright crescent shade (a corona line on its rim), a ribbed capacitor stack behind |
-| ![](weapon_gsentry.jpg) Null spire (gsentry) | G1 | 2 shots, 4 damage, range 3, point defence against craft; instant streaks | a sentry post: a tall turning hex spire with green sight slits down its face, two needle rails through a small shade fin at its head, standing high to see over the block |
+| ![](weapon_gauss.jpg) Null cannon (gauss) | T1, T2 | 3 shots, 6 damage, ignores half of armour; the effect lights coils breech to muzzle, a near invisible slug, a shock ring | a rail gun: two slim round rail pairs with banded collars stepping down, reaching well past a thin arched crescent shade (three seamed bevelled plates, a stepped layer, plate courses, a corona crest), crescent capacitor fins behind on a small oval shell |
+| ![](weapon_gsentry.jpg) Null spire (gsentry) | G1 | 2 shots, 4 damage, range 3, point defence against craft; instant streaks | a sentry post: a tall slim round spire with banded collars and green sight slits, an oval head pod, two thin needle rails through a layered crescent fin, standing high to see over the block |
 | ![](weapon_doom.jpg) Corona arc (doom) | A1 | one heavy blow every other turn; arcs crawl on the emitter, then a re-striking arc; the crest is a black disc in a thin ring | an arc emitter: a capacitor column (disc banks, feed conduits) ending in the crest, a black shade disc in a thin corona ring with a small lens, under a crown of six electrode horns |
 
 
@@ -49,11 +55,11 @@ concept, slim it; (3) the stern block is compact with three large dark bells fac
 | | Hull length:beam | Hull length:height | Envelope length:beam | Envelope length:height |
 |---|---:|---:|---:|---:|
 | Concept (8c sheet, plan and side view) | 1.94 | 15.57 | 1.77 | 5.94 |
-| **Build** | **1.89** | **10.23** | 1.72 | 5.83 |
+| **Build** | **1.89** | **10.41** | 1.72 | 5.86 |
 
 The ring is 13.0 long and 8.1 wide, centred at 43 percent, as the plan. Hull length to height is lower than the concept's
 because the arcs are real box sections 0.42 deep, where the side view draws the ring as a line. Envelope length to height is
-5.83 against the concept's 5.94 (the null spire now stands a little above the block, as the concept's sentry does).
+5.86 against the concept's 5.94 (the null spire now stands a little above the block, as the concept's sentry does).
 Structure per cell (concept by eye / build): bow top 5/9, bow side 4/7, mid top 5/7, mid side 4/5, stern top 6/7, stern side
 5/5.
 
@@ -78,9 +84,9 @@ Structure per cell (concept by eye / build): bow top 5/9, bow side 4/7, mid top 
 
 ## Fit and inventory
 
-- **Fit check: zero**, LANE included, on the PC run (w2) and in the sandbox; 456 objects, 30 parts, 360 rays, 3 turrets each
+- **Fit check: zero**, LANE included, on the PC run (w3) and in the sandbox; 457 objects, 30 parts, 360 rays, 3 turrets each
   turned through 73 bearings and free to turn all the way round, one firing lane (the emitter's, out through the bow gap). The
-  rebuilt weapons checked at zero on their first full run. The first full layout had 15 findings (9 clash, 6 exhaust: the bells inside the block, struts into the emitter
+  rebuilt weapons checked at zero on their first full run, in both passes. The first full layout had 15 findings (9 clash, 6 exhaust: the bells inside the block, struts into the emitter
   collar and the core's hubs, spine-head thrusters into the collar and firing into the arcs); [fit_report.md](fit_report.md)
   lists them and every fix.
 - **Inventory**: 16 lines written before modelling (commit 884ae8b8), each now naming its job (R221); the weapon lines carry
@@ -100,8 +106,9 @@ plan and the beauty show three across, the side view stacks them); eclipse-ring 
 - **The engine block** at the aft camera is the near end, so it reads larger in the frame than the beauty's far, high block,
   and its bells are seen at an angle rather than head-on (the beauty's inconsistency, above).
 - **The weapons** differ from the picture on purpose (R221): its turrets are boxes with round twin barrels, ours rail guns
-  behind crescent shades. Seen from the high aft camera the null cannons read mostly as a green crescent rim over ribbed
-  fins, the rails short behind them; the null spire is a small upright post on the block roof.
+  behind crescent shades. Seen from the high aft camera the null cannons read as a thin green crescent hook with long thin
+  banded rails reaching forward along the spine; the null spire is a slim banded post on the block roof. The saddles under
+  the cannons are still the larger mass there.
 - **The struts** run straight across; the concept's lean diagonally.
 - **The ring** is the plan's size; the beauty draws it a little larger relative to the block, and its arcs at slightly
   different radii.
@@ -112,6 +119,6 @@ As deathless_E11: [sheet.jpg](sheet.jpg), [feature_table.md](feature_table.md), 
 [cells.jpg](cells.jpg), [cells.json](cells.json), [fit_report.md](fit_report.md), [fit_view.jpg](fit_view.jpg),
 [fit.json](fit.json), [manifest.json](manifest.json), [checks.json](checks.json), the views and
 [outline_check.jpg](outline_check.jpg). Design source: `tools/blender/build_sheets/ships/deathless_E12.py`; inventory
-`ships/deathless_E12_inv.py`; part shapes `tools/blender/kits/eclipse/parts.py`. Third sheet rendered on the PC as
-`opus532e\w\w2` (`w\run.bat`: both ships, then E12's second camera with `build.py ... beauty`); weapons alone:
+`ships/deathless_E12_inv.py`; part shapes `tools/blender/kits/eclipse/parts.py`. Fourth sheet rendered on the PC as
+`opus532e\w\w3` (`w\run.bat`: both ships, then E12's second camera with `build.py ... beauty`); weapons alone:
 [null cannon](weapon_gauss.jpg), [null spire](weapon_gsentry.jpg), [corona arc](weapon_doom.jpg).

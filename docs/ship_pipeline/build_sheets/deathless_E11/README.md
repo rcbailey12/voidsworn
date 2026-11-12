@@ -1,11 +1,12 @@
-# deathless_E11 build sheet: The Unsetting, the Eclipse flagship (second sheet: R221 weapons)
+# deathless_E11 build sheet: The Unsetting, the Eclipse flagship (third sheet: R221 weapons, pass 2)
 
 Eclipse flagship, class Tomb-ark, **28.0 world units** (godot/render/hull_table.gd CLS_LEN['Tomb-ark']; data.js `d_boss`:
 gauss T, gauss T, doom F, flak T; ability nova, the spinal shell). Accepted picture:
 contrib/muse/design/concept_round8c_2026_11/deathless_E11_beauty.jpg and _sheet.jpg (R206). Designer of record: Opus (R205,
 R207). Issue 532. Rendered on Ryan's PC (Blender 4.5, GPU), blockout
-`C:\Users\rcbai\Downloads\voidsworn_test\opus532e\w\w2\deathless_E11\deathless_E11_blockout.blend`; the model is 28.04 long.
-Second sheet (R221): the weapons rebuilt from the lore; the hull, crescent, engines and camera are unchanged from the first.
+`C:\Users\rcbai\Downloads\voidsworn_test\opus532e\w\w3\deathless_E11\deathless_E11_blockout.blend`; the model is 28.04 long.
+Second and third sheets (R221): the weapons rebuilt from the lore, then (pass 2) in the hull's own curved, layered, banded
+language; the barbettes slimmed to the turret feet; the hull, crescent, engines and camera are unchanged from the first.
 
 ![deathless_E11 preview](preview.jpg)
 
@@ -19,10 +20,15 @@ actual weapons they use per lore Bible and faction rules." The concept draws gen
 build follows the lore instead (RULEBOOK 4.11, ships.md 2c; the design lines are in `tools/blender/kits/eclipse/README.md`).
 None is a breech-and-barrel cannon. The sheet's weapon row shows each beside its lore line.
 
+Pass 2 (Ryan, 07:40 and 07:41 CST: the turrets "read chunky" and "look super blocky in comparison to the rest of the ship"):
+every weapon is rebuilt in the hull's own language and detail level (RULEBOOK 5.16): thin curved crescent shades of seamed,
+bevelled, layered plates with plate courses, slim round rails and needles banded like the hull's collars, small oval shells
+and round feet; no boxes, square frames or hex drums. Judged at the beauty camera beside the hull.
+
 | Weapon | Mounts | Lore and rules | Built as |
 |---|---|---|---|
-| ![](weapon_gauss.jpg) Null cannon (gauss) | T1, T2 | 3 shots, 6 damage, ignores half of armour; the effect lights coils breech to muzzle, a near invisible slug, a shock ring | a rail gun: two flat rail pairs in stepped square accelerator frames, an open fork and shock plate, through the slot of an upright crescent shade (a corona line on its rim), a ribbed capacitor stack behind |
-| ![](weapon_flak.jpg) Null shredder (flak) | F1, F2 | 3 shots, 3 damage, range 2, point defence; the effect is instant streaks to a spread of airbursts | a fan of five needle rails splayed side to side from a squat hex drum, through the slot of a crescent shade, a two-fin capacitor pack |
+| ![](weapon_gauss.jpg) Null cannon (gauss) | T1, T2 | 3 shots, 6 damage, ignores half of armour; the effect lights coils breech to muzzle, a near invisible slug, a shock ring | a rail gun: two slim round rail pairs with banded collars stepping down, reaching well past a thin arched crescent shade (three seamed bevelled plates, a stepped layer, plate courses, a corona crest), crescent capacitor fins behind on a small oval shell |
+| ![](weapon_flak.jpg) Null shredder (flak) | F1, F2 | 3 shots, 3 damage, range 2, point defence; the effect is instant streaks to a spread of airbursts | a fan of five thin round needle rails with banded collars, splayed side to side, out of a small layered crescent shade on an oval shell, two crescent capacitor fins |
 | ![](weapon_doom.jpg) Corona arc (doom) | A1 | one heavy blow every other turn; arcs crawl on the emitter, then a re-striking arc; the crest is a black disc in a thin ring | an arc emitter: a capacitor column (disc banks, feed conduits) ending in the crest, a black shade disc in a thin corona ring with a small lens, under a crown of six electrode horns |
 
 
@@ -31,7 +37,7 @@ None is a breech-and-barrel cannon. The sheet's weapon row shows each beside its
 | | Hull length:beam | Hull length:height | Envelope length:beam | Envelope length:height |
 |---|---:|---:|---:|---:|
 | Concept (8c sheet, true top and side views) | 5.72 | 7.00 | 2.49 | 4.49 |
-| **Build** | **5.59** | **6.54** | 2.59 | 4.14 |
+| **Build** | **5.59** | **6.54** | 2.59 | 4.11 |
 
 Hull: length over the median beam or height across the middle 60 percent. The crescent is 10.85 across (concept 10.8), its
 back at 39.6 percent (concept 39.6). Structure per cell (concept by eye / build): bow top 6/7, bow side 5/7, mid top 8/9,
@@ -65,9 +71,9 @@ camera and hull are unchanged, only the turrets' outline moved, so it was not re
 ## Fit and inventory
 
 - **Fit check: zero** (clash, mount, arc, sweep, exhaust, exit and the new LANE: no gun in a weapon's firing lane or
-  backblast) on the PC run (w2) and in the sandbox; 244 objects, 29 parts, 483 rays, 4 turrets each turned through 73
+  backblast) on the PC run (w3) and in the sandbox; 243 objects, 29 parts, 475 rays, 4 turrets each turned through 73
   bearings and free to turn all the way round, one firing lane (the corona arc's, forward of the horns). The rebuilt weapons
-  checked at zero on their first full run. The first full layout had 3 findings (the aft flak twin through the
+  checked at zero on their first full run, in both passes. The first full layout had 3 findings (the aft flak twin through the
   deck housing; T1's aft fire blocked by T2's plinth); [fit_report.md](fit_report.md) lists them and every fix.
 - **Inventory**: 21 lines written from the concept before modelling (commit 884ae8b8), each now naming its job (R221: what it
   does on the ship); the weapon lines carry their own types (nullcannon, shredder, corona_arc) and sub-parts; every line
@@ -93,9 +99,10 @@ broader read.
 - **The crescent** reads a little narrower and less domed than the beauty's fat brim, and the horns sweep a little less far
   round; the plan of record (the sheet's top view) is held.
 - **The weapons** differ from the picture on purpose (R221): the picture's turrets are boxes with round twin barrels, ours
-  are rail guns behind crescent shades; its projector ends in a plain bore with a green dot, ours in the crest disc under a
-  crown of horns. At the beauty camera the turrets' shades read as tilted caps with a green rim and the accelerator frames as
-  a row of square rings; the concept's long slim barrels are gone.
+  are slim banded rail pairs behind thin crescent shades; its projector ends in a plain bore with a green dot, ours in the
+  crest disc under a crown of horns. At the beauty camera the shades read as smooth curved hoods with a green crest (their
+  seams and plate courses are fine at that distance, and flat colour hides them; the paint stage carries plate contrast),
+  the rails as long thin banded lines reaching forward, as the concept's barrels do.
 - **The projector** in the beauty is longer and heavier, with more collar steps; ours has three collars and three segments.
 - **The stern**: the concept's three big stacked drums dominate the stern; our diamond of four is a little smaller, and the
   feathers lie flatter.
@@ -112,4 +119,4 @@ weapons alone: [null cannon](weapon_gauss.jpg), [null shredder](weapon_flak.jpg)
 Design source: `tools/blender/build_sheets/ships/deathless_E11.py`; inventory `ships/deathless_E11_inv.py`; part shapes
 `tools/blender/kits/eclipse/parts.py`.
 
-Second sheet rendered on the PC as `opus532e\w\w2` (Blender 4.5, GPU; `w\run.bat`), the sheet text included.
+Third sheet rendered on the PC as `opus532e\w\w3` (Blender 4.5, GPU; `w\run.bat`), the sheet text included.

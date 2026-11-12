@@ -1,6 +1,6 @@
 # deathless_E11: The Unsetting (Eclipse flagship), build sheet
 
-Eclipse (deathless) | class Tomb-ark | version 2 (second sheet (R221 weapons)), 2026-11-12 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\opus532e\w\w1\deathless_E11\deathless_E11_blockout.blend`
+Eclipse (deathless) | class Tomb-ark | version 3 (third sheet (R221 weapons, pass 2)), 2026-11-12 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\opus532e\w\w3\deathless_E11\deathless_E11_blockout.blend`
 
 **Length 28.0 world units** (data.js d_boss (cls 'Tomb-ark'); length from godot/render/hull_table.gd CLS_LEN['Tomb-ark'] = 28.0 (drawn x SHIP_K 1.6 = 44.8 on the board)). Frame: +X bow, +Y port, +Z up; station % from the prow tip; offset + port / - starboard; height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.
 
@@ -15,9 +15,9 @@ Eclipse (deathless) | class Tomb-ark | version 2 (second sheet (R221 weapons)), 
 | beam top | 10.85 |
 | beam bow | 10.85 |
 | beam disagreement percent | 0.0 |
-| height side | 6.8 |
-| height bow | 6.8 |
-| height disagreement percent | 0.0 |
+| height side | 6.838 |
+| height bow | 6.862 |
+| height disagreement percent | 0.09 |
 | widest at station percent | 17.6 |
 | hull beam | 4.76 |
 | hull depth | 4.0 |
@@ -86,8 +86,8 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Projector shaft | 7.7 to 17.1 | -0.82 to 0.82 | -1.02 to 0.62 | violet and mauve | a part of the kit projector, counted as its own mass |
 | Projector muzzle block | 4.8 to 20.4 | -0.84 to 0.84 | -1.04 to 0.64 | mauve | a part of the kit projector, counted as its own mass |
 | Dorsal tier | 50.7 to 69.6 | -1.42 to 1.42 | 1.40 to 2.21 | mauve plate | the layered plate tier along the spine (the concept's raised plate rows), a quarter unit proud |
-| Barbette, fore battery | 38.0 to 44.8 | -0.95 to 0.95 | 1.50 to 2.12 | violet plate | a low round drum: the fore battery fires aft over the tier and the aft battery's muzzles |
-| Barbette, aft battery | 54.4 to 61.2 | -1.00 to 1.00 | 1.90 to 2.87 | violet plate | a low round drum that superfires the aft battery over the fore one |
+| Barbette, fore battery | 38.9 to 43.9 | -0.70 to 0.70 | 1.50 to 2.12 | violet plate | a low round drum, slimmed to the turret's foot (R221 pass 2): the fore battery fires aft over the tier and the aft battery's muzzles |
+| Barbette, aft battery | 55.4 to 60.2 | -0.72 to 0.72 | 1.90 to 2.87 | violet plate | a low round drum that superfires the aft battery over the fore one |
 | Flank belt | 40.0 to 73.9 | -2.50 to 2.50 | -0.05 to 0.42 | grey-mauve armour boxes | a raised strake at mid height, both flanks |
 | Lower skirt | 40.7 to 73.9 | -2.42 to 2.42 | -1.66 to -0.46 | deep violet tall plates | tall narrow plates hanging below the belt |
 | Band collar | 74.8 to 78.3 | -2.11 to 2.11 | -2.04 to 1.95 | violet gunmetal with segmented blocks | the heavy band ring at 77 percent |
@@ -161,7 +161,7 @@ Full interiors throughout the hull (R215), hidden until a piece breaks. Eclipse 
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 244 objects, 29 parts, 672 close pairs, 483 rays, 5 guns, 4 turrets swept, 8 cones, 15 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 243 objects, 29 parts, 670 close pairs, 475 rays, 5 guns, 4 turrets swept, 8 cones, 15 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -172,10 +172,10 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **The engine cluster is a diamond of four.** the side view and the beauty show three bells stacked, the plan shows two side by side; a diamond of four is the one layout that reads as all three pictures, and keeps the stern wide and flat.
 - **Engines are eclipse rings, not flame.** factions.md: "no flaming bells. An eclipse ring of pale light": each bell has a black shade disc with a thin pale green-white ring inside its lip.
 - **Batteries by data.js slot.** d_boss carries gauss T twice, doom F and flak T: the two big mounts are the null cannons (the aft one superfires on a barbette), the projector is the corona arc, the small aft mount and a belly mount are the null shredders.
-- **Weapons built from the lore, not the picture's generic turrets (R221).** Ryan: "their turrets look the same as hullbreakers"; the picture draws box turrets with round twin barrels. The null cannons are rail guns (flat rail pairs in stepped accelerator frames) firing through the slot of a crescent shade, the shredders fans of needle rails, the projector an arc emitter with a crown of electrode horns round the crest's black disc (tools/blender/kits/eclipse/README.md).
+- **Weapons built from the lore, not the picture's generic turrets (R221).** Ryan: "their turrets look the same as hullbreakers"; the picture draws box turrets with round twin barrels. The null cannons are rail guns (slim round rail pairs with banded collars) firing through the slot of a thin arched crescent shade, the shredders fans of needle rails, all in the hull's curved, layered, banded language (pass 2: "super blocky"), the projector an arc emitter with a crown of electrode horns round the crest's black disc (tools/blender/kits/eclipse/README.md).
 - **The green hexagon on the deck is the core port, not a gun.** the faction's green is the trapped core seen through gaps; the flak slot is the small twin.
 - **The crescent is three stacked layers with a corona line on each rim.** factions.md: broad layered plates, the green a thin line on every shade rim; the concept shows two stepped bands and a lip; the layers are also how it breaks (band by band).
-- **Low round drums under both batteries.** so the fore twin clears the tier when it trains aft and fires aft over the aft twin's muzzles, and the aft twin fires over the fore one (the fit check found both).
+- **Low round drums under both batteries, slimmed to the turret feet (R221 pass 2).** so the fore twin clears the tier when it trains aft and fires aft over the aft twin's muzzles, and the aft twin fires over the fore one (the fit check found both).
 - **Belly twin, attitude thrusters, deck and belly hatches, corona strip lights, heat panels added.** the belly needs cover and a ship in space needs thrusters; the picture shows no underside.
 - **The crescent band is 1.65 wide at its sides.** the plan of record (the 8c sheet's top view) gives 1.3, the beauty reads broader; the band sits between the two so the beauty's fat brim reads without losing the plan.
 
