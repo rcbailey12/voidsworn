@@ -20,3 +20,56 @@ Level = luminance 0 to 255 (Rec. 709 weights on the sRGB values as drawn).
 
 These are tuning values judged by eye (RULEBOOK 0.4); Ryan's eye on the sheet is the judge of "can tell every faction
 apart".
+
+Added after the first measurement (Nov 12), because the clip rule above did not catch the Glasswright burn-out: their hulls
+sat at about 215, just under the clip level, and the white spread off the hull as glow. Two more numbers are reported (not
+rules): **halo**, the mean level of the ring 2 to 10 pixels outside the hull minus the open sky's median (a burnt-out
+glowing hull has one), and **lines**, the spread (standard deviation) of the hull's own levels (a flat white hull has none).
+
+## Result (main b7cacdc4 before, branch ad7daade after; Ryan's PC, RTX 5080, Godot 4.7.2, 1920x1080, second run kept)
+
+Every one of the 30 faction ships is inside the band on all three skies (lit side 105 to 181); every one has at least 86
+percent of its outline lit on the darkest sky (before: 55 percent at worst, the Eclipse Tomb-ark); no ship has more than
+1.1 percent of its pixels clipped. Before, 18 of the 30 were outside the band on at least one sky (every Hegemony and Glasswright ship above it,
+every Eclipse ship and four Sunward and Hullbreaker ships below it).
+
+| Faction | Sky | Lit before | Lit after | Edge before (darkest) | Edge after (darkest) | Max clip after | Max halo before | Max halo after |
+|---|---|---|---|---|---|---|---|---|
+| Hegemony Navy | world | 192 to 211 | 156 to 180 | 0.95 | 0.91 | 0.2% | 6 | 7 |
+| Hegemony Navy | frontier | 192 to 211 | 156 to 180 | - | - | 0.2% | 5 | 5 |
+| Hegemony Navy | storm | 192 to 211 | 156 to 180 | - | - | 0.0% | 20 | 19 |
+| Sunward Crusade | world | 82 to 118 | 105 to 156 | 0.70 | 0.86 | 0.2% | 7 | 7 |
+| Sunward Crusade | frontier | 81 to 118 | 105 to 157 | - | - | 0.2% | 4 | 4 |
+| Sunward Crusade | storm | 82 to 119 | 105 to 156 | - | - | 0.2% | 5 | 5 |
+| Ashfall Hullbreakers | world | 89 to 115 | 122 to 151 | 0.79 | 0.90 | 0.0% | 4 | 4 |
+| Ashfall Hullbreakers | frontier | 89 to 115 | 122 to 151 | - | - | 0.0% | 7 | 7 |
+| Ashfall Hullbreakers | storm | 90 to 115 | 122 to 151 | - | - | 0.0% | 11 | 11 |
+| Chorus | world | 128 to 155 | 134 to 157 | 0.96 | 0.96 | 0.2% | 3 | 11 |
+| Chorus | frontier | 128 to 155 | 134 to 157 | - | - | 0.2% | 4 | 8 |
+| Chorus | storm | 128 to 155 | 133 to 157 | - | - | 0.2% | 11 | 11 |
+| Glasswrights | world | 206 to 216 | 160 to 180 | 1.00 | 1.00 | 1.1% | 36 | 17 |
+| Glasswrights | frontier | 206 to 216 | 160 to 181 | - | - | 1.1% | 24 | 11 |
+| Glasswrights | storm | 204 to 216 | 159 to 177 | - | - | 0.9% | 23 | 16 |
+| Eclipse | world | 63 to 74 | 116 to 134 | 0.55 | 0.87 | 0.3% | -1 | -1 |
+| Eclipse | frontier | 63 to 74 | 116 to 134 | - | - | 0.3% | -5 | -5 |
+| Eclipse | storm | 70 to 119 | 126 to 150 | - | - | 0.3% | 79 | 79 |
+
+Every ship, every sky, before and after: `table.md`. The Eclipse storm halo (79) is the bright storm cloud behind the
+frigate's cell, the same before and after, not glow from the hull. Glasswright lines: 10 to 20 before, 18 to 26 after.
+
+## The pictures (all at camera 170, 1 to 1 pixels; nothing here is a close-up)
+
+| File | What |
+|---|---|
+| `fleet_world_before_after.jpg` | the bench fleet sheet on the darkest sky, before and after side by side, numbers under each pair |
+| `fleet_frontier_before_after.jpg` | the same, brightest sky |
+| `fleet_storm_before_after.jpg` | the same, storm map |
+| `phone_world_1.jpg` to `_2.jpg` | for Ryan's phone (1280 wide): every ship but the capitals, before on the left half, after on the right, darkest sky |
+| `phone_world_3.jpg` | the same for the beacon (it did not fit on page 2) |
+| `phone_world_4.jpg`, `_5.jpg` | the six capitals, before, then after, in the same places |
+| `moments_worst_off_hull.jpg` | the 16 bench moment cells that changed most outside the hulls: before, after, difference (hull mask in blue) |
+
+## How it was made
+
+contrib/opus/reviews/readability_362.md (the report): the probe, the measure, the calibration runs, the moments check and
+the scene gate. Remake: the PC run files in contrib/opus/reviews/readability_362/pc/, then measure.py and sheets.py.

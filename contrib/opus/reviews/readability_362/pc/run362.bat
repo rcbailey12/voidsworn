@@ -132,7 +132,7 @@ if not exist "%PY%" (
   echo no ComfyUI python >> "%S%"
   exit /b 1
 )
-if not exist "%D%\sheets_%~1_vs_%~2" mkdir "%D%\sheets_%~1_vs_%~2"
-"%PY%" "%D%\tool\look_bench_sheets.py" --after "%D%\%~2" --before "%D%\%~1" --out "%D%\sheets_%~1_vs_%~2" --label-after %~2 --label-before %~1 > "%D%\sheets_%~1_vs_%~2\sheets_log.txt" 2>&1
-echo %date% %time% sheets %1 vs %2 exit !errorlevel! >> "%S%"
+if not exist "%D%\sheets_%~2_vs_%~3" mkdir "%D%\sheets_%~2_vs_%~3"
+"%PY%" "%D%\tool\look_bench_sheets.py" --after "%D%\%~3" --before "%D%\%~2" --out "%D%\sheets_%~2_vs_%~3" --label-after %~3 --label-before %~2 > "%D%\sheets_%~2_vs_%~3\sheets_log.txt" 2>&1
+echo %date% %time% sheets %2 vs %3 exit !errorlevel! >> "%S%"
 exit /b 0
