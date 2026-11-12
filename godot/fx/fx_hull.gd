@@ -980,6 +980,17 @@ func jet(near: Vector3, through: Vector3, out: Vector3) -> Dictionary:
 		_took("rcs", "hp")
 		return {"p": best["p"], "n": out.normalized(), "f": best["f"], "src": "hp"}
 	var h := surface(through, out)
+	if h.is_empty() and tm != null:
+		# a tower's spire or a ring's hole: the seen sample (a ray hit) nearest the aim whose plating faces the gas's way
+		var o2 := out.normalized()
+		var bd2 := INF
+		for j in sp.size():
+			if sn[j].dot(o2) < 0.25:
+				continue
+			var dd2: float = sp[j].distance_to(near)
+			if dd2 < bd2:
+				bd2 = dd2
+				h = {"p": sp[j], "n": sn[j]}
 	if h.is_empty():
 		_took("rcs", "skip")
 		return {}

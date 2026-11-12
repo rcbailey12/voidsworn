@@ -184,7 +184,7 @@ func _walk(id: String, s, real: bool) -> Dictionary:
 			put.call("breach", h.breach_point(sec, nth))
 		put.call("breach up", h.breach_point(sec, 1, Vector2(0.15, 0.75)))
 		for j in 12:
-			put.call("sample", h.surface_sample(sec, 2.5, "walk"))
+			put.call("sample", h.surface_sample(sec, 2.5, "breach"))
 	# movement jets: every row ShipView fires, at its own fitted beam and height when it is a ShipView
 	var sv = s.root
 	var L: float = float(sv.get("L")) if sv.get("L") != null and sv is SV else h.L
@@ -287,7 +287,7 @@ func _stand_ins() -> void:
 	var wedge := PrismMesh.new()
 	wedge.size = Vector3(12.0, 24.0, 1.0)   # the triangle's base 12 (z after the turn), its height 24 (x), 1 thick (y)
 	wedge.left_to_right = 0.5
-	var slab_xf := Transform3D(Basis(Vector3(0, 1, 0), Vector3(0, 0, 1), Vector3(1, 0, 0)), Vector3.ZERO)
+	var slab_xf := Transform3D(Basis(Vector3(0, 0, 1), Vector3(1, 0, 0), Vector3(0, 1, 0)), Vector3.ZERO)   # mesh x to z, y to x, z to y
 	var slab := _stand("ST_slab", Vector3(-60, 0, 0), [_mesh_of(wedge, slab_xf)])
 	# its authored muzzles: slot 0 two macro barrels on the top face, slot 1 one lance at the bow tip, and a core
 	_hp(slab, "hp_w0_hbattery_T_0", Vector3(-4, 0.5, 1.0), Vector3(1, 0, 0), Vector3.UP, {"radius": 0.1})
@@ -362,11 +362,11 @@ func _stand_ins() -> void:
 	_hp(broken, "hp_w0_hbattery_T_0", Vector3(-4, 3.5, 1.0), Vector3(1, 0, 0), Vector3.UP, {"radius": 0.1})
 	var Bk = _add("slab_broken", broken, "Cruiser")
 	var before := failures
+	print("[attach] the next refusal is expected: a muzzle moved 3 units off a copy of the stand-in slab")
 	var wb := _walk("slab_broken", Bk, false)
-	check(failures > before and int(wb["off_hull"]) >= 1, "the walk refuses a muzzle 3 units off the hull")
-	if failures == before + 1:
-		failures = before   # the expected refusal above is the proof, not a failure of the check
-		print("[attach] (the refusal above was expected: a muzzle 3 units off the stand-in slab)")
+	var refused := failures - before
+	failures = before   # the expected refusal is the proof, not a failure of the check
+	check(refused >= 1 and int(wb["off_hull"]) >= 1, "the walk refuses a muzzle 3 units off the hull")
 	report["hulls"].erase("ST_slab_broken")
 	fx.remove_ship("slab_broken")
 	for id in ["slab", "ring", "tower"]:
@@ -380,7 +380,7 @@ func _real_hulls(only: Array) -> int:
 	var da := DirAccess.open(base)
 	if da == null:
 		return 0
-	var man: Dictionary = SV.manifest() if SV.has_method("manifest") else {}
+	var man: Dictionary = SV.manifest()
 	var by_code := {}
 	for key in HT.AI_HULLS:
 		by_code[str(HT.AI_HULLS[key])] = str(key).split("|")
