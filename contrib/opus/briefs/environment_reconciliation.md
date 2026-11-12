@@ -12,11 +12,11 @@ values), SPEC (written, not built).
 
 ## 1. AS14 and AS10: debris tumble, one figure of record
 
-**Figure of record (provisional): a piece of debris turns at most 0.10 / max(1, scale) radians a second**
-(`TUMBLE_K` and `tumble_rate`, godot/world/world_living.gd). Scale 1 is a 2-unit rock or a wreck piece of radius 1.
-It binds when the motion capture in section 8 has sheeted it against the terrain synthesis periods and Ryan has
-looked at the sheet. The terrain synthesis 2.4 periods (small rocks 20 to 40 s a turn, large rocks 60 to 90 s, wreck
-pieces 80 to 120 s) are the alternative, built as the capture variant `VS_TUMBLE=periods`.
+**Figure of record (adopted by the Board, issue #541): a piece of debris turns at most 0.10 / max(1, scale) radians a
+second** (`TUMBLE_K` and `tumble_rate`, godot/world/world_living.gd). Scale 1 is a 2-unit rock or a wreck piece of
+radius 1. It bound after the motion capture in section 8 sheeted it against the terrain synthesis periods (PR 527).
+The terrain synthesis 2.4 periods (small rocks 20 to 40 s a turn, large rocks 60 to 90 s, wreck pieces 80 to 120 s)
+remain the alternative, built as the capture variant `VS_TUMBLE=periods`.
 
 What the code actually turns today (found by this pass; the audit read the stored rates, not the shaders):
 
@@ -24,20 +24,20 @@ What the code actually turns today (found by this pass; the audit read the store
 |---|---|---|---|---|
 | Wreck kit pieces on debris hexes (living path) | yes, in WRECK_SHADER | exactly the cap: 0.10 / scale (scale 1.3 to 2.6), hero piece 0.10 / scale (scale 2.6 to 3.8) | 82 to 163 s; hero 163 to 239 s | SHIPPED, DERIVED |
 | Painted hull chunks (issue 49, one per debris hex) | yes, on the CPU | the cap at the slot's scale | as their wreck slot | SHIPPED |
-| Debris rocks, both paths | **no** | a rate is stored (raw 0.05 to 0.35, held under the cap) but ROCK_SHADER ignores time | held | SHIPPED (world_rocks.gd: "Keep the seeded starting pose, without time-driven tumble") |
-| Blockers, edge, deep, belt, mountain and crystal fields (AS10) | **no** | AS10's ranges are stored and never shown | held | SHIPPED |
+| Debris rocks, both paths | yes, in ROCK_SHADER | the stored raw rate held under the cap (0.05 to 0.35 before the cap) | 1 to 3 minutes | SHIPPED (option B, issue #541) |
+| Blockers, edge, deep, belt, mountain and crystal fields (AS10) | yes, in ROCK_SHADER | AS10's stored ranges | as AS10 | SHIPPED (option B, issue #541) |
 
-So the 2 to 3 times disagreement AS14 found is real on paper and almost moot on screen: it is largest for small
-rocks, and no rock turns. For wreck pieces the two documents nearly agree (shipped 82 to 163 s against the periods'
-80 to 120 s). AS10's "inconsistent spin laws" are also invisible today for the same reason. The open question is
-therefore not only which rate but whether rocks should turn at all (section 9). The capture variant
-`VS_ROCK_TUMBLE=1` turns every rock at its stored rate, so the sheet can show rocks held against rocks turning.
-Why rock tumble was taken out is not in the repo record this thread can read (shallow history); the shader comment
-says it was on purpose.
+So the 2 to 3 times disagreement AS14 found is real on paper: it is largest for small rocks. For wreck pieces the two
+documents nearly agree (shipped 82 to 163 s against the periods' 80 to 120 s). AS10's "inconsistent spin laws" stay on
+paper too: the fields run at their stored ranges, not at the terrain periods. The Board adopted option B (issue #541):
+rocks turn at the slow cap law, so the capture can be read against the held variant `VS_ROCK_TUMBLE=0`. Why rock
+tumble was taken out is not in the repo record this thread can read (shallow history); the shader comment says it was
+on purpose.
 
-Code changes in this pass (defaults are byte-for-byte the shipped behaviour): `TUMBLE_K` named once and used by the
-CPU and the wreck shader (`tumble_k` uniform); `rock_tumble` and `wreck_tumble` hold the two laws; the rock and crystal
-shaders gained a `tumble_k` uniform that is 0 (held) unless the capture sets `VS_ROCK_TUMBLE=1`.
+Code changes in this pass (defaults are byte-for-byte the shipped behaviour, then option B turned the rock law on):
+`TUMBLE_K` named once and used by the CPU and the wreck shader (`tumble_k` uniform); `rock_tumble` and `wreck_tumble`
+hold the two laws; the rock and crystal shaders gained a `tumble_k` uniform that is on by default (option B, #541) and
+held only when the capture sets `VS_ROCK_TUMBLE=0`.
 
 ## 2. AS16: debris size structure, spec against code, value by value
 
@@ -131,15 +131,15 @@ tall. The harness waits for warm-up, suppresses the opening camera glide, disabl
 stationary camera and a 1920x1080 frame. It stops on placeholder hulls. Captures and the measured verdict are indexed
 in `contrib/opus/reviews/env230_report.md` and `docs/shots/env230/`.
 
-## 9. The question for Ryan (after the capture; the board asks it with the sheets)
+## 9. The rocks decision (Board call: B, issue #541)
 
-Debris rocks and the backdrop rock fields never turn today; only wreck pieces turn, slowly. Which should ship?
-A) keep it: rocks still, wrecks turning once every 1.4 to 4 minutes; B) rocks turn too, at the same slow law (debris
-rocks once every 1 to 3 minutes, far fields slower); C) the faster terrain periods (small rocks every 20 to 40 s).
-**Opus pick: B**, if the sheet shows no shimmer or swimming craters. The backdrops synthesis Ryan adopted (R79)
-promised debris "drifting slowly" and rejected a near-static field as frozen, and today's field is fully static; C's
-20 to 40 s turns read busy at battle distance. The answer sets `TUMBLE_K` and the rock shader default, and closes
-AS14 and AS10.
+Debris rocks and the backdrop rock fields held their pose before this call; only wreck pieces turned, slowly. The
+options were A) keep it: rocks still, wrecks turning once every 1.4 to 4 minutes; B) rocks turn too, at the same slow
+law (debris rocks once every 1 to 3 minutes, far fields slower); C) the faster terrain periods (small rocks every 20
+to 40 s). **The Board adopted B** (Nov 11 2026, issue #541) under the backdrops synthesis Ryan adopted (R79), which
+promised debris "drifting slowly" and rejected a near-static field as frozen, and PR 527's sheets showed it moves the
+rocks without shimmer at the fixed camera. `rock_tumble_k` in godot/world/world_rocks.gd now defaults on;
+`VS_ROCK_TUMBLE=0` holds the seeded pose for comparison. Ryan can overrule on sight. This closes AS14 and AS10.
 
 ## 10. Original pass limitations (Nov 9; PC completion in env230_report.md)
 
