@@ -1,0 +1,362 @@
+{
+ "code": "corsair_A16",
+ "sheet_version": 2,
+ "routes_note": "kit = the faction parts kit (tools/blender/kits/corsair); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
+ "parts": [
+  {
+   "id": "I1",
+   "kind": "intake",
+   "what": "wake-sniffer scoop, 1.9 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "I2",
+   "kind": "intake",
+   "what": "wake-sniffer scoop, 1.9 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "D1",
+   "kind": "dish",
+   "what": "listening dish, 1.9 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "D2",
+   "kind": "dish",
+   "what": "listening dish, 1.9 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "H1",
+   "kind": "claw",
+   "what": "boarding claw, 4 segments",
+   "count": 1,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "H2",
+   "kind": "claw",
+   "what": "boarding claw, 4 segments",
+   "count": 1,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "H3",
+   "kind": "claw",
+   "what": "boarding claw, 3 segments",
+   "count": 1,
+   "route": "kit",
+   "source": "designed"
+  },
+  {
+   "id": "H4",
+   "kind": "claw",
+   "what": "boarding claw, 3 segments",
+   "count": 1,
+   "route": "kit",
+   "source": "designed"
+  },
+  {
+   "id": "C1",
+   "kind": "chain",
+   "what": "lashing chain, taut between lugs",
+   "count": 1,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "C2",
+   "kind": "chain",
+   "what": "lashing chain, taut between lugs",
+   "count": 1,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "C3",
+   "kind": "chain",
+   "what": "lashing chain, taut between lugs",
+   "count": 1,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "R1",
+   "kind": "launcher",
+   "what": "rocket rack, 2 by 5 tubes",
+   "count": 10,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "T1",
+   "kind": "gun",
+   "what": "twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "T2",
+   "kind": "gun",
+   "what": "twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "PB",
+   "kind": "gun",
+   "what": "single ball casemate",
+   "count": 1,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "P1",
+   "kind": "gun",
+   "what": "twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "P2",
+   "kind": "gun",
+   "what": "twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "P3",
+   "kind": "gun",
+   "what": "twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "P4",
+   "kind": "gun",
+   "what": "twin ball casemate",
+   "count": 2,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "P5",
+   "kind": "gun",
+   "what": "twin ball casemate",
+   "count": 2,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "SB",
+   "kind": "gun",
+   "what": "single ball casemate",
+   "count": 1,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "S1",
+   "kind": "gun",
+   "what": "twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "S2",
+   "kind": "gun",
+   "what": "twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "S3",
+   "kind": "gun",
+   "what": "twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "S4",
+   "kind": "gun",
+   "what": "twin ball casemate",
+   "count": 2,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "S5",
+   "kind": "gun",
+   "what": "twin ball casemate",
+   "count": 2,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "E0",
+   "kind": "engine",
+   "what": "engine, bell 3.0 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "E1",
+   "kind": "engine",
+   "what": "engine, bell 3.6 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "E2",
+   "kind": "engine",
+   "what": "engine, bell 3.1 across",
+   "count": 1,
+   "route": "kit",
+   "source": "designed"
+  },
+  {
+   "id": "E3",
+   "kind": "engine",
+   "what": "engine, bell 1.2 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "E4",
+   "kind": "engine",
+   "what": "engine, bell 1.2 across",
+   "count": 1,
+   "route": "kit",
+   "source": "designed"
+  },
+  {
+   "id": "E5",
+   "kind": "engine",
+   "what": "engine, bell 1.3 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture"
+  },
+  {
+   "id": "Q1",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed"
+  },
+  {
+   "id": "Q2",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed"
+  },
+  {
+   "id": "Q3",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed"
+  },
+  {
+   "id": "Q4",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed"
+  },
+  {
+   "id": "B1",
+   "kind": "bay",
+   "what": "ventral launch bay door, 3.6 x 3.4",
+   "count": 1,
+   "route": "hand-built",
+   "source": "designed"
+  }
+ ],
+ "masses": [
+  {
+   "name": "Hull slab (tier 1)",
+   "route": "hand-built"
+  },
+  {
+   "name": "Raised armoured deck (tier 2)",
+   "route": "hand-built"
+  },
+  {
+   "name": "Castle (tier 3)",
+   "route": "hand-built"
+  },
+  {
+   "name": "Bridge block",
+   "route": "hand-built"
+  },
+  {
+   "name": "Flank sponsons and belt strakes",
+   "route": "hand-built"
+  }
+ ],
+ "break_pieces": [
+  {
+   "name": "bow piece",
+   "stations": "0.0 to 23.0 percent",
+   "bounded_by": [
+    "B-1"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "midships piece 1",
+   "stations": "23.0 to 59.6 percent",
+   "bounded_by": [
+    "B-1",
+    "B-2"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "midships piece 2",
+   "stations": "59.6 to 78.5 percent",
+   "bounded_by": [
+    "B-2",
+    "B-3"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "stern piece",
+   "stations": "78.5 to 100.0 percent",
+   "bounded_by": [
+    "B-3"
+   ],
+   "full_interior": true
+  }
+ ],
+ "insides": "full interiors throughout the hull, hidden until a piece breaks (R215); every break piece carries its share"
+}

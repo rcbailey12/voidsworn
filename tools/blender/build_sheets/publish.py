@@ -7,7 +7,7 @@ import os; os.makedirs(D, exist_ok=True)
 for n in ['side', 'top', 'underside', 'bow', 'stern', 'cutaway', 'threequarter']:
     Image.open('%s/%s.png' % (O, n)).convert('RGB').save('%s/%s.jpg' % (D, n), quality=88)
 Image.open('%s/sheet.jpg' % O).save('%s/sheet.jpg' % D, quality=85)
-for n in ('preview.jpg', 'feature_table.md', 'checks.json'):
+for n in ('preview.jpg', 'feature_table.md', 'checks.json', 'manifest.json'):
     shutil.copy('%s/%s' % (O, n), '%s/%s' % (D, n))
 im = Image.open(ov); im.resize((im.width * 720 // im.height, 720)).save('%s/outline_check.jpg' % D, quality=85)
 beauty = [l for l in open('%s/tools/blender/build_sheets/ships/%s.py' % (REPO, s)) if l.startswith('BEAUTY')][0].split("'")[1]

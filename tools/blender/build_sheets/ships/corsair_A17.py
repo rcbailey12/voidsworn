@@ -1,7 +1,9 @@
-# corsair_A17: Hullbreaker wrecker, the Pack Hunter (Ashfall Hullbreakers cruiser, class Cruiser, 14.5 world units).
+# corsair_A17 round 2: Hullbreaker wrecker, the Pack Hunter (Ashfall Hullbreakers cruiser, class Cruiser, 14.5 world units).
 # Accepted picture: contrib/muse/design/concept_round8_2026_11/corsair_A17_beauty.jpg (R201), from round 1 Pack Hunter
 # (concept_directions_2026_11/corsair_B.jpg, R197). data.js c_marauder: scatter P, scatter S, torp F, flak T (no hangar).
-# Units are world units. +X bow, +Y port, +Z up. Jaw tips at x = +7.25, engine exits near x = -7.25.
+# Round 2 (R213, Ryan 19:40 CST): designed from the picture's identity, lean (his pick): a heavy head with jaws, scoops and
+# listening dishes as ears, a narrow neck, a shoulder hump, a stacked engine cluster. Profile from the round 8 side view.
+# +X bow, +Y port, +Z up. Jaw tips x = +7.25, engine exits x = -7.25. Flat belly z = -1.75.
 CODE = 'corsair_A17'
 NAME = 'Hullbreaker wrecker (the Pack Hunter)'
 FACTION = 'Ashfall Hullbreakers (corsair)'
@@ -10,128 +12,137 @@ LENGTH = 14.5
 GAME = "data.js c_marauder (cls 'Cruiser'); length from godot/render/hull_table.gd CLS_LEN['Cruiser'] = 14.5 (drawn x SHIP_K 1.6 = 23.2 on the board)"
 BEAUTY = 'contrib/muse/design/concept_round8_2026_11/corsair_A17_beauty.jpg'
 
-# a heavy head, a narrower neck, a great shoulder hump, then the engine end
-# beam and heights are 0.88 of the first fit: leaner (factions.md 'lean, leaning forward'; the outline fit improves, 85.5 to 86.5 percent)
 HULL = [
-    (4.9, 2.112, 2.156, -1.276, 1.364, 0.44, 0.396),
-    (4.3, 2.332, 2.376, -1.452, 1.584, 0.528, 0.44),
-    (2.3, 2.288, 2.332, -1.496, 1.672, 0.66, 0.528),
-    (0.2, 2.42, 2.464, -1.54, 2.068, 0.836, 0.528),
-    (-2.8, 2.42, 2.464, -1.452, 2.288, 0.88, 0.528),
-    (-4.8, 2.156, 2.2, -1.232, 2.2, 0.792, 0.44),
-    (-5.8, 1.804, 1.848, -0.968, 1.716, 0.616, 0.352),
+    (4.9, 2.2, 2.2, -1.35, 1.15, 0.45, 0.45),
+    (4.4, 2.45, 2.45, -1.6, 1.4, 0.55, 0.5),
+    (2.75, 2.45, 2.45, -1.65, 1.45, 0.6, 0.55),
+    (2.3, 2.15, 2.15, -1.6, 1.3, 0.55, 0.5),
+    (1.2, 2.45, 2.5, -1.7, 1.5, 0.7, 0.6),
+    (-1.0, 2.55, 2.6, -1.75, 1.6, 0.75, 0.6),
+    (-4.0, 2.45, 2.5, -1.7, 1.6, 0.75, 0.6),
+    (-5.2, 2.1, 2.15, -1.5, 1.45, 0.6, 0.5),
+    (-5.8, 1.8, 1.85, -1.2, 1.2, 0.5, 0.4),
 ]
+PL = dict(size=(0.5, 1.4), thick=(0.04, 0.15), skip=0.15, stack=0.35, mats={'soot': 5, 'iron': 5, 'pale': 2, 'rust': 2, 'soot2': 2})
 
 
 def build(K):
-    K.mass('Hull (head, neck, hump)', K.hull(HULL, 'soot', shell=0.22), 'weathered grey and soot plate',
-           note='heavy head, narrow neck, shoulder hump')
-    K.mass('Head top block', K.loft('A17_headtop', [(4.7, 1.496, 1.584, 1.056, 1.628, 0.264, 0), (2.4, 1.584, 1.672, 1.232, 1.804, 0.264, 0)], 'pale'),
-           'pale grey trophy plate with a rust patch')
-    K.mass('Hump crest', K.loft('A17_crest', [(-0.6, 1.32, 1.408, 1.936, 2.596, 0.352, 0), (-4.4, 1.408, 1.496, 2.024, 2.772, 0.396, 0)], 'soot'),
-           'soot with red patches', note='the shoulder hump top')
-    K.box('A17_rust_head', 4.0, 4.6, -0.88, 0.528, 1.61, 1.672, 'rust')
-    K.loft('A17_redstripe', [(3.6, -1.76, 2.306, 1.144, 1.426, 0, 0), (0.0, -1.936, 2.482, 1.584, 1.936, 0, 0)], 'blood')
-    K.box('A17_red_hump', -1.6, -0.4, -0.88, 0.528, 2.596, 2.64, 'blood')
-    K.loft('A17_red_flank', [(-3.2, 2.464, -2.288, 0.176, 1.232, 0, 0), (-4.2, 2.288, -2.112, 0.176, 1.232, 0, 0)], 'blood')
-    K.mass('Engine block', K.box('A17_engblock', -6.4, -5.6, -1.9, 1.9, -1.0, 1.9, 'soot', ch=0.3), 'soot, steel')
+    K.mass('Hull (head, neck, body)', K.hull(HULL, 'soot', shell=0.22, plates=dict(PL, seed=17)), 'weathered grey and soot plate',
+           note='heavy head, pinched neck, lean body')
+    K.mass('Head brow', K.loft('A17_brow', [(4.75, 1.75, 1.75, 1.05, 1.75, 0.3, 0), (2.8, 1.85, 1.85, 1.2, 1.85, 0.3, 0)], 'pale',
+           plates=dict(PL, seed=27, faces=[0, 1, 2, 3])), 'pale grey trophy plate, rust patch', note='the raised brow of the head')
+    K.mass('Shoulder hump', K.loft('A17_hump', [(0.4, 1.8, 1.85, 1.3, 1.9, 0.4, 0), (-0.6, 2.2, 2.25, 1.3, 2.75, 0.5, 0),
+                                                (-4.2, 2.2, 2.25, 1.3, 2.85, 0.5, 0), (-5.0, 1.8, 1.85, 1.3, 2.2, 0.4, 0)], 'soot',
+                                    plates=dict(PL, seed=37, faces=[0, 1, 2, 3])), 'soot with dried-blood patches', note='the shoulder hump')
+    K.mass('Hump crest', K.box('A17_crest', -3.8, -1.2, -1.2, 1.2, 2.7, 3.2, 'soot', ch=0.25, plates=dict(PL, seed=47, faces=[0, 1, 2, 3])),
+           'soot', note='stepped crest on the hump')
+    K.box('A17_rust_brow', 4.0, 4.6, -1.0, 0.6, 1.75, 1.82, 'rust')
+    K.box('A17_red_crest', -2.8, -1.6, -1.15, 1.15, 3.2, 3.25, 'blood')
+    for side in (1, -1):
+        K.loft('A17_redstripe_%d' % side, [(2.0, side * 2.47 if side > 0 else 2.0, -2.0 if side > 0 else 2.52, 1.0, 1.35, 0, 0),
+                                            (-0.5, side * 2.62 if side > 0 else 2.0, -2.0 if side > 0 else 2.67, 1.0, 1.4, 0, 0)], 'blood')
+    K.mass('Engine block', K.box('A17_engblock', -6.0, -5.4, -1.9, 1.9, -1.3, 1.6, 'soot', ch=0.25), 'soot, steel')
+    # belt strake along both flanks
+    import kit as _k
+    K.loft('A17_belt', [(x, _k.sec_at(HULL, x)[1] + 0.2, _k.sec_at(HULL, x)[2] + 0.2, -0.75, -0.3, 0.08, 0.08) for x in (2.2, 0.0, -2.5, -5.0)], 'iron')
 
-    # ---- bow: scoops, dishes ("ears"), jaws ----
-    K.intake('I1', (5.3, 1.408, -0.66), 0.6, 1.9, note='port scoop, low, ribbed duct along the port chin')
-    K.cyl('A17_I1_rib', (3.2, 1.364, -0.66), (4.4, 1.364, -0.66), 0.7, 'steel')
-    K.intake('I2', (5.15, -1.54, 0.132), 0.42, 1.0, note='starboard scoop, small (mismatched pair)')
-    K.dish('D1', (3.3, 2.2, 0.88), 0.8, yaw=35, pitch=10, note='port ear, on the head flank')
-    K.dish('D2', (4.0, -1.98, 1.364), 0.8, yaw=-30, pitch=15, note='starboard ear, on the head top edge')
-    # jaws: open sideways, hooks turned inboard
-    K.claw('J1', (4.5, -1.496, -0.968), [(5.6, -1.848, -1.1), (6.6, -1.936, -1.188), (7.25, -1.54, -1.276)], w=0.5, name='boarding jaw',
-           note='starboard upper jaw')
-    K.claw('J2', (4.3, -0.88, -1.276), [(5.3, -1.188, -1.628), (6.0, -1.276, -1.848), (6.5, -0.88, -1.936)], w=0.45, name='boarding jaw',
-           note='starboard lower jaw (shorter, mismatched)')
-    K.claw('J3', (4.0, 0.968, -1.276), [(4.9, 1.276, -1.716), (5.7, 1.364, -1.98), (6.2, 0.968, -2.112)], w=0.5, name='boarding jaw',
-           note='port lower jaw')
-    K.claw('J4', (4.5, 1.584, -0.88), [(5.4, 1.892, -0.968), (6.3, 1.98, -1.056), (6.8, 1.584, -1.144)], w=0.45, src='designed', name='boarding jaw',
-           note='port upper jaw: hidden behind the port scoop in the picture; pairs J1 so the jaws can close')
-    K.box('A17_jaw_housing', 3.4, 4.6, -1.672, 1.672, -1.584, -1.056, 'steel', ch=0.15)
+    # ---- head: scoops, ears (dishes), jaws ----
+    for side, fi, fd, r in ((1, 'I1', 'D1', 0.62), (-1, 'I2', 'D2', 0.55)):
+        y = 2.55 * side
+        K.intake(fi, (5.3, y, 0.25), r, 2.4, src='picture', note='%s scoop drum along the head flank%s' % ('port' if side > 0 else 'starboard', ', the larger' if side > 0 else ''))
+        for i, x in enumerate((3.4, 4.1)):
+            K.cyl('A17_%s_rib%d' % (fi, i), (x - 0.12, y, 0.25), (x + 0.12, y, 0.25), r * 1.15, 'steel')
+        K.box('A17_%s_saddle' % fi, 2.9, 4.9, min(y, side * 2.1), max(y, side * 2.1), -0.2, 0.7, 'steel', ch=0.08)
+        K.dish(fd, (2.6, 2.4 * side, 1.4), 0.85, yaw=25 * side, pitch=10, note='%s ear, listening dish' % ('port' if side > 0 else 'starboard'))
+    K.box('A17_jaw_housing', 3.4, 4.8, -2.0, 2.0, -2.05, -1.5, 'steel', ch=0.15)
+    for side, fl, fu in ((1, 'J1', 'J3'), (-1, 'J2', 'J4')):
+        s_ = 'port' if side > 0 else 'starboard'
+        K.claw(fl, (4.4, 1.55 * side, -1.75), [(5.4, 1.9 * side, -1.85), (6.4, 1.95 * side, -1.9), (7.25, 1.45 * side, -1.85)],
+               w=0.7, name='boarding jaw', note='%s lower jaw, hinged, opens sideways' % s_)
+        K.claw(fu, (4.6, 2.2 * side, -0.85), [(5.5, 2.45 * side, -0.95), (6.3, 2.45 * side, -1.0), (6.85, 2.0 * side, -1.05)],
+               w=0.5, name='boarding jaw', src='picture' if side < 0 else 'designed', note='%s upper jaw' % s_)
 
-    # ---- chains ----
-    K.chain('C1', [(-0.2, 2.464, 1.584), (-0.4, 0.88, 2.64), (-0.6, -0.88, 2.64), (-0.8, -2.508, 1.584)], note='girdle over the hump front')
-    K.chain('C2', [(3.4, -2.244, 1.276), (1.2, -2.288, 1.628), (-1.4, -2.508, 2.024)], note='starboard edge lashing, head to hump')
+    # ---- chains: girdles over the neck and hump seams ----
+    K.chain('C1', [(2.45, 2.35, -0.6), (2.45, 1.9, 1.35), (2.45, -1.9, 1.35), (2.45, -2.35, -0.6)], note='girdle over the neck seam')
+    K.chain('C2', [(-0.7, 2.75, 0.2), (-0.7, 2.25, 2.0), (-0.7, 1.5, 2.8), (-0.7, -1.5, 2.8), (-0.7, -2.3, 2.0), (-0.7, -2.8, 0.2)],
+            note='girdle over the hump front')
 
-    # ---- weapons ----
-    K.launcher('R1', (3.4, 0.44, 1.804), 2, 3, tube_r=0.16, depth=1.2, pitch=5, slot='F', weapon='torp', src='designed',
-               note='rattle-rocket pod on the head top: data.js gives the wrecker a forward rocket slot; the picture shows none')
-    K.gun('T1', (1.6, -0.264, 1.54), 0, 8, barrels=1, cal=0.1, blen=1.3, size=0.85, slot='T', weapon='flak', note='neck turret on a pedestal')
-    K.gun('T2', (-2.6, 0.616, 2.746), 0, 6, barrels=2, cal=0.09, blen=1.2, size=0.8, slot='T', weapon='flak', note='hump-top twin')
-    K.gun('S1', (3.3, -2.156, 1.276), -45, 0, barrels=2, cal=0.08, blen=1.0, size=0.7, slot='S', weapon='scatter', note='starboard edge')
-    K.gun('S2', (1.9, -2.2, 1.496), -45, 0, barrels=2, cal=0.08, blen=1.0, size=0.7, slot='S', weapon='scatter', note='starboard edge')
-    K.gun('S3', (0.4, -2.376, 2.024), -35, 0, barrels=1, cal=0.08, blen=1.0, size=0.7, slot='S', weapon='scatter', note='starboard edge')
-    K.gun('S4', (-3.9, -2.464, 0.528), -50, 0, barrels=2, cal=0.09, blen=1.1, size=0.75, normal=(0, -0.88, 0), slot='S', weapon='scatter',
-          src='designed', note='starboard hump casemate; the picture does not show the starboard flank')
-    K.gun('P1', (-3.7, 2.464, 0.528), 50, 0, barrels=2, cal=0.09, blen=1.2, size=0.75, normal=(0, 0.88, 0), slot='P', weapon='scatter', note='port hump casemate')
-    K.gun('P2', (-4.6, 2.244, 1.32), 55, 0, barrels=1, cal=0.08, blen=1.0, size=0.65, normal=(0, 0.88, 0), slot='P', weapon='scatter')
-    K.gun('P3', (-2.7, 2.464, -0.616), 45, 0, barrels=1, cal=0.07, blen=0.8, size=0.6, normal=(0, 0.88, 0), slot='P', weapon='scatter')
-    K.gun('P4', (-0.8, 2.024, -1.452), 35, -10, barrels=2, cal=0.08, blen=1.1, size=0.7, normal=(0, 0, -0.88), slot='P', weapon='scatter',
-          note='port chin turret, hangs under the neck')
+    # ---- weapons, by data.js slot ----
+    K.launcher('R1', (4.35, 0.0, 1.85), 2, 3, tube_r=0.17, depth=1.3, pitch=5, slot='F', weapon='torp',
+               note='rattle-rocket pod on the brow, firing over the jaws')
+    K.gun('T1', (-2.5, 0.0, 3.2), 0, 8, barrels=2, cal=0.1, blen=1.4, size=0.9, slot='T', weapon='flak', note='hump-top twin, 360 degrees')
+    K.gun('T2', (-1.6, 0.0, -1.75), 0, -8, barrels=2, cal=0.09, blen=1.2, size=0.8, normal=(0, 0, -1), slot='T', weapon='flak',
+          note='belly twin, covers below')
+    for side, sl in ((1, 'P'), (-1, 'S')):
+        for i, x in enumerate((1.7, -0.3)):
+            K.gun('%s%d' % (sl, i + 1), (x, side * 1.9, 1.5 if x > 0.5 else 1.6), side * 45, 2, barrels=2, cal=0.09, blen=1.25,
+                  size=0.85, slot=sl, weapon='scatter', note='deck-edge twin turret')
+        K.gun('%s3' % sl, (-3.3, side * 2.25, 2.1), side * 55, 0, barrels=2, cal=0.09, blen=1.2, size=0.8, normal=(0, side, 0),
+              slot=sl, weapon='scatter', note='hump flank casemate')
 
-    # ---- engines (mismatched cluster, larger to port) ----
-    K.engine('E1', (-6.4, 1.012, 1.144), 0.5, 1.4, bell=1.2, note='port upper')
-    K.engine('E2', (-6.692, 1.188, 0), 0.62, 1.5, bell=1.2, note='port main, the large one')
-    K.engine('E3', (-6.2, 1.32, -0.836), 0.34, 1.0, bell=1.25, note='port lower, small')
-    K.engine('E4', (-6.2, -1.056, 1.232), 0.45, 1.3, bell=1.2, note='starboard upper')
-    K.engine('E5', (-6.4, -1.144, -0.088), 0.52, 1.4, bell=1.2, src='designed', note='starboard main, smaller than E2')
-    for i, x in enumerate((3.5, 1.0, -1.5, -4.0)):
-        K.box('A17_light%d' % i, x - 0.08, x + 0.08, 2.5 + (0.25 if x < 0 else 0), 2.56 + (0.25 if x < 0 else 0), -0.45, -0.35, 'light')
+    # ---- engines: a stacked cluster, three per side, port bells larger ----
+    for side, base in ((1, 'E1'), (-1, 'E4')):
+        for j, (z, r) in enumerate(((1.05, 0.5), (0.0, 0.58), (-0.95, 0.42))):
+            rr = r * (1.08 if side > 0 else 0.95)
+            K.engine('E%d' % ((1 if side > 0 else 4) + j), (-7.25 + 0.9 * rr, side * 1.1, z), rr, 1.0, bell=1.2,
+                     src='picture' if side > 0 or j == 0 else 'designed', note='%s %s' % ('port' if side > 0 else 'starboard', ('upper', 'main', 'lower')[j]))
+    for i, (x, y, z, n) in enumerate([(4.2, 2.45, 1.0, (0, 1, 0)), (4.2, -2.45, 1.0, (0, -1, 0)),
+                                      (-5.3, 2.1, 1.0, (0, 1, 0)), (-5.3, -2.15, 1.0, (0, -1, 0))]):
+        K.thruster('Q%d' % (i + 1), (x, y, z), n, note='bow' if x > 0 else 'stern')
+    for i, x in enumerate((3.6, 1.0, -1.5, -4.0)):
+        for side in (1, -1):
+            K.box('A17_light%d%s' % (i, 'p' if side > 0 else 's'), x - 0.08, x + 0.08, side * 2.55 - 0.03, side * 2.55 + 0.03, -1.05, -0.95, 'light')
 
     # ---- colour zones ----
     K.colour('weathered grey and soot plate', 7.25, -7.25, 'whole hull')
-    K.colour('pale grey trophy plate (head top)', 4.7, 2.4, 'head top block')
-    K.colour('rust patch', 4.6, 4.0, 'head top, forward')
-    K.colour('dried-blood red stripe', 3.6, 0.0, 'starboard deck edge')
-    K.colour('dried-blood red patch', -0.4, -1.6, 'hump top')
-    K.colour('dried-blood red patch', -3.2, -4.2, 'port hump flank')
+    K.colour('pale grey trophy plate (brow)', 4.75, 2.8, 'head top')
+    K.colour('rust patch', 4.6, 4.0, 'brow, forward')
+    K.colour('dried-blood red stripes', 2.0, -0.5, 'both deck edges')
+    K.colour('dried-blood red patch', -1.6, -2.8, 'hump crest')
 
     # ---------- INSIDE ----------
-    K.deck('lower', -0.484, -5.4, 4.6)
-    K.deck('main', 0.66, -5.4, 4.6)
-    K.deck('hump', 1.76, -4.6, 0.0)
-    for i, x in enumerate((4.3, 2.3, 0.2, -2.8, -4.8)):
+    K.deck('lower', -0.75, -5.4, 4.5)
+    K.deck('main', 0.55, -5.4, 4.5)
+    K.deck_box('hump', 1.9, -4.3, 0.2, 1.8)
+    for i, x in enumerate((4.4, 2.5, 0.2, -2.6, -4.7)):
         K.bulkhead('F%d' % i, x)
-    K.room('jaw_machinery', 'machinery', 3.4, 4.6, -1.584, 1.584, -1.144, -0.528, note='jaw rams and winches')
-    K.room('boarding_kennels', 'crew', 2.4, 4.6, -1.672, 1.672, -0.396, 0.616, note='boarding gangs at the jaws')
-    K.room('ears_sensor_room', 'bridge', 2.6, 4.4, -1.232, 1.232, 0.748, 1.408, note='listening room behind the dishes, the bridge')
-    K.room('rocket_magazine', 'magazine', 2.6, 3.4, -0.352, 1.144, 1.276, 1.76, note='under the rocket pod')
-    K.room('loot_hold', 'hold', 0.3, 2.2, -1.76, 1.76, -1.232, 0.572, note='neck hold')
-    K.room('crew_decks', 'crew', -2.6, 0.1, -1.936, 1.936, 0.748, 1.672, note='')
-    K.room('shell_magazine', 'magazine', -2.6, 0.1, -1.936, 1.936, -1.232, 0.572, note='battery magazines')
-    K.room('flak_magazine', 'magazine', -3.4, -1.8, -0.528, 1.232, 1.848, 2.464, note='under the hump twin')
-    K.room('core', 'core', -4.6, -2.9, -1.056, 1.056, -1.144, 0.572, note='reactor core (hp_core)')
-    K.room('engine_room', 'engroom', -5.6, -4.9, -1.584, 1.584, -0.792, 1.584, note='engine room and feeds')
-    K.armour('head (forward of 4.3)', 0.45, 'ram plate behind the jaws')
-    K.armour('flanks', 0.25, 'patch plates')
+    K.room('jaw_machinery', 'machinery', 3.4, 4.6, -1.8, 1.8, -1.45, -0.85, note='jaw rams and winches')
+    K.room('boarding_kennels', 'crew', 2.9, 4.6, -1.9, 1.9, -0.65, 0.45, note='boarding gangs behind the jaws')
+    K.room('ears_and_bridge', 'bridge', 2.9, 4.5, -1.4, 1.4, 0.65, 1.25, note='listening room and bridge under the brow')
+    K.room('rocket_magazine', 'magazine', 3.4, 4.3, -0.6, 0.6, 1.3, 1.8, note='under the rocket pod')
+    K.room('loot_hold', 'hold', 0.3, 2.3, -2.0, 2.0, -1.45, 0.45, note='neck hold')
+    K.room('crew_decks', 'crew', -2.5, 0.1, -2.1, 2.1, 0.65, 1.8, note='')
+    K.room('shell_magazine', 'magazine', -2.5, 0.1, -2.1, 2.1, -1.45, 0.45, note='battery magazines')
+    K.room('flak_magazine', 'magazine', -3.4, -1.7, -0.8, 0.8, 2.0, 2.65, note='under the hump twin')
+    K.room('core', 'core', -4.5, -2.8, -1.2, 1.2, -1.45, 0.45, note='reactor core (hp_core)')
+    K.room('engine_room', 'engroom', -5.4, -4.8, -1.8, 1.8, -1.2, 1.4, note='engine room and feeds')
+    K.armour('head (forward of 4.4)', 0.45, 'ram plate behind the jaws')
+    K.armour('flanks', 0.25, 'patch plates and the belt strake')
     K.armour('hump roof and deck', 0.2, '')
     K.armour('belly', 0.25, 'flat armoured belly with chines')
     K.armour('engine end', 0.15, 'thinnest')
-    K.break_line('B-1', 2.3, 'the neck seam under the C2 lashing: the head and jaws tear off, opening the kennels and the hold')
-    K.break_line('B-2', -4.8, 'hump/engine seam: the engine cluster tears away, opening the engine room')
-    K.point('core', 'hp_core', (-3.7, 0, -0.264))
-    for i, (x, y, z, sec, side) in enumerate([(3.9, 2.4, 0.9, 'prow', 'port'), (3.0, -2.5, -0.6, 'prow', 'stbd'),
-                                              (0.9, 2.7, 1.2, 'mid', 'port'), (-1.8, -2.85, 0.2, 'mid', 'stbd'),
-                                              (-5.0, 2.35, 1.5, 'eng', 'port')]):
+    K.break_line('B-1', 2.45, 'the neck seam under the C1 girdle: the head and jaws tear off, opening the kennels and the hold',
+                 path=[(2.6, 1.85), (2.2, 1.0), (2.75, 0.2), (2.25, -0.6), (2.7, -1.75)])
+    K.break_line('B-2', -4.75, 'hump and engine seam: the engine cluster tears away, opening the engine room',
+                 path=[(-4.9, 2.2), (-4.5, 1.2), (-5.0, 0.3), (-4.55, -0.7), (-4.95, -1.7)])
+    K.inside.append(dict(kind='note', name='insides', note='Full interiors throughout the hull (R215), hidden until a piece breaks. Deaths blow the hull apart unevenly along these seams with a ragged bite where the core goes (R186).'))
+    K.point('core', 'hp_core', (-3.6, 0, -0.5))
+    for i, (x, y, z, sec, side) in enumerate([(3.9, 2.45, 0.9, 'prow', 'port'), (2.9, -2.45, -0.6, 'prow', 'stbd'),
+                                              (0.8, 2.5, 1.1, 'mid', 'port'), (-1.9, -2.6, 0.1, 'mid', 'stbd'),
+                                              (-4.9, 2.2, 1.4, 'eng', 'port')]):
         K.point('breach', 'hp_breach_%d' % i, (x, y, z), side=side, section=sec)
-    K.point('rcs', 'hp_rcs_0', (4.6, 2.156, 0.528), side='port')
-    K.point('rcs', 'hp_rcs_1', (4.6, -2.2, 0.528), side='stbd')
-    K.point('board', 'hp_board_0', (-0.6, 2.42, 0.176), side='port')
-    K.point('board', 'hp_board_1', (-0.6, -2.464, 0.176), side='stbd')
+    K.point('rcs', 'hp_rcs_0', (4.2, 2.45, 1.0), side='port')
+    K.point('rcs', 'hp_rcs_1', (4.2, -2.45, 1.0), side='stbd')
+    K.point('board', 'hp_board_0', (-0.5, 2.6, 0.2), side='port')
+    K.point('board', 'hp_board_1', (-0.5, -2.65, 0.2), side='stbd')
 
-    # ---------- changed from the picture ----------
-    K.change('Every gun rests facing forward or trained 35 to 55 degrees off the bow', 'the picture draws two port flank guns trained aft; no gun faces aft')
-    K.change('Every gun sits on a turning ring or a ball casemate', 'several picture guns stand on thin posts or come straight out of plate')
-    K.change('Jaws hinge on a housing under the head and their hooks turn inboard', 'the picture jaws are loose arms; jaws that open sideways must close on something')
-    K.change('Fourth jaw J4 added (port upper)', 'the picture shows three; a pair per side lets the jaws close (it would sit behind the port scoop in the picture)')
-    K.change('Chains are taut lashings between lugs', 'a slack chain cannot drape in space; the faction rule is chains between hull sections')
-    K.change('Forward rocket pod R1 added on the head top', 'data.js gives the wrecker a forward rocket slot (torp F); the picture shows no launcher')
-    K.change('Engine glow points aft only', 'the picture shows the upper starboard pod glowing at its front')
+    # ---------- changed from the picture (designer's decisions, R207) ----------
+    K.change('Guns laid out as matched batteries by game slot', 'the picture scatters guns on one edge and the far flank; scatter P and S are mirrored (two deck-edge twin turrets and a hump casemate per side), flak on the spine and the belly, the rocket pod on the brow')
+    K.change('Lean hull, profile from the round 8 side view', 'Ryan kept A17 lean (R213); the head sits low and heavy, the hump rises behind the neck')
+    K.change('Jaws are two matched pairs hinged on a housing, hooks turned inboard', 'the picture shows three loose arms; jaws that open sideways must close on something')
+    K.change('Scoops and ears made a matched pair (port scoop larger)', 'the picture shows a large port scoop and a small starboard one; kept mismatched in size, matched in place')
+    K.change('Engines are a stacked cluster of three per side, glow aft only', 'the picture shows a port cluster and one starboard pod glowing at its front')
+    K.change('Forward rocket pod, belly flak turret and four attitude thrusters added', 'data.js gives a forward rocket slot (torp F); the belly needs cover; a ship in space needs thrusters')
+    K.change('Chains are taut girdles over the neck and hump seams', 'a slack chain cannot drape in space; the girdles sit on the break lines')
     K.change('Crystal shard removed', 'Ryan, R197')
-
-    K.open_item('Starboard flank aft of the hump front: designed here (S4, E5); the picture does not show it')
-    K.open_item('Belly between the jaw housing and the engines: flat armoured belly with chines, P4 chin turret; the picture does not show it')
+    K.open_item('Belly detail between the jaw housing and the engines is designed here; the picture does not show it')

@@ -95,7 +95,7 @@ if os.name == 'nt':
             d.use = True
     except Exception as ex:
         print('gpu setup', ex)
-sc.cycles.samples = 8 if QUICK else 48
+sc.cycles.samples = int(os.environ.get('SHEET_SAMPLES', 8 if QUICK else 48))
 sc.cycles.use_denoising = True
 sc.render.film_transparent = True
 sc.view_settings.view_transform = 'Standard'

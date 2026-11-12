@@ -253,9 +253,16 @@ for r in INS:
         SPN[r['name']] = len(SPN) + 1
         label(dr, ((u0 + u1) / 2 - 10 * SC, (v0 + v1) / 2 - 12 * SC), str(SPN[r['name']]), f_m, INK)
     if r['kind'] == 'break':
-        u, _ = proj('cutaway', (r['x'], 0, 0))
-        dashed(dr, (u, 40 * SC), (u, cut.size[1] - 90 * SC), RED, 4, 14)
-        label(dr, (u + 6, 44 * SC), r['name'], f_m, RED)
+        if r.get('path'):
+            pts = [proj('cutaway', (x_, 0, z_)) for x_, z_ in r['path']]
+            for a_, b_ in zip(pts, pts[1:]):
+                dashed(dr, a_, b_, RED, int(5 * SC / 2) + 2, 10)
+            lx, ly = pts[0] if r.get('orient') != 'long' else pts[len(pts) // 2]
+            label(dr, (lx + 6, ly - 40 * SC), r['name'] + (' (long)' if r.get('orient') == 'long' else ''), f_m, RED)
+        else:
+            u, _ = proj('cutaway', (r['x'], 0, 0))
+            dashed(dr, (u, 40 * SC), (u, cut.size[1] - 90 * SC), RED, 4, 14)
+            label(dr, (u + 6, 44 * SC), r['name'], f_m, RED)
     if r['kind'] == 'bulkhead':
         u, _ = proj('cutaway', (r['x'], 0, 0))
         label(dr, (u - 12, cut.size[1] - 86 * SC), r['name'], f_s, DIM, box=False)
@@ -280,6 +287,33 @@ for nm, im in (('side', side), ('top', top), ('underside', und), ('bow', bow), (
 
 json.dump(checks, open(os.path.join(OUT, 'checks.json'), 'w'), indent=1)
 print(json.dumps(checks))
+# ---------------- manifest (R214): every part, its route, and the break pieces ----------------
+man = dict(code=CODE, sheet_version=2, routes_note='kit = the faction parts kit (tools/blender/kits/corsair); hand-built = modelled for this hull; generated = from a reviewed part-library entry',
+           parts=[], masses=[], break_pieces=[])
+for f in F:
+    man['parts'].append(dict(id=f['id'], kind=f['kind'], what=f['what'], count=f['count'], route='kit' if f['kind'] in ('gun', 'launcher', 'engine', 'dish', 'intake', 'claw', 'chain', 'thruster') else 'hand-built',
+                             source=f['src']))
+for m in M['masses']:
+    man['masses'].append(dict(name=m['name'], route='hand-built'))
+br = [r for r in M['inside'] if r['kind'] == 'break']
+tr = sorted([r for r in br if r.get('orient') != 'long'], key=lambda r: -r['x'])
+lg = [r for r in br if r.get('orient') == 'long']
+edges = [XT] + [r['x'] for r in tr] + [XT - ML]
+names = ['bow piece'] + ['midships piece %d' % i for i in range(1, len(tr))] + ['stern piece']
+for i in range(len(edges) - 1):
+    a_, b_ = edges[i], edges[i + 1]
+    split = [r['name'] for r in lg if min(q[0] for q in r['path']) < a_ and max(q[0] for q in r['path']) > b_]
+    nm_ = names[i] if i < len(names) else 'piece %d' % i
+    if split:
+        for half in ('upper', 'lower'):
+            man['break_pieces'].append(dict(name='%s, %s half' % (nm_, half), stations='%.1f to %.1f percent' % (station(a_), station(b_)),
+                                            bounded_by=[r['name'] for r in tr if r['x'] in (a_, b_)] + split, full_interior=True))
+    else:
+        man['break_pieces'].append(dict(name=nm_, stations='%.1f to %.1f percent' % (station(a_), station(b_)),
+                                        bounded_by=[r['name'] for r in tr if r['x'] in (a_, b_)], full_interior=True))
+man['insides'] = 'full interiors throughout the hull, hidden until a piece breaks (R215); every break piece carries its share'
+json.dump(man, open(os.path.join(OUT, 'manifest.json'), 'w'), indent=1)
+
 # ---------------- feature table ----------------
 def r2(v):
     return '%.2f' % v
@@ -335,10 +369,18 @@ lines.append('\n| Armour zone | Thickness (units) | Note |\n|---|---:|---|')
 for r in INS:
     if r['kind'] == 'armour':
         lines.append('| %s | %.2f | %s |' % (r['name'], r['t'], r.get('note', '')))
-lines.append('\n| Break line | Station % | What it opens |\n|---|---:|---|')
+lines.append('\n| Break line | Station % | What it opens |\n|---|---|---|')
 for r in INS:
     if r['kind'] == 'break':
-        lines.append('| %s | %.1f | %s |' % (r['name'], station(r['x']), r.get('note', '')))
+        if r.get('orient') == 'long':
+            xs = [q[0] for q in r['path']]
+            st_ = '%.1f to %.1f (along)' % (station(max(xs)), station(min(xs)))
+        else:
+            xs = [q[0] for q in (r.get('path') or [(r['x'], 0)])]
+            st_ = '%.1f (seam wanders %.1f to %.1f)' % (station(r['x']), station(max(xs)), station(min(xs)))
+        lines.append('| %s | %s | %s |' % (r['name'], st_, r.get('note', '')))
+    if r['kind'] == 'note':
+        lines.append('\n%s\n' % r['note'])
 lines.append('\n## Hard points (the contract of PR 530, tools/blender/kits/shared/hardpoints.py)\n')
 lines.append('| Point | Station % | Offset | Height | Side | Section | Note |\n|---|---:|---:|---:|---|---|---|')
 for p in M['points']:
@@ -366,13 +408,22 @@ body_h = max(H_T, right_h)
 tab_rows = [f for f in F]
 tab_h = 60 + LH * (len(tab_rows) + 3)
 ch_h = 50 + LH * (len(M['changes']) + 2)
-SH = head + body_h + PAD + max(tab_h, ch_h) + int(1600 * SC)
+SH = head + body_h + PAD + max(tab_h, ch_h) + int(2400 * SC) + int(SW * 0.4)
 sheet = Image.new('RGB', (SW, SH), (44, 44, 46))
 dr = ImageDraw.Draw(sheet)
 dr.text((PAD, 30), '%s  |  %s' % (CODE, M['name']), font=f_xl, fill=INK)
 dr.text((PAD, int(110 * SC)), '%s  |  class %s  |  length %.1f world units (%s)' % (M['faction'], M['cls'], L, 'hull_table.gd CLS_LEN'), font=f_m, fill=INK)
-dr.text((PAD, int(150 * SC)), 'Build sheet v1, 2026-11-11. Every view: an orthographic render of ONE Blender blockout, one scale (%d px per unit). Side %.2f / top %.2f long (%.2f%% apart).' % (k, len_side, len_top, checks['length_disagreement_percent']), font=f_m, fill=DIM)
+dr.text((PAD, int(150 * SC)), 'Build sheet v2 (round 2), 2026-11-11. Every view: an orthographic render of ONE Blender blockout, one scale (%d px per unit). Side %.2f / top %.2f long (%.2f%% apart).' % (k, len_side, len_top, checks['length_disagreement_percent']), font=f_m, fill=DIM)
 dr.text((PAD, int(190 * SC)), 'Orange rings: feature-table IDs. Grey rings, dashed: far side. Station % from the prow tip. Counts in the table outrank the pictures.', font=f_m, fill=DIM)
+# FIRST: the accepted beauty beside the blockout at the camera fitted to it (R213)
+bcam = Image.open(os.path.join(RD, 'beauty_cam.png')).convert('RGBA'); bgc = Image.new('RGBA', bcam.size, GREY + (255,)); bgc.alpha_composite(bcam)
+bcam = bgc.convert('RGB')
+BW = (SW - 3 * PAD) // 2; BH = int(BW * beauty.height / beauty.width)
+dr.text((PAD, head - int(10 * SC)), 'ACCEPTED BEAUTY (identity: finish, colour, character)', font=f_m, fill=INK)
+dr.text((2 * PAD + BW, head - int(10 * SC)), 'THE BLOCKOUT at the camera fitted to the beauty (same model as every view below)', font=f_m, fill=INK)
+sheet.paste(beauty.resize((BW, BH)), (PAD, head + int(30 * SC)))
+sheet.paste(bcam.resize((BW, BH)), (2 * PAD + BW, head + int(30 * SC)))
+head = head + int(30 * SC) + BH + PAD
 y = head
 sheet.paste(top, (PAD, y)); sheet.paste(und, (PAD + W_T + PAD // 2, y))
 xr = col_l + PAD
@@ -384,12 +435,11 @@ sheet.paste(bow, (xr, yb)); sheet.paste(stern, (xr + bow.width + PAD, yb))
 iy = y + H_T + PAD; iw = col_l - PAD
 room = max(body_h - H_T - PAD, int(500 * SC))
 bh = min(room // 2 - int(40 * SC), int(iw * beauty.height / beauty.width)); bw = int(beauty.width * bh / beauty.height)
-dr.text((PAD, iy), 'IDENTITY: accepted beauty (finish, colour, character)', font=f_m, fill=INK)
-sheet.paste(beauty.resize((bw, bh)), (PAD, iy + int(40 * SC)))
 tq_h = bh; tq_w = int(tq.width * tq_h / tq.height)
-dr.text((PAD, iy + bh + int(50 * SC)), 'blockout three-quarter (45 deg to port of the bow, 30 up), same model as every view', font=f_m, fill=INK)
-sheet.paste(tq.resize((tq_w, tq_h)), (PAD, iy + bh + int(90 * SC)))
-body_h = max(body_h, H_T + PAD + 2 * bh + int(140 * SC))
+dr.text((PAD, iy), 'blockout three-quarter (45 deg to port of the bow, 30 up), same model as every view', font=f_m, fill=INK)
+tq_h = min(room - int(60 * SC), int(iw * tq.height / tq.width)); tq_w = int(tq.width * tq_h / tq.height)
+sheet.paste(tq.resize((tq_w, tq_h)), (PAD, iy + int(40 * SC)))
+body_h = max(body_h, H_T + PAD + tq_h + int(60 * SC))
 # text block: feature table (compact) and changes
 y2 = head + body_h + PAD
 dr.text((PAD, y2), 'FEATURE TABLE (full table with offsets and heights: feature_table.md)', font=f_l, fill=INK)
@@ -421,8 +471,13 @@ for r in INS:
         dr.text((xc, yy), '- armour %s: %.2f %s' % (r['name'], r['t'], r.get('note', '')), font=f_s, fill=INK); yy += int(28 * SC)
 for r in INS:
     if r['kind'] == 'break':
-        for i, ln in enumerate(textwrap.wrap('- %s at %.1f%%: %s' % (r['name'], station(r['x']), r.get('note', '')), 95)):
+        where = 'along the belt' if r.get('orient') == 'long' else 'at %.1f%%' % station(r['x'])
+        for i, ln in enumerate(textwrap.wrap('- %s %s: %s' % (r['name'], where, r.get('note', '')), 95)):
             dr.text((xc + (0 if i == 0 else 20), yy), ln, font=f_s, fill=RED); yy += int(28 * SC)
+for r in INS:
+    if r['kind'] == 'note':
+        for i, ln in enumerate(textwrap.wrap(r['note'], 95)):
+            dr.text((xc + (0 if i == 0 else 20), yy), ln, font=f_s, fill=CYAN); yy += int(28 * SC)
 for nm_s, n_s in SPN.items():
     r = [q for q in INS if q['kind'] == 'space' and q['name'] == nm_s][0]
     dr.text((xc, yy), '%d  %s: %s' % (n_s, nm_s.replace('_', ' '), r.get('note', '')), font=f_s, fill=INK); yy += int(28 * SC)

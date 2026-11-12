@@ -11,10 +11,12 @@ from mathutils import Vector, Matrix
 MATS = {
     # name: (rgb, emission strength). Colour zones are schematic: the beauty picture gives the finish.
     'soot': ((0.055, 0.050, 0.048), 0),      # soot black hull plate
-    'rust': ((0.30, 0.12, 0.07), 0),         # rust plate
+    'rust': ((0.22, 0.09, 0.055), 0),        # rust plate
+    'soot2': ((0.032, 0.030, 0.029), 0),     # darker soot plate
+    'iron': ((0.10, 0.10, 0.105), 0),        # bare iron plate
     'blood': ((0.33, 0.05, 0.05), 0),        # dried-blood red band
     'violet': ((0.28, 0.12, 0.45), 0),       # violet Eclipse trophy plate
-    'pale': ((0.55, 0.56, 0.58), 0),         # pale Hegemony grey trophy plate
+    'pale': ((0.36, 0.37, 0.38), 0),         # pale Hegemony grey trophy plate
     'steel': ((0.20, 0.20, 0.21), 0),        # gun metal and machinery
     'dark': ((0.02, 0.02, 0.02), 0),         # intake throats, apertures
     'dish': ((0.62, 0.60, 0.56), 0),         # dish faces
@@ -106,7 +108,7 @@ class Kit:
         ob['inside'] = inside
         return ob
 
-    def loft(self, name, sections, m, inside=False, shell=0.0, ytilt=None):
+    def loft(self, name, sections, m, inside=False, shell=0.0, ytilt=None, plates=None):
         """sections: (x, hw_port, hw_stbd, z_bottom, z_top, chamfer_top, chamfer_bottom[, y_offset]) bow first"""
         rings = []
         for s in sections:
@@ -123,17 +125,86 @@ class Kit:
         faces.append(tuple(range(n))[::-1])
         faces.append(tuple(range((len(rings) - 1) * n, len(rings) * n)))
         ob = self._obj(name, verts, faces, m, inside)
+        if plates:
+            self._plates(name, rings, plates)
         # make normals point out
         bm = bmesh.new(); bm.from_mesh(ob.data); bmesh.ops.recalc_face_normals(bm, faces=bm.faces); bm.to_mesh(ob.data); bm.free()
         if shell:
             mod = ob.modifiers.new('shell', 'SOLIDIFY'); mod.thickness = shell; mod.offset = -1; mod.use_rim = True
         return ob
 
-    def box(self, name, x0, x1, y0, y1, z0, z1, m, ch=0.0, inside=False, taper=0.0):
+    def _plates(self, name, rings, spec):
+        """armour slabs over the loft faces: plates of mixed size and thickness, a few in trophy colours.
+        spec: dict(seed, size=(lo, hi) along the hull, thick=(lo, hi), skip=fraction left bare, mats={mat: weight}, faces=[0..7])"""
+        import random
+        rnd = random.Random(spec.get('seed', 1))
+        lo, hi = spec.get('size', (0.9, 2.2)); tlo, thi = spec.get('thick', (0.05, 0.2))
+        mats = spec.get('mats', {'soot': 6, 'rust': 2, 'steel': 1})
+        names = list(mats); wts = [mats[k] for k in names]
+        faces_ok = spec.get('faces', list(range(8)))
+        buckets = {k: ([], []) for k in names}
+        n = 8
+        cen = [Vector(map(lambda *c: sum(c) / n, *r)) for r in rings]
+        for i in range(len(rings) - 1):
+            for j in faces_ok:
+                A, B = Vector(rings[i][j]), Vector(rings[i][(j + 1) % n])
+                D, C = Vector(rings[i + 1][j]), Vector(rings[i + 1][(j + 1) % n])
+                flen = (D - A).length; fw = (B - A).length
+                if flen < 0.3 or fw < 0.2:
+                    continue
+                nrm = (B - A).cross(D - A)
+                if nrm.length < 1e-6:
+                    continue
+                nrm.normalize()
+                if nrm.dot((A + C) / 2 - (cen[i] + cen[i + 1]) / 2) < 0:
+                    nrm = -nrm
+                # cut along the hull into runs, across into 1 to 3 courses
+                us = [0.0]
+                while us[-1] < 1.0:
+                    us.append(min(1.0, us[-1] + rnd.uniform(lo, hi) / flen))
+                ncross = max(1, min(3, int(fw / 1.4 + rnd.random())))
+                for a0, a1 in zip(us, us[1:]):
+                    vs = sorted([0.0, 1.0] + [rnd.uniform(0.25, 0.75) for _ in range(ncross - 1)])
+                    for b0, b1 in zip(vs, vs[1:]):
+                        if rnd.random() < spec.get('skip', 0.2):
+                            continue
+                        g = 0.04
+                        def P(u, v):
+                            return A.lerp(D, u).lerp(B.lerp(C, u), v)
+                        u0, u1 = a0 + g / flen, a1 - g / flen; v0, v1 = b0 + g / fw, b1 - g / fw
+                        if u1 <= u0 or v1 <= v0:
+                            continue
+                        t = rnd.uniform(tlo, thi)
+                        bot = [P(u0, v0), P(u1, v0), P(u1, v1), P(u0, v1)]
+                        sh = (t * 0.25)  # bevelled top edge
+                        mid = [(bot[0] + bot[2]) / 2]
+                        top = [q + nrm * t + (mid[0] - q).normalized() * min(sh, (mid[0] - q).length * 0.3) for q in bot]
+                        k = rnd.choices(names, wts)[0]
+                        V, Fc = buckets[k]
+                        def slab(bq, tq):
+                            o = len(V)
+                            V.extend([tuple(q) for q in bq] + [tuple(q) for q in tq])
+                            Fc.extend([(o, o + 3, o + 2, o + 1), (o + 4, o + 5, o + 6, o + 7), (o, o + 1, o + 5, o + 4),
+                                       (o + 1, o + 2, o + 6, o + 5), (o + 2, o + 3, o + 7, o + 6), (o + 3, o, o + 4, o + 7)])
+                        slab([q - nrm * 0.02 for q in bot], top)
+                        if rnd.random() < spec.get('stack', 0.3):
+                            # a second, smaller slab stacked on the first (the picture's stacked armour)
+                            fu = rnd.uniform(0.15, 0.5); fv = rnd.uniform(0.15, 0.5)
+                            cu, cv = rnd.uniform(u0 + fu * (u1 - u0) / 2 + 0.01, u1 - fu * (u1 - u0) / 2 - 0.01), (v0 + v1) / 2
+                            hu, hv = fu * (u1 - u0) / 2, fv * (v1 - v0) / 2 + 0.1 * (v1 - v0)
+                            b2 = [P(cu - hu, cv - hv) + nrm * t, P(cu + hu, cv - hv) + nrm * t, P(cu + hu, cv + hv) + nrm * t, P(cu - hu, cv + hv) + nrm * t]
+                            t2 = rnd.uniform(tlo, thi)
+                            slab(b2, [q + nrm * t2 for q in b2])
+        for k, (V, Fc) in buckets.items():
+            if V:
+                ob = self._obj('%s_plates_%s' % (name, k), V, Fc, k)
+                bm = bmesh.new(); bm.from_mesh(ob.data); bmesh.ops.recalc_face_normals(bm, faces=bm.faces); bm.to_mesh(ob.data); bm.free()
+
+    def box(self, name, x0, x1, y0, y1, z0, z1, m, ch=0.0, inside=False, taper=0.0, plates=None):
         """axis box from x0 (aft) to x1 (fore), y0 (stbd) to y1 (port); taper shrinks the fore end"""
         hw = (y1 - y0) / 2; yo = (y1 + y0) / 2
         secs = [(x1, hw - taper, hw - taper, z0, z1 - taper * 0.5, ch, ch * 0.5, yo), (x0, hw, hw, z0, z1, ch, ch * 0.5, yo)]
-        return self.loft(name, secs, m, inside)
+        return self.loft(name, secs, m, inside, plates=plates)
 
     def cyl(self, name, p0, p1, r0, m, r1=None, n=16, inside=False, cap=True):
         p0, p1 = Vector(p0), Vector(p1)
@@ -160,9 +231,9 @@ class Kit:
         return obs
 
     # ---------- surface helpers ----------
-    def hull(self, sections, m='soot', shell=0.25):
+    def hull(self, sections, m='soot', shell=0.25, plates=None):
         self.hull_sections = sections
-        return self.loft(self.code + '_hull', sections, m, shell=shell)
+        return self.loft(self.code + '_hull', sections, m, shell=shell, plates=plates)
 
     def top_z(self, x, sections=None):
         s = sec_at(sections or self.hull_sections, x)
@@ -261,14 +332,33 @@ class Kit:
                                   pos=tuple(p), aim=(yaw, pitch), src=src, note=note))
 
     def claw(self, fid, hinge, pts, w=0.45, src='picture', note='', m='steel', name='boarding claw'):
-        """boarding claw: a hinge drum under the hull, then tapered segments through pts, the last a hook"""
+        """boarding claw: a hinge drum under the hull, then flat tapered blades through pts, the last a hooked point"""
         h = Vector(hinge)
         self.cyl(fid + '_hinge', h - Vector((0, w * 0.6, 0)), h + Vector((0, w * 0.6, 0)), w * 0.5, m)
         prev = h
+        n = len(pts)
         for i, q in enumerate(pts):
             q = Vector(q)
-            k = 1.0 - 0.55 * i / max(1, len(pts) - 1)
-            self.cyl('%s_seg%d' % (fid, i), prev, q, w * 0.55 * k, m, r1=w * 0.5 * k * (0.35 if i == len(pts) - 1 else 0.9), n=6)
+            d = (q - prev); L = d.length
+            if L < 1e-6:
+                continue
+            d.normalize()
+            side = Vector((0, 1, 0)) if abs(d.y) < 0.9 else Vector((1, 0, 0))
+            wd = d.cross(side).normalized()          # blade width direction, in the claw's plane
+            k0 = 1.0 - 0.6 * i / max(1, n); k1 = 1.0 - 0.6 * (i + 1) / max(1, n)
+            if i == n - 1:
+                k1 = 0.08
+            th = w * 0.32
+            corners = []
+            for (c, k) in ((prev, k0), (q, k1)):
+                for a in (-1, 1):
+                    for b in (-1, 1):
+                        corners.append(c + wd * (a * w * 0.5 * k) + side * (b * th * (0.6 + 0.4 * k)))
+            faces = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
+            ob = self._obj('%s_blade%d' % (fid, i), corners, faces, m)
+            bm = bmesh.new(); bm.from_mesh(ob.data); bmesh.ops.recalc_face_normals(bm, faces=bm.faces); bm.to_mesh(ob.data); bm.free()
+            if i < n - 1:
+                self.cyl('%s_joint%d' % (fid, i), q - side * th * 1.3, q + side * th * 1.3, w * 0.28 * k1 + 0.08, m, n=10)
             prev = q
         self.features.append(dict(id=fid, kind='claw', what='%s, %d segments' % (name, len(pts)), count=1,
                                   pos=tuple(h), aim=(0.0, -60.0), src=src, note=note, tip=tuple(Vector(pts[-1]))))
@@ -307,6 +397,18 @@ class Kit:
         self.loft('in_deck_' + name, secs, 'deck', inside=True)
         self.inside.append(dict(kind='deck', name=name, z=z, x=(x0, x1)))
 
+    def deck_box(self, name, z, x0, x1, hw, t=0.08):
+        self.box('in_deck_' + name, x0, x1, -hw, hw, z - t / 2, z + t / 2, 'deck', inside=True)
+        self.inside.append(dict(kind='deck', name=name, z=z, x=(x0, x1)))
+
+    def thruster(self, fid, pos, normal, src='designed', note=''):
+        """attitude thruster block: a box on the hull with a nozzle out along normal"""
+        p = Vector(pos); n = Vector(normal).normalized()
+        self.cyl(fid + '_block', p - n * 0.25, p + n * 0.15, 0.35, 'steel', n=6)
+        self.cyl(fid + '_nozzle', p + n * 0.1, p + n * 0.45, 0.12, 'steel', r1=0.22, n=10, cap=False)
+        self.features.append(dict(id=fid, kind='thruster', what='attitude thruster quad', count=1, pos=tuple(p),
+                                  aim=None, src=src, note=note))
+
     def bulkhead(self, name, x, inset=0.3, t=0.1, zmax=None):
         s = sec_at(self.hull_sections, x)
         zt = s[4] - inset if zmax is None else zmax
@@ -318,8 +420,9 @@ class Kit:
     def armour(self, zone, thick, note=''):
         self.inside.append(dict(kind='armour', name=zone, t=thick, note=note))
 
-    def break_line(self, name, x, note=''):
-        self.inside.append(dict(kind='break', name=name, x=x, note=note))
+    def break_line(self, name, x, note='', path=None, kind='trans'):
+        """path: the seam as (x, z) points from deck to belly, uneven along the patch plates (R186: never a straight cut)"""
+        self.inside.append(dict(kind='break', name=name, x=x, note=note, path=path, orient=kind))
 
     def point(self, kind, name, pos, side='', section='', note=''):
         self.points.append(dict(kind=kind, name=name, pos=tuple(pos), side=side, section=section, note=note))
