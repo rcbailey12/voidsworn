@@ -184,7 +184,31 @@ Late shaders after warm-up: 0 in every session. Data: `data/gate/`.
   the new rows, all six factions. If Eclipse or Hullbreakers fall out of the band, the bracket rows give the darkest value
   that stays in.
 
+## Job F (Ryan, Nov 12 11:40 CST: Eclipse a bit darker; Hullbreakers stay 1.25)
+
+Ryan, on the job E sheets: "the pictures are super pixelated, it's honestly hard to tell. i'd go a bit darker for eclipse
+but hullbreakers are good." What moves what he sees: the lit side (brightest quarter) on Eclipse is held up mostly by the
+rim light, so it barely moves with lift (D9 on the darkest sky: 106.4 at 3.0, 107.7 at 3.2, 109.4 at 3.5); the hull's
+middle tone moves more (D9 median 60.0, 61.8, 63.6; main 41.6). Job F measures how far lift alone goes and whether the
+Eclipse material rim (READ rim, 0.4) moves the look. The rim light itself (RIM) is shared by every faction, so it is not a
+per faction knob and is not tried here.
+
+- `pc/variants_f.json`: Eclipse only. e320 (now), e260, e220, e180, e220_rim27 (lift 2.2, material rim 0.27).
+- `pc/readability_probe.gd`: new options `--cam` (camera distance), `--cell` (crop size, 1 to 1) and `--factions`; the
+  defaults are the old behaviour. `pc/run362.bat`: passes `%PX%` (more probe options) to the probe, empty by default.
+- `pc/job_f.bat`: (1) the camera 170 band on the darkest sky and the storm for the five settings, once; (2) the Eclipse
+  ships at camera 60 (the bench's middle camera: real game pixels when zoomed in, never scaled), darkest sky, 1440x840
+  crops, main twice (keep the second) and the branch with the five settings once. It copies the branch's run362.bat beside
+  the old one as run362f.bat (a new file) for step 2.
+- Queue: copy `pc/job_f.bat` from origin/opus/issue-362 into `%USERPROFILE%\Downloads\voidsworn_test\opus362\` and put
+  `q_opus362_f.bat` in the PC queue with `call "%USERPROFILE%\Downloads\voidsworn_test\opus362\job_f.bat"`. Done when
+  status.txt has "job f done"; stage back probe_f_1.zip, probe_f60before_2.zip and probe_f60_1.zip.
+- Then here: `measure.py F1 --out data/rows_f.json`; pick the darkest Eclipse setting with every Eclipse ship at 100 or
+  more lit and edge 0.60 or more on the darkest sky (storm checked too); `close_sheet.py --before F60BEFORE2 --after F60
+  --rows data/rows_f.json --out docs/shots/look_bench/readability/` (one page per Eclipse ship, every setting side by side,
+  1280 wide, no taller than 720); set the lift in look.gd, R227's line and the tables, remake the camera 170 sheets.
+
 ## PC
 
 Folder `Downloads\voidsworn_test\opus362` (sparse clone, the hull copies, runs, zips). Queue files used:
-q_opus362_a, _z1, _z2, _c2, _b, _c, _d; then _e for job E (R227 lifts). Nothing deleted.
+q_opus362_a, _z1, _z2, _c2, _b, _c, _d; then _e for job E (R227 lifts) and _f for job F. Nothing deleted.

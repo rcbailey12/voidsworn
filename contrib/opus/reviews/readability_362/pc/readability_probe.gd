@@ -11,6 +11,10 @@ extends "res://bench/look_bench.gd"
 #
 # godot --path godot --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 ^
 #       res://bench/readability_probe.tscn -- --out DIR [--skies world,frontier,storm (or joined by +)] [--variants FILE.json] [--commit SHA]
+#       [--cam 60] [--cell 1440x840] [--factions deathless,corsair]
+# --cam: camera distance (default 170, the battle camera; 60 is the bench's middle camera, real game pixels when zoomed in).
+# --cell: the crop round the screen centre, at 1 to 1 (default the bench fleet cell 400x240; raise it with --cam 60).
+# --factions: only these factions' ships (the faction ids); craft and objects are left out when it is given.
 # Variants (branch only): a JSON list of {"name": ..., "tune": {...}}; "tune" is laid over render/look.gd READ and RIM for
 # that variant (look.gd `tune`, bench probes only). Without --variants: one variant "cur" (the commit as it is).
 # Writes DIR/<variant>/<sky>/<nn>_<code>.png and <nn>_<code>_mask.png, DIR/materials.json (the hull materials as the
@@ -41,9 +45,18 @@ func _run() -> void:
 			variants = v
 	var skies := String(args.get("skies", "world,frontier,storm")).replace("+", ",").split(",", false)
 	var LK = load("res://render/look.gd")
+	var cam_r := float(args.get("cam", 170.0))
+	var cell := FLEET_CELL
+	if args.has("cell"):
+		var wh := str(args["cell"]).split("x", false)
+		if wh.size() == 2:
+			cell = Vector2i(clampi(int(wh[0]), 64, W), clampi(int(wh[1]), 64, H))
+	var only_f: Array = []
+	if args.has("factions"):
+		only_f = Array(str(args["factions"]).split(",", false))
 	var probe := {"commit": str(args.get("commit", "")), "godot": Engine.get_version_info().get("string", ""),
 		"adapter": RenderingServer.get_video_adapter_name(), "variants": variants, "skies": skies, "stills": [],
-		"warnings": report["warnings"]}
+		"warnings": report["warnings"], "cam": cam_r, "cell": [cell.x, cell.y], "factions": only_f}
 	var mats := {}
 	for vi in variants.size():
 		var v: Dictionary = variants[vi]
@@ -69,6 +82,8 @@ func _run() -> void:
 				seed(2070)
 				fx.rng.seed = 11
 				var parts := String(key).split("|")
+				if not only_f.is_empty() and not (parts[0] in only_f):
+					continue
 				var sv
 				if parts[0] in ["craft", "obj"]:
 					sv = _ship("A", "hegemony", "Frigate", Vector3.ZERO, 0, code)
@@ -78,7 +93,7 @@ func _run() -> void:
 					return
 				if vi == 0 and sky_name == skies[0]:
 					mats[code] = _materials(sv)
-				_cam(Vector3.ZERO, 170.0)
+				_cam(Vector3.ZERO, cam_r)
 				for k in 8:
 					await _step()
 				var img := _grab()
@@ -86,10 +101,10 @@ func _run() -> void:
 					_warn("empty frame %s %s" % [sky_name, code])
 					continue
 				var base := "%02d_%s" % [n, code]
-				_crop(img, FLEET_CELL, FLEET_CELL).save_png(d.path_join(base + ".png"))
+				_crop(img, cell, cell).save_png(d.path_join(base + ".png"))
 				var mk = await _mask(sv)
 				if mk != null:
-					_crop(mk, FLEET_CELL, FLEET_CELL).save_png(d.path_join(base + "_mask.png"))
+					_crop(mk, cell, cell).save_png(d.path_join(base + "_mask.png"))
 				probe["stills"].append({"variant": v["name"], "sky": sky_name, "file": "%s/%s/%s.png" % [v["name"], sky_name, base],
 					"code": code, "what": key, "length": float(sv.L)})
 				n += 1

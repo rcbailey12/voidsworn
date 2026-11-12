@@ -3,6 +3,7 @@ rem Issue 362 PC run (Opus worker). One job file for every step; the step is the
 rem   run362.bat setup              lean sparse clone of opus/issue-362 in opus362\repo, the PC-built hulls copied in
 rem                                 (copy only) from audit2\repo\godot, as the look bench does (LB_SHIPS default)
 rem   run362.bat probe REF NAME [VARIANTS] [SKIES]   readability probe (fleet at camera 170 plus hull masks), twice
+rem                                 (set PX first for more probe options, e.g. --cam 60 --cell 1440x840 --factions deathless)
 rem   run362.bat moments REF NAME   the look bench moments part, twice (RULEBOOK 12.5: keep the second run)
 rem   run362.bat gate REF NAME      the scene gate (R116): base and res_2160, twice
 rem   run362.bat sheets BEFORE AFTER   moments sheets with look_bench_sheets.py (ComfyUI's portable Python)
@@ -88,7 +89,7 @@ exit /b 0
 :probe1
 call :gpu
 if errorlevel 1 exit /b 1
-call "%D%\tmo.bat" 2400 "%G%" --path "%P%" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 res://bench/readability_probe.tscn -- --out "%D%\probe_%1_%2" --skies %SKY% %VARG% --commit %SHA% > "%D%\log_probe_%1_%2.txt" 2>&1
+call "%D%\tmo.bat" 2400 "%G%" --path "%P%" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 res://bench/readability_probe.tscn -- --out "%D%\probe_%1_%2" --skies %SKY% %VARG% --commit %SHA% %PX% > "%D%\log_probe_%1_%2.txt" 2>&1
 echo %date% %time% probe %1 run %2 exit !errorlevel! >> "%S%"
 findstr /c:"READ_PROBE_DONE" "%D%\log_probe_%1_%2.txt" > nul
 if errorlevel 1 echo probe %1 run %2 DID NOT FINISH >> "%S%"
