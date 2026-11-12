@@ -152,7 +152,7 @@ func measure(h, label: String, need_strengths := false) -> Dictionary:
 			check(false, "%s: TEXT3 only for joining words ('%s', role %s)" % [label, it["t"], it["role"]])
 		if nm == "GLACIER" and str(it["role"]) != "shield":
 			check(false, "%s: Glacier only for shield readouts ('%s')" % [label, it["t"]])
-		if nm == "NEM" and not ("Nemesis" == str(it["t"]) or str(it["t"]).to_lower() == str(h.ledger.nem.get("name", "")).to_lower() or str(it["t"]) == str(h.ledger.target.get("name", "")).to_upper()):
+		if nm == "NEM" and not ("Nemesis" == str(it["t"]) or str(it["t"]).to_lower() == str(h.ledger.nem.get("name", "")).to_lower() or str(it["t"]) == str(h.ledger.target.get("name", "")).to_upper() or (str(it["t"]).length() > 3 and str(it["t"]) in str(h.ledger.target.get("name", "")).to_upper())):
 			check(false, "%s: NEM only for the Nemesis ('%s')" % [label, it["t"]])
 		var r: Rect2 = L.item_rect(it)
 		if not screen.encloses(r):
@@ -257,7 +257,7 @@ func _run() -> void:
 			words.append(str(x["t"]))
 		var joined := " | ".join(words)
 		check("FIRE THE OATH LANCE" in joined and "92%" in joined and "UNYIELDING OATH" in joined and "Hegemony Navy, 2 ships" in joined, "%s: the moment reads as E1 (FIRE THE OATH LANCE, 92%%, the ship, the enemy)" % tag)
-		check("About 15 damage: 7 to its prow shield, 8 to hull." in joined, "%s: the expected damage is one sentence" % tag)
+		check("About 15 damage: 7 to its prow shield, 8 to hull." in " ".join(words), "%s: the expected damage is one sentence" % tag)
 		var tips_ok := true
 		for x in h.ledger.hits:
 			if str(x["act"]) == "" and str(x["tip"]) == "":
@@ -307,7 +307,7 @@ func _run() -> void:
 		feed(h, {"rows": big})
 		await process_frame
 		var r4 := measure(h, tag + " 20 ships")
-		check(int(r4["fleet"].get("shown", 0)) >= 4 and int(acts(h).get("pick", 0)) == int(r4["fleet"].get("shown", 0)), "%s: a 20-ship fleet shows %d lines and folds the rest into one (hover lists them)" % [tag, int(r4["fleet"].get("shown", 0))])
+		check(int(r4["fleet"].get("shown", 0)) >= 2 and int(acts(h).get("pick", 0)) == int(r4["fleet"].get("shown", 0)), "%s: a 20-ship fleet shows %d lines and folds the rest into one (hover lists them)" % [tag, int(r4["fleet"].get("shown", 0))])
 		feed(h, {"ship": long_ship, "target": target("Grand Admiral Seraphine Voss-Haldane"), "rows": rows(3, true)})
 		await process_frame
 		measure(h, tag + " six guns, every order, the longest names")

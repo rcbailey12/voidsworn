@@ -36,7 +36,7 @@ const X0 := 40.0          # left margin (R218: narrower sheet)
 const CW := 380.0         # the sheet's width (R218: was 560, about a third of the screen with the veil; now about a fifth)
 const TOP := 40.0         # top margin
 const FOOT := 48.0        # bottom margin
-const VEIL_A := 0.86      # the left veil at full strength (its first 72%; R218: lighter so the board shows through)
+const VEIL_A := 0.94      # the left veil at full strength (its first 72%); R218 narrowed its reach, not its strength (the words need 4.5 to 1)
 const VEIL_W := 0.30      # the left veil fades to nothing here (share of the window width), or further if the sheet needs it (R218: was 0.45)
 const ROW_GAP := 36.0     # a fleet line
 const ROW_GAP_TIGHT := 34.0
@@ -588,8 +588,7 @@ func _focus(x: float, y: float, cw: float) -> float:
 	if not A.is_empty():
 		y += _action_box(x, y, cw, A) + px(18)
 	y += _orders(x, y, cw, A) + px(4)
-	_command_row(x, y, cw, A)
-	y += px(34)
+	y += _command_row(x, y, cw, A)
 	return y
 
 
@@ -676,15 +675,22 @@ func _orders(x: float, y: float, w: float, A: Dictionary) -> float:
 	return (yy - y) + (px(30) if not list.is_empty() else 0.0)
 
 
-func _command_row(x: float, y: float, w: float, A: Dictionary) -> void:
+func _command_row(x: float, y: float, w: float, A: Dictionary) -> float:
+	# returns the height used. R218 narrowed the sheet: when the Command and End ship do not fit on one line with a clear gap,
+	# End ship drops to its own line (right-aligned) instead of running into the Command.
+	var used := 0.0
 	if bool(cmd.get("ready", false)):
 		var cw0 := t(x, y + px(1), "Command", f_body, 19, TEXT3, 0, "join")
-		keyed(x + cw0 + px(10), y, str(cmd.get("label", "Command")), "C", TEXT, 20.0, "command", null,
+		used = cw0 + px(10) + keyed(x + cw0 + px(10), y, str(cmd.get("label", "Command")), "C", TEXT, 20.0, "command", null,
 			"Your Admiral's Command, once per battle: %s. Click twice (or press C) to give it." % str(cmd.get("label", "")))
+	var yy := y
 	var e := card_button("end")
 	if not e.is_empty() and str(A.get("act", "")) != "end":
 		var ew := keyed_w("End ship", "Space")
-		keyed(x + w - ew, y, "End ship", "Space", TEXT2, 20.0, "end", null, str(e.get("tip", "")))
+		if used > 0.0 and used + px(28) + ew > w:
+			yy += px(34)
+		keyed(x + w - ew, yy, "End ship", "Space", TEXT2, 20.0, "end", null, str(e.get("tip", "")))
+	return (yy - y) + px(34)
 
 
 # the tree prompt (issue 529) in the place of the shot: the skill's name, its question, the choices numbered (keys 1 to 3)
@@ -773,6 +779,11 @@ func _fleet(x: float, y_min: float, w: float, H: float) -> void:
 		var fw := _w("999", f_num, 19) + px(16)
 		var nm_fs := 28.0
 		var up := str(r.get("name", "")).to_upper()
+		# R218's narrower sheet: a name too long for its line is cut with an ellipsis (the hover gives the full name)
+		if _w(up, f_name, nm_fs) > nw - fw:
+			while up.length() > 4 and _w(up + "...", f_name, nm_fs) > nw - fw:
+				up = up.substr(0, up.length() - 1).strip_edges()
+			up += "..."
 		t(nx, yy, up, f_name, nm_fs, col, 0, "name")
 		var hp := float(r.get("hp", 0))
 		var mx := float(r.get("maxHp", 1))
