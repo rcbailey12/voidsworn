@@ -151,10 +151,22 @@ func _run() -> void:
 			var w: Dictionary = fx.dstate["wrecks"][0]
 			if s.death_big:
 				var capital: bool = s.death_tier == "capital"
-				_check(int(s.get_meta("death_cut_count")) == (2 if capital else 1), "a cruiser parts in two, a capital in three")
-				_check(w["nodes"].size() == int(s.get_meta("death_cut_count")) + 1, "capital has two or three sealed cuts")
+				# R186/R215: the rule is a wreck that is blown apart and not hollow, never a typed piece count. Check the
+				# pieces the plan made: every main piece has an opaque torn face, every released piece has its cut event,
+				# and the break is not one straight full-width line (checked in _check_blown_apart).
+				var job: Dictionary = s.get_meta("cut_job", {})
+				var plan: Dictionary = job.get("plan", {})
+				var main_pieces: Array = job.get("out", [])
+				var n_main: int = int(plan.get("n_main", 0))
+				var hollow := 0
+				for i in n_main:
+					if i >= main_pieces.size() or not main_pieces[i].has("cap") \
+							or (main_pieces[i]["cap"][Mesh.ARRAY_VERTEX] as PackedVector3Array).is_empty():
+						hollow += 1
+				_check(n_main > 0 and hollow == 0, "every main piece has an opaque torn face (hollow pieces: %d)" % hollow)
 				var cuts: Array = w["cut_events"]
-				_check(cuts.size() == w["nodes"].size() and (float(cuts.back().t) - float(cuts.front().t) >= 0.28 if capital else true), "a capital's pieces part one after another")
+				_check(not w["nodes"].is_empty() and cuts.size() == w["nodes"].size(), "every parted piece is released once")
+				_check(float(cuts.back().t) - float(cuts.front().t) >= 0.28 if capital else true, "a capital's pieces part one after another")
 				_check(float(w.get("cool", 0.0)) >= (14.0 if capital else 8.0), "big wrecks cool over the playbook's time")
 				var late := 0
 				for r in fx.flash_area_log.slice(before_req):
@@ -175,6 +187,13 @@ func _run() -> void:
 				for f in w["fires"]:
 					if f.has("cool"):
 						_check(float(f["mat"].get_shader_parameter("gate")) > 0.5, "slow coals survive the initial flames")
+			# R186/R215: the wreck cleans up. Clear this kill's wreck and check every one of its pieces was released.
+			var pieces_alive := 0
+			fx.clear_wreck("T")
+			await process_frame
+			for nd in w["nodes"]:
+				if is_instance_valid(nd): pieces_alive += 1
+			_check(fx.dstate["wrecks"].is_empty() and pieces_alive == 0, "wreck cleanup frees every piece")
 			print("DESTRUCTION_STAGE class=%s size=%.1f flagship=%s calm=%s duration=%.2f pieces=%d flashes=%d" % [spec[0], spec[1], spec[2], calm, duration, w["nodes"].size(), flashes])
 			fx.release()
 			world.queue_free()

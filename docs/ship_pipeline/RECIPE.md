@@ -28,15 +28,15 @@ stage 1 writes the concept).
 its log is checked, the stage prints `Stage N FAILED: ...` with the log to read, and exits non-zero. No stage prints "done" after a
 failed step. Stage 2 fails when the shape reference is still missing; stages 3 and 5 refuse to start without it; stage 4 fails when
 the build is not written, when the audit lists any problem or any part across a break line, or when the audit's self-test lets a
-broken build through; stages 3 and 4 exit non-zero when the outline gate fails (stage 4 still makes the clay close-ups first, so the
+broken build through; stages 3 and 4 report the outline overlap and never stop on it (stage 4 still makes the clay close-ups first, so the
 shape can be judged); stage 6 fails when the LOD export or the Godot bench does not finish; stage 7 as below.
 
 | Stage | File | What it does | Output | Time on the PC |
 |---|---|---|---|---|
 | 1. Concept in | `1_concept_in.bat` | checks `docs\ship_pipeline\concepts\<ship>.webp`, starts `tools\recipe\ships\<ship>.json` from the template (asks the faction), writes the concept with its outline | `concept.png` | seconds |
 | 2. AI shape reference | `2_shape_ref.bat` | TRELLIS.2 turns the concept cut-out into one whole-hull mesh: a shape reference and a source of surface grime, never shipped. Every current concept already has one | `bakeoff\<ship>_trellis.glb` | 2 to 4 min |
-| 3. Traced hull and the outline gate | `3_trace_hull.bat` | slices the shape reference and fits clean faceted sections (`b0trace.py`); tunes the hull module's numbers on the concept outline with a pull toward the shape reference (`tune5.py`); scores the outline at the concept's own camera, then the outline per third and the inner edge check (`outline_thirds.py`; standing gate `standing.py outline`). Reports the overlap and each third (RULEBOOK 5.8, R147: reported, not a pass bar; the stage still exits non-zero below 0.90 until issue 564 lands) | `sil\sil_<cell>.png`, `sil\outline_thirds.json`, the overlap numbers | 10 to 25 min (tune) |
-| 4. Faction parts kit | `4_parts_kit.bat` | builds the hull with the faction kit's parts at the ship's sockets, audits it (`audit.py`: nothing floats, nothing crosses the build's own break lines, no gun aimed backward or into the ship against its mount normal), proves the audit can fail (`audit_selftest.py`: five broken copies refused, each for its own reason), re-scores the gate and the per-third and inner edge checks with the parts on, scores the outline from the second camera (`outline_battle.py`: the game battle camera at r 170 and the studio battle camera, against the B0 shape reference), renders clay close-ups at the concept camera | `build\<cell>.blend`, `audit.json`, `sil\outline_thirds.json`, `sil\outline_battle.json`, `clay\` | about 5 min |
+| 3. Traced hull and the outline overlap | `3_trace_hull.bat` | slices the shape reference and fits clean faceted sections (`b0trace.py`); tunes the hull module's numbers on the concept outline with a pull toward the shape reference (`tune5.py`); scores the outline at the concept's own camera, then the outline per third and the inner edge check (`outline_thirds.py`; `standing.py outline`). The overlap is reported against the ship json `outline_gate` and `outline_third_slack`; it is not a pass bar (RULEBOOK 5.8) | `sil\sil_<cell>.png`, `sil\outline_thirds.json`, the reported overlap | 10 to 25 min (tune) |
+| 4. Faction parts kit | `4_parts_kit.bat` | builds the hull with the faction kit's parts at the ship's sockets, audits it (`audit.py`: nothing floats, nothing crosses the build's own break lines, no gun aimed backward or into the ship against its mount normal), proves the audit can fail (`audit_selftest.py`: five broken copies refused, each for its own reason), re-scores the outline overlap and the per-third and inner edge checks with the parts on, scores the outline from the second camera (`outline_battle.py`: the game battle camera at r 170 and the studio battle camera, against the B0 shape reference), renders clay close-ups at the concept camera | `build\<cell>.blend`, `audit.json`, `sil\outline_thirds.json`, `sil\outline_battle.json`, `clay\` | about 5 min |
 | 5. Paint bake | `5_paint_bake.bat` | the bake script named by the ship json's `bake` (`bakeAb6.py` for C15s_23; it builds whichever hull module `hull` names, so any ship whose hull module follows `armA5` to `armA7` uses it; a ship with its own bake names it there): the faction paint and the shape reference's grime baked to atlases (hull albedo, ORM, detail normal; parts albedo, ORM), renders at the concept camera (studio and concept light), the fixed views (top and below, the underside still) and the far side (starboard, `side_s`, on request in `render.py`), weapon close-ups, the concept and model blink sheet (`blink.py`), then the standing paint, licence and light checks | `<cell>.blend`, maps, `r\`, `close\`, `bow_blink.gif` | 30 to 40 min |
 | 6. LOD | `6_lod.bat` | the hand LOD chain (lod0 to lod3 sharing one set of atlases, small parts drop out by size) and the Godot cost bench (twenty copies, 1080p and 3D at 4K). Costs are reported, never capped (R111) | `glb\<cell>.glb`, `godot\` | about 3 min |
 | 7. Game export | `7_export.bat` | runs every standing ship check (`standing.py all`), then writes the game's ship folder from the baked ship and the ship json, with no hand steps: the ship glb with a node per hard point, the 2048 map set and `manifest_entry.json` with the point counts. Then reads the glb back and checks it: FAIL when any required point is missing (a weapon slot, an engine, a hangar mouth, the core, the braking and boarding origins), the breach count for the class and faction is wrong, a hard point is off the mesh, or the manifest entry disagrees. Then proves the check can fail (every broken copy must be refused, each for its own reason). Details below and in `HARDPOINTS.md` | `recipe\<ship>\export\<code>\` | about a minute |
@@ -53,7 +53,7 @@ side, weapons, overview and the firing capture).
 - `faction`: picks the kit, `tools/blender/kits/<faction>/` (see `tools/blender/kits/README.md`);
 - `hull`: the hull module, a Python file that builds the hull blocks; `tune`: its tuned numbers (written by stage 3);
 - `concept_camera`: the camera fitted to the concept (stage 3 fits one when this is empty);
-- `outline_gate`: 0.90; `outline_third_slack`: 5.0, how far below the gate one third (bow, midship, stern) may score;
+- `outline_gate`: 0.90 and `outline_third_slack`: 5.0, the context the reported outline overlap is printed against (not a pass bar, RULEBOOK 5.8);
 - `lights`: the window and trim lights the bake writes, each in pixels across on a 70 px ship (for example
   `{"windows": 2.5, "trim": 2.0}`); empty while the paint has no light map. `light_min_px`: 2.0, the smallest a light may be;
 - `game_ship` and `game_code`: the ship's id in `data.js` and the folder name in `godot/assets/ships` (stage 7); `length_world`:
@@ -64,8 +64,9 @@ side, weapons, overview and the firing capture).
 
 Socket positions and sizes are measured off the concept through the fitted camera: pick the weapon's pixel in the concept, cast it
 onto a plane at a plausible height, read x, y and z (round 6 README, section 1, has the C15s numbers and the method). Then the
-gate decides: a part that pokes outside the concept's outline at the concept camera costs overlap, so sizes settle where the
-weapons read like the concept; the overlap is reported beside it (RULEBOOK 5.8), and the guns are never bent to raise it (5.10).
+outline is read by eye: a part that pokes outside the concept's outline at the concept camera costs overlap, so sizes settle
+where the weapons read like the concept and the reported overlap is read for what it says (RULEBOOK 5.8); the guns are
+never bent to raise it (5.10).
 
 ## What the stage 4 audit proves, and what it does not
 
@@ -189,7 +190,7 @@ These are not one-off sheets. Every stage writes them into the job folder and st
 
 | Check | Where it runs | What it proves |
 |---|---|---|
-| outline per third, inner edge | stages 3 and 4 (`outline_thirds.py`) | the outline overlap for bow, midship and stern separately, each at least the gate minus `outline_third_slack`, and every third has the inner edge distances (median px and share within 6 px), so a wrong third cannot hide in the whole-ship average |
+| outline per third, inner edge | stages 3 and 4 (`outline_thirds.py`) | the outline overlap for bow, midship and stern separately, reported against the gate and `outline_third_slack` (not a pass bar, RULEBOOK 5.8), and every third has the inner edge distances (median px and share within 6 px), so a wrong third cannot hide in the whole-ship average |
 | outline from the second camera | stage 4 (`outline_battle.py`) | the same overlap per third at the game's battle camera (r 170) and the studio battle camera, against the B0 shape reference; this is the angle the player uses, not the concept camera |
 | blink sheet | stage 5 (`blink.py`) | `bow_blink.gif`: the concept and the model at the fitted concept camera, alternating, so the bow can be flipped in front of Ryan |
 | paint sides | stage 5 (`render.py`: concept, `below`, `side_s`) | the concept side, the underside and the far (starboard) side stills all exist; paint is judged on all three, not only the side the concept shows |
@@ -211,7 +212,7 @@ example `{"windows": 2.5, "trim": 2.0}`. Empty `lights` means the paint has no s
 
 | Generic (any concept, any faction) | Per ship today | Next |
 |---|---|---|
-| stages 1, 2, 5, 6, 7; the outline gate and the standing checks (per third, inner edge, second camera, paint sides, blink sheet, licences, light sizes); the fitted concept camera; the shared plumbing (sockets, seating, scale rules, audit, tags, the muzzle, engine and bay registry); the hard point contract and its one count table (`kits/shared/hardpoints.py`); bake, LOD chain, cost bench; the game export, its hard points and its check | the hull module's block table (C15s: raised forward deck, deckhouse and tower tiers, hump, aft body, stern block, sponsons, modules, cargo blocks; `armA5.py`); the sockets in the ship json | a block table as data in the ship json, so a new hull needs no Python; the wreck and damage glbs and the scene gate (stage 7, list above) |
+| stages 1, 2, 5, 6, 7; the outline overlap report and the standing checks (per third, inner edge, second camera, paint sides, blink sheet, licences, light sizes); the fitted concept camera; the shared plumbing (sockets, seating, scale rules, audit, tags, the muzzle, engine and bay registry); the hard point contract and its one count table (`kits/shared/hardpoints.py`); bake, LOD chain, cost bench; the game export, its hard points and its check | the hull module's block table (C15s: raised forward deck, deckhouse and tower tiers, hump, aft body, stern block, sponsons, modules, cargo blocks; `armA5.py`); the sockets in the ship json | a block table as data in the ship json, so a new hull needs no Python; the wreck and damage glbs and the scene gate (stage 7, list above) |
 | the Hullbreaker kit and paint (`kits/hullbreakers/`) | | a kit per faction: Sunward Crusade, Glasswrights, Eclipse, Chorus, Hegemony Navy, each with its own shape language and paint |
 
 The section fits in stage 3 (`b0trace.py`) are generic; turning them into the hull module's knot table was a hand step in round 5
@@ -225,9 +226,10 @@ in the recipe, and the next change makes it data.
   `docs/shots/ship_pipeline/route209/round4/concept_camera.json`; game ship `c_marauder`, game code `C15s_23`.
 - Kit: `tools/blender/kits/hullbreakers/kit.py` and `paint.py`.
 - Reports and sheets: `docs/shots/ship_pipeline/route209/round6/README.md`, `docs/shots/ship_pipeline/route209/round7/README.md`.
-- The outline gate after round 7 reads 89.7 percent (scored from the PC glb; the game export 89.6), under the 90 gate: the bow
-  pass cost 0.3 against Ab6's 90.0. Per third (`outline_thirds.py`, audit pass 2 finding 13): bow 90.3 (Ab6 91.0), midship 90.7,
-  stern 85.1. Stage 4 exits on the gate FAIL; that is the honest reading, and R156 puts the bow's look ahead of the score.
+- The outline overlap after round 7 reads 89.7 percent (scored from the PC glb; the game export 89.6), under the 90 point it
+  was once scored against: the bow pass cost 0.3 against Ab6's 90.0. Per third (`outline_thirds.py`, audit pass 2 finding 13):
+  bow 90.3 (Ab6 91.0), midship 90.7, stern 85.1. The old gate exited on that low whole number; it is now reported, and R156 puts
+  the bow's look ahead of the score.
 - Round 8 (`docs/shots/ship_pipeline/route209/round8/README.md`): hull module `armA8` (the bow third fitted by
   `tools/blender/r209/fit8.py` to the concept outline and its traced near deck edge, numbers in `fit8_bow.json`). Outline after
   round 8: bow third 91.5, midship 90.6, stern 85.0 (the per-third floor at gate 90 and slack 5 is 85.0), whole 90.3 (over the

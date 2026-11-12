@@ -1,0 +1,14 @@
+{
+  "capture": "C:/Users/rcbai/Downloads/voidsworn_test/work217/issue-238-deepseek/20261112_014512/repo/docs/shots/reporting_2026_11/hd6_battle_log_soak.png",
+  "hud_characters": 24763,
+  "hud_display_lines": 424,
+  "hud_entry_cap_located": false,
+  "hud_log_entries": 346,
+  "js_cap": 200,
+  "quality": "high",
+  "result": "win",
+  "rounds": 14,
+  "rules_log_entries": 346,
+  "seconds": 58.006,
+  "seed": 4238
+}

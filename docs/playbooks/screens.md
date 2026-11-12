@@ -11,25 +11,71 @@ screen. The worked example is the campaign map's Briefing layout.
 - What he named as the tells of a machine-made screen: too many colours and glows, everything in a box or tag, uneven type and
   spacing. The cure is restraint and one system.
 
-## 2. The system (what every screen shares)
+## 2. The system (what every screen shares): the orders sheet
 
-- **Two colours over pale sage text.** Lime means the next action and what it acts on. Red is the Nemesis only. A third
-  colour needs a ruling.
-- **One filled button per screen**: the lime one that says what happens next, with its key cap.
-- **One type ladder** (at the 1080 design height, scaled by the one scale law in contrib/opus/briefs/ui_spec.md): 40 display,
-  22 row titles, 20 map labels and names, 15 body, 14 secondary, 13 small caps heads; numbers in the number face. Nothing
-  under 12.
-- **One spacing grid**: multiples of 8, column padding 40.
-- **Boxes are earned.** A flat column with a quiet edge, hairlines between groups, and at most one floating card (a hover
-  tip). No chamfers, brackets, scanlines, wells or left bars on a calm screen.
-- **Hover, a key or a click holds the detail.** If a fact is not needed to make this screen's decision, it goes behind
-  hover, "Map key" or a "Dossier" style overlay. Nothing is deleted from the game: every moved fact is listed with where it
-  now lives.
-- **Text over a 3D scene**: on the campaign map, plain text with a dark halo (R165); everywhere else it sits on a backing
-  (contrib/opus/briefs/ui_style.md section 3).
-- **The scene is part of the screen.** Dim it until nothing in the backdrop is brighter than the routes and labels.
-- Palette, fonts, key caps, buttons and the focus ring come from godot/ui/theme/glass_shell.gd. A screen adds what is missing
-  to the theme, never loose numbers of its own.
+Lime Tactical is retired (R191). Every screen moves to the orders sheet, the look Ryan passed on the campaign map's rail
+(R176, contrib/opus/briefs/campaign_rail_orders_sheet.md) and picked again for the battle screen (E1 LEDGER, R210). The
+battle screen (godot/ui/battle/ledger.gd) is the second screen built in it; build the next ones from this section.
+
+- **One accent, the ember (#ff8a3a, glass_shell.gd MAP_EMBER).** It marks the next action and what it acts on: the action
+  box, the odds, "Your turn", the ship that is up (its name on the board and its ring), the hovered hex. Nothing else is
+  orange. NEM (#ff6050) is the Nemesis only. **Glacier (#92b8e8, GLACIER) is shield readouts only** (R210); the shields drawn
+  around ships in space keep their faction colours. A damaged hull figure takes the game's damage colour (HULL_LOW).
+- **Three text strengths**: TEXT for what the player must read, TEXT2 for supporting sentences, TEXT3 for joining words only
+  ("Hull", "Target", "Heat", "Dossier"), never a sentence.
+- **Three faces, one job each**: Big Shoulders Display for names in capitals (never under 28 px at 1080, never a sentence),
+  Barlow for every sentence and joining word, Azeret Mono for figures and keys.
+- **No panels.** Words sit on a smooth darkening of the scene (about 94% black, full strength under the words, fading to
+  nothing), never on a filled rectangle with an edge. Square corners. No pills, key badges, glows or shadows.
+- **One box per screen**: the action, a 2 px square ember outline 56 px tall with its key on the right, filled ember under the
+  pointer. Dialogs (the menu, the end card) and hover tips are near-black squares with a hairline edge.
+- **Width follows the decision (R218).** Sheet and panel widths are set by the decision the screen holds, not by how much
+  data exists, and the scene keeps most of the screen. When Ryan rules a width on one screen, it is written here as the rule
+  for every sheet. Ryan, Nov 11 2026: "the side left panel takes up a ton of the screen. It's like 30-40% of the screen and
+  blocking a lot that's going on."
+- **Keys after words**, in the figure face and the second strength: "Brace B", "End ship Space". No key caps.
+- **Say less (R177).** Only what the screen's decision needs is on it; the rest is one hover or one key away, and the pull
+  request lists every moved item and how it is reached. Nothing is deleted from the game.
+- **Readability, checked by a test**: nothing under 17 px at 1080, three strengths, 4.5 to 1 over the brightest and darkest
+  board, no overlaps at any fleet size or name length (the battle screen's check, godot/ui/battle/test/ledger_readability_test.gd,
+  composites the screen's own darkening over pure white and black, so a pass holds over any backdrop).
+- **Board colours follow**: no lime on the 3D board either (the ring under the ship that is up and the hovered hex are ember);
+  the threat map and the reach hatching are bone (TEXT), because red is the Nemesis alarm's and purple is on Ryan's list.
+- Palette and faces come from godot/ui/theme/glass_shell.gd (MAP_EMBER, TEXT, TEXT2, TEXT3, NEM, GLACIER, sheet_name,
+  sheet_body, sheet_medium, num). A screen adds what is missing to the theme, never loose numbers of its own.
+
+### The battle screen (E1 LEDGER, issue 271)
+
+The orders sheet takes about a fifth of the screen width (380 px from a 40 px margin at 1080), never more than a quarter, and
+shows detail only for the decision in front of the player; everything else waits behind a key or a hover (R218). A fleet too
+big for it folds into "and N more" with a hover (R220). The camera centres the board in the part the sheet leaves clear.
+
+One left sheet, read in the order the player decides: whose turn and how many ships still act; the ship (name, class, hull,
+movement, its four shields as a small plan in Glacier); its status line; its guns (name, arc and range, then the odds or why
+it cannot fire); the target and the odds, large, with one sentence of expected damage; the action; the orders that can be
+given now; the Command and End ship; the fleet at the foot. Top right: Menu, the enemy and Heat, the Nemesis. Bottom right:
+the last three log lines. Names on the board only for the ship that is up and the target. The camera centres the board in
+the part the sheet leaves clear (camera_rig.gd screen_shift).
+
+What moved behind a hover or a key (all still reachable):
+
+| Was on the screen | Now |
+|---|---|
+| captain, armour, evasion, turns, sections, perks, the key list | hover the ship's name |
+| a gun's damage, cost, reload, arc words | hover the gun; click it or press its number to arm it alone |
+| the target's hull and four shields | hover the target's name |
+| the Nemesis block (aboard, flees when, adaptations, weakness) | hover the Nemesis line |
+| Heat gauge | "Heat 3"; hover for the rules behind it |
+| the unacted set, who the enemy can reach first | the count in the top line; hover it |
+| fleet bars, status words, LOW, NEW, danger badges | hover a fleet line (click picks the ship) |
+| orders that cannot be given now (Ram, Board, a cooling ability) | hidden until they can; their keys work as before |
+| the step hints (Move, Fire, End) | one short sentence; the full hint on the action's hover |
+| Cancel button | Esc |
+| speed, threat map, top-down, grid buttons | Esc menu (and R, T, Z keys) |
+| the key line along the bottom | Esc menu, Keys; and the ship name's hover |
+| nameplates with bars on every ship | hover a ship |
+| the four-line log ticker | three lines; L (or "Log L") opens the full log |
+| the status line's state words | hover the status line for their definitions |
 
 ## 3. Steps
 
@@ -43,7 +89,7 @@ screen. The worked example is the campaign map's Briefing layout.
    the done test. docs/archive/briefs/campaign_map_briefing.md is the pattern.
 5. **Build** in the game from the brief, theme first.
 6. **Capture** on the PC at 1080 and 1440: the plain state, a busy state, each overlay, a hover, and a damaged or edge case.
-   Look at them at full size against the mockup: alignment to the grid, no overlaps, lime only where it should be.
+   Look at them at full size against the mockup: alignment to the grid, no overlaps, the ember only where it should be.
 7. **One image to Ryan**: the new screen beside the old one.
 
 ## 4. The checks that prove it
@@ -67,7 +113,11 @@ screen. The worked example is the campaign map's Briefing layout.
   lookups (C.nemRead).
 - Captures that are staged but never committed: the picture Ryan judged must be in docs/shots/ from the final commit.
 
-## 6. Worked example
+## 6. Worked examples
+
+The battle screen: three layouts captured over the real battle (issue 271 step 1, contrib/opus/reviews/battle_screen_ember_options.md),
+Ryan's pick E1 (R210), the build (step 2, contrib/opus/reviews/battle_screen_ember_build.md, pictures in
+docs/shots/ui_battle_ember/build/).
 
 The campaign map: three options (contrib/opus/ui_map_design/), the brief (docs/archive/briefs/campaign_map_briefing.md), the
 build on opus/issue-344 (pull request 349), the finish (issue 418) and round 3 (issue 420: the approach to the star across
@@ -88,7 +138,8 @@ One screen is one or two build runs and one or two capture runs, plus one Ryan l
 
 ## 8. Open question for Ryan
 
-Whether the battle HUD takes the map's calmer treatment (program decision 8). Until he rules, the HUD keeps its slabs.
+Settled: the battle HUD takes the orders sheet (R210, E1 LEDGER). Open: the enemy's violet markers and the acting enemy's
+lavender ring on the 3D board, and the mint ring under your other ships, are board colours this rollout did not change.
 
 ## 9. Seat
 

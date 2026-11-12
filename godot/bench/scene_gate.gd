@@ -40,7 +40,10 @@ extends Node
 # steps from the session-1 seed, three deaths at steps 260, 320 and 380), with every worker job (hull rebuilds, death
 # cuts) waited for before each step, so the same code draws the same moments; writes still_<step>_wide.png (the gate
 # view) and still_<step>_close.png (the third death's ship, close) at steps 200, 300, 400 and 470. For before and
-# after sheets of a change that must not show.
+# after sheets of a change that must not show. --film N (issue 461): with --still, also film_<step>.jpg every N steps
+# (1280x720), a short film of the same fixed-clock fight at the battle camera (r 170, or --film_r R), centred where the
+# third death happens (the close stills are skipped). --trace and the base and deaths rows also report the flash
+# counter's requests, counted and refused flashes (row "flash", issue 461).
 # Not in the default list (run with --modes): the 3D scene drawn at more pixels than the 1080p window, so the cost at
 # Ryan's real screens shows whatever monitor the window sits on (the HUD stays at 1080p):
 #   res_1440     3D at 2560x1440 (scaling_3d_scale 1.333)
@@ -51,6 +54,7 @@ const API := preload("res://rules/battle_api.gd")
 const BL := preload("res://world/board_look.gd")
 const PG := preload("res://render/placeholder_guard.gd")
 const SV := preload("res://render/ship_view.gd")
+const HULL := preload("res://fx/fx_hull.gd")
 
 const RES := Vector2i(1920, 1080)
 const MODES := ["base", "shadows_off", "msaa_2x", "msaa_off", "fx_off", "post_off", "hud_off", "world_off", "ships_off",
@@ -229,6 +233,13 @@ func _still_run() -> void:
 		if deaths.size() > 2 and str(id) == str(deaths[2]) and sv != null and is_instance_valid(sv):
 			close_t = Vector3(sv.global_position.x, 0, sv.global_position.z)
 	var shots := [200, 300, 400, 470]
+	var film := int(args.get("film", 0))
+	if film > 0 and close_t != Vector3.INF:
+		# the film is shot at the battle camera (r 170 unless --film_r), centred where the third death happens
+		b.cam.t = close_t
+		b.cam.r = float(args.get("film_r", 170.0))
+		b.cam.snap()
+		keep = {"t": b.cam.t, "r": b.cam.r}
 	for st in 471:
 		_settle(fx)
 		if st % 21 == 0:
@@ -238,11 +249,23 @@ func _still_run() -> void:
 				fx.death(deaths[d], "big" if d == 2 else "blast")
 				side_ids["player"].erase(deaths[d])
 				side_ids["enemy"].erase(deaths[d])
+		if film > 0 and close_t != Vector3.INF:
+			# the battle's own camera follows the selected ship; hold the film on the third death's place every step
+			b.cam.t = close_t
+			b.cam.r = float(args.get("film_r", 170.0))
+			b.cam.snap()
 		fx.step(1.0 / 60.0)
 		await get_tree().process_frame
+		# Issue 461: --film N also keeps every Nth step as a 1280x720 jpg (film_<step>.jpg), so the same fixed-clock fight
+		# can be played back as a short film for before and after.
+		if film > 0 and st % film == 0:
+			var fimg := get_viewport().get_texture().get_image()
+			if fimg != null and not fimg.is_empty():
+				fimg.resize(1280, 720, Image.INTERPOLATE_LANCZOS)
+				fimg.save_jpg(out.path_join("film_%03d.jpg" % st), 0.9)
 		if st in shots:
 			await _shot("still_%03d_wide.png" % st)
-			if close_t != Vector3.INF:
+			if close_t != Vector3.INF and film <= 0:
 				b.cam.t = close_t
 				b.cam.r = 70.0
 				b.cam.snap()
@@ -535,6 +558,7 @@ func _save() -> void:
 
 
 func _build(mode: String, seed: int) -> void:
+	HULL.reset_late()   # issue 376: count only the shaders this battle first builds after its warm-up
 	b = BattleScene.instantiate()
 	b.external = true
 	b.args["quality"] = "max"
@@ -712,6 +736,14 @@ func _mode(mode: String, s: int) -> Dictionary:
 	var obj0 := int(Performance.get_monitor(Performance.OBJECT_COUNT))
 	if b.gfx != null:
 		b.gfx.prof_take()
+	# Issue 461: every bright-flash request in the measured frames, so the report can say how often the flash counter
+	# refused one in the 20-ship storm battle and how big the refused ones were drawn (they still draw at full size and
+	# colour, with a slower rise). Logging is set by name, so an older commit without it is simply not logged.
+	var fl0 := 0
+	if b.gfx != null and "flash_area_log" in b.gfx:
+		b.gfx.set("flash_area_logging", true)
+		(b.gfx.flash_area_log as Array).clear()
+		fl0 = b.gfx.flash_log.size()
 	vol_looks.clear()
 	for i in n:
 		if mode == "deaths" and b.gfx != null:
@@ -756,6 +788,7 @@ func _mode(mode: String, s: int) -> Dictionary:
 			vol0 = vol
 			obj0 = obj
 		vol_looks.clear()
+	var late: Array = HULL.late_shader_names()
 	var row := {"mode": mode, "frames": n, "warmup": warm, "seconds": (Time.get_ticks_usec() - t0) / 1e6,
 		"viewport": [vp.get_visible_rect().size.x, vp.get_visible_rect().size.y], "msaa_3d": vp.msaa_3d,
 		"scaling_3d": vp.scaling_3d_scale, "volleys": b.gfx.stats.get("volleys", 0) if b.gfx != null else 0,
@@ -763,7 +796,34 @@ func _mode(mode: String, s: int) -> Dictionary:
 		"damage_counts": b.gfx.damage_counts() if b.gfx != null else {},
 		"vram_mb": Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0,
 		"texture_mb": Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED) / 1048576.0,
-		"buffer_mb": Performance.get_monitor(Performance.RENDER_BUFFER_MEM_USED) / 1048576.0}
+		"buffer_mb": Performance.get_monitor(Performance.RENDER_BUFFER_MEM_USED) / 1048576.0,
+		"late_shaders": late.size(), "late_shader_names": late}
+	if b.gfx != null and "flash_area_log" in b.gfx:
+		var req := 0
+		var yielded := 0
+		var refused: Array = []
+		var counted := 0
+		for e in b.gfx.flash_area_log:
+			req += 1
+			if int(e[5]) == 1:
+				counted += 1
+			if e.size() > 8 and int(e[8]) == 1:
+				yielded += 1
+			elif int(e[6]) == 0:
+				refused.append(int(float(e[3])))
+		refused.sort()
+		# every counted or refused flash in order: [seconds into the measured frames, drawn px, counted, drawn bright]
+		var events: Array = []
+		var tmin := INF
+		for e in b.gfx.flash_area_log:
+			tmin = minf(tmin, float(e[0]))
+		for e in b.gfx.flash_area_log:
+			if int(e[5]) == 1 or int(e[6]) == 0:
+				events.append([snappedf(float(e[0]) - tmin, 0.001), int(float(e[3])), int(e[5]), int(e[6]), int(e[8]) if e.size() > 8 else 0])
+		row["flash_events"] = events
+		row["flash"] = {"requests": req, "counted": counted, "refused": refused.size(), "refused_px": refused, "gun_hits_yielded": yielded,
+			"counted_log": b.gfx.flash_log.size() - fl0, "limit_px2": b.gfx.flash_limit_px2() if b.gfx.has_method("flash_limit_px2") else 0.0}
+		b.gfx.set("flash_area_logging", false)
 	for k in cols:
 		var arr: Array = cols[k]
 		var srt := arr.duplicate()
@@ -783,12 +843,16 @@ func _mode(mode: String, s: int) -> Dictionary:
 	row["build_ms"] = build_ms
 	if trace:
 		row["trace"] = _trace_summary(tr)
+		row["trace"]["late_shaders"] = late
 		var tf := FileAccess.open(out.path_join("trace_%s_s%d.json" % [mode, s + 1]), FileAccess.WRITE)
 		tf.store_string(JSON.stringify(tr) + "\n")
 		tf.close()
 	print("[scene_gate] %d %s gpu %.3f frame %.3f cpu %.3f dc %d+%d prims %d+%d" % [s + 1, mode, row["gpu_median"],
 		row["frame_median"], row["cpu_median"], int(row["dc_vis_median"]), int(row["dc_sh_median"]),
 		int(row["prim_vis_median"]), int(row["prim_sh_median"])])
+	print("[scene_gate] %d %s late shaders after warm-up (issue 376): %d" % [s + 1, mode, late.size()])
+	for line in late:
+		print("[scene_gate]   late shader " + str(line))
 	volleys_on = false
 	kill_shadows = false
 	b.queue_free()

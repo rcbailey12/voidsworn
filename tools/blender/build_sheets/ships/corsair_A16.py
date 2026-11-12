@@ -79,8 +79,8 @@ def build(K):
     for side in (1, -1):
         K.slit('SL%d' % (1 if side > 0 else 2), (6.72, 1.3 * side, 1.75), (0.8, 0, 0.6), 0.9, 0.14, inv='tier2', note='vision slit in the tier 2 front')
     K.mark('tier2', 'tier', ['face', 'roof', 'opening'])
-    K.mass('Rack plinth', K.loft('A16_plinth', [(3.0, 1.2, 1.2, 1.9, 2.15, 0.2, 0), (2.6, 1.65, 1.65, 1.9, 2.45, 0.25, 0),
-                                                (-0.2, 1.65, 1.65, 1.9, 2.45, 0.25, 0)], 'soot', plates=dict(PL, seed=27, faces=[0, 1, 2, 3], size=(0.45, 0.9))),
+    K.mass('Rack plinth', K.loft('A16_plinth', [(3.8, 1.2, 1.2, 1.9, 2.15, 0.2, 0), (3.4, 1.65, 1.65, 1.9, 2.45, 0.25, 0),
+                                                (0.6, 1.65, 1.65, 1.9, 2.45, 0.25, 0)], 'soot', plates=dict(PL, seed=27, faces=[0, 1, 2, 3], size=(0.45, 0.9))),
            'soot', note='lifts the rack so it fires clear over the bow')
 
     # ---------------- castle (tier 3, a low step), bridge, barbette ----------------
@@ -144,23 +144,16 @@ def build(K):
     K.hatchbox('HB1', (7.95, 1.55, K.deck_z(7.95, 1.1) + 0.02), 0.9, 0.9, 0.3, inv='bow_hatchboxes', note='framed deck box, port')
     K.hatchbox('HB2', (7.95, -1.6, K.deck_z(7.95, -1.2) + 0.02), 0.8, 0.8, 0.28, inv='bow_hatchboxes', note='framed deck box, starboard (smaller)')
 
-    # ---------------- chains: real links, taut ----------------
-    K.chain('C1', [(7.3, 3.95, 0.95), (7.3, 3.0, 1.45), (7.3, -3.05, 1.45), (7.3, -4.05, 0.95)], inv='mid_chain', note='girdle over the tier 2 seam')
-    K.chain('C2', [(-1.75, 4.15, 0.95), (-1.75, 3.5, 2.05), (-1.75, -3.6, 2.05), (-1.75, -4.25, 0.95)], inv='stern_chain',
-            note='girdle over the castle seam, at the foot of the castle front')
-    K.chain('C3', [(7.95, belt_y(7.95, 1, 'lo', -0.7) - 0.05, -0.62), (4.0, belt_y(4.0, 1, 'lo', -0.7) - 0.05, -0.64), (-1.4, belt_y(-1.4, 1, 'lo', -0.7) - 0.05, -0.64)],
-            inv='bow_chain', note='port flank lashing along the lower belt top')
-    K.chain('C4', [(6.4, belt_y(6.4, -1, 'lo', -0.7) + 0.05, -0.62), (2.0, belt_y(2.0, -1, 'lo', -0.7) + 0.05, -0.64), (-0.6, belt_y(-0.6, -1, 'lo', -0.7) + 0.05, -0.64)],
-            inv='bow_chain', note='starboard flank lashing, shorter (junky, unmatched)')
+    # chains cut (R221: Ryan, "there's no purpose"; every part has a job, ships.md 2c)
 
     # ---------------- weapons, by data.js slot ----------------
-    K.launcher('R1', (2.55, 0.0, 2.45), 2, 5, cell=0.5, depth=2.4, pitch=10, slot='F', weapon='htorp', inv='rack',
+    K.launcher('R1', (3.35, 0.0, 2.45), 2, 5, cell=0.5, depth=2.4, pitch=10, slot='F', weapon='htorp', inv='rack',
                note='heavy rocket rack, 10 cells, magazine below')
     K.hatchbox('HB3', (4.75, 1.15, 2.0), 1.2, 1.3, 0.28, fins=2, inv='armour_vent', note='armoured vent housing with two slanted blades')
-    K.gun('T1', (-2.95, 0.0, 2.6), 0, 10, barrels=2, cal=0.14, blen=1.75, size=1.3, slot='T', weapon='flak', inv='top_turret',
-          note='castle flak turret, fires over the rack at 10 degrees and up')
-    K.gun('T2', (-6.65, 0.0, 3.25), 0, 30, barrels=2, cal=0.16, blen=1.85, size=1.45, slot='T', weapon='flak', inv='top_turret', variant=1,
-          note='bridge barbette flak turret, superfiring over T1, rests at 30 degrees')
+    K.gun('T1', (4.0, 0.0, -2.62), 0, 8, barrels=2, cal=0.14, blen=1.75, size=1.3, normal=(0, 0, -1), slot='T', weapon='flak', inv='belly_turret',
+          note='belly flak turret, covers below (R221: moved off the castle front, out of the rocket rack\'s backblast)')
+    K.gun('T2', (-7.0, 0.0, 3.25), 0, 30, barrels=2, cal=0.16, blen=1.85, size=1.45, slot='T', weapon='flak', inv='top_turret', variant=1,
+          note='bridge barbette flak turret, rests at 30 degrees, aft of the rocket rack\'s backblast')
     for side, sl in ((1, 'P'), (-1, 'S')):
         K.gun('%sB' % sl, (9.0, max(sf(8.6, side, RECESS_Z), sf(9.4, side, RECESS_Z), key=abs) + 0.02 * side, RECESS_Z), side * 20, 0, barrels=1, cal=0.18, blen=1.7, size=1.05,
               normal=(0, side, 0), slot=sl, weapon='scatter', inv='bow_casemates', note='bow casemate in the recessed band, trained forward')
@@ -267,14 +260,15 @@ def build(K):
     K.change('A long, low slab to the concept\'s measured proportions, the bow tapering in plan, the flank in layered belts', 'the Board on round 3: the hull was a straight-sided box, too tall; now length to beam about 3 and length to height about 4.5 like the round 8 sheet, tier 2 and the castle as low steps')
     K.change('The front tubes are the ship\'s face: big, side by side across the prow, jutting ahead of a tapered nose under a stepped brow', 'Ryan R217: "the tubes at the front ... are just circles on the actual build"')
     K.change('Rack raised on a plinth and pitched 12 degrees; no turret in front of it', 'Ryan R217: "the guns are visibly blocking the rockets"; the fit check proves every cell fires clear over the bow')
-    K.change('Flak superfires from the castle front (T1) and a bridge barbette (T2)', 'the round 2 bunker turret sat in the rack\'s line of fire; the picture puts its top turret on the castle')
+    K.change('Flak on a bridge barbette (T2) and under the belly (T1)', 'the round 2 bunker turret sat in the rack\'s line of fire and the round 3 castle-front turret in its backblast (R221); the picture puts its top turret on the castle')
     K.change('Guns laid out as matched port and starboard batteries by game slot', 'the picture has a row of guns on one deck edge and a cluster on the other flank; scatter P and S are mirrored: a bow casemate, three deck-edge twin turrets, a flank casemate amidships and two sponson casemates per side')
     K.change('Profile set from a true side reading: deep flat-bellied slab, raised tier 2, castle, bridge block', 'one three-quarter camera cannot see height; the round 8 side view and the shape reference give a hull 4.9 deep, 6.5 to the castle roof')
     K.change('Roof turrets rest facing forward', 'the picture draws its barrel aft; no gun faces aft')
     K.change('The mid-length starboard engine pod becomes an upper pod on the stern deck', 'a pod at mid-length glowing forward would push the ship backward and burn its own deck')
     K.change('Two main engine pods, port larger, plus a centre main and lower boosters', 'the picture shows the port pod only; a single side pod would turn the ship; the faction keeps mismatched bells')
     K.change('Attitude thrusters moved off the casemates and pods', 'the fit check found the round 2 bow quads firing into the bow casemates and the stern quads into the pods')
-    K.change('Chains are taut girdles and flank lashings of real links', 'a slack chain cannot sag in space (R185); the girdles sit on the break lines')
+    K.change('Chains cut', 'Ryan, R221: "let\'s get rid of the chains randomly around the ship. There\'s no purpose"; every part has a job (ships.md 2c)')
+    K.change('Castle flak turret moved to the belly; the bridge turret set aft', 'Ryan, R221: "a gun directly behind the rocket pods on a16 ... seems like it conflicts"; the fit check now tests each rack\'s firing lane and backblast')
     K.change('Curved pincers under the bow tip; short grabbers under the stern', 'the concept\'s mandibles hang under the bow tip and its grabbers under the stern (the Board on round 3: round 3\'s read as legs under midships)')
     K.change('Engine pods brought in close to the hull', 'the concept\'s pods sit inside the ship\'s beam (top view); round 3\'s stood far out')
     K.change('Ventral launch bay and four attitude thruster quads added', 'data.js gives the barge a hangar of 2; a ship in space needs thrusters to turn')
@@ -283,7 +277,7 @@ def build(K):
     K.open_item('The notch in each tube\'s lower lip is left for the build\'s kit pass')
 
     # ---------- the fit report's fix column: round 2 clashes and how round 3 fixed them ----------
-    K.fix('R1 launch cells covered by T1 (the bunker turret in front of the rack)', 'bunker turret removed; flak moved to the castle front (T1) and a bridge barbette (T2); the rack raised on a plinth and pitched 12 degrees')
+    K.fix('R1 launch cells covered by T1 (the bunker turret in front of the rack)', 'bunker turret removed; flak moved to a bridge barbette (T2) and, after R221, the belly (T1); the rack raised on a plinth and pitched 12 degrees')
     K.fix('Q1 and Q2 exhaust into the bow casemates PB and SB', 'bow quads moved up onto the upper chamfer of the prow, firing up and out; casemates moved aft to 9.0')
     K.fix('Q3 and Q4 exhaust into the pods E1 and E2 and their pylons', 'stern quads moved to the castle\'s aft corners, above the pods')
     K.fix('E3 and E4 exhaust into the hull and the E0 housing', 'boosters moved below and aft of the stern end, exits at -12.1')

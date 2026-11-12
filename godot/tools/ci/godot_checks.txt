@@ -46,15 +46,18 @@ headless|fx/test/death_leap_check.gd|-|-|death sections, tiers, lifetime, cleanu
 headless|fx/test/death_plane_check.gd|-|-|ShipView and effects together as battle.gd marks a ship dead; box ships
 headless|fx/test/destruction_staging_check.gd|-|-|staged deaths, class gating, flash limits and the hurry key
 headless|fx/test/kill_slowmo_check.gd|-|-|issue 521: the kill slow-motion beat starts at the core flash of cruiser and capital kills, never for small hulls or under reduce motion, and a key or click ends it
+headless|fx/test/late_shader_check.gd|-|-|issue 376: after warm-up, any shader or material first built mid-battle logs its name and the frame time and is counted
 headless|fx/test/destruction_steps_check.gd|-|-|break geometry: every open edge is sealed; DESTRUCTION_OUT unset, so no pictures
 headless|fx/test/authored_interiors_check.gd|-|-|issue 557: authored GLB interiors and seams reach damage and death; moving a seam changes piece ownership; old hulls keep fallback
 headless|fx/test/flash_area_check.gd|-|-|issue 504: the flash counter by area on a staged worst second, checked against a brute-force area count; zero in calm mode
+headless|fx/test/hit_recipe_check.gd|-|-|issue 461: the hit ladder, a recipe per weapon family, thrown matter outliving flame, outward direction, torpedo light reach, zero flashes in calm mode, the lance kill's clean cut
 headless|fx/test/fx_smoke.gd|-|-|every weapon look, the damage ladder, shield breaks and every death cause on box ships
 headless|fx/test/playtest_batch1_check.gd|-|-|presentation regressions with stand-in hull scenes, no ship files
 headless|fx/test/playtest_batch3_check.gd|-|-|hits keep the skin, heavy damage opens a break, exhaust stays in space
 headless|fx/test/squadron_check.gd|-|-|451 squadron and carrier checks on stand-in craft
 headless|scenes/battle/test/wing_cancel_test.gd|-|-|UI-5 (issue 387): the battle screen clears its armed wing on a ship pick, the roster, Escape and Cancel
 headless|scenes/battle/test/movement_flight_check.gd|-|-|issue 505 flown movement: ends on the rules hex and facing, no roll, no heading jump, slides hold heading, burn, coast and retro jets, turning jets start and stop turns, weight past battleship
+headless|ui/battle/test/ledger_readability_test.gd|-|-|issue 271: the battle screen orders sheet (E1) at 1080 and 1440: 17 px, Big Shoulders 28, three strengths, 4.5 to 1 over white and black boards, no overlaps, every function reachable, nothing lime
 headless|scenes/battle/test/nose_first_check.gd|-|-|issue 521: a run of two hexes or more is flown nose first on the main engine through battle.gd _glide_steps; ends on the rules hex and facing, passes inside every route hex, a one-hex slide is slower than a burn
 gpu|assets/ships/test/a4_shots.gd|scene:res://assets/ships/test/a4_shots.tscn|--out {out}|in-game ship sheet: needs the built ship files and a window
 gpu|campaign/test/capstone_mastery_shots.gd|-|{out}|campaign screenshots: needs a window

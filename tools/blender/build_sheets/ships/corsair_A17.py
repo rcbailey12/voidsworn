@@ -136,11 +136,7 @@ def build(K):
     for i, y in enumerate((0.15, 0.0, -0.15)):
         K.pipe('PH%d' % i, [(6.0, y, -0.6), (5.1, y, -0.72), (4.4, y, -1.1), (3.6, y, -1.72)], r=0.045, inv='jaw_pipes')
 
-    # ---------------- chains ----------------
-    K.chain('C1', [(2.45, 2.55, -0.4), (2.45, 2.25, 0.5), (2.45, 1.45, 0.8), (2.45, -1.45, 0.8), (2.45, -2.25, 0.5), (2.45, -2.6, -0.4)],
-            link=0.18, r=0.028, inv='neck_chain', note='girdle at the neck, between the neck block and the fore block')
-    K.chain('C2', [(-1.92, 2.1, 0.47), (-1.92, 1.95, 1.34), (-1.92, -1.95, 1.34), (-1.92, -2.1, 0.47)],
-            link=0.18, r=0.028, inv='hump_chain', note='girdle in the gap between the mid and saddle blocks')
+    # chains cut (R221: Ryan, "there's no purpose"; every part has a job, ships.md 2c)
 
     # ---------------- weapons, by data.js slot ----------------
     K.mass('Rack plinth', K.box('A17_plinth', 0.95, 2.1, -0.72, 0.72, 0.8, 1.7, 'iron', ch=0.12), 'iron', note='lifts the rocket pod clear over the neck turrets')
@@ -150,10 +146,10 @@ def build(K):
     K.gun('T2', (-1.0, 0.0, -1.64), 0, 8, barrels=2, cal=0.08, blen=1.1, size=0.75, normal=(0, 0, -1), slot='T', weapon='flak', inv='belly_turret',
           note='belly twin, covers below')
     for side, sl in ((1, 'P'), (-1, 'S')):
-        K.box('A17_barbette_%s1' % sl, 2.9, 3.6, min(side * 0.25, side * 0.95), max(side * 0.25, side * 0.95), 0.7, 1.78, 'iron', ch=0.1)
-        K.gun('%s1' % sl, (3.25, side * 0.6, 1.78), side * 40, 2, barrels=2, cal=0.08, blen=1.1, size=0.75, slot=sl, weapon='scatter', inv='deck_guns',
+        K.box('A17_barbette_%s1' % sl, 2.9, 3.6, min(side * 0.95, side * 1.65), max(side * 0.95, side * 1.65), 0.7, 1.78, 'iron', ch=0.1)
+        K.gun('%s1' % sl, (3.25, side * 1.3, 1.78), side * 40, 2, barrels=2, cal=0.08, blen=1.1, size=0.75, slot=sl, weapon='scatter', inv='deck_guns',
               note='neck block twin turret on a low barbette')
-        K.gun('%s2' % sl, (-1.0, side * 1.4 + 0.1, 1.3), side * 25, 3, barrels=2, cal=0.08, blen=1.15, size=0.75, slot=sl, weapon='scatter', inv='deck_guns',
+        K.gun('%s2' % sl, (-1.4, side * 1.8 + 0.1, 1.3), side * 25, 3, barrels=2, cal=0.08, blen=1.15, size=0.75, slot=sl, weapon='scatter', inv='deck_guns',
               variant=1, note='mid block twin turret, superfiring')
         K.gun('%s3' % sl, (-2.2, sy(-2.2, side) + 0.28 * side, -0.25), side * 35, 0, barrels=2, cal=0.08, blen=1.05, size=0.75, normal=(0, side, 0),
               slot=sl, weapon='scatter', inv='flank_casemates', note='flank casemate on the flank tier')
@@ -233,7 +229,8 @@ def build(K):
     K.change('Engines are squat drums in two columns a side, exits level, no bell touching another', 'the concept\'s stacked cluster; the fit check found round 2\'s bells inside each other')
     K.change('The head follows the beauty: a big, tall, boxy front block over the neck, big ear dishes standing out at its upper corners, broad flat prongs', 'the Board on round 3b: Ryan judges against the accepted picture, which draws the head larger than the round 8 sheet')
     K.change('Forward rocket pod, belly flak turret and four attitude thrusters added', 'data.js gives a forward rocket slot (torp F); the belly needs cover; a ship in space needs thrusters')
-    K.change('Chains are taut girdles of real links in the gaps between blocks', 'a slack chain cannot drape in space (R185); the girdles sit on the break lines')
+    K.change('Chains cut', 'Ryan, R221: "let\'s get rid of the chains randomly around the ship. There\'s no purpose"; every part has a job (ships.md 2c)')
+    K.change('Neck and mid turrets moved outboard', 'R221: no gun in the rocket pod\'s firing lane or backblast (the fit check tests both)')
     K.change('Crystal shard removed', 'Ryan, R197')
     K.open_item('Belly detail between the prong housings and the engines is designed here; the picture does not show the underside')
 

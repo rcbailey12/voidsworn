@@ -59,7 +59,16 @@ func _run() -> void:
 		var b := Vector2(p[i + 1].y, p[i + 1].z)
 		var c := Vector2(p[i + 2].y, p[i + 2].z)
 		area += absf((b - a).cross(c - a)) * 0.5
-	_check(absf(area - 7.0 * 0.982 * 0.982) < 0.001, "concave cap covers exactly the recessed outline")
+	# R186/R215: the rule protects a backed, not-hollow piece, never one typed recess depth. The cap must cover almost all
+	# of the outline (it may inset it, and the ragged rim may add a little), so a changed cap look cannot fail this.
+	var outline_area := 0.0
+	for i in outline.size():
+		var a := Vector2(outline[i].y, outline[i].z)
+		var b := Vector2(outline[(i + 1) % outline.size()].y, outline[(i + 1) % outline.size()].z)
+		outline_area += a.cross(b) * 0.5
+	outline_area = absf(outline_area)
+	var covered := area / outline_area
+	_check(covered >= 0.9 and covered <= 1.05, "concave cap backs the outline (%.1f percent), so the piece is not hollow" % (covered * 100.0))
 	# Older single-surface hulls and Chorus share the cutter, but never the
 	# same interior appearance. Real closed geometry backs their thin skin.
 	for organic in [false, true]:

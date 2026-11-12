@@ -169,6 +169,30 @@ you see in both). A16: closer (bow-on it reads round, the plan tapers into the t
 is fuller and more bulbous below the belts, and its surface is many small overlapping plates. Both are the next build's work,
 not another blockout round (the Board said stop after 3c).
 
+# R221 clean-ups (Opus worker, Nov 12 2026): Ryan's two points on round 3c
+
+Ryan: "I think hullbreakers are good to go after 2 minor clean ups. One, let's get rid of the chains randomly around the ship.
+There's no purpose. 2. There's a gun directly behind the rocket pods on a16 which seems like it conflicts?"
+
+- **Chains cut** from both ships (A16: four, A17: two) and from both inventories. Every inventory line now carries a `job`
+  (what the part does on the ship); `inventory.py` prints a Job column and fails a line with no job, or a built part whose
+  inventory id names no line (A16 39 lines and 101 built parts, A17 27 and 85: 0 failing). No other part lacked a job.
+- **The gun behind the rack** was A16's castle-front flak turret T1, on the centreline about 3 units behind the rack. It is
+  now a belly flak turret (flak covers below); the rack and plinth moved 0.8 forward and the bridge turret T2 0.35 aft so its
+  barrel tips clear the backblast.
+- **The fit check's seventh test, LANE** (kit `launcher` writes the boxes; `clash.py` tests them): each rack has a firing
+  lane forward of its cells (4 degree spread, to 80 percent of the length) and a backblast aft of the rack (15 degree spread,
+  2.5 rack depths or 15 percent of the length). No gun may sit in either, resting or turned through its slot arc, even when
+  no mesh touches. On the 3c layouts it found A16 T1 and T2 in the backblast, and A17's neck turrets P1 and S1 in the rocket
+  pod's lane and mid turrets P2 and S2 in its backblast. A17's neck turrets moved outboard (0.6 to 1.3 off the centreline),
+  its mid turrets out (1.8) and aft (-1.4). Both ships zero in all seven tests (PC run r221a, Blender 4.5). The fit view
+  draws the lanes (yellow) and blasts (magenta).
+- **Turret reach** (the issue 560 lesson): `clash.py` turns each turret from rest each way in 5 degree steps until something
+  stops it; the fit report lists it. A17: every turret at least 155 degrees each way. A16: under 60 one way are P3 and S3
+  (0 toward the bow: they rest at 25 degrees with barrels just clear of the P2 and S2 barbettes; 140 the other way, so their
+  whole 30 to 150 arc is clear); P2 and S2 turn 70 inboard before the rack stops them. A fix for the build: rest P3 and S3
+  at 35 degrees, inside their arc.
+
 # Eclipse E11 and E12, first sheets (Opus worker, Nov 12 2026)
 
 Branch opus/issue-532-eclipse, from main with PR 547's tools brought in (`git checkout origin/opus/issue-532 --

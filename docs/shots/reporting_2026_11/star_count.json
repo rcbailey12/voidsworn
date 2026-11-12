@@ -1,0 +1,252 @@
+{
+  "item": "BD6 star density count",
+  "method": "expected kept grid cells, one per 3D cell whose cube intersects the layer sphere; pass probability 1-(threshold-density)",
+  "battle_view_sr": 1.14,
+  "layers": [
+    {
+      "scale": 120,
+      "threshold": 0.955,
+      "gain": 1,
+      "band_density": 0.03,
+      "cells_near_sphere": 271532
+    },
+    {
+      "scale": 300,
+      "threshold": 0.985,
+      "gain": 0.55,
+      "band_density": 0.012,
+      "cells_near_sphere": 1697228
+    },
+    {
+      "scale": 650,
+      "threshold": 0.994,
+      "gain": 0.35,
+      "band_density": 0.004,
+      "cells_near_sphere": 7966520
+    }
+  ],
+  "regions": [
+    {
+      "region": "frontier",
+      "band": 0.6,
+      "by_layer": [
+        {
+          "scale": 120,
+          "thr": 0.955,
+          "gain": 1,
+          "dens": 0.03,
+          "stars": 13224.4,
+          "stars_relaxed": 15939.8
+        },
+        {
+          "scale": 300,
+          "thr": 0.985,
+          "gain": 0.55,
+          "dens": 0.012,
+          "stars": 27973.5,
+          "stars_relaxed": 44945.8
+        },
+        {
+          "scale": 650,
+          "thr": 0.994,
+          "gain": 0.35,
+          "dens": 0.004,
+          "stars": 51735.1,
+          "stars_relaxed": 131400.3
+        }
+      ],
+      "stars_total": 92933,
+      "stars_per_sr": 7395.37,
+      "stars_in_battle_view": 8430.7,
+      "relaxed_total": 192285.9,
+      "relaxed_per_sr": 15301.63,
+      "relaxed_in_battle_view": 17443.9,
+      "relaxed_change_pct": 106.9
+    },
+    {
+      "region": "nebula",
+      "band": 0.4,
+      "by_layer": [
+        {
+          "scale": 120,
+          "thr": 0.955,
+          "gain": 1,
+          "dens": 0.03,
+          "stars": 12889.3,
+          "stars_relaxed": 15604.6
+        },
+        {
+          "scale": 300,
+          "thr": 0.985,
+          "gain": 0.55,
+          "dens": 0.012,
+          "stars": 27135.2,
+          "stars_relaxed": 44107.4
+        },
+        {
+          "scale": 650,
+          "thr": 0.994,
+          "gain": 0.35,
+          "dens": 0.004,
+          "stars": 50423.1,
+          "stars_relaxed": 130088.3
+        }
+      ],
+      "stars_total": 90447.6,
+      "stars_per_sr": 7197.59,
+      "stars_in_battle_view": 8205.3,
+      "relaxed_total": 189800.3,
+      "relaxed_per_sr": 15103.83,
+      "relaxed_in_battle_view": 17218.4,
+      "relaxed_change_pct": 109.8
+    },
+    {
+      "region": "world",
+      "band": 0.8,
+      "by_layer": [
+        {
+          "scale": 120,
+          "thr": 0.955,
+          "gain": 1,
+          "dens": 0.03,
+          "stars": 13559.6,
+          "stars_relaxed": 16274.9
+        },
+        {
+          "scale": 300,
+          "thr": 0.985,
+          "gain": 0.55,
+          "dens": 0.012,
+          "stars": 28811.9,
+          "stars_relaxed": 45784.2
+        },
+        {
+          "scale": 650,
+          "thr": 0.994,
+          "gain": 0.35,
+          "dens": 0.004,
+          "stars": 53047.1,
+          "stars_relaxed": 132712.3
+        }
+      ],
+      "stars_total": 95418.6,
+      "stars_per_sr": 7593.17,
+      "stars_in_battle_view": 8656.2,
+      "relaxed_total": 194771.4,
+      "relaxed_per_sr": 15499.42,
+      "relaxed_in_battle_view": 17669.3,
+      "relaxed_change_pct": 104.1
+    },
+    {
+      "region": "boneyard",
+      "band": 0.45,
+      "by_layer": [
+        {
+          "scale": 120,
+          "thr": 0.955,
+          "gain": 1,
+          "dens": 0.03,
+          "stars": 12973.1,
+          "stars_relaxed": 15688.4
+        },
+        {
+          "scale": 300,
+          "thr": 0.985,
+          "gain": 0.55,
+          "dens": 0.012,
+          "stars": 27344.8,
+          "stars_relaxed": 44317
+        },
+        {
+          "scale": 650,
+          "thr": 0.994,
+          "gain": 0.35,
+          "dens": 0.004,
+          "stars": 50751.1,
+          "stars_relaxed": 130416.3
+        }
+      ],
+      "stars_total": 91069,
+      "stars_per_sr": 7247.04,
+      "stars_in_battle_view": 8261.6,
+      "relaxed_total": 190421.7,
+      "relaxed_per_sr": 15153.28,
+      "relaxed_in_battle_view": 17274.7,
+      "relaxed_change_pct": 109.1
+    },
+    {
+      "region": "deep",
+      "band": 1,
+      "by_layer": [
+        {
+          "scale": 120,
+          "thr": 0.955,
+          "gain": 1,
+          "dens": 0.03,
+          "stars": 13894.8,
+          "stars_relaxed": 16610.1
+        },
+        {
+          "scale": 300,
+          "thr": 0.985,
+          "gain": 0.55,
+          "dens": 0.012,
+          "stars": 29650.3,
+          "stars_relaxed": 46622.5
+        },
+        {
+          "scale": 650,
+          "thr": 0.994,
+          "gain": 0.35,
+          "dens": 0.004,
+          "stars": 54359,
+          "stars_relaxed": 134024.2
+        }
+      ],
+      "stars_total": 97904.1,
+      "stars_per_sr": 7790.96,
+      "stars_in_battle_view": 8881.7,
+      "relaxed_total": 197256.8,
+      "relaxed_per_sr": 15697.2,
+      "relaxed_in_battle_view": 17894.8,
+      "relaxed_change_pct": 101.5
+    },
+    {
+      "region": "deadstar",
+      "band": 0.7,
+      "by_layer": [
+        {
+          "scale": 120,
+          "thr": 0.955,
+          "gain": 1,
+          "dens": 0.03,
+          "stars": 13392,
+          "stars_relaxed": 16107.3
+        },
+        {
+          "scale": 300,
+          "thr": 0.985,
+          "gain": 0.55,
+          "dens": 0.012,
+          "stars": 28392.7,
+          "stars_relaxed": 45365
+        },
+        {
+          "scale": 650,
+          "thr": 0.994,
+          "gain": 0.35,
+          "dens": 0.004,
+          "stars": 52391.1,
+          "stars_relaxed": 132056.3
+        }
+      ],
+      "stars_total": 94175.8,
+      "stars_per_sr": 7494.27,
+      "stars_in_battle_view": 8543.5,
+      "relaxed_total": 193528.6,
+      "relaxed_per_sr": 15400.52,
+      "relaxed_in_battle_view": 17556.6,
+      "relaxed_change_pct": 105.5
+    }
+  ]
+}

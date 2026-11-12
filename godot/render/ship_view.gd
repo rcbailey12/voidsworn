@@ -2,6 +2,9 @@ extends Node3D
 # One ship on the board: its hull (the game's mesh for its faction and class, or the 8K version for a flagship), scaled to
 # the class length, turned to its facing, with engine glows, a selection ring, and the animation of its moves.
 
+# the ring under the ship that is up: the Hollow Sun's ember, the battle screen's one accent (#ff8a3a, glass_shell.gd
+# MAP_EMBER; issue 271 step 2, lime retired by R191)
+const EMBER := Color(1.0, 0.541, 0.227)
 const HT := preload("res://render/hull_table.gd")
 const CRAFT := preload("res://render/squadron_craft.gd")
 const WING := preload("res://render/squadron_wing.gd")
@@ -250,7 +253,7 @@ func _ring() -> void:
 	ring.mesh = tm
 	var m := StandardMaterial3D.new()
 	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	m.albedo_color = Color(0.78, 0.96, 0.23)
+	m.albedo_color = EMBER
 	m.emission_enabled = true
 	ring.material_override = m
 	ring.position.y = -0.3
@@ -366,7 +369,7 @@ func flee() -> void:
 	ring.visible = false
 
 
-func set_selected(on: bool, col := Color(0.78, 0.96, 0.23)) -> void:   # lime: the ship that is up (R149)
+func set_selected(on: bool, col := EMBER) -> void:   # the ship that is up: ember (issue 271; lime retired, R191)
 	ring.visible = on
 	(ring.material_override as StandardMaterial3D).albedo_color = col
 	ring.rotation.y = -rotation.y

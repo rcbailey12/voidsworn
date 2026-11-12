@@ -54,8 +54,11 @@ const S_PATCH := 14
 const S_FISSURE := 15
 const S_SCORCH := 13      # the stage ladder's spreading scorch (fx_ship._plan)
 
-const MARK_CAP := 12      # weapon marks per ship (section breaches come on top)
-const SEC_MARK_CAP := 4   # ... and per hull section; past it a repeat grows an old mark or the lightest old mark goes
+# Issue 461 (audit item 4, "scorch that stays"): doubled from 12 and 4, so a ship that has been in a fight keeps its scars
+# instead of losing the oldest after a dozen hits. Cost reported, never capped (R111): the gate's frame intervals and the
+# hull rebuild time are in contrib/opus/reviews/hits_report.md.
+const MARK_CAP := 24      # weapon marks per ship (section breaches come on top)
+const SEC_MARK_CAP := 8   # ... and per hull section; past it a repeat grows an old mark or the lightest old mark goes
 const GROW_MAX := 1.6     # how far repeats can grow a mark (lance slots lengthen, craters widen, ion trees spread)
 # The smallest halo per mark style, in world units (the game's scale: hexes 17.3 across; the battle camera sits 170 away,
 # about 7.7 pixels a unit at 1080p). Claude's picks, vetoable; tuned on the r5 battle-distance stills.

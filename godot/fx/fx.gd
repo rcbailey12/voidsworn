@@ -19,6 +19,12 @@ const DEATH := preload("res://fx/fx_death.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
 const LIGHT_K := 0.9
+const LIGHT_REACH := 30.0   # an event light's standing reach in world units (hexes are 17.3 across)
+# Issue 461: a light given its own reach also falls off more slowly (Godot's omni light dims as distance to the power of
+# its attenuation). Bench round 1: at the standing 1.2 a torpedo's light changed a cruiser parked 15 units away by under
+# 1 percent, so the reach alone lit nothing; at 0.6 the neighbour is lit about five times as much.
+const LIGHT_ATTEN := 1.2
+const REACH_ATTEN := 0.6
 const FLASH_WINDOW := 0.12   # flashes this close are one event (a salvo landing together)
 const FLASH_CAP := 3         # counted flashes in any rolling second (WCAG 2.3.1 general flash threshold)
 const FLASH_I := 4.0         # sprite intensity from which a short flash-like sprite counts (dimmer pops are free)
@@ -114,7 +120,7 @@ var rng = RandomNumberGenerator.new()
 
 # --- lights
 var _lpool: Array = []
-var _lev: Array = []        # [pos, t0, life, peak, col, shape]
+var _lev: Array = []        # [pos, t0, life, peak, col, shape, reach]
 var _lsrc: Array = []       # persistent: {node, off, col, base, flick, seed}
 
 # --- feel
@@ -124,6 +130,11 @@ var _pauses: Array = []     # [t, frames]
 var _flashes: PackedFloat64Array = []
 var flash_log: PackedFloat64Array = []   # every counted flash (tests check the 3-a-second cap)
 var _refused: PackedFloat64Array = []    # flashes the budget turned down (their lights stay dark)
+# opus_check_524b (issue 558): a yielded gun flash still draws a soft flash, which is one flash under WCAG 2.3.1. These are
+# remembered per field so the soft ones are bounded too: [T, screen x, screen y]. flash_lift is true after a flash_at call
+# that refused a flash in a field already holding FLASH_CAP flashes in the last second; the caller then draws no peak at all.
+var _soft_mem: Array = []
+var flash_lift := false
 var _later: Array = []      # [t, callable]
 var _shake_off = Vector2.ZERO
 var _punches: Array = []    # [t, amount] (F3 zoom punch)
@@ -239,8 +250,8 @@ func setup(opts := {}) -> void:
 		l.light_energy = 0.0
 		l.shadow_enabled = false
 		l.visible = false
-		l.omni_range = 30.0 * unit
-		l.omni_attenuation = 1.2
+		l.omni_range = LIGHT_REACH * unit
+		l.omni_attenuation = LIGHT_ATTEN
 		add_child(l)
 		_lpool.append(l)
 	phys_root = Node3D.new()
@@ -253,15 +264,32 @@ func setup(opts := {}) -> void:
 # One Shader per distinct source (materials share it): identical shaders compile once, not once per material.
 var _shaders := {}
 
+# Issue 376: names for the shader sources that are constants in fx_shaders.gd, so a late shader's log line says
+# "mat SPRITE" instead of a hash. Built once on the first late shader.
+var _shader_names := {}
 
-func _mat(code: String, prio := 0, defines := "") -> ShaderMaterial:
+
+func _shader_name(code: String) -> String:
+	if _shader_names.is_empty():
+		var scr: Script = load("res://fx/fx_shaders.gd")
+		var consts: Dictionary = scr.get_script_constant_map()
+		for k in consts:
+			if consts[k] is String:
+				_shader_names[consts[k]] = k
+	return str(_shader_names.get(code, "code " + str(code.hash())))
+
+
+func _mat(code: String, prio := 0, defines := "", label := "") -> ShaderMaterial:
 	var key := str(code.hash()) + "|" + defines
 	var s: Shader = _shaders.get(key)
 	if s == null:
+		var name := label
+		if name == "":
+			name = "mat " + _shader_name(code) + ("" if defines == "" else " " + defines.strip_edges())
 		if defines != "":
 			var nl = code.find("\n", code.find("render_mode"))
 			code = code.substr(0, nl + 1) + defines + code.substr(nl + 1)
-		s = HULL.shared_shader(code)
+		s = HULL.shared_shader(code, name)
 		_shaders[key] = s
 	var m = ShaderMaterial.new()
 	m.shader = s
@@ -269,8 +297,17 @@ func _mat(code: String, prio := 0, defines := "") -> ShaderMaterial:
 	return m
 
 
-func mat(code: String, prio := 0, defines := "") -> ShaderMaterial:
-	return _mat(code, prio, defines)
+func mat(code: String, prio := 0, defines := "", label := "") -> ShaderMaterial:
+	return _mat(code, prio, defines, label)
+
+
+# Issue 376: how many distinct shaders were first built after the warm-up ended, and their names with frame and time.
+func late_shader_count() -> int:
+	return HULL.late_shader_count()
+
+
+func late_shader_names() -> Array:
+	return HULL.late_shader_names()
 
 
 # ---------------------------------------------------------------- clock
@@ -537,7 +574,13 @@ func _flash_count(T: float) -> bool:
 #     general flash: it is counted against FLASH_CAP (three in any rolling second) like any other, or refused.
 #  4. Small flashes far apart never add up; small flashes close together do.
 # Reduce flashing: false at once, as on main (nothing is booked or remembered).
-func flash_at(p: Vector3, T: float, size: float, px := 0.0, life := FLASH_WINDOW) -> bool:
+# Issue 461: `yield_last` (gun hits and muzzles, not torpedoes): a flash that would have to be counted is drawn soft
+# instead, so gun fire never spends the three flashes a second that deaths' core flashes need. In the 20-ship storm gate
+# salvos of shell hits stacked past the limit, were counted (often booked ahead, at the volley's fire time) and a frigate's
+# and a cruiser's core flash were then turned soft. The limit, the window and the cap are unchanged; a hit only ever asks
+# for less. Its log row is marked as yielded (flash_area_log column 9).
+func flash_at(p: Vector3, T: float, size: float, px := 0.0, life := FLASH_WINDOW, yield_last := false) -> bool:
+	flash_lift = false
 	if reduce_flashing:
 		return false
 	if camera == null or not is_instance_valid(camera):
@@ -557,13 +600,44 @@ func flash_at(p: Vector3, T: float, size: float, px := 0.0, life := FLASH_WINDOW
 	var bright := true
 	var counted := 0
 	if lit > flash_limit_px2():
-		bright = _flash_count(T)
-		counted = 1 if bright else 0
+		if yield_last:
+			bright = false
+			flash_lift = _soft_full(T, c)
+			if not flash_lift:
+				_soft_mem.append([T, c[0], c[1]])
+			_refused.append(T)
+			if _refused.size() > 64:
+				_refused = _refused.slice(32)
+			if flash_area_logging:
+				flash_area_log.append([T, c[0], c[1], c[2], lit, 0, 0, maxf(life, FLASH_WINDOW), 1])
+			pend("flash", t0)
+			return false
+		else:
+			bright = _flash_count(T)
+			counted = 1 if bright else 0
 	if bright:
 		_flash_remember(T, life, c)
 	_flash_note(T, c, lit, counted, 1 if bright else 0, life)
 	pend("flash", t0)
 	return bright
+
+
+# opus_check_524b: how many flashes (counted bright ones anywhere, conservatively, plus remembered soft ones inside this
+# 10 degree field) fall in the second before T. At FLASH_CAP or more the field is full: the next gun flash gets no peak.
+func _soft_full(T: float, c: PackedFloat64Array) -> bool:
+	var box := flash_box_px()
+	var n := 0
+	for f in _flashes:
+		if f <= T and T - f < 1.0:
+			n += 1
+	var keep: Array = []
+	for e in _soft_mem:
+		if T - float(e[0]) < 1.0:
+			keep.append(e)
+			if float(e[0]) <= T and absf(float(e[1]) - c[0]) < box and absf(float(e[2]) - c[1]) < box:
+				n += 1
+	_soft_mem = keep
+	return n >= FLASH_CAP
 
 
 # The side of a 10 degree box in viewport pixels (rounded down, so the box and the limit are never overstated).
@@ -700,7 +774,10 @@ func pop(p: Vector3, T: float, col: Color, size: float, i: float, n := Vector3.U
 # Issue 504: a light that goes with a refused flash is no longer dropped. It keeps its colour and place and rises softly
 # (shape 3: a 0.1 s or longer rise, then the same fall) at most just under the peak that counts, so the hulls around a
 # refused flash are still lit without a sharp step. Reduce flashing is untouched (its own path below).
-func light(p: Vector3, t: float, life: float, peak: float, col: Color, shape := 0) -> void:
+# Issue 461 (audit item 11): `reach` is how far the light carries, in world units (0: the pool's standing 30, about 1.7
+# hexes). A torpedo hit and a death's core flash pass two to three hexes, so the hulls round them are lit for the length
+# of the flash. Reach changes only how far the light falls off, never its peak, so the flash counter's rules are the same.
+func light(p: Vector3, t: float, life: float, peak: float, col: Color, shape := 0, reach := 0.0) -> void:
 	if shape == 0 and not reduce_flashing:
 		var refused := false
 		for f in _refused:
@@ -716,7 +793,7 @@ func light(p: Vector3, t: float, life: float, peak: float, col: Color, shape := 
 	if reduce_flashing and shape == 0:
 		peak *= 0.45
 		life *= 1.8
-	_lev.append([p, t, life, peak, col, shape])
+	_lev.append([p, t, life, peak, col, shape, reach])
 
 
 # Whether a sprite of this size at p is big enough on screen to count as a flash (WCAG counts flashes by area; small
@@ -756,7 +833,7 @@ func _update_lights() -> void:
 			1: I = smoothstep(0.0, 0.08, u) * (1.0 - smoothstep(0.85, 1.0, u)) * (1.0 if reduce_flashing else 0.88 + 0.12 * sin(now * 50.0))
 			2: I = u * u
 			3: I = smoothstep(0.0, 0.25, u) if u < 0.25 else pow(1.0 - (u - 0.25) / 0.75, 2.0)   # issue 504: soft rise
-		ev.append([e[0], I * float(e[3]), e[4]])
+		ev.append([e[0], I * float(e[3]), e[4], float(e[6]) if e.size() > 6 else 0.0])
 	_lev = keep
 	var ks: Array = []
 	for s in _lsrc:
@@ -769,18 +846,20 @@ func _update_lights() -> void:
 		var fl = 1.0 - float(s["flick"]) * (0.5 + 0.5 * sin(now * 23.0 + float(s["seed"])) * sin(now * 7.1 + float(s["seed"]) * 2.0))
 		if reduce_flashing:
 			fl = 1.0 - float(s["flick"]) * 0.3 * (0.5 + 0.5 * sin(now * 2.0 + float(s["seed"])))
-		ev.append([n.global_transform * (s["off"] as Vector3), float(s["base"]) * fl, s["col"]])
+		ev.append([n.global_transform * (s["off"] as Vector3), float(s["base"]) * fl, s["col"], 0.0])
 	_lsrc = ks
 	# brightest first, nearer lights count more when the pool is short
 	for e in ev:
 		e.append(float(e[1]) / (1.0 + (e[0] as Vector3).distance_to(cp) / (200.0 * unit)))
-	ev.sort_custom(func(a: Array, b: Array) -> bool: return float(a[3]) > float(b[3]))
+	ev.sort_custom(func(a: Array, b: Array) -> bool: return float(a[4]) > float(b[4]))
 	for k in _lpool.size():
 		var l: OmniLight3D = _lpool[k]
 		if k < ev.size() and float(ev[k][1]) > 0.03:
 			l.position = ev[k][0]
 			l.light_energy = float(ev[k][1]) * LIGHT_K
 			l.light_color = ev[k][2]
+			l.omni_range = (float(ev[k][3]) if float(ev[k][3]) > 0.0 else LIGHT_REACH) * unit
+			l.omni_attenuation = REACH_ATTEN if float(ev[k][3]) > 0.0 else LIGHT_ATTEN
 			l.visible = true
 		else:
 			l.visible = false
@@ -1215,6 +1294,9 @@ func particles_emitted() -> int:
 func warmup(cam: Camera3D, frames := 4) -> void:
 	if cam == null:
 		return
+	# Issue 376: a warm-up builds shaders by design, and a bench may warm more than once, so the late log is off while
+	# this runs and on again when it ends. Anything built after this is a miss in the hand-kept list.
+	HULL.pause_late_watch()
 	# The temporary PBR adapter is queried for uniforms at death too. Keep its
 	# shader alive so that query never recompiles it for each new ship.
 	_shaders["hull_exterior"] = HULL.shared_shader(HULL.EXTERIOR)
@@ -1390,3 +1472,4 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	for i in frames:
 		await RenderingServer.frame_post_draw
 	tmp.queue_free()
+	HULL.start_late_watch()
