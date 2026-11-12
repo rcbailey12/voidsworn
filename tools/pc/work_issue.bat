@@ -163,6 +163,8 @@ if exist "%O%\shots\*.png" (
   if not exist "docs\shots\issue-%N%-%ARM%" mkdir "docs\shots\issue-%N%-%ARM%"
   copy /y "%O%\shots\*.png" "docs\shots\issue-%N%-%ARM%\" > nul
 )
+rem #357 / R144: a capture run can re-save tracked .import files; restore them before the commit.
+for /f "usebackq delims=" %%F in (`git ls-files "*.import"`) do git checkout -q -- "%%F"
 git add -A
 rem (b) The refuse list and the Deliver to warning (issue 377).
 %PS% guard %N% %ARM% "%R%" "%O%" >> "%O%\result.txt" 2>&1

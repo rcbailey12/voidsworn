@@ -1,6 +1,12 @@
 #!/bin/sh
 # Cloud / Linux twin of tools/pc/parity.bat: same steps, same PASS/FAIL. Usage: GODOT=/path/to/godot sh godot/rules/test/run_parity.sh [scenario ...]
 cd "$(dirname "$0")"; T=$(pwd); P=$(cd ../.. && pwd); G="${GODOT:-godot}"; F=0; mkdir -p golden out
+# Node guard (issue 357): the rules math targets V8 in Node 22; another major gives a false parity failure.
+NV=$(node -p "process.versions.node" 2>/dev/null)
+case "$NV" in
+  22.*) : ;;
+  *) echo "FAIL: Node major 22 is required, found ${NV:-no node}; use the bundled Node 22 at voidsworn_test/node/node.exe."; exit 1 ;;
+esac
 SC="${*:-$(node -e "console.log(Object.keys(require('./scenarios.json')).join(' '))")}"
 gd() { "$G" --headless --path "$P" --script res://rules/test/parity_main.gd -- "$@"; }
 node node/export_data.js ../data/tables.json || F=$((F+1))

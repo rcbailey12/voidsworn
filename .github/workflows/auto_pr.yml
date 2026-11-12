@@ -46,7 +46,7 @@ jobs:
             if [ -n "$ititle" ]; then title="Issue $n: $ititle"; else title=$(printf '%s\n' "$TITLE" | head -1); fi
             if [ -n "$arm" ]; then title="$title [$arm arm]"; fi
             body=$(printf '%s\n' "$TITLE" | tail -n +2)
-            printf '%s\n\nOpened automatically from branch %s. Opus reviews and merges.\n' "$body" "$BRANCH" > body.md
+            printf '%s\n\nOpened automatically from branch %s. The Board reviews and merges.\n' "$body" "$BRANCH" > body.md
             # Claude-built work (opus/) gets an outside check before its issue may close, and standing issues stay open
             # through every merge (256 is the outside-check issue; it was closed by merges twice on Nov 10): those PRs say
             # "Refs #N", never a closing word. Add a standing issue to STANDING, space separated.
@@ -67,5 +67,22 @@ jobs:
               [ "$(gh pr list -R "$REPO" --head "$BRANCH" --state open --json number --jq 'length')" != "0" ] && echo "PR for $BRANCH was opened by another run"
             }
           else
-            echo "PR already open for $BRANCH"
+            # A later push from a runner (codex/, muse/, work/) refreshes the text, so the PR describes the newest run
+            # (issue 357: PR 543 kept a first run's report after a second run replaced it). opus/ PR bodies are
+            # written by hand with their evidence and are never overwritten.
+            case "$BRANCH" in
+              opus/*) echo "PR already open for $BRANCH" ;;
+              *)
+                pr=$(gh pr list -R "$REPO" --head "$BRANCH" --state open --json number --jq '.[0].number')
+                body=$(printf '%s\n' "$TITLE" | tail -n +2)
+                printf '%s\n\nRefreshed from the latest push to branch %s. The Board reviews and merges.\n' "$body" "$BRANCH" > body.md
+                # standing issues (256) are never closed by a merge, same as above
+                case " 256 " in *" $n "*)
+                  sed -i -E "s/\b(close[sd]?|fix(e[sd])?|resolve[sd]?):?[[:space:]]+#$n\b/Refs #$n/Ig" body.md
+                  grep -q "Refs #$n" body.md || printf '\nRefs #%s\n' "$n" >> body.md ;;
+                *) grep -qiE "(close[sd]?|refs) #$n\b" body.md || printf '\nCloses #%s\n' "$n" >> body.md ;;
+                esac
+                gh pr edit "$pr" -R "$REPO" --body-file body.md && echo "PR $pr text refreshed"
+                ;;
+            esac
           fi

@@ -41,6 +41,9 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
 9. **Fidelity and fit.** Section 2c: parts read as what they are, the fit check with zero clashes (R217); a parts inventory
    before modelling, one detail level across the ship, kit first, the massing checked by ratios and structure counts, and
    the side-by-side judged by someone other than the builder before Ryan sees it (R218).
+10. **The route is proven by a ship in the game.** RULEBOOK 0.9 (R225): a change to how ships are built is done only when
+   one ship has gone from its build sheet to the game on Ryan's PC; the sheet writes each fact once (masses, seams, insides,
+   mounts, length) and the recipe reads it; recipe checks read the ship's own entry, never C15s's shape.
 
 ## 1. Target
 
