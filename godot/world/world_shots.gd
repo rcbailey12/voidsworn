@@ -12,6 +12,13 @@ extends Node
 #                       and _3_close.jpg
 #         [--terrain]   with --looks, also a close shot over the nearest nebula, ion storm and debris hex (_4_neb.jpg,
 #                       _4_storm.jpg, _4_debris.jpg)
+#         [--motion S]  issue #230 (AS10, AS14, NB8): the motion capture. Look C (cine, the default look; stated in every
+#                       file name, BD17), the camera held still for S seconds (default 30) on each view in turn: close
+#                       over the nearest debris, nebula and ion storm hex, and low over the board toward the edge and
+#                       deep rock fields. A frame every --every seconds (default 5) goes into one contact sheet per view,
+#                       read left to right, top to bottom (<case>_<tag>_cine_m_<view>_sheet.jpg), plus a difference image
+#                       of the first and last frame, brightened, so anything that moved shows (_diff.jpg). Variants come
+#                       from the environment (VS_TUMBLE=periods, VS_ROCK_TUMBLE=1); --tag names the variant in the files.
 #
 # Every case is a fixed scenario dictionary (the same fields as rules/test/scenarios.json) with its seed, and the biome
 # the campaign would give that region (biome is visual only, R63), written into the rules' battle before the scene builds.
@@ -92,6 +99,9 @@ func _case(c: Array) -> void:
 	b.args["quality"] = str(args.get("quality", "max"))
 	b.args["no-tips"] = true
 	add_child(b)
+	# Suppress the opening glide after _ready(), so this does not launch battle.gd's own shots routine.
+	if args.has("motion"):
+		b.args["shots"] = true
 	b.tips_off = true
 	var sc := {"seed": int(c[5]), "sector": 1, "admiral": "vex", "fleet": ["penitent", "harrow", "warden", "warden"], "fac": c[1],
 		"obj": "rout", "shape": c[3], "map": c[2], "dep": "line", "kind": "battle"}
@@ -113,8 +123,13 @@ func _case(c: Array) -> void:
 	var t_build := (Time.get_ticks_usec() - t0) / 1000.0
 	# let the warm-up, the world's own bakes and the ships settle
 	var w0 := Time.get_ticks_msec()
-	while (b.warming or b.busy) and Time.get_ticks_msec() - w0 < 20000:
+	var warm_limit := 120000 if args.has("motion") else 20000
+	while (b.warming or b.busy) and Time.get_ticks_msec() - w0 < warm_limit:
 		await get_tree().process_frame
+	if args.has("motion") and (b.warming or b.busy):
+		push_error("Motion capture stopped: battle warm-up did not finish")
+		get_tree().quit(1)
+		return
 	for k in 90:
 		await get_tree().process_frame
 	if b.hud != null:
@@ -125,6 +140,12 @@ func _case(c: Array) -> void:
 	print("[world_shots] %s: scene build %.0f ms; %s" % [name, t_build, notes])
 	var cam = b.cam
 	var home := {"a": cam.a, "b": cam.b, "r": cam.r, "t": cam.t}
+	if args.has("motion"):
+		await _motion(b, name, home)
+		b.queue_free()
+		await get_tree().process_frame
+		await get_tree().process_frame
+		return
 	if args.has("looks"):
 		await _looks(b, name, home)
 		b.queue_free()
@@ -277,6 +298,130 @@ func _looks(b, name: String, home: Dictionary) -> void:
 	if b.world != null:
 		print("[world_shots] %s: %s" % [name, "; ".join(b.world.notes)])
 	BL.set_look("today", false)
+
+
+# Issue #230 motion capture: each view held still, frames at fixed wall-clock steps (the shaders run on TIME), one
+# contact sheet and one first-to-last difference image per view.
+func _motion(b, name: String, home: Dictionary) -> void:
+	var cam = b.cam
+	var secs := float(args["motion"]) if str(args["motion"]) != "true" else 30.0
+	# Player window settings can override the command line while the battle loads. Capture at the requested size.
+	if DisplayServer.get_name() != "headless":
+		get_window().mode = Window.MODE_WINDOWED
+		get_window().size = Vector2i(1920, 1080)
+		await _settle()
+	cam.input_enabled = false
+	b.set_process_unhandled_input(false)
+	var every := maxf(0.5, float(args.get("every", "5")))
+	var tag := str(args.get("tag", "shipped"))
+	BL.set_look("cine", false)
+	BL.tactical = false
+	b.board.apply_look(false)
+	var views: Array = []
+	for kind in ["debris", "neb", "storm"]:
+		var tk := ""
+		var tb := 1e9
+		for k in b.V.get("terrain", {}):
+			if str(b.V["terrain"][k]) == kind:
+				var qr: PackedStringArray = str(k).split(",")
+				var pw: Vector3 = b.board.hex_world(int(qr[0]), int(qr[1]))
+				if pw.length() < tb:
+					tb = pw.length()
+					tk = k
+		if tk != "":
+			var qr2: PackedStringArray = tk.split(",")
+			views.append([kind, b.board.hex_world(int(qr2[0]), int(qr2[1])), 95.0, home["b"]])
+	# low over the board, as the _3_low shot: the edge scatter and the deep field (AS10's two fields) fill the far half
+	views.append(["fields", home["t"], 260.0, 1.32])
+	print("[world_shots] %s motion: tag %s, look cine, %d views, %.0f s each, a frame every %.1f s, VS_TUMBLE=%s VS_ROCK_TUMBLE=%s" % [
+		name, tag, views.size(), secs, every, OS.get_environment("VS_TUMBLE"), OS.get_environment("VS_ROCK_TUMBLE")])
+	for v in views:
+		cam.a = home["a"]
+		cam.b = v[3]
+		cam.r = v[2]
+		cam.t = v[1]
+		cam.snap()
+		await _settle()
+		var base := "%s_%s_cine_m_%s" % [name, tag, v[0]]
+		var locked: Transform3D = cam.global_transform
+		var frames: Array = []
+		var t0 := Time.get_ticks_msec()
+		var k := 0
+		while true:
+			var due := t0 + int(k * every * 1000.0)
+			while Time.get_ticks_msec() < due:
+				await get_tree().process_frame
+			if not cam.global_transform.is_equal_approx(locked):
+				push_error("Motion capture stopped: camera moved during " + base)
+				get_tree().quit(1)
+				return
+			var img: Image = await _grab()
+			if img != null:
+				if img.get_size() != Vector2i(1920, 1080):
+					push_error("Motion capture stopped: expected 1920x1080, got " + str(img.get_size()))
+					get_tree().quit(1)
+					return
+				frames.append(img)
+			k += 1
+			if k * every > secs + 0.001:
+				break
+		print("[world_shots] %s: %d frames over %.1f s" % [base, k, (Time.get_ticks_msec() - t0) / 1000.0])
+		if frames.size() > 1:
+			_sheet(frames, out.path_join(base + "_sheet.jpg"))
+			_diff(frames[0], frames[frames.size() - 1], out.path_join(base + "_diff.jpg"))
+			(frames[0] as Image).save_jpg(out.path_join(base + "_first.jpg"), 0.92)
+	BL.set_look("today", false)
+
+
+# the current frame, or null when headless (nothing is drawn)
+func _grab() -> Image:
+	if DisplayServer.get_name() == "headless":
+		await get_tree().process_frame
+		return null
+	if PG.stop_if_any():
+		return null
+	await RenderingServer.frame_post_draw
+	return get_viewport().get_texture().get_image()
+
+
+# frames in a grid of three columns, each a third of the screen's width
+func _sheet(frames: Array, path: String) -> void:
+	var f0: Image = frames[0]
+	var w := f0.get_width() / 3
+	var h := f0.get_height() / 3
+	var rows := int(ceil(frames.size() / 3.0))
+	var sheet := Image.create(w * 3 + 8, h * rows + 4 * (rows - 1) + 4, false, Image.FORMAT_RGB8)
+	sheet.fill(Color(0.5, 0.5, 0.5))
+	for i in frames.size():
+		var im: Image = (frames[i] as Image).duplicate()
+		im.convert(Image.FORMAT_RGB8)
+		im.resize(w, h, Image.INTERPOLATE_BILINEAR)
+		sheet.blit_rect(im, Rect2i(0, 0, w, h), Vector2i((i % 3) * (w + 4), (i / 3) * (h + 4)))
+	sheet.save_jpg(path, 0.92)
+	print("[world_shots] ", path)
+
+
+# |last - first| per pixel at half size, times 6, so slow tumble and drift show as light on black
+func _diff(a: Image, z: Image, path: String) -> void:
+	var w := a.get_width() / 2
+	var h := a.get_height() / 2
+	var ia: Image = a.duplicate()
+	var iz: Image = z.duplicate()
+	for im in [ia, iz]:
+		(im as Image).convert(Image.FORMAT_RGB8)
+		(im as Image).resize(w, h, Image.INTERPOLATE_BILINEAR)
+	var d := Image.create(w, h, false, Image.FORMAT_RGB8)
+	var moved := 0
+	for y in h:
+		for x in w:
+			var ca := ia.get_pixel(x, y)
+			var cz := iz.get_pixel(x, y)
+			var dc := Color(minf(1.0, absf(ca.r - cz.r) * 6.0), minf(1.0, absf(ca.g - cz.g) * 6.0), minf(1.0, absf(ca.b - cz.b) * 6.0))
+			if dc.r + dc.g + dc.b > 0.3:
+				moved += 1
+			d.set_pixel(x, y, dc)
+	d.save_jpg(path, 0.92)
+	print("[world_shots] %s (%.2f%% of pixels changed)" % [path, 100.0 * moved / float(w * h)])
 
 
 # a slow orbit and a zoom breath for S seconds: frame times (average, 1% low, worst)

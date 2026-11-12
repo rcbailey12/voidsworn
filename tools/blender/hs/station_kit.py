@@ -1,7 +1,8 @@
-"""Issue 61 station blockouts. Blender 4.5, X spine, Y lateral, Z up.
+"""Station kit: issue 61 blockouts, issue 183 detail additions, issue 195 paint, issue 199 detail pass.
 
-Run through tools/pc/jobs/station_blockout.bat. Output is review material only.
-The owner must approve the turntables before detailing or swapping the live prop.
+Blender 4.5, X spine, Y lateral, Z up. See STATION_KIT.md for the stages, which checks fail a run and which values
+are only reported (triangles, R113; the R94 shape values, ST3 in issue 230), and the .bat that starts each run.
+Output is review material only; the live board prop is not swapped without the owner's approval.
 One shared spine supplies fleet and refinery variants; dimensions are world units.
 """
 import argparse
@@ -202,11 +203,15 @@ def audit():
                 assert trees[o].ray_cast(muzzle, Vector((1, 0, 0)))[0] is None, ('Blocked gun', barrel.name, o.name)
     lo = [min(bounds[o][0][i] for o in PARTS) for i in range(3)]
     hi = [max(bounds[o][1][i] for o in PARTS) for i in range(3)]
-    assert abs(hi[0] - lo[0] - 46) < 0.01, (lo, hi)
-    assert hi[2] >= 15, 'R91 skyline must rise above the flat blockout'
     assert all(math.isfinite(v) for v in lo + hi)
+    # ST3 (#230, Nov 6 environment audit): the R91 and R94 approval state is reported, not asserted. The R94 shapes stay
+    # the default build; a build that differs says so in the audit JSON and the log instead of failing.
+    shape = {'length': round(hi[0] - lo[0], 4), 'length_r94': 46, 'skyline_top': round(hi[2], 4), 'skyline_r91_at_least': 15}
+    shape['matches_r94'] = abs(shape['length'] - 46) < 0.01 and hi[2] >= 15
+    if not shape['matches_r94']:
+        print('[station-kit] REPORT: shape differs from the R94 default', json.dumps(shape), flush=True)
     return {'parts': len(PARTS), 'contact_edges': len(edges), 'guns': len(GUNS),
-            'bounds': [lo, hi], 'attachment_audit': 'PASS', 'gun_clearance': 'PASS'}
+            'bounds': [lo, hi], 'attachment_audit': 'PASS', 'gun_clearance': 'PASS', 'r94_shape': shape}
 
 
 def merge_export(path):
@@ -934,13 +939,21 @@ def detail_main():
         detail()
         current = locked_snapshot()
         assert all(current[k] == v for k, v in frozen.items()), 'R94 primitive changed'
+        # ST3 (#230): the R94 detail heights are reported against their approved values, not asserted.
         if name == 'fleet':
-            tops = [max(v.co.z for v in bpy.data.objects['dorsal_%d' % i].data.vertices) for i in range(4)]
-            assert tops == [4.5, 5.0, 4.0, 6.5] and all(z - 2 >= 2 for z in tops)
-            assert max(v.co.z for v in bpy.data.objects['gantry_crossbeam'].data.vertices) == 9
+            tops = [round(max(v.co.z for v in bpy.data.objects['dorsal_%d' % i].data.vertices), 4) for i in range(4)]
+            beam = round(max(v.co.z for v in bpy.data.objects['gantry_crossbeam'].data.vertices), 4)
+            heights = {'dorsal_tops': tops, 'dorsal_tops_r94': [4.5, 5.0, 4.0, 6.5], 'gantry_crossbeam_top': beam,
+                       'gantry_crossbeam_top_r94': 9}
+            heights['matches_r94'] = tops == [4.5, 5.0, 4.0, 6.5] and all(z - 2 >= 2 for z in tops) and beam == 9
         else:
-            assert max(v.co.z for v in bpy.data.objects['secondary_process_column'].data.vertices) < 12
+            column = round(max(v.co.z for v in bpy.data.objects['secondary_process_column'].data.vertices), 4)
+            heights = {'secondary_process_column_top': column, 'secondary_process_column_r94_under': 12}
+            heights['matches_r94'] = column < 12
+        if not heights['matches_r94']:
+            print('[station-detail] REPORT: heights differ from the R94 default', name, json.dumps(heights), flush=True)
         result = audit()
+        result['r94_heights'] = heights
         result['locked_primitives'] = len(frozen)
         result['locked_primitive_hashes'] = frozen
         result['locked_geometry'] = 'PASS: exact vertex, polygon, transform and bevel hashes'
