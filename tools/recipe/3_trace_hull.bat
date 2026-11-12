@@ -26,6 +26,8 @@ if not exist "%JOB%\tune.json" (echo Stage 3 FAILED: the tune wrote nothing. See
 set R209_TUNE_JSON=%JOB%\tune.json
 echo Tuned numbers: %JOB%\tune.json (commit it beside the hull module and name it as "tune" in ships\%SHIP%.json to keep it)
 :tuned
+rem issue 592 PC run: the sil folder was made only by the tune step, so a build-sheet ship (no tune) had none and scoring failed
+if not exist "%JOB%\sil" mkdir "%JOB%\sil"
 "%B%" -b -P "%R%\sil_dump.py" -- "%JOB%\%CELL%.npz" build %HULL% %CELL% > "%JOB%\log_sildump.txt" 2>&1
 findstr /L /c:"[sil] dumped" "%JOB%\log_sildump.txt" > nul || (echo Stage 3 FAILED: the hull could not be built. See %JOB%\log_sildump.txt & goto bad)
 "%BPY%" "%R%\silhouette4.py" score "%JOB%\concept.png" "%CAMJ%" "%JOB%\sil" %CELL%="%JOB%\%CELL%.npz" > "%JOB%\log_sil.txt" 2>&1
