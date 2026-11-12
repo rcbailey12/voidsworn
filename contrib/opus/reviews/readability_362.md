@@ -7,9 +7,11 @@ Branch opus/issue-362, PR 580. Game change: `godot/render/look.gd` (per faction 
 ## Answer first
 
 - Every one of the 30 faction ships now sits inside the stated band (lit side 100 to 190) on the darkest sky, the brightest
-  sky and the storm map: 105 to 181 after, against 63 to 216 before (18 of 30 were outside).
-- No hull is lost on the darkest sky: at least 86 percent of every outline is lit (before: 55 percent for the Eclipse
-  Tomb-ark, 63 to 74 for the other Eclipse ships).
+  sky and the storm map: 105 to 181 after, against 63 to 216 before (18 of 30 were outside). Measured at Ryan's R227
+  lifts (Eclipse 3.2, Hullbreakers 1.25; job E, e6bfef6c): Eclipse 108 to 122 and Hullbreakers 115 to 145 on the darkest
+  sky, both in band, so no fallback was needed.
+- No hull is lost on the darkest sky: at least 79 percent of every outline is lit (the Eclipse D22; before: 55 percent for
+  the Eclipse Tomb-ark, 63 to 74 for the other Eclipse ships).
 - Glasswrights stop burning out: lit side 206 to 216 down to 160 to 180, glow halo 36 down to 17 at most, line detail up
   (spread 10 to 20, now 18 to 26), clipped pixels 1.1 percent at most (rule: 2).
 - No effect or shield look changed by accident: outside the hulls the bench moments differ only where a hull itself moved
@@ -65,8 +67,11 @@ addition is marked as made after the first measurement.
    level with Sunward's 105) and Hullbreakers 114 to 144 on both; the worst outline on the darkest sky about 0.82. Eclipse
    3.0 would put D9 at about 103, inside the band by less than the estimate's error, so 3.2 is the darkest middle value I
    trust to stay in. Job E (below) measures it, with Eclipse 3.0 and 3.5 and Hullbreakers 1.2 and 1.3 beside it as
-   fallbacks. The numbers in "Answer first", the table below and the sheets are still the 4.5 and 1.5 run until job E
-   comes back.
+   fallbacks. Measured (job E, e6bfef6c, `data/rows_after_r227.json`): Eclipse 108 to 122 on the darkest sky (D9 the
+   lowest, 107.7) and 113 to 146 on the storm; Hullbreakers 115 to 145 on all three skies; worst outline on the darkest
+   sky 0.80 (D22). Both in band, so 3.2 and 1.25 stay. The bracket (`data/rows_r227_bracket.json`, darkest sky): Eclipse
+   3.0 106 to 121 and 3.5 109 to 125; Hullbreakers 1.2 113 to 143 and 1.3 116 to 146. The other four factions measured
+   the same as the ad7daade run (lit side identical, to 0.1).
 2. The rim light (`look_rim.gd`, made by LOOK.apply beside the key light): a back light from the camera's own line of sight
    beyond the ships, tipped up 20 degrees, specular strong (light_specular 8) and diffuse weak (energy 0.35). Only the far
    outline of a hull faces it and the camera at once, at a grazing angle, so the hull gets a bright edge. It follows the
@@ -86,16 +91,17 @@ addition is marked as made after the first measurement.
 
 ## Per faction (lit side min to max; full per ship table: docs/shots/look_bench/readability/table.md)
 
-Measured at Eclipse 4.5 and Hullbreakers 1.5 (ad7daade); job E replaces the two rows.
+After = job E (e6bfef6c, Eclipse 3.2, Hullbreakers 1.25), all six factions. The first after run (ad7daade, 4.5 and 1.5)
+is in `data/rows_after_ad7daade.json`.
 
 | Faction | Darkest sky before / after | Brightest before / after | Storm before / after | Edge darkest, worst ship, before / after |
 |---|---|---|---|---|
 | Hegemony Navy | 192-211 / 156-180 | 192-211 / 156-180 | 192-211 / 156-180 | 0.95 / 0.91 |
 | Sunward Crusade | 82-118 / 105-156 | 81-118 / 105-157 | 82-119 / 105-156 | 0.70 / 0.86 |
-| Ashfall Hullbreakers | 89-115 / 122-151 | 89-115 / 122-151 | 90-115 / 122-151 | 0.79 / 0.90 |
+| Ashfall Hullbreakers | 89-115 / 115-145 | 89-115 / 115-144 | 90-115 / 115-145 | 0.79 / 0.88 |
 | Chorus | 128-155 / 134-157 | 128-155 / 134-157 | 128-155 / 133-157 | 0.96 / 0.96 |
 | Glasswrights | 206-216 / 160-180 | 206-216 / 160-181 | 204-216 / 159-177 | 1.00 / 1.00 |
-| Eclipse | 63-74 / 116-134 | 63-74 / 116-134 | 70-119 / 126-150 | 0.55 / 0.87 |
+| Eclipse | 63-74 / 108-122 | 63-74 / 108-122 | 70-119 / 113-146 | 0.55 / 0.80 |
 
 Craft and objects (not held to the band): the three craft are drawn by render/squadron_craft.gd in battle (not through
 LOOK.hull, so neither change reaches them); the bench draws them with Hegemony numbers, so on the sheet the spore reads
