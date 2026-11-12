@@ -165,6 +165,7 @@ func _exit_tree() -> void:
 # tasks are waited for first: an unawaited WorkerThreadPool task keeps its job (hull materials and textures) alive
 # until the process ends, after the rendering server is gone (G2: "RenderingServer is null" at exit, a crash risk).
 func release() -> void:
+	attach_report(true)
 	_end_dim()
 	for id in ships:
 		var s = ships[id]
@@ -995,9 +996,30 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 			pend("cut_first", t_c))
 
 
+# Issue 370: what the attach point service answered for each ship this battle (per point type: authored "hp", surface
+# "ray", "centre" for a core worked out from the triangles, "skip" for an effect not drawn). With say, one line per ship.
+func attach_report(say := false, only := "") -> Dictionary:
+	var out := {}
+	for id in ships:
+		if only != "" and id != only:
+			continue
+		var h = (ships[id] as SHIP).hull
+		if h == null:
+			continue
+		out[id] = {"code": h.code, "counts": h.attach_counts.duplicate(true), "skipped": h.skipped()}
+		if say and not h.attach_counts.is_empty():
+			var parts: Array = []
+			for k in h.attach_counts:
+				var c: Dictionary = h.attach_counts[k]
+				parts.append("%s hp %d ray %d centre %d skip %d" % [k, c.get("hp", 0), c.get("ray", 0), c.get("centre", 0), c.get("skip", 0)])
+			print("[attach] battle %s %s: skipped %d; %s" % [id, h.code, h.skipped(), "; ".join(parts)])
+	return out
+
+
 func remove_ship(id: String) -> void:
 	if not ships.has(id):
 		return
+	attach_report(true, id)
 	(ships[id] as SHIP).teardown(self)
 	ships.erase(id)
 
@@ -1143,13 +1165,24 @@ func board(attacker_id: String, target_id: String, _result := "") -> float:
 	if not ships.has(target_id):
 		return 0.0
 	var s: SHIP = ships[target_id]
-	var toward: Vector3 = ships[attacker_id].to_world(ships[attacker_id].hull.c) if ships.has(attacker_id) else s.to_world(s.hull.c + Vector3(0, 0, s.hull.W * 3.0))
+	# issue 370: the party leaves the attacker from its boarding hatch (hp_board on the side facing the target, else the
+	# side plating facing it through its core) and breaks in through the target's side plating facing that hatch, on
+	# the line through the target's core. Either missing: nothing to show (logged and counted by the hull).
+	var toward: Vector3
+	if ships.has(attacker_id):
+		var a: SHIP = ships[attacker_id]
+		var o: Dictionary = a.hull.board_origin(a.xf().affine_inverse() * s.to_world(s.hull.core))
+		if o.is_empty():
+			return 0.0
+		toward = a.to_world(o["p"])
+	else:
+		toward = s.to_world(s.hull.core + Vector3(0, 0, s.hull.W * 3.0))
 	var inv: Transform3D = s.xf().affine_inverse()
 	var tl: Vector3 = inv * toward
-	var side := Vector3(0, 0, signf(tl.z - s.hull.c.z) if absf(tl.z - s.hull.c.z) > 1e-3 else 1.0)
-	var from: Vector3 = s.hull.c + side * (s.hull.W * 2.0 + s.hull.L * 0.2) + Vector3(s.hull.L * 0.05, 0, 0)
-	var h: Dictionary = s.hull.ray(from, -side)
+	var side := Vector3(0, 0, signf(tl.z - s.hull.core.z) if absf(tl.z - s.hull.core.z) > 1e-3 else 1.0)
+	var h: Dictionary = s.hull.surface(s.hull.core + Vector3(s.hull.L * 0.05, 0, 0), side)
 	if h.is_empty():
+		s.hull._took("board", "skip")
 		return 0.0
 	var lp: Vector3 = h["p"]
 	var ln: Vector3 = h["n"]
