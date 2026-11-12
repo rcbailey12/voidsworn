@@ -1,0 +1,10 @@
+[
+ {"name": "k050", "tune": {"read": {"*": {"lift_k": 0.5}}}},
+ {"name": "k100", "tune": {}},
+ {"name": "k200", "tune": {"read": {"*": {"lift_k": 2.0}}}},
+ {"name": "k400", "tune": {"read": {"*": {"lift_k": 4.0}}}},
+ {"name": "rim0", "tune": {"rim": {"energy": 0.0}}},
+ {"name": "rimhi", "tune": {"rim": {"energy": 0.6, "spec": 16.0}}},
+ {"name": "ith1", "tune": {"read": {"ithar": {"lift": 0.5, "emit": 0.15, "metal": 0.4, "spec": 0.3}}}},
+ {"name": "ith2", "tune": {"read": {"ithar": {"lift": 0.9, "emit": 0.6, "metal": 0.8, "spec": 0.4}}}}
+]
