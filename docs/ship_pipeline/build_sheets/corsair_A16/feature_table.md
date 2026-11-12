@@ -142,7 +142,7 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 
 ## INSIDE (R98, R209): what each break reveals
 
-Deck levels (height): lower deck -1.35 (11% to 89%); main deck 0.00 (10% to 89%); gun deck 1.60 (25% to 59%); castle deck 1.95 (60% to 79%).
+Deck levels (height): lower deck -1.35 (12% to 87%); main deck 0.00 (10% to 89%); gun deck 1.65 (27% to 58%); castle deck 1.95 (60% to 79%).
 
 Bulkhead and frame stations: F0 10.1%, F1 19.7%, F2 31.9%, F3 47.2%, F4 60.3%, F5 74.8%, F6 84.7%.
 
@@ -155,12 +155,12 @@ Bulkhead and frame stations: F0 10.1%, F1 19.7%, F2 31.9%, F3 47.2%, F4 60.3%, F
 | loot hold (hold) | 32.2 to 46.8 | -2.55 to 2.55 | -2.10 to -1.45 | loot holds |
 | hangar (hangar) | 47.6 to 66.5 | -2.35 to 2.35 | -2.20 to -0.10 | two squadrons, belly drop |
 | core (core) | 66.8 to 74.4 | -1.20 to 1.20 | -2.20 to -0.10 | reactor core (hp_core) |
-| shell magazine p (magazine) | 60.7 to 74.5 | 1.50 to 2.60 | 0.10 to 1.00 | port battery magazine |
-| shell magazine s (magazine) | 60.7 to 74.5 | -2.60 to -1.50 | 0.10 to 1.00 | starboard battery magazine |
-| gun deck (crew) | 25.8 to 59.9 | -2.50 to 2.50 | 1.45 to 1.90 | turret crews and hoists |
-| warlord hall (crew) | 60.6 to 79.0 | -2.30 to 2.30 | 1.95 to 2.45 | the warlord hall |
-| bridge (bridge) | 67.9 to 77.5 | -1.40 to 1.40 | 2.55 to 2.90 | command deck |
-| engine room (engroom) | 75.3 to 88.8 | -1.55 to 1.55 | -1.60 to 1.00 | engine room and pod feeds |
+| shell magazine p (magazine) | 60.7 to 74.5 | 1.50 to 2.60 | 0.25 to 0.95 | port battery magazine |
+| shell magazine s (magazine) | 60.7 to 74.5 | -2.60 to -1.50 | 0.25 to 0.95 | starboard battery magazine |
+| gun deck (crew) | 27.2 to 58.0 | -2.20 to 2.20 | 1.70 to 1.85 | turret crews and hoists |
+| warlord hall (crew) | 60.9 to 78.2 | -2.20 to 2.20 | 1.95 to 2.35 | the warlord hall |
+| bridge (bridge) | 68.4 to 77.6 | -1.20 to 1.20 | 2.60 to 2.85 | command deck |
+| engine room (engroom) | 75.3 to 88.6 | -1.45 to 1.45 | -1.60 to 1.00 | engine room and pod feeds |
 
 | Armour zone | Thickness (units) | Note |
 |---|---:|---|

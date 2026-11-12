@@ -60,6 +60,11 @@ found on this sheet:
    tubes 1.02 of the hull's triangles and 0.80 of its edge features per square unit (were 0.45 and 0.29), bay 1.64 and
    1.61 (were 0.18 and 0.18). The fit check is still zero. The views on this page show the old tubes and bay until the
    next PC render; [tubes_bay_r224.jpg](tubes_bay_r224.jpg) shows the new ones.
+5. **Every inside clear of the plating, seen from outside (PR 610's surface check).** The paint job's check saw rooms
+   reach the skin: the gun deck, warlord hall, shell magazines, bridge and engine room, and with them the gun deck floor
+   and the lower deck. Each is pulled in to sit inside its own tier with room to spare (feature table rows updated).
+   Measured on this branch: the surface check's six views at 1280 show 0 inside pixels (A17 also 0); no inside corner
+   stands outside the plating; death_seam_check's "outside the whole ship" count is 0.
 
 ## R221 clean-ups (Ryan, Nov 12 2026)
 

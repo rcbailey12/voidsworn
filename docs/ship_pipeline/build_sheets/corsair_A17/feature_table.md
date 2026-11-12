@@ -133,7 +133,7 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 
 ## INSIDE (R98, R209): what each break reveals
 
-Deck levels (height): lower deck -0.82 (23% to 87%); top deck 0.30 (34% to 87%); head deck 0.00 (10% to 20%).
+Deck levels (height): lower deck -0.82 (36% to 87%); lower_fore deck -0.82 (23% to 31%); top deck 0.30 (36% to 87%); head deck 0.00 (10% to 20%).
 
 Bulkhead and frame stations: F0 13.1%, F1 22.7%, F2 36.1%, F3 44.7%, F4 63.2%, F5 82.4%.
 
@@ -141,8 +141,8 @@ Bulkhead and frame stations: F0 13.1%, F1 22.7%, F2 36.1%, F3 44.7%, F4 63.2%, F
 |---|---|---|---|---|
 | jaw machinery (machinery) | 11.7 to 19.6 | -0.75 to 0.75 | -0.60 to -0.10 | grabber arm rams and winches over the mouth |
 | listening bridge (bridge) | 11.0 to 19.3 | -0.70 to 0.70 | 0.05 to 0.55 | listening room and bridge in the head |
-| boarding kennels (crew) | 23.4 to 33.0 | -1.60 to 1.60 | -1.45 to -0.88 | boarding gangs behind the grabbers |
-| loot hold (hold) | 33.7 to 44.3 | -1.70 to 1.70 | -1.45 to -0.88 | neck hold |
+| boarding kennels (crew) | 23.4 to 30.6 | -1.60 to 1.60 | -1.45 to -0.88 | boarding gangs behind the grabbers |
+| loot hold (hold) | 36.1 to 44.3 | -1.70 to 1.70 | -1.45 to -0.88 | neck hold |
 | rocket magazine (magazine) | 36.4 to 42.9 | -0.60 to 0.60 | 0.34 to 0.70 | under the rocket pod, in the fore block |
 | crew decks (crew) | 53.9 to 61.5 | -1.30 to 1.50 | 0.34 to 1.05 | in the mid block |
 | shell magazine (magazine) | 44.7 to 63.2 | -1.70 to 1.70 | -1.45 to -0.88 | battery magazines |
@@ -183,7 +183,7 @@ Full interiors throughout the hull (R215), hidden until a piece breaks. Deaths b
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 367 objects, 56 parts, 965 close pairs, 506 rays, 8 guns, 6 turrets swept, 10 cones, 28 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 371 objects, 56 parts, 953 close pairs, 506 rays, 8 guns, 6 turrets swept, 10 cones, 28 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 

@@ -203,15 +203,18 @@ def build(K):
     K.colour('dried-blood red patch', -3.6, -4.9, 'aft block roof')
 
     # ---------- INSIDE (round 3b: follows the low hull and the top blocks) ----------
-    K.deck('lower', -0.82, -5.4, 4.0, inset=0.5)  # inset 0.5: its edge stays clear of the plating torn at the seams
-    K.deck_box('top', 0.3, -5.3, 2.3, 1.3)
+    # nothing inside spans the neck seam's band (x 2.2 to 2.7): a deck edge, then a hold floor, on the tear stood outside
+    # its piece in the death check (PC run, issue 532); the decks, the hold and the kennels stop either side, F2 closes the gap
+    K.deck('lower', -0.82, -5.4, 2.05, inset=0.5)
+    K.deck('lower_fore', -0.82, 2.85, 4.0, inset=0.5)
+    K.deck_box('top', 0.3, -5.3, 2.05, 1.3)
     K.deck_box('head', 0.0, 4.4, 5.9, 0.75)
     for i, x in enumerate((5.4, 4.0, 2.05, 0.8, -1.9, -4.7)):  # F2 off the B-1 seam station (a bulkhead face on the tear)
         K.bulkhead('F%d' % i, x)
     K.room('jaw_machinery', 'machinery', 4.45, 5.6, -0.75, 0.75, -0.6, -0.1, note='grabber arm rams and winches over the mouth')
     K.room('listening_bridge', 'bridge', 4.5, 5.7, -0.7, 0.7, 0.05, 0.55, note='listening room and bridge in the head')
-    K.room('boarding_kennels', 'crew', 2.5, 3.9, -1.6, 1.6, -1.45, -0.88, note='boarding gangs behind the grabbers')
-    K.room('loot_hold', 'hold', 0.85, 2.4, -1.7, 1.7, -1.45, -0.88, note='neck hold')
+    K.room('boarding_kennels', 'crew', 2.85, 3.9, -1.6, 1.6, -1.45, -0.88, note='boarding gangs behind the grabbers')
+    K.room('loot_hold', 'hold', 0.85, 2.05, -1.7, 1.7, -1.45, -0.88, note='neck hold')
     K.room('rocket_magazine', 'magazine', 1.05, 2.0, -0.6, 0.6, 0.34, 0.7, note='under the rocket pod, in the fore block')
     K.room('crew_decks', 'crew', -1.65, -0.55, -1.3, 1.5, 0.34, 1.05, note='in the mid block')
     K.room('shell_magazine', 'magazine', -1.9, 0.8, -1.7, 1.7, -1.45, -0.88, note='battery magazines')
