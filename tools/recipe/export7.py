@@ -114,6 +114,26 @@ if longitudinal:
     seams.append(dict(p=[0, z, 0], n=[0, 1, 0], span=[x0, x1]))
 destruction = dict(version=1, seams=seams, interior_materials=[])
 
+def machine_boxes():
+    """issue 600 (R226, RULEBOOK 5.17): where each machine sits, so a death rides it whole with one piece. The build stamps
+    machine=1 on every object of a machine part (the faction kit's MACHINES, tools/blender/build_sheets/kit.py); the objects
+    of one part share grp. Each part's box is its fixed objects' bounds in the GLB ship frame (a turret's turning mesh is
+    its own node and rides whole by itself). The runtime (fx_death.gd) reads these boxes, never a list of part names."""
+    dg = bpy.context.evaluated_depsgraph_get(); out = {}
+    for o in src:
+        if not o.get('machine') or o.name in TURNING: continue
+        oe = o.evaluated_get(dg); me = oe.to_mesh()
+        pts = [o.matrix_world @ v.co for v in me.vertices]; oe.to_mesh_clear()
+        if not pts: continue
+        g = str(o.get('grp') or o.name)
+        row = out.setdefault(g, dict(name=g, kind=str(o.get('part_kind', '')), lo=[1e9] * 3, hi=[-1e9] * 3))
+        for p in pts:
+            q = (p.x, p.z, -p.y)      # Blender Z up to the GLB frame, as the seams
+            for i in range(3): row['lo'][i] = min(row['lo'][i], q[i]); row['hi'][i] = max(row['hi'][i], q[i])
+    return [dict(r, lo=[round(v, 6) for v in r['lo']], hi=[round(v, 6) for v in r['hi']]) for _, r in sorted(out.items())]
+
+destruction['machines'] = machine_boxes()
+
 def world_bvh(objs):
     bm = bmesh.new(); dg = bpy.context.evaluated_depsgraph_get()
     for o in objs:

@@ -640,8 +640,9 @@ static func seeds_for(s, cause: String, r: RandomNumberGenerator) -> PackedVecto
 # - a bite: where the core goes off (on the break, on the side last hit), an ellipsoid of hull, its rim torn by waves,
 #   is cut out as four to six separate fragments that the core flash throws out tumbling;
 # - chips: a few small wedges along each break, thrown out with the bite.
-# Everything is a plain function of the triangle's centre, so the worker labels triangles exactly as before (no
-# triangle splitting): the break's raggedness comes from the waves and the hull's own triangles.
+# Everything is a plain function of a point, so the worker labels each triangle by its centre. On an older hull that is
+# all (no triangle splitting: the raggedness comes from the waves and the hull's own triangles); on an authored hull
+# (issue 600) the triangles across a tear are split along it first (_refine), and the tear follows the seams' paths.
 
 # A few random plane waves: [direction * wave number, phase, amplitude]. Mostly across the hull (small x part), so the
 # teeth run along the break.
@@ -666,8 +667,102 @@ static func _wave_sum(waves: Array, q: Vector3) -> float:
 
 # The signed distance (roughly) to one break: positive on its +x side.
 static func _break_f(b: Dictionary, q: Vector3) -> float:
+	if b.has("path"):
+		# far from the path its waves (at most 0.022 of the length) cannot change the side: skip them
+		if q.x < float(b["xmin"]) - float(b["near"]): return q.x - float(b["xmin"])
+		if q.x > float(b["xmax"]) + float(b["near"]): return q.x - float(b["xmax"])
+		# the waves tear the plating raggedly in side view near the flanks and in plan over the deck, and the insides with
+		# it: the height only counts near the flanks (s near 1), so a deck tears where the plating above it tears
+		var s := clampf(absf(q.z - float(b["cz"])) / float(b["hw"]), 0.0, 1.0)
+		s *= s
+		var qw := Vector3(q.x, float(b["cy"]) + (q.y - float(b["cy"])) * s * s, q.z)
+		return _path_f(b, q) + _wave_sum(b["waves"], qw)
 	var d: Vector3 = q - (b["at"] as Vector3)
 	return d.dot(b["n"]) - float(b["k"]) * absf(d.dot(b["side"]) - float(b["zk"])) + _wave_sum(b["waves"], q)
+
+
+# Issue 600 (R226, RULEBOOK 5.17): a seam's authored plan path, read from the export (its one home, R225). The path runs
+# across the beam as (x, z) points from -z to +z and on past both ends at its end x; the sign comes from how many times a
+# line from the point toward +x crosses it (even: the +x side), the size from the nearest crossing along x, or the
+# nearest path segment when the point is close. Far from the path only the side matters, so it answers from its x range.
+static func _path_f(b: Dictionary, q: Vector3) -> float:
+	var near: float = b["near"]
+	if q.x < float(b["xmin"]) - near: return q.x - float(b["xmin"])
+	if q.x > float(b["xmax"]) + near: return q.x - float(b["xmax"])
+	var pp: PackedVector2Array = b["path"]
+	var n := pp.size()
+	var crossings := 0
+	var hx := INF
+	# the two ends run on along z at their own x
+	if q.z < pp[0].y:
+		hx = absf(pp[0].x - q.x)
+		if pp[0].x > q.x: crossings += 1
+	if q.z >= pp[n - 1].y:
+		hx = minf(hx, absf(pp[n - 1].x - q.x))
+		if pp[n - 1].x > q.x: crossings += 1
+	for i in n - 1:
+		var a := pp[i]
+		var c := pp[i + 1]
+		if (a.y > q.z) == (c.y > q.z): continue
+		var xi := a.x + (q.z - a.y) * (c.x - a.x) / (c.y - a.y)
+		hx = minf(hx, absf(xi - q.x))
+		if xi > q.x: crossings += 1
+	var d := hx
+	if d < near:
+		var p2 := Vector2(q.x, q.z)
+		if q.z < pp[0].y: d = minf(d, p2.distance_to(pp[0]))
+		if q.z > pp[n - 1].y: d = minf(d, p2.distance_to(pp[n - 1]))
+		for i in n - 1:
+			d = minf(d, p2.distance_to(Geometry2D.get_closest_point_to_segment(p2, pp[i], pp[i + 1])))
+	return -d if crossings % 2 == 1 else d
+
+
+# The x of a seam at a point across the beam: on its path where it has one (the nearest crossing to `at`), else its plane.
+static func _break_x(b: Dictionary, z: float) -> float:
+	if not b.has("path"): return float((b["at"] as Vector3).x)
+	var pp: PackedVector2Array = b["path"]
+	if z <= pp[0].y: return pp[0].x
+	if z >= pp[pp.size() - 1].y: return pp[pp.size() - 1].x
+	var best := float((b["at"] as Vector3).x)
+	var bd := INF
+	for i in pp.size() - 1:
+		var a := pp[i]
+		var c := pp[i + 1]
+		if (a.y > z) == (c.y > z): continue
+		var xi := a.x + (z - a.y) * (c.x - a.x) / (c.y - a.y)
+		if absf(xi - float((b["at"] as Vector3).x)) < bd:
+			bd = absf(xi - float((b["at"] as Vector3).x))
+			best = xi
+	return best
+
+
+# Issue 600 (R226): the machine (gun, turret ring, engine, claw, mast...) whose box from the export holds a point, or -1.
+# Where boxes overlap, the one whose centre is nearest in its own size wins.
+static func _machine_at(plan: Dictionary, q: Vector3) -> int:
+	var mach: Dictionary = plan.get("mach", {})
+	if mach.is_empty() or not (mach["all"] as AABB).has_point(q): return -1
+	var bins: Array = mach["bins"]
+	var bi := int(floor((q.x - float(mach["x0"])) / float(mach["bw"])))
+	if bi < 0 or bi >= bins.size(): return -1
+	var boxes: Array = mach["boxes"]
+	var best := -1
+	var bd := INF
+	for k in (bins[bi] as PackedInt32Array):
+		var bb: AABB = boxes[k]
+		if not bb.has_point(q): continue
+		var d := (q - bb.get_center()).abs() / (bb.size * 0.5).max(Vector3.ONE * 1e-6)
+		var dn := maxf(d.x, maxf(d.y, d.z))
+		if dn < bd:
+			bd = dn
+			best = k
+	return best
+
+
+# The piece a point goes to: a machine's own piece wherever its box holds the point (it never tears), else the plan.
+static func _piece_at(plan: Dictionary, q: Vector3) -> int:
+	var m := _machine_at(plan, q)
+	if m >= 0: return int((plan["mach"]["piece"] as PackedInt32Array)[m])
+	return _plan_assign(plan, q)
 
 
 # The main piece a point belongs to (0 at the hull's low x end), ignoring the bite and the chips.
@@ -687,7 +782,17 @@ static func _plan_assign(plan: Dictionary, q: Vector3) -> int:
 	if not bite.is_empty():
 		var d: Vector3 = q - (bite["c"] as Vector3)
 		var e := Vector2(d.x / float(bite["rx"]), Vector2(d.y, d.z).length() / float(bite["ry"])).length_squared()
-		if e + _wave_sum(bite["waves"], q) < 1.0:
+		if bite.has("drill"):
+			# issue 600: on an authored hull the bite is a short shaft into the hull from the hit side, so the plating, its
+			# liner and the decks under it go together (an ellipsoid took the plating and left the liner over the hole)
+			var out: Vector3 = bite["out"]
+			var tdep := d.dot(out)
+			var dp := d - out * tdep
+			e = Vector2(dp.x / float(bite["rx"]), Vector2(dp.y, dp.z).length() / float(bite["ry"])).length_squared()
+			if tdep < -float(bite["drill"]): e = INF
+			elif e < 1.35 and e + _wave_sum(bite["waves"], (bite["c"] as Vector3) + dp) < 1.0: e = -1.0   # walls along the shaft
+			else: e = INF
+		if e < 1.35 and e + _wave_sum(bite["waves"], q) < 1.0:   # the two waves add at most 0.34
 			var subs: PackedVector3Array = bite["subs"]
 			var best := 0
 			var bd := INF
@@ -819,6 +924,24 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 			breaks[-1]["n"] = transverse[i]["n"]
 			breaks[-1]["k"] = k * 0.25
 			breaks[-1]["waves"] = _waves(r, L, L * 0.012, 3)
+			if transverse[i].has("path"):
+				# issue 600 (R226): the tear follows the seam's authored plan path (it kinks round the machines), torn by the
+				# waves; the path is the kink, so no extra V
+				var pp: PackedVector2Array = transverse[i]["path"]
+				var xs := pp[0].x
+				var xl := pp[0].x
+				for q in pp:
+					xs = minf(xs, q.x)
+					xl = maxf(xl, q.x)
+				breaks[-1]["path"] = pp
+				breaks[-1]["xmin"] = xs
+				breaks[-1]["xmax"] = xl
+				breaks[-1]["near"] = L * 0.06
+				breaks[-1]["cy"] = h.c.y
+				breaks[-1]["cz"] = h.c.z
+				breaks[-1]["hw"] = maxf(maxf(absf(pp[0].y - h.c.z), absf(pp[pp.size() - 1].y - h.c.z)), W * 0.1)
+				breaks[-1]["k"] = 0.0
+				breaks[-1]["at"] = Vector3(_break_x(breaks[-1], h.c.z), h.c.y, h.c.z)
 	for b in authored:
 		if not b.has("span"): continue
 		var parent := 0
@@ -841,6 +964,7 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 	var rx: float = L * (0.09 if capital else 0.12) * (0.6 if lance_on else 1.0)
 	# centred a little into the bigger of the two pieces, so the bite eats mostly into it and the small one stays small
 	var bat: Vector3 = (breaks[bi]["at"] as Vector3) + Vector3.RIGHT * rx * 0.5 * (-1.0 if float(sizes[bi]) > float(sizes[bi + 1]) else 1.0)
+	bat.x += _break_x(breaks[bi], h.c.z + zs * W * 0.4) - float((breaks[bi]["at"] as Vector3).x)   # on the path's hit side
 	var out_dir := Vector3(0.0, 0.3, zs).normalized()
 	# the bite's centre is a real hull sample: the one furthest out to the hit side near the break (bench round 3: a ray
 	# toward the hull could hit a mast tip with no plating round it, and the core flash then floated off the hull)
@@ -866,21 +990,52 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 	# a torn rim, but one bite: two long waves (round 1's three waves holed a capital's deck like lace)
 	var bite := {"c": bc, "rx": rx, "ry": ry, "waves": _waves(r, L, 0.22, 2), "subs": subs, "first": n_main,
 		"out": out_dir}
+	if not authored.is_empty(): bite["drill"] = ry * 0.8
 	# 4. chips along each break
 	var per := 2
 	var chip_seeds := PackedVector3Array()
 	for b in breaks:
 		for j in per:
-			chip_seeds.append((b["at"] as Vector3) + (b["side"] as Vector3) * W * r.randf_range(-0.5, 0.5) * (-zs if j == 0 else zs) + Vector3.UP * H * r.randf_range(-0.4, 0.4))
+			var cs: Vector3 = (b["at"] as Vector3) + (b["side"] as Vector3) * W * r.randf_range(-0.5, 0.5) * (-zs if j == 0 else zs) + Vector3.UP * H * r.randf_range(-0.4, 0.4)
+			if b.has("path"): cs.x = _break_x(b, cs.z)
+			chip_seeds.append(cs)
 	var chips := {"seeds": chip_seeds, "per": per, "band": L * 0.03, "reach": minf(maxf(W, H) * 0.25, L * 0.05), "first": n_main + nsub}
 	# 5. scorch on the plating round the wound: the bite and both sides of each break, fading over about a hull width
 	var scorch: Array = [Vector4(bc.x, bc.y, bc.z, rx + minf(W, L * 0.12) * 0.6)]
 	for b in breaks:
 		for side in [-1.0, 1.0]:
 			var p: Vector3 = (b["at"] as Vector3) + (b["side"] as Vector3) * W * 0.3 * side + Vector3.UP * H * 0.2
+			if b.has("path"): p.x = _break_x(b, p.z)
 			scorch.append(Vector4(p.x, p.y, p.z, minf(W, L * 0.12) * 0.5))
-	return {"L": L, "seeds": seeds, "sizes": sizes, "breaks": breaks, "bite": bite, "chips": chips, "n_main": n_main,
+	var plan := {"L": L, "seeds": seeds, "sizes": sizes, "breaks": breaks, "bite": bite, "chips": chips, "n_main": n_main,
 		"n_frag": nsub + chip_seeds.size(), "bite_break": bi, "scorch": scorch, "authored": not authored.is_empty()}
+	# 6. issue 600 (R226, RULEBOOK 5.17): the machines ride whole, each with the main piece its box centre lies in. Their boxes
+	# come from the export (fx_hull machines); bins along the length keep the lookup short.
+	var mlist: Array = h.get("machines") if h.get("machines") is Array else []
+	if not mlist.is_empty():
+		var boxes: Array = []
+		var mpiece := PackedInt32Array()
+		var x0m := INF
+		var x1m := -INF
+		for m in mlist:
+			var bb: AABB = (m["box"] as AABB).grow(L * 0.002)
+			boxes.append(bb)
+			mpiece.append(_plan_main(plan, bb.get_center()))
+			x0m = minf(x0m, bb.position.x)
+			x1m = maxf(x1m, bb.end.x)
+		var nb := 64
+		var bw := maxf((x1m - x0m) / nb, 0.0001)
+		var bins: Array = []
+		for i in nb:
+			var row := PackedInt32Array()
+			for k in boxes.size():
+				var bb: AABB = boxes[k]
+				if bb.end.x >= x0m + i * bw and bb.position.x <= x0m + (i + 1) * bw: row.append(k)
+			bins.append(row)
+		var all: AABB = boxes[0]
+		for bb in boxes: all = all.merge(bb)
+		plan["mach"] = {"boxes": boxes, "piece": mpiece, "bins": bins, "x0": x0m, "bw": bw, "all": all}
+	return plan
 
 
 # Issue 461 (carried from 484: "the cut is prepared before the killing weapon is known"). A lance kill re-cuts the hull on
@@ -948,7 +1103,18 @@ static func precompute(fx, s, cause := "blast") -> void:
 		var xf = inv * mi.global_transform
 		for si in mi.mesh.get_surface_count():
 			var mat: Material = mi.get_active_material(si)
-			surfs.append({"arrays": s.current_arrays(mi, si), "xf": xf, "mat": mat, "interior": s.hull.authored and HULL.interior_material(mi.mesh.surface_get_material(si)), "fmt": (mi.mesh as ArrayMesh).surface_get_format(si) if mi.mesh is ArrayMesh else 0})
+			var src_mat: Material = mi.mesh.surface_get_material(si)
+			var sd := {"arrays": s.current_arrays(mi, si), "xf": xf, "mat": mat, "interior": s.hull.authored and HULL.interior_material(src_mat), "fmt": (mi.mesh as ArrayMesh).surface_get_format(si) if mi.mesh is ArrayMesh else 0}
+			# issue 600: the hull plating surface (<code>_hull, RECIPE.md stage 7) tears with the insides under it; only the
+			# parts surfaces carry machines
+			if s.hull.authored and src_mat != null and String(src_mat.resource_name).ends_with("_hull"): sd["skin"] = true
+			# issue 600 (R226): a turret's turning mesh is a machine on its own node: it rides whole with the piece under its
+			# pivot (the ring's machine box holds the pivot)
+			var tk: int = s.hull._turret_above(mi, s.root)
+			if tk >= 0:
+				sd["tur"] = tk
+				sd["anchor"] = inv * (s.hull.turrets[tk]["node"] as Node3D).global_transform.origin
+			surfs.append(sd)
 	var job = {"seeds": seeds, "surfs": surfs, "cause": cause, "organic": s.faction == "chorus", "out": null,
 		"mesh_on_worker": DisplayServer.get_name() != "headless", "plan": plan, "authored": s.hull.authored,
 		"ragged": s.death_big, "warp": _waves(r, s.hull.L, s.hull.L * 0.05, 3) if s.faction == "chorus" else [],
@@ -956,7 +1122,9 @@ static func precompute(fx, s, cause := "blast") -> void:
 	s.set_meta("cut_job", job)
 	_init_dirs()
 	var tid = WorkerThreadPool.add_task(func() -> void:
+		var tc := Time.get_ticks_usec()
 		var pieces := _cut(job)
+		job["cut_usec"] = Time.get_ticks_usec() - tc
 		_piece_hulls(pieces)
 		if bool(job.get("sites", false)):
 			var n_main: int = int(job["plan"]["n_main"]) if not (job["plan"] as Dictionary).is_empty() else pieces.size()
@@ -1055,6 +1223,181 @@ static func _piece_materials(am: ArrayMesh, pc: Dictionary, weathered := false) 
 	return am
 
 
+# Issue 600 (R186, RULEBOOK 5.17): an authored hull's insides were whole slabs (an A16 deck is a few triangles up to half
+# the ship long), and each triangle went whole to the piece its centre lay in, so decks and bulkheads stuck out of the
+# broken hull as big flat squares. Every triangle that crosses a tear (the seam paths with their waves, the bite, the
+# chips) is now split along it until its edges are shorter than REFINE_EPS of the length (about a pixel at camera 170),
+# then each small triangle goes to its own piece: the insides and the plating tear at the same ragged line.
+# An edge is split by a rule of its two end points alone (they lie on different pieces, or a point between them does),
+# so two triangles that share an edge split it the same way and the outer skin stays sealed for _seal_piece. A machine's
+# box never splits (every point in it is the machine's piece). A large inside triangle whose middle lies on another piece
+# is also split (insides are not sealed, so it may leave a T-junction).
+const REFINE_EPS := 0.012
+const REFINE_EPS_SKIN := 0.02
+const REFINE_CAP := 200000   # new points per surface at most (a guard; A16 needs a few thousand)
+
+
+static func _refine(plan: Dictionary, vl_in: PackedVector3Array, arr: Array, idx: PackedInt32Array, eps: float, interior: bool) -> Dictionary:
+	var vl := vl_in.duplicate()   # the source arrays are shared with the live ship: never grown in place
+	var n0 := vl.size()
+	var nrm := PackedVector3Array()
+	if arr[Mesh.ARRAY_NORMAL] != null and (arr[Mesh.ARRAY_NORMAL] as PackedVector3Array).size() == n0: nrm = (arr[Mesh.ARRAY_NORMAL] as PackedVector3Array).duplicate()
+	var tng := PackedFloat32Array()
+	if arr[Mesh.ARRAY_TANGENT] != null and (arr[Mesh.ARRAY_TANGENT] as PackedFloat32Array).size() == n0 * 4: tng = (arr[Mesh.ARRAY_TANGENT] as PackedFloat32Array).duplicate()
+	var uv := PackedVector2Array()
+	if arr[Mesh.ARRAY_TEX_UV] != null and (arr[Mesh.ARRAY_TEX_UV] as PackedVector2Array).size() == n0: uv = (arr[Mesh.ARRAY_TEX_UV] as PackedVector2Array).duplicate()
+	var uv2 := PackedVector2Array()
+	if arr[Mesh.ARRAY_TEX_UV2] != null and (arr[Mesh.ARRAY_TEX_UV2] as PackedVector2Array).size() == n0: uv2 = (arr[Mesh.ARRAY_TEX_UV2] as PackedVector2Array).duplicate()
+	var col := PackedColorArray()
+	if arr[Mesh.ARRAY_COLOR] != null and (arr[Mesh.ARRAY_COLOR] as PackedColorArray).size() == n0: col = (arr[Mesh.ARRAY_COLOR] as PackedColorArray).duplicate()
+	var vp := PackedInt32Array()
+	vp.resize(n0)
+	vp.fill(-9)
+	var mids := {}
+	var eps2 := eps * eps
+	var sample := float(plan["L"]) * 0.03
+	var out_idx := PackedInt32Array()
+	var out_piece := PackedInt32Array()
+	var stack := PackedInt32Array()
+	var m := PackedInt32Array([-1, -1, -1])
+	for t in range(0, idx.size() - 2, 3):
+		var a0 := idx[t]
+		var b0 := idx[t + 1]
+		var c0 := idx[t + 2]
+		var p0 := vl[a0]
+		var p1 := vl[b0]
+		var p2 := vl[c0]
+		if maxf(p0.distance_squared_to(p1), maxf(p1.distance_squared_to(p2), p2.distance_squared_to(p0))) < eps2:
+			if interior and _torn(plan, vl, vp, a0, b0, c0): continue
+			out_idx.append(a0)
+			out_idx.append(b0)
+			out_idx.append(c0)
+			out_piece.append(_piece_at(plan, (p0 + p1 + p2) / 3.0))
+			continue
+		# bisection can cycle on slivers at the tear (a split that leaves a child as long as its parent), so each triangle
+		# splits at most twice per halving of its longest edge down to eps; a triangle stopped there stays whole (a
+		# T-junction at most, and only on a piece boundary, where the two sides are sealed apart anyway)
+		var dmax := mini(30, 3 * int(ceil(log(sqrt(maxf(p0.distance_squared_to(p1), maxf(p1.distance_squared_to(p2), p2.distance_squared_to(p0)))) / eps) / log(2.0))) + 4)
+		stack.append(a0)
+		stack.append(b0)
+		stack.append(c0)
+		stack.append(0)
+		while not stack.is_empty():
+			var n := stack.size()
+			var a := stack[n - 4]
+			var b := stack[n - 3]
+			var c := stack[n - 2]
+			var depth := stack[n - 1]
+			stack.resize(n - 4)
+			if depth >= dmax:
+				if interior and _torn(plan, vl, vp, a, b, c): continue
+				out_idx.append(a)
+				out_idx.append(b)
+				out_idx.append(c)
+				out_piece.append(_piece_at(plan, (vl[a] + vl[b] + vl[c]) / 3.0))
+				continue
+			var marks := 0
+			var longest := 0.0
+			for ei in 3:
+				var ia: int = a if ei == 0 else (b if ei == 1 else c)
+				var ib: int = b if ei == 0 else (c if ei == 1 else a)
+				var qa := vl[ia]
+				var qb := vl[ib]
+				var l2 := qa.distance_squared_to(qb)
+				longest = maxf(longest, l2)
+				var key: int = mini(ia, ib) * 16777216 + maxi(ia, ib)
+				var got: int = int(mids.get(key, -2))
+				if got == -2:
+					got = -1
+					if l2 >= eps2 and vl.size() - n0 < REFINE_CAP:
+						if vp[ia] == -9: vp[ia] = _piece_at(plan, qa)
+						if vp[ib] == -9: vp[ib] = _piece_at(plan, qb)
+						var cut := vp[ia] != vp[ib]
+						if not cut and l2 > sample * sample:
+							# a long edge can pass a tooth, a chip or the bite with both ends on one piece: look between
+							var k := clampi(int(ceil(sqrt(l2) / sample)), 2, 12)
+							for j in range(1, k):
+								if _piece_at(plan, qa.lerp(qb, float(j) / k)) != vp[ia]:
+									cut = true
+									break
+						if cut:
+							got = vl.size()
+							vl.append((qa + qb) * 0.5)
+							vp.append(-9)
+							if not nrm.is_empty():
+								var nn := nrm[ia] + nrm[ib]
+								nrm.append(nn.normalized() if nn.length_squared() > 1e-12 else nrm[ia])
+							if not tng.is_empty():
+								var tv := Vector3(tng[ia * 4] + tng[ib * 4], tng[ia * 4 + 1] + tng[ib * 4 + 1], tng[ia * 4 + 2] + tng[ib * 4 + 2])
+								tv = tv.normalized() if tv.length_squared() > 1e-12 else Vector3(tng[ia * 4], tng[ia * 4 + 1], tng[ia * 4 + 2])
+								tng.append_array(PackedFloat32Array([tv.x, tv.y, tv.z, tng[ia * 4 + 3]]))
+							if not uv.is_empty(): uv.append((uv[ia] + uv[ib]) * 0.5)
+							if not uv2.is_empty(): uv2.append((uv2[ia] + uv2[ib]) * 0.5)
+							if not col.is_empty(): col.append(col[ia].lerp(col[ib], 0.5))
+					mids[key] = got
+				m[ei] = got
+				if got >= 0: marks += 1
+			if marks == 0 and interior and longest >= eps2 and vl.size() - n0 < REFINE_CAP:
+				# a big inside panel whose middle lies on another piece (the bite, a chip): split it anyway
+				if vp[a] == -9: vp[a] = _piece_at(plan, vl[a])
+				if _piece_at(plan, (vl[a] + vl[b] + vl[c]) / 3.0) != vp[a]:
+					for ei in 3:
+						var ia: int = a if ei == 0 else (b if ei == 1 else c)
+						var ib: int = b if ei == 0 else (c if ei == 1 else a)
+						var key: int = mini(ia, ib) * 16777216 + maxi(ia, ib)
+						var got := vl.size()
+						vl.append((vl[ia] + vl[ib]) * 0.5)
+						vp.append(-9)
+						if not nrm.is_empty():
+							var nn := nrm[ia] + nrm[ib]
+							nrm.append(nn.normalized() if nn.length_squared() > 1e-12 else nrm[ia])
+						if not tng.is_empty(): tng.append_array(tng.slice(ia * 4, ia * 4 + 4))
+						if not uv.is_empty(): uv.append((uv[ia] + uv[ib]) * 0.5)
+						if not uv2.is_empty(): uv2.append((uv2[ia] + uv2[ib]) * 0.5)
+						if not col.is_empty(): col.append(col[ia].lerp(col[ib], 0.5))
+						mids[key] = got
+						m[ei] = got
+					marks = 3
+			if marks == 0:
+				if interior and _torn(plan, vl, vp, a, b, c): continue
+				out_idx.append(a)
+				out_idx.append(b)
+				out_idx.append(c)
+				out_piece.append(_piece_at(plan, (vl[a] + vl[b] + vl[c]) / 3.0))
+				continue
+			var mab := m[0]
+			var mbc := m[1]
+			var mca := m[2]
+			var kids: Array
+			if marks == 3:
+				kids = [a, mab, mca, mab, b, mbc, mca, mbc, c, mab, mbc, mca]
+			elif marks == 1:
+				if mab >= 0: kids = [a, mab, c, mab, b, c]
+				elif mbc >= 0: kids = [a, b, mbc, a, mbc, c]
+				else: kids = [a, b, mca, mca, b, c]
+			elif mca < 0: kids = [mab, b, mbc, a, mab, mbc, a, mbc, c]
+			elif mab < 0: kids = [mbc, c, mca, b, mbc, mca, b, mca, a]
+			else: kids = [mca, a, mab, c, mca, mab, c, mab, b]
+			for i in kids.size():
+				stack.append(int(kids[i]))
+				if i % 3 == 2: stack.append(depth + 1)
+	var out := arr.duplicate()
+	if not nrm.is_empty(): out[Mesh.ARRAY_NORMAL] = nrm
+	if not tng.is_empty(): out[Mesh.ARRAY_TANGENT] = tng
+	if not uv.is_empty(): out[Mesh.ARRAY_TEX_UV] = uv
+	if not uv2.is_empty(): out[Mesh.ARRAY_TEX_UV2] = uv2
+	if not col.is_empty(): out[Mesh.ARRAY_COLOR] = col
+	return {"vl": vl, "arr": out, "idx": out_idx, "piece": out_piece}
+
+
+# An inside triangle still across the tear at the finest split (its corners on different pieces): the strip the tear
+# runs through is blown away, so no corner of an inside panel stands past its own piece's torn line.
+static func _torn(plan: Dictionary, vl: PackedVector3Array, vp: PackedInt32Array, a: int, b: int, c: int) -> bool:
+	for i in [a, b, c]:
+		if vp[i] == -9: vp[i] = _piece_at(plan, vl[i])
+	return vp[a] != vp[b] or vp[b] != vp[c]
+
+
 static func _cut(job: Dictionary) -> Array:
 	var seeds: PackedVector3Array = job["seeds"]
 	var plan: Dictionary = job.get("plan", {})
@@ -1082,6 +1425,28 @@ static func _cut(job: Dictionary) -> Array:
 			idx.resize(v.size())
 			for i in v.size():
 				idx[i] = i
+		# issue 600: where each triangle goes. A turret's turning mesh rides whole with the piece under its pivot; an
+		# authored hull's triangles that cross a tear are split along it first (_refine), so no deck, bulkhead or plate is
+		# left whole across a break; a machine's triangles go with its own piece (_piece_at).
+		var tri_piece := PackedInt32Array()
+		var nv: int = v.size()
+		if not plan.is_empty():
+			if sd.has("anchor"):
+				tri_piece.resize(idx.size() / 3)
+				tri_piece.fill(_piece_at(plan, sd["anchor"]))
+			elif bool(job.get("authored", false)):
+				var inside := bool(sd.get("interior", false))
+				# the plating and the insides follow the tear; a machine's box holds only on the parts surfaces
+				var sp: Dictionary = plan
+				if (inside or bool(sd.get("skin", false))) and plan.has("mach"):
+					sp = plan.duplicate()
+					sp.erase("mach")
+				var rf := _refine(sp, vl, arr, idx, float(plan["L"]) * (REFINE_EPS if inside else REFINE_EPS_SKIN), inside)
+				vl = rf["vl"]
+				arr = rf["arr"]
+				idx = rf["idx"]
+				tri_piece = rf["piece"]
+				nv = vl.size()
 		var buckets: Array = []
 		for c in ns:
 			buckets.append(PackedInt32Array())
@@ -1093,8 +1458,10 @@ static func _cut(job: Dictionary) -> Array:
 			var best = 0
 			var bd = 1e18
 			var bd2 = 1e18
-			if not plan.is_empty():
-				best = _plan_assign(plan, q)
+			if not tri_piece.is_empty():
+				best = tri_piece[t / 3]
+			elif not plan.is_empty():
+				best = _piece_at(plan, q)
 			else:
 				# issue 484: a Chorus rupture tears along warped lines, not flat Voronoi planes
 				var qw: Vector3 = q
@@ -1120,7 +1487,7 @@ static func _cut(job: Dictionary) -> Array:
 			if tri.is_empty():
 				continue
 			var remap = PackedInt32Array()
-			remap.resize(v.size())
+			remap.resize(nv)
 			remap.fill(-1)
 			var order = PackedInt32Array()
 			var nidx = PackedInt32Array()
@@ -1140,14 +1507,14 @@ static func _cut(job: Dictionary) -> Array:
 			for i in order.size():
 				pv[i] = vl[order[i]]
 			na[Mesh.ARRAY_VERTEX] = pv
-			if arr[Mesh.ARRAY_NORMAL] != null and (arr[Mesh.ARRAY_NORMAL] as PackedVector3Array).size() == v.size():
+			if arr[Mesh.ARRAY_NORMAL] != null and (arr[Mesh.ARRAY_NORMAL] as PackedVector3Array).size() == nv:
 				var src: PackedVector3Array = arr[Mesh.ARRAY_NORMAL]
 				var dn = PackedVector3Array()
 				dn.resize(order.size())
 				for i in order.size():
 					dn[i] = (xf.basis * src[order[i]]).normalized()
 				na[Mesh.ARRAY_NORMAL] = dn
-			if arr[Mesh.ARRAY_TANGENT] != null and (arr[Mesh.ARRAY_TANGENT] as PackedFloat32Array).size() == v.size() * 4:
+			if arr[Mesh.ARRAY_TANGENT] != null and (arr[Mesh.ARRAY_TANGENT] as PackedFloat32Array).size() == nv * 4:
 				var src4: PackedFloat32Array = arr[Mesh.ARRAY_TANGENT]
 				var dt = PackedFloat32Array()
 				dt.resize(order.size() * 4)
@@ -1160,14 +1527,14 @@ static func _cut(job: Dictionary) -> Array:
 					dt[i * 4 + 3] = src4[o4 + 3]
 				na[Mesh.ARRAY_TANGENT] = dt
 			for key in [Mesh.ARRAY_TEX_UV, Mesh.ARRAY_TEX_UV2]:
-				if arr[key] != null and (arr[key] as PackedVector2Array).size() == v.size():
+				if arr[key] != null and (arr[key] as PackedVector2Array).size() == nv:
 					var s2: PackedVector2Array = arr[key]
 					var d2 = PackedVector2Array()
 					d2.resize(order.size())
 					for i in order.size():
 						d2[i] = s2[order[i]]
 					na[key] = d2
-			if arr[Mesh.ARRAY_COLOR] != null and (arr[Mesh.ARRAY_COLOR] as PackedColorArray).size() == v.size():
+			if arr[Mesh.ARRAY_COLOR] != null and (arr[Mesh.ARRAY_COLOR] as PackedColorArray).size() == nv:
 				var sc: PackedColorArray = arr[Mesh.ARRAY_COLOR]
 				var dc = PackedColorArray()
 				dc.resize(order.size())
@@ -1176,7 +1543,7 @@ static func _cut(job: Dictionary) -> Array:
 				na[Mesh.ARRAY_COLOR] = dc
 			na[Mesh.ARRAY_INDEX] = nidx
 			var pc: Dictionary = pieces[c]
-			pc["surfs"].append({"arrays": na, "mat": sd["mat"], "interior": sd.get("interior", false), "fmt": int(sd.get("fmt", 0))})
+			pc["surfs"].append({"arrays": na, "mat": sd["mat"], "interior": sd.get("interior", false), "fmt": int(sd.get("fmt", 0)), "tur": int(sd.get("tur", -1)), "skin": bool(sd.get("skin", false))})
 			pc["n"] = int(pc["n"]) + order.size()
 			var step = maxi(1, order.size() / 120)
 			var points: PackedVector3Array = pc["pts"]

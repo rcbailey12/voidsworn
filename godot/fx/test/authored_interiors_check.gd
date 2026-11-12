@@ -87,12 +87,20 @@ func _run() -> void:
 	if plan.breaks.size() > 1:
 		shift = minf(shift, 0.5 * (float(plan.breaks[1].at.x) - point.x))
 	var before: int = DEATH._plan_main(plan, point + Vector3.RIGHT * shift * 0.36)
+	var seam0: Vector3 = s.hull.seams[0].at
+	var path0 = s.hull.seams[0].get("path")
 	s.hull.seams[0].at += Vector3.RIGHT * shift
+	if path0 != null:
+		# issue 600: a seam with a plan path moves with its path (the cut follows the path)
+		var moved_path := PackedVector2Array()
+		for q in (path0 as PackedVector2Array): moved_path.append(q + Vector2(shift, 0.0))
+		s.hull.seams[0].path = moved_path
 	rng.seed = 190
 	var moved: Dictionary = DEATH.fracture_plan(fx, s, rng)
 	check(absf(moved.breaks[0].at.x - point.x - shift) < 0.0001, "moving authored seam moves fracture anchor")
 	check(DEATH._plan_main(moved, point + Vector3.RIGHT * shift * 0.36) != before, "moving seam changes actual piece ownership")
-	s.hull.seams[0].at = point
+	s.hull.seams[0].at = seam0
+	if path0 != null: s.hull.seams[0].path = path0
 	var moving_mesh: MeshInstance3D = s.meshes[0]
 	var analysis_pose: Transform3D = ship.global_transform.affine_inverse() * moving_mesh.global_transform
 	moving_mesh.position.y += 0.4
@@ -103,17 +111,22 @@ func _run() -> void:
 	var job: Dictionary = s.get_meta("cut_job")
 	check(job.surfs[0].xf.is_equal_approx(analysis_pose), "authored seams stay aligned when ShipView bobs the mesh")
 	var interior_triangles := 0
-	var original_inside := 0
+	var original_area := 0.0
+	var piece_area := 0.0
 	for sd in job.surfs:
-		if sd.interior: original_inside += sd.arrays[Mesh.ARRAY_INDEX].size() / 3
+		if sd.interior: original_area += _area(sd.arrays[Mesh.ARRAY_VERTEX], sd.arrays[Mesh.ARRAY_INDEX], sd.xf)
 	for pc in job.out:
 		check(pc.authored, "authored cut bypasses full fallback caps")
 		for sd in pc.surfs:
 			if sd.interior:
 				interior_triangles += sd.arrays[Mesh.ARRAY_INDEX].size() / 3
+				piece_area += _area(sd.arrays[Mesh.ARRAY_VERTEX], sd.arrays[Mesh.ARRAY_INDEX], Transform3D.IDENTITY)
 				check(HULL.interior_material(sd.mat), "cut retains authored material")
 	check(interior_triangles > 0, "cut contains real interior triangles")
-	check(interior_triangles == original_inside, "every authored interior triangle reaches a wreck piece")
+	# issue 600: the insides tear with the hull (split along the tear, the strip it runs through blown away), so the pieces
+	# keep almost all of the authored inside area rather than every original triangle
+	check(piece_area >= original_area * 0.9 and piece_area <= original_area * 1.0001,
+		"the wreck pieces keep the authored insides (%.1f percent of their area)" % (100.0 * piece_area / maxf(original_area, 1e-9)))
 	var outline := PackedVector3Array([Vector3(0, -2, -3), Vector3(0, 2, -3), Vector3(0, 2, 3), Vector3(0, -2, 3)])
 	var cap := {"v": PackedVector3Array(), "n": PackedVector3Array(), "c": PackedColorArray()}
 	DEATH._cap_outline(cap, outline, AABB(Vector3(-5, -2, -3), Vector3(5, 4, 6)), 0.000001,
@@ -136,3 +149,10 @@ func _run() -> void:
 	world.queue_free()
 	print("AUTHORED_INTERIORS failures=%d interior_triangles=%d" % [failures, interior_triangles])
 	quit(1 if failures else 0)
+
+
+static func _area(v: PackedVector3Array, idx: PackedInt32Array, xf: Transform3D) -> float:
+	var a := 0.0
+	for t in range(0, idx.size() - 2, 3):
+		a += (xf * v[idx[t + 1]] - xf * v[idx[t]]).cross(xf * v[idx[t + 2]] - xf * v[idx[t]]).length() * 0.5
+	return a
