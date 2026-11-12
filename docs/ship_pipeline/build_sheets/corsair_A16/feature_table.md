@@ -23,7 +23,7 @@ Ashfall Hullbreakers (corsair) | class Battle-barge | version 3 (round 3), 2026-
 | hull depth | 4.0 |
 | L to B hull | 3.33 |
 | L to H hull | 6.5 |
-| prow overhang | 1.1 |
+| prow overhang | 1.4 |
 | outline iou percent | 80.3 |
 | mass outline iou percent | 80.7 |
 | PASS | True |
@@ -34,7 +34,7 @@ Ashfall Hullbreakers (corsair) | class Battle-barge | version 3 (round 3), 2026-
 |---|---|---:|---:|---:|---:|---|---|---|---|
 | I1 | front tube (wake-sniffer scoop), 1.9 across, 2.6 deep | 1 | 2.0 | 1.35 | -0.25 | forward | - | picture | port front tube: the ship's face; deep bore, hooded rolled lip, clamp bands |
 | I2 | front tube (wake-sniffer scoop), 1.9 across, 2.6 deep | 1 | 2.0 | -1.35 | -0.25 | forward | - | picture | starboard front tube: the ship's face; deep bore, hooded rolled lip, clamp bands |
-| V0 | louvre panel 0.3 x 1.5 | 1 | 3.6 | 0.00 | -0.25 | - | - | picture | ribbed spine between the tubes |
+| V0 | louvre panel 0.3 x 1.5 | 1 | 4.4 | 0.00 | -0.25 | - | - | picture | ribbed spine between the tubes |
 | SL1 | vision slit 0.9 x 0.14 | 1 | 24.6 | 1.30 | 1.75 | - | - | picture | vision slit in the tier 2 front |
 | SL2 | vision slit 0.9 x 0.14 | 1 | 24.6 | -1.30 | 1.75 | - | - | picture | vision slit in the tier 2 front |
 | SL3p | vision slit 1.4 x 0.13 | 1 | 72.9 | 1.83 | 2.78 | - | - | picture | bridge flank vision slit |
@@ -128,12 +128,12 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 
 | Mass | Station % | Offset range | Height range | Colour | Note |
 |---|---|---|---|---|---|
-| Hull slab (tier 1) | 4.2 to 93.2 | -3.95 to 3.85 | -2.60 to 1.40 | soot black, patched plate | a slab about 4 deep, the bow tapering and rounded by heavy chamfers |
+| Hull slab (tier 1) | 5.4 to 93.2 | -3.95 to 3.85 | -2.60 to 1.40 | soot black, patched plate | a slab about 4 deep, the bow tapering and rounded by heavy chamfers |
 | Upper armour belt | 12.0 to 74.0 | -4.18 to 4.08 | 0.10 to 0.90 | iron and soot | layered flank belt, standing 0.24 out |
 | Lower armour belt | 15.1 to 71.7 | -4.28 to 4.18 | -1.60 to -0.70 | iron and soot | layered flank belt, standing 0.34 out |
-| Prow brow (two steps) | 3.6 to 9.0 | -2.90 to 2.85 | 0.70 to 1.50 | soot | overhangs the tube mouths |
+| Prow brow (two steps) | 5.4 to 9.8 | -2.85 to 2.80 | 0.85 to 1.50 | soot | overhangs the tube mouths |
 | Brow step | 7.8 to 12.2 | -2.60 to 2.55 | 1.30 to 1.82 | rust | the second brow step |
-| Chin | 3.8 to 9.0 | -2.65 to 2.60 | -2.30 to -1.35 | iron | under the tubes, carries the pincers |
+| Chin | 5.5 to 9.0 | -2.65 to 2.60 | -2.30 to -1.35 | iron | under the tubes, carries the pincers |
 | Raised armoured deck (tier 2) | 23.5 to 60.3 | -3.45 to 3.30 | 1.20 to 2.00 | rust plate | a low step over the forward two thirds |
 | Rack plinth | 38.8 to 51.1 | -1.65 to 1.65 | 1.90 to 2.45 | soot | lifts the rack so it fires clear over the bow |
 | Castle (tier 3) | 58.7 to 80.1 | -3.10 to 3.00 | 1.30 to 2.60 | soot with a dried-blood band |  |
@@ -203,7 +203,7 @@ Full interiors throughout the hull (R215): decks, frames, spaces and machinery a
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0. Tested: 407 objects, 77 parts, 921 close pairs, 796 rays, 16 guns, 8 turrets swept, 10 cones, 45 apertures. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0. Tested: 408 objects, 77 parts, 936 close pairs, 796 rays, 16 guns, 8 turrets swept, 10 cones, 45 apertures. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 

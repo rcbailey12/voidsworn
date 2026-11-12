@@ -1,10 +1,32 @@
-# corsair_A16 build sheet: the Warlord's Pyre-Barge (round 3)
+# corsair_A16 build sheet: the Warlord's Pyre-Barge (round 3b)
 
 Ashfall Hullbreakers flagship, class Battle-barge, **26.0 world units** (godot/render/hull_table.gd CLS_LEN; data.js c_boss).
 Version 3, 2026-11-11, after Ryan's review of round 2 (R217: tubes as circles, guns blocking the rockets and in front of an
 engine, engines and guns plain tubes) and his scaling rule (R218: whole-ship fidelity), with turrets that turn (R219).
-Designer of record: Opus (R205, R207). Rendered on Ryan's PC (Blender 4.5, GPU), blockout
-`C:\Users\rcbai\Downloads\voidsworn_test\opus532\r3d\corsair_A16\corsair_A16_blockout.blend`.
+Round 3b (2026-11-12) rebuilt the massing to the concept's measured proportions after the Board's review of round 3 (the hull
+was a straight-sided box, too tall; the tubes small and low; the claws legs under midships). Designer of record: Opus (R205,
+R207). Rendered on Ryan's PC (Blender 4.5, GPU), blockout
+`C:\Users\rcbai\Downloads\voidsworn_test\opus532\r3f\corsair_A16\corsair_A16_blockout.blend`; the model is 26.14 long.
+
+## Proportions and structure (measured the same way on the concept and the build)
+
+| | Hull length:beam | Hull length:height | Envelope length:beam | Envelope length:height |
+|---|---:|---:|---:|---:|
+| Concept (round 8 sheet, top and side views) | 3.04 | 4.45 | 2.46 | 3.17 |
+| Round 3 build | 2.74 | 3.39 | 2.06 | 2.02 |
+| **Round 3b build** | **3.01** | **4.18** | 2.13 | 2.80 |
+
+Hull: length over the median beam or height across the middle 60 percent of the length. Distinct masses per cell (concept by
+eye, build from the model) are in [inventory.md](inventory.md); every cell has at least the concept's count.
+
+## What round 3b changed
+
+1. **A long, low slab** about 4 deep, with tier 2 and the castle as low steps (the whole ship about 5.7 tall, like the
+   concept), the bow tapering in plan from the tube cluster (about 4.3 wide) and rounded by heavy chamfers.
+2. **Layered flank belts**: an upper armour belt, a recessed band carrying the lights, vents and bow casemates, a lower belt.
+3. **The two tubes are the face**: big, side by side across the nose, standing fully proud of a shortened brow and chin.
+4. **Curved pincers under the bow tip**; short grabbers under the stern instead of legs under midships; the engine pods
+   brought in close to the hull.
 
 ![corsair_A16 preview](preview.jpg)
 
@@ -14,7 +36,8 @@ midships and stern at the same windows), then [fit_view.jpg](fit_view.jpg) and [
 - [sheet.jpg](sheet.jpg): beauty and blockout, true side, top, underside, bow-on, engine end, INSIDE cutaway, feature table,
   changes, then the fit view and the nine cells.
 - [inventory.md](inventory.md): the parts inventory written from the concept before modelling (R218), ticked per blob-sweep
-  cell from the model: 41 lines, every one present, shaped by its kit part type and detailed (every sub-part modelled).
+  cell from the model: 41 lines, every one present, shaped by its kit part type and detailed (every sub-part modelled); plus
+  the proportions and the structure count per cell.
 - [fit_report.md](fit_report.md): the fit check (RULEBOOK 5.15): 38 clashes on the round 2 layout (16 clash, 11 turret sweep,
   10 exhaust, 1 exit: the rack covered by the bunker turret), each fix, and **zero left** in round 3.
 - [feature_table.md](feature_table.md), [manifest.json](manifest.json) (routes, the turret pivots and arcs), [checks.json](checks.json),
@@ -23,10 +46,9 @@ midships and stern at the same windows), then [fit_view.jpg](fit_view.jpg) and [
 - Design source: `tools/blender/build_sheets/ships/corsair_A16.py`; inventory `ships/corsair_A16_inv.py`; part shapes
   `tools/blender/kits/hullbreakers/parts.py`.
 
-## What round 3 changed
+## What round 3 changed (parts, still in force)
 
-1. **The front tubes** are deep tubes with hooded rolled lips, dark bores going back 2.5 units and clamp bands, jutting 1.3
-   ahead of a shorter, faceted prow cap under a two-step brow, a ribbed spine between them (the concept's cluster).
+1. **The front tubes** are deep tubes with hooded rolled lips, dark bores and clamp bands, a ribbed spine between them.
 2. **Every part is its real shape**, from the Hullbreakers kit: engines are bells with a throat, an ember lining, an inner
    cone, cooling rings, gimbal struts, a banded housing and a mount collar; turrets have a ring and bolt ring, a faceted
    housing with a glacis and bustle, a mantlet on trunnions, breeches, barrels with recoil sleeves, clamps, muzzle brakes and
@@ -48,8 +70,9 @@ midships and stern at the same windows), then [fit_view.jpg](fit_view.jpg) and [
   with three cooling rings and struts. Same part, plainer: the fin ring is a kit addition for the build.
 - **The rack** in the concept is a bundle of round tubes; ours is a framed box of round cells. Same read from above; the
   bundle is a variant the kit can add.
-- **The castle** in the concept is taller and busier (stacked boxes and sloped plates); ours keeps the concept's tiers with
-  slits and hatches, fewer boxes.
+- **The nose** is still more faceted than the concept's rounded, bulbous one: the loft sections are octagons with heavy
+  chamfers; a rounder cap is a kit change for the build.
+- **The castle** in the concept is busier (stacked boxes and sloped plates); ours keeps its low step with slits and hatches.
 - **Guns** are matched batteries by slot (R213) where the concept scatters them; barrels are a little shorter than the
   concept's so neighbours clear each other when they turn.
 - **Tube lip notch**: the concept's lower-lip notch is left for the build's kit pass.

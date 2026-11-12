@@ -124,8 +124,8 @@ cells.json.
 
 | Ship | Concept hull L:B / L:H | Round 3 build | Round 3b build |
 |---|---|---|---|
-| corsair_A16 | 3.04 / 4.45 | 2.74 / 3.39 | see the sheet (about 3.05 / 4.2) |
-| corsair_A17 | 2.75 / 4.06 | 2.62 / 2.84 | see the sheet (about 2.83 / 3.8) |
+| corsair_A16 | 3.04 / 4.45 | 2.74 / 3.39 | 3.01 / 4.18 |
+| corsair_A17 | 2.75 / 4.06 | 2.62 / 2.84 | 2.82 / 3.84 |
 
 - **A17:** rebuilt long and low. A base hull with flank blocks; six top blocks stepping up toward the stern with gaps and
   undercut bases; a big chamfered head with two roof steps over a cut-in mouth, the scoop drums under its corners; four long
@@ -135,3 +135,8 @@ cells.json.
   close in; curved pincers under the bow tip; short grabbers under the stern instead of legs under midships.
 - Cameras: view angles held from the round 3 fit (a free refit chose a 47 degree view to make the lower hull fill the
   concept's outline, which would hide exactly what the Board flagged); framing refit to the new blockouts.
+- Renders: `opus532\r3e\corsair_A17` and `opus532\r3f\corsair_A16` (Blender 4.5, GPU); zero clashes on both, both pass the
+  standard (lengths 26.14 and 14.49).
+- Judged beside the concept at the same size: A17 is now the concept's long, low, stepped hunter with forward prongs; A16 the
+  long armoured slab with the twin tubes as its face. What still differs (each README): A16's nose more faceted than round,
+  A17's head a little smaller than the beauty's, and on both the surface density and colour that the paint stage carries.

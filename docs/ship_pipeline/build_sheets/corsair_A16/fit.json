@@ -10,9 +10,9 @@
   "EXIT": 0
  },
  "tested": {
-  "objects": 407,
+  "objects": 408,
   "parts": 77,
-  "close_pairs": 921,
+  "close_pairs": 936,
   "rays": 796,
   "guns": 16,
   "turrets_swept": 8,
@@ -2566,7 +2566,7 @@
    "id": "V0",
    "kind": "vent",
    "pos": [
-    12.319999694824219,
+    12.119999885559082,
     0.0,
     -0.25
    ],
