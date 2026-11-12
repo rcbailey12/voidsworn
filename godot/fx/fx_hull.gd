@@ -796,7 +796,12 @@ func _took(kind: String, how: String) -> void:
 	row[how] = int(row.get(how, 0)) + 1
 	attach_counts[kind] = row
 	if how == "ray":
-		_attach_note(kind, how, "hp_%s missing on %s; using the surface ray" % [_kind_name(kind), _who()])
+		if not HP_RE.has(kind):
+			_attach_note(kind, how, "%s on %s: placed on the plating (a surface sample; not a hard point type)" % [kind, _who()])
+		elif not (points.get(kind, []) as Array).is_empty():
+			_attach_note(kind, how, "hp_%s on %s: no authored point fits this request; using the surface ray" % [_kind_name(kind), _who()])
+		else:
+			_attach_note(kind, how, "hp_%s missing on %s; using the surface ray" % [_kind_name(kind), _who()])
 	elif how == "skip":
 		_attach_note(kind, how, "hp_%s on %s: no authored point and the surface ray missed; effect skipped" % [_kind_name(kind), _who()])
 
