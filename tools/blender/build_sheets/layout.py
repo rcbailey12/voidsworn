@@ -29,10 +29,18 @@ def font(n, bold=False):
     return ImageFont.load_default()
 
 
+OFF = {}
+PADS = {'side': (40, 70, 90), 'cutaway': (40, 70, 90), 'top': (110, 80, 90), 'underside': (20, 80, 90), 'bow': (20, 90, 20), 'stern': (20, 70, 20)}
+
+
 def flat(name):
     im = Image.open(os.path.join(RD, name + '.png')).convert('RGBA')
-    bg = Image.new('RGBA', im.size, GREY + (255,)); bg.alpha_composite(im)
-    return bg.convert('RGB'), np.asarray(im)[..., 3] > 8
+    sc_ = M['views'].get(name, {}).get('px_per_unit', 40) / 40.0
+    l_, t_, b_ = [int(v * sc_) for v in PADS.get(name, (0, 0, 0))]
+    bg = Image.new('RGBA', (im.width + 2 * l_, im.height + t_ + b_), GREY + (255,)); bg.alpha_composite(im, (l_, t_))
+    a = np.zeros((bg.height, bg.width), bool); a[t_:t_ + im.height, l_:l_ + im.width] = np.asarray(im)[..., 3] > 8
+    OFF[name] = (l_, t_)
+    return bg.convert('RGB'), a
 
 
 V = M['views']
@@ -40,9 +48,9 @@ L = M['length']; XT = M['x_tip']; ML = M['model_length']
 
 
 def proj(view, p):
-    v = V[view]; k = v['px_per_unit']; W, H = v['res']
+    v = V[view]; k = v['px_per_unit']; W, H = v['res']; ox, oy = OFF.get(view, (0, 0))
     d = np.array(p, float) - np.array(v['centre'])
-    return W / 2 + k * float(np.dot(d, v['right'])), H / 2 - k * float(np.dot(d, v['up']))
+    return ox + W / 2 + k * float(np.dot(d, v['right'])), oy + H / 2 - k * float(np.dot(d, v['up']))
 
 
 def station(x):
@@ -97,10 +105,10 @@ checks = dict(length_from_game=L, model_length=ML, length_side=round(len_side, 3
               height_disagreement_percent=round(abs(height - height_bow) / L * 100, 2),
               widest_at_station_percent=round(beam_st, 1))
 # hull-only ratios (the proportion check, fittings excluded)
-hull_beam = max(m['y'][1] - m['y'][0] for m in M['masses'] if m['name'] == 'Hull slab')
-hull_h = [m for m in M['masses'] if m['name'] == 'Hull slab'][0]
+hull_h = [m for m in M['masses'] if m['name'].startswith('Hull')][0]
+hull_beam = hull_h['y'][1] - hull_h['y'][0]
 checks['hull_beam'] = round(hull_beam, 2); checks['hull_depth'] = round(hull_h['z'][1] - hull_h['z'][0], 2)
-checks['L_to_B_overall'] = round(L / beam, 2); checks['L_to_H_overall'] = round(L / height, 2)
+checks['L_to_B_hull'] = round(L / hull_beam, 2); checks['L_to_H_hull'] = round(L / checks['hull_depth'], 2)
 checks['PASS'] = bool(checks['length_disagreement_percent'] <= 2 and checks['model_vs_game_percent'] <= 2
                       and checks['beam_disagreement_percent'] <= 2 and checks['height_disagreement_percent'] <= 2)
 fit = os.path.join(REPO, 'tools/blender/build_sheets/ships', CODE + '_camera.json')
@@ -108,8 +116,7 @@ if os.path.exists(fit):
     fj = json.load(open(fit)); checks['outline_iou_percent'] = round(fj.get('iou', 0) * 100, 1)
     checks['mass_outline_iou_percent'] = round(fj.get('body_iou', 0) * 100, 1)
     checks['concept_camera'] = {kk: fj[kk] for kk in ('az', 'el', 'roll', 'dist', 'mm', 'sx', 'sy') if kk in fj}
-json.dump(checks, open(os.path.join(OUT, 'checks.json'), 'w'), indent=1)
-print(json.dumps(checks))
+
 
 F = M['features']
 GUNS = [f for f in F if f['kind'] in ('gun', 'launcher')]
@@ -166,7 +173,7 @@ W_S, H_S = side.size
 dr = ann('side', side, a_side, hide_far=lambda p: p[1] < -0.5)
 for i in range(11):
     x = XT - ML * i / 10; u, _ = proj('side', (x, 0, 0))
-    dr.line((u, H_S - 40, u, H_S - 25), fill=DIM, width=2); label(dr, (u - 14, H_S - 24), '%d%%' % (i * 10), f_s, DIM, box=False)
+    dr.line((u, H_S - 88 * SC, u, H_S - 76 * SC), fill=DIM, width=2); label(dr, (u - 14 * SC, H_S - 74 * SC), '%d%%' % (i * 10), f_s, DIM, box=False)
 y0 = sz0 - 30
 dr.line((sx0, y0, sx1, y0), fill=CYAN, width=2)
 for xx in (sx0, sx1):
@@ -183,32 +190,50 @@ def scalebar(dr, x, y):
     label(dr, (x, y + 16), '0', f_s, INK, box=False); label(dr, (x + 5 * k - 30, y + 16), '5 units', f_s, INK, box=False)
 
 
-scalebar(dr, 30, H_S - 95)
-label(dr, (20, 14), 'TRUE SIDE (port beam, bow left, 0 deg elevation)  far-side fittings dashed grey', f_m)
+import importlib.util as _ilu
+_sp = _ilu.spec_from_file_location('ship', os.path.join(REPO, 'tools/blender/build_sheets/ships', CODE + '.py'))
+_sm = _ilu.module_from_spec(_sp)
+try:
+    import types; sys.modules.setdefault('bpy', types.ModuleType('bpy')); _sp.loader.exec_module(_sm)
+    deck_x = max(r[0] for r in _sm.HULL)
+except Exception as ex:
+    print('no hull table', ex); deck_x = None
+if deck_x is not None:
+    ov = XT - deck_x
+    checks['prow_overhang'] = round(ov, 2)
+    u0, _ = proj('side', (XT, 0, 0)); u1, _ = proj('side', (deck_x, 0, 0)); yv = sz0 + 20 * SC
+    dr.line((u0, yv, u1, yv), fill=ACC, width=3)
+    for uu in (u0, u1):
+        dr.line((uu, yv - 10, uu, yv + 10), fill=ACC, width=3)
+    label(dr, (u0, yv + 12 * SC), 'prow overhang %.2f (forward-most point to the forward end of the deck edge)' % ov, f_s, ACC)
+scalebar(dr, 30 * SC, H_S - 44 * SC)
+label(dr, (14 * SC, 14 * SC), 'TRUE SIDE (port beam, bow left, level)', f_m)
+label(dr, (14 * SC, 50 * SC), 'grey rings: far-side fittings', f_s, DIM)
 
 # top view
 dr = ann('top', top, a_top)
 W_T, H_T = top.size
 for i in range(11):
     x = XT - ML * i / 10; _, v = proj('top', (x, 0, 0))
-    dr.line((8, v, 24, v), fill=DIM, width=2); label(dr, (26, v - 12), '%d%%' % (i * 10), f_s, DIM, box=False)
+    dr.line((8, v, 30 * SC, v), fill=DIM, width=2); label(dr, (34 * SC, v - 12 * SC), '%d%%' % (i * 10), f_s, DIM, box=False)
 dr.line((wr[1], wr[0], wr[2], wr[0]), fill=CYAN, width=2)
 label(dr, (wr[1], wr[0] + 6), 'beam %.2f over barrels at %.0f%%; hull %.2f' % (beam, beam_st, hull_beam), f_s, CYAN)
 dr.line((W_T - 40, ty0, W_T - 40, ty1), fill=CYAN, width=2)
 label(dr, (W_T - 330 * SC, ty1 - 40 * SC), 'length %.2f' % len_top, f_m, CYAN)
-scalebar(dr, 80, H_T - 60)
+scalebar(dr, 110 * SC, H_T - 44 * SC)
 label(dr, (14, 14), 'TRUE TOP (bow up, port left)', f_m)
-label(dr, (14, 48), 'belly items (claws, bay) not shown: see underside', f_s, DIM)
+label(dr, (14, 48 * SC), 'belly items (claws, bay) not shown: see underside', f_s, DIM)
 
 # underside
 dr = ann('underside', und, a_und)
-scalebar(dr, 80, H_T - 60)
-label(dr, (14, 14), 'UNDERSIDE (from below, bow up, port right)', f_m)
+scalebar(dr, 30 * SC, H_T - 44 * SC)
+label(dr, (14, 14), 'UNDERSIDE (from below)', f_m)
+label(dr, (14, 48 * SC), 'bow up, port on the right', f_s, DIM)
 
 # bow and stern
 dr = ImageDraw.Draw(bow)
 label(dr, (14, 14), 'BOW-ON (port right)', f_m)
-label(dr, (14, 50), 'beam %.2f  height %.2f' % (beam_bow, height_bow), f_s, CYAN)
+label(dr, (14, 52 * SC), 'beam %.2f  height %.2f' % (beam_bow, height_bow), f_s, CYAN)
 dr = ImageDraw.Draw(stern)
 label(dr, (14, 14), 'ENGINE END (port left)', f_m)
 for f in F:
@@ -221,32 +246,30 @@ for f in F:
 # cutaway with inside labels
 dr = ImageDraw.Draw(cut)
 INS = M['inside']
+SPN = {}
 for r in INS:
     if r['kind'] == 'space' and r['y'][0] < 0.05:
         u0, v0 = proj('cutaway', (r['x'][1], 0, r['z'][1])); u1, v1 = proj('cutaway', (r['x'][0], 0, r['z'][0]))
-        cx, cy = (u0 + u1) / 2, (v0 + v1) / 2
-        nm = r['name'].replace('_', ' ')
-        fs = f_s
-        bb = dr.textbbox((0, 0), nm, font=fs)
-        label(dr, (cx - (bb[2] - bb[0]) / 2, cy - 10), nm, fs, INK)
+        SPN[r['name']] = len(SPN) + 1
+        label(dr, ((u0 + u1) / 2 - 10 * SC, (v0 + v1) / 2 - 12 * SC), str(SPN[r['name']]), f_m, INK)
     if r['kind'] == 'break':
         u, _ = proj('cutaway', (r['x'], 0, 0))
-        dashed(dr, (u, 30), (u, cut.size[1] - 60), RED, 4, 14)
-        label(dr, (u + 6, 40), r['name'], f_m, RED)
+        dashed(dr, (u, 40 * SC), (u, cut.size[1] - 90 * SC), RED, 4, 14)
+        label(dr, (u + 6, 44 * SC), r['name'], f_m, RED)
     if r['kind'] == 'bulkhead':
         u, _ = proj('cutaway', (r['x'], 0, 0))
-        label(dr, (u - 12, cut.size[1] - 40), r['name'], f_s, DIM, box=False)
+        label(dr, (u - 12, cut.size[1] - 86 * SC), r['name'], f_s, DIM, box=False)
     if r['kind'] == 'deck':
         _, v = proj('cutaway', (0, 0, r['z']))
-        label(dr, (6, v - 12), r['name'] + ' deck', f_s, DIM, box=False)
+        label(dr, (6, v - 12 * SC), r['name'] + ' deck', f_s, DIM, box=False)
 for p in M['points']:
     if p['kind'] in ('breach', 'core'):
         u, v = proj('cutaway', p['pos'])
         rr = 9
         dr.polygon([(u, v - rr), (u + rr, v), (u, v + rr), (u - rr, v)], outline=RED if p['kind'] == 'breach' else ACC, width=3)
-        label(dr, (u + 10, v + 4), p['name'].replace('hp_', ''), f_s, RED if p['kind'] == 'breach' else ACC)
-label(dr, (14, 14), 'INSIDE: side section on the centreline (port half removed)', f_m)
-scalebar(dr, 30, cut.size[1] - 95)
+        label(dr, (u + 10, v + 4), p['name'].replace('hp_breach_', 'b').replace('hp_', ''), f_s, RED if p['kind'] == 'breach' else ACC, box=False)
+label(dr, (14, 8), 'INSIDE: side section on the centreline (port half removed)', f_s)
+scalebar(dr, 30 * SC, cut.size[1] - 44 * SC)
 
 # beauty and blockout three-quarter
 beauty = Image.open(os.path.join(REPO, M['beauty'])).convert('RGB')
@@ -255,6 +278,8 @@ tq, _ = flat('threequarter')
 for nm, im in (('side', side), ('top', top), ('underside', und), ('bow', bow), ('stern', stern), ('cutaway', cut), ('threequarter', tq)):
     im.save(os.path.join(OUT, nm + '.png'))
 
+json.dump(checks, open(os.path.join(OUT, 'checks.json'), 'w'), indent=1)
+print(json.dumps(checks))
 # ---------------- feature table ----------------
 def r2(v):
     return '%.2f' % v
@@ -268,8 +293,8 @@ lines.append('**Length %.1f world units** (%s). Frame: +X bow, +Y port, +Z up; s
 lines.append('## Measured off the views\n')
 lines.append('| Check | Value |\n|---|---|')
 for kk in ('model_length', 'length_side', 'length_top', 'length_disagreement_percent', 'beam_top', 'beam_bow', 'beam_disagreement_percent',
-           'height_side', 'height_bow', 'height_disagreement_percent', 'widest_at_station_percent', 'hull_beam', 'hull_depth', 'L_to_B_overall', 'L_to_H_overall',
-           'outline_iou_percent', 'mass_outline_iou_percent', 'PASS'):
+           'height_side', 'height_bow', 'height_disagreement_percent', 'widest_at_station_percent', 'hull_beam', 'hull_depth', 'L_to_B_hull', 'L_to_H_hull',
+           'prow_overhang', 'outline_iou_percent', 'mass_outline_iou_percent', 'PASS'):
     if kk in checks:
         lines.append('| %s | %s |' % (kk.replace('_', ' '), checks[kk]))
 lines.append('\n## Feature table (every gun, launcher, engine, dish, claw, chain and major fitting)\n')
@@ -332,7 +357,7 @@ open(os.path.join(OUT, 'feature_table.md'), 'w').write('\n'.join(lines) + '\n')
 # ---------------- the sheet ----------------
 PAD = int(40 * SC)
 col_l = W_T * 2 + PAD
-SW = max(col_l + W_S + 3 * PAD, int(3300 * SC))
+SW = max(col_l + W_S + 3 * PAD, int(2800 * SC))
 head = int(300 * SC)
 # right column: side, cutaway, bow+stern
 right_h = H_S + PAD + cut.size[1] + PAD + max(bow.size[1], stern.size[1])
@@ -346,16 +371,8 @@ sheet = Image.new('RGB', (SW, SH), (44, 44, 46))
 dr = ImageDraw.Draw(sheet)
 dr.text((PAD, 30), '%s  |  %s' % (CODE, M['name']), font=f_xl, fill=INK)
 dr.text((PAD, int(110 * SC)), '%s  |  class %s  |  length %.1f world units (%s)' % (M['faction'], M['cls'], L, 'hull_table.gd CLS_LEN'), font=f_m, fill=INK)
-dr.text((PAD, int(150 * SC)), 'Build sheet v1, 2026-11-11. Every view: an orthographic render of ONE Blender blockout, one scale (%d px per unit). '
-        'Side %.2f / top %.2f long (%.2f%% apart).' % (k, len_side, len_top, checks['length_disagreement_percent']), font=f_m, fill=DIM)
+dr.text((PAD, int(150 * SC)), 'Build sheet v1, 2026-11-11. Every view: an orthographic render of ONE Blender blockout, one scale (%d px per unit). Side %.2f / top %.2f long (%.2f%% apart).' % (k, len_side, len_top, checks['length_disagreement_percent']), font=f_m, fill=DIM)
 dr.text((PAD, int(190 * SC)), 'Orange rings: feature-table IDs. Grey rings, dashed: far side. Station % from the prow tip. Counts in the table outrank the pictures.', font=f_m, fill=DIM)
-# beauty top right
-bh = head - 20
-bw = int(beauty.width * bh / beauty.height)
-sheet.paste(beauty.resize((bw, bh)), (SW - bw - PAD, 10))
-dr.text((SW - bw - PAD - 330, 20), 'identity (accepted beauty)', font=f_s, fill=DIM)
-tqh = bh; tqw = int(tq.width * tqh / tq.height)
-sheet.paste(tq.resize((tqw, tqh)), (SW - bw - tqw - 2 * PAD, 10))
 y = head
 sheet.paste(top, (PAD, y)); sheet.paste(und, (PAD + W_T + PAD // 2, y))
 xr = col_l + PAD
@@ -363,6 +380,16 @@ sheet.paste(side, (xr, y))
 sheet.paste(cut, (xr, y + H_S + PAD))
 yb = y + H_S + PAD + cut.size[1] + PAD
 sheet.paste(bow, (xr, yb)); sheet.paste(stern, (xr + bow.width + PAD, yb))
+# identity: the accepted beauty and the blockout's own three-quarter, in the space under the plan views
+iy = y + H_T + PAD; iw = col_l - PAD
+room = max(body_h - H_T - PAD, int(500 * SC))
+bh = min(room // 2 - int(40 * SC), int(iw * beauty.height / beauty.width)); bw = int(beauty.width * bh / beauty.height)
+dr.text((PAD, iy), 'IDENTITY: accepted beauty (finish, colour, character)', font=f_m, fill=INK)
+sheet.paste(beauty.resize((bw, bh)), (PAD, iy + int(40 * SC)))
+tq_h = bh; tq_w = int(tq.width * tq_h / tq.height)
+dr.text((PAD, iy + bh + int(50 * SC)), 'blockout three-quarter (45 deg to port of the bow, 30 up), same model as every view', font=f_m, fill=INK)
+sheet.paste(tq.resize((tq_w, tq_h)), (PAD, iy + bh + int(90 * SC)))
+body_h = max(body_h, H_T + PAD + 2 * bh + int(140 * SC))
 # text block: feature table (compact) and changes
 y2 = head + body_h + PAD
 dr.text((PAD, y2), 'FEATURE TABLE (full table with offsets and heights: feature_table.md)', font=f_l, fill=INK)
@@ -371,7 +398,7 @@ cols = [(c_, int(w_ * SC)) for c_, w_ in [('ID', 70), ('fitting', 420), ('count'
 x = PAD
 for nm_c, w in cols:
     dr.text((x, yy), nm_c, font=f_s, fill=ACC); x += w
-yy += 30
+yy += LH
 for f in F:
     cnt = str(f['count'])
     vals = [f['id'], f['what'][:38], cnt, '%.1f' % f['station'], r2(f['pos'][1]), r2(f['pos'][2]), aimtxt(f)[:38] if f['kind'] != 'chain' else 'lashing',
@@ -396,6 +423,9 @@ for r in INS:
     if r['kind'] == 'break':
         for i, ln in enumerate(textwrap.wrap('- %s at %.1f%%: %s' % (r['name'], station(r['x']), r.get('note', '')), 95)):
             dr.text((xc + (0 if i == 0 else 20), yy), ln, font=f_s, fill=RED); yy += int(28 * SC)
+for nm_s, n_s in SPN.items():
+    r = [q for q in INS if q['kind'] == 'space' and q['name'] == nm_s][0]
+    dr.text((xc, yy), '%d  %s: %s' % (n_s, nm_s.replace('_', ' '), r.get('note', '')), font=f_s, fill=INK); yy += int(28 * SC)
 nb = sum(1 for p in M['points'] if p['kind'] == 'breach')
 dr.text((xc, yy + 10), '- %d breach anchors (red diamonds), core (orange diamond); rcs, boarding and bay points in feature_table.md' % nb, font=f_s, fill=INK)
 dr.text((xc, yy + 50), 'Cyan rows: designed here, not shown in the picture.', font=f_s, fill=CYAN)

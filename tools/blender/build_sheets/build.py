@@ -69,7 +69,7 @@ if MODE == 'mesh':
 # ---------------- scene: one key light, one fill, flat grey ground added in the layout ----------------
 world = bpy.data.worlds.new('w'); sc.world = world; world.use_nodes = True
 world.node_tree.nodes['Background'].inputs[0].default_value = (0.2, 0.2, 0.2, 1)
-world.node_tree.nodes['Background'].inputs[1].default_value = 0.35
+world.node_tree.nodes['Background'].inputs[1].default_value = 0.7
 
 
 def sun(name, toward, strength, angle=4.0):

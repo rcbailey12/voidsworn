@@ -260,7 +260,7 @@ class Kit:
         self.features.append(dict(id=fid, kind='dish', what='listening dish, %.1f across' % (2 * r), count=1,
                                   pos=tuple(p), aim=(yaw, pitch), src=src, note=note))
 
-    def claw(self, fid, hinge, pts, w=0.45, src='picture', note='', m='steel'):
+    def claw(self, fid, hinge, pts, w=0.45, src='picture', note='', m='steel', name='boarding claw'):
         """boarding claw: a hinge drum under the hull, then tapered segments through pts, the last a hook"""
         h = Vector(hinge)
         self.cyl(fid + '_hinge', h - Vector((0, w * 0.6, 0)), h + Vector((0, w * 0.6, 0)), w * 0.5, m)
@@ -270,7 +270,7 @@ class Kit:
             k = 1.0 - 0.55 * i / max(1, len(pts) - 1)
             self.cyl('%s_seg%d' % (fid, i), prev, q, w * 0.55 * k, m, r1=w * 0.5 * k * (0.35 if i == len(pts) - 1 else 0.9), n=6)
             prev = q
-        self.features.append(dict(id=fid, kind='claw', what='boarding claw, %d segments' % len(pts), count=1,
+        self.features.append(dict(id=fid, kind='claw', what='%s, %d segments' % (name, len(pts)), count=1,
                                   pos=tuple(h), aim=(0.0, -60.0), src=src, note=note, tip=tuple(Vector(pts[-1]))))
 
     def chain(self, fid, pts, r=0.09, src='picture', note=''):
