@@ -32,12 +32,12 @@ const HAIR := GS.SHEET_HAIR
 const ON_EMBER := GS.ON_EMBER
 
 # the sheet at the 1080 design height
-const X0 := 52.0          # left margin
-const CW := 560.0         # the sheet's width
+const X0 := 40.0          # left margin (R218: narrower sheet)
+const CW := 380.0         # the sheet's width (R218: was 560, about a third of the screen with the veil; now about a fifth)
 const TOP := 40.0         # top margin
 const FOOT := 48.0        # bottom margin
-const VEIL_A := 0.94      # the left veil at full strength (its first 72%)
-const VEIL_W := 0.45      # the left veil fades to nothing here (share of the window width), or further if the sheet needs it
+const VEIL_A := 0.86      # the left veil at full strength (its first 72%; R218: lighter so the board shows through)
+const VEIL_W := 0.30      # the left veil fades to nothing here (share of the window width), or further if the sheet needs it (R218: was 0.45)
 const ROW_GAP := 36.0     # a fleet line
 const ROW_GAP_TIGHT := 34.0
 
