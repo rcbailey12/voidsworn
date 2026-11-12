@@ -51,9 +51,9 @@ the screens half of R218 written nowhere (issue 558). Set: Board, Nov 12 (R211, 
 0.9 **How a route is set up (any multi-step pipeline: ships, effects, captures, installs).** (a) A method change is done
 only when one real item has gone end to end through it into the game on Ryan's PC; each stage passing alone is not a pass.
 (b) Each fact has one home: the first step that decides it writes it, and every later step reads it from there instead of
-keeping its own copy. (c) A check tests what its rule says and reads the item's own numbers (length, seams, part shapes),
+keeping its own copy; a mirror refreshed from that home under a check (the oracle copies, 12.4) is not a second home. (c) A check tests what its rule says and reads the item's own numbers (length, seams, part shapes),
 never the shape of the first item it was written for. (d) Anything Ryan's PC runs (.bat launchers, installs, caches) gets
-one real run there before it counts as done. No new test or gate is added for this rule; it shapes how routes are built
+one real run there before it counts as done, within 3.3 (nothing deleted on the PC without Ryan's yes). No new test or gate is added for this rule; it shapes how routes are built
 and briefed. Why: Codex's A16 dry run (issue 587) found eight gaps from these four habits: the build sheet and the recipe
 kept separate copies of the same facts, three checks assumed the old C15s cruiser (its 14.5 length, an extra seam,
 closed engine bells), a launcher quoting bug and a stale game cache only show on Windows in a real install, and no ship
