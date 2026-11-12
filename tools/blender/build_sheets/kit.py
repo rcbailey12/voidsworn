@@ -184,7 +184,7 @@ class Kit:
         for s in sections:
             x, hwp, hws, zb, zt, ct, cb = s[:7]
             yo = s[7] if len(s) > 7 else 0.0
-            ring = _round_sec(hwp, hws, zb, zt, yo, *(pexp or ())) if rounded else _octa(hwp, hws, zb, zt, ct, cb, yo)
+            ring = _round_sec(hwp, hws, zb, zt, yo, p_top=(pexp or (None, None))[0], p_bot=(pexp or (None, None))[1]) if rounded else _octa(hwp, hws, zb, zt, ct, cb, yo)
             rings.append([(x, y, z) for (y, z) in ring])
         verts = [v for r in rings for v in r]
         n = len(rings[0])
@@ -597,10 +597,11 @@ class Kit:
         self.features.append(dict(id=fid, kind='chain', what='lashing chain, taut between lugs', count=1,
                                   pos=tuple(Vector(pts[0])), end=tuple(Vector(pts[-1])), aim=None, src=src, note=note, inv=[inv] if isinstance(inv, str) else list(inv)))
 
-    def thruster(self, fid, pos, normal, src='designed', note='', inv=()):
+    def thruster(self, fid, pos, normal, src='designed', note='', inv=(), r=0.35):
         p = Vector(pos); n = Vector(normal).normalized()
-        part = self.emit(fid, HP.thruster(0.35), HP.frame(p, n.orthogonal(), n), inv)
-        self.fitdata.append(dict(id=fid, kind='thruster', cones=[dict(apex=tuple(p + n * 0.3), dir=tuple(n), r0=0.25, half=20.0, length=1.2)]))
+        part = self.emit(fid, HP.thruster(r), HP.frame(p, n.orthogonal(), n), inv)
+        self.fitdata.append(dict(id=fid, kind='thruster', cones=[dict(apex=tuple(p + n * 0.3 * r / 0.35), dir=tuple(n), r0=0.25 * r / 0.35, half=20.0,
+                                                                  length=1.2 * max(0.6, r / 0.35))]))
         self.features.append(dict(id=fid, kind='thruster', what='attitude thruster quad', count=1, pos=tuple(p),
                                   aim=None, src=src, note=note, inv=[inv] if isinstance(inv, str) else list(inv)))
 

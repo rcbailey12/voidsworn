@@ -42,7 +42,7 @@ INVENTORY = [
          src='designed'),
     dict(id='block_hatches', type='hatch', what='hatches on the stern block roof', count=2, cells=['stern/top'], reads='a rim, a door, a seam, hinges',
          src='designed'),
-    dict(id='thrusters', type='thruster', what='attitude thrusters on the stern block and the spine head', count=4, cells=['bow/side', 'stern/side'],
+    dict(id='thrusters', type='thruster', what='attitude thrusters on the stern block\'s roof and belly edges', count=4, cells=['stern/side'],
          reads='a block, slot nozzles', src='designed'),
 ]
 STRUCTURE = {'bow/top': 5, 'bow/side': 4, 'mid/top': 5, 'mid/side': 4, 'stern/top': 6, 'stern/side': 5}

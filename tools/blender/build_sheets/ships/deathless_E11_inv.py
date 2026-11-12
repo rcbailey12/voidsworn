@@ -55,7 +55,7 @@ INVENTORY = [
     dict(id='engines', type='engine', what='the engine cluster: three bells stacked in the side view, two side by side in plan (a diamond of four)',
          count=4, cells=['stern/side', 'stern/top', 'stern/below'],
          reads='faceted ribbed drums, mount collars, vanes, short bells, a corona ring round a black shade disc (no flame)', src='picture'),
-    dict(id='vents', type='vent', what='heat slot panels on the stern flanks under the feathers', count=2, cells=['stern/side'],
+    dict(id='vents', type='vent', what='heat slot panels on the aft flanks over the belt', count=2, cells=['stern/side'],
          reads='a frame, slanted slats', src='designed'),
     dict(id='stern_thrusters', type='thruster', what='attitude thrusters on the stern flanks', count=2, cells=['stern/side'], reads='a block, slot nozzles',
          src='designed'),
