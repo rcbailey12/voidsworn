@@ -56,8 +56,10 @@ const READ := {
 	"deathless": {"lift": 9.0, "rim": 0.4, "rim_tint": 0.5, "emit": 1.0, "metal": 0.7, "spec": 0.5},
 }
 # The rim light (render/look_rim.gd): energy is its diffuse strength, spec multiplies its specular on top (Light3D
-# light_specular), alpha is how far (degrees) it is tipped up from the camera's line of sight, behind the ships.
-const RIM := {"energy": 0.35, "spec": 8.0, "alpha": 30.0, "color": Color(0.85, 0.9, 1.0)}
+# light_specular), alpha is how far (degrees) it is tipped up from the camera's line of sight, behind the ships. Calibration 2
+# (contrib/opus/reviews/readability_362.md): alpha 20 keeps every outline lit (edge 0.93 or more on the darkest sky) while
+# the Eclipse fans and the Glasswright Ark stay below the band's top; 30 and 45 lit their flat faces too.
+const RIM := {"energy": 0.35, "spec": 8.0, "alpha": 20.0, "color": Color(0.85, 0.9, 1.0)}
 # Render layer 16: only hull surfaces join it (look_rim.gd marks them), so the rim light lights nothing else. The campaign
 # map uses layers 2 to 4 (ui/campaign/map3d.gd); nothing else sets layers.
 const RIM_LAYER := 1 << 15

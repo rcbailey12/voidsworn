@@ -49,7 +49,7 @@ func _follow() -> void:
 	if cam == null:
 		return
 	var b := cam.global_transform.basis
-	var to_light := (-b.z).rotated(b.x.normalized(), deg_to_rad(float(_cfg.get("alpha", 30.0)))).normalized()
+	var to_light := (-b.z).rotated(b.x.normalized(), deg_to_rad(float(_cfg.get("alpha", 20.0)))).normalized()
 	var up := Vector3.UP if absf(to_light.y) < 0.99 else Vector3.FORWARD
 	global_transform = Transform3D(Basis.looking_at(-to_light, up), global_transform.origin)
 
