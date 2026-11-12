@@ -11,6 +11,7 @@
 # verts, faces) in a local frame, plus fit data (pivots, exits, cones) for the fit check (tools/blender/build_sheets/clash.py).
 # Local frame of every part: +X forward (the aim, or the engine's thrust direction), +Y left, +Z up (the mount normal).
 # Roles: 'mount' parts may sit into the hull (rings, collars, plates, saddles); every other role must stay clear of it.
+# 'turn' (turret guns only, R219): the pieces that turn about the ring centre; the caller parents them to a pivot.
 # Materials are names; the caller maps them: steel, dark, soot, iron, rust, glow, ember, brass, warhead, dish.
 import math
 from mathutils import Vector, Matrix
@@ -182,7 +183,7 @@ def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.55, rings
         c, s = math.cos(a), math.sin(a)
         f = 2 / (rings + 1); x1 = xt * (1 - f); r1 = rt + (r_exit - rt) * f ** 1.6 + t
         a0 = Vector((xt + r_exit * 0.45, br * 0.97 * c, br * 0.97 * s)); a1 = Vector((x1, r1 * c, r1 * s))
-        p.add('strut%d' % i, 'body', 'steel', rod(a0, a1, max(0.025, r_exit * 0.05), 8))
+        p.add('strut%d' % i, 'mount', 'steel', rod(a0, a1, max(0.025, r_exit * 0.05), 8))  # gimbal struts belong to the mount
     p.fit = dict(exit=P((0, 0, 0)), axis=D((-1, 0, 0)), radius=r_exit + t, front=P((xf, 0, 0)), body_r=br)
     return p
 
@@ -255,22 +256,24 @@ def gun(barrels=2, cal=0.12, blen=2.0, size=1.0, mount='turret', pitch=0.0, vari
         mantlet_r = H * 0.42
         trunnion = Vector((mx - mantlet_r * 0.3, 0, mz))
     else:
-        # casemate: plate on the hull (local z = out of the flank), housing standing out, the ball in its face
-        pw = W * 1.25; ph = H * 1.5
-        p.add('plate', 'mount', 'iron', moved(block(-0.25 * s, 0.1 * s, ph * 0.5, pw * 0.5, ph * 0.18),
-                                              Matrix.Rotation(-math.pi / 2, 4, 'Y')))
-        # the box housing: from the plate out 0.55 s, its outer face sloped back
-        z0 = 0.1 * s; zo = z0 + 0.55 * s
-        hs = [(-Lh * 0.5, [(W * 0.48, z0), (W * 0.48, zo - 0.08 * s), (W * 0.36, zo), (-W * 0.36, zo), (-W * 0.48, zo - 0.08 * s), (-W * 0.48, z0)]),
-              (Lh * 0.32, [(W * 0.48, z0), (W * 0.48, zo - 0.08 * s), (W * 0.36, zo), (-W * 0.36, zo), (-W * 0.48, zo - 0.08 * s), (-W * 0.48, z0)]),
-              (Lh * 0.5, [(W * 0.4, z0), (W * 0.4, zo - 0.16 * s), (W * 0.3, zo - 0.1 * s), (-W * 0.3, zo - 0.1 * s), (-W * 0.4, zo - 0.16 * s), (-W * 0.4, z0)])]
-        # in a casemate, local +Y is along the hull (up or down the flank); the housing is wide along Y
-        p.add('housing', 'body', 'soot', prism(hs))
+        # casemate: an armoured plate on the hull (local +Z out of the flank), a box housing standing out from it, the ball
+        # in the housing's OUTER face; pitch is the train out from the hull axis (90 = straight out), so the breeches run
+        # back into the housing, never into the hull
+        pw = Lh * 1.3; ph = W * 1.25
+        p.add('plate', 'mount', 'iron', moved(block(-0.25 * s, 0.06 * s, pw * 0.5, ph * 0.5, ph * 0.18),
+                                              Matrix.Rotation(-math.pi / 2, 4, 'Y') @ Matrix.Rotation(math.pi / 2, 4, 'X')))
+        z0 = 0.06 * s; zo = z0 + 0.62 * s
+        sl = 0.1 * s
+        hs = [(-Lh * 0.5, [(W * 0.5, z0), (W * 0.5, zo - sl), (W * 0.4, zo), (-W * 0.4, zo), (-W * 0.5, zo - sl), (-W * 0.5, z0)]),
+              (Lh * 0.5, [(W * 0.5, z0), (W * 0.5, zo - sl), (W * 0.4, zo), (-W * 0.4, zo), (-W * 0.5, zo - sl), (-W * 0.5, z0)])]
+        V_, F_ = prism(hs)
+        # bevel the fore and aft ends: pull the outer face in
+        V_ = [(x * (1 - 0.18 * max(0.0, (z - z0) / (zo - z0))), y, z) for (x, y, z) in V_]
+        p.add('housing', 'body', 'soot', (V_, F_))
         if variant % 2:
-            p.add('patch', 'body', 'rust', block(-Lh * 0.45, -Lh * 0.1, W * 0.3, 0.015 * s, 0, zo=zo + 0.01 * s))
-        mx = Lh * 0.5; mz = (z0 + zo) / 2
-        mantlet_r = 0.24 * s * (1 + 0.12 * (barrels - 1))
-        trunnion = Vector((mx - mantlet_r * 0.4, 0, mz))
+            p.add('patch', 'body', 'rust', block(-Lh * 0.4, -Lh * 0.05, W * 0.3, 0.015 * s, 0, zo=zo + 0.01 * s))
+        mantlet_r = 0.26 * s * (1 + 0.12 * (barrels - 1))
+        trunnion = Vector((0, 0, zo - mantlet_r * 0.35))
     # the mantlet: a ball (casemate) or a curved shield on the trunnions (turret), turning with the elevation
     E = Matrix.Translation(trunnion) @ Matrix.Rotation(-math.radians(pitch), 4, 'Y')
     if mount == 'turret':
@@ -283,7 +286,7 @@ def gun(barrels=2, cal=0.12, blen=2.0, size=1.0, mount='turret', pitch=0.0, vari
             p.add('trunnion%d' % (sgn > 0), 'body', 'steel', moved(rod((0, sgn * mw / 2, 0), (0, sgn * (mw / 2 + 0.06 * s), 0), mantlet_r * 0.45, 12), E))
     else:
         ball = []
-        k = 7
+        k = 9
         for i in range(k + 1):
             a = -math.pi / 2 + math.pi * i / k
             ball.append((mantlet_r * math.sin(a), max(0.001, mantlet_r * math.cos(a))))
@@ -299,6 +302,12 @@ def gun(barrels=2, cal=0.12, blen=2.0, size=1.0, mount='turret', pitch=0.0, vari
         for c in b.comps:
             p.add('b%d_%s' % (i, c['name']), c['role'], c['mat'], moved((c['verts'], c['faces']), E @ Matrix.Translation((bx0, off, 0))))
         muzzles.append(P(E @ Vector((bx0 + blen, off, 0))))
+    if mount == 'turret':
+        # R219 (Ryan, Nov 11): turret guns turn to face their target. Everything above the ring turns about the mount
+        # normal through the ring centre (role 'turn'); the ring and bolt ring stay fixed to the hull (role 'mount').
+        for c in p.comps:
+            if c['role'] == 'body':
+                c['role'] = 'turn'
     pivot = Vector((0, 0, trunnion.z))
     p.fit = dict(pivot=P(pivot), trunnion=P(trunnion), muzzles=muzzles, reach=bx0 + blen + trunnion.x,
                  aim=D(E.to_3x3() @ Vector((1, 0, 0))), up=D((0, 0, 1)), mount=mount, radius=max(W, Lh) * 0.6)
@@ -320,7 +329,7 @@ def launch_tube(r, depth, lip=0.18, hood=0.0, bands=2, grille=False, seg=24, wal
         # pull the mouth forward on the upper half: the cowl
         V = [(x + (hood * r * max(0.0, z / ro) if x > -r * 0.3 else 0.0), y, z) for (x, y, z) in V]
     p.add('tube', 'mount', 'soot', (V, F))
-    p.add('bore', 'body', 'dark', revolve([(-depth * 0.92, 0.001), (-depth * 0.92, r * 1.001), (-depth * 0.35, r * 1.001)], seg))
+    p.add('bore', 'mount', 'dark', revolve([(-depth * 0.92, 0.001), (-depth * 0.92, r * 1.001), (-depth * 0.35, r * 1.001)], seg))  # inside the tube: sinks with it
     for i in range(bands):
         x = -depth * (0.35 + 0.45 * i / max(1, bands - 1)) if bands > 1 else -depth * 0.5
         p.add('band%d' % i, 'mount', 'iron', ring_band(x, ro, r * 0.22, r * 0.08, seg))
@@ -433,7 +442,7 @@ def dish(r, depth=None, ribs=6, post=0.9, seg=24):
     d = depth or r * 0.32
     h = r * post
     p.add('base', 'mount', 'iron', block(-r * 0.32, r * 0.32, r * 0.3, r * 0.05, r * 0.06, zo=r * 0.05))
-    p.add('post', 'body', 'steel', rod((0, 0, 0.0), (0, 0, h), r * 0.09, 10))
+    p.add('post', 'body', 'steel', rod((0, 0, r * 0.06), (0, 0, h), r * 0.09, 10))
     c = Vector((r * 0.05, 0, h))
     p.add('yoke', 'body', 'steel', block(-r * 0.12, r * 0.1, r * 0.22, r * 0.08, r * 0.03, zo=h))
     # bowl: a paraboloid shell with thickness and a rolled rim
@@ -449,9 +458,12 @@ def dish(r, depth=None, ribs=6, post=0.9, seg=24):
     V = [(x, y, z + h) for (x, y, z) in V]
     p.add('bowl', 'body', 'dish', (V, F))
     for i in range(ribs):
+        # ribs run on the back of the bowl, following its curve, out to a rim lug
         a = 2 * math.pi * i / ribs
         e = Vector((0, math.cos(a), math.sin(a)))
-        p.add('rib%d' % i, 'body', 'steel', rod(Vector((c.x + 0.08 * r, 0, h)), Vector((c.x + 0.08 * r + d * 0.9, 0, h)) + e * r * 0.95, r * 0.025, 6))
+        pts = [Vector((c.x + 0.12 * r + d * f * f - r * 0.07, 0, h)) + e * (r * f) for f in (0.15, 0.45, 0.75, 1.0)]
+        for j, (q0, q1) in enumerate(zip(pts, pts[1:])):
+            p.add('rib%d%d' % (i, j), 'body', 'steel', rod(q0, q1, r * 0.03, 6))
     tip = Vector((c.x + 0.12 * r + r * 0.75, 0, h))
     p.add('feed', 'body', 'steel', rod(tip - Vector((r * 0.12, 0, 0)), tip, r * 0.07, 10, r1=r * 0.1))
     for i in range(3):
@@ -539,7 +551,7 @@ def hatch(w, h, round_=False, wheel=True):
         r = w / 2
         p.add('rim', 'mount', 'iron', revolve([(-0.03, r * 1.18), (0.06, r * 1.18), (0.06, r * 1.02), (-0.03, r * 1.02)], 20, closed=True, axis='Z'))
         p.add('seam', 'body', 'dark', revolve([(0.0, r * 1.02), (0.0, r * 0.98)], 20, axis='Z'))
-        p.add('door', 'body', 'steel', revolve([(-0.02, r * 0.96), (0.04, r * 0.96), (0.06, r * 0.8), (0.06, 0.001)], 20, axis='Z'))
+        p.add('door', 'body', 'steel', revolve([(0.01, r * 0.96), (0.05, r * 0.96), (0.07, r * 0.8), (0.07, 0.001)], 20, axis='Z'))
         if wheel:
             p.add('wheel', 'body', 'iron', moved(revolve([(0.0, r * 0.42), (0.02, r * 0.42), (0.02, r * 0.34), (0.0, r * 0.34)], 14, closed=True), Matrix.Translation((0, 0, 0.1)) @ Matrix.Rotation(-math.pi / 2, 4, 'Y')))
         hx = r
@@ -567,7 +579,7 @@ def hatchbox(w, l, h, fins=0):
     for i in range(3):
         x = -l * 0.35 + l * 0.35 * i
         for s in (1, -1):
-            p.add('rib%d%d' % (i, s > 0), 'body', 'steel', block(x - 0.04, x + 0.04, 0.035, h * 0.4, 0.0, yo=s * (w / 2 + 0.01), zo=h * 0.45))
+            p.add('rib%d%d' % (i, s > 0), 'body', 'steel', block(x - 0.04, x + 0.04, 0.035, h * 0.36, 0.0, yo=s * (w / 2 + 0.01), zo=h * 0.5))
     for i in range(fins):
         y = (i - (fins - 1) / 2) * w * 0.42
         p.add('fin%d' % i, 'body', 'soot', prism([(-l * 0.35, [(y + 0.08, h), (y - 0.08, h), (y - 0.08, h + 0.05), (y + 0.08, h + 0.05)]),

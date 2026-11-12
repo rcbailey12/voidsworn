@@ -3,6 +3,8 @@
 # render: builds the blockout, saves <outdir>/<code>_blockout.blend, renders every view (side, top, underside, bow, stern,
 #         the standard three-quarter, the fitted beauty camera, the side cutaway) and writes <code>_model.json.
 # mesh:   builds and writes <code>_tris.npz (exterior triangles) for the outline fit, no renders.
+# fit:    builds, runs the fit check (clash.py) and writes <code>_fit.json and <code>_model.json, no renders.
+# render runs the fit check too (round 3, R217).
 import sys, os, json, math, importlib.util
 import bpy
 from mathutils import Vector, Matrix
@@ -17,14 +19,16 @@ MODE = argv[2] if len(argv) > 2 else 'render'
 QUICK = '--quick' in argv
 os.makedirs(OUT, exist_ok=True)
 
-spec = importlib.util.spec_from_file_location(CODE, os.path.join(HERE, 'ships', CODE + '.py'))
+spec = importlib.util.spec_from_file_location(CODE, os.environ.get('SHIP_FILE') or os.path.join(HERE, 'ships', CODE + '.py'))
 ship = importlib.util.module_from_spec(spec); spec.loader.exec_module(ship)
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 sc = bpy.context.scene
 K = kit.Kit(CODE, ship.LENGTH)
 ship.build(K)
+K.finish()
 bpy.context.view_layer.update()
+import clash  # noqa: E402
 
 
 def ext_objects():
@@ -58,6 +62,41 @@ def tris(objs):
         e.to_mesh_clear()
     return out
 
+
+def r3(v):
+    return [round(float(c), 3) for c in v]
+
+
+def write_model():
+    model = dict(code=CODE, name=ship.NAME, faction=ship.FACTION, cls=ship.CLASS, length=ship.LENGTH, game=ship.GAME,
+                 beauty=ship.BEAUTY, model_length=round(MODEL_LEN, 3), x_tip=round(XTIP, 3), lo=r3(LO), hi=r3(HI), views=views,
+                 features=[], masses=[], inside=K.inside, points=[], changes=K.changes, tbd=K.tbd)
+    for f in K.features:
+        g = dict(f)
+        for k in ('pos', 'end', 'tip', 'exit'):
+            if g.get(k) is not None:
+                g[k] = r3(g[k])
+        if 'muzzle' in g:
+            g['muzzle'] = [r3(m) for m in g['muzzle']]
+        g['station'] = round((XTIP - f['pos'][0]) / MODEL_LEN * 100, 1)
+        model['features'].append(g)
+    for m in K.masses:
+        ob = bpy.data.objects[m['obj']]
+        lo, hi = bbox([ob])
+        model['masses'].append(dict(m, st=(round((XTIP - hi.x) / MODEL_LEN * 100, 1), round((XTIP - lo.x) / MODEL_LEN * 100, 1)),
+                                    y=(round(lo.y, 2), round(hi.y, 2)), z=(round(lo.z, 2), round(hi.z, 2))))
+    for p in K.points:
+        model['points'].append(dict(p, pos=r3(p['pos']), station=round((XTIP - p['pos'][0]) / MODEL_LEN * 100, 1)))
+    model['parts'] = K.built
+    model['fit_counts'] = FIT['counts']
+    json.dump(model, open(os.path.join(OUT, CODE + '_model.json'), 'w'), indent=1)
+
+
+views = {}
+FIT = clash.run(K, OUT, CODE, ship.LENGTH) if MODE in ('fit', 'render') else dict(counts={})
+if MODE == 'fit':
+    write_model()
+    sys.exit(0)
 
 if MODE == 'mesh':
     import numpy as np
@@ -198,30 +237,7 @@ if os.path.exists(fitp):
     render(o, tuple(fc['res']), os.path.join(OUT, 'beauty_cam.png'))
 
 
-def r3(v):
-    return [round(float(c), 3) for c in v]
-
-
-model = dict(code=CODE, name=ship.NAME, faction=ship.FACTION, cls=ship.CLASS, length=ship.LENGTH, game=ship.GAME,
-             beauty=ship.BEAUTY, model_length=round(MODEL_LEN, 3), x_tip=round(XTIP, 3), lo=r3(LO), hi=r3(HI), views=views,
-             features=[], masses=[], inside=K.inside, points=[], changes=K.changes, tbd=K.tbd)
-for f in K.features:
-    g = dict(f)
-    for k in ('pos', 'end', 'tip', 'exit'):
-        if g.get(k) is not None:
-            g[k] = r3(g[k])
-    if 'muzzle' in g:
-        g['muzzle'] = [r3(m) for m in g['muzzle']]
-    g['station'] = round((XTIP - f['pos'][0]) / MODEL_LEN * 100, 1)
-    model['features'].append(g)
-for m in K.masses:
-    ob = bpy.data.objects[m['obj']]
-    lo, hi = bbox([ob])
-    model['masses'].append(dict(m, st=(round((XTIP - hi.x) / MODEL_LEN * 100, 1), round((XTIP - lo.x) / MODEL_LEN * 100, 1)),
-                                y=(round(lo.y, 2), round(hi.y, 2)), z=(round(lo.z, 2), round(hi.z, 2))))
-for p in K.points:
-    model['points'].append(dict(p, pos=r3(p['pos']), station=round((XTIP - p['pos'][0]) / MODEL_LEN * 100, 1)))
-json.dump(model, open(os.path.join(OUT, CODE + '_model.json'), 'w'), indent=1)
+write_model()
 blend = os.path.join(OUT, CODE + '_blockout.blend')
 bpy.ops.wm.save_as_mainfile(filepath=blend)
 print('WROTE', blend)

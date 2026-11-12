@@ -288,11 +288,21 @@ for nm, im in (('side', side), ('top', top), ('underside', und), ('bow', bow), (
 json.dump(checks, open(os.path.join(OUT, 'checks.json'), 'w'), indent=1)
 print(json.dumps(checks))
 # ---------------- manifest (R214): every part, its route, and the break pieces ----------------
-man = dict(code=CODE, sheet_version=2, routes_note='kit = the faction parts kit (tools/blender/kits/corsair); hand-built = modelled for this hull; generated = from a reviewed part-library entry',
+ARCS_ = {'F': (-60.0, 60.0), 'P': (30.0, 150.0), 'S': (-150.0, -30.0), 'T': (-180.0, 180.0)}
+man = dict(code=CODE, sheet_version=3, routes_note='kit = the Hullbreakers parts kit (tools/blender/kits/hullbreakers/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry',
+           turret_marking='R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).',
            parts=[], masses=[], break_pieces=[])
+KITK = ('gun', 'launcher', 'engine', 'dish', 'intake', 'claw', 'chain', 'thruster', 'hatch', 'hatchbox', 'vent', 'lamp', 'antenna', 'pipe', 'bay', 'slit')
 for f in F:
-    man['parts'].append(dict(id=f['id'], kind=f['kind'], what=f['what'], count=f['count'], route='kit' if f['kind'] in ('gun', 'launcher', 'engine', 'dish', 'intake', 'claw', 'chain', 'thruster') else 'hand-built',
-                             source=f['src']))
+    row = dict(id=f['id'], kind=f['kind'], what=f['what'], count=f['count'], route='kit' if f['kind'] in KITK else 'hand-built',
+               source=f['src'], inventory=f.get('inv', []))
+    if f['kind'] == 'gun':
+        tur = 'casemate' not in f['what']
+        row['turret'] = tur
+        if tur:
+            lo_, hi_ = ARCS_.get(f.get('slot') or 'T', (-180.0, 180.0))
+            row.update(pivot_object=f['id'] + '_turret', arc_lo=lo_, arc_hi=hi_)
+    man['parts'].append(row)
 for m in M['masses']:
     man['masses'].append(dict(name=m['name'], route='hand-built'))
 br = [r for r in M['inside'] if r['kind'] == 'break']
@@ -321,7 +331,7 @@ def r2(v):
 
 lines = []
 lines.append('# %s: %s, build sheet\n' % (CODE, M['name']))
-lines.append('%s | class %s | version 1, 2026-11-11 | blockout: `C:\\Users\\rcbai\\Downloads\\voidsworn_test\\opus532\\%s\\%s_blockout.blend`\n' % (M['faction'], M['cls'], CODE, CODE))
+lines.append('%s | class %s | version 3 (round 3), 2026-11-11 | blockout: `C:\\Users\\rcbai\\Downloads\\voidsworn_test\\opus532\\r3b\\%s\\%s_blockout.blend`\n' % (M['faction'], M['cls'], CODE, CODE))
 lines.append('**Length %.1f world units** (%s). Frame: +X bow, +Y port, +Z up; station %% from the prow tip; offset + port / - starboard; '
              'height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.\n' % (L, M['game']))
 lines.append('## Measured off the views\n')
@@ -385,6 +395,16 @@ lines.append('\n## Hard points (the contract of PR 530, tools/blender/kits/share
 lines.append('| Point | Station % | Offset | Height | Side | Section | Note |\n|---|---:|---:|---:|---|---|---|')
 for p in M['points']:
     lines.append('| %s | %.1f | %s | %s | %s | %s | %s |' % (p['name'], p['station'], r2(p['pos'][1]), r2(p['pos'][2]), p.get('side', ''), p.get('section', ''), p.get('note', '')))
+fj_ = os.path.join(RD, CODE + '_fit.json')
+if os.path.exists(fj_):
+    FJ = json.load(open(fj_))
+    lines.append('\n## Fit check (RULEBOOK 5.15, R217 to R219)\n')
+    lines.append('Clashes left: %s. Tested: %s. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); '
+                 'picture: [fit_view.jpg](fit_view.jpg).' % (', '.join('%s %d' % kv for kv in FJ['counts'].items()),
+                                                            ', '.join('%s %s' % (v, k_.replace('_', ' ')) for k_, v in FJ['tested'].items())))
+    lines.append('\n## Parts inventory (R218)\n')
+    lines.append('Written from the concept before modelling; ticked per blob-sweep cell (present, shaped, detailed) in [inventory.md](inventory.md); '
+                 'the nine cells beside the concept: [cells.jpg](cells.jpg); concept and blockout at the same camera: [side_by_side.jpg](side_by_side.jpg).')
 lines.append('\n## Changed from the picture (R207)\n')
 for w, why in M['changes']:
     lines.append('- **%s.** %s.' % (w, why))
@@ -413,7 +433,7 @@ sheet = Image.new('RGB', (SW, SH), (44, 44, 46))
 dr = ImageDraw.Draw(sheet)
 dr.text((PAD, 30), '%s  |  %s' % (CODE, M['name']), font=f_xl, fill=INK)
 dr.text((PAD, int(110 * SC)), '%s  |  class %s  |  length %.1f world units (%s)' % (M['faction'], M['cls'], L, 'hull_table.gd CLS_LEN'), font=f_m, fill=INK)
-dr.text((PAD, int(150 * SC)), 'Build sheet v2 (round 2), 2026-11-11. Every view: an orthographic render of ONE Blender blockout, one scale (%d px per unit). Side %.2f / top %.2f long (%.2f%% apart).' % (k, len_side, len_top, checks['length_disagreement_percent']), font=f_m, fill=DIM)
+dr.text((PAD, int(150 * SC)), 'Build sheet v3 (round 3, R217 to R219), 2026-11-11. Every view: an orthographic render of ONE Blender blockout, one scale (%d px per unit). Side %.2f / top %.2f long (%.2f%% apart).' % (k, len_side, len_top, checks['length_disagreement_percent']), font=f_m, fill=DIM)
 dr.text((PAD, int(190 * SC)), 'Orange rings: feature-table IDs. Grey rings, dashed: far side. Station % from the prow tip. Counts in the table outrank the pictures.', font=f_m, fill=DIM)
 # FIRST: the accepted beauty beside the blockout at the camera fitted to it (R213)
 bcam = Image.open(os.path.join(RD, 'beauty_cam.png')).convert('RGBA'); bgc = Image.new('RGBA', bcam.size, GREY + (255,)); bgc.alpha_composite(bcam)
@@ -485,7 +505,15 @@ nb = sum(1 for p in M['points'] if p['kind'] == 'breach')
 dr.text((xc, yy + 10), '- %d breach anchors (red diamonds), core (orange diamond); rcs, boarding and bay points in feature_table.md' % nb, font=f_s, fill=INK)
 dr.text((xc, yy + 50), 'Cyan rows: designed here, not shown in the picture.', font=f_s, fill=CYAN)
 sheet = sheet.crop((0, 0, SW, min(SH, max(yy + 120, y2 + 60 + LH * (len(F) + 3)))))
-sheet.save(os.path.join(OUT, 'sheet.jpg'), quality=90)
-pv = sheet.resize((int(sheet.width * 720 / sheet.height), 720), Image.LANCZOS)
+pv = sheet.resize((int(sheet.width * 720 / sheet.height), 720), Image.LANCZOS)  # the preview is the main sheet, before the extras
 pv.save(os.path.join(OUT, 'preview.jpg'), quality=88)
+extra = [Image.open(os.path.join(OUT, n_)).convert('RGB') for n_ in ('fit_view.jpg', 'cells.jpg') if os.path.exists(os.path.join(OUT, n_))]
+if extra:
+    ex_h = sum(int(e.height * min(1.0, (sheet.width - 2 * PAD) / e.width)) + PAD for e in extra)
+    s2 = Image.new('RGB', (sheet.width, sheet.height + ex_h), (44, 44, 46)); s2.paste(sheet, (0, 0)); yy2 = sheet.height
+    for e in extra:
+        k_ = min(1.0, (sheet.width - 2 * PAD) / e.width)
+        e = e.resize((int(e.width * k_), int(e.height * k_))); s2.paste(e, (PAD, yy2)); yy2 += e.height + PAD
+    sheet = s2
+sheet.save(os.path.join(OUT, 'sheet.jpg'), quality=90)
 print('sheet', sheet.size, 'preview', pv.size)
