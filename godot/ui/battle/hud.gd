@@ -66,6 +66,9 @@ const FLEET_W := 250.0
 const LOG_W := 600.0     # the full log
 const LOG_LINES := 4
 const LOG_H := 134.0
+# The battle log view keeps the newest 200 entries, the browser's own cap (ui3d.js log(): while el.childNodes.length > 200
+# remove the first). Only the view is capped: the rules' own log array keeps every entry for saves, the debrief and parity.
+const LOG_VIEW_MAX := 200
 
 var font: Font                      # sentences: Barlow Regular (the orders sheet, R176)
 var font_semi: Font                 # buttons, short labels: Barlow Medium
@@ -1696,9 +1699,13 @@ func add_log(m: String, c: String) -> void:
 	var txt := m.replace("[", "(").replace("]", ")")
 	var col: String = LOG_COL.get(c, "#f0eade")
 	log_text.append_text("[color=#969084]R%d[/color]  [color=%s]%s[/color]\n" % [_round, col, txt])
+	# Drop the oldest from the view only. Each entry ends in a newline, which leaves one empty paragraph after the last
+	# entry, so 200 entries are 201 paragraphs. The rules log array is never touched here.
+	while log_text.get_paragraph_count() > LOG_VIEW_MAX + 1:
+		log_text.remove_paragraph(0)
 	_log_lines.append(txt)
-	if _log_lines.size() > 400:
-		_log_lines = _log_lines.slice(_log_lines.size() - 200)
+	if _log_lines.size() > LOG_VIEW_MAX:
+		_log_lines = _log_lines.slice(_log_lines.size() - LOG_VIEW_MAX)
 	if ledger != null:
 		ledger.log_lines = _log_lines
 		ledger.mark()
