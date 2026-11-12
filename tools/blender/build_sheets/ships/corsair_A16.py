@@ -49,15 +49,12 @@ def build(K):
     sf = lambda x, side, z: K.surf(x, side, z)  # noqa: E731
     # ---------------- the layered flank: upper belt, recessed band, lower belt (the concept's stepped belts) ----------------
     for nm, (zb, zt, out), x0, x1 in (('upper', BELT_UP, 10.0, -6.2), ('lower', BELT_LO, 9.2, -5.6)):
-        secs = []
-        for x in (x0, (x0 * 2 + x1) / 3, (x0 + x1 * 2) / 3, x1):
-            h = _k.sec_at(HULL, x)
-            secs.append((x, h[1] + out, h[2] + out, zb, zt, 0.12, 0.12))
-        K.mass('%s armour belt' % nm.capitalize(), K.loft('A16_belt_%s' % nm, secs, 'iron' if nm == 'upper' else 'soot2',
-                                                          plates=dict(PL, seed=91 if nm == 'upper' else 92, faces=[6, 7, 0, 2, 3, 4], size=(0.4, 0.9))),
-               'iron and soot', note='layered flank belt, standing %.2f out' % out)
+        xs = [x0 - (x0 - x1) * i / 8 for i in range(9)]
+        K.mass('%s armour belt' % nm.capitalize(), K.band('A16_belt_%s' % nm, xs, zb, zt, out, 'iron' if nm == 'upper' else 'soot2',
+                                                          plates=dict(PL, seed=91 if nm == 'upper' else 92, size=(0.4, 0.9))),
+               'iron and soot', note='layered flank belt following the hull\'s curve, standing %.2f out' % out)
     K.mark('belt', 'plate', ['slab', 'step', 'bevel', 'rivet'])
-    belt_y = lambda x, side, which: sy(x, side) + side * (BELT_UP if which == 'up' else BELT_LO)[2]  # noqa: E731
+    belt_y = lambda x, side, which, z=None: K.surf(x, side, z if z is not None else ((BELT_UP if which == 'up' else BELT_LO)[1])) + side * (BELT_UP if which == 'up' else BELT_LO)[2]  # noqa: E731
 
     # ---------------- the prow: two big tubes are the face, a stepped brow over them, a chin under ----------------
     K.mass('Prow brow (two steps)', K.loft('A16_brow', [
@@ -124,7 +121,7 @@ def build(K):
     import random
     rp = random.Random(1616)
     for i, (x, z, side) in enumerate([(3.5, 0.5, 1), (-0.6, 0.45, 1), (3.3, 0.5, -1), (-0.8, 0.5, -1)]):
-        K.patch('PT%d' % i, (x, belt_y(x, side, 'up') + 0.02 * side, z), (0, side, 0), rp.uniform(0.6, 0.85), rp.uniform(0.4, 0.55), ang=rp.uniform(-0.3, 0.3),
+        K.patch('PT%d' % i, (x, belt_y(x, side, 'up', z) + 0.02 * side, z), K.surf_n(x, side, z), rp.uniform(0.6, 0.85), rp.uniform(0.4, 0.55), ang=rp.uniform(-0.3, 0.3),
                 lift=rp.uniform(0.08, 0.16), m=rp.choice(['iron', 'pale', 'rust']), inv='patches')
     for i, (x, side) in enumerate([(2.2, 1), (-1.9, 1), (2.0, -1), (-1.6, -1)]):
         K.patch('PT%d' % (4 + i), (x, sf(x, side, 1.12) + 0.02 * side, 1.12), K.surf_n(x, side, 1.12), rp.uniform(0.8, 1.0), 0.5, ang=0.2 * side, lift=0.13,
@@ -151,9 +148,9 @@ def build(K):
     K.chain('C1', [(7.3, 3.95, 0.95), (7.3, 3.0, 1.45), (7.3, -3.05, 1.45), (7.3, -4.05, 0.95)], inv='mid_chain', note='girdle over the tier 2 seam')
     K.chain('C2', [(-1.75, 4.15, 0.95), (-1.75, 3.5, 2.05), (-1.75, -3.6, 2.05), (-1.75, -4.25, 0.95)], inv='stern_chain',
             note='girdle over the castle seam, at the foot of the castle front')
-    K.chain('C3', [(7.95, belt_y(7.95, 1, 'lo') - 0.05, -0.62), (4.0, belt_y(4.0, 1, 'lo') - 0.05, -0.64), (-1.4, belt_y(-1.4, 1, 'lo') - 0.05, -0.64)],
+    K.chain('C3', [(7.95, belt_y(7.95, 1, 'lo', -0.7) - 0.05, -0.62), (4.0, belt_y(4.0, 1, 'lo', -0.7) - 0.05, -0.64), (-1.4, belt_y(-1.4, 1, 'lo', -0.7) - 0.05, -0.64)],
             inv='bow_chain', note='port flank lashing along the lower belt top')
-    K.chain('C4', [(6.4, belt_y(6.4, -1, 'lo') + 0.05, -0.62), (2.0, belt_y(2.0, -1, 'lo') + 0.05, -0.64), (-0.6, belt_y(-0.6, -1, 'lo') + 0.05, -0.64)],
+    K.chain('C4', [(6.4, belt_y(6.4, -1, 'lo', -0.7) + 0.05, -0.62), (2.0, belt_y(2.0, -1, 'lo', -0.7) + 0.05, -0.64), (-0.6, belt_y(-0.6, -1, 'lo', -0.7) + 0.05, -0.64)],
             inv='bow_chain', note='starboard flank lashing, shorter (junky, unmatched)')
 
     # ---------------- weapons, by data.js slot ----------------
@@ -174,7 +171,7 @@ def build(K):
                   slot=sl, weapon='scatter', inv='bow_guns', note='deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring)')
         K.gun('%s3' % sl, (-0.7, side * 2.72, 2.0), side * 25, 2, barrels=2, cal=0.14, blen=2.2, size=1.3, variant=1,
               slot=sl, weapon='scatter', inv='mid_guns', note='deck-edge twin turret, tier 2, aft')
-        K.gun('%sM' % sl, (0.9, belt_y(0.9, side, 'up') + 0.02 * side, 0.5), side * 35, 0, barrels=2, cal=0.12, blen=1.7, size=1.0, normal=(0, side, 0),
+        K.gun('%sM' % sl, (0.9, belt_y(0.9, side, 'up', 0.5) + 0.02 * side, 0.5), side * 35, 0, barrels=2, cal=0.12, blen=1.7, size=1.0, normal=(0, side, 0),
               slot=sl, weapon='scatter', inv='mid_casemates', note='flank twin casemate on the upper belt amidships')
         for i, x in enumerate((-3.75, -5.8)):
             K.gun('%s%d' % (sl, i + 4), (x, side * 4.3, 0.35), side * 30, 0, barrels=2, cal=0.13, blen=1.9, size=1.1, variant=i,

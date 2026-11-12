@@ -173,8 +173,8 @@ Concept counts read off the round 8 sheet by eye (A17 sheet: bow, the head block
 
 | Cell | Concept | Build | Build masses |
 |---|---:|---:|---|
-| bow/top | 5 | 7 | Base hull (head and flank tier); Lower hull band; Head brow (step 1); Head crown (step 2); Flank block 1 port; Flank block 1 starboard; U1 neck block |
-| bow/side | 5 | 6 | Base hull (head and flank tier); Lower hull band; Head brow (step 1); Head crown (step 2); Flank block 1 port; U1 neck block |
+| bow/top | 5 | 9 | Base hull (head and flank tier); Lower hull band; Head brow (step 1); Head crown (step 2); Flank block 1 port; Flank block 1 starboard; U1 neck block; Ear bracket port; Ear bracket starboard |
+| bow/side | 5 | 7 | Base hull (head and flank tier); Lower hull band; Head brow (step 1); Head crown (step 2); Flank block 1 port; U1 neck block; Ear bracket port |
 | bow/below | no view | 2 | Base hull (head and flank tier); Lower hull band |
 | mid/top | 7 | 13 | Base hull (head and flank tier); Lower hull band; Flank block 2 port; Flank block 3 port; Flank block 4 port; Flank block 2 starboard; Flank block 3 starboard; Flank block 4 starboard; U2 fore block; U3 ramp block; U4 mid block; U5 saddle b |
 | mid/side | 7 | 10 | Base hull (head and flank tier); Lower hull band; Flank block 2 port; Flank block 3 port; Flank block 4 port; U2 fore block; U3 ramp block; U4 mid block; U5 saddle block; Rack plinth |
@@ -190,6 +190,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 2.04 | 3.54 | 2.75 | 4.06 |
-| build | 1.91 | 2.88 | 2.82 | 3.84 |
+| build | 1.92 | 2.71 | 2.83 | 3.79 |
 
 Lines not present, shaped and detailed without a reason: 0.

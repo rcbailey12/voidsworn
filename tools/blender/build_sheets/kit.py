@@ -298,6 +298,33 @@ class Kit:
             return side * hw * cs ** (2.0 / p)
         return side * hw
 
+    def band(self, name, xs, zb, zt, out, m, plates=None, k=5):
+        """an armour belt that follows the hull's curve (round 3c): at each station the hull's flank between zb and zt on both
+        sides, pushed out by `out` along the surface normal; the ring closes across the inside of the hull"""
+        rings = []
+        for x in xs:
+            port = []; stbd = []
+            for i in range(k):
+                z = zt - (zt - zb) * i / (k - 1)
+                for side, lst in ((1, port), (-1, stbd)):
+                    n = self.surf_n(x, side, z)
+                    lst.append((x, self.surf(x, side, z) + n[1] * out, z + n[2] * out))
+            rings.append(port + stbd[::-1])
+        n = len(rings[0])
+        verts = [v for r in rings for v in r]
+        faces = []
+        for i in range(len(rings) - 1):
+            for j in range(n):
+                a, b = i * n + j, i * n + (j + 1) % n
+                faces.append((a, b, b + n, a + n))
+        faces.append(tuple(range(n))[::-1]); faces.append(tuple(range((len(rings) - 1) * n, len(rings) * n)))
+        ob = self._obj(name, verts, faces, m)
+        if plates:
+            # plates only on the outer faces (the port run, then the starboard run), never across the inside
+            outer = list(range(0, k - 1)) + list(range(k, 2 * k - 1))
+            self._pending.append((name, rings, dict(plates, faces=outer)))
+        return ob
+
     def surf_n(self, x, side, z):
         """outward normal of the hull flank at (x, z) on one side (from the section's curve)"""
         y1, y2 = self.surf(x, side, z - 0.05), self.surf(x, side, z + 0.05)

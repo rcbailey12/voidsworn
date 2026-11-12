@@ -62,7 +62,7 @@
   {
    "id": "D1",
    "kind": "dish",
-   "what": "listening dish, 1.1 across",
+   "what": "listening dish, 1.9 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -73,7 +73,7 @@
   {
    "id": "I2",
    "kind": "intake",
-   "what": "scoop drum with a grille, 0.7 across, 2.1 deep",
+   "what": "scoop drum with a grille, 0.8 across, 2.1 deep",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -84,7 +84,7 @@
   {
    "id": "D2",
    "kind": "dish",
-   "what": "listening dish, 1.1 across",
+   "what": "listening dish, 1.9 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -139,7 +139,7 @@
   {
    "id": "PH0",
    "kind": "pipe",
-   "what": "pipe run, 0.12 bore",
+   "what": "pipe run, 0.09 bore",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -150,7 +150,7 @@
   {
    "id": "PH1",
    "kind": "pipe",
-   "what": "pipe run, 0.12 bore",
+   "what": "pipe run, 0.09 bore",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -161,7 +161,7 @@
   {
    "id": "PH2",
    "kind": "pipe",
-   "what": "pipe run, 0.12 bore",
+   "what": "pipe run, 0.09 bore",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -755,6 +755,14 @@
    "route": "hand-built"
   },
   {
+   "name": "Ear bracket port",
+   "route": "hand-built"
+  },
+  {
+   "name": "Ear bracket starboard",
+   "route": "hand-built"
+  },
+  {
    "name": "Rack plinth",
    "route": "hand-built"
   }
@@ -762,7 +770,7 @@
  "break_pieces": [
   {
    "name": "bow piece",
-   "stations": "0.0 to 32.9 percent",
+   "stations": "0.0 to 33.2 percent",
    "bounded_by": [
     "B-1"
    ],
@@ -770,7 +778,7 @@
   },
   {
    "name": "midships piece 1",
-   "stations": "32.9 to 82.6 percent",
+   "stations": "33.2 to 82.7 percent",
    "bounded_by": [
     "B-1",
     "B-2"
@@ -779,7 +787,7 @@
   },
   {
    "name": "stern piece",
-   "stations": "82.6 to 100.0 percent",
+   "stations": "82.7 to 100.0 percent",
    "bounded_by": [
     "B-2"
    ],
