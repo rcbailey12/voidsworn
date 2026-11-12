@@ -64,15 +64,15 @@ MATS = {
     'armour': ((0.16, 0.15, 0.14), 0),
     # Eclipse (issue 532, E11 and E12; factions.md: dark violet-black plates, the green-white corona line, a small bright
     # core; R201: keep the Eclipse purple; R204: colour is fixed in the build). Schematic zones; the paint stage finishes them.
-    'shade': ((0.045, 0.032, 0.062), 0),     # violet-black shade plate
-    'shade2': ((0.075, 0.05, 0.11), 0),      # deep violet plate
-    'mauve': ((0.25, 0.15, 0.30), 0),        # dusty mauve plate (the concept's lit plates)
-    'violet': ((0.16, 0.085, 0.24), 0),      # Eclipse violet plate
-    'lilac': ((0.33, 0.25, 0.37), 0),        # pale grey-mauve plate (the weathered patches)
-    'gunv': ((0.10, 0.085, 0.12), 0),        # violet gunmetal: barrels, frames, machinery
-    'corona': ((0.62, 1.0, 0.72), 6),        # the thin green-white corona line on every shade rim
-    'ecore': ((0.45, 1.0, 0.5), 10),         # the trapped light core
-    'lens': ((0.3, 1.0, 0.42), 12),          # the corona arc emitter lens
+    'shade': ((0.018, 0.012, 0.026), 0),     # violet-black shade plate
+    'shade2': ((0.032, 0.02, 0.05), 0),      # deep violet plate
+    'mauve': ((0.115, 0.06, 0.135), 0),        # dusty mauve plate (the concept's lit plates)
+    'violet': ((0.07, 0.034, 0.105), 0),      # Eclipse violet plate
+    'lilac': ((0.15, 0.115, 0.165), 0),        # pale grey-mauve plate (the weathered patches)
+    'gunv': ((0.045, 0.038, 0.055), 0),        # violet gunmetal: barrels, frames, machinery
+    'corona': ((0.25, 1.0, 0.4), 1.1),        # the thin green-white corona line on every shade rim
+    'ecore': ((0.2, 1.0, 0.3), 1.4),         # the trapped light core
+    'lens': ((0.15, 1.0, 0.28), 1.8),          # the corona arc emitter lens
     'archive': ((0.30, 0.55, 0.42), 0),      # inside: archive vaults
     'darkdeck': ((0.20, 0.18, 0.24), 0),     # inside: dark decks
 }
@@ -208,6 +208,9 @@ class Kit:
         spec: dict(seed, size=(lo, hi), thick=(lo, hi), skip, stack, mats={mat: weight}, faces=[0..7], inv='inventory id')"""
         import random
         rnd = random.Random(spec.get('seed', 1))
+        if spec.get('stride', 1) > 1:
+            # plate over every k-th section (closely spaced lofts such as the Eclipse crescent's layers); keep the last
+            k_ = spec['stride']; rings = rings[::k_] + ([rings[-1]] if (len(rings) - 1) % k_ else [])
         lo, hi = spec.get('size', (0.9, 2.2)); tlo, thi = spec.get('thick', (0.05, 0.2))
         mats = spec.get('mats', {'soot': 6, 'rust': 2, 'steel': 1})
         names = list(mats); wts = [mats[k] for k in names]
@@ -248,7 +251,13 @@ class Kit:
                         u0, u1 = a0 + g / flen, a1 - g / flen; v0, v1 = b0 + g / fw, b1 - g / fw
                         if u1 <= u0 or v1 <= v0:
                             continue
-                        if self._kept_out(A, D_ - A, B - A, nrm, u0, u1, v0, v1, flen, fw):
+                        if spec.get('keep3d'):
+                            # opt-in (Eclipse sheets): a plate is cleared only when its own patch comes within a keep-out's
+                            # radius, not the whole band across a narrow face
+                            pc = Pq((u0 + u1) / 2, (v0 + v1) / 2); hd = 0.5 * ((u1 - u0) * flen + (v1 - v0) * fw)
+                            if any((pc - c).length < r + hd * 0.7 for c, r in self.keepouts):
+                                continue
+                        elif self._kept_out(A, D_ - A, B - A, nrm, u0, u1, v0, v1, flen, fw):
                             continue
                         bot = [Pq(u0, v0), Pq(u1, v0), Pq(u1, v1), Pq(u0, v1)]
                         (V, F), (rv, rf) = HP.plate_slab(bot, nrm, t, rivets=spec.get('rivets', True))
@@ -631,8 +640,8 @@ class Kit:
         return self._surface_part(fid, HP.vent(w, h, slats), pos, normal, (0, 0, 1) if abs(Vector(normal).z) < 0.7 else (1, 0, 0), inv,
                                   'louvre panel %.1f x %.1f' % (w, h), 'vent', src, note, aperture=0.4)
 
-    def lamp(self, fid, pos, normal, inv=(), src='picture', note=''):
-        return self._surface_part(fid, HP.lamp(0.08), pos, normal, (0, 0, 1) if abs(Vector(normal).z) < 0.7 else (1, 0, 0), inv,
+    def lamp(self, fid, pos, normal, inv=(), src='picture', note='', up=None):
+        return self._surface_part(fid, HP.lamp(0.08), pos, normal, up or ((0, 0, 1) if abs(Vector(normal).z) < 0.7 else (1, 0, 0)), inv,
                                   'running light', 'lamp', src, note, aperture=0.35)
 
     def slit(self, fid, pos, normal, w, h, inv=(), src='picture', note=''):

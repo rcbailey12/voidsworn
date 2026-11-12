@@ -40,7 +40,7 @@ HULL = [
     (-11.2, 2.08, 2.08, -2.02, 1.95, 0, 0),
     (-12.3, 1.9, 1.9, -1.88, 1.8, 0, 0),
 ]
-PL = dict(size=(0.32, 0.75), thick=(0.03, 0.09), skip=0.07, stack=0.35, mats={'violet': 5, 'mauve': 4, 'shade2': 2, 'lilac': 1})
+PL = dict(keep3d=True, size=(0.32, 0.75), thick=(0.03, 0.09), skip=0.07, stack=0.35, mats={'violet': 5, 'mauve': 4, 'shade2': 2, 'lilac': 1})
 
 # the crescent: two ellipses in plan (d = distance aft of the prow, y to port), the outer through the horn tips and the back,
 # the inner through the horn tips and the inner wall
@@ -64,8 +64,8 @@ def cz(phi_deg, u):
     """the lower blade's top and bottom at (phi, u): thick at the inner wall, knife-thin at the rim, drooping to the horns"""
     f = min(1.0, abs(phi_deg) / PHI_H)
     zc = ZC - 1.6 * f ** 1.3
-    h_in = 0.16 + 1.75 * (1 - f) ** 0.8
-    h_out = 0.08 + 0.7 * (1 - f) ** 1.5
+    h_in = 0.16 + 1.0 * (1 - f) ** 0.8
+    h_out = 0.08 + 0.55 * (1 - f) ** 1.5
     th = h_in * (1 - u) + h_out * u
     return zc - 0.4 * th, zc + 0.6 * th
 
@@ -93,48 +93,48 @@ def build(K):
             bot.append((x, y, zb)); top.append((x, y, zt))
         rings.append(bot + top[::-1])
     K.mass('Crescent lower blade', K.loft_rings('E11_crescent_blade', rings, 'violet',
-                                                plates=dict(PL, seed=21, faces=[0, 1, 2, 4, 5, 6, 7], size=(0.3, 0.65), inv='crescent_plates')),
-           'Eclipse violet and mauve plate', note='a broad brim: 1.9 thick at the inner wall, 0.8 at the back rim, thin at the horns; it falls 1.6 from the root to the horns')
+                                                plates=dict(PL, seed=21, faces=[0, 1, 2, 4, 5, 6, 7], size=(0.3, 0.65), stride=2, inv='crescent_plates')),
+           'Eclipse violet and mauve plate', note='a broad brim: 1.2 thick at the inner wall, 0.6 at the back rim, thin at the horns; it falls 1.6 from the root to the horns')
     PHI_U, U_U = 122.0, 0.55
     up_rings = []
     for i in range(N + 1):
         ph = -PHI_U + 2 * PHI_U * i / N
         f = abs(ph) / PHI_U
-        t = max(0.05, 0.34 * (1 - f ** 2) ** 0.5)
+        t = max(0.05, 0.25 * (1 - f ** 2) ** 0.5)
         bot = []; top = []
         for u in (0.0, U_U * 0.5, U_U):
             x, y = cres(ph, u); zb, zt = cz(ph, u)
             bot.append((x, y, zt - 0.02)); top.append((x, y, zt + t - (0.06 if u == U_U else 0.0)))
         up_rings.append(bot + top[::-1])
     K.mass('Crescent upper layer', K.loft_rings('E11_crescent_upper', up_rings, 'mauve',
-                                                plates=dict(PL, seed=22, faces=[3, 4, 5], size=(0.3, 0.6), inv='crescent_plates')),
+                                                plates=dict(PL, seed=22, faces=[3, 4, 5], size=(0.3, 0.6), stride=2, inv='crescent_plates')),
            'mauve plate', note='stepped in from the rim, over the inner half of the blade, to 122 degrees either side')
     PHI_R, U_R = 64.0, 0.3
     r_rings = []
     for i in range(N // 2 + 1):
         ph = -PHI_R + 2 * PHI_R * i / (N // 2)
         f = abs(ph) / PHI_R
-        t0 = 0.34 * (1 - (ph / PHI_U) ** 2) ** 0.5
-        t = max(0.04, 0.26 * (1 - f ** 2) ** 0.5)
+        t0 = 0.25 * (1 - (ph / PHI_U) ** 2) ** 0.5
+        t = max(0.04, 0.2 * (1 - f ** 2) ** 0.5)
         bot = []; top = []
         for u in (0.0, U_R * 0.5, U_R):
             x, y = cres(ph, u); zb, zt = cz(ph, u)
             bot.append((x, y, zt + t0 - 0.02)); top.append((x, y, zt + t0 + t - (0.05 if u == U_R else 0.0)))
         r_rings.append(bot + top[::-1])
     K.mass('Crescent root layer', K.loft_rings('E11_crescent_root', r_rings, 'violet',
-                                               plates=dict(PL, seed=23, faces=[3, 4, 5], size=(0.3, 0.55), inv='crescent_plates')),
+                                               plates=dict(PL, seed=23, faces=[3, 4, 5], size=(0.3, 0.55), stride=2, inv='crescent_plates')),
            'violet plate', note='the third, shortest layer over the root')
     # corona lines: the blade's rim, the upper layer's rim, the inner rim
-    K.strip('E11_corona_rim', [(*cres(ph, 1.0), cz(ph, 1.0)[1] + 0.005) for ph in phis], w=0.07, t=0.035)
-    K.strip('E11_corona_upper', [(*cres(ph, U_U), cz(ph, U_U)[1] + max(0.05, 0.34 * (1 - (ph / PHI_U) ** 2) ** 0.5) - 0.055)
-                                 for ph in [-PHI_U + 2 * PHI_U * i / N for i in range(N + 1)]], w=0.06, t=0.03)
+    K.strip('E11_corona_rim', [(*cres(ph, 1.0), cz(ph, 1.0)[1] + 0.005) for ph in phis], w=0.045, t=0.03)
+    K.strip('E11_corona_upper', [(*cres(ph, U_U), cz(ph, U_U)[1] + max(0.05, 0.25 * (1 - (ph / PHI_U) ** 2) ** 0.5) - 0.055)
+                                 for ph in [-PHI_U + 2 * PHI_U * i / N for i in range(N + 1)]], w=0.04, t=0.025)
     inner = []
     for ph in [-PHI_U + 2 * PHI_U * i / N for i in range(N + 1)]:
-        t0 = max(0.05, 0.34 * (1 - (ph / PHI_U) ** 2) ** 0.5)
-        tr = max(0.04, 0.26 * (1 - (ph / PHI_R) ** 2) ** 0.5) if abs(ph) < PHI_R else 0.0
+        t0 = max(0.05, 0.25 * (1 - (ph / PHI_U) ** 2) ** 0.5)
+        tr = max(0.04, 0.2 * (1 - (ph / PHI_R) ** 2) ** 0.5) if abs(ph) < PHI_R else 0.0
         x, y = cres(ph, 0.0)
         inner.append((x + 0.04, y, cz(ph, 0.0)[1] + t0 + tr + 0.005))
-    K.strip('E11_corona_inner', inner, w=0.06, t=0.03)
+    K.strip('E11_corona_inner', inner, w=0.04, t=0.025)
     K.mark('crescent', 'shade', ['band', 'layer', 'corona', 'plate'])
     K.mark('crescent_plates', 'plate', ['slab', 'step', 'bevel', 'fastener'])
 
@@ -166,7 +166,7 @@ def build(K):
            'violet plate', note='a low round drum that superfires the aft battery over the fore one')
     K.mark('dorsal_tiers', 'tier', ['face', 'roof', 'opening'])
     K.mass('Flank belt', K.band('E11_belt', [2.8, 2.0, -2.0, -5.6, -6.7], -0.05, 0.4, 0.12, 'gunv',
-                                plates=dict(PL, seed=41, size=(0.5, 1.1), thick=(0.07, 0.16), skip=0.12, stack=0.5, mats={'lilac': 4, 'mauve': 3, 'violet': 1}, inv='belts')),
+                                plates=dict(PL, seed=41, size=(0.5, 1.1), thick=(0.07, 0.16), skip=0.12, stack=0.5, mats={'lilac': 4, 'mauve': 3, 'violet': 1}, inv='belts'), k=3),
            'grey-mauve armour boxes', note='a raised strake at mid height, both flanks')
     K.mass('Lower skirt', K.band('E11_skirt', [2.6, 2.0, -2.0, -5.6, -6.7], -1.6, -0.45, 0.07, 'violet',
                                  plates=dict(PL, seed=42, size=(0.28, 0.4), thick=(0.04, 0.1), stack=0.1, inv='skirt')),
@@ -182,7 +182,7 @@ def build(K):
     # ---------------- the stern feathers: three rows of eight swept shade blades ----------------
     import kit as kk
     nf = 0
-    for row, (x0, lift0, lift1, L) in enumerate(((-8.2, 0.02, 0.1, 2.0), (-9.4, 0.04, 0.14, 2.0), (-10.6, 0.06, 0.26, 2.3))):
+    for row, (x0, lift0, lift1, L) in enumerate(((-8.2, 0.02, 0.06, 2.0), (-9.4, 0.03, 0.08, 2.0), (-10.6, 0.04, 0.15, 2.3))):
         for k in range(12):
             a = math.radians(15 + 30 * k + (15 if row == 1 else 0))
             sec = []
@@ -236,7 +236,7 @@ def build(K):
         K.thruster('Q1' + sn, (1.6, surf(1.6, side, 0.95), 0.95), K.surf_n(1.6, side, 0.95), inv='bow_thrusters', note='neck flank')
         for i, x in enumerate((2.6, 0.6, -1.4, -3.4)):
             z = 0.62
-            K.lamp('L%d%s' % (i, sn), (x, surf(x, side, z), z), K.surf_n(x, side, z), inv='lamps', note='corona strip light over the belt')
+            K.lamp('L%d%s' % (i, sn), (x, surf(x, side, z), z), K.surf_n(x, side, z), inv='lamps', note='corona strip light over the belt', up=(1, 0, 0))
         K.vent('V1' + sn, (-6.0, max(surf(-5.6, side, 1.05), surf(-6.4, side, 1.05), key=abs) + 0.03 * side, 1.05), K.surf_n(-6.0, side, 1.05), 0.7, 0.32, slats=4,
                inv='vents', note='heat slot panel over the belt, ahead of the band collar')
         K.thruster('Q2' + sn, (-7.5, side * 2.1, 0.0), (0, side, 0), inv='stern_thrusters', note='on the band collar')

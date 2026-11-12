@@ -40,7 +40,7 @@ HULL = [
     (-6.65, 1.12, 1.12, -0.66, 0.86, 0, 0),
 ]
 PEXP = (3.0, 3.0)   # the block's section: a rounded box (the concept's block is round-shouldered, never a slab)
-PL = dict(size=(0.25, 0.55), thick=(0.025, 0.07), skip=0.07, stack=0.35, mats={'shade2': 5, 'violet': 3, 'shade': 2, 'mauve': 1})
+PL = dict(keep3d=True, size=(0.25, 0.55), thick=(0.025, 0.07), skip=0.07, stack=0.35, mats={'shade2': 5, 'violet': 3, 'shade': 2, 'mauve': 1})
 
 
 def ring_pt(t_deg, r):
