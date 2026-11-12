@@ -68,7 +68,9 @@ those joints with the current ragged tear, bite and chips; wounds and pieces exp
 machine rides whole with its piece (its box comes from the export); and the plating and the insides under it tear at the
 same ragged line (triangles across the tear are split along it, the narrow strip it runs through is blown away), so no
 deck or bulkhead is left whole across a break or sticks out of the wreck. `fx/test/death_seam_check.gd` kills A16 and
-counts both: zero. A ship without
+counts both: zero (any ship's GLB can be given after `--`; A17 is zero too, issue 532). Its unpainted A16 fixture carries a
+record of the sheet files it was exported from, and the check fails when they change until the fixture is regenerated
+(`tools/recipe/sheet_fixture_hash.py` lists the steps; opus_check_608 note 3). A ship without
 that record keeps the #167 fallback. Main wreck bodies retain their split altitude (linear Y lock, zero Y release
 velocity), while tumbling freely, so physics cannot push the readable wreck under the board. This does not constrain all
 small fragments; `death_plane_check.gd` protects the existing behavior.

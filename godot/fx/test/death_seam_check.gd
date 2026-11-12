@@ -12,10 +12,13 @@ extends SceneTree
 # It also prints the cut's worker time and the main-thread time to build the pieces (R118).
 # The ship: the GLB path after "--", else the installed res://assets/ships/C19_51/C19_51.glb, else the unpainted export
 # kept as a fixture (fx/test/fixtures/C19_51_unbaked.glb.gz: tools/recipe/export7.py unbaked=1 on the A16 build, gzipped;
-# regenerate it when A16's sheet changes).
+# regenerate it when A16's sheet changes, by the steps in tools/recipe/sheet_fixture_hash.py). Staleness guard (opus_check_608
+# note 3, issue 532): the fixture's record C19_51_unbaked.sheet.txt holds the sha256 of the files that make A16's geometry and
+# their list; when the check runs on the fixture it hashes the same files and fails when they differ.
 const FX := preload("res://fx/fx.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const FIXTURE := "res://fx/test/fixtures/C19_51_unbaked.glb.gz"
+const FIXTURE_RECORD := "res://fx/test/fixtures/C19_51_unbaked.sheet.txt"
 const INSTALLED := "res://assets/ships/C19_51/C19_51.glb"
 const TOL_FRAC := 0.012   # of the length: one split step of the cut (fx_death.gd REFINE_EPS); a torn inside edge beside its plating
 var failures := 0
@@ -58,9 +61,29 @@ func _enclosed(tm: TriangleMesh, c: Vector3, tol: float) -> bool:
 	return false
 
 
+# The fixture was exported from the A16 sheet as it stood: hash the files its record lists (repository paths, line endings
+# as LF) and compare with the recorded sha256 (tools/recipe/sheet_fixture_hash.py writes both).
+func _fixture_fresh() -> void:
+	var rec := FileAccess.get_file_as_string(FIXTURE_RECORD).split("\n", false)
+	check(rec.size() > 1 and rec[0].begins_with("sha256 "), "the fixture record %s is missing or unreadable" % FIXTURE_RECORD)
+	if rec.size() < 2: return
+	var repo := ProjectSettings.globalize_path("res://").path_join("..")
+	var ctx := HashingContext.new()
+	ctx.start(HashingContext.HASH_SHA256)
+	for i in range(1, rec.size()):
+		var f := repo.path_join(rec[i].strip_edges())
+		check(FileAccess.file_exists(f), "the fixture record names a file that is not there: " + rec[i])
+		ctx.update(FileAccess.get_file_as_string(f).replace("\r\n", "\n").to_utf8_buffer())
+	var got := ctx.finish().hex_encode()
+	var want := rec[0].substr(7).strip_edges()
+	print("DEATH_SEAM fixture record ", "fresh" if got == want else "STALE")
+	check(got == want, "the C19_51 fixture is stale: A16's sheet files changed since it was exported (regenerate it by the steps in tools/recipe/sheet_fixture_hash.py)")
+
+
 func _load_ship() -> Node3D:
 	var args := OS.get_cmdline_user_args()
 	var path: String = args[0] if not args.is_empty() else (INSTALLED if FileAccess.file_exists(INSTALLED) else FIXTURE)
+	if path == FIXTURE: _fixture_fresh()
 	var bytes := FileAccess.get_file_as_bytes(path)
 	if path.ends_with(".gz"): bytes = bytes.decompress_dynamic(-1, FileAccess.COMPRESSION_GZIP)
 	var doc := GLTFDocument.new()
