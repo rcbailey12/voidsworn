@@ -9,7 +9,9 @@ extends SceneTree
 #     when rays up and down, or to port and starboard, meet the plating, or the plating is within TOL_FRAC of it; an inside
 #     corner already outside the whole ship's plating before the break (by more than 0.003 of the length) is a build sheet
 #     matter: it is skipped, and its triangles are counted apart.
-# It also prints the cut's worker time and the main-thread time to build the pieces (R118).
+# It also prints the cut's worker time and the main-thread time to build the pieces (R118), and (issue 616) the kill
+# frame's time in fx.death and each later frame's share of the power-down it hands on; the power-down must finish within
+# 30 frames with every hull surface given its material. The times are printed, not checked: CI machines vary.
 # The ship: the GLB path after "--", else the installed res://assets/ships/C19_51/C19_51.glb, else the unpainted export
 # kept as a fixture (fx/test/fixtures/C19_51_unbaked.glb.gz: tools/recipe/export7.py unbaked=1 on the A16 build, gzipped;
 # regenerate it when A16's sheet changes).
@@ -109,10 +111,33 @@ func _run() -> void:
 	var job: Dictionary = s.get_meta("cut_job", {})
 	check(job.get("built", false), "the cut finished and its pieces were built")
 	var prof: Dictionary = fx.prof_take()
+	# Issue 616 (R118): the kill frame's main-thread time in fx.death (wall clock round the call, so a profile key booked
+	# twice cannot skew it), then each following frame's share of the death's spread work (prof "power_down").
+	var t_kill := Time.get_ticks_usec()
 	fx.death("a16", "big")
+	var kill_ms := float(Time.get_ticks_usec() - t_kill) / 1000.0
+	var spread: Array = []
+	var done_at := 0 if not s.has_meta("death_power_queue") else -1
+	var prof2: Dictionary = fx.prof_take()
 	for i in 240:
 		fx.step(1.0 / 60.0)
+		var pf: Dictionary = fx.prof_take()
+		for k in pf: prof2[k] = int(prof2.get(k, 0)) + int(pf[k])
+		if i < 12: spread.append(float(pf.get("power_down", 0)) / 1000.0)
+		if done_at < 0 and not s.has_meta("death_power_queue"): done_at = i + 1
 		await process_frame
+	# every hull surface was handed its power-down material (the live ones dark, the authored insides a dark copy)
+	var n_surf := 0
+	var n_set := 0
+	for mm in s.meshes:
+		var mi := mm as MeshInstance3D
+		if not is_instance_valid(mi) or mi.mesh == null: continue
+		for si in mi.mesh.get_surface_count():
+			n_surf += 1
+			if mi.get_surface_override_material(si) != null: n_set += 1
+	print("DEATH_SEAM kill_frame death_ms=%.1f power_down_frames_after=%d power_down_ms_per_frame=%s surfaces=%d powered=%d" % [kill_ms, done_at, str(spread.map(func(x: float) -> String: return "%.1f" % x)), n_surf, n_set])
+	check(done_at >= 0 and done_at <= 30, "the power-down finished within 30 frames of the kill (took %d)" % done_at)
+	check(n_set == n_surf, "every hull surface has its power-down material: %d of %d" % [n_set, n_surf])
 	check(s.has_meta("death_hidden"), "A16 broke up")
 	var pieces: Array = job.get("out", []) if job.get("out") != null else []
 	var plan: Dictionary = job.get("plan", {})
@@ -200,7 +225,6 @@ func _run() -> void:
 				if bad: outside += 1
 				if sheet: outside_whole += 1
 	var cut_ms := float(job.get("cut_usec", -1)) / 1000.0
-	var prof2: Dictionary = fx.prof_take()
 	print("DEATH_SEAM machines=%d machines_split=%d %s" % [sets.size(), split, str(names)])
 	print("DEATH_SEAM inside_triangles=%d inside_outside_hull=%d fragment_inside_triangles=%d pieces=%d main=%d (outside the whole ship before the break, a sheet matter: %d)" % [inside_total, outside, frag_inside, pieces.size(), n_main, outside_whole])
 	print("DEATH_SEAM cut_worker_ms=%.1f main_thread_ms piece_build=%.1f (most in one frame %.1f; headless also builds the geometry here, a game window builds it on the worker) death=%.1f break_up=%.1f" % [cut_ms,
