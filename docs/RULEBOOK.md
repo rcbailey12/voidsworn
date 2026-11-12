@@ -105,12 +105,15 @@ agents-09.
 | Board: reviews, merges, specs, visual calls, picks put to Ryan | One Claude thread, Opus 5.5 | judgement is the bottleneck (R128, R194) |
 | Every ship model in Blender (blockouts, build sheets, hulls, kits, the station); hard or open-ended builds; read-only code audits | Opus 5.5 workers, two at most while the Board runs | Ryan: "I think builds in blender should come from Opus" (R205); the five-hour limit was hit with three (R194) |
 | Well-specified code: rules, tests, scripts, screens to a spec | DeepSeek V4.1 Flash workhorse on the PC | merged on one review pass for nine cents (R127, R134) |
-| Captures, benches, scripted steps that shape no ship, code, image-tool jobs | Codex on the PC, one job at a time | "Codex and deepseek should do other work to free you up on these crucial items" (R206) |
+| Pipeline and engine jobs that need Codex's depth (export, import, effects plumbing); captures and benches only when no cheaper seat can run them | Codex on the PC, one job at a time, while its weekly usage lasts | "Codex and deepseek should do other work to free you up on these crucial items" (R206); "We're starting to run low on codex usage ... We may just need to move other things to opus instead of codex being the workhorse with DeepSeek" (R219) |
+| Checks of a seat's own work: a different model checks it (Codex's pipeline work is traced or checked by Opus or Muse) | Opus worker or Muse | "It feels like that makes sense to be checked by a different model" (R219) |
 | Concept pictures by image to image, research, design text, outside checks | Muse (Rey chairs); Ryan starts every run | several models, an outside view (R128) |
 | Ideation | Flash and Grok, through Muse | free and broad |
 
 No Fable helpers: Ryan's Fable allowance is spent ("I just used the final fable reset", R180). Kimi is off and was never fairly
-tested (only the pay-as-you-go tier, R164). Ids: R128, R180e, R205, R206, agents-12.
+tested (only the pay-as-you-go tier, R164). Codex's weekly usage is watched at every board check (it was at 19 percent with
+six days to its reset on Nov 11, R219): when it runs low, code jobs go to the DeepSeek workhorse and Opus workers, and Codex
+keeps only what needs it. Ids: R128, R180e, R205, R206, R219, agents-12.
 
 2.7 **Codex runs the model Ryan picked: GPT 6.1 Sol today, pinned by name in tools/pc/codex_issue.bat.** Never a weaker
 model by accident (Luna) and never switched to another one (Astra) without his yes; no Codex cloud tasks or cloud reviews.
@@ -378,6 +381,12 @@ old ban had no reason and is retired). Set: Ryan (R80, retired R216).
 
 6.16 **Spend death effect cost where the eye is (the tell, the break, the core flash); long cooling stays cheap.** 2 s and 14 s
 are starting values. Why: deaths now run 3.5 to over 10 seconds in three beats (R186, R193). Set: Ryan (R90, R216).
+
+6.17 **Turret guns turn to face their target when they fire; fixed side guns (casemates, broadside batteries) stay fixed.**
+A turret traverses smoothly (never snaps, RULEBOOK 7.1), within its arc, and returns to rest; the gun's muzzle and its effects
+start at the turned barrel. Why: today every gun is a fixed mesh (no aim code in godot/render/ship_view.gd or
+godot/fx/fx_weapons.gd); turning turrets make a fight read and suit the detailed guns now being built (R217). Set: Ryan, Nov 11
+(R219: "I agree with your design on turrets").
 
 ## 7. Movement
 
