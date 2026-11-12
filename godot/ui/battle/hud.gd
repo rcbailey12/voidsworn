@@ -1,22 +1,22 @@
 extends CanvasLayer
-# The battle HUD: the Glass Shell C bold layout (issue #271, FINDINGS R145) in the Lime Tactical identity (FINDINGS R149).
-# Specs: the layout docs/shots/ui_redesign/mockups_r2/C_glass_shell_bold.png, the look
-# docs/shots/ui_redesign/identity/2_lime_tactical.png; the style rules are contrib/opus/briefs/ui_style.md, the theme
-# pieces (palette, fonts, panel, well, strip, buttons) godot/ui/theme/glass_shell.gd.
+# The battle HUD: the ember orders sheet, E1 LEDGER (issue 271 step 2; Ryan's pick R210, as captured in step 1,
+# docs/shots/ui_battle_ember/E1_ledger.jpg; the look is the campaign map's rail, contrib/opus/briefs/campaign_rail_orders_sheet.md,
+# R176). The sheet itself is godot/ui/battle/ledger.gd: one left sheet in decision order (whose turn, the ship, its hull
+# and four shields, its guns, the target and the odds, the action, the orders and the Command, the fleet at the foot),
+# the menu, the enemy, Heat and the Nemesis top right, the last three log lines bottom right. No panels: words on a
+# darkened edge of the scene; ember the one accent; Glacier for shield readouts only; square corners; one box.
 #
-# One matte panel per region, every line of text on a solid well or strip, lime only for the next action and the panel
-# furniture, faction colour only as a small accent. The right column is one glass shell holding seven blocks in decision order:
-#   Nemesis | the ship that is up | 1 Move | 2 Fire | Orders | Target | 3 End (End ship fixed in the bottom right corner)
-# Left: the fleet list (one line plus bars per ship; 20 ships fit at 1080 with no scroll) and the four-line log ticker
-# (L opens the full log). Top: round, whose turn, the acted pips, the objective, the enemy, the run's Heat level and the
-# view keys. Under it: the unacted set (ships still to act, the ones the enemy can reach first) or, in the enemy's
-# turn, the enemy turn strip. Ship nameplates on the board sit on solid strips.
+# This file keeps the battle's HUD interface (the setters battle.gd calls, the menu, the end card, the tip card, the
+# hover tips, banners, toasts, floats and nameplates) and hands every setter's data to the sheet. Everything here that is
+# still visible is in the sheet's look. SAY LESS (R177): what the sheet does not show is one hover or one key away; the
+# list is in docs/playbooks/screens.md (battle screen).
 #
-# Regions (the UI pass rule of Nov 1 still holds: every part has its own region, nothing sits on anything else):
-#   top bar (left of the shell) | band row under it (unacted set or turn strip, legend chip) | left: fleet list, log
-#   under it | right: the shell, full height | the middle column between the fleet list and the shell: banner, toasts,
-#   tip card, hover tip, the key hint at the bottom (when no ship is up).
-# _layout() enforces this every frame. The HUD is rebuilt at the new scale when the window size changes.
+# The Lime Tactical shell of the previous build (top bar, unacted set, fleet list, the seven-block shell, the log ticker,
+# the turn strip, the key hint) is still built and filled, inside `legacy`, which is never shown: the PC capture tools
+# (ui_shots.gd, f1_trace.gd, bench/scene_gate.gd) and story_beat3_test read it. It goes when those tools read the sheet.
+#
+# Regions now: the sheet (left, ledger.sheet_r) | the clear part of the screen to its right, where the banner, toasts,
+# the tip card and hover tips sit (_column) | top right and bottom right corners (the sheet's own words).
 #
 # Every number shown comes from the battle (battle.gd builds the rows from the rules' own queries); this file only
 # draws them.
@@ -27,6 +27,16 @@ signal rescaled   # the HUD was rebuilt at a new size; the battle refreshes what
 const Brand := preload("res://ui/battle/brand.gd")
 const UiScale := preload("res://ui/ui_scale.gd")
 const GS := preload("res://ui/theme/glass_shell.gd")
+const Ledger := preload("res://ui/battle/ledger.gd")
+
+# the orders sheet palette (glass_shell.gd, R176; Glacier R210)
+const S_EMBER := GS.MAP_EMBER
+const S_TEXT := GS.TEXT
+const S_TEXT2 := GS.TEXT2
+const S_TEXT3 := GS.TEXT3
+const S_NEM := GS.NEM
+const S_GLACIER := GS.GLACIER
+const S_HAIR := GS.SHEET_HAIR
 
 const INK := GS.INK
 const IRON := GS.IRON
@@ -58,8 +68,9 @@ const LOG_W := 600.0     # the log
 const LOG_LINES := 4     # the ticker
 const LOG_H := 134.0     # the ticker's height: head 36, four lines of 21, padding 14
 
-var font: Font                      # body: Chakra Petch Regular (glass_shell.gd, Lime Tactical R149)
-var font_semi: Font                 # names, buttons: Chakra Petch SemiBold
+var font: Font                      # sentences: Barlow Regular (the orders sheet, R176)
+var font_semi: Font                 # buttons, short labels: Barlow Medium
+var font_name: Font                 # names in capitals: Big Shoulders Display (banner, menu and end card titles)
 var font_goth: Font                 # display (round title, banner, end card): Chakra Petch Bold, tracked caps
 var font_caps: Font                 # section heads and tags: Chakra Petch Bold, tracked caps
 var font_num: Font                  # numbers that decide something (odds, damage, hull, keys): Azeret Mono
@@ -126,6 +137,12 @@ var card: PanelContainer            # 3 End: the activation's end (End ship fixe
 var card_box: VBoxContainer
 var _card_sig := ""
 
+var ledger                          # the orders sheet (ledger.gd): what the player sees
+var legacy: Control                 # the previous build's shell, built and filled, never shown (see the top of this file)
+var _log_lines: Array = []          # the log as plain lines, for the sheet's last three
+var ask_panel: Control              # issue 529: the sheet while a tree prompt is open in it, else null
+var ask_key := ""
+
 var _rows: Array = []               # the last fleet rows (set_roster)
 var _info := {}                     # the last battle info (set_info)
 var _panel_info := {}               # the last ship info (set_panel)
@@ -136,8 +153,9 @@ var _phase_kind := ""
 
 func _ready() -> void:
 	layer = 10
-	font = GS.body()
-	font_semi = GS.semi()
+	font = GS.sheet_body()
+	font_semi = GS.sheet_medium()
+	font_name = GS.sheet_name()
 	k = scale_for(get_viewport().get_visible_rect().size)
 	_scaled_fonts()
 	_built_vs = get_viewport().get_visible_rect().size
@@ -170,12 +188,36 @@ func _build_all() -> void:
 	_build_roster()
 	_build_panel()
 	_build_log()
+	_build_ledger()
 	_build_banner()
 	_build_chip()
 	_build_hint()
 	_build_legend()
 	_build_phase()
 	_build_tip()
+	# the previous build's shell goes out of sight (it is still filled; see the top of this file); the sheet is what shows
+	legacy = Control.new()
+	legacy.name = "legacy"
+	legacy.set_anchors_preset(Control.PRESET_FULL_RECT)
+	legacy.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	legacy.visible = false
+	root.add_child(legacy)
+	for c in [top, unacted, roster, panel, phase, hint]:
+		c.reparent(legacy, false)
+	# the full log (L) sits over the sheet's corner; the banner, toasts, tips and dialogs over everything
+	root.move_child(log_panel, ledger.get_index() + 1)
+
+
+# the orders sheet: every setter hands it its data (ledger.gd lays it out and draws it)
+func _build_ledger() -> void:
+	ledger = Ledger.new()
+	ledger.name = "ledger"
+	ledger.k = k
+	root.add_child(ledger)
+	ledger.log_lines = _log_lines
+	ledger.keys_bb = keys_text()
+	ledger.act.connect(func(n: String, arg: Variant) -> void: action.emit(n, arg))
+	ledger.hover_tip.connect(_ledger_tip)
 
 
 # the window changed size: build every part again at the new scale and put back what each part showed. The battle log's
@@ -209,6 +251,7 @@ func _rebuild() -> void:
 	bars = []
 	load_cover = null
 	_card_sig = ""
+	ask_panel = null
 	_phase_fs = -1
 	_heights = {}
 	k = nk
@@ -224,9 +267,14 @@ func _rebuild() -> void:
 		callv("show_tipcard", _last["show_tipcard"])
 	if _last.has("show_menu"):
 		var sm: Array = _last["show_menu"]
-		show_menu(sm[0], sm[1], keep_row)
+		show_menu(sm[0], sm[1], keep_row, str(sm[2]) if sm.size() > 2 else "")
 	if _last.has("show_end"):
 		callv("show_end", _last["show_end"])
+	if _last.has("show_ask"):
+		var sa: Array = _last["show_ask"]
+		ask_panel = null   # the old sheet went with the old root
+		ask_key = ""
+		show_ask(sa[0])
 	if bool(_last.get("letterbox", false)):
 		letterbox(true)
 	if bool(_last.get("loading", false)):
@@ -267,17 +315,73 @@ func s(v: float) -> int:
 	return int(round(v * k))
 
 
-# the battle theme: the shared Glass Shell theme (glass_shell.gd make_theme, focus ring included) at the battle base sizes
+# the battle theme: the shared theme (glass_shell.gd make_theme, focus ring included) in the orders sheet faces, with the
+# sheet's plain buttons: words only, ember while the pointer is on them; no fill, no edge, square (R176)
 func _theme() -> Theme:
-	var th := GS.make_theme(k, font, font_semi, 15)
-	th.default_font_size = s(15)
+	var th := GS.make_theme(k, font, font_semi, 17)
+	th.default_font_size = s(17)
+	var plain := GS.flat(Color(0, 0, 0, 0), 10.0, 5.0, k)
+	for st in ["normal", "hover", "pressed", "disabled"]:
+		th.set_stylebox(st, "Button", plain)
+	th.set_color("font_color", "Button", S_TEXT)
+	th.set_color("font_hover_color", "Button", S_EMBER)
+	th.set_color("font_pressed_color", "Button", S_EMBER)
+	th.set_color("font_focus_color", "Button", S_TEXT)
+	th.set_color("font_hover_pressed_color", "Button", S_EMBER)
+	th.set_color("font_disabled_color", "Button", S_TEXT2)
+	th.set_color("font_color", "Label", S_TEXT)
+	th.set_color("default_color", "RichTextLabel", S_TEXT)
+	th.set_stylebox("panel", "TooltipPanel", _tipbox())
+	th.set_color("font_color", "TooltipLabel", S_TEXT)
 	# AC5 (UI audit, ui_spec.md 6.2): the focus ring comes from the theme alone (glass_shell.gd focus_ring via make_theme),
 	# one source for every screen (#314 check condition 4). Only the menu and the end card take keyboard focus (_button
 	# keys); the board-time buttons stay out of it because Space, Enter and Tab belong to the battle there (F1 key scheme).
-	th.set_font_size("font_size", "Button", s(14))
-	th.set_font_size("normal_font_size", "RichTextLabel", s(14))
-	th.set_font_size("bold_font_size", "RichTextLabel", s(14))
+	th.set_font_size("font_size", "Button", s(19))
+	th.set_font_size("normal_font_size", "RichTextLabel", s(18))
+	th.set_font_size("bold_font_size", "RichTextLabel", s(18))
+	th.set_font_size("font_size", "TooltipLabel", s(18))
 	return th
+
+
+# the one kind of box besides the action: a hover tip, the menu, the end card, the full log. Near-black, a quiet hairline
+# edge, square, no shadow, no glow (the map's hover tip, glass_shell.gd tip)
+func _tipbox(pad_x := 14.0, pad_y := 10.0) -> StyleBoxFlat:
+	var b := GS.flat(Color(GS.COLUMN, 0.96), pad_x, pad_y, k)
+	b.border_color = S_HAIR
+	b.set_border_width_all(maxi(1, s(1)))
+	return b
+
+
+# the HUD's palette translation: the battle still writes some of its words in the previous build's colours (bbcode and
+# Color arguments). Lime and the old amber become the ember, the old shield cyan becomes Glacier (shield readouts only),
+# every other old colour one of the three text strengths. Nothing lime reaches the screen.
+const BB_MAP := {"#c8f53a": "#ff8a3a", "#ffb23e": "#ff8a3a", "#4fc4ff": "#92b8e8", "#9fe2ff": "#92b8e8",
+	"#a7b09d": "#c4beb0", "#7c8674": "#969084", "#e8eee0": "#f0eade", "#c4a4ff": "#f0eade", "#8d86a0": "#c4beb0",
+	"#52f0c4": "#f0eade", "#59d6a8": "#f0eade", "#ffad3b": "#f0eade", "#ff8a72": "#f0eade", "#ff8a6a": "#f0eade",
+	"#9fd4ff": "#f0eade", "#7fc4ff": "#f0eade", "#f08a4b": "#f0eade", "#f0c58b": "#c4beb0", "#d9f78a": "#f0eade"}
+
+
+static func recol(t: String) -> String:
+	var o := t
+	for c in BB_MAP:
+		o = o.replace("color=" + c, "color=" + str(BB_MAP[c]))
+	return o
+
+
+static func col_of(c: Color) -> Color:
+	var h := "#" + c.to_html(false)
+	if BB_MAP.has(h):
+		return Color(str(BB_MAP[h]))
+	if c.is_equal_approx(GILT) or c.is_equal_approx(Color(0.78, 0.96, 0.23)):
+		return S_EMBER
+	return c
+
+
+# plain words over the scene: the map's dark halo, no strip (ui_style.md 3, the orders sheet exception)
+func _halo(l: Label) -> void:
+	l.add_theme_color_override("font_outline_color", Color(GS.HALO, 0.92))
+	l.add_theme_constant_override("outline_size", maxi(3, s(6)))
+	l.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
 
 
 # a panel (the matte black-olive slab, chamfered); its marks (scanline, bevel, brackets) come from _frame
@@ -451,15 +555,16 @@ func _button(txt: String, act: String, arg: Variant = null, primary := false, ke
 	b.text = txt
 	b.focus_mode = Control.FOCUS_ALL if keys else Control.FOCUS_NONE
 	if primary:
-		var bb := GS.button_boxes(k, true)
+		# the dialog's one action: the sheet's action box, a square ember outline that fills ember under the pointer
+		var bx := GS.sheet_jump_boxes(k)
 		for st in ["normal", "hover", "pressed", "disabled"]:
-			b.add_theme_stylebox_override(st, bb[st])
-		b.add_theme_color_override("font_color", GS.ON_GILT)
-		b.add_theme_color_override("font_hover_color", GS.ON_GILT)
-		b.add_theme_color_override("font_pressed_color", GS.ON_GILT)
-		b.add_theme_color_override("font_focus_color", GS.ON_GILT)    # sage on lime would not read with the keyboard on it
-		b.add_theme_color_override("font_hover_pressed_color", GS.ON_GILT)
-		b.add_theme_font_override("font", GS.bold())
+			b.add_theme_stylebox_override(st, bx[st])
+		b.add_theme_color_override("font_color", S_EMBER)
+		b.add_theme_color_override("font_focus_color", S_EMBER)
+		b.add_theme_color_override("font_hover_color", GS.ON_EMBER)
+		b.add_theme_color_override("font_pressed_color", GS.ON_EMBER)
+		b.add_theme_color_override("font_hover_pressed_color", GS.ON_EMBER)
+		b.add_theme_font_override("font", font_semi)
 	b.pressed.connect(func() -> void: action.emit(act, arg))
 	return b
 
@@ -714,6 +819,8 @@ func set_crest(tex: Texture2D, tip: String) -> void:
 # the Admiral's Command: its button sits in the Orders block with the C key
 func set_command(label: String, ready: bool) -> void:
 	_last["set_command"] = [label, ready]
+	ledger.cmd = {"label": label, "ready": ready}
+	ledger.mark()
 	cmd_btn.visible = ready
 	var l: Label = cmd_btn.get_meta("lbl") if cmd_btn.has_meta("lbl") else null
 	if l != null:
@@ -730,6 +837,8 @@ func _size_key_button(b: Button) -> void:
 
 func set_top(round_n: int, turn: String, objective: String, end_text: String, end_on: bool, speed_fast: bool, threat_on: bool) -> void:
 	_last["set_top"] = [round_n, turn, objective, end_text, end_on, speed_fast, threat_on]
+	ledger.top = {"round": round_n, "turn": turn, "objective": objective, "end_text": end_text, "end_on": end_on}
+	ledger.mark()
 	_round = round_n
 	title_lbl.text = "ROUND %d" % round_n
 	var t := turn.to_upper()
@@ -754,6 +863,8 @@ func set_top(round_n: int, turn: String, objective: String, end_text: String, en
 func set_info(info: Dictionary) -> void:
 	_last["set_info"] = [info]
 	_info = info
+	ledger.info = info
+	ledger.mark()
 	foe_lbl.text = str(info.get("foe_name", ""))
 	foe_lbl.visible = foe_lbl.text != ""
 	var ct = info.get("foe_crest")
@@ -970,6 +1081,8 @@ func _apply_heights() -> void:
 func set_roster(rows: Array) -> void:
 	_last["set_roster"] = [rows]
 	_rows = rows
+	ledger.rows = rows
+	ledger.mark()
 	# rows: [{id, name, cls, hp, maxHp, sh: [4], shMax, status, sel, done, flag, new, danger}]
 	for c in roster_box.get_children():
 		roster_box.remove_child(c)
@@ -1141,6 +1254,8 @@ func _num_rich(bb: String, size := 14) -> RichTextLabel:
 # info: {name, title, ship, flee, tex, adapted: [[name, effect, why]], weak: [[name, effect]], state ("" | fled | destroyed)}
 func set_nemesis(info: Dictionary) -> void:
 	_last["set_nemesis"] = [info]
+	ledger.nem = info
+	ledger.mark()
 	_clear(nem_well)
 	nem_well.visible = not info.is_empty()
 	if info.is_empty():
@@ -1195,6 +1310,9 @@ func set_nemesis(info: Dictionary) -> void:
 func set_panel(info: Dictionary) -> void:
 	_last["set_panel"] = [info]
 	_panel_info = info
+	ledger.ship = info
+	ledger.detail_bb = recol(_detail_bb(info)) if not info.is_empty() else ""
+	ledger.mark()
 	_clear(up_well)
 	_clear(fire_well)
 	_clear(orders_well)
@@ -1355,30 +1473,21 @@ func _detail_bb(info: Dictionary) -> String:
 	if str(info.get("note", "")) != "":
 		bb += "\n" + str(info["note"])
 	for ex in info.get("extra", []):
-		bb += "\n[color=#c8f53a]%s[/color]\n%s" % [str(ex[0]).to_upper(), str(ex[1])]
+		bb += "\n[b]%s[/b]\n%s" % [str(ex[0]), str(ex[1])]
 	if info.get("side", "") == "player":
 		bb += "\n\n" + keys_text()
 	return bb
 
 
+# the ship's "more on hover" layer (the sheet shows it on hover over the ship's name; tools call this to show it at once)
 func _show_dtip() -> void:
 	if _panel_info.is_empty():
 		return
-	var d := up_well.find_child("detail", true, false) as RichTextLabel
-	if d == null:
-		return
-	dtip_text.text = d.text
-	dtip.visible = true
-	dtip.reset_size()
-	var wr := up_well.get_global_rect()
-	var vs := root.get_viewport_rect().size
-	var p := Vector2(wr.position.x - dtip.size.x - s(10), wr.position.y)
-	p.y = clampf(p.y, float(s(8)), maxf(float(s(8)), vs.y - dtip.size.y - s(8)))
-	dtip.position = p.round()
+	_ledger_tip(recol(_detail_bb(_panel_info)), Vector2(ledger.sheet_r.position.x, s(110)))
 
 
 func keys_text() -> String:
-	return "[font_size=%d][color=#a7b09d]Click a blue hex to plan a move, click it again (or [b]Enter[/b]) to go. Click an enemy to target it and see the odds, click it again (or [b]Enter[/b]) to fire. [b]Q[/b]/[b]E[/b] turn, [b]1[/b]-[b]6[/b] pick one weapon, [b]B[/b] brace, [b]X[/b] ram, [b]G[/b] board, [b]C[/b] Command, [b]Tab[/b] next ship, [b]Space[/b] end ship, [b]Esc[/b] cancel the plan. In the enemy turn [b]Enter[/b] or [b]Space[/b] hurries. Right-drag orbit, left-drag or WASD pan, wheel zoom, [b]T[/b] top-down, [b]R[/b] threat map, [b]V[/b] firing arcs, [b]F[/b] focus, [b]L[/b] full log, [b]Home[/b] reset view.[/color][/font_size]" % s(12)
+	return "[font_size=%d][color=#a7b09d]Click a blue hex to plan a move, click it again (or [b]Enter[/b]) to go. Click an enemy to target it and see the odds, click it again (or [b]Enter[/b]) to fire. [b]Q[/b]/[b]E[/b] turn, [b]1[/b]-[b]6[/b] pick one weapon, [b]B[/b] brace, [b]X[/b] ram, [b]G[/b] board, [b]C[/b] Command, [b]Tab[/b] next ship, [b]Space[/b] end ship, [b]Esc[/b] cancel the plan. In the enemy turn [b]Enter[/b] or [b]Space[/b] hurries. Right-drag orbit, left-drag or WASD pan, wheel zoom, [b]T[/b] top-down, [b]R[/b] threat map, [b]V[/b] firing arcs, [b]F[/b] focus, [b]L[/b] full log, [b]Home[/b] reset view.[/color][/font_size]" % s(17)
 
 
 func _sect(t: String) -> Control:
@@ -1538,6 +1647,8 @@ func _build_orders(orders: Array) -> void:
 # info: {name, cls, hp, maxHp, sh: [4], shMax, exp_hull, exp_sh: [4], line (bbcode), flag}
 func set_target(info: Dictionary) -> void:
 	_last["set_target"] = [info]
+	ledger.target = info
+	ledger.mark()
 	_clear(target_well)
 	target_well.visible = not info.is_empty()
 	if info.is_empty():
@@ -1589,6 +1700,8 @@ func set_target(info: Dictionary) -> void:
 
 func set_card(info: Dictionary) -> void:
 	_last["set_card"] = [info]
+	ledger.card = info
+	ledger.mark()
 	var sig := JSON.stringify(info)
 	if sig == _card_sig:
 		return
@@ -1805,119 +1918,122 @@ func _refresh_end() -> void:
 # ---------------------------------------------------------------- log ticker, banner, tip, chip, hint
 
 func _build_log() -> void:
-	log_panel = _panel(M, -1, -1, M, LOG_W, _log_h())
+	# the full log (L, or "Log L" on the sheet): a box over the bottom right corner, where the sheet shows the last three lines
+	log_panel = PanelContainer.new()
+	log_panel.name = "full_log"
+	log_panel.add_theme_stylebox_override("panel", _tipbox(16, 12))
+	log_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	log_panel.anchor_left = 1.0
+	log_panel.anchor_right = 1.0
+	log_panel.anchor_top = 1.0
+	log_panel.anchor_bottom = 1.0
+	log_panel.offset_left = -s(52 + LOG_W + 16)
+	log_panel.offset_right = -s(36)
+	log_panel.offset_bottom = -s(24)
+	log_panel.offset_top = -s(24 + _log_h())
+	log_panel.visible = log_open
+	root.add_child(log_panel)
 	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", s(3))
+	v.add_theme_constant_override("separation", s(8))
 	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	log_panel.add_child(v)
-	# the head (LOG and Full log) sits inside the log's well with the lines, so every word is on the solid backing
-	# (ui_style.md 2 and 3; #314 check condition 1)
-	var w := PanelContainer.new()
-	w.add_theme_stylebox_override("panel", GS.well(k, Color(0, 0, 0, 0), 10, 4))
-	w.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	w.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_child(w)
-	var wv := VBoxContainer.new()
-	wv.add_theme_constant_override("separation", s(2))
-	wv.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	w.add_child(wv)
-	var hh := _head("", "Log")
-	var lb := _key_button("Full log", "log", null, false, "L")
-	lb.custom_minimum_size.y = s(24)
-	lb.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
-	lb.tooltip_text = "Open or close the full battle log (L)"
+	var hh := HBoxContainer.new()
+	hh.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var ht := _label("Battle log", 19, S_TEXT, font_semi)
+	ht.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hh.add_child(ht)
+	var lb := _button("Close  L", "log")
+	lb.tooltip_text = "Close the full battle log (L)"
 	hh.add_child(lb)
-	wv.add_child(hh)
+	v.add_child(hh)
 	if log_text != null and is_instance_valid(log_text):   # a rebuild keeps the log's text
-		log_text.add_theme_font_size_override("normal_font_size", s(14))
-		log_text.add_theme_font_size_override("bold_font_size", s(14))
-		log_text.add_theme_constant_override("line_separation", s(2))
-		wv.add_child(log_text)
+		_log_text_style()
+		v.add_child(log_text)
 		_log_bar()
 		return
 	log_text = RichTextLabel.new()
 	log_text.bbcode_enabled = true
 	log_text.scroll_following = true
 	log_text.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	log_text.add_theme_font_size_override("normal_font_size", s(14))
-	log_text.add_theme_font_size_override("bold_font_size", s(14))
-	log_text.add_theme_constant_override("line_separation", s(2))   # Chakra Petch lines are 19 at 14; 21 a line keeps the ticker at four
-	wv.add_child(log_text)
+	_log_text_style()
+	v.add_child(log_text)
 	_log_bar()
 
 
-# the ticker keeps following the last line; its scroll bar shows only when the full log is open
+func _log_text_style() -> void:
+	log_text.add_theme_font_override("normal_font", font)
+	log_text.add_theme_font_override("bold_font", font_semi)
+	log_text.add_theme_font_size_override("normal_font_size", s(18))
+	log_text.add_theme_font_size_override("bold_font_size", s(18))
+	log_text.add_theme_constant_override("line_separation", s(4))
+
+
+# the scroll bar shows only when the full log is open
 func _log_bar() -> void:
 	var sb := log_text.get_v_scroll_bar()
 	sb.self_modulate.a = 1.0 if log_open else 0.0
 	sb.mouse_filter = Control.MOUSE_FILTER_STOP if log_open else Control.MOUSE_FILTER_IGNORE
 
 
-# the ticker shows the last four lines; open, the log takes most of the left side and scrolls
+# the full log's height: most of the screen's height
 func _log_h() -> float:
-	if log_open:
-		return maxf(200.0, root.get_viewport_rect().size.y / k * 0.62) if root != null else 600.0
-	return LOG_H
+	if root != null:
+		return maxf(200.0, root.get_viewport_rect().size.y / k * 0.62)
+	return 600.0
 
 
 func toggle_log() -> void:
 	log_open = not log_open
-	log_panel.offset_top = -s(M + _log_h())
+	log_panel.offset_top = -s(24 + _log_h())
+	log_panel.visible = log_open
 	_log_bar()
-	log_panel.z_index = 2 if log_open else 0
 	log_text.scroll_to_line(maxi(0, log_text.get_line_count() - 1))
-	_apply_heights()
 
 
-const LOG_COL := {"p": "#59d6a8", "e": "#ff8a72", "s": "#c8f53a", "x": "#a7b09d", "ember": "#ffb23e"}
+# the log in the sheet's strengths: your side and the story in TEXT, the enemy and the system in TEXT2 (no colour codes
+# for shield or hull damage: the words say it)
+const LOG_COL := {"p": "#f0eade", "e": "#c4beb0", "s": "#f0eade", "x": "#c4beb0", "ember": "#f0eade"}
 
 
 func add_log(m: String, c: String) -> void:
 	var txt := m.replace("[", "(").replace("]", ")")
-	# the game's colouring: shield damage cyan, hull damage amber
-	var re := RegEx.new()
-	re.compile("(\\d+) to (\\w+) shields")
-	txt = re.sub(txt, "[color=#4fc4ff]$1 to $2 shields[/color]", true)
-	re.compile("(\\d+) hull")
-	txt = re.sub(txt, "[color=#ffad3b]$1 hull[/color]", true)
-	var col: String = LOG_COL.get(c, "#e8eee0")
-	log_text.append_text("[color=#7c8674]R%d[/color]  [color=%s]%s[/color]\n" % [_round, col, txt])
+	var col: String = LOG_COL.get(c, "#f0eade")
+	log_text.append_text("[color=#969084]R%d[/color]  [color=%s]%s[/color]\n" % [_round, col, txt])
+	_log_lines.append(txt)
+	if _log_lines.size() > 400:
+		_log_lines = _log_lines.slice(_log_lines.size() - 200)
+	if ledger != null:
+		ledger.log_lines = _log_lines
+		ledger.mark()
 
 
 func _build_banner() -> void:
-	banner_lbl = _label("", 46, BONE, font_goth)
+	# the banner ("Round 2", "Victory", a Command's name): a name in Big Shoulders over the scene with the dark halo
+	banner_lbl = _label("", 46, S_TEXT, font_name)
 	banner_lbl.set_anchors_preset(Control.PRESET_CENTER)
 	banner_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	banner_lbl.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	banner_lbl.grow_vertical = Control.GROW_DIRECTION_BOTH
-	banner_lbl.add_theme_constant_override("shadow_offset_x", 0)
-	banner_lbl.add_theme_constant_override("shadow_offset_y", s(3))
-	banner_lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
-	# the banner is text over the board too: a solid strip behind it (ui_style.md: no text without a backing)
-	var bs := GS.strip(k, GILT)
-	bs.content_margin_left = s(28)
-	bs.content_margin_right = s(28)
-	bs.content_margin_top = s(4)
-	bs.content_margin_bottom = s(8)
-	banner_lbl.add_theme_stylebox_override("normal", bs)
+	_halo(banner_lbl)
+	banner_lbl.add_theme_constant_override("outline_size", maxi(4, s(12)))
 	banner_lbl.modulate.a = 0.0
 	root.add_child(banner_lbl)
-	toast_lbl = _label("", 16, EMBER, font_semi)
+	toast_lbl = _label("", 19, S_TEXT, font_semi)
 	toast_lbl.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	toast_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	toast_lbl.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	toast_lbl.offset_top = s(124)
 	toast_lbl.offset_bottom = s(150)
-	toast_lbl.add_theme_stylebox_override("normal", GS.strip(k, EMBER))
+	_halo(toast_lbl)
 	toast_lbl.modulate.a = 0.0
 	root.add_child(toast_lbl)
 
 
 func banner(text: String, col := BONE, dur := 0.9) -> void:
 	banner_lbl.text = text.to_upper()
-	banner_lbl.add_theme_font_size_override("font_size", Brand.fit_size(banner_lbl.text, font_goth, s(40), _column().y - _column().x - s(80)))
-	banner_lbl.add_theme_color_override("font_color", col)
-	(banner_lbl.get_theme_stylebox("normal") as StyleBoxFlat).border_color = col
+	var c := col_of(col)
+	banner_lbl.add_theme_font_size_override("font_size", maxi(s(28), Brand.fit_size(banner_lbl.text, font_name, s(64), _column().y - _column().x - s(80))))
+	banner_lbl.add_theme_color_override("font_color", S_EMBER if c == S_EMBER else S_TEXT)
 	_banner_t = 0.0
 	_banner_dur = dur
 
@@ -1931,43 +2047,65 @@ func toast(text: String) -> void:
 
 func _build_tip() -> void:
 	tip = PanelContainer.new()
-	var g := GS.well(k, Color(0, 0, 0, 0), 10, 7)
-	g.border_color = GILT2
-	tip.add_theme_stylebox_override("panel", g)
+	tip.add_theme_stylebox_override("panel", _tipbox())
 	tip.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tip.visible = false
 	tip_text = RichTextLabel.new()
 	tip_text.bbcode_enabled = true
 	tip_text.fit_content = true
 	tip_text.scroll_active = false
-	tip_text.custom_minimum_size = Vector2(s(300), 0)
+	tip_text.custom_minimum_size = Vector2(s(340), 0)
 	tip_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tip_text.add_theme_font_size_override("normal_font_size", s(18))
+	tip_text.add_theme_font_size_override("bold_font_size", s(18))
 	tip.add_child(tip_text)
 	root.add_child(tip)
+	# the sheet's hover layer: what moved off the sheet (the captain, armour, evasion and turns behind the ship's name; a
+	# gun's damage and cost; the target's shields; the Nemesis; the keys)
 	dtip = PanelContainer.new()
-	var g2 := GS.well(k, Color(0, 0, 0, 0), 12, 9)
-	g2.border_color = GILT2
-	dtip.add_theme_stylebox_override("panel", g2)
+	dtip.add_theme_stylebox_override("panel", _tipbox(16, 12))
 	dtip.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	dtip.visible = false
 	dtip_text = RichTextLabel.new()
 	dtip_text.bbcode_enabled = true
 	dtip_text.fit_content = true
 	dtip_text.scroll_active = false
-	dtip_text.custom_minimum_size = Vector2(s(400), 0)
+	dtip_text.custom_minimum_size = Vector2(s(420), 0)
 	dtip_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	dtip_text.add_theme_font_size_override("normal_font_size", s(13))
-	dtip_text.add_theme_font_size_override("bold_font_size", s(13))
+	dtip_text.add_theme_font_size_override("normal_font_size", s(18))
+	dtip_text.add_theme_font_size_override("bold_font_size", s(18))
 	dtip.add_child(dtip_text)
 	root.add_child(dtip)
+
+
+# a hover on the sheet: its tip beside the sheet (for the corners' words, beside them, toward the middle)
+func _ledger_tip(t: String, at: Vector2) -> void:
+	if t == "":
+		dtip.visible = false
+		return
+	dtip_text.text = recol(t)
+	dtip.visible = true
+	dtip.reset_size()
+	var vs := root.get_viewport_rect().size
+	var p: Vector2
+	if at.x < ledger.sheet_r.end.x:
+		p = Vector2(ledger.sheet_r.end.x + s(8), at.y - s(6))
+	else:
+		p = Vector2(at.x - dtip.size.x - s(16), at.y - s(6))
+		if at.y > vs.y * 0.5:
+			p.y = at.y - dtip.size.y - s(12)
+	p.y = clampf(p.y, float(s(8)), maxf(float(s(8)), vs.y - dtip.size.y - s(8)))
+	p.x = clampf(p.x, float(s(8)), maxf(float(s(8)), vs.x - dtip.size.x - s(8)))
+	dtip.position = p.round()
 
 
 func show_tip(bb: String, at: Vector2) -> void:
 	if bb == "":
 		tip.visible = false
 		return
-	if tip_text.text != bb:
-		tip_text.text = bb
+	var rb := recol(bb)
+	if tip_text.text != rb:
+		tip_text.text = rb
 	tip.visible = true
 	tip.reset_size()
 	_tip_at = at
@@ -1989,11 +2127,11 @@ func _place_tip() -> void:
 	if p.x + w > col.y:
 		p.x = _tip_at.x - w - s(18)
 	p.x = clampf(p.x, col.x, maxf(col.x, col.y - w))
-	var t := top.get_global_rect().end.y + gap
+	var t := float(s(8))
 	p.y = clampf(p.y, t, maxf(t, vs.y - h - gap))
 	for i in 3:
 		var moved := false
-		for c in [log_panel, tipcard, phase, legend, aichip, unacted, hint]:
+		for c in [log_panel, tipcard, legend, aichip]:
 			if c == null or not is_instance_valid(c) or not c.visible or c.modulate.a < 0.01:
 				continue
 			var cr: Rect2 = c.get_global_rect()
@@ -2005,26 +2143,33 @@ func _place_tip() -> void:
 	tip.position = p.round()
 
 
-# the middle column between the fleet list and the shell: Vector2(left x, right x)
+# the clear part of the screen, right of the sheet: Vector2(left x, right x)
 func _column() -> Vector2:
 	var vs := root.get_viewport_rect().size
-	var gap := float(s(10))
 	var l := float(s(M))
+	if ledger != null and ledger.visible:
+		l = ledger.sheet_r.end.x + float(s(10))
 	var r := vs.x - s(M)
-	if roster != null and roster.visible:
-		l = roster.get_global_rect().end.x + gap
-	if panel != null and panel.visible:
-		r = panel.get_global_rect().position.x - gap
 	return Vector2(l, maxf(l + s(200), r))
 
 
+# how far right of the screen's middle the clear part's middle is, in pixels: the camera puts the board's centre there
+# (camera_rig.gd screen_shift), so the ship it focuses is not under the sheet. 0 while the sheet is hidden (cut-ins).
+func clear_shift() -> float:
+	if root == null or ledger == null or not ledger.visible or ledger.modulate.a < 0.5 or not visible:
+		return 0.0
+	var vs := root.get_viewport_rect().size
+	var c := _column()
+	return maxf(0.0, (c.x + vs.x) * 0.5 - vs.x * 0.5)
+
+
 func _build_chip() -> void:
-	aichip = _label("", 15, GS.FOE_TEXT)
+	aichip = _label("", 19, S_TEXT2, font_semi)
 	aichip.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	aichip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	aichip.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	aichip.offset_top = s(70)
-	aichip.add_theme_stylebox_override("normal", GS.strip(k, FOE_RING, Color(FOE_RING, 0.6)))
+	_halo(aichip)
 	aichip.visible = false
 	root.add_child(aichip)
 
@@ -2035,24 +2180,25 @@ func set_chip(txt: String) -> void:
 	aichip.visible = txt != ""
 
 
+# the previous build's key line along the bottom (kept for the tools; never shown: the keys are on the ship name's hover
+# and in the menu)
 func _build_hint() -> void:
-	hint = _label("Right-drag orbit   Left-drag or WASD pan   Wheel zoom   T top-down   R threat   V arcs   L log   Tab next ship   Space end ship", 13, BONE2)
+	hint = _label("Right-drag orbit   Left-drag or WASD pan   Wheel zoom   T top-down   R threat   V arcs   L log   Tab next ship   Space end ship", 17, S_TEXT2)
 	hint.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	hint.offset_top = -s(40)
 	hint.offset_bottom = -s(14)
-	hint.add_theme_stylebox_override("normal", GS.strip(k, IRON3))
 	root.add_child(hint)
 
 
 # ---------------------------------------------------------------- terrain legend (ui3d.js refreshLegend)
-# Only what is on this battlefield: the encounter, its zones and its terrain. Collapsed it is a chip of swatches in the
-# band row; a click opens the names and what each does (and the encounter's own rule), another click closes it.
+# Only what is on this battlefield: the encounter, its zones and its terrain. Closed it is one line under the Nemesis, top
+# right: the encounter's name and a swatch per terrain; a click opens the names and what each does, another click closes.
 
 func _build_legend() -> void:
 	legend = PanelContainer.new()
-	legend.add_theme_stylebox_override("panel", GS.strip(k, IRON3, Color(IRON3, 0.8)))
+	legend.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 	legend.mouse_filter = Control.MOUSE_FILTER_STOP
 	root.add_child(legend)
 	legend.visible = false
@@ -2090,76 +2236,77 @@ func _draw_legend() -> void:
 		return
 	legend.visible = true
 	if not legend_open:
-		legend.add_theme_stylebox_override("panel", GS.strip(k, IRON3, Color(IRON3, 0.8)))
+		legend.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 		var h := HBoxContainer.new()
-		h.add_theme_constant_override("separation", s(6))
+		h.add_theme_constant_override("separation", s(8))
 		h.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		h.add_child(_label(title if title != "" else "Terrain", 14, BONE2))
+		h.alignment = BoxContainer.ALIGNMENT_END
+		h.add_child(_label(title if title != "" else "Terrain", 19, S_TEXT2, font_semi))
 		for r in rows:
 			h.add_child(_swatch(str(r[1])))
-		h.add_child(_label("▾", 14, BONE3))
 		legend.add_child(h)
 		legend.size = Vector2.ZERO
 		legend.reset_size()
 		return
-	legend.add_theme_stylebox_override("panel", GS.well(k, Color(0, 0, 0, 0), 12, 8))
+	legend.add_theme_stylebox_override("panel", _tipbox(14, 10))
 	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", s(4))
+	v.add_theme_constant_override("separation", s(6))
 	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var bb := "[b][color=#c8f53a]%s[/color][/b] [color=#7c8674](click to close)[/color]" % (title if title != "" else "Terrain")
+	var hb := "[b]%s[/b]" % (title if title != "" else "Terrain")
 	if str(_legend.get("desc", "")) != "":
-		bb += "\n[color=#a7b09d]%s[/color]" % str(_legend["desc"])
-	var head := _rich(bb)
-	head.custom_minimum_size.x = s(352)
+		hb += "\n[color=#c4beb0]%s[/color]" % str(_legend["desc"])
+	var head := _rich(recol(hb), 18)
+	head.custom_minimum_size.x = s(380)
 	v.add_child(head)
 	for r in rows:
 		var h := HBoxContainer.new()
 		h.add_theme_constant_override("separation", s(8))
 		h.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		h.add_child(_swatch(str(r[1])))
-		var t := _rich("[b]%s[/b] %s" % [str(r[0]), str(r[2])])
+		var t := _rich(recol("[b]%s[/b] %s" % [str(r[0]), str(r[2])]), 18)
 		t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		t.custom_minimum_size.x = s(332)
+		t.custom_minimum_size.x = s(356)
 		h.add_child(t)
 		v.add_child(h)
+	v.add_child(_label("Click to close", 17, S_TEXT2))
 	legend.add_child(v)
 	legend.size = Vector2.ZERO
 	legend.reset_size()
 
 
 # ---------------------------------------------------------------- nameplates
-# A solid strip on the board: a 3 px side accent (friend green, foe lavender), the name, a segmented hull bar and a
-# shield line. Tags above it: UP (gilt), NEMESIS (alarm red), and on the target the odds ("64% 2 guns") with the
-# expected loss hatched on its bars.
+# E1: words on the board only for the ship that is up (ember) and the target (the Nemesis in its red); the ship under the
+# pointer and the enemy acting now get theirs while they are; every other name waits for hover. Plain words with the
+# map's dark halo: no strip, no bars, no tags (the hull and shields are on the sheet and on the hover tip).
 
 func plate(id: String) -> Control:
 	if plates.has(id):
 		return plates[id]
 	var c := VBoxContainer.new()
 	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	c.add_theme_constant_override("separation", s(1))
+	c.add_theme_constant_override("separation", 0)
 	var tags := HBoxContainer.new()
 	tags.name = "tags"
-	tags.add_theme_constant_override("separation", s(4))
 	tags.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tags.visible = false
 	c.add_child(tags)
 	var st := PanelContainer.new()
 	st.name = "st"
 	st.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	st.add_theme_stylebox_override("panel", GS.strip(k, FRIEND))
+	st.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 	c.add_child(st)
 	var v := VBoxContainer.new()
 	v.name = "v"
-	v.add_theme_constant_override("separation", s(2))
+	v.add_theme_constant_override("separation", 0)
 	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	st.add_child(v)
-	var nm := _label("", 13, BONE, font_semi)
+	var nm := _label("", 19, S_TEXT, font_semi)
 	nm.name = "nm"
+	_halo(nm)
 	v.add_child(nm)
 	var bars_c := Control.new()
 	bars_c.name = "bars"
-	bars_c.custom_minimum_size = Vector2(s(84), s(7))
+	bars_c.visible = false
 	bars_c.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bars_c.set_meta("v", [1.0, 0.0, false, -1.0, -1.0])
 	bars_c.draw.connect(func() -> void: _draw_plate_bars(bars_c))
@@ -2201,57 +2348,23 @@ func _draw_plate_bars(c: Control) -> void:
 		c.draw_rect(Rect2(0, y, w * sh, maxf(1.0, float(s(2)))), SHIELD)
 
 
-# extra: {nem: bool, odds: "64% 2 guns", ghost: expected hull after the volley (or -1), target: bool}
+# extra: {nem: bool, odds: "64% 2 guns", ghost: expected hull after the volley (or -1), target: bool}. The odds and the
+# ghost are on the sheet now; the plate is the name only.
 func set_plate(id: String, screen: Vector2, on: bool, name_txt: String, friend: bool, flag: bool, hp: float, mx: float, sh: float, shmx: float, up := false, extra := {}) -> void:
 	var c := plate(id)
 	c.visible = on
 	if not on:
 		return
 	var nm := c.get_node("st/v/nm") as Label
-	var txt := ("★ " if flag else "") + name_txt
-	nm.text = txt
-	nm.add_theme_color_override("font_color", GILT if up else (FRIEND if friend else FOE))
-	nm.add_theme_font_size_override("font_size", s(15) if up else s(13))
-	var st := c.get_node("st") as PanelContainer
+	nm.text = name_txt
 	var target: bool = extra.get("target", false)
-	var key := "%s|%s|%s|%s" % [str(up), str(friend), str(target), str(k)]
-	if st.get_meta("key", "") != key:
-		st.set_meta("key", key)
-		var acc := GILT if up else (FRIEND if friend else FOE_RING)
-		st.add_theme_stylebox_override("panel", GS.strip(k, acc, GILT if (up or target) else Color(0, 0, 0, 0)))
-	# tags above the strip
-	var tags := c.get_node("tags") as HBoxContainer
-	var want := PackedStringArray()
-	if up:
-		want.append("UP")
-	if bool(extra.get("nem", false)):
-		want.append("NEMESIS")
-	if str(extra.get("odds", "")) != "":
-		want.append("odds:" + str(extra["odds"]))
-	var tsig := ",".join(want)
-	if tags.get_meta("sig", "") != tsig:
-		tags.set_meta("sig", tsig)
-		for x in tags.get_children():
-			tags.remove_child(x)
-			x.queue_free()
-		for t in want:
-			if t == "UP":
-				tags.add_child(_tag("UP", GILT, true, 12))
-			elif t == "NEMESIS":
-				tags.add_child(_tag("NEMESIS", ALERT, true, 12))
-			else:
-				var o := _label(t.substr(5), 13, GS.ON_GILT, font_num_b)
-				o.add_theme_stylebox_override("normal", GS.tag(k, GILT, true))
-				tags.add_child(o)
-		tags.visible = not want.is_empty()
+	var col := S_EMBER if up else (S_NEM if bool(extra.get("nem", false)) else S_TEXT)
+	nm.add_theme_color_override("font_color", col)
+	c.set_meta("keep", up or target)
 	var bars_c := c.get_node("st/v/bars") as Control
 	var f := clampf(hp / maxf(mx, 1.0), 0.0, 1.0)
 	var g := float(extra.get("ghost", -1.0))
-	var vv := [f, clampf(sh / maxf(shmx, 1.0), 0.0, 1.0), shmx > 0.0, clampf(g / maxf(mx, 1.0), 0.0, 1.0) if g >= 0.0 else -1.0, -1.0]
-	if bars_c.get_meta("v") != vv:
-		bars_c.set_meta("v", vv)
-		bars_c.custom_minimum_size.y = s(7) if shmx > 0.0 else s(4)
-		bars_c.queue_redraw()
+	bars_c.set_meta("v", [f, clampf(sh / maxf(shmx, 1.0), 0.0, 1.0), shmx > 0.0, clampf(g / maxf(mx, 1.0), 0.0, 1.0) if g >= 0.0 else -1.0, -1.0])
 	c.reset_size()
 	c.position = screen - Vector2(c.size.x * 0.5, c.size.y)
 
@@ -2266,7 +2379,12 @@ var plates_hidden := 0
 # screen rects of the HUD panels a ship name must not sit under
 func hud_blockers() -> Array:
 	var out: Array = []
-	for p in [top, roster, panel, log_panel, tipcard, phase, legend, unacted]:
+	if ledger != null and ledger.is_visible_in_tree():
+		out.append(Rect2(ledger.sheet_r.position, Vector2(ledger.sheet_r.size.x - s(24), ledger.sheet_r.size.y)))
+		for h in ledger.hits:
+			if not Rect2(h["r"]).intersects(ledger.sheet_r):
+				out.append(Rect2(h["r"]))
+	for p in [log_panel, tipcard, legend]:
 		if p != null and is_instance_valid(p) and (p as Control).is_visible_in_tree():
 			out.append((p as Control).get_global_rect())
 	return out
@@ -2289,6 +2407,10 @@ func declutter_plates(prio: Dictionary) -> void:
 	plates_hidden = 0
 	for it in items:
 		var c: Control = plates[it[2]]
+		if not bool(c.get_meta("keep", false)) and int(it[0]) < 2:
+			# E1: a name that is neither the ship that is up, the target, the hovered ship nor the enemy acting waits for hover
+			c.modulate.a = 0.0
+			continue
 		var pr := _plate_rect(c).grow(s(1))
 		if _hits_any(pr, blockers):
 			c.modulate.a = 0.0
@@ -2357,11 +2479,8 @@ func plate_names_under_panels() -> int:
 
 # a floating callout over a ship ("-12 shield", "Miss", "Critical"); the battle scene moves and fades it
 func make_float(text: String, col: Color) -> Label:
-	var l := _label(text, 16, col, font_semi)
-	l.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
-	l.add_theme_constant_override("shadow_offset_y", s(2))
-	l.add_theme_constant_override("outline_size", s(3))
-	l.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.7))
+	var l := _label(text, 19, col_of(col), font_semi)
+	_halo(l)
 	plates_root.add_child(l)
 	l.reset_size()
 	return l
@@ -2378,26 +2497,21 @@ func remove_plate(id: String) -> void:
 func show_tipcard(id: String, title: String, body: String) -> void:
 	hide_tipcard()
 	_last["show_tipcard"] = [id, title, body]
-	tipcard = _panel(-1, 86, M + COL_W + 22, -1, 360, -1)
-	var w := _well(GILT2, 14, 10)
-	tipcard.add_child(w)
+	tipcard = _panel(-1, 86, M + COL_W + 22, -1, 380, -1)
+	tipcard.add_theme_stylebox_override("panel", _tipbox(18, 14))
 	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", s(8))
-	w.add_child(v)
-	v.add_child(_label(title, 17, GILT, font_semi))
-	var b := _rich(body)
-	b.custom_minimum_size = Vector2(s(318), 0)
+	v.add_theme_constant_override("separation", s(10))
+	tipcard.add_child(v)
+	var tl := _label(title, 21, S_TEXT, font_semi)
+	tl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	tl.custom_minimum_size = Vector2(s(340), 0)
+	v.add_child(tl)
+	var b := _rich(recol(body), 18)
+	b.custom_minimum_size = Vector2(s(340), 0)
 	v.add_child(b)
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", s(8))
-	# lit, not filled: End ship stays the one filled lime button on the screen (R148)
-	var ok := _button("Got it", "tip_ok", id)
-	var lb := GS.lit_boxes(k)
-	for st in ["normal", "hover", "pressed", "disabled"]:
-		ok.add_theme_stylebox_override(st, lb[st])
-	for c in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
-		ok.add_theme_color_override(c, GILT)
-	row.add_child(ok)
+	row.add_theme_constant_override("separation", s(12))
+	row.add_child(_button("Got it", "tip_ok", id, true))
 	row.add_child(_button("Turn off all tips", "tip_off"))
 	v.add_child(row)
 
@@ -2418,48 +2532,44 @@ func _grab_end_focus(first: Button, attempt := 1) -> void:
 		get_tree().create_timer(0.75).timeout.connect(func() -> void: _grab_end_focus(first, attempt + 1), CONNECT_ONE_SHOT)
 
 
-# a centred glass frame with one solid well inside (the end card and the menu)
+# a centred box (the end card and the menu): the hover tip's near-black square with its hairline edge, in the middle of
+# the clear part of the screen. Its first child is the content (the menu's rows are read by index: row 0 is the title).
 func _modal(pad_x: float, pad_y: float) -> Array:
-	# one solid well with the shell's etched edge and gilt corner ticks; its first child is the content (the menu's rows
-	# are read by index: row 0 is the title)
 	var p := PanelContainer.new()
-	var g := GS.well(k, Color(0, 0, 0, 0), pad_x, pad_y)
-	g.border_color = GS.SHELL_EDGE
-	g.shadow_color = Color(0, 0, 0, 0.55)
-	g.shadow_size = s(18)
-	p.add_theme_stylebox_override("panel", g)
+	p.add_theme_stylebox_override("panel", _tipbox(pad_x, pad_y))
 	p.set_anchors_preset(Control.PRESET_CENTER)
 	p.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	p.grow_vertical = Control.GROW_DIRECTION_BOTH
 	p.mouse_filter = Control.MOUSE_FILTER_STOP
 	root.add_child(p)
-	GS.ticks_on(p, k)
 	return [p, p]
 
 
 func show_end(title: String, body: String, win: bool, external := false) -> void:
 	_last["show_end"] = [title, body, win, external]
-	var mw := _modal(36, 26)
+	var mw := _modal(40, 30)
 	endcard = mw[0]
 	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", s(12))
+	v.add_theme_constant_override("separation", s(14))
 	(mw[1] as Control).add_child(v)
-	var t := _label(title.to_upper(), 34, GILT if win else BLOOD, font_goth)
+	var t := _label(title.to_upper(), 56, S_EMBER if win else S_TEXT, font_name)
 	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(t)
-	var b := _label(body, 16, BONE2)
+	var b := _label(body, 19, S_TEXT2)
 	b.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	b.custom_minimum_size = Vector2(s(520), 0)
 	v.add_child(b)
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	row.add_theme_constant_override("separation", s(10))
+	row.add_theme_constant_override("separation", s(14))
 	if external:
 		row.add_child(_button("Continue", "continue", null, true, true))
 	else:
 		row.add_child(_button("Fight again", "restart", null, true, true))
 		row.add_child(_button("Quit", "quit", null, false, true))
+	for c in row.get_children():
+		(c as Button).custom_minimum_size = Vector2(s(180), s(56))
 	v.add_child(row)
 	# keyboard focus on the first button, after a beat: a Space still held down to hurry the last enemy turn must not
 	# press Continue the moment the card appears (the battle's own 0.5 s guard on Space, battle.gd _on_key)
@@ -2467,11 +2577,12 @@ func show_end(title: String, body: String, win: bool, external := false) -> void
 	get_tree().create_timer(0.75).timeout.connect(func() -> void: _grab_end_focus(first), CONNECT_ONE_SHOT)
 
 
-# the in-battle menu (Esc with nothing to cancel, or Menu in the top bar): items are [text, action, arg]
+# the in-battle menu (Esc with nothing to cancel, or Menu on the sheet): items are [text, action, arg]. body, when given,
+# is a paragraph under the title (the Keys page).
 var menu: PanelContainer
 
 
-func show_menu(title: String, items: Array, row := -1) -> void:
+func show_menu(title: String, items: Array, row := -1, body := "") -> void:
 	# a toggle in the menu builds it again: keep the keyboard on the same row
 	var refocus := row if row >= 0 else 0
 	if row < 0 and menu != null and is_instance_valid(menu):
@@ -2479,18 +2590,24 @@ func show_menu(title: String, items: Array, row := -1) -> void:
 		if fo != null and menu.is_ancestor_of(fo):
 			refocus = maxi(0, fo.get_index() - 1)   # row 0 is the title label
 	hide_menu()
-	_last["show_menu"] = [title, items]
-	var mw := _modal(26, 18)
+	_last["show_menu"] = [title, items, body]
+	var mw := _modal(30, 22)
 	menu = mw[0]
 	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", s(8))
-	v.custom_minimum_size = Vector2(s(320), 0)
+	v.add_theme_constant_override("separation", s(2))
+	v.custom_minimum_size = Vector2(s(360), 0)
 	(mw[1] as Control).add_child(v)
-	var t := _label(title.to_upper(), 22, GILT, font_goth)
-	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var t := _label(title.to_upper(), 40, S_TEXT, font_name)
 	v.add_child(t)
 	for it in items:
-		v.add_child(_button(str(it[0]), str(it[1]), it[2] if it.size() > 2 else null, it == items[0], true))
+		var bt := _button(str(it[0]), str(it[1]), it[2] if it.size() > 2 else null, it == items[0], true)
+		bt.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		bt.custom_minimum_size.y = s(44)
+		v.add_child(bt)
+	if body != "":
+		var bl := _rich(recol(body), 18)
+		bl.custom_minimum_size = Vector2(s(560), 0)
+		v.add_child(bl)
 	if items.size() > 0:
 		(v.get_child(1 + mini(refocus, items.size() - 1)) as Button).grab_focus.call_deferred()
 
@@ -2515,7 +2632,7 @@ func letterbox(on: bool) -> void:
 			bars.append(b)
 	for b in bars:
 		(b as ColorRect).visible = on
-	for c in [top, roster, panel, log_panel, unacted]:
+	for c in [ledger, log_panel, legend]:
 		if c != null:
 			c.modulate.a = 0.0 if on else 1.0
 
@@ -2531,7 +2648,7 @@ func loading(on: bool) -> void:
 		load_cover.color = Color(GS.INK, 1.0)
 		load_cover.set_anchors_preset(Control.PRESET_FULL_RECT)
 		load_cover.mouse_filter = Control.MOUSE_FILTER_STOP
-		var l := _label("PREPARING THE BATTLE...", 22, GILT, font_goth)
+		var l := _label("PREPARING THE BATTLE", 40, S_TEXT, font_name)
 		l.set_anchors_preset(Control.PRESET_CENTER)
 		l.grow_horizontal = Control.GROW_DIRECTION_BOTH
 		l.grow_vertical = Control.GROW_DIRECTION_BOTH
@@ -2540,6 +2657,30 @@ func loading(on: bool) -> void:
 	elif not on and load_cover != null:
 		load_cover.queue_free()
 		load_cover = null
+
+
+# Issue 529 (PR 533): a tree prompt (a "you may" skill's yes or no, a Chorus role) takes the shot's place in the sheet,
+# with the skill's name, one line that says what the choice does, and its choices numbered. Keys 1 to 3 pick (battle.gd),
+# so does a click. It stays until answered: the rules hold the open prompt (view().ask). ask_panel is the sheet while a
+# prompt is open, so battle.gd's "a prompt is open" test (hud.ask_panel != null) reads as before.
+func show_ask(a: Dictionary) -> void:
+	var key := "%s|%s|%s" % [str(a.get("kind")), str(a.get("key")), str(a.get("id", ""))]
+	if ask_panel != null and ask_key == key:
+		return
+	_last["show_ask"] = [a]
+	ask_key = key
+	ledger.ask = a
+	ledger.mark()
+	ask_panel = ledger
+
+
+func hide_ask() -> void:
+	_last.erase("show_ask")
+	ask_key = ""
+	if ledger != null:
+		ledger.ask = {}
+		ledger.mark()
+	ask_panel = null
 
 
 func hide_menu() -> void:
@@ -2588,86 +2729,42 @@ var _phase_fs := -1
 
 func _layout() -> void:
 	var vs := root.get_viewport_rect().size
-	var gap := float(s(10))
 	var col := _column()
-	var band_top := top.get_global_rect().end.y + s(6)
-	var band_bot := band_top
-	# the band row: the unacted set from the fleet list's left edge, then the legend chip; the enemy turn strip centred
-	var x := float(s(M))
-	if unacted.visible:
-		unacted.reset_size()
-		unacted.position = Vector2(x, band_top).round()
-		x = unacted.get_global_rect().end.x + gap
-		band_bot = maxf(band_bot, unacted.get_global_rect().end.y)
-	var avail_l := maxf(x, float(s(M)))
+	# Retreat lives on the sheet (battle.gd sets the old button's state)
+	var rt := {"on": retreat_btn.visible, "off": retreat_btn.disabled}
+	if ledger.retreat != rt:
+		ledger.retreat = rt
+		ledger.mark()
+	# top right, under the Nemesis line: the terrain key, right aligned at the sheet's right margin
+	var right := vs.x - s(52)
+	var below := float(s(150))
 	if legend != null and legend.visible:
-		legend.position = Vector2(maxf(avail_l, col.x), band_top).round()
-		var lr := legend.get_global_rect()
-		if lr.end.x > col.y:
-			legend.position.x = maxf(float(s(M)), col.y - lr.size.x)
-			lr = legend.get_global_rect()
-		avail_l = lr.end.x + gap
-		if not legend_open:
-			band_bot = maxf(band_bot, lr.end.y)
-	avail_l = maxf(avail_l, col.x)
-	var avail_w := maxf(float(s(200)), col.y - avail_l)
-	if phase.visible:
-		# the strip's text shrinks (down to 12) and then wraps to fit between the legend chip and the shell
-		var plain := phase_lbl.get_parsed_text()
-		var fs := s(15)
-		var marg := float(s(36))
-		while fs > s(12) and font_semi.get_string_size(plain, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x + marg > avail_w:
-			fs -= 1
-		if fs != _phase_fs:
-			_phase_fs = fs
-			phase_lbl.add_theme_font_size_override("normal_font_size", fs)
-			phase_lbl.add_theme_font_size_override("bold_font_size", fs)
-		var wide: bool = font_semi.get_string_size(plain, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x + marg > avail_w
-		var want_wrap := TextServer.AUTOWRAP_WORD_SMART if wide else TextServer.AUTOWRAP_OFF
-		var want_min := avail_w - marg if wide else 0.0
-		if phase_lbl.autowrap_mode != want_wrap or absf(phase_lbl.custom_minimum_size.x - want_min) > 1.0:
-			phase_lbl.autowrap_mode = want_wrap
-			phase_lbl.custom_minimum_size.x = want_min
-			phase.reset_size()
-		if phase.size.x > phase.get_combined_minimum_size().x + 1.0:
-			phase.reset_size()
-		var w := phase.size.x
-		var px := clampf((col.x + col.y) * 0.5 - w * 0.5, avail_l, maxf(avail_l, col.y - w))
-		phase.position = Vector2(px, band_top).round()
-		band_bot = maxf(band_bot, phase.position.y + phase.size.y)
+		legend.reset_size()
+		legend.position = Vector2(right - legend.size.x, below).round()
+		below = legend.position.y + legend.size.y + s(10)
 	if aichip.visible:
 		aichip.reset_size()
-		var w := aichip.size.x
-		var y := band_bot + s(6) if phase.visible else band_top
-		aichip.position = Vector2(clampf((col.x + col.y) * 0.5 - w * 0.5, avail_l, maxf(avail_l, col.y - w)), y).round()
-		band_bot = maxf(band_bot, aichip.position.y + aichip.size.y)
-	var below := maxf(band_bot, roster.get_global_rect().position.y - s(4)) + s(8)
-	# the onboarding tip card: right side of the middle column, under the band row
+		aichip.position = Vector2(clampf((col.x + col.y) * 0.5 - aichip.size.x * 0.5, col.x, maxf(col.x, col.y - aichip.size.x)), s(40)).round()
+	# the onboarding tip card: right side of the clear part, under the corner's words
 	if tipcard != null and is_instance_valid(tipcard):
-		tipcard.position = Vector2(col.y - tipcard.size.x, below).round()
-	# toasts: centred in the middle column under the band row, below the tip card if they would meet
+		tipcard.position = Vector2(right - tipcard.size.x, below + s(6)).round()
+	# toasts: centred in the clear part, near the top, below the tip card if they would meet
 	if toast_lbl.modulate.a > 0.0:
 		toast_lbl.reset_size()
 		var w := toast_lbl.size.x
-		var p := Vector2(clampf((col.x + col.y) * 0.5 - w * 0.5, col.x, maxf(col.x, col.y - w)), below)
+		var p := Vector2(clampf((col.x + col.y) * 0.5 - w * 0.5, col.x, maxf(col.x, col.y - w)), s(96))
 		if tipcard != null and is_instance_valid(tipcard) and Rect2(p, toast_lbl.size).intersects(tipcard.get_global_rect()):
-			p.y = tipcard.get_global_rect().end.y + s(8)
+			p.x = maxf(col.x, tipcard.get_global_rect().position.x - w - s(16))
 		toast_lbl.position = p.round()
-	# the big banner: centred in the middle column
+	# the big banner: centred in the clear part
 	if banner_lbl.modulate.a > 0.0:
 		banner_lbl.reset_size()
 		var w := banner_lbl.size.x
-		banner_lbl.position = Vector2(clampf((col.x + col.y) * 0.5 - w * 0.5, col.x, maxf(col.x, col.y - w)), vs.y * 0.5 - banner_lbl.size.y * 0.5).round()
-	# the key hint (no ship up): between the log and the shell, at the bottom
-	var bl := col.x
-	if log_panel != null and log_panel.visible:
-		bl = maxf(bl, log_panel.get_global_rect().end.x + gap)
-	if hint.visible:
-		hint.reset_size()
-		var w: float = hint.size.x
-		hint.position.x = roundf(clampf((bl + col.y) * 0.5 - w * 0.5, bl, maxf(bl, col.y - w)))
-		hint.position.y = vs.y - s(14) - hint.size.y
-	_apply_heights()
+		banner_lbl.position = Vector2(clampf((col.x + col.y) * 0.5 - w * 0.5, col.x, maxf(col.x, col.y - w)), vs.y * 0.42 - banner_lbl.size.y * 0.5).round()
+	# the menu and the end card: centred in the clear part
+	for m in [menu, endcard]:
+		if m != null and is_instance_valid(m):
+			(m as Control).position.x = roundf(clampf((col.x + col.y) * 0.5 - (m as Control).size.x * 0.5, col.x, maxf(col.x, col.y - (m as Control).size.x)))
 	if tip.visible:
 		_place_tip()
 
@@ -2678,8 +2775,10 @@ func _card_room() -> float:
 
 
 func over_ui(p: Vector2) -> bool:
-	for c in [top, roster, panel, log_panel, tipcard, endcard, menu, legend, unacted]:
-		if c != null and is_instance_valid(c) and c.visible and c.get_global_rect().has_point(p):
+	if ledger != null and ledger.is_visible_in_tree() and ledger.modulate.a > 0.5 and ledger._has_point(p):
+		return true
+	for c in [log_panel, tipcard, endcard, menu, legend]:
+		if c != null and is_instance_valid(c) and c.is_visible_in_tree() and c.get_global_rect().has_point(p):
 			return true
 	return false
 
@@ -2735,6 +2834,8 @@ func _build_phase() -> void:
 func set_phase(kind: String, bb: String, progress := -1.0) -> void:
 	_last["set_phase"] = [kind, bb, progress]
 	_phase_kind = kind
+	ledger.phase = {"kind": kind, "text": bb, "p": progress}
+	ledger.mark()
 	if phase_lbl.text != bb:
 		phase_lbl.text = bb
 	phase.visible = kind == "enemy"

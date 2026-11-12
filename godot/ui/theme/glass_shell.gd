@@ -85,6 +85,9 @@ const TEXT3 := Color("#969084")
 const NEM := Color("#ff6050")
 const ON_EMBER := Color("#100c08")
 const SHEET_HAIR := Color("#48443c")
+# Glacier: shield readouts and nothing else, on every screen that moves to the orders sheet (R191, Ryan's pick R210). The
+# shields drawn around ships in space keep their faction colours (owner, Oct 24); this is the interface's shield colour.
+const GLACIER := Color("#92b8e8")
 
 static func sheet_name() -> Font:
 	return _variant("sheet800", _font_file("BigShouldersDisplay-VF.ttf"), 0, 800)

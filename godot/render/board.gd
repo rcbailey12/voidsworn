@@ -354,11 +354,13 @@ const BASE_FILL := Color(0.04, 0.06, 0.09, 0.18)
 # F1: a neutral grey grid (was a pale blue that blended with the move hexes); it fades away from the ship that is up
 const BASE_RING := Color(0.66, 0.70, 0.78, 0.075)
 # F1: the hexes a ship can move to are blue, a colour no terrain, zone or marker uses (nebula violet, debris sand, storm
-# yellow, exits green, perimeters red, the relay gold, your ships mint, enemies violet, the hovered hex lime)
+# yellow, exits green, perimeters red, the relay gold, your ships mint, enemies violet, the hovered hex ember)
 const REACH_FILL := Color(0.10, 0.45, 1.0, 0.36)
 const REACH_HOT := Color(0.30, 0.70, 1.0, 0.55)
 const REACH_RING := Color(0.25, 0.55, 1.0, 0.22)
 const REACH_EDGE := Color(0.45, 0.85, 1.0, 1.0)
+# the hovered hex's outline: the battle screen's ember (#ff8a3a; issue 271 step 2, lime retired by R191)
+const HOVER_RING := Color(1.0, 0.541, 0.227, 0.9)
 
 
 # objective zones (ui3d.js ZONE_INFO): the exit edge green, the transports' exit and the station perimeter red; the relay
@@ -403,7 +405,7 @@ func refresh() -> void:
 		if ring_over.has(k) and style_over.has(k):
 			rc.a *= 0.5
 		if k == hover_key:
-			rc = Color(0.78, 0.96, 0.23, 0.9)   # the hovered hex: Lime Tactical lime (R149), the next action
+			rc = HOVER_RING   # the hovered hex: the ember, the next action (issue 271; lime retired, R191)
 		rm.set_instance_color(i, rc)
 		rm.set_instance_custom_data(i, Color(1.0 if (ring_over.has(k) or k == hover_key) else 0.0, 0, 0, 0))
 
