@@ -43,6 +43,11 @@ sweep Part 4).
 0.7 **A rule that says the game does something needs a capture or a check that shows it, or the words "not built yet".** Why:
 specs described braking jets and slow motion the game did not have (issue 492). Set: Board, Nov 11.
 
+0.8 **After a day with many rulings, the Board has an outside model check that each one landed in the document a worker reads
+(a dropped-context sweep).** Batch rulings that only set a rule (no working method) may land in this book alone. Why: the
+insides rule was recorded but never reached the builder's playbook (R209, R211); Muse's method audit of R201 to R218 found
+the screens half of R218 written nowhere (issue 558). Set: Board, Nov 12 (R211, issue 558).
+
 ## 1. Working with Ryan
 
 1.1 **Plain words, the answer first, your pick and why; no em dashes; no human-hour estimates** (estimate in agent runs and
@@ -240,6 +245,13 @@ sanding off what made them theirs (R180). Set: Board lesson after Ryan's review 
 recipe and is the reference for later jobs (R167: "I want this to end with something that opus or other models can run
 from"). Set: Ryan (R167, R180). Ids: R167b, R180d, handoff-01.
 
+4.11 **Every part has a job and every weapon is its faction's own.** A part with no purpose is cut; weapons, turrets and
+launchers are designed per faction from the lore bible and the faction sheet (how the weapon works shows in its mount,
+housing, barrel and muzzle), never a shared silhouette; a gun in another weapon's firing lane or backblast is a clash. Why:
+Ryan on the Hullbreakers: "let's get rid of the chains randomly around the ship. There's no purpose" and "a gun directly
+behind the rocket pods on a16 ... seems like it conflicts"; on Eclipse: "their turrets look the same as hullbreakers" (R221).
+Set: Ryan, Nov 12 (R221).
+
 ## 5. Ship build pipeline
 
 5.1 **No ship is built until its build sheet passes the concept standard** (contrib/muse/design/concept_standard_2026_11/standard.md:
@@ -387,7 +399,8 @@ are starting values. Why: deaths now run 3.5 to over 10 seconds in three beats (
 A turret traverses smoothly (never snaps, RULEBOOK 7.1), within its arc, and returns to rest; the gun's muzzle and its effects
 start at the turned barrel. Why: today every gun is a fixed mesh (no aim code in godot/render/ship_view.gd or
 godot/fx/fx_weapons.gd); turning turrets make a fight read and suit the detailed guns now being built (R217). Set: Ryan, Nov 11
-(R219: "I agree with your design on turrets"). Built (issue 560): a turret is its own node in the ship's glb
+(R219: "I agree with your design on turrets"). A turret may turn aft only to follow a target its rules arc lets it hit
+there; at rest no gun ever points backward (4.2). Set: Ryan, Nov 12 (R222: "yes agree on your turret facing rule"). Built (issue 560): a turret is its own node in the ship's glb
 (docs/ship_pipeline/HARDPOINTS.md "Turrets"; the kit marks it, tools/blender/kits/README.md); the attach point service in
 godot/fx/fx_hull.gd turns it, checked by godot/render/test/turret_check.gd. Hulls exported before it keep fixed guns.
 

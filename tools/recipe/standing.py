@@ -1,7 +1,8 @@
 # Ship recipe: the standing checks every ship keeps for the rest of its life (outside audit pass 2, findings 3, 4 and 13;
 # FINDINGS R160 point (f); docs/ship_pipeline/HARDPOINTS.md). Plain Python, no bpy and no numpy.
-#   outline  the outline score per third (bow, midship, stern) and the inner edge check from the concept camera, with the
-#            class gate (ship json outline_gate) and a per-third floor of gate minus outline_third_slack (default 5 points)
+#   outline  the outline score per third (bow, midship, stern) and the inner edge check from the concept camera. The
+#            overlap numbers are REPORTED against the ship json outline_gate, never a pass bar (RULEBOOK 5.8); missing
+#            numbers or missing inner edge distances still fail loudly.
 #   battle   the outline score from the second camera, the game's battle camera at r 170 (outline_battle.py), both cameras
 #   paint    the concept side, the far side and the underside stills all exist (stage 5 render.py)
 #   blink    the concept and model blink sheet exists (blink.py)
@@ -50,23 +51,28 @@ def check_outline(ship, job):
         n = d.get(t) or {}
         if 'overlap' not in n:
             bad.append(f'{t}: no overlap'); continue
-        if float(n['overlap']) < floor:
-            bad.append(f'{t}: {n["overlap"]} percent is below {floor:.1f} (gate {gate:.0f} minus {slack:.1f})')
         for k in EDGE_KEYS:
             if k not in n:
                 bad.append(f'{t}: no {k} (the inner edge check did not run)')
     whole = (d.get('whole') or {}).get('overlap')
     if whole is None:
         bad.append('no whole overlap')
-    elif float(whole) < gate:
-        bad.append(f'whole: {whole} percent is below the gate {gate:.0f}')
     if bad:
         for b in bad:
             print('  FAIL', b)
-        return fail(f'outline: {cell} does not meet the standing outline check')
-    print(f'  outline {cell}: bow {d["bow"]["overlap"]}, midship {d["midship"]["overlap"]}, stern {d["stern"]["overlap"]}, whole {whole}; '
-          f'inner edges within 6 px bow {d["bow"]["edge_cell_within_6px"]}, midship {d["midship"]["edge_cell_within_6px"]}, stern {d["stern"]["edge_cell_within_6px"]}')
-    return ok(f'outline per third and inner edge check meet the gate (floor {floor:.1f})')
+        return fail(f'outline: {cell} does not have a complete standing outline record')
+    # RULEBOOK 5.8: the overlap against the concept is a reported number, not a pass bar. The old gate and floor are
+    # printed beside it so the builder can see where the shape sits, and a low number is a note, never a failure.
+    print(f'  outline {cell}: bow {d["bow"]["overlap"]}, midship {d["midship"]["overlap"]}, stern {d["stern"]["overlap"]}, whole {whole} '
+          f'(reported, not a pass bar; old gate {gate:.0f}, old per-third floor {floor:.1f})')
+    print(f'  inner edges within 6 px bow {d["bow"]["edge_cell_within_6px"]}, midship {d["midship"]["edge_cell_within_6px"]}, stern {d["stern"]["edge_cell_within_6px"]}')
+    for t in THIRDS:
+        v = float(d[t]['overlap'])
+        if v < floor:
+            print(f'  REPORT {t} overlap {v} percent is below the old per-third floor {floor:.1f}; no failure (RULEBOOK 5.8)')
+    if float(whole) < gate:
+        print(f'  REPORT whole overlap {whole} percent is below the old gate {gate:.0f}; no failure (RULEBOOK 5.8)')
+    return ok('outline per third and inner edge data are present; the overlap is reported, not a pass bar')
 
 
 def check_battle(ship, job):
@@ -194,11 +200,12 @@ def write_fixture(root, good=True):
     sp = os.path.join(root, 'ship.json')
     json.dump(ship, open(sp, 'w'), indent=1)
     thirds = {}
-    for k, v in (('bow', 91.5), ('midship', 90.6), ('stern', 85.0)):
+    for k, v in (('bow', 80.0), ('midship', 80.0), ('stern', 70.0)):
         thirds[k] = dict(overlap=v, **{e: 10.0 for e in EDGE_KEYS})
     if not good:
-        thirds['stern']['overlap'] = 80.0
-    thirds['whole'] = dict(overlap=90.3)
+        # RULEBOOK 5.8: a low overlap is reported, so the broken copy is missing an inner edge distance instead.
+        thirds['stern'].pop('edge_cell_within_6px')
+    thirds['whole'] = dict(overlap=78.0)
     json.dump(dict(cells={'T1': thirds}), open(os.path.join(root, 'sil', 'outline_thirds.json'), 'w'), indent=1)
     battle = {'game': dict(bow=85.2, midship=90.9, stern=85.8, whole=87.7), 'studio': dict(bow=74.6, midship=90.7, stern=89.2, whole=86.0)}
     json.dump(dict(cells={'T1': battle}), open(os.path.join(root, 'sil', 'outline_battle.json'), 'w'), indent=1)

@@ -166,12 +166,65 @@ float fx_mouth_edge(int i, vec3 p) {
 # Materials keep their own textures/uniforms. No static GPU resource survives shutdown.
 static var _shader_refs := {}
 
-static func shared_shader(code: String) -> Shader:
+# Issue 569: a see-through hull surface (the Glasswright sail membranes, GLB alpha blend, which
+# Godot imports as TRANSPARENCY_ALPHA_DEPTH_PRE_PASS) carries its alpha through the damage path
+# too. A spatial shader that writes ALPHA is drawn transparent, so the opaque fleet keeps the
+# plain EXTERIOR code and only a see-through source gets this variant. The damage shader is
+# derived from this code, so it keeps the alpha.
+static func exterior_alpha_code() -> String:
+	if not _ext_codes.has("exterior_alpha"):
+		_ext_codes["exterior_alpha"] = EXTERIOR.replace("ALBEDO = hull_albedo.rgb * texture(hull_color, UV).rgb;",
+			"ALBEDO = hull_albedo.rgb * texture(hull_color, UV).rgb;\n\tALPHA = hull_albedo.a * texture(hull_color, UV).a;")
+	return _ext_codes["exterior_alpha"]
+
+# Issue 376: the shader warm-up list is hand kept, so after it ends any shader first built later names itself here, once
+# per name, with the frame and the time. A name in this list is a miss in the warm-up list. The flag is off during a
+# warm-up (a bench may warm more than once), and logging is once per name so a hot path cannot flood the log.
+static var late_watch := false
+static var _late := {}
+static var _late_lines: Array = []
+
+
+static func start_late_watch() -> void:
+	late_watch = true
+
+
+static func pause_late_watch() -> void:
+	late_watch = false
+
+
+static func reset_late() -> void:
+	late_watch = false
+	_late.clear()
+	_late_lines.clear()
+
+
+static func late_shader_count() -> int:
+	return _late.size()
+
+
+static func late_shader_names() -> Array:
+	return _late_lines.duplicate()
+
+
+static func note_late(name: String) -> void:
+	if not late_watch or _late.has(name):
+		return
+	var frame := Engine.get_process_frames()
+	var ms := Time.get_ticks_usec() / 1000.0
+	_late[name] = [frame, ms]
+	var line := "%s frame %d %.1f ms" % [name, frame, ms]
+	_late_lines.append(line)
+	print("[fx] late shader: " + line)
+
+
+static func shared_shader(code: String, label := "") -> Shader:
 	var shader: Shader = _shader_refs[code].get_ref() if _shader_refs.has(code) else null
 	if shader == null:
 		shader = Shader.new()
 		shader.code = code
 		_shader_refs[code] = weakref(shader)
+		note_late(label if label != "" else "hull shader " + str(code.hash()))
 	return shader
 
 
@@ -179,6 +232,7 @@ static func clear_shader_cache() -> void:
 	_shader_refs.clear()
 	_dmg_code.clear()
 	_uniform_names.clear()
+	_ext_codes.clear()
 
 
 static func damage_material(src: Material, frame: Transform3D, mouths: Dictionary, L: float, organic := false) -> ShaderMaterial:
@@ -188,7 +242,8 @@ static func damage_material(src: Material, frame: Transform3D, mouths: Dictionar
 		src = StandardMaterial3D.new()
 	var base: ShaderMaterial = src if src is ShaderMaterial else _exterior(src)
 	var mat := ShaderMaterial.new()
-	mat.shader = shared_shader(_damage_code(base.shader.code))
+	var dmg := _damage_code(base.shader.code)
+	mat.shader = shared_shader(dmg, "damage " + str(dmg.hash()))
 	for param in _uniforms_of(base.shader):
 		var value = base.get_shader_parameter(param)
 		if value != null:
@@ -209,6 +264,7 @@ static func damage_material(src: Material, frame: Transform3D, mouths: Dictionar
 # hull rebuild, death and death piece made one per surface on the main thread). Same code out, same shader.
 static var _dmg_code := {}
 static var _uniform_names := {}
+static var _ext_codes := {}
 
 
 static func _uniforms_of(shader: Shader) -> Array:
@@ -280,9 +336,12 @@ if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
 
 static func _exterior(src: Material) -> ShaderMaterial:
 	var mat := ShaderMaterial.new()
-	mat.shader = shared_shader(EXTERIOR)
-	if not src is BaseMaterial3D: return mat
 	var m := src as BaseMaterial3D
+	# The glTF importer gives an alphaMode BLEND material TRANSPARENCY_ALPHA_DEPTH_PRE_PASS,
+	# so every transparency mode except DISABLED must carry its alpha into the damage shader.
+	var see_through := m != null and m.transparency != BaseMaterial3D.TRANSPARENCY_DISABLED
+	mat.shader = shared_shader(exterior_alpha_code() if see_through else EXTERIOR, "exterior_alpha" if see_through else "exterior")
+	if m == null: return mat
 	for pair in [["albedo", m.albedo_color], ["uv_scale", m.uv1_scale], ["uv_offset", m.uv1_offset],
 		["roughness", m.roughness], ["metallic", m.metallic], ["specular", m.metallic_specular],
 		["normal_scale", m.normal_scale], ["has_normal", m.normal_enabled], ["has_orm", m is ORMMaterial3D],

@@ -18,10 +18,10 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
    opus_check_341).
-4. **Breakable by design, comprehensive insides.** Real hull thickness, decks, bulkheads and machinery spaces, authored break
+4. **Breakable by design, comprehensive insides (performance permitting, R215).** Real hull thickness, decks, bulkheads and machinery spaces, authored break
    lines with matching inner faces and damage textures (R98). Insides are built through the whole hull, not only in the break
    pieces (Ryan, Nov 11: "better to be comprehensive with internal if we can without performance issues", R215); they stay
-   hidden until a piece breaks away, so they cost memory, not frame time, and their cost is reported (R111). Rim bands at break
+   hidden until a piece breaks away; their cost is reported per build (R111) and the measured scene gate decides whether the full set ships (R215; issue 557's test hull: 25,008 more triangles, three more material draws, gate PASS). Rim bands at break
    lines and openings plus a dark inner liner (R99 Q1) stay as the layer the intact ship shows. How a ship breaks follows the
    current destruction approach, not R99 Q2's fixed line count (R215): blown apart, never sliced (R186: uneven pieces, no
    straight line across the hull, a missing bite where the core went, ragged scorched rims), break lines placed by the faction's
@@ -35,6 +35,9 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
 8. **Costs.** Triangles, draw calls and surfaces per ship are reported, never capped; the only binding law is the measured
    scene gate on the RTX 5080 (R111, R121). Challengers earn adoption by Ryan's judgement on comparison sheets with costs
    reported (R121).
+9. **Fidelity and fit.** Section 2c: parts read as what they are, the fit check with zero clashes (R217); a parts inventory
+   before modelling, one detail level across the ship, kit first, the massing checked by ratios and structure counts, and
+   the side-by-side judged by someone other than the builder before Ryan sees it (R218).
 
 ## 1. Target
 
@@ -68,6 +71,10 @@ as a real built object and lists each change, with its reason, on the build shee
 when the picture, the faction guide and the lore conflict, or a change would alter the ship's identity.
 
 ## 2c. Parts that read and fit together (R217)
+
+Ryan's words in this section are quoted. The mechanisms (gun slots from data.js, the blockout over the stage 2 reference,
+heights against a side view, the parts inventory, the fit check, ratios and structure counts) are the Board's method under
+R202, written to answer the failures he named in R213, R217 and R218.
 
 Ryan, Nov 11 2026 21:24 CST, on build sheets round 2 (A16, A17): "The tubes at the front of a16 concept are just circles on the
 actual build? also the guns are visibly blocking the rockets and appear to be in front of an engine at one point. we need to
@@ -106,6 +113,17 @@ global learning and shaping the approach". So the method, for every ship of ever
   rendered beside the concept at the same view, and the inventory is ticked off per cell: present, shaped, detailed. That
   table is on every sheet and every build.
 - Every round's feedback goes into this section as a general rule, never only into the one ship's notes.
+- Every part has a job (R221). A part that does nothing on the ship (Ryan on the Hullbreaker chains: "let's get rid of the
+  chains randomly around the ship. There's no purpose") is cut; the inventory names each part's job, and a part with none
+  does not ship. Junky is still on-brand for Hullbreakers, but junk that is bolted on for a reason.
+- Parts must not look like they conflict, not only not clash (R221: "There's a gun directly behind the rocket pods on a16
+  which seems like it conflicts?"). The fit check adds each launcher's backblast cone and each rack's firing lane, and a
+  gun whose barrel points at or sits in another weapon's lane or blast is a clash even when no mesh touches.
+- Weapons are designed per faction from the lore (R221: "their turrets look the same as hullbreakers. We should have those
+  be more unique per factions and fit the actual weapons they use per lore Bible and faction rules"). Each faction kit's
+  guns, turrets and launchers are built from what that faction's weapons are (data.js weapon ids, the lore bible, the
+  faction sheet in factions.md): their mount, housing, barrel and muzzle say how the weapon works. No turret silhouette is
+  shared between factions; the sheet shows each weapon type beside its lore line.
 - Massing is checked as hard as parts (Board, Nov 12, from round 3: every part passed its tick while the hull still read as a
   lump). The sheet reports the concept's and the build's length to beam to height ratios, and the per-cell table adds a
   structure count: distinct masses, tiers and steps per cell, concept against build. A part list that passes over the wrong
@@ -141,14 +159,13 @@ we don't run into the issues of before with just empty looking husks". What he w
 
 The seven recipe stages, each a double-click file that stops with FAILED and a non-zero exit when it should:
 1 concept in, 2 the AI shape reference (TRELLIS.2, a shape and grime source only, never shipped), 3 the traced hull and the
-outline gate, 4 the faction parts kit and its audit, 5 the paint bake, 6 the LOD chain and its cost, 7 the game export with
+outline overlap, 4 the faction parts kit and its audit, 5 the paint bake, 6 the LOD chain and its cost, 7 the game export with
 hard points.
 
 ## 4. The checks that prove it
 
 - Stage 3: the outline overlap with the concept at the concept's own camera is reported, not a pass bar (RULEBOOK 5.8; was
-  90 percent, R147). Until the workhorse fix in contrib/opus/reviews/rulebook_board_notes.md lands, the stage still exits
-  non-zero below 0.90: read the number and the picture, and say so in the report.
+  90 percent, R147). The stage prints the number and its picture; read them and say so in the report.
 - Stage 4: the audit lists nothing: no part floats or is sunk, nothing crosses a break line, no gun aims backward or into
   the ship. audit_selftest.py proves the audit can fail.
 - Stage 7: check_export.py passes: every weapon slot in the ship's data.js list has a hard point, every hard point is on the
@@ -187,7 +204,7 @@ Brief: docs/playbooks/ships.md (section 0 binds); docs/ship_pipeline/RECIPE.md; 
 Deliver to: tools/recipe/ships/SHIP.json, tools/blender/kits/FACTION/ (only what this hull adds), docs/shots/ships/SHIP/ (blob sweep, bench sheet), docs/ship_pipeline/build_sheets/SHIP/manifest.json
 Branch: opus/issue-<number>
 Effort: one Opus worker; GPU jobs through the PC queue
-Done when: stages 1 to 7 end without FAILED; the outline gate, the audit and check_export.py pass and their output is pasted in the report; the manifest matches the build sheet (run_all_checks); a break render of every break line shows decks and frames, never a hollow; the nine-cell blob sweep and one battle camera bench image are committed. What Ryan will see: the ship at the battle camera beside its concept.
+Done when: stages 1 to 7 end without FAILED; the outline overlap is reported, the audit and check_export.py pass and their output is pasted in the report; the manifest matches the build sheet (run_all_checks); a break render of every break line shows decks and frames, never a hollow; the nine-cell blob sweep and one battle camera bench image are committed. What Ryan will see: the ship at the battle camera beside its concept.
 Build sheet: docs/ship_pipeline/build_sheets/SHIP/ (passed standard.md on <date>; Ryan's look on <date>)
 Route per part: kit, hand-built, or generated (generated names its reviewed part-library entry, R96 Q5)
 Inside: the sheet's INSIDE section (decks, frames, spaces and machinery through the whole hull, armour, break lines by the faction's rule, breach anchors)

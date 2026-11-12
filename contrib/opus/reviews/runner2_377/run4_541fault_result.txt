@@ -1,0 +1,13 @@
+started Thu 11/12/2026  0:53:46.57 (dryrun) 
+issue #377 prepared for the deepseek arm
+agent running  0:53:55.67 
+opencode exit 0 at  0:54:03.99 
+refuse list: nothing refused
+WARNING: 1 changed file(s) outside the issue's Deliver to (tools/pc/work_issue.bat, tools/pc/work_issue.ps1, tools/pc/codex_issue.bat, .github/workflows/auto_pr.yml):
+  A tools/pc/work/merge377_note.txt
+TEST FAULT skipcommit (dry run only): the runner leaves the staged change uncommitted, as the issue 541 run did
+!!! DIFF MISMATCH: push stopped, the check failed. The commit to push does not carry the change in out\diffstat.txt.
+!!! staged: 3 file(s); in the commit to push: 0. Nothing pushed; the staged change is kept as out\change.patch; see out\DIFF_MISMATCH.txt
+push stopped, the runner's check failed with code 10: read the lines above; nothing was merged 
+run folder size: 0.01 GB (repo copy 0.01 GB, out 0.0 MB) in C:\Users\rcbai\Downloads\voidsworn_test\opus377\runs\dryrun-377-deepseek\20261112_005346
+repo copy kept: the setting is on, but this run did not end in a checked push

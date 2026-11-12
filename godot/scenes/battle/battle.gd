@@ -39,6 +39,7 @@ const PlayLog := preload("res://scenes/battle/play_log.gd")
 # F1: move hexes are blue (board.gd REACH_*: a colour no terrain uses); targets red; a target that would bear from the
 # planned hex orange; the targeted enemy white-hot
 const REACH_C := Board.REACH_FILL
+const EMBER_3D := ShipView.EMBER   # the ring under the ship that is up (issue 271: ember, lime retired R191)
 const REACH_RING := Board.REACH_RING
 const REACH_HOT := Board.REACH_HOT
 const TARGET_RING := Color(1.0, 0.25, 0.2, 0.95)
@@ -1427,7 +1428,7 @@ func _play_event(e: Dictionary) -> void:
 		"command":
 			var C = _command(str(e["id"]))
 			_log("%s: %s!" % [_name(e["unit"]), str(C.get("n", e["id"]))], "e" if e["side"] == "enemy" else "p")
-			hud.banner(str(C.get("n", e["id"])), Color("#ff8a6a") if e["side"] == "enemy" else Color("#c8f53a"))
+			hud.banner(str(C.get("n", e["id"])), Color("#ff8a6a") if e["side"] == "enemy" else Color("#ff8a3a"))
 			await wait(float(PACE["banner"]) + 140.0)
 		"wreck":
 			wrecked[e["unit"]] = true
@@ -2261,7 +2262,7 @@ func _end_flow() -> void:
 			music.victory(boss_fight)
 		else:
 			music.defeat()
-	hud.banner("Victory" if win else "Defeat", Color("#c8f53a") if win else Color("#ff8a72"), 1.6)
+	hud.banner("Victory" if win else "Defeat", Color("#ff8a3a") if win else Color("#ff8a72"), 1.6)
 	await get_tree().create_timer(1.2).timeout
 	var lost := 0
 	var killed := 0
@@ -2751,8 +2752,8 @@ func _threat_fills() -> Dictionary:
 	for k in _threat_cache:
 		var f := float(_threat_cache[k]) / mx
 		if f > 0.0:
-			# #271: the enemy side's lavender (ui_spec.md 5.1 FOE family); alarm red is the Nemesis tag's alone
-			out[k] = Color(0.79, 0.64, 1.0, 0.06 + 0.34 * f)
+			# issue 271 step 2: bone (Board.THREAT), not red (the Nemesis alarm's alone) and not lavender (R174's list)
+			out[k] = Color(Board.THREAT, 0.05 + 0.27 * f)
 	return out
 
 
@@ -3661,7 +3662,7 @@ func _ship_tip(u: Dictionary) -> String:
 		var parts: Array = []
 		for i in 4:
 			parts.append(str(int(d["sh"][i])))
-		t += "   Shields [color=#4fc4ff]%s[/color] / %d" % [" ".join(parts), int(u["shMax"])]
+		t += "   Shields [color=#92b8e8]%s[/color] / %d" % [" ".join(parts), int(u["shMax"])]
 	if u["side"] == "player" and u["activated"]:
 		t += "\n[color=#7c8674]Already acted this round.[/color]"
 	return t
@@ -3717,7 +3718,7 @@ func _attack_tip(t_id: String) -> String:
 		rows += "%s  %s\n" % [str(vw["name"]), right]
 	var t := "[b][color=#ff8a72]%s[/color][/b]\n[color=#a7b09d]Hull %d/%d, armor %d%%, evasion %d[/color]\n" % [str(tv["name"]), int(tv["hp"]), int(tv["maxHp"]), int(round(float(tu.get("armor", 0)) * 100.0)), int(_z0(tu.get("ev"))) + int(_z0(tu.get("evBuff")))]
 	if float(tv["shMax"]) > 0:
-		t += "Hits the [color=#4fc4ff][b]%s shield[/b] (%d/%d)[/color]%s." % [QUAD_NAME[quad], int(tv["sh"][quad]), int(tv["shMax"]), " [color=#ffad3b]down, straight to hull[/color]" if float(tv["sh"][quad]) < 1 else ""]
+		t += "Hits the [color=#92b8e8][b]%s shield[/b] (%d/%d)[/color]%s." % [QUAD_NAME[quad], int(tv["sh"][quad]), int(tv["shMax"]), " [color=#ffad3b]down, straight to hull[/color]" if float(tv["sh"][quad]) < 1 else ""]
 	else:
 		t += "Target is unshielded: [color=#ffad3b]every hit lands on the hull[/color]."
 	if rear:
@@ -3727,12 +3728,12 @@ func _attack_tip(t_id: String) -> String:
 	t += "\n" + rows
 	if not _shot_blockers(tv).is_empty(): t += "[color=#ffb875]%s[/color]\n" % _blocker_text(tv)
 	if n > 0:
-		t += "Expected: about [color=#4fc4ff]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage.\n[color=#c8f53a]%s[/color]" % [int(round(sh)), int(round(hull)),
+		t += "Expected: about [color=#92b8e8]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage.\n[color=#ff8a3a]%s[/color]" % [int(round(sh)), int(round(hull)),
 			("Targeted. Click again or Enter to fire %d weapon%s." % [n, "s" if n > 1 else ""]) if target == t_id else "Click to target (nothing fires yet)."]
 	else:
 		var am = (atk if (target == t_id and atk != null) else (_attack_move(t_id) if int(su.get("moveLeft", 0)) > 0 else null))
 		if am != null:
-			t += "[color=#c8f53a]Out of reach from here. %s[/color]" % (("Planned: burn %d movement to the ghost and fire %d weapon%s on the way. Click again or Enter to go." % [int(am["st"].cost), int(am["n"]), "s" if int(am["n"]) > 1 else ""]) if target == t_id else "Click to see the attack-move: where the ship would stop and what would fire.")
+			t += "[color=#ff8a3a]Out of reach from here. %s[/color]" % (("Planned: burn %d movement to the ghost and fire %d weapon%s on the way. Click again or Enter to go." % [int(am["st"].cost), int(am["n"]), "s" if int(am["n"]) > 1 else ""]) if target == t_id else "Click to see the attack-move: where the ship would stop and what would fire.")
 		else:
 			t += "[color=#7c8674]No ready weapon can reach this target.[/color]"
 	return t
@@ -3832,6 +3833,13 @@ func _on_action(name: String, arg) -> void:
 			var stn := str(arg)
 			_cmd(func(): return api.stance(sid, stn))
 		"menu":
+			_open_menu()
+		"keys":
+			hud.show_menu("Keys", [["Back", "menu"]], -1, hud.keys_text())
+		"grid":
+			var gb = board.get("_look_btn") if board != null else null
+			if gb is Button and (gb as Button).visible:
+				(gb as Button).button_pressed = not (gb as Button).button_pressed
 			_open_menu()
 		"log":
 			hud.toggle_log()
@@ -3979,6 +3987,11 @@ func _open_menu() -> void:
 	items.append(["Threat map: %s" % ("on" if threat_on else "off"), "opt", "threat"])
 	items.append(["Reach hatching: %s" % ("on" if danger_on else "off"), "opt", "danger"])
 	items.append(["Firing arcs: %s" % ("on" if arcs_on else "off"), "opt", "arcs"])
+	# issue 271 (E1): the view keys that left the screen are listed here (they still work: T, Z, R, Esc)
+	items.append(["Top-down view (T)", "top"])
+	if board != null and board.get("_look_btn") != null and (board.get("_look_btn") as Button).visible:
+		items.append(["Tactical grid: %s (Z)" % ("on" if (board.get("_look_btn") as Button).button_pressed else "off"), "grid"])
+	items.append(["Keys", "keys"])
 	if external and not in_campaign:
 		items.append(["Quit to title", "to_title"])
 	elif not external:
@@ -4080,8 +4093,7 @@ func _refresh_ui() -> void:
 	hud.set_info(_battle_info())
 	hud.set_top(int(V["round"]), turn, _objective(), end_text, mine and not busy, user_speed < 1.0, threat_on)
 	hud.set_nemesis(_nem_info())
-	hud.retreat_btn.visible = can_retreat and not ended
-	hud.retreat_btn.disabled = not (mine and not busy)
+	hud.set_retreat(can_retreat and not ended, not (mine and not busy))
 	var rows: Array = []
 	for u in V["units"]:
 		if u["side"] != "player" or u["squadron"] or (u["dead"] and not views.has(u["id"])):
@@ -4099,11 +4111,11 @@ func _refresh_ui() -> void:
 		hud.set_phase("", "")
 	elif mine and not busy:
 		var up := sel if sel != "" else ""
-		hud.set_phase("player", "[b][color=#c8f53a]YOUR TURN[/color][/b]  ·  Round %d%s  ·  [color=#a7b09d]%d more ready[/color]" % [int(V["round"]),
+		hud.set_phase("player", "[b][color=#ff8a3a]YOUR TURN[/color][/b]  ·  Round %d%s  ·  [color=#a7b09d]%d more ready[/color]" % [int(V["round"]),
 			("  ·  [color=#e8eee0]%s[/color] is up" % _name(up)) if up != "" else "", maxi(0, pend - (1 if up != "" and not VU.get(up, {}).get("active", false) else 0))])
 	for id in views:
 		var sv = views[id]
-		sv.set_selected(id == sel, Color(0.78, 0.96, 0.23))   # the ship that is up: Lime Tactical lime (R149)
+		sv.set_selected(id == sel, EMBER_3D)   # the ship that is up: the Hollow Sun's ember (issue 271, R191 retires lime)
 	_overlay()
 	_tutorial()
 	# F1: a click changes what the hovered thing means (targeted, planned): refresh its tip without waiting for the mouse
@@ -4124,6 +4136,7 @@ func _card_info() -> Dictionary:
 		if pend0 == 0:
 			return {}
 		return {"name": "Pick a ship", "tag": "YOUR TURN", "cls": "", "more": "%d ready" % pend0, "steps": [], "hint": "Click one of your ships (green ring) or press Tab.",
+			"say": "Pick a ship: click one of yours or press Tab.",
 			"buttons": [{"text": "Next ship (Tab)", "act": "next", "on": true, "big": true}]}
 	var u: Dictionary = VU[id]
 	var ui := _ui(id)
@@ -4173,17 +4186,22 @@ func _card_info() -> Dictionary:
 		{"n": 2, "label": "Fire", "detail": ("braced" if braced else ("%d of %d guns ready" % [ready, guns] + (", %d can fire now" % bear if ready > 0 else ""))), "st": fi_st},
 		{"n": 3, "label": "End ship", "detail": "Space", "st": en_st}]
 	var hint := ""
+	var say := ""   # issue 271: the sheet's one short sentence for what to do now (the full hint is on the action's hover)
 	var btns: Array = []
 	if nothing or ending:
 		hint = "[color=#a7b09d]Nothing left to do this round: handing over to the next ship.[/color]"
+		say = "Nothing left to do: handing over."
 	elif braced:
 		hint = "Braced: hull damage −40% until its next turn. End the ship (Space)."
+		say = "Braced: hull damage -40% until its next turn."
 	elif plan != null:
 		hint = "[color=#7fc4ff]Planned move:[/color] %d movement%s, the ghost shows where it ends and which way it faces (Q/E turn it). [b]Click the hex again or press Enter to go.[/b] Esc cancels. A move can't be taken back once made." % [int(plan.cost), (", %d turn%s" % [int(plan.get("t", 0)), "" if int(plan.get("t", 0)) == 1 else "s"]) if int(plan.get("t", 0)) > 0 else ""]
+		say = "Planned move: %d movement%s. Q and E turn it, Esc cancels." % [int(plan.cost), (", %d turn%s" % [int(plan.get("t", 0)), "" if int(plan.get("t", 0)) == 1 else "s"]) if int(plan.get("t", 0)) > 0 else ""]
 		btns.append({"text": "Move here (Enter)", "act": "confirm", "on": true, "primary": true})
 		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
 	elif target != "" and atk != null:
 		hint = "[color=#ffb23e]%s is out of reach from here.[/color] The ghost shows where the ship would stop: it burns %d movement and fires %d of %d guns on the way. [b]Click it again or press Enter to go.[/b] Esc cancels." % [_name(target), int(atk["st"].cost), int(atk["n"]), int(atk["of"])]
+		say = "Out of reach: it burns %d movement and fires %d of %d guns on the way." % [int(atk["st"].cost), int(atk["n"]), int(atk["of"])]
 		btns.append({"text": "Burn and fire (Enter)", "act": "confirm", "on": true, "primary": true})
 		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
 	elif target != "":
@@ -4202,23 +4220,30 @@ func _card_info() -> Dictionary:
 		if set.is_empty():
 			hint = _cant_fire_reason(target)
 		else:
-			hint = "[color=#ff8a6a]Target: %s.[/color] %d gun%s bear from here: about [color=#4fc4ff]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage. [b]Click it again or press Enter to fire.[/b] Esc cancels." % [_name(target), set.size(), "" if set.size() == 1 else "s", int(round(sh)), int(round(hl))]
+			hint = "[color=#ff8a6a]Target: %s.[/color] %d gun%s bear from here: about [color=#92b8e8]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage. [b]Click it again or press Enter to fire.[/b] Esc cancels." % [_name(target), set.size(), "" if set.size() == 1 else "s", int(round(sh)), int(round(hl))]
 			btns.append({"text": "Fire %d weapon%s (Enter)" % [set.size(), "" if set.size() == 1 else "s"], "act": "confirm", "on": true, "primary": true})
 			if not torp_rows.is_empty():
 				hint += "\n[color=#f0c58b]%s[/color]\n%s" % [" ".join(torp_rows), torp_why]
+				say = " ".join(torp_rows)
 			btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
 	elif fired and bear > 0:
 		hint = "%d gun%s still ready. Click an enemy with a red ring to target it, or end the ship (Space)." % [bear, "" if bear == 1 else "s"]
+		say = "%d gun%s still ready: pick another target, or end the ship." % [bear, "" if bear == 1 else "s"]
 	elif fired:
 		hint = "Fired. %s or end the ship (Space)." % ("It can still slip %d hex%s: click a blue hex," % [mleft, "" if mleft == 1 else "es"] if mleft > 0 else "Use its ability, board, ram")
+		say = ("Fired. It can still slip %d hex%s." % [mleft, "" if mleft == 1 else "es"]) if mleft > 0 else "Fired."
 	elif bear > 0 and mleft > 0:
 		hint = "Click a blue hex to plan a move, or an enemy with a red ring to target it (ships move, then fire). B braces instead."
+		say = "Click a blue hex to move, or an enemy with a red ring to target it."
 	elif bear > 0:
 		hint = "No movement left. Click an enemy with a red ring to target it, or brace (B), or end the ship (Space)."
+		say = "No movement left. Click an enemy with a red ring to target it."
 	elif mleft > 0:
 		hint = "Click a blue hex to plan a move. No gun bears from here yet: an orange ring on an enemy means it would from the planned hex. B braces instead."
+		say = "Click a blue hex to move. No gun bears from here yet."
 	else:
 		hint = "No movement left and no gun bears. Turn with Q/E, brace (B) or end the ship (Space)."
+		say = "No movement left and no gun bears. Turn, brace or end the ship."
 	if not braced and bool(ui.get("orders", {}).get("brace", false)):
 		btns.append({"text": "Brace (B)", "act": "brace", "on": true, "tip": str(TBL.get("ORDERS", {}).get("brace", {}).get("d", ""))})
 	if u.get("ab") != null and bool(u.get("abReady", false)) and bool(ui.get("ability", {}).get("ready", false)):
@@ -4231,7 +4256,7 @@ func _card_info() -> Dictionary:
 	btns.append({"text": "End ship (Space)", "act": "end", "on": true, "big": true, "primary": plan == null and target == "",
 		"tip": "This ship is done for the round%s; the enemy moves one of theirs." % ("" if u["active"] else " (it holds position)")})
 	return {"name": str(u["name"]), "cls": str(u["cls"]), "flag": u["flagship"], "tag": "ACTING" if u["active"] else "UP",
-		"more": ("%d more ready" % more) if more > 0 else "last ship this round", "steps": steps, "hint": hint, "buttons": btns, "aim": target != "" and plan == null}
+		"more": ("%d more ready" % more) if more > 0 else "last ship this round", "steps": steps, "hint": hint, "say": say, "buttons": btns, "aim": target != "" and plan == null}
 
 
 # F1: the play log goes three places: the battle result (campaign_host hands results to the campaign), the campaign's
@@ -4486,7 +4511,7 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 		for pk in cap.get("perks", []):
 			var P = TBL.get("PERKS", {}).get(str(pk))
 			if P is Dictionary:
-				line += "  [color=#c8f53a]%s[/color] [color=#7c8674](%s)[/color]" % [str(P.get("n", pk)), str(P.get("d", "")).trim_suffix(".")]
+				line += "  [b]%s[/b] [color=#7c8674](%s)[/color]" % [str(P.get("n", pk)), str(P.get("d", "")).trim_suffix(".")]
 		info["captain"] = line.strip_edges()
 	# hull by section
 	if ru.get("sec") is Dictionary:
@@ -4499,7 +4524,7 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 	# shields in words
 	if float(u["shMax"]) > 0.0:
 		var sh: Array = disp.get(u["id"], {"sh": u["sh"]})["sh"]
-		info["stats"] = str(info.get("stats", "")) + "\n[color=#4fc4ff]Shields[/color] of %d each, +%d a turn: prow %d, port %d, starboard %d, rear %d" % [int(u["shMax"]), int(_z0(ru.get("regen"))), int(sh[0]), int(sh[3]), int(sh[1]), int(sh[2])]
+		info["stats"] = str(info.get("stats", "")) + "\n[color=#92b8e8]Shields[/color] of %d each, +%d a turn: prow %d, port %d, starboard %d, rear %d" % [int(u["shMax"]), int(_z0(ru.get("regen"))), int(sh[0]), int(sh[3]), int(sh[1]), int(sh[2])]
 	# state and faction lines (refreshPanel tr[] and battle.js factionTraitLines)
 	var tr: Array = R.storyModifierLines(ru)
 	if _jt(ru.get("hullRegen")):
@@ -4567,7 +4592,7 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 			var M = TBL.get("MOVE_RULES", {}).get(fac)
 			var dl := "Thrusters: sideslip %s, back off %s, pass over or under %s." % [_n(MR.get("slip")), _n(MR.get("rev")), ("+" + _n(MR.get("over"))) if _jt(MR.get("over")) else "free"]
 			if M is Dictionary:
-				dl += " [color=#c8f53a]%s[/color]: %s" % [str(M.get("n", "")), str(M.get("d", ""))]
+				dl += " [b]%s[/b]: %s" % [str(M.get("n", "")), str(M.get("d", ""))]
 			if ru.get("hexMoved") != null:
 				if int(ru["hexMoved"]) == 0:
 					dl += " [color=#ff8a72]Has not moved: enemies get +%s to hit.[/color]" % _n(MR.get("still"))
@@ -4597,17 +4622,17 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 		if _jt(ru.get("pflag")) and _jt(RUN.get("aspect")):
 			var AS = TBL.get("ASPECTS", {}).get(str(RUN["aspect"]))
 			if AS is Dictionary:
-				bb += "[b][color=#c8f53a]%s[/color][/b] [color=#a7b09d]%s[/color]\n" % [str(AS.get("n", "")), str(AS.get("d", ""))]
+				bb += "[b]%s[/b] [color=#a7b09d]%s[/color]\n" % [str(AS.get("n", "")), str(AS.get("d", ""))]
 		var stats: Dictionary = Bs.get("boonStats", {}) if Bs.get("boonStats") is Dictionary else {}
 		for b in RUN.get("boons", []):
 			var B0 = TBL.get("BOONS", {}).get(str(b.get("id")))
 			if not B0 is Dictionary:
 				continue
 			var pat = B0.get("p") if _jt(B0.get("p")) else (B0.get("duo", [""])[0] if B0.get("duo") is Array else "")
-			var pcol := str(TBL.get("PATRONS", {}).get(str(pat), {}).get("col", "#c8f53a"))
+			var pcol := str(TBL.get("PATRONS", {}).get(str(pat), {}).get("col", "#ff8a3a"))
 			var dl: Array = _boon_d.get(str(b.get("id")), [])
 			var d := str(dl[clampi(int(_z0(b.get("r"))), 0, dl.size() - 1)]) if not dl.is_empty() else ""
-			bb += "[color=%s]▌[/color][b]%s[/b]%s [color=#a7b09d]%s[/color]\n" % [pcol, str(B0.get("n", "")), (" [color=#c8f53a]×%d this battle[/color]" % int(stats[b["id"]])) if _jt(stats.get(b.get("id"))) else "", d]
+			bb += "[color=%s]▌[/color][b]%s[/b]%s [color=#a7b09d]%s[/color]\n" % [pcol, str(B0.get("n", "")), (" [b]×%d this battle[/b]" % int(stats[b["id"]])) if _jt(stats.get(b.get("id"))) else "", d]
 		if bb != "":
 			extra.append(["Fleet protocols", bb.strip_edges()])
 	if ru["side"] == "player" and not _jt(ru.get("isSq")):
@@ -4639,6 +4664,9 @@ func _process(dt: float) -> void:
 	if api == null:
 		return
 	var vs := get_viewport().get_visible_rect().size
+	# issue 271: the camera looks at the middle of the part of the screen the orders sheet leaves clear (0 in cut-ins)
+	var want_shift: float = hud.clear_shift() if cine_saved.is_empty() else 0.0
+	cam.screen_shift += (want_shift - cam.screen_shift) * clampf(dt * 6.0, 0.0, 1.0)
 	for id in views:
 		var sv = views[id]
 		var u: Dictionary = VU.get(id, {})
@@ -4915,14 +4943,14 @@ func _target_info() -> Dictionary:
 			if es[i] > es[bq]:
 				bq = i
 		var who := ("Both bearing guns" if set.size() == 2 else ("%d bearing guns" % set.size() if set.size() > 2 else "The bearing gun"))
-		line = "%s%s: about [color=#c8f53a][b]%d[/b][/color] damage" % [who, " from the planned hex" if plan != null else "", int(round(tot))]
+		line = "%s%s: about [color=#ff8a3a][b]%d[/b][/color] damage" % [who, " from the planned hex" if plan != null else "", int(round(tot))]
 		if es[bq] > 0.5:
 			line += ", about %d on its %s shield" % [int(round(es[bq])), FACING_WORD[bq]]
 		line += " and %d on hull." % int(round(eh)) if es[bq] > 0.5 else ", %d on hull." % int(round(eh))
 		# no kill prediction (ui_spec S1 board ruling on the #314 check): the expected value only; the hatched ghost on the
 		# target's hull bar already shows the hull reaching zero
 		_tgt_plate[tid] = {"odds": "%d%% %d gun%s" % [best, set.size(), "" if set.size() == 1 else "s"], "ghost": maxf(0.0, float(d["hp"]) - eh)}
-	return {"name": str(tu["name"]), "flag": tu["flagship"], "hp": float(d["hp"]), "maxHp": float(tu["maxHp"]), "sh": d["sh"], "shMax": float(tu["shMax"]),
+	return {"name": str(tu["name"]), "flag": tu["flagship"], "nem": bool(tu.get("nemesis", false)), "hp": float(d["hp"]), "maxHp": float(tu["maxHp"]), "sh": d["sh"], "shMax": float(tu["shMax"]),
 		"exp_hull": eh, "exp_sh": es, "line": line}
 
 
@@ -4932,7 +4960,7 @@ func _torpedo_why() -> String:
 
 func _float_hit(id, sh: float, hull: float, crit) -> void:
 	if sh > 0:
-		_float(id, "−%d shield" % int(sh), Color("#4fc4ff"), -18)
+		_float(id, "−%d shield" % int(sh), Color("#92b8e8"), -18)
 	if hull > 0:
 		_float(id, "−%d hull" % int(hull), Color("#ffd27a") if crit else Color("#ffad3b"), 0)
 	if crit:

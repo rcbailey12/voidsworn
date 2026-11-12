@@ -4,6 +4,24 @@ const Sfx := preload("res://audio/sfx.gd")
 const Music := preload("res://music/music_player.gd")
 const DeathAudio := preload("res://audio/death_audio.gd")
 const API := preload("res://rules/battle_api.gd")
+# RULEBOOK 8.4 and the sound playbook: count cues by family, never by one exact table total. Each family below lists the
+# takes it has now and is a floor: adding a cue to a family passes, removing one fails. A new cue id with no family fails.
+const CUE_FAMILIES := {
+	"guns": ["gun_shell", "gun_flak", "gun_sq", "gun_las", "gun_plasma", "gun_tracer", "gun_spine", "gun_needle", "gun_rail", "gun_glob"],
+	"weapon_tails": ["salvo_tail"],
+	"lances": ["lance", "lance_ion", "lance_dark", "lance_choir"],
+	"torpedoes": ["torp", "torp_rocket", "torp_sac", "torp_star", "torp_heavy"],
+	"hits": ["hit", "hit_heavy", "hit_las", "hit_plasma", "hit_rail", "hit_wet", "hit_glass", "hit_ion"],
+	"shields": ["shield", "shield_break"],
+	"patterns": ["patter_hull", "patter_shield"],
+	"explosions": ["pop", "boom_s", "boom_m", "boom_l"],
+	"ship": ["phase", "launch", "engine", "cough", "puff", "charge"],
+	"ui": ["ui_click", "ui_confirm", "ui_cancel", "ui_round", "ui_your", "ui_enemy", "ui_select", "ui_panel", "ui_reward", "ui_alert", "ui_boss"],
+	"stings": ["sting_win", "sting_loss"],
+	"fleet": ["arrive_jump"],
+	"death": ["death_powerdown", "death_vent", "death_crack", "death_run", "chunk_cool", "hulk_vent", "bass_drop", "wreck"],
+	"orders": ["board_grapple", "brace_lock", "adapt_shift"],
+}
 var fails: Array = []
 var heard: Array = []
 
@@ -69,7 +87,28 @@ func _run() -> void:
 		_ok(events.any(func(e): return e.t == "adaptation"), scenario + " emits a semantic adaptation report")
 	s.stop_all()
 	heard.clear()
-	_ok(s.cues.size() == 67, "57 existing cues plus 10 new ids (ui_plan is an override)")
+	# RULEBOOK 8.4: count by family. Every family is present with at least the takes it has today; a new cue may be
+	# added without moving a total, but a family that loses a take fails. No exact total of 67 is enforced.
+	var listed := {}
+	for fam in CUE_FAMILIES:
+		var missing: Array = []
+		for n in CUE_FAMILIES[fam]:
+			if not s.cues.has(n): missing.append(n)
+			listed[n] = true
+		_ok(missing.is_empty(), fam + " family keeps its takes (%d present%s)" % [CUE_FAMILIES[fam].size() - missing.size(),
+			"" if missing.is_empty() else ", missing " + ", ".join(missing)])
+	for n in s.cues:
+		_ok(listed.has(n), str(n) + " belongs to a cue family (add it to CUE_FAMILIES)")
+	# A cue heard often never plays the same take twice in a row (RULEBOOK 8.4). _pick is the real round robin.
+	var takes := ["a", "b", "c", "d"]
+	var prev := ""
+	var repeats := 0
+	for i in 32:
+		var pick := str(s._pick(takes, "audio-check"))
+		if pick == prev: repeats += 1
+		prev = pick
+	_ok(repeats == 0, "a cue never plays the same take twice in a row (RULEBOOK 8.4)")
+	print("AUDIO FAMILIES " + ", ".join(CUE_FAMILIES.keys().map(func(f): return "%s=%d" % [f, CUE_FAMILIES[f].size()])))
 	for name in s.cues:
 		var c: Dictionary = s.cues[name]
 		_ok(AudioServer.get_bus_index(c.bus) >= 0, name + " bus exists")
@@ -147,6 +186,8 @@ func _run() -> void:
 	fx.now = 2.31
 	d._process(0.0)
 	await create_timer(0.02).timeout
+	# The death playbook keeps one core beat per capital death (the break, the core flash, then the wreck tail), so the
+	# once-only death cues stay. Only the exact cue-table total above is retired (RULEBOOK 8.4, sound playbook item 4).
 	for n in ["boom_l", "bass_drop", "wreck"]:
 		_ok(heard.count(n) == 1, n + " starts once")
 	s.stop_all()

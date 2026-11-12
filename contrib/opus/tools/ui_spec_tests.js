@@ -198,6 +198,41 @@ check(lows.length >= 4 && lows.every(v => v === 0.35), `every hull-low line is 0
   check(fs.existsSync(path.join(ROOT, 'godot/scenes/battle/test/wing_cancel_test.gd')) && /headless\|scenes\/battle\/test\/wing_cancel_test\.gd\|/.test(read('godot/tools/ci/godot_checks.txt')), 'the headless UI-5 behaviour check is listed in godot/tools/ci/godot_checks.txt');
 }
 
+// 9. issue 271 step 2: the battle screen is the ember orders sheet, E1 LEDGER (Ryan's pick R210; the rail's look, R176).
+// Structure guards for the Node-only standing checks; the readability numbers (17 px, 28 px Big Shoulders, three strengths,
+// 4.5 to 1 over the brightest and darkest board, no overlaps, every function reachable) are measured by the headless
+// Godot check godot/ui/battle/test/ledger_readability_test.gd on GitHub.
+{
+  const led = read('godot/ui/battle/ledger.gd'), bg = read('godot/scenes/battle/battle.gd');
+  const gsh3 = read('godot/ui/theme/glass_shell.gd'), board = read('godot/render/board.gd'), sv = read('godot/render/ship_view.gd');
+  check(/const Ledger := preload\("res:\/\/ui\/battle\/ledger\.gd"\)/.test(hud) && /func _build_ledger\(/.test(hud) && /ledger\.ship = info/.test(hud) && /ledger\.target = info/.test(hud) && /ledger\.card = info/.test(hud), 'the battle HUD hands every setter to the orders sheet (ledger.gd)');
+  // issue 578: the hidden Lime shell is gone; no file under godot/ui/battle/ writes the lime hex
+  const battleUi = [];
+  (function walk(d) {
+    for (const e of fs.readdirSync(path.join(ROOT, d), { withFileTypes: true })) {
+      const rel = d + '/' + e.name;
+      if (e.isDirectory()) { if (e.name !== 'fonts') walk(rel); }
+      else if (/\.(gd|tscn|tres|json)$/.test(e.name)) battleUi.push(rel);
+    }
+  })('godot/ui/battle');
+  for (const f of battleUi) check(!/#c8f53a/i.test(read(f)), `${f} writes no lime hex (the hidden shell is gone, issue 578)`);
+  check(/const EMBER := GS\.MAP_EMBER/.test(led) && /const GLACIER := GS\.GLACIER/.test(led) && /const GLACIER := Color\("#92b8e8"\)/.test(gsh3), 'the sheet takes ember and Glacier (#92b8e8) from glass_shell.gd');
+  check(!/GILT|GS\.SHIELD\b|#c8f53a|#4fc4ff|corner_radius|shadow/.test(led), 'no lime, no old shield cyan, no rounded corners and no shadows on the sheet');
+  const plan = (led.match(/func _shield_plan\([\s\S]*?\n(?=func )/) || [''])[0];
+  const glacierUses = led.split('\n').filter(l => /GLACIER/.test(l) && !/^\s*#|^const /.test(l));
+  check(glacierUses.length >= 2 && glacierUses.every(l => plan.includes(l)), 'Glacier is used by the shield plan only (the shield readout)');
+  check(/GS\.sheet_name\(\)/.test(led) && /GS\.sheet_body\(\)/.test(led) && /GS\.sheet_medium\(\)/.test(led) && /GS\.num\(\)/.test(led) && /fs > 28/.test(led), 'the sheet uses the three faces (Big Shoulders names from 28 px, Barlow, Azeret Mono)');
+  check(/func _action_box\(/.test(led) && /px\(56\)/.test(led) && /maxf\(2\.0, px\(2\)\)/.test(led), 'the one box is the 56 px square ember action, a 2 px outline');
+  check(/static func veil_alpha/.test(led) && /func dark_at\(/.test(led) && /VEIL_A := 0\.94/.test(led), 'the sheet sits on a smooth veil, not a panel, and the check reads its strength');
+  check(/HOVER_RING := Color\(1\.0, 0\.541, 0\.227/.test(board) && !/0\.78, 0\.96, 0\.23/.test(board + sv + bg), 'the hovered hex and the ring under the ship that is up are ember on the 3D board (lime retired, R191)');
+  check(!/#c8f53a|#4fc4ff/.test(bg), 'battle.gd writes no lime and no old shield cyan');
+  check(/"say": say/.test(bg) && /"nem": bool\(tu\.get\("nemesis", false\)\)/.test(bg), 'the activation card carries one short sentence and the target says when it is the Nemesis');
+  check(/\["Top-down view \(T\)", "top"\]/.test(bg) && /\["Keys", "keys"\]/.test(bg) && /"grid":/.test(bg), 'the view keys that left the screen are listed in the menu (T, Z, Keys)');
+  check(/func show_ask\(/.test(hud) && /ledger\.ask = a/.test(hud) && /func _prompt\(/.test(led), 'the issue 529 tree prompt takes the shot\'s place in the sheet (show_ask drops in)');
+  check(/screen_shift/.test(read('godot/render/camera_rig.gd')) && /hud\.clear_shift\(\)/.test(bg), 'the camera looks at the middle of the part the sheet leaves clear');
+  check(/headless\|ui\/battle\/test\/ledger_readability_test\.gd\|/.test(read('godot/tools/ci/godot_checks.txt')), 'the readability check is listed in godot/tools/ci/godot_checks.txt');
+}
+
 // 6. the diff script still reads every named pair (a pattern that stopped matching is reported, not failed)
 const r = diff.build();
 const stale = r.pairs.filter(p => /NOT FOUND/.test(p.a.v + p.b.v));

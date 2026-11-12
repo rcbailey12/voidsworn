@@ -1,0 +1,41 @@
+{
+  "source": {
+    "folder": "C:/Users/rcbai/Downloads/voidsworn_test/board/issue-195/shots/",
+    "detail_audit": "detail_audit.json",
+    "detail_gpu": "detail_gpu.json"
+  },
+  "adapter": "NVIDIA GeForce RTX 5080",
+  "renderer": "forward_plus",
+  "resolution": [
+    3840,
+    2160
+  ],
+  "metric": "paired median viewport GPU ms; station shown minus hidden",
+  "pairs": 5,
+  "target_ms": 0.35,
+  "ceiling_ms": 1,
+  "variants": {
+    "fleet": {
+      "triangles_roundtrip": 11636,
+      "parts": 98,
+      "guns": 8,
+      "median_delta_ms": 0.0439999103546143,
+      "paired_range_ms": [
+        -0.0159999132156372,
+        0.0479999780654907
+      ],
+      "pairs": 5
+    },
+    "refinery": {
+      "triangles_roundtrip": 6656,
+      "parts": 61,
+      "guns": 0,
+      "median_delta_ms": 0.0380001068115234,
+      "paired_range_ms": [
+        -0.00499999523162842,
+        0.0830000638961792
+      ],
+      "pairs": 5
+    }
+  }
+}

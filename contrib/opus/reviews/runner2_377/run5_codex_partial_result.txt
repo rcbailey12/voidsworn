@@ -1,0 +1,10 @@
+started Thu 11/12/2026  0:54:08.75 
+codex exit 1 
+PARTIAL RUN, codex exit 1: the work goes to runner377/codex-377-partial, which opens no pull request 
+REFUSED 1 file(s): not committed, copies kept in out\refused (never deleted):
+  A godot/assets/ships/C19_51/C19_51_kit.glb: ship files under godot/assets/ships/c19_51/ (PC-built, never committed)
+WARNING: 1 changed file(s) outside the issue's Deliver to (tools/pc/work_issue.bat, tools/pc/work_issue.ps1, tools/pc/codex_issue.bat, .github/workflows/auto_pr.yml):
+  A tools/pc/codex_partial377.txt
+commit 8db590306 (run 1 of runner377/codex-377-partial) carries the staged change (1 files)
+pushed diff checked: GitHub's runner377/codex-377-partial (8db590306) carries exactly out\diffstat.txt (1 files)
+pushed runner377/codex-377-partial 

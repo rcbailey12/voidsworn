@@ -50,10 +50,10 @@ moves on one per volley (HARDPOINTS.md "When shots outnumber points", rules 2 an
 
 Not moved, on purpose or by order:
 
-- fx/fx_death.gd:1474 (death fallback `s.hull.c` when there are fewer than two seeds), :2036 (wreck mark fallback
-  `c + H * 0.5`, a box point), :1594 (wreck spin pivot about `hull.c`): fx_death.gd was 557's when this job started and the
-  brief said not to touch it. 557 has merged; moving these three to `s.hull.core` is a one-line change each, for the Board
-  to allow.
+- fx/fx_death.gd: the three box-centre fallbacks now use the core: :1474 (death fallback with fewer than two seeds) and
+  :2036 (wreck mark fallback) moved by the Board after 557 merged; :1657 (_tell's tear origin with no seeds and no break
+  lines) moved for opus_check_570 condition 1. Still on `hull.c` on purpose: :1594, the wreck spin pivot (a rotation
+  centre, not a placement).
 - fx/fx_ship.gd:568 (the hit kick's torque arm about `hull.c`): physics, not a placement.
 - fx/fx_ship.gd:1273 (a damaged squadron's smoke ribbon): a wing of craft has no hull of its own.
 - fx/fx_weapons.gd:107-108, :1315 (`to_c`, the target's box centre): the aim of a volley and the misses that fly past it,

@@ -1,0 +1,5 @@
+A contrib/opus/tools/big377.bin: 9.0 MB, over the 8 MB limit (WORK_MAX_FILE_MB)
+A godot/assets/ships/B16_23/B16_23_hull.glb: ship files under godot/assets/ships/b16_23/ (PC-built, never committed)
+M godot/fx/atlases/weapons/muzzle/muzzle_flow.png.import: a re-saved .import file (Godot rewrites these on import)
+A godot/gen/hull_probe.tres: under godot/gen (built on the PC, never committed)
+A tools/pc/probe377.gd.uid: a new .uid file (Godot makes these)

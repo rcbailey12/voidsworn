@@ -13,7 +13,7 @@ extends RefCounted
 #   damage_glow                fire and lit conduits inside hull damage
 #   hull_fix                   [rim amount, rim tint, albedo lift] for look.gd's hull fix (dark hulls)
 #   nebula                     three colours for the battle sky when this faction is the enemy (world.gd)
-#   accent                     a second effect colour; when set, a corona round each engine core (none in use yet)
+#   accent                     a second effect colour; when set, a corona round each engine core (four factions set one)
 #   shield_edge                an edge colour or "rainbow" for the shield bubble's rim (none in use yet)
 # Ids never change; display names live in the story tables, not here.
 

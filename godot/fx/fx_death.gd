@@ -178,6 +178,7 @@ static func setup_physics(fx) -> void:
 	(st["bounce"] as PhysicsMaterial).friction = 0.4
 	var sh = Shader.new()
 	sh.code = DEBRIS_BODY
+	HULL.note_late("death debris body")
 	var m = ShaderMaterial.new()
 	m.shader = sh
 	st["debris_mat"] = m
@@ -215,7 +216,7 @@ static func flipbook_material(fx, kind: String, band := "capital") -> ShaderMate
 	var rel := "death/" + band + "/" + kind + "_"
 	if route_texture(fx, rel + "color.png") != null:
 		return route_material(fx, SH.DEATH_FLIPBOOK, rel)
-	var m: ShaderMaterial = fx.mat(SH.DEATH_FLIPBOOK, 2, "#define COMPAT\n" if fx.compat else "")
+	var m: ShaderMaterial = fx.mat(SH.DEATH_FLIPBOOK, 2, "#define COMPAT\n" if fx.compat else "", "flipbook " + band + "/" + kind)
 	for key in ["color", "flow", "thickness"]:
 		var path: String = ATLAS_DIR + band + "/" + kind + "_" + key + ".png"
 		var textures: Dictionary = fx.dstate.get("death_atlases", {})
@@ -247,7 +248,7 @@ static func route_texture(fx, rel: String, seed_index := -1) -> Texture2D:
 
 # Three maps with baked colour and heat. The meta tells callers to sample the whole cell and keep the shader define.
 static func route_material(fx, code: String, rel: String, production := false, seed_index := -1) -> ShaderMaterial:
-	var m: ShaderMaterial = fx.mat(code, 2, ("#define COMPAT\n" if fx.compat else "") + "#define ROUTE_BAKED\n")
+	var m: ShaderMaterial = fx.mat(code, 2, ("#define COMPAT\n" if fx.compat else "") + "#define ROUTE_BAKED\n", "route " + rel)
 	if production and seed_index < 0: seed_index = fx.rng.randi_range(0, 2)
 	for key in ["color", "flow", "thickness"]:
 		m.set_shader_parameter({"color": "atlas", "flow": "motion", "thickness": "thickness"}[key], route_texture(fx, rel + key + ".png", seed_index))
@@ -266,7 +267,11 @@ static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life
 	mi.extra_cull_margin = size * 3.0 + velocity.length() * life
 	var m := flipbook_material(fx, kind, band)
 	if staged:
-		m = route_material(fx, SH.DEATH_FLIPBOOK, "death/" + band + "/flash_", true)
+		# Issue 461 (carried from issue 484, Board comment on 507): the core flash always uses the lopsided baked seed
+		# (s0), turned at random. Two of the three seeds are the round "flower" of equal puffs, which read as a ring of
+		# identical puffs at about 2.3 s on a capital death ("a little too even and weird", Ryan, Nov 11).
+		m = route_material(fx, SH.DEATH_FLIPBOOK, "death/" + band + "/flash_", true, 0)
+		m.set_shader_parameter("pic_spin", fx.rng.randf() * TAU)
 		m.set_shader_parameter("size_divisor", 0.80)
 		mi.extra_cull_margin = 100.0
 	m.set_shader_parameter("born", fx.now)
@@ -751,6 +756,26 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 	if last is Array and last.size() >= 3 and fx.now - float(last[2]) < 6.0:
 		var lz: float = ((last[0] as Vector3) - h.c).z
 		if absf(lz) > W * 0.05: zs = signf(lz)
+	# Issue 461 (carried from 484): a lance kill cuts clean on the beam's own line (deaths_and_hits.md, "What killed it":
+	# the tear is the cut, two clean halves). The beam's point and direction (hull space) are set by _lance_recut on the
+	# death frame; the break nearest the beam lies on it, square-ish to the beam, with no kink and almost no teeth.
+	var lance = s.get_meta("lance_line", [])
+	var lance_on: bool = lance is Array and lance.size() >= 2
+	var lance_b := -1
+	if lance_on:
+		var lx: float = ((lance[0] as Vector3).x - x0) / L
+		if sizes.size() == 2:
+			var lu := clampf(lx, 0.3, 0.7)
+			sizes = [lu, 1.0 - lu]
+			lance_b = 0
+		else:
+			var acc := 0.0
+			var bd := INF
+			for i in sizes.size() - 1:
+				acc += float(sizes[i])
+				if absf(acc - lx) < bd:
+					bd = absf(acc - lx)
+					lance_b = i
 	# 2. the breaks: tilted, kinked, torn
 	var breaks: Array = []
 	var u := 0.0
@@ -764,6 +789,15 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 		var pitch := deg_to_rad(r.randf_range(10.0, 22.0)) * (1.0 if r.randf() < 0.5 else -1.0)
 		var k := r.randf_range(0.45, 0.8) * (1.0 if r.randf() < 0.5 else -1.0)
 		var amp := L * 0.03
+		if i == lance_b:
+			# the plane holds the beam's line: its normal is across the beam, kept within 34 degrees of square to the hull
+			var pn: Vector3 = (lance[1] as Vector3).cross(Vector3.UP)
+			pn = pn.normalized() if pn.length() > 0.05 else Vector3.RIGHT
+			if pn.x < 0.0: pn = -pn
+			yaw = clampf(atan2(pn.z, pn.x), -deg_to_rad(34.0), deg_to_rad(34.0))
+			pitch = 0.0
+			k = 0.0
+			amp = L * 0.004
 		# keep each break inside its two pieces: the tilt, the kink and the teeth together reach at most `room`
 		var reach: float = absf(tan(yaw)) * W * 0.5 + absf(tan(pitch)) * H * 0.5 + absf(k) * W * 0.5 + amp * 1.6
 		var fit := minf(1.0, room / maxf(reach, 0.0001))
@@ -804,7 +838,7 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 	var bi := 0
 	if breaks.size() > 1 and authored.is_empty():
 		bi = 0 if float(sizes[0]) + float(sizes[1]) >= float(sizes[1]) + float(sizes[2]) else 1
-	var rx: float = L * (0.09 if capital else 0.12)
+	var rx: float = L * (0.09 if capital else 0.12) * (0.6 if lance_on else 1.0)
 	# centred a little into the bigger of the two pieces, so the bite eats mostly into it and the small one stays small
 	var bat: Vector3 = (breaks[bi]["at"] as Vector3) + Vector3.RIGHT * rx * 0.5 * (-1.0 if float(sizes[bi]) > float(sizes[bi + 1]) else 1.0)
 	var out_dir := Vector3(0.0, 0.3, zs).normalized()
@@ -847,6 +881,39 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 			scorch.append(Vector4(p.x, p.y, p.z, minf(W, L * 0.12) * 0.5))
 	return {"L": L, "seeds": seeds, "sizes": sizes, "breaks": breaks, "bite": bite, "chips": chips, "n_main": n_main,
 		"n_frag": nsub + chip_seeds.size(), "bite_break": bi, "scorch": scorch, "authored": not authored.is_empty()}
+
+
+# Issue 461 (carried from 484: "the cut is prepared before the killing weapon is known"). A lance kill re-cuts the hull on
+# the death frame along the beam's line (fracture_plan reads "lance_line"). The cut runs on a worker during the tell
+# (1.38 s on a cruiser, 2.0 s on a capital); if it is not done by the break, the ship breaks along the cut it already had
+# (cut_prev), never stalls. Only big hulls killed by a lance pay for it.
+static func _lance_recut(fx, s) -> void:
+	if not is_instance_valid(s.root):
+		return
+	if s.has_meta("cut_task"):
+		# a damage refresh of the cut is still running (bench round 1: a damaged ship nearly always has one): leave it to
+		# finish on its own and start the lance cut beside it. If the refresh had not finished, the ship breaks along the
+		# last finished cut (cut_prev) only if the lance cut is late; otherwise it waits for the lance cut.
+		_collect_later(fx, int(s.get_meta("cut_task")))
+		s.remove_meta("cut_task")
+	var h = s.hull
+	# with no recent hit on record, a per-ship point a little off the middle (an even split reads as sliced, Ryan, Nov 11)
+	var lp: Vector3 = h.c + Vector3(h.L * (0.12 if hash(str(s.id)) % 2 == 0 else -0.12), 0.0, 0.0)
+	var ld: Vector3 = Vector3(0.0, 0.0, -float(h.stb_z))
+	var last = s.get_meta("last_hit", [])
+	if last is Array and last.size() >= 3 and fx.now - float(last[2]) < 2.0:
+		lp = last[0]
+		ld = last[1]
+	s.set_meta("lance_line", [lp, ld])
+	if s.has_meta("cut_job"):
+		var old: Dictionary = s.get_meta("cut_job")
+		if old.get("out") != null:
+			s.set_meta("cut_prev", old)
+		s.remove_meta("cut_job")
+	var t0 := Time.get_ticks_usec()
+	precompute(fx, s, "cut")
+	fx.notes.append("lance recut %s" % str(s.id))
+	fx.pend("lance_recut", t0)
 
 
 # Gather the hull's surfaces on the main thread (mesh arrays come from the rendering server), then cut on a worker.
@@ -980,7 +1047,7 @@ static func _piece_materials(am: ArrayMesh, pc: Dictionary, weathered := false) 
 		si += 1
 	if pc.has("cap"):
 		var mat := ShaderMaterial.new()
-		mat.shader = HULL.shared_shader(SLAG)
+		mat.shader = HULL.shared_shader(SLAG, "death piece slag")
 		mat.set_shader_parameter("organic", pc.get("organic", false))
 		mat.set_shader_parameter("section_scale", pc.get("section_scale", 1.0))
 		am.surface_set_material(mini(si, am.get_surface_count() - 1), mat)
@@ -1467,6 +1534,8 @@ static func _death_inner(fx, s, cause: String) -> float:
 	var inherited := Vector3.ZERO
 	if "_vel" in s.root: inherited = s.root.get("_vel")
 	s.set_meta("death_velocity", inherited)
+	if cause == "cut" and s.death_big and s.faction != "chorus":
+		_lance_recut(fx, s)
 	if not s.has_meta("cut_task") and not s.has_meta("cut_job"):
 		precompute(fx, s, cause)
 	var job: Dictionary = s.get_meta("cut_job", {})
@@ -1498,7 +1567,7 @@ static func power_material(mat: ShaderMaterial) -> ShaderMaterial:
 	code = code.replace("uniform float fx_power = 1.0;", "uniform float fx_power = 1.0;\nuniform float death_age = 0.0;\nuniform float death_start = 0.0;\nuniform vec2 death_span = vec2(0.0, 1.0);\nuniform vec3 death_axis = vec3(1.0, 0.0, 0.0);\nuniform vec3 death_steps = vec3(3.0, 0.055, 0.18);")
 	var band := "floor(clamp((dot(fx_hull_p, death_axis) - death_span.x) / death_span.y, 0.0, 0.999) * death_steps.x) * death_steps.y"
 	code = code.replace("clamp(fx_power, 0.0, 1.0)", "(1.0 - smoothstep(" + band + ", " + band + " + death_steps.z, death_age))")
-	mat.shader = HULL.shared_shader(code)
+	mat.shader = HULL.shared_shader(code, "death power down " + str(code.hash()))
 	return mat
 
 
@@ -1654,7 +1723,7 @@ static func _grow_dir(fx, s, axis: Vector3) -> Vector3:
 # is the game's own cut plane (the bisector of the prepared pieces, issue 167's fallback).
 static func _tell(fx, s, T: float, tl: DeathTimeline, cause: String, seeds: PackedVector3Array, lines: Array = []) -> void:
 	var h = s.hull
-	var at: Vector3 = (seeds[0] + seeds[1]) * 0.5 if seeds.size() >= 2 else h.c
+	var at: Vector3 = (seeds[0] + seeds[1]) * 0.5 if seeds.size() >= 2 else h.core   # opus_check_570 condition 1: the core, never the box centre
 	var axis: Vector3 = (seeds[1] - seeds[0]).normalized() if seeds.size() >= 2 else Vector3.RIGHT
 	if not lines.is_empty():
 		# issue 484: the tear runs on the fracture plan's tilted breaks (the bite's break first)
@@ -2186,6 +2255,11 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		vel.y = 0.0
 		# issue 484: the biggest piece of a big hull turns slowly, so it stays readable as the ship's main wreck
 		var ang: Vector3 = fx.rdir() * ((0.14 if is_main else 0.35) if s.death_big else (1.1 if is_main else 1.6))
+		if s.death_big and not organic:
+			# Issue 461 (Board, on 484's cruiser at 6.0 s: "the big bow piece reads dim"): the main pieces tumbled on a
+			# random axis and by 6 s showed the key light their dark bellies. They now turn mostly about the vertical, with
+			# a slight roll and pitch, so their plated tops stay lit while they drift and turn.
+			ang = Vector3(ang.x * 0.25, signf(ang.y + 0.001) * maxf(absf(ang.y), 0.08), ang.z * 0.25)
 		var release_delay := 0.0
 		if s.death_big and not organic:
 			var timeline: DeathTimeline = s.get_meta("death_timeline")
@@ -2325,6 +2399,10 @@ static func _organic_spill(fx, p: Vector3, L: float, tint: Color) -> void:
 	fx.spr(p, fx.now, 0.45, tint, 1.8, L * 0.025, L * 0.16, 20, Vector3.ZERO, 0.0, 0.0, 0.0, 28.0)
 
 
+# Issue 461: how far a death's core flash lights the hulls round it (world units; hexes are 17.3 across).
+const CORE_LIGHT_REACH := {"small": 26.0, "cruiser": 35.0, "capital": 52.0}
+
+
 static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: Node3D = null, local_p := Vector3.ZERO, src = null, band_override := "", frame = null) -> void:
 	if is_instance_valid(node): p = node.to_global(local_p)
 	if not p.is_finite() or R <= 0.0: return
@@ -2346,13 +2424,15 @@ static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: 
 		mat.set_shader_parameter("extent", px * STAGING_UNITS_PER_PIXEL)
 		mat.set_shader_parameter("size_divisor", float(row[4] if soft else row[3]))
 		mat.set_shader_parameter("soft_flash", 1.0 if soft else 0.0)
-		if not fx.reduce_flashing: fx.light(p, fx.now, float(row[1]), 9.0, Color(0.65, 0.75, 0.91), 0)
+		# Issue 461 (audit item 11): the core flash lights the hulls round it, about two hexes for a cruiser and three for
+		# a capital, for the length of the flash (deaths_and_hits.md, beat 2)
+		if not fx.reduce_flashing: fx.light(p, fx.now, float(row[1]), 9.0, Color(0.65, 0.75, 0.91), 0, CORE_LIGHT_REACH[band])
 		return
 	# Only this booking can produce a bright baked flash or its event light.
 	if allowed:
 		var flash := flipbook(fx, p, Vector3.UP, R * 3.0, "flash", 0.20, Vector3.ZERO, 6.0, atlas_band(R / 0.16), src)
 		(flash.material_override as ShaderMaterial).set_shader_parameter("min_pixels", px)
-		fx.light(p, fx.now, 0.12, 9.0, Color(0.65, 0.75, 0.91), 0)
+		fx.light(p, fx.now, 0.12, 9.0, Color(0.65, 0.75, 0.91), 0, CORE_LIGHT_REACH[band])
 	else:
 		flipbook(fx, p, Vector3.UP, R * 2.8, "cool", 0.65, Vector3.ZERO, 0.5, atlas_band(R / 0.16), src)
 

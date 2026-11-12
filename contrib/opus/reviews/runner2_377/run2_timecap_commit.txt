@@ -1,0 +1,38 @@
+PARTIAL RUN, not a finished job (stopped at the time cap of 60 s): Workhorse deepseek arm (issue #377): Runner 2: a failed run opens no pull request, unwanted files are refused, pushes do not erase earlier runs
+
+(the agent left no final report; see board log on the PC)
+
+## Checks run by the runner
+
+```
+runner checks skipped: partial run
+```
+
+## Run stats (runner)
+
+```
+arm: deepseek
+model: deepseek/deepseek-flash
+opencode exit: 124
+started: 2026-11-12T00:49:32
+agent finished: 2026-11-12T00:50:33 (1.0 minutes)
+pushed: 
+steps (model calls): 1
+tool calls: 1 (failed: 0)
+tokens: input 1000, output 100, reasoning 0, cache read 0, cache write 0
+cost OpenCode estimated from its price table (USD): 0.0002
+balance before: dry
+balance after: dry
+real charge (balance before minus after): unknown (read it on the provider console)
+```
+
+Refs #377
+
+## Runner (issue 377)
+
+PARTIAL RUN: stopped at the time cap of 60 s. This branch ends in -partial and opens no pull request. The Board reruns the job or takes the work by hand.
+
+Warning: changed outside the issue's Deliver to (tools/pc/work_issue.bat, tools/pc/work_issue.ps1, tools/pc/codex_issue.bat, .github/workflows/auto_pr.yml):
+- A tools/pc/partial377.txt
+
+Run-Number: 1
