@@ -1,0 +1,19 @@
+PARTIAL RUN, not a finished job (codex exit 1): Codex (issue #377): Runner 2: a failed run opens no pull request, unwanted files are refused, pushes do not erase earlier runs
+
+Stand-in report, run B: wrote tools/pc/codex_partial377.txt and copied a ship file in, then stopped with exit 1.
+
+
+Closes #377
+
+## Runner (issue 377)
+
+PARTIAL RUN: codex exit 1. This branch ends in -partial and opens no pull request. The Board reruns the job or takes the work by hand.
+
+Refused by the runner, not committed (1; copies kept on the PC in the run's out folder, runs\20261112_074304\refused):
+- A godot/assets/ships/C19_51/C19_51_kit.glb: ship files under godot/assets/ships/C19_51/ (PC-built, never committed)
+
+Warning: changed outside the issue's Deliver to (tools/pc/work_issue.bat, tools/pc/work_issue.ps1, tools/pc/codex_issue.bat, .github/workflows/auto_pr.yml):
+- A tools/pc/codex_partial377.txt
+
+Earlier tip of runner377/codex-377-partial kept: 57e13ff6719868d202d9d7e3cd0280b604dd83aa is this commit's second parent, so the earlier run stays reachable. This commit's files are this run's alone.
+Run-Number: 3

@@ -6,6 +6,12 @@
 #   work_issue.ps1 lasttext <events.jsonl>                        prints the agent's final text
 #   work_issue.ps1 stats   <n> <arm> <out>                        reads events.jsonl, balances and times; writes stats.txt and last.md
 #   work_issue.ps1 msg     <n> <arm> <out>                        writes commit.txt (becomes the PR description)
+# Runner 2 (issue 377, Opus, Nov 12 2026); codex_issue.bat uses these three too:
+#   work_issue.ps1 guard   <n> <tag> <repo> <out>                 the refuse list and the Deliver to warning, on the staged change;
+#                                                                 its files go to <out>\runs\<date_time>\ (one folder per run)
+#   work_issue.ps1 commit  <repo> <out> <branch> <real|dry|test>  one commit that keeps the branch's earlier tip, checked before push
+#   work_issue.ps1 confirm <repo> <out> <branch> <real|dry|test>  after the push: GitHub's branch must carry exactly out\diffstat.txt
+#   work_issue.ps1 tidy    <run folder> <root> <settings> <ok> <dry>  run folder size; removes repo\ only if Ryan's setting allows
 # Keys come from the environment (DEEPSEEK_API_KEY, MOONSHOT_API_KEY) and are never written to any file.
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -37,6 +43,50 @@ function Last-Text($ev) {
 }
 
 function Read-Txt($p) { if (Test-Path $p) { return ([IO.File]::ReadAllText($p)).Trim() } else { return '' } }
+
+# ---- Runner 2 helpers (issue 377) ----
+# git's output as an array of lines; $script:gx holds its exit code. stderr is dropped (PowerShell 5.1 turns it into errors).
+function Git-Lines { $o = & git @args 2>$null; $script:gx = $LASTEXITCODE; if ($null -eq $o) { return @() }; return @($o | ForEach-Object { [string]$_ }) }
+function Git-One { $o = @(Git-Lines @args); if ($o.Count) { return $o[0].Trim() } else { return '' } }
+function Write-Lines($path, $lines) { [IO.File]::WriteAllText($path, ((@($lines) -join "`n") + "`n"), (New-Object System.Text.UTF8Encoding($false))) }
+function Read-Lines($path) { if (-not (Test-Path -LiteralPath $path)) { return @() }; return @([IO.File]::ReadAllLines($path) | Where-Object { $_ -ne '' }) }
+# Folders and files named on the issue's "Deliver to" line (anything with a slash, or a file name with an extension).
+function Scope-Paths($dl) {
+  $res = @()
+  if (-not $dl) { return $res }
+  $t = $dl -replace '[`"''()\[\]]', ' '
+  foreach ($m in [regex]::Matches($t, '[A-Za-z0-9_.\-]+(?:/[A-Za-z0-9_.\-<>*{}]*)+|[A-Za-z0-9_\-]+\.[A-Za-z0-9]{1,5}\b')) {
+    $p = $m.Value
+    $cut = $p.IndexOfAny([char[]]'<*{'); if ($cut -ge 0) { $p = $p.Substring(0, $cut) }
+    $p = $p.TrimEnd('.', ',', ';', ':').TrimEnd('/')
+    if ($p.Length -ge 2) { $res += $p }
+  }
+  return $res
+}
+function In-Scope($p, $scope) {
+  foreach ($s in $scope) { if ($p -ieq $s -or $p.StartsWith($s + '/', [StringComparison]::OrdinalIgnoreCase)) { return $true } }
+  return $false
+}
+# Why a staged file may not be committed, or $null. The second line of defence behind godot/.gitignore (R144).
+function Refuse-Reason($st, $p, $repo, $maxMb) {
+  $lp = $p.ToLower()
+  if ($lp.StartsWith('godot/gen/')) { return 'under godot/gen (built on the PC, never committed)' }
+  if ($lp.StartsWith('godot/.godot/')) { return "under godot/.godot (Godot's import cache)" }
+  if ($p -match '^godot/assets/ships/([^/]+)/' -and $Matches[1] -notin @('previews', 'test')) { return "ship files under godot/assets/ships/$($Matches[1])/ (PC-built, never committed)" }
+  if ($lp.EndsWith('.uid') -and $st -eq 'A') { return 'a new .uid file (Godot makes these)' }
+  if ($lp.EndsWith('.import') -and $st -eq 'M') { return 'a re-saved .import file (Godot rewrites these on import)' }
+  if ($lp.EndsWith('.import') -and $st -eq 'A') { return 'a new .import file (Godot makes these)' }
+  if ($st -eq 'A' -or $st -eq 'M') {
+    $f = Join-Path $repo ($p -replace '/', '\')
+    if (Test-Path -LiteralPath $f) {
+      $mb = (Get-Item -LiteralPath $f -Force).Length / 1MB
+      if ($mb -gt $maxMb) { return ('{0:N1} MB, over the {1} MB limit (WORK_MAX_FILE_MB)' -f $mb, $maxMb) }
+    }
+  }
+  return $null
+}
+# The staged change, kept as a patch beside the run when the runner stops before a push.
+function Save-Patch($out, $pre) { & git diff --cached --binary "--output=$(Join-Path $out 'change.patch')" $pre 2>$null }
 
 if ($mode -eq 'prep') {
   $n = $args[1]; $arm = $args[2]; $repo = $args[3]; $out = $args[4]; $godot = $args[5]
@@ -83,6 +133,10 @@ $($i.body)
 "@
   [IO.File]::WriteAllText((Join-Path $repo 'WORK_TASK.md'), $task, $utf8)
   [IO.File]::WriteAllText((Join-Path $out 'title.txt'), [string]$i.title, $utf8)
+  # The issue's "Deliver to" line: the guard step warns about changed files outside it (issue 377).
+  $dl = ''
+  if ([string]$i.body -match '(?im)^\s*Deliver to:\s*(.+?)\s*$') { $dl = $Matches[1] }
+  [IO.File]::WriteAllText((Join-Path $out 'deliver_to.txt'), $dl, $utf8)
   Write-Host "issue #$n prepared for the $arm arm"
 }
 elseif ($mode -eq 'balance') {
@@ -162,4 +216,225 @@ elseif ($mode -eq 'msg') {
   $msg = "Workhorse $arm arm (issue #$n): $title`n`n$last`n`n## Checks run by the runner`n`n$fence`n$checks`n$fence`n`n## Run stats (runner)`n`n$fence`n$stats`n$fence`n`nRefs #$n`n"
   [IO.File]::WriteAllText((Join-Path $out 'commit.txt'), $msg, $utf8)
 }
-else { Write-Host 'usage: work_issue.ps1 prep|balance|keycheck|lasttext|stats|msg ...'; exit 2 }
+elseif ($mode -eq 'guard') {
+  # After git add -A: refuse what must never be committed, keep a copy of it (never deleted), and warn about changed files
+  # outside the issue's Deliver to line. Everything this step makes goes to a folder of its own for this run,
+  # <out>\runs\<date_time>\ (refused\, refused.txt, scope_warnings.txt, guard.md), so a rerun that shares <out> (Codex's
+  # board\issue-N) never overwrites an earlier run's refused copies (Muse, opus_check_575). out\guard_dir.txt names it.
+  $ErrorActionPreference = 'Continue'
+  $n = $args[1]; $tag = $args[2]; $repo = $args[3]; $out = $args[4]
+  $maxMb = 8; if ($env:WORK_MAX_FILE_MB) { $maxMb = [double]$env:WORK_MAX_FILE_MB }
+  Push-Location $repo
+  $staged = @(Git-Lines -c core.quotepath=off diff --cached --name-status --no-renames)
+  if ($gx -ne 0) { Write-Host 'guard failed: git could not list the staged change'; Pop-Location; exit 1 }
+  $dlFile = Join-Path $out 'deliver_to.txt'
+  $dl = Read-Txt $dlFile
+  if (-not (Test-Path $dlFile)) {
+    try {
+      $i = Invoke-RestMethod -UseBasicParsing -TimeoutSec 30 -Headers @{ 'User-Agent' = 'voidsworn-runner' } -Uri "https://api.github.com/repos/rcbailey12/voidsworn/issues/$n"
+      if ([string]$i.body -match '(?im)^\s*Deliver to:\s*(.+?)\s*$') { $dl = $Matches[1] }
+      [IO.File]::WriteAllText($dlFile, $dl, $utf8)
+    } catch { }
+  }
+  $scope = @(Scope-Paths $dl)
+  $stamp = Get-Date -Format 'yyyyMMdd_HHmmss'
+  $gdir = Join-Path $out "runs\$stamp"; $k = 2
+  while (Test-Path -LiteralPath $gdir) { $gdir = Join-Path $out "runs\${stamp}_$k"; $k++ }
+  New-Item -ItemType Directory -Force -Path $gdir | Out-Null
+  $grel = $gdir.Substring($out.TrimEnd('\').Length).TrimStart('\')
+  [IO.File]::WriteAllText((Join-Path $out 'guard_dir.txt'), $gdir, [Text.Encoding]::ASCII)
+  $refused = @(); $warn = @()
+  foreach ($l in $staged) {
+    $parts = $l -split "`t", 2
+    if ($parts.Count -lt 2) { continue }
+    $st = $parts[0].Substring(0, 1); $p = $parts[1]
+    $why = Refuse-Reason $st $p $repo $maxMb
+    if ($why) { $refused += [pscustomobject]@{ S = $st; P = $p; Why = $why }; continue }
+    if ($p -like "docs/shots/issue-$n-$tag/*") { continue }
+    if ($scope.Count -and -not (In-Scope $p $scope)) { $warn += "$st $p" }
+  }
+  $keep = Join-Path $gdir 'refused'
+  $bad = @()
+  foreach ($r in $refused) {
+    if ($r.S -ne 'D') {
+      $src = Join-Path $repo ($r.P -replace '/', '\'); $dst = Join-Path $keep ($r.P -replace '/', '\')
+      try { New-Item -ItemType Directory -Force -Path (Split-Path $dst) | Out-Null; Copy-Item -LiteralPath $src -Destination $dst -Force -ErrorAction Stop } catch { $bad += "copy failed: $($r.P)" }
+    }
+    & git reset -q -- ":(literal)$($r.P)" 2>$null
+  }
+  # The refused files must be out of the commit now (they stay in the working folder and in out\refused).
+  $after = @(Git-Lines -c core.quotepath=off diff --cached --name-only --no-renames)
+  foreach ($r in $refused) { if ($after -contains $r.P) { $bad += "still staged: $($r.P)" } }
+  $rl = @($refused | ForEach-Object { "$($_.S) $($_.P): $($_.Why)" })
+  Write-Lines (Join-Path $gdir 'refused.txt') $rl
+  Write-Lines (Join-Path $gdir 'scope_warnings.txt') $warn
+  $md = @()
+  if ($refused.Count) {
+    Write-Host "REFUSED $($refused.Count) file(s): not committed, copies kept in $gdir\refused (never deleted):"
+    $rl | ForEach-Object { Write-Host "  $_" }
+    $md += "Refused by the runner, not committed ($($refused.Count); copies kept on the PC in the run's out folder, $grel\refused):"
+    $md += @($rl | Select-Object -First 30 | ForEach-Object { "- $_" })
+    if ($rl.Count -gt 30) { $md += "- and $($rl.Count - 30) more ($grel\refused.txt on the PC)" }
+    $md += ''
+  } else { Write-Host 'refuse list: nothing refused' }
+  if (-not $scope.Count) {
+    Write-Host 'scope: no folders found on the issue''s Deliver to line, so nothing was checked against it'
+    $md += 'Scope: no folders found on the issue''s Deliver to line; not checked.'
+  } elseif ($warn.Count) {
+    Write-Host "WARNING: $($warn.Count) changed file(s) outside the issue's Deliver to ($($scope -join ', ')):"
+    $warn | ForEach-Object { Write-Host "  $_" }
+    $md += "Warning: changed outside the issue's Deliver to ($($scope -join ', ')):"
+    $md += @($warn | Select-Object -First 30 | ForEach-Object { "- $_" })
+    if ($warn.Count -gt 30) { $md += "- and $($warn.Count - 30) more ($grel\scope_warnings.txt on the PC)" }
+  } else { Write-Host "scope: every changed file is inside the issue's Deliver to" }
+  Write-Lines (Join-Path $gdir 'guard.md') $md
+  Pop-Location
+  if ($bad.Count) { Write-Host 'guard failed:'; $bad | ForEach-Object { Write-Host "  $_" }; exit 1 }
+  exit 0
+}
+elseif ($mode -eq 'commit') {
+  # One commit for the run, made with git's plumbing (no hooks, no editor, its exit code checked). Its parents are the
+  # agent's HEAD (with any merge the agent made under it) and the branch's earlier tip on GitHub, so a rerun pushes as a
+  # fast-forward with no force and the earlier run stays reachable. Then the check the issue 541 trap needs: the commit
+  # must carry exactly the staged change (out\diffstat.txt). The author is git's own identity, or GIT_AUTHOR_* and
+  # GIT_COMMITTER_* when the calling .bat sets them. Exit 0 ready to push, 7 nothing to commit, 10 diff mismatch,
+  # 11 commit failed, 12 the branch's earlier tip could not be read.
+  $ErrorActionPreference = 'Continue'
+  $repo = $args[1]; $out = $args[2]; $br = $args[3]; $push = $args[4]
+  $fault = ''; if ($push -ne 'real' -and $env:WORK_TEST_FAULT) { $fault = $env:WORK_TEST_FAULT }
+  Push-Location $repo
+  $pre = Git-One rev-parse HEAD
+  [IO.File]::WriteAllText((Join-Path $out 'pre_commit.txt'), $pre, [Text.Encoding]::ASCII)
+  & git diff --cached --quiet 2>$null
+  if ($LASTEXITCODE -eq 0) { Write-Host 'nothing left to commit after the refuse list'; Pop-Location; exit 7 }
+  $num = @(Git-Lines -c core.quotepath=off diff --cached --numstat --no-renames)
+  Write-Lines (Join-Path $out 'diff_numstat.txt') $num
+  Write-Lines (Join-Path $out 'diffstat.txt') @(Git-Lines -c core.quotepath=off diff --cached --stat --no-renames)
+  # The branch's earlier tip (an earlier run, or the Board's own fix-ups): kept, never overwritten.
+  $old = ''
+  $ls = @(Git-Lines ls-remote origin "refs/heads/$br")
+  if ($gx -ne 0) { Write-Host "push stopped: could not read branch $br on GitHub, the check failed; change kept as out\change.patch"; Save-Patch $out $pre; Pop-Location; exit 12 }
+  if ($ls.Count) {
+    $want = ($ls[0] -split '\s+')[0]
+    & git fetch -q --depth 1 origin "+refs/heads/${br}:refs/remotes/origin/runner-prev" 2>$null
+    $old = Git-One rev-parse -q --verify 'refs/remotes/origin/runner-prev^{commit}'
+    if (-not $old) { Write-Host "push stopped: could not fetch the earlier tip $want of $br, the check failed; change kept as out\change.patch"; Save-Patch $out $pre; Pop-Location; exit 12 }
+  }
+  [IO.File]::WriteAllText((Join-Path $out 'prev_tip.txt'), $old, [Text.Encoding]::ASCII)
+  $runNo = 1
+  if ($old) {
+    $runNo = 2
+    $om = (Git-Lines log -1 --format=%B $old) -join "`n"
+    if ($om -match '(?m)^Run-Number: (\d+)') { $runNo = [int]$Matches[1] + 1 }
+  }
+  # The message: the runner's text (commit.txt) plus the runner's own block. Never empty (issue 541: an empty
+  # commit.txt made the old runner's commit abort, and its push carried only the agent's merge commit).
+  $msg = ''
+  $cp = Join-Path $out 'commit.txt'
+  if (Test-Path $cp) { $msg = [IO.File]::ReadAllText($cp) }
+  $n = ''; if ($br -match 'issue-(\d+)') { $n = $Matches[1] }
+  if (-not $msg.Trim()) { $msg = "Runner commit for $br (the message step left no text; the agent's report is in the run's out folder on the PC)`n`nRefs #$n`n"; Write-Host 'WARNING: commit.txt was empty, the runner wrote a plain message' }
+  $partial = Read-Txt (Join-Path $out 'partial.txt')
+  # The refuse step's text for this run: its own folder (out\guard_dir.txt), never an earlier run's.
+  $guard = ''
+  $gd = Read-Txt (Join-Path $out 'guard_dir.txt')
+  if ($gd) { $guard = Read-Txt (Join-Path $gd 'guard.md') }
+  $base = Read-Txt (Join-Path $out 'base_commit.txt')
+  $block = "## Runner (issue 377)`n`n"
+  if ($partial) {
+    $msg = "PARTIAL RUN, not a finished job ($partial): " + $msg
+    $block += "PARTIAL RUN: $partial. This branch ends in -partial and opens no pull request. The Board reruns the job or takes the work by hand.`n`n"
+  }
+  if ($guard) { $block += "$guard`n`n" }
+  if ($base -and $base -ne $pre) {
+    $ac = @(Git-Lines log --format='%h %s' "$base..$pre")
+    if ($ac.Count) { $block += "Commits the agent made itself (merges included), under this one:`n" + (($ac | ForEach-Object { "- $_" }) -join "`n") + "`n`n" }
+  }
+  if ($old) { $block += "Earlier tip of $br kept: $old is this commit's second parent, so the earlier run stays reachable. This commit's files are this run's alone.`n" }
+  $block += "Run-Number: $runNo`n"
+  $final = $msg.TrimEnd() + "`n`n" + $block
+  [IO.File]::WriteAllText($cp, $final, $utf8)
+  $new = $pre
+  if ($fault -eq 'skipcommit') {
+    Write-Host 'TEST FAULT skipcommit (dry run only): the runner leaves the staged change uncommitted, as the issue 541 run did'
+  } else {
+    $tree = Git-One write-tree
+    if ($gx -ne 0 -or -not $tree) { Write-Host 'COMMIT FAILED: git write-tree failed; nothing pushed, change kept as out\change.patch'; Save-Patch $out $pre; Pop-Location; exit 11 }
+    $pargs = @('-p', $pre)
+    $mh = Git-One rev-parse -q --verify MERGE_HEAD
+    if ($mh) { $pargs += @('-p', $mh) }
+    if ($old -and $old -ne $pre) { $pargs += @('-p', $old) }
+    $new = Git-One commit-tree $tree @pargs -F $cp
+    if ($gx -ne 0 -or -not $new) { Write-Host 'COMMIT FAILED: git commit-tree failed; nothing pushed, change kept as out\change.patch'; Save-Patch $out $pre; Pop-Location; exit 11 }
+    & git update-ref -m 'runner commit (issue 377)' HEAD $new $pre 2>$null
+    if ($LASTEXITCODE -ne 0) { Write-Host 'COMMIT FAILED: git update-ref failed; nothing pushed, change kept as out\change.patch'; Save-Patch $out $pre; Pop-Location; exit 11 }
+  }
+  [IO.File]::WriteAllText((Join-Path $out 'run_commit.txt'), $new, [Text.Encoding]::ASCII)
+  # Before the push: the commit must carry exactly the staged change, and nothing may be left staged.
+  $head = Git-One rev-parse HEAD
+  $num2 = @(Git-Lines -c core.quotepath=off diff --numstat --no-renames $pre $head)
+  & git diff --cached --quiet $head 2>$null; $clean = ($LASTEXITCODE -eq 0)
+  if ((($num -join "`n") -ne ($num2 -join "`n")) -or -not $clean -or $head -ne $new) {
+    $v = @('DIFF MISMATCH before the push (issue 377): the commit to push does not carry the staged change.', "agent HEAD $pre, commit to push $head", '', 'staged (out\diffstat.txt):') + $num + @('', 'in the commit to push:') + $num2
+    Write-Lines (Join-Path $out 'DIFF_MISMATCH.txt') $v
+    Write-Host '!!! DIFF MISMATCH: push stopped, the check failed. The commit to push does not carry the change in out\diffstat.txt.'
+    Write-Host "!!! staged: $($num.Count) file(s); in the commit to push: $($num2.Count). Nothing pushed; the staged change is kept as out\change.patch; see out\DIFF_MISMATCH.txt"
+    Save-Patch $out $pre; Pop-Location; exit 10
+  }
+  $sh = $new.Substring(0, [Math]::Min(9, $new.Length))
+  if ($old) { Write-Host "commit $sh (run $runNo of $br) carries the staged change ($($num.Count) files); earlier tip $($old.Substring(0, 9)) kept as its parent, so the push needs no force" }
+  else { Write-Host "commit $sh (run 1 of $br) carries the staged change ($($num.Count) files)" }
+  Pop-Location; exit 0
+}
+elseif ($mode -eq 'confirm') {
+  # After the push: GitHub's branch must be the runner's commit, and its diff from the agent's HEAD must be exactly
+  # out\diffstat.txt. Writes pushed_diffstat.txt. Exit 10, loudly, when they differ.
+  $ErrorActionPreference = 'Continue'
+  $repo = $args[1]; $out = $args[2]; $br = $args[3]; $push = $args[4]
+  Push-Location $repo
+  $pre = Read-Txt (Join-Path $out 'pre_commit.txt'); $new = Read-Txt (Join-Path $out 'run_commit.txt')
+  $num = @(Read-Lines (Join-Path $out 'diff_numstat.txt'))
+  if ($push -eq 'dry') { Write-Host 'dry run: nothing pushed; the commit that would be pushed carries exactly out\diffstat.txt (checked before the push)'; Pop-Location; exit 0 }
+  $ls = @(Git-Lines ls-remote origin "refs/heads/$br")
+  $remote = ''; if ($ls.Count) { $remote = ($ls[0] -split '\s+')[0] }
+  if ($remote -ne $new) {
+    Write-Lines (Join-Path $out 'DIFF_MISMATCH.txt') @('PUSH CHECK FAILED (issue 377)', "GitHub's $br is '$remote'", "the runner's commit is $new")
+    Write-Host "!!! PUSH CHECK FAILED: GitHub's $br is '$remote', not the runner's commit $new. See out\DIFF_MISMATCH.txt"
+    Pop-Location; exit 10
+  }
+  $num2 = @(Git-Lines -c core.quotepath=off diff --numstat --no-renames $pre $remote)
+  & git -c core.quotepath=off diff --stat --no-renames "--output=$(Join-Path $out 'pushed_diffstat.txt')" $pre $remote 2>$null
+  if (($num -join "`n") -ne ($num2 -join "`n")) {
+    Write-Lines (Join-Path $out 'DIFF_MISMATCH.txt') (@('DIFF MISMATCH after the push (issue 377)', 'out\diffstat.txt:') + $num + @('', "pushed ($pre..$remote):") + $num2)
+    Write-Host "!!! DIFF MISMATCH after the push, the check failed: GitHub's $br does not carry exactly out\diffstat.txt. Do not merge it; see out\DIFF_MISMATCH.txt"
+    Pop-Location; exit 10
+  }
+  Write-Host "pushed diff checked: GitHub's $br ($($remote.Substring(0, 9))) carries exactly out\diffstat.txt ($($num.Count) files)"
+  Pop-Location; exit 0
+}
+elseif ($mode -eq 'tidy') {
+  # Every run: report the run folder's size. Only when Ryan's setting says yes (off by default) and the run ended in a
+  # checked push, remove the run's own repo\ copy; out\ (reports, logs, shots, refused files) is always kept.
+  $ErrorActionPreference = 'Continue'
+  $run = $args[1]; $root = $args[2]; $setf = $args[3]; $ok = $args[4]; $dry = $args[5]
+  function SizeOf($p) { if (-not (Test-Path -LiteralPath $p)) { return [double]0 }; $s = (Get-ChildItem -LiteralPath $p -Recurse -Force -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum; if ($s) { return [double]$s } else { return [double]0 } }
+  $repo = Join-Path $run 'repo'; $outd = Join-Path $run 'out'
+  $rs = SizeOf $repo; $os = SizeOf $outd
+  Write-Host ('run folder size: {0:N2} GB (repo copy {1:N2} GB, out {2:N1} MB) in {3}' -f (($rs + $os) / 1GB), ($rs / 1GB), ($os / 1MB), $run)
+  $on = $false
+  if (Test-Path -LiteralPath $setf) { foreach ($l in [IO.File]::ReadAllLines($setf)) { if ($l.Trim() -ieq 'remove_repo_copy_after_push=yes') { $on = $true } } }
+  if (-not (Test-Path -LiteralPath $repo)) { exit 0 }
+  if (-not $on) { Write-Host "repo copy kept: remove_repo_copy_after_push is not yes in $setf"; exit 0 }
+  if ($ok -ne '1') { Write-Host 'repo copy kept: the setting is on, but this run did not end in a checked push'; exit 0 }
+  $runFull = [IO.Path]::GetFullPath($run).TrimEnd('\'); $rootFull = [IO.Path]::GetFullPath($root).TrimEnd('\') + '\'
+  if (-not $runFull.StartsWith($rootFull, [StringComparison]::OrdinalIgnoreCase) -or -not (Test-Path -LiteralPath (Join-Path $repo '.git')) -or -not (Test-Path -LiteralPath (Join-Path $outd 'result.txt'))) {
+    Write-Host "repo copy kept: safety check failed (the run folder must sit under $root and hold repo\.git and out\result.txt)"; exit 0
+  }
+  if ($dry -eq '1') { Write-Host ('dry run: the setting is on and the push was checked, so a real run would now remove {0} ({1:N2} GB) and keep out\; nothing removed' -f $repo, ($rs / 1GB)); exit 0 }
+  Remove-Item -LiteralPath $repo -Recurse -Force -ErrorAction SilentlyContinue
+  if (Test-Path -LiteralPath $repo) { & cmd.exe /c rd /s /q "\\?\$repo" 2>$null }
+  if (Test-Path -LiteralPath $repo) { Write-Host ('repo copy only partly removed: {0:N2} GB left in {1}' -f ((SizeOf $repo) / 1GB), $repo) }
+  else { Write-Host ('repo copy removed after the checked push (Ryan''s setting): {0}, {1:N2} GB freed; out\ kept' -f $repo, ($rs / 1GB)) }
+  exit 0
+}
+else { Write-Host 'usage: work_issue.ps1 prep|balance|keycheck|lasttext|stats|msg|guard|commit|confirm|tidy ...'; exit 2 }

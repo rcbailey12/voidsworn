@@ -3,7 +3,7 @@ rem Workhorse (#217, Opus, Nov 7 2026): one job-board issue, one model, OpenCode
 rem Usage: work_issue.bat <issue number> <arm: deepseek, deepseekpro or kimi> [dryrun]   (WORK_MODEL overrides the arm's model id)
 rem Each run gets its own folder, Downloads\voidsworn_test\work217\issue-<n>-<arm>\<date_time>\, holding repo\ (a fresh clone of
 rem main on branch work/issue-<n>-<arm>) and out\ (OpenCode events, the agent's report, run stats, balances, shots).
-rem Nothing is deleted anywhere. latest.txt in issue-<n>-<arm>\ names the newest run folder.
+rem latest.txt in issue-<n>-<arm>\ names the newest run folder.
 rem After the agent finishes, its shots are copied into docs\shots\issue-<n>-<arm>\ so the evidence rides the PR, the change is
 rem committed and pushed, and GitHub opens the PR (auto_pr) and runs the checks. If the push fails: out\change.patch.
 rem dryrun: a free stand-in model (work\mock_llm.js) instead of the real one, and "git push --dry-run" instead of a push.
@@ -11,6 +11,28 @@ rem After the agent stops the runner runs the standing checks and parity itself 
 rem (#356): each check has its own time limit, a timeout is printed as a timeout, and a failed check never stops the push.
 rem Keys: DEEPSEEK_API_KEY and MOONSHOT_API_KEY, saved by work_setup.bat as user settings; read from the registry here, so a
 rem window that was open before setup (the watcher) still finds them.
+rem
+rem Runner 2 (issue 377, Opus, Nov 12 2026):
+rem  (a) An agent exit code that is not 0 (the time cap gives 124), or a merge the agent left unfinished, makes a PARTIAL run:
+rem      it pushes to work/issue-<n>-<arm>-partial, which opens no pull request (tools/pc/issue-377-auto_pr.patch), and skips
+rem      the runner checks.
+rem  (b) After git add -A the guard step (work_issue.ps1 guard) refuses files over WORK_MAX_FILE_MB (default 8), anything
+rem      under godot/gen, godot/.godot or godot/assets/ships/<hull>/ (previews and test stay allowed), new .uid files and new
+rem      or re-saved .import files. Refused files are unstaged, copied to out\runs\<date_time>\refused\ (never deleted) and listed in
+rem      result.txt and the PR text. Changed files outside the issue's Deliver to line are listed as a warning.
+rem  (c) No force push. The run's one commit is made with git's plumbing and checked; when the branch already exists its
+rem      earlier tip becomes the commit's second parent, so a rerun is a plain fast-forward push and the earlier run's
+rem      commit stays reachable. Commit text ends with "Run-Number: k".
+rem  (541) Before the push the commit must carry exactly the staged change (out\diffstat.txt); after the push GitHub's branch
+rem      must be that commit with that diff (out\pushed_diffstat.txt). Any difference stops the run loudly: DIFF MISMATCH
+rem      in result.txt, out\DIFF_MISMATCH.txt, exit code 10.
+rem  (disk) Every run ends with its folder size in result.txt. Only when work217\runner_settings.txt says
+rem      remove_repo_copy_after_push=yes (off by default; Ryan turns it on once with WORKHORSE_CLEANUP.bat) does a run whose
+rem      push was checked remove its own repo\ copy; out\ is always kept. A dry run never removes anything.
+rem Dry-run test knobs (ignored unless the third argument is dryrun): WORK_DRY_SCENARIO picks the stand-in model's script;
+rem WORK_TEST_BRANCH pushes for real to that branch (it must not start with codex/, muse/, work/ or opus/, so no PR opens);
+rem WORK_SKIP_CHECKS=1 skips the runner checks; WORK_DRY_SPARSE lists the only folders a lean test clone checks out;
+rem WORK_TEST_FAULT=skipcommit leaves the change uncommitted, as the issue 541 run did. WORK_ROOT moves the run folders.
 setlocal
 set "N=%~1"
 set "ARM=%~2"
@@ -33,20 +55,43 @@ rem timeout is written into the commit text instead of eating the run.
 if not defined CHECK_CAP set "CHECK_CAP=900"
 if not defined PARITY_CAP set "PARITY_CAP=1500"
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
+if not defined WORK_ROOT set "WORK_ROOT=%VT%\work217"
 set "T=%~dp0"
 set "PS=powershell -NoProfile -ExecutionPolicy Bypass -File "%T%work_issue.ps1""
 set "OC=%APPDATA%\npm\opencode.cmd"
 set "BR=work/issue-%N%-%ARM%"
+rem How the run ends: real pushes to GitHub; dry is "git push --dry-run"; test pushes for real to WORK_TEST_BRANCH.
+set "PUSHMODE=real"
+set "DRY=0"
+if /i "%MODE%"=="dryrun" set "PUSHMODE=dry"
+if /i "%MODE%"=="dryrun" set "DRY=1"
+if /i not "%MODE%"=="dryrun" goto :branchset
+if not defined WORK_TEST_BRANCH goto :branchset
+echo %WORK_TEST_BRANCH%| findstr /r /i /c:"^codex/" /c:"^muse/" /c:"^work/" /c:"^opus/" > nul
+if not errorlevel 1 (echo WORK_TEST_BRANCH must not start with codex/, muse/, work/ or opus/: those open pull requests & exit /b 2)
+set "BR=%WORK_TEST_BRANCH%"
+set "PUSHMODE=test"
+:branchset
+rem The run's commit carries Ryan's git identity, as before.
+set "GIT_AUTHOR_NAME=Ryan Bailey"
+set "GIT_AUTHOR_EMAIL=rcbailey12@gmail.com"
+set "GIT_COMMITTER_NAME=Ryan Bailey"
+set "GIT_COMMITTER_EMAIL=rcbailey12@gmail.com"
 for /f %%s in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd_HHmmss"') do set "STAMP=%%s"
 set "K=issue-%N%-%ARM%"
 if /i "%MODE%"=="dryrun" set "K=dryrun-%N%-%ARM%"
-set "A=%VT%\work217\%K%\%STAMP%"
+set "A=%WORK_ROOT%\%K%\%STAMP%"
 set "R=%A%\repo"
 set "O=%A%\out"
+set "RC=0"
+set "OK=0"
 mkdir "%O%"
-echo %A%> "%VT%\work217\%K%\latest.txt"
+echo %A%> "%WORK_ROOT%\%K%\latest.txt"
 echo started %date% %time% (%MODE%) > "%O%\result.txt"
 echo %MODEL%> "%O%\model.txt"
+rem Ryan's one cleanup switch (issue 377). The runner only creates the file, with the setting off, and then only reads it.
+set "SETF=%WORK_ROOT%\runner_settings.txt"
+if not exist "%SETF%" call :settings
 if not exist "%OC%" (echo OpenCode is not installed: run WORKHORSE_SETUP.bat first >> "%O%\result.txt" & exit /b 3)
 rem parity.bat in a repo checkout reads godot_path.txt one folder above the repo
 copy /y "%VT%\godot_path.txt" "%A%\godot_path.txt" >nul
@@ -70,12 +115,19 @@ goto :clone
 set "DEEPSEEK_API_KEY=dry"
 set "MOONSHOT_API_KEY=dry"
 set "OPENCODE_CONFIG=%T%work\opencode_mock.json"
-start "workhorse stand-in model" /min "C:\Program Files\nodejs\node.exe" "%T%work\mock_llm.js" 8765 "%O%\mock_log.txt"
+start "workhorse stand-in model" /min "C:\Program Files\nodejs\node.exe" "%T%work\mock_llm.js" 8765 "%O%\mock_log.txt" %WORK_DRY_SCENARIO%
 rem wait until the stand-in is listening (an earlier one may still hold the port for a few seconds)
-powershell -NoProfile -Command "$f='%O%\mock_log.txt'; for($i=0;$i -lt 90;$i++){ if((Test-Path $f) -and (Select-String -Quiet -Path $f -Pattern 'listening')){exit 0}; Start-Sleep 1 }; exit 1"
+powershell -NoProfile -Command "$f='%O%\mock_log.txt'; for($i=0;$i -lt 300;$i++){ if((Test-Path $f) -and (Select-String -Quiet -Path $f -Pattern 'listening')){exit 0}; Start-Sleep 1 }; exit 1"
 
 :clone
+if /i "%MODE%"=="dryrun" if defined WORK_DRY_SPARSE goto :leanclone
 git clone -q -c core.autocrlf=false --depth 1 https://github.com/rcbailey12/voidsworn "%R%" > "%O%\git_log.txt" 2>&1
+goto :cloned
+:leanclone
+rem Dry runs only: a blobless clone that checks out the named folders, so a test run keeps the PC folder lean.
+git clone -q -c core.autocrlf=false --depth 1 --filter=blob:none --sparse https://github.com/rcbailey12/voidsworn "%R%" > "%O%\git_log.txt" 2>&1
+if exist "%R%\.git" git -C "%R%" sparse-checkout add %WORK_DRY_SPARSE% >> "%O%\git_log.txt" 2>&1
+:cloned
 if not exist "%R%\.git" (echo clone failed >> "%O%\result.txt" & exit /b 4)
 pushd "%R%"
 git checkout -q -B %BR%
@@ -92,6 +144,16 @@ call "%T%tmo.bat" %WORK_CAP% "%OC%" run --auto --format json -m %MODEL% --dir "%
 powershell -NoProfile -Command "(Get-Date).ToString('s')" > "%O%\time_agent_end.txt"
 set /p OCX=<"%O%\exit.txt"
 echo opencode exit %OCX% at %time% >> "%O%\result.txt"
+rem (a) A run that did not end cleanly is PARTIAL: its own branch, no pull request (issue 377).
+set "PB=%BR%"
+set "PARTIAL="
+if not "%OCX%"=="0" set "PARTIAL=agent exit %OCX%"
+if "%OCX%"=="124" set "PARTIAL=stopped at the time cap of %WORK_CAP% s"
+git rev-parse -q --verify MERGE_HEAD > nul 2>&1
+if not errorlevel 1 set "PARTIAL=the agent left a merge unfinished"
+if defined PARTIAL set "PB=%BR%-partial"
+> "%O%\partial.txt" echo.%PARTIAL%
+if defined PARTIAL echo PARTIAL RUN, %PARTIAL%: the work goes to %PB%, which opens no pull request >> "%O%\result.txt"
 rem give the provider a minute to book the charge before reading the balance again
 if /i not "%MODE%"=="dryrun" timeout /t 60 /nobreak > nul
 if /i "%MODE%"=="dryrun" (echo dry> "%O%\balance_after.txt") else (%PS% balance %ARM% "%O%\balance_after.txt" > nul)
@@ -102,9 +164,14 @@ if exist "%O%\shots\*.png" (
   copy /y "%O%\shots\*.png" "docs\shots\issue-%N%-%ARM%\" > nul
 )
 git add -A
+rem (b) The refuse list and the Deliver to warning (issue 377).
+%PS% guard %N% %ARM% "%R%" "%O%" >> "%O%\result.txt" 2>&1
+if errorlevel 1 goto :guardfail
 git diff --cached --quiet
 if not errorlevel 1 goto :nochange
 git diff --cached --stat > "%O%\diffstat.txt"
+if defined PARTIAL (> "%O%\checks.txt" echo runner checks skipped: partial run & goto :afterchecks)
+if /i "%MODE%"=="dryrun" if "%WORK_SKIP_CHECKS%"=="1" (> "%O%\checks.txt" echo runner checks skipped: dry run with WORK_SKIP_CHECKS=1 & goto :afterchecks)
 rem Runner checks (#356): after the agent stops, run the checks ourselves and keep their rows for the commit text.
 rem Each check has its own time limit through tmo.bat. A timeout is written as a timeout, and a failed check never
 rem stops the push: the FAIL rows ride in the text and every byte of the run is kept.
@@ -120,29 +187,56 @@ type "%O%\checks_node.txt" >> "%O%\checks.txt"
 if "%PARITY_EXIT%"=="124" (echo TIMEOUT: tools\pc\parity.bat nopause hit its %PARITY_CAP% s limit >> "%O%\checks.txt") else (echo exit %PARITY_EXIT% >> "%O%\checks.txt")
 type "%O%\checks_parity.txt" >> "%O%\checks.txt"
 echo checks: node exit %NODE_EXIT%, parity exit %PARITY_EXIT% at %time% >> "%O%\result.txt"
+:afterchecks
 %PS% msg %N% %ARM% "%O%"
-git -c user.name="Ryan Bailey" -c user.email="rcbailey12@gmail.com" commit -q -F "%O%\commit.txt"
-if /i "%MODE%"=="dryrun" (git push --dry-run origin %BR% > "%O%\push.txt" 2>&1) else (git push -q -f origin %BR% > "%O%\push.txt" 2>&1)
+rem (c) and the issue 541 check: one checked commit that keeps the branch's earlier tip, then a push with no force.
+%PS% commit "%R%" "%O%" %PB% %PUSHMODE% >> "%O%\result.txt" 2>&1
+set "SX=%ERRORLEVEL%"
+if "%SX%"=="7" goto :nochange
+if not "%SX%"=="0" goto :stopped
+if "%PUSHMODE%"=="dry" (git push --dry-run origin HEAD:refs/heads/%PB% > "%O%\push.txt" 2>&1) else (git push origin HEAD:refs/heads/%PB% > "%O%\push.txt" 2>&1)
 if errorlevel 1 goto :pushfail
+%PS% confirm "%R%" "%O%" %PB% %PUSHMODE% >> "%O%\result.txt" 2>&1
+set "SX=%ERRORLEVEL%"
+if not "%SX%"=="0" goto :stopped
 powershell -NoProfile -Command "(Get-Date).ToString('s')" > "%O%\time_pushed.txt"
 %PS% stats %N% %ARM% "%O%" > nul
-if /i "%MODE%"=="dryrun" (echo dry run: push to %BR% would work, nothing pushed >> "%O%\result.txt") else (echo pushed %BR% >> "%O%\result.txt")
-popd
-exit /b 0
+if "%PUSHMODE%"=="dry" (echo dry run: push to %PB% would work, nothing pushed >> "%O%\result.txt") else (echo pushed %PB% >> "%O%\result.txt")
+set "OK=1"
+goto :finish
 
 :getkey
 for /f "tokens=2,*" %%a in ('reg query HKCU\Environment /v %1 2^>nul ^| findstr /c:"REG_"') do set "%1=%%b"
 exit /b 0
+:settings
+> "%SETF%" echo # Workhorse runner settings (issue 377). The runner only reads this file; Ryan changes it with WORKHORSE_CLEANUP.bat.
+>> "%SETF%" echo # remove_repo_copy_after_push=yes: after a push the runner has checked, it removes that run's repo copy and keeps out.
+>> "%SETF%" echo remove_repo_copy_after_push=no
+exit /b 0
 :pushfail
-git format-patch -1 --stdout > "%O%\change.patch"
+set /p PRE=<"%O%\pre_commit.txt"
+git diff --binary --output="%O%\change.patch" %PRE% HEAD
 echo push failed, change saved as out\change.patch >> "%O%\result.txt"
-popd
-exit /b 8
+set "RC=8"
+goto :finish
+:stopped
+echo push stopped, the runner's check failed with code %SX%: read the lines above; nothing was merged >> "%O%\result.txt"
+set "RC=%SX%"
+goto :finish
+:guardfail
+echo the refuse step failed: nothing committed, nothing pushed >> "%O%\result.txt"
+set "RC=13"
+goto :finish
 :nochange
 echo the agent made no changes >> "%O%\result.txt"
-popd
-exit /b 7
+set "RC=7"
+goto :finish
 :prepfail
 echo could not read the issue from GitHub >> "%O%\result.txt"
+set "RC=6"
+goto :finish
+:finish
 popd
-exit /b 6
+rem (disk) The run folder's size, and the repo copy removed only when Ryan's setting allows it and the push was checked.
+%PS% tidy "%A%" "%WORK_ROOT%" "%SETF%" %OK% %DRY% >> "%O%\result.txt" 2>&1
+exit /b %RC%
