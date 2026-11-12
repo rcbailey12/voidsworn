@@ -26,6 +26,13 @@ echo Tuned numbers: %JOB%\tune.json (commit it beside the hull module and name i
 findstr /L /c:"[sil] dumped" "%JOB%\log_sildump.txt" > nul || (echo Stage 3 FAILED: the hull could not be built. See %JOB%\log_sildump.txt & goto bad)
 "%BPY%" "%R%\silhouette4.py" score "%JOB%\concept.png" "%CAMJ%" "%JOB%\sil" %CELL%="%JOB%\%CELL%.npz" > "%JOB%\log_sil.txt" 2>&1
 if errorlevel 1 (echo Stage 3 FAILED: the outline could not be scored. See %JOB%\log_sil.txt & goto bad)
+rem Issue 363: the standing checks the recipe keeps (outside audit pass 2, finding 13): the score per third and the inner
+rem edge check, recorded beside the whole outline score. The per-third floor is the gate minus outline_third_slack.
+"%BPY%" "%R%\outline_thirds.py" "%JOB%\concept.png" "%CAMJ%" "%JOB%\sil" %CELL%="%JOB%\%CELL%.npz" > "%JOB%\log_thirds.txt" 2>&1
+if errorlevel 1 (echo Stage 3 FAILED: the outline per third and inner edge check did not run. See %JOB%\log_thirds.txt & goto bad)
+"%BPY%" "%RC%\standing.py" outline --ship "%R209_SHIP%" --job "%JOB%" > "%JOB%\log_standing.txt" 2>&1
+if errorlevel 1 (type "%JOB%\log_standing.txt" & echo Stage 3 FAILED: the standing outline check did not pass. See %JOB%\log_standing.txt & goto bad)
+type "%JOB%\log_standing.txt"
 "%BPY%" "%RC%\ship.py" %SHIP% gate "%JOB%\sil\silhouette_scores.json"
 set GATE=%errorlevel%
 echo The overlay is %JOB%\sil\sil_%CELL%.png (green both, red concept only, yellow ship only).
