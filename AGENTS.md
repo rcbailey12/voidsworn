@@ -3,7 +3,8 @@
 Embers of the Hollow Sun (repo name voidsworn) is a hex fleet-tactics roguelite. The product is the Godot 4 port in `godot/`, played on
 Ryan's Windows PC only; the browser JS game is the rules oracle, frozen except for rules fixes. The owner is Ryan. He is not a coder:
 he judges work by screenshots. Start with HANDOFF.md section 0 and contrib/opus/FINDINGS.md (fixed Nov 7, R110; the rest of this file
-is reviewed in #216). The plan and the per-area recipes are in `docs/playbooks/` (PROGRAM.md first).
+is reviewed in #216). The plan and the per-area recipes are in `docs/playbooks/` (PROGRAM.md first). The rules in force, each
+with its reason, are in `docs/RULEBOOK.md` (issue 492): where this file and the rulebook disagree, the rulebook wins.
 
 ## Auditing? Follow `docs/REVIEW_PROTOCOL.md` exactly (mandatory), then `docs/ship_pipeline/AUDIT_BRIEF.md`
 
@@ -29,6 +30,12 @@ It holds the goal, the full history, every piece of owner feedback word for word
   Effort (Codex): high | xhigh   or   Models (Muse): <set>
   Done when: <the check that proves it, and what Ryan will see>
   ```
+- Ship build issues add four lines to the block (Ryan, Nov 11 2026, R214; template in docs/playbooks/ships.md section 7):
+  Route per part, Inside, Paint stack, Budget. Every build pull request body carries its done-when evidence and a method line
+  (build sheet link, manifest, budget numbers, changes made to the sheet); the outside check (issue 256) returns a build PR
+  without them as BLOCKING.
+- A ruling that changes a working method is not landed until the same pull request edits the working document a worker
+  reads for that area (the playbook, RECIPE.md, this file) (R214).
 - Muse's standing instructions: `contrib/opus/briefs/muse_standing_rule.md`.
 - Muse research, design and review jobs always include a blind Rey leg written before Rey reads the other legs (Ryan, Nov 3, R89). Write the Models line as: Rey writes a blind leg first, DeepSeek and Qwen write, Flash and Grok ideation only, Rey chairs; Argon blocked since Nov 5.
 - Questions for Ryan go to him directly in the agent's own chat, not as GitHub tags or comments (Ryan, Nov 2).
@@ -39,10 +46,11 @@ Match the job to the seat that is best at it, and keep the paid seats for what o
 
 | Work | Seat | Why |
 |---|---|---|
-| Board, PR review and merges, specs, visual calls, questions for Ryan | Claude, the project's Board thread (Fable 5.2 for the Nov 9 and 10 design window, R152; Opus for the build-out, R169) | the reviewer is the bottleneck; spend Claude on judgment, not bulk typing (2 or 3 threads at once) |
+| Board, PR review and merges, specs, visual calls, questions for Ryan | Claude, the project's Board thread (Opus 5.5 since Nov 11; the live seats are docs/RULEBOOK.md 2.6 and LOOP.md "The seats") | the reviewer is the bottleneck; spend Claude on judgment, not bulk typing (2 or 3 threads at once) |
 | Well-specified coding: rules, campaign, UI, scripts, tests | Workhorse: DeepSeek V4.1 Flash in OpenCode on the PC (tools/pc/work_issue.bat) | merged on one review pass for $0.09 on #26 (R127) |
 | Hard or open-ended multi-file coding, ship rounds, screen builds, plans | Opus 5.5 worker threads (the hardest jobs while the Claude plan has room, R132, R152) | Kimi is off except a real job both DeepSeek models fail (R132, R134); it was slower and 50x the price per job on the API |
-| GPU and Blender work: bakes, renders, captures, benchmarks, exports | Codex on the PC (when Ryan un-parks Codex); until then Opus PC threads | Codex knows the pipeline tools; the workhorse is untested on GPU jobs |
+| Every ship model made in Blender: blockouts, hulls, kits, the station (R205) | Opus worker threads | Ryan, Nov 11: "I think builds in blender should come from Opus" |
+| GPU work that shapes no ship: bakes, renders, captures, benchmarks, exports | Codex on the PC | Codex knows the pipeline tools; the workhorse is untested on GPU jobs |
 | Research, design text, audits, second-opinion reviews | Muse (Rey chairs; blind Rey leg; DeepSeek and Qwen write) | several models, an outside view |
 | Ideation and wide brainstorms | Flash and Grok (free), through Muse | cheap and broad |
 | Independent checker on an Opus-built change | Rey (or ChatGPT when back) | nobody grades their own work |
@@ -93,7 +101,7 @@ Match the job to the seat that is best at it, and keep the paid seats for what o
 
 - **Ship parts look like they belong (owner, Oct 21 2026).** Hand-built bolt-ons on the AI hulls (guns, racks, funnels, masts, drums, turrets) must make sense where they sit: snapped onto the real hull surface (never floating or sunk), on a visible mount (plate, ball, saddle, column), guns aimed forward or out to the side, never backward (owner, Oct 22: no ship in the game fires backward; bow guns may face forward along the prow, never aimed back into the ship), and placed in matched, symmetric pairs at sensible hard points. Corsair is the exception: haphazard and junky is on-brand there. Soft or blobby AI areas near the bridge and superstructure get rebuilt by hand the same way (tools/blender/a1/barge_v15.py is the live worked example; tools/blender/hs/c19_kit.py is history and not the live kit path, FINDINGS D3).
 - **Space ships, not naval ships (owner, Oct 22 2026: "careful that these don't stretch into obvious naval-looking ships. again, these are SPACE ships").** Keep the concept's look, but never add sea-ship tells: no boat keels or raked stems, jackstaffs, bollards, anchors, crow's nests, yardarms with rigging, mast ladders, lifeboats, portholes in rows along a waterline. Prefer the space versions: armoured flat bellies with chines, sensor housings and antenna arrays, equipment pods, recessed lights, main engine bells and thruster pods, docking hatches, heat radiators. Owner, Oct 24 2026: this covers the whole hull shape (bow profile, keel line, deck line), not only bolted-on parts; crossbar masts and smokestack funnels count as naval tells and become antenna arrays and heat radiators.
-- **Breakable by design (owner, Nov 4 2026, FINDINGS R98).** Every new or rebuilt hull gets real hull thickness, a few internal decks and bulkheads, and two or three authored break lines with matching interior faces and damage textures, so broken pieces never look hollow. Chorus hulls get flesh and bone inside. Older hulls rely on the game-side interior fallback (#167).
+- **Breakable by design (owner, Nov 4 2026, FINDINGS R98).** Every new or rebuilt hull gets real hull thickness, insides through the whole hull (decks, bulkheads, machinery; hidden until a piece breaks) and matching interior faces and damage textures, so broken pieces never look hollow; ships are blown apart unevenly by the faction's rule, never sliced along fixed lines (R186, R209, R215; docs/RULEBOOK.md 5.4). Chorus hulls get flesh and bone inside. Older hulls rely on the game-side interior fallback (#167).
 - **Blob sweep for every AI ship (owner, Oct 21 2026: "ensure we catch all of those for all other ships").** Before showing a ship, review it region by region against the concept: bow / midship / stern, each from the top, the side and below (9 cells, studio renders at the same angles as the concept views). The sweep is a viewing instrument for Ryan's eye, with no clean-or-rebuild pass bar (R121). Things the AI reliably mangles and that get rebuilt by default:
   - guns of any size (turrets, casemates, long cannons, bow chasers, stern guns), rocket racks and launchers
   - bridge and superstructure tiers, masts, funnels, antennas, rails

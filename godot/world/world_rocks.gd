@@ -25,7 +25,7 @@ render_mode cull_back;
 // A sphere about the pose's origin bounds every orientation of this batch's mesh.
 instance uniform float rock_radius = 1.0;
 varying flat float camera_cover;
-// #230 capture variant (VS_ROCK_TUMBLE=1): 1 turns each rock at its stored rate; 0, the shipped value, holds the pose.
+// #230 option B (issue #541): rocks turn at their stored rate under the cap law by default; VS_ROCK_TUMBLE=0 holds the pose.
 uniform float tumble_k = 0.0;
 uniform int kind = 0;
 uniform vec3 base = vec3(0.09, 0.075, 0.062);
@@ -95,7 +95,7 @@ void vertex() {
 	float axis_length = length(ic.xyz);
 	if (axis_length > 1e-6) {
 		vec3 ax = ic.xyz / axis_length;
-		float a = ic.w * 6.2831 + TIME * axis_length * tumble_k; // Keep the seeded starting pose; tumble_k 0 (shipped) never turns it.
+		float a = ic.w * 6.2831 + TIME * axis_length * tumble_k; // Keep the seeded starting pose; the slow law turns from it by default.
 		VERTEX = rot(VERTEX, ax, a);
 		NORMAL = rot(NORMAL, ax, a);
 	}
@@ -228,7 +228,7 @@ instance uniform float rock_radius = 1.0;
 varying flat float camera_cover;
 uniform vec3 glow = vec3(0.3, 0.8, 1.0);
 uniform vec3 edge = vec3(0.7, 0.45, 1.0);
-uniform float tumble_k = 0.0;   // as ROCK_SHADER: 0 holds the pose (shipped)
+uniform float tumble_k = 0.0;   // as ROCK_SHADER: turns at the stored rate unless VS_ROCK_TUMBLE=0 holds it
 uniform vec3 board_c = vec3(0.0);
 uniform vec2 haze_r = vec2(320.0, 2200.0);
 uniform vec3 haze_col = vec3(0.01);
@@ -248,7 +248,7 @@ void vertex() {
 	float axis_length = length(ic.xyz);
 	if (axis_length > 1e-6) {
 		vec3 ax = ic.xyz / axis_length;
-		float a = ic.w * 6.2831 + TIME * axis_length * tumble_k; // Crystal clusters keep the same fixed pose as their rocks.
+		float a = ic.w * 6.2831 + TIME * axis_length * tumble_k; // Crystal clusters turn with their rocks under the same law.
 		VERTEX = rot(VERTEX, ax, a);
 		NORMAL = rot(NORMAL, ax, a);
 	}
@@ -385,9 +385,9 @@ static func detail_tex() -> Texture3D:
 	return t
 
 
-# Issue #230 (AS10, AS14): rocks hold their seeded poses; the spin rates world.gd and world_living.gd store in each
-# instance are not shown. VS_ROCK_TUMBLE=1 turns them on for the board's motion capture only (never shipped).
-static var rock_tumble_k: float = 1.0 if OS.get_environment("VS_ROCK_TUMBLE") == "1" else 0.0
+# Issue #230 option B, shipped by #541: rocks turn at the spin rate world.gd and world_living.gd store in each instance
+# (the slow cap law; AS10's far-field rates). VS_ROCK_TUMBLE=0 restores the held seeded pose.
+static var rock_tumble_k: float = 0.0 if OS.get_environment("VS_ROCK_TUMBLE") == "0" else 1.0
 
 
 # One material per kind and look (the far layers share it, with their haze)

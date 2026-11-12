@@ -12,6 +12,8 @@ source changed during this continuation.
 - `docs/shots/env230/capture_counts.json`: records all five runs.
 - `tools/pc/jobs/env230_motion.bat`: quoted the comma-separated gas map argument so the batch subroutine receives both maps.
 - `contrib/opus/reviews/env230_report.md`: completed the capture results, verdict and checks.
+- `godot/world/world_rocks.gd`: issue #541 default change, option B. Rocks turn at the slow cap law unless
+  `VS_ROCK_TUMBLE=0`; the cap_rocks capture behaviour is now shipped.
 
 The retained source work includes `world.gd` reporting the measured AS1 rock angle and PL8 planet/rock ratio beside
 0.05 rad / 4.4 tuning targets once per map, rather than asserting those visual values. Crash, save and correctness
@@ -75,15 +77,16 @@ nor measurements of spin speed, and differences between runs are not a controlle
 | cap_rocks | 21.50% | 9.29% |
 | periods_rocks | 21.60% | 8.95% |
 
-B remains the recommendation for Ryan to judge against A and C, as in the PR body. No shipped motion default was
-changed. Gas-flat's six sheets and differences are supplied for NB8's comparison with the corresponding shipped
+B is now the shipped default (Board call, issue #541): `rock_tumble_k` in godot/world/world_rocks.gd defaults to the
+slow cap law, so backdrop and debris rocks turn; `VS_ROCK_TUMBLE=0` restores the held poses used by the shipped run
+above. Ryan can overrule on sight. Gas-flat's six sheets and differences are supplied for NB8's comparison with the corresponding shipped
 views; this delivery does not choose new gas rates. Five-second samples do not establish the absence of shimmer
 between samples. The shader TIME rollover limitation recorded in the briefs remains.
 
 ## Checks and R129 self-check
 
-- `node contrib/opus/tools/env_reconcile_tests.js`: 29 checks, 29 pass, 0 fail.
-- `node contrib/opus/tools/run_all_checks.js`: exit 0; 42 PASS, 2 KNOWN, 0 FAIL, 0 SKIP. Known baseline: seven findings
+- `node contrib/opus/tools/env_reconcile_tests.js`: 29 checks, 29 pass, 0 fail at PR 527; issue #541 extends it to 61 checks, 61 pass.
+- `node contrib/opus/tools/run_all_checks.js`: exit 0; 42 PASS, 2 KNOWN, 0 FAIL, 0 SKIP at PR 527 (issue #541 rerun: 43 PASS, 2 KNOWN, 0 FAIL). Known baseline: seven findings
   failures (KIT-1, KIT-3, ROS-9, MOD-2, EVT-1, NEM-6, UI-5) and 12 constant differences.
 - Capture checks: all four resumed jobs exit 0; expected seven-frame views and done markers present; all 165 delivered
   JPGs decode and meet the 720 px ceiling. B and C visibly name their run.

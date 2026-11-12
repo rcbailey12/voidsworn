@@ -41,8 +41,37 @@ check(/const TUMBLE_K := 0\.10\b/.test(liv) && has(liv, 'return TUMBLE_K / maxf(
 check(has(liv, 'uniform float tumble_k = 0.10;') && has(liv, 'min(rate, tumble_k / max(1.0, scale_v))'), 'the wreck shader caps tumble with the same figure');
 check(!/0\.10 \/ max\(1\.0, scale_v\)/.test(liv), 'no second hard-coded 0.10 tumble cap in world_living.gd');
 check(has(liv, 'OS.get_environment("VS_TUMBLE") == "periods" else "cap"'), 'the terrain-periods tumble is a capture variant, off by default');
-check((rocks.match(/uniform float tumble_k = 0\.0;/g) || []).length === 2 && has(rocks, 'OS.get_environment("VS_ROCK_TUMBLE") == "1" else 0.0'), 'rocks hold their seeded pose by default (rock and crystal shaders, tumble_k 0)');
+check((rocks.match(/uniform float tumble_k = 0\.0;/g) || []).length === 2 && has(rocks, 'static var rock_tumble_k: float = 0.0 if OS.get_environment("VS_ROCK_TUMBLE") == "0" else 1.0'), 'rocks turn at the slow law by default (rock and crystal shaders; VS_ROCK_TUMBLE=0 holds the pose)');
 check(has(rec, '0.10 / max(1, scale)'), 'environment_reconciliation.md states the figure of record');
+// 3b. The documents of record state the values the code side pins (contrib/muse/reviews/opus_check_286.md conditions 1 and 3)
+for (const row of [
+	'| Ground haze (0) | -4 to 2 | 0.6 | 0.116 u/s (0.0067 hex/s) | 0.196 u/s |',
+	'| Main body (1) | 1 to 8 | 1.0 | 0.193 u/s (0.011 hex/s) | 0.327 u/s |',
+	'| Wisps (2) | 6 to 14 | 1.6 | 0.308 u/s (0.018 hex/s) | 0.523 u/s |',
+	'| Tying veil (3) | 12 to 18 | 0.4 | 0.077 u/s (0.0045 hex/s) | 0.131 u/s |'])
+	check(has(spec, row), `nebula_motion_spec.md section 2 states the layer row: ${row}`);
+check(has(spec, 'sampled at 0.075 cycles per unit'), 'nebula_motion_spec.md section 0 states the 0.075 sample rate');
+check(has(spec, 'Storm body drift 0.328 u/s (0.019 hex/s); storm wisps 0.524 u/s; storm veil 0.131 u/s'), 'nebula_motion_spec.md section 2 states the storm rates');
+check(has(spec, 'every layer runs 1.7 times faster, and the veil runs backward (-1.7 x 0.4 = -0.68)'), 'nebula_motion_spec.md section 2 states the storm multiplier and veil reversal');
+check(has(spec, 'same field at 3.6 times the frequency with an extra 2.5 times the drift'), 'nebula_motion_spec.md section 2 states the filament frequency and extra drift');
+check(has(spec, 'plus or minus 0.025') && has(spec, '`sin(gas_time * 0.785398 + phase)`'), 'nebula_motion_spec.md section 3 states the body breathing');
+check(has(spec, '`0.90 + 0.10 * sin(gas_time * 3.14159 + phase)`'), 'nebula_motion_spec.md section 3 states the storm glow pulse');
+check(has(spec, 'Shipped play never sets it.'), 'nebula_motion_spec.md section 2 states the flat-rate variant is off in play');
+check(has(spec, '`exp(-d^2 / 500)` at weight 0.10'), 'nebula_motion_spec.md section 4 states the sheet glow spread and weight');
+check(has(spec, 'the emissive boost of 0.3 is full within') && has(spec, 'full within **0.46 hex** (8 u) and gone at **0.69 hex** (12 u)'), 'nebula_motion_spec.md section 4 states the flash weight and radius');
+check(has(spec, 'each bolt waits 2.2 to 6.5 s between flashes'), 'nebula_motion_spec.md section 4 states the bolt cadence');
+check(has(spec, 'fades linearly over 0.45 s (`tick` decays by dt / 0.45)'), 'nebula_motion_spec.md section 4 states the shield-tick flare');
+check(has(rec, 'rocks 5.6, wrecks 7.6, plain path 3.9'), 'environment_reconciliation.md section 2 states the AS18 piece sizes');
+check(has(rec, 'VS_TUMBLE=periods'), 'environment_reconciliation.md states the periods capture variant');
+check(has(rec, '| Debris rocks, both paths | yes, in ROCK_SHADER |'), 'environment_reconciliation.md section 1 states rocks turn by default');
+check(has(rec, 'reports the largest measured backdrop rock angle'), 'environment_reconciliation.md section 7 states R191 reporting');
+check(has(rec, '`r94_shape` and `r94_heights` with `matches_r94`') && has(rec, 'the triangle ceiling is a printed value'), 'environment_reconciliation.md section 6 states the ST3 and ST5 outcomes');
+check(has(spec, 'the vein pattern moves 0.555 u/s in the storm body and 0.889 u/s in the storm wisps'), 'nebula_motion_spec.md section 4 states the storm filament rates');
+check(has(spec, '**2.0 hexes** (33.9 u)'), 'nebula_motion_spec.md section 4 states the sheet glow reaches 2.0 hexes');
+check(has(spec, 'at -1.7 x base (-0.328 u/s)'), 'nebula_motion_spec.md section 2 states the flat storm veil rate (-0.328 u/s)');
+check(has(rec, 'piece longer than 8.66 units'), 'environment_reconciliation.md section 3 states the AS18 cap 8.66');
+check(has(rec, 'at most 8.66'), 'environment_reconciliation.md section 2 states the hero cap 8.66');
+check(has(rec, '**Figures of record: nebula alpha 0.075, debris 0.065, ion storm 0.065**'), 'environment_reconciliation.md section 4 states the BD16 alphas 0.075, 0.065, 0.065');
 // 4. AS18: no debris piece over 8.66 units (section 3)
 const CAP = 8.66;
 const living = /var s := 0\.3 \+ 2\.5 \* pow\(rng\.randf\(\), 2\.4\)/.test(liv) ? (0.3 + 2.5) * 2.0 : NaN;
@@ -62,6 +91,14 @@ check(!/assert abs\(hi\[0\] - lo\[0\] - 46\)/.test(kit) && !/assert hi\[2\] >= 1
 check(!/assert tops ==/.test(kit) && !/assert max\(v\.co\.z for v in bpy\.data\.objects\['gantry_crossbeam'\]/.test(kit) && !/assert max\(v\.co\.z for v in bpy\.data\.objects\['secondary_process_column'\]/.test(kit), 'ST3: R94 detail heights are reported, not asserted');
 check(!/assert[^\n]*triangles_roundtrip[^\n]*<=/.test(kit), 'ST5: no station triangle ceiling assert (R113)');
 check(has(kit, "'Disconnected parts: '") && has(kit, "'Backward gun'") && has(kit, "'R94 primitive changed'"), 'the correctness asserts and the R100 additions-only hash check stay');
+// 7b. ST3 reporting presence (opus_check_286 condition 2a)
+check(has(kit, "'r94_shape': shape") && has(kit, "result['r94_heights'] = heights"), 'ST3 writes r94_shape and r94_heights into the audit');
+check(has(kit, "shape['matches_r94'] =") && has(kit, "heights['matches_r94'] ="), 'ST3 sets matches_r94 for the shape and the heights');
+check(has(kit, 'REPORT: shape differs from the R94 default') && has(kit, 'REPORT: heights differ from the R94 default'), 'ST3 prints a REPORT: line when the R94 default differs');
+// 8. The capture setters and the two tumble law bodies (opus_check_286 condition 2b and 2c)
+check(/if OS\.get_environment\("VS_GAS_FLAT"\) == "1":\s*\n\s*m\.set_shader_parameter\("flat_rates", 1\.0\)/.test(liv), 'the flat_rates setter is guarded by VS_GAS_FLAT=1');
+check(has(liv, 'return minf(raw_rate, tumble_rate(scale_v))') && has(liv, 'var period := lerpf(60.0, 90.0, seed_v) if scale_v >= 1.5 else lerpf(20.0, 40.0, seed_v)') && has(liv, 'return TAU / period'), 'rock_tumble keeps the cap and periods law bodies');
+check(has(liv, 'return tumble_rate(scale_v)') && has(liv, 'return TAU / lerpf(80.0, 120.0, u)'), 'wreck_tumble keeps the cap and periods law bodies');
 
 console.log(`env_reconcile_tests: ${pass + fail} checks, ${pass} pass, ${fail} fail`);
 process.exit(fail ? 1 : 0);

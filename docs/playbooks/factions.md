@@ -23,7 +23,13 @@ Ryan, Nov 10 2026 (R164), on hard points: "It should vary by size of ship, facti
 - Matched symmetric pairs at sensible hard points, on visible mounts. The Hullbreakers are the one exception.
 - The ship must read at the battle camera (camera 170): one clear silhouette, one main colour, one accent light. Detail that
   only shows up close is a bonus, never the identity.
-- Every hull has real thickness, a few decks and bulkheads inside, and authored break lines with matching inner faces (R98).
+- Every hull has real thickness and comprehensive insides through the whole hull: decks, frames, spaces and machinery, so a
+  hit, break or death never shows an empty husk (R98, R209, R215). Ryan, Nov 11: "Let's ensure we're keeping in mind the
+  hits, the breaks, the deaths and everything that affects the internals of the ship so we don't run into the issues of before
+  with just empty looking husks". Chorus hulls carry flesh, bone and organs; Glasswrights layered glass and light.
+- Breaks look blown apart, never sliced (R186; Ryan: "It's like straight lines and even halves. It doesn't feel like an
+  explosion or major hit happened"). The faction's "How it breaks" line says where the hull gives way, not that it parts
+  cleanly.
 - Hard points are not a fixed count (R164). Gun and engine points come from the hull's own weapon slots and engines. Breach
   anchors (where the hull opens when it dies) scale with class and follow the faction's own way of breaking, below.
 
@@ -67,14 +73,18 @@ class and faction (issue 363), never from a constant.
 
 **In one line:** a pale wedge with a line of blue light.
 
-- **Silhouette:** clean flat wedge, sharp bow, low profile. One low sensor fin, not a tower. Symmetric and identical across the
+- **Silhouette:** a heavy, thick wedge on twin rails, about 3 : 1, with big shoulder turrets (R183 (3); Ryan on round 4:
+  "Hegemony also seems a bit too fragile and slender?"). One low sensor fin, not a tower. Symmetric and identical across the
   fleet: the same parts repeated at different sizes.
-- **Shape language:** machined, modular, horizontal. Flush panels, straight seams, repeated modules. Ion prongs at the bow.
+- **Shape language:** machined, modular, horizontal. Flush panels, straight seams, repeated modules. The ion weapon is a
+  recessed emitter trench in a blunt bow face, never prongs (R183 (1); Ryan: "every ship has the guns directly on the nose
+  which feels odd").
 - **Colours:** pale grey, steel-blue trim, implant-blue light strips that pulse in time across the whole fleet.
-- **Guns sit:** in rows of identical turrets on the upper deck, evenly pitched, plus the bow prongs. Small drone bays in the
-  flanks.
+- **Guns sit:** low armoured mounts sunk into the shoulder armour, short thick barrels, never tall round turrets with long
+  thin barrels (R185 (4); Ryan: "The hegemony guns look weird and almost cartoonish"); plus the bow emitter trench. Small
+  drone bays in the flanks.
 - **Engines:** a flat row of rectangular blue-white nozzles.
-- **How it breaks:** in modules. It parts cleanly at the bulkhead rings between modules, like a spine coming apart. Inside:
+- **How it breaks:** in modules. It gives way at the bulkhead rings between modules, like a spine coming apart, the rims torn and scorched (R186). Inside:
   white corridors, blue emergency light, racks of identical equipment. Breach anchors sit on the module joints.
 - **Never:** rust, asymmetry, ornament, warm light. No yacht decks, no conning tower, no tall mast.
 - **What the present concepts get wrong:** H7 to H10 read as yachts or submarines (a tall sail-like tower, stepped cabin
@@ -87,15 +97,18 @@ class and faction (issue 363), never from a constant.
 
 - **Silhouette:** blunt, heavy-bowed, uneven. Bigger on one side than the other. Listening dishes and wake-sniffer scoops at
   the bow, boarding claws under it. The one faction allowed to be junky.
-- **Shape language:** bolted, patched, chained. Hull plates torn from every other faction, kept in their old colours. Chains
-  between hull sections.
-- **Colours:** soot black, rust, dried-blood red, patches of trophy colour (pale Hegemony grey, a shard of Glasswright
-  crystal, violet Eclipse plate), dim red running lights.
+- **Shape language:** bolted, patched. Hull plates torn from every other faction, kept in their old colours. Nothing hangs
+  off the ship: no loose chains, cages or dangling cargo; trophies and cargo are bolted flat (R185 (3); Ryan: "I don't
+  understand the random things hanging off, it reads as naval"). Rocket racks sit on the top deck as big mismatched
+  bolted-on launchers (R183 (4); Ryan: "rockets need to be on top to fit the scrapped together theme").
+- **Colours:** soot black, rust, dried-blood red, patches of trophy colour (pale Hegemony grey, violet Eclipse plate), dim
+  red running lights. No crystal shard: it came off A16 and A17 (R197; Ryan: "Not sure why there is a weird crystal in there
+  but we can get rid of that").
 - **Guns sit:** wherever they could be bolted: mismatched calibres, off-centre, still never facing backward. Casemates in the
   bow, tube racks on the deck.
 - **Engines:** mismatched bells with a red-orange glow, one often larger than the rest.
-- **How it breaks:** at the seams. Patch plates tear off first, then the hull parts where sections are chained together, and
-  the chains hold the pieces for a moment. Inside: scavenged frames, loot holds, kennel decks. One more breach anchor than
+- **How it breaks:** at the seams. Patch plates tear off first, then the hull parts where sections are welded together,
+  ragged and uneven, never a clean cut (R186). Inside: scavenged frames, loot holds, kennel decks. One more breach anchor than
   the base count, placed unevenly.
 - **Never:** clean symmetry, bright light, fresh paint. And still no sea-ship parts: junk is allowed, a boat is not.
 - **What the present concepts get wrong:** all five carry lattice masts, cranes, porthole rows and keel fins (Muse's C15s trial
@@ -112,9 +125,17 @@ ships catch, store and release light.
 
 - **Who they are (lore 6.1):** the Starwrights who stayed flesh; the finest optical engineers who ever lived. They built the
   collectors, mirrors and beam lines that carried a star's light across a system, and watched that machine kill their sun.
-- **Shape language:** engineered optics: mirrors, lenses, prisms, rings, trusses. Rigid, geometric, symmetric about the long
-  axis. Cut and faceted, never soft. Nothing that reads as a wing, a petal, a sail or a body.
-- **Colours:** clear crystal and silver, a rainbow fringe on cut edges, a stored light glowing deep inside.
+- **First rule, ahead of any shape rule (R192).** Ryan, Nov 11: "It doesn't match with how I envision the glasswrights being
+  artistic, thoughtful in creation and looking to create beauty with function, even in these warships." Every structural
+  part is shaped with care and is also the ornament; the weapons are the centrepieces and must make sense.
+- **Lenses are grown in (R196).** Ryan: "The lenses are a littlenweird and don't feel naturally ingrained into the ship like
+  you'd expect with their lore. It should feel almost seamless and less bolted on. Like a work of art or blown glass, though
+  able to rotate, etc." One continuous skin of glass and metal; no pod, bracket, ring mount or visible seam between lens and
+  ship. Forward lenses visibly point forward. G17 (clear bubbles) and G18 (cream tubes) failed this (R201, R206).
+- **Shape language:** a leaf of cut glass lit from inside on a silver spine and rim (the G13 base, carried by G15). Rigid,
+  symmetric about the long axis. Nothing that reads as a wing, a petal, a sail or a body. No crystal object on a hull and no
+  hull shaped like a crystal (R180, R183 (5): every crystal and prism route was scrapped).
+- **Colours:** clear glass and polished silver, a rainbow fringe on cut edges, a stored light glowing deep inside.
 - **Guns sit:** on the optical axis. The prism lance is the hull's stored light let out through the bow optic: a white core
   with a rainbow fringe. Smaller lenses along the hull are the secondary guns.
 - **Engines:** no flame. A soft white bloom at the stern optic.
@@ -157,7 +178,9 @@ execution is off" and "Start over with a new idea". So: the idea of grown, livin
   appetite. The Fleshwrights were kin to the Glasswrights, so a Chorus ship may echo a Glasswright shape in flesh.
 - **Shape language:** grown, not built. Scale and menace first: slow, heavy, deep-sea. Hide, membrane, chitin ridges, light
   inside the body. Symmetric where a body would be, ragged where it has been scarred and regrown.
-- **Colours:** dark olive-brown hide, ochre bone and chitin, bile yellow-green light from inside.
+- **Colours:** dark olive-brown hide, ochre bone and chitin, bile yellow-green light from inside. The C10 and C11 pictures came
+  out greyer; the colour is set in the build sheet's colour notes and the paint stage, not by more image rounds (R204; Ryan:
+  "we can fix color ourselves rather than get stuck in a loop with color fixes with image generation").
 - **Guns sit:** in throats, spines and sacs: a weapon is an organ. Brood sacs along the flanks for the wings.
 - **Engines:** no nozzles. Pulsing vents or trailing membranes with a yellow-green glow.
 - **How it breaks:** it bursts and tears. Sacs rupture first, then the body tears open. Inside: flesh and bone (R98), wet and
@@ -167,46 +190,69 @@ execution is off" and "Start over with a new idea". So: the idea of grown, livin
 
 ---
 
-## The concept redo: where each flagship stands (Nov 11 2026)
+## The concept redo: where each flagship stands (Nov 11 2026, evening, after R215)
 
 The order Ryan set: the build pipeline was proven first (ship rounds 7 and 8, PR 401); then every faction's concepts are redone
-from the current lore, direction first ("Direction first, then fleets"), and only then built. Four rounds of pictures later
-(FINDINGS R172, R176, R178, R180), this is the state. A flagship marked SETTLED is the reference for its whole fleet.
+from the current lore, direction first ("Direction first, then fleets"), and only then built. Eight rounds of pictures later
+(FINDINGS R172 to R206), this is the state. What makes a picture a build reference now:
 
-| Faction | State | The reference picture | What Ryan said, and what is still to fix |
-|---|---|---|---|
-| Sunward Crusade | SETTLED (S8) | contrib/codex/design/concept_round5_2026_11/voidsworn_S8_sheet.jpg | A black iron blade with a forked prow; the lance is an ember-lit emitter recessed in the slot between the two prow halves; an organ-pipe bank of ember radiators on the rear spine; seven short heavy barrels a side; four flak turrets in pairs; two engine bells. Ryan agreed to settle it (R185) after "same giant gun directly on nose" (R183) was cured. For the fleet: keep the underside worked (naval pass, gate line 11). |
-| Hegemony Navy | Near final (H8); guns being redrawn (round 6, H9) | contrib/codex/design/concept_round5_2026_11/hegemony_H8_sheet.jpg | A thick slab wedge on two thick rails with the hangar between them, a blunt bow with a recessed blue emitter trench, blue light lines. Ryan (R185): "The hegemony guns look weird and almost cartoonish but rest looks good." The two shoulder turbolasers become low armoured mounts sunk into the shoulder armour with short thick barrels, never tall round turrets with long thin twin barrels; a little more structure on the top surface. |
-| Eclipse | Flagship SETTLED (E4); ring cruiser SETTLED in direction (E8) | contrib/codex/design/concept_round2_2026_11/deathless_E4_sheet.jpg (flagship); contrib/codex/design/concept_round5_2026_11/deathless_E8_sheet.jpg (ring cruiser) | "I like where we're going with Eclipse." The flagship is the crescent with the doom weapon through its focus. The cruiser (Eclipse zenith) is the ring ship Ryan asked for from the round 1 Annulus: the ring lies flat, a broken ring of separate violet plates round a green core on a slim spine, the doom aperture in the gap at the bow. Ryan agreed with the Board's read (R185): it works; the plates need visible struts to the spine (to fix when the Eclipse fleet is drawn). |
-| The Glasswrights | OPEN, direction found: the Mirror Deck made prismatic (round 6, G13) | Base: contrib/muse/design/concept_round5_2026_11/ithar_G11_sheet.jpg (Mirror Deck); the glass and light to bring in: contrib/muse/design/concept_round4_2026_11/ithar_G9_sheet.jpg (the Wedge) | Ryan (R185): "The problem with unfinished is that it still doesn't look like a warship. It just kinda looks like a satellite? Mirror deck is somewhat close, so it's almost merging and maybe making mirror deck more of a prismatic reflection? And not making it a naval ship?" So: the Mirror Deck's plan (a long leaf or spearhead from above, one piece with the hull), its tiles made prismatic (clear glass facets over stored light, splitting it into rainbow fringe, as the Wedge did), and no boat hull: the ship is a lens in section, the same above and below. Lens weapons larger and plainer, so it reads as a warship. The Unfinished (open ribs) and the Racing Hull (a silver tube) are dropped. |
-| Ashfall Hullbreakers | OPEN, close: A11 cleaned of naval tells (round 6, A13) | Base: contrib/muse/design/concept_round5_2026_11/corsair_A11_sheet.jpg; the character behind it: docs/ship_pipeline/concepts/C19_51.webp | Ryan picked a mix of Muse A7 and A9 without A7's grey block (R184); A11 is that mix (two big rocket launchers on the top deck, stacked red oxide slabs, the pale trophy slab). Ryan on it (R185): "I don't understand the random things hanging off, it reads as naval." So: nothing hangs off the ship (no chains, no cages); cargo is bolted flat to the hull; no boat profile and no ship's prow (a flat armoured belly, a blunt stepped bow); no green on the launchers; both launchers angled out to the sides. |
-| The Chorus | Flagship SETTLED (C9); second class picked (C8) | contrib/muse/design/concept_round4_2026_11/chorus_C9_sheet.jpg (flagship, the old leviathan); chorus_C8_sheet.jpg (bone through skin) | Ryan (R184): "I really like c8 and c9. C8 would probably need to be changed a bit since it's similar to c9 if it's a second ship but I like them a lot." C9 is The Ninefold Maw: scarred, barnacled hide, one large bloom with two throats, brood sacs of different sizes, a lumpy outline from above. C8's bone plates and spines grown through the hide become the Chorus bladeback (the cruiser): shorter and stockier than the flagship, one throat, the bone ridge as its whole identity, so the two are never confused. Both run lean (about 5 : 1); accepted. Amber is the Chorus glow. |
+- **It is in the one concept style (R197).** Ryan, Nov 11: "Generally that style and tone is exactly how we should look at the
+  concepts for our ships across fsctions. Pretty realistic and detailed to help with the builds... this style is how it should
+  look in game." The style reference is contrib/muse/design/concept_directions_2026_11/corsair_A.jpg. Ryan judges it, side by
+  side; the Board does not declare a picture in style on its own (R198).
+- **Ryan has accepted that picture.** No concept is a build reference until he does (R199 (2)).
+- **It still needs a build sheet before anything is built (R203).** Ryan: "I want to make sure that they are good enough to
+  actually hand build from in blender." The sheet passes contrib/muse/design/concept_standard_2026_11/standard.md and is made by
+  an Opus worker (R205). docs/playbooks/ships.md says how.
 
-**The method that works (use it for every later ship).**
+| Faction | Ship | State | Reference picture | Ryan's words, and what is left |
+|---|---|---|---|---|
+| Ashfall Hullbreakers | flagship (Warlord's Pyre-Barge) A16; cruiser (Pack Hunter) A17 | ACCEPTED (R201); build sheets round 2 running (issue 532) | contrib/muse/design/concept_round8_2026_11/corsair_A16_beauty.jpg, corsair_A17_beauty.jpg (from round 1 corsair_A.jpg and corsair_B.jpg) | R197: "Yes! Scrap brick as the primary and pack hunter as like a cruiser or something." Round 1 sheets failed (R213: "The guns look randomly placed and don't make sense... the builds look like square blocks basically. It barely looks like the concepts."). A17: "Keep it lean" (length to beam about 3.0). |
+| Eclipse | flagship E11; ring cruiser E12 | ACCEPTED (R206); build sheets next | contrib/muse/design/concept_round8c_2026_11/deathless_E11_beauty.jpg, deathless_E12_beauty.jpg | Keep the Eclipse purple (E10 lost it, R201). The builder adds the struts the E12 ring arcs lack (R207: "Where there are gaps like eclipse rings not all having structural connections... you should build differently"). |
+| The Chorus | flagship C10; bladeback cruiser C11 | ACCEPTED (R204); build sheets next | contrib/muse/design/concept_round8b_2026_11/chorus_C10_beauty.jpg, chorus_C11_beauty.jpg | R204: "The chorus ones look good, we can fix color ourselves rather than get stuck in a loop with color fixes with image generation." Bile yellow-green set in the build sheet's colour notes. The two read as two classes (the README's outline sheet). |
+| Sunward Crusade | flagship, S8 shape | SHAPE SETTLED, style not reached; Opus build-sheet route | shape: contrib/codex/design/concept_round5_2026_11/voidsworn_S8_sheet.jpg | S8 settled in direction (R185: "Agree with other takes"). S9 and S10 failed the style (R201; R206: S10 "still close to the smooth drawing"). No more image rounds: an Opus build sheet locks the S8 shape and dresses it in the R197 style (R206 (2)). |
+| Hegemony Navy | flagship, H10 shape | SHAPE SETTLED, style not reached; Opus build-sheet route | shape: contrib/muse/design/concept_round7_2026_11/hegemony_H10_sheet.jpg | R198: "H10 but I don't think it's in the same style as we see in hullbreakers. It's semi realistic but not quite." H12 failed (R204: "You're right on h12"). A well-kept navy, never rusty. Same route as Sunward (R204 (3)). |
+| The Glasswrights | flagship, G15 shape | SHAPE SETTLED, lenses not reached; Opus build-sheet route | shape: contrib/muse/design/concept_round7_2026_11/ithar_G15_sheet.jpg | R196: "I really like g15." Its lenses are grown into the hull (the faction sheet above). G17 and G18 failed on the lenses (R201, R206). Same route (R206 (2)). |
+| Station | Vesper Reach, damaged | ACCEPTED (R206: "T2 damaged"); build sheet, then issue 373 | contrib/muse/design/station_concept_2026_11/station_T2_beauty.jpg | Concept picture first, then the build (R201 (3)). |
+
+History, not targets: every earlier pick (S8's own render, S9, S10, E4, E8, E9, E10, H8, H9, H11, H12, A10 to A15, G9 to G14,
+G16 to G18, C8, C9). A10 to A15 were drawn against the wrong reference (R196: the Board read "our prior concept" as
+docs/ship_pipeline/concepts/C19_51.webp; Ryan meant round 1 Scrap Brick).
+
+**The method that works (use it for every later ship; each line names the ruling it comes from).**
 1. Write the ship before drawing it: its exact weapons from data.js and where each sits, its engines, its proportions, and the
-   twelve-line gate (docs/playbooks/concepts_round2.md). Round 1 failed because no picture was told how many guns the ship has.
-2. A design sheet first (top view above side view, flat on, same scale), then the beauty view made FROM that sheet. The battle
-   camera looks down, so the identity must read in the top view.
-3. It must read as armed from above at thumbnail size: barrels plain to see, ordered, never scattered (R176).
-   But each faction mounts its forward weapon its own way, never a long barrel on the tip of the nose, and no two factions
-   share an outline from above (R183; gate lines 1 and 8).
-4. Codex's built-in image tool holds a layout and a weapon count and keeps one hand across factions; it is the tool for
-   finals. Muse's image models give variety and are better at organic subjects, but drift on layout and colour. Use Muse to
-   explore, Codex to settle.
-5. **Start from what was already liked (R180).** When a faction had a picture Ryan liked (the round 1 Prism, the original
-   Pyre-Barge), the new brief starts from that picture and names what to keep. Two rounds were lost by designing the
-   Glasswrights and the Hullbreakers afresh and sanding off what made them theirs.
-6. The Board reviews every sheet against the gate before Ryan sees it, and says plainly which fail.
-7. **Check every feature under the battle camera before briefing it (R183).** The round 4 ring cruiser failed because an
-   upright ring is a bar from above. Anything that carries a ship's identity must show in the top view.
-8. **Run the naval pass on every sheet, side view first (R185; gate line 11).** No boat profile, a worked belly, no deck
-   house, no ship's prow, nothing hanging off, no battleship turrets. Image models drift to sea ships whenever a brief says
-   "deck", "hull", "prow" or "barge": use "upper surface", "body", "bow face" and "block" in prompts instead.
-9. **Put the code name on every picture sent to Ryan** (R185: "I can't tell which one is a11").
+   thirteen-line gate (docs/playbooks/concepts_round2.md). Round 1 failed because no picture was told how many guns the ship has.
+2. Draw in the one concept style (R197). A picture that reads as an illustration, a toy or a cartoon fails, whatever its shape.
+   Each faction keeps its own palette and character ("realistic" does not mean rusty).
+3. It must read as armed from above at thumbnail size (R176). Each faction mounts its forward weapon its own way, never a long
+   barrel on the tip of the nose, and no two factions share an outline from above (R183; gate lines 1 and 8).
+4. **When Ryan likes a picture, the next image job edits that picture (R192).** Image to image, the changes listed, everything
+   else untouched; a result that drifted in mass, silhouette or character fails. Ryan: "Can we use our prior concept from
+   before all these rounds as the base? Or just use that?" Six Hullbreaker rounds were lost redescribing a liked picture in
+   words.
+5. **Colour alone never sends a picture back (R204).** Colour is fixed in the build.
+6. **When image rounds cannot reach the style without breaking the shape, stop the image rounds** and send the shape through
+   the Opus build-sheet route (R204 (3), R206 (2)): a blockout locked to the liked shape, dressed in the style.
+7. **The accepted picture guides the build; it is not traced (R207, R213).** Ryan: "Use it to guide, not the very final exact
+   design." And: "The concept should inform and guide but it's not a final play by play guide." The Opus builder is the
+   designer of record: it keeps the picture's identity (mass, outline from above, character, palette, where the big features
+   sit), fixes what would not work as a built object, takes guns from data.js slots as batteries that make sense, and lists
+   every change with its reason on the build sheet.
+8. **Start from what was already liked (R180), and find it first (R196).** When Ryan points at a picture from memory, find it,
+   show it with its name on it, and get a yes before building on it.
+9. Check every feature under the battle camera before briefing it (R183), and run the naval pass on every sheet, side view
+   first (R185; gate line 11). Image models drift to sea ships whenever a brief says "deck", "hull", "prow" or "barge": use
+   "upper surface", "body", "bow face" and "block" in prompts instead.
+10. Put the code name on every picture sent to Ryan (R185: "I can't tell which one is a11").
+11. The Board reviews every sheet against the gate before Ryan sees it, and says plainly which fail.
 
-**Next.** The finished battle is Sunward against Eclipse (R180), so those two fleets come first: a fleet brief per faction
-(every class in data.js, each derived from the flagship's grammar: what it keeps, what it drops, its weapons), drawn as design
-sheets by Codex, picked by Ryan, then built through tools/recipe (docs/playbooks/ships.md).
+Retired from this list: "Codex's built-in image tool is the tool for finals" (the Codex-drawn picks were the ones off the
+style, R197 (3); concept rounds now run through Muse's image to image, and every Blender step is Opus's, R205).
+
+**Next.** The finished battle is Sunward against Eclipse (R180). Eclipse's flagship and cruiser are accepted; Sunward's
+flagship needs its build sheet. Then a fleet brief per faction (every class in data.js, each derived from the flagship's
+grammar: what it keeps, what it drops, its weapons), pictures in the style, Ryan's yes, build sheets, then builds through
+tools/recipe (docs/playbooks/ships.md).
 
 ## Round 1 directions (Nov 10; kept for the record, not picked: R172)
 

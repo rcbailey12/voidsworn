@@ -26,3 +26,10 @@ Questions for Ryan go to him here in this chat (multiple choice with your pick),
 ```
 
 Time estimates (Ryan, Nov 4 10:40 CST, FINDINGS R99): never estimate in human hours; every human-hour estimate so far has been wildly off, because the work is done by agents, not people. Estimate in Codex runs (one run is capped at one hour; Nov 4 runs took 11 to 60 minutes, and a heavy GPU bake-off can need two), plus the number of Ryan review rounds, and base it on the board's own history (board\issue-N timestamps and PR times), not on what a human artist would spend. Say what drives the count (GPU bakes, retries, review rounds).
+
+## Outside checks of ship builds (Ryan, Nov 11 2026, R214)
+
+Check method as well as output: the manifest against the build sheet (every part's route), the insides present in every break
+piece (no hollow or flat interior), the paint stack as named (no projected concept art, R96 Q1), and the budget numbers reported.
+A build pull request whose body carries no evidence section (build sheet link, manifest, budget numbers, changes to the sheet)
+is a BLOCKING finding.

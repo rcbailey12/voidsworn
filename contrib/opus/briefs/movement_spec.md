@@ -116,7 +116,7 @@ smooth speed profile along the path and the bend of the curve (`_gl_force`), and
 
 ## 4. Unchanged
 
-- One ship moves at a time (R64). Flip and burn stays off (R64, R55). Momentum is never carried between turns (every
+- One ship moves at a time (R64). Flip and burn stays off (R64, R55; R193: left alone on the Board's advice, to be looked at again once braking jets are on screen, which they now are). Momentum is never carried between turns (every
   move starts and ends at rest; a rules change, not planned).
 - Brisk (a player option) and strike craft keep the older eased motion; `--movement segments` keeps the old rest-to-rest
   segments as a debug flag.

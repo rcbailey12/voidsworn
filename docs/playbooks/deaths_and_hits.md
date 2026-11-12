@@ -7,7 +7,36 @@ Issue 405, effects track; the design behind issues 365 and 366. Written by the B
 Ryan, Nov 10, on the explosion routes: "Far right in both for sure. We need to upgrade the effects a bit but it's the right
 approach." This page is the upgrade. Every fire and flash below is route B with the hot core.
 
-## What is wrong today (from the sheets)
+## Rulings of Nov 11 that change this page (read first)
+
+- **Wrecks are blown apart, never sliced (R186).** Ryan: "the wreckage comes out looking too clean at the end. It's like
+  straight lines and even halves. It doesn't feel like an explosion or major hit happened. It feels like they're just getting
+  sliced in half after everything". Every big death: uneven pieces, no straight line across the hull, a missing bite where the
+  core went off, ragged scorched rims, fragments between the pieces. A lance kill may stay cleaner along the beam's line.
+  Built: issue 484 (contrib/opus/reviews/death_wreck_report.md).
+- **The 0.70 s cap is for flame only (R193 (3), "Flame only").** Flame still flashes and snuffs out ("fire is wrong for space"
+  stands); sparks, debris, gas and cooling embers get their own longer lives, so hits throw things and leave marks. The cap
+  had been applied to all of them, so nothing was thrown and nothing lingered.
+- **The kill moment holds and slows (R193 (2), "Hold and slow").** The kill camera stays through the core flash and a short,
+  skippable slow-motion beat plays on cruiser, capital and flagship kills. This replaces the Board's old line "the camera is
+  never taken for a capital death" (R123). Built: issue 521 (PR 525).
+- **The flash counter counts by area (R193 (1), "Count by area").** Still at most three big flashes a second, but "big"
+  follows the W3C guideline's combined area inside a 10 degree window, worked from a stated screen size and distance
+  (default a 32 inch screen at 24 inches). Reduce flashing is untouched. Built: issue 504 (PR 512,
+  contrib/opus/reviews/flash_counter_report.md). The counter protects comfort for everyone; tune inside it.
+- **Torpedo on a hull: 140 px, not 154 (R208 (2), "Yes, 140").** A lone 154 px flash was over the counter's limit and pushed
+  deaths' core flashes soft.
+- **Hits must read at the battle camera (R208 (1), "Merge, then push harder").** The first hits build (issue 461, PR 524) was
+  real but subtle at camera 170; a second pass (issue 538) makes thrown debris, sparks and smoke bigger and longer-lived.
+- **Light on neighbouring hulls stays faint for now (R208 (3), "Keep it faint for now")**, at the peak the counter need not
+  count, until a counter measures lit hull area.
+- **Breaks show insides, never a hollow shell (R209, R215).** Ryan: "so we don't run into the issues of before with just empty
+  looking husks or anything similar." Hits, wounds, breaks and deaths use the hull's built insides where they exist (decks,
+  frames, machinery, lit or burning spaces). docs/playbooks/ships.md, "The insides".
+
+The rest of this page is the Nov 11 morning design; where it disagrees with the lines above, the lines above win.
+
+## What was wrong before the Nov 11 builds (from the sheets)
 
 - A hit is a pale cloud with no fire in it. A death is a faint puff near the stern.
 - Nothing announces a death. The ship sits unchanged, then the puff arrives: no lights dying, no tear, no build-up.
@@ -19,8 +48,9 @@ approach." This page is the upgrade. Every fire and flash below is route B with 
 
 1. **Light, then matter, then dark.** A white flash first, fire seen through gas second, cooling coals last. In that order,
    every time, so the eye learns it.
-2. **Flash and snuff out.** No flame lives longer than 0.70 s; no hot core holds full heat longer than 0.25 s (owner ruling).
-   The dark gap after a flash is what makes the next one read. Never rolling fire.
+2. **Flame flashes and snuffs out.** No flame lives longer than 0.70 s; no hot core holds full heat longer than 0.25 s (owner
+   ruling; R193 (3) limits it to flame). The dark gap after a flash is what makes the next one read. Never rolling fire.
+   Sparks, debris, gas and embers are not flame and live longer.
 3. **A bigger ship dies longer, not just larger.** A frigate is gone in under a second. A cruiser takes about three and a
    half. A capital takes about four and a half and leaves a wreck that glows for a quarter of a minute.
 4. **It starts on the ship.** Every jet, tear, flash and blast sits on a hard point, a breach anchor or the surface the shot
@@ -30,7 +60,8 @@ approach." This page is the upgrade. Every fire and flash below is route B with 
 6. **Each faction breaks its own way** (docs/playbooks/factions.md, "How it breaks"). The beats and sizes are shared; the
    matter is the faction's.
 
-The camera is never taken from the player for a death. Reduce flashing keeps every size and swaps each white flash for the
+The kill camera holds through the core flash on cruiser, capital and flagship kills, with a short skippable slow beat
+(R193 (2)). Reduce flashing keeps every size and swaps each white flash for the
 softer rise and fall the staging table gives.
 
 ## A death in three beats
@@ -41,10 +72,10 @@ Times are seconds from the killing blow. Sizes are at 1080 at the battle camera.
 
 | Beat | When | What the player sees |
 |---|---|---|
-| 1. The tell | 0.0 | The killing hit plays its own row (a torpedo on the hull: 154 px flash). |
+| 1. The tell | 0.0 | The killing hit plays its own row (a torpedo on the hull: 140 px flash, R208). |
 | | 0.0 to 0.3 | The ship dies inside: engines flare once, about a third brighter for two frames, then go black; running lights go out bow to stern. This must be plain at camera 170. |
 | | 0.3 to 1.38 | A glowing tear opens along the break line, growing from the side that was hit, white-hot at its tip and ember behind. Three chain blasts walk along it at about 0.5, 0.8 and 1.1 s, each at least 75 px, each a flash with a hot core that is gone in a quarter second. Narrow jets of fire, then gas, vent from the breach anchors. |
-| 2. The break | 1.38 | The hull parts into two capped halves, pushed apart along the tear, each starting a slow tumble. |
+| 2. The break | 1.38 | The hull is blown apart along the tear into uneven pieces with ragged scorched rims and a bite missing where the core went (R186), each starting a slow tumble. |
 | | 1.66 | The core flash: 302 px for 0.20 s, at the lip of the torn face, and it lights every hull within about two hexes. |
 | | 1.66 to about 5 | The body: 260 px. Fire shows through the gas for at most 0.70 s, then gas alone thins and drifts. Shrapnel streamers leave along the plane of the break. |
 | 3. The wreck | 2.1 to 4.9 | Five secondaries on each half, each at least 75 px, staggered, each lighting its own half. |
@@ -120,7 +151,7 @@ One ladder, each step plainly bigger than the last at the battle camera: las, ma
 | Las | 40 px, one or two frames of white. | A tiny hot spark. No smoke. | A small scorch that glows for about a second and a half. |
 | Macro | 56 px. | A punch: a short cone of sparks off the plate and a brief hot spot. No fireball. | A dent that glows and cools over about two and a half seconds. |
 | Lance | 78 px each pulse. | A contact burn that stays lit and crawls along the hull while the beam dwells, spraying molten metal; a third of a second of tail when it lifts. | A cut line that glows for about three seconds, then a dark scar. |
-| Torpedo on a hull | 154 px for 0.16 s, and it lights the hulls near it. | 140 px: fire seen through gas, then gas; debris sprays off the surface. | A wound that glows and cools over about four seconds, then a dark crater that stays. |
+| Torpedo on a hull | 140 px for 0.16 s (R208), and it lights the hulls near it (faint for now, R208 (3)). | 140 px: fire seen through gas, then gas; debris sprays off the surface. | A wound that glows and cools over about four seconds, then a dark crater that stays. |
 | Torpedo on a shield | 110 px. | The ripple: 156 px, the biggest body of any hit. | A shield scar for about a second. (The shield's own look is Ryan's pick from Muse's three directions.) |
 
 Three upgrades run through all of them:
@@ -141,6 +172,10 @@ look.
 4. Later, per rebuilt faction: its death beside the shared one.
 
 ## Build order (jobs written from docs/playbooks/effects.md's template)
+
+State on Nov 11 evening: 365 (rebake) merged and closed; 366's parts landed (or are landing) as 462 (death beats), 484 (wrecks), 461 (hits, waiting on Muse's re-check:
+PR 524) and 521 (kill moment); 366 and 365 closed (R201). Next: 538 (hits pass 2), 463 (small-ship deaths), then faction
+deaths on the rebuilt hulls. The list below is the original plan.
 
 1. Issue 365: rebake by route B with the hot core: the death core, the secondary, the chain blast, the torpedo, the macro
    spark, the vent jet, each at the size its row needs so nothing is stretched. Codex, GPU.

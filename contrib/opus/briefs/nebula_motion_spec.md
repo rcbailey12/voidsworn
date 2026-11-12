@@ -59,7 +59,8 @@ to 0.5, 2.5 to 6.5 and 8 to 12, plus the veil at 13.5 to 16.5) and are #139's to
   the body drift"). Storm body drift 0.328 u/s (0.019 hex/s); storm wisps 0.524 u/s; storm veil 0.131 u/s the other
   way. SHIPPED, DERIVED.
 - Capture variant (NB8's settle): `VS_GAS_FLAT=1` sets every layer to the base rate (multiplier 1.0, the storm's 1.7
-  and the veil's reversal kept). Shipped play never sets it.
+  and the veil's reversal kept). On a storm map the flat assignment runs before the storm multiplier, so the veil runs
+  at -1.7 x base (-0.328 u/s) the other way, not at its shipped storm speed of 0.131 u/s. Shipped play never sets it.
 
 ## 3. Breathing and pulses
 
