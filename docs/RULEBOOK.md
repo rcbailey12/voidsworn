@@ -398,7 +398,8 @@ are starting values. Why: deaths now run 3.5 to over 10 seconds in three beats (
 A turret traverses smoothly (never snaps, RULEBOOK 7.1), within its arc, and returns to rest; the gun's muzzle and its effects
 start at the turned barrel. Why: today every gun is a fixed mesh (no aim code in godot/render/ship_view.gd or
 godot/fx/fx_weapons.gd); turning turrets make a fight read and suit the detailed guns now being built (R217). Set: Ryan, Nov 11
-(R219: "I agree with your design on turrets").
+(R219: "I agree with your design on turrets"). A turret may turn aft only to follow a target its rules arc lets it hit
+there; at rest no gun ever points backward (4.2). Set: Ryan, Nov 12 (R222: "yes agree on your turret facing rule").
 
 ## 7. Movement
 
