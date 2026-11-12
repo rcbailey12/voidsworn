@@ -26,7 +26,7 @@ SHEET = dict(version=3, round='third sheet (R221 weapons)', date='2026-11-12', b
              alt_cameras=dict(fwd='best ring overlap (forward of the starboard beam, high): the ring layout lines up, the bells cannot show'),
              before='First full layout', before_note='The first complete E12 layout, built with the Eclipse kit and run through the check before any fix.',
              during='While designing, the check also caught (and the design fixed): the sentry twin sweeping through the block roof thrusters (moved forward), a roof hatch on a '
-                    'thruster, the block\'s green lights inside the stern arcs (raised), and the heat panels touching the outer engine housings (moved forward).')
+                    'thruster, the block\'s green lights inside the stern arcs (raised), and the heat panels touching the outer engine housings (moved forward).' + ' ' + 'R221 weapon rebuild (this sheet): the new null cannons, null spire and corona arc emitter checked at zero on their first full run, with the new LANE test and the emitter\'s own firing lane.')
 
 XC, AR, BR, WR = 0.97, 6.5, 4.07, 1.4    # the ring: centre x, outer semi-axes (along, across), radial depth
 ZR, HR = -0.1, 0.42                      # the ring plane and its depth
@@ -142,7 +142,7 @@ def build(K):
                                                  (x - 0.5, 0.42, 0.42, ZS - 0.02, ZS + 0.42, 0.12, 0.0), (x - 0.75, 0.22, 0.22, ZS + 0.06, ZS + 0.3, 0.06, 0.0)],
                      'violet', plates=dict(PL, seed=80 + i, faces=[0, 1, 2, 3], size=(0.2, 0.35)))
         K.mass('Saddle, %s battery' % nm, sad, 'violet plate', note='the oval saddle the turret stands on')
-        K.gun('T%d' % (i + 1), (x, 0.0, ZS + 0.42), 0, 4, barrels=2, cal=0.07, blen=1.15, size=0.72, slot='T', weapon='gauss', inv='main_guns',
+        K.gun('T%d' % (i + 1), (x, 0.0, ZS + 0.42), 0, 4, barrels=2, cal=0.08, blen=1.3, size=0.86, slot='T', weapon='gauss', inv='main_guns',
               variant=i, note='%s null cannon: twin rail pairs through a crescent shade, on its saddle' % nm)
     K.mark('saddles', 'pylon', ['web', 'plate'])
     K.spinal('A1', (5.3, 0.0, ZS), 1.05, r=0.24, collar_r=0.4, collar_len=0.45, block_len=0.36, block_r=0.33, slot='F', weapon='doom', inv='emitter',
@@ -150,7 +150,7 @@ def build(K):
     import bpy as _bpy
     for nm_, ob_, col_ in (('Emitter collars', 'A1_mount_mauve', 'mauve and violet'), ('Emitter shaft', 'A1_body_violet', 'violet and mauve'), ('Emitter block', 'A1_body_mauve', 'mauve')):
         K.mass(nm_, _bpy.data.objects[ob_], col_, note='a part of the kit projector, counted as its own mass')
-    K.gun('G1', (-5.25, 0.0, 0.9), 0, 6, barrels=2, cal=0.05, blen=0.75, size=0.55, slot='T', weapon='gsentry', inv='sentry', variant=2,
+    K.gun('G1', (-5.25, 0.0, 0.9), 0, 6, barrels=2, cal=0.055, blen=0.8, size=0.62, slot='T', weapon='gsentry', inv='sentry', variant=2,
           note='the null spire: a tall turning spire on the block roof, green sight slits, two needle rails through a shade fin at its head')
 
     # ---------------- engines: three side by side ----------------

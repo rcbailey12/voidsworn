@@ -25,7 +25,7 @@ SHEET = dict(version=2, round='second sheet (R221 weapons)', date='2026-11-12', 
              before='First full layout', before_note='The first complete E11 layout, built with the Eclipse kit and run through the check before any fix.',
              during='While designing, the check also caught (and the design fixed): deck hatches and the core port sunk in the curved tier, the belt lights inside the belt, '
                     'heat panels covered by the stern feathers (moved forward of the band collar), the aft flak twin sweeping through deck hatches (moved to the deck edge), '
-                    'and, after the crescent was raised over the nose, the fore twin\'s barrels striking the tier when trained aft (the tier now starts behind its sweep).')
+                    'and, after the crescent was raised over the nose, the fore twin\'s barrels striking the tier when trained aft (the tier now starts behind its sweep).' + ' ' + 'R221 weapon rebuild (this sheet): the new null cannons, shredders and corona arc emitter checked at zero on their first full run, with the new LANE test and the emitter\'s own firing lane.')
 
 PEXP = (2.8, 2.3)   # the oval section: flatter over the deck, round in the flanks and belly
 # (x, half-beam port, half-beam starboard, bottom, top, -, -): the body, nose first (the nose sits inside the crescent's root)

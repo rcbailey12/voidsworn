@@ -436,7 +436,8 @@ SH = head + body_h + PAD + max(tab_h, ch_h) + int(2400 * SC) + int(SW * 0.4)
 # R221 (ships.md 2c): the weapon row, each weapon type the ship carries beside its rules, its lore line and its design line,
 # from the close-ups build.py renders (weapon_<id>.png) and the kit's WEAPONS table (in the model json)
 import textwrap
-WEAP = [w for w in M.get('weapons', []) if os.path.exists(os.path.join(RD, w['image']))]
+WORDER = ['gauss', 'flak', 'gsentry', 'doom']   # main guns first, the fixed weapon last
+WEAP = sorted([w for w in M.get('weapons', []) if os.path.exists(os.path.join(RD, w['image']))], key=lambda w: (WORDER.index(w['id']) if w['id'] in WORDER else 9, w['id']))
 WR_W = (SW - PAD * (len(WEAP) + 1)) // max(1, len(WEAP)) if WEAP else 0
 WR_IH = int(WR_W * 0.7)
 WR_WRAP = max(40, int(WR_W / (11.5 * SC)))
@@ -450,7 +451,7 @@ def weapon_text(w):
     return out
 
 
-WR_H = (int(60 * SC) + WR_IH + int(20 * SC) + max(len(weapon_text(w)) for w in WEAP) * int(28 * SC) + PAD) if WEAP else 0
+WR_H = (int(60 * SC) + WR_IH + int(20 * SC) + max(len(weapon_text(w)) for w in WEAP) * int(28 * SC) + int(40 * SC) + PAD) if WEAP else 0
 SH += WR_H
 sheet = Image.new('RGB', (SW, SH), (44, 44, 46))
 dr = ImageDraw.Draw(sheet)

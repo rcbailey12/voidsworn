@@ -134,8 +134,9 @@ WEAPONS = {
              'invisible slug, a hard white flash and a pale shock ring, a punch-through with an exit spray.',
         design='A magnetic rail gun, not a barrel: each gun is a pair of flat rails (the slug rides between them) held in square '
                'accelerator frames that step down toward the muzzle (the coils the effect lights in steps), ending in an open fork '
-               'and a flat shock plate, no bore. The rails fire through a slot between two curved shade plates (the turret\'s own '
-               'sunshade, a corona line on its rim); a ribbed capacitor stack behind stores the charge. Twin: two rail pairs.'),
+               'and a flat shock plate, no bore. The rails fire through the slot of a crescent shade held upright in front like a '
+               'shield (two curved plates, horns swept back, a corona line on the rim); a ribbed capacitor stack behind stores the '
+               'charge. Twin: two rail pairs.'),
     'flak': dict(
         name='Null shredder', rules='data.js flak: 3 shots, 3 damage, range 2; point defence (vs squadrons x3)',
         lore='The Eclipse flak (FAC_WNAMES deathless flak). Battle effect (gflak): instant thin streaks to a spread of airbursts.',
@@ -232,7 +233,7 @@ def _null_cannon(p, barrels, cal, blen, s, pitch, variant):
     # the shade: a crescent of two curved plates (horns swept back, drooping), the firing slot between them, corona on the rim
     R = 0.56 * s; cx = -0.46 * s; slot = cal * 1.45
     lo, _rl = _shade(R, 80, -0.32 * s, -slot, 0.05 * s, lean=-0.3, cx=cx, droop=0.0)
-    up, rim = _shade(R, 80, slot, 0.42 * s, 0.05 * s, lean=0.55, cx=cx, droop=0.55)
+    up, rim = _shade(R, 80, slot, 0.44 * s, 0.05 * s, lean=0.18, cx=cx, droop=0.4)   # upright: a shield held forward, not a lid
     p.add('shade0', 'body', 'violet', moved(lo, E))
     p.add('shade1', 'body', 'mauve', moved(up, E))
     p.add('corona', 'body', 'corona', moved(rim, E))
@@ -246,7 +247,7 @@ def _null_cannon(p, barrels, cal, blen, s, pitch, variant):
         for sz in (1, -1):
             p.add('rail%d%d' % (i, sz > 0), 'body', 'gunv', moved(block(-0.2 * s, xe + cal * 0.9, cal * 0.5, cal * 0.17, cal * 0.06, zo=sz * cal * 0.62), T))
         for j, (t_, k_) in enumerate(((0.1, 1.35), (0.33, 1.2), (0.56, 1.05), (0.78, 0.9))):
-            p.add('frame%d%d' % (i, j), 'body', 'steel' if j % 2 else 'gunv', moved(_sqring(xf + blen * t_, cal * 0.78, cal * (0.78 + 0.32 * k_), cal * 0.5), T))
+            p.add('frame%d%d' % (i, j), 'body', 'violet' if j % 2 else 'gunv', moved(_sqring(xf + blen * t_, cal * 0.78, cal * (0.78 + 0.32 * k_), cal * 0.5), T))
         p.add('muzzle%d' % i, 'body', 'steel', moved(_sqring(xe, cal * 0.8, cal * 1.6, cal * 0.16), T))
         muzzles.append(P(E @ Vector((xe + cal * 0.9, off, 0))))
     if variant % 2:
