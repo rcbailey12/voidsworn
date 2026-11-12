@@ -155,6 +155,17 @@ float fx_mouth_edge(int i, vec3 p) {
 # Materials keep their own textures/uniforms. No static GPU resource survives shutdown.
 static var _shader_refs := {}
 
+# Issue 569: a see-through hull surface (the Glasswright sail membranes, GLB alpha blend, which
+# Godot imports as TRANSPARENCY_ALPHA_DEPTH_PRE_PASS) carries its alpha through the damage path
+# too. A spatial shader that writes ALPHA is drawn transparent, so the opaque fleet keeps the
+# plain EXTERIOR code and only a see-through source gets this variant. The damage shader is
+# derived from this code, so it keeps the alpha.
+static func exterior_alpha_code() -> String:
+	if not _ext_codes.has("exterior_alpha"):
+		_ext_codes["exterior_alpha"] = EXTERIOR.replace("ALBEDO = hull_albedo.rgb * texture(hull_color, UV).rgb;",
+			"ALBEDO = hull_albedo.rgb * texture(hull_color, UV).rgb;\n\tALPHA = hull_albedo.a * texture(hull_color, UV).a;")
+	return _ext_codes["exterior_alpha"]
+
 # Issue 376: the shader warm-up list is hand kept, so after it ends any shader first built later names itself here, once
 # per name, with the frame and the time. A name in this list is a miss in the warm-up list. The flag is off during a
 # warm-up (a bench may warm more than once), and logging is once per name so a hot path cannot flood the log.
@@ -210,6 +221,7 @@ static func clear_shader_cache() -> void:
 	_shader_refs.clear()
 	_dmg_code.clear()
 	_uniform_names.clear()
+	_ext_codes.clear()
 
 
 static func damage_material(src: Material, frame: Transform3D, mouths: Dictionary, L: float, organic := false) -> ShaderMaterial:
@@ -241,6 +253,7 @@ static func damage_material(src: Material, frame: Transform3D, mouths: Dictionar
 # hull rebuild, death and death piece made one per surface on the main thread). Same code out, same shader.
 static var _dmg_code := {}
 static var _uniform_names := {}
+static var _ext_codes := {}
 
 
 static func _uniforms_of(shader: Shader) -> Array:
@@ -312,9 +325,12 @@ if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
 
 static func _exterior(src: Material) -> ShaderMaterial:
 	var mat := ShaderMaterial.new()
-	mat.shader = shared_shader(EXTERIOR, "exterior")
-	if not src is BaseMaterial3D: return mat
 	var m := src as BaseMaterial3D
+	# The glTF importer gives an alphaMode BLEND material TRANSPARENCY_ALPHA_DEPTH_PRE_PASS,
+	# so every transparency mode except DISABLED must carry its alpha into the damage shader.
+	var see_through := m != null and m.transparency != BaseMaterial3D.TRANSPARENCY_DISABLED
+	mat.shader = shared_shader(exterior_alpha_code() if see_through else EXTERIOR, "exterior_alpha" if see_through else "exterior")
+	if m == null: return mat
 	for pair in [["albedo", m.albedo_color], ["uv_scale", m.uv1_scale], ["uv_offset", m.uv1_offset],
 		["roughness", m.roughness], ["metallic", m.metallic], ["specular", m.metallic_specular],
 		["normal_scale", m.normal_scale], ["has_normal", m.normal_enabled], ["has_orm", m is ORMMaterial3D],

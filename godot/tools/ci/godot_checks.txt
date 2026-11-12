@@ -49,6 +49,7 @@ headless|fx/test/kill_slowmo_check.gd|-|-|issue 521: the kill slow-motion beat s
 headless|fx/test/late_shader_check.gd|-|-|issue 376: after warm-up, any shader or material first built mid-battle logs its name and the frame time and is counted
 headless|fx/test/destruction_steps_check.gd|-|-|break geometry: every open edge is sealed; DESTRUCTION_OUT unset, so no pictures
 headless|fx/test/authored_interiors_check.gd|-|-|issue 557: authored GLB interiors and seams reach damage and death; moving a seam changes piece ownership; old hulls keep fallback
+headless|fx/test/damage_alpha_check.gd|-|-|issue 569: a transparent sail surface stays transparent after damage; the opaque hull stays on the opaque shader
 headless|fx/test/flash_area_check.gd|-|-|issue 504: the flash counter by area on a staged worst second, checked against a brute-force area count; zero in calm mode
 headless|fx/test/hit_recipe_check.gd|-|-|issue 461: the hit ladder, a recipe per weapon family, thrown matter outliving flame, outward direction, torpedo light reach, zero flashes in calm mode, the lance kill's clean cut
 headless|fx/test/fx_smoke.gd|-|-|every weapon look, the damage ladder, shield breaks and every death cause on box ships
@@ -70,6 +71,7 @@ gpu|campaign/test/nemesis_teach_shots.gd|-|{out}|Nemesis teaching screenshots: n
 gpu|campaign/test/onboarding_visual.gd|compat|{repo}\.onboarding_checks\gpu_visual|renders the HUD tip card; writes inside the checkout only, as RUN_ONBOARDING_SHOTS.bat does
 gpu|campaign/test/r1_ui_shots.gd|-|{out}|R1 campaign screen screenshots: needs a window
 gpu|story/test/career_shots.gd|compat|{out}|Career screen screenshots: needs a window
+gpu|fx/test/damage_alpha_probe.gd|env:SAIL_ALPHA_OUT|-|issue 569: one damaged Glasswright cruiser at camera 60 over a checker, so a see-through sail is plain; needs the GPU and the ship files
 gpu|fx/test/damage_surface_probe.gd|env:DAMAGE_OUT|-|damage stills and 20 real hull frame cost: needs the GPU and the ship files
 gpu|fx/test/death_leap_probe.gd|env:DEATH_OUT|-|real-ship death recordings and a 4K profile: needs the GPU and the ship files
 gpu|fx/test/death_spawn_check.gd|-|-|death pictures sit on the plating and every one is recorded (issue 354): runs without a window but needs the ship files

@@ -1323,6 +1323,12 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.STREAK, 1),
 		mat(SH.RIBBON, 1), mat(SH.TRAIL, 1), mat(WEAP.LANE, 1), mat(DEATH.SLAG, 0),
 		HULL.damage_material(StandardMaterial3D.new(), Transform3D.IDENTITY, {}, 1.0)]
+	# Issue 569: a Glasswright sail is alpha blend, so its damage material is a different shader.
+	# Warm it too, or the first hurt sail compiles its pipeline in a fight.
+	var sail_src := StandardMaterial3D.new()
+	sail_src.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	sail_src.albedo_color = Color(1, 1, 1, 0.55)
+	mats.append(HULL.damage_material(sail_src, Transform3D.IDENTITY, {}, 1.0))
 	if not compat:
 		mats.append_array([mat(SH.VOL, 2), mat(SH.SPRITE, 1, "#define SOFT\n")])
 	for band in ["small", "cruiser", "capital"]:
