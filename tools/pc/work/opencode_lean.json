@@ -39,6 +39,13 @@
             "context": 250000,
             "output": 32768
           }
+        },
+        "k3": {
+          "name": "Kimi K3 (lighter plan model, Ryan Nov 12: try a cheaper Kimi model)",
+          "limit": {
+            "context": 250000,
+            "output": 32768
+          }
         }
       }
     },

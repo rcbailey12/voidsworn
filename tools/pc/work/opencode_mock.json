@@ -26,6 +26,9 @@
         },
         "k3.1-pro": {
           "name": "stand-in"
+        },
+        "k3": {
+          "name": "stand-in"
         }
       }
     },
