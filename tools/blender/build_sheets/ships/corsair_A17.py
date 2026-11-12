@@ -19,9 +19,11 @@ BEAUTY = 'contrib/muse/design/concept_round8_2026_11/corsair_A17_beauty.jpg'
 # the head: a chamfered face that overhangs the jaw mouth (the bottom rises from -1.65 at 3.6 to -0.7 at the face), the neck
 # pinched behind it, then the lean body
 # the base hull (flank tier): the narrow head (x 6.2 to 4.3) then the body; the jaw mouth is cut in under the head face
+# round 4 (A17 build, issue 532): the face is a narrower panel framed by big angled planes, a deep bevel all round as in the
+# beauty, not a flat end (Ryan R217: "the front is also just a flat block which does not match the concept")
 HULL = [
-    (6.2, 1.5, 1.5, -0.55, 1.3, 0.4, 0.22),
-    (5.95, 1.65, 1.65, -0.7, 1.48, 0.42, 0.28),
+    (6.25, 1.08, 1.08, -0.42, 1.02, 0.3, 0.16),
+    (5.8, 1.65, 1.65, -0.7, 1.48, 0.42, 0.28),
     (4.35, 1.7, 1.7, -0.82, 1.52, 0.42, 0.3),
     (4.05, 2.15, 2.2, -1.6, 0.42, 0.42, 0.45),
     (0.0, 2.3, 2.35, -1.6, 0.45, 0.42, 0.45),
@@ -49,19 +51,26 @@ def build(K):
     K.mass('Lower hull band', K.loft('A17_lowband', [(3.9, 2.0, 2.05, -1.64, -1.0, 0.0, 0.22), (-5.2, 2.0, 2.05, -1.64, -1.0, 0.0, 0.22)], 'soot2',
                                      plates=dict(PL, seed=18, faces=[3, 4, 5, 6, 7, 0], inv='belly_plates')), 'dark soot', note='the belly steps in under the flank tier')
     # ---------------- the head: brow, crown, face panels ----------------
-    K.mass('Head brow (step 1)', K.loft('A17_brow', [(6.05, 1.2, 1.2, 1.4, 1.62, 0.18, 0), (5.7, 1.35, 1.35, 1.4, 1.75, 0.22, 0),
+    K.mass('Head brow (step 1)', K.loft('A17_brow', [(5.72, 1.2, 1.2, 1.4, 1.6, 0.16, 0), (5.45, 1.35, 1.35, 1.4, 1.75, 0.22, 0),
                                                      (4.45, 1.38, 1.38, 1.4, 1.8, 0.22, 0)], 'pale', plates=dict(PL, seed=27, faces=[0, 1, 2, 3], inv='head_plates')),
            'pale grey trophy plate', note='the first roof step, sloped at its front')
     K.mass('Head crown (step 2)', K.loft('A17_crown', [(5.35, 0.75, 0.75, 1.72, 1.88, 0.1, 0), (5.15, 0.82, 0.82, 1.72, 1.98, 0.12, 0),
                                                        (4.55, 0.82, 0.82, 1.72, 1.98, 0.12, 0)], 'soot'), 'soot', note='the second step')
-    K.loft('A17_mouth_roof', [(6.1, 1.2, 1.2, -0.67, -0.5, 0.04, 0.04), (4.45, 1.35, 1.35, -0.84, -0.66, 0.04, 0.06)], 'dark')
+    K.loft('A17_mouth_roof', [(6.05, 0.95, 0.95, -0.62, -0.46, 0.04, 0.04), (5.75, 1.35, 1.35, -0.74, -0.58, 0.04, 0.06),
+                              (4.45, 1.35, 1.35, -0.84, -0.66, 0.04, 0.06)], 'dark')
     K.mark('head', 'hull', ['bevel', 'step', 'overhang'])
-    for i, (y, w) in enumerate(((0.6, 0.95), (-0.6, 0.95))):
-        K.patch('FP%d' % i, (6.21, y, 0.38), (1, 0, 0), w, 1.45, ang=0.03 * (1 if i else -1), lift=0.015, t=0.05, m='iron', inv='head_face')
-    for i, y in enumerate((1.2, 0.0, -1.2)):
-        K.box('A17_strap%d' % i, 6.17, 6.3, y - 0.05, y + 0.05, -0.45, 1.12, 'steel')
+    for i, (y, w) in enumerate(((0.48, 0.8), (-0.48, 0.8))):
+        K.patch('FP%d' % i, (6.26, y, 0.3), (1, 0, 0), w, 1.15, ang=0.03 * (1 if i else -1), lift=0.015, t=0.05, m='iron', inv='head_face')
+    for i, y in enumerate((0.95, 0.0, -0.95)):
+        K.box('A17_strap%d' % i, 6.2, 6.33, y - 0.05, y + 0.05, -0.32, 0.92, 'steel')
+    # the bevel frame round the face: armour plates on the angled corner and brow planes, and a lower lip
+    for side in (1, -1):
+        K.patch('FB%s' % ('p' if side > 0 else 's'), (6.03, 1.36 * side, 0.32), (0.8, 0.6 * side, 0), 0.62, 1.05, ang=0.04 * side, lift=0.03,
+                t=0.05, m='iron' if side > 0 else 'pale', inv='head_face')
+    K.patch('FBT', (6.03, 0.0, 1.25), (0.72, 0, 0.69), 1.5, 0.45, ang=0.02, lift=0.03, t=0.05, m='pale', inv='head_face')
+    K.box('A17_face_lip', 5.95, 6.3, -0.95, 0.95, -0.5, -0.36, 'steel', ch=0.04)
     K.mark('head_face', 'plate', ['slab', 'step', 'bevel', 'rivet'])
-    K.box('A17_rust_brow', 5.75, 5.95, -0.3, 0.3, 1.7, 1.76, 'rust')
+    K.box('A17_rust_brow', 4.95, 5.3, 0.9, 1.3, 1.72, 1.8, 'rust')
 
     # ---------------- the body: flank blocks (both sides, junky and unmatched) and the stepped top blocks ----------------
     import random
@@ -149,7 +158,7 @@ def build(K):
         K.box('A17_barbette_%s1' % sl, 2.9, 3.6, min(side * 0.95, side * 1.65), max(side * 0.95, side * 1.65), 0.7, 1.78, 'iron', ch=0.1)
         K.gun('%s1' % sl, (3.25, side * 1.3, 1.78), side * 40, 2, barrels=2, cal=0.08, blen=1.1, size=0.75, slot=sl, weapon='scatter', inv='deck_guns',
               note='neck block twin turret on a low barbette')
-        K.gun('%s2' % sl, (-1.4, side * 1.8 + 0.1, 1.3), side * 25, 3, barrels=2, cal=0.08, blen=1.15, size=0.75, slot=sl, weapon='scatter', inv='deck_guns',
+        K.gun('%s2' % sl, (-1.4, side * 1.8 + 0.1, 1.3), side * 35, 3, barrels=2, cal=0.08, blen=1.15, size=0.75, slot=sl, weapon='scatter', inv='deck_guns',
               variant=1, note='mid block twin turret, superfiring')
         K.gun('%s3' % sl, (-2.2, sy(-2.2, side) + 0.28 * side, -0.25), side * 35, 0, barrels=2, cal=0.08, blen=1.05, size=0.75, normal=(0, side, 0),
               slot=sl, weapon='scatter', inv='flank_casemates', note='flank casemate on the flank tier')
@@ -180,13 +189,13 @@ def build(K):
     # ---- colour zones ----
     K.colour('weathered grey and soot plate', 7.25, -7.25, 'whole hull')
     K.colour('pale grey trophy plate (brow)', 6.05, 4.45, 'head roof')
-    K.colour('rust patch', 5.45, 5.0, 'brow, forward')
+    K.colour('rust patch', 5.3, 4.95, 'brow, port')
     K.colour('dried-blood red plates', 2.3, 0.95, 'fore block roof')
     K.colour('dried-blood red patch', -3.6, -4.9, 'aft block roof')
 
     # ---------- INSIDE (round 3b: follows the low hull and the top blocks) ----------
     K.deck('lower', -0.82, -5.4, 4.0)
-    K.deck_box('top', 0.9, -5.3, 2.3, 1.3)
+    K.deck_box('top', 0.3, -5.3, 2.3, 1.3)
     K.deck_box('head', 0.0, 4.4, 5.9, 0.75)
     for i, x in enumerate((5.4, 4.0, 2.4, 0.8, -1.9, -4.7)):
         K.bulkhead('F%d' % i, x)
@@ -194,10 +203,10 @@ def build(K):
     K.room('listening_bridge', 'bridge', 4.5, 5.7, -0.7, 0.7, 0.05, 0.55, note='listening room and bridge in the head')
     K.room('boarding_kennels', 'crew', 2.5, 3.9, -1.6, 1.6, -1.45, -0.88, note='boarding gangs behind the prongs')
     K.room('loot_hold', 'hold', 0.85, 2.4, -1.7, 1.7, -1.45, -0.88, note='neck hold')
-    K.room('rocket_magazine', 'magazine', 0.95, 2.3, -0.6, 0.6, 0.5, 1.1, note='under the rocket pod')
-    K.room('crew_decks', 'crew', -1.9, 0.8, -1.3, 1.3, 0.5, 1.4, note='in the ramp and mid blocks')
+    K.room('rocket_magazine', 'magazine', 1.05, 2.0, -0.6, 0.6, 0.34, 0.7, note='under the rocket pod, in the fore block')
+    K.room('crew_decks', 'crew', -1.65, -0.55, -1.3, 1.5, 0.34, 1.05, note='in the mid block')
     K.room('shell_magazine', 'magazine', -1.9, 0.8, -1.7, 1.7, -1.45, -0.88, note='battery magazines')
-    K.room('flak_magazine', 'magazine', -5.2, -3.4, -0.8, 0.8, 0.5, 1.6, note='under the aft block twin')
+    K.room('flak_magazine', 'magazine', -5.2, -3.6, -0.8, 0.8, 0.34, 1.25, note='under the aft block twin')
     K.room('core', 'core', -4.5, -2.6, -1.1, 1.1, -1.45, 0.3, note='reactor core (hp_core)')
     K.room('engine_room', 'engroom', -5.4, -4.75, -1.6, 1.6, -1.2, 0.35, note='engine room and feeds')
     K.armour('head (forward of 4.4)', 0.4, 'ram plate and face panels over the mouth')
@@ -205,10 +214,13 @@ def build(K):
     K.armour('top blocks', 0.2, '')
     K.armour('belly', 0.25, 'flat armoured belly, the band stepping in')
     K.armour('engine end', 0.15, 'thinnest')
-    K.break_line('B-1', 2.45, 'the neck seam under the C1 girdle: the head and prongs tear off, opening the kennels and the hold',
+    K.break_line('B-1', 2.45, 'the neck seam behind the neck turrets: the head and prongs tear off, opening the kennels and the hold',
                  path=[(2.6, 0.78), (2.2, 0.2), (2.7, -0.4), (2.25, -1.0), (2.65, -1.6)])
-    K.break_line('B-2', -4.75, 'aft block and engine seam: the engine cluster tears away, opening the engine room',
-                 path=[(-4.9, 1.8), (-4.5, 1.0), (-5.0, 0.2), (-4.55, -0.7), (-4.95, -1.55)])
+    # R226 (RULEBOOK 5.17): the seam runs along the weld between the saddle and aft blocks, kinked round the antennas AN1 and
+    # AN2 ahead of it and the aft twin T1 and the stern thrusters Q3 and Q4 behind it, so every machine rides whole
+    K.break_line('B-2', -3.35, 'the weld between the saddle and aft blocks: the aft block, its flak twin and the engine cluster tear away, '
+                 'biting through the core and opening the engine room',
+                 path=[(-3.7, 2.7), (-3.3, 1.9), (-3.15, 1.0), (-3.45, 0.25), (-3.2, -0.5), (-3.55, -1.3), (-3.25, -2.0), (-3.6, -2.7)])
     K.inside.append(dict(kind='note', name='insides', note='Full interiors throughout the hull (R215), hidden until a piece breaks. Deaths blow the hull apart unevenly along these seams with a ragged bite where the core goes (R186).'))
     K.point('core', 'hp_core', (-3.6, 0, -0.6))
     for i, (x, y, z, sec, side) in enumerate([(3.6, 1.95, -0.2, 'prow', 'port'), (3.0, -1.95, -0.4, 'prow', 'stbd'),
@@ -232,6 +244,12 @@ def build(K):
     K.change('Chains cut', 'Ryan, R221: "let\'s get rid of the chains randomly around the ship. There\'s no purpose"; every part has a job (ships.md 2c)')
     K.change('Neck and mid turrets moved outboard', 'R221: no gun in the rocket pod\'s firing lane or backblast (the fit check tests both)')
     K.change('Crystal shard removed', 'Ryan, R197')
+    K.change('The face is a narrower panel inside a deep bevel frame (corner and brow planes plated), with a lower lip over the mouth',
+             'Ryan R217 on A17: "the front is also just a flat block which does not match the concept"; the beauty\'s head is chamfered all round, not a flat end (A17 build, issue 532)')
+    K.change('Aft seam B-2 moved forward to the weld between the saddle and aft blocks, kinked round the antennas, T1 and the stern thrusters',
+             'R226 (RULEBOOK 5.17): a machine never crosses a seam; at -4.75 the seam cut T1, Q3 and Q4 (A17 build, issue 532)')
+    K.change('Mid turrets P2 and S2 rest at 35 degrees (were 25)', 'their data.js arc is 30 to 150; a rest outside it failed the export check (A17 build, issue 532)')
+    K.change('Rooms in the top blocks kept under their roofs; the top deck lowered to 0.3', 'about 70 inside triangles sat outside the intact plating, above the low top blocks and in the gaps between them (issue 532 note from PR 608)')
     K.open_item('Belly detail between the prong housings and the engines is designed here; the picture does not show the underside')
 
     # ---------- the fit report's fix column (round 2 clashes) ----------

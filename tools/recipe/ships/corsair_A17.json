@@ -1,0 +1,22 @@
+{
+ "ship": "corsair_A17",
+ "name": "Hullbreaker wrecker, the Pack Hunter (Ashfall Hullbreakers)",
+ "faction": "hullbreakers",
+ "game_ship": "c_marauder",
+ "game_code": "C15s_23",
+ "sheet": "corsair_A17",
+ "concept": "contrib/muse/design/concept_round8_2026_11/corsair_A17_beauty.jpg",
+ "shape_ref_yaw": null,
+ "shape_ref_yaw_note": "null until measured: stage 3 measures the long axis (common.shape_ref_yaw, ai_align); read the overlay, then write the value here (plus 180 if the bow came out aft)",
+ "concept_camera": "",
+ "hull": "sheet_hull",
+ "tune": "",
+ "bake": "none",
+ "cell": "A17",
+ "outline_gate": 0.9,
+ "outline_third_slack": 5.0,
+ "lights": {},
+ "light_min_px": 2.0,
+ "notes": "Built from the approved build sheet docs/ship_pipeline/build_sheets/corsair_A17/ (design file tools/blender/build_sheets/ships/corsair_A17.py). The sheet is the one home of the design (RULEBOOK 0.9, R225): masses, parts, mounts, seams, insides, hard points and the class length (LENGTH 14.5, the Cruiser) come from it through tools/blender/build_sheets/contract.py; this file only names the sheet, the game ids, the concept and the recipe settings. No parts list here: the sheet places every part. game_code C15s_23 is the Cruiser folder the game picks for corsair (godot/render/hull_table.gd AI_HULLS); an install replaces the old recipe cruiser there, copied aside first. bake none until the sheet paint stack (issue 601) lands. Stage 3 does not trace or tune a sheet hull; it fits the concept camera and reports the outline.",
+ "parts": []
+}

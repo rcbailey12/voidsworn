@@ -74,11 +74,20 @@ func _run() -> void:
 	fx.add_ship("authored", ship, {"faction": "corsair", "cls": "Cruiser", "size": 0.8})
 	var s = fx.ship("authored")
 	check(s.hull.authored, "GLB extras reached hull reader")
-	check(s.hull.seams.size() == 3, "both transverse seams and bounded longitudinal seam survived")
+	# issue 532 (R225 (c): a check reads the ship's own numbers): the seams the ship carries, counted from its own
+	# voidsworn_destruct record, never the fixture's two transverse and one longitudinal (A17 has two transverse, A16 three)
+	var own_seams := 0
+	for nd in [ship] + ship.find_children("*", "Node3D", true, false):
+		var ex = nd.get_meta("extras", {})
+		var dc = nd.get_meta("voidsworn_destruct", ex.get("voidsworn_destruct", {}) if ex is Dictionary else {})
+		if not dc is Dictionary or int(dc.get("version", 0)) != 1: continue
+		own_seams += (dc.get("seams", []) as Array).size()
+	check(own_seams > 0 and s.hull.seams.size() == own_seams, "every authored seam survived (%d of %d)" % [s.hull.seams.size(), own_seams])
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 190
 	var plan: Dictionary = DEATH.fracture_plan(fx, s, rng)
-	check(plan.n_main == 4, "piece count follows authored structure, not the legacy cruiser count")
+	# one main piece more than the transverse seams, plus one per longitudinal seam (fx_death.gd fracture_plan): seams + 1
+	check(plan.n_main == own_seams + 1, "piece count follows authored structure, not the legacy cruiser count (%d)" % plan.n_main)
 	check(plan.n_frag > 0 and not plan.bite.is_empty(), "authored seams retain missing bite and fragments")
 	var point: Vector3 = plan.breaks[0].at
 	# issue 592 (R225: a check reads the ship's own numbers): move the first seam by 0.14 of the length, or by half the gap to

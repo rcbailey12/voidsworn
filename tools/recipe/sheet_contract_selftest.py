@@ -69,9 +69,15 @@ check(sk and all(o.modifiers.get('skin') for o in sc.objects if o.name in shell)
       f'the hull thickness is the sheet\'s, scaled, on {len(sk)} skin modifiers')
 
 # broken inputs, each refused by name
-d, K = build(); other = dict(SHIP, game_ship='c_marauder')
-try: contract.to_recipe(K, other); check(False, 'a ship whose weapon list lacks a sheet weapon was refused')
-except contract.ContractError as e: check('names 0 slots' in str(e), f'a ship whose weapon list lacks a sheet weapon was refused: {e}')
+# the ship's own data.js list with one of the sheet's weapons taken out (R225 (c): the item's own numbers, never another ship id;
+# the first version swapped in c_marauder, which is A17's own ship and lacks nothing)
+d, K = build(); own = gamedata.weapons(SHIP['game_ship'])
+used = {(x.get('weapon'), f['slot']) for f in fit for x in feats if x['id'] == f['id'] and f['kind'] in ('gun', 'launcher')}
+drop = next(w for w in own if w in used); lacking = [w for w in own if w != drop]
+_weapons = gamedata.weapons; gamedata.weapons = lambda gid, data_js=None: lacking if gid == SHIP['game_ship'] else _weapons(gid, data_js)
+try: contract.to_recipe(K, SHIP); check(False, f'a ship whose weapon list lacks a sheet weapon ({drop[0]} {drop[1]}) was refused')
+except contract.ContractError as e: check('names 0 slots' in str(e), f'a ship whose weapon list lacks a sheet weapon ({drop[0]} {drop[1]}) was refused: {e}')
+finally: gamedata.weapons = _weapons
 d, K = build()
 K.inside += [dict(kind='break', name='L-a', x=0, orient='long', path=[(1, 0.5), (-1, 0.5)]), dict(kind='break', name='L-b', x=0, orient='long', path=[(1, 1.0), (-1, 1.0)])]
 try: contract.to_recipe(K, SHIP); check(False, 'two longitudinal seams were refused')

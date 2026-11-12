@@ -149,18 +149,18 @@ Bulkhead and frame stations: F0 10.1%, F1 19.7%, F2 31.9%, F3 47.2%, F4 60.3%, F
 | Space | Station % | Offset range | Height range | Note |
 |---|---|---|---|---|
 | tube ducts (machinery) | 8.6 to 12.2 | -1.80 to 1.80 | -1.00 to 0.60 | front tube ducts and sniffer gear |
-| claw machinery (machinery) | 12.1 to 19.3 | -2.40 to 2.40 | -2.10 to -1.45 | pincer rams and winches |
-| kennel decks (crew) | 12.4 to 31.6 | -2.80 to 2.80 | -1.25 to 1.20 | boarding gangs, two decks |
+| claw machinery (machinery) | 12.6 to 18.0 | -1.90 to 1.90 | -1.95 to -1.45 | pincer rams and winches |
+| kennel decks (crew) | 13.4 to 31.5 | -2.30 to 2.30 | -1.25 to 1.00 | boarding gangs, two decks |
 | rocket magazine (magazine) | 32.3 to 51.8 | -1.50 to 1.50 | 0.10 to 1.30 | under the rocket rack |
-| loot hold (hold) | 32.3 to 46.9 | -3.00 to 3.00 | -2.25 to -1.45 | loot holds |
-| hangar (hangar) | 47.6 to 66.4 | -2.50 to 2.50 | -2.30 to -0.10 | two squadrons, belly drop |
+| loot hold (hold) | 32.2 to 46.8 | -2.55 to 2.55 | -2.10 to -1.45 | loot holds |
+| hangar (hangar) | 47.6 to 66.5 | -2.35 to 2.35 | -2.20 to -0.10 | two squadrons, belly drop |
 | core (core) | 66.8 to 74.4 | -1.20 to 1.20 | -2.20 to -0.10 | reactor core (hp_core) |
-| shell magazine p (magazine) | 60.6 to 74.4 | 1.50 to 3.10 | 0.10 to 1.25 | port battery magazine |
-| shell magazine s (magazine) | 60.6 to 74.4 | -3.10 to -1.50 | 0.10 to 1.25 | starboard battery magazine |
+| shell magazine p (magazine) | 60.7 to 74.5 | 1.50 to 2.60 | 0.10 to 1.00 | port battery magazine |
+| shell magazine s (magazine) | 60.7 to 74.5 | -2.60 to -1.50 | 0.10 to 1.00 | starboard battery magazine |
 | gun deck (crew) | 25.8 to 59.9 | -2.50 to 2.50 | 1.45 to 1.90 | turret crews and hoists |
 | warlord hall (crew) | 60.6 to 79.0 | -2.30 to 2.30 | 1.95 to 2.45 | the warlord hall |
 | bridge (bridge) | 67.9 to 77.5 | -1.40 to 1.40 | 2.55 to 2.90 | command deck |
-| engine room (engroom) | 75.2 to 89.3 | -1.90 to 1.90 | -1.80 to 1.20 | engine room and pod feeds |
+| engine room (engroom) | 75.3 to 88.8 | -1.55 to 1.55 | -1.60 to 1.00 | engine room and pod feeds |
 
 | Armour zone | Thickness (units) | Note |
 |---|---:|---|

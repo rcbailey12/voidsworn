@@ -44,6 +44,14 @@ found on this sheet:
      carries the bridge, T2, Q3, Q4, H4 and the engine block whole.
    - Structure still crossing: the bay B1, the deck boxes HB1 and HB2 (B-1), a lamp and two vents. The views on this page
      still show the old seams until the next PC render.
+3. **Rooms fitted inside the hull (issue 532, the A17 build).** About 150 inside triangles stood outside the intact
+   plating before any break (death_seam_check.gd on PR 608 counts them apart as a sheet matter): the lower corners of
+   the claw machinery, kennel decks, loot hold, hangar and engine room poked through the rounded belly, and the tops of
+   the two shell magazines through the rounded deck edge. Each room now fits the hull section at its corners with about
+   0.1 to spare, and the claw machinery starts at x 8.4, clear of the B-1 seam's path (a room face on the tear line left one
+   inside triangle outside its piece). Measured on the unpainted export with PR 608's check: 0 outside the whole ship and
+   0 outside their own piece (was 150 and 0); machines split 0 of 37. The feature table's room rows carry the new sizes; the
+   cutaway still shows the old rooms until the next PC render.
 
 ## R221 clean-ups (Ryan, Nov 12 2026)
 
