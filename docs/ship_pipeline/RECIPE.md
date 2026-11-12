@@ -282,7 +282,9 @@ triangles, surfaces, memory and renderer work: occlusion is not a promise of zer
 **The version 1 format** is the ship node's GLB `extras.voidsworn_destruct` dictionary. It contains `version: 1`,
 `interior_materials: [material name, ...]`, and `seams: [{p: [x,y,z], n: [x,y,z]}, ...]`, all in the GLB ship frame.
 Transverse seams have normal `[1,0,0]`; one built from a sheet also carries `path`, its plan path as `[x, z]` points in the
-GLB ship frame (R226: it kinks round machines; the runtime does not read it yet, its breaks still tilt about `p`). The optional longitudinal seam has normal `[0,1,0]` and `span: [x0,x1]`, identifying
+GLB ship frame (R226: it kinks round machines; the game's death cut follows it, issue 600). `machines: [{name, kind, lo,
+hi}, ...]` gives each machine part's box (its fixed objects, the build's `machine` stamp, grouped by `grp`; a turret's
+turning mesh is its own node), so a death rides each machine whole with one piece. The optional longitudinal seam has normal `[0,1,0]` and `span: [x0,x1]`, identifying
 the transverse compartment it weakens. Positions are points, normals are unit vectors. The writer converts Blender Z up
 to glTF Y up once. Its inputs are the build's scene `r209_t_lines` and `r209_l_line`; no default joints are supplied.
 `interior_materials` names actual nonempty surfaces, including `<code>_inside_skin` for the retained inner liner.

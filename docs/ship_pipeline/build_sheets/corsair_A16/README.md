@@ -44,6 +44,27 @@ found on this sheet:
      carries the bridge, T2, Q3, Q4, H4 and the engine block whole.
    - Structure still crossing: the bay B1, the deck boxes HB1 and HB2 (B-1), a lamp and two vents. The views on this page
      still show the old seams until the next PC render.
+3. **Rooms fitted inside the hull (issue 532, the A17 build).** About 150 inside triangles stood outside the intact
+   plating before any break (death_seam_check.gd on PR 608 counts them apart as a sheet matter): the lower corners of
+   the claw machinery, kennel decks, loot hold, hangar and engine room poked through the rounded belly, and the tops of
+   the two shell magazines through the rounded deck edge. Each room now fits the hull section at its corners with about
+   0.1 to spare, and the claw machinery starts at x 8.4, clear of the B-1 seam's path (a room face on the tear line left one
+   inside triangle outside its piece). Measured on the unpainted export with PR 608's check: 0 outside the whole ship and
+   0 outside their own piece (was 150 and 0); machines split 0 of 37. The feature table's room rows carry the new sizes; the
+   cutaway still shows the old rooms until the next PC render.
+4. **Front tubes and launch bay at the hull's detail level (R224).** The paint job (issue 601) measured the tubes at 0.45
+   and the bay at 0.18 of the hull's triangles per square unit. The Hullbreaker kit's launch tube now has three rings
+   stepping down inside the bore, a ring of bolts on the lip, eight stiffeners along the barrel and bolted clamp bands; the
+   bay has framed door leaves with five stiffeners each, guide rails on brackets down both sides, a door ram at each
+   hinge, end frames and a rivet row on the rim. Measured on the build (mesh half of tools/recipe/density.py, PR 601):
+   tubes 1.02 of the hull's triangles and 0.80 of its edge features per square unit (were 0.45 and 0.29), bay 1.64 and
+   1.61 (were 0.18 and 0.18). The fit check is still zero. The views on this page show the old tubes and bay until the
+   next PC render; [tubes_bay_r224.jpg](tubes_bay_r224.jpg) shows the new ones.
+5. **Every inside clear of the plating, seen from outside (PR 610's surface check).** The paint job's check saw rooms
+   reach the skin: the gun deck, warlord hall, shell magazines, bridge and engine room, and with them the gun deck floor
+   and the lower deck. Each is pulled in to sit inside its own tier with room to spare (feature table rows updated).
+   Measured on this branch: the surface check's six views at 1280 show 0 inside pixels (A17 also 0); no inside corner
+   stands outside the plating; death_seam_check's "outside the whole ship" count is 0.
 
 ## Paint (issue 601, Nov 12 2026)
 

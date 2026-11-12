@@ -11,6 +11,17 @@ extends RefCounted
 #   - Dark hulls (Chorus, Deathless): a Fresnel rim in the faction tint plus a small albedo lift, instead of more key light,
 #     so they read against black space without washing the others out (A2: "too dark in Godot"; R31 fixed most of it by
 #     turning SDFGI off).
+#   - Issue 362 (battle camera readability, R157 finding 4): judged at camera 170 at true pixel size on the look bench
+#     fleet sheet. Two parts, both on the hulls only (effects and shields are unshaded and never see them):
+#     1. READ below: per faction hull material numbers so every faction's lit side sits in one brightness band
+#        (docs/shots/look_bench/readability/README.md states the band and the per-ship numbers). The Glasswright hull's
+#        burn-out was its own baked glow (emissive map over about a quarter of the hull at strength 4.0, so 1.2 to 2.4
+#        linear, above the glow threshold) plus a near-mirror finish; it is capped here in Godot, no rebake.
+#     2. A rim light (render/look_rim.gd): a back light from behind the ships as the camera sees them, specular only in
+#        effect, on its own render layer that only hull surfaces join, so a dark hull keeps a bright edge against the
+#        darkest sky while rocks, planet and board keep their light. Godot's material rim cannot do this on a dark hull:
+#        it is multiplied by the albedo (scene_forward_clustered.glsl "diffuse_light *= albedo").
+#     KEY_ENERGY and the glow threshold are unchanged: raising either moves every accepted look at once (issue 362 risk).
 
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
 const KEY_COL := Color(1.0, 0.96, 0.90)
@@ -28,6 +39,57 @@ const FX_GAIN := {"aces": 0.5556, "agx": 0.75}
 # Dark-hull fix per faction: [rim amount, rim tint, albedo lift], from the faction look data (fx/faction_looks.json,
 # field hull_fix), so a repaint is a data edit
 const FLOOK := preload("res://fx/faction_look.gd")
+
+# Issue 362: per faction hull numbers at the battle camera (tuning values judged by eye on the fleet sheet, RULEBOOK 0.4;
+# measured in docs/shots/look_bench/readability/README.md). Where a faction is here, these replace its hull_fix:
+#   lift      multiplies the albedo in linear light (hull_fix's lift multiplied the sRGB colour: 1.35 there is about 1.9 here)
+#   rim       Godot's material rim and rim tint (it scales with the albedo, so it only helps the mid and pale hulls)
+#   emit      multiplies the hull's own baked glow (the glTF emissive strength, 4.0 on every A4 hull)
+#   metal     multiplies the metallic map; spec is Godot's specular (0.5 is the default)
+# Damaged hulls keep all of these: fx/fx_hull.gd _exterior copies albedo, rim, metallic, specular and emission energy.
+# The dark factions (Sunward black iron, Hullbreaker rust, Eclipse violet-black) sit near the band's low end and the pale
+# ones (Hegemony, Glasswrights) below its top, so each keeps its own value and colour; the rim light gives the dark ones
+# their outline (a first pass that lifted them to the middle turned the rust pink and the Eclipse lavender). Ryan, Nov 12
+# (R227): Eclipse darker and Hullbreakers slightly down (4.5 to 2.2, 1.5 to 1.25); 2.2 is the darkest Eclipse lift that keeps
+# every Eclipse ship at 100 or more lit on the darkest sky (job F, contrib/opus/reviews/readability_362.md).
+const READ := {
+	"voidsworn": {"lift": 1.45, "rim": 0.12, "rim_tint": 0.3, "emit": 1.0, "metal": 1.0, "spec": 0.5},
+	"hegemony": {"lift": 0.4, "rim": 0.08, "rim_tint": 0.2, "emit": 1.0, "metal": 1.0, "spec": 0.5},
+	"corsair": {"lift": 1.25, "rim": 0.15, "rim_tint": 0.3, "emit": 1.0, "metal": 1.0, "spec": 0.5},
+	"chorus": {"lift": 1.9, "rim": 0.45, "rim_tint": 0.55, "emit": 1.0, "metal": 1.0, "spec": 0.5},
+	"ithar": {"lift": 0.4, "rim": 0.1, "rim_tint": 0.25, "emit": 0.15, "metal": 0.4, "spec": 0.3},
+	"deathless": {"lift": 2.2, "rim": 0.4, "rim_tint": 0.5, "emit": 1.0, "metal": 0.7, "spec": 0.5},
+}
+# The rim light (render/look_rim.gd): energy is its diffuse strength, spec multiplies its specular on top (Light3D
+# light_specular), alpha is how far (degrees) it is tipped up from the camera's line of sight, behind the ships. Calibration 2
+# (contrib/opus/reviews/readability_362.md): alpha 20 keeps every outline lit (edge 0.93 or more on the darkest sky) while
+# the Eclipse fans and the Glasswright Ark stay below the band's top; 30 and 45 lit their flat faces too.
+const RIM := {"energy": 0.35, "spec": 8.0, "alpha": 20.0, "color": Color(0.85, 0.9, 1.0)}
+# Render layer 16: only hull surfaces join it (look_rim.gd marks them), so the rim light lights nothing else. The campaign
+# map uses layers 2 to 4 (ui/campaign/map3d.gd); nothing else sets layers.
+const RIM_LAYER := 1 << 15
+const RIM_SCRIPT := "res://render/look_rim.gd"
+# Bench probes only (contrib/opus/reviews/readability_362/): numbers laid over READ and RIM for one run, never saved. The game
+# never sets this.
+static var tune := {}
+
+
+static func read_of(faction: String) -> Dictionary:
+	var r: Dictionary = (READ.get(faction, {}) as Dictionary).duplicate()
+	var t: Dictionary = tune.get("read", {})
+	if t.has(faction):
+		r.merge(t[faction], true)
+	if t.has("*") and not r.is_empty():
+		var g: Dictionary = t["*"]
+		if g.has("lift_k"):
+			r["lift"] = float(r.get("lift", 1.0)) * float(g["lift_k"])
+	return r
+
+
+static func rim_of() -> Dictionary:
+	var r := RIM.duplicate()
+	r.merge(tune.get("rim", {}), true)
+	return r
 
 
 static func apply(env: Environment, key: DirectionalLight3D, fill: DirectionalLight3D, opts := {}) -> void:
@@ -80,6 +142,24 @@ static func apply(env: Environment, key: DirectionalLight3D, fill: DirectionalLi
 		fill.light_color = FILL_COL
 		fill.light_energy = 0.25 * key_e
 		fill.shadow_enabled = false
+	if key != null and bool(opts.get("rim", true)):
+		rim_light(key)
+
+
+# Issue 362: the hulls' rim light, a sibling of the key light (one per scene, reused when apply runs again). Returns it,
+# or null when the key light is not in a scene yet.
+static func rim_light(key: DirectionalLight3D) -> DirectionalLight3D:
+	var parent := key.get_parent()
+	if parent == null:
+		return null
+	var l := parent.get_node_or_null("LookRim") as DirectionalLight3D
+	if l == null:
+		l = DirectionalLight3D.new()
+		l.set_script(load(RIM_SCRIPT))
+		l.name = "LookRim"
+		parent.add_child(l)
+	l.call("configure")
+	return l
 
 
 static func _fx_gain(v: float) -> void:
@@ -100,10 +180,28 @@ static func hull(mat: Material, faction: String, copy := false) -> Material:
 	if copy:
 		m = m.duplicate()
 	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
-	var f: Array = FLOOK.of(faction).get("hull_fix", [0.1, 0.25, 1.0])
+	# the rim light (look_rim.gd) finds hull surfaces by this mark; death pieces and damaged hulls carry it on
+	m.set_meta("look_hull", faction)
+	var r := read_of(faction)
+	if r.is_empty():
+		var f: Array = FLOOK.of(faction).get("hull_fix", [0.1, 0.25, 1.0])
+		m.rim_enabled = true
+		m.rim = float(f[0])
+		m.rim_tint = float(f[1])
+		if float(f[2]) != 1.0:
+			m.albedo_color = Color(m.albedo_color.r * float(f[2]), m.albedo_color.g * float(f[2]), m.albedo_color.b * float(f[2]), m.albedo_color.a)
+		return m
 	m.rim_enabled = true
-	m.rim = float(f[0])
-	m.rim_tint = float(f[1])
-	if float(f[2]) != 1.0:
-		m.albedo_color = Color(m.albedo_color.r * float(f[2]), m.albedo_color.g * float(f[2]), m.albedo_color.b * float(f[2]), m.albedo_color.a)
+	m.rim = float(r.get("rim", 0.1))
+	m.rim_tint = float(r.get("rim_tint", 0.25))
+	var lift := float(r.get("lift", 1.0))
+	if lift != 1.0:
+		var a := m.albedo_color.a
+		var c := m.albedo_color.srgb_to_linear()
+		c = Color(c.r * lift, c.g * lift, c.b * lift).linear_to_srgb()
+		c.a = a
+		m.albedo_color = c
+	m.emission_energy_multiplier *= float(r.get("emit", 1.0))
+	m.metallic *= float(r.get("metal", 1.0))
+	m.metallic_specular = float(r.get("spec", m.metallic_specular))
 	return m

@@ -1,0 +1,4 @@
+[
+ {"name": "e300_c120", "tune": {"read": {"deathless": {"lift": 3.0}, "corsair": {"lift": 1.2}}}},
+ {"name": "e350_c130", "tune": {"read": {"deathless": {"lift": 3.5}, "corsair": {"lift": 1.3}}}}
+]

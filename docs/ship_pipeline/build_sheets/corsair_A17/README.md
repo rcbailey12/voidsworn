@@ -1,15 +1,71 @@
-# corsair_A17 build sheet: Hullbreaker wrecker, the Pack Hunter (round 3c, R221 clean-ups)
+# corsair_A17 build sheet: Hullbreaker wrecker, the Pack Hunter (round 3c, R221 clean-ups, into the recipe)
 
-Ashfall Hullbreakers cruiser, class Cruiser, **14.5 world units** (godot/render/hull_table.gd CLS_LEN; data.js c_marauder);
-the model is 14.55. Version 3c, 2026-11-12: round 3's parts, fit check and turret marking (R217 to R219), with the massing
+Ashfall Hullbreakers cruiser, class Cruiser (14.5), **this ship 14.6 world units** claw tip to stern (godot/render/hull_table.gd CLS_LEN; data.js c_marauder);
+the model is 14.58. Version 3c, 2026-11-12: round 3's parts, fit check and turret marking (R217 to R219), with the massing
 rebuilt to the concept's measured proportions after the Board's review of round 3 ("short, tall and round, a lump").
-Designer of record: Opus (R205, R207). Rendered on Ryan's PC (Blender 4.5, GPU), blockout
-`C:\Users\rcbai\Downloads\voidsworn_test\opus532\r221a\corsair_A17\corsair_A17_blockout.blend`.
+Designer of record: Opus (R205, R207). The views on this page were re-rendered for the A17 build (issue 532) in the Opus
+sandbox (Blender 5.3, CPU, 24 samples) from the same build.py; the round 3c blockout from Ryan's PC is
+`C:\Users\rcbai\Downloads\voidsworn_test\opus532\r221a\corsair_A17\corsair_A17_blockout.blend`, and stage 4 of the PC run
+saves the recipe build at `Downloads\voidsworn_test\recipe\corsair_A17\build\A17.blend`.
 
 **Round 3c (the Board on 3b): the head follows the beauty**, the picture Ryan judges against: a big, tall, boxy front block
 (about 2.3 tall and 3.4 wide) towering over the neck, two big ear dishes (1.9 across, about the head's height) standing out
 from brackets at its upper corners, and broad flat prongs (0.7 and 0.55 wide). The neck turrets and the rocket pod were lifted
 so their arcs and exits clear the taller head; the fit check is still zero.
+
+## Into the recipe (issue 532, the A17 build, Nov 12 2026)
+
+The recipe builds this sheet itself, the route A16 proved (issue 592): ship file `tools/recipe/ships/corsair_A17.json`
+(data.js `c_marauder`, game folder `C15s_23`, the corsair Cruiser the game draws; the class length 14.5 is read from this
+sheet, `bake: none` until the sheet paint stack, issue 601, lands). What the route and the Board's notes changed here:
+
+1. **The bow (Ryan R217: "the front is also just a flat block which does not match the concept").** The face is now a
+   narrower panel (2.2 wide, 1.45 tall) inside a deep bevel frame: the corner and brow planes run back 0.45 to the full
+   head (3.3 wide), each plated, with a lower lip over the mouth, as the beauty draws it. The neck block behind the head is
+   raised from 0.78 to 1.12, so the head no longer stands on the neck like a separate box.
+2. **Seams round machines (R226, RULEBOOK 5.17).** The aft seam B-2 cut the aft twin T1 and the stern thrusters Q3 and
+   Q4 at x -4.75. It now runs along the weld between the saddle and aft blocks (about -3.15 to -3.7), kinked round the
+   antennas AN1 and AN2 ahead of it and T1, Q3 and Q4 behind it, and bites through the core. The stage 4 audit passes: no
+   machine across a seam; structure across: three lamps (L4s, LHp, LHs).
+3. **Turret rests.** P2 and S2 rested at 25 degrees, outside their data.js arc (30 to 150); they now rest at 35. The fit
+   check is still zero in all seven tests.
+4. **Insides inside the plating.** 67 inside triangles stood outside the intact hull (death_seam_check.gd on PR 608
+   counts them as a sheet matter): the top deck at 0.9 and the crew, rocket and flak rooms rose above the low top blocks
+   and into the gaps between them. The top deck is now at 0.3 and each room sits under its own block's roof. Measured on
+   the unpainted export with PR 608's check: 0 outside the whole ship; machines split 0 of 29.
+5. **Detail density (R224).** Measured per part type on the build (the mesh half of tools/recipe/density.py, PR 601):
+   no part type is under 0.75 of the hull's triangles or edge features per square unit; the lowest are the prongs (1.50
+   and 1.29). The kit tube's new bore rings, bolted lip and stiffeners (added for A16) also reach A17's scoop drums.
+
+6. **Ear dishes and the camera (the Board on PR 611, R207).** The dishes are now 1.24 across (were 1.9), a little under
+   the face's height, on short brackets low on the head's shoulders, turned forward and outward, and the kit's dish colour
+   is rusted grey, not white. The fitted beauty camera is refit from the concept's view (az 44.3, el 18.4) so the bow is on
+   screen in side_by_side.jpg: outline IoU 76.8 percent then, 74.0 after the R229 arms and ears (the round 3b camera scored 62.8 with the same mask; it had framed the
+   bow off the left edge).
+
+7. **Bulkhead F2 off the neck seam.** F2 stood at x 2.4, on the B-1 seam's station, and PR 608's death check found its
+   face left outside its piece after the tear (1 to 11 triangles, varying with the cut). It now stands at 2.05: 0. The
+   cutaway picture still shows it at 2.4.
+
+8. **The grabbers and the ears from the whole concept (R229).** Ryan: "the front claws or grabbers are coming out
+   differently in the build model, they're more like 4 independent prongs." The bow crop had cut them off. In the whole
+   beauty and the sheet's side view they are jointed arms, so the four flat prongs are replaced by four grabber arms, a new
+   Hullbreaker kit part `claw_arm`: a shoulder hinge between hinge plates on a bracket in its housing under the jaw, two
+   box segments with bolted top plates, a knuckle with hinge plates and pins, a ram across each joint and a forked,
+   hooked pincer. A pair a side, upper and lower, close toward each other to pin a hull for the boarding gangs; the jaw
+   hoses now feed their rams. The ears, measured on the whole beauty, are about three quarters of the head's flank height
+   across: 1.6 (item 6's 1.24 came from the crop). Fit check zero; no machine on a seam; claw_arm at 2.53 and 2.33 of the
+   hull's density; PR 608's death check 0 and 0.
+
+9. **Arms splayed, ship length 14.6 (Ryan, Nov 12: "it's fine to extend the game length a bit").** The lower pair runs
+   forward and down, the upper pair forward and outward, as the beauty draws them. In the concept sheet's side view the
+   arms reach 6.8 percent of the whole length ahead of the head's face; here 7.3. The hull body is unchanged; the sheet's
+   LENGTH is 14.6, claw tip to stern (+0.7 percent on the Cruiser class's 14.5, which stays as it is). The game still draws
+   the ship at its class length (render/ship_view.gd reads CLS_LEN by class), so on the board it is 0.7 percent smaller
+   than the sheet; the manifest entry and the stage 6 bench carry 14.6.
+
+Side by side with the WHOLE concept at the same camera (R229): [whole ship](../../../shots/issue_532_a17/a17_whole_compare.jpg),
+[side against the sheet's side view](../../../shots/issue_532_a17/a17_side_compare.jpg), then the [bow](../../../shots/issue_532_a17/a17_bow_compare.jpg).
 
 **R221 clean-ups (Ryan, Nov 12 2026).** The two chain girdles are cut ("There's no purpose"), and every inventory line names
 its job (27 lines, 0 failing). The fit check's new LANE test (each rack's firing lane forward and backblast aft; no gun in
@@ -30,7 +86,8 @@ midships and stern at the same windows), then [cells.jpg](cells.jpg) and [fit_vi
 | Round 3 build | 2.62 | 2.84 | 2.05 | 2.22 |
 | Round 3b build | 2.82 | 3.84 | 1.91 | 2.88 |
 | Round 3c build | 2.83 | 3.79 | 1.92 | 2.71 |
-| **R221 build** | **2.84** | **3.82** | 1.92 | 2.71 |
+| R221 build | 2.84 | 3.82 | 1.92 | 2.71 |
+| **Into the recipe (issue 532)** | **2.83** | **3.82** | 1.92 | 2.71 |
 
 Hull: length over the median beam or height across the middle 60 percent of the length. The envelope includes the guns,
 dishes and belly turret. Distinct masses per cell (concept by eye, build from the model) are in [inventory.md](inventory.md):

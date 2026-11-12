@@ -44,7 +44,7 @@ MATS = {
     'pale': ((0.36, 0.37, 0.38), 0),         # pale Hegemony grey trophy plate
     'steel': ((0.20, 0.20, 0.21), 0),        # gun metal and machinery
     'dark': ((0.012, 0.011, 0.011), 0),      # bores, throats, apertures, recesses
-    'dish': ((0.62, 0.60, 0.56), 0),         # dish faces
+    'dish': ((0.25, 0.235, 0.215), 0),       # dish faces: rusted grey, never a white disc (Board on PR 611)
     'glow': ((1.0, 0.25, 0.08), 8),          # engine throat glow
     'ember': ((0.9, 0.22, 0.06), 1.6),       # engine bell lining
     'light': ((1.0, 0.1, 0.05), 3),          # running lights
@@ -607,6 +607,18 @@ class Kit:
         part = self.emit(fid, part, Matrix.Translation(h), inv, keep_r=w)
         self.features.append(dict(id=fid, kind='claw', what='%s, %d segments, %d fingers' % (name, len(pts), fingers), count=1,
                                   pos=tuple(h), aim=(0.0, -60.0), src=src, note=note, tip=tuple(part.fit['tip'][1]), inv=[inv] if isinstance(inv, str) else list(inv)))
+
+    def claw_arm(self, fid, shoulder, pts, w=0.42, hook=1.0, fork=0.45, src='picture', note='', inv=(), housing=None):
+        """an articulated grabber arm from the kit (R229): shoulder hinge at `shoulder` (axis across the ship), knuckles
+        through pts (world), a forked pincer at the last point curling toward hook (+1 down, -1 up). housing (x0, x1, y0,
+        y1, z0, z1): the armoured box the shoulder bracket bolts into, part of the arm's mount"""
+        h = Vector(shoulder)
+        if housing:
+            self.box(fid + '_housing', *housing, 'steel', ch=0.08, grp=fid).__setitem__('role', 'mount')
+        part = HP.claw_arm([Vector(q) - h for q in pts], w=w, hook=hook, fork=fork)
+        part = self.emit(fid, part, Matrix.Translation(h), inv, keep_r=w)
+        self.features.append(dict(id=fid, kind='claw', what='grabber arm, %d segments, knuckles, rams, forked pincer' % len(pts), count=1,
+                                  pos=tuple(h), aim=(0.0, 0.0), src=src, note=note, tip=tuple(part.fit['tip'][1]), inv=[inv] if isinstance(inv, str) else list(inv)))
 
     def prong(self, fid, root, length, width=0.4, thick=0.12, hook=0.35, yaw=0.0, droop=0.0, joints=2, src='picture', note='', inv=(),
               housing=None):

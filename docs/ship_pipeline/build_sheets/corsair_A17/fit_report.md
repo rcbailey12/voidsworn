@@ -77,14 +77,14 @@ The round 2 design (`tools/blender/build_sheets/ships/r2/corsair_A17.py`, the PR
 
 ## How round 3 fixed them
 
-| Clash (round 2) | Fix (round 3) |
+| Clash (before) | Fix |
 |---|---|
 | Engine bells E1 to E6 inside each other; E2 and E5 exhausts on their neighbours | two columns a side, exits level at -7.25, centres spaced by the sum of the bell radii plus the lip |
 | P2 and S2 barrels striking the hump at every aft bearing | the mid block turrets now stand on the block top and superfire; the blocks behind them are no taller than their barrels |
 | P1 and S1 barrels through the ear dishes D1 and D2 | the neck turrets stand inboard on barbettes high enough to fire over the head and the ears |
 | Ear dishes D1 and D2 had no mount on the hull | each dish stands on an armoured bracket out from the head's upper corner |
 | Q1 and Q2 bow thrusters inside the scoop drums, their exhaust on the drum ribs | bow thrusters on the body flank behind the drums, firing clear outboard |
-| Jaw blades inside the hull and the jaw housing | four prongs, each hinged in its own housing in the mouth, the blades clear of the hull |
+| Jaw blades inside the hull and the jaw housing | four grabber arms (R229), each shoulder in its own housing under the jaw, clear of the hull |
 | C2 girdle through the P2 and S2 turret rings | C2 runs in the gap between the mid and saddle blocks, clear of every ring |
 | Crest and belly turret housings sunk in the crest and the belly | turrets sit on their rings on block tops and the belly band, plates cleared under each mount |
 
@@ -93,9 +93,9 @@ into the hull, a pipe through a pod, chains through casemates, dishes too low on
 neighbouring deck-edge turrets meeting when trained aft (the middle ones now superfire on barbettes) and antennas inside a
 turret's swept circle (moved out).
 
-## Round 3 (after)
+## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 360 objects, 56 parts, 833 close pairs, 532 rays, 8 guns, 6 turrets swept, 10 cones, 28 apertures, 2 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 371 objects, 56 parts, 953 close pairs, 506 rays, 8 guns, 6 turrets swept, 10 cones, 28 apertures, 2 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 
@@ -104,9 +104,9 @@ Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 360
 | T1 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
 | T2 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
 | P1 | P | 30 to 150 | 25 | 40 | all round | - | all round | - | no |
-| P2 | P | 30 to 150 | 25 | 25 | all round | - | all round | - | no |
+| P2 | P | 30 to 150 | 25 | 35 | all round | - | all round | - | no |
 | S1 | S | -150 to -30 | 25 | -40 | all round | - | all round | - | no |
-| S2 | S | -150 to -30 | 25 | -25 | 155 | AN2_mount_iron | all round | - | no |
+| S2 | S | -150 to -30 | 25 | -35 | 165 | AN2_mount_iron | 170 | AN2_mount_iron | no |
 
 Reach is measured from the rest bearing, in degrees, turning toward port (bearings rising) and toward starboard; "all round" means nothing stops it within 180. Every turret clears its whole data.js slot arc (sweep steps above). Under 60 degrees either way: none.
 

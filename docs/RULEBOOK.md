@@ -345,11 +345,16 @@ beside the concept. Feedback on one part becomes a rule for all parts. Why: "Eng
 to carry that through to the whole model. Don't just patch singular behavior or examples, use it for global learning and
 shaping the approach" (Ryan, Nov 11, R218). Set: Ryan, Nov 11 (R218). Ids: ships-2c.
 
-5.17 **A machine never crosses a seam; structure may.** Guns, turrets, casemates, launchers, engines, thrusters, claws and
-sensor masts ride whole with one piece: the seam moves, or kinks round them in plan; hull plating, frames, ribs, rails and
-openings such as a launch bay may tear across a seam. The stage 4 audit reads each part's kind from the build (the faction
-kit's MACHINES) and fails only a machine across a seam. Why: a cut gun reads as sliced, a torn plate as blown apart (R186,
-"blown apart, never sliced"). Set: Board, Nov 12 (R226). Ids: ships-2c.
+5.17 **A machine never crosses a seam; structure that crosses a seam is torn at it, insides included.** Guns, turrets,
+casemates, launchers, engines, thrusters, claws and sensor masts ride whole with one piece: the seam moves, or kinks round
+them in plan. Hull plating, frames, ribs, rails, openings such as a launch bay, and every inside (decks, bulkheads, rooms,
+the liner) tear across a seam, along the same ragged line as the plating over them: no inside panel stays whole across a
+break or sticks out past its piece's broken hull. The stage 4 audit reads each part's kind from the build (the faction kit's
+MACHINES) and fails only a machine across a seam; the export carries each seam's path and each machine's box, and the game's
+death cut reads them there (fx/test/death_seam_check.gd: zero machines split, zero insides outside their piece). Why: a cut
+gun reads as sliced, a torn plate as blown apart (R186, "blown apart, never sliced"); whole deck and bulkhead slabs stuck out
+of the broken A16 as big flat squares (Ryan, Nov 12, issue 600). Set: Board, Nov 12 (R226; insides added from Ryan's eye,
+issue 600). Ids: ships-2c.
 
 ## 6. Battle look
 

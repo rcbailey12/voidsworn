@@ -62,7 +62,7 @@
   {
    "id": "D1",
    "kind": "dish",
-   "what": "listening dish, 1.9 across",
+   "what": "listening dish, 1.6 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -84,7 +84,7 @@
   {
    "id": "D2",
    "kind": "dish",
-   "what": "listening dish, 1.9 across",
+   "what": "listening dish, 1.6 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -95,7 +95,7 @@
   {
    "id": "J1",
    "kind": "claw",
-   "what": "jaw prong, 2.6 long, hooked tip",
+   "what": "grabber arm, 2 segments, knuckles, rams, forked pincer",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -106,7 +106,7 @@
   {
    "id": "J3",
    "kind": "claw",
-   "what": "jaw prong, 2.3 long, hooked tip",
+   "what": "grabber arm, 2 segments, knuckles, rams, forked pincer",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -117,7 +117,7 @@
   {
    "id": "J2",
    "kind": "claw",
-   "what": "jaw prong, 2.6 long, hooked tip",
+   "what": "grabber arm, 2 segments, knuckles, rams, forked pincer",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -128,7 +128,7 @@
   {
    "id": "J4",
    "kind": "claw",
-   "what": "jaw prong, 2.3 long, hooked tip",
+   "what": "grabber arm, 2 segments, knuckles, rams, forked pincer",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -748,7 +748,7 @@
  "break_pieces": [
   {
    "name": "bow piece",
-   "stations": "0.0 to 33.2 percent",
+   "stations": "0.0 to 33.3 percent",
    "bounded_by": [
     "B-1"
    ],
@@ -756,7 +756,7 @@
   },
   {
    "name": "midships piece 1",
-   "stations": "33.2 to 82.7 percent",
+   "stations": "33.3 to 73.1 percent",
    "bounded_by": [
     "B-1",
     "B-2"
@@ -765,7 +765,7 @@
   },
   {
    "name": "stern piece",
-   "stations": "82.7 to 100.0 percent",
+   "stations": "73.1 to 100.0 percent",
    "bounded_by": [
     "B-2"
    ],
