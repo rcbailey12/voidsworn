@@ -67,6 +67,25 @@ all of the other guidance we've discussed across the faction guides, lore, playb
 as a real built object and lists each change, with its reason, on the build sheet before the build. Questions go to Ryan only
 when the picture, the faction guide and the lore conflict, or a change would alter the ship's identity.
 
+## 2c. Parts that read and fit together (R217)
+
+Ryan, Nov 11 2026 21:24 CST, on build sheets round 2 (A16, A17): "The tubes at the front of a16 concept are just circles on the
+actual build? also the guns are visibly blocking the rockets and appear to be in front of an engine at one point. we need to
+do a check to see how the parts interact together, how they fit the actual ship and the total cohesive package together.
+there also just appears to be a lot less fine detail and texture ... the engines look like big tubes, the weapons look so
+simple and just tubes". On A17: "the front is also just a flat block which does not match the concept." So, from round 3 on:
+- Every part is modelled as the thing it is, at the build sheet already: an engine is a bell with a throat, inner cone,
+  cooling rings and a mount, not a cylinder; a gun is a base, a mantlet, a breech and a barrel with a muzzle, not a tube; a
+  launch tube has depth, a lip and a dark bore, not a disc on the hull; a rocket rack shows its cells. Surface texture (seams,
+  grit, wear, paint) comes in the build; part shape does not wait for it.
+- The bow and every big mass follow the concept's own shaping (bevels, steps, overhangs, cut-ins); a flat block where the
+  concept has shape is a fault.
+- The fit check, run on every build sheet and every build: no part sits inside another; no gun's firing arc passes through
+  another part or the hull; no part sits in an engine's exhaust cone; no launcher's exit is blocked; every part sits on the
+  hull on a mount. The sheet carries a fit view (top and side with firing arcs and exhaust cones drawn) and a fit report
+  listing each clash and how it was fixed. A clash left in is a blocking finding.
+- The Board judges every sheet beside its concept at the same size before Ryan sees it (R198, R213), part by part.
+
 ## 2b. The insides (R98, R209)
 
 Ryan, Nov 11 2026: "keeping in mind the hits, the breaks, the deaths and everything that affects the internals of the ship so

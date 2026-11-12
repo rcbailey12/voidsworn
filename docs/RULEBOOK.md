@@ -296,6 +296,12 @@ Set: Board. Ids: D11, X14.
 5.14 **A build pull request carries its done-when evidence and a method line** (build sheet link, manifest, budget numbers,
 changes made to the sheet); the outside check returns one without them as blocking. Why: R214. Set: Ryan, Nov 11.
 
+5.15 **Parts read as what they are and fit together: the fit check.** Engines are bells with throats and rings, guns have a base,
+mantlet, breech and muzzle, launch tubes have depth; the bow and big masses carry the concept's shaping. No part inside
+another, in another gun's arc, in an exhaust cone or blocking a launcher; a fit view and fit report on every sheet and build.
+Why: round 2 sheets had guns blocking rockets and in front of an engine, tubes as flat circles, engines and guns as plain
+tubes, and a flat-block bow (Ryan, Nov 11, R217). Set: Ryan, Nov 11 (R217). Ids: ships-2c.
+
 ## 6. Battle look
 
 6.1 **Judge everything at the battle camera (camera 170, the radius Ryan plays at) at true pixel size, before any close-up.**
