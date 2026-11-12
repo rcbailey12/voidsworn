@@ -1,4 +1,4 @@
-# Movement specification (rewritten for issue 505, Nov 11 2026)
+# Movement specification (rewritten for issue 505, Nov 11 2026; section 1a added for issue 521)
 
 Ryan, Nov 11 2026, 09:47 CST: "Make sure it's clean, feels weighty and like you're in space, not water or land? Use of the
 main engine, thrusters, turning all make sense, the routing paths for movement make sense, which direction the ship ends
@@ -33,10 +33,45 @@ change any of them for a better look, and says so with a strip.
     to rest there for 40 percent of the spin (`GL_DWELL`) while it swings, then it burns out on the new heading;
   - the final facing: starts while the hull is still braking (it overlaps 45 percent of its own length, `GL_TRAIL`) and
     finishes after the hull stops. A visible, weighty manoeuvre, never a late snap.
-- **Slides.** A sidestep or a back-off keeps the heading exactly and slides on side or retro jets, smooth in and out. A
-  dogleg (ahead, then a sidestep) keeps the nose and drifts sideways at the bend.
+- **Slides.** A one-hex sidestep or back-off keeps the heading exactly and slides on side or retro jets, smooth in and
+  out, slower than a burn. A dogleg (a run, then a one-hex sidestep) keeps the nose and drifts sideways at the bend.
+  A longer move is flown nose first (section 1a).
 - **No roll.** The hull never banks into a turn (nothing in space leans a ship). ShipView never writes the hull's roll or
   pitch; those belong to the hit reactions (fx/API.md).
+
+## 1a. The main engine does the travelling (issue 521, FINDINGS R195)
+
+Ryan, on the merged issue 505 build: "engines should be clearly stronger and more used for movement than the thrusters.
+it sometimes seemed like thrusters would move the ship (especially in slides) just as fast as the engine movement, which
+doesn't really make sense to me... it did feel odd to see the ships moving diagnolly or sidewways at rapid speed using
+thrusters, especially long distance. for one tile over, it tracks but not when they're going like 3-10 tiles down just
+almost skating on thrusters."
+
+**What he was reacting to:** from issue 505 a route made of sidesteps held its heading and was flown on side jets at
+cruise speed, so several diagonal steps looked like a ship skating sideways across the board at engine speed.
+
+**The rule (LOOK only; the rules' route, end hex and final facing never change):**
+- A move of two hexes or more is flown nose first (battle.gd `_nose_first`). The route's hex centres are split into
+  straight legs (`LEG_TOL` 0.55 of a hex: a zigzag of two hex directions is one straight diagonal run, not a heading
+  change every hex). The nose comes round onto the first leg before the burn (section 1's turn before the run), onto
+  each later leg at its corner, the main engine does the travelling, and the ship turns to the ruled final facing while
+  it brakes (section 1's final facing). The rules' own turn steps inside the move are not flown; only their result is.
+- Inside a leg the hull is drawn 60 percent of the way onto the leg's straight line (`LEG_PULL`), so it still passes
+  inside every hex of the ruled route (a hex centre is at most 0.2 of a hex off the flown line).
+- A one-hex slide stays on side or retro jets: a one-hex sidestep or back-off, or a one-hex sidestep at the end or start
+  of a longer run (the dogleg drift, on the heading of the leg before it).
+- A run straight astern of both the heading and the final facing (more than `ASTERN` 120 degrees off each, a straight
+  back-off of two hexes) is backed on retro jets with the heading held: turning a heavy hull round and back again for
+  two hexes would be two half-turns of spin for nothing.
+- A move flown only on thrusters (the two cases above) takes `SLIDE_PACE` 1.45 times the burn's time per hex, and its
+  ramps scale with it, so it is visibly slower and gentler than the main engine.
+- Checked by godot/scenes/battle/test/nose_first_check.gd (headless): real rules routes through battle.gd's own
+  `_glide_steps`; under way at more than half its peak speed the nose stays within 35 degrees of the course on every run
+  of two hexes or more (except a straight back-off and a dogleg's last hex); ends on the rules hex and facing; passes
+  inside every route hex; a one-hex slide is at least 1.3 times as long as a one-hex burn.
+
+The small jets: in a flown move no jet starts smaller than `PUFF_MIN` 2.4 world units (about 18 px at the battle
+camera, r 170), so a frigate's jets read; puffs live 0.4 to 0.55 s (was 0.3 to 0.55).
 
 ## 2. What makes each light (all read from the forces on the hull, in its own frame)
 
@@ -93,10 +128,11 @@ smooth speed profile along the path and the bend of the curve (`_gl_force`), and
 The flown move in `godot/render/ship_view.gd` (`play_glide`, `_gl_force`, `_gl_yaw_acc`, `_glide_thrusters`, the
 `GL_*` and `JET_*` constants, the puffs' size and life in a flown move) and the move timing in
 `godot/scenes/battle/battle.gd` (`MOVE_HEX`, `MOVE_ROT`, `MOVE_SK_MAX`, `MOVE_CRUISE`, `MOVE_PER`, `MOVE_CAP`,
-`_drive_level`). Not governed: hit reactions (fx_ship.gd), deaths and wrecks, the camera, the rules.
+`_drive_level`, and since issue 521 `_glide_steps`, `_nose_first`, `LEG_TOL`, `LEG_PULL`, `ASTERN`, `SLIDE_PACE`). Not governed: hit reactions (fx_ship.gd), deaths and wrecks, the camera, the rules.
 
 ## 6. How it is checked
 
+- `godot/scenes/battle/test/nose_first_check.gd` (headless, on GitHub, issue 521): section 1a.
 - `godot/scenes/battle/test/movement_flight_check.gd` (headless, on GitHub): ends on the rules hex and facing; no roll;
   no frame turns more than 3.5 degrees; slides and straight runs hold the heading; a turn in a move is never faster than
   the same ship's turn in place; burn, coast and retro jets on a straight run; aft jets and a low drive on a back-off;
