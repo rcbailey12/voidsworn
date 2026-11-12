@@ -13,8 +13,8 @@ the 5080; all tools are free and local.
 that passes the concept sheet standard comes first (R203); hand-built and kit parts, AI parts only through a reviewed
 faction part library (R96 Q5); the AI shape reference of stage 2 is a tracing guide, never shipped; paint from masks baked
 from the ship's own geometry plus trim sheets and decals, colours sampled from the concept, the concept never projected
-(R96 Q1); breakable by design with rim bands, a dark inner liner and full interiors in the break pieces, capitals breaking
-on two transverse lines and one longitudinal (R98, R99); costs reported, never capped, against the measured scene gate
+(R96 Q1); breakable by design with insides built through the whole hull (hidden until a piece breaks), rim bands and a dark inner
+liner, ships blown apart unevenly by the faction's rule, never sliced (R98, R99 Q1, R186, R215); costs reported, never capped, against the measured scene gate
 (R111). Each build writes docs/ship_pipeline/build_sheets/SHIP/manifest.json (part, route, kit id or library entry), and
 run_all_checks compares it with the build sheet (R214).
 

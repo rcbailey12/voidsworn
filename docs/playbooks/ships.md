@@ -18,11 +18,15 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
    opus_check_341).
-4. **Breakable by design.** Real hull thickness, a few decks and bulkheads, authored break lines with matching inner faces
-   and damage textures (R98). The intact ship carries rim bands at break lines and openings plus a decimated dark inner
-   liner; full interiors only in the break pieces (R99 Q1). Capital hulls break on two transverse lines plus one
-   longitudinal line (R99 Q2), placed by the faction's rule (factions.md "How it breaks"). Section 2b says what the build
-   sheet must show.
+4. **Breakable by design, comprehensive insides.** Real hull thickness, decks, bulkheads and machinery spaces, authored break
+   lines with matching inner faces and damage textures (R98). Insides are built through the whole hull, not only in the break
+   pieces (Ryan, Nov 11: "better to be comprehensive with internal if we can without performance issues", R215); they stay
+   hidden until a piece breaks away, so they cost memory, not frame time, and their cost is reported (R111). Rim bands at break
+   lines and openings plus a dark inner liner (R99 Q1) stay as the layer the intact ship shows. How a ship breaks follows the
+   current destruction approach, not R99 Q2's fixed line count (R215): blown apart, never sliced (R186: uneven pieces, no
+   straight line across the hull, a missing bite where the core went, ragged scorched rims), break lines placed by the faction's
+   rule (factions.md "How it breaks") and breach anchors by class and faction (HARDPOINTS.md, issue 363). Section 2b says
+   what the build sheet must show.
 5. **Build sheet first.** No ship is built from a beauty picture alone: it needs a build sheet that passes
    contrib/muse/design/concept_standard_2026_11/standard.md (R203), with the INSIDE section (R209).
 6. **The concept guides; the builder designs.** Section 2a (R207, R213): identity from the picture, every other decision the
@@ -135,7 +139,7 @@ Effort: one Opus worker; GPU jobs through the PC queue
 Done when: stages 1 to 7 end without FAILED; the outline gate, the audit and check_export.py pass and their output is pasted in the report; the manifest matches the build sheet (run_all_checks); a break render of every break line shows decks and frames, never a hollow; the nine-cell blob sweep and one battle camera bench image are committed. What Ryan will see: the ship at the battle camera beside its concept.
 Build sheet: docs/ship_pipeline/build_sheets/SHIP/ (passed standard.md on <date>; Ryan's look on <date>)
 Route per part: kit, hand-built, or generated (generated names its reviewed part-library entry, R96 Q5)
-Inside: the sheet's INSIDE section (decks, frames, spaces, armour, break lines R99 Q2, breach anchors)
+Inside: the sheet's INSIDE section (decks, frames, spaces and machinery through the whole hull, armour, break lines by the faction's rule, breach anchors)
 Paint stack: the faction paint by name (tools/blender/kits/FACTION/paint.py), its masks, trim sheets and decals (R96 Q1)
 Budget: triangles, draw calls and surfaces reported; scene gate ms measured on the 5080 (R111)
 ```
