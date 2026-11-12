@@ -458,8 +458,18 @@ class Kit:
         M = HP.frame(p, Vector((math.cos(math.radians(yaw)), math.sin(math.radians(yaw)), 0)), (0, 0, 1))
         part = self.emit(fid, part, M, inv)
         ex = [dict(pos=tuple(e['pos'][1]), axis=tuple(e['axis'][1]), r=e['radius']) for e in part.fit['exits']]
-        self.fitdata.append(dict(id=fid, kind='launcher', slot=slot, apertures=[dict(pos=e['pos'], dir=e['axis'], length=self.length * 0.8,
-                                                                                     cone=4.0, what='launch cell') for e in ex]))
+        # R221: the firing lane forward of the cells and the backblast aft of the rack, as boxes that widen with distance;
+        # a gun inside either (resting or turned through its arc) is a LANE clash in clash.py even when no mesh touches
+        dv = sum((Vector(e['axis']) for e in ex), Vector()).normalized()
+        cv = sum((Vector(e['pos']) for e in ex), Vector()) / len(ex)
+        uv = Vector((0, 0, 1)).cross(dv).normalized(); wv = dv.cross(uv).normalized()
+        hu = max(abs((Vector(e['pos']) - cv).dot(uv)) + e['r'] for e in ex) + 0.1
+        hw = max(abs((Vector(e['pos']) - cv).dot(wv)) + e['r'] for e in ex) + 0.1
+        lane = dict(apex=tuple(cv), dir=tuple(dv), u=tuple(uv), w=tuple(wv), hu=hu, hw=hw, half=4.0, length=self.length * 0.8, what='firing lane')
+        blast = dict(apex=tuple(cv - dv * depth), dir=tuple(-dv), u=tuple(uv), w=tuple(wv), hu=hu, hw=hw, half=15.0,
+                     length=max(2.5 * depth, 0.15 * self.length), what='backblast')
+        self.fitdata.append(dict(id=fid, kind='launcher', slot=slot, lanes=[lane, blast],
+                                 apertures=[dict(pos=e['pos'], dir=e['axis'], length=self.length * 0.8, cone=4.0, what='launch cell') for e in ex]))
         self.features.append(dict(id=fid, kind='launcher', what='rocket rack, %d by %d cells' % (rows, cols), count=rows * cols,
                                   pos=tuple(p), aim=(yaw, pitch), slot=slot, weapon=weapon, src=src, note=note, inv=[inv] if isinstance(inv, str) else list(inv)))
 

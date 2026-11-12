@@ -5,7 +5,8 @@
 # with three ticks: PRESENT (the model has at least the listed count of parts carrying this inventory id), SHAPED (built by
 # its kit part type, not a plain block), DETAILED (every sub-part of the kit type is modelled; tools/blender/kits/
 # hullbreakers/parts.py SUBPARTS). Returns non-zero when a line is not present, shaped and detailed and the sheet does not
-# say why (a 'why' entry in the ship's INV_NOTES).
+# say why (a 'why' entry in the ship's INV_NOTES). Every part has a job (R221, ships.md 2c, RULEBOOK 4.11): a line with no job,
+# or a built part whose inventory id is missing or names no line, also fails.
 import sys, os, json, importlib.util
 
 CODE, REPO, OUT = sys.argv[1:4]
@@ -27,11 +28,14 @@ except Exception as ex:
 lines = ['# %s parts inventory (R218)\n' % CODE,
          'Written from the concept before modelling, region by region (bow, midships, stern; top, side, below). Each line names the',
          'kit part type (tools/blender/kits/hullbreakers/parts.py), how many, the blob-sweep cells it shows in, and the sub-parts that',
-         'make it read as that thing. Source: `tools/blender/build_sheets/ships/%s_inv.py`.\n' % CODE,
-         '| ID | Type | What | Count | Cells | Reads as (sub-parts) | Source |', '|---|---|---|---:|---|---|---|']
+         'make it read as that thing, and its job: what it does on the ship (R221: a part with no job is cut). Source:',
+         '`tools/blender/build_sheets/ships/%s_inv.py`.\n' % CODE,
+         '| ID | Job | Type | What | Count | Cells | Reads as (sub-parts) | Source |', '|---|---|---|---|---:|---|---|---|']
+no_job = [it['id'] for it in INV if not it.get('job')]
 for it in INV:
-    lines.append('| %s | %s | %s%s | %d | %s | %s | %s |' % (it['id'], it['type'], it['what'], (' (' + it['note'] + ')') if it.get('note') else '',
-                                                           it['count'], ', '.join(it['cells']), it['reads'], it['src']))
+    lines.append('| %s | %s | %s | %s%s | %d | %s | %s | %s |' % (it['id'], it.get('job') or '**NONE: cut it**', it['type'], it['what'],
+                                                                (' (' + it['note'] + ')') if it.get('note') else '',
+                                                                it['count'], ', '.join(it['cells']), it['reads'], it['src']))
 lines.append('\nKit sub-parts per type (what DETAILED checks):\n')
 for t in sorted({it['type'] for it in INV}):
     lines.append('- %s: %s' % (t, ', '.join(TYPES.get(t, ['(hull shaping, checked by eye on the side-by-side)']))))
@@ -71,10 +75,18 @@ def ratios(rd):
     return out
 
 
-bad = 0
+bad = len(no_job)
+if no_job:
+    lines.append('\nLines with no job (cut them): %s.' % ', '.join(no_job))
 if MODEL:
     M = json.load(open(MODEL))
     built = {}
+    ids = {it['id'] for it in INV}
+    orphans = [p['id'] for p in M.get('parts', []) if not set(p.get('inv', [])) & ids]
+    bad += len(orphans)
+    lines.append('\n## Every built part has a job (R221)\n')
+    lines.append('Built kit parts: %d; parts whose inventory id names no line with a job: %d%s.' % (
+        len(M.get('parts', [])), len(orphans), (' (' + ', '.join(orphans) + ')') if orphans else ''))
     for p in M.get('parts', []):
         for iid in p.get('inv', []):
             b = built.setdefault(iid, dict(n=0, shaped=True, detailed=True, kinds=set()))

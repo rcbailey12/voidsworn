@@ -17,6 +17,12 @@
 #               22 percent of the ship's length, whichever is longer (thrusters 20 degrees, 1.2 units).
 #   5. EXIT     no launcher cell, tube mouth, dish beam, hatch, lamp, vent or slit is covered: rays out along its axis (launch
 #               cells to 80 percent of the ship's length with a 4 degree spread) hit nothing.
+#   6. LANE     (R221: parts must not look like they conflict) every launcher has a firing lane forward of its cells (4 degree
+#               spread, to 80 percent of the ship's length) and a backblast aft of the rack (15 degree spread, 2.5 rack depths or
+#               15 percent of the ship's length); no gun may sit in either, resting or turned through its slot arc, even when no
+#               mesh touches.
+#   Turret reach (the 560 lesson: deck dressing can pin a turret): each turret is turned from rest each way in 5 degree steps
+#               until something stops it; the fit report lists the real reach and flags any under 60 degrees either way.
 # Writes <out>/<code>_fit.json: every clash (check, parts, where), the arcs, cones and apertures for the fit view.
 import json, math, os
 import bpy
@@ -207,7 +213,28 @@ def run(K, out, code, length, verbose=True):
             else:
                 n_ok += 1
             b += 5.0
-        sweeps.append(dict(id=f['id'], slot=f['slot'], arc=[lo_, hi_], clear_steps=n_ok))
+        reach = []
+        for sgn in (1, -1):
+            got = 0
+            for k_ in range(1, 37):
+                R = Matrix.Rotation(math.radians(5.0 * k_ * sgn), 3, up)
+                Vb = [ring + R @ (v - ring) for v in V0]
+                lo = Vector((min(v.x for v in Vb), min(v.y for v in Vb), min(v.z for v in Vb)))
+                hi = Vector((max(v.x for v in Vb), max(v.y for v in Vb), max(v.z for v in Vb)))
+                tb = BVHTree.FromPolygons(Vb, F0, epsilon=0.0)
+                stop = None
+                for r in rec:
+                    if r['grp'] == f['id'] or any(lo[k] > r['hi'][k] or r['lo'][k] > hi[k] for k in range(3)):
+                        continue
+                    if tb.overlap(r['bvh']):
+                        stop = r['name']; break
+                if stop:
+                    reach.append(dict(deg=got, stop=stop)); break
+                got = 5 * k_
+            else:
+                reach.append(dict(deg=180, stop=None))
+        sweeps.append(dict(id=f['id'], slot=f['slot'], arc=[lo_, hi_], clear_steps=n_ok, rest_yaw=f['rest_yaw'],
+                           reach_port=reach[0], reach_stbd=reach[1]))
 
     def seg_dist(p1, q1, p2, q2):
         d1 = q1 - p1; d2 = q2 - p2; r = p1 - p2
@@ -328,6 +355,45 @@ def run(K, out, code, length, verbose=True):
                 add('EXIT', f['id'], blocked[1], blocked[3], '%s covered by %s at %.1f' % (a['what'], blocked[2], blocked[0]))
             aps.append(dict(id=f['id'], kind=f['kind'], pos=list(o), dir=list(d), length=L, blocked=bool(blocked)))
 
+    # ---- 6. firing lanes and backblast (R221)
+    lanes = []
+    guns = [f for f in K.fitdata if f['kind'] == 'gun']
+
+    def in_lane(ln, p):
+        rel = Vector(p) - Vector(ln['apex']); a_ = rel.dot(Vector(ln['dir']))
+        if a_ <= 0 or a_ >= ln['length']:
+            return False
+        t_ = math.tan(math.radians(ln['half']))
+        return abs(rel.dot(Vector(ln['u']))) < ln['hu'] + a_ * t_ and abs(rel.dot(Vector(ln['w']))) < ln['hw'] + a_ * t_
+    for f in K.fitdata:
+        for ln in f.get('lanes', []):
+            lanes.append(dict(id=f['id'], **ln))
+            for g in guns:
+                if g['id'] == f['id']:
+                    continue
+                hit = None
+                for r in rec:
+                    if r['grp'] != g['id']:
+                        continue
+                    for v in r['V']:
+                        if in_lane(ln, v):
+                            hit = ('resting', v); break
+                    if hit:
+                        break
+                if not hit and g['mount'] != 'casemate':
+                    for bx in bearings(g, 5.0):
+                        for p0, p1 in barrels_at(g, bx):
+                            for t_ in (0.25, 0.5, 0.75, 1.0):
+                                q = p0 + (p1 - p0) * t_
+                                if in_lane(ln, q):
+                                    hit = ('turned to bearing %d' % bx, q); break
+                            if hit:
+                                break
+                        if hit:
+                            break
+                if hit:
+                    add('LANE', g['id'], f['id'], hit[1], 'gun %s sits in %s\'s %s (%s)' % (g['id'], f['id'], ln['what'], hit[0]))
+
     for c in clashes:
         del c['_key']
         if c['bearings']:
@@ -338,9 +404,9 @@ def run(K, out, code, length, verbose=True):
                 else:
                     sec.append([b_, b_])
             c['detail'] += '; blocked bearings ' + ', '.join('%d to %d' % (a_, b_) if a_ != b_ else '%d' % a_ for a_, b_ in sec)
-    res = dict(code=code, clashes=clashes, counts={c: sum(1 for x in clashes if x['check'] == c) for c in ('CLASH', 'MOUNT', 'ARC', 'SWEEP', 'EXHAUST', 'EXIT')},
-               tested=dict(objects=len(rec), parts=len(groups), close_pairs=n_pairs, rays=n_rays, guns=len(arcs), turrets_swept=len(sweeps), cones=len(cones), apertures=len(aps)),
-               arcs=arcs, sweeps=sweeps, cones=cones, apertures=aps, fixes=[list(x) for x in K.fixes], allowed=[list(x) for x in K.allow])
+    res = dict(code=code, clashes=clashes, counts={c: sum(1 for x in clashes if x['check'] == c) for c in ('CLASH', 'MOUNT', 'ARC', 'SWEEP', 'EXHAUST', 'EXIT', 'LANE')},
+               tested=dict(objects=len(rec), parts=len(groups), close_pairs=n_pairs, rays=n_rays, guns=len(arcs), turrets_swept=len(sweeps), cones=len(cones), apertures=len(aps), lanes=len(lanes)),
+               arcs=arcs, sweeps=sweeps, cones=cones, apertures=aps, lanes=lanes, fixes=[list(x) for x in K.fixes], allowed=[list(x) for x in K.allow])
     json.dump(res, open(os.path.join(out, code + '_fit.json'), 'w'), indent=1, default=lambda v: list(v) if hasattr(v, '__iter__') else str(v))
     if verbose:
         print('FIT', code, res['counts'], res['tested'])
