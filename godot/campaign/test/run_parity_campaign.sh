@@ -5,6 +5,12 @@
 # 2. Node plays each seeded run with the root JS files (golden/), Godot plays the same runs (out/);
 # 3. compares them step by step and prints PASS, or the first step and field that differ.
 cd "$(dirname "$0")"; T=$(pwd); P=$(cd ../.. && pwd); G="${GODOT:-godot}"; F=0; A=${1:-1}; Z=${2:-24}
+# Node guard (issue 357): the rules math targets V8 in Node 22; another major gives a false parity failure.
+NV=$(node -p "process.versions.node" 2>/dev/null)
+case "$NV" in
+  22.*) : ;;
+  *) echo "FAIL: Node major 22 is required, found ${NV:-no node}; use the bundled Node 22 at voidsworn_test/node/node.exe."; exit 1 ;;
+esac
 mkdir -p golden out
 node node/export_campaign.js out/tables_check.json > /dev/null || F=$((F+1))
 if node -e "const a=require('./out/tables_check.json').sha256,b=require('../data/campaign_tables.json').sha256; process.exit(a===b?0:1)"; then echo "  tables: PASS (match the root game files)"; else echo "  tables: FAIL (campaign_tables.json is stale: run node godot/campaign/test/node/export_campaign.js)"; F=$((F+1)); fi

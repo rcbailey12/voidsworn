@@ -15,6 +15,9 @@ rem the rules oracle is the root game files (battle.js, data.js, core.js); the n
 set "T=%PROJ%rules\test\"
 set "NODE=node"
 if exist "%GAME%..\node\node.exe" set "NODE=%GAME%..\node\node.exe"
+rem Node guard (issue 357): the rules math targets V8 in Node 22; another major gives a false parity failure.
+"%NODE%" -e "process.exit(process.versions.node.split('.')[0]==='22'?0:3)" >nul 2>&1
+if errorlevel 1 ( echo FAIL: Node major 22 is required, use the bundled Node 22 at voidsworn_test\node\node.exe. & exit /b 1 )
 set "GODOT="
 if exist "%GAME%..\godot_path.txt" set /p GODOT=<"%GAME%..\godot_path.txt"
 if not defined GODOT if exist "%HERE%godot_path.txt" set /p GODOT=<"%HERE%godot_path.txt"
