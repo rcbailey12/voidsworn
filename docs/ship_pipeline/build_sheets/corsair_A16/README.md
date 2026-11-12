@@ -76,11 +76,10 @@ the launch bay (0.18 and 0.18) are smoother in mesh than the hull; the paint car
 
 **Pass 2 (Board review of PR 610; Ryan agreed, R228), all in the faction stack:** a plate patchwork (panel cells at the
 concept's plate size plus each modelled plate's own island, each picking soot, gun-metal, brick red or a bare scrape) with
-black seams; stronger cavities and worn edges; rust held a dark brick red under the 1.25 lift; running lights by the stack's
-rule, 2.2 px on a 70 px ship (16 on A16: seven along each flank at the sheet's lamp row, one deck-edge point a side; the deck
-edges are lined with turrets, so few have room), deep red under the glow threshold, measured into the job's lights.json; engine
-glow left to the game (the export's hp_eng points with their bell radius drive the engine effect, fx_hull.gd; the sheet's
-throat and bell lining stay emissive). The running lights add 384 triangles (129,028 on the ship mesh).
+black seams; stronger cavities and worn edges; rust held a dark brick red under the 1.25 lift; running lights by the stack's rule as small round deep-red lamps (pass 3,
+the Board's correction: about 0.3 units, about 1 px at camera 170 and 3 at camera 60, brightness carries the read; 15 on A16
+along the flanks at the sheet's lamp row and at the deck edges), reported in the job's lights.json; engine glow left to the game (the export's hp_eng points with their bell radius drive the engine effect, fx_hull.gd; the sheet's
+throat and bell lining stay emissive). 
 
 ## R221 clean-ups (Ryan, Nov 12 2026)
 

@@ -176,7 +176,10 @@ def check_lights(ship, job):
         return ok('lights: no window or trim lights are declared (the paint has no light map yet)')
     floor = float(ship.get('light_min_px', 2.0))
     bad = []
+    points = []
     for k, v in lights.items():
+        if isinstance(v, dict) and v.get('point'):      # R228 item 4: a point light reads by its brightness; its size is reported
+            points.append(f'{k} {v.get("count", "?")} at {v.get("px")} px'); continue
         px = _px(v)
         if px is None:
             bad.append(f'{k}: no px size'); continue
@@ -186,7 +189,8 @@ def check_lights(ship, job):
         for b in bad:
             print('  FAIL', b)
         return fail('lights: a light that is too small will not read at the battle camera')
-    return ok(f'lights: every declared window and trim light is at least {floor:.1f} px across on a 70 px ship')
+    pt = f'; point lights (R228, read by brightness, not held to the size floor): {", ".join(points)}' if points else ''
+    return ok(f'lights: every declared window and trim light is at least {floor:.1f} px across on a 70 px ship{pt}')
 
 
 CHECKS = dict(outline=check_outline, battle=check_battle, paint=check_paint, blink=check_blink, licences=check_licences, lights=check_lights)

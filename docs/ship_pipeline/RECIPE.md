@@ -124,11 +124,12 @@ R225: one home per fact):
    unit and paint detail (the share of the surface as busy as the hull's busiest 30 percent), each against the hull; a part type
    under 0.75 of the hull is flagged in `density.json` and printed by stage 5 (reported, not a pass bar).
 The job's `textures\` holds the trim sheet and the decal atlas and `licences.json` their lines, so the licence check now
-reads real entries. Running lights (R228): the faction stack's `RUNNING_LIGHTS` rule builds flush red lenses in thin iron frames
-on the hull (a row per flank at the sheet's lamp height, deck-edge points; clear of parts, decals and the breach, braking and
-boarding points; each frame bridges the plate steps under it), sized to the light rule with a margin (2.2 px on a 70 px ship),
-emissive under the game's 0.8 glow threshold; the measured size goes into the job's `lights.json`, which `standing.py lights`
-reads over the ship json's `lights`. Plate patchwork, seams and brick rust (R228) are the faction stack's `PATCH_FAMILIES`,
+reads real entries. Running lights (R228 item 4: visible as small red points at battle size; brightness, not size, carries the read): the faction
+stack's `RUNNING_LIGHTS` rule builds small round deep-red lamps (about 0.3 world units, #c41e14, emissive under the game's 0.8
+glow threshold) in iron bezels on the hull (a row per flank at the sheet's lamp height, deck-edge points; clear of parts, decals
+and the breach, braking and boarding points; each bezel bridges the plate steps under it); their size and count go into the
+job's `lights.json` as point lights, which `standing.py lights` reports without holding them to the 2 px floor of painted window
+and trim lights. Plate patchwork, seams and brick rust (R228) are the faction stack's `PATCH_FAMILIES`,
 `patch_cell` and `CONCEPT`. Engine glow is the game's (R228): the export's `hp_eng` points with their bell radius drive the
 game's engine effect (`godot/fx/fx_hull.gd` reads them as the nozzles), beside the sheet's emissive throat and bell lining.
 
@@ -326,7 +327,7 @@ These are not one-off sheets. Every stage writes them into the job folder and st
 | blink sheet | stage 5 (`blink.py`) | `bow_blink.gif`: the concept and the model at the fitted concept camera, alternating, so the bow can be flipped in front of Ryan |
 | paint sides | stage 5 (`render.py`: concept, `below`, `side_s`) | the concept side, the underside and the far (starboard) side stills all exist; paint is judged on all three, not only the side the concept shows |
 | texture licences | stage 5 (`standing.py licences`) | every downloaded texture under the job's `textures/` has its own line in `licences.json`: file, source, licence (CC0, CC-BY, CC-BY-SA, public domain or own work) and what it is used for |
-| light sizes | stages 5 and 7 (`standing.py lights`) | every window and trim light declared in the ship json's `lights`, and every light a paint stack measured into the job's `lights.json` (issue 601, R228), is at least `light_min_px` (2.0) pixels across on a 70 px ship at the battle camera; with neither, it passes because the paint has no lights |
+| light sizes | stages 5 and 7 (`standing.py lights`) | every window and trim light declared in the ship json's `lights`, and every light a paint stack measured into the job's `lights.json` (issue 601), is at least `light_min_px` (2.0) pixels across on a 70 px ship at the battle camera; point lights (`"point": true`, R228 item 4: running lamps read by brightness) are reported, not held to that floor; with no lights it passes |
 
 Round 7 delivered the first four as one-off scripts and sheets (`outline_thirds.py`, `sheets7pc.py`'s `bow_blink.gif` and
 `far_side.jpg`); round 8 added the second camera (`outline_battle.py`). This job makes all of them standing stages and adds

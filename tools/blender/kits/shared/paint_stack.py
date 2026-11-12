@@ -484,12 +484,32 @@ def _box(name, centre, t, b, n, w, h, d, mat, role, grp, back=.0003):
     return o
 
 
+def _disc(name, centre, t, b, n, r, d, mat, role, grp, back=.0003, sides=12):
+    """a short round lamp on a surface frame: front face d out from centre, back `back` behind it"""
+    bm = bmesh.new(); rings = []
+    for off in (-back, d):
+        rings.append([bm.verts.new(centre + n * off + (t * math.cos(2 * math.pi * k / sides) + b * math.sin(2 * math.pi * k / sides)) * r)
+                      for k in range(sides)])
+    bm.faces.new(rings[1]); bm.faces.new(list(reversed(rings[0])))
+    for k in range(sides):
+        k2 = (k + 1) % sides; bm.faces.new((rings[0][k], rings[0][k2], rings[1][k2], rings[1][k]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    me = bpy.data.meshes.new(name); bm.to_mesh(me); bm.free()
+    m = bpy.data.materials.get(mat) or bpy.data.materials.new(mat); me.materials.append(m)
+    o = bpy.data.objects.new(name, me); bpy.context.scene.collection.objects.link(o)
+    o['role'] = role; o['grp'] = grp; o['part_kind'] = 'lamp'; o['machine'] = 0; o['inside'] = False
+    return o
+
+
 def add_running_lights(S, hull, others, decals):
     """the faction's running lights, by its rule (S.RUNNING_LIGHTS), on this ship's own hull: each lens at least the light size
     rule across (px on a 70 px ship, the ship one unit long), a flank row at the sheet's lamp height and a few deck-edge points,
     each on a hull face with room, clear of every part, of the decals and of the breach, braking and boarding points. Returns the
     report (count, size in px, where)."""
-    R = S.RUNNING_LIGHTS; px = R['px']; h = px / 70.0; w = h * R['aspect']
+    R = S.RUNNING_LIGHTS
+    Lw = float(bpy.context.scene.get('r209_length_world', 0) or 0)
+    if 'world' in R and Lw > 0: h = w = R['world'] / Lw        # a lamp of a fixed world size on every ship of the faction
+    else: h = R['px'] / 70.0; w = h * R.get('aspect', 1.0)
     dg = bpy.context.evaluated_depsgraph_get()
     def tree(objs):
         bm = bmesh.new()
@@ -524,8 +544,12 @@ def add_running_lights(S, hull, others, decals):
         if st is None: return False
         t, b, top, spread = st; c = p + n * top
         g = f'RL{len(made) // 2}'; fr = 1 + R['frame']
-        made.append(_box(g + '_mount_iron', c, t, b, n, w * fr, h * fr, R['proud'] * .6, 'iron', 'mount', g, back=spread + .0006))
-        made.append(_box(g + '_body_light', c, t, b, n, w, h, R['proud'], 'light', 'body', g))
+        if R.get('round'):
+            made.append(_disc(g + '_mount_iron', c, t, b, n, w * fr / 2, R['proud'] * .6, 'iron', 'mount', g, back=spread + .0006))
+            made.append(_disc(g + '_body_light', c, t, b, n, w / 2, R['proud'], 'light', 'body', g))
+        else:
+            made.append(_box(g + '_mount_iron', c, t, b, n, w * fr, h * fr, R['proud'] * .6, 'iron', 'mount', g, back=spread + .0006))
+            made.append(_box(g + '_body_light', c, t, b, n, w, h, R['proud'], 'light', 'body', g))
         rep.append(dict(at=tag, pos=[round(v, 4) for v in c], bridge=round(spread, 4))); return True
     for sy in (1, -1):
         cy = lambda o: sum((o.matrix_world @ Vector(c)).y for c in o.bound_box) / 8      # noqa: E731 (the contract bakes transforms in)
@@ -565,7 +589,8 @@ def add_running_lights(S, hull, others, decals):
                 n = hh[1].normalized()
                 if n.z < .85 or not clear(hh[0]): continue
                 if place(hh[0], n, 'port deck edge' if sy > 0 else 'starboard deck edge'): break
-    return made, dict(count=len(made) // 2, px=round(min(w, h) * 70.0, 2), lens=[round(w, 4), round(h, 4)], rule=R, where=rep)
+    return made, dict(count=len(made) // 2, px=round(min(w, h) * 70.0, 2), lens=[round(w, 4), round(h, 4)], lens_world=round(min(w, h) * Lw, 3),
+                      rule=R, where=rep)
 
 
 # ------------------------------------------------------------------------------------------------------------ the whole stack
@@ -590,7 +615,8 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
     decals, drep = place_decals(S, H, P); INFO['decals'] = drep
     if getattr(S, 'RUNNING_LIGHTS', None):       # the faction's running lights, by its rule (before the atlases: their frames are parts)
         made, lrep = add_running_lights(S, H, P, decals); INFO['running_lights'] = lrep
-        json.dump(dict(lights={'running': dict(px=lrep['px'], count=lrep['count'], source='measured: the lens size the stack built, on a 70 px ship')}),
+        json.dump(dict(lights={'running': dict(px=lrep['px'], count=lrep['count'], point=True, world=lrep['lens_world'],
+                                               source='measured: the lens size the stack built, on a 70 px ship; point lights (R228 item 4): brightness, not size, carries the read')}),
                   open(os.path.join(out, 'lights.json'), 'w'), indent=1)
         H, P, G, I = split()
     unwrap(H, .0003); unwrap(P, .0004)

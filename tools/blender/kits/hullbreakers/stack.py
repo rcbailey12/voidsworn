@@ -111,7 +111,7 @@ PATCH_FAMILIES = [(.30, pair('soot2')), (.24, pair('gunmetal')), (.20, pair('red
 # glowing zones keep their own emissive surface: engine throat and bell lining in the faction's engine colour, running lights
 # in its accent (godot/fx/faction_looks.json corsair, the game's one home for them); dim, never bright (factions.md)
 GLOW = ('glow', 'ember', 'light')
-GLOW_STRENGTH = dict(glow=6.0, ember=1.4, light=1.0)
+GLOW_STRENGTH = dict(glow=6.0, ember=1.4)    # the running lights' strength is LIGHT_STRENGTH (below)
 
 
 def faction_look():
@@ -128,25 +128,26 @@ def glow_material(zone):
     b = m.node_tree.nodes['Principled BSDF']
     base = .03 if zone == 'light' else .08
     b.inputs['Base Color'].default_value = (col[0] * base, col[1] * base, col[2] * base, 1); b.inputs['Roughness'].default_value = .6
-    if zone == 'light': col = [c * LIGHT_EMIT for c in col]
-    b.inputs['Emission Color'].default_value = (*col, 1); b.inputs['Emission Strength'].default_value = GLOW_STRENGTH.get(zone, 2.0)
+    if zone == 'light': col = [c / LIGHT_GAIN for c in lin(LIGHT_RGB)]   # lin() divides by the light gain; the lens wants the colour itself
+    b.inputs['Emission Color'].default_value = (*col, 1); b.inputs['Emission Strength'].default_value = LIGHT_STRENGTH if zone == 'light' else GLOW_STRENGTH.get(zone, 2.0)
     return m
 
 
 # ------------------------------------------------------------------------------------------------------------ running lights
-# The Board, Nov 12 2026 (PR 610 review, R207: the concept guides): the concept shows clear red lights along the flanks and the deck
-# edges, so they are made to read at the battle camera: every running light is at least the light size rule across (RULEBOOK
-# standing check `lights`: light_min_px, 2.0 px on a 70 px ship) with a small margin, red, small, never a bloom halo (the
-# emission stays under the game's glow threshold, 0.8, godot/render/look.gd). Placed by rule on each ship's own hull, as the
-# decals: a row along each flank at the height of the sheet's own lamps (the sheet decides where the light row runs; mid-flank
-# when it has none) and a few points on the deck edges. A light is a flush lens in a thin iron frame (surface fittings like the
-# decals, on hull faces only, clear of every part and of the breach, braking and boarding points).
-RUNNING_LIGHTS = dict(px=2.2, aspect=1.5, proud=.0015, frame=.25, max_step=.012,
-                      flank=dict(x=(.06, .82), step=.068, z_band=(.40, .62)),
-                      deck=dict(x=(.16, .30, .44, .58, .72), inset=.010),
+# R228 item 4 as the Board corrected it (Nov 12 2026, review of pass 2): the concept's lights are small deep-red lamps, points of
+# light, "visible as small red points at battle size; brightness, not size, carries the read". So each light is a small round
+# lamp, about 0.30 world units across (about 1 px at camera 170, 3 px at camera 60), deep red (sRGB #c41e14), emissive and
+# bright, but kept under the game's 0.8 glow threshold so it never blooms into a halo (godot/render/look.gd). Placed by rule on
+# each ship's own hull, as the decals: a row along each flank at the height of the sheet's own lamps (mid-flank when it has
+# none) and points on the deck edges, on hull faces only, clear of every part, of the decals and of the breach, braking and
+# boarding points; a lamp's iron bezel bridges the plate steps under it (never floating). They are point lights, so the light
+# size floor of the standing check (for painted window and trim lights) does not hold them; their size is reported.
+RUNNING_LIGHTS = dict(world=.30, round=True, proud=.0012, frame=.30, max_step=.012,
+                      flank=dict(x=(.06, .82), step=.125, z_band=(.40, .62)),
+                      deck=dict(x=(.22, .46, .70), inset=.010),
                       clear_points=.045, clear_decals=.035)
-LIGHT_EMIT = .40      # emission colour = accent x this, strength 1: well under the game's 0.8 glow threshold (no halo) and deep red,
-#                       not the salmon a brighter red turns under AgX (sandbox pass 2)
+LIGHT_RGB = (196, 30, 20)   # #c41e14, the lens colour (sRGB), deep red, never salmon
+LIGHT_STRENGTH = 1.4        # linear red channel 0.55 x 1.4 = 0.77: lit, under the game's 0.8 glow threshold (no halo)
 
 
 # ------------------------------------------------------------------------------------------------------------ decals
