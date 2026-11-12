@@ -2,6 +2,8 @@
 
 Owner: Opus. Started Oct 24 2026 at main d5d0227 (game code unchanged since Oct 22).
 
+**The rules in force, each with its reason, are in `docs/RULEBOOK.md` (issue 492, Nov 11 2026). This file is the dated history of rulings and findings: when a row here and the rulebook disagree, the rulebook wins, and a new ruling lands with its rulebook or playbook edit (R214).**
+
 This is the single list of what is true, wrong or open about the game and the design record. Rules:
 - Every new claim from Rey (Muse), DeepSeek, Qwen or Gemini enters as UNVERIFIED and is checked before anything is built on it.
 - A fix updates its row in the same commit.
