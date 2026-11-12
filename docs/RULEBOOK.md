@@ -43,6 +43,11 @@ sweep Part 4).
 0.7 **A rule that says the game does something needs a capture or a check that shows it, or the words "not built yet".** Why:
 specs described braking jets and slow motion the game did not have (issue 492). Set: Board, Nov 11.
 
+0.8 **After a day with many rulings, the Board has an outside model check that each one landed in the document a worker reads
+(a dropped-context sweep).** Batch rulings that only set a rule (no working method) may land in this book alone. Why: the
+insides rule was recorded but never reached the builder's playbook (R209, R211); Muse's method audit of R201 to R218 found
+the screens half of R218 written nowhere (issue 558). Set: Board, Nov 12 (R211, issue 558).
+
 ## 1. Working with Ryan
 
 1.1 **Plain words, the answer first, your pick and why; no em dashes; no human-hour estimates** (estimate in agent runs and
