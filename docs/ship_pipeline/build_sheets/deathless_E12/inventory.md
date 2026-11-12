@@ -152,10 +152,10 @@ Concept counts read off the concept sheet by eye (E12 sheet: bow, the two fore a
 |---|---:|---:|---|
 | bow/top | 5 | 9 | Spine, fore; Arc, fore port; Arc, centre port; Arc, fore starboard; Arc, centre starboard; Saddle, fore battery; Emitter collars; Emitter shaft; Emitter block |
 | bow/side | 4 | 7 | Spine, fore; Arc, fore port; Arc, centre port; Saddle, fore battery; Emitter collars; Emitter shaft; Emitter block |
-| bow/below | no view | 8 | Spine, fore; Arc, fore port; Arc, centre port; Arc, fore starboard; Arc, centre starboard; Emitter collars; Emitter shaft; Emitter block |
-| mid/top | 5 | 8 | Hull: the stern block and the aft spine; Spine, fore; Arc, centre port; Arc, aft port; Arc, centre starboard; Arc, aft starboard; Saddle, fore battery; Saddle, aft battery |
-| mid/side | 4 | 6 | Hull: the stern block and the aft spine; Spine, fore; Arc, centre port; Arc, aft port; Saddle, fore battery; Saddle, aft battery |
-| mid/below | no view | 6 | Hull: the stern block and the aft spine; Spine, fore; Arc, centre port; Arc, aft port; Arc, centre starboard; Arc, aft starboard |
+| bow/below | no view | 9 | Spine, fore; Arc, fore port; Arc, centre port; Arc, fore starboard; Arc, centre starboard; Saddle, fore battery; Emitter collars; Emitter shaft; Emitter block |
+| mid/top | 5 | 7 | Hull: the stern block and the aft spine; Spine, fore; Arc, centre port; Arc, aft port; Arc, centre starboard; Arc, aft starboard; Saddle, aft battery |
+| mid/side | 4 | 5 | Hull: the stern block and the aft spine; Spine, fore; Arc, centre port; Arc, aft port; Saddle, aft battery |
+| mid/below | no view | 7 | Hull: the stern block and the aft spine; Spine, fore; Arc, centre port; Arc, aft port; Arc, centre starboard; Arc, aft starboard; Saddle, aft battery |
 | stern/top | 6 | 7 | Hull: the stern block and the aft spine; Block roof step; Block flank cheeks; Arc, aft port; Arc, stern port; Arc, aft starboard; Arc, stern starboard |
 | stern/side | 5 | 5 | Hull: the stern block and the aft spine; Block roof step; Block flank cheeks; Arc, aft port; Arc, stern port |
 | stern/below | no view | 6 | Hull: the stern block and the aft spine; Block flank cheeks; Arc, aft port; Arc, stern port; Arc, aft starboard; Arc, stern starboard |
@@ -167,6 +167,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 1.77 | 5.94 | 1.94 | 15.57 |
-| build | 1.72 | 5.98 | 1.89 | 11.21 |
+| build | 1.72 | 7.02 | 1.89 | 11.32 |
 
 Lines not present, shaped and detailed without a reason: 0.

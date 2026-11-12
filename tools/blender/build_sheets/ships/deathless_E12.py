@@ -22,7 +22,8 @@ CONCEPT_SHEET = 'contrib/muse/design/concept_round8c_2026_11/deathless_E12_sheet
 CONCEPT_VIEWS = dict(top=dict(box=(116, 40, 1376, 770), largest=False, flip=True), side=dict(box=(100, 850, 1395, 1080), largest=False, flip=True))
 CROPS = [('bow (fore arcs, emitter, fore battery)', (1150, 40, 2000, 1000)), ('midships (core and centre arcs)', (620, 40, 1300, 1000)),
          ('stern (engine block, aft arcs)', (150, 200, 780, 900))]
-SHEET = dict(version=1, round='first sheet', date='2026-11-12', blend='opus532e\\e1',
+SHEET = dict(version=2, round='second sheet (Board review)', date='2026-11-12', blend='opus532e\\e7',
+             alt_cameras=dict(fwd='best ring overlap (forward of the starboard beam, high): the ring layout lines up, the bells cannot show'),
              before='First full layout', before_note='The first complete E12 layout, built with the Eclipse kit and run through the check before any fix.',
              during='While designing, the check also caught (and the design fixed): the sentry twin sweeping through the block roof thrusters (moved forward), a roof hatch on a '
                     'thruster, the block\'s green lights inside the stern arcs (raised), and the heat panels touching the outer engine housings (moved forward).')
@@ -33,12 +34,12 @@ ZS = 0.15                                # the spine axis
 ARCS_T = [('fore', 15.0, 62.0), ('centre', 66.0, 104.0), ('aft', 108.0, 146.0), ('stern', 150.0, 168.0)]   # parametric angle, from the bow to port
 # the stern spine and block, one loft (x, half-beam port, starboard, bottom, top, top chamfer, bottom chamfer): the hull
 HULL = [
-    (0.2, 0.3, 0.3, ZS - 0.24, ZS + 0.24, 0, 0),
-    (-2.6, 0.32, 0.32, ZS - 0.26, ZS + 0.26, 0, 0),
-    (-3.3, 0.8, 0.8, -0.42, 0.68, 0, 0),
-    (-4.0, 1.22, 1.22, -0.74, 0.95, 0, 0),
-    (-6.25, 1.26, 1.26, -0.76, 0.97, 0, 0),
-    (-6.65, 1.12, 1.12, -0.66, 0.86, 0, 0),
+    (0.2, 0.18, 0.18, ZS - 0.16, ZS + 0.16, 0, 0),
+    (-2.6, 0.2, 0.2, ZS - 0.17, ZS + 0.17, 0, 0),
+    (-3.3, 0.85, 0.85, -0.36, 0.56, 0, 0),
+    (-4.0, 1.38, 1.38, -0.6, 0.76, 0, 0),
+    (-5.95, 1.48, 1.48, -0.62, 0.78, 0, 0),
+    (-6.3, 1.38, 1.38, -0.55, 0.7, 0, 0),
 ]
 PEXP = (3.0, 3.0)   # the block's section: a rounded box (the concept's block is round-shouldered, never a slab)
 PL = dict(keep3d=True, size=(0.2, 0.45), thick=(0.04, 0.1), skip=0.06, stack=0.5, mats={'shade2': 5, 'violet': 3, 'shade': 3, 'mauve': 1})
@@ -57,18 +58,18 @@ def build(K):
 
     hull = K.hull(HULL, 'shade', shell=0.12, plates=dict(PL, seed=51, inv='spine_plates'), rounded=True, pexp=PEXP)
     K.mass('Hull: the stern block and the aft spine', hull, 'deep violet plate', note='a round-shouldered block tapering forward into the spine')
-    K.mass('Block roof step', K.loft('E12_roofstep', [(-4.2, 0.85, 0.85, 0.7, 1.08, 0.12, 0.0), (-4.45, 0.95, 0.95, 0.7, 1.12, 0.14, 0.0), (-6.0, 0.95, 0.95, 0.7, 1.12, 0.14, 0.0),
-                                                     (-6.2, 0.85, 0.85, 0.7, 1.06, 0.12, 0.0)], 'violet', plates=dict(PL, seed=53, faces=[0, 1, 2, 3], size=(0.2, 0.4))),
+    K.mass('Block roof step', K.loft('E12_roofstep', [(-4.2, 0.75, 0.75, 0.55, 0.86, 0.1, 0.0), (-4.45, 0.85, 0.85, 0.55, 0.9, 0.12, 0.0), (-5.7, 0.85, 0.85, 0.55, 0.9, 0.12, 0.0),
+                                                     (-5.9, 0.75, 0.75, 0.55, 0.85, 0.1, 0.0)], 'violet', plates=dict(PL, seed=53, faces=[0, 1, 2, 3], size=(0.2, 0.4))),
            'violet plate', note='a raised plate step on the block roof, the sentry on it')
-    K.mass('Block flank cheeks', K.loft('E12_cheeks', [(-4.3, 1.3, 1.3, -0.35, 0.5, 0.1, 0.1), (-6.0, 1.33, 1.33, -0.35, 0.5, 0.1, 0.1)], 'violet',
+    K.mass('Block flank cheeks', K.loft('E12_cheeks', [(-4.3, 1.5, 1.5, -0.3, 0.42, 0.08, 0.08), (-5.75, 1.56, 1.56, -0.3, 0.42, 0.08, 0.08)], 'violet',
                                         plates=dict(PL, seed=54, faces=[6, 7, 0, 2, 3, 4], size=(0.2, 0.4))), 'violet plate', note='armour cheeks on the block flanks, the lights in them')
     K.mark('stern_block', 'tier', ['face', 'roof', 'opening'])
-    fore = K.loft('E12_spine_fore', [(5.35, 0.27, 0.27, ZS - 0.22, ZS + 0.22, 0.08, 0.08), (4.9, 0.3, 0.3, ZS - 0.24, ZS + 0.24, 0.09, 0.09),
-                                     (1.75, 0.3, 0.3, ZS - 0.24, ZS + 0.24, 0.09, 0.09)], 'shade2', plates=dict(PL, seed=52, inv='spine_plates'))
+    fore = K.loft('E12_spine_fore', [(5.35, 0.17, 0.17, ZS - 0.15, ZS + 0.15, 0.05, 0.05), (4.9, 0.18, 0.18, ZS - 0.16, ZS + 0.16, 0.05, 0.05),
+                                     (1.75, 0.18, 0.18, ZS - 0.16, ZS + 0.16, 0.05, 0.05)], 'shade2', plates=dict(PL, seed=52, inv='spine_plates'))
     K.mass('Spine, fore', fore, 'deep violet plate', note='the plated beam from the core to the emitter')
     # spine collars where fittings meet it (the steps)
     for i, x in enumerate((5.0, 2.25, -0.75, -1.95)):
-        K.loft('E12_collar%d' % i, [(x + 0.12, 0.37, 0.37, ZS - 0.31, ZS + 0.31, 0.1, 0.1), (x - 0.12, 0.37, 0.37, ZS - 0.31, ZS + 0.31, 0.1, 0.1)], 'violet')
+        K.loft('E12_collar%d' % i, [(x + 0.1, 0.25, 0.25, ZS - 0.22, ZS + 0.22, 0.07, 0.07), (x - 0.1, 0.25, 0.25, ZS - 0.22, ZS + 0.22, 0.07, 0.07)], 'violet')
     K.mark('spine', 'hull', ['bevel', 'step', 'overhang'])
     K.mark('spine_plates', 'plate', ['slab', 'step', 'bevel', 'fastener'])
 
@@ -120,7 +121,7 @@ def build(K):
     # ---------------- the struts: every arc on its own truss (R207) ----------------
     def spine_y(x):
         if x > 1.8:
-            return 0.3
+            return 0.18
         return abs(K.surf(x, 1, ZS))
     struts = [('fore', 48.0, 48.0), ('centre', 77.0, 77.0), ('centre', 103.0, 103.0), ('aft', 130.0, 130.0)]
     for side in (1, -1):
@@ -137,8 +138,8 @@ def build(K):
 
     # ---------------- weapons, by data.js slot ----------------
     for i, (x, nm) in enumerate(((3.2, 'fore'), (-1.35, 'aft'))):
-        sad = K.loft('E12_saddle%d' % (i + 1), [(x + 0.85, 0.32, 0.32, ZS + 0.1, ZS + 0.32, 0.08, 0.0), (x + 0.55, 0.56, 0.56, ZS + 0.0, ZS + 0.42, 0.14, 0.0),
-                                                 (x - 0.55, 0.56, 0.56, ZS + 0.0, ZS + 0.42, 0.14, 0.0), (x - 0.85, 0.32, 0.32, ZS + 0.1, ZS + 0.32, 0.08, 0.0)],
+        sad = K.loft('E12_saddle%d' % (i + 1), [(x + 0.75, 0.22, 0.22, ZS + 0.06, ZS + 0.3, 0.06, 0.0), (x + 0.5, 0.42, 0.42, ZS - 0.02, ZS + 0.42, 0.12, 0.0),
+                                                 (x - 0.5, 0.42, 0.42, ZS - 0.02, ZS + 0.42, 0.12, 0.0), (x - 0.75, 0.22, 0.22, ZS + 0.06, ZS + 0.3, 0.06, 0.0)],
                      'violet', plates=dict(PL, seed=80 + i, faces=[0, 1, 2, 3], size=(0.2, 0.35)))
         K.mass('Saddle, %s battery' % nm, sad, 'violet plate', note='the oval saddle the turret stands on')
         K.gun('T%d' % (i + 1), (x, 0.0, ZS + 0.42), 0, 4, barrels=2, cal=0.07, blen=1.15, size=0.72, slot='T', weapon='gauss', inv='main_guns',
@@ -149,23 +150,23 @@ def build(K):
     import bpy as _bpy
     for nm_, ob_, col_ in (('Emitter collars', 'A1_mount_mauve', 'mauve and violet'), ('Emitter shaft', 'A1_body_violet', 'violet and mauve'), ('Emitter block', 'A1_body_mauve', 'mauve')):
         K.mass(nm_, _bpy.data.objects[ob_], col_, note='a part of the kit projector, counted as its own mass')
-    K.gun('G1', (-5.25, 0.0, 1.12), 0, 6, barrels=2, cal=0.05, blen=0.75, size=0.55, slot='T', weapon='gsentry', inv='sentry', variant=2,
+    K.gun('G1', (-5.25, 0.0, 0.9), 0, 6, barrels=2, cal=0.05, blen=0.75, size=0.55, slot='T', weapon='gsentry', inv='sentry', variant=2,
           note='the null spire: a small sentry twin on the block roof with green sights')
 
     # ---------------- engines: three side by side ----------------
-    for i, y in enumerate((0.92, 0.0, -0.92)):
-        K.engine('E%d' % (i + 1), (-7.25, y, 0.06), 0.36, 0.9, bell=1.18, body_r=0.42, rings=2, nose='flat', inv='engines',
+    for i, y in enumerate((1.02, 0.0, -1.02)):
+        K.engine('E%d' % (i + 1), (-7.25, y, 0.08), 0.39, 0.9, bell=1.18, body_r=0.44, rings=2, nose='flat', inv='engines',
                  src='picture', note=('port', 'centre', 'starboard')[i] + ' engine')
 
     # ---------------- block fittings ----------------
     for side in (1, -1):
         sn = 'p' if side > 0 else 's'
         for j, x in enumerate((-4.45, -4.75, -5.05)):
-            K.lamp('L%d%s' % (j, sn), (x, side * 1.33, 0.36), (0, side, 0), inv='block_lights', note='green light panel on the block flank', up=(0, 0, 1))
-        K.vent('V1' + sn, (-5.5, side * 1.33, 0.3), (0, side, 0), 0.4, 0.36, slats=4, inv='block_vents', note='heat slot panel on the block flank')
-        K.hatch('H1' + sn, (-6.0, side * 0.5, 1.12), (0, 0, 1), 0.26, inv='block_hatches', note='hatch on the block roof')
-        K.thruster('Q1' + sn, (-4.0, side * 0.98, 0.8), (0, side * 0.6, 0.8), r=0.2, inv='thrusters', note='block roof edge, firing up and out over the ring')
-        K.thruster('Q2' + sn, (-4.0, side * 0.98, -0.6), (0, side * 0.6, -0.8), r=0.2, inv='thrusters', note='block belly edge, firing down and out')
+            K.lamp('L%d%s' % (j, sn), (x, side * 1.56, 0.3), (0, side, 0), inv='block_lights', note='green light panel on the block flank', up=(0, 0, 1))
+        K.vent('V1' + sn, (-5.45, side * 1.565, 0.06), (0, side, 0), 0.4, 0.3, slats=4, inv='block_vents', note='heat slot panel on the block flank')
+        K.hatch('H1' + sn, (-5.65, side * 0.5, 0.9), (0, 0, 1), 0.26, inv='block_hatches', note='hatch on the block roof')
+        K.thruster('Q1' + sn, (-4.0, side * 1.0, K.deck_z(-4.0, 1.0) - 0.02), (0, side * 0.6, 0.8), r=0.2, inv='thrusters', note='block roof edge, firing up and out over the ring')
+        K.thruster('Q2' + sn, (-4.0, side * 1.0, 0.16 - (K.deck_z(-4.0, 1.0) - 0.08) - 0.02), (0, side * 0.6, -0.8), r=0.2, inv='thrusters', note='block belly edge, firing down and out')
 
     # ---------------- colour zones ----------------
     K.colour('deep violet plate, violet-black shade (paint stage)', 7.25, -7.25, 'whole ship')
@@ -176,23 +177,23 @@ def build(K):
     # ---------- INSIDE ----------
     for nm_, z_ in (('block_lower', -0.3), ('block_upper', 0.38)):
         secs = []
-        for x in (-4.0, -5.2, -6.3):
+        for x in (-4.0, -5.0, -5.95):
             hw = abs(K.surf(x, 1, z_)) - 0.25
             secs.append((x, hw, hw, z_ - 0.04, z_ + 0.04, 0, 0))
         K.loft('in_deck_' + nm_, secs, 'darkdeck', inside=True)
-        K.inside.append(dict(kind='deck', name=nm_, z=z_, x=(-6.3, -4.0)))
-    for i, x in enumerate((-3.4, -4.4, -5.3, -6.3)):
+        K.inside.append(dict(kind='deck', name=nm_, z=z_, x=(-5.95, -4.0)))
+    for i, x in enumerate((-3.4, -4.4, -5.3, -6.0)):
         s_ = _k.sec_at(HULL, x)
         K.loft('in_bh_F%d' % i, [(x + 0.05, s_[1] - 0.22, s_[2] - 0.22, s_[3] + 0.22, s_[4] - 0.22, 0, 0), (x - 0.05, s_[1] - 0.22, s_[2] - 0.22, s_[3] + 0.22, s_[4] - 0.22, 0, 0)],
                'frame', inside=True, rounded=True, pexp=PEXP)
         K.inside.append(dict(kind='bulkhead', name='F%d' % i, x=x))
-    K.room('conduit_aft', 'machinery', -3.2, 0.1, -0.18, 0.18, ZS - 0.15, ZS + 0.15, note='the spine\'s power conduits from the core to the drives')
-    K.room('conduit_fore', 'machinery', 1.9, 5.2, -0.18, 0.18, ZS - 0.15, ZS + 0.15, note='conduits to the emitter and the fore battery')
+    K.room('conduit_aft', 'machinery', -3.2, 0.1, -0.1, 0.1, ZS - 0.09, ZS + 0.09, note='the spine\'s power conduits from the core to the drives')
+    K.room('conduit_fore', 'machinery', 1.9, 5.2, -0.1, 0.1, ZS - 0.09, ZS + 0.09, note='conduits to the emitter and the fore battery')
     K.room('archive_vault', 'archive', -4.0, -3.4, -0.5, 0.5, -0.3, 0.4, note='the archive vault in the block\'s forward taper')
-    K.room('dark_decks', 'darkdeck', -4.8, -4.05, -0.9, 0.9, 0.42, 0.8, note='dark decks: machine crew stations')
-    K.room('sentry_magazine', 'magazine', -5.8, -4.85, -0.6, 0.6, 0.42, 0.8, note='under the null spire')
-    K.room('engine_room', 'engroom', -6.3, -4.4, -0.9, 0.9, -0.55, 0.3, note='engine room and the three drives\' feeds')
-    K.room('battery_feeds', 'magazine', 3.0, 3.4, -0.12, 0.12, ZS + 0.2, ZS + 0.38, note='the fore battery\'s feed under its saddle')
+    K.room('dark_decks', 'darkdeck', -4.8, -4.05, -0.9, 0.9, 0.4, 0.6, note='dark decks: machine crew stations')
+    K.room('sentry_magazine', 'magazine', -5.8, -4.85, -0.6, 0.6, 0.4, 0.6, note='under the null spire')
+    K.room('engine_room', 'engroom', -6.0, -4.4, -0.9, 0.9, -0.55, 0.3, note='engine room and the three drives\' feeds')
+    K.room('battery_feeds', 'magazine', 3.0, 3.4, -0.12, 0.12, ZS + 0.18, ZS + 0.38, note='the fore battery\'s feed under its saddle')
     K.inside.append(dict(kind='space', name='core', mat='ecore', x=(XC - 0.55, XC + 0.55), y=(-0.55, 0.55), z=(ZS - 0.55, ZS + 0.55),
                          note='the core of trapped light, caged in the open (hp_core)'))
     K.armour('ring arcs (outer walls and top plates)', 0.14, 'the shade: thickest on the outer wall')
@@ -208,12 +209,13 @@ def build(K):
     for i, (t, sec, side) in enumerate(((40.0, 'prow', 'port'), (-85.0, 'mid', 'stbd'), (95.0, 'mid', 'port'), (-135.0, 'eng', 'stbd'))):
         x, y = ring_pt(t, 0.3)
         K.point('breach', 'hp_breach_%d' % i, (x, y, zt + 0.01), side=side, section=sec, note='on a shade arc')
-    for i, (x, y, z) in enumerate(((-4.0, 0.98, 0.8), (-4.0, -0.98, 0.8), (-4.0, 0.98, -0.6), (-4.0, -0.98, -0.6))):
+    for i, (x, y, z) in enumerate(((-4.0, 1.0, K.deck_z(-4.0, 1.0)), (-4.0, -1.0, K.deck_z(-4.0, 1.0)), (-4.0, 1.0, 0.16 - K.deck_z(-4.0, 1.0)), (-4.0, -1.0, 0.16 - K.deck_z(-4.0, 1.0)))):
         K.point('rcs', 'hp_rcs_%d' % i, (x, y, z), side='port' if y > 0 else 'stbd')
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
     K.change('Every arc has its own truss struts (eight)', 'R207: the picture leaves four of seven arcs floating; the centre arcs get two struts each, clear of the core cage, the stern arcs sit into the block')
     K.change('Eight arcs, the stern pair matched', 'the picture has one stern arc on the starboard side only; matched pairs (factions.md) unless a break is drawn on purpose')
+    K.change('The spine slimmed to a rod (0.36 across); the block made compact and low (1.4 tall), its aft face filled by three 0.92 bells standing out 0.95 behind it', 'the Board on the first sheet: the concept\'s spine is a thin rod carrying the fittings, and its three large dark bells are the stern\'s most prominent feature')
     K.change('Three engines side by side in one row', 'the plan and the beauty show three across; the side view stacks them, which the plan cannot; one row keeps the block broad and low')
     K.change('Engines are eclipse rings, not flame', 'factions.md: "no flaming bells. An eclipse ring of pale light"')
     K.change('Arcs are real box sections, 0.42 deep', 'the side view draws the ring as a line; the beauty shows thick box sections with open bays, which carry frames and machinery')

@@ -232,3 +232,20 @@ Judged beside each concept at the same size and camera (side_by_side.jpg):
 - The changes text and fix column were added after the last PC render (text only) and merged into the model and fit json
   from a sandbox run that gives the same zero (each README says so).
 - PC folder: `voidsworn_test\opus532e` (e1 to e6 renders and .blend files, about 120 MB), nothing deleted.
+
+## E12 second sheet (after the Board's review, Nov 12 2026)
+
+The Board passed E11 and sent E12 back on four points; E11 unchanged.
+1. **Camera**: refit to the beauty's aft three-quarter angle (azimuth -122, elevation 58), framing only fitted, 45.5 percent
+   outline. The beauty is not one consistent camera (bells facing the viewer, an aft view; stern higher in frame than bow, a
+   forward view), so at a true aft angle the block is the near end and lands low and large. The side-by-side adds the
+   forward camera (53.8 percent) as its last row: judge the stern on the first, the ring on the last. New `build.py ...
+   beauty` mode renders a second camera (`SHEET_CAMERA`); sheet_extras shows any `beauty_cam_<name>.png` as an extra row.
+2. **Spine** slimmed to a rod, 0.36 by 0.32 (was 0.6 by 0.48), collars and saddles with it.
+3. **Stern block** compact and low (1.4 tall, was 1.9), three 0.92 bells filling its aft face, standing out 0.95.
+4. **Arcs** unchanged (one matched ellipse); the concept's slightly different radii are noted, not copied.
+
+Fit check zero (PC e8 and sandbox), inventory 0 failing, every cell at or above the concept. Ratios: hull L:B 1.89 (concept
+1.94), hull L:H 11.32 (15.57), envelope L:B 1.72 (1.77), envelope L:H 7.02 (5.94: the lower block drops the stern height).
+My read: on the aft view the bells, slim spine and open arcs read as the concept, but the near block still fills the lower left
+of the frame, where the beauty puts it far and high; that comes from the picture itself, not from the model.

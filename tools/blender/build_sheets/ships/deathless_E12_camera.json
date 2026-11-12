@@ -1,21 +1,21 @@
 {
- "az": -86.40202734567652,
- "el": 63.2241924674873,
- "roll": -2.375309972727854,
- "dist": 59.27718094701875,
- "mm": 115.78255954870285,
+ "az": -122.0,
+ "el": 58.0,
+ "roll": 12.0,
+ "dist": 16.862876223387307,
+ "mm": 33.52036173058897,
  "target": [
   0.0,
   0.0,
   0.0
  ],
- "sx": -0.05316148950176164,
- "sy": 0.05329571437676193,
+ "sx": 0.008020719254778331,
+ "sy": 0.052694043262870804,
  "res": [
   2096,
   1184
  ],
- "iou": 0.539,
- "body_iou": 0.5383,
- "note": "E12 sheet: start set by hand from the overlay, fit.py refined the camera only; concept mask: brightness over a modelled backdrop glow (the top-left haze), closed, holes filled, every shape over 4000 px except the escort"
+ "iou": 0.455,
+ "body_iou": 0.4487,
+ "note": "E12 camera of record (the Board on the first sheet): the beauty's aft three-quarter angle, where the three bells face the viewer. Angles from a grid held to the aft quarter (azimuth -125 to -105, elevation up to 58, roll, distance), then fit.py refined the framing only (--fix-angles, never the ship). The beauty is not one consistent camera: its bells face the viewer (an aft view) while its stern sits higher in the frame than its bow (a view from forward of the beam), so no camera matches both; deathless_E12_camera_fwd.json is the best ring overlap."
 }

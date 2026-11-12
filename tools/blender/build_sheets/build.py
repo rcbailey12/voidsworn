@@ -176,6 +176,18 @@ def render(o, res, path, inside=False, outside=True):
     bpy.ops.render.render(write_still=True)
 
 
+if MODE == 'beauty':
+    # a second camera on the concept (SHEET_CAMERA=<json under ships/>), only that render, written as beauty_cam_<name>.png
+    nm_ = os.environ.get('SHEET_CAMERA', CODE + '_camera_alt.json')
+    fc = json.load(open(os.path.join(HERE, 'ships', nm_)))
+    a_, e_ = math.radians(fc['az']), math.radians(fc['el'])
+    d_ = Vector((math.cos(e_) * math.cos(a_), math.cos(e_) * math.sin(a_), math.sin(e_)))
+    f_ = -d_; r_ = f_.cross(Vector((0, 0, 1))).normalized(); u_ = r_.cross(f_).normalized(); rr_ = math.radians(fc.get('roll', 0))
+    r_, u_ = r_ * math.cos(rr_) + u_ * math.sin(rr_), u_ * math.cos(rr_) - r_ * math.sin(rr_)
+    o = cam('beauty_alt', Vector(fc['target']) + d_ * fc['dist'], r_, u_, persp_mm=fc['mm'], res=tuple(fc['res']), shift=(-fc.get('sx', 0), -fc.get('sy', 0)))
+    render(o, tuple(fc['res']), os.path.join(OUT, 'beauty_cam_' + nm_.replace(CODE + '_camera_', '').replace('.json', '') + '.png'))
+    sys.exit(0)
+
 # ortho views: window centred on the model, one px-per-unit for all
 cx, cy, cz = (LO.x + HI.x) / 2, (LO.y + HI.y) / 2, (LO.z + HI.z) / 2
 pad = 1.0

@@ -1,13 +1,13 @@
 {
  "code": "deathless_E12",
- "sheet_version": 1,
+ "sheet_version": 2,
  "routes_note": "kit = the Eclipse parts kit (tools/blender/kits/eclipse/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
  "turret_marking": "R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).",
  "parts": [
   {
    "id": "S1p",
    "kind": "strut",
-   "what": "truss strut, 1.7 long",
+   "what": "truss strut, 1.9 long",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -18,7 +18,7 @@
   {
    "id": "S2p",
    "kind": "strut",
-   "what": "truss strut, 2.4 long",
+   "what": "truss strut, 2.5 long",
    "count": 1,
    "route": "kit",
    "source": "designed",
@@ -29,7 +29,7 @@
   {
    "id": "S3p",
    "kind": "strut",
-   "what": "truss strut, 2.4 long",
+   "what": "truss strut, 2.5 long",
    "count": 1,
    "route": "kit",
    "source": "designed",
@@ -40,7 +40,7 @@
   {
    "id": "S4p",
    "kind": "strut",
-   "what": "truss strut, 1.8 long",
+   "what": "truss strut, 1.9 long",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -51,7 +51,7 @@
   {
    "id": "S1s",
    "kind": "strut",
-   "what": "truss strut, 1.7 long",
+   "what": "truss strut, 1.9 long",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -62,7 +62,7 @@
   {
    "id": "S2s",
    "kind": "strut",
-   "what": "truss strut, 2.4 long",
+   "what": "truss strut, 2.5 long",
    "count": 1,
    "route": "kit",
    "source": "designed",
@@ -73,7 +73,7 @@
   {
    "id": "S3s",
    "kind": "strut",
-   "what": "truss strut, 2.4 long",
+   "what": "truss strut, 2.5 long",
    "count": 1,
    "route": "kit",
    "source": "designed",
@@ -84,7 +84,7 @@
   {
    "id": "S4s",
    "kind": "strut",
-   "what": "truss strut, 1.8 long",
+   "what": "truss strut, 1.9 long",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -163,7 +163,7 @@
   {
    "id": "E1",
    "kind": "engine",
-   "what": "engine, bell 0.9 across",
+   "what": "engine, bell 1.0 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -174,7 +174,7 @@
   {
    "id": "E2",
    "kind": "engine",
-   "what": "engine, bell 0.9 across",
+   "what": "engine, bell 1.0 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -185,7 +185,7 @@
   {
    "id": "E3",
    "kind": "engine",
-   "what": "engine, bell 0.9 across",
+   "what": "engine, bell 1.0 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -229,7 +229,7 @@
   {
    "id": "V1p",
    "kind": "vent",
-   "what": "louvre panel 0.4 x 0.4",
+   "what": "louvre panel 0.4 x 0.3",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -306,7 +306,7 @@
   {
    "id": "V1s",
    "kind": "vent",
-   "what": "louvre panel 0.4 x 0.4",
+   "what": "louvre panel 0.4 x 0.3",
    "count": 1,
    "route": "kit",
    "source": "picture",

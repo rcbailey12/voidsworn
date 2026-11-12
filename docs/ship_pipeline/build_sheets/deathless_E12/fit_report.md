@@ -1,4 +1,4 @@
-# deathless_E12 fit report (first sheet; RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
+# deathless_E12 fit report (second sheet (Board review); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
 
 Made by `tools/blender/build_sheets/clash.py` on the built blockout (it runs inside every `build.py ... render` and on its own
 with `build.py <code> <out> fit`). What it tests, on every part of every type:
@@ -42,7 +42,7 @@ The first complete E12 layout, built with the Eclipse kit and run through the ch
 | EXHAUST | Q2s | hull | 2 | exhaust cone hits E12_arc_fore_s at 1.1 behind the exit |
 | EXHAUST | Q2s | S1s | 2 | exhaust cone hits S1s_mount_mauve at 1.0 behind the exit |
 
-## How first sheet fixed them
+## How second sheet (Board review) fixed them
 
 | Clash (before) | Fix |
 |---|---|
@@ -56,7 +56,7 @@ While designing, the check also caught (and the design fixed): the sentry twin s
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0. Tested: 452 objects, 30 parts, 313 close pairs, 372 rays, 4 guns, 3 turrets swept, 7 cones, 10 apertures.
+Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0. Tested: 446 objects, 30 parts, 309 close pairs, 368 rays, 4 guns, 3 turrets swept, 7 cones, 10 apertures.
 
 **Zero clashes left.** No clash is left in as intended.
 

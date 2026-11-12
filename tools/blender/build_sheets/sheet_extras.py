@@ -221,6 +221,12 @@ def side_by_side():
         a = con.crop(box); c = bld.crop(box)
         h = half * a.height // a.width
         rows.append((nm, a.resize((half, h)), c.resize((half, h))))
+    for alt in sorted(glob.glob(os.path.join(RD, 'beauty_cam_*.png'))):
+        # a second camera on the same concept (the sheet's README says why)
+        b2 = Image.open(alt).convert('RGBA'); bg2 = Image.new('RGBA', b2.size, (14, 14, 16, 255)); bg2.alpha_composite(b2)
+        b2 = bg2.convert('RGB').resize(con.size)
+        lab = (SH.get('alt_cameras') or {}).get(os.path.basename(alt)[len('beauty_cam_'):-4], os.path.basename(alt))
+        rows.append(('full view, second camera: ' + lab, con.resize((half, half * con.height // con.width)), b2.resize((half, half * con.height // con.width))))
     H = 90 + sum(r[1].height + 50 for r in rows)
     out = Image.new('RGB', (W + 30, H), (30, 30, 32)); d = ImageDraw.Draw(out)
     d.text((10, 10), '%s: CONCEPT (left) and BUILD SHEET BLOCKOUT %s (right), same camera, same windows' % (CODE, RND), font=F_M, fill=INK)
