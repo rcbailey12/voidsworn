@@ -199,7 +199,7 @@ def build(K):
     K.deck('lower', -0.82, -5.4, 4.0)
     K.deck_box('top', 0.3, -5.3, 2.3, 1.3)
     K.deck_box('head', 0.0, 4.4, 5.9, 0.75)
-    for i, x in enumerate((5.4, 4.0, 2.4, 0.8, -1.9, -4.7)):
+    for i, x in enumerate((5.4, 4.0, 2.05, 0.8, -1.9, -4.7)):  # F2 off the B-1 seam station (a bulkhead face on the tear)
         K.bulkhead('F%d' % i, x)
     K.room('jaw_machinery', 'machinery', 4.45, 5.6, -0.75, 0.75, -0.6, -0.1, note='prong rams and winches over the mouth')
     K.room('listening_bridge', 'bridge', 4.5, 5.7, -0.7, 0.7, 0.05, 0.55, note='listening room and bridge in the head')

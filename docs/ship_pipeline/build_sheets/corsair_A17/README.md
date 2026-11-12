@@ -37,6 +37,16 @@ sheet, `bake: none` until the sheet paint stack, issue 601, lands). What the rou
    no part type is under 0.75 of the hull's triangles or edge features per square unit; the lowest are the prongs (1.50
    and 1.29). The kit tube's new bore rings, bolted lip and stiffeners (added for A16) also reach A17's scoop drums.
 
+6. **Ear dishes and the camera (the Board on PR 611, R207).** The dishes are now 1.24 across (were 1.9), a little under
+   the face's height, on short brackets low on the head's shoulders, turned forward and outward, and the kit's dish colour
+   is rusted grey, not white. The fitted beauty camera is refit from the concept's view (az 44.3, el 18.4) so the bow is on
+   screen in side_by_side.jpg: outline IoU 76.8 percent (the round 3b camera scored 62.8 with the same mask; it had framed the
+   bow off the left edge).
+
+7. **Bulkhead F2 off the neck seam.** F2 stood at x 2.4, on the B-1 seam's station, and PR 608's death check found its
+   face left outside its piece after the tear (1 to 11 triangles, varying with the cut). It now stands at 2.05: 0. The
+   cutaway picture still shows it at 2.4.
+
 Side by side with the concept: [bow](../../../shots/issue_532_a17/a17_bow_compare.jpg) (concept, before, now),
 [three-quarter](../../../shots/issue_532_a17/a17_threequarter_compare.jpg), [side](../../../shots/issue_532_a17/a17_side_compare.jpg).
 

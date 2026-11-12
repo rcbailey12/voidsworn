@@ -15,8 +15,8 @@ Ashfall Hullbreakers (corsair) | class Cruiser | version 3 (round 3), 2026-11-11
 | beam top | 7.625 |
 | beam bow | 7.638 |
 | beam disagreement percent | 0.09 |
-| height side | 5.375 |
-| height bow | 5.375 |
+| height side | 5.062 |
+| height bow | 5.062 |
 | height disagreement percent | 0.0 |
 | widest at station percent | 59.0 |
 | hull beam | 4.65 |
@@ -24,8 +24,8 @@ Ashfall Hullbreakers (corsair) | class Cruiser | version 3 (round 3), 2026-11-11
 | L to B hull | 3.12 |
 | L to H hull | 4.65 |
 | prow overhang | 1.03 |
-| outline iou percent | 72.9 |
-| mass outline iou percent | 72.7 |
+| outline iou percent | 76.8 |
+| mass outline iou percent | 78.4 |
 | PASS | True |
 
 ## Feature table (every gun, launcher, engine, dish, claw, chain and major fitting)
@@ -37,9 +37,9 @@ Ashfall Hullbreakers (corsair) | class Cruiser | version 3 (round 3), 2026-11-11
 | SL2 | vision slit 0.6 x 0.12 | 1 | 46.8 | -0.75 | 1.02 | - | - | picture | slit in the ramp block slope |
 | HS2 | square hatch 0.4 | 1 | 80.0 | -2.05 | 0.98 | - | - | picture | hatch on the aft block flank |
 | I1 | scoop drum with a grille, 0.8 across, 2.1 deep | 1 | 6.4 | 1.88 | -0.42 | forward | - | picture | port scoop drum on the head flank, the larger |
-| D1 | listening dish, 1.9 across | 1 | 16.0 | 2.02 | 1.30 | 45 deg off the bow to port, +8 elev | - | picture | port ear, a big listening dish standing out at the head's upper corner |
+| D1 | listening dish, 1.2 across | 1 | 16.4 | 2.20 | 0.34 | 40 deg off the bow to port, +8 elev | - | picture | port ear, a listening dish on the head's shoulder, turned forward and outward |
 | I2 | scoop drum with a grille, 0.8 across, 2.1 deep | 1 | 6.4 | -1.88 | -0.42 | forward | - | picture | starboard scoop drum on the head flank |
-| D2 | listening dish, 1.9 across | 1 | 16.0 | -2.02 | 1.30 | 45 deg off the bow to starboard, +8 elev | - | picture | starboard ear, a big listening dish standing out at the head's upper corner |
+| D2 | listening dish, 1.2 across | 1 | 16.4 | -2.20 | 0.34 | 40 deg off the bow to starboard, +8 elev | - | picture | starboard ear, a listening dish on the head's shoulder, turned forward and outward |
 | J1 | jaw prong, 2.6 long, hooked tip | 1 | 19.8 | 0.70 | -1.32 | hook forward and down | - | picture | port lower prong, a long flat blade with a hooked tip |
 | J3 | jaw prong, 2.3 long, hooked tip | 1 | 18.8 | 1.34 | -1.00 | hook forward and down | - | picture | port upper prong, over and outboard of the lower |
 | J2 | jaw prong, 2.6 long, hooked tip | 1 | 19.8 | -0.70 | -1.32 | hook forward and down | - | picture | starboard lower prong, a long flat blade with a hooked tip |
@@ -127,15 +127,15 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | U5 saddle block | 63.7 to 71.0 | -1.82 to 1.58 | 0.40 to 1.40 | soot with dried-blood patches | stepped top block, top 1.40, undercut base |
 | U6 aft block | 71.9 to 88.2 | -2.05 to 2.15 | 0.40 to 1.52 | soot with dried-blood patches | stepped top block, top 1.52, undercut base |
 | Engine block | 87.2 to 91.3 | -2.00 to 2.00 | -1.35 to 1.35 | soot, steel |  |
-| Ear bracket port | 12.9 to 19.1 | 1.45 to 2.30 | 0.95 to 1.30 | iron | bracket out from the head's upper corner |
-| Ear bracket starboard | 12.9 to 19.1 | -2.30 to -1.45 | 0.95 to 1.30 | iron | bracket out from the head's upper corner |
+| Ear bracket port | 14.0 to 18.8 | 1.50 to 2.45 | 0.08 to 0.34 | iron | bracket out from the head's shoulder |
+| Ear bracket starboard | 14.0 to 18.8 | -2.45 to -1.50 | 0.08 to 0.34 | iron | bracket out from the head's shoulder |
 | Rack plinth | 35.6 to 43.5 | -0.72 to 0.72 | 0.80 to 1.70 | iron | lifts the rocket pod clear over the neck turrets |
 
 ## INSIDE (R98, R209): what each break reveals
 
 Deck levels (height): lower deck -0.82 (23% to 87%); top deck 0.30 (34% to 86%); head deck 0.00 (9% to 20%).
 
-Bulkhead and frame stations: F0 12.9%, F1 22.5%, F2 33.5%, F3 44.5%, F4 63.1%, F5 82.4%.
+Bulkhead and frame stations: F0 12.9%, F1 22.5%, F2 35.9%, F3 44.5%, F4 63.1%, F5 82.4%.
 
 | Space | Station % | Offset range | Height range | Note |
 |---|---|---|---|---|
@@ -183,7 +183,7 @@ Full interiors throughout the hull (R215), hidden until a piece breaks. Deaths b
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 368 objects, 56 parts, 913 close pairs, 532 rays, 8 guns, 6 turrets swept, 10 cones, 28 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 364 objects, 56 parts, 942 close pairs, 504 rays, 8 guns, 6 turrets swept, 10 cones, 28 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -203,6 +203,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **Neck and mid turrets moved outboard.** R221: no gun in the rocket pod's firing lane or backblast (the fit check tests both).
 - **Crystal shard removed.** Ryan, R197.
 - **The face is a narrower panel inside a deep bevel frame (corner and brow planes plated), with a lower lip over the mouth.** Ryan R217 on A17: "the front is also just a flat block which does not match the concept"; the beauty's head is chamfered all round, not a flat end (A17 build, issue 532).
+- **Ear dishes smaller (1.24 across, was 1.9), lower on the head's shoulders, turned forward and outward, rusted grey.** the Board on PR 611 (R207): the concept's ears are plain bowls a little under the face's height, not big white discs at the head's top corners (A17 build, issue 532).
 - **Neck block raised from 0.78 to 1.12.** in the beauty the deck behind the head steps down only a little; at 0.78 the head stood on the neck like a separate box (A17 build, issue 532).
 - **Aft seam B-2 moved forward to the weld between the saddle and aft blocks, kinked round the antennas, T1 and the stern thrusters.** R226 (RULEBOOK 5.17): a machine never crosses a seam; at -4.75 the seam cut T1, Q3 and Q4 (A17 build, issue 532).
 - **Mid turrets P2 and S2 rest at 35 degrees (were 25).** their data.js arc is 30 to 150; a rest outside it failed the export check (A17 build, issue 532).

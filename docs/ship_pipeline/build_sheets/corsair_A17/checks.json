@@ -8,8 +8,8 @@
  "beam_top": 7.625,
  "beam_bow": 7.638,
  "beam_disagreement_percent": 0.09,
- "height_side": 5.375,
- "height_bow": 5.375,
+ "height_side": 5.062,
+ "height_bow": 5.062,
  "height_disagreement_percent": 0.0,
  "widest_at_station_percent": 59.0,
  "hull_beam": 4.65,
@@ -17,16 +17,16 @@
  "L_to_B_hull": 3.12,
  "L_to_H_hull": 4.65,
  "PASS": true,
- "outline_iou_percent": 72.9,
- "mass_outline_iou_percent": 72.7,
+ "outline_iou_percent": 76.8,
+ "mass_outline_iou_percent": 78.4,
  "concept_camera": {
-  "az": 53.5328734679381,
-  "el": 27.295278485741864,
-  "roll": -2.4780655057596306,
-  "dist": 35.898897931676245,
-  "mm": 84.10525232273683,
-  "sx": -0.0977941262464842,
-  "sy": 0.08380952123424304
+  "az": 44.27327435531133,
+  "el": 18.42167390406086,
+  "roll": -5.0708275185005505,
+  "dist": 33.478904430726665,
+  "mm": 70.91409179684477,
+  "sx": -0.08544653591103064,
+  "sy": 0.09751494297755456
  },
  "prow_overhang": 1.03
 }
