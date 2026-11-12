@@ -29,6 +29,10 @@ battle screen (godot/ui/battle/ledger.gd) is the second screen built in it; buil
   nothing), never on a filled rectangle with an edge. Square corners. No pills, key badges, glows or shadows.
 - **One box per screen**: the action, a 2 px square ember outline 56 px tall with its key on the right, filled ember under the
   pointer. Dialogs (the menu, the end card) and hover tips are near-black squares with a hairline edge.
+- **Width follows the decision (R218).** Sheet and panel widths are set by the decision the screen holds, not by how much
+  data exists, and the scene keeps most of the screen. When Ryan rules a width on one screen, it is written here as the rule
+  for every sheet. Ryan, Nov 11 2026: "the side left panel takes up a ton of the screen. It's like 30-40% of the screen and
+  blocking a lot that's going on."
 - **Keys after words**, in the figure face and the second strength: "Brace B", "End ship Space". No key caps.
 - **Say less (R177).** Only what the screen's decision needs is on it; the rest is one hover or one key away, and the pull
   request lists every moved item and how it is reached. Nothing is deleted from the game.
@@ -41,6 +45,10 @@ battle screen (godot/ui/battle/ledger.gd) is the second screen built in it; buil
   sheet_body, sheet_medium, num). A screen adds what is missing to the theme, never loose numbers of its own.
 
 ### The battle screen (E1 LEDGER, issue 271)
+
+The orders sheet takes about a fifth of the screen width (380 px from a 40 px margin at 1080), never more than a quarter, and
+shows detail only for the decision in front of the player; everything else waits behind a key or a hover (R218). A fleet too
+big for it folds into "and N more" with a hover (R220). The camera centres the board in the part the sheet leaves clear.
 
 One left sheet, read in the order the player decides: whose turn and how many ships still act; the ship (name, class, hull,
 movement, its four shields as a small plan in Glacier); its status line; its guns (name, arc and range, then the odds or why
