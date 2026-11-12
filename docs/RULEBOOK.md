@@ -250,7 +250,9 @@ launchers are designed per faction from the lore bible and the faction sheet (ho
 housing, barrel and muzzle), never a shared silhouette; a gun in another weapon's firing lane or backblast is a clash. Why:
 Ryan on the Hullbreakers: "let's get rid of the chains randomly around the ship. There's no purpose" and "a gun directly
 behind the rocket pods on a16 ... seems like it conflicts"; on Eclipse: "their turrets look the same as hullbreakers" (R221).
-Set: Ryan, Nov 12 (R221).
+Set: Ryan, Nov 12 (R221). Parts carry the hull's detail density: triangles and edge features per square unit, per part
+type, within 25 percent of the hull's, reported on every sheet (R224: "They also just look smoother and less detailed, maybe
+slightly less poly than the rest of the ship").
 
 ## 5. Ship build pipeline
 
