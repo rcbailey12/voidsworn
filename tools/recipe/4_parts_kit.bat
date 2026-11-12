@@ -27,6 +27,7 @@ findstr /L /c:"[sil] dumped" "%JOB%\log_sildump.txt" > nul || (echo Stage 4 FAIL
 set CAMJ=
 for /f "usebackq delims=" %%L in (`""%BPY%" "%RC%\ship.py" %SHIP% get concept_camera"`) do set CAMJ=%%L
 if "%CAMJ%"=="" (set CAMJ=%JOB%\concept_camera.json) else (set CAMJ=%REPO%\%CAMJ%)
+if not exist "%JOB%\sil" mkdir "%JOB%\sil"
 "%BPY%" "%R%\silhouette4.py" score "%JOB%\concept.png" "%CAMJ%" "%JOB%\sil" %CELL%="%JOB%\%CELL%.npz" > "%JOB%\log_sil.txt" 2>&1
 if errorlevel 1 (echo Stage 4 FAILED: the outline could not be scored. See %JOB%\log_sil.txt & goto bad)
 "%BPY%" "%RC%\ship.py" %SHIP% gate "%JOB%\sil\silhouette_scores.json"
