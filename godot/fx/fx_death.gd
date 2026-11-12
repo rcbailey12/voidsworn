@@ -1654,7 +1654,7 @@ static func _grow_dir(fx, s, axis: Vector3) -> Vector3:
 # is the game's own cut plane (the bisector of the prepared pieces, issue 167's fallback).
 static func _tell(fx, s, T: float, tl: DeathTimeline, cause: String, seeds: PackedVector3Array, lines: Array = []) -> void:
 	var h = s.hull
-	var at: Vector3 = (seeds[0] + seeds[1]) * 0.5 if seeds.size() >= 2 else h.c
+	var at: Vector3 = (seeds[0] + seeds[1]) * 0.5 if seeds.size() >= 2 else h.core   # opus_check_570 condition 1: the core, never the box centre
 	var axis: Vector3 = (seeds[1] - seeds[0]).normalized() if seeds.size() >= 2 else Vector3.RIGHT
 	if not lines.is_empty():
 		# issue 484: the tear runs on the fracture plan's tilted breaks (the bite's break first)
