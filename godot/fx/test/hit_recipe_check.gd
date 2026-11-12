@@ -273,6 +273,17 @@ func _yield_check() -> void:
 				n += 1
 		worst = maxi(worst, n)
 	_check(worst <= 3, "still never more than three counted flashes in a second")
+	# opus_check_524b: soft flashes are bounded too. In one field, the flashes of the last second (counted and soft) fill
+	# the cap, so the next yielded gun flash is told to draw no peak (fx.flash_lift); a second later the field is free again.
+	var T2: float = T + 3.0
+	var lifts: Array = []
+	for i in 6:
+		fx.flash_at(Vector3.ZERO, T2 + 0.1 * i, 0.0, big, 0.16, true)
+		lifts.append(fx.flash_lift)
+	_check(not lifts[0] and not lifts[1] and not lifts[2], "the first three soft gun flashes in a field keep their soft rise")
+	_check(lifts[3] and lifts[4] and lifts[5], "the fourth and later in the same second lose their peak (a slow, dim lift)")
+	fx.flash_at(Vector3.ZERO, T2 + 1.7, 0.0, big, 0.16, true)
+	_check(not fx.flash_lift, "a second later the field takes soft flashes again")
 	fx.release()
 	world.queue_free()
 	await process_frame

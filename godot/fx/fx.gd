@@ -130,6 +130,11 @@ var _pauses: Array = []     # [t, frames]
 var _flashes: PackedFloat64Array = []
 var flash_log: PackedFloat64Array = []   # every counted flash (tests check the 3-a-second cap)
 var _refused: PackedFloat64Array = []    # flashes the budget turned down (their lights stay dark)
+# opus_check_524b (issue 558): a yielded gun flash still draws a soft flash, which is one flash under WCAG 2.3.1. These are
+# remembered per field so the soft ones are bounded too: [T, screen x, screen y]. flash_lift is true after a flash_at call
+# that refused a flash in a field already holding FLASH_CAP flashes in the last second; the caller then draws no peak at all.
+var _soft_mem: Array = []
+var flash_lift := false
 var _later: Array = []      # [t, callable]
 var _shake_off = Vector2.ZERO
 var _punches: Array = []    # [t, amount] (F3 zoom punch)
@@ -549,6 +554,7 @@ func _flash_count(T: float) -> bool:
 # and a cruiser's core flash were then turned soft. The limit, the window and the cap are unchanged; a hit only ever asks
 # for less. Its log row is marked as yielded (flash_area_log column 9).
 func flash_at(p: Vector3, T: float, size: float, px := 0.0, life := FLASH_WINDOW, yield_last := false) -> bool:
+	flash_lift = false
 	if reduce_flashing:
 		return false
 	if camera == null or not is_instance_valid(camera):
@@ -570,6 +576,9 @@ func flash_at(p: Vector3, T: float, size: float, px := 0.0, life := FLASH_WINDOW
 	if lit > flash_limit_px2():
 		if yield_last:
 			bright = false
+			flash_lift = _soft_full(T, c)
+			if not flash_lift:
+				_soft_mem.append([T, c[0], c[1]])
 			_refused.append(T)
 			if _refused.size() > 64:
 				_refused = _refused.slice(32)
@@ -585,6 +594,24 @@ func flash_at(p: Vector3, T: float, size: float, px := 0.0, life := FLASH_WINDOW
 	_flash_note(T, c, lit, counted, 1 if bright else 0, life)
 	pend("flash", t0)
 	return bright
+
+
+# opus_check_524b: how many flashes (counted bright ones anywhere, conservatively, plus remembered soft ones inside this
+# 10 degree field) fall in the second before T. At FLASH_CAP or more the field is full: the next gun flash gets no peak.
+func _soft_full(T: float, c: PackedFloat64Array) -> bool:
+	var box := flash_box_px()
+	var n := 0
+	for f in _flashes:
+		if f <= T and T - f < 1.0:
+			n += 1
+	var keep: Array = []
+	for e in _soft_mem:
+		if T - float(e[0]) < 1.0:
+			keep.append(e)
+			if float(e[0]) <= T and absf(float(e[1]) - c[0]) < box and absf(float(e[2]) - c[1]) < box:
+				n += 1
+	_soft_mem = keep
+	return n >= FLASH_CAP
 
 
 # The side of a 10 degree box in viewport pixels (rounded down, so the box and the limit are never overstated).

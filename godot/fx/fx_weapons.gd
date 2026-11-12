@@ -455,6 +455,9 @@ static func _burst(fx, p: Vector3, axis: Vector3, T: float, size: float, kind: S
 		if fx.reduce_flashing or not fx.flash_at(p, T, size, px / BURST_PX_K, life, gun):
 			power = 1.25
 			duration = maxf(life, 0.4)
+			if fx.flash_lift:   # opus_check_524b: the field already holds three flashes this second: a slow, dim lift, no peak
+				power = 0.6
+				duration = maxf(life, 1.2)
 	var seed: float = fx.rng.randf()
 	fx.later(T, func l_burst() -> void:
 		var node := DEATH.flipbook(fx, p, axis, size * fx.unit, kind, duration, velocity, power, "small") as MeshInstance3D
@@ -1360,12 +1363,13 @@ static func _staged_hit(fx, src, p: Vector3, T: float, torpedo: bool, ks := 1.0)
 	var body_px: float = (140.0 if torpedo else 48.0) * target_scale * ks
 	var life := 0.16 if torpedo else 0.12
 	var soft: bool = fx.reduce_flashing or not fx.flash_at(p, T, flash_px * DEATH.STAGING_UNITS_PER_PIXEL, flash_px, life, src != null and not torpedo)
+	var lift: bool = soft and fx.flash_lift   # opus_check_524b: a full field: the flash rises slowly and dimly, no peak
 	var spin: float = fx.rng.randf() * TAU
 	var shape := Vector2(fx.rng.randf_range(0.9, 1.25), fx.rng.randf_range(0.85, 1.1))
 	for body in [false, true]:
 		var rel: String = ("weapons/impact/" if torpedo else "weapons/macro/") + ("impact_" if body else "flash_")
 		var at: float = T + (0.025 if body else 0.0)
-		var duration: float = (0.90 if torpedo else 0.50) if body else ((0.50 if torpedo else 0.42) if soft else life)
+		var duration: float = (0.90 if torpedo else 0.50) if body else (1.2 if lift else ((0.50 if torpedo else 0.42) if soft else life))
 		fx.later(at, func l_staged_hit() -> void:
 			var mi := MeshInstance3D.new()
 			mi.name = "fx_staged_body" if body else "fx_staged_flash"
@@ -1385,7 +1389,7 @@ static func _staged_hit(fx, src, p: Vector3, T: float, torpedo: bool, ks := 1.0)
 			mat.set_shader_parameter("min_pixels", body_px if body else flash_px)
 			# The flash's lit extent includes bloom; the body retains the native gas framing.
 			mat.set_shader_parameter("size_divisor", 0.80 if body else ((0.97 if torpedo else 0.98) if soft else 3.0))
-			mat.set_shader_parameter("intensity", 2.0 if body else (1.25 if soft else 5.2))
+			mat.set_shader_parameter("intensity", 2.0 if body else (0.6 if lift else (1.25 if soft else 5.2)))
 			mat.set_shader_parameter("soft_flash", 1.0 if soft and not body else 0.0)
 			mi.material_override = mat
 			fx.add_child(mi)
