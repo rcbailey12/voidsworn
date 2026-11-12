@@ -52,6 +52,14 @@ found on this sheet:
    inside triangle outside its piece). Measured on the unpainted export with PR 608's check: 0 outside the whole ship and
    0 outside their own piece (was 150 and 0); machines split 0 of 37. The feature table's room rows carry the new sizes; the
    cutaway still shows the old rooms until the next PC render.
+4. **Front tubes and launch bay at the hull's detail level (R224).** The paint job (issue 601) measured the tubes at 0.45
+   and the bay at 0.18 of the hull's triangles per square unit. The Hullbreaker kit's launch tube now has three rings
+   stepping down inside the bore, a ring of bolts on the lip, eight stiffeners along the barrel and bolted clamp bands; the
+   bay has framed door leaves with five stiffeners each, guide rails on brackets down both sides, a door ram at each
+   hinge, end frames and a rivet row on the rim. Measured on the build (mesh half of tools/recipe/density.py, PR 601):
+   tubes 1.02 of the hull's triangles and 0.80 of its edge features per square unit (were 0.45 and 0.29), bay 1.64 and
+   1.61 (were 0.18 and 0.18). The fit check is still zero. The views on this page show the old tubes and bay until the
+   next PC render; [tubes_bay_r224.jpg](tubes_bay_r224.jpg) shows the new ones.
 
 ## R221 clean-ups (Ryan, Nov 12 2026)
 

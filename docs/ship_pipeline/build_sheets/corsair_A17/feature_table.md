@@ -18,12 +18,12 @@ Ashfall Hullbreakers (corsair) | class Cruiser | version 3 (round 3), 2026-11-11
 | height side | 5.375 |
 | height bow | 5.375 |
 | height disagreement percent | 0.0 |
-| widest at station percent | 59.1 |
+| widest at station percent | 59.0 |
 | hull beam | 4.65 |
 | hull depth | 3.12 |
 | L to B hull | 3.12 |
 | L to H hull | 4.65 |
-| prow overhang | 1.08 |
+| prow overhang | 1.03 |
 | outline iou percent | 72.9 |
 | mass outline iou percent | 72.7 |
 | PASS | True |
@@ -51,10 +51,10 @@ Ashfall Hullbreakers (corsair) | class Cruiser | version 3 (round 3), 2026-11-11
 | T1 | twin turret | 2 barrels | 81.7 | 0.00 | 1.52 | forward, +8 elev | T flak | picture | aft block twin, all round |
 | T2 | twin belly turret | 2 barrels | 56.9 | 0.00 | -1.64 | forward, +8 elev | T flak | picture | belly twin, covers below |
 | P1 | twin turret | 2 barrels | 27.7 | 1.30 | 1.78 | 40 deg off the bow to port | P scatter | picture | neck block twin turret on a low barbette |
-| P2 | twin turret | 2 barrels | 59.7 | 1.90 | 1.30 | 25 deg off the bow to port, +3 elev | P scatter | picture | mid block twin turret, superfiring |
+| P2 | twin turret | 2 barrels | 59.7 | 1.90 | 1.30 | 35 deg off the bow to port, +3 elev | P scatter | picture | mid block twin turret, superfiring |
 | P3 | twin casemate | 2 barrels | 65.2 | 2.58 | -0.25 | 35 deg off the bow to port | P scatter | picture | flank casemate on the flank tier |
 | S1 | twin turret | 2 barrels | 27.7 | -1.30 | 1.78 | 40 deg off the bow to starboard | S scatter | picture | neck block twin turret on a low barbette |
-| S2 | twin turret | 2 barrels | 59.7 | -1.70 | 1.30 | 25 deg off the bow to starboard, +3 elev | S scatter | picture | mid block twin turret, superfiring |
+| S2 | twin turret | 2 barrels | 59.7 | -1.70 | 1.30 | 35 deg off the bow to starboard, +3 elev | S scatter | picture | mid block twin turret, superfiring |
 | S3 | twin casemate | 2 barrels | 65.2 | -2.63 | -0.25 | 35 deg off the bow to starboard | S scatter | picture | flank casemate on the flank tier |
 | E1 | engine, bell 1.2 across | 1 | 99.9 | 0.72 | 0.55 | exhaust aft | - | picture | port inner main, a squat drum |
 | E2 | engine, bell 1.0 across | 1 | 99.9 | 1.90 | 0.00 | exhaust aft | - | picture | port outer, a squat drum |
@@ -98,7 +98,7 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 |---|---:|---:|---|---|
 | weathered grey and soot plate | 0.2 | 99.9 | whole hull |  |
 | pale grey trophy plate (brow) | 8.5 | 19.5 | head roof |  |
-| rust patch | 12.6 | 15.7 | brow, forward |  |
+| rust patch | 13.6 | 16.0 | brow, port |  |
 | dried-blood red plates | 34.2 | 43.5 | fore block roof |  |
 | dried-blood red patch | 74.8 | 83.7 | aft block roof |  |
 
@@ -106,9 +106,9 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 
 | Mass | Station % | Offset range | Height range | Colour | Note |
 |---|---|---|---|---|---|
-| Base hull (head and flank tier) | 7.4 to 87.5 | -2.35 to 2.30 | -1.60 to 1.52 | weathered grey and soot plate | narrow head over a cut-in jaw mouth, then the long low body |
+| Base hull (head and flank tier) | 7.1 to 87.5 | -2.35 to 2.30 | -1.60 to 1.52 | weathered grey and soot plate | narrow head over a cut-in jaw mouth, then the long low body |
 | Lower hull band | 23.2 to 85.8 | -2.05 to 2.00 | -1.64 to -1.00 | dark soot | the belly steps in under the flank tier |
-| Head brow (step 1) | 8.5 to 19.5 | -1.38 to 1.38 | 1.40 to 1.80 | pale grey trophy plate | the first roof step, sloped at its front |
+| Head brow (step 1) | 10.7 to 19.5 | -1.38 to 1.38 | 1.40 to 1.80 | pale grey trophy plate | the first roof step, sloped at its front |
 | Head crown (step 2) | 13.3 to 18.8 | -0.82 to 0.82 | 1.72 to 1.98 | soot | the second step |
 | Flank block 1 port | 27.0 to 32.5 | 1.79 to 2.46 | -0.72 to 0.20 | patched plate | armour block on the flank tier |
 | Flank block 2 port | 33.9 to 43.5 | 1.84 to 2.42 | -0.72 to 0.27 | patched plate | armour block on the flank tier |
@@ -120,7 +120,7 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Flank block 3 starboard | 46.3 to 59.1 | -2.62 to -1.95 | -0.72 to 0.36 | patched plate | armour block on the flank tier |
 | Flank block 4 starboard | 59.7 to 70.3 | -2.63 to -1.95 | -0.72 to 0.30 | patched plate | armour block on the flank tier |
 | Flank block 5 starboard | 71.7 to 81.0 | -2.59 to -1.95 | -0.72 to 0.27 | patched plate | armour block on the flank tier |
-| U1 neck block | 22.5 to 32.9 | -1.50 to 1.50 | 0.40 to 0.78 | soot with dried-blood patches | stepped top block, top 0.78, undercut base |
+| U1 neck block | 22.5 to 32.9 | -1.50 to 1.50 | 0.40 to 1.12 | soot with dried-blood patches | stepped top block, top 1.12, undercut base |
 | U2 fore block | 33.9 to 44.2 | -1.77 to 1.93 | 0.40 to 0.90 | soot with dried-blood patches | stepped top block, top 0.90, undercut base |
 | U3 ramp block | 44.9 to 51.1 | -1.85 to 1.75 | 0.40 to 1.20 | soot with dried-blood patches | stepped top block, top 1.20, undercut base |
 | U4 mid block | 52.0 to 62.8 | -1.93 to 2.13 | 0.40 to 1.30 | soot with dried-blood patches | stepped top block, top 1.30, undercut base |
@@ -133,7 +133,7 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 
 ## INSIDE (R98, R209): what each break reveals
 
-Deck levels (height): lower deck -0.82 (23% to 87%); top deck 0.90 (34% to 86%); head deck 0.00 (9% to 20%).
+Deck levels (height): lower deck -0.82 (23% to 87%); top deck 0.30 (34% to 86%); head deck 0.00 (9% to 20%).
 
 Bulkhead and frame stations: F0 12.9%, F1 22.5%, F2 33.5%, F3 44.5%, F4 63.1%, F5 82.4%.
 
@@ -143,10 +143,10 @@ Bulkhead and frame stations: F0 12.9%, F1 22.5%, F2 33.5%, F3 44.5%, F4 63.1%, F
 | listening bridge (bridge) | 10.9 to 19.1 | -0.70 to 0.70 | 0.05 to 0.55 | listening room and bridge in the head |
 | boarding kennels (crew) | 23.2 to 32.9 | -1.60 to 1.60 | -1.45 to -0.88 | boarding gangs behind the prongs |
 | loot hold (hold) | 33.5 to 44.2 | -1.70 to 1.70 | -1.45 to -0.88 | neck hold |
-| rocket magazine (magazine) | 34.2 to 43.5 | -0.60 to 0.60 | 0.50 to 1.10 | under the rocket pod |
-| crew decks (crew) | 44.5 to 63.1 | -1.30 to 1.30 | 0.50 to 1.40 | in the ramp and mid blocks |
+| rocket magazine (magazine) | 36.3 to 42.8 | -0.60 to 0.60 | 0.34 to 0.70 | under the rocket pod, in the fore block |
+| crew decks (crew) | 53.8 to 61.4 | -1.30 to 1.50 | 0.34 to 1.05 | in the mid block |
 | shell magazine (magazine) | 44.5 to 63.1 | -1.70 to 1.70 | -1.45 to -0.88 | battery magazines |
-| flak magazine (magazine) | 73.4 to 85.8 | -0.80 to 0.80 | 0.50 to 1.60 | under the aft block twin |
+| flak magazine (magazine) | 74.8 to 85.8 | -0.80 to 0.80 | 0.34 to 1.25 | under the aft block twin |
 | core (core) | 67.9 to 81.0 | -1.10 to 1.10 | -1.45 to 0.30 | reactor core (hp_core) |
 | engine room (engroom) | 82.7 to 87.2 | -1.60 to 1.60 | -1.20 to 0.35 | engine room and feeds |
 
@@ -160,8 +160,8 @@ Bulkhead and frame stations: F0 12.9%, F1 22.5%, F2 33.5%, F3 44.5%, F4 63.1%, F
 
 | Break line | Station % | What it opens |
 |---|---|---|
-| B-1 | 33.2 (seam wanders 31.5 to 34.9) | the neck seam under the C1 girdle: the head and prongs tear off, opening the kennels and the hold |
-| B-2 | 82.7 (seam wanders 81.0 to 84.4) | aft block and engine seam: the engine cluster tears away, opening the engine room |
+| B-1 | 33.2 (seam wanders 31.5 to 34.9) | the neck seam behind the neck turrets: the head and prongs tear off, opening the kennels and the hold |
+| B-2 | 73.1 (seam wanders 71.7 to 75.5) | the weld between the saddle and aft blocks: the aft block, its flak twin and the engine cluster tear away, biting through the core and opening the engine room |
 
 Full interiors throughout the hull (R215), hidden until a piece breaks. Deaths blow the hull apart unevenly along these seams with a ragged bite where the core goes (R186).
 
@@ -183,7 +183,7 @@ Full interiors throughout the hull (R215), hidden until a piece breaks. Deaths b
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 360 objects, 56 parts, 833 close pairs, 532 rays, 8 guns, 6 turrets swept, 10 cones, 28 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 368 objects, 56 parts, 913 close pairs, 532 rays, 8 guns, 6 turrets swept, 10 cones, 28 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -202,6 +202,11 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **Chains cut.** Ryan, R221: "let's get rid of the chains randomly around the ship. There's no purpose"; every part has a job (ships.md 2c).
 - **Neck and mid turrets moved outboard.** R221: no gun in the rocket pod's firing lane or backblast (the fit check tests both).
 - **Crystal shard removed.** Ryan, R197.
+- **The face is a narrower panel inside a deep bevel frame (corner and brow planes plated), with a lower lip over the mouth.** Ryan R217 on A17: "the front is also just a flat block which does not match the concept"; the beauty's head is chamfered all round, not a flat end (A17 build, issue 532).
+- **Neck block raised from 0.78 to 1.12.** in the beauty the deck behind the head steps down only a little; at 0.78 the head stood on the neck like a separate box (A17 build, issue 532).
+- **Aft seam B-2 moved forward to the weld between the saddle and aft blocks, kinked round the antennas, T1 and the stern thrusters.** R226 (RULEBOOK 5.17): a machine never crosses a seam; at -4.75 the seam cut T1, Q3 and Q4 (A17 build, issue 532).
+- **Mid turrets P2 and S2 rest at 35 degrees (were 25).** their data.js arc is 30 to 150; a rest outside it failed the export check (A17 build, issue 532).
+- **Rooms in the top blocks kept under their roofs; the top deck lowered to 0.3.** about 70 inside triangles sat outside the intact plating, above the low top blocks and in the gaps between them (issue 532 note from PR 608).
 
 ## Designed here, not shown in the picture
 

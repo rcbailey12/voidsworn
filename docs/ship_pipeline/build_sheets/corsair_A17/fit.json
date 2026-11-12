@@ -11,9 +11,9 @@
   "LANE": 0
  },
  "tested": {
-  "objects": 360,
+  "objects": 368,
   "parts": 56,
-  "close_pairs": 833,
+  "close_pairs": 913,
   "rays": 532,
   "guns": 8,
   "turrets_swept": 6,
@@ -1414,7 +1414,7 @@
     150.0
    ],
    "clear_steps": 25,
-   "rest_yaw": 25,
+   "rest_yaw": 35,
    "reach_port": {
     "deg": 180,
     "stop": null
@@ -1450,14 +1450,14 @@
     -30.0
    ],
    "clear_steps": 25,
-   "rest_yaw": -25,
+   "rest_yaw": -35,
    "reach_port": {
-    "deg": 155,
+    "deg": 165,
     "stop": "AN2_mount_iron"
    },
    "reach_stbd": {
-    "deg": 180,
-    "stop": null
+    "deg": 170,
+    "stop": "AN2_mount_iron"
    }
   }
  ],

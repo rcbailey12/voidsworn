@@ -54,7 +54,7 @@ Kit sub-parts per type (what DETAILED checks):
 - rib: rib
 - thruster: block, nozzle
 - tier: face, roof, opening
-- tube: tube, bore, band
+- tube: tube, bore, band, ring, bolt, stiff
 - vent: frame, slat
 
 Left as surface, and why:
@@ -65,7 +65,7 @@ Left as surface, and why:
 
 ## Every built part has a job (R221)
 
-Built kit parts: 85; parts whose inventory id names no line with a job: 0.
+Built kit parts: 88; parts whose inventory id names no line with a job: 0.
 
 ## Per cell: present, shaped, detailed (from the model, corsair_A17_model.json)
 
@@ -88,7 +88,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
 | head | the head: an octagonal block with heavy chamfers on every edge, a beve | 1 / 1 | Y | Y | Y |
-| head_face | face panels on the head front: raised framed panels with vertical stra | 3 / 1 | Y | Y | Y |
+| head_face | face panels on the head front: raised framed panels with vertical stra | 6 / 1 | Y | Y | Y |
 | scoops | scoop drums at the lower corners of the head (port larger) | 2 / 2 | Y | Y | Y |
 | ears | listening dishes as ears on brackets at the upper sides of the head | 2 / 2 | Y | Y | Y |
 | jaws | jaws: long flat prongs reaching forward from the lower bow like a fork | 4 / 4 | Y | Y | Y |
@@ -167,7 +167,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 ## Structure per cell: distinct masses (blocks, tiers, belts), concept against build
 
-Concept counts read off the round 8 sheet by eye (A17 sheet: bow, the head block, its roof step, the neck block, the flank tier and belly band; midships, three stepped top blocks over flank blocks; stern, two top blocks, the engine block and flank blocks); build counts are the model's registered masses whose station range overlaps the third (below: masses reaching within 0.8 of the belly).
+Concept counts read off the concept sheet by eye (A17 sheet: bow, the head block, its roof step, the neck block, the flank tier and belly band; midships, three stepped top blocks over flank blocks; stern, two top blocks, the engine block and flank blocks); build counts are the model's registered masses whose station range overlaps the third (below: masses reaching within 0.8 of the belly).
 
 | Cell | Concept | Build | Build masses |
 |---|---:|---:|---|
@@ -188,6 +188,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 2.04 | 3.54 | 2.75 | 4.06 |
-| build | 1.92 | 2.71 | 2.84 | 3.82 |
+| build | 1.92 | 2.71 | 2.83 | 3.82 |
 
 Lines not present, shaped and detailed without a reason: 0.

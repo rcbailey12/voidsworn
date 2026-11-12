@@ -756,7 +756,7 @@
   },
   {
    "name": "midships piece 1",
-   "stations": "33.2 to 82.7 percent",
+   "stations": "33.2 to 73.1 percent",
    "bounded_by": [
     "B-1",
     "B-2"
@@ -765,7 +765,7 @@
   },
   {
    "name": "stern piece",
-   "stations": "82.7 to 100.0 percent",
+   "stations": "73.1 to 100.0 percent",
    "bounded_by": [
     "B-2"
    ],

@@ -33,6 +33,12 @@ sheet, `bake: none` until the sheet paint stack, issue 601, lands). What the rou
    counts them as a sheet matter): the top deck at 0.9 and the crew, rocket and flak rooms rose above the low top blocks
    and into the gaps between them. The top deck is now at 0.3 and each room sits under its own block's roof. Measured on
    the unpainted export with PR 608's check: 0 outside the whole ship; machines split 0 of 29.
+5. **Detail density (R224).** Measured per part type on the build (the mesh half of tools/recipe/density.py, PR 601):
+   no part type is under 0.75 of the hull's triangles or edge features per square unit; the lowest are the prongs (1.50
+   and 1.29). The kit tube's new bore rings, bolted lip and stiffeners (added for A16) also reach A17's scoop drums.
+
+Side by side with the concept: [bow](../../../shots/issue_532_a17/a17_bow_compare.jpg) (concept, before, now),
+[three-quarter](../../../shots/issue_532_a17/a17_threequarter_compare.jpg), [side](../../../shots/issue_532_a17/a17_side_compare.jpg).
 
 **R221 clean-ups (Ryan, Nov 12 2026).** The two chain girdles are cut ("There's no purpose"), and every inventory line names
 its job (27 lines, 0 failing). The fit check's new LANE test (each rack's firing lane forward and backblast aft; no gun in
@@ -53,7 +59,8 @@ midships and stern at the same windows), then [cells.jpg](cells.jpg) and [fit_vi
 | Round 3 build | 2.62 | 2.84 | 2.05 | 2.22 |
 | Round 3b build | 2.82 | 3.84 | 1.91 | 2.88 |
 | Round 3c build | 2.83 | 3.79 | 1.92 | 2.71 |
-| **R221 build** | **2.84** | **3.82** | 1.92 | 2.71 |
+| R221 build | 2.84 | 3.82 | 1.92 | 2.71 |
+| **Into the recipe (issue 532)** | **2.83** | **3.82** | 1.92 | 2.71 |
 
 Hull: length over the median beam or height across the middle 60 percent of the length. The envelope includes the guns,
 dishes and belly turret. Distinct masses per cell (concept by eye, build from the model) are in [inventory.md](inventory.md):

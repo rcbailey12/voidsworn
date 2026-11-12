@@ -75,7 +75,7 @@
   {
    "cell": "bow/side",
    "id": "head_face",
-   "built": 3,
+   "built": 6,
    "listed": 1,
    "present": true,
    "shaped": true,
@@ -491,7 +491,7 @@
   "build": {
    "env_LB": 1.92,
    "env_LH": 2.71,
-   "hull_LB": 2.84,
+   "hull_LB": 2.83,
    "hull_LH": 3.82
   }
  }

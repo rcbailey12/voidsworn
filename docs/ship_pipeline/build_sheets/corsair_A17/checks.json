@@ -11,7 +11,7 @@
  "height_side": 5.375,
  "height_bow": 5.375,
  "height_disagreement_percent": 0.0,
- "widest_at_station_percent": 59.1,
+ "widest_at_station_percent": 59.0,
  "hull_beam": 4.65,
  "hull_depth": 3.12,
  "L_to_B_hull": 3.12,
@@ -28,5 +28,5 @@
   "sx": -0.0977941262464842,
   "sy": 0.08380952123424304
  },
- "prow_overhang": 1.08
+ "prow_overhang": 1.03
 }
