@@ -105,9 +105,9 @@ func _run() -> void:
 		fx.step(1.0 / 60.0)
 		await process_frame
 		var j: Dictionary = s.get_meta("cut_job", {})
-		if j.has("meshes"): break
+		if j.get("built", false): break
 	var job: Dictionary = s.get_meta("cut_job", {})
-	check(job.has("meshes"), "the cut finished and its pieces were built")
+	check(job.get("built", false), "the cut finished and its pieces were built")
 	var prof: Dictionary = fx.prof_take()
 	fx.death("a16", "big")
 	for i in 240:
@@ -203,8 +203,8 @@ func _run() -> void:
 	var prof2: Dictionary = fx.prof_take()
 	print("DEATH_SEAM machines=%d machines_split=%d %s" % [sets.size(), split, str(names)])
 	print("DEATH_SEAM inside_triangles=%d inside_outside_hull=%d fragment_inside_triangles=%d pieces=%d main=%d (outside the whole ship before the break, a sheet matter: %d)" % [inside_total, outside, frag_inside, pieces.size(), n_main, outside_whole])
-	print("DEATH_SEAM cut_worker_ms=%.1f main_thread_ms piece_build=%.1f death=%.1f break_up=%.1f" % [cut_ms,
-		float(prof.get("piece_meshes", 0)) / 1000.0, float(prof2.get("death", 0)) / 1000.0, float(prof2.get("break_up", 0)) / 1000.0])
+	print("DEATH_SEAM cut_worker_ms=%.1f main_thread_ms piece_build=%.1f (most in one frame %.1f; headless also builds the geometry here, a game window builds it on the worker) death=%.1f break_up=%.1f" % [cut_ms,
+		float(prof.get("piece_meshes", 0)) / 1000.0, float(job.get("build_max_usec", 0)) / 1000.0, float(prof2.get("death", 0)) / 1000.0, float(prof2.get("break_up", 0)) / 1000.0])
 	check(split == 0, "machines split across pieces: %d %s" % [split, str(names)])
 	check(outside == 0, "inside triangles outside their own piece's hull: %d" % outside)
 	check(inside_total > 0, "the pieces carry inside triangles")

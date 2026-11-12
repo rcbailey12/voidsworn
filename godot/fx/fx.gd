@@ -1185,7 +1185,8 @@ func death(id: String, cause := "blast") -> float:
 		return 0.0
 	stats["deaths"] += 1
 	var t0 := Time.get_ticks_usec()
-	var tl_before = (ships[id] as SHIP).get_meta("death_timeline", null)
+	# has_meta first: get_meta with a null default logs an error on a ship's first death (issue 600)
+	var tl_before = (ships[id] as SHIP).get_meta("death_timeline") if (ships[id] as SHIP).has_meta("death_timeline") else null
 	var r: float = DEATH.death(self, ships[id], cause)
 	pend("death", t0)
 	var s: SHIP = ships[id]

@@ -1162,16 +1162,34 @@ static func _prebuild(fx, s) -> void:
 	WorkerThreadPool.wait_for_task_completion(tid)
 	s.remove_meta("cut_task")
 	var job: Dictionary = s.get_meta("cut_job", {})
+	job["meshes"] = []
+	_prebuild_step(fx, s, job)
+
+
+# Issue 600 (R118): the pieces' materials and colliders are built a few at a time, PREBUILD_BUDGET of main-thread time a
+# frame, never all in one frame (on A16, 16 pieces cost 40 to 60 ms together). A break-up that comes first builds what
+# is missing on the spot, as it always could; job "built" says all are done.
+const PREBUILD_BUDGET := 4000   # microseconds a frame; a tuning value
+
+static func _prebuild_step(fx, s, job: Dictionary) -> void:
+	if s.has_meta("death_hidden"):
+		return
 	var t0 := Time.get_ticks_usec()
-	var meshes: Array = []
+	var meshes: Array = job["meshes"]
 	var geo: Array = job.get("geo", [])
 	var pieces: Array = job.get("out", []) if job.get("out") != null else []
-	for i in pieces.size():
+	while meshes.size() < pieces.size():
+		var i := meshes.size()
 		var pc: Dictionary = pieces[i]
 		meshes.append(_piece_materials(geo[i], pc) if i < geo.size() else _piece_mesh(pc))
 		if pc.has("hull"): pc["shape"] = safe_convex(pc["hull"])
-	job["meshes"] = meshes
+		if Time.get_ticks_usec() - t0 > PREBUILD_BUDGET: break
+	job["build_max_usec"] = maxi(int(job.get("build_max_usec", 0)), Time.get_ticks_usec() - t0)
 	fx.pend("piece_meshes", t0)
+	if meshes.size() < pieces.size():
+		fx.later(fx.now + 0.001, func l_prebuild_step() -> void: _prebuild_step(fx, s, job))
+	else:
+		job["built"] = true
 
 
 # Hull attributes keep their vertex format; private damage materials add burnt backs.
