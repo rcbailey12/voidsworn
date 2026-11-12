@@ -14,8 +14,8 @@ INVENTORY = [
          reads='ribbed drums with bands, a rolled lip, a grille in a dark mouth', src='picture'),
     dict(id='ears', type='dish', what='listening dishes as ears on brackets at the upper sides of the head', count=2, cells=['bow/top', 'bow/side'],
          reads='ribbed bowls with rims, feed horns on struts, yokes, a base', src='picture'),
-    dict(id='jaws', type='claw', what='jaws: articulated claws under and beside the head', count=4, cells=['bow/below', 'bow/side'],
-         reads='hinge drums, armoured segments, joints, rams, hooked fingers', src='picture'),
+    dict(id='jaws', type='prong', what='jaws: long flat prongs reaching forward from the lower bow like a fork (round 3b: the Board read the round 3 claws as hands)',
+         count=4, cells=['bow/below', 'bow/side', 'bow/top'], reads='hinge knuckles, long flat tapering blades, a spine ridge, joint knuckles, hooked tips', src='picture'),
     dict(id='jaw_pipes', type='pipe', what='coiled hoses and pipes under the head between the jaws', count=3, cells=['bow/below'],
          reads='runs with flange rings', src='picture'),
     dict(id='brow_rack', type='rack', what='rattle-rocket pod on the brow (data.js torp F)', count=1, cells=['bow/top'],
@@ -57,6 +57,10 @@ INVENTORY = [
     dict(id='stern_vents', type='vent', what='louvre panels on the aft flanks over the engine room', count=2, cells=['stern/side'], reads='frames, slats', src='picture'),
     dict(id='stern_thrusters', type='thruster', what='attitude thruster quads at the stern', count=2, cells=['stern/side'], reads='a block, splayed nozzles', src='designed'),
 ]
+# Structure (round 3b, the Board on round 3): distinct block masses per blob-sweep cell, counted by eye on the round 8 sheet's
+# side and top views (thirds of the length). The concept has no underside view.
+STRUCTURE = {'bow/top': 5, 'bow/side': 5, 'mid/top': 7, 'mid/side': 7, 'stern/top': 5, 'stern/side': 6}
+STRUCTURE_NOTE = 'A17 sheet: bow, the head block, its roof step, the neck block, the flank tier and belly band; midships, three stepped top blocks over flank blocks; stern, two top blocks, the engine block and flank blocks'
 LEFT_PLAIN = [
     'Grime, rust streaks, scratches, worn edges and decals: surface texture, painted in the build (recipe stages 4 and 5), not modelled.',
     'The picture\'s slack chains: made taut girdles (R185).',

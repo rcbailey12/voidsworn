@@ -437,6 +437,17 @@ class Kit:
         self.features.append(dict(id=fid, kind='claw', what='%s, %d segments, %d fingers' % (name, len(pts), fingers), count=1,
                                   pos=tuple(h), aim=(0.0, -60.0), src=src, note=note, tip=tuple(part.fit['tip'][1]), inv=[inv] if isinstance(inv, str) else list(inv)))
 
+    def prong(self, fid, root, length, width=0.4, thick=0.12, hook=0.35, yaw=0.0, droop=0.0, joints=2, src='picture', note='', inv=(),
+              housing=None):
+        """a long flat jaw prong from the kit, hinged at root, reaching forward (yaw toward port +)"""
+        h = Vector(root)
+        if housing:
+            self.box(fid + '_housing', *housing, 'steel', ch=0.08, grp=fid)
+        part = HP.prong(length, width, thick, hook=hook, joints=joints, droop=droop)
+        part = self.emit(fid, part, HP.frame(h, self.aim_vec(yaw, 0), (0, 0, 1)), inv, keep_r=width)
+        self.features.append(dict(id=fid, kind='claw', what='jaw prong, %.1f long, hooked tip' % length, count=1, pos=tuple(h), aim=(yaw, 0.0),
+                                  src=src, note=note, tip=tuple(part.fit['tip'][1]), inv=[inv] if isinstance(inv, str) else list(inv)))
+
     def chain(self, fid, pts, r=0.045, src='picture', note='', inv=(), link=0.3):
         part = HP.chain(pts, link=link, r=r)
         self.emit(fid, part, Matrix.Identity(4), inv, keep=False)

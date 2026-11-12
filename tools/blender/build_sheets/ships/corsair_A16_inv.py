@@ -85,6 +85,10 @@ INVENTORY = [
          reads='a bevelled block, four splayed nozzles', src='designed'),
     dict(id='stern_chain', type='chain', what='girdle chain over the castle seam', count=1, cells=['stern/top', 'stern/side'], reads='links, lugs', src='picture'),
 ]
+# Structure (round 3b, the Board on round 3): distinct masses per blob-sweep cell, counted by eye on the round 8 sheet's side and
+# top views (thirds of the length). The concept has no underside view.
+STRUCTURE = {'bow/top': 5, 'bow/side': 6, 'mid/top': 6, 'mid/side': 7, 'stern/top': 7, 'stern/side': 7}
+STRUCTURE_NOTE = 'A16 sheet: bow, the prow cap, brow steps, tube housing, chin and layered flank belts; midships, tier 2, the rack plinth, the vent box, three flank bands and the sponson; stern, castle, bridge, stern deck, two pod housings and flank bands'
 LEFT_PLAIN = [
     'Grime, rust streaks, scratches, worn edges and decals: surface texture, painted in the build (recipe stages 4 and 5), not modelled.',
     'The picture\'s slack hanging chains: made taut girdles (factions.md: nothing hangs off the ship, R185).',

@@ -410,6 +410,7 @@ SUBPARTS = {
     'rack': ['box', 'frame', 'div', 'cell', 'nose', 'bore', 'cheek', 'yoke', 'ring'],
     'dish': ['bowl', 'rib', 'feed', 'strut', 'yoke', 'post', 'base'],
     'claw': ['hinge', 'arm', 'joint', 'ram', 'finger'],
+    'prong': ['knuckle', 'blade', 'spine', 'joint', 'hook'],
     'chain': ['link', 'lug'],
     'hatch': ['rim', 'door', 'seam', 'hinge'],
     'hatchbox': ['frame', 'lid', 'rib'],
@@ -708,3 +709,37 @@ def plate_slab(bot, nrm, t, bevel=0.25, rivets=True, lift=0.0, rr=0.035):
             vv, ff = rod(c - nrm * 0.01, c + nrm * rr * 0.8, rr, 6)
             o = len(RV); RV += vv; RF += [tuple(x + o for x in f) for f in ff]
     return (V, F), (RV, RF)
+
+
+def prong(length, width, thick, hook=0.35, joints=2, droop=0.0):
+    """a jaw prong (round 3b; the Board on R217: "long flat prongs projecting forward from the lower bow like a fork,
+    blades with a hooked tip"): a hinge knuckle at the root (origin, axis across the ship), a long flat blade along +X that
+    tapers to a hooked tip curling inboard-down, a raised spine ridge along its top, joint knuckles along it. droop bends
+    the blade down along its length (units at the tip)."""
+    p = Part('prong')
+    p.add('knuckle', 'mount', 'iron', moved(revolve([(-width * 0.62, thick * 1.5), (width * 0.62, thick * 1.5)], 16, cap0=True, cap1=True),
+                                            Matrix.Rotation(math.pi / 2, 4, 'Z')))
+    n = 6
+    secs = []
+    for i in range(n + 1):
+        f = i / n
+        x = thick * 1.2 + (length - thick * 1.2) * f
+        hw = width * (0.5 - 0.22 * f)
+        ht = thick * (1.0 - 0.35 * f)
+        z = -droop * f * f
+        secs.append((x, octa(hw, ht, ht * 0.45, 0.0, z)))
+    p.add('blade', 'body', 'steel', prism(secs))
+    sp = [(thick * 1.4 + (length * 0.85) * f, -droop * f * f + thick * (1.0 - 0.35 * f)) for f in (0.0, 0.5, 1.0)]
+    for i, ((x0, z0), (x1, z1)) in enumerate(zip(sp, sp[1:])):
+        p.add('spine%d' % i, 'body', 'soot', block(x0, x1, width * 0.12, thick * 0.35, 0.0, zo=(z0 + z1) / 2 + thick * 0.25))
+    for j in range(joints):
+        f = (j + 1) / (joints + 1); x = thick * 1.2 + (length - thick * 1.2) * f
+        p.add('joint%d' % j, 'body', 'iron', moved(revolve([(-width * (0.55 - 0.2 * f), thick * 1.2), (width * (0.55 - 0.2 * f), thick * 1.2)], 12, cap0=True, cap1=True),
+                                                   Matrix.Translation((x, 0, -droop * f * f)) @ Matrix.Rotation(math.pi / 2, 4, 'Z')))
+    # the hook: two short tapering segments turning down and back at the tip
+    tip = Vector((length, 0, -droop)); a = tip + Vector((hook * 0.55, 0, -hook * 0.35)); b = a + Vector((-hook * 0.2, 0, -hook * 0.5))
+    for k, (u0, u1, t0, t1) in enumerate(((tip - Vector((thick, 0, 0)), a, 0.28, 0.18), (a, b, 0.18, 0.03))):
+        M = frame(u0, u1 - u0, (0, 1, 0)); L = (u1 - u0).length
+        p.add('hook%d' % k, 'body', 'steel', moved(prism([(0.0, octa(width * t0, thick * 0.6, thick * 0.2)), (L, octa(max(0.005, width * t1), thick * 0.4, 0.0))]), M))
+    p.fit = dict(tip=P(a))
+    return p

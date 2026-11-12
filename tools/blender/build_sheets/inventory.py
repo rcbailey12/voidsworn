@@ -38,6 +38,39 @@ for t in sorted({it['type'] for it in INV}):
 lines.append('\nLeft as surface, and why:\n')
 for w in inv.LEFT_PLAIN:
     lines.append('- ' + w)
+
+
+def ratios(rd):
+    """length to beam and length to height, concept sheet against build renders, the same measure on both"""
+    from PIL import Image
+    import numpy as np
+    from scipy import ndimage
+
+    def clean(d):
+        d = ndimage.binary_opening(d, np.ones((3, 3)))
+        lab, n = ndimage.label(d); sz = ndimage.sum(d, lab, range(1, n + 1)); return lab == (np.argmax(sz) + 1)
+
+    def prof(m):
+        xs = np.where(m.any(0))[0]; x0, x1 = xs.min(), xs.max(); L = x1 - x0
+        ext = []
+        for c in m[:, x0:x1 + 1].T:
+            ys = np.where(c)[0]; ext.append(ys.max() - ys.min() if len(ys) else 0)
+        ext = np.array(ext, float); mid = ext[int(0.2 * len(ext)):int(0.8 * len(ext))]
+        ys = np.where(m.any(1))[0]
+        return L, ys.max() - ys.min(), float(np.median(mid))
+    im = np.asarray(Image.open(os.path.join(REPO, 'contrib/muse/design/concept_round8_2026_11', CODE + '_sheet.jpg')).convert('RGB')).astype(int)
+    bg = np.median(im[5:40, 5:40].reshape(-1, 3), axis=0); d = np.abs(im - bg).sum(2) > 40
+    h2 = im.shape[0] * 7 // 12; w2 = im.shape[1] * 3 // 4
+    views = dict(concept=(clean(d[:h2, :w2]), clean(d[h2:, :w2])),
+                 build=(clean(np.rot90(np.asarray(Image.open(os.path.join(rd, 'top.png')))[..., 3] > 8)),
+                        clean(np.asarray(Image.open(os.path.join(rd, 'side.png')))[..., 3] > 8)))
+    out = {}
+    for k, (t, s_) in views.items():
+        Lt, Bt, Bm = prof(t); Ls, Hs, Hm = prof(s_)
+        out[k] = dict(env_LB=round(Lt / Bt, 2), env_LH=round(Ls / Hs, 2), hull_LB=round(Lt / Bm, 2), hull_LH=round(Ls / Hm, 2))
+    return out
+
+
 bad = 0
 if MODEL:
     M = json.load(open(MODEL))
@@ -67,8 +100,37 @@ if MODEL:
                                                                  'Y' if b['shaped'] else 'n', 'Y' if b['detailed'] else 'n', (' ' + why) if why else ''))
             rows.append(dict(cell=c, id=it['id'], built=b['n'], listed=it['count'], present=pres, shaped=bool(b['shaped']), detailed=bool(b['detailed'])))
         lines.append('')
-    json.dump(dict(rows=rows, failing=bad), open(os.path.join(OUT, 'cells.json'), 'w'), indent=1)
-    lines.append('Lines not present, shaped and detailed without a reason: %d.' % bad)
+    # ---- structure, not only parts (the Board on round 3, ships.md 2c): distinct masses per cell, concept against build ----
+    lo_z = M['lo'][2]
+    regs = {'bow': (0.0, 33.4), 'mid': (33.3, 66.7), 'stern': (66.6, 100.0)}
+    SC = getattr(inv, 'STRUCTURE', {})
+    srows = []
+    lines.append('\n## Structure per cell: distinct masses (blocks, tiers, belts), concept against build\n')
+    lines.append('Concept counts read off the round 8 sheet by eye (%s); build counts are the model\'s registered masses whose station range '
+                 'overlaps the third (below: masses reaching within 0.8 of the belly).\n' % getattr(inv, 'STRUCTURE_NOTE', 'see the inventory file'))
+    lines.append('| Cell | Concept | Build | Build masses |\n|---|---:|---:|---|')
+    for c in CELLS:
+        reg, view = c.split('/')
+        a, b = regs[reg]
+        ms = [m for m in M.get('masses', []) if m['st'][0] < b and m['st'][1] > a and (view != 'below' or m['z'][0] <= lo_z + 0.8)
+              and (view != 'side' or m['y'][1] > 0.05)]  # the side view is the port beam: starboard-only masses are hidden
+        cc = SC.get(c)
+        srows.append(dict(cell=c, concept=cc, build=len(ms)))
+        lines.append('| %s | %s | %d | %s |' % (c, cc if cc is not None else 'no view', len(ms), '; '.join(m['name'] for m in ms)[:240]))
+    rat = None
+    rd = os.path.dirname(MODEL)
+    if os.path.exists(os.path.join(rd, 'top.png')) and os.path.exists(os.path.join(rd, 'side.png')):
+        rat = ratios(rd)
+        lines.append('\n## Proportions: length to beam and length to height, concept against build (the Board on round 3)\n')
+        lines.append('Measured the same way on both: the concept sheet\'s top and side views and the blockout\'s top and side renders, bow left. '
+                     'Envelope: the whole outline. Hull: length over the median beam or height across the middle 60 percent of the length '
+                     '(dishes, guns and antennas sticking out at a few stations do not count).\n')
+        lines.append('| | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |\n|---|---:|---:|---:|---:|')
+        for k_ in ('concept', 'build'):
+            r_ = rat[k_]
+            lines.append('| %s | %.2f | %.2f | %.2f | %.2f |' % (k_, r_['env_LB'], r_['env_LH'], r_['hull_LB'], r_['hull_LH']))
+    json.dump(dict(rows=rows, failing=bad, structure=srows, ratios=rat), open(os.path.join(OUT, 'cells.json'), 'w'), indent=1)
+    lines.append('\nLines not present, shaped and detailed without a reason: %d.' % bad)
 open(os.path.join(OUT, 'inventory.md'), 'w').write('\n'.join(lines) + '\n')
 print('inventory', CODE, 'failing', bad)
 sys.exit(1 if bad else 0)
