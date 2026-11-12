@@ -95,7 +95,7 @@ What it writes (`tools/recipe/export7.py`), in the game's frame (+X bow, +Y up, 
 
 | Output | What |
 |---|---|
-| `<code>.glb` | one ship node, one mesh with three surfaces (`<code>_hull`, `<code>_parts`, `<code>_glow`), and an empty child node per hard point. The maps are outside the glb, by relative URI, as the A4 ships have them |
+| `<code>.glb` | one ship node, one mesh with exterior surfaces (`<code>_hull`, `<code>_parts`, `<code>_glow`) plus authored interior surfaces, and an empty child node per hard point. The maps are outside the glb, by relative URI, as the A4 ships have them |
 | `hp_w<slot>_<weapon>_<arc>_<n>` | one per weapon muzzle: the barrel tips the kit registers while it builds (`plumbing.register_gun`), so a hard point is always on a real barrel. Node -Z along the barrel, +Y away from the hull. The weapon and arc are read from `data.js`, never typed. Extras: kind, size, arc, arc_deg, slot, weapon, radius, socket |
 | `hp_eng_<n>` | one per engine exit (the hull module registers them): -Z out of the bell, `extras.radius` |
 | `hp_bay_<n>` | one per hangar mouth the hull module registers (`plumbing.register_bay`): -Z the launch direction, `extras.hangar` |
@@ -130,9 +130,47 @@ install a checked export there: what it replaces is copied to `export\replaced_<
 files are moved there too (they belong to the old hull), and `manifest_entry.json` is merged into
 `assets/ships/manifest.json`. Nothing is deleted.
 
+### Authored insides and weak seams (issue 557)
+
+Stage 7 keeps every visible, non-proxy `role=interior` object and applies the hull's `skin` solidify modifier. It never
+replaces an authored room with a flat cap. A build without interior geometry or authored seams fails export and readback.
+The original materials, including interior paint, are retained; the inner skin gets a separate dark material. Interior
+surfaces share the ship mesh and stay behind its opaque exterior until damage or separation exposes them. They still cost
+triangles, surfaces, memory and renderer work: occlusion is not a promise of zero frame cost. Measure the #207 scene.
+
+**The version 1 format** is the ship node's GLB `extras.voidsworn_destruct` dictionary. It contains `version: 1`,
+`interior_materials: [material name, ...]`, and `seams: [{p: [x,y,z], n: [x,y,z]}, ...]`, all in the GLB ship frame.
+Transverse seams have normal `[1,0,0]`. The optional longitudinal seam has normal `[0,1,0]` and `span: [x0,x1]`, identifying
+the transverse compartment it weakens. Positions are points, normals are unit vectors. The writer converts Blender Z up
+to glTF Y up once. Its inputs are the build's scene `r209_t_lines` and `r209_l_line`; no default joints are supplied.
+`interior_materials` names actual nonempty surfaces, including `<code>_inside_skin` for the retained inner liner.
+The reader `fx_hull.gd` transforms seams into the hull analysis frame, accounting for ship scale, and recognises those
+materials before the damage and fracture fallback. A GLB extra was chosen so installing the ship also installs its seams
+and insides, without a sidecar that can go missing or old fixed chunks that would replace the current explosion.
+
+`fx_death.gd` uses those seams as weak joints, with waves, kink, missing bite, chips, scorch and faction matter retained.
+The number of main pieces follows the supplied structure; legacy ships without the extra keep the #167 fallback.
+Authored rooms keep their geometry through wounds and death; `fx_breach.gd` removes the shell at the wound and keeps its
+torn edge, without laying its generic cavity floor and frames over the authored room. Old hulls still get those floors.
+An inner liner by itself fails readback: the export must also contain real room surfaces. The optional
+`authored_interiors_check.gd -- --legacy-cache` PC check verifies every installed older asset keeps the legacy reader
+and its original outside triangles.
+
+Prove the written asset with `fx/test/authored_interiors_check.gd -- EXPORT/CODE.glb` in headless Godot, and compare the
+same installed ship at camera 170 and 60 with `fx/test/authored_interiors_probe.gd -- AUTHORED LEGACY MOVED SHOTS` on the GPU.
+`tools/recipe/interiors_export_probe.py` repeats the three exports from one baked blend (`variant=authored`, `legacy`,
+`moved`); `moved` shifts the first transverse joint by 0.10 ship units in Blender before export. Optional `fixture=1` adds
+six clearly named machinery marker boxes between Ab8's decks for the pipeline test, identically before each export;
+these are test geometry, not production ship art. The legacy comparison
+pins the exporter at commit `902388eb2fa3582bd26531be3e3ec38d8d01dfd0` (optional `baseline=REV` override). The capture probe
+saves an installed scene and loads it through ShipView, then calls the production damage and death paths. Keep the raw
+stills and record triangles, surfaces/draw calls and the #207 frame median and 4K GPU cost beside them. The only cost gate
+is RULEBOOK 3.9. `check_export_selftest.py` proves that removing interior primitives or seams from a valid export fails.
+
 **Not written yet (exactly what is left of the A4 set):**
 
-1. `<code>_wreck.glb`: the death pieces (the hull cut along its authored break lines into chunks with cut faces).
+1. `<code>_wreck.glb`: no fixed chunk file is needed for new recipe ships. The runtime fractures their exported shell and
+   authored interiors near their exported weak seams, with the current irregular explosion. Older ship assets still load.
 2. `<code>_damage.glb` and the `skin_<n>` hull patches in the ship glb: the breach holes and per-weapon damage. The `hp_breach`
    anchors (one per section and side, the class and faction count) are already there for it.
 3. `<code>_emissive.jpg`: the glow (engine throats, muzzles, lamps) is its own surface with an emissive factor, not a map.

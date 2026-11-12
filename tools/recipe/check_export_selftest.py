@@ -60,12 +60,28 @@ def breach_count(g):
 def breach_near(g): first(g, 'hp_breach_')['translation'] = list(first(g, 'hp_w')['translation'])
 def breach_inward(g):
     n = first(g, 'hp_breach_'); n['rotation'] = qmul(n.get('rotation', [0, 0, 0, 1]), [1, 0, 0, 0])   # a half turn about its own X: +Y now points in
+
+def no_interior(g):
+    root = next(n for n in g['nodes'] if n.get('name') == code)
+    mats = root['extras']['voidsworn_destruct']['interior_materials']
+    g['meshes'][root['mesh']]['primitives'] = [p for p in g['meshes'][root['mesh']]['primitives'] if g['materials'][p['material']]['name'] not in mats]
+
+def no_seams(g):
+    next(n for n in g['nodes'] if n.get('name') == code)['extras']['voidsworn_destruct']['seams'] = []
+
+def liner_only(g):
+    root = next(n for n in g['nodes'] if n.get('name') == code)
+    mats = root['extras']['voidsworn_destruct']['interior_materials']
+    g['meshes'][root['mesh']]['primitives'] = [p for p in g['meshes'][root['mesh']]['primitives'] if g['materials'][p['material']]['name'] not in mats or g['materials'][p['material']]['name'] == code + '_inside_skin']
+    root['extras']['voidsworn_destruct']['interior_materials'] = [code + '_inside_skin']
 CASES = (('pass', None, 0, ''), ('no_slot', no_slot, 1, f'weapon slot {last} '), ('off_mesh', off_mesh, 1, 'off the mesh'),
          ('backward', backward, 1, 'aimed backward'), ('wrong_side', wrong_side, 1, 'a port mount must sit'), ('no_core', no_core, 1, 'hp_core'),
          ('no_socket', no_socket, 1, 'no extras.socket'), ('no_engine', no_engine, 1, 'hp_eng'),
          ('no_rcs', no_rcs, 1, 'hp_rcs'), ('no_board', no_board, 1, 'hp_board'),
          ('breach_count', breach_count, 1, 'hp_breach'), ('breach_near', breach_near, 1, 'from a part (at least'),
-         ('breach_inward', breach_inward, 1, 'is not the outward normal'))
+         ('breach_inward', breach_inward, 1, 'is not the outward normal'),
+         ('no_interior', no_interior, 1, 'no authored interior geometry'), ('no_seams', no_seams, 1, 'no authored break seams'),
+         ('liner_only', liner_only, 1, 'no authored interior rooms'))
 bad = 0; base = os.path.join(src, '_selftest')
 for name, fn, want, why_must in CASES:
     d = os.path.join(base, name); os.makedirs(d, exist_ok=True)

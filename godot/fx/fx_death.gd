@@ -669,7 +669,10 @@ static func _break_f(b: Dictionary, q: Vector3) -> float:
 static func _plan_main(plan: Dictionary, q: Vector3) -> int:
 	var i := 0
 	for b in plan["breaks"]:
+		if b.has("parent"): continue
 		if _break_f(b, q) > 0.0: i += 1
+	for b in plan["breaks"]:
+		if b.has("parent") and i == int(b["parent"]) and _break_f(b, q) > 0.0: i = int(b["piece"])
 	return i
 
 
@@ -694,7 +697,7 @@ static func _plan_assign(plan: Dictionary, q: Vector3) -> int:
 	var main := 0
 	for bi in breaks.size():
 		var f := _break_f(breaks[bi], q)
-		if f > 0.0: main += 1
+		if f > 0.0 and not breaks[bi].has("parent"): main += 1
 		if not chips.is_empty() and absf(f) < float(chips["band"]):
 			var seeds: PackedVector3Array = chips["seeds"]
 			var best := -1
@@ -705,6 +708,9 @@ static func _plan_assign(plan: Dictionary, q: Vector3) -> int:
 					bd = dd
 					best = j
 			if best >= 0 and bd < float(chips["reach"]) * float(chips["reach"]): return int(chips["first"]) + best
+	if bool(plan.get("authored", false)):
+		for b in breaks:
+			if b.has("parent") and main == int(b["parent"]) and _break_f(b, q) > 0.0: main = int(b["piece"])
 	return main
 
 
@@ -728,6 +734,17 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 	else:
 		var small := r.randf_range(0.31, 0.37)
 		sizes = [small, 1.0 - small] if r.randf() < 0.5 else [1.0 - small, small]
+	var seam_data = h.get("seams")
+	var authored: Array = seam_data if seam_data is Array else []
+	var transverse: Array = authored.filter(func(b): return not b.has("span"))
+	transverse.sort_custom(func(a, b): return a["at"].x < b["at"].x)
+	if not transverse.is_empty():
+		sizes.clear()
+		var prev := x0
+		for b in transverse:
+			sizes.append((float(b["at"].x) - prev) / L)
+			prev = b["at"].x
+		sizes.append((x0 + L - prev) / L)
 	# the side that was hit (the bite and the scorch sit there); with no recent hit, a per-ship side
 	var zs := 1.0 if r.randf() < 0.5 else -1.0
 	var last = s.get_meta("last_hit", [])
@@ -762,9 +779,30 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 		var mean_off := k * (W * 0.25 + zk * zk / W) / maxf(n.x, 0.2)
 		breaks.append({"at": Vector3(x0 + u * L - mean_off, h.c.y, h.c.z), "n": n, "side": side,
 			"zk": zk, "k": k, "waves": _waves(r, L, amp, 3)})
+		if not transverse.is_empty():
+			# Authored joints are weaknesses, with an irregular tear close to the authored plane.
+			breaks[-1]["at"] = transverse[i]["at"]
+			breaks[-1]["n"] = transverse[i]["n"]
+			breaks[-1]["k"] = k * 0.25
+			breaks[-1]["waves"] = _waves(r, L, L * 0.012, 3)
+	for b in authored:
+		if not b.has("span"): continue
+		var parent := 0
+		var mid: float = (float(b["span"][0]) + float(b["span"][1])) * 0.5
+		for t in transverse:
+			if mid > float(t["at"].x): parent += 1
+		var piece := seeds.size()
+		var normal: Vector3 = b["n"]
+		var at: Vector3 = b["at"]
+		at.x = mid
+		seeds[parent] = seeds[parent] - normal * H * 0.2
+		seeds.append(Vector3(mid, h.c.y, h.c.z) + normal * H * 0.2)
+		sizes.append(float(sizes[parent]) * 0.5)
+		breaks.append({"at": at, "n": normal, "side": Vector3.FORWARD, "zk": 0.0, "k": 0.08,
+			"waves": _waves(r, L, L * 0.008, 3), "parent": parent, "piece": piece})
 	# 3. the bite: on the core's break (a capital: the break beside its biggest piece), on the side that was hit
 	var bi := 0
-	if breaks.size() > 1:
+	if breaks.size() > 1 and authored.is_empty():
 		bi = 0 if float(sizes[0]) + float(sizes[1]) >= float(sizes[1]) + float(sizes[2]) else 1
 	var rx: float = L * (0.09 if capital else 0.12)
 	# centred a little into the bigger of the two pieces, so the bite eats mostly into it and the small one stays small
@@ -808,7 +846,7 @@ static func fracture_plan(fx, s, r: RandomNumberGenerator) -> Dictionary:
 			var p: Vector3 = (b["at"] as Vector3) + (b["side"] as Vector3) * W * 0.3 * side + Vector3.UP * H * 0.2
 			scorch.append(Vector4(p.x, p.y, p.z, minf(W, L * 0.12) * 0.5))
 	return {"L": L, "seeds": seeds, "sizes": sizes, "breaks": breaks, "bite": bite, "chips": chips, "n_main": n_main,
-		"n_frag": nsub + chip_seeds.size(), "bite_break": bi, "scorch": scorch}
+		"n_frag": nsub + chip_seeds.size(), "bite_break": bi, "scorch": scorch, "authored": not authored.is_empty()}
 
 
 # Gather the hull's surfaces on the main thread (mesh arrays come from the rendering server), then cut on a worker.
@@ -828,11 +866,14 @@ static func precompute(fx, s, cause := "blast") -> void:
 	# torn breaks, a bite of hull gone where the core goes off, chips along the break); the seeds stay one per main
 	# piece for the older readers.
 	var plan := {}
-	if s.death_big and s.faction != "chorus":
+	if (s.death_big and s.faction != "chorus") or s.hull.authored:
 		plan = fracture_plan(fx, s, r)
 		seeds = plan["seeds"]
 	var inv: Transform3D = s.root.global_transform.affine_inverse()
 	var surfs: Array = []
+	if s.hull.authored:
+		# Seams and damage entries live in the analysis pose; ShipView may since have bobbed or banked the mesh.
+		inv = s.hull_motion().affine_inverse() * inv
 	for m in s.meshes:
 		var mi = m as MeshInstance3D
 		if mi == null or mi.mesh == null:
@@ -840,9 +881,9 @@ static func precompute(fx, s, cause := "blast") -> void:
 		var xf = inv * mi.global_transform
 		for si in mi.mesh.get_surface_count():
 			var mat: Material = mi.get_active_material(si)
-			surfs.append({"arrays": s.current_arrays(mi, si), "xf": xf, "mat": mat, "fmt": (mi.mesh as ArrayMesh).surface_get_format(si) if mi.mesh is ArrayMesh else 0})
+			surfs.append({"arrays": s.current_arrays(mi, si), "xf": xf, "mat": mat, "interior": s.hull.authored and HULL.interior_material(mi.mesh.surface_get_material(si)), "fmt": (mi.mesh as ArrayMesh).surface_get_format(si) if mi.mesh is ArrayMesh else 0})
 	var job = {"seeds": seeds, "surfs": surfs, "cause": cause, "organic": s.faction == "chorus", "out": null,
-		"mesh_on_worker": DisplayServer.get_name() != "headless", "plan": plan,
+		"mesh_on_worker": DisplayServer.get_name() != "headless", "plan": plan, "authored": s.hull.authored,
 		"ragged": s.death_big, "warp": _waves(r, s.hull.L, s.hull.L * 0.05, 3) if s.faction == "chorus" else [],
 		"sites": s.death_big and s.faction != "chorus", "sp": s.hull.sp, "sn": s.hull.sn}
 	s.set_meta("cut_job", job)
@@ -918,6 +959,10 @@ static func _piece_geometry(pc: Dictionary) -> ArrayMesh:
 static func _piece_materials(am: ArrayMesh, pc: Dictionary, weathered := false) -> ArrayMesh:
 	var si := 0
 	for sd in pc["surfs"]:
+		if bool(sd.get("interior", false)):
+			am.surface_set_material(si, sd["mat"])
+			si += 1
+			continue
 		var hull_mat := HULL.damage_material(sd["mat"], Transform3D.IDENTITY, {}, float(pc.get("section_scale", 1.0)), bool(pc.get("organic", false)))
 		hull_mat.set_shader_parameter("fx_power", 0.0)
 		hull_mat.set_shader_parameter("fx_weather", 0.8 if weathered else 0.0)
@@ -955,7 +1000,7 @@ static func _cut(job: Dictionary) -> Array:
 	var pieces: Array = []
 	for c in ns:
 		pieces.append({"surfs": [], "pts": PackedVector3Array(), "edge": PackedVector3Array(), "n": 0, "organic": job.get("organic", false),
-			"ragged": bool(job.get("ragged", false)), "frag": c >= n_main, "scorch": plan.get("scorch", []), "plan": plan})
+			"ragged": bool(job.get("ragged", false)), "frag": c >= n_main, "scorch": plan.get("scorch", []), "plan": plan, "authored": job.get("authored", false)})
 	for sd in job["surfs"]:
 		var arr: Array = sd["arrays"]
 		var xf: Transform3D = sd["xf"]
@@ -1064,7 +1109,7 @@ static func _cut(job: Dictionary) -> Array:
 				na[Mesh.ARRAY_COLOR] = dc
 			na[Mesh.ARRAY_INDEX] = nidx
 			var pc: Dictionary = pieces[c]
-			pc["surfs"].append({"arrays": na, "mat": sd["mat"], "fmt": int(sd.get("fmt", 0))})
+			pc["surfs"].append({"arrays": na, "mat": sd["mat"], "interior": sd.get("interior", false), "fmt": int(sd.get("fmt", 0))})
 			pc["n"] = int(pc["n"]) + order.size()
 			var step = maxi(1, order.size() / 120)
 			var points: PackedVector3Array = pc["pts"]
@@ -1095,6 +1140,8 @@ static func _seal_piece(pc: Dictionary) -> void:
 	pc["section_scale"] = bounds.size.length()
 	var quantum := maxf(bounds.size.length() * 0.000001, 0.000001)
 	for sd in pc["surfs"]:
+		# Authored decks and machinery have their own thickness and paint. Only the exterior gets a procedural torn rim.
+		if bool(pc.get("authored", false)) and bool(sd.get("interior", false)): continue
 		var pts: PackedVector3Array = sd["arrays"][Mesh.ARRAY_VERTEX]
 		var idx: PackedInt32Array = sd["arrays"][Mesh.ARRAY_INDEX]
 		var ids := PackedInt32Array()
@@ -1195,8 +1242,9 @@ static func _cap_outline(cap: Dictionary, outline: PackedVector3Array, bounds: A
 			if hi - lo > 1:
 				indices.append_array(PackedInt32Array([lo, hi - 1, hi]))
 				hi -= 1
-	for i in range(0, indices.size(), 3):
-		_cap_tri(cap, inset[indices[i]], inset[indices[i + 1]], inset[indices[i + 2]], Color(0.9, 0.015, 0, 1))
+	if not bool(pc.get("authored", false)):
+		for i in range(0, indices.size(), 3):
+			_cap_tri(cap, inset[indices[i]], inset[indices[i + 1]], inset[indices[i + 2]], Color(0.9, 0.015, 0, 1))
 	for i in outline.size():
 		var j := (i + 1) % outline.size()
 		_cap_tri(cap, outline[i], outline[j], inset[j], Color(0.25, 1.0, 0, 1))
@@ -1218,7 +1266,8 @@ static func _cap_outline(cap: Dictionary, outline: PackedVector3Array, bounds: A
 		for i in range(0, outline.size(), maxi(1, outline.size() / 48)):
 			if lip.size() < 512: lip.append(inset[i])
 		pc["lip"] = lip
-		_section_structure(cap, polygon, centre, x, y, inward, depth, radius, bool(pc.get("organic", false)), ragged)
+		if not bool(pc.get("authored", false)):
+			_section_structure(cap, polygon, centre, x, y, inward, depth, radius, bool(pc.get("organic", false)), ragged)
 	# Issue 484: a torn rim, not a clean outline: plating peeled outward in bent petals, some still glowing.
 	if ragged and outline.size() >= 6 and radius > bounds.size.length() * 0.05:
 		_cap_petals(cap, outline, centre, inward, radius, quantum, bool(pc.get("organic", false)), bounds.size.length())
@@ -1464,6 +1513,11 @@ static func _power_down(s) -> void:
 		var prepared: Array = []
 		for i in mi.mesh.get_surface_count():
 			var source: Material = mi.get_active_material(i)
+			if s.hull.authored and HULL.interior_material(mi.mesh.surface_get_material(i)):
+				var inside: Material = source.duplicate()
+				if inside is BaseMaterial3D: inside.emission_enabled = false
+				prepared.append(inside)
+				continue
 			var mat: ShaderMaterial
 			if source is ShaderMaterial and source.has_meta("fx_hull_source"):
 				mat = source.duplicate()
@@ -1959,8 +2013,8 @@ static func _hulk(fx, s) -> void:
 		node.add_child(copy)
 		copy.global_transform = original.global_transform
 		for i in original.mesh.get_surface_count():
-			var mat: ShaderMaterial = original.get_active_material(i).duplicate()
-			mat.set_shader_parameter("fx_power", 0.0)
+			var mat: Material = original.get_active_material(i).duplicate()
+			if mat is ShaderMaterial: mat.set_shader_parameter("fx_power", 0.0)
 			copy.set_surface_override_material(i, mat)
 	# Keep the opaque wound backs and rims after the live ship is released.
 	# Do not copy pooled lights, sparks or the live ship's other emitters.

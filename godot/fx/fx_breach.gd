@@ -825,6 +825,9 @@ static func compute(job: Dictionary) -> Dictionary:
 	var out_s: Array = []
 	var edges := {}
 	for sd in job["surfs"]:
+		if bool(sd.get("interior", false)):
+			out_s.append(null)
+			continue
 		var aabb: AABB = sd["aabb"]
 		var hit := false
 		for x in ents:
@@ -858,9 +861,10 @@ static func compute(job: Dictionary) -> Dictionary:
 		_quad(pt, a, b, b2, a2, -inw, col)
 	for i in ents.size():
 		var E: Ent = ents[i]
-		if E.walls and E.style != S_BREACH and not E.through and not job.get("organic", false):
+		var authored := bool(job.get("hull").get("authored")) if job.get("hull") is Object else false
+		if E.walls and E.style != S_BREACH and not E.through and not job.get("organic", false) and not authored:
 			_walls(parts[i], E)
-		if E.kind == K_HOLE:
+		if E.kind == K_HOLE and not authored:
 			_throat(parts[i], E, int(job.get("wound_kind", 0)))
 		elif E.style == S_PATCH and not job.get("flat", false):
 			_patch(parts[i], E, job.get("hull"))
@@ -1155,7 +1159,7 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 				ed["r"] = int(ed.get("r", 0)) + 1
 				ed["own"] = ri
 				edges[key] = ed
-			if not E.through:
+			if not E.through and not bool(sd.get("authored", false)):
 				_cup_tri(parts[ri], E, lents, a, b, c, n0 + n1 + n2)
 			continue
 		# the overlay skin over each mark this triangle lies under, lifted a hair off the hull
@@ -1198,7 +1202,7 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 		var pt: Part = parts[ow]
 		var shade := 0.35 + 0.3 * _nz(Q * 5.0 / maxf(Eo.R, 1e-3))
 		_tri(pt, Dp[i0] - n0 * Eo.th, Dp[i1] - n1 * Eo.th, Dp[i2] - n2 * Eo.th, -n0, -n1, -n2, -nsum, Color(PART_SKIN, shade, 0, 1))
-		if maxf(pm[i0], maxf(pm[i1], pm[i2])) > Eo.R * 0.01 and not Eo.through:
+		if maxf(pm[i0], maxf(pm[i1], pm[i2])) > Eo.R * 0.01 and not Eo.through and not bool(sd.get("authored", false)):
 			_cup_tri(pt, Eo, lents, a, b, c, nsum)
 	if not changed and not removed_any:
 		return null
@@ -1565,7 +1569,8 @@ static func gather(s) -> Array:
 				continue
 			out.append({"mi": mi, "mid": mi.get_instance_id(), "si": si, "arrays": s.arrays_of(am, si), "xf": xf, "aabb": aabb,
 				"fmt": am.surface_get_format(si), "mat": am.surface_get_material(si), "mesh": am,
-				"ov": mi.get_surface_override_material(si), "global_ov": mi.material_override, "n": am.get_surface_count()})
+				"ov": mi.get_surface_override_material(si), "global_ov": mi.material_override, "n": am.get_surface_count(),
+				"authored": s.hull.authored, "interior": s.hull.authored and HULL.interior_material(am.surface_get_material(si)) and not am.surface_get_material(si).resource_name.ends_with("_inside_skin")})
 	return out
 
 
@@ -1718,6 +1723,7 @@ static func _inside_overlay(fx, s, mis: Array, ents: Array, glow: Color) -> void
 		mi.material_override = null
 		for si in mi.mesh.get_surface_count():
 			var src: Material = override if override != null else mi.get_active_material(si)
+			if HULL.interior_material(mi.mesh.surface_get_material(si)) and not mi.mesh.surface_get_material(si).resource_name.ends_with("_inside_skin"): continue
 			mi.set_surface_override_material(si, HULL.damage_material(src, frame, mouths, s.hull.L, s.get("faction") == "chorus"))
 		if mi.has_meta("fx_inside"):
 			mi.material_overlay = null
