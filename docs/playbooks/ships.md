@@ -67,6 +67,46 @@ all of the other guidance we've discussed across the faction guides, lore, playb
 as a real built object and lists each change, with its reason, on the build sheet before the build. Questions go to Ryan only
 when the picture, the faction guide and the lore conflict, or a change would alter the ship's identity.
 
+## 2c. Parts that read and fit together (R217)
+
+Ryan, Nov 11 2026 21:24 CST, on build sheets round 2 (A16, A17): "The tubes at the front of a16 concept are just circles on the
+actual build? also the guns are visibly blocking the rockets and appear to be in front of an engine at one point. we need to
+do a check to see how the parts interact together, how they fit the actual ship and the total cohesive package together.
+there also just appears to be a lot less fine detail and texture ... the engines look like big tubes, the weapons look so
+simple and just tubes". On A17: "the front is also just a flat block which does not match the concept." So, from round 3 on:
+- Every part is modelled as the thing it is, at the build sheet already: an engine is a bell with a throat, inner cone,
+  cooling rings and a mount, not a cylinder; a gun is a base, a mantlet, a breech and a barrel with a muzzle, not a tube; a
+  launch tube has depth, a lip and a dark bore, not a disc on the hull; a rocket rack shows its cells. Surface texture (seams,
+  grit, wear, paint) comes in the build; part shape does not wait for it.
+- The bow and every big mass follow the concept's own shaping (bevels, steps, overhangs, cut-ins); a flat block where the
+  concept has shape is a fault.
+- The fit check, run on every build sheet and every build: no part sits inside another; no gun's firing arc passes through
+  another part or the hull; no part sits in an engine's exhaust cone; no launcher's exit is blocked; every part sits on the
+  hull on a mount. The sheet carries a fit view (top and side with firing arcs and exhaust cones drawn) and a fit report
+  listing each clash and how it was fixed. A clash left in is a blocking finding.
+- The Board judges every sheet beside its concept at the same size before Ryan sees it (R198, R213), part by part.
+
+Ryan, Nov 11 2026 21:34 CST (R218): "how else do we scale that to the other parts of the ship? Engines and guns are the
+reference but we want to carry that through to the whole model. Don't just patch singular behavior or examples, use it for
+global learning and shaping the approach". So the method, for every ship of every faction and the station:
+- The parts inventory. Before modelling, list every feature the concept shows, region by region (bow, midship, stern; top,
+  side, below): hull plates and armour steps, superstructure tiers, sensor and antenna gear, radiators, hatches and bays,
+  thrusters, engines, guns, launchers, claws and grapples, pipes and tanks, lights, faction marks. Each line names the part
+  type, how many, where, and its sub-parts (what makes it read as that thing: a radiator has fins and a frame, a hatch has a
+  rim and a seam, an armour plate has a thickness step and a bevel, a tier has a face, a roof line and openings). Nothing on
+  the concept is left as plain surface on the model unless the sheet says why.
+- One detail level for the whole ship. Every part is modelled to the same level as its neighbours: if the guns have
+  breeches and muzzles, the hull has plate steps and the tiers have openings. A region of plain blocks beside detailed parts
+  is a fault (Ryan's "the level of texture and details seem to vary wildly", Oct 21).
+- Kit first. Each faction's kit (tools/blender/kits/FACTION/) holds every part type at that level, built once and reused by
+  every ship of the faction, so the next ship starts at the bar instead of rebuilding to it.
+- The fit check covers every part, not only guns and engines: antennas, radiators, hatches, claws and lights get the same
+  clash, arc, exhaust and mount tests.
+- The comparison is region by region. The nine-cell blob sweep views (bow, midship, stern from top, side and below) are
+  rendered beside the concept at the same view, and the inventory is ticked off per cell: present, shaped, detailed. That
+  table is on every sheet and every build.
+- Every round's feedback goes into this section as a general rule, never only into the one ship's notes.
+
 ## 2b. The insides (R98, R209)
 
 Ryan, Nov 11 2026: "keeping in mind the hits, the breaks, the deaths and everything that affects the internals of the ship so

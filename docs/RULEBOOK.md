@@ -301,6 +301,19 @@ Set: Board. Ids: D11, X14.
 5.14 **A build pull request carries its done-when evidence and a method line** (build sheet link, manifest, budget numbers,
 changes made to the sheet); the outside check returns one without them as blocking. Why: R214. Set: Ryan, Nov 11.
 
+5.15 **Parts read as what they are and fit together: the fit check.** Engines are bells with throats and rings, guns have a base,
+mantlet, breech and muzzle, launch tubes have depth; the bow and big masses carry the concept's shaping. No part inside
+another, in another gun's arc, in an exhaust cone or blocking a launcher; a fit view and fit report on every sheet and build.
+Why: round 2 sheets had guns blocking rockets and in front of an engine, tubes as flat circles, engines and guns as plain
+tubes, and a flat-block bow (Ryan, Nov 11, R217). Set: Ryan, Nov 11 (R217). Ids: ships-2c.
+
+5.16 **Fidelity is whole-ship: a parts inventory, one detail level, kit first, region by region.** Every feature the concept
+shows is listed with its sub-parts and modelled; every part sits at the same detail level as its neighbours; each faction's
+kit holds every part type at that level; the fit check covers every part; the sheet ticks the inventory per blob-sweep cell
+beside the concept. Feedback on one part becomes a rule for all parts. Why: "Engines and guns are the reference but we want
+to carry that through to the whole model. Don't just patch singular behavior or examples, use it for global learning and
+shaping the approach" (Ryan, Nov 11, R218). Set: Ryan, Nov 11 (R218). Ids: ships-2c.
+
 ## 6. Battle look
 
 6.1 **Judge everything at the battle camera (camera 170, the radius Ryan plays at) at true pixel size, before any close-up.**
