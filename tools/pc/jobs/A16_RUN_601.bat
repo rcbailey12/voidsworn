@@ -4,7 +4,8 @@ rem Issue 601: the Hullbreaker paint stack on A16 (bake "stack"), from a fresh c
 rem A16_RUN_592b.bat. Stages 1 to 4 are not rerun: their outputs for corsair_A16 are already in recipe\corsair_A16 from the 592
 rem runs (the sheet's design is unchanged on this branch; stage 5 rebuilds the same sheet through sheet_hull). Then the game
 rem install (INSTALL_TO, the clone's own godot folder), a4_shots (battle, close, and cams: camera 170 and 60), the GPU readback,
-rem and the painted sheet pictures beside the concept (paint_sheet.py on the GPU, paint_compare.py). Each step is logged with its
+rem and the painted sheet pictures beside the concept (paint_sheet.py on the GPU, paint_compare.py). Stage 5 also runs the
+rem surface check (no inside room colour or unpainted surface seen from outside); its pictures and json are copied to out\surface. Each step is logged with its
 rem exit code in out\result.txt. Writes only under opus601\ and recipe\corsair_A16\. Never deletes anything.
 setlocal
 set V=%USERPROFILE%\Downloads\voidsworn_test
@@ -41,6 +42,9 @@ echo compare exit %ERRORLEVEL% >> "%RES%"
 copy /y "%JOB%\density.json" "%O%\" > nul
 copy /y "%JOB%\A16.json" "%O%\" > nul
 copy /y "%JOB%\licences.json" "%O%\" > nul
+copy /y "%JOB%\lights.json" "%O%\" > nul
+if not exist "%O%\surface" mkdir "%O%\surface"
+copy /y "%JOB%\surface\*.*" "%O%\surface\" > nul
 echo done %DATE% %TIME% >> "%RES%"
 exit /b 0
 :stage

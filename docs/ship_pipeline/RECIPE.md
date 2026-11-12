@@ -120,7 +120,9 @@ R225: one home per fact):
 5. bakes albedo and ORM for both atlases and the hull's detail normal (the layers' height through a bump), then puts the
    textured materials on the ship (`export7.py` reads them as before) and keeps glow, ember and light as their own emissive
    surfaces; the insides keep the sheet's own materials;
-6. measures R224 (`tools/recipe/density.py`): per part type, triangles and edge features per square unit, texels per square
+6. gives every inside the faction's dark liner (`inside_material`: one material per room, the liner's dark with a faint tint, the
+   core keeps its light), so an inside seen through an opening or a gap never shows a sheet room colour (R99 Q1);
+7. measures R224 (`tools/recipe/density.py`): per part type, triangles and edge features per square unit, texels per square
    unit and paint detail (the share of the surface as busy as the hull's busiest 30 percent), each against the hull; a part type
    under 0.75 of the hull is flagged in `density.json` and printed by stage 5 (reported, not a pass bar).
 The job's `textures\` holds the trim sheet and the decal atlas and `licences.json` their lines, so the licence check now
@@ -133,8 +135,15 @@ and trim lights. Plate patchwork, seams and brick rust (R228) are the faction st
 `patch_cell` and `CONCEPT`. Engine glow is the game's (R228): the export's `hp_eng` points with their bell radius drive the
 game's engine effect (`godot/fx/fx_hull.gd` reads them as the nozzles), beside the sheet's emissive throat and bell lining.
 
+Stage 5 then runs the surface check (`tools/recipe/surface_check.py`, issue 601, after Ryan saw "a white square near the back
+and another white square underneath" on the first PC run): the six standard views drawn flat by surface class, and it fails on
+any pixel of an inside room colour or of a surface with no stack material seen from outside, naming the objects that show
+(`surface\surface_check.json`). On A16 before the liner: 6,844 pixels, from rooms that reach through the hull (gun deck, warlord
+hall, shell magazines, bridge, engine room); after: 0. The rooms poking out are the sheet's geometry to fix; the liner keeps them
+dark meanwhile.
+
 Pictures: `tools/blender/build_sheets/paint_sheet.py` renders the painted blend at the sheet's concept camera and the four flat
-views under the game's light with the battle lift; `paint_compare.py` lays them beside the concept (and the game's camera 170
+views (and bow on and stern on) under the game's light with the battle lift; `paint_compare.py` lays them beside the concept (and the game's camera 170
 and 60 shots, `a4_shots.gd` set `cams`) as pictures for Ryan. The PC run for A16 is `tools/pc/jobs/A16_RUN_601.bat`.
 
 

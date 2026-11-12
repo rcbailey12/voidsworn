@@ -81,6 +81,14 @@ the Board's correction: about 0.3 units, about 1 px at camera 170 and 3 at camer
 along the flanks at the sheet's lamp row and at the deck edges), reported in the job's lights.json; engine glow left to the game (the export's hp_eng points with their bell radius drive the engine effect, fx_hull.gd; the sheet's
 throat and bell lining stay emissive). 
 
+**Pass 4 (Board's full pass over the first PC run; Ryan: "a white square near the back and another white square underneath"),
+all in the stack and the route:** the insides take the dark liner (room colours showed through the hull: gun deck, warlord
+hall, shell magazines, bridge, engine room reach outside it, which is sheet geometry for the A17/532 worker; the salmon bar
+aft was the shell magazine); stage 5's new surface check counts 6,844 such pixels before and 0 after
+([before](paint/surface_check_before.json), [after](paint/surface_check_after.json)); plates in two sizes with offset rows and
+a few overlaid patches; the close-range grain cut; part faces carry plates and seams; the engine throat a dimmer red-orange
+deep in the bell, the lining near dark. [Six views beside the concept](paint/A16_paint_views.jpg).
+
 ## R221 clean-ups (Ryan, Nov 12 2026)
 
 1. **Chains cut.** Ryan: "let's get rid of the chains randomly around the ship. There's no purpose." All four are gone, and

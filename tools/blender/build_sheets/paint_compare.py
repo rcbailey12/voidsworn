@@ -44,13 +44,15 @@ def main():
         box = (int(x0 * W), int(y0 * H), int(x1 * W), int(y1 * H))
         made.append(pair(con.crop(box), bea.crop(box), f'{N} paint, {k}: concept (left), painted build (right)', 'same camera, same window',
                          os.path.join(OUT, f'{N}_paint_{k}.jpg')))
-    views = [('side (port)', 'paint_side.png'), ('far side (starboard)', 'paint_side_s.png'), ('top', 'paint_top.png'), ('below', 'paint_below.png')]
-    img = Image.new('RGB', (1280, 60 + 2 * 300), BG); head(img, f'{N} paint: the four flat views', 'bow left on the port side, top and below; the far side shows the bow on the right')
+    views = [('concept', None), ('side (port)', 'paint_side.png'), ('far side (starboard)', 'paint_side_s.png'), ('top', 'paint_top.png'),
+             ('below', 'paint_below.png'), ('bow on', 'paint_bow.png'), ('stern on', 'paint_stern.png')]
+    img = Image.new('RGB', (1280, 60 + 2 * 326), BG)
+    head(img, f'{N} paint: the six views beside the concept', 'bow left on the port side, top and below; the far side shows the bow on the right')
     for i, (lab, f) in enumerate(views):
-        p = os.path.join(P, f)
-        if not os.path.exists(p): continue
-        t = fit(Image.open(p).convert('RGB'), 636, 280); x, y = (i % 2) * 644, 60 + (i // 2) * 300
-        img.paste(t, (x, y + 18)); ImageDraw.Draw(img).text((x + 8, y), lab, fill=DIM, font=font(14))
+        src = con if f is None else (Image.open(os.path.join(P, f)).convert('RGB') if os.path.exists(os.path.join(P, f)) else None)
+        if src is None: continue
+        t = fit(src, 316, 300); x, y = (i % 4) * 321, 60 + (i // 4) * 326
+        img.paste(t, (x, y + 22)); ImageDraw.Draw(img).text((x + 6, y + 2), lab, fill=DIM, font=font(14))
     p = os.path.join(OUT, f'{N}_paint_views.jpg'); img.save(p, quality=90); made.append(p)
     if SH != '-':
         for cam in ('cam170', 'cam60'):

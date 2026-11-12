@@ -20,6 +20,9 @@ goto baked
 :bake
 "%B%" -b -P "%R%\%BAKE%" -- "%JOB%" "%B0%" none %CELL% 4096 64 > "%JOB%\log_bake.txt" 2>&1
 findstr /L /c:"[209] %CELL% {" "%JOB%\log_bake.txt" > nul || (echo Stage 5 FAILED: the bake ^(%BAKE%^) wrote nothing. See %JOB%\log_bake.txt & goto bad)
+rem issue 601: every surface seen from outside carries the stack: no inside room colour and no unpainted surface in six views
+if /i "%BAKE%"=="bake_sheet.py" "%B%" -b "%JOB%\%CELL%.blend" -P "%RC%\surface_check.py" -- "%JOB%\surface" > "%JOB%\log_surface.txt" 2>&1
+if /i "%BAKE%"=="bake_sheet.py" (findstr /b /c:"PASS surface check" "%JOB%\log_surface.txt" || (findstr /c:"surface check" /c:"seen from outside" "%JOB%\log_surface.txt" & echo Stage 5 FAILED: surfaces seen from outside without the paint stack. See %JOB%\log_surface.txt & goto bad))
 if /i "%BAKE%"=="bake_sheet.py" if exist "%JOB%\density.json" "%BPY%" -c "import json,sys;d=json.load(open(sys.argv[1]))['summary'];print('Stage 5 R224 density (reported, not a pass bar): paint flags',len(d['paint_flags']),'mesh flags',len(d['mesh_flags']));[print('  ',f) for f in d['paint_flags']+d['mesh_flags']]" "%JOB%\density.json"
 :baked
 rem the ship's own fitted concept camera (stage 3), so the concept side still belongs to this ship and not to C15s_23

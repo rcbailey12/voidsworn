@@ -99,4 +99,6 @@ side = ortho('side', (0, 3, -.0), (0, 0, 0), (0, 0, 1), 1.12, (2400, 1000)); sho
 side_s = ortho('side_s', (0, -3, 0), (0, 0, 0), (0, 0, 1), 1.12, (2400, 1000)); shots['side_s'] = shoot(side_s, 'paint_side_s', SCALE * .55)
 top = ortho('top', (0, 0, 3), (0, 0, 0), (0, -1, 0), 1.12, (2400, 1000)); shots['top'] = shoot(top, 'paint_top', SCALE * .55)
 below = ortho('below', (0, 0, -3), (0, 0, 0), (0, 1, 0), 1.12, (2400, 1000)); shots['below'] = shoot(below, 'paint_below', SCALE * .55)
+bow = ortho('bow', (3, 0, 0), (0, 0, 0), (0, 0, 1), .62, (1200, 1000)); shots['bow'] = shoot(bow, 'paint_bow', SCALE * .55)
+stern = ortho('stern', (-3, 0, 0), (0, 0, 0), (0, 0, 1), .62, (1200, 1000)); shots['stern'] = shoot(stern, 'paint_stern', SCALE * .55)
 json.dump(dict(shots=shots, lift=LIFT, samples=SAMP, camera=SHEET + '_camera.json'), open(os.path.join(OUT, 'paint_shots.json'), 'w'), indent=1)

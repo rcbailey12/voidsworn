@@ -36,7 +36,12 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    (point lights: the standing light check reports their size, the 2 px floor is for painted window and trim lights);
    (5) engine glow is the
    game's: the export marks each bell (hp_eng with its radius) and the game's engine effect draws the plume there, with the
-   sheet's own emissive throat and bell lining; the paint never fakes a glow.
+   sheet's own emissive throat and bell lining, a hot red-orange deep in the bell and a dimmer red lining so the dark rim and
+   lip read, never a flat peach cap; the paint never fakes a glow. And from the first PC run (Board and Ryan, Nov 12 16:32
+   CST): every surface seen from outside carries the stack, an inside seen through an opening reads as the dark liner, never a
+   room colour (stage 5's surface check, zero pixels allowed); plates come in large and small sizes, offset rows and a few
+   overlaid patches, never a regular grid (RULEBOOK 0.5); no salt-and-pepper grain at close range (edge wear, grime and plate
+   tone carry the look); big part faces carry the hull's plates and seams (R224 in paint).
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
    opus_check_341).

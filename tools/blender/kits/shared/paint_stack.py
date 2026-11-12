@@ -216,38 +216,67 @@ def decal_layer(c, col, height, rough, decals, atlas, cells, wear):
     return col, height, rough
 
 
-def patchwork(c, S, col, amount):
-    """the plate patchwork: a staggered grid of panels at the faction's plate size in the ship frame, each panel (and each modelled
-    plate, by its UV island) picks one of the faction's plate families; returns the colour and the seam mask (the panel borders
-    on the face's own plane, never across it)"""
-    nt = c.nt; L = S.LAYERS; cx, cy, cz = L['patch_cell']
-    q = node(nt, 'ShaderNodeVectorMath', operation='DIVIDE'); nt.links.new(c.pos, q.inputs[0]); q.inputs[1].default_value = (cx, cy, cz)
+def _grid(c, cell, seed, shift):
+    """one panel grid in the ship frame: rows (along z) each shifted along x and y by their own random amount (never a regular
+    stagger), cells of the given size; returns (cell id vector, the three in-cell coordinates)"""
+    nt = c.nt; cx, cy, cz = cell
+    off = node(nt, 'ShaderNodeVectorMath', operation='ADD'); nt.links.new(c.pos, off.inputs[0]); off.inputs[1].default_value = shift
+    q = node(nt, 'ShaderNodeVectorMath', operation='DIVIDE'); nt.links.new(off.outputs[0], q.inputs[0]); q.inputs[1].default_value = (cx, cy, cz)
     sq = node(nt, 'ShaderNodeSeparateXYZ'); nt.links.new(q.outputs[0], sq.inputs[0])
     row = math_(nt, 'FLOOR', sq.outputs[2])
-    odd = math_(nt, 'MULTIPLY', math_(nt, 'MODULO', math_(nt, 'ABSOLUTE', row), 2.0), .5)
-    qx = math_(nt, 'ADD', sq.outputs[0], odd); qy = math_(nt, 'ADD', sq.outputs[1], odd)
-    cq = node(nt, 'ShaderNodeCombineXYZ'); nt.links.new(math_(nt, 'FLOOR', qx), cq.inputs[0]); nt.links.new(math_(nt, 'FLOOR', qy), cq.inputs[1]); nt.links.new(row, cq.inputs[2])
-    wn = node(nt, 'ShaderNodeTexWhiteNoise', noise_dimensions='3D'); nt.links.new(cq.outputs[0], wn.inputs['Vector'])
-    r = math_(nt, 'FRACT', math_(nt, 'ADD', wn.outputs['Value'], math_(nt, 'MULTIPLY', c.isl, .618)))
-    r2 = wn.outputs['Color']
-    sp2 = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(r2, sp2.inputs[0]); tone = sp2.outputs[1]
-    lo = 0.0
-    for share, (flo, fhi) in S.PATCH_FAMILIES:
-        hi = lo + share
-        m = math_(nt, 'MULTIPLY', math_(nt, 'GREATER_THAN', r, lo - 1e-4), math_(nt, 'LESS_THAN', r, hi))
-        fam = mixc(nt, flo, fhi, math_(nt, 'ADD', math_(nt, 'MULTIPLY', tone, .7), math_(nt, 'MULTIPLY', c.noise(L['patch_scale'] * 3, 3), .3)))
-        col = mixc(nt, col, fam, math_(nt, 'MULTIPLY', m, amount))
-        lo = hi
-    # seams: the distance to the panel border along each axis, counted only on the axes that lie in the face's plane
-    nrm = node(nt, 'ShaderNodeSeparateXYZ'); nt.links.new(c.geo.outputs['Normal'], nrm.inputs[0])
-    seam = None
-    for qa, size, na in ((qx, cx, nrm.outputs[0]), (qy, cy, nrm.outputs[1]), (sq.outputs[2], cz, nrm.outputs[2])):
+    rn = node(nt, 'ShaderNodeTexWhiteNoise', noise_dimensions='1D'); nt.links.new(math_(nt, 'ADD', row, seed), rn.inputs['W'])
+    rc = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(rn.outputs['Color'], rc.inputs[0])
+    qx = math_(nt, 'ADD', sq.outputs[0], rc.outputs[0]); qy = math_(nt, 'ADD', sq.outputs[1], rc.outputs[1])
+    cq = node(nt, 'ShaderNodeCombineXYZ'); nt.links.new(math_(nt, 'FLOOR', qx), cq.inputs[0]); nt.links.new(math_(nt, 'FLOOR', qy), cq.inputs[1])
+    nt.links.new(math_(nt, 'ADD', row, seed), cq.inputs[2])
+    return cq.outputs[0], (qx, qy, sq.outputs[2])
+
+
+def _seams(c, S, coords, cell):
+    """the panel borders on the face's own plane (an axis along the face normal never draws a seam)"""
+    nt = c.nt; L = S.LAYERS
+    nrm = node(nt, 'ShaderNodeSeparateXYZ'); nt.links.new(c.geo.outputs['Normal'], nrm.inputs[0]); seam = None
+    for qa, size, na in zip(coords, cell, nrm.outputs[:3]):
         f = math_(nt, 'FRACT', qa); d = math_(nt, 'MULTIPLY', math_(nt, 'MINIMUM', f, math_(nt, 'SUBTRACT', 1, f)), size)
         e = math_(nt, 'SUBTRACT', 1, ramp(nt, d, L['patch_seam'] * .4, L['patch_seam']))
         e = math_(nt, 'MULTIPLY', e, ramp(nt, math_(nt, 'SUBTRACT', 1, math_(nt, 'ABSOLUTE', na)), .35, .65))
         seam = e if seam is None else math_(nt, 'MAXIMUM', seam, e)
-    seam = math_(nt, 'MULTIPLY', seam, amount)
-    return col, seam
+    return seam
+
+
+def patchwork(c, S, col, amount, families=None, cells=None):
+    """the plate patchwork (R228; RULEBOOK 0.5, tidy is a fault): two panel grids of different sizes, the region of each chosen by
+    a broad noise, rows offset at random, plus a sparse layer of larger patch plates laid over them; each panel (and each modelled
+    plate, by its UV island) picks one of the faction's plate families. Returns the colour and the seam mask."""
+    nt = c.nt; L = S.LAYERS; families = families or S.PATCH_FAMILIES
+    big, small, patch = cells or (L['patch_big'], L['patch_small'], L['patch_over'])
+    region = ramp(nt, c.noise(L['patch_region'], 2), .42, .58)          # 0: big plates, 1: small plates
+    ids = []; seam = None
+    for k, (cell, seed, sh) in enumerate(((big, 11.0, (0, 0, 0)), (small, 37.0, (.013, .007, .005)))):
+        cid, co = _grid(c, cell, seed, sh); sm = _seams(c, S, co, cell)
+        w = region if k else math_(nt, 'SUBTRACT', 1, region)
+        ids.append((cid, w)); sm = math_(nt, 'MULTIPLY', sm, w)
+        seam = sm if seam is None else math_(nt, 'ADD', seam, sm)
+    def pick(cid, w, col):
+        wn = node(nt, 'ShaderNodeTexWhiteNoise', noise_dimensions='3D'); nt.links.new(cid, wn.inputs['Vector'])
+        r = math_(nt, 'FRACT', math_(nt, 'ADD', wn.outputs['Value'], math_(nt, 'MULTIPLY', c.isl, .618)))
+        sp2 = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(wn.outputs['Color'], sp2.inputs[0]); tone = sp2.outputs[1]
+        lo = 0.0
+        for share, (flo, fhi) in families:
+            hi = lo + share
+            m = math_(nt, 'MULTIPLY', math_(nt, 'GREATER_THAN', r, lo - 1e-4), math_(nt, 'LESS_THAN', r, hi))
+            fam = mixc(nt, flo, fhi, math_(nt, 'ADD', math_(nt, 'MULTIPLY', tone, .75), math_(nt, 'MULTIPLY', c.noise(L['patch_scale'] * 3, 2), .25)))
+            col = mixc(nt, col, fam, math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', m, w), amount))
+            lo = hi
+        return col
+    for cid, w in ids: col = pick(cid, w, col)
+    # the overlaid patch plates: a sparse few larger plates, bolted over whatever is under them, with their own seam
+    pid, pco = _grid(c, patch, 71.0, (.021, .011, .009))
+    pw = node(nt, 'ShaderNodeTexWhiteNoise', noise_dimensions='3D'); nt.links.new(pid, pw.inputs['Vector'])
+    on = math_(nt, 'LESS_THAN', pw.outputs['Value'], L['patch_over_share'])
+    col = pick(pid, on, col)
+    seam = math_(nt, 'MAXIMUM', math_(nt, 'MULTIPLY', seam, math_(nt, 'SUBTRACT', 1, on)), math_(nt, 'MULTIPLY', _seams(c, S, pco, patch), on))
+    return col, math_(nt, 'MULTIPLY', seam, amount, clamp=True)
 
 
 def zone_material(S, zone, group, masks, tiles, decals, decal_atlas):
@@ -273,6 +302,9 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas):
         col = mixc(nt, col, red, math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', pick, thin), L.get('red_tone', .75)))
     if group == 'H' and z.get('patchwork', 0) > 0 and getattr(S, 'PATCH_FAMILIES', None):
         col, seam = patchwork(c, S, col, z['patchwork'])
+    elif group == 'P' and z.get('patchwork_parts', 0) > 0 and getattr(S, 'PATCH_FAMILIES_PARTS', None):
+        # R224 in paint: big part faces (a rack box, a turret top) carry the hull's plate and seam detail at a smaller plate size
+        col, seam = patchwork(c, S, col, z['patchwork_parts'], S.PATCH_FAMILIES_PARTS, S.LAYERS['patch_parts'])
     col = mulc(nt, col, math_(nt, 'ADD', 1 - L['side_dark'], math_(nt, 'MULTIPLY', c.up, L['side_dark'])))
     height = math_(nt, 'MULTIPLY', c.noise(L['grain_scale'], 4, .6), L.get('grain', .05))
     rough = math_(nt, 'ADD', z.get('rough', L['rough']), math_(nt, 'MULTIPLY', c.noise(L['grain_scale'], 2), .08))
@@ -661,6 +693,16 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
         o.data.materials.clear(); o.data.materials.append(glow[z])
     for o in I: o.hide_render = False
     INFO['glow_materials'] = sorted(m.name for m in glow.values())
+    # the insides: an inside seen from outside (an opening, a gap) reads as the dark inner liner, never a sheet room colour (R99 Q1;
+    # Ryan, Nov 12 16:32 CST: "a white square near the back and another white square underneath")
+    if hasattr(S, 'inside_material'):
+        inside = {}
+        for o in I:
+            for i, sl in enumerate(o.material_slots):
+                z = sl.material.name if sl.material else 'room'
+                if z not in inside: inside[z] = S.inside_material(z)
+                o.material_slots[i].material = inside[z]
+        INFO['inside_materials'] = sorted(m.name for m in inside.values())
     INFO['texel_density'] = texel_density(H, P, res, parts_res)
     INFO['stack_seconds'] = round(time.time() - t0, 1)
     return INFO

@@ -60,13 +60,14 @@ def pair(k):
 SCALE = 1.0          # every size below is in ship lengths (the recipe's frame: the ship is 1.0 long)
 LAYERS = dict(
     ao_short=.004, ao_long=.025, edge_radius=.0010, edge_gain=14.0,      # the masks (about 10 cm, 65 cm, 2.6 cm on the 26 unit barge)
-    patch_scale=4.0, plate_var=.40, side_dark=.25, grain_scale=260.0, mottle_scale=90.0, mottle=.10, grain=.02,    # base: broad two-tone patches, one tone per plate island
+    patch_scale=4.0, plate_var=.40, side_dark=.25, grain_scale=260.0, mottle_scale=40.0, mottle=.04, grain=.004,    # base: broad two-tone patches, one tone per plate island
     rough=.70, metal=.40, wear=1.0, grime=.75, ao_dark=.88, red_tone=.75,
     # the plate patchwork (issue 601 Board review: the concept's hull is a quilt of small plates, each its own tone): a grid of
     # panels at the concept's plate size, staggered, each panel and each modelled plate picks a family; black seams between them
-    patch_cell=(.034, .022, .019), patch_seam=.0011, seam_dark=.85,
+    patch_big=(.052, .034, .028), patch_small=(.021, .015, .012), patch_over=(.044, .030, .024), patch_over_share=.10,
+    patch_region=7.0, patch_parts=((.020, .016, .014), (.011, .009, .008), (.024, .018, .016)), patch_seam=.0011, seam_dark=.85,
     cavity_pow=2.0, wear_lo=.30, wear_hi=.52,
-    scuff=.85, scuff_size=.045,                                           # the trim sheet's scuff tile, 1.2 m across on the barge
+    scuff=.45, scuff_size=.045,                                           # the trim sheet's scuff tile, 1.2 m across on the barge
     rivets=1, rivet_pitch=.011, rivet_band=(.0012, .0045),               # a rivet every 29 cm, in a band 3 to 12 cm in from each edge
     trim_size=dict(stripes=.03, tread=.02, weld=.03), trim_aspect=dict(stripes=1.0, tread=1.0, weld=4.0),
     streak_scale=4.0, streak_stretch=60.0, rust_blot=26.0,                # rust: long vertical streaks, blotches about 4 percent across
@@ -76,14 +77,14 @@ LAYERS = dict(
 # zone: base pair, then what the layers do to it. rust 0 keeps a trophy plate's own paint clean of new rust (it came off a
 # ship that kept it painted); scuff and wear still mark it.
 ZONES = dict(
-    soot=dict(rust=.45, grime=.75, red_share=.20, patchwork=1.0),
+    soot=dict(rust=.45, grime=.75, red_share=.20, patchwork=1.0, patchwork_parts=.8),
     soot2=dict(rust=.40, grime=.85, plate_var=.35, red_share=.15, patchwork=1.0),
-    iron=dict(rust=.55, metal=.55, rough=.58, wear=1.0, red_share=.12, patchwork=1.0),
+    iron=dict(rust=.55, metal=.55, rough=.58, wear=1.0, red_share=.12, patchwork=1.0, patchwork_parts=.8),
     rust=dict(rust=.90, rough=.88, metal=.20, patchwork=.6),
     blood=dict(rust=.40, rough=.86, metal=.15, patchwork=.4),
     pale=dict(rust=.15, rough=.70, metal=.25, plate_var=.25),
     violet=dict(rust=.10, rough=.62, metal=.20, plate_var=.20),
-    steel=dict(rust=.25, metal=.65, rough=.50, wear=1.0, rivets=0),
+    steel=dict(rust=.25, metal=.65, rough=.50, wear=1.0, patchwork_parts=.8),
     dark=dict(rust=0, grime=.2, wear=.15, scuff=.1, rivets=0, metal=.1, rough=.9, plate_var=.1),
     dish=dict(rust=.30, metal=.40, rough=.55, plate_var=.1, scuff=1.0),
     warhead=dict(rust=.35, metal=.30, rough=.65, rivets=0),
@@ -107,11 +108,16 @@ RED_PLATE = pair('red_plate')    # a zone's red_share of its plates carry this w
 # the patchwork families (a hull zone with patchwork > 0): (share of panels, colour pair). The rest keep the zone's own tones.
 # Shares read off the concept's hull pixels (the k-means above): dark soot most, then gun-metal grey, brick red, a few scrapes.
 PATCH_FAMILIES = [(.30, pair('soot2')), (.24, pair('gunmetal')), (.20, pair('red_plate')), (.06, pair('scrape'))]
+# on part faces (R224 in paint): the same kind of plates, mostly metal, a little soot and rust, rare scrapes
+PATCH_FAMILIES_PARTS = [(.30, pair('gunmetal')), (.20, pair('soot2')), (.08, pair('red_plate')), (.04, pair('scrape'))]
 
 # glowing zones keep their own emissive surface: engine throat and bell lining in the faction's engine colour, running lights
 # in its accent (godot/fx/faction_looks.json corsair, the game's one home for them); dim, never bright (factions.md)
 GLOW = ('glow', 'ember', 'light')
-GLOW_STRENGTH = dict(glow=6.0, ember=1.4)    # the running lights' strength is LIGHT_STRENGTH (below)
+# engine throat and bell lining (R228 item 5, Board review of the PC run: the bells were filled with a flat peach disc): the throat
+# a hot red-orange deep in the bell, the lining a dimmer deep red toward the lip, so the dark rim and lip read; never blown out
+GLOW_STRENGTH = dict(glow=1.3, ember=.07)    # the running lights' strength is LIGHT_STRENGTH (below)
+GLOW_TINT = dict(glow=(1.0, .58, .40), ember=(.70, .22, .16))   # times the faction's engine colour: redder, never peach
 
 
 def faction_look():
@@ -129,7 +135,32 @@ def glow_material(zone):
     base = .03 if zone == 'light' else .08
     b.inputs['Base Color'].default_value = (col[0] * base, col[1] * base, col[2] * base, 1); b.inputs['Roughness'].default_value = .6
     if zone == 'light': col = [c / LIGHT_GAIN for c in lin(LIGHT_RGB)]   # lin() divides by the light gain; the lens wants the colour itself
+    elif zone in GLOW_TINT: col = [c * k for c, k in zip(col, GLOW_TINT[zone])]
     b.inputs['Emission Color'].default_value = (*col, 1); b.inputs['Emission Strength'].default_value = LIGHT_STRENGTH if zone == 'light' else GLOW_STRENGTH.get(zone, 2.0)
+    return m
+
+
+# ------------------------------------------------------------------------------------------------------------ insides
+# An inside seen from outside, through an opening or a gap, reads as the dark inner liner (R99 Q1), never the sheet's room
+# colour (the PC run of A16 showed the deck, hold and hangar colours through the hull, Nov 12). Each room keeps its own material,
+# so the game still knows its insides (export7 lists them as interior materials), in the liner's dark, a faint tint per room so a
+# broken ship's spaces are not all one; the reactor core keeps its light.
+INSIDE_BASE = (.035, .028, .022)
+INSIDE_TINT = .18
+
+
+def inside_material(room):
+    src = bpy.data.materials.get(room); m = bpy.data.materials.new(f'ps_inside_{room}'); m.use_nodes = True
+    b = m.node_tree.nodes['Principled BSDF']; rgb = (1, 1, 1)
+    if src is not None and src.use_nodes and src.node_tree.nodes.get('Principled BSDF'):
+        sb = src.node_tree.nodes['Principled BSDF']; rgb = tuple(sb.inputs['Base Color'].default_value)[:3]
+        em = sb.inputs['Emission Strength'].default_value
+        if em > 0:      # the core: its own light stays (it is the missing bite's glow when the ship breaks)
+            b.inputs['Emission Color'].default_value = sb.inputs['Emission Color'].default_value; b.inputs['Emission Strength'].default_value = em
+    mx = max(rgb) or 1
+    b.inputs['Base Color'].default_value = tuple(INSIDE_BASE[i] * (1 - INSIDE_TINT + INSIDE_TINT * rgb[i] / mx) for i in range(3)) + (1,)
+    b.inputs['Roughness'].default_value = .9; b.inputs['Metallic'].default_value = .2
+    m['ps_inside'] = 1
     return m
 
 
