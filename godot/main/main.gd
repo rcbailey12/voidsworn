@@ -17,7 +17,7 @@ const SETTINGS_PATH := "user://settings.json"
 signal battle_done(result: Dictionary)
 
 var args := {}
-var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "movement": "cinematic", "taa": false}
+var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "movement": "cinematic", "taa": false, "ui_scale": 1.0, "reduce_motion": false}
 var title: CanvasLayer
 var battle: Node
 var campaign: Node
@@ -183,7 +183,7 @@ func _capture_window(spec: String) -> void:
 
 
 func _apply_settings() -> void:
-	# the player's UI scale (R2, ui_spec.md 4.4): 1.0 until the settings entry ships; a missing key reads as 1.0
+	# the player's UI scale (R2, ui_spec.md 4.4): the Settings entry writes settings["ui_scale"], a missing key reads as 1.0
 	load("res://ui/ui_scale.gd").set_player(settings.get("ui_scale", 1.0))
 	# screenshot and capture jobs keep the window the command line asked for (--resolution), so every frame is one size
 	var capture: bool = args.has("shots") or args.has("breach-shots") or args.has("move-frames") or args.has("title-shot") or args.has("career-shot")

@@ -60,6 +60,12 @@ The rest of this page is the Nov 11 morning design; where it disagrees with the 
 6. **Each faction breaks its own way** (docs/playbooks/factions.md, "How it breaks"). The beats and sizes are shared; the
    matter is the faction's.
 
+Recipe ships carry authored interiors and weak joints in the GLB (`RECIPE.md`, stage 7, issue 557). The fracture prefers
+those joints with the current ragged tear, bite and chips; wounds and pieces expose the authored rooms. A ship without
+that record keeps the #167 fallback. Main wreck bodies retain their split altitude (linear Y lock, zero Y release
+velocity), while tumbling freely, so physics cannot push the readable wreck under the board. This does not constrain all
+small fragments; `death_plane_check.gd` protects the existing behavior.
+
 The kill camera holds through the core flash on cruiser, capital and flagship kills, with a short skippable slow beat
 (R193 (2)). Reduce flashing keeps every size and swaps each white flash for the
 softer rise and fall the staging table gives.

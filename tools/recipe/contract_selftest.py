@@ -107,9 +107,12 @@ def build(ship, out):
         for k, sg in enumerate((-1, 1)):
             node(f'hp_rcs_{k}', [.30, .02, sg * .25], [1, 0, 0], [0, 0, 1], dict(kind='rcs', side='P' if sg < 0 else 'S'))
             node(f'hp_board_{k}', [0, .02, sg * .25], [0, 0, sg], [0, 0, 1], dict(kind='board', side='P' if sg < 0 else 'S'))
+    iv, inf = box(-.48, .48, -.01, .01, -.23, .23)
+    nodes[0]['extras'] = dict(voidsworn_destruct=dict(version=1, interior_materials=[code + '_inside_0'],
+                                                    seams=[dict(p=[.15, 0, 0], n=[1, 0, 0])]))
     write_glb(os.path.join(out, code + '.glb'), nodes,
-              [dict(name=code + '_hull'), dict(name=code + '_parts')],
-              [dict(pos=hv, idx=[i for f in hf for i in f]), dict(pos=pv, idx=[i for f in pf for i in f])],
+              [dict(name=code + '_hull'), dict(name=code + '_parts'), dict(name=code + '_inside_0')],
+              [dict(pos=hv, idx=[i for f in hf for i in f]), dict(pos=pv, idx=[i for f in pf for i in f]), dict(pos=iv, idx=[i for f in inf for i in f])],
               dict(recipe='contract_selftest', ship=ship['ship'], unbaked=True))
     counts = {}
     for n in nodes[1:]:
@@ -195,7 +198,7 @@ def main():
         print('PASS the hard point contract is proved on the round 7 ship' if not bad else f'FAIL {bad} case(s) did not behave')
         return 0 if not bad else 1
     finally:
-        shutil.rmtree(tmp, ignore_errors=True)
+        print('Scratch retained:', tmp)
 
 
 if __name__ == '__main__':

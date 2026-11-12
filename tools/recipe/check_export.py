@@ -16,6 +16,7 @@
 #   - the smallest required set of any class is not met: a weapon point per data.js weapon slot, hp_core, hp_eng, hp_rcs and
 #     hp_board (two each, one port and one starboard), and hp_bay when data.js gives the ship a hangar;
 #   - a hard point is not a child of the ship node, or a map the glb names is not there.
+#   - the authored interior/seams record or real room geometry is missing (a liner alone is not a room).
 # usage: python check_export.py SHIP_JSON EXPORT_DIR [tol=0.012] [unbaked=1]
 import os, sys, json, struct, re
 import numpy as np
@@ -78,17 +79,57 @@ def main():
     if root is None or 'mesh' not in nodes[root]: probs.append(f'no ship node named {code} with a mesh'); return finish(out, code, probs, notes, {})
     for k in ('translation', 'rotation', 'scale', 'matrix'):
         if k in nodes[root]: probs.append(f'the ship node has a {k}: its mesh and hard points must be in the ship frame as written')
-    T = []; PT = []; hull_seen = False
+    contract = nodes[root].get('extras', {}).get('voidsworn_destruct', {})
+    interiors = contract.get('interior_materials', [])
+    if contract.get('version') != 1: probs.append('no authored interior/seams contract version 1')
+    seams = contract.get('seams', [])
+    if not seams: probs.append('no authored break seams')
+    signatures = set()
+    for seam in seams:
+        try:
+            p, n = np.array(seam['p'], float), np.array(seam['n'], float)
+            if p.shape != (3,) or n.shape != (3,) or not np.isfinite([p, n]).all() or abs(np.linalg.norm(n) - 1) > .001: raise ValueError()
+            if 'span' in seam and (len(seam['span']) != 2 or not np.isfinite(seam['span']).all() or seam['span'][0] >= seam['span'][1]): raise ValueError()
+            if not np.allclose(n, [0, 1, 0] if 'span' in seam else [1, 0, 0], atol=.001): raise ValueError()
+            signature = (tuple(np.round(p, 7)), tuple(n), tuple(seam.get('span', [])))
+            if signature in signatures: raise ValueError()
+            signatures.add(signature)
+        except (KeyError, TypeError, ValueError): probs.append('invalid authored break seam')
+    if seams and not any('span' not in s for s in seams): probs.append('no authored transverse break seam')
+    T = []; PT = []; IT = []; rooms = []; interior_seen = set(); hull_seen = False
     for pr in g['meshes'][nodes[root]['mesh']]['primitives']:
         pos = accessor(g, blob, pr['attributes']['POSITION']).astype(np.float64)
         idx = accessor(g, blob, pr['indices']).reshape(-1, 3).astype(np.int64) if 'indices' in pr else np.arange(len(pos)).reshape(-1, 3)
-        T.append(pos[idx]); mat = g['materials'][pr['material']].get('name', '') if 'material' in pr else ''
+        mat = g['materials'][pr['material']].get('name', '') if 'material' in pr else ''
+        if mat in interiors:
+            IT.append(pos[idx]); interior_seen.add(mat)
+            if mat != code + '_inside_skin': rooms.append(pos[idx])
+            continue
+        T.append(pos[idx])
         if mat == code + '_hull': hull_seen = True
         else: PT.append(pos[idx])                     # every surface but the hull is a part surface (parts and glow)
     if not hull_seen: probs.append(f'no {code}_hull surface: the hull cannot be told from the parts, so breach clearance cannot be measured')
     T = np.concatenate(T); A, B, C = T[:, 0], T[:, 1], T[:, 2]; lo, hi = T.reshape(-1, 3).min(0), T.reshape(-1, 3).max(0)
     PT = np.concatenate(PT) if PT else np.zeros((0, 3, 3))
     LEN = float(hi[0] - lo[0]); TOL = TOL_FRAC * LEN
+    if not IT: probs.append('no authored interior geometry')
+    else:
+        inside = np.concatenate(IT)
+        area = np.linalg.norm(np.cross(inside[:, 1] - inside[:, 0], inside[:, 2] - inside[:, 0]), axis=1).sum() * .5
+        if not np.isfinite(inside).all() or area <= 1e-10: probs.append('no usable authored interior geometry')
+        notes.append(f'authored interiors: {len(inside)} triangles, {len(IT)} surfaces; authored seams: {len(seams)}')
+    if not rooms: probs.append('no authored interior rooms: an inner liner alone is not comprehensive insides')
+    else:
+        room_geo = np.concatenate(rooms)
+        if np.linalg.norm(np.cross(room_geo[:, 1] - room_geo[:, 0], room_geo[:, 2] - room_geo[:, 0]), axis=1).sum() <= 1e-10:
+            probs.append('no authored interior rooms: room geometry has no area')
+    if set(interiors) != interior_seen: probs.append('authored interior material list does not match its nonempty surfaces')
+    for seam in seams:
+        if len(seam.get('p', [])) != 3: continue
+        p = np.array(seam['p'], float); n = np.array(seam.get('n', [0, 0, 0]), float)
+        if n.shape != (3,): continue
+        distances = (T.reshape(-1, 3) - p) @ n
+        if distances.min() >= 0 or distances.max() <= 0: probs.append('authored break seam does not cross the hull')
     notes.append(f'{len(T)} triangles ({len(PT)} on part surfaces), box x {lo[0]:.3f} to {hi[0]:.3f}, y {lo[1]:.3f} to {hi[1]:.3f}, z {lo[2]:.3f} to {hi[2]:.3f}')
     notes.append(f'ship length {LEN:.4f}: off-mesh limit {TOL_FRAC} of it, {TOL:.4f}; breach clearance at least {BREACH_CLEAR}')
     kids = set(nodes[root].get('children', [])); hps = [(i, n) for i, n in enumerate(nodes) if str(n.get('name', '')).startswith('hp_')]
@@ -188,7 +229,7 @@ def finish(out, code, probs, notes, info):
     for w in info.get('weapons', []): print(f"[check] slot {w['slot']} {w['weapon']} {w['arc']}: {len(w['hard_points'])} hard points")
     print('[check] hard points:', json.dumps(info.get('hardpoints', {})))
     for p in probs: print('[check] PROBLEM:', p)
-    print('PASS' if ok else 'FAIL', f'{code} game export:', 'every required point is there, the breach count matches the class and faction, and every hard point is on the mesh' if ok else f'{len(probs)} problems')
+    print('PASS' if ok else 'FAIL', f'{code} game export:', 'authored rooms and seams retained; every required point is there, the breach count matches the class and faction, and every hard point is on the mesh' if ok else f'{len(probs)} problems')
     sys.exit(0 if ok else 1)
 
 if __name__ == '__main__':

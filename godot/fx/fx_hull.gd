@@ -30,6 +30,8 @@ var nozzles_from_kit = false        # true when the nozzles came from A4's hp_en
 var bow = Vector3.ZERO
 var mounts = {}                    # "port", "stb", "top" -> Array of {p, n}
 var tri_count = 0
+var authored := false
+var seams: Array = []             # version 1, transformed into this hull analysis frame
 var _rng = RandomNumberGenerator.new()
 var stb_z = 1.0                    # +1: root +Z is starboard (G2), -1: +Z is port
 # the attach point service (issue 370)
@@ -321,6 +323,40 @@ static func _inject(code: String, method: String, start: String, finish: String)
 	return code.substr(0, a) + start + code.substr(a, b - a - 1) + finish + code.substr(b - 1)
 
 
+static func interior_material(mat: Material) -> bool:
+	if mat != null and mat.has_meta("fx_hull_source"): mat = mat.get_meta("fx_hull_source")
+	return mat != null and bool(mat.get_meta("fx_authored_interior", false))
+
+
+func _authored(root: Node3D) -> void:
+	authored = false
+	seams.clear()
+	var nodes: Array = [root]
+	nodes.append_array(root.find_children("*", "Node3D", true, false))
+	for nd in nodes:
+		var extras = nd.get_meta("extras", {})
+		var contract = nd.get_meta("voidsworn_destruct", extras.get("voidsworn_destruct", {}))
+		if not contract is Dictionary or int(contract.get("version", 0)) != 1: continue
+		var parts: Array = [nd]
+		parts.append_array(nd.find_children("*", "MeshInstance3D", true, false))
+		for part in parts:
+			if not part is MeshInstance3D or part.mesh == null: continue
+			for si in part.mesh.get_surface_count():
+				var mat: Material = part.mesh.surface_get_material(si)
+				if mat != null and mat.resource_name in contract.get("interior_materials", []): mat.set_meta("fx_authored_interior", true)
+		var xf: Transform3D = root.global_transform.affine_inverse() * nd.global_transform
+		for seam in contract.get("seams", []):
+			var p: Array = seam["p"]
+			var n: Array = seam["n"]
+			var row := {"at": xf * Vector3(p[0], p[1], p[2]),
+				"n": (xf.basis.inverse().transposed() * Vector3(n[0], n[1], n[2])).normalized()}
+			if seam.has("span"):
+				row["span"] = [ (xf * Vector3(seam["span"][0], 0, 0)).x, (xf * Vector3(seam["span"][1], 0, 0)).x ]
+			seams.append(row)
+		authored = not seams.is_empty()
+		return
+
+
 static func faces_of(root: Node3D, meshes: Array) -> PackedVector3Array:
 	var faces = PackedVector3Array()
 	var inv = root.global_transform.affine_inverse()
@@ -329,7 +365,22 @@ static func faces_of(root: Node3D, meshes: Array) -> PackedVector3Array:
 		if mi == null or mi.mesh == null:
 			continue
 		var xf = inv * mi.global_transform
-		var f = mi.mesh.get_faces()
+		var f := PackedVector3Array()
+		var has_inside := false
+		for si in mi.mesh.get_surface_count():
+			if interior_material(mi.mesh.surface_get_material(si)): has_inside = true
+		if not has_inside:
+			f = mi.mesh.get_faces() # Keep #167's native extraction unchanged for every older asset.
+		else:
+			for si in mi.mesh.get_surface_count():
+				# The outside BVH must never land an impact on a deck inside the hull.
+				if interior_material(mi.mesh.surface_get_material(si)): continue
+				var arr: Array = mi.mesh.surface_get_arrays(si)
+				var v: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+				var idx = arr[Mesh.ARRAY_INDEX]
+				if idx == null or idx.is_empty(): f.append_array(v)
+				else:
+					for i in idx: f.append(v[i])
 		if xf.is_equal_approx(Transform3D.IDENTITY):
 			faces.append_array(f)
 		else:
@@ -339,6 +390,7 @@ static func faces_of(root: Node3D, meshes: Array) -> PackedVector3Array:
 
 func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	_rng.seed = seed_v
+	_authored(root)
 	var inv = root.global_transform.affine_inverse()
 	var first = true
 	for m in meshes:
