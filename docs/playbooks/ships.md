@@ -119,6 +119,11 @@ global learning and shaping the approach". So the method, for every ship of ever
 - Parts must not look like they conflict, not only not clash (R221: "There's a gun directly behind the rocket pods on a16
   which seems like it conflicts?"). The fit check adds each launcher's backblast cone and each rack's firing lane, and a
   gun whose barrel points at or sits in another weapon's lane or blast is a clash even when no mesh touches.
+- Weapons carry the hull's detail density, measured (R224: Ryan on the Eclipse weapons, "They also just look smoother and
+  less detailed, maybe slightly less poly than the rest of the ship"). The fit check reports, per part type, triangles
+  per square unit of surface and edge features (seams, steps, bevels, greebles) per square unit against the hull's own; a
+  part type more than 25 percent under the hull on either is flagged on the sheet and fixed in the build. This applies to
+  every faction and every part type, not only weapons.
 - Weapons are designed per faction from the lore (R221: "their turrets look the same as hullbreakers. We should have those
   be more unique per factions and fit the actual weapons they use per lore Bible and faction rules"). Each faction kit's
   guns, turrets and launchers are built from what that faction's weapons are (data.js weapon ids, the lore bible, the
