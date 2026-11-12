@@ -2527,8 +2527,8 @@ func _threat_fills() -> Dictionary:
 	for k in _threat_cache:
 		var f := float(_threat_cache[k]) / mx
 		if f > 0.0:
-			# #271: the enemy side's lavender (ui_spec.md 5.1 FOE family); alarm red is the Nemesis tag's alone
-			out[k] = Color(0.79, 0.64, 1.0, 0.06 + 0.34 * f)
+			# issue 271 step 2: bone (Board.THREAT), not red (the Nemesis alarm's alone) and not lavender (R174's list)
+			out[k] = Color(Board.THREAT, 0.05 + 0.27 * f)
 	return out
 
 

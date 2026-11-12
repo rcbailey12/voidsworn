@@ -445,13 +445,36 @@ func _ship_block(x: float, y: float, cw: float) -> float:
 	y += px(124)
 	var fl := plain(str(ship.get("flags", "")))
 	if fl != "":
-		y += para(x, y, fl, f_body, 19, TEXT, cw) + px(6)
+		var fh := para(x, y, fl, f_body, 19, TEXT, cw)
+		var defs := keyword_tip(fl)
+		if defs != "":
+			hit(Rect2(x, y, cw, fh), "", null, defs)
+		y += fh + px(6)
 	y += px(6)
 	y += _gun_rows(x, y, cw) + px(14)
 	return y
 
 
 # hull as figures: "135 / 135", the first in the damage colour when hurt
+# the one-layer keyword definitions (Glass Shell follow-up 14, Muse synthesis pattern 8): the state words a status line
+# uses, defined on hover over that line
+const KEYWORDS := {
+	"Braced": "Braced: the ship takes 40% less hull damage until its next turn. A braced ship does not turn or fire.",
+	"On fire": "On fire: its shields falter and it can no longer repair itself.",
+	"Torpedoes inbound": "Torpedoes inbound: a torpedo is locked on this ship's marked hex. Move 3 or more hexes away from it to dodge.",
+	"focusing its fire": "Focus fire: the enemy fleet favours this ship when it picks targets.",
+	"Fired": "Ships move, then fire: after firing, half the movement left can still be used to slip away.",
+}
+
+
+static func keyword_tip(line: String) -> String:
+	var out := PackedStringArray()
+	for kw in KEYWORDS:
+		if line.contains(kw):
+			out.append(str(KEYWORDS[kw]))
+	return "\n".join(out)
+
+
 func _hull_fig(x: float, y: float, hp: float, mx: float, size := 26.0) -> void:
 	var a := str(int(round(hp)))
 	var bb := " / %d" % int(round(mx))

@@ -84,7 +84,8 @@ void fragment() {
 		c = mix(vec3(0.30, 0.62, 0.85), vec3(0.64, 0.88, 1.0), hot);
 	}
 	if (band > 0.5) {
-		// #271 reach hatching, in the enemy side's lavender: how many enemies can bring guns on this hex next turn,
+		// #271 reach hatching, in the threat colour (bone, issue 271 step 2: not red, which is the Nemesis alarm, and not
+		// lavender or purple, an AI tell on Ryan's list, R174): how many enemies can bring guns on this hex next turn,
 		// carried by the pattern as well as the colour (ui_spec.md 5.2): sparse lines for 1, closer for 2, crossed for 3+.
 		// Drawn in board space so the lines run on across hexes.
 		// line width: about one pixel at any zoom (screen-space), never thicker than a tenth of the gap between lines
@@ -104,7 +105,7 @@ void fragment() {
 		// about as bright as 0.2 would in screen colour)
 		float h = l * (band > 2.5 ? 0.034 : (band > 1.5 ? 0.028 : 0.022));
 		float A = h + a * (1.0 - h);
-		c = (vec3(0.79, 0.64, 1.0) * h + c * a * (1.0 - h)) / max(A, 0.0001);
+		c = (vec3(0.941, 0.918, 0.871) * h + c * a * (1.0 - h)) / max(A, 0.0001);
 		a = A;
 	}
 	ALBEDO = c;
@@ -361,6 +362,9 @@ const REACH_RING := Color(0.25, 0.55, 1.0, 0.22)
 const REACH_EDGE := Color(0.45, 0.85, 1.0, 1.0)
 # the hovered hex's outline: the battle screen's ember (#ff8a3a; issue 271 step 2, lime retired by R191)
 const HOVER_RING := Color(1.0, 0.541, 0.227, 0.9)
+# the threat map (R) and the reach hatching: bone, the sheet's TEXT (#f0eade) as a wash on the board. Red is the Nemesis
+# alarm's alone, lavender and purple are on Ryan's AI-tell list (R174), blue is the reach, ember the next action.
+const THREAT := Color(0.941, 0.918, 0.871)
 
 
 # objective zones (ui3d.js ZONE_INFO): the exit edge green, the transports' exit and the station perimeter red; the relay
