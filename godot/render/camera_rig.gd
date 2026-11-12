@@ -26,6 +26,9 @@ var keyboard_enabled := true
 var slow_until := 0.0
 var _clock := 0.0
 var shake := Vector3.ZERO
+# issue 271 (E1 LEDGER): pixels to move the board's centre to the right of the screen's middle, so the point the camera
+# looks at sits in the middle of the part the orders sheet leaves clear (hud.gd clear_shift). 0 keeps it centred.
+var screen_shift := 0.0
 
 
 func _ready() -> void:
@@ -192,3 +195,7 @@ func _apply() -> void:
 	var p := tg + Vector3(cos(_ca) * sin(_cb), cos(_cb), -sin(_ca) * sin(_cb)) * _cr
 	var up := Vector3.UP if _cb > 0.02 else Vector3(-cos(_ca), 0, sin(_ca))
 	look_at_from_position(p, tg, up)
+	# a sideways shift of the camera in its own plane moves the target right on screen by screen_shift pixels at its
+	# distance (the field of view is vertical, so half the window height spans tan(fov / 2) * distance)
+	var vh := get_viewport().get_visible_rect().size.y if is_inside_tree() else 1080.0
+	h_offset = -screen_shift / maxf(vh * 0.5, 1.0) * _cr * tan(deg_to_rad(fov) * 0.5)
