@@ -31,16 +31,18 @@ His scope answers:
 - **Fleets**: about six to eight ships a side. **Sunward Crusade against Eclipse** (Ryan, Nov 11 2026, R180; this replaces the
   first plan of the Hullbreakers plus one other). Both have a settled flagship (docs/playbooks/factions.md) and look nothing
   alike. Each fleet needs one capital, one cruiser or destroyer and one escort through the ship recipe.
-- **Ships**: built by tools/recipe with real thickness, break lines and interiors (R98), hard points by hull class and faction
-  theme (R164 item 4, issue 363), concepts in three views (issue 398).
+- **Ships**: built by tools/recipe with real thickness and comprehensive insides (R98, R209, R215), hard points by hull class
+  and faction theme (R164 item 4, issue 363), from an accepted concept in the one style (R197) and an Opus build sheet that
+  passes the concept standard (R203, R205, R207; docs/playbooks/ships.md).
 - **Effects**: every big moment staged to Muse's table (contrib/muse/design/hit_staging_2026_11/synthesis.md): explosions by
   the picked route (issues 353, 365), deaths in three beats (366), one kit of trails, beams and flares (367), effects that
   start on the ship (370), shields that hug the hull, show four sides and rest invisible (R163 item 2; 371, 372).
 - **Space**: nebula and ion storm hexes with depth (368), a board planet and rocks from real data, remixed past recognition
   (R163 item 3; 369), the black hole and sky calm enough that ships and effects win.
-- **Screen**: the battle HUD as it is today (Lime Tactical), unless Ryan rules otherwise after he has seen the Briefing map
-  in the game (R165).
-- **Sound**: outside the finished battle until the sound redo is scoped with him.
+- **Screen**: the battle screen in the ember orders-sheet look, layout E1 Ledger, shield readouts in Glacier #92b8e8 (Ryan,
+  Nov 11: "Retire lime", R191; "E1 Ledger" and "Glacier pale blue", R210). Being built: issue 271 step 2.
+- **Sound**: scoped (R171: weapons, hits and deaths, buttons and menus, ambience, music; "Clean and tactical"). Routing is in
+  (issue 506); sound weight is next (R193 (4)); the redo follows the listening page.
 - **Done**: a capture of the whole fight and its look bench sheet, and Ryan says yes.
 
 ## How every item flows
@@ -55,18 +57,25 @@ His scope answers:
 6. **Roll out.** The rest of that kind (the other 34 hulls, the other weapons, the other hexes) becomes jobs written from the
    playbook's template, for DeepSeek, Codex or Opus. Fable only reviews their pictures.
 
-## Who does what
+## Who does what (rewritten Nov 11 2026 evening; the live list is contrib/opus/LOOP.md "The seats")
+
+Ryan, Nov 11, 06:43 CST: "I just used the final fable reset, so let's cool it on fable usage outside of this chat. Opus worker
+threads only going forward" (R180). And 15:07 CST: "you own the codebase and github. you are my orchestrator and control the
+building" (R202). And 17:45 and 17:48 CST: "I think builds in blender should come from Opus... Codex and deepseek should do
+other work to free you up on these crucial items" (R205, R206). So "Fable" in the track tables below reads as the Board
+(options sheets, reviews, picks) or an Opus worker (builds).
 
 | Work | Seat |
 |---|---|
-| Options sheets, art direction, faction theme sheets, picture reviews, the playbooks, picks put to Ryan | Fable 5.2 (the Board, and at most two Fable helpers) |
-| The first in-engine build of a new look, where an eye is needed at every step | A Fable helper |
-| Well-specified code: services, checks, tables, wiring, the second and later builds from a playbook | DeepSeek workhorse |
-| GPU work: bakes, renders, ship recipe runs, bench captures in bulk | Codex on the PC once ChatGPT is back; until then a Fable helper drives the PC queue |
-| Reference research, design text, outside checks of Fable-built changes | Muse |
+| Options sheets, art direction, faction sheets, picture reviews, the playbooks, picks put to Ryan, merges | The Board (one Claude thread, Opus 5.5 since Nov 11, R194) |
+| Every ship model in Blender (blockouts, build sheets, hulls, kits, the station), hard or visual builds, read-only code audits | Opus 5.5 worker threads, two at most (R205; LOOP.md duties item 9) |
+| Well-specified code: services, checks, tables, wiring, screens and builds to a spec | DeepSeek workhorse on the PC |
+| Captures, benches, look-bench runs, scripted pipeline steps that shape no ship, code, image-tool jobs | Codex on the PC, one job at a time (R205, R206) |
+| Concept pictures by image to image, research, design text, outside checks of Opus-built changes | Muse (Ryan starts every run) |
 | Picks, looks, money | Ryan |
 
-Fable is never spent on bulk code, bakes, table edits or anything a playbook already covers.
+No Fable helpers (R180). The Board starts agreed work on its own and asks Ryan only for design, key decisions, reviews of what
+he will see, and conflicts (R202).
 
 ## The tracks, in order
 
@@ -96,13 +105,13 @@ bake route, the bench rows for each moment, and the job template for "one more w
 | Faction theme sheets: one page per faction (shape language, where guns sit, where it breaks, what it never has) | new | Fable (Board) | nothing |
 | Ryan's pick of the second fleet for the finished battle | decision 2 | Ryan | the theme sheets |
 | Concepts in three views for the finished battle's hulls | 276 | Muse's image models, Fable art direction | 398, decision 2 |
-| Hulls through the recipe | tools/recipe | Codex (GPU) | concepts |
+| Build sheets, then hulls through the recipe | tools/recipe, docs/playbooks/ships.md | Opus workers (R205); Codex for captures | an accepted concept (R203) |
 | Blob sweep of each hull, as pictures | docs/ship_pipeline/BLOB_SWEEP.md | Fable reviews, Ryan's eye | each hull |
-| The station as a built set piece | 373 | Codex | the recipe proven on a second faction |
+| The station as a built set piece | 373 | Opus worker (R205) | its build sheet from concept T2 (R206) |
 
 Playbook: docs/playbooks/ships.md. It starts from tools/recipe and PR 401, adds the concept standard, the hard point
 contract and the theme sheets, and ends with the job template for "the next hull". The ship queue (36 hulls) is rolled out
-from it by Codex, with Fable reviewing sweeps only.
+from it by Opus workers (every Blender step, R205), with Codex on captures and the Board reviewing sweeps.
 
 ### 3. Space and the board
 
@@ -118,15 +127,14 @@ planets we know").
 
 ### 4. Screens (lighter)
 
-The Briefing campaign map is being built on opus/issue-344 to contrib/opus/briefs/campaign_map_briefing.md (R165). When Ryan
-has said yes to its captures, docs/playbooks/screens.md is written from it (the type ladder, the two colours, what goes
-behind hover, the capture job), and the other screens become DeepSeek jobs from its template. The battle HUD question goes
-to Ryan then.
+The campaign map and its rail are built (R165, R176, R177); docs/playbooks/screens.md is written from them. Lime is retired
+(R191): every screen takes the ember orders-sheet look as it is next built. The battle HUD question is settled: E1 Ledger
+(R210), built in issue 271 step 2. Then debrief and the other screens, from screens.md's template.
 
 ### 5. Sound (lighter)
 
-Ryan: "The sounds that I've heard from the game so far are bad" (R163). The Board owes him scope questions; the redo and
-docs/playbooks/sound.md follow his answers.
+Ryan: "The sounds that I've heard from the game so far are bad" (R163). Scoped (R171) and written up in
+docs/playbooks/sound.md; routing done (issue 506); sound weight, the listening page and the redo follow.
 
 ## The playbook format (every playbook, same headings)
 
@@ -141,35 +149,38 @@ docs/playbooks/sound.md follow his answers.
 
 A playbook is done when a model that has never seen this repo ships the next item from it and the Board changes nothing.
 
-## Budget and pacing
+## Budget and pacing (rewritten Nov 11 2026 evening)
 
-- The weekly Claude limit stood at 51 percent used at 14:36 UTC on Nov 10 and resets Saturday 18:00 CST. Ryan holds one more
-  full Fable reset.
-- The Board plus at most two Fable helpers at a time (R167, replacing R166's one-helper rule). A helper is started only for a
-  row above that names a Fable seat.
-- The Board tells Ryan when the limit is close. The spare reset is his to use; it buys the most when used with at least a
-  day left before the Saturday reset.
-- If the limit is hit with no reset used, nothing stops: DeepSeek, Muse and Codex keep running the rows that are theirs, and
-  the Board's picks wait in LOOP.md.
+- Ryan's Fable resets are all used (R180). The Board and Opus workers draw the Claude plan: two Opus workers at most while the
+  Board thread is active (the five-hour limit was hit on Nov 11 with three; LOOP.md duties item 9).
+- Codex gives about 100 minutes of work per five-hour window; one Codex job and one GPU job at a time on the PC.
+- If a limit is hit, nothing stops: DeepSeek, Muse and Codex keep running the rows that are theirs, and the Board's picks wait
+  in LOOP.md.
 
-## Decisions: made, and still owed (Nov 11 2026)
+## Decisions: made, and still owed (Nov 11 2026 evening)
 
 Made (his words are in FINDINGS):
-1. Explosions: route B with flash plus hot core (R170). Rebaked and merged; "Explosions are looking much better" (R180).
+1. Explosions: route B with flash plus hot core (R170). "Explosions are looking much better" (R180).
 2. The finished battle's fleets: Sunward against Eclipse (R180).
-3. The campaign map: the Briefing layout over the real 3D scene (R165), the approach to the star, routes only, fight stops
-   show the enemy, regions as scenery with a landmark and an emblem (R170, R174, R181). "I really like the new map approaches."
-4. The interface look: the orders sheet (R176, R177), proven on the map's left rail; "Map first, then all": every other
-   screen follows it. Rule: say less.
-5. Sound scope: weapons, hits and deaths, buttons and menus, ambience, music; clean and tactical; never thin, cheesy or
-   harsh (R171).
-6. Flagship directions for Sunward, Hegemony and Eclipse (R180). The four leftover picks of issue 396 (R182).
+3. The campaign map: the Briefing layout over the real 3D scene, the approach to the star, routes only, fight stops show the
+   enemy, regions as scenery (R165, R170, R174, R181). Rocks turn slowly by default (R212: "Nah, I like the rotation of
+   asteroids").
+4. The interface look: the ember orders sheet everywhere, lime retired (R176, R177, R191). Battle screen E1 Ledger, Glacier
+   for shield readouts only, 3D shields keep faction colours (R210).
+5. Sound scope (R171); the cinematic audit and its build order: flash counter, hits, movement, sound, kill moment (R193).
+6. Movement: smooth, never sudden, feels like space (R189); the main engine does the travelling (R195).
+7. Deaths: blown apart, never sliced (R186); flame only for the 0.70 s cap; kill moment held and slowed (R193); hits pushed
+   harder, torpedo 140 px (R208).
+8. Concepts: one style (R197); accepted build references A16, A17, C10, C11, E11, E12 and the station T2 (R201, R204, R206);
+   Sunward (S8 shape), Hegemony (H10 shape) and Glasswrights (G15 shape) go through the Opus build-sheet route (R204, R206).
+9. Builds: build sheet first (R203), the concept guides (R207, R213), Opus builds in Blender (R205), insides comprehensive
+   (R209, R215), the method binding in the working documents (R214).
 
 Owed, in the order they will arrive:
-1. Glasswrights, Hullbreakers and Chorus flagships (concept round 4), and the Eclipse ring cruiser.
-2. The Sunward and Eclipse fleets (one sheet per class), then each built hull.
-3. Death beats: the cruiser and capital deaths (issue 462), with the scene dim on a capital's death on or off.
-4. The battle screen in the orders sheet look (options first where the layout is in question).
-5. Shield look (from a shield options sheet). 6. Backdrop strength for battles (from a sky sheet). 7. Planet. 8. Trails,
-   beams and flares. 9. The sound listening page.
-
+1. Hullbreaker build sheets round 2 (A16, A17; issue 532), then the other accepted ships' sheets and Sunward, Hegemony and
+   Glasswright sheets by the shape-locked route.
+2. The battle screen built in E1 Ledger (issue 271 step 2), shown before it merges.
+3. Hits pass 2 (issue 538); small-ship deaths (463); sound weight (507).
+4. The rulebook's batches of Ryan's own old calls (issue 492).
+5. Shield look (from a shield options sheet). 6. Backdrop strength for battles (sky sheet). 7. Planet. 8. Trails, beams and
+   flares. 9. The sound listening page. 10. The Sunward and Eclipse fleet sheets.

@@ -8,10 +8,23 @@ effect: a weapon hit, a shield response, a trail, a death.
 - Ryan, Nov 10, on the explosion routes sheet: "Far right in both for sure. We need to upgrade the effects a bit but it's the
   right approach." The far right column is **route B with flash plus hot core** (R170). Every explosion is built that way.
 - Sizes and times come from Muse's staging table, contrib/muse/design/hit_staging_2026_11/synthesis.md, measured at 1080 at
-  the battle camera: for example a torpedo on a hull flashes 154 px for 0.16 s, a cruiser death flashes 302 px for 0.20 s.
+  the battle camera: for example a torpedo on a hull flashes 140 px for 0.16 s (R208: 154 was over the flash counter and
+  pushed deaths soft), a cruiser death flashes 302 px for 0.20 s.
   Each step up the ladder is about 1.4 times the one below, so a bigger event always reads bigger.
 - Flame cap: no flame or hot core lives longer than 0.70 s, and none stays at full heat longer than 0.25 s (owner ruling).
-  Flash and snuff out, never rolling fire.
+  Flash and snuff out, never rolling fire. **Flame only (R193 (3)):** sparks, debris, gas and cooling embers are not flame and
+  get their own longer lives, so hits throw things and leave marks. Applying the cap to all of them was audit root cause D
+  (contrib/opus/reviews/cinematic_audit_top10.md).
+- **The numbers are starting points, judged by eye in a moving fight (R187).** Ryan asked for an audit of "these weird
+  arbitrary, like, guidance on that is making it, you know, more restricted and less realistic and cinematic than it should
+  be". What stays protected: comfort (the flash counter and the reduce flashing option) and frame rate. Everything else may be
+  loosened even if a fight gets busier. Tidy is a fault: even, straight, identical, instant, capped or one scale shows on
+  screen as staging (R186, R187).
+- **The flash counter counts by area (R193 (1)):** at most three big flashes a second, "big" by the W3C guideline's combined
+  area in a 10 degree window, from a stated screen (default 32 inch at 24 inches); godot/fx/fx.gd, issue 504. Work inside it:
+  it is a comfort rule for every player, not only under reduce flashing.
+- **Hits must read at camera 170 (R208 (1)).** Ryan picked "Merge, then push harder" on the first hits build; subtle is a
+  fail. Light on neighbouring hulls stays faint for now (R208 (3)).
 - Shields: invisible at rest, a faint edge glow on zoom, hover or a recent hit, a downed side reads as a dark gap, and they
   keep faction colours (R163; Oct 24).
 - Directions already researched for the next options sheets (contrib/muse/design/look_references_2026_11/synthesis.md):
@@ -20,7 +33,8 @@ effect: a weapon hit, a shield response, a trail, a death.
 
 ## 2. Inputs
 
-- The look bench (godot/bench/, tools/pc/jobs/look_bench.bat, baseline docs/shots/look_bench/). Its moments are listed in
+- The look bench (godot/bench/, tools/pc/jobs/look_bench.bat, baseline docs/shots/look_bench/). For a death or a deep wound:
+  the hull's insides (R209), so a break shows decks and frames, never a hollow shell. Its moments are listed in
   godot/bench/look_moments.json; add a moment there when an effect has none.
 - The picked route's bake scripts and pack step (tools/blender/vfx/ on branch opus/issue-353 until issue 419 lands them).
 - For anything new in look (not a resize or retime): Ryan's pick from an options sheet. Options first, then build.
@@ -41,7 +55,9 @@ effect: a weapon hit, a shield response, a trail, a death.
 
 ## 4. The checks that prove it
 
-- The bench strip at camera 170 shows the effect at the table's size within 15 percent, at the table's time within two frames.
+- The bench strip at camera 170 shows the effect at the table's size within 15 percent, at the table's time within two frames
+  (the table is the starting point; a better look found by eye changes the table, with a strip, R187).
+- The flash counter (godot/fx/fx.gd) accepts it without softening it; if it refuses, say so with the numbers.
 - godot/fx/test/check_destruction.bat and the stray puff guard pass: every spawned picture is recorded and sits on the hull
   (death_spawn_check.gd, PR 404).
 - Frame time on the bench is reported against the baseline. Costs are reported; a regression is the Board's call.
