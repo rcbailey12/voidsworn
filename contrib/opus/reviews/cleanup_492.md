@@ -41,7 +41,7 @@ history comment at the top.
 | Free tools, no triangle limits, glb not .vsm | RULEBOOK 3.8, 3.9, 5.12 |
 | Owner rulings of Oct 24: PC-only, shield colours | RULEBOOK 3.1, 6.11 |
 | Battles grow toward about 20 ships; capture is add, strip or ransom | rules of play, kept in FINDINGS R1 and R4; now named as examples in the rulebook's preamble |
-| The dead-star board stays | PR 554 adds RULEBOOK 10.10 (R216); until it merges, FINDINGS R2 |
+| The dead-star board stays | RULEBOOK 10.10 (R216, merged with PR 554) |
 | Lore approved, ids never change, the id to name list | RULEBOOK 11.1; the id to name list stays in AGENTS.md's first paragraph as a fact |
 | Ryan's PC first: RTX 5080, 32 GB, "400+ GB free", paths, ComfyUI | RULEBOOK 3.2; "400+ GB free" dropped (the disk filled on Nov 11); new rule in RULEBOOK 3.3: keep each job's PC folder lean, the Board lists folder sizes at each disk check; the Blender path is in RECIPE.md, ComfyUI in the pipeline README |
 | Breakable by design | RULEBOOK 5.4 and 5.5; the "older hulls use the game-side interior fallback (issue 167)" fact added to 5.4 |
