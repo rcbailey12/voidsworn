@@ -46,6 +46,7 @@ headless|fx/test/death_leap_check.gd|-|-|death sections, tiers, lifetime, cleanu
 headless|fx/test/death_plane_check.gd|-|-|ShipView and effects together as battle.gd marks a ship dead; box ships
 headless|fx/test/destruction_staging_check.gd|-|-|staged deaths, class gating, flash limits and the hurry key
 headless|fx/test/kill_slowmo_check.gd|-|-|issue 521: the kill slow-motion beat starts at the core flash of cruiser and capital kills, never for small hulls or under reduce motion, and a key or click ends it
+headless|fx/test/late_shader_check.gd|-|-|issue 376: after warm-up, any shader or material first built mid-battle logs its name and the frame time and is counted
 headless|fx/test/destruction_steps_check.gd|-|-|break geometry: every open edge is sealed; DESTRUCTION_OUT unset, so no pictures
 headless|fx/test/authored_interiors_check.gd|-|-|issue 557: authored GLB interiors and seams reach damage and death; moving a seam changes piece ownership; old hulls keep fallback
 headless|fx/test/flash_area_check.gd|-|-|issue 504: the flash counter by area on a staged worst second, checked against a brute-force area count; zero in calm mode
