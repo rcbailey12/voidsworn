@@ -64,3 +64,105 @@ Left as surface, and why:
 - Grime, rust streaks, scratches, worn edges and decals: surface texture, painted in the build (recipe stages 4 and 5), not modelled.
 - The picture's slack chains: made taut girdles (R185).
 - The crystal shard: removed (R197).
+
+## Per cell: present, shaped, detailed (from the model, corsair_A17_model.json)
+
+Y = yes, n = no. Counts are parts built with this inventory id against the count the concept shows.
+
+### bow/top
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| head | the head: an octagonal block with heavy chamfers on every edge, a beve | 1 / 1 | Y | Y | Y |
+| head_hatchboxes | framed boxes on the head roof | 3 / 3 | Y | Y | Y |
+| scoops | scoop drums at the lower corners of the head (port larger) | 2 / 2 | Y | Y | Y |
+| ears | listening dishes as ears on brackets at the upper sides of the head | 2 / 2 | Y | Y | Y |
+| brow_rack | rattle-rocket pod on the brow (data.js torp F) | 1 / 1 | Y | Y | Y |
+| head_plates | armour plating over the head | 2 / 1 | Y | Y | Y |
+| neck_chain | chains over the neck | 1 / 1 | Y | Y | Y |
+
+### bow/side
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| head | the head: an octagonal block with heavy chamfers on every edge, a beve | 1 / 1 | Y | Y | Y |
+| head_face | face panels on the head front: raised framed panels with vertical stra | 3 / 1 | Y | Y | Y |
+| scoops | scoop drums at the lower corners of the head (port larger) | 2 / 2 | Y | Y | Y |
+| ears | listening dishes as ears on brackets at the upper sides of the head | 2 / 2 | Y | Y | Y |
+| jaws | jaws: articulated claws under and beside the head | 4 / 4 | Y | Y | Y |
+| head_plates | armour plating over the head | 2 / 1 | Y | Y | Y |
+| bow_thrusters | attitude thruster quads at the head | 2 / 2 | Y | Y | Y |
+| lamps | red lamps in rows along the lower flank | 12 / 12 | Y | Y | Y |
+
+### bow/below
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| jaws | jaws: articulated claws under and beside the head | 4 / 4 | Y | Y | Y |
+| jaw_pipes | coiled hoses and pipes under the head between the jaws | 3 / 3 | Y | Y | Y |
+| head_plates | armour plating over the head | 2 / 1 | Y | Y | Y |
+| belly_plates | flat armoured belly with chines | 1 / 1 | Y | Y | Y |
+
+### mid/top
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| neck_chain | chains over the neck | 1 / 1 | Y | Y | Y |
+| hump | the shoulder hump: stepped tiers with sloped faces, a crest, openings | 4 / 1 | Y | Y | Y |
+| hump_hatchboxes | raised framed boxes on the hump and the neck deck | 3 / 3 | Y | Y | Y |
+| deck_guns | deck-edge twin turrets | 4 / 4 | Y | Y | Y |
+| crest_gun | twin turret on the hump crest | 1 / 1 | Y | Y | Y |
+| patches | torn patch plates on the flanks and hump shoulder | 8 / 8 | Y | Y | Y |
+| rust_plates | rust and dried-blood red plates (hump, deck edges) | 5 / 3 | Y | Y | Y |
+| hump_chain | girdle chain over the hump front | 1 / 1 | Y | Y | Y |
+
+### mid/side
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| hump | the shoulder hump: stepped tiers with sloped faces, a crest, openings | 4 / 1 | Y | Y | Y |
+| deck_guns | deck-edge twin turrets | 4 / 4 | Y | Y | Y |
+| flank_casemates | hump flank twin casemates | 2 / 2 | Y | Y | Y |
+| patches | torn patch plates on the flanks and hump shoulder | 8 / 8 | Y | Y | Y |
+| rust_plates | rust and dried-blood red plates (hump, deck edges) | 5 / 3 | Y | Y | Y |
+| flank_ribs | vertical frame ribs on the flanks | 6 / 6 | Y | Y | Y |
+| lamps | red lamps in rows along the lower flank | 12 / 12 | Y | Y | Y |
+| hump_chain | girdle chain over the hump front | 1 / 1 | Y | Y | Y |
+
+### mid/below
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| belly_turret | belly twin turret (covers below) | 1 / 1 | Y | Y | Y |
+| belly_plates | flat armoured belly with chines | 1 / 1 | Y | Y | Y |
+
+### stern/top
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| engines | the stacked engine cluster: three per side, port bells larger | 6 / 6 | Y | Y | Y |
+| engine_block | the engine block the cluster mounts on | 1 / 1 | Y | Y | Y |
+| antennas | twin antenna arrays on the aft hump (sheet top view) | 2 / 2 | Y | Y | Y |
+| stern_hatch | hatches on the aft hump faces | 2 / 2 | Y | Y | Y |
+
+### stern/side
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| flank_casemates | hump flank twin casemates | 2 / 2 | Y | Y | Y |
+| flank_ribs | vertical frame ribs on the flanks | 6 / 6 | Y | Y | Y |
+| lamps | red lamps in rows along the lower flank | 12 / 12 | Y | Y | Y |
+| engines | the stacked engine cluster: three per side, port bells larger | 6 / 6 | Y | Y | Y |
+| engine_block | the engine block the cluster mounts on | 1 / 1 | Y | Y | Y |
+| stern_hatch | hatches on the aft hump faces | 2 / 2 | Y | Y | Y |
+| stern_vents | louvre panels on the aft flanks over the engine room | 2 / 2 | Y | Y | Y |
+| stern_thrusters | attitude thruster quads at the stern | 2 / 2 | Y | Y | Y |
+
+### stern/below
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| belly_plates | flat armoured belly with chines | 1 / 1 | Y | Y | Y |
+| engines | the stacked engine cluster: three per side, port bells larger | 6 / 6 | Y | Y | Y |
+
+Lines not present, shaped and detailed without a reason: 0.

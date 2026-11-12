@@ -1,29 +1,43 @@
-# corsair_A17 build sheet: Hullbreaker wrecker, the Pack Hunter (round 2)
+# corsair_A17 build sheet: Hullbreaker wrecker, the Pack Hunter (round 3)
 
 Ashfall Hullbreakers cruiser, class Cruiser, **14.5 world units** (godot/render/hull_table.gd CLS_LEN; data.js c_marauder).
-Version 2, 2026-11-11, after Ryan's review of round 1 (R213; A17 stays lean). Designer of record: Opus (R205, R207).
-Open [sheet.jpg](sheet.jpg) (beauty and blockout first), [feature_table.md](feature_table.md), [manifest.json](manifest.json).
+Version 3, 2026-11-11, after Ryan's review of round 2 (R217: "the front is also just a flat block which does not match the
+concept", and A16's notes hold here too) and R218 (whole-ship fidelity), with turrets that turn (R219). Lean, as Ryan kept it
+(R213). Designer of record: Opus (R205, R207). Rendered on Ryan's PC (Blender 4.5, GPU), blockout
+`C:\Users\rcbai\Downloads\voidsworn_test\opus532\r3d\corsair_A17\corsair_A17_blockout.blend`.
 
 ![corsair_A17 preview](preview.jpg)
 
-- Views, one model, one scale: [side](side.jpg), [top](top.jpg), [underside](underside.jpg), [bow-on](bow.jpg),
-  [engine end](stern.jpg), [INSIDE cutaway](cutaway.jpg), [three-quarter](threequarter.jpg),
-  [beauty beside the blockout](beauty_vs_blockout.jpg), [outline overlay](outline_check.jpg), [checks.json](checks.json).
-- Design source: `tools/blender/build_sheets/ships/corsair_A17.py`.
+Start here: **[side_by_side.jpg](side_by_side.jpg)** (concept left, blockout right, same camera, full view then bow,
+midships and stern at the same windows), then [fit_view.jpg](fit_view.jpg) and [cells.jpg](cells.jpg).
 
-## Depth and massing (why)
+- [sheet.jpg](sheet.jpg): beauty and blockout, true views, INSIDE cutaway, feature table, changes, fit view and nine cells.
+- [inventory.md](inventory.md): the parts inventory from the concept, written before modelling (R218): 29 lines, every one
+  present, shaped by its kit part type and detailed, ticked per blob-sweep cell.
+- [fit_report.md](fit_report.md): 43 clashes on the round 2 layout (20 clash, 2 mount, 6 arc, 7 turret sweep, 8 exhaust:
+  engine bells inside each other, the hump-front turrets' barrels striking the hump, turrets through the ear dishes, bow
+  thrusters inside the scoop drums), each fix, and **zero left** in round 3.
+- [feature_table.md](feature_table.md), [manifest.json](manifest.json), [checks.json](checks.json), the views and the outline
+  overlay as for A16. Design source: `tools/blender/build_sheets/ships/corsair_A17.py`; inventory `ships/corsair_A17_inv.py`.
 
-Profile from the round 8 sheet's side view (about 74 px per unit there): a low heavy head (scoop drums and jaws), a pinched
-neck, the body deck at 1.5 and a shoulder hump to 2.85 with a crest to 3.2 over a flat belly at -1.75. Hull depth 3.35
-(length to depth 4.3), 5.0 to the crest (2.9); beam 5.15 (2.8), lean as Ryan kept it. The TRELLIS reference for A17 came
-out in a different axis frame and was not used for numbers.
+## What round 3 changed
 
-## Guns by slot (data.js c_marauder: scatter P, scatter S, torp F, flak T)
+1. **The head is shaped, never a flat block**: an octagonal block with heavy chamfers, two roof steps (the pale brow, then a
+   crown carrying the rocket pod), a face that overhangs a cut-in jaw mouth (the bottom rises from the belly line to the face),
+   framed face panels with vertical straps, scoop drums with grilles and four bands at its lower corners (port larger), ear
+   dishes at its upper front corners, framed boxes on the brow, hoses in the mouth.
+2. **Every part is its real shape** from the Hullbreakers kit (as A16): engine bells, turrets, casemates, the 2 by 3 rocket pod,
+   dishes, four jaws in their own housings, link chains, thrusters, antennas, hatches, slits, vents, lamps, hull plates.
+3. **The engine cluster works**: six bells, exits level at the stern, centres spaced so no bell touches another and no
+   exhaust washes a neighbour (round 2's were inside each other).
+4. **Guns fit**: neck turrets on low barbettes, hump-front turrets superfiring over them, hump casemates, a crest twin and a
+   belly twin; every turret swept through its data.js arc without touching anything (R219).
 
-- **P and S (scatter), mirrored, three mounts a side:** two deck-edge twin turrets (38 and 52 percent) at 45 degrees off the
-  bow and a hump-flank twin casemate (73 percent) at 55 degrees.
-- **F (torp):** a 2 by 3 rattle-rocket pod on the brow, firing over the jaws.
-- **T (flak):** a twin on the hump crest and a twin belly turret, both on the centreline.
+## What still differs from the concept, and why
 
-Outline at the fitted camera: 83.7 percent. Honest read: the same ship (heavy head with ears and scoop drums, jaws, hump,
-stacked engines), still a blockout without the picture's plate density.
+- **Surface density** (as A16): the concept's small torn plates, rivets and grime are coarser here and flat-coloured; texture
+  is the paint stage, plate size a kit setting.
+- **The jaws** in the concept are broad mandible blades; ours are segmented arms with hooked fingers. They read as claws and
+  close on something (R207), but are thinner than the picture's.
+- **The hump** in the concept has more steps and boxes; ours has the hump, a crest and three framed boxes.
+- **The head** is a little lower relative to the hump than the concept's, to keep the ship lean (R213).

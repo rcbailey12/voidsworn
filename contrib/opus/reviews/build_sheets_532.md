@@ -56,3 +56,54 @@ sandbox instead (Blender 5.3 bpy, Cycles CPU, 12 samples with denoise); the PC .
 `tools\blender\build_sheets\render_sheets.bat corsair_A16 corsair_A17` rebuilds both round 2 blockouts and .blend files in
 about a minute each. Two more PC traps: (1) re-committing the same container path can deliver a stale copy: commit from a
 fresh path and checksum the PC copy; (2) staging can return a truncated file without an error: open every staged image.
+
+# Round 3 (Opus worker, Nov 11 2026, after R217, R218 and R219)
+
+Ryan, 21:24 CST (R217): the A16 front tubes were "just circles", "the guns are visibly blocking the rockets and appear to be
+in front of an engine", "the engines look like big tubes, the weapons look so simple"; A17's "front is also just a flat
+block". 21:34 CST (R218): carry it through the whole model. R219: turret guns turn to face their target.
+
+## What was built, in order
+
+1. **Parts inventory first** (R218): `tools/blender/build_sheets/ships/corsair_A16_inv.py` (41 lines) and `corsair_A17_inv.py`
+   (29 lines), read from the beauty and the round 8 sheet region by region, each line with its kit part type, count, blob-sweep
+   cells and the sub-parts that make it read. Pushed before any modelling (commit 5e2a6fb1). `inventory.py` ticks each line per
+   cell from the model: present, shaped, detailed. Both ships: every line Y.
+2. **Kit part shapes** (R217, R218): `tools/blender/kits/hullbreakers/parts.py`, pure geometry (mathutils only) so the sheet
+   and the real build call the same builders: engine bell, gun (turret and casemate), launch tube, rocket rack, dish, claw,
+   chain, hatch, framed deck box, louvre vent, lamp, thruster quad, antenna array, pipe run, bay door, slit, armour plate.
+   `SUBPARTS` names each type's sub-parts; `detail_ok` is the DETAILED tick.
+3. **The fit check** (RULEBOOK 5.15): `tools/blender/build_sheets/clash.py`, inside every render and on its own
+   (`build.py <code> <out> fit`): CLASH, MOUNT, ARC (data.js slot arcs from core.js inArc), SWEEP (R219: each turret turned
+   through its arc, and turret pairs both turning), EXHAUST, EXIT, on every part of every type.
+4. **Turrets turn** (R219): each turret is an empty `<id>_turret` at the ring centre (local +Z = mount normal) with custom
+   properties `turret=1`, `slot`, `weapon`, `arc_lo`, `arc_hi`, `arc_deg`, `rest_yaw`, `rest_pitch`; children
+   `<id>_turn_<material>` carry the turning pieces in the pivot's frame; the ring stays fixed. Casemates: `turret=0`,
+   `gun_fixed=1`. The manifest lists `pivot_object` and the arc per turret.
+5. **The two ships redesigned** until the check found nothing, then judged part by part beside the concept
+   (`side_by_side.jpg`), which caught two more things the check could not: A16's tubes still hidden behind cheek boxes (the
+   prow was shortened so they jut out) and A17's red deck stripes reading as bricks (now thin plates).
+
+## Fit check, before and after
+
+| Ship | Round 2 layout | Round 3 |
+|---|---|---|
+| corsair_A16 | 38: clash 16, sweep 11, exhaust 10, exit 1 (the rack's cells covered by the bunker turret T1) | 0 |
+| corsair_A17 | 43: clash 20, mount 2, arc 6, sweep 7, exhaust 8 (bells inside each other, P2 and S2 barrels into the hump) | 0 |
+
+The "before" column is the round 2 layout (`ships/r2/`, kept only for this) built with the round 3 part shapes; each fix is
+in the ship's `fit_report.md`. The PC run (Blender 4.5) and the sandbox (bpy 5.3) give the same counts.
+
+## Honest read beside the concept
+
+Both now read as built objects with parts that are what they are, and the bows carry the concept's shaping. What still
+differs is listed in each ship's README: surface density (plates coarser than the concept's, flat colour: paint stage and a
+kit setting), A16's engine fin ring and tube-bundle rack, A17's mandible jaws drawn as segmented claws, fewer boxes on the
+castle and hump. None is a fit fault.
+
+## Notes for the Board
+
+- Cameras refit to the round 3 blockouts against a concept mask (outline 80.5 and 75.5 percent; reported, not a bar).
+- The round 3 renders: `C:\Users\rcbai\Downloads\voidsworn_test\opus532\r3d\` (r3, r3b, r3c are earlier passes of this round,
+  kept, nothing deleted).
+- R219's arc test samples the barrels at their rest elevation for the sweep; the fire-line test covers elevations.

@@ -1,43 +1,55 @@
-# corsair_A16 build sheet: the Warlord's Pyre-Barge (round 2)
+# corsair_A16 build sheet: the Warlord's Pyre-Barge (round 3)
 
 Ashfall Hullbreakers flagship, class Battle-barge, **26.0 world units** (godot/render/hull_table.gd CLS_LEN; data.js c_boss).
-Version 2, 2026-11-11, after Ryan's review of round 1 (R213: guns randomly placed, flatter than the concept, square blocks).
-Designer of record: Opus (R205, R207). Open [sheet.jpg](sheet.jpg): the accepted beauty and the blockout at the camera
-fitted to it come first. Then [feature_table.md](feature_table.md) and [manifest.json](manifest.json) (R214).
+Version 3, 2026-11-11, after Ryan's review of round 2 (R217: tubes as circles, guns blocking the rockets and in front of an
+engine, engines and guns plain tubes) and his scaling rule (R218: whole-ship fidelity), with turrets that turn (R219).
+Designer of record: Opus (R205, R207). Rendered on Ryan's PC (Blender 4.5, GPU), blockout
+`C:\Users\rcbai\Downloads\voidsworn_test\opus532\r3d\corsair_A16\corsair_A16_blockout.blend`.
 
 ![corsair_A16 preview](preview.jpg)
 
-- Views, one model, one scale (80 px per unit): [side](side.jpg), [top](top.jpg), [underside](underside.jpg),
-  [bow-on](bow.jpg), [engine end](stern.jpg), [INSIDE cutaway](cutaway.jpg), [three-quarter](threequarter.jpg),
-  [beauty beside the blockout](beauty_vs_blockout.jpg), [outline overlay](outline_check.jpg), [checks.json](checks.json).
-- Design source: `tools/blender/build_sheets/ships/corsair_A16.py`.
+Start here: **[side_by_side.jpg](side_by_side.jpg)** (concept left, blockout right, same camera, full view then bow,
+midships and stern at the same windows), then [fit_view.jpg](fit_view.jpg) and [cells.jpg](cells.jpg).
 
-## Depth and massing (why)
+- [sheet.jpg](sheet.jpg): beauty and blockout, true side, top, underside, bow-on, engine end, INSIDE cutaway, feature table,
+  changes, then the fit view and the nine cells.
+- [inventory.md](inventory.md): the parts inventory written from the concept before modelling (R218), ticked per blob-sweep
+  cell from the model: 41 lines, every one present, shaped by its kit part type and detailed (every sub-part modelled).
+- [fit_report.md](fit_report.md): the fit check (RULEBOOK 5.15): 38 clashes on the round 2 layout (16 clash, 11 turret sweep,
+  10 exhaust, 1 exit: the rack covered by the bunker turret), each fix, and **zero left** in round 3.
+- [feature_table.md](feature_table.md), [manifest.json](manifest.json) (routes, the turret pivots and arcs), [checks.json](checks.json),
+  views: [side](side.jpg), [top](top.jpg), [underside](underside.jpg), [bow-on](bow.jpg), [engine end](stern.jpg),
+  [cutaway](cutaway.jpg), [three-quarter](threequarter.jpg), [outline overlay](outline_check.jpg).
+- Design source: `tools/blender/build_sheets/ships/corsair_A16.py`; inventory `ships/corsair_A16_inv.py`; part shapes
+  `tools/blender/kits/hullbreakers/parts.py`.
 
-Round 1 fitted one three-quarter camera, which cannot see height. Round 2 reads the true profile off the round 8 sheet's
-side view (48 px per unit at this length) and the plan off its top view, with the TRELLIS shape reference
-(board\issue-532\shots\corsair_A16\shape_reference_v2.glb) as a check on the massing:
+## What round 3 changed
 
-| Reading | Hull depth (belly to deck) | To the castle roof | Beam |
-|---|---:|---:|---:|
-| Round 8 side and top views | 5.5 | 6.0 | 8.5 |
-| TRELLIS shape reference | about 6 | 7.9 | about 11 (it reads depth into width, the "egg") |
-| Round 1 (rejected) | 4.45 | 6.6 with a thin castle | 8.3 |
-| **Round 2** | **4.9 slab + tier 2 to 5.7** | **6.5, bridge 7.1** | **8.7** |
+1. **The front tubes** are deep tubes with hooded rolled lips, dark bores going back 2.5 units and clamp bands, jutting 1.3
+   ahead of a shorter, faceted prow cap under a two-step brow, a ribbed spine between them (the concept's cluster).
+2. **Every part is its real shape**, from the Hullbreakers kit: engines are bells with a throat, an ember lining, an inner
+   cone, cooling rings, gimbal struts, a banded housing and a mount collar; turrets have a ring and bolt ring, a faceted
+   housing with a glacis and bustle, a mantlet on trunnions, breeches, barrels with recoil sleeves, clamps, muzzle brakes and
+   dark bores; casemates have an armour plate, a box sponson and a ball mantlet; the rack is a framed box of ten cells with
+   rocket noses set back in them, side cheeks, a yoke and a slewing ring; dishes have ribbed backs, rims and feed horns on
+   struts; claws have hinge drums, armoured segments, joints, rams and hooked fingers; chains are real links. Hull plates
+   carry thickness steps, bevels and corner rivets and are cleared under every mount.
+3. **No gun blocks the rockets**: the round 2 bunker turret is gone; the rack sits on a plinth, pitched 12 degrees, every cell
+   clear over the deck boxes and dishes; the flak superfires from the castle front (T1) and a bridge barbette (T2).
+4. **Turrets turn (R219)**: each turret is a pivot `<id>_turret` at its ring centre with `turret=1` and its data.js arc;
+   the middle deck-edge turret on each side superfires on a barbette so neighbours never meet when trained aft.
 
-So length to depth is 4.0 to the castle roof (5.3 for the slab alone) and length to beam 3.0: the long slab Ryan accepted,
-with real elevation: a blunt chin rising to the scoops, the slab, a raised armoured tier 2 with a sloped front at 23 percent,
-the castle at 59 to 80 percent, the bridge block and flak turret on top, the stern deck and the engine pods.
+## What still differs from the concept, and why
 
-## Guns by slot (data.js c_boss: scatter P, scatter S, htorp F, flak T)
-
-- **P and S (scatter), matched mirror batteries, six mounts a side:** a bow ball casemate trained 15 degrees off the bow, three
-  deck-edge twin turrets on tier 2 (stations 27, 37, 47 percent) resting 45 degrees off the bow, and two castle-flank twin
-  casemates (65 and 73 percent) at 55 degrees. One mount family per tier.
-- **F (htorp):** one 10-tube heavy rocket rack on the spine at 41 percent, firing over the bow, magazine directly below.
-- **T (flak):** two twin turrets on the spine, 360 degree arcs: one on the gun bunker (31 percent), one superfiring on the
-  bridge (69 percent).
-
-Outline at the fitted camera (az 45, el 24, roll -1.4): 84.3 percent. My honest read of the side by side: plainly the same
-ship (the slab, the twin scoops and dishes, the rack, the castle, the big port pod, the claws), but still a blockout: the
-picture's density of small plates, rivets and wear is a paint and kit job, not a sheet job.
+- **Surface density.** The concept is covered in small torn plates, rivet rows, grime and red glow. The blockout has plates
+  with steps and rivets at a coarser size and flat colour: texture and wear are the paint stage (recipe 4 and 5), and the
+  plate size is a kit setting the build can tighten.
+- **The big port engine** in the concept is a short fat drum with many radial fins round a fire-filled bell; ours is a bell
+  with three cooling rings and struts. Same part, plainer: the fin ring is a kit addition for the build.
+- **The rack** in the concept is a bundle of round tubes; ours is a framed box of round cells. Same read from above; the
+  bundle is a variant the kit can add.
+- **The castle** in the concept is taller and busier (stacked boxes and sloped plates); ours keeps the concept's tiers with
+  slits and hatches, fewer boxes.
+- **Guns** are matched batteries by slot (R213) where the concept scatters them; barrels are a little shorter than the
+  concept's so neighbours clear each other when they turn.
+- **Tube lip notch**: the concept's lower-lip notch is left for the build's kit pass.

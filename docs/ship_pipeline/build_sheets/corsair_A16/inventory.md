@@ -77,3 +77,124 @@ Left as surface, and why:
 - Grime, rust streaks, scratches, worn edges and decals: surface texture, painted in the build (recipe stages 4 and 5), not modelled.
 - The picture's slack hanging chains: made taut girdles (factions.md: nothing hangs off the ship, R185).
 - The crystal shard: removed (R197).
+
+## Per cell: present, shaped, detailed (from the model, corsair_A16_model.json)
+
+Y = yes, n = no. Counts are parts built with this inventory id against the count the concept shows.
+
+### bow/top
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| prow | blunt rounded prow: faceted cap stepping down over the tube cluster, a | 1 / 1 | Y | Y | Y |
+| ftubes | front tubes (wake-sniffer scoops) side by side under the brow | 2 / 2 | Y | Y | Y |
+| dishes | listening dishes side by side on a plinth over the prow | 2 / 2 | Y | Y | Y |
+| bow_guns | deck-edge twin turrets in a row along the forward deck edges (picture: | 4 / 4 | Y | Y | Y |
+| bow_hatchboxes | raised framed deck boxes on the forward deck | 2 / 2 | Y | Y | Y |
+| bow_chain | lashing chains across the bow deck and down the flank | 2 / 2 | Y | Y | Y |
+| bow_trophy | violet Eclipse trophy plates (deck and port flank) | 1 / 2 | Y | Y | Y |
+| bow_plates | armour plating of mixed size over the whole bow | 5 / 1 | Y | Y | Y |
+
+### bow/side
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| prow | blunt rounded prow: faceted cap stepping down over the tube cluster, a | 1 / 1 | Y | Y | Y |
+| ftubes | front tubes (wake-sniffer scoops) side by side under the brow | 2 / 2 | Y | Y | Y |
+| ftube_spine | ribbed housing between and above the tubes | 1 / 1 | Y | Y | Y |
+| dishes | listening dishes side by side on a plinth over the prow | 2 / 2 | Y | Y | Y |
+| bow_guns | deck-edge twin turrets in a row along the forward deck edges (picture: | 4 / 4 | Y | Y | Y |
+| bow_casemates | bow casemates low on the flanks | 2 / 2 | Y | Y | Y |
+| bow_claws | big hooked boarding claws under the chin | 2 / 2 | Y | Y | Y |
+| bow_chain | lashing chains across the bow deck and down the flank | 2 / 2 | Y | Y | Y |
+| bow_trophy | violet Eclipse trophy plates (deck and port flank) | 1 / 2 | Y | Y | Y |
+| bow_plates | armour plating of mixed size over the whole bow | 5 / 1 | Y | Y | Y |
+| flank_vents | louvre panels in a row along the lower flank | 6 / 6 | Y | Y | Y |
+| lamps | dim red running lights along both flanks and on the castle | 14 / 14 | Y | Y | Y |
+| bow_thrusters | attitude thruster quads at the bow | 2 / 2 | Y | Y | Y |
+| flank_ribs | vertical frame ribs dividing the flank into sections | 8 / 8 | Y | Y | Y |
+| belt | belt strake along each flank | 1 / 2 | Y | Y | Y |
+
+### bow/below
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| bow_claws | big hooked boarding claws under the chin | 2 / 2 | Y | Y | Y |
+| bow_plates | armour plating of mixed size over the whole bow | 5 / 1 | Y | Y | Y |
+| belly_plates | flat armoured belly with chines | 1 / 1 | Y | Y | Y |
+
+### mid/top
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| tier2 | raised armoured deck (tier 2) with a sloped, stepped front | 3 / 1 | Y | Y | Y |
+| rack | heavy rocket rack, 2 by 5 cells, on the spine | 1 / 1 | Y | Y | Y |
+| armour_vent | armoured vent housing forward of the rack: a raised box with two slant | 1 / 1 | Y | Y | Y |
+| mid_guns | deck-edge twin turrets amidships | 2 / 2 | Y | Y | Y |
+| patches | torn patch plates, crooked and overlapping, mid-flank and the tier 2 s | 8 / 8 | Y | Y | Y |
+| mid_chain | girdle chain over the tier 2 seam | 1 / 1 | Y | Y | Y |
+| antennas | antenna arrays on the spine (the sheet top view shows tall sticks) | 2 / 2 | Y | Y | Y |
+
+### mid/side
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| flank_vents | louvre panels in a row along the lower flank | 6 / 6 | Y | Y | Y |
+| lamps | dim red running lights along both flanks and on the castle | 14 / 14 | Y | Y | Y |
+| tier2 | raised armoured deck (tier 2) with a sloped, stepped front | 3 / 1 | Y | Y | Y |
+| mid_guns | deck-edge twin turrets amidships | 2 / 2 | Y | Y | Y |
+| mid_casemates | flank twin casemates amidships | 2 / 2 | Y | Y | Y |
+| patches | torn patch plates, crooked and overlapping, mid-flank and the tier 2 s | 8 / 8 | Y | Y | Y |
+| pale_plates | pale Hegemony grey trophy plates on the port flank | 1 / 1 | Y | Y | Y |
+| flank_ribs | vertical frame ribs dividing the flank into sections | 8 / 8 | Y | Y | Y |
+| belt | belt strake along each flank | 1 / 2 | Y | Y | Y |
+| mid_chain | girdle chain over the tier 2 seam | 1 / 1 | Y | Y | Y |
+
+### mid/below
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| grapples | grapple arms under the belly (sheet side view: three grabbers) | 2 / 2 | Y | Y | Y |
+| bay | ventral launch bay (data.js hangar 2) | 1 / 1 | Y | Y | Y |
+| belly_plates | flat armoured belly with chines | 1 / 1 | Y | Y | Y |
+
+### stern/top
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| antennas | antenna arrays on the spine (the sheet top view shows tall sticks) | 2 / 2 | Y | Y | Y |
+| castle | the castle (tier 3): sloped front with a dried-blood band, flank faces | 3 / 1 | Y | Y | Y |
+| bridge | bridge block on the castle roof with a vision slit | 3 / 1 | Y | Y | Y |
+| top_turret | castle-top turret with a long barrel | 2 / 1 | Y | Y | Y |
+| main_engine | big main engine bells: the port pod the larger, a centre main | 3 / 3 | Y | Y | Y |
+| upper_pod | upper pod engine on the stern deck | 1 / 1 | Y | Y | Y |
+| pylons | armoured engine housings and pylons around the pods | 1 / 2 | Y | Y | Y |
+| round_hatch | round hatch with a hand wheel on the stern deck | 1 / 1 | Y | Y | Y |
+| stern_chain | girdle chain over the castle seam | 1 / 1 | Y | Y | Y |
+
+### stern/side
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| lamps | dim red running lights along both flanks and on the castle | 14 / 14 | Y | Y | Y |
+| flank_ribs | vertical frame ribs dividing the flank into sections | 8 / 8 | Y | Y | Y |
+| castle | the castle (tier 3): sloped front with a dried-blood band, flank faces | 3 / 1 | Y | Y | Y |
+| bridge | bridge block on the castle roof with a vision slit | 3 / 1 | Y | Y | Y |
+| stern_casemates | castle flank twin casemates in boxy housings | 4 / 4 | Y | Y | Y |
+| main_engine | big main engine bells: the port pod the larger, a centre main | 3 / 3 | Y | Y | Y |
+| boosters | small lower booster bells | 2 / 2 | Y | Y | Y |
+| pylons | armoured engine housings and pylons around the pods | 1 / 2 | Y | Y | Y |
+| castle_hatches | flank hatches on the castle | 2 / 2 | Y | Y | Y |
+| stern_pipes | pipe runs along the stern flanks to the pods | 2 / 2 | Y | Y | Y |
+| stern_thrusters | attitude thruster quads at the stern | 2 / 2 | Y | Y | Y |
+| stern_chain | girdle chain over the castle seam | 1 / 1 | Y | Y | Y |
+
+### stern/below
+
+| ID | What | Built / listed | Present | Shaped | Detailed |
+|---|---|---|---|---|---|
+| grapples | grapple arms under the belly (sheet side view: three grabbers) | 2 / 2 | Y | Y | Y |
+| belly_plates | flat armoured belly with chines | 1 / 1 | Y | Y | Y |
+| boosters | small lower booster bells | 2 / 2 | Y | Y | Y |
+
+Lines not present, shaped and detailed without a reason: 0.
