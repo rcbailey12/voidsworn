@@ -12,7 +12,9 @@ engines, bay points follow its hangars, and breach anchors follow the class and 
 
 Every game ship is in the game frame: **+X is the bow, +Y is up, -Z is port** (standard glTF, right-handed, true chirality;
 `tools/blender/a4/K1_DECISIONS.md` decision 2). Every hard point is an empty node, a direct child of the ship node, with its
-own translation and rotation already in that frame (the ship node itself has no transform).
+own translation and rotation already in that frame (the ship node itself has no transform). The one exception is a turret's
+muzzle: it is a child of its turret node (see "Turrets" below), so its transform is in the turret's frame and it turns with
+the barrels. The check and the game read every point through the node tree.
 
 Every point uses the same local axes:
 
@@ -147,6 +149,35 @@ Two places, two different jobs:
 The old A4 hulls keep their existing points and the fallback above. This contract is enforced for ships built by the recipe;
 the 36 old hulls are not retrofitted (Board verdict on audit finding 6: build the points into the new recipe instead of
 retrofitting hulls that will be replaced).
+
+## Turrets (issue 560)
+
+RULEBOOK 6.17 (Ryan, Nov 11 2026, R219: "I agree with your design on turrets"): turret guns turn to face their target when they
+fire; fixed side guns (casemates, broadside batteries) stay fixed. A turret reaches the game as its own node:
+
+| Node | Where | Axes | `extras` |
+|---|---|---|---|
+| `turret_<n>` | a child of the ship node, at the ring centre on the ring's top face (the pivot) | +Y the turning axis (the mount normal, away from the hull); -Z the rest aim projected into the ring's plane | `kind=turret`, `id` (the kit's part id), `socket`, `slot`, `weapon`, `arc_lo`, `arc_hi`, `rest_yaw`, `rest_pitch` |
+| `turret_<n>_turn` | a child of `turret_<n>`, in its frame | | (a mesh: housing, mantlet, breeches, barrels) |
+| `hp_w<slot>_<weapon>_<arc>_<k>` | a child of `turret_<n>`, one per barrel of that turret | as every weapon point | the weapon extras plus `turret=<n>` |
+
+`arc_lo` and `arc_hi` are bearings from the bow in degrees, + to port (the frame of core.js `inArc`): the arc the turret may
+train through. A kit that gives no arc of its own gets its slot's rules arc (`hardpoints.RULES_ARC`: F -60 to 60, P 30 to 150,
+S -150 to -30, T all round). The ring and its bolts stay in the ship mesh. `<n>` counts the ship's turrets from 0.
+
+How a kit marks a turret in its blend is in `tools/blender/kits/README.md` ("How a kit marks a turret") and
+`tools/blender/kits/shared/turrets.py`: an empty `<id>_turret` with the turning meshes as its children, or a `TURRET_TURN` list
+of the kit's turning pieces that stage 7 applies. The export writes the nodes above (`export7.py`); the check
+(`check_export.py`) fails a ship whose kit marks a turret that the export merged into the ship mesh (no `turret_<n>` of its own,
+or its muzzles on the ship node), a turret node with no turning mesh or no muzzle, a missing extra, a pivot off the mesh, a
+turret resting aimed aft or resting outside its own arc.
+
+In the game (the attach point service, godot/fx/fx_hull.gd "turrets"): before a turret's shots it turns toward the target, the
+goal clamped to its arc and to the yaws where its barrels stay clear of its own ship (checked once when the ship is added,
+against the hull and every part that does not turn); the traverse is eased (an average 150 degrees a second, never faster than
+1.5 times that, never accelerating faster than 900 degrees a second squared; tuning values); each shot waits until its turret
+arrives and leaves the turned muzzle; after its last shot the turret holds 0.9 s and trains back to rest. The rules never see it
+(RULEBOOK 7.4). A hull with no turret node keeps fixed guns: the 36 A4 hulls and the round 7 export of C15s_23.
 
 ## The shield surface (for P3-22)
 

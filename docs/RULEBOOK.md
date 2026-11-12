@@ -400,7 +400,9 @@ A turret traverses smoothly (never snaps, RULEBOOK 7.1), within its arc, and ret
 start at the turned barrel. Why: today every gun is a fixed mesh (no aim code in godot/render/ship_view.gd or
 godot/fx/fx_weapons.gd); turning turrets make a fight read and suit the detailed guns now being built (R217). Set: Ryan, Nov 11
 (R219: "I agree with your design on turrets"). A turret may turn aft only to follow a target its rules arc lets it hit
-there; at rest no gun ever points backward (4.2). Set: Ryan, Nov 12 (R222: "yes agree on your turret facing rule").
+there; at rest no gun ever points backward (4.2). Set: Ryan, Nov 12 (R222: "yes agree on your turret facing rule"). Built (issue 560): a turret is its own node in the ship's glb
+(docs/ship_pipeline/HARDPOINTS.md "Turrets"; the kit marks it, tools/blender/kits/README.md); the attach point service in
+godot/fx/fx_hull.gd turns it, checked by godot/render/test/turret_check.gd. Hulls exported before it keep fixed guns.
 
 ## 7. Movement
 

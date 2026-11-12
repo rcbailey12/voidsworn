@@ -15,8 +15,15 @@
 #     than <code>_hull), and +Y is the outward normal (pointing out of its own side: its z component along that side at least 0.5);
 #   - the smallest required set of any class is not met: a weapon point per data.js weapon slot, hp_core, hp_eng, hp_rcs and
 #     hp_board (two each, one port and one starboard), and hp_bay when data.js gives the ship a hangar;
-#   - a hard point is not a child of the ship node, or a map the glb names is not there.
+#   - a hard point is not a child of the ship node (or, for a turret's muzzle, of its turret node), or a map the glb names is not
+#     there.
 #   - the authored interior/seams record or real room geometry is missing (a liner alone is not a room).
+#   - turrets (issue 560, RULEBOOK 6.17; docs/ship_pipeline/HARDPOINTS.md "Turrets"): a turret the kit marks (a ship json part
+#     whose part is 'turret', or the asset extras turrets_marked the export recorded from the blend) has no turret_<n> node of its
+#     own (the export merged it into the ship mesh), or one of its muzzles hangs on the ship node instead of under its turret; a
+#     turret node lacks its turning mesh, a muzzle, an extra (TURRET_EXTRAS), sits off the mesh, rests aimed backward or rests
+#     outside its own arc.
+# Every position and axis is read through the node tree (a turret's muzzle is in its turret's frame), as the game reads it.
 # usage: python check_export.py SHIP_JSON EXPORT_DIR [tol=0.012] [unbaked=1]
 import os, sys, json, struct, re
 import numpy as np
@@ -43,6 +50,28 @@ def accessor(g, blob, i):
     o = bv.get('byteOffset', 0) + a.get('byteOffset', 0); stride = bv.get('byteStride') or dt.itemsize * nc
     if stride == dt.itemsize * nc: return np.frombuffer(blob, dt, a['count'] * nc, o).reshape(a['count'], nc)
     return np.stack([np.frombuffer(blob, dt, nc, o + k * stride) for k in range(a['count'])])
+
+def node_matrix(n):
+    """a glTF node's local 4x4 matrix (matrix, or translation, rotation, scale)"""
+    if 'matrix' in n: return np.array(n['matrix'], float).reshape(4, 4).T
+    x, y, z, w = n.get('rotation', (0, 0, 0, 1)); t = n.get('translation', (0, 0, 0)); sc = n.get('scale', (1, 1, 1))
+    R = np.array([[1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)],
+                  [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
+                  [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)]])
+    M = np.eye(4); M[:3, :3] = R * np.array(sc, float)[None, :]; M[:3, 3] = t
+    return M
+
+def world_matrices(g):
+    """every node's matrix in the scene frame, and its parent index"""
+    nodes = g['nodes']; parent = {}
+    for i, n in enumerate(nodes):
+        for c in n.get('children', []): parent[c] = i
+    W = {}
+    def w(i):
+        if i not in W: W[i] = (w(parent[i]) if i in parent else np.eye(4)) @ node_matrix(nodes[i])
+        return W[i]
+    for i in range(len(nodes)): w(i)
+    return W, parent
 
 def quat_rot(q, v):
     x, y, z, w = q; u = np.array([x, y, z]); v = np.array(v, float)
@@ -97,8 +126,14 @@ def main():
         except (KeyError, TypeError, ValueError): probs.append('invalid authored break seam')
     if seams and not any('span' not in s for s in seams): probs.append('no authored transverse break seam')
     T = []; PT = []; IT = []; rooms = []; interior_seen = set(); hull_seen = False
-    for pr in g['meshes'][nodes[root]['mesh']]['primitives']:
+    WM, parent = world_matrices(g)
+    turret_ids = [i for i, n in enumerate(nodes) if re.fullmatch(HP_CONTRACT.TURRET_PATTERN, str(n.get('name', ''))) or (n.get('extras') or {}).get('kind') == 'turret']
+    turn_meshes = [(i, nodes[i]) for i, n in enumerate(nodes) if 'mesh' in n and parent.get(i) in turret_ids]
+    prims = [(pr, None) for pr in g['meshes'][nodes[root]['mesh']]['primitives']]
+    for i, n in turn_meshes: prims += [(pr, WM[i]) for pr in g['meshes'][n['mesh']]['primitives']]
+    for pr, M in prims:
         pos = accessor(g, blob, pr['attributes']['POSITION']).astype(np.float64)
+        if M is not None: pos = pos @ M[:3, :3].T + M[:3, 3]
         idx = accessor(g, blob, pr['indices']).reshape(-1, 3).astype(np.int64) if 'indices' in pr else np.arange(len(pos)).reshape(-1, 3)
         mat = g['materials'][pr['material']].get('name', '') if 'material' in pr else ''
         if mat in interiors:
@@ -106,8 +141,8 @@ def main():
             if mat != code + '_inside_skin': rooms.append(pos[idx])
             continue
         T.append(pos[idx])
-        if mat == code + '_hull': hull_seen = True
-        else: PT.append(pos[idx])                     # every surface but the hull is a part surface (parts and glow)
+        if mat == code + '_hull' and M is None: hull_seen = True
+        else: PT.append(pos[idx])                     # every surface but the hull is a part surface (parts, glow, turrets)
     if not hull_seen: probs.append(f'no {code}_hull surface: the hull cannot be told from the parts, so breach clearance cannot be measured')
     T = np.concatenate(T); A, B, C = T[:, 0], T[:, 1], T[:, 2]; lo, hi = T.reshape(-1, 3).min(0), T.reshape(-1, 3).max(0)
     PT = np.concatenate(PT) if PT else np.zeros((0, 3, 3))
@@ -135,9 +170,13 @@ def main():
     kids = set(nodes[root].get('children', [])); hps = [(i, n) for i, n in enumerate(nodes) if str(n.get('name', '')).startswith('hp_')]
     by_slot = {}; count = {}; rows = []
     for i, n in hps:
-        nm = n['name']; p = np.array(n.get('translation', (0, 0, 0)), float); q = n.get('rotation', (0, 0, 0, 1))
-        if i not in kids: probs.append(f'{nm} is not a child of the ship node')
-        fwd = quat_rot(q, (0, 0, -1)); up = quat_rot(q, (0, 1, 0)); row = dict(name=nm, p=[round(v, 4) for v in p], fwd=[round(v, 3) for v in fwd])
+        nm = n['name']; M = WM[i]; p = M[:3, 3].copy()
+        par = parent.get(i); under = par if par in turret_ids and parent.get(par) == root else None
+        if i not in kids and under is None: probs.append(f'{nm} is not a child of the ship node')
+        if under is not None and not nm.startswith('hp_w'): probs.append(f'{nm} hangs under a turret: only weapon muzzles turn with a turret')
+        R3 = M[:3, :3] / np.linalg.norm(M[:3, :3], axis=0)[None, :]
+        fwd = R3 @ np.array((0, 0, -1.0)); up = R3 @ np.array((0, 1.0, 0)); row = dict(name=nm, p=[round(v, 4) for v in p], fwd=[round(v, 3) for v in fwd])
+        if under is not None: row['turret'] = nodes[under]['name']
         if nm == 'hp_core':
             count['core'] = count.get('core', 0) + 1
             if not (np.all(p >= lo) and np.all(p <= hi)): probs.append('hp_core is outside the hull')
@@ -194,6 +233,39 @@ def main():
                 if fwd[2] * sg < .5: probs.append(f'{nm}: a boarding origin must point out of its own side')
         else: probs.append(f'{nm}: not a hard point name the contract defines')
         rows.append(row)
+    # turrets (issue 560): every turret the kit marks reaches the glb as its own node with its turning mesh and its muzzles
+    trows = []; tinfo = []
+    for t in turret_ids:
+        n = nodes[t]; nm = str(n.get('name', '')); ex = n.get('extras') or {}; M = WM[t]; p = M[:3, 3]
+        R3 = M[:3, :3] / np.linalg.norm(M[:3, :3], axis=0)[None, :]; fwd = R3 @ np.array((0, 0, -1.0)); ax = R3 @ np.array((0, 1.0, 0))
+        if parent.get(t) != root: probs.append(f'{nm} is not a child of the ship node')
+        ch = n.get('children', [])
+        mz = [c for c in ch if str(nodes[c].get('name', '')).startswith('hp_w')]
+        has_mesh = any('mesh' in nodes[c] and nodes[c].get('name') == nm + '_turn' for c in ch)
+        trows.append(dict(name=nm, extras=ex, has_mesh=has_mesh, muzzles=len(mz)))
+        d = float(tri_dist(p, A, B, C).min())
+        if d > TOL: probs.append(f'{nm}: its pivot is {d:.4f} off the mesh (limit {TOL:.4f}): the turret must turn about its own ring')
+        if fwd[0] < -.05: probs.append(f'{nm} rests aimed backward (x {fwd[0]:+.2f}): no gun faces backward (RULEBOOK 4.2)')
+        k = re.fullmatch(HP_CONTRACT.TURRET_PATTERN, nm)
+        for c in mz:
+            if k and (nodes[c].get('extras') or {}).get('turret') != int(k.group(1)):
+                probs.append(f'{nodes[c]["name"]}: extras.turret is {(nodes[c].get("extras") or {}).get("turret")!r}, its turret is {nm}')
+        tinfo.append(dict(name=nm, id=ex.get('id'), socket=ex.get('socket'), p=[round(v, 4) for v in p], fwd=[round(v, 3) for v in fwd],
+                          axis=[round(v, 3) for v in ax], arc=[ex.get('arc_lo'), ex.get('arc_hi')], muzzles=[nodes[c]['name'] for c in mz], off_mesh=round(d, 4)))
+    probs += HP_CONTRACT.turret_problems(trows)
+    marked = set(g.get('asset', {}).get('extras', {}).get('turrets_marked') or [])
+    for e in ship.get('parts', []):
+        if e.get('part') == 'turret':
+            marked.add(e['name'])
+            if e.get('pair'): marked.add(e['name'] + '_s')
+    have = {str(nodes[t].get('extras', {}).get('id')) for t in turret_ids} | {str(nodes[t].get('extras', {}).get('socket')) for t in turret_ids}
+    for tid in sorted(marked):
+        if tid not in have: probs.append(f'turret {tid} is marked by the kit but the export merged it into the ship mesh (no turret node of its own)')
+    for i, n in hps:
+        sock = (n.get('extras') or {}).get('socket')
+        if sock in marked and parent.get(i) == root:
+            probs.append(f'{n["name"]}: a muzzle of turret {sock} hangs on the ship node, so it would not turn with its barrels (merged turret)')
+    notes.append(f'turrets: {len(turret_ids)} written ({", ".join(t["name"] + " " + str(t["id"]) for t in tinfo) or "none"}); marked by the kit: {sorted(marked) or "none"}')
     for slot, (wk, arc) in enumerate(weapons):
         if slot not in by_slot: probs.append(f'weapon slot {slot} ({wk} {arc}) has no hard point')
     if count.get('core', 0) > 1: probs.append('more than one hp_core')
@@ -220,7 +292,7 @@ def main():
             probs.append(f'manifest_entry.json cls {entry.get("cls")!r} is not {cls!r} (data.js)')
     info = dict(cls=cls, faction=HP_CONTRACT.faction_key(fac), expected_breach=expected_breach,
                 required=req, weapons=[dict(slot=s, weapon=wk, arc=arc, hard_points=sorted(by_slot.get(s, []))) for s, (wk, arc) in enumerate(weapons)],
-                hardpoints=count, maps=imgs, tolerance=TOL, tolerance_of_length=TOL_FRAC, ship_length=LEN, breach_clearance=BREACH_CLEAR, rows=rows)
+                hardpoints=count, maps=imgs, tolerance=TOL, tolerance_of_length=TOL_FRAC, ship_length=LEN, breach_clearance=BREACH_CLEAR, rows=rows, turrets=tinfo)
     return finish(out, code, probs, notes, info)
 
 def finish(out, code, probs, notes, info):

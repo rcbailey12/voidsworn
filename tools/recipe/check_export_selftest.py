@@ -14,6 +14,9 @@
 #   breach_count    the last breach anchor renamed away                            must FAIL (the class and faction count is not met)
 #   breach_near     the first breach anchor moved onto the first weapon's muzzle   must FAIL (closer than 0.03 to a part)
 #   breach_inward   the first breach anchor turned so +Y points into the ship      must FAIL (+Y is not the outward normal)
+#   turret_merged   (an export with turrets) the turret nodes removed and their      must FAIL (a marked turret merged into the mesh)
+#                   muzzles moved onto the ship node, as the export did before 560
+#   turret_no_mesh  (an export with turrets) the turning meshes renamed away          must FAIL (a turret with no turning mesh)
 # usage: python check_export_selftest.py SHIP_JSON EXPORT_DIR [unbaked=1]      (exit code 1 when any case does not behave)
 import os, sys, json, struct, shutil, subprocess, re
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
@@ -27,7 +30,9 @@ def write_glb(path, g, blob):
         f.write(struct.pack('<4sII', b'glTF', 2, 12 + 8 + len(js) + 8 + len(blob))); f.write(struct.pack('<I4s', len(js), b'JSON')); f.write(js)
         f.write(struct.pack('<I4s', len(blob), b'BIN\0')); f.write(blob)
 
-def first(g, pre): return next(n for n in g['nodes'] if str(n.get('name', '')).startswith(pre))
+def first(g, pre):      # the first such node on the ship node itself (a turret's muzzles are in their turret's frame)
+    kids = set(next(n for n in g['nodes'] if n.get('name') == code).get('children', []))
+    return next(n for i, n in enumerate(g['nodes']) if str(n.get('name', '')).startswith(pre) and i in kids)
 def length(g):          # the x extent of the ship mesh, from the POSITION accessors' min and max (glTF requires them)
     root = next(n for n in g['nodes'] if n.get('name') == code); acc = [g['accessors'][pr['attributes']['POSITION']] for pr in g['meshes'][root['mesh']]['primitives']]
     return max(a['max'][0] for a in acc) - min(a['min'][0] for a in acc)
@@ -74,6 +79,18 @@ def liner_only(g):
     mats = root['extras']['voidsworn_destruct']['interior_materials']
     g['meshes'][root['mesh']]['primitives'] = [p for p in g['meshes'][root['mesh']]['primitives'] if g['materials'][p['material']]['name'] not in mats or g['materials'][p['material']]['name'] == code + '_inside_skin']
     root['extras']['voidsworn_destruct']['interior_materials'] = [code + '_inside_skin']
+def turret_merged(g):   # issue 560: the turrets folded back into the ship mesh (turret nodes gone, their muzzles on the ship node)
+    W, par = CE.world_matrices(g); root = next(i for i, n in enumerate(g['nodes']) if n.get('name') == code)
+    for i, n in enumerate(g['nodes']):
+        if re.fullmatch(r'turret_\d+', str(n.get('name', ''))):
+            for c in list(n.get('children', [])):
+                if str(g['nodes'][c].get('name', '')).startswith('hp_w'):
+                    g['nodes'][c]['translation'] = [float(v) for v in W[c][:3, 3]]; g['nodes'][c]['rotation'] = n.get('rotation', [0, 0, 0, 1])
+                    n['children'].remove(c); g['nodes'][root]['children'].append(c)
+            g['nodes'][root]['children'].remove(i); n['name'] = 'x' + n['name']; n.pop('extras', None)
+def turret_no_mesh(g):
+    for n in g['nodes']:
+        if re.fullmatch(r'turret_\d+_turn', str(n.get('name', ''))): n['name'] += 'x'
 CASES = (('pass', None, 0, ''), ('no_slot', no_slot, 1, f'weapon slot {last} '), ('off_mesh', off_mesh, 1, 'off the mesh'),
          ('backward', backward, 1, 'aimed backward'), ('wrong_side', wrong_side, 1, 'a port mount must sit'), ('no_core', no_core, 1, 'hp_core'),
          ('no_socket', no_socket, 1, 'no extras.socket'), ('no_engine', no_engine, 1, 'hp_eng'),
@@ -82,6 +99,9 @@ CASES = (('pass', None, 0, ''), ('no_slot', no_slot, 1, f'weapon slot {last} '),
          ('breach_inward', breach_inward, 1, 'is not the outward normal'),
          ('no_interior', no_interior, 1, 'no authored interior geometry'), ('no_seams', no_seams, 1, 'no authored break seams'),
          ('liner_only', liner_only, 1, 'no authored interior rooms'))
+_g0, _ = CE.read_glb(os.path.join(src, code + '.glb'))
+if any(re.fullmatch(r'turret_\d+', str(n.get('name', ''))) for n in _g0['nodes']):     # issue 560: only an export that has turrets
+    CASES += (('turret_merged', turret_merged, 1, 'merged it into the ship mesh'), ('turret_no_mesh', turret_no_mesh, 1, 'no turning mesh'))
 bad = 0; base = os.path.join(src, '_selftest')
 for name, fn, want, why_must in CASES:
     d = os.path.join(base, name); os.makedirs(d, exist_ok=True)

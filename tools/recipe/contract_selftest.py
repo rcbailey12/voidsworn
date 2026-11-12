@@ -49,7 +49,8 @@ def box(x0, x1, y0, y1, z0, z1):
 
 
 def write_glb(path, nodes, materials, prims, asset_extra):
-    """one mesh with one primitive per material, positions float32 and indices uint16"""
+    """one mesh per mesh index (prim 'mesh', default 0, the ship), one primitive per material, positions float32 and indices
+    uint16"""
     blob = b''; views = []; accs = []
     for pi, pr in enumerate(prims):
         pos, idx = pr['pos'], pr['idx']
@@ -63,7 +64,8 @@ def write_glb(path, nodes, materials, prims, asset_extra):
         accs.append(dict(bufferView=len(views) - 1, componentType=5123, count=len(idx), type='SCALAR'))
     g = dict(asset=dict(version='2.0', generator='issue 363 contract selftest', extras=asset_extra),
              scene=0, scenes=[dict(nodes=[0])], nodes=nodes,
-             meshes=[dict(primitives=[dict(attributes=dict(POSITION=2 * i), indices=2 * i + 1, material=i) for i in range(len(prims))])],
+             meshes=[dict(primitives=[dict(attributes=dict(POSITION=2 * i), indices=2 * i + 1, material=pr.get('material', i)) for i, pr in enumerate(prims) if pr.get('mesh', 0) == m])
+                     for m in range(1 + max(pr.get('mesh', 0) for pr in prims))],
              materials=materials, buffers=[dict(byteLength=len(blob))], bufferViews=views, accessors=accs)
     js = json.dumps(g, separators=(',', ':')).encode(); js += b' ' * (-len(js) % 4)
     with open(path, 'wb') as f:
@@ -82,8 +84,30 @@ def build(ship, out):
     def node(name, p, fwd, up, ex):
         nodes[0]['children'].append(len(nodes)); nodes.append(dict(name=name, translation=p, rotation=quat(fwd, up), extras=ex))
 
-    # two barrels per weapon slot, on the hull surface
+    # turrets (issue 560): every socket the ship json marks as a turret gets its own node on the deck (+Y the turning axis, -Z
+    # the rest aim, the bow), a turning box as its child and two muzzles under it; the rest of the slot's guns stay fixed
+    turret_socks = [(e['name'], e.get('slot')) for e in ship.get('parts', []) if e.get('part') == 'turret']
+    turret_prims = []
+
+    def turret(k, name, slot, x):
+        wk, arc = weapons[slot]; lo, hi = H.turret_arc(arc)
+        tn = len(nodes); nodes[0]['children'].append(tn)
+        nodes.append(dict(name=f'turret_{k}', translation=[x, .08, 0], rotation=quat([1, 0, 0], [0, 1, 0]), children=[],
+                          extras=dict(kind='turret', id=name, socket=name, slot=slot, weapon=wk, arc_lo=lo, arc_hi=hi, rest_yaw=0.0, rest_pitch=0.0)))
+        nodes[tn]['children'].append(len(nodes)); nodes.append(dict(name=f'turret_{k}_turn', mesh=1 + k))
+        bv, bf = box(-.03, .03, 0, .04, -.06, .03)
+        turret_prims.append(dict(pos=bv, idx=[i for f in bf for i in f], mesh=1 + k, material=1))
+        for j in range(2):
+            nodes[tn]['children'].append(len(nodes))
+            nodes.append(dict(name=f'hp_w{slot}_{wk}_{arc}_{2 * k + j}', translation=[-.015 + .03 * j, .02, -.06], rotation=[0, 0, 0, 1],
+                              extras=dict(kind='gun', size='S', arc=arc, arc_deg={'F': 30, 'T': 135, 'P': 60, 'S': 60}[arc], slot=slot, weapon=wk,
+                                          radius=.01, socket=name, turret=k)))
+    for k, (name, slot) in enumerate(turret_socks):
+        turret(k, name, int(slot), -.10 - .15 * k)
+    turret_slots = {int(sl) for _, sl in turret_socks}
+    # two barrels per weapon slot, on the hull surface (a slot served by turrets has its muzzles on them)
     for slot, (wk, arc) in enumerate(weapons):
+        if slot in turret_slots: continue
         for k in range(2):
             if arc in ('P', 'S'):
                 sg = -1 if arc == 'P' else 1
@@ -112,13 +136,14 @@ def build(ship, out):
                                                     seams=[dict(p=[.15, 0, 0], n=[1, 0, 0])]))
     write_glb(os.path.join(out, code + '.glb'), nodes,
               [dict(name=code + '_hull'), dict(name=code + '_parts'), dict(name=code + '_inside_0')],
-              [dict(pos=hv, idx=[i for f in hf for i in f]), dict(pos=pv, idx=[i for f in pf for i in f]), dict(pos=iv, idx=[i for f in inf for i in f])],
-              dict(recipe='contract_selftest', ship=ship['ship'], unbaked=True))
+              [dict(pos=hv, idx=[i for f in hf for i in f]), dict(pos=pv, idx=[i for f in pf for i in f]), dict(pos=iv, idx=[i for f in inf for i in f])] + turret_prims,
+              dict(recipe='contract_selftest', ship=ship['ship'], unbaked=True, turrets_marked=[n for n, _ in turret_socks]))
     counts = {}
     for n in nodes[1:]:
+        if not str(n.get('name', '')).startswith('hp_'): continue
         k = n['extras']['kind']; counts[k] = counts.get(k, 0) + 1
     json.dump(dict(name=ship.get('name') or code, faction=ship.get('faction'), cls=cls, band=H.band(cls),
-                   length_world=ship.get('length_world', 0), hardpoints=counts, breaches=counts.get('breach', 0), files={}),
+                   length_world=ship.get('length_world', 0), hardpoints=counts, breaches=counts.get('breach', 0), turrets=len(turret_socks), files={}),
               open(os.path.join(out, 'manifest_entry.json'), 'w'), indent=1)
     return code
 
@@ -174,6 +199,31 @@ def main():
             rc, txt = run_check(SHIPJ, b)
             ok = rc != 0 and why in txt; bad += not ok
             print(('ok  ' if ok else 'WRONG'), f'no {name}: the check', 'refused it' if ok else 'did not name the missing ' + why)
+        # issue 560: the same ship with its turrets merged into the ship mesh (turret nodes gone, their muzzles on the ship node)
+        b = os.path.join(tmp, 'turret_merged'); shutil.copytree(d, b)
+        g, blob = CE.read_glb(os.path.join(b, code + '.glb'))
+        W, par = CE.world_matrices(g)
+        for i, n in enumerate(g['nodes']):
+            if str(n.get('name', '')).startswith('turret_') and not n['name'].endswith('_turn'):
+                for c in list(n.get('children', [])):
+                    if str(g['nodes'][c].get('name', '')).startswith('hp_w'):
+                        g['nodes'][c]['translation'] = [float(v) for v in W[c][:3, 3]]; g['nodes'][c]['rotation'] = n['rotation']
+                        n['children'].remove(c); g['nodes'][0]['children'].append(c)
+                g['nodes'][0]['children'].remove(i); n['name'] = 'x' + n['name']; n.pop('extras', None); n['children'] = []
+        put(b, g, blob)
+        rc, txt = run_check(SHIPJ, b)
+        ok = rc != 0 and 'merged it into the ship mesh' in txt and 'merged turret' in txt; bad += not ok
+        print(('ok  ' if ok else 'WRONG'), 'turrets merged into the ship mesh: the check', 'refused it' if ok else 'let it through')
+        if not ok: print(txt)
+        # issue 560: a turret node whose barrels were left in the ship mesh (no turning mesh under it)
+        b = os.path.join(tmp, 'turret_no_mesh'); shutil.copytree(d, b)
+        g, blob = CE.read_glb(os.path.join(b, code + '.glb'))
+        for n in g['nodes']:
+            if str(n.get('name', '')).endswith('_turn'): n['name'] = n['name'] + 'x'
+        put(b, g, blob)
+        rc, txt = run_check(SHIPJ, b)
+        ok = rc != 0 and 'no turning mesh' in txt; bad += not ok
+        print(('ok  ' if ok else 'WRONG'), 'a turret with no turning mesh: the check', 'refused it' if ok else 'let it through')
         # one anchor fewer is the wrong class and faction count
         b = os.path.join(tmp, 'breach_count'); shutil.copytree(d, b)
         g, blob = CE.read_glb(os.path.join(b, code + '.glb'))

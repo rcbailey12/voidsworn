@@ -164,10 +164,13 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 	var tk: float = float(TARGET_K.get(DEATH.atlas_band(float(Tg.hull.L)), 1.0)) if Tg != null else 1.0
 	# mounts: the guns that can bear (never backward), from the attach point service (issue 370): the slot's authored
 	# muzzles, else the plating the station rays found, else none (the volley's effects are skipped and counted)
+	# issue 560 (RULEBOOK 6.17): a muzzle on a turret comes back where the turned barrel will put it, with the time the turret
+	# arrives; that shot waits for it ("lead"), so the flash and the tracer start at the turned barrel. Fixed guns have no lead.
 	var mounts: Array = []
 	if A != null:
 		var tl: Vector3 = A.xf().affine_inverse() * to_c
 		var heavy: bool = lk in ["lance", "ion", "pulsar", "doom", "torp", "star", "gauss"]
+		A.hull.turret_clock = T0
 		for m in A.hull.guns(int(opts.get("slot", -1)), wid, tl, maxi(shots.size(), 1), heavy):
 			if m.is_empty():
 				continue
@@ -176,7 +179,8 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 				mp += (m["n"] as Vector3) * 0.15 * ka_geo   # a station ray's hit: the flash sits just off the plate
 			elif m["src"] == "bow":
 				mp += Vector3(0.3 * ka_geo, 0, 0)           # the bow tube's mouth, just ahead of the plating
-			mounts.append({"p": A.to_world(mp), "n": A.dir_world(m["n"])})
+			mounts.append({"p": A.to_world(mp), "n": A.dir_world(m["n"]), "tur": int(m.get("tur", -1)),
+				"lead": maxf(0.0, float(m.get("arrive", T0)) - T0)})
 		if mounts.is_empty():
 			# no muzzle on this hull for this weapon and no plating that bears: nothing to draw (logged and counted by
 			# the hull); the battle keeps its own timing for the hits (battle.gd: 0.3 s with no impact times)
@@ -189,6 +193,8 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 	var done = 0.0
 	var hj = 0
 	var total = shots.size()
+	var tur_last := {}    # turret -> its last shot's fire time: it holds its aim through that, then trains back to rest
+	var froms: Array = []   # each shot's muzzle (world) and turret (-1 for a fixed gun), for the checks
 	for i in total:
 		var hit: bool = bool(shots[i])
 		var hd: Dictionary = {}
@@ -206,13 +212,18 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 			print("[fx] shot %d %s from %s hit %s (rel %s) n %s shield %s miss %s sec %s" % [i, lk, str(from), str(tgt["p"]),
 				str((tgt["p"] as Vector3) - tp), str(tgt["n"]), str(tgt.get("shield", false)), str(tgt.get("miss", false)),
 				str(hd.get("section", ""))])
-		var r = _shot(fx, lk, kind, w, i, total, from, m["n"], tgt, T0, col, fac, A, Tg, hd, ka, kt, faction)
+		var r = _shot(fx, lk, kind, w, i, total, from, m["n"], tgt, T0 + float(m.get("lead", 0.0)), col, fac, A, Tg, hd, ka, kt, faction)
+		if int(m.get("tur", -1)) >= 0:
+			tur_last[int(m["tur"])] = maxf(float(tur_last.get(int(m["tur"]), -INF)), float(r[2]))
+		froms.append({"p": from, "tur": int(m.get("tur", -1))})
 		impacts.append(float(r[0]) - T0)
 		fires.append(float(r[2]) - T0)
 		done = maxf(done, float(r[1]) - T0)
 		if Tg != null and hit:
 			Tg.busy_until = maxf(Tg.busy_until, float(r[0]))
-	return {"impacts": impacts, "fires": fires, "done": done}
+	for k in tur_last:
+		A.hull.turret_release(int(k), float(tur_last[k]))
+	return {"impacts": impacts, "fires": fires, "done": done, "muzzles": froms}
 
 
 # Where a shot ends: the shield bubble, the hull (section, facing), or past the target for a miss.

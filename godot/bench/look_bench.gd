@@ -565,6 +565,10 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 			sum += sa.to_world(nz["p"])
 		if sa.hull.nozzles.size() > 0:
 			focus = sum / float(sa.hull.nozzles.size())
+	# issue 560: a row may move the camera's focus off the ship's centre ("focus_off": [x, z] in world units), for a part
+	# such as the aft deck turrets
+	var fo: Array = row.get("focus_off", [0, 0])
+	focus += Vector3(float(fo[0]), 0.0, float(fo[1]))
 	_cam(focus, r)
 	for k in 72:   # 1.2 s: engines up, the first damage and cut jobs done
 		await _step()

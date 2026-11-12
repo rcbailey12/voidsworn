@@ -1,0 +1,433 @@
+{
+ "adapter": "NVIDIA GeForce RTX 5080",
+ "bench_sha256": "1f8b8a5848e5666424a5f33537b6743fed70e0142ca51c88ca9af291a8b1b549",
+ "commit": "1878cf02",
+ "fixed_fps": 60,
+ "godot": "4.7.2-stable (official)",
+ "late_shader_counter": "not present at this commit (issue 376)",
+ "moments_sha256": "09a46d8ad1f7cb24c4adf06585e0126c6174b8198d423810a3e663e2f171c0f7",
+ "parts": {
+  "0": {
+   "start_frame": 900
+  },
+  "2": {
+   "start_frame": 1800
+  },
+  "3": {
+   "start_frame": 2700
+  },
+  "moments": {
+   "region": "frontier",
+   "start_frame": 1020
+  }
+ },
+ "pipelines_compiled": 810,
+ "stills": [
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 816,
+     "t": 0.0
+    },
+    {
+     "step": 828,
+     "t": 0.2
+    },
+    {
+     "step": 840,
+     "t": 0.4
+    },
+    {
+     "step": 852,
+     "t": 0.6
+    },
+    {
+     "step": 864,
+     "t": 0.8
+    },
+    {
+     "step": 876,
+     "t": 1.0
+    },
+    {
+     "step": 898,
+     "t": 1.3667
+    },
+    {
+     "step": 959,
+     "t": 2.3833
+    },
+    {
+     "step": 1013,
+     "t": 3.2833
+    },
+    {
+     "step": 1061,
+     "t": 4.0833
+    }
+   ],
+   "file": "moments/t_turrets_port_aft__c170.png",
+   "id": "t_turrets_port_aft",
+   "impacts": [
+    1.48050455091236,
+    0.853807830471298
+   ],
+   "part": "moments"
+  },
+  {
+   "cam": 60,
+   "cells": [
+    {
+     "step": 1134,
+     "t": 0.0
+    },
+    {
+     "step": 1146,
+     "t": 0.2
+    },
+    {
+     "step": 1158,
+     "t": 0.4
+    },
+    {
+     "step": 1170,
+     "t": 0.6
+    },
+    {
+     "step": 1182,
+     "t": 0.8
+    },
+    {
+     "step": 1194,
+     "t": 1.0
+    },
+    {
+     "step": 1216,
+     "t": 1.3667
+    },
+    {
+     "step": 1277,
+     "t": 2.3833
+    },
+    {
+     "step": 1331,
+     "t": 3.2833
+    },
+    {
+     "step": 1379,
+     "t": 4.0833
+    }
+   ],
+   "file": "moments/t_turrets_port_aft__c60.png",
+   "id": "t_turrets_port_aft",
+   "impacts": [
+    1.48050455091236,
+    0.853807830471298
+   ],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 1452,
+     "t": 0.0
+    },
+    {
+     "step": 1464,
+     "t": 0.2
+    },
+    {
+     "step": 1476,
+     "t": 0.4
+    },
+    {
+     "step": 1488,
+     "t": 0.6
+    },
+    {
+     "step": 1500,
+     "t": 0.8
+    },
+    {
+     "step": 1512,
+     "t": 1.0
+    },
+    {
+     "step": 1534,
+     "t": 1.3667
+    },
+    {
+     "step": 1595,
+     "t": 2.3833
+    },
+    {
+     "step": 1649,
+     "t": 3.2833
+    },
+    {
+     "step": 1697,
+     "t": 4.0833
+    }
+   ],
+   "file": "moments/t_turrets_port_aft__c26.png",
+   "id": "t_turrets_port_aft",
+   "impacts": [
+    1.48050455091236,
+    0.853807830471298
+   ],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 1770,
+     "t": 0.0
+    },
+    {
+     "step": 1782,
+     "t": 0.2
+    },
+    {
+     "step": 1794,
+     "t": 0.4
+    },
+    {
+     "step": 1806,
+     "t": 0.6
+    },
+    {
+     "step": 1818,
+     "t": 0.8
+    },
+    {
+     "step": 1830,
+     "t": 1.0
+    },
+    {
+     "step": 1830,
+     "t": 1.0
+    },
+    {
+     "step": 1888,
+     "t": 1.9667
+    },
+    {
+     "step": 1942,
+     "t": 2.8667
+    },
+    {
+     "step": 1990,
+     "t": 3.6667
+    }
+   ],
+   "file": "moments/t_turrets_stbd_bow__c170.png",
+   "id": "t_turrets_stbd_bow",
+   "impacts": [
+    1.05369197299196,
+    0.905614937261166
+   ],
+   "part": "moments"
+  },
+  {
+   "cam": 60,
+   "cells": [
+    {
+     "step": 2063,
+     "t": 0.0
+    },
+    {
+     "step": 2075,
+     "t": 0.2
+    },
+    {
+     "step": 2087,
+     "t": 0.4
+    },
+    {
+     "step": 2099,
+     "t": 0.6
+    },
+    {
+     "step": 2111,
+     "t": 0.8
+    },
+    {
+     "step": 2123,
+     "t": 1.0
+    },
+    {
+     "step": 2123,
+     "t": 1.0
+    },
+    {
+     "step": 2181,
+     "t": 1.9667
+    },
+    {
+     "step": 2235,
+     "t": 2.8667
+    },
+    {
+     "step": 2283,
+     "t": 3.6667
+    }
+   ],
+   "file": "moments/t_turrets_stbd_bow__c60.png",
+   "id": "t_turrets_stbd_bow",
+   "impacts": [
+    1.05369197299196,
+    0.905614937261166
+   ],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 2356,
+     "t": 0.0
+    },
+    {
+     "step": 2368,
+     "t": 0.2
+    },
+    {
+     "step": 2380,
+     "t": 0.4
+    },
+    {
+     "step": 2392,
+     "t": 0.6
+    },
+    {
+     "step": 2404,
+     "t": 0.8
+    },
+    {
+     "step": 2416,
+     "t": 1.0
+    },
+    {
+     "step": 2416,
+     "t": 1.0
+    },
+    {
+     "step": 2473,
+     "t": 1.95
+    },
+    {
+     "step": 2527,
+     "t": 2.85
+    },
+    {
+     "step": 2575,
+     "t": 3.65
+    }
+   ],
+   "file": "moments/t_turrets_stbd_bow__c26.png",
+   "id": "t_turrets_stbd_bow",
+   "impacts": [
+    1.04962404918603,
+    0.905614937261166
+   ],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 2648,
+     "t": 0.0
+    },
+    {
+     "step": 2666,
+     "t": 0.3
+    },
+    {
+     "step": 2668,
+     "t": 0.3333
+    },
+    {
+     "step": 2707,
+     "t": 0.9833
+    }
+   ],
+   "file": "moments/t_casemates_fixed__c170.png",
+   "id": "t_casemates_fixed",
+   "impacts": [
+    0.379713332653046,
+    0.432785065968831,
+    0.575846560796102,
+    0.715545558929443,
+    0.774746517340342
+   ],
+   "part": "moments"
+  },
+  {
+   "cam": 60,
+   "cells": [
+    {
+     "step": 2780,
+     "t": 0.0
+    },
+    {
+     "step": 2798,
+     "t": 0.3
+    },
+    {
+     "step": 2800,
+     "t": 0.3333
+    },
+    {
+     "step": 2839,
+     "t": 0.9833
+    }
+   ],
+   "file": "moments/t_casemates_fixed__c60.png",
+   "id": "t_casemates_fixed",
+   "impacts": [
+    0.379713332653046,
+    0.432785065968831,
+    0.575846560796102,
+    0.715545558929443,
+    0.774746517340342
+   ],
+   "part": "moments"
+  },
+  {
+   "cam": 26,
+   "cells": [
+    {
+     "step": 2912,
+     "t": 0.0
+    },
+    {
+     "step": 2930,
+     "t": 0.3
+    },
+    {
+     "step": 2932,
+     "t": 0.3333
+    },
+    {
+     "step": 2971,
+     "t": 0.9833
+    }
+   ],
+   "file": "moments/t_casemates_fixed__c26.png",
+   "id": "t_casemates_fixed",
+   "impacts": [
+    0.379713332653046,
+    0.432785065968831,
+    0.575846560796102,
+    0.715545558929443,
+    0.764264424641927
+   ],
+   "part": "moments"
+  }
+ ],
+ "warnings": []
+}

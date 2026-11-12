@@ -141,7 +141,8 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	# whenever the hull moved between fx steps (the stills: overlays sank into the bobbing hull at random, which is
 	# why marks came and went between runs)
 	for m in meshes:
-		if m is MeshInstance3D:
+		# (issue 560: never a turret's turning mesh, which turns under the hull and would carry the damage round with it)
+		if m is MeshInstance3D and hull._turret_above(m, root) < 0:
 			_ref_mi = m
 			break
 	if _ref_mi != null:
@@ -293,6 +294,8 @@ func _build_trails(fx) -> void:
 func update(fx, dt: float) -> void:
 	if gone or not is_instance_valid(root):
 		return
+	if not hull.turrets.is_empty():
+		hull.turret_step(fx.now)    # issue 560: each turret's node at its pose for the effect clock
 	_update_damage_emitters(fx)
 	_react_step(fx, dt)
 	_hide_placeholder_engines()

@@ -3,7 +3,9 @@
 # From a ship's baked blend (stage 5) and its ship json, with no hand steps, this writes the game's ship folder
 # (godot/assets/ships/README.md, tools/blender/a4/K1_DECISIONS.md):
 #   <CODE>.glb             one ship node <CODE> (one mesh; surfaces <CODE>_hull, <CODE>_parts, <CODE>_glow) with an empty child node per
-#                          hard point; the maps are outside the glb, by relative URI, as the A4 ships have them
+#                          hard point; the maps are outside the glb, by relative URI, as the A4 ships have them. Each turret
+#                          (issue 560) is its own child node turret_<n> at its ring centre (+Y the turning axis, -Z the rest aim),
+#                          with its turning mesh turret_<n>_turn and its muzzles (hp_w) under it; the ring stays in the ship mesh
 #   <CODE>_base.jpg, <CODE>_orm.jpg, <CODE>_normal.jpg          the hull atlas (albedo sRGB; R occlusion, G roughness, B metal; normal)
 #   <CODE>_parts_base.jpg, <CODE>_parts_orm.jpg                 the parts atlas
 #   <CODE>_export.json     what was written: every hard point, the weapon slots, triangles, every file with its size and sha256
@@ -64,6 +66,33 @@ sc = bpy.context.scene
 if 'r209_hp' not in sc: die('this blend has no hard point data (scene r209_hp): rebuild it with the current hull module')
 HP = json.loads(sc['r209_hp'])
 os.makedirs(OUT, exist_ok=True); t0 = time.time(); status('RUNNING')
+
+# ---------------------------------------------------------------------------------------------------------------- turrets (issue 560)
+# RULEBOOK 6.17 (R219): turret guns turn to face their target. A turret leaves the export as its own node turret_<n> (pivot at the
+# ring centre, +Y the turning axis, -Z the rest aim), its turning mesh turret_<n>_turn and its muzzles (hp_w) as its children;
+# docs/ship_pipeline/HARDPOINTS.md "Turrets". The blend marks a turret with an empty <id>_turret (turret=1) whose children are the
+# turning meshes (tools/blender/kits/shared/turrets.py); a kit that names its turning pieces instead (TURRET_TURN in its kit.py)
+# is marked here, in memory, before anything is read. Casemates and broadside guns are never turrets: they stay in the ship mesh.
+import ast
+import turrets as TURRETS
+
+def kit_turret_turn(path):
+    """the TURRET_TURN tuple a faction kit declares (read, not imported: the kit imports the build library at its top)"""
+    if not os.path.exists(path): return None
+    for node in ast.parse(open(path, encoding='utf-8').read()).body:
+        if isinstance(node, ast.Assign) and any(getattr(t, 'id', '') == 'TURRET_TURN' for t in node.targets):
+            return tuple(ast.literal_eval(node.value))
+    return None
+
+KIT_TURN = kit_turret_turn(os.path.join(REPO, 'tools', 'blender', 'kits', str(ship.get('faction', '')), 'kit.py'))
+if KIT_TURN:
+    try: TURRETS.mark_from_parts(sc, ship.get('parts', []), KIT_TURN, WEAPONS)
+    except ValueError as e: die(str(e))
+PIVOTS = TURRETS.pivots(sc)
+TURNING = {o.name for _, ms in PIVOTS for o in ms}
+for pv, ms in PIVOTS:
+    if not ms: die(f'turret {pv.name} has no turning mesh under it')
+TURRETS_MARKED = [pv.name[:-len('_turret')] if pv.name.endswith('_turret') else pv.name for pv, _ in PIVOTS]
 
 # ---------------------------------------------------------------------------------------------------------------- the ship mesh
 src = [o for o in sc.objects if o.type == 'MESH' and not o.hide_render and not o.get('proxy')]
@@ -179,7 +208,8 @@ def inside_material(srcmat, liner=False):
         destruction['interior_materials'].append(m.name)
     return inside_mats[key]
 
-for o in src:
+def prep(o):
+    """a copy of a source mesh with its modifiers applied and its export materials set"""
     c = o.copy(); c.data = o.data.copy(); sc.collection.objects.link(c); bpy.context.view_layer.objects.active = c
     if o.get('role') == 'interior':
         for i, m in enumerate(c.data.materials): c.data.materials[i] = inside_material(m)
@@ -203,15 +233,28 @@ for o in src:
         if interior_faces:
             c.data.materials.append(inside_material(None, liner=True))
             for i in interior_faces: c.data.polygons[i].material_index = 1
-    keep.append(c)
-bpy.ops.object.select_all(action='DESELECT')
-for c in keep: c.select_set(True)
-bpy.context.view_layer.objects.active = keep[0]; bpy.ops.object.join(); J = bpy.context.view_layer.objects.active
-J.name = CODE; J.data.name = CODE; bpy.ops.object.material_slot_remove_unused()
-used_materials = {slot.material.name for slot in J.material_slots if slot.material}
+    return c
+
+def join(objs, name):
+    """join copies into one object named name (world space, no parent)"""
+    bpy.ops.object.select_all(action='DESELECT')
+    for c in objs: c.select_set(True)
+    bpy.context.view_layer.objects.active = objs[0]; bpy.ops.object.join(); j = bpy.context.view_layer.objects.active
+    if j.parent is not None:
+        mw = j.matrix_world.copy(); j.parent = None; j.matrix_world = mw
+    j.name = name; j.data.name = name; bpy.ops.object.material_slot_remove_unused()
+    for k in list(j.keys()): del j[k]
+    return j
+
+keep = [prep(o) for o in src if o.name not in TURNING]      # the ship mesh: everything but the turning parts of turrets
+J = join(keep, CODE)
+TURN_OBJS = [join([prep(o) for o in ms], f'turret_{k}_turn') for k, (pv, ms) in enumerate(PIVOTS)]
+used_materials = {slot.material.name for o in [J] + TURN_OBJS for slot in o.material_slots if slot.material}
 destruction['interior_materials'] = [m for m in destruction['interior_materials'] if m in used_materials]
-for k in list(J.keys()): del J[k]
 J.data.calc_loop_triangles(); TRIS = len(J.data.loop_triangles)
+TURRET_TRIS = 0
+for t in TURN_OBJS:
+    t.data.calc_loop_triangles(); TURRET_TRIS += len(t.data.loop_triangles)
 
 # ---------------------------------------------------------------------------------------------------------------- materials and maps
 def occlusion_group():
@@ -262,6 +305,20 @@ def empty(name, p, fwd, up, extras):
 
 HPS = []; cnt = {}; by_slot = {}
 part_of = {e['name']: e for e in ship['parts']}
+# which turret a muzzle belongs to: the pivot's socket (or its id) names the muzzle's socket; else the turret whose turning mesh
+# the muzzle tip sits on (a kit that registered its muzzles under another name)
+TURRET_OF_SOCKET = {}
+for k, (pv, ms) in enumerate(PIVOTS):
+    TURRET_OF_SOCKET[str(pv.get('socket') or TURRETS_MARKED[k])] = k
+    TURRET_OF_SOCKET.setdefault(TURRETS_MARKED[k], k)
+TURN_BVH = [world_bvh([o for o in ms])[0] for pv, ms in PIVOTS]
+def turret_of(m):
+    if m['socket'] in TURRET_OF_SOCKET: return TURRET_OF_SOCKET[m['socket']]
+    best = None
+    for k, T in enumerate(TURN_BVH):
+        hit = T.find_nearest(Vector(m['tip']))
+        if hit[0] is not None and hit[3] < .004 + float(m.get('radius') or 0) and (best is None or hit[3] < best[1]): best = (k, hit[3])
+    return best[0] if best else None
 for m in HP['muzzles']:
     if m.get('slot') is None: continue
     slot = int(m['slot'])
@@ -270,7 +327,9 @@ for m in HP['muzzles']:
     e = part_of.get(m['socket']) or part_of.get(m['socket'][:-2], {})
     ex = dict(kind='gun', size=e.get('mount') or MOUNT_SIZE.get(m.get('part'), 'M'), arc=arc, arc_deg=ARC_DEG[arc], slot=slot, weapon=wk,
               radius=float(m.get('radius') or 0), socket=m['socket'])
-    HPS.append(dict(name=f'{key}_{k}', p=m['tip'], fwd=m['aim'], up=m['normal'], extras=ex)); by_slot.setdefault(slot, []).append(f'{key}_{k}')
+    tk = turret_of(m)
+    if tk is not None: ex['turret'] = tk
+    HPS.append(dict(name=f'{key}_{k}', p=m['tip'], fwd=m['aim'], up=m['normal'], extras=ex, turret=tk)); by_slot.setdefault(slot, []).append(f'{key}_{k}')
 for k, e in enumerate(sorted(HP['engines'], key=lambda e: (-e['radius'], -e['pos'][1]))):
     HPS.append(dict(name=f'hp_eng_{k}', p=e['pos'], fwd=e['dir'], up=(0, 0, 1), extras=dict(kind='engine', radius=float(e['radius']), engine=e['name'])))
 for k, b in enumerate(HP.get('bays', [])):
@@ -286,7 +345,25 @@ for k, b in enumerate(RCS):
 for k, b in enumerate(BOARD):
     HPS.append(dict(name=f'hp_board_{k}', p=list(b['p']), fwd=(0, b['side'], 0), up=(0, 0, 1),
                     extras=dict(kind='board', side='P' if b['side'] > 0 else 'S', radius=0.0)))
-for h in HPS: empty(h['name'], h['p'], h['fwd'], h['up'], h['extras'])
+TURRET_NODES = []
+for k, (pv, ms) in enumerate(PIVOTS):
+    W = pv.matrix_world; ax = (W.to_3x3() @ Vector((0, 0, 1))).normalized(); fw = (W.to_3x3() @ Vector((1, 0, 0))).normalized()
+    slot = int(pv.get('slot', -1)); wk, arc = WEAPONS[slot] if 0 <= slot < len(WEAPONS) else (str(pv.get('weapon', '')), 'T')
+    lo, hi = HP_CONTRACT.turret_arc(arc, pv.get('arc_lo'), pv.get('arc_hi'))
+    ex = dict(kind='turret', id=TURRETS_MARKED[k], socket=str(pv.get('socket') or TURRETS_MARKED[k]), slot=slot, weapon=str(pv.get('weapon') or wk),
+              arc_lo=float(lo), arc_hi=float(hi), rest_yaw=float(pv.get('rest_yaw', math.degrees(math.atan2(fw.y, fw.x)))),
+              rest_pitch=float(pv.get('rest_pitch', 0.0)), turns_about='local +Y (the mount normal)', arc_frame='bearing from the bow, + to port')
+    E = empty(f'turret_{k}', list(W.translation), list(fw), list(ax), ex)
+    t = TURN_OBJS[k]                                  # the turning mesh, written in the turret's own frame
+    t.data.transform(E.matrix_world.inverted() @ t.matrix_world); t.parent = E; t.matrix_parent_inverse = Matrix.Identity(4); t.matrix_basis = Matrix.Identity(4)
+    TURRET_NODES.append(dict(name=f'turret_{k}', p=[round(v, 5) for v in W.translation], up=[round(v, 4) for v in ax], fwd=[round(v, 4) for v in fw],
+                             triangles=len(t.data.loop_triangles), muzzles=[h['name'] for h in HPS if h.get('turret') == k], **ex))
+    if not TURRET_NODES[-1]['muzzles']: die(f'turret {pv.name} has no registered muzzle on its barrels: its flash could not follow the turn')
+for h in HPS:
+    o = empty(h['name'], h['p'], h['fwd'], h['up'], h['extras'])
+    if h.get('turret') is not None:                    # a turret muzzle hangs under its turret, so it turns with the barrels
+        E = sc.objects[f'turret_{h["turret"]}']; mw = o.matrix_world.copy()
+        o.parent = E; o.matrix_parent_inverse = E.matrix_world.inverted(); o.matrix_world = mw
 kinds = {}
 for h in HPS: kinds[h['extras']['kind']] = kinds.get(h['extras']['kind'], 0) + 1
 counts = {k: kinds.get(k, 0) for k in ('gun', 'engine', 'bay', 'breach', 'core', 'rcs', 'board')}
@@ -300,7 +377,7 @@ J['voidsworn_destruct'] = destruction
 # ---------------------------------------------------------------------------------------------------------------- write
 tmp = os.path.join(OUT, '_gltf_source'); os.makedirs(tmp, exist_ok=True)      # the exporter's own files; kept (nothing is deleted)
 bpy.ops.object.select_all(action='DESELECT'); J.select_set(True)
-for c in J.children: c.select_set(True)
+for c in J.children_recursive: c.select_set(True)      # turret meshes and turret muzzles sit one level down
 bpy.ops.export_scene.gltf(filepath=os.path.join(tmp, CODE + '.gltf'), export_format='GLTF_SEPARATE', use_selection=True, export_apply=True,
                           export_yup=True, export_extras=True, export_image_format='NONE' if UNBAKED else 'JPEG', export_jpeg_quality=92, export_image_quality=92,
                           export_tangents=False, export_cameras=False, export_lights=False, export_animations=False)
@@ -330,7 +407,7 @@ if not UNBAKED:
     if not need.issubset(set(role.values())): die(f'the map set is not the format\'s: wrote {sorted(role.values())}, need {sorted(need)}')
 del g['buffers'][0]['uri']; g['buffers'][0]['byteLength'] = len(blob)
 g.setdefault('asset', {}).setdefault('extras', {}).update(recipe='tools/recipe/7_export.bat', ship=ship['ship'], cell=ship.get('cell'), game_ship=GAME,
-                                                         unbaked=UNBAKED)
+                                                         unbaked=UNBAKED, turrets_marked=TURRETS_MARKED)
 js = json.dumps(g, separators=(',', ':')).encode('utf-8'); js += b' ' * (-len(js) % 4); blob += b'\0' * (-len(blob) % 4)
 with open(os.path.join(OUT, CODE + '.glb'), 'wb') as f:      # glb: header, the JSON chunk, the binary chunk (images by URI)
     f.write(struct.pack('<4sII', b'glTF', 2, 12 + 8 + len(js) + 8 + len(blob)))
@@ -341,11 +418,11 @@ for fn in sorted(os.listdir(OUT)):
         files[fn] = dict(bytes=os.path.getsize(p), sha256=hashlib.sha256(open(p, 'rb').read()).hexdigest())
 manifest = dict(name=ship.get('name') or CODE, faction=FAC, cls=CLS, band=HP_CONTRACT.band(CLS),
                 length_world=float(ship.get('length_world', 0) or 0), hardpoints={k: v for k, v in counts.items() if v},
-                breaches=counts['breach'], files=files, pc_path=f'godot/assets/ships/{CODE}/')
+                breaches=counts['breach'], turrets=len(TURRET_NODES), files=files, pc_path=f'godot/assets/ships/{CODE}/')
 json.dump(manifest, open(os.path.join(OUT, 'manifest_entry.json'), 'w'), indent=1)
 rep = dict(ship=ship['ship'], code=CODE, cell=ship.get('cell'), game_ship=GAME, faction=ship.get('faction'), cls=CLS,
            band=HP_CONTRACT.band(CLS), expected_breach=EXPECTED_BREACH, unbaked=UNBAKED, maps=0 if UNBAKED else MAPS,
-           triangles=TRIS, surfaces=len([s for s in J.material_slots if s.material]), destruction=destruction,
+           triangles=TRIS, turret_triangles=TURRET_TRIS, turrets=TURRET_NODES, surfaces=len([s for s in J.material_slots if s.material]), destruction=destruction,
            weapons=[dict(slot=i, weapon=wk, arc=arc, hard_points=by_slot.get(i, [])) for i, (wk, arc) in enumerate(WEAPONS)],
            slots_without_hard_points=missing, hardpoints=counts,
            hard_points=[dict(name=h['name'], p=[round(float(v), 5) for v in h['p']], fwd=[round(float(v), 4) for v in h['fwd']],
@@ -354,7 +431,7 @@ rep = dict(ship=ship['ship'], code=CODE, cell=ship.get('cell'), game_ship=GAME, 
            not_written=['<CODE>_wreck.glb (the death pieces)', '<CODE>_damage.glb and the skin_<n> hull patches (breach damage)',
                         '<CODE>_emissive.jpg (the glow is its own surface with an emissive factor, no map)'])
 json.dump(rep, open(os.path.join(OUT, CODE + '_export.json'), 'w'), indent=1)
-print('[export7]', CODE, 'triangles', TRIS, 'hard points', json.dumps(counts), 'files', sorted(files), flush=True)
+print('[export7]', CODE, 'triangles', TRIS, 'hard points', json.dumps(counts), 'turrets', len(TURRET_NODES), f'({TURRET_TRIS} triangles)', 'files', sorted(files), flush=True)
 if missing:
     die('no hard point for ' + ', '.join(missing))
 status('WRITTEN ' + CODE + ('  (unbaked test: no maps)' if UNBAKED else ''))

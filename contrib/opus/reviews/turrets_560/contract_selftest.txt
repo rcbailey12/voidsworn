@@ -1,0 +1,24 @@
+ok   breach Frigate corsair: 3, expected 3
+ok   breach Frigate ithar: 1, expected 1
+ok   breach Destroyer corsair: 4, expected 4
+ok   breach Cruiser corsair: 5, expected 5
+ok   breach Cruiser ithar: 3, expected 3
+ok   breach Carrier chorus: 7, expected 7
+ok   breach Battleship hegemony: 6, expected 6
+ok   breach Dreadnought corsair: 9, expected 9
+ok   breach Frigate chorus: 2, expected 2
+ok   breach Squadron chorus: 0, expected 0
+[contract] round 7 ship C15s_23 (c_marauder): Cruiser of corsair, expected breach anchors 5 (the shipped round 7 export has 6; a PC re-export is needed for the table)
+ok   the full point set on the round 7 ship: the check passed
+ok   no gun: the check refused it
+ok   no engine: the check refused it
+ok   no breach: the check refused it
+ok   no core: the check refused it
+ok   no rcs: the check refused it
+ok   no board: the check refused it
+ok   turrets merged into the ship mesh: the check refused it
+ok   a turret with no turning mesh: the check refused it
+ok   one breach anchor short: the check refused it for the class and faction count
+ok   the round 7 six-anchor export: the check refused it (the table counts 5)
+PASS the hard point contract is proved on the round 7 ship
+Scratch retained: (scratch)

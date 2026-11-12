@@ -20,3 +20,9 @@ feet; borrowed parts barely weathered. Colours were fitted to region samples of 
 
 Variants and pairs: a `pair` socket mirrors position, size and aim exactly; `variant` and `variant_s` give the twins different
 salvage detail (patches, welds, drum types). Use `variant: 1` on a turret to show a borrowed part.
+
+Turning turrets (issue 560; RULEBOOK 6.17, Ryan R219): the turret's ring and its welds stay on the hull; its body, dome or glacis
+plate, patch, recoil sleeve, barrel and muzzle ring turn (`TURRET_TURN` in `kit.py`). Stage 7 marks every `turret` socket from
+that list and writes each as its own `turret_<n>` node, so the game turns it to its target (tools/blender/kits/README.md "How a
+kit marks a turret"). Casemates, the bow battery and the drum racks are fixed guns and never turn. The build-sheet kit for A16
+and A17 (tools/blender/build_sheets/kit.py, issue 532) marks its turrets in the blend the same way, with an empty `<id>_turret`.
