@@ -543,7 +543,25 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		return false
 	if row.has("shield_left"):
 		fx.sync_ship("T", _unit(1.0, int(row["shield_left"])))
+	# Issue 461: a row may park a third ship beside the target ("near": [faction, class, dx, dz] in world units from
+	# the target), for example to show a torpedo hit lighting the hull next to it; and may run the engines at a level
+	# ("engine": 0 to 1) instead of the parked glow, for the engine flicker rows at the close cameras.
+	var near: Array = row.get("near", [])
+	if near.size() >= 4:
+		if _ship("N", str(near[0]), str(near[1]), T.global_position + Vector3(float(near[2]), 0.0, float(near[3])), 2) == null:
+			return false
+	if row.has("engine"):
+		for sid in fx.ships.keys():
+			fx.set_engine(str(sid), float(row["engine"]))
 	var focus: Vector3 = (A if str(row.get("focus", "target")) == "attacker" else T).global_position
+	# Issue 461: "attacker_engines" centres on the mean of the attacker's engine nozzles (the engine flicker rows)
+	if str(row.get("focus", "")) == "attacker_engines" and fx.ship("A") != null:
+		var sa = fx.ship("A")
+		var sum := Vector3.ZERO
+		for nz in sa.hull.nozzles:
+			sum += sa.to_world(nz["p"])
+		if sa.hull.nozzles.size() > 0:
+			focus = sum / float(sa.hull.nozzles.size())
 	_cam(focus, r)
 	for k in 72:   # 1.2 s: engines up, the first damage and cut jobs done
 		await _step()
