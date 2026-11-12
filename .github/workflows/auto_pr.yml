@@ -13,6 +13,10 @@ on:
       - 'muse/issue-*'
       - 'work/issue-*'
       - 'opus/issue-*'   # Claude worker branches (issue 359); '*' also matches the arm shape opus/issue-<n>-<arm>
+      # A run the PC runner marks partial (the agent stopped at the time cap or exited with an error, issue 377) pushes to
+      # <branch>-partial and must open no pull request. A '!' pattern after the patterns above takes those branches back out.
+      - '!codex/issue-*-partial'
+      - '!work/issue-*-partial'
 # One run at a time per branch, in order (never cancelled): Muse pushes a new branch and its first commit a second apart,
 # and two runs racing each other both saw no pull request, so the slower one failed on 'already exists' (Nov 10, PR 409).
 concurrency:
@@ -32,6 +36,8 @@ jobs:
           REPO: ${{ github.repository }}
           TITLE: ${{ github.event.head_commit.message }}
         run: |
+          # Second line of defence for partial runs (issue 377): never open a pull request for a -partial branch.
+          case "$BRANCH" in *-partial) echo "partial run branch $BRANCH: no pull request (issue 377)"; exit 0 ;; esac
           n=$(printf '%s' "$BRANCH" | sed -E 's/.*issue-([0-9]+).*/\1/')
           arm=$(printf '%s' "$BRANCH" | sed -E 's/.*issue-[0-9]+-?//')
           open=$(gh pr list -R "$REPO" --head "$BRANCH" --state open --json number --jq 'length')
