@@ -23,8 +23,8 @@ BEAUTY = 'contrib/muse/design/concept_round8_2026_11/corsair_A16_beauty.jpg'
 # the bow tapers in plan (about 4.3 wide at the tube cluster, 0.16 of the length; 6 at 1/12; 7.8 at 3/12) and is rounded by heavy
 # chamfers; the slab is about 4 deep; the stern body narrows between the engine pods
 HULL = [
-    (12.05, 2.0, 2.05, -1.35, 0.85, 0.7, 0.6),
-    (11.3, 2.55, 2.6, -1.9, 1.15, 0.8, 0.8),
+    (11.75, 2.1, 2.15, -1.4, 0.9, 0.95, 0.85),
+    (11.2, 2.6, 2.65, -1.95, 1.15, 1.0, 0.95),
     (10.3, 3.0, 3.05, -2.3, 1.3, 0.85, 0.9),
     (8.6, 3.5, 3.6, -2.55, 1.4, 0.9, 0.95),
     (6.0, 3.75, 3.85, -2.6, 1.4, 0.9, 1.0),
@@ -60,18 +60,18 @@ def build(K):
 
     # ---------------- the prow: two big tubes are the face, a stepped brow over them, a chin under ----------------
     K.mass('Prow brow (two steps)', K.loft('A16_brow', [
-        (12.2, 2.2, 2.2, 0.75, 1.15, 0.3, 0.1), (11.9, 2.5, 2.5, 0.7, 1.35, 0.4, 0.12), (10.8, 2.85, 2.9, 0.75, 1.5, 0.5, 0.15)],
+        (11.75, 2.05, 2.05, 0.95, 1.2, 0.3, 0.1), (11.45, 2.4, 2.4, 0.9, 1.38, 0.45, 0.12), (10.6, 2.8, 2.85, 0.85, 1.5, 0.6, 0.15)],
         'soot', plates=dict(PL, seed=17, faces=[0, 1, 2, 3], size=(0.45, 1.0), inv='bow_plates')), 'soot', note='overhangs the tube mouths')
     K.mass('Brow step', K.loft('A16_brow_step', [(11.1, 2.2, 2.25, 1.3, 1.75, 0.35, 0), (9.95, 2.55, 2.6, 1.3, 1.82, 0.4, 0)], 'rust',
                                plates=dict(PL, seed=18, faces=[0, 1, 2, 3], size=(0.45, 0.9), inv='bow_plates')), 'rust', note='the second brow step')
-    K.mass('Chin', K.loft('A16_chin', [(12.15, 2.1, 2.1, -1.95, -1.4, 0.1, 0.4), (10.8, 2.6, 2.65, -2.3, -1.35, 0.1, 0.5)], 'iron'), 'iron',
+    K.mass('Chin', K.loft('A16_chin', [(11.7, 2.0, 2.0, -1.95, -1.45, 0.1, 0.4), (10.8, 2.6, 2.65, -2.3, -1.35, 0.1, 0.5)], 'iron'), 'iron',
            note='under the tubes, carries the pincers')
     K.mark('prow', 'hull', ['bevel', 'step', 'overhang'])
     for side, fid in ((1, 'I1'), (-1, 'I2')):
         K.tube(fid, (12.62, 1.35 * side, -0.25), 0.95, 2.6, hood=0.4, bands=3, inv='ftubes', what='front tube (wake-sniffer scoop)',
                note='%s front tube: the ship\'s face; deep bore, hooded rolled lip, clamp bands' % ('port' if side > 0 else 'starboard'))
-    K.box('A16_spine_block', 10.9, 12.2, -0.17, 0.17, -1.1, 0.65, 'soot', ch=0.04)
-    K.vent('V0', (12.2, 0.0, -0.25), (1, 0, 0), 0.3, 1.5, slats=7, inv='ftube_spine', note='ribbed spine between the tubes')
+    K.box('A16_spine_block', 10.9, 12.0, -0.17, 0.17, -1.1, 0.65, 'soot', ch=0.04)
+    K.vent('V0', (12.0, 0.0, -0.25), (1, 0, 0), 0.3, 1.5, slats=7, inv='ftube_spine', note='ribbed spine between the tubes')
 
     # ---------------- tier 2: a low raised deck (0.6), a sloped, stepped front at 7.0 ----------------
     T2 = [(7.0, 2.4, 2.5, 1.2, 1.55, 0.3, 0), (6.4, 3.05, 3.2, 1.2, 2.0, 0.42, 0), (0.0, 3.3, 3.45, 1.2, 2.0, 0.45, 0),
