@@ -1,11 +1,14 @@
 extends DirectionalLight3D
 # Issue 362 (battle camera readability): the hulls' rim light. render/look.gd rim_light() puts one beside the key light.
 #
-# What it does: a back light that shines from behind the ships as the camera sees them, toward the camera and a little
-# down, so the grazing faces along a hull's outline catch a bright edge (Fresnel makes a surface's specular strongest
-# there). A dark hull (Sunward black iron, Eclipse violet-black) then keeps an outline against the darkest sky. Its
-# diffuse share is kept low and its specular share high (Light3D light_specular), so it draws an edge and adds little
-# flat light. It follows the camera's heading every frame, so the edge stays on the outline wherever the player turns.
+# What it does: a back light from almost straight behind the ships as the camera sees them: from the camera's own line of
+# sight, tipped up by `alpha` degrees (LOOK.RIM), so it shines back toward the camera from just below the far side of the
+# ship. Only the faces along a hull's far outline face both the light and the camera, and they catch it at a grazing angle,
+# where a surface's specular is strongest (Fresnel): a bright edge. A dark hull (Sunward black iron, Eclipse violet-black)
+# then keeps an outline against the darkest sky. Flat decks and discs face away from it, so they are not lit (the first
+# try, a light from behind and above, mirrored on every flat top and burnt the Glasswright Ark out: issue 362 calibration).
+# Its diffuse share is kept low and its specular share high (Light3D light_specular). It follows the camera every frame,
+# so the edge stays on the outline wherever the player turns or tips the view.
 #
 # What it lights: only surfaces on render layer LOOK.RIM_LAYER. This node puts every hull surface on that layer when it
 # enters the scene: a surface whose material came from LOOK.hull (meta "look_hull"), or a damaged or dying hull material
@@ -39,19 +42,16 @@ func _process(_dt: float) -> void:
 	_follow()
 
 
-# The light travels toward the camera (its heading only), tilted down by `tilt` degrees.
+# The light sits along the camera's line of sight beyond the ships, tipped up by `alpha` degrees about the camera's right
+# axis, and shines back toward the camera.
 func _follow() -> void:
 	var cam := get_viewport().get_camera_3d() if is_inside_tree() else null
 	if cam == null:
 		return
-	var f := -cam.global_transform.basis.z
-	var h := Vector3(f.x, 0.0, f.z)
-	if h.length() < 0.001:
-		h = Vector3(0, 0, -1)   # straight down (top-down view): any heading draws an edge
-	h = h.normalized()
-	var t := deg_to_rad(float(_cfg.get("tilt", 12.0)))
-	var d := -h * cos(t) + Vector3.DOWN * sin(t)
-	global_transform = Transform3D(Basis.looking_at(d, Vector3.UP), global_transform.origin)
+	var b := cam.global_transform.basis
+	var to_light := (-b.z).rotated(b.x.normalized(), deg_to_rad(float(_cfg.get("alpha", 30.0)))).normalized()
+	var up := Vector3.UP if absf(to_light.y) < 0.99 else Vector3.FORWARD
+	global_transform = Transform3D(Basis.looking_at(-to_light, up), global_transform.origin)
 
 
 func _on_added(n: Node) -> void:

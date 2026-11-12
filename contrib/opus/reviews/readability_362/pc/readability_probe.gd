@@ -10,7 +10,7 @@ extends "res://bench/look_bench.gd"
 # a storm cell is not pixel-equal to the bench's own still, only equivalent; before and after are both made this way).
 #
 # godot --path godot --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 ^
-#       res://bench/readability_probe.tscn -- --out DIR [--skies world,frontier,storm] [--variants FILE.json] [--commit SHA]
+#       res://bench/readability_probe.tscn -- --out DIR [--skies world,frontier,storm (or joined by +)] [--variants FILE.json] [--commit SHA]
 # Variants (branch only): a JSON list of {"name": ..., "tune": {...}}; "tune" is laid over render/look.gd READ and RIM for
 # that variant (look.gd `tune`, bench probes only). Without --variants: one variant "cur" (the commit as it is).
 # Writes DIR/<variant>/<sky>/<nn>_<code>.png and <nn>_<code>_mask.png, DIR/materials.json (the hull materials as the
@@ -39,7 +39,7 @@ func _run() -> void:
 		var v = JSON.parse_string(FileAccess.get_file_as_string(str(args["variants"])))
 		if v is Array and not (v as Array).is_empty():
 			variants = v
-	var skies := String(args.get("skies", "world,frontier,storm")).split(",", false)
+	var skies := String(args.get("skies", "world,frontier,storm")).replace("+", ",").split(",", false)
 	var LK = load("res://render/look.gd")
 	var probe := {"commit": str(args.get("commit", "")), "godot": Engine.get_version_info().get("string", ""),
 		"adapter": RenderingServer.get_video_adapter_name(), "variants": variants, "skies": skies, "stills": [],

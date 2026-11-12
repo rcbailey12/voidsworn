@@ -9,9 +9,12 @@ The numbers (the band and the rules are stated in docs/shots/look_bench/readabil
   lit        the hull's lit side: the mean level of its interior pixels (hull eroded by one pixel, so no pixel is half sky)
              from the 75th to the 98th percentile (the brightest quarter, the top 2 percent of specks left out)
   clip       share of hull pixels with any channel at 250 or more (burnt out to white)
+  sky_level  the median level of the sky ring 2 to 4 pixels outside the hull
   edge       share of the hull's outline pixels (the hull minus its one-pixel erosion) at least 12 levels brighter than
              the sky just outside it (the median level of the ring 2 to 4 pixels out)
   body       median level of the interior minus the median level of the sky ring (how far the hull stands off the sky)
+  halo       glow spilling off the hull: the mean level of the ring 2 to 10 pixels outside the hull minus the median level
+             of the open sky (every pixel more than 30 pixels from the hull); a burnt-out glowing hull has a halo
   lines      standard deviation of the interior levels (how much line and panel detail is left; a burnt-out hull is flat)
 """
 import argparse
@@ -62,10 +65,14 @@ def measure(png, mask_png):
     row["lit"] = round(float(top.mean() if top.size else vi.max()), 1)
     row["median"] = round(float(np.median(vi)), 1)
     row["clip"] = round(float((c[hull].max(1) >= 250).mean()), 4)
-    row["sky"] = round(sky, 1)
+    row["sky_level"] = round(sky, 1)
     row["edge"] = round(float((y[outline] >= sky + 12).mean()), 3) if outline.any() else 0.0
     row["body"] = round(float(np.median(vi)) - sky, 1)
     row["lines"] = round(float(vi.std()), 1)
+    near = shift_or(hull, 10) & ~shift_or(hull, 1)
+    far = ~shift_or(hull, 30)
+    if far.sum() > 100:
+        row["halo"] = round(float(y[near].mean() - np.median(y[far])), 1)
     row["bbox"] = [int(xs.min()), int(ys.min()), int(xs.max()), int(ys.max())]
     return row
 

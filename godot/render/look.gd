@@ -49,15 +49,15 @@ const FLOOK := preload("res://fx/faction_look.gd")
 # Damaged hulls keep all of these: fx/fx_hull.gd _exterior copies albedo, rim, metallic, specular and emission energy.
 const READ := {
 	"voidsworn": {"lift": 2.6, "rim": 0.12, "rim_tint": 0.3, "emit": 1.0, "metal": 1.0, "spec": 0.5},
-	"hegemony": {"lift": 0.85, "rim": 0.08, "rim_tint": 0.2, "emit": 1.0, "metal": 1.0, "spec": 0.5},
-	"corsair": {"lift": 1.5, "rim": 0.15, "rim_tint": 0.3, "emit": 1.0, "metal": 1.0, "spec": 0.5},
+	"hegemony": {"lift": 0.45, "rim": 0.08, "rim_tint": 0.2, "emit": 1.0, "metal": 1.0, "spec": 0.5},
+	"corsair": {"lift": 3.0, "rim": 0.15, "rim_tint": 0.3, "emit": 1.0, "metal": 1.0, "spec": 0.5},
 	"chorus": {"lift": 1.9, "rim": 0.45, "rim_tint": 0.55, "emit": 1.0, "metal": 1.0, "spec": 0.5},
-	"ithar": {"lift": 0.7, "rim": 0.1, "rim_tint": 0.25, "emit": 0.3, "metal": 0.6, "spec": 0.35},
-	"deathless": {"lift": 3.0, "rim": 0.4, "rim_tint": 0.5, "emit": 1.0, "metal": 1.0, "spec": 0.5},
+	"ithar": {"lift": 0.45, "rim": 0.1, "rim_tint": 0.25, "emit": 0.15, "metal": 0.4, "spec": 0.3},
+	"deathless": {"lift": 9.0, "rim": 0.4, "rim_tint": 0.5, "emit": 1.0, "metal": 0.7, "spec": 0.5},
 }
 # The rim light (render/look_rim.gd): energy is its diffuse strength, spec multiplies its specular on top (Light3D
-# light_specular), tilt is how far below level it shines (degrees), toward the camera from behind the ships.
-const RIM := {"energy": 0.35, "spec": 8.0, "tilt": 12.0, "color": Color(0.85, 0.9, 1.0)}
+# light_specular), alpha is how far (degrees) it is tipped up from the camera's line of sight, behind the ships.
+const RIM := {"energy": 0.35, "spec": 8.0, "alpha": 30.0, "color": Color(0.85, 0.9, 1.0)}
 # Render layer 16: only hull surfaces join it (look_rim.gd marks them), so the rim light lights nothing else. The campaign
 # map uses layers 2 to 4 (ui/campaign/map3d.gd); nothing else sets layers.
 const RIM_LAYER := 1 << 15
