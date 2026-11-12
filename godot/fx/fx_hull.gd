@@ -421,8 +421,10 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 		mounts[side] = _mount_row(side)
 	if code == "" and root.get("code") != null:
 		code = str(root.get("code"))
+	_read_turrets(root)
 	_read_points(root)
 	_find_core(faces)
+	_turret_clearance(root, meshes)
 
 
 func section_of(x: float) -> int:
@@ -741,6 +743,15 @@ func _read_points(root: Node3D) -> void:
 				row["weapon"] = str(ex.get("weapon", m.get_string(2)))
 				row["arc"] = str(ex.get("arc", m.get_string(3)))
 				row["i"] = int(m.get_string(4))
+				# issue 560: a muzzle under a turret node turns with it; keep it in the turret's own frame (at rest)
+				var tk := _turret_above(n3, root)
+				if tk >= 0:
+					var ti: Transform3D = (turrets[tk]["xf"] as Transform3D).affine_inverse()
+					row["tur"] = tk
+					row["lp"] = ti * xf.origin
+					row["lf"] = (ti.basis * f).normalized()
+					row["ln"] = (ti.basis * u).normalized()
+					(turrets[tk]["muzzles"] as Array).append(nm)
 			elif k != "core":
 				row["i"] = int(m.get_string(1))
 			(points[k] as Array).append(row)
@@ -851,8 +862,16 @@ func guns(slot: int, weapon: String, target_local: Vector3, n: int, bow_first :=
 	if not pts.is_empty():
 		var key := "%d|%s" % [slot, weapon]
 		var off: int = int(_gun_turn.get(key, posmod(hash(code + key), pts.size())))
+		var aims := {}     # issue 560: each turret this volley uses turns once, toward the target, before its shots
 		for i in n:
-			out.append(_hp(pts[posmod(off + i, pts.size())]))
+			var pt: Dictionary = pts[posmod(off + i, pts.size())]
+			if pt.has("tur"):
+				var tk: int = int(pt["tur"])
+				if not aims.has(tk):
+					aims[tk] = turret_aim(tk, target_local, turret_clock)
+				out.append(_turned(pt, aims[tk]))
+			else:
+				out.append(_hp(pt))
 			_took("gun", "hp")
 		_gun_turn[key] = off + 1
 		return out
@@ -895,7 +914,9 @@ func _gun_points(slot: int, weapon: String, d: Vector3) -> Array:
 	return by_slot
 
 
-static func _bears(pt: Dictionary, d: Vector3) -> bool:
+func _bears(pt: Dictionary, d: Vector3) -> bool:
+	if pt.has("tur"):
+		return turret_reaches(int(pt["tur"]), core + d * 100.0)
 	return str(pt.get("arc", "")) == "T" or maxf((pt["f"] as Vector3).dot(d), (pt["n"] as Vector3).dot(d)) > 0.2
 
 
@@ -1025,3 +1046,349 @@ func board_origin(toward_local: Vector3) -> Dictionary:
 		return {}
 	_took("board", "ray")
 	return {"p": h["p"], "n": h["n"], "f": h["n"], "src": "ray"}
+
+
+# ---------------------------------------------------------------- turrets (issue 560)
+# RULEBOOK 6.17 (Ryan, Nov 11 2026, R219: "I agree with your design on turrets"): turret guns turn to face their target when
+# they fire; fixed side guns (casemates, broadside batteries) stay fixed. A turret is a node turret_<n> in the ship
+# (docs/ship_pipeline/HARDPOINTS.md "Turrets"): its local +Y is the turning axis through the ring centre, its local -Z the
+# rest aim, its turning mesh and its hp_w muzzles are its children. A hull without turret nodes (every A4 hull and the round 7
+# recipe export) has none here, and its guns never move.
+# Before a turret's shots, guns() turns it toward the target: the goal is the target's bearing, clamped to the turret's arc and
+# to the yaws where its barrels stay clear of its own ship (checked once at analyse against the hull and the fixed parts); the
+# traverse is eased in and out (a cubic that starts at the turret's current speed and ends at rest: never a snap, RULEBOOK 7.1);
+# each shot from that turret is held back until the turret arrives (the volley's "lead") and leaves the muzzle where the turned
+# barrel puts it; TURN_HOLD after its last shot the turret trains back to rest the same way. Its pose is a pure function of the
+# effect clock (fx.now), so a hurried or slowed clock turns it in step with the shots; fx_ship.update writes the pose onto the
+# node every frame. The rules never see any of it (RULEBOOK 7.4): the volley's shots, hits and targets are the rules' own.
+const TURRET_RE := "^turret_(\\d+)$"
+const TURN_RATE := 150.0     # degrees a second: a traverse's average rate (eased, so the peak is 1.5 times this); a tuning value
+const TURN_MIN := 0.3        # seconds: the shortest traverse, so even a small correction eases in and out
+const TURN_MAX := 2.4        # seconds: the longest (the far way round a blocked sector), so TURN_RATE holds; a tuning value
+const TURN_ACC := 900.0      # degrees a second squared: the most a traverse speeds up or slows down (no lurch); a tuning value
+const TURN_HOLD := 0.9       # seconds a turret holds its aim after its last shot before it trains back to rest
+const CLEAR_STEP := 2.0      # degrees between the barrel clearance samples at analyse
+var turrets: Array = []      # {node, name, id, rest (its local transform), xf (root frame at rest), lo, hi, ymin, ymax, full, segs, ...}
+var turret_clock := 0.0      # the effect clock now (fx.now): fx_ship.update and every volley set it before guns()
+var _turret_of := {}         # turret node instance id -> index
+
+
+func _read_turrets(root: Node3D) -> void:
+	turrets = []
+	_turret_of = {}
+	var inv := root.global_transform.affine_inverse()
+	var re := RegEx.new()
+	re.compile(TURRET_RE)
+	var found: Array = []
+	for nd in root.find_children("turret_*", "Node3D", true, false):
+		var n3 := nd as Node3D
+		var ex = n3.get_meta("extras", {})
+		if not ex is Dictionary:
+			ex = {}
+		var m := re.search(String(n3.name))
+		if m == null and str(ex.get("kind", "")) != "turret":
+			continue
+		found.append([int(m.get_string(1)) if m != null else 1000 + found.size(), n3, ex])
+	found.sort_custom(func(a: Array, b: Array) -> bool: return int(a[0]) < int(b[0]))
+	for row in found:
+		var n3: Node3D = row[1]
+		var ex: Dictionary = row[2]
+		_turret_of[n3.get_instance_id()] = turrets.size()
+		turrets.append({"node": n3, "name": String(n3.name), "id": str(ex.get("id", n3.name)), "rest": n3.transform,
+			"xf": inv * n3.global_transform, "lo": float(ex.get("arc_lo", -180.0)), "hi": float(ex.get("arc_hi", 180.0)),
+			"muzzles": [], "ymin": -180.0, "ymax": 180.0, "full": true, "blocked": [], "segs": [], "yaw": 0.0, "aims": 0})
+
+
+# The turret a node hangs under (its nearest turret ancestor below the root), or -1.
+func _turret_above(n: Node, root: Node) -> int:
+	var p := n.get_parent()
+	while p != null and p != root:
+		if _turret_of.has(p.get_instance_id()):
+			return int(_turret_of[p.get_instance_id()])
+		p = p.get_parent()
+	return -1
+
+
+# A direction's bearing from the bow in degrees, + to port (the frame of the arcs: core.js inArc, HARDPOINTS.md "Turrets").
+func bearing_of(d: Vector3) -> float:
+	return rad_to_deg(atan2(d.dot(Vector3(0, 0, -stb_z)), d.x))
+
+
+static func _in_arc(b: float, lo: float, hi: float) -> bool:
+	for w in [0.0, 360.0, -360.0]:
+		if b + w >= lo - 1e-3 and b + w <= hi + 1e-3:
+			return true
+	return false
+
+
+# A turret's root-frame transform at a yaw (degrees) about its own +Y.
+func turret_xf(k: int, yaw: float) -> Transform3D:
+	return (turrets[k]["xf"] as Transform3D) * Transform3D(Basis(Vector3.UP, deg_to_rad(yaw)), Vector3.ZERO)
+
+
+# Where a turret muzzle is, and where it points, with its turret at a yaw: {"p", "n", "f"} in the root frame.
+func muzzle_at(pt: Dictionary, yaw: float) -> Dictionary:
+	var T := turret_xf(int(pt["tur"]), yaw)
+	return {"p": T * (pt["lp"] as Vector3), "f": (T.basis * (pt["lf"] as Vector3)).normalized(), "n": (T.basis * (pt["ln"] as Vector3)).normalized()}
+
+
+func _turned(pt: Dictionary, aim: Dictionary) -> Dictionary:
+	var m := muzzle_at(pt, float(aim["yaw"]))
+	m["src"] = "hp"
+	m["tur"] = int(pt["tur"])
+	m["yaw"] = float(aim["yaw"])
+	m["arrive"] = float(aim["arrive"])
+	m["clamped"] = bool(aim["clamped"])
+	return m
+
+
+# The barrels' bearing at a yaw (the first muzzle's aim, flattened into the ship's plane).
+func _barrel_bearing(k: int, yaw: float) -> float:
+	var pt := _first_muzzle(k)
+	var f: Vector3 = (turret_xf(k, yaw).basis * ((pt["lf"] as Vector3) if not pt.is_empty() else Vector3(0, 0, -1))).normalized()
+	return bearing_of(f)
+
+
+func _first_muzzle(k: int) -> Dictionary:
+	for pt in points.get("gun", []):
+		if int(pt.get("tur", -1)) == k:
+			return pt
+	return {}
+
+
+# Once per hull: the yaws each turret may reach from rest, walking both ways until its arc ends or a barrel would run into the
+# ship (the hull and every part that does not turn; another turret is taken at rest). A turret's reach is one unbroken run of
+# yaws through 0 (rest), [ymin, ymax], or the whole circle (full). Its edges are found to a tenth of a degree.
+func _turret_clearance(root: Node3D, meshes: Array) -> void:
+	if turrets.is_empty():
+		return
+	var fixed: Array = []
+	for m in meshes:
+		var mi := m as MeshInstance3D
+		if mi != null and _turret_above(mi, root) < 0:
+			fixed.append(mi)
+	var faces := faces_of(root, fixed)
+	var tmf: TriangleMesh = null
+	if faces.size() >= 3:
+		tmf = TriangleMesh.new()
+		tmf.create_from_faces(faces)
+	for k in turrets.size():
+		var t: Dictionary = turrets[k]
+		var ok_at := func(yaw: float) -> bool: return _turret_ok(k, yaw, tmf)
+		if not ok_at.call(0.0):
+			print("[turret] %s on %s: its barrels touch the ship at rest; it stays at rest" % [t["name"], _who()])
+			t["full"] = false
+			t["ymin"] = 0.0
+			t["ymax"] = 0.0
+			continue
+		# walk each way from rest until a yaw is not allowed; the run may pass 180 (the far way round a blocked sector)
+		var hi := 0.0
+		while hi + CLEAR_STEP <= 360.0 and ok_at.call(hi + CLEAR_STEP):
+			hi += CLEAR_STEP
+		var lo := 0.0
+		while lo - CLEAR_STEP > hi - 360.0 and ok_at.call(lo - CLEAR_STEP):
+			lo -= CLEAR_STEP
+		t["full"] = hi - lo >= 360.0 - CLEAR_STEP - 1e-3
+		if not t["full"]:
+			hi = _edge(ok_at, hi, hi + CLEAR_STEP)
+			lo = _edge(ok_at, lo, lo - CLEAR_STEP)
+		t["ymin"] = lo
+		t["ymax"] = hi
+		var why := []
+		for y in range(-180, 181, int(CLEAR_STEP)):
+			if _in_arc(_barrel_bearing(k, float(y)), float(t["lo"]), float(t["hi"])) and not _turret_ok(k, float(y), tmf):
+				why.append(y)
+		t["blocked"] = why
+		print("[turret] %s (%s) on %s: arc %.0f to %.0f, trains %s%s" % [t["name"], t["id"], _who(), t["lo"], t["hi"],
+			"all round" if t["full"] else "%.1f to %.1f from rest" % [lo, hi],
+			"" if why.is_empty() else "; %d degrees of its arc are kept clear of the ship" % (why.size() * int(CLEAR_STEP))])
+
+
+static func _edge(ok_at: Callable, good: float, bad: float) -> float:
+	for i in 10:
+		var mid := (good + bad) * 0.5
+		if ok_at.call(mid):
+			good = mid
+		else:
+			bad = mid
+	return good
+
+
+# A yaw is allowed when every barrel's bearing is inside the arc and no barrel runs into the ship: the barrel's own line, back
+# from just past the muzzle along its aim for two thirds of the muzzle's reach from the turning axis (the outer barrel, clear of
+# the housing and the ring), and the same line offset by the barrel's radius on four sides.
+func _turret_ok(k: int, yaw: float, tmf: TriangleMesh) -> bool:
+	var t: Dictionary = turrets[k]
+	if not _in_arc(_barrel_bearing(k, yaw), float(t["lo"]), float(t["hi"])):
+		return false
+	if tmf == null:
+		return true
+	var T := turret_xf(k, yaw)
+	for pt in points.get("gun", []):
+		if int(pt.get("tur", -1)) != k:
+			continue
+		var lp: Vector3 = pt["lp"]
+		var lf: Vector3 = pt["lf"]
+		var reach := Vector2(lp.x, lp.z).length()
+		var r := maxf(float((pt["ex"] as Dictionary).get("radius", 0.0)), 1e-4) * (T.basis.get_scale().x)
+		var fw := (T.basis * lf).normalized()
+		var b: Vector3 = T * lp + fw * r * 2.0
+		var a: Vector3 = T * (lp - lf.normalized() * reach * 0.67)
+		var d := (b - a).normalized()
+		var s1 := d.cross(Vector3.UP if absf(d.y) < 0.9 else Vector3.RIGHT).normalized() * r
+		var s2 := d.cross(s1).normalized() * r
+		for o in [Vector3.ZERO, s1, -s1, s2, -s2]:
+			if not tmf.intersect_segment(a + o, b + o).is_empty():
+				return false
+	return true
+
+
+# Can turret k bring its barrels onto a point (root frame) without clamping?
+func turret_reaches(k: int, target_local: Vector3) -> bool:
+	var t: Dictionary = turrets[k]
+	return bool(t["full"]) or not _in_reach(t, _want_yaw(k, target_local), 0.0).is_empty()
+
+
+# The yaws equal to `want` (whole turns apart) inside a turret's reach, nearest `near` first: [] when it cannot get there.
+static func _in_reach(t: Dictionary, want: float, near: float) -> Array:
+	var out: Array = []
+	for j in [-1, 0, 1]:
+		var y: float = want + 360.0 * j
+		if y >= float(t["ymin"]) - 0.05 and y <= float(t["ymax"]) + 0.05:
+			out.append(clampf(y, float(t["ymin"]), float(t["ymax"])))
+	out.sort_custom(func(a: float, b: float) -> bool: return absf(a - near) < absf(b - near))
+	return out
+
+
+# A traverse's length: at most TURN_RATE on average, never under TURN_MIN, and long enough that the eased cubic (which starts
+# at speed v0 and ends at rest) never speeds up or slows down faster than TURN_ACC.
+static func _traverse_time(dy: float, v0: float) -> float:
+	var T := clampf(maxf(absf(dy) / TURN_RATE, sqrt(6.0 * absf(dy) / TURN_ACC)), TURN_MIN, TURN_MAX)
+	for i in 40:
+		var a0 := absf(6.0 * dy - 4.0 * v0 * T) / (T * T)
+		var a1 := absf(-6.0 * dy + 2.0 * v0 * T) / (T * T)
+		if maxf(a0, a1) <= TURN_ACC:
+			break
+		T *= 1.08
+	return T
+
+
+# The yaw (degrees, -180 to 180) that turns turret k's rest aim onto a point: about the turret's own axis, from its pivot.
+func _want_yaw(k: int, target_local: Vector3) -> float:
+	var q: Vector3 = (turrets[k]["xf"] as Transform3D).affine_inverse() * target_local
+	var pt := _first_muzzle(k)
+	var lf: Vector3 = (pt["lf"] as Vector3) if not pt.is_empty() else Vector3(0, 0, -1)
+	# the barrel's own rest direction in the turret's plane (a kit may rest a barrel a little off the node's -Z)
+	var rest := atan2(-lf.x, -lf.z)
+	return wrapf(rad_to_deg(atan2(-q.x, -q.z) - rest), -180.0, 180.0)
+
+
+# Turn turret k toward a point (root frame), starting at time now on the effect clock. Returns {"yaw", "arrive", "clamped"}:
+# the yaw it will hold, when it gets there and whether the target lay outside its reach (it then holds the nearest edge).
+func turret_aim(k: int, target_local: Vector3, now: float) -> Dictionary:
+	var t: Dictionary = turrets[k]
+	var want := _want_yaw(k, target_local)
+	now = maxf(now, float(t.get("busy", -INF)))    # never swing away under shots an earlier volley still has to fire
+	var y0 := turret_yaw(k, now)
+	var v0 := _turret_speed(k, now)
+	var goal := want
+	var clamped := false
+	if bool(t["full"]):
+		goal = want + 360.0 * roundf((y0 - want) / 360.0)      # the nearest turn to where it already points
+	else:
+		var lo: float = t["ymin"]
+		var hi: float = t["ymax"]
+		var can := _in_reach(t, want, y0)
+		if not can.is_empty():
+			goal = can[0]
+		else:
+			# out of reach: the edge whose bearing is nearer the target's; when the two are within 10 degrees of each other,
+			# the one the turret reaches with less turning
+			clamped = true
+			var dlo := absf(wrapf(want - lo, -180.0, 180.0))
+			var dhi := absf(wrapf(want - hi, -180.0, 180.0))
+			if absf(dlo - dhi) < 10.0:
+				goal = lo if absf(lo - y0) < absf(hi - y0) else hi
+			else:
+				goal = lo if dlo < dhi else hi
+	var segs: Array = t["segs"]
+	# a new aim replaces whatever was planned after now (a pending return to rest, an older aim)
+	while not segs.is_empty() and float(segs[-1]["t0"]) > now:
+		segs.pop_back()
+	var arrive := now
+	if absf(goal - y0) > 0.25 or absf(v0) > 1.0:
+		var dur := _traverse_time(goal - y0, v0)
+		segs.append({"t0": now, "t1": now + dur, "y0": y0, "y1": goal, "v0": v0})
+		arrive = now + dur
+	elif not segs.is_empty():
+		arrive = maxf(now, float(segs[-1]["t1"]))
+	t["aims"] = int(t["aims"]) + 1
+	return {"yaw": goal, "arrive": arrive, "clamped": clamped}
+
+
+# After its shots: turret k holds its aim through its last shot (fired at `last`) and TURN_HOLD more, then trains back to rest
+# (the nearest whole turn).
+func turret_release(k: int, last: float) -> void:
+	var t: Dictionary = turrets[k]
+	t["busy"] = maxf(float(t.get("busy", -INF)), last)
+	var at := last + TURN_HOLD
+	var segs: Array = t["segs"]
+	while not segs.is_empty() and float(segs[-1]["t0"]) > at:
+		segs.pop_back()
+	var y := turret_yaw(k, at)
+	# home: rest itself for a turret whose reach is one run (it goes back the way it came), the nearest whole turn otherwise
+	var home := 360.0 * roundf(y / 360.0) if bool(t["full"]) else 0.0
+	if absf(y - home) < 0.25:
+		return
+	var v := _turret_speed(k, at)
+	segs.append({"t0": at, "t1": at + _traverse_time(home - y, v), "y0": y, "y1": home, "v0": v})
+
+
+# Turret k's yaw (degrees from rest) and speed (degrees a second) at time t on the effect clock.
+func turret_yaw(k: int, t: float) -> float:
+	var s := _seg_at(k, t)
+	if s.is_empty():     # nothing has started yet: the pose before the first planned segment (rest when none)
+		var segs: Array = turrets[k]["segs"]
+		return 0.0 if segs.is_empty() else float(segs[0]["y0"])
+	var T := float(s["t1"]) - float(s["t0"])
+	var u := clampf((t - float(s["t0"])) / maxf(T, 1e-4), 0.0, 1.0)
+	var y := (2.0 * u * u * u - 3.0 * u * u + 1.0) * float(s["y0"]) + (u * u * u - 2.0 * u * u + u) * T * float(s["v0"]) \
+		+ (-2.0 * u * u * u + 3.0 * u * u) * float(s["y1"])
+	var tt: Dictionary = turrets[k]
+	if not bool(tt["full"]):
+		y = clampf(y, float(tt["ymin"]), float(tt["ymax"]))    # a reversal that would swing past the reach edge holds at it
+	return y
+
+
+func _turret_speed(k: int, t: float) -> float:
+	var s := _seg_at(k, t)
+	if s.is_empty() or t >= float(s["t1"]):
+		return 0.0
+	var T := float(s["t1"]) - float(s["t0"])
+	var u := clampf((t - float(s["t0"])) / maxf(T, 1e-4), 0.0, 1.0)
+	return ((6.0 * u * u - 6.0 * u) * float(s["y0"]) + (3.0 * u * u - 4.0 * u + 1.0) * T * float(s["v0"]) + (-6.0 * u * u + 6.0 * u) * float(s["y1"])) / maxf(T, 1e-4)
+
+
+# The segment in force at t: the last one that has started (its end pose holds until the next one starts).
+func _seg_at(k: int, t: float) -> Dictionary:
+	var segs: Array = turrets[k]["segs"]
+	for i in range(segs.size() - 1, -1, -1):
+		if float(segs[i]["t0"]) <= t:
+			return segs[i]
+	return {}
+
+
+# Every frame (fx_ship.update): put each turret's node at its pose for the effect clock and drop finished segments.
+func turret_step(t: float) -> void:
+	turret_clock = t
+	for k in turrets.size():
+		var tt: Dictionary = turrets[k]
+		var n = tt["node"]
+		if not is_instance_valid(n):
+			continue
+		var segs: Array = tt["segs"]
+		while segs.size() > 1 and float(segs[1]["t0"]) <= t:
+			segs.pop_front()
+		var y := turret_yaw(k, t)
+		tt["yaw"] = y
+		(n as Node3D).transform = (tt["rest"] as Transform3D) * Transform3D(Basis(Vector3.UP, deg_to_rad(y)), Vector3.ZERO)

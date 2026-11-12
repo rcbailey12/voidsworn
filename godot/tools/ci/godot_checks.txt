@@ -54,6 +54,7 @@ headless|fx/test/fx_smoke.gd|-|-|every weapon look, the damage ladder, shield br
 headless|fx/test/playtest_batch1_check.gd|-|-|presentation regressions with stand-in hull scenes, no ship files
 headless|fx/test/playtest_batch3_check.gd|-|-|hits keep the skin, heavy damage opens a break, exhaust stays in space
 headless|fx/test/squadron_check.gd|-|-|451 squadron and carrier checks on stand-in craft
+headless|render/test/turret_check.gd|-|-|issue 560: on the exported turret test ship (render/test/fixtures/T560_fx) turrets turn smoothly to the target bearing inside their arc and clear of their own ship, fire from the turned muzzle, go back to rest; fixed guns never move; the same hits as fixed guns
 headless|scenes/battle/test/wing_cancel_test.gd|-|-|UI-5 (issue 387): the battle screen clears its armed wing on a ship pick, the roster, Escape and Cancel
 headless|scenes/battle/test/movement_flight_check.gd|-|-|issue 505 flown movement: ends on the rules hex and facing, no roll, no heading jump, slides hold heading, burn, coast and retro jets, turning jets start and stop turns, weight past battleship
 headless|scenes/battle/test/nose_first_check.gd|-|-|issue 521: a run of two hexes or more is flown nose first on the main engine through battle.gd _glide_steps; ends on the rules hex and facing, passes inside every route hex, a one-hex slide is slower than a burn

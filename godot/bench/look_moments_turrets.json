@@ -1,0 +1,228 @@
+{
+ "about": "Issue 560 turret rows for godot/bench/look_bench.gd (run with --moments res://bench/look_moments_turrets.json). Same fields as look_moments_attach.json. The attacker is the recipe cruiser C15s_23 exported with its turrets as their own nodes (tools/recipe/export7.py after issue 560); it sits unturned at (-34, 0), so z below 0 is its port side. Cells: the fire anchor is the moment the volley is called (the turrets start to turn), impact the first shot's landing; the last cells show the turrets back at rest.",
+ "cameras": [
+  170,
+  60,
+  26
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "170": [
+   384,
+   216
+  ],
+  "60": [
+   768,
+   432
+  ],
+  "26": [
+   1152,
+   648
+  ]
+ },
+ "rows": [
+  {
+   "id": "t_turrets_port_aft",
+   "group": "turrets (issue 560)",
+   "label": "recipe cruiser C15s_23 (corsair Cruiser, its two aft deck turrets): flak (slot 3) at a target to port, behind the beam; both turrets turn, fire, go back to rest",
+   "att": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt_at": [
+    -80,
+    -55
+   ],
+   "do": "volley",
+   "kind": "flak",
+   "weapon": "flak",
+   "slot": 3,
+   "shots": 2,
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0.0,
+     1
+    ],
+    [
+     "fire",
+     0.2,
+     1
+    ],
+    [
+     "fire",
+     0.4,
+     1
+    ],
+    [
+     "fire",
+     0.6,
+     1
+    ],
+    [
+     "fire",
+     0.8,
+     1
+    ],
+    [
+     "fire",
+     1.0,
+     1
+    ],
+    [
+     "impact",
+     -0.12,
+     1
+    ],
+    [
+     "impact",
+     0.9,
+     1
+    ],
+    [
+     "impact",
+     1.8,
+     1
+    ],
+    [
+     "impact",
+     2.6,
+     1
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "t_turrets_stbd_bow",
+   "group": "turrets (issue 560)",
+   "label": "recipe cruiser C15s_23: flak (slot 3) at a target to starboard, ahead of the beam",
+   "att": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt_at": [
+    0,
+    50
+   ],
+   "do": "volley",
+   "kind": "flak",
+   "weapon": "flak",
+   "slot": 3,
+   "shots": 2,
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0.0,
+     1
+    ],
+    [
+     "fire",
+     0.2,
+     1
+    ],
+    [
+     "fire",
+     0.4,
+     1
+    ],
+    [
+     "fire",
+     0.6,
+     1
+    ],
+    [
+     "fire",
+     0.8,
+     1
+    ],
+    [
+     "fire",
+     1.0,
+     1
+    ],
+    [
+     "impact",
+     -0.12,
+     1
+    ],
+    [
+     "impact",
+     0.9,
+     1
+    ],
+    [
+     "impact",
+     1.8,
+     1
+    ],
+    [
+     "impact",
+     2.6,
+     1
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "t_casemates_fixed",
+   "group": "turrets (issue 560)",
+   "label": "recipe cruiser C15s_23: scatter (slot 0, port casemates) at a target to port; casemates are fixed and never turn",
+   "att": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt_at": [
+    -34,
+    -60
+   ],
+   "do": "volley",
+   "kind": "scatter",
+   "weapon": "scatter",
+   "slot": 0,
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0.0,
+     1
+    ],
+    [
+     "fire",
+     0.3,
+     1
+    ],
+    [
+     "impact",
+     -0.05,
+     1
+    ],
+    [
+     "impact",
+     0.6,
+     1
+    ]
+   ],
+   "key": 4
+  }
+ ]
+}
