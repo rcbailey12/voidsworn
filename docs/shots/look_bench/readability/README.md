@@ -26,12 +26,14 @@ sat at about 215, just under the clip level, and the white spread off the hull a
 rules): **halo**, the mean level of the ring 2 to 10 pixels outside the hull minus the open sky's median (a burnt-out
 glowing hull has one), and **lines**, the spread (standard deviation) of the hull's own levels (a flat white hull has none).
 
-## Result (main b7cacdc4 before, branch e6bfef6c after; Ryan's PC, RTX 5080, Godot 4.7.2, 1920x1080, second run kept)
+## Result (main b7cacdc4 before, branch ad627af7 after; Ryan's PC, RTX 5080, Godot 4.7.2, 1920x1080)
 
-After is Ryan's R227 lifts (Nov 12): Eclipse 3.2 and Hullbreakers 1.25 (the first after run, ad7daade, had 4.5 and 1.5;
-its rows stay in contrib/opus/reviews/readability_362/data/rows_after_ad7daade.json). No other faction changed.
+After is Ryan's R227 lifts (Nov 12): Eclipse 2.2 and Hullbreakers 1.25, measured in job F (the darkest sky and the storm,
+one run; see contrib/opus/reviews/readability_362.md "Job F"). The brightest sky (frontier) was not re-run: its rows and
+`fleet_frontier_before_after.jpg` are job E (e6bfef6c), where Eclipse is 3.2. Earlier after runs: ad7daade (4.5 and 1.5)
+and e6bfef6c (3.2 and 1.25), rows in contrib/opus/reviews/readability_362/data/. No other faction changed.
 
-Every one of the 30 faction ships is inside the band on all three skies (lit side 105 to 181); every one has at least 79
+Every one of the 30 faction ships is inside the band on all three skies (lit side 101 to 181); every one has at least 70
 percent of its outline lit on the darkest sky (before: 55 percent at worst, the Eclipse Tomb-ark); no ship has more than
 1.1 percent of its pixels clipped. Before, 18 of the 30 were outside the band on at least one sky (every Hegemony and Glasswright ship above it,
 every Eclipse ship and four Sunward and Hullbreaker ships below it).
@@ -53,23 +55,24 @@ every Eclipse ship and four Sunward and Hullbreaker ships below it).
 | Glasswrights | world | 206 to 216 | 160 to 180 | 1.00 | 1.00 | 1.1% | 36 | 17 |
 | Glasswrights | frontier | 206 to 216 | 160 to 181 | - | - | 1.1% | 24 | 11 |
 | Glasswrights | storm | 204 to 216 | 159 to 177 | - | - | 0.9% | 23 | 16 |
-| Eclipse | world | 63 to 74 | 108 to 122 | 0.55 | 0.80 | 0.3% | -1 | -1 |
-| Eclipse | frontier | 63 to 74 | 108 to 122 | - | - | 0.3% | -5 | -5 |
-| Eclipse | storm | 70 to 119 | 113 to 146 | - | - | 0.3% | 79 | 79 |
+| Eclipse | world | 63 to 74 | 101 to 112 | 0.55 | 0.70 | 0.3% | -1 | -1 |
+| Eclipse | frontier | 63 to 74 | 108 to 122 (at 3.2) | - | - | 0.3% | -5 | -5 |
+| Eclipse | storm | 70 to 119 | 101 to 143 | - | - | 0.3% | 79 | 79 |
 
 Every ship, every sky, before and after: `table.md`. The Eclipse storm halo (79) is the bright storm cloud behind the
 frigate's cell, the same before and after, not glow from the hull. Glasswright lines: 10 to 20 before, 18 to 26 after.
 
-## The pictures (all at camera 170, 1 to 1 pixels; nothing here is a close-up)
+## The pictures (camera 170 unless named, 1 to 1 pixels; only eclipse_camera60_r227.jpg is closer, at camera 60)
 
 | File | What |
 |---|---|
 | `fleet_world_before_after.jpg` | the bench fleet sheet on the darkest sky, before and after side by side, numbers under each pair |
-| `fleet_frontier_before_after.jpg` | the same, brightest sky |
+| `fleet_frontier_before_after.jpg` | the same, brightest sky (job E: Eclipse 3.2) |
 | `fleet_storm_before_after.jpg` | the same, storm map |
 | `phone_world_1.jpg` to `_2.jpg` | for Ryan's phone (1280 wide): every ship but the capitals, before on the left half, after on the right, darkest sky |
 | `phone_world_3.jpg` | the same for the beacon (it did not fit on page 2) |
 | `phone_world_4.jpg`, `_5.jpg` | the six capitals, before, then after, in the same places |
+| `eclipse_camera60_r227.jpg` | the one close picture: the Eclipse ships at camera 60, true pixels, main, lift 3.2, 2.2 (the pick) and 1.8 (out of band) side by side |
 | `moments_worst_off_hull.jpg` | the 16 bench moment cells that changed most outside the hulls: before, after, difference (hull mask in blue) |
 
 ## How it was made

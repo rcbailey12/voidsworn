@@ -7,11 +7,12 @@ Branch opus/issue-362, PR 580. Game change: `godot/render/look.gd` (per faction 
 ## Answer first
 
 - Every one of the 30 faction ships now sits inside the stated band (lit side 100 to 190) on the darkest sky, the brightest
-  sky and the storm map: 105 to 181 after, against 63 to 216 before (18 of 30 were outside). Measured at Ryan's R227
-  lifts (Eclipse 3.2, Hullbreakers 1.25; job E, e6bfef6c): Eclipse 108 to 122 and Hullbreakers 115 to 145 on the darkest
-  sky, both in band, so no fallback was needed.
-- No hull is lost on the darkest sky: at least 79 percent of every outline is lit (the Eclipse D22; before: 55 percent for
-  the Eclipse Tomb-ark, 63 to 74 for the other Eclipse ships).
+  sky and the storm map: 101 to 181 after, against 63 to 216 before (18 of 30 were outside). Ryan's R227 lifts
+  (Eclipse 2.2 after his second look, Hullbreakers 1.25; job F, ad627af7): Eclipse 101 to 112 and Hullbreakers 115 to 145
+  on the darkest sky. Eclipse 2.2 is the darkest setting that keeps every Eclipse ship at 100 or more; 1.8 drops the
+  Tomb-ark to 96. Ryan's picture: `eclipse_camera60_r227.jpg` (camera 60, true pixels).
+- No hull is lost on the darkest sky: at least 70 percent of every outline is lit (the Eclipse Tomb-ark D22; before: 55
+  percent for the Tomb-ark, 63 to 74 for the other Eclipse ships).
 - Glasswrights stop burning out: lit side 206 to 216 down to 160 to 180, glow halo 36 down to 17 at most, line detail up
   (spread 10 to 20, now 18 to 26), clipped pixels 1.1 percent at most (rule: 2).
 - No effect or shield look changed by accident: outside the hulls the bench moments differ only where a hull itself moved
@@ -57,7 +58,7 @@ addition is marked as made after the first measurement.
    metal scale, specular). They replace hull_fix for the six factions (hull_fix stays as the fallback). Damaged and dying
    hulls keep them (fx_hull.gd `_exterior` copies albedo, rim, metallic, specular and emission energy; checked headless).
    Final: Sunward lift 1.45; Hegemony 0.4; Hullbreakers 1.25; Chorus 1.9 (about its old 1.35 sRGB lift); Glasswrights
-   lift 0.4, glow 0.15 of its baked strength, metal 0.4, specular 0.3; Eclipse lift 3.2, metal 0.7. The dark factions sit
+   lift 0.4, glow 0.15 of its baked strength, metal 0.4, specular 0.3; Eclipse lift 2.2, metal 0.7. The dark factions sit
    near the band's low end and the pale ones below its top, so each keeps its value and colour.
    Ryan's ruling (Nov 12, R227), on phone_world_1.jpg: "slightly darker for eclipse, maybe somewhere in the middle? tone it
    slightly down for hullbreakers, again somewhere in the middle-ish?" So Eclipse 4.5 to 3.2 (before: about 1.6 to 1.9 in
@@ -72,6 +73,9 @@ addition is marked as made after the first measurement.
    sky 0.80 (D22). Both in band, so 3.2 and 1.25 stay. The bracket (`data/rows_r227_bracket.json`, darkest sky): Eclipse
    3.0 106 to 121 and 3.5 109 to 125; Hullbreakers 1.2 113 to 143 and 1.3 116 to 146. The other four factions measured
    the same as the ad7daade run (lit side identical, to 0.1).
+   Ryan's second look (Nov 12 11:40 CST, R227): "i'd go a bit darker for eclipse but hullbreakers are good." Job F
+   (below): Eclipse 2.2 is the darkest lift that keeps every Eclipse ship at 100 or more lit on the darkest sky, so the
+   final Eclipse lift is 2.2; Hullbreakers stay 1.25.
 2. The rim light (`look_rim.gd`, made by LOOK.apply beside the key light): a back light from the camera's own line of sight
    beyond the ships, tipped up 20 degrees, specular strong (light_specular 8) and diffuse weak (energy 0.35). Only the far
    outline of a hull faces it and the camera at once, at a grazing angle, so the hull gets a bright edge. It follows the
@@ -91,8 +95,10 @@ addition is marked as made after the first measurement.
 
 ## Per faction (lit side min to max; full per ship table: docs/shots/look_bench/readability/table.md)
 
-After = job E (e6bfef6c, Eclipse 3.2, Hullbreakers 1.25), all six factions. The first after run (ad7daade, 4.5 and 1.5)
-is in `data/rows_after_ad7daade.json`.
+After = Eclipse 2.2 and Hullbreakers 1.25: the darkest and storm columns from job F (ad627af7, the e220 setting,
+`data/rows_after_r227_e220.json`); the brightest sky (frontier) was not run in job F, so its column is job E (e6bfef6c),
+where Eclipse is still 3.2 (frontier read the same as the darkest sky within 0.1 in every run). The earlier after runs
+are in `data/rows_after_ad7daade.json` (4.5 and 1.5) and `data/rows_after_r227.json` (3.2 and 1.25).
 
 | Faction | Darkest sky before / after | Brightest before / after | Storm before / after | Edge darkest, worst ship, before / after |
 |---|---|---|---|---|
@@ -101,7 +107,7 @@ is in `data/rows_after_ad7daade.json`.
 | Ashfall Hullbreakers | 89-115 / 115-145 | 89-115 / 115-144 | 90-115 / 115-145 | 0.79 / 0.88 |
 | Chorus | 128-155 / 134-157 | 128-155 / 134-157 | 128-155 / 133-157 | 0.96 / 0.96 |
 | Glasswrights | 206-216 / 160-180 | 206-216 / 160-181 | 204-216 / 159-177 | 1.00 / 1.00 |
-| Eclipse | 63-74 / 108-122 | 63-74 / 108-122 | 70-119 / 113-146 | 0.55 / 0.80 |
+| Eclipse | 63-74 / 101-112 | 63-74 / 108-122 (at 3.2) | 70-119 / 101-143 | 0.55 / 0.70 |
 
 Craft and objects (not held to the band): the three craft are drawn by render/squadron_craft.gd in battle (not through
 LOOK.hull, so neither change reaches them); the bench draws them with Hegemony numbers, so on the sheet the spore reads
@@ -154,8 +160,8 @@ Late shaders after warm-up: 0 in every session. Data: `data/gate/`.
 ## Unsure, and for the Board
 
 1. Faction colour: Eclipse read dark violet-grey rather than violet-black at 4.5, and the Hullbreaker rust lighter (warmer
-   pink in places) at 1.5. Ryan ruled on Nov 12 (R227): about halfway back, now 3.2 and 1.25 (step 1 above); job E
-   measures it.
+   pink in places) at 1.5. Ryan ruled on Nov 12 (R227): Hullbreakers 1.25, Eclipse first 3.2, then darker: 2.2 (step 1
+   and job F).
 2. The rim light at close range: on the Tomb-ark at camera 60 it draws a thin white line along the inner ring ridge. Ryan
    zooms in for effects; worth his look.
 3. hull_fix in fx/faction_looks.json is now only the fallback for a faction READ does not name. godot/fx/ was out of my
@@ -203,10 +209,33 @@ per faction knob and is not tried here.
 - Queue: copy `pc/job_f.bat` from origin/opus/issue-362 into `%USERPROFILE%\Downloads\voidsworn_test\opus362\` and put
   `q_opus362_f.bat` in the PC queue with `call "%USERPROFILE%\Downloads\voidsworn_test\opus362\job_f.bat"`. Done when
   status.txt has "job f done"; stage back probe_f_1.zip, probe_f60before_2.zip and probe_f60_1.zip.
-- Then here: `measure.py F1 --out data/rows_f.json`; pick the darkest Eclipse setting with every Eclipse ship at 100 or
-  more lit and edge 0.60 or more on the darkest sky (storm checked too); `close_sheet.py --before F60BEFORE2 --after F60
-  --rows data/rows_f.json --out docs/shots/look_bench/readability/` (one page per Eclipse ship, every setting side by side,
-  1280 wide, no taller than 720); set the lift in look.gd, R227's line and the tables, remake the camera 170 sheets.
+- Done here: `measure.py probe_f_1 --out data/rows_f.json`; `eclipse_cam60.py` makes Ryan's one picture
+  (docs/shots/look_bench/readability/eclipse_camera60_r227.jpg: main, 3.2, 2.2, 1.8 side by side, camera 60, windows cut at
+  1 to 1, camera 170 numbers under each code); `close_sheet.py` makes one page per ship with every setting if the Board
+  wants the full set (not committed). The camera 170 sheets and table.md were remade from the e220 setting relabelled as
+  the branch (`data/rows_after_r227_e220.json`; files point into probe_f_1/e220).
+
+Result (darkest sky, camera 170; lit side min to max over the four Eclipse ships, worst edge):
+
+| Eclipse setting | Darkest sky | Storm | Edge (darkest) | D9 middle tone |
+|---|---|---|---|---|
+| main (before) | 63 to 74 | 70 to 119 | 0.55 | 41.6 |
+| lift 3.2 (job E) | 108 to 122 | 113 to 146 | 0.80 | 61.8 |
+| lift 2.6 | 104 to 116 | 106 to 144 | 0.74 | 57.4 |
+| **lift 2.2 (the pick)** | **101 to 112** | **101 to 143** | **0.70** | **54.0** |
+| lift 1.8 | 96 to 107 (D22 96, D9 98: out) | 96 to 142 | 0.65 | 50.5 |
+| lift 2.2, material rim 0.27 | 101 to 112 | 101 to 143 | 0.67 | 53.7 |
+
+- The pick: 2.2, the darkest lift with every Eclipse ship at 100 or more on the darkest sky (D9 101.0, D22 101.1) and the
+  edge at 0.70 (rule: 0.60). The margin is thin but measured, not estimated; the e320 setting re-measured within 0.1 of
+  job E, and no other faction moved by more than 0.6 between runs.
+- Which knob moves what Ryan sees: lift. From 3.2 to 2.2 the hull's middle tone drops about 8 levels on every Eclipse ship
+  (D9 61.8 to 54.0, D22 58.2 to 50.5; main 41.6 and 38.6), which is the darkening Ryan asked for. The material rim does
+  nothing visible: 0.4 to 0.27 moves the lit side by 0.2 at most and the middle tone by 0.3. The lit side is held up by
+  the rim light, so it is what stops lift going lower; the rim light is shared by every faction, so taking Eclipse further
+  down would need a per faction rim light amount (a code change, not proposed here).
+- Storm edge 0.34 for the Eclipse frigate is the storm cloud behind its cell (the same 0.35 at 3.2); the edge rule is the
+  darkest sky.
 
 ## PC
 

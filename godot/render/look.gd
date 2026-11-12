@@ -50,14 +50,15 @@ const FLOOK := preload("res://fx/faction_look.gd")
 # The dark factions (Sunward black iron, Hullbreaker rust, Eclipse violet-black) sit near the band's low end and the pale
 # ones (Hegemony, Glasswrights) below its top, so each keeps its own value and colour; the rim light gives the dark ones
 # their outline (a first pass that lifted them to the middle turned the rust pink and the Eclipse lavender). Ryan, Nov 12
-# (R227): Eclipse slightly darker and Hullbreakers slightly down, about halfway back to the old look (4.5 to 3.2, 1.5 to 1.25).
+# (R227): Eclipse darker and Hullbreakers slightly down (4.5 to 2.2, 1.5 to 1.25); 2.2 is the darkest Eclipse lift that keeps
+# every Eclipse ship at 100 or more lit on the darkest sky (job F, contrib/opus/reviews/readability_362.md).
 const READ := {
 	"voidsworn": {"lift": 1.45, "rim": 0.12, "rim_tint": 0.3, "emit": 1.0, "metal": 1.0, "spec": 0.5},
 	"hegemony": {"lift": 0.4, "rim": 0.08, "rim_tint": 0.2, "emit": 1.0, "metal": 1.0, "spec": 0.5},
 	"corsair": {"lift": 1.25, "rim": 0.15, "rim_tint": 0.3, "emit": 1.0, "metal": 1.0, "spec": 0.5},
 	"chorus": {"lift": 1.9, "rim": 0.45, "rim_tint": 0.55, "emit": 1.0, "metal": 1.0, "spec": 0.5},
 	"ithar": {"lift": 0.4, "rim": 0.1, "rim_tint": 0.25, "emit": 0.15, "metal": 0.4, "spec": 0.3},
-	"deathless": {"lift": 3.2, "rim": 0.4, "rim_tint": 0.5, "emit": 1.0, "metal": 0.7, "spec": 0.5},
+	"deathless": {"lift": 2.2, "rim": 0.4, "rim_tint": 0.5, "emit": 1.0, "metal": 0.7, "spec": 0.5},
 }
 # The rim light (render/look_rim.gd): energy is its diffuse strength, spec multiplies its specular on top (Light3D
 # light_specular), alpha is how far (degrees) it is tipped up from the camera's line of sight, behind the ships. Calibration 2
