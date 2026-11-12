@@ -36,3 +36,14 @@ The last seven WAITING rows now work as their text says in both twins, and every
 ## Council note
 
 Verdicts: blind Rey GO WITH CONDITIONS; DeepSeek GO WITH CONDITIONS (conditions 1 and 2 shared, condition 3 added and adopted, two test-quality notes above); Qwen GO WITH CONDITIONS (conditions 1 and 2, the re-entrancy note above); Flash GO WITH CONDITIONS (conditions 1 and 2, with line-level citations in both twins for every mechanic, the round's deepest verification); Grok GO WITH CONDITIONS (conditions 1 and 2). No dissent. The DeepSeek seat took three browser attempts to land (the site's upload control failed in two windows and worked in the third); the leg that landed read both attachments in full and its gates were verified.
+
+## Addendum (Nov 11, 2026): a second DeepSeek run
+
+A duplicate DeepSeek run (the first browser window, whose upload initially failed and later succeeded) landed after the report above was delivered. It also returned GO WITH CONDITIONS on the same two conditions, and its extra points are recorded here; none changes the verdict or the conditions.
+
+- **The golden-stability claim survives the new view fields.** The run asked whether _i_view's new role, canRole and ask fields would change golden hashes if a golden records view rather than B. Chair-verified at head: godot/rules/test/node/golden.js records the canonical battle state (its snap function serialises B and the units), not view(), so the new view fields cannot enter a golden hash. The 0-differ claim is consistent with the recording mechanism.
+- **The report's exact numbers are run outputs, not CI pins.** The tests assert differences, ratios and tolerances (exactly 10; the (1.1, 1.15] band; the NoStop half within 2 points), so a small numeric drift in a future run would not fail CI. Acceptable for a report; a later reader should not treat 74 to 64 or 19.2 to 37.0 as pinned values.
+- **The mend tide assertion is one-sided**: the test asserts the mend tide exceeds the strike tide, not the 10 percent factor itself (the round-regrowth tick does assert round(regen times 1.1) exactly).
+- **The fixture writer searches seeds** (up to 60) until a row fires or stays quiet. That is acceptable because the behaviour checks prove each mechanic independently; a fixture alone would not show the row fires in ordinary play.
+- **Two small edges**: a ship joining the player side after battle start receives no role and is never asked (the skill text says "at battle start", so this is arguably correct); and in battle_api.gd's answer path, if can_command() is false after the last may answer, the prompt closes with no Command given and the player simply presses again. Neither is a rules defect.
+- The run also flagged a wording slip in the check pack itself (it said the golden.js bodies stay while the code copy elided them). The chair read the golden.js changes in the full diff; the elision applied to the leg copies only.
