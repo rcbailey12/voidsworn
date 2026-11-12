@@ -103,6 +103,7 @@ What it writes (`tools/recipe/export7.py`), in the game's frame (+X bow, +Y up, 
 | `hp_core` | the hull's centre of mass |
 | `hp_rcs_<n>` | two braking puff origins, one port and one starboard on the forward half: -Z the braking thrust, `extras.side` |
 | `hp_board_<n>` | two boarding origins, one port and one starboard on the mid hull: -Z out toward the target, `extras.side` |
+| `turret_<n>` | issue 560 (RULEBOOK 6.17): one per turret the kit marks, a child of the ship node at the ring centre: +Y the turning axis, -Z the rest aim. Its turning mesh `turret_<n>_turn` and its muzzles (`hp_w`, with `extras.turret`) hang under it; the ring stays in the ship mesh. Extras: kind, id, socket, slot, weapon, arc_lo, arc_hi, rest_yaw, rest_pitch (docs/ship_pipeline/HARDPOINTS.md "Turrets") |
 | `<code>_base.jpg`, `_orm.jpg`, `_normal.jpg` | the hull atlas at 2048 |
 | `<code>_parts_base.jpg`, `<code>_parts_orm.jpg` | the parts atlas at 2048 |
 | `manifest_entry.json` | the ship's manifest entry: class, band, length and the point counts (gun, engine, bay, breach, core, rcs, board) |
@@ -117,13 +118,28 @@ glb's mesh box, so the limit scales with the ship; `hp_core` must be inside the 
 mount sits to starboard or the other way round, a forward weapon does not point forward, an engine does not point aft; a weapon
 point lacks one of the eight extras in the table above or its extras slot, weapon or arc disagree with its name; a breach anchor
 is closer than 0.03 (ship frame, `export7.BREACH_CLEAR`) to a part surface, or +Y is not its outward normal; the manifest entry is
-missing or its counts disagree; a map the glb names is not in the folder. `check_export_selftest.py` then breaks copies of the real
+missing or its counts disagree; a map the glb names is not in the folder; a turret the kit marks (a ship json part `turret`, or
+one the blend marked, which the export records in `asset.extras.turrets_marked`) has no `turret_<n>` node of its own, or its
+muzzles hang on the ship node (the export merged it), or a turret node lacks its turning mesh, a muzzle, an extra, sits off the
+mesh, rests aimed aft or rests outside its own arc. Every point is read through the node tree, so a turret's muzzle is checked
+where the turret puts it. `check_export_selftest.py` then breaks copies of the real
 export (a slot's points removed, a point moved 0.05 of the ship's length off the hull, a gun turned aft, a port point mirrored to
 starboard, `hp_core` removed, a weapon's `extras.socket` removed, an engine, rcs and board origin removed, a breach anchor removed,
-a breach anchor moved onto a muzzle, a breach anchor turned to face in) and the check must refuse every copy, each for its own
-reason. `contract_selftest.py` proves the same check on the round 7 ship (C15s_23) in the sandbox, with its real `data.js` weapon
+a breach anchor moved onto a muzzle, a breach anchor turned to face in; on an export with turrets, the turrets folded back into
+the ship mesh and the turning meshes taken away) and the check must refuse every copy, each for its own reason. `contract_selftest.py` proves the same check on the round 7 ship (C15s_23) in the sandbox, with its real `data.js` weapon
 list and the 5 anchors the cruiser of the Hullbreakers gets from the table. An `unbaked=1` test export names its surfaces
 `<code>_hull` and `<code>_parts` too, so the clearance is measured in the sandbox as on a baked ship.
+
+**Turrets (issue 560; RULEBOOK 6.17, Ryan R219).** A turret gun turns to face its target in the game; a casemate or broadside
+battery stays fixed. The blend says which guns turn in one of two ways (tools/blender/kits/shared/turrets.py): the kit puts an
+empty `<id>_turret` at the ring centre (local +Z the turning axis, local +X the rest aim; properties turret=1, slot, weapon,
+arc_lo, arc_hi, rest_yaw, rest_pitch) with the turning meshes as its children (the build-sheet kit does this while it builds), or
+the kit lists its turning pieces in `TURRET_TURN` in its kit.py and stage 7 marks each turret socket in memory before it reads the
+scene (the recipe Hullbreaker kit; the blend on disk is never changed). Stage 7 then joins each turret's turning meshes into
+`turret_<n>_turn` under `turret_<n>` and hangs that turret's muzzles under it; everything else is joined into the ship mesh as
+before. A kit that marks no turret exports exactly as before. The turret test ship (`tools/recipe/turret_fixture.py`, a small
+test hull with the recipe kit's own turret parts, exported by this script with `unbaked=1`) is the game check's fixture
+(`godot/render/test/fixtures/T560_fx/`, `godot/render/test/turret_check.gd`).
 
 Stage 7 never copies into the game on its own (the build's ship folder is shared). Set `INSTALL_TO` to a Godot project folder to
 install a checked export there: what it replaces is copied to `export\replaced_<date>\` first, the old ship's wreck and damage
