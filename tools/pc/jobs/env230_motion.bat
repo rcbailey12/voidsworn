@@ -60,7 +60,7 @@ if /I "%~4"=="single" exit /b 0
 set "VS_TUMBLE="
 set "VS_ROCK_TUMBLE="
 set "VS_GAS_FLAT=1"
-call :run gas_flat nebula_storm,deep_storm
+call :run gas_flat "nebula_storm,deep_storm"
 if not "%ERRORLEVEL%"=="0" exit /b 6
 if /I "%~4"=="single" exit /b 0
 echo all five runs complete

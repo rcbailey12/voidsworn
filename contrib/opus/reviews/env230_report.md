@@ -1,91 +1,108 @@
 # Environment motion capture, PC completion
 
-Refs #520. Refs #230. PC delivery for draft PR 286; Ryan's A/B/C pick remains open. Capture status is below.
+Refs #520. Refs #230. All five capture variants are delivered. Ryan's A/B/C choice remains open.
 
-## Merge and changes
+## Changes
 
-The runner supplied a fresh checkout. Fetched full history, based `codex/issue-520` on PR 286's head
-`3b34bf8a`, and merged `origin/main` (`3ef2c88f`) with `--no-commit --no-ff`. The merge was clean. All 201
-main FINDINGS rows are preserved verbatim, plus PR 286's R139 row. The merge remains uncommitted for the runner.
+Resumed `origin/codex/issue-520` at `1dc189f8`, as the Board's resume note required. Retained the first pass's
+main merge, reconciliation, R139 record, R191 size reporting, camera fixes and shipped capture. No Godot game
+source changed during this continuation.
 
-- Retained PR 286's reconciliation, nebula motion record, tumble and gas capture switches, station value reporting,
-  station documentation and synthesis pointers. The shipped rock/gas/tumble defaults remain as on main.
-- `godot/world/world.gd`: R191 (4) replaces the AS1/PL8 visual asserts with one report per map build: largest backdrop
-  rock angle, planet/rock diameter ratio, and the 0.05 rad / 4.4 targets. No planet or rocks reports n/a. Existing size
-  tuning remains; crash, save and correctness guards remain.
-- `godot/world/world_shots.gd`: motion captures wait for warm-up, suppress the opening glide without launching the
-  battle's separate shots routine, disable camera input, verify the camera stays fixed and verify 1920x1080 frames.
-  The motion grab now uses main's placeholder guard.
-- `tools/pc/jobs/env230_motion.bat`: runs this merged working tree, copies built hulls and A4 assets from `build/godot`,
-  imports headless and runs the five variants sequentially. It checks for another GPU job, stops on failed runs or
-  script/shader/placeholder errors, and writes names onto images at no more than 720 px tall. Logs stay in TEMP.
-- Updated the existing `env_reconcile_tests.js` and the two environment briefs for R191 and the PC capture.
+- `docs/shots/env230/`: added `periods`, `cap_rocks`, `periods_rocks` and `gas_flat`, plus the B and C choice sheets.
+- `docs/shots/env230/capture_counts.json`: records all five runs.
+- `tools/pc/jobs/env230_motion.bat`: quoted the comma-separated gas map argument so the batch subroutine receives both maps.
+- `contrib/opus/reviews/env230_report.md`: completed the capture results, verdict and checks.
 
-## Checks
+The retained source work includes `world.gd` reporting the measured AS1 rock angle and PL8 planet/rock ratio beside
+0.05 rad / 4.4 tuning targets once per map, rather than asserting those visual values. Crash, save and correctness
+guards remain. The motion harness checks a stationary camera, 1920x1080 frames and real hull assets.
 
-- `node contrib/opus/tools/env_reconcile_tests.js`: 29 checks, 29 pass, 0 fail.
-- `node contrib/opus/tools/run_all_checks.js`: exit 0; 42 PASS, 2 KNOWN, 0 FAIL, 0 SKIP. The existing baseline is
-  seven findings failures (KIT-1, KIT-3, ROS-9, MOD-2, EVT-1, NEM-6, UI-5) and 12 constant differences.
-- Godot 4.7.2 headless `res://tools/ci/load_all.gd`: 157 scripts, 11 scenes, 0 failed.
-- A TEMP headless R191 probe measured a planet/rock ratio of 0.040 against target 4.4, then no planet: both printed
-  reports and completed without aborting. Final headless checks used normal Windows access and clean logs.
-- Python AST parse of `station_kit.py`: PASS, without writing a bytecode file.
-- The PC job's busy guard was exercised while the other GPU job was active: it reported the conflict and exited 3
-  without starting a capture. The 720 px label step was also exercised on a TEMP test image.
+## Captures
 
-## PC capture status
+Ran only the four remaining variants through `tools/pc/jobs/env230_motion.bat REPO SHOTS RUN single`, on the PC's
+RTX 5080 with Forward+. The job copied `build/godot/gen` and the A4 ship assets, then imported headless. Checked
+`queue/running`, active Godot/Blender/ffmpeg jobs and GPU use before each run. The only queue file was the documented
+Nov 1 stale A4 entry. Waited for the issue 461 and 271 captures between periods and cap_rocks; neither was stopped.
+Their process creation times were after the completed periods run.
 
-Shipped is complete: 12 views, 36 named images, all at most 720 px tall. The other four runs are pending while the
-GPU is used by the separately launched issue 461 look bench. The partial periods capture was stopped when that
-overlap was detected and is not delivered. The job supports a resume run argument, with another job check between
-variants. No other task's process has been stopped.
+The first gas-flat attempt exposed a batch argument bug: an unquoted comma split the map list into separate subroutine
+arguments, so only nebula_storm ran. Quoted that argument and reran only gas_flat. Its completed delivery includes
+both maps. The one-map attempt is preserved on the PC in `shots/resume/gas_flat_one_map_attempt/`, outside the delivered set.
 
-This is an incomplete delivery. Remaining runs: `periods`, `cap_rocks`, `periods_rocks`, `gas_flat`; B and C are not
-available yet. After waiting for issue 461's `done_main.txt`, the continuation attempted B first, but a new issue 461
-look bench (`opus461/lb/runs/main2_a`, commit `b8e66671`) had already claimed the GPU. The guard exited 3 again, before
-copying assets or starting a capture. No deferred environment process remains running. A scheduling choice was asked
-in chat; no permission to pause the other task was received. AGENTS.md's "one GPU job at a time" prevents overlapping
-the jobs. Do not treat the source merge or the passing checks as proof that the five-run done condition is met.
+Every view holds the camera for 30 seconds and samples seven frames, five seconds apart. Each view has a named
+sheet, a first-to-last difference image brightened 6x, and its first frame. All delivered images are at most 720 px
+tall. The three choice sheets are 1168x720 and put the run name on the image.
 
-Resume a single run with `tools/pc/jobs/env230_motion.bat REPO SHOTS RUN single`; omit `single` to run the named
-variant and following variants. Use the merged working tree and the existing final shots folder. No commit is made
-by that job. The original issue runner's checkout was reused rather than creating a second clone.
+| Run | Sheets | Differences | First frames | Purpose |
+|---|---:|---:|---:|---|
+| shipped | 12 | 12 | 12 | A: retained first-pass baseline, rocks still |
+| periods | 12 | 12 | 12 | Wreck periods changed, rocks still |
+| cap_rocks | 12 | 12 | 12 | B: rocks turn, slow debris law |
+| periods_rocks | 12 | 12 | 12 | C: rocks turn, faster terrain periods |
+| gas_flat | 6 | 6 | 6 | Flat gas layer rates on nebula_storm and deep_storm |
 
-The shipped graveyard debris difference image shows turning wreck pieces and black, unchanged rock silhouettes.
-Gas, the planet, selection rings and board highlights also animate, so the whole difference image is not wreck-only;
-the debris geometry that changes is wreckage. The cap_rocks comparison has not yet been captured.
+54 views, 378 sampled frames: 162 per-view images and three choice sheets. Counts, dimensions and image decoding
+were checked across all 165 JPGs. Reviewed the 42 resumed first frames and the B/C sheets; no placeholder blocks.
+All four resumed jobs exited 0, logged their done marker, and reported no script, shader, placeholder or motion-guard
+errors. The existing shipped set was preserved.
 
 [A: shipped, rocks still](../../../docs/shots/env230/option_A_shipped.jpg).
-[Graveyard debris difference](../../../docs/shots/env230/shipped/boneyard_graveyard_shipped_cine_m_debris_diff.jpg).
-PC review copy: `C:/Users/rcbai/Downloads/voidsworn_test/board/issue-520/shots/final/option_A_shipped.jpg`.
+[B: cap_rocks, slow turning rocks](../../../docs/shots/env230/option_B_cap_rocks.jpg).
+[C: periods_rocks, faster terrain periods](../../../docs/shots/env230/option_C_periods_rocks.jpg).
 
-The shipped graveyard debris view has 13.28 percent changed pixels; its fields view has 5.46 percent. These are
-whole-image measurements, including unrelated gas/planet/board animation, not percentages of moving debris.
-The four map reports each measured 0.050000 rad; planet/rock diameter ratios were 6.137 (frontier), 6.145 (nebula),
-4.603 (graveyard) and 5.251 (deep). Each report printed once per map and included the 0.05 rad / 4.4 tuning targets.
+PC review copies of these three sheets: `C:/Users/rcbai/Downloads/voidsworn_test/board/issue-520/shots/resume/`.
+The four new per-view sets are in matching run subfolders there. Shipped per-view copies remain in `shots/final/shipped/`.
 
-## R129 self-check
+## Verdict from the difference images
 
-- Callers: searched all uses of tumble_rate, rock_tumble, wreck_tumble, TUMBLE_K, the rock shader material factories,
-  _backdrop_scale and the station audit fields. Default rates are preserved in both debris paths, wreck slots and
-  painted hull chunks; blocker_visuals uses the default stationary rock material. Both rock and crystal shaders take
-  the capture switch. The size report accumulates all five field paths and prints once after fields are built.
-- Saves: no save reader, writer, field or format changed. The standing save checks passed, including save fuzz and
-  old-profile coverage. No profile or run migration is needed.
-- Twins: presentation only. No browser oracle, Godot rule/campaign code, or exported tables changed against main;
-  oracle_copy_test passed in the standing suite. No rules export was needed.
-- UI: no player flow or UI value changed. Battle/campaign settings and screens retain their current behavior;
-  window size and input overrides exist only in the motion harness.
-- CI: run_all_checks automatically discovers env_reconcile_tests; GitHub also runs rules/campaign parity and Godot
-  game checks. PC rendering is supplied by this delivery. CI has not run on this uncommitted working tree.
+**Shipped moves only wreck pieces among the debris geometry. cap_rocks moves rocks too.** In the shipped graveyard
+debris difference, rock shapes stay black while the angular wreck pieces and painted hull fragments are bright.
+In cap_rocks, those same rock clusters have bright changing surfaces and outlines, including the large rocks on the
+right. The graveyard fields difference also shows the far rocks changing in B. C shows rocks changing as well.
+
+[Shipped debris difference](../../../docs/shots/env230/shipped/boneyard_graveyard_shipped_cine_m_debris_diff.jpg).
+[B debris difference](../../../docs/shots/env230/cap_rocks/boneyard_graveyard_cap_rocks_cine_m_debris_diff.jpg).
+[B fields difference](../../../docs/shots/env230/cap_rocks/boneyard_graveyard_cap_rocks_cine_m_fields_diff.jpg).
+
+The whole shipped difference image is not wreck-only: gas, the planet, selection rings and board highlights also
+animate. The log's changed-pixel shares below include those effects. They are neither percentages of moving debris
+nor measurements of spin speed, and differences between runs are not a controlled pixel comparison of gas motion.
+
+| Graveyard run | Debris view changed pixels | Fields view changed pixels |
+|---|---:|---:|
+| shipped | 13.28% | 5.46% |
+| periods | 13.58% | 5.55% |
+| cap_rocks | 21.50% | 9.29% |
+| periods_rocks | 21.60% | 8.95% |
+
+B remains the recommendation for Ryan to judge against A and C, as in the PR body. No shipped motion default was
+changed. Gas-flat's six sheets and differences are supplied for NB8's comparison with the corresponding shipped
+views; this delivery does not choose new gas rates. Five-second samples do not establish the absence of shimmer
+between samples. The shader TIME rollover limitation recorded in the briefs remains.
+
+## Checks and R129 self-check
+
+- `node contrib/opus/tools/env_reconcile_tests.js`: 29 checks, 29 pass, 0 fail.
+- `node contrib/opus/tools/run_all_checks.js`: exit 0; 42 PASS, 2 KNOWN, 0 FAIL, 0 SKIP. Known baseline: seven findings
+  failures (KIT-1, KIT-3, ROS-9, MOD-2, EVT-1, NEM-6, UI-5) and 12 constant differences.
+- Capture checks: all four resumed jobs exit 0; expected seven-frame views and done markers present; all 165 delivered
+  JPGs decode and meet the 720 px ceiling. B and C visibly name their run.
+- Callers: retained the first pass's tumble, material, backdrop and station caller sweep. This continuation changes
+  no game function or caller. The gas map-list call is verified by capturing both named maps; capture switches are
+  confirmed by the batch paths and motion logs.
+- Saves and old profiles: no source or data changes; standing save fuzz, progression and old-profile checks passed.
+- Twins: no browser oracle, Godot rules, campaign tables or exports changed; oracle_copy_test passed.
+- UI: no player flow, screen or setting changed. Camera and window overrides remain capture-only.
+- CI: standing checks discover env_reconcile_tests. GitHub's rules parity and game checks are still the branch's
+  separate CI jobs; no claim that CI ran on these uncommitted artifacts.
 
 ## Scope and limits
 
-The rejected first attempts are preserved on the PC outside the delivered image set. Their opening camera glide
-and maximized frame size made them unsuitable for comparison. Only the final fixed-camera 1920x1080 run is delivered.
-The capture asserts those conditions before accepting frames.
+Per the resume note, did not redo the main merge, R191 implementation, camera fixes or shipped capture. The only
+new harness edit is the quoted gas map-list argument described above. Did not rebuild a Blender station or rerun
+full Godot rules/campaign parity: this continuation adds captures and a report,
+and both requested check commands passed. The first pass's headless load and R191 probe results remain recorded
+in the prior report revision. No new station or terrain look is claimed complete.
 
-No Blender station rebuild or new station images: this job changes audit reporting and retains PR 286's station
-work. No full rules/campaign parity rerun: this is a presentation-only change, with no rule, table or save changes;
-the requested standing checks, Godot load check and live rendering cover this task. Shader TIME rollover and the
-unbuilt terrain work remain the limitations recorded in the briefs. No files were deleted, committed or pushed.
+Generated import-file changes were preserved in TEMP and restored or moved out of the delivery. No gen files,
+ship assets or uid files are included. Logs and helper scripts stay in TEMP. No files were deleted, committed or pushed.
