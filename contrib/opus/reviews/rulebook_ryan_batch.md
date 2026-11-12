@@ -1,7 +1,7 @@
 # Ryan's own calls the rulebook would reword or ask about (issue 492)
 
 For the Board to put to Ryan, one batch at a time. Each item: his rule as recorded, his words if any, the proposed wording, and
-the Board's pick. Nothing here is changed until he answers. Board-written and agent-written rules were decided without asking
+the Board's pick. ANSWERED by Ryan, Nov 11 2026 21:00 CST (FINDINGS R216): all eleven taken as picked except item 1, which he reworded (the model, not the place: Sol 6.1, never Luna by accident, never forced onto Astra). Reasons: 8 the game's identity; 9 subscription ran out, not useful enough for the cost; 10 the tools need it. Nothing here is changed until he answers. Board-written and agent-written rules were decided without asking
 (see rulebook_board_notes.md).
 
 ## Batch 2: four old calls with no reason recorded

@@ -27,7 +27,7 @@ git clean -fdq
 %PS% prep %N% "%R%" "%O%"
 if errorlevel 1 goto :prepfail
 set /p EFF=<"%O%\effort.txt"
-call "%B%\tools\pc\tmo.bat" 3600 "%APPDATA%\npm\codex.cmd" exec -c model_reasoning_effort=%EFF% --approve-for-me --ephemeral --color never -C "%R%" -o "%O%\last.md" "Read CODEX_TASK.md in this folder and do exactly what it says. Do not commit." > "%O%\log.txt" 2>&1
+call "%B%\tools\pc\tmo.bat" 3600 "%APPDATA%\npm\codex.cmd" exec -m gpt-6.1-sol -c model_reasoning_effort=%EFF% --approve-for-me --ephemeral --color never -C "%R%" -o "%O%\last.md" "Read CODEX_TASK.md in this folder and do exactly what it says. Do not commit." > "%O%\log.txt" 2>&1
 echo codex exit %ERRORLEVEL% >> "%O%\result.txt"
 rem Usage limit: leave the issue for the board to retry on a later poll instead of marking it done.
 rem Nov 3 fix: look only at the last 40 lines. Codex often prints this script while it works, so a whole-log
