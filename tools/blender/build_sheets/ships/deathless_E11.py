@@ -23,7 +23,9 @@ CONCEPT_VIEWS = dict(top=dict(box=(139, 23, 1747, 670), largest=True, flip=True)
 CROPS = [('bow (crescent and projector)', (900, 300, 1920, 1100)), ('midships (batteries)', (450, 60, 1250, 620)), ('stern (engines and feathers)', (0, 20, 760, 560))]
 SHEET = dict(version=1, round='first sheet', date='2026-11-12', blend='opus532e\\e1',
              before='First full layout', before_note='The first complete E11 layout, built with the Eclipse kit and run through the check before any fix.',
-             during='')
+             during='While designing, the check also caught (and the design fixed): deck hatches and the core port sunk in the curved tier, the belt lights inside the belt, '
+                    'heat panels covered by the stern feathers (moved forward of the band collar), the aft flak twin sweeping through deck hatches (moved to the deck edge), '
+                    'and, after the crescent was raised over the nose, the fore twin\'s barrels striking the tier when trained aft (the tier now starts behind its sweep).')
 
 PEXP = (2.8, 2.3)   # the oval section: flatter over the deck, round in the flanks and belly
 # (x, half-beam port, half-beam starboard, bottom, top, -, -): the body, nose first (the nose sits inside the crescent's root)
@@ -45,7 +47,7 @@ PL = dict(keep3d=True, size=(0.32, 0.75), thick=(0.03, 0.09), skip=0.07, stack=0
 # the crescent: two ellipses in plan (d = distance aft of the prow, y to port), the outer through the horn tips and the back,
 # the inner through the horn tips and the inner wall
 CO, AO, BO = 5.168, 5.932, 5.4   # outer: centre d, semi-axis along the length, half-width (back at d 11.1, 39.6 percent)
-CI, AI, BI = 3.115, 4.085, 4.1   # inner (its back, the inner wall, at d 7.2: the band is 3.9 deep at the root, as the plan)
+CI, AI, BI = 2.983, 4.217, 3.75   # inner (its back, the inner wall, at d 7.2: the band is 3.9 deep at the root, as the plan; 1.65 wide at the sides, between the plan's 1.3 and the beauty's)
 PHI_H = math.degrees(math.acos((0.0 - CO) / AO))   # the horn tip on the outer ellipse
 PSI_H = math.degrees(math.acos((0.0 - CI) / AI))
 Z0 = -0.2                        # the projector axis
@@ -312,4 +314,7 @@ def build(K):
     K.change('Belly twin, attitude thrusters, deck and belly hatches, corona strip lights, heat panels added', 'the belly needs cover and a ship in space needs thrusters; the picture shows no underside')
     K.open_item('The belly between the skirt and the belly twin is designed here; the picture does not show the underside')
 
-    # ---------- the fit report's fix column (filled from the first full layout's check) ----------
+    K.change('The crescent band is 1.65 wide at its sides', 'the plan of record (the 8c sheet\'s top view) gives 1.3, the beauty reads broader; the band sits between the two so the beauty\'s fat brim reads without losing the plan')
+    # ---------- the fit report's fix column: every finding on the first full layout (/tmp before/deathless_E11_fit.json, kept in fit_report.md) ----------
+    K.fix('F1 (aft flak twin) intersecting HB1 (the deck housing), and sweeping through it from bearing -30 to 30', 'the housing made shorter (0.5) and moved forward to 4.6 aft of amidships; the twin moved aft to 6.4, so its barrels clear the housing at every bearing')
+    K.fix('T1 (fore twin) firing aft blocked by T2\'s plinth at bearings 175 and -175', 'T2 moved aft (to 57 percent) and T1 raised on a low round drum, so T1\'s highest line passes over T2\'s muzzles; both twins carry 2.0 barrels')

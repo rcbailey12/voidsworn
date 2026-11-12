@@ -24,7 +24,8 @@ CROPS = [('bow (fore arcs, emitter, fore battery)', (1150, 40, 2000, 1000)), ('m
          ('stern (engine block, aft arcs)', (150, 200, 780, 900))]
 SHEET = dict(version=1, round='first sheet', date='2026-11-12', blend='opus532e\\e1',
              before='First full layout', before_note='The first complete E12 layout, built with the Eclipse kit and run through the check before any fix.',
-             during='')
+             during='While designing, the check also caught (and the design fixed): the sentry twin sweeping through the block roof thrusters (moved forward), a roof hatch on a '
+                    'thruster, the block\'s green lights inside the stern arcs (raised), and the heat panels touching the outer engine housings (moved forward).')
 
 XC, AR, BR, WR = 0.97, 6.5, 4.07, 1.4    # the ring: centre x, outer semi-axes (along, across), radial depth
 ZR, HR = -0.1, 0.42                      # the ring plane and its depth
@@ -77,7 +78,7 @@ def build(K):
     narc = 0
     for side in (1, -1):
         for nm, t0, t1 in ARCS_T:
-            n = max(6, int((t1 - t0) / 3))
+            n = max(4, int((t1 - t0) / 4.5))
             ts = [side * (t0 + (t1 - t0) * i / n) for i in range(n + 1)]
             rings = []
             for t in ts:
@@ -219,3 +220,10 @@ def build(K):
     K.change('Weapons by data.js slot', 'd_harvester: gauss T twice on the spine saddles, doom F the bow emitter, gsentry T the null spire on the block roof (the picture\'s small green-lit turret)')
     K.change('Thrusters, hatches and heat panels added', 'a ship in space needs thrusters; the picture shows no underside')
     K.open_item('The underside of the block and the ring is designed here; the picture shows no underside')
+    # ---------- the fit report's fix column: every finding on the first full layout ----------
+    K.fix('E1, E2, E3 bells inside the stern block', 'the block\'s aft face moved forward to 6.65 aft of the bow datum, so the bells stand clear of it')
+    K.fix('S1p and S1s (fore struts) into the emitter\'s breech collar', 'the fore struts meet the arcs at 48 degrees and run straight across, clear of the collar')
+    K.fix('S3p and S3s (aft centre struts) touching the core\'s hub collars', 'the struts moved to 103 degrees and the spine collar there moved aft, so the lugs clear the hubs')
+    K.fix('A1 (emitter) collar against the spine-head thrusters Q2p and Q2s', 'the spine-head thrusters removed; all four thrusters sit on the block\'s roof and belly edges')
+    K.fix('Q1 and Q2 exhaust cones on the aft and fore arcs and on the fore struts', 'the thrusters fire up and out, and down and out, from the block edges, clear of every arc')
+
