@@ -4,7 +4,7 @@
 
 **Read in this order:** this section; contrib/opus/LOOP.md ("The Board's standing duties", "The seats", the LATEST lines of
 "Current state"); contrib/opus/OPEN_WORK.md (one row per open issue and parked pull request); the playbook for your area
-(docs/playbooks/, PROGRAM.md first); FINDINGS R183 to R215 for Ryan's words. the rulebook (issue 492, RULEBOOK.md in docs) becomes the one
+(docs/playbooks/, PROGRAM.md first); FINDINGS R183 to R215 for Ryan's words. docs/RULEBOOK.md (issue 492) becomes the one
 live list of rules when it merges. Section 0a below is this morning's state: where it disagrees with this section, this
 section wins.
 
@@ -39,11 +39,11 @@ drift to keep happening or where we get confused on how we're doing things."
 - PR 549: the build method in ships.md, RECIPE.md and AGENTS.md (R214, R215). Merge when green.
 - PR 548 / issue 541: environment follow-up (workhorse; the Board recovered its edits). Merge when green.
 - PR 543 / issue 357: code traps; conflicts with main, to be redone on current main once 524, 544 and 547 land.
-- This pull request (issue 492): Part A carries the Nov 11 rulings into their working documents; Part B is the rulebook.
+- This pull request (issue 492): Part A carries the Nov 11 rulings into their working documents; Part B is docs/RULEBOOK.md, with contrib/opus/reviews/rulebook_board_notes.md for the Board.
 
 **Next, in order.** Merge what is green. A16 and A17 round 2 to Ryan beside the concepts; then the manifest check (550). Build
 sheets for E11, E12, C10, C11 and the station; then S8, H10 and G15 by the shape-locked route. Hits pass 2 (538), small-ship
-deaths (463), sound weight (507). The rulebook's batch of Ryan's own calls (issue 492).
+deaths (463), sound weight (507). The rulebook's batches of Ryan's own calls (contrib/opus/reviews/rulebook_ryan_batch.md).
 Then clean the issue board: every open issue kept and rewritten, folded, or closed with one line (OPEN_WORK.md has a verdict
 for each).
 
@@ -51,7 +51,7 @@ for each).
 
 | Track | Playbook | Open issues |
 |---|---|---|
-| Rules of the project | the rulebook (issue 492), AGENTS.md | 492, 545, 216 |
+| Rules of the project | docs/RULEBOOK.md (issue 492), AGENTS.md | 492, 545, 216 |
 | Battle effects | docs/playbooks/effects.md, deaths_and_hits.md | 461, 538, 463, 507, 370, 367, 371, 372, 362 |
 | Movement | contrib/opus/briefs/movement_spec.md | 507 (smaller movement items) |
 | Sound | docs/playbooks/sound.md | 507 (sound weight), 211 |
