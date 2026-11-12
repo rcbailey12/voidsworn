@@ -115,6 +115,9 @@ rem kimicode: its own config with no helper agents (issue 597: five parallel hel
 if /i "%ARM%"=="kimicode" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
 if /i "%ARM%"=="sonnet" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
 if /i "%ARM%"=="opus" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
+rem deepseek arms too (Ryan, Nov 12: "$20 at DeepSeek API in like a week ... not super sustainable"): one agent, no helpers
+if /i "%ARM%"=="deepseek" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
+if /i "%ARM%"=="deepseekpro" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
 if /i "%MODE%"=="dryrun" goto :drysetup
 call :getkey DEEPSEEK_API_KEY
 call :getkey MOONSHOT_API_KEY
