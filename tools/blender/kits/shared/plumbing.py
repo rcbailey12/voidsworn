@@ -169,9 +169,27 @@ def lod_size(objs):
         o['size'] = (Vector([max(v[i] for v in w) for i in range(3)]) - Vector([min(v[i] for v in w) for i in range(3)])).length
 
 # ---------------------------------------------------------------------------------------------------------------- audit
-def audit(hull_objs, part_objs, guns=(), t_lines=None, l_line=None):
+def path_x(path, y0, y1):
+    """the x range a seam's plan path (points (x, y) across the beam) covers between y0 and y1; beyond its ends it runs on
+    at its end points' x"""
+    pts = sorted(path, key=lambda p: p[1]); xs = []
+    for (xa, ya), (xb, yb) in zip(pts, pts[1:]):
+        for y in (y0, y1):
+            if ya <= y <= yb and yb > ya: xs.append(xa + (xb - xa) * (y - ya) / (yb - ya))
+    xs += [x for x, y in pts if y0 <= y <= y1]
+    if y0 < pts[0][1]: xs.append(pts[0][0])
+    if y1 > pts[-1][1]: xs.append(pts[-1][0])
+    return min(xs), max(xs)
+
+
+def audit(hull_objs, part_objs, guns=(), t_lines=None, l_line=None, t_paths=None):
     """common.audit's checks in one pass (a kit adds hundreds of small parts; the pairwise version rebuilt a tree per part):
-    parts that neither intersect (or lie within .002 of) the hull nor intersect another part (floating), parts across a break line, guns aimed backward"""
+    parts that neither intersect (or lie within .002 of) the hull nor intersect another part (floating), parts across a break line, guns aimed backward.
+    Across a seam (R226, Board, Nov 12, from R186): a machine (a part whose objects carry machine=1, stamped from the faction
+    kit's MACHINES) never crosses one; its footprint is all its objects but the turning meshes, which ride their turret's ring.
+    A seam with a plan path (t_paths, one list of (x, y) per transverse line) is tested along the path, so a seam can kink
+    round a machine. Structure (machine=0: plates, ribs, hatches, vents, the launch bay) may cross and is only reported. An
+    object with no machine mark (a kit that marks no kinds) is held to the machine rule, as before R226."""
     import bmesh
     from mathutils.bvhtree import BVHTree
     import common as C
@@ -194,11 +212,22 @@ def audit(hull_objs, part_objs, guns=(), t_lines=None, l_line=None):
     held = set(); near = {}
     for k, o in enumerate(allp):
         if k in touching or T.overlap(C.bvh([o])): held.add(grp[k])
+    paths = list(t_paths) if t_paths else [None] * len(t_lines)
+    boxes = {}                                          # the seam test's unit: a marked part (its grp), else the object itself
     for k, o in enumerate(allp):
+        if o.get('machine') is not None and o.get('role') == 'turn': continue
+        unit = grp[k] if o.get('machine') is not None else o.name
         w = [o.matrix_world @ Vector(b) for b in o.bound_box]; lo = Vector([min(v[i] for v in w) for i in range(3)]); hi = Vector([max(v[i] for v in w) for i in range(3)])
-        for x in t_lines:
-            if lo.x < x - .002 and hi.x > x + .002: cross.append(o.name)
-        if len(l_line) == 3 and lo.x < l_line[2] and hi.x > l_line[1] and lo.z < l_line[0] - .002 < l_line[0] + .002 < hi.z: cross.append(o.name)   # () = no longitudinal seam
+        b = boxes.get(unit); boxes[unit] = (lo, hi, o.get('machine', 1)) if b is None else (Vector(map(min, b[0], lo)), Vector(map(max, b[1], hi)), b[2])
+    structure = []
+    for unit, (lo, hi, machine) in boxes.items():
+        over = False
+        for x, path in zip(t_lines, paths):
+            x0, x1 = path_x(path, lo.y, hi.y) if path else (x, x)
+            if lo.x < x1 - .002 and hi.x > x0 + .002: over = True
+        if len(l_line) == 3 and lo.x < l_line[2] and hi.x > l_line[1] and lo.z < l_line[0] - .002 < l_line[0] + .002 < hi.z: over = True   # () = no longitudinal seam
+        if over: (cross if machine else structure).append(unit)
+    for k, o in enumerate(allp):
         if grp[k] in held: continue
         dmin = 9
         for v in list(o.data.vertices)[::max(1, len(o.data.vertices) // 150)]:
@@ -212,5 +241,5 @@ def audit(hull_objs, part_objs, guns=(), t_lines=None, l_line=None):
     # sampled vertex within .002 of the hull. A part resting exactly on another part without crossing its faces is not excused by
     # it. A part intersecting only another part is excused, so a chain of parts can hang off one that meets the hull; it does not
     # prove each part sits on a real mount.
-    return dict(problems=probs, parts=len(allp), crossing_break_lines=sorted(set(cross)),
+    return dict(problems=probs, parts=len(allp), crossing_break_lines=sorted(set(cross)), structure_across_seams=sorted(set(structure)),
                 guns_with_normals=sum(1 for g in guns if len(g) > 2 and g[2] is not None), guns_into_ship=into)

@@ -465,6 +465,9 @@ class Kit:
                     ob['turret'] = 1 if pivot is not None else 0
                     if pivot is None:
                         ob['gun_fixed'] = 1
+        for ob in [o for o in self.coll.objects if o.get('grp') == fid and o.type == 'MESH']:
+            # R226: the part's kind and whether it is a machine, from the faction kit (parts.py MACHINES); the audit reads them
+            ob['part_kind'] = part.kind; ob['machine'] = int(part.kind in getattr(HP, 'MACHINES', ()))
         if keep:
             mv = [v for c in part.comps if c['role'] == 'mount' for v in c['verts']]
             if mv:

@@ -105,7 +105,10 @@ if not sc.get('r209_t_lines'): die('no authored break seams in this blend')
 longitudinal = list(sc.get('r209_l_line', []))
 if longitudinal and len(longitudinal) != 3: die('invalid authored longitudinal break seam')
 # Version 1 is defined in RECIPE.md stage 7. Store geometry and seams together in the GLB.
-seams = [dict(p=[float(x), 0, 0], n=[1, 0, 0]) for x in sorted(sc['r209_t_lines'])]
+T_PATHS = json.loads(sc.get('r209_t_paths', 'null')) or [None] * len(sc['r209_t_lines'])
+# a transverse seam's plan path (R226: it kinks round machines), when the build has one: [x, z] points in the GLB ship frame
+seams = [dict(p=[float(x), 0, 0], n=[1, 0, 0], **({'path': [[float(px), float(-py)] for px, py in pth]} if pth else {}))
+         for x, pth in sorted(zip(sc['r209_t_lines'], T_PATHS), key=lambda t: t[0])]
 if longitudinal:
     z, x0, x1 = map(float, longitudinal)
     seams.append(dict(p=[0, z, 0], n=[0, 1, 0], span=[x0, x1]))

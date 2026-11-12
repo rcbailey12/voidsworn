@@ -135,6 +135,9 @@ global learning and shaping the approach". So the method, for every ship of ever
   guns, turrets and launchers are built from what that faction's weapons are (data.js weapon ids, the lore bible, the
   faction sheet in factions.md): their mount, housing, barrel and muzzle say how the weapon works. No turret silhouette is
   shared between factions; the sheet shows each weapon type beside its lore line.
+- Seams go round machines (R226, RULEBOOK 5.17): a gun, turret, casemate, launcher, engine, thruster, claw or sensor mast
+  sits wholly in one piece, so the sheet moves or kinks each seam's plan path round them; plating, ribs, rails and openings
+  such as a launch bay may tear across. The stage 4 audit tests each seam along its path and fails only a machine on it.
 - Massing is checked as hard as parts (Board, Nov 12, from round 3: every part passed its tick while the hull still read as a
   lump). The sheet reports the concept's and the build's length to beam to height ratios, and the per-cell table adds a
   structure count: distinct masses, tiers and steps per cell, concept against build. A part list that passes over the wrong
@@ -177,8 +180,8 @@ hard points.
 
 - Stage 3: the outline overlap with the concept at the concept's own camera is reported, not a pass bar (RULEBOOK 5.8; was
   90 percent, R147). The stage prints the number and its picture; read them and say so in the report.
-- Stage 4: the audit lists nothing: no part floats or is sunk, nothing crosses a break line, no gun aims backward or into
-  the ship. audit_selftest.py proves the audit can fail. Transverse seams are required, the longitudinal seam is optional.
+- Stage 4: the audit lists nothing: no part floats or is sunk, no machine crosses a break line (R226; structure may), no gun
+  aims backward or into the ship. audit_selftest.py proves the audit can fail. Transverse seams are required, the longitudinal seam is optional.
   A sheet ship first passes sheet_contract_selftest.py (the sheet's data reached the recipe unchanged but for units).
 - Stage 7: check_export.py passes: every weapon slot in the ship's data.js list has a hard point, every hard point is on the
   mesh (an engine point at the centre of an open bell passes by its bell: rim, throat and clear exhaust), every turret rests

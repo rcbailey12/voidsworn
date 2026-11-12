@@ -12,8 +12,11 @@
 #                             rooms), in the <code>_inside collection
 #   hull and parts            role 'hull' (masses, plates); every other     unchanged: export7 joins role 'hull' as the hull
 #                             role is a part (mount, turn, body, ...)       surface and everything else but interiors as parts
-#   seams                     K.break_line rows: kind 'trans' at x;         scene r209_t_lines (x) and r209_l_line ([z, x0, x1]
+#   seams                     K.break_line rows: kind 'trans' at x, with    scene r209_t_lines (x), r209_t_paths (JSON: the plan
+#                             its plan path of (x, y) across the beam;      path of each, or null) and r209_l_line ([z, x0, x1]
 #                             kind 'long' along a path of (x, z)            or [] when the sheet authors no longitudinal seam)
+#   part kinds                each part's objects: part_kind and machine    unchanged: the stage 4 audit reads machine (R226)
+#                             (the faction kit's MACHINES)
 #   gun and launcher mounts   kit fit records (muzzles, barrel aim, bore,  scene r209_hp muzzles (slot = the data.js index of the
 #                             mount normal, slot letter and weapon)         sheet's weapon and arc) and r209_guns (aim, normal)
 #   turrets                   pivot empties <id>_turret, turning meshes     unchanged hierarchy; the pivot's slot letter becomes
@@ -99,7 +102,9 @@ def to_recipe(K, ship):
 
     # seams
     breaks = [r for r in K.inside if r.get('kind') == 'break']
-    t_lines = sorted(r['x'] * s for r in breaks if r.get('orient', 'trans') == 'trans')
+    trans = sorted((r for r in breaks if r.get('orient', 'trans') == 'trans'), key=lambda r: r['x'])
+    t_lines = [r['x'] * s for r in trans]
+    t_paths = [[[px * s, py * s] for px, py in r['path']] if r.get('path') else None for r in trans]
     longs = [r for r in breaks if r.get('orient') == 'long']
     if len(longs) > 1:
         raise ContractError(f'{len(longs)} longitudinal seams ({", ".join(r["name"] for r in longs)}): format version 1 holds one')
@@ -109,7 +114,7 @@ def to_recipe(K, ship):
         if len(pts) < 2: raise ContractError(f'longitudinal seam {longs[0]["name"]} has no path of (x, z) points')
         l_line = [sum(p[1] for p in pts) / len(pts) * s, min(p[0] for p in pts) * s, max(p[0] for p in pts) * s]
     if not t_lines: raise ContractError('the sheet authors no transverse seam')
-    sc['r209_t_lines'] = t_lines; sc['r209_l_line'] = l_line
+    sc['r209_t_lines'] = t_lines; sc['r209_l_line'] = l_line; sc['r209_t_paths'] = json.dumps(t_paths)
 
     # gun and launcher mounts, engines
     feats = {f['id']: f for f in K.features}

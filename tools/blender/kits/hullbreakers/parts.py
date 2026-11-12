@@ -403,6 +403,12 @@ def rocket_rack(rows, cols, cell=0.4, depth=1.8, yoke=True, variant=0, seg=12):
 # Ryan, Nov 11 21:34 CST (R218): "Engines and guns are the reference but we want to carry that through to the whole model."
 # Each type below carries the sub-parts that make it read as that thing (ships.md 2c, RULEBOOK 5.16). SUBPARTS names them so a
 # sheet can tick each inventory line: present, shaped (built by its kit type), detailed (every sub-part modelled).
+# R226 (Board, Nov 12, from R186 'blown apart, never sliced'): the part kinds that are machines. A machine never
+# crosses a seam (a cut gun reads as sliced): it rides whole with one piece. Every other kind is structure (plates,
+# ribs, rails, hatches, vents, lamps, pipes, openings such as the launch bay) and may tear across a seam. The sheet kit
+# stamps each part's objects with part_kind and machine from here; the stage 4 audit reads them (tools/recipe/audit.py).
+MACHINES = ('gun', 'spinal', 'rack', 'tube', 'engine', 'thruster', 'claw', 'prong', 'antenna', 'dish')
+
 SUBPARTS = {
     'engine': ['housing', 'collar', 'band', 'bell', 'lining', 'throat_glow', 'cone', 'cool', 'strut'],
     'gun': ['ring|plate', 'housing', 'mantlet', 'breech', 'tube', 'clamp', 'bore', 'vent'],

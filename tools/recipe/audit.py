@@ -4,7 +4,10 @@
 # or the build sheet contract writes r209_t_lines into the blend; the module defaults belong to an older hull) or carries them
 # empty, when its longitudinal seam (r209_l_line) is present but not one [z, x0, x1] with x0 < x1, when any gun
 # lacks its mount normal (the into-the-ship test could not run for it; Muse condition 1 on PR 341), and when the audit lists any
-# problem or any part across a break line. The longitudinal seam is optional (issue 592; the export contract's version 1 format,
+# problem or any machine across a break line (R226, Board, Nov 12, from R186 "blown apart, never sliced": guns, turrets,
+# casemates, launchers, engines, thrusters, claws and sensor masts ride whole with one piece; structure such as plating, ribs,
+# rails and the launch bay may tear across and is listed in structure_across_seams; a part's kind comes from the build itself,
+# tools/blender/kits/<kit>/parts.py MACHINES, and a seam with a plan path is tested along it). The longitudinal seam is optional (issue 592; the export contract's version 1 format,
 # RECIPE.md stage 7): a build without one (r209_l_line missing or []) is audited on its transverse seams alone, and no seam is
 # ever borrowed from another hull (RULEBOOK 0.9: a check reads the ship's own entry).
 # What the floating test proves: every part intersects the hull or another part (BVH overlap: faces that cross), or has a sampled
@@ -40,7 +43,8 @@ else:
 if fail:
     au = dict(result='FAIL', failures=fail, problems=[], crossing_break_lines=[], guns=len(guns), guns_with_normals=sum(g[2] is not None for g in guns))
 else:
-    au = PB.audit(hull, parts, guns, t_lines=tuple(sc['r209_t_lines']), l_line=L_LINE)
+    T_PATHS = json.loads(sc.get('r209_t_paths', 'null')) or None      # a seam's plan path, written by the build sheet contract
+    au = PB.audit(hull, parts, guns, t_lines=tuple(sc['r209_t_lines']), l_line=L_LINE, t_paths=T_PATHS)
     au['guns'] = len(guns); au['break_lines'] = dict(t_lines=list(sc['r209_t_lines']), l_line=list(L_LINE))
     au['result'] = 'FAIL' if (au['problems'] or au['crossing_break_lines']) else 'PASS'
 json.dump(au, open(out, 'w'), indent=1)

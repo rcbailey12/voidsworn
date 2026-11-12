@@ -280,8 +280,9 @@ picture shows, and lists every change on the sheet. Why: "Use it to guide, not t
 look randomly placed and don't make sense... the builds look like square blocks basically" and "The concept should inform and
 guide but it's not a final play by play guide" (R213). Set: Ryan, Nov 11. Ids: R25 (concepts are inspiration), R207, R213.
 
-5.3 **The settled build method is binding** (docs/playbooks/ships.md section 0; docs/ship_pipeline/RECIPE.md): the hull traced
-from the stage 2 AI shape reference, which is never shipped; hand-built parts, AI parts only through a reviewed faction
+5.3 **The settled build method is binding** (docs/playbooks/ships.md section 0; docs/ship_pipeline/RECIPE.md): the hull designed
+on the approved build sheet (5.1, 5.2), which the recipe builds as it is and never traces again (issue 592), with the stage 2
+AI shape reference made from the accepted concept as an outline and grime reference only, never shipped; hand-built parts, AI parts only through a reviewed faction
 library; paint from geometry masks, trim sheets and decals, never projected concept art; the seven stages. Why: projected
 concept paint was dropped on all 36 hulls (R82); Ryan adopted the research route (R96); the method kept drifting between
 documents (R214). Set: Ryan (R82, R96, R214, R215). Ids: R82d, R96a, R96c, R150a.
@@ -342,6 +343,12 @@ kit holds every part type at that level; the fit check covers every part; the sh
 beside the concept. Feedback on one part becomes a rule for all parts. Why: "Engines and guns are the reference but we want
 to carry that through to the whole model. Don't just patch singular behavior or examples, use it for global learning and
 shaping the approach" (Ryan, Nov 11, R218). Set: Ryan, Nov 11 (R218). Ids: ships-2c.
+
+5.17 **A machine never crosses a seam; structure may.** Guns, turrets, casemates, launchers, engines, thrusters, claws and
+sensor masts ride whole with one piece: the seam moves, or kinks round them in plan; hull plating, frames, ribs, rails and
+openings such as a launch bay may tear across a seam. The stage 4 audit reads each part's kind from the build (the faction
+kit's MACHINES) and fails only a machine across a seam. Why: a cut gun reads as sliced, a torn plate as blown apart (R186,
+"blown apart, never sliced"). Set: Board, Nov 12 (R226). Ids: ships-2c.
 
 ## 6. Battle look
 
