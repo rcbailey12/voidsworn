@@ -18,10 +18,10 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
    opus_check_341).
-4. **Breakable by design, comprehensive insides.** Real hull thickness, decks, bulkheads and machinery spaces, authored break
+4. **Breakable by design, comprehensive insides (performance permitting, R215).** Real hull thickness, decks, bulkheads and machinery spaces, authored break
    lines with matching inner faces and damage textures (R98). Insides are built through the whole hull, not only in the break
    pieces (Ryan, Nov 11: "better to be comprehensive with internal if we can without performance issues", R215); they stay
-   hidden until a piece breaks away, so they cost memory, not frame time, and their cost is reported (R111). Rim bands at break
+   hidden until a piece breaks away; their cost is reported per build (R111) and the measured scene gate decides whether the full set ships (R215; issue 557's test hull: 25,008 more triangles, three more material draws, gate PASS). Rim bands at break
    lines and openings plus a dark inner liner (R99 Q1) stay as the layer the intact ship shows. How a ship breaks follows the
    current destruction approach, not R99 Q2's fixed line count (R215): blown apart, never sliced (R186: uneven pieces, no
    straight line across the hull, a missing bite where the core went, ragged scorched rims), break lines placed by the faction's
@@ -35,6 +35,9 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
 8. **Costs.** Triangles, draw calls and surfaces per ship are reported, never capped; the only binding law is the measured
    scene gate on the RTX 5080 (R111, R121). Challengers earn adoption by Ryan's judgement on comparison sheets with costs
    reported (R121).
+9. **Fidelity and fit.** Section 2c: parts read as what they are, the fit check with zero clashes (R217); a parts inventory
+   before modelling, one detail level across the ship, kit first, the massing checked by ratios and structure counts, and
+   the side-by-side judged by someone other than the builder before Ryan sees it (R218).
 
 ## 1. Target
 
@@ -68,6 +71,10 @@ as a real built object and lists each change, with its reason, on the build shee
 when the picture, the faction guide and the lore conflict, or a change would alter the ship's identity.
 
 ## 2c. Parts that read and fit together (R217)
+
+Ryan's words in this section are quoted. The mechanisms (gun slots from data.js, the blockout over the stage 2 reference,
+heights against a side view, the parts inventory, the fit check, ratios and structure counts) are the Board's method under
+R202, written to answer the failures he named in R213, R217 and R218.
 
 Ryan, Nov 11 2026 21:24 CST, on build sheets round 2 (A16, A17): "The tubes at the front of a16 concept are just circles on the
 actual build? also the guns are visibly blocking the rockets and appear to be in front of an engine at one point. we need to

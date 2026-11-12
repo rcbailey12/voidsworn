@@ -122,8 +122,8 @@ function buildChecks() {
   const OPUS = 'contrib/opus/tools/';
   const MUSE = 'contrib/muse/tools/';
   const checks = [];
-  const add = (file, extra = [], kind = 'normal', timeout = 300) => {
-    checks.push({ name: path.basename(file, '.js'), file, args: extra, kind, timeout });
+  const add = (file, extra = [], kind = 'normal', timeout = 300, gate = false) => {
+    checks.push({ name: path.basename(file, '.js'), file, args: extra, kind, timeout, gate });
   };
   fs.readdirSync(__dirname).filter(f => f.endsWith('_tests.js') || f === 'campaign_start_test.js').sort().forEach(f => add(OPUS + f));
   add(OPUS + 'progression_telemetry_test.js'); // #27 step 11: per run XP by line and the F1 play log report
@@ -132,7 +132,7 @@ function buildChecks() {
   add(OPUS + 'tree_table_walk_test.js'); // #361: every LINEAGE_TREES row is hand-off tested through the real functions or on the dated waiting list
   add(OPUS + 'tree_last_rows_test.js'); // #529: the last seven tree rows and the you-may prompts move their numbers; fixtures carry the real lineage
   add(OPUS + 'oracle_copy_test.js'); // #335 finding 3: the oracle copies and campaign tables match the root game files (hard, not optional)
-  add('godot/campaign/test/node/nem_assign_enum.js'); // #120 R-Q1: the exact assignment constraints (quick mode) gate every PR
+  add('godot/campaign/test/node/nem_assign_enum.js', [], 'normal', 300, true); // #120 R-Q1: the exact assignment constraints (quick mode) gate every PR; a gating row never SKIPs under --fast (issue 248 NOTE 4)
   add(OPUS + 'nem_direct_reads_report.js'); // #364: report only, the count of direct save reads outside godot/campaign/
   add(OPUS + 'naming_lint_game.test.js');
   add(OPUS + 'naming_lint_game.js', [], 'naming');
@@ -221,7 +221,8 @@ async function main() {
   if (only && !checks.some(c => c.name === only || c.file === only)) { console.error('Unknown check: ' + only + '\nNames: ' + checks.map(c => c.name).join(', ')); process.exit(1); }
   const report = [];
   for (const c of checks.filter(c => !only || c.name === only || c.file === only)) {
-    if (args.includes('--fast') && c.timeout > 120) {
+    // A gating row is never downgraded to SKIP: --fast still runs it, and a SKIP that still happens is a FAIL.
+    if (args.includes('--fast') && c.timeout > 120 && !c.gate) {
       const row = { check: c.name, result: 'SKIP', seconds: 0, detail: 'SKIP: fast', output: '' };
       report.push(row);
       console.log('Running ' + c.name + ' (limit ' + c.timeout + ' s)...');
@@ -230,6 +231,7 @@ async function main() {
     }
     console.log('Running ' + c.name + ' (limit ' + c.timeout + ' s)...');
     const row = await execute(c, baseline);
+    if (c.gate && row.result === 'SKIP') { row.result = 'FAIL'; row.detail = 'FAIL: gating row would skip: ' + row.detail; }
     report.push(row);
     console.log(row.detail);
   }

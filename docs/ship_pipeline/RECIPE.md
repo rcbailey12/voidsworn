@@ -9,7 +9,7 @@ asks for the ship id once (the concept's file name, for example `C15s_23`), writ
 `Downloads\voidsworn_test\recipe\<ship>\`, and ends with a plain PASS, FAIL or "done" line. Nothing is deleted. Heavy steps run on
 the 5080; all tools are free and local.
 
-**The method this recipe runs (binding; docs/playbooks/ships.md section 0 has each rule with its source):** a build sheet
+**The method this recipe runs (binding; docs/playbooks/ships.md section 0 has each rule with its source, and section 2c the parts inventory, one detail level, the fit check and the massing check of R217 and R218):** a build sheet
 that passes the concept sheet standard comes first (R203); hand-built and kit parts, AI parts only through a reviewed
 faction part library (R96 Q5); the AI shape reference of stage 2 is a tracing guide, never shipped; paint from masks baked
 from the ship's own geometry plus trim sheets and decals, colours sampled from the concept, the concept never projected
@@ -65,7 +65,8 @@ side, weapons, overview and the firing capture).
 Socket positions and sizes are measured off the concept through the fitted camera: pick the weapon's pixel in the concept, cast it
 onto a plane at a plausible height, read x, y and z (round 6 README, section 1, has the C15s numbers and the method). Then the
 outline is read by eye: a part that pokes outside the concept's outline at the concept camera costs overlap, so sizes settle
-where the weapons read like the concept and the reported overlap is read for what it says.
+where the weapons read like the concept and the reported overlap is read for what it says (RULEBOOK 5.8); the guns are
+never bent to raise it (5.10).
 
 ## What the stage 4 audit proves, and what it does not
 

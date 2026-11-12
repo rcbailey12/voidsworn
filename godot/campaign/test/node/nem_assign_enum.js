@@ -24,7 +24,7 @@ let fails = 0;
 const ok = (name, pass, detail) => { console.log((pass ? 'PASS ' : 'FAIL ') + name + (detail ? ' ' + detail : '')); if (!pass) fails++; };
 const cell = {}, pooled = {}, ret = {}, two = {}, three = {};
 for (const f of FACS) { cell[f] = [{}, {}, {}]; ret[f] = 0; two[f] = 0; three[f] = 0; }
-let own = 0, rep12 = 0, rep23 = 0, totalSlots = 0, badLen = 0;
+let own = 0, rep12 = 0, rep23 = 0, totalSlots = 0, badLen = 0, missingFoe = 0;
 for (const pf of FACS) {
   for (let seed = 1; seed <= runs; seed++) {
     const r = __ENUM.run(seed, pf);
@@ -33,7 +33,7 @@ for (const pf of FACS) {
     for (let i = 0; i < 3; i++) {
       const h = a[i];
       if (h === pf) own++;
-      if (!r.foes.includes(h)) badLen++;
+      if (!r.foes.includes(h)) missingFoe++;
       cell[pf][i][h] = (cell[pf][i][h] || 0) + 1;
       pooled[h] = (pooled[h] || 0) + 1;
       totalSlots++;
@@ -48,6 +48,7 @@ for (const pf of FACS) {
 }
 console.log('issue 120 enumeration: ' + runs + ' starts per player faction, ' + (runs * FACS.length) + ' runs, ' + totalSlots + ' story point slots');
 ok('120-2 assignment length', badLen === 0, 'bad=' + badLen);
+ok('120-2 hunter is a run foe', missingFoe === 0, 'missing=' + missingFoe);
 ok('120-2 no own-faction hunter', own === 0, 'own=' + own);
 ok('120-2 no H2=H1 repeat', rep12 === 0, 'count=' + rep12);
 ok('120-2 no H3=H2 repeat', rep23 === 0, 'count=' + rep23);
