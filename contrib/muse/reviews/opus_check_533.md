@@ -1,6 +1,6 @@
 # Outside check: PR 533 (issue 529, tree skills: the last seven rows and the yes-or-no prompt)
 
-Refs #256. PR head c47b4826 (opus/issue-529). Checked against the issue 529 brief, the PR's own report (contrib/opus/reviews/tree_last_rows_report.md), and the full diff (the four generated data files, both tables.json copies, golden.js and scenarios.json, were read as refreshes; the chair verified the new table keys in the refreshed tables at head). Council: blind Rey leg, DeepSeek, Qwen, Flash, Grok. All legs read the complete code diff, the brief, the report and the blind leg.
+Refs #256. PR head c47b4826 (opus/issue-529). Checked against the issue 529 brief, the PR's own report (contrib/opus/reviews/tree_last_rows_report.md), and the full diff (the four generated data files, both tables.json copies, golden.js and scenarios.json, were read as refreshes; the chair verified the new table keys in the refreshed tables at head). Council: blind Rey leg, DeepSeek (two runs), Flash, Grok. The Qwen seat is empty (see the correction in the council note). Every leg that ran read the complete code diff, the brief, the report and the blind leg.
 
 ## Verdict: GO WITH CONDITIONS (one Board answer and two paper items, nothing blocking in the code)
 
@@ -27,15 +27,17 @@ The last seven WAITING rows now work as their text says in both twins, and every
 
 ## Recorded, not conditions
 
-- **treeAskCommand's re-entrancy rests on caller discipline in the JS twin** (Qwen, INFERRED, low). The function opens a prompt without itself marking the Command consumed; the Godot path guards through can_command and the busy flag, and no test exercises a double invoke in the same tick. No defect is demonstrated; one spec line or a guard at the JS call site closes it whenever the browser screen is next touched.
-- **The role fixtures key their pre-answers by positional unit ids** (x03, x04), which follow fleet composition order (Qwen). The fixtures' own check mode fails if the real functions build a different lineage, so a silent drift would surface as a failing check, not a wrong pass.
-- **The mend rounding is consistent across the twins** (Qwen, verified both ways): JS Math.round and the GDScript jsround agree on the positive values involved.
+- **treeAskCommand does not itself mark the Command consumed** (chair, from the diff). It does guard an already-open prompt (a second call returns true without overwriting B.treeAsk), so consumption rests with the caller; the Godot path guards through can_command and the busy flag. No defect is demonstrated.
+- **The role fixtures key their pre-answers by positional unit ids** (x03, x04), which follow fleet composition order (chair, from the diff). The fixtures' own check mode fails if the real functions build a different lineage, so a silent drift would surface as a failing check, not a wrong pass.
+- **The mend rounding is consistent across the twins** (chair, from the diff): the GDScript side applies the mend multiplier through jsround, the project's JS Math.round mirror, on the positive values involved.
 - **Two test-quality notes from DeepSeek**: the role-prompt block in tree_last_rows_test.js resets the prompt state mid-battle, so it proves the API shape rather than a pure fresh battle-start flow; and the NoStop test reseeds before killUnit, so if killUnit consumed RNG the same-dice guarantee would soften (the h_picket case likely does not reanimate). Neither undermines the assertions as run.
 - **The report's other three questions are properly the Board's**: per-ship "may" texts keep their automatic default, roles default to strike including for a Mending Throng fleet, and the ship picks inside a "yes" keep each skill's default picker. All three match the brief's default-preserving rule.
 
 ## Council note
 
-Verdicts: blind Rey GO WITH CONDITIONS; DeepSeek GO WITH CONDITIONS (conditions 1 and 2 shared, condition 3 added and adopted, two test-quality notes above); Qwen GO WITH CONDITIONS (conditions 1 and 2, the re-entrancy note above); Flash GO WITH CONDITIONS (conditions 1 and 2, with line-level citations in both twins for every mechanic, the round's deepest verification); Grok GO WITH CONDITIONS (conditions 1 and 2). No dissent. The DeepSeek seat took three browser attempts to land (the site's upload control failed in two windows and worked in the third); the leg that landed read both attachments in full and its gates were verified.
+Verdicts: blind Rey GO WITH CONDITIONS; DeepSeek GO WITH CONDITIONS (conditions 1 and 2 shared, condition 3 added and adopted, two test-quality notes above; a duplicate second run agreed and its extras are in the addendum); Flash GO WITH CONDITIONS (conditions 1 and 2, with line-level citations in both twins for every mechanic, the round's deepest verification); Grok GO WITH CONDITIONS (conditions 1 and 2). No dissent among the legs that ran.
+
+Correction (Nov 11, 2026, same evening): the first delivery of this file credited a Qwen leg that did not exist. Qwen received the pack, the brief and the report, then hit the daily Qwen3.8-Max limit before the check reply was generated; the seat is empty and the chat is retained for a retry after the limit resets. The three notes an earlier draft attributed to Qwen were re-verified by the chair against the diff and are attributed to the chair above. The verdict and the three conditions are unchanged: every leg that actually ran reached them independently. The DeepSeek seat took three browser attempts to land (the site's upload control failed in two windows and worked in the third); the legs that landed read both attachments in full and their gates were verified.
 
 ## Addendum (Nov 11, 2026): a second DeepSeek run
 
