@@ -9,6 +9,15 @@ asks for the ship id once (the concept's file name, for example `C15s_23`), writ
 `Downloads\voidsworn_test\recipe\<ship>\`, and ends with a plain PASS, FAIL or "done" line. Nothing is deleted. Heavy steps run on
 the 5080; all tools are free and local.
 
+**The method this recipe runs (binding; docs/playbooks/ships.md section 0 has each rule with its source):** a build sheet
+that passes the concept sheet standard comes first (R203); hand-built and kit parts, AI parts only through a reviewed
+faction part library (R96 Q5); the AI shape reference of stage 2 is a tracing guide, never shipped; paint from masks baked
+from the ship's own geometry plus trim sheets and decals, colours sampled from the concept, the concept never projected
+(R96 Q1); breakable by design with rim bands, a dark inner liner and full interiors in the break pieces, capitals breaking
+on two transverse lines and one longitudinal (R98, R99); costs reported, never capped, against the measured scene gate
+(R111). Each build writes docs/ship_pipeline/build_sheets/SHIP/manifest.json (part, route, kit id or library entry), and
+run_all_checks compares it with the build sheet (R214).
+
 **Must already be on the PC before the first run** (the recipe does not install these): Blender 4.5.14 at
 `Downloads\voidsworn_test\blender\blender-4.5.14-windows-x64\`, Godot 4.7.2 (the console build) at
 `Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe`, and, for stage 2 only, the TRELLIS.2 venv at
