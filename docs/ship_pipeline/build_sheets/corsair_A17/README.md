@@ -1,7 +1,7 @@
 # corsair_A17 build sheet: Hullbreaker wrecker, the Pack Hunter (round 3c, R221 clean-ups, into the recipe)
 
-Ashfall Hullbreakers cruiser, class Cruiser, **14.5 world units** (godot/render/hull_table.gd CLS_LEN; data.js c_marauder);
-the model is 14.55. Version 3c, 2026-11-12: round 3's parts, fit check and turret marking (R217 to R219), with the massing
+Ashfall Hullbreakers cruiser, class Cruiser (14.5), **this ship 14.6 world units** claw tip to stern (godot/render/hull_table.gd CLS_LEN; data.js c_marauder);
+the model is 14.58. Version 3c, 2026-11-12: round 3's parts, fit check and turret marking (R217 to R219), with the massing
 rebuilt to the concept's measured proportions after the Board's review of round 3 ("short, tall and round, a lump").
 Designer of record: Opus (R205, R207). The views on this page were re-rendered for the A17 build (issue 532) in the Opus
 sandbox (Blender 5.3, CPU, 24 samples) from the same build.py; the round 3c blockout from Ryan's PC is
@@ -56,6 +56,13 @@ sheet, `bake: none` until the sheet paint stack, issue 601, lands). What the rou
    hoses now feed their rams. The ears, measured on the whole beauty, are about three quarters of the head's flank height
    across: 1.6 (item 6's 1.24 came from the crop). Fit check zero; no machine on a seam; claw_arm at 2.53 and 2.33 of the
    hull's density; PR 608's death check 0 and 0.
+
+9. **Arms splayed, ship length 14.6 (Ryan, Nov 12: "it's fine to extend the game length a bit").** The lower pair runs
+   forward and down, the upper pair forward and outward, as the beauty draws them. In the concept sheet's side view the
+   arms reach 6.8 percent of the whole length ahead of the head's face; here 7.3. The hull body is unchanged; the sheet's
+   LENGTH is 14.6, claw tip to stern (+0.7 percent on the Cruiser class's 14.5, which stays as it is). The game still draws
+   the ship at its class length (render/ship_view.gd reads CLS_LEN by class), so on the board it is 0.7 percent smaller
+   than the sheet; the manifest entry and the stage 6 bench carry 14.6.
 
 Side by side with the WHOLE concept at the same camera (R229): [whole ship](../../../shots/issue_532_a17/a17_whole_compare.jpg),
 [side against the sheet's side view](../../../shots/issue_532_a17/a17_side_compare.jpg), then the [bow](../../../shots/issue_532_a17/a17_bow_compare.jpg).
