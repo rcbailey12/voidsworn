@@ -40,15 +40,25 @@ sheet, `bake: none` until the sheet paint stack, issue 601, lands). What the rou
 6. **Ear dishes and the camera (the Board on PR 611, R207).** The dishes are now 1.24 across (were 1.9), a little under
    the face's height, on short brackets low on the head's shoulders, turned forward and outward, and the kit's dish colour
    is rusted grey, not white. The fitted beauty camera is refit from the concept's view (az 44.3, el 18.4) so the bow is on
-   screen in side_by_side.jpg: outline IoU 76.8 percent (the round 3b camera scored 62.8 with the same mask; it had framed the
+   screen in side_by_side.jpg: outline IoU 76.8 percent then, 74.0 after the R229 arms and ears (the round 3b camera scored 62.8 with the same mask; it had framed the
    bow off the left edge).
 
 7. **Bulkhead F2 off the neck seam.** F2 stood at x 2.4, on the B-1 seam's station, and PR 608's death check found its
    face left outside its piece after the tear (1 to 11 triangles, varying with the cut). It now stands at 2.05: 0. The
    cutaway picture still shows it at 2.4.
 
-Side by side with the concept: [bow](../../../shots/issue_532_a17/a17_bow_compare.jpg) (concept, before, now),
-[three-quarter](../../../shots/issue_532_a17/a17_threequarter_compare.jpg), [side](../../../shots/issue_532_a17/a17_side_compare.jpg).
+8. **The grabbers and the ears from the whole concept (R229).** Ryan: "the front claws or grabbers are coming out
+   differently in the build model, they're more like 4 independent prongs." The bow crop had cut them off. In the whole
+   beauty and the sheet's side view they are jointed arms, so the four flat prongs are replaced by four grabber arms, a new
+   Hullbreaker kit part `claw_arm`: a shoulder hinge between hinge plates on a bracket in its housing under the jaw, two
+   box segments with bolted top plates, a knuckle with hinge plates and pins, a ram across each joint and a forked,
+   hooked pincer. A pair a side, upper and lower, close toward each other to pin a hull for the boarding gangs; the jaw
+   hoses now feed their rams. The ears, measured on the whole beauty, are about three quarters of the head's flank height
+   across: 1.6 (item 6's 1.24 came from the crop). Fit check zero; no machine on a seam; claw_arm at 2.53 and 2.33 of the
+   hull's density; PR 608's death check 0 and 0.
+
+Side by side with the WHOLE concept at the same camera (R229): [whole ship](../../../shots/issue_532_a17/a17_whole_compare.jpg),
+[side against the sheet's side view](../../../shots/issue_532_a17/a17_side_compare.jpg), then the [bow](../../../shots/issue_532_a17/a17_bow_compare.jpg).
 
 **R221 clean-ups (Ryan, Nov 12 2026).** The two chain girdles are cut ("There's no purpose"), and every inventory line names
 its job (27 lines, 0 failing). The fit check's new LANE test (each rack's firing lane forward and backblast aft; no gun in

@@ -12,7 +12,7 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 | head_hatchboxes | deck access and ready stores for the head | hatchbox | framed boxes on the head roof | 3 | bow/top | a framed box, an inset lid, side ribs | picture |
 | scoops | wake-sniffer scoops: draw in the wake of ships ahead to track prey | tube | scoop drums at the lower corners of the head (port larger) | 2 | bow/side, bow/top | ribbed drums with bands, a rolled lip, a grille in a dark mouth | picture |
 | ears | listening dishes: hear targets ahead and to the sides (the pack hunter's ears) | dish | listening dishes as ears on brackets at the upper sides of the head | 2 | bow/top, bow/side | ribbed bowls with rims, feed horns on struts, yokes, a base | picture |
-| jaws | jaws: pin a victim for boarding (the Hullbreakers' trade) | prong | jaws: long flat prongs reaching forward from the lower bow like a fork (round 3b: the Board read the round 3 claws as hands) | 4 | bow/below, bow/side, bow/top | hinge knuckles, long flat tapering blades, a spine ridge, joint knuckles, hooked tips | picture |
+| jaws | boarding grabbers: seize and pin a victim's hull for the boarding gangs (the Hullbreakers' trade) | claw_arm | four articulated grabber arms from under the jaw, a pair a side, upper and lower, closing like pincers (R229: the whole beauty, not the bow crop) | 4 | bow/below, bow/side, bow/top | shoulder hinges on brackets, two box segments, knuckles with hinge plates, rams, forked hooked pincers | picture |
 | jaw_pipes | hydraulics that close the jaws | pipe | coiled hoses and pipes under the head between the jaws | 3 | bow/below | runs with flange rings | picture |
 | brow_rack | rattle rockets, data.js slot F (torp) | rack | rattle-rocket pod on the brow (data.js torp F) (the picture shows no launcher; data.js gives a forward torpedo slot) | 1 | bow/top | a box of cells with noses, frame, dividers, cheeks, a yoke and a ring | designed |
 | head_plates | armour | plate | armour plating over the head | 1 | bow/top, bow/side, bow/below | slabs with steps, bevels, rivets | picture |
@@ -38,6 +38,7 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 Kit sub-parts per type (what DETAILED checks):
 
 - antenna: base, mast, whip, pod
+- claw_arm: bracket, hinge, plate, pin, arm, rivet, ram, joint, wrist, finger
 - dish: bowl, rib, feed, strut, yoke, post, base
 - engine: housing, collar, band, bell, lining, throat_glow, cone, cool, strut
 - gun: ring|plate, housing, mantlet, breech, tube, clamp, bore, vent
@@ -48,7 +49,6 @@ Kit sub-parts per type (what DETAILED checks):
 - patch: slab, lift, rivet
 - pipe: run, flange
 - plate: slab, step, bevel, rivet
-- prong: knuckle, blade, spine, joint, hook
 - pylon: web, plate
 - rack: box, frame, div, cell, nose, bore, cheek, yoke, ring
 - rib: rib
@@ -79,7 +79,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | head_hatchboxes | framed boxes on the head roof | 3 / 3 | Y | Y | Y |
 | scoops | scoop drums at the lower corners of the head (port larger) | 2 / 2 | Y | Y | Y |
 | ears | listening dishes as ears on brackets at the upper sides of the head | 2 / 2 | Y | Y | Y |
-| jaws | jaws: long flat prongs reaching forward from the lower bow like a fork | 4 / 4 | Y | Y | Y |
+| jaws | four articulated grabber arms from under the jaw, a pair a side, upper | 4 / 4 | Y | Y | Y |
 | brow_rack | rattle-rocket pod on the brow (data.js torp F) | 1 / 1 | Y | Y | Y |
 | head_plates | armour plating over the head | 2 / 1 | Y | Y | Y |
 
@@ -91,7 +91,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | head_face | face panels on the head front: raised framed panels with vertical stra | 6 / 1 | Y | Y | Y |
 | scoops | scoop drums at the lower corners of the head (port larger) | 2 / 2 | Y | Y | Y |
 | ears | listening dishes as ears on brackets at the upper sides of the head | 2 / 2 | Y | Y | Y |
-| jaws | jaws: long flat prongs reaching forward from the lower bow like a fork | 4 / 4 | Y | Y | Y |
+| jaws | four articulated grabber arms from under the jaw, a pair a side, upper | 4 / 4 | Y | Y | Y |
 | head_plates | armour plating over the head | 2 / 1 | Y | Y | Y |
 | bow_thrusters | attitude thruster quads at the head | 2 / 2 | Y | Y | Y |
 | lamps | red lamps in rows along the lower flank | 12 / 12 | Y | Y | Y |
@@ -100,7 +100,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| jaws | jaws: long flat prongs reaching forward from the lower bow like a fork | 4 / 4 | Y | Y | Y |
+| jaws | four articulated grabber arms from under the jaw, a pair a side, upper | 4 / 4 | Y | Y | Y |
 | jaw_pipes | coiled hoses and pipes under the head between the jaws | 3 / 3 | Y | Y | Y |
 | head_plates | armour plating over the head | 2 / 1 | Y | Y | Y |
 | belly_plates | flat armoured belly with chines | 2 / 1 | Y | Y | Y |
@@ -188,6 +188,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 2.04 | 3.54 | 2.75 | 4.06 |
-| build | 1.92 | 2.88 | 2.83 | 3.82 |
+| build | 1.91 | 2.88 | 2.82 | 3.77 |
 
 Lines not present, shaped and detailed without a reason: 0.

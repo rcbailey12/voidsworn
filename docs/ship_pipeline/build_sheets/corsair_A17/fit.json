@@ -11,10 +11,10 @@
   "LANE": 0
  },
  "tested": {
-  "objects": 365,
+  "objects": 368,
   "parts": 56,
-  "close_pairs": 938,
-  "rays": 504,
+  "close_pairs": 945,
+  "rays": 506,
   "guns": 8,
   "turrets_swept": 6,
   "cones": 10,
@@ -490,7 +490,7 @@
     ],
     [
      -5.0,
-     0
+     10
     ],
     [
      0.0,
@@ -498,7 +498,7 @@
     ],
     [
      5.0,
-     0
+     10
     ],
     [
      10.0,
@@ -1708,9 +1708,9 @@
    "id": "D1",
    "kind": "dish",
    "pos": [
-    5.3232927322387695,
-    2.555184841156006,
-    1.099658489227295
+    5.296184539794922,
+    2.8583030700683594,
+    1.2802046537399292
    ],
    "dir": [
     0.7585893273353577,
@@ -1740,9 +1740,9 @@
    "id": "D2",
    "kind": "dish",
    "pos": [
-    5.3232927322387695,
-    -2.555184841156006,
-    1.099658489227295
+    5.296184539794922,
+    -2.8583030700683594,
+    1.2802046537399292
    ],
    "dir": [
     0.7585893273353577,
@@ -2154,7 +2154,7 @@
   ],
   [
    "Jaw blades inside the hull and the jaw housing",
-   "four prongs, each hinged in its own housing in the mouth, the blades clear of the hull"
+   "four grabber arms (R229), each shoulder in its own housing under the jaw, clear of the hull"
   ],
   [
    "C2 girdle through the P2 and S2 turret rings",

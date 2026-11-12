@@ -84,7 +84,7 @@ The round 2 design (`tools/blender/build_sheets/ships/r2/corsair_A17.py`, the PR
 | P1 and S1 barrels through the ear dishes D1 and D2 | the neck turrets stand inboard on barbettes high enough to fire over the head and the ears |
 | Ear dishes D1 and D2 had no mount on the hull | each dish stands on an armoured bracket out from the head's upper corner |
 | Q1 and Q2 bow thrusters inside the scoop drums, their exhaust on the drum ribs | bow thrusters on the body flank behind the drums, firing clear outboard |
-| Jaw blades inside the hull and the jaw housing | four prongs, each hinged in its own housing in the mouth, the blades clear of the hull |
+| Jaw blades inside the hull and the jaw housing | four grabber arms (R229), each shoulder in its own housing under the jaw, clear of the hull |
 | C2 girdle through the P2 and S2 turret rings | C2 runs in the gap between the mid and saddle blocks, clear of every ring |
 | Crest and belly turret housings sunk in the crest and the belly | turrets sit on their rings on block tops and the belly band, plates cleared under each mount |
 
@@ -95,7 +95,7 @@ turret's swept circle (moved out).
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 364 objects, 56 parts, 942 close pairs, 504 rays, 8 guns, 6 turrets swept, 10 cones, 28 apertures, 2 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 368 objects, 56 parts, 945 close pairs, 506 rays, 8 guns, 6 turrets swept, 10 cones, 28 apertures, 2 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 

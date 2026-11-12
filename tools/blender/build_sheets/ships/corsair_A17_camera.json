@@ -15,7 +15,7 @@
   1920,
   1280
  ],
- "iou": 0.7675,
- "body_iou": 0.7841,
- "note": "A17 build (issue 532, Board on PR 611): refit from a hand start at the concept view (az 42, el 30, roll -6) so the bow is on screen; the round 3b fit (az 53.5, el 27.3) had framed the bow off the left edge. Concept mask: luminance over 28, closed, holes filled, largest shape only (the dark belly drops out, so the IoU is a lower bound). Old camera with the same mask: 0.6275."
+ "iou": 0.7404,
+ "body_iou": 0.757,
+ "note": "A17 build (issue 532, Board on PR 611): refit from a hand start at the concept view (az 42, el 30, roll -6) so the bow is on screen; the round 3b fit (az 53.5, el 27.3) had framed the bow off the left edge. Concept mask: luminance over 28, closed, holes filled, largest shape only (the dark belly drops out, so the IoU is a lower bound). Old camera with the same mask: 0.6275. Rescored after R229 (grabber arms, ears 1.6): 0.7404, same camera."
 }

@@ -124,7 +124,7 @@ def build(K):
             K.patch('RS%d%s' % (j, 'p' if side > 0 else 's'), (x, 1.4 * side, 0.91), (0, 0.0, 1.0), w, 0.3, ang=0.04 * side, lift=0.02, t=0.04, m='blood', inv='rust_plates')
     K.mark('rust_plates', 'plate', ['slab', 'step', 'bevel', 'rivet'])
 
-    # ---------------- head fittings: scoop drums, ears, prongs, hoses ----------------
+    # ---------------- head fittings: scoop drums, ears, grabber arms, hoses ----------------
     for side, fi, r in ((1, 'I1', 0.42), (-1, 'I2', 0.38)):
         y = 1.88 * side
         K.box('A17_%s_saddle' % fi, 4.35, 6.0, min(y * 0.78, y), max(y * 0.78, y), -0.78, -0.42, 'steel', ch=0.06)
@@ -248,7 +248,7 @@ def build(K):
     K.change('The jaws are four articulated grabber arms (two segments, knuckles, rams, forked pincers), a pair a side closing toward each other', 'Ryan, R229: the round 3b flat prongs came from a bow crop that cut the grabbers off; the whole beauty and the sheet\'s side view show jointed arms (new kit part claw_arm)')
     K.change('Guns laid out as matched batteries by game slot', 'the picture scatters guns; scatter P and S are mirrored (a neck block turret, a mid block turret superfiring, a flank casemate per side), flak on the aft block and the belly, the rocket pod on the fore block')
     K.change('Engines are squat drums in two columns a side, exits level, no bell touching another', 'the concept\'s stacked cluster; the fit check found round 2\'s bells inside each other')
-    K.change('The head follows the beauty: a big, tall, boxy front block over the neck, big ear dishes standing out at its upper corners, broad flat prongs', 'the Board on round 3b: Ryan judges against the accepted picture, which draws the head larger than the round 8 sheet')
+    K.change('The head follows the beauty: a big, tall, boxy front block over the neck, ear dishes on its shoulders (R229 sizes them)', 'the Board on round 3b: Ryan judges against the accepted picture, which draws the head larger than the round 8 sheet')
     K.change('Forward rocket pod, belly flak turret and four attitude thrusters added', 'data.js gives a forward rocket slot (torp F); the belly needs cover; a ship in space needs thrusters')
     K.change('Chains cut', 'Ryan, R221: "let\'s get rid of the chains randomly around the ship. There\'s no purpose"; every part has a job (ships.md 2c)')
     K.change('Neck and mid turrets moved outboard', 'R221: no gun in the rocket pod\'s firing lane or backblast (the fit check tests both)')
@@ -261,7 +261,7 @@ def build(K):
              'R226 (RULEBOOK 5.17): a machine never crosses a seam; at -4.75 the seam cut T1, Q3 and Q4 (A17 build, issue 532)')
     K.change('Mid turrets P2 and S2 rest at 35 degrees (were 25)', 'their data.js arc is 30 to 150; a rest outside it failed the export check (A17 build, issue 532)')
     K.change('Rooms in the top blocks kept under their roofs; the top deck lowered to 0.3', 'about 70 inside triangles sat outside the intact plating, above the low top blocks and in the gaps between them (issue 532 note from PR 608)')
-    K.open_item('Belly detail between the prong housings and the engines is designed here; the picture does not show the underside')
+    K.open_item('Belly detail between the grabber arm housings and the engines is designed here; the picture does not show the underside')
 
     # ---------- the fit report's fix column (round 2 clashes) ----------
     K.fix('Engine bells E1 to E6 inside each other; E2 and E5 exhausts on their neighbours', 'two columns a side, exits level at -7.25, centres spaced by the sum of the bell radii plus the lip')
@@ -269,6 +269,6 @@ def build(K):
     K.fix('P1 and S1 barrels through the ear dishes D1 and D2', 'the neck turrets stand inboard on barbettes high enough to fire over the head and the ears')
     K.fix('Ear dishes D1 and D2 had no mount on the hull', 'each dish stands on an armoured bracket out from the head\'s upper corner')
     K.fix('Q1 and Q2 bow thrusters inside the scoop drums, their exhaust on the drum ribs', 'bow thrusters on the body flank behind the drums, firing clear outboard')
-    K.fix('Jaw blades inside the hull and the jaw housing', 'four prongs, each hinged in its own housing in the mouth, the blades clear of the hull')
+    K.fix('Jaw blades inside the hull and the jaw housing', 'four grabber arms (R229), each shoulder in its own housing under the jaw, clear of the hull')
     K.fix('C2 girdle through the P2 and S2 turret rings', 'C2 runs in the gap between the mid and saddle blocks, clear of every ring')
     K.fix('Crest and belly turret housings sunk in the crest and the belly', 'turrets sit on their rings on block tops and the belly band, plates cleared under each mount')
