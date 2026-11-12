@@ -74,9 +74,13 @@ the hull on texels per square unit (1.63 to 1.84 of the hull) and on paint detai
 paint flag. Mesh flags (the build's, not the paint's): the front tubes (triangles 0.45, edge features 0.29 of the hull) and
 the launch bay (0.18 and 0.18) are smoother in mesh than the hull; the paint carries rivets, scuffs and stripes on them.
 
-**Open for Ryan:** the running lights are the sheet's lamp parts (lens about 0.2 units across, about 0.5 px on a 70 px ship),
-dim as the faction sheet asks; the light size rule (2 px) applies to painted window and trim lights, which this stack does not
-paint.
+**Pass 2 (Board review of PR 610; Ryan agreed, R228), all in the faction stack:** a plate patchwork (panel cells at the
+concept's plate size plus each modelled plate's own island, each picking soot, gun-metal, brick red or a bare scrape) with
+black seams; stronger cavities and worn edges; rust held a dark brick red under the 1.25 lift; running lights by the stack's
+rule, 2.2 px on a 70 px ship (16 on A16: seven along each flank at the sheet's lamp row, one deck-edge point a side; the deck
+edges are lined with turrets, so few have room), deep red under the glow threshold, measured into the job's lights.json; engine
+glow left to the game (the export's hp_eng points with their bell radius drive the engine effect, fx_hull.gd; the sheet's
+throat and bell lining stay emissive). The running lights add 384 triangles (129,028 on the ship mesh).
 
 ## R221 clean-ups (Ryan, Nov 12 2026)
 

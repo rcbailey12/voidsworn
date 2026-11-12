@@ -38,7 +38,7 @@ CONCEPT = dict(
     rust_streak=((34, 15, 11), (84, 40, 26)),   # rust run-off and blooms: the deep red-brown dark cluster, brick, not pink
     bare=((120, 110, 111), (170, 157, 151)),    # worn bare metal on edges (the lit grey clusters)
     grime=((10, 9, 9), (20, 17, 16)),           # soot and grime
-    red_plate=((60, 22, 17), (108, 42, 28)),    # the brick and blood red plates scattered among the dark ones (red clusters)
+    red_plate=((54, 20, 15), (90, 34, 22)),     # the brick and blood red plates scattered among the dark ones (red clusters)
     gunmetal=((34, 35, 40), (72, 70, 76)),      # the grey gun-metal plates of the patchwork (mid-tone clusters 52, 52, 59 and 72, 67, 77)
     scrape=((112, 106, 102), (165, 156, 150)),  # bare steel scrape plates (the lit grey clusters)
 )
@@ -126,7 +126,8 @@ def glow_material(zone):
     # running lights are their own emissive surfaces
     m = bpy.data.materials.new('p3_glow' if zone == 'glow' else f'p3_{zone}'); m.use_nodes = True
     b = m.node_tree.nodes['Principled BSDF']
-    b.inputs['Base Color'].default_value = (col[0] * .08, col[1] * .08, col[2] * .08, 1); b.inputs['Roughness'].default_value = .6
+    base = .03 if zone == 'light' else .08
+    b.inputs['Base Color'].default_value = (col[0] * base, col[1] * base, col[2] * base, 1); b.inputs['Roughness'].default_value = .6
     if zone == 'light': col = [c * LIGHT_EMIT for c in col]
     b.inputs['Emission Color'].default_value = (*col, 1); b.inputs['Emission Strength'].default_value = GLOW_STRENGTH.get(zone, 2.0)
     return m
@@ -144,7 +145,8 @@ RUNNING_LIGHTS = dict(px=2.2, aspect=1.5, proud=.0015, frame=.25, max_step=.012,
                       flank=dict(x=(.06, .82), step=.068, z_band=(.40, .62)),
                       deck=dict(x=(.16, .30, .44, .58, .72), inset=.010),
                       clear_points=.045, clear_decals=.035)
-LIGHT_EMIT = .75      # emission colour = accent x this, strength 1: under the game's 0.8 glow threshold, so no halo
+LIGHT_EMIT = .40      # emission colour = accent x this, strength 1: well under the game's 0.8 glow threshold (no halo) and deep red,
+#                       not the salmon a brighter red turns under AgX (sandbox pass 2)
 
 
 # ------------------------------------------------------------------------------------------------------------ decals
