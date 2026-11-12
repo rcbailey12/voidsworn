@@ -689,7 +689,7 @@
   "build": {
    "env_LB": 2.13,
    "env_LH": 2.8,
-   "hull_LB": 3.01,
+   "hull_LB": 3.02,
    "hull_LH": 4.18
   }
  }

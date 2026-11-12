@@ -50,8 +50,8 @@ Ashfall Hullbreakers (corsair) | class Battle-barge | version 3 (round 3), 2026-
 | H2 | boarding claw, 3 segments, 2 fingers | 1 | 9.4 | -1.25 | -2.80 | hook forward and down | - | picture | starboard pincer: a curved mandible under the bow tip, hooking forward |
 | H3 | boarding claw, 2 segments, 3 fingers | 1 | 73.3 | 1.30 | -2.85 | hook forward and down | - | picture | short grabber under the stern (round 8 side sheet: grabbers under the stern; Ryan R196: hooks underneath) |
 | H4 | boarding claw, 2 segments, 3 fingers | 1 | 82.1 | -1.30 | -2.85 | hook forward and down | - | picture | short grabber under the stern (round 8 side sheet: grabbers under the stern; Ryan R196: hooks underneath) |
-| HB1 | framed deck box 0.9 x 0.9 | 1 | 19.9 | 1.80 | 1.37 | - | - | picture | framed deck box, port |
-| HB2 | framed deck box 0.8 x 0.8 | 1 | 19.9 | -1.90 | 1.37 | - | - | picture | framed deck box, starboard (smaller) |
+| HB1 | framed deck box 0.9 x 0.9 | 1 | 19.9 | 1.55 | 1.41 | - | - | picture | framed deck box, port |
+| HB2 | framed deck box 0.8 x 0.8 | 1 | 19.9 | -1.60 | 1.41 | - | - | picture | framed deck box, starboard (smaller) |
 | C1 | lashing chain, taut between lugs | 1 | 22.4 | 3.95 | 0.95 | to station 22.4%, offset -4.05 | - | picture | girdle over the tier 2 seam |
 | C2 | lashing chain, taut between lugs | 1 | 57.0 | 4.15 | 0.95 | to station 57.0%, offset -4.25 | - | picture | girdle over the castle seam, at the foot of the castle front |
 | C3 | lashing chain, taut between lugs | 1 | 19.9 | 3.64 | -0.62 | to station 55.7%, offset 4.12 | - | picture | port flank lashing along the lower belt top |
@@ -64,14 +64,14 @@ Ashfall Hullbreakers (corsair) | class Battle-barge | version 3 (round 3), 2026-
 | P1 | twin turret | 2 barrels | 26.2 | 2.72 | 2.00 | 15 deg off the bow to port | P scatter | picture | deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring) |
 | P2 | twin turret | 2 barrels | 39.6 | 2.72 | 2.75 | 20 deg off the bow to port | P scatter | picture | deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring) |
 | P3 | twin turret | 2 barrels | 53.0 | 2.72 | 2.00 | 25 deg off the bow to port | P scatter | picture | deck-edge twin turret, tier 2, aft |
-| PM | twin casemate | 2 barrels | 46.9 | 4.06 | 0.50 | 35 deg off the bow to port | P scatter | picture | flank twin casemate on the upper belt amidships |
+| PM | twin casemate | 2 barrels | 46.9 | 3.94 | 0.50 | 35 deg off the bow to port | P scatter | picture | flank twin casemate on the upper belt amidships |
 | P4 | twin casemate | 2 barrels | 64.7 | 4.30 | 0.35 | 30 deg off the bow to port | P scatter | picture | sponson twin casemate under the castle |
 | P5 | twin casemate | 2 barrels | 72.5 | 4.30 | 0.35 | 30 deg off the bow to port | P scatter | picture | sponson twin casemate under the castle |
 | SB | single casemate | 1 barrel | 15.9 | -3.32 | -0.30 | 20 deg off the bow to starboard | S scatter | picture | bow casemate in the recessed band, trained forward |
 | S1 | twin turret | 2 barrels | 26.2 | -2.72 | 2.00 | 15 deg off the bow to starboard | S scatter | picture | deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring) |
 | S2 | twin turret | 2 barrels | 39.6 | -2.72 | 2.75 | 20 deg off the bow to starboard | S scatter | picture | deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring) |
 | S3 | twin turret | 2 barrels | 53.0 | -2.72 | 2.00 | 25 deg off the bow to starboard | S scatter | picture | deck-edge twin turret, tier 2, aft |
-| SM | twin casemate | 2 barrels | 46.9 | -4.16 | 0.50 | 35 deg off the bow to starboard | S scatter | picture | flank twin casemate on the upper belt amidships |
+| SM | twin casemate | 2 barrels | 46.9 | -4.04 | 0.50 | 35 deg off the bow to starboard | S scatter | picture | flank twin casemate on the upper belt amidships |
 | S4 | twin casemate | 2 barrels | 64.7 | -4.30 | 0.35 | 30 deg off the bow to starboard | S scatter | picture | sponson twin casemate under the castle |
 | S5 | twin casemate | 2 barrels | 72.5 | -4.30 | 0.35 | 30 deg off the bow to starboard | S scatter | picture | sponson twin casemate under the castle |
 | E0 | engine, bell 2.8 across | 1 | 99.8 | 0.00 | -0.35 | exhaust aft | - | picture | centre main engine, its housing sunk in the stern |
@@ -80,15 +80,15 @@ Ashfall Hullbreakers (corsair) | class Battle-barge | version 3 (round 3), 2026-
 | E3 | engine, bell 1.2 across | 1 | 96.6 | 1.55 | -1.85 | exhaust aft | - | picture | lower booster |
 | E4 | engine, bell 1.2 across | 1 | 96.6 | -1.55 | -1.85 | exhaust aft | - | designed | lower booster |
 | E5 | engine, bell 1.2 across | 1 | 93.5 | -1.20 | 2.18 | exhaust aft | - | picture | upper starboard pod on the stern deck |
-| Q1 | attitude thruster quad | 1 | 10.3 | 2.71 | 0.45 | - | - | designed | bow |
-| Q2 | attitude thruster quad | 1 | 10.3 | -2.77 | 0.45 | - | - | designed | bow |
+| Q1 | attitude thruster quad | 1 | 10.3 | 2.64 | 0.45 | - | - | designed | bow |
+| Q2 | attitude thruster quad | 1 | 10.3 | -2.69 | 0.45 | - | - | designed | bow |
 | Q3 | attitude thruster quad | 1 | 78.4 | 2.78 | 2.00 | - | - | designed | stern |
 | Q4 | attitude thruster quad | 1 | 78.4 | -2.88 | 2.00 | - | - | designed | stern |
 | PP1 | pipe run, 0.18 bore | 1 | 80.3 | 2.35 | 1.60 | - | - | picture |  |
 | PP2 | pipe run, 0.18 bore | 1 | 80.3 | -2.35 | 1.60 | - | - | picture |  |
 | AN1 | antenna array, 1.8 tall, 3 whips | 1 | 87.6 | 1.25 | 1.70 | - | - | picture | antenna array on the stern deck, port |
 | AN2 | antenna array, 1.4 tall, 2 whips | 1 | 84.4 | -0.15 | 1.70 | - | - | picture | antenna array on the stern deck, centre |
-| VF0p | louvre panel 1.0 x 0.5 | 1 | 26.0 | 3.67 | -0.22 | - | - | picture |  |
+| VF0p | louvre panel 1.0 x 0.5 | 1 | 26.0 | 3.66 | -0.22 | - | - | picture |  |
 | VF1p | louvre panel 1.0 x 0.5 | 1 | 40.4 | 3.79 | -0.22 | - | - | picture |  |
 | VF2p | louvre panel 1.0 x 0.5 | 1 | 57.8 | 3.84 | -0.22 | - | - | picture |  |
 | L0p | running light | 1 | 21.2 | 3.44 | -0.32 | - | - | picture |  |
@@ -98,7 +98,7 @@ Ashfall Hullbreakers (corsair) | class Battle-barge | version 3 (round 3), 2026-
 | L4p | running light | 1 | 62.2 | 4.32 | -0.36 | - | - | picture |  |
 | L5p | running light | 1 | 68.3 | 4.32 | -0.36 | - | - | picture |  |
 | LCp | running light | 1 | 62.9 | 3.00 | 2.25 | - | - | picture |  |
-| VF0s | louvre panel 1.0 x 0.5 | 1 | 26.0 | -3.77 | -0.22 | - | - | picture |  |
+| VF0s | louvre panel 1.0 x 0.5 | 1 | 26.0 | -3.76 | -0.22 | - | - | picture |  |
 | VF1s | louvre panel 1.0 x 0.5 | 1 | 40.4 | -3.89 | -0.22 | - | - | picture |  |
 | VF2s | louvre panel 1.0 x 0.5 | 1 | 57.8 | -3.94 | -0.22 | - | - | picture |  |
 | L0s | running light | 1 | 21.2 | -3.51 | -0.32 | - | - | picture |  |
@@ -129,7 +129,7 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Mass | Station % | Offset range | Height range | Colour | Note |
 |---|---|---|---|---|---|
 | Hull slab (tier 1) | 5.4 to 93.2 | -3.95 to 3.85 | -2.60 to 1.40 | soot black, patched plate | a rounded wedge in section (round flanks and belly, a flatter deck), the bow tapering to a broad rounded nose |
-| Upper armour belt | 12.0 to 74.0 | -4.19 to 4.09 | 0.10 to 1.02 | iron and soot | layered flank belt following the hull's curve, standing 0.24 out |
+| Upper armour belt | 12.0 to 74.0 | -4.16 to 4.06 | 0.12 to 1.09 | iron and soot | layered flank belt following the hull's curve, standing 0.24 out |
 | Lower armour belt | 15.1 to 71.7 | -4.29 to 4.19 | -1.83 to -0.71 | iron and soot | layered flank belt following the hull's curve, standing 0.34 out |
 | Prow brow (two steps) | 5.4 to 9.8 | -2.85 to 2.80 | 0.85 to 1.50 | soot | overhangs the tube mouths |
 | Brow step | 7.8 to 12.2 | -2.60 to 2.55 | 1.30 to 1.82 | rust | the second brow step |
@@ -195,15 +195,15 @@ Full interiors throughout the hull (R215): decks, frames, spaces and machinery a
 | hp_breach_4 | 53.4 | 4.20 | 0.60 | port | mid |  |
 | hp_breach_5 | 79.0 | 2.60 | 0.70 | port | eng |  |
 | hp_breach_6 | 83.2 | -2.50 | -1.20 | stbd | eng |  |
-| hp_rcs_0 | 10.3 | 2.71 | 0.45 | port |  |  |
-| hp_rcs_1 | 10.3 | -2.77 | 0.45 | stbd |  |  |
+| hp_rcs_0 | 10.3 | 2.64 | 0.45 | port |  |  |
+| hp_rcs_1 | 10.3 | -2.69 | 0.45 | stbd |  |  |
 | hp_board_0 | 42.7 | 4.20 | -0.30 | port |  |  |
 | hp_board_1 | 42.7 | -4.30 | -0.30 | stbd |  |  |
 | hp_bay_0 | 58.9 | 0.00 | -2.70 |  |  | launch down |
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0. Tested: 409 objects, 77 parts, 1033 close pairs, 796 rays, 16 guns, 8 turrets swept, 10 cones, 45 apertures. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0. Tested: 409 objects, 77 parts, 1124 close pairs, 796 rays, 16 guns, 8 turrets swept, 10 cones, 45 apertures. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 

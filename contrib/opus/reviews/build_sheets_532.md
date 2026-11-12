@@ -149,5 +149,22 @@ cells.json.
   boxes; every flank part is seated on the curve (`surf`, `surf_n`, `deck_z`). Bulkheads inset to stay inside the round hull.
 - **A17 head to the beauty.** A big, tall, boxy front block over the neck, big ear dishes standing out at its upper corners
   on brackets, broad flat prongs; the neck turrets and rocket pod lifted to clear it.
-- **Every rule kept**: zero clashes on both (PC runs r3g for A17, r3h for A16), inventory ticks all Y, ratios and structure
-  counts on both sheets, the side-by-sides redone.
+- **Rounder shoulder (A16, after r3h).** The r3h three-quarter view still read flat-sided, so the section's deck exponent came
+  down (kit `P_TOP` 6.0 to 3.5, flanks and belly 2.3). That pushed four parts into the curve (deck boxes HB1 and HB2 into the
+  hull, casemates PM and SM into the upper belt); the boxes moved inboard onto the deck and the casemates now take the
+  surface normal (`surf_n`), so the fit check is back to zero. A17 does not use the rounded loft and stays at zero.
+- **Every rule kept**: zero clashes on both (PC runs r3g for A17, r3i for A16, Blender 4.5), inventory ticks all Y (failing
+  0), ratios and structure counts on both sheets, the side-by-sides redone.
+
+| Ship | Hull L:B concept / build | Hull L:H concept / build | Envelope L:B concept / build | Envelope L:H concept / build |
+|---|---|---|---|---|
+| A16 | 3.04 / 3.02 | 4.45 / 4.18 | 2.46 / 2.13 | 3.17 / 2.80 |
+| A17 | 2.75 / 2.83 | 4.06 / 3.79 | 2.04 / 1.92 | 3.54 / 2.71 |
+
+Structure counts (concept / build, top and side per third): A16 bow 5/7 and 6/7, mid 6/8 and 7/7, stern 7/10 and 7/8; A17 bow
+5/9 and 5/7, mid 7/13 and 7/10, stern 5/9 and 6/7. Every cell at or above the concept's count.
+
+**Would Ryan say it looks like the concept?** A17: yes on the head now (the big boxy block with ear dishes is the first thing
+you see in both). A16: closer (bow-on it reads round, the plan tapers into the tubes) but not yet the same: the concept's hull
+is fuller and more bulbous below the belts, and its surface is many small overlapping plates. Both are the next build's work,
+not another blockout round (the Board said stop after 3c).

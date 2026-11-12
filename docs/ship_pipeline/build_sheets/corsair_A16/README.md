@@ -1,12 +1,13 @@
-# corsair_A16 build sheet: the Warlord's Pyre-Barge (round 3b)
+# corsair_A16 build sheet: the Warlord's Pyre-Barge (round 3c)
 
 Ashfall Hullbreakers flagship, class Battle-barge, **26.0 world units** (godot/render/hull_table.gd CLS_LEN; data.js c_boss).
 Version 3, 2026-11-11, after Ryan's review of round 2 (R217: tubes as circles, guns blocking the rockets and in front of an
 engine, engines and guns plain tubes) and his scaling rule (R218: whole-ship fidelity), with turrets that turn (R219).
 Round 3b (2026-11-12) rebuilt the massing to the concept's measured proportions after the Board's review of round 3 (the hull
-was a straight-sided box, too tall; the tubes small and low; the claws legs under midships). Designer of record: Opus (R205,
+was a straight-sided box, too tall; the tubes small and low; the claws legs under midships). Round 3c (2026-11-12) rounded
+the hull in section and tapered the plan more toward the bow (Board review of 3b). Designer of record: Opus (R205,
 R207). Rendered on Ryan's PC (Blender 4.5, GPU), blockout
-`C:\Users\rcbai\Downloads\voidsworn_test\opus532\r3f\corsair_A16\corsair_A16_blockout.blend`; the model is 26.14 long.
+`C:\Users\rcbai\Downloads\voidsworn_test\opus532\r3i\corsair_A16\corsair_A16_blockout.blend`; the model is 26.14 long.
 
 ## Proportions and structure (measured the same way on the concept and the build)
 
@@ -14,10 +15,21 @@ R207). Rendered on Ryan's PC (Blender 4.5, GPU), blockout
 |---|---:|---:|---:|---:|
 | Concept (round 8 sheet, top and side views) | 3.04 | 4.45 | 2.46 | 3.17 |
 | Round 3 build | 2.74 | 3.39 | 2.06 | 2.02 |
-| **Round 3b build** | **3.01** | **4.18** | 2.13 | 2.80 |
+| Round 3b build | 3.01 | 4.18 | 2.13 | 2.80 |
+| **Round 3c build** | **3.02** | **4.18** | 2.13 | 2.80 |
 
 Hull: length over the median beam or height across the middle 60 percent of the length. Distinct masses per cell (concept by
 eye, build from the model) are in [inventory.md](inventory.md); every cell has at least the concept's count.
+
+## What round 3c changed
+
+1. **A rounded wedge in section**: the hull loft is a superellipse (new kit option `hull(..., rounded=True)`), flatter on the
+   deck with a rounded shoulder, round in the flanks and belly, still plated; the bow-on view now reads as a rounded hull.
+2. **More taper in plan**: the forward sections narrow sooner (half beam 3.75 at 6.0, 3.25 at 8.6, 2.75 at 10.3), into a broad
+   rounded nose behind the tubes.
+3. **The armour belts follow the curve** (new kit `band`: the flank between two heights pushed out along the hull surface),
+   and every flank and deck part (ribs, vents, lamps, patches, casemates, bow thrusters, deck boxes) is seated on the curve
+   with the kit's `surf`, `surf_n` and `deck_z`.
 
 ## What round 3b changed
 
@@ -70,8 +82,8 @@ midships and stern at the same windows), then [fit_view.jpg](fit_view.jpg) and [
   with three cooling rings and struts. Same part, plainer: the fin ring is a kit addition for the build.
 - **The rack** in the concept is a bundle of round tubes; ours is a framed box of round cells. Same read from above; the
   bundle is a variant the kit can add.
-- **The nose** is still more faceted than the concept's rounded, bulbous one: the loft sections are octagons with heavy
-  chamfers; a rounder cap is a kit change for the build.
+- **The nose and flanks** are now round in section (round 3c), but the concept's hull is fuller still: it bulges wider at
+  the waterline and its plates are many small overlapping slabs, where ours are fewer, larger panels on one smooth loft.
 - **The castle** in the concept is busier (stacked boxes and sloped plates); ours keeps its low step with slits and hatches.
 - **Guns** are matched batteries by slot (R213) where the concept scatters them; barrels are a little shorter than the
   concept's so neighbours clear each other when they turn.
