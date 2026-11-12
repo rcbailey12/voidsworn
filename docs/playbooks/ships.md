@@ -11,7 +11,10 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
 
 1. **Parts and hull.** Hand-built parts by default; AI-made parts only through a reviewed part library per faction (R96 Q5).
    The hull is traced in clean faceted sections from an AI shape reference made from the concept (recipe stages 2 and 3):
-   the AI mesh is a tracing guide and a grime source, never shipped (RECIPE.md stage 2).
+   the AI mesh is a tracing guide and a grime source, never shipped (RECIPE.md stage 2). A ship with an approved build sheet
+   (item 5) is not traced again: the sheet is its hull, the recipe builds the sheet through one build contract and reads every
+   fact from it (RECIPE.md "Ships built from a build sheet", issue 592); stage 2's reference still comes from the accepted
+   concept, for the outline score and the grime.
 2. **Paint.** Procedural materials driven by masks baked from the ship's own geometry (curvature, ambient occlusion, edge
    wear), plus trim sheets and decals; colours may be sampled from the concept; the concept picture is never projected onto
    the ship (R96 Q1). Local AI texturing only after a one-hull proof of unlit PBR output (R96 Q1).
@@ -157,7 +160,7 @@ we don't run into the issues of before with just empty looking husks". What he w
 | B | Ryan picks one direction per faction | one sheet per faction, the Board's pick stated | Ryan |
 | C | Fleet brief: feature table per ship | docs/ship_pipeline/fleets/FACTION.md | Board or an Opus helper (high effort) |
 | D | The build sheet per ship (R203, R209, R213): one Blender blockout designed from the accepted concept, true views, feature table, INSIDE section, changes from the picture | docs/ship_pipeline/build_sheets/SHIP/ | Opus worker builds, Board checks beside the concept, Ryan looks |
-| E | Recipe stages 1 to 7 on the PC, one ship at a time | tools/recipe/1_concept_in.bat to 7_export.bat; ship file tools/recipe/ships/SHIP.json from _template.json | Opus worker (R205: every Blender model is Opus's) |
+| E | Recipe stages 1 to 7 on the PC, one ship at a time | tools/recipe/1_concept_in.bat to 7_export.bat; ship file tools/recipe/ships/SHIP.json from _template.json, naming the build sheet ("sheet", hull module sheet_hull; worked example corsair_A16.json) | Opus worker (R205: every Blender model is Opus's) |
 | F | Blob sweep: nine cells, bow, midship, stern from top, side and below, beside the concept views | docs/ship_pipeline/BLOB_SWEEP.md | Opus worker or Codex renders, Board looks, Ryan's eye decides |
 | G | The ship in the game on the look bench, battle camera first | tools/pc/jobs/look_bench.bat | Codex |
 | H | Ryan sees one image: the ship at the battle camera beside its concept | | Board |
@@ -172,9 +175,12 @@ hard points.
 - Stage 3: the outline overlap with the concept at the concept's own camera is reported, not a pass bar (RULEBOOK 5.8; was
   90 percent, R147). The stage prints the number and its picture; read them and say so in the report.
 - Stage 4: the audit lists nothing: no part floats or is sunk, nothing crosses a break line, no gun aims backward or into
-  the ship. audit_selftest.py proves the audit can fail.
+  the ship. audit_selftest.py proves the audit can fail. Transverse seams are required, the longitudinal seam is optional.
+  A sheet ship first passes sheet_contract_selftest.py (the sheet's data reached the recipe unchanged but for units).
 - Stage 7: check_export.py passes: every weapon slot in the ship's data.js list has a hard point, every hard point is on the
-  mesh, and the breach anchors meet their contract. The contract's count comes from the hull's class and faction
+  mesh (an engine point at the centre of an open bell passes by its bell: rim, throat and clear exhaust), every turret rests
+  inside its own arc, and the breach anchors meet their contract. An install refreshes the game's ship cache and reads the
+  ship back through ShipView, or the stage fails. The contract's count comes from the hull's class and faction
   (factions.md, "Breach anchors by class"; issue 363), never from a constant.
 - Stage 6 reports cost; costs are never capped (R111).
 - The insides (R209): a break render of each authored break line at the battle camera and at camera 60 shows decks, frames

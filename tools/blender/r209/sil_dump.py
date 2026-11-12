@@ -30,7 +30,7 @@ if MODE == 'glb':
     objs = [o for o in bpy.context.scene.objects if o.type == 'MESH']
     if len(a) > 3 and a[3] == 'lod0': objs = [o for o in objs if o.name.endswith('lod0')]
 elif MODE == 'b0':
-    bpy.ops.wm.read_factory_settings(use_empty=True); o = C.import_glb(a[2], 'b0'); C.ai_align(o, 22.0); objs = [o]
+    bpy.ops.wm.read_factory_settings(use_empty=True); o = C.import_glb(a[2], 'b0'); C.ai_align(o, C.shape_ref_yaw()); objs = [o]
 elif MODE == 'build':
     mod = __import__(a[2]); cell = a[3]
     hero = getattr(mod, 'HERO_SLOTS', ('casemate', 'bowguns', 'drumrack')) if cell.startswith('Hy') else ()

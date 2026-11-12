@@ -22,6 +22,22 @@ R207). Rendered on Ryan's PC (Blender 4.5, GPU), blockout
 Hull: length over the median beam or height across the middle 60 percent of the length. Distinct masses per cell (concept by
 eye, build from the model) are in [inventory.md](inventory.md); every cell has at least the concept's count.
 
+## Into the recipe (issue 592, Nov 12 2026)
+
+The recipe now builds this sheet itself (ship file `tools/recipe/ships/corsair_A16.json`, hull module `sheet_hull`, the
+build contract `tools/blender/build_sheets/contract.py`; RECIPE.md "Ships built from a build sheet"). Two things the route
+found on this sheet:
+
+1. **Turret rests (changed).** The six deck-edge turrets rested at 15, 20 and 25 degrees off the bow, outside their own
+   data.js arc (scatter P and S fire 30 to 150), so the game export check refused them (HARDPOINTS.md "Turrets"). They now
+   rest at 30, 35 and 40 degrees. The fit check still finds zero clashes; the views on this page still show the old rests
+   until the next PC render.
+2. **Parts across the seams (open, for the Board).** The stage 4 audit refuses any part that crosses a seam plane. On this
+   sheet 8 parts do: the belly bay B1 and the casemates P4 and S4 cross B-2 (x -2.5, by design: the seam opens the hangar);
+   the turrets P1 and S1 cross B-1 (x 7.0); T2, the stern thrusters Q3 and Q4 and the grabber H4 cross B-3 (x -7.4). Either
+   the seams move to clear stations, or the rule changes for the game's tilted, kinked breaks (fx_death.gd cuts every
+   piece's edge anyway). Not changed here.
+
 ## R221 clean-ups (Ryan, Nov 12 2026)
 
 1. **Chains cut.** Ryan: "let's get rid of the chains randomly around the ship. There's no purpose." All four are gone, and

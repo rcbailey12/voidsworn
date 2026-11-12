@@ -30,13 +30,15 @@ var hull_basis := Basis.IDENTITY # the hull's fitted basis (scale, mirror, yaw f
 var a4 := false              # an A4 kit ship (not mirrored)
 
 static var _manifest = null
+# the cache manifest ShipView reads; a test points it at its own cache (render/test/install_refresh_check.gd, issue 592)
+static var manifest_path := "res://gen/manifest.json"
 
 
 static func manifest() -> Dictionary:
 	if _manifest == null:
 		_manifest = {}
-		if FileAccess.file_exists("res://gen/manifest.json"):
-			_manifest = JSON.parse_string(FileAccess.get_file_as_string("res://gen/manifest.json"))
+		if FileAccess.file_exists(manifest_path):
+			_manifest = JSON.parse_string(FileAccess.get_file_as_string(manifest_path))
 	return _manifest
 
 

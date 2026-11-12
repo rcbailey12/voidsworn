@@ -57,16 +57,16 @@ Ashfall Hullbreakers (corsair) | class Battle-barge | version 3 (round 3), 2026-
 | T1 | twin belly turret | 2 barrels | 35.0 | 0.00 | -2.62 | forward, +8 elev | T flak | picture | belly flak turret, covers below (R221: moved off the castle front, out of the rocket rack's backblast) |
 | T2 | twin turret | 2 barrels | 77.1 | 0.00 | 3.25 | forward, +30 elev | T flak | picture | bridge barbette flak turret, rests at 30 degrees, aft of the rocket rack's backblast |
 | PB | single casemate | 1 barrel | 15.9 | 3.27 | -0.30 | 20 deg off the bow to port | P scatter | picture | bow casemate in the recessed band, trained forward |
-| P1 | twin turret | 2 barrels | 26.2 | 2.72 | 2.00 | 15 deg off the bow to port | P scatter | picture | deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring) |
-| P2 | twin turret | 2 barrels | 39.6 | 2.72 | 2.75 | 20 deg off the bow to port | P scatter | picture | deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring) |
-| P3 | twin turret | 2 barrels | 53.0 | 2.72 | 2.00 | 25 deg off the bow to port | P scatter | picture | deck-edge twin turret, tier 2, aft |
+| P1 | twin turret | 2 barrels | 26.2 | 2.72 | 2.00 | 30 deg off the bow to port | P scatter | picture | deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring) |
+| P2 | twin turret | 2 barrels | 39.6 | 2.72 | 2.75 | 35 deg off the bow to port | P scatter | picture | deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring) |
+| P3 | twin turret | 2 barrels | 53.0 | 2.72 | 2.00 | 40 deg off the bow to port | P scatter | picture | deck-edge twin turret, tier 2, aft |
 | PM | twin casemate | 2 barrels | 46.9 | 3.94 | 0.50 | 35 deg off the bow to port | P scatter | picture | flank twin casemate on the upper belt amidships |
 | P4 | twin casemate | 2 barrels | 64.7 | 4.30 | 0.35 | 30 deg off the bow to port | P scatter | picture | sponson twin casemate under the castle |
 | P5 | twin casemate | 2 barrels | 72.5 | 4.30 | 0.35 | 30 deg off the bow to port | P scatter | picture | sponson twin casemate under the castle |
 | SB | single casemate | 1 barrel | 15.9 | -3.32 | -0.30 | 20 deg off the bow to starboard | S scatter | picture | bow casemate in the recessed band, trained forward |
-| S1 | twin turret | 2 barrels | 26.2 | -2.72 | 2.00 | 15 deg off the bow to starboard | S scatter | picture | deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring) |
-| S2 | twin turret | 2 barrels | 39.6 | -2.72 | 2.75 | 20 deg off the bow to starboard | S scatter | picture | deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring) |
-| S3 | twin turret | 2 barrels | 53.0 | -2.72 | 2.00 | 25 deg off the bow to starboard | S scatter | picture | deck-edge twin turret, tier 2, aft |
+| S1 | twin turret | 2 barrels | 26.2 | -2.72 | 2.00 | 30 deg off the bow to starboard | S scatter | picture | deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring) |
+| S2 | twin turret | 2 barrels | 39.6 | -2.72 | 2.75 | 35 deg off the bow to starboard | S scatter | picture | deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring) |
+| S3 | twin turret | 2 barrels | 53.0 | -2.72 | 2.00 | 40 deg off the bow to starboard | S scatter | picture | deck-edge twin turret, tier 2, aft |
 | SM | twin casemate | 2 barrels | 46.9 | -4.04 | 0.50 | 35 deg off the bow to starboard | S scatter | picture | flank twin casemate on the upper belt amidships |
 | S4 | twin casemate | 2 barrels | 64.7 | -4.30 | 0.35 | 30 deg off the bow to starboard | S scatter | picture | sponson twin casemate under the castle |
 | S5 | twin casemate | 2 barrels | 72.5 | -4.30 | 0.35 | 30 deg off the bow to starboard | S scatter | picture | sponson twin casemate under the castle |
@@ -215,6 +215,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **Guns laid out as matched port and starboard batteries by game slot.** the picture has a row of guns on one deck edge and a cluster on the other flank; scatter P and S are mirrored: a bow casemate, three deck-edge twin turrets, a flank casemate amidships and two sponson casemates per side.
 - **Profile set from a true side reading: deep flat-bellied slab, raised tier 2, castle, bridge block.** one three-quarter camera cannot see height; the round 8 side view and the shape reference give a hull 4.9 deep, 6.5 to the castle roof.
 - **Roof turrets rest facing forward.** the picture draws its barrel aft; no gun faces aft.
+- **Deck-edge turrets rest at 30, 35 and 40 degrees off the bow (were 15, 20 and 25).** issue 592: a turret rests inside its own data.js arc (scatter P and S: 30 to 150; HARDPOINTS.md "Turrets"), so the game export check passes; the fit check still finds zero clashes.
 - **The mid-length starboard engine pod becomes an upper pod on the stern deck.** a pod at mid-length glowing forward would push the ship backward and burn its own deck.
 - **Two main engine pods, port larger, plus a centre main and lower boosters.** the picture shows the port pod only; a single side pod would turn the ship; the faction keeps mismatched bells.
 - **Attitude thrusters moved off the casemates and pods.** the fit check found the round 2 bow quads firing into the bow casemates and the stern quads into the pods.

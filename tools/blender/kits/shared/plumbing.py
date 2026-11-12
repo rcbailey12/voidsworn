@@ -175,7 +175,7 @@ def audit(hull_objs, part_objs, guns=(), t_lines=None, l_line=None):
     import bmesh
     from mathutils.bvhtree import BVHTree
     import common as C
-    t_lines = C.T_LINES if t_lines is None else t_lines; l_line = C.L_LINE if l_line is None else l_line
+    t_lines = C.T_LINES if t_lines is None else t_lines; l_line = C.L_LINE if l_line is None else l_line   # an empty l_line: the build has none
     probs = []; cross = []; into = 0
     for g in guns:      # (name, aim) or (name, aim, mount normal): with the normal the into-the-ship rule is tested too (aim_ok)
         nm, d = g[0], Vector(g[1]); nn = Vector(g[2]) if len(g) > 2 and g[2] is not None else None
@@ -187,18 +187,27 @@ def audit(hull_objs, part_objs, guns=(), t_lines=None, l_line=None):
         oe = o.evaluated_get(dg); me = oe.to_mesh(); t = bmesh.new(); t.from_mesh(me); t.transform(o.matrix_world)
         owner += [k] * len(t.faces); tm = bpy.data.meshes.new('tmp'); t.to_mesh(tm); t.free(); bm.from_mesh(tm); bpy.data.meshes.remove(tm); oe.to_mesh_clear()
     ALL = BVHTree.FromBMesh(bm); bm.free()
-    touching = set(owner[a] for a, b in ALL.overlap(ALL) if owner[a] != owner[b])
+    # a part may be several objects (a build sheet writes one per material, all carrying the part's grp): an object counts as
+    # held when any object of its own part touches the hull or another part (issue 592); without grp each object is its own part
+    grp = [o.get('grp') or ('#%d' % k) for k, o in enumerate(allp)]
+    touching = set(owner[a] for a, b in ALL.overlap(ALL) if owner[a] != owner[b] and grp[owner[a]] != grp[owner[b]])
+    held = set(); near = {}
+    for k, o in enumerate(allp):
+        if k in touching or T.overlap(C.bvh([o])): held.add(grp[k])
     for k, o in enumerate(allp):
         w = [o.matrix_world @ Vector(b) for b in o.bound_box]; lo = Vector([min(v[i] for v in w) for i in range(3)]); hi = Vector([max(v[i] for v in w) for i in range(3)])
         for x in t_lines:
             if lo.x < x - .002 and hi.x > x + .002: cross.append(o.name)
-        if lo.x < l_line[2] and hi.x > l_line[1] and lo.z < l_line[0] - .002 < l_line[0] + .002 < hi.z: cross.append(o.name)
-        if k in touching or T.overlap(C.bvh([o])): continue
+        if len(l_line) == 3 and lo.x < l_line[2] and hi.x > l_line[1] and lo.z < l_line[0] - .002 < l_line[0] + .002 < hi.z: cross.append(o.name)   # () = no longitudinal seam
+        if grp[k] in held: continue
         dmin = 9
         for v in list(o.data.vertices)[::max(1, len(o.data.vertices) // 150)]:
             h = T.find_nearest(o.matrix_world @ v.co)
             if h[0] is not None: dmin = min(dmin, h[3])
-        if dmin > .002: probs.append(f'part {o.name} floats {dmin * 41.6:.2f} game units off the hull')
+        near.setdefault(grp[k], []).append((dmin, o.name))
+    for g, rows in near.items():
+        dmin, name = min(rows)
+        if dmin > .002: probs.append(f'part {name if len(rows) == 1 else g} floats {dmin * 41.6:.2f} game units off the hull')
     # what the floating test proves: every part intersects the hull or another part (BVH overlap: faces that cross), or has a
     # sampled vertex within .002 of the hull. A part resting exactly on another part without crossing its faces is not excused by
     # it. A part intersecting only another part is excused, so a chain of parts can hang off one that meets the hull; it does not

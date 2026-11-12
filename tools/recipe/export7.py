@@ -64,6 +64,8 @@ HANGAR = int(gamedata.ship_attr(GAME, 'hangar', default=0) or 0)
 EXPECTED_BREACH = HP_CONTRACT.expected_breach(CLS, FAC)
 sc = bpy.context.scene
 if 'r209_hp' not in sc: die('this blend has no hard point data (scene r209_hp): rebuild it with the current hull module')
+# the class length: a build sheet writes it into the blend (r209_length_world, its one home); other ships keep it in the json
+LENGTH_WORLD = float(sc.get('r209_length_world') or ship.get('length_world', 0) or 0)
 HP = json.loads(sc['r209_hp'])
 os.makedirs(OUT, exist_ok=True); t0 = time.time(); status('RUNNING')
 
@@ -132,12 +134,15 @@ def core_point(bm):
     if abs(vol) < 1e-9: die('the hull has no volume')
     c /= vol; return Vector((c.x, 0.0, c.z))
 
-def hull_side_point(x0, x1, s, z0, avoid=(), clear=BREACH_CLEAR):
+HULL_Z = (min(v.co.z for v in hbm.verts), max(v.co.z for v in hbm.verts))   # the hull's own height (R225: never C15s's numbers)
+
+def hull_side_point(x0, x1, s, z0, avoid=(), clear=BREACH_CLEAR, zs=None):
     """the side-hull point (ray in from the side) nearest (x0..x1, z0) among those at least clear from every part.
-    Returns (loc, outward normal, clearance) or None. z0 is the section's preferred side height (the faction's placement)."""
-    best = None; xm = (x0 + x1) / 2
+    Returns (loc, outward normal, clearance) or None. z0 is the section's preferred side height (the faction's placement); the
+    heights searched are zs, else the middle 80 percent of the hull's own height."""
+    best = None; xm = (x0 + x1) / 2; h = HULL_Z[1] - HULL_Z[0]
     for x in np.linspace(x0, x1, 25):
-        for z in np.linspace(-.115, .020, 17):
+        for z in (np.linspace(HULL_Z[0] + .1 * h, HULL_Z[1] - .1 * h, 17) if zs is None else zs):
             loc, nrm, _, _ = HT.ray_cast(Vector((x, s * .6, z)), Vector((0, -s, 0)), 1.2)
             if loc is None or nrm.y * s < .55: continue             # a side face, facing out
             d = PT.find_nearest(loc)[3] if PT else 9.0
@@ -184,10 +189,42 @@ def origin_points(kind, x0, x1, z0):
         out.append(dict(side=s, p=loc, n=nrm))
     return out
 
-CORE = core_point(hbm); BREACH = breach_anchors()
-REQUIRED = HP_CONTRACT.required_points(WEAPONS, CLS, FAC, HANGAR)
-RCS = origin_points('rcs', .16, .36, .000) if REQUIRED['rcs'] else []
-BOARD = origin_points('board', -.12, .14, -.030) if REQUIRED['board'] else []
+def authored(kind):
+    """the build's own points of one kind (scene r209_points, written by the build sheet contract; issue 592, R225: the sheet is
+    the one home of where its core, breach anchors and braking and boarding origins sit). Each side point goes onto the hull
+    side the same way the export places its own (hull_side_point: a ray in from the side): at the sheet's own x and height when
+    that spot is open hull, else the nearest open spot within AUTHORED_REACH of it; a breach anchor also keeps BREACH_CLEAR
+    from every part (the contract). How far each moved is recorded in the export json."""
+    out = []; avoid = []
+    for p in AUTHORED:
+        if p['kind'] != kind: continue
+        x, y, z = p['pos']
+        if kind == 'core': out.append(dict(p=Vector((x, y, z)))); continue
+        s = 1 if p.get('side') == 'P' else -1 if p.get('side') == 'S' else (1 if y > 0 else -1)
+        got = hull_side_point(x - AUTHORED_REACH, x + AUTHORED_REACH, s, z, avoid, clear=BREACH_CLEAR if kind == 'breach' else 0.0,
+                              zs=np.linspace(z - AUTHORED_REACH, z + AUTHORED_REACH, 17))
+        if got is None or abs(got[0].z - z) > AUTHORED_REACH:
+            die(f'the build\'s {p["name"]} at x {x:.3f}, z {z:.3f} ({"port" if s > 0 else "starboard"}) has no open hull side within {AUTHORED_REACH}'
+                + (f' and {BREACH_CLEAR} clear of every part' if kind == 'breach' else '') + ': move it on the build sheet')
+        loc, nrm, cl = got
+        if kind == 'breach': avoid.append(loc)
+        out.append(dict(name=p['name'], section=p.get('section') or '', side=s, p=loc, n=nrm, clear=cl, moved=round((loc - Vector((x, y, z))).length, 4)))
+    return out
+
+AUTHORED_REACH = .04      # how far (ship lengths) an authored side point may move to reach open hull
+
+AUTHORED = json.loads(sc.get('r209_points', '[]'))
+if AUTHORED:
+    REQUIRED = HP_CONTRACT.required_points(WEAPONS, CLS, FAC, HANGAR)
+    core = authored('core'); BREACH = authored('breach'); RCS = authored('rcs'); BOARD = authored('board')
+    if len(core) != 1: die(f'the build places {len(core)} cores; it must place one')
+    CORE = core[0]['p']
+    if len(BREACH) != EXPECTED_BREACH: die(f'the build places {len(BREACH)} breach anchors; the {CLS} of {FAC} gets {EXPECTED_BREACH} (tools/blender/kits/shared/hardpoints.py)')
+else:
+    CORE = core_point(hbm); BREACH = breach_anchors()
+    REQUIRED = HP_CONTRACT.required_points(WEAPONS, CLS, FAC, HANGAR)
+    RCS = origin_points('rcs', .16, .36, .000) if REQUIRED['rcs'] else []
+    BOARD = origin_points('board', -.12, .14, -.030) if REQUIRED['board'] else []
 hbm.free()
 if pbm: pbm.free()
 
@@ -370,7 +407,7 @@ counts = {k: kinds.get(k, 0) for k in ('gun', 'engine', 'bay', 'breach', 'core',
 req_probs = HP_CONTRACT.missing_required(counts, WEAPONS, CLS, FAC, HANGAR)
 if req_probs: die('; '.join(req_probs))
 missing = [f'slot {i} ({wk} {arc})' for i, (wk, arc) in enumerate(WEAPONS) if i not in by_slot]
-J['length_world'] = float(ship.get('length_world', 0) or 0); J['recipe_cell'] = ship.get('cell', ''); J['faction'] = ship.get('faction', '')
+J['length_world'] = LENGTH_WORLD; J['recipe_cell'] = ship.get('cell', ''); J['faction'] = ship.get('faction', '')
 J['cls'] = CLS; J['band'] = HP_CONTRACT.band(CLS)
 J['voidsworn_destruct'] = destruction
 
@@ -417,14 +454,16 @@ for fn in sorted(os.listdir(OUT)):
     if os.path.isfile(p) and fn.startswith(CODE) and not fn.endswith(('_export.json', '_check.json')):
         files[fn] = dict(bytes=os.path.getsize(p), sha256=hashlib.sha256(open(p, 'rb').read()).hexdigest())
 manifest = dict(name=ship.get('name') or CODE, faction=FAC, cls=CLS, band=HP_CONTRACT.band(CLS),
-                length_world=float(ship.get('length_world', 0) or 0), hardpoints={k: v for k, v in counts.items() if v},
+                length_world=LENGTH_WORLD, hardpoints={k: v for k, v in counts.items() if v},
                 breaches=counts['breach'], turrets=len(TURRET_NODES), files=files, pc_path=f'godot/assets/ships/{CODE}/')
 json.dump(manifest, open(os.path.join(OUT, 'manifest_entry.json'), 'w'), indent=1)
 rep = dict(ship=ship['ship'], code=CODE, cell=ship.get('cell'), game_ship=GAME, faction=ship.get('faction'), cls=CLS,
            band=HP_CONTRACT.band(CLS), expected_breach=EXPECTED_BREACH, unbaked=UNBAKED, maps=0 if UNBAKED else MAPS,
            triangles=TRIS, turret_triangles=TURRET_TRIS, turrets=TURRET_NODES, surfaces=len([s for s in J.material_slots if s.material]), destruction=destruction,
            weapons=[dict(slot=i, weapon=wk, arc=arc, hard_points=by_slot.get(i, [])) for i, (wk, arc) in enumerate(WEAPONS)],
-           slots_without_hard_points=missing, hardpoints=counts,
+           slots_without_hard_points=missing, hardpoints=counts, length_world=LENGTH_WORLD, sheet=sc.get('r209_sheet', ''),
+           points_from=('the build (r209_points)' if AUTHORED else 'placed by this export'),
+           authored_moved={b['name']: b['moved'] for b in BREACH + RCS + BOARD if 'moved' in b},
            hard_points=[dict(name=h['name'], p=[round(float(v), 5) for v in h['p']], fwd=[round(float(v), 4) for v in h['fwd']],
                              up=[round(float(v), 4) for v in h['up']], frame='ship (x bow, y port, z up)', **h['extras']) for h in HPS],
            manifest=manifest, files=files, seconds=round(time.time() - t0, 1),

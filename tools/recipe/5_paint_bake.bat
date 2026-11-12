@@ -4,13 +4,22 @@ rem grime are baked to texture atlases (hull: albedo, ORM, detail normal; parts:
 rem at the concept camera (studio light and concept light) and at the fixed views. About 30 to 40 minutes.
 rem The bake script is the ship json's "bake" (env.bat; default bakeAb6.py, which builds whichever hull module the json names).
 rem Stops with FAILED (non-zero exit) when the bake or a render writes nothing.
+rem Issue 592: "bake": "none" in the ship json means this ship has no paint stack yet. The stage then bakes nothing: stage 4's
+rem build goes on as the stage 5 ship, unpainted, and stage 7 exports it as an unbaked test export (said so in its files).
 call "%~dp0env.bat"
 if not exist "%B0%" (echo Stage 5 FAILED: no shape reference at %B0%. Run stage 2 first. & goto bad)
+if /i not "%BAKE%"=="none" goto bake
+if not exist "%JOB%\build\%CELL%.blend" (echo Stage 5 FAILED: no stage 4 build at %JOB%\build\%CELL%.blend. Run stage 4 first. & goto bad)
+copy /y "%JOB%\build\%CELL%.blend" "%JOB%\%CELL%.blend" > nul
+echo Stage 5: no paint stack for this ship yet ^(bake none^): the unpainted stage 4 build goes on.
+goto baked
+:bake
 "%B%" -b -P "%R%\%BAKE%" -- "%JOB%" "%B0%" none %CELL% 4096 64 > "%JOB%\log_bake.txt" 2>&1
 findstr /L /c:"[209] %CELL% {" "%JOB%\log_bake.txt" > nul || (echo Stage 5 FAILED: the bake ^(%BAKE%^) wrote nothing. See %JOB%\log_bake.txt & goto bad)
+:baked
 rem the ship's own fitted concept camera (stage 3), so the concept side still belongs to this ship and not to C15s_23
 set CAMJ=
-for /f "usebackq delims=" %%L in (`"%BPY%" "%RC%\ship.py" %SHIP% get concept_camera`) do set CAMJ=%%L
+for /f "usebackq delims=" %%L in (`""%BPY%" "%RC%\ship.py" %SHIP% get concept_camera"`) do set CAMJ=%%L
 if not "%CAMJ%"=="" set CAMJ=%REPO%\%CAMJ%
 if "%CAMJ%"=="" if exist "%JOB%\concept_camera.json" set CAMJ=%JOB%\concept_camera.json
 set CAMARG=
@@ -33,8 +42,8 @@ for %%C in (paint licences lights) do (
   type "%JOB%\log_standing_%%C.txt"
 )
 echo Stage 5 done: renders in %JOB%\r and %JOB%\close
-pause
+if "%RECIPE_NOPAUSE%"=="" pause
 exit /b 0
 :bad
-pause
+if "%RECIPE_NOPAUSE%"=="" pause
 exit /b 1
