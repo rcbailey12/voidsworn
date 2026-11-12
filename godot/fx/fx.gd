@@ -19,6 +19,12 @@ const DEATH := preload("res://fx/fx_death.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
 const LIGHT_K := 0.9
+const LIGHT_REACH := 30.0   # an event light's standing reach in world units (hexes are 17.3 across)
+# Issue 461: a light given its own reach also falls off more slowly (Godot's omni light dims as distance to the power of
+# its attenuation). Bench round 1: at the standing 1.2 a torpedo's light changed a cruiser parked 15 units away by under
+# 1 percent, so the reach alone lit nothing; at 0.6 the neighbour is lit about five times as much.
+const LIGHT_ATTEN := 1.2
+const REACH_ATTEN := 0.6
 const FLASH_WINDOW := 0.12   # flashes this close are one event (a salvo landing together)
 const FLASH_CAP := 3         # counted flashes in any rolling second (WCAG 2.3.1 general flash threshold)
 const FLASH_I := 4.0         # sprite intensity from which a short flash-like sprite counts (dimmer pops are free)
@@ -114,7 +120,7 @@ var rng = RandomNumberGenerator.new()
 
 # --- lights
 var _lpool: Array = []
-var _lev: Array = []        # [pos, t0, life, peak, col, shape]
+var _lev: Array = []        # [pos, t0, life, peak, col, shape, reach]
 var _lsrc: Array = []       # persistent: {node, off, col, base, flick, seed}
 
 # --- feel
@@ -124,6 +130,11 @@ var _pauses: Array = []     # [t, frames]
 var _flashes: PackedFloat64Array = []
 var flash_log: PackedFloat64Array = []   # every counted flash (tests check the 3-a-second cap)
 var _refused: PackedFloat64Array = []    # flashes the budget turned down (their lights stay dark)
+# opus_check_524b (issue 558): a yielded gun flash still draws a soft flash, which is one flash under WCAG 2.3.1. These are
+# remembered per field so the soft ones are bounded too: [T, screen x, screen y]. flash_lift is true after a flash_at call
+# that refused a flash in a field already holding FLASH_CAP flashes in the last second; the caller then draws no peak at all.
+var _soft_mem: Array = []
+var flash_lift := false
 var _later: Array = []      # [t, callable]
 var _shake_off = Vector2.ZERO
 var _punches: Array = []    # [t, amount] (F3 zoom punch)
@@ -165,6 +176,7 @@ func _exit_tree() -> void:
 # tasks are waited for first: an unawaited WorkerThreadPool task keeps its job (hull materials and textures) alive
 # until the process ends, after the rendering server is gone (G2: "RenderingServer is null" at exit, a crash risk).
 func release() -> void:
+	attach_report(true)
 	_end_dim()
 	for id in ships:
 		var s = ships[id]
@@ -239,8 +251,8 @@ func setup(opts := {}) -> void:
 		l.light_energy = 0.0
 		l.shadow_enabled = false
 		l.visible = false
-		l.omni_range = 30.0 * unit
-		l.omni_attenuation = 1.2
+		l.omni_range = LIGHT_REACH * unit
+		l.omni_attenuation = LIGHT_ATTEN
 		add_child(l)
 		_lpool.append(l)
 	phys_root = Node3D.new()
@@ -563,7 +575,13 @@ func _flash_count(T: float) -> bool:
 #     general flash: it is counted against FLASH_CAP (three in any rolling second) like any other, or refused.
 #  4. Small flashes far apart never add up; small flashes close together do.
 # Reduce flashing: false at once, as on main (nothing is booked or remembered).
-func flash_at(p: Vector3, T: float, size: float, px := 0.0, life := FLASH_WINDOW) -> bool:
+# Issue 461: `yield_last` (gun hits and muzzles, not torpedoes): a flash that would have to be counted is drawn soft
+# instead, so gun fire never spends the three flashes a second that deaths' core flashes need. In the 20-ship storm gate
+# salvos of shell hits stacked past the limit, were counted (often booked ahead, at the volley's fire time) and a frigate's
+# and a cruiser's core flash were then turned soft. The limit, the window and the cap are unchanged; a hit only ever asks
+# for less. Its log row is marked as yielded (flash_area_log column 9).
+func flash_at(p: Vector3, T: float, size: float, px := 0.0, life := FLASH_WINDOW, yield_last := false) -> bool:
+	flash_lift = false
 	if reduce_flashing:
 		return false
 	if camera == null or not is_instance_valid(camera):
@@ -583,13 +601,44 @@ func flash_at(p: Vector3, T: float, size: float, px := 0.0, life := FLASH_WINDOW
 	var bright := true
 	var counted := 0
 	if lit > flash_limit_px2():
-		bright = _flash_count(T)
-		counted = 1 if bright else 0
+		if yield_last:
+			bright = false
+			flash_lift = _soft_full(T, c)
+			if not flash_lift:
+				_soft_mem.append([T, c[0], c[1]])
+			_refused.append(T)
+			if _refused.size() > 64:
+				_refused = _refused.slice(32)
+			if flash_area_logging:
+				flash_area_log.append([T, c[0], c[1], c[2], lit, 0, 0, maxf(life, FLASH_WINDOW), 1])
+			pend("flash", t0)
+			return false
+		else:
+			bright = _flash_count(T)
+			counted = 1 if bright else 0
 	if bright:
 		_flash_remember(T, life, c)
 	_flash_note(T, c, lit, counted, 1 if bright else 0, life)
 	pend("flash", t0)
 	return bright
+
+
+# opus_check_524b: how many flashes (counted bright ones anywhere, conservatively, plus remembered soft ones inside this
+# 10 degree field) fall in the second before T. At FLASH_CAP or more the field is full: the next gun flash gets no peak.
+func _soft_full(T: float, c: PackedFloat64Array) -> bool:
+	var box := flash_box_px()
+	var n := 0
+	for f in _flashes:
+		if f <= T and T - f < 1.0:
+			n += 1
+	var keep: Array = []
+	for e in _soft_mem:
+		if T - float(e[0]) < 1.0:
+			keep.append(e)
+			if float(e[0]) <= T and absf(float(e[1]) - c[0]) < box and absf(float(e[2]) - c[1]) < box:
+				n += 1
+	_soft_mem = keep
+	return n >= FLASH_CAP
 
 
 # The side of a 10 degree box in viewport pixels (rounded down, so the box and the limit are never overstated).
@@ -726,7 +775,10 @@ func pop(p: Vector3, T: float, col: Color, size: float, i: float, n := Vector3.U
 # Issue 504: a light that goes with a refused flash is no longer dropped. It keeps its colour and place and rises softly
 # (shape 3: a 0.1 s or longer rise, then the same fall) at most just under the peak that counts, so the hulls around a
 # refused flash are still lit without a sharp step. Reduce flashing is untouched (its own path below).
-func light(p: Vector3, t: float, life: float, peak: float, col: Color, shape := 0) -> void:
+# Issue 461 (audit item 11): `reach` is how far the light carries, in world units (0: the pool's standing 30, about 1.7
+# hexes). A torpedo hit and a death's core flash pass two to three hexes, so the hulls round them are lit for the length
+# of the flash. Reach changes only how far the light falls off, never its peak, so the flash counter's rules are the same.
+func light(p: Vector3, t: float, life: float, peak: float, col: Color, shape := 0, reach := 0.0) -> void:
 	if shape == 0 and not reduce_flashing:
 		var refused := false
 		for f in _refused:
@@ -742,7 +794,7 @@ func light(p: Vector3, t: float, life: float, peak: float, col: Color, shape := 
 	if reduce_flashing and shape == 0:
 		peak *= 0.45
 		life *= 1.8
-	_lev.append([p, t, life, peak, col, shape])
+	_lev.append([p, t, life, peak, col, shape, reach])
 
 
 # Whether a sprite of this size at p is big enough on screen to count as a flash (WCAG counts flashes by area; small
@@ -782,7 +834,7 @@ func _update_lights() -> void:
 			1: I = smoothstep(0.0, 0.08, u) * (1.0 - smoothstep(0.85, 1.0, u)) * (1.0 if reduce_flashing else 0.88 + 0.12 * sin(now * 50.0))
 			2: I = u * u
 			3: I = smoothstep(0.0, 0.25, u) if u < 0.25 else pow(1.0 - (u - 0.25) / 0.75, 2.0)   # issue 504: soft rise
-		ev.append([e[0], I * float(e[3]), e[4]])
+		ev.append([e[0], I * float(e[3]), e[4], float(e[6]) if e.size() > 6 else 0.0])
 	_lev = keep
 	var ks: Array = []
 	for s in _lsrc:
@@ -795,18 +847,20 @@ func _update_lights() -> void:
 		var fl = 1.0 - float(s["flick"]) * (0.5 + 0.5 * sin(now * 23.0 + float(s["seed"])) * sin(now * 7.1 + float(s["seed"]) * 2.0))
 		if reduce_flashing:
 			fl = 1.0 - float(s["flick"]) * 0.3 * (0.5 + 0.5 * sin(now * 2.0 + float(s["seed"])))
-		ev.append([n.global_transform * (s["off"] as Vector3), float(s["base"]) * fl, s["col"]])
+		ev.append([n.global_transform * (s["off"] as Vector3), float(s["base"]) * fl, s["col"], 0.0])
 	_lsrc = ks
 	# brightest first, nearer lights count more when the pool is short
 	for e in ev:
 		e.append(float(e[1]) / (1.0 + (e[0] as Vector3).distance_to(cp) / (200.0 * unit)))
-	ev.sort_custom(func(a: Array, b: Array) -> bool: return float(a[3]) > float(b[3]))
+	ev.sort_custom(func(a: Array, b: Array) -> bool: return float(a[4]) > float(b[4]))
 	for k in _lpool.size():
 		var l: OmniLight3D = _lpool[k]
 		if k < ev.size() and float(ev[k][1]) > 0.03:
 			l.position = ev[k][0]
 			l.light_energy = float(ev[k][1]) * LIGHT_K
 			l.light_color = ev[k][2]
+			l.omni_range = (float(ev[k][3]) if float(ev[k][3]) > 0.0 else LIGHT_REACH) * unit
+			l.omni_attenuation = REACH_ATTEN if float(ev[k][3]) > 0.0 else LIGHT_ATTEN
 			l.visible = true
 		else:
 			l.visible = false
@@ -1021,9 +1075,30 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 			pend("cut_first", t_c))
 
 
+# Issue 370: what the attach point service answered for each ship this battle (per point type: authored "hp", surface
+# "ray", "centre" for a core worked out from the triangles, "skip" for an effect not drawn). With say, one line per ship.
+func attach_report(say := false, only := "") -> Dictionary:
+	var out := {}
+	for id in ships:
+		if only != "" and id != only:
+			continue
+		var h = (ships[id] as SHIP).hull
+		if h == null:
+			continue
+		out[id] = {"code": h.code, "counts": h.attach_counts.duplicate(true), "skipped": h.skipped()}
+		if say and not h.attach_counts.is_empty():
+			var parts: Array = []
+			for k in h.attach_counts:
+				var c: Dictionary = h.attach_counts[k]
+				parts.append("%s hp %d ray %d centre %d skip %d" % [k, c.get("hp", 0), c.get("ray", 0), c.get("centre", 0), c.get("skip", 0)])
+			print("[attach] battle %s %s: skipped %d; %s" % [id, h.code, h.skipped(), "; ".join(parts)])
+	return out
+
+
 func remove_ship(id: String) -> void:
 	if not ships.has(id):
 		return
+	attach_report(true, id)
 	(ships[id] as SHIP).teardown(self)
 	ships.erase(id)
 
@@ -1169,13 +1244,24 @@ func board(attacker_id: String, target_id: String, _result := "") -> float:
 	if not ships.has(target_id):
 		return 0.0
 	var s: SHIP = ships[target_id]
-	var toward: Vector3 = ships[attacker_id].to_world(ships[attacker_id].hull.c) if ships.has(attacker_id) else s.to_world(s.hull.c + Vector3(0, 0, s.hull.W * 3.0))
+	# issue 370: the party leaves the attacker from its boarding hatch (hp_board on the side facing the target, else the
+	# side plating facing it through its core) and breaks in through the target's side plating facing that hatch, on
+	# the line through the target's core. Either missing: nothing to show (logged and counted by the hull).
+	var toward: Vector3
+	if ships.has(attacker_id):
+		var a: SHIP = ships[attacker_id]
+		var o: Dictionary = a.hull.board_origin(a.xf().affine_inverse() * s.to_world(s.hull.core))
+		if o.is_empty():
+			return 0.0
+		toward = a.to_world(o["p"])
+	else:
+		toward = s.to_world(s.hull.core + Vector3(0, 0, s.hull.W * 3.0))
 	var inv: Transform3D = s.xf().affine_inverse()
 	var tl: Vector3 = inv * toward
-	var side := Vector3(0, 0, signf(tl.z - s.hull.c.z) if absf(tl.z - s.hull.c.z) > 1e-3 else 1.0)
-	var from: Vector3 = s.hull.c + side * (s.hull.W * 2.0 + s.hull.L * 0.2) + Vector3(s.hull.L * 0.05, 0, 0)
-	var h: Dictionary = s.hull.ray(from, -side)
+	var side := Vector3(0, 0, signf(tl.z - s.hull.core.z) if absf(tl.z - s.hull.core.z) > 1e-3 else 1.0)
+	var h: Dictionary = s.hull.surface(s.hull.core + Vector3(s.hull.L * 0.05, 0, 0), side)
 	if h.is_empty():
+		s.hull._took("board", "skip")
 		return 0.0
 	var lp: Vector3 = h["p"]
 	var ln: Vector3 = h["n"]
@@ -1270,6 +1356,12 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.STREAK, 1),
 		mat(SH.RIBBON, 1), mat(SH.TRAIL, 1), mat(WEAP.LANE, 1), mat(DEATH.SLAG, 0),
 		HULL.damage_material(StandardMaterial3D.new(), Transform3D.IDENTITY, {}, 1.0)]
+	# Issue 569: a Glasswright sail is alpha blend, so its damage material is a different shader.
+	# Warm it too, or the first hurt sail compiles its pipeline in a fight.
+	var sail_src := StandardMaterial3D.new()
+	sail_src.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	sail_src.albedo_color = Color(1, 1, 1, 0.55)
+	mats.append(HULL.damage_material(sail_src, Transform3D.IDENTITY, {}, 1.0))
 	if not compat:
 		mats.append_array([mat(SH.VOL, 2), mat(SH.SPRITE, 1, "#define SOFT\n")])
 	for band in ["small", "cruiser", "capital"]:

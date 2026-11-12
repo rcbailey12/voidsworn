@@ -1915,7 +1915,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		var hl: Array = []
 		for h in hits:
 			hl.append({"shield": h["shield"], "hull": h["hull"], "section": h.get("section", ""), "crit": h["crit"]})
-		var r: Dictionary = gfx.volley(str(a_id), str(e["kind"]), str(t_id), {"weapon_id": str(e.get("weapon_id", "")), "shots": shots, "hits": hl, "quad": int(e["quad"]), "pd": int(e.get("pd", 0))})
+		var r: Dictionary = gfx.volley(str(a_id), str(e["kind"]), str(t_id), {"weapon_id": str(e.get("weapon_id", "")), "slot": int(e["weapon"]) if e.get("weapon") != null else -1, "shots": shots, "hits": hl, "quad": int(e["quad"]), "pd": int(e.get("pd", 0))})
 		if fam in ["lance", "ion"]:
 			sfx.lance(fam == "ion", fac, from)
 		elif fam == "torp":
@@ -4093,8 +4093,7 @@ func _refresh_ui() -> void:
 	hud.set_info(_battle_info())
 	hud.set_top(int(V["round"]), turn, _objective(), end_text, mine and not busy, user_speed < 1.0, threat_on)
 	hud.set_nemesis(_nem_info())
-	hud.retreat_btn.visible = can_retreat and not ended
-	hud.retreat_btn.disabled = not (mine and not busy)
+	hud.set_retreat(can_retreat and not ended, not (mine and not busy))
 	var rows: Array = []
 	for u in V["units"]:
 		if u["side"] != "player" or u["squadron"] or (u["dead"] and not views.has(u["id"])):

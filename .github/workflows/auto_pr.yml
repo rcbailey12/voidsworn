@@ -13,6 +13,10 @@ on:
       - 'muse/issue-*'
       - 'work/issue-*'
       - 'opus/issue-*'   # Claude worker branches (issue 359); '*' also matches the arm shape opus/issue-<n>-<arm>
+      # A run the PC runner marks partial (the agent stopped at the time cap or exited with an error, issue 377) pushes to
+      # <branch>-partial and must open no pull request. A '!' pattern after the patterns above takes those branches back out.
+      - '!codex/issue-*-partial'
+      - '!work/issue-*-partial'
 # One run at a time per branch, in order (never cancelled): Muse pushes a new branch and its first commit a second apart,
 # and two runs racing each other both saw no pull request, so the slower one failed on 'already exists' (Nov 10, PR 409).
 concurrency:
@@ -31,7 +35,18 @@ jobs:
           BRANCH: ${{ github.ref_name }}
           REPO: ${{ github.repository }}
           TITLE: ${{ github.event.head_commit.message }}
+          # Standing issues never close on a merge (256 is the outside-check issue). One list for both paths below (opus_check_594).
+          STANDING: '256'
         run: |
+          # Second line of defence for partial runs (issue 377): never open a pull request for a -partial branch.
+          case "$BRANCH" in *-partial) echo "partial run branch $BRANCH: no pull request (issue 377)"; exit 0 ;; esac
+          # Any closing word before ANY standing issue becomes "Refs", whichever branch or issue the PR is for (opus_check_594
+          # condition 1: a runner commit saying "Closes #256" on another issue's branch would close 256 on merge).
+          guard_standing() {
+            for s in $STANDING; do
+              sed -i -E "s/\b(close[sd]?|fix(e[sd])?|resolve[sd]?):?[[:space:]]+#$s\b/Refs #$s/Ig" body.md
+            done
+          }
           n=$(printf '%s' "$BRANCH" | sed -E 's/.*issue-([0-9]+).*/\1/')
           arm=$(printf '%s' "$BRANCH" | sed -E 's/.*issue-[0-9]+-?//')
           open=$(gh pr list -R "$REPO" --head "$BRANCH" --state open --json number --jq 'length')
@@ -40,11 +55,10 @@ jobs:
             if [ -n "$ititle" ]; then title="Issue $n: $ititle"; else title=$(printf '%s\n' "$TITLE" | head -1); fi
             if [ -n "$arm" ]; then title="$title [$arm arm]"; fi
             body=$(printf '%s\n' "$TITLE" | tail -n +2)
-            printf '%s\n\nOpened automatically from branch %s. Opus reviews and merges.\n' "$body" "$BRANCH" > body.md
+            printf '%s\n\nOpened automatically from branch %s. The Board reviews and merges.\n' "$body" "$BRANCH" > body.md
             # Claude-built work (opus/) gets an outside check before its issue may close, and standing issues stay open
             # through every merge (256 is the outside-check issue; it was closed by merges twice on Nov 10): those PRs say
-            # "Refs #N", never a closing word. Add a standing issue to STANDING, space separated.
-            STANDING="256"
+            # "Refs #N", never a closing word. Add a standing issue to STANDING (the step env above), space separated.
             word="Closes"
             case "$BRANCH" in opus/*) word="Refs" ;; esac
             case " $STANDING " in *" $n "*) word="Refs" ;; esac
@@ -55,11 +69,30 @@ jobs:
             else
               grep -q "Closes #$n" body.md || printf '\nCloses #%s\n' "$n" >> body.md
             fi
+            guard_standing
             # If another run opened it in the meantime, that is a pass, not a failure.
             gh pr create -R "$REPO" --base main --head "$BRANCH" --title "$title" --body-file body.md || {
               sleep 3
               [ "$(gh pr list -R "$REPO" --head "$BRANCH" --state open --json number --jq 'length')" != "0" ] && echo "PR for $BRANCH was opened by another run"
             }
           else
-            echo "PR already open for $BRANCH"
+            # A later push from a runner (codex/, muse/, work/) refreshes the text, so the PR describes the newest run
+            # (issue 357: PR 543 kept a first run's report after a second run replaced it). opus/ PR bodies are
+            # written by hand with their evidence and are never overwritten.
+            case "$BRANCH" in
+              opus/*) echo "PR already open for $BRANCH" ;;
+              *)
+                pr=$(gh pr list -R "$REPO" --head "$BRANCH" --state open --json number --jq '.[0].number')
+                body=$(printf '%s\n' "$TITLE" | tail -n +2)
+                printf '%s\n\nRefreshed from the latest push to branch %s. The Board reviews and merges.\n' "$body" "$BRANCH" > body.md
+                # standing issues are never closed by a merge, same as above
+                case " $STANDING " in *" $n "*)
+                  sed -i -E "s/\b(close[sd]?|fix(e[sd])?|resolve[sd]?):?[[:space:]]+#$n\b/Refs #$n/Ig" body.md
+                  grep -q "Refs #$n" body.md || printf '\nRefs #%s\n' "$n" >> body.md ;;
+                *) grep -qiE "(close[sd]?|refs) #$n\b" body.md || printf '\nCloses #%s\n' "$n" >> body.md ;;
+                esac
+                guard_standing
+                gh pr edit "$pr" -R "$REPO" --body-file body.md && echo "PR $pr text refreshed"
+                ;;
+            esac
           fi

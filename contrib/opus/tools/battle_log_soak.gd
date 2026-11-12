@@ -93,6 +93,13 @@ func _run() -> void:
 		quit(1)
 		return
 
+	# Open the full log (L) before measuring and for the capture, then let the layout settle. A hidden RichTextLabel has
+	# no width, so its display-line count is meaningless until the panel is open.
+	if b.hud != null and not b.hud.log_open:
+		b.hud.toggle_log()
+	for k in 20:
+		await process_frame
+
 	# Read the two logs after the fight: the rules' own event array and the HUD's RichTextLabel.
 	var rules_log: Array = api.R.B.get("log", []) if api.R.B.get("log") is Array else []
 	var parsed: String = b.hud.log_text.get_parsed_text()
@@ -100,11 +107,6 @@ func _run() -> void:
 	var display_lines: int = b.hud.log_text.get_line_count()
 	var chars: int = b.hud.log_text.get_total_character_count()
 
-	# Open the full log (L) for the capture, then let the layout settle.
-	if b.hud != null and not b.hud.log_open:
-		b.hud.toggle_log()
-	for k in 20:
-		await process_frame
 	await RenderingServer.frame_post_draw
 	var png := out.path_join("hd6_battle_log_soak.png")
 	var img := root.get_texture().get_image()
@@ -114,7 +116,7 @@ func _run() -> void:
 		"seed": seed, "quality": quality, "result": result, "rounds": rounds,
 		"rules_log_entries": rules_log.size(), "hud_log_entries": entries,
 		"hud_display_lines": display_lines, "hud_characters": chars,
-		"hud_entry_cap_located": false, "js_cap": 200,
+		"hud_entry_cap_located": true, "js_cap": 200,
 		"capture": png, "seconds": (Time.get_ticks_msec() - started) / 1000.0,
 	}
 	var f := FileAccess.open(out.path_join("soak.json"), FileAccess.WRITE)

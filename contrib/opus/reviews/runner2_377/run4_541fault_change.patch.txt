@@ -1,0 +1,25 @@
+diff --git a/tools/pc/codex_issue.bat b/tools/pc/codex_issue.bat
+index 4c217f1..ec28f78 100644
+--- a/tools/pc/codex_issue.bat
++++ b/tools/pc/codex_issue.bat
+@@ -74,3 +74,4 @@ git clean -fdq
+ powershell -NoProfile -Command "$f=Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\board\queued.txt'; (Get-Content $f) -ne '%N%' | Set-Content $f"
+ popd
+ exit /b 9
++rem merge case edit 2
+diff --git a/tools/pc/work/merge377_note.txt b/tools/pc/work/merge377_note.txt
+new file mode 100644
+index 0000000..5e7b839
+--- /dev/null
++++ b/tools/pc/work/merge377_note.txt
+@@ -0,0 +1 @@
++merge case note
+diff --git a/tools/pc/work_issue.ps1 b/tools/pc/work_issue.ps1
+index 6b98310..e700c25 100644
+--- a/tools/pc/work_issue.ps1
++++ b/tools/pc/work_issue.ps1
+@@ -163,3 +163,4 @@ elseif ($mode -eq 'msg') {
+   [IO.File]::WriteAllText((Join-Path $out 'commit.txt'), $msg, $utf8)
+ }
+ else { Write-Host 'usage: work_issue.ps1 prep|balance|keycheck|lasttext|stats|msg ...'; exit 2 }
++# merge case edit 1

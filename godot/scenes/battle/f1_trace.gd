@@ -107,12 +107,14 @@ func _shot(name: String) -> void:
 	_check(ov == 0, "%s: no ship names overlap (%d hidden by the declutter)" % [name, b.hud.plates_hidden])
 	var up: int = b.hud.plate_names_under_panels()
 	_check(up == 0, "%s: no ship name sits under a side panel (%d found)" % [name, up])
-	if b.hud.tip.visible and b.hud.card.visible:
+	var lg = b.hud.ledger
+	var sr := Rect2(lg.get_global_position() + lg.sheet_r.position, lg.sheet_r.size)
+	if b.hud.tip.visible and not lg.card.is_empty():
 		var tr: Rect2 = b.hud.tip.get_global_rect()
-		_check(not tr.intersects(b.hud.card.get_global_rect()), "%s: the hover tip is clear of the card" % name)
+		_check(not tr.intersects(sr), "%s: the hover tip is clear of the sheet" % name)
 	if b.hud.tip.visible and DisplayServer.get_name() != "headless":  # judged in a real window
 		var tr2: Rect2 = b.hud.tip.get_global_rect()
-		_check(not tr2.intersects(b.hud.panel.get_global_rect()) and not tr2.intersects(b.hud.roster.get_global_rect()), "%s: the hover tip is clear of the side panels" % name)
+		_check(not tr2.intersects(sr) and not tr2.intersects(b.hud.log_panel.get_global_rect()), "%s: the hover tip is clear of the sheet and the log" % name)
 	await b._snap("%02d_%s" % [step_n, name])
 
 
@@ -166,12 +168,12 @@ func run(battle) -> void:
 	_check(b.sel != "" and b._usable(b._sel_unit()), "at the start the game hands over a ready ship (%s)" % b._name(b.sel))
 	_check(b.plog.is_open() and str(b.plog.cur.get("how", "")) == "auto", "the play log opened the hand-over as automatic")
 	var vs: Vector2 = b.get_viewport().get_visible_rect().size
-	var cr: Rect2 = b.hud.card.get_global_rect()
-	var fits: bool = cr.size.y > 40.0 and cr.size.y <= float(b.hud.s(330)) and absf(cr.end.y - (vs.y - b.hud.s(16))) < 2.0
-	if DisplayServer.get_name() != "headless":
-		fits = fits and cr.size.y < vs.y * 0.34 and cr.position.y > vs.y * 0.6 and cr.size.x < vs.x * 0.7
-	_check(b.hud.card.visible and fits,
-		"the activation card sits at the bottom of the screen and fits (%d x %d at %d, %d on a %d x %d screen)" % [cr.size.x, cr.size.y, cr.position.x, cr.position.y, vs.x, vs.y])
+	var lg0 = b.hud.ledger
+	lg0.layout()
+	var sr0 := Rect2(lg0.get_global_position() + lg0.sheet_r.position, lg0.sheet_r.size)
+	var fits: bool = sr0.size.x > 100.0 and sr0.size.y > 100.0 and sr0.end.x <= vs.x + 1.0 and sr0.end.y <= vs.y + 1.0
+	_check(not lg0.card.is_empty() and fits,
+		"the orders sheet fits on screen and carries the activation (%d x %d at %d, %d on a %d x %d screen)" % [sr0.size.x, sr0.size.y, sr0.position.x, sr0.position.y, vs.x, vs.y])
 	var up: String = b.sel
 	# 2. a mistaken click on an enemy: it only targets or inspects, never fires or moves
 	var far := ""
@@ -297,7 +299,7 @@ func run(battle) -> void:
 		_key(KEY_SPACE)
 		for i in 40:
 			await get_tree().process_frame
-			if b.hud.phase.visible and b.hud.phase_lbl.text.contains("ENEMY TURN") and b.hud.phase_lbl.text.contains("ship"):
+			if b.hud.ledger.enemy_turn() and str(b.hud.ledger.phase.get("text", "")) != "":
 				break
 		await get_tree().create_timer(0.3 / maxf(Engine.time_scale, 1.0)).timeout
 		await b._snap("%02d_enemy_turn" % (step_n + 1))

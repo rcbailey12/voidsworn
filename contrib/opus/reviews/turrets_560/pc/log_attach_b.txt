@@ -1,0 +1,70 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[attach] hp_core missing on ST_ring (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on ST_tower (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_w missing on ST_tower; using the surface ray
+[attach] hp_bay on ST_empty: no authored point and the surface ray missed; effect skipped
+[attach] hp_core on ST_empty: no authored point and the surface ray missed; effect skipped
+[attach] hp_board on ST_empty: no authored point and the surface ray missed; effect skipped
+[attach] hp_rcs on ST_empty: no authored point and the surface ray missed; effect skipped
+[attach] hp_breach on ST_empty: no authored point and the surface ray missed; effect skipped
+[attach] hp_w on ST_empty: no authored point and the surface ray missed; effect skipped
+[attach] battle empty ST_empty: skipped 8; bay hp 0 ray 0 centre 0 skip 1; core hp 0 ray 0 centre 0 skip 1; board hp 0 ray 0 centre 0 skip 1; rcs hp 0 ray 0 centre 0 skip 1; breach hp 0 ray 0 centre 0 skip 1; gun hp 0 ray 0 centre 0 skip 3
+[attach] hp_bay missing on ST_ring; using the surface ray
+[attach] hp_core missing on ST_slab_broken (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] the next refusal is expected: a muzzle moved 3 units off a copy of the stand-in slab
+[attach] hp_w on ST_slab_broken: no authored point fits this request; using the surface ray
+[attach] hp_bay missing on ST_slab_broken; using the surface ray
+[attach] hp_board missing on ST_slab_broken; using the surface ray
+[attach] hp_breach missing on ST_slab_broken; using the surface ray
+[attach] hp_rcs missing on ST_slab_broken; using the surface ray
+ERROR: ATTACH FAIL: ST_slab_broken hp hp_w0_hbattery_T_0 (hp) is 3.000 from the hull (limit 0.388)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://fx/test/attach_check.gd:51)
+       [1] _close (res://fx/test/attach_check.gd:238)
+       [2] _walk (res://fx/test/attach_check.gd:218)
+       [3] _stand_ins (res://fx/test/attach_check.gd:378)
+       [4] _run (res://fx/test/attach_check.gd:82)
+ATTACH FAIL: ST_slab_broken hp hp_w0_hbattery_T_0 (hp) is 3.000 from the hull (limit 0.388)
+ERROR: ATTACH FAIL: ST_slab_broken gun (hp) is 3.000 from the hull (limit 0.388)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://fx/test/attach_check.gd:51)
+       [1] _close (res://fx/test/attach_check.gd:238)
+       [2] _walk (res://fx/test/attach_check.gd:218)
+       [3] _stand_ins (res://fx/test/attach_check.gd:378)
+       [4] _run (res://fx/test/attach_check.gd:82)
+ATTACH FAIL: ST_slab_broken gun (hp) is 3.000 from the hull (limit 0.388)
+[attach] ST_slab_broken: 114 points walked, worst 2.9000 past the limit 0.2880, 2 off the hull; authored { "gun": 1, "engine": 0, "bay": 0, "breach": 0, "core": 0, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 576, "ray": 192, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 0, "ray": 0, "centre": 1, "skip": 0 }, "breach": { "hp": 0, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle slab_broken ST_slab_broken: skipped 0; gun hp 576 ray 192 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 0 ray 0 centre 1 skip 0; breach hp 0 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w on ST_slab: no authored point fits this request; using the surface ray
+[attach] hp_bay missing on ST_slab; using the surface ray
+[attach] hp_board missing on ST_slab; using the surface ray
+[attach] hp_breach missing on ST_slab; using the surface ray
+[attach] hp_rcs missing on ST_slab; using the surface ray
+[attach] ST_slab: 116 points walked, worst 0.0000 past the limit 0.2880, 0 off the hull; authored { "gun": 3, "engine": 0, "bay": 0, "breach": 0, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 1438, "ray": 300, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 0, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] hp_w on ST_ring: no authored point fits this request; using the surface ray
+[attach] hp_board missing on ST_ring; using the surface ray
+[attach] hp_breach on ST_ring: no authored point fits this request; using the surface ray
+[attach] hp_rcs missing on ST_ring; using the surface ray
+[attach] ST_ring: 116 points walked, worst 0.0000 past the limit 0.2160, 0 off the hull; authored { "gun": 1, "engine": 0, "bay": 0, "breach": 2, "core": 0, "rcs": 0, "board": 0 }; skipped 0; { "bay": { "hp": 0, "ray": 49, "centre": 0, "skip": 0 }, "breach": { "hp": 3, "ray": 36, "centre": 0, "skip": 0 }, "gun": { "hp": 468, "ray": 300, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 0, "ray": 0, "centre": 1, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] hp_bay missing on ST_tower; using the surface ray
+[attach] hp_board missing on ST_tower; using the surface ray
+[attach] hp_breach missing on ST_tower; using the surface ray
+[attach] hp_rcs missing on ST_tower; using the surface ray
+[attach] ST_tower: 111 points walked, worst 0.0000 past the limit 0.1920, 0 off the hull; authored { "gun": 0, "engine": 0, "bay": 0, "breach": 0, "core": 0, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 0, "ray": 195, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 0, "ray": 0, "centre": 1, "skip": 0 }, "breach": { "hp": 0, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[turret] turret_0 (turA) on C15s_23: arc -180 to 180, trains -121.6 to 121.6 from rest; 56 degrees of its arc are kept clear of the ship
+[turret] turret_1 (turS) on C15s_23: arc -180 to 180, trains -14.7 to 14.7 from rest; 80 degrees of its arc are kept clear of the ship
+[attach] hp_w on C15s_23: no authored point fits this request; using the surface ray
+[attach] hp_bay missing on C15s_23; using the surface ray
+[attach] hp_board on C15s_23: no authored point fits this request; using the surface ray
+[attach] hp_breach on C15s_23: no authored point fits this request; using the surface ray
+[attach] hp_rcs on C15s_23: no authored point fits this request; using the surface ray
+[attach] C15s_23: 151 points walked, worst 0.0002 past the limit 0.2784, 0 off the hull; authored { "gun": 18, "engine": 3, "bay": 0, "breach": 5, "core": 1, "rcs": 2, "board": 2 }; skipped 0; { "gun": { "hp": 3456, "ray": 384, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 15, "ray": 1, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 5, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 12, "ray": 12, "centre": 0, "skip": 0 } }
+[attach] battle real_C15s_23 C15s_23: skipped 0; gun hp 3456 ray 384 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 15 ray 1 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 5 ray 36 centre 0 skip 0; rcs hp 12 ray 12 centre 0 skip 0
+[attach] real hulls walked: 1
+ATTACH_CHECK PASS: 4 hulls, 0 failures, 0 effects skipped by the walk
+[attach] battle slab ST_slab: skipped 0; gun hp 1438 ray 300 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 0 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] battle ring ST_ring: skipped 0; bay hp 0 ray 49 centre 0 skip 0; breach hp 3 ray 36 centre 0 skip 0; gun hp 468 ray 300 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 0 ray 0 centre 1 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] battle tower ST_tower: skipped 0; gun hp 0 ray 195 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 0 ray 0 centre 1 skip 0; breach hp 0 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0

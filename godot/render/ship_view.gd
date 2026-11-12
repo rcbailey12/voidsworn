@@ -6,6 +6,7 @@ extends Node3D
 # MAP_EMBER; issue 271 step 2, lime retired by R191)
 const EMBER := Color(1.0, 0.541, 0.227)
 const HT := preload("res://render/hull_table.gd")
+const ATTACH := preload("res://fx/fx_hull.gd")
 const CRAFT := preload("res://render/squadron_craft.gd")
 const WING := preload("res://render/squadron_wing.gd")
 const PG := preload("res://render/placeholder_guard.gd")
@@ -29,13 +30,15 @@ var hull_basis := Basis.IDENTITY # the hull's fitted basis (scale, mirror, yaw f
 var a4 := false              # an A4 kit ship (not mirrored)
 
 static var _manifest = null
+# the cache manifest ShipView reads; a test points it at its own cache (render/test/install_refresh_check.gd, issue 592)
+static var manifest_path := "res://gen/manifest.json"
 
 
 static func manifest() -> Dictionary:
 	if _manifest == null:
 		_manifest = {}
-		if FileAccess.file_exists("res://gen/manifest.json"):
-			_manifest = JSON.parse_string(FileAccess.get_file_as_string("res://gen/manifest.json"))
+		if FileAccess.file_exists(manifest_path):
+			_manifest = JSON.parse_string(FileAccess.get_file_as_string(manifest_path))
 	return _manifest
 
 
@@ -470,8 +473,9 @@ var segs: Array = []
 var seg_i := 0
 var seg_t := 0.0
 var fx_engines := false       # G4 draws the engines at the real nozzles: the old guessed glows stay hidden
-var half_w := 1.0             # half the hull's beam and height (from the fitted box), for where the jets sit
+var half_w := 1.0             # half the hull's beam and height (from the fitted box), to aim the jets (issue 370)
 var half_h := 0.6
+var attach = null             # issue 370: the attach point service for this hull (fx/fx_hull.gd), set by fx_ship.setup
 var _prev_pos := Vector3.ZERO
 var _vel := Vector3.ZERO
 var _acc := Vector3.ZERO
@@ -1290,36 +1294,86 @@ func snap_to(p: Vector3, yaw: float) -> void:
 	rotation.y = yaw
 
 
-# ---------------------------------------------------------------- RCS jets: short cold-gas bursts at the hull's corners
+# ---------------------------------------------------------------- RCS jets: short cold-gas bursts on the hull
 # (puffs are left in space where they were fired; they do not ride along with the hull)
+# Issue 370 (R150, RULEBOOK 6.7): each jet starts on the ship. The spot each one is named by below (a station along the
+# length, a side, from the fitted box) only aims: the attach point service (fx/fx_hull.gd jet) gives the authored hp_rcs
+# nearest it, else the plating a ray finds on that side at that station, else no puff (logged and counted). Before
+# this, the puff sat at the box spot itself, which on the barge and other hulls that do not fill their box is empty space.
 func _couple_puffs(sgn: float, k: float) -> void:
-	# a positive yaw acceleration needs the bow pushed to -z and the stern to +z: the bow's +z jet and the stern's -z jet
-	var bx := L * 0.4
-	_puff(Vector3(bx, 0.2, half_w * sgn), Vector3(0, 0, sgn), k)
-	_puff(Vector3(-bx, 0.2, -half_w * sgn), Vector3(0, 0, -sgn), k)
+	_jets("couple", sgn, k)
 
 
 func _retro_puffs(k: float) -> void:
-	var bx := L * 0.5
-	_puff(Vector3(bx, 0.2, half_w * 0.45), Vector3(1, 0, 0.25), k)
-	_puff(Vector3(bx, 0.2, -half_w * 0.45), Vector3(1, 0, -0.25), k)
+	_jets("retro", 1.0, k)
 
 
 func _aft_puffs(k: float) -> void:
-	var bx := -L * 0.48
-	_puff(Vector3(bx, half_h * 0.6, half_w * 0.7), Vector3(-1, 0, 0.2), k * 0.8)
-	_puff(Vector3(bx, half_h * 0.6, -half_w * 0.7), Vector3(-1, 0, -0.2), k * 0.8)
+	_jets("aft", 1.0, k)
 
 
 func _side_puffs(sgn: float, k: float) -> void:
-	# pushing the hull to +z vents gas to -z from the jets on that side, a matched pair at bow and stern (no spin)
-	for bx in [L * 0.36, -L * 0.36]:
-		_puff(Vector3(bx, 0.2, -half_w * sgn), Vector3(0, 0, -sgn), k)
+	_jets("side", sgn, k)
 
 
-func _puff(at: Vector3, dir: Vector3, k := 1.0) -> void:
+func _jets(kind: String, sgn: float, k: float) -> void:
+	for j in jet_aims(kind, sgn, L, half_w, half_h):
+		_puff(j[0], j[1], k * float(j[3]), j[2])
+
+
+# Every movement jet, one row each: [aim, gas direction, the side it vents from, strength], in this node's frame.
+# One source for the jets and for the attach check (fx/test/attach_check.gd walks every row).
+static func jet_aims(kind: String, sgn: float, l: float, hw: float, hh: float) -> Array:
+	match kind:
+		"couple":
+			# a positive yaw acceleration needs the bow pushed to -z and the stern to +z: the bow's +z jet and the stern's -z jet
+			var bx := l * 0.4
+			return [[Vector3(bx, 0.2, hw * sgn), Vector3(0, 0, sgn), Vector3(0, 0, sgn), 1.0],
+				[Vector3(-bx, 0.2, -hw * sgn), Vector3(0, 0, -sgn), Vector3(0, 0, -sgn), 1.0]]
+		"retro":
+			var bx := l * 0.5
+			return [[Vector3(bx, 0.2, hw * 0.45), Vector3(1, 0, 0.25), Vector3(1, 0, 0), 1.0],
+				[Vector3(bx, 0.2, -hw * 0.45), Vector3(1, 0, -0.25), Vector3(1, 0, 0), 1.0]]
+		"aft":
+			var bx := -l * 0.48
+			return [[Vector3(bx, hh * 0.6, hw * 0.7), Vector3(-1, 0, 0.2), Vector3(-1, 0, 0), 0.8],
+				[Vector3(bx, hh * 0.6, -hw * 0.7), Vector3(-1, 0, -0.2), Vector3(-1, 0, 0), 0.8]]
+		"side":
+			# pushing the hull to +z vents gas to -z from the jets on that side, a matched pair at bow and stern (no spin)
+			return [[Vector3(l * 0.36, 0.2, -hw * sgn), Vector3(0, 0, -sgn), Vector3(0, 0, -sgn), 1.0],
+				[Vector3(-l * 0.36, 0.2, -hw * sgn), Vector3(0, 0, -sgn), Vector3(0, 0, -sgn), 1.0]]
+	return []
+
+
+# The attach point service for this hull: fx_ship.setup hands over its own; a ShipView with no effects system makes one.
+func _attach_hull():
+	if attach == null and not meshes.is_empty():
+		attach = ATTACH.new()
+		attach.code = code
+		attach.formation = not squad_kind.is_empty()
+		attach.analyse(self, meshes, hash(code))
+	return attach
+
+
+# Where the jet named by `aim` (this node's frame) starts, on the hull as it sits now (ShipView bobs it), or INF for none.
+func jet_point(aim: Vector3, out: Vector3) -> Vector3:
+	var a = _attach_hull()
+	if a == null:
+		return Vector3.INF
+	var o := out.normalized()
+	var through := aim - o * (aim - (a.core as Vector3)).dot(o)
+	var h: Dictionary = a.jet(aim, through, o)
+	if h.is_empty():
+		return Vector3.INF
+	return (h["p"] as Vector3) + (hull.position - hull_base)
+
+
+func _puff(aim: Vector3, dir: Vector3, k := 1.0, out := Vector3.ZERO) -> void:
 	jet_count += 1
 	if dead or not visible or DisplayServer.get_name() == "headless":
+		return
+	var at := jet_point(aim, out if out != Vector3.ZERO else dir)
+	if at == Vector3.INF:
 		return
 	var sp := Sprite3D.new()
 	sp.texture = _glow_tex()

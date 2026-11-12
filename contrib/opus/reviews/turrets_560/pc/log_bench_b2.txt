@@ -1,0 +1,86 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[world] loaded 85cc746c6465a059e100958a76f16d2d2b2b9f6d3083a1481dac0b10be5c2422 4096x2048 in 619 ms (worker)
+[world] loaded 68286506a1f676c949792a55b6d6dfa0191e5160fd3a4efea33187a591e6e033 4096x2048 in 704 ms (worker)
+[world] loaded a879f897ac82fd6caae6ee66bd6b63a9dfe4598e36d1cd444cd6f3a4365227c4 1024x512 in 705 ms (worker)
+[world] loaded 33cad9f1b217a745a4fd4ad3f30581b33f689f8ddf7224d82286f035f254d5f9 1024x512 in 708 ms (worker)
+[world] loaded 21fa569075915e4c28178e3b9b14d7af5591855ed5189b215ff59e484028c027 4096x2048 in 89 ms (worker)
+[world] loaded 86a8e752b1140c19f58021a91dcf0ff170155a28e5e796001a603c2f8e57810e 1024x512 in 87 ms (worker)
+[world] loaded dbbcf042d7e67b557e78f51e890502358dc095e36afa77cbac2191ce712cd4ef 1024x512 in 84 ms (worker)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.468, target 4.4; visual tuning (R191)
+[look_bench] world: frontier
+[turret] turret_0 (turA) on C15s_23: arc -180 to 180, trains -121.6 to 121.6 from rest; 56 degrees of its arc are kept clear of the ship
+[turret] turret_1 (turS) on C15s_23: arc -180 to 180, trains -14.7 to 14.7 from rest; 80 degrees of its arc are kept clear of the ship
+[attach] hp_rcs missing on D21_23; using the surface ray
+[attach] battle A C15s_23: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 14 centre 0 skip 0
+[turret] turret_0 (turA) on C15s_23: arc -180 to 180, trains -121.6 to 121.6 from rest; 56 degrees of its arc are kept clear of the ship
+[turret] turret_1 (turS) on C15s_23: arc -180 to 180, trains -14.7 to 14.7 from rest; 80 degrees of its arc are kept clear of the ship
+[attach] hp_rcs missing on D21_23; using the surface ray
+[attach] battle A C15s_23: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 22 centre 0 skip 0
+[turret] turret_0 (turA) on C15s_23: arc -180 to 180, trains -121.6 to 121.6 from rest; 56 degrees of its arc are kept clear of the ship
+[turret] turret_1 (turS) on C15s_23: arc -180 to 180, trains -14.7 to 14.7 from rest; 80 degrees of its arc are kept clear of the ship
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] warm pass done
+[attach] battle A C15s_23: skipped 0; gun hp 5 ray 0 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[turret] turret_0 (turA) on C15s_23: arc -180 to 180, trains -121.6 to 121.6 from rest; 56 degrees of its arc are kept clear of the ship
+[turret] turret_1 (turS) on C15s_23: arc -180 to 180, trains -14.7 to 14.7 from rest; 80 degrees of its arc are kept clear of the ship
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] t_turrets_port_aft at 170: 10 cells
+[attach] battle A C15s_23: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 14 centre 0 skip 0
+[turret] turret_0 (turA) on C15s_23: arc -180 to 180, trains -121.6 to 121.6 from rest; 56 degrees of its arc are kept clear of the ship
+[turret] turret_1 (turS) on C15s_23: arc -180 to 180, trains -14.7 to 14.7 from rest; 80 degrees of its arc are kept clear of the ship
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] t_turrets_port_aft at 60: 10 cells
+[attach] battle A C15s_23: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 14 centre 0 skip 0
+[turret] turret_0 (turA) on C15s_23: arc -180 to 180, trains -121.6 to 121.6 from rest; 56 degrees of its arc are kept clear of the ship
+[turret] turret_1 (turS) on C15s_23: arc -180 to 180, trains -14.7 to 14.7 from rest; 80 degrees of its arc are kept clear of the ship
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] t_turrets_port_aft at 26: 10 cells
+[attach] battle A C15s_23: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 14 centre 0 skip 0
+[turret] turret_0 (turA) on C15s_23: arc -180 to 180, trains -121.6 to 121.6 from rest; 56 degrees of its arc are kept clear of the ship
+[turret] turret_1 (turS) on C15s_23: arc -180 to 180, trains -14.7 to 14.7 from rest; 80 degrees of its arc are kept clear of the ship
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] t_turrets_stbd_bow at 170: 10 cells
+[attach] battle A C15s_23: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 22 centre 0 skip 0
+[turret] turret_0 (turA) on C15s_23: arc -180 to 180, trains -121.6 to 121.6 from rest; 56 degrees of its arc are kept clear of the ship
+[turret] turret_1 (turS) on C15s_23: arc -180 to 180, trains -14.7 to 14.7 from rest; 80 degrees of its arc are kept clear of the ship
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] t_turrets_stbd_bow at 60: 10 cells
+[attach] battle A C15s_23: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 22 centre 0 skip 0
+[turret] turret_0 (turA) on C15s_23: arc -180 to 180, trains -121.6 to 121.6 from rest; 56 degrees of its arc are kept clear of the ship
+[turret] turret_1 (turS) on C15s_23: arc -180 to 180, trains -14.7 to 14.7 from rest; 80 degrees of its arc are kept clear of the ship
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] t_turrets_stbd_bow at 26: 10 cells
+[attach] battle A C15s_23: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 26 centre 0 skip 0
+[turret] turret_0 (turA) on C15s_23: arc -180 to 180, trains -121.6 to 121.6 from rest; 56 degrees of its arc are kept clear of the ship
+[turret] turret_1 (turS) on C15s_23: arc -180 to 180, trains -14.7 to 14.7 from rest; 80 degrees of its arc are kept clear of the ship
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] t_casemates_fixed at 170: 4 cells
+[attach] battle A C15s_23: skipped 0; gun hp 5 ray 0 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[turret] turret_0 (turA) on C15s_23: arc -180 to 180, trains -121.6 to 121.6 from rest; 56 degrees of its arc are kept clear of the ship
+[turret] turret_1 (turS) on C15s_23: arc -180 to 180, trains -14.7 to 14.7 from rest; 80 degrees of its arc are kept clear of the ship
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] t_casemates_fixed at 60: 4 cells
+[attach] battle A C15s_23: skipped 0; gun hp 5 ray 0 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[turret] turret_0 (turA) on C15s_23: arc -180 to 180, trains -121.6 to 121.6 from rest; 56 degrees of its arc are kept clear of the ship
+[turret] turret_1 (turS) on C15s_23: arc -180 to 180, trains -14.7 to 14.7 from rest; 80 degrees of its arc are kept clear of the ship
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] t_casemates_fixed at 26: 4 cells
+[attach] battle A C15s_23: skipped 0; gun hp 5 ray 0 centre 0 skip 0
+[attach] battle T D21_23: skipped 0; rcs hp 0 ray 2 centre 0 skip 0
+[look_bench] late shader counter (issue 376): not present at this commit; pipelines compiled in this run: 810
+[look_bench] stills: 9, warnings: 0
+LOOK_BENCH_DONE

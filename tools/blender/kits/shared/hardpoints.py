@@ -215,3 +215,58 @@ def check_breach_layout(rows):
     if abs(p - s) > 1:
         probs.append(f'breach anchors are {p} port and {s} starboard: the pair must stay within one of even')
     return probs
+
+
+# ---------------------------------------------------------------------------------------------------------------- turrets (issue 560)
+# RULEBOOK 6.17 (Ryan, Nov 11 2026, R219: "I agree with your design on turrets"): turret guns turn to face their target when
+# they fire; fixed side guns (casemates, broadside batteries) stay fixed. A turret reaches the game as its own node:
+#   turret_<n>          an empty node, a direct child of the ship node, at the ring centre (the pivot). Local +Y is the turning
+#                       axis (the mount normal, away from the hull); local -Z is the rest aim projected into the ring's plane
+#                       (the same axes as every hard point). extras: kind=turret, id (the kit's part id), socket, slot, weapon,
+#                       arc_lo and arc_hi (bearings in degrees from the bow, + to port: the arc the turret may train through),
+#                       rest_yaw (the rest aim's bearing), rest_pitch (the barrels' rest elevation).
+#   turret_<n>_turn     the turning mesh (housing, mantlet, barrels): a child of turret_<n>, in its frame.
+#   hp_w<...>           each muzzle of that turret's barrels: a child of turret_<n> (so it turns with the barrels), with the
+#                       weapon extras plus turret=<n>. Every other hard point stays a direct child of the ship node.
+# The ring (the part that stays on the hull) stays in the ship mesh. A casemate or broadside battery is not a turret: its
+# muzzles stay direct children of the ship node and never move.
+TURRET_PATTERN = r'turret_(\d+)'
+TURRET_MESH_PATTERN = r'turret_(\d+)_turn'
+TURRET_EXTRAS = ('kind', 'id', 'socket', 'slot', 'weapon', 'arc_lo', 'arc_hi', 'rest_yaw', 'rest_pitch')
+# The rules' firing arcs (core.js inArc: F within 60.5 degrees of the bow, S and P 29.5 to 150.5 to one side, T all round),
+# as bearings from the bow, + to port. A turret whose kit gives no arc of its own trains through its slot's rules arc.
+RULES_ARC = {'F': (-60.0, 60.0), 'P': (30.0, 150.0), 'S': (-150.0, -30.0), 'T': (-180.0, 180.0), 'R': (120.0, 240.0)}
+
+
+def turret_arc(arc_letter, kit_lo=None, kit_hi=None):
+    """the arc a turret trains through: the kit's own when it gives one, else the slot's rules arc"""
+    if kit_lo is not None and kit_hi is not None:
+        return float(kit_lo), float(kit_hi)
+    return RULES_ARC.get(str(arc_letter), (-180.0, 180.0))
+
+
+def turret_problems(rows):
+    """rows: [dict(name, extras, has_mesh, muzzles, up_dot_normal)] for the written turret nodes. Problems with the marking."""
+    import re
+    probs = []
+    for r in rows:
+        nm = r['name']; ex = r.get('extras') or {}
+        if not re.fullmatch(TURRET_PATTERN, nm):
+            probs.append(f'{nm}: not a turret node name the contract defines (turret_<n>)')
+        for k in TURRET_EXTRAS:
+            if k not in ex:
+                probs.append(f'{nm} has no extras.{k}')
+        if ex.get('kind') not in (None, 'turret'):
+            probs.append(f'{nm}: extras.kind is {ex.get("kind")!r}, not turret')
+        lo, hi = ex.get('arc_lo'), ex.get('arc_hi')
+        if isinstance(lo, (int, float)) and isinstance(hi, (int, float)):
+            if not lo < hi or hi - lo > 360.0 + 1e-6:
+                probs.append(f'{nm}: the arc {lo} to {hi} is not a range of at most 360 degrees')
+            ry = ex.get('rest_yaw')
+            if isinstance(ry, (int, float)) and not (lo - 1e-6 <= ry <= hi + 1e-6 or lo - 1e-6 <= ry + 360 <= hi + 1e-6 or lo - 1e-6 <= ry - 360 <= hi + 1e-6):
+                probs.append(f'{nm}: rests at bearing {ry}, outside its own arc {lo} to {hi}')
+        if not r.get('has_mesh'):
+            probs.append(f'{nm} has no turning mesh ({nm}_turn): the barrels would not turn')
+        if not r.get('muzzles'):
+            probs.append(f'{nm} carries no hp_w muzzle: the flash would not follow the barrel')
+    return probs

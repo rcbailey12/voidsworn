@@ -1,0 +1,4 @@
+ contrib/opus/tools/scope377_probe.txt | 1 +
+ tools/pc/probe377.gd                  | 1 +
+ tools/pc/work_issue.ps1               | 1 +
+ 3 files changed, 3 insertions(+)

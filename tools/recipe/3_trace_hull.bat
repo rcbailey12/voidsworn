@@ -4,6 +4,9 @@ rem one clean faceted section to each slice (b0trace.py), tunes the hull module'
 rem toward the shape reference (tune5.py, the slow step: about 10 minutes a run), then scores the outline at the concept's own
 rem camera. The overlap is REPORTED against the ship's outline_gate (90 percent); it is not a pass bar (RULEBOOK 5.8).
 rem Refuses to run without the shape reference (stage 2); every step that fails stops the stage with FAILED and a non-zero exit.
+rem A ship built from a build sheet (ships\SHIP.json names "sheet", hull module sheet_hull) is not traced or tuned: the approved
+rem sheet is its hull (RECIPE.md "Ships built from a build sheet"). The stage still reads the shape reference, fits the concept
+rem camera when the json has none, builds the sheet hull and reports its outline, so stages 4 and 5 have the same records.
 call "%~dp0env.bat"
 if not exist "%B0%" (echo Stage 3 FAILED: no shape reference at %B0%. Run stage 2 first. & goto bad)
 if "%HULL%"=="" (echo Stage 3 FAILED: no hull module in ships\%SHIP%.json. Copy tools\blender\r209\armA5.py as the ship's hull module, set its block table to the concept's blocks, and name it in the json. & goto bad)
@@ -11,10 +14,11 @@ if "%HULL%"=="" (echo Stage 3 FAILED: no hull module in ships\%SHIP%.json. Copy 
 if errorlevel 1 (echo Stage 3 FAILED: the concept PNG was not written. & goto bad)
 "%B%" -b -P "%R%\sil_dump.py" -- "%JOB%\b0.npz" b0 "%B0%" > "%JOB%\log_b0dump.txt" 2>&1
 findstr /L /c:"[sil] dumped" "%JOB%\log_b0dump.txt" > nul || (echo Stage 3 FAILED: the shape reference could not be read. See %JOB%\log_b0dump.txt & goto bad)
-for /f "usebackq delims=" %%L in (`"%BPY%" "%RC%\ship.py" %SHIP% get concept_camera`) do set CAMJ=%%L
+for /f "usebackq delims=" %%L in (`""%BPY%" "%RC%\ship.py" %SHIP% get concept_camera"`) do set CAMJ=%%L
 if "%CAMJ%"=="" (set CAMJ=%JOB%\concept_camera.json & "%BPY%" "%R%\silhouette4.py" fit "%JOB%\concept.png" "%JOB%\b0.npz" "%JOB%\concept_camera.json") else (set CAMJ=%REPO%\%CAMJ%)
 "%BPY%" "%R%\b0trace.py" slices "%JOB%\b0.npz" "%JOB%\slices.npz" > "%JOB%\log_trace.txt" 2>&1
 if errorlevel 1 (echo Stage 3 FAILED: the trace failed. See %JOB%\log_trace.txt & goto bad)
+if not "%SHEET%"=="" (echo The hull is the build sheet %SHEET%: no tune. & goto tuned)
 if not "%R209_TUNE_JSON%"=="" goto tuned
 echo Tuning the hull on the concept outline (about 10 minutes)...
 "%B%" -b -P "%R%\tune5.py" -- "%JOB%\concept.png" "%CAMJ%" "%JOB%\b0.npz" "%JOB%\tune.json" 2 512 .25 > "%JOB%\log_tune.txt" 2>&1
@@ -38,8 +42,8 @@ set GATE=%errorlevel%
 echo The overlay is %JOB%\sil\sil_%CELL%.png (green both, red concept only, yellow ship only).
 if not "%GATE%"=="0" (echo Stage 3 FAILED: the outline score could not be read. & goto bad)
 echo Stage 3 done: PASS, the outline overlap is reported above (not a pass bar, RULEBOOK 5.8)
-pause
+if "%RECIPE_NOPAUSE%"=="" pause
 exit /b 0
 :bad
-pause
+if "%RECIPE_NOPAUSE%"=="" pause
 exit /b 1

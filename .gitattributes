@@ -1,0 +1,11 @@
+# Line endings in the repo, not a flag in every script (issue 357).
+# Git stores LF in the repository and checks out the ending each file type needs.
+# .bat must be CRLF for cmd; the rest stay LF so a plain clone on the PC reads and runs them.
+*.js text eol=lf
+*.gd text eol=lf
+*.json text eol=lf
+*.sh text eol=lf
+*.md text eol=lf
+*.py text eol=lf
+*.patch text eol=lf
+*.bat text eol=crlf

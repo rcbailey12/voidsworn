@@ -1,0 +1,19 @@
+ok   pass: the check passed as it must | 
+ok   no_slot: the check failed as it must | weapon slot 3 (flak T) has no hard point
+ok   off_mesh: the check failed as it must | hp_w0_scatter_P_0 is 0.0673 off the mesh (limit 0.0120)
+ok   backward: the check failed as it must | hp_w0_scatter_P_0 rests aimed backward (x -1.00)
+ok   wrong_side: the check failed as it must | hp_w0_scatter_P_0: a port mount must sit and aim to port (z below 0)
+ok   no_core: the check failed as it must | need exactly 1 hp_core (0 written)
+ok   no_socket: the check failed as it must | hp_w0_scatter_P_0 has no extras.socket
+ok   no_engine: the check failed as it must | need at least 1 hp_eng (0 written)
+ok   no_rcs: the check failed as it must | need at least 2 hp_rcs (0 written)
+ok   no_board: the check failed as it must | need at least 2 hp_board (0 written)
+ok   breach_count: the check failed as it must | need exactly 5 hp_breach for a Cruiser of corsair (4 written)
+ok   breach_near: the check failed as it must | hp_breach_0 is 0.0001 from a part (at least 0.03)
+ok   breach_inward: the check failed as it must | hp_breach_0: +Y is not the outward normal (it points z +1.00 on the port side)
+ok   no_interior: the check failed as it must | no authored interior geometry
+ok   no_seams: the check failed as it must | no authored break seams
+ok   liner_only: the check failed as it must | no authored interior rooms: an inner liner alone is not comprehensive insides
+ok   turret_merged: the check failed as it must | turret turA is marked by the kit but the export merged it into the ship mesh (no turret node of its own)
+ok   turret_no_mesh: the check failed as it must | turret_0 has no turning mesh (turret_0_turn): the barrels would not turn
+PASS the export check fails when it should

@@ -48,6 +48,18 @@ specs described braking jets and slow motion the game did not have (issue 492). 
 insides rule was recorded but never reached the builder's playbook (R209, R211); Muse's method audit of R201 to R218 found
 the screens half of R218 written nowhere (issue 558). Set: Board, Nov 12 (R211, issue 558).
 
+0.9 **How a route is set up (any multi-step pipeline: ships, effects, captures, installs).** (a) A method change is done
+only when one real item has gone end to end through it into the game on Ryan's PC; each stage passing alone is not a pass.
+(b) Each fact has one home: the first step that decides it writes it, and every later step reads it from there instead of
+keeping its own copy; a mirror refreshed from that home under a check (the oracle copies, 12.4) is not a second home. (c) A check tests what its rule says and reads the item's own numbers (length, seams, part shapes),
+never the shape of the first item it was written for. (d) Anything Ryan's PC runs (.bat launchers, installs, caches) gets
+one real run there before it counts as done, within 3.3 (nothing deleted on the PC without Ryan's yes). No new test or gate is added for this rule; it shapes how routes are built
+and briefed. Why: Codex's A16 dry run (issue 587) found eight gaps from these four habits: the build sheet and the recipe
+kept separate copies of the same facts, three checks assumed the old C15s cruiser (its 14.5 length, an extra seam,
+closed engine bells), a launcher quoting bug and a stale game cache only show on Windows in a real install, and no ship
+had gone from sheet to game since the sheet method changed. Set: Board, Nov 12, on Ryan's ask to learn from the gaps at
+the level of design and setup, not patches (R225).
+
 ## 1. Working with Ryan
 
 1.1 **Plain words, the answer first, your pick and why; no em dashes; no human-hour estimates** (estimate in agent runs and
@@ -115,8 +127,9 @@ agents-09.
 | Concept pictures by image to image, research, design text, outside checks | Muse (Rey chairs); Ryan starts every run | several models, an outside view (R128) |
 | Ideation | Flash and Grok, through Muse | free and broad |
 
-No Fable helpers: Ryan's Fable allowance is spent ("I just used the final fable reset", R180). Kimi is off and was never fairly
-tested (only the pay-as-you-go tier, R164). Codex's weekly usage is watched at every board check (it was at 19 percent with
+No Fable helpers: Ryan's Fable allowance is spent ("I just used the final fable reset", R180). Kimi was never fairly tested
+(only the pay-as-you-go tier, R164); Ryan took the Kimi Code plan on Nov 12, and it gets one head-to-head job against DeepSeek
+(arm kimicode, issue 597) before it holds a seat. Codex's weekly usage is watched at every board check (it was at 19 percent with
 six days to its reset on Nov 11, R219): when it runs low, code jobs go to the DeepSeek workhorse and Opus workers, and Codex
 keeps only what needs it. Ids: R128, R180e, R205, R206, R219, agents-12.
 
@@ -245,6 +258,15 @@ sanding off what made them theirs (R180). Set: Board lesson after Ryan's review 
 recipe and is the reference for later jobs (R167: "I want this to end with something that opus or other models can run
 from"). Set: Ryan (R167, R180). Ids: R167b, R180d, handoff-01.
 
+4.11 **Every part has a job and every weapon is its faction's own.** A part with no purpose is cut; weapons, turrets and
+launchers are designed per faction from the lore bible and the faction sheet (how the weapon works shows in its mount,
+housing, barrel and muzzle), never a shared silhouette; a gun in another weapon's firing lane or backblast is a clash. Why:
+Ryan on the Hullbreakers: "let's get rid of the chains randomly around the ship. There's no purpose" and "a gun directly
+behind the rocket pods on a16 ... seems like it conflicts"; on Eclipse: "their turrets look the same as hullbreakers" (R221).
+Set: Ryan, Nov 12 (R221). Parts carry the hull's detail density: triangles and edge features per square unit, per part
+type, within 25 percent of the hull's, reported on every sheet (R224: "They also just look smoother and less detailed, maybe
+slightly less poly than the rest of the ship").
+
 ## 5. Ship build pipeline
 
 5.1 **No ship is built until its build sheet passes the concept standard** (contrib/muse/design/concept_standard_2026_11/standard.md:
@@ -259,8 +281,9 @@ picture shows, and lists every change on the sheet. Why: "Use it to guide, not t
 look randomly placed and don't make sense... the builds look like square blocks basically" and "The concept should inform and
 guide but it's not a final play by play guide" (R213). Set: Ryan, Nov 11. Ids: R25 (concepts are inspiration), R207, R213.
 
-5.3 **The settled build method is binding** (docs/playbooks/ships.md section 0; docs/ship_pipeline/RECIPE.md): the hull traced
-from the stage 2 AI shape reference, which is never shipped; hand-built parts, AI parts only through a reviewed faction
+5.3 **The settled build method is binding** (docs/playbooks/ships.md section 0; docs/ship_pipeline/RECIPE.md): the hull designed
+on the approved build sheet (5.1, 5.2), which the recipe builds as it is and never traces again (issue 592), with the stage 2
+AI shape reference made from the accepted concept as an outline and grime reference only, never shipped; hand-built parts, AI parts only through a reviewed faction
 library; paint from geometry masks, trim sheets and decals, never projected concept art; the seven stages. Why: projected
 concept paint was dropped on all 36 hulls (R82); Ryan adopted the research route (R96); the method kept drifting between
 documents (R214). Set: Ryan (R82, R96, R214, R215). Ids: R82d, R96a, R96c, R150a.
@@ -322,6 +345,12 @@ beside the concept. Feedback on one part becomes a rule for all parts. Why: "Eng
 to carry that through to the whole model. Don't just patch singular behavior or examples, use it for global learning and
 shaping the approach" (Ryan, Nov 11, R218). Set: Ryan, Nov 11 (R218). Ids: ships-2c.
 
+5.17 **A machine never crosses a seam; structure may.** Guns, turrets, casemates, launchers, engines, thrusters, claws and
+sensor masts ride whole with one piece: the seam moves, or kinks round them in plan; hull plating, frames, ribs, rails and
+openings such as a launch bay may tear across a seam. The stage 4 audit reads each part's kind from the build (the faction
+kit's MACHINES) and fails only a machine across a seam. Why: a cut gun reads as sliced, a torn plate as blown apart (R186,
+"blown apart, never sliced"). Set: Board, Nov 12 (R226). Ids: ships-2c.
+
 ## 6. Battle look
 
 6.1 **Judge everything at the battle camera (camera 170, the radius Ryan plays at) at true pixel size, before any close-up.**
@@ -352,7 +381,8 @@ R193); replaces the Board's R123 "the camera is never taken for a capital death"
 
 6.7 **Effects start on the ship** (a hard point, a breach anchor or the hit surface), never at a box corner or in empty space.
 Why: "random thrusters or smoke popped up away from the ship itself? it looks all wrong" (R150). Set: Ryan (R150); method
-Board (R153). Ids: R150b, R153, effects-05.
+Board (R153). Built: the attach point service in godot/fx/fx_hull.gd (authored point, else surface ray, else skipped and
+counted), checked by godot/fx/test/attach_check.gd (issue 370). Ids: R150b, R153, effects-05.
 
 6.8 **Hits are weighty and readable at the battle camera**: mass-scaled shudder and kicks corrected by thrusters, damage on the
 hull itself with per-weapon marks, wounds that cool to scars, thrown matter big enough to read at camera 170; light on
@@ -391,7 +421,10 @@ are starting values. Why: deaths now run 3.5 to over 10 seconds in three beats (
 A turret traverses smoothly (never snaps, RULEBOOK 7.1), within its arc, and returns to rest; the gun's muzzle and its effects
 start at the turned barrel. Why: today every gun is a fixed mesh (no aim code in godot/render/ship_view.gd or
 godot/fx/fx_weapons.gd); turning turrets make a fight read and suit the detailed guns now being built (R217). Set: Ryan, Nov 11
-(R219: "I agree with your design on turrets").
+(R219: "I agree with your design on turrets"). A turret may turn aft only to follow a target its rules arc lets it hit
+there; at rest no gun ever points backward (4.2). Set: Ryan, Nov 12 (R222: "yes agree on your turret facing rule"). Built (issue 560): a turret is its own node in the ship's glb
+(docs/ship_pipeline/HARDPOINTS.md "Turrets"; the kit marks it, tools/blender/kits/README.md); the attach point service in
+godot/fx/fx_hull.gd turns it, checked by godot/render/test/turret_check.gd. Hulls exported before it keep fixed guns.
 
 ## 7. Movement
 

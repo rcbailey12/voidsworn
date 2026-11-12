@@ -127,7 +127,12 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	_seed = hash(sid)
 	hull = HULL.new()
 	hull.stb_z = float(fx.starboard_z)
+	hull.code = str(root.get("code")) if root.get("code") != null else sid
+	hull.formation = squadron
 	hull.analyse(root, meshes, _seed)
+	# issue 370: ShipView's movement jets (braking, side, turning) ask the same attach point service
+	if "attach" in root:
+		root.set("attach", hull)
 	# ShipView bobs and banks the hull node under the root; the hull analysis above is in the pose of this moment, so
 	# the damage (overlay skins, cavities, fires) follows the hull's motion from here (r6: the hull bobbed 0.25 units
 	# up and down past a mark overlay lifted 0.026, so overlay-only marks such as ion burns kept vanishing into it).
@@ -136,7 +141,8 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	# whenever the hull moved between fx steps (the stills: overlays sank into the bobbing hull at random, which is
 	# why marks came and went between runs)
 	for m in meshes:
-		if m is MeshInstance3D:
+		# (issue 560: never a turret's turning mesh, which turns under the hull and would carry the damage round with it)
+		if m is MeshInstance3D and hull._turret_above(m, root) < 0:
 			_ref_mi = m
 			break
 	if _ref_mi != null:
@@ -238,7 +244,7 @@ func _build_engines(fx) -> void:
 			Vector4(r * 2.8, r * 2.8, 11 if corsair else 4, fx.rng.randf()), Vector4(1.0, 0, 0, 0)))
 		var acc = fac.get("accent")
 		if acc is Color:
-			# a corona round the core in the faction's second colour (faction look data, accent; none in use yet)
+			# a corona round the core in the faction's second colour (faction look data, accent; four factions set one)
 			b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0), Vector4(0, 0, 0, 1.0), Vector4(acc.r, acc.g, acc.b, 0.9),
 				Vector4(r * 5.0, r * 5.0, 4, fx.rng.randf()), Vector4(1.0, 0, 0, 0)))
 		rb.add(rs, POOLS.pack(Vector4(np.x, np.y, np.z, 3 if corsair else 0), Vector4(nd.x, nd.y, nd.z, plume), Vector4(eng.r, eng.g, eng.b, 0.9),
@@ -288,12 +294,14 @@ func _build_trails(fx) -> void:
 func update(fx, dt: float) -> void:
 	if gone or not is_instance_valid(root):
 		return
+	if not hull.turrets.is_empty():
+		hull.turret_step(fx.now)    # issue 560: each turret's node at its pose for the effect clock
 	_update_damage_emitters(fx)
 	_react_step(fx, dt)
 	_hide_placeholder_engines()
 	var hm := hull_motion()
 	if _shield_mi != null and _shield_mi.visible:
-		_shield_mi.transform = hm * Transform3D(Basis.from_scale(hull.shield_radii()), hull.c)
+		_shield_mi.transform = hm * Transform3D(Basis.from_scale(hull.shield_radii()), hull.shield_centre())
 	var pos = root.global_position - root.get_parent_node_3d().global_transform.basis * _app_pos if root.get_parent_node_3d() != null else root.global_position
 	var moved = pos.distance_to(_last_pos) if _last_pos != Vector3.INF else 0.0
 	_last_pos = pos
@@ -422,7 +430,7 @@ func _build_shield(fx) -> void:
 	_shield_mi.name = "fx_shield"
 	_shield_mi.mesh = sph
 	_shield_mi.material_override = _shield_mat
-	_shield_mi.position = hull.c
+	_shield_mi.position = hull.shield_centre()
 	_shield_mi.scale = hull.shield_radii()
 	_shield_mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_shield_mi.visible = false
@@ -433,8 +441,8 @@ func _build_shield(fx) -> void:
 func shield_point(from_world: Vector3, aim_local := Vector3.INF) -> Dictionary:
 	var inv = xf().affine_inverse()
 	var rad = hull.shield_radii()
-	var o = (inv * from_world) - hull.c
-	var tgt = (aim_local - hull.c) if aim_local != Vector3.INF else Vector3.ZERO
+	var o = (inv * from_world) - hull.shield_centre()
+	var tgt = (aim_local - hull.shield_centre()) if aim_local != Vector3.INF else Vector3.ZERO
 	var d = (tgt - o).normalized()
 	# ray against the unit sphere in scaled space
 	var os = o / rad
@@ -450,7 +458,7 @@ func shield_point(from_world: Vector3, aim_local := Vector3.INF) -> Dictionary:
 		var tt = (-b - sqrt(disc)) / (2.0 * a)
 		lp = o + d * tt
 	var n = (lp / (rad * rad)).normalized()
-	return {"p": xf() * (lp + hull.c), "n": (xf().basis * n).normalized(), "local": lp}
+	return {"p": xf() * (lp + hull.shield_centre()), "n": (xf().basis * n).normalized(), "local": lp}
 
 
 func shield_hit(fx, local_p: Vector3, T: float, strength: float, spread: float, life := 0.6) -> void:
@@ -474,7 +482,7 @@ func shield_break(fx, quad: int) -> void:
 	_shield_until = maxf(_shield_until, T + 1.45)
 	var rad = hull.shield_radii()
 	var lp = qd * rad
-	var wp = to_world(lp + hull.c)
+	var wp = to_world(lp + hull.shield_centre())
 	var wn = dir_world(qd)
 	var sc: Color = fac["shield"]
 	var st: int = fac["shield_style"]
@@ -700,13 +708,11 @@ func _rcs(fx) -> void:
 		var rp: Vector3 = best[j][1]
 		var t: Vector3 = best[j][2]
 		# Issue 281 run 7: a hull that does not fill its bounding box (the Eclipse disc and tower) leaves the box
-		# corner in empty space, so the old corner puff floated off the ship. Start each puff on the real plating: cast
-		# a ray from the corner, pushed a further L away from the hull centre, back toward it, and use the hit point.
-		# A corner whose ray misses has no plating behind it, so skip it.
+		# corner in empty space, so the old corner puff floated off the ship. Issue 370: the corner only picks the jet;
+		# the attach point service starts it at the authored hp_rcs nearest that corner, else on the plating a ray
+		# finds on the line from the corner to the hull centre (the run 7 ray), else nowhere (skipped and counted).
 		var outward: Vector3 = rp - hull.c
-		var od: float = outward.length()
-		outward = outward / maxf(od, 1e-3)
-		var h: Dictionary = hull.ray(rp + outward * L, -outward)
+		var h: Dictionary = hull.jet(rp, hull.c, outward)
 		if h.is_empty():
 			continue
 		var wp: Vector3 = to_world(h["p"])
@@ -811,14 +817,25 @@ func _clear_lights(i: int) -> void:
 func _anchor(i: int, kind: String) -> Dictionary:
 	var key = "%s%d" % [kind, i]
 	if not _anchors.has(key):
-		var h: Dictionary = hull.random_sample(i, 2.5)
-		if kind == "b":
-			for t in 32:
-				var c: Dictionary = hull.random_sample(i, 0.0)
-				var ny = (c["n"] as Vector3).y
-				if ny > 0.15 and ny < 0.75:
-					h = c
-					break
+		# issue 370: where the hull opens comes from the section's authored breach anchors (hp_breach_*): "a" the main
+		# hole on the first, "b" the second hole on the next one that faces part way up. Else, and for the secondary
+		# scorches ("sc0" to "sc2", marks on the plate, not openings), a seen surface sample: a ray hit, as before.
+		var h: Dictionary = {}
+		if kind == "a":
+			h = hull.breach_point(i, 0)
+		elif kind == "b":
+			h = hull.breach_point(i, 1, Vector2(0.15, 0.75))
+		if h.is_empty():
+			h = hull.surface_sample(i, 2.5, "breach" if kind in ["a", "b"] else "scorch")
+			if kind == "b" and not h.is_empty():
+				for t in 32:
+					var c: Dictionary = hull.random_sample(i, 0.0)
+					var ny = (c["n"] as Vector3).y
+					if ny > 0.15 and ny < 0.75:
+						h = {"p": c["p"], "n": c["n"]}
+						break
+		if h.is_empty():
+			return {}
 		_anchors[key] = {"p": h["p"], "n": h["n"], "t": {}}
 	return _anchors[key]
 
@@ -840,6 +857,7 @@ func _plan(fx, i: int, st: int) -> Array:
 	var L: float = hull.L
 	var sd = float(posmod(_seed, 1000)) * 0.01 + i * 3.7
 	var a = _anchor(i, "a")
+	if a.is_empty(): return out   # issue 370: a hull with no plating has nowhere to show damage
 	var sc = BREACH.surface(a.p, a.n, L * (0.03 + 0.034 * grade), sd + 0.7, BREACH.S_SCORCH)
 	sc.t0 = _t0(a, -grade, fx)
 	sc.sec = i
@@ -848,6 +866,7 @@ func _plan(fx, i: int, st: int) -> Array:
 	# Stable samples: increasing a stage never moves the earlier secondary burns.
 	for j in mini(grade, 3):
 		var h := _anchor(i, "sc%d" % j)
+		if h.is_empty(): continue
 		var s2 = BREACH.surface(h.p, h.n, L * 0.024, sd + 5.0 + j, BREACH.S_SCORCH)
 		s2.t0 = sc.t0
 		s2.sec = i
@@ -881,6 +900,7 @@ func _plan(fx, i: int, st: int) -> Array:
 	out.append(e)
 	if weight >= 2:
 		var bt = _anchor(i, "b")
+		if bt.is_empty(): return out
 		var eb = BREACH.hole(hull, bt.p, bt.n, L * 0.032, 1.0, 0.12, sd + 2.1)
 		eb.t0 = _t0(bt, st, fx)
 		eb.sec = i
@@ -1095,6 +1115,7 @@ func _build_section(fx, i: int, up: bool) -> void:
 	_dmg_request(fx)
 	if not up or st < 1 or fx.compat: return
 	var a := _anchor(i, "a")
+	if a.is_empty(): return
 	var wp := to_world(a.p)
 	var wn := dir_world(a.n)
 	var glow: Color = fac.damage_glow
@@ -1181,6 +1202,7 @@ func _refresh_damage_emitters(fx) -> void:
 
 func _build_damage_emitter(fx, e: Dictionary) -> void:
 	var a := _anchor(e.sec, "a")
+	if a.is_empty(): return
 	var p: Vector3 = a.p
 	var n: Vector3 = a.n
 	var glow: Color = fac.damage_glow
@@ -1260,7 +1282,10 @@ func _update_damage_emitters(fx) -> void:
 
 func pulse(fx, strength: float) -> void:
 	var c: Color = fac["weapon"]
-	var p = to_world(hull.c)
+	var cp: Dictionary = hull.core_point()   # issue 370: the ship's own pulse starts at its core
+	if cp.is_empty():
+		return
+	var p = to_world(cp["p"])
 	var k = scale_k()
 	fx.ring(p, dir_world(Vector3.UP), fx.now, 0.9, c, 1.2 * strength, hull.L * 0.3, hull.L * 0.9, 2)
 	fx.spr(p, fx.now, 0.8, c, 1.0 * strength, hull.L * 0.4, hull.L * 0.8, 18)
@@ -1268,7 +1293,9 @@ func pulse(fx, strength: float) -> void:
 
 
 func tick_flare(fx, kind: String) -> void:
-	var h: Dictionary = hull.random_sample(-1, 0.5)
+	var h: Dictionary = hull.surface_sample(-1, 0.5, "flare")   # issue 370: a seen point on the plating, or none
+	if h.is_empty():
+		return
 	var wp = to_world(h["p"])
 	var wn = dir_world(h["n"])
 	var k = scale_k()
@@ -1293,7 +1320,7 @@ func jump_out(fx) -> void:
 	var T: float = fx.now
 	var bow = dir_world(Vector3(1, 0, 0))
 	var c: Color = fac["engine"]
-	var p = to_world(hull.c)
+	var p = to_world(hull.core)   # issue 370: the jump flash at the core (hp_core, else the centre of volume)
 	for t in hull.nozzles:
 		var np = to_world(t["p"])
 		fx.spr(np, T, 0.5, c, 6.0, 2.0, 8.0, 2)

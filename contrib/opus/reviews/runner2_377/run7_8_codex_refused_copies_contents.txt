@@ -1,0 +1,5 @@
+refused copies kept per run:
+== 20261112_074254
+glb from stand-in run A
+== 20261112_074304
+glb from stand-in run B

@@ -251,9 +251,16 @@ def drum_rack(s, seat, rnd):
     weld(f'{s.name}weld', [(xm - L * .30 + .004, y0, zc - r * .78 + .0028), (xm - L * .30 + .004, (y0 + y1) / 2, zc - r * .78 + .0028)], rnd=rnd)
     PB.tag(i1, 'part', 'rack')
 
+# Issue 560 (RULEBOOK 6.17, R219): a turret turns to face its target. These named pieces of turret() below turn about the ring
+# centre; the ring and its welds stay on the hull. Stage 7 reads this list and marks each turret socket in the scene before the
+# export (tools/blender/kits/shared/turrets.py mark_from_parts): an empty <socket>_turret at the ring's top centre with the
+# turning pieces as its children. Casemates, bow batteries and drum racks are fixed and are never listed.
+TURRET_TURN = ('body', 'dome', 'plate', 'patch', 'rec', 'brl', 'mz')
+
 def turret(s, seat, rnd):
     """a top turret. variant 0 (Hullbreaker junk): a squat welded drum with a sloped front plate, a patch, one heavy barrel.
-    variant 1 ('borrowed'): a clean faceted dome turret from another navy, welded onto a crude adapter ring, a long thin barrel."""
+    variant 1 ('borrowed'): a clean faceted dome turret from another navy, welded onto a crude adapter ring, a long thin barrel.
+    Its pieces named in TURRET_TURN turn in the game (issue 560); the ring and the welds stay fixed."""
     c = s.pos; R0 = s.size; a = s.aim; z0 = seat.top(c.x, c.y, R0 * 2, R0 * 2) or c.z
     flat = Vector((a.x, a.y, 0)).normalized(); yaw = math.atan2(flat.y, flat.x); RZ = Matrix.Rotation(yaw, 3, 'Z')
     elev = math.radians(s.extra.get('elev', 12)); ad = (RZ @ Vector((math.cos(elev), 0, math.sin(elev)))).normalized()

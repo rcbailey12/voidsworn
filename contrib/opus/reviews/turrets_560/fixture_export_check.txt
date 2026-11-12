@@ -1,0 +1,10 @@
+[check] authored interiors: 12 triangles, 1 surfaces; authored seams: 2
+[check] 2596 triangles (2520 on part surfaces), box x -0.515 to 0.504, y -0.060 to 0.070, z -0.144 to 0.144
+[check] ship length 1.0190: off-mesh limit 0.012 of it, 0.0122; breach clearance at least 0.03
+[check] turrets: 2 written (turret_0 turA, turret_1 turB); marked by the kit: ['turA', 'turB']
+[check] slot 0 scatter P: 1 hard points
+[check] slot 1 scatter S: 1 hard points
+[check] slot 2 torp F: 1 hard points
+[check] slot 3 flak T: 2 hard points
+[check] hard points: {"board": 2, "breach": 5, "core": 1, "engine": 1, "rcs": 2, "gun": 5}
+PASS T560_fx game export: authored rooms and seams retained; every required point is there, the breach count matches the class and faction, and every hard point is on the mesh

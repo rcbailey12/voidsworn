@@ -14,7 +14,7 @@ extends SceneTree
 # at four distances for judging pops by eye.
 #   godot --path PROJECT --resolution 1920x1080 --script res://bench209.gd -- GLB_DIR OUT_DIR CELLS(comma list) [REPEATS]
 
-const LENGTH := 14.5        # C15s_23 length_world (godot/assets/ships/manifest.json)
+var LENGTH := 0.0           # the ship's class length, from its own entry: the argument length=N (6_lod.bat passes the ship json's; issue 592)
 const DIR := Vector3(0.0, 0.5570, 0.8305)   # the battle camera direction of the round 4 protocol: (0, cos .98, sin .98)
 var world: Node3D
 var cam: Camera3D
@@ -267,6 +267,14 @@ func run() -> void:
 	out = a[1]
 	var cells: PackedStringArray = a[2].split(",")
 	var repeats := int(a[3]) if a.size() > 3 else 2
+	for x in a:
+		if x.begins_with("length="):
+			LENGTH = float(x.substr(7))
+	if LENGTH <= 0.0:
+		push_error("bench209r3: no length=N argument (the ship's class length); the bench will not assume C15s_23's 14.5")
+		print("BENCH FAILED: no class length")
+		quit(1)
+		return
 	if a.size() > 4 and a[4] == "quick":   # a logic test only (software renderer): a few frames, no real numbers
 		WARM = 2
 		MEAS = 3

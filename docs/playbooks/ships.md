@@ -11,7 +11,10 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
 
 1. **Parts and hull.** Hand-built parts by default; AI-made parts only through a reviewed part library per faction (R96 Q5).
    The hull is traced in clean faceted sections from an AI shape reference made from the concept (recipe stages 2 and 3):
-   the AI mesh is a tracing guide and a grime source, never shipped (RECIPE.md stage 2).
+   the AI mesh is a tracing guide and a grime source, never shipped (RECIPE.md stage 2). A ship with an approved build sheet
+   (item 5) is not traced again: the sheet is its hull, the recipe builds the sheet through one build contract and reads every
+   fact from it (RECIPE.md "Ships built from a build sheet", issue 592); stage 2's reference still comes from the accepted
+   concept, for the outline score and the grime.
 2. **Paint.** Procedural materials driven by masks baked from the ship's own geometry (curvature, ambient occlusion, edge
    wear), plus trim sheets and decals; colours may be sampled from the concept; the concept picture is never projected onto
    the ship (R96 Q1). Local AI texturing only after a one-hull proof of unlit PBR output (R96 Q1).
@@ -38,6 +41,9 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
 9. **Fidelity and fit.** Section 2c: parts read as what they are, the fit check with zero clashes (R217); a parts inventory
    before modelling, one detail level across the ship, kit first, the massing checked by ratios and structure counts, and
    the side-by-side judged by someone other than the builder before Ryan sees it (R218).
+10. **The route is proven by a ship in the game.** RULEBOOK 0.9 (R225): a change to how ships are built is done only when
+   one ship has gone from its build sheet to the game on Ryan's PC; the sheet writes each fact once (masses, seams, insides,
+   mounts, length) and the recipe reads it; recipe checks read the ship's own entry, never a prior ship's shape (C15s's was the case that bit).
 
 ## 1. Target
 
@@ -113,6 +119,25 @@ global learning and shaping the approach". So the method, for every ship of ever
   rendered beside the concept at the same view, and the inventory is ticked off per cell: present, shaped, detailed. That
   table is on every sheet and every build.
 - Every round's feedback goes into this section as a general rule, never only into the one ship's notes.
+- Every part has a job (R221). A part that does nothing on the ship (Ryan on the Hullbreaker chains: "let's get rid of the
+  chains randomly around the ship. There's no purpose") is cut; the inventory names each part's job, and a part with none
+  does not ship. Junky is still on-brand for Hullbreakers, but junk that is bolted on for a reason.
+- Parts must not look like they conflict, not only not clash (R221: "There's a gun directly behind the rocket pods on a16
+  which seems like it conflicts?"). The fit check adds each launcher's backblast cone and each rack's firing lane, and a
+  gun whose barrel points at or sits in another weapon's lane or blast is a clash even when no mesh touches.
+- Weapons carry the hull's detail density, measured (R224: Ryan on the Eclipse weapons, "They also just look smoother and
+  less detailed, maybe slightly less poly than the rest of the ship"). The fit check reports, per part type, triangles
+  per square unit of surface and edge features (seams, steps, bevels, greebles) per square unit against the hull's own; a
+  part type more than 25 percent under the hull on either is flagged on the sheet and fixed in the build. This applies to
+  every faction and every part type, not only weapons.
+- Weapons are designed per faction from the lore (R221: "their turrets look the same as hullbreakers. We should have those
+  be more unique per factions and fit the actual weapons they use per lore Bible and faction rules"). Each faction kit's
+  guns, turrets and launchers are built from what that faction's weapons are (data.js weapon ids, the lore bible, the
+  faction sheet in factions.md): their mount, housing, barrel and muzzle say how the weapon works. No turret silhouette is
+  shared between factions; the sheet shows each weapon type beside its lore line.
+- Seams go round machines (R226, RULEBOOK 5.17): a gun, turret, casemate, launcher, engine, thruster, claw or sensor mast
+  sits wholly in one piece, so the sheet moves or kinks each seam's plan path round them; plating, ribs, rails and openings
+  such as a launch bay may tear across. The stage 4 audit tests each seam along its path and fails only a machine on it.
 - Massing is checked as hard as parts (Board, Nov 12, from round 3: every part passed its tick while the hull still read as a
   lump). The sheet reports the concept's and the build's length to beam to height ratios, and the per-cell table adds a
   structure count: distinct masses, tiers and steps per cell, concept against build. A part list that passes over the wrong
@@ -141,7 +166,7 @@ we don't run into the issues of before with just empty looking husks". What he w
 | B | Ryan picks one direction per faction | one sheet per faction, the Board's pick stated | Ryan |
 | C | Fleet brief: feature table per ship | docs/ship_pipeline/fleets/FACTION.md | Board or an Opus helper (high effort) |
 | D | The build sheet per ship (R203, R209, R213): one Blender blockout designed from the accepted concept, true views, feature table, INSIDE section, changes from the picture | docs/ship_pipeline/build_sheets/SHIP/ | Opus worker builds, Board checks beside the concept, Ryan looks |
-| E | Recipe stages 1 to 7 on the PC, one ship at a time | tools/recipe/1_concept_in.bat to 7_export.bat; ship file tools/recipe/ships/SHIP.json from _template.json | Opus worker (R205: every Blender model is Opus's) |
+| E | Recipe stages 1 to 7 on the PC, one ship at a time | tools/recipe/1_concept_in.bat to 7_export.bat; ship file tools/recipe/ships/SHIP.json from _template.json, naming the build sheet ("sheet", hull module sheet_hull; worked example corsair_A16.json) | Opus worker (R205: every Blender model is Opus's) |
 | F | Blob sweep: nine cells, bow, midship, stern from top, side and below, beside the concept views | docs/ship_pipeline/BLOB_SWEEP.md | Opus worker or Codex renders, Board looks, Ryan's eye decides |
 | G | The ship in the game on the look bench, battle camera first | tools/pc/jobs/look_bench.bat | Codex |
 | H | Ryan sees one image: the ship at the battle camera beside its concept | | Board |
@@ -155,10 +180,13 @@ hard points.
 
 - Stage 3: the outline overlap with the concept at the concept's own camera is reported, not a pass bar (RULEBOOK 5.8; was
   90 percent, R147). The stage prints the number and its picture; read them and say so in the report.
-- Stage 4: the audit lists nothing: no part floats or is sunk, nothing crosses a break line, no gun aims backward or into
-  the ship. audit_selftest.py proves the audit can fail.
+- Stage 4: the audit lists nothing: no part floats or is sunk, no machine crosses a break line (R226; structure may), no gun
+  aims backward or into the ship. audit_selftest.py proves the audit can fail. Transverse seams are required, the longitudinal seam is optional.
+  A sheet ship first passes sheet_contract_selftest.py (the sheet's data reached the recipe unchanged but for units).
 - Stage 7: check_export.py passes: every weapon slot in the ship's data.js list has a hard point, every hard point is on the
-  mesh, and the breach anchors meet their contract. The contract's count comes from the hull's class and faction
+  mesh (an engine point at the centre of an open bell passes by its bell: rim, throat and clear exhaust), every turret rests
+  inside its own arc, and the breach anchors meet their contract. An install refreshes the game's ship cache and reads the
+  ship back through ShipView, or the stage fails. The contract's count comes from the hull's class and faction
   (factions.md, "Breach anchors by class"; issue 363), never from a constant.
 - Stage 6 reports cost; costs are never capped (R111).
 - The insides (R209): a break render of each authored break line at the battle camera and at camera 60 shows decks, frames

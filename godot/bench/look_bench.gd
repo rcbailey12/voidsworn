@@ -114,7 +114,8 @@ func _warn(s: String) -> void:
 
 
 func _run() -> void:
-	var f := FileAccess.get_file_as_string(MOMENTS)
+	# issue 370: --moments FILE reads another rows file (a job's own rows, e.g. bench/look_moments_attach.json)
+	var f := FileAccess.get_file_as_string(str(args.get("moments", MOMENTS)))
 	var parsed = JSON.parse_string(f)
 	if not (parsed is Dictionary):
 		_log("ERROR cannot read " + MOMENTS)
@@ -538,12 +539,36 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 	A = _ship("A", str(att[0]), str(att[1]), Vector3(-34, 0, 0), 0)
 	if A == null:
 		return false
-	T = _ship("T", str(tgt[0]), str(tgt[1]), Vector3(34, 0, 0), 2)
+	# issue 370: a row may place the target ("tgt_at": [x, z]), for a broadside or a shot from behind
+	var tat: Array = row.get("tgt_at", [34, 0])
+	T = _ship("T", str(tgt[0]), str(tgt[1]), Vector3(float(tat[0]), 0, float(tat[1])), 2)
 	if T == null:
 		return false
 	if row.has("shield_left"):
 		fx.sync_ship("T", _unit(1.0, int(row["shield_left"])))
+	# Issue 461: a row may park a third ship beside the target ("near": [faction, class, dx, dz] in world units from
+	# the target), for example to show a torpedo hit lighting the hull next to it; and may run the engines at a level
+	# ("engine": 0 to 1) instead of the parked glow, for the engine flicker rows at the close cameras.
+	var near: Array = row.get("near", [])
+	if near.size() >= 4:
+		if _ship("N", str(near[0]), str(near[1]), T.global_position + Vector3(float(near[2]), 0.0, float(near[3])), 2) == null:
+			return false
+	if row.has("engine"):
+		for sid in fx.ships.keys():
+			fx.set_engine(str(sid), float(row["engine"]))
 	var focus: Vector3 = (A if str(row.get("focus", "target")) == "attacker" else T).global_position
+	# Issue 461: "attacker_engines" centres on the mean of the attacker's engine nozzles (the engine flicker rows)
+	if str(row.get("focus", "")) == "attacker_engines" and fx.ship("A") != null:
+		var sa = fx.ship("A")
+		var sum := Vector3.ZERO
+		for nz in sa.hull.nozzles:
+			sum += sa.to_world(nz["p"])
+		if sa.hull.nozzles.size() > 0:
+			focus = sum / float(sa.hull.nozzles.size())
+	# issue 560: a row may move the camera's focus off the ship's centre ("focus_off": [x, z] in world units), for a part
+	# such as the aft deck turrets
+	var fo: Array = row.get("focus_off", [0, 0])
+	focus += Vector3(float(fo[0]), 0.0, float(fo[1]))
 	_cam(focus, r)
 	for k in 72:   # 1.2 s: engines up, the first damage and cut jobs done
 		await _step()
@@ -561,7 +586,7 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		var shots := []
 		for i in n:
 			shots.append(true)
-		var res: Dictionary = fx.volley("A", kind, "T", {"weapon_id": wid, "shots": shots,
+		var res: Dictionary = fx.volley("A", kind, "T", {"weapon_id": wid, "shots": shots, "slot": int(row.get("slot", -1)),
 			"hits": _hits(n, str(row.get("on", "hull")) == "shield", bool(row.get("crit", false)))})
 		impacts = res.get("impacts", [])
 		if impacts.is_empty():
@@ -575,6 +600,19 @@ func _moment(row: Dictionary, r: float, crop: Vector2i, cell: Vector2i, d: Strin
 		fx.shield_break("T", 3)
 	elif what == "death":
 		fx.death("T", str(row.get("cause", "blast")))
+	# issue 370 (attach points): where a launch, the movement jets and the wounds start on the attacker's hull
+	elif what == "launch":
+		fx.launch("A", "T")
+	elif what == "jets":
+		# every movement jet ShipView fires, at once; the bench keeps ShipView's processing off, so each puff stays where
+		# it started (that start is what this row shows)
+		A._retro_puffs(1.0)
+		A._aft_puffs(1.0)
+		A._side_puffs(1.0, 1.0)
+		A._couple_puffs(1.0, 1.0)
+	elif what == "wounds":
+		fx.sync_ship("A", {"hp": 25.0, "maxHp": 100.0, "burning": false, "sh": [5, 5, 5, 5],
+			"sec": {"eng": {"hp": 10, "max": 100}, "mid": {"hp": 10, "max": 100}, "prow": {"hp": 10, "max": 100}}})
 	var anchors := {"fire": t_ev, "event": t_ev, "impact": t_ev + (float(impacts[0]) if impacts.size() > 0 else 0.6)}
 	# Issue 504: a row may fire a second volley from A at T during the event ("also": [seconds after the event, kind,
 	# weapon]), for example a torpedo landing on a dying capital; the "also" anchor is that volley's first impact.
