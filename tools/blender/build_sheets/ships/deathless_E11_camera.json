@@ -15,7 +15,7 @@
   1920,
   1280
  ],
- "iou": 0.8367,
- "body_iou": 0.841,
+ "iou": 0.825,
+ "body_iou": 0.8282,
  "note": "E11 sheet: view angles found by a coarse grid over azimuth, elevation and roll on the thinned mesh, then fit.py refined all seven camera numbers (never the ship); concept mask: luminance over 28, closed, holes filled, largest shape (the escort left out)"
 }

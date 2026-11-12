@@ -15,7 +15,7 @@
   2096,
   1184
  ],
- "iou": 0.5385,
+ "iou": 0.539,
  "body_iou": 0.5383,
  "note": "E12 sheet: start set by hand from the overlay, fit.py refined the camera only; concept mask: brightness over a modelled backdrop glow (the top-left haze), closed, holes filled, every shape over 4000 px except the escort"
 }

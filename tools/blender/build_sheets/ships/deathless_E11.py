@@ -125,22 +125,25 @@ def build(K):
                                                plates=dict(PL, seed=23, faces=[3, 4, 5], size=(0.3, 0.55), stride=2, inv='crescent_plates')),
            'violet plate', note='the third, shortest layer over the root')
     # corona lines: the blade's rim, the upper layer's rim, the inner rim
-    K.strip('E11_corona_rim', [(*cres(ph, 1.0), cz(ph, 1.0)[1] + 0.005) for ph in phis], w=0.045, t=0.03)
+    K.strip('E11_corona_rim', [(*cres(ph, 1.0), cz(ph, 1.0)[1] + 0.005) for ph in phis], w=0.034, t=0.025)
     K.strip('E11_corona_upper', [(*cres(ph, U_U), cz(ph, U_U)[1] + max(0.05, 0.25 * (1 - (ph / PHI_U) ** 2) ** 0.5) - 0.055)
-                                 for ph in [-PHI_U + 2 * PHI_U * i / N for i in range(N + 1)]], w=0.04, t=0.025)
+                                 for ph in [-PHI_U + 2 * PHI_U * i / N for i in range(N + 1)]], w=0.032, t=0.022)
     inner = []
     for ph in [-PHI_U + 2 * PHI_U * i / N for i in range(N + 1)]:
         t0 = max(0.05, 0.25 * (1 - (ph / PHI_U) ** 2) ** 0.5)
         tr = max(0.04, 0.2 * (1 - (ph / PHI_R) ** 2) ** 0.5) if abs(ph) < PHI_R else 0.0
         x, y = cres(ph, 0.0)
         inner.append((x + 0.04, y, cz(ph, 0.0)[1] + t0 + tr + 0.005))
-    K.strip('E11_corona_inner', inner, w=0.04, t=0.025)
+    K.strip('E11_corona_inner', inner, w=0.032, t=0.022)
     K.mark('crescent', 'shade', ['band', 'layer', 'corona', 'plate'])
     K.mark('crescent_plates', 'plate', ['slab', 'step', 'bevel', 'fastener'])
 
     # ---------------- the corona arc projector (doom F), out of the crescent's inner wall ----------------
     K.spinal('A1', (5.1, 0.0, Z0), 7.56, r=0.66, collar_r=1.02, collar_len=3.2, block_len=1.6, block_r=0.84, slot='F', weapon='doom',
              inv='projector', note='the corona arc projector on the axis, through the crescent; the spinal shell (nova) fires from it')
+    import bpy as _bpy
+    for nm_, ob_, col_ in (('Projector breech collars', 'A1_mount_mauve', 'mauve and violet'), ('Projector shaft', 'A1_body_violet', 'violet and mauve'), ('Projector muzzle block', 'A1_body_mauve', 'mauve')):
+        K.mass(nm_, _bpy.data.objects[ob_], col_, note='a part of the kit projector, counted as its own mass')
 
     # ---------------- the body: the neck brow, dorsal tiers, flank belt, skirt, band collar ----------------
     def tier(name, x0, x1, hw0, hw1, lift, seed):

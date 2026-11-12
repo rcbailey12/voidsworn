@@ -70,9 +70,9 @@ MATS = {
     'violet': ((0.07, 0.034, 0.105), 0),      # Eclipse violet plate
     'lilac': ((0.15, 0.115, 0.165), 0),        # pale grey-mauve plate (the weathered patches)
     'gunv': ((0.045, 0.038, 0.055), 0),        # violet gunmetal: barrels, frames, machinery
-    'corona': ((0.25, 1.0, 0.4), 1.1),        # the thin green-white corona line on every shade rim
+    'corona': ((0.2, 1.0, 0.35), 0.7),        # the thin green-white corona line on every shade rim
     'ecore': ((0.2, 1.0, 0.3), 1.4),         # the trapped light core
-    'lens': ((0.15, 1.0, 0.28), 1.8),          # the corona arc emitter lens
+    'lens': ((0.15, 1.0, 0.28), 1.2),          # the corona arc emitter lens
     'archive': ((0.30, 0.55, 0.42), 0),      # inside: archive vaults
     'darkdeck': ((0.20, 0.18, 0.24), 0),     # inside: dark decks
 }

@@ -40,7 +40,7 @@ HULL = [
     (-6.65, 1.12, 1.12, -0.66, 0.86, 0, 0),
 ]
 PEXP = (3.0, 3.0)   # the block's section: a rounded box (the concept's block is round-shouldered, never a slab)
-PL = dict(keep3d=True, size=(0.25, 0.55), thick=(0.025, 0.07), skip=0.07, stack=0.35, mats={'shade2': 5, 'violet': 3, 'shade': 2, 'mauve': 1})
+PL = dict(keep3d=True, size=(0.2, 0.45), thick=(0.04, 0.1), skip=0.06, stack=0.5, mats={'shade2': 5, 'violet': 3, 'shade': 3, 'mauve': 1})
 
 
 def ring_pt(t_deg, r):
@@ -54,7 +54,7 @@ def build(K):
     import kit as _k
     from mathutils import Vector
 
-    hull = K.hull(HULL, 'shade2', shell=0.12, plates=dict(PL, seed=51, inv='spine_plates'), rounded=True, pexp=PEXP)
+    hull = K.hull(HULL, 'shade', shell=0.12, plates=dict(PL, seed=51, inv='spine_plates'), rounded=True, pexp=PEXP)
     K.mass('Hull: the stern block and the aft spine', hull, 'deep violet plate', note='a round-shouldered block tapering forward into the spine')
     K.mass('Block roof step', K.loft('E12_roofstep', [(-4.2, 0.85, 0.85, 0.7, 1.08, 0.12, 0.0), (-4.45, 0.95, 0.95, 0.7, 1.12, 0.14, 0.0), (-6.0, 0.95, 0.95, 0.7, 1.12, 0.14, 0.0),
                                                      (-6.2, 0.85, 0.85, 0.7, 1.06, 0.12, 0.0)], 'violet', plates=dict(PL, seed=53, faces=[0, 1, 2, 3], size=(0.2, 0.4))),
@@ -86,11 +86,11 @@ def build(K):
                 for r, z in sec:
                     x, y = ring_pt(t, r); pts.append((x, y, z))
                 rings.append(pts if side > 0 else pts[::-1])
-            ob = K.loft_rings('E12_arc_%s_%s' % (nm, 'p' if side > 0 else 's'), rings, 'shade2',
+            ob = K.loft_rings('E12_arc_%s_%s' % (nm, 'p' if side > 0 else 's'), rings, 'shade',
                               plates=dict(PL, seed=60 + narc, faces=[6, 7, 0] if side > 0 else [0, 7, 6], size=(0.25, 0.5), inv='arc_plates'))
             K.mass('Arc, %s %s' % (nm, 'port' if side > 0 else 'starboard'), ob, 'deep violet plate', note='box-section shade arc, the inner bay open')
             # the corona line along the outer rim
-            K.strip('E12_corona_%s_%s' % (nm, 'p' if side > 0 else 's'), [(*ring_pt(t, 0.02), zt + 0.002) for t in ts], w=0.06, t=0.03)
+            K.strip('E12_corona_%s_%s' % (nm, 'p' if side > 0 else 's'), [(*ring_pt(t, 0.02), zt + 0.002) for t in ts], w=0.034, t=0.022)
             # frames across the open bay and the machinery running along it
             nf = max(2, int((t1 - t0) / 7))
             for j in range(nf + 1):
@@ -145,6 +145,9 @@ def build(K):
     K.mark('saddles', 'pylon', ['web', 'plate'])
     K.spinal('A1', (5.3, 0.0, ZS), 1.05, r=0.24, collar_r=0.4, collar_len=0.45, block_len=0.36, block_r=0.33, slot='F', weapon='doom', inv='emitter',
              note='the corona arc emitter on the spine head, firing through the ring\'s bow gap')
+    import bpy as _bpy
+    for nm_, ob_, col_ in (('Emitter collars', 'A1_mount_mauve', 'mauve and violet'), ('Emitter shaft', 'A1_body_violet', 'violet and mauve'), ('Emitter block', 'A1_body_mauve', 'mauve')):
+        K.mass(nm_, _bpy.data.objects[ob_], col_, note='a part of the kit projector, counted as its own mass')
     K.gun('G1', (-5.25, 0.0, 1.12), 0, 6, barrels=2, cal=0.05, blen=0.75, size=0.55, slot='T', weapon='gsentry', inv='sentry', variant=2,
           note='the null spire: a small sentry twin on the block roof with green sights')
 
@@ -157,7 +160,7 @@ def build(K):
     for side in (1, -1):
         sn = 'p' if side > 0 else 's'
         for j, x in enumerate((-4.45, -4.75, -5.05)):
-            K.lamp('L%d%s' % (j, sn), (x, side * 1.33, 0.36), (0, side, 0), inv='block_lights', note='green light panel on the block flank')
+            K.lamp('L%d%s' % (j, sn), (x, side * 1.33, 0.36), (0, side, 0), inv='block_lights', note='green light panel on the block flank', up=(0, 0, 1))
         K.vent('V1' + sn, (-5.5, side * 1.33, 0.3), (0, side, 0), 0.4, 0.36, slats=4, inv='block_vents', note='heat slot panel on the block flank')
         K.hatch('H1' + sn, (-6.0, side * 0.5, 1.12), (0, 0, 1), 0.26, inv='block_hatches', note='hatch on the block roof')
         K.thruster('Q1' + sn, (-4.0, side * 0.98, 0.8), (0, side * 0.6, 0.8), r=0.2, inv='thrusters', note='block roof edge, firing up and out over the ring')

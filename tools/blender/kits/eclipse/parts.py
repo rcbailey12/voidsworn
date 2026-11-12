@@ -253,8 +253,8 @@ def spinal(length, r=0.55, collar_r=None, collar_len=None, block_len=None, block
                                              (length - 0.05, brr * 0.62)], seg, closed=True, phase=ph))
     p.add('blockcap', 'body', 'violet', revolve([(x1 + bl * 0.35, brr * 0.99), (x1 + bl * 0.35, brr * 1.06), (x1 + bl * 0.5, brr * 1.06),
                                                 (x1 + bl * 0.5, brr * 0.99)], seg, closed=True, phase=ph))
-    p.add('bore', 'body', 'dark', revolve([(length - 0.05, brr * 0.62), (length - 0.3, brr * 0.5), (length - 0.3, 0.001)], 16))
-    p.add('lens', 'body', 'lens', revolve([(length - 0.28, brr * 0.34), (length - 0.2, brr * 0.3), (length - 0.16, 0.001)], 16, cap0=True))
+    p.add('bore', 'body', 'dark', revolve([(length - 0.05, brr * 0.62), (length - 0.35, brr * 0.5), (length - 0.35, 0.001)], 16))
+    p.add('lens', 'body', 'lens', revolve([(length - 0.34, brr * 0.16), (length - 0.3, brr * 0.14), (length - 0.27, 0.001)], 16, cap0=True))
     p.fit = dict(muzzles=[P((length, 0, 0))], pivot=P((length - 0.05, 0, 0)), trunnion=P((length - 0.05, 0, 0)), reach=0.3,
                  aim=D((1, 0, 0)), up=D((0, 0, 1)), mount='spinal', radius=brr)
     return p
