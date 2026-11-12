@@ -7,7 +7,7 @@ rem If the push fails, the change is saved as build_b\cx_issue<n>.patch for Opus
 rem Everything for the job (log, Codex's report, result) lands in Downloads\voidsworn_test\board\issue-<n>\.
 rem Runner 2 (issue 377, Opus, Nov 12 2026), the same steps as tools/pc/work_issue.bat through work_issue.ps1:
 rem  a Codex exit code that is not 0 (124 is the time cap) pushes to codex/issue-<n>-partial, which opens no pull request;
-rem  the guard step refuses ship, gen, .uid, .import and oversized files (copies kept in board\issue-<n>\refused) and warns
+rem  the guard step refuses ship, gen, .uid, .import and oversized files (copies kept per run in board\issue-<n>\runs\<date_time>\refused) and warns
 rem  about files outside the issue's Deliver to; one checked commit keeps the branch's earlier tip as a parent, so the push
 rem  needs no force; GitHub's branch must then carry exactly out\diffstat.txt, or the run stops loudly (DIFF MISMATCH).
 rem Test mode (for the Board's dry runs): CODEX_TEST_ROOT moves repo and out folders there, CODEX_TEST_AGENT is a .bat run

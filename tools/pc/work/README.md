@@ -42,8 +42,9 @@ work_issue.ps1):
   title starts "PARTIAL RUN". tools/pc/issue-377-auto_pr.patch makes auto_pr.yml open no pull request for those branches.
 - **Refuse list** (`work_issue.ps1 guard`, after `git add -A`). Never committed: files over WORK_MAX_FILE_MB (default 8),
   anything under godot/gen, godot/.godot or godot/assets/ships/<hull>/ (previews and test stay allowed), new .uid files, new
-  or re-saved .import files. Each refused file is unstaged and copied to out\refused\ (never deleted); the list goes to
-  result.txt, out\refused.txt and the PR text. A changed file outside the issue's "Deliver to" line is a warning only.
+  or re-saved .import files. Each refused file is unstaged and copied to out\runs\<date_time>\refused\ (never deleted; a folder per
+  run, so Codex reruns that share board\issue-N keep every earlier copy); the list goes to result.txt, that folder's
+  refused.txt and the PR text. A changed file outside the issue's "Deliver to" line is a warning only.
 - **No force push** (`work_issue.ps1 commit`). The run's one commit is made with git plumbing and its exit code checked; when
   the branch already exists on GitHub its tip becomes the commit's second parent, so a rerun is a plain fast-forward and the
   earlier run's commit stays reachable. The commit text ends with "Run-Number: k".

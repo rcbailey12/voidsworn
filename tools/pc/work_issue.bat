@@ -18,7 +18,7 @@ rem      it pushes to work/issue-<n>-<arm>-partial, which opens no pull request 
 rem      the runner checks.
 rem  (b) After git add -A the guard step (work_issue.ps1 guard) refuses files over WORK_MAX_FILE_MB (default 8), anything
 rem      under godot/gen, godot/.godot or godot/assets/ships/<hull>/ (previews and test stay allowed), new .uid files and new
-rem      or re-saved .import files. Refused files are unstaged, copied to out\refused\ (never deleted) and listed in
+rem      or re-saved .import files. Refused files are unstaged, copied to out\runs\<date_time>\refused\ (never deleted) and listed in
 rem      result.txt and the PR text. Changed files outside the issue's Deliver to line are listed as a warning.
 rem  (c) No force push. The run's one commit is made with git's plumbing and checked; when the branch already exists its
 rem      earlier tip becomes the commit's second parent, so a rerun is a plain fast-forward push and the earlier run's

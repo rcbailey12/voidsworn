@@ -7,7 +7,8 @@
 #   work_issue.ps1 stats   <n> <arm> <out>                        reads events.jsonl, balances and times; writes stats.txt and last.md
 #   work_issue.ps1 msg     <n> <arm> <out>                        writes commit.txt (becomes the PR description)
 # Runner 2 (issue 377, Opus, Nov 12 2026); codex_issue.bat uses these three too:
-#   work_issue.ps1 guard   <n> <tag> <repo> <out>                 the refuse list and the Deliver to warning, on the staged change
+#   work_issue.ps1 guard   <n> <tag> <repo> <out>                 the refuse list and the Deliver to warning, on the staged change;
+#                                                                 its files go to <out>\runs\<date_time>\ (one folder per run)
 #   work_issue.ps1 commit  <repo> <out> <branch> <real|dry|test>  one commit that keeps the branch's earlier tip, checked before push
 #   work_issue.ps1 confirm <repo> <out> <branch> <real|dry|test>  after the push: GitHub's branch must carry exactly out\diffstat.txt
 #   work_issue.ps1 tidy    <run folder> <root> <settings> <ok> <dry>  run folder size; removes repo\ only if Ryan's setting allows
@@ -216,8 +217,10 @@ elseif ($mode -eq 'msg') {
   [IO.File]::WriteAllText((Join-Path $out 'commit.txt'), $msg, $utf8)
 }
 elseif ($mode -eq 'guard') {
-  # After git add -A: refuse what must never be committed, keep a copy of it in out\refused (never deleted), and warn
-  # about changed files outside the issue's Deliver to line. Writes refused.txt, scope_warnings.txt and guard.md.
+  # After git add -A: refuse what must never be committed, keep a copy of it (never deleted), and warn about changed files
+  # outside the issue's Deliver to line. Everything this step makes goes to a folder of its own for this run,
+  # <out>\runs\<date_time>\ (refused\, refused.txt, scope_warnings.txt, guard.md), so a rerun that shares <out> (Codex's
+  # board\issue-N) never overwrites an earlier run's refused copies (Muse, opus_check_575). out\guard_dir.txt names it.
   $ErrorActionPreference = 'Continue'
   $n = $args[1]; $tag = $args[2]; $repo = $args[3]; $out = $args[4]
   $maxMb = 8; if ($env:WORK_MAX_FILE_MB) { $maxMb = [double]$env:WORK_MAX_FILE_MB }
@@ -234,6 +237,12 @@ elseif ($mode -eq 'guard') {
     } catch { }
   }
   $scope = @(Scope-Paths $dl)
+  $stamp = Get-Date -Format 'yyyyMMdd_HHmmss'
+  $gdir = Join-Path $out "runs\$stamp"; $k = 2
+  while (Test-Path -LiteralPath $gdir) { $gdir = Join-Path $out "runs\${stamp}_$k"; $k++ }
+  New-Item -ItemType Directory -Force -Path $gdir | Out-Null
+  $grel = $gdir.Substring($out.TrimEnd('\').Length).TrimStart('\')
+  [IO.File]::WriteAllText((Join-Path $out 'guard_dir.txt'), $gdir, [Text.Encoding]::ASCII)
   $refused = @(); $warn = @()
   foreach ($l in $staged) {
     $parts = $l -split "`t", 2
@@ -244,7 +253,7 @@ elseif ($mode -eq 'guard') {
     if ($p -like "docs/shots/issue-$n-$tag/*") { continue }
     if ($scope.Count -and -not (In-Scope $p $scope)) { $warn += "$st $p" }
   }
-  $keep = Join-Path $out 'refused'
+  $keep = Join-Path $gdir 'refused'
   $bad = @()
   foreach ($r in $refused) {
     if ($r.S -ne 'D') {
@@ -257,15 +266,15 @@ elseif ($mode -eq 'guard') {
   $after = @(Git-Lines -c core.quotepath=off diff --cached --name-only --no-renames)
   foreach ($r in $refused) { if ($after -contains $r.P) { $bad += "still staged: $($r.P)" } }
   $rl = @($refused | ForEach-Object { "$($_.S) $($_.P): $($_.Why)" })
-  Write-Lines (Join-Path $out 'refused.txt') $rl
-  Write-Lines (Join-Path $out 'scope_warnings.txt') $warn
+  Write-Lines (Join-Path $gdir 'refused.txt') $rl
+  Write-Lines (Join-Path $gdir 'scope_warnings.txt') $warn
   $md = @()
   if ($refused.Count) {
-    Write-Host "REFUSED $($refused.Count) file(s): not committed, copies kept in out\refused (never deleted):"
+    Write-Host "REFUSED $($refused.Count) file(s): not committed, copies kept in $gdir\refused (never deleted):"
     $rl | ForEach-Object { Write-Host "  $_" }
-    $md += "Refused by the runner, not committed ($($refused.Count); copies kept on the PC in the run's out\refused):"
+    $md += "Refused by the runner, not committed ($($refused.Count); copies kept on the PC in the run's out folder, $grel\refused):"
     $md += @($rl | Select-Object -First 30 | ForEach-Object { "- $_" })
-    if ($rl.Count -gt 30) { $md += "- and $($rl.Count - 30) more (out\refused.txt on the PC)" }
+    if ($rl.Count -gt 30) { $md += "- and $($rl.Count - 30) more ($grel\refused.txt on the PC)" }
     $md += ''
   } else { Write-Host 'refuse list: nothing refused' }
   if (-not $scope.Count) {
@@ -276,9 +285,9 @@ elseif ($mode -eq 'guard') {
     $warn | ForEach-Object { Write-Host "  $_" }
     $md += "Warning: changed outside the issue's Deliver to ($($scope -join ', ')):"
     $md += @($warn | Select-Object -First 30 | ForEach-Object { "- $_" })
-    if ($warn.Count -gt 30) { $md += "- and $($warn.Count - 30) more (out\scope_warnings.txt on the PC)" }
+    if ($warn.Count -gt 30) { $md += "- and $($warn.Count - 30) more ($grel\scope_warnings.txt on the PC)" }
   } else { Write-Host "scope: every changed file is inside the issue's Deliver to" }
-  Write-Lines (Join-Path $out 'guard.md') $md
+  Write-Lines (Join-Path $gdir 'guard.md') $md
   Pop-Location
   if ($bad.Count) { Write-Host 'guard failed:'; $bad | ForEach-Object { Write-Host "  $_" }; exit 1 }
   exit 0
@@ -326,7 +335,10 @@ elseif ($mode -eq 'commit') {
   $n = ''; if ($br -match 'issue-(\d+)') { $n = $Matches[1] }
   if (-not $msg.Trim()) { $msg = "Runner commit for $br (the message step left no text; the agent's report is in the run's out folder on the PC)`n`nRefs #$n`n"; Write-Host 'WARNING: commit.txt was empty, the runner wrote a plain message' }
   $partial = Read-Txt (Join-Path $out 'partial.txt')
-  $guard = Read-Txt (Join-Path $out 'guard.md')
+  # The refuse step's text for this run: its own folder (out\guard_dir.txt), never an earlier run's.
+  $guard = ''
+  $gd = Read-Txt (Join-Path $out 'guard_dir.txt')
+  if ($gd) { $guard = Read-Txt (Join-Path $gd 'guard.md') }
   $base = Read-Txt (Join-Path $out 'base_commit.txt')
   $block = "## Runner (issue 377)`n`n"
   if ($partial) {
