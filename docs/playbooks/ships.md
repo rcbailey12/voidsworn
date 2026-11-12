@@ -23,6 +23,17 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    decal rules) on the shared machinery (`tools/blender/kits/shared/paint_stack.py`: masks baked from the ship's own geometry,
    the bake), and the sheet's materials say where each colour zone sits. A faction with no stack yet stays unpainted
    (RECIPE.md "The paint stack for sheet ships"). Nobody paints a ship by hand.
+   What the Hullbreaker stack must show (R228, Ryan, Nov 12 2026 14:21 CST, agreeing with the Board's review of A16 pass 1:
+   "Yep completely agree with your findings"), set in the faction stack for every Hullbreaker sheet ship, never on one ship:
+   (1) a plate patchwork at the concept's density, many small plates each with its own tone (soot, gun-metal, brick-red rust,
+   bare-steel scrapes, the purple trophy panels), driven by panel cells and the modelled plates' own islands (the stack's
+   PATCH_FAMILIES, patch_cell); (2) contrast: black seams and dark recesses, brighter worn edges and scrapes, never flat grey
+   at camera 170; (3) rust is a dark brick red, never pink, judged under the battle lift (1.25, R227); (4) red running lights
+   that reach the 2 px light rule at the battle camera (light_min_px on a 70 px ship): a row along each flank at the sheet's
+   lamp height plus deck-edge points, small, red, under the game's glow threshold so no halo, built by the stack's
+   RUNNING_LIGHTS rule and measured into the job's lights.json, which the standing lights check reads; (5) engine glow is the
+   game's: the export marks each bell (hp_eng with its radius) and the game's engine effect draws the plume there, with the
+   sheet's own emissive throat and bell lining; the paint never fakes a glow.
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
    opus_check_341).

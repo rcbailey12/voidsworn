@@ -216,6 +216,40 @@ def decal_layer(c, col, height, rough, decals, atlas, cells, wear):
     return col, height, rough
 
 
+def patchwork(c, S, col, amount):
+    """the plate patchwork: a staggered grid of panels at the faction's plate size in the ship frame, each panel (and each modelled
+    plate, by its UV island) picks one of the faction's plate families; returns the colour and the seam mask (the panel borders
+    on the face's own plane, never across it)"""
+    nt = c.nt; L = S.LAYERS; cx, cy, cz = L['patch_cell']
+    q = node(nt, 'ShaderNodeVectorMath', operation='DIVIDE'); nt.links.new(c.pos, q.inputs[0]); q.inputs[1].default_value = (cx, cy, cz)
+    sq = node(nt, 'ShaderNodeSeparateXYZ'); nt.links.new(q.outputs[0], sq.inputs[0])
+    row = math_(nt, 'FLOOR', sq.outputs[2])
+    odd = math_(nt, 'MULTIPLY', math_(nt, 'MODULO', math_(nt, 'ABSOLUTE', row), 2.0), .5)
+    qx = math_(nt, 'ADD', sq.outputs[0], odd); qy = math_(nt, 'ADD', sq.outputs[1], odd)
+    cq = node(nt, 'ShaderNodeCombineXYZ'); nt.links.new(math_(nt, 'FLOOR', qx), cq.inputs[0]); nt.links.new(math_(nt, 'FLOOR', qy), cq.inputs[1]); nt.links.new(row, cq.inputs[2])
+    wn = node(nt, 'ShaderNodeTexWhiteNoise', noise_dimensions='3D'); nt.links.new(cq.outputs[0], wn.inputs['Vector'])
+    r = math_(nt, 'FRACT', math_(nt, 'ADD', wn.outputs['Value'], math_(nt, 'MULTIPLY', c.isl, .618)))
+    r2 = wn.outputs['Color']
+    sp2 = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(r2, sp2.inputs[0]); tone = sp2.outputs[1]
+    lo = 0.0
+    for share, (flo, fhi) in S.PATCH_FAMILIES:
+        hi = lo + share
+        m = math_(nt, 'MULTIPLY', math_(nt, 'GREATER_THAN', r, lo - 1e-4), math_(nt, 'LESS_THAN', r, hi))
+        fam = mixc(nt, flo, fhi, math_(nt, 'ADD', math_(nt, 'MULTIPLY', tone, .7), math_(nt, 'MULTIPLY', c.noise(L['patch_scale'] * 3, 3), .3)))
+        col = mixc(nt, col, fam, math_(nt, 'MULTIPLY', m, amount))
+        lo = hi
+    # seams: the distance to the panel border along each axis, counted only on the axes that lie in the face's plane
+    nrm = node(nt, 'ShaderNodeSeparateXYZ'); nt.links.new(c.geo.outputs['Normal'], nrm.inputs[0])
+    seam = None
+    for qa, size, na in ((qx, cx, nrm.outputs[0]), (qy, cy, nrm.outputs[1]), (sq.outputs[2], cz, nrm.outputs[2])):
+        f = math_(nt, 'FRACT', qa); d = math_(nt, 'MULTIPLY', math_(nt, 'MINIMUM', f, math_(nt, 'SUBTRACT', 1, f)), size)
+        e = math_(nt, 'SUBTRACT', 1, ramp(nt, d, L['patch_seam'] * .4, L['patch_seam']))
+        e = math_(nt, 'MULTIPLY', e, ramp(nt, math_(nt, 'SUBTRACT', 1, math_(nt, 'ABSOLUTE', na)), .35, .65))
+        seam = e if seam is None else math_(nt, 'MAXIMUM', seam, e)
+    seam = math_(nt, 'MULTIPLY', seam, amount)
+    return col, seam
+
+
 def zone_material(S, zone, group, masks, tiles, decals, decal_atlas):
     """the procedural material of one zone in one atlas (group 'H' hull, 'P' parts), from the faction stack S"""
     z = S.ZONES[zone]
@@ -230,12 +264,15 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas):
     col = mixc(nt, lo, hi, tone)
     col = mulc(nt, col, math_(nt, 'ADD', 1 - z.get('plate_var', L['plate_var']) / 2, math_(nt, 'MULTIPLY', c.isl, z.get('plate_var', L['plate_var']))))
     mo = L.get('mottle', .2); col = mulc(nt, col, math_(nt, 'ADD', 1 - mo / 2, math_(nt, 'MULTIPLY', c.noise(L['mottle_scale'], 5, .65), mo)))
+    seam = None
     if group == 'H' and z.get('red_share', 0) > 0:      # a share of the zone's hull plates (by island) carry the red over-paint, worn
         pick = math_(nt, 'GREATER_THAN', math_(nt, 'FRACT', math_(nt, 'MULTIPLY', c.isl, 7.31)), 1 - z['red_share'])
         rlo, rhi = S.RED_PLATE
         red = mixc(nt, rlo, rhi, ramp(nt, c.noise(L['patch_scale'] * 3, 3), .3, .7))
         thin = ramp(nt, c.noise(L['mottle_scale'] * .5, 4, .6), .32, .58)          # the paint is thin and patchy
         col = mixc(nt, col, red, math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', pick, thin), L.get('red_tone', .75)))
+    if group == 'H' and z.get('patchwork', 0) > 0 and getattr(S, 'PATCH_FAMILIES', None):
+        col, seam = patchwork(c, S, col, z['patchwork'])
     col = mulc(nt, col, math_(nt, 'ADD', 1 - L['side_dark'], math_(nt, 'MULTIPLY', c.up, L['side_dark'])))
     height = math_(nt, 'MULTIPLY', c.noise(L['grain_scale'], 4, .6), L.get('grain', .05))
     rough = math_(nt, 'ADD', z.get('rough', L['rough']), math_(nt, 'MULTIPLY', c.noise(L['grain_scale'], 2), .08))
@@ -279,9 +316,14 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas):
     col = mixc(nt, col, S.GRIME, math_(nt, 'MULTIPLY', g, .8))
     run = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', ramp(nt, c.noise(L['streak_scale'] * .7, 2, .5, stretch=(30, 30, 1.6)), .55, .74), c.side), z.get('grime', L['grime']) * .5)
     col = mulc(nt, col, math_(nt, 'SUBTRACT', 1, run))
-    col = mulc(nt, col, math_(nt, 'ADD', 1 - L['ao_dark'], math_(nt, 'MULTIPLY', c.ao, L['ao_dark'])))
+    cav = math_(nt, 'POWER', c.ao, L.get('cavity_pow', 1.0))
+    col = mulc(nt, col, math_(nt, 'ADD', 1 - L['ao_dark'], math_(nt, 'MULTIPLY', cav, L['ao_dark'])))
+    if seam is not None:       # black seams between the panels
+        col = mulc(nt, col, math_(nt, 'SUBTRACT', 1, math_(nt, 'MULTIPLY', seam, L.get('seam_dark', .8))))
+        height = math_(nt, 'SUBTRACT', height, math_(nt, 'MULTIPLY', seam, .5))
+        rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', seam, .1))
     # 5. decals (hull atlas): before the wear, so the wear eats into them
-    wear = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', c.edge, ramp(nt, c.noise(L['wear_scale'], 6, .6), .38, .62)), wear_amt)
+    wear = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', c.edge, ramp(nt, c.noise(L['wear_scale'], 6, .6), L.get('wear_lo', .38), L.get('wear_hi', .62))), wear_amt)
     wear = math_(nt, 'MULTIPLY', wear, ramp(nt, c.noise(L['wear_patch'], 2), .30, .66), clamp=True)
     if decals and decal_atlas is not None:
         col, height, rough = decal_layer(c, col, height, rough, decals, decal_atlas, S.DECAL_CELLS, math_(nt, 'ADD', math_(nt, 'MULTIPLY', scuff, .7), wear))
@@ -424,6 +466,108 @@ def _room(T, p, n, w, h):
     return ok / tot
 
 
+# ------------------------------------------------------------------------------------------------------------ running lights
+def _box(name, centre, t, b, n, w, h, d, mat, role, grp, back=.0003):
+    """a flat box on a surface frame (t across, b up, n out): its front d out from centre, its back `back` behind it"""
+    bm = bmesh.new(); vs = []
+    for k in (0, 1):
+        for sv in (-1, 1):
+            for su in (-1, 1):
+                vs.append(bm.verts.new(centre + t * (su * w / 2) + b * (sv * h / 2) + n * (d if k else -back)))
+    for f in ((0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)):
+        bm.faces.new([vs[i] for i in f])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    me = bpy.data.meshes.new(name); bm.to_mesh(me); bm.free()
+    m = bpy.data.materials.get(mat) or bpy.data.materials.new(mat); me.materials.append(m)
+    o = bpy.data.objects.new(name, me); bpy.context.scene.collection.objects.link(o)
+    o['role'] = role; o['grp'] = grp; o['part_kind'] = 'lamp'; o['machine'] = 0; o['inside'] = False
+    return o
+
+
+def add_running_lights(S, hull, others, decals):
+    """the faction's running lights, by its rule (S.RUNNING_LIGHTS), on this ship's own hull: each lens at least the light size
+    rule across (px on a 70 px ship, the ship one unit long), a flank row at the sheet's lamp height and a few deck-edge points,
+    each on a hull face with room, clear of every part, of the decals and of the breach, braking and boarding points. Returns the
+    report (count, size in px, where)."""
+    R = S.RUNNING_LIGHTS; px = R['px']; h = px / 70.0; w = h * R['aspect']
+    dg = bpy.context.evaluated_depsgraph_get()
+    def tree(objs):
+        bm = bmesh.new()
+        for o in objs:
+            e = o.evaluated_get(dg); me = e.to_mesh(); t = bmesh.new(); t.from_mesh(me); t.transform(o.matrix_world)
+            tm = bpy.data.meshes.new('_t'); t.to_mesh(tm); t.free(); bm.from_mesh(tm); bpy.data.meshes.remove(tm); e.to_mesh_clear()
+        T = BVHTree.FromBMesh(bm); bm.free(); return T
+    TH = tree(hull); TA = tree(hull + others)
+    xs = [v for o in hull for v in (o.matrix_world @ Vector(b) for b in o.bound_box)]
+    x0 = min(v.x for v in xs); x1 = max(v.x for v in xs); zt = max(v.z for v in xs); zb = min(v.z for v in xs)
+    keep = [Vector(p['pos']) for p in json.loads(bpy.context.scene.get('r209_points', '[]')) if p['kind'] in ('breach', 'rcs', 'board')]
+    keep_d = [Vector(d['pos']) for d in decals]
+    lamps = [o for o in others if o.get('part_kind') == 'lamp']
+    def clear(p):
+        return all((p - k).length > R['clear_points'] for k in keep) and all((p - k).length > R['clear_decals'] for k in keep_d)
+    made = []; rep = []
+    def seat(p, n):
+        """a light bridges the plate steps under it: every ray over its frame must land on the hull (not a part) on a face
+        turned out; the frame's back reaches the deepest of them, its front sits proud of the highest (never floating)"""
+        b = Vector((0, 0, 1)) if abs(n.z) < .7 else Vector((1, 0, 0)); b = (b - n * b.dot(n)).normalized(); t = n.cross(b).normalized()
+        fr = 1 + R['frame']; ds = []
+        for su in (-.5, 0, .5):
+            for sv in (-.5, 0, .5):
+                q = p + t * (su * w * fr) + b * (sv * h * fr) + n * .05
+                a_ = TA.ray_cast(q, -n); h_ = TH.ray_cast(q, -n)
+                if a_[0] is None or h_[0] is None or (a_[0] - h_[0]).length > 1e-5 or h_[1].dot(n) < .6: return None
+                ds.append((h_[0] - p).dot(n))
+        if max(ds) - min(ds) > R.get('max_step', .010): return None
+        return t, b, max(ds), max(ds) - min(ds)
+    def place(p, n, tag):
+        st = seat(p, n)
+        if st is None: return False
+        t, b, top, spread = st; c = p + n * top
+        g = f'RL{len(made) // 2}'; fr = 1 + R['frame']
+        made.append(_box(g + '_mount_iron', c, t, b, n, w * fr, h * fr, R['proud'] * .6, 'iron', 'mount', g, back=spread + .0006))
+        made.append(_box(g + '_body_light', c, t, b, n, w, h, R['proud'], 'light', 'body', g))
+        rep.append(dict(at=tag, pos=[round(v, 4) for v in c], bridge=round(spread, 4))); return True
+    for sy in (1, -1):
+        cy = lambda o: sum((o.matrix_world @ Vector(c)).y for c in o.bound_box) / 8      # noqa: E731 (the contract bakes transforms in)
+        mine = [o for o in lamps if (cy(o) > 0) == (sy > 0)]
+        zs = [sum((o.matrix_world @ Vector(c)).z for c in o.bound_box) / 8 for o in mine]
+        zrow = sorted(zs)[len(zs) // 2] if zs else None
+        fx = R['flank']['x'][0]
+        while fx <= R['flank']['x'][1] + 1e-9:
+            x = x1 - fx * (x1 - x0)
+            cands = [zrow + dz * h for dz in (0, 1.3, -1.3, 2.6, -2.6, 3.9, -3.9, 5.2)] if zrow is not None else \
+                [zb + f * (zt - zb) for f in np.linspace(R['flank']['z_band'][0], R['flank']['z_band'][1], 5)]
+            placed = False
+            for z, dx in [(z, dx) for dx in (0, .25, -.25, .45, -.45) for z in cands]:
+                if placed: break
+                o = Vector((x + dx * R['flank']['step'], sy * 2.0, z)); d = Vector((0, -sy, 0))
+                hit = TA.ray_cast(o, d); hh = TH.ray_cast(o, d)
+                if hit[0] is None or hh[0] is None or (hit[0] - hh[0]).length > 1e-5: continue
+                n = hh[1].normalized()
+                if n.y * sy < .75 or not clear(hh[0]): continue
+                placed = place(hh[0], n, 'port flank' if sy > 0 else 'starboard flank')
+            fx += R['flank']['step']
+        for fx in R['deck']['x']:
+            x = x1 - fx * (x1 - x0)
+            # the deck edge: the outermost up-facing hull deck at this station, then step in from it until a light seats
+            edge = None; zdeck = None
+            for y in np.linspace(.01, .25, 49):    # walk out across the top deck; its edge is where the deck level drops away
+                hh = TH.ray_cast(Vector((x, sy * y, zt + 1.0)), Vector((0, 0, -1)))
+                if hh[0] is None: break
+                if hh[1].z <= .85: continue
+                if zdeck is None: zdeck = hh[0].z
+                if abs(hh[0].z - zdeck) > .008: break
+                edge = sy * y
+            ys = [] if edge is None else [edge - sy * R['deck']['inset'] * k for k in np.linspace(1, 6, 11)]
+            for y in ys:
+                o = Vector((x, y, zt + 1.0)); hit = TA.ray_cast(o, Vector((0, 0, -1))); hh = TH.ray_cast(o, Vector((0, 0, -1)))
+                if hit[0] is None or hh[0] is None or (hit[0] - hh[0]).length > 1e-5: continue
+                n = hh[1].normalized()
+                if n.z < .85 or not clear(hh[0]): continue
+                if place(hh[0], n, 'port deck edge' if sy > 0 else 'starboard deck edge'): break
+    return made, dict(count=len(made) // 2, px=round(min(w, h) * 70.0, 2), lens=[round(w, 4), round(h, 4)], rule=R, where=rep)
+
+
 # ------------------------------------------------------------------------------------------------------------ the whole stack
 def use(S):
     GLOW_ZONES.clear(); GLOW_ZONES.update(S.GLOW)
@@ -435,7 +579,6 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
     H, P, G, I = split()
     INFO.update(hull_objects=len(H), part_objects=len(P), glow_objects=len(G), interior_objects=len(I), device=gpu(samples), samples=samples)
     for o in H + P + G: o.hide_render = False
-    unwrap(H, .0003); unwrap(P, .0004)
     # the trim sheet and decal atlas: the faction's own art, written into the job's textures folder with its licence line
     trim_rows, decal_arr = S.trim_sheet(), S.decal_atlas()
     tiles = {k: np_image(f'{cell}_trim_{k}', v, colour=True) for k, v in trim_rows.items()}
@@ -445,6 +588,12 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
         lic = S.write_textures(textures_dir, trim_rows, decal_arr)
         INFO['textures'] = lic
     decals, drep = place_decals(S, H, P); INFO['decals'] = drep
+    if getattr(S, 'RUNNING_LIGHTS', None):       # the faction's running lights, by its rule (before the atlases: their frames are parts)
+        made, lrep = add_running_lights(S, H, P, decals); INFO['running_lights'] = lrep
+        json.dump(dict(lights={'running': dict(px=lrep['px'], count=lrep['count'], source='measured: the lens size the stack built, on a 70 px ship')}),
+                  open(os.path.join(out, 'lights.json'), 'w'), indent=1)
+        H, P, G, I = split()
+    unwrap(H, .0003); unwrap(P, .0004)
     maps = {}
     for group, objs, R in (('H', H, res), ('P', P, parts_res)):
         J = bake_copy(objs, f'{cell}_{group}_bake', getattr(S, 'ZONE_BY_KIND', None)); hid = {o.name: o.hide_render for o in objs}

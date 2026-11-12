@@ -30,15 +30,17 @@ CONCEPT = dict(
     soot=((18, 20, 23), (41, 39, 43)),          # the dark cool plate that is most of the hull (dark clusters 48 and 27 percent)
     soot2=((10, 12, 15), (29, 29, 32)),         # the darker soot plate
     iron=((24, 25, 29), (58, 55, 60)),          # iron plate and belts: dark gunmetal (the dark and low mid-tone clusters)
-    rust=((47, 28, 29), (126, 81, 77)),         # the maroon rust plate (red clusters 37 and 9 percent)
-    blood=((62, 29, 36), (104, 30, 30)),        # dried-blood red plate and bands
+    rust=((44, 20, 16), (98, 44, 31)),          # the rust plate: dark brick red (the red clusters, blue held under green: never pink)
+    blood=((58, 20, 18), (100, 28, 24)),        # dried-blood red plate and bands
     pale=((98, 88, 88), (149, 136, 130)),       # pale Hegemony grey trophy plate
     violet=((57, 29, 53), (110, 78, 140)),      # violet Eclipse trophy plate (violet clusters)
     steel=((20, 21, 24), (52, 50, 56)),         # gun metal, machinery: dark, its bare edges carry the light
-    rust_streak=((36, 16, 14), (96, 52, 40)),   # rust run-off and blooms (the deep red-brown dark cluster, the lit rust)
+    rust_streak=((34, 15, 11), (84, 40, 26)),   # rust run-off and blooms: the deep red-brown dark cluster, brick, not pink
     bare=((120, 110, 111), (170, 157, 151)),    # worn bare metal on edges (the lit grey clusters)
     grime=((10, 9, 9), (20, 17, 16)),           # soot and grime
-    red_plate=((58, 22, 24), (98, 38, 36)),     # the maroon and blood red plates scattered among the dark ones (red clusters)
+    red_plate=((60, 22, 17), (108, 42, 28)),    # the brick and blood red plates scattered among the dark ones (red clusters)
+    gunmetal=((34, 35, 40), (72, 70, 76)),      # the grey gun-metal plates of the patchwork (mid-tone clusters 52, 52, 59 and 72, 67, 77)
+    scrape=((112, 106, 102), (165, 156, 150)),  # bare steel scrape plates (the lit grey clusters)
 )
 # The game's light on a face at about 45 degrees to the key (godot/render/look.gd: key 2.0, ambient 0.25 x key), the factor
 # between an albedo and the lit tone the concept shows; checked by the sandbox preview under the game's light (issue 601).
@@ -59,7 +61,11 @@ SCALE = 1.0          # every size below is in ship lengths (the recipe's frame: 
 LAYERS = dict(
     ao_short=.004, ao_long=.025, edge_radius=.0010, edge_gain=14.0,      # the masks (about 10 cm, 65 cm, 2.6 cm on the 26 unit barge)
     patch_scale=4.0, plate_var=.40, side_dark=.25, grain_scale=260.0, mottle_scale=90.0, mottle=.10, grain=.02,    # base: broad two-tone patches, one tone per plate island
-    rough=.70, metal=.40, wear=1.0, grime=.75, ao_dark=.65, red_tone=.75,
+    rough=.70, metal=.40, wear=1.0, grime=.75, ao_dark=.88, red_tone=.75,
+    # the plate patchwork (issue 601 Board review: the concept's hull is a quilt of small plates, each its own tone): a grid of
+    # panels at the concept's plate size, staggered, each panel and each modelled plate picks a family; black seams between them
+    patch_cell=(.034, .022, .019), patch_seam=.0011, seam_dark=.85,
+    cavity_pow=2.0, wear_lo=.30, wear_hi=.52,
     scuff=.85, scuff_size=.045,                                           # the trim sheet's scuff tile, 1.2 m across on the barge
     rivets=1, rivet_pitch=.011, rivet_band=(.0012, .0045),               # a rivet every 29 cm, in a band 3 to 12 cm in from each edge
     trim_size=dict(stripes=.03, tread=.02, weld=.03), trim_aspect=dict(stripes=1.0, tread=1.0, weld=4.0),
@@ -70,11 +76,11 @@ LAYERS = dict(
 # zone: base pair, then what the layers do to it. rust 0 keeps a trophy plate's own paint clean of new rust (it came off a
 # ship that kept it painted); scuff and wear still mark it.
 ZONES = dict(
-    soot=dict(rust=.45, grime=.75, red_share=.20),
-    soot2=dict(rust=.40, grime=.85, plate_var=.35, red_share=.15),
-    iron=dict(rust=.55, metal=.55, rough=.58, wear=1.0, red_share=.12),
-    rust=dict(rust=.90, rough=.88, metal=.20),
-    blood=dict(rust=.40, rough=.86, metal=.15),
+    soot=dict(rust=.45, grime=.75, red_share=.20, patchwork=1.0),
+    soot2=dict(rust=.40, grime=.85, plate_var=.35, red_share=.15, patchwork=1.0),
+    iron=dict(rust=.55, metal=.55, rough=.58, wear=1.0, red_share=.12, patchwork=1.0),
+    rust=dict(rust=.90, rough=.88, metal=.20, patchwork=.6),
+    blood=dict(rust=.40, rough=.86, metal=.15, patchwork=.4),
     pale=dict(rust=.15, rough=.70, metal=.25, plate_var=.25),
     violet=dict(rust=.10, rough=.62, metal=.20, plate_var=.20),
     steel=dict(rust=.25, metal=.65, rough=.50, wear=1.0, rivets=0),
@@ -98,11 +104,14 @@ BARE = lin(CONCEPT['bare'][1])
 RUST = lin(CONCEPT['rust_streak'][1]); RUST_DARK = lin(CONCEPT['rust_streak'][0])
 GRIME = lin(CONCEPT['grime'][0])
 RED_PLATE = pair('red_plate')    # a zone's red_share of its plates carry this worn red over-paint (the concept's scattered red plates)
+# the patchwork families (a hull zone with patchwork > 0): (share of panels, colour pair). The rest keep the zone's own tones.
+# Shares read off the concept's hull pixels (the k-means above): dark soot most, then gun-metal grey, brick red, a few scrapes.
+PATCH_FAMILIES = [(.30, pair('soot2')), (.24, pair('gunmetal')), (.20, pair('red_plate')), (.06, pair('scrape'))]
 
 # glowing zones keep their own emissive surface: engine throat and bell lining in the faction's engine colour, running lights
 # in its accent (godot/fx/faction_looks.json corsair, the game's one home for them); dim, never bright (factions.md)
 GLOW = ('glow', 'ember', 'light')
-GLOW_STRENGTH = dict(glow=6.0, ember=1.4, light=2.2)
+GLOW_STRENGTH = dict(glow=6.0, ember=1.4, light=1.0)
 
 
 def faction_look():
@@ -118,8 +127,24 @@ def glow_material(zone):
     m = bpy.data.materials.new('p3_glow' if zone == 'glow' else f'p3_{zone}'); m.use_nodes = True
     b = m.node_tree.nodes['Principled BSDF']
     b.inputs['Base Color'].default_value = (col[0] * .08, col[1] * .08, col[2] * .08, 1); b.inputs['Roughness'].default_value = .6
+    if zone == 'light': col = [c * LIGHT_EMIT for c in col]
     b.inputs['Emission Color'].default_value = (*col, 1); b.inputs['Emission Strength'].default_value = GLOW_STRENGTH.get(zone, 2.0)
     return m
+
+
+# ------------------------------------------------------------------------------------------------------------ running lights
+# The Board, Nov 12 2026 (PR 610 review, R207: the concept guides): the concept shows clear red lights along the flanks and the deck
+# edges, so they are made to read at the battle camera: every running light is at least the light size rule across (RULEBOOK
+# standing check `lights`: light_min_px, 2.0 px on a 70 px ship) with a small margin, red, small, never a bloom halo (the
+# emission stays under the game's glow threshold, 0.8, godot/render/look.gd). Placed by rule on each ship's own hull, as the
+# decals: a row along each flank at the height of the sheet's own lamps (the sheet decides where the light row runs; mid-flank
+# when it has none) and a few points on the deck edges. A light is a flush lens in a thin iron frame (surface fittings like the
+# decals, on hull faces only, clear of every part and of the breach, braking and boarding points).
+RUNNING_LIGHTS = dict(px=2.2, aspect=1.5, proud=.0015, frame=.25, max_step=.012,
+                      flank=dict(x=(.06, .82), step=.068, z_band=(.40, .62)),
+                      deck=dict(x=(.16, .30, .44, .58, .72), inset=.010),
+                      clear_points=.045, clear_decals=.035)
+LIGHT_EMIT = .75      # emission colour = accent x this, strength 1: under the game's 0.8 glow threshold, so no halo
 
 
 # ------------------------------------------------------------------------------------------------------------ decals

@@ -164,7 +164,14 @@ def _px(v):
 
 
 def check_lights(ship, job):
-    lights = ship.get('lights') or {}
+    lights = dict(ship.get('lights') or {})
+    # issue 601: a paint stack that builds lights measures them and writes the job's lights.json; the measured size wins
+    mp = os.path.join(job, 'lights.json')
+    if os.path.exists(mp):
+        try:
+            lights.update(json.load(open(mp, encoding='utf-8')).get('lights', {}))
+        except ValueError as e:
+            return fail(f'lights: {mp} is not JSON: {e}')
     if not lights:
         return ok('lights: no window or trim lights are declared (the paint has no light map yet)')
     floor = float(ship.get('light_min_px', 2.0))
