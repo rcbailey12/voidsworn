@@ -12,7 +12,7 @@ This audit judges whether Opus's approved go forward plan, findings registry and
 
 ## Opus inventory
 
-Documents reviewed: (1) contrib/opus/go-forward-plan.md, Section 3, the use map. Three tables: Building ships, Engine test and look, Game design. Plus the "Not used, and why" list. (2) contrib/opus/FINDINGS.md. The notes summarize X1 to X10, D4, D5, D7, D8, D9, D11, D12, D18, F5, F6, F22, F23 and B1. The rest of the registry is not assessed. (3) contrib/opus/enginetest/SPEC.md. The A2 engine test spec. Also relevant: OPUS_HANDOFF.md section 1, the plan status table (B0 marked DONE on Oct 25) and the repository evidence about contrib/opus/tools/. Corpus areas covered by the notes: materials and kit specs, effects, graphics, engine comparison and tool guides, skills and workflows, Nemesis, events and wings, and game design syntheses.
+Documents reviewed: (1) docs/archive/go-forward-plan.md, Section 3, the use map. Three tables: Building ships, Engine test and look, Game design. Plus the "Not used, and why" list. (2) contrib/opus/FINDINGS.md. The notes summarize X1 to X10, D4, D5, D7, D8, D9, D11, D12, D18, F5, F6, F22, F23 and B1. The rest of the registry is not assessed. (3) contrib/opus/enginetest/SPEC.md. The A2 engine test spec. Also relevant: OPUS_HANDOFF.md section 1, the plan status table (B0 marked DONE on Oct 25) and the repository evidence about contrib/opus/tools/. Corpus areas covered by the notes: materials and kit specs, effects, graphics, engine comparison and tool guides, skills and workflows, Nemesis, events and wings, and game design syntheses.
 
 ## Used with evidence
 

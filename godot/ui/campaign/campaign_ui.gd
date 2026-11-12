@@ -596,7 +596,7 @@ func _aspect() -> Control:
 	return v
 
 # ---------------- the sector map: the Briefing layout (Ryan's pick, Nov 10 2026, FINDINGS R165) ----------------
-# The spec is contrib/opus/briefs/campaign_map_briefing.md; the picture is contrib/opus/ui_map_design/map_option_C_briefing.jpg.
+# The first spec (archived) is docs/archive/briefs/campaign_map_briefing.md; the live look is contrib/opus/briefs/campaign_rail_orders_sheet.md; the first picture is contrib/opus/ui_map_design/map_option_C_briefing.jpg.
 # Left: one flat column, 480 wide (the sector, the routes you can take as numbered rows, the one filled lime button, the
 # Nemesis in a few lines, the fleet). Right: the real 3D chart with plain words on it (map3d.gd). Two colours on top of the
 # sage text: lime is the next action and the next jumps, ALERT red is the Nemesis. Everything else the old screen said is one

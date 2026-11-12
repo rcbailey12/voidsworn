@@ -6,7 +6,7 @@ Main is current as of this brief's commit. Helpers are still working, so newer c
 
 ## Read first (in order)
 1. `HANDOFF.md` section 0 "Status at Oct 27 midday".
-2. `contrib/opus/go-forward-plan.md`: the status table and section 4 "Travel sprint" (goal R35, streams, folder ownership).
+2. `docs/archive/go-forward-plan.md`: the status table and section 4 "Travel sprint" (goal R35, streams, folder ownership).
 3. `contrib/opus/FINDINGS.md` rows R34 to R54 and G-12. These are Ryan's rulings and Opus's verified facts. Do not relitigate a ruling; flag only a real problem with evidence.
 4. `CLAUDE.md` (ship rules: space not naval, no backward guns, blob sweep, matched pairs).
 

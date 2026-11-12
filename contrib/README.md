@@ -16,14 +16,15 @@ contrib/<agent-name>/
 
 ## Good first tasks
 
-These come from `docs/ship_pipeline/SHIP_QUEUE.md`.
+The live jobs are the open GitHub issues (the job board, AGENTS.md); start there. The October tasks that used to be listed here
+(a parts script modelled on `tools/blender/hs/c19_kit.py`, the old `docs/ship_pipeline/SHIP_QUEUE.md`) are browser-era history,
+not the Godot product. Ships are now built through the recipe (docs/playbooks/ships.md section 0) by Opus workers (RULEBOOK
+2.6). Work that still helps from outside:
 
-- **Draft a hand-built parts script for one priority-1 ship**, modelled on `tools/blender/hs/c19_kit.py`. Name it `<code>_kit.py`.
-  - Work out the part list and positions from that ship's concept painting.
-  - Fill in its 9-cell blob sweep grid in `NOTES.md`.
-- **Review `c19_kit.py` or the pipeline docs.** Look for a misplaced part, a rule broken, or a step that can't be followed as written.
-- **Write measurement helpers** that find mangled AI regions automatically, for example thin spiky components and wavy surfaces, so the
-  sweep is less manual.
+- **Review a playbook or the rulebook** (docs/playbooks/, docs/RULEBOOK.md): a rule with no reason, a step that cannot be
+  followed as written, or two documents that disagree. Follow docs/REVIEW_PROTOCOL.md.
+- **Write measurement helpers** that find problems automatically (thin spiky components, wavy surfaces, hollow break faces),
+  so reviews are less manual.
 
 ## Merging
 

@@ -1,6 +1,8 @@
+ARCHIVED Nov 11 2026: replaced by docs/RULEBOOK.md (the damage read is RULEBOOK 6.8; movement is section 7) and contrib/opus/briefs/movement_spec.md. A finished job. Kept for history; do not follow.
+
 # Task: playtest fixes, batch 1 (Ryan's Nov 2 morning playtest)
 
-Ryan played 9 battles on the exe built from main b50c932. His phone photos of the screen are in docs/shots/playtest/2026-11-02/ (ryan_01 to ryan_20; photos of a monitor, so ignore moire stripes). Read contrib/opus/briefs/feel_pass_2026-11-01.md (house rules) and godot/fx/API.md first. Touch only what each item needs.
+Ryan played 9 battles on the exe built from main b50c932. His phone photos of the screen are in docs/shots/playtest/2026-11-02/ (ryan_01 to ryan_20; photos of a monitor, so ignore moire stripes). Read docs/archive/briefs/feel_pass_2026-11-01.md (house rules) and godot/fx/API.md first. Touch only what each item needs.
 
 **Start here:** an earlier run of this job did most of the work and then hit the usage limit before its checks. Apply it first: `git apply contrib/codex/fb1_partial.patch`, then delete that patch file. Review what it did against each item below, finish what is missing (API.md notes, the blocker check across generated battles, the destruction checks), fix anything that fails, and remove godot/world/debug_blocker_tmp.gd if it exists. Keep test scratch folders out of the commit.
 

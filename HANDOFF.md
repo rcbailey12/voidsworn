@@ -5,7 +5,8 @@
 **Read in this order:** this section; contrib/opus/LOOP.md ("The Board's standing duties", "The seats", the LATEST lines of
 "Current state"); contrib/opus/OPEN_WORK.md (one row per open issue and parked pull request); the playbook for your area
 (docs/playbooks/, PROGRAM.md first); FINDINGS R183 to R215 for Ryan's words. docs/RULEBOOK.md (issue 492, merged as PR 551) is the one
-live list of rules. Section 0a below is this morning's state: where it disagrees with this section, this
+live list of rules; anything under docs/archive/ is history, never followed (the issue 492 clean-up moved the stale briefs
+there, contrib/opus/reviews/cleanup_492.md). Section 0a below is this morning's state: where it disagrees with this section, this
 section wins.
 
 **The Board** is one Claude thread in the Project, Opus 5.5 since Nov 11 afternoon. It owns the whole board, starts agreed work

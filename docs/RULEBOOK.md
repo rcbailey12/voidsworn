@@ -2,7 +2,8 @@
 
 The one list of rules in force for the whole project (issue 492, FINDINGS R190). Each rule says what to do, why (the problem
 Ryan was reacting to, in his words where they exist), who set it and when, and its old ids. Rules of play and balance numbers
-are not here (R190's scope): they live in the browser oracle, godot/rules and their FINDINGS rows.
+are not here (R190's scope): they live in the browser oracle, godot/rules and their FINDINGS rows (for example battles growing
+over a run toward about 20 ships, a guide and not a cap, R1; capture as add, strip or ransom, R4).
 
 Ryan, Nov 11 2026: "Those old hard coded rules with no context or detail artifically restricing us are exactly what I'm worried
 about across the board" (R190), and at 20:05 CST: "Let's ensure we're documenting all these decisions and approaches. I don't
@@ -157,7 +158,10 @@ noticeable now." (R32); PC-only (Oct 24). Set: Ryan. Ids: R32, R33a, agents-02.
 3.2 **Heavy work runs on Ryan's PC (RTX 5080) through the queue; the cloud sandbox is for editing.** Why: the sandbox has about
 8 GB and no GPU and runs out of memory on full meshes. Set: Ryan, Oct 21. Id: agents-23.
 
-3.3 **Never delete anything on Ryan's PC.** Set: Ryan (project instructions). Ids: ships-10, loop-17.
+3.3 **Never delete anything on Ryan's PC; keep every job's PC folder lean, and the Board lists the PC folder sizes at each
+disk check.** Why: the PC disk filled on Nov 11 (C: 0.0 GB free, 550 GB in voidsworn_test, mostly old run copies), the queue
+watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md, Nov 12 02:15 and 02:20 UTC). Set: Ryan
+(project instructions: never delete); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
 
 3.4 **One GPU job at a time, and check Ryan is not using the GPU first.** Why: a long bake holds every later job, and he uses
 the GPU himself ("can we have codex pause gpu usage?", R173). Set: Ryan (R173); Board (queue). Ids: R173b, effects-09.
@@ -255,7 +259,8 @@ documents (R214). Set: Ryan (R82, R96, R214, R215). Ids: R82d, R96a, R96c, R150a
 
 5.4 **Breakable by design, with comprehensive insides.** Every hull has real thickness and insides through the whole hull
 (decks, frames, spaces, machinery; Chorus flesh and bone; Glasswright layered glass), rim bands and a dark liner where the
-intact ship shows; the build check fails a hull whose broken pieces show a hollow or flat inside. Why: "the broken open pieces
+intact ship shows; the build check fails a hull whose broken pieces show a hollow or flat inside. Hulls built before this rule
+rely on the game-side interior fallback (issue 167). Why: "the broken open pieces
 are visibly empty" (R98); "so we don't run into the issues of before with just empty looking husks" (R209); "I think it's
 better to be comprehensive with internal if we can without performance issues" (R215). Set: Ryan, Nov 4 and 11. Ids: R70,
 R98a, R98b, R99a, R209, R215.

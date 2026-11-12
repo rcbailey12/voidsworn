@@ -40,7 +40,7 @@ screen. The worked example is the campaign map's Briefing layout.
    the map's three is contrib/opus/ui_map_design/mockup_gen.py.
 3. **Pick.** Ryan picks, or mixes. Ask what to keep from the present screen before building.
 4. **Brief.** One file in contrib/opus/briefs/: his words, the layout with sizes, what stays, what leaves and where it goes,
-   the done test. contrib/opus/briefs/campaign_map_briefing.md is the pattern.
+   the done test. docs/archive/briefs/campaign_map_briefing.md is the pattern.
 5. **Build** in the game from the brief, theme first.
 6. **Capture** on the PC at 1080 and 1440: the plain state, a busy state, each overlay, a hover, and a damaged or edge case.
    Look at them at full size against the mockup: alignment to the grid, no overlaps, lime only where it should be.
@@ -69,7 +69,7 @@ screen. The worked example is the campaign map's Briefing layout.
 
 ## 6. Worked example
 
-The campaign map: three options (contrib/opus/ui_map_design/), the brief (contrib/opus/briefs/campaign_map_briefing.md), the
+The campaign map: three options (contrib/opus/ui_map_design/), the brief (docs/archive/briefs/campaign_map_briefing.md), the
 build on opus/issue-344 (pull request 349), the finish (issue 418) and round 3 (issue 420: the approach to the star across
 three sectors, and stops ahead readable by icon).
 

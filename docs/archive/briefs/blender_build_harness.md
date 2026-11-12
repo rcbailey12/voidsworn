@@ -1,3 +1,5 @@
+ARCHIVED Nov 11 2026: replaced by docs/playbooks/ships.md (section 0 binds) and docs/ship_pipeline/RECIPE.md. Kept for history; do not follow (habit 4's no downloaded textures is overruled by RULEBOOK 5.13, CC0 assets allowed; its caps section is dead, R111).
+
 # Blender build jobs: the harness every builder follows (from #206 and #214, Nov 8 2026)
 
 Whoever builds a hull, part or station in Blender (Codex, the workhorse, Opus) works this way. Source notes: issue #206 (the Kamome harness example Ryan reviewed Nov 6) and issue #214 (the Kensei 15-step Blender plus Tripo guide, Nov 6). Both are closed into this file.

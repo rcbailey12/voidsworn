@@ -253,7 +253,7 @@
   "source": "contrib/opus/FINDINGS.md line 36 (row R11)",
   "area": "agents and process",
   "said_by": "Ryan",
-  "rule": "The plan in contrib/opus/go-forward-plan.md is approved.",
+  "rule": "The plan in docs/archive/go-forward-plan.md is approved.",
   "quote": "",
   "reason": "none recorded",
   "now": "stale: docs/playbooks/PROGRAM.md (R167) is the plan now, yet CLAUDE.md still calls go-forward-plan.md \"the approved build plan\"",

@@ -53,7 +53,7 @@ const KEY_FG := Color("#d9f78a")       # key cap text (light lime, in the number
 # left with the Briefing build (FINDINGS R165): danger is four pips and a word, a stop is its 3D model, a route is lime or pale.
 const BLUE := Color("#62a8ff")         # B4 blue event options (an option your fleet qualifies for)
 const SHADE := Color(0.035, 0.047, 0.035, 0.80)  # the dim layer behind a dialog: INK-toned, the scene only hints through
-# the campaign map's Briefing layout (FINDINGS R165, contrib/opus/briefs/campaign_map_briefing.md): one flat column and plain
+# the campaign map's Briefing layout (FINDINGS R165, docs/archive/briefs/campaign_map_briefing.md): one flat column and plain
 # words on the chart. Two colours on top of the sage text: lime for the next action and the next jumps, ALERT for the Nemesis.
 const COLUMN := Color("#0b0e0b")       # the flat briefing column and the map's one box (the hover tip)
 const HAIR := Color("#1c241c")         # the column's quiet edge and the rules inside it

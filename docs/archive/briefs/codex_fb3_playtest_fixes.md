@@ -1,6 +1,8 @@
+ARCHIVED Nov 11 2026: replaced by docs/RULEBOOK.md (the damage read is RULEBOOK 6.8; movement is section 7) and contrib/opus/briefs/movement_spec.md. A finished job. Kept for history; do not follow.
+
 # Codex brief: playtest fixes, batch 3 (Ryan's Nov 2 afternoon run)
 
-Ryan's real 4K screenshots (not phone photos) are in docs/shots/playtest/2026-11-02b/ (ryan_b01 to ryan_b10, right monitor only). House rules: contrib/opus/briefs/feel_pass_2026-11-01.md. Presentation only: no rules or numbers; rules parity must PASS.
+Ryan's real 4K screenshots (not phone photos) are in docs/shots/playtest/2026-11-02b/ (ryan_b01 to ryan_b10, right monitor only). House rules: docs/archive/briefs/feel_pass_2026-11-01.md. Presentation only: no rules or numbers; rules parity must PASS.
 
 1. Move tiles are still bright blue (b02, b04, b07). Cause found: Ryan's saved board look is "living" (user://board_look.cfg), and the soft outlines from #35 only apply to "cine". Apply the soft outline style (thin glowing edges, very faint fill, brighter hover hex, soft path line) to every board look that draws reachable hexes. Also the tiles draw over the hulls (b02: a blue tile shows through the ship): tiles must sit under ships and never tint a hull; fix the render order or depth so a ship always reads on top.
 

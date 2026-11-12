@@ -1,6 +1,8 @@
+ARCHIVED Nov 11 2026: replaced by docs/RULEBOOK.md (the damage read is RULEBOOK 6.8; movement is section 7) and contrib/opus/briefs/movement_spec.md. A finished job. Kept for history; do not follow.
+
 # Task: playtest fixes, batch 2 (movement, torpedoes, move tiles)
 
-Ryan's rulings (Nov 2, FINDINGS R76). Photos from his playtest are in docs/shots/playtest/2026-11-02/ (phone photos of a monitor; ignore moire). House rules: contrib/opus/briefs/feel_pass_2026-11-01.md. Presentation only: no rules or number changes, and the rules parity must still PASS.
+Ryan's rulings (Nov 2, FINDINGS R76). Photos from his playtest are in docs/shots/playtest/2026-11-02/ (phone photos of a monitor; ignore moire). House rules: docs/archive/briefs/feel_pass_2026-11-01.md. Presentation only: no rules or number changes, and the rules parity must still PASS.
 
 1. Movement: glide on curves. Ryan: "Movement is too thruster based. It causes the ships to move jerkily side to side. It doesn't feel like space travel... It doesn't feel smooth, cohesive or cinematic. The thrusters are more visible than the engine." Rebuild the cinematic move animation in the battle scene (find it from board_look.gd and the F2 movement work):
    - The ship follows one smooth curve through its path (a spline through the hex centres, eased at both ends), always facing along its direction of travel, and banks gently into turns (a few degrees of roll, eased).

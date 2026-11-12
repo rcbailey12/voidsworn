@@ -100,7 +100,9 @@ hard points.
 
 ## 4. The checks that prove it
 
-- Stage 3: the outline gate, 90 percent of the concept's outline at the concept's own camera. FAIL means not ready for parts.
+- Stage 3: the outline overlap with the concept at the concept's own camera is reported, not a pass bar (RULEBOOK 5.8; was
+  90 percent, R147). Until the workhorse fix in contrib/opus/reviews/rulebook_board_notes.md lands, the stage still exits
+  non-zero below 0.90: read the number and the picture, and say so in the report.
 - Stage 4: the audit lists nothing: no part floats or is sunk, nothing crosses a break line, no gun aims backward or into
   the ship. audit_selftest.py proves the audit can fail.
 - Stage 7: check_export.py passes: every weapon slot in the ship's data.js list has a hard point, every hard point is on the
@@ -119,6 +121,9 @@ hard points.
   every sheet against the "Never" list before it reaches the recipe.
 - The AI shape reference mangles guns, bridges, masts, tanks, bows and nozzles. They are rebuilt from the kit by default.
 - Hand-built parts must carry the hull's level of surface detail, or the ship looks assembled from two games.
+- A model's own visual check is a hint, never proof (an AI inspector once passed a prop clipping through a sill); the scripted
+  stage 4 audit is the check. Generators drop thin wires, text and fine greebles: build those in code (from the archived
+  harness brief, docs/archive/briefs/blender_build_harness.md).
 - Heavy work runs on the PC, one GPU job at a time. Never delete anything on the PC.
 - A hull whose weapon list changes in data.js needs stage 7 again, or check_export.py fails on a missing hard point.
 
@@ -152,6 +157,7 @@ results, and every change made to the sheet. A build pull request without it com
 
 ## 8. Seat
 
-Codex runs the recipe. Muse draws. DeepSeek does well-specified tool repairs (a check, a table, a file format). The Board
+An Opus worker builds every ship model and runs the recipe (R205, RULEBOOK 2.6); Codex runs captures and benches that
+shape no ship. Muse draws. DeepSeek does well-specified tool repairs (a check, a table, a file format). The Board
 writes the fleet briefs, accepts sheets, looks at every sweep and puts one image in front of Ryan. Hand a picture back to the
 Board whenever a gate passes but the ship looks wrong: a pass on the numbers is not a pass on the look.

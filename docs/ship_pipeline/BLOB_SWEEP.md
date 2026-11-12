@@ -1,6 +1,12 @@
 # Blob sweep: the "done" check for every AI ship
 
-Owner (Ryan, Oct 21 2026): "ensure we catch all of those for all other ships." A ship is not shown to Ryan until it passes this.
+Owner (Ryan, Oct 21 2026): "ensure we catch all of those for all other ships." Since Nov 7 the sweep is a viewing instrument
+for Ryan's eye, not a pass bar (R121, RULEBOOK 5.9): the Board lists what it sees, Ryan decides.
+
+**Status Nov 11 2026 (issue 492 clean-up):** the nine-cell grid (section 1), the rebuild list (2), the placement rules (3), the
+space rule (3b) and one level of detail (4b) are live; the rules themselves are RULEBOOK 4.1 to 4.3 and 5.6. Paint by
+projection (section 4) is not allowed for new builds (RULEBOOK 5.3), and the phone shots in section 5 are browser-era history,
+not the Godot product. The live build method is docs/playbooks/ships.md section 0.
 
 ## 1. Review grid (9 cells)
 
@@ -12,7 +18,9 @@ Render the ship (studio, `render_multi.py`) and put each render next to the same
 | **midship**|     |      |       |
 | **stern**  |     |      |       |
 
-Each cell gets a verdict: **clean** or **rebuild by hand**, with the part named. Write the grid into the ship's row in `SHIP_QUEUE.md`.
+Each cell gets a note of what the Board sees, with the part named (the old clean or rebuild verdict per cell is retired, R121). The
+old practice of writing the grid into `SHIP_QUEUE.md` is browser-era history; today the sweep goes into the ship's folder in
+docs/shots/ships/ (docs/playbooks/ships.md section 7).
 
 ## 2. Rebuilt by default (the AI reliably mangles these)
 
@@ -39,7 +47,7 @@ Each cell gets a verdict: **clean** or **rebuild by hand**, with the part named.
 
 **Space ships, not naval ships (owner, Oct 22 2026: "careful that these don't stretch into obvious naval-looking ships. again, these are SPACE ships").** Keep the concept's look, but never add sea-ship tells: no boat keels or raked stems, jackstaffs, bollards, anchors, crow's nests, yardarms with rigging, mast ladders, lifeboats, portholes in rows along a waterline. Prefer the space versions: armoured flat bellies with chines, sensor housings and antenna arrays, equipment pods, recessed lights, main engine bells and thruster pods, docking hatches, heat radiators.
 
-## 4. Paint
+## 4. Paint (projection is browser-era history: new builds paint from geometry masks, trim sheets and decals, RULEBOOK 5.3)
 
 - Parts the pictures show clearly are painted by projection.
 - Parts the pictures barely show keep hand paint with grime (`project_paint.py` `KEEP` boxes). This covers tops, undersides, and racks
@@ -54,7 +62,8 @@ rebuilt part and the AI hull at close zoom: neither should look smoother or busi
 
 ## 5. In-game check
 
-- Shots on desktop and phone, at zoom 1.0 and 0.5, on at least two maps.
+- Shots at the battle camera on the look bench (tools/pc/jobs/look_bench.bat), then closer (RULEBOOK 6.1). The old "desktop and
+  phone, at zoom 1.0 and 0.5" shots are browser-era history, not the Godot product.
 - Look for:
   - black faces (lighting or normals);
   - parts missing (load errors in the log);

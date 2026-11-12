@@ -66,7 +66,7 @@ const lows = [...hud.matchAll(/HULL_LOW if \w+ < ([\d.]+)/g), ...campaignHull.ma
 check(lows.length >= 4 && lows.every(v => v === 0.35), `every hull-low line is 0.35: battle roster, nameplate, campaign bars and hull figures (HD9; found ${lows.join(', ')})`);
 
 // 7. issue #344 (UI rollout 1): the campaign pages are in Lime Tactical, and the campaign map is the Briefing layout
-// (Ryan's pick, FINDINGS R165; contrib/opus/briefs/campaign_map_briefing.md). These are code-structure checks: they read
+// (Ryan's pick, FINDINGS R165; docs/archive/briefs/campaign_map_briefing.md). These are code-structure checks: they read
 // the source. What the map does when it runs (it only reads; Muse's check of PR 349, condition 1) is tested by behaviour in
 // godot/campaign/test/map_readonly_test.gd, which CI runs with the Nemesis scenarios (run_nem_scenarios.sh).
 {
