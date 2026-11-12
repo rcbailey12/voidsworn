@@ -646,7 +646,7 @@
   {
    "cell": "bow/below",
    "concept": null,
-   "build": 2
+   "build": 3
   },
   {
    "cell": "mid/top",
@@ -661,7 +661,7 @@
   {
    "cell": "mid/below",
    "concept": null,
-   "build": 1
+   "build": 2
   },
   {
    "cell": "stern/top",
@@ -676,7 +676,7 @@
   {
    "cell": "stern/below",
    "concept": null,
-   "build": 1
+   "build": 2
   }
  ],
  "ratios": {

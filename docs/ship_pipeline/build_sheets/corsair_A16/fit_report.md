@@ -86,7 +86,7 @@ turret's swept circle (moved out).
 
 ## Round 3 (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0. Tested: 406 objects, 77 parts, 970 close pairs, 796 rays, 16 guns, 8 turrets swept, 10 cones, 45 apertures.
+Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0. Tested: 409 objects, 77 parts, 1033 close pairs, 796 rays, 16 guns, 8 turrets swept, 10 cones, 45 apertures.
 
 **Zero clashes left.** No clash is left in as intended.
 

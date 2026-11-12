@@ -141,8 +141,8 @@ def build(K):
         K.claw(fid, (x, y, -2.85), [(x + 0.45, y, -3.3), (x + 0.6, y, -3.7)], w=0.5, fingers=3, src='picture', inv='grapples',
                housing=(x - 0.6, x + 0.45, y - 0.36, y + 0.36, -3.02, -2.15),
                note='short grabber under the stern (round 8 side sheet: grabbers under the stern; Ryan R196: hooks underneath)')
-    K.hatchbox('HB1', (7.95, 1.8, K.deck_z(7.95, 2.25)), 0.9, 0.9, 0.3, inv='bow_hatchboxes', note='framed deck box, port')
-    K.hatchbox('HB2', (7.95, -1.9, K.deck_z(7.95, -2.3)), 0.8, 0.8, 0.28, inv='bow_hatchboxes', note='framed deck box, starboard (smaller)')
+    K.hatchbox('HB1', (7.95, 1.55, K.deck_z(7.95, 1.1) + 0.02), 0.9, 0.9, 0.3, inv='bow_hatchboxes', note='framed deck box, port')
+    K.hatchbox('HB2', (7.95, -1.6, K.deck_z(7.95, -1.2) + 0.02), 0.8, 0.8, 0.28, inv='bow_hatchboxes', note='framed deck box, starboard (smaller)')
 
     # ---------------- chains: real links, taut ----------------
     K.chain('C1', [(7.3, 3.95, 0.95), (7.3, 3.0, 1.45), (7.3, -3.05, 1.45), (7.3, -4.05, 0.95)], inv='mid_chain', note='girdle over the tier 2 seam')
@@ -171,7 +171,7 @@ def build(K):
                   slot=sl, weapon='scatter', inv='bow_guns', note='deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring)')
         K.gun('%s3' % sl, (-0.7, side * 2.72, 2.0), side * 25, 2, barrels=2, cal=0.14, blen=2.2, size=1.3, variant=1,
               slot=sl, weapon='scatter', inv='mid_guns', note='deck-edge twin turret, tier 2, aft')
-        K.gun('%sM' % sl, (0.9, belt_y(0.9, side, 'up', 0.5) + 0.02 * side, 0.5), side * 35, 0, barrels=2, cal=0.12, blen=1.7, size=1.0, normal=(0, side, 0),
+        K.gun('%sM' % sl, (0.9, belt_y(0.9, side, 'up', 0.5) + 0.02 * side, 0.5), side * 35, 0, barrels=2, cal=0.12, blen=1.7, size=1.0, normal=K.surf_n(0.9, side, 0.5),
               slot=sl, weapon='scatter', inv='mid_casemates', note='flank twin casemate on the upper belt amidships')
         for i, x in enumerate((-3.75, -5.8)):
             K.gun('%s%d' % (sl, i + 4), (x, side * 4.3, 0.35), side * 30, 0, barrels=2, cal=0.13, blen=1.9, size=1.1, variant=i,

@@ -1,10 +1,15 @@
-# corsair_A17 build sheet: Hullbreaker wrecker, the Pack Hunter (round 3b)
+# corsair_A17 build sheet: Hullbreaker wrecker, the Pack Hunter (round 3c)
 
 Ashfall Hullbreakers cruiser, class Cruiser, **14.5 world units** (godot/render/hull_table.gd CLS_LEN; data.js c_marauder);
-the model is 14.49. Version 3b, 2026-11-12: round 3's parts, fit check and turret marking (R217 to R219), with the massing
+the model is 14.55. Version 3c, 2026-11-12: round 3's parts, fit check and turret marking (R217 to R219), with the massing
 rebuilt to the concept's measured proportions after the Board's review of round 3 ("short, tall and round, a lump").
 Designer of record: Opus (R205, R207). Rendered on Ryan's PC (Blender 4.5, GPU), blockout
-`C:\Users\rcbai\Downloads\voidsworn_test\opus532\r3e\corsair_A17\corsair_A17_blockout.blend`.
+`C:\Users\rcbai\Downloads\voidsworn_test\opus532\r3g\corsair_A17\corsair_A17_blockout.blend`.
+
+**Round 3c (the Board on 3b): the head follows the beauty**, the picture Ryan judges against: a big, tall, boxy front block
+(about 2.3 tall and 3.4 wide) towering over the neck, two big ear dishes (1.9 across, about the head's height) standing out
+from brackets at its upper corners, and broad flat prongs (0.7 and 0.55 wide). The neck turrets and the rocket pod were lifted
+so their arcs and exits clear the taller head; the fit check is still zero.
 
 ![corsair_A17 preview](preview.jpg)
 
@@ -17,7 +22,8 @@ midships and stern at the same windows), then [cells.jpg](cells.jpg) and [fit_vi
 |---|---:|---:|---:|---:|
 | Concept (round 8 sheet, top and side views) | 2.75 | 4.06 | 2.04 | 3.54 |
 | Round 3 build | 2.62 | 2.84 | 2.05 | 2.22 |
-| **Round 3b build** | **2.82** | **3.84** | 1.91 | 2.88 |
+| Round 3b build | 2.82 | 3.84 | 1.91 | 2.88 |
+| **Round 3c build** | **2.83** | **3.79** | 1.92 | 2.71 |
 
 Hull: length over the median beam or height across the middle 60 percent of the length. The envelope includes the guns,
 dishes and belly turret. Distinct masses per cell (concept by eye, build from the model) are in [inventory.md](inventory.md):
@@ -39,9 +45,9 @@ every cell has at least the concept's count.
 
 ## What still differs from the concept, and why
 
-- **The head** is a little smaller relative to the body than the beauty's big front block (the round 8 sheet draws it
-  narrower than the beauty does; I followed the sheet's top view and enlarged it toward the beauty).
+- **The head** now follows the beauty rather than the round 8 sheet (which draws it narrower and lower); the two pictures
+  disagree, and the beauty is the accepted one.
 - **Surface density and colour**: the concept's small torn plates, rivets, grime and red engine glow are the paint stage;
   plate size is a kit setting.
-- **Hull height** is 5 percent over the concept's (length:height 3.84 against 4.06): the turrets and the belly twin add height
-  the concept's smaller guns do not.
+- **Hull height** is about 7 percent over the sheet's (length:height 3.79 against 4.06): the taller head and the turrets add
+  height the sheet's smaller head and guns do not.

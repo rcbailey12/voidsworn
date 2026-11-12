@@ -206,13 +206,13 @@ Concept counts read off the round 8 sheet by eye (A16 sheet: bow, the prow cap, 
 |---|---:|---:|---|
 | bow/top | 5 | 7 | Hull slab (tier 1); Upper armour belt; Lower armour belt; Prow brow (two steps); Brow step; Chin; Raised armoured deck (tier 2) |
 | bow/side | 6 | 7 | Hull slab (tier 1); Upper armour belt; Lower armour belt; Prow brow (two steps); Brow step; Chin; Raised armoured deck (tier 2) |
-| bow/below | no view | 2 | Hull slab (tier 1); Chin |
+| bow/below | no view | 3 | Hull slab (tier 1); Lower armour belt; Chin |
 | mid/top | 6 | 8 | Hull slab (tier 1); Upper armour belt; Lower armour belt; Raised armoured deck (tier 2); Rack plinth; Castle (tier 3); Sponson port; Sponson starboard |
 | mid/side | 7 | 7 | Hull slab (tier 1); Upper armour belt; Lower armour belt; Raised armoured deck (tier 2); Rack plinth; Castle (tier 3); Sponson port |
-| mid/below | no view | 1 | Hull slab (tier 1) |
+| mid/below | no view | 2 | Hull slab (tier 1); Lower armour belt |
 | stern/top | 7 | 10 | Hull slab (tier 1); Upper armour belt; Lower armour belt; Castle (tier 3); Bridge block; Stern deck; Sponson port; Sponson starboard; Pod pylon port; Pod pylon starboard |
 | stern/side | 7 | 8 | Hull slab (tier 1); Upper armour belt; Lower armour belt; Castle (tier 3); Bridge block; Stern deck; Sponson port; Pod pylon port |
-| stern/below | no view | 1 | Hull slab (tier 1) |
+| stern/below | no view | 2 | Hull slab (tier 1); Lower armour belt |
 
 ## Proportions: length to beam and length to height, concept against build (the Board on round 3)
 

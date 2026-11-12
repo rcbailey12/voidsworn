@@ -74,7 +74,10 @@ def _octa(hwp, hws, zb, zt, ct, cb, yo=0.0):
             (yo - hws, zb + cb), (yo - hws + cb, zb), (yo + hwp - cb, zb), (yo + hwp, zb + cb)]
 
 
-def _round_sec(hwp, hws, zb, zt, yo=0.0, n=20, p_top=6.0, p_bot=2.3):
+P_TOP, P_BOT = 3.5, 2.3  # the rounded section's exponents: the deck shoulder and the flanks and belly (2 is an ellipse)
+
+
+def _round_sec(hwp, hws, zb, zt, yo=0.0, n=24, p_top=P_TOP, p_bot=P_BOT):
     """a rounded wedge section (round 3c): a superellipse, flatter on top (p_top) and round in the flanks and belly (p_bot)"""
     zc = (zb + zt) / 2; hz = (zt - zb) / 2
     pts = []
@@ -293,7 +296,7 @@ class Kit:
         zb, zt = s[3], s[4]
         if getattr(self, 'hull_rounded', False):
             zc = (zb + zt) / 2; hz = (zt - zb) / 2
-            u = max(-1.0, min(1.0, (z - zc) / hz)); p = 6.0 if u >= 0 else 2.3
+            u = max(-1.0, min(1.0, (z - zc) / hz)); p = P_TOP if u >= 0 else P_BOT
             sn = abs(u) ** (p / 2.0); cs = max(0.0, 1 - sn * sn) ** 0.5
             return side * hw * cs ** (2.0 / p)
         return side * hw
@@ -339,7 +342,7 @@ class Kit:
             return zt
         zc = (zb + zt) / 2; hz = (zt - zb) / 2
         f = min(1.0, abs(y) / hw)
-        return zc + hz * max(0.0, 1 - f ** 6.0) ** (1 / 6.0)
+        return zc + hz * max(0.0, 1 - f ** P_TOP) ** (1 / P_TOP)
 
     def top_z(self, x, sections=None):
         s = sec_at(sections or self.hull_sections, x)

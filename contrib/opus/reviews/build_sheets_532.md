@@ -140,3 +140,14 @@ cells.json.
 - Judged beside the concept at the same size: A17 is now the concept's long, low, stepped hunter with forward prongs; A16 the
   long armoured slab with the twin tubes as its face. What still differs (each README): A16's nose more faceted than round,
   A17's head a little smaller than the beauty's, and on both the surface density and colour that the paint stage carries.
+
+# Round 3c (Opus worker, Nov 12 2026): the three things Ryan would notice first
+
+- **A16 cross-section and plan.** The hull is now a rounded wedge in section (a new kit loft option: a superellipse, flatter on
+  the deck, round in the flanks and belly, still plated), tapering more toward a broad rounded nose; the armour belts follow
+  the hull's curve (new kit `band`: the flank between two heights pushed out along the surface normal) instead of square
+  boxes; every flank part is seated on the curve (`surf`, `surf_n`, `deck_z`). Bulkheads inset to stay inside the round hull.
+- **A17 head to the beauty.** A big, tall, boxy front block over the neck, big ear dishes standing out at its upper corners
+  on brackets, broad flat prongs; the neck turrets and rocket pod lifted to clear it.
+- **Every rule kept**: zero clashes on both (PC runs r3g for A17, r3h for A16), inventory ticks all Y, ratios and structure
+  counts on both sheets, the side-by-sides redone.
