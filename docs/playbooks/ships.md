@@ -106,6 +106,12 @@ global learning and shaping the approach". So the method, for every ship of ever
   rendered beside the concept at the same view, and the inventory is ticked off per cell: present, shaped, detailed. That
   table is on every sheet and every build.
 - Every round's feedback goes into this section as a general rule, never only into the one ship's notes.
+- Massing is checked as hard as parts (Board, Nov 12, from round 3: every part passed its tick while the hull still read as a
+  lump). The sheet reports the concept's and the build's length to beam to height ratios, and the per-cell table adds a
+  structure count: distinct masses, tiers and steps per cell, concept against build. A part list that passes over the wrong
+  massing is not a pass.
+- The builder never grades its own sheet alone: the Board (or another model) judges the side-by-side before Ryan sees it
+  (RULEBOOK 2.2, R219).
 
 ## 2b. The insides (R98, R209)
 

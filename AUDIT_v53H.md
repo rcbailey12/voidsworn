@@ -1,3 +1,5 @@
+ARCHIVED Nov 12 2026: a browser-era audit of v53 (the frozen browser game), not the Godot product. Kept for history; do not follow. The rules in force are docs/RULEBOOK.md.
+
 # Voidsworn v53, workstream H: leftovers, visual asset inventory, gallery harness, cleanup and fidelity plan
 
 Audited: `master` at 5d37b55 (v53.3), read-only. Scripts live on branch `v53-H` (worktree `scratchpad/wt-H`). In-flight branches checked so ownership is right: C (perf: hull fetch, scene-graph diet, pooled text, shared ring geometry), E (faceted board rocks `mkFacet`, block tint, Ithar sails and material), G (concept-hull material `aiHullMat` with shader ports, `HullQ` ray casts and `seatOnHull`, no procedural turrets on concept hulls, new procedural craft), F (sound, nothing committed yet).
