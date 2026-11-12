@@ -2,20 +2,20 @@
  "az": 50.80772793923923,
  "el": 26.20992122790251,
  "roll": -1.570787634739617,
- "dist": 49.64318340406229,
- "mm": 67.55010547388446,
+ "dist": 46.02108638835915,
+ "mm": 68.12726200228617,
  "target": [
   0.5,
   0,
   0
  ],
- "sx": 0.025192562767864347,
- "sy": 0.06345475823310932,
+ "sx": 0.03854421418552283,
+ "sy": 0.07069495826474761,
  "res": [
   1920,
   1280
  ],
- "iou": 0.8046,
- "body_iou": 0.8049,
- "note": "round 3: refit to the round 3 blockout against a concept mask (luminance over 28, closed, holes filled, largest shape only)"
+ "iou": 0.8027,
+ "body_iou": 0.8071,
+ "note": "round 3b: view angles held from the round 3 fit to the concept, framing refit to the round 3b blockout (concept mask: luminance over 28, closed, holes filled, largest shape only)"
 }
