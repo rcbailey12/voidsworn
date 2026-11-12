@@ -4,8 +4,8 @@
 
 **Read in this order:** this section; contrib/opus/LOOP.md ("The Board's standing duties", "The seats", the LATEST lines of
 "Current state"); contrib/opus/OPEN_WORK.md (one row per open issue and parked pull request); the playbook for your area
-(docs/playbooks/, PROGRAM.md first); FINDINGS R183 to R215 for Ryan's words. docs/RULEBOOK.md (issue 492) becomes the one
-live list of rules when it merges. Section 0a below is this morning's state: where it disagrees with this section, this
+(docs/playbooks/, PROGRAM.md first); FINDINGS R183 to R215 for Ryan's words. docs/RULEBOOK.md (issue 492, merged as PR 551) is the one
+live list of rules. Section 0a below is this morning's state: where it disagrees with this section, this
 section wins.
 
 **The Board** is one Claude thread in the Project, Opus 5.5 since Nov 11 afternoon. It owns the whole board, starts agreed work
@@ -36,8 +36,7 @@ drift to keep happening or where we get confused on how we're doing things."
 - PR 547 / issue 532: Hullbreaker build sheets, round 2 (Opus worker). PR 536 (Codex's try) stays open as the reference only.
 - PR 544 / issue 271 step 2: the battle screen built as E1 Ledger (Opus worker).
 - PR 524 / issue 461: hits, waiting on Muse's re-check (opus_check_524b); then 538 (hits pass 2).
-- PR 549: the build method in ships.md, RECIPE.md and AGENTS.md (R214, R215). Merge when green.
-- PR 548 / issue 541: environment follow-up (workhorse; the Board recovered its edits). Merge when green.
+- Merged at 20:50 CST: PR 549 (the build method, R214, R215), PR 548 (issue 541, rocks turn by default), PR 551 (the rulebook).
 - PR 543 / issue 357: code traps; conflicts with main, to be redone on current main once 524, 544 and 547 land.
 - This pull request (issue 492): Part A carries the Nov 11 rulings into their working documents; Part B is docs/RULEBOOK.md, with contrib/opus/reviews/rulebook_board_notes.md for the Board.
 
