@@ -111,9 +111,10 @@ agents-09.
 No Fable helpers: Ryan's Fable allowance is spent ("I just used the final fable reset", R180). Kimi is off and was never fairly
 tested (only the pay-as-you-go tier, R164). Ids: R128, R180e, R205, R206, agents-12.
 
-2.7 **Codex runs locally on the PC; no cloud tasks or cloud reviews.** Why: "I don't want to use an inferior model" (the cloud
-ran an older model). Set: Ryan, Nov 2 (R75). Ends when the cloud model matches the local one (see the batch for Ryan).
-Ids: R75b, agents-07.
+2.7 **Codex runs the model Ryan picked: GPT 6.1 Sol today, pinned by name in tools/pc/codex_issue.bat.** Never a weaker
+model by accident (Luna) and never switched to another one (Astra) without his yes; no Codex cloud tasks or cloud reviews.
+Why: "We don't want to force using Astra or something. Just not accidentally run Luna or something, that's why we usually
+use Sol 6.1" (R216). Ends when Ryan picks another model. Set: Ryan, Nov 2 (R75) and Nov 11 (R216). Ids: R75b, agents-07.
 
 2.8 **Muse: a blind Rey leg written before Rey reads the others, on research, design and review jobs** (not on low-code fix
 jobs). Why: "Let's ensure muse is running its own blind leg room not just chairing." Set: Ryan, Nov 3 (R89). Ids: R89,
@@ -143,6 +144,9 @@ low for well-specified code. Why: a miss on a look costs a whole extra round (R1
 
 2.15 **The repo is the record.** Rulings go to FINDINGS with Ryan's words and the problem he was reacting to; board state to
 LOOP.md; rules to this book. Why: the other models only see the repo. Set: Ryan (project instructions; R189).
+
+2.16 **Argon stays off.** Why: "My subscription ran out and it just wasn't that useful to justify the cost" (R216). Ends when
+Ryan pays for it again. Set: Ryan, Nov 5 and 11 (R216).
 
 ## 3. PC and tools
 
@@ -177,6 +181,9 @@ at 1080p, GPU ms at 4K). Triangles, draw calls and surfaces are reported, never 
 floor. Why: new content needs a spending limit, Ryan plays at 1440p and 4K (R116); "measurements exist to find where fidelity
 can scale up and where performance forces scale down" (R121). Set: Ryan, Nov 6 to 8 (R111, R113, R116, R121, R122a). Ids:
 R111a, R111b, R113, R116, R121a, R121b.
+
+3.10 **The repo stays public.** Why: the outside tools (Muse and its models) read it without logins (R216). Set: Ryan (R10,
+R216).
 
 ## 4. Ships and concepts
 
@@ -344,6 +351,16 @@ Set: Ryan (R3, R163). Ids: R3a, R163a, effects-04.
 
 6.13 **Plasma is light blue.** Why: his call on the damage marks reference (R46). Set: Ryan, Oct 26. Ids: R46a, lore-04.
 
+6.14 **Normal hits mark the hull (scorch, wounds, scars); a hull opens into a real break only when a section is nearly gone or
+on death.** 20 percent of a section's hull is the starting value, judged by eye. Why: cut-out holes on every hit "looked like
+hollow cardboard" (Nov 1 playtest). Set: Ryan (R80, R216).
+
+6.15 **Section damage tint may show on small ships if it reads at camera 170**; the hits pass tries it by eye on frigates (the
+old ban had no reason and is retired). Set: Ryan (R80, retired R216).
+
+6.16 **Spend death effect cost where the eye is (the tell, the break, the core flash); long cooling stays cheap.** 2 s and 14 s
+are starting values. Why: deaths now run 3.5 to over 10 seconds in three beats (R186, R193). Set: Ryan (R90, R216).
+
 ## 7. Movement
 
 7.1 **Movement is never sudden, jerky or stop-start, and feels like space**: thrusters fire wherever a ship would need them
@@ -370,6 +387,9 @@ Board's advice (R193). Set: Ryan (R64, R193). Ids: R64c, feel-02.
 
 7.7 **Every number in contrib/opus/briefs/movement_spec.md is a tuning value chosen by eye from motion strips.** Set: Board
 (R189's rewrite). Ids: R131a, R131b, movespec-02, movespec-03, movespec-05, movespec-07.
+
+7.8 **Strike craft move like small agile craft (quick turns, short burns), still never jerky.** Why: small craft should feel
+quick, inside 7.1 (R189, R195). Set: Ryan (R55, R216).
 
 ## 8. Battle sound
 
@@ -439,6 +459,8 @@ Ryan, Nov 2. Id: R76b.
 Why: a run is meant to be lost; the debrief names what the death bought (contrib/opus/briefs/debrief_spec.md). Set: Ryan
 (R137a). Id: debrief-01.
 
+9.13 **After a battle: one prize screen, one confirm; a prize may open for detail before the confirm.** Set: Ryan (R23, R216).
+
 ## 10. The campaign map, space and the board
 
 10.1 **The battle board is a cinematic scene, not a board game**: no grey plate, living terrain, a faint grid only near the
@@ -466,6 +488,15 @@ Ryan. Ids: R164c, R165a, R170c, R174a, R174b, R181, briefing-01.
 
 10.7 **Stations are built from the accepted concept (Vesper Reach, T2 damaged) through the ship recipe, with far more surface
 detail than the first pass.** Why: "T2 damaged" (R206); stations looked plain (R109). Set: Ryan. Ids: R109, R206.
+
+10.8 **A battle opens with both fleets in view; markers at the screen edge only where a ship can leave the view.** Set: Ryan
+(R62, R216).
+
+10.9 **Nebula colour is picked per region by eye on the sky sheet; no indigo to purple gradient; the faction tint share is a
+tuning value.** Why: Ryan listed indigo to purple gradients among the AI-made tells (R174). Set: Ryan (R82, R216).
+
+10.10 **The battle board is the dead star's gravity well.** Why: it is the game's identity, the Hollow Sun setting (R216).
+Set: Ryan, Oct 24 (R216).
 
 ## 11. Story, names and the campaign
 
