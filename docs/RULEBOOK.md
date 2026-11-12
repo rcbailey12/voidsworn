@@ -245,6 +245,13 @@ sanding off what made them theirs (R180). Set: Board lesson after Ryan's review 
 recipe and is the reference for later jobs (R167: "I want this to end with something that opus or other models can run
 from"). Set: Ryan (R167, R180). Ids: R167b, R180d, handoff-01.
 
+4.11 **Every part has a job and every weapon is its faction's own.** A part with no purpose is cut; weapons, turrets and
+launchers are designed per faction from the lore bible and the faction sheet (how the weapon works shows in its mount,
+housing, barrel and muzzle), never a shared silhouette; a gun in another weapon's firing lane or backblast is a clash. Why:
+Ryan on the Hullbreakers: "let's get rid of the chains randomly around the ship. There's no purpose" and "a gun directly
+behind the rocket pods on a16 ... seems like it conflicts"; on Eclipse: "their turrets look the same as hullbreakers" (R221).
+Set: Ryan, Nov 12 (R221).
+
 ## 5. Ship build pipeline
 
 5.1 **No ship is built until its build sheet passes the concept standard** (contrib/muse/design/concept_standard_2026_11/standard.md:

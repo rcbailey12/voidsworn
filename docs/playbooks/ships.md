@@ -113,6 +113,17 @@ global learning and shaping the approach". So the method, for every ship of ever
   rendered beside the concept at the same view, and the inventory is ticked off per cell: present, shaped, detailed. That
   table is on every sheet and every build.
 - Every round's feedback goes into this section as a general rule, never only into the one ship's notes.
+- Every part has a job (R221). A part that does nothing on the ship (Ryan on the Hullbreaker chains: "let's get rid of the
+  chains randomly around the ship. There's no purpose") is cut; the inventory names each part's job, and a part with none
+  does not ship. Junky is still on-brand for Hullbreakers, but junk that is bolted on for a reason.
+- Parts must not look like they conflict, not only not clash (R221: "There's a gun directly behind the rocket pods on a16
+  which seems like it conflicts?"). The fit check adds each launcher's backblast cone and each rack's firing lane, and a
+  gun whose barrel points at or sits in another weapon's lane or blast is a clash even when no mesh touches.
+- Weapons are designed per faction from the lore (R221: "their turrets look the same as hullbreakers. We should have those
+  be more unique per factions and fit the actual weapons they use per lore Bible and faction rules"). Each faction kit's
+  guns, turrets and launchers are built from what that faction's weapons are (data.js weapon ids, the lore bible, the
+  faction sheet in factions.md): their mount, housing, barrel and muzzle say how the weapon works. No turret silhouette is
+  shared between factions; the sheet shows each weapon type beside its lore line.
 - Massing is checked as hard as parts (Board, Nov 12, from round 3: every part passed its tick while the hull still read as a
   lump). The sheet reports the concept's and the build's length to beam to height ratios, and the per-cell table adds a
   structure count: distinct masses, tiers and steps per cell, concept against build. A part list that passes over the wrong
