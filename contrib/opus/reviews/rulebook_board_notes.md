@@ -62,16 +62,18 @@ R23 one prize screen. Others, for the Board to give a reason or drop:
 
 ## Also outstanding from Part A
 
-- AGENTS.md: the seat table and R214 are on PR 549; after it merges, the Board row still says "Fable 5.2 ... R152" and the
-  "Breakable by design" paragraph still says "two or three authored break lines": point both at RULEBOOK 2.6 and 5.4.
-- AGENTS.md "Ship models" section still names barge_v15.py and SHIP_QUEUE as the start: point it at docs/playbooks/ships.md.
-- CLAUDE.md still names contrib/opus/go-forward-plan.md as the approved plan (this PR fixes it).
+- Done (PR 552, then the clean-up PR): AGENTS.md is slimmed; its seat table, ship sections and PC notes are in the rulebook
+  and the old text is archived at docs/archive/AGENTS_2026-11-11.md.
+- Done: CLAUDE.md no longer names the go-forward plan (archived at docs/archive/go-forward-plan.md).
 - FINDINGS.md needs a header line: the rulebook is the live source; new rulings record the problem Ryan was reacting to (R189)
   and land with their document edit (R214). Board commits it to main.
 - The lore bible's Eclipse ship colour line needs a note pointing at R169b (green rim) and R201 (purple plates).
 - No playbook for space and the board yet (PROGRAM.md track 3).
 
-## Should move to docs/archive/ (not moved in this job), and what replaced each
+## Should move to docs/archive/, and what replaced each
+
+Done Nov 11 by the clean-up pull request (branch opus/issue-492-cleanup): where each item went is in
+contrib/opus/reviews/cleanup_492.md. The paths in the table are the old ones.
 
 | Document | Replaced by |
 |---|---|

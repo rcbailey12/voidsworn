@@ -3998,7 +3998,7 @@
  },
  {
   "id": "skill-sk-01",
-  "source": ".claude/skills/ship-kit/SKILL.md:7",
+  "source": "docs/archive/skills/ship-kit_SKILL_2026-11-11.md:7",
   "area": "ship build pipeline",
   "said_by": "Board",
   "rule": "The worked example and template for every ship is the Pyre-Barge C19_51 chain (barge_v15.py, pixal_to_game, vsm_pack, closeshot).",
@@ -4012,7 +4012,7 @@
  },
  {
   "id": "skill-sk-02",
-  "source": ".claude/skills/ship-kit/SKILL.md:10",
+  "source": "docs/archive/skills/ship-kit_SKILL_2026-11-11.md:10",
   "area": "ships and concepts",
   "said_by": "Ryan",
   "rule": "Rules every ship must pass: space not naval list; mounts; never backward; matched pairs; surface detail; shields keep faction colours; breakable by design.",
@@ -4026,7 +4026,7 @@
  },
  {
   "id": "skill-sk-03",
-  "source": ".claude/skills/ship-kit/SKILL.md:19",
+  "source": "docs/archive/skills/ship-kit_SKILL_2026-11-11.md:19",
   "area": "ship build pipeline",
   "said_by": "Board",
   "rule": "Blocking audit: no floating part (nearest surface under 1.5 mm), no backward guns, glb reimport with matching triangles.",
@@ -4040,7 +4040,7 @@
  },
  {
   "id": "skill-sk-04",
-  "source": ".claude/skills/ship-kit/SKILL.md:20",
+  "source": "docs/archive/skills/ship-kit_SKILL_2026-11-11.md:20",
   "area": "ship build pipeline",
   "said_by": "Board",
   "rule": "Blob sweep: every cell gets a verdict, clean or rebuild by hand.",
@@ -4053,7 +4053,7 @@
  },
  {
   "id": "skill-sk-05",
-  "source": ".claude/skills/ship-kit/SKILL.md:30",
+  "source": "docs/archive/skills/ship-kit_SKILL_2026-11-11.md:30",
   "area": "ship build pipeline",
   "said_by": "Board",
   "rule": "Kit material lights by stored normals; paint self-light is 0 (ships3d.js:790).",
