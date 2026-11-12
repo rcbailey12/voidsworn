@@ -42,7 +42,7 @@ if /i "%ARM%"=="deepseek" set "MODEL=deepseek/deepseek-flash"
 if /i "%ARM%"=="deepseekpro" set "MODEL=deepseek/deepseek-v4-pro"
 if /i "%ARM%"=="kimi" set "MODEL=moonshotai/kimi-k3.1-pro"
 rem kimicode: the Kimi Code plan (Ryan, Nov 12, issue 597); its key only works on api.kimi.com/coding/v1 (work\opencode.json)
-if /i "%ARM%"=="kimicode" set "MODEL=kimicode/kimi-for-coding"
+if /i "%ARM%"=="kimicode" set "MODEL=kimicode/k3.1-pro"
 if not defined MODEL (echo usage: work_issue.bat issue-number deepseek-deepseekpro-kimi-or-kimicode [dryrun] & exit /b 2)
 if defined WORK_MODEL set "MODEL=%WORK_MODEL%"
 rem The repo's bundled Node 22 first: the shell's Node 24 gives a false 4,048 pow differences in the parity math sweep (#217 trial)

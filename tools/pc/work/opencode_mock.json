@@ -5,7 +5,7 @@
   "provider": {
     "deepseek": { "options": { "baseURL": "http://127.0.0.1:8765/v1" } },
     "moonshotai": { "options": { "baseURL": "http://127.0.0.1:8765/v1" } },
-    "kimicode": { "npm": "@ai-sdk/openai-compatible", "name": "Kimi Code plan (stand-in)", "options": { "baseURL": "http://127.0.0.1:8765/v1", "apiKey": "dry" }, "models": { "kimi-for-coding": { "name": "stand-in" } } }
+    "kimicode": { "npm": "@ai-sdk/openai-compatible", "name": "Kimi Code plan (stand-in)", "options": { "baseURL": "http://127.0.0.1:8765/v1", "apiKey": "dry" }, "models": { "kimi-for-coding": { "name": "stand-in" }, "k3.1-pro": { "name": "stand-in" } } }
   },
   "permission": {
     "edit": "allow",
