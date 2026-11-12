@@ -27,10 +27,18 @@
       },
       "models": {
         "kimi-for-coding": {
-          "name": "Kimi for coding (the plan's default alias)"
+          "name": "Kimi for coding (the plan's default alias)",
+          "limit": {
+            "context": 250000,
+            "output": 32768
+          }
         },
         "k3.1-pro": {
-          "name": "Kimi K3.1 Pro (the plan's strongest listed model)"
+          "name": "Kimi K3.1 Pro (the plan's strongest listed model)",
+          "limit": {
+            "context": 250000,
+            "output": 32768
+          }
         }
       }
     }
