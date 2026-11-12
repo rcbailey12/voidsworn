@@ -558,5 +558,5 @@ Anything else I decide, then report.
 ## 11. Starter line for a fresh session
 
 ```
-Read HANDOFF.md, then contrib/opus/go-forward-plan.md and contrib/opus/FINDINGS.md in github.com/rcbailey12/voidsworn (main), and continue from the first phase not marked done.
+Read HANDOFF.md, then docs/archive/go-forward-plan.md and contrib/opus/FINDINGS.md in github.com/rcbailey12/voidsworn (main), and continue from the first phase not marked done.
 ```

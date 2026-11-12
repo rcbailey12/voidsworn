@@ -489,7 +489,7 @@
   "source": "CLAUDE.md:6",
   "area": "agents and process",
   "said_by": "Board",
-  "rule": "The approved build plan is contrib/opus/go-forward-plan.md.",
+  "rule": "The approved build plan is docs/archive/go-forward-plan.md.",
   "quote": "",
   "reason": "none recorded",
   "now": "superseded by docs/playbooks/PROGRAM.md (R167); HANDOFF section 0 already says so",
@@ -2275,7 +2275,7 @@
   "rule": "Material library from ambientCG, CC0 only.",
   "quote": "",
   "reason": "Free for any use, no credit needed (line 14).",
-  "now": "contradicted by contrib/opus/briefs/blender_build_harness.md (no downloaded textures, even CC0)",
+  "now": "contradicted by docs/archive/briefs/blender_build_harness.md (no downloaded textures, even CC0)",
   "restricts": "n/a",
   "verdict": "RETIRE",
   "note": "Pair: TEXTURE_PASS.md (use CC0 ambientCG) vs blender_build_harness.md habit 4 (no external assets)."
@@ -2414,7 +2414,7 @@
  },
  {
   "id": "plan-01",
-  "source": "contrib/opus/go-forward-plan.md:56",
+  "source": "docs/archive/go-forward-plan.md:56",
   "area": "rules of play",
   "said_by": "Ryan",
   "rule": "Battle size grows over a run: about 10, 14, 20 ships on board by sector; 20 is a guide, not a cap; the player's fleet stays 4 to 7 ships.",
@@ -2427,7 +2427,7 @@
  },
  {
   "id": "plan-02",
-  "source": "contrib/opus/go-forward-plan.md:61",
+  "source": "docs/archive/go-forward-plan.md:61",
   "area": "battle look",
   "said_by": "Ryan",
   "rule": "Shields keep faction colours; the cyan-only rule is retired for 3D shields; shield bars and numbers in the UI stay cyan.",
@@ -2440,7 +2440,7 @@
  },
  {
   "id": "plan-03",
-  "source": "contrib/opus/go-forward-plan.md:64",
+  "source": "docs/archive/go-forward-plan.md:64",
   "area": "rules of play",
   "said_by": "Ryan",
   "rule": "Captured ships: add, strip or ransom; auto-scrap when full; sector flagships cannot be captured.",
@@ -2453,7 +2453,7 @@
  },
  {
   "id": "plan-04",
-  "source": "contrib/opus/go-forward-plan.md:69",
+  "source": "docs/archive/go-forward-plan.md:69",
   "area": "battle look",
   "said_by": "Ryan",
   "rule": "Acceptance is Ryan's eye plus automatic checks (brightness scan, colourblind simulation, silhouette test); no viewer panels.",
@@ -2466,7 +2466,7 @@
  },
  {
   "id": "plan-05",
-  "source": "contrib/opus/go-forward-plan.md:75",
+  "source": "docs/archive/go-forward-plan.md:75",
   "area": "battle sound",
   "said_by": "Ryan",
   "rule": "Sound stays as is, Sonniss clips included.",
@@ -2479,7 +2479,7 @@
  },
  {
   "id": "plan-06",
-  "source": "contrib/opus/go-forward-plan.md:88",
+  "source": "docs/archive/go-forward-plan.md:88",
   "area": "agents and process",
   "said_by": "Board",
   "rule": "Gates stay light: a step is done when automatic checks pass and Ryan says yes on screenshots.",
@@ -2492,7 +2492,7 @@
  },
  {
   "id": "plan-07",
-  "source": "contrib/opus/go-forward-plan.md:131",
+  "source": "docs/archive/go-forward-plan.md:131",
   "area": "battle look",
   "said_by": "agent",
   "rule": "Background brightness scan: no board pixel brighter than 40% of a mid-grey reference.",
@@ -2506,7 +2506,7 @@
  },
  {
   "id": "plan-08",
-  "source": "contrib/opus/go-forward-plan.md:133",
+  "source": "docs/archive/go-forward-plan.md:133",
   "area": "battle look",
   "said_by": "agent",
   "rule": "Accessibility numbers: at most 3 flashes per second and a reduce-flashing toggle.",
@@ -2520,7 +2520,7 @@
  },
  {
   "id": "plan-09",
-  "source": "contrib/opus/go-forward-plan.md:391",
+  "source": "docs/archive/go-forward-plan.md:391",
   "area": "rules of play",
   "said_by": "Ryan",
   "rule": "Corsairs cannot take lance-kind weapons; Glasswrights (Ithar) cannot Brace.",
@@ -2533,7 +2533,7 @@
  },
  {
   "id": "plan-10",
-  "source": "contrib/opus/go-forward-plan.md:151",
+  "source": "docs/archive/go-forward-plan.md:151",
   "area": "battle look",
   "said_by": "agent",
   "rule": "Torpedo telegraph: predicted path, two-stage warning, a ramp to white about 800 ms before impact.",
@@ -2546,7 +2546,7 @@
  },
  {
   "id": "plan-11",
-  "source": "contrib/opus/go-forward-plan.md:370",
+  "source": "docs/archive/go-forward-plan.md:370",
   "area": "movement",
   "said_by": "Board",
   "rule": "Faster first: target 12 s per round, 15 s limit, every resolution skippable.",
@@ -2559,7 +2559,7 @@
  },
  {
   "id": "plan-12",
-  "source": "contrib/opus/go-forward-plan.md:384",
+  "source": "docs/archive/go-forward-plan.md:384",
   "area": "rules of play",
   "said_by": "Board",
   "rule": "Balance band: no admiral below 50% or above 90% against a sector 1 flagship.",
@@ -2572,7 +2572,7 @@
  },
  {
   "id": "plan-13",
-  "source": "contrib/opus/go-forward-plan.md:548",
+  "source": "docs/archive/go-forward-plan.md:548",
   "area": "agents and process",
   "said_by": "Board",
   "rule": "Commits go straight to main with the Ryan Bailey identity.",
@@ -2585,7 +2585,7 @@
  },
  {
   "id": "plan-14",
-  "source": "contrib/opus/go-forward-plan.md:503",
+  "source": "docs/archive/go-forward-plan.md:503",
   "area": "agents and process",
   "said_by": "Ryan",
   "rule": "The old \"two helpers at most\" rule is retired.",
@@ -2598,7 +2598,7 @@
  },
  {
   "id": "plan-15",
-  "source": "contrib/opus/go-forward-plan.md:554",
+  "source": "docs/archive/go-forward-plan.md:554",
   "area": "agents and process",
   "said_by": "Board",
   "rule": "The plan is approved, so no new scope questions unless something changes it.",
@@ -2611,7 +2611,7 @@
  },
  {
   "id": "plan-16",
-  "source": "contrib/opus/go-forward-plan.md:1",
+  "source": "docs/archive/go-forward-plan.md:1",
   "area": "agents and process",
   "said_by": "Ryan",
   "rule": "The whole go-forward plan (Oct 24) is the approved build plan.",
@@ -2718,7 +2718,7 @@
  },
  {
   "id": "fb2-01",
-  "source": "contrib/opus/briefs/codex_fb2_movement_torpedo_tiles.md:7",
+  "source": "docs/archive/briefs/codex_fb2_movement_torpedo_tiles.md:7",
   "area": "movement",
   "said_by": "Board",
   "rule": "No side-to-side translation: sidesteps and back-offs are a gentle curved drift with the hull pointed along the curve; thrusters small brief puffs only while turning.",
@@ -2731,7 +2731,7 @@
  },
  {
   "id": "fb2-02",
-  "source": "contrib/opus/briefs/codex_fb2_movement_torpedo_tiles.md:3",
+  "source": "docs/archive/briefs/codex_fb2_movement_torpedo_tiles.md:3",
   "area": "agents and process",
   "said_by": "Board",
   "rule": "Presentation only: no rules or number changes; rules parity must PASS.",
@@ -2744,7 +2744,7 @@
  },
  {
   "id": "fb3-01",
-  "source": "contrib/opus/briefs/codex_fb3_playtest_fixes.md:9",
+  "source": "docs/archive/briefs/codex_fb3_playtest_fixes.md:9",
   "area": "movement",
   "said_by": "Ryan",
   "rule": "Bring thruster visuals back (bright short puffs on turns, small station-keeping flickers); keep smooth curves with no sideways shuffle.",
@@ -2757,7 +2757,7 @@
  },
  {
   "id": "fb3-02",
-  "source": "contrib/opus/briefs/codex_fb3_playtest_fixes.md:16",
+  "source": "docs/archive/briefs/codex_fb3_playtest_fixes.md:16",
   "area": "battle look",
   "said_by": "Board",
   "rule": "Normal hits do not cut holes; real breaks only when a section is nearly gone or on death, showing fire inside.",
@@ -2770,7 +2770,7 @@
  },
  {
   "id": "fb3-03",
-  "source": "contrib/opus/briefs/codex_fb3_playtest_fixes.md:21",
+  "source": "docs/archive/briefs/codex_fb3_playtest_fixes.md:21",
   "area": "battle look",
   "said_by": "Ryan",
   "rule": "Engine trails are emitted into world space and trace the path flown.",
@@ -2783,7 +2783,7 @@
  },
  {
   "id": "fb1-01",
-  "source": "contrib/opus/briefs/codex_fb1_playtest_fixes.md:12",
+  "source": "docs/archive/briefs/codex_fb1_playtest_fixes.md:12",
   "area": "battle look",
   "said_by": "Board",
   "rule": "Every blocking hex shows something solid at that hex; a blocked shot outlines the blocker and names it.",
@@ -2796,7 +2796,7 @@
  },
  {
   "id": "fb1-02",
-  "source": "contrib/opus/briefs/codex_fb1_playtest_fixes.md:22",
+  "source": "docs/archive/briefs/codex_fb1_playtest_fixes.md:22",
   "area": "battle look",
   "said_by": "Board",
   "rule": "Chorus damage is organic and non-gory (no blood-red gore).",
@@ -2809,7 +2809,7 @@
  },
  {
   "id": "feel-01",
-  "source": "contrib/opus/briefs/feel_pass_2026-11-01.md:23",
+  "source": "docs/archive/briefs/feel_pass_2026-11-01.md:23",
   "area": "movement",
   "said_by": "Ryan",
   "rule": "Movement about twice as slow, ships one at a time; the 12 s target and 15 s round limit are retired; Enter or Space hurries.",
@@ -2822,7 +2822,7 @@
  },
  {
   "id": "feel-02",
-  "source": "contrib/opus/briefs/feel_pass_2026-11-01.md:24",
+  "source": "docs/archive/briefs/feel_pass_2026-11-01.md:24",
   "area": "movement",
   "said_by": "Ryan",
   "rule": "Flip-and-burn stays off.",
@@ -2835,7 +2835,7 @@
  },
  {
   "id": "feel-03",
-  "source": "contrib/opus/briefs/feel_pass_2026-11-01.md:61",
+  "source": "docs/archive/briefs/feel_pass_2026-11-01.md:61",
   "area": "battle look",
   "said_by": "Board",
   "rule": "Effects: a minimum on-screen size for tracers, bolts and impacts; keep the 20-ship 1% low above 40 fps on Forward+.",
@@ -2848,7 +2848,7 @@
  },
  {
   "id": "feel-04",
-  "source": "contrib/opus/briefs/feel_pass_2026-11-01.md:68",
+  "source": "docs/archive/briefs/feel_pass_2026-11-01.md:68",
   "area": "battle look",
   "said_by": "Ryan",
   "rule": "Every effects brief starts from the destruction research and names which reference game technique it copies.",
@@ -2861,7 +2861,7 @@
  },
  {
   "id": "feel-05",
-  "source": "contrib/opus/briefs/feel_pass_2026-11-01.md:72",
+  "source": "docs/archive/briefs/feel_pass_2026-11-01.md:72",
   "area": "agents and process",
   "said_by": "Board",
   "rule": "Commit straight to main from a worktree; never git stash.",
@@ -2874,7 +2874,7 @@
  },
  {
   "id": "feel-06",
-  "source": "contrib/opus/briefs/feel_pass_2026-11-01.md:84",
+  "source": "docs/archive/briefs/feel_pass_2026-11-01.md:84",
   "area": "PC and tools",
   "said_by": "Board",
   "rule": "Never put |, &, < or > in a PC job's arguments; a hung job blocks the lane.",
@@ -2887,7 +2887,7 @@
  },
  {
   "id": "feel-07",
-  "source": "contrib/opus/briefs/feel_pass_2026-11-01.md:86",
+  "source": "docs/archive/briefs/feel_pass_2026-11-01.md:86",
   "area": "PC and tools",
   "said_by": "Board",
   "rule": "Never drive the PC by computer control.",
@@ -2900,7 +2900,7 @@
  },
  {
   "id": "harness-01",
-  "source": "contrib/opus/briefs/blender_build_harness.md:7",
+  "source": "docs/archive/briefs/blender_build_harness.md:7",
   "area": "ship build pipeline",
   "said_by": "Board",
   "rule": "Design doc first: a measured parts list per asset before building.",
@@ -2913,7 +2913,7 @@
  },
  {
   "id": "harness-02",
-  "source": "contrib/opus/briefs/blender_build_harness.md:9",
+  "source": "docs/archive/briefs/blender_build_harness.md:9",
   "area": "ship build pipeline",
   "said_by": "Board",
   "rule": "A scripted overlap audit ends every build: 0 gap, no intersections, nothing across break lines; triangle and draw call report.",
@@ -2926,7 +2926,7 @@
  },
  {
   "id": "harness-03",
-  "source": "contrib/opus/briefs/blender_build_harness.md:10",
+  "source": "docs/archive/briefs/blender_build_harness.md:10",
   "area": "ship build pipeline",
   "said_by": "Board",
   "rule": "No downloaded 3D models or texture images, even CC0; procedural materials only.",
@@ -2940,7 +2940,7 @@
  },
  {
   "id": "briefing-01",
-  "source": "contrib/opus/briefs/campaign_map_briefing.md:5",
+  "source": "docs/archive/briefs/campaign_map_briefing.md:5",
   "area": "map",
   "said_by": "Ryan",
   "rule": "Briefing layout over the real 3D scene; keep 3D stop models, the black hole, curved glowing routes, nebula and starfield; backdrop dimmed about half.",
@@ -2953,7 +2953,7 @@
  },
  {
   "id": "briefing-02",
-  "source": "contrib/opus/briefs/campaign_map_briefing.md:27",
+  "source": "docs/archive/briefs/campaign_map_briefing.md:27",
   "area": "screens and UI",
   "said_by": "Board",
   "rule": "Left briefing column 480 wide, padding 40, 8 px grid, number face 13, sector name 40, route rows 22, one filled lime button.",
@@ -2966,7 +2966,7 @@
  },
  {
   "id": "briefing-03",
-  "source": "contrib/opus/briefs/campaign_map_briefing.md:62",
+  "source": "docs/archive/briefs/campaign_map_briefing.md:62",
   "area": "map",
   "said_by": "Ryan",
   "rule": "Stops further on: about 70 percent size and about half brightness, names on hover.",
@@ -2979,7 +2979,7 @@
  },
  {
   "id": "briefing-04",
-  "source": "contrib/opus/briefs/campaign_map_briefing.md:57",
+  "source": "docs/archive/briefs/campaign_map_briefing.md:57",
   "area": "map",
   "said_by": "Board",
   "rule": "Orbit rings drop to a faint hint or go.",
@@ -2992,7 +2992,7 @@
  },
  {
   "id": "briefing-05",
-  "source": "contrib/opus/briefs/campaign_map_briefing.md:84",
+  "source": "docs/archive/briefs/campaign_map_briefing.md:84",
   "area": "screens and UI",
   "said_by": "Board",
   "rule": "Nothing is deleted from the game: every fact on the old screen is one click or hover away; the PR lists each moved item.",
@@ -3281,7 +3281,7 @@
  },
  {
   "id": "constants-01",
-  "source": "contrib/opus/briefs/ui_spec_constants.md:3",
+  "source": "docs/archive/briefs/ui_spec_constants.md:3",
   "area": "screens and UI",
   "said_by": "Board",
   "rule": "Generated file: do not edit by hand; change the code and rerun the script.",
