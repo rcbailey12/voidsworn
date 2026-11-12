@@ -19,7 +19,7 @@ M = json.load(open(os.path.join(RD, CODE + '_model.json')))
 FIT = json.load(open(os.path.join(RD, CODE + '_fit.json')))
 ARCS = {'F': (-60.0, 60.0), 'P': (30.0, 150.0), 'S': (-150.0, -30.0), 'T': (-180.0, 180.0)}
 INK = (232, 228, 218); DIM = (160, 158, 150); GREY = (58, 58, 60)
-GREEN = (90, 220, 120); CYAN = (90, 200, 235); ORANGE = (255, 150, 50); YELLOW = (250, 220, 60); RED = (235, 70, 55)
+GREEN = (90, 220, 120); CYAN = (90, 200, 235); ORANGE = (255, 150, 50); YELLOW = (250, 220, 60); RED = (235, 70, 55); MAGENTA = (235, 80, 210)
 
 
 def font(n):
@@ -73,6 +73,15 @@ def fit_view():
             pts.append(proj(view, q)); a += 3
         return pts
 
+    def lane_pts(view, ln):
+        # the lane or blast box seen from above (u, the beam) or from the side (w, the height), out to 30 percent of the length
+        L = min(ln['length'], 0.3 * M['length']); t = math.tan(math.radians(ln['half']))
+        ax = ln['u'] if view == 'top' else ln['w']; h0 = ln['hu'] if view == 'top' else ln['hw']
+        a0 = ln['apex']; dd = ln['dir']
+        e = [a0[i] + dd[i] * L for i in range(3)]
+        return [proj(view, [a0[i] + ax[i] * h0 for i in range(3)]), proj(view, [e[i] + ax[i] * (h0 + L * t) for i in range(3)]),
+                proj(view, [e[i] - ax[i] * (h0 + L * t) for i in range(3)]), proj(view, [a0[i] - ax[i] * h0 for i in range(3)])]
+
     def draw_top(d):
         for a in FIT['arcs']:
             lo, hi = ARCS.get(a['slot'] or 'T', (-180, 180))
@@ -94,6 +103,9 @@ def fit_view():
             e = [ap[i] + dd[i] * L for i in range(3)]
             q0 = [e[i] + u[i] * (c['r0'] + L * t) for i in range(3)]; q1 = [e[i] - u[i] * (c['r0'] + L * t) for i in range(3)]
             d.polygon([proj('top', p0), proj('top', q0), proj('top', q1), proj('top', p1)], fill=ORANGE + (70,), outline=ORANGE + (230,))
+        for ln in FIT.get('lanes', []):
+            d.polygon(lane_pts('top', ln), fill=(MAGENTA if ln['what'] == 'backblast' else YELLOW) + (55,),
+                      outline=(MAGENTA if ln['what'] == 'backblast' else YELLOW) + (220,))
         for a in FIT['apertures']:
             L = min(a['length'], 0.3 * M['length']) if a['kind'] in ('launcher', 'tube') else min(a['length'], 1.2)
             e = [a['pos'][i] + a['dir'][i] * L for i in range(3)]
@@ -114,6 +126,9 @@ def fit_view():
             d.polygon([proj('side', (ap[0], ap[1], ap[2] + c['r0'])), proj('side', (e[0], e[1], e[2] + c['r0'] + L * t)),
                        proj('side', (e[0], e[1], e[2] - c['r0'] - L * t)), proj('side', (ap[0], ap[1], ap[2] - c['r0']))],
                       fill=ORANGE + (70,), outline=ORANGE + (230,))
+        for ln in FIT.get('lanes', []):
+            d.polygon(lane_pts('side', ln), fill=(MAGENTA if ln['what'] == 'backblast' else YELLOW) + (55,),
+                      outline=(MAGENTA if ln['what'] == 'backblast' else YELLOW) + (220,))
         for a in FIT['apertures']:
             if a['kind'] not in ('launcher', 'tube'):
                 continue
@@ -131,17 +146,18 @@ def fit_view():
     for c in FIT['cones']:
         if abs(c['dir'][2]) < 0.9 and abs(c['dir'][1]) < 0.9:
             x, y = proj('side', c['apex']); ds.text((x - 40, y - 12), c['id'], font=F_S, fill=ORANGE)
-    W = t2.width + s2.width + 60; H = max(t2.height, s2.height) + 280
+    W = max(t2.width + s2.width + 60, 1960); H = max(t2.height, s2.height) + 305
     sh = Image.new('RGB', (W, H), (40, 40, 42)); d = ImageDraw.Draw(sh)
     cnt = FIT['counts']
-    d.text((20, 15), '%s FIT VIEW, %s. Left: clashes %d, mounts %d, arcs %d, sweeps %d, exhaust %d, exits %d' % (
-        CODE, RND, cnt['CLASH'], cnt['MOUNT'], cnt['ARC'], cnt.get('SWEEP', 0), cnt['EXHAUST'], cnt['EXIT']), font=F_L, fill=INK)
+    d.text((20, 15), '%s FIT VIEW, %s (R221). Left: clash %d, mount %d, arc %d, sweep %d, exhaust %d, exit %d, lane %d' % (
+        CODE, RND, cnt['CLASH'], cnt['MOUNT'], cnt['ARC'], cnt.get('SWEEP', 0), cnt['EXHAUST'], cnt['EXIT'], cnt.get('LANE', 0)), font=F_M, fill=INK)
     d.text((20, 75), 'green: each gun\'s data.js firing arc (red if a bearing is blocked); cyan circle: a turret\'s sweep (R219, every bearing turned and tested)', font=F_S, fill=DIM)
     d.text((20, 100), 'orange: exhaust cones (12 deg engines, 20 deg thrusters); yellow: launcher cell and tube exits, other apertures', font=F_S, fill=DIM)
-    d.text((20, 125), 'tested: %s' % ', '.join('%s %s' % (v, k_.replace('_', ' ')) for k_, v in FIT['tested'].items()), font=F_S, fill=DIM)
-    sh.paste(t2, (20, 170)); sh.paste(s2, (t2.width + 40, 170))
-    d.text((20, 170 + t2.height + 10), 'TOP (bow up, port left)', font=F_M, fill=INK)
-    d.text((t2.width + 40, 170 + s2.height + 10), 'SIDE (port beam, bow left): elevation fans at each arc limit, cones, exits', font=F_M, fill=INK)
+    d.text((20, 125), 'yellow box: each rack\'s firing lane; magenta box: its backblast (no gun may sit in either, R221)', font=F_S, fill=DIM)
+    d.text((20, 150), 'tested: %s' % ', '.join('%s %s' % (v, k_.replace('_', ' ')) for k_, v in FIT['tested'].items()), font=F_S, fill=DIM)
+    sh.paste(t2, (20, 195)); sh.paste(s2, (t2.width + 40, 195))
+    d.text((20, 195 + t2.height + 10), 'TOP (bow up, port left)', font=F_M, fill=INK)
+    d.text((t2.width + 40, 195 + s2.height + 10), 'SIDE (port beam, bow left): elevation fans at each arc limit, cones, exits', font=F_M, fill=INK)
     sh.save(os.path.join(OUT, 'fit_view.jpg'), quality=88)
 
 
@@ -159,7 +175,12 @@ def fit_report():
          '4. **SWEEP** (R219): every turret\'s turning pieces turned through every bearing of its arc touch nothing; no two turrets meet',
          '   when both turn through their arcs.',
          '5. **EXHAUST**: nothing in any engine or thruster exhaust cone.',
-         '6. **EXIT**: no launcher cell, tube mouth, dish beam, hatch, lamp, vent or slit is covered.\n',
+         '6. **EXIT**: no launcher cell, tube mouth, dish beam, hatch, lamp, vent or slit is covered.',
+         '7. **LANE** (R221: parts must not look like they conflict): each rack has a firing lane forward of its cells (4 degree spread,',
+         '   to 80 percent of the ship\'s length) and a backblast aft (15 degree spread, 2.5 rack depths or 15 percent of the length);',
+         '   no gun may sit in either, resting or turned through its slot arc, even when no mesh touches.',
+         '8. **Turret reach** (the issue 560 lesson: deck dressing can pin a turret): each turret is turned from rest each way in 5 degree',
+         '   steps until something stops it; the table below gives the real reach and flags any under 60 degrees either way.\n',
          'Turret marking for issue 560 (R219): each turret is an empty named `<id>_turret` at the ring centre (local +Z = the mount',
          'normal), with custom properties `turret=1`, `slot`, `weapon`, `arc_lo`, `arc_hi`, `arc_deg` (bearings from the bow, + to port, as',
          'core.js inArc), `rest_yaw`, `rest_pitch`; its turning meshes `<id>_turn_<material>` are its children (mesh in the pivot frame,',
@@ -193,9 +214,21 @@ def fit_report():
             L.append('| %s | %s | %s | %s |' % (c['check'], c['part'], c['other'], c['detail']))
     else:
         L.append('**Zero clashes left.** No clash is left in as intended.\n')
-    L.append('| Turret | Slot | Arc (bearings) | Sweep steps clear |\n|---|---|---|---:|')
+    L.append('| Turret | Slot | Arc (bearings) | Sweep steps clear | Rest | Reach to port | Stopped by | Reach to starboard | Stopped by | Under 60 |')
+    L.append('|---|---|---|---:|---:|---:|---|---:|---|---|')
+    short = []
     for s in FIT.get('sweeps', []):
-        L.append('| %s | %s | %d to %d | %d |' % (s['id'], s['slot'] or 'T', s['arc'][0], s['arc'][1], s['clear_steps']))
+        rp = s.get('reach_port', dict(deg=180, stop=None)); rs = s.get('reach_stbd', dict(deg=180, stop=None))
+        low = [w for w, r_ in (('port', rp), ('starboard', rs)) if r_['deg'] < 60]
+        if low:
+            short.append('%s (%s)' % (s['id'], ', '.join('%s %d' % (w, (rp if w == 'port' else rs)['deg']) for w in low)))
+        L.append('| %s | %s | %d to %d | %d | %d | %s | %s | %s | %s | %s |' % (
+            s['id'], s['slot'] or 'T', s['arc'][0], s['arc'][1], s['clear_steps'], s.get('rest_yaw', 0),
+            '%d' % rp['deg'] if rp['deg'] < 180 else 'all round', rp['stop'] or '-', '%d' % rs['deg'] if rs['deg'] < 180 else 'all round',
+            rs['stop'] or '-', 'yes' if low else 'no'))
+    L.append('\nReach is measured from the rest bearing, in degrees, turning toward port (bearings rising) and toward starboard; "all round"'
+             ' means nothing stops it within 180. Every turret clears its whole data.js slot arc (sweep steps above). Under 60 degrees'
+             ' either way: %s.' % ('; '.join(short) if short else 'none'))
     L.append('\nPicture: [fit_view.jpg](fit_view.jpg) (top and side with arcs, sweep circles, exhaust cones and exits).')
     open(os.path.join(OUT, 'fit_report.md'), 'w').write('\n'.join(L) + '\n')
 

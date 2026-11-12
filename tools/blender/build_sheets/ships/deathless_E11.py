@@ -21,7 +21,7 @@ CONCEPT_SHEET = 'contrib/muse/design/concept_round8c_2026_11/deathless_E11_sheet
 # the true views on the 8c sheet (x0, y0, x1, y1), bow on the right; the escort is a separate shape and is left out
 CONCEPT_VIEWS = dict(top=dict(box=(139, 23, 1747, 670), largest=True, flip=True), side=dict(box=(143, 704, 1824, 1079), largest=True, flip=True))
 CROPS = [('bow (crescent and projector)', (900, 300, 1920, 1100)), ('midships (batteries)', (450, 60, 1250, 620)), ('stern (engines and feathers)', (0, 20, 760, 560))]
-SHEET = dict(version=1, round='first sheet', date='2026-11-12', blend='opus532e\\e1',
+SHEET = dict(version=2, round='second sheet (R221 weapons)', date='2026-11-12', blend='opus532e\\w\\w1',
              before='First full layout', before_note='The first complete E11 layout, built with the Eclipse kit and run through the check before any fix.',
              during='While designing, the check also caught (and the design fixed): deck hatches and the core port sunk in the curved tier, the belt lights inside the belt, '
                     'heat panels covered by the stern feathers (moved forward of the band collar), the aft flak twin sweeping through deck hatches (moved to the deck edge), '
@@ -142,7 +142,7 @@ def build(K):
 
     # ---------------- the corona arc projector (doom F), out of the crescent's inner wall ----------------
     K.spinal('A1', (5.1, 0.0, Z0), 7.56, r=0.66, collar_r=1.02, collar_len=3.2, block_len=1.6, block_r=0.84, slot='F', weapon='doom',
-             inv='projector', note='the corona arc projector on the axis, through the crescent; the spinal shell (nova) fires from it')
+             inv='projector', note='the corona arc emitter on the axis, through the crescent: a capacitor column ending in a crown of electrode horns round a black shade disc; the spinal shell (nova) fires from it')
     import bpy as _bpy
     for nm_, ob_, col_ in (('Projector breech collars', 'A1_mount_mauve', 'mauve and violet'), ('Projector shaft', 'A1_body_violet', 'violet and mauve'), ('Projector muzzle block', 'A1_body_mauve', 'mauve')):
         K.mass(nm_, _bpy.data.objects[ob_], col_, note='a part of the kit projector, counted as its own mass')
@@ -218,13 +218,13 @@ def build(K):
 
     # ---------------- batteries, by data.js slot ----------------
     K.gun('T1', (2.4, 0.0, 2.1), 0, 5, barrels=2, cal=0.13, blen=2.0, size=1.35, slot='T', weapon='gauss', inv='main_guns',
-          note='fore null cannon twin on a low drum behind the crescent')
+          note='fore null cannon: twin rail pairs through a crescent shade, on a low drum behind the crescent')
     K.gun('T2', (-2.2, 0.0, 2.85), 0, 3, barrels=2, cal=0.13, blen=2.0, size=1.35, slot='T', weapon='gauss', inv='main_guns', variant=1,
-          note='aft null cannon twin, superfiring over T1; far enough aft that T1 fires aft over its muzzles')
+          note='aft null cannon, superfiring over T1; far enough aft that T1 fires aft over its muzzles')
     K.gun('F1', (-6.4, 0.0, K.deck_z(-6.4, 0.0)), 0, 12, barrels=2, cal=0.075, blen=1.1, size=0.85, slot='T', weapon='flak', inv='flak',
-          note='null shredder twin aft on the deck')
+          note='null shredder: a fan of five needle rails, aft on the deck')
     K.gun('F2', (-1.0, 0.0, -2.05), 0, 10, barrels=2, cal=0.075, blen=1.1, size=0.85, normal=(0, 0, -1), slot='T', weapon='flak', inv='belly_flak',
-          note='null shredder twin on the belly, covering below')
+          note='null shredder on the belly, covering below')
 
     # ---------------- deck and flank fittings ----------------
     K.corewin('CW1', (-3.75, 0.0, tier_z(-3.75, 0.0) - 0.01), (0, 0, 1), 0.34, inv='core_port', note='the core\'s light through a hex port in tier 1')
@@ -307,7 +307,8 @@ def build(K):
     # ---------- changed from the picture (designer's decisions, R207) ----------
     K.change('The engine cluster is a diamond of four', 'the side view and the beauty show three bells stacked, the plan shows two side by side; a diamond of four is the one layout that reads as all three pictures, and keeps the stern wide and flat')
     K.change('Engines are eclipse rings, not flame', 'factions.md: "no flaming bells. An eclipse ring of pale light": each bell has a black shade disc with a thin pale green-white ring inside its lip')
-    K.change('Batteries by data.js slot', 'd_boss carries gauss T twice, doom F and flak T: the two big twins are the null cannons (the aft one superfires on a barbette), the projector is the corona arc, the small aft twin and a belly twin are the null shredders')
+    K.change('Batteries by data.js slot', 'd_boss carries gauss T twice, doom F and flak T: the two big mounts are the null cannons (the aft one superfires on a barbette), the projector is the corona arc, the small aft mount and a belly mount are the null shredders')
+    K.change('Weapons built from the lore, not the picture\'s generic turrets (R221)', 'Ryan: "their turrets look the same as hullbreakers"; the picture draws box turrets with round twin barrels. The null cannons are rail guns (flat rail pairs in stepped accelerator frames) firing through the slot of a crescent shade, the shredders fans of needle rails, the projector an arc emitter with a crown of electrode horns round the crest\'s black disc (tools/blender/kits/eclipse/README.md)')
     K.change('The green hexagon on the deck is the core port, not a gun', 'the faction\'s green is the trapped core seen through gaps; the flak slot is the small twin')
     K.change('The crescent is three stacked layers with a corona line on each rim', 'factions.md: broad layered plates, the green a thin line on every shade rim; the concept shows two stepped bands and a lip; the layers are also how it breaks (band by band)')
     K.change('Low round drums under both batteries', 'so the fore twin clears the tier when it trains aft and fires aft over the aft twin\'s muzzles, and the aft twin fires over the fore one (the fit check found both)')

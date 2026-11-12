@@ -433,6 +433,25 @@ tab_rows = [f for f in F]
 tab_h = 60 + LH * (len(tab_rows) + 3)
 ch_h = 50 + LH * (len(M['changes']) + 2)
 SH = head + body_h + PAD + max(tab_h, ch_h) + int(2400 * SC) + int(SW * 0.4)
+# R221 (ships.md 2c): the weapon row, each weapon type the ship carries beside its rules, its lore line and its design line,
+# from the close-ups build.py renders (weapon_<id>.png) and the kit's WEAPONS table (in the model json)
+import textwrap
+WEAP = [w for w in M.get('weapons', []) if os.path.exists(os.path.join(RD, w['image']))]
+WR_W = (SW - PAD * (len(WEAP) + 1)) // max(1, len(WEAP)) if WEAP else 0
+WR_IH = int(WR_W * 0.7)
+WR_WRAP = max(40, int(WR_W / (11.5 * SC)))
+
+
+def weapon_text(w):
+    out = [('%s  (data.js %s; %s)' % (w.get('name', w['id']), w['id'], ', '.join(w.get('mounts', []))), f_m, INK)]
+    for lab, key, col in (('Rules', 'rules', DIM), ('Lore', 'lore', ACC), ('Built as', 'design', INK)):
+        for i, ln in enumerate(textwrap.wrap('%s: %s' % (lab, w.get(key, '')), WR_WRAP)):
+            out.append((ln, f_s, col))
+    return out
+
+
+WR_H = (int(60 * SC) + WR_IH + int(20 * SC) + max(len(weapon_text(w)) for w in WEAP) * int(28 * SC) + PAD) if WEAP else 0
+SH += WR_H
 sheet = Image.new('RGB', (SW, SH), (44, 44, 46))
 dr = ImageDraw.Draw(sheet)
 dr.text((PAD, 30), '%s  |  %s' % (CODE, M['name']), font=f_xl, fill=INK)
@@ -448,6 +467,18 @@ dr.text((2 * PAD + BW, head - int(10 * SC)), 'THE BLOCKOUT at the camera fitted 
 sheet.paste(beauty.resize((BW, BH)), (PAD, head + int(30 * SC)))
 sheet.paste(bcam.resize((BW, BH)), (2 * PAD + BW, head + int(30 * SC)))
 head = head + int(30 * SC) + BH + PAD
+if WEAP:
+    dr.text((PAD, head), 'WEAPONS: each weapon built from what it is (R221; lore bible 7, factions.md, data.js), shown alone at the same angle',
+            font=f_l, fill=INK)
+    for i, w in enumerate(WEAP):
+        x0 = PAD + i * (WR_W + PAD)
+        im = Image.open(os.path.join(RD, w['image'])).convert('RGBA')
+        bg_ = Image.new('RGBA', im.size, GREY + (255,)); bg_.alpha_composite(im)
+        sheet.paste(bg_.convert('RGB').resize((WR_W, WR_IH)), (x0, head + int(60 * SC)))
+        ty = head + int(60 * SC) + WR_IH + int(20 * SC)
+        for ln, fn_, col in weapon_text(w):
+            dr.text((x0, ty), ln, font=fn_, fill=col); ty += int(28 * SC) if fn_ is f_s else int(34 * SC)
+    head += WR_H
 y = head
 sheet.paste(top, (PAD, y)); sheet.paste(und, (PAD + W_T + PAD // 2, y))
 xr = col_l + PAD

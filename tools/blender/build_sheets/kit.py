@@ -472,7 +472,8 @@ class Kit:
                 r = keep_r or min(2.5, max((v - o).length for v in mv) * 1.05)
                 self.keepouts.append((Vector(o), r))
         inv = [inv] if isinstance(inv, str) else list(inv)
-        self.built.append(dict(id=fid, kind=part.kind, inv=inv, shaped=True, detailed=HP.detail_ok(part.kind, names),
+        typ = getattr(part, 'type', part.kind)   # a kit may name a part's own type (Eclipse weapons, R221); default its kind
+        self.built.append(dict(id=fid, kind=part.kind, type=typ, inv=inv, shaped=True, detailed=HP.detail_ok(typ, names),
                                subs=sorted({n.rstrip('0123456789').split('_')[-1] for n in names})))
         return part
 
@@ -492,16 +493,18 @@ class Kit:
         casemate: on a flank (normal +-Y), the ball in the sponson's outer face, barrels trained yaw (from the bow)."""
         assert -100 < yaw < 100, fid + ' would aim aft'
         p = Vector(pos); nrm = Vector(normal).normalized()
+        import inspect
+        wk = {'weapon': weapon} if 'weapon' in inspect.signature(HP.gun).parameters else {}   # R221: a kit that builds each weapon its own way
         if abs(nrm.z) > 0.5:
             fwd = Vector((math.cos(math.radians(yaw)), math.sin(math.radians(yaw)), 0))
-            part = HP.gun(barrels, cal, blen, size, 'turret', pitch=pitch, variant=variant)
+            part = HP.gun(barrels, cal, blen, size, 'turret', pitch=pitch, variant=variant, **wk)
             M = HP.frame(p, fwd, nrm)
             kind = 'belly turret' if nrm.z < 0 else 'turret'
         else:
             # train: the angle from the flank normal toward the bow
             aim = self.aim_vec(yaw, pitch)
             train = math.degrees(math.acos(max(-1, min(1, aim.dot(nrm)))))
-            part = HP.gun(barrels, cal, blen, size, 'casemate', pitch=90 - train, variant=variant)
+            part = HP.gun(barrels, cal, blen, size, 'casemate', pitch=90 - train, variant=variant, **wk)
             M = HP.frame(p, Vector((1, 0, 0)), nrm)
             kind = 'casemate'
         lo_, hi_ = ARCS.get(slot or 'T', (-180.0, 180.0))
@@ -515,7 +518,9 @@ class Kit:
         self.fitdata.append(dict(id=fid, kind='gun', slot=slot, pivot=tuple(piv), up=tuple(nrm), mount=kind, ring=tuple(p), rest_yaw=yaw,
                                  reach=fd['reach'], band=band or ((0, 10, 20, 30, 45, 60) if weapon == 'flak' else (0, 10, 20, 30) if kind != 'casemate' else (-10, 0, 10, 20)),
                                  muzzles=[tuple(m[1]) for m in fd['muzzles']], cal=cal * 1.55, hous_r=fd['radius'], rest_pitch=pitch))
-        self.features.append(dict(id=fid, kind='gun', what='%s %s' % ({1: 'single', 2: 'twin', 3: 'triple'}.get(barrels, str(barrels)), kind),
+        wn = getattr(HP, 'WEAPONS', {}).get(weapon, {}).get('name')
+        what = '%s %s' % ({1: 'single', 2: 'twin', 3: 'triple'}.get(barrels, str(barrels)), kind)
+        self.features.append(dict(id=fid, kind='gun', what=('%s, %s' % (wn.lower(), what)) if wn else what,
                                   count=barrels, pos=tuple(p), aim=(yaw, pitch), slot=slot, weapon=weapon, src=src, note=note,
                                   muzzle=[tuple(m[1]) for m in fd['muzzles']], normal=tuple(nrm), inv=list(inv) if not isinstance(inv, str) else [inv]))
 
@@ -535,8 +540,18 @@ class Kit:
         M = HP.frame(p, Vector((math.cos(math.radians(yaw)), math.sin(math.radians(yaw)), 0)), (0, 0, 1))
         part = self.emit(fid, part, M, inv)
         ex = [dict(pos=tuple(e['pos'][1]), axis=tuple(e['axis'][1]), r=e['radius']) for e in part.fit['exits']]
-        self.fitdata.append(dict(id=fid, kind='launcher', slot=slot, apertures=[dict(pos=e['pos'], dir=e['axis'], length=self.length * 0.8,
-                                                                                     cone=4.0, what='launch cell') for e in ex]))
+        # R221: the firing lane forward of the cells and the backblast aft of the rack, as boxes that widen with distance;
+        # a gun inside either (resting or turned through its arc) is a LANE clash in clash.py even when no mesh touches
+        dv = sum((Vector(e['axis']) for e in ex), Vector()).normalized()
+        cv = sum((Vector(e['pos']) for e in ex), Vector()) / len(ex)
+        uv = Vector((0, 0, 1)).cross(dv).normalized(); wv = dv.cross(uv).normalized()
+        hu = max(abs((Vector(e['pos']) - cv).dot(uv)) + e['r'] for e in ex) + 0.1
+        hw = max(abs((Vector(e['pos']) - cv).dot(wv)) + e['r'] for e in ex) + 0.1
+        lane = dict(apex=tuple(cv), dir=tuple(dv), u=tuple(uv), w=tuple(wv), hu=hu, hw=hw, half=4.0, length=self.length * 0.8, what='firing lane')
+        blast = dict(apex=tuple(cv - dv * depth), dir=tuple(-dv), u=tuple(uv), w=tuple(wv), hu=hu, hw=hw, half=15.0,
+                     length=max(2.5 * depth, 0.15 * self.length), what='backblast')
+        self.fitdata.append(dict(id=fid, kind='launcher', slot=slot, lanes=[lane, blast],
+                                 apertures=[dict(pos=e['pos'], dir=e['axis'], length=self.length * 0.8, cone=4.0, what='launch cell') for e in ex]))
         self.features.append(dict(id=fid, kind='launcher', what='rocket rack, %d by %d cells' % (rows, cols), count=rows * cols,
                                   pos=tuple(p), aim=(yaw, pitch), slot=slot, weapon=weapon, src=src, note=note, inv=[inv] if isinstance(inv, str) else list(inv)))
 
@@ -697,10 +712,15 @@ class Kit:
         for ob in self.coll.objects:
             if ob.get('grp') == fid and ob.get('role') != 'mount':
                 ob['gun_fixed'] = 1; ob['turret'] = 0
+        # R221: the fixed weapon's firing lane, forward of its muzzle along the axis (4 degree spread, to 80 percent of the length):
+        # a gun resting in it, or turned into it through its arc, is a LANE clash in clash.py, as for a launcher
+        mz = Vector(fd['muzzles'][0][1]); hr = fd['radius']
+        lane = dict(apex=tuple(mz), dir=(1.0, 0.0, 0.0), u=(0.0, 1.0, 0.0), w=(0.0, 0.0, 1.0), hu=hr, hw=hr, half=4.0, length=self.length * 0.8,
+                    what='firing lane')
         self.fitdata.append(dict(id=fid, kind='gun', slot=slot, pivot=tuple(fd['pivot'][1]), up=(0, 0, 1), mount='spinal', ring=tuple(p),
                                  rest_yaw=0.0, reach=fd['reach'], band=(-10, 0, 10, 20), muzzles=[tuple(m[1]) for m in fd['muzzles']],
-                                 cal=r, hous_r=fd['radius'], rest_pitch=0.0))
-        self.features.append(dict(id=fid, kind='gun', what='spinal projector (fixed)', count=1, pos=tuple(p), aim=(0.0, 0.0), slot=slot,
+                                 cal=r, hous_r=fd['radius'], rest_pitch=0.0, lanes=[lane]))
+        self.features.append(dict(id=fid, kind='gun', what='spinal %s (fixed)' % ('arc emitter' if getattr(part, 'type', '') == 'corona_arc' else 'projector'), count=1, pos=tuple(p), aim=(0.0, 0.0), slot=slot,
                                   weapon=weapon, src=src, note=note, muzzle=[tuple(m[1]) for m in fd['muzzles']], normal=(1, 0, 0),
                                   fixed=True, inv=[inv] if isinstance(inv, str) else list(inv)))
 

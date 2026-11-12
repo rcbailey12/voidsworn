@@ -22,7 +22,7 @@ CONCEPT_SHEET = 'contrib/muse/design/concept_round8c_2026_11/deathless_E12_sheet
 CONCEPT_VIEWS = dict(top=dict(box=(116, 40, 1376, 770), largest=False, flip=True), side=dict(box=(100, 850, 1395, 1080), largest=False, flip=True))
 CROPS = [('bow (fore arcs, emitter, fore battery)', (1150, 40, 2000, 1000)), ('midships (core and centre arcs)', (620, 40, 1300, 1000)),
          ('stern (engine block, aft arcs)', (150, 200, 780, 900))]
-SHEET = dict(version=2, round='second sheet (Board review)', date='2026-11-12', blend='opus532e\\e7',
+SHEET = dict(version=3, round='third sheet (R221 weapons)', date='2026-11-12', blend='opus532e\\w\\w1',
              alt_cameras=dict(fwd='best ring overlap (forward of the starboard beam, high): the ring layout lines up, the bells cannot show'),
              before='First full layout', before_note='The first complete E12 layout, built with the Eclipse kit and run through the check before any fix.',
              during='While designing, the check also caught (and the design fixed): the sentry twin sweeping through the block roof thrusters (moved forward), a roof hatch on a '
@@ -143,15 +143,15 @@ def build(K):
                      'violet', plates=dict(PL, seed=80 + i, faces=[0, 1, 2, 3], size=(0.2, 0.35)))
         K.mass('Saddle, %s battery' % nm, sad, 'violet plate', note='the oval saddle the turret stands on')
         K.gun('T%d' % (i + 1), (x, 0.0, ZS + 0.42), 0, 4, barrels=2, cal=0.07, blen=1.15, size=0.72, slot='T', weapon='gauss', inv='main_guns',
-              variant=i, note='%s null cannon twin on its saddle' % nm)
+              variant=i, note='%s null cannon: twin rail pairs through a crescent shade, on its saddle' % nm)
     K.mark('saddles', 'pylon', ['web', 'plate'])
     K.spinal('A1', (5.3, 0.0, ZS), 1.05, r=0.24, collar_r=0.4, collar_len=0.45, block_len=0.36, block_r=0.33, slot='F', weapon='doom', inv='emitter',
-             note='the corona arc emitter on the spine head, firing through the ring\'s bow gap')
+             note='the corona arc emitter on the spine head (a crown of electrode horns round a black shade disc), firing through the ring\'s bow gap')
     import bpy as _bpy
     for nm_, ob_, col_ in (('Emitter collars', 'A1_mount_mauve', 'mauve and violet'), ('Emitter shaft', 'A1_body_violet', 'violet and mauve'), ('Emitter block', 'A1_body_mauve', 'mauve')):
         K.mass(nm_, _bpy.data.objects[ob_], col_, note='a part of the kit projector, counted as its own mass')
     K.gun('G1', (-5.25, 0.0, 0.9), 0, 6, barrels=2, cal=0.05, blen=0.75, size=0.55, slot='T', weapon='gsentry', inv='sentry', variant=2,
-          note='the null spire: a small sentry twin on the block roof with green sights')
+          note='the null spire: a tall turning spire on the block roof, green sight slits, two needle rails through a shade fin at its head')
 
     # ---------------- engines: three side by side ----------------
     for i, y in enumerate((1.02, 0.0, -1.02)):
@@ -219,6 +219,7 @@ def build(K):
     K.change('Three engines side by side in one row', 'the plan and the beauty show three across; the side view stacks them, which the plan cannot; one row keeps the block broad and low')
     K.change('Engines are eclipse rings, not flame', 'factions.md: "no flaming bells. An eclipse ring of pale light"')
     K.change('Arcs are real box sections, 0.42 deep', 'the side view draws the ring as a line; the beauty shows thick box sections with open bays, which carry frames and machinery')
+    K.change('Weapons built from the lore, not the picture\'s generic turrets (R221)', 'Ryan: "their turrets look the same as hullbreakers"; the picture draws box turrets with round twin barrels. The null cannons are rail guns firing through the slot of a crescent shade, the null spire a tall sentry spire with needle rails, the emitter a crown of electrode horns round the crest\'s black disc (tools/blender/kits/eclipse/README.md)')
     K.change('Weapons by data.js slot', 'd_harvester: gauss T twice on the spine saddles, doom F the bow emitter, gsentry T the null spire on the block roof (the picture\'s small green-lit turret)')
     K.change('Thrusters, hatches and heat panels added', 'a ship in space needs thrusters; the picture shows no underside')
     K.open_item('The underside of the block and the ring is designed here; the picture shows no underside')
