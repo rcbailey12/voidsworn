@@ -1,3 +1,5 @@
+# HISTORY (marked Nov 11 2026, issue 492): browser-era Pyre-Barge builder, not the live path and not the Godot product. Ships are
+# built through tools/recipe by the method in docs/playbooks/ships.md section 0 (RULEBOOK 5.3). Kept for history; do not follow.
 # A1 step 2: Pyre-Barge v15, the dressed version of Ryan's pick (Oct 24, FINDINGS R12): shape C (double-sided hulk) plus some of
 # shape B's salvage junk, in the Corsair rust-and-bone palette, with the v14 detail pass (plating, repairs, pipes, vents, dents, jank).
 # Frame: x aft (bow at -x), y to port, z up, length about 1.0, the same as c19_kit.py and barge_shapes.py.

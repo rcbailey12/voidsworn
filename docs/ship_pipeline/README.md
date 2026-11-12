@@ -1,5 +1,13 @@
 # Ship pipeline: concept painting to in-game hull
 
+**Status Nov 11 2026 (issue 492 clean-up): this page records the October pipeline, built for the frozen browser game.** The
+live ship method is docs/playbooks/ships.md section 0 and docs/ship_pipeline/RECIPE.md (tools/recipe, seven stages); the rules
+are docs/RULEBOOK.md sections 4 and 5. Projecting the concept painting onto the ship (steps 5 and 6 below) is not allowed for
+new builds (R82, R96 Q1, RULEBOOK 5.3). Steps 7 to 10 and the gotchas that name the phone, `.vsm`, `vsm_pack`, `ships3d.js`,
+Babylon or `closeshot.py` are browser-era history, not the Godot product: the Godot game loads glb copied into the PC build
+(RULEBOOK 5.12). The PC paths under "Where things run" still hold; its run.request runner was replaced by the job queue
+(.claude/skills/playtest-and-balance/SKILL.md, "PC runner").
+
 Owner goal (Ryan): every ship looks just like its concept painting from every angle, crisp up close, no soft or blobby AI shapes.
 Free tools only. No artificial triangle limits (full-detail meshes are compressed, not decimated, on desktop).
 
@@ -37,7 +45,7 @@ everything below. The other 35 hulls are listed in `SHIP_QUEUE.md`. Rules for wh
    - Best Pyre-Barge run: E2 = sides + concept + front.
 4. **Find the concept painting's camera**: `fitcam_render.py` (Blender, silhouettes over an az/el grid) then `fitcam_fit.py`
    (ComfyUI's Python, best overlap). Writes `<T>_concept.json {az, el, iou}`. Good fits score IoU about 0.89.
-5. **Project the paint**: `blender -b -P tools/blender/project_paint.py -- mesh.glb out.png 4096 "img|mask|az|el|weight" ...`.
+5. **Project the paint** (not allowed for new builds: R82, R96 Q1, RULEBOOK 5.3): `blender -b -P tools/blender/project_paint.py -- mesh.glb out.png 4096 "img|mask|az|el|weight" ...`.
    The pictures are projected back onto the mesh and baked into its albedo, so the paint is as sharp as the pictures.
 6. **Hand-built parts** (`tools/blender/hs/<code>_kit.py`, primitives in `hs_lib.py`; see `c19_kit.py`):
    - Cut the mangled AI geometry out of the hull (boxes and measured regions).
@@ -57,16 +65,16 @@ everything below. The other 35 hulls are listed in `SHIP_QUEUE.md`. Rules for wh
      It also bakes `<out>_orm.png` (occlusion, roughness, metal) and `<out>_nrm.png` (fine normals: dents, pitting, scratches, soft
      edges). `AOD` sets the grime reach (use .01 for parts). `pixal_to_game` turns them into `CODE_f/_fn.webp` (env `FIN`) and
      `CODE_kit_f/_kit_n.webp` (env `KFIN`); the game loads them when the header says `fin`.
-7. **Phone LOD**: `lod_make.py` (collapse decimate that keeps UVs) to 250k triangles.
-8. **To the game**: `pixal_to_game.py in.glb out_dir CODE left|front TEXRES` with `ALB` (projected albedo), `KIT` (painted kit) and
+7. **Phone LOD** (browser-era history, not the Godot product): `lod_make.py` (collapse decimate that keeps UVs) to 250k triangles.
+8. **To the game** (browser-era history, not the Godot product; Godot takes glb through recipe stage 7): `pixal_to_game.py in.glb out_dir CODE left|front TEXRES` with `ALB` (projected albedo), `KIT` (painted kit) and
    `CONCEPT` (brightness levelling). Then `node vsm_pack.mjs dir CODE` packs the hull with meshoptimizer into `CODE.vsm`
    (desktop about 11-14 MB at 1.5-2M triangles; phone about 3.5 MB at 250k).
-9. **In game**: `ships3d.js` loads `hulls_hi/CODE.vsm` (desktop) or `hulls/CODE.vsm` (phone/medium), plus `CODE_kit.json` and the maps.
+9. **In game** (browser-era history, not the Godot product): `ships3d.js` loads `hulls_hi/CODE.vsm` (desktop) or `hulls/CODE.vsm` (phone/medium), plus `CODE_kit.json` and the maps.
    Add the code to `AI_VSM` in ships3d.js.
-10. **Check**: studio renders (`render_multi.py`) at the concept's angles plus top, below and stern, then in-game shots
+10. **Check** (the closeshot half is browser-era history; Godot ships are judged on the look bench, tools/pc/jobs/look_bench.bat): studio renders (`render_multi.py`) at the concept's angles plus top, below and stern, then in-game shots
     (`closeshot.py`, env `OUT TAG TPLS ZOOM MAP ONLY PRE EVAL`) on desktop and phone. Then the blob sweep (`BLOB_SWEEP.md`).
 
-## Gotchas learned on the Pyre-Barge
+## Gotchas learned on the Pyre-Barge (browser-era history, not the Godot product, except the sandbox and PC notes)
 
 - Ship size = hull + hand-built parts. `pixal_to_game` reads the kit for the bounds. Without that, cutting the AI bow stretched the ship 1.33x.
 - Kit material: light by the stored normals (no two-sided lighting) plus a 0.3 paint self-light (`G.kitFill`). Otherwise roofs read

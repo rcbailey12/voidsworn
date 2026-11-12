@@ -1,3 +1,5 @@
+# HISTORY (marked Nov 11 2026, issue 492): browser-era Pyre-Barge builder, not the live path and not the Godot product. Ships are
+# built through tools/recipe by the method in docs/playbooks/ships.md section 0 (RULEBOOK 5.3). Kept for history; do not follow.
 # Pyre-Barge (C19_51) hybrid: the Pixal3D hull keeps its shape and paint; its small parts (rocket rack, funnels, mast, long guns),
 # which the AI blurs together, are cut out and rebuilt as clean bevelled parts placed where the concept's side and front views put them.
 # Frame: the Pixal3D GLB as Blender imports it for a side-first run: x aft (bow at -x), z up, y lateral; 1 unit = 931 px in the

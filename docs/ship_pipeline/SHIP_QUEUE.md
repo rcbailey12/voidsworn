@@ -1,3 +1,5 @@
+HISTORY (marked Nov 11 2026): the Oct 22 status of the 36 old AI hulls in the frozen browser game (AI_HULLS in ships3d.js); browser-era history, not the Godot product. The 36 old concepts are history, not targets (docs/playbooks/ships.md section 1), and "Ithar have sails" contradicts the Glasswright Never list (docs/playbooks/factions.md). Where each faction stands now: docs/playbooks/factions.md, "The concept redo". The live ship method is docs/playbooks/ships.md section 0 and docs/ship_pipeline/RECIPE.md; the rules are docs/RULEBOOK.md sections 4 and 5. Kept for history; do not follow.
+
 # Ship queue
 
 Every AI hull in the game (`AI_HULLS` in ships3d.js) and where it stands in the pipeline (`README.md`).

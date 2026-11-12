@@ -1,34 +1,44 @@
 ---
 name: ship-kit
-description: Use when building, dressing, painting or exporting any Voidsworn hull or kit (Blender scripts in tools/blender, the barge chain, max-detail flagships), or when touching the hull pipeline (project_paint, pixal_to_game, vsm_pack). Gives the build-check-export procedure and the ship rules every part must pass.
+description: Use when building, dressing, painting or exporting any hull, part kit or the station for Embers of the Hollow Sun (build sheets, Blender blockouts, tools/recipe stages 1 to 7, tools/blender/kits, hard points, the glb export). Points at the binding build method and the ship rules every part must pass.
 ---
 
 # Ship kit: build, check, export
 
-The worked example is the Pyre-Barge (C19_51). Its chain is the template for every ship: `assets/ships/C19_51/README.md`.
+This skill is a pointer. The method is binding and lives in the repo, not here (rewritten Nov 11 2026, issue 492; the old
+browser-era Pyre-Barge procedure is archived at docs/archive/skills/ship-kit_SKILL_2026-11-11.md).
 
-## Rules every ship must pass (owner rulings, CLAUDE.md)
-- Space ships, not naval: no keel or raked stem, no jackstaffs, bollards, anchors, crow's nests, yardarms, rigging, mast ladders, lifeboats, porthole rows, crossbar masts or smokestack funnels. This covers hull shape (bow profile, keel line, deck line) as well as bolted parts. Prefer flat armoured bellies with chines, sensor housings, antenna arrays, equipment pods, recessed lights, engine bells and thruster pods, docking hatches, heat radiators.
-- Bolted parts sit on the real hull surface on a visible mount (plate, ball, saddle, column), never floating or sunk, in matched symmetric pairs at sensible hard points. Corsair may be junky and asymmetric.
-- Guns face forward or out to the side, never backward. Bow guns may face forward along the prow.
-- Hand-built parts carry the AI hull's level of surface detail (seams, grit, worn edges).
-- Shields keep faction colours (the cyan-only rule is retired). No artificial triangle caps (retired), but keep load time in mind.
-- Breakable by design (owner, Nov 4 2026, FINDINGS R98): every new or rebuilt hull ships with real hull thickness (no single-skin shells), a few internal decks and bulkheads, and two or three authored break lines with matching interior faces and damage textures, so death and damage cuts show built insides, never an empty void. Chorus hulls get flesh and bone inside instead of metal. The game-side interior fallback (#167) covers hulls built before this rule.
+## Read first, in this order
+1. docs/RULEBOOK.md sections 4 (ships and concepts) and 5 (the build pipeline): each rule with its reason. It wins.
+2. docs/playbooks/ships.md: section 0 (the settled method, binding, R214), the steps, the checks, the traps and the job
+   template with its four build lines (Route per part, Inside, Paint stack, Budget).
+3. docs/ship_pipeline/RECIPE.md: what each of the seven tools/recipe stages does and how it fails.
+4. docs/playbooks/factions.md: the faction's sheet (shape, colour, where guns sit, how it breaks, its Never list) and the
+   breach anchors by class; docs/ship_pipeline/HARDPOINTS.md for the hard point contract.
+5. The ship's build sheet in docs/ship_pipeline/build_sheets/<ship>/, which must pass
+   contrib/muse/design/concept_standard_2026_11/standard.md before any build (R203).
+
+## The rules in one breath (the rulebook has the reasons)
+- Space ships, never sea ships, in the whole shape (RULEBOOK 4.1). No gun faces backward or into the ship (4.2).
+- Parts snapped to the real hull on a visible mount, in matched pairs at sensible hard points; the Hullbreakers may be junky (4.3).
+- The concept guides, it is not traced; the builder designs and lists every change on the sheet (5.2).
+- Insides through the whole hull; breaks by the faction's rule and the class, never a fixed count or a straight cut (5.4, 5.5).
+- Hand-built parts carry the hull's level of surface detail (5.6). Paint from geometry masks, trim sheets and decals; the
+  concept is never projected (5.3).
+- Costs reported, never capped; the only binding law is the measured scene gate (3.9). The outline overlap and the blob
+  sweep are reported for Ryan's eye, not pass bars (5.8, 5.9).
+- Every ship model made in Blender is an Opus worker's (RULEBOOK 2.6, R205).
 
 ## Procedure
-1. **Build in Blender from a script**, never by hand edits that cannot be re-run: `tools/blender/a1/barge_v15.py` (uses `hs_lib.py`, `detail_lib.py`). Max-detail flagships: `tools/blender/a2detail/`. Cloud checks: `pip install --break-system-packages bpy` (5.2); the PC runs Blender 4.5.14, so avoid 5.x-only API.
-2. **Automatic audit in the build** (blocking): no backward guns, no floating parts (BVH overlap, or nearest surface under 1.5 mm; choose near objects by bounding-box overlap, not centre distance), and a reimport of every exported glb with matching triangle counts. The barge's `audit()` and `export()` are the reference. Do not show a ship that fails.
-3. **Blob sweep** before showing a ship: bow, midship and stern, each from top, side and below (9 cells, studio renders at the concept's angles). Every cell gets a verdict: clean, or rebuild by hand. Rebuild by default: guns and launchers, bridge and superstructure tiers, masts and antennas, tanks and drums, the bow (faired loft from the hull's own sections), engine nozzles, armour stacks, sponsons, and any thin spiky AI debris.
-4. **Clay and colour sheets** with `tools/blender/a1/clay.py` and `render_v15.py`; contact sheets with `sheet.py`. Send Ryan screenshots, not descriptions.
-5. **Paint** on the PC (`tools/blender/project_paint.py`, PAINT=proc; parts the concept shows poorly keep hand paint via KEEP boxes). Keep the faction palette.
-6. **To the game** on the PC: `pixal_to_game.py` (reads the kit for bounds: the game size comes from hull plus kit together) then `vsm_pack.mjs`, for `hulls_hi` (4096) and `hulls` (2048). Job example: `tools/pc/jobs/c19_v15d.bat`.
-7. **Check in the game** on the PC with closeshot (see the screenshot-verdict skill), including damage states.
-8. **Commit** the script, the glb exports (`assets/ships/<code>/`), the game files and the sheets; update the ship's README chain and FINDINGS.
-
-## Frames and formats
-- Game frame: bow +x, y up, z port. Blender kit frame: x aft (bow -x), y port, z up; `clay.py` turns game hulls with FLIP=1.
-- Older AI hulls: `CODE.json` (base64 int16 positions, int8 normals, indices, uv2) plus `_m.webp` (R AO, G curvature) and `_n.webp`. The barge: `.vsm` (meshopt) plus `CODE_kit.json`.
-- Kit material lights by stored normals (no two-sided lighting); paint self-light is 0 (ships3d.js:790).
+1. Build sheet first (standard.md), with its INSIDE section and its "Changed from the picture" list.
+2. Recipe stages 1 to 7 on the PC (tools/recipe/1_concept_in.bat to 7_export.bat; ship file tools/recipe/ships/<ship>.json
+   from _template.json; faction kit and paint in tools/blender/kits/<faction>/). Each stage stops with FAILED and a non-zero exit.
+3. Stage 4's audit (tools/recipe/audit.py; audit_selftest.py proves it can fail) and stage 7's check_export.py must pass.
+4. The nine-cell blob sweep (docs/ship_pipeline/BLOB_SWEEP.md) and the ship at the battle camera on the look bench
+   (tools/pc/jobs/look_bench.bat; the screenshot-verdict skill), beside its concept.
+5. The pull request body carries the done-when evidence and the method line (build sheet link, manifest, budget numbers,
+   changes made to the sheet), or the outside check returns it as BLOCKING (RULEBOOK 5.14).
 
 ## PC runs
-Heavy work (bakes, paints, closeshots) runs on Ryan's PC through the watcher: see the playtest-and-balance skill's "PC runner" section.
+Heavy work runs on Ryan's PC through the job queue, one GPU job at a time (RULEBOOK 3.2 to 3.5): see the playtest-and-balance
+skill's "PC runner" section. Keep the job's PC folder lean. Never delete anything on the PC.

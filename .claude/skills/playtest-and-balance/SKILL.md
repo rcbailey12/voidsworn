@@ -17,7 +17,7 @@ description: Use after any Voidsworn rules, balance, pacing or content change (b
 - Baseline: `contrib/opus/compute/balance_reference.md` and its CSVs (rebuild CSVs with `python3 contrib/opus/tools/mega_report.py`).
 
 ## Report
-Only deltas against the baseline, in a table: cell, before, after, the mode and sample size. Flag exit criteria: no admiral below 50% or above 90% against a sector 1 flagship; waits under 15 s per round (target 12); no crashes. Update FINDINGS rows (evidence, status) and the plan's phase status. Rules and outcomes must not change when only presentation time changes.
+Only deltas against the baseline, in a table: cell, before, after, the mode and sample size. Flag exit criteria: no admiral below 50% or above 90% against a sector 1 flagship; waits reported as the worst case per round, not held to a target (the old 15 s, target 12, is retired: Ryan accepted longer enemy turns, R64, RULEBOOK 7.3); no crashes. Update FINDINGS rows (evidence, status) and the plan's phase status. Rules and outcomes must not change when only presentation time changes.
 
 ## Playtest
 Ryan's own run is the exit for B1 and B2. Give him a short list of what to feel for, and record what he says in FINDINGS.
