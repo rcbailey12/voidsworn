@@ -34,6 +34,7 @@ SCALE = dict(
 GUNS = []      # (name, aim, socket normal) for the audit
 MUZZLES = []   # round 7: one record per weapon muzzle (name, socket, tip, aim, normal, radius); the game export's hard points
 ENGINES = []   # round 7: one record per engine exit (name, pos, dir, radius)
+BAYS = []      # issue 363: one record per hangar mouth (name, pos, dir, hangar); a carrier hull module registers its mouths
 
 def mark():
     return len(hs_lib.PARTS)
@@ -56,16 +57,21 @@ def register_gun(name, aim, normal=None, tip=None, socket=None, radius=None):
 def register_engine(name, pos, direction, radius):
     ENGINES.append(dict(name=name, pos=[round(v, 5) for v in pos], dir=[round(v, 5) for v in Vector(direction).normalized()], radius=round(radius, 5)))
 
+def register_bay(name, pos, direction, hangar=0):
+    """a hangar mouth and launch point (issue 363): dir is the launch direction, hangar the data.js hangar it serves. It becomes
+    hp_bay_<n> in the game export; a ship with a hangar in data.js must register at least one mouth or stage 7 fails."""
+    BAYS.append(dict(name=name, pos=[round(v, 5) for v in pos], dir=[round(v, 5) for v in Vector(direction).normalized()], hangar=int(hangar or 0)))
+
 def clear_registry():
-    GUNS.clear(); MUZZLES.clear(); ENGINES.clear()
+    GUNS.clear(); MUZZLES.clear(); ENGINES.clear(); BAYS.clear()
 
 def hardpoint_data(sockets):
-    """what the game export needs from the build: every muzzle with its socket's weapon slot and side, and the engine exits.
-    A hull module stores this on the scene (scene['r209_hp']) so it travels in the saved blend."""
+    """what the game export needs from the build: every muzzle with its socket's weapon slot and side, the engine exits and the
+    hangar mouths. A hull module stores this on the scene (scene['r209_hp']) so it travels in the saved blend."""
     by = {s.name: s for s in sockets}; out = []
     for m in MUZZLES:
         s = by.get(m['socket']); out.append(dict(m, part=s.part if s else None, slot=getattr(s, 'slot', None) if s else None, side=s.side if s else 0))
-    return dict(muzzles=out, engines=list(ENGINES))
+    return dict(muzzles=out, engines=list(ENGINES), bays=list(BAYS))
 
 def aim_ok(aim, normal=None):
     """owner rule: guns aim forward or out to the side, never backward (x < -0.05) and never into the ship (against the mount normal)"""

@@ -56,6 +56,7 @@ uniform float gas_time = 0.0;
 uniform float glow_from = 0.56;
 uniform float gain_a = 1.0;
 uniform float storm = 0.0;
+uniform float flat_rates = 0.0;   // #230 NB8 capture variant (VS_GAS_FLAT=1): every layer at the base rate; 0 shipped
 uniform vec3 bolt = vec3(0.70, 0.80, 1.00);
 uniform vec4 flashes[4];
 uniform vec4 tick_flare = vec4(0.0);
@@ -85,7 +86,9 @@ void fragment() {
 	if (dz > 0.000001 && opaque_world.y > -20.0) { discard; }
 	float band = floor(vI.w);
 	float phase = fract(vI.w);
+	// Layer rates and the base drift: contrib/opus/briefs/nebula_motion_spec.md (issue #230, NB8).
 	float rate = band < 0.5 ? 0.6 : (band < 1.5 ? 1.0 : (band < 2.5 ? 1.6 : 0.4));
+	if (flat_rates > 0.5) { rate = 1.0; }
 	if (storm > 0.5) { rate *= band > 2.5 ? -1.7 : 1.7; }
 	vec3 drift = vec3(0.012, 0.004, 0.007) * gas_time * rate;
 	vec3 p = vW * 0.075 + drift;
@@ -315,6 +318,8 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	sh.code = GAS_SHADER.replace("%NOISE%", WS.NOISE)
 	m.shader = sh
 	m.set_shader_parameter("sun_v", Vector3(0.45, 0.70, 0.55))   # world.gd SUN
+	if OS.get_environment("VS_GAS_FLAT") == "1":
+		m.set_shader_parameter("flat_rates", 1.0)   # capture variant only (#230 NB8); never set in play
 	var mk: Array = _mask(ps, 1.5 if storm else 2.0)
 	m.set_shader_parameter("mask_tex", mk[0])
 	m.set_shader_parameter("mask_box", mk[1])
@@ -606,6 +611,8 @@ func _debris(ps: Array) -> void:
 	var hot := ShaderMaterial.new()
 	hot.shader = wsh
 	hot.set_shader_parameter("hot", 1.0)
+	for wm in [metal, hot]:
+		(wm as ShaderMaterial).set_shader_parameter("tumble_k", TUMBLE_K if tumble_mode == "cap" else 1000.0)
 	var shards := {}     # "mesh|mat" -> [{xf, cd}]
 	var slots: Array = []
 	var n_dust := 0
@@ -637,8 +644,9 @@ func _debris(ps: Array) -> void:
 			var b := Basis.from_euler(Vector3(rng.randf() * TAU, rng.randf() * TAU, rng.randf() * TAU)).scaled(Vector3.ONE * sc)
 			var xf := Transform3D(b, (p as Vector3) + Vector3(cos(a) * rr, rng.randf_range(-2.5, 3.0), sin(a) * rr))
 			# Derive the animation from the pose, without changing the seeded layout.
-			var axis := b.x.normalized() * tumble_rate(sc)
-			last_slot = {"key": key, "index": shards[key].size(), "xf": xf, "scale": sc, "axis": axis}
+			var spin := wreck_tumble(sc, xf.origin)
+			var axis := b.x.normalized() * spin
+			last_slot = {"key": key, "index": shards[key].size(), "xf": xf, "scale": sc, "axis": axis, "rate": spin}
 			shards[key].append({"xf": xf, "cd": Color(axis.x, axis.y, axis.z, float(mk) / 6.0)})
 		slots.append(last_slot)
 		n_dust += 0 if low else 48
@@ -698,6 +706,7 @@ render_mode cull_disabled;
 """ + "%NOISE%" + """
 uniform float hot = 0.0;
 uniform vec3 hot_col = vec3(1.0, 0.42, 0.12);
+uniform float tumble_k = 0.10;   // TUMBLE_K, the #230 figure of record; the periods capture variant lifts it
 varying vec3 lp;
 
 void vertex() {
@@ -706,7 +715,7 @@ void vertex() {
 	float rate = length(INSTANCE_CUSTOM.xyz);
 	vec3 ax = INSTANCE_CUSTOM.xyz / max(rate, 0.000001);
 	float scale_v = length(MODEL_MATRIX[0].xyz);
-	float an = TIME * min(rate, 0.10 / max(1.0, scale_v)) + h * 6.2831;
+	float an = TIME * min(rate, tumble_k / max(1.0, scale_v)) + h * 6.2831;
 	float c = cos(an);
 	float s = sin(an);
 	mat3 R = mat3(vec3(c + ax.x * ax.x * (1.0 - c), ax.y * ax.x * (1.0 - c) + ax.z * s, ax.z * ax.x * (1.0 - c) - ax.y * s),
@@ -746,8 +755,37 @@ const WRECK_NAMES := ["hull_fragment", "broken_frame", "truss", "hull_section", 
 static var _wreck_mesh_cache: Array = []
 
 
+# Issue #230 AS14: the one tumble figure of record (contrib/opus/briefs/environment_reconciliation.md section 1). A
+# piece of debris turns at most TUMBLE_K / max(1, scale) rad per second (scale 1 is a 2-unit rock or a radius-1 wreck
+# piece). Provisional: it binds once the board's motion capture (world_shots.gd --motion) has sheeted it against the
+# terrain synthesis periods and Ryan has judged the sheet.
+const TUMBLE_K := 0.10
+# Capture variant only: VS_TUMBLE=periods turns debris at the terrain synthesis 2.4 periods instead (small rocks 20 to
+# 40 s a turn, large rocks 60 to 90 s, wreck pieces 80 to 120 s). Unset (or "cap") is the shipped law.
+static var tumble_mode: String = "periods" if OS.get_environment("VS_TUMBLE") == "periods" else "cap"
+
+
 static func tumble_rate(scale_v: float) -> float:
-	return 0.10 / maxf(1.0, scale_v)
+	return TUMBLE_K / maxf(1.0, scale_v)
+
+
+# A rock's tumble in rad per second. "cap": the seeded raw rate held under the cap (the shipped law). "periods": the
+# terrain synthesis period for its size band, picked by the piece's own seed so the seeded layout does not change.
+static func rock_tumble(raw_rate: float, scale_v: float, seed_v: float) -> float:
+	if tumble_mode != "periods":
+		return minf(raw_rate, tumble_rate(scale_v))
+	# library rocks are 2 units long at scale 1 (rocks.json ext), so 3 units and up is scale 1.5 and up
+	var period := lerpf(60.0, 90.0, seed_v) if scale_v >= 1.5 else lerpf(20.0, 40.0, seed_v)
+	return TAU / period
+
+
+# A wreck piece's tumble in rad per second. "cap": exactly the cap for its scale (the shipped law). "periods": 80 to
+# 120 s a turn, the period picked from the piece's position so no extra random number is drawn.
+static func wreck_tumble(scale_v: float, at: Vector3) -> float:
+	if tumble_mode != "periods":
+		return tumble_rate(scale_v)
+	var u := fposmod(sin(at.x * 12.9898 + at.z * 78.233 + at.y * 37.719) * 43758.5453, 1.0)
+	return TAU / lerpf(80.0, 120.0, u)
 
 
 # Rank each hex by its full mesh's actual long axis, not spawn order or a size
@@ -763,7 +801,7 @@ static func add_debris_rocks(batch, pieces: Array, mat: Material) -> void:
 		var mesh_name := str(piece.mesh) if i < 3 else str(piece.mesh) + "_lo"
 		var scale_v: float = piece.xf.basis.get_scale().x
 		batch.add(mesh_name, mat, piece.shadow, piece.xf, piece.axis,
-			minf(float(piece.rate), tumble_rate(scale_v)), piece.seed)
+			rock_tumble(float(piece.rate), scale_v, float(piece.seed)), piece.seed)
 
 
 static func _shard_meshes() -> Array:
@@ -858,7 +896,7 @@ func _install_chunks() -> void:
 		var id: int = slot.mmi.get_instance_id()
 		if not replaced.has(id): replaced[id] = {"mmi": slot.mmi, "indices": []}
 		replaced[id].indices.append(int(slot.index))
-		_hull_spin.append([pivot, (slot.axis as Vector3).normalized(), tumble_rate(float(slot.scale))])
+		_hull_spin.append([pivot, (slot.axis as Vector3).normalized(), float(slot.get("rate", tumble_rate(float(slot.scale))))])
 	# Compact each affected draw once. Do not hide a replaced slot with a zero
 	# scale: a singular normal matrix can feed NaNs into lighting and bloom.
 	for group in replaced.values():

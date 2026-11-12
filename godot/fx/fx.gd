@@ -806,7 +806,30 @@ func hit_pause(t: float, frames: int) -> void:
 
 func death_slowmo() -> void:
 	if now >= _death_hurry_until and _death_slow_left <= 0.0:
-		_death_slow_left = 0.48
+		_death_slow_left = DEATH_SLOW_S
+
+
+# Issue 521 (R193, Ryan's pick "Hold and slow"; R73): the slow-motion beat at the core flash of every cruiser, capital
+# and flagship kill (fx_ship.death_big). The battle turns it on (off by default, so the effect checks keep their own
+# timing) and leaves it off under reduce motion. A key or a click during it calls skip_death_slowmo.
+var kill_slowmo := false
+const DEATH_SLOW_S := 0.48    # real seconds at about a third of speed (R73), then the clock eases back
+var _core_at := {}            # ship id -> the effect clock time of its core flash (big hulls broken by the timeline)
+
+
+# The effect clock time of a dying ship's core flash, read from its death timeline; -1 when it has none (small hulls,
+# the Chorus rupture, a burnt-out hulk).
+func death_core_at(id: String) -> float:
+	return float(_core_at.get(id, -1.0))
+
+
+# A key or a click during the beat: back to full speed now, and no new beat from a death already under way.
+func skip_death_slowmo() -> void:
+	_death_slow_left = 0.0
+	_death_hurry_until = maxf(_death_hurry_until, now + 0.1)
+	for id in _core_at.keys():
+		if float(_core_at[id]) > now - 0.5:
+			_core_at[id] = -1.0
 
 
 # Same presentation hurry as the battle. Also suppress a beat scheduled later in this death.
@@ -1061,8 +1084,20 @@ func death(id: String, cause := "blast") -> float:
 		return 0.0
 	stats["deaths"] += 1
 	var t0 := Time.get_ticks_usec()
+	var tl_before = (ships[id] as SHIP).get_meta("death_timeline", null)
 	var r: float = DEATH.death(self, ships[id], cause)
 	pend("death", t0)
+	var s: SHIP = ships[id]
+	_core_at.erase(id)
+	# only a timeline this death made (a burnt-out hulk or the Chorus rupture makes none and has no core flash)
+	if s.death_big and s.has_meta("death_timeline") and s.get_meta("death_timeline") != tl_before and s.has_meta("death_start"):
+		var tl = s.get_meta("death_timeline")
+		var core := float(s.get_meta("death_start")) + float(tl.cut) + float(tl.core_delay)
+		_core_at[id] = core
+		if kill_slowmo:
+			later(core, func l_kill_slowmo() -> void:
+				if float(_core_at.get(id, -1.0)) >= 0.0:
+					death_slowmo())
 	return r
 
 

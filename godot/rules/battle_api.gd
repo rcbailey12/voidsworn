@@ -124,6 +124,9 @@ func _i_new_battle_scenario(sc, seed_override: int = -1) -> void:
 		if S.has(key): cfg[key] = S[key]
 	if S.get("treeChoices") != null: cfg["treeChoices"] = S.treeChoices.duplicate(true)   # issue #305: H1 answers for a fixture
 	if S.get("cmdRound") != null: cfg["cmdRound"] = S.cmdRound   # issue #305: pin the round the fixture uses the Command
+	for key in ["treeMay", "treeRoles", "treeRoleChange"]:   # issue 529: prompt answers for a fixture
+		if S.get(key) != null: cfg[key] = S[key].duplicate(true)
+	if R.jt(S.get("cmdAfterMove")): cfg["cmdAfterMove"] = true   # issue 529: the Command after the first move of its round
 	if S.get("alt") != null: cfg["alt"] = S.alt   # passed through untouched, so new_battle's type-safe cfg.alt!==false is what decides (s41: a Dictionary)
 	if R.jt(S.get("campaign")):
 		cfg["campaign"] = true; cfg["event_force"] = S.get("event_force"); cfg["event_war"] = S.get("event_war")
@@ -222,9 +225,9 @@ func _i_view() -> Dictionary:
 			"sec": u.get("sec").duplicate(true) if u.get("sec") != null else null, "crew": u.get("crew"), "crewMax": u.get("crewMax"), "dead": R.jt(u.get("dead")), "fled": R.jt(u.get("fled")),
 			"activated": R.jt(u.get("activated")), "active": B.get("activeUnit") != null and is_same(B["activeUnit"], u), "braced": R.jt(u.get("braced")), "mp": u["mp"], "turnsLeft": u["turnsLeft"],
 			"ab": u.get("ab"), "abCd": u["abCd"], "abReady": R.canAbility(u) if not R.jt(u.get("dead")) else false, "burning": R.z0(u["st"].get("fire")) > 0, "flagship": R.jt(u.get("flagship")) or R.jt(u.get("boss")), "weapons": ws,
-			"moveLeft": R.postFireMp(u), "fired": R.jt(u.get("postFire")), "stance": u.get("stance") if (u.get("ab") == "launch" or R.jt(R.g(u.get("fx"), "hive"))) else null, "canStance": R.canStance(u),
+			"role": R.treeRole(u), "canRole": R.treeCanChangeRole(u), "moveLeft": R.postFireMp(u), "fired": R.jt(u.get("postFire")), "stance": u.get("stance") if (u.get("ab") == "launch" or R.jt(R.g(u.get("fx"), "hive"))) else null, "canStance": R.canStance(u),
 			"anchor": R.jt(u.get("anchor")), "inSync": R.inSync(u), "rising": u.get("riseAt"), "nemesis": R.jt(u.get("nemFlag")), "covered": u.get("coverBy")})
-	return {"round": int(B["round"]), "side": B["side"], "phase": phase, "over": B["over"] if R.jt(B.get("over")) else null, "terrain": B["terrain"].duplicate(), "map": B["map"].duplicate(true),
+	return {"ask": B["treeAsk"].duplicate(true) if B.get("treeAsk") is Dictionary else null, "round": int(B["round"]), "side": B["side"], "phase": phase, "over": B["over"] if R.jt(B.get("over")) else null, "terrain": B["terrain"].duplicate(), "map": B["map"].duplicate(true),
 		"obj": B["obj"].duplicate(true) if B.get("obj") != null else null, "units": us, "focus": B["aiFocus"]["id"] if B.get("aiFocus") != null else null, "arena": B["arena"], "cut": R.CUT.keys() if R.CUT != null else [], "hexes": _hexes, "torps": _torps(), "zones": _zones(), "halt": halted if halted != "" else null}
 func _zones() -> Dictionary: # battle.js objZone: "exit" (breakthrough: jump clear here), "texit" (intercept: transports escape here), "guard" (defend: the ring 2 hexes out)
 	var o := {}
@@ -442,6 +445,53 @@ func command() -> bool:
 func _i_command() -> bool:                             # the Admiral's Command (once per battle, from round 1)
 	if not can_command() or R.jt(R.B.get("busy")): return false
 	R.B["busy"] = true; var ok = R.useCommand("player"); _after_act(); return ok
+# ---------------- issue 529: the tree prompts (a "you may" skill asks yes or no; the Chorus roles at battle start) ----------------
+# The open prompt lives in the rules state (B.treeAsk, plain data), so a battle kept mid-prompt comes back to the same prompt.
+# command_or_ask() is the screen's Command button: it opens the first unanswered "you may" prompt for the Command, or gives the
+# Command at once when nothing is left to ask. answer(opt) answers the open prompt; after the last "you may" answer the Command is
+# given. The bot keeps command(), so seeded bot battles never see a prompt and take each skill's old default.
+func ask() -> Dictionary:
+	_enter()
+	var a = R.B.get("treeAsk") if R != null and R.B != null else null
+	var r = a.duplicate(true) if a is Dictionary else {}
+	_leave(false); return r
+func command_or_ask() -> String:
+	_enter()
+	if halted != "": _leave(false); return ""
+	var r = _i_command_or_ask(); _leave(true); return r
+func _i_command_or_ask() -> String:   # "ask" when a prompt opened, "command" when the Command was given, "" when neither
+	if not can_command() or R.jt(R.B.get("busy")): return ""
+	if R.treeAskCommand("player"): return "ask"
+	return "command" if _i_command() else ""
+func answer(opt: String) -> bool:
+	_enter()
+	if halted != "": _leave(false); return false
+	var r = _i_answer(opt); _leave(true); return r
+func _i_answer(opt: String) -> bool:
+	var a = R.B.get("treeAsk")
+	if a == null or phase != "player" or R.jt(R.B.get("busy")): return false
+	var then = a.get("then"); var kind = a.get("kind")
+	if not R.treeAnswer(opt): return false
+	if then == "command":
+		if R.treeAskCommand("player"): return true
+		if can_command(): _i_command()
+	elif kind == "role":
+		R.treeRoleAsk()   # the next ship's role, until every ship has one
+	return true
+func roles_open() -> bool:   # the battle-start role prompt (the screen calls it once the battle is shown; the bot never does)
+	_enter()
+	if halted != "": _leave(false); return false
+	var r = phase == "player" and R.treeRoleAsk(); _leave(true); return r
+func can_change_role(id: String) -> bool:
+	_enter()
+	var u = unit(id); var r = phase == "player" and u != null and R.treeCanChangeRole(u); _leave(false); return r
+func change_role(id: String) -> bool:   # opens the change-role prompt for one ship (once per battle per ship)
+	_enter()
+	if halted != "": _leave(false); return false
+	var u = unit(id); var r = phase == "player" and u != null and not R.jt(R.B.get("busy")) and R.treeRoleChangeAsk(u); _leave(true); return r
+func role_of(id: String) -> String:
+	_enter()
+	var u = unit(id); var r = R.treeRole(u) if u != null else null; _leave(false); return str(r) if r != null else ""
 # ---------------- previews and the threat map (read-only, fresh copies) ----------------
 # compute_reach(id) -> {states: [...], map: {"q,r": state}}: every end state the ship can move to (reach() returns the states only).
 func compute_reach(id: String) -> Dictionary:
@@ -653,7 +703,12 @@ func _ai_activate(u) -> void:
 	var gone = func(): return R.jt(R.B.get("over")) or R.jt(u.get("dead")) or R.jt(u.get("activated")) or R.B["side"] != "player" or phase != "player" or R.B["round"] != r0
 	if gone.call(): return
 	if R.canStance(u): R.aiStance(u)
-	if R.canCommand("player") and not R.jt(R.B.get("busy")):
+	var cfA = R.B.get("cfg"); var rc = cfA.get("treeRoleChange") if cfA is Dictionary else null
+	if rc is Dictionary and R.B["round"] == rc.get("round"):   # issue 529: a fixture changes one ship's role (the change-role action)
+		var xr = unit(str(rc.get("id")))
+		if xr != null: R.treeSetRole(xr, rc.get("role"), true)
+	var late = cfA is Dictionary and R.jt(cfA.get("cmdAfterMove"))
+	if not late and R.canCommand("player") and not R.jt(R.B.get("busy")):
 		var c = R.commandFor("player"); var pl = []; var en = []
 		for x in R.alive("player"):
 			if not R.jt(x.get("isSq")): pl.append(x)
@@ -705,6 +760,9 @@ func _ai_activate(u) -> void:
 			bs = sc; best = s
 	R.eval_end()
 	if best != null and best.path.size() > 0: move(u["id"], best)
+	if gone.call(): return
+	if late and cfA.get("cmdRound") == R.B["round"] and R.canCommand("player") and not R.jt(R.B.get("busy")) and R.z0(u.get("hexMoved")) > 0:
+		command()
 	if gone.call(): return
 	var canAny = false
 	for w in u["weapons"]:

@@ -8,7 +8,10 @@
 #   wrong_side      the first port weapon point mirrored to starboard              must FAIL (a port mount on the starboard side)
 #   no_core         hp_core renamed away                                           must FAIL (a required hard point missing)
 #   no_socket       extras.socket taken off the first weapon point                 must FAIL (a weapon extra missing)
-#   breach_count    the last breach anchor renamed away (five left)                must FAIL (the contract is six, two per section)
+#   no_engine       every hp_eng renamed away                                      must FAIL (a required hard point missing)
+#   no_rcs          every hp_rcs renamed away                                      must FAIL (a required hard point missing)
+#   no_board        every hp_board renamed away                                    must FAIL (a required hard point missing)
+#   breach_count    the last breach anchor renamed away                            must FAIL (the class and faction count is not met)
 #   breach_near     the first breach anchor moved onto the first weapon's muzzle   must FAIL (closer than 0.03 to a part)
 #   breach_inward   the first breach anchor turned so +Y points into the ship      must FAIL (+Y is not the outward normal)
 # usage: python check_export_selftest.py SHIP_JSON EXPORT_DIR [unbaked=1]      (exit code 1 when any case does not behave)
@@ -43,15 +46,26 @@ def wrong_side(g):
     n = next(n for n in g['nodes'] if re.fullmatch(r'hp_w\d+_.+_P_\d+', str(n.get('name', '')))); t = n['translation']; n['translation'] = [t[0], t[1], -t[2]]
 def no_core(g): first(g, 'hp_core')['name'] = 'x_core'
 def no_socket(g): first(g, 'hp_w')['extras'].pop('socket')
+def no_engine(g):
+    for n in g['nodes']:
+        if str(n.get('name', '')).startswith('hp_eng_'): n['name'] = 'x' + n['name']
+def no_rcs(g):
+    for n in g['nodes']:
+        if str(n.get('name', '')).startswith('hp_rcs_'): n['name'] = 'x' + n['name']
+def no_board(g):
+    for n in g['nodes']:
+        if str(n.get('name', '')).startswith('hp_board_'): n['name'] = 'x' + n['name']
 def breach_count(g):
     n = [n for n in g['nodes'] if str(n.get('name', '')).startswith('hp_breach_')][-1]; n['name'] = 'x' + n['name']
 def breach_near(g): first(g, 'hp_breach_')['translation'] = list(first(g, 'hp_w')['translation'])
 def breach_inward(g):
     n = first(g, 'hp_breach_'); n['rotation'] = qmul(n.get('rotation', [0, 0, 0, 1]), [1, 0, 0, 0])   # a half turn about its own X: +Y now points in
 CASES = (('pass', None, 0, ''), ('no_slot', no_slot, 1, f'weapon slot {last} '), ('off_mesh', off_mesh, 1, 'off the mesh'),
-         ('backward', backward, 1, 'aimed backward'), ('wrong_side', wrong_side, 1, 'a port mount must sit'), ('no_core', no_core, 1, 'no hp_core'),
-         ('no_socket', no_socket, 1, 'no extras.socket'), ('breach_count', breach_count, 1, '5 hp_breach anchors'),
-         ('breach_near', breach_near, 1, 'from a part (at least'), ('breach_inward', breach_inward, 1, 'is not the outward normal'))
+         ('backward', backward, 1, 'aimed backward'), ('wrong_side', wrong_side, 1, 'a port mount must sit'), ('no_core', no_core, 1, 'hp_core'),
+         ('no_socket', no_socket, 1, 'no extras.socket'), ('no_engine', no_engine, 1, 'hp_eng'),
+         ('no_rcs', no_rcs, 1, 'hp_rcs'), ('no_board', no_board, 1, 'hp_board'),
+         ('breach_count', breach_count, 1, 'hp_breach'), ('breach_near', breach_near, 1, 'from a part (at least'),
+         ('breach_inward', breach_inward, 1, 'is not the outward normal'))
 bad = 0; base = os.path.join(src, '_selftest')
 for name, fn, want, why_must in CASES:
     d = os.path.join(base, name); os.makedirs(d, exist_ok=True)
@@ -60,6 +74,14 @@ for name, fn, want, why_must in CASES:
     g, blob = CE.read_glb(os.path.join(src, code + '.glb'))
     if fn: fn(g)
     write_glb(os.path.join(d, code + '.glb'), g, blob)
+    mp = os.path.join(d, 'manifest_entry.json')
+    if os.path.exists(mp):      # keep the manifest in step, so the only problem is the one this case broke
+        c = {}
+        for n in g['nodes']:
+            ex = n.get('extras') or {}
+            if ex.get('kind') and str(n.get('name', '')).startswith('hp_'): c[ex['kind']] = c.get(ex['kind'], 0) + 1
+        m = json.load(open(mp)); m['hardpoints'] = c; m['breaches'] = c.get('breach', 0)
+        json.dump(m, open(mp, 'w'), indent=1)
     r = subprocess.run([sys.executable, os.path.join(HERE, 'check_export.py'), shipj, d] + sys.argv[3:], capture_output=True, text=True)
     probs = [l[17:] for l in r.stdout.splitlines() if 'PROBLEM' in l]; why = [l for l in probs if why_must and why_must in l][:1]
     ok = (r.returncode == want) and (not want or bool(why)); bad += not ok

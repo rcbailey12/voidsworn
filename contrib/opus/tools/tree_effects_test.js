@@ -78,7 +78,10 @@ const WANT = {
   t7b_ecl_formation_a: 'nekhet:B:0:0', t7b_ecl_formation_b: 'sekhmar:B:0:0', t7b_ecl_formation_c: 'anuket:B:0:0', t7b_ecl_formation_d: 'khepra:B:0:0',
   t7b_ecl_shadow: 'anuket:A:1:0', t7b_ecl_wall: 'khepra:A:1:0', t7b_ecl_archive: 'nekhet:A:1:1', t7b_ecl_iterfire: 'nekhet:A:1:0', t7b_ecl_triage: 'nekhet:A:0:1', t7b_ecl_targetarchived: 'sekhmar:A:1:1',
   t7b_ch_broodsplits: 'matriarch:A:1:0', t7b_ch_nine: 'matriarch:cap:0', t7b_ch_teeth: 'razormaw:A:0:1',
-  t7b_ch_tideearly: 'mending:A:1:0', t7b_ch_growth: 'mending:A:1:1', t7b_ch_spat: 'voice:A:1:1'
+  t7b_ch_tideearly: 'mending:A:1:0', t7b_ch_growth: 'mending:A:1:1', t7b_ch_spat: 'voice:A:1:1',
+  // issue 529: the last seven rows (behaviour checks in tree_last_rows_test.js)
+  t529_roles_strike: 'matriarch:B:0:0', t529_roles_screen: 'razormaw:B:0:0', t529_roles_mend: 'mending:B:0:0', t529_roles_change: 'voice:B:0:0',
+  t529_spawned: 'matriarch:A:1:1', t529_nostop: 'matriarch:cap:1', t529_scent: 'razormaw:A:1:1'
 };
 // Issue 361: one dated waiting list for the whole tree lane, shared with tree_table_walk_test.js.
 // This check only enforces the other half: a row on that list must have no TREE_FX entry.
