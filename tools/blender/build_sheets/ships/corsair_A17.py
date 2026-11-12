@@ -11,8 +11,8 @@ CODE = 'corsair_A17'
 NAME = 'Hullbreaker wrecker (the Pack Hunter)'
 FACTION = 'Ashfall Hullbreakers (corsair)'
 CLASS = 'Cruiser'
-LENGTH = 14.5
-GAME = "data.js c_marauder (cls 'Cruiser'); length from godot/render/hull_table.gd CLS_LEN['Cruiser'] = 14.5 (drawn x SHIP_K 1.6 = 23.2 on the board)"
+LENGTH = 14.6
+GAME = "data.js c_marauder (cls 'Cruiser'); class length godot/render/hull_table.gd CLS_LEN['Cruiser'] = 14.5; this ship 14.6, claw tip to stern (Ryan, Nov 12: 'it's fine to extend the game length a bit'; R229 grabber arms at the concept sheet's share)"
 BEAUTY = 'contrib/muse/design/concept_round8_2026_11/corsair_A17_beauty.jpg'
 
 # (x, half-beam port, half-beam starboard, bottom, top, top chamfer, bottom chamfer)
@@ -144,10 +144,10 @@ def build(K):
     # down; their forked pincers close toward each other (the upper hooks down, the lower up) to pin a hull for boarding
     for side, fi, fo in ((1, 'J1', 'J3'), (-1, 'J2', 'J4')):
         s_ = 'port' if side > 0 else 'starboard'
-        K.claw_arm(fi, (4.35, 0.55 * side, -1.45), [(5.45, 0.6 * side, -1.88), (6.3, 0.74 * side, -1.74)], w=0.54, hook=-1.0, fork=0.3,
+        K.claw_arm(fi, (4.35, 0.55 * side, -1.45), [(5.45, 0.7 * side, -2.02), (6.25, 0.95 * side, -2.12)], w=0.54, hook=-1.0, fork=0.3,
                    inv='jaws', housing=(3.95, 4.5, 0.55 * side - 0.36, 0.55 * side + 0.36, -1.68, -1.2),
                    note='%s lower grabber arm: shoulder under the jaw, knuckle low and forward, pincer hooking up' % s_)
-        K.claw_arm(fo, (4.6, 1.52 * side, -1.3), [(5.6, 1.58 * side, -1.56), (6.4, 1.38 * side, -1.56)], w=0.48, hook=1.0, fork=0.3,
+        K.claw_arm(fo, (4.6, 1.52 * side, -1.3), [(5.65, 1.68 * side, -1.5), (6.45, 1.74 * side, -1.6)], w=0.48, hook=1.0, fork=0.3,
                    inv='jaws', housing=(4.15, 4.8, 1.52 * side - 0.32, 1.52 * side + 0.32, -1.5, -1.08),
                    note='%s upper grabber arm: over and outboard of the lower, pincer hooking down' % s_)
     # the hoses feed the arms' rams from the jaw machinery, over the arm shoulders into the body's front face (R229)
@@ -203,7 +203,7 @@ def build(K):
     K.colour('dried-blood red patch', -3.6, -4.9, 'aft block roof')
 
     # ---------- INSIDE (round 3b: follows the low hull and the top blocks) ----------
-    K.deck('lower', -0.82, -5.4, 4.0)
+    K.deck('lower', -0.82, -5.4, 4.0, inset=0.5)  # inset 0.5: its edge stays clear of the plating torn at the seams
     K.deck_box('top', 0.3, -5.3, 2.3, 1.3)
     K.deck_box('head', 0.0, 4.4, 5.9, 0.75)
     for i, x in enumerate((5.4, 4.0, 2.05, 0.8, -1.9, -4.7)):  # F2 off the B-1 seam station (a bulkhead face on the tear)
@@ -224,7 +224,7 @@ def build(K):
     K.armour('belly', 0.25, 'flat armoured belly, the band stepping in')
     K.armour('engine end', 0.15, 'thinnest')
     K.break_line('B-1', 2.45, 'the neck seam behind the neck turrets: the head and grabbers tear off, opening the kennels and the hold',
-                 path=[(2.6, 0.78), (2.2, 0.2), (2.7, -0.4), (2.25, -1.0), (2.65, -1.6)])
+                 path=[(2.4, 2.7), (2.6, 0.78), (2.2, 0.2), (2.7, -0.4), (2.25, -1.0), (2.65, -1.6), (2.35, -2.7)])
     # R226 (RULEBOOK 5.17): the seam runs along the weld between the saddle and aft blocks, kinked round the antennas AN1 and
     # AN2 ahead of it and the aft twin T1 and the stern thrusters Q3 and Q4 behind it, so every machine rides whole
     K.break_line('B-2', -3.35, 'the weld between the saddle and aft blocks: the aft block, its flak twin and the engine cluster tear away, '
@@ -256,6 +256,8 @@ def build(K):
     K.change('The face is a narrower panel inside a deep bevel frame (corner and brow planes plated), with a lower lip over the mouth',
              'Ryan R217 on A17: "the front is also just a flat block which does not match the concept"; the beauty\'s head is chamfered all round, not a flat end (A17 build, issue 532)')
     K.change('Ear dishes 1.6 across (were 1.9), lower on the head\'s shoulders, turned forward and outward, rusted grey', 'the Board on PR 611 (R207, R229): measured on the whole beauty, each ear is about three quarters of the head\'s flank height across and sits at the rear of the head\'s shoulder; not a white disc high on the top corner (A17 build, issue 532)')
+    K.change('Grabber arms splayed: the lower pair forward and down, the upper pair forward and outward', 'the Board on PR 611 (R229): the arms read tucked under; their reach ahead of the face is the concept sheet\'s share (side view: 6.8 percent of the whole length, here 7.3), so the hull is not shortened (A17 build, issue 532)')
+    K.change('Ship length 14.6 (class 14.5), claw tip to stern', 'Ryan, Nov 12: "it\'s fine to extend the game length a bit"; the grabber arms take the concept sheet\'s share ahead of the face (6.8 percent in its side view, 7.3 here) and the hull body is unchanged; +0.7 percent (A17 build, issue 532)')
     K.change('Neck block raised from 0.78 to 1.12', 'in the beauty the deck behind the head steps down only a little; at 0.78 the head stood on the neck like a separate box (A17 build, issue 532)')
     K.change('Aft seam B-2 moved forward to the weld between the saddle and aft blocks, kinked round the antennas, T1 and the stern thrusters',
              'R226 (RULEBOOK 5.17): a machine never crosses a seam; at -4.75 the seam cut T1, Q3 and Q4 (A17 build, issue 532)')
