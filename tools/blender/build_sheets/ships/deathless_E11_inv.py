@@ -33,7 +33,7 @@ INVENTORY = [
     dict(id='skirt', job="lower side armour, the belly's first layer", type='belt', what='the lower flank skirt: tall narrow plates hanging in a row below the belt', count=2,
          cells=['mid/side', 'mid/below', 'stern/side'], reads='a band following the hull curve, tall narrow plates', src='picture'),
     dict(id='main_guns', job="the two null cannons (gauss T, gauss T): armour-piercing rail guns, the ship's main fire all round", type='nullcannon', what='the two big twin turrets on the centreline (data.js gauss T, gauss T)', count=2,
-         cells=['mid/top', 'mid/side'], reads='a thin hex foot, a low housing, a crescent shade of two curved plates with a corona rim, yoke cheeks, a ribbed capacitor stack, two rail pairs in stepped square accelerator frames, a shock plate at each muzzle (R221: rail guns, not barrels)',
+         cells=['mid/top', 'mid/side'], reads='a thin round foot, a small oval shell, an arched crescent shade of three seamed bevelled plates with a stepped second layer, plate courses and a corona crest, rod yokes, layered crescent capacitor fins, two slim round rail pairs with banded collars and a shock ring at each muzzle (R221: rail guns, not barrels)',
          src='picture'),
     dict(id='core_port', job="shows the trapped core's light through the deck (the faction's green, never a pooled glow); the core vents through it", type='corewin', what='the green hexagonal port on the deck: the trapped core\'s light seen through a gap (factions.md)', count=1,
          cells=['mid/top'], reads='a hex rim, glowing glass set back, bars', src='picture', note='README 8c called it a flak cluster; read as the core port'),
@@ -47,7 +47,7 @@ INVENTORY = [
          reads='a housing, a green-white bar lens', src='designed'),
     # ---------------- stern (66 to 100 percent): the band collar, the shade feathers, the engines ----------------
     dict(id='flak', job='the null shredder (flak T): screens the stern and deck against craft', type='shredder', what='the small twin turret aft on the deck (data.js flak T)', count=1, cells=['stern/top', 'stern/side'],
-         reads='a thin hex foot, a squat hex drum, a crescent shade with the firing slot, a two-fin capacitor pack, a fan of five needle rails with tip frames (R221)', src='picture'),
+         reads='a thin round foot, a small oval shell, a layered crescent shade with the firing slot and a corona crest, two crescent capacitor fins, a fan of five thin needle rails with banded collars (R221)', src='picture'),
     dict(id='band_collar', job='the structural ring where the stern section joins the body (B-2 tears here)', type='belt', what='the heavy band collar round the body at about three quarters of the length', count=1,
          cells=['stern/top', 'stern/side', 'stern/below'], reads='a raised ring following the hull, segmented plates', src='picture'),
     dict(id='feathers', job='stern shade blades that shield the engine room and dump heat aft', type='feather', what='layered swept shade blades round the stern, row over row, flaring toward the engines', count=24,

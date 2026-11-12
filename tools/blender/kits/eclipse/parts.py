@@ -9,9 +9,10 @@
 #                a thin corona ring of pale green-white light just inside the lip around a black shade disc (no flame)
 #   gun          (R221) built from the weapon it carries, never a breech-and-barrel cannon; every turret stands behind its
 #                own small shade (curved plates, a corona line on the rim) and fires through the gap in it:
-#                nullcannon (gauss): rail pairs in stepped square accelerator frames, an open fork and shock plate, a ribbed
-#                capacitor stack aft; shredder (flak): a fan of five needle rails from a squat hex drum; spire (gsentry): a
-#                tall turning hex spire with green sight slits, two needle rails through a shade fin at its head
+#                (R221 pass 2, "super blocky": the hull's language, curved, layered, banded, never boxes or square frames)
+#                nullcannon (gauss): slim round rail pairs with banded collars past a thin arched crescent shade of seamed,
+#                bevelled plates, crescent capacitor fins, an oval shell; shredder (flak): a fan of five thin needle rails
+#                from a layered crescent shade; spire (gsentry): a tall slim banded spire, needles through a crescent fin
 #   spinal       the corona arc (doom): an arc emitter: breech collars, a capacitor column (segments, stacked disc banks,
 #                feed conduits), a black shade disc in a corona ring with a small lens, a crown of six electrode horns
 #   core_cage    the trapped light core: a bright sphere in gimbal rings and meridian bars between two hub collars
@@ -35,9 +36,9 @@ import geom  # noqa: E402
 SUBPARTS = {
     'engine': ['housing', 'collar', 'rib', 'vane', 'bell', 'corona', 'shade'],
     # the weapons (R221: each from what it is; WEAPONS below)
-    'nullcannon': ['ring|plate', 'housing', 'capacitor', 'yoke', 'shade', 'corona', 'rail', 'frame', 'muzzle'],
-    'shredder': ['ring|plate', 'housing', 'capacitor', 'shade', 'corona', 'needle', 'frame'],
-    'spire': ['ring|plate', 'spire', 'band', 'sight', 'head', 'shade', 'corona', 'needle', 'frame'],
+    'nullcannon': ['ring|plate', 'housing', 'capacitor', 'yoke', 'shade', 'layer', 'corona', 'rail', 'collar', 'muzzle'],
+    'shredder': ['ring|plate', 'housing', 'capacitor', 'shade', 'layer', 'corona', 'needle', 'collar'],
+    'spire': ['ring|plate', 'spire', 'band', 'sight', 'head', 'shade', 'corona', 'needle', 'collar'],
     'corona_arc': ['breech', 'segment', 'capacitor', 'conduit', 'emitter', 'shade', 'corona', 'lens', 'horn'],
     'core': ['hub', 'sphere', 'gimbal', 'bar'],
     'strut': ['rail', 'web', 'lug'],
@@ -132,23 +133,25 @@ WEAPONS = {
         name='Null cannon', rules='data.js gauss: 3 shots, 6 damage, range 5; ignores half of armour (WTRAITS gauss)',
         lore='Lore 7.5: "Null weapons ignore half of armour". Battle effect: capacitor coils light breech to muzzle in steps, a near '
              'invisible slug, a hard white flash and a pale shock ring, a punch-through with an exit spray.',
-        design='A magnetic rail gun, not a barrel: each gun is a pair of flat rails (the slug rides between them) held in square '
-               'accelerator frames that step down toward the muzzle (the coils the effect lights in steps), ending in an open fork '
-               'and a flat shock plate, no bore. The rails fire through the slot of a crescent shade held upright in front like a '
-               'shield (two curved plates, horns swept back, a corona line on the rim); a ribbed capacitor stack behind stores the '
-               'charge. Twin: two rail pairs.'),
+        design=('A magnetic rail gun, not a barrel: each gun is a pair of slim round rails (the slug rides between them) banded '
+               'with round accelerator collars that step down toward the muzzle (the coils the effect lights in steps), reaching'
+               ' well past the shade and ending in a thin shock ring, no bore. They fire through the slot of a thin crescent '
+               "shade in the hull's language: an arch of three bevelled plates with narrow seams, a second layer stepped in on "
+               "its face, plate courses at the hull's scale, horns swept back and down, a corona line on the crest. Low layered "
+               'crescent capacitor fins sit behind it on a small oval shell. Twin: two rail pairs.')),
     'flak': dict(
         name='Null shredder', rules='data.js flak: 3 shots, 3 damage, range 2; point defence (vs squadrons x3)',
         lore='The Eclipse flak (FAC_WNAMES deathless flak). Battle effect (gflak): instant thin streaks to a spread of airbursts.',
-        design='A fan of five short needle rails splayed side to side so the slugs spread into a screen, out of a slot in a curved '
-               'shade wrapped round a squat hexagonal drum; a two-fin capacitor pack behind; elevates high (to 60) for craft.'),
+        design=('A fan of five thin round needle rails, each with two banded collars, splayed side to side so the slugs spread '
+               'into a screen, out of the slot of a small layered crescent shade on a low oval shell; two crescent capacitor '
+               'fins behind; it elevates high (to 60) for craft.')),
     'gsentry': dict(
         name='Null spire', rules='data.js gsentry: 2 shots, 4 damage, range 3; point defence (vs squadrons x3)',
         lore='Null sentries / Null spire (FAC_WNAMES deathless gsentry, lore 7.10): the zenith\'s picket against craft. Battle '
              'effect (gflak): instant thin streaks.',
-        design='A sentry post, not a gun box: a tall tapered hexagonal spire that turns, its head carrying two short needle rails '
-               'through a small vertical shade fin, green sight slits down the spire\'s face (the concept\'s green sights); it '
-               'stands high to see craft over the hull.'),
+        design=('A sentry post, not a gun box: a tall slim round spire with banded collars and green sight slits down its face, '
+               'turning; at its head a small oval pod with two thin round needle rails through a layered crescent fin; it stands'
+               ' high to see craft over the hull.')),
     'doom': dict(
         name='Corona arc', rules='data.js doom: lance, 1 shot, 40 damage, range 5, every other turn (cd 2)',
         lore='Lore 7.5: "the Corona arc lands one heavy blow every other turn". Battle effect: little crawling arcs gather on the '
@@ -175,144 +178,173 @@ def _ringloft(rings, cap=True):
     return V, F
 
 
-def _shade(R, half, z0, z1, t, lean=0.0, cx=0.0, droop=0.3, n=12):
-    """a turret's own sunshade: a plate curved round a vertical axis at x = cx (concave aft), spanning -half..half degrees
-    from +X, from z0 to z1 (lower toward the horns by droop), the top leaning back by lean. Returns (plate, rim line) as
-    (verts, faces): the rim line is the thin corona strip along the top edge."""
+def _shade(R, half, z0, z1, t, lean=0.0, cx=0.0, droop=0.3, n=28, bevel=0.6, span=None):
+    """a turret's own sunshade, in the hull's language (the crescent's layered, bevelled plates): a thin plate curved round a
+    vertical axis at x = cx (concave aft), spanning -half..half degrees from +X, from z0 up to z1 (lower toward the horns by
+    droop), the top leaning back by lean; its top edge bevelled to a knife rim (bevel: the share of t the chamfer takes).
+    Returns (plate, rim line) as (verts, faces): the rim line is the thin corona strip along the crest."""
     rings, rim = [], []
+    a0, a1 = span or (-half, half)   # span: one plate of a segmented shade (degrees), the droop still measured on the whole
     for i in range(n + 1):
-        a = math.radians(-half + 2 * half * i / n)
+        a = math.radians(a0 + (a1 - a0) * i / n)
         c, s = math.cos(a), math.sin(a)
         f = abs(a) / math.radians(half)
         zt = z0 + (z1 - z0) * (1 - droop * f * f)
         rt = R - lean * (zt - z0)
+        tk = t * (1 - 0.45 * f)            # thinner toward the horns, as the crescent
 
         def pt(r, z):
             return (cx + r * c, r * s, z)
-        rings.append([pt(R, z0), pt(R + t, z0), pt(rt + t, zt), pt(rt, zt)])
-        rim.append([pt(rt - t * 0.1, zt - t * 0.1), pt(rt + t * 1.1, zt - t * 0.1), pt(rt + t * 1.1, zt + t * 0.35), pt(rt - t * 0.1, zt + t * 0.35)])
+        ch = tk * 2.2 * bevel
+        rings.append([pt(R, z0), pt(R + tk, z0), pt(rt + tk - lean * 0, zt - ch), pt(rt + tk * 0.35, zt), pt(rt, zt - ch * 0.3)])
+        rim.append([pt(rt + tk * 0.05, zt - tk * 0.15), pt(rt + tk * 0.75, zt - tk * 0.15), pt(rt + tk * 0.75, zt + tk * 0.3), pt(rt + tk * 0.05, zt + tk * 0.3)])
     return _ringloft(rings), _ringloft(rim)
 
 
-def _sqring(x, r_in, r_out, w):
-    """a square frame round the X axis at station x: inner and outer half-sides r_in, r_out, depth w"""
-    k = 1 / math.cos(math.pi / 4)
-    return revolve([(x - w / 2, r_in * k), (x - w / 2, r_out * k), (x + w / 2, r_out * k), (x + w / 2, r_in * k)], 4, closed=True, phase=math.pi / 4)
+def _ovaldome(rx, ry, z0, h, xo=0.0, n=24, k=5, flat=0.35):
+    """a rounded oval shell (the hull's oval section, in miniature): base rx by ry at z0, rising h, flattened on top"""
+    rings = []
+    for j in range(k + 1):
+        u = j / k
+        sc = max(0.25, math.cos(u * math.pi / 2) ** flat)
+        z = z0 + h * u ** 0.8
+        rings.append([(xo + rx * sc * math.cos(2 * math.pi * i / n), ry * sc * math.sin(2 * math.pi * i / n), z) for i in range(n)])
+    return _ringloft(rings)
 
 
-def _turntable(p, s, rr, z_top, sides=6):
-    """the fixed hexagonal foot (mount: 'plate' on the hull, 'ring' the bearing) every Eclipse turret turns on: thin, so the
-    turning weapon above it is what reads"""
-    p.add('plate', 'mount', 'shade', _zrev([(-0.12 * s, rr * 1.1), (0.0, rr * 1.1), (0.03 * s, rr * 1.0), (0.03 * s, 0.001)],
-                                          sides, phase=math.pi / sides, cap0=True))
-    p.add('ring', 'mount', 'gunv', _zrev([(0.02 * s, rr * 0.8), (z_top, rr * 0.8), (z_top, 0.001)], sides, phase=math.pi / sides))
+def _collar(x, r_in, r_out, w, n=16):
+    """a banded collar round the X axis at station x (the hull's band collar in miniature): a round band with a raised lip"""
+    return revolve([(x - w / 2, r_in), (x - w / 2, r_out * 0.92), (x - w * 0.2, r_out), (x + w * 0.2, r_out), (x + w / 2, r_out * 0.92), (x + w / 2, r_in)],
+                   n, closed=True)
+
+
+def _turntable(p, s, rr, z_top, sides=24):
+    """the fixed foot every Eclipse turret turns on: a thin round plate with a bevelled edge and a low bearing ring"""
+    p.add('plate', 'mount', 'shade', _zrev([(-0.1 * s, rr * 1.05), (0.0, rr * 1.05), (0.025 * s, rr * 0.95), (0.025 * s, 0.001)],
+                                          sides, cap0=True))
+    p.add('ring', 'mount', 'gunv', _zrev([(0.02 * s, rr * 0.78), (z_top, rr * 0.74), (z_top, 0.001)], sides))
+
+
+def _crescent_stack(p, name, E, R, cx, z0, z1, t, half, k, step, mats=('violet', 'mauve')):
+    """capacitor banks as layered crescent fins behind the shade, stepping down and in (the crescent's layers repeated)"""
+    for j in range(k):
+        f = 1 - 0.16 * (j + 1)
+        pl, _ = _shade(R * f, half * (0.92 - 0.06 * j), z0 * f, z1 * f, t * 0.8, lean=0.1, cx=cx - step * (j + 1), droop=0.45, n=20)
+        p.add('%s%d' % (name, j), 'body', mats[j % 2], moved(pl, E))
 
 
 def _null_cannon(p, barrels, cal, blen, s, pitch, variant):
-    """the null cannon (data.js gauss): rail pairs in stepped accelerator frames through the slot of a crescent shade (the
-    flagship's crescent in miniature, horns swept back); a ribbed capacitor stack behind it"""
-    rr = 0.5 * s
-    _turntable(p, s, rr, 0.08 * s)
-    z0 = 0.08 * s
-    # the turning deck: a low chamfered hexagonal slab, under the shade
-    p.add('housing', 'body', 'mauve', prism([(-0.6 * s, octa(0.3 * s, 0.06 * s, 0.04 * s, 0, z0 + 0.06 * s)),
-                                             (0.1 * s, octa(0.44 * s, 0.07 * s, 0.05 * s, 0, z0 + 0.07 * s)),
-                                             (0.32 * s, octa(0.3 * s, 0.05 * s, 0.03 * s, 0, z0 + 0.06 * s))]))
-    zh = z0 + 0.13 * s
-    zc = zh + 0.36 * s
-    # the capacitor stack: ribbed upright fins behind the shade, stepping down aft (it stores the charge the frames release)
-    for k in range(5):
-        x = -0.2 * s - 0.1 * s * k
-        hw = 0.34 * s * (1 - 0.1 * k); ht = 0.52 * s * (1 - 0.13 * k)
-        p.add('capacitor%d' % k, 'body', 'violet' if k % 2 else 'gunv', block(x - 0.028 * s, x + 0.028 * s, hw, ht / 2, 0.03 * s, zo=zh + ht / 2 - 0.01 * s))
-    p.add('capspine', 'body', 'gunv', block(-0.66 * s, -0.1 * s, 0.07 * s, 0.07 * s, 0.02 * s, zo=zh + 0.06 * s))
-    trunnion = Vector((0.08 * s, 0, zc))
+    """the null cannon (data.js gauss): two round rail pairs banded with stepped collars, reaching well past a tall, thin,
+    layered crescent shade (corona on its rim); layered crescent capacitor banks behind; a small oval shell under it"""
+    rr = 0.36 * s
+    _turntable(p, s, rr, 0.06 * s)
+    z0 = 0.06 * s
+    p.add('housing', 'body', 'mauve', _ovaldome(0.34 * s, 0.26 * s, z0, 0.13 * s, xo=-0.08 * s))
+    zh = z0 + 0.12 * s
+    zc = zh + 0.3 * s
+    trunnion = Vector((0.05 * s, 0, zc))
     for sgn in (1, -1):
-        p.add('yoke%d' % (sgn > 0), 'body', 'gunv', block(-0.12 * s, 0.12 * s, 0.03 * s, (zc - zh) / 2 + 0.03 * s, 0.01 * s, yo=sgn * 0.3 * s, zo=(zc + zh) / 2))
+        p.add('yoke%d' % (sgn > 0), 'body', 'gunv', rod((0.0, sgn * 0.17 * s, zh - 0.02 * s), (0.05 * s, sgn * 0.17 * s, zc), 0.028 * s, 8))
     E = Matrix.Translation(trunnion) @ Matrix.Rotation(-math.radians(pitch), 4, 'Y')
-    # the shade: a crescent of two curved plates (horns swept back, drooping), the firing slot between them, corona on the rim
-    R = 0.56 * s; cx = -0.46 * s; slot = cal * 1.45
-    lo, _rl = _shade(R, 80, -0.32 * s, -slot, 0.05 * s, lean=-0.3, cx=cx, droop=0.0)
-    up, rim = _shade(R, 80, slot, 0.44 * s, 0.05 * s, lean=0.18, cx=cx, droop=0.4)   # upright: a shield held forward, not a lid
+    R = 0.46 * s; cx = -0.4 * s; slot = cal * 1.2
+    lo, _rl = _shade(R, 68, -0.2 * s, -slot, 0.03 * s, lean=-0.25, cx=cx, droop=0.2)
     p.add('shade0', 'body', 'violet', moved(lo, E))
-    p.add('shade1', 'body', 'mauve', moved(up, E))
+    # the upper shade: three plates with narrow seams (the E12 ring's broken plates, the crescent's plate courses), an arch
+    # high at the centre and swept down to thin horns; the corona line runs along the whole crest
+    for j, (a0, a1) in enumerate(((-74.0, -27.0), (-25.0, 25.0), (27.0, 74.0))):
+        up, _ = _shade(R, 74, slot, 0.48 * s, 0.03 * s, lean=0.22, cx=cx, droop=0.75, n=12, span=(a0, a1))
+        p.add('shade%d' % (j + 1), 'body', 'mauve' if j != 1 else 'violet', moved(up, E))
+    _, rim = _shade(R, 74, slot, 0.48 * s, 0.03 * s, lean=0.22, cx=cx, droop=0.75)
     p.add('corona', 'body', 'corona', moved(rim, E))
-    xf = cx + R + 0.05 * s     # the shade's front face on the axis
-    gap = cal * 4.2
+    # the second layer, stepped in from the rim on the shade's front face (as the crescent's upper layer), and two thin plate
+    # courses across the front at the hull's plate scale
+    ly, _ = _shade(R + 0.03 * s, 52, slot + 0.02 * s, 0.32 * s, 0.022 * s, lean=0.22, cx=cx, droop=0.6)
+    p.add('layer0', 'body', 'violet', moved(ly, E))
+    for j, za in enumerate((0.15 * s, 0.25 * s)):
+        rb, _ = _shade(R + 0.032 * s + 0.022 * s - 0.22 * (za - slot), 58 - 10 * j, za, za + 0.025 * s, 0.012 * s, cx=cx, droop=0.0, n=20, bevel=0.2)
+        p.add('layer%d' % (j + 1), 'body', 'gunv', moved(rb, E))
+    # capacitor banks: low layered crescent fins behind the slot
+    _crescent_stack(p, 'capacitor', E, R * 0.8, cx, -0.14 * s, 0.14 * s, 0.026 * s, 60, 3, 0.06 * s)
+    xf = cx + R + 0.04 * s
+    gap = cal * 3.6
+    L = blen * 1.3
     muzzles = []
     for i in range(barrels):
         off = (i - (barrels - 1) / 2) * gap
-        xe = xf + blen
+        xe = xf + L
         T = E @ Matrix.Translation((0, off, 0))
         for sz in (1, -1):
-            p.add('rail%d%d' % (i, sz > 0), 'body', 'gunv', moved(block(-0.2 * s, xe + cal * 0.9, cal * 0.5, cal * 0.17, cal * 0.06, zo=sz * cal * 0.62), T))
-        for j, (t_, k_) in enumerate(((0.1, 1.35), (0.33, 1.2), (0.56, 1.05), (0.78, 0.9))):
-            p.add('frame%d%d' % (i, j), 'body', 'violet' if j % 2 else 'gunv', moved(_sqring(xf + blen * t_, cal * 0.78, cal * (0.78 + 0.32 * k_), cal * 0.5), T))
-        p.add('muzzle%d' % i, 'body', 'steel', moved(_sqring(xe, cal * 0.8, cal * 1.6, cal * 0.16), T))
-        muzzles.append(P(E @ Vector((xe + cal * 0.9, off, 0))))
-    if variant % 2:
-        p.add('sensor', 'body', 'dark', block(-0.62 * s, -0.5 * s, 0.05 * s, 0.03 * s, 0, yo=0.2 * s, zo=zh + 0.15 * s))
-    return trunnion, muzzles, xf + blen + cal * 0.9, max(rr * 1.1, 0.6 * s)
+            p.add('rail%d%d' % (i, sz > 0), 'body', 'gunv', moved(rod((-0.15 * s, 0, sz * cal * 0.42), (xe, 0, sz * cal * 0.42), cal * 0.24, 8, cal * 0.2), T))
+        for j, (t_, k_) in enumerate(((0.08, 1.25), (0.3, 1.12), (0.52, 1.0), (0.74, 0.9))):
+            p.add('collar%d%d' % (i, j), 'body', 'violet' if j % 2 else 'gunv', moved(_collar(xf + L * t_, cal * 0.5, cal * (0.62 + 0.26 * k_), cal * 0.45), T))
+        p.add('muzzle%d' % i, 'body', 'steel', moved(_collar(xe - cal * 0.25, cal * 0.5, cal * 1.05, cal * 0.14), T))
+        muzzles.append(P(E @ Vector((xe, off, 0))))
+    return trunnion, muzzles, xf + L, max(rr * 1.05, 0.5 * s)
 
 
 def _shredder(p, barrels, cal, blen, s, pitch, variant):
-    """the null shredder (data.js flak): a fan of needle rails out of a slot in a shade wrapped round a squat drum"""
-    rr = 0.48 * s
-    _turntable(p, s, rr, 0.08 * s)
-    z0 = 0.08 * s
-    p.add('housing', 'body', 'mauve', _zrev([(z0, rr * 0.86), (z0 + 0.3 * s, rr * 0.86), (z0 + 0.36 * s, rr * 0.7), (z0 + 0.36 * s, 0.001)], 6, phase=0.0))
-    zc = z0 + 0.2 * s
-    for k in range(2):
-        x = -0.36 * s - 0.1 * s * k
-        p.add('capacitor%d' % k, 'body', 'violet' if k else 'gunv', block(x - 0.03 * s, x + 0.03 * s, 0.26 * s * (1 - 0.2 * k), 0.13 * s, 0.015 * s, zo=zc))
-    trunnion = Vector((0.05 * s, 0, zc))
+    """the null shredder (data.js flak): a fan of five thin round needle rails out of the slot of a layered crescent shade on a
+    small oval shell; crescent capacitor fins behind"""
+    rr = 0.32 * s
+    _turntable(p, s, rr, 0.06 * s)
+    z0 = 0.06 * s
+    p.add('housing', 'body', 'mauve', _ovaldome(0.28 * s, 0.24 * s, z0, 0.14 * s, xo=-0.06 * s))
+    zc = z0 + 0.24 * s
+    trunnion = Vector((0.03 * s, 0, zc))
     E = Matrix.Translation(trunnion) @ Matrix.Rotation(-math.radians(pitch), 4, 'Y')
-    R = 0.43 * s; cx = -0.12 * s; slot = cal * 1.0
-    lo, _ = _shade(R, 70, -0.17 * s, -slot, 0.04 * s, lean=-0.2, cx=cx, droop=0.2)
-    up, rim = _shade(R, 70, slot, 0.2 * s, 0.04 * s, lean=0.5, cx=cx, droop=0.5)
+    R = 0.36 * s; cx = -0.2 * s; slot = cal * 0.9
+    lo, _ = _shade(R, 76, -0.16 * s, -slot, 0.026 * s, lean=-0.2, cx=cx, droop=0.2)
+    up, rim = _shade(R, 80, slot, 0.42 * s, 0.028 * s, lean=0.3, cx=cx, droop=0.55)
     p.add('shade0', 'body', 'violet', moved(lo, E)); p.add('shade1', 'body', 'mauve', moved(up, E)); p.add('corona', 'body', 'corona', moved(rim, E))
-    xf = cx + R + 0.04 * s
+    ly, _ = _shade(R + 0.026 * s, 55, slot + 0.02 * s, 0.28 * s, 0.018 * s, lean=0.3, cx=cx, droop=0.4)
+    p.add('layer0', 'body', 'violet', moved(ly, E))
+    _crescent_stack(p, 'capacitor', E, R * 0.8, cx, -0.1 * s, 0.1 * s, 0.022 * s, 60, 2, 0.05 * s)
+    xf = cx + R + 0.03 * s
     n = max(barrels, 5)
+    L = blen * 1.25
     muzzles = []
     for i in range(n):
-        a = math.radians((i - (n - 1) / 2) * 9.0)
+        a = math.radians((i - (n - 1) / 2) * 8.0)
         Ry = Matrix.Rotation(a, 4, 'Z')
-        root = Vector((xf - 0.12 * s, (i - (n - 1) / 2) * cal * 0.9, 0))
-        tip = root + Ry.to_3x3() @ Vector((blen, 0, 0))
-        p.add('needle%d' % i, 'body', 'gunv', moved(rod(root, tip, cal * 0.42, 4, cal * 0.3), E))
-        fr = root + Ry.to_3x3() @ Vector((blen * 0.8, 0, 0))
-        p.add('frame%d' % i, 'body', 'steel', moved(moved(_sqring(0, cal * 0.3, cal * 0.62, cal * 0.5), Matrix.Translation(fr) @ Ry), E))
+        root = Vector((xf - 0.14 * s, (i - (n - 1) / 2) * cal * 0.9, 0))
+        tip = root + Ry.to_3x3() @ Vector((L, 0, 0))
+        p.add('needle%d' % i, 'body', 'gunv', moved(rod(root, tip, cal * 0.3, 8, cal * 0.2), E))
+        for j, t_ in enumerate((0.45, 0.85)):
+            fr = root + Ry.to_3x3() @ Vector((L * t_, 0, 0))
+            p.add('collar%d%d' % (i, j), 'body', 'steel' if j else 'violet', moved(moved(_collar(0, cal * 0.25, cal * 0.5, cal * 0.4, 12), Matrix.Translation(fr) @ Ry), E))
         muzzles.append(P(E @ tip))
-    return trunnion, muzzles, xf - 0.12 * s + blen, rr * 1.25
+    return trunnion, muzzles, xf - 0.14 * s + L, rr * 1.05
 
 
 def _spire(p, barrels, cal, blen, s, pitch, variant):
-    """the null spire (data.js gsentry): a tall turning hexagonal spire, two needle rails through a shade fin at its head"""
-    rr = 0.36 * s
-    _turntable(p, s, rr, 0.08 * s)
-    z0 = 0.08 * s; zt = z0 + 0.95 * s
-    p.add('spire', 'body', 'mauve', _zrev([(z0, rr * 0.8), (z0 + 0.12 * s, rr * 0.8), (z0 + 0.18 * s, rr * 0.6), (zt, rr * 0.36), (zt, 0.001)], 6, phase=0.0))
+    """the null spire (data.js gsentry): a tall slim round spire with banded collars and green sight slits, turning; at its
+    head a small oval pod with two thin round needle rails through a layered crescent fin"""
+    rr = 0.3 * s
+    _turntable(p, s, rr, 0.06 * s)
+    z0 = 0.06 * s; zt = z0 + 0.95 * s
+    p.add('spire', 'body', 'mauve', _zrev([(z0, rr * 0.7), (z0 + 0.1 * s, rr * 0.7), (z0 + 0.18 * s, rr * 0.48), (zt - 0.08 * s, rr * 0.26), (zt, rr * 0.22), (zt, 0.001)], 16))
     for k in range(3):
-        z = z0 + 0.28 * s + 0.2 * s * k
-        rk = rr * (0.6 - (0.24 * (z - z0 - 0.18 * s) / (zt - z0 - 0.18 * s))) + 0.015 * s
-        p.add('band%d' % k, 'body', 'gunv', _zrev([(z, rk), (z + 0.04 * s, rk), (z + 0.04 * s, 0.001)], 6))
-        p.add('sight%d' % k, 'body', 'corona', block(rk - 0.01 * s, rk + 0.012 * s, 0.03 * s, 0.05 * s, 0, zo=z + 0.1 * s))
-    zc = zt + 0.1 * s
-    p.add('head', 'body', 'violet', block(-0.22 * s, 0.1 * s, 0.13 * s, 0.1 * s, 0.04 * s, zo=zc))
+        z = z0 + 0.3 * s + 0.2 * s * k
+        rk = rr * (0.48 - 0.22 * (z - z0 - 0.18 * s) / (zt - z0 - 0.18 * s)) + 0.012 * s
+        p.add('band%d' % k, 'body', 'gunv', _zrev([(z - 0.02 * s, rk * 0.95), (z - 0.01 * s, rk), (z + 0.03 * s, rk), (z + 0.04 * s, rk * 0.95), (z + 0.04 * s, 0.001)], 16))
+        p.add('sight%d' % k, 'body', 'corona', block(rk - 0.012 * s, rk + 0.008 * s, 0.022 * s, 0.045 * s, 0, zo=z + 0.1 * s))
+    zc = zt + 0.07 * s
+    p.add('head', 'body', 'violet', _ovaldome(0.15 * s, 0.1 * s, zt - 0.02 * s, 0.14 * s, xo=-0.05 * s, n=20))
     trunnion = Vector((0.0, 0, zc))
     E = Matrix.Translation(trunnion) @ Matrix.Rotation(-math.radians(pitch), 4, 'Y')
-    R = 0.24 * s; cx = -0.12 * s
-    fin, rim = _shade(R, 55, -0.16 * s, 0.2 * s, 0.035 * s, lean=0.4, cx=cx, droop=0.5)
+    R = 0.2 * s; cx = -0.1 * s
+    fin, rim = _shade(R, 70, -0.12 * s, 0.24 * s, 0.022 * s, lean=0.35, cx=cx, droop=0.55)
     p.add('shade', 'body', 'violet', moved(fin, E)); p.add('corona', 'body', 'corona', moved(rim, E))
-    xf = cx + R + 0.035 * s
+    xf = cx + R + 0.025 * s
+    L = blen * 1.2
     muzzles = []
     for i in range(max(barrels, 2)):
-        off = (i - 0.5) * cal * 2.6
-        root = Vector((-0.05 * s, off, 0)); tip = Vector((xf + blen, off, 0))
-        p.add('needle%d' % i, 'body', 'gunv', moved(rod(root, tip, cal * 0.45, 4, cal * 0.32), E))
-        p.add('frame%d' % i, 'body', 'steel', moved(_sqring(xf + blen * 0.75, cal * 0.32, cal * 0.7, cal * 0.5), E @ Matrix.Translation((0, off, 0))))
+        off = (i - 0.5) * cal * 2.4
+        root = Vector((-0.05 * s, off, 0)); tip = Vector((xf + L, off, 0))
+        p.add('needle%d' % i, 'body', 'gunv', moved(rod(root, tip, cal * 0.32, 8, cal * 0.22), E))
+        p.add('collar%d' % i, 'body', 'steel', moved(_collar(xf + L * 0.7, cal * 0.25, cal * 0.55, cal * 0.4, 12), E @ Matrix.Translation((0, off, 0))))
         muzzles.append(P(E @ tip))
-    return trunnion, muzzles, xf + blen, rr * 1.25
+    return trunnion, muzzles, xf + L, rr * 1.05
 
 
 GUN_BUILDERS = {'gauss': ('nullcannon', _null_cannon), 'flak': ('shredder', _shredder), 'gsentry': ('spire', _spire)}

@@ -23,7 +23,7 @@ INVENTORY = [
          cells=['bow/top', 'bow/side'], reads='breech collars, a capacitor column (segments, disc banks, conduits), an emitter head with a black shade disc in a thin corona ring, a small lens, six electrode horns (R221)', src='picture'),
     dict(id='main_guns', job='the two null cannons (gauss T, gauss T): armour-piercing rail guns either side of the core', type='nullcannon', what='two twin turrets on oval saddles on the spine, one either side of the core (data.js gauss T, gauss T)',
          count=2, cells=['bow/top', 'bow/side', 'mid/top', 'mid/side'],
-         reads='a thin hex foot, a low housing, a crescent shade with a corona rim, yoke cheeks, a ribbed capacitor stack, two rail pairs in stepped square frames, shock plates (R221)', src='picture'),
+         reads='a thin round foot, a small oval shell, an arched crescent shade of seamed bevelled plates with a second layer and a corona crest, rod yokes, crescent capacitor fins, two slim round rail pairs with banded collars and shock rings (R221)', src='picture'),
     dict(id='saddles', job='seat the batteries on the thin spine and carry their feeds', type='pylon', what='the oval saddles the turrets stand on', count=2, cells=['bow/side', 'mid/side'], reads='a stepped web, plates',
          src='picture'),
     # ---------------- midships ----------------
@@ -35,7 +35,7 @@ INVENTORY = [
     dict(id='engines', job='drive (sp 2): three eclipse-ring engines, no flame', type='engine', what='three engines side by side in the stern block', count=3, cells=['stern/top', 'stern/side', 'stern/below'],
          reads='faceted ribbed drums, mount collars, vanes, short bells, a corona ring round a black shade disc (no flame)', src='picture'),
     dict(id='sentry', job='the null spire (gsentry T): point defence against craft, standing high to see over the hull', type='spire', what='the small turret on the stern block roof with green sights (data.js gsentry T, the null spire)', count=1,
-         cells=['stern/top', 'stern/side'], reads='a thin hex foot, a tall turning hex spire with bands and green sight slits, a head, a shade fin with a corona rim, two needle rails with tip frames (R221)', src='picture'),
+         cells=['stern/top', 'stern/side'], reads='a thin round foot, a tall slim round spire with banded collars and green sight slits, an oval head pod, a layered crescent fin with a corona crest, two thin needle rails with banded collars (R221)', src='picture'),
     dict(id='block_lights', job='running lights and the corona line on the block', type='lamp', what='the green light panel on the stern block flanks', count=6, cells=['stern/side'],
          reads='a housing, a green-white bar lens', src='picture', note='the picture shows three on the near flank; matched on the far one'),
     dict(id='block_vents', job='dump heat from the engine room', type='vent', what='heat slot panels on the stern block flanks', count=2, cells=['stern/side'], reads='a frame, slats',

@@ -21,7 +21,7 @@ CONCEPT_SHEET = 'contrib/muse/design/concept_round8c_2026_11/deathless_E11_sheet
 # the true views on the 8c sheet (x0, y0, x1, y1), bow on the right; the escort is a separate shape and is left out
 CONCEPT_VIEWS = dict(top=dict(box=(139, 23, 1747, 670), largest=True, flip=True), side=dict(box=(143, 704, 1824, 1079), largest=True, flip=True))
 CROPS = [('bow (crescent and projector)', (900, 300, 1920, 1100)), ('midships (batteries)', (450, 60, 1250, 620)), ('stern (engines and feathers)', (0, 20, 760, 560))]
-SHEET = dict(version=2, round='second sheet (R221 weapons)', date='2026-11-12', blend='opus532e\\w\\w1',
+SHEET = dict(version=3, round='third sheet (R221 weapons, pass 2)', date='2026-11-12', blend='opus532e\\w\\w3',
              before='First full layout', before_note='The first complete E11 layout, built with the Eclipse kit and run through the check before any fix.',
              during='While designing, the check also caught (and the design fixed): deck hatches and the core port sunk in the curved tier, the belt lights inside the belt, '
                     'heat panels covered by the stern feathers (moved forward of the band collar), the aft flak twin sweeping through deck hatches (moved to the deck edge), '
@@ -161,12 +161,12 @@ def build(K):
         # the dorsal tier's rounded top at (x, y): its section is (hw, deck - 0.45 .. deck + 0.26), deck exponent 3.2
         hw = 1.45 + (1.25 - 1.45) * (-0.2 - x) / 5.3; zt_ = K.deck_z(x, 0.0); zb_, zt2 = zt_ - 0.45, zt_ + 0.26
         return (zb_ + zt2) / 2 + (zt2 - zb_) / 2 * max(0.0, 1 - (abs(y) / hw) ** 3.2) ** (1 / 3.2)
-    K.mass('Barbette, fore battery', K.loft('E11_barb1', [(3.35, 0.85, 0.85, 1.5, 2.12, 0, 0), (3.2, 0.95, 0.95, 1.5, 2.1, 0, 0), (1.6, 0.95, 0.95, 1.5, 2.1, 0, 0),
-                                                          (1.45, 0.85, 0.85, 1.5, 2.12, 0, 0)], 'violet', rounded=True, pexp=(2.0, 2.0),
+    K.mass('Barbette, fore battery', K.loft('E11_barb1', [(3.1, 0.62, 0.62, 1.5, 2.12, 0, 0), (2.98, 0.7, 0.7, 1.5, 2.1, 0, 0), (1.82, 0.7, 0.7, 1.5, 2.1, 0, 0),
+                                                          (1.7, 0.62, 0.62, 1.5, 2.12, 0, 0)], 'violet', rounded=True, pexp=(2.0, 2.0),
                                            plates=dict(PL, seed=35, faces=list(range(0, 12)), size=(0.25, 0.45))),
-           'violet plate', note='a low round drum: the fore battery fires aft over the tier and the aft battery\'s muzzles')
-    K.mass('Barbette, aft battery', K.loft('E11_barb2', [(-1.25, 0.92, 0.92, 1.9, 2.87, 0, 0), (-1.4, 1.0, 1.0, 1.9, 2.83, 0, 0), (-3.0, 1.0, 1.0, 1.9, 2.83, 0, 0),
-                                                         (-3.15, 0.92, 0.92, 1.9, 2.87, 0, 0)], 'violet', rounded=True, pexp=(2.0, 2.0),
+           'violet plate', note='a low round drum, slimmed to the turret\'s foot (R221 pass 2): the fore battery fires aft over the tier and the aft battery\'s muzzles')
+    K.mass('Barbette, aft battery', K.loft('E11_barb2', [(-1.52, 0.64, 0.64, 1.9, 2.87, 0, 0), (-1.64, 0.72, 0.72, 1.9, 2.83, 0, 0), (-2.76, 0.72, 0.72, 1.9, 2.83, 0, 0),
+                                                         (-2.88, 0.64, 0.64, 1.9, 2.87, 0, 0)], 'violet', rounded=True, pexp=(2.0, 2.0),
                                            plates=dict(PL, seed=34, faces=list(range(0, 12)), size=(0.25, 0.45))),
            'violet plate', note='a low round drum that superfires the aft battery over the fore one')
     K.mark('dorsal_tiers', 'tier', ['face', 'roof', 'opening'])
@@ -308,10 +308,10 @@ def build(K):
     K.change('The engine cluster is a diamond of four', 'the side view and the beauty show three bells stacked, the plan shows two side by side; a diamond of four is the one layout that reads as all three pictures, and keeps the stern wide and flat')
     K.change('Engines are eclipse rings, not flame', 'factions.md: "no flaming bells. An eclipse ring of pale light": each bell has a black shade disc with a thin pale green-white ring inside its lip')
     K.change('Batteries by data.js slot', 'd_boss carries gauss T twice, doom F and flak T: the two big mounts are the null cannons (the aft one superfires on a barbette), the projector is the corona arc, the small aft mount and a belly mount are the null shredders')
-    K.change('Weapons built from the lore, not the picture\'s generic turrets (R221)', 'Ryan: "their turrets look the same as hullbreakers"; the picture draws box turrets with round twin barrels. The null cannons are rail guns (flat rail pairs in stepped accelerator frames) firing through the slot of a crescent shade, the shredders fans of needle rails, the projector an arc emitter with a crown of electrode horns round the crest\'s black disc (tools/blender/kits/eclipse/README.md)')
+    K.change('Weapons built from the lore, not the picture\'s generic turrets (R221)', 'Ryan: "their turrets look the same as hullbreakers"; the picture draws box turrets with round twin barrels. The null cannons are rail guns (slim round rail pairs with banded collars) firing through the slot of a thin arched crescent shade, the shredders fans of needle rails, all in the hull\'s curved, layered, banded language (pass 2: "super blocky"), the projector an arc emitter with a crown of electrode horns round the crest\'s black disc (tools/blender/kits/eclipse/README.md)')
     K.change('The green hexagon on the deck is the core port, not a gun', 'the faction\'s green is the trapped core seen through gaps; the flak slot is the small twin')
     K.change('The crescent is three stacked layers with a corona line on each rim', 'factions.md: broad layered plates, the green a thin line on every shade rim; the concept shows two stepped bands and a lip; the layers are also how it breaks (band by band)')
-    K.change('Low round drums under both batteries', 'so the fore twin clears the tier when it trains aft and fires aft over the aft twin\'s muzzles, and the aft twin fires over the fore one (the fit check found both)')
+    K.change('Low round drums under both batteries, slimmed to the turret feet (R221 pass 2)', 'so the fore twin clears the tier when it trains aft and fires aft over the aft twin\'s muzzles, and the aft twin fires over the fore one (the fit check found both)')
     K.change('Belly twin, attitude thrusters, deck and belly hatches, corona strip lights, heat panels added', 'the belly needs cover and a ship in space needs thrusters; the picture shows no underside')
     K.open_item('The belly between the skirt and the belly twin is designed here; the picture does not show the underside')
 

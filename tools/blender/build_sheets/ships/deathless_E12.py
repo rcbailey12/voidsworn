@@ -22,7 +22,7 @@ CONCEPT_SHEET = 'contrib/muse/design/concept_round8c_2026_11/deathless_E12_sheet
 CONCEPT_VIEWS = dict(top=dict(box=(116, 40, 1376, 770), largest=False, flip=True), side=dict(box=(100, 850, 1395, 1080), largest=False, flip=True))
 CROPS = [('bow (fore arcs, emitter, fore battery)', (1150, 40, 2000, 1000)), ('midships (core and centre arcs)', (620, 40, 1300, 1000)),
          ('stern (engine block, aft arcs)', (150, 200, 780, 900))]
-SHEET = dict(version=3, round='third sheet (R221 weapons)', date='2026-11-12', blend='opus532e\\w\\w1',
+SHEET = dict(version=4, round='fourth sheet (R221 weapons, pass 2)', date='2026-11-12', blend='opus532e\\w\\w3',
              alt_cameras=dict(fwd='best ring overlap (forward of the starboard beam, high): the ring layout lines up, the bells cannot show'),
              before='First full layout', before_note='The first complete E12 layout, built with the Eclipse kit and run through the check before any fix.',
              during='While designing, the check also caught (and the design fixed): the sentry twin sweeping through the block roof thrusters (moved forward), a roof hatch on a '
@@ -219,7 +219,7 @@ def build(K):
     K.change('Three engines side by side in one row', 'the plan and the beauty show three across; the side view stacks them, which the plan cannot; one row keeps the block broad and low')
     K.change('Engines are eclipse rings, not flame', 'factions.md: "no flaming bells. An eclipse ring of pale light"')
     K.change('Arcs are real box sections, 0.42 deep', 'the side view draws the ring as a line; the beauty shows thick box sections with open bays, which carry frames and machinery')
-    K.change('Weapons built from the lore, not the picture\'s generic turrets (R221)', 'Ryan: "their turrets look the same as hullbreakers"; the picture draws box turrets with round twin barrels. The null cannons are rail guns firing through the slot of a crescent shade, the null spire a tall sentry spire with needle rails, the emitter a crown of electrode horns round the crest\'s black disc (tools/blender/kits/eclipse/README.md)')
+    K.change('Weapons built from the lore, not the picture\'s generic turrets (R221)', 'Ryan: "their turrets look the same as hullbreakers"; the picture draws box turrets with round twin barrels. The null cannons are rail guns (slim round rail pairs with banded collars) firing through the slot of a thin arched crescent shade, the null spire a tall slim banded sentry spire with needle rails, all in the hull\'s curved, layered, banded language (pass 2: "super blocky"), the emitter a crown of electrode horns round the crest\'s black disc (tools/blender/kits/eclipse/README.md)')
     K.change('Weapons by data.js slot', 'd_harvester: gauss T twice on the spine saddles, doom F the bow emitter, gsentry T the null spire on the block roof (the picture\'s small green-lit turret)')
     K.change('Thrusters, hatches and heat panels added', 'a ship in space needs thrusters; the picture shows no underside')
     K.open_item('The underside of the block and the ring is designed here; the picture shows no underside')
