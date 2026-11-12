@@ -9,7 +9,7 @@ asks for the ship id once (the concept's file name, for example `C15s_23`), writ
 `Downloads\voidsworn_test\recipe\<ship>\`, and ends with a plain PASS, FAIL or "done" line. Nothing is deleted. Heavy steps run on
 the 5080; all tools are free and local.
 
-**The method this recipe runs (binding; docs/playbooks/ships.md section 0 has each rule with its source):** a build sheet
+**The method this recipe runs (binding; docs/playbooks/ships.md section 0 has each rule with its source, and section 2c the parts inventory, one detail level, the fit check and the massing check of R217 and R218):** a build sheet
 that passes the concept sheet standard comes first (R203); hand-built and kit parts, AI parts only through a reviewed
 faction part library (R96 Q5); the AI shape reference of stage 2 is a tracing guide, never shipped; paint from masks baked
 from the ship's own geometry plus trim sheets and decals, colours sampled from the concept, the concept never projected
@@ -35,7 +35,7 @@ shape can be judged); stage 6 fails when the LOD export or the Godot bench does 
 |---|---|---|---|---|
 | 1. Concept in | `1_concept_in.bat` | checks `docs\ship_pipeline\concepts\<ship>.webp`, starts `tools\recipe\ships\<ship>.json` from the template (asks the faction), writes the concept with its outline | `concept.png` | seconds |
 | 2. AI shape reference | `2_shape_ref.bat` | TRELLIS.2 turns the concept cut-out into one whole-hull mesh: a shape reference and a source of surface grime, never shipped. Every current concept already has one | `bakeoff\<ship>_trellis.glb` | 2 to 4 min |
-| 3. Traced hull and the outline gate | `3_trace_hull.bat` | slices the shape reference and fits clean faceted sections (`b0trace.py`); tunes the hull module's numbers on the concept outline with a pull toward the shape reference (`tune5.py`); scores the outline at the concept's own camera, then the outline per third and the inner edge check (`outline_thirds.py`; standing gate `standing.py outline`). Gate: 90 percent overlap, and each third at least `outline_third_slack` (default 5) below it | `sil\sil_<cell>.png`, `sil\outline_thirds.json`, PASS or FAIL | 10 to 25 min (tune) |
+| 3. Traced hull and the outline gate | `3_trace_hull.bat` | slices the shape reference and fits clean faceted sections (`b0trace.py`); tunes the hull module's numbers on the concept outline with a pull toward the shape reference (`tune5.py`); scores the outline at the concept's own camera, then the outline per third and the inner edge check (`outline_thirds.py`; standing gate `standing.py outline`). Reports the overlap and each third (RULEBOOK 5.8, R147: reported, not a pass bar; the stage still exits non-zero below 0.90 until issue 564 lands) | `sil\sil_<cell>.png`, `sil\outline_thirds.json`, the overlap numbers | 10 to 25 min (tune) |
 | 4. Faction parts kit | `4_parts_kit.bat` | builds the hull with the faction kit's parts at the ship's sockets, audits it (`audit.py`: nothing floats, nothing crosses the build's own break lines, no gun aimed backward or into the ship against its mount normal), proves the audit can fail (`audit_selftest.py`: five broken copies refused, each for its own reason), re-scores the gate and the per-third and inner edge checks with the parts on, scores the outline from the second camera (`outline_battle.py`: the game battle camera at r 170 and the studio battle camera, against the B0 shape reference), renders clay close-ups at the concept camera | `build\<cell>.blend`, `audit.json`, `sil\outline_thirds.json`, `sil\outline_battle.json`, `clay\` | about 5 min |
 | 5. Paint bake | `5_paint_bake.bat` | the bake script named by the ship json's `bake` (`bakeAb6.py` for C15s_23; it builds whichever hull module `hull` names, so any ship whose hull module follows `armA5` to `armA7` uses it; a ship with its own bake names it there): the faction paint and the shape reference's grime baked to atlases (hull albedo, ORM, detail normal; parts albedo, ORM), renders at the concept camera (studio and concept light), the fixed views (top and below, the underside still) and the far side (starboard, `side_s`, on request in `render.py`), weapon close-ups, the concept and model blink sheet (`blink.py`), then the standing paint, licence and light checks | `<cell>.blend`, maps, `r\`, `close\`, `bow_blink.gif` | 30 to 40 min |
 | 6. LOD | `6_lod.bat` | the hand LOD chain (lod0 to lod3 sharing one set of atlases, small parts drop out by size) and the Godot cost bench (twenty copies, 1080p and 3D at 4K). Costs are reported, never capped (R111) | `glb\<cell>.glb`, `godot\` | about 3 min |
@@ -65,7 +65,7 @@ side, weapons, overview and the firing capture).
 Socket positions and sizes are measured off the concept through the fitted camera: pick the weapon's pixel in the concept, cast it
 onto a plane at a plausible height, read x, y and z (round 6 README, section 1, has the C15s numbers and the method). Then the
 gate decides: a part that pokes outside the concept's outline at the concept camera costs overlap, so sizes settle where the
-weapons read like the concept and the outline stays at 90 percent or better.
+weapons read like the concept; the overlap is reported beside it (RULEBOOK 5.8), and the guns are never bent to raise it (5.10).
 
 ## What the stage 4 audit proves, and what it does not
 
