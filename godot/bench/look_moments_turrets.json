@@ -1,5 +1,5 @@
 {
- "about": "Issue 560 turret rows for godot/bench/look_bench.gd (run with --moments res://bench/look_moments_turrets.json). Same fields as look_moments_attach.json. The attacker is the recipe cruiser C15s_23 exported with its turrets as their own nodes (tools/recipe/export7.py after issue 560); it sits unturned at (-34, 0), so z below 0 is its port side. Cells: the fire anchor is the moment the volley is called (the turrets start to turn), impact the first shot's landing; the last cells show the turrets back at rest.",
+ "about": "Issue 560 turret rows for godot/bench/look_bench.gd (run with --moments res://bench/look_moments_turrets.json). Same fields as look_moments_attach.json. The attacker is the recipe cruiser C15s_23 exported with its turrets as their own nodes (tools/recipe/export7.py after issue 560); it sits unturned at (-34, 0), so z below 0 is its port side. Cells: the fire anchor is the moment the volley is called (the turrets start to turn), impact the first shot's landing; the last cells show the turrets back at rest. Every camera is a 1 to 1 pixel crop; focus_off moves the camera's focus to the aft deck between the two turrets (9 units aft of the ship's centre), so the close cameras show both turrets.",
  "cameras": [
   170,
   60,
@@ -15,12 +15,12 @@
    216
   ],
   "60": [
-   768,
-   432
+   384,
+   216
   ],
   "26": [
-   1152,
-   648
+   384,
+   216
   ]
  },
  "rows": [
@@ -99,7 +99,11 @@
      1
     ]
    ],
-   "key": 4
+   "key": 4,
+   "focus_off": [
+    -9.0,
+    0.0
+   ]
   },
   {
    "id": "t_turrets_stbd_bow",
@@ -176,7 +180,11 @@
      1
     ]
    ],
-   "key": 4
+   "key": 4,
+   "focus_off": [
+    -9.0,
+    0.0
+   ]
   },
   {
    "id": "t_casemates_fixed",
@@ -222,7 +230,11 @@
      1
     ]
    ],
-   "key": 4
+   "key": 4,
+   "focus_off": [
+    -9.0,
+    0.0
+   ]
   }
  ]
 }

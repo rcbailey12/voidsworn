@@ -148,7 +148,7 @@ func _run() -> void:
 	var fixed_faces := PackedVector3Array()
 	var inv := a_node.global_transform.affine_inverse()
 	var fixed_mis: Array = []
-	for mi in a_node.find_children("*", "MeshInstance3D", true, false):
+	for mi in A.meshes:      # the ship's own meshes (find_children would also return the effects' own meshes)
 		if h._turret_above(mi, a_node) < 0:
 			fixed_mis.append(mi)
 	fixed_faces = HULL.faces_of(a_node, fixed_mis)

@@ -14,6 +14,8 @@ extends SceneTree
 # What is walked per hull: every authored point; the gun muzzles for every slot, weapon and 16 target directions (and
 # the station rays they fall back to); wing launches; the core; breach anchors and surface samples; every movement jet
 # ShipView fires (render/ship_view.gd jet_aims) and the hit-reaction corner jets (fx_ship.gd _rcs); boarding origins.
+# A turret's muzzle (issue 560) is turned back by its turret's yaw before it is measured, since the triangles are the ship at
+# rest; render/test/turret_check.gd proves the turned muzzle sits on the turned barrel.
 # Behaviour proofs on the stand-ins: an authored muzzle wins over the ray; more shots than points cycle the points; a ray
 # that finds no plating skips and is counted; a point moved off the hull is caught by this check's own distance walk.
 #
@@ -170,7 +172,17 @@ func _walk(id: String, s, real: bool) -> Dictionary:
 			for w in weapons:
 				for heavy in [false, true]:
 					for m in h.guns(int(sl), str(w), t, 6, heavy):
-						put.call("gun", m, float(_radius_at(h, m)))
+						if m.has("tur"):
+							# issue 560: a turret muzzle comes back where the turned barrel puts it; the triangles here are the ship
+							# at rest, so turn it back by its own turret's yaw and hold it to its barrel at rest
+							var back: Transform3D = h.turret_xf(int(m["tur"]), 0.0) * h.turret_xf(int(m["tur"]), float(m["yaw"])).affine_inverse()
+							var mr: Dictionary = m.duplicate()
+							mr["p"] = back * (m["p"] as Vector3)
+							mr["n"] = (back.basis * (m["n"] as Vector3)).normalized()
+							mr["f"] = (back.basis * (m["f"] as Vector3)).normalized()
+							put.call("gun (turret, turned back to rest)", mr, float(_radius_at(h, mr)))
+						else:
+							put.call("gun", m, float(_radius_at(h, m)))
 	# wing launches, the core, wounds, boarding
 	for t in dirs:
 		for i in 3:
