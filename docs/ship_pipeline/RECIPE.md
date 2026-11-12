@@ -43,7 +43,7 @@ the script path broke apart and HULL, CELL and CODE came back empty on the PC. E
 | 2. AI shape reference | `2_shape_ref.bat` | TRELLIS.2 turns the concept into one whole-hull mesh: a shape reference and a source of surface grime, never shipped. Its input is the concept squared with no cut-out of ours when the concept has no alpha (`ship.py concept ... raw`): TRELLIS.2 removes the background itself, where the luminance rule loses a dark belly. A new concept (every redone concept, A16 first) needs this run | `bakeoff\<ship>_trellis.glb` | 2 to 4 min |
 | 3. Traced hull and the outline overlap | `3_trace_hull.bat` | slices the shape reference and fits clean faceted sections (`b0trace.py`); tunes the hull module's numbers on the concept outline with a pull toward the shape reference (`tune5.py`); scores the outline at the concept's own camera, then the outline per third and the inner edge check (`outline_thirds.py`; `standing.py outline`). The overlap is reported against the ship json `outline_gate` and `outline_third_slack`; it is not a pass bar (RULEBOOK 5.8). A ship built from a build sheet is not traced or tuned (below) | `sil\sil_<cell>.png`, `sil\outline_thirds.json`, the reported overlap | 10 to 25 min (tune) |
 | 4. Faction parts kit | `4_parts_kit.bat` | builds the hull with the faction kit's parts at the ship's sockets, audits it (`audit.py`: nothing floats, nothing crosses the build's own break lines, no gun aimed backward or into the ship against its mount normal), proves the audit can fail (`audit_selftest.py`: six broken copies refused, each for its own reason, a build with no longitudinal seam not refused for that alone, and on a build that marks part kinds a machine moved onto a seam refused and a structure part not); for a ship built from a build sheet it first proves the build contract (`sheet_contract_selftest.py`, below), re-scores the outline overlap and the per-third and inner edge checks with the parts on, scores the outline from the second camera (`outline_battle.py`: the game battle camera at r 170 and the studio battle camera, against the B0 shape reference), renders clay close-ups at the concept camera | `build\<cell>.blend`, `audit.json`, `sil\outline_thirds.json`, `sil\outline_battle.json`, `clay\` | about 5 min |
-| 5. Paint bake | `5_paint_bake.bat` | `"bake": "none"`: the ship has no paint stack yet; nothing is baked, stage 4's build goes on unpainted and stage 7 writes an unbaked test export (A16 today). Otherwise the bake script named by the ship json's `bake` (`bakeAb6.py` for C15s_23; it builds whichever hull module `hull` names, so any ship whose hull module follows `armA5` to `armA7` uses it; a ship with its own bake names it there): the faction paint and the shape reference's grime baked to atlases (hull albedo, ORM, detail normal; parts albedo, ORM), renders at the concept camera (studio and concept light), the fixed views (top and below, the underside still) and the far side (starboard, `side_s`, on request in `render.py`), weapon close-ups, the concept and model blink sheet (`blink.py`), then the standing paint, licence and light checks | `<cell>.blend`, maps, `r\`, `close\`, `bow_blink.gif` | 30 to 40 min |
+| 5. Paint bake | `5_paint_bake.bat` | `"bake": "stack"` (a ship built from a build sheet, A16 the first; issue 601): the faction kit's paint stack, `bake_sheet.py` (below, "The paint stack for sheet ships"); a faction whose kit has no stack yet goes the `"none"` way and the stage says so. `"bake": "none"`: nothing is baked, stage 4's build goes on unpainted and stage 7 writes an unbaked test export. Otherwise the bake script named by the ship json's `bake` (`bakeAb6.py` for C15s_23; it builds whichever hull module `hull` names, so any ship whose hull module follows `armA5` to `armA7` uses it; a ship with its own bake names it there): the faction paint and the shape reference's grime baked to atlases (hull albedo, ORM, detail normal; parts albedo, ORM), renders at the concept camera (studio and concept light), the fixed views (top and below, the underside still) and the far side (starboard, `side_s`, on request in `render.py`), weapon close-ups, the concept and model blink sheet (`blink.py`), then the standing paint, licence and light checks | `<cell>.blend`, maps, `r\`, `close\`, `bow_blink.gif` | 30 to 40 min |
 | 6. LOD | `6_lod.bat` | an analysis product (issue 592): the hand LOD chain (lod0 to lod3 sharing one set of atlases, small parts drop out by size; the reduced levels are cleaned of the zero-area faces the decimate leaves, so they import whole) and the Godot cost bench (twenty copies, 1080p and 3D at 4K) at the ship's own class length (`length=` from the ship json, or its build sheet). The game ships stage 7's export and loads no LOD chain; lod0 is that same geometry, so the bench's lod0 numbers are the shipped mesh's in the studio scene. The binding cost is the #207 scene gate on the installed ship (RULEBOOK 3.9). Costs are reported, never capped (R111) | `glb\<cell>.glb`, `godot\` | about 3 min |
 | 7. Game export | `7_export.bat` | runs every standing ship check (`standing.py all`), then writes the game's ship folder from the baked ship and the ship json, with no hand steps: the ship glb with a node per hard point, the 2048 map set and `manifest_entry.json` with the point counts. Then reads the glb back and checks it: FAIL when any required point is missing (a weapon slot, an engine, a hangar mouth, the core, the braking and boarding origins), the breach count for the class and faction is wrong, a hard point is off the mesh, or the manifest entry disagrees. Then proves the check can fail (every broken copy must be refused, each for its own reason). Details below and in `HARDPOINTS.md` | `recipe\<ship>\export\<code>\` | about a minute |
 
@@ -86,9 +86,51 @@ reads, one authority per datum:
 
 `tools/recipe/sheet_contract_selftest.py` (stage 4, every sheet ship) rebuilds the sheet and proves each row: the outside is one
 length long, the length, seams, muzzles and slots, turret pivots, engines, insides and hull thickness are the sheet's, and a
-ship whose weapon list lacks a sheet weapon, or a sheet with two longitudinal seams, is refused by name. A sheet ship has no
-paint stack yet (`"bake": "none"`; `bakeAb6.py` refuses a sheet hull rather than add C15s's break structure to it): its paint
-bake is the next job.
+ship whose weapon list lacks a sheet weapon, or a sheet with two longitudinal seams, is refused by name. A sheet ship is painted by its faction kit's paint stack (`"bake": "stack"`, below); `bakeAb6.py` refuses a sheet hull rather
+than add C15s's break structure to it.
+
+## The paint stack for sheet ships (issue 601; ships.md section 0 item 2)
+
+The method is R96 Q1, binding: procedural materials driven by masks baked from the ship's own geometry, plus a trim sheet and
+decals; colours may be sampled from the concept; the concept picture is never projected onto the ship; only CC0 textures (RULEBOOK 5.13: the
+Hullbreaker trim sheet and decals are own work, drawn by the stack and dedicated CC0). It is written once per faction kit and every sheet ship of that faction uses it (R218; RULEBOOK 0.9,
+R225: one home per fact):
+
+| Fact | Its one home | Read by |
+|---|---|---|
+| where each colour zone sits on the ship | the build sheet: each object's material is its zone (soot, soot2, rust, iron, blood, pale, violet, steel, dark, dish, warhead, brass; glow, ember, light glow) | the stack, per object |
+| what each zone is made of: two tones sampled from the concept, rust, grime, wear, scuffs, rivets, roughness, metal | `tools/blender/kits/<kit>/stack.py` `CONCEPT` and `ZONES` (the samples' method is written there, `sample_concept()` repeats it) | `kits/shared/paint_stack.py` |
+| the layers' sizes in ship lengths (mask reach, rivet pitch, scuff tile, rust streaks) | the faction stack's `LAYERS` | the shared stack |
+| the trim sheet and the decal art | drawn by the faction stack (`trim_sheet()`, `decal_atlas()`), written to the job's `textures\` with a licence line each (CC0, own work) | the shared stack; `standing.py licences` |
+| where decals go | rules in the faction stack's `DECALS` (station along the ship, height band, face, size), placed on each ship's own surfaces by ray cast | the shared stack (`place_decals`, reported in `CELL.json`) |
+| glow colours (engine throat and bell lining, running lights) | `godot/fx/faction_looks.json` (the game's own: `engine`, `accent`) | the faction stack's `glow_material` |
+| the battle albedo lift (R227) | the game (`godot/render/look.gd`); the paint is not lifted | `paint_sheet.py` applies it only to preview the game's read |
+
+`tools/blender/r209/bake_sheet.py` (env.bat sets `BAKE` to it when the ship json says `"stack"` and the kit has `stack.py`):
+1. builds the sheet through `sheet_hull` and the build contract, the same ship stage 4 audited;
+2. unwraps two atlases (hull, parts; smart projection and a tight pack: a sheet hull is many thousand small islands);
+3. bakes the masks per atlas from the ship's own geometry into `CELL_hull_masks.png` and `CELL_parts_masks.png`: R ambient
+   occlusion at a short reach (cavities), G convex edges (bevel normal against the face normal, occluded corners removed),
+   B ambient occlusion at a long reach (grime). The hull is baked with the parts in place and the parts with the hull in place;
+4. builds one procedural material per (zone, atlas): the plate's own tone per UV island plus a soft patch and fine mottle; the
+   trim sheet's scuffs and rivet rows set back from every plate edge (box projected at ship scale, so a gun and a hull plate
+   carry the same density, R224); the zone's own trim rows (`ZONE_BY_KIND`: the launch bay mouth's warning stripes); rust in
+   cavities, under edges and in a few blooms, running down the sides; grime low, under parts and toward the engines; the decals;
+   edge wear to bare metal last, so it eats into the decals;
+5. bakes albedo and ORM for both atlases and the hull's detail normal (the layers' height through a bump), then puts the
+   textured materials on the ship (`export7.py` reads them as before) and keeps glow, ember and light as their own emissive
+   surfaces; the insides keep the sheet's own materials;
+6. measures R224 (`tools/recipe/density.py`): per part type, triangles and edge features per square unit, texels per square
+   unit and paint detail (the share of the surface as busy as the hull's busiest 30 percent), each against the hull; a part type
+   under 0.75 of the hull is flagged in `density.json` and printed by stage 5 (reported, not a pass bar).
+The job's `textures\` holds the trim sheet and the decal atlas and `licences.json` their lines, so the licence check now
+reads real entries. The lights check still passes on `"lights": {}`: the stack paints no window or trim light map; the running
+lights are the sheet's lamp parts, a glow surface.
+
+Pictures: `tools/blender/build_sheets/paint_sheet.py` renders the painted blend at the sheet's concept camera and the four flat
+views under the game's light with the battle lift; `paint_compare.py` lays them beside the concept (and the game's camera 170
+and 60 shots, `a4_shots.gd` set `cams`) as pictures for Ryan. The PC run for A16 is `tools/pc/jobs/A16_RUN_601.bat`.
+
 
 ## What a ship needs (the per-ship data)
 
@@ -98,6 +140,8 @@ bake is the next job.
 - `hull`: the hull module, a Python file that builds the hull blocks; `tune`: its tuned numbers (written by stage 3);
 - `concept_camera`: the camera fitted to the concept (stage 3 fits one when this is empty);
 - `outline_gate`: 0.90 and `outline_third_slack`: 5.0, the context the reported outline overlap is printed against (not a pass bar, RULEBOOK 5.8);
+- `bake`: the stage 5 bake: `stack` (a sheet ship: its faction kit's paint stack), `none` (unpainted), or a bake script
+  (`bakeAb6.py`, the traced hulls);
 - `lights`: the window and trim lights the bake writes, each in pixels across on a 70 px ship (for example
   `{"windows": 2.5, "trim": 2.0}`); empty while the paint has no light map. `light_min_px`: 2.0, the smallest a light may be;
 - `game_ship` and `game_code`: the ship's id in `data.js` and the folder name in `godot/assets/ships` (stage 7); `length_world`:
@@ -295,7 +339,7 @@ example `{"windows": 2.5, "trim": 2.0}`. Empty `lights` means the paint has no s
 | Generic (any concept, any faction) | Per ship today | Next |
 |---|---|---|
 | stages 1, 2, 5, 6, 7; the outline overlap report and the standing checks (per third, inner edge, second camera, paint sides, blink sheet, licences, light sizes); the fitted concept camera; the shared plumbing (sockets, seating, scale rules, audit, tags, the muzzle, engine and bay registry); the hard point contract and its one count table (`kits/shared/hardpoints.py`); bake, LOD chain, cost bench; the game export, its hard points and its check | the hull module's block table (C15s: raised forward deck, deckhouse and tower tiers, hump, aft body, stern block, sponsons, modules, cargo blocks; `armA5.py`); the sockets in the ship json | a block table as data in the ship json, so a new hull needs no Python; the wreck and damage glbs and the scene gate (stage 7, list above) |
-| the Hullbreaker kit and paint (`kits/hullbreakers/`) | | a kit per faction: Sunward Crusade, Glasswrights, Eclipse, Chorus, Hegemony Navy, each with its own shape language and paint |
+| the Hullbreaker kit and paint (`kits/hullbreakers/`); the paint stack for sheet ships (`kits/shared/paint_stack.py`, the Hullbreakers' `kits/hullbreakers/stack.py`) | | a kit per faction: Sunward Crusade, Glasswrights, Eclipse, Chorus, Hegemony Navy, each with its own shape language and paint |
 
 The section fits in stage 3 (`b0trace.py`) are generic; turning them into the hull module's knot table was a hand step in round 5
 (smoothed and squared up), and the block table is a design step: which blocks the concept has. That is the one creative step left

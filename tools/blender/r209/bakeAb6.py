@@ -146,7 +146,8 @@ def lod_tags(objs):
 def main():
     t0 = time.time(); os.makedirs(OUT, exist_ok=True)
     if getattr(A3, 'OWN_INSIDES', False):     # issue 592: a build sheet hull carries its own insides and seams; this bake would add
-        raise SystemExit('bakeAb6: the hull module builds a build sheet (OWN_INSIDES); its paint stack is not written yet: set "bake": "none" in the ship json')
+        #                                    the round 2 break structure; issue 601: sheet ships paint through bake_sheet.py instead
+        raise SystemExit('bakeAb6: the hull module builds a build sheet (OWN_INSIDES): set "bake": "stack" in the ship json (bake_sheet.py, the faction kit\'s paint stack, issue 601), or "none" for the unpainted route')
     hero = A3.HERO_SLOTS if CELL.startswith('Hy') else ()
     S, Pl, hard, gen, notes, prox = A3.build_geometry(hero, GEN)
     t_geo = time.time() - t0

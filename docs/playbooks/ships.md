@@ -17,7 +17,12 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    concept, for the outline score and the grime.
 2. **Paint.** Procedural materials driven by masks baked from the ship's own geometry (curvature, ambient occlusion, edge
    wear), plus trim sheets and decals; colours may be sampled from the concept; the concept picture is never projected onto
-   the ship (R96 Q1). Local AI texturing only after a one-hull proof of unlit PBR output (R96 Q1).
+   the ship (R96 Q1). Local AI texturing only after a one-hull proof of unlit PBR output (R96 Q1). A ship built from a build
+   sheet is painted by its faction kit's paint stack (issue 601): the ship json says `"bake": "stack"`, the stack is written
+   once per faction (`tools/blender/kits/FACTION/stack.py`: colours sampled from the concept, the layers, the trim sheet, the
+   decal rules) on the shared machinery (`tools/blender/kits/shared/paint_stack.py`: masks baked from the ship's own geometry,
+   the bake), and the sheet's materials say where each colour zone sits. A faction with no stack yet stays unpainted
+   (RECIPE.md "The paint stack for sheet ships"). Nobody paints a ship by hand.
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
    opus_check_341).
@@ -61,7 +66,8 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    break lines, the three or four features that make it that ship). The table outranks every picture.
 3. A three-view concept sheet for the ship, to contrib/muse/design/concept_standard_2026_11/standard.md: side, top, front, one
    light, plain background. A generated sheet is an identity and proportion reference: it never settles counts.
-4. The faction's parts kit and paint (tools/blender/kits/FACTION/kit.py and paint.py). A faction's first hull builds them.
+4. The faction's parts kit and paint (tools/blender/kits/FACTION/kit.py and paint.py; for sheet ships, parts.py and the paint
+   stack stack.py). A faction's first hull builds them.
 5. A build sheet that passes standard.md (R203, Ryan: "good enough to actually hand build from in blender"): true side, top,
    underside and bow-on views of one design at one scale, rendered from one Blender blockout; the length from data.js; a
    scale bar; the feature table; an INSIDE section (below); and a "Changed from the picture" list (R207).
@@ -129,7 +135,10 @@ global learning and shaping the approach". So the method, for every ship of ever
   less detailed, maybe slightly less poly than the rest of the ship"). The fit check reports, per part type, triangles
   per square unit of surface and edge features (seams, steps, bevels, greebles) per square unit against the hull's own; a
   part type more than 25 percent under the hull on either is flagged on the sheet and fixed in the build. This applies to
-  every faction and every part type, not only weapons.
+  every faction and every part type, not only weapons. The paint carries it too (issue 601): the paint stack puts its
+  scuffs, rivet rows and wear on at ship scale, the same on a gun as on a hull plate, and stage 5 measures every part type's
+  texels and paint detail per square unit against the hull's beside the mesh numbers (tools/recipe/density.py, the job's
+  density.json; a part type under 0.75 of the hull is flagged).
 - Weapons are designed per faction from the lore (R221: "their turrets look the same as hullbreakers. We should have those
   be more unique per factions and fit the actual weapons they use per lore Bible and faction rules"). Each faction kit's
   guns, turrets and launchers are built from what that faction's weapons are (data.js weapon ids, the lore bible, the
@@ -225,7 +234,7 @@ Done when: stages 1 to 7 end without FAILED; the outline overlap is reported, th
 Build sheet: docs/ship_pipeline/build_sheets/SHIP/ (passed standard.md on <date>; Ryan's look on <date>)
 Route per part: kit, hand-built, or generated (generated names its reviewed part-library entry, R96 Q5)
 Inside: the sheet's INSIDE section (decks, frames, spaces and machinery through the whole hull, armour, break lines by the faction's rule, breach anchors)
-Paint stack: the faction paint by name (tools/blender/kits/FACTION/paint.py), its masks, trim sheets and decals (R96 Q1)
+Paint stack: the faction paint by name (sheet ships: tools/blender/kits/FACTION/stack.py, "bake": "stack"; traced hulls: paint.py), its masks, trim sheets and decals (R96 Q1)
 Budget: triangles, draw calls and surfaces reported; scene gate ms measured on the 5080 (R111)
 ```
 

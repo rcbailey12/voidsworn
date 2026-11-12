@@ -12,6 +12,10 @@ tools/blender/kits/
   hullbreakers/kit.py     the Ashfall Hullbreakers parts: casemate, bow_battery, drum_rack (drums), turret (own and borrowed),
                           marking (stencils, tags, lamps); salvage helpers (weld beads, patch plates, quilted sleeves)
   hullbreakers/paint.py   the Hullbreaker paint bands (red-forward, gunmetal-aft, heavy rust and grime, worn edges, markings)
+  shared/paint_stack.py   issue 601: the paint stack machinery for sheet ships (masks baked from the ship's own geometry, the
+                          layers, trim sheet sampling, decal placement by ray cast, the atlas bake). No look of its own.
+  hullbreakers/stack.py   issue 601: the Hullbreaker paint stack for sheet ships: concept colour samples, zones, layer sizes,
+                          the trim sheet and decal art, the decal rules. Every Hullbreaker sheet ship uses it.
   <faction>/kit.py        one per faction, same function shape: part(socket, seat, rnd), PARTS dict, build(sockets, seat)
   <faction>/paint.py      the faction's own bands and masks, same make / assign interface (bake, LOD, export are shared)
 ```

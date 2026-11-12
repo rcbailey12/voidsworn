@@ -2,7 +2,7 @@ extends Node3D
 # A4 in-game ship check (feel pass, Nov 1): every faction's ships drawn exactly as the battle draws them (ShipView.setup,
 # the battle's sky, lights and G4 look at quality max, MSAA 4x), so the paint is judged in the game, not in the Blender studio.
 #   godot --path godot --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out <folder> [--facs hegemony,corsair]
-#       [--sets diag,battle,close,bare] [--codes H4_11,V1b_r_23] [--tag before]
+#       [--sets diag,battle,close,bare,cams] [--codes H4_11,V1b_r_23] [--tag before]
 # Writes JPGs into <folder>:
 #   <fac>_battle.jpg       the faction's line at the default battle camera (the camera rig at its home angle and distance)
 #   <fac>_battle_near.jpg  the same line zoomed in the way a player zooms to look at a ship
@@ -11,6 +11,7 @@ extends Node3D
 #   <code>_u.jpg           from straight below (bow to the left as in _t and _s): with _t and _s, the 9-cell blob sweep
 #   props_old.jpg, props_a4.jpg  (set props) the board's station and three derelict hulks as board.gd draws them today (the
 #                          old AI meshes in a flat grey or black) and as assets/ships/a4_props.gd draws them (the painted A4 ships)
+#   <code>_cam170.jpg, <code>_cam60.jpg  (set cams, issue 601) the ship alone at the battle camera's angle, camera 170 and 60
 #   <code>_bare.jpg        (set bare) the same three-quarter view with every texture map taken off: if it looks the same as
 #                          <code>_q.jpg, the maps are not reaching the screen
 # and prints one "[a4diag]" line per ship: each material's maps (class, size, format, mipmaps, path), metal, roughness.
@@ -175,6 +176,9 @@ func _run() -> void:
 				sv.free()
 		if sets.has("battle") and f != "obj" and f != "craft":
 			await _battle_line(f, ships)
+		if sets.has("cams") and f != "obj" and f != "craft":
+			for e in ships:
+				await _cams(e[0], f, e[1])
 		if sets.has("close") or sets.has("bare"):
 			for e in ships:
 				var L := _len_of(f, e[1])
@@ -219,6 +223,25 @@ func _battle_line(fac: String, ships: Array) -> void:
 	await _snap("%s_battle_near" % fac)
 	for n in nodes:
 		(n as Node).free()
+	cam.current = true
+	await get_tree().process_frame
+
+
+# issue 601: one ship alone at the battle camera's home angle, at camera 170 (the battle camera's distance) and camera 60 (the
+# look bench's middle distance), true game pixels, never scaled: the paint as the player sees it. Writes <code>_cam170.jpg and
+# <code>_cam60.jpg (set cams)
+func _cams(code: String, fac: String, cls: String) -> void:
+	var sv := _spawn(code, fac, cls, Vector3.ZERO, 0)
+	rig.current = true
+	rig.a = -PI / 2.0
+	rig.b = 0.98
+	rig.t = Vector3.ZERO
+	for r in [170.0, 60.0]:
+		rig.r = r
+		rig.snap()
+		await _settle()
+		await _snap("%s_cam%d" % [code, int(r)])
+	sv.free()
 	cam.current = true
 	await get_tree().process_frame
 
