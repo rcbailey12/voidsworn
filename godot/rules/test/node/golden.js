@@ -101,7 +101,9 @@ async function pBotFull(u){
   const r0=B.round, gone=()=>B.over||u.dead||u.activated||B.side!=='player'||B.round!==r0; // stops when the activation ends or the round changes (as api.ai_activate)
   if(gone()) return;
   if(canStance(u)) aiStance(u); // the bot picks wing stances like the enemy does (ACT.stance: no action wrapper)
-  if(canCommand('player')&&!B.busy){ const c=commandFor('player'); const pl=alive('player').filter(x=>!x.isSq), en=alive('enemy').filter(x=>!x.isSq);
+  { const rc=B.cfg&&B.cfg.treeRoleChange; if(rc&&B.round===rc.round){ const x=B.units.find(y=>y.id===rc.id); if(x) treeSetRole(x,rc.role,true); } } // issue 529: a fixture changes one ship's role (the change-role action)
+  const late=!!(B.cfg&&B.cfg.cmdAfterMove); // issue 529: a fixture may give the Command after the first move of its round
+  if(!late&&canCommand('player')&&!B.busy){ const c=commandFor('player'); const pl=alive('player').filter(x=>!x.isSq), en=alive('enemy').filter(x=>!x.isSq);
     if(c&&pl.length&&en.length){ const near=en.filter(e=>pl.some(p=>hdist(p,e)<=8)).length, hpR=pl.reduce((a,p)=>a+p.hp,0)/pl.reduce((a,p)=>a+p.maxHp,0), hurt=pl.some(p=>p.hp<p.maxHp*.5);
       const id=c.id, off=['barrage','hunt','scramble','surge'].includes(id), cr=(B.cfg&&B.cfg.cmdRound!=null)?B.cfg.cmdRound:null;
       if((cr!=null&&B.round===cr)||(cr==null&&((off&&(near>=2||B.round>=4))||(id==='restore'&&hpR<.6)||(id==='iron'&&(hurt||near>=2))||B.round>=6))) await actF(()=>useCommand('player')); } }
@@ -117,6 +119,8 @@ async function pBotFull(u){
   const {states}=computeReach(u); let best=null,bs=-1e9;
   for(const s of states){ const v=stateView(u,s); const off=evalOffense(v,u.weapons.filter(weaponReady),foes); const th=evalThreat(v,foes); const nd=Math.min(...foes.map(f=>hdist(v,f))); const sc=off-th*.3-(off>0?0:nd*3)-botObjF(v)-torpThreat(u,v)*.9-syncPull(u,v)*1.5; if(sc>bs){bs=sc;best=s;} }
   if(best&&best.path.length&&guardF(u)) await actF(()=>moveUnit(u,best));
+  if(gone()) return;
+  if(late&&B.cfg.cmdRound===B.round&&canCommand('player')&&!B.busy&&(u.hexMoved||0)>0) await actF(()=>useCommand('player'));
   if(gone()) return;
   if(!u.weapons.some(w=>weaponReady(w)&&alive('enemy').some(t=>canFire(u,w,t)))&&canRotate(u)&&guardF(u)) await actF(()=>rotateUnit(u,1));
   if(gone()) return;
@@ -158,6 +162,7 @@ async function runScenario(S){
   if(S.arch) cfg.arch=S.arch; if(S.mod) cfg.mod=S.mod; if(S.nemesis) cfg.nemesis=JSON.parse(JSON.stringify(S.nemesis)); if(S.verb) cfg.verb=S.verb; if(S.noStar) cfg.noStar=true;
   if(S.treeChoices) cfg.treeChoices=JSON.parse(JSON.stringify(S.treeChoices));
   if(S.cmdRound!=null) cfg.cmdRound=S.cmdRound;
+  for(const key of ['treeMay','treeRoles','treeRoleChange']) if(S[key]!=null) cfg[key]=JSON.parse(JSON.stringify(S[key])); if(S.cmdAfterMove) cfg.cmdAfterMove=true; // issue 529: prompt answers and timing for a fixture
   for(const key of ['teachingGate','teachingBattle','edgeFeature','arena','storyMods']) if(S[key]!=null) cfg[key]=S[key];
   startBattle(cfg);
   if(S.campaign){ B.campaign=true; B.event=rollBattleEvent(cfg,S.event_war?(cfg.kind!=='boss'?(rnd()<.6?'reinf_enemy':'reinf_ally'):null):(S.event_force||null)); } // campaign3d.js battleScreen (event_war: the sector at war)

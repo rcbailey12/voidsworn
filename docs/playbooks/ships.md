@@ -21,6 +21,32 @@ gates, and who does what.
 3. A three-view concept sheet for the ship, to contrib/muse/design/concept_standard_2026_11/standard.md: side, top, front, one
    light, plain background. A generated sheet is an identity and proportion reference: it never settles counts.
 4. The faction's parts kit and paint (tools/blender/kits/FACTION/kit.py and paint.py). A faction's first hull builds them.
+5. A build sheet that passes standard.md (R203, Ryan: "good enough to actually hand build from in blender"): true side, top,
+   underside and bow-on views of one design at one scale, rendered from one Blender blockout; the length from data.js; a
+   scale bar; the feature table; an INSIDE section (below); and a "Changed from the picture" list (R207).
+
+## 2a. The concept guides; the builder designs (R207)
+
+Ryan, Nov 11 2026: "use the concept pictures to guide the build. Where there are gaps like eclipse rings not all having
+structural connections or if guns look oddly proportioned or something similar that, you should build differently. Use it
+to guide, not the very final exact design." And: "Opus should have final decision making as the designer. It should follow
+all of the other guidance we've discussed across the faction guides, lore, playbooks." The accepted picture sets identity
+(mass, silhouette from above, character, palette, where the big features sit). The Opus builder corrects what would not work
+as a real built object and lists each change, with its reason, on the build sheet before the build. Questions go to Ryan only
+when the picture, the faction guide and the lore conflict, or a change would alter the ship's identity.
+
+## 2b. The insides (R98, R209)
+
+Ryan, Nov 11 2026: "keeping in mind the hits, the breaks, the deaths and everything that affects the internals of the ship so
+we don't run into the issues of before with just empty looking husks". What he was reacting to: broken pieces that were
+"visibly empty" (R98) and wrecks that looked sliced (R186). So:
+- The build sheet's INSIDE section gives deck levels, bulkhead and frame stations, the core and the engine room, magazines and
+  machinery spaces, armour thickness by zone, and the break lines placed by the faction's rule (factions.md "How it breaks";
+  the breach anchors of HARDPOINTS.md, issue 363).
+- Every hull has real thickness and those insides, sized to read at the battle camera when a piece breaks away: decks, frames,
+  machinery shapes, lit or burning spaces; never flat caps or a hollow shell. Chorus: flesh, bone and organs. Glasswrights:
+  layered glass and light.
+- Hits, wounds, breaks and deaths use the insides where they exist.
 
 ## 3. Steps
 
@@ -30,8 +56,8 @@ gates, and who does what.
 | B | Ryan picks one direction per faction | one sheet per faction, the Board's pick stated | Ryan |
 | C | Fleet brief: feature table per ship | docs/ship_pipeline/fleets/FACTION.md | Board or an Opus helper (high effort) |
 | D | Three-view sheets per ship, checked against the table and the sheet's "Never" list | docs/ship_pipeline/concepts/ (new files; old ones stay as history) | Muse draws, Board accepts |
-| E | Recipe stages 1 to 7 on the PC, one ship at a time | tools/recipe/1_concept_in.bat to 7_export.bat; ship file tools/recipe/ships/SHIP.json from _template.json | Codex (GPU) |
-| F | Blob sweep: nine cells, bow, midship, stern from top, side and below, beside the concept views | docs/ship_pipeline/BLOB_SWEEP.md | Codex renders, Board looks, Ryan's eye decides |
+| E | Recipe stages 1 to 7 on the PC, one ship at a time | tools/recipe/1_concept_in.bat to 7_export.bat; ship file tools/recipe/ships/SHIP.json from _template.json | Opus worker (R205: every Blender model is Opus's) |
+| F | Blob sweep: nine cells, bow, midship, stern from top, side and below, beside the concept views | docs/ship_pipeline/BLOB_SWEEP.md | Opus worker or Codex renders, Board looks, Ryan's eye decides |
 | G | The ship in the game on the look bench, battle camera first | tools/pc/jobs/look_bench.bat | Codex |
 | H | Ryan sees one image: the ship at the battle camera beside its concept | | Board |
 
@@ -49,6 +75,8 @@ hard points.
   mesh, and the breach anchors meet their contract. The contract's count comes from the hull's class and faction
   (factions.md, "Breach anchors by class"; issue 363), never from a constant.
 - Stage 6 reports cost; costs are never capped (R111).
+- The insides (R209): a break render of each authored break line at the battle camera and at camera 60 shows decks, frames
+  and machinery, never a hollow or flat interior. A hull that shows one is not done.
 - The blob sweep is a viewing instrument, not a pass bar (R121): the Board lists what it sees, Ryan decides.
 
 ## 5. Traps
