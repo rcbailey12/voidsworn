@@ -44,7 +44,7 @@ MATS = {
     'pale': ((0.36, 0.37, 0.38), 0),         # pale Hegemony grey trophy plate
     'steel': ((0.20, 0.20, 0.21), 0),        # gun metal and machinery
     'dark': ((0.012, 0.011, 0.011), 0),      # bores, throats, apertures, recesses
-    'dish': ((0.62, 0.60, 0.56), 0),         # dish faces
+    'dish': ((0.25, 0.235, 0.215), 0),       # dish faces: rusted grey, never a white disc (Board on PR 611)
     'glow': ((1.0, 0.25, 0.08), 8),          # engine throat glow
     'ember': ((0.9, 0.22, 0.06), 1.6),       # engine bell lining
     'light': ((1.0, 0.1, 0.05), 3),          # running lights

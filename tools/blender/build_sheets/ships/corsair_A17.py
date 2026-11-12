@@ -131,11 +131,13 @@ def build(K):
         K.tube(fi, (6.35, y, -0.42), r, 2.1, grille=True, bands=4, inv='scoops', what='scoop drum with a grille',
                note='%s scoop drum on the head flank%s' % ('port' if side > 0 else 'starboard', ', the larger' if side > 0 else ''))
         # the ears (the beauty): big dishes, about the head's height across, standing out from brackets at the head's upper corners
+        # Board on PR 611 (R207): the concept's ears are smaller bowls (a little under the face's height across) set lower on
+        # the head's shoulders, turned forward and outward
         K.mass('Ear bracket %s' % ('port' if side > 0 else 'starboard'),
-               K.box('A17_ear_bracket_%d' % (1 if side > 0 else 2), 4.5, 5.4, min(side * 1.45, side * 2.3), max(side * 1.45, side * 2.3), 0.95, 1.3, 'iron', ch=0.08),
-               'iron', note='bracket out from the head\'s upper corner')
-        K.dish('D%d' % (1 if side > 0 else 2), (4.95, 2.02 * side, 1.3), 0.95, yaw=45 * side, pitch=8, post=0.85, inv='ears',
-               note='%s ear, a big listening dish standing out at the head\'s upper corner' % ('port' if side > 0 else 'starboard'))
+               K.box('A17_ear_bracket_%d' % (1 if side > 0 else 2), 4.55, 5.25, min(side * 1.5, side * 2.45), max(side * 1.5, side * 2.45), 0.08, 0.34, 'iron', ch=0.06),
+               'iron', note='bracket out from the head\'s shoulder')
+        K.dish('D%d' % (1 if side > 0 else 2), (4.9, 2.2 * side, 0.34), 0.62, yaw=40 * side, pitch=8, post=1.1, inv='ears',
+               note='%s ear, a listening dish on the head\'s shoulder, turned forward and outward' % ('port' if side > 0 else 'starboard'))
     for side, fi, fo in ((1, 'J1', 'J3'), (-1, 'J2', 'J4')):
         s_ = 'port' if side > 0 else 'starboard'
         K.prong(fi, (4.4, 0.7 * side, -1.32), 2.6, width=0.7, thick=0.09, hook=0.3, yaw=-3 * side, droop=0.06, inv='jaws',
@@ -246,6 +248,7 @@ def build(K):
     K.change('Crystal shard removed', 'Ryan, R197')
     K.change('The face is a narrower panel inside a deep bevel frame (corner and brow planes plated), with a lower lip over the mouth',
              'Ryan R217 on A17: "the front is also just a flat block which does not match the concept"; the beauty\'s head is chamfered all round, not a flat end (A17 build, issue 532)')
+    K.change('Ear dishes smaller (1.24 across, was 1.9), lower on the head\'s shoulders, turned forward and outward, rusted grey', 'the Board on PR 611 (R207): the concept\'s ears are plain bowls a little under the face\'s height, not big white discs at the head\'s top corners (A17 build, issue 532)')
     K.change('Neck block raised from 0.78 to 1.12', 'in the beauty the deck behind the head steps down only a little; at 0.78 the head stood on the neck like a separate box (A17 build, issue 532)')
     K.change('Aft seam B-2 moved forward to the weld between the saddle and aft blocks, kinked round the antennas, T1 and the stern thrusters',
              'R226 (RULEBOOK 5.17): a machine never crosses a seam; at -4.75 the seam cut T1, Q3 and Q4 (A17 build, issue 532)')
