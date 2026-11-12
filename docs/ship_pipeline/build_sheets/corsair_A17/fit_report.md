@@ -13,6 +13,11 @@ with `build.py <code> <out> fit`). What it tests, on every part of every type:
    when both turn through their arcs.
 5. **EXHAUST**: nothing in any engine or thruster exhaust cone.
 6. **EXIT**: no launcher cell, tube mouth, dish beam, hatch, lamp, vent or slit is covered.
+7. **LANE** (R221: parts must not look like they conflict): each rack has a firing lane forward of its cells (4 degree spread,
+   to 80 percent of the ship's length) and a backblast aft (15 degree spread, 2.5 rack depths or 15 percent of the length);
+   no gun may sit in either, resting or turned through its slot arc, even when no mesh touches.
+8. **Turret reach** (the issue 560 lesson: deck dressing can pin a turret): each turret is turned from rest each way in 5 degree
+   steps until something stops it; the table below gives the real reach and flags any under 60 degrees either way.
 
 Turret marking for issue 560 (R219): each turret is an empty named `<id>_turret` at the ring centre (local +Z = the mount
 normal), with custom properties `turret=1`, `slot`, `weapon`, `arc_lo`, `arc_hi`, `arc_deg` (bearings from the bow, + to port, as
@@ -90,17 +95,19 @@ turret's swept circle (moved out).
 
 ## Round 3 (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0. Tested: 367 objects, 58 parts, 899 close pairs, 540 rays, 8 guns, 6 turrets swept, 10 cones, 28 apertures.
+Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 360 objects, 56 parts, 833 close pairs, 532 rays, 8 guns, 6 turrets swept, 10 cones, 28 apertures, 2 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 
-| Turret | Slot | Arc (bearings) | Sweep steps clear |
-|---|---|---|---:|
-| T1 | T | -180 to 180 | 73 |
-| T2 | T | -180 to 180 | 73 |
-| P1 | P | 30 to 150 | 25 |
-| P2 | P | 30 to 150 | 25 |
-| S1 | S | -150 to -30 | 25 |
-| S2 | S | -150 to -30 | 25 |
+| Turret | Slot | Arc (bearings) | Sweep steps clear | Rest | Reach to port | Stopped by | Reach to starboard | Stopped by | Under 60 |
+|---|---|---|---:|---:|---:|---|---:|---|---|
+| T1 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
+| T2 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
+| P1 | P | 30 to 150 | 25 | 40 | all round | - | all round | - | no |
+| P2 | P | 30 to 150 | 25 | 25 | all round | - | all round | - | no |
+| S1 | S | -150 to -30 | 25 | -40 | all round | - | all round | - | no |
+| S2 | S | -150 to -30 | 25 | -25 | 155 | AN2_mount_iron | all round | - | no |
+
+Reach is measured from the rest bearing, in degrees, turning toward port (bearings rising) and toward starboard; "all round" means nothing stops it within 180. Every turret clears its whole data.js slot arc (sweep steps above). Under 60 degrees either way: none.
 
 Picture: [fit_view.jpg](fit_view.jpg) (top and side with arcs, sweep circles, exhaust cones and exits).

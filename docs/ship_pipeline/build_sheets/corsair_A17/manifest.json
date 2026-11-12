@@ -170,28 +170,6 @@
    ]
   },
   {
-   "id": "C1",
-   "kind": "chain",
-   "what": "lashing chain, taut between lugs",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "neck_chain"
-   ]
-  },
-  {
-   "id": "C2",
-   "kind": "chain",
-   "what": "lashing chain, taut between lugs",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "hump_chain"
-   ]
-  },
-  {
    "id": "R1",
    "kind": "launcher",
    "what": "rocket rack, 2 by 3 cells",

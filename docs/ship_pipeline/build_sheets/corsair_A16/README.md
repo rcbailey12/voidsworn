@@ -1,4 +1,4 @@
-# corsair_A16 build sheet: the Warlord's Pyre-Barge (round 3c)
+# corsair_A16 build sheet: the Warlord's Pyre-Barge (round 3c, R221 clean-ups)
 
 Ashfall Hullbreakers flagship, class Battle-barge, **26.0 world units** (godot/render/hull_table.gd CLS_LEN; data.js c_boss).
 Version 3, 2026-11-11, after Ryan's review of round 2 (R217: tubes as circles, guns blocking the rockets and in front of an
@@ -7,7 +7,7 @@ Round 3b (2026-11-12) rebuilt the massing to the concept's measured proportions 
 was a straight-sided box, too tall; the tubes small and low; the claws legs under midships). Round 3c (2026-11-12) rounded
 the hull in section and tapered the plan more toward the bow (Board review of 3b). Designer of record: Opus (R205,
 R207). Rendered on Ryan's PC (Blender 4.5, GPU), blockout
-`C:\Users\rcbai\Downloads\voidsworn_test\opus532\r3i\corsair_A16\corsair_A16_blockout.blend`; the model is 26.14 long.
+`C:\Users\rcbai\Downloads\voidsworn_test\opus532\r221a\corsair_A16\corsair_A16_blockout.blend`; the model is 26.14 long.
 
 ## Proportions and structure (measured the same way on the concept and the build)
 
@@ -16,10 +16,25 @@ R207). Rendered on Ryan's PC (Blender 4.5, GPU), blockout
 | Concept (round 8 sheet, top and side views) | 3.04 | 4.45 | 2.46 | 3.17 |
 | Round 3 build | 2.74 | 3.39 | 2.06 | 2.02 |
 | Round 3b build | 3.01 | 4.18 | 2.13 | 2.80 |
-| **Round 3c build** | **3.02** | **4.18** | 2.13 | 2.80 |
+| Round 3c build | 3.02 | 4.18 | 2.13 | 2.80 |
+| **R221 build** | **3.04** | **4.05** | 2.13 | 2.80 |
 
 Hull: length over the median beam or height across the middle 60 percent of the length. Distinct masses per cell (concept by
 eye, build from the model) are in [inventory.md](inventory.md); every cell has at least the concept's count.
+
+## R221 clean-ups (Ryan, Nov 12 2026)
+
+1. **Chains cut.** Ryan: "let's get rid of the chains randomly around the ship. There's no purpose." All four are gone, and
+   every inventory line now names its job (what the part does on the ship); a line or a built part with no job fails the
+   inventory (39 lines, 0 failing).
+2. **No gun behind the rockets.** Ryan: "There's a gun directly behind the rocket pods on a16 which seems like it conflicts?"
+   The castle-front flak turret (T1) is now a belly flak turret (flak covers below, where the deck guns cannot reach); the
+   rack and its plinth moved 0.8 forward and the bridge flak turret (T2) 0.35 aft. The fit check gained a seventh test, LANE:
+   each rack's firing lane forward and backblast aft, and no gun in either, resting or turned through its arc. Zero.
+3. **Turret reach** (the issue 560 lesson): the fit report now lists how far each turret really turns each way before
+   something stops it. Every turret clears its whole data.js arc; P3 and S3 rest with their barrels just clear of the P2 and
+   S2 barbettes and cannot turn toward the bow from rest (0 degrees that way, 140 the other), which their arc (30 to 150 off
+   the bow) never needs.
 
 ## What round 3c changed
 
@@ -48,10 +63,11 @@ midships and stern at the same windows), then [fit_view.jpg](fit_view.jpg) and [
 - [sheet.jpg](sheet.jpg): beauty and blockout, true side, top, underside, bow-on, engine end, INSIDE cutaway, feature table,
   changes, then the fit view and the nine cells.
 - [inventory.md](inventory.md): the parts inventory written from the concept before modelling (R218), ticked per blob-sweep
-  cell from the model: 41 lines, every one present, shaped by its kit part type and detailed (every sub-part modelled); plus
+  cell from the model: 39 lines (R221: chains cut, belly turret added; each names its job), every one present, shaped by its kit part type and detailed (every sub-part modelled); plus
   the proportions and the structure count per cell.
 - [fit_report.md](fit_report.md): the fit check (RULEBOOK 5.15): 38 clashes on the round 2 layout (16 clash, 11 turret sweep,
-  10 exhaust, 1 exit: the rack covered by the bunker turret), each fix, and **zero left** in round 3.
+  10 exhaust, 1 exit: the rack covered by the bunker turret), each fix, and **zero left** in round 3, including the R221
+  firing lane and backblast test; plus each turret's real turning reach.
 - [feature_table.md](feature_table.md), [manifest.json](manifest.json) (routes, the turret pivots and arcs), [checks.json](checks.json),
   views: [side](side.jpg), [top](top.jpg), [underside](underside.jpg), [bow-on](bow.jpg), [engine end](stern.jpg),
   [cutaway](cutaway.jpg), [three-quarter](threequarter.jpg), [outline overlay](outline_check.jpg).
@@ -66,10 +82,10 @@ midships and stern at the same windows), then [fit_view.jpg](fit_view.jpg) and [
    housing with a glacis and bustle, a mantlet on trunnions, breeches, barrels with recoil sleeves, clamps, muzzle brakes and
    dark bores; casemates have an armour plate, a box sponson and a ball mantlet; the rack is a framed box of ten cells with
    rocket noses set back in them, side cheeks, a yoke and a slewing ring; dishes have ribbed backs, rims and feed horns on
-   struts; claws have hinge drums, armoured segments, joints, rams and hooked fingers; chains are real links. Hull plates
+   struts; claws have hinge drums, armoured segments, joints, rams and hooked fingers. Hull plates
    carry thickness steps, bevels and corner rivets and are cleared under every mount.
 3. **No gun blocks the rockets**: the round 2 bunker turret is gone; the rack sits on a plinth, pitched 12 degrees, every cell
-   clear over the deck boxes and dishes; the flak superfires from the castle front (T1) and a bridge barbette (T2).
+   clear over the deck boxes and dishes; flak on a bridge barbette (T2) and, after R221, under the belly (T1).
 4. **Turrets turn (R219)**: each turret is a pivot `<id>_turret` at its ring centre with `turret=1` and its data.js arc;
    the middle deck-edge turret on each side superfires on a barbette so neighbours never meet when trained aft.
 

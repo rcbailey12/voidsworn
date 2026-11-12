@@ -47,16 +47,14 @@ Ashfall Hullbreakers (corsair) | class Cruiser | version 3 (round 3), 2026-11-11
 | PH0 | pipe run, 0.09 bore | 1 | 8.8 | 0.15 | -0.60 | - | - | picture |  |
 | PH1 | pipe run, 0.09 bore | 1 | 8.8 | 0.00 | -0.60 | - | - | picture |  |
 | PH2 | pipe run, 0.09 bore | 1 | 8.8 | -0.15 | -0.60 | - | - | picture |  |
-| C1 | lashing chain, taut between lugs | 1 | 33.2 | 2.55 | -0.40 | to station 33.2%, offset -2.60 | - | picture | girdle at the neck, between the neck block and the fore block |
-| C2 | lashing chain, taut between lugs | 1 | 63.2 | 2.10 | 0.47 | to station 63.2%, offset -2.10 | - | picture | girdle in the gap between the mid and saddle blocks |
 | R1 | rocket rack, 2 by 3 cells | 6 tubes | 36.6 | 0.00 | 1.70 | forward, +10 elev | F torp | picture | rattle-rocket pod on the fore block, firing over the head |
 | T1 | twin turret | 2 barrels | 81.7 | 0.00 | 1.52 | forward, +8 elev | T flak | picture | aft block twin, all round |
 | T2 | twin belly turret | 2 barrels | 56.9 | 0.00 | -1.64 | forward, +8 elev | T flak | picture | belly twin, covers below |
-| P1 | twin turret | 2 barrels | 27.7 | 0.60 | 1.78 | 40 deg off the bow to port | P scatter | picture | neck block twin turret on a low barbette |
-| P2 | twin turret | 2 barrels | 56.9 | 1.50 | 1.30 | 25 deg off the bow to port, +3 elev | P scatter | picture | mid block twin turret, superfiring |
+| P1 | twin turret | 2 barrels | 27.7 | 1.30 | 1.78 | 40 deg off the bow to port | P scatter | picture | neck block twin turret on a low barbette |
+| P2 | twin turret | 2 barrels | 59.7 | 1.90 | 1.30 | 25 deg off the bow to port, +3 elev | P scatter | picture | mid block twin turret, superfiring |
 | P3 | twin casemate | 2 barrels | 65.2 | 2.58 | -0.25 | 35 deg off the bow to port | P scatter | picture | flank casemate on the flank tier |
-| S1 | twin turret | 2 barrels | 27.7 | -0.60 | 1.78 | 40 deg off the bow to starboard | S scatter | picture | neck block twin turret on a low barbette |
-| S2 | twin turret | 2 barrels | 56.9 | -1.30 | 1.30 | 25 deg off the bow to starboard, +3 elev | S scatter | picture | mid block twin turret, superfiring |
+| S1 | twin turret | 2 barrels | 27.7 | -1.30 | 1.78 | 40 deg off the bow to starboard | S scatter | picture | neck block twin turret on a low barbette |
+| S2 | twin turret | 2 barrels | 59.7 | -1.70 | 1.30 | 25 deg off the bow to starboard, +3 elev | S scatter | picture | mid block twin turret, superfiring |
 | S3 | twin casemate | 2 barrels | 65.2 | -2.63 | -0.25 | 35 deg off the bow to starboard | S scatter | picture | flank casemate on the flank tier |
 | E1 | engine, bell 1.2 across | 1 | 99.9 | 0.72 | 0.55 | exhaust aft | - | picture | port inner main, a squat drum |
 | E2 | engine, bell 1.0 across | 1 | 99.9 | 1.90 | 0.00 | exhaust aft | - | picture | port outer, a squat drum |
@@ -91,7 +89,7 @@ Ashfall Hullbreakers (corsair) | class Cruiser | version 3 (round 3), 2026-11-11
 | HB5 | framed deck box 0.5 x 0.4 | 1 | 61.0 | 0.35 | 1.30 | - | - | picture | framed box on the mid block |
 | HB6 | framed deck box 0.4 x 0.3 | 1 | 86.5 | 1.10 | 1.52 | - | - | picture | framed box on the aft block |
 
-Totals: 8 gun mounts with 16 barrels; 6 launcher tubes; 6 engines; 2 intakes; 2 dishes; 4 claws; 2 chains.
+Totals: 8 gun mounts with 16 barrels; 6 launcher tubes; 6 engines; 2 intakes; 2 dishes; 4 claws; 0 chains.
 No gun rests facing aft: every gun row above points forward or out to the side (yaw under 90 degrees).
 
 ## Colour zones (break stations from the side view; finish from the beauty)
@@ -185,7 +183,7 @@ Full interiors throughout the hull (R215), hidden until a piece breaks. Deaths b
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0. Tested: 367 objects, 58 parts, 899 close pairs, 540 rays, 8 guns, 6 turrets swept, 10 cones, 28 apertures. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 360 objects, 56 parts, 833 close pairs, 532 rays, 8 guns, 6 turrets swept, 10 cones, 28 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -201,7 +199,8 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **Engines are squat drums in two columns a side, exits level, no bell touching another.** the concept's stacked cluster; the fit check found round 2's bells inside each other.
 - **The head follows the beauty: a big, tall, boxy front block over the neck, big ear dishes standing out at its upper corners, broad flat prongs.** the Board on round 3b: Ryan judges against the accepted picture, which draws the head larger than the round 8 sheet.
 - **Forward rocket pod, belly flak turret and four attitude thrusters added.** data.js gives a forward rocket slot (torp F); the belly needs cover; a ship in space needs thrusters.
-- **Chains are taut girdles of real links in the gaps between blocks.** a slack chain cannot drape in space (R185); the girdles sit on the break lines.
+- **Chains cut.** Ryan, R221: "let's get rid of the chains randomly around the ship. There's no purpose"; every part has a job (ships.md 2c).
+- **Neck and mid turrets moved outboard.** R221: no gun in the rocket pod's firing lane or backblast (the fit check tests both).
 - **Crystal shard removed.** Ryan, R197.
 
 ## Designed here, not shown in the picture

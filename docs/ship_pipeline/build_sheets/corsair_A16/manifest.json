@@ -225,50 +225,6 @@
    ]
   },
   {
-   "id": "C1",
-   "kind": "chain",
-   "what": "lashing chain, taut between lugs",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "mid_chain"
-   ]
-  },
-  {
-   "id": "C2",
-   "kind": "chain",
-   "what": "lashing chain, taut between lugs",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "stern_chain"
-   ]
-  },
-  {
-   "id": "C3",
-   "kind": "chain",
-   "what": "lashing chain, taut between lugs",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "bow_chain"
-   ]
-  },
-  {
-   "id": "C4",
-   "kind": "chain",
-   "what": "lashing chain, taut between lugs",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "bow_chain"
-   ]
-  },
-  {
    "id": "R1",
    "kind": "launcher",
    "what": "rocket rack, 2 by 5 cells",
@@ -293,12 +249,12 @@
   {
    "id": "T1",
    "kind": "gun",
-   "what": "twin turret",
+   "what": "twin belly turret",
    "count": 2,
    "route": "kit",
    "source": "picture",
    "inventory": [
-    "top_turret"
+    "belly_turret"
    ],
    "turret": true,
    "pivot_object": "T1_turret",

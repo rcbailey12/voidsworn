@@ -47,15 +47,6 @@
   },
   {
    "cell": "bow/top",
-   "id": "bow_chain",
-   "built": 2,
-   "listed": 2,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "bow/top",
    "id": "bow_trophy",
    "built": 1,
    "listed": 2,
@@ -129,15 +120,6 @@
   {
    "cell": "bow/side",
    "id": "bow_claws",
-   "built": 2,
-   "listed": 2,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "bow/side",
-   "id": "bow_chain",
    "built": 2,
    "listed": 2,
    "present": true,
@@ -281,15 +263,6 @@
   },
   {
    "cell": "mid/top",
-   "id": "mid_chain",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/top",
    "id": "antennas",
    "built": 2,
    "listed": 2,
@@ -379,19 +352,19 @@
    "detailed": true
   },
   {
-   "cell": "mid/side",
-   "id": "mid_chain",
-   "built": 1,
-   "listed": 1,
+   "cell": "mid/below",
+   "id": "grapples",
+   "built": 2,
+   "listed": 2,
    "present": true,
    "shaped": true,
    "detailed": true
   },
   {
    "cell": "mid/below",
-   "id": "grapples",
-   "built": 2,
-   "listed": 2,
+   "id": "belly_turret",
+   "built": 1,
+   "listed": 1,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -444,7 +417,7 @@
   {
    "cell": "stern/top",
    "id": "top_turret",
-   "built": 2,
+   "built": 1,
    "listed": 1,
    "present": true,
    "shaped": true,
@@ -480,15 +453,6 @@
   {
    "cell": "stern/top",
    "id": "round_hatch",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "stern/top",
-   "id": "stern_chain",
    "built": 1,
    "listed": 1,
    "present": true,
@@ -595,15 +559,6 @@
    "detailed": true
   },
   {
-   "cell": "stern/side",
-   "id": "stern_chain",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
    "cell": "stern/below",
    "id": "grapples",
    "built": 2,
@@ -689,8 +644,8 @@
   "build": {
    "env_LB": 2.13,
    "env_LH": 2.8,
-   "hull_LB": 3.02,
-   "hull_LH": 4.18
+   "hull_LB": 3.04,
+   "hull_LH": 4.05
   }
  }
 }

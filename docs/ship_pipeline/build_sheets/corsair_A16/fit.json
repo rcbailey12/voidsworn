@@ -7,46 +7,48 @@
   "ARC": 0,
   "SWEEP": 0,
   "EXHAUST": 0,
-  "EXIT": 0
+  "EXIT": 0,
+  "LANE": 0
  },
  "tested": {
-  "objects": 409,
-  "parts": 77,
-  "close_pairs": 1124,
-  "rays": 796,
+  "objects": 400,
+  "parts": 73,
+  "close_pairs": 1037,
+  "rays": 753,
   "guns": 16,
   "turrets_swept": 8,
   "cones": 10,
-  "apertures": 45
+  "apertures": 45,
+  "lanes": 2
  },
  "arcs": [
   {
    "id": "T1",
    "pivot": [
-    -2.950000047683716,
+    4.0,
     0.0,
-    3.0939998626708984
+    -3.113999843597412
    ],
    "up": [
     0.0,
     0.0,
-    1.0
+    -1.0
    ],
    "slot": "T",
-   "mount": "turret",
+   "mount": "belly turret",
    "reach": 2.336950003051758,
    "bearings": [
     [
      -180.0,
-     20
+     0
     ],
     [
      -175.0,
-     60
+     10
     ],
     [
      -170.0,
-     60
+     0
     ],
     [
      -165.0,
@@ -158,55 +160,55 @@
     ],
     [
      -30.0,
-     10
+     0
     ],
     [
      -25.0,
-     10
+     0
     ],
     [
      -20.0,
-     20
+     0
     ],
     [
      -15.0,
-     20
+     0
     ],
     [
      -10.0,
-     20
+     10
     ],
     [
      -5.0,
-     20
+     0
     ],
     [
      0.0,
-     20
+     0
     ],
     [
      5.0,
-     20
+     0
     ],
     [
      10.0,
-     20
+     10
     ],
     [
      15.0,
-     20
+     0
     ],
     [
      20.0,
-     20
+     0
     ],
     [
      25.0,
-     10
+     0
     ],
     [
      30.0,
-     10
+     0
     ],
     [
      35.0,
@@ -318,22 +320,22 @@
     ],
     [
      170.0,
-     60
+     0
     ],
     [
      175.0,
-     60
+     0
     ],
     [
      180.0,
-     20
+     0
     ]
    ]
   },
   {
    "id": "T2",
    "pivot": [
-    -6.650000095367432,
+    -7.0,
     0.0,
     3.8010001182556152
    ],
@@ -2301,7 +2303,16 @@
     -180.0,
     180.0
    ],
-   "clear_steps": 73
+   "clear_steps": 73,
+   "rest_yaw": 0,
+   "reach_port": {
+    "deg": 180,
+    "stop": null
+   },
+   "reach_stbd": {
+    "deg": 180,
+    "stop": null
+   }
   },
   {
    "id": "T2",
@@ -2310,7 +2321,16 @@
     -180.0,
     180.0
    ],
-   "clear_steps": 73
+   "clear_steps": 73,
+   "rest_yaw": 0,
+   "reach_port": {
+    "deg": 180,
+    "stop": null
+   },
+   "reach_stbd": {
+    "deg": 180,
+    "stop": null
+   }
   },
   {
    "id": "P1",
@@ -2319,7 +2339,16 @@
     30.0,
     150.0
    ],
-   "clear_steps": 25
+   "clear_steps": 25,
+   "rest_yaw": 15,
+   "reach_port": {
+    "deg": 140,
+    "stop": "A16_barbette_P2"
+   },
+   "reach_stbd": {
+    "deg": 120,
+    "stop": "HB3_body_soot"
+   }
   },
   {
    "id": "P2",
@@ -2328,7 +2357,16 @@
     30.0,
     150.0
    ],
-   "clear_steps": 25
+   "clear_steps": 25,
+   "rest_yaw": 20,
+   "reach_port": {
+    "deg": 180,
+    "stop": null
+   },
+   "reach_stbd": {
+    "deg": 70,
+    "stop": "R1_body_iron"
+   }
   },
   {
    "id": "P3",
@@ -2337,7 +2375,16 @@
     30.0,
     150.0
    ],
-   "clear_steps": 25
+   "clear_steps": 25,
+   "rest_yaw": 25,
+   "reach_port": {
+    "deg": 140,
+    "stop": "A16_redband"
+   },
+   "reach_stbd": {
+    "deg": 0,
+    "stop": "A16_barbette_P2"
+   }
   },
   {
    "id": "S1",
@@ -2346,7 +2393,16 @@
     -150.0,
     -30.0
    ],
-   "clear_steps": 25
+   "clear_steps": 25,
+   "rest_yaw": -15,
+   "reach_port": {
+    "deg": 170,
+    "stop": "A16_barbette_S2"
+   },
+   "reach_stbd": {
+    "deg": 140,
+    "stop": "A16_barbette_S2"
+   }
   },
   {
    "id": "S2",
@@ -2355,7 +2411,16 @@
     -150.0,
     -30.0
    ],
-   "clear_steps": 25
+   "clear_steps": 25,
+   "rest_yaw": -20,
+   "reach_port": {
+    "deg": 70,
+    "stop": "R1_body_iron"
+   },
+   "reach_stbd": {
+    "deg": 180,
+    "stop": null
+   }
   },
   {
    "id": "S3",
@@ -2364,7 +2429,16 @@
     -150.0,
     -30.0
    ],
-   "clear_steps": 25
+   "clear_steps": 25,
+   "rest_yaw": -25,
+   "reach_port": {
+    "deg": 0,
+    "stop": "A16_barbette_S2"
+   },
+   "reach_stbd": {
+    "deg": 140,
+    "stop": "A16_castle"
+   }
   }
  ],
  "cones": [
@@ -2758,7 +2832,7 @@
    "id": "R1",
    "kind": "launcher",
    "pos": [
-    2.51328444480896,
+    3.313284397125244,
     -1.0,
     3.2893612384796143
    ],
@@ -2774,7 +2848,7 @@
    "id": "R1",
    "kind": "launcher",
    "pos": [
-    2.51328444480896,
+    3.313284397125244,
     -0.5,
     3.2893612384796143
    ],
@@ -2790,7 +2864,7 @@
    "id": "R1",
    "kind": "launcher",
    "pos": [
-    2.51328444480896,
+    3.313284397125244,
     0.0,
     3.2893612384796143
    ],
@@ -2806,7 +2880,7 @@
    "id": "R1",
    "kind": "launcher",
    "pos": [
-    2.51328444480896,
+    3.313284397125244,
     0.5,
     3.2893612384796143
    ],
@@ -2822,7 +2896,7 @@
    "id": "R1",
    "kind": "launcher",
    "pos": [
-    2.51328444480896,
+    3.313284397125244,
     1.0,
     3.2893612384796143
    ],
@@ -2838,7 +2912,7 @@
    "id": "R1",
    "kind": "launcher",
    "pos": [
-    2.4264605045318604,
+    3.2264604568481445,
     -1.0,
     3.7817652225494385
    ],
@@ -2854,7 +2928,7 @@
    "id": "R1",
    "kind": "launcher",
    "pos": [
-    2.4264605045318604,
+    3.2264604568481445,
     -0.5,
     3.7817652225494385
    ],
@@ -2870,7 +2944,7 @@
    "id": "R1",
    "kind": "launcher",
    "pos": [
-    2.4264605045318604,
+    3.2264604568481445,
     0.0,
     3.7817652225494385
    ],
@@ -2886,7 +2960,7 @@
    "id": "R1",
    "kind": "launcher",
    "pos": [
-    2.4264605045318604,
+    3.2264604568481445,
     0.5,
     3.7817652225494385
    ],
@@ -2902,7 +2976,7 @@
    "id": "R1",
    "kind": "launcher",
    "pos": [
-    2.4264605045318604,
+    3.2264604568481445,
     1.0,
     3.7817652225494385
    ],
@@ -3251,10 +3325,68 @@
    "blocked": false
   }
  ],
+ "lanes": [
+  {
+   "id": "R1",
+   "apex": [
+    3.269871950149536,
+    0.0,
+    3.5355632305145264
+   ],
+   "dir": [
+    0.9848077893257141,
+    0.0,
+    0.17364811897277832
+   ],
+   "u": [
+    0.0,
+    0.9999999403953552,
+    0.0
+   ],
+   "w": [
+    -0.17364811897277832,
+    0.0,
+    0.9848078489303589
+   ],
+   "hu": 1.2799999403953553,
+   "hw": 0.5300001410953701,
+   "half": 4.0,
+   "length": 20.8,
+   "what": "firing lane"
+  },
+  {
+   "id": "R1",
+   "apex": [
+    0.9063332080841064,
+    0.0,
+    3.118807792663574
+   ],
+   "dir": [
+    -0.9848077893257141,
+    -0.0,
+    -0.17364811897277832
+   ],
+   "u": [
+    0.0,
+    0.9999999403953552,
+    0.0
+   ],
+   "w": [
+    -0.17364811897277832,
+    0.0,
+    0.9848078489303589
+   ],
+   "hu": 1.2799999403953553,
+   "hw": 0.5300001410953701,
+   "half": 15.0,
+   "length": 6.0,
+   "what": "backblast"
+  }
+ ],
  "fixes": [
   [
    "R1 launch cells covered by T1 (the bunker turret in front of the rack)",
-   "bunker turret removed; flak moved to the castle front (T1) and a bridge barbette (T2); the rack raised on a plinth and pitched 12 degrees"
+   "bunker turret removed; flak moved to a bridge barbette (T2) and, after R221, the belly (T1); the rack raised on a plinth and pitched 12 degrees"
   ],
   [
    "Q1 and Q2 exhaust into the bow casemates PB and SB",

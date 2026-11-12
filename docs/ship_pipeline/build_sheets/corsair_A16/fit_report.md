@@ -13,6 +13,11 @@ with `build.py <code> <out> fit`). What it tests, on every part of every type:
    when both turn through their arcs.
 5. **EXHAUST**: nothing in any engine or thruster exhaust cone.
 6. **EXIT**: no launcher cell, tube mouth, dish beam, hatch, lamp, vent or slit is covered.
+7. **LANE** (R221: parts must not look like they conflict): each rack has a firing lane forward of its cells (4 degree spread,
+   to 80 percent of the ship's length) and a backblast aft (15 degree spread, 2.5 rack depths or 15 percent of the length);
+   no gun may sit in either, resting or turned through its slot arc, even when no mesh touches.
+8. **Turret reach** (the issue 560 lesson: deck dressing can pin a turret): each turret is turned from rest each way in 5 degree
+   steps until something stops it; the table below gives the real reach and flags any under 60 degrees either way.
 
 Turret marking for issue 560 (R219): each turret is an empty named `<id>_turret` at the ring centre (local +Z = the mount
 normal), with custom properties `turret=1`, `slot`, `weapon`, `arc_lo`, `arc_hi`, `arc_deg` (bearings from the bow, + to port, as
@@ -69,7 +74,7 @@ The round 2 design (`tools/blender/build_sheets/ships/r2/corsair_A16.py`, the PR
 
 | Clash (round 2) | Fix (round 3) |
 |---|---|
-| R1 launch cells covered by T1 (the bunker turret in front of the rack) | bunker turret removed; flak moved to the castle front (T1) and a bridge barbette (T2); the rack raised on a plinth and pitched 12 degrees |
+| R1 launch cells covered by T1 (the bunker turret in front of the rack) | bunker turret removed; flak moved to a bridge barbette (T2) and, after R221, the belly (T1); the rack raised on a plinth and pitched 12 degrees |
 | Q1 and Q2 exhaust into the bow casemates PB and SB | bow quads moved up onto the upper chamfer of the prow, firing up and out; casemates moved aft to 9.0 |
 | Q3 and Q4 exhaust into the pods E1 and E2 and their pylons | stern quads moved to the castle's aft corners, above the pods |
 | E3 and E4 exhaust into the hull and the E0 housing | boosters moved below and aft of the stern end, exits at -12.1 |
@@ -86,19 +91,21 @@ turret's swept circle (moved out).
 
 ## Round 3 (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0. Tested: 409 objects, 77 parts, 1124 close pairs, 796 rays, 16 guns, 8 turrets swept, 10 cones, 45 apertures.
+Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 400 objects, 73 parts, 1037 close pairs, 753 rays, 16 guns, 8 turrets swept, 10 cones, 45 apertures, 2 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 
-| Turret | Slot | Arc (bearings) | Sweep steps clear |
-|---|---|---|---:|
-| T1 | T | -180 to 180 | 73 |
-| T2 | T | -180 to 180 | 73 |
-| P1 | P | 30 to 150 | 25 |
-| P2 | P | 30 to 150 | 25 |
-| P3 | P | 30 to 150 | 25 |
-| S1 | S | -150 to -30 | 25 |
-| S2 | S | -150 to -30 | 25 |
-| S3 | S | -150 to -30 | 25 |
+| Turret | Slot | Arc (bearings) | Sweep steps clear | Rest | Reach to port | Stopped by | Reach to starboard | Stopped by | Under 60 |
+|---|---|---|---:|---:|---:|---|---:|---|---|
+| T1 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
+| T2 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
+| P1 | P | 30 to 150 | 25 | 15 | 140 | A16_barbette_P2 | 120 | HB3_body_soot | no |
+| P2 | P | 30 to 150 | 25 | 20 | all round | - | 70 | R1_body_iron | no |
+| P3 | P | 30 to 150 | 25 | 25 | 140 | A16_redband | 0 | A16_barbette_P2 | yes |
+| S1 | S | -150 to -30 | 25 | -15 | 170 | A16_barbette_S2 | 140 | A16_barbette_S2 | no |
+| S2 | S | -150 to -30 | 25 | -20 | 70 | R1_body_iron | all round | - | no |
+| S3 | S | -150 to -30 | 25 | -25 | 0 | A16_barbette_S2 | 140 | A16_castle | yes |
+
+Reach is measured from the rest bearing, in degrees, turning toward port (bearings rising) and toward starboard; "all round" means nothing stops it within 180. Every turret clears its whole data.js slot arc (sweep steps above). Under 60 degrees either way: P3 (starboard 0); S3 (port 0).
 
 Picture: [fit_view.jpg](fit_view.jpg) (top and side with arcs, sweep circles, exhaust cones and exits).

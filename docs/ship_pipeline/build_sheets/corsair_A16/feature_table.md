@@ -52,14 +52,10 @@ Ashfall Hullbreakers (corsair) | class Battle-barge | version 3 (round 3), 2026-
 | H4 | boarding claw, 2 segments, 3 fingers | 1 | 82.1 | -1.30 | -2.85 | hook forward and down | - | picture | short grabber under the stern (round 8 side sheet: grabbers under the stern; Ryan R196: hooks underneath) |
 | HB1 | framed deck box 0.9 x 0.9 | 1 | 19.9 | 1.55 | 1.41 | - | - | picture | framed deck box, port |
 | HB2 | framed deck box 0.8 x 0.8 | 1 | 19.9 | -1.60 | 1.41 | - | - | picture | framed deck box, starboard (smaller) |
-| C1 | lashing chain, taut between lugs | 1 | 22.4 | 3.95 | 0.95 | to station 22.4%, offset -4.05 | - | picture | girdle over the tier 2 seam |
-| C2 | lashing chain, taut between lugs | 1 | 57.0 | 4.15 | 0.95 | to station 57.0%, offset -4.25 | - | picture | girdle over the castle seam, at the foot of the castle front |
-| C3 | lashing chain, taut between lugs | 1 | 19.9 | 3.64 | -0.62 | to station 55.7%, offset 4.12 | - | picture | port flank lashing along the lower belt top |
-| C4 | lashing chain, taut between lugs | 1 | 25.8 | -3.97 | -0.62 | to station 52.6%, offset -4.23 | - | picture | starboard flank lashing, shorter (junky, unmatched) |
-| R1 | rocket rack, 2 by 5 cells | 10 tubes | 40.6 | 0.00 | 2.45 | forward, +10 elev | F htorp | picture | heavy rocket rack, 10 cells, magazine below |
+| R1 | rocket rack, 2 by 5 cells | 10 tubes | 37.5 | 0.00 | 2.45 | forward, +10 elev | F htorp | picture | heavy rocket rack, 10 cells, magazine below |
 | HB3 | framed deck box 1.3 x 1.2, 2 armour fins | 1 | 32.1 | 1.15 | 2.00 | - | - | picture | armoured vent housing with two slanted blades |
-| T1 | twin turret | 2 barrels | 61.6 | 0.00 | 2.60 | forward, +10 elev | T flak | picture | castle flak turret, fires over the rack at 10 degrees and up |
-| T2 | twin turret | 2 barrels | 75.7 | 0.00 | 3.25 | forward, +30 elev | T flak | picture | bridge barbette flak turret, superfiring over T1, rests at 30 degrees |
+| T1 | twin belly turret | 2 barrels | 35.0 | 0.00 | -2.62 | forward, +8 elev | T flak | picture | belly flak turret, covers below (R221: moved off the castle front, out of the rocket rack's backblast) |
+| T2 | twin turret | 2 barrels | 77.1 | 0.00 | 3.25 | forward, +30 elev | T flak | picture | bridge barbette flak turret, rests at 30 degrees, aft of the rocket rack's backblast |
 | PB | single casemate | 1 barrel | 15.9 | 3.27 | -0.30 | 20 deg off the bow to port | P scatter | picture | bow casemate in the recessed band, trained forward |
 | P1 | twin turret | 2 barrels | 26.2 | 2.72 | 2.00 | 15 deg off the bow to port | P scatter | picture | deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring) |
 | P2 | twin turret | 2 barrels | 39.6 | 2.72 | 2.75 | 20 deg off the bow to port | P scatter | picture | deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring) |
@@ -110,7 +106,7 @@ Ashfall Hullbreakers (corsair) | class Battle-barge | version 3 (round 3), 2026-
 | LCs | running light | 1 | 62.9 | -3.10 | 2.25 | - | - | picture |  |
 | B1 | ventral launch bay 3.4 x 3.2 | 1 | 58.9 | 0.00 | -2.60 | - | - | designed | data.js hangar 2: squadrons drop from the belly |
 
-Totals: 16 gun mounts with 30 barrels; 10 launcher tubes; 6 engines; 2 intakes; 2 dishes; 4 claws; 4 chains.
+Totals: 16 gun mounts with 30 barrels; 10 launcher tubes; 6 engines; 2 intakes; 2 dishes; 4 claws; 0 chains.
 No gun rests facing aft: every gun row above points forward or out to the side (yaw under 90 degrees).
 
 ## Colour zones (break stations from the side view; finish from the beauty)
@@ -135,7 +131,7 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Brow step | 7.8 to 12.2 | -2.60 to 2.55 | 1.30 to 1.82 | rust | the second brow step |
 | Chin | 5.5 to 9.0 | -2.65 to 2.60 | -2.30 to -1.35 | iron | under the tubes, carries the pincers |
 | Raised armoured deck (tier 2) | 23.5 to 60.3 | -3.45 to 3.30 | 1.20 to 2.00 | rust plate | a low step over the forward two thirds |
-| Rack plinth | 38.8 to 51.1 | -1.65 to 1.65 | 1.90 to 2.45 | soot | lifts the rack so it fires clear over the bow |
+| Rack plinth | 35.8 to 48.0 | -1.65 to 1.65 | 1.90 to 2.45 | soot | lifts the rack so it fires clear over the bow |
 | Castle (tier 3) | 58.7 to 80.1 | -3.10 to 3.00 | 1.30 to 2.60 | soot with a dried-blood band |  |
 | Bridge block | 67.5 to 78.0 | -1.85 to 1.85 | 2.50 to 3.00 | soot | command deck on the castle roof |
 | Stern deck | 79.8 to 89.3 | -2.00 to 2.00 | 1.20 to 1.70 | steel | carries the upper pod and the round hatch |
@@ -203,7 +199,7 @@ Full interiors throughout the hull (R215): decks, frames, spaces and machinery a
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0. Tested: 409 objects, 77 parts, 1124 close pairs, 796 rays, 16 guns, 8 turrets swept, 10 cones, 45 apertures. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 400 objects, 73 parts, 1037 close pairs, 753 rays, 16 guns, 8 turrets swept, 10 cones, 45 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -215,14 +211,15 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **A long, low slab to the concept's measured proportions, the bow tapering in plan, the flank in layered belts.** the Board on round 3: the hull was a straight-sided box, too tall; now length to beam about 3 and length to height about 4.5 like the round 8 sheet, tier 2 and the castle as low steps.
 - **The front tubes are the ship's face: big, side by side across the prow, jutting ahead of a tapered nose under a stepped brow.** Ryan R217: "the tubes at the front ... are just circles on the actual build".
 - **Rack raised on a plinth and pitched 12 degrees; no turret in front of it.** Ryan R217: "the guns are visibly blocking the rockets"; the fit check proves every cell fires clear over the bow.
-- **Flak superfires from the castle front (T1) and a bridge barbette (T2).** the round 2 bunker turret sat in the rack's line of fire; the picture puts its top turret on the castle.
+- **Flak on a bridge barbette (T2) and under the belly (T1).** the round 2 bunker turret sat in the rack's line of fire and the round 3 castle-front turret in its backblast (R221); the picture puts its top turret on the castle.
 - **Guns laid out as matched port and starboard batteries by game slot.** the picture has a row of guns on one deck edge and a cluster on the other flank; scatter P and S are mirrored: a bow casemate, three deck-edge twin turrets, a flank casemate amidships and two sponson casemates per side.
 - **Profile set from a true side reading: deep flat-bellied slab, raised tier 2, castle, bridge block.** one three-quarter camera cannot see height; the round 8 side view and the shape reference give a hull 4.9 deep, 6.5 to the castle roof.
 - **Roof turrets rest facing forward.** the picture draws its barrel aft; no gun faces aft.
 - **The mid-length starboard engine pod becomes an upper pod on the stern deck.** a pod at mid-length glowing forward would push the ship backward and burn its own deck.
 - **Two main engine pods, port larger, plus a centre main and lower boosters.** the picture shows the port pod only; a single side pod would turn the ship; the faction keeps mismatched bells.
 - **Attitude thrusters moved off the casemates and pods.** the fit check found the round 2 bow quads firing into the bow casemates and the stern quads into the pods.
-- **Chains are taut girdles and flank lashings of real links.** a slack chain cannot sag in space (R185); the girdles sit on the break lines.
+- **Chains cut.** Ryan, R221: "let's get rid of the chains randomly around the ship. There's no purpose"; every part has a job (ships.md 2c).
+- **Castle flak turret moved to the belly; the bridge turret set aft.** Ryan, R221: "a gun directly behind the rocket pods on a16 ... seems like it conflicts"; the fit check now tests each rack's firing lane and backblast.
 - **Curved pincers under the bow tip; short grabbers under the stern.** the concept's mandibles hang under the bow tip and its grabbers under the stern (the Board on round 3: round 3's read as legs under midships).
 - **Engine pods brought in close to the hull.** the concept's pods sit inside the ship's beam (top view); round 3's stood far out.
 - **Ventral launch bay and four attitude thruster quads added.** data.js gives the barge a hangar of 2; a ship in space needs thrusters to turn.
