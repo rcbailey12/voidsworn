@@ -25,9 +25,9 @@ BEAUTY = 'contrib/muse/design/concept_round8_2026_11/corsair_A16_beauty.jpg'
 HULL = [
     (11.75, 2.1, 2.15, -1.4, 0.9, 0.95, 0.85),
     (11.2, 2.6, 2.65, -1.95, 1.15, 1.0, 0.95),
-    (10.3, 3.0, 3.05, -2.3, 1.3, 0.85, 0.9),
-    (8.6, 3.5, 3.6, -2.55, 1.4, 0.9, 0.95),
-    (6.0, 3.75, 3.85, -2.6, 1.4, 0.9, 1.0),
+    (10.3, 2.75, 2.8, -2.3, 1.3, 0.85, 0.9),
+    (8.6, 3.25, 3.3, -2.55, 1.4, 0.9, 0.95),
+    (6.0, 3.65, 3.75, -2.6, 1.4, 0.9, 1.0),
     (0.0, 3.85, 3.95, -2.6, 1.4, 0.9, 1.0),
     (-4.0, 3.8, 3.9, -2.6, 1.4, 0.9, 1.0),
     (-6.4, 3.3, 3.35, -2.45, 1.4, 0.85, 0.9),
@@ -44,8 +44,9 @@ RECESS_Z = -0.3
 def build(K):
     import kit as _k
     sy = lambda x, side: _k.sec_at(HULL, x)[1 if side > 0 else 2] * side  # noqa: E731
-    K.mass('Hull slab (tier 1)', K.hull(HULL, 'soot', shell=0.35, plates=dict(PL, seed=16, inv=['bow_plates', 'belly_plates'])),
-           'soot black, patched plate', note='a slab about 4 deep, the bow tapering and rounded by heavy chamfers')
+    K.mass('Hull slab (tier 1)', K.hull(HULL, 'soot', shell=0.35, plates=dict(PL, seed=16, inv=['bow_plates', 'belly_plates']), rounded=True),
+           'soot black, patched plate', note='a rounded wedge in section (round flanks and belly, a flatter deck), the bow tapering to a broad rounded nose')
+    sf = lambda x, side, z: K.surf(x, side, z)  # noqa: E731
     # ---------------- the layered flank: upper belt, recessed band, lower belt (the concept's stepped belts) ----------------
     for nm, (zb, zt, out), x0, x1 in (('upper', BELT_UP, 10.0, -6.2), ('lower', BELT_LO, 9.2, -5.6)):
         secs = []
@@ -111,7 +112,7 @@ def build(K):
                'soot', note='flank sponson under the castle')
     for i, x in enumerate((8.3, 5.0, -1.2)):
         for side in (1, -1):
-            y = sy(x, side) + 0.08 * side
+            y = sf(x, side, -0.3) + 0.08 * side
             K.rib('RB%d%s' % (i, 'p' if side > 0 else 's'), [(x, y, -0.68), (x, y, 0.08)], w=0.2, inv='flank_ribs')
 
     # trophy plates on the belts, torn patches
@@ -126,8 +127,7 @@ def build(K):
         K.patch('PT%d' % i, (x, belt_y(x, side, 'up') + 0.02 * side, z), (0, side, 0), rp.uniform(0.6, 0.85), rp.uniform(0.4, 0.55), ang=rp.uniform(-0.3, 0.3),
                 lift=rp.uniform(0.08, 0.16), m=rp.choice(['iron', 'pale', 'rust']), inv='patches')
     for i, (x, side) in enumerate([(2.2, 1), (-1.9, 1), (2.0, -1), (-1.6, -1)]):
-        hy = abs(sy(x, side)) - 0.55
-        K.patch('PT%d' % (4 + i), (x, (hy + 0.1) * side, 1.12), (0, 0.7 * side, 0.7), rp.uniform(0.8, 1.0), 0.5, ang=0.2 * side, lift=0.13,
+        K.patch('PT%d' % (4 + i), (x, sf(x, side, 1.12) + 0.02 * side, 1.12), K.surf_n(x, side, 1.12), rp.uniform(0.8, 1.0), 0.5, ang=0.2 * side, lift=0.13,
                 m=rp.choice(['iron', 'rust']), inv='patches')
 
     # ---------------- bow fittings: dishes, the pincers under the tip, deck boxes ----------------
@@ -144,8 +144,8 @@ def build(K):
         K.claw(fid, (x, y, -2.85), [(x + 0.45, y, -3.3), (x + 0.6, y, -3.7)], w=0.5, fingers=3, src='picture', inv='grapples',
                housing=(x - 0.6, x + 0.45, y - 0.36, y + 0.36, -3.02, -2.15),
                note='short grabber under the stern (round 8 side sheet: grabbers under the stern; Ryan R196: hooks underneath)')
-    K.hatchbox('HB1', (7.95, 2.0, 1.4), 0.9, 0.9, 0.3, inv='bow_hatchboxes', note='framed deck box, port')
-    K.hatchbox('HB2', (7.95, -2.2, 1.4), 0.8, 0.8, 0.28, inv='bow_hatchboxes', note='framed deck box, starboard (smaller)')
+    K.hatchbox('HB1', (7.95, 1.8, K.deck_z(7.95, 2.25)), 0.9, 0.9, 0.3, inv='bow_hatchboxes', note='framed deck box, port')
+    K.hatchbox('HB2', (7.95, -1.9, K.deck_z(7.95, -2.3)), 0.8, 0.8, 0.28, inv='bow_hatchboxes', note='framed deck box, starboard (smaller)')
 
     # ---------------- chains: real links, taut ----------------
     K.chain('C1', [(7.3, 3.95, 0.95), (7.3, 3.0, 1.45), (7.3, -3.05, 1.45), (7.3, -4.05, 0.95)], inv='mid_chain', note='girdle over the tier 2 seam')
@@ -165,7 +165,7 @@ def build(K):
     K.gun('T2', (-6.65, 0.0, 3.25), 0, 30, barrels=2, cal=0.16, blen=1.85, size=1.45, slot='T', weapon='flak', inv='top_turret', variant=1,
           note='bridge barbette flak turret, superfiring over T1, rests at 30 degrees')
     for side, sl in ((1, 'P'), (-1, 'S')):
-        K.gun('%sB' % sl, (9.0, max(sy(8.6, side), sy(9.4, side), key=abs) + 0.02 * side, RECESS_Z), side * 20, 0, barrels=1, cal=0.18, blen=1.7, size=1.05,
+        K.gun('%sB' % sl, (9.0, max(sf(8.6, side, RECESS_Z), sf(9.4, side, RECESS_Z), key=abs) + 0.02 * side, RECESS_Z), side * 20, 0, barrels=1, cal=0.18, blen=1.7, size=1.05,
               normal=(0, side, 0), slot=sl, weapon='scatter', inv='bow_casemates', note='bow casemate in the recessed band, trained forward')
         K.box('A16_barbette_%s2' % sl, 2.05, 3.55, min(side * 1.95, side * 3.45), max(side * 1.95, side * 3.45), 1.9, 2.75, 'iron', ch=0.2,
               plates=dict(PL, seed=80 + side, faces=[0, 2, 3], size=(0.4, 0.8)))
@@ -194,7 +194,7 @@ def build(K):
         K.engine(fid, (-12.1, 1.55 * side, -1.85), 0.45, 1.6, bell=1.25, src='picture' if side > 0 else 'designed', inv='boosters', note='lower booster')
     K.engine('E5', (-11.3, -1.2, 2.18), 0.48, 1.9, bell=1.2, inv='upper_pod', note='upper starboard pod on the stern deck')
     K.box('A16_E5_saddle', -10.0, -8.6, -1.75, -0.65, 1.6, 1.9, 'iron', ch=0.08)
-    for i, (x, y, z, n) in enumerate([(9.3, 2.8, 0.98, (0, 0.7, 0.7)), (9.3, -2.85, 0.98, (0, -0.7, 0.7)),
+    for i, (x, y, z, n) in enumerate([(10.45, sf(10.45, 1, 0.45), 0.45, K.surf_n(10.45, 1, 0.45)), (10.45, sf(10.45, -1, 0.45), 0.45, K.surf_n(10.45, -1, 0.45)),
                                       (-7.35, 2.78, 2.0, (0, 1, 0)), (-7.35, -2.88, 2.0, (0, -1, 0))]):
         K.thruster('Q%d' % (i + 1), (x, y, z), n, inv='bow_thrusters' if x > 0 else 'stern_thrusters', note='bow' if x > 0 else 'stern')
     for side in (1, -1):
@@ -205,10 +205,10 @@ def build(K):
     # ---------------- the recessed band: vents and lamps; belly bay ----------------
     for side in (1, -1):
         for i, x in enumerate((6.35, 2.6, -1.95)):
-            K.vent('VF%d%s' % (i, 'p' if side > 0 else 's'), (x, max(sy(x - 0.55, side), sy(x + 0.55, side), key=abs) + 0.01 * side, RECESS_Z + 0.08),
+            K.vent('VF%d%s' % (i, 'p' if side > 0 else 's'), (x, max(sf(x - 0.55, side, RECESS_Z + 0.08), sf(x + 0.55, side, RECESS_Z + 0.08), key=abs) + 0.01 * side, RECESS_Z + 0.08),
                    (0, side, 0), 1.0, 0.45, slats=5, inv='flank_vents')
         for i, x in enumerate((7.6, 4.4, 1.6, -0.6, -3.1, -4.7)):
-            yl = (max(sy(x - 0.1, side), sy(x + 0.1, side), key=abs) + 0.02 * side) if x > -2.9 else side * 4.32
+            yl = (max(sf(x - 0.1, side, RECESS_Z), sf(x + 0.1, side, RECESS_Z), key=abs) + 0.02 * side) if x > -2.9 else side * 4.32
             K.lamp('L%d%s' % (i, 'p' if side > 0 else 's'), (x, yl, RECESS_Z - 0.02 if x > -2.9 else -0.36), (0, side, 0), inv='lamps')
         K.lamp('LC%s' % ('p' if side > 0 else 's'), (-3.3, cy(-3.3, side) + 0.01 * side, 2.25), (0, side, 0), inv='lamps')
     K.bay('B1', (-2.25, 0.0, -2.6), 3.2, 3.4, inv='bay', note='data.js hangar 2: squadrons drop from the belly')
@@ -227,7 +227,7 @@ def build(K):
     K.deck_box('gun', 1.6, -2.4, 6.6, 2.8)
     K.deck_box('castle', 1.95, -7.6, -2.6, 2.5)
     for i, x in enumerate((10.5, 8.0, 4.8, 0.8, -2.6, -6.4, -9.0)):
-        K.bulkhead('F%d' % i, x)
+        K.bulkhead('F%d' % i, x, inset=0.75)  # inside the rounded section
     K.room('tube_ducts', 'machinery', 9.95, 10.9, -1.8, 1.8, -1.0, 0.6, note='front tube ducts and sniffer gear')
     K.room('claw_machinery', 'machinery', 8.1, 10.0, -2.4, 2.4, -2.1, -1.45, note='pincer rams and winches')
     K.room('kennel_decks', 'crew', 4.9, 9.9, -2.8, 2.8, -1.25, 1.2, note='boarding gangs, two decks')
@@ -259,13 +259,14 @@ def build(K):
                                               (-0.8, 4.2, 0.6, 'mid', 'port'), (-7.5, 2.6, 0.7, 'eng', 'port'),
                                               (-8.6, -2.5, -1.2, 'eng', 'stbd')]):
         K.point('breach', 'hp_breach_%d' % i, (x, y, z), side=side, section=sec)
-    K.point('rcs', 'hp_rcs_0', (9.3, 2.8, 0.98), side='port')
-    K.point('rcs', 'hp_rcs_1', (9.3, -2.85, 0.98), side='stbd')
+    K.point('rcs', 'hp_rcs_0', (10.45, sf(10.45, 1, 0.45), 0.45), side='port')
+    K.point('rcs', 'hp_rcs_1', (10.45, sf(10.45, -1, 0.45), 0.45), side='stbd')
     K.point('board', 'hp_board_0', (2.0, 4.2, -0.3), side='port')
     K.point('board', 'hp_board_1', (2.0, -4.3, -0.3), side='stbd')
     K.point('bay', 'hp_bay_0', (-2.25, 0, -2.7), note='launch down')
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
+    K.change('A rounded wedge in section (round flanks and belly, a flatter deck), tapering in plan to a broad rounded nose', 'the Board on round 3b: the hull still read as a straight-sided box; Ryan: "the builds look like square blocks basically"')
     K.change('A long, low slab to the concept\'s measured proportions, the bow tapering in plan, the flank in layered belts', 'the Board on round 3: the hull was a straight-sided box, too tall; now length to beam about 3 and length to height about 4.5 like the round 8 sheet, tier 2 and the castle as low steps')
     K.change('The front tubes are the ship\'s face: big, side by side across the prow, jutting ahead of a tapered nose under a stepped brow', 'Ryan R217: "the tubes at the front ... are just circles on the actual build"')
     K.change('Rack raised on a plinth and pitched 12 degrees; no turret in front of it', 'Ryan R217: "the guns are visibly blocking the rockets"; the fit check proves every cell fires clear over the bow')

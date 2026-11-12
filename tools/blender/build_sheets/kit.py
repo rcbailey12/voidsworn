@@ -74,6 +74,20 @@ def _octa(hwp, hws, zb, zt, ct, cb, yo=0.0):
             (yo - hws, zb + cb), (yo - hws + cb, zb), (yo + hwp - cb, zb), (yo + hwp, zb + cb)]
 
 
+def _round_sec(hwp, hws, zb, zt, yo=0.0, n=20, p_top=6.0, p_bot=2.3):
+    """a rounded wedge section (round 3c): a superellipse, flatter on top (p_top) and round in the flanks and belly (p_bot)"""
+    zc = (zb + zt) / 2; hz = (zt - zb) / 2
+    pts = []
+    for i in range(n):
+        t = 2 * math.pi * i / n
+        c, s_ = math.cos(t), math.sin(t)
+        p = p_top if s_ >= 0 else p_bot
+        y = (hwp if c >= 0 else hws) * math.copysign(abs(c) ** (2.0 / p), c)
+        z = zc + hz * math.copysign(abs(s_) ** (2.0 / p), s_)
+        pts.append((yo + y, z))
+    return pts
+
+
 def sec_at(sections, x):
     """interpolate a loft section list at station x (sections sorted bow first, x descending)"""
     s = sorted(sections, key=lambda r: -r[0])
@@ -128,15 +142,17 @@ class Kit:
         bm = bmesh.new(); bm.from_mesh(ob.data); bmesh.ops.recalc_face_normals(bm, faces=bm.faces); bm.to_mesh(ob.data); bm.free()
         return ob
 
-    def loft(self, name, sections, m, inside=False, shell=0.0, ytilt=None, plates=None, grp=None):
-        """sections: (x, hw_port, hw_stbd, z_bottom, z_top, chamfer_top, chamfer_bottom[, y_offset]) bow first"""
+    def loft(self, name, sections, m, inside=False, shell=0.0, ytilt=None, plates=None, grp=None, rounded=False):
+        """sections: (x, hw_port, hw_stbd, z_bottom, z_top, chamfer_top, chamfer_bottom[, y_offset]) bow first.
+        rounded: a rounded wedge section instead of the octagon (round 3c), the chamfers ignored"""
         rings = []
         for s in sections:
             x, hwp, hws, zb, zt, ct, cb = s[:7]
             yo = s[7] if len(s) > 7 else 0.0
-            rings.append([(x, y, z) for (y, z) in _octa(hwp, hws, zb, zt, ct, cb, yo)])
+            ring = _round_sec(hwp, hws, zb, zt, yo) if rounded else _octa(hwp, hws, zb, zt, ct, cb, yo)
+            rings.append([(x, y, z) for (y, z) in ring])
         verts = [v for r in rings for v in r]
-        n = 8
+        n = len(rings[0])
         faces = []
         for i in range(len(rings) - 1):
             for j in range(n):
@@ -160,10 +176,10 @@ class Kit:
         lo, hi = spec.get('size', (0.9, 2.2)); tlo, thi = spec.get('thick', (0.05, 0.2))
         mats = spec.get('mats', {'soot': 6, 'rust': 2, 'steel': 1})
         names = list(mats); wts = [mats[k] for k in names]
-        faces_ok = spec.get('faces', list(range(8)))
+        n = len(rings[0])
+        faces_ok = spec.get('faces', list(range(n)))
         buckets = {k: ([], []) for k in names}
         RV, RF = [], []
-        n = 8
         cen = [Vector(map(lambda *c: sum(c) / n, *r)) for r in rings]
         kept = 0
         for i in range(len(rings) - 1):
@@ -265,9 +281,38 @@ class Kit:
         return self._obj(name, verts, faces, m, inside, smooth=True, grp=grp)
 
     # ---------- surface helpers ----------
-    def hull(self, sections, m='soot', shell=0.25, plates=None):
+    def hull(self, sections, m='soot', shell=0.25, plates=None, rounded=False):
         self.hull_sections = sections
-        return self.loft(self.code + '_hull', sections, m, shell=shell, plates=plates)
+        self.hull_rounded = rounded
+        return self.loft(self.code + '_hull', sections, m, shell=shell, plates=plates, rounded=rounded)
+
+    def surf(self, x, side, z):
+        """the hull's flank surface y at station x and height z (rounded or octagonal section), signed by side"""
+        s = sec_at(self.hull_sections, x)
+        hw = s[1] if side > 0 else s[2]
+        zb, zt = s[3], s[4]
+        if getattr(self, 'hull_rounded', False):
+            zc = (zb + zt) / 2; hz = (zt - zb) / 2
+            u = max(-1.0, min(1.0, (z - zc) / hz)); p = 6.0 if u >= 0 else 2.3
+            sn = abs(u) ** (p / 2.0); cs = max(0.0, 1 - sn * sn) ** 0.5
+            return side * hw * cs ** (2.0 / p)
+        return side * hw
+
+    def surf_n(self, x, side, z):
+        """outward normal of the hull flank at (x, z) on one side (from the section's curve)"""
+        y1, y2 = self.surf(x, side, z - 0.05), self.surf(x, side, z + 0.05)
+        n = Vector((0, side * 0.1, -side * (y2 - y1)))
+        return tuple(n.normalized())
+
+    def deck_z(self, x, y):
+        """the hull's top at station x and offset y (the rounded section's deck curve)"""
+        s = sec_at(self.hull_sections, x)
+        hw = s[1] if y >= 0 else s[2]; zb, zt = s[3], s[4]
+        if not getattr(self, 'hull_rounded', False):
+            return zt
+        zc = (zb + zt) / 2; hz = (zt - zb) / 2
+        f = min(1.0, abs(y) / hw)
+        return zc + hz * max(0.0, 1 - f ** 6.0) ** (1 / 6.0)
 
     def top_z(self, x, sections=None):
         s = sec_at(sections or self.hull_sections, x)
