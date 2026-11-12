@@ -1915,7 +1915,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		var hl: Array = []
 		for h in hits:
 			hl.append({"shield": h["shield"], "hull": h["hull"], "section": h.get("section", ""), "crit": h["crit"]})
-		var r: Dictionary = gfx.volley(str(a_id), str(e["kind"]), str(t_id), {"weapon_id": str(e.get("weapon_id", "")), "shots": shots, "hits": hl, "quad": int(e["quad"]), "pd": int(e.get("pd", 0))})
+		var r: Dictionary = gfx.volley(str(a_id), str(e["kind"]), str(t_id), {"weapon_id": str(e.get("weapon_id", "")), "slot": int(e["weapon"]) if e.get("weapon") != null else -1, "shots": shots, "hits": hl, "quad": int(e["quad"]), "pd": int(e.get("pd", 0))})
 		if fam in ["lance", "ion"]:
 			sfx.lance(fam == "ion", fac, from)
 		elif fam == "torp":

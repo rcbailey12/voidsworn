@@ -1,0 +1,309 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[attach] hp_core missing on ST_ring (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on ST_tower (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_w missing on ST_tower; using the surface ray
+[attach] hp_bay on ST_empty: no authored point and the surface ray missed; effect skipped
+[attach] hp_core on ST_empty: no authored point and the surface ray missed; effect skipped
+[attach] hp_board on ST_empty: no authored point and the surface ray missed; effect skipped
+[attach] hp_rcs on ST_empty: no authored point and the surface ray missed; effect skipped
+[attach] hp_breach on ST_empty: no authored point and the surface ray missed; effect skipped
+[attach] hp_w on ST_empty: no authored point and the surface ray missed; effect skipped
+[attach] battle empty ST_empty: skipped 8; bay hp 0 ray 0 centre 0 skip 1; core hp 0 ray 0 centre 0 skip 1; board hp 0 ray 0 centre 0 skip 1; rcs hp 0 ray 0 centre 0 skip 1; breach hp 0 ray 0 centre 0 skip 1; gun hp 0 ray 0 centre 0 skip 3
+[attach] hp_bay missing on ST_ring; using the surface ray
+[attach] hp_core missing on ST_slab_broken (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] the next refusal is expected: a muzzle moved 3 units off a copy of the stand-in slab
+[attach] hp_w missing on ST_slab_broken; using the surface ray
+[attach] hp_bay missing on ST_slab_broken; using the surface ray
+[attach] hp_board missing on ST_slab_broken; using the surface ray
+[attach] hp_breach missing on ST_slab_broken; using the surface ray
+[attach] hp_rcs missing on ST_slab_broken; using the surface ray
+ERROR: ATTACH FAIL: ST_slab_broken hp hp_w0_hbattery_T_0 (hp) is 3.000 from the hull (limit 0.388)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://fx/test/attach_check.gd:49)
+       [1] _close (res://fx/test/attach_check.gd:226)
+       [2] _walk (res://fx/test/attach_check.gd:206)
+       [3] _stand_ins (res://fx/test/attach_check.gd:366)
+       [4] _run (res://fx/test/attach_check.gd:80)
+ATTACH FAIL: ST_slab_broken hp hp_w0_hbattery_T_0 (hp) is 3.000 from the hull (limit 0.388)
+ERROR: ATTACH FAIL: ST_slab_broken gun (hp) is 3.000 from the hull (limit 0.388)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://fx/test/attach_check.gd:49)
+       [1] _close (res://fx/test/attach_check.gd:226)
+       [2] _walk (res://fx/test/attach_check.gd:206)
+       [3] _stand_ins (res://fx/test/attach_check.gd:366)
+       [4] _run (res://fx/test/attach_check.gd:80)
+ATTACH FAIL: ST_slab_broken gun (hp) is 3.000 from the hull (limit 0.388)
+[attach] ST_slab_broken: 114 points walked, worst 2.9000 past the limit 0.2880, 2 off the hull; authored { "gun": 1, "engine": 0, "bay": 0, "breach": 0, "core": 0, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 576, "ray": 192, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 0, "ray": 0, "centre": 1, "skip": 0 }, "breach": { "hp": 0, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle slab_broken ST_slab_broken: skipped 0; gun hp 576 ray 192 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 0 ray 0 centre 1 skip 0; breach hp 0 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on ST_slab; using the surface ray
+[attach] hp_bay missing on ST_slab; using the surface ray
+[attach] hp_board missing on ST_slab; using the surface ray
+[attach] hp_breach missing on ST_slab; using the surface ray
+[attach] hp_rcs missing on ST_slab; using the surface ray
+[attach] ST_slab: 116 points walked, worst 0.0000 past the limit 0.2880, 0 off the hull; authored { "gun": 3, "engine": 0, "bay": 0, "breach": 0, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 1438, "ray": 300, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 0, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] hp_w missing on ST_ring; using the surface ray
+[attach] hp_board missing on ST_ring; using the surface ray
+[attach] hp_breach missing on ST_ring; using the surface ray
+[attach] hp_rcs missing on ST_ring; using the surface ray
+[attach] ST_ring: 116 points walked, worst 0.0000 past the limit 0.2160, 0 off the hull; authored { "gun": 1, "engine": 0, "bay": 0, "breach": 2, "core": 0, "rcs": 0, "board": 0 }; skipped 0; { "bay": { "hp": 0, "ray": 49, "centre": 0, "skip": 0 }, "breach": { "hp": 3, "ray": 36, "centre": 0, "skip": 0 }, "gun": { "hp": 468, "ray": 300, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 0, "ray": 0, "centre": 1, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] hp_bay missing on ST_tower; using the surface ray
+[attach] hp_board missing on ST_tower; using the surface ray
+[attach] hp_breach missing on ST_tower; using the surface ray
+[attach] hp_rcs missing on ST_tower; using the surface ray
+[attach] ST_tower: 111 points walked, worst 0.0000 past the limit 0.1920, 0 off the hull; authored { "gun": 0, "engine": 0, "bay": 0, "breach": 0, "core": 0, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 0, "ray": 195, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 0, "ray": 0, "centre": 1, "skip": 0 }, "breach": { "hp": 0, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] hp_w missing on B16_23; using the surface ray
+[attach] hp_bay missing on B16_23; using the surface ray
+[attach] hp_board missing on B16_23; using the surface ray
+[attach] hp_breach missing on B16_23; using the surface ray
+[attach] hp_rcs missing on B16_23; using the surface ray
+[attach] B16_23: 141 points walked, worst 0.0157 past the limit 0.5376, 0 off the hull; authored { "gun": 4, "engine": 2, "bay": 0, "breach": 10, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 3540, "ray": 300, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 11, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_B16_23 B16_23: skipped 0; gun hp 3540 ray 300 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 11 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on B19_11; using the surface ray
+[attach] hp_bay missing on B19_11; using the surface ray
+[attach] hp_board missing on B19_11; using the surface ray
+[attach] hp_breach missing on B19_11; using the surface ray
+[attach] hp_rcs missing on B19_11; using the surface ray
+[attach] B19_11: 124 points walked, worst 0.0002 past the limit 0.1248, 0 off the hull; authored { "gun": 1, "engine": 2, "bay": 0, "breach": 4, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 576, "ray": 192, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 5, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_B19_11 B19_11: skipped 0; gun hp 576 ray 192 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 5 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on B20_11; using the surface ray
+[attach] hp_bay missing on B20_11; using the surface ray
+[attach] hp_board missing on B20_11; using the surface ray
+[attach] hp_breach missing on B20_11; using the surface ray
+[attach] hp_rcs missing on B20_11; using the surface ray
+[attach] B20_11: 131 points walked, worst 0.0008 past the limit 0.1824, 0 off the hull; authored { "gun": 2, "engine": 2, "bay": 0, "breach": 6, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 960, "ray": 192, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 8, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_B20_11 B20_11: skipped 0; gun hp 960 ray 192 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 8 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on B21_11; using the surface ray
+[attach] hp_bay missing on B21_11; using the surface ray
+[attach] hp_board missing on B21_11; using the surface ray
+[attach] hp_breach missing on B21_11; using the surface ray
+[attach] hp_rcs missing on B21_11; using the surface ray
+[attach] B21_11: 129 points walked, worst 0.0010 past the limit 0.2784, 0 off the hull; authored { "gun": 2, "engine": 2, "bay": 0, "breach": 6, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 1428, "ray": 300, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 7, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_B21_11 B21_11: skipped 0; gun hp 1428 ray 300 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 7 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on B22_11; using the surface ray
+[attach] hp_board missing on B22_11; using the surface ray
+[attach] hp_breach missing on B22_11; using the surface ray
+[attach] hp_rcs missing on B22_11; using the surface ray
+[attach] B22_11: 122 points walked, worst 0.0384 past the limit 0.3168, 0 off the hull; authored { "gun": 2, "engine": 2, "bay": 2, "breach": 8, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 1428, "ray": 300, "centre": 0, "skip": 0 }, "bay": { "hp": 48, "ray": 0, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 10, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_B22_11 B22_11: skipped 0; gun hp 1428 ray 300 centre 0 skip 0; bay hp 48 ray 0 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 10 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on B23_51; using the surface ray
+[attach] hp_bay missing on B23_51; using the surface ray
+[attach] hp_board missing on B23_51; using the surface ray
+[attach] hp_breach missing on B23_51; using the surface ray
+[attach] hp_rcs missing on B23_51; using the surface ray
+[attach] B23_51: 114 points walked, worst 0.0000 past the limit 0.2784, 0 off the hull; authored { "gun": 1, "engine": 0, "bay": 0, "breach": 0, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 576, "ray": 192, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 0, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_B23_51 B23_51: skipped 0; gun hp 576 ray 192 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 0 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on C13s_23; using the surface ray
+[attach] hp_bay missing on C13s_23; using the surface ray
+[attach] hp_board missing on C13s_23; using the surface ray
+[attach] hp_breach missing on C13s_23; using the surface ray
+[attach] hp_rcs missing on C13s_23; using the surface ray
+[attach] C13s_23: 125 points walked, worst 0.0003 past the limit 0.1248, 0 off the hull; authored { "gun": 1, "engine": 3, "bay": 0, "breach": 4, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 576, "ray": 192, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 5, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_C13s_23 C13s_23: skipped 0; gun hp 576 ray 192 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 5 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on C14s_23; using the surface ray
+[attach] hp_bay missing on C14s_23; using the surface ray
+[attach] hp_board missing on C14s_23; using the surface ray
+[attach] hp_breach missing on C14s_23; using the surface ray
+[attach] hp_rcs missing on C14s_23; using the surface ray
+[attach] C14s_23: 129 points walked, worst 0.0104 past the limit 0.1824, 0 off the hull; authored { "gun": 2, "engine": 3, "bay": 0, "breach": 6, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 1368, "ray": 360, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 6, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_C14s_23 C14s_23: skipped 0; gun hp 1368 ray 360 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 6 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on C15s_23; using the surface ray
+[attach] hp_bay missing on C15s_23; using the surface ray
+[attach] hp_board missing on C15s_23; using the surface ray
+[attach] hp_breach missing on C15s_23; using the surface ray
+[attach] hp_rcs missing on C15s_23; using the surface ray
+[attach] C15s_23: 161 points walked, worst 0.0004 past the limit 0.2784, 0 off the hull; authored { "gun": 18, "engine": 3, "bay": 0, "breach": 6, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 3504, "ray": 336, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 6, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_C15s_23 C15s_23: skipped 0; gun hp 3504 ray 336 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 6 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on C16s_23; using the surface ray
+[attach] hp_board missing on C16s_23; using the surface ray
+[attach] hp_breach missing on C16s_23; using the surface ray
+[attach] hp_rcs missing on C16s_23; using the surface ray
+[attach] C16s_23: 122 points walked, worst 0.0361 past the limit 0.3168, 0 off the hull; authored { "gun": 2, "engine": 3, "bay": 2, "breach": 8, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 960, "ray": 192, "centre": 0, "skip": 0 }, "bay": { "hp": 48, "ray": 0, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 10, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_C16s_23 C16s_23: skipped 0; gun hp 960 ray 192 centre 0 skip 0; bay hp 48 ray 0 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 10 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on C19_51; using the surface ray
+[attach] hp_bay missing on C19_51; using the surface ray
+[attach] hp_board missing on C19_51; using the surface ray
+[attach] hp_breach missing on C19_51; using the surface ray
+[attach] hp_rcs missing on C19_51; using the surface ray
+[attach] C19_51: 151 points walked, worst 0.0467 past the limit 0.4992, 0 off the hull; authored { "gun": 7, "engine": 6, "bay": 0, "breach": 8, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 3540, "ray": 300, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 10, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_C19_51 C19_51: skipped 0; gun hp 3540 ray 300 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 10 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on D20_23; using the surface ray
+[attach] hp_bay missing on D20_23; using the surface ray
+[attach] hp_board missing on D20_23; using the surface ray
+[attach] hp_breach missing on D20_23; using the surface ray
+[attach] hp_rcs missing on D20_23; using the surface ray
+[attach] D20_23: 132 points walked, worst 0.0005 past the limit 0.1824, 0 off the hull; authored { "gun": 2, "engine": 4, "bay": 0, "breach": 6, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 960, "ray": 192, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 6, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_D20_23 D20_23: skipped 0; gun hp 960 ray 192 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 6 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on D21_23; using the surface ray
+[attach] hp_bay missing on D21_23; using the surface ray
+[attach] hp_board missing on D21_23; using the surface ray
+[attach] hp_breach missing on D21_23; using the surface ray
+[attach] hp_rcs missing on D21_23; using the surface ray
+[attach] D21_23: 133 points walked, worst 0.0008 past the limit 0.2784, 0 off the hull; authored { "gun": 4, "engine": 2, "bay": 0, "breach": 6, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 3540, "ray": 300, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 6, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_D21_23 D21_23: skipped 0; gun hp 3540 ray 300 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 6 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on D22_23; using the surface ray
+[attach] hp_bay missing on D22_23; using the surface ray
+[attach] hp_board missing on D22_23; using the surface ray
+[attach] hp_breach missing on D22_23; using the surface ray
+[attach] hp_rcs missing on D22_23; using the surface ray
+[attach] D22_23: 142 points walked, worst 0.0040 past the limit 0.5376, 0 off the hull; authored { "gun": 4, "engine": 2, "bay": 0, "breach": 10, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 3540, "ray": 300, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 11, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_D22_23 D22_23: skipped 0; gun hp 3540 ray 300 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 11 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on D9_23; using the surface ray
+[attach] hp_bay missing on D9_23; using the surface ray
+[attach] hp_board missing on D9_23; using the surface ray
+[attach] hp_breach missing on D9_23; using the surface ray
+[attach] hp_rcs missing on D9_23; using the surface ray
+[attach] D9_23: 122 points walked, worst 0.0004 past the limit 0.1248, 0 off the hull; authored { "gun": 1, "engine": 1, "bay": 0, "breach": 4, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 576, "ray": 192, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 4, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_D9_23 D9_23: skipped 0; gun hp 576 ray 192 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 4 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on H10_23; using the surface ray
+[attach] hp_bay missing on H10_23; using the surface ray
+[attach] hp_board missing on H10_23; using the surface ray
+[attach] hp_breach missing on H10_23; using the surface ray
+[attach] hp_rcs missing on H10_23; using the surface ray
+[attach] H10_23: 145 points walked, worst 0.0139 past the limit 0.4032, 0 off the hull; authored { "gun": 7, "engine": 3, "bay": 0, "breach": 8, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 3540, "ray": 300, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 8, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_H10_23 H10_23: skipped 0; gun hp 3540 ray 300 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 8 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on H4_11; using the surface ray
+[attach] hp_bay missing on H4_11; using the surface ray
+[attach] hp_board missing on H4_11; using the surface ray
+[attach] hp_breach missing on H4_11; using the surface ray
+[attach] hp_rcs missing on H4_11; using the surface ray
+[attach] H4_11: 151 points walked, worst 0.0199 past the limit 0.5952, 0 off the hull; authored { "gun": 9, "engine": 3, "bay": 0, "breach": 10, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 5460, "ray": 300, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 8, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_H4_11 H4_11: skipped 0; gun hp 5460 ray 300 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 8 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on H7_23; using the surface ray
+[attach] hp_bay missing on H7_23; using the surface ray
+[attach] hp_board missing on H7_23; using the surface ray
+[attach] hp_breach missing on H7_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] H7_23: 129 points walked, worst 0.0004 past the limit 0.1248, 0 off the hull; authored { "gun": 3, "engine": 2, "bay": 0, "breach": 4, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 1428, "ray": 300, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 5, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_H7_23 H7_23: skipped 0; gun hp 1428 ray 300 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 5 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on H8_23; using the surface ray
+[attach] hp_bay missing on H8_23; using the surface ray
+[attach] hp_board missing on H8_23; using the surface ray
+[attach] hp_breach missing on H8_23; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] H8_23: 130 points walked, worst 0.0005 past the limit 0.1824, 0 off the hull; authored { "gun": 2, "engine": 2, "bay": 0, "breach": 6, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 1428, "ray": 300, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 7, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_H8_23 H8_23: skipped 0; gun hp 1428 ray 300 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 7 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on H9_23; using the surface ray
+[attach] hp_bay missing on H9_23; using the surface ray
+[attach] hp_board missing on H9_23; using the surface ray
+[attach] hp_breach missing on H9_23; using the surface ray
+[attach] hp_rcs missing on H9_23; using the surface ray
+[attach] H9_23: 133 points walked, worst 0.0010 past the limit 0.2784, 0 off the hull; authored { "gun": 3, "engine": 2, "bay": 0, "breach": 6, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 2004, "ray": 300, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 6, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_H9_23 H9_23: skipped 0; gun hp 2004 ray 300 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 6 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on I11_37; using the surface ray
+[attach] hp_bay missing on I11_37; using the surface ray
+[attach] hp_board missing on I11_37; using the surface ray
+[attach] hp_breach missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] I11_37: 124 points walked, worst 0.0067 past the limit 0.1824, 0 off the hull; authored { "gun": 2, "engine": 1, "bay": 0, "breach": 6, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 1320, "ray": 408, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 6, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_I11_37 I11_37: skipped 0; gun hp 1320 ray 408 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 6 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on I14_23; using the surface ray
+[attach] hp_bay missing on I14_23; using the surface ray
+[attach] hp_board missing on I14_23; using the surface ray
+[attach] hp_breach missing on I14_23; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+[attach] I14_23: 122 points walked, worst 0.0004 past the limit 0.1248, 0 off the hull; authored { "gun": 1, "engine": 2, "bay": 0, "breach": 3, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 468, "ray": 300, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 3, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_I14_23 I14_23: skipped 0; gun hp 468 ray 300 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 3 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on I15_11; using the surface ray
+[attach] hp_bay missing on I15_11; using the surface ray
+[attach] hp_board missing on I15_11; using the surface ray
+[attach] hp_breach missing on I15_11; using the surface ray
+[attach] hp_rcs missing on I15_11; using the surface ray
+[attach] I15_11: 130 points walked, worst 0.0163 past the limit 0.2784, 0 off the hull; authored { "gun": 3, "engine": 1, "bay": 0, "breach": 6, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 2004, "ray": 300, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 8, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_I15_11 I15_11: skipped 0; gun hp 2004 ray 300 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 8 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on I16_11; using the surface ray
+[attach] hp_board missing on I16_11; using the surface ray
+[attach] hp_breach missing on I16_11; using the surface ray
+[attach] hp_rcs missing on I16_11; using the surface ray
+[attach] I16_11: 119 points walked, worst 0.0387 past the limit 0.3168, 0 off the hull; authored { "gun": 2, "engine": 1, "bay": 2, "breach": 8, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 1428, "ray": 300, "centre": 0, "skip": 0 }, "bay": { "hp": 48, "ray": 0, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 9, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_I16_11 I16_11: skipped 0; gun hp 1428 ray 300 centre 0 skip 0; bay hp 48 ray 0 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 9 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on I8_37; using the surface ray
+[attach] hp_bay missing on I8_37; using the surface ray
+[attach] hp_board missing on I8_37; using the surface ray
+[attach] hp_breach missing on I8_37; using the surface ray
+[attach] hp_rcs missing on I8_37; using the surface ray
+[attach] I8_37: 144 points walked, worst 0.0389 past the limit 0.4992, 0 off the hull; authored { "gun": 5, "engine": 1, "bay": 0, "breach": 10, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 4416, "ray": 192, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 11, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_I8_37 I8_37: skipped 0; gun hp 4416 ray 192 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 11 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on O1_37; using the surface ray
+[attach] hp_bay missing on O1_37; using the surface ray
+[attach] hp_board missing on O1_37; using the surface ray
+[attach] hp_breach missing on O1_37; using the surface ray
+[attach] hp_rcs missing on O1_37; using the surface ray
+[attach] O1_37: 131 points walked, worst 0.0008 past the limit 0.2784, 0 off the hull; authored { "gun": 0, "engine": 0, "bay": 0, "breach": 10, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 0, "ray": 192, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 10, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_O1_37 O1_37: skipped 0; gun hp 0 ray 192 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 10 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on O2_37; using the surface ray
+[attach] hp_bay missing on O2_37; using the surface ray
+[attach] hp_board missing on O2_37; using the surface ray
+[attach] hp_breach missing on O2_37; using the surface ray
+[attach] hp_rcs missing on O2_37; using the surface ray
+[attach] O2_37: 126 points walked, worst 0.0009 past the limit 0.2784, 0 off the hull; authored { "gun": 0, "engine": 2, "bay": 0, "breach": 6, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 0, "ray": 192, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 6, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_O2_37 O2_37: skipped 0; gun hp 0 ray 192 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 6 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on O3_11; using the surface ray
+[attach] hp_bay missing on O3_11; using the surface ray
+[attach] hp_board missing on O3_11; using the surface ray
+[attach] hp_breach missing on O3_11; using the surface ray
+[attach] hp_rcs missing on O3_11; using the surface ray
+[attach] O3_11: 121 points walked, worst 0.0016 past the limit 0.2784, 0 off the hull; authored { "gun": 0, "engine": 0, "bay": 0, "breach": 4, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 0, "ray": 192, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 4, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_O3_11 O3_11: skipped 0; gun hp 0 ray 192 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 4 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on S1_51; using the surface ray
+[attach] hp_bay missing on S1_51; using the surface ray
+[attach] hp_board missing on S1_51; using the surface ray
+[attach] hp_breach missing on S1_51; using the surface ray
+[attach] hp_rcs missing on S1_51; using the surface ray
+[attach] S1_51: 113 points walked, worst 0.0000 past the limit 0.2784, 0 off the hull; authored { "gun": 1, "engine": 1, "bay": 0, "breach": 0, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 576, "ray": 192, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 0, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_S1_51 S1_51: skipped 0; gun hp 576 ray 192 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 0 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on S2_23; using the surface ray
+[attach] hp_bay missing on S2_23; using the surface ray
+[attach] hp_board missing on S2_23; using the surface ray
+[attach] hp_breach missing on S2_23; using the surface ray
+[attach] hp_rcs missing on S2_23; using the surface ray
+[attach] S2_23: 115 points walked, worst 0.0000 past the limit 0.2784, 0 off the hull; authored { "gun": 1, "engine": 4, "bay": 0, "breach": 0, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 576, "ray": 192, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 0, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_S2_23 S2_23: skipped 0; gun hp 576 ray 192 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 0 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on V14_23; using the surface ray
+[attach] hp_bay missing on V14_23; using the surface ray
+[attach] hp_board missing on V14_23; using the surface ray
+[attach] hp_breach missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] V14_23: 128 points walked, worst 0.0004 past the limit 0.1248, 0 off the hull; authored { "gun": 3, "engine": 2, "bay": 0, "breach": 4, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 1428, "ray": 300, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 5, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_V14_23 V14_23: skipped 0; gun hp 1428 ray 300 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 5 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on V15_37; using the surface ray
+[attach] hp_bay missing on V15_37; using the surface ray
+[attach] hp_board missing on V15_37; using the surface ray
+[attach] hp_breach missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] V15_37: 128 points walked, worst 0.0168 past the limit 0.1824, 0 off the hull; authored { "gun": 2, "engine": 2, "bay": 0, "breach": 6, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 1428, "ray": 300, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 6, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_V15_37 V15_37: skipped 0; gun hp 1428 ray 300 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 6 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on V16_37; using the surface ray
+[attach] hp_bay missing on V16_37; using the surface ray
+[attach] hp_board missing on V16_37; using the surface ray
+[attach] hp_breach missing on V16_37; using the surface ray
+[attach] hp_rcs missing on V16_37; using the surface ray
+[attach] V16_37: 133 points walked, worst 0.0039 past the limit 0.2784, 0 off the hull; authored { "gun": 5, "engine": 2, "bay": 0, "breach": 6, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 2004, "ray": 300, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 6, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_V16_37 V16_37: skipped 0; gun hp 2004 ray 300 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 6 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on V17_37; using the surface ray
+[attach] hp_bay missing on V17_37; using the surface ray
+[attach] hp_board missing on V17_37; using the surface ray
+[attach] hp_breach missing on V17_37; using the surface ray
+[attach] hp_rcs missing on V17_37; using the surface ray
+[attach] V17_37: 146 points walked, worst 0.0138 past the limit 0.4032, 0 off the hull; authored { "gun": 7, "engine": 3, "bay": 0, "breach": 8, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 3540, "ray": 300, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 10, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_V17_37 V17_37: skipped 0; gun hp 3540 ray 300 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 10 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on V18_51; using the surface ray
+[attach] hp_board missing on V18_51; using the surface ray
+[attach] hp_breach missing on V18_51; using the surface ray
+[attach] hp_rcs missing on V18_51; using the surface ray
+[attach] V18_51: 129 points walked, worst 0.0367 past the limit 0.3168, 0 off the hull; authored { "gun": 3, "engine": 4, "bay": 2, "breach": 8, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 1536, "ray": 192, "centre": 0, "skip": 0 }, "bay": { "hp": 48, "ray": 0, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 10, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_V18_51 V18_51: skipped 0; gun hp 1536 ray 192 centre 0 skip 0; bay hp 48 ray 0 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 10 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] hp_w missing on V1b_r_23; using the surface ray
+[attach] hp_bay missing on V1b_r_23; using the surface ray
+[attach] hp_board missing on V1b_r_23; using the surface ray
+[attach] hp_breach missing on V1b_r_23; using the surface ray
+[attach] hp_rcs missing on V1b_r_23; using the surface ray
+[attach] V1b_r_23: 150 points walked, worst 0.0193 past the limit 0.5184, 0 off the hull; authored { "gun": 8, "engine": 3, "bay": 0, "breach": 10, "core": 1, "rcs": 0, "board": 0 }; skipped 0; { "gun": { "hp": 3648, "ray": 192, "centre": 0, "skip": 0 }, "bay": { "hp": 0, "ray": 48, "centre": 0, "skip": 0 }, "board": { "hp": 0, "ray": 16, "centre": 0, "skip": 0 }, "core": { "hp": 1, "ray": 0, "centre": 0, "skip": 0 }, "breach": { "hp": 11, "ray": 36, "centre": 0, "skip": 0 }, "rcs": { "hp": 0, "ray": 24, "centre": 0, "skip": 0 } }
+[attach] battle real_V1b_r_23 V1b_r_23: skipped 0; gun hp 3648 ray 192 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 11 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] real hulls walked: 36
+ATTACH_CHECK PASS: 39 hulls, 0 failures, 0 effects skipped by the walk
+[attach] battle slab ST_slab: skipped 0; gun hp 1438 ray 300 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 1 ray 0 centre 0 skip 0; breach hp 0 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] battle ring ST_ring: skipped 0; bay hp 0 ray 49 centre 0 skip 0; breach hp 3 ray 36 centre 0 skip 0; gun hp 468 ray 300 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 0 ray 0 centre 1 skip 0; rcs hp 0 ray 24 centre 0 skip 0
+[attach] battle tower ST_tower: skipped 0; gun hp 0 ray 195 centre 0 skip 0; bay hp 0 ray 48 centre 0 skip 0; board hp 0 ray 16 centre 0 skip 0; core hp 0 ray 0 centre 1 skip 0; breach hp 0 ray 36 centre 0 skip 0; rcs hp 0 ray 24 centre 0 skip 0

@@ -359,7 +359,8 @@ R193); replaces the Board's R123 "the camera is never taken for a capital death"
 
 6.7 **Effects start on the ship** (a hard point, a breach anchor or the hit surface), never at a box corner or in empty space.
 Why: "random thrusters or smoke popped up away from the ship itself? it looks all wrong" (R150). Set: Ryan (R150); method
-Board (R153). Ids: R150b, R153, effects-05.
+Board (R153). Built: the attach point service in godot/fx/fx_hull.gd (authored point, else surface ray, else skipped and
+counted), checked by godot/fx/test/attach_check.gd (issue 370). Ids: R150b, R153, effects-05.
 
 6.8 **Hits are weighty and readable at the battle camera**: mass-scaled shudder and kicks corrected by thrusters, damage on the
 hull itself with per-weapon marks, wounds that cool to scars, thrown matter big enough to read at camera 170; light on

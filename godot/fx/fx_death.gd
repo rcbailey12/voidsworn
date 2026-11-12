@@ -1540,7 +1540,7 @@ static func _death_inner(fx, s, cause: String) -> float:
 		precompute(fx, s, cause)
 	var job: Dictionary = s.get_meta("cut_job", {})
 	var seeds: PackedVector3Array = job.get("seeds", PackedVector3Array())
-	var at: Vector3 = (seeds[0] + seeds[1]) * 0.5 if seeds.size() >= 2 else s.hull.c
+	var at: Vector3 = (seeds[0] + seeds[1]) * 0.5 if seeds.size() >= 2 else s.hull.core   # issue 370: the core, never the box centre
 	var axis: Vector3 = (seeds[1] - seeds[0]).normalized() if seeds.size() >= 2 else Vector3.RIGHT
 	var lines := _break_lines(job)
 	if not lines.is_empty():
@@ -1723,7 +1723,7 @@ static func _grow_dir(fx, s, axis: Vector3) -> Vector3:
 # is the game's own cut plane (the bisector of the prepared pieces, issue 167's fallback).
 static func _tell(fx, s, T: float, tl: DeathTimeline, cause: String, seeds: PackedVector3Array, lines: Array = []) -> void:
 	var h = s.hull
-	var at: Vector3 = (seeds[0] + seeds[1]) * 0.5 if seeds.size() >= 2 else h.c
+	var at: Vector3 = (seeds[0] + seeds[1]) * 0.5 if seeds.size() >= 2 else h.core   # opus_check_570 condition 1: the core, never the box centre
 	var axis: Vector3 = (seeds[1] - seeds[0]).normalized() if seeds.size() >= 2 else Vector3.RIGHT
 	if not lines.is_empty():
 		# issue 484: the tear runs on the fracture plan's tilted breaks (the bite's break first)
@@ -2102,7 +2102,7 @@ static func _hulk(fx, s) -> void:
 	var wreck := {"id": s.id, "t0": fx.now, "nodes": [node], "mats": [], "lights": [],
 		"fires": [{"node": node, "vel": drift, "ang": Vector3(0.01, 0.035, 0.015)}], "speed": 1.0, "hulk": true}
 	var hit: Dictionary = s.hull.ray(s.hull.c + Vector3.UP * maxf(s.hull.L, 1.0), Vector3.DOWN)
-	var p: Vector3 = hit.get("p", s.hull.c + Vector3.UP * s.hull.H * 0.5)
+	var p: Vector3 = hit.get("p", s.hull.core)   # issue 370: a missed ray falls back to the core, never a box point
 	var n: Vector3 = hit.get("n", Vector3.UP)
 	var b := POOLS.Batch.new()
 	var size: float = maxf(s.hull.L * 0.025, 0.06)

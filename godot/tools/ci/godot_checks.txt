@@ -41,6 +41,7 @@ headless|music/test/music_check.gd|-|-|music player and tracks walk title, map, 
 headless|audio/test/audio_check.gd|-|-|sound data, real player starts, variants and the separate mutes
 headless|audio/test/salvo_check.gd|-|-|salvo sounds: counts real player starts and keeps the caps
 headless|audio/test/smoke_lifetime_check.gd|-|-|sound and debris lifetimes leave no freed node behind; no ship files needed
+headless|fx/test/attach_check.gd|-|-|issue 370: every attach point (authored, surface ray) lies on the hull within 0.012 of its length; stand-in slab, ring and tower here, every ship file present on the PC; skips counted
 headless|fx/test/damage_surface_check.gd|-|-|R80 damage contracts on box ships: stages, emitters and their caps, marks
 headless|fx/test/death_leap_check.gd|-|-|death sections, tiers, lifetime, cleanup and drift (issue 137)
 headless|fx/test/death_plane_check.gd|-|-|ShipView and effects together as battle.gd marks a ship dead; box ships

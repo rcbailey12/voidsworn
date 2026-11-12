@@ -162,15 +162,25 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 	# Issue 461: a hit is sized by the gun that fired it as well as by the ship it lands on
 	var gk: float = float(GUN_K.get(DEATH.atlas_band(float(A.hull.L)), 1.0)) if A != null else 1.0
 	var tk: float = float(TARGET_K.get(DEATH.atlas_band(float(Tg.hull.L)), 1.0)) if Tg != null else 1.0
-	# mounts: the guns that can bear (never backward)
+	# mounts: the guns that can bear (never backward), from the attach point service (issue 370): the slot's authored
+	# muzzles, else the plating the station rays found, else none (the volley's effects are skipped and counted)
 	var mounts: Array = []
 	if A != null:
 		var tl: Vector3 = A.xf().affine_inverse() * to_c
-		for m in A.hull.mounts_for(tl, maxi(shots.size(), 1)):
-			mounts.append({"p": A.to_world((m["p"] as Vector3) + (m["n"] as Vector3) * 0.15 * ka_geo), "n": A.dir_world(m["n"])})
-		if lk in ["lance", "ion", "pulsar", "doom", "torp", "star", "gauss"] and (A.xf().affine_inverse() * to_c - A.hull.c).normalized().x > 0.5:
-			for i in mounts.size():
-				mounts[i] = {"p": A.to_world(A.hull.bow + Vector3(0.3 * ka_geo, 0, 0)), "n": A.dir_world(Vector3(1, 0, 0))}
+		var heavy: bool = lk in ["lance", "ion", "pulsar", "doom", "torp", "star", "gauss"]
+		for m in A.hull.guns(int(opts.get("slot", -1)), wid, tl, maxi(shots.size(), 1), heavy):
+			if m.is_empty():
+				continue
+			var mp: Vector3 = m["p"]
+			if m["src"] == "ray":
+				mp += (m["n"] as Vector3) * 0.15 * ka_geo   # a station ray's hit: the flash sits just off the plate
+			elif m["src"] == "bow":
+				mp += Vector3(0.3 * ka_geo, 0, 0)           # the bow tube's mouth, just ahead of the plating
+			mounts.append({"p": A.to_world(mp), "n": A.dir_world(m["n"])})
+		if mounts.is_empty():
+			# no muzzle on this hull for this weapon and no plating that bears: nothing to draw (logged and counted by
+			# the hull); the battle keeps its own timing for the hits (battle.gd: 0.3 s with no impact times)
+			return {"impacts": [], "fires": [], "done": 0.0, "skipped": shots.size()}
 	else:
 		for i in maxi(shots.size(), 1):
 			mounts.append({"p": from_c, "n": (to_c - from_c).normalized()})
@@ -1456,8 +1466,15 @@ static func launch(fx, cid: String, sid: String) -> void:
 		return
 	var S = fx.ship(sid)
 	var T: float = fx.now
-	var from: Vector3 = C.to_world(C.hull.c + Vector3(0, C.hull.H * 0.3, 0))
-	var to: Vector3 = S.to_world(S.hull.c) if S != null else from + C.dir_world(Vector3(1, 0, 0)) * 20.0
+	# issue 370: craft leave from a hangar mouth (hp_bay), else from the plating facing up and toward the wing, and fly
+	# to the wing's core; a hull with neither has nothing to launch from on screen (logged and counted)
+	var toward: Vector3 = C.xf().affine_inverse() * (S.to_world(S.hull.core) if S != null else C.to_world(C.hull.core + Vector3(20, 0, 0)))
+	var bay: Dictionary = C.hull.bay(int(C.get_meta("launches", 0)), toward)
+	C.set_meta("launches", int(C.get_meta("launches", 0)) + 1)
+	if bay.is_empty():
+		return
+	var from: Vector3 = C.to_world(bay["p"])
+	var to: Vector3 = S.to_world(S.hull.core) if S != null else from + C.dir_world(Vector3(1, 0, 0)) * 20.0
 	var eng: Color = C.fac["engine"]
 	var k: float = C.scale_k()
 	fx.spr(from, T, 0.8, eng, 1.5, 1.0 * k, 2.5 * k, 18)
@@ -1514,7 +1531,11 @@ static func torp_lane(fx, lane_id: String, aid: String, to: Vector3, turns: int)
 	if A == null:
 		return
 	var fac: Dictionary = A.fac
-	var from: Vector3 = A.to_world(A.hull.bow)
+	# issue 370: the torpedo's own tube (an authored torpedo muzzle), else the bow plating; the lane starts there
+	var tube: Array = A.hull.guns(-1, "startorp" if A.faction == "ithar" else "torp", A.xf().affine_inverse() * to, 1, true)
+	if tube.is_empty() or (tube[0] as Dictionary).is_empty():
+		return
+	var from: Vector3 = A.to_world(tube[0]["p"])
 	var y = minf(from.y, to.y) - 0.5
 	var a = Vector3(from.x, y, from.z)
 	var b = Vector3(to.x, y, to.z)

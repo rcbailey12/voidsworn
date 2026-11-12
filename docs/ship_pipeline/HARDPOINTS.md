@@ -182,6 +182,8 @@ invent different ones.
 
 ## What this contract does not do
 
-It does not move the effects onto the points yet. The attach point service in `godot/fx` is its own job (audit finding 6,
-pass 3); until it lands the game still fires from its guessed side mounts and its box corners. It also does not rebuild the
-old A4 hulls: they keep their existing points and the fallback above.
+The game side is the attach point service at the end of `godot/fx/fx_hull.gd` (issue 370): every effect that starts on the
+ship reads these points first, then a surface ray, then skips and counts (godot/fx/API.md section 2;
+`godot/fx/test/attach_check.gd` holds every point to the export check's own 0.012 of the ship's length). This contract does not
+rebuild the old A4 hulls: they keep their existing points and the fallback above. Neither the A4 hulls nor the round 7 export
+carry `hp_rcs` or `hp_board` yet; the export writes them, so a re-export adds them.

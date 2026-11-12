@@ -1,0 +1,256 @@
+# issue 370: [attach] lines from the look bench's kept run on the branch (log_bench_after_2.txt, commit 071e4641, Ryan's PC, Nov 11 23:51 to 0:01 CST). One battle line per ship per moment.
+[attach] battle A I15_11: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] battle A I15_11: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] hp_rcs missing on I15_11; using the surface ray
+[attach] battle A I15_11: skipped 0; rcs hp 0 ray 8 centre 0 skip 0
+[attach] hp_scorch missing on I15_11; using the surface ray
+[attach] hp_breach missing on I15_11; using the surface ray
+[attach] battle A I15_11: skipped 0; breach hp 5 ray 1 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_bay missing on I15_11; using the surface ray
+[attach] battle A I15_11: skipped 0; bay hp 0 ray 1 centre 0 skip 0
+[attach] battle A D22_23: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle A D22_23: skipped 0; gun hp 1 ray 0 centre 0 skip 0
+[attach] hp_rcs missing on D22_23; using the surface ray
+[attach] battle A D22_23: skipped 0; rcs hp 0 ray 8 centre 0 skip 0
+[attach] hp_scorch missing on D22_23; using the surface ray
+[attach] hp_breach missing on D22_23; using the surface ray
+[attach] battle A D22_23: skipped 0; breach hp 5 ray 1 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_bay missing on D22_23; using the surface ray
+[attach] battle A D22_23: skipped 0; bay hp 0 ray 1 centre 0 skip 0
+[attach] battle A D21_23: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[attach] battle A D21_23: skipped 0; gun hp 1 ray 0 centre 0 skip 0
+[attach] hp_rcs missing on D21_23; using the surface ray
+[attach] battle A D21_23: skipped 0; rcs hp 0 ray 8 centre 0 skip 0
+[attach] hp_scorch missing on D21_23; using the surface ray
+[attach] hp_breach missing on D21_23; using the surface ray
+[attach] battle A D21_23: skipped 0; breach hp 3 ray 3 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_bay missing on D21_23; using the surface ray
+[attach] battle A D21_23: skipped 0; bay hp 0 ray 1 centre 0 skip 0
+[attach] battle A C19_51: skipped 0; gun hp 5 ray 0 centre 0 skip 0
+[attach] battle A C19_51: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] hp_rcs missing on C19_51; using the surface ray
+[attach] battle A C19_51: skipped 0; rcs hp 0 ray 8 centre 0 skip 0
+[attach] hp_scorch missing on C19_51; using the surface ray
+[attach] hp_breach missing on C19_51; using the surface ray
+[attach] battle A C19_51: skipped 0; breach hp 5 ray 1 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_bay missing on C19_51; using the surface ray
+[attach] battle A C19_51: skipped 0; bay hp 0 ray 1 centre 0 skip 0
+[attach] battle A C15s_23: skipped 0; gun hp 5 ray 0 centre 0 skip 0
+[attach] battle A C15s_23: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] hp_rcs missing on C15s_23; using the surface ray
+[attach] battle A C15s_23: skipped 0; rcs hp 0 ray 8 centre 0 skip 0
+[attach] hp_scorch missing on C15s_23; using the surface ray
+[attach] hp_breach missing on C15s_23; using the surface ray
+[attach] battle A C15s_23: skipped 0; breach hp 3 ray 3 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_bay missing on C15s_23; using the surface ray
+[attach] battle A C15s_23: skipped 0; bay hp 0 ray 1 centre 0 skip 0
+[look_bench] a_slab_broadside at 170: 10 cells
+[attach] battle A I15_11: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[look_bench] a_slab_broadside at 60: 10 cells
+[attach] battle A I15_11: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[look_bench] a_slab_broadside at 26: 10 cells
+[attach] battle A I15_11: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[look_bench] a_slab_ahead at 170: 10 cells
+[attach] battle A I15_11: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[look_bench] a_slab_ahead at 60: 10 cells
+[attach] battle A I15_11: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[look_bench] a_slab_ahead at 26: 10 cells
+[attach] battle A I15_11: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] hp_rcs missing on I15_11; using the surface ray
+[look_bench] a_slab_jets at 170: 2 cells
+[attach] battle A I15_11: skipped 0; rcs hp 0 ray 8 centre 0 skip 0
+[attach] hp_rcs missing on I15_11; using the surface ray
+[look_bench] a_slab_jets at 60: 2 cells
+[attach] battle A I15_11: skipped 0; rcs hp 0 ray 8 centre 0 skip 0
+[attach] hp_rcs missing on I15_11; using the surface ray
+[look_bench] a_slab_jets at 26: 2 cells
+[attach] battle A I15_11: skipped 0; rcs hp 0 ray 8 centre 0 skip 0
+[attach] hp_scorch missing on I15_11; using the surface ray
+[attach] hp_breach missing on I15_11; using the surface ray
+[look_bench] a_slab_wounds at 170: 2 cells
+[attach] battle A I15_11: skipped 0; breach hp 5 ray 1 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_scorch missing on I15_11; using the surface ray
+[attach] hp_breach missing on I15_11; using the surface ray
+[look_bench] a_slab_wounds at 60: 2 cells
+[attach] battle A I15_11: skipped 0; breach hp 5 ray 1 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_scorch missing on I15_11; using the surface ray
+[attach] hp_breach missing on I15_11; using the surface ray
+[look_bench] a_slab_wounds at 26: 2 cells
+[attach] battle A I15_11: skipped 0; breach hp 5 ray 1 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_bay missing on I15_11; using the surface ray
+[look_bench] a_slab_launch at 170: 8 cells
+[attach] battle A I15_11: skipped 0; bay hp 0 ray 1 centre 0 skip 0
+[attach] hp_bay missing on I15_11; using the surface ray
+[look_bench] a_slab_launch at 60: 8 cells
+[attach] battle A I15_11: skipped 0; bay hp 0 ray 1 centre 0 skip 0
+[attach] hp_bay missing on I15_11; using the surface ray
+[look_bench] a_slab_launch at 26: 8 cells
+[attach] battle A I15_11: skipped 0; bay hp 0 ray 1 centre 0 skip 0
+[look_bench] a_ring_broadside at 170: 10 cells
+[attach] battle A D22_23: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[look_bench] a_ring_broadside at 60: 10 cells
+[attach] battle A D22_23: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[look_bench] a_ring_broadside at 26: 10 cells
+[attach] battle A D22_23: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[look_bench] a_ring_ahead at 170: 10 cells
+[attach] battle A D22_23: skipped 0; gun hp 1 ray 0 centre 0 skip 0
+[look_bench] a_ring_ahead at 60: 10 cells
+[attach] battle A D22_23: skipped 0; gun hp 1 ray 0 centre 0 skip 0
+[look_bench] a_ring_ahead at 26: 10 cells
+[attach] battle A D22_23: skipped 0; gun hp 1 ray 0 centre 0 skip 0
+[attach] hp_rcs missing on D22_23; using the surface ray
+[look_bench] a_ring_jets at 170: 2 cells
+[attach] battle A D22_23: skipped 0; rcs hp 0 ray 8 centre 0 skip 0
+[attach] hp_rcs missing on D22_23; using the surface ray
+[look_bench] a_ring_jets at 60: 2 cells
+[attach] battle A D22_23: skipped 0; rcs hp 0 ray 8 centre 0 skip 0
+[attach] hp_rcs missing on D22_23; using the surface ray
+[look_bench] a_ring_jets at 26: 2 cells
+[attach] battle A D22_23: skipped 0; rcs hp 0 ray 8 centre 0 skip 0
+[attach] hp_scorch missing on D22_23; using the surface ray
+[attach] hp_breach missing on D22_23; using the surface ray
+[look_bench] a_ring_wounds at 170: 2 cells
+[attach] battle A D22_23: skipped 0; breach hp 5 ray 1 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_scorch missing on D22_23; using the surface ray
+[attach] hp_breach missing on D22_23; using the surface ray
+[look_bench] a_ring_wounds at 60: 2 cells
+[attach] battle A D22_23: skipped 0; breach hp 5 ray 1 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_scorch missing on D22_23; using the surface ray
+[attach] hp_breach missing on D22_23; using the surface ray
+[look_bench] a_ring_wounds at 26: 2 cells
+[attach] battle A D22_23: skipped 0; breach hp 5 ray 1 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_bay missing on D22_23; using the surface ray
+[look_bench] a_ring_launch at 170: 8 cells
+[attach] battle A D22_23: skipped 0; bay hp 0 ray 1 centre 0 skip 0
+[attach] hp_bay missing on D22_23; using the surface ray
+[look_bench] a_ring_launch at 60: 8 cells
+[attach] battle A D22_23: skipped 0; bay hp 0 ray 1 centre 0 skip 0
+[attach] hp_bay missing on D22_23; using the surface ray
+[look_bench] a_ring_launch at 26: 8 cells
+[attach] battle A D22_23: skipped 0; bay hp 0 ray 1 centre 0 skip 0
+[look_bench] a_tower_broadside at 170: 10 cells
+[attach] battle A D21_23: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[look_bench] a_tower_broadside at 60: 10 cells
+[attach] battle A D21_23: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[look_bench] a_tower_broadside at 26: 10 cells
+[attach] battle A D21_23: skipped 0; gun hp 3 ray 0 centre 0 skip 0
+[look_bench] a_tower_ahead at 170: 10 cells
+[attach] battle A D21_23: skipped 0; gun hp 1 ray 0 centre 0 skip 0
+[look_bench] a_tower_ahead at 60: 10 cells
+[attach] battle A D21_23: skipped 0; gun hp 1 ray 0 centre 0 skip 0
+[look_bench] a_tower_ahead at 26: 10 cells
+[attach] battle A D21_23: skipped 0; gun hp 1 ray 0 centre 0 skip 0
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] a_tower_jets at 170: 2 cells
+[attach] battle A D21_23: skipped 0; rcs hp 0 ray 8 centre 0 skip 0
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] a_tower_jets at 60: 2 cells
+[attach] battle A D21_23: skipped 0; rcs hp 0 ray 8 centre 0 skip 0
+[attach] hp_rcs missing on D21_23; using the surface ray
+[look_bench] a_tower_jets at 26: 2 cells
+[attach] battle A D21_23: skipped 0; rcs hp 0 ray 8 centre 0 skip 0
+[attach] hp_scorch missing on D21_23; using the surface ray
+[attach] hp_breach missing on D21_23; using the surface ray
+[look_bench] a_tower_wounds at 170: 2 cells
+[attach] battle A D21_23: skipped 0; breach hp 3 ray 3 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_scorch missing on D21_23; using the surface ray
+[attach] hp_breach missing on D21_23; using the surface ray
+[look_bench] a_tower_wounds at 60: 2 cells
+[attach] battle A D21_23: skipped 0; breach hp 3 ray 3 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_scorch missing on D21_23; using the surface ray
+[attach] hp_breach missing on D21_23; using the surface ray
+[look_bench] a_tower_wounds at 26: 2 cells
+[attach] battle A D21_23: skipped 0; breach hp 3 ray 3 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_bay missing on D21_23; using the surface ray
+[look_bench] a_tower_launch at 170: 8 cells
+[attach] battle A D21_23: skipped 0; bay hp 0 ray 1 centre 0 skip 0
+[attach] hp_bay missing on D21_23; using the surface ray
+[look_bench] a_tower_launch at 60: 8 cells
+[attach] battle A D21_23: skipped 0; bay hp 0 ray 1 centre 0 skip 0
+[attach] hp_bay missing on D21_23; using the surface ray
+[look_bench] a_tower_launch at 26: 8 cells
+[attach] battle A D21_23: skipped 0; bay hp 0 ray 1 centre 0 skip 0
+[look_bench] a_barge_broadside at 170: 10 cells
+[attach] battle A C19_51: skipped 0; gun hp 5 ray 0 centre 0 skip 0
+[look_bench] a_barge_broadside at 60: 10 cells
+[attach] battle A C19_51: skipped 0; gun hp 5 ray 0 centre 0 skip 0
+[look_bench] a_barge_broadside at 26: 10 cells
+[attach] battle A C19_51: skipped 0; gun hp 5 ray 0 centre 0 skip 0
+[look_bench] a_barge_ahead at 170: 10 cells
+[attach] battle A C19_51: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[look_bench] a_barge_ahead at 60: 10 cells
+[attach] battle A C19_51: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[look_bench] a_barge_ahead at 26: 10 cells
+[attach] battle A C19_51: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] hp_rcs missing on C19_51; using the surface ray
+[look_bench] a_barge_jets at 170: 2 cells
+[attach] battle A C19_51: skipped 0; rcs hp 0 ray 8 centre 0 skip 0
+[attach] hp_rcs missing on C19_51; using the surface ray
+[look_bench] a_barge_jets at 60: 2 cells
+[attach] battle A C19_51: skipped 0; rcs hp 0 ray 8 centre 0 skip 0
+[attach] hp_rcs missing on C19_51; using the surface ray
+[look_bench] a_barge_jets at 26: 2 cells
+[attach] battle A C19_51: skipped 0; rcs hp 0 ray 8 centre 0 skip 0
+[attach] hp_scorch missing on C19_51; using the surface ray
+[attach] hp_breach missing on C19_51; using the surface ray
+[look_bench] a_barge_wounds at 170: 2 cells
+[attach] battle A C19_51: skipped 0; breach hp 5 ray 1 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_scorch missing on C19_51; using the surface ray
+[attach] hp_breach missing on C19_51; using the surface ray
+[look_bench] a_barge_wounds at 60: 2 cells
+[attach] battle A C19_51: skipped 0; breach hp 5 ray 1 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_scorch missing on C19_51; using the surface ray
+[attach] hp_breach missing on C19_51; using the surface ray
+[look_bench] a_barge_wounds at 26: 2 cells
+[attach] battle A C19_51: skipped 0; breach hp 5 ray 1 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_bay missing on C19_51; using the surface ray
+[look_bench] a_barge_launch at 170: 8 cells
+[attach] battle A C19_51: skipped 0; bay hp 0 ray 1 centre 0 skip 0
+[attach] hp_bay missing on C19_51; using the surface ray
+[look_bench] a_barge_launch at 60: 8 cells
+[attach] battle A C19_51: skipped 0; bay hp 0 ray 1 centre 0 skip 0
+[attach] hp_bay missing on C19_51; using the surface ray
+[look_bench] a_barge_launch at 26: 8 cells
+[attach] battle A C19_51: skipped 0; bay hp 0 ray 1 centre 0 skip 0
+[look_bench] a_recipe_broadside at 170: 10 cells
+[attach] battle A C15s_23: skipped 0; gun hp 5 ray 0 centre 0 skip 0
+[look_bench] a_recipe_broadside at 60: 10 cells
+[attach] battle A C15s_23: skipped 0; gun hp 5 ray 0 centre 0 skip 0
+[look_bench] a_recipe_broadside at 26: 10 cells
+[attach] battle A C15s_23: skipped 0; gun hp 5 ray 0 centre 0 skip 0
+[look_bench] a_recipe_ahead at 170: 10 cells
+[attach] battle A C15s_23: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[look_bench] a_recipe_ahead at 60: 10 cells
+[attach] battle A C15s_23: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[look_bench] a_recipe_ahead at 26: 10 cells
+[attach] battle A C15s_23: skipped 0; gun hp 2 ray 0 centre 0 skip 0
+[attach] hp_rcs missing on C15s_23; using the surface ray
+[look_bench] a_recipe_jets at 170: 2 cells
+[attach] battle A C15s_23: skipped 0; rcs hp 0 ray 8 centre 0 skip 0
+[attach] hp_rcs missing on C15s_23; using the surface ray
+[look_bench] a_recipe_jets at 60: 2 cells
+[attach] battle A C15s_23: skipped 0; rcs hp 0 ray 8 centre 0 skip 0
+[attach] hp_rcs missing on C15s_23; using the surface ray
+[look_bench] a_recipe_jets at 26: 2 cells
+[attach] battle A C15s_23: skipped 0; rcs hp 0 ray 8 centre 0 skip 0
+[attach] hp_scorch missing on C15s_23; using the surface ray
+[attach] hp_breach missing on C15s_23; using the surface ray
+[look_bench] a_recipe_wounds at 170: 2 cells
+[attach] battle A C15s_23: skipped 0; breach hp 3 ray 3 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_scorch missing on C15s_23; using the surface ray
+[attach] hp_breach missing on C15s_23; using the surface ray
+[look_bench] a_recipe_wounds at 60: 2 cells
+[attach] battle A C15s_23: skipped 0; breach hp 3 ray 3 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_scorch missing on C15s_23; using the surface ray
+[attach] hp_breach missing on C15s_23; using the surface ray
+[look_bench] a_recipe_wounds at 26: 2 cells
+[attach] battle A C15s_23: skipped 0; breach hp 3 ray 3 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_bay missing on C15s_23; using the surface ray
+[look_bench] a_recipe_launch at 170: 8 cells
+[attach] battle A C15s_23: skipped 0; bay hp 0 ray 1 centre 0 skip 0
+[attach] hp_bay missing on C15s_23; using the surface ray
+[look_bench] a_recipe_launch at 60: 8 cells
+[attach] battle A C15s_23: skipped 0; bay hp 0 ray 1 centre 0 skip 0
+[attach] hp_bay missing on C15s_23; using the surface ray
+[look_bench] a_recipe_launch at 26: 8 cells
+[attach] battle A C15s_23: skipped 0; bay hp 0 ray 1 centre 0 skip 0
