@@ -1,0 +1,663 @@
+{
+ "about": "Issue 370 attach point rows for godot/bench/look_bench.gd (run with --moments res://bench/look_moments_attach.json). Same fields as look_moments.json, plus tgt_at ([x, z] of the target; the attacker sits unturned at (-34, 0), so z -60 is its port side) and slot (the weapon's data.js slot, as the battle passes it). do: volley, jets (every ShipView movement jet at once), wounds (every section at 10 percent), launch (a wing toward the target). Hulls: the slab (I15_11, the Glasswright sail), the ring (D22_23), the tower (D21_23), the barge (C19_51) and the recipe ship (C15s_23, round 7 export).",
+ "cameras": [
+  170,
+  60,
+  26
+ ],
+ "cell": [
+  384,
+  216
+ ],
+ "crop": {
+  "170": [
+   384,
+   216
+  ],
+  "60": [
+   768,
+   432
+  ],
+  "26": [
+   1152,
+   648
+  ]
+ },
+ "rows": [
+  {
+   "id": "a_slab_broadside",
+   "group": "attach (issue 370)",
+   "label": "slab hull I15_11 (ithar Cruiser): turret (slot 2) at a target to port",
+   "att": [
+    "ithar",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt_at": [
+    -34,
+    -60
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "turret",
+   "slot": 2,
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0.0,
+     10
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "a_slab_ahead",
+   "group": "attach (issue 370)",
+   "label": "slab hull I15_11 (ithar Cruiser): pulsar (slot 0) at a target ahead",
+   "att": [
+    "ithar",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "pulsar",
+   "slot": 0,
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0.0,
+     10
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "a_slab_jets",
+   "group": "attach (issue 370)",
+   "label": "slab hull I15_11 (ithar Cruiser): every movement jet at once (braking, stern, side, turning), each left where it started",
+   "att": [
+    "ithar",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "jets",
+   "focus": "attacker",
+   "windows": [
+    [
+     "event",
+     0.0,
+     2
+    ]
+   ],
+   "key": 0
+  },
+  {
+   "id": "a_slab_wounds",
+   "group": "attach (issue 370)",
+   "label": "slab hull I15_11 (ithar Cruiser): every section down to 10 percent (wounds at the breach anchors)",
+   "att": [
+    "ithar",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "wounds",
+   "focus": "attacker",
+   "windows": [
+    [
+     "event",
+     1.5,
+     2
+    ]
+   ],
+   "key": 0
+  },
+  {
+   "id": "a_slab_launch",
+   "group": "attach (issue 370)",
+   "label": "slab hull I15_11 (ithar Cruiser): a wing launches toward the target ahead",
+   "att": [
+    "ithar",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "launch",
+   "focus": "attacker",
+   "windows": [
+    [
+     "event",
+     0.0,
+     8
+    ]
+   ],
+   "key": 2
+  },
+  {
+   "id": "a_ring_broadside",
+   "group": "attach (issue 370)",
+   "label": "ring hull D22_23 (deathless Tomb-ark): gauss (slot 0) at a target to port",
+   "att": [
+    "deathless",
+    "Tomb-ark"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt_at": [
+    -34,
+    -60
+   ],
+   "do": "volley",
+   "kind": "gauss",
+   "weapon": "gauss",
+   "slot": 0,
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0.0,
+     10
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "a_ring_ahead",
+   "group": "attach (issue 370)",
+   "label": "ring hull D22_23 (deathless Tomb-ark): doom (slot 2) at a target ahead",
+   "att": [
+    "deathless",
+    "Tomb-ark"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "doom",
+   "slot": 2,
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0.0,
+     10
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "a_ring_jets",
+   "group": "attach (issue 370)",
+   "label": "ring hull D22_23 (deathless Tomb-ark): every movement jet at once (braking, stern, side, turning), each left where it started",
+   "att": [
+    "deathless",
+    "Tomb-ark"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "jets",
+   "focus": "attacker",
+   "windows": [
+    [
+     "event",
+     0.0,
+     2
+    ]
+   ],
+   "key": 0
+  },
+  {
+   "id": "a_ring_wounds",
+   "group": "attach (issue 370)",
+   "label": "ring hull D22_23 (deathless Tomb-ark): every section down to 10 percent (wounds at the breach anchors)",
+   "att": [
+    "deathless",
+    "Tomb-ark"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "wounds",
+   "focus": "attacker",
+   "windows": [
+    [
+     "event",
+     1.5,
+     2
+    ]
+   ],
+   "key": 0
+  },
+  {
+   "id": "a_ring_launch",
+   "group": "attach (issue 370)",
+   "label": "ring hull D22_23 (deathless Tomb-ark): a wing launches toward the target ahead",
+   "att": [
+    "deathless",
+    "Tomb-ark"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "launch",
+   "focus": "attacker",
+   "windows": [
+    [
+     "event",
+     0.0,
+     8
+    ]
+   ],
+   "key": 2
+  },
+  {
+   "id": "a_tower_broadside",
+   "group": "attach (issue 370)",
+   "label": "tower hull D21_23 (deathless Cruiser): gauss (slot 0) at a target to port",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "tgt_at": [
+    -34,
+    -60
+   ],
+   "do": "volley",
+   "kind": "gauss",
+   "weapon": "gauss",
+   "slot": 0,
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0.0,
+     10
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "a_tower_ahead",
+   "group": "attach (issue 370)",
+   "label": "tower hull D21_23 (deathless Cruiser): doom (slot 2) at a target ahead",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "lance",
+   "weapon": "doom",
+   "slot": 2,
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0.0,
+     10
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "a_tower_jets",
+   "group": "attach (issue 370)",
+   "label": "tower hull D21_23 (deathless Cruiser): every movement jet at once (braking, stern, side, turning), each left where it started",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "jets",
+   "focus": "attacker",
+   "windows": [
+    [
+     "event",
+     0.0,
+     2
+    ]
+   ],
+   "key": 0
+  },
+  {
+   "id": "a_tower_wounds",
+   "group": "attach (issue 370)",
+   "label": "tower hull D21_23 (deathless Cruiser): every section down to 10 percent (wounds at the breach anchors)",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "wounds",
+   "focus": "attacker",
+   "windows": [
+    [
+     "event",
+     1.5,
+     2
+    ]
+   ],
+   "key": 0
+  },
+  {
+   "id": "a_tower_launch",
+   "group": "attach (issue 370)",
+   "label": "tower hull D21_23 (deathless Cruiser): a wing launches toward the target ahead",
+   "att": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt": [
+    "hegemony",
+    "Cruiser"
+   ],
+   "do": "launch",
+   "focus": "attacker",
+   "windows": [
+    [
+     "event",
+     0.0,
+     8
+    ]
+   ],
+   "key": 2
+  },
+  {
+   "id": "a_barge_broadside",
+   "group": "attach (issue 370)",
+   "label": "barge hull C19_51 (corsair Battle-barge): scatter (slot 0) at a target to port",
+   "att": [
+    "corsair",
+    "Battle-barge"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt_at": [
+    -34,
+    -60
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "scatter",
+   "slot": 0,
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0.0,
+     10
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "a_barge_ahead",
+   "group": "attach (issue 370)",
+   "label": "barge hull C19_51 (corsair Battle-barge): htorp (slot 2) at a target ahead",
+   "att": [
+    "corsair",
+    "Battle-barge"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "htorp",
+   "slot": 2,
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0.3,
+     10
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "a_barge_jets",
+   "group": "attach (issue 370)",
+   "label": "barge hull C19_51 (corsair Battle-barge): every movement jet at once (braking, stern, side, turning), each left where it started",
+   "att": [
+    "corsair",
+    "Battle-barge"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "jets",
+   "focus": "attacker",
+   "windows": [
+    [
+     "event",
+     0.0,
+     2
+    ]
+   ],
+   "key": 0
+  },
+  {
+   "id": "a_barge_wounds",
+   "group": "attach (issue 370)",
+   "label": "barge hull C19_51 (corsair Battle-barge): every section down to 10 percent (wounds at the breach anchors)",
+   "att": [
+    "corsair",
+    "Battle-barge"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "wounds",
+   "focus": "attacker",
+   "windows": [
+    [
+     "event",
+     1.5,
+     2
+    ]
+   ],
+   "key": 0
+  },
+  {
+   "id": "a_barge_launch",
+   "group": "attach (issue 370)",
+   "label": "barge hull C19_51 (corsair Battle-barge): a wing launches toward the target ahead",
+   "att": [
+    "corsair",
+    "Battle-barge"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "launch",
+   "focus": "attacker",
+   "windows": [
+    [
+     "event",
+     0.0,
+     8
+    ]
+   ],
+   "key": 2
+  },
+  {
+   "id": "a_recipe_broadside",
+   "group": "attach (issue 370)",
+   "label": "recipe hull C15s_23 (corsair Cruiser): scatter (slot 0) at a target to port",
+   "att": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "tgt_at": [
+    -34,
+    -60
+   ],
+   "do": "volley",
+   "kind": "battery",
+   "weapon": "scatter",
+   "slot": 0,
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0.0,
+     10
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "a_recipe_ahead",
+   "group": "attach (issue 370)",
+   "label": "recipe hull C15s_23 (corsair Cruiser): torp (slot 2) at a target ahead",
+   "att": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "volley",
+   "kind": "torp",
+   "weapon": "torp",
+   "slot": 2,
+   "on": "hull",
+   "focus": "attacker",
+   "windows": [
+    [
+     "fire",
+     0.3,
+     10
+    ]
+   ],
+   "key": 4
+  },
+  {
+   "id": "a_recipe_jets",
+   "group": "attach (issue 370)",
+   "label": "recipe hull C15s_23 (corsair Cruiser): every movement jet at once (braking, stern, side, turning), each left where it started",
+   "att": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "jets",
+   "focus": "attacker",
+   "windows": [
+    [
+     "event",
+     0.0,
+     2
+    ]
+   ],
+   "key": 0
+  },
+  {
+   "id": "a_recipe_wounds",
+   "group": "attach (issue 370)",
+   "label": "recipe hull C15s_23 (corsair Cruiser): every section down to 10 percent (wounds at the breach anchors)",
+   "att": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "wounds",
+   "focus": "attacker",
+   "windows": [
+    [
+     "event",
+     1.5,
+     2
+    ]
+   ],
+   "key": 0
+  },
+  {
+   "id": "a_recipe_launch",
+   "group": "attach (issue 370)",
+   "label": "recipe hull C15s_23 (corsair Cruiser): a wing launches toward the target ahead",
+   "att": [
+    "corsair",
+    "Cruiser"
+   ],
+   "tgt": [
+    "deathless",
+    "Cruiser"
+   ],
+   "do": "launch",
+   "focus": "attacker",
+   "windows": [
+    [
+     "event",
+     0.0,
+     8
+    ]
+   ],
+   "key": 2
+  }
+ ]
+}
