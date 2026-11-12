@@ -1,6 +1,6 @@
 # deathless_E11: The Unsetting (Eclipse flagship), build sheet
 
-Eclipse (deathless) | class Tomb-ark | version 1 (first sheet), 2026-11-12 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\opus532e\e1\deathless_E11\deathless_E11_blockout.blend`
+Eclipse (deathless) | class Tomb-ark | version 2 (second sheet (R221 weapons)), 2026-11-12 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\opus532e\w\w1\deathless_E11\deathless_E11_blockout.blend`
 
 **Length 28.0 world units** (data.js d_boss (cls 'Tomb-ark'); length from godot/render/hull_table.gd CLS_LEN['Tomb-ark'] = 28.0 (drawn x SHIP_K 1.6 = 44.8 on the board)). Frame: +X bow, +Y port, +Z up; station % from the prow tip; offset + port / - starboard; height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.
 
@@ -15,8 +15,8 @@ Eclipse (deathless) | class Tomb-ark | version 1 (first sheet), 2026-11-12 | blo
 | beam top | 10.85 |
 | beam bow | 10.85 |
 | beam disagreement percent | 0.0 |
-| height side | 6.513 |
-| height bow | 6.513 |
+| height side | 6.8 |
+| height bow | 6.8 |
 | height disagreement percent | 0.0 |
 | widest at station percent | 17.6 |
 | hull beam | 4.76 |
@@ -32,11 +32,11 @@ Eclipse (deathless) | class Tomb-ark | version 1 (first sheet), 2026-11-12 | blo
 
 | ID | Fitting | Count | Station % | Offset | Height | Points | Game slot | Source | Note |
 |---|---|---:|---:|---:|---:|---|---|---|---|
-| A1 | spinal projector (fixed) | 1 barrel | 31.8 | 0.00 | -0.20 | forward | F doom | picture | the corona arc projector on the axis, through the crescent; the spinal shell (nova) fires from it |
-| T1 | twin turret | 2 barrels | 41.4 | 0.00 | 2.10 | forward, +5 elev | T gauss | picture | fore null cannon twin on a low drum behind the crescent |
-| T2 | twin turret | 2 barrels | 57.8 | 0.00 | 2.85 | forward, +3 elev | T gauss | picture | aft null cannon twin, superfiring over T1; far enough aft that T1 fires aft over its muzzles |
-| F1 | twin turret | 2 barrels | 72.8 | 0.00 | 1.78 | forward, +12 elev | T flak | picture | null shredder twin aft on the deck |
-| F2 | twin belly turret | 2 barrels | 53.5 | 0.00 | -2.05 | forward, +10 elev | T flak | picture | null shredder twin on the belly, covering below |
+| A1 | spinal arc emitter (fixed) | 1 barrel | 31.8 | 0.00 | -0.20 | forward | F doom | picture | the corona arc emitter on the axis, through the crescent: a capacitor column ending in a crown of electrode horns round a black shade disc; the spinal shell (nova) fires from it |
+| T1 | null cannon, twin turret | 2 barrels | 41.4 | 0.00 | 2.10 | forward, +5 elev | T gauss | picture | fore null cannon: twin rail pairs through a crescent shade, on a low drum behind the crescent |
+| T2 | null cannon, twin turret | 2 barrels | 57.8 | 0.00 | 2.85 | forward, +3 elev | T gauss | picture | aft null cannon, superfiring over T1; far enough aft that T1 fires aft over its muzzles |
+| F1 | null shredder, twin turret | 2 barrels | 72.8 | 0.00 | 1.78 | forward, +12 elev | T flak | picture | null shredder: a fan of five needle rails, aft on the deck |
+| F2 | null shredder, twin belly turret | 2 barrels | 53.5 | 0.00 | -2.05 | forward, +10 elev | T flak | picture | null shredder on the belly, covering below |
 | CW1 | core port, hexagonal, 0.7 across | 1 | 63.4 | 0.00 | 2.15 | - | - | picture | the core's light through a hex port in tier 1 |
 | HB1 | framed deck box 0.5 x 0.9 | 1 | 66.4 | 0.00 | 2.12 | - | - | picture | raised deck housing (the shade generator) on tier 1 |
 | H1 | square hatch 0.3 | 1 | 71.7 | 1.35 | 1.60 | - | - | picture | deck hatch aft, port |
@@ -84,7 +84,7 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Crescent root layer | 18.8 to 29.9 | -3.67 to 3.67 | 0.36 to 1.45 | violet plate | the third, shortest layer over the root |
 | Projector breech collars | 20.4 to 33.9 | -0.94 to 0.94 | -1.14 to 0.74 | mauve and violet | a part of the kit projector, counted as its own mass |
 | Projector shaft | 7.7 to 17.1 | -0.82 to 0.82 | -1.02 to 0.62 | violet and mauve | a part of the kit projector, counted as its own mass |
-| Projector muzzle block | 4.8 to 20.4 | -0.78 to 0.78 | -0.98 to 0.58 | mauve | a part of the kit projector, counted as its own mass |
+| Projector muzzle block | 4.8 to 20.4 | -0.84 to 0.84 | -1.04 to 0.64 | mauve | a part of the kit projector, counted as its own mass |
 | Dorsal tier | 50.7 to 69.6 | -1.42 to 1.42 | 1.40 to 2.21 | mauve plate | the layered plate tier along the spine (the concept's raised plate rows), a quarter unit proud |
 | Barbette, fore battery | 38.0 to 44.8 | -0.95 to 0.95 | 1.50 to 2.12 | violet plate | a low round drum: the fore battery fires aft over the tier and the aft battery's muzzles |
 | Barbette, aft battery | 54.4 to 61.2 | -1.00 to 1.00 | 1.90 to 2.87 | violet plate | a low round drum that superfires the aft battery over the fore one |
@@ -161,7 +161,7 @@ Full interiors throughout the hull (R215), hidden until a piece breaks. Eclipse 
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0. Tested: 241 objects, 29 parts, 645 close pairs, 474 rays, 5 guns, 4 turrets swept, 8 cones, 15 apertures. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 244 objects, 29 parts, 672 close pairs, 483 rays, 5 guns, 4 turrets swept, 8 cones, 15 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -171,7 +171,8 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 
 - **The engine cluster is a diamond of four.** the side view and the beauty show three bells stacked, the plan shows two side by side; a diamond of four is the one layout that reads as all three pictures, and keeps the stern wide and flat.
 - **Engines are eclipse rings, not flame.** factions.md: "no flaming bells. An eclipse ring of pale light": each bell has a black shade disc with a thin pale green-white ring inside its lip.
-- **Batteries by data.js slot.** d_boss carries gauss T twice, doom F and flak T: the two big twins are the null cannons (the aft one superfires on a barbette), the projector is the corona arc, the small aft twin and a belly twin are the null shredders.
+- **Batteries by data.js slot.** d_boss carries gauss T twice, doom F and flak T: the two big mounts are the null cannons (the aft one superfires on a barbette), the projector is the corona arc, the small aft mount and a belly mount are the null shredders.
+- **Weapons built from the lore, not the picture's generic turrets (R221).** Ryan: "their turrets look the same as hullbreakers"; the picture draws box turrets with round twin barrels. The null cannons are rail guns (flat rail pairs in stepped accelerator frames) firing through the slot of a crescent shade, the shredders fans of needle rails, the projector an arc emitter with a crown of electrode horns round the crest's black disc (tools/blender/kits/eclipse/README.md).
 - **The green hexagon on the deck is the core port, not a gun.** the faction's green is the trapped core seen through gaps; the flak slot is the small twin.
 - **The crescent is three stacked layers with a corona line on each rim.** factions.md: broad layered plates, the green a thin line on every shade rim; the concept shows two stepped bands and a lip; the layers are also how it breaks (band by band).
 - **Low round drums under both batteries.** so the fore twin clears the tier when it trains aft and fires aft over the aft twin's muzzles, and the aft twin fires over the fore one (the fit check found both).

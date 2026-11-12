@@ -2,46 +2,48 @@
 
 Written from the concept before modelling, region by region (bow, midships, stern; top, side, below). Each line names the
 kit part type (tools/blender/kits/eclipse/parts.py), how many, the blob-sweep cells it shows in, and the sub-parts that
-make it read as that thing. Source: `tools/blender/build_sheets/ships/deathless_E11_inv.py`.
+make it read as that thing, and its job: what it does on the ship (R221: a part with no job is cut). Source:
+`tools/blender/build_sheets/ships/deathless_E11_inv.py`.
 
-| ID | Type | What | Count | Cells | Reads as (sub-parts) | Source |
-|---|---|---|---:|---|---|---|
-| crescent | shade | the crescent shade: a broad blade curving forward round the projector, thick at its inner wall and knife-thin at its outer rim, horns reaching past the muzzle, the plane drooping a little toward the horns | 1 | bow/top, bow/side, bow/below, mid/top, mid/side | a lower blade, an upper layer stepped in from the rim, a short third layer at the root, a green-white corona line on every rim, dense plates | picture |
-| crescent_plates | plate | dense small plates over the crescent faces (upper, inner wall, belly) | 1 | bow/top, bow/side, bow/below | chamfered slabs with steps and flush fasteners | picture |
-| projector | spinal | the central barrel through the crescent: the corona arc projector (data.js doom F; the Tomb-ark spinal shell) | 1 | bow/top, bow/side, bow/below | stepped octagonal breech collars, shaft segments with bands and rails, an octagonal muzzle block, a dark bore, a green emitter lens | picture |
-| bow_thrusters | thruster | attitude thrusters on the neck flanks | 2 | mid/side | a block, slot nozzles | designed |
-| body | hull | the long oval body: widest behind the crescent, a gentle taper aft to a waist at the band collar | 1 | mid/top, mid/side, mid/below, stern/top, stern/side, stern/below | a rounded oval section (never a box), a neck stepping down into the crescent root, an overhang over the collars | picture |
-| body_plates | plate | the plate rows over the body: rows of small plates across the deck, ribbed rows down the flanks | 1 | mid/top, mid/side, mid/below, stern/top, stern/side, stern/below | chamfered slabs with steps and fasteners | picture |
-| dorsal_tiers | tier | layered dorsal plate tiers along the spine carrying the batteries (the concept's raised plate rows) | 1 | mid/top, mid/side | stepped faces, roof lines, openings (the core port and hatches) | picture |
-| belts | belt | the flank belt: a raised strake of armour boxes at mid height, both flanks | 2 | mid/side, mid/top, stern/side | a band following the hull curve, plates on it | picture |
-| skirt | belt | the lower flank skirt: tall narrow plates hanging in a row below the belt | 2 | mid/side, mid/below, stern/side | a band following the hull curve, tall narrow plates | picture |
-| main_guns | gun | the two big twin turrets on the centreline (data.js gauss T, gauss T) | 2 | mid/top, mid/side | hex plinths, faceted housings under stacked shade plates, mantlets, breeches, coiled barrels, ringed muzzles | picture |
-| core_port | corewin | the green hexagonal port on the deck: the trapped core's light seen through a gap (factions.md) (README 8c called it a flak cluster; read as the core port) | 1 | mid/top | a hex rim, glowing glass set back, bars | picture |
-| shade_gen | hatchbox | the raised deck housing between the core port and the aft turret | 1 | mid/top, mid/side | a framed block, an inset lid under a stacked plate, side ribs | picture |
-| belly_flak | gun | belly twin turret covering below (data.js flak T, second mount) | 1 | mid/below | as the turrets | designed |
-| hatches | hatch | octagonal hatches on the deck tiers and the belly | 4 | mid/top, mid/below | a rim, a door, a seam, hinges | designed |
-| lamps | lamp | corona strip lights along the flank belt | 8 | mid/side, stern/side | a housing, a green-white bar lens | designed |
-| flak | gun | the small twin turret aft on the deck (data.js flak T) | 1 | stern/top, stern/side | as the turrets, smaller, slimmer barrels | picture |
-| band_collar | belt | the heavy band collar round the body at about three quarters of the length | 1 | stern/top, stern/side, stern/below | a raised ring following the hull, segmented plates | picture |
-| feathers | feather | layered swept shade blades round the stern, row over row, flaring toward the engines | 24 | stern/top, stern/side, stern/below | tapered blades with a thickness step, overlapping rows | picture |
-| engines | engine | the engine cluster: three bells stacked in the side view, two side by side in plan (a diamond of four) | 4 | stern/side, stern/top, stern/below | faceted ribbed drums, mount collars, vanes, short bells, a corona ring round a black shade disc (no flame) | picture |
-| vents | vent | heat slot panels on the aft flanks over the belt | 2 | stern/side | a frame, slanted slats | designed |
-| stern_thrusters | thruster | attitude thrusters on the stern flanks | 2 | stern/side | a block, slot nozzles | designed |
+| ID | Job | Type | What | Count | Cells | Reads as (sub-parts) | Source |
+|---|---|---|---|---:|---|---|---|
+| crescent | the shield held forward (factions.md: the shade always faces the enemy); the ship shelters behind it, and it peels first when hit | shade | the crescent shade: a broad blade curving forward round the projector, thick at its inner wall and knife-thin at its outer rim, horns reaching past the muzzle, the plane drooping a little toward the horns | 1 | bow/top, bow/side, bow/below, mid/top, mid/side | a lower blade, an upper layer stepped in from the rim, a short third layer at the root, a green-white corona line on every rim, dense plates | picture |
+| crescent_plates | armour over the shade: the plates that peel band by band (the Eclipse break) | plate | dense small plates over the crescent faces (upper, inner wall, belly) | 1 | bow/top, bow/side, bow/below | chamfered slabs with steps and flush fasteners | picture |
+| projector | the corona arc (doom F): one heavy blow every other turn, and the nova (spinal shell) fires from it | corona_arc | the central barrel through the crescent: the corona arc projector (data.js doom F; the Tomb-ark spinal shell) | 1 | bow/top, bow/side, bow/below | stepped breech collars, a capacitor column (segments, stacked disc banks, feed conduits), an emitter head with a black shade disc in a thin corona ring, a small lens, a crown of six electrode horns (R221: an arc emitter, not a barrel) | picture |
+| bow_thrusters | attitude control at the neck: turns the long hull (tn 1) | thruster | attitude thrusters on the neck flanks | 2 | mid/side | a block, slot nozzles | designed |
+| body | carries everything: decks, archive vaults, magazines, the core | hull | the long oval body: widest behind the crescent, a gentle taper aft to a waist at the band collar | 1 | mid/top, mid/side, mid/below, stern/top, stern/side, stern/below | a rounded oval section (never a box), a neck stepping down into the crescent root, an overhang over the collars | picture |
+| body_plates | armour over the body (ar 0.35, no shields: heavy armour is how Eclipse survive) | plate | the plate rows over the body: rows of small plates across the deck, ribbed rows down the flanks | 1 | mid/top, mid/side, mid/below, stern/top, stern/side, stern/below | chamfered slabs with steps and fasteners | picture |
+| dorsal_tiers | armoured decks that carry and feed the two batteries; they peel off with them (B-3) | tier | layered dorsal plate tiers along the spine carrying the batteries (the concept's raised plate rows) | 1 | mid/top, mid/side | stepped faces, roof lines, openings (the core port and hatches) | picture |
+| belts | side armour over the vaults and magazines | belt | the flank belt: a raised strake of armour boxes at mid height, both flanks | 2 | mid/side, mid/top, stern/side | a band following the hull curve, plates on it | picture |
+| skirt | lower side armour, the belly's first layer | belt | the lower flank skirt: tall narrow plates hanging in a row below the belt | 2 | mid/side, mid/below, stern/side | a band following the hull curve, tall narrow plates | picture |
+| main_guns | the two null cannons (gauss T, gauss T): armour-piercing rail guns, the ship's main fire all round | nullcannon | the two big twin turrets on the centreline (data.js gauss T, gauss T) | 2 | mid/top, mid/side | a thin hex foot, a low housing, a crescent shade of two curved plates with a corona rim, yoke cheeks, a ribbed capacitor stack, two rail pairs in stepped square accelerator frames, a shock plate at each muzzle (R221: rail guns, not barrels) | picture |
+| core_port | shows the trapped core's light through the deck (the faction's green, never a pooled glow); the core vents through it | corewin | the green hexagonal port on the deck: the trapped core's light seen through a gap (factions.md) (README 8c called it a flak cluster; read as the core port) | 1 | mid/top | a hex rim, glowing glass set back, bars | picture |
+| shade_gen | houses the shade generators that drive the plate layers | hatchbox | the raised deck housing between the core port and the aft turret | 1 | mid/top, mid/side | a framed block, an inset lid under a stacked plate, side ribs | picture |
+| belly_flak | the second null shredder (flak T) covers below, where the deck shredder cannot see | shredder | belly twin turret covering below (data.js flak T, second mount) | 1 | mid/below | as the deck shredder | designed |
+| hatches | crew and drone access to the decks and the belly (repair swarms come out here) | hatch | octagonal hatches on the deck tiers and the belly | 4 | mid/top, mid/below | a rim, a door, a seam, hinges | designed |
+| lamps | corona strip lights: running lights and the Eclipse corona line along the belt | lamp | corona strip lights along the flank belt | 8 | mid/side, stern/side | a housing, a green-white bar lens | designed |
+| flak | the null shredder (flak T): screens the stern and deck against craft | shredder | the small twin turret aft on the deck (data.js flak T) | 1 | stern/top, stern/side | a thin hex foot, a squat hex drum, a crescent shade with the firing slot, a two-fin capacitor pack, a fan of five needle rails with tip frames (R221) | picture |
+| band_collar | the structural ring where the stern section joins the body (B-2 tears here) | belt | the heavy band collar round the body at about three quarters of the length | 1 | stern/top, stern/side, stern/below | a raised ring following the hull, segmented plates | picture |
+| feathers | stern shade blades that shield the engine room and dump heat aft | feather | layered swept shade blades round the stern, row over row, flaring toward the engines | 24 | stern/top, stern/side, stern/below | tapered blades with a thickness step, overlapping rows | picture |
+| engines | drive (sp 1): four eclipse-ring engines, no flame | engine | the engine cluster: three bells stacked in the side view, two side by side in plan (a diamond of four) | 4 | stern/side, stern/top, stern/below | faceted ribbed drums, mount collars, vanes, short bells, a corona ring round a black shade disc (no flame) | picture |
+| vents | dump heat from the shade machinery and the core | vent | heat slot panels on the aft flanks over the belt | 2 | stern/side | a frame, slanted slats | designed |
+| stern_thrusters | attitude control at the stern, paired with the neck thrusters to turn the hull | thruster | attitude thrusters on the stern flanks | 2 | stern/side | a block, slot nozzles | designed |
 
 Kit sub-parts per type (what DETAILED checks):
 
 - belt: band, plate
 - corewin: rim, glass, bar
+- corona_arc: breech, segment, capacitor, conduit, emitter, shade, corona, lens, horn
 - engine: housing, collar, rib, vane, bell, corona, shade
 - feather: blade, step
-- gun: ring|plate, housing, cowl, mantlet, breech, tube, coil, muzzle, bore
 - hatch: rim, door, seam, hinge
 - hatchbox: frame, lid, rib
 - hull: bevel, step, overhang
 - lamp: housing, lens
+- nullcannon: ring|plate, housing, capacitor, yoke, shade, corona, rail, frame, muzzle
 - plate: slab, step, bevel, fastener
 - shade: band, layer, corona, plate
-- spinal: breech, segment, band, rail, block, bore, lens
+- shredder: ring|plate, housing, capacitor, shade, corona, needle, frame
 - thruster: block, nozzle
 - tier: face, roof, opening
 - vent: frame, slat
@@ -50,6 +52,10 @@ Left as surface, and why:
 
 - Grime, scuffs, the pale grey-green weathering patch on the inner crescent face (README 8c) and decals: surface texture, painted in the build (recipe stages 4 and 5), not modelled.
 - The escort beside the flagship in every picture is its own ship (a later fleet brief), not part of this hull.
+
+## Every built part has a job (R221)
+
+Built kit parts: 80; parts whose inventory id names no line with a job: 0.
 
 ## Per cell: present, shaped, detailed (from the model, deathless_E11_model.json)
 
@@ -179,6 +185,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 2.49 | 4.49 | 5.72 | 7.00 |
-| build | 2.59 | 4.32 | 5.59 | 6.47 |
+| build | 2.59 | 4.14 | 5.59 | 6.54 |
 
 Lines not present, shaped and detailed without a reason: 0.

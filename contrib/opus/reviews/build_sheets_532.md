@@ -249,3 +249,68 @@ Fit check zero (PC e8 and sandbox), inventory 0 failing, every cell at or above 
 1.94), hull L:H 11.32 (15.57), envelope L:B 1.72 (1.77), envelope L:H 7.02 (5.94: the lower block drops the stern height).
 My read: on the aft view the bells, slim spine and open arcs read as the concept, but the near block still fills the lower left
 of the frame, where the beauty puts it far and high; that comes from the picture itself, not from the model.
+
+# Eclipse R221: weapons from the lore (Opus worker, Nov 12 2026)
+
+Ryan, Nov 12 06:27 CST (R221): "Eclipse are almost there, my major note is that their turrets look the same as hullbreakers.
+We should have those be more unique per fsctions and fit the actual weapons they use per lore Bible and faction rules." Also
+R222: a turret turns aft only to follow a target its rules arc allows; at rest no gun points backward. E11 is now its second
+sheet, E12 its third; hull, crescent, ring, engines and cameras unchanged.
+
+## Read before modelling
+
+data.js W and FAC_WNAMES.deathless (gauss = Null cannon, flak = Null shredder, gsentry = Null spire, doom = Corona arc), the
+battle effects in godot/fx/fx_weapons.gd (null: coils light breech to muzzle in steps, a near invisible slug, a shock ring, a
+punch-through; flak: instant streaks to airbursts; corona arc: arcs crawl on the emitter, then a re-striking arc), lore bible
+7.5, 7.8 (the crest: a black disc with a thin ring) and 7.10, and factions.md Eclipse ("guns sit behind the shade's rim,
+firing through gaps between plates"). One design line per weapon went into `tools/blender/kits/eclipse/README.md` (and
+`WEAPONS` in parts.py, which the sheet prints) before the shapes were built.
+
+## Designs (one line each)
+
+- **Null cannon (gauss T):** a rail gun, two flat rail pairs in stepped square accelerator frames ending in an open fork and a
+  shock plate, firing through the slot of an upright crescent shade with a corona rim, a ribbed capacitor stack behind.
+- **Null shredder (flak T, E11):** a fan of five needle rails splayed side to side from a squat hex drum, through the slot of a
+  crescent shade, a two-fin capacitor pack; elevates to 60 for craft.
+- **Null spire (gsentry T, E12):** a tall turning hex spire with green sight slits, two needle rails through a small shade fin
+  at its head.
+- **Corona arc (doom F):** an arc emitter, the shaft a capacitor column (disc banks, feed conduits), the mouth the crest (a
+  black shade disc in a thin corona ring with a small lens) under a crown of six electrode horns.
+
+No breech-and-barrel cannon anywhere: no round barrel, breech block, muzzle brake or bore. Every turret is still turret-ready
+(`<id>_turret` empty with turret, slot, weapon, arc_lo, arc_hi, arc_deg, rest_yaw, rest_pitch; turning meshes its children);
+every gun rests pointing forward.
+
+## Tools
+
+- PR 547's newer tools brought in by a three-way merge from their common base (1f333759): clash.py's LANE test and real turret
+  reach, inventory.py's Job column and "every part has a job" check, the kit's rack lanes, the extras' LANE count. The Eclipse
+  hooks kept (each ship names its KIT; the inventory reads that kit's SUBPARTS).
+- kit.py: a kit whose `gun()` takes `weapon` builds each weapon its own way (Hullbreakers unchanged); a part may carry its own
+  type for the inventory's detail check; the spinal weapon gets a firing lane, so LANE covers it.
+- build.py renders each weapon type alone (`weapon_<id>.png`, also its own `weapons` mode); layout.py prints the weapon row
+  (image, rules, lore line, design line) under the beauty pair; publish.py copies the weapon pictures.
+- Every inventory line on both ships now names its job.
+
+## Results
+
+| Ship | Fit (clash, mount, arc, sweep, exhaust, exit, lane) | Turret reach | Inventory | Hull L:B / L:H concept and build |
+|---|---|---|---|---|
+| E11 | all 0 (244 objects, 483 rays, 4 turrets, 1 lane) | 180 both ways, all four | 0 failing, every part has a job | 5.72 / 7.00 and 5.59 / 6.54 |
+| E12 | all 0 (456 objects, 360 rays, 3 turrets, 1 lane) | 180 both ways, all three | 0 failing, every part has a job | 1.94 / 15.57 and 1.89 / 10.23 |
+
+The new weapons checked at zero on their first full run. PC runs `opus532e\w\w1` (first shapes) and `w\w2` (the null cannon
+shade made upright, a shield held forward rather than a lid; E12's guns a size up); GPU read twice at 0 percent before each;
+nothing deleted. The outline overlays were not refitted (cameras and hulls unchanged).
+
+## Judged beside the concept
+
+- **E11:** the turrets no longer look like the Hullbreakers' (no box, no round barrels): from the beauty camera each is an
+  upright crescent shield with a green rim and a row of square accelerator frames, and the projector's mouth is the crest
+  under its horn crown. They now differ from the picture's turrets on purpose; the picture's long slim barrels are gone, and
+  at that distance the frames read as a row of square rings more than as rails.
+- **E12:** at the high aft camera the null cannons read mostly as a green crescent rim over ribbed fins, the rails short behind
+  them; the null spire is a small upright post on the block roof; the emitter's horn crown reads at the bow. Ring, block and
+  bells as on the second sheet.
+- Still different from the concepts (each README): surface and colour (paint stage), E11's crescent a little narrower and the
+  projector shaft shorter, E12's near block and straight struts.

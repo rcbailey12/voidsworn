@@ -2,39 +2,41 @@
 
 Written from the concept before modelling, region by region (bow, midships, stern; top, side, below). Each line names the
 kit part type (tools/blender/kits/eclipse/parts.py), how many, the blob-sweep cells it shows in, and the sub-parts that
-make it read as that thing. Source: `tools/blender/build_sheets/ships/deathless_E12_inv.py`.
+make it read as that thing, and its job: what it does on the ship (R221: a part with no job is cut). Source:
+`tools/blender/build_sheets/ships/deathless_E12_inv.py`.
 
-| ID | Type | What | Count | Cells | Reads as (sub-parts) | Source |
-|---|---|---|---:|---|---|---|
-| arcs | arc | the broken shade ring: flat box-section arcs on an oval round the spine, open at the bow and stern, an outer armoured wall with plates, the inner bay open on frames and machinery, a green-white corona line on every outer rim (the picture draws seven (one stern arc, starboard); the build has the matching port one) | 8 | bow/top, bow/side, bow/below, mid/top, mid/side, mid/below, stern/top, stern/side, stern/below | a channel section, a corona line, frames across the bay, machinery and conduits in it, plates | picture |
-| arc_plates | plate | plates over the arcs' upper faces and outer walls | 1 | bow/top, mid/top, stern/top | chamfered slabs with steps and fasteners | picture |
-| struts | strut | truss struts from the spine to the arcs (four in the picture; every arc gets its own, R207) (the picture shows four struts; the arcs it leaves floating get theirs (R207)) | 8 | bow/top, mid/top, stern/top | two rails, a zigzag web, end lugs | picture |
-| spine | hull | the spine: a long plated beam, stepped where it meets each fitting, overhanging the emitter housing | 1 | bow/top, bow/side, mid/top, mid/side, stern/top, stern/side | bevels, steps, an overhang | picture |
-| spine_plates | plate | plate blocks along the spine | 1 | bow/top, mid/top, stern/top, bow/side, mid/side | chamfered slabs with steps and fasteners | picture |
-| emitter | spinal | the bow emitter: a collared housing with a green lens (data.js doom F, the corona arc) | 1 | bow/top, bow/side | breech collars, segments, bands, rails, a muzzle block, a dark bore, a green lens | picture |
-| main_guns | gun | two twin turrets on oval saddles on the spine, one either side of the core (data.js gauss T, gauss T) | 2 | bow/top, bow/side, mid/top, mid/side | hex plinths, faceted housings under stacked shade plates, mantlets, breeches, coiled barrels, ringed muzzles | picture |
-| saddles | pylon | the oval saddles the turrets stand on | 2 | bow/side, mid/side | a stepped web, plates | picture |
-| core | core | the caged green core at the centre of the ring | 1 | mid/top, mid/side, mid/below | hub collars, a bright sphere, gimbal rings, meridian bars | picture |
-| stern_block | tier | the stern block: a broad faceted block tapering forward into the spine, the engines in its face | 1 | stern/top, stern/side, stern/below | faceted faces, a stepped roof, openings (lights, vents, hatches) | picture |
-| engines | engine | three engines side by side in the stern block | 3 | stern/top, stern/side, stern/below | faceted ribbed drums, mount collars, vanes, short bells, a corona ring round a black shade disc (no flame) | picture |
-| sentry | gun | the small turret on the stern block roof with green sights (data.js gsentry T, the null spire) | 1 | stern/top, stern/side | as the turrets, smaller | picture |
-| block_lights | lamp | the green light panel on the stern block flanks (the picture shows three on the near flank; matched on the far one) | 6 | stern/side | a housing, a green-white bar lens | picture |
-| block_vents | vent | heat slot panels on the stern block flanks | 2 | stern/side | a frame, slats | designed |
-| block_hatches | hatch | hatches on the stern block roof | 2 | stern/top | a rim, a door, a seam, hinges | designed |
-| thrusters | thruster | attitude thrusters on the stern block's roof and belly edges | 4 | stern/side | a block, slot nozzles | designed |
+| ID | Job | Type | What | Count | Cells | Reads as (sub-parts) | Source |
+|---|---|---|---|---:|---|---|---|
+| arcs | the broken shade ring: shields round the spine on every side, and they peel first when hit | arc | the broken shade ring: flat box-section arcs on an oval round the spine, open at the bow and stern, an outer armoured wall with plates, the inner bay open on frames and machinery, a green-white corona line on every outer rim (the picture draws seven (one stern arc, starboard); the build has the matching port one) | 8 | bow/top, bow/side, bow/below, mid/top, mid/side, mid/below, stern/top, stern/side, stern/below | a channel section, a corona line, frames across the bay, machinery and conduits in it, plates | picture |
+| arc_plates | armour over the arcs | plate | plates over the arcs' upper faces and outer walls | 1 | bow/top, mid/top, stern/top | chamfered slabs with steps and fasteners | picture |
+| struts | carry the arcs to the spine (R207: every arc structurally joined) | strut | truss struts from the spine to the arcs (four in the picture; every arc gets its own, R207) (the picture shows four struts; the arcs it leaves floating get theirs (R207)) | 8 | bow/top, mid/top, stern/top | two rails, a zigzag web, end lugs | picture |
+| spine | the keel beam: carries the core, the batteries and the emitter between the arcs | hull | the spine: a long plated beam, stepped where it meets each fitting, overhanging the emitter housing | 1 | bow/top, bow/side, mid/top, mid/side, stern/top, stern/side | bevels, steps, an overhang | picture |
+| spine_plates | armour over the spine | plate | plate blocks along the spine | 1 | bow/top, mid/top, stern/top, bow/side, mid/side | chamfered slabs with steps and fasteners | picture |
+| emitter | the corona arc (doom F): one heavy blow every other turn, fired through the ring's bow gap | corona_arc | the bow emitter: a collared housing with a green lens (data.js doom F, the corona arc) | 1 | bow/top, bow/side | breech collars, a capacitor column (segments, disc banks, conduits), an emitter head with a black shade disc in a thin corona ring, a small lens, six electrode horns (R221) | picture |
+| main_guns | the two null cannons (gauss T, gauss T): armour-piercing rail guns either side of the core | nullcannon | two twin turrets on oval saddles on the spine, one either side of the core (data.js gauss T, gauss T) | 2 | bow/top, bow/side, mid/top, mid/side | a thin hex foot, a low housing, a crescent shade with a corona rim, yoke cheeks, a ribbed capacitor stack, two rail pairs in stepped square frames, shock plates (R221) | picture |
+| saddles | seat the batteries on the thin spine and carry their feeds | pylon | the oval saddles the turrets stand on | 2 | bow/side, mid/side | a stepped web, plates | picture |
+| core | the trapped light core: powers the ship and the reclaim (repair) ability | core | the caged green core at the centre of the ring | 1 | mid/top, mid/side, mid/below | hub collars, a bright sphere, gimbal rings, meridian bars | picture |
+| stern_block | holds the engines, the engine room and the sentry | tier | the stern block: a broad faceted block tapering forward into the spine, the engines in its face | 1 | stern/top, stern/side, stern/below | faceted faces, a stepped roof, openings (lights, vents, hatches) | picture |
+| engines | drive (sp 2): three eclipse-ring engines, no flame | engine | three engines side by side in the stern block | 3 | stern/top, stern/side, stern/below | faceted ribbed drums, mount collars, vanes, short bells, a corona ring round a black shade disc (no flame) | picture |
+| sentry | the null spire (gsentry T): point defence against craft, standing high to see over the hull | spire | the small turret on the stern block roof with green sights (data.js gsentry T, the null spire) | 1 | stern/top, stern/side | a thin hex foot, a tall turning hex spire with bands and green sight slits, a head, a shade fin with a corona rim, two needle rails with tip frames (R221) | picture |
+| block_lights | running lights and the corona line on the block | lamp | the green light panel on the stern block flanks (the picture shows three on the near flank; matched on the far one) | 6 | stern/side | a housing, a green-white bar lens | picture |
+| block_vents | dump heat from the engine room | vent | heat slot panels on the stern block flanks | 2 | stern/side | a frame, slats | designed |
+| block_hatches | crew and drone access to the block | hatch | hatches on the stern block roof | 2 | stern/top | a rim, a door, a seam, hinges | designed |
+| thrusters | attitude control: turn the cruiser from its stern | thruster | attitude thrusters on the stern block's roof and belly edges | 4 | stern/side | a block, slot nozzles | designed |
 
 Kit sub-parts per type (what DETAILED checks):
 
 - arc: channel, corona, frame, machinery, plate
 - core: hub, sphere, gimbal, bar
+- corona_arc: breech, segment, capacitor, conduit, emitter, shade, corona, lens, horn
 - engine: housing, collar, rib, vane, bell, corona, shade
-- gun: ring|plate, housing, cowl, mantlet, breech, tube, coil, muzzle, bore
 - hatch: rim, door, seam, hinge
 - hull: bevel, step, overhang
 - lamp: housing, lens
+- nullcannon: ring|plate, housing, capacitor, yoke, shade, corona, rail, frame, muzzle
 - plate: slab, step, bevel, fastener
 - pylon: web, plate
-- spinal: breech, segment, band, rail, block, bore, lens
+- spire: ring|plate, spire, band, sight, head, shade, corona, needle, frame
 - strut: rail, web, lug
 - thruster: block, nozzle
 - tier: face, roof, opening
@@ -44,6 +46,10 @@ Left as surface, and why:
 
 - Grime, scuffs and decals: surface texture, painted in the build (recipe stages 4 and 5), not modelled.
 - The escort beside the cruiser in every picture is its own ship (a later fleet brief), not part of this hull.
+
+## Every built part has a job (R221)
+
+Built kit parts: 53; parts whose inventory id names no line with a job: 0.
 
 ## Per cell: present, shaped, detailed (from the model, deathless_E12_model.json)
 
@@ -167,6 +173,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 1.77 | 5.94 | 1.94 | 15.57 |
-| build | 1.72 | 7.02 | 1.89 | 11.32 |
+| build | 1.72 | 5.83 | 1.89 | 10.23 |
 
 Lines not present, shaped and detailed without a reason: 0.

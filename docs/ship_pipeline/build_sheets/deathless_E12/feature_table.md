@@ -1,6 +1,6 @@
 # deathless_E12: Eclipse zenith (the ring cruiser), build sheet
 
-Eclipse (deathless) | class Cruiser | version 2 (second sheet (Board review)), 2026-11-12 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\opus532e\e7\deathless_E12\deathless_E12_blockout.blend`
+Eclipse (deathless) | class Cruiser | version 3 (third sheet (R221 weapons)), 2026-11-12 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\opus532e\w\w1\deathless_E12\deathless_E12_blockout.blend`
 
 **Length 14.5 world units** (data.js d_harvester (cls 'Cruiser'); length from godot/render/hull_table.gd CLS_LEN['Cruiser'] = 14.5 (drawn x SHIP_K 1.6 = 23.2 on the board)). Frame: +X bow, +Y port, +Z up; station % from the prow tip; offset + port / - starboard; height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.
 
@@ -15,8 +15,8 @@ Eclipse (deathless) | class Cruiser | version 2 (second sheet (Board review)), 2
 | beam top | 8.475 |
 | beam bow | 8.475 |
 | beam disagreement percent | 0.0 |
-| height side | 2.087 |
-| height bow | 2.087 |
+| height side | 2.525 |
+| height bow | 2.525 |
 | height disagreement percent | 0.0 |
 | widest at station percent | 44.6 |
 | hull beam | 2.96 |
@@ -41,10 +41,10 @@ Eclipse (deathless) | class Cruiser | version 2 (second sheet (Board review)), 2
 | S3s | truss strut, 2.5 long | 1 | 51.4 | -0.16 | 0.13 | - | - | designed | truss from the spine to the centre starboard arc |
 | S4s | truss strut, 1.9 long | 1 | 66.2 | -0.18 | 0.13 | - | - | picture | truss from the spine to the aft starboard arc |
 | C1 | caged core of trapped light, 1.5 across | 1 | 43.4 | 0.00 | 0.15 | - | - | picture | the trapped light core in gimbal rings; the spine enters its hubs |
-| T1 | twin turret | 2 barrels | 28.1 | 0.00 | 0.57 | forward, +4 elev | T gauss | picture | fore null cannon twin on its saddle |
-| T2 | twin turret | 2 barrels | 59.4 | 0.00 | 0.57 | forward, +4 elev | T gauss | picture | aft null cannon twin on its saddle |
-| A1 | spinal projector (fixed) | 1 barrel | 13.7 | 0.00 | 0.15 | forward | F doom | picture | the corona arc emitter on the spine head, firing through the ring's bow gap |
-| G1 | twin turret | 2 barrels | 86.1 | 0.00 | 0.90 | forward, +6 elev | T gsentry | picture | the null spire: a small sentry twin on the block roof with green sights |
+| T1 | null cannon, twin turret | 2 barrels | 28.1 | 0.00 | 0.57 | forward, +4 elev | T gauss | picture | fore null cannon: twin rail pairs through a crescent shade, on its saddle |
+| T2 | null cannon, twin turret | 2 barrels | 59.4 | 0.00 | 0.57 | forward, +4 elev | T gauss | picture | aft null cannon: twin rail pairs through a crescent shade, on its saddle |
+| A1 | spinal arc emitter (fixed) | 1 barrel | 13.7 | 0.00 | 0.15 | forward | F doom | picture | the corona arc emitter on the spine head (a crown of electrode horns round a black shade disc), firing through the ring's bow gap |
+| G1 | null spire, twin turret | 2 barrels | 86.1 | 0.00 | 0.90 | forward, +6 elev | T gsentry | picture | the null spire: a tall turning spire on the block roof, green sight slits, two needle rails through a shade fin at its head |
 | E1 | engine, bell 1.0 across | 1 | 99.9 | 1.02 | 0.08 | exhaust aft | - | picture | port engine |
 | E2 | engine, bell 1.0 across | 1 | 99.9 | 0.00 | 0.08 | exhaust aft | - | picture | centre engine |
 | E3 | engine, bell 1.0 across | 1 | 99.9 | -1.02 | 0.08 | exhaust aft | - | picture | starboard engine |
@@ -95,7 +95,7 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Saddle, aft battery | 54.2 to 64.5 | -0.42 to 0.42 | 0.13 to 0.57 | violet plate | the oval saddle the turret stands on |
 | Emitter collars | 10.7 to 17.8 | -0.37 to 0.37 | -0.22 to 0.52 | mauve and violet | a part of the kit projector, counted as its own mass |
 | Emitter shaft | 7.7 to 10.1 | -0.32 to 0.32 | -0.17 to 0.47 | violet and mauve | a part of the kit projector, counted as its own mass |
-| Emitter block | 6.5 to 10.6 | -0.30 to 0.30 | -0.15 to 0.45 | mauve | a part of the kit projector, counted as its own mass |
+| Emitter block | 6.5 to 10.6 | -0.33 to 0.33 | -0.18 to 0.48 | mauve | a part of the kit projector, counted as its own mass |
 
 ## INSIDE (R98, R209): what each break reveals
 
@@ -144,7 +144,7 @@ Eclipse breaks in layers (factions.md): the ring arcs peel away first, band by b
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0. Tested: 446 objects, 30 parts, 309 close pairs, 368 rays, 4 guns, 3 turrets swept, 7 cones, 10 apertures. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 456 objects, 30 parts, 302 close pairs, 360 rays, 4 guns, 3 turrets swept, 7 cones, 10 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -158,6 +158,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **Three engines side by side in one row.** the plan and the beauty show three across; the side view stacks them, which the plan cannot; one row keeps the block broad and low.
 - **Engines are eclipse rings, not flame.** factions.md: "no flaming bells. An eclipse ring of pale light".
 - **Arcs are real box sections, 0.42 deep.** the side view draws the ring as a line; the beauty shows thick box sections with open bays, which carry frames and machinery.
+- **Weapons built from the lore, not the picture's generic turrets (R221).** Ryan: "their turrets look the same as hullbreakers"; the picture draws box turrets with round twin barrels. The null cannons are rail guns firing through the slot of a crescent shade, the null spire a tall sentry spire with needle rails, the emitter a crown of electrode horns round the crest's black disc (tools/blender/kits/eclipse/README.md).
 - **Weapons by data.js slot.** d_harvester: gauss T twice on the spine saddles, doom F the bow emitter, gsentry T the null spire on the block roof (the picture's small green-lit turret).
 - **Thrusters, hatches and heat panels added.** a ship in space needs thrusters; the picture shows no underside.
 

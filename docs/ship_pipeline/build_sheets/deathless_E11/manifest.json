@@ -1,13 +1,13 @@
 {
  "code": "deathless_E11",
- "sheet_version": 1,
+ "sheet_version": 2,
  "routes_note": "kit = the Eclipse parts kit (tools/blender/kits/eclipse/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
  "turret_marking": "R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).",
  "parts": [
   {
    "id": "A1",
    "kind": "gun",
-   "what": "spinal projector (fixed)",
+   "what": "spinal arc emitter (fixed)",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -19,7 +19,7 @@
   {
    "id": "T1",
    "kind": "gun",
-   "what": "twin turret",
+   "what": "null cannon, twin turret",
    "count": 2,
    "route": "kit",
    "source": "picture",
@@ -34,7 +34,7 @@
   {
    "id": "T2",
    "kind": "gun",
-   "what": "twin turret",
+   "what": "null cannon, twin turret",
    "count": 2,
    "route": "kit",
    "source": "picture",
@@ -49,7 +49,7 @@
   {
    "id": "F1",
    "kind": "gun",
-   "what": "twin turret",
+   "what": "null shredder, twin turret",
    "count": 2,
    "route": "kit",
    "source": "picture",
@@ -64,7 +64,7 @@
   {
    "id": "F2",
    "kind": "gun",
-   "what": "twin belly turret",
+   "what": "null shredder, twin belly turret",
    "count": 2,
    "route": "kit",
    "source": "picture",

@@ -553,9 +553,9 @@
   },
   "build": {
    "env_LB": 2.59,
-   "env_LH": 4.32,
+   "env_LH": 4.14,
    "hull_LB": 5.59,
-   "hull_LH": 6.47
+   "hull_LH": 6.54
   }
  }
 }
