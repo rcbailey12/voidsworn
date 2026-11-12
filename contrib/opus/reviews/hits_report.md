@@ -78,11 +78,36 @@ it is drawn with its bloom (`px / BURST_PX_K`). Two changes in how hits ask:
   stacked past the limit were counted, often booked ahead at the volley's fire time, and in two gate rounds a frigate's
   and a cruiser's core flash were turned soft behind them.
 
-GATE_TABLE
+Base mode is 12 s of the storm battle with volleys about three a second; deaths mode adds three deaths. Two sessions a
+round. "Yielded" is a gun hit drawn soft rather than counted (new); "refused" is the counter turning a flash soft.
+
+| Round (commit) | counted | refused (px of each) | gun hits yielded | what changed |
+|---|---|---|---|---|
+| main 057fb93c and 335cf1f2, 8 sessions | 0 to 11 a session | 0 | (none) | before |
+| after2 440c72d5, 4 sessions | 2 to 10 | 7: 35, 35, 63, 40, 76, 216, 302 | (none) | hits bigger, booked at drawn size: a frigate's (216) and a cruiser's (302) core flash refused |
+| after3 to after5, torpedo 140 px, 12 sessions | 0 to 14 | 11, among them a frigate core (216) and a cruiser core (302) once each | (none) | hits pre-booked at fire time still took the slots |
+| after6, after7 d6b700e7, 8 sessions | 0 to 8 | 0 | 2 to 15 a session | gun hits yield |
+| after8 ab819b7d, 4 sessions | 0 to 9 | 1: a cruiser core (302) | 2 to 8 | the shield torpedo booked at 169 px (Muse's check of PR 524; fixed in c8a2634) |
+| **after9 c8a26348 (the head), 4 sessions** | 0 to 9 | **0** | 2 to 12 | final |
+
+So at the head: the counter refused nothing in the gate, and every death's core flash drew bright. What gave way: 2 to 12
+gun hits a session (each 30 to 80 px, a few a shield torpedo's 75 px) were drawn with the soft rise instead of the sharp
+one, at full size and colour, inside a salvo. Torpedoes still book the budget like deaths do, so a core flash can still be
+refused when several torpedoes and deaths land in the same second; it happened in no session of the final policy.
 
 ## Cost
 
-FRAME_TABLE
+20-ship storm gate, RTX 5080, 1920x1080, Forward+, vsync off. Medians over sessions (main: 4 per mode from two rounds;
+branch: 6 per mode from rounds after6, after7, after9). Frame interval is the whole frame; GPU time is the GPU's own.
+
+| Mode | frame median, before / after | frame p99 | GPU median | GPU p99 |
+|---|---|---|---|---|
+| base | 7.20 / 7.56 ms | 13.93 / 14.89 ms | 2.42 / 2.36 ms | 3.01 / 2.78 ms |
+| deaths | 8.06 / 6.72 ms | 13.77 / 11.89 ms | 2.51 / 2.46 ms | 3.10 / 2.83 ms |
+
+Session to session the same commit moved by up to 4 ms of frame interval (other jobs shared the PC; after9 waited 5
+minutes for the GPU), so the frame differences above are inside the noise. GPU time did not grow. One more worker cut per
+lance kill of a big hull and up to 24 marks a ship are the new CPU costs; neither shows above the noise in the gate.
 
 No new textures: texture memory 1,602 MB before and after. Video memory 2,420 to 2,500 MB in both. The PC was shared
 with other jobs during these runs (frame intervals moved by up to 4 ms between sessions of the same commit); the GPU time
@@ -95,7 +120,11 @@ is the steadier number.
   inward; the families differ; torpedo light reach; reduce flashing books and counts nothing; gun hits yield and deaths
   keep the budget; a lance kill re-plans its cut on the beam's line (no kink, on the beam's point, not pitched) even with
   the first cut still running, and breaks up; the engine flicker constant; the scar cap.
-- On the PC, headless, final commit CHK_SHA: CHK_LINES
+- On the PC, headless, at the head c8a26348 (chk_c8): hit_recipe_check, flash_area_check, destruction_staging_check,
+  fx_smoke, death_plane_check, destruction_steps_check, damage_surface_check, death_leap_check, playtest_batch1_check,
+  playtest_batch3_check, squadron_check: all exit 0. HIT_RECIPE failures=0; "shield torpedo: row 75 px, booked 75 px"
+  (box ships: a small gun on a small target, 110 x 0.85 x 0.8). FX_SMOKE stray=0.
+- Not run here: the GPU checks (godot_gpu_checks.bat) and death_spawn_check on real hulls; CI runs the headless list.
 - Checks changed on purpose: none of the existing checks needed a number changed. The sweep (rules_sweep_checks.md C3, C7)
   found no exact HIT_PX, MUZ_PX or light-range guard; the comfort contracts (three a second, zero in calm) still hold in
   flash_area_check, destruction_staging_check and fx_smoke.
@@ -116,7 +145,10 @@ breathing under reduce flashing (flick() is unchanged).
 - On a lance kill the tear is straighter and on the beam's point, but at camera 60 the difference from a torpedo kill is
   modest; the tell's own shader still draws its tear the same way.
 - Gun hits that would need counting are now drawn soft rather than bright: in a dense salvo some shell flashes rise
-  slowly. The gate counts them separately (YIELD_NOTE).
+  slowly (2 to 12 a session in the gate).
+- The filmed fight (hits_fight_*.mp4) holds the battle camera on the player's line where the bench's third death is set;
+  the deaths themselves happen off that frame, and at camera 170 the hit changes are small in it. The bench strips show
+  the hits better.
 - Not built: faction-specific deaths and hits beyond the nearest-row rule; shields (waits on Ryan's pick).
 
 ## For the Board (and Ryan)
@@ -125,7 +157,13 @@ breathing under reduce flashing (flick() is unchanged).
   second. That is a deliberate junky look, but it is a large swing on a white core; at the close cameras a few
   Hullbreaker capitals could approach a general flash. Not changed here.
 - If Ryan wants the neighbour light stronger, the counter should first learn to measure lit hull area.
-- The playbook's torpedo row now says 140 px and why.
+- **For Ryan, a table amendment:** the torpedo-on-a-hull flash is built at 140 px, not the playbook's 154 (the playbook
+  row now says so). 154 px alone is over the flash counter's limit, so every torpedo spent one of the three flashes a
+  second and deaths' core flashes were turned soft behind them. hits_ladder.jpg shows the 140 px torpedo.
+- Muse's outside check of the early push (PR 524 at e2c34ab, contrib/muse/reviews/opus_check_524.md on muse/issue-256):
+  all five conditions are done (the evidence is in the PR; the shield torpedo is asked at its row and the check proves
+  it; the playbooks agree with the build on ion, the 140 px torpedo and the ladder steps; the needle exception and the
+  lance cut's limits are written down; faction_look.gd's accent comment is fixed).
 
 ## Evidence on the PC
 
