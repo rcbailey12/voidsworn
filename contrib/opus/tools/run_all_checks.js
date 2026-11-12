@@ -15,6 +15,12 @@ const path = require('path');
 const { spawn } = require('child_process');
 const ROOT = path.resolve(__dirname, '../../..');
 
+// Issue 357: the rules math targets V8 in Node 22; another major gives a false parity failure.
+if (require.main === module && process.versions.node.split('.')[0] !== '22') {
+  console.error('FAIL: Node major 22 is required, found ' + process.versions.node + '. Use the bundled Node 22 at voidsworn_test/node/node.exe.');
+  process.exit(1);
+}
+
 function readBaseline() {
   return JSON.parse(fs.readFileSync(path.join(__dirname, 'checks_baseline.json'), 'utf8'));
 }

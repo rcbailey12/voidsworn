@@ -46,7 +46,7 @@ if not exist "%O%" mkdir "%O%"
 echo started %date% %time% > "%O%\result.txt"
 if exist "%R%\.git" goto :cloned
 if defined CODEX_TEST_SPARSE goto :leanclone
-git clone -q --depth 1 https://github.com/rcbailey12/voidsworn "%R%"
+git clone -q -c core.autocrlf=false --depth 1 https://github.com/rcbailey12/voidsworn "%R%"
 goto :cloned
 :leanclone
 git clone -q -c core.autocrlf=false --depth 1 --filter=blob:none --sparse https://github.com/rcbailey12/voidsworn "%R%"
@@ -54,7 +54,6 @@ if exist "%R%\.git" git -C "%R%" sparse-checkout add %CODEX_TEST_SPARSE%
 :cloned
 if not exist "%R%\.git" (echo clone failed >> "%O%\result.txt" & exit /b 4)
 pushd "%R%"
-git config core.autocrlf false
 git fetch -q --depth 1 origin main
 if errorlevel 1 goto :fetchfail
 git checkout -q -f -B %BR% origin/main
