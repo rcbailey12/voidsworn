@@ -206,7 +206,16 @@ check(lows.length >= 4 && lows.every(v => v === 0.35), `every hull-low line is 0
   const led = read('godot/ui/battle/ledger.gd'), bg = read('godot/scenes/battle/battle.gd');
   const gsh3 = read('godot/ui/theme/glass_shell.gd'), board = read('godot/render/board.gd'), sv = read('godot/render/ship_view.gd');
   check(/const Ledger := preload\("res:\/\/ui\/battle\/ledger\.gd"\)/.test(hud) && /func _build_ledger\(/.test(hud) && /ledger\.ship = info/.test(hud) && /ledger\.target = info/.test(hud) && /ledger\.card = info/.test(hud), 'the battle HUD hands every setter to the orders sheet (ledger.gd)');
-  check(/legacy\.visible = false/.test(hud) && /for c in \[top, unacted, roster, panel, phase, hint\]/.test(hud), 'the Lime shell of the previous build is out of sight (legacy, never shown)');
+  // issue 578: the hidden Lime shell is gone; no file under godot/ui/battle/ writes the lime hex
+  const battleUi = [];
+  (function walk(d) {
+    for (const e of fs.readdirSync(path.join(ROOT, d), { withFileTypes: true })) {
+      const rel = d + '/' + e.name;
+      if (e.isDirectory()) { if (e.name !== 'fonts') walk(rel); }
+      else if (/\.(gd|tscn|tres|json)$/.test(e.name)) battleUi.push(rel);
+    }
+  })('godot/ui/battle');
+  for (const f of battleUi) check(!/#c8f53a/i.test(read(f)), `${f} writes no lime hex (the hidden shell is gone, issue 578)`);
   check(/const EMBER := GS\.MAP_EMBER/.test(led) && /const GLACIER := GS\.GLACIER/.test(led) && /const GLACIER := Color\("#92b8e8"\)/.test(gsh3), 'the sheet takes ember and Glacier (#92b8e8) from glass_shell.gd');
   check(!/GILT|GS\.SHIELD\b|#c8f53a|#4fc4ff|corner_radius|shadow/.test(led), 'no lime, no old shield cyan, no rounded corners and no shadows on the sheet');
   const plan = (led.match(/func _shield_plan\([\s\S]*?\n(?=func )/) || [''])[0];

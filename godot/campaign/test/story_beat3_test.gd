@@ -17,6 +17,13 @@ func text_of(node: Node) -> String:
 	for child in node.get_children(): text += text_of(child)
 	return text
 
+# the words the orders sheet lays out (the battle HUD's only screen since issue 578)
+func sheet_text(h) -> String:
+	h.ledger.layout()
+	var text := ""
+	for it in h.ledger.items: text += str(it["t"]) + "\n"
+	return text
+
 func shot(name_: String) -> void:
 	if screenshot_dir == "": return
 	await process_frame
@@ -56,7 +63,8 @@ func battle_shot(api, ui, name_: String) -> void:
 	await settle(); await shot(name_)
 	var flag = api.R.B["units"].filter(func(u): return u["side"] == "player" and bool(u.get("pflag", false)))[0]
 	scene.select(flag["id"]); await settle()
-	for line in api.R.storyModifierLines(flag): check(text_of(scene.hud.panel).contains(line), "ship status shows " + line)
+	var shown := sheet_text(scene.hud)
+	for line in api.R.storyModifierLines(flag): check(shown.contains(line), "ship status shows " + line)
 	await shot(name_ + "_status")
 	scene.queue_free(); await settle(); ui.show()
 
