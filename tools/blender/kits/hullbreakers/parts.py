@@ -333,6 +333,33 @@ def launch_tube(r, depth, lip=0.18, hood=0.0, bands=2, grille=False, seg=24, wal
     for i in range(bands):
         x = -depth * (0.35 + 0.45 * i / max(1, bands - 1)) if bands > 1 else -depth * 0.5
         p.add('band%d' % i, 'mount', 'iron', ring_band(x, ro, r * 0.22, r * 0.08, seg))
+    # R224 and R217 (issue 532: A16's front tubes measured 0.45 of the hull's triangles per square unit and 0.29 of its edge
+    # features): the tube carries the hull's detail level. Rings stand inside the bore (stepped liners), a ring of bolts on
+    # the lip, and armour stiffeners run along the barrel between the clamp bands.
+    tr = r * 0.07
+    for i, f in enumerate((0.18, 0.42, 0.68)):
+        x = -depth * f
+        p.add('ring%d' % i, 'mount', 'iron', revolve([(x - r * 0.06, r + 0.005), (x - r * 0.06, r - tr), (x + r * 0.06, r - tr),
+                                                      (x + r * 0.06, r + 0.005)], seg, closed=True))
+    nb = max(10, int(seg * 0.75))
+    rb = ro + r * lip * 0.3
+    for i in range(nb):
+        a = 2 * math.pi * (i + 0.5) / nb
+        c, sn = math.cos(a), math.sin(a)
+        p.add('bolt%d' % i, 'mount', 'iron', rod((-r * 0.04, rb * c, rb * sn), (r * 0.06, rb * c, rb * sn), r * 0.045, 6))
+    for i in range(8):
+        a = 2 * math.pi * (i + 0.25) / 8
+        c, sn = math.cos(a), math.sin(a)
+        p.add('stiff%d' % i, 'mount', 'steel', rod((-depth * 0.97, (ro + r * 0.03) * c, (ro + r * 0.03) * sn),
+                                                  (-r * 0.3, (ro + r * 0.03) * c, (ro + r * 0.03) * sn), r * 0.05, 4))
+    # each clamp band is bolted: a bolt head between each pair of stiffeners, standing off the band
+    for i in range(bands):
+        x = -depth * (0.35 + 0.45 * i / max(1, bands - 1)) if bands > 1 else -depth * 0.5
+        rr = ro + r * 0.07         # the band stands r * 0.08 proud: each bolt head sits in its top face
+        for j in range(8):
+            a = 2 * math.pi * (j + 0.75) / 8
+            c, sn = math.cos(a), math.sin(a)
+            p.add('bolt_b%d_%d' % (i, j), 'mount', 'iron', rod((x, rr * c, rr * sn), (x, (rr + r * 0.05) * c, (rr + r * 0.05) * sn), r * 0.05, 6))
     if grille:
         n = 5
         for i in range(n):
@@ -412,7 +439,7 @@ MACHINES = ('gun', 'spinal', 'rack', 'tube', 'engine', 'thruster', 'claw', 'pron
 SUBPARTS = {
     'engine': ['housing', 'collar', 'band', 'bell', 'lining', 'throat_glow', 'cone', 'cool', 'strut'],
     'gun': ['ring|plate', 'housing', 'mantlet', 'breech', 'tube', 'clamp', 'bore', 'vent'],
-    'tube': ['tube', 'bore', 'band'],
+    'tube': ['tube', 'bore', 'band', 'ring', 'bolt', 'stiff'],
     'rack': ['box', 'frame', 'div', 'cell', 'nose', 'bore', 'cheek', 'yoke', 'ring'],
     'dish': ['bowl', 'rib', 'feed', 'strut', 'yoke', 'post', 'base'],
     'claw': ['hinge', 'arm', 'joint', 'ram', 'finger'],
@@ -425,7 +452,7 @@ SUBPARTS = {
     'thruster': ['block', 'nozzle'],
     'antenna': ['base', 'mast', 'whip', 'pod'],
     'pipe': ['run', 'flange'],
-    'bay': ['rim', 'leaf', 'seam', 'hinge'],
+    'bay': ['rim', 'leaf', 'seam', 'hinge', 'ram', 'frame', 'stiff', 'rail', 'bracket', 'rivet'],
     'slit': ['frame', 'glass'],
     'plate': ['slab', 'step', 'bevel', 'rivet'],
     'patch': ['slab', 'lift', 'rivet'],
@@ -681,6 +708,32 @@ def bay(w, l, leaves=2):
         x = -l / 2 + l * (i + 0.5) / 3
         for s in (1, -1):
             p.add('hinge%d%d' % (i, s > 0), 'body', 'iron', rod((x - 0.2, s * w / 2, 0.12), (x + 0.2, s * w / 2, 0.12), 0.06, 8))
+            # the door ram: from the rim, outboard of the hinge, to the leaf
+            p.add('ram%d%d' % (i, s > 0), 'body', 'steel', rod((x + 0.28, s * (w / 2 + 0.06), 0.1), (x + 0.28, s * (w / 2 - 0.35), 0.16), 0.035, 6))
+    # R224 (issue 532: A16's bay measured 0.18 of the hull's triangles per square unit): frames, rails and inner structure.
+    # Each leaf is a framed panel with stiffeners across it; guide rails run the length of both sides on brackets; the rim
+    # carries a row of rivets; a transverse frame closes each end of the well.
+    for i in range(leaves):
+        y0 = -w / 2 + w * i / leaves + 0.03; y1 = -w / 2 + w * (i + 1) / leaves - 0.03; yc = (y0 + y1) / 2; hw = (y1 - y0) / 2
+        for s in (1, -1):
+            p.add('frame%d%s' % (i, 'a' if s > 0 else 'b'), 'body', 'iron', block(-l / 2 + 0.06, l / 2 - 0.06, 0.05, 0.03, 0.01, yo=yc + s * (hw - 0.07), zo=0.15))
+        for k in range(5):
+            x = -l / 2 + l * (k + 0.5) / 5
+            p.add('stiff%d%d' % (i, k), 'body', 'steel', rod((x, y0 + 0.08, 0.15), (x, y1 - 0.08, 0.15), 0.035, 4))
+    for s in (1, -1):
+        yr = s * (w / 2 + 0.2)
+        p.add('rail%s' % ('a' if s > 0 else 'b'), 'body', 'iron', block(-l / 2 - 0.05, l / 2 + 0.05, 0.05, 0.05, 0.015, yo=yr, zo=0.14))
+        for k in range(6):
+            x = -l / 2 + l * (k + 0.5) / 6
+            p.add('bracket%d%s' % (k, 'a' if s > 0 else 'b'), 'body', 'steel', block(x - 0.06, x + 0.06, 0.07, 0.07, 0.01, yo=yr, zo=0.06))
+    for e in (1, -1):
+        p.add('endframe%s' % ('a' if e > 0 else 'b'), 'body', 'iron', block(e * (l / 2 - 0.02) - 0.05, e * (l / 2 - 0.02) + 0.05, w / 2 + 0.1, 0.05, 0.015, zo=0.12))
+    nr = max(8, int((l + w) / 0.25))
+    for k in range(nr):
+        f = (k + 0.5) / nr
+        for s in (1, -1):
+            for (x, y) in (((-l / 2 + l * f), s * (w / 2 + 0.07)), (s * (l / 2 + 0.07), (-w / 2 + w * f))):
+                p.add('rivet%d%s%d' % (k, 'a' if s > 0 else 'b', abs(x) > l / 2), 'body', 'iron', rod((x, y, 0.08), (x, y, 0.115), 0.025, 6))
     # rotate so +Z is out: the block axis (X) became Z above
     return p
 

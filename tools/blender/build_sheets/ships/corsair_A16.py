@@ -276,6 +276,7 @@ def build(K):
     K.change('Engine pods brought in close to the hull', 'the concept\'s pods sit inside the ship\'s beam (top view); round 3\'s stood far out')
     K.change('Ventral launch bay and four attitude thruster quads added', 'data.js gives the barge a hangar of 2; a ship in space needs thrusters to turn')
     K.change('Crystal shard removed', 'Ryan, R197')
+    K.change('Front tubes and launch bay raised to the hull\'s detail density', 'R224, measured by the paint job (issue 601): the tubes were 0.45 and the bay 0.18 of the hull\'s triangles per square unit; the kit tube now has bore rings, a bolted lip, stiffeners and bolted bands (1.02 and 0.80 of the hull), the bay framed leaves with stiffeners, guide rails on brackets, door rams, end frames and rivets (1.64 and 1.61) (A17 build, issue 532)')
     K.change('Seven rooms fitted inside the rounded hull (claw machinery, kennel decks, loot hold, hangar, engine room, both shell magazines)',
              'their lower corners stood outside the intact plating (about 150 inside triangles, death_seam_check.gd on PR 608); each now fits the section with about 0.1 to spare (A17 build, issue 532)')
     K.open_item('Belly detail between the claws and the bay is designed here; the picture does not show it')

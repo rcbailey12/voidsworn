@@ -34,7 +34,7 @@ PL = dict(size=(0.3, 0.75), thick=(0.03, 0.1), skip=0.1, stack=0.45, mats={'soot
 # the top blocks, bow to stern: (name, x fore, x aft, half-beam at the top, half-beam at the base, top, front slope, y offset)
 # they step up toward the stern (concept side view: 0.47, 1.2, 1.6, 1.73, 1.87), with gaps between them and undercut bases
 TOP = [
-    ('U1 neck block', 4.0, 2.5, 1.5, 1.4, 0.78, 0.25, 0.0),
+    ('U1 neck block', 4.0, 2.5, 1.5, 1.4, 1.12, 0.25, 0.0),
     ('U2 fore block', 2.35, 0.85, 1.85, 1.7, 0.9, 0.35, 0.08),
     ('U3 ramp block', 0.75, -0.15, 1.8, 1.75, 1.2, 0.7, -0.05),
     ('U4 mid block', -0.28, -1.85, 2.03, 1.75, 1.3, 0.25, 0.1),
@@ -246,6 +246,7 @@ def build(K):
     K.change('Crystal shard removed', 'Ryan, R197')
     K.change('The face is a narrower panel inside a deep bevel frame (corner and brow planes plated), with a lower lip over the mouth',
              'Ryan R217 on A17: "the front is also just a flat block which does not match the concept"; the beauty\'s head is chamfered all round, not a flat end (A17 build, issue 532)')
+    K.change('Neck block raised from 0.78 to 1.12', 'in the beauty the deck behind the head steps down only a little; at 0.78 the head stood on the neck like a separate box (A17 build, issue 532)')
     K.change('Aft seam B-2 moved forward to the weld between the saddle and aft blocks, kinked round the antennas, T1 and the stern thrusters',
              'R226 (RULEBOOK 5.17): a machine never crosses a seam; at -4.75 the seam cut T1, Q3 and Q4 (A17 build, issue 532)')
     K.change('Mid turrets P2 and S2 rest at 35 degrees (were 25)', 'their data.js arc is 30 to 150; a rest outside it failed the export check (A17 build, issue 532)')

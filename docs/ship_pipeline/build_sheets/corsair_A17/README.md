@@ -1,15 +1,38 @@
-# corsair_A17 build sheet: Hullbreaker wrecker, the Pack Hunter (round 3c, R221 clean-ups)
+# corsair_A17 build sheet: Hullbreaker wrecker, the Pack Hunter (round 3c, R221 clean-ups, into the recipe)
 
 Ashfall Hullbreakers cruiser, class Cruiser, **14.5 world units** (godot/render/hull_table.gd CLS_LEN; data.js c_marauder);
 the model is 14.55. Version 3c, 2026-11-12: round 3's parts, fit check and turret marking (R217 to R219), with the massing
 rebuilt to the concept's measured proportions after the Board's review of round 3 ("short, tall and round, a lump").
-Designer of record: Opus (R205, R207). Rendered on Ryan's PC (Blender 4.5, GPU), blockout
-`C:\Users\rcbai\Downloads\voidsworn_test\opus532\r221a\corsair_A17\corsair_A17_blockout.blend`.
+Designer of record: Opus (R205, R207). The views on this page were re-rendered for the A17 build (issue 532) in the Opus
+sandbox (Blender 5.3, CPU, 24 samples) from the same build.py; the round 3c blockout from Ryan's PC is
+`C:\Users\rcbai\Downloads\voidsworn_test\opus532\r221a\corsair_A17\corsair_A17_blockout.blend`, and stage 4 of the PC run
+saves the recipe build at `Downloads\voidsworn_test\recipe\corsair_A17\build\A17.blend`.
 
 **Round 3c (the Board on 3b): the head follows the beauty**, the picture Ryan judges against: a big, tall, boxy front block
 (about 2.3 tall and 3.4 wide) towering over the neck, two big ear dishes (1.9 across, about the head's height) standing out
 from brackets at its upper corners, and broad flat prongs (0.7 and 0.55 wide). The neck turrets and the rocket pod were lifted
 so their arcs and exits clear the taller head; the fit check is still zero.
+
+## Into the recipe (issue 532, the A17 build, Nov 12 2026)
+
+The recipe builds this sheet itself, the route A16 proved (issue 592): ship file `tools/recipe/ships/corsair_A17.json`
+(data.js `c_marauder`, game folder `C15s_23`, the corsair Cruiser the game draws; the class length 14.5 is read from this
+sheet, `bake: none` until the sheet paint stack, issue 601, lands). What the route and the Board's notes changed here:
+
+1. **The bow (Ryan R217: "the front is also just a flat block which does not match the concept").** The face is now a
+   narrower panel (2.2 wide, 1.45 tall) inside a deep bevel frame: the corner and brow planes run back 0.45 to the full
+   head (3.3 wide), each plated, with a lower lip over the mouth, as the beauty draws it. The neck block behind the head is
+   raised from 0.78 to 1.12, so the head no longer stands on the neck like a separate box.
+2. **Seams round machines (R226, RULEBOOK 5.17).** The aft seam B-2 cut the aft twin T1 and the stern thrusters Q3 and
+   Q4 at x -4.75. It now runs along the weld between the saddle and aft blocks (about -3.15 to -3.7), kinked round the
+   antennas AN1 and AN2 ahead of it and T1, Q3 and Q4 behind it, and bites through the core. The stage 4 audit passes: no
+   machine across a seam; structure across: three lamps (L4s, LHp, LHs).
+3. **Turret rests.** P2 and S2 rested at 25 degrees, outside their data.js arc (30 to 150); they now rest at 35. The fit
+   check is still zero in all seven tests.
+4. **Insides inside the plating.** 67 inside triangles stood outside the intact hull (death_seam_check.gd on PR 608
+   counts them as a sheet matter): the top deck at 0.9 and the crew, rocket and flak rooms rose above the low top blocks
+   and into the gaps between them. The top deck is now at 0.3 and each room sits under its own block's roof. Measured on
+   the unpainted export with PR 608's check: 0 outside the whole ship; machines split 0 of 29.
 
 **R221 clean-ups (Ryan, Nov 12 2026).** The two chain girdles are cut ("There's no purpose"), and every inventory line names
 its job (27 lines, 0 failing). The fit check's new LANE test (each rack's firing lane forward and backblast aft; no gun in
