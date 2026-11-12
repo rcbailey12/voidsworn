@@ -107,6 +107,8 @@ set "OPENCODE_DISABLE_MODELS_FETCH=1"
 rem one shell command may run 30 minutes (parity takes several; the default is 2 minutes)
 set "OPENCODE_EXPERIMENTAL_BASH_DEFAULT_TIMEOUT_MS=1800000"
 set "OPENCODE_CONFIG=%T%work\opencode.json"
+rem kimicode: its own config with no helper agents (issue 597: five parallel helpers spent the plan's 5-hour window in 9 minutes)
+if /i "%ARM%"=="kimicode" set "OPENCODE_CONFIG=%T%work\opencode_kimi.json"
 if /i "%MODE%"=="dryrun" goto :drysetup
 call :getkey DEEPSEEK_API_KEY
 call :getkey MOONSHOT_API_KEY
