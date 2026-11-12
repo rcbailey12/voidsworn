@@ -23,6 +23,7 @@ const ShipView := preload("res://render/ship_view.gd")
 const CamRig := preload("res://render/camera_rig.gd")
 const HT := preload("res://render/hull_table.gd")
 const HUD := preload("res://ui/battle/hud.gd")
+const UiScale := preload("res://ui/ui_scale.gd")
 const Fx := preload("res://scenes/battle/fx_stub.gd")
 const Sfx := preload("res://audio/sfx.gd")
 const DeathAudio := preload("res://audio/death_audio.gd")
@@ -2104,7 +2105,7 @@ func _impact(t_id, h: Dictionary, col: Color) -> void:
 # at the flash (fx.gd kill_slowmo, R73). A key or a click lets both go; under reduce motion the beat is off and the hold
 # ends just after the flash. Hurried (Enter or Space) or with no core flash, the old 1.6 s at the battle's pace stays.
 const KILL_AFTER := 0.35      # seconds the cut-in stays on the wreck after the flash (and after the beat, when it plays)
-var reduce_motion := false    # settings key reduce_motion (ui_spec.md 7.6; the switch itself is UI follow-up job A)
+var reduce_motion := false    # settings key reduce_motion (ui_spec.md 7.6; the switch sits in Settings and this menu)
 var kill_hold_until := -1.0   # game_t when the kill cut-in lets go; -1 when none holds
 var _kill_hold_n := 0
 
@@ -3972,6 +3973,8 @@ func _open_menu() -> void:
 	items.append(["Cut-ins: %s" % {"key": "key moments", "all": "every attack", "off": "off"}.get(cine, cine), "opt", "cine"])
 	items.append(["Teaching tips: %s" % ("off" if tips_off else "on"), "opt", "tips"])
 	items.append(["Reduce flashing: %s" % ("on" if reduce_flashing else "off"), "opt", "flash"])
+	items.append(["Reduce motion: %s" % ("on" if reduce_motion else "off"), "opt", "motion"])
+	items.append(["UI scale: %s" % _ui_scale_name(), "opt", "uiscale"])
 	items.append(["Screen shake: %s" % ("full" if shake_scale >= 1.0 else ("reduced" if shake_scale > 0.0 else "off")), "opt", "shake"])
 	items.append(["Threat map: %s" % ("on" if threat_on else "off"), "opt", "threat"])
 	items.append(["Reach hatching: %s" % ("on" if danger_on else "off"), "opt", "danger"])
@@ -3983,6 +3986,16 @@ func _open_menu() -> void:
 	items.append(["Copy a problem report", "report"])
 	items.append(["Quit the game", "quit"])
 	hud.show_menu("Menu", items)
+
+
+const UI_SCALES := [[0.9, "Small"], [1.0, "Normal"], [1.15, "Large"], [1.3, "Larger"]]
+
+
+func _ui_scale_name() -> String:
+	for o in UI_SCALES:
+		if is_equal_approx(float(o[0]), UiScale.player):
+			return str(o[1])
+	return "Normal"
 
 
 func _toggle_opt(k: String) -> void:
@@ -4009,6 +4022,19 @@ func _toggle_opt(k: String) -> void:
 		"flash":
 			set_fx_opts(not reduce_flashing, shake_scale)
 			option_changed.emit("reduce_flashing", reduce_flashing)
+		"motion":
+			reduce_motion = not reduce_motion
+			option_changed.emit("reduce_motion", reduce_motion)
+		"uiscale":
+			var i := 0
+			for j in UI_SCALES.size():
+				if is_equal_approx(float(UI_SCALES[j][0]), UiScale.player):
+					i = j
+			var v := float(UI_SCALES[(i + 1) % UI_SCALES.size()][0])
+			UiScale.set_player(v)
+			option_changed.emit("ui_scale", v)
+			if hud != null and is_instance_valid(hud):
+				hud._rebuild()
 		"shake":
 			set_fx_opts(reduce_flashing, 0.5 if shake_scale >= 1.0 else (0.0 if shake_scale > 0.0 else 1.0))
 			option_changed.emit("shake", shake_scale)

@@ -289,21 +289,31 @@ func _settings() -> void:
 	v.custom_minimum_size = Vector2(s(460), 0)
 	settings_panel.add_child(v)
 	v.add_child(_label("Settings", 24, T_GILT, font_goth))
-	v.add_child(_toggle("Sound", "sound"))
-	v.add_child(_slider("Volume", "volume", 0.0, 1.0))
-	v.add_child(_toggle("Music", "music"))
-	v.add_child(_slider("Music volume", "music_volume", 0.0, 1.0))
-	v.add_child(_choice("Speed", "speed", [[1.0, "Normal"], [0.45, "Fast"]]))
-	v.add_child(_choice("Movement", "movement", [["cinematic", "Cinematic"], ["brisk", "Brisk"]]))
-	v.add_child(_choice("Enemy AI", "ai", [["veteran", "Veteran"], ["standard", "Standard"]]))
-	v.add_child(_toggle("Reduce flashing", "reduce_flashing"))
-	v.add_child(_choice("Screen shake", "shake", [[1.0, "Full"], [0.5, "Reduced"], [0.0, "Off"]]))
-	v.add_child(_toggle("Follow enemy activations", "follow"))
-	v.add_child(_choice("Cut-ins", "cine", [["key", "Key moments"], ["all", "Every attack"], ["off", "Off"]]))
-	v.add_child(_toggle("Teaching tips", "tips"))
-	v.add_child(_toggle("Full screen", "fullscreen"))
-	v.add_child(_choice("Graphics", "quality", [["max", "Max"], ["high", "High"], ["low", "Low"]]))
-	v.add_child(_toggle("Temporal AA (smoother edges, softer motion)", "taa"))
+	# the rows scroll when the panel would be taller than the window at the larger UI scales, while the title and Done stay put
+	var sc := ScrollContainer.new()
+	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	v.add_child(sc)
+	var rows := VBoxContainer.new()
+	rows.add_theme_constant_override("separation", s(10))
+	rows.custom_minimum_size = Vector2(s(460), 0)
+	sc.add_child(rows)
+	rows.add_child(_toggle("Sound", "sound"))
+	rows.add_child(_slider("Volume", "volume", 0.0, 1.0))
+	rows.add_child(_toggle("Music", "music"))
+	rows.add_child(_slider("Music volume", "music_volume", 0.0, 1.0))
+	rows.add_child(_choice("Speed", "speed", [[1.0, "Normal"], [0.45, "Fast"]]))
+	rows.add_child(_choice("Movement", "movement", [["cinematic", "Cinematic"], ["brisk", "Brisk"]]))
+	rows.add_child(_choice("Enemy AI", "ai", [["veteran", "Veteran"], ["standard", "Standard"]]))
+	rows.add_child(_choice("UI scale", "ui_scale", [[0.9, "Small"], [1.0, "Normal"], [1.15, "Large"], [1.3, "Larger"]]))
+	rows.add_child(_toggle("Reduce motion", "reduce_motion"))
+	rows.add_child(_toggle("Reduce flashing", "reduce_flashing"))
+	rows.add_child(_choice("Screen shake", "shake", [[1.0, "Full"], [0.5, "Reduced"], [0.0, "Off"]]))
+	rows.add_child(_toggle("Follow enemy activations", "follow"))
+	rows.add_child(_choice("Cut-ins", "cine", [["key", "Key moments"], ["all", "Every attack"], ["off", "Off"]]))
+	rows.add_child(_toggle("Teaching tips", "tips"))
+	rows.add_child(_toggle("Full screen", "fullscreen"))
+	rows.add_child(_choice("Graphics", "quality", [["max", "Max"], ["high", "High"], ["low", "Low"]]))
+	rows.add_child(_toggle("Temporal AA (smoother edges, softer motion)", "taa"))
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_END
 	row.add_child(_button("Done", func() -> void:
@@ -315,6 +325,8 @@ func _settings() -> void:
 			settings_dim = null
 		_focus_first(menu), true))
 	v.add_child(row)
+	var vs := get_viewport().get_visible_rect().size
+	sc.custom_minimum_size = Vector2(s(460), minf(rows.get_combined_minimum_size().y, vs.y - s(150)))
 	_focus_first(settings_panel)
 
 
@@ -466,7 +478,9 @@ func _choice(t: String, key: String, opts: Array) -> Control:
 				i = j
 		main.settings[key] = opts[(i + 1) % opts.size()][0]
 		b.text = label_of.call()
-		main.save_settings())
+		main.save_settings()
+		if key == "ui_scale":
+			_rebuild())
 	b.custom_minimum_size = Vector2(s(110), 0)
 	r.add_child(b)
 	return r

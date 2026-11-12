@@ -8,7 +8,7 @@ extends RefCounted
 # 1080 is the design height: every size in the UI code is written as it looks at 1920x1080. The floor and the ceiling
 # are provisional: the U-A calibration captures (1440p, 4K and a small window, ruled on by Ryan) set them for good
 # (HD1). The ceiling only binds above 2376 lines, the floor below 648.
-# The player's UI scale (R2) multiplies the window law. It stays 1.0 until the settings entry ships (ui_spec.md 4.4);
+# The player's UI scale (R2) multiplies the window law. The Settings screen offers it (issue 546, ui_spec.md 4.4);
 # main.gd copies settings["ui_scale"] here when settings are applied, and a missing key reads as 1.0.
 # Users: hud.gd (s), title.gd (s), campaign_ui.gd (px, which map3d.gd's labels read), campaign_fallback_ui.gd,
 # career_screen.gd, rename_dialog.gd, load_screen.gd. A new screen calls k_for(), never its own clamp.
