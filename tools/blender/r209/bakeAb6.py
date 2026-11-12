@@ -77,7 +77,7 @@ def trim_source(src, hull):
 def b0_bakes(hull):
     """steps 3: trimmed B0, smoothed B0, the detail-only normal map and the cavity AO, all on the hull's UVs"""
     t0 = time.time()
-    src = C.import_glb(B0, 'b0_src'); C.ai_align(src, 22.0)
+    src = C.import_glb(B0, 'b0_src'); C.ai_align(src, C.shape_ref_yaw())
     n0, n1 = trim_source(src, hull); INFO.update(b0_triangles_faces=n0, b0_faces_kept=n1, trim_outside=TRIM_OUT)
     sm = src.copy(); sm.data = src.data.copy(); bpy.context.scene.collection.objects.link(sm); sm.name = 'b0_smooth'
     m = sm.modifiers.new('dec', 'DECIMATE'); sm.data.calc_loop_triangles(); m.ratio = min(1, SMOOTH_TRIS / max(1, len(sm.data.loop_triangles)))
@@ -145,6 +145,8 @@ def lod_tags(objs):
 
 def main():
     t0 = time.time(); os.makedirs(OUT, exist_ok=True)
+    if getattr(A3, 'OWN_INSIDES', False):     # issue 592: a build sheet hull carries its own insides and seams; this bake would add
+        raise SystemExit('bakeAb6: the hull module builds a build sheet (OWN_INSIDES); its paint stack is not written yet: set "bake": "none" in the ship json')
     hero = A3.HERO_SLOTS if CELL.startswith('Hy') else ()
     S, Pl, hard, gen, notes, prox = A3.build_geometry(hero, GEN)
     t_geo = time.time() - t0

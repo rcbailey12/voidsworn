@@ -6,6 +6,10 @@ extends SceneTree
 # Writes res://gen/hulls/<code>.res (a Mesh with its material), res://gen/hi/<code>.scn (the 8K flagships as scenes),
 # res://gen/rocks/<code>.res, res://gen/sky.res and res://gen/manifest.json. Textures are mipmapped and compressed
 # (S3TC/RGTC) so the GPU reads them as they are.
+# Issue 592: --ships-only refreshes only the ship cache (gen/ships, gen/damage, gen/wreck and the manifest's "ships") from
+# assets/ships: the recipe's stage 7 install runs it, so the game reads a newly installed hull, never the cached old one, and an
+# old hull's damage and wreck entries go with it. --gen DIR and --ships DIR move the cache and the ship folders (the install
+# test, render/test/install_refresh_check.gd, runs in user://).
 
 const HT := preload("res://render/hull_table.gd")
 # bump when the generated files change shape; tools/pc/play_godot.bat rebuilds when gen\v<N>.txt is missing
@@ -19,6 +23,9 @@ var max_s := 0.0            # --max-seconds N: stop starting new items after N s
 var t_start := 0
 var out_of_time := false
 var manifest := {"hulls": {}, "hi": {}, "rocks": {}, "sky": "", "ships": {}}
+var ships_only := false
+var gen_root := "res://gen"
+var ships_base := "res://assets/ships"
 
 
 func _init() -> void:
@@ -31,6 +38,9 @@ func _init() -> void:
 			"--env": env_dir = a[i + 1]; i += 1
 			"--force": force = true
 			"--max-seconds": max_s = float(a[i + 1]); i += 1
+			"--ships-only": ships_only = true
+			"--gen": gen_root = a[i + 1]; i += 1
+			"--ships": ships_base = a[i + 1]; i += 1
 		i += 1
 	if repo == "":
 		repo = ProjectSettings.globalize_path("res://").get_base_dir().get_base_dir()
@@ -38,12 +48,19 @@ func _init() -> void:
 	for d in ["res://gen", "res://gen/hulls", "res://gen/hi", "res://gen/rocks"]:
 		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(d))
 	t_start = Time.get_ticks_msec()
-	var old = _read_json("res://gen/manifest.json")
+	var old = _read_json(gen_root.path_join("manifest.json"))
 	if old is Dictionary and not force:
 		manifest = old
 		for k in ["hulls", "hi", "rocks", "ships"]:
 			if not manifest.has(k):
 				manifest[k] = {}
+	if ships_only:
+		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(gen_root))
+		_build_a4_ships()
+		_save_manifest()
+		print("[assets] ships refreshed: %d A4 ships in %s" % [manifest["ships"].size(), gen_root.path_join("manifest.json")])
+		quit(0)
+		return
 	var codes := {}
 	for k in HT.AI_HULLS:
 		codes[HT.AI_HULLS[k]] = true
@@ -91,7 +108,7 @@ func _current(table: Dictionary, code: String, out: String) -> bool:
 
 
 func _save_manifest() -> void:
-	var f := FileAccess.open("res://gen/manifest.json", FileAccess.WRITE)
+	var f := FileAccess.open(gen_root.path_join("manifest.json"), FileAccess.WRITE)
 	if f != null:
 		f.store_string(JSON.stringify(manifest, "  "))
 
@@ -313,9 +330,9 @@ func _build_hi(code: String) -> void:
 func _build_a4_ships() -> void:
 	if not manifest.has("ships"):
 		manifest["ships"] = {}
-	for d in ["res://gen/ships", "res://gen/damage", "res://gen/wreck"]:
-		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(d))
-	var base := "res://assets/ships"
+	for d in ["ships", "damage", "wreck"]:
+		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(gen_root.path_join(d)))
+	var base := ships_base
 	var da := DirAccess.open(base)
 	if da == null:
 		return
@@ -323,18 +340,15 @@ func _build_a4_ships() -> void:
 		var src := base.path_join(code).path_join(code + ".glb")
 		if not FileAccess.file_exists(src):
 			continue
-		var out := "res://gen/ships/%s.scn" % code
+		var out := gen_root.path_join("ships/%s.scn" % code)
 		# A4 re-exports ships under the same names: a changed source (time or size of the ship, damage or wreck glb)
 		# rebuilds that ship even when the generator version is current
-		var stamp := ""
+		var stamp := source_stamp(base, code)
 		var newest := 0
 		for suf in ["", "_damage", "_wreck"]:
 			var sp0 := base.path_join(code).path_join(code + suf + ".glb")
 			if FileAccess.file_exists(sp0):
-				var fa := FileAccess.open(sp0, FileAccess.READ)
-				var mt := FileAccess.get_modified_time(sp0)
-				newest = maxi(newest, mt)
-				stamp += "%d:%d;" % [mt, fa.get_length() if fa != null else 0]
+				newest = maxi(newest, FileAccess.get_modified_time(sp0))
 		if manifest["ships"].has(code):
 			var me: Dictionary = manifest["ships"][code]
 			if not me.has("src") and FileAccess.file_exists(out) and FileAccess.get_modified_time(out) >= newest:
@@ -345,13 +359,25 @@ func _build_a4_ships() -> void:
 			continue
 		var e := {"v": GEN_VERSION, "res": out, "mirror": false, "src": stamp}
 		if _glb_to_scene(src, out, code):
-			for extra in [["_damage", "res://gen/damage/%s_damage.scn"], ["_wreck", "res://gen/wreck/%s_wreck.scn"]]:
+			for extra in [["_damage", gen_root.path_join("damage/%s_damage.scn")], ["_wreck", gen_root.path_join("wreck/%s_wreck.scn")]]:
 				var sp := base.path_join(code).path_join(code + extra[0] + ".glb")
 				if FileAccess.file_exists(sp) and _glb_to_scene(sp, extra[1] % code, code + extra[0]):
 					e[extra[0].substr(1)] = extra[1] % code
 			manifest["ships"][code] = e
 			print("[assets] A4 ship %s%s" % [code, " (+ breach parts)" if e.has("damage") else ""])
 	_check_a4_ships()
+
+
+# the stamp of a ship's source files (time and size of the ship, damage and wreck glb): a changed stamp rebuilds the ship.
+# One home: the install readback (render/test/installed_ship_check.gd) reads the same function.
+static func source_stamp(base: String, code: String) -> String:
+	var stamp := ""
+	for suf in ["", "_damage", "_wreck"]:
+		var sp0 := base.path_join(code).path_join(code + suf + ".glb")
+		if FileAccess.file_exists(sp0):
+			var fa := FileAccess.open(sp0, FileAccess.READ)
+			stamp += "%d:%d;" % [FileAccess.get_modified_time(sp0), fa.get_length() if fa != null else 0]
+	return stamp
 
 
 # one line per A4 ship as the game will load it: skins, heavy skins, hard points, breach holes and heavies, wreck chunks

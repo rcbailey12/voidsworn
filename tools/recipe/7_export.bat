@@ -12,25 +12,29 @@ rem Last, it proves the check itself can fail (check_export_selftest.py: every b
 rem It never copies into the game on its own. To install a checked export, set INSTALL_TO to a Godot project folder (the folder
 rem that holds project.godot) before running this: the files it replaces are first copied to export\replaced_DATE\, and the old
 rem ship's wreck and damage files are moved there too (they belong to the old hull). Nothing is deleted. The install also merges
-rem manifest_entry.json into INSTALL_TO\assets\ships\manifest.json, so the point counts are recorded per ship.
+rem manifest_entry.json into INSTALL_TO\assets\ships\manifest.json, so the point counts are recorded per ship, refreshes the
+rem game's ship cache (render\build_assets.gd --ships-only) and reads the ship back as the game draws it (issue 592).
 rem Set RECIPE_NOPAUSE=1 to run it from another job without the key press at the end.
 call "%~dp0env.bat"
 set EX=%JOB%\export\%CODE%
+rem issue 592: a ship with no paint stack yet ("bake": "none") is exported and checked as an unbaked test export
+set UNB=
+if /i "%BAKE%"=="none" set UNB=unbaked=1
 if not exist "%JOB%\%CELL%.blend" (echo Stage 7 FAILED: no baked ship at %JOB%\%CELL%.blend. Run stage 5 first. & goto bad)
 if not exist "%EX%" mkdir "%EX%"
 echo RUNNING > "%EX%\export_status.txt"
 "%BPY%" "%RC%\standing.py" all --ship "%R209_SHIP%" --job "%JOB%" > "%JOB%\log_standing_all.txt" 2>&1
 if errorlevel 1 (type "%JOB%\log_standing_all.txt" & echo Stage 7 FAILED: a standing ship check did not pass. See %JOB%\log_standing_all.txt & goto bad)
 type "%JOB%\log_standing_all.txt"
-"%B%" -b "%JOB%\%CELL%.blend" -P "%RC%\export7.py" -- "%R209_SHIP%" "%EX%" maps=2048 > "%JOB%\log_export.txt" 2>&1
+"%B%" -b "%JOB%\%CELL%.blend" -P "%RC%\export7.py" -- "%R209_SHIP%" "%EX%" maps=2048 %UNB% > "%JOB%\log_export.txt" 2>&1
 findstr /c:"[export7]" "%JOB%\log_export.txt"
 findstr /b /c:"WRITTEN" "%EX%\export_status.txt" > nul
 if errorlevel 1 (echo Stage 7 FAILED: the export was not written. See %JOB%\log_export.txt & goto bad)
-"%BPY%" "%RC%\check_export.py" "%R209_SHIP%" "%EX%" > "%JOB%\log_export_check.txt" 2>&1
+"%BPY%" "%RC%\check_export.py" "%R209_SHIP%" "%EX%" %UNB% > "%JOB%\log_export_check.txt" 2>&1
 set CHK=%errorlevel%
 type "%JOB%\log_export_check.txt"
 if not "%CHK%"=="0" (echo CHECK FAILED > "%EX%\export_status.txt" & echo Stage 7 FAILED: %EX% is not a game ship folder. Nothing was installed. & goto bad)
-"%BPY%" "%RC%\check_export_selftest.py" "%R209_SHIP%" "%EX%" > "%JOB%\log_export_selftest.txt" 2>&1
+"%BPY%" "%RC%\check_export_selftest.py" "%R209_SHIP%" "%EX%" %UNB% > "%JOB%\log_export_selftest.txt" 2>&1
 set SELF=%errorlevel%
 type "%JOB%\log_export_selftest.txt"
 if not "%SELF%"=="0" (echo SELFTEST FAILED > "%EX%\export_status.txt" & echo Stage 7 FAILED: the export check did not refuse a broken export. Nothing was installed. & goto bad)
@@ -49,7 +53,14 @@ copy /y "%EX%\%CODE%.glb" "%SH%\" > nul
 copy /y "%EX%\%CODE%*.jpg" "%SH%\" > nul
 "%BPY%" "%RC%\manifest_merge.py" "%EX%\manifest_entry.json" "%INSTALL_TO%" "%CODE%"
 if errorlevel 1 (echo Stage 7 FAILED: the manifest entry was not merged into %INSTALL_TO%\assets\ships\manifest.json & goto bad)
-echo Installed into %SH% (what was there before is in %OLD%)
+rem issue 592: copying the glb is not enough, the game draws ships from its asset cache (gen\manifest.json). Refresh the ship
+rem cache from the installed folders, then read the ship back the way the game will (ShipView), or the old hull stays on screen.
+"%GD%" --headless --path "%INSTALL_TO%" --script res://render/build_assets.gd -- --ships-only > "%JOB%\log_install_cache.txt" 2>&1
+findstr /c:"[assets] ships refreshed" "%JOB%\log_install_cache.txt" > nul || (echo Stage 7 FAILED: the game's ship cache was not refreshed. See %JOB%\log_install_cache.txt & goto bad)
+"%GD%" --headless --path "%INSTALL_TO%" --script res://render/test/installed_ship_check.gd -- %CODE% > "%JOB%\log_install_readback.txt" 2>&1
+findstr /c:"INSTALL READBACK PASS" "%JOB%\log_install_readback.txt" > nul || (type "%JOB%\log_install_readback.txt" & echo Stage 7 FAILED: the game does not draw the new %CODE%. See %JOB%\log_install_readback.txt & goto bad)
+type "%JOB%\log_install_readback.txt" | findstr /c:"INSTALL READBACK"
+echo Installed into %SH% (what was there before is in %OLD%); the game's ship cache is refreshed
 :done
 echo Stage 7 done: PASS. The game's ship folder is %EX%
 if "%RECIPE_NOPAUSE%"=="" pause

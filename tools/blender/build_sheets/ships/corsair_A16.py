@@ -160,9 +160,9 @@ def build(K):
         K.box('A16_barbette_%s2' % sl, 2.05, 3.55, min(side * 1.95, side * 3.45), max(side * 1.95, side * 3.45), 1.9, 2.75, 'iron', ch=0.2,
               plates=dict(PL, seed=80 + side, faces=[0, 2, 3], size=(0.4, 0.8)))
         for i, (x, z) in enumerate(((6.3, 2.0), (2.8, 2.75))):
-            K.gun('%s%d' % (sl, i + 1), (x, side * 2.72, z), side * (15 + 5 * i), 2, barrels=2, cal=0.14, blen=2.2, size=1.3, variant=i,
+            K.gun('%s%d' % (sl, i + 1), (x, side * 2.72, z), side * (30 + 5 * i), 2, barrels=2, cal=0.14, blen=2.2, size=1.3, variant=i,
                   slot=sl, weapon='scatter', inv='bow_guns', note='deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring)')
-        K.gun('%s3' % sl, (-0.7, side * 2.72, 2.0), side * 25, 2, barrels=2, cal=0.14, blen=2.2, size=1.3, variant=1,
+        K.gun('%s3' % sl, (-0.7, side * 2.72, 2.0), side * 40, 2, barrels=2, cal=0.14, blen=2.2, size=1.3, variant=1,
               slot=sl, weapon='scatter', inv='mid_guns', note='deck-edge twin turret, tier 2, aft')
         K.gun('%sM' % sl, (0.9, belt_y(0.9, side, 'up', 0.5) + 0.02 * side, 0.5), side * 35, 0, barrels=2, cal=0.12, blen=1.7, size=1.0, normal=K.surf_n(0.9, side, 0.5),
               slot=sl, weapon='scatter', inv='mid_casemates', note='flank twin casemate on the upper belt amidships')
@@ -236,12 +236,13 @@ def build(K):
     K.armour('tier 2 and castle roof', 0.3, '')
     K.armour('belly', 0.35, 'flat armoured belly with chines')
     K.armour('engine end', 0.2, 'thinnest: the soft spot')
-    K.break_line('B-1', 7.0, 'tier 2 seam under the C1 girdle: the bow and the kennel decks tear off; C1 holds them a moment',
-                 path=[(7.3, 1.55), (6.8, 1.0), (7.5, 0.3), (6.9, -0.6), (7.6, -1.6), (7.1, -2.6)])
-    K.break_line('B-2', -2.5, 'castle seam under the C2 girdle: opens the rocket magazine and the hangar',
-                 path=[(-2.3, 2.6), (-2.9, 1.9), (-2.1, 1.0), (-2.8, 0.1), (-2.0, -1.1), (-2.7, -2.6)])
-    K.break_line('B-3', -7.4, 'castle and engine room seam: the engine block tears away with the stern',
-                 path=[(-7.8, 2.25), (-7.2, 1.4), (-7.9, 0.5), (-7.3, -0.8), (-7.7, -2.2)])
+    # R226 (Board, Nov 12): a machine never crosses a seam; each seam runs round them in plan (its path, port to starboard)
+    K.break_line('B-1', 7.7, 'tier 2 seam forward of the P1 and S1 turrets: the bow and the kennel decks tear off',
+                 path=[(7.6, 3.9), (7.3, 2.0), (7.9, 1.0), (7.4, 0.2), (8.0, -0.8), (7.5, -1.8), (7.8, -3.9)])
+    K.break_line('B-2', -2.5, 'castle seam: opens the rocket magazine and tears through the hangar bay; kinks forward of the P4 and S4 casemates and aft of the P3 and S3 turrets',
+                 path=[(-1.7, 6.2), (-1.7, 3.9), (-2.4, 3.7), (-2.6, 2.4), (-2.1, 1.0), (-2.8, 0.1), (-2.0, -1.1), (-2.6, -2.4), (-2.4, -3.7), (-1.7, -3.9), (-1.7, -6.2)])
+    K.break_line('B-3', -4.7, 'castle seam through the reactor core: the bridge, its turret T2 and the engine block tear away with the stern; kinks aft of the P5 and S5 casemates at the flanks',
+                 path=[(-6.6, 6.2), (-6.6, 2.3), (-4.6, 2.1), (-4.9, 1.2), (-4.5, 0.2), (-4.8, -0.9), (-4.6, -2.1), (-6.6, -2.3), (-6.6, -6.2)])
     K.inside.append(dict(kind='note', name='insides', note='Full interiors throughout the hull (R215): decks, frames, spaces and machinery along the whole length, hidden until a piece breaks. Deaths blow the hull apart unevenly along these seams with a ragged bite where the core goes (R186).'))
     K.point('core', 'hp_core', (-5.3, 0, -1.1))
     for i, (x, y, z, sec, side) in enumerate([(9.4, 3.3, 0.2, 'prow', 'port'), (7.4, -3.9, -1.1, 'prow', 'stbd'),
@@ -253,7 +254,7 @@ def build(K):
     K.point('rcs', 'hp_rcs_1', (10.45, sf(10.45, -1, 0.45), 0.45), side='stbd')
     K.point('board', 'hp_board_0', (2.0, 4.2, -0.3), side='port')
     K.point('board', 'hp_board_1', (2.0, -4.3, -0.3), side='stbd')
-    K.point('bay', 'hp_bay_0', (-2.25, 0, -2.7), note='launch down')
+    K.point('bay', 'hp_bay_0', (-2.25, 0, -2.7), note='launch down', dir=(0, 0, -1))
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
     K.change('A rounded wedge in section (round flanks and belly, a flatter deck), tapering in plan to a broad rounded nose', 'the Board on round 3b: the hull still read as a straight-sided box; Ryan: "the builds look like square blocks basically"')
@@ -264,6 +265,8 @@ def build(K):
     K.change('Guns laid out as matched port and starboard batteries by game slot', 'the picture has a row of guns on one deck edge and a cluster on the other flank; scatter P and S are mirrored: a bow casemate, three deck-edge twin turrets, a flank casemate amidships and two sponson casemates per side')
     K.change('Profile set from a true side reading: deep flat-bellied slab, raised tier 2, castle, bridge block', 'one three-quarter camera cannot see height; the round 8 side view and the shape reference give a hull 4.9 deep, 6.5 to the castle roof')
     K.change('Roof turrets rest facing forward', 'the picture draws its barrel aft; no gun faces aft')
+    K.change('Seams moved and kinked so no machine is cut: B-1 from 7.0 to 7.7, B-3 from -7.4 to -4.7, B-2 kinks round the casemates and turrets', 'R226 (Board, Nov 12, from R186): a machine never crosses a seam; the bridge turret T2 and the stern grabber H4 overlap in plan and the engines and antennas fill the stern, so the aft seam moves forward of T2 into the castle')
+    K.change('Deck-edge turrets rest at 30, 35 and 40 degrees off the bow (were 15, 20 and 25)', 'issue 592: a turret rests inside its own data.js arc (scatter P and S: 30 to 150; HARDPOINTS.md "Turrets"), so the game export check passes; the fit check still finds zero clashes')
     K.change('The mid-length starboard engine pod becomes an upper pod on the stern deck', 'a pod at mid-length glowing forward would push the ship backward and burn its own deck')
     K.change('Two main engine pods, port larger, plus a centre main and lower boosters', 'the picture shows the port pod only; a single side pod would turn the ship; the faction keeps mismatched bells')
     K.change('Attitude thrusters moved off the casemates and pods', 'the fit check found the round 2 bow quads firing into the bow casemates and the stern quads into the pods')

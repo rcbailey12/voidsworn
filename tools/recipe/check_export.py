@@ -3,7 +3,8 @@
 #   - a weapon slot of the ship's data.js weapon list has no hard point (hp_w<slot>_<weapon>_<arc>_<n>), or a weapon hard point
 #     names a slot, weapon or arc the rules do not have;
 #   - a hard point lies farther from the ship's mesh than TOL (tol, default 0.012, times the ship's length: the x extent of its
-#     mesh box); hp_core must lie inside the hull's box;
+#     mesh box); hp_core must lie inside the hull's box. An engine point farther than TOL passes only as the centre of an
+#     open bell (open_bell: the rim on its exit plane at extras.radius all round, a throat upstream, a clear exhaust path);
 #   - a weapon rests aimed backward, a port mount sits on the starboard side or the other way round, a forward weapon does not
 #     point forward, an engine exit does not point aft;
 #   - a weapon hard point lacks one of the extras RECIPE.md lists (kind, size, arc, arc_deg, slot, weapon, radius, socket), or its
@@ -93,6 +94,25 @@ def tri_dist(p, A, B, C):
     P = np.broadcast_to(p, A.shape); edge = np.minimum(np.minimum(seg_dist(P, A, B), seg_dist(P, B, C)), seg_dist(P, C, A))
     return np.where(inside, plane, edge)
 
+def open_bell(p, fwd, R, V, tol):
+    """is p the centre of an open engine bell of radius R exhausting along fwd? (issue 592; RECIPE.md stage 7)
+    rim:    mesh vertices on the exit plane (within tol along the axis) at the recorded radius (0.7 R to 1.15 R off the axis)
+            in at least 10 of 12 sectors round the axis: the bell is there, at that size, facing that way;
+    throat: mesh inside 0.9 R of the axis upstream of the plane (within 2 R): the bell has a throat behind its mouth;
+    clear:  no mesh inside 0.6 R of the axis downstream of the plane (tol to 2 R): nothing plugs the exhaust."""
+    if R <= 0: return dict(ok=False, why='no extras.radius')
+    f = np.asarray(fwd, float); f = f / np.linalg.norm(f); q = V - p; ax = q @ f; rad = np.linalg.norm(q - np.outer(ax, f), axis=1)
+    u = np.cross(f, [0, 1, 0] if abs(f[1]) < .9 else [1, 0, 0]); u /= np.linalg.norm(u); w = np.cross(f, u)
+    rim = (np.abs(ax) <= tol) & (rad >= .7 * R) & (rad <= 1.15 * R)
+    sectors = len(set((np.floor((np.arctan2(q[rim] @ w, q[rim] @ u) + np.pi) / (2 * np.pi) * 12).astype(int) % 12).tolist()))
+    throat = int(((ax < -tol * .25) & (ax > -2 * R) & (rad < .9 * R)).sum())
+    plug = int(((ax > tol) & (ax < 2 * R) & (rad < .6 * R)).sum())
+    out = dict(radius=round(R, 4), rim_sectors=sectors, throat_vertices=throat, exhaust_vertices=plug)
+    why = [] if sectors >= 10 else [f'its rim at radius {R:.4f} on the exit plane covers {sectors} of 12 sectors']
+    if not throat: why.append('no throat upstream of the exit')
+    if plug: why.append(f'{plug} mesh points in the exhaust path')
+    out.update(ok=not why, why='; '.join(why)); return out
+
 def main():
     a = sys.argv[1:]; shipj, out = a[0], a[1]; kw = dict(x.split('=', 1) for x in a[2:] if '=' in x)
     TOL_FRAC = float(kw.get('tol', .012)); UNBAKED = kw.get('unbaked') == '1'
@@ -146,7 +166,7 @@ def main():
     if not hull_seen: probs.append(f'no {code}_hull surface: the hull cannot be told from the parts, so breach clearance cannot be measured')
     T = np.concatenate(T); A, B, C = T[:, 0], T[:, 1], T[:, 2]; lo, hi = T.reshape(-1, 3).min(0), T.reshape(-1, 3).max(0)
     PT = np.concatenate(PT) if PT else np.zeros((0, 3, 3))
-    LEN = float(hi[0] - lo[0]); TOL = TOL_FRAC * LEN
+    LEN = float(hi[0] - lo[0]); TOL = TOL_FRAC * LEN; VERTS = np.unique(T.reshape(-1, 3).round(6), axis=0)
     if not IT: probs.append('no authored interior geometry')
     else:
         inside = np.concatenate(IT)
@@ -182,7 +202,14 @@ def main():
             if not (np.all(p >= lo) and np.all(p <= hi)): probs.append('hp_core is outside the hull')
             rows.append(row); continue
         d = float(tri_dist(p, A, B, C).min()); row['off_mesh'] = round(d, 4)
-        if d > TOL: probs.append(f'{nm} is {d:.4f} off the mesh (limit {TOL:.4f})')
+        if d > TOL and nm.startswith('hp_eng_'):
+            # issue 592: an engine point is the centre of its bell's exit, and an open bell has no mesh at its centre. It passes
+            # when the authored bell is there: its rim on the exit plane at the recorded radius, all round, its throat upstream
+            # and its exhaust path clear (open_bell); the 0.012 limit is not loosened for any point
+            bell = open_bell(p, fwd, float((n.get('extras') or {}).get('radius') or 0), VERTS, TOL)
+            row['bell'] = bell
+            if not bell.get('ok'): probs.append(f'{nm} is {d:.4f} off the mesh (limit {TOL:.4f}) and is not the centre of an open engine bell: {bell["why"]}')
+        elif d > TOL: probs.append(f'{nm} is {d:.4f} off the mesh (limit {TOL:.4f})')
         m = re.fullmatch(r'hp_w(\d+)_([A-Za-z0-9_]+)_([FTPS])_(\d+)', nm)
         if m:
             slot, wk, arc = int(m.group(1)), m.group(2), m.group(3); count['gun'] = count.get('gun', 0) + 1

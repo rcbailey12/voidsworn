@@ -81,12 +81,17 @@ func _run() -> void:
 	check(plan.n_main == 4, "piece count follows authored structure, not the legacy cruiser count")
 	check(plan.n_frag > 0 and not plan.bite.is_empty(), "authored seams retain missing bite and fragments")
 	var point: Vector3 = plan.breaks[0].at
-	var before: int = DEATH._plan_main(plan, point + Vector3.RIGHT * s.hull.L * 0.05)
-	s.hull.seams[0].at += Vector3.RIGHT * s.hull.L * 0.14
+	# issue 592 (R225: a check reads the ship's own numbers): move the first seam by 0.14 of the length, or by half the gap to
+	# the next seam when they are closer (A16's castle seams are 0.08 apart), so it stays the first seam
+	var shift: float = s.hull.L * 0.14
+	if plan.breaks.size() > 1:
+		shift = minf(shift, 0.5 * (float(plan.breaks[1].at.x) - point.x))
+	var before: int = DEATH._plan_main(plan, point + Vector3.RIGHT * shift * 0.36)
+	s.hull.seams[0].at += Vector3.RIGHT * shift
 	rng.seed = 190
 	var moved: Dictionary = DEATH.fracture_plan(fx, s, rng)
-	check(absf(moved.breaks[0].at.x - point.x - s.hull.L * 0.14) < 0.0001, "moving authored seam moves fracture anchor")
-	check(DEATH._plan_main(moved, point + Vector3.RIGHT * s.hull.L * 0.05) != before, "moving seam changes actual piece ownership")
+	check(absf(moved.breaks[0].at.x - point.x - shift) < 0.0001, "moving authored seam moves fracture anchor")
+	check(DEATH._plan_main(moved, point + Vector3.RIGHT * shift * 0.36) != before, "moving seam changes actual piece ownership")
 	s.hull.seams[0].at = point
 	var moving_mesh: MeshInstance3D = s.meshes[0]
 	var analysis_pose: Transform3D = ship.global_transform.affine_inverse() * moving_mesh.global_transform

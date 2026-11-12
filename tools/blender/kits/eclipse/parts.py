@@ -33,6 +33,12 @@ sys.path.insert(0, os.path.normpath(os.path.join(os.path.dirname(os.path.abspath
 from geom import Part, P, D, frame, revolve, prism, octa, block, moved, ring_band, rod  # noqa: E402,F401
 import geom  # noqa: E402
 
+# R226 (Board, Nov 12, from R186 'blown apart, never sliced'): the part kinds that are machines. A machine never
+# crosses a seam (a cut gun reads as sliced): it rides whole with one piece. Every other kind is structure (plates,
+# ribs, rails, hatches, vents, lamps, pipes, openings such as the launch bay) and may tear across a seam. The sheet kit
+# stamps each part's objects with part_kind and machine from here; the stage 4 audit reads them (tools/recipe/audit.py).
+MACHINES = ('gun', 'spinal', 'engine', 'thruster')
+
 SUBPARTS = {
     'engine': ['housing', 'collar', 'rib', 'vane', 'bell', 'corona', 'shade'],
     # the weapons (R221: each from what it is; WEAPONS below)

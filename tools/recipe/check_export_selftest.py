@@ -17,6 +17,9 @@
 #   turret_merged   (an export with turrets) the turret nodes removed and their      must FAIL (a marked turret merged into the mesh)
 #                   muzzles moved onto the ship node, as the export did before 560
 #   turret_no_mesh  (an export with turrets) the turning meshes renamed away          must FAIL (a turret with no turning mesh)
+#   bell_radius     (an export with an open engine bell, issue 592) that engine's      must FAIL (not the centre of an open bell)
+#                   extras.radius doubled
+#   bell_plane      the same engine point moved half its radius down its exhaust       must FAIL (not the centre of an open bell)
 # usage: python check_export_selftest.py SHIP_JSON EXPORT_DIR [unbaked=1]      (exit code 1 when any case does not behave)
 import os, sys, json, struct, shutil, subprocess, re
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
@@ -102,6 +105,19 @@ CASES = (('pass', None, 0, ''), ('no_slot', no_slot, 1, f'weapon slot {last} '),
 _g0, _ = CE.read_glb(os.path.join(src, code + '.glb'))
 if any(re.fullmatch(r'turret_\d+', str(n.get('name', ''))) for n in _g0['nodes']):     # issue 560: only an export that has turrets
     CASES += (('turret_merged', turret_merged, 1, 'merged it into the ship mesh'), ('turret_no_mesh', turret_no_mesh, 1, 'no turning mesh'))
+def open_bells():       # the engines the check passed as open bells (its own record of the export as written)
+    cj = os.path.join(src, code + '_check.json')
+    if not os.path.exists(cj): subprocess.run([sys.executable, os.path.join(HERE, 'check_export.py'), shipj, src] + sys.argv[3:], capture_output=True)
+    if not os.path.exists(cj): return []
+    return [r['name'] for r in json.load(open(cj)).get('rows', []) if (r.get('bell') or {}).get('ok')]
+BELLS = open_bells()
+def bell_node(g): return next(n for n in g['nodes'] if n.get('name') == BELLS[0])
+def bell_radius(g): n = bell_node(g); n['extras']['radius'] = 2 * float(n['extras']['radius'])
+def bell_plane(g):
+    n = bell_node(g); fwd = CE.quat_rot(n.get('rotation', [0, 0, 0, 1]), (0, 0, -1.0)); r = float(n['extras']['radius'])
+    n['translation'] = [float(t + .5 * r * f) for t, f in zip(n['translation'], fwd)]
+if BELLS:
+    CASES += (('bell_radius', bell_radius, 1, 'not the centre of an open engine bell'), ('bell_plane', bell_plane, 1, 'not the centre of an open engine bell'))
 bad = 0; base = os.path.join(src, '_selftest')
 for name, fn, want, why_must in CASES:
     d = os.path.join(base, name); os.makedirs(d, exist_ok=True)

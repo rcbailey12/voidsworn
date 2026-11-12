@@ -465,6 +465,9 @@ class Kit:
                     ob['turret'] = 1 if pivot is not None else 0
                     if pivot is None:
                         ob['gun_fixed'] = 1
+        for ob in [o for o in self.coll.objects if o.get('grp') == fid and o.type == 'MESH']:
+            # R226: the part's kind and whether it is a machine, from the faction kit (parts.py MACHINES); the audit reads them
+            ob['part_kind'] = part.kind; ob['machine'] = int(part.kind in getattr(HP, 'MACHINES', ()))
         if keep:
             mv = [v for c in part.comps if c['role'] == 'mount' for v in c['verts']]
             if mv:
@@ -517,7 +520,8 @@ class Kit:
         piv = fd['pivot'][1] if kind != 'casemate' else fd['trunnion'][1]
         self.fitdata.append(dict(id=fid, kind='gun', slot=slot, pivot=tuple(piv), up=tuple(nrm), mount=kind, ring=tuple(p), rest_yaw=yaw,
                                  reach=fd['reach'], band=band or ((0, 10, 20, 30, 45, 60) if weapon == 'flak' else (0, 10, 20, 30) if kind != 'casemate' else (-10, 0, 10, 20)),
-                                 muzzles=[tuple(m[1]) for m in fd['muzzles']], cal=cal * 1.55, hous_r=fd['radius'], rest_pitch=pitch))
+                                 muzzles=[tuple(m[1]) for m in fd['muzzles']], cal=cal * 1.55, hous_r=fd['radius'], rest_pitch=pitch,
+                                 aim=tuple(fd['aim'][1]), bore=cal / 2))   # aim, bore: the barrel axis and radius the recipe's hard points read
         wn = getattr(HP, 'WEAPONS', {}).get(weapon, {}).get('name')
         what = '%s %s' % ({1: 'single', 2: 'twin', 3: 'triple'}.get(barrels, str(barrels)), kind)
         self.features.append(dict(id=fid, kind='gun', what=('%s, %s' % (wn.lower(), what)) if wn else what,
@@ -551,7 +555,7 @@ class Kit:
         blast = dict(apex=tuple(cv - dv * depth), dir=tuple(-dv), u=tuple(uv), w=tuple(wv), hu=hu, hw=hw, half=15.0,
                      length=max(2.5 * depth, 0.15 * self.length), what='backblast')
         self.fitdata.append(dict(id=fid, kind='launcher', slot=slot, lanes=[lane, blast],
-                                 apertures=[dict(pos=e['pos'], dir=e['axis'], length=self.length * 0.8, cone=4.0, what='launch cell') for e in ex]))
+                                 apertures=[dict(pos=e['pos'], dir=e['axis'], r=e['r'], length=self.length * 0.8, cone=4.0, what='launch cell') for e in ex]))
         self.features.append(dict(id=fid, kind='launcher', what='rocket rack, %d by %d cells' % (rows, cols), count=rows * cols,
                                   pos=tuple(p), aim=(yaw, pitch), slot=slot, weapon=weapon, src=src, note=note, inv=[inv] if isinstance(inv, str) else list(inv)))
 
@@ -791,8 +795,10 @@ class Kit:
         """path: the seam as (x, z) points from deck to belly, uneven along the patch plates (R186: never a straight cut)"""
         self.inside.append(dict(kind='break', name=name, x=x, note=note, path=path, orient=kind))
 
-    def point(self, kind, name, pos, side='', section='', note=''):
-        self.points.append(dict(kind=kind, name=name, pos=tuple(pos), side=side, section=section, note=note))
+    def point(self, kind, name, pos, side='', section='', note='', dir=None):
+        """a hard point the sheet places (core, breach, rcs, board, bay); dir: a bay's launch direction (the recipe reads it,
+        tools/blender/build_sheets/contract.py)"""
+        self.points.append(dict(kind=kind, name=name, pos=tuple(pos), side=side, section=section, note=note, dir=tuple(dir) if dir else None))
 
     def colour(self, name, x0, x1, where, note=''):
         self.inside.append(dict(kind='colour', name=name, x=(x0, x1), where=where, note=note))

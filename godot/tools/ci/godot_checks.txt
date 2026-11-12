@@ -57,6 +57,7 @@ headless|fx/test/fx_smoke.gd|-|-|every weapon look, the damage ladder, shield br
 headless|fx/test/playtest_batch1_check.gd|-|-|presentation regressions with stand-in hull scenes, no ship files
 headless|fx/test/playtest_batch3_check.gd|-|-|hits keep the skin, heavy damage opens a break, exhaust stays in space
 headless|fx/test/squadron_check.gd|-|-|451 squadron and carrier checks on stand-in craft
+headless|render/test/install_refresh_check.gd|-|-|issue 592: the stage 7 install route in user://: the real asset builder (--ships-only) rebuilds a replaced hull's cache entry, drops its old damage and wreck scenes, and ShipView draws the new hull
 headless|render/test/turret_check.gd|-|-|issue 560: on the exported turret test ship (render/test/fixtures/T560_fx) turrets turn smoothly to the target bearing inside their arc and clear of their own ship, fire from the turned muzzle, go back to rest; fixed guns never move; the same hits as fixed guns
 headless|scenes/battle/test/wing_cancel_test.gd|-|-|UI-5 (issue 387): the battle screen clears its armed wing on a ship pick, the roster, Escape and Cancel
 headless|scenes/battle/test/movement_flight_check.gd|-|-|issue 505 flown movement: ends on the rules hex and facing, no roll, no heading jump, slides hold heading, burn, coast and retro jets, turning jets start and stop turns, weight past battleship
@@ -73,6 +74,7 @@ gpu|campaign/test/map_region_shots.gd|-|{out} --no-tips|all five generated regio
 gpu|campaign/test/nemesis_teach_shots.gd|-|{out}|Nemesis teaching screenshots: needs a window
 gpu|campaign/test/onboarding_visual.gd|compat|{repo}\.onboarding_checks\gpu_visual|renders the HUD tip card; writes inside the checkout only, as RUN_ONBOARDING_SHOTS.bat does
 gpu|campaign/test/r1_ui_shots.gd|-|{out}|R1 campaign screen screenshots: needs a window
+gpu|render/test/installed_ship_check.gd|-|C19_51|issue 592: the install readback stage 7 runs after an install (needs the PC's built ship cache, godot/gen): the cache was built from the installed C19_51 files, names no damage or wreck scene the folder lacks, and ShipView draws every hard point and turret node of the glb
 gpu|story/test/career_shots.gd|compat|{out}|Career screen screenshots: needs a window
 gpu|fx/test/damage_alpha_probe.gd|env:SAIL_ALPHA_OUT|-|issue 569: one damaged Glasswright cruiser at camera 60 over a checker, so a see-through sail is plain; needs the GPU and the ship files
 gpu|fx/test/damage_surface_probe.gd|env:DAMAGE_OUT|-|damage stills and 20 real hull frame cost: needs the GPU and the ship files

@@ -8,6 +8,9 @@
 #         give way to the hand-built parts of the same slots (baked into the same atlas; generated meshes barely reduce, their UV
 #         islands are tiny)
 #   lod3  parts under 0.05 dropped, the rest to 30 percent, hull to 20 percent (silhouette and paint only)
+# Issue 592: this chain is an ANALYSIS product (what a hand LOD chain would save, measured by the stage 6 bench). The game ships
+# stage 7's export (one full-detail ship mesh with its turret and hard point nodes) and loads no LOD chain; lod0 here is the
+# same geometry stage 7 writes (the same visible, non-proxy meshes), so the bench's lod0 'off' numbers are the shipped mesh's.
 # usage: blender -b CELL.blend -P export3.py -- OUT.glb
 import sys, os, json, bpy
 OUT = sys.argv[sys.argv.index('--') + 1]
@@ -37,6 +40,18 @@ def decimate(o, ratio):
     if ratio >= 1: return
     m = o.modifiers.new('lod', 'DECIMATE'); m.ratio = ratio; m.use_collapse_triangulate = True
     bpy.context.view_layer.objects.active = o; bpy.ops.object.modifier_apply(modifier='lod')
+    clean(o)
+
+def clean(o):
+    """issue 592: a collapse decimate leaves zero-area faces, loose edges and loose points behind, so the reduced levels
+    exported as 'not valid' meshes and Godot dropped part of them on import. Dissolve them and validate the mesh."""
+    import bmesh
+    bm = bmesh.new(); bm.from_mesh(o.data)
+    bmesh.ops.dissolve_degenerate(bm, edges=bm.edges[:], dist=1e-6)
+    bmesh.ops.delete(bm, geom=[e for e in bm.edges if not e.link_faces], context='EDGES_FACES')
+    bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
+    bmesh.ops.triangulate(bm, faces=bm.faces[:])
+    bm.to_mesh(o.data); bm.free(); o.data.validate(clean_customdata=False); o.data.update()
 
 sc = bpy.context.scene
 src = [o for o in sc.objects if o.type == 'MESH' and (not o.hide_render or o.get('proxy'))]

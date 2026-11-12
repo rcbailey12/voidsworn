@@ -221,8 +221,22 @@ def report(objs):
     return dict(triangles=t, objects=len(objs), surfaces=len(used), draw_calls_merged=len(used))
 
 # ---------------------------------------------------------------- normalise an AI mesh into the ship frame
+def shape_ref_yaw(default=22.0):
+    """the shape reference's yaw into the ship frame, from the ship's own json (R209_SHIP, set by the recipe's env.bat):
+    its "shape_ref_yaw". 22.0 is C15s_23's value and only the default when no ship json is named (RULEBOOK 0.9, R225). A null
+    value means not measured yet: ai_align then measures the long axis itself (it cannot tell bow from stern: read the stage 3
+    overlay and write the value, plus 180 if the bow came out aft, into the json)."""
+    import json, os
+    p = os.environ.get('R209_SHIP', '')
+    if not p or not os.path.exists(p): return default
+    return json.load(open(p)).get('shape_ref_yaw', default)
+
 def ai_align(o, yaw_deg, length=1.0, centre=None):
-    """rotate an imported AI mesh about z so its long axis is x, then scale and centre it"""
+    """rotate an imported AI mesh about z so its long axis is x, then scale and centre it (yaw_deg None: measure the long axis)"""
+    if yaw_deg is None:
+        v = np.array([x.co[:2] for x in o.data.vertices]); v = v - v.mean(0)
+        w, V = np.linalg.eigh(v.T @ v); ax = V[:, int(np.argmax(w))]
+        yaw_deg = -math.degrees(math.atan2(ax[1], ax[0])); print(f'[ai_align] measured shape_ref_yaw {yaw_deg:.1f} (long axis; bow or stern not known)', flush=True)
     # round 2 fix: turn the mesh data itself. Round 1 set rotation_euler, but glTF imports use quaternion rotation mode, so the yaw
     # was silently dropped and B0 (and the station table measured off it) sat about 20 degrees off the ship axis.
     o.data.transform(Matrix.Rotation(math.radians(yaw_deg), 4, 'Z'))
