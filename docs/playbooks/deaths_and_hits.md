@@ -97,7 +97,7 @@ body and the wreck.
 - **Sunward Crusade.** Splits lengthwise between its gun decks. Magazines go off as an even row down the broadside, a
   drumbeat a quarter second apart. The spire line snaps off as one piece and tumbles away still glowing ember. Inside: iron
   decks lit orange.
-- **Hegemony Navy.** Parts cleanly at the module joints. Blue-white arcs jump the gap for a third of a second instead of
+- **Hegemony Navy.** Breaks at the module joints, the rims torn and scorched (R186). Blue-white arcs jump the gap for a third of a second instead of
   fire. Lights die on every module at the same instant. Few secondaries, evenly timed. Its drones go dark and drift.
 - **Ashfall Hullbreakers.** Patch plates tear loose during the tell, four to six of them spinning off. The halves part, the
   chains between them hold for about half a second, then snap with a second jolt. Secondaries are uneven and too many. Red
