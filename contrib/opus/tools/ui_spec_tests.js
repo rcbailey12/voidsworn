@@ -35,6 +35,29 @@ for (const f of USERS) check(/ui\/ui_scale\.gd/.test(read(f)) && /k_for\(/.test(
 check(!/clamp\(ui\.k/.test(read('godot/ui/campaign/map3d.gd')), 'map3d.gd labels follow ui.k without a second clamp');
 check(/set_player\(settings\.get\("ui_scale", 1\.0\)\)/.test(read('godot/main/main.gd')), 'main.gd hands the player UI scale to ui_scale.gd, a missing key reading 1.0 (ui_spec.md 4.4)');
 
+// 2b. issue 546 (the A2 sweep row): the settings screen offers UI scale and Reduce motion, with the spec's defaults, and
+// an old settings.json without either key keeps those defaults (main.gd loads the file key by key over its defaults).
+{
+  const mg = read('godot/main/main.gd');
+  const defs = (/var settings := \{([^}]*)\}/.exec(mg) || [])[1] || '';
+  check(/"ui_scale": 1\.0/.test(defs), 'main.gd default ui_scale is Normal 1.0 (ui_spec.md 4.4, 7.5)');
+  check(/"reduce_motion": false/.test(defs), 'main.gd default reduce_motion is off (ui_spec.md 7.5, 7.6)');
+  check(/for k in o:\n\s*settings\[k\] = o\[k\]/.test(mg), 'main.gd loads an existing settings file key by key over the defaults, so an old file without ui_scale or reduce_motion still reads 1.0 and off');
+  check(/b\.reduce_motion = bool\(settings\.get\("reduce_motion", false\)\)/.test(mg), 'main.gd gives the battle the reduce_motion setting (a missing key reads off)');
+  const ti = read('godot/main/title.gd');
+  check(/_choice\("UI scale", "ui_scale", \[\[0\.9, "Small"\], \[1\.0, "Normal"\], \[1\.15, "Large"\], \[1\.3, "Larger"\]\]\)/.test(ti), 'title Settings offers UI scale as Small 0.9, Normal 1.0, Large 1.15, Larger 1.3 (ui_spec.md 4.4)');
+  check(/_toggle\("Reduce motion", "reduce_motion"\)/.test(ti), 'title Settings offers Reduce motion as a switch (ui_spec.md 7.6)');
+  check(/_toggle\("Reduce flashing", "reduce_flashing"\)/.test(ti), 'the two new entries sit in the same Settings list as Reduce flashing (issue 546)');
+  check(/if key == "ui_scale":\n\s*_rebuild\(\)/.test(ti), 'changing UI scale rebuilds the title screen at once (ui_spec.md 4.4)');
+  check(/ScrollContainer\.new\(\)/.test(ti) && /rows\.get_combined_minimum_size\(\)\.y, vs\.y - s\(150\)/.test(ti), 'the Settings list scrolls when the larger UI scales would push the panel past the window, so Done stays reachable');
+  const bt = read('godot/scenes/battle/battle.gd');
+  check(/items\.append\(\["Reduce motion: %s"/.test(bt) && /"opt", "motion"/.test(bt), 'the battle menu offers Reduce motion in the comfort subset (ui_spec.md 7.6)');
+  check(/items\.append\(\["UI scale: %s"/.test(bt) && /"opt", "uiscale"/.test(bt), 'the battle menu offers UI scale in the comfort subset (ui_spec.md 4.4)');
+  check(/reduce_motion = not reduce_motion/.test(bt) && /option_changed\.emit\("reduce_motion", reduce_motion\)/.test(bt), 'the battle menu switch writes reduce_motion through option_changed');
+  check(/UiScale\.set_player\(v\)/.test(bt) && /option_changed\.emit\("ui_scale", v\)/.test(bt), 'the battle menu switch writes ui_scale and applies the shared law');
+  check(/hud\._rebuild\(\)/.test(bt), 'changing UI scale in the battle menu rebuilds the HUD at once (ui_spec.md 4.4)');
+}
+
 // 3. AC5: the battle theme draws a visible focus ring, and the menu and end card take keyboard focus
 const hud = read('godot/ui/battle/hud.gd');
 check(!/set_stylebox\("focus", "Button", StyleBoxEmpty/.test(hud), 'battle theme focus stylebox is not empty (AC5, ui_spec.md 6.2)');
