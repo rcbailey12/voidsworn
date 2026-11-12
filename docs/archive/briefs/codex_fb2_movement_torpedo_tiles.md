@@ -1,3 +1,5 @@
+ARCHIVED Nov 11 2026: replaced by docs/RULEBOOK.md (the damage read is RULEBOOK 6.8; movement is section 7) and contrib/opus/briefs/movement_spec.md. A finished job. Kept for history; do not follow.
+
 # Task: playtest fixes, batch 2 (movement, torpedoes, move tiles)
 
 Ryan's rulings (Nov 2, FINDINGS R76). Photos from his playtest are in docs/shots/playtest/2026-11-02/ (phone photos of a monitor; ignore moire). House rules: contrib/opus/briefs/feel_pass_2026-11-01.md. Presentation only: no rules or number changes, and the rules parity must still PASS.

@@ -1,3 +1,5 @@
+ARCHIVED Nov 11 2026: replaced by docs/playbooks/PROGRAM.md (the plan) and docs/RULEBOOK.md (the rules). Kept for history; do not follow. Section 1 below is Ryan's Oct 24 calls (battle size, the dead-star board, shield colours, capture, the public repo); they live on in FINDINGS R1 to R10 and RULEBOOK 3.1, 6.11 and 10.
+
 # Voidsworn go-forward plan
 
 Opus, Oct 24 2026. **Status: APPROVED by Ryan, Oct 24 2026, 22:13 CDT.** Basis: main at d5d0227 plus Ryan's answers of Oct 24 (21:44 to 22:11 CDT).

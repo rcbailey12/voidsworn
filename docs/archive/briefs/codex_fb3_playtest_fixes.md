@@ -1,3 +1,5 @@
+ARCHIVED Nov 11 2026: replaced by docs/RULEBOOK.md (the damage read is RULEBOOK 6.8; movement is section 7) and contrib/opus/briefs/movement_spec.md. A finished job. Kept for history; do not follow.
+
 # Codex brief: playtest fixes, batch 3 (Ryan's Nov 2 afternoon run)
 
 Ryan's real 4K screenshots (not phone photos) are in docs/shots/playtest/2026-11-02b/ (ryan_b01 to ryan_b10, right monitor only). House rules: contrib/opus/briefs/feel_pass_2026-11-01.md. Presentation only: no rules or numbers; rules parity must PASS.

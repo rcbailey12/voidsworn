@@ -1,3 +1,5 @@
+ARCHIVED Nov 11 2026: replaced by contrib/opus/briefs/campaign_rail_orders_sheet.md and docs/playbooks/screens.md (RULEBOOK 9.1 and 10.6). Kept for history; do not follow.
+
 # Campaign map: the Briefing build (Ryan's pick, Nov 10 2026, FINDINGS R165)
 
 Ryan on the Lime Tactical map of PR 349 (R164): "I really like the concept but it's getting pretty busy and it also reads as AI
