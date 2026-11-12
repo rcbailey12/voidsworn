@@ -1,0 +1,14 @@
+start Thu 11/12/2026  2:08:25.14 
+clone 2f56f955  2:08:32.30 
+export exit 0  2:08:44.06 
+check exit 0  2:08:45.79 
+selftest exit 0  2:09:15.76 
+copied  2:09:16.04 
+import exit 0  2:13:44.30 
+build_assets exit 0  2:13:46.48 
+turret check exit 0  2:13:48.38 
+attach check exit 1  2:13:50.75 
+gpu free  2:14:51.69 
+bench run 1 exit 0  2:14:51.69 
+bench run 2 exit 0  2:14:51.69 
+done Thu 11/12/2026  2:18:07.49 
