@@ -1,0 +1,21 @@
+{
+ "az": 53.5328734679381,
+ "el": 27.295278485741864,
+ "roll": -2.4780655057596306,
+ "dist": 35.898897931676245,
+ "mm": 84.10525232273683,
+ "target": [
+  0,
+  0,
+  0.5
+ ],
+ "sx": -0.0977941262464842,
+ "sy": 0.08380952123424304,
+ "res": [
+  1920,
+  1280
+ ],
+ "iou": 0.7292,
+ "body_iou": 0.7269,
+ "note": "round 3b: view angles held from the round 3 fit to the concept, framing refit to the round 3b blockout (concept mask: luminance over 28, closed, holes filled, largest shape only)"
+}
