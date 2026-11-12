@@ -1,4 +1,6 @@
-> **Current audit (Oct 22): the texture pass. Start with `docs/ship_pipeline/TEXTURE_PASS.md`.**
+HISTORY (marked Nov 11 2026): the Oct 21 to 22 Pyre-Barge audit brief for the frozen browser game; browser-era history, not the Godot product. An outside audit today follows docs/REVIEW_PROTOCOL.md and the brief in its own issue (RULEBOOK 2.11). The live ship method is docs/playbooks/ships.md section 0 and docs/ship_pipeline/RECIPE.md; the rules are docs/RULEBOOK.md sections 4 and 5. Kept for history; do not follow.
+
+> **The Oct 22 audit was the texture pass (`docs/ship_pipeline/TEXTURE_PASS.md`, also history).**
 
 # Audit brief: AI ship models for Voidsworn
 

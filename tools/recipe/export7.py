@@ -11,29 +11,38 @@
 #   hp_w<slot>_<weapon>_<arc>_<n>   one per weapon muzzle of every socket that has a "slot" in the ship json (the barrel tips and
 #                                   launch mouths the kit registered while building): node -Z along the barrel, +Y away from the hull
 #   hp_eng_<n>                      one per engine exit: -Z out of the bell (aft), extras.radius the bell radius
-#   hp_breach_<n>                   breach anchors on open hull, clear of parts: two per section (prow, mid, eng), port and starboard;
-#                                   +Y is the outward surface normal
+#   hp_bay_<n>                      one per hangar mouth the hull module registers (register_bay): -Z the launch direction
+#   hp_breach_<n>                   breach anchors on open hull, clear of parts, counted by class and faction from one table
+#                                   (tools/blender/kits/shared/hardpoints.py; docs/ship_pipeline/HARDPOINTS.md): +Y the outward
+#                                   surface normal, spread over prow, mid and eng
 #   hp_core                         the hull's centre of mass
+#   hp_rcs_<n>                      braking puff origins: two, one port and one starboard on the forward half, -Z the braking thrust
+#   hp_board_<n>                    boarding origins: two, one port and one starboard on the mid hull, -Z out toward the target
 # The weapon kind and arc of each slot are read from the game's own data.js (the ship json names the ship: "game_ship"), so the
 # names can never drift from the rules. tools/recipe/check_export.py then reads the written glb back and fails the export when a
-# weapon slot has no hard point or a hard point is off the mesh.
+# required point is missing (including the breach count for the hull's class and faction) or a hard point is off the mesh.
+# The export also writes manifest_entry.json for this ship: the point counts, class, band and files, ready to merge into
+# godot/assets/ships/manifest.json.
 # usage: blender -b CELL.blend -P export7.py -- SHIP_JSON OUT_DIR [maps=2048] [unbaked=1]
 #   unbaked=1 is for testing the geometry and hard points on a build that has not been baked (no maps are written and the
 #   export json says so; check_export.py fails such a folder unless it is told the same).
-import os, sys, json, math, struct, hashlib, shutil, time
+import os, sys, json, math, struct, hashlib, shutil, time, random
 import bpy, bmesh
 import numpy as np
 from mathutils import Vector, Matrix
 from mathutils.bvhtree import BVHTree
 
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.normpath(os.path.join(HERE, '..', '..'))
+SHARED = os.path.normpath(os.path.join(REPO, 'tools', 'blender', 'kits', 'shared'))
+sys.path.insert(0, SHARED)
+import hardpoints as HP_CONTRACT
 a = sys.argv[sys.argv.index('--') + 1:]
 SHIPJ, OUT = a[0], a[1]; kw = dict(x.split('=', 1) for x in a[2:] if '=' in x)
 MAPS = int(kw.get('maps', 2048)); UNBAKED = kw.get('unbaked') == '1'
 ship = json.load(open(SHIPJ)); CODE = ship.get('game_code') or ship['ship']; GAME = ship.get('game_ship')
 ARC_DEG = {'F': 30, 'T': 135, 'P': 60, 'S': 60}       # as tools/blender/a4/ships.py: half-angle of the firing arc from the rest direction
 MOUNT_SIZE = dict(casemate='M', drum_rack='M', turret='S', bow_battery='M')   # a socket's "mount" key overrides
-BREACH_SECTIONS = (('prow', .215, .47), ('mid', -.10, .16), ('eng', -.44, -.14))   # x ranges; two anchors each (port, starboard)
+BREACH_SECTIONS = (('prow', .215, .47), ('mid', -.10, .16), ('eng', -.44, -.14))   # x ranges
 BREACH_CLEAR = .030                                  # an anchor keeps this far from every part
 
 def status(text):      # the stage file reads this (a Blender exit code is not something to lean on)
@@ -47,15 +56,29 @@ sys.path.insert(0, HERE)
 import gamedata
 try: WEAPONS = gamedata.weapons(GAME)      # [(kind, arc), ...] in slot order, from the game's data.js
 except ValueError as e: die(str(e))
+CLS = gamedata.ship_attr(GAME, 'cls', default='Cruiser')
+FAC = gamedata.ship_attr(GAME, 'fac', default=ship.get('faction'))
+HANGAR = int(gamedata.ship_attr(GAME, 'hangar', default=0) or 0)
+EXPECTED_BREACH = HP_CONTRACT.expected_breach(CLS, FAC)
 sc = bpy.context.scene
 if 'r209_hp' not in sc: die('this blend has no hard point data (scene r209_hp): rebuild it with the current hull module')
 HP = json.loads(sc['r209_hp'])
 os.makedirs(OUT, exist_ok=True); t0 = time.time(); status('RUNNING')
 
 # ---------------------------------------------------------------------------------------------------------------- the ship mesh
-src = [o for o in sc.objects if o.type == 'MESH' and not o.hide_render and o.get('role') != 'interior' and not o.get('proxy')]
-hull_src = [o for o in src if o.get('role') == 'hull']; part_src = [o for o in src if o.get('role') != 'hull']
+src = [o for o in sc.objects if o.type == 'MESH' and not o.hide_render and not o.get('proxy')]
+hull_src = [o for o in src if o.get('role') == 'hull']; part_src = [o for o in src if o.get('role') not in ('hull', 'interior')]
 if not hull_src: die('no hull in this blend')
+if not any(o.get('role') == 'interior' for o in src): die('no authored interior in this blend')
+if not sc.get('r209_t_lines'): die('no authored break seams in this blend')
+longitudinal = list(sc.get('r209_l_line', []))
+if longitudinal and len(longitudinal) != 3: die('invalid authored longitudinal break seam')
+# Version 1 is defined in RECIPE.md stage 7. Store geometry and seams together in the GLB.
+seams = [dict(p=[float(x), 0, 0], n=[1, 0, 0]) for x in sorted(sc['r209_t_lines'])]
+if longitudinal:
+    z, x0, x1 = map(float, longitudinal)
+    seams.append(dict(p=[0, z, 0], n=[0, 1, 0], span=[x0, x1]))
+destruction = dict(version=1, seams=seams, interior_materials=[])
 
 def world_bvh(objs):
     bm = bmesh.new(); dg = bpy.context.evaluated_depsgraph_get()
@@ -64,9 +87,12 @@ def world_bvh(objs):
         tm = bpy.data.meshes.new('_t'); t.to_mesh(tm); t.free(); bm.from_mesh(tm); bpy.data.meshes.remove(tm); oe.to_mesh_clear()
     T = BVHTree.FromBMesh(bm); return T, bm
 
-for o in hull_src:      # the game's ship has no inner skin (that is for the break pieces)
+skin_states = []
+for o in hull_src:      # Surface anchors use the outside only. Restore thickness before copying the ship.
     sk = o.modifiers.get('skin')
-    if sk: sk.show_viewport = False; sk.show_render = False
+    if sk:
+        skin_states.append((sk, sk.show_viewport, sk.show_render))
+        sk.show_viewport = False; sk.show_render = False
 HT, hbm = world_bvh(hull_src); PT, pbm = world_bvh(part_src) if part_src else (None, None)
 
 def core_point(bm):
@@ -77,45 +103,113 @@ def core_point(bm):
     if abs(vol) < 1e-9: die('the hull has no volume')
     c /= vol; return Vector((c.x, 0.0, c.z))
 
+def hull_side_point(x0, x1, s, z0, avoid=(), clear=BREACH_CLEAR):
+    """the side-hull point (ray in from the side) nearest (x0..x1, z0) among those at least clear from every part.
+    Returns (loc, outward normal, clearance) or None. z0 is the section's preferred side height (the faction's placement)."""
+    best = None; xm = (x0 + x1) / 2
+    for x in np.linspace(x0, x1, 25):
+        for z in np.linspace(-.115, .020, 17):
+            loc, nrm, _, _ = HT.ray_cast(Vector((x, s * .6, z)), Vector((0, -s, 0)), 1.2)
+            if loc is None or nrm.y * s < .55: continue             # a side face, facing out
+            d = PT.find_nearest(loc)[3] if PT else 9.0
+            if d is None: d = 9.0
+            if d < clear: continue
+            if any((loc.x - a.x) ** 2 + (loc.z - a.z) ** 2 < .0025 for a in avoid): continue
+            off = (loc.x - xm) ** 2 + 4 * (loc.z - z0) ** 2
+            if best is None or off < best[0]: best = (off, loc.copy(), nrm.copy(), d)
+    return None if best is None else (best[1], best[2].normalized(), round(best[3], 4))
+
+
 def breach_anchors():
-    """open hull, clear of parts: per section and side, the side-hull point (ray in from the side) nearest the middle of the
-    section's side among those at least BREACH_CLEAR from every part"""
-    out = []
-    for sec, x0, x1 in BREACH_SECTIONS:
-        for s in (1, -1):
-            best = None; xm = (x0 + x1) / 2
-            for x in np.linspace(x0, x1, 21):
-                for z in np.linspace(-.115, .020, 13):
-                    loc, nrm, _, _ = HT.ray_cast(Vector((x, s * .6, z)), Vector((0, -s, 0)), 1.2)
-                    if loc is None or nrm.y * s < .55: continue             # a side face, facing out
-                    d = PT.find_nearest(loc)[3] if PT else 9.0
-                    if d is None: d = 9.0
-                    if d < BREACH_CLEAR: continue
-                    off = (x - xm) ** 2 + 4 * (z + .050) ** 2
-                    if best is None or off < best[0]: best = (off, loc.copy(), nrm.copy(), d)
-            if best is None: die(f'no open hull for a breach anchor in the {sec} section, side {s}')
-            out.append(dict(section=sec, side=s, p=best[1], n=best[2].normalized(), clear=round(best[3], 4)))
+    """open hull, clear of parts, in the class and faction layout from the contract (hardpoints.breach_layout): the side-hull
+    point nearest each section's middle and the faction's preferred side height, at least BREACH_CLEAR from every part."""
+    n = EXPECTED_BREACH
+    if n <= 0: return []
+    zpref = HP_CONTRACT.FACTION_Z.get(HP_CONTRACT.faction_key(FAC))
+    out = []; avoid = []
+    for i, (sec, side) in enumerate(HP_CONTRACT.breach_layout(n)):
+        x0, x1 = next((a, b) for s, a, b in BREACH_SECTIONS if s == sec)
+        s = 1 if side == 'P' else -1                  # Blender frame: +y is port
+        z0 = zpref if zpref is not None else -.050
+        xm = (x0 + x1) / 2
+        if HP_CONTRACT.faction_key(FAC) == 'corsair':     # uneven by theme, but the same unevenness every export
+            rng = random.Random(f'{CODE}:{sec}:{side}:{i}')
+            xm += rng.uniform(-.055, .055); z0 += rng.uniform(-.035, .035)
+        got = hull_side_point(xm - (x1 - x0) / 2, xm + (x1 - x0) / 2, s, z0, avoid)
+        if got is None: got = hull_side_point(x0, x1, s, z0, avoid)
+        if got is None: die(f'no open hull for a breach anchor in the {sec} section, side {side}')
+        loc, nrm, cl = got
+        avoid.append(loc)
+        out.append(dict(section=sec, side=s, p=loc, n=nrm, clear=cl))
     return out
 
-CORE = core_point(hbm); BREACH = breach_anchors(); hbm.free()
+
+def origin_points(kind, x0, x1, z0):
+    """one port and one starboard hull origin of a new point type (rcs braking puffs, board parties), derived from the hull
+    surface; the signed side is +1 port, -1 starboard. clear=0: an origin may sit under a part (it is not a breach anchor)."""
+    out = []
+    for s in (1, -1):
+        got = hull_side_point(x0, x1, s, z0, clear=0.0)
+        if got is None: die(f'no hull for an {kind} origin on the {"port" if s > 0 else "starboard"} side')
+        loc, nrm, _ = got
+        out.append(dict(side=s, p=loc, n=nrm))
+    return out
+
+CORE = core_point(hbm); BREACH = breach_anchors()
+REQUIRED = HP_CONTRACT.required_points(WEAPONS, CLS, FAC, HANGAR)
+RCS = origin_points('rcs', .16, .36, .000) if REQUIRED['rcs'] else []
+BOARD = origin_points('board', -.12, .14, -.030) if REQUIRED['board'] else []
+hbm.free()
 if pbm: pbm.free()
 
 keep = []
+for sk, viewport, render in skin_states: sk.show_viewport = viewport; sk.show_render = render
+inside_mats = {}
+def inside_material(srcmat, liner=False):
+    key = (srcmat.name if srcmat else '', liner)
+    if key not in inside_mats:
+        m = srcmat.copy() if srcmat else bpy.data.materials.new('inside_skin')
+        m.name = CODE + '_inside_' + ('skin' if liner else str(len(inside_mats)))
+        m.use_nodes = True
+        if not srcmat:
+            bs = m.node_tree.nodes.get('Principled BSDF')
+            bs.inputs['Base Color'].default_value = (.035, .028, .022, 1)
+            bs.inputs['Roughness'].default_value = .85
+        inside_mats[key] = m
+        destruction['interior_materials'].append(m.name)
+    return inside_mats[key]
+
 for o in src:
     c = o.copy(); c.data = o.data.copy(); sc.collection.objects.link(c); bpy.context.view_layer.objects.active = c
+    if o.get('role') == 'interior':
+        for i, m in enumerate(c.data.materials): c.data.materials[i] = inside_material(m)
+        if not c.data.materials: c.data.materials.append(inside_material(None))
+    elif not c.data.materials:
+        c.data.materials.append(bpy.data.materials.new(CODE + ('_hull' if o.get('role') == 'hull' else '_parts')))
+    sk = c.modifiers.get('skin')
+    if sk:
+        sk.show_viewport = True; sk.show_render = True
+        c.data.materials.append(inside_material(None, liner=True))
+        sk.material_offset = len(c.data.materials) - 1
+        sk.material_offset_rim = len(c.data.materials) - 1
     for md in list(c.modifiers):
-        if md.name == 'skin': c.modifiers.remove(md); continue
         try: bpy.ops.object.modifier_apply(modifier=md.name)
-        except Exception: c.modifiers.remove(md)
-    if UNBAKED:      # test only: one plain material per role, so the glb splits hull from parts as a baked one does (the check measures
+        except Exception as e: die(f'cannot apply {o.name}/{md.name}: {e}')
+    if UNBAKED and o.get('role') != 'interior':      # preserve the inner skin's separate surface
+        interior_faces = [f.index for f in c.data.polygons if c.data.materials[f.material_index].name in destruction['interior_materials']]
         c.data.materials.clear()       # the breach anchors' clearance from the parts surfaces)
         nm = CODE + ('_hull' if o.get('role') == 'hull' else '_parts'); c.data.materials.append(bpy.data.materials.get(nm) or bpy.data.materials.new(nm))
         for f in c.data.polygons: f.material_index = 0
+        if interior_faces:
+            c.data.materials.append(inside_material(None, liner=True))
+            for i in interior_faces: c.data.polygons[i].material_index = 1
     keep.append(c)
 bpy.ops.object.select_all(action='DESELECT')
 for c in keep: c.select_set(True)
 bpy.context.view_layer.objects.active = keep[0]; bpy.ops.object.join(); J = bpy.context.view_layer.objects.active
 J.name = CODE; J.data.name = CODE; bpy.ops.object.material_slot_remove_unused()
+used_materials = {slot.material.name for slot in J.material_slots if slot.material}
+destruction['interior_materials'] = [m for m in destruction['interior_materials'] if m in used_materials]
 for k in list(J.keys()): del J[k]
 J.data.calc_loop_triangles(); TRIS = len(J.data.loop_triangles)
 
@@ -131,7 +225,7 @@ maps = {}
 if UNBAKED:      # test only: the plain role materials set before the join (<CODE>_hull, <CODE>_parts) so the glb still loads; no maps
     for s in J.material_slots: s.material.use_nodes = True
 else:
-    tex = [s.material for s in J.material_slots if s.material and s.material.get('p3_textured')]
+    tex = [s.material for s in J.material_slots if s.material and s.material.get('p3_textured') and s.material.name not in destruction['interior_materials']]
     hullm = next((m for m in tex if any(n.type == 'NORMAL_MAP' for n in m.node_tree.nodes)), None)
     partm = next((m for m in tex if m is not hullm), None)
     if hullm is None or partm is None: die('this blend is not baked (no hull and parts atlas materials): run stage 5 first, or pass unbaked=1 for a geometry test')
@@ -179,14 +273,29 @@ for m in HP['muzzles']:
     HPS.append(dict(name=f'{key}_{k}', p=m['tip'], fwd=m['aim'], up=m['normal'], extras=ex)); by_slot.setdefault(slot, []).append(f'{key}_{k}')
 for k, e in enumerate(sorted(HP['engines'], key=lambda e: (-e['radius'], -e['pos'][1]))):
     HPS.append(dict(name=f'hp_eng_{k}', p=e['pos'], fwd=e['dir'], up=(0, 0, 1), extras=dict(kind='engine', radius=float(e['radius']), engine=e['name'])))
+for k, b in enumerate(HP.get('bays', [])):
+    HPS.append(dict(name=f'hp_bay_{k}', p=b['pos'], fwd=b['dir'], up=(0, 0, 1), extras=dict(kind='bay', hangar=int(b.get('hangar') or 0))))
 for k, b in enumerate(BREACH):
     f = Vector((1, 0, 0)) if abs(b['n'].x) < .9 else Vector((0, 0, 1))
     HPS.append(dict(name=f'hp_breach_{k}', p=list(b['p']), fwd=list(f), up=list(b['n']),
                     extras=dict(kind='breach', radius=0.0, section=b['section'], side='P' if b['side'] > 0 else 'S', clear=b['clear'])))
 HPS.append(dict(name='hp_core', p=list(CORE), fwd=(0, 1, 0), up=(0, 0, 1), extras=dict(kind='core')))   # identity in the game frame
+for k, b in enumerate(RCS):
+    HPS.append(dict(name=f'hp_rcs_{k}', p=list(b['p']), fwd=(1, 0, 0), up=(0, 0, 1),
+                    extras=dict(kind='rcs', side='P' if b['side'] > 0 else 'S', radius=0.0)))
+for k, b in enumerate(BOARD):
+    HPS.append(dict(name=f'hp_board_{k}', p=list(b['p']), fwd=(0, b['side'], 0), up=(0, 0, 1),
+                    extras=dict(kind='board', side='P' if b['side'] > 0 else 'S', radius=0.0)))
 for h in HPS: empty(h['name'], h['p'], h['fwd'], h['up'], h['extras'])
+kinds = {}
+for h in HPS: kinds[h['extras']['kind']] = kinds.get(h['extras']['kind'], 0) + 1
+counts = {k: kinds.get(k, 0) for k in ('gun', 'engine', 'bay', 'breach', 'core', 'rcs', 'board')}
+req_probs = HP_CONTRACT.missing_required(counts, WEAPONS, CLS, FAC, HANGAR)
+if req_probs: die('; '.join(req_probs))
 missing = [f'slot {i} ({wk} {arc})' for i, (wk, arc) in enumerate(WEAPONS) if i not in by_slot]
 J['length_world'] = float(ship.get('length_world', 0) or 0); J['recipe_cell'] = ship.get('cell', ''); J['faction'] = ship.get('faction', '')
+J['cls'] = CLS; J['band'] = HP_CONTRACT.band(CLS)
+J['voidsworn_destruct'] = destruction
 
 # ---------------------------------------------------------------------------------------------------------------- write
 tmp = os.path.join(OUT, '_gltf_source'); os.makedirs(tmp, exist_ok=True)      # the exporter's own files; kept (nothing is deleted)
@@ -204,19 +313,21 @@ role = {}
 def use(mat, slot, tex):
     if tex is None: return
     i = g['textures'][tex['index']]['source']; pre = CODE if mat['name'] == CODE + '_hull' else mat['name']; nm = f'{pre}_{slot}'
+    if mat['name'] in destruction['interior_materials'] and i in role: return  # authored trim maps may be shared
     if role.get(i, nm) != nm: die(f'one image does two jobs ({role[i]} and {nm}): the ORM map must hold occlusion, roughness and metal together')
     role[i] = nm
-for mat in g.get('materials', []):
-    if mat.get('name') not in (CODE + '_hull', CODE + '_parts'): continue
+for mat in sorted(g.get('materials', []), key=lambda m: m.get('name') in destruction['interior_materials']):
+    if mat.get('name') not in [CODE + '_hull', CODE + '_parts'] + destruction['interior_materials']: continue
     pbr = mat.get('pbrMetallicRoughness', {})
     use(mat, 'base', pbr.get('baseColorTexture')); use(mat, 'orm', pbr.get('metallicRoughnessTexture')); use(mat, 'orm', mat.get('occlusionTexture'))
     use(mat, 'normal', mat.get('normalTexture'))
+    if mat.get('name') in destruction['interior_materials']: use(mat, 'emission', mat.get('emissiveTexture'))
 for i, im in enumerate(g.get('images', [])):
     if i not in role: die(f'the exporter wrote an image no ship material uses: {im.get("uri")}')
     new = role[i] + '.jpg'; shutil.copyfile(os.path.join(tmp, im['uri']), os.path.join(OUT, new)); im['uri'] = new; im['name'] = role[i]
 if not UNBAKED:
     need = {CODE + '_base', CODE + '_orm', CODE + '_normal', CODE + '_parts_base', CODE + '_parts_orm'}
-    if set(role.values()) != need: die(f'the map set is not the format\'s: wrote {sorted(role.values())}, need {sorted(need)}')
+    if not need.issubset(set(role.values())): die(f'the map set is not the format\'s: wrote {sorted(role.values())}, need {sorted(need)}')
 del g['buffers'][0]['uri']; g['buffers'][0]['byteLength'] = len(blob)
 g.setdefault('asset', {}).setdefault('extras', {}).update(recipe='tools/recipe/7_export.bat', ship=ship['ship'], cell=ship.get('cell'), game_ship=GAME,
                                                          unbaked=UNBAKED)
@@ -228,19 +339,22 @@ for fn in sorted(os.listdir(OUT)):
     p = os.path.join(OUT, fn)
     if os.path.isfile(p) and fn.startswith(CODE) and not fn.endswith(('_export.json', '_check.json')):
         files[fn] = dict(bytes=os.path.getsize(p), sha256=hashlib.sha256(open(p, 'rb').read()).hexdigest())
-kinds = {}
-for h in HPS: kinds[h['extras']['kind']] = kinds.get(h['extras']['kind'], 0) + 1
-rep = dict(ship=ship['ship'], code=CODE, cell=ship.get('cell'), game_ship=GAME, faction=ship.get('faction'), unbaked=UNBAKED, maps=0 if UNBAKED else MAPS,
-           triangles=TRIS, surfaces=len([s for s in J.material_slots if s.material]),
+manifest = dict(name=ship.get('name') or CODE, faction=FAC, cls=CLS, band=HP_CONTRACT.band(CLS),
+                length_world=float(ship.get('length_world', 0) or 0), hardpoints={k: v for k, v in counts.items() if v},
+                breaches=counts['breach'], files=files, pc_path=f'godot/assets/ships/{CODE}/')
+json.dump(manifest, open(os.path.join(OUT, 'manifest_entry.json'), 'w'), indent=1)
+rep = dict(ship=ship['ship'], code=CODE, cell=ship.get('cell'), game_ship=GAME, faction=ship.get('faction'), cls=CLS,
+           band=HP_CONTRACT.band(CLS), expected_breach=EXPECTED_BREACH, unbaked=UNBAKED, maps=0 if UNBAKED else MAPS,
+           triangles=TRIS, surfaces=len([s for s in J.material_slots if s.material]), destruction=destruction,
            weapons=[dict(slot=i, weapon=wk, arc=arc, hard_points=by_slot.get(i, [])) for i, (wk, arc) in enumerate(WEAPONS)],
-           slots_without_hard_points=missing, hardpoints=kinds,
+           slots_without_hard_points=missing, hardpoints=counts,
            hard_points=[dict(name=h['name'], p=[round(float(v), 5) for v in h['p']], fwd=[round(float(v), 4) for v in h['fwd']],
                              up=[round(float(v), 4) for v in h['up']], frame='ship (x bow, y port, z up)', **h['extras']) for h in HPS],
-           files=files, seconds=round(time.time() - t0, 1),
+           manifest=manifest, files=files, seconds=round(time.time() - t0, 1),
            not_written=['<CODE>_wreck.glb (the death pieces)', '<CODE>_damage.glb and the skin_<n> hull patches (breach damage)',
                         '<CODE>_emissive.jpg (the glow is its own surface with an emissive factor, no map)'])
 json.dump(rep, open(os.path.join(OUT, CODE + '_export.json'), 'w'), indent=1)
-print('[export7]', CODE, 'triangles', TRIS, 'hard points', json.dumps(kinds), 'files', sorted(files), flush=True)
+print('[export7]', CODE, 'triangles', TRIS, 'hard points', json.dumps(counts), 'files', sorted(files), flush=True)
 if missing:
     die('no hard point for ' + ', '.join(missing))
 status('WRITTEN ' + CODE + ('  (unbaked test: no maps)' if UNBAKED else ''))

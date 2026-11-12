@@ -48,9 +48,9 @@ Check to close: none needed.
 
 ### 5. The Voidsworn carriers conflict is on record but decided; no stream B change touches it. [OBSERVED]
 
-What: contrib/opus/FINDINGS.md entry F22 records "Voidsworn carrier ban (price ladder)" as a Conflict ("Breaks Commodore Ashgrove, carrier doctrine, starts with a Reliquary (data.js:204)") with status DECIDED: carriers stay, priced up. The approved go-forward plan (contrib/opus/go-forward-plan.md) says "Voidsworn keep carriers, at a price premium. The proposed carrier ban would break Commodore Ashgrove, a Voidsworn admiral whose whole kit is carriers (data.js:204)." data.js confirms: ashgrove is Commodore Sera Ashgrove, fac voidsworn, "Carrier doctrine", starting fleet includes 'reliquary', and HULLS lists reliquary as a Reliquary-class carrier, fac voidsworn. The trigger commit changes only battle.js and sim3d.js, so no stream B change follows the loss list over the plan. The conflict text exists on main but is marked DECIDED in favor of the plan, so there is no live contradiction for stream B to act on.
+What: contrib/opus/FINDINGS.md entry F22 records "Voidsworn carrier ban (price ladder)" as a Conflict ("Breaks Commodore Ashgrove, carrier doctrine, starts with a Reliquary (data.js:204)") with status DECIDED: carriers stay, priced up. The approved go-forward plan (docs/archive/go-forward-plan.md) says "Voidsworn keep carriers, at a price premium. The proposed carrier ban would break Commodore Ashgrove, a Voidsworn admiral whose whole kit is carriers (data.js:204)." data.js confirms: ashgrove is Commodore Sera Ashgrove, fac voidsworn, "Carrier doctrine", starting fleet includes 'reliquary', and HULLS lists reliquary as a Reliquary-class carrier, fac voidsworn. The trigger commit changes only battle.js and sim3d.js, so no stream B change follows the loss list over the plan. The conflict text exists on main but is marked DECIDED in favor of the plan, so there is no live contradiction for stream B to act on.
 
-Where: contrib/opus/FINDINGS.md (F22), contrib/opus/go-forward-plan.md, data.js (ashgrove entry, HULLS reliquary).
+Where: contrib/opus/FINDINGS.md (F22), docs/archive/go-forward-plan.md, data.js (ashgrove entry, HULLS reliquary).
 
 Plan item and ruling: B3.1 and the faction identity rulings ("The plan is the approved record"). Upheld.
 

@@ -4,7 +4,7 @@ One list so nothing is lost between chats. Details live in the linked docs. Orde
 
 > **Frozen (Nov 8, 2026): this is the pre-board record.** Live work lives only in GitHub issues (R75); this file is not the queue. The Oct 24 note below still explains the phase tags.
 
-> **Oct 24 2026: the approved build plan is `contrib/opus/go-forward-plan.md`.** Items below are tagged with the plan phase that covers them, for example [A1]. Untagged items are parking lot. Phone and Pixel items are retired (PC-only). The engine is decided by the 6-ship test (A2, A3), not after v55.
+> **Oct 24 2026: the approved build plan is `docs/archive/go-forward-plan.md`.** Items below are tagged with the plan phase that covers them, for example [A1]. Untagged items are parking lot. Phone and Pixel items are retired (PC-only). The engine is decided by the 6-ship test (A2, A3), not after v55.
 
 ## 0. Near backlog (Ryan, Oct 24: keep close, not this pass)
 - [ ] Three height bands for 3D space (contrib/muse/reviews/space_3d.md): a big rules change, proposal only

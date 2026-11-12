@@ -28,6 +28,8 @@ var nozzles_from_kit = false        # true when the nozzles came from A4's hp_en
 var bow = Vector3.ZERO
 var mounts = {}                    # "port", "stb", "top" -> Array of {p, n}
 var tri_count = 0
+var authored := false
+var seams: Array = []             # version 1, transformed into this hull analysis frame
 var _rng = RandomNumberGenerator.new()
 var stb_z = 1.0                    # +1: root +Z is starboard (G2), -1: +Z is port
 
@@ -153,12 +155,54 @@ float fx_mouth_edge(int i, vec3 p) {
 # Materials keep their own textures/uniforms. No static GPU resource survives shutdown.
 static var _shader_refs := {}
 
-static func shared_shader(code: String) -> Shader:
+# Issue 376: the shader warm-up list is hand kept, so after it ends any shader first built later names itself here, once
+# per name, with the frame and the time. A name in this list is a miss in the warm-up list. The flag is off during a
+# warm-up (a bench may warm more than once), and logging is once per name so a hot path cannot flood the log.
+static var late_watch := false
+static var _late := {}
+static var _late_lines: Array = []
+
+
+static func start_late_watch() -> void:
+	late_watch = true
+
+
+static func pause_late_watch() -> void:
+	late_watch = false
+
+
+static func reset_late() -> void:
+	late_watch = false
+	_late.clear()
+	_late_lines.clear()
+
+
+static func late_shader_count() -> int:
+	return _late.size()
+
+
+static func late_shader_names() -> Array:
+	return _late_lines.duplicate()
+
+
+static func note_late(name: String) -> void:
+	if not late_watch or _late.has(name):
+		return
+	var frame := Engine.get_process_frames()
+	var ms := Time.get_ticks_usec() / 1000.0
+	_late[name] = [frame, ms]
+	var line := "%s frame %d %.1f ms" % [name, frame, ms]
+	_late_lines.append(line)
+	print("[fx] late shader: " + line)
+
+
+static func shared_shader(code: String, label := "") -> Shader:
 	var shader: Shader = _shader_refs[code].get_ref() if _shader_refs.has(code) else null
 	if shader == null:
 		shader = Shader.new()
 		shader.code = code
 		_shader_refs[code] = weakref(shader)
+		note_late(label if label != "" else "hull shader " + str(code.hash()))
 	return shader
 
 
@@ -175,7 +219,8 @@ static func damage_material(src: Material, frame: Transform3D, mouths: Dictionar
 		src = StandardMaterial3D.new()
 	var base: ShaderMaterial = src if src is ShaderMaterial else _exterior(src)
 	var mat := ShaderMaterial.new()
-	mat.shader = shared_shader(_damage_code(base.shader.code))
+	var dmg := _damage_code(base.shader.code)
+	mat.shader = shared_shader(dmg, "damage " + str(dmg.hash()))
 	for param in _uniforms_of(base.shader):
 		var value = base.get_shader_parameter(param)
 		if value != null:
@@ -267,7 +312,7 @@ if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
 
 static func _exterior(src: Material) -> ShaderMaterial:
 	var mat := ShaderMaterial.new()
-	mat.shader = shared_shader(EXTERIOR)
+	mat.shader = shared_shader(EXTERIOR, "exterior")
 	if not src is BaseMaterial3D: return mat
 	var m := src as BaseMaterial3D
 	for pair in [["albedo", m.albedo_color], ["uv_scale", m.uv1_scale], ["uv_offset", m.uv1_offset],
@@ -310,6 +355,40 @@ static func _inject(code: String, method: String, start: String, finish: String)
 	return code.substr(0, a) + start + code.substr(a, b - a - 1) + finish + code.substr(b - 1)
 
 
+static func interior_material(mat: Material) -> bool:
+	if mat != null and mat.has_meta("fx_hull_source"): mat = mat.get_meta("fx_hull_source")
+	return mat != null and bool(mat.get_meta("fx_authored_interior", false))
+
+
+func _authored(root: Node3D) -> void:
+	authored = false
+	seams.clear()
+	var nodes: Array = [root]
+	nodes.append_array(root.find_children("*", "Node3D", true, false))
+	for nd in nodes:
+		var extras = nd.get_meta("extras", {})
+		var contract = nd.get_meta("voidsworn_destruct", extras.get("voidsworn_destruct", {}))
+		if not contract is Dictionary or int(contract.get("version", 0)) != 1: continue
+		var parts: Array = [nd]
+		parts.append_array(nd.find_children("*", "MeshInstance3D", true, false))
+		for part in parts:
+			if not part is MeshInstance3D or part.mesh == null: continue
+			for si in part.mesh.get_surface_count():
+				var mat: Material = part.mesh.surface_get_material(si)
+				if mat != null and mat.resource_name in contract.get("interior_materials", []): mat.set_meta("fx_authored_interior", true)
+		var xf: Transform3D = root.global_transform.affine_inverse() * nd.global_transform
+		for seam in contract.get("seams", []):
+			var p: Array = seam["p"]
+			var n: Array = seam["n"]
+			var row := {"at": xf * Vector3(p[0], p[1], p[2]),
+				"n": (xf.basis.inverse().transposed() * Vector3(n[0], n[1], n[2])).normalized()}
+			if seam.has("span"):
+				row["span"] = [ (xf * Vector3(seam["span"][0], 0, 0)).x, (xf * Vector3(seam["span"][1], 0, 0)).x ]
+			seams.append(row)
+		authored = not seams.is_empty()
+		return
+
+
 static func faces_of(root: Node3D, meshes: Array) -> PackedVector3Array:
 	var faces = PackedVector3Array()
 	var inv = root.global_transform.affine_inverse()
@@ -318,7 +397,22 @@ static func faces_of(root: Node3D, meshes: Array) -> PackedVector3Array:
 		if mi == null or mi.mesh == null:
 			continue
 		var xf = inv * mi.global_transform
-		var f = mi.mesh.get_faces()
+		var f := PackedVector3Array()
+		var has_inside := false
+		for si in mi.mesh.get_surface_count():
+			if interior_material(mi.mesh.surface_get_material(si)): has_inside = true
+		if not has_inside:
+			f = mi.mesh.get_faces() # Keep #167's native extraction unchanged for every older asset.
+		else:
+			for si in mi.mesh.get_surface_count():
+				# The outside BVH must never land an impact on a deck inside the hull.
+				if interior_material(mi.mesh.surface_get_material(si)): continue
+				var arr: Array = mi.mesh.surface_get_arrays(si)
+				var v: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
+				var idx = arr[Mesh.ARRAY_INDEX]
+				if idx == null or idx.is_empty(): f.append_array(v)
+				else:
+					for i in idx: f.append(v[i])
 		if xf.is_equal_approx(Transform3D.IDENTITY):
 			faces.append_array(f)
 		else:
@@ -328,6 +422,7 @@ static func faces_of(root: Node3D, meshes: Array) -> PackedVector3Array:
 
 func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	_rng.seed = seed_v
+	_authored(root)
 	var inv = root.global_transform.affine_inverse()
 	var first = true
 	for m in meshes:

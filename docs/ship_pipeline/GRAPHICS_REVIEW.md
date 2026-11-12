@@ -1,3 +1,5 @@
+HISTORY (marked Nov 11 2026): Babylon fixes for the frozen browser game; browser-era history, not the Godot product. The live ship method is docs/playbooks/ships.md section 0 and docs/ship_pipeline/RECIPE.md; the rules are docs/RULEBOOK.md sections 4 and 5. Kept for history; do not follow.
+
 # Graphics review: hidden problems that hurt detail (Oct 22, 2026)
 
 Owner asked (Oct 22): "are there other items like being lit from the inside that we should review that might be impacting graphical

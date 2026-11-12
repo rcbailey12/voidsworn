@@ -35,6 +35,29 @@ for (const f of USERS) check(/ui\/ui_scale\.gd/.test(read(f)) && /k_for\(/.test(
 check(!/clamp\(ui\.k/.test(read('godot/ui/campaign/map3d.gd')), 'map3d.gd labels follow ui.k without a second clamp');
 check(/set_player\(settings\.get\("ui_scale", 1\.0\)\)/.test(read('godot/main/main.gd')), 'main.gd hands the player UI scale to ui_scale.gd, a missing key reading 1.0 (ui_spec.md 4.4)');
 
+// 2b. issue 546 (the A2 sweep row): the settings screen offers UI scale and Reduce motion, with the spec's defaults, and
+// an old settings.json without either key keeps those defaults (main.gd loads the file key by key over its defaults).
+{
+  const mg = read('godot/main/main.gd');
+  const defs = (/var settings := \{([^}]*)\}/.exec(mg) || [])[1] || '';
+  check(/"ui_scale": 1\.0/.test(defs), 'main.gd default ui_scale is Normal 1.0 (ui_spec.md 4.4, 7.5)');
+  check(/"reduce_motion": false/.test(defs), 'main.gd default reduce_motion is off (ui_spec.md 7.5, 7.6)');
+  check(/for k in o:\n\s*settings\[k\] = o\[k\]/.test(mg), 'main.gd loads an existing settings file key by key over the defaults, so an old file without ui_scale or reduce_motion still reads 1.0 and off');
+  check(/b\.reduce_motion = bool\(settings\.get\("reduce_motion", false\)\)/.test(mg), 'main.gd gives the battle the reduce_motion setting (a missing key reads off)');
+  const ti = read('godot/main/title.gd');
+  check(/_choice\("UI scale", "ui_scale", \[\[0\.9, "Small"\], \[1\.0, "Normal"\], \[1\.15, "Large"\], \[1\.3, "Larger"\]\]\)/.test(ti), 'title Settings offers UI scale as Small 0.9, Normal 1.0, Large 1.15, Larger 1.3 (ui_spec.md 4.4)');
+  check(/_toggle\("Reduce motion", "reduce_motion"\)/.test(ti), 'title Settings offers Reduce motion as a switch (ui_spec.md 7.6)');
+  check(/_toggle\("Reduce flashing", "reduce_flashing"\)/.test(ti), 'the two new entries sit in the same Settings list as Reduce flashing (issue 546)');
+  check(/if key == "ui_scale":\n\s*_rebuild\(\)/.test(ti), 'changing UI scale rebuilds the title screen at once (ui_spec.md 4.4)');
+  check(/ScrollContainer\.new\(\)/.test(ti) && /rows\.get_combined_minimum_size\(\)\.y, vs\.y - s\(150\)/.test(ti), 'the Settings list scrolls when the larger UI scales would push the panel past the window, so Done stays reachable');
+  const bt = read('godot/scenes/battle/battle.gd');
+  check(/items\.append\(\["Reduce motion: %s"/.test(bt) && /"opt", "motion"/.test(bt), 'the battle menu offers Reduce motion in the comfort subset (ui_spec.md 7.6)');
+  check(/items\.append\(\["UI scale: %s"/.test(bt) && /"opt", "uiscale"/.test(bt), 'the battle menu offers UI scale in the comfort subset (ui_spec.md 4.4)');
+  check(/reduce_motion = not reduce_motion/.test(bt) && /option_changed\.emit\("reduce_motion", reduce_motion\)/.test(bt), 'the battle menu switch writes reduce_motion through option_changed');
+  check(/UiScale\.set_player\(v\)/.test(bt) && /option_changed\.emit\("ui_scale", v\)/.test(bt), 'the battle menu switch writes ui_scale and applies the shared law');
+  check(/hud\._rebuild\(\)/.test(bt), 'changing UI scale in the battle menu rebuilds the HUD at once (ui_spec.md 4.4)');
+}
+
 // 3. AC5: the battle theme draws a visible focus ring, and the menu and end card take keyboard focus
 const hud = read('godot/ui/battle/hud.gd');
 check(!/set_stylebox\("focus", "Button", StyleBoxEmpty/.test(hud), 'battle theme focus stylebox is not empty (AC5, ui_spec.md 6.2)');
@@ -66,7 +89,7 @@ const lows = [...hud.matchAll(/HULL_LOW if \w+ < ([\d.]+)/g), ...campaignHull.ma
 check(lows.length >= 4 && lows.every(v => v === 0.35), `every hull-low line is 0.35: battle roster, nameplate, campaign bars and hull figures (HD9; found ${lows.join(', ')})`);
 
 // 7. issue #344 (UI rollout 1): the campaign pages are in Lime Tactical, and the campaign map is the Briefing layout
-// (Ryan's pick, FINDINGS R165; contrib/opus/briefs/campaign_map_briefing.md). These are code-structure checks: they read
+// (Ryan's pick, FINDINGS R165; docs/archive/briefs/campaign_map_briefing.md). These are code-structure checks: they read
 // the source. What the map does when it runs (it only reads; Muse's check of PR 349, condition 1) is tested by behaviour in
 // godot/campaign/test/map_readonly_test.gd, which CI runs with the Nemesis scenarios (run_nem_scenarios.sh).
 {
@@ -173,6 +196,32 @@ check(lows.length >= 4 && lows.every(v => v === 0.35), `every hull-low line is 0
   check(/wing_sel = ""/.test(body('_cancel')), 'battle _cancel() clears the armed wing (UI-5, issue 387)');
   check(/elif wing_sel != "":[\s\S]*?wing_sel = ""/.test((bg.match(/KEY_ESCAPE:[\s\S]*?KEY_TAB:/) || [''])[0]), 'battle Escape clears the armed wing (UI-5, issue 387)');
   check(fs.existsSync(path.join(ROOT, 'godot/scenes/battle/test/wing_cancel_test.gd')) && /headless\|scenes\/battle\/test\/wing_cancel_test\.gd\|/.test(read('godot/tools/ci/godot_checks.txt')), 'the headless UI-5 behaviour check is listed in godot/tools/ci/godot_checks.txt');
+}
+
+// 9. issue 271 step 2: the battle screen is the ember orders sheet, E1 LEDGER (Ryan's pick R210; the rail's look, R176).
+// Structure guards for the Node-only standing checks; the readability numbers (17 px, 28 px Big Shoulders, three strengths,
+// 4.5 to 1 over the brightest and darkest board, no overlaps, every function reachable) are measured by the headless
+// Godot check godot/ui/battle/test/ledger_readability_test.gd on GitHub.
+{
+  const led = read('godot/ui/battle/ledger.gd'), bg = read('godot/scenes/battle/battle.gd');
+  const gsh3 = read('godot/ui/theme/glass_shell.gd'), board = read('godot/render/board.gd'), sv = read('godot/render/ship_view.gd');
+  check(/const Ledger := preload\("res:\/\/ui\/battle\/ledger\.gd"\)/.test(hud) && /func _build_ledger\(/.test(hud) && /ledger\.ship = info/.test(hud) && /ledger\.target = info/.test(hud) && /ledger\.card = info/.test(hud), 'the battle HUD hands every setter to the orders sheet (ledger.gd)');
+  check(/legacy\.visible = false/.test(hud) && /for c in \[top, unacted, roster, panel, phase, hint\]/.test(hud), 'the Lime shell of the previous build is out of sight (legacy, never shown)');
+  check(/const EMBER := GS\.MAP_EMBER/.test(led) && /const GLACIER := GS\.GLACIER/.test(led) && /const GLACIER := Color\("#92b8e8"\)/.test(gsh3), 'the sheet takes ember and Glacier (#92b8e8) from glass_shell.gd');
+  check(!/GILT|GS\.SHIELD\b|#c8f53a|#4fc4ff|corner_radius|shadow/.test(led), 'no lime, no old shield cyan, no rounded corners and no shadows on the sheet');
+  const plan = (led.match(/func _shield_plan\([\s\S]*?\n(?=func )/) || [''])[0];
+  const glacierUses = led.split('\n').filter(l => /GLACIER/.test(l) && !/^\s*#|^const /.test(l));
+  check(glacierUses.length >= 2 && glacierUses.every(l => plan.includes(l)), 'Glacier is used by the shield plan only (the shield readout)');
+  check(/GS\.sheet_name\(\)/.test(led) && /GS\.sheet_body\(\)/.test(led) && /GS\.sheet_medium\(\)/.test(led) && /GS\.num\(\)/.test(led) && /fs > 28/.test(led), 'the sheet uses the three faces (Big Shoulders names from 28 px, Barlow, Azeret Mono)');
+  check(/func _action_box\(/.test(led) && /px\(56\)/.test(led) && /maxf\(2\.0, px\(2\)\)/.test(led), 'the one box is the 56 px square ember action, a 2 px outline');
+  check(/static func veil_alpha/.test(led) && /func dark_at\(/.test(led) && /VEIL_A := 0\.94/.test(led), 'the sheet sits on a smooth veil, not a panel, and the check reads its strength');
+  check(/HOVER_RING := Color\(1\.0, 0\.541, 0\.227/.test(board) && !/0\.78, 0\.96, 0\.23/.test(board + sv + bg), 'the hovered hex and the ring under the ship that is up are ember on the 3D board (lime retired, R191)');
+  check(!/#c8f53a|#4fc4ff/.test(bg), 'battle.gd writes no lime and no old shield cyan');
+  check(/"say": say/.test(bg) && /"nem": bool\(tu\.get\("nemesis", false\)\)/.test(bg), 'the activation card carries one short sentence and the target says when it is the Nemesis');
+  check(/\["Top-down view \(T\)", "top"\]/.test(bg) && /\["Keys", "keys"\]/.test(bg) && /"grid":/.test(bg), 'the view keys that left the screen are listed in the menu (T, Z, Keys)');
+  check(/func show_ask\(/.test(hud) && /ledger\.ask = a/.test(hud) && /func _prompt\(/.test(led), 'the issue 529 tree prompt takes the shot\'s place in the sheet (show_ask drops in)');
+  check(/screen_shift/.test(read('godot/render/camera_rig.gd')) && /hud\.clear_shift\(\)/.test(bg), 'the camera looks at the middle of the part the sheet leaves clear');
+  check(/headless\|ui\/battle\/test\/ledger_readability_test\.gd\|/.test(read('godot/tools/ci/godot_checks.txt')), 'the readability check is listed in godot/tools/ci/godot_checks.txt');
 }
 
 // 6. the diff script still reads every named pair (a pattern that stopped matching is reported, not failed)

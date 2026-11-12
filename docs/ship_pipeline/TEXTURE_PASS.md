@@ -1,3 +1,5 @@
+HISTORY (marked Nov 11 2026): the Oct 22 texture pass for the frozen browser game; browser-era history, not the Godot product. The live ship method is docs/playbooks/ships.md section 0 and docs/ship_pipeline/RECIPE.md; the rules are docs/RULEBOOK.md sections 4 and 5. Kept for history; do not follow.
+
 # Texture pass: brief for auditors and builders (Oct 22, 2026)
 
 ## Why

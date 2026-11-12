@@ -1,10 +1,15 @@
 # Consolidated UI specification (issue #231)
 
+**Status Nov 11 2026 (issue 492 clean-up):** live for the scale law (4.1), the focus ring (6), settings (7), the faction colour
+rule (5.4) and the debrief order (10). Superseded: the gold and Lime palettes and fonts (the look is the orders sheet,
+docs/playbooks/screens.md section 2 and RULEBOOK 9.1) and the 12 px floor (one floor of 17 px, RULEBOOK 9.4). Where this file
+and the rulebook disagree, the rulebook wins.
+
 Opus, Nov 8 2026. FINDINGS R136. This is settlement U-B of the Nov 6 UI and campaign map audit (contrib/muse/reviews/ui_audit_2026_11/, synthesis section 6, the blind Rey table at legs/rey_blind.md section 5, owner rulings R1 to R3 in synthesis section 9 and issue #215). It also carries the U-E pieces #231 names: the MN10 host read, the MP9 precedence read, the MN3 defaults block, and the MN8 debrief spec (with MN9 folded in), which lives in its own file: [debrief_spec.md](debrief_spec.md).
 
 **R137 (Ryan, Nov 8 16:53 CST):** the whole UI gets a redesign from scratch (warship-console look, battle screen first, #270 and #271). The redesign changes the look and the layouts; this spec's scale law, focus ring, text floor, colour meanings and content rules stay underneath it. Where a section here names a shipped layout value (a panel width, a banner size), the redesign's style guide replaces it.
 
-How to use it: a coding job that touches UI reads this file first. The generated table of both builds' literals is [ui_spec_constants.md](ui_spec_constants.md) (`node contrib/opus/tools/ui_constants_diff.js` writes it). The standing checks in contrib/opus/tools/ui_spec_tests.js keep the code-structure rules below true on every PR.
+How to use it: a coding job that touches UI reads this file first. The generated table of both builds' literals is written on demand by `node contrib/opus/tools/ui_constants_diff.js` (to contrib/opus/briefs/ui_spec_constants.md; the Nov 8 snapshot is archived at docs/archive/briefs/ui_spec_constants.md). The standing checks in contrib/opus/tools/ui_spec_tests.js keep the code-structure rules below true on every PR.
 
 Values marked **provisional** are this spec's picks pending a capture round: U-A (the calibration sitting, #235, Ryan at 1440p and 4K), U-C (the campaign capture round, #237) or U-D (the danger-band Monte Carlo and the colour-vision pass, #238). A provisional value is the rule until its round lands; the round changes it here, in one place. Nothing here is a performance gate (R111, R121); the scene gate (R116) is the only one.
 
@@ -120,14 +125,14 @@ Every UI colour is a named palette entry. A new colour in UI code is either one 
 | DANGER 1 to 4 | #7ddc6a, #d0a64b, #f0883a, #e2453a | map danger bands Easy, Even, Hard, Deadly (MP8; cut points re-ruled by the U-D Monte Carlo) |
 | core colours | PATRONS col (data) | a core's own name and its sync lines |
 | faction colours | section 5.4 | campaign map and crests only |
-| SHELL, SHELL_EDGE | #0a0d0a at 80%; lime at 20% | #271 Lime Tactical: the matte panel and its edge (contrib/opus/briefs/ui_style.md) |
+| SHELL, SHELL_EDGE | #0a0d0a at 80%; lime at 20% | #271 Lime Tactical (retired, R191): the matte panel and its edge (docs/archive/briefs/ui_style_lime_tactical.md) |
 | WELL, WELL_EDGE | #080a08 (93% in a panel, 88% as a strip); lime at 35% | #271: the solid backing under every line of text, and its 2 px left bar |
 | SHIELD_TRACK | #1b2a2e | #271: the empty part of a shield bar |
 
 **Lime Tactical values (R149, #271).** The battle HUD now draws from godot/ui/theme/glass_shell.gd, which keeps these
 names and meanings with new values: the grounds black-olive, the text family pale sage, GILT neon lime #c8f53a (still
 "the player's own and the next action"), ALERT #ff4433 (still the one alarm red), FRIEND mint #52f0c4 (moved off green
-so it never reads as the lime). The full table is ui_style.md section 5. The hex values in the table above stay true
+so it never reads as the lime). The full table is section 5 of docs/archive/briefs/ui_style_lime_tactical.md (Lime is retired, R191). The hex values in the table above stay true
 for the screens not yet rebuilt (title, campaign, career, menus); each moves to the glass_shell.gd values when it is.
 
 Recorded decisions:

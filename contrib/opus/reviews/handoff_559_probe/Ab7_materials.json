@@ -1,0 +1,142 @@
+{
+ "materials": {
+  "Ab7_hull_mat": {
+   "objects": 1,
+   "roles": {
+    "hull": 1
+   },
+   "tris": 0,
+   "nodes": {
+    "ShaderNodeBsdfPrincipled": 1,
+    "ShaderNodeOutputMaterial": 1,
+    "ShaderNodeUVMap": 1,
+    "ShaderNodeTexImage": 3,
+    "ShaderNodeSeparateColor": 1,
+    "ShaderNodeNormalMap": 1
+   },
+   "images": [
+    [
+     "Ab7_hull_albedo",
+     [
+      4096,
+      4096
+     ],
+     "sRGB",
+     [
+      "Base Color"
+     ]
+    ],
+    [
+     "Ab7_hull_orm",
+     [
+      4096,
+      4096
+     ],
+     "Non-Color",
+     [
+      "Color"
+     ]
+    ],
+    [
+     "Ab7_normal",
+     [
+      4096,
+      4096
+     ],
+     "Non-Color",
+     [
+      "Color"
+     ]
+    ]
+   ],
+   "bsdf_linked": [
+    "Base Color",
+    "Metallic",
+    "Roughness",
+    "Normal"
+   ],
+   "Emission Strength": 0.0
+  },
+  "Ab7_parts_mat": {
+   "objects": 1181,
+   "roles": {
+    "part": 1084,
+    "trim": 28,
+    "dark": 50,
+    "decal": 19
+   },
+   "tris": 0,
+   "nodes": {
+    "ShaderNodeBsdfPrincipled": 1,
+    "ShaderNodeOutputMaterial": 1,
+    "ShaderNodeUVMap": 1,
+    "ShaderNodeTexImage": 2,
+    "ShaderNodeSeparateColor": 1
+   },
+   "images": [
+    [
+     "Ab7_parts_albedo",
+     [
+      4096,
+      4096
+     ],
+     "sRGB",
+     [
+      "Base Color"
+     ]
+    ],
+    [
+     "Ab7_parts_orm",
+     [
+      4096,
+      4096
+     ],
+     "Non-Color",
+     [
+      "Color"
+     ]
+    ]
+   ],
+   "bsdf_linked": [
+    "Base Color",
+    "Metallic",
+    "Roughness"
+   ],
+   "Emission Strength": 0.0
+  },
+  "p3_glow": {
+   "objects": 19,
+   "roles": {
+    "glow": 19
+   },
+   "tris": 0,
+   "nodes": {
+    "ShaderNodeBsdfPrincipled": 1,
+    "ShaderNodeOutputMaterial": 1
+   },
+   "images": [],
+   "bsdf_linked": [],
+   "Emission Strength": 2.200000047683716,
+   "Metallic": 0.0,
+   "Roughness": 0.800000011920929
+  },
+  "p3_interior": {
+   "objects": 22,
+   "roles": {
+    "interior": 22
+   },
+   "tris": 0,
+   "nodes": {
+    "ShaderNodeBsdfPrincipled": 1,
+    "ShaderNodeOutputMaterial": 1
+   },
+   "images": [],
+   "bsdf_linked": [],
+   "Emission Strength": 0.0,
+   "Metallic": 0.0,
+   "Roughness": 0.800000011920929
+  }
+ },
+ "interior_objects": 22,
+ "hidden_render_meshes": 0
+}

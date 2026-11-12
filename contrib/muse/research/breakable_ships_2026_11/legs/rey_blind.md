@@ -8,7 +8,7 @@ Do not solidify the whole hull and carry the result around intact. Split the hul
 
 ## 1. Hull thickness from a single-skin AI mesh
 
-Project facts: the current hulls are single-sided surfaces with nothing inside (contrib/muse/research/destruction_2026_11/synthesis.md), the ship-kit rule requires real hull thickness with no single-skin shells (.claude/skills/ship-kit/SKILL.md, "Breakable by design"), and builds are Blender scripts on Blender 4.5.14, never unrepeatable hand edits (same skill, procedure step 1).
+Project facts: the current hulls are single-sided surfaces with nothing inside (contrib/muse/research/destruction_2026_11/synthesis.md), the ship-kit rule requires real hull thickness with no single-skin shells (docs/archive/skills/ship-kit_SKILL_2026-11-11.md, "Breakable by design"), and builds are Blender scripts on Blender 4.5.14, never unrepeatable hand edits (same skill, procedure step 1).
 
 Proposed script stages (Blender built-ins only):
 
@@ -56,7 +56,7 @@ INFERRED estimates, arithmetic shown, none measured:
 
 ## 6. Chorus organic hulls
 
-The ship-kit rule fixes the principle: Chorus hulls get flesh and bone inside instead of metal (.claude/skills/ship-kit/SKILL.md). Applied to this method:
+The ship-kit rule fixes the principle: Chorus hulls get flesh and bone inside instead of metal (docs/archive/skills/ship-kit_SKILL_2026-11-11.md). Applied to this method:
 
 - No decks, no bulkheads, no right angles. The inner shell becomes flesh: a dark red-brown, wet-look interior material (roughness low, colour dark per the Nov 1 darkness rule), with vein and fibre detail in texture, not geometry.
 - Bulkheads become bone or cartilage walls: the cap at a break line is a bone plate with a flesh rim, displaced more irregularly than a metal cap, because a Chorus piece tears rather than slices. INFERRED: reuse the same cap mechanism with a larger displacement amplitude and the organic material set; no second code path.

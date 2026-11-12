@@ -54,6 +54,7 @@ const API := preload("res://rules/battle_api.gd")
 const BL := preload("res://world/board_look.gd")
 const PG := preload("res://render/placeholder_guard.gd")
 const SV := preload("res://render/ship_view.gd")
+const HULL := preload("res://fx/fx_hull.gd")
 
 const RES := Vector2i(1920, 1080)
 const MODES := ["base", "shadows_off", "msaa_2x", "msaa_off", "fx_off", "post_off", "hud_off", "world_off", "ships_off",
@@ -557,6 +558,7 @@ func _save() -> void:
 
 
 func _build(mode: String, seed: int) -> void:
+	HULL.reset_late()   # issue 376: count only the shaders this battle first builds after its warm-up
 	b = BattleScene.instantiate()
 	b.external = true
 	b.args["quality"] = "max"
@@ -786,6 +788,7 @@ func _mode(mode: String, s: int) -> Dictionary:
 			vol0 = vol
 			obj0 = obj
 		vol_looks.clear()
+	var late: Array = HULL.late_shader_names()
 	var row := {"mode": mode, "frames": n, "warmup": warm, "seconds": (Time.get_ticks_usec() - t0) / 1e6,
 		"viewport": [vp.get_visible_rect().size.x, vp.get_visible_rect().size.y], "msaa_3d": vp.msaa_3d,
 		"scaling_3d": vp.scaling_3d_scale, "volleys": b.gfx.stats.get("volleys", 0) if b.gfx != null else 0,
@@ -793,7 +796,8 @@ func _mode(mode: String, s: int) -> Dictionary:
 		"damage_counts": b.gfx.damage_counts() if b.gfx != null else {},
 		"vram_mb": Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0,
 		"texture_mb": Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED) / 1048576.0,
-		"buffer_mb": Performance.get_monitor(Performance.RENDER_BUFFER_MEM_USED) / 1048576.0}
+		"buffer_mb": Performance.get_monitor(Performance.RENDER_BUFFER_MEM_USED) / 1048576.0,
+		"late_shaders": late.size(), "late_shader_names": late}
 	if b.gfx != null and "flash_area_log" in b.gfx:
 		var req := 0
 		var yielded := 0
@@ -839,12 +843,16 @@ func _mode(mode: String, s: int) -> Dictionary:
 	row["build_ms"] = build_ms
 	if trace:
 		row["trace"] = _trace_summary(tr)
+		row["trace"]["late_shaders"] = late
 		var tf := FileAccess.open(out.path_join("trace_%s_s%d.json" % [mode, s + 1]), FileAccess.WRITE)
 		tf.store_string(JSON.stringify(tr) + "\n")
 		tf.close()
 	print("[scene_gate] %d %s gpu %.3f frame %.3f cpu %.3f dc %d+%d prims %d+%d" % [s + 1, mode, row["gpu_median"],
 		row["frame_median"], row["cpu_median"], int(row["dc_vis_median"]), int(row["dc_sh_median"]),
 		int(row["prim_vis_median"]), int(row["prim_sh_median"])])
+	print("[scene_gate] %d %s late shaders after warm-up (issue 376): %d" % [s + 1, mode, late.size()])
+	for line in late:
+		print("[scene_gate]   late shader " + str(line))
 	volleys_on = false
 	kill_shadows = false
 	b.queue_free()

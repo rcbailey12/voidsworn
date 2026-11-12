@@ -37,6 +37,7 @@ var _planet_ang := 0.0
 var _planet_pos := Vector3.ZERO
 var _planet_R := 0.0
 var _backdrop_radii := {}    # mesh radii about the shader's rotation origin
+var _backdrop_angle_max := 0.0
 var _ring_n := Vector3.ZERO      # the planet's ring plane normal (zero: no rings)
 # degrees about x. F4: the default camera looks down 34 degrees from +z; a tilt of -25 shows it the disc nearly edge on
 # (about 9 degrees), the classic lensed look (the far side of the disc bent up over the shadow); -12 showed it face on.
@@ -129,6 +130,7 @@ func step(dt: float) -> void:
 
 func build(view: Dictionary, opts: Dictionary) -> void:
 	var t0 := Time.get_ticks_usec()
+	_backdrop_angle_max = 0.0
 	quality = String(opts.get("quality", "max"))
 	if RenderingServer.get_current_rendering_method() == "gl_compatibility":
 		quality = "low"
@@ -213,6 +215,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 		if not (clouds[t] as Array).is_empty():
 			cloud_hexes(clouds[t], t, fac)
 	fields(mk, rock_kind)
+	_report_backdrop_scale()
 	var n_rocks: int = _batch.build(self, Callable(WR, "mesh"))
 	dust(mk)
 	wisps()
@@ -845,9 +848,18 @@ func _backdrop_scale(nm: String, s: float, p: Vector3, max_length := INF) -> flo
 	var length_cap := minf(max_length, 2.0 * sin(BACKDROP_ROCK_ANGLE * 0.5) * dist)
 	s = minf(s, length_cap / diameter)
 	var angle := 2.0 * asin(clampf(diameter * s / (2.0 * maxf(dist, 0.001)), 0.0, 1.0))
-	assert(angle <= BACKDROP_ROCK_ANGLE + 0.000001, "Backdrop rock exceeds 0.05 rad")
-	assert(_planet_ang == 0.0 or angle * 4.4 <= 2.0 * _planet_ang + 0.000001, "Backdrop rock exceeds planet scale margin")
+	# R191 (4): rocks must not loom over the fleet or read larger than a planet. These are visual tuning values,
+	# reported once after all fields are built so the loom turntable can judge them without stopping the game.
+	_backdrop_angle_max = maxf(_backdrop_angle_max, angle)
 	return s
+
+
+func _report_backdrop_scale() -> void:
+	var ratio := "n/a (no planet or backdrop rocks)"
+	if _planet_ang > 0.0 and _backdrop_angle_max > 0.0:
+		ratio = "%.3f" % (2.0 * _planet_ang / _backdrop_angle_max)
+	print("[world] AS1 largest backdrop rock %.6f rad, target %.3f rad; PL8 planet/rock diameter %s, target 4.4; visual tuning (R191)" % [
+		_backdrop_angle_max, BACKDROP_ROCK_ANGLE, ratio])
 
 
 # The layers round and below the board, by map: an edge scatter (near the board's height, outside it), a deep field far

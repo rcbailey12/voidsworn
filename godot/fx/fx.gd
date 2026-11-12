@@ -264,15 +264,32 @@ func setup(opts := {}) -> void:
 # One Shader per distinct source (materials share it): identical shaders compile once, not once per material.
 var _shaders := {}
 
+# Issue 376: names for the shader sources that are constants in fx_shaders.gd, so a late shader's log line says
+# "mat SPRITE" instead of a hash. Built once on the first late shader.
+var _shader_names := {}
 
-func _mat(code: String, prio := 0, defines := "") -> ShaderMaterial:
+
+func _shader_name(code: String) -> String:
+	if _shader_names.is_empty():
+		var scr: Script = load("res://fx/fx_shaders.gd")
+		var consts: Dictionary = scr.get_script_constant_map()
+		for k in consts:
+			if consts[k] is String:
+				_shader_names[consts[k]] = k
+	return str(_shader_names.get(code, "code " + str(code.hash())))
+
+
+func _mat(code: String, prio := 0, defines := "", label := "") -> ShaderMaterial:
 	var key := str(code.hash()) + "|" + defines
 	var s: Shader = _shaders.get(key)
 	if s == null:
+		var name := label
+		if name == "":
+			name = "mat " + _shader_name(code) + ("" if defines == "" else " " + defines.strip_edges())
 		if defines != "":
 			var nl = code.find("\n", code.find("render_mode"))
 			code = code.substr(0, nl + 1) + defines + code.substr(nl + 1)
-		s = HULL.shared_shader(code)
+		s = HULL.shared_shader(code, name)
 		_shaders[key] = s
 	var m = ShaderMaterial.new()
 	m.shader = s
@@ -280,8 +297,17 @@ func _mat(code: String, prio := 0, defines := "") -> ShaderMaterial:
 	return m
 
 
-func mat(code: String, prio := 0, defines := "") -> ShaderMaterial:
-	return _mat(code, prio, defines)
+func mat(code: String, prio := 0, defines := "", label := "") -> ShaderMaterial:
+	return _mat(code, prio, defines, label)
+
+
+# Issue 376: how many distinct shaders were first built after the warm-up ended, and their names with frame and time.
+func late_shader_count() -> int:
+	return HULL.late_shader_count()
+
+
+func late_shader_names() -> Array:
+	return HULL.late_shader_names()
 
 
 # ---------------------------------------------------------------- clock
@@ -859,7 +885,30 @@ func hit_pause(t: float, frames: int) -> void:
 
 func death_slowmo() -> void:
 	if now >= _death_hurry_until and _death_slow_left <= 0.0:
-		_death_slow_left = 0.48
+		_death_slow_left = DEATH_SLOW_S
+
+
+# Issue 521 (R193, Ryan's pick "Hold and slow"; R73): the slow-motion beat at the core flash of every cruiser, capital
+# and flagship kill (fx_ship.death_big). The battle turns it on (off by default, so the effect checks keep their own
+# timing) and leaves it off under reduce motion. A key or a click during it calls skip_death_slowmo.
+var kill_slowmo := false
+const DEATH_SLOW_S := 0.48    # real seconds at about a third of speed (R73), then the clock eases back
+var _core_at := {}            # ship id -> the effect clock time of its core flash (big hulls broken by the timeline)
+
+
+# The effect clock time of a dying ship's core flash, read from its death timeline; -1 when it has none (small hulls,
+# the Chorus rupture, a burnt-out hulk).
+func death_core_at(id: String) -> float:
+	return float(_core_at.get(id, -1.0))
+
+
+# A key or a click during the beat: back to full speed now, and no new beat from a death already under way.
+func skip_death_slowmo() -> void:
+	_death_slow_left = 0.0
+	_death_hurry_until = maxf(_death_hurry_until, now + 0.1)
+	for id in _core_at.keys():
+		if float(_core_at[id]) > now - 0.5:
+			_core_at[id] = -1.0
 
 
 # Same presentation hurry as the battle. Also suppress a beat scheduled later in this death.
@@ -1114,8 +1163,20 @@ func death(id: String, cause := "blast") -> float:
 		return 0.0
 	stats["deaths"] += 1
 	var t0 := Time.get_ticks_usec()
+	var tl_before = (ships[id] as SHIP).get_meta("death_timeline", null)
 	var r: float = DEATH.death(self, ships[id], cause)
 	pend("death", t0)
+	var s: SHIP = ships[id]
+	_core_at.erase(id)
+	# only a timeline this death made (a burnt-out hulk or the Chorus rupture makes none and has no core flash)
+	if s.death_big and s.has_meta("death_timeline") and s.get_meta("death_timeline") != tl_before and s.has_meta("death_start"):
+		var tl = s.get_meta("death_timeline")
+		var core := float(s.get_meta("death_start")) + float(tl.cut) + float(tl.core_delay)
+		_core_at[id] = core
+		if kill_slowmo:
+			later(core, func l_kill_slowmo() -> void:
+				if float(_core_at.get(id, -1.0)) >= 0.0:
+					death_slowmo())
 	return r
 
 
@@ -1233,6 +1294,9 @@ func particles_emitted() -> int:
 func warmup(cam: Camera3D, frames := 4) -> void:
 	if cam == null:
 		return
+	# Issue 376: a warm-up builds shaders by design, and a bench may warm more than once, so the late log is off while
+	# this runs and on again when it ends. Anything built after this is a miss in the hand-kept list.
+	HULL.pause_late_watch()
 	# The temporary PBR adapter is queried for uniforms at death too. Keep its
 	# shader alive so that query never recompiles it for each new ship.
 	_shaders["hull_exterior"] = HULL.shared_shader(HULL.EXTERIOR)
@@ -1408,3 +1472,4 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	for i in frames:
 		await RenderingServer.frame_post_draw
 	tmp.queue_free()
+	HULL.start_late_watch()

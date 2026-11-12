@@ -2,6 +2,9 @@ extends Node3D
 # One ship on the board: its hull (the game's mesh for its faction and class, or the 8K version for a flagship), scaled to
 # the class length, turned to its facing, with engine glows, a selection ring, and the animation of its moves.
 
+# the ring under the ship that is up: the Hollow Sun's ember, the battle screen's one accent (#ff8a3a, glass_shell.gd
+# MAP_EMBER; issue 271 step 2, lime retired by R191)
+const EMBER := Color(1.0, 0.541, 0.227)
 const HT := preload("res://render/hull_table.gd")
 const CRAFT := preload("res://render/squadron_craft.gd")
 const WING := preload("res://render/squadron_wing.gd")
@@ -250,7 +253,7 @@ func _ring() -> void:
 	ring.mesh = tm
 	var m := StandardMaterial3D.new()
 	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	m.albedo_color = Color(0.78, 0.96, 0.23)
+	m.albedo_color = EMBER
 	m.emission_enabled = true
 	ring.material_override = m
 	ring.position.y = -0.3
@@ -366,7 +369,7 @@ func flee() -> void:
 	ring.visible = false
 
 
-func set_selected(on: bool, col := Color(0.78, 0.96, 0.23)) -> void:   # lime: the ship that is up (R149)
+func set_selected(on: bool, col := EMBER) -> void:   # the ship that is up: ember (issue 271; lime retired, R191)
 	ring.visible = on
 	(ring.material_override as StandardMaterial3D).albedo_color = col
 	ring.rotation.y = -rotation.y
@@ -806,9 +809,11 @@ const GL_TR := [0.7, 1.7]     # units to build cruise speed from rest, escort an
 const GL_SPIN := 2.4          # a turn step's weight to units of the move's timeline (the motion's own ramps add as much)
 const GL_POINT := 0.5         # a turn before the run: the hull sets off when the nose is within this many radians (29 deg)
 const GL_TRAIL := 0.45        # a turn after the run starts this share of its own length before the hull arrives
+# (battle.gd passes its own "point" and "trail" for a move flown nose first, issue 521: NF_POINT, NF_TRAIL)
 const GL_DWELL := 0.4         # a big turn at a corner (two steps or more): the hull rests this share of the spin there
 const GL_COAST := 0.15        # the drive while coasting under way (battle level about 0.6 of 2): hot, never dark
 const JET_ON := 0.18          # a jet fires above this level; its puffs carry the level, so they fade in and out
+const PUFF_MIN := 2.4         # issue 521: the smallest jet in a flown move, in world units (a frigate's jets read at r 170)
 const JET_K := 10.0           # how fast a jet level follows its push (1/s): short ramps, never one-frame switches
 
 
@@ -920,7 +925,8 @@ func play_glide(steps: Array, unit_s: float, opts := {}) -> void:
 	gl_tm0 = 0.0
 	if lead_u > 0.0:
 		# point, then burn: set off when the nose is within GL_POINT of the new heading (the drive builds slowly anyway)
-		var want := 1.0 - GL_POINT / maxf(lead_d, GL_POINT * 1.5)
+		var pt := float(opts.get("point", GL_POINT))
+		var want := 1.0 - pt / maxf(lead_d, pt * 1.5)
 		var lo := 0.0
 		var hi := 1.0
 		for _i in 24:
@@ -931,7 +937,7 @@ func play_glide(steps: Array, unit_s: float, opts := {}) -> void:
 				hi = mid
 		gl_tm0 = lead_u * clampf(hi, 0.35, 0.9)
 	var t_end := gl_tm0 + t_motion
-	var t_trail0 := maxf(t_end - minf(trail_u * GL_TRAIL, minf(tr, t_motion * 0.5)), gl_tm0)
+	var t_trail0 := maxf(t_end - minf(trail_u * float(opts.get("trail", GL_TRAIL)), minf(tr, t_motion * 0.5)), gl_tm0)
 	var t_cursor := 0.0   # (rotation only: spins one after another)
 	for g in groups:
 		var k := int(g["k"])
@@ -1325,12 +1331,14 @@ func _puff(at: Vector3, dir: Vector3, k := 1.0) -> void:
 	# a jet reads at battle zoom: about 5% of the hull's length as it leaves the nozzle, three times that as it spreads
 	# (in a flown move a capital's jets are bigger and last longer: a heavy burn, not a puff)
 	var mk := clampf(mass / MASS_MAX, 0.0, 1.0) if glide else 0.0
-	sp.pixel_size = clampf(L * lerpf(0.07, 0.1, mk), 1.4, lerpf(2.8, 4.6, mk)) / 64.0 * (0.6 + 0.4 * k)
+	# issue 521 (carried item 2): in a flown move no jet starts smaller than PUFF_MIN world units, about 18 px at the
+	# battle camera (r 170), so a frigate's small jets read; the bigger hulls were already past it
+	sp.pixel_size = clampf(L * lerpf(0.07, 0.1, mk), PUFF_MIN if glide else 1.4, lerpf(2.8, 4.6, mk)) / 64.0 * (0.6 + 0.4 * k)
 	sp.top_level = true
 	add_child(sp)
 	sp.global_position = to_global(at + dir.normalized() * maxf(L, 6.0) * 0.03)  # just outside the hull, not inside it
 	var vw: Vector3 = global_transform.basis.orthonormalized() * dir.normalized()
-	puffs.append({"n": sp, "t": 0.0, "v": vw * maxf(L, 6.0) * 0.8 * (0.6 + 0.4 * k) + _vel * 0.6, "s": sp.pixel_size, "a": 0.75 * k, "life": lerpf(0.3, 0.55, mk) if glide else 0.4})
+	puffs.append({"n": sp, "t": 0.0, "v": vw * maxf(L, 6.0) * 0.8 * (0.6 + 0.4 * k) + _vel * 0.6, "s": sp.pixel_size, "a": 0.75 * k, "life": lerpf(0.4, 0.55, mk) if glide else 0.4})
 
 
 static var _pm: StandardMaterial3D = null

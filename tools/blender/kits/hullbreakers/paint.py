@@ -27,7 +27,7 @@
 #   layer 2  rust in the concept's big orange blotches (BLOTCH: about 0.03 to 0.06 of the ship's length, on the decks and the
 #            upper sides), not thin streaks
 #   layer 3  wear and grime from the ship's own shape, as before (plates, seams, edge wear, AO, run-off)
-#   not yet  CC0 material textures under the colour, the concept projected where its camera sees the ship, a light map, big
+#   not yet  CC0 material textures under the colour; NOT ALLOWED without Ryan's ruling: the concept projected onto the ship (R96 Q1); a light map, big
 #            far-reading markings (finding 3 items 1, 2, 4, 5): see the round 8 README, "not done"
 # The bake, the textured material and the band switch reuse paint3.py (same node labels, so bakeAb and export3 are unchanged).
 import os, sys

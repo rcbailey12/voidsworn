@@ -25,6 +25,8 @@ render_mode cull_back;
 // A sphere about the pose's origin bounds every orientation of this batch's mesh.
 instance uniform float rock_radius = 1.0;
 varying flat float camera_cover;
+// #230 option B (issue #541): rocks turn at their stored rate under the cap law by default; VS_ROCK_TUMBLE=0 holds the pose.
+uniform float tumble_k = 0.0;
 uniform int kind = 0;
 uniform vec3 base = vec3(0.09, 0.075, 0.062);
 uniform vec3 fresh = vec3(0.16, 0.15, 0.14);
@@ -93,7 +95,7 @@ void vertex() {
 	float axis_length = length(ic.xyz);
 	if (axis_length > 1e-6) {
 		vec3 ax = ic.xyz / axis_length;
-		float a = ic.w * 6.2831; // Keep the seeded starting pose, without time-driven tumble.
+		float a = ic.w * 6.2831 + TIME * axis_length * tumble_k; // Keep the seeded starting pose; the slow law turns from it by default.
 		VERTEX = rot(VERTEX, ax, a);
 		NORMAL = rot(NORMAL, ax, a);
 	}
@@ -226,6 +228,7 @@ instance uniform float rock_radius = 1.0;
 varying flat float camera_cover;
 uniform vec3 glow = vec3(0.3, 0.8, 1.0);
 uniform vec3 edge = vec3(0.7, 0.45, 1.0);
+uniform float tumble_k = 0.0;   // as ROCK_SHADER: turns at the stored rate unless VS_ROCK_TUMBLE=0 holds it
 uniform vec3 board_c = vec3(0.0);
 uniform vec2 haze_r = vec2(320.0, 2200.0);
 uniform vec3 haze_col = vec3(0.01);
@@ -245,7 +248,7 @@ void vertex() {
 	float axis_length = length(ic.xyz);
 	if (axis_length > 1e-6) {
 		vec3 ax = ic.xyz / axis_length;
-		float a = ic.w * 6.2831; // Crystal clusters keep the same fixed pose as their rocks.
+		float a = ic.w * 6.2831 + TIME * axis_length * tumble_k; // Crystal clusters turn with their rocks under the same law.
 		VERTEX = rot(VERTEX, ax, a);
 		NORMAL = rot(NORMAL, ax, a);
 	}
@@ -382,6 +385,11 @@ static func detail_tex() -> Texture3D:
 	return t
 
 
+# Issue #230 option B, shipped by #541: rocks turn at the spin rate world.gd and world_living.gd store in each instance
+# (the slow cap law; AS10's far-field rates). VS_ROCK_TUMBLE=0 restores the held seeded pose.
+static var rock_tumble_k: float = 0.0 if OS.get_environment("VS_ROCK_TUMBLE") == "0" else 1.0
+
+
 # One material per kind and look (the far layers share it, with their haze)
 static func material(kind: String, look: Dictionary) -> ShaderMaterial:
 	var K: Dictionary = KINDS.get(kind, KINDS["stone"])
@@ -394,6 +402,7 @@ static func material(kind: String, look: Dictionary) -> ShaderMaterial:
 	m.set_shader_parameter("fresh", K["fresh"])
 	m.set_shader_parameter("detail", detail_tex())
 	m.set_shader_parameter("q", 1.0 if str(look.get("quality", "max")) == "max" else 0.0)
+	m.set_shader_parameter("tumble_k", rock_tumble_k)
 	m.set_shader_parameter("board_c", look.get("board_c", Vector3.ZERO))
 	m.set_shader_parameter("haze_col", look.get("haze", Vector3(0.01, 0.012, 0.02)))
 	m.set_shader_parameter("haze_r", look.get("haze_r", Vector2(320, 2200)))
@@ -410,6 +419,7 @@ static func crystal_material(look: Dictionary) -> ShaderMaterial:
 	var sh := Shader.new()
 	sh.code = CRYSTAL_SHADER
 	m.shader = sh
+	m.set_shader_parameter("tumble_k", rock_tumble_k)
 	m.set_shader_parameter("board_c", look.get("board_c", Vector3.ZERO))
 	m.set_shader_parameter("haze_col", look.get("haze", Vector3(0.01, 0.012, 0.02)))
 	m.set_shader_parameter("haze_r", look.get("haze_r", Vector2(320, 2200)))

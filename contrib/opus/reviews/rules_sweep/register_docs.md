@@ -26,7 +26,7 @@ Read-only sweep for the rulebook (issue 492, FINDINGS R190). Every rule found is
 | docs/ship_pipeline/TEXTURE_PASS.md | HISTORY | Browser texture pass; Pixel phone questions. |
 | docs/ship_pipeline/GRAPHICS_REVIEW.md | HISTORY | Babylon fixes. |
 | docs/ship_pipeline/RECIPE.md | LIVE | Breach contract "exactly six" contradicts the class table (R164); outline gate 0.90 as a hard exit. |
-| contrib/opus/go-forward-plan.md | HISTORY | Replaced by PROGRAM.md (R167): Babylon, commit to main, 12 s round target, phone, helper rules. Its Oct 24 owner rulings (battle size, shields, capture) are carried in AGENTS.md. |
+| docs/archive/go-forward-plan.md | HISTORY | Replaced by PROGRAM.md (R167): Babylon, commit to main, 12 s round target, phone, helper rules. Its Oct 24 owner rulings (battle size, shields, capture) are carried in AGENTS.md. |
 | briefs: movement_spec.md | PARTLY STALE | The glide model is written as the R76 prohibitions R189 says were misread; it describes braking and side jets the default game does not fire; the bank is now to be removed. R189 says rewrite it. |
 | briefs: campaign_rail_orders_sheet.md | LIVE | The interface look. |
 | briefs: ui_style.md | PARTLY STALE | Sections 1 to 8 are Lime Tactical (R149), which the orders sheet replaces screen by screen; only the "Orders sheet" section at the end is the live look. |

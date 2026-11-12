@@ -8,16 +8,21 @@
 #     point forward, an engine exit does not point aft;
 #   - a weapon hard point lacks one of the extras RECIPE.md lists (kind, size, arc, arc_deg, slot, weapon, radius, socket), or its
 #     extras slot, weapon or arc disagree with its name;
-#   - the breach contract (RECIPE.md hard point table; Muse condition 2 on PR 341) is not met: exactly six hp_breach anchors, two
-#     per section (prow, mid, eng: extras.section), one port and one starboard (extras.side P or S, sitting on that side), each
-#     at least BREACH_CLEAR (0.03, ship frame, the writer's export7.BREACH_CLEAR) from every part surface (the glb's surfaces other
-#     than <code>_hull), and +Y the outward normal (pointing out of its own side: y component of +Y along that side at least 0.5);
-#   - hp_eng or hp_core is missing, a hard point is not a child of the ship node, or a map the glb names is not there.
+#   - the breach contract (docs/ship_pipeline/HARDPOINTS.md; the count comes from tools/blender/kits/shared/hardpoints.py, never
+#     from a constant) is not met: the number of hp_breach anchors is the class and faction count, they cover the sections
+#     (prow, mid, eng: extras.section) the count needs, the port and starboard sides stay within one of even (extras.side P or S,
+#     sitting on that side), each is at least BREACH_CLEAR (0.03, ship frame) from every part surface (the glb's surfaces other
+#     than <code>_hull), and +Y is the outward normal (pointing out of its own side: its z component along that side at least 0.5);
+#   - the smallest required set of any class is not met: a weapon point per data.js weapon slot, hp_core, hp_eng, hp_rcs and
+#     hp_board (two each, one port and one starboard), and hp_bay when data.js gives the ship a hangar;
+#   - a hard point is not a child of the ship node, or a map the glb names is not there.
+#   - the authored interior/seams record or real room geometry is missing (a liner alone is not a room).
 # usage: python check_export.py SHIP_JSON EXPORT_DIR [tol=0.012] [unbaked=1]
 import os, sys, json, struct, re
 import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
-import gamedata
+SHARED = os.path.normpath(os.path.join(HERE, '..', 'blender', 'kits', 'shared')); sys.path.insert(0, SHARED)
+import gamedata, hardpoints as HP_CONTRACT
 BREACH_CLEAR = .030; BREACH_SECTIONS = ('prow', 'mid', 'eng'); WEAPON_EXTRAS = ('kind', 'size', 'arc', 'arc_deg', 'slot', 'weapon', 'radius', 'socket')
 
 def read_glb(path):
@@ -64,25 +69,69 @@ def main():
     TOL_FRAC = float(kw.get('tol', .012)); UNBAKED = kw.get('unbaked') == '1'
     ship = json.load(open(shipj)); code = ship.get('game_code') or ship['ship']; probs = []; notes = []
     weapons = gamedata.weapons(ship['game_ship'])
+    cls = gamedata.ship_attr(ship['game_ship'], 'cls', default='Cruiser')
+    fac = gamedata.ship_attr(ship['game_ship'], 'fac', default=ship.get('faction'))
+    hangar = int(gamedata.ship_attr(ship['game_ship'], 'hangar', default=0) or 0)
+    req = HP_CONTRACT.required_points(weapons, cls, fac, hangar)
+    expected_breach = req['breach']
     g, blob = read_glb(os.path.join(out, code + '.glb')); nodes = g['nodes']
     root = next((i for i, n in enumerate(nodes) if n.get('name') == code), None)
     if root is None or 'mesh' not in nodes[root]: probs.append(f'no ship node named {code} with a mesh'); return finish(out, code, probs, notes, {})
     for k in ('translation', 'rotation', 'scale', 'matrix'):
         if k in nodes[root]: probs.append(f'the ship node has a {k}: its mesh and hard points must be in the ship frame as written')
-    T = []; PT = []; hull_seen = False
+    contract = nodes[root].get('extras', {}).get('voidsworn_destruct', {})
+    interiors = contract.get('interior_materials', [])
+    if contract.get('version') != 1: probs.append('no authored interior/seams contract version 1')
+    seams = contract.get('seams', [])
+    if not seams: probs.append('no authored break seams')
+    signatures = set()
+    for seam in seams:
+        try:
+            p, n = np.array(seam['p'], float), np.array(seam['n'], float)
+            if p.shape != (3,) or n.shape != (3,) or not np.isfinite([p, n]).all() or abs(np.linalg.norm(n) - 1) > .001: raise ValueError()
+            if 'span' in seam and (len(seam['span']) != 2 or not np.isfinite(seam['span']).all() or seam['span'][0] >= seam['span'][1]): raise ValueError()
+            if not np.allclose(n, [0, 1, 0] if 'span' in seam else [1, 0, 0], atol=.001): raise ValueError()
+            signature = (tuple(np.round(p, 7)), tuple(n), tuple(seam.get('span', [])))
+            if signature in signatures: raise ValueError()
+            signatures.add(signature)
+        except (KeyError, TypeError, ValueError): probs.append('invalid authored break seam')
+    if seams and not any('span' not in s for s in seams): probs.append('no authored transverse break seam')
+    T = []; PT = []; IT = []; rooms = []; interior_seen = set(); hull_seen = False
     for pr in g['meshes'][nodes[root]['mesh']]['primitives']:
         pos = accessor(g, blob, pr['attributes']['POSITION']).astype(np.float64)
         idx = accessor(g, blob, pr['indices']).reshape(-1, 3).astype(np.int64) if 'indices' in pr else np.arange(len(pos)).reshape(-1, 3)
-        T.append(pos[idx]); mat = g['materials'][pr['material']].get('name', '') if 'material' in pr else ''
+        mat = g['materials'][pr['material']].get('name', '') if 'material' in pr else ''
+        if mat in interiors:
+            IT.append(pos[idx]); interior_seen.add(mat)
+            if mat != code + '_inside_skin': rooms.append(pos[idx])
+            continue
+        T.append(pos[idx])
         if mat == code + '_hull': hull_seen = True
         else: PT.append(pos[idx])                     # every surface but the hull is a part surface (parts and glow)
     if not hull_seen: probs.append(f'no {code}_hull surface: the hull cannot be told from the parts, so breach clearance cannot be measured')
     T = np.concatenate(T); A, B, C = T[:, 0], T[:, 1], T[:, 2]; lo, hi = T.reshape(-1, 3).min(0), T.reshape(-1, 3).max(0)
     PT = np.concatenate(PT) if PT else np.zeros((0, 3, 3))
     LEN = float(hi[0] - lo[0]); TOL = TOL_FRAC * LEN
+    if not IT: probs.append('no authored interior geometry')
+    else:
+        inside = np.concatenate(IT)
+        area = np.linalg.norm(np.cross(inside[:, 1] - inside[:, 0], inside[:, 2] - inside[:, 0]), axis=1).sum() * .5
+        if not np.isfinite(inside).all() or area <= 1e-10: probs.append('no usable authored interior geometry')
+        notes.append(f'authored interiors: {len(inside)} triangles, {len(IT)} surfaces; authored seams: {len(seams)}')
+    if not rooms: probs.append('no authored interior rooms: an inner liner alone is not comprehensive insides')
+    else:
+        room_geo = np.concatenate(rooms)
+        if np.linalg.norm(np.cross(room_geo[:, 1] - room_geo[:, 0], room_geo[:, 2] - room_geo[:, 0]), axis=1).sum() <= 1e-10:
+            probs.append('no authored interior rooms: room geometry has no area')
+    if set(interiors) != interior_seen: probs.append('authored interior material list does not match its nonempty surfaces')
+    for seam in seams:
+        if len(seam.get('p', [])) != 3: continue
+        p = np.array(seam['p'], float); n = np.array(seam.get('n', [0, 0, 0]), float)
+        if n.shape != (3,): continue
+        distances = (T.reshape(-1, 3) - p) @ n
+        if distances.min() >= 0 or distances.max() <= 0: probs.append('authored break seam does not cross the hull')
     notes.append(f'{len(T)} triangles ({len(PT)} on part surfaces), box x {lo[0]:.3f} to {hi[0]:.3f}, y {lo[1]:.3f} to {hi[1]:.3f}, z {lo[2]:.3f} to {hi[2]:.3f}')
     notes.append(f'ship length {LEN:.4f}: off-mesh limit {TOL_FRAC} of it, {TOL:.4f}; breach clearance at least {BREACH_CLEAR}')
-    breach = {}
     kids = set(nodes[root].get('children', [])); hps = [(i, n) for i, n in enumerate(nodes) if str(n.get('name', '')).startswith('hp_')]
     by_slot = {}; count = {}; rows = []
     for i, n in hps:
@@ -116,7 +165,7 @@ def main():
             if not n.get('extras', {}).get('radius'): probs.append(f'{nm} has no extras.radius')
         elif nm.startswith('hp_breach_'):
             count['breach'] = count.get('breach', 0) + 1; row['normal'] = [round(v, 3) for v in up]; ex = n.get('extras', {})
-            sec, side = ex.get('section'), ex.get('side'); breach.setdefault(sec, []).append(side)
+            sec, side = ex.get('section'), ex.get('side')
             if sec not in BREACH_SECTIONS: probs.append(f'{nm}: extras.section is {sec!r}, not one of {", ".join(BREACH_SECTIONS)}')
             if side not in ('P', 'S'): probs.append(f'{nm}: extras.side is {side!r}, not P or S')
             else:
@@ -126,25 +175,51 @@ def main():
             if len(PT):
                 cl = float(tri_dist(p, PT[:, 0], PT[:, 1], PT[:, 2]).min()); row['clear'] = round(cl, 4)
                 if cl < BREACH_CLEAR - 1e-5: probs.append(f'{nm} is {cl:.4f} from a part (at least {BREACH_CLEAR})')   # 1e-5: float32 rounding only
-        elif nm.startswith('hp_bay_'): count['bay'] = count.get('bay', 0) + 1
-        else: probs.append(f'{nm}: not a hard point name the format defines')
+        elif nm.startswith('hp_bay_'):
+            count['bay'] = count.get('bay', 0) + 1
+            if 'hangar' not in n.get('extras', {}): probs.append(f'{nm} has no extras.hangar')
+        elif nm.startswith('hp_rcs_'):
+            count['rcs'] = count.get('rcs', 0) + 1; ex = n.get('extras', {})
+            side = ex.get('side')
+            if side not in ('P', 'S'): probs.append(f'{nm}: extras.side is {side!r}, not P or S')
+            elif (p[2] < 0) != (side == 'P'): probs.append(f'{nm}: a {"port" if side == "P" else "starboard"} braking origin sits on the other side (z {p[2]:+.3f})')
+            if fwd[0] < .5: probs.append(f'{nm}: a braking origin must point forward (+X, thrust against the motion)')
+        elif nm.startswith('hp_board_'):
+            count['board'] = count.get('board', 0) + 1; ex = n.get('extras', {})
+            side = ex.get('side')
+            if side not in ('P', 'S'): probs.append(f'{nm}: extras.side is {side!r}, not P or S')
+            else:
+                sg = -1 if side == 'P' else 1
+                if p[2] * sg <= 0: probs.append(f'{nm}: a {"port" if side == "P" else "starboard"} boarding origin sits on the other side (z {p[2]:+.3f})')
+                if fwd[2] * sg < .5: probs.append(f'{nm}: a boarding origin must point out of its own side')
+        else: probs.append(f'{nm}: not a hard point name the contract defines')
         rows.append(row)
     for slot, (wk, arc) in enumerate(weapons):
         if slot not in by_slot: probs.append(f'weapon slot {slot} ({wk} {arc}) has no hard point')
-    for k in ('engine', 'breach', 'core'):
-        if not count.get(k): probs.append(f'no hp_{ {"engine": "eng", "breach": "breach", "core": "core"}[k] } hard point')
     if count.get('core', 0) > 1: probs.append('more than one hp_core')
-    if count.get('breach', 0) and count['breach'] != 6: probs.append(f'{count["breach"]} hp_breach anchors: the contract is six, two per section')
-    for sec in BREACH_SECTIONS:
-        if count.get('breach') and sorted(breach.get(sec, [])) != ['P', 'S']:
-            probs.append(f'the {sec} section has breach anchors {sorted(breach.get(sec, []))}: the contract is one port (P) and one starboard (S)')
+    for prob in HP_CONTRACT.missing_required(count, weapons, cls, fac, hangar): probs.append(prob)
+    breach_ex = [n.get('extras', {}) for i, n in hps if str(n.get('name', '')).startswith('hp_breach_')]
+    for prob in HP_CONTRACT.check_breach_layout([(ex.get('section'), ex.get('side')) for ex in breach_ex]):
+        probs.append(prob)
     unb = bool(g.get('asset', {}).get('extras', {}).get('unbaked'))
     if unb and not UNBAKED: probs.append('this is an unbaked test export (no maps): not a game ship folder')
     imgs = [im.get('uri') for im in g.get('images', [])]
     if not unb and not imgs: probs.append('the glb names no maps')
     for u in imgs:
         if not u or not os.path.exists(os.path.join(out, u)): probs.append(f'map {u} is named by the glb but is not in the folder')
-    info = dict(weapons=[dict(slot=s, weapon=wk, arc=arc, hard_points=sorted(by_slot.get(s, []))) for s, (wk, arc) in enumerate(weapons)],
+    mp = os.path.join(out, 'manifest_entry.json')
+    if not os.path.exists(mp):
+        probs.append('no manifest_entry.json: the export must write the point counts into the ship\'s manifest entry')
+    else:
+        entry = json.load(open(mp, encoding='utf-8'))
+        if entry.get('hardpoints') != count:
+            probs.append(f'manifest_entry.json hardpoints {entry.get("hardpoints")} do not match the written points {count}')
+        if entry.get('breaches') != count.get('breach', 0):
+            probs.append(f'manifest_entry.json breaches {entry.get("breaches")} do not match the written {count.get("breach", 0)}')
+        if entry.get('cls') != cls:
+            probs.append(f'manifest_entry.json cls {entry.get("cls")!r} is not {cls!r} (data.js)')
+    info = dict(cls=cls, faction=HP_CONTRACT.faction_key(fac), expected_breach=expected_breach,
+                required=req, weapons=[dict(slot=s, weapon=wk, arc=arc, hard_points=sorted(by_slot.get(s, []))) for s, (wk, arc) in enumerate(weapons)],
                 hardpoints=count, maps=imgs, tolerance=TOL, tolerance_of_length=TOL_FRAC, ship_length=LEN, breach_clearance=BREACH_CLEAR, rows=rows)
     return finish(out, code, probs, notes, info)
 
@@ -154,7 +229,7 @@ def finish(out, code, probs, notes, info):
     for w in info.get('weapons', []): print(f"[check] slot {w['slot']} {w['weapon']} {w['arc']}: {len(w['hard_points'])} hard points")
     print('[check] hard points:', json.dumps(info.get('hardpoints', {})))
     for p in probs: print('[check] PROBLEM:', p)
-    print('PASS' if ok else 'FAIL', f'{code} game export:', 'every weapon slot has its hard points and every hard point is on the mesh' if ok else f'{len(probs)} problems')
+    print('PASS' if ok else 'FAIL', f'{code} game export:', 'authored rooms and seams retained; every required point is there, the breach count matches the class and faction, and every hard point is on the mesh' if ok else f'{len(probs)} problems')
     sys.exit(0 if ok else 1)
 
 if __name__ == '__main__':

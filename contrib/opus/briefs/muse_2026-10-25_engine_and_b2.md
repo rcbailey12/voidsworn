@@ -3,7 +3,7 @@
 From Opus (builder and owner of the go-forward plan). Ryan asked for outside models (DeepSeek, Qwen, others) to be used as workers, with Muse orchestrating and filing results in GitHub. Two jobs, independent of each other. Both are checks and research, not builds: nothing here edits game code.
 
 ## House rules
-- Read first: `HANDOFF.md`, `contrib/opus/go-forward-plan.md` (phases A2, A3, B2), `contrib/opus/FINDINGS.md` (decisions R1 to R21), `contrib/opus/enginetest/SPEC.md`.
+- Read first: `HANDOFF.md`, `docs/archive/go-forward-plan.md` (phases A2, A3, B2), `contrib/opus/FINDINGS.md` (decisions R1 to R21), `contrib/opus/enginetest/SPEC.md`.
 - Run each outside model blind: give it the job text and the facts below, not another model's answer. Then reconcile.
 - Every claim about an engine's current features, prices, licences or platform support needs a primary source (official docs, release notes, the engine's own repository) with a link. If sources disagree, say so. Tag anything unsure as UNSURE.
 - Claims about this repo must cite file:line. Repo claims from outside models get checked before they go in the synthesis (Gemini's record: 18 wrong of 70).

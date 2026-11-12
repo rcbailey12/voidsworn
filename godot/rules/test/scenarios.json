@@ -8678,5 +8678,309 @@
    "capstone": null
   },
   "note": "Eclipse Umbra Target Archived Mid-Flight (sekhmar:A:1:1): a target no other ship chose pays +10 aim"
+ },
+ "t529_roles_strike": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "admiral": "matriarch",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_brood",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "seed": 52901,
+  "note": "Issue 529: Matriarch Roles Assigned at Hatching (matriarch:B:0:0), the default strike role: +10 aim on every shot",
+  "lineage": {
+   "id": "matriarch",
+   "picks": [
+    "B:0:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t529_roles_screen": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "admiral": "razormaw",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_razor",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "seed": 52911,
+  "treeRoles": {
+   "x03": "screen",
+   "x04": "screen"
+  },
+  "note": "Issue 529: Razormaw Roles Assigned at Hatching (razormaw:B:0:0), both ships answer screen: +10 evasion",
+  "lineage": {
+   "id": "razormaw",
+   "picks": [
+    "B:0:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t529_roles_mend": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "admiral": "mending",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_razor",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "rounds": 5,
+  "cmdRound": 2,
+  "seed": 52921,
+  "treeRoles": {
+   "x03": "mend",
+   "x04": "mend"
+  },
+  "note": "Issue 529: Mending Roles Assigned at Hatching (mending:B:0:0), both ships answer mend: regrowth and the Regrowth tide 10% stronger",
+  "lineage": {
+   "id": "mending",
+   "picks": [
+    "B:0:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t529_roles_change": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "admiral": "voice",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_razor",
+   "b_spitter",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion",
+   "h_picket"
+  ],
+  "rounds": 4,
+  "seed": 52931,
+  "treeRoleChange": {
+   "round": 2,
+   "id": "x03",
+   "role": "screen"
+  },
+  "note": "Issue 529: Voice Roles Assigned at Hatching (voice:B:0:0), strike by default, then the change-role action makes x03 a screen in round 2",
+  "lineage": {
+   "id": "voice",
+   "picks": [
+    "B:0:0"
+   ],
+   "capstone": null
+  }
+ },
+ "t529_spawned": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "admiral": "matriarch",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_brood",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor"
+  ],
+  "rounds": 5,
+  "cmdRound": 1,
+  "cmdAfterMove": true,
+  "seed": 52945,
+  "note": "Issue 529: Matriarch Spawned Before the Strike (matriarch:A:1:1): the brood moves, then Spawning surge; its extra swarms strike at +15%",
+  "lineage": {
+   "id": "matriarch",
+   "picks": [
+    "A:0:0",
+    "A:1:1"
+   ],
+   "capstone": null
+  }
+ },
+ "t529_nostop": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "admiral": "matriarch",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_brood",
+   "b_drone",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 6,
+  "cmdRound": 2,
+  "seed": 52975,
+  "note": "Issue 529: Matriarch The Brood Does Not Stop (matriarch:cap:1): an extra swarm that destroys its target strikes another enemy at half damage",
+  "lineage": {
+   "id": "matriarch",
+   "picks": [
+    "A:0:0",
+    "B:0:0",
+    "C:0:0"
+   ],
+   "capstone": 1
+  }
+ },
+ "t529_scent": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "admiral": "razormaw",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_razor",
+   "b_razor",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket",
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 6,
+  "cmdRound": 2,
+  "seed": 52978,
+  "note": "Issue 529: Razormaw Scent in the Dark (razormaw:A:1:1): after a kill in the frenzy the ship's next shot at a new target gains +10 aim",
+  "lineage": {
+   "id": "razormaw",
+   "picks": [
+    "A:0:0",
+    "A:1:1"
+   ],
+   "capstone": null
+  }
+ },
+ "t529_may_debt_no": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "admiral": "vex",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "penitent",
+   "harrow"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_picket",
+   "h_picket"
+  ],
+  "rounds": 5,
+  "cmdRound": 3,
+  "seed": 52971,
+  "treeMay": {
+   "vex:A:2:1": false
+  },
+  "note": "Issue 529: Vex Debt Comes Due (vex:A:2:1) answered no at the prompt: the volley fires at once, nothing is delayed",
+  "lineage": {
+   "id": "vex",
+   "picks": [
+    "A:0:0",
+    "A:1:0",
+    "A:2:1"
+   ],
+   "capstone": null
+  }
+ },
+ "t529_may_grow_no": {
+  "sector": 1,
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "bot": "full",
+  "admiral": "mending",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_razor",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion"
+  ],
+  "rounds": 6,
+  "cmdRound": 3,
+  "seed": 52981,
+  "treeMay": {
+   "mending:A:0:0": false
+  },
+  "note": "Issue 529: Mending Grow Where It Hurts (mending:A:0:0) answered no: the regrowth is spread as normal",
+  "lineage": {
+   "id": "mending",
+   "picks": [
+    "A:0:0"
+   ],
+   "capstone": null
+  }
  }
 }

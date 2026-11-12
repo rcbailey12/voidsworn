@@ -33,7 +33,7 @@ Critical review, correctly done: X1 (batch 7 "no substantive conflicts" overturn
 
 ### 1. The three project skills "Written in B0" (W1) - two outside legs agree, Muse leg left it unverified
 
-Plan text, chair-verified on main (contrib/opus/go-forward-plan.md, section 3): "Three project skills: ship kit, screenshot verdict, playtest and balance | claude_skills.md | Written in B0, so every future session works the same way." Phase table, same file: "B0 Ground truth | DONE Oct 25".
+Plan text, chair-verified on main (docs/archive/go-forward-plan.md, section 3): "Three project skills: ship kit, screenshot verdict, playtest and balance | claude_skills.md | Written in B0, so every future session works the same way." Phase table, same file: "B0 Ground truth | DONE Oct 25".
 
 Repo tree, as checked by both outside legs independently: no skills folder at root, no .claude/skills, no contrib/opus/skills; contrib/opus/tools/ contains only b1_tests.js, checkpack/, and mega_report.py. Qwen's run agent adds: no .claude directory at all in the recursive tree on main (dotfiles like .gitignore are listed, so this is not a listing artifact), and docs/skills/ holds only generic skills, which does not rescue the claim because the claude_skills.md spec (C-W1) requires project skills to live in .claude/skills/<name>/ inside the repo and be committed. The ordering of the three skills does match claude_skills.md priority order, so the citation is right and the delivery claim is wrong.
 

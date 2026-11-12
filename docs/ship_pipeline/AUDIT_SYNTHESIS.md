@@ -1,3 +1,5 @@
+HISTORY (marked Nov 11 2026): the Oct 22 Pyre-Barge audit synthesis; browser-era history, not the Godot product. Dangerous if followed: it lists naval parts (jackstaffs, bollards, yards, crow rail, funnels) as fixes and allows stern guns aft, both overruled (RULEBOOK 4.1 and 4.2). The live ship method is docs/playbooks/ships.md section 0 and docs/ship_pipeline/RECIPE.md; the rules are docs/RULEBOOK.md sections 4 and 5. Kept for history; do not follow.
+
 # Audit synthesis (Oct 22 2026)
 
 Three audits answered `AUDIT_BRIEF.md`:

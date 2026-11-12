@@ -23,6 +23,7 @@ const ShipView := preload("res://render/ship_view.gd")
 const CamRig := preload("res://render/camera_rig.gd")
 const HT := preload("res://render/hull_table.gd")
 const HUD := preload("res://ui/battle/hud.gd")
+const UiScale := preload("res://ui/ui_scale.gd")
 const Fx := preload("res://scenes/battle/fx_stub.gd")
 const Sfx := preload("res://audio/sfx.gd")
 const DeathAudio := preload("res://audio/death_audio.gd")
@@ -38,6 +39,7 @@ const PlayLog := preload("res://scenes/battle/play_log.gd")
 # F1: move hexes are blue (board.gd REACH_*: a colour no terrain uses); targets red; a target that would bear from the
 # planned hex orange; the targeted enemy white-hot
 const REACH_C := Board.REACH_FILL
+const EMBER_3D := ShipView.EMBER   # the ring under the ship that is up (issue 271: ember, lime retired R191)
 const REACH_RING := Board.REACH_RING
 const REACH_HOT := Board.REACH_HOT
 const TARGET_RING := Color(1.0, 0.25, 0.2, 0.95)
@@ -188,11 +190,15 @@ func _ready() -> void:
 		shots_dir = str(args["f1-trace"])
 	if args.has("ui-shots"):
 		shots_dir = str(args["ui-shots"])
+	if args.has("tree-shots"):
+		shots_dir = str(args["tree-shots"])
 	_load_opts()
 	if shots_dir != "" or args.has("sheet-check"):
 		tips_off = true   # screenshot jobs: no onboarding tip card covering the top of the screen
 	if args.has("movement"):
 		movement = str(args["movement"])
+	if args.has("reduce-motion"):
+		reduce_motion = true
 	_build_world()
 	sfx = Sfx.new()
 	sfx.name = "Sfx"
@@ -220,6 +226,8 @@ func _ready() -> void:
 		_sheet_check()
 	elif args.has("planet-shot"):
 		_planet_shot()
+	elif args.has("tree-shots"):
+		_tree_shots(str(args.get("tree-shot", "role")))
 	elif args.has("ui-shots"):
 		# UI pass layout check (ui/battle/ui_shots.gd): five moments, a still and an overlap check each
 		var us: Node = load("res://ui/battle/ui_shots.gd").new()
@@ -498,6 +506,7 @@ func _begin(a) -> void:
 	bot_moved.clear()
 	bot_tried.clear()
 	bot_cmd_used = false
+	roles_opened = false
 	t_start = Time.get_ticks_msec() / 1000.0
 	last_progress = t_start
 	for id in views:
@@ -1419,7 +1428,7 @@ func _play_event(e: Dictionary) -> void:
 		"command":
 			var C = _command(str(e["id"]))
 			_log("%s: %s!" % [_name(e["unit"]), str(C.get("n", e["id"]))], "e" if e["side"] == "enemy" else "p")
-			hud.banner(str(C.get("n", e["id"])), Color("#ff8a6a") if e["side"] == "enemy" else Color("#c8f53a"))
+			hud.banner(str(C.get("n", e["id"])), Color("#ff8a6a") if e["side"] == "enemy" else Color("#ff8a3a"))
 			await wait(float(PACE["banner"]) + 140.0)
 		"wreck":
 			wrecked[e["unit"]] = true
@@ -1526,7 +1535,13 @@ func _play_move(id, path: Array, charge: bool) -> void:
 	elif cin:
 		# the glide sets its own length from its physics at this pace (cruise MOVE_CRUISE of the hex time; ramps, corners
 		# and spins add to it), capped
-		sv.play_glide(gsteps, per * MOVE_CRUISE * (0.72 if charge else 1.0) * mv_speed / 1000.0, {"mass": sk, "cap": MOVE_CAP / 1000.0 * mv_speed})
+		# issue 521: a move flown only on thrusters (a one-hex slide, a straight back-off) is slower and gentler than a burn
+		var jets_only: bool = not gsteps.is_empty() and bool((gsteps[-1] as Dictionary).get("thrusters", false))
+		var gopts := {"mass": sk, "cap": MOVE_CAP / 1000.0 * mv_speed}
+		if not gsteps.is_empty() and bool((gsteps[-1] as Dictionary).get("nose_first", false)):
+			gopts["point"] = NF_POINT
+			gopts["trail"] = NF_TRAIL
+		sv.play_glide(gsteps, per * MOVE_CRUISE * (SLIDE_PACE if jets_only else 1.0) * (0.72 if charge else 1.0) * mv_speed / 1000.0, gopts)
 		dur = sv.path_dur / maxf(mv_speed, 1e-3)
 	else:
 		sv.play_path(keys, yaws, alts, s, dur * mv_speed, {"mass": mass})
@@ -1619,21 +1634,129 @@ func _move_segments(sv, path: Array, mass: float, flip_ok := false) -> Array:
 
 # F2: the path as glide steps for ship_view.gd play_glide (one continuous motion): each turn step a target heading and
 # its weight (a 60 degree turn weighs MOVE_ROT hexes, more for a bigger hull, so it spins slower), each translation step
-# its hex (with the height of a climb over a rock or a dive under a ship) and a weight of one hex
+# its hex (with the height of a climb over a rock or a dive under a ship) and a weight of one hex.
+# Issue 521 (R195, Ryan: "engines should be clearly stronger and more used for movement than the thrusters... for one tile
+# over, it tracks but not when they're going like 3-10 tiles down just almost skating on thrusters"): a move of more than
+# one hex is flown nose first on the main engine (_nose_first), and only a one-hex slide stays on the side or retro jets.
+# Presentation only: the hexes passed, the end hex and the final facing are the rules' own.
 func _glide_steps(sv, path: Array, sk: float) -> Array:
 	var out: Array = []
 	var la: float = sv.cur_yaw
 	for st in path:
 		var a: float = la + angle_difference(la, ShipView.yaw_of(st["f"]))
 		if _jt(st.get("rot")):
-			out.append({"kind": "turn", "yaw": a, "w": lerpf(MOVE_ROT[0], MOVE_ROT[1], sk) * maxf(absf(angle_difference(la, a)) / (PI / 3.0), 0.5)})
+			out.append({"kind": "turn", "yaw": a, "w": _turn_w(la, a, sk)})
 		else:
 			var ov := float(st.get("over", 0)) if st.get("over") != null else 0.0
 			var p: Vector3 = board.hex_world(st["q"], st["r"])
 			p.y = (9.0 if ov > 0 else -7.5) if ov != 0.0 else 0.0
-			out.append({"kind": "move", "p": p, "w": 1.0})
+			out.append({"kind": "move", "p": p, "w": 1.0, "slide": _jt(st.get("slip")) or _jt(st.get("rev"))})
 		la = a
+	var n_hex := 0
+	for g in out:
+		n_hex += 1 if g["kind"] == "move" else 0
+	if n_hex <= 1:
+		if n_hex == 1:
+			for g in out:
+				if g["kind"] == "move" and bool(g["slide"]):
+					out[-1]["thrusters"] = true
+		return out
+	return _nose_first(out, sv.position, float(sv.cur_yaw), la, sk)
+
+
+func _turn_w(a0: float, a1: float, sk: float) -> float:
+	return lerpf(MOVE_ROT[0], MOVE_ROT[1], sk) * maxf(absf(angle_difference(a0, a1)) / (PI / 3.0), 0.5)
+
+
+# Issue 521 tuning values (judged by eye on the issue 521 strips; movement_spec.md section 1):
+const LEG_TOL := 0.55        # hex centres within this share of a hex of a straight line fly as one leg (a zigzag of two
+                             # hex directions is one straight diagonal run, not a heading change every hex)
+const LEG_PULL := 0.6        # inside a leg the hull is drawn this share of the way onto the straight line, so it still
+                             # passes inside every hex of the ruled route (a hex centre is at most 0.2 hex off its line)
+const ASTERN := 2.1          # radians: a run this far behind both the heading and the final facing is backed on retro jets
+const NF_POINT := 0.75       # a nose-first move sets off when the nose is within 43 degrees of its course (the burn
+                             # starts while the nose is still coming round, so the turn and the run overlap)
+const NF_TRAIL := 0.7        # and starts its turn to the final facing earlier while it brakes (section 1's 0.45)
+const SLIDE_PACE := 1.45     # a move flown only on thrusters (a one-hex slide, a straight back-off) takes this many times
+                             # the burn's time per hex: visibly slower and gentler than the main engine
+
+
+# A move of two hexes or more as the ship would fly it: the route's hex centres are split into straight legs; the nose
+# comes round onto each leg before the burn (a turn before the run, or at a corner), the main engine does the travelling,
+# and the ship turns to the rules' final facing while it brakes (play_glide's trailing turn). A one-hex leg that the
+# rules flew as a sidestep or back-off stays a slide on the heading of the leg before it (the dogleg drift); a run
+# straight astern of both the heading and the final facing is backed on retro jets.
+# Returns the glide steps; "thrusters" in the last step's dict says the whole move is flown on thrusters.
+func _nose_first(rsteps: Array, p0: Vector3, yaw0: float, yaw_end: float, sk: float) -> Array:
+	var pts: Array = [Vector3(p0.x, 0.0, p0.z)]
+	var slide: Array = []
+	for g in rsteps:
+		if g["kind"] == "move":
+			pts.append(g["p"])
+			slide.append(bool(g.get("slide", false)))
+	var flat: Array = []
+	for q in pts:
+		flat.append(Vector2((q as Vector3).x, (q as Vector3).z))
+	var hexd := 0.0
+	for i in flat.size() - 1:
+		hexd += ((flat[i + 1] as Vector2) - (flat[i] as Vector2)).length()
+	hexd = maxf(hexd / maxf(flat.size() - 1, 1), 1.0)
+	var keep := {0: true, flat.size() - 1: true}
+	_rdp(flat, 0, flat.size() - 1, LEG_TOL * hexd, keep)
+	var idx: Array = keep.keys()
+	idx.sort()
+	var out: Array = []
+	var h := yaw0
+	var engine := false
+	for li in idx.size() - 1:
+		var i0 := int(idx[li])
+		var i1 := int(idx[li + 1])
+		var d: Vector2 = (flat[i1] as Vector2) - (flat[i0] as Vector2)
+		var head := h
+		if d.length() > 1e-3 and not (i1 - i0 == 1 and bool(slide[i0])):
+			var tgt := atan2(-d.y, d.x)   # ShipView's yaw: the bow is (cos yaw, 0, -sin yaw)
+			if not (absf(angle_difference(h, tgt)) > ASTERN and absf(angle_difference(yaw_end, tgt)) > ASTERN):
+				head = h + angle_difference(h, tgt)
+				engine = true
+		if absf(angle_difference(h, head)) > 0.02:
+			out.append({"kind": "turn", "yaw": head, "w": _turn_w(h, head, sk)})
+		h = head
+		var ln := d.normalized() if d.length() > 1e-3 else Vector2.ZERO
+		for i in range(i0 + 1, i1 + 1):
+			var q: Vector3 = pts[i]
+			if i < i1:
+				var rel: Vector2 = (flat[i] as Vector2) - (flat[i0] as Vector2)
+				var on: Vector2 = (flat[i0] as Vector2) + ln * rel.dot(ln)
+				var pulled: Vector2 = (flat[i] as Vector2).lerp(on, LEG_PULL)
+				q = Vector3(pulled.x, q.y, pulled.y)
+			out.append({"kind": "move", "p": q, "w": 1.0})
+	if absf(angle_difference(h, yaw_end)) > 0.02:
+		out.append({"kind": "turn", "yaw": h + angle_difference(h, yaw_end), "w": _turn_w(h, yaw_end, sk)})
+	if not out.is_empty():
+		out[-1]["thrusters"] = not engine
+		out[-1]["nose_first"] = true
 	return out
+
+
+# Ramer-Douglas-Peucker: keep the points that stand more than tol off the straight line between kept points
+func _rdp(flat: Array, i0: int, i1: int, tol: float, keep: Dictionary) -> void:
+	if i1 - i0 < 2:
+		return
+	var a: Vector2 = flat[i0]
+	var b: Vector2 = flat[i1]
+	var ab := b - a
+	var worst := -1.0
+	var wi := -1
+	for i in range(i0 + 1, i1):
+		var p: Vector2 = flat[i]
+		var dev := (p - a).length() if ab.length() < 1e-3 else absf(ab.cross(p - a)) / ab.length()
+		if dev > worst:
+			worst = dev
+			wi = i
+	if worst > tol:
+		keep[wi] = true
+		_rdp(flat, i0, wi, tol, keep)
+		_rdp(flat, wi, i1, tol, keep)
 
 
 # How long a G4 volley holds the battle, as `total` (the caller waits total * sp): the effect's own length scaled by the
@@ -1978,13 +2101,102 @@ func _impact(t_id, h: Dictionary, col: Color) -> void:
 	sfx.hit(sv.position, h.get("crit", false))
 
 
+# Issue 521 (audit item 7; R193, Ryan's pick "Hold and slow", which replaces the Board's R123): the cut-in for a kill
+# holds until just after the core flash (a cruiser's at 1.66 s, a capital's at 2.28 s) and the slow-motion beat plays
+# at the flash (fx.gd kill_slowmo, R73). A key or a click lets both go; under reduce motion the beat is off and the hold
+# ends just after the flash. Hurried (Enter or Space) or with no core flash, the old 1.6 s at the battle's pace stays.
+const KILL_AFTER := 0.35      # seconds the cut-in stays on the wreck after the flash (and after the beat, when it plays)
+var reduce_motion := false    # settings key reduce_motion (ui_spec.md 7.6; the switch sits in Settings and this menu)
+var kill_hold_until := -1.0   # game_t when the kill cut-in lets go; -1 when none holds
+var _kill_hold_n := 0
+
+
+# Issue 521 (Board review of PR 525): while a kill cut-in holds, the camera frames the DYING ship, not the attacker and
+# target pair (that wide shot left a dreadnought's death a speck): a low three-quarter view on the target, close enough
+# that the hull fills about KILL_FILL of the screen height (a capital more), on whichever quarter is nearest the current
+# view so the camera never whips round, eased in over the first beat (the rig's slow easing). _cine_release eases back.
+const KILL_FILL := [0.85, 1.0]    # the hull's length against the screen height before the three-quarter view shortens it
+                                  # (on screen about 0.4 of the height for a cruiser, about half for a capital): cruiser, capital
+const KILL_BETA := 1.12           # the camera's angle down from straight up (64 degrees: low, still above the board)
+
+
+func _kill_frame(id) -> void:
+	var sv = views.get(id)
+	if sv == null:
+		return
+	if cine_saved.is_empty():
+		cine_saved = {"a": cam.a, "b": cam.b, "r": cam.r, "t": cam.t}
+	var cap: bool = float(VU.get(id, {}).get("size", 0.6)) > 0.8 or bool(VU.get(id, {}).get("flagship", false))
+	var fill: float = KILL_FILL[1] if cap else KILL_FILL[0]
+	var span := 2.0 * tan(deg_to_rad(cam.fov) * 0.5)   # screen height per unit of distance
+	var rr := clampf(maxf(float(sv.L), 6.0) / (fill * span), cam.min_r, 200.0)
+	var tp := Vector3(sv.position.x, 0.0, sv.position.z)
+	# the four three-quarter views (bow and stern quarters, either side): one with no other hull between the camera and
+	# the dying ship, nearest the current view (so the camera never swings far)
+	var cur: float = cam.a
+	var best := cur
+	var score := INF
+	for q in [PI / 4.0, 3.0 * PI / 4.0, -PI / 4.0, -3.0 * PI / 4.0]:
+		var cand: float = cur + angle_difference(cur, float(sv.cur_yaw) + q)
+		var eye := tp + Vector3(cos(cand) * sin(KILL_BETA), cos(KILL_BETA), -sin(cand) * sin(KILL_BETA)) * rr
+		var blocked := 0.0
+		for oid in views:
+			var ov = views[oid]
+			if oid == id or ov == null or ov.dead or not ov.visible:
+				continue
+			var o: Vector3 = ov.position
+			var seg := tp - eye
+			var k := clampf((o - eye).dot(seg) / maxf(seg.length_squared(), 1e-4), 0.0, 1.0)
+			if (eye + seg * k).distance_to(o) < float(ov.L) * 0.6 + float(sv.L) * 0.15 and k < 0.92:
+				blocked += 1.0
+		var sc := blocked * 10.0 + absf(cand - cur)
+		if sc < score:
+			score = sc
+			best = cand
+	cam.a = best
+	cam.b = KILL_BETA
+	cam.r = rr
+	cam.t = tp
+	cam.slow_until = cam._clock + 1.2
+	hud.letterbox(true)
+
+
+func _kill_hold(core_in: float) -> void:
+	var hold := 1.6 * speed
+	if core_in >= 0.0 and not skip:
+		hold = core_in + KILL_AFTER + (0.0 if reduce_motion else 0.48)   # fx.gd DEATH_SLOW_S, played at about a third
+	_kill_hold_n += 1
+	var n := _kill_hold_n
+	kill_hold_until = game_t + hold
+	get_tree().create_timer(hold).timeout.connect(func() -> void:
+		if n == _kill_hold_n:
+			_kill_let_go())
+
+
+func _kill_let_go() -> void:
+	kill_hold_until = -1.0
+	_kill_hold_n += 1
+	if not cine_saved.is_empty():
+		cam.slow_until = cam._clock + 0.9   # back to the board view on the slow easing, not a snap out of the close-up
+	_cine_release()
+
+
+# a key or a click while a kill cut-in holds: the camera comes back and the slow-motion beat ends now
+func _kill_skip() -> void:
+	if kill_hold_until < 0.0:
+		return
+	if gfx != null and gfx.has_method("skip_death_slowmo"):
+		gfx.skip_death_slowmo()
+	_kill_let_go()
+
+
 func _play_death(e: Dictionary) -> void:
 	var id = e["unit"]
 	var sv = views.get(id)
+	var cined := false
 	if sv != null and _cine_wants("kill", e.get("by"), id) and cine_saved.is_empty():
-		var by = e.get("by") if e.get("by") != null and views.has(e.get("by")) else id
-		_cine_frame(by, id)
-		get_tree().create_timer(1.6 * speed).timeout.connect(_cine_release)
+		_kill_frame(id)
+		cined = true
 	var cause := str(e.get("cause", "blast"))
 	var friend := _side(id) == "player"
 	var sq := bool(VU.get(id, {}).get("squadron", false))
@@ -1995,9 +2207,16 @@ func _play_death(e: Dictionary) -> void:
 	var p: Vector3 = sv.position + Vector3(0, 2, 0)
 	var big := L >= 14.0
 	if gfx != null and gfx.has_method("death"):
+		if "kill_slowmo" in gfx:
+			gfx.kill_slowmo = not reduce_motion
 		var t: float = float(gfx.death(str(id), cause))
 		if skip and gfx.has_method("hurry_death"):
 			gfx.hurry_death()
+		var core_in := -1.0
+		if gfx.has_method("death_core_at") and float(gfx.death_core_at(str(id))) >= 0.0:
+			core_in = float(gfx.death_core_at(str(id))) - float(gfx.now)
+		if cined:
+			_kill_hold(core_in)
 		death_audio.fx = gfx
 		death_audio.watch(str(id), p)
 		sv.dead = true
@@ -2010,7 +2229,12 @@ func _play_death(e: Dictionary) -> void:
 		var pk := clampf(speed, 0.25 if skip else 0.5, 1.0)
 		var floor_k := clampf(speed / 0.35, 0.35, 1.0)   # under the round budget a big hull's hold shrinks too
 		await get_tree().create_timer(maxf((0.8 if big else 0.3) * floor_k, t * 0.6 * minf(pk, floor_k))).timeout
+		# issue 521: the next event waits while a kill cut-in still holds (a key or a click lets it go)
+		while kill_hold_until > 0.0 and game_t < kill_hold_until and not ended:
+			await get_tree().process_frame
 		return
+	if cined:
+		_kill_hold(-1.0)
 	_flash(p, 14.0 + L * 1.6, Color(1.0, 0.65, 0.3), 0.9)
 	_flash(p + Vector3(L * 0.25, 1, 0), 8.0 + L * 0.8, Color(1.0, 0.85, 0.6), 0.5, 0.15 * speed)
 	_flash(p - Vector3(L * 0.25, 0, 1), 8.0 + L * 0.8, Color(1.0, 0.5, 0.2), 0.6, 0.3 * speed)
@@ -2038,7 +2262,7 @@ func _end_flow() -> void:
 			music.victory(boss_fight)
 		else:
 			music.defeat()
-	hud.banner("Victory" if win else "Defeat", Color("#c8f53a") if win else Color("#ff8a72"), 1.6)
+	hud.banner("Victory" if win else "Defeat", Color("#ff8a3a") if win else Color("#ff8a72"), 1.6)
 	await get_tree().create_timer(1.2).timeout
 	var lost := 0
 	var killed := 0
@@ -2335,6 +2559,8 @@ func _clear_overlay() -> void:
 
 
 func _overlay() -> void:
+	if quitting or board == null or not is_instance_valid(board):
+		return
 	if board != null and board.has_method("set_danger"):
 		board.set_danger(_danger_bands())
 	if not _can_act():
@@ -2526,8 +2752,8 @@ func _threat_fills() -> Dictionary:
 	for k in _threat_cache:
 		var f := float(_threat_cache[k]) / mx
 		if f > 0.0:
-			# #271: the enemy side's lavender (ui_spec.md 5.1 FOE family); alarm red is the Nemesis tag's alone
-			out[k] = Color(0.79, 0.64, 1.0, 0.06 + 0.34 * f)
+			# issue 271 step 2: bone (Board.THREAT), not red (the Nemesis alarm's alone) and not lavender (R174's list)
+			out[k] = Color(Board.THREAT, 0.05 + 0.27 * f)
 	return out
 
 
@@ -2650,6 +2876,8 @@ func _unhandled_input(e: InputEvent) -> void:
 		return
 	if opening and ((e is InputEventMouseButton and (e as InputEventMouseButton).pressed) or (e is InputEventKey and (e as InputEventKey).pressed)):
 		_end_opening()
+	if kill_hold_until > 0.0 and ((e is InputEventMouseButton and (e as InputEventMouseButton).pressed and (e as InputEventMouseButton).button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]) or (e is InputEventKey and (e as InputEventKey).pressed and not (e as InputEventKey).echo)):
+		_kill_skip()
 	if e is InputEventMouseButton or e is InputEventMouseMotion:
 		if e is InputEventMouseButton and hud.over_ui((e as InputEventMouseButton).position) and (e as InputEventMouseButton).pressed:
 			return
@@ -2670,6 +2898,15 @@ func _unhandled_input(e: InputEvent) -> void:
 
 
 func _on_key(k: int) -> void:
+	if hud.ask_panel != null and is_instance_valid(hud.ask_panel):
+		# issue 529: a tree prompt is open; 1 to 3 answer it, nothing else acts until it is answered
+		var a: Dictionary = V.get("ask") if V.get("ask") is Dictionary else {}
+		var opts: Array = a.get("opts", [])
+		var i := [KEY_1, KEY_2, KEY_3].find(k)
+		if i < 0: i = [KEY_KP_1, KEY_KP_2, KEY_KP_3].find(k)
+		if i >= 0 and i < opts.size():
+			_on_action("ask", str(opts[i].get("id", "")))
+		return
 	if k in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE] and (busy or api.phase == "enemy") and not ended:
 		# B2: Enter or Space hurries the rest of the enemy's turn (presentation only)
 		skip = true
@@ -2929,6 +3166,8 @@ func _on_hover(p: Vector2) -> void:
 
 
 func _on_click() -> void:
+	if hud.ask_panel != null and is_instance_valid(hud.ask_panel):
+		return   # issue 529: a tree prompt is open; answer it first
 	if not _can_act() or hover.x == 99999 or not _api_join():
 		return
 	var u := _unit_at(hover.x, hover.y)
@@ -3423,7 +3662,7 @@ func _ship_tip(u: Dictionary) -> String:
 		var parts: Array = []
 		for i in 4:
 			parts.append(str(int(d["sh"][i])))
-		t += "   Shields [color=#4fc4ff]%s[/color] / %d" % [" ".join(parts), int(u["shMax"])]
+		t += "   Shields [color=#92b8e8]%s[/color] / %d" % [" ".join(parts), int(u["shMax"])]
 	if u["side"] == "player" and u["activated"]:
 		t += "\n[color=#7c8674]Already acted this round.[/color]"
 	return t
@@ -3479,7 +3718,7 @@ func _attack_tip(t_id: String) -> String:
 		rows += "%s  %s\n" % [str(vw["name"]), right]
 	var t := "[b][color=#ff8a72]%s[/color][/b]\n[color=#a7b09d]Hull %d/%d, armor %d%%, evasion %d[/color]\n" % [str(tv["name"]), int(tv["hp"]), int(tv["maxHp"]), int(round(float(tu.get("armor", 0)) * 100.0)), int(_z0(tu.get("ev"))) + int(_z0(tu.get("evBuff")))]
 	if float(tv["shMax"]) > 0:
-		t += "Hits the [color=#4fc4ff][b]%s shield[/b] (%d/%d)[/color]%s." % [QUAD_NAME[quad], int(tv["sh"][quad]), int(tv["shMax"]), " [color=#ffad3b]down, straight to hull[/color]" if float(tv["sh"][quad]) < 1 else ""]
+		t += "Hits the [color=#92b8e8][b]%s shield[/b] (%d/%d)[/color]%s." % [QUAD_NAME[quad], int(tv["sh"][quad]), int(tv["shMax"]), " [color=#ffad3b]down, straight to hull[/color]" if float(tv["sh"][quad]) < 1 else ""]
 	else:
 		t += "Target is unshielded: [color=#ffad3b]every hit lands on the hull[/color]."
 	if rear:
@@ -3489,12 +3728,12 @@ func _attack_tip(t_id: String) -> String:
 	t += "\n" + rows
 	if not _shot_blockers(tv).is_empty(): t += "[color=#ffb875]%s[/color]\n" % _blocker_text(tv)
 	if n > 0:
-		t += "Expected: about [color=#4fc4ff]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage.\n[color=#c8f53a]%s[/color]" % [int(round(sh)), int(round(hull)),
+		t += "Expected: about [color=#92b8e8]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage.\n[color=#ff8a3a]%s[/color]" % [int(round(sh)), int(round(hull)),
 			("Targeted. Click again or Enter to fire %d weapon%s." % [n, "s" if n > 1 else ""]) if target == t_id else "Click to target (nothing fires yet)."]
 	else:
 		var am = (atk if (target == t_id and atk != null) else (_attack_move(t_id) if int(su.get("moveLeft", 0)) > 0 else null))
 		if am != null:
-			t += "[color=#c8f53a]Out of reach from here. %s[/color]" % (("Planned: burn %d movement to the ghost and fire %d weapon%s on the way. Click again or Enter to go." % [int(am["st"].cost), int(am["n"]), "s" if int(am["n"]) > 1 else ""]) if target == t_id else "Click to see the attack-move: where the ship would stop and what would fire.")
+			t += "[color=#ff8a3a]Out of reach from here. %s[/color]" % (("Planned: burn %d movement to the ghost and fire %d weapon%s on the way. Click again or Enter to go." % [int(am["st"].cost), int(am["n"]), "s" if int(am["n"]) > 1 else ""]) if target == t_id else "Click to see the attack-move: where the ship would stop and what would fire.")
 		else:
 			t += "[color=#7c8674]No ready weapon can reach this target.[/color]"
 	return t
@@ -3576,12 +3815,31 @@ func _on_action(name: String, arg) -> void:
 			else:
 				cmd_armed_t = -9.0
 				plog.act("command")
-				_cmd(func(): return api.command())
+				# issue 529: a picked "you may" skill asks yes or no first (the rules hold the prompt; answering gives the Command)
+				if api.has_method("command_or_ask"):
+					_cmd(func(): return api.command_or_ask() != "")
+				else:
+					_cmd(func(): return api.command())
+		"ask":
+			var opt := str(arg)
+			plog.act("ask " + opt)
+			hud.hide_ask()
+			_cmd(func(): return api.answer(opt))
+		"role":
+			var rid := sel
+			_cmd(func(): return api.change_role(rid))
 		"stance":
 			var sid := sel
 			var stn := str(arg)
 			_cmd(func(): return api.stance(sid, stn))
 		"menu":
+			_open_menu()
+		"keys":
+			hud.show_menu("Keys", [["Back", "menu"]], -1, hud.keys_text())
+		"grid":
+			var gb = board.get("_look_btn") if board != null else null
+			if gb is Button and (gb as Button).visible:
+				(gb as Button).button_pressed = not (gb as Button).button_pressed
 			_open_menu()
 		"log":
 			hud.toggle_log()
@@ -3620,6 +3878,95 @@ func _on_action(name: String, arg) -> void:
 			_quit()
 
 
+# ---------------------------------------------------------------- issue 529: the tree prompts
+
+var roles_opened := false
+
+
+func _sync_ask() -> void:
+	var a = V.get("ask")
+	if a is Dictionary and not ended:
+		hud.show_ask(a)
+	elif hud.ask_panel != null:
+		hud.hide_ask()
+	# the Chorus role prompt opens once, when the player first has the battle (never for the bot or a showcase)
+	if not roles_opened and not bot and not showcase and not opening and not warming and not ended and api.phase == "player" and not busy and api.has_method("roles_open"):
+		roles_opened = true
+		_open_roles.call_deferred()
+
+
+func _open_roles() -> void:
+	_cmd(func(): return api.roles_open())
+
+
+# --tree-shots <dir> --tree-shot role|may|callout (issue 529 pictures, with --scenario): "role" the Chorus role prompt at
+# battle start and then a ship's role order; "may" Vex's Debt Comes Due yes or no prompt after the Command (C, C);
+# "callout" the bot plays until a Roles callout floats over a ship, then the log and the ship's lineage count.
+func _tree_shots(kind: String) -> void:
+	while busy or warming or api == null:
+		await get_tree().process_frame
+	await get_tree().create_timer(2.0).timeout
+	_end_opening()
+	await get_tree().create_timer(1.6).timeout
+	_refresh_ui()
+	await get_tree().create_timer(0.8).timeout
+	if kind == "role":
+		for i in 120:
+			if hud.ask_panel != null: break
+			await get_tree().process_frame
+		await _snap("tree_role_prompt")
+		while hud.ask_panel != null and is_instance_valid(hud.ask_panel):
+			var a: Dictionary = V.get("ask") if V.get("ask") is Dictionary else {}
+			_on_action("ask", "strike" if str(a.get("id", "")) != _first_player() else "screen")
+			await get_tree().create_timer(0.6).timeout
+		select(_first_player())
+		cam.focus(_pos(_first_player()), 170.0)
+		await get_tree().create_timer(1.2).timeout
+		await _snap("tree_role_order")
+	elif kind == "may":
+		select(_first_player())
+		await get_tree().create_timer(0.6).timeout
+		_on_action("command", null)
+		await get_tree().create_timer(0.3).timeout
+		_on_action("command", null)
+		for i in 120:
+			if hud.ask_panel != null: break
+			await get_tree().process_frame
+		await get_tree().create_timer(0.6).timeout
+		await _snap("tree_may_prompt")
+	else:
+		for i in 120:
+			if hud.ask_panel != null: break
+			await get_tree().process_frame
+		while hud.ask_panel != null and is_instance_valid(hud.ask_panel):
+			_on_action("ask", "strike")
+			for i in 30:
+				var shown := false
+				for f in floats:
+					var l: Label = f["lbl"]
+					if is_instance_valid(l) and l.text.begins_with("Roles Assigned") and f["t"] > 0.3:
+						shown = true
+				if shown: break
+				await get_tree().process_frame
+			if hud.ask_panel == null or not is_instance_valid(hud.ask_panel):
+				break
+		await _snap("tree_role_callout")   # the callout over the ship and the log line (bottom left)
+		await get_tree().create_timer(1.5).timeout
+		select(_first_player())
+		await get_tree().create_timer(1.0).timeout
+		hud._show_dtip()   # the "more on hover" layer: the Admiral lineage block counts each skill this battle
+		await get_tree().create_timer(0.5).timeout
+		await _snap("tree_role_count")
+	_quit_report()
+
+
+func _first_player() -> String:
+	for u in V.get("units", []):
+		if u["side"] == "player" and not u["squadron"] and not u["dead"]:
+			return str(u["id"])
+	return ""
+
+
 # ---------------------------------------------------------------- in-battle menu (the browser's settings menu in the top bar)
 
 signal option_changed(key: String, value: Variant)
@@ -3634,10 +3981,17 @@ func _open_menu() -> void:
 	items.append(["Cut-ins: %s" % {"key": "key moments", "all": "every attack", "off": "off"}.get(cine, cine), "opt", "cine"])
 	items.append(["Teaching tips: %s" % ("off" if tips_off else "on"), "opt", "tips"])
 	items.append(["Reduce flashing: %s" % ("on" if reduce_flashing else "off"), "opt", "flash"])
+	items.append(["Reduce motion: %s" % ("on" if reduce_motion else "off"), "opt", "motion"])
+	items.append(["UI scale: %s" % _ui_scale_name(), "opt", "uiscale"])
 	items.append(["Screen shake: %s" % ("full" if shake_scale >= 1.0 else ("reduced" if shake_scale > 0.0 else "off")), "opt", "shake"])
 	items.append(["Threat map: %s" % ("on" if threat_on else "off"), "opt", "threat"])
 	items.append(["Reach hatching: %s" % ("on" if danger_on else "off"), "opt", "danger"])
 	items.append(["Firing arcs: %s" % ("on" if arcs_on else "off"), "opt", "arcs"])
+	# issue 271 (E1): the view keys that left the screen are listed here (they still work: T, Z, R, Esc)
+	items.append(["Top-down view (T)", "top"])
+	if board != null and board.get("_look_btn") != null and (board.get("_look_btn") as Button).visible:
+		items.append(["Tactical grid: %s (Z)" % ("on" if (board.get("_look_btn") as Button).button_pressed else "off"), "grid"])
+	items.append(["Keys", "keys"])
 	if external and not in_campaign:
 		items.append(["Quit to title", "to_title"])
 	elif not external:
@@ -3645,6 +3999,16 @@ func _open_menu() -> void:
 	items.append(["Copy a problem report", "report"])
 	items.append(["Quit the game", "quit"])
 	hud.show_menu("Menu", items)
+
+
+const UI_SCALES := [[0.9, "Small"], [1.0, "Normal"], [1.15, "Large"], [1.3, "Larger"]]
+
+
+func _ui_scale_name() -> String:
+	for o in UI_SCALES:
+		if is_equal_approx(float(o[0]), UiScale.player):
+			return str(o[1])
+	return "Normal"
 
 
 func _toggle_opt(k: String) -> void:
@@ -3671,6 +4035,19 @@ func _toggle_opt(k: String) -> void:
 		"flash":
 			set_fx_opts(not reduce_flashing, shake_scale)
 			option_changed.emit("reduce_flashing", reduce_flashing)
+		"motion":
+			reduce_motion = not reduce_motion
+			option_changed.emit("reduce_motion", reduce_motion)
+		"uiscale":
+			var i := 0
+			for j in UI_SCALES.size():
+				if is_equal_approx(float(UI_SCALES[j][0]), UiScale.player):
+					i = j
+			var v := float(UI_SCALES[(i + 1) % UI_SCALES.size()][0])
+			UiScale.set_player(v)
+			option_changed.emit("ui_scale", v)
+			if hud != null and is_instance_valid(hud):
+				hud._rebuild()
 		"shake":
 			set_fx_opts(reduce_flashing, 0.5 if shake_scale >= 1.0 else (0.0 if shake_scale > 0.0 else 1.0))
 			option_changed.emit("shake", shake_scale)
@@ -3688,8 +4065,9 @@ func _toggle_opt(k: String) -> void:
 # ---------------------------------------------------------------- HUD refresh
 
 func _refresh_ui() -> void:
-	if api == null or V.is_empty():
+	if api == null or V.is_empty() or quitting or not is_instance_valid(hud):
 		return
+	_sync_ask()
 	if sel != "" and (not VU.has(sel) or VU[sel]["dead"]):
 		sel = ""
 	if sel != "" and reach_map.is_empty() and _can_act() and _usable(_sel_unit()):
@@ -3734,11 +4112,11 @@ func _refresh_ui() -> void:
 		hud.set_phase("", "")
 	elif mine and not busy:
 		var up := sel if sel != "" else ""
-		hud.set_phase("player", "[b][color=#c8f53a]YOUR TURN[/color][/b]  ·  Round %d%s  ·  [color=#a7b09d]%d more ready[/color]" % [int(V["round"]),
+		hud.set_phase("player", "[b][color=#ff8a3a]YOUR TURN[/color][/b]  ·  Round %d%s  ·  [color=#a7b09d]%d more ready[/color]" % [int(V["round"]),
 			("  ·  [color=#e8eee0]%s[/color] is up" % _name(up)) if up != "" else "", maxi(0, pend - (1 if up != "" and not VU.get(up, {}).get("active", false) else 0))])
 	for id in views:
 		var sv = views[id]
-		sv.set_selected(id == sel, Color(0.78, 0.96, 0.23))   # the ship that is up: Lime Tactical lime (R149)
+		sv.set_selected(id == sel, EMBER_3D)   # the ship that is up: the Hollow Sun's ember (issue 271, R191 retires lime)
 	_overlay()
 	_tutorial()
 	# F1: a click changes what the hovered thing means (targeted, planned): refresh its tip without waiting for the mouse
@@ -3759,6 +4137,7 @@ func _card_info() -> Dictionary:
 		if pend0 == 0:
 			return {}
 		return {"name": "Pick a ship", "tag": "YOUR TURN", "cls": "", "more": "%d ready" % pend0, "steps": [], "hint": "Click one of your ships (green ring) or press Tab.",
+			"say": "Pick a ship: click one of yours or press Tab.",
 			"buttons": [{"text": "Next ship (Tab)", "act": "next", "on": true, "big": true}]}
 	var u: Dictionary = VU[id]
 	var ui := _ui(id)
@@ -3808,17 +4187,22 @@ func _card_info() -> Dictionary:
 		{"n": 2, "label": "Fire", "detail": ("braced" if braced else ("%d of %d guns ready" % [ready, guns] + (", %d can fire now" % bear if ready > 0 else ""))), "st": fi_st},
 		{"n": 3, "label": "End ship", "detail": "Space", "st": en_st}]
 	var hint := ""
+	var say := ""   # issue 271: the sheet's one short sentence for what to do now (the full hint is on the action's hover)
 	var btns: Array = []
 	if nothing or ending:
 		hint = "[color=#a7b09d]Nothing left to do this round: handing over to the next ship.[/color]"
+		say = "Nothing left to do: handing over."
 	elif braced:
 		hint = "Braced: hull damage −40% until its next turn. End the ship (Space)."
+		say = "Braced: hull damage -40% until its next turn."
 	elif plan != null:
 		hint = "[color=#7fc4ff]Planned move:[/color] %d movement%s, the ghost shows where it ends and which way it faces (Q/E turn it). [b]Click the hex again or press Enter to go.[/b] Esc cancels. A move can't be taken back once made." % [int(plan.cost), (", %d turn%s" % [int(plan.get("t", 0)), "" if int(plan.get("t", 0)) == 1 else "s"]) if int(plan.get("t", 0)) > 0 else ""]
+		say = "Planned move: %d movement%s. Q and E turn it, Esc cancels." % [int(plan.cost), (", %d turn%s" % [int(plan.get("t", 0)), "" if int(plan.get("t", 0)) == 1 else "s"]) if int(plan.get("t", 0)) > 0 else ""]
 		btns.append({"text": "Move here (Enter)", "act": "confirm", "on": true, "primary": true})
 		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
 	elif target != "" and atk != null:
 		hint = "[color=#ffb23e]%s is out of reach from here.[/color] The ghost shows where the ship would stop: it burns %d movement and fires %d of %d guns on the way. [b]Click it again or press Enter to go.[/b] Esc cancels." % [_name(target), int(atk["st"].cost), int(atk["n"]), int(atk["of"])]
+		say = "Out of reach: it burns %d movement and fires %d of %d guns on the way." % [int(atk["st"].cost), int(atk["n"]), int(atk["of"])]
 		btns.append({"text": "Burn and fire (Enter)", "act": "confirm", "on": true, "primary": true})
 		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
 	elif target != "":
@@ -3837,23 +4221,30 @@ func _card_info() -> Dictionary:
 		if set.is_empty():
 			hint = _cant_fire_reason(target)
 		else:
-			hint = "[color=#ff8a6a]Target: %s.[/color] %d gun%s bear from here: about [color=#4fc4ff]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage. [b]Click it again or press Enter to fire.[/b] Esc cancels." % [_name(target), set.size(), "" if set.size() == 1 else "s", int(round(sh)), int(round(hl))]
+			hint = "[color=#ff8a6a]Target: %s.[/color] %d gun%s bear from here: about [color=#92b8e8]%d shield[/color] and [color=#ffad3b]%d hull[/color] damage. [b]Click it again or press Enter to fire.[/b] Esc cancels." % [_name(target), set.size(), "" if set.size() == 1 else "s", int(round(sh)), int(round(hl))]
 			btns.append({"text": "Fire %d weapon%s (Enter)" % [set.size(), "" if set.size() == 1 else "s"], "act": "confirm", "on": true, "primary": true})
 			if not torp_rows.is_empty():
 				hint += "\n[color=#f0c58b]%s[/color]\n%s" % [" ".join(torp_rows), torp_why]
+				say = " ".join(torp_rows)
 			btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
 	elif fired and bear > 0:
 		hint = "%d gun%s still ready. Click an enemy with a red ring to target it, or end the ship (Space)." % [bear, "" if bear == 1 else "s"]
+		say = "%d gun%s still ready: pick another target, or end the ship." % [bear, "" if bear == 1 else "s"]
 	elif fired:
 		hint = "Fired. %s or end the ship (Space)." % ("It can still slip %d hex%s: click a blue hex," % [mleft, "" if mleft == 1 else "es"] if mleft > 0 else "Use its ability, board, ram")
+		say = ("Fired. It can still slip %d hex%s." % [mleft, "" if mleft == 1 else "es"]) if mleft > 0 else "Fired."
 	elif bear > 0 and mleft > 0:
 		hint = "Click a blue hex to plan a move, or an enemy with a red ring to target it (ships move, then fire). B braces instead."
+		say = "Click a blue hex to move, or an enemy with a red ring to target it."
 	elif bear > 0:
 		hint = "No movement left. Click an enemy with a red ring to target it, or brace (B), or end the ship (Space)."
+		say = "No movement left. Click an enemy with a red ring to target it."
 	elif mleft > 0:
 		hint = "Click a blue hex to plan a move. No gun bears from here yet: an orange ring on an enemy means it would from the planned hex. B braces instead."
+		say = "Click a blue hex to move. No gun bears from here yet."
 	else:
 		hint = "No movement left and no gun bears. Turn with Q/E, brace (B) or end the ship (Space)."
+		say = "No movement left and no gun bears. Turn, brace or end the ship."
 	if not braced and bool(ui.get("orders", {}).get("brace", false)):
 		btns.append({"text": "Brace (B)", "act": "brace", "on": true, "tip": str(TBL.get("ORDERS", {}).get("brace", {}).get("d", ""))})
 	if u.get("ab") != null and bool(u.get("abReady", false)) and bool(ui.get("ability", {}).get("ready", false)):
@@ -3866,7 +4257,7 @@ func _card_info() -> Dictionary:
 	btns.append({"text": "End ship (Space)", "act": "end", "on": true, "big": true, "primary": plan == null and target == "",
 		"tip": "This ship is done for the round%s; the enemy moves one of theirs." % ("" if u["active"] else " (it holds position)")})
 	return {"name": str(u["name"]), "cls": str(u["cls"]), "flag": u["flagship"], "tag": "ACTING" if u["active"] else "UP",
-		"more": ("%d more ready" % more) if more > 0 else "last ship this round", "steps": steps, "hint": hint, "buttons": btns, "aim": target != "" and plan == null}
+		"more": ("%d more ready" % more) if more > 0 else "last ship this round", "steps": steps, "hint": hint, "say": say, "buttons": btns, "aim": target != "" and plan == null}
 
 
 # F1: the play log goes three places: the battle result (campaign_host hands results to the campaign), the campaign's
@@ -4047,6 +4438,10 @@ func _panel_info() -> Dictionary:
 			for stn in ["strike", "screen", "hunt"]:
 				orders.append({"text": "Wings: %s%s" % [stn, " (now)" if str(u.get("stance")) == stn else ""], "act": "stance", "arg": stn, "on": bool(u.get("canStance")) and str(u.get("stance")) != stn and _can_act(),
 					"tip": {"strike": "Wings range out and strike.", "screen": "Wings stay within 2 hexes, hunt craft first and shoot down torpedoes aimed at ships beside them.", "hunt": "Wings range 4 hexes further, +20% against crippled ships, easier to hit."}[stn]})
+		if str(u.get("role", "")) != "" and u.get("role") != null:   # issue 529: Roles Assigned at Hatching, one change per battle
+			var rn := str(u["role"]).capitalize()
+			orders.append({"text": "Role: %s" % rn, "act": "role", "on": _can_act() and bool(u.get("canRole")),
+				"tip": "This ship's role: strike +10 aim, screen +10 evasion, mend 10% stronger repair and regrowth. A ship may change its role once per battle."})
 		orders.append({"text": "Turn left (Q)", "act": "rotl", "on": can})
 		orders.append({"text": "Turn right (E)", "act": "rotr", "on": can})
 		info["orders"] = orders
@@ -4117,7 +4512,7 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 		for pk in cap.get("perks", []):
 			var P = TBL.get("PERKS", {}).get(str(pk))
 			if P is Dictionary:
-				line += "  [color=#c8f53a]%s[/color] [color=#7c8674](%s)[/color]" % [str(P.get("n", pk)), str(P.get("d", "")).trim_suffix(".")]
+				line += "  [b]%s[/b] [color=#7c8674](%s)[/color]" % [str(P.get("n", pk)), str(P.get("d", "")).trim_suffix(".")]
 		info["captain"] = line.strip_edges()
 	# hull by section
 	if ru.get("sec") is Dictionary:
@@ -4130,7 +4525,7 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 	# shields in words
 	if float(u["shMax"]) > 0.0:
 		var sh: Array = disp.get(u["id"], {"sh": u["sh"]})["sh"]
-		info["stats"] = str(info.get("stats", "")) + "\n[color=#4fc4ff]Shields[/color] of %d each, +%d a turn: prow %d, port %d, starboard %d, rear %d" % [int(u["shMax"]), int(_z0(ru.get("regen"))), int(sh[0]), int(sh[3]), int(sh[1]), int(sh[2])]
+		info["stats"] = str(info.get("stats", "")) + "\n[color=#92b8e8]Shields[/color] of %d each, +%d a turn: prow %d, port %d, starboard %d, rear %d" % [int(u["shMax"]), int(_z0(ru.get("regen"))), int(sh[0]), int(sh[3]), int(sh[1]), int(sh[2])]
 	# state and faction lines (refreshPanel tr[] and battle.js factionTraitLines)
 	var tr: Array = R.storyModifierLines(ru)
 	if _jt(ru.get("hullRegen")):
@@ -4198,7 +4593,7 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 			var M = TBL.get("MOVE_RULES", {}).get(fac)
 			var dl := "Thrusters: sideslip %s, back off %s, pass over or under %s." % [_n(MR.get("slip")), _n(MR.get("rev")), ("+" + _n(MR.get("over"))) if _jt(MR.get("over")) else "free"]
 			if M is Dictionary:
-				dl += " [color=#c8f53a]%s[/color]: %s" % [str(M.get("n", "")), str(M.get("d", ""))]
+				dl += " [b]%s[/b]: %s" % [str(M.get("n", "")), str(M.get("d", ""))]
 			if ru.get("hexMoved") != null:
 				if int(ru["hexMoved"]) == 0:
 					dl += " [color=#ff8a72]Has not moved: enemies get +%s to hit.[/color]" % _n(MR.get("still"))
@@ -4228,17 +4623,17 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 		if _jt(ru.get("pflag")) and _jt(RUN.get("aspect")):
 			var AS = TBL.get("ASPECTS", {}).get(str(RUN["aspect"]))
 			if AS is Dictionary:
-				bb += "[b][color=#c8f53a]%s[/color][/b] [color=#a7b09d]%s[/color]\n" % [str(AS.get("n", "")), str(AS.get("d", ""))]
+				bb += "[b]%s[/b] [color=#a7b09d]%s[/color]\n" % [str(AS.get("n", "")), str(AS.get("d", ""))]
 		var stats: Dictionary = Bs.get("boonStats", {}) if Bs.get("boonStats") is Dictionary else {}
 		for b in RUN.get("boons", []):
 			var B0 = TBL.get("BOONS", {}).get(str(b.get("id")))
 			if not B0 is Dictionary:
 				continue
 			var pat = B0.get("p") if _jt(B0.get("p")) else (B0.get("duo", [""])[0] if B0.get("duo") is Array else "")
-			var pcol := str(TBL.get("PATRONS", {}).get(str(pat), {}).get("col", "#c8f53a"))
+			var pcol := str(TBL.get("PATRONS", {}).get(str(pat), {}).get("col", "#ff8a3a"))
 			var dl: Array = _boon_d.get(str(b.get("id")), [])
 			var d := str(dl[clampi(int(_z0(b.get("r"))), 0, dl.size() - 1)]) if not dl.is_empty() else ""
-			bb += "[color=%s]▌[/color][b]%s[/b]%s [color=#a7b09d]%s[/color]\n" % [pcol, str(B0.get("n", "")), (" [color=#c8f53a]×%d this battle[/color]" % int(stats[b["id"]])) if _jt(stats.get(b.get("id"))) else "", d]
+			bb += "[color=%s]▌[/color][b]%s[/b]%s [color=#a7b09d]%s[/color]\n" % [pcol, str(B0.get("n", "")), (" [b]×%d this battle[/b]" % int(stats[b["id"]])) if _jt(stats.get(b.get("id"))) else "", d]
 		if bb != "":
 			extra.append(["Fleet protocols", bb.strip_edges()])
 	if ru["side"] == "player" and not _jt(ru.get("isSq")):
@@ -4270,6 +4665,9 @@ func _process(dt: float) -> void:
 	if api == null:
 		return
 	var vs := get_viewport().get_visible_rect().size
+	# issue 271: the camera looks at the middle of the part of the screen the orders sheet leaves clear (0 in cut-ins)
+	var want_shift: float = hud.clear_shift() if cine_saved.is_empty() else 0.0
+	cam.screen_shift += (want_shift - cam.screen_shift) * clampf(dt * 6.0, 0.0, 1.0)
 	for id in views:
 		var sv = views[id]
 		var u: Dictionary = VU.get(id, {})
@@ -4546,14 +4944,14 @@ func _target_info() -> Dictionary:
 			if es[i] > es[bq]:
 				bq = i
 		var who := ("Both bearing guns" if set.size() == 2 else ("%d bearing guns" % set.size() if set.size() > 2 else "The bearing gun"))
-		line = "%s%s: about [color=#c8f53a][b]%d[/b][/color] damage" % [who, " from the planned hex" if plan != null else "", int(round(tot))]
+		line = "%s%s: about [color=#ff8a3a][b]%d[/b][/color] damage" % [who, " from the planned hex" if plan != null else "", int(round(tot))]
 		if es[bq] > 0.5:
 			line += ", about %d on its %s shield" % [int(round(es[bq])), FACING_WORD[bq]]
 		line += " and %d on hull." % int(round(eh)) if es[bq] > 0.5 else ", %d on hull." % int(round(eh))
 		# no kill prediction (ui_spec S1 board ruling on the #314 check): the expected value only; the hatched ghost on the
 		# target's hull bar already shows the hull reaching zero
 		_tgt_plate[tid] = {"odds": "%d%% %d gun%s" % [best, set.size(), "" if set.size() == 1 else "s"], "ghost": maxf(0.0, float(d["hp"]) - eh)}
-	return {"name": str(tu["name"]), "flag": tu["flagship"], "hp": float(d["hp"]), "maxHp": float(tu["maxHp"]), "sh": d["sh"], "shMax": float(tu["shMax"]),
+	return {"name": str(tu["name"]), "flag": tu["flagship"], "nem": bool(tu.get("nemesis", false)), "hp": float(d["hp"]), "maxHp": float(tu["maxHp"]), "sh": d["sh"], "shMax": float(tu["shMax"]),
 		"exp_hull": eh, "exp_sh": es, "line": line}
 
 
@@ -4563,7 +4961,7 @@ func _torpedo_why() -> String:
 
 func _float_hit(id, sh: float, hull: float, crit) -> void:
 	if sh > 0:
-		_float(id, "−%d shield" % int(sh), Color("#4fc4ff"), -18)
+		_float(id, "−%d shield" % int(sh), Color("#92b8e8"), -18)
 	if hull > 0:
 		_float(id, "−%d hull" % int(hull), Color("#ffd27a") if crit else Color("#ffad3b"), 0)
 	if crit:
@@ -4659,7 +5057,7 @@ func _load_opts() -> void:
 
 func _sync_teaching_switch() -> void:
 	tips_off = Teaching.is_off()
-	if args.has("no-tips") or args.has("shots") or args.has("breach-shots") or args.has("f1-trace") or args.has("ui-shots"):
+	if args.has("no-tips") or args.has("shots") or args.has("breach-shots") or args.has("f1-trace") or args.has("ui-shots") or args.has("tree-shots"):
 		tips_off = true
 
 
@@ -5114,7 +5512,14 @@ func _quit_report() -> void:
 	_quit()
 
 
+# Issue 521 (carried item 4 of the issue 505 report): _quit frees the scene's children and waits two frames; a command
+# still awaiting (the capture's end_activation) then resumed into _refresh_ui and _overlay on the freed HUD and board, a
+# script error and then a crash on shutdown. Once quitting, neither draws.
+var quitting := false
+
+
 func _quit(code := 0) -> void:
+	quitting = true
 	if code == 0 and shots_dir != "" and PG.stop_if_any():
 		code = 1
 	var m = get_node_or_null("/root/Main")

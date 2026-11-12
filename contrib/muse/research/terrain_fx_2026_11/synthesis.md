@@ -43,6 +43,8 @@ Star occlusion: the gas gains an absorptive component so stars dim by density in
 
 Motion: the existing TIME offset rates (0.012, 0.004, 0.007, GAS_SHADER at world_living.gd:31) become per-layer multipliers: ground haze at 0.6 times, body at 1 times, wisps at 1.6 times, tying veil at 0.4 times. The body also gets a slow breathing oscillation of the density threshold (period about 8 seconds, small amplitude) so the cloud appears to churn rather than slide. The mask stays fixed in world space; only the interior moves. No whole-patch alpha pulsing: pulsing reads as a state change, and the nebula has none.
 
+Reconciled (Opus, #230, Nov 9 2026): the motion values above are built; the base drift rate they multiply is 0.193 world units a second, and every layer rate is numbered in contrib/opus/briefs/nebula_motion_spec.md, which governs from now on.
+
 ### 2.2 Ships inside gas
 
 Ships inside a nebula stay crisp and selectable. The gas alpha at ship height (y 0 to 3) stays below 0.4, and the nebula body alpha starts at 0.40 at patch centre, tunable upward after the first playtest if hulls still read well. The ceiling reference is the 0.7 densest-point cap the Qwen leg reports for EVE (adopted as a design rule with the citation caveat in section 3.5): our working numbers stay well under it. Selection rings, health bars, icons and all UI render on top, unchanged. Concealment is carried by the hit penalty (battle.js:649), not by hiding or dimming hulls. Depth is sold by the layers and the patch light around the ship, never by gas drawn over the ship. This adopts the Rey leg's owner pick over the DeepSeek leg's rim-lit silhouette framing; the dissent is recorded in section 6.
@@ -64,6 +66,8 @@ Bolts are unchanged. Count stays at about 1 bolt per 2 storm hexes, at most 6; c
 
 This settlement is the main dissent in the pack and all three leg positions are recorded in section 6: the Rey leg wanted yellow to lead the storm's light outright, the DeepSeek leg wanted yellow kept out of the body and confined to tint, UI and bolt-lit highlights, and the Qwen leg proposed the violet-dominant ramp the chair adopts as the mechanism, with the Rey leg's filaments, sheet glow and tick flare added on top.
 
+Reconciled (Opus, #230, Nov 9 2026, NB11): "within about 12 units" is 0.69 hex (full boost within 0.46 hex, 8 units); the sheet glow reaches 1.3 to 2.0 hexes. Storm motion and activity numbers: contrib/opus/briefs/nebula_motion_spec.md section 4.
+
 ### 2.4 Debris
 
 Debris is physical cover, not gas, and its counts are already settled by Job 10: 15 to 22 rocks plus 3 to 5 wreck pieces per hex on the living path (func _debris at world_living.gd:469; the four procedural wreck types at world_living.gd:549-556). Those counts do not change. What changes is value, hierarchy and dust:
@@ -77,6 +81,8 @@ Debris is physical cover, not gas, and its counts are already settled by Job 10:
 7. Ship clear zone: debris placement keeps a clear zone of radius 4 units around each ship hex centre so a hull is never buried in rocks. Height discipline: most pieces stay below ship midline; one hero wreck piece per patch may rise higher. Debris does not block movement or line of fire (it is not in the blocking set at battle.js:7), and its height must not pretend otherwise.
 
 Stars show through the gaps; occlusion is by geometry only. No violet, no yellow: tan and rust only, so debris can never be confused with either gas kind in a still.
+
+Reconciled (Opus, #230, Nov 9 2026, AS14, AS16, AS18): contrib/opus/briefs/environment_reconciliation.md sections 1 to 3 is the document of record for these values. Shipped: the counts, about a fifth of rocks 3 to 5 units on average, one hero wreck piece in every hex at 4 to 7.6 units, nothing over 8.66. Not yet built (#100): sub-clumps, the ship clear zone, the tan dust and its drift. The wreck size "6 to 9 units" is amended to "up to 8.66". The tumble periods in point 6 are the alternative to the 0.10 / scale figure of record, sheeted by the #230 motion capture.
 
 ### 2.5 Dead star well
 
@@ -103,6 +109,8 @@ The footprint mask (func _mask at world_living.gd:298) gains an edge feather: 2 
 ### 2.7 Tactical tint
 
 ZONE_TINT (godot/render/board.gd:325) alpha comes down so the gas itself carries the terrain read, while a faint tint stays for gameplay zoning. Current values: nebula violet alpha 0.16, debris tan alpha 0.12, storm yellow alpha 0.13. The exact new values are not fixed in this document; they are a screenshot-judged tuning step inside build task 8, taken against the landed gas, because fixing them before the ramps exist would be guessing. The TERRAIN_INFO legend colours (battle.js:8-15) are the reference and are not edited by this work: if a world ramp and a legend colour cannot be reconciled, that goes to the owner (it is part of Q1), not to a silent legend edit. This is also the terrain half of R70: the board-game-on-a-background read is partly the tint doing the terrain's job, and the settlement moves that job into the gas.
+
+Reconciled (Opus, #230, Nov 9 2026, BD16): the screenshot step landed nebula 0.075, debris 0.065 and storm 0.065 (board.gd ZONE_TINT), R82 Q3's "reduced, faint tint kept". These are the figures of record (contrib/opus/briefs/environment_reconciliation.md section 4); the 0.16, 0.12 and 0.13 above were the pre-reduction values.
 
 ### 2.8 Old clouds path (today and holo looks)
 

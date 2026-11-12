@@ -14,6 +14,7 @@ var fails := 0
 
 class FakeHud extends CanvasLayer:
 	var menu = null
+	var ask_panel = null   # issue 529: the real HUD has a prompt panel; null means no prompt is open
 	func toast(_text: String, _opts := {}) -> void:
 		pass
 

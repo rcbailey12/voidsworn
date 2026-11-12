@@ -17,6 +17,11 @@ effect: a weapon hit, a shield response, a trail, a death.
   stays (deaths_and_hits.md, "The hits, upgraded").
 - Numbers in this playbook and the staging table are starting points judged by eye in a moving fight, not gates (R187).
   Checks protect crashes, saves, comfort and frame rate.
+- **The flash counter counts by area (R193 (1)):** at most three big flashes a second, "big" by the W3C guideline's combined
+  area in a 10 degree window, from a stated screen (default 32 inch at 24 inches); godot/fx/fx.gd, issue 504. Work inside it:
+  it is a comfort rule for every player, not only under reduce flashing.
+- **Hits must read at camera 170 (R208 (1)).** Ryan picked "Merge, then push harder" on the first hits build; subtle is a
+  fail. Light on neighbouring hulls stays faint for now (R208 (3)).
 - Shields: invisible at rest, a faint edge glow on zoom, hover or a recent hit, a downed side reads as a dark gap, and they
   keep faction colours (R163; Oct 24).
 - Directions already researched for the next options sheets (contrib/muse/design/look_references_2026_11/synthesis.md):
@@ -25,7 +30,8 @@ effect: a weapon hit, a shield response, a trail, a death.
 
 ## 2. Inputs
 
-- The look bench (godot/bench/, tools/pc/jobs/look_bench.bat, baseline docs/shots/look_bench/). Its moments are listed in
+- The look bench (godot/bench/, tools/pc/jobs/look_bench.bat, baseline docs/shots/look_bench/). For a death or a deep wound:
+  the hull's insides (R209), so a break shows decks and frames, never a hollow shell. Its moments are listed in
   godot/bench/look_moments.json; add a moment there when an effect has none.
 - The picked route's bake scripts and pack step (tools/blender/vfx/ on branch opus/issue-353 until issue 419 lands them).
 - For anything new in look (not a resize or retime): Ryan's pick from an options sheet. Options first, then build.
@@ -48,6 +54,7 @@ effect: a weapon hit, a shield response, a trail, a death.
 
 - The bench strip at camera 170 shows the effect, with its measured size and time beside the table's row. The row is a
   starting point (R187): a difference judged better by eye in a moving fight is reported, not failed.
+- The flash counter (godot/fx/fx.gd) accepts it without softening it; if it refuses, say so with the numbers.
 - godot/fx/test/check_destruction.bat and the stray puff guard pass: every spawned picture is recorded and sits on the hull
   (death_spawn_check.gd, PR 404).
 - Frame time on the bench is reported against the baseline. Costs are reported; a regression is the Board's call.

@@ -98,7 +98,7 @@ Also in this block, per Qwen run 2 response 1: the owner-label list at about :63
 
 ### NEXT.md (file-level banner declares it superseded)
 
-**A35. NEXT.md:3** Quote (the file's own banner): "The build queue is now contrib/opus/go-forward-plan.md". Claim: the banner retires this file by pointing at a plan file that is itself no longer the live queue. Conflicts with: LOOP.md (the live queue) and FINDINGS R35 (FINDINGS.md:60). Source: Qwen run 2 response 2. Fix: repoint the banner at contrib/opus/LOOP.md as the live queue, this file as historical reference only.
+**A35. NEXT.md:3** Quote (the file's own banner): "The build queue is now docs/archive/go-forward-plan.md". Claim: the banner retires this file by pointing at a plan file that is itself no longer the live queue. Conflicts with: LOOP.md (the live queue) and FINDINGS R35 (FINDINGS.md:60). Source: Qwen run 2 response 2. Fix: repoint the banner at contrib/opus/LOOP.md as the live queue, this file as historical reference only.
 
 **A36. NEXT.md:9** Quote: "one battle on the Pixel for anything visual". Claim: the publish gate still includes a battle on the Pixel. Conflicts with: the Oct 24 PC-only rulings (CLAUDE.md:7) and FINDINGS D7 (FINDINGS.md:268, phone framing STALE). Flag status: NEXT.md's banner says the phone and Pixel gates below are retired; the line still sits in the operative gate sentence. Corroborated in substance: Qwen run 2 response 2. Fix: delete the Pixel clause from the gate line.
 
@@ -163,7 +163,7 @@ C) Delete it; anything still live gets filed as an issue first.
 
 ## Not checked
 
-- Currency of docs outside the six: docs/ship_pipeline/TEXTURE_PASS.md (called "current" at AGENTS.md:11), docs/ship_pipeline/SHIP_QUEUE.md and its hull count, docs/REVIEW_PROTOCOL.md, contrib/opus/go-forward-plan.md phase states, and contrib/opus/briefs/muse_standing_rule.md. None were in the pack, and FINDINGS and LOOP do not settle their current wording.
+- Currency of docs outside the six: docs/ship_pipeline/TEXTURE_PASS.md (called "current" at AGENTS.md:11), docs/ship_pipeline/SHIP_QUEUE.md and its hull count, docs/REVIEW_PROTOCOL.md, docs/archive/go-forward-plan.md phase states, and contrib/opus/briefs/muse_standing_rule.md. None were in the pack, and FINDINGS and LOOP do not settle their current wording.
 - PC facts in CLAUDE.md:15-17 (RTX 5080 16 GB, 32 GB RAM, disk space, ComfyUI portable version, Blender path). FINDINGS confirms only the RTX 5080 as the measurement floor (R111); the rest has no counterpart in the winning sources.
 - Display-name details beyond what FINDINGS itself uses (for example "Hegemony Navy" at CLAUDE.md:13): the authority is the lore bible and rename map, which were not in the pack.
 - HANDOFF.md:23 says the repo state audit sits on branch muse/repo-state-2026-11. Whether that branch was later merged is not recorded in FINDINGS or LOOP, so the line was not called stale.

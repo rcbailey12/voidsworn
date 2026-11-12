@@ -1,8 +1,8 @@
 @echo off
-rem Ship recipe, stage 3: the traced hull and the outline gate. Slices the shape reference every 0.02 of the ship's length and fits
+rem Ship recipe, stage 3: the traced hull and the outline overlap. Slices the shape reference every 0.02 of the ship's length and fits
 rem one clean faceted section to each slice (b0trace.py), tunes the hull module's numbers on the concept outline with a small pull
 rem toward the shape reference (tune5.py, the slow step: about 10 minutes a run), then scores the outline at the concept's own
-rem camera. The gate is the ship's outline_gate (90 percent): FAIL means the shape is not ready for parts.
+rem camera. The overlap is REPORTED against the ship's outline_gate (90 percent); it is not a pass bar (RULEBOOK 5.8).
 rem Refuses to run without the shape reference (stage 2); every step that fails stops the stage with FAILED and a non-zero exit.
 call "%~dp0env.bat"
 if not exist "%B0%" (echo Stage 3 FAILED: no shape reference at %B0%. Run stage 2 first. & goto bad)
@@ -26,11 +26,18 @@ echo Tuned numbers: %JOB%\tune.json (commit it beside the hull module and name i
 findstr /L /c:"[sil] dumped" "%JOB%\log_sildump.txt" > nul || (echo Stage 3 FAILED: the hull could not be built. See %JOB%\log_sildump.txt & goto bad)
 "%BPY%" "%R%\silhouette4.py" score "%JOB%\concept.png" "%CAMJ%" "%JOB%\sil" %CELL%="%JOB%\%CELL%.npz" > "%JOB%\log_sil.txt" 2>&1
 if errorlevel 1 (echo Stage 3 FAILED: the outline could not be scored. See %JOB%\log_sil.txt & goto bad)
+rem Issue 363: the standing checks the recipe keeps (outside audit pass 2, finding 13): the score per third and the inner
+rem edge check, recorded beside the whole outline score. The overlap is reported, not a pass bar (RULEBOOK 5.8).
+"%BPY%" "%R%\outline_thirds.py" "%JOB%\concept.png" "%CAMJ%" "%JOB%\sil" %CELL%="%JOB%\%CELL%.npz" > "%JOB%\log_thirds.txt" 2>&1
+if errorlevel 1 (echo Stage 3 FAILED: the outline per third and inner edge check did not run. See %JOB%\log_thirds.txt & goto bad)
+"%BPY%" "%RC%\standing.py" outline --ship "%R209_SHIP%" --job "%JOB%" > "%JOB%\log_standing.txt" 2>&1
+if errorlevel 1 (type "%JOB%\log_standing.txt" & echo Stage 3 FAILED: the standing outline record is incomplete. See %JOB%\log_standing.txt & goto bad)
+type "%JOB%\log_standing.txt"
 "%BPY%" "%RC%\ship.py" %SHIP% gate "%JOB%\sil\silhouette_scores.json"
 set GATE=%errorlevel%
 echo The overlay is %JOB%\sil\sil_%CELL%.png (green both, red concept only, yellow ship only).
-if not "%GATE%"=="0" (echo Stage 3: the outline gate FAILED; the shape is not ready for parts. & goto bad)
-echo Stage 3 done: PASS
+if not "%GATE%"=="0" (echo Stage 3 FAILED: the outline score could not be read. & goto bad)
+echo Stage 3 done: PASS, the outline overlap is reported above (not a pass bar, RULEBOOK 5.8)
 pause
 exit /b 0
 :bad
