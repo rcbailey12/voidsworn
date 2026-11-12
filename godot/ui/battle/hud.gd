@@ -11,9 +11,8 @@ extends CanvasLayer
 # still visible is in the sheet's look. SAY LESS (R177): what the sheet does not show is one hover or one key away; the
 # list is in docs/playbooks/screens.md (battle screen).
 #
-# The Lime Tactical shell of the previous build (top bar, unacted set, fleet list, the seven-block shell, the log ticker,
-# the turn strip, the key hint) is still built and filled, inside `legacy`, which is never shown: the PC capture tools
-# (ui_shots.gd, f1_trace.gd, bench/scene_gate.gd) and story_beat3_test read it. It goes when those tools read the sheet.
+# The Lime Tactical shell of the previous build is gone: the PC capture tools (ui_shots.gd, f1_trace.gd,
+# bench/scene_gate.gd) and story_beat3_test read the sheet (ledger.gd) now, so nothing is built for them (issue 578).
 #
 # Regions now: the sheet (left, ledger.sheet_r) | the clear part of the screen to its right, where the banner, toasts,
 # the tip card and hover tips sit (_column) | top right and bottom right corners (the sheet's own words).
@@ -60,24 +59,26 @@ const FOE_RING := GS.FOE_RING
 
 # the layout at the 1080 design height
 const M := 12.0          # screen margin
-const COL_W := 440.0     # the right shell
-const TOP_H := 38.0      # the top bar
-const BAND_H := 26.0     # the band row under it
-const FLEET_W := 250.0   # the fleet list
-const LOG_W := 600.0     # the log
-const LOG_LINES := 4     # the ticker
-const LOG_H := 134.0     # the ticker's height: head 36, four lines of 21, padding 14
+const COL_W := 440.0     # the tip card's offset from the sheet's margin
+const TOP_H := 38.0      # kept for the old shell helpers below (not built)
+const BAND_H := 26.0
+const FLEET_W := 250.0
+const LOG_W := 600.0     # the full log
+const LOG_LINES := 4
+const LOG_H := 134.0
 
 var font: Font                      # sentences: Barlow Regular (the orders sheet, R176)
 var font_semi: Font                 # buttons, short labels: Barlow Medium
 var font_name: Font                 # names in capitals: Big Shoulders Display (banner, menu and end card titles)
-var font_goth: Font                 # display (round title, banner, end card): Chakra Petch Bold, tracked caps
+var font_goth: Font                 # display (banner, end card): Chakra Petch Bold, tracked caps
 var font_caps: Font                 # section heads and tags: Chakra Petch Bold, tracked caps
 var font_num: Font                  # numbers that decide something (odds, damage, hull, keys): Azeret Mono
 var font_num_b: Font                # the same, bold
 var font_act: Font                  # the finish button's caps label
 var k := 1.0                        # the UI scale (ui_scale.gd: window height / 1080, clamped, times the player scale)
 var root: Control
+# the previous build's controls: no longer built (issue 578); the names stay so the old helpers below parse while they
+# are removed. Nothing here is created or shown.
 var top: PanelContainer
 var title_lbl: Label
 var crest: TextureRect
@@ -100,8 +101,25 @@ var roster_box: VBoxContainer
 var roster_sc: ScrollContainer
 var roster_head: Label
 var panel_sc: ScrollContainer
-var panel: PanelContainer           # the right glass shell (all seven blocks)
-var panel_box: VBoxContainer        # the blocks above End (they scroll if the window is very short)
+var panel: PanelContainer
+var panel_box: VBoxContainer
+var hint: Label
+var unacted: PanelContainer
+var unacted_row: HBoxContainer
+var nem_well: PanelContainer
+var up_well: PanelContainer
+var move_well: PanelContainer
+var fire_well: PanelContainer
+var orders_well: PanelContainer
+var target_well: PanelContainer
+var card: PanelContainer
+var card_box: VBoxContainer
+var _card_sig := ""
+var legacy: Control
+var _rows: Array = []
+var _info := {}
+var _card_info := {}
+var _phase_kind := ""
 var log_panel: PanelContainer
 var log_text: RichTextLabel
 var log_open := false
@@ -115,9 +133,6 @@ var plates_root: Control
 var plates := {}                    # unit id -> Control
 var tipcard: PanelContainer
 var endcard: PanelContainer
-var hint: Label
-var unacted: PanelContainer         # the unacted set under the top bar
-var unacted_row: HBoxContainer
 var _banner_t := 0.0
 var _banner_dur := 0.0
 var toast_lbl: Label
@@ -126,29 +141,13 @@ var legend: PanelContainer
 var legend_open := false
 var _legend := {}                   # {title, desc, rows: [[name, colour, effect]]}
 
-# the seven blocks of the shell
-var nem_well: PanelContainer
-var up_well: PanelContainer
-var move_well: PanelContainer
-var fire_well: PanelContainer
-var orders_well: PanelContainer
-var target_well: PanelContainer
-var card: PanelContainer            # 3 End: the activation's end (End ship fixed bottom right)
-var card_box: VBoxContainer
-var _card_sig := ""
-
 var ledger                          # the orders sheet (ledger.gd): what the player sees
-var legacy: Control                 # the previous build's shell, built and filled, never shown (see the top of this file)
 var _log_lines: Array = []          # the log as plain lines, for the sheet's last three
 var ask_panel: Control              # issue 529: the sheet while a tree prompt is open in it, else null
 var ask_key := ""
 
-var _rows: Array = []               # the last fleet rows (set_roster)
-var _info := {}                     # the last battle info (set_info)
 var _panel_info := {}               # the last ship info (set_panel)
-var _card_info := {}                # the last activation info (set_card)
 var _round := 1
-var _phase_kind := ""
 
 
 func _ready() -> void:
@@ -183,27 +182,12 @@ func _build_all() -> void:
 		plates_root.set_anchors_preset(Control.PRESET_FULL_RECT)
 		plates_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(plates_root)
-	_build_top()
-	_build_unacted()
-	_build_roster()
-	_build_panel()
 	_build_log()
 	_build_ledger()
 	_build_banner()
 	_build_chip()
-	_build_hint()
 	_build_legend()
-	_build_phase()
 	_build_tip()
-	# the previous build's shell goes out of sight (it is still filled; see the top of this file); the sheet is what shows
-	legacy = Control.new()
-	legacy.name = "legacy"
-	legacy.set_anchors_preset(Control.PRESET_FULL_RECT)
-	legacy.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	legacy.visible = false
-	root.add_child(legacy)
-	for c in [top, unacted, roster, panel, phase, hint]:
-		c.reparent(legacy, false)
 	# the full log (L) sits over the sheet's corner; the banner, toasts, tips and dialogs over everything
 	root.move_child(log_panel, ledger.get_index() + 1)
 
@@ -222,15 +206,15 @@ func _build_ledger() -> void:
 	ledger.mouse_entered.connect(func() -> void: tip.visible = false)
 
 
-# the window changed size: build every part again at the new scale and put back what each part showed. The battle log's
-# text, the floating callouts and the grid button move across as they are; nameplates are made again on the next frame.
+# The window changed size: build every part again at the new scale and put back what each part showed. The battle log's
+# text, the floating callouts and the dialogs move across as they are; nameplates are made again on the next frame.
 func _rebuild() -> void:
 	var vs := get_viewport().get_visible_rect().size
 	_built_vs = vs
 	var nk := scale_for(vs)
 	if absf(nk - k) < 0.004 or root == null:
 		return
-	var keep := {"retreat_v": retreat_btn.visible, "retreat_d": retreat_btn.disabled, "hint": hint.visible,
+	var keep := {
 		"banner": banner_lbl.text, "banner_col": banner_lbl.get_theme_color("font_color"), "banner_a": banner_lbl.modulate.a,
 		"toast": toast_lbl.text, "toast_a": toast_lbl.modulate.a}
 	# N5 (#282): a rebuild while the menu is open keeps its keyboard row. Read the row before the menu is thrown away.
@@ -238,8 +222,6 @@ func _rebuild() -> void:
 	if menu != null and is_instance_valid(menu):
 		var mfo := get_viewport().gui_get_focus_owner()
 		if mfo != null and menu.is_ancestor_of(mfo): keep_row = maxi(0, mfo.get_index() - 1)
-	if _grid_btn != null and is_instance_valid(_grid_btn) and _grid_btn.get_parent() != null:
-		_grid_btn.get_parent().remove_child(_grid_btn)
 	plates_root.get_parent().remove_child(plates_root)
 	for id in plates:
 		(plates[id] as Control).queue_free()
@@ -252,19 +234,13 @@ func _rebuild() -> void:
 	tipcard = null
 	bars = []
 	load_cover = null
-	_card_sig = ""
 	ask_panel = null
-	_phase_fs = -1
-	_heights = {}
 	k = nk
 	_scaled_fonts()
 	_build_all()
-	retreat_btn.visible = keep["retreat_v"]
-	retreat_btn.disabled = keep["retreat_d"]
-	for key in ["set_crest", "set_info", "set_command", "set_top", "set_roster", "set_nemesis", "set_panel", "set_target", "set_legend", "set_chip", "set_phase", "set_card"]:
+	for key in ["set_crest", "set_info", "set_command", "set_top", "set_roster", "set_nemesis", "set_panel", "set_target", "set_legend", "set_chip", "set_phase", "set_card", "set_retreat"]:
 		if _last.has(key):
 			callv(key, _last[key])
-	hint.visible = keep["hint"]
 	if _last.has("show_tipcard"):
 		callv("show_tipcard", _last["show_tipcard"])
 	if _last.has("show_menu"):
@@ -357,7 +333,7 @@ func _tipbox(pad_x := 14.0, pad_y := 10.0) -> StyleBoxFlat:
 # the HUD's palette translation: the battle still writes some of its words in the previous build's colours (bbcode and
 # Color arguments). Lime and the old amber become the ember, the old shield cyan becomes Glacier (shield readouts only),
 # every other old colour one of the three text strengths. Nothing lime reaches the screen.
-const BB_MAP := {"#c8f53a": "#ff8a3a", "#ffb23e": "#ff8a3a", "#4fc4ff": "#92b8e8", "#9fe2ff": "#92b8e8",
+const BB_MAP := {"#ffb23e": "#ff8a3a", "#4fc4ff": "#92b8e8", "#9fe2ff": "#92b8e8",
 	"#a7b09d": "#c4beb0", "#7c8674": "#969084", "#e8eee0": "#f0eade", "#c4a4ff": "#f0eade", "#8d86a0": "#c4beb0",
 	"#52f0c4": "#f0eade", "#59d6a8": "#f0eade", "#ffad3b": "#f0eade", "#ff8a72": "#f0eade", "#ff8a6a": "#f0eade",
 	"#9fd4ff": "#f0eade", "#7fc4ff": "#f0eade", "#f08a4b": "#f0eade", "#f0c58b": "#c4beb0", "#d9f78a": "#f0eade"}
@@ -787,49 +763,25 @@ var info_well: PanelContainer   # the top bar's right well: the enemy's crest an
 var _grid_btn: Button
 
 
-# board look C's "Grid (Z)" toggle (board.gd makes it on its own layer at a fixed spot, where the ship panel covered it):
-# moved into the top bar before Threat, at the HUD's size. board.gd still owns its state, text and when it shows.
+# board look C's "Grid (Z)" toggle: the sheet has no top bar for it, so it is kept off the screen; the Z key and the
+# battle menu still work (the X and Z keys are unchanged in battle.gd).
 func adopt_grid(b: Button) -> void:
-	if b == null or not is_instance_valid(b) or top_row == null:
-		return
-	if _grid_btn == b and b.get_parent() == top_row:
+	if b == null or not is_instance_valid(b):
 		return
 	_grid_btn = b
-	if b.get_parent() != null:
-		b.get_parent().remove_child(b)
-	b.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	b.offset_left = 0
-	b.offset_top = 0
-	b.offset_right = 0
-	b.offset_bottom = 0
-	b.text = "Z"
-	b.tooltip_text = "Tactical grid (Z)"
-	b.custom_minimum_size = Vector2(s(32), 0)
-	b.add_theme_font_size_override("font_size", s(14))
-	top_row.add_child(b)
-	top_row.move_child(b, threat_btn.get_index())
+	b.visible = false
 
 
-# your admiral's crest (godot/portraits) at the left of the top bar
-func set_crest(tex: Texture2D, tip: String) -> void:
-	_last["set_crest"] = [tex, tip]
-	crest.texture = tex
-	crest.visible = tex != null
-	crest.tooltip_text = tip
+# the admiral's crest is not part of E1 LEDGER (the admiral's name is in the Command line); kept for the battle's call
+func set_crest(_tex: Texture2D, _tip: String) -> void:
+	_last["set_crest"] = [_tex, _tip]
 
 
-# the Admiral's Command: its button sits in the Orders block with the C key
+# the Admiral's Command: the sheet draws it in the orders line with the C key
 func set_command(label: String, ready: bool) -> void:
 	_last["set_command"] = [label, ready]
 	ledger.cmd = {"label": label, "ready": ready}
 	ledger.mark()
-	cmd_btn.visible = ready
-	var l: Label = cmd_btn.get_meta("lbl") if cmd_btn.has_meta("lbl") else null
-	if l != null:
-		l.text = "Command: " + label
-		l.add_theme_color_override("font_color", GILT)
-	cmd_btn.tooltip_text = "Your Admiral's Command (C), once per battle: " + label
-	_size_key_button(cmd_btn)
 
 
 func _size_key_button(b: Button) -> void:
@@ -842,22 +794,6 @@ func set_top(round_n: int, turn: String, objective: String, end_text: String, en
 	ledger.top = {"round": round_n, "turn": turn, "objective": objective, "end_text": end_text, "end_on": end_on}
 	ledger.mark()
 	_round = round_n
-	title_lbl.text = "ROUND %d" % round_n
-	var t := turn.to_upper()
-	if turn.begins_with("Your turn"):
-		t = "YOUR TURN"
-	turn_lbl.text = t
-	turn_lbl.add_theme_color_override("font_color", GILT if t == "YOUR TURN" else (FOE if t == "ENEMY TURN" else BONE2))
-	var o := objective.trim_prefix("Objective: ")
-	obj_lbl.text = o.substr(0, 1).to_upper() + o.substr(1)
-	obj_lbl.tooltip_text = objective
-	end_btn.text = end_text
-	end_btn.disabled = not end_on
-	# the classic turn (no activation card): End turn stays in the top bar; otherwise End ship is in the End block
-	end_btn.visible = end_on and _card_info.is_empty()
-	speed_btn.text = "2x" if speed_fast else "1x"
-	threat_btn.add_theme_color_override("font_color", GILT if threat_on else BONE)
-	_refresh_acted()
 
 
 # what the battle knows beyond the rows: the enemy's faction, its ship count, the run's Heat level
@@ -867,20 +803,13 @@ func set_info(info: Dictionary) -> void:
 	_info = info
 	ledger.info = info
 	ledger.mark()
-	foe_lbl.text = str(info.get("foe_name", ""))
-	foe_lbl.visible = foe_lbl.text != ""
-	var ct = info.get("foe_crest")
-	foe_crest.texture = ct if ct is Texture2D else null
-	foe_crest.visible = foe_crest.texture != null
-	var h := int(info.get("heat", -1))
-	heat_box.visible = h >= 0
-	# the label shows what the gauge shows: nine segments, so at most 9 (the HEAT weights sum to exactly 9 today; the
-	# clamp keeps the two in step if a rule is ever added)
-	heat_lbl.text = str(clampi(h, 0, 9))
-	info_well.visible = foe_lbl.visible or foe_crest.visible or heat_box.visible
-	heat_box.tooltip_text = str(info.get("heat_tip", "Heat: the run's difficulty level, up to 9."))
-	heat_bar.queue_redraw()
-	_refresh_acted()
+
+
+# Retreat on the sheet: on when it can be used, off (dimmed) while it cannot
+func set_retreat(on: bool, off: bool) -> void:
+	_last["set_retreat"] = [on, off]
+	ledger.retreat = {"on": on, "off": off}
+	ledger.mark()
 
 
 func _draw_heat() -> void:
@@ -1086,20 +1015,6 @@ func set_roster(rows: Array) -> void:
 	ledger.rows = rows
 	ledger.mark()
 	# rows: [{id, name, cls, hp, maxHp, sh: [4], shMax, status, sel, done, flag, new, danger}]
-	for c in roster_box.get_children():
-		roster_box.remove_child(c)
-		c.queue_free()
-	_fit(roster_sc, roster_box, roster, 0.0)
-	var alive := 0
-	for r in rows:
-		if str(r.get("status", "")) != "Lost":
-			alive += 1
-	roster_head.text = str(alive)
-	for r in rows:
-		roster_box.add_child(_roster_row(r))
-	_refresh_acted()
-	_refresh_unacted()
-	_refresh_end()
 
 
 func _roster_row(r: Dictionary) -> Control:
@@ -1258,54 +1173,6 @@ func set_nemesis(info: Dictionary) -> void:
 	_last["set_nemesis"] = [info]
 	ledger.nem = info
 	ledger.mark()
-	_clear(nem_well)
-	nem_well.visible = not info.is_empty()
-	if info.is_empty():
-		return
-	var h := HBoxContainer.new()
-	h.add_theme_constant_override("separation", s(10))
-	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var tex = info.get("tex")
-	if tex is Texture2D:
-		var tr := TextureRect.new()
-		tr.texture = tex
-		tr.custom_minimum_size = Vector2(s(50), s(50))
-		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		tr.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-		tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		h.add_child(tr)
-	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", s(1))
-	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var top_r := HBoxContainer.new()
-	top_r.add_theme_constant_override("separation", s(7))
-	top_r.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	top_r.add_child(_tag("NEMESIS", ALERT))
-	var nm := _label(str(info.get("name", "")), 16, BONE, font_semi)
-	nm.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	top_r.add_child(nm)
-	var stt := str(info.get("state", ""))
-	if stt != "":
-		top_r.add_child(_label(stt, 13, BONE3))
-	v.add_child(top_r)
-	var bb := "[color=#a7b09d]Aboard[/color] %s" % str(info.get("ship", ""))
-	if str(info.get("flee", "")) != "":
-		bb += " [color=#7c8674]·[/color] [color=#a7b09d]%s[/color]" % str(info["flee"])
-	for a in info.get("adapted", []):
-		bb += "\n[color=#ff8a72]Adapted:[/color] %s%s" % [str(a[1]).trim_suffix("."), (" [color=#7c8674](%s)[/color]" % str(a[2])) if str(a[2]) != "" else ""]
-	var weak: Array = info.get("weak", [])
-	if weak.is_empty():
-		bb += "\n[color=#59d6a8]Weakness:[/color] [color=#7c8674]not found yet[/color]"
-	for w in weak:
-		bb += "\n[color=#59d6a8]Weakness:[/color] %s [color=#7c8674](%s)[/color]" % [str(w[1]).trim_suffix("."), str(w[0]).to_lower()]
-	var r := _rich(bb, 13)
-	r.custom_minimum_size.x = s(COL_W - 110)
-	v.add_child(r)
-	h.add_child(v)
-	nem_well.add_child(h)
 
 
 # --- the ship that is up (or the one you inspect): name, class and captain, hull, shields, armour, move, turns
@@ -1315,124 +1182,6 @@ func set_panel(info: Dictionary) -> void:
 	ledger.ship = info
 	ledger.detail_bb = recol(_detail_bb(info)) if not info.is_empty() else ""
 	ledger.mark()
-	_clear(up_well)
-	_clear(fire_well)
-	_clear(orders_well)
-	if cmd_btn.get_parent() != null:
-		cmd_btn.get_parent().remove_child(cmd_btn)   # it lives in the Orders head; keep it across the rebuild
-	fire_well.modulate.a = 1.0
-	move_well.modulate.a = 1.0
-	up_well.visible = true
-	dtip.visible = false
-	if info.is_empty():
-		up_well.add_theme_stylebox_override("panel", GS.well(k))
-		var v0 := VBoxContainer.new()
-		v0.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		v0.add_child(_rich("[color=#a7b09d]Select one of your ships, or hover an enemy to see it.[/color]"))
-		var kt := _rich(keys_text())
-		kt.custom_minimum_size.x = s(COL_W - 44)
-		v0.add_child(kt)
-		up_well.add_child(v0)
-		fire_well.visible = false
-		orders_well.visible = false
-		_route_card()
-		return
-	var mine: bool = info.get("side", "") == "player"
-	var is_up: bool = mine and str(info.get("tag", "")) in ["UP", "ACTING"]
-	up_well.add_theme_stylebox_override("panel", GS.well(k, GILT if is_up else Color(0, 0, 0, 0)))
-	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", s(4))
-	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	up_well.add_child(v)
-	var h := HBoxContainer.new()
-	h.add_theme_constant_override("separation", s(8))
-	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var tg := str(info.get("tag", "UP" if mine else "ENEMY"))
-	# filled lime only for the ship that is up (the next action); your other ships get a mint outline, the enemy lavender
-	h.add_child(_tag(tg, GILT if is_up else (FRIEND if mine else FOE_RING), is_up))
-	# Lime Tactical: the ship's name in bold tracked caps (the mockup's "LONG WATCH"), lime while it is up
-	var nm := _label(("★ " if info.get("flag", false) else "") + str(info["name"]).to_upper(), 20, GILT if is_up else (FRIEND if mine else FOE), GS.ship_name(k))
-	nm.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	h.add_child(nm)
-	if int(info.get("danger", 0)) > 0:
-		h.add_child(_badge(int(info["danger"])))
-	v.add_child(h)
-	var cl := str(info["cls"])
-	if str(info.get("cap_name", "")) != "":
-		cl += " · " + str(info["cap_name"])
-	var cll := _label(cl, 14, BONE2)
-	cll.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	v.add_child(cll)
-	# HULL: label, bar, number
-	var hr := HBoxContainer.new()
-	hr.add_theme_constant_override("separation", s(8))
-	hr.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var hl := _label("HULL", 13, BONE2, font_caps)
-	hl.custom_minimum_size.x = s(40)
-	hl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	hr.add_child(hl)
-	var hb := _hull_bar(float(info["hp"]), float(info["maxHp"]), 7)
-	hb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hb.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	hr.add_child(hb)
-	var hn := _num_rich("[b]%d[/b][color=#7c8674]/%d[/color]" % [int(info["hp"]), int(info["maxHp"])], 15)
-	hn.autowrap_mode = TextServer.AUTOWRAP_OFF
-	hn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	hr.add_child(hn)
-	v.add_child(hr)
-	# SHLD: four facings, each with its own label and number (prow, starboard, rear, port)
-	if float(info["shMax"]) > 0.0:
-		var sr := HBoxContainer.new()
-		sr.add_theme_constant_override("separation", s(8))
-		sr.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		var sl := _label("SHLD", 13, BONE2, font_caps)
-		sl.custom_minimum_size.x = s(40)
-		sl.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-		sr.add_child(sl)
-		sr.add_child(_facings(info["sh"], float(info["shMax"])))
-		v.add_child(sr)
-	# the line of numbers that drive the next decision; EVA, CREW and the rest are on hover
-	var mv: Array = info.get("move", [])
-	var bits := PackedStringArray()
-	if info.has("arm"):
-		bits.append("[color=#a7b09d]ARM[/color] [b]%d%%[/b]" % int(info["arm"]))
-	if mv.size() == 2:
-		bits.append("[color=#a7b09d]MOVE[/color] [b]%d/%d[/b]" % [int(mv[0]), int(mv[1])])
-	if info.has("turns"):
-		bits.append("[color=#a7b09d]TURNS[/color] [b]%d[/b]" % int(info["turns"]))
-	var nr := HBoxContainer.new()
-	nr.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var nl := _rich("   ".join(bits), 14)
-	nl.autowrap_mode = TextServer.AUTOWRAP_OFF
-	nl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	nr.add_child(nl)
-	nr.add_child(_label("more on hover", 12, BONE3))
-	v.add_child(nr)
-	# status that changes what you can do (braced, on fire, story modifiers, inbound torpedoes): one line, short
-	var flags := str(info.get("flags", ""))
-	if flags != "":
-		var fl := _rich(flags, 13)
-		fl.custom_minimum_size.x = s(COL_W - 44)
-		v.add_child(fl)
-	# the "more on hover" layer: everything else the old ship panel showed (sections, shields in words, captain perks,
-	# faction lines, protocols); kept here hidden so it is part of the panel, shown beside the shell on hover
-	var more := _rich(_detail_bb(info), 13)
-	more.visible = false
-	more.name = "detail"
-	v.add_child(more)
-	# 2 Fire: the weapons table
-	if info.has("weapons"):
-		_build_fire(info)
-	else:
-		fire_well.visible = false
-	# Orders
-	if info.has("orders"):
-		_build_orders(info["orders"])
-		orders_well.visible = true
-	else:
-		orders_well.visible = false
-	_route_card()
 
 
 # four shield facings: a bar each with its name and number under it
@@ -1651,48 +1400,6 @@ func set_target(info: Dictionary) -> void:
 	_last["set_target"] = [info]
 	ledger.target = info
 	ledger.mark()
-	_clear(target_well)
-	target_well.visible = not info.is_empty()
-	if info.is_empty():
-		return
-	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", s(4))
-	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	target_well.add_child(v)
-	var hh := _head("", "Target")
-	var eh := float(info.get("exp_hull", 0.0))
-	var es: Array = info.get("exp_sh", [])
-	var any_exp := eh > 0.5
-	for x in es:
-		if float(x) > 0.5:
-			any_exp = true
-	if any_exp:
-		hh.add_child(_hatch_key())
-		hh.add_child(_label("expected", 12, BONE2))
-	hh.add_child(_tag("ENEMY", FOE_RING, false))
-	v.add_child(hh)
-	var nr := HBoxContainer.new()
-	nr.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var nm := _label(("★ " if info.get("flag", false) else "") + str(info.get("name", "")), 17, FOE, font_semi)
-	nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	nm.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	nr.add_child(nm)
-	var hp := float(info.get("hp", 0))
-	var after := maxf(0.0, hp - eh)
-	var t := "[b]%d[/b][color=#7c8674]/%d[/color]" % [int(hp), int(info.get("maxHp", 0))]
-	if eh > 0.5:
-		t += " [color=#a7b09d]to about[/color] [b]%d[/b]" % int(round(after))
-	var hn := _num_rich(t, 15)
-	hn.autowrap_mode = TextServer.AUTOWRAP_OFF
-	nr.add_child(hn)
-	v.add_child(nr)
-	v.add_child(_hull_bar(hp, float(info.get("maxHp", 1)), 7, after if eh > 0.5 else -1.0))
-	if float(info.get("shMax", 0)) > 0.0:
-		v.add_child(_facings(info.get("sh", [0, 0, 0, 0]), float(info["shMax"]), es))
-	if str(info.get("line", "")) != "":
-		var l := _rich(str(info["line"]), 14)
-		l.custom_minimum_size.x = s(COL_W - 44)
-		v.add_child(l)
 
 
 # ---------------------------------------------------------------- 1 Move and 3 End (from the activation card)
@@ -1704,18 +1411,6 @@ func set_card(info: Dictionary) -> void:
 	_last["set_card"] = [info]
 	ledger.card = info
 	ledger.mark()
-	var sig := JSON.stringify(info)
-	if sig == _card_sig:
-		return
-	_card_sig = sig
-	_card_info = info
-	card.visible = not info.is_empty()
-	hint.visible = info.is_empty()   # the End block carries the keys while it shows
-	if _last.has("set_top"):
-		var st: Array = _last["set_top"]
-		end_btn.visible = bool(st[4]) and info.is_empty()
-	_route_card()
-	_refresh_unacted()
 
 
 func _route_card() -> void:
@@ -2732,11 +2427,6 @@ var _phase_fs := -1
 func _layout() -> void:
 	var vs := root.get_viewport_rect().size
 	var col := _column()
-	# Retreat lives on the sheet (battle.gd sets the old button's state)
-	var rt := {"on": retreat_btn.visible, "off": retreat_btn.disabled}
-	if ledger.retreat != rt:
-		ledger.retreat = rt
-		ledger.mark()
 	# top right, under the Nemesis line: the terrain key, right aligned at the sheet's right margin
 	var right := vs.x - s(52)
 	var below := float(s(150))
@@ -2838,12 +2528,3 @@ func set_phase(kind: String, bb: String, progress := -1.0) -> void:
 	_phase_kind = kind
 	ledger.phase = {"kind": kind, "text": bb, "p": progress}
 	ledger.mark()
-	if phase_lbl.text != bb:
-		phase_lbl.text = bb
-	phase.visible = kind == "enemy"
-	phase_bar.visible = progress >= 0.0
-	phase_fill.anchor_right = clampf(progress, 0.0, 1.0)
-	if phase.visible:
-		phase.reset_size()
-	_refresh_acted()
-	_refresh_unacted()

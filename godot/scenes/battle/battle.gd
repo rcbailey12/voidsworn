@@ -4093,8 +4093,7 @@ func _refresh_ui() -> void:
 	hud.set_info(_battle_info())
 	hud.set_top(int(V["round"]), turn, _objective(), end_text, mine and not busy, user_speed < 1.0, threat_on)
 	hud.set_nemesis(_nem_info())
-	hud.retreat_btn.visible = can_retreat and not ended
-	hud.retreat_btn.disabled = not (mine and not busy)
+	hud.set_retreat(can_retreat and not ended, not (mine and not busy))
 	var rows: Array = []
 	for u in V["units"]:
 		if u["side"] != "player" or u["squadron"] or (u["dead"] and not views.has(u["id"])):

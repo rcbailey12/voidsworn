@@ -32,13 +32,14 @@ func _note(ok: bool, what: String) -> void:
 	print("[ui-check] ", "PASS " if ok else "FAIL ", what)
 
 
-# every HUD part that is showing, with its screen rect
+# every HUD part that is showing, with its screen rect (the orders sheet, ledger.gd, is the whole battle screen)
 func _parts() -> Array:
 	var h = b.hud
 	var out: Array = []
-	# #271: the activation card is the End block inside the shell (the ship panel), checked by _check_shell
-	var named := [["top bar", h.top], ["fleet list", h.roster], ["ship panel", h.panel], ["battle log", h.log_panel],
-		["unacted set", h.unacted], ["turn strip", h.phase], ["legend", h.legend], ["hover tip", h.tip], ["tip card", h.tipcard],
+	var lg = h.ledger
+	if lg != null and lg.is_visible_in_tree() and lg.modulate.a > 0.05:
+		out.append(["orders sheet", Rect2(lg.get_global_position() + lg.sheet_r.position, lg.sheet_r.size)])
+	var named := [["battle log", h.log_panel], ["legend", h.legend], ["hover tip", h.tip], ["tip card", h.tipcard],
 		["enemy chip", h.aichip]]
 	for n in named:
 		var c = n[1]
@@ -48,8 +49,6 @@ func _parts() -> Array:
 		out.append(["toast", h.toast_lbl.get_global_rect()])
 	if h.banner_lbl.modulate.a > 0.05 and h.banner_lbl.text != "":
 		out.append(["banner", _text_rect(h.banner_lbl)])
-	if h.hint.is_visible_in_tree():
-		out.append(["key hint", _text_rect(h.hint)])
 	return out
 
 
@@ -63,6 +62,8 @@ func _text_rect(l: Label) -> Rect2:
 func _check(name: String) -> void:
 	var vs: Vector2 = b.get_viewport().get_visible_rect().size
 	var scr := Rect2(Vector2.ZERO, vs).grow(1.0)
+	if b.hud.ledger != null:
+		b.hud.ledger.layout()
 	var parts := _parts()
 	var bad: Array = []
 	for p in parts:
@@ -74,28 +75,16 @@ func _check(name: String) -> void:
 			var c: Rect2 = parts[j][1]
 			if a.grow(-1.0).intersects(c.grow(-1.0)):
 				bad.append("%s %s overlaps %s %s" % [parts[i][0], _r(a), parts[j][0], _r(c)])
-	# every top bar button inside the top bar
-	var tr: Rect2 = b.hud.top.get_global_rect().grow(1.0)
-	var nb := 0
-	for c in b.hud.top_row.get_children():
-		if c is Button and (c as Button).visible:
-			nb += 1
-			if not tr.encloses((c as Button).get_global_rect()):
-				bad.append("top bar button \"%s\" is cut off %s" % [(c as Button).text, _r((c as Button).get_global_rect())])
-	# #271: the End block sits inside the shell at its bottom (End ship fixed in the bottom right corner), and the fleet
-	# list shows every ship with no scroll at 1080 lines or more
 	var h = b.hud
-	if h.card.visible:
-		var pr: Rect2 = h.panel.get_global_rect().grow(1.0)
-		var cr: Rect2 = h.card.get_global_rect()
-		if not pr.encloses(cr) or absf(cr.end.y - (vs.y - h.s(16))) > 2.0:
-			bad.append("the End block is not at the bottom of the shell %s in %s" % [_r(cr), _r(pr)])
-	if vs.y >= 1079.0 and h.roster_sc.get_v_scroll_bar().visible:
-		bad.append("the fleet list scrolls (%d rows)" % h.roster_box.get_child_count())
+	# the fleet at the foot of the sheet shows at least two lines at 1080 (more fold into "and N more")
+	var fit: Dictionary = h.ledger.fleet_fit
+	if vs.y >= 1079.0 and int(fit.get("total", 0)) > 1 and int(fit.get("shown", 0)) < 2 and not bool(fit.get("summary", false)):
+		bad.append("the fleet shows fewer than two lines (%s)" % str(fit))
+	# the Grid (Z) button is not on the screen: the sheet has no top bar, so board look C's button stays hidden
 	var gb = b.board.get("_look_btn") if b.board != null else null
-	if gb != null and is_instance_valid(gb) and (gb as Button).visible and (gb as Button).get_parent() != b.hud.top_row:
-		bad.append("the Grid (Z) button is not in the top bar")
-	_note(bad.is_empty(), "%s at %dx%d (UI scale %.2f): %d parts, %d top bar buttons%s" % [name, int(vs.x), int(vs.y), b.hud.k, parts.size(), nb,
+	if gb != null and is_instance_valid(gb) and (gb as Button).is_visible_in_tree():
+		bad.append("the Grid (Z) button shows beside the sheet")
+	_note(bad.is_empty(), "%s at %dx%d (UI scale %.2f): %d parts%s" % [name, int(vs.x), int(vs.y), b.hud.k, parts.size(),
 		"" if bad.is_empty() else ": " + "; ".join(PackedStringArray(bad))])
 
 
@@ -164,8 +153,8 @@ func run(battle) -> void:
 		b.hud.k = 1.9
 		b.hud._rebuild()
 		await get_tree().create_timer(0.8).timeout
-		_note(absf(b.hud.k - b.hud.scale_for(b.get_viewport().get_visible_rect().size)) < 0.01 and b.hud.log_text.get_line_count() == nlog and b.hud.card.visible and b.hud.plates.size() > 0,
-			"rebuild: scale %.2f, log lines %d (were %d), card shown %s, %d nameplates" % [b.hud.k, b.hud.log_text.get_line_count(), nlog, str(b.hud.card.visible), b.hud.plates.size()])
+		_note(absf(b.hud.k - b.hud.scale_for(b.get_viewport().get_visible_rect().size)) < 0.01 and b.hud.log_text.get_line_count() == nlog and not b.hud.ledger.card.is_empty() and b.hud.plates.size() > 0,
+			"rebuild: scale %.2f, log lines %d (were %d), activation shown %s, %d nameplates" % [b.hud.k, b.hud.log_text.get_line_count(), nlog, str(not b.hud.ledger.card.is_empty()), b.hud.plates.size()])
 	_check_fire_tips("opening")
 	# 1. the opening hand-over
 	await _shot("1_battle_start")
@@ -279,13 +268,13 @@ func run(battle) -> void:
 	var t0 := Time.get_ticks_msec()
 	while Time.get_ticks_msec() - t0 < 20000:
 		await get_tree().process_frame
-		if b.hud.phase.visible and b.hud.phase_lbl.text.contains("ENEMY TURN"):
+		if b.hud.ledger.enemy_turn():
 			break
 		if b.api.phase == "player" and not b.busy and not b.ending:
 			b.handed_t = -9.0
 			b._on_key(KEY_SPACE)
 	await get_tree().create_timer(0.3).timeout
-	_note(b.hud.phase_lbl.text.contains("ENEMY TURN") and b.hud.toast_lbl.text != "Out of range." and not b.hud.tip.visible, "enemy turn clears firing warning and hover tip")
+	_note(b.hud.ledger.enemy_turn() and b.hud.toast_lbl.text != "Out of range." and not b.hud.tip.visible, "enemy turn clears firing warning and hover tip")
 	_check("6_enemy_turn")
 	await b._snap("6_enemy_turn")
 	# let the enemy's turn finish (hurried) before quitting, so nothing is torn down mid-move
