@@ -141,14 +141,13 @@ we don't run into the issues of before with just empty looking husks". What he w
 
 The seven recipe stages, each a double-click file that stops with FAILED and a non-zero exit when it should:
 1 concept in, 2 the AI shape reference (TRELLIS.2, a shape and grime source only, never shipped), 3 the traced hull and the
-outline gate, 4 the faction parts kit and its audit, 5 the paint bake, 6 the LOD chain and its cost, 7 the game export with
+outline overlap, 4 the faction parts kit and its audit, 5 the paint bake, 6 the LOD chain and its cost, 7 the game export with
 hard points.
 
 ## 4. The checks that prove it
 
 - Stage 3: the outline overlap with the concept at the concept's own camera is reported, not a pass bar (RULEBOOK 5.8; was
-  90 percent, R147). Until the workhorse fix in contrib/opus/reviews/rulebook_board_notes.md lands, the stage still exits
-  non-zero below 0.90: read the number and the picture, and say so in the report.
+  90 percent, R147). The stage prints the number and its picture; read them and say so in the report.
 - Stage 4: the audit lists nothing: no part floats or is sunk, nothing crosses a break line, no gun aims backward or into
   the ship. audit_selftest.py proves the audit can fail.
 - Stage 7: check_export.py passes: every weapon slot in the ship's data.js list has a hard point, every hard point is on the
@@ -187,7 +186,7 @@ Brief: docs/playbooks/ships.md (section 0 binds); docs/ship_pipeline/RECIPE.md; 
 Deliver to: tools/recipe/ships/SHIP.json, tools/blender/kits/FACTION/ (only what this hull adds), docs/shots/ships/SHIP/ (blob sweep, bench sheet), docs/ship_pipeline/build_sheets/SHIP/manifest.json
 Branch: opus/issue-<number>
 Effort: one Opus worker; GPU jobs through the PC queue
-Done when: stages 1 to 7 end without FAILED; the outline gate, the audit and check_export.py pass and their output is pasted in the report; the manifest matches the build sheet (run_all_checks); a break render of every break line shows decks and frames, never a hollow; the nine-cell blob sweep and one battle camera bench image are committed. What Ryan will see: the ship at the battle camera beside its concept.
+Done when: stages 1 to 7 end without FAILED; the outline overlap is reported, the audit and check_export.py pass and their output is pasted in the report; the manifest matches the build sheet (run_all_checks); a break render of every break line shows decks and frames, never a hollow; the nine-cell blob sweep and one battle camera bench image are committed. What Ryan will see: the ship at the battle camera beside its concept.
 Build sheet: docs/ship_pipeline/build_sheets/SHIP/ (passed standard.md on <date>; Ryan's look on <date>)
 Route per part: kit, hand-built, or generated (generated names its reviewed part-library entry, R96 Q5)
 Inside: the sheet's INSIDE section (decks, frames, spaces and machinery through the whole hull, armour, break lines by the faction's rule, breach anchors)
