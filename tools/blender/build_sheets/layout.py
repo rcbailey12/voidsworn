@@ -289,15 +289,18 @@ json.dump(checks, open(os.path.join(OUT, 'checks.json'), 'w'), indent=1)
 print(json.dumps(checks))
 # ---------------- manifest (R214): every part, its route, and the break pieces ----------------
 ARCS_ = {'F': (-60.0, 60.0), 'P': (30.0, 150.0), 'S': (-150.0, -30.0), 'T': (-180.0, 180.0)}
-man = dict(code=CODE, sheet_version=3, routes_note='kit = the Hullbreakers parts kit (tools/blender/kits/hullbreakers/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry',
+SHT = M.get('sheet') or dict(version=3, round='round 3', date='2026-11-11', blend='opus532\\r3b')
+KITN = M.get('kit', 'hullbreakers')
+man = dict(code=CODE, sheet_version=SHT.get('version', 3), routes_note='kit = the %s parts kit (tools/blender/kits/%s/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry' % (KITN.capitalize(), KITN),
            turret_marking='R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).',
            parts=[], masses=[], break_pieces=[])
-KITK = ('gun', 'launcher', 'engine', 'dish', 'intake', 'claw', 'chain', 'thruster', 'hatch', 'hatchbox', 'vent', 'lamp', 'antenna', 'pipe', 'bay', 'slit')
+KITK = ('gun', 'launcher', 'engine', 'dish', 'intake', 'claw', 'chain', 'thruster', 'hatch', 'hatchbox', 'vent', 'lamp', 'antenna', 'pipe', 'bay', 'slit',
+        'core', 'strut', 'corewin')
 for f in F:
     row = dict(id=f['id'], kind=f['kind'], what=f['what'], count=f['count'], route='kit' if f['kind'] in KITK else 'hand-built',
                source=f['src'], inventory=f.get('inv', []))
     if f['kind'] == 'gun':
-        tur = 'casemate' not in f['what']
+        tur = 'casemate' not in f['what'] and not f.get('fixed')
         row['turret'] = tur
         if tur:
             lo_, hi_ = ARCS_.get(f.get('slot') or 'T', (-180.0, 180.0))
@@ -331,7 +334,8 @@ def r2(v):
 
 lines = []
 lines.append('# %s: %s, build sheet\n' % (CODE, M['name']))
-lines.append('%s | class %s | version 3 (round 3), 2026-11-11 | blockout: `C:\\Users\\rcbai\\Downloads\\voidsworn_test\\opus532\\r3b\\%s\\%s_blockout.blend`\n' % (M['faction'], M['cls'], CODE, CODE))
+lines.append('%s | class %s | version %s (%s), %s | blockout: `C:\\Users\\rcbai\\Downloads\\voidsworn_test\\%s\\%s\\%s_blockout.blend`\n' % (
+    M['faction'], M['cls'], SHT.get('version', 3), SHT.get('round', 'round 3'), SHT.get('date', '2026-11-11'), SHT.get('blend', 'opus532\\r3b'), CODE, CODE))
 lines.append('**Length %.1f world units** (%s). Frame: +X bow, +Y port, +Z up; station %% from the prow tip; offset + port / - starboard; '
              'height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.\n' % (L, M['game']))
 lines.append('## Measured off the views\n')
@@ -429,11 +433,31 @@ tab_rows = [f for f in F]
 tab_h = 60 + LH * (len(tab_rows) + 3)
 ch_h = 50 + LH * (len(M['changes']) + 2)
 SH = head + body_h + PAD + max(tab_h, ch_h) + int(2400 * SC) + int(SW * 0.4)
+# R221 (ships.md 2c): the weapon row, each weapon type the ship carries beside its rules, its lore line and its design line,
+# from the close-ups build.py renders (weapon_<id>.png) and the kit's WEAPONS table (in the model json)
+import textwrap
+WORDER = ['gauss', 'flak', 'gsentry', 'doom']   # main guns first, the fixed weapon last
+WEAP = sorted([w for w in M.get('weapons', []) if os.path.exists(os.path.join(RD, w['image']))], key=lambda w: (WORDER.index(w['id']) if w['id'] in WORDER else 9, w['id']))
+WR_W = (SW - PAD * (len(WEAP) + 1)) // max(1, len(WEAP)) if WEAP else 0
+WR_IH = int(WR_W * 0.7)
+WR_WRAP = max(40, int(WR_W / (11.5 * SC)))
+
+
+def weapon_text(w):
+    out = [('%s  (data.js %s; %s)' % (w.get('name', w['id']), w['id'], ', '.join(w.get('mounts', []))), f_m, INK)]
+    for lab, key, col in (('Rules', 'rules', DIM), ('Lore', 'lore', ACC), ('Built as', 'design', INK)):
+        for i, ln in enumerate(textwrap.wrap('%s: %s' % (lab, w.get(key, '')), WR_WRAP)):
+            out.append((ln, f_s, col))
+    return out
+
+
+WR_H = (int(60 * SC) + WR_IH + int(20 * SC) + max(len(weapon_text(w)) for w in WEAP) * int(28 * SC) + int(40 * SC) + PAD) if WEAP else 0
+SH += WR_H
 sheet = Image.new('RGB', (SW, SH), (44, 44, 46))
 dr = ImageDraw.Draw(sheet)
 dr.text((PAD, 30), '%s  |  %s' % (CODE, M['name']), font=f_xl, fill=INK)
 dr.text((PAD, int(110 * SC)), '%s  |  class %s  |  length %.1f world units (%s)' % (M['faction'], M['cls'], L, 'hull_table.gd CLS_LEN'), font=f_m, fill=INK)
-dr.text((PAD, int(150 * SC)), 'Build sheet v3 (round 3, R217 to R219), 2026-11-11. Every view: an orthographic render of ONE Blender blockout, one scale (%d px per unit). Side %.2f / top %.2f long (%.2f%% apart).' % (k, len_side, len_top, checks['length_disagreement_percent']), font=f_m, fill=DIM)
+dr.text((PAD, int(150 * SC)), ('Build sheet v%s (%s, R217 to R219), %s. Every view' % (SHT.get('version', 3), SHT.get('round', 'round 3'), SHT.get('date', '2026-11-11'))) + ': an orthographic render of ONE Blender blockout, one scale (%d px per unit). Side %.2f / top %.2f long (%.2f%% apart).' % (k, len_side, len_top, checks['length_disagreement_percent']), font=f_m, fill=DIM)
 dr.text((PAD, int(190 * SC)), 'Orange rings: feature-table IDs. Grey rings, dashed: far side. Station % from the prow tip. Counts in the table outrank the pictures.', font=f_m, fill=DIM)
 # FIRST: the accepted beauty beside the blockout at the camera fitted to it (R213)
 bcam = Image.open(os.path.join(RD, 'beauty_cam.png')).convert('RGBA'); bgc = Image.new('RGBA', bcam.size, GREY + (255,)); bgc.alpha_composite(bcam)
@@ -444,6 +468,18 @@ dr.text((2 * PAD + BW, head - int(10 * SC)), 'THE BLOCKOUT at the camera fitted 
 sheet.paste(beauty.resize((BW, BH)), (PAD, head + int(30 * SC)))
 sheet.paste(bcam.resize((BW, BH)), (2 * PAD + BW, head + int(30 * SC)))
 head = head + int(30 * SC) + BH + PAD
+if WEAP:
+    dr.text((PAD, head), 'WEAPONS: each weapon built from what it is (R221; lore bible 7, factions.md, data.js), shown alone at the same angle',
+            font=f_l, fill=INK)
+    for i, w in enumerate(WEAP):
+        x0 = PAD + i * (WR_W + PAD)
+        im = Image.open(os.path.join(RD, w['image'])).convert('RGBA')
+        bg_ = Image.new('RGBA', im.size, GREY + (255,)); bg_.alpha_composite(im)
+        sheet.paste(bg_.convert('RGB').resize((WR_W, WR_IH)), (x0, head + int(60 * SC)))
+        ty = head + int(60 * SC) + WR_IH + int(20 * SC)
+        for ln, fn_, col in weapon_text(w):
+            dr.text((x0, ty), ln, font=fn_, fill=col); ty += int(28 * SC) if fn_ is f_s else int(34 * SC)
+    head += WR_H
 y = head
 sheet.paste(top, (PAD, y)); sheet.paste(und, (PAD + W_T + PAD // 2, y))
 xr = col_l + PAD

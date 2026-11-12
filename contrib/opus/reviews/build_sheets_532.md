@@ -192,3 +192,174 @@ There's no purpose. 2. There's a gun directly behind the rocket pods on a16 whic
   (0 toward the bow: they rest at 25 degrees with barrels just clear of the P2 and S2 barbettes; 140 the other way, so their
   whole 30 to 150 arc is clear); P2 and S2 turn 70 inboard before the rack stops them. A fix for the build: rest P3 and S3
   at 35 degrees, inside their arc.
+
+# Eclipse E11 and E12, first sheets (Opus worker, Nov 12 2026)
+
+Branch opus/issue-532-eclipse, from main with PR 547's tools brought in (`git checkout origin/opus/issue-532 --
+tools/blender/build_sheets tools/blender/kits/hullbreakers`). Deliveries: docs/ship_pipeline/build_sheets/deathless_E11/ and
+deathless_E12/ (the corsair_A16 file set). Hull ids: E11 = data.js `d_boss` (The Unsetting, Tomb-ark, 28.0; gauss T, gauss T,
+doom F, flak T), E12 = `d_harvester` (Eclipse zenith, Cruiser, 14.5; gauss T, gauss T, doom F, gsentry T); lengths from
+godot/render/hull_table.gd CLS_LEN, slots also in godot/rules/data/tables.json HULLS.
+
+## Method, in the order the playbook asks
+
+1. **Inventories before modelling** (R218): `ships/deathless_E11_inv.py` (21 lines) and `deathless_E12_inv.py` (16), read
+   region by region from the 8c beauty and sheet (both sheets draw the bow on the right, with the escort in every view);
+   pushed first (commit 884ae8b8).
+2. **The Eclipse kit** (RULEBOOK 4.5, every faction its own kit): `tools/blender/kits/eclipse/parts.py`, no Hullbreaker
+   shapes: eclipse engines (faceted ribbed drums, vanes, a short bell, a pale corona ring round a black shade disc, no flame),
+   null cannon turrets (two-step hex plinth, faceted housing under two stacked shade plates, slotted mantlet, coiled barrels,
+   ringed muzzles; four or more barrels make a clustered shredder), the corona arc projector, the caged core, truss struts, a
+   hex core port, octagonal hatches, shade-generator housings, heat slot panels, corona strip lights, slot thrusters,
+   machine-cut plates with flush fasteners. Geometry primitives moved to `tools/blender/kits/shared/geom.py` (plumbing only;
+   the Hullbreaker kit keeps its own copy, unchanged).
+3. **Tools made faction-aware, Hullbreaker behaviour unchanged**: the ship file names its KIT; kit.py loads it; new
+   placements (spinal, core, strut, corewin, ring lofts, rim strips); clash.py treats a fixed spinal weapon like a casemate
+   (arc tested, not swept); inventory, extras and layout read each ship's concept sheet, view boxes (bow-right, escort left
+   out), crops and version label; two opt-in plate settings (`stride`, `keep3d`) so closely spaced lofts and narrow rounded
+   faces get plates. A16 and A17 still check at zero with these tools.
+4. **Massing first, measured** (ships.md 2c): both concepts measured on their true views, the builds iterated against them
+   (E11 four massing passes: taller body, the crescent raised over the nose and made a flatter brim, bigger engines, the stern
+   feathers laid closer; E12: the stern block made shorter and rounder).
+
+| Ship | Hull L:B concept / build | Hull L:H concept / build | Envelope L:B concept / build | Envelope L:H concept / build | Outline at the beauty camera |
+|---|---|---|---|---|---:|
+| E11 | 5.72 / 5.59 | 7.00 / 6.47 | 2.49 / 2.59 | 4.49 / 4.32 | 82.9 percent |
+| E12 | 1.94 / 1.89 | 15.57 / 11.21 | 1.77 / 1.72 | 5.94 / 5.98 | 53.9 percent |
+
+Structure counts: every cell at or above the concept's (E11 bow 6/7 and 5/7, mid 8/9 and 8/9, stern 8/17 and 8/12; E12 bow
+5/9 and 4/7, mid 5/8 and 4/6, stern 6/7 and 5/5).
+
+5. **The fit check**: first full layouts E11 3 findings, E12 15 (each with its fix in the ship's fit_report.md), then zero on
+   both, in the sandbox and on the PC (Blender 4.5). Turrets marked as pivots with arcs (R219).
+6. **Renders** on Ryan's PC through the queue (opus532e\e1 to e6; GPU read twice under 15 percent before each; nothing
+   deleted). The first PC render showed what the workbench preview hid: colours washed to lilac, corona lines blown to white,
+   no plates on the crescent's upper layers. All three fixed before delivery.
+
+## Would Ryan say it looks like the concept?
+
+Judged beside each concept at the same size and camera (side_by_side.jpg):
+- **E11: yes.** The crescent brim with green rims round the projector, the long plated body with two big twins and the small
+  aft twin, the band collar, the stern cluster all sit where the picture puts them, at the picture's proportions. Still
+  different: surface (the concept's plate courses and weathering are the paint stage), the crescent a little narrower and less
+  domed, the projector a little lighter, the engines a little smaller.
+- **E12: yes on identity, weaker on the picture match.** The broken oval ring of open box arcs with green rims, the caged
+  core, the spine with its two twins and the bow emitter, the three-engine block, all at the plan's numbers. The camera fit is
+  only 53.9 percent because the beauty draws the ring larger and nearer the block than its own plan and sees the block from
+  aft; the plan wins for placement (standard.md). Still different: the block reads plainer from above, the struts run straight
+  where the concept's lean, surface and colour depth.
+
+## Notes for the Board
+
+- The branch carries copies of PR 547's tools with my changes; merging 547 first gives add/add conflicts in those files and in
+  this review file: take this branch's versions (they are 547's plus the Eclipse changes and behave the same for A16 and A17).
+- The changes text and fix column were added after the last PC render (text only) and merged into the model and fit json
+  from a sandbox run that gives the same zero (each README says so).
+- PC folder: `voidsworn_test\opus532e` (e1 to e6 renders and .blend files, about 120 MB), nothing deleted.
+
+## E12 second sheet (after the Board's review, Nov 12 2026)
+
+The Board passed E11 and sent E12 back on four points; E11 unchanged.
+1. **Camera**: refit to the beauty's aft three-quarter angle (azimuth -122, elevation 58), framing only fitted, 45.5 percent
+   outline. The beauty is not one consistent camera (bells facing the viewer, an aft view; stern higher in frame than bow, a
+   forward view), so at a true aft angle the block is the near end and lands low and large. The side-by-side adds the
+   forward camera (53.8 percent) as its last row: judge the stern on the first, the ring on the last. New `build.py ...
+   beauty` mode renders a second camera (`SHEET_CAMERA`); sheet_extras shows any `beauty_cam_<name>.png` as an extra row.
+2. **Spine** slimmed to a rod, 0.36 by 0.32 (was 0.6 by 0.48), collars and saddles with it.
+3. **Stern block** compact and low (1.4 tall, was 1.9), three 0.92 bells filling its aft face, standing out 0.95.
+4. **Arcs** unchanged (one matched ellipse); the concept's slightly different radii are noted, not copied.
+
+Fit check zero (PC e8 and sandbox), inventory 0 failing, every cell at or above the concept. Ratios: hull L:B 1.89 (concept
+1.94), hull L:H 11.32 (15.57), envelope L:B 1.72 (1.77), envelope L:H 7.02 (5.94: the lower block drops the stern height).
+My read: on the aft view the bells, slim spine and open arcs read as the concept, but the near block still fills the lower left
+of the frame, where the beauty puts it far and high; that comes from the picture itself, not from the model.
+
+# Eclipse R221: weapons from the lore (Opus worker, Nov 12 2026)
+
+Ryan, Nov 12 06:27 CST (R221): "Eclipse are almost there, my major note is that their turrets look the same as hullbreakers.
+We should have those be more unique per fsctions and fit the actual weapons they use per lore Bible and faction rules." Also
+R222: a turret turns aft only to follow a target its rules arc allows; at rest no gun points backward. E11 is now its second
+sheet, E12 its third; hull, crescent, ring, engines and cameras unchanged.
+
+## Read before modelling
+
+data.js W and FAC_WNAMES.deathless (gauss = Null cannon, flak = Null shredder, gsentry = Null spire, doom = Corona arc), the
+battle effects in godot/fx/fx_weapons.gd (null: coils light breech to muzzle in steps, a near invisible slug, a shock ring, a
+punch-through; flak: instant streaks to airbursts; corona arc: arcs crawl on the emitter, then a re-striking arc), lore bible
+7.5, 7.8 (the crest: a black disc with a thin ring) and 7.10, and factions.md Eclipse ("guns sit behind the shade's rim,
+firing through gaps between plates"). One design line per weapon went into `tools/blender/kits/eclipse/README.md` (and
+`WEAPONS` in parts.py, which the sheet prints) before the shapes were built.
+
+## Designs (one line each)
+
+- **Null cannon (gauss T):** a rail gun, two flat rail pairs in stepped square accelerator frames ending in an open fork and a
+  shock plate, firing through the slot of an upright crescent shade with a corona rim, a ribbed capacitor stack behind.
+- **Null shredder (flak T, E11):** a fan of five needle rails splayed side to side from a squat hex drum, through the slot of a
+  crescent shade, a two-fin capacitor pack; elevates to 60 for craft.
+- **Null spire (gsentry T, E12):** a tall turning hex spire with green sight slits, two needle rails through a small shade fin
+  at its head.
+- **Corona arc (doom F):** an arc emitter, the shaft a capacitor column (disc banks, feed conduits), the mouth the crest (a
+  black shade disc in a thin corona ring with a small lens) under a crown of six electrode horns.
+
+No breech-and-barrel cannon anywhere: no round barrel, breech block, muzzle brake or bore. Every turret is still turret-ready
+(`<id>_turret` empty with turret, slot, weapon, arc_lo, arc_hi, arc_deg, rest_yaw, rest_pitch; turning meshes its children);
+every gun rests pointing forward.
+
+## Tools
+
+- PR 547's newer tools brought in by a three-way merge from their common base (1f333759): clash.py's LANE test and real turret
+  reach, inventory.py's Job column and "every part has a job" check, the kit's rack lanes, the extras' LANE count. The Eclipse
+  hooks kept (each ship names its KIT; the inventory reads that kit's SUBPARTS).
+- kit.py: a kit whose `gun()` takes `weapon` builds each weapon its own way (Hullbreakers unchanged); a part may carry its own
+  type for the inventory's detail check; the spinal weapon gets a firing lane, so LANE covers it.
+- build.py renders each weapon type alone (`weapon_<id>.png`, also its own `weapons` mode); layout.py prints the weapon row
+  (image, rules, lore line, design line) under the beauty pair; publish.py copies the weapon pictures.
+- Every inventory line on both ships now names its job.
+
+## Results
+
+| Ship | Fit (clash, mount, arc, sweep, exhaust, exit, lane) | Turret reach | Inventory | Hull L:B / L:H concept and build |
+|---|---|---|---|---|
+| E11 | all 0 (244 objects, 483 rays, 4 turrets, 1 lane) | 180 both ways, all four | 0 failing, every part has a job | 5.72 / 7.00 and 5.59 / 6.54 |
+| E12 | all 0 (456 objects, 360 rays, 3 turrets, 1 lane) | 180 both ways, all three | 0 failing, every part has a job | 1.94 / 15.57 and 1.89 / 10.23 |
+
+The new weapons checked at zero on their first full run. PC runs `opus532e\w\w1` (first shapes) and `w\w2` (the null cannon
+shade made upright, a shield held forward rather than a lid; E12's guns a size up); GPU read twice at 0 percent before each;
+nothing deleted. The outline overlays were not refitted (cameras and hulls unchanged).
+
+## Judged beside the concept
+
+- **E11:** the turrets no longer look like the Hullbreakers' (no box, no round barrels): from the beauty camera each is an
+  upright crescent shield with a green rim and a row of square accelerator frames, and the projector's mouth is the crest
+  under its horn crown. They now differ from the picture's turrets on purpose; the picture's long slim barrels are gone, and
+  at that distance the frames read as a row of square rings more than as rails.
+- **E12:** at the high aft camera the null cannons read mostly as a green crescent rim over ribbed fins, the rails short behind
+  them; the null spire is a small upright post on the block roof; the emitter's horn crown reads at the bow. Ring, block and
+  bells as on the second sheet.
+- Still different from the concepts (each README): surface and colour (paint stage), E11's crescent a little narrower and the
+  projector shaft shorter, E12's near block and straight struts.
+
+## Pass 2: the hull's language, not boxes (Nov 12 2026, after 07:40 CST)
+
+Ryan, through the Board: at full-ship distance the turrets "read chunky, more box than crescent", and "The eclipse weapons look
+super blocky in comparison to the rest of the ship." So the weapons now share the hull's shape language and detail level
+(RULEBOOK 5.16), judged at the beauty camera beside the hull. Lore designs, turret empties and properties unchanged.
+
+- **Null cannon:** a thin arched crescent shade, three bevelled plates with narrow seams (the E12 ring's broken plates), a
+  second layer stepped in on its face, two plate courses across it, horns swept back and down, the corona line along the
+  crest; slim round rails (octagonal section) banded with round collars like the hull's band collar, 1.3 times longer, reaching
+  well past the shade to a thin shock ring; capacitor banks as low layered crescent fins; a small oval shell on a thin round
+  foot; rod yokes. No square frames, boxes or hex drums left.
+- **Null shredder:** the same shade language, smaller; five thin round needles with two banded collars each; oval shell.
+- **Null spire:** a slim round spire with banded collars and the green sights, an oval head pod, a layered crescent fin.
+- **Corona arc:** unchanged (its octagonal collars and capacitor column already follow the concept's projector).
+- **E11 barbettes** slimmed to the turret feet (0.95 and 1.0 half-width to 0.7 and 0.72).
+
+Fit zero on both, LANE included (E11 243 objects, 475 rays; E12 457 objects, 360 rays), every turret free to turn 180 either
+way, inventory 0 failing with every job kept (weapon sub-parts now include `layer` and `collar`). PC run `opus532e\w\w3`, GPU
+read twice at 0 percent first, nothing deleted.
+
+Judged at the beauty camera beside the hull: the turrets now read as curved hoods with a green crest and long thin banded
+rails, in step with the crescent and the banded body rather than as boxes on it. Still: from ahead the shade reads as one
+smooth hood (its seams and plate courses are fine at that distance and the flat colour hides them; the paint stage carries
+the plate contrast); on E12 the saddles under the cannons are still the larger mass.

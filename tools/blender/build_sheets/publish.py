@@ -19,4 +19,9 @@ c = Image.new('RGB', (540, 720)); c.paste(a, (0, 0)); c.paste(b, (0, 360))
 d = ImageDraw.Draw(c); d.text((8, 8), s + ' accepted beauty', fill=(255, 255, 255)); d.text((8, 368), s + ' blockout at the fitted beauty camera', fill=(255, 255, 255))
 c.save('%s/beauty_vs_blockout.jpg' % D, quality=85)
 shutil.copy('%s/%s_fit.json' % (R, s), '%s/fit.json' % D)
+# R221: each weapon type alone (the sheet's weapon row), weapon_<data.js id>.jpg
+import glob
+for w in sorted(glob.glob('%s/weapon_*.png' % R)):
+    a_ = Image.open(w).convert('RGBA'); bg_ = Image.new('RGBA', a_.size, (58, 58, 60, 255)); bg_.alpha_composite(a_)
+    bg_.convert('RGB').save('%s/%s.jpg' % (D, os.path.basename(w)[:-4]), quality=88)
 print('published', D)

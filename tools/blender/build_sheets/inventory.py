@@ -17,9 +17,13 @@ inv = importlib.util.module_from_spec(sp); sp.loader.exec_module(inv)
 INV = inv.INVENTORY
 CELLS = ['%s/%s' % (r, v) for r in ('bow', 'mid', 'stern') for v in ('top', 'side', 'below')]
 TYPES = {}
+import re
+_sp_ = os.path.join(REPO, 'tools/blender/build_sheets/ships', CODE + '.py')
+_ship_src = open(_sp_).read() if os.path.exists(_sp_) else open(os.path.join(REPO, 'tools/blender/build_sheets/ships', CODE + '_inv.py')).read()
+_km = re.search(r"^KIT\s*=\s*'(\w+)'", _ship_src, re.M)
+KITN = _km.group(1) if _km else 'hullbreakers'
 try:
-    import re
-    src = open(os.path.join(REPO, 'tools/blender/kits/hullbreakers/parts.py')).read()
+    src = open(os.path.join(REPO, 'tools/blender/kits/%s/parts.py' % KITN)).read()
     blk = src[src.index('SUBPARTS = {'):]; blk = blk[:blk.index('\n}\n') + 3]
     TYPES = eval(blk.split('=', 1)[1])
 except Exception as ex:
@@ -27,7 +31,7 @@ except Exception as ex:
 
 lines = ['# %s parts inventory (R218)\n' % CODE,
          'Written from the concept before modelling, region by region (bow, midships, stern; top, side, below). Each line names the',
-         'kit part type (tools/blender/kits/hullbreakers/parts.py), how many, the blob-sweep cells it shows in, and the sub-parts that',
+         'kit part type (tools/blender/kits/%s/parts.py), how many, the blob-sweep cells it shows in, and the sub-parts that' % KITN,
          'make it read as that thing, and its job: what it does on the ship (R221: a part with no job is cut). Source:',
          '`tools/blender/build_sheets/ships/%s_inv.py`.\n' % CODE,
          '| ID | Job | Type | What | Count | Cells | Reads as (sub-parts) | Source |', '|---|---|---|---|---:|---|---|---|']
@@ -62,10 +66,24 @@ def ratios(rd):
         ext = np.array(ext, float); mid = ext[int(0.2 * len(ext)):int(0.8 * len(ext))]
         ys = np.where(m.any(1))[0]
         return L, ys.max() - ys.min(), float(np.median(mid))
-    im = np.asarray(Image.open(os.path.join(REPO, 'contrib/muse/design/concept_round8_2026_11', CODE + '_sheet.jpg')).convert('RGB')).astype(int)
+    cs = M.get('concept_sheet') or 'contrib/muse/design/concept_round8_2026_11/%s_sheet.jpg' % CODE
+    im = np.asarray(Image.open(os.path.join(REPO, cs)).convert('RGB')).astype(int)
     bg = np.median(im[5:40, 5:40].reshape(-1, 3), axis=0); d = np.abs(im - bg).sum(2) > 40
-    h2 = im.shape[0] * 7 // 12; w2 = im.shape[1] * 3 // 4
-    views = dict(concept=(clean(d[:h2, :w2]), clean(d[h2:, :w2])),
+    cv = M.get('concept_views')
+    if cv:
+        # per-ship boxes (x0, y0, x1, y1) round each true view, excluding the escort; 'largest' keeps the biggest shape only,
+        # otherwise every shape over 400 px counts (the Eclipse ring cruiser's arcs are separate pieces in plan)
+        def cut(v):
+            x0, y0, x1, y1 = v['box']; dd = ndimage.binary_opening(d[y0:y1, x0:x1], np.ones((3, 3)))
+            if v.get('largest', True):
+                return clean(dd)
+            lab, n = ndimage.label(dd); sz = ndimage.sum(dd, lab, range(1, n + 1))
+            return np.isin(lab, [i + 1 for i in range(n) if sz[i] >= 400])
+        con = (cut(cv['top']), cut(cv['side']))
+    else:
+        h2 = im.shape[0] * 7 // 12; w2 = im.shape[1] * 3 // 4
+        con = (clean(d[:h2, :w2]), clean(d[h2:, :w2]))
+    views = dict(concept=con,
                  build=(clean(np.rot90(np.asarray(Image.open(os.path.join(rd, 'top.png')))[..., 3] > 8)),
                         clean(np.asarray(Image.open(os.path.join(rd, 'side.png')))[..., 3] > 8)))
     out = {}
@@ -118,7 +136,7 @@ if MODEL:
     SC = getattr(inv, 'STRUCTURE', {})
     srows = []
     lines.append('\n## Structure per cell: distinct masses (blocks, tiers, belts), concept against build\n')
-    lines.append('Concept counts read off the round 8 sheet by eye (%s); build counts are the model\'s registered masses whose station range '
+    lines.append('Concept counts read off the concept sheet by eye (%s); build counts are the model\'s registered masses whose station range '
                  'overlaps the third (below: masses reaching within 0.8 of the belly).\n' % getattr(inv, 'STRUCTURE_NOTE', 'see the inventory file'))
     lines.append('| Cell | Concept | Build | Build masses |\n|---|---:|---:|---|')
     for c in CELLS:

@@ -1,0 +1,21 @@
+{
+ "az": -86.40202734567652,
+ "el": 63.2241924674873,
+ "roll": -2.375309972727854,
+ "dist": 59.27718094701875,
+ "mm": 115.78255954870285,
+ "target": [
+  0.0,
+  0.0,
+  0.0
+ ],
+ "sx": -0.05316148950176164,
+ "sy": 0.05329571437676193,
+ "res": [
+  2096,
+  1184
+ ],
+ "iou": 0.5381,
+ "body_iou": 0.5399,
+ "note": "E12 second camera: the best whole-outline overlap with the beauty (forward of the starboard beam, high); the side-by-side shows it as its last row. E12 sheet: start set by hand from the overlay, fit.py refined the camera only; concept mask: brightness over a modelled backdrop glow (the top-left haze), closed, holes filled, every shape over 4000 px except the escort"
+}

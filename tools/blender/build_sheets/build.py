@@ -3,6 +3,7 @@
 # render: builds the blockout, saves <outdir>/<code>_blockout.blend, renders every view (side, top, underside, bow, stern,
 #         the standard three-quarter, the fitted beauty camera, the side cutaway) and writes <code>_model.json.
 # mesh:   builds and writes <code>_tris.npz (exterior triangles) for the outline fit, no renders.
+# weapons: builds and renders only the weapon close-ups (weapon_<id>.png, <code>_weapons.json; R221).
 # fit:    builds, runs the fit check (clash.py) and writes <code>_fit.json and <code>_model.json, no renders.
 # render runs the fit check too (round 3, R217).
 import sys, os, json, math, importlib.util
@@ -24,6 +25,7 @@ ship = importlib.util.module_from_spec(spec); spec.loader.exec_module(ship)
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 sc = bpy.context.scene
+kit.use_kit(getattr(ship, 'KIT', 'hullbreakers'))
 K = kit.Kit(CODE, ship.LENGTH)
 ship.build(K)
 K.finish()
@@ -70,7 +72,10 @@ def r3(v):
 def write_model():
     model = dict(code=CODE, name=ship.NAME, faction=ship.FACTION, cls=ship.CLASS, length=ship.LENGTH, game=ship.GAME,
                  beauty=ship.BEAUTY, model_length=round(MODEL_LEN, 3), x_tip=round(XTIP, 3), lo=r3(LO), hi=r3(HI), views=views,
-                 features=[], masses=[], inside=K.inside, points=[], changes=K.changes, tbd=K.tbd)
+                 features=[], masses=[], inside=K.inside, points=[], changes=K.changes, tbd=K.tbd, kit=kit.KIT_NAME,
+                 sheet=getattr(ship, 'SHEET', dict(version=3, round='round 3', date='2026-11-11', blend='opus532\\r3b')),
+                 concept_sheet=getattr(ship, 'CONCEPT_SHEET', None), concept_views=getattr(ship, 'CONCEPT_VIEWS', None),
+                 crops=getattr(ship, 'CROPS', None))
     for f in K.features:
         g = dict(f)
         for k in ('pos', 'end', 'tip', 'exit'):
@@ -88,6 +93,7 @@ def write_model():
     for p in K.points:
         model['points'].append(dict(p, pos=r3(p['pos']), station=round((XTIP - p['pos'][0]) / MODEL_LEN * 100, 1)))
     model['parts'] = K.built
+    model['weapons'] = globals().get('WEAPON_ROWS', [])
     model['fit_counts'] = FIT['counts']
     json.dump(model, open(os.path.join(OUT, CODE + '_model.json'), 'w'), indent=1)
 
@@ -172,6 +178,73 @@ def render(o, res, path, inside=False, outside=True):
     bpy.ops.render.render(write_still=True)
 
 
+def look_cam(name, az, el, dist, mm, res, target, roll=0.0, shift=(0, 0)):
+    """az from the bow toward port, el above the deck plane"""
+    a, e = math.radians(az), math.radians(el)
+    d = Vector((math.cos(e) * math.cos(a), math.cos(e) * math.sin(a), math.sin(e)))
+    loc = Vector(target) + d * dist
+    f = -d
+    right = f.cross(Vector((0, 0, 1))).normalized(); up = right.cross(f).normalized()
+    rr = math.radians(roll)
+    right, up = right * math.cos(rr) + up * math.sin(rr), up * math.cos(rr) - right * math.sin(rr)
+    return cam(name, loc, right, up, persp_mm=mm, res=res, shift=shift)
+
+
+def weapon_shots():
+    """R221 (ships.md 2c: the sheet shows each weapon type beside its lore line): one close-up per weapon type the ship carries,
+    at the first mount of that type (deck mounts first), 35 degrees to port of its aim and 22 up, the weapon alone (the hull
+    hidden). Writes weapon_<data.js id>.png and returns the list for the model json."""
+    out, seen = [], set()
+    W_ = getattr(kit.HP, 'WEAPONS', {})
+    guns = sorted([f for f in K.features if f['kind'] == 'gun' and f.get('weapon')], key=lambda f: (f.get('normal', (0, 0, 1))[2] < 0, f['id']))
+    for f in guns:
+        w = f['weapon']
+        if w in seen:
+            continue
+        seen.add(w)
+        obs = [o for o in K.coll.objects if o.type == 'MESH' and o.get('grp') == f['id']]
+        if f.get('fixed'):
+            mz = Vector(f['muzzle'][0]); hr = max(0.3, max(abs(v[1]) for o in obs for v in [o.matrix_world @ q.co for q in o.data.vertices]))
+            tgt = mz - Vector((hr * 1.2, 0, 0)); size = hr * 4.0
+        else:
+            lo, hi = bbox(obs); tgt = (lo + hi) / 2; size = (hi - lo).length
+        az, el = [float(v) for v in os.environ.get('SHEET_WEAPON_VIEW', '35,22').split(',')]
+        # the weapon alone (the hull hidden), so its shape reads: how it fires shows in its mount, housing and muzzle
+        o = look_cam('weapon_' + w, az, el, size * 1.75, 50, (800, 560), tuple(tgt))
+        keep = {ob.name for ob in obs}
+        for ob in K.coll.objects:
+            ob.hide_render = ob.name not in keep
+        for ob in K.cin.objects:
+            ob.hide_render = True
+        sc.camera = o; sc.render.resolution_x, sc.render.resolution_y = (800, 560) if not QUICK else (400, 280)
+        sc.render.filepath = os.path.join(OUT, 'weapon_%s.png' % w)
+        bpy.ops.render.render(write_still=True)
+        for ob in K.coll.objects:
+            ob.hide_render = False
+        d = dict(W_.get(w, {}))
+        d.update(id=w, example=f['id'], mounts=[g['id'] for g in K.features if g.get('weapon') == w], slot=f.get('slot', ''), image='weapon_%s.png' % w)
+        out.append(d)
+    return out
+
+
+WEAPON_ROWS = []
+if MODE == 'weapons':
+    WEAPON_ROWS = weapon_shots()
+    json.dump(WEAPON_ROWS, open(os.path.join(OUT, CODE + '_weapons.json'), 'w'), indent=1)
+    sys.exit(0)
+
+if MODE == 'beauty':
+    # a second camera on the concept (SHEET_CAMERA=<json under ships/>), only that render, written as beauty_cam_<name>.png
+    nm_ = os.environ.get('SHEET_CAMERA', CODE + '_camera_alt.json')
+    fc = json.load(open(os.path.join(HERE, 'ships', nm_)))
+    a_, e_ = math.radians(fc['az']), math.radians(fc['el'])
+    d_ = Vector((math.cos(e_) * math.cos(a_), math.cos(e_) * math.sin(a_), math.sin(e_)))
+    f_ = -d_; r_ = f_.cross(Vector((0, 0, 1))).normalized(); u_ = r_.cross(f_).normalized(); rr_ = math.radians(fc.get('roll', 0))
+    r_, u_ = r_ * math.cos(rr_) + u_ * math.sin(rr_), u_ * math.cos(rr_) - r_ * math.sin(rr_)
+    o = cam('beauty_alt', Vector(fc['target']) + d_ * fc['dist'], r_, u_, persp_mm=fc['mm'], res=tuple(fc['res']), shift=(-fc.get('sx', 0), -fc.get('sy', 0)))
+    render(o, tuple(fc['res']), os.path.join(OUT, 'beauty_cam_' + nm_.replace(CODE + '_camera_', '').replace('.json', '') + '.png'))
+    sys.exit(0)
+
 # ortho views: window centred on the model, one px-per-unit for all
 cx, cy, cz = (LO.x + HI.x) / 2, (LO.y + HI.y) / 2, (LO.z + HI.z) / 2
 pad = 1.0
@@ -213,18 +286,6 @@ o, res = ortho_view('stern', (cx - D, cy, cz), (0, -1, 0), (0, 0, 1), Ly, Lz, (c
 render(o, res, os.path.join(OUT, 'stern.png'))
 
 
-def look_cam(name, az, el, dist, mm, res, target, roll=0.0, shift=(0, 0)):
-    """az from the bow toward port, el above the deck plane"""
-    a, e = math.radians(az), math.radians(el)
-    d = Vector((math.cos(e) * math.cos(a), math.cos(e) * math.sin(a), math.sin(e)))
-    loc = Vector(target) + d * dist
-    f = -d
-    right = f.cross(Vector((0, 0, 1))).normalized(); up = right.cross(f).normalized()
-    rr = math.radians(roll)
-    right, up = right * math.cos(rr) + up * math.sin(rr), up * math.cos(rr) - right * math.sin(rr)
-    return cam(name, loc, right, up, persp_mm=mm, res=res, shift=shift)
-
-
 # standard three-quarter: 45 degrees off the bow toward port, 30 above, bow left
 o = look_cam('threequarter', 45, 30, 120, 50 * 120 / (1.5 * ship.LENGTH) * 0.9, (1600, 1000), (cx, cy, cz))
 render(o, (int(1600 * (0.5 if QUICK else 1)), int(1000 * (0.5 if QUICK else 1))), os.path.join(OUT, 'threequarter.png'))
@@ -235,6 +296,8 @@ if os.path.exists(fitp):
     o = look_cam('beauty_cam', fc['az'], fc['el'], fc['dist'], fc['mm'], tuple(fc['res']), fc['target'], fc.get('roll', 0),
                  (-fc.get('sx', 0), -fc.get('sy', 0)))  # fit.py moves the picture, Blender's shift moves the frame
     render(o, tuple(fc['res']), os.path.join(OUT, 'beauty_cam.png'))
+
+WEAPON_ROWS = weapon_shots()
 
 
 write_model()

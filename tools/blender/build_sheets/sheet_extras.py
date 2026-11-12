@@ -149,8 +149,8 @@ def fit_view():
     W = max(t2.width + s2.width + 60, 1960); H = max(t2.height, s2.height) + 305
     sh = Image.new('RGB', (W, H), (40, 40, 42)); d = ImageDraw.Draw(sh)
     cnt = FIT['counts']
-    d.text((20, 15), '%s FIT VIEW (R221). Left: clash %d, mount %d, arc %d, sweep %d, exhaust %d, exit %d, lane %d' % (
-        CODE, cnt['CLASH'], cnt['MOUNT'], cnt['ARC'], cnt.get('SWEEP', 0), cnt['EXHAUST'], cnt['EXIT'], cnt.get('LANE', 0)), font=F_M, fill=INK)
+    d.text((20, 15), '%s FIT VIEW, %s (R221). Left: clash %d, mount %d, arc %d, sweep %d, exhaust %d, exit %d, lane %d' % (
+        CODE, RND, cnt['CLASH'], cnt['MOUNT'], cnt['ARC'], cnt.get('SWEEP', 0), cnt['EXHAUST'], cnt['EXIT'], cnt.get('LANE', 0)), font=F_M, fill=INK)
     d.text((20, 75), 'green: each gun\'s data.js firing arc (red if a bearing is blocked); cyan circle: a turret\'s sweep (R219, every bearing turned and tested)', font=F_S, fill=DIM)
     d.text((20, 100), 'orange: exhaust cones (12 deg engines, 20 deg thrusters); yellow: launcher cell and tube exits, other apertures', font=F_S, fill=DIM)
     d.text((20, 125), 'yellow box: each rack\'s firing lane; magenta box: its backblast (no gun may sit in either, R221)', font=F_S, fill=DIM)
@@ -163,7 +163,7 @@ def fit_view():
 
 # ---------------------------------------------------------------- fit report
 def fit_report():
-    L = ['# %s fit report (round 3; RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)\n' % CODE,
+    L = ['# %s fit report (%s; RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)\n' % (CODE, RND),
          'Made by `tools/blender/build_sheets/clash.py` on the built blockout (it runs inside every `build.py ... render` and on its own',
          'with `build.py <code> <out> fit`). What it tests, on every part of every type:\n',
          '1. **CLASH**: no part intersects another part; no non-mount piece (barrel, bell, blade, lid, slat, lens) sits inside the hull.',
@@ -188,21 +188,24 @@ def fit_report():
          '(`turret=0`, `gun_fixed=1`).\n']
     if R2 and os.path.exists(R2):
         B = json.load(open(R2))
-        L.append('## Round 2 layout, checked (before)\n')
-        L.append('The round 2 design (`tools/blender/build_sheets/ships/r2/%s.py`, the PR 547 layout) built with the round 3 kit parts and run'
-                 ' through the same check. Counts: %s.\n' % (CODE, ', '.join('%s %d' % kv for kv in B['counts'].items())))
+        L.append('## %s, checked (before)\n' % SH.get('before', 'Round 2 layout'))
+        L.append('%s Counts: %s.\n' % (SH.get('before_note', 'The round 2 design (`tools/blender/build_sheets/ships/r2/%s.py`, the PR 547 layout) built with the round 3 kit parts and run'
+                 ' through the same check.' % CODE), ', '.join('%s %d' % kv for kv in B['counts'].items())))
         L.append('| Check | Part | Against | Hits | What |\n|---|---|---|---:|---|')
         for c in B['clashes']:
             L.append('| %s | %s | %s | %d | %s |' % (c['check'], c['part'], c['other'], c['n'], c['detail'].replace('|', '/')))
-    L.append('\n## How round 3 fixed them\n')
-    L.append('| Clash (round 2) | Fix (round 3) |\n|---|---|')
+    L.append('\n## How %s fixed them\n' % RND)
+    L.append('| Clash (before) | Fix |\n|---|---|')
     for a, b in FIT['fixes']:
         L.append('| %s | %s |' % (a, b))
-    L.append('\nWhile designing round 3 the check also caught (and the design fixed) plates swallowing slits and lamps, casemate breeches pushed')
-    L.append('into the hull, a pipe through a pod, chains through casemates, dishes too low on their posts, and, once turrets turned (R219),')
-    L.append('neighbouring deck-edge turrets meeting when trained aft (the middle ones now superfire on barbettes) and antennas inside a')
-    L.append('turret\'s swept circle (moved out).\n')
-    L.append('## Round 3 (after)\n')
+    if SH.get('during'):
+        L.append('\n' + SH['during'] + '\n')
+    else:
+        L.append('\nWhile designing round 3 the check also caught (and the design fixed) plates swallowing slits and lamps, casemate breeches pushed')
+        L.append('into the hull, a pipe through a pod, chains through casemates, dishes too low on their posts, and, once turrets turned (R219),')
+        L.append('neighbouring deck-edge turrets meeting when trained aft (the middle ones now superfire on barbettes) and antennas inside a')
+        L.append('turret\'s swept circle (moved out).\n')
+    L.append('## The sheet as delivered (after)\n')
     L.append('Counts: %s. Tested: %s.\n' % (', '.join('%s %d' % kv for kv in FIT['counts'].items()),
                                             ', '.join('%s %s' % (v, k_.replace('_', ' ')) for k_, v in FIT['tested'].items())))
     if FIT['clashes']:
@@ -235,6 +238,12 @@ CROPS = {'corsair_A16': [('bow', (60, 380, 900, 1160)), ('midships', (560, 220, 
          'corsair_A17': [('bow', (60, 380, 900, 1120)), ('midships', (600, 120, 1400, 800)), ('stern', (1100, 120, 1700, 800))]}
 
 
+if M.get('crops'):
+    CROPS[CODE] = [tuple(c) if not isinstance(c[1], list) else (c[0], tuple(c[1])) for c in M['crops']]
+SH = M.get('sheet') or dict(round='round 3')
+RND = SH.get('round', 'round 3')
+
+
 def side_by_side():
     con = Image.open(os.path.join(REPO, M['beauty'])).convert('RGB')
     b = Image.open(os.path.join(RD, 'beauty_cam.png')).convert('RGBA')
@@ -245,10 +254,16 @@ def side_by_side():
         a = con.crop(box); c = bld.crop(box)
         h = half * a.height // a.width
         rows.append((nm, a.resize((half, h)), c.resize((half, h))))
+    for alt in sorted(glob.glob(os.path.join(RD, 'beauty_cam_*.png'))):
+        # a second camera on the same concept (the sheet's README says why)
+        b2 = Image.open(alt).convert('RGBA'); bg2 = Image.new('RGBA', b2.size, (14, 14, 16, 255)); bg2.alpha_composite(b2)
+        b2 = bg2.convert('RGB').resize(con.size)
+        lab = (SH.get('alt_cameras') or {}).get(os.path.basename(alt)[len('beauty_cam_'):-4], os.path.basename(alt))
+        rows.append(('full view, second camera: ' + lab, con.resize((half, half * con.height // con.width)), b2.resize((half, half * con.height // con.width))))
     H = 90 + sum(r[1].height + 50 for r in rows)
     out = Image.new('RGB', (W + 30, H), (30, 30, 32)); d = ImageDraw.Draw(out)
-    d.text((10, 10), '%s: CONCEPT (left) and BUILD SHEET BLOCKOUT round 3 (right), same camera, same windows' % CODE, font=F_M, fill=INK)
-    d.text((10, 50), 'camera: fitted to the concept outline (ships/%s_camera.json, refit in round 3); blockout: flat colour, no paint or texture yet (recipe stages 4 and 5)' % CODE,
+    d.text((10, 10), '%s: CONCEPT (left) and BUILD SHEET BLOCKOUT %s (right), same camera, same windows' % (CODE, RND), font=F_M, fill=INK)
+    d.text((10, 50), 'camera: fitted to the concept outline (ships/%s_camera.json); blockout: flat schematic colour, no paint or texture yet (recipe stages 4 and 5)' % CODE,
            font=F_S, fill=DIM)
     y = 90
     for nm, a, c in rows:
@@ -270,14 +285,20 @@ def ship_box(im, bg):
 
 
 def cells():
-    sheet = Image.open(os.path.join(REPO, M['beauty'].replace('_beauty.jpg', '_sheet.jpg'))).convert('RGB')
-    a = np.asarray(sheet).astype(int); bgc = np.median(a[5:40, 5:40].reshape(-1, 3), axis=0)
-    objs, sizes = ship_box(sheet, bgc)
-    big = sorted([(sizes[i], objs[i]) for i in range(len(objs))], key=lambda t: -t[0])[:2]
-    big = sorted(big, key=lambda t: t[1][0].start)   # upper first: the top view, then the side view
+    sheet = Image.open(os.path.join(REPO, M.get('concept_sheet') or M['beauty'].replace('_beauty.jpg', '_sheet.jpg'))).convert('RGB')
     cview = {}
-    for nm, (_, o) in zip(('top', 'side'), big):
-        cview[nm] = sheet.crop((o[1].start, o[0].start, o[1].stop, o[0].stop))
+    if M.get('concept_views'):
+        # per-ship boxes round each true view (the escort left out); flip: the sheet draws the bow on the right
+        for nm in ('top', 'side'):
+            v = M['concept_views'][nm]; c = sheet.crop(tuple(v['box']))
+            cview[nm] = c.transpose(Image.FLIP_LEFT_RIGHT) if v.get('flip') else c
+    else:
+        a = np.asarray(sheet).astype(int); bgc = np.median(a[5:40, 5:40].reshape(-1, 3), axis=0)
+        objs, sizes = ship_box(sheet, bgc)
+        big = sorted([(sizes[i], objs[i]) for i in range(len(objs))], key=lambda t: -t[0])[:2]
+        big = sorted(big, key=lambda t: t[1][0].start)   # upper first: the top view, then the side view
+        for nm, (_, o) in zip(('top', 'side'), big):
+            cview[nm] = sheet.crop((o[1].start, o[0].start, o[1].stop, o[0].stop))
 
     def build_view(name, rot):
         im = Image.open(os.path.join(RD, name + '.png')).convert('RGBA')
@@ -301,7 +322,7 @@ def cells():
     H = 80 + sum((x[1].height if x[1] else 60) + x[2].height + 120 for x in blocks)
     out = Image.new('RGB', (Wst + TW + 60, H), (36, 36, 38)); d = ImageDraw.Draw(out)
     d.text((20, 15), '%s: the nine blob-sweep cells, concept over blockout, and each cell\'s inventory (R218)' % CODE, font=F_M, fill=INK)
-    d.text((20, 52), 'concept: the round 8 sheet\'s top and side views (their boxes include engine plumes and loose guns); it has no underside view', font=F_S, fill=DIM)
+    d.text((20, 52), 'concept: the concept sheet\'s top and side views, bow left (their boxes include loose guns); it has no underside view', font=F_S, fill=DIM)
     y = 90
     for v, cs, bs in blocks:
         y0 = y

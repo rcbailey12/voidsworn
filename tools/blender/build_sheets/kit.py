@@ -12,8 +12,26 @@ import bpy
 import bmesh
 from mathutils import Vector, Matrix
 
-sys.path.insert(0, os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'kits', 'hullbreakers')))
-import parts as HP  # noqa: E402
+_KITS = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'kits'))
+
+
+def _load_kit(name):
+    """the faction's own part kit (RULEBOOK 4.5): tools/blender/kits/<name>/parts.py"""
+    import importlib.util
+    sp = importlib.util.spec_from_file_location('parts_' + name, os.path.join(_KITS, name, 'parts.py'))
+    m = importlib.util.module_from_spec(sp); sp.loader.exec_module(m)
+    return m
+
+
+HP = _load_kit('hullbreakers')
+KIT_NAME = 'hullbreakers'
+
+
+def use_kit(name):
+    """switch every helper below to a faction's kit (ships/<code>.py sets KIT; the Hullbreakers are the default)"""
+    global HP, KIT_NAME
+    HP = _load_kit(name); KIT_NAME = name
+    return HP
 
 MATS = {
     # name: (rgb, emission strength). Colour zones are schematic: the beauty picture gives the finish.
@@ -44,6 +62,19 @@ MATS = {
     'hold': ((0.45, 0.32, 0.18), 0),
     'bridge': ((0.60, 0.55, 0.25), 0),
     'armour': ((0.16, 0.15, 0.14), 0),
+    # Eclipse (issue 532, E11 and E12; factions.md: dark violet-black plates, the green-white corona line, a small bright
+    # core; R201: keep the Eclipse purple; R204: colour is fixed in the build). Schematic zones; the paint stage finishes them.
+    'shade': ((0.018, 0.012, 0.026), 0),     # violet-black shade plate
+    'shade2': ((0.032, 0.02, 0.05), 0),      # deep violet plate
+    'mauve': ((0.115, 0.06, 0.135), 0),        # dusty mauve plate (the concept's lit plates)
+    'violet': ((0.07, 0.034, 0.105), 0),      # Eclipse violet plate
+    'lilac': ((0.15, 0.115, 0.165), 0),        # pale grey-mauve plate (the weathered patches)
+    'gunv': ((0.045, 0.038, 0.055), 0),        # violet gunmetal: barrels, frames, machinery
+    'corona': ((0.2, 1.0, 0.35), 0.7),        # the thin green-white corona line on every shade rim
+    'ecore': ((0.2, 1.0, 0.3), 1.4),         # the trapped light core
+    'lens': ((0.15, 1.0, 0.28), 1.2),          # the corona arc emitter lens
+    'archive': ((0.30, 0.55, 0.42), 0),      # inside: archive vaults
+    'darkdeck': ((0.20, 0.18, 0.24), 0),     # inside: dark decks
 }
 ARCS = {'F': (-60.0, 60.0), 'P': (30.0, 150.0), 'S': (-150.0, -30.0), 'T': (-180.0, 180.0), 'R': (120.0, 240.0)}  # core.js inArc
 
@@ -58,7 +89,7 @@ def mat(name):
     b = m.node_tree.nodes.get('Principled BSDF')
     b.inputs['Base Color'].default_value = (*rgb, 1)
     b.inputs['Roughness'].default_value = 0.7
-    b.inputs['Metallic'].default_value = 0.3 if name in ('steel', 'pale', 'dish', 'iron', 'brass') else 0.1
+    b.inputs['Metallic'].default_value = 0.3 if name in ('steel', 'pale', 'dish', 'iron', 'brass', 'gunv') else 0.1
     if em:
         b.inputs['Emission Color'].default_value = (*rgb, 1)
         b.inputs['Emission Strength'].default_value = em
@@ -77,8 +108,9 @@ def _octa(hwp, hws, zb, zt, ct, cb, yo=0.0):
 P_TOP, P_BOT = 3.5, 2.3  # the rounded section's exponents: the deck shoulder and the flanks and belly (2 is an ellipse)
 
 
-def _round_sec(hwp, hws, zb, zt, yo=0.0, n=24, p_top=P_TOP, p_bot=P_BOT):
+def _round_sec(hwp, hws, zb, zt, yo=0.0, n=24, p_top=None, p_bot=None):
     """a rounded wedge section (round 3c): a superellipse, flatter on top (p_top) and round in the flanks and belly (p_bot)"""
+    p_top = P_TOP if p_top is None else p_top; p_bot = P_BOT if p_bot is None else p_bot
     zc = (zb + zt) / 2; hz = (zt - zb) / 2
     pts = []
     for i in range(n):
@@ -145,14 +177,14 @@ class Kit:
         bm = bmesh.new(); bm.from_mesh(ob.data); bmesh.ops.recalc_face_normals(bm, faces=bm.faces); bm.to_mesh(ob.data); bm.free()
         return ob
 
-    def loft(self, name, sections, m, inside=False, shell=0.0, ytilt=None, plates=None, grp=None, rounded=False):
+    def loft(self, name, sections, m, inside=False, shell=0.0, ytilt=None, plates=None, grp=None, rounded=False, pexp=None):
         """sections: (x, hw_port, hw_stbd, z_bottom, z_top, chamfer_top, chamfer_bottom[, y_offset]) bow first.
         rounded: a rounded wedge section instead of the octagon (round 3c), the chamfers ignored"""
         rings = []
         for s in sections:
             x, hwp, hws, zb, zt, ct, cb = s[:7]
             yo = s[7] if len(s) > 7 else 0.0
-            ring = _round_sec(hwp, hws, zb, zt, yo) if rounded else _octa(hwp, hws, zb, zt, ct, cb, yo)
+            ring = _round_sec(hwp, hws, zb, zt, yo, p_top=(pexp or (None, None))[0], p_bot=(pexp or (None, None))[1]) if rounded else _octa(hwp, hws, zb, zt, ct, cb, yo)
             rings.append([(x, y, z) for (y, z) in ring])
         verts = [v for r in rings for v in r]
         n = len(rings[0])
@@ -176,6 +208,9 @@ class Kit:
         spec: dict(seed, size=(lo, hi), thick=(lo, hi), skip, stack, mats={mat: weight}, faces=[0..7], inv='inventory id')"""
         import random
         rnd = random.Random(spec.get('seed', 1))
+        if spec.get('stride', 1) > 1:
+            # plate over every k-th section (closely spaced lofts such as the Eclipse crescent's layers); keep the last
+            k_ = spec['stride']; rings = rings[::k_] + ([rings[-1]] if (len(rings) - 1) % k_ else [])
         lo, hi = spec.get('size', (0.9, 2.2)); tlo, thi = spec.get('thick', (0.05, 0.2))
         mats = spec.get('mats', {'soot': 6, 'rust': 2, 'steel': 1})
         names = list(mats); wts = [mats[k] for k in names]
@@ -216,7 +251,13 @@ class Kit:
                         u0, u1 = a0 + g / flen, a1 - g / flen; v0, v1 = b0 + g / fw, b1 - g / fw
                         if u1 <= u0 or v1 <= v0:
                             continue
-                        if self._kept_out(A, D_ - A, B - A, nrm, u0, u1, v0, v1, flen, fw):
+                        if spec.get('keep3d'):
+                            # opt-in (Eclipse sheets): a plate is cleared only when its own patch comes within a keep-out's
+                            # radius, not the whole band across a narrow face
+                            pc = Pq((u0 + u1) / 2, (v0 + v1) / 2); hd = 0.5 * ((u1 - u0) * flen + (v1 - v0) * fw)
+                            if any((pc - c).length < r + hd * 0.7 for c, r in self.keepouts):
+                                continue
+                        elif self._kept_out(A, D_ - A, B - A, nrm, u0, u1, v0, v1, flen, fw):
                             continue
                         bot = [Pq(u0, v0), Pq(u1, v0), Pq(u1, v1), Pq(u0, v1)]
                         (V, F), (rv, rf) = HP.plate_slab(bot, nrm, t, rivets=spec.get('rivets', True))
@@ -256,6 +297,40 @@ class Kit:
                 return True
         return False
 
+    def loft_rings(self, name, rings, m, plates=None, inside=False, grp=None, cap=True):
+        """a solid through explicit section rings (lists of world points, the same count each, in order along the
+        mass): the crescent's layers and the ring arcs. plates: as loft (faces = indices into a ring's edges)"""
+        verts = [tuple(v) for r in rings for v in r]
+        n = len(rings[0])
+        faces = []
+        for i in range(len(rings) - 1):
+            for j in range(n):
+                a, b = i * n + j, i * n + (j + 1) % n
+                faces.append((a, b, b + n, a + n))
+        if cap:
+            faces.append(tuple(range(n))[::-1]); faces.append(tuple(range((len(rings) - 1) * n, len(rings) * n)))
+        ob = self._obj(name, verts, faces, m, inside, grp=grp)
+        if plates:
+            self._pending.append((name, [[tuple(v) for v in r] for r in rings], plates))
+        return ob
+
+    def strip(self, name, pts, w=0.05, t=0.04, normals=None, m='corona', grp=None):
+        """a thin raised strip along a polyline (the corona line on a shade rim): w wide across, t proud along normals"""
+        V, F = [], []
+        pts = [Vector(p) for p in pts]
+        for i, p in enumerate(pts):
+            d = (pts[min(i + 1, len(pts) - 1)] - pts[max(i - 1, 0)]).normalized()
+            nrm = Vector(normals[i]) if normals else Vector((0, 0, 1))
+            side = d.cross(nrm).normalized()
+            for q in (p - side * w / 2, p + side * w / 2, p + side * w / 2 + nrm * t, p - side * w / 2 + nrm * t):
+                V.append(tuple(q))
+        for i in range(len(pts) - 1):
+            for j in range(4):
+                a, b = i * 4 + j, i * 4 + (j + 1) % 4
+                F.append((a, b, b + 4, a + 4))
+        F.append((3, 2, 1, 0)); o = (len(pts) - 1) * 4; F.append((o, o + 1, o + 2, o + 3))
+        return self._obj(name, V, F, m, grp=grp)
+
     def finish(self):
         """build the deferred hull plates, now that every mount has claimed its keep-out"""
         for name, rings, spec in self._pending:
@@ -284,10 +359,12 @@ class Kit:
         return self._obj(name, verts, faces, m, inside, smooth=True, grp=grp)
 
     # ---------- surface helpers ----------
-    def hull(self, sections, m='soot', shell=0.25, plates=None, rounded=False):
+    def hull(self, sections, m='soot', shell=0.25, plates=None, rounded=False, pexp=None):
+        """pexp: (deck exponent, flank and belly exponent) of the rounded section for this hull (default P_TOP, P_BOT)"""
         self.hull_sections = sections
         self.hull_rounded = rounded
-        return self.loft(self.code + '_hull', sections, m, shell=shell, plates=plates, rounded=rounded)
+        self.p_top, self.p_bot = pexp or (P_TOP, P_BOT)
+        return self.loft(self.code + '_hull', sections, m, shell=shell, plates=plates, rounded=rounded, pexp=pexp)
 
     def surf(self, x, side, z):
         """the hull's flank surface y at station x and height z (rounded or octagonal section), signed by side"""
@@ -296,7 +373,7 @@ class Kit:
         zb, zt = s[3], s[4]
         if getattr(self, 'hull_rounded', False):
             zc = (zb + zt) / 2; hz = (zt - zb) / 2
-            u = max(-1.0, min(1.0, (z - zc) / hz)); p = P_TOP if u >= 0 else P_BOT
+            u = max(-1.0, min(1.0, (z - zc) / hz)); p = getattr(self, 'p_top', P_TOP) if u >= 0 else getattr(self, 'p_bot', P_BOT)
             sn = abs(u) ** (p / 2.0); cs = max(0.0, 1 - sn * sn) ** 0.5
             return side * hw * cs ** (2.0 / p)
         return side * hw
@@ -341,8 +418,8 @@ class Kit:
         if not getattr(self, 'hull_rounded', False):
             return zt
         zc = (zb + zt) / 2; hz = (zt - zb) / 2
-        f = min(1.0, abs(y) / hw)
-        return zc + hz * max(0.0, 1 - f ** P_TOP) ** (1 / P_TOP)
+        f = min(1.0, abs(y) / hw); pt = getattr(self, 'p_top', P_TOP)
+        return zc + hz * max(0.0, 1 - f ** pt) ** (1 / pt)
 
     def top_z(self, x, sections=None):
         s = sec_at(sections or self.hull_sections, x)
@@ -395,7 +472,8 @@ class Kit:
                 r = keep_r or min(2.5, max((v - o).length for v in mv) * 1.05)
                 self.keepouts.append((Vector(o), r))
         inv = [inv] if isinstance(inv, str) else list(inv)
-        self.built.append(dict(id=fid, kind=part.kind, inv=inv, shaped=True, detailed=HP.detail_ok(part.kind, names),
+        typ = getattr(part, 'type', part.kind)   # a kit may name a part's own type (Eclipse weapons, R221); default its kind
+        self.built.append(dict(id=fid, kind=part.kind, type=typ, inv=inv, shaped=True, detailed=HP.detail_ok(typ, names),
                                subs=sorted({n.rstrip('0123456789').split('_')[-1] for n in names})))
         return part
 
@@ -415,16 +493,18 @@ class Kit:
         casemate: on a flank (normal +-Y), the ball in the sponson's outer face, barrels trained yaw (from the bow)."""
         assert -100 < yaw < 100, fid + ' would aim aft'
         p = Vector(pos); nrm = Vector(normal).normalized()
+        import inspect
+        wk = {'weapon': weapon} if 'weapon' in inspect.signature(HP.gun).parameters else {}   # R221: a kit that builds each weapon its own way
         if abs(nrm.z) > 0.5:
             fwd = Vector((math.cos(math.radians(yaw)), math.sin(math.radians(yaw)), 0))
-            part = HP.gun(barrels, cal, blen, size, 'turret', pitch=pitch, variant=variant)
+            part = HP.gun(barrels, cal, blen, size, 'turret', pitch=pitch, variant=variant, **wk)
             M = HP.frame(p, fwd, nrm)
             kind = 'belly turret' if nrm.z < 0 else 'turret'
         else:
             # train: the angle from the flank normal toward the bow
             aim = self.aim_vec(yaw, pitch)
             train = math.degrees(math.acos(max(-1, min(1, aim.dot(nrm)))))
-            part = HP.gun(barrels, cal, blen, size, 'casemate', pitch=90 - train, variant=variant)
+            part = HP.gun(barrels, cal, blen, size, 'casemate', pitch=90 - train, variant=variant, **wk)
             M = HP.frame(p, Vector((1, 0, 0)), nrm)
             kind = 'casemate'
         lo_, hi_ = ARCS.get(slot or 'T', (-180.0, 180.0))
@@ -438,7 +518,9 @@ class Kit:
         self.fitdata.append(dict(id=fid, kind='gun', slot=slot, pivot=tuple(piv), up=tuple(nrm), mount=kind, ring=tuple(p), rest_yaw=yaw,
                                  reach=fd['reach'], band=band or ((0, 10, 20, 30, 45, 60) if weapon == 'flak' else (0, 10, 20, 30) if kind != 'casemate' else (-10, 0, 10, 20)),
                                  muzzles=[tuple(m[1]) for m in fd['muzzles']], cal=cal * 1.55, hous_r=fd['radius'], rest_pitch=pitch))
-        self.features.append(dict(id=fid, kind='gun', what='%s %s' % ({1: 'single', 2: 'twin', 3: 'triple'}.get(barrels, str(barrels)), kind),
+        wn = getattr(HP, 'WEAPONS', {}).get(weapon, {}).get('name')
+        what = '%s %s' % ({1: 'single', 2: 'twin', 3: 'triple'}.get(barrels, str(barrels)), kind)
+        self.features.append(dict(id=fid, kind='gun', what=('%s, %s' % (wn.lower(), what)) if wn else what,
                                   count=barrels, pos=tuple(p), aim=(yaw, pitch), slot=slot, weapon=weapon, src=src, note=note,
                                   muzzle=[tuple(m[1]) for m in fd['muzzles']], normal=tuple(nrm), inv=list(inv) if not isinstance(inv, str) else [inv]))
 
@@ -539,10 +621,11 @@ class Kit:
         self.features.append(dict(id=fid, kind='chain', what='lashing chain, taut between lugs', count=1,
                                   pos=tuple(Vector(pts[0])), end=tuple(Vector(pts[-1])), aim=None, src=src, note=note, inv=[inv] if isinstance(inv, str) else list(inv)))
 
-    def thruster(self, fid, pos, normal, src='designed', note='', inv=()):
+    def thruster(self, fid, pos, normal, src='designed', note='', inv=(), r=0.35):
         p = Vector(pos); n = Vector(normal).normalized()
-        part = self.emit(fid, HP.thruster(0.35), HP.frame(p, n.orthogonal(), n), inv)
-        self.fitdata.append(dict(id=fid, kind='thruster', cones=[dict(apex=tuple(p + n * 0.3), dir=tuple(n), r0=0.25, half=20.0, length=1.2)]))
+        part = self.emit(fid, HP.thruster(r), HP.frame(p, n.orthogonal(), n), inv)
+        self.fitdata.append(dict(id=fid, kind='thruster', cones=[dict(apex=tuple(p + n * 0.3 * r / 0.35), dir=tuple(n), r0=0.25 * r / 0.35, half=20.0,
+                                                                  length=1.2 * max(0.6, r / 0.35))]))
         self.features.append(dict(id=fid, kind='thruster', what='attitude thruster quad', count=1, pos=tuple(p),
                                   aim=None, src=src, note=note, inv=[inv] if isinstance(inv, str) else list(inv)))
 
@@ -572,8 +655,8 @@ class Kit:
         return self._surface_part(fid, HP.vent(w, h, slats), pos, normal, (0, 0, 1) if abs(Vector(normal).z) < 0.7 else (1, 0, 0), inv,
                                   'louvre panel %.1f x %.1f' % (w, h), 'vent', src, note, aperture=0.4)
 
-    def lamp(self, fid, pos, normal, inv=(), src='picture', note=''):
-        return self._surface_part(fid, HP.lamp(0.08), pos, normal, (0, 0, 1) if abs(Vector(normal).z) < 0.7 else (1, 0, 0), inv,
+    def lamp(self, fid, pos, normal, inv=(), src='picture', note='', up=None):
+        return self._surface_part(fid, HP.lamp(0.08), pos, normal, up or ((0, 0, 1) if abs(Vector(normal).z) < 0.7 else (1, 0, 0)), inv,
                                   'running light', 'lamp', src, note, aperture=0.35)
 
     def slit(self, fid, pos, normal, w, h, inv=(), src='picture', note=''):
@@ -619,6 +702,42 @@ class Kit:
         self._obj(fid + '_slab', V, F, m, grp='hull'); self._obj(fid + '_rivets', RV, RF, 'iron', grp='hull')
         if inv:
             self.built.append(dict(id=fid, kind='patch', inv=[inv], shaped=True, detailed=lift > 0, subs=['slab', 'lift', 'rivet']))
+
+    def spinal(self, fid, root, length, r=0.55, slot='F', weapon='doom', src='picture', note='', inv=(), **kw):
+        """a fixed forward weapon along the ship's axis (the Eclipse corona arc projector): root on the hull face, +X"""
+        p = Vector(root)
+        part = HP.spinal(length, r, **kw)
+        part = self.emit(fid, part, HP.frame(p, (1, 0, 0), (0, 0, 1)), inv, keep=False)
+        fd = part.fit
+        for ob in self.coll.objects:
+            if ob.get('grp') == fid and ob.get('role') != 'mount':
+                ob['gun_fixed'] = 1; ob['turret'] = 0
+        # R221: the fixed weapon's firing lane, forward of its muzzle along the axis (4 degree spread, to 80 percent of the length):
+        # a gun resting in it, or turned into it through its arc, is a LANE clash in clash.py, as for a launcher
+        mz = Vector(fd['muzzles'][0][1]); hr = fd['radius']
+        lane = dict(apex=tuple(mz), dir=(1.0, 0.0, 0.0), u=(0.0, 1.0, 0.0), w=(0.0, 0.0, 1.0), hu=hr, hw=hr, half=4.0, length=self.length * 0.8,
+                    what='firing lane')
+        self.fitdata.append(dict(id=fid, kind='gun', slot=slot, pivot=tuple(fd['pivot'][1]), up=(0, 0, 1), mount='spinal', ring=tuple(p),
+                                 rest_yaw=0.0, reach=fd['reach'], band=(-10, 0, 10, 20), muzzles=[tuple(m[1]) for m in fd['muzzles']],
+                                 cal=r, hous_r=fd['radius'], rest_pitch=0.0, lanes=[lane]))
+        self.features.append(dict(id=fid, kind='gun', what='spinal %s (fixed)' % ('arc emitter' if getattr(part, 'type', '') == 'corona_arc' else 'projector'), count=1, pos=tuple(p), aim=(0.0, 0.0), slot=slot,
+                                  weapon=weapon, src=src, note=note, muzzle=[tuple(m[1]) for m in fd['muzzles']], normal=(1, 0, 0),
+                                  fixed=True, inv=[inv] if isinstance(inv, str) else list(inv)))
+
+    def core(self, fid, centre, r, src='picture', note='', inv=()):
+        p = Vector(centre)
+        part = self.emit(fid, HP.core_cage(r), HP.frame(p, (1, 0, 0), (0, 0, 1)), inv, keep=False)
+        self.features.append(dict(id=fid, kind='core', what='caged core of trapped light, %.1f across' % (2 * r), count=1, pos=tuple(p), aim=None,
+                                  src=src, note=note, inv=[inv] if isinstance(inv, str) else list(inv)))
+
+    def strut(self, fid, a, b, w=0.22, r=0.035, up=(0, 0, 1), src='designed', note='', inv=()):
+        part = self.emit(fid, HP.strut(a, b, w, r, up), Matrix.Identity(4), inv, keep=False)
+        self.features.append(dict(id=fid, kind='strut', what='truss strut, %.1f long' % (Vector(b) - Vector(a)).length, count=1, pos=tuple(a),
+                                  end=tuple(b), aim=None, src=src, note=note, inv=[inv] if isinstance(inv, str) else list(inv)))
+
+    def corewin(self, fid, pos, normal, r, inv=(), src='picture', note=''):
+        return self._surface_part(fid, HP.corewin(r), pos, normal, (1, 0, 0), inv, 'core port, hexagonal, %.1f across' % (2 * r), 'corewin',
+                                  src, note, aperture=0.5)
 
     def allow_touch(self, a, b, why):
         self.allow.append((a, b, why))

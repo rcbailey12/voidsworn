@@ -159,7 +159,7 @@ def run(K, out, code, length, verbose=True):
             clear_el = None; first = None
             for e in f['band']:
                 er = math.radians(e)
-                if f['mount'] == 'casemate':
+                if f['mount'] in ('casemate', 'spinal'):
                     d = hz * math.cos(er) + Vector((0, 0, 1)) * math.sin(er)
                 else:
                     d = hz * math.cos(er) + up * math.sin(er)
@@ -181,7 +181,7 @@ def run(K, out, code, length, verbose=True):
     # ---- 3b. turret sweeps (R219)
     from mathutils import Matrix
     sweeps = []
-    turrets = [f for f in K.fitdata if f['kind'] == 'gun' and f['mount'] != 'casemate']
+    turrets = [f for f in K.fitdata if f['kind'] == 'gun' and f['mount'] not in ('casemate', 'spinal')]  # fixed guns do not turn
     for f in turrets:
         movers = [r for r in rec if r['grp'] == f['id'] and r['role'] == 'turn']
         if not movers:

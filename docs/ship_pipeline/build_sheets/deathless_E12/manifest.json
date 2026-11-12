@@ -1,0 +1,449 @@
+{
+ "code": "deathless_E12",
+ "sheet_version": 4,
+ "routes_note": "kit = the Eclipse parts kit (tools/blender/kits/eclipse/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
+ "turret_marking": "R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).",
+ "parts": [
+  {
+   "id": "S1p",
+   "kind": "strut",
+   "what": "truss strut, 1.9 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "struts"
+   ]
+  },
+  {
+   "id": "S2p",
+   "kind": "strut",
+   "what": "truss strut, 2.5 long",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "struts"
+   ]
+  },
+  {
+   "id": "S3p",
+   "kind": "strut",
+   "what": "truss strut, 2.5 long",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "struts"
+   ]
+  },
+  {
+   "id": "S4p",
+   "kind": "strut",
+   "what": "truss strut, 1.9 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "struts"
+   ]
+  },
+  {
+   "id": "S1s",
+   "kind": "strut",
+   "what": "truss strut, 1.9 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "struts"
+   ]
+  },
+  {
+   "id": "S2s",
+   "kind": "strut",
+   "what": "truss strut, 2.5 long",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "struts"
+   ]
+  },
+  {
+   "id": "S3s",
+   "kind": "strut",
+   "what": "truss strut, 2.5 long",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "struts"
+   ]
+  },
+  {
+   "id": "S4s",
+   "kind": "strut",
+   "what": "truss strut, 1.9 long",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "struts"
+   ]
+  },
+  {
+   "id": "C1",
+   "kind": "core",
+   "what": "caged core of trapped light, 1.5 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "core"
+   ]
+  },
+  {
+   "id": "T1",
+   "kind": "gun",
+   "what": "null cannon, twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "main_guns"
+   ],
+   "turret": true,
+   "pivot_object": "T1_turret",
+   "arc_lo": -180.0,
+   "arc_hi": 180.0
+  },
+  {
+   "id": "T2",
+   "kind": "gun",
+   "what": "null cannon, twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "main_guns"
+   ],
+   "turret": true,
+   "pivot_object": "T2_turret",
+   "arc_lo": -180.0,
+   "arc_hi": 180.0
+  },
+  {
+   "id": "A1",
+   "kind": "gun",
+   "what": "spinal arc emitter (fixed)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "emitter"
+   ],
+   "turret": false
+  },
+  {
+   "id": "G1",
+   "kind": "gun",
+   "what": "null spire, twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "sentry"
+   ],
+   "turret": true,
+   "pivot_object": "G1_turret",
+   "arc_lo": -180.0,
+   "arc_hi": 180.0
+  },
+  {
+   "id": "E1",
+   "kind": "engine",
+   "what": "engine, bell 1.0 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "E2",
+   "kind": "engine",
+   "what": "engine, bell 1.0 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "E3",
+   "kind": "engine",
+   "what": "engine, bell 1.0 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "L0p",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "block_lights"
+   ]
+  },
+  {
+   "id": "L1p",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "block_lights"
+   ]
+  },
+  {
+   "id": "L2p",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "block_lights"
+   ]
+  },
+  {
+   "id": "V1p",
+   "kind": "vent",
+   "what": "louvre panel 0.4 x 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "block_vents"
+   ]
+  },
+  {
+   "id": "H1p",
+   "kind": "hatch",
+   "what": "square hatch 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "block_hatches"
+   ]
+  },
+  {
+   "id": "Q1p",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q2p",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "L0s",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "block_lights"
+   ]
+  },
+  {
+   "id": "L1s",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "block_lights"
+   ]
+  },
+  {
+   "id": "L2s",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "block_lights"
+   ]
+  },
+  {
+   "id": "V1s",
+   "kind": "vent",
+   "what": "louvre panel 0.4 x 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "block_vents"
+   ]
+  },
+  {
+   "id": "H1s",
+   "kind": "hatch",
+   "what": "square hatch 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "block_hatches"
+   ]
+  },
+  {
+   "id": "Q1s",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q2s",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  }
+ ],
+ "masses": [
+  {
+   "name": "Hull: the stern block and the aft spine",
+   "route": "hand-built"
+  },
+  {
+   "name": "Block roof step",
+   "route": "hand-built"
+  },
+  {
+   "name": "Block flank cheeks",
+   "route": "hand-built"
+  },
+  {
+   "name": "Spine, fore",
+   "route": "hand-built"
+  },
+  {
+   "name": "Arc, fore port",
+   "route": "hand-built"
+  },
+  {
+   "name": "Arc, centre port",
+   "route": "hand-built"
+  },
+  {
+   "name": "Arc, aft port",
+   "route": "hand-built"
+  },
+  {
+   "name": "Arc, stern port",
+   "route": "hand-built"
+  },
+  {
+   "name": "Arc, fore starboard",
+   "route": "hand-built"
+  },
+  {
+   "name": "Arc, centre starboard",
+   "route": "hand-built"
+  },
+  {
+   "name": "Arc, aft starboard",
+   "route": "hand-built"
+  },
+  {
+   "name": "Arc, stern starboard",
+   "route": "hand-built"
+  },
+  {
+   "name": "Saddle, fore battery",
+   "route": "hand-built"
+  },
+  {
+   "name": "Saddle, aft battery",
+   "route": "hand-built"
+  },
+  {
+   "name": "Emitter collars",
+   "route": "hand-built"
+  },
+  {
+   "name": "Emitter shaft",
+   "route": "hand-built"
+  },
+  {
+   "name": "Emitter block",
+   "route": "hand-built"
+  }
+ ],
+ "break_pieces": [
+  {
+   "name": "bow piece",
+   "stations": "0.0 to 43.4 percent",
+   "bounded_by": [
+    "B-1"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "midships piece 1",
+   "stations": "43.4 to 74.8 percent",
+   "bounded_by": [
+    "B-1",
+    "B-2"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "stern piece",
+   "stations": "74.8 to 100.0 percent",
+   "bounded_by": [
+    "B-2"
+   ],
+   "full_interior": true
+  }
+ ],
+ "insides": "full interiors throughout the hull, hidden until a piece breaks (R215); every break piece carries its share"
+}
