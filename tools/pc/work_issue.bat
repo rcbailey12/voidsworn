@@ -1,6 +1,6 @@
 @echo off
 rem Workhorse (#217, Opus, Nov 7 2026): one job-board issue, one model, OpenCode headless on Ryan's PC. Nobody watches the run.
-rem Usage: work_issue.bat <issue number> <arm: deepseek, deepseekpro, kimi, kimicode or sonnet> [dryrun]   (WORK_MODEL overrides the arm's model id)
+rem Usage: work_issue.bat <issue number> <arm: deepseek, deepseekpro, kimi, kimicode, sonnet or opus> [dryrun]   (WORK_MODEL overrides the arm's model id)
 rem Each run gets its own folder, Downloads\voidsworn_test\work217\issue-<n>-<arm>\<date_time>\, holding repo\ (a fresh clone of
 rem main on branch work/issue-<n>-<arm>) and out\ (OpenCode events, the agent's report, run stats, balances, shots).
 rem latest.txt in issue-<n>-<arm>\ names the newest run folder.
@@ -45,7 +45,9 @@ rem kimicode: the Kimi Code plan (Ryan, Nov 12, issue 597); its key only works o
 if /i "%ARM%"=="kimicode" set "MODEL=kimicode/k3.1-pro"
 rem sonnet: Claude Sonnet 5.5 on the Max plan's monthly API credits (Ryan, Nov 12, issue 614); key VOIDSWORN_CLAUDE_API_KEY, never ANTHROPIC_API_KEY, which would switch Ryan's own Claude Code to API billing
 if /i "%ARM%"=="sonnet" set "MODEL=anthropic/claude-sonnet-5-5"
-if not defined MODEL (echo usage: work_issue.bat issue-number deepseek-deepseekpro-kimi-kimicode-or-sonnet [dryrun] & exit /b 2)
+rem opus: Claude Opus 5.5 on the same credits (Ryan, Nov 12 16:15: "why not use it as another opus worker")
+if /i "%ARM%"=="opus" set "MODEL=anthropic/claude-opus-5-5"
+if not defined MODEL (echo usage: work_issue.bat issue-number deepseek-deepseekpro-kimi-kimicode-sonnet-or-opus [dryrun] & exit /b 2)
 if defined WORK_MODEL set "MODEL=%WORK_MODEL%"
 rem The repo's bundled Node 22 first: the shell's Node 24 gives a false 4,048 pow differences in the parity math sweep (#217 trial)
 set "PATH=%USERPROFILE%\Downloads\voidsworn_test\node;C:\Program Files\nodejs;C:\Program Files\Git\cmd;%APPDATA%\npm;%PATH%"
@@ -112,6 +114,7 @@ set "OPENCODE_CONFIG=%T%work\opencode.json"
 rem kimicode: its own config with no helper agents (issue 597: five parallel helpers spent the plan's 5-hour window in 9 minutes); sonnet uses it too, to keep API credit spend linear
 if /i "%ARM%"=="kimicode" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
 if /i "%ARM%"=="sonnet" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
+if /i "%ARM%"=="opus" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
 if /i "%MODE%"=="dryrun" goto :drysetup
 call :getkey DEEPSEEK_API_KEY
 call :getkey MOONSHOT_API_KEY
@@ -119,6 +122,8 @@ call :getkey KIMI_CODE_API_KEY
 call :getkey VOIDSWORN_CLAUDE_API_KEY
 if /i "%ARM%"=="sonnet" if not defined VOIDSWORN_CLAUDE_API_KEY (echo no Claude API key saved: run CLAUDE_API_KEY.bat >> "%O%\result.txt" & exit /b 3)
 if /i "%ARM%"=="sonnet" goto :clone
+if /i "%ARM%"=="opus" if not defined VOIDSWORN_CLAUDE_API_KEY (echo no Claude API key saved: run CLAUDE_API_KEY.bat >> "%O%\result.txt" & exit /b 3)
+if /i "%ARM%"=="opus" goto :clone
 if /i "%ARM%"=="kimicode" if not defined KIMI_CODE_API_KEY (echo no Kimi Code key saved: run KIMI_CODE_KEY.bat >> "%O%\result.txt" & exit /b 3)
 if /i "%ARM%"=="kimicode" goto :clone
 if /i not "%ARM%"=="kimi" if not defined DEEPSEEK_API_KEY (echo no DeepSeek key saved: run WORKHORSE_SETUP.bat >> "%O%\result.txt" & exit /b 3)

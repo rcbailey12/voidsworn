@@ -37,6 +37,9 @@
       "models": {
         "claude-sonnet-5-5": {
           "name": "stand-in"
+        },
+        "claude-opus-5-5": {
+          "name": "stand-in"
         }
       }
     }

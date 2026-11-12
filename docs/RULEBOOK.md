@@ -129,9 +129,9 @@ agents-09.
 
 No Fable helpers: Ryan's Fable allowance is spent ("I just used the final fable reset", R180). Kimi was never fairly tested
 (only the pay-as-you-go tier, R164); Ryan took the Kimi Code plan on Nov 12, and it gets one head-to-head job against DeepSeek
-(arm kimicode, issue 597) before it holds a seat. Claude Sonnet 5.5 runs as a workhorse arm (sonnet, issue 614) on the Max plan's $100 a month of API
-credits (Ryan, Nov 12): the credits do not roll over, so they are spent each month on mid-size code jobs; it is the
-same model family as the Board, so it never serves as the different-model check of Opus work (R219). Codex's weekly usage is watched at every board check (it was at 19 percent with
+(arm kimicode, issue 597) before it holds a seat. Claude Opus 5.5 (arm opus, Ryan: "why not use it as another opus worker") and Sonnet 5.5 (arm sonnet) run as workhorse arms (issue 614) on the Max plan's $100 a month of API
+credits (Ryan, Nov 12): the credits do not roll over, so they are spent each month, Opus first, on jobs that would otherwise take an Opus
+worker seat; it is the same model family as the Board, so it never serves as the different-model check of Opus work (R219). Codex's weekly usage is watched at every board check (it was at 19 percent with
 six days to its reset on Nov 11, R219): when it runs low, code jobs go to the DeepSeek workhorse and Opus workers, and Codex
 keeps only what needs it. Ids: R128, R180e, R205, R206, R219, agents-12.
 

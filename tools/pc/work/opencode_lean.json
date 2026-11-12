@@ -53,6 +53,13 @@
             "context": 200000,
             "output": 32000
           }
+        },
+        "claude-opus-5-5": {
+          "name": "Claude Opus 5.5 (Max plan API credits, issue 614)",
+          "limit": {
+            "context": 200000,
+            "output": 32000
+          }
         }
       }
     }
