@@ -45,6 +45,39 @@ found on this sheet:
    - Structure still crossing: the bay B1, the deck boxes HB1 and HB2 (B-1), a lamp and two vents. The views on this page
      still show the old seams until the next PC render.
 
+## Paint (issue 601, Nov 12 2026)
+
+A16 is the first ship painted by a faction paint stack (RECIPE.md "The paint stack for sheet ships"): `"bake": "stack"` in
+`tools/recipe/ships/corsair_A16.json`, the Hullbreaker stack `tools/blender/kits/hullbreakers/stack.py` on the shared machinery
+`tools/blender/kits/shared/paint_stack.py`. Masks are baked from this ship's own geometry; colours were sampled from
+the round 8 concept (`corsair_A16_beauty.jpg`; the method is in the stack's `CONCEPT`); the concept is never projected; the
+trim sheet and decals are drawn by the stack (own work, CC0). The colour zones are this sheet's own materials: nothing on
+the sheet's design changed. Nobody painted A16 by hand.
+
+Sandbox preview (Blender 5.3 on CPU, 1024 atlases, 12 samples; the PC run bakes 4096 at 64 samples):
+[full](paint/A16_paint_full.jpg), [bow](paint/A16_paint_bow.jpg), [midships](paint/A16_paint_midships.jpg),
+[stern](paint/A16_paint_stern.jpg), [flat views](paint/A16_paint_views.jpg). The game's own pictures (camera 170 and 60) come
+from the PC job `tools/pc/jobs/A16_RUN_601.bat`.
+
+**Changed from the picture (paint), the builder's calls:**
+- Decals the concept does not show at its scale, placed by the stack's rules on the ship's own surfaces: the hull code "C19"
+  on both flanks forward, a clan mark (a broken ring torn by three claw slashes, dried-blood red) on the bow deck, kill
+  tallies on both flanks aft of midships, faded bone and soot chevrons by the bow tubes, all half worn off. Why: the faction
+  sheet asks for a crude, scavenged look and these read as the crew's own marks; no navy yellow (the concept has none).
+- A share of the soot and iron hull plates carry a thin, worn maroon over-paint (red_share 0.12 to 0.20 per zone). Why: the
+  concept scatters red plates through the dark hull more than the sheet's zone weights (one blood plate in eighteen) give.
+- The launch bay mouth carries faded warning stripes (a trim sheet row). Why: a working opening; the concept cannot show
+  the belly.
+
+**R224 in paint (sandbox numbers, `paint/density_sandbox.json`; `tools/recipe/density.py`).** Every part type is at or above
+the hull on texels per square unit (1.63 to 1.84 of the hull) and on paint detail (1.09 to 2.19; the dishes lowest). No
+paint flag. Mesh flags (the build's, not the paint's): the front tubes (triangles 0.45, edge features 0.29 of the hull) and
+the launch bay (0.18 and 0.18) are smoother in mesh than the hull; the paint carries rivets, scuffs and stripes on them.
+
+**Open for Ryan:** the running lights are the sheet's lamp parts (lens about 0.2 units across, about 0.5 px on a 70 px ship),
+dim as the faction sheet asks; the light size rule (2 px) applies to painted window and trim lights, which this stack does not
+paint.
+
 ## R221 clean-ups (Ryan, Nov 12 2026)
 
 1. **Chains cut.** Ryan: "let's get rid of the chains randomly around the ship. There's no purpose." All four are gone, and
