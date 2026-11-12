@@ -55,9 +55,12 @@ def build(K):
     K.mark('head_face', 'plate', ['slab', 'step', 'bevel', 'rivet'])
     K.box('A17_rust_brow', 4.05, 4.55, -0.65, 0.35, 1.8, 1.86, 'rust')
     K.box('A17_red_crest', -2.8, -1.6, -1.15, 1.15, 3.2, 3.25, 'blood')
+    # dried-blood red trophy plates on the deck-edge chamfers (thin plates, not raised blocks)
     for side in (1, -1):
-        K.loft('A17_redstripe_%d' % side, [(2.0, side * 2.47 if side > 0 else 2.0, -2.0 if side > 0 else 2.52, 1.0, 1.35, 0, 0),
-                                            (-0.5, side * 2.62 if side > 0 else 2.0, -2.0 if side > 0 else 2.67, 1.0, 1.4, 0, 0)], 'blood')
+        for j, (x, w) in enumerate(((1.05, 0.95), (0.05, 0.8))):
+            hw = abs(sy(x, side)); top = _k.sec_at(HULL, x)[4]; ct = _k.sec_at(HULL, x)[5]
+            K.patch('RS%d%s' % (j, 'p' if side > 0 else 's'), (x, (hw - ct * 0.5) * side, top - ct * 0.5 + 0.02), (0, 0.7 * side, 0.7), w, ct * 1.1,
+                    ang=0.04 * side, lift=0.03, t=0.05, m='blood', inv='rust_plates')
     K.mark('rust_plates', 'plate', ['slab', 'step', 'bevel', 'rivet'])
 
     # ---------------- the hump: stepped tiers with sloped faces, a crest ----------------
