@@ -59,8 +59,9 @@ keeps the whole upper two thirds; the fleet top left, the enemy and the log top 
 | log ticker, four lines | three lines; L opens the full log | say less |
 
 The tree prompts of issue 529 (PR 533, open): the prompt takes the place of the action while it is open (the game holds
-every other action until it is answered, so nothing else is lost). E1 and E2 put it where FIRE sits; E3 lets it take the
-whole shot column. The role prompt (three choices) takes the same place.
+every other action until it is answered, and it is asked after the Command, so the shot is not live). E1 puts it in the
+shot's place in the sheet; E2 at the foot where FIRE sits, with a taller darkening behind it; E3 in the shot column. The
+role prompt (three choices) takes the same place.
 
 ## Shield colour candidates (R191: one colour, used for nothing else on any screen)
 
@@ -76,14 +77,25 @@ colours shield damage #4fc4ff; the build drops that).
 
 ## Readability at 1080 (the rail spec's checks)
 
-READABILITY_TABLE
+| Option | Words | Smallest | Big Shoulders from | Strengths | Lowest contrast (word) | Under 4.5 | Overlaps (main and prompt frames) | Result |
+|---|---|---|---|---|---|---|---|---|
+| E1 LEDGER | 59 | 17 px | 28 px | TEXT, TEXT2, TEXT3 | 5.81 to 1 ("Log  L", TEXT3) | 0 | 0 | PASS |
+| E2 CROSSING | 68 | 17 px | 28 px | TEXT, TEXT2, TEXT3 | 6.03 to 1 ("Command", TEXT3) | 0 | 0 | PASS |
+| E3 FOOTING | 59 | 17 px | 28 px | TEXT, TEXT2, TEXT3 | 5.85 to 1 ("Heat", TEXT3) | 0 | 0 | PASS |
+
+The brightest and darkest boards per option are named in readability.json (brightest_bg, darkest_bg), with every word's
+contrast on each. The first capture round failed this check: the words at the right end of each sheet (the odds,
+"out of range", the Nemesis's name) sat where the darkening had begun to fade (3.7 to 4.3 to 1 over the planet and the
+nebula). The fix was the rail spec's own: a stronger darkening, not a panel (full strength out to 72% of its reach, the
+words kept inside that).
 
 Method: every drawn word's box and colour is recorded by the overlay (E*_items.json on the PC); contrast is the worst
 single pixel under each word on the brightest and on the darkest of six boards (the same veils with no words, the camera
 turned through a full circle about the same point: the planet, the nebula and the bright dust all pass behind each edge).
-Words on the board itself (the two ship names) use the map's dark halo and are not counted.
+Words on the board itself (the two ship names) use the map's dark halo and are not counted. The prompt frames are
+checked for size and overlap; their contrast was judged by eye (the prompt sits inside the same darkening).
 
-## The Board's pick
+## Pick (the worker's, for the Board to confirm or overrule)
 
 **E1 LEDGER, with Glacier shields.**
 
@@ -110,6 +122,10 @@ the mint ring under your ships and reads as "good".
   ruling on the mint ring if Verdigris is picked.
 - R191 says one shield colour on every screen; the Oct 24 ruling says the 3D shield bubbles keep faction colours. These
   pictures change the interface only. Which of the two governs the bubbles is a question for Ryan.
+- The enemy's violet hex markers and glow on the board are the nearest thing on these pictures to Ryan's "indigo to
+  purple" tell. They are board colours (the FOE family), not interface; worth a look when the board gets its pass.
+- In every option the bearing gun's odds show twice (in its gun row, small, and as the focus, large). The build can drop
+  the small one if Ryan finds it repetitive.
 - The capture tool (contrib/opus/ui_battle_ember/) is reusable for the build's before and after.
 
 ## How it was made
