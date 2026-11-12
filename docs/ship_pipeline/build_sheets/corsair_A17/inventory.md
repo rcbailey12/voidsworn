@@ -11,7 +11,7 @@ make it read as that thing. Source: `tools/blender/build_sheets/ships/corsair_A1
 | head_hatchboxes | hatchbox | framed boxes on the head roof | 3 | bow/top | a framed box, an inset lid, side ribs | picture |
 | scoops | tube | scoop drums at the lower corners of the head (port larger) | 2 | bow/side, bow/top | ribbed drums with bands, a rolled lip, a grille in a dark mouth | picture |
 | ears | dish | listening dishes as ears on brackets at the upper sides of the head | 2 | bow/top, bow/side | ribbed bowls with rims, feed horns on struts, yokes, a base | picture |
-| jaws | claw | jaws: articulated claws under and beside the head | 4 | bow/below, bow/side | hinge drums, armoured segments, joints, rams, hooked fingers | picture |
+| jaws | prong | jaws: long flat prongs reaching forward from the lower bow like a fork (round 3b: the Board read the round 3 claws as hands) | 4 | bow/below, bow/side, bow/top | hinge knuckles, long flat tapering blades, a spine ridge, joint knuckles, hooked tips | picture |
 | jaw_pipes | pipe | coiled hoses and pipes under the head between the jaws | 3 | bow/below | runs with flange rings | picture |
 | brow_rack | rack | rattle-rocket pod on the brow (data.js torp F) (the picture shows no launcher; data.js gives a forward torpedo slot) | 1 | bow/top | a box of cells with noses, frame, dividers, cheeks, a yoke and a ring | designed |
 | head_plates | plate | armour plating over the head | 1 | bow/top, bow/side, bow/below | slabs with steps, bevels, rivets | picture |
@@ -40,7 +40,6 @@ Kit sub-parts per type (what DETAILED checks):
 
 - antenna: base, mast, whip, pod
 - chain: link, lug
-- claw: hinge, arm, joint, ram, finger
 - dish: bowl, rib, feed, strut, yoke, post, base
 - engine: housing, collar, band, bell, lining, throat_glow, cone, cool, strut
 - gun: ring|plate, housing, mantlet, breech, tube, clamp, bore, vent
@@ -51,6 +50,7 @@ Kit sub-parts per type (what DETAILED checks):
 - patch: slab, lift, rivet
 - pipe: run, flange
 - plate: slab, step, bevel, rivet
+- prong: knuckle, blade, spine, joint, hook
 - pylon: web, plate
 - rack: box, frame, div, cell, nose, bore, cheek, yoke, ring
 - rib: rib
@@ -77,6 +77,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | head_hatchboxes | framed boxes on the head roof | 3 / 3 | Y | Y | Y |
 | scoops | scoop drums at the lower corners of the head (port larger) | 2 / 2 | Y | Y | Y |
 | ears | listening dishes as ears on brackets at the upper sides of the head | 2 / 2 | Y | Y | Y |
+| jaws | jaws: long flat prongs reaching forward from the lower bow like a fork | 4 / 4 | Y | Y | Y |
 | brow_rack | rattle-rocket pod on the brow (data.js torp F) | 1 / 1 | Y | Y | Y |
 | head_plates | armour plating over the head | 2 / 1 | Y | Y | Y |
 | neck_chain | chains over the neck | 1 / 1 | Y | Y | Y |
@@ -89,7 +90,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | head_face | face panels on the head front: raised framed panels with vertical stra | 3 / 1 | Y | Y | Y |
 | scoops | scoop drums at the lower corners of the head (port larger) | 2 / 2 | Y | Y | Y |
 | ears | listening dishes as ears on brackets at the upper sides of the head | 2 / 2 | Y | Y | Y |
-| jaws | jaws: articulated claws under and beside the head | 4 / 4 | Y | Y | Y |
+| jaws | jaws: long flat prongs reaching forward from the lower bow like a fork | 4 / 4 | Y | Y | Y |
 | head_plates | armour plating over the head | 2 / 1 | Y | Y | Y |
 | bow_thrusters | attitude thruster quads at the head | 2 / 2 | Y | Y | Y |
 | lamps | red lamps in rows along the lower flank | 12 / 12 | Y | Y | Y |
@@ -98,17 +99,17 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| jaws | jaws: articulated claws under and beside the head | 4 / 4 | Y | Y | Y |
+| jaws | jaws: long flat prongs reaching forward from the lower bow like a fork | 4 / 4 | Y | Y | Y |
 | jaw_pipes | coiled hoses and pipes under the head between the jaws | 3 / 3 | Y | Y | Y |
 | head_plates | armour plating over the head | 2 / 1 | Y | Y | Y |
-| belly_plates | flat armoured belly with chines | 1 / 1 | Y | Y | Y |
+| belly_plates | flat armoured belly with chines | 2 / 1 | Y | Y | Y |
 
 ### mid/top
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
 | neck_chain | chains over the neck | 1 / 1 | Y | Y | Y |
-| hump | the shoulder hump: stepped tiers with sloped faces, a crest, openings | 4 / 1 | Y | Y | Y |
+| hump | the shoulder hump: stepped tiers with sloped faces, a crest, openings | 3 / 1 | Y | Y | Y |
 | hump_hatchboxes | raised framed boxes on the hump and the neck deck | 3 / 3 | Y | Y | Y |
 | deck_guns | deck-edge twin turrets | 4 / 4 | Y | Y | Y |
 | crest_gun | twin turret on the hump crest | 1 / 1 | Y | Y | Y |
@@ -120,7 +121,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| hump | the shoulder hump: stepped tiers with sloped faces, a crest, openings | 4 / 1 | Y | Y | Y |
+| hump | the shoulder hump: stepped tiers with sloped faces, a crest, openings | 3 / 1 | Y | Y | Y |
 | deck_guns | deck-edge twin turrets | 4 / 4 | Y | Y | Y |
 | flank_casemates | hump flank twin casemates | 2 / 2 | Y | Y | Y |
 | patches | torn patch plates on the flanks and hump shoulder | 8 / 8 | Y | Y | Y |
@@ -134,7 +135,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
 | belly_turret | belly twin turret (covers below) | 1 / 1 | Y | Y | Y |
-| belly_plates | flat armoured belly with chines | 1 / 1 | Y | Y | Y |
+| belly_plates | flat armoured belly with chines | 2 / 1 | Y | Y | Y |
 
 ### stern/top
 
@@ -162,7 +163,33 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| belly_plates | flat armoured belly with chines | 1 / 1 | Y | Y | Y |
+| belly_plates | flat armoured belly with chines | 2 / 1 | Y | Y | Y |
 | engines | the stacked engine cluster: three per side, port bells larger | 6 / 6 | Y | Y | Y |
+
+
+## Structure per cell: distinct masses (blocks, tiers, belts), concept against build
+
+Concept counts read off the round 8 sheet by eye (A17 sheet: bow, the head block, its roof step, the neck block, the flank tier and belly band; midships, three stepped top blocks over flank blocks; stern, two top blocks, the engine block and flank blocks); build counts are the model's registered masses whose station range overlaps the third (below: masses reaching within 0.8 of the belly).
+
+| Cell | Concept | Build | Build masses |
+|---|---:|---:|---|
+| bow/top | 5 | 7 | Base hull (head and flank tier); Lower hull band; Head brow (step 1); Head crown (step 2); Flank block 1 port; Flank block 1 starboard; U1 neck block |
+| bow/side | 5 | 6 | Base hull (head and flank tier); Lower hull band; Head brow (step 1); Head crown (step 2); Flank block 1 port; U1 neck block |
+| bow/below | no view | 2 | Base hull (head and flank tier); Lower hull band |
+| mid/top | 7 | 13 | Base hull (head and flank tier); Lower hull band; Flank block 2 port; Flank block 3 port; Flank block 4 port; Flank block 2 starboard; Flank block 3 starboard; Flank block 4 starboard; U2 fore block; U3 ramp block; U4 mid block; U5 saddle b |
+| mid/side | 7 | 10 | Base hull (head and flank tier); Lower hull band; Flank block 2 port; Flank block 3 port; Flank block 4 port; U2 fore block; U3 ramp block; U4 mid block; U5 saddle block; Rack plinth |
+| mid/below | no view | 2 | Base hull (head and flank tier); Lower hull band |
+| stern/top | 5 | 9 | Base hull (head and flank tier); Lower hull band; Flank block 4 port; Flank block 5 port; Flank block 4 starboard; Flank block 5 starboard; U5 saddle block; U6 aft block; Engine block |
+| stern/side | 6 | 7 | Base hull (head and flank tier); Lower hull band; Flank block 4 port; Flank block 5 port; U5 saddle block; U6 aft block; Engine block |
+| stern/below | no view | 3 | Base hull (head and flank tier); Lower hull band; Engine block |
+
+## Proportions: length to beam and length to height, concept against build (the Board on round 3)
+
+Measured the same way on both: the concept sheet's top and side views and the blockout's top and side renders, bow left. Envelope: the whole outline. Hull: length over the median beam or height across the middle 60 percent of the length (dishes, guns and antennas sticking out at a few stations do not count).
+
+| | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
+|---|---:|---:|---:|---:|
+| concept | 2.04 | 3.54 | 2.75 | 4.06 |
+| build | 1.91 | 2.88 | 2.82 | 3.84 |
 
 Lines not present, shaped and detailed without a reason: 0.

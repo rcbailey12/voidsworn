@@ -101,7 +101,7 @@ if MODEL:
             rows.append(dict(cell=c, id=it['id'], built=b['n'], listed=it['count'], present=pres, shaped=bool(b['shaped']), detailed=bool(b['detailed'])))
         lines.append('')
     # ---- structure, not only parts (the Board on round 3, ships.md 2c): distinct masses per cell, concept against build ----
-    lo_z = M['lo'][2]
+    lo_z = min(m['z'][0] for m in M.get('masses', [])) if M.get('masses') else M['lo'][2]  # the belly, not claw tips
     regs = {'bow': (0.0, 33.4), 'mid': (33.3, 66.7), 'stern': (66.6, 100.0)}
     SC = getattr(inv, 'STRUCTURE', {})
     srows = []

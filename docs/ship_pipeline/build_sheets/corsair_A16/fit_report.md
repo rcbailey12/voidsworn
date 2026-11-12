@@ -74,7 +74,7 @@ The round 2 design (`tools/blender/build_sheets/ships/r2/corsair_A16.py`, the PR
 | Q3 and Q4 exhaust into the pods E1 and E2 and their pylons | stern quads moved to the castle's aft corners, above the pods |
 | E3 and E4 exhaust into the hull and the E0 housing | boosters moved below and aft of the stern end, exits at -12.1 |
 | E0 had no mount on the hull | its housing now runs forward into the stern (a mount piece) |
-| Claw blades H1 to H4 inside their hull housings | each housing is now the claw's own mount, the hinge drum in it, the blades clear of the hull |
+| Claw blades H1 to H4 inside their hull housings | each pincer and grabber has its own housing as its mount, the blades clear of the hull |
 | Tube bores I1 and I2 inside the prow | a sunk tube is a mount by design: its bore runs back into the prow; the mouth must be clear (EXIT check) |
 | Casemate housings P4, P5, S4, S5, SB inside hull masses | casemates set onto the sponson outer faces and the bow flank surface, plates cleared under each mount |
 | Dish posts D1 and D2 inside the plinth | dishes stand on the plinth top on their own base plates |
@@ -86,7 +86,7 @@ turret's swept circle (moved out).
 
 ## Round 3 (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0. Tested: 405 objects, 77 parts, 1086 close pairs, 803 rays, 16 guns, 8 turrets swept, 10 cones, 45 apertures.
+Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0. Tested: 407 objects, 77 parts, 921 close pairs, 796 rays, 16 guns, 8 turrets swept, 10 cones, 45 apertures.
 
 **Zero clashes left.** No clash is left in as intended.
 

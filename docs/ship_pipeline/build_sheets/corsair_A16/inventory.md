@@ -112,7 +112,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | flank_vents | louvre panels in a row along the lower flank | 6 / 6 | Y | Y | Y |
 | lamps | dim red running lights along both flanks and on the castle | 14 / 14 | Y | Y | Y |
 | bow_thrusters | attitude thruster quads at the bow | 2 / 2 | Y | Y | Y |
-| flank_ribs | vertical frame ribs dividing the flank into sections | 8 / 8 | Y | Y | Y |
+| flank_ribs | vertical frame ribs dividing the flank into sections | 6 / 8 | Y | Y | Y |
 | belt | belt strake along each flank | 1 / 2 | Y | Y | Y |
 
 ### bow/below
@@ -146,7 +146,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | mid_casemates | flank twin casemates amidships | 2 / 2 | Y | Y | Y |
 | patches | torn patch plates, crooked and overlapping, mid-flank and the tier 2 s | 8 / 8 | Y | Y | Y |
 | pale_plates | pale Hegemony grey trophy plates on the port flank | 1 / 1 | Y | Y | Y |
-| flank_ribs | vertical frame ribs dividing the flank into sections | 8 / 8 | Y | Y | Y |
+| flank_ribs | vertical frame ribs dividing the flank into sections | 6 / 8 | Y | Y | Y |
 | belt | belt strake along each flank | 1 / 2 | Y | Y | Y |
 | mid_chain | girdle chain over the tier 2 seam | 1 / 1 | Y | Y | Y |
 
@@ -177,7 +177,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
 | lamps | dim red running lights along both flanks and on the castle | 14 / 14 | Y | Y | Y |
-| flank_ribs | vertical frame ribs dividing the flank into sections | 8 / 8 | Y | Y | Y |
+| flank_ribs | vertical frame ribs dividing the flank into sections | 6 / 8 | Y | Y | Y |
 | castle | the castle (tier 3): sloped front with a dried-blood band, flank faces | 3 / 1 | Y | Y | Y |
 | bridge | bridge block on the castle roof with a vision slit | 3 / 1 | Y | Y | Y |
 | stern_casemates | castle flank twin casemates in boxy housings | 4 / 4 | Y | Y | Y |
@@ -196,5 +196,31 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | grapples | grapple arms under the belly (sheet side view: three grabbers) | 2 / 2 | Y | Y | Y |
 | belly_plates | flat armoured belly with chines | 1 / 1 | Y | Y | Y |
 | boosters | small lower booster bells | 2 / 2 | Y | Y | Y |
+
+
+## Structure per cell: distinct masses (blocks, tiers, belts), concept against build
+
+Concept counts read off the round 8 sheet by eye (A16 sheet: bow, the prow cap, brow steps, tube housing, chin and layered flank belts; midships, tier 2, the rack plinth, the vent box, three flank bands and the sponson; stern, castle, bridge, stern deck, two pod housings and flank bands); build counts are the model's registered masses whose station range overlaps the third (below: masses reaching within 0.8 of the belly).
+
+| Cell | Concept | Build | Build masses |
+|---|---:|---:|---|
+| bow/top | 5 | 7 | Hull slab (tier 1); Upper armour belt; Lower armour belt; Prow brow (two steps); Brow step; Chin; Raised armoured deck (tier 2) |
+| bow/side | 6 | 7 | Hull slab (tier 1); Upper armour belt; Lower armour belt; Prow brow (two steps); Brow step; Chin; Raised armoured deck (tier 2) |
+| bow/below | no view | 2 | Hull slab (tier 1); Chin |
+| mid/top | 6 | 8 | Hull slab (tier 1); Upper armour belt; Lower armour belt; Raised armoured deck (tier 2); Rack plinth; Castle (tier 3); Sponson port; Sponson starboard |
+| mid/side | 7 | 7 | Hull slab (tier 1); Upper armour belt; Lower armour belt; Raised armoured deck (tier 2); Rack plinth; Castle (tier 3); Sponson port |
+| mid/below | no view | 1 | Hull slab (tier 1) |
+| stern/top | 7 | 10 | Hull slab (tier 1); Upper armour belt; Lower armour belt; Castle (tier 3); Bridge block; Stern deck; Sponson port; Sponson starboard; Pod pylon port; Pod pylon starboard |
+| stern/side | 7 | 8 | Hull slab (tier 1); Upper armour belt; Lower armour belt; Castle (tier 3); Bridge block; Stern deck; Sponson port; Pod pylon port |
+| stern/below | no view | 1 | Hull slab (tier 1) |
+
+## Proportions: length to beam and length to height, concept against build (the Board on round 3)
+
+Measured the same way on both: the concept sheet's top and side views and the blockout's top and side renders, bow left. Envelope: the whole outline. Hull: length over the median beam or height across the middle 60 percent of the length (dishes, guns and antennas sticking out at a few stations do not count).
+
+| | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
+|---|---:|---:|---:|---:|
+| concept | 2.46 | 3.17 | 3.04 | 4.45 |
+| build | 2.13 | 2.80 | 3.01 | 4.18 |
 
 Lines not present, shaped and detailed without a reason: 0.

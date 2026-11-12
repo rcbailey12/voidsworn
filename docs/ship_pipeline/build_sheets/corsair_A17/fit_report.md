@@ -74,14 +74,14 @@ The round 2 design (`tools/blender/build_sheets/ships/r2/corsair_A17.py`, the PR
 
 | Clash (round 2) | Fix (round 3) |
 |---|---|
-| Engine bells E1 to E6 inside each other; E2 and E5 exhausts on their neighbours | exits set level at -7.25; centres spaced by the sum of the bell radii plus the lip |
-| P2 and S2 barrels striking the hump at every aft bearing | moved up onto the hump's front corners, superfiring over the neck deck |
-| P1 and S1 barrels through the ear dishes D1 and D2 | ears moved to the head's front corners; P1 and S1 back to the neck deck, resting 30 degrees out |
-| Ear dishes D1 and D2 had no mount on the hull | each dish stands on its own base plate on the head roof |
-| Q1 and Q2 bow thrusters inside the scoop drums, their exhaust on the drum ribs | thrusters moved up the head flanks between the ears and the drums |
-| Jaw blades inside the hull and the jaw housing | each jaw has its own housing (its mount) in the cut-in mouth; the blades clear the hull |
-| C2 girdle through the P2 and S2 turret rings | C2 moved aft to -1.62, over the hump and crest, clear of every ring |
-| Crest and belly turret housings sunk in the crest and the belly | turrets now sit on their rings on the surface, plates cleared under each mount |
+| Engine bells E1 to E6 inside each other; E2 and E5 exhausts on their neighbours | two columns a side, exits level at -7.25, centres spaced by the sum of the bell radii plus the lip |
+| P2 and S2 barrels striking the hump at every aft bearing | the mid block turrets now stand on the block top and superfire; the blocks behind them are no taller than their barrels |
+| P1 and S1 barrels through the ear dishes D1 and D2 | the neck block turrets stand inboard of the drums; the ears are bolted to the drum tops, out of every arc |
+| Ear dishes D1 and D2 had no mount on the hull | each dish is bolted to its scoop drum (a declared mount on another part) |
+| Q1 and Q2 bow thrusters inside the scoop drums, their exhaust on the drum ribs | bow thrusters on the body flank behind the drums, firing clear outboard |
+| Jaw blades inside the hull and the jaw housing | four prongs, each hinged in its own housing in the mouth, the blades clear of the hull |
+| C2 girdle through the P2 and S2 turret rings | C2 runs in the gap between the mid and saddle blocks, clear of every ring |
+| Crest and belly turret housings sunk in the crest and the belly | turrets sit on their rings on block tops and the belly band, plates cleared under each mount |
 
 While designing round 3 the check also caught (and the design fixed) plates swallowing slits and lamps, casemate breeches pushed
 into the hull, a pipe through a pod, chains through casemates, dishes too low on their posts, and, once turrets turned (R219),
@@ -90,7 +90,7 @@ turret's swept circle (moved out).
 
 ## Round 3 (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0. Tested: 312 objects, 59 parts, 762 close pairs, 503 rays, 8 guns, 6 turrets swept, 10 cones, 29 apertures.
+Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0. Tested: 361 objects, 58 parts, 819 close pairs, 502 rays, 8 guns, 6 turrets swept, 10 cones, 28 apertures.
 
 **Zero clashes left.** No clash is left in as intended.
 

@@ -192,7 +192,7 @@
   {
    "cell": "bow/side",
    "id": "flank_ribs",
-   "built": 8,
+   "built": 6,
    "listed": 8,
    "present": true,
    "shaped": true,
@@ -363,7 +363,7 @@
   {
    "cell": "mid/side",
    "id": "flank_ribs",
-   "built": 8,
+   "built": 6,
    "listed": 8,
    "present": true,
    "shaped": true,
@@ -507,7 +507,7 @@
   {
    "cell": "stern/side",
    "id": "flank_ribs",
-   "built": 8,
+   "built": 6,
    "listed": 8,
    "present": true,
    "shaped": true,
@@ -631,5 +631,66 @@
    "detailed": true
   }
  ],
- "failing": 0
+ "failing": 0,
+ "structure": [
+  {
+   "cell": "bow/top",
+   "concept": 5,
+   "build": 7
+  },
+  {
+   "cell": "bow/side",
+   "concept": 6,
+   "build": 7
+  },
+  {
+   "cell": "bow/below",
+   "concept": null,
+   "build": 2
+  },
+  {
+   "cell": "mid/top",
+   "concept": 6,
+   "build": 8
+  },
+  {
+   "cell": "mid/side",
+   "concept": 7,
+   "build": 7
+  },
+  {
+   "cell": "mid/below",
+   "concept": null,
+   "build": 1
+  },
+  {
+   "cell": "stern/top",
+   "concept": 7,
+   "build": 10
+  },
+  {
+   "cell": "stern/side",
+   "concept": 7,
+   "build": 8
+  },
+  {
+   "cell": "stern/below",
+   "concept": null,
+   "build": 1
+  }
+ ],
+ "ratios": {
+  "concept": {
+   "env_LB": 2.46,
+   "env_LH": 3.17,
+   "hull_LB": 3.04,
+   "hull_LH": 4.45
+  },
+  "build": {
+   "env_LB": 2.13,
+   "env_LH": 2.8,
+   "hull_LB": 3.01,
+   "hull_LH": 4.18
+  }
+ }
 }

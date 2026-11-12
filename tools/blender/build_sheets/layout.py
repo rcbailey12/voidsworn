@@ -105,7 +105,7 @@ checks = dict(length_from_game=L, model_length=ML, length_side=round(len_side, 3
               height_disagreement_percent=round(abs(height - height_bow) / L * 100, 2),
               widest_at_station_percent=round(beam_st, 1))
 # hull-only ratios (the proportion check, fittings excluded)
-hull_h = [m for m in M['masses'] if m['name'].startswith('Hull')][0]
+hull_h = [m for m in M['masses'] if m['obj'] == CODE + '_hull' or m['name'].startswith('Hull')][0]
 hull_beam = hull_h['y'][1] - hull_h['y'][0]
 checks['hull_beam'] = round(hull_beam, 2); checks['hull_depth'] = round(hull_h['z'][1] - hull_h['z'][0], 2)
 checks['L_to_B_hull'] = round(L / hull_beam, 2); checks['L_to_H_hull'] = round(L / checks['hull_depth'], 2)

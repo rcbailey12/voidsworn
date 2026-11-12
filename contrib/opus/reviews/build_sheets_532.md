@@ -107,3 +107,31 @@ castle and hump. None is a fit fault.
 - The round 3 renders: `C:\Users\rcbai\Downloads\voidsworn_test\opus532\r3d\` (r3, r3b, r3c are earlier passes of this round,
   kept, nothing deleted).
 - R219's arc test samples the barrels at their rest elevation for the sweep; the fire-line test covers elevations.
+
+# Round 3b (Opus worker, Nov 11 to 12 2026): massing first
+
+The Board on round 3: the parts, fit check and turret marking were right, but the hull massing did not match the concept, the
+first thing Ryan sees (his round 1 and 2 words: "flatter than the concept... the builds look like square blocks"; "the front is
+also just a flat block"). The inventory ticks had passed because they counted listed parts, not structure (RULEBOOK 5.7).
+
+## Measured, then built to the numbers
+
+`tools/blender/build_sheets/inventory.py` now measures length to beam and length to height the same way on the concept sheet's
+true top and side views and on the blockout's top and side renders (whole outline, and hull: length over the median beam or
+height across the middle 60 percent of the length), and counts distinct masses per blob-sweep cell, concept (by eye, written in
+the ship's `_inv.py` as STRUCTURE) against build (the model's registered masses). Both go in each ship's inventory.md and
+cells.json.
+
+| Ship | Concept hull L:B / L:H | Round 3 build | Round 3b build |
+|---|---|---|---|
+| corsair_A16 | 3.04 / 4.45 | 2.74 / 3.39 | see the sheet (about 3.05 / 4.2) |
+| corsair_A17 | 2.75 / 4.06 | 2.62 / 2.84 | see the sheet (about 2.83 / 3.8) |
+
+- **A17:** rebuilt long and low. A base hull with flank blocks; six top blocks stepping up toward the stern with gaps and
+  undercut bases; a big chamfered head with two roof steps over a cut-in mouth, the scoop drums under its corners; four long
+  flat prongs with hooked tips (a new kit part, `prong`); squat engine drums in two columns a side. About 30 percent lower.
+- **A16:** a slab about 4 deep with tier 2 and the castle as low steps; the bow tapers in plan from the tube cluster; the flank
+  in layered belts (upper armour belt, a recessed band of lights, vents and bow casemates, a lower belt); the engine pods
+  close in; curved pincers under the bow tip; short grabbers under the stern instead of legs under midships.
+- Cameras: view angles held from the round 3 fit (a free refit chose a 47 degree view to make the lower hull fill the
+  concept's outline, which would hide exactly what the Board flagged); framing refit to the new blockouts.
