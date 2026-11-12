@@ -117,14 +117,22 @@ that cannot fire into one line, then the fleet becomes one summary line ("Fleet 
   move is clicked (battle.gd _fans on the ghost); drawing them on hover is board work (fans rebuilt per hovered hex), not the
   HUD's, and belongs with the board's pass.
 
-## The issue 529 prompts (PR 533, not on main yet)
+## The issue 529 prompts (PR 533, merged into main while this was built)
 
-hud.gd has show_ask, hide_ask and ask_panel with PR 533's signatures; the prompt draws in the shot's place in the sheet.
-battle.gd's PR 533 code (keys 1 to 3, the click guard, `_on_action("ask")`) works unchanged against it. When PR 533 merges
-after this one, its hud.gd hunk (a modal show_ask) conflicts: keep this branch's version. If it merges first, take this
-branch's hud.gd and keep 533's battle.gd.
+Main was merged into this branch after PR 533 landed. hud.gd keeps show_ask, hide_ask and ask_panel with PR 533's
+signatures, but the prompt now draws in the shot's place in the sheet instead of a centred Lime modal (the conflict was
+resolved in favour of the sheet). battle.gd's PR 533 code (keys 1 to 3, the click guard, `_on_action("ask")`, the role
+order) works unchanged against it; tree_prompt_test, wing_cancel_test and the readability check's prompt moment pass.
 
-## Pictures (docs/shots/ui_battle_ember/build/)
+## Pictures (docs/shots/ui_battle_ember/build/): NOT YET MADE
+
+Blocked on Ryan's PC: its disk was full when the capture job started (Nov 11 19:39 CST; robocopy error 112, "There is not
+enough space on the disk", from the first file, before this job had written anything but a shallow clone of main into
+opus271b2\main). Nothing was deleted. Once there is room, queue opus271b2\b271_job1.bat again (or a copy under a new name)
+and run make_build_pictures.py on opus271b2\out. Main now has PR 533, so the before of the prompt moment is captured too.
+
+### When made
+
 
 before_* and after_* for three moments: 1_target (your turn with a target), 2_prompt (a "you may" prompt; the before is PR
 533's own picture, main having no prompt), 3_enemy (the enemy's turn). 1280 wide, the code name on a strip under the picture,
@@ -135,7 +143,7 @@ through build271_shots.bat, then make_build_pictures.py), seed 7, the Nemesis de
 
 - ui_spec_tests: 151 checks, 151 pass (section 9 is this screen's structure guards).
 - run_all_checks.js: every row PASS or KNOWN (the listed findings and oracle baselines, unchanged).
-- Godot: load_all 158 scripts, 11 scenes, 0 failed; the headless list: every check PASS locally except death_leap_check,
+- Godot: load_all 162 scripts, 11 scenes, 0 failed (after merging main with PR 533); the headless list: every check PASS locally except death_leap_check,
   which failed only because the sandbox's import did not finish the fx atlases ("baked atlas is imported"); GitHub imports
   them. The bot battle (seed 359): PASS, no script errors.
 
