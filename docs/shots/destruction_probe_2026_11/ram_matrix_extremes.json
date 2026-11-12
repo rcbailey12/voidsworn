@@ -1,0 +1,44 @@
+{
+  "cells": 110592,
+  "max_recoil_frac": 1.0666666666666667,
+  "max_recoil_cell": {
+    "att": "i_wisp",
+    "tgt": "penitent",
+    "att_cls": "Frigate",
+    "tgt_cls": "Cruiser",
+    "att_fac": "ithar",
+    "tgt_fac": "voidsworn",
+    "att_size": 0.46,
+    "tgt_size": 0.76,
+    "run": 3,
+    "quad": "prow",
+    "shield": true,
+    "hp_frac": 1,
+    "dmg": 18,
+    "dmg_frac_max": 0.13333333333333333,
+    "soak": 18,
+    "recoil": 32,
+    "recoil_frac_att": 1.0666666666666667,
+    "kills_full": false,
+    "kills_this": false,
+    "recoil_kills_full": true,
+    "cap_frac": 0.4,
+    "shieldless": false
+  },
+  "recoil_kills_full_cells": 896,
+  "recoil_kills_full_at_full_hp_cells": 448,
+  "recoil_full_kills_by_attacker": {
+    "i_wisp": {
+      "att_cls": "Frigate",
+      "att_fac": "ithar",
+      "cells": 224,
+      "max_frac": 1.0666666666666667
+    },
+    "i_wisp_l": {
+      "att_cls": "Frigate",
+      "att_fac": "ithar",
+      "cells": 224,
+      "max_frac": 1.0666666666666667
+    }
+  }
+}
