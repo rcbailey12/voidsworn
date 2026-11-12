@@ -188,6 +188,8 @@ func _ready() -> void:
 		shots_dir = str(args["f1-trace"])
 	if args.has("ui-shots"):
 		shots_dir = str(args["ui-shots"])
+	if args.has("tree-shots"):
+		shots_dir = str(args["tree-shots"])
 	_load_opts()
 	if shots_dir != "" or args.has("sheet-check"):
 		tips_off = true   # screenshot jobs: no onboarding tip card covering the top of the screen
@@ -222,6 +224,8 @@ func _ready() -> void:
 		_sheet_check()
 	elif args.has("planet-shot"):
 		_planet_shot()
+	elif args.has("tree-shots"):
+		_tree_shots(str(args.get("tree-shot", "role")))
 	elif args.has("ui-shots"):
 		# UI pass layout check (ui/battle/ui_shots.gd): five moments, a still and an overlap check each
 		var us: Node = load("res://ui/battle/ui_shots.gd").new()
@@ -500,6 +504,7 @@ func _begin(a) -> void:
 	bot_moved.clear()
 	bot_tried.clear()
 	bot_cmd_used = false
+	roles_opened = false
 	t_start = Time.get_ticks_msec() / 1000.0
 	last_progress = t_start
 	for id in views:
@@ -2891,6 +2896,15 @@ func _unhandled_input(e: InputEvent) -> void:
 
 
 func _on_key(k: int) -> void:
+	if hud.ask_panel != null and is_instance_valid(hud.ask_panel):
+		# issue 529: a tree prompt is open; 1 to 3 answer it, nothing else acts until it is answered
+		var a: Dictionary = V.get("ask") if V.get("ask") is Dictionary else {}
+		var opts: Array = a.get("opts", [])
+		var i := [KEY_1, KEY_2, KEY_3].find(k)
+		if i < 0: i = [KEY_KP_1, KEY_KP_2, KEY_KP_3].find(k)
+		if i >= 0 and i < opts.size():
+			_on_action("ask", str(opts[i].get("id", "")))
+		return
 	if k in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE] and (busy or api.phase == "enemy") and not ended:
 		# B2: Enter or Space hurries the rest of the enemy's turn (presentation only)
 		skip = true
@@ -3150,6 +3164,8 @@ func _on_hover(p: Vector2) -> void:
 
 
 func _on_click() -> void:
+	if hud.ask_panel != null and is_instance_valid(hud.ask_panel):
+		return   # issue 529: a tree prompt is open; answer it first
 	if not _can_act() or hover.x == 99999 or not _api_join():
 		return
 	var u := _unit_at(hover.x, hover.y)
@@ -3797,7 +3813,19 @@ func _on_action(name: String, arg) -> void:
 			else:
 				cmd_armed_t = -9.0
 				plog.act("command")
-				_cmd(func(): return api.command())
+				# issue 529: a picked "you may" skill asks yes or no first (the rules hold the prompt; answering gives the Command)
+				if api.has_method("command_or_ask"):
+					_cmd(func(): return api.command_or_ask() != "")
+				else:
+					_cmd(func(): return api.command())
+		"ask":
+			var opt := str(arg)
+			plog.act("ask " + opt)
+			hud.hide_ask()
+			_cmd(func(): return api.answer(opt))
+		"role":
+			var rid := sel
+			_cmd(func(): return api.change_role(rid))
 		"stance":
 			var sid := sel
 			var stn := str(arg)
@@ -3839,6 +3867,95 @@ func _on_action(name: String, arg) -> void:
 			start_default()
 		"quit":
 			_quit()
+
+
+# ---------------------------------------------------------------- issue 529: the tree prompts
+
+var roles_opened := false
+
+
+func _sync_ask() -> void:
+	var a = V.get("ask")
+	if a is Dictionary and not ended:
+		hud.show_ask(a)
+	elif hud.ask_panel != null:
+		hud.hide_ask()
+	# the Chorus role prompt opens once, when the player first has the battle (never for the bot or a showcase)
+	if not roles_opened and not bot and not showcase and not opening and not warming and not ended and api.phase == "player" and not busy and api.has_method("roles_open"):
+		roles_opened = true
+		_open_roles.call_deferred()
+
+
+func _open_roles() -> void:
+	_cmd(func(): return api.roles_open())
+
+
+# --tree-shots <dir> --tree-shot role|may|callout (issue 529 pictures, with --scenario): "role" the Chorus role prompt at
+# battle start and then a ship's role order; "may" Vex's Debt Comes Due yes or no prompt after the Command (C, C);
+# "callout" the bot plays until a Roles callout floats over a ship, then the log and the ship's lineage count.
+func _tree_shots(kind: String) -> void:
+	while busy or warming or api == null:
+		await get_tree().process_frame
+	await get_tree().create_timer(2.0).timeout
+	_end_opening()
+	await get_tree().create_timer(1.6).timeout
+	_refresh_ui()
+	await get_tree().create_timer(0.8).timeout
+	if kind == "role":
+		for i in 120:
+			if hud.ask_panel != null: break
+			await get_tree().process_frame
+		await _snap("tree_role_prompt")
+		while hud.ask_panel != null and is_instance_valid(hud.ask_panel):
+			var a: Dictionary = V.get("ask") if V.get("ask") is Dictionary else {}
+			_on_action("ask", "strike" if str(a.get("id", "")) != _first_player() else "screen")
+			await get_tree().create_timer(0.6).timeout
+		select(_first_player())
+		cam.focus(_pos(_first_player()), 170.0)
+		await get_tree().create_timer(1.2).timeout
+		await _snap("tree_role_order")
+	elif kind == "may":
+		select(_first_player())
+		await get_tree().create_timer(0.6).timeout
+		_on_action("command", null)
+		await get_tree().create_timer(0.3).timeout
+		_on_action("command", null)
+		for i in 120:
+			if hud.ask_panel != null: break
+			await get_tree().process_frame
+		await get_tree().create_timer(0.6).timeout
+		await _snap("tree_may_prompt")
+	else:
+		for i in 120:
+			if hud.ask_panel != null: break
+			await get_tree().process_frame
+		while hud.ask_panel != null and is_instance_valid(hud.ask_panel):
+			_on_action("ask", "strike")
+			for i in 30:
+				var shown := false
+				for f in floats:
+					var l: Label = f["lbl"]
+					if is_instance_valid(l) and l.text.begins_with("Roles Assigned") and f["t"] > 0.3:
+						shown = true
+				if shown: break
+				await get_tree().process_frame
+			if hud.ask_panel == null or not is_instance_valid(hud.ask_panel):
+				break
+		await _snap("tree_role_callout")   # the callout over the ship and the log line (bottom left)
+		await get_tree().create_timer(1.5).timeout
+		select(_first_player())
+		await get_tree().create_timer(1.0).timeout
+		hud._show_dtip()   # the "more on hover" layer: the Admiral lineage block counts each skill this battle
+		await get_tree().create_timer(0.5).timeout
+		await _snap("tree_role_count")
+	_quit_report()
+
+
+func _first_player() -> String:
+	for u in V.get("units", []):
+		if u["side"] == "player" and not u["squadron"] and not u["dead"]:
+			return str(u["id"])
+	return ""
 
 
 # ---------------------------------------------------------------- in-battle menu (the browser's settings menu in the top bar)
@@ -3911,6 +4028,7 @@ func _toggle_opt(k: String) -> void:
 func _refresh_ui() -> void:
 	if api == null or V.is_empty() or quitting or not is_instance_valid(hud):
 		return
+	_sync_ask()
 	if sel != "" and (not VU.has(sel) or VU[sel]["dead"]):
 		sel = ""
 	if sel != "" and reach_map.is_empty() and _can_act() and _usable(_sel_unit()):
@@ -4268,6 +4386,10 @@ func _panel_info() -> Dictionary:
 			for stn in ["strike", "screen", "hunt"]:
 				orders.append({"text": "Wings: %s%s" % [stn, " (now)" if str(u.get("stance")) == stn else ""], "act": "stance", "arg": stn, "on": bool(u.get("canStance")) and str(u.get("stance")) != stn and _can_act(),
 					"tip": {"strike": "Wings range out and strike.", "screen": "Wings stay within 2 hexes, hunt craft first and shoot down torpedoes aimed at ships beside them.", "hunt": "Wings range 4 hexes further, +20% against crippled ships, easier to hit."}[stn]})
+		if str(u.get("role", "")) != "" and u.get("role") != null:   # issue 529: Roles Assigned at Hatching, one change per battle
+			var rn := str(u["role"]).capitalize()
+			orders.append({"text": "Role: %s" % rn, "act": "role", "on": _can_act() and bool(u.get("canRole")),
+				"tip": "This ship's role: strike +10 aim, screen +10 evasion, mend 10% stronger repair and regrowth. A ship may change its role once per battle."})
 		orders.append({"text": "Turn left (Q)", "act": "rotl", "on": can})
 		orders.append({"text": "Turn right (E)", "act": "rotr", "on": can})
 		info["orders"] = orders
@@ -4880,7 +5002,7 @@ func _load_opts() -> void:
 
 func _sync_teaching_switch() -> void:
 	tips_off = Teaching.is_off()
-	if args.has("no-tips") or args.has("shots") or args.has("breach-shots") or args.has("f1-trace") or args.has("ui-shots"):
+	if args.has("no-tips") or args.has("shots") or args.has("breach-shots") or args.has("f1-trace") or args.has("ui-shots") or args.has("tree-shots"):
 		tips_off = true
 
 

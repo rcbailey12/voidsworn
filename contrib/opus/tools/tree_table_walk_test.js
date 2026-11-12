@@ -13,13 +13,8 @@ const path = require('path');
 // must be removed from WAITING (the check fails until it is), and a row may not join the list after the freeze.
 const LIST_FROZEN = '2026-11-10';
 const WAITING = {
-  'matriarch:A:1:1': { date: '2026-11-10', reason: 'Spawned Before the Strike needs a Command declared after the brood moves; the harness bot declares on its first activation' },
-  'matriarch:cap:1': { date: '2026-11-10', reason: 'The Brood Does Not Stop needs the wing kill then retarget chain (H4 after a swarm kill)' },
-  'razormaw:A:1:1': { date: '2026-11-10', reason: 'Scent in the Dark needs a per-ship kill then target-change counter (H2)' },
-  'matriarch:B:0:0': { date: '2026-11-10', reason: 'Chorus roles need a battle-start role prompt and a change-role action in both twins and the Godot UI' },
-  'razormaw:B:0:0': { date: '2026-11-10', reason: 'Chorus roles need a battle-start role prompt and a change-role action in both twins and the Godot UI' },
-  'mending:B:0:0': { date: '2026-11-10', reason: 'Chorus roles need a battle-start role prompt and a change-role action in both twins and the Godot UI' },
-  'voice:B:0:0': { date: '2026-11-10', reason: 'Chorus roles need a battle-start role prompt and a change-role action in both twins and the Godot UI' }
+  // empty since issue 529 (Nov 11 2026): the last seven rows (the four Chorus roles, Spawned Before the Strike,
+  // The Brood Does Not Stop, Scent in the Dark) now work in battle
 };
 // The rows that were allowed to wait on LIST_FROZEN. Keep this literal: a row may leave WAITING when its effect lands,
 // but a row that joins the list must also join this literal, which is what a reviewer sees. The list only shrinks.

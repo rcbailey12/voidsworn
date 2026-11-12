@@ -3044,8 +3044,31 @@ const TREE_FX={
   "kassar:B:0:0":{k:"formation",n:10},"kassar:B:0:1":{k:"drillRevision"},"kassar:C:0:0":{k:"beacon",n:10},"kassar:C:0:1":{k:"standardForward",n:1},
   "vorn:B:0:0":{k:"formation",n:10},"vorn:B:0:1":{k:"drillRevision"},"vorn:C:0:0":{k:"beacon",n:10},"vorn:C:0:1":{k:"standardForward",n:1},
   "reyes:B:0:0":{k:"formation",n:10},"reyes:B:0:1":{k:"drillRevision"},"reyes:C:0:0":{k:"beacon",n:10},"reyes:C:0:1":{k:"standardForward",n:1},
-  "maren:B:0:0":{k:"formation",n:10},"maren:B:0:1":{k:"drillRevision"},"maren:C:0:0":{k:"beacon",n:10},"maren:C:0:1":{k:"standardForward",n:1}
+  "maren:B:0:0":{k:"formation",n:10},"maren:B:0:1":{k:"drillRevision"},"maren:C:0:0":{k:"beacon",n:10},"maren:C:0:1":{k:"standardForward",n:1},
+  // Issue 529: the last seven waiting rows. The four Chorus role rows (n: aim for strike and evasion for screen; m: the mend boost),
+  // Spawned Before the Strike, The Brood Does Not Stop (n: the damage of the second strike), Scent in the Dark.
+  "matriarch:B:0:0":{k:"roles",n:10,m:.1},"razormaw:B:0:0":{k:"roles",n:10,m:.1},"mending:B:0:0":{k:"roles",n:10,m:.1},"voice:B:0:0":{k:"roles",n:10,m:.1},
+  "matriarch:A:1:1":{k:"spawnedStrike",n:.15},
+  "matriarch:cap:1":{k:"broodNoStop",n:.5},
+  "razormaw:A:1:1":{k:"scentDark",n:10}
 };
+// Issue 529: the tree skills whose text says "you may" ask the player yes or no when the Command is given. The bot, the sims
+// and every test without an answer take "yes", which is what the skill did before the prompt existed.
+// cmd: the Command that asks; q: the one line the prompt shows; yes and no: the two buttons.
+const TREE_MAY={
+  heldAccount:{cmd:'barrage',q:'Hold one ship\'s volley until that ship has moved this round?',yes:'Hold one volley',no:'Fire every volley now'},
+  debtDue:{cmd:'barrage',q:'Delay the whole volley to the start of next round? It fires then with +20% damage.',yes:'Delay the volley',no:'Fire it now'},
+  salvoTwoHands:{cmd:'hunt',q:'Hold the damage bonus for half your ships and spend it next round instead?',yes:'Hold half',no:'Spend it all now'},
+  wingReserve:{cmd:'scramble',q:'Keep one extra wing unlaunched? It launches free at the start of next round.',yes:'Keep one back',no:'Launch them all'},
+  secondWave:{cmd:'scramble',q:'Hold all extra wings and launch them at the start of next round instead?',yes:'Hold the wings',no:'Launch them now'},
+  screensShift:{cmd:'iron',q:'Shift the wall: one ship takes 20 points more damage reduction, another 20 points less?',yes:'Shift the wall',no:'Keep it even'},
+  platesShadow:{cmd:'iron',q:'Stack the wall on one ship: 75% less damage for it, 25% less for every other ship?',yes:'Stack the wall',no:'Keep it even'},
+  weldMatters:{cmd:'restore',q:'Put one ship\'s whole repair share onto its most damaged section?',yes:'Weld one section',no:'Spread the repair'},
+  scrapFront:{cmd:'restore',q:'Give the flagship\'s repair share, doubled, to one other ship?',yes:'Give it away',no:'Keep it'},
+  growHurts:{cmd:'restore',q:'Put one ship\'s whole regrowth onto its most damaged section?',yes:'Grow one section',no:'Spread the regrowth'}
+};
+// Issue 529: Roles Assigned at Hatching. The three roles in prompt order, with the one line each button explains.
+const TREE_ROLES=[{id:'strike',n:'Strike',d:'+10 aim'},{id:'screen',n:'Screen',d:'+10 evasion'},{id:'mend',n:'Mend',d:'repair and regrowth 10% stronger'}];
 // Patron favour: grows with every boon you take from a patron
 const FAVOUR_TIERS=[{at:0,n:'Listening'},{at:4,n:'Partial sync',d:'Its protocols are rare more often.'},{at:12,n:'Synced',d:'If it is in range of your run, you start with one of its protocols.'},{at:25,n:'Full sync',d:'Its protocols are never common.'}];
 // Heat: optional rules after your first victory; each level adds 10% renown
