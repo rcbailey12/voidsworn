@@ -29,6 +29,12 @@ It holds the goal, the full history, every piece of owner feedback word for word
   Effort (Codex): high | xhigh   or   Models (Muse): <set>
   Done when: <the check that proves it, and what Ryan will see>
   ```
+- Ship build issues add four lines to the block (Ryan, Nov 11 2026, R214; template in docs/playbooks/ships.md section 7):
+  Route per part, Inside, Paint stack, Budget. Every build pull request body carries its done-when evidence and a method line
+  (build sheet link, manifest, budget numbers, changes made to the sheet); the outside check (issue 256) returns a build PR
+  without them as BLOCKING.
+- A ruling that changes a working method is not landed until the same pull request edits the working document a worker
+  reads for that area (the playbook, RECIPE.md, this file) (R214).
 - Muse's standing instructions: `contrib/opus/briefs/muse_standing_rule.md`.
 - Muse research, design and review jobs always include a blind Rey leg written before Rey reads the other legs (Ryan, Nov 3, R89). Write the Models line as: Rey writes a blind leg first, DeepSeek and Qwen write, Flash and Grok ideation only, Rey chairs; Argon blocked since Nov 5.
 - Questions for Ryan go to him directly in the agent's own chat, not as GitHub tags or comments (Ryan, Nov 2).
@@ -42,7 +48,8 @@ Match the job to the seat that is best at it, and keep the paid seats for what o
 | Board, PR review and merges, specs, visual calls, questions for Ryan | Claude, the project's Board thread (Fable 5.2 for the Nov 9 and 10 design window, R152; Opus for the build-out, R169) | the reviewer is the bottleneck; spend Claude on judgment, not bulk typing (2 or 3 threads at once) |
 | Well-specified coding: rules, campaign, UI, scripts, tests | Workhorse: DeepSeek V4.1 Flash in OpenCode on the PC (tools/pc/work_issue.bat) | merged on one review pass for $0.09 on #26 (R127) |
 | Hard or open-ended multi-file coding, ship rounds, screen builds, plans | Opus 5.5 worker threads (the hardest jobs while the Claude plan has room, R132, R152) | Kimi is off except a real job both DeepSeek models fail (R132, R134); it was slower and 50x the price per job on the API |
-| GPU and Blender work: bakes, renders, captures, benchmarks, exports | Codex on the PC (when Ryan un-parks Codex); until then Opus PC threads | Codex knows the pipeline tools; the workhorse is untested on GPU jobs |
+| Every ship model made in Blender: blockouts, hulls, kits, the station (R205) | Opus worker threads | Ryan, Nov 11: "I think builds in blender should come from Opus" |
+| GPU work that shapes no ship: bakes, renders, captures, benchmarks, exports | Codex on the PC | Codex knows the pipeline tools; the workhorse is untested on GPU jobs |
 | Research, design text, audits, second-opinion reviews | Muse (Rey chairs; blind Rey leg; DeepSeek and Qwen write) | several models, an outside view |
 | Ideation and wide brainstorms | Flash and Grok (free), through Muse | cheap and broad |
 | Independent checker on an Opus-built change | Rey (or ChatGPT when back) | nobody grades their own work |
