@@ -23,6 +23,7 @@ function Arm-Info($arm) {
     { $_ -in 'deepseek','deepseekpro' } { return @{ base = 'https://api.deepseek.com'; key = $env:DEEPSEEK_API_KEY; models = 'https://api.deepseek.com/models'; bal = 'https://api.deepseek.com/user/balance' } }
     'kimi'     { return @{ base = 'https://api.moonshot.ai/v1'; key = $env:MOONSHOT_API_KEY; models = 'https://api.moonshot.ai/v1/models'; bal = 'https://api.moonshot.ai/v1/users/me/balance' } }
     'kimicode' { return @{ base = 'https://api.kimi.com/coding/v1'; key = $env:KIMI_CODE_API_KEY; models = 'https://api.kimi.com/coding/v1/models'; bal = $null } }   # plan quota, no balance endpoint (issue 597)
+    'sonnet'   { return @{ base = 'https://api.anthropic.com/v1'; key = $env:VOIDSWORN_CLAUDE_API_KEY; models = 'https://api.anthropic.com/v1/models'; bal = $null; anthropic = $true } }   # Max plan API credits, no balance endpoint (issue 614)
     default    { throw "unknown arm $arm" }
   }
 }
@@ -155,7 +156,9 @@ elseif ($mode -eq 'keycheck') {
   $arm = $args[1]; $a = Arm-Info $arm
   if (-not $a.key) { Write-Host 'no key saved'; exit 1 }
   try {
-    $r = Invoke-RestMethod -UseBasicParsing -TimeoutSec 30 -Headers @{ Authorization = "Bearer $($a.key)" } -Uri $a.models
+    $h = @{ Authorization = "Bearer $($a.key)" }
+    if ($a.anthropic) { $h = @{ "x-api-key" = $a.key; "anthropic-version" = "2023-06-01" } }
+    $r = Invoke-RestMethod -UseBasicParsing -TimeoutSec 30 -Headers $h -Uri $a.models
     $ids = @($r.data | ForEach-Object { $_.id }) -join ', '
     Write-Host "key works; models: $ids"; exit 0
   } catch { Write-Host "key refused or no network: $($_.Exception.Message)"; exit 1 }

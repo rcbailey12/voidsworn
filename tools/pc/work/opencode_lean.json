@@ -41,6 +41,20 @@
           }
         }
       }
+    },
+    "anthropic": {
+      "options": {
+        "apiKey": "{env:VOIDSWORN_CLAUDE_API_KEY}"
+      },
+      "models": {
+        "claude-sonnet-5-5": {
+          "name": "Claude Sonnet 5.5 (Max plan API credits, issue 614)",
+          "limit": {
+            "context": 200000,
+            "output": 32000
+          }
+        }
+      }
     }
   },
   "tools": {
