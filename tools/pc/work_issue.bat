@@ -1,6 +1,6 @@
 @echo off
 rem Workhorse (#217, Opus, Nov 7 2026): one job-board issue, one model, OpenCode headless on Ryan's PC. Nobody watches the run.
-rem Usage: work_issue.bat <issue number> <arm: deepseek, deepseekpro, kimi, kimicode, sonnet or opus> [dryrun]   (WORK_MODEL overrides the arm's model id; WORK_EFFORT=low, high or max sets the kimicode arm's reasoning effort)
+rem Usage: work_issue.bat <issue number> <arm: deepseek, deepseekpro, kimi, kimicode, sonnet or opus> [dryrun]   (WORK_MODEL overrides the arm's model id; WORK_EFFORT=low, high or max sets the kimicode arm's reasoning effort); WORK_HARNESS=kimi runs the kimicode arm on Kimi Code CLI instead of OpenCode, issue 664
 rem Each run gets its own folder, Downloads\voidsworn_test\work217\issue-<n>-<arm>\<date_time>\, holding repo\ (a fresh clone of
 rem main on branch work/issue-<n>-<arm>) and out\ (OpenCode events, the agent's report, run stats, balances, shots).
 rem latest.txt in issue-<n>-<arm>\ names the newest run folder.
@@ -177,8 +177,26 @@ if defined WORK_SHIPS call "%T%get_ship_files.bat" "%VT%\build\godot" "%R%" "%R%
 if /i "%MODE%"=="dryrun" (echo dry> "%O%\balance_before.txt") else (%PS% balance %ARM% "%O%\balance_before.txt" > nul)
 powershell -NoProfile -Command "(Get-Date).ToString('s')" > "%O%\time_start.txt"
 echo agent running %time% >> "%O%\result.txt"
+rem WORK_HARNESS=kimi (issue 664, Board, Nov 13): on the kimicode arm only, the agent is Kimi Code CLI (kimi -p, print mode, auto permission,
+rem the plan login of the PC user) instead of OpenCode; the model is kimi-code/kimi-for-coding unless WORK_KIMI_MODEL says otherwise. Everything
+rem else (clone, task, guard, commit, push, checks) is the same. Unset, or on any other arm, nothing changes.
+if /i not "%ARM%"=="kimicode" goto :agent_oc
+if /i not "%WORK_HARNESS%"=="kimi" goto :agent_oc
+set "KIMIEXE="
+for /f "delims=" %%k in ('where kimi 2^>nul') do if not defined KIMIEXE set "KIMIEXE=%%k"
+if not defined KIMIEXE if exist "%USERPROFILE%\.local\bin\kimi.exe" set "KIMIEXE=%USERPROFILE%\.local\bin\kimi.exe"
+if not defined KIMIEXE (echo Kimi Code CLI not found: kimi is not on PATH >> "%O%\result.txt" & (echo 3)> "%O%\exit.txt" & goto :agent_end)
+set "KMODEL=kimi-code/kimi-for-coding"
+if defined WORK_KIMI_MODEL set "KMODEL=%WORK_KIMI_MODEL%"
+echo harness: Kimi Code CLI %KIMIEXE% -m %KMODEL% >> "%O%\result.txt"
+echo kimi-cli %KMODEL%> "%O%\model.txt"
+call "%T%tmo.bat" %WORK_CAP% "%KIMIEXE%" -m %KMODEL% --output-format stream-json -p "Read WORK_TASK.md in this folder and do exactly what it says. Do not commit and do not push." > "%O%\events.jsonl" 2> "%O%\stderr.txt"
+> "%O%\exit.txt" echo %ERRORLEVEL%
+goto :agent_end
+:agent_oc
 call "%T%tmo.bat" %WORK_CAP% "%OC%" run --auto --format json -m %MODEL% %VARIANT% --dir "%R%" "Read WORK_TASK.md in this folder and do exactly what it says. Do not commit and do not push." > "%O%\events.jsonl" 2> "%O%\stderr.txt"
 > "%O%\exit.txt" echo %ERRORLEVEL%
+:agent_end
 powershell -NoProfile -Command "(Get-Date).ToString('s')" > "%O%\time_agent_end.txt"
 set /p OCX=<"%O%\exit.txt"
 echo opencode exit %OCX% at %time% >> "%O%\result.txt"
