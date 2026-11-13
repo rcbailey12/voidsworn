@@ -1,6 +1,6 @@
 @echo off
 rem Workhorse (#217, Opus, Nov 7 2026): one job-board issue, one model, OpenCode headless on Ryan's PC. Nobody watches the run.
-rem Usage: work_issue.bat <issue number> <arm: deepseek, deepseekpro, kimi, kimicode, sonnet or opus> [dryrun]   (WORK_MODEL overrides the arm's model id)
+rem Usage: work_issue.bat <issue number> <arm: deepseek, deepseekpro, kimi, kimicode, sonnet or opus> [dryrun]   (WORK_MODEL overrides the arm's model id; WORK_EFFORT=low, high or max sets the kimicode arm's reasoning effort)
 rem Each run gets its own folder, Downloads\voidsworn_test\work217\issue-<n>-<arm>\<date_time>\, holding repo\ (a fresh clone of
 rem main on branch work/issue-<n>-<arm>) and out\ (OpenCode events, the agent's report, run stats, balances, shots).
 rem latest.txt in issue-<n>-<arm>\ names the newest run folder.
@@ -51,6 +51,19 @@ if not defined MODEL (echo usage: work_issue.bat issue-number deepseek-deepseekp
 rem WORK_MODEL overrides the model only within the arm's own provider (Board, Nov 13: a q_ file set WORK_MODEL=kimicode/k3 in the
 rem queue watcher's window, and three later opus-arm runs ran on Kimi and stopped on its quota); one from another provider is ignored
 if defined WORK_MODEL for /f "tokens=1 delims=/" %%P in ("%MODEL%") do for /f "tokens=1 delims=/" %%Q in ("%WORK_MODEL%") do if /i "%%P"=="%%Q" (set "MODEL=%WORK_MODEL%") else (echo WORK_MODEL %WORK_MODEL% ignored: arm %ARM% runs on %%P)
+rem WORK_EFFORT (issue 656, Opus, Nov 13 2026): optional reasoning effort for the run, low, high or max. It becomes OpenCode's
+rem "--variant <effort>", which picks the model's variant in work\opencode_lean.json (variant low sends reasoning_effort "low" to
+rem the API; proof: contrib/opus/reviews/kimi_effort_smoke_656.md). Unset, nothing is added and every arm runs exactly as before.
+rem Only the kimicode arm takes it (its models are the ones with variants written and measured); on any other arm it is ignored
+rem with a line, so a WORK_EFFORT left in the queue watcher's window cannot change an opus or deepseek run (the WORK_MODEL trap).
+set "VARIANT="
+if not defined WORK_EFFORT goto :effortset
+echo %WORK_EFFORT%| findstr /i /x "low high max" > nul
+if errorlevel 1 (echo WORK_EFFORT %WORK_EFFORT% ignored: use low, high or max & goto :effortset)
+if /i not "%ARM%"=="kimicode" (echo WORK_EFFORT %WORK_EFFORT% ignored: only the kimicode arm takes an effort & goto :effortset)
+rem written in lower case: OpenCode's variant names are case sensitive
+for %%L in (low high max) do if /i "%WORK_EFFORT%"=="%%L" set "VARIANT=--variant %%L"
+:effortset
 rem The repo's bundled Node 22 first: the shell's Node 24 gives a false 4,048 pow differences in the parity math sweep (#217 trial)
 set "PATH=%USERPROFILE%\Downloads\voidsworn_test\node;C:\Program Files\nodejs;C:\Program Files\Git\cmd;%APPDATA%\npm;%PATH%"
 rem The same bundled Node 22 for the runner's own check step (a quoted full path survives the time-limit wrapper)
@@ -96,7 +109,7 @@ set "OK=0"
 mkdir "%O%"
 echo %A%> "%WORK_ROOT%\%K%\latest.txt"
 echo started %date% %time% (%MODE%) > "%O%\result.txt"
-echo %MODEL%> "%O%\model.txt"
+if defined VARIANT (echo %MODEL% %VARIANT%> "%O%\model.txt") else (echo %MODEL%> "%O%\model.txt")
 rem Ryan's one cleanup switch (issue 377). The runner only creates the file, with the setting off, and then only reads it.
 set "SETF=%WORK_ROOT%\runner_settings.txt"
 if not exist "%SETF%" call :settings
@@ -164,7 +177,7 @@ if defined WORK_SHIPS call "%T%get_ship_files.bat" "%VT%\build\godot" "%R%" "%R%
 if /i "%MODE%"=="dryrun" (echo dry> "%O%\balance_before.txt") else (%PS% balance %ARM% "%O%\balance_before.txt" > nul)
 powershell -NoProfile -Command "(Get-Date).ToString('s')" > "%O%\time_start.txt"
 echo agent running %time% >> "%O%\result.txt"
-call "%T%tmo.bat" %WORK_CAP% "%OC%" run --auto --format json -m %MODEL% --dir "%R%" "Read WORK_TASK.md in this folder and do exactly what it says. Do not commit and do not push." > "%O%\events.jsonl" 2> "%O%\stderr.txt"
+call "%T%tmo.bat" %WORK_CAP% "%OC%" run --auto --format json -m %MODEL% %VARIANT% --dir "%R%" "Read WORK_TASK.md in this folder and do exactly what it says. Do not commit and do not push." > "%O%\events.jsonl" 2> "%O%\stderr.txt"
 > "%O%\exit.txt" echo %ERRORLEVEL%
 powershell -NoProfile -Command "(Get-Date).ToString('s')" > "%O%\time_agent_end.txt"
 set /p OCX=<"%O%\exit.txt"
