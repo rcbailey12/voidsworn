@@ -64,7 +64,7 @@ var tel_log: Array = []     # a slim run log (events only), kept with the save; 
 # ======================= setup =======================
 # Every table the campaign reads. load_tables refuses to start when one is missing, and export_campaign.js fails when the oracle
 # lacks one (it also scans the campaign scripts for every TB table they read, so a new table cannot slip past this list).
-const REQUIRED_TABLES = ["ABILITIES", "ADMIRALS", "ARCHETYPES", "ARC_NAME", "ARC_VARIANT", "ASPECTS", "BEVENTS", "BOONS", "BOON_D", "BOON_FX", "BOON_NEED", "BOSS_DMG", "BOSS_ENC", "BOSS_FAC", "BOSS_SCALE", "CAPTAINS", "CAUSE_WORD", "CLASS_TRACK_MAX", "CMD_TEXT", "DEEP_MAPS", "ENCOUNTERS", "ENC_POOL", "ENC_SPECIAL", "EVENTS", "EVENT_FALLBACK", "FACTIONS", "FAC_GATES", "FAC_MAP", "FAC_REGION", "FAC_VERBS", "FAC_WNAMES", "FAC_WTRAIT", "FAVOUR_TIERS", "FNAMES", "FX_CAPS", "HEAT", "HULLS", "HULL_VARIANTS", "KILL_CAUSES", "KIND_WORD", "LEGACY", "MAP_NAME", "MASTERY_PERKS", "MASTERY_XP", "LINEAGE_XP", "LINEAGE_TREES", "CAPSTONE_MASTERY_XP", "CAPSTONE_MASTERY_PERKS", "MODULES", "MOD_NAMES", "MOD_NEED", "MORE_SHIP_NAMES", "NEM_ADAPT", "NEM_ADAPT_FAC", "NEM_BEAT_WORD", "NEM_CLOCK", "NEM_FAC", "NEM_LINES", "NEM_PERSONA", "NEM_TRAITS", "NEM_VOICE", "NEM_WEAK", "NODE_INFO", "NODE_MODS", "PATRONS", "PERKS", "RAMP", "RANKS", "RANK_XP", "RARITY", "REGIONS", "REGION_BIOME", "RELICS", "RELIC_NAMES", "REWARD_DEF", "ROCK_KINDS", "RUN_FACTIONS", "RUN_WORD", "SECTOR_CONDS", "SECTOR_POOL", "SHAPES", "SHIP_NAMES", "TREE_FX", "W", "WING_PERKS", "WING_XP", "WIN_TITLE", "WTRAITS"]
+const REQUIRED_TABLES = ["ABILITIES", "ADMIRALS", "ARCHETYPES", "ARC_NAME", "ARC_VARIANT", "ASPECTS", "BEVENTS", "BOONS", "BOON_D", "BOON_FX", "BOON_NEED", "BOSS_DMG", "BOSS_ENC", "BOSS_FAC", "BOSS_SCALE", "CAPTAINS", "CAUSE_WORD", "CLASS_TRACK_MAX", "CMD_TEXT", "CORE_EAT_HULL", "DEEP_MAPS", "ENCOUNTERS", "ENC_POOL", "ENC_SPECIAL", "EVENTS", "EVENT_FALLBACK", "FACTIONS", "FAC_GATES", "FAC_MAP", "FAC_REGION", "FAC_VERBS", "FAC_WNAMES", "FAC_WTRAIT", "FAVOUR_TIERS", "FNAMES", "FX_CAPS", "HEAT", "HULLS", "HULL_VARIANTS", "KILL_CAUSES", "KIND_WORD", "LEGACY", "MAP_NAME", "MASTERY_PERKS", "MASTERY_XP", "LINEAGE_XP", "LINEAGE_TREES", "CAPSTONE_MASTERY_XP", "CAPSTONE_MASTERY_PERKS", "MODULES", "MOD_NAMES", "MOD_NEED", "MORE_SHIP_NAMES", "NEM_ADAPT", "NEM_ADAPT_FAC", "NEM_BEAT_WORD", "NEM_CLOCK", "NEM_FAC", "NEM_LINES", "NEM_PERSONA", "NEM_TRAITS", "NEM_VOICE", "NEM_WEAK", "NODE_INFO", "NODE_MODS", "PATRONS", "PERKS", "RAMP", "RANKS", "RANK_XP", "RARITY", "REGIONS", "REGION_BIOME", "RELICS", "RELIC_NAMES", "REWARD_DEF", "ROCK_KINDS", "RUN_FACTIONS", "RUN_WORD", "SECTOR_CONDS", "SECTOR_POOL", "SHAPES", "SHIP_NAMES", "TREE_FX", "W", "WING_PERKS", "WING_XP", "WIN_TITLE", "WTRAITS"]
 func load_tables(path: String = TABLES_PATH) -> String:
 	var txt = FileAccess.get_file_as_string(path)
 	var j = JSON.parse_string(txt)
@@ -243,7 +243,8 @@ func runDefaults() -> Dictionary:
 	return {"fac": "voidsworn", "foes": null, "admiral": "vex", "credits": 0, "cpCap": 10, "sector": 1, "relics": [], "inventory": [], "fleet": [], "pos": null,
 		"stats": {"battles": 0, "elites": 0, "bosses": 0, "kills": 0, "lost": 0}, "t0": 0, "fallen": [], "ambush": false, "over": false, "boons": [], "patrons": [],
 		"aspect": null, "flagUid": null, "heat": [], "mastery": 0, "ransoms": 0, "altFleet": false, "cmdOverride": null, "giftBoon": null, "reserve": [], "seenEvents": [],
-		"regionsUsed": [], "condsUsed": [], "curNode": null, "reinf": 0, "flags": {}, "nem": null, "verbUsed": 0, "verbNext": null, "classTrack": {}, "boonRerolls": 0}
+		"regionsUsed": [], "condsUsed": [], "curNode": null, "reinf": 0, "flags": {}, "nem": null, "verbUsed": 0, "verbNext": null, "classTrack": {}, "boonRerolls": 0,
+		"eatenCore": null, "eatCoreSeen": false}
 func normalizeRun(r) -> Variant:
 	if not (r is Dictionary): return r
 	var d = runDefaults()
@@ -557,15 +558,16 @@ func boonUseful(id, kit: Dictionary) -> bool:
 # useless fillers (an exhausted pool gives a short offer, which boonStep pays 60 credits for). One special slot: legendary or duo, duo 45%.
 func boonOfferPool(p) -> Array:
 	var kit = fleetKit(); var pool = []
+	var eaten = RUN.get("eatenCore")
 	for id in BOONS.keys():
 		var b = BOONS[id]; var bp = b.get("p")
-		if jt(bp) and not jt(b.get("leg")) and (bp == p or RUN["patrons"].has(bp)) and not hasBoon(id) and boonUseful(id, kit): pool.append(id)
+		if jt(bp) and not jt(b.get("leg")) and (bp == p or RUN["patrons"].has(bp)) and not hasBoon(id) and boonUseful(id, kit) and bp != eaten: pool.append(id)
 	return pool
 func boonOfferDuos(p) -> Array:
 	var have = boonPatrons(); var kit = fleetKit(); var duos = []
 	for id in BOONS.keys():
 		var b = BOONS[id]
-		if not jt(b.get("duo")) or hasBoon(id) or not boonUseful(id, kit) or not b["duo"].has(p): continue
+		if not jt(b.get("duo")) or hasBoon(id) or not boonUseful(id, kit) or not b["duo"].has(p) or b["duo"].has(RUN.get("eatenCore")): continue
 		var all_ok = true; var some = false
 		for q in b["duo"]:
 			if not (have.has(q) or q == p): all_ok = false
@@ -601,6 +603,7 @@ func boonOfferCan(p, minR) -> Array:
 	return out
 func legendaryFor(p, minR) -> Variant:
 	if not (float(z0(minR)) >= 1): return null
+	if RUN != null and p == RUN.get("eatenCore"): return null
 	var L = null
 	for id in BOONS.keys():
 		if jt(BOONS[id].get("leg")) and BOONS[id].get("p") == p:
@@ -612,7 +615,8 @@ func legendaryFor(p, minR) -> Variant:
 	return L if n >= 2 else null
 func rollNodeReward(type) -> Dictionary:
 	ensurePatrons()
-	var p = pick(RUN["patrons"])
+	var ps = RUN["patrons"].filter(func(q): return q != RUN.get("eatenCore"))
+	var p = pick(ps if not ps.is_empty() else RUN["patrons"])
 	if type == "elite" or type == "boss": return {"k": "boon", "p": p, "min": 1}
 	var x = rnd()
 	if x < 0.62: return {"k": "boon", "p": p}
@@ -672,7 +676,8 @@ func derive(ship: Dictionary) -> Dictionary:
 	var fx = sumFx(lst)
 	var mk = float(ship["mk"]) if jt(ship.get("mk")) else 1.0
 	var mm = 1.0 + 0.2 * (mk - 1.0); var tr = classTrack(t.get("cls"))   # B4 step 3: the class refit track adds 6% hull and 6% damage per level
-	var maxHp = jsround(float(t["hp"]) * mm * (1.0 + float(z0(fx.get("hpPct"))) + 0.06 * tr))
+	var eat = float(TB.CORE_EAT_HULL) if (RUN != null and jt(RUN.get("eatenCore")) and factionOfTpl(ship["tpl"]) == "chorus") else 0.0   # R78 Q15: an eaten core grows every Chorus ship, new ships included
+	var maxHp = jsround(float(t["hp"]) * mm * (1.0 + float(z0(fx.get("hpPct"))) + 0.06 * tr + eat))
 	var ws = []
 	for e in t["w"]: ws.append(mkWeapon(e[0], e[1], fx))
 	return {
@@ -1046,6 +1051,46 @@ func favourTier(p) -> int:
 	for i in range(FAVOUR_TIERS.size()):
 		if f >= float(FAVOUR_TIERS[i]["at"]): t = i
 	return t
+# R78 Q15 (issue 42): the first time a Chorus run reaches sector 3 it may eat one core it has not synced with.
+# Every core below Synced qualifies; if none does, there is no offer. Refusing marks the offer seen with no other change.
+func syncedTier() -> int:
+	for i in range(FAVOUR_TIERS.size()):
+		if float(FAVOUR_TIERS[i]["at"]) == 12.0: return i
+	return FAVOUR_TIERS.size() - 1
+func coreEatEligible() -> Array:
+	var out = []
+	if RUN == null or RUN["fac"] != "chorus": return out
+	var synced = syncedTier()
+	for p in PATRONS.keys():
+		if favourTier(p) < synced: out.append(p)
+	return out
+func coreEatDue() -> bool:
+	return RUN != null and RUN["fac"] == "chorus" and float(RUN["sector"]) == 3.0 and not jt(RUN.get("eatCoreSeen")) and not coreEatEligible().is_empty()
+func eatsCoreBoon(b, p) -> bool:
+	if not (b is Dictionary) or not BOONS.has(b.get("id")): return false
+	var B = BOONS[b["id"]]
+	return B.get("p") == p or (jt(B.get("duo")) and B["duo"].has(p))
+func _eat_core(p) -> void:
+	RUN["eatenCore"] = p; RUN["eatCoreSeen"] = true
+	RUN["boons"] = or_(RUN.get("boons"), []).filter(func(b): return not eatsCoreBoon(b, p))
+	if RUN.get("reward") is Dictionary and RUN["reward"].get("boonOffer") is Array:
+		RUN["reward"]["boonOffer"] = RUN["reward"]["boonOffer"].filter(func(o): return not eatsCoreBoon(o, p))
+	var alt = null
+	for q in or_(RUN.get("patrons"), []):
+		if q != p: alt = q; break
+	if alt != null:
+		if RUN.get("map") is Dictionary:
+			for c in RUN["map"]["cols"]:
+				for n in c:
+					if n.get("rw") is Dictionary and n["rw"].get("k") == "boon" and n["rw"].get("p") == p: n["rw"]["p"] = alt
+		if RUN.get("reward") is Dictionary and RUN["reward"].get("rw") is Dictionary and RUN["reward"]["rw"].get("k") == "boon" and RUN["reward"]["rw"].get("p") == p: RUN["reward"]["rw"]["p"] = alt
+func applyEatCore(p) -> bool:
+	if RUN == null or jt(RUN.get("eatCoreSeen")) or not coreEatEligible().has(p): return false
+	changeFleet(_eat_core.bind(p))
+	return true
+func refuseCoreEat() -> bool:
+	if RUN == null or jt(RUN.get("eatCoreSeen")): return false
+	RUN["eatenCore"] = null; RUN["eatCoreSeen"] = true; return true
 func heatLevel(list) -> float:
 	var t = 0.0
 	for k in or_(list, []): t += float(z0(HEAT[k].get("w"))) if HEAT.has(k) else 0.0
@@ -1108,7 +1153,7 @@ func newRun(admiralId, fac, opt = {}) -> void:
 	fac = fac if RUN_FACTIONS.has(fac) else "voidsworn"
 	var foes = shuffle(RUN_FACTIONS.filter(func(f): return f != fac))
 	RUN = {"fac": fac, "foes": foes, "admiral": admiralId, "credits": 120, "cpCap": 10, "sector": 1, "relics": [], "inventory": [], "fleet": [], "pos": null,
-		"stats": {"battles": 0, "elites": 0, "bosses": 0, "kills": 0, "lost": 0}, "t0": now_ms(), "fallen": [], "ambush": false, "over": false, "boons": []}
+		"stats": {"battles": 0, "elites": 0, "bosses": 0, "kills": 0, "lost": 0}, "t0": now_ms(), "fallen": [], "ambush": false, "over": false, "boons": [], "eatenCore": null, "eatCoreSeen": false}
 	RUN["patrons"] = shuffle(PATRONS.keys()).slice(0, 4); RUN["aspect"] = null; RUN["flagUid"] = null; RUN["nem"] = null
 	if teaching_tips and float(z0(META["stats"].get("finishedRuns", META["stats"].get("runs")))) < 2: RUN["teachingGate"] = true
 	if jt(META["unlocked"].get("chest1")): RUN["credits"] += 75
@@ -1183,7 +1228,11 @@ func act(name: String, arg = "") -> void:
 		"closeModal":
 			if not _arc_after(modal_d): close_modal()
 		"beat3":
-			if not showBeat3(): close_modal()
+			if not showCoreEatOffer() and not showBeat3(): close_modal()
+		"eatCore":
+			ACT_eatCore(a)
+		"refuseCoreEat":
+			ACT_refuseCoreEat()
 		"storyCore":
 			close_modal(); resumeReward()
 		"continueRun": ACT_continueRun()
@@ -1577,6 +1626,7 @@ func mapScreen() -> void:
 	show_page("map", {"avail": avail}, acts)
 func ACT_enterNode(id: String) -> void:
 	if not availableNodes().has(id): return
+	if showCoreEatOffer(): return
 	if showBeat3(): return
 	var n = findNode(id); RUN["pos"] = id; RUN["curNode"] = id
 	tel("node", {"type": n["type"], "col": n["col"]})
@@ -2700,6 +2750,23 @@ func showBeat3() -> bool:
 	for i in range(ev["o"].size()): A(acts, "eventChoice", i)
 	show_modal("event", {"ev": ev}, acts)
 	return true
+# R78 Q15 (issue 42): the Chorus run's one core-eating choice, offered before the first node of sector 3.
+func showCoreEatOffer() -> bool:
+	if not coreEatDue(): return false
+	var cores = coreEatEligible()
+	var acts = []
+	for p in cores: A(acts, "eatCore", p)
+	A(acts, "refuseCoreEat")
+	show_modal("eatCore", {"cores": cores}, acts)
+	return true
+func ACT_eatCore(p: String) -> void:
+	if not applyEatCore(p): return
+	tel("core_eat", {"p": p, "sector": RUN["sector"]})
+	saveRun(); close_modal(); act("beat3")
+func ACT_refuseCoreEat() -> void:
+	if not refuseCoreEat(): return
+	tel("core_eat_refuse", {"sector": RUN["sector"]})
+	saveRun(); close_modal(); act("beat3")
 func beat3Debrief() -> String:
 	if RUN == null: return ""
 	var row: Dictionary = TB.STORY_BEAT3[RUN["fac"]]
