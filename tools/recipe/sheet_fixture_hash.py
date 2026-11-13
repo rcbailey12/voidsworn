@@ -15,7 +15,11 @@ REPO = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
 FILES = ['tools/blender/build_sheets/ships/corsair_A16.py', 'tools/blender/build_sheets/kit.py', 'tools/blender/kits/hullbreakers/parts.py',
          'tools/blender/build_sheets/contract.py', 'tools/recipe/export7.py',
          # the hull builder and the recipe input of step 1 below (Muse's check of PR 611, BLOCKING 1; issue 618)
-         'tools/blender/r209/sheet_hull.py', 'tools/recipe/ships/corsair_A16.json']
+         'tools/blender/r209/sheet_hull.py', 'tools/recipe/ships/corsair_A16.json',
+         # what export7.py imports and writes into the fixture: hard points and breach layout, turret pivots, the game's weapon
+         # list (Muse's check of PR 620, BLOCKING 4.1). data.js, read through gamedata.py, is not listed: listing it would mark the
+         # fixture stale on every rules edit; a data.js change to A16's own ship entry (c_boss) needs the rebuild below by hand.
+         'tools/blender/kits/shared/hardpoints.py', 'tools/blender/kits/shared/turrets.py', 'tools/recipe/gamedata.py']
 OUT = os.path.join(REPO, 'godot', 'fx', 'test', 'fixtures', 'C19_51_unbaked.sheet.txt')
 
 
