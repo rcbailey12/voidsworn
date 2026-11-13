@@ -130,7 +130,7 @@
    "kind": "hangar",
    "what": "open hangar mouth 3.6 long, 1.6 high, 1.9 deep, doors slid forward",
    "count": 1,
-   "route": "hand-built",
+   "route": "kit",
    "source": "picture",
    "inventory": [
     "hangars"
@@ -141,7 +141,7 @@
    "kind": "hangar",
    "what": "open hangar mouth 3.0 long, 1.6 high, 1.9 deep, doors slid aft",
    "count": 1,
-   "route": "hand-built",
+   "route": "kit",
    "source": "picture",
    "inventory": [
     "hangars"
@@ -152,7 +152,7 @@
    "kind": "craft",
    "what": "cobbled fighter, 1.6 long",
    "count": 1,
-   "route": "hand-built",
+   "route": "kit",
    "source": "picture",
    "inventory": [
     "craft"
@@ -163,7 +163,7 @@
    "kind": "craft",
    "what": "cobbled fighter, 1.6 long",
    "count": 1,
-   "route": "hand-built",
+   "route": "kit",
    "source": "picture",
    "inventory": [
     "craft"
@@ -273,7 +273,7 @@
    "kind": "spare",
    "what": "spare engine bell, 1.0 across, lying across the deck in a cradle",
    "count": 1,
-   "route": "hand-built",
+   "route": "kit",
    "source": "picture",
    "inventory": [
     "spare_bell"
