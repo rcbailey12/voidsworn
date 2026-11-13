@@ -2060,16 +2060,23 @@ func set_plate(id: String, screen: Vector2, on: bool, name_txt: String, friend: 
 	if not on:
 		return
 	var nm := c.get_node("st/v/nm") as Label
-	nm.text = name_txt
+	# issue 221: the plate is laid out again only when its words change or its size no longer fits them
+	var relayout := nm.text != name_txt
+	if relayout:
+		nm.text = name_txt
 	var target: bool = extra.get("target", false)
 	var col := S_EMBER if up else (S_NEM if bool(extra.get("nem", false)) else S_TEXT)
-	nm.add_theme_color_override("font_color", col)
+	# issue 221: an override sends THEME_CHANGED, which reshapes the label's text and re-sorts the plate; set it only when
+	# the colour changes, not every frame for every ship
+	if not nm.has_theme_color_override("font_color") or nm.get_theme_color("font_color") != col:
+		nm.add_theme_color_override("font_color", col)
 	c.set_meta("keep", up or target)
 	var bars_c := c.get_node("st/v/bars") as Control
 	var f := clampf(hp / maxf(mx, 1.0), 0.0, 1.0)
 	var g := float(extra.get("ghost", -1.0))
 	bars_c.set_meta("v", [f, clampf(sh / maxf(shmx, 1.0), 0.0, 1.0), shmx > 0.0, clampf(g / maxf(mx, 1.0), 0.0, 1.0) if g >= 0.0 else -1.0, -1.0])
-	c.reset_size()
+	if relayout or c.size != c.get_combined_minimum_size():
+		c.reset_size()
 	c.position = screen - Vector2(c.size.x * 0.5, c.size.y)
 
 
@@ -2103,21 +2110,22 @@ func declutter_plates(prio: Dictionary) -> void:
 	var items: Array = []
 	for id in plates:
 		var c: Control = plates[id]
-		c.modulate.a = 1.0
 		if c.visible:
 			items.append([int(prio.get(id, 0)), c.position.y + c.size.y, id])
 	items.sort_custom(func(a, b): return a[0] > b[0] if a[0] != b[0] else a[1] > b[1])
 	var shown: Array = []
+	# issue 221: each plate's alpha is decided first and written once (1 then 0 every frame redrew every plate twice)
+	var hid := {}
 	plates_hidden = 0
 	for it in items:
 		var c: Control = plates[it[2]]
 		if not bool(c.get_meta("keep", false)) and int(it[0]) < 2:
 			# E1: a name that is neither the ship that is up, the target, the hovered ship nor the enemy acting waits for hover
-			c.modulate.a = 0.0
+			hid[it[2]] = true
 			continue
 		var pr := _plate_rect(c).grow(s(1))
 		if _hits_any(pr, blockers):
-			c.modulate.a = 0.0
+			hid[it[2]] = true
 			plates_hidden += 1
 			continue
 		if int(it[0]) >= 2:
@@ -2136,16 +2144,21 @@ func declutter_plates(prio: Dictionary) -> void:
 				c.position.y -= dy
 				pr.position.y -= dy
 			if _hits_any(pr, blockers):
-				c.modulate.a = 0.0
+				hid[it[2]] = true
 				plates_hidden += 1
 				continue
 			shown.append(pr)
 			continue
 		if _hits_any(pr, shown):
-			c.modulate.a = 0.0
+			hid[it[2]] = true
 			plates_hidden += 1
 			continue
 		shown.append(pr)
+	for id in plates:
+		var c: Control = plates[id]
+		var a := 0.0 if hid.has(id) else 1.0
+		if c.modulate.a != a:
+			c.modulate.a = a
 
 
 func _hits_any(r: Rect2, rs: Array) -> bool:
