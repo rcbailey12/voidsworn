@@ -66,3 +66,20 @@ Dry-run knobs (only with `dryrun`): WORK_DRY_SCENARIO (refuse, timecap, merge: s
 (a lean blobless clone of the named folders), WORK_TEST_FAULT=skipcommit (replays the issue 541 failure). WORK_ROOT moves
 the run folders. codex_issue.bat has CODEX_TEST_ROOT, CODEX_TEST_AGENT, CODEX_TEST_BRANCH and CODEX_TEST_SPARSE. The proof
 runs are in contrib/opus/reviews/runner2_377.md.
+
+## Reasoning effort (issue 656, Opus, Nov 13 2026)
+
+- `WORK_EFFORT=low`, `high` or `max` (any case) before calling work_issue.bat adds `--variant <effort>` to the OpenCode run.
+  Unset, nothing is added and every arm runs as before. Only the kimicode arm takes it; on any other arm, or with any other
+  value, the runner prints "WORK_EFFORT ... ignored" and runs at the default. The effort shows in out\model.txt and the
+  "model:" line of stats.txt (for example `kimicode/kimi-for-coding --variant low`).
+- The variants live in opencode_lean.json (and the stand-in copy in opencode_mock.json): each kimicode model has
+  `variants.low/high/max = { "reasoningEffort": "<effort>" }`, which OpenCode 1.19.5 sends to the API as the body field
+  `reasoning_effort`; the relay in kimi_effort_smoke.js saw it on every agent call. Without those variants OpenCode drops
+  `--variant` silently (exit 0, no effort field sent), so to give another arm an effort, write its variants into its config,
+  prove them with the smoke tool, and add the arm to the check in work_issue.bat.
+- `node tools/pc/work/kimi_effort_smoke.js` (key in KIMI_CODE_API_KEY) runs tiny identical OpenCode runs, one per effort,
+  through a local relay that logs what each call sent and the tokens it used; `--upstream stub` does it free, `--direct N`
+  makes N bare API calls per effort instead. Results and the trial settings: contrib/opus/reviews/kimi_effort_smoke_656.md.
+- Every OpenCode session makes one extra small call to title the session (no tools, about 640 prompt tokens); with the
+  variants written in, it goes out with reasoning_effort "low" whatever WORK_EFFORT says.

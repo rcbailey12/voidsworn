@@ -31,6 +31,17 @@
           "limit": {
             "context": 250000,
             "output": 32768
+          },
+          "variants": {
+            "low": {
+              "reasoningEffort": "low"
+            },
+            "high": {
+              "reasoningEffort": "high"
+            },
+            "max": {
+              "reasoningEffort": "max"
+            }
           }
         },
         "k3.1-pro": {
@@ -38,6 +49,17 @@
           "limit": {
             "context": 250000,
             "output": 32768
+          },
+          "variants": {
+            "low": {
+              "reasoningEffort": "low"
+            },
+            "high": {
+              "reasoningEffort": "high"
+            },
+            "max": {
+              "reasoningEffort": "max"
+            }
           }
         },
         "k3": {
@@ -45,6 +67,17 @@
           "limit": {
             "context": 250000,
             "output": 32768
+          },
+          "variants": {
+            "low": {
+              "reasoningEffort": "low"
+            },
+            "high": {
+              "reasoningEffort": "high"
+            },
+            "max": {
+              "reasoningEffort": "max"
+            }
           }
         }
       }

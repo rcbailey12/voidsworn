@@ -22,13 +22,46 @@
       },
       "models": {
         "kimi-for-coding": {
-          "name": "stand-in"
+          "name": "stand-in",
+          "variants": {
+            "low": {
+              "reasoningEffort": "low"
+            },
+            "high": {
+              "reasoningEffort": "high"
+            },
+            "max": {
+              "reasoningEffort": "max"
+            }
+          }
         },
         "k3.1-pro": {
-          "name": "stand-in"
+          "name": "stand-in",
+          "variants": {
+            "low": {
+              "reasoningEffort": "low"
+            },
+            "high": {
+              "reasoningEffort": "high"
+            },
+            "max": {
+              "reasoningEffort": "max"
+            }
+          }
         },
         "k3": {
-          "name": "stand-in"
+          "name": "stand-in",
+          "variants": {
+            "low": {
+              "reasoningEffort": "low"
+            },
+            "high": {
+              "reasoningEffort": "high"
+            },
+            "max": {
+              "reasoningEffort": "max"
+            }
+          }
         }
       }
     },
