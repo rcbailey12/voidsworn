@@ -127,13 +127,15 @@ R225: one home per fact):
    under 0.75 of the hull is flagged in `density.json` and printed by stage 5 (reported, not a pass bar).
 The job's `textures\` holds the trim sheet and the decal atlas and `licences.json` their lines, so the licence check now
 reads real entries. Running lights (R228 item 4: visible as small red points at battle size; brightness, not size, carries the read): the faction
-stack's `RUNNING_LIGHTS` rule builds small round deep-red lamps (about 0.3 world units, #c41e14, emissive under the game's 0.8
-glow threshold) in iron bezels on the hull (a row per flank at the sheet's lamp height, deck-edge points; clear of parts, decals
+stack's `RUNNING_LIGHTS` rule builds small round deep-red lamps (0.0115 of the ship's length, #c41e14, emissive under the game's
+0.8 glow threshold) in iron bezels on the hull, never on or right beside a machine (a row per flank at the sheet's lamp height, deck-edge points; clear of parts, decals
 and the breach, braking and boarding points; each bezel bridges the plate steps under it); their size and count go into the
 job's `lights.json` as point lights, which `standing.py lights` reports without holding them to the 2 px floor of painted window
 and trim lights. Plate patchwork, seams and brick rust (R228) are the faction stack's `PATCH_FAMILIES`,
 `patch_cell` and `CONCEPT`. Engine glow is the game's (R228): the export's `hp_eng` points with their bell radius drive the
-game's engine effect (`godot/fx/fx_hull.gd` reads them as the nozzles), beside the sheet's emissive throat and bell lining.
+game's engine effect (`godot/fx/fx_hull.gd` reads them as the nozzles), beside the sheet's throat and bell lining, which the
+stack gives one emissive surface with its own map (`bake_engine_glow`: hot core to deep red, hot spots, soot streaks, the lining
+dark toward the lip, each engine its own; written by stage 7 as `<code>_glow_emission.jpg`).
 
 Stage 5 then runs the surface check (`tools/recipe/surface_check.py`, issue 601, after Ryan saw "a white square near the back
 and another white square underneath" on the first PC run): the six standard views drawn flat by surface class, and it fails on
@@ -317,7 +319,8 @@ is RULEBOOK 3.9. `check_export_selftest.py` proves that removing interior primit
    authored interiors near their exported weak seams, with the current irregular explosion. Older ship assets still load.
 2. `<code>_damage.glb` and the `skin_<n>` hull patches in the ship glb: the breach holes and per-weapon damage. The `hp_breach`
    anchors (one per section and side, the class and faction count) are already there for it.
-3. `<code>_emissive.jpg`: the glow (engine throats, muzzles, lamps) is its own surface with an emissive factor, not a map.
+3. `<code>_emissive.jpg`: the glow is its own surface with an emissive factor; a sheet ship's engine glow carries its own map,
+   `<code>_glow_emission.jpg` (issue 601); muzzles and lamps stay flat emissive.
 4. One surface: the A4 ships have one mesh surface and one map set; a recipe ship has two atlases (hull, parts), so three surfaces.
    Merging them into one atlas is a bake-stage change (stage 5), not an export change.
 5. `ships.json` rows in `godot/assets/ships` (the manifest entry is written by stage 7), and the R116 scene gate with the ship in

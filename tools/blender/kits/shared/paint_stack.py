@@ -257,19 +257,21 @@ def patchwork(c, S, col, amount, families=None, cells=None):
         w = region if k else math_(nt, 'SUBTRACT', 1, region)
         ids.append((cid, w)); sm = math_(nt, 'MULTIPLY', sm, w)
         seam = sm if seam is None else math_(nt, 'ADD', seam, sm)
-    def pick(cid, w, col):
+    def pick(cid, w, col, small=False):
         wn = node(nt, 'ShaderNodeTexWhiteNoise', noise_dimensions='3D'); nt.links.new(cid, wn.inputs['Vector'])
         r = math_(nt, 'FRACT', math_(nt, 'ADD', wn.outputs['Value'], math_(nt, 'MULTIPLY', c.isl, .618)))
         sp2 = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(wn.outputs['Color'], sp2.inputs[0]); tone = sp2.outputs[1]
         lo = 0.0
-        for share, (flo, fhi) in families:
+        for fam_ in families:
+            share, (flo, fhi) = fam_[0], fam_[1]
             hi = lo + share
+            if len(fam_) > 2 and fam_[2] == 'small' and not small: lo = hi; continue
             m = math_(nt, 'MULTIPLY', math_(nt, 'GREATER_THAN', r, lo - 1e-4), math_(nt, 'LESS_THAN', r, hi))
             fam = mixc(nt, flo, fhi, math_(nt, 'ADD', math_(nt, 'MULTIPLY', tone, .75), math_(nt, 'MULTIPLY', c.noise(L['patch_scale'] * 3, 2), .25)))
             col = mixc(nt, col, fam, math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', m, w), amount))
             lo = hi
         return col
-    for cid, w in ids: col = pick(cid, w, col)
+    for k, (cid, w) in enumerate(ids): col = pick(cid, w, col, small=k == 1)
     # the overlaid patch plates: a sparse few larger plates, bolted over whatever is under them, with their own seam
     pid, pco = _grid(c, patch, 71.0, (.021, .011, .009))
     pw = node(nt, 'ShaderNodeTexWhiteNoise', noise_dimensions='3D'); nt.links.new(pid, pw.inputs['Vector'])
@@ -364,7 +366,7 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas):
     rough = math_(nt, 'SUBTRACT', rough, math_(nt, 'MULTIPLY', wear, .30))
     metal = math_(nt, 'ADD', metal, math_(nt, 'MULTIPLY', wear, .6), clamp=True)
     height = math_(nt, 'SUBTRACT', height, math_(nt, 'MULTIPLY', wear, .1))
-    rough = math_(nt, 'MAXIMUM', math_(nt, 'MINIMUM', rough, 1.0), .05)
+    rough = math_(nt, 'MAXIMUM', math_(nt, 'MINIMUM', rough, 1.0), L.get('rough_floor', .05))
     nt.links.new(col, bs.inputs['Base Color']); nt.links.new(rough, bs.inputs['Roughness'])
     if isinstance(metal, float): bs.inputs['Metallic'].default_value = metal
     else: nt.links.new(metal, bs.inputs['Metallic'])
@@ -540,8 +542,10 @@ def add_running_lights(S, hull, others, decals):
     report (count, size in px, where)."""
     R = S.RUNNING_LIGHTS
     Lw = float(bpy.context.scene.get('r209_length_world', 0) or 0)
-    if 'world' in R and Lw > 0: h = w = R['world'] / Lw        # a lamp of a fixed world size on every ship of the faction
-    else: h = R['px'] / 70.0; w = h * R.get('aspect', 1.0)
+    if 'length_frac' in R: h = w = R['length_frac']              # a lamp sized to the ship (the ship is one unit long here)
+    elif 'world' in R and Lw > 0: h = w = R['world'] / Lw
+    elif 'px' in R: h = R['px'] / 70.0; w = h * R.get('aspect', 1.0)
+    else: raise ValueError('RUNNING_LIGHTS needs length_frac, world (with the ship length) or px')     # Muse NOTE 7 on PR 610
     dg = bpy.context.evaluated_depsgraph_get()
     def tree(objs):
         bm = bmesh.new()
@@ -550,12 +554,17 @@ def add_running_lights(S, hull, others, decals):
             tm = bpy.data.meshes.new('_t'); t.to_mesh(tm); t.free(); bm.from_mesh(tm); bpy.data.meshes.remove(tm); e.to_mesh_clear()
         T = BVHTree.FromBMesh(bm); bm.free(); return T
     TH = tree(hull); TA = tree(hull + others)
+    mach = [o for o in others if o.get('machine')]
+    TM = tree(mach) if mach else None
     xs = [v for o in hull for v in (o.matrix_world @ Vector(b) for b in o.bound_box)]
     x0 = min(v.x for v in xs); x1 = max(v.x for v in xs); zt = max(v.z for v in xs); zb = min(v.z for v in xs)
     keep = [Vector(p['pos']) for p in json.loads(bpy.context.scene.get('r209_points', '[]')) if p['kind'] in ('breach', 'rcs', 'board')]
     keep_d = [Vector(d['pos']) for d in decals]
     lamps = [o for o in others if o.get('part_kind') == 'lamp']
     def clear(p):
+        if TM is not None and R.get('clear_machines'):     # never on a machine or the hull right under one (a turret's barbette)
+            q = TM.find_nearest(p)
+            if q[0] is not None and q[3] < R['clear_machines'] + w / 2: return False
         return all((p - k).length > R['clear_points'] for k in keep) and all((p - k).length > R['clear_decals'] for k in keep_d)
     made = []; rep = []
     def seat(p, n):
@@ -625,6 +634,79 @@ def add_running_lights(S, hull, others, decals):
                       rule=R, where=rep)
 
 
+# ------------------------------------------------------------------------------------------------------------ engine glow
+def bake_engine_glow(S, objs, out, cell, res, samples):
+    """the engine throat glow (Ryan, Nov 12 19:16 CST: "more variation to the engine glow so it's not so uniform, just disc
+    color"): each engine's throat disc and bell lining get an emission map, a hot core grading out to deeper red and orange,
+    uneven hot spots and soot streaks across the throat, the lining dark toward the lip, and each engine a little dimmer, more
+    orange or more red than its neighbours. The game's moving plume sits on top; this paints no flame. Per vertex the stack
+    writes, in the colour attribute ps_glow: R the distance from the engine's axis over the throat radius, G the engine's own
+    random, B the depth into the bell (1 at the throat, 0 at the lip), A the angle round the axis."""
+    E = S.ENGINE_GLOW; groups = {}
+    for o in objs: groups.setdefault(o.get('grp') or o.name.split('_')[0], []).append(o)
+    rng = np.random.default_rng(601)
+    for gname, members in sorted(groups.items()):
+        rnd = float(rng.random())
+        W = [o.matrix_world @ v.co for o in members for v in o.data.vertices]
+        disc = [o for o in members if o.data.materials and o.data.materials[0].name == 'glow']
+        Dv = [o.matrix_world @ v.co for o in (disc or members) for v in o.data.vertices]
+        cy = sum(v.y for v in Dv) / len(Dv); cz = sum(v.z for v in Dv) / len(Dv)
+        rmax = max(math.hypot(v.y - cy, v.z - cz) for v in Dv) or 1.0
+        x0 = min(v.x for v in W); x1 = max(v.x for v in W)
+        for o in members:
+            me = o.data; ca = me.color_attributes.get('ps_glow') or me.color_attributes.new('ps_glow', 'FLOAT_COLOR', 'POINT')
+            is_disc = o in disc
+            for i, v in enumerate(me.vertices):
+                w = o.matrix_world @ v.co
+                r = min(1.0, math.hypot(w.y - cy, w.z - cz) / rmax) if is_disc else 1.0
+                d = 1.0 if is_disc else (w.x - x0) / max(x1 - x0, 1e-6)
+                ang = (math.atan2(w.z - cz, w.y - cy) / (2 * math.pi)) % 1.0
+                ca.data[i].color = (r, rnd, d, ang)
+    for o in objs: o.hide_render = False
+    unwrap(objs, .004)
+    J = bake_copy(objs, f'{cell}_E_bake'); hid = {o.name: o.hide_render for o in objs}
+    for o in objs: o.hide_render = True
+    m = bpy.data.materials.new('ps_engine_glow_bake'); m.use_nodes = True; nt = m.node_tree; nt.nodes.clear()
+    outn = node(nt, 'ShaderNodeOutputMaterial'); em = node(nt, 'ShaderNodeEmission'); nt.links.new(em.outputs[0], outn.inputs[0])
+    at = node(nt, 'ShaderNodeAttribute'); at.attribute_type = 'GEOMETRY'; at.attribute_name = 'ps_glow'
+    sp = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(at.outputs['Color'], sp.inputs[0])
+    r, e, d, a = sp.outputs[0], sp.outputs[1], sp.outputs[2], at.outputs['Alpha']
+    tc = node(nt, 'ShaderNodeTexCoord')
+    def noise(vec, scale, detail=3, rough=.6):
+        n = node(nt, 'ShaderNodeTexNoise'); n.inputs['Scale'].default_value = scale; n.inputs['Detail'].default_value = detail
+        n.inputs['Roughness'].default_value = rough; nt.links.new(vec, n.inputs['Vector']); return n.outputs['Fac']
+    # heat: the core (hot at the axis) on the throat disc, the lining by its depth (dark at the lip, R228 item 5)
+    heat = math_(nt, 'MULTIPLY', math_(nt, 'SUBTRACT', 1, ramp(nt, r, 0.0, 1.0)), math_(nt, 'POWER', d, E['lining_falloff']))
+    # uneven hot spots, and soot streaks running out from the axis (by angle, each engine its own)
+    hs = ramp(nt, noise(tc.outputs['Object'], E['hotspot_scale'], 4), E['hotspot'][0], E['hotspot'][1])
+    heat = math_(nt, 'ADD', heat, math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', hs, d), E['hotspot_gain']))
+    av = node(nt, 'ShaderNodeCombineXYZ'); nt.links.new(math_(nt, 'MULTIPLY', a, E['streaks']), av.inputs[0]); nt.links.new(math_(nt, 'MULTIPLY', e, 31.0), av.inputs[1])
+    nt.links.new(math_(nt, 'MULTIPLY', r, 1.5), av.inputs[2])
+    soot = ramp(nt, noise(av.outputs[0], 1.0, 2, .5), E['soot'][0], E['soot'][1])
+    heat = math_(nt, 'MULTIPLY', heat, math_(nt, 'SUBTRACT', 1, math_(nt, 'MULTIPLY', soot, E['soot_gain'])), clamp=True)
+    # each engine its own: brightness and hue (more orange or more red)
+    heat = math_(nt, 'MULTIPLY', heat, math_(nt, 'ADD', E['bright'][0], math_(nt, 'MULTIPLY', e, E['bright'][1] - E['bright'][0])))
+    cr = node(nt, 'ShaderNodeValToRGB')
+    for i_, (pos, col) in enumerate(E['ramp']):
+        el = cr.color_ramp.elements[i_] if i_ < 2 else cr.color_ramp.elements.new(pos)
+        el.position = pos; el.color = (*col, 1)
+    hue = math_(nt, 'ADD', heat, math_(nt, 'MULTIPLY', math_(nt, 'SUBTRACT', e, .5), E['hue_shift']))
+    nt.links.new(math_(nt, 'MINIMUM', math_(nt, 'MAXIMUM', hue, 0.0), 1.0), cr.inputs[0])
+    col = mixc(nt, (0, 0, 0), cr.outputs[0], ramp(nt, heat, 0.0, .25))
+    nt.links.new(col, em.inputs['Color']); em.inputs['Strength'].default_value = 1
+    for i in range(len(J.material_slots)): J.material_slots[i].material = m
+    im = new_image(f'{cell}_engine_emission', res, colour=True); _target([m], im)
+    INFO['bake_engine_glow_s'] = bake(J, 'EMIT', 4); save(im, out, im.name)
+    for o in objs: o.hide_render = hid[o.name]
+    bpy.data.objects.remove(J)
+    g = bpy.data.materials.new('p3_glow'); g.use_nodes = True; gt = g.node_tree; b = gt.nodes['Principled BSDF']
+    uv = gt.nodes.new('ShaderNodeUVMap'); ti = gt.nodes.new('ShaderNodeTexImage'); ti.image = im; gt.links.new(uv.outputs[0], ti.inputs[0])
+    gt.links.new(ti.outputs[0], b.inputs['Emission Color']); b.inputs['Emission Strength'].default_value = E['strength']
+    b.inputs['Base Color'].default_value = (.03, .012, .006, 1); b.inputs['Roughness'].default_value = .85
+    INFO['engine_glow'] = dict(engines=len(groups), map=im.name + '.png', res=res)
+    return g
+
+
 # ------------------------------------------------------------------------------------------------------------ the whole stack
 def use(S):
     GLOW_ZONES.clear(); GLOW_ZONES.update(S.GLOW)
@@ -687,7 +769,13 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
         for o in objs:
             o.data.materials.clear(); o.data.materials.append(M); o.data.polygons.foreach_set('material_index', np.zeros(len(o.data.polygons), np.int32))
     glow = {}
+    eng = [o for o in G if (o.data.materials[0].name if o.data.materials else '') in ('glow', 'ember')] if hasattr(S, 'ENGINE_GLOW') else []
+    if eng:      # the engine throats and linings: one surface, its own emission map (graded, hot spots, soot, each engine its own)
+        glow['engine'] = bake_engine_glow(S, eng, out, cell, max(256, res // 4), samples)
+        for o in eng:
+            o.data.materials.clear(); o.data.materials.append(glow['engine'])
     for o in G:
+        if o in eng: continue
         z = o.data.materials[0].name if o.data.materials else 'glow'
         if z not in glow: glow[z] = S.glow_material(z)
         o.data.materials.clear(); o.data.materials.append(glow[z])

@@ -32,7 +32,7 @@ CONCEPT = dict(
     iron=((24, 25, 29), (58, 55, 60)),          # iron plate and belts: dark gunmetal (the dark and low mid-tone clusters)
     rust=((44, 20, 16), (98, 44, 31)),          # the rust plate: dark brick red (the red clusters, blue held under green: never pink)
     blood=((58, 20, 18), (100, 28, 24)),        # dried-blood red plate and bands
-    pale=((98, 88, 88), (149, 136, 130)),       # pale Hegemony grey trophy plate
+    pale=((52, 51, 52), (88, 85, 84)),          # Hegemony grey trophy plate, weathered dark (pass 5: never a chalky whole plate)
     violet=((57, 29, 53), (110, 78, 140)),      # violet Eclipse trophy plate (violet clusters)
     steel=((20, 21, 24), (52, 50, 56)),         # gun metal, machinery: dark, its bare edges carry the light
     rust_streak=((34, 15, 11), (84, 40, 26)),   # rust run-off and blooms: the deep red-brown dark cluster, brick, not pink
@@ -61,7 +61,8 @@ SCALE = 1.0          # every size below is in ship lengths (the recipe's frame: 
 LAYERS = dict(
     ao_short=.004, ao_long=.025, edge_radius=.0010, edge_gain=14.0,      # the masks (about 10 cm, 65 cm, 2.6 cm on the 26 unit barge)
     patch_scale=4.0, plate_var=.40, side_dark=.25, grain_scale=260.0, mottle_scale=40.0, mottle=.04, grain=.004,    # base: broad two-tone patches, one tone per plate island
-    rough=.70, metal=.40, wear=1.0, grime=.75, ao_dark=.88, red_tone=.75,
+    rough=.70, metal=.40, wear=1.0, grime=.90, ao_dark=.88, red_tone=.75,
+    rough_floor=.58,     # pass 5 (Board, PC run): no sharp white specular at the game's key light; the concept's metal is dull and grimy
     # the plate patchwork (issue 601 Board review: the concept's hull is a quilt of small plates, each its own tone): a grid of
     # panels at the concept's plate size, staggered, each panel and each modelled plate picks a family; black seams between them
     patch_big=(.052, .034, .028), patch_small=(.021, .015, .012), patch_over=(.044, .030, .024), patch_over_share=.10,
@@ -82,17 +83,18 @@ ZONES = dict(
     iron=dict(rust=.55, metal=.55, rough=.58, wear=1.0, red_share=.12, patchwork=1.0, patchwork_parts=.8),
     rust=dict(rust=.90, rough=.88, metal=.20, patchwork=.6),
     blood=dict(rust=.40, rough=.86, metal=.15, patchwork=.4),
-    pale=dict(rust=.15, rough=.70, metal=.25, plate_var=.25),
+    pale=dict(rust=.25, rough=.74, metal=.25, plate_var=.30, patchwork=.5, grime=1.0),
     violet=dict(rust=.10, rough=.62, metal=.20, plate_var=.20),
     steel=dict(rust=.25, metal=.65, rough=.50, wear=1.0, patchwork_parts=.8),
     dark=dict(rust=0, grime=.2, wear=.15, scuff=.1, rivets=0, metal=.1, rough=.9, plate_var=.1),
-    dish=dict(rust=.30, metal=.40, rough=.55, plate_var=.1, scuff=1.0),
+    dish=dict(rust=.30, metal=.30, rough=.75, plate_var=.1, scuff=1.0),
+    bell=dict(base='steel', rust=.30, metal=.30, rough=.80, wear=.6, grime=1.0),   # engine bells and housings: matte, never mirror black
     warhead=dict(rust=.35, metal=.30, rough=.65, rivets=0),
     brass=dict(rust=.20, metal=.60, rough=.50, rivets=0),
     iron_bay=dict(base='iron', rust=.4, metal=.45, rough=.72, trim=('stripes',), trim_amount=.75),
 )
 _BASE = dict(soot='soot', soot2='soot2', iron='iron', rust='rust', blood='blood', pale='pale', violet='violet', steel='steel',
-             dark='grime', dish='bare', warhead='rust', brass='bare', iron_bay='iron')
+             dark='grime', dish='bare', warhead='rust', brass='bare', iron_bay='iron', bell='steel')
 for _k, _z in ZONES.items():
     _lo, _hi = pair(_BASE[_k])
     if _k == 'dish': _lo, _hi = lin((70, 66, 64)), lin((120, 112, 108))
@@ -100,24 +102,31 @@ for _k, _z in ZONES.items():
     if _k == 'warhead': _lo, _hi = lin((60, 22, 16)), lin((104, 40, 26))
     _z['lo'], _z['hi'] = _lo, _hi
 FALLBACK = 'soot'
-ZONE_BY_KIND = {('bay', 'iron'): 'iron_bay'}      # (part kind, sheet zone): the launch bay mouth carries the warning stripes
+ZONE_BY_KIND = {('bay', 'iron'): 'iron_bay', ('engine', 'steel'): 'bell', ('engine', 'iron'): 'bell', ('engine', 'soot'): 'bell'}      # (part kind, sheet zone): the launch bay mouth carries the warning stripes
 BARE = lin(CONCEPT['bare'][1])
 RUST = lin(CONCEPT['rust_streak'][1]); RUST_DARK = lin(CONCEPT['rust_streak'][0])
 GRIME = lin(CONCEPT['grime'][0])
 RED_PLATE = pair('red_plate')    # a zone's red_share of its plates carry this worn red over-paint (the concept's scattered red plates)
 # the patchwork families (a hull zone with patchwork > 0): (share of panels, colour pair). The rest keep the zone's own tones.
 # Shares read off the concept's hull pixels (the k-means above): dark soot most, then gun-metal grey, brick red, a few scrapes.
-PATCH_FAMILIES = [(.30, pair('soot2')), (.24, pair('gunmetal')), (.20, pair('red_plate')), (.06, pair('scrape'))]
+# a family marked 'small' only takes small plates (pass 5: light grey is for scrapes and small patches, never whole big plates)
+PATCH_FAMILIES = [(.30, pair('soot2')), (.24, pair('gunmetal')), (.20, pair('red_plate')), (.025, pair('scrape'), 'small')]
 # on part faces (R224 in paint): the same kind of plates, mostly metal, a little soot and rust, rare scrapes
-PATCH_FAMILIES_PARTS = [(.30, pair('gunmetal')), (.20, pair('soot2')), (.08, pair('red_plate')), (.04, pair('scrape'))]
+PATCH_FAMILIES_PARTS = [(.30, pair('gunmetal')), (.25, pair('soot2')), (.08, pair('red_plate')), (.015, pair('scrape'), 'small')]
 
 # glowing zones keep their own emissive surface: engine throat and bell lining in the faction's engine colour, running lights
 # in its accent (godot/fx/faction_looks.json corsair, the game's one home for them); dim, never bright (factions.md)
 GLOW = ('glow', 'ember', 'light')
 # engine throat and bell lining (R228 item 5, Board review of the PC run: the bells were filled with a flat peach disc): the throat
 # a hot red-orange deep in the bell, the lining a dimmer deep red toward the lip, so the dark rim and lip read; never blown out
-GLOW_STRENGTH = dict(glow=1.3, ember=.07)    # the running lights' strength is LIGHT_STRENGTH (below)
-GLOW_TINT = dict(glow=(1.0, .58, .40), ember=(.70, .22, .16))   # times the faction's engine colour: redder, never peach
+# Ryan, Nov 12 19:16 CST: "more variation to the engine glow so it's not so uniform, just disc color". The throat and lining
+# carry an emission map (shared/paint_stack.bake_engine_glow): a hot core grading out to deeper red and orange, uneven hot spots,
+# soot streaks out from the axis, the lining dark toward the lip, each engine a little different. The plume is the game's.
+ENGINE_GLOW = dict(ramp=[(0.0, (.10, .008, .003)), (.35, (.55, .05, .012)), (.65, (.95, .20, .04)), (.85, (1.0, .42, .10)), (1.0, (1.0, .66, .30))],
+                   lining_falloff=3.0, hotspot_scale=900.0, hotspot=(.58, .72), hotspot_gain=.30, streaks=14.0, soot=(.52, .70),
+                   soot_gain=.55, bright=(.70, 1.05), hue_shift=.18, strength=1.15)
+GLOW_STRENGTH = dict(glow=.9, ember=.035)    # the running lights' strength is LIGHT_STRENGTH (below)
+GLOW_TINT = dict(glow=(1.0, .45, .30), ember=(.60, .18, .12))   # times the faction's engine colour: redder, never peach
 
 
 def faction_look():
@@ -134,7 +143,7 @@ def glow_material(zone):
     b = m.node_tree.nodes['Principled BSDF']
     base = .03 if zone == 'light' else .08
     b.inputs['Base Color'].default_value = (col[0] * base, col[1] * base, col[2] * base, 1); b.inputs['Roughness'].default_value = .6
-    if zone == 'light': col = [c / LIGHT_GAIN for c in lin(LIGHT_RGB)]   # lin() divides by the light gain; the lens wants the colour itself
+    if zone == 'light': col = [c * LIGHT_GAIN for c in lin(LIGHT_RGB)]   # lin() divides by the light gain; the lens wants the colour itself
     elif zone in GLOW_TINT: col = [c * k for c, k in zip(col, GLOW_TINT[zone])]
     b.inputs['Emission Color'].default_value = (*col, 1); b.inputs['Emission Strength'].default_value = LIGHT_STRENGTH if zone == 'light' else GLOW_STRENGTH.get(zone, 2.0)
     return m
@@ -167,13 +176,14 @@ def inside_material(room):
 # ------------------------------------------------------------------------------------------------------------ running lights
 # R228 item 4 as the Board corrected it (Nov 12 2026, review of pass 2): the concept's lights are small deep-red lamps, points of
 # light, "visible as small red points at battle size; brightness, not size, carries the read". So each light is a small round
-# lamp, about 0.30 world units across (about 1 px at camera 170, 3 px at camera 60), deep red (sRGB #c41e14), emissive and
+# lamp, 0.0115 of the ship's length across (0.30 units on the 26 unit A16: about 1 px at camera 170, 3 px at camera 60;
+# pass 5: a fixed world size read as stickers on the 14.6 unit A17), deep red (sRGB #c41e14), emissive and
 # bright, but kept under the game's 0.8 glow threshold so it never blooms into a halo (godot/render/look.gd). Placed by rule on
-# each ship's own hull, as the decals: a row along each flank at the height of the sheet's own lamps (mid-flank when it has
+# each ship's own hull, as the decals, never on a machine (turret, gun, launcher, engine: clear_machines): a row along each flank at the height of the sheet's own lamps (mid-flank when it has
 # none) and points on the deck edges, on hull faces only, clear of every part, of the decals and of the breach, braking and
 # boarding points; a lamp's iron bezel bridges the plate steps under it (never floating). They are point lights, so the light
 # size floor of the standing check (for painted window and trim lights) does not hold them; their size is reported.
-RUNNING_LIGHTS = dict(world=.30, round=True, proud=.0012, frame=.30, max_step=.012,
+RUNNING_LIGHTS = dict(length_frac=.0115, round=True, proud=.0012, frame=.30, max_step=.012, clear_machines=.012,
                       flank=dict(x=(.06, .82), step=.125, z_band=(.40, .62)),
                       deck=dict(x=(.22, .46, .70), inset=.010),
                       clear_points=.045, clear_decals=.035)
@@ -199,10 +209,30 @@ def _disc(h, w, cx, cy, r):
     y, x = np.mgrid[0:h, 0:w]; return np.hypot(x - cx, y - cy) <= r
 
 
-def decal_atlas(res=1024):
-    """the decal atlas, RGBA in 0..1, row 0 at the top; drawn here (own work)"""
+# stencil glyphs for the hull code, as segments on a cell 0..1 wide and tall: a=top b=top right c=bottom right d=bottom
+# e=bottom left f=top left g=middle (a seven-segment stencil; C, S and the digits are all a game code needs)
+_SEG = {'0': 'abcdef', '1': 'bc', '2': 'abged', '3': 'abgcd', '4': 'fgbc', '5': 'afgcd', '6': 'afgedc', '7': 'abc', '8': 'abcdefg',
+        '9': 'abcdfg', 'C': 'afed', 'S': 'afgcd', 'H': 'fbgec', 'V': 'fbedc', 'D': 'abcdef', 'E': 'afged'}
+
+
+def ship_code():
+    """the ship's own hull code, from its game code (C19_51 -> C19, C15s_23 -> C15): NOTE 2 of Muse's check of PR 610, a stack
+    written once for the faction must not paint one ship's number on the next"""
+    import json as _j
+    p = os.environ.get('R209_SHIP', '')
+    code = (_j.load(open(p)).get('game_code') if p and os.path.exists(p) else '') or 'C00'
+    out = ''
+    for ch in code.split('_')[0]:           # the class letter and number; a lower-case variant mark (the s of C15s) is not painted
+        if ch in _SEG: out += ch
+    return out[:4] or 'C00'
+
+
+def decal_atlas(res=1024, code=None):
+    """the decal atlas, RGBA in 0..1, row 0 at the top; drawn here (own work). The hull code is the ship's own, and the random
+    marks (tallies, wear) are seeded by it, so no two ships of the faction wear the same marks"""
+    code = code or ship_code()
     c = res // 2; A = np.zeros((res, res, 4), np.float32)
-    rng = np.random.default_rng(601)
+    rng = np.random.default_rng(sum(ord(ch) * (k + 7) for k, ch in enumerate(code)) + 601)
     blood = np.array(CONCEPT['blood'][1]) / 255 * 1.1; bone = np.array((176, 166, 150)) / 255; soot = np.array((18, 16, 15)) / 255
     y, x = np.mgrid[0:c, 0:c]; u = x / c; v = y / c
     def put(cell, mask, col):
@@ -217,12 +247,20 @@ def decal_atlas(res=1024):
         d = np.abs((u - .5 - k * .13) * .94 + (v - .5) * .34)
         slash |= (d < .028 + .02 * (1 - np.abs(v - .5) * 2)) & (np.abs(v - .5) < .44)
     put(0, ring | slash, blood)
-    # 1 the hull code: stencil glyphs C 1 9 (the ship's game code, C19), with stencil bridges
+    # 1 the hull code: the ship's own code in seven-segment stencil glyphs, with a stencil bridge
     g = np.zeros((c, c), bool)
     def bar(x0, y0, x1, y1): g[int(y0 * c):int(y1 * c), int(x0 * c):int(x1 * c)] = True
-    bar(.06, .25, .12, .75); bar(.06, .25, .27, .33); bar(.06, .67, .27, .75)                       # C
-    bar(.40, .25, .47, .75); bar(.35, .25, .40, .33)                                                 # 1
-    bar(.60, .25, .86, .33); bar(.60, .25, .67, .52); bar(.60, .46, .86, .53); bar(.79, .25, .86, .75); bar(.60, .67, .86, .75)  # 9
+    n = len(code); cw = .88 / n; th = min(.07, cw * .28)
+    for k, ch in enumerate(code):
+        x0 = .06 + k * cw; x1 = x0 + cw * .78; y0, ym, y1 = .25, .50, .75
+        for sg in _SEG.get(ch, ''):
+            if sg == 'a': bar(x0, y0, x1, y0 + th)
+            if sg == 'g': bar(x0, ym - th / 2, x1, ym + th / 2)
+            if sg == 'd': bar(x0, y1 - th, x1, y1)
+            if sg == 'f': bar(x0, y0, x0 + th, ym)
+            if sg == 'e': bar(x0, ym, x0 + th, y1)
+            if sg == 'b': bar(x1 - th, y0, x1, ym)
+            if sg == 'c': bar(x1 - th, ym, x1, y1)
     g[int(.47 * c):int(.50 * c), :] = False                                                           # the stencil bridge
     put(1, g, bone)
     # 2 kill tallies: rows of four strokes and a slash, scratched in by hand

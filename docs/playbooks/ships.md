@@ -30,7 +30,8 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    PATCH_FAMILIES, patch_cell); (2) contrast: black seams and dark recesses, brighter worn edges and scrapes, never flat grey
    at camera 170; (3) rust is a dark brick red, never pink, judged under the battle lift (1.25, R227); (4) red running lights
    visible as small red points at battle size; brightness, not size, carries the read (the Board's correction of its first
-   call, Nov 12): small round lamps about 0.3 world units across (about 1 px at camera 170, 3 px at camera 60), deep red
+   call, Nov 12): small round lamps 0.0115 of the ship's length across (0.3 units on A16: about 1 px at camera 170, 3 px at
+   camera 60), on hull and deck edges only, never on a machine (turret, gun, launcher, engine), deep red
    (#c41e14), emissive but under the game's glow threshold so no halo, about 16 in all: a row along each flank at the
    sheet's lamp height plus deck-edge points, built by the stack's RUNNING_LIGHTS rule and reported in the job's lights.json
    (point lights: the standing light check reports their size, the 2 px floor is for painted window and trim lights);
@@ -41,7 +42,13 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    CST): every surface seen from outside carries the stack, an inside seen through an opening reads as the dark liner, never a
    room colour (stage 5's surface check, zero pixels allowed); plates come in large and small sizes, offset rows and a few
    overlaid patches, never a regular grid (RULEBOOK 0.5); no salt-and-pepper grain at close range (edge wear, grime and plate
-   tone carry the look); big part faces carry the hull's plates and seams (R224 in paint).
+   tone carry the look); big part faces carry the hull's plates and seams (R224 in paint). Pass 5 (Board, the two-ship
+   PC run): painted metal has a roughness floor (no white specular glare at the game's key light; bells and dishes matte, the
+   concept's metal is dull and grimy); light grey is for scrapes and small patches only, never whole big plates; the trophy
+   grey is weathered dark; grime goes over everything; the throat glow sits deep in the bell, the lip and rim stay dark, and (Ryan, Nov 12 19:16 CST: "more variation to the
+   engine glow so it's not so uniform, just disc color") it varies: a hot core grading out to deeper red and orange, uneven hot
+   spots and soot streaks across the throat, each engine a little dimmer, more orange or more red than its neighbours, baked into
+   the engine glow's own emission map by the stack (ENGINE_GLOW); the game's moving plume sits on top, so no flame is painted.
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
    opus_check_341).

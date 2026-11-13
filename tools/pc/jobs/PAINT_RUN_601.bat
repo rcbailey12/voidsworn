@@ -11,7 +11,8 @@ setlocal
 set V=%USERPROFILE%\Downloads\voidsworn_test
 set W=%V%\opus601
 set C=%W%\repo
-set O=%W%\out2
+rem each run writes its own out folder (out2 was the pass 4 run, 49996e0c): nothing earlier is overwritten
+set O=%W%\out3
 if not exist "%W%" mkdir "%W%"
 if not exist "%O%" mkdir "%O%"
 set RES=%O%\result.txt
