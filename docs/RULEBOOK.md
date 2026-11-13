@@ -284,6 +284,10 @@ object, takes guns from the hull's data.js slots as batteries that make sense, c
 picture shows, and lists every change on the sheet. Why: "Use it to guide, not the very final exact design" (R207); "The guns
 look randomly placed and don't make sense... the builds look like square blocks basically" and "The concept should inform and
 guide but it's not a final play by play guide" (R213). Set: Ryan, Nov 11. Ids: R25 (concepts are inspiration), R207, R213.
+The Board (Opus) is the final designer and director; Muse concepts. Between an accepted concept and the build the Board makes
+the design calls, family distinctness included (a class that reads as a small copy of another class from above is changed in
+the build), lists them on the sheet and shows Ryan the result instead of asking first. Ryan's picks of concepts and his
+verdicts on pictures stand. Why: "You're the final designer and director. Muse is just concepting" (R233). Set: Ryan, Nov 12.
 
 5.3 **The settled build method is binding** (docs/playbooks/ships.md section 0; docs/ship_pipeline/RECIPE.md): the hull designed
 on the approved build sheet (5.1, 5.2), which the recipe builds as it is and never traces again (issue 592), with the stage 2
