@@ -12,7 +12,7 @@ extends RefCounted
 #     panel furniture (section heads, brackets, the bevel). Only one filled lime button at a time (R148).
 #   - ALERT red is reserved for danger (the Nemesis). Faction colour is a small accent only (a crest, a 3 px bar); the
 #     friend and foe channel in battle is FRIEND mint and the FOE lavender family (ui_spec.md 5.1 and 5.4).
-#   - Sizes are written at the 1080 design height and scaled by ui_scale.gd k (ui_spec.md 4.1). No text under 12.
+#   - Sizes are written at the 1080 design height and scaled by ui_scale.gd k (ui_spec.md 4.1). No text under 17 (RULEBOOK 9.4).
 #
 # Every function takes k (the UI scale) so a screen can build its pieces at its own size. Nothing here reads the rules.
 
@@ -444,7 +444,7 @@ static func focus_ring(k: float) -> StyleBoxFlat:
 
 # the shared theme for any screen: body font and base size, buttons, labels, rich text ([code] uses the number face),
 # tooltips and the focus ring (focus_ring). Every screen takes its focus ring from here, the battle HUD included.
-static func make_theme(k: float, body_f: Font, body_semi: Font, base := 15) -> Theme:
+static func make_theme(k: float, body_f: Font, body_semi: Font, base := 17) -> Theme:
 	var th := Theme.new()
 	th.default_font = body_f
 	th.default_font_size = px(base, k)
@@ -457,15 +457,15 @@ static func make_theme(k: float, body_f: Font, body_semi: Font, base := 15) -> T
 	th.set_color("font_pressed_color", "Button", BONE)
 	th.set_color("font_disabled_color", "Button", BONE3)
 	th.set_font("font", "Button", body_semi)
-	th.set_font_size("font_size", "Button", px(14, k))
+	th.set_font_size("font_size", "Button", px(17, k))
 	th.set_color("font_color", "Label", BONE)
 	th.set_color("default_color", "RichTextLabel", BONE)
 	th.set_font("normal_font", "RichTextLabel", body_f)
 	th.set_font("bold_font", "RichTextLabel", body_semi)
 	th.set_font("mono_font", "RichTextLabel", num())
-	th.set_font_size("normal_font_size", "RichTextLabel", px(14, k))
-	th.set_font_size("bold_font_size", "RichTextLabel", px(14, k))
-	th.set_font_size("mono_font_size", "RichTextLabel", px(14, k))
+	th.set_font_size("normal_font_size", "RichTextLabel", px(17, k))
+	th.set_font_size("bold_font_size", "RichTextLabel", px(17, k))
+	th.set_font_size("mono_font_size", "RichTextLabel", px(17, k))
 	# tooltips: a solid well with sage text (keyword definitions, one layer deep), a dim lime edge
 	var tp := well(k, Color(0, 0, 0, 0), 10, 7)
 	tp.border_color = GILT2
@@ -473,7 +473,7 @@ static func make_theme(k: float, body_f: Font, body_semi: Font, base := 15) -> T
 	th.set_stylebox("panel", "TooltipPanel", tp)
 	th.set_color("font_color", "TooltipLabel", BONE)
 	th.set_font("font", "TooltipLabel", body_f)
-	th.set_font_size("font_size", "TooltipLabel", px(14, k))
+	th.set_font_size("font_size", "TooltipLabel", px(17, k))
 	# scroll bars: thin, olive, out of the way
 	var sg := StyleBoxFlat.new()
 	sg.bg_color = Color(IRON3, 0.9)
@@ -612,7 +612,7 @@ static func row_boxes(k: float, picked: bool, pad_x := 40.0, pad_y := 14.0) -> D
 
 # a plain text button ("Map key", "Dossier", "Fleet and refits"): words only, secondary sage, primary sage under the pointer.
 # It keeps the shared focus ring from make_theme.
-static func plain_button(b: Button, k: float, size := 15.0, f: Font = null) -> void:
+static func plain_button(b: Button, k: float, size := 17.0, f: Font = null) -> void:
 	var e := StyleBoxEmpty.new()
 	for st in ["normal", "hover", "pressed", "disabled"]:
 		b.add_theme_stylebox_override(st, e)

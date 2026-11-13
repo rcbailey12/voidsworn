@@ -428,7 +428,7 @@ func _well(accent := Color(0, 0, 0, 0), pad_x := 12.0, pad_y := 8.0) -> PanelCon
 	return p
 
 
-func _label(txt: String, size := 15, col := BONE, f: Font = null) -> Label:
+func _label(txt: String, size := 17, col := BONE, f: Font = null) -> Label:
 	var l := Label.new()
 	l.text = txt
 	l.add_theme_font_size_override("font_size", s(size))
@@ -445,22 +445,22 @@ func _head(n: String, word: String, right: String = "", right_col := BONE2) -> H
 	h.add_theme_constant_override("separation", s(6))
 	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if n != "":
-		var nl := _label(n, 13, GILT, font_caps)
+		var nl := _label(n, 17, GILT, font_caps)
 		nl.name = "step_no"   # _route_card relabels it (a tick when done); a head without a number has none
 		h.add_child(nl)
-	h.add_child(_label(word.to_upper(), 13, GILT, font_caps))
+	h.add_child(_label(word.to_upper(), 17, GILT, font_caps))
 	var sp := Control.new()
 	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	sp.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	h.add_child(sp)
 	if right != "":
-		var r := _label(right, 14, right_col)
+		var r := _label(right, 17, right_col)
 		h.add_child(r)
 	return h
 
 
 # a small solid tag ("UP", "NEMESIS", "ENEMY", "LOW")
-func _tag(txt: String, col: Color, filled := true, size := 13) -> Label:
+func _tag(txt: String, col: Color, filled := true, size := 17) -> Label:
 	var l := _label(txt, size, GS.ON_GILT if filled else col, font_caps)
 	if filled and col != GILT:
 		l.add_theme_color_override("font_color", Color("#14070a") if col == ALERT else INK)
@@ -470,7 +470,7 @@ func _tag(txt: String, col: Color, filled := true, size := 13) -> Label:
 
 
 # a key cap beside an action ("B", "Tab", "Space")
-func _keycap(key: String, size := 13) -> Label:
+func _keycap(key: String, size := 17) -> Label:
 	var l := _label(key, size, GS.KEY_FG, font_num_b)
 	l.add_theme_stylebox_override("normal", GS.keycap(k))
 	l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -569,7 +569,7 @@ func _key_button(txt: String, act: String, arg: Variant = null, primary := false
 	h.offset_left = s(8)
 	h.offset_right = -s(6)
 	if kk != "":
-		var kc := _keycap(kk, 12 if kk.length() > 2 else 13)
+		var kc := _keycap(kk, 17)
 		if primary:
 			kc.add_theme_stylebox_override("normal", GS.keycap_on_gilt(k))
 			kc.add_theme_color_override("font_color", GS.ON_GILT)
@@ -615,7 +615,7 @@ func _end_button(b: Dictionary) -> Button:
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	h.add_child(l)
 	if kk != "":
-		var kc := _keycap(kk.to_upper(), 12 if kk.length() > 2 else 13)
+		var kc := _keycap(kk.to_upper(), 17)
 		kc.add_theme_stylebox_override("normal", GS.keycap_on_gilt(k))
 		kc.add_theme_color_override("font_color", GS.ON_GILT if on else BONE3)
 		h.add_child(kc)
@@ -672,7 +672,7 @@ func _build_top() -> void:
 	title_lbl = _label("ROUND 1", 19, BONE, font_goth)
 	title_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	lrow.add_child(title_lbl)
-	turn_lbl = _label("", 13, GILT, font_caps)
+	turn_lbl = _label("", 17, GILT, font_caps)
 	turn_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	lrow.add_child(turn_lbl)
 	# the acted pips: your ships (filled when done, gilt for the one that is up), a dash, then the enemy's ships
@@ -681,12 +681,12 @@ func _build_top() -> void:
 	pips.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	pips.draw.connect(_draw_pips)
 	lrow.add_child(pips)
-	acted_lbl = _label("", 13, BONE2)
+	acted_lbl = _label("", 17, BONE2)
 	acted_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	lrow.add_child(acted_lbl)
 	# the objective takes the room the buttons leave and ends in "..." when there is not enough, so the buttons on the
 	# right are never pushed off the screen
-	obj_lbl = _label("", 14, GILT)
+	obj_lbl = _label("", 17, GILT)
 	obj_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	obj_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	obj_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -708,7 +708,7 @@ func _build_top() -> void:
 	foe_crest.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	foe_crest.visible = false
 	irow.add_child(foe_crest)
-	foe_lbl = _label("", 14, BONE)
+	foe_lbl = _label("", 17, BONE)
 	foe_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	foe_lbl.visible = false
 	irow.add_child(foe_lbl)
@@ -717,14 +717,14 @@ func _build_top() -> void:
 	heat_box.add_theme_constant_override("separation", s(6))
 	heat_box.mouse_filter = Control.MOUSE_FILTER_PASS
 	heat_box.visible = false
-	heat_box.add_child(_label("HEAT", 13, BONE2, font_caps))
+	heat_box.add_child(_label("HEAT", 17, BONE2, font_caps))
 	heat_bar = Control.new()
 	heat_bar.custom_minimum_size = Vector2(s(84), s(12))
 	heat_bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	heat_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	heat_bar.draw.connect(_draw_heat)
 	heat_box.add_child(heat_bar)
-	heat_lbl = _label("0", 15, EMBER, font_num_b)
+	heat_lbl = _label("0", 17, EMBER, font_num_b)
 	heat_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	heat_box.add_child(heat_lbl)
 	irow.add_child(heat_box)
@@ -738,7 +738,7 @@ func _build_top() -> void:
 	row.add_child(retreat_btn)
 	# board look C's "Grid (Z)" button (board.gd) lives here, in the top bar, once the battle hands it over (adopt_grid)
 	if _grid_btn != null and is_instance_valid(_grid_btn):
-		_grid_btn.add_theme_font_size_override("font_size", s(14))
+		_grid_btn.add_theme_font_size_override("font_size", s(17))
 		row.add_child(_grid_btn)
 	threat_btn = _top_key("R", "threat", "Threat map (R): how much enemy fire can reach each hex next turn. The hatching (who can reach) shows anyway.")
 	row.add_child(threat_btn)
@@ -757,7 +757,7 @@ func _top_key(txt: String, act: String, tipt: String) -> Button:
 	var b := _button(txt, act)
 	b.tooltip_text = tipt
 	b.custom_minimum_size = Vector2(s(32), 0)
-	b.add_theme_font_size_override("font_size", s(14))
+	b.add_theme_font_size_override("font_size", s(17))
 	return b
 
 
@@ -922,9 +922,9 @@ func _refresh_unacted() -> void:
 		else:
 			rest.append(r)
 	inreach.sort_custom(func(a, b): return int(a.get("danger", 0)) > int(b.get("danger", 0)))
-	unacted_row.add_child(_label("%d unacted" % ready.size(), 14, BONE, font_semi))
+	unacted_row.add_child(_label("%d unacted" % ready.size(), 17, BONE, font_semi))
 	if not inreach.is_empty():
-		unacted_row.add_child(_label("in reach first:", 13, BONE3))
+		unacted_row.add_child(_label("in reach first:", 17, BONE3))
 	var order: Array = inreach + rest
 	var n := mini(3, order.size())
 	for i in n:
@@ -941,7 +941,7 @@ func _refresh_unacted() -> void:
 		var h := HBoxContainer.new()
 		h.add_theme_constant_override("separation", s(5))
 		h.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		h.add_child(_label(str(r["name"]), 14, FRIEND, font_semi))
+		h.add_child(_label(str(r["name"]), 17, FRIEND, font_semi))
 		if int(r.get("danger", 0)) > 0:
 			var bd := _badge(int(r["danger"]), 12)
 			bd.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -949,7 +949,7 @@ func _refresh_unacted() -> void:
 		chip.add_child(h)
 		unacted_row.add_child(chip)
 	if order.size() > n:
-		var more := _label("+%d" % (order.size() - n), 13, BONE2)
+		var more := _label("+%d" % (order.size() - n), 17, BONE2)
 		more.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		unacted_row.add_child(more)
 	unacted.reset_size()
@@ -965,10 +965,10 @@ func _build_roster() -> void:
 	roster.add_child(v)
 	var hh := HBoxContainer.new()
 	hh.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var hl := _label("FLEET", 13, GILT, font_caps)
+	var hl := _label("FLEET", 17, GILT, font_caps)
 	hl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hh.add_child(hl)
-	roster_head = _label("", 13, BONE2, font_caps)
+	roster_head = _label("", 17, BONE2, font_caps)
 	hh.add_child(roster_head)
 	var hw := PanelContainer.new()
 	hw.add_theme_stylebox_override("panel", GS.well(k, Color(0, 0, 0, 0), 8, 3))
@@ -1054,24 +1054,24 @@ func _roster_row(r: Dictionary) -> Control:
 	row.add_theme_constant_override("separation", s(5))
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# 14, not 15: Chakra Petch is wider than the old Barlow (the Lime Tactical mockup does the same; still above the 12 floor)
-	var nm := _label(("★ " if r["flag"] else "") + str(r["name"]), 14, BONE, font_semi)
+	var nm := _label(("★ " if r["flag"] else "") + str(r["name"]), 17, BONE, font_semi)
 	nm.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	nm.custom_minimum_size.x = s(90)
 	nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(nm)
 	var f := clampf(float(r["hp"]) / maxf(float(r["maxHp"]), 1.0), 0.0, 1.0)
 	if f < 0.35 and str(r["status"]) != "Lost":
-		var low := _label("LOW", 12, HULL_LOW, font_caps)
+		var low := _label("LOW", 17, HULL_LOW, font_caps)
 		low.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		low.tooltip_text = "Hull below 35%."
 		row.add_child(low)
 	if int(r.get("danger", 0)) > 0 and str(r["status"]) != "Lost":
 		row.add_child(_badge(int(r["danger"]), 12))
 	if r.get("new", false):
-		row.add_child(_label("NEW", 12, EMBER, font_caps))
+		row.add_child(_label("NEW", 17, EMBER, font_caps))
 	var st := str(r["status"])
 	var stc := GILT if st in ["Up", "Acting"] else (FRIEND if st == "Ready" else (BLOOD if st == "Lost" else BONE3))
-	var sl := _label(st, 13, stc, font_semi)
+	var sl := _label(st, 17, stc, font_semi)
 	sl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(sl)
 	v.add_child(row)
@@ -1149,7 +1149,7 @@ func _clear(c: Control) -> void:
 		x.queue_free()
 
 
-func _rich(bb: String, size := 14) -> RichTextLabel:
+func _rich(bb: String, size := 17) -> RichTextLabel:
 	var r := RichTextLabel.new()
 	r.bbcode_enabled = true
 	r.fit_content = true
@@ -1163,7 +1163,7 @@ func _rich(bb: String, size := 14) -> RichTextLabel:
 
 
 # rich text set in the number face (Azeret Mono): hull "312/370 to about 75" and the like
-func _num_rich(bb: String, size := 14) -> RichTextLabel:
+func _num_rich(bb: String, size := 17) -> RichTextLabel:
 	var r := _rich(bb, size)
 	r.add_theme_font_override("normal_font", font_num)
 	r.add_theme_font_override("bold_font", font_num_b)
@@ -1287,7 +1287,7 @@ func _weapon_cols(cells: Array, head := false) -> Control:
 	sp.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	h.add_child(sp)
 	for i in cells.size():
-		var l := _label(str(cells[i]), 12, BONE3, font_caps)
+		var l := _label(str(cells[i]), 17, BONE3, font_caps)
 		if i == 0:
 			l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		else:
@@ -1322,13 +1322,13 @@ func _weapon_row(w: Dictionary) -> Control:
 	var kc := _keycap(str(int(idx) + 1))
 	kc.custom_minimum_size.x = s(WCOL[0])
 	h.add_child(kc)
-	var n := _label(str(w["name"]), 15, BONE3 if dim else BONE, font_semi)
+	var n := _label(str(w["name"]), 17, BONE3 if dim else BONE, font_semi)
 	n.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	n.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	n.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	h.add_child(n)
 	var arc := str(w.get("arc", ""))
-	var at := _label(("%s %s" % [arc, str(w.get("rng", ""))]).strip_edges(), 13, BONE, font_num_b)
+	var at := _label(("%s %s" % [arc, str(w.get("rng", ""))]).strip_edges(), 17, BONE, font_num_b)
 	at.add_theme_stylebox_override("normal", GS.keycap(k))
 	at.custom_minimum_size.x = s(WCOL[2])
 	at.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -1338,19 +1338,19 @@ func _weapon_row(w: Dictionary) -> Control:
 	h.add_child(at)
 	var hit := int(w.get("hit", -1))
 	if hit >= 0:
-		var hl := _label("%d%%" % hit, 15, GILT, font_num_b)
+		var hl := _label("%d%%" % hit, 17, GILT, font_num_b)
 		hl.custom_minimum_size.x = s(WCOL[3])
 		hl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		hl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		h.add_child(hl)
-		var dl := _label("~%d" % int(w.get("dmg", 0)), 15, BONE, font_num_b)
+		var dl := _label("~%d" % int(w.get("dmg", 0)), 17, BONE, font_num_b)
 		dl.custom_minimum_size.x = s(WCOL[4])
 		dl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		dl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		h.add_child(dl)
 	else:
 		# a gun that cannot fire shows the reason in place of its odds
-		var why := _label(str(w.get("why", w.get("right", ""))), 12, BONE3)
+		var why := _label(str(w.get("why", w.get("right", ""))), 17, BONE3)
 		why.tooltip_text = why.text
 		why.mouse_filter = Control.MOUSE_FILTER_PASS
 		why.custom_minimum_size.x = s(WCOL[3] + WCOL[4] + 6)
@@ -1359,7 +1359,7 @@ func _weapon_row(w: Dictionary) -> Control:
 		why.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		h.add_child(why)
 	var cost := str(w.get("cost", ""))
-	var cl := _label(cost, 13, EMBER if cost.begins_with("CD") else BONE3, font_num)
+	var cl := _label(cost, 17, EMBER if cost.begins_with("CD") else BONE3, font_num)
 	cl.custom_minimum_size.x = s(WCOL[5])
 	cl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	cl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -1501,7 +1501,7 @@ func _route_card() -> void:
 		var step_no: Label = hh.find_child("step_no", false, false) as Label if hh != null else null
 		if not fi.is_empty() and step_no != null:
 			step_no.text = "✓" if str(fi.get("st", "")) == "done" else "2"
-			var det := _label(str(fi.get("detail", "")), 13, BONE if lit2 else BONE2)
+			var det := _label(str(fi.get("detail", "")), 17, BONE if lit2 else BONE2)
 			det.name = "fire_detail"
 			var od := fv.find_child("fire_detail", false, false)
 			if od != null:
@@ -2525,8 +2525,8 @@ func _build_phase() -> void:
 	phase_lbl.autowrap_mode = TextServer.AUTOWRAP_OFF
 	phase_lbl.scroll_active = false
 	phase_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	phase_lbl.add_theme_font_size_override("normal_font_size", s(15))
-	phase_lbl.add_theme_font_size_override("bold_font_size", s(15))
+	phase_lbl.add_theme_font_size_override("normal_font_size", s(17))
+	phase_lbl.add_theme_font_size_override("bold_font_size", s(17))
 	v.add_child(phase_lbl)
 	phase_bar = ColorRect.new()
 	phase_bar.color = Color(0.2, 0.12, 0.3, 0.9)

@@ -18,9 +18,9 @@ const K_MIN := 0.6
 const K_MAX := 2.2
 const PLAYER_MIN := 0.8
 const PLAYER_MAX := 1.4
-# TY6: no text is set below 12 at the design height (12 pixels at 1080 lines, 24 at 4K). Checked by script
-# (contrib/opus/tools/ui_spec_tests.js) on every font size literal in godot/ui and godot/main.
-const MIN_TEXT := 12
+# TY6: no text is set below 17 at the design height (17 pixels at 1080 lines, 34 at 4K; RULEBOOK 9.4, issue 644). Checked
+# by script (contrib/opus/tools/ui_spec_tests.js) on every font size literal in godot/ui and godot/main.
+const MIN_TEXT := 17
 
 static var player := 1.0
 

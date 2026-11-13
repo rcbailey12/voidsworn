@@ -295,7 +295,8 @@ man = dict(code=CODE, sheet_version=SHT.get('version', 3), routes_note='kit = th
            turret_marking='R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).',
            parts=[], masses=[], break_pieces=[])
 KITK = ('gun', 'launcher', 'engine', 'dish', 'intake', 'claw', 'chain', 'thruster', 'hatch', 'hatchbox', 'vent', 'lamp', 'antenna', 'pipe', 'bay', 'slit',
-        'core', 'strut', 'corewin', 'sac', 'brood', 'spine', 'chitin')
+        'core', 'strut', 'corewin', 'sac', 'brood', 'spine', 'chitin',
+        'hangar', 'craft', 'spare')  # issue 633: hangar_mouth, craft and the spare engine_bell are kit builders
 for f in F:
     row = dict(id=f['id'], kind=f['kind'], what=f['what'], count=f['count'], route='kit' if f['kind'] in KITK else 'hand-built',
                source=f['src'], inventory=f.get('inv', []))

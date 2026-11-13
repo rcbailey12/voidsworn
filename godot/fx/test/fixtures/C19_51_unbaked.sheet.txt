@@ -1,4 +1,4 @@
-sha256 881999c1f5bf9184fe3fd0b9f917c62bf6171252cd0bfffc314111a88b38af94
+sha256 5ca29fd481eec103bfe9d33750f71dc77dbed3ea386ad37a4dcf7ecb326c4e2c
 tools/blender/build_sheets/ships/corsair_A16.py
 tools/blender/build_sheets/kit.py
 tools/blender/kits/hullbreakers/parts.py
@@ -6,3 +6,6 @@ tools/blender/build_sheets/contract.py
 tools/recipe/export7.py
 tools/blender/r209/sheet_hull.py
 tools/recipe/ships/corsair_A16.json
+tools/blender/kits/shared/hardpoints.py
+tools/blender/kits/shared/turrets.py
+tools/recipe/gamedata.py
