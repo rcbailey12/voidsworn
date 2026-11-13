@@ -27,10 +27,46 @@
       },
       "models": {
         "kimi-for-coding": {
-          "name": "Kimi for coding (the plan's default alias)"
+          "name": "Kimi for coding (the plan's default alias)",
+          "limit": {
+            "context": 250000,
+            "output": 32768
+          }
         },
         "k3.1-pro": {
-          "name": "Kimi K3.1 Pro (the plan's strongest listed model)"
+          "name": "Kimi K3.1 Pro (the plan's strongest listed model)",
+          "limit": {
+            "context": 250000,
+            "output": 32768
+          }
+        },
+        "k3": {
+          "name": "Kimi K3 (lighter plan model, Ryan Nov 12: try a cheaper Kimi model)",
+          "limit": {
+            "context": 250000,
+            "output": 32768
+          }
+        }
+      }
+    },
+    "anthropic": {
+      "options": {
+        "apiKey": "{env:VOIDSWORN_CLAUDE_API_KEY}"
+      },
+      "models": {
+        "claude-sonnet-5-5": {
+          "name": "Claude Sonnet 5.5 (Max plan API credits, issue 614)",
+          "limit": {
+            "context": 200000,
+            "output": 32000
+          }
+        },
+        "claude-opus-5-5": {
+          "name": "Claude Opus 5.5 (Max plan API credits, issue 614)",
+          "limit": {
+            "context": 200000,
+            "output": 32000
+          }
         }
       }
     }

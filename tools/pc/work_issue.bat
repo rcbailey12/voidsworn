@@ -1,6 +1,6 @@
 @echo off
 rem Workhorse (#217, Opus, Nov 7 2026): one job-board issue, one model, OpenCode headless on Ryan's PC. Nobody watches the run.
-rem Usage: work_issue.bat <issue number> <arm: deepseek, deepseekpro, kimi or kimicode> [dryrun]   (WORK_MODEL overrides the arm's model id)
+rem Usage: work_issue.bat <issue number> <arm: deepseek, deepseekpro, kimi, kimicode, sonnet or opus> [dryrun]   (WORK_MODEL overrides the arm's model id)
 rem Each run gets its own folder, Downloads\voidsworn_test\work217\issue-<n>-<arm>\<date_time>\, holding repo\ (a fresh clone of
 rem main on branch work/issue-<n>-<arm>) and out\ (OpenCode events, the agent's report, run stats, balances, shots).
 rem latest.txt in issue-<n>-<arm>\ names the newest run folder.
@@ -43,8 +43,14 @@ if /i "%ARM%"=="deepseekpro" set "MODEL=deepseek/deepseek-v4-pro"
 if /i "%ARM%"=="kimi" set "MODEL=moonshotai/kimi-k3.1-pro"
 rem kimicode: the Kimi Code plan (Ryan, Nov 12, issue 597); its key only works on api.kimi.com/coding/v1 (work\opencode.json)
 if /i "%ARM%"=="kimicode" set "MODEL=kimicode/k3.1-pro"
-if not defined MODEL (echo usage: work_issue.bat issue-number deepseek-deepseekpro-kimi-or-kimicode [dryrun] & exit /b 2)
-if defined WORK_MODEL set "MODEL=%WORK_MODEL%"
+rem sonnet: Claude Sonnet 5.5 on the Max plan's monthly API credits (Ryan, Nov 12, issue 614); key VOIDSWORN_CLAUDE_API_KEY, never ANTHROPIC_API_KEY, which would switch Ryan's own Claude Code to API billing
+if /i "%ARM%"=="sonnet" set "MODEL=anthropic/claude-sonnet-5-5"
+rem opus: Claude Opus 5.5 on the same credits (Ryan, Nov 12 16:15: "why not use it as another opus worker")
+if /i "%ARM%"=="opus" set "MODEL=anthropic/claude-opus-5-5"
+if not defined MODEL (echo usage: work_issue.bat issue-number deepseek-deepseekpro-kimi-kimicode-sonnet-or-opus [dryrun] & exit /b 2)
+rem WORK_MODEL overrides the model only within the arm's own provider (Board, Nov 13: a q_ file set WORK_MODEL=kimicode/k3 in the
+rem queue watcher's window, and three later opus-arm runs ran on Kimi and stopped on its quota); one from another provider is ignored
+if defined WORK_MODEL for /f "tokens=1 delims=/" %%P in ("%MODEL%") do for /f "tokens=1 delims=/" %%Q in ("%WORK_MODEL%") do if /i "%%P"=="%%Q" (set "MODEL=%WORK_MODEL%") else (echo WORK_MODEL %WORK_MODEL% ignored: arm %ARM% runs on %%P)
 rem The repo's bundled Node 22 first: the shell's Node 24 gives a false 4,048 pow differences in the parity math sweep (#217 trial)
 set "PATH=%USERPROFILE%\Downloads\voidsworn_test\node;C:\Program Files\nodejs;C:\Program Files\Git\cmd;%APPDATA%\npm;%PATH%"
 rem The same bundled Node 22 for the runner's own check step (a quoted full path survives the time-limit wrapper)
@@ -107,12 +113,22 @@ set "OPENCODE_DISABLE_MODELS_FETCH=1"
 rem one shell command may run 30 minutes (parity takes several; the default is 2 minutes)
 set "OPENCODE_EXPERIMENTAL_BASH_DEFAULT_TIMEOUT_MS=1800000"
 set "OPENCODE_CONFIG=%T%work\opencode.json"
-rem kimicode: its own config with no helper agents (issue 597: five parallel helpers spent the plan's 5-hour window in 9 minutes)
-if /i "%ARM%"=="kimicode" set "OPENCODE_CONFIG=%T%work\opencode_kimi.json"
+rem kimicode: its own config with no helper agents (issue 597: five parallel helpers spent the plan's 5-hour window in 9 minutes); sonnet uses it too, to keep API credit spend linear
+if /i "%ARM%"=="kimicode" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
+if /i "%ARM%"=="sonnet" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
+if /i "%ARM%"=="opus" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
+rem deepseek arms too (Ryan, Nov 12: "$20 at DeepSeek API in like a week ... not super sustainable"): one agent, no helpers
+if /i "%ARM%"=="deepseek" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
+if /i "%ARM%"=="deepseekpro" set "OPENCODE_CONFIG=%T%work\opencode_lean.json"
 if /i "%MODE%"=="dryrun" goto :drysetup
 call :getkey DEEPSEEK_API_KEY
 call :getkey MOONSHOT_API_KEY
 call :getkey KIMI_CODE_API_KEY
+call :getkey VOIDSWORN_CLAUDE_API_KEY
+if /i "%ARM%"=="sonnet" if not defined VOIDSWORN_CLAUDE_API_KEY (echo no Claude API key saved: run CLAUDE_API_KEY.bat >> "%O%\result.txt" & exit /b 3)
+if /i "%ARM%"=="sonnet" goto :clone
+if /i "%ARM%"=="opus" if not defined VOIDSWORN_CLAUDE_API_KEY (echo no Claude API key saved: run CLAUDE_API_KEY.bat >> "%O%\result.txt" & exit /b 3)
+if /i "%ARM%"=="opus" goto :clone
 if /i "%ARM%"=="kimicode" if not defined KIMI_CODE_API_KEY (echo no Kimi Code key saved: run KIMI_CODE_KEY.bat >> "%O%\result.txt" & exit /b 3)
 if /i "%ARM%"=="kimicode" goto :clone
 if /i not "%ARM%"=="kimi" if not defined DEEPSEEK_API_KEY (echo no DeepSeek key saved: run WORKHORSE_SETUP.bat >> "%O%\result.txt" & exit /b 3)
@@ -122,6 +138,7 @@ goto :clone
 set "DEEPSEEK_API_KEY=dry"
 set "MOONSHOT_API_KEY=dry"
 set "KIMI_CODE_API_KEY=dry"
+set "VOIDSWORN_CLAUDE_API_KEY=dry"
 set "OPENCODE_CONFIG=%T%work\opencode_mock.json"
 start "workhorse stand-in model" /min "C:\Program Files\nodejs\node.exe" "%T%work\mock_llm.js" 8765 "%O%\mock_log.txt" %WORK_DRY_SCENARIO%
 rem wait until the stand-in is listening (an earlier one may still hold the port for a few seconds)

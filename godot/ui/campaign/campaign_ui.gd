@@ -1431,6 +1431,7 @@ func _end(d: Dictionary) -> Control:
 	else: sub = "The last hull goes dark in sector " + C.roman(R["sector"]) + ". The survivors will tell it differently."
 	var sl = lbl(sub, 20, BONE2); sl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(sl)
 	v.add_child(lbl(C.TB.STORY_BEAT3[R["fac"]]["learning"], 18, GILT))
+	if C.jt(R.get("eatenCore")) and C.PATRONS.has(R["eatenCore"]): v.add_child(lbl("The swarm ate " + str(C.PATRONS[R["eatenCore"]]["n"]) + ".", 18, GILT))
 	var stl = _story_text()
 	if stl != "":
 		var sll = lbl(stl, 18, GILT); sll.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(sll)
@@ -1750,6 +1751,13 @@ func _modal(md: Dictionary) -> void:
 				add(v, choice(b["n"], C.BOON_D[o["id"]][r], "takeBoon", i, acts, Color(C.PATRONS[duo[0]]["col"]) if C.jt(duo) else pc, tag, EMBER if C.jt(duo) else Color(R0["col"])))
 			v.add_child(foot([abtn("Reroll the offer (" + C.numstr(d.get("rerollCost", 0)) + " credits, once)", "boonReroll", _arg_of(acts, "boonReroll"), false, false, acts),
 				abtn("Decline: take " + C.numstr(d.get("declineCred", 0)) + " credits", "boonDecline", "", false, false, acts)]))
+		"eatCore":
+			h2.call("The swarm hungers.")
+			p.call("A core you have not synced with lies within reach. Eat one now, or refuse.", BONE2)
+			for core in d["cores"]:
+				var P = C.PATRONS[core]; var pc = Color(P["col"])
+				add(v, choice("Eat " + str(P["n"]), "every ship +10% hull for this run; lose its protocols for this run", "eatCore", core, acts, pc, str(P["glyph"])))
+			v.add_child(foot([abtn("Refuse", "refuseCoreEat", "", false, false, acts)]))
 		"relic":
 			h2.call("The flagship’s vault" if d["boss"] else "Spoils of the elite"); p.call(str(C.REWARD_DEF["relic"]), BONE3); p.call("Choose one.")
 			for r in d["opts"]: add(v, choice(C.relicName(r), C.RELICS[r]["d"], "takeRelic", r, acts))

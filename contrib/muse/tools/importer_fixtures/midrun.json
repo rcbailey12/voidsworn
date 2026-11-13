@@ -1254,7 +1254,9 @@
         ],
         "modOffer": null
       },
-      "v": 2
+      "v": 2,
+      "eatenCore": null,
+      "eatCoreSeen": false
     },
     "recovered": false
   }
