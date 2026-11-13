@@ -45,7 +45,8 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    tone carry the look); big part faces carry the hull's plates and seams (R224 in paint). Pass 5 (Board, the two-ship
    PC run): painted metal has a roughness floor (no white specular glare at the game's key light; bells and dishes matte, the
    concept's metal is dull and grimy); light grey is for scrapes and small patches only, never whole big plates; the trophy
-   grey is weathered dark; grime goes over everything; the throat glow sits deep in the bell, the lip and rim stay dark, and (Ryan, Nov 12 19:16 CST: "more variation to the
+   grey is weathered dark; grime goes over everything; in the game the stack's surfaces take the soft rim light (look.gd RIM
+   soft: the full rim specular flared white on them at the close cameras); the throat glow sits deep in the bell, the lip and rim stay dark, and (Ryan, Nov 12 19:16 CST: "more variation to the
    engine glow so it's not so uniform, just disc color") it varies: a hot core in the centre of the throat (the plug cone glows hottest, never black) grading out to deeper red and orange, uneven hot
    spots and soot streaks across the throat, each engine its own brightness, core reach, hue and hot-spot pattern, baked into
    the engine glow's own emission map by the stack (ENGINE_GLOW); the game's moving plume sits on top, so no flame is painted.

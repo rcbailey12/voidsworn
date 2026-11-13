@@ -132,7 +132,12 @@ stack's `RUNNING_LIGHTS` rule builds small round deep-red lamps (0.0115 of the s
 and the breach, braking and boarding points; each bezel bridges the plate steps under it); their size and count go into the
 job's `lights.json` as point lights, which `standing.py lights` reports without holding them to the 2 px floor of painted window
 and trim lights. Plate patchwork, seams and brick rust (R228) are the faction stack's `PATCH_FAMILIES`,
-`patch_cell` and `CONCEPT`. Engine glow is the game's (R228): the export's `hp_eng` points with their bell radius drive the
+`patch_cell` and `CONCEPT`. The game's rim light (`godot/render/look_rim.gd`, issue 362, specular x8) flared white on the stack's surfaces at the close
+cameras (PC run out3): they carry real roughness, which the old flat-colour hulls did not. The stack marks its textured and engine
+glow materials `rim_soft` (glTF material extras); `look.gd` puts such surfaces on their own layer, lit by a second rim light with
+`RIM soft` (0.25) of the specular. Every other hull keeps the full rim light, pixel for pixel (sandbox probe
+`godot/render/test/rim_soft_probe.gd`: A16 white pixels 46 to 5 at camera b and 28 to 0 at q, outline at camera 170 37.0 to 35.3;
+an old hull 0 pixels changed). Engine glow is the game's (R228): the export's `hp_eng` points with their bell radius drive the
 game's engine effect (`godot/fx/fx_hull.gd` reads them as the nozzles), beside the sheet's throat and bell lining, which the
 stack gives one emissive surface with the plug cone, with its own map (`bake_engine_glow`: the hot core on the axis, the plug
 hottest, to deep red at the wall, each engine its own reach, hot spots, soot streaks, the lining

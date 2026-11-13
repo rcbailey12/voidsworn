@@ -778,6 +778,9 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
         INFO[f'zones_{group}'] = sorted(mats)
     HM = textured(f'{cell}_hull_mat', maps['H']['albedo'], maps['H']['orm'], maps['H']['normal'])
     PM = textured(f'{cell}_parts_mat', maps['P']['albedo'], maps['P']['orm'])
+    # issue 601: these surfaces carry the stack's own roughness; the game gives them the soft rim light (godot/render/look.gd RIM
+    # soft), not the full specular that flared white on them at the close cameras. glTF writes it as the material's extras.
+    for M_ in (HM, PM): M_['rim_soft'] = 1
     for objs, M in ((H, HM), (P, PM)):
         for o in objs:
             o.data.materials.clear(); o.data.materials.append(M); o.data.polygons.foreach_set('material_index', np.zeros(len(o.data.polygons), np.int32))
@@ -785,7 +788,7 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
     eng = [o for o in G if (o.data.materials[0].name if o.data.materials else '') in ('glow', 'ember') or o.get('emissive_zone') == 'plug'] \
         if hasattr(S, 'ENGINE_GLOW') else []
     if eng:      # the engine throats and linings: one surface, its own emission map (graded, hot spots, soot, each engine its own)
-        glow['engine'] = bake_engine_glow(S, eng, out, cell, max(256, res // 4), samples)
+        glow['engine'] = bake_engine_glow(S, eng, out, cell, max(256, res // 4), samples); glow['engine']['rim_soft'] = 1
         for o in eng:
             o.data.materials.clear(); o.data.materials.append(glow['engine'])
     for o in G:

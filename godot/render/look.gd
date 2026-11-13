@@ -64,10 +64,17 @@ const READ := {
 # light_specular), alpha is how far (degrees) it is tipped up from the camera's line of sight, behind the ships. Calibration 2
 # (contrib/opus/reviews/readability_362.md): alpha 20 keeps every outline lit (edge 0.93 or more on the darkest sky) while
 # the Eclipse fans and the Glasswright Ark stay below the band's top; 30 and 45 lit their flat faces too.
-const RIM := {"energy": 0.35, "spec": 8.0, "alpha": 20.0, "color": Color(0.85, 0.9, 1.0)}
+const RIM := {"energy": 0.35, "spec": 8.0, "alpha": 20.0, "color": Color(0.85, 0.9, 1.0), "soft": 0.25}
+# soft (issue 601): the share of the rim light's specular a surface painted by a sheet ship's paint stack takes. Those surfaces
+# carry real roughness (the stack's roughness floor), and the full spec of 8 flared white on their lips and top edges at the
+# close cameras (A16 and A17, PC run out3: rack tops, bell lips, flank streaks); at camera 170 their outline barely changes
+# (sandbox probe: edge 37.0 at spec 8, 35.3 at spec 2, 34.1 with no rim light). Such surfaces say so in their glTF material
+# extras ("rim_soft", written by the paint stack) and join their own layer, lit by a second rim light with this share of the
+# specular; every other hull keeps the full rim light exactly as before.
 # Render layer 16: only hull surfaces join it (look_rim.gd marks them), so the rim light lights nothing else. The campaign
 # map uses layers 2 to 4 (ui/campaign/map3d.gd); nothing else sets layers.
 const RIM_LAYER := 1 << 15
+const RIM_SOFT_LAYER := 1 << 14      # issue 601: the stack-painted surfaces (RIM soft); nothing else uses layer 15
 const RIM_SCRIPT := "res://render/look_rim.gd"
 # Bench probes only (contrib/opus/reviews/readability_362/): numbers laid over READ and RIM for one run, never saved. The game
 # never sets this.
@@ -159,6 +166,15 @@ static func rim_light(key: DirectionalLight3D) -> DirectionalLight3D:
 		l.name = "LookRim"
 		parent.add_child(l)
 	l.call("configure")
+	# issue 601: the soft rim light for stack-painted surfaces (dark until one of them is in the scene)
+	var s := parent.get_node_or_null("LookRimSoft") as DirectionalLight3D
+	if s == null:
+		s = DirectionalLight3D.new()
+		s.set_script(load(RIM_SCRIPT))
+		s.set("soft", true)
+		s.name = "LookRimSoft"
+		parent.add_child(s)
+	s.call("configure")
 	return l
 
 
@@ -182,6 +198,10 @@ static func hull(mat: Material, faction: String, copy := false) -> Material:
 	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 	# the rim light (look_rim.gd) finds hull surfaces by this mark; death pieces and damaged hulls carry it on
 	m.set_meta("look_hull", faction)
+	# issue 601: a surface the paint stack painted says so in its glTF extras; it takes the soft rim light (RIM soft)
+	var ex = m.get_meta("extras", {})
+	if ex is Dictionary and (ex as Dictionary).has("rim_soft"):
+		m.set_meta("look_rim_soft", true)
 	var r := read_of(faction)
 	if r.is_empty():
 		var f: Array = FLOOK.of(faction).get("hull_fix", [0.1, 0.25, 1.0])
