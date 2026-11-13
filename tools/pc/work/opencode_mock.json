@@ -3,14 +3,63 @@
   "autoupdate": false,
   "share": "disabled",
   "provider": {
-    "deepseek": { "options": { "baseURL": "http://127.0.0.1:8765/v1" } },
-    "moonshotai": { "options": { "baseURL": "http://127.0.0.1:8765/v1" } },
-    "kimicode": { "npm": "@ai-sdk/openai-compatible", "name": "Kimi Code plan (stand-in)", "options": { "baseURL": "http://127.0.0.1:8765/v1", "apiKey": "dry" }, "models": { "kimi-for-coding": { "name": "stand-in" }, "k3.1-pro": { "name": "stand-in" } } }
+    "deepseek": {
+      "options": {
+        "baseURL": "http://127.0.0.1:8765/v1"
+      }
+    },
+    "moonshotai": {
+      "options": {
+        "baseURL": "http://127.0.0.1:8765/v1"
+      }
+    },
+    "kimicode": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Kimi Code plan (stand-in)",
+      "options": {
+        "baseURL": "http://127.0.0.1:8765/v1",
+        "apiKey": "dry"
+      },
+      "models": {
+        "kimi-for-coding": {
+          "name": "stand-in"
+        },
+        "k3.1-pro": {
+          "name": "stand-in"
+        },
+        "k3": {
+          "name": "stand-in"
+        }
+      }
+    },
+    "anthropic": {
+      "options": {
+        "baseURL": "http://127.0.0.1:8765/v1",
+        "apiKey": "dry"
+      },
+      "models": {
+        "claude-sonnet-5-5": {
+          "name": "stand-in"
+        },
+        "claude-opus-5-5": {
+          "name": "stand-in"
+        }
+      }
+    }
   },
   "permission": {
     "edit": "allow",
     "webfetch": "allow",
     "external_directory": "allow",
-    "bash": { "*": "allow", "*git push*": "deny", "*git commit*": "deny", "*git -c*": "deny", "*rm -r*": "deny", "*rm -fr*": "deny", "*rmdir*": "deny", "*Remove-Item*": "deny" }
+    "bash": {
+      "*": "allow",
+      "*git push*": "deny",
+      "*git commit*": "deny",
+      "*git -c*": "deny",
+      "*rm -r*": "deny",
+      "*rm -fr*": "deny",
+      "*rmdir*": "deny",
+      "*Remove-Item*": "deny"
+    }
   }
 }

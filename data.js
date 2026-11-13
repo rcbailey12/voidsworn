@@ -3071,6 +3071,8 @@ const TREE_MAY={
 const TREE_ROLES=[{id:'strike',n:'Strike',d:'+10 aim'},{id:'screen',n:'Screen',d:'+10 evasion'},{id:'mend',n:'Mend',d:'repair and regrowth 10% stronger'}];
 // Patron favour: grows with every boon you take from a patron
 const FAVOUR_TIERS=[{at:0,n:'Listening'},{at:4,n:'Partial sync',d:'Its protocols are rare more often.'},{at:12,n:'Synced',d:'If it is in range of your run, you start with one of its protocols.'},{at:25,n:'Full sync',d:'Its protocols are never common.'}];
+// R78 Q15 (issue 42): a Chorus run may eat one core it has not synced with in sector 3; each Chorus ship gains this much hull for the run
+const CORE_EAT_HULL=0.1;
 // Heat: optional rules after your first victory; each level adds 10% renown
 // enemy fleet archetypes: the same budget spent three different ways, named per faction and shown on the map
 const ARCHETYPES={

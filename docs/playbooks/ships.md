@@ -107,6 +107,9 @@ all of the other guidance we've discussed across the faction guides, lore, playb
 (mass, silhouette from above, character, palette, where the big features sit). The Opus builder corrects what would not work
 as a real built object and lists each change, with its reason, on the build sheet before the build. Questions go to Ryan only
 when the picture, the faction guide and the lore conflict, or a change would alter the ship's identity.
+Ryan, Nov 12 2026 (R233): "You're the final designer and director. Muse is just concepting." The Board makes the design
+calls between concept and build, family distinctness included, and shows Ryan the result rather than asking first. First
+case: the Eclipse flare (E14) carries one closed ring, so from above it never reads as a small zenith (E12, the split ring).
 
 ## 2c. Parts that read and fit together (R217)
 

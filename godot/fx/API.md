@@ -209,7 +209,7 @@ Tonemapper, exposure, bloom threshold and the dark-hull lift are chosen in look.
 
 Ryan's PC (RTX 5080), 4K max detail, the gallery's 26 s reel (`godot/fx/gallery/README.md` has the table): everything 5.78 ms a frame against 4.18 ms with no effects, so the effects layer costs about 1.6 ms; the world 0.5 ms; physics 0.03 ms. High quality saves about 1.75 ms. Call `fx.warmup(cam)` on the loading screen so no shader compiles mid-fight; it also lights every warmed material once with an omni light (the Compatibility renderer compiles a material's point-light pass on first use) and makes the first Jolt bodies a death uses, off screen.
 
-Profiling: `fx.prof` holds microseconds of fx's own main-thread work per section (`volley`, `death`, `break_up`, `debris`, `breach_apply`, `hull_gather`, `cut_start`, `piece_meshes`, and the per-frame `later`, `ships`, `weap_death`, `lights_pools`) since the last `fx.prof_take()`. The gallery's 20-ship bench lists, for every frame over 33 ms, that breakdown for the frame and the one before, plus process, physics and render times.
+Profiling: `fx.prof` holds microseconds of fx's own main-thread work per section (`volley`, `death`, `break_up`, `debris`, `breach_apply`, `hull_gather`, `cut_start`, `piece_meshes`, `power_down` (issue 616: a dying hull's power-down materials, built POWER_BUDGET a frame from the kill frame on; its kill-frame share is inside `death` too), and the per-frame `later`, `ships`, `weap_death`, `lights_pools`) since the last `fx.prof_take()`. The gallery's 20-ship bench lists, for every frame over 33 ms, that breakdown for the frame and the one before, plus process, physics and render times.
 
 ## 13. Drop-in event player (a sketch for battle.gd)
 

@@ -12,6 +12,7 @@
 # args: what goes after "--"; {out} is the output folder (gpu), {repo} the clone root, {fixture} the fixture file; - for none
 headless|campaign/test/arc_hook_test.gd|-|-|story arc hook: arcs off or empty change nothing, test cards pay, flag and end; whole seeded runs, no window
 headless|campaign/test/capstone_mastery_test.gd|-|-|capstone mastery opens at 320, 440 and 600 XP; campaign data only
+headless|campaign/test/core_eat_test.gd|-|-|issue 42 (R78 Q15): the Chorus core-eating offer in sector 3, the growth, the lost protocols, refusing, the save round trip and other factions
 headless|campaign/test/core_sync_test.gd|fixture:core_sync_tests.js|{fixture}|core sync announcements match the browser fixtures; its optional second arg (shots) is not used here
 headless|campaign/test/free_exit_test.gd|fixture:free_exit_tests.js|{fixture}|free exits match the live browser at entry, result and map
 headless|campaign/test/heat_test.gd|-|-|Heat after the first loss and the XP payout; campaign data only
@@ -50,7 +51,7 @@ headless|fx/test/kill_slowmo_check.gd|-|-|issue 521: the kill slow-motion beat s
 headless|fx/test/late_shader_check.gd|-|-|issue 376: after warm-up, any shader or material first built mid-battle logs its name and the frame time and is counted
 headless|fx/test/destruction_steps_check.gd|-|-|break geometry: every open edge is sealed; DESTRUCTION_OUT unset, so no pictures
 headless|fx/test/authored_interiors_check.gd|-|-|issue 557: authored GLB interiors and seams reach damage and death; moving a seam changes piece ownership; old hulls keep fallback
-headless|fx/test/death_seam_check.gd|-|-|issue 600: kills A16 (C19_51, its unpainted export kept in fx/test/fixtures) and counts machines split across pieces and inside triangles outside their own piece's hull: both zero; prints the cut's worker time
+headless|fx/test/death_seam_check.gd|-|-|issue 600: kills A16 (C19_51, its unpainted export kept in fx/test/fixtures) and counts machines split across pieces and inside triangles outside their own piece's hull: both zero; prints the cut's worker time; issue 616: the power-down after the kill finishes within 30 frames with every hull surface powered down, and prints the kill frame's fx.death time
 headless|fx/test/damage_alpha_check.gd|-|-|issue 569: a transparent sail surface stays transparent after damage; the opaque hull stays on the opaque shader
 headless|fx/test/flash_area_check.gd|-|-|issue 504: the flash counter by area on a staged worst second, checked against a brute-force area count; zero in calm mode
 headless|fx/test/hit_recipe_check.gd|-|-|issue 461: the hit ladder, a recipe per weapon family, thrown matter outliving flame, outward direction, torpedo light reach, zero flashes in calm mode, the lance kill's clean cut

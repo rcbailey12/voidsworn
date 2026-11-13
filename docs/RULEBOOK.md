@@ -125,11 +125,13 @@ agents-09.
 | Pipeline and engine jobs that need Codex's depth (export, import, effects plumbing); captures and benches only when no cheaper seat can run them | Codex on the PC, one job at a time, while its weekly usage lasts | "Codex and deepseek should do other work to free you up on these crucial items" (R206); "We're starting to run low on codex usage ... We may just need to move other things to opus instead of codex being the workhorse with DeepSeek" (R219) |
 | Checks of a seat's own work: a different model checks it (Codex's pipeline work is traced or checked by Opus or Muse) | Opus worker or Muse | "It feels like that makes sense to be checked by a different model" (R219) |
 | Concept pictures by image to image, research, design text, outside checks | Muse (Rey chairs); Ryan starts every run | several models, an outside view (R128) |
-| Ideation | Flash and Grok, through Muse | free and broad |
+| Ideation and legs | Grok and Google Flash, through Muse: a leg in every Muse action, beside DeepSeek and Qwen (R231) | free and broad; Qwen's daily cap emptied three seats on Nov 12 |
 
 No Fable helpers: Ryan's Fable allowance is spent ("I just used the final fable reset", R180). Kimi was never fairly tested
 (only the pay-as-you-go tier, R164); Ryan took the Kimi Code plan on Nov 12, and it gets one head-to-head job against DeepSeek
-(arm kimicode, issue 597) before it holds a seat. Codex's weekly usage is watched at every board check (it was at 19 percent with
+(arm kimicode, issue 597) before it holds a seat. Claude Opus 5.5 (arm opus, Ryan: "why not use it as another opus worker") and Sonnet 5.5 (arm sonnet) run as workhorse arms (issue 614) on the Max plan's $100 a month of API
+credits (Ryan, Nov 12): the credits do not roll over, so they are spent each month, Opus first, on jobs that would otherwise take an Opus
+worker seat; it is the same model family as the Board, so it never serves as the different-model check of Opus work (R219). Codex's weekly usage is watched at every board check (it was at 19 percent with
 six days to its reset on Nov 11, R219): when it runs low, code jobs go to the DeepSeek workhorse and Opus workers, and Codex
 keeps only what needs it. Ids: R128, R180e, R205, R206, R219, agents-12.
 
@@ -140,7 +142,9 @@ use Sol 6.1" (R216). Ends when Ryan picks another model. Set: Ryan, Nov 2 (R75) 
 
 2.8 **Muse: a blind Rey leg written before Rey reads the others, on research, design and review jobs** (not on low-code fix
 jobs). Why: "Let's ensure muse is running its own blind leg room not just chairing." Set: Ryan, Nov 3 (R89). Ids: R89,
-agents-10, muse-07.
+agents-10, muse-07. Every Muse action (research, design, review and outside checks, and low-code fixes) runs legs from DeepSeek, Qwen,
+Grok and Google Flash, with Rey chairing. Why: "let's have muse use grok and Google flash LLMs in all its actions too" (Ryan,
+Nov 12, R231); more outside views, and no check runs on one leg when a model hits its cap.
 
 2.9 **A Muse issue is never edited once Ryan may have started it; new scope is a new issue.** Why: Rey kept to the version it
 had read and the Board's later edit was lost (R200). Set: Board, Nov 11.
@@ -280,6 +284,10 @@ object, takes guns from the hull's data.js slots as batteries that make sense, c
 picture shows, and lists every change on the sheet. Why: "Use it to guide, not the very final exact design" (R207); "The guns
 look randomly placed and don't make sense... the builds look like square blocks basically" and "The concept should inform and
 guide but it's not a final play by play guide" (R213). Set: Ryan, Nov 11. Ids: R25 (concepts are inspiration), R207, R213.
+The Board (Opus) is the final designer and director; Muse concepts. Between an accepted concept and the build the Board makes
+the design calls, family distinctness included (a class that reads as a small copy of another class from above is changed in
+the build), lists them on the sheet and shows Ryan the result instead of asking first. Ryan's picks of concepts and his
+verdicts on pictures stand. Why: "You're the final designer and director. Muse is just concepting" (R233). Set: Ryan, Nov 12.
 
 5.3 **The settled build method is binding** (docs/playbooks/ships.md section 0; docs/ship_pipeline/RECIPE.md): the hull designed
 on the approved build sheet (5.1, 5.2), which the recipe builds as it is and never traces again (issue 592), with the stage 2

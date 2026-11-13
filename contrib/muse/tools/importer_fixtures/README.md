@@ -3,6 +3,10 @@
 Nov 2 2026, issue 20: loaded meta expectations now include empty heirs and
 shadowPool fields. The old input saves are unchanged, so these fixtures
 also check the new fields are added when an older profile is opened.
+Nov 12 2026, issue 42 (R78 Q15): loaded run expectations now include
+eatenCore (null) and eatCoreSeen (false). The old input saves are unchanged,
+so these fixtures also check the two new fields are added when an older run
+is opened.
 
 Fixtures for building and testing an importer that carries browser saves
 into the Godot build. Background: the browser game stores one JSON envelope

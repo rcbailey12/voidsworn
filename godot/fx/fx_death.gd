@@ -1873,11 +1873,9 @@ static func _cap_bone(cap: Dictionary, a: Vector3, b: Vector3, n: Vector3, wa: f
 
 # ---------------------------------------------------------------- the death
 
+# fx.death books this under prof "death" (issue 616: it was booked here as well, so the profile showed twice the time).
 static func death(fx, s, cause: String) -> float:
-	var t0 := Time.get_ticks_usec()
-	var r = _death_inner(fx, s, cause)
-	fx.pend("death", t0)
-	return r
+	return _death_inner(fx, s, cause)
 
 
 static func _death_inner(fx, s, cause: String) -> float:
@@ -1888,7 +1886,7 @@ static func _death_inner(fx, s, cause: String) -> float:
 		var cb: Node = s.get_meta("collider")
 		if is_instance_valid(cb): cb.queue_free()
 	var tint := Color(0.95, 0.34, 0.08) if cause != "melt" else Color(0.55, 0.65, 0.12)
-	_power_down(s)
+	_power_down(fx, s)
 	s.set_meta("death_start", T)
 	s.engine_level = 0.0
 	if s.death_big:
@@ -1956,49 +1954,97 @@ static func power_material(mat: ShaderMaterial) -> ShaderMaterial:
 	return mat
 
 
-static func _power_down(s) -> void:
+# Issue 616 (R118): the power-down materials (one damage material per hull surface, about 0.7 ms each on A16) were all
+# built on the kill frame, 11 to 12 ms of it. The kill frame now builds them for POWER_BUDGET of main-thread time and
+# the rest follow on the next fx steps, the same budget-and-carry-on pattern as the piece build (_prebuild_step, issue
+# 600). The poses (the shudder and the spin) are all taken on the kill frame. A surface still waiting keeps its live
+# material for a frame or two, while the first band's 0.15 s fade has barely begun; _update_dying sets death_age on each
+# new material before it is drawn, so it starts at the same point of the fade it would have reached.
+const POWER_BUDGET := 4000   # microseconds a frame; a tuning value, the same as PREBUILD_BUDGET
+
+static func _power_down(fx, s) -> void:
 	var mats: Array = []
 	var poses: Array = []
+	var queue: Array = []
 	var inv: Transform3D = s.root.global_transform.affine_inverse()
 	for mesh in s.meshes:
 		var mi := mesh as MeshInstance3D
 		if not is_instance_valid(mi) or mi.mesh == null: continue
-		poses.append({"mi": mi, "pose": inv * mi.global_transform})
-		var prepared: Array = []
-		for i in mi.mesh.get_surface_count():
-			var source: Material = mi.get_active_material(i)
-			if s.hull.authored and HULL.interior_material(mi.mesh.surface_get_material(i)):
-				var inside: Material = source.duplicate()
-				if inside is BaseMaterial3D: inside.emission_enabled = false
-				prepared.append(inside)
-				continue
-			var mat: ShaderMaterial
-			if source is ShaderMaterial and source.has_meta("fx_hull_source"):
-				mat = source.duplicate()
-			else:
-				mat = HULL.damage_material(source, inv * mi.global_transform, {}, s.hull.L, s.faction == "chorus")
-			mat = power_material(mat)
-			var box: AABB = s.hull.box
-			if s.death_tier == "capital":
-				# deck by deck, top to bottom
-				mat.set_shader_parameter("death_axis", Vector3.DOWN)
-				mat.set_shader_parameter("death_span", Vector2(-(box.position.y + box.size.y), maxf(box.size.y, 0.01)))
-				mat.set_shader_parameter("death_steps", Vector3(5.0, 0.12, 0.15))
-			elif s.death_tier == "cruiser":
-				# bow (+X) to stern
-				mat.set_shader_parameter("death_axis", Vector3.LEFT)
-				mat.set_shader_parameter("death_span", Vector2(-(box.position.x + box.size.x), maxf(box.size.x, 0.01)))
-				mat.set_shader_parameter("death_steps", Vector3(4.0, 0.06, 0.12))
-			else:
-				mat.set_shader_parameter("death_span", Vector2(box.position.x, s.hull.L))
-			prepared.append(mat)
-			mats.append(mat)
-		mi.material_override = null
-		for i in prepared.size(): mi.set_surface_override_material(i, prepared[i])
+		var pose: Transform3D = inv * mi.global_transform
+		poses.append({"mi": mi, "pose": pose})
+		queue.append({"mi": mi, "pose": pose, "prepared": []})
 	s.set_meta("death_power", mats)
 	s.set_meta("death_poses", poses)
+	s.set_meta("death_power_queue", queue)
 	s._reacting = false
 	s._shield_until = -1.0
+	_power_down_step(fx, s, POWER_BUDGET)
+
+
+# Build power-down materials from the queue for up to budget microseconds (a negative budget: all of them), then hand
+# the rest to the next fx step. A mesh gets its materials all at once when its last surface is built.
+static func _power_down_step(fx, s, budget: int) -> void:
+	if not s.has_meta("death_power_queue"): return
+	if s.has_meta("death_hidden") or not is_instance_valid(s.root) or fx.ships.get(s.id) != s:
+		s.remove_meta("death_power_queue")
+		return
+	var t0 := Time.get_ticks_usec()
+	var queue: Array = s.get_meta("death_power_queue")
+	var mats: Array = s.get_meta("death_power", [])
+	while not queue.is_empty():
+		var q: Dictionary = queue[0]
+		var mi := q["mi"] as MeshInstance3D
+		if not is_instance_valid(mi) or mi.mesh == null:
+			queue.pop_front()
+			continue
+		var prepared: Array = q["prepared"]
+		var i: int = prepared.size()
+		if i < mi.mesh.get_surface_count():
+			var inside: bool = s.hull.authored and HULL.interior_material(mi.mesh.surface_get_material(i))
+			var mat := _power_surface(s, mi, i, q["pose"])
+			prepared.append(mat)
+			if not inside: mats.append(mat)
+		if prepared.size() >= mi.mesh.get_surface_count():
+			mi.material_override = null
+			for k in prepared.size(): mi.set_surface_override_material(k, prepared[k])
+			queue.pop_front()
+		if budget >= 0 and Time.get_ticks_usec() - t0 > budget: break
+	s.set_meta("death_power_max_usec", maxi(int(s.get_meta("death_power_max_usec", 0)), Time.get_ticks_usec() - t0))
+	fx.pend("power_down", t0)
+	if queue.is_empty():
+		s.remove_meta("death_power_queue")
+	else:
+		# the next fx step, however slow the effect clock runs (a hit pause): a step always moves it on a little
+		fx.later(fx.now + 0.000001, func l_power_down_step() -> void: _power_down_step(fx, s, POWER_BUDGET))
+
+
+# One surface's power-down material (an inside surface of an authored hull: a dark copy of its own material).
+static func _power_surface(s, mi: MeshInstance3D, i: int, pose: Transform3D) -> Material:
+	var source: Material = mi.get_active_material(i)
+	if s.hull.authored and HULL.interior_material(mi.mesh.surface_get_material(i)):
+		var inside: Material = source.duplicate()
+		if inside is BaseMaterial3D: inside.emission_enabled = false
+		return inside
+	var mat: ShaderMaterial
+	if source is ShaderMaterial and source.has_meta("fx_hull_source"):
+		mat = source.duplicate()
+	else:
+		mat = HULL.damage_material(source, pose, {}, s.hull.L, s.faction == "chorus")
+	mat = power_material(mat)
+	var box: AABB = s.hull.box
+	if s.death_tier == "capital":
+		# deck by deck, top to bottom
+		mat.set_shader_parameter("death_axis", Vector3.DOWN)
+		mat.set_shader_parameter("death_span", Vector2(-(box.position.y + box.size.y), maxf(box.size.y, 0.01)))
+		mat.set_shader_parameter("death_steps", Vector3(5.0, 0.12, 0.15))
+	elif s.death_tier == "cruiser":
+		# bow (+X) to stern
+		mat.set_shader_parameter("death_axis", Vector3.LEFT)
+		mat.set_shader_parameter("death_span", Vector2(-(box.position.x + box.size.x), maxf(box.size.x, 0.01)))
+		mat.set_shader_parameter("death_steps", Vector3(4.0, 0.06, 0.12))
+	else:
+		mat.set_shader_parameter("death_span", Vector2(box.position.x, s.hull.L))
+	return mat
 
 
 static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
@@ -2455,6 +2501,7 @@ static func _hide_ship(s) -> void:
 # G2 may release its live ship root as soon as death()'s returned time expires.
 static func _hulk(fx, s) -> void:
 	if not is_instance_valid(s.root) or fx.ships.get(s.id) != s or s.has_meta("death_hidden"): return
+	_power_down_step(fx, s, -1)   # issue 616: the copy takes the power-down materials, all of them (done long before, as a rule)
 	var node := Node3D.new()
 	node.name = "fx_hulk_" + s.id
 	fx.phys_root.add_child(node)

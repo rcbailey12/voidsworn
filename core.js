@@ -67,7 +67,8 @@ function migrateRun(r){ if(r&&!r.fac) r.fac='voidsworn';
   if(r&&(!r.v||r.v<2)){ r.v=2; r.stats=r.stats||{battles:0,elites:0,bosses:0,kills:0}; r.fallen=r.fallen||[]; } return normalizeRun(r); }
 // v53: the one place that knows every field a RUN carries. newRun sets the real starting values; this fills anything an older or partial save lacks
 function runDefaults(){ return {fac:'voidsworn',foes:null,admiral:'vex',credits:0,cpCap:10,sector:1,relics:[],inventory:[],fleet:[],pos:null,stats:{battles:0,elites:0,bosses:0,kills:0,lost:0},t0:0,fallen:[],ambush:false,over:false,boons:[],patrons:[],aspect:null,flagUid:null,
-  heat:[],mastery:0,ransoms:0,altFleet:false,cmdOverride:null,giftBoon:null,reserve:[],seenEvents:[],regionsUsed:[],condsUsed:[],curNode:null,reinf:0,flags:{},nem:null,verbUsed:0,verbNext:null,classTrack:{},boonRerolls:0}; } // B4: event flags, the Nemesis, the faction verb
+  heat:[],mastery:0,ransoms:0,altFleet:false,cmdOverride:null,giftBoon:null,reserve:[],seenEvents:[],regionsUsed:[],condsUsed:[],curNode:null,reinf:0,flags:{},nem:null,verbUsed:0,verbNext:null,classTrack:{},boonRerolls:0,
+  eatenCore:null,eatCoreSeen:false}; } // B4: event flags, the Nemesis, the faction verb; R78 Q15: the core eaten in sector 3
 function normalizeRun(r){ if(!r||typeof r!=='object') return r; const d=runDefaults(); for(const k in d) if(r[k]==null) r[k]=d[k];
   for(const k of ['relics','inventory','fleet','fallen','boons','patrons','heat','reserve','seenEvents','regionsUsed','condsUsed']) if(!Array.isArray(r[k])) r[k]=[];
   if(typeof r.stats!=='object'||Array.isArray(r.stats)) r.stats={}; for(const k in d.stats) if(typeof r.stats[k]!=='number') r.stats[k]=0;
@@ -206,8 +207,8 @@ function boonUseful(id,kit){ const n=BOON_NEED[id]; return !n||!!kit[n]; }
 // the offering core's picks weighted 3 to 1, drawn without replacement, every pick rolled with the offering core's sync (no off-core rarity tax);
 // no owned, duplicate or useless fillers, so an exhausted pool gives a short offer (boonStep pays 60 credits for it). One special slot:
 // the core's legendary or a duo; when both qualify the duo takes it 45% of the time.
-function boonOfferPool(p){ const kit=fleetKit(); return Object.keys(BOONS).filter(id=>{ const b=BOONS[id]; return b.p&&!b.leg&&(b.p===p||RUN.patrons.includes(b.p))&&!hasBoon(id)&&boonUseful(id,kit); }); }
-function boonOfferDuos(p){ const have=boonPatrons(), kit=fleetKit(); return Object.keys(BOONS).filter(id=>{ const b=BOONS[id]; return b.duo&&!hasBoon(id)&&boonUseful(id,kit)&&b.duo.includes(p)&&b.duo.every(q=>have.has(q)||q===p)&&b.duo.some(q=>q!==p&&have.has(q)); }); }
+function boonOfferPool(p){ const kit=fleetKit(); return Object.keys(BOONS).filter(id=>{ const b=BOONS[id]; return b.p&&!b.leg&&(b.p===p||RUN.patrons.includes(b.p))&&!hasBoon(id)&&boonUseful(id,kit)&&b.p!==RUN.eatenCore; }); }
+function boonOfferDuos(p){ const have=boonPatrons(), kit=fleetKit(); return Object.keys(BOONS).filter(id=>{ const b=BOONS[id]; return b.duo&&!hasBoon(id)&&boonUseful(id,kit)&&b.duo.includes(p)&&b.duo.every(q=>have.has(q)||q===p)&&b.duo.some(q=>q!==p&&have.has(q))&&!b.duo.includes(RUN.eatenCore); }); }
 function rollBoonOffer(p,minR){ ensurePatrons(); const s=(RUN&&RUN.sector)||1;
   const pool=boonOfferPool(p), out=[];
   while(out.length<3&&pool.length){ const total=pool.reduce((n,id)=>n+(BOONS[id].p===p?3:1),0); let x=rnd()*total, at=0;
@@ -220,9 +221,9 @@ function rollBoonOffer(p,minR){ ensurePatrons(); const s=(RUN&&RUN.sector)||1;
   return out; }
 // R1 (RWD-6): every protocol an offer from this core could show, so a reroll that cannot change the offer is refused before it charges
 function boonOfferCan(p,minR){ ensurePatrons(); const L=legendaryFor(p,minR); return [...new Set(boonOfferPool(p).concat(boonOfferDuos(p),L?[L]:[]))]; }
-function legendaryFor(p,minR){ if(!(minR>=1)) return null; const L=Object.keys(BOONS).find(id=>BOONS[id].leg&&BOONS[id].p===p); if(!L||hasBoon(L)||!boonUseful(L,fleetKit())) return null; const n=(RUN.boons||[]).filter(b=>BOONS[b.id]&&BOONS[b.id].p===p&&!BOONS[b.id].leg).length; return n>=2?L:null; }
+function legendaryFor(p,minR){ if(!(minR>=1)) return null; if(RUN&&p===RUN.eatenCore) return null; const L=Object.keys(BOONS).find(id=>BOONS[id].leg&&BOONS[id].p===p); if(!L||hasBoon(L)||!boonUseful(L,fleetKit())) return null; const n=(RUN.boons||[]).filter(b=>BOONS[b.id]&&BOONS[b.id].p===p&&!BOONS[b.id].leg).length; return n>=2?L:null; }
 // what a map node pays out: usually a patron's boon (its sigil shows on the map), sometimes a refit, credits or repairs
-function rollNodeReward(type){ ensurePatrons(); const p=pick(RUN.patrons); if(type==='elite'||type==='boss') return {k:'boon',p,min:1}; const x=rnd(); return x<.62?{k:'boon',p}:x<.78?{k:'mod'}:x<.9?{k:'cred'}:{k:'repair'}; }
+function rollNodeReward(type){ ensurePatrons(); const ps=RUN.eatenCore?RUN.patrons.filter(q=>q!==RUN.eatenCore):RUN.patrons; const p=pick(ps.length?ps:RUN.patrons); if(type==='elite'||type==='boss') return {k:'boon',p,min:1}; const x=rnd(); return x<.62?{k:'boon',p}:x<.78?{k:'mod'}:x<.9?{k:'cred'}:{k:'repair'}; }
 function flagshipOf(){ return RUN&&RUN.fleet&&RUN.fleet.find(s=>s.uid===RUN.flagUid); }
 function shipValue(tpl){ const H=HULLS[tpl]; return H&&Number.isFinite(H.cost)?H.cost:40*((H&&H.cp)||1); } // B1: hulls with no shop price (bosses, variants) still have a value, so selling never makes credits NaN
 function prizeScrap(tpl){ return Math.round(shipValue(tpl)*.35); }
@@ -240,7 +241,8 @@ function derive(ship){
   const asp=RUN&&RUN.aspect&&ship.uid===RUN.flagUid&&ASPECTS[RUN.aspect]?[ASPECTS[RUN.aspect].fx]:[];
   const fx=sumFx([...fleetFxList(), ...ship.mods.map(m=>MODULES[m]?MODULES[m].fx:unknownId('module',m)), ...ship.cap.perks.map(p=>PERKS[p]?PERKS[p].fx:unknownId('perk',p)), ...asp]);
   const mk=ship.mk||1, mm=1+.2*(mk-1), tr=classTrack(t.cls); // B4 step 3: the shared class refit track adds 6% hull and 6% damage per level
-  const maxHp=Math.round(t.hp*mm*(1+(fx.hpPct||0)+.06*tr));
+  const eat=RUN&&RUN.eatenCore&&factionOfTpl(ship.tpl)==='chorus'?CORE_EAT_HULL:0; // R78 Q15: an eaten core grows every Chorus ship for the run, new ships included
+  const maxHp=Math.round(t.hp*mm*(1+(fx.hpPct||0)+.06*tr+eat));
   return {
     maxHp, shMax:Math.round(t.sh*mm*(1+(fx.shPct||0))), regen:Math.round(t.rg*mm*(1+(fx.regenPct||0))),
     armor:Math.min(.6,t.ar+(fx.armor||0)), speed:t.sp+(fx.speed||0), turns:t.tn+(fx.turns||0), ev:t.ev+(fx.ev||0),
@@ -400,6 +402,24 @@ function lineageRespec(id){
 }
 function favourOf(p){ return (META.favour&&META.favour[p])||0; }
 function favourTier(p){ const f=favourOf(p); let t=0; FAVOUR_TIERS.forEach((x,i)=>{ if(f>=x.at) t=i; }); return t; }
+// R78 Q15 (issue 42): the first time a Chorus run reaches sector 3 it may eat one core it has not synced with.
+// Every core below Synced qualifies; if none does, there is no offer. Refusing marks the offer seen with no other change.
+function syncedTier(){ return FAVOUR_TIERS.findIndex(t=>t.at===12); }
+function coreEatEligible(){ if(!RUN||RUN.fac!=='chorus') return []; const synced=syncedTier(); return Object.keys(PATRONS).filter(p=>favourTier(p)<synced); }
+function coreEatDue(){ return !!(RUN&&RUN.fac==='chorus'&&RUN.sector===3&&!RUN.eatCoreSeen&&coreEatEligible().length); }
+function eatsCoreBoon(b,p){ const B=BOONS[b&&b.id]; return !!B&&(B.p===p||!!(B.duo&&B.duo.includes(p))); }
+function eatCore(p){
+  if(!RUN||RUN.eatCoreSeen||!coreEatEligible().includes(p)) return false;
+  changeFleet(()=>{ RUN.eatenCore=p; RUN.eatCoreSeen=true;
+    RUN.boons=(RUN.boons||[]).filter(b=>!eatsCoreBoon(b,p));
+    if(RUN.reward&&Array.isArray(RUN.reward.boonOffer)) RUN.reward.boonOffer=RUN.reward.boonOffer.filter(o=>!eatsCoreBoon(o,p));
+    const alt=(RUN.patrons||[]).find(q=>q!==p);
+    if(alt){ for(const c of (RUN.map&&RUN.map.cols)||[]) for(const n of c) if(n.rw&&n.rw.k==='boon'&&n.rw.p===p) n.rw.p=alt;
+      if(RUN.reward&&RUN.reward.rw&&RUN.reward.rw.k==='boon'&&RUN.reward.rw.p===p) RUN.reward.rw.p=alt; }
+  });
+  return true;
+}
+function refuseCoreEat(){ if(!RUN||RUN.eatCoreSeen) return false; RUN.eatenCore=null; RUN.eatCoreSeen=true; return true; }
 function heatLevel(list){ return (list||[]).reduce((a,k)=>a+((HEAT[k]&&HEAT[k].w)||0),0); }
 // an admiral's alternate fleet: split the biggest hull into two mid-size ones, or merge the two smallest into one larger hull
 // v41: the alternate fleet keeps the same command points and never loses a carrier (a carrier admiral's passive and Command need one)
@@ -425,7 +445,7 @@ function newRun(admiralId,fac,opt){
   if(!owned){ RUN=null; return; }
   fac=RUN_FACTIONS.includes(fac)?fac:'voidsworn';
   RUN = {fac, foes:shuffle(RUN_FACTIONS.filter(f=>f!==fac)), admiral:admiralId, credits:120, cpCap:10, sector:1, relics:[], inventory:[], fleet:[], pos:null,
-    stats:{battles:0,elites:0,bosses:0,kills:0,lost:0}, t0:Date.now(), fallen:[], ambush:false, over:false, boons:[], patrons:shuffle(Object.keys(PATRONS)).slice(0,4), aspect:null, flagUid:null, nem:null};
+    stats:{battles:0,elites:0,bosses:0,kills:0,lost:0}, t0:Date.now(), fallen:[], ambush:false, over:false, boons:[], patrons:shuffle(Object.keys(PATRONS)).slice(0,4), aspect:null, flagUid:null, nem:null, eatenCore:null, eatCoreSeen:false};
   if(opt.teachingGate===true&&(META.stats.finishedRuns==null?(META.stats.runs||0):META.stats.finishedRuns)<2) RUN.teachingGate=true;
   if(META.unlocked.chest1) RUN.credits+=75; if(META.unlocked.chest2) RUN.credits+=75; if(META.unlocked.chest3) RUN.credits+=75;
   if(META.unlocked.cmd1) RUN.cpCap+=2; if(META.unlocked.cmd2) RUN.cpCap+=2;

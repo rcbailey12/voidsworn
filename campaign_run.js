@@ -92,6 +92,7 @@ ACT.factionVerb=()=>{ const lines=useVerb(); if(!lines) return; saveRun(); mapSc
 ACT.saveQuit=()=>{ saveRun(); titleScreen(); };
 ACT.enterNode=id=>{
   if(!availableNodes().includes(id)) return;
+  if(showCoreEat()) return;
   if(showBeat3()) return;
   const n=findNode(id); RUN.pos=id; RUN.curNode=id;
   tel('node',{type:n.type,col:n.col});
@@ -515,7 +516,7 @@ function applyOutcome(r){
   }
   if(r.core){
     const p=BEAT3_REWARDS.core[RUN.fac];
-    if(p){ RUN.reward={kind:'story',rw:{k:'boon',p},stage:'pick',relics:[],wrecks:[],prizes:[],boonOffer:null,modOffer:null}; out.push(`1 free protocol offer from ${PATRONS[p].short}. Choose 1 protocol or decline for ${boonDeclineCred()} credits.`); }
+    if(p){ const off=RUN.eatenCore&&RUN.eatenCore===p?((RUN.patrons||[]).find(q=>q!==p)||p):p; RUN.reward={kind:'story',rw:{k:'boon',p:off},stage:'pick',relics:[],wrecks:[],prizes:[],boonOffer:null,modOffer:null}; out.push(`1 free protocol offer from ${PATRONS[off].short}. Choose 1 protocol or decline for ${boonDeclineCred()} credits.`); }
   }
   if(!out.length && !r.fight) out.push('You move on.');
   return out;
@@ -531,7 +532,15 @@ function showBeat3(){
   const ev=beat3Card(); if(!ev) return false; curEvent=ev;
   modal(`<h2>${esc(ev.t)}</h2><p style="white-space:pre-line">${esc(ev.b)}</p>${ev.o.map((o,i)=>`<button class="choice" data-act="eventChoice" data-arg="${i}"><b>${esc(o.l)}</b></button>`).join('')}`); return true;
 }
-ACT.beat3=()=>{ if(!showBeat3()) closeModal(); };
+// R78 Q15 (issue 42): the Chorus run's one core-eating choice, offered before the first node of sector 3.
+function showCoreEat(){
+  if(!coreEatDue()) return false;
+  modal(`<h2>The swarm hungers.</h2><p class="muted">A core you have not synced with lies within reach. Eat one now, or refuse.</p>${coreEatEligible().map(p=>{ const P=PATRONS[p]; return `<button class="choice" data-act="eatCore" data-arg="${p}" style="border-left:4px solid ${P.col}"><span class="rar" style="color:${P.col}">${P.glyph}</span><b>Eat ${esc(P.n)}</b><small>every ship +10% hull for this run; lose its protocols for this run</small></button>`; }).join('')}<div class="row" style="margin-top:10px"><button data-act="refuseCoreEat">Refuse</button></div>`);
+  return true;
+}
+ACT.eatCore=p=>{ if(!eatCore(p)) return; try{ tel('core_eat',{p,sector:RUN.sector}); }catch(e){} saveRun(); closeModal(); ACT.beat3(); };
+ACT.refuseCoreEat=()=>{ if(!refuseCoreEat()) return; try{ tel('core_eat_refuse',{sector:RUN.sector}); }catch(e){} saveRun(); closeModal(); ACT.beat3(); };
+ACT.beat3=()=>{ if(showCoreEat()) return; if(!showBeat3()) closeModal(); };
 function beat3Debrief(){ const a=RUN&&STORY_BEAT3[RUN.fac]; return a&&RUN.flags&&RUN.flags[a.id]!=null?a.debrief:''; }
 function applyBeat3Outcome(r){
   const out=applyOutcome({...r,cred:r.credits,healAll:r.repair,nemIntel:r.weak,nemClock:r.clock}).filter(l=>l!=='You move on.');
@@ -653,7 +662,7 @@ ACT.rewardNext=()=>{ const rw=window._rw||{}; closeModal();
   relicStep(); };
 ACT.takeMod=m=>{ RUN.inventory.push(m); try{ tel('reward_pick',{k:'mod',id:m,offered:window._modOffer}); }catch(e){} toast(`${modName(m)} stowed in the hold.`); closeModal(); relicStep(); };
 // a patron offers three boons; rarity shows how strong each one is
-function boonStep(p,minR){ const P=PATRONS[p]; if(!P){ relicStep(); return; } const offer=(RUN.reward&&RUN.reward.boonOffer)||rollBoonOffer(p,minR); window._boonOffer=offer; if(RUN.reward&&!RUN.reward.boonOffer){ RUN.reward.boonOffer=offer; saveRun(); }
+function boonStep(p,minR){ if(RUN&&RUN.eatenCore===p) p=(RUN.patrons||[]).find(q=>q!==p)||p; const P=PATRONS[p]; if(!P){ relicStep(); return; } const offer=(RUN.reward&&RUN.reward.boonOffer)||rollBoonOffer(p,minR); window._boonOffer=offer; if(RUN.reward&&!RUN.reward.boonOffer){ RUN.reward.boonOffer=offer; saveRun(); }
   if(offer.length<3&&!(RUN.reward&&RUN.reward.shortPaid)){ RUN.credits+=60; if(RUN.reward){ RUN.reward.shortPaid=1; saveRun(); } if(offer.length) toast(`Only ${offer.length} on offer: +60 credits.`); } // R1 (R64): a short offer pays 60 credits, once per reward
   if(!offer.length){ toast('Nothing left to offer. +60 credits.'); relicStep(); return; }
   modal(`<div class="boonhead" style="border-color:${P.col}"><span class="sigil" style="background:${P.col}">${P.glyph}</span><div><h2 style="margin:0;color:${P.col}">${esc(P.n)}</h2><div class="muted" style="font-size:14px">${esc(P.theme)}</div></div></div>
