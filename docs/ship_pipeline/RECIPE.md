@@ -100,7 +100,7 @@ R225: one home per fact):
 
 | Fact | Its one home | Read by |
 |---|---|---|
-| where each colour zone sits on the ship | the build sheet: each object's material is its zone (soot, soot2, rust, iron, blood, pale, violet, steel, dark, dish, warhead, brass; glow, ember, light glow) | the stack, per object |
+| where each colour zone sits on the ship | the build sheet: each object's material is its zone (soot, soot2, rust, iron, blood, pale, violet, lilac, steel, dark, dish, warhead, brass; glow, ember, light glow) | the stack, per object |
 | what each zone is made of: two tones sampled from the concept, rust, grime, wear, scuffs, rivets, roughness, metal | `tools/blender/kits/<kit>/stack.py` `CONCEPT` and `ZONES` (the samples' method is written there, `sample_concept()` repeats it) | `kits/shared/paint_stack.py` |
 | the layers' sizes in ship lengths (mask reach, rivet pitch, scuff tile, rust streaks) | the faction stack's `LAYERS` | the shared stack |
 | the trim sheet and the decal art | drawn by the faction stack (`trim_sheet()`, `decal_atlas()`), written to the job's `textures\` with a licence line each (CC0, own work) | the shared stack; `standing.py licences` |
@@ -144,6 +144,18 @@ game's engine effect (`godot/fx/fx_hull.gd` reads them as the nozzles), beside t
 stack gives one emissive surface with the plug cone, with its own map (`bake_engine_glow`: the hot core on the axis, the plug
 hottest, to deep red at the wall, each engine its own reach, hot spots, soot streaks, the lining
 dark toward the lip, each engine its own; written by stage 7 as `<code>_glow_emission.jpg`).
+
+Kinds and zones a new sheet ship may bring (issue 651, A18 to A20; each is a kit rule, never a ship rule):
+- a flank hangar mouth (part kind `hangar`) is a launch bay mouth: its iron carries the bay's warning stripes
+  (`ZONE_BY_KIND[('hangar', 'iron')]`, as `('bay', 'iron')`); its liner is the dark zone, its lamps the running-light red;
+- a parked craft (kind `craft`) is painted by its sheet zones like any part; its nozzle `ember` joins the engine glow surface;
+- a cold engine (kind `engine` whose group has no glow or ember, A20's spare bell on the deck) keeps its throat dark: only a
+  lit engine's plug cone joins the glow (`shared/paint_stack.py`, `run`);
+- a sheet zone the stack has no colour for falls back to soot; give it a `CONCEPT` sample, a `ZONES` entry and a `_BASE`
+  line in the faction stack. When the first beauty (A16's) has too few pixels of it, sample it from the beauty of the ship
+  that brings it and write the method beside the sample (the zone `lilac`, the Eclipse trophy plate, from A20's beauty).
+Before a ship is set to `"bake": "stack"`, list its (kind, zone) pairs against the ones the stack already paints
+(each built object's `part_kind` and first material; A18 brought none, A19 a new kind (`bow_launcher`) whose zones the stack already paints, A20 the four above).
 
 Stage 5 then runs the surface check (`tools/recipe/surface_check.py`, issue 601, after Ryan saw "a white square near the back
 and another white square underneath" on the first PC run): the six standard views drawn flat by surface class, and it fails on

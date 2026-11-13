@@ -41,6 +41,11 @@ CONCEPT = dict(
     red_plate=((54, 20, 15), (90, 34, 22)),     # the brick and blood red plates scattered among the dark ones (red clusters)
     gunmetal=((34, 35, 40), (72, 70, 76)),      # the grey gun-metal plates of the patchwork (mid-tone clusters 52, 52, 59 and 72, 67, 77)
     scrape=((112, 106, 102), (165, 156, 150)),  # bare steel scrape plates (the lit grey clusters)
+    # issue 651: the weathered pale violet of an Eclipse trophy plate (the sheet zone lilac, first on A20's violet bell housing).
+    # A16's beauty has too few such pixels, so it is sampled from the A20 beauty (class_family_corsair_2026_11/corsair_A20_beauty.jpg):
+    # k-means (4) of the violet pixels (b over g above 1.4, r over g above 1.1, b over r above 0.9, luminance over 30) of the whole
+    # picture, the two lighter clusters (the darker two, (35, 30, 49) and (47, 42, 68), are the violet zone's own shadow tones)
+    lilac=((74, 65, 98), (105, 93, 135)),
 )
 # The game's light on a face at about 45 degrees to the key (godot/render/look.gd: key 2.0, ambient 0.25 x key), the factor
 # between an albedo and the lit tone the concept shows; checked by the sandbox preview under the game's light (issue 601).
@@ -85,6 +90,7 @@ ZONES = dict(
     blood=dict(rust=.40, rough=.86, metal=.15, patchwork=.4),
     pale=dict(rust=.25, rough=.74, metal=.25, plate_var=.30, patchwork=.5, grime=1.0),
     violet=dict(rust=.10, rough=.62, metal=.20, plate_var=.20),
+    lilac=dict(rust=.10, rough=.66, metal=.20, plate_var=.20),     # issue 651: kept clean of new rust, as violet
     steel=dict(rust=.25, metal=.65, rough=.50, wear=1.0, patchwork_parts=.8),
     dark=dict(rust=0, grime=.2, wear=.15, scuff=.1, rivets=0, metal=.1, rough=.9, plate_var=.1),
     dish=dict(rust=.30, metal=.30, rough=.75, plate_var=.1, scuff=1.0),
@@ -93,7 +99,7 @@ ZONES = dict(
     brass=dict(rust=.20, metal=.60, rough=.50, rivets=0),
     iron_bay=dict(base='iron', rust=.4, metal=.45, rough=.72, trim=('stripes',), trim_amount=.75),
 )
-_BASE = dict(soot='soot', soot2='soot2', iron='iron', rust='rust', blood='blood', pale='pale', violet='violet', steel='steel',
+_BASE = dict(soot='soot', soot2='soot2', iron='iron', rust='rust', blood='blood', pale='pale', violet='violet', lilac='lilac', steel='steel',
              dark='grime', dish='bare', warhead='rust', brass='bare', iron_bay='iron', bell='steel')
 for _k, _z in ZONES.items():
     _lo, _hi = pair(_BASE[_k])
@@ -102,7 +108,13 @@ for _k, _z in ZONES.items():
     if _k == 'warhead': _lo, _hi = lin((60, 22, 16)), lin((104, 40, 26))
     _z['lo'], _z['hi'] = _lo, _hi
 FALLBACK = 'soot'
-ZONE_BY_KIND = {('bay', 'iron'): 'iron_bay', ('engine', 'steel'): 'bell', ('engine', 'iron'): 'bell', ('engine', 'soot'): 'bell'}      # (part kind, sheet zone): the launch bay mouth carries the warning stripes
+ZONE_BY_KIND = {('bay', 'iron'): 'iron_bay', ('engine', 'steel'): 'bell', ('engine', 'iron'): 'bell', ('engine', 'soot'): 'bell',
+                ('hangar', 'iron'): 'iron_bay'}      # (part kind, sheet zone): the launch bay mouth carries the warning stripes
+# issue 651: a flank hangar mouth (kind hangar, A20) is a launch bay mouth too: its iron rim, rails, ribs and blast door frame carry
+# the same stripes; its dark liner is the dark zone and its lamps the running-light red. A parked craft (kind craft) is painted
+# by its sheet zones like any part, and its nozzle glow (ember) joins the engine glow surface. A spare engine bell (kind engine
+# with no glow or ember of its own: a cold spare, A20) keeps its dark throat dark: the plug cone glows only in a lit engine
+# (shared/paint_stack.run).
 BARE = lin(CONCEPT['bare'][1])
 RUST = lin(CONCEPT['rust_streak'][1]); RUST_DARK = lin(CONCEPT['rust_streak'][0])
 GRIME = lin(CONCEPT['grime'][0])
