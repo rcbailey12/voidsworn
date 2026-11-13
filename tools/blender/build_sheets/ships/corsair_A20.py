@@ -34,9 +34,10 @@ HB = 2.75           # the body's half-beam
 DECK, BELLY = 1.0, -1.05
 # the hangar block on the port flank: two mouths in a recess DEPTH deep; the core's port side is the back wall
 DEPTH = 1.9
-MZ0, MZ1 = -0.82, 0.55                                  # mouth floor and ceiling (low on the flank, the sheet's side view)
-MOUTHS = [('H1', 1.5, 3.4, 1), ('H2', -2.4, 2.8, -1)]  # (id, centre x, length, doors slid +1 forward / -1 aft)
-X_FORE, X_AFT = 3.2, -3.8                               # the hangar block's ends (mouth 1 front, mouth 2 back)
+LINER = 0.3          # the dark liner slab on the back wall
+MZ0, MZ1 = -0.86, 0.72                                  # mouth floor and ceiling: three quarters of the flank's height (the beauty)
+MOUTHS = [('H1', 1.4, 3.6, 1), ('H2', -2.5, 3.0, -1)]  # (id, centre x, length, doors slid +1 forward / -1 aft)
+X_FORE, X_AFT = 3.25, -4.05                              # the hangar block's ends (mouth 1 front, mouth 2 back)
 # (x, half-beam port, half-beam starboard, bottom, top, top chamfer, bottom chamfer): the body, its port side stepped in
 # to the back wall of the hangar block between X_FORE and X_AFT
 HULL = [
@@ -49,12 +50,12 @@ HULL = [
     (-7.2, HB, HB, BELLY, DECK, 0.3, 0.28),
     (-7.45, HB - 0.2, HB - 0.2, BELLY + 0.1, DECK - 0.08, 0.26, 0.24),
 ]
-PL = dict(keep3d=True, size=(0.42, 1.05), thick=(0.05, 0.15), skip=0.08, stack=0.5, mats={'soot': 5, 'iron': 3, 'pale': 3, 'rust': 2, 'soot2': 2, 'violet': 2})
+PL = dict(keep3d=True, courses=True, size=(0.4, 0.9), thick=(0.035, 0.08), step=0.045, gap=0.03, over=0.22, skip=0.05, stack=0.22, rivets_share=0.3, mats={'soot': 5, 'iron': 3, 'pale': 3, 'rust': 2, 'soot2': 2, 'violet': 2})
 ENG = [('E1', -2.1, 0.46, 0.38, ''), ('E2', -1.06, 0.42, 0.33, ''), ('E3', 0.02, 0.44, 0.47, 'the largest'),
        ('E4', 1.1, 0.4, 0.35, 'in a violet Eclipse trophy housing'), ('E5', 2.12, 0.48, 0.4, '')]   # (id, y, z, r, note)
-THR = [(6.4, 1.16, -0.25), (6.4, -1.16, -0.25), (-6.55, HB, -0.1), (-6.55, -HB, -0.1)]
-LAMPS = [(5.5, HB, -0.4, 1), (-6.15, HB, -0.6, 1), (7.0, 1.22, 0.3, 1), (4.6, -HB - 0.14, -0.4, -1),
-         (1.4, -HB - 0.14, -0.55, -1), (-2.75, -HB - 0.14, -0.35, -1), (-5.2, -HB - 0.14, -0.55, -1), (7.0, -1.22, 0.3, -1)]   # (x, y, z, side)
+THR = [(6.6, 1.61, -0.6), (6.6, -1.61, -0.6), (-6.55, HB, -0.1), (-6.55, -HB, -0.1)]
+LAMPS = [(5.5, HB, -0.4, 1), (-6.15, HB, -0.6, 1), (7.0, 1.595, 0.3, 1), (4.6, -HB - 0.14, -0.4, -1),
+         (1.4, -HB - 0.14, -0.55, -1), (-2.75, -HB - 0.14, -0.35, -1), (-5.2, -HB - 0.14, -0.55, -1), (7.0, -1.595, 0.3, -1)]   # (x, y, z, side)
 DECK_TIERS = [('D1 fore deck tier', 5.35, 2.05, -2.4, 0.7, 0.34), ('D2 mid deck tier', 1.35, -2.75, -2.5, -0.3, 0.4),
               ('D3 aft deck tier', -3.25, -6.95, -2.0, 2.1, 0.36)]                  # (name, x fore, x aft, y stbd, y port, height)
 
@@ -68,9 +69,9 @@ def build(K):
            'soot and patched plate', note='the wide flat slab; between the hangar block\'s ends its port side is the back wall of the two mouths')
     K.mark('hull_form', 'hull', ['bevel', 'step', 'overhang'])
     # the bow block: narrower than the body, a little lower, the two intake tubes in its face
-    K.mass('Bow block', K.loft('A20_bowblock', [(8.0, 1.0, 1.0, -0.7, 0.52, 0.18, 0.16), (7.75, 1.18, 1.18, -0.84, 0.66, 0.22, 0.2),
-                                                 (5.6, 1.22, 1.22, -0.88, 0.7, 0.22, 0.2)], 'soot2', plates=dict(PL, seed=21, inv='bow_plates')),
-           'dark soot', note='the narrow bow block in front of the body (the sheet\'s plan)')
+    K.mass('Bow block', K.loft('A20_bowblock', [(8.0, 1.5, 1.5, -1.0, 0.8, 0.22, 0.2), (7.8, 1.58, 1.58, -1.05, 0.86, 0.26, 0.22),
+                                                 (5.3, 1.62, 1.62, -1.05, 0.9, 0.26, 0.22)], 'soot2', plates=dict(PL, seed=21, inv='bow_plates')),
+           'dark soot', note='the bow block in front of the body, as tall as the slab and about half its beam: a housing for the two huge intake tubes (the beauty)')
     K.mark('bow_block', 'tier', ['face', 'roof', 'opening'])
     # the hangar block on the port flank: the sill under the mouths, the lintel over them, the plate between them
     x_gap0 = MOUTHS[0][1] - MOUTHS[0][2] / 2; x_gap1 = MOUTHS[1][1] + MOUTHS[1][2] / 2
@@ -129,39 +130,46 @@ def build(K):
     for p_ in ((5.4, 2.1, DECK), (5.4, -2.05, DECK)):
         K.keepouts.append((Vector(p_), 0.5))
     K.keepouts.append((Vector((1.45, 1.15, DECK)), 0.95))           # the spare bell
-    for (hid, xc, L, slide) in MOUTHS:                               # the back walls of the mouths stay clean round the blast door
-        for k in range(3):
-            K.keepouts.append((Vector((xc + L * (k - 1) / 3, HB - DEPTH, (MZ0 + MZ1) / 2)), 0.75))
     for (x, y, z, n) in LAMPS:
         K.keepouts.append((Vector((x, y, z)), 0.15))
     for side in (1, -1):                                             # the bow grabbers' shoulders and the grapples under the belly
-        K.keepouts.append((Vector((6.8, 0.68 * side, -0.88)), 0.5))
+        K.keepouts.append((Vector((6.8, 0.68 * side, -1.05)), 0.45))
         for x in (-6.85, -6.0, -5.2):
             K.keepouts.append((Vector((x, 2.1 * side, BELLY)), 0.55))
     K.finish()
 
     # ---------------- the hangar mouths: the dressing that makes each recess read as a launch bay with depth ----------------
     for (hid, xc, L, slide) in MOUTHS:
-        part = HP.hangar_mouth(L, MZ1 - MZ0, DEPTH, slide=slide, seed=7 if slide > 0 else 11)
+        # the dark liner of the recess (round 2, the Board: the mouths must read as big, deep, dark openings from the beauty
+        # camera): soot-black floor, ceiling, back wall and end walls, so the key light that falls into a port mouth finds no
+        # grey plate, only the rails, ribs, lamps and the fighter
+        x0_, x1_ = xc - L / 2, xc + L / 2
+        # the back liner is a 0.3 slab over the hull's plated back wall, so the mouth is DEPTH - 0.3 deep to its blast door
+        K.box('A20_%s_liner_back' % hid, x0_, x1_, HB - DEPTH, HB - DEPTH + LINER, MZ0, MZ1, 'dark')
+        K.box('A20_%s_liner_roof' % hid, x0_, x1_, HB - DEPTH + LINER, HB - 0.03, MZ1 - 0.025, MZ1 + 0.005, 'dark')
+        K.box('A20_%s_liner_floor' % hid, x0_, x1_, HB - DEPTH + LINER, HB - 0.03, MZ0 - 0.005, MZ0 + 0.012, 'dark')
+        for xe, d_ in ((x0_, 1), (x1_, -1)):
+            K.box('A20_%s_liner_end%d' % (hid, d_ > 0), min(xe, xe + d_ * 0.025), max(xe, xe + d_ * 0.025), HB - DEPTH + LINER, HB - 0.03, MZ0, MZ1, 'dark')
+        part = HP.hangar_mouth(L, MZ1 - MZ0, DEPTH - LINER, slide=slide, seed=7 if slide > 0 else 11)
         K.emit(hid, part, Matrix.Translation((xc, HB, (MZ0 + MZ1) / 2)), 'hangars', keep=False)
         K.features.append(dict(id=hid, kind='hangar', what='open hangar mouth %.1f long, %.1f high, %.1f deep, doors slid %s' % (L, MZ1 - MZ0, DEPTH, 'forward' if slide > 0 else 'aft'),
                                count=1, pos=(xc, HB, (MZ0 + MZ1) / 2), aim=(90.0, 0.0), src='picture',
                                note='%s mouth on the port flank: torn plate rim, armoured doors slid clear, launch rails, a dim red lamp' % ('forward' if slide > 0 else 'aft'),
                                inv=['hangars']))
     # the craft: a fighter nosing out of the forward mouth, a second parked deeper in the aft one (the game's squadron, 1.6)
-    for (cid, xc, y, var, fwd) in (('C1', 1.5, HB - 0.75, 0, (0, 1, 0)), ('C2', -2.3, HB - 0.8, 1, (-0.3, 0.954, 0))):
+    for (cid, xc, y, var, fwd) in (('C1', 1.5, HB - 0.65, 0, (0, 1, 0)), ('C2', -2.3, HB - 0.62, 1, (-0.3, 0.954, 0))):
         part = HP.craft(1.6, variant=var)
         K.emit(cid, part, HP.frame((xc, y, MZ0), fwd, (0, 0, 1)), 'craft', keep=False)
         K.features.append(dict(id=cid, kind='craft', what='cobbled fighter, 1.6 long', count=1, pos=(xc, y, MZ0), aim=(90.0, 0.0), src='picture',
                                note='nosing out of the forward mouth' if var == 0 else 'parked deeper in the aft mouth, half refitted', inv=['craft']))
     # ---------------- the bow: two big intake tubes in the bow block's face, a chin scoop, a pair of grabbers ----------------
-    for i, (y, r) in enumerate(((0.55, 0.41), (-0.55, 0.39))):
-        K.tube('I%d' % (i + 1), (8.06, y, -0.06), r, 1.6, hood=0.2, bands=3, inv='intakes', what='intake tube',
+    for i, (y, r) in enumerate(((0.73, 0.56), (-0.73, 0.54))):
+        K.tube('I%d' % (i + 1), (8.2, y, -0.12), r, 2.3, hood=0.18, bands=3, inv='intakes', what='intake tube',
                note='%s intake: the family\'s face (designs.md "two low intake tubes")' % ('port' if y > 0 else 'starboard'))
-    K.tube('I3', (7.86, 0.0, -0.98), 0.11, 0.42, grille=True, bands=2, inv='scoop', what='wake-sniffer scoop with a grille', note='chin scoop (designs.md)')
+    K.tube('I3', (8.1, 0.0, -0.86), 0.1, 0.42, grille=True, bands=2, inv='scoop', what='wake-sniffer scoop with a grille', note='chin scoop (designs.md)')
     for side, fi in ((1, 'J1'), (-1, 'J2')):
-        K.claw_arm(fi, (6.8, 0.68 * side, -1.3), [(7.3, 0.74 * side, -1.44), (7.64, 0.78 * side, -1.38)], w=0.34, hook=-1.0, fork=0.32,
-                   inv='grabbers', housing=(6.4, 7.1, 0.68 * side - 0.22, 0.68 * side + 0.22, -1.38, -0.8),
+        K.claw_arm(fi, (6.8, 0.68 * side, -1.42), [(7.3, 0.74 * side, -1.56), (7.64, 0.78 * side, -1.5)], w=0.34, hook=-1.0, fork=0.32,
+                   inv='grabbers', housing=(6.4, 7.1, 0.68 * side - 0.22, 0.68 * side + 0.22, -1.5, -0.95),
                    note='%s grabber under the bow block' % ('port' if side > 0 else 'starboard'))
     # the heavy grapple arms, folded flat under the stern quarters, for dragging prizes alongside (designs.md)
     for side, fi in ((1, 'J3'), (-1, 'J4')):
@@ -239,8 +247,8 @@ def build(K):
                                               (1.0, -HB, -0.25, 'mid', 'stbd'), (-3.2, -HB, -0.05, 'mid', 'stbd'), (-6.4, HB, 0.35, 'eng', 'port'),
                                               (-7.0, -HB, -0.45, 'eng', 'stbd')]):
         K.point('breach', 'hp_breach_%d' % i, (x, y, z), side=side, section=sec)
-    K.point('rcs', 'hp_rcs_0', (6.4, 1.22, 0.0), side='port')
-    K.point('rcs', 'hp_rcs_1', (6.4, -1.22, 0.0), side='stbd')
+    K.point('rcs', 'hp_rcs_0', (6.6, 1.61, -0.6), side='port')
+    K.point('rcs', 'hp_rcs_1', (6.6, -1.61, -0.6), side='stbd')
     K.point('board', 'hp_board_0', (-0.55, HB, -0.4), side='port')
     K.point('board', 'hp_board_1', (-0.9, -HB, -0.3), side='stbd')
     for i, (hid, xc, L, slide) in enumerate(MOUTHS):

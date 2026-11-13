@@ -33,13 +33,15 @@ import math, random
 # body, the aft taper into the engine block. Section 1.46 wide by 0.98 deep, to the sheet's true top and side views (hull
 # length to beam 4.4); the beauty's three-quarter reads deeper, its perspective (the sheet's proportions table reports both).
 HULL = [
-    (3.06, 0.43, 0.43, -0.18, 0.23, 0.1, 0.08),
-    (2.62, 0.62, 0.62, -0.38, 0.3, 0.13, 0.12),
-    (1.6, 0.72, 0.72, -0.53, 0.43, 0.16, 0.15),
-    (-2.25, 0.73, 0.73, -0.53, 0.45, 0.16, 0.15),
+    (3.1, 0.5, 0.5, -0.4, 0.3, 0.16, 0.14),
+    (2.5, 0.64, 0.64, -0.52, 0.4, 0.18, 0.16),
+    (1.5, 0.78, 0.78, -0.55, 0.45, 0.18, 0.16),
+    (0.4, 0.84, 0.84, -0.55, 0.46, 0.18, 0.16),
+    (-1.3, 0.8, 0.8, -0.53, 0.45, 0.17, 0.15),
+    (-2.25, 0.74, 0.74, -0.53, 0.45, 0.16, 0.15),
     (-2.78, 0.65, 0.65, -0.46, 0.4, 0.14, 0.14),
 ]
-PL = dict(keep3d=True, size=(0.2, 0.55), thick=(0.03, 0.09), skip=0.08, stack=0.55, mats={'soot': 4, 'iron': 4, 'pale': 2, 'rust': 3, 'soot2': 2, 'violet': 1})
+PL = dict(keep3d=True, courses=True, size=(0.16, 0.36), thick=(0.02, 0.05), step=0.025, gap=0.018, over=0.2, skip=0.04, stack=0.2, rivets_share=0.3, mats={'soot': 4, 'iron': 4, 'pale': 2, 'rust': 3, 'soot2': 2, 'violet': 1})
 # the spine, bow to stern: stacked blocks (name, x fore, x aft, half-beam, top, front slope, y offset), with gaps between them
 SPINE = [
     ('S1 fore spine block', 1.45, 0.78, 0.45, 0.6, 0.22, 0.0),
@@ -60,7 +62,8 @@ def build(K):
     K.mass('Base hull (wedge bow, body, aft taper)', K.hull(HULL, 'soot', shell=0.08, plates=dict(PL, seed=18, inv=['hull_plates', 'belly_plates'])),
            'soot and patched plate', note='the sloped wedge bow over a cut-in chin, then the long body')
     K.mark('hull_form', 'hull', ['bevel', 'step', 'overhang'])
-    K.mass('Lower hull band', K.loft('A18_lowband', [(2.1, 0.7, 0.7, -0.57, -0.36, 0.0, 0.07), (-2.55, 0.71, 0.71, -0.57, -0.36, 0.0, 0.07)], 'soot2',
+    K.mass('Lower hull band', K.loft('A18_lowband', [(1.85, 0.7, 0.7, -0.6, -0.4, 0.0, 0.08), (0.4, 0.76, 0.76, -0.6, -0.4, 0.0, 0.08), (-1.3, 0.72, 0.72, -0.6, -0.4, 0.0, 0.08),
+                                                     (-2.55, 0.68, 0.68, -0.6, -0.4, 0.0, 0.08)], 'soot2',
                                      plates=dict(PL, seed=19, faces=[3, 4, 5, 6, 7, 0], inv='belly_plates')), 'dark soot', note='the belly steps in under the flank')
     # the engine pylons and the engine block (masses first, so the plates go on before any part claims its mount, R224)
     for side, y, r, ex, nm in ENG:
@@ -72,25 +75,26 @@ def build(K):
     K.mass('Engine block', K.box('A18_engblock', -2.9, -2.6, -0.56, 0.56, -0.42, 0.5, 'soot', ch=0.09, plates=dict(PL, seed=57, size=(0.12, 0.26))), 'soot, steel')
     K.mark('engine_block', 'pylon', ['web', 'plate'])
     # ---------------- the face and chin: a framed face with the wake-sniffer scoop, a brow plate over it ----------------
-    K.box('A18_face_lip', 3.0, 3.1, -0.39, 0.39, -0.23, -0.16, 'steel', ch=0.02)
-    for i, y in enumerate((0.33, -0.33)):
-        K.box('A18_face_strap%d' % i, 3.02, 3.1, y - 0.03, y + 0.03, -0.16, 0.2, 'steel')
-    K.patch('FBR', (2.86, 0.0, 0.33), (0.42, 0, 0.91), 0.62, 0.32, ang=0.03, lift=0.02, t=0.03, m='pale', inv='face_plates')
+    K.box('A18_face_lip', 3.04, 3.15, -0.35, 0.35, -0.29, -0.22, 'steel', ch=0.02)
+    K.box('A18_face_brow', 3.02, 3.15, -0.35, 0.35, 0.13, 0.2, 'steel', ch=0.02)
     for side in (1, -1):
-        K.patch('FC%s' % ('p' if side > 0 else 's'), (2.85, 0.53 * side, 0.03), (0.55, 0.83 * side, 0), 0.38, 0.36, ang=0.05 * side, lift=0.02, t=0.03,
+        K.box('A18_face_cheek%d' % (side > 0), 3.02, 3.15, min(side * 0.34, side * 0.4), max(side * 0.34, side * 0.4), -0.29, 0.2, 'steel', ch=0.02)
+    K.patch('FBR', (2.84, 0.0, 0.345), (0.16, 0, 0.99), 0.62, 0.34, ang=0.03, lift=0.02, t=0.03, m='pale', inv='face_plates')
+    for side in (1, -1):
+        K.patch('FC%s' % ('p' if side > 0 else 's'), (2.95, 0.57 * side, -0.05), (0.42, 0.91 * side, 0), 0.36, 0.42, ang=0.05 * side, lift=0.02, t=0.03,
                 m='iron' if side > 0 else 'rust', inv='face_plates')
     K.mark('face_plates', 'plate', ['slab', 'step', 'bevel', 'rivet'])
-    K.tube('I1', (3.12, 0.0, 0.025), 0.145, 0.58, grille=True, bands=2, inv='scoop', what='wake-sniffer scoop with a grille',
-           note='the scoop in the bow face: it tastes the wake of ships ahead (designs.md: the chin scoop, moved up into the face)')
-    # ---------------- the starboard dish sponson: the swollen shoulder that carries the one big ear (the picture's side) ----------------
-    K.mass('Dish sponson (starboard bow shoulder)', K.loft('A18_sponson', [(2.5, -0.2, 0.86, -0.25, 0.34, 0.09, 0.09, 0.0),
-                                                                           (2.22, -0.2, 0.98, -0.31, 0.51, 0.11, 0.11, 0.0),
-                                                                           (1.5, -0.2, 0.98, -0.31, 0.53, 0.11, 0.11, 0.0),
-                                                                           (1.3, -0.2, 0.84, -0.24, 0.45, 0.09, 0.09, 0.0)],
-                                                           'iron', plates=dict(PL, seed=23, faces=[1, 2, 3, 4], inv='sponson_plates', size=(0.12, 0.24))),
-           'bare iron, patched', note='bolted onto the starboard shoulder, swelling the outline from above (designs.md\'s swollen shoulder, on the picture\'s side)')
+    K.vent('I1', (3.11, 0.0, -0.045), (1, 0, 0), 0.66, 0.3, slats=7, inv='scoop',
+           note='the wide intake grille that fills the bow face: the wake-sniffer scoop tastes the wake of ships ahead (designs.md: the chin scoop, moved up into the face as the picture draws it)')
+    # ---------------- the dish mount: a low raised block on the nose, starboard, that carries the one big ear nearly flush ----------------
+    K.mass('Dish mount (raised block on the nose, starboard)', K.loft('A18_sponson', [(2.45, 0.28, 0.28, 0.15, 0.55, 0.06, 0.0, -0.36),
+                                                                                     (2.27, 0.32, 0.32, 0.15, 0.6, 0.07, 0.0, -0.37),
+                                                                                     (1.62, 0.32, 0.32, 0.15, 0.62, 0.07, 0.0, -0.37),
+                                                                                     (1.46, 0.28, 0.28, 0.15, 0.58, 0.06, 0.0, -0.36)],
+                                                                     'iron', plates=dict(PL, seed=23, faces=[0, 1, 2, 3, 7], inv='sponson_plates', size=(0.12, 0.26))),
+           'bare iron, patched', note='a low armoured block bolted on the nose to starboard, the dish set nearly flush on it (the picture\'s flush disc)')
     K.mark('sponson', 'tier', ['face', 'roof', 'opening'])
-    K.slit('SL1', (1.8, -0.981, -0.05), (0, -1, 0), 0.34, 0.09, inv='sponson', note='vision slit in the sponson\'s outboard face: the dish operator\'s port')
+    K.slit('SL1', (2.452, -0.47, 0.47), (1, 0, 0), 0.2, 0.06, inv='sponson', note='vision slit in the dish mount\'s front: the dish operator\'s port')
     # ---------------- the spine: stacked blocks with gaps and undercut bases ----------------
     for (nm, x0, x1, hw, top, slope, yo) in SPINE:
         base = 0.36
@@ -121,8 +125,8 @@ def build(K):
                         rb.choice(['soot', 'iron', 'soot2']), plates=dict(PL, seed=300 + i * 7 + (side > 0), faces=[6, 7, 0] if side > 0 else [2, 3, 4], size=(0.14, 0.32)))
             K.mass('Flank brick %d %s' % (i + 1, 'port' if side > 0 else 'starboard'), ob, 'patched plate', note='armour brick bolted on the flank')
     K.mark('flank_bricks', 'tier', ['face', 'roof', 'opening'])
-    K.patch('TP1', (-0.3, 0.745, -0.02), (0, 1, 0), 1.0, 0.42, ang=0.04, lift=0.03, t=0.04, m='pale', inv='trophy')
-    K.patch('TP2', (1.0, 0.56, 0.44), (0.2, 0.3, 0.93), 0.4, 0.32, ang=0.3, lift=0.03, t=0.03, m='violet', inv='trophy')
+    K.patch('TP1', (-0.3, sy(-0.3, 1) + 0.005, -0.02), (0, 1, 0), 1.0, 0.42, ang=0.04, lift=0.03, t=0.04, m='pale', inv='trophy')
+    K.patch('TP2', (1.0, 0.45, 0.455), (0, 0, 1), 0.4, 0.32, ang=0.3, lift=0.03, t=0.03, m='violet', inv='trophy')
 
     # the plates go on now, over every mass, with the mounts of the flank fittings and the turret kept clear (on a frigate the
     # kit's default keep-outs, sized for the barge, would strip most of the hull: issue 633)
@@ -131,19 +135,21 @@ def build(K):
     for (x, side) in LAMPS:
         K.keepouts.append((Vector((x, sy(x, side), -0.36)), 0.12))
     K.keepouts.append((Vector((0.45, 0.02, 0.66)), 0.44))
-    K.keepouts.append((Vector((1.98, -0.55, 0.53)), 0.36))        # the dish's base and post
+    K.keepouts.append((Vector((1.98, -0.37, 0.62)), 0.34))        # the dish's base and post
+    for side in (1, -1):                                           # the grabber shoulders under the chin
+        K.keepouts.append((Vector((2.15, 0.34 * side, -0.6)), 0.26))
     K.finish()
 
     # the one big ear, after the plates (a plate keep-out round its base would strip the small sponson bare)
-    K.dish('D1', (1.98, -0.55, 0.53), 0.5, yaw=-15, pitch=84, post=0.16, inv='ear',
-           note='the one oversized listening dish, 1.0 across (two thirds of the beam), set nearly flush on the raised sponson, canted a little forward, on the starboard shoulder')
+    K.dish('D1', (1.98, -0.37, 0.62), 0.46, yaw=-15, pitch=84, post=0.16, inv='ear',
+           note='the one oversized listening dish, 0.9 across (more than half the beam), set nearly flush on the raised dish mount, canted a little forward, on the starboard side of the nose')
 
     # ---------------- the grabbers: one pair of small arms under the chin ----------------
     for side, fi in ((1, 'J1'), (-1, 'J2')):
         K.claw_arm(fi, (2.2, 0.34 * side, -0.72), [(2.6, 0.41 * side, -0.82), (2.88, 0.45 * side, -0.76)], w=0.22, hook=-1.0 if side > 0 else 1.0, fork=0.32,
                    inv='grabbers', housing=(1.9, 2.37, 0.34 * side - 0.15, 0.34 * side + 0.15, -0.8, -0.46),
                    note='%s grabber arm under the chin: pins a fleeing hull long enough for the pack to catch up' % ('port' if side > 0 else 'starboard'))
-    K.pipe('PH1', [(2.45, 0.0, -0.35), (2.15, 0.0, -0.48), (1.8, 0.0, -0.56)], r=0.03, inv='chin_pipes', note='the rams\' hydraulic feed')
+    K.pipe('PH1', [(2.75, 0.0, -0.5), (2.35, 0.0, -0.56), (2.0, 0.0, -0.58)], r=0.03, inv='chin_pipes', note='the rams\' hydraulic feed')
 
     # ---------------- the one gun: data.js autocannon T, on the gun block of the spine ----------------
     K.gun('T1', (0.45, 0.02, 0.66), 0, 6, barrels=2, cal=0.052, blen=0.74, size=0.52, slot='T', weapon='autocannon', inv='autocannon',
@@ -191,12 +197,12 @@ def build(K):
                  path=[(1.18, 1.3), (1.05, 0.88), (1.16, 0.4), (1.0, -0.05), (1.14, -0.5), (1.04, -0.88), (1.15, -1.3)])
     K.inside.append(dict(kind='note', name='insides', note='Full interiors through the hull (R215), hidden until a piece breaks. Patch plates tear first; the hull parts at the weld behind the head, ragged (R186).'))
     K.point('core', 'hp_core', (-1.0, 0, -0.33))
-    for i, (x, y, z, sec, side) in enumerate([(0.9, 0.76, 0.08, 'prow', 'port'), (-0.65, -0.76, -0.05, 'mid', 'stbd'), (-2.05, 0.75, -0.05, 'eng', 'port')]):
+    for i, (x, y, z, sec, side) in enumerate([(0.9, sy(0.9, 1), 0.08, 'prow', 'port'), (-0.65, sy(-0.65, -1), -0.05, 'mid', 'stbd'), (-2.05, sy(-2.05, 1), -0.05, 'eng', 'port')]):
         K.point('breach', 'hp_breach_%d' % i, (x, y, z), side=side, section=sec)
     K.point('rcs', 'hp_rcs_0', (1.5, sy(1.5, 1), -0.12), side='port')
     K.point('rcs', 'hp_rcs_1', (1.5, sy(1.5, -1), -0.12), side='stbd')
-    K.point('board', 'hp_board_0', (-0.2, 0.74, -0.29), side='port')
-    K.point('board', 'hp_board_1', (-0.2, -0.74, -0.29), side='stbd')
+    K.point('board', 'hp_board_0', (-0.2, sy(-0.2, 1), -0.29), side='port')
+    K.point('board', 'hp_board_1', (-0.2, sy(-0.2, -1), -0.29), side='stbd')
 
     # ---------- changed from the picture (designer's decisions, R207, R233) ----------
     K.change('One gun: a twin autocannon turret on the spine\'s gun block', 'data.js c_raider carries one weapon, autocannon T (R221: weapons from data.js); the picture\'s rows of flank guns, '

@@ -205,7 +205,10 @@ class Kit:
     def _plates(self, name, rings, spec):
         """armour slabs over the loft faces: plates of mixed size and thickness with bevelled edges and corner rivets, a
         second smaller slab stacked on some (a thickness step), a few in trophy colours; none under a mount (keep-outs).
-        spec: dict(seed, size=(lo, hi), thick=(lo, hi), skip, stack, mats={mat: weight}, faces=[0..7], inv='inventory id')"""
+        spec: dict(seed, size=(lo, hi), thick=(lo, hi), skip, stack, mats={mat: weight}, faces=[0..7], inv='inventory id')
+        courses=True lays the plates in courses instead (_plates_courses, opt-in)"""
+        if spec.get('courses'):
+            return self._plates_courses(name, rings, spec)
         import random
         rnd = random.Random(spec.get('seed', 1))
         if spec.get('stride', 1) > 1:
@@ -278,6 +281,117 @@ class Kit:
         if spec.get('inv'):
             for iid in ([spec['inv']] if isinstance(spec['inv'], str) else spec['inv']):
                 self.built.append(dict(id=name + '_plates', kind='plate', inv=[iid], shaped=True, detailed=kept > 0 and spec.get('rivets', True),
+                                       subs=['slab', 'step', 'bevel', 'rivet']))
+
+    def _plates_courses(self, name, rings, spec):
+        """scrap brick in courses (issue 633; the Board on round 1: "lay plates in courses at the hull's plate size so every
+        face reads as stacked scrap, and make the top faces stepped, not flat lids"; R196, R197). Opt-in (courses=True); the
+        default plating above is unchanged. On every face the plates run in courses across it, each course split along its
+        length at its own joints (a brick bond, at the hull's plate size in world units both ways, never a count per face, as
+        issue 618's rule for kit parts); a share of the joints is bridged by a patch plate laid over both neighbours (plates
+        over plates), a share of plates carries a smaller offset patch, and upward faces are terraced: the plates stand in
+        slabs of one, two or three steps (step: units per step), set by a coarse grid in world space so neighbouring faces
+        agree. Rivets on a share of plates only (rivets: the share), so the hull's density per square unit stays near the
+        default plating's. Keep-outs as keep3d."""
+        import random
+        rnd = random.Random(spec.get('seed', 1))
+        lo, hi = spec.get('size', (0.9, 2.2)); tlo, thi = spec.get('thick', (0.05, 0.2))
+        step = spec.get('step', thi * 1.1); over = spec.get('over', 0.3); stack = spec.get('stack', 0.3)
+        rshare = spec.get('rivets_share', 0.35); skip = spec.get('skip', 0.08); g = spec.get('gap', 0.035)
+        mats = spec.get('mats', {'soot': 6, 'rust': 2, 'steel': 1})
+        names = list(mats); wts = [mats[k] for k in names]
+        n = len(rings[0])
+        faces_ok = spec.get('faces', list(range(n)))
+        buckets = {k: ([], []) for k in names}
+        RV, RF = [], []
+        cen = [Vector(map(lambda *c: sum(c) / n, *r)) for r in rings]
+        cell = hi * spec.get('terrace', 1.7)
+        seed = spec.get('seed', 1)
+        kept = 0
+
+        def level(p, up):
+            # the terrace level at a world point: a coarse grid, the same on every face that shares it
+            if up < 0.55:
+                return 0
+            k = (int(math.floor(p.x / cell)) * 73856093) ^ (int(math.floor(p.y / cell)) * 19349663) ^ (seed * 83492791)
+            return (0, 1, 1, 2, 0, 2, 1, 3)[k % 8]
+
+        def slab(bot, nrm, t, mat, riv):
+            nonlocal kept
+            (V, F), (rv, rf) = HP.plate_slab(bot, nrm, t, rivets=riv)
+            bv, bf = buckets[mat]; o = len(bv); bv.extend(V); bf.extend([tuple(x + o for x in f) for f in F])
+            if riv:
+                o = len(RV); RV.extend(rv); RF.extend([tuple(x + o for x in f) for f in rf])
+            kept += 1
+
+        def cuts(total, lo_, hi_):
+            # split a length into pieces of the plate size; a short remainder joins the last piece
+            out = [0.0]
+            while out[-1] < total - 1e-6:
+                out.append(min(total, out[-1] + rnd.uniform(lo_, hi_)))
+            if len(out) > 2 and out[-1] - out[-2] < lo_ * 0.45:
+                out.pop(-2)
+            return out
+
+        for i in range(len(rings) - 1):
+            for j in faces_ok:
+                A, B = Vector(rings[i][j]), Vector(rings[i][(j + 1) % n])
+                D_, C = Vector(rings[i + 1][j]), Vector(rings[i + 1][(j + 1) % n])
+                flen = (D_ - A).length; fw = (B - A).length
+                if flen < min(0.3, lo * 0.9) or fw < min(0.2, lo * 0.6):
+                    continue
+                nrm = (B - A).cross(D_ - A)
+                if nrm.length < 1e-6:
+                    continue
+                nrm.normalize()
+                if nrm.dot((A + C) / 2 - (cen[i] + cen[i + 1]) / 2) < 0:
+                    nrm = -nrm
+
+                def Pq(u, v):
+                    return A.lerp(D_, u).lerp(B.lerp(C, u), v)
+                vs = cuts(fw, lo * 0.75, hi * 0.8)
+                for b0, b1 in zip(vs, vs[1:]):
+                    us = cuts(flen, lo, hi)
+                    row = []
+                    for a0, a1 in zip(us, us[1:]):
+                        u0, u1 = (a0 + g) / flen, (a1 - g) / flen; v0, v1 = (b0 + g) / fw, (b1 - g) / fw
+                        if u1 <= u0 or v1 <= v0:
+                            row.append(None); continue
+                        pc = Pq((u0 + u1) / 2, (v0 + v1) / 2); hd = 0.5 * ((u1 - u0) * flen + (v1 - v0) * fw)
+                        if rnd.random() < skip or any((pc - c).length < r + hd * 0.7 for c, r in self.keepouts):
+                            row.append(None); continue
+                        t = rnd.uniform(tlo, thi) + level(pc, nrm.z) * step
+                        slab([Pq(u0, v0), Pq(u1, v0), Pq(u1, v1), Pq(u0, v1)], nrm, t, rnd.choices(names, wts)[0], rnd.random() < rshare)
+                        row.append((u0, u1, v0, v1, t))
+                        if rnd.random() < stack:
+                            # a smaller patch off-centre on this plate, a second thickness step
+                            fu, fv = rnd.uniform(0.3, 0.6), rnd.uniform(0.35, 0.7)
+                            cu = u0 + (u1 - u0) * rnd.uniform(fu / 2, 1 - fu / 2); cv = v0 + (v1 - v0) * rnd.uniform(fv / 2, 1 - fv / 2)
+                            hu, hv = fu * (u1 - u0) / 2, fv * (v1 - v0) / 2
+                            slab([Pq(cu - hu, cv - hv) + nrm * t, Pq(cu + hu, cv - hv) + nrm * t, Pq(cu + hu, cv + hv) + nrm * t, Pq(cu - hu, cv + hv) + nrm * t],
+                                 nrm, rnd.uniform(tlo, thi) * 0.8, rnd.choices(names, wts)[0], False)
+                    for p0, p1 in zip(row, row[1:]):
+                        # a patch over the joint between two neighbours (plates over plates)
+                        if p0 is None or p1 is None or rnd.random() >= over:
+                            continue
+                        js = (p0[1] + p1[0]) / 2; w_ = min(p0[1] - p0[0], p1[1] - p1[0]) * rnd.uniform(0.3, 0.55)
+                        va, vb = max(p0[2], p1[2]), min(p0[3], p1[3])
+                        if vb - va < 0.02:
+                            continue
+                        fv = rnd.uniform(0.45, 0.85); cv = (va + vb) / 2 + (vb - va) * (1 - fv) * rnd.uniform(-0.5, 0.5)
+                        hv = (vb - va) * fv / 2; z0 = max(p0[4], p1[4])
+                        if any((Pq(js, cv) - c).length < r + w_ * flen * 0.7 for c, r in self.keepouts):
+                            continue
+                        slab([Pq(js - w_, cv - hv) + nrm * z0, Pq(js + w_, cv - hv) + nrm * z0, Pq(js + w_, cv + hv) + nrm * z0, Pq(js - w_, cv + hv) + nrm * z0],
+                             nrm, rnd.uniform(tlo, thi) * 0.7, rnd.choices(names, wts)[0], rnd.random() < rshare)
+        for k, (V, Fc) in buckets.items():
+            if V:
+                self._obj('%s_plates_%s' % (name, k), V, Fc, k, grp='hull')
+        if RV:
+            self._obj('%s_rivets' % name, RV, RF, 'iron', grp='hull')
+        if spec.get('inv'):
+            for iid in ([spec['inv']] if isinstance(spec['inv'], str) else spec['inv']):
+                self.built.append(dict(id=name + '_plates', kind='plate', inv=[iid], shaped=True, detailed=kept > 0,
                                        subs=['slab', 'step', 'bevel', 'rivet']))
 
     def _kept_out(self, A, du, dv, nrm, u0, u1, v0, v1, flen, fw):

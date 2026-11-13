@@ -31,14 +31,14 @@ import math, random
 # (x, half-beam port, half-beam starboard, bottom, top, top chamfer, bottom chamfer): the blunt bow face (the two casemates sit
 # in it), the sloped chin, the long body, the taper into the stern block
 HULL = [
-    (4.05, 0.64, 0.64, -0.26, 0.26, 0.11, 0.09),
-    (3.75, 0.79, 0.79, -0.38, 0.29, 0.13, 0.12),
-    (3.2, 0.86, 0.86, -0.5, 0.31, 0.14, 0.15),
-    (1.9, 0.88, 0.88, -0.5, 0.32, 0.14, 0.15),
+    (4.05, 0.56, 0.56, -0.26, 0.26, 0.1, 0.09),
+    (3.55, 0.66, 0.66, -0.4, 0.29, 0.12, 0.12),
+    (2.55, 0.8, 0.8, -0.5, 0.31, 0.14, 0.15),
+    (1.5, 0.88, 0.88, -0.5, 0.32, 0.14, 0.15),
     (-3.1, 0.86, 0.86, -0.5, 0.34, 0.14, 0.15),
     (-3.6, 0.79, 0.79, -0.46, 0.32, 0.13, 0.14),
 ]
-PL = dict(keep3d=True, size=(0.24, 0.62), thick=(0.03, 0.1), skip=0.08, stack=0.5, mats={'soot': 4, 'iron': 4, 'pale': 2, 'rust': 3, 'soot2': 2, 'violet': 1})
+PL = dict(keep3d=True, courses=True, size=(0.2, 0.46), thick=(0.025, 0.06), step=0.03, gap=0.02, over=0.2, skip=0.04, stack=0.2, rivets_share=0.3, mats={'soot': 4, 'iron': 4, 'pale': 2, 'rust': 3, 'soot2': 2, 'violet': 1})
 # the spine, bow to stern: stacked blocks (name, x fore, x aft, half-beam, top, front slope, y offset), gaps between them
 SPINE = [
     ('M1 fore spine block', 1.7, 0.55, 0.54, 0.58, 0.2, 0.02),
@@ -86,11 +86,12 @@ def build(K):
     K.mass('Lower hull band', K.loft('A19_lowband', [(3.0, 0.86, 0.86, -0.54, -0.3, 0.0, 0.07), (-3.4, 0.84, 0.84, -0.54, -0.3, 0.0, 0.07)], 'soot2',
                                      plates=dict(PL, seed=20, faces=[3, 4, 5, 6, 7, 0], inv='belly_plates')), 'dark soot', note='the belly steps in under the flank')
     # the foredeck plate: the picture's broad flat spade over the bow, its tip a blunt wedge from above, overhanging the flanks
-    K.mass('Foredeck plate (the spade)', K.loft('A19_spade', [(4.32, 0.52, 0.52, 0.22, 0.33, 0.04, 0.03), (3.9, 0.86, 0.86, 0.22, 0.4, 0.06, 0.03),
-                                                             (3.0, 1.0, 1.0, 0.24, 0.43, 0.07, 0.03), (1.15, 1.0, 1.0, 0.26, 0.44, 0.07, 0.03),
-                                                             (0.9, 0.9, 0.9, 0.26, 0.41, 0.06, 0.03)],
-                                                'iron', plates=dict(PL, seed=21, faces=[0, 1, 2], inv='spade_plates', size=(0.14, 0.32))),
-           'bare iron and trophy plate', note='the broad flat foredeck plate, a blunt wedge from above (the picture\'s spade)')
+    K.mass('Foredeck plate (the spade)', K.loft('A19_spade', [(4.62, 0.2, 0.2, 0.2, 0.31, 0.03, 0.02), (4.15, 0.63, 0.63, 0.21, 0.38, 0.05, 0.03),
+                                                             (3.2, 0.82, 0.82, 0.23, 0.42, 0.07, 0.03), (2.2, 1.0, 1.0, 0.25, 0.44, 0.07, 0.03),
+                                                             (1.6, 1.04, 1.04, 0.26, 0.45, 0.07, 0.03), (1.15, 1.04, 1.04, 0.26, 0.45, 0.07, 0.03),
+                                                             (0.9, 0.94, 0.94, 0.26, 0.42, 0.06, 0.03)],
+                                                'iron', plates=dict(PL, seed=21, faces=[0, 1, 2], inv='spade_plates', size=(0.16, 0.36))),
+           'bare iron and trophy plate', note='the broad flat bow plate, an arrow-head wedge from above: a blunt point that widens over the first third (the picture\'s spade)')
     K.mark('spade', 'tier', ['face', 'roof', 'opening'])
     for (nm, x0, x1, hw, top, slope, yo) in SPINE:
         base = 0.3 if x0 < 0.9 else 0.4
@@ -141,6 +142,8 @@ def build(K):
         K.keepouts.append((Vector(((x0 + x1) / 2, -0.98, -0.2)), 0.13))
     for (fid, x, *_r) in CASEMATES:
         K.keepouts.append((Vector((x, -0.88, -0.1)), 0.32))
+    K.keepouts.append((Vector((3.0, 0.55, 0.43)), 0.22))           # the dishes' bases
+    K.keepouts.append((Vector((-3.45, -0.55, SB_TOP)), 0.2))
     for x, z in ((1.12, 0.58), (-1.85, 0.6)):
         K.keepouts.append((Vector((x, -0.05, z)), 0.48))
     K.finish()
