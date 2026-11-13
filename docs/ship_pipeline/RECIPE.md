@@ -138,7 +138,7 @@ and trim lights. Plate patchwork, seams and brick rust (R228) are the faction st
 cameras (PC run out3): they carry real roughness, which the old flat-colour hulls did not. The stack marks its textured and engine
 glow materials `rim_soft` (glTF material extras); `look.gd` puts such surfaces on their own layer, lit by a second rim light with
 `RIM soft` (0.25) of the specular. Every other hull keeps the full rim light, pixel for pixel (sandbox probe
-`godot/render/test/rim_soft_probe.gd`: A16 white pixels 46 to 5 at camera b and 28 to 0 at q, outline at camera 170 37.0 to 35.3;
+`godot/tools/probes/rim_soft_probe.gd` (a hand-run probe with arguments, kept outside the test folders the checks list covers): A16 white pixels 46 to 5 at camera b and 28 to 0 at q, outline at camera 170 37.0 to 35.3;
 an old hull 0 pixels changed). Engine glow is the game's (R228): the export's `hp_eng` points with their bell radius drive the
 game's engine effect (`godot/fx/fx_hull.gd` reads them as the nozzles), beside the sheet's throat and bell lining, which the
 stack gives one emissive surface with the plug cone, with its own map (`bake_engine_glow`: the hot core on the axis, the plug

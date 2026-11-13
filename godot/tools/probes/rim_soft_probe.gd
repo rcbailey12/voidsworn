@@ -3,7 +3,7 @@ extends SceneTree
 # LookRim for every hull, LookRimSoft for surfaces whose glTF extras carry rim_soft, the paint stack's), at the close cameras b and q of
 # a4_shots and the battle camera (camera 170). It loads the glb at run time (GLTFDocument), so it needs no import; give the maps as PNG
 # (this Linux build did not decode the glb's JPEG maps at run time).
-# usage: godot --path godot --script res://render/test/rim_soft_probe.gd -- GLB OUT_DIR LENGTH TAG FACTION
+# usage: godot --path godot --script res://tools/probes/rim_soft_probe.gd -- GLB OUT_DIR LENGTH TAG FACTION
 const LOOK := preload("res://render/look.gd")
 func _init() -> void:
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
