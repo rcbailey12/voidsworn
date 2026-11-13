@@ -1,7 +1,8 @@
 # Ship recipe, stage 4: prove the audit fails when it should (Muse condition 2 on PR 341, R158; condition 1 on PR 341's check).
 # Six broken copies of the opened build, in memory only (the blend on disk is never written): a gun turned into the ship against
 # its mount normal, the build's own transverse break lines removed, the transverse lines emptied, a malformed longitudinal seam,
-# every mount normal removed, and one gun's mount normal removed. audit.py must refuse all six. A case whose break cannot be made
+# every mount normal removed, and one gun's mount normal removed (on a one-gun ship, a second record of that gun without its
+# normal, issue 633). audit.py must refuse all six. A case whose break cannot be made
 # on this build (for example no gun carries a normal to turn against) counts as a self-test failure, never as a pass.
 # One more copy proves the longitudinal seam is optional (issue 592): with r209_l_line (and r209_l_lines) removed, the audit must not name the
 # break lines among its failures (it may still fail for something else the build really has).
@@ -53,8 +54,10 @@ for case in ('into_ship', 'no_break_lines', 'empty_break_lines', 'bad_longitudin
             print(f'n/a  {case}: this build marks no part kinds, so every part is held to the machine rule', flush=True); continue
     elif case == 'no_normals': sc['r209_guns'] = json.dumps([x[:2] for x in g])
     elif case == 'one_normal_missing':
-        made = len(g) > 1 and all(len(x) > 2 and x[2] for x in g)
-        if made: g[-1] = g[-1][:2]; sc['r209_guns'] = json.dumps(g)                  # the last gun loses its normal, the rest keep theirs
+        made = len(g) > 0 and all(len(x) > 2 and x[2] for x in g)
+        # the last gun loses its normal, the rest keep theirs; a ship with one gun (a frigate's single data.js weapon, issue 633)
+        # gets a second record of that gun without its normal, so the case is still one of two and never the no_normals case
+        if made: g = g + [g[-1][:2]] if len(g) == 1 else g[:-1] + [g[-1][:2]]; sc['r209_guns'] = json.dumps(g)
     if not made:
         ok = False; print(f'BAD  {case}: this break could not be made on this build, so the case proves nothing', flush=True); continue
     sys.argv = ['blender', '--', os.path.join(out, f'audit_{case}.json')]

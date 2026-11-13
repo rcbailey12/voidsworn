@@ -172,7 +172,7 @@ const norm = v => {
 
 // ---------------------------------------------------------------- report
 function build() {
-  const MIN = +(/const MIN_TEXT := (\d+)/.exec(read('godot/ui/ui_scale.gd')) || [0, 12])[1];
+  const MIN = +(/const MIN_TEXT := (\d+)/.exec(read('godot/ui/ui_scale.gd')) || [0, 17])[1];
   const gd = godotFiles();
   const pal = palette();
   const palKeys = Object.keys(pal);
