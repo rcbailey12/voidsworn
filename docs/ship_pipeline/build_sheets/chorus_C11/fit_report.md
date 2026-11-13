@@ -1,4 +1,4 @@
-# chorus_C11 fit report (round 3, face and massing; RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
+# chorus_C11 fit report (the recipe (issue 623); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
 
 Made by `tools/blender/build_sheets/clash.py` on the built blockout (it runs inside every `build.py ... render` and on its own
 with `build.py <code> <out> fit`). What it tests, on every part of every type:
@@ -26,7 +26,7 @@ also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on t
 (`turret=0`, `gun_fixed=1`).
 
 
-## How round 3, face and massing fixed them
+## How the recipe (issue 623) fixed them
 
 | Clash (before) | Fix |
 |---|---|

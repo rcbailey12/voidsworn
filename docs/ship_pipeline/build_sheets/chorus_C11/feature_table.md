@@ -1,6 +1,6 @@
 # chorus_C11: The bladeback (Chorus cruiser), build sheet
 
-The Chorus (chorus) | class Cruiser | version 3 (round 3, face and massing), 2026-11-12 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\opus623\chorus_C11\chorus_C11\chorus_C11_blockout.blend`
+The Chorus (chorus) | class Cruiser | version 4 (the recipe (issue 623)), 2026-11-13 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\opus623\chorus_C11\chorus_C11\chorus_C11_blockout.blend`
 
 **Length 14.5 world units** (data.js b_razor (cls 'Cruiser'); length from godot/render/hull_table.gd CLS_LEN['Cruiser'] = 14.5). Frame: +X bow, +Y port, +Z up; station % from the prow tip; offset + port / - starboard; height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.
 
@@ -139,6 +139,8 @@ Flesh, bone and organs through the whole body (R215), hidden until a piece break
 | hp_rcs_1 | 19.2 | -2.35 | -1.38 | stbd |  |  |
 | hp_rcs_2 | 77.8 | 1.12 | 0.31 | port |  |  |
 | hp_rcs_3 | 77.8 | -1.11 | 0.31 | stbd |  |  |
+| hp_board_0 | 45.1 | 2.64 | 0.25 | port |  |  |
+| hp_board_1 | 45.1 | -2.65 | 0.25 | stbd |  |  |
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
@@ -158,6 +160,8 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **The stern ends in a ring of six pulse vents, each with three glowing filaments splayed outward.** factions.md: no nozzles; the picture's amber nodes and filament plume. The filaments are cut to about a third of the picture's so the ship is 14.5 throat rim to filament tip, and splayed so none hangs in a neighbour's jet.
 - **Siphons added, a pair forward and a pair aft.** a ship in space must turn; the picture shows none.
 - **The small spines along the lower stern are cut.** no job (R221).
+- **B-1 and B-2 run on straight past the flanks to 6.0 off the axis (issue 623, the recipe).** the game weighs the tear's height by how far across the path it is, so a path that stops at the flank tears the septa and the liner at different places from the plating near the flanks (death_seam_check: 171 triangles outside their piece); E11's paths run on the same way.
+- **Boarding origins on the flanks at x 0.8; the throats' hard points are the bile glands' faces deep in the throats (issue 623).** the game contract needs one boarding origin a side; the mouth's centre is open air, which the export check refuses as off the mesh, so the shot leaves from the gland and the arcs and the firing lane are still taken from the mouth.
 
 ## Designed here, not shown in the picture
 

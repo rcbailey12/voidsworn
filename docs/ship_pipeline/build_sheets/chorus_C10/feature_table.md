@@ -1,6 +1,6 @@
 # chorus_C10: The Ninefold Maw (Chorus flagship), build sheet
 
-The Chorus (chorus) | class Bio-titan | version 4 (round 4, the body), 2026-11-12 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\opus623\chorus_C10\chorus_C10\chorus_C10_blockout.blend`
+The Chorus (chorus) | class Bio-titan | version 5 (the recipe (issue 623)), 2026-11-13 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\opus623\chorus_C10\chorus_C10\chorus_C10_blockout.blend`
 
 **Length 28.0 world units** (data.js b_boss (cls 'Bio-titan'); length from godot/render/hull_table.gd CLS_LEN['Bio-titan'] = 28.0). Frame: +X bow, +Y port, +Z up; station % from the prow tip; offset + port / - starboard; height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.
 
@@ -138,7 +138,6 @@ Bulkhead and frame stations: F0 12.3%, F1 18.4%, F2 28.0%, F3 34.5%, F4 40.9%, F
 | B-1 | 24.5 (seam wanders 23.0 to 25.9) | behind the head: the mouth mass tears away, opening the glands and the Node |
 | B-2 | 55.9 (seam wanders 55.2 to 57.1) | behind the tendril crown: the body tears open across the heart vat's aft end and the second stomach |
 | B-3 | 73.0 (seam wanders 72.0 to 74.1) | ahead of the tail: the tail and the vent crown tear free, opening the pulse bladder |
-| B-4 | 23.0 to 71.6 (along) | the belly tears away along the brood sacs' roots, the sacs bursting first (factions.md: sacs rupture first, then the body tears open) |
 
 Flesh, bone and organs through the whole body (R215), hidden until a piece breaks: bone hoops for frames, membrane septa for decks, organs and chambers that never reach the skin. The Chorus bursts and tears: sacs rupture first, then the body tears open along ragged lines (R186).
 
@@ -154,13 +153,21 @@ Flesh, bone and organs through the whole body (R215), hidden until a piece break
 | hp_breach_3 | 39.8 | -2.68 | -0.24 | stbd | mid | open hide beside a sac or the trim |
 | hp_breach_4 | 53.8 | 2.12 | -0.17 | port | mid | open hide beside a sac or the trim |
 | hp_breach_5 | 58.0 | -1.39 | 1.30 | stbd | mid | open hide beside a sac or the trim |
-| hp_breach_6 | 70.2 | 1.47 | 0.26 | port | eng | open hide beside a sac or the trim |
-| hp_breach_7 | 75.2 | -0.76 | 1.14 | stbd | eng | open hide beside a sac or the trim |
-| hp_breach_8 | 80.9 | 0.82 | 0.40 | port | eng | open hide beside a sac or the trim |
+| hp_breach_6 | 67.7 | 1.57 | 0.21 | port | eng | open hide beside a sac or the trim |
+| hp_breach_7 | 75.2 | -1.00 | 0.94 | stbd | eng | open hide beside a sac or the trim |
+| hp_breach_8 | 82.0 | 0.65 | 0.29 | port | eng | open hide beside a sac or the trim |
 | hp_rcs_0 | 19.5 | 2.76 | -1.13 | port |  |  |
 | hp_rcs_1 | 19.5 | -2.69 | -1.10 | stbd |  |  |
 | hp_rcs_2 | 76.6 | 0.78 | 0.86 | port |  |  |
 | hp_rcs_3 | 76.6 | -0.89 | 0.92 | stbd |  |  |
+| hp_bay_0 | 32.4 | 2.56 | -3.71 | port |  | brood sac birth slit |
+| hp_bay_1 | 32.4 | -2.53 | -3.64 | stbd |  | brood sac birth slit |
+| hp_bay_2 | 49.3 | 2.05 | -2.87 | port |  | brood sac birth slit |
+| hp_bay_3 | 49.3 | -2.15 | -2.98 | stbd |  | brood sac birth slit |
+| hp_bay_4 | 63.4 | 1.56 | -1.99 | port |  | brood sac birth slit |
+| hp_bay_5 | 63.4 | -1.59 | -2.02 | stbd |  | brood sac birth slit |
+| hp_board_0 | 43.0 | 2.43 | 0.77 | port |  |  |
+| hp_board_1 | 43.0 | -2.52 | 0.80 | stbd |  |  |
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
@@ -182,6 +189,10 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **Siphons added, a pair behind the mouths and a pair on the tail.** a ship in space must turn; the picture shows none; siphons, not nozzles.
 - **Pore fields on the head and round the tail, veins along the flanks.** the Chorus has no eyes: it tastes (lore 5.8); the veins carry bile to the throats (README 8b: C9's vein tracery faded in this pass).
 - **Scars carry knit ridges.** regrowing scar tissue (lore 5.3; regen 20): the wound pulling shut.
+- **The belly seam B-4 is gone; B-1 to B-3 run on straight past the flanks (issue 623, the recipe).** the game's longitudinal seam is one level plane over its whole compartment that takes everything above it (fx_death.gd); at the belly it would cut through the lower septum, the brood chambers, the heart vat and the spore stores and leave their halves outside the torn hull (death_seam_check: 1512 triangles). The transverse paths end in straight runs to 7.5 off the axis, as E11's do: the game weighs the tear's height by how far across the path it is, so a path that stops at the flank tears the insides and the plating at different places near the flanks. The body still bursts at its sacs and tears across in four pieces.
+- **Six launch mouths, one per brood sac's birth slit, launching out and down along the sac (issue 623).** data.js hangar 3; the export needs a hp_bay on the mesh for each mouth.
+- **Boarding origins on the mid flanks at x 2.0; the throats' hard points are the bile glands' faces deep in the throats (issue 623).** the game contract needs one boarding origin a side; the mouth's centre is open air, which the export check refuses as off the mesh, so the shot leaves from the gland and the arcs and the firing lane are still taken from the mouth.
+- **Breach anchors 6 to 8 moved to x -4.9, -7.0 (higher on the flank) and -8.9 (issue 623).** the export puts each anchor on open hull 0.03 of the length clear of every part and apart from the others; at -5.6, -7.0 and -8.6 the last one found no open hull left beside the vents.
 
 ## Designed here, not shown in the picture
 
