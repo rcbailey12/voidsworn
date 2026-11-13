@@ -2,6 +2,8 @@
 
 Ashfall Hullbreakers frigate (the Sniffer, the pack's finder), class Frigate (6.5 world units, godot/render/hull_table.gd CLS_LEN); data.js c_raider: autocannon T, ability overburn, speed 6, evasion 28. The model is 6.51 long. Designer of record: Opus (R205, R207); the Board is the final designer (R233). Built from the accepted concept of PR 625 (contrib/muse/design/class_family_corsair_2026_11/, corsair_A18_beauty.jpg, v3, Ryan Nov 12 2026) and designs.md, the design of record for the fittings. The views were rendered in the Opus sandbox (Blender 5.3 as a Python module, CPU, 20 samples) from the same build.py; no PC run yet: the Board runs the recipe there after reviewing this sheet. Paint: `bake: none` (the sheet paint stack, PR 610, is not merged).
 
+**Issue 668 (R239): broadened toward the concept.** Ryan, Nov 13 2026: "a18 and a19 are much slimmer than concept. It's not a huge deal but it'd add some variety." Every hull half-beam from the nose's 40 percent station aft is out by 0.18 (the design file's WIDEN), less toward the face so the grille nose keeps its taper (0.96 across at the face, 2.0 at 40 percent, was 0.85 and 1.7); the spine blocks, the engine block and drums, the belly band and the flank fittings moved out with it. The hull is 2.04 wide at midships (was 1.68): hull length to beam 3.87 to 3.19 on the sheet's own hull measure (checks.json), 3.50 to 2.94 on the inventory's (inventory.md; it reads the concept sheet's top view at 4.28). The class length (6.51) and the silhouette (the grille nose, the one big ear, the lopsided drums) are kept. The concept sheet's top view draws A18 slimmer than the beauty does; Ryan's words match the beauty, so the beauty is the target: with the camera refitted (camera only) to the same beauty mask, the outline overlap goes from 62.6 percent on the slim build to 63.3 on the broadened one (body 56.7 to 58.8). Fit check all zero. The aft port breach anchor hp_breach_2 moved down from height -0.05 to -0.45: the drum mount moved out with the widening and came within 0.03 of the length of the old spot, so stage 7 refused it. Sheet before this change: git history of this folder (issue 633 round 2).
+
 ![corsair_A18 preview](preview.jpg)
 
 **Start here (R229, the whole concept first):** [whole beauty beside the whole build](../../../shots/issue_633_hullbreakers/a18_whole_compare.jpg), [side against the concept sheet's side](../../../shots/issue_633_hullbreakers/a18_side_compare.jpg), [plan against plan](../../../shots/issue_633_hullbreakers/a18_top_compare.jpg), then the [bow](../../../shots/issue_633_hullbreakers/a18_bow_compare.jpg) and [stern](../../../shots/issue_633_hullbreakers/a18_stern_compare.jpg); the five Hullbreakers from above at one scale: [hullbreakers_lineup_top.jpg](../../../shots/issue_633_hullbreakers/hullbreakers_lineup_top.jpg). Then [side_by_side.jpg](side_by_side.jpg), [cells.jpg](cells.jpg) and [fit_view.jpg](fit_view.jpg).
@@ -10,11 +12,11 @@ Ashfall Hullbreakers frigate (the Sniffer, the pack's finder), class Frigate (6.
 
 A18 is painted by the same Hullbreaker paint stack as A16 and A17 (`"bake": "stack"`, tools/blender/kits/hullbreakers/stack.py),
 nothing ship-specific: the colour zones are this sheet's own materials (its grille nose is built from kinds the stack already
-knew, so it needed no new zone). Sandbox preview (stages 4 to 7 on the CPU, 1024 atlases, 16 samples):
+knew, so it needed no new zone). Sandbox preview (stages 4 to 7 on the CPU, 1024 atlases, 16 samples; re-rendered for issue 668 on the broadened hull; nothing was installed, so the authored interiors and death seam results below are from the earlier installed run):
 [full](paint/A18_paint_full.jpg), [six views beside the whole beauty](paint/A18_paint_views.jpg),
 [bow](paint/A18_paint_bow.jpg), [midships](paint/A18_paint_midships.jpg), [stern](paint/A18_paint_stern.jpg),
 [engines](paint/A18_paint_engines.jpg). Surface check 0 ([json](paint/surface_check_after.json)); R224 paint and mesh flags
-none ([density](paint/density_sandbox.json)); 16 running lamps (0.8 px on a 70 px ship); authored interiors and the death seam
+none ([density](paint/density_sandbox.json)); 15 running lamps on the broadened hull (0.8 px on a 70 px ship; 16 before issue 668); authored interiors and the death seam
 check pass on the export. As A17, the stack's colours are sampled from A16, so A18 paints darker than its picture.
 
 ## What the class is (the Board as designer, R233)
@@ -25,7 +27,7 @@ A chunky nose that tapers forward to a small wide-grilled face over a cut-in chi
 
 | Check | Result |
 |---|---|
-| Fit check, seven tests (CLASH, MOUNT, ARC, SWEEP, EXHAUST, EXIT, LANE) | CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0, all zero ([fit_report.md](fit_report.md)) |
+| Fit check, seven tests (CLASH, MOUNT, ARC, SWEEP, EXHAUST, EXIT, LANE) | CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0, all zero ([fit_report.md](fit_report.md)); issue 668 broadened build: all zero |
 | Machines on a seam (R226), sandbox stage 4 audit | 0 of 12 machines across a seam; structure across: none |
 | Audit (tools/recipe/audit.py) | PASS: 0 problems |
 | Audit self-test (audit_selftest.py) | PASS, all nine cases |
@@ -34,7 +36,7 @@ A chunky nose that tapers forward to a small wide-grilled face over a cut-in chi
 | Detail density per part type (R224, under 0.75 of the hull is a fault) | none under; lowest slit at 0.95 of the hull's triangles and 0.97 of its edge features per square unit |
 | Inventory (every part has a job, present, shaped, detailed per cell) | 0 failing ([inventory.md](inventory.md)) |
 | Triangles (reported, never capped) | 58512 outside, 408 inside, 58920 in all (round 1: 37296 and 408; the plates in courses carry the scrap brick, R196) |
-| Outline overlap with the beauty at the sheet camera (reported, not a bar, RULEBOOK 5.8) | 76.2 percent (mass outline 76.7; round 1 77.8) |
+| Outline overlap with the beauty at the sheet camera (reported, not a bar, RULEBOOK 5.8) | 76.2 percent (mass outline 76.7; round 1 77.8), the round 2 record; issue 668 kept the camera and rescored against a remade beauty mask (luminance over 19, largest piece, holes filled): 53.5 on the broadened build against 54.9 on round 2 at this camera, 63.3 against 62.6 with the camera refitted to each (see the issue 668 note above; [outline_check.jpg](outline_check.jpg) is the rescore) |
 
 The fit check, the seam and inside tests and the density were run in the sandbox (tools/blender/build_sheets/build.py fit mode; the seam, inside and density measures are scripted the same way as the Chorus sheets' check, issue 623). PR 608's death check in Godot needs the exported ship and runs on the PC.
 
@@ -57,6 +59,7 @@ C13s_23 (`corsair|Frigate` in godot/render/hull_table.gd AI_HULLS), bake none. I
 
 ## Changed from the picture (R207, R233)
 
+- **Issue 668: the body is broadened, every half-beam from 40 percent aft out by 0.18 (2.04 wide at midships, was 1.68; the face 0.96, was 0.85), the length and the outline from above (taper, swell, drums) kept.** Ryan, Nov 13 2026 (R239): "a18 and a19 are much slimmer than concept. It's not a huge deal but it'd add some variety." The lines below that give round 2's widths are kept as the history
 - **One gun: a twin autocannon turret on the spine's gun block.** data.js c_raider carries one weapon, autocannon T (R221: weapons from data.js); the picture's rows of flank guns, designs.md's two bow casemates and its rocket rack have no slot, so they are not built
 - **The nose is chunky and tapers forward to the face: 0.84 across and 0.5 tall at the face, widening and deepening over the first 40 percent to 1.7 across at midships, where the body is widest, then easing aft.** the Board on round 1 (Nov 13, R233): the build was a long box (1.46 wide almost bow to stern, a 0.4 tall face) with a dish at the front; the concept sheet draws the nose 1.0 across at the face and 1.6 to 1.7 by 40 percent of the length
 - **The one big ear: an oversized listening dish (0.9 across, more than half the beam) set nearly flush on a low raised dish mount on the nose, to starboard.** the picture's flush disc on the starboard foredeck; designs.md's "a little brick with one big ear". Round 2 drops round 1's sponson that bulged the shoulder: the outline from above is the nose's own taper and swell (the Board)
