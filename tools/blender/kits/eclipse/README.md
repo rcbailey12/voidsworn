@@ -36,3 +36,8 @@ and rest_pitch, the turning meshes its children; the hex foot stays on the hull.
 Eclipse engines (faceted ribbed drums, vanes, a short bell, a pale corona ring round a black shade disc, no flame), the caged
 core, truss struts, the hex core port, octagonal hatches, shade-generator housings, heat slot panels, corona strip lights, slot
 thrusters, machine-cut plates with flush fasteners. Each part's docstring in parts.py says what it is.
+
+**Detail by size (issue 618, R224).** `panels()` lays plate courses on a part's flat faces at the hull's own plate size in world
+units (`PANEL`), so a part built large keeps the hull's detail density: the engine housings, the corona arc's breech collars,
+column and head carry them, and every engine bell gets stiffener rings by its length. The corona arc's hard point is its lens
+(the horns' meeting point ahead of it is open space, off the mesh).

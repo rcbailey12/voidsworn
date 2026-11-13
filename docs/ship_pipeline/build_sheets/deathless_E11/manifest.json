@@ -299,7 +299,7 @@
   {
    "id": "E1",
    "kind": "engine",
-   "what": "engine, bell 1.5 across",
+   "what": "engine, bell 1.3 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -310,7 +310,7 @@
   {
    "id": "E2",
    "kind": "engine",
-   "what": "engine, bell 1.5 across",
+   "what": "engine, bell 1.3 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -321,18 +321,7 @@
   {
    "id": "E3",
    "kind": "engine",
-   "what": "engine, bell 1.5 across",
-   "count": 1,
-   "route": "kit",
-   "source": "designed",
-   "inventory": [
-    "engines"
-   ]
-  },
-  {
-   "id": "E4",
-   "kind": "engine",
-   "what": "engine, bell 1.5 across",
+   "what": "engine, bell 1.3 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -446,7 +435,7 @@
  "break_pieces": [
   {
    "name": "bow piece, upper half",
-   "stations": "0.0 to 31.4 percent",
+   "stations": "0.0 to 31.5 percent",
    "bounded_by": [
     "B-1",
     "B-4"
@@ -455,7 +444,7 @@
   },
   {
    "name": "bow piece, lower half",
-   "stations": "0.0 to 31.4 percent",
+   "stations": "0.0 to 31.5 percent",
    "bounded_by": [
     "B-1",
     "B-4"
@@ -464,7 +453,7 @@
   },
   {
    "name": "midships piece 1, upper half",
-   "stations": "31.4 to 76.7 percent",
+   "stations": "31.5 to 76.8 percent",
    "bounded_by": [
     "B-1",
     "B-2",
@@ -474,7 +463,7 @@
   },
   {
    "name": "midships piece 1, lower half",
-   "stations": "31.4 to 76.7 percent",
+   "stations": "31.5 to 76.8 percent",
    "bounded_by": [
     "B-1",
     "B-2",
@@ -484,7 +473,7 @@
   },
   {
    "name": "stern piece",
-   "stations": "76.7 to 100.0 percent",
+   "stations": "76.8 to 100.0 percent",
    "bounded_by": [
     "B-2"
    ],
