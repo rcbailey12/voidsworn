@@ -2,13 +2,18 @@
 # on it, 1280 wide, no taller than 720). Plain Python with Pillow (Blender's own python has it after the recipe's env.bat).
 # Inputs: the paint_sheet.py renders (paint_beauty at the sheet's concept camera, side, far side, top, below), the concept, and
 # optionally the game's own shots (a4_shots.gd: CODE_cam170.jpg, CODE_cam60.jpg, true game pixels, never scaled).
-# usage: python paint_compare.py PAINT_DIR CONCEPT_JPG SHOTS_DIR|- GAME_CODE OUT_DIR [name=A16]
+# usage: python paint_compare.py PAINT_DIR CONCEPT_JPG SHOTS_DIR|- GAME_CODE OUT_DIR [name=A16] [stack=Hullbreaker] [issue=601]
 import os, sys
 from PIL import Image, ImageDraw, ImageFont
 
 BG = (14, 15, 18); FG = (225, 228, 232); DIM = (165, 170, 178)
 # region windows (fractions of the concept camera's frame), the same on the concept and the render
 WIN = dict(bow=(.02, .22, .46, .95), midships=(.25, .08, .73, .72), stern=(.53, .0, 1.0, .64))
+
+
+# what the engines picture shows, per faction stack (issue 642: the Eclipse engine is a ring of pale light round a dark disc)
+ENGINE_NOTE = {'Hullbreaker': 'the throat glow: hot core in the centre, hot spots and soot, each engine its own; the lip dark',
+               'Eclipse': 'the eclipse ring: pale light round a black shade disc, hot spots and dim gaps, each engine its own; no flame'}
 
 
 def font(size):
@@ -57,8 +62,11 @@ def main():
     kw = dict(x.split('=', 1) for x in a[5:] if '=' in x); N = kw.get('name', 'A16')
     os.makedirs(OUT, exist_ok=True)
     con = Image.open(CON).convert('RGB'); bea = Image.open(os.path.join(P, 'paint_beauty.png')).convert('RGB').resize(con.size)
+    js0 = os.path.join(P, 'paint_shots.json')
+    lift = __import__('json').load(open(js0)).get('lift', 1.25) if os.path.exists(js0) else 1.25
+    stack, issue = kw.get('stack', 'Hullbreaker'), kw.get('issue', '601')
     made = [pair(con, bea, f'{N} paint: concept (left) and the painted build (right), same camera',
-                 'Hullbreaker paint stack (issue 601): game light, battle lift 1.25; colours sampled from the concept, never projected',
+                 f'{stack} paint stack (issue {issue}): game light, battle lift {lift:g}; colours sampled from the concept, never projected',
                  os.path.join(OUT, f'{N}_paint_full.jpg'))]
     W, H = con.size
     js = os.path.join(P, 'paint_shots.json')
@@ -91,9 +99,15 @@ def main():
     zs, bl = os.path.join(P, 'paint_stern_zoom.png'), os.path.join(P, 'paint_bell.png')
     if os.path.exists(zs) and os.path.exists(bl):      # the engines up close: every bell stern-on, and the biggest bell at a close camera
         img = Image.new('RGB', (1280, 60 + 600), BG)
-        head(img, f'{N} engines: every bell stern-on (left), the biggest bell up close (right)', 'the throat glow: hot core in the centre, hot spots and soot, each engine its own; the lip dark')
+        head(img, f'{N} engines: every bell stern-on (left), the biggest bell up close (right)', ENGINE_NOTE.get(stack, ENGINE_NOTE['Hullbreaker']))
         img.paste(fit(Image.open(zs).convert('RGB'), 636, 600), (0, 60)); img.paste(fit(Image.open(bl).convert('RGB'), 636, 600), (644, 60))
         p = os.path.join(OUT, f'{N}_paint_engines.jpg'); img.save(p, quality=92); made.append(p)
+    cr, cc = os.path.join(P, 'paint_close_rim.png'), os.path.join(P, 'paint_close_core.png')
+    if os.path.exists(cr) and os.path.exists(cc):      # issue 642: the glow a faction stack asks to see close (the corona line, the core)
+        img = Image.new('RGB', (1280, 60 + 600), BG)
+        head(img, f'{N} close: the corona line on a shade rim (left), the core through its port (right)', f'game light, battle lift {lift:g}; the green is a thin line on the rim and the core, never pooled in hollows')
+        img.paste(fit(Image.open(cr).convert('RGB'), 636, 600), (0, 60)); img.paste(fit(Image.open(cc).convert('RGB'), 636, 600), (644, 60))
+        p = os.path.join(OUT, f'{N}_paint_close.jpg'); img.save(p, quality=92); made.append(p)
     if SH != '-':
         for cam in ('cam170', 'cam60'):
             g = os.path.join(SH, f'{CODE}_{cam}.jpg')

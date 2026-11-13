@@ -3,7 +3,7 @@
 # sheet's side_by_side.jpg, under the GAME's light (godot/render/look.gd: key 2.0 from KEY_DIR, fill a quarter, cool ambient,
 # AgX) with the faction's battle albedo lift (R227: Hullbreakers 1.25), then lays each beside the concept at the same camera.
 # One picture per item, its code name on it, 1280 wide and no taller than 720 (RULEBOOK 1.2).
-# usage: blender -b CELL.blend -P paint_sheet.py -- OUT_DIR SHEET CONCEPT_JPG [lift=1.25] [samples=32] [scale=0.5] [gpu=1]
+# usage: blender -b CELL.blend -P paint_sheet.py -- OUT_DIR SHEET CONCEPT_JPG [lift=1.25] [samples=32] [scale=0.5] [gpu=1] [sky_spec=0]
 #        (python3 with the bpy module works the same: python3 paint_sheet.py CELL.blend OUT_DIR SHEET CONCEPT_JPG ...)
 import os, sys, math, json
 import bpy
@@ -42,6 +42,13 @@ bk = w.node_tree.nodes.new('ShaderNodeBackground'); bk.inputs['Color'].default_v
 out = w.node_tree.nodes['World Output']
 w.node_tree.links.new(lp.outputs['Is Camera Ray'], mx.inputs[0]); w.node_tree.links.new(bg.outputs[0], mx.inputs[1])
 w.node_tree.links.new(bk.outputs[0], mx.inputs[2]); w.node_tree.links.new(mx.outputs[0], out.inputs[0])
+if kw.get('sky_spec') == '0':
+    # issue 642: the battle reflects its dark sky (godot/scenes/battle/battle.gd: reflected light from the dead-star sky, near
+    # black), so the ambient lights a hull's diffuse colour and not its specular. On a very dark albedo (the Eclipse under its 2.2
+    # lift) the uniform world's grey specular sheen outweighed the colour in the preview; sky_spec=0 lets glossy rays see the dark
+    # background instead, as the game does. Off by default: the pictures of the accepted ships stay as they were made.
+    gl = w.node_tree.nodes.new('ShaderNodeMixShader'); w.node_tree.links.new(lp.outputs['Is Glossy Ray'], gl.inputs[0])
+    w.node_tree.links.new(mx.outputs[0], gl.inputs[1]); w.node_tree.links.new(bk.outputs[0], gl.inputs[2]); w.node_tree.links.new(gl.outputs[0], out.inputs[0])
 for o in [o for o in sc.objects if o.type == 'LIGHT']: bpy.data.objects.remove(o)
 for nm, dg, col, e in (('key', (-.45, -.70, -.55), (1, .96, .90), 2.0), ('fill', (.6, -.2, .75), (.55, .65, .85), .5)):
     d = Vector((dg[0], -dg[2], dg[1])).normalized()
@@ -133,4 +140,22 @@ if hp:
     loc = bp + Vector((-7.0 * r, 2.2 * r * (1 if bp.y >= 0 else -1), 2.0 * r)); o.location = loc
     o.rotation_euler = (bp + Vector((r * .6, 0, 0)) - loc).to_track_quat('-Z', 'Y').to_euler(); c.lens = 50; c.clip_start = .0005
     sc.render.resolution_x, sc.render.resolution_y = 1200, 1000; shots['bell'] = shoot(o, 'paint_bell', SCALE * .6)
+# close views of the glow a faction stack asks for (issue 642: the Eclipse corona line on a shade rim, and the core seen through its
+# port): a material with ps_close names the view; the camera sits just outside the surface, looking in at it
+close = {}
+for o in sc.objects:
+    if o.type != 'MESH' or o.hide_render or o.get('role') == 'interior' or not o.data.materials or o.data.materials[0] is None: continue
+    tag = o.data.materials[0].get('ps_close')
+    if tag: close.setdefault(str(tag), []).append(o)
+for tag, objs in sorted(close.items()):
+    if tag == 'rim':      # the longest corona line, at its point farthest out from the ship's axis
+        span = lambda o: max((o.matrix_world @ v.co - o.matrix_world @ o.data.vertices[0].co).length for v in o.data.vertices)   # noqa: E731
+        o = max(objs, key=lambda o: (o.get('role') == 'hull', span(o))); vs = [o.matrix_world @ v.co for v in o.data.vertices]
+        p = max(vs, key=lambda v: abs(v.y)); out_ = Vector((0.15, 1.0 if p.y >= 0 else -1.0, 0.9)).normalized(); dist = .09
+    else:                 # the core: the middle of its glowing surfaces, seen from above and a little forward
+        vs = [o.matrix_world @ v.co for o in objs for v in o.data.vertices]; p = sum(vs, Vector()) / len(vs)
+        span = max(max(v[i] for v in vs) - min(v[i] for v in vs) for i in range(3)); out_ = Vector((0.45, 0.35, 1.0)).normalized(); dist = max(.05, span * 3.5)
+    c = bpy.data.cameras.new('close_' + tag); o2 = bpy.data.objects.new('close_' + tag, c); sc.collection.objects.link(o2)
+    o2.location = p + out_ * dist; o2.rotation_euler = (p - o2.location).to_track_quat('-Z', 'Y').to_euler(); c.lens = 50; c.clip_start = .0005
+    sc.render.resolution_x, sc.render.resolution_y = 1200, 1000; shots['close_' + tag] = shoot(o2, 'paint_close_' + tag, SCALE * .6)
 json.dump(dict(shots=shots, windows=windows, lift=LIFT, samples=SAMP, camera=SHEET + '_camera.json'), open(os.path.join(OUT, 'paint_shots.json'), 'w'), indent=1)

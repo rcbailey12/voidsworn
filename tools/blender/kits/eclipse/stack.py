@@ -57,13 +57,13 @@ LIFT = battle_lift()
 CONCEPT = dict(
     shade=((13, 11, 19), (30, 25, 42)),         # violet-black shade plate, most of the ship (E12 12,15,25 and 25,24,38; the hue of 43,36,60)
     shade2=((16, 12, 24), (36, 28, 52)),        # deep violet plate (E12 25,24,38 to 43,36,60)
-    violet=((19, 13, 30), (44, 32, 66)),        # Eclipse violet plate (E12 43,36,60 and 61,51,82, darkened)
-    mauve=((22, 15, 25), (48, 36, 52)),         # dusty mauve plate (E11 42,32,40 and 64,51,61, darkened: E11's redder violet)
-    lilac=((26, 21, 30), (56, 47, 62)),         # weathered pale plate (E11 64,51,61 and 93,76,87 held well down: never lavender)
+    violet=((19, 13, 30), (52, 38, 78)),        # Eclipse violet plate (E12 43,36,60 and 61,51,82, darkened)
+    mauve=((22, 15, 25), (58, 43, 62)),         # dusty mauve plate (E11 42,32,40 and 64,51,61, darkened: E11's redder violet)
+    lilac=((26, 21, 30), (64, 54, 72)),         # weathered pale plate (E11 64,51,61 and 93,76,87 held well down: never lavender)
     gunv=((12, 10, 16), (30, 26, 38)),          # violet gunmetal: frames, rails, collars, the barrels of machines
     steel=((16, 14, 20), (38, 34, 46)),         # machinery metal (the gun cores, the core cage hubs)
     iron=((11, 9, 14), (26, 22, 32)),           # the sheet's flush fasteners on the plates
-    bare=((58, 52, 68), (86, 78, 100)),         # worn edges: the machined metal under the dark coat, cool and dulled, a little violet
+    bare=((70, 63, 84), (112, 102, 130)),         # worn edges: the machined metal under the dark coat, cool and dulled, a little violet
     grime=((6, 5, 8), (12, 10, 14)),            # the dark of seams and deep recesses (the concepts' darkest 3,7,10 to 17,12,17)
     seam=((8, 6, 11), (16, 12, 20)),
 )
@@ -72,14 +72,23 @@ CONCEPT = dict(
 LIGHT_GAIN = 1.45
 # the green-white corona: the hue of the concepts' brightest rim pixels (E12 132,228,88; E11 101,152,115), whitened toward a cold
 # white (factions.md: "a thin, cold green-white line"; the concepts' saturated green reads as a toxic or undead glow)
-CORONA_RGB = (172, 246, 196)
-CORE_RGB = (214, 255, 222)       # the trapped light core: the same light, hotter, nearly white at its heart
+CORONA_RGB = (128, 242, 164)
+CORE_RGB = (186, 255, 204)       # the trapped light core: the same light, hotter, nearly white at its heart
+
+
+# AgX and the warm key take colour out of dark tones: the first preview (sandbox, game light, lift 2.2) showed the shade plates
+# as a neutral grey-violet (median hull pixel at the beauty camera saturation 0.22 against the E12 concept's 0.57). So the albedo
+# carries the hue a little stronger than the tone it must show: its distance from its own grey is scaled by SAT.
+SAT = 2.6
 
 
 def lin(srgb):
-    """the tone to show in the game (sRGB 0..255) to the albedo to paint: linear, over the light gain and the battle lift"""
+    """the tone to show in the game (sRGB 0..255) to the albedo to paint: linear, over the light gain and the battle lift, with
+    the hue held (SAT)"""
     c = np.asarray(srgb, np.float64) / 255.0
-    return tuple(float(x) / (LIGHT_GAIN * LIFT) for x in np.where(c <= .04045, c / 12.92, ((c + .055) / 1.055) ** 2.4))
+    c = np.where(c <= .04045, c / 12.92, ((c + .055) / 1.055) ** 2.4)
+    y = float(c @ np.array((.2126, .7152, .0722))); c = np.clip(y + (c - y) * SAT, y * .15, None)
+    return tuple(float(x) / (LIGHT_GAIN * LIFT) for x in c)
 
 
 def lin_raw(srgb):
@@ -96,13 +105,13 @@ SCALE = 1.0          # every size below is in ship lengths (the recipe's frame: 
 LAYERS = dict(
     ao_short=.004, ao_long=.025, edge_radius=.0010, edge_gain=14.0,      # the masks
     patch_scale=4.0, plate_var=.30, side_dark=.22, grain_scale=260.0, mottle_scale=40.0, mottle=.03, grain=.003,   # no salt and pepper
-    rough=.66, metal=.35, wear=1.0, grime=.55, ao_dark=.90, red_tone=0.0,
+    rough=.66, metal=.50, wear=1.0, grime=.55, ao_dark=.90, red_tone=0.0,
     rough_floor=.60,     # the roughness floor (ships.md section 0 item 2, pass 5): no white specular glare at the game's key light
     # the plate patchwork in mixed sizes, rows offset at random, a few larger plates laid over (RULEBOOK 0.5: never a grid); the
     # sheet's modelled plates each take their own tone by UV island on top of it
     patch_big=(.046, .030, .026), patch_small=(.017, .012, .010), patch_over=(.060, .036, .030), patch_over_share=.08,
     patch_region=6.0, patch_parts=((.018, .014, .012), (.010, .008, .007), (.022, .016, .014)), patch_seam=.0010, seam_dark=.88,
-    cavity_pow=2.2, wear_lo=.34, wear_hi=.56,
+    cavity_pow=2.2, wear_lo=.28, wear_hi=.50,
     scuff=.22, scuff_size=.050,                                           # fine machining scratches, never chips
     rivets=1, rivet_pitch=.012, rivet_band=(.0012, .0040),               # flush fasteners in a band in from each plate edge
     trim_size=dict(), trim_aspect=dict(),
@@ -135,7 +144,7 @@ RED_PLATE = pair('shade')         # read only where a zone has a red_share, and 
 # the patchwork families: (share of panels, colour pair[, 'small']). Shares by eye from the concepts' plate clusters: the dark
 # shade most, then deep violet, the redder mauve, a few weathered pale plates, small only (never whole big pale plates)
 PATCH_FAMILIES = [(.30, pair('shade')), (.22, pair('shade2')), (.16, pair('violet')), (.10, pair('mauve')), (.03, pair('lilac'), 'small')]
-PATCH_FAMILIES_PARTS = [(.30, pair('gunv')), (.24, pair('shade')), (.14, pair('violet')), (.02, pair('lilac'), 'small')]
+PATCH_FAMILIES_PARTS = [(.28, pair('gunv')), (.22, pair('shade')), (.16, pair('violet')), (.10, pair('mauve')), (.03, pair('lilac'), 'small')]
 
 # ------------------------------------------------------------------------------------------------------------ the light
 # glowing zones keep their own emissive surface. The corona line and the core are the faction's green-white (factions.md; their
@@ -173,8 +182,8 @@ def glow_material(zone):
 # circle (each engine its own pattern), each engine its own brightness and its own tint (paler, or warmer toward the accent).
 # The disc stays the dark zone: the ring is the light, the middle is black. The game's moving plume sits on top; no flame.
 ENGINE_GLOW = dict(zones=('corona',), kind='engine', disc=('corona',), plug=(),
-                   pale=.55, accent=(0.0, .30), bright=(.70, 1.15), hotspot_scale=7.0, hotspot=(.40, .72), hotspot_gain=.45,
-                   gaps=(.30, .55), gap_dark=.55, inner_gain=.35, norm=.62, strength=1.6, base=(.008, .006, .012))
+                   pale=.25, accent=(0.0, .35), bright=(.45, 1.15), hotspot_scale=7.0, hotspot=(.40, .72), hotspot_gain=.90,
+                   gaps=(.30, .55), gap_dark=.90, inner_gain=.35, norm=.50, strength=1.0, base=(.008, .006, .012))
 
 
 def engine_glow_nodes(nt, r, e, d, a, tc, H):
