@@ -38,7 +38,12 @@ def write_glb(path, g, blob):
 
 def first(g, pre):      # the first such node on the ship node itself (a turret's muzzles are in their turret's frame)
     kids = set(next(n for n in g['nodes'] if n.get('name') == code).get('children', []))
-    return next(n for i, n in enumerate(g['nodes']) if str(n.get('name', '')).startswith(pre) and i in kids)
+    n = next((n for i, n in enumerate(g['nodes']) if str(n.get('name', '')).startswith(pre) and i in kids), None)
+    if n is None:       # issue 633: a ship whose every gun is a turret (the A18 frigate's one autocannon) has its weapon points
+        # only under its turret nodes; the case then breaks the first turret's muzzle, read through its turret as the game does
+        under = {c for i in kids for c in g['nodes'][i].get('children', [])}
+        n = next(n for i, n in enumerate(g['nodes']) if str(n.get('name', '')).startswith(pre) and i in under)
+    return n
 def length(g):          # the x extent of the ship mesh, from the POSITION accessors' min and max (glTF requires them)
     root = next(n for n in g['nodes'] if n.get('name') == code); acc = [g['accessors'][pr['attributes']['POSITION']] for pr in g['meshes'][root['mesh']]['primitives']]
     return max(a['max'][0] for a in acc) - min(a['min'][0] for a in acc)
@@ -54,8 +59,22 @@ def top(g):             # the y top of the ship mesh, from the same accessors
     return max(g['accessors'][pr['attributes']['POSITION']]['max'][1] for pr in g['meshes'][root['mesh']]['primitives'])
 def off_mesh(g):
     n = first(g, 'hp_w'); t = n['translation']; d = .05 * length(g); n['translation'] = [t[0], max(t[1], top(g)) + d, t[2] + (d if t[2] > 0 else -d)]
+def in_turret(g, n):    # issue 633: the point is a turret's muzzle (its frame is the turret's, not the ship node's)
+    root = next(i for i, m in enumerate(g['nodes']) if m.get('name') == code)
+    return g['nodes'].index(n) not in set(g['nodes'][root].get('children', []))
+def mat_quat(R):        # a rotation matrix as a glTF quaternion (x, y, z, w)
+    import numpy as np
+    w = np.sqrt(max(0.0, 1 + R[0, 0] + R[1, 1] + R[2, 2])) / 2; x = np.sqrt(max(0.0, 1 + R[0, 0] - R[1, 1] - R[2, 2])) / 2
+    y = np.sqrt(max(0.0, 1 - R[0, 0] + R[1, 1] - R[2, 2])) / 2; z = np.sqrt(max(0.0, 1 - R[0, 0] - R[1, 1] + R[2, 2])) / 2
+    x = np.copysign(x, R[2, 1] - R[1, 2]); y = np.copysign(y, R[0, 2] - R[2, 0]); z = np.copysign(z, R[1, 0] - R[0, 1])
+    return [float(x), float(y), float(z), float(w)]
 def backward(g):
     n = first(g, 'hp_w'); n['rotation'] = [0, .7071068, 0, .7071068]   # a quarter turn about +Y: the node's -Z now points along -X (aft)
+    if in_turret(g, n):     # a turret's muzzle: turned so it aims aft in the ship's frame, read through its turret
+        import numpy as np
+        W, par = CE.world_matrices(g); i = g['nodes'].index(n); Rp = W[par[i]][:3, :3]; Rp = Rp / np.linalg.norm(Rp, axis=0)[None, :]
+        Raft = np.array(((0.0, 0, 1), (0, 1, 0), (-1, 0, 0)))          # the quarter turn about +Y: -Z to -X
+        n['rotation'] = mat_quat(Rp.T @ Raft)
 def port_point(g):      # the first port weapon point; a ship with no port arc (issue 618: Eclipse fires T and F) mirrors its port boarding origin
     n = next((n for n in g['nodes'] if re.fullmatch(r'hp_w\d+_.+_P_\d+', str(n.get('name', '')))), None)
     return n or next(n for n in g['nodes'] if str(n.get('name', '')).startswith('hp_board_') and (n.get('extras') or {}).get('side') == 'P')
@@ -74,7 +93,12 @@ def no_board(g):
         if str(n.get('name', '')).startswith('hp_board_'): n['name'] = 'x' + n['name']
 def breach_count(g):
     n = [n for n in g['nodes'] if str(n.get('name', '')).startswith('hp_breach_')][-1]; n['name'] = 'x' + n['name']
-def breach_near(g): first(g, 'hp_breach_')['translation'] = list(first(g, 'hp_w')['translation'])
+def breach_near(g):
+    m = first(g, 'hp_w'); b = first(g, 'hp_breach_'); b['translation'] = list(m['translation'])
+    if in_turret(g, m):     # a turret's muzzle: its place in the ship node's frame
+        import numpy as np
+        W, par = CE.world_matrices(g); root = next(i for i, n in enumerate(g['nodes']) if n.get('name') == code)
+        b['translation'] = [float(v) for v in (np.linalg.inv(W[root]) @ W[g['nodes'].index(m)])[:3, 3]]
 def breach_inward(g):
     n = first(g, 'hp_breach_'); n['rotation'] = qmul(n.get('rotation', [0, 0, 0, 1]), [1, 0, 0, 0])   # a half turn about its own X: +Y now points in
 

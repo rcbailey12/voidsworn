@@ -10,6 +10,9 @@ construction. The feature table is written by the same model, and on counts it o
 | corsair_A17, Hullbreaker wrecker (Pack Hunter) | [sheet](corsair_A17/sheet.jpg) | [feature_table.md](corsair_A17/feature_table.md) |
 | chorus_C10, The Ninefold Maw (Chorus flagship) | [sheet](chorus_C10/sheet.jpg) | [feature_table.md](chorus_C10/feature_table.md) |
 | chorus_C11, the bladeback (Chorus cruiser) | [sheet](chorus_C11/sheet.jpg) | [feature_table.md](chorus_C11/feature_table.md) |
+| corsair_A18, Hullbreaker raider (the Sniffer), issue 633 | [sheet](corsair_A18/sheet.jpg) | [feature_table.md](corsair_A18/feature_table.md) |
+| corsair_A19, Hullbreaker gutship (the Mauler), issue 633 | [sheet](corsair_A19/sheet.jpg) | [feature_table.md](corsair_A19/feature_table.md) |
+| corsair_A20, Hullbreaker hulk-carrier (the Den), issue 633 | [sheet](corsair_A20/sheet.jpg) | [feature_table.md](corsair_A20/feature_table.md) |
 
 How it is made (tools/blender/build_sheets/):
 

@@ -1,0 +1,504 @@
+{
+ "code": "corsair_A19",
+ "sheet_version": 1,
+ "routes_note": "kit = the Hullbreakers parts kit (tools/blender/kits/hullbreakers/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
+ "turret_marking": "R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).",
+ "parts": [
+  {
+   "id": "HB1",
+   "kind": "hatchbox",
+   "what": "framed deck box 0.4 x 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "spine_boxes"
+   ]
+  },
+  {
+   "id": "HB2",
+   "kind": "hatchbox",
+   "what": "framed deck box 0.3 x 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "spine_boxes"
+   ]
+  },
+  {
+   "id": "HS1",
+   "kind": "hatch",
+   "what": "square hatch 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "HS2",
+   "kind": "hatch",
+   "what": "square hatch 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "hatches"
+   ]
+  },
+  {
+   "id": "SL1",
+   "kind": "slit",
+   "what": "vision slit 0.2 x 0.06",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "spine"
+   ]
+  },
+  {
+   "id": "VSp",
+   "kind": "vent",
+   "what": "louvre panel 0.4 x 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "VSs",
+   "kind": "vent",
+   "what": "louvre panel 0.4 x 0.3",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "AN1",
+   "kind": "antenna",
+   "what": "antenna array, 0.8 tall, 3 whips",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "antenna"
+   ]
+  },
+  {
+   "id": "R1",
+   "kind": "launcher",
+   "what": "rocket casemate in the bow face, one long tube",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "bow_launchers"
+   ]
+  },
+  {
+   "id": "R2",
+   "kind": "launcher",
+   "what": "rocket casemate in the bow face, 3 short fat tubes",
+   "count": 3,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "bow_launchers"
+   ]
+  },
+  {
+   "id": "I1",
+   "kind": "intake",
+   "what": "wake-sniffer scoop with a grille, 0.2 across, 0.4 deep",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "scoop"
+   ]
+  },
+  {
+   "id": "J1",
+   "kind": "claw",
+   "what": "grabber arm, 2 segments, knuckles, rams, forked pincer",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "grabbers"
+   ]
+  },
+  {
+   "id": "J3",
+   "kind": "claw",
+   "what": "grabber arm, 2 segments, knuckles, rams, forked pincer",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "grabbers"
+   ]
+  },
+  {
+   "id": "J2",
+   "kind": "claw",
+   "what": "grabber arm, 2 segments, knuckles, rams, forked pincer",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "grabbers"
+   ]
+  },
+  {
+   "id": "J4",
+   "kind": "claw",
+   "what": "grabber arm, 2 segments, knuckles, rams, forked pincer",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "grabbers"
+   ]
+  },
+  {
+   "id": "PH1",
+   "kind": "pipe",
+   "what": "pipe run, 0.07 bore",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "belly_pipes"
+   ]
+  },
+  {
+   "id": "D1",
+   "kind": "dish",
+   "what": "listening dish, 0.6 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "dishes"
+   ]
+  },
+  {
+   "id": "D2",
+   "kind": "dish",
+   "what": "listening dish, 0.4 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "dishes"
+   ]
+  },
+  {
+   "id": "S1",
+   "kind": "gun",
+   "what": "twin casemate",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "casemates"
+   ],
+   "turret": false
+  },
+  {
+   "id": "S2",
+   "kind": "gun",
+   "what": "single casemate",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "casemates"
+   ],
+   "turret": false
+  },
+  {
+   "id": "S3",
+   "kind": "gun",
+   "what": "twin casemate",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "casemates"
+   ],
+   "turret": false
+  },
+  {
+   "id": "S4",
+   "kind": "gun",
+   "what": "twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "deck_turrets"
+   ],
+   "turret": true,
+   "pivot_object": "S4_turret",
+   "arc_lo": -150.0,
+   "arc_hi": -30.0
+  },
+  {
+   "id": "S5",
+   "kind": "gun",
+   "what": "twin turret",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "deck_turrets"
+   ],
+   "turret": true,
+   "pivot_object": "S5_turret",
+   "arc_lo": -150.0,
+   "arc_hi": -30.0
+  },
+  {
+   "id": "E1",
+   "kind": "engine",
+   "what": "engine, bell 0.8 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "E2",
+   "kind": "engine",
+   "what": "engine, bell 0.5 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "E3",
+   "kind": "engine",
+   "what": "engine, bell 0.6 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "engines"
+   ]
+  },
+  {
+   "id": "Q1",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q2",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q3",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "Q4",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "thrusters"
+   ]
+  },
+  {
+   "id": "L0",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L1",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L2",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L3",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L4",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L5",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lamps"
+   ]
+  },
+  {
+   "id": "L6",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "lamps"
+   ]
+  }
+ ],
+ "masses": [
+  {
+   "name": "Base hull (blunt bow, chin, long body)",
+   "route": "hand-built"
+  },
+  {
+   "name": "Lower hull band",
+   "route": "hand-built"
+  },
+  {
+   "name": "Foredeck plate (the spade)",
+   "route": "hand-built"
+  },
+  {
+   "name": "M1 fore spine block",
+   "route": "hand-built"
+  },
+  {
+   "name": "M2 battery block",
+   "route": "hand-built"
+  },
+  {
+   "name": "M3 aft spine block",
+   "route": "hand-built"
+  },
+  {
+   "name": "Port side block",
+   "route": "hand-built"
+  },
+  {
+   "name": "Starboard brick 1",
+   "route": "hand-built"
+  },
+  {
+   "name": "Starboard brick 2",
+   "route": "hand-built"
+  },
+  {
+   "name": "Starboard brick 3",
+   "route": "hand-built"
+  },
+  {
+   "name": "Starboard brick 4",
+   "route": "hand-built"
+  },
+  {
+   "name": "Stern block",
+   "route": "hand-built"
+  }
+ ],
+ "break_pieces": [
+  {
+   "name": "bow piece",
+   "stations": "0.0 to 25.4 percent",
+   "bounded_by": [
+    "B-1"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "midships piece 1",
+   "stations": "25.4 to 81.9 percent",
+   "bounded_by": [
+    "B-1",
+    "B-2"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "stern piece",
+   "stations": "81.9 to 100.0 percent",
+   "bounded_by": [
+    "B-2"
+   ],
+   "full_interior": true
+  }
+ ],
+ "insides": "full interiors throughout the hull, hidden until a piece breaks (R215); every break piece carries its share"
+}

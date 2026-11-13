@@ -1,0 +1,21 @@
+{
+ "az": 40.98337683591076,
+ "el": 23.695440339999216,
+ "roll": 1.6603484090652474,
+ "dist": 23.485136456199854,
+ "mm": 51.87281953737886,
+ "target": [
+  -1.0,
+  0,
+  0.0
+ ],
+ "sx": 0.12284636640145619,
+ "sy": 0.10042942035468495,
+ "res": [
+  1920,
+  1280
+ ],
+ "note": "A20 build sheet (issue 633): the view set by hand to the beauty's (az 46 from the bow toward port, el 30, roll -4, 40 mm), the framing from three point matches (the bow face between the intakes, the forward mouth, the middle of the bell row), because the beauty's dark hull on a lit nebula gives no clean outline mask to fit (the outline fits ran side-on or framed the nebula). The beauty draws the slab wider for its length than the build (the proportions table). IoU against a luminance-19 mask of the beauty. Round 2 (issue 633): refitted to the round 2 build from the round 1 camera, the camera only, never the ship.",
+ "iou": 0.7476,
+ "body_iou": 0.7485
+}
