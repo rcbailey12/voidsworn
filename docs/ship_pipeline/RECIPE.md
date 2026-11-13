@@ -144,7 +144,7 @@ dark meanwhile.
 
 Pictures: `tools/blender/build_sheets/paint_sheet.py` renders the painted blend at the sheet's concept camera and the four flat
 views (and bow on and stern on) under the game's light with the battle lift; `paint_compare.py` lays them beside the concept (and the game's camera 170
-and 60 shots, `a4_shots.gd` set `cams`) as pictures for Ryan. The PC run for A16 is `tools/pc/jobs/A16_RUN_601.bat`.
+and 60 shots, `a4_shots.gd` set `cams`) as pictures for Ryan. The PC run for A16 is `tools/pc/jobs/A16_RUN_601.bat`; for both Hullbreaker sheet ships (A16, A17) `tools/pc/jobs/PAINT_RUN_601.bat`.
 
 
 ## What a ship needs (the per-ship data)
