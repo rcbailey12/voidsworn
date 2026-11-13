@@ -648,7 +648,7 @@ def bake_engine_glow(S, objs, out, cell, res, samples):
     for gname, members in sorted(groups.items()):
         rnd = float(rng.random())
         W = [o.matrix_world @ v.co for o in members for v in o.data.vertices]
-        disc = [o for o in members if o.data.materials and o.data.materials[0].name == 'glow']
+        disc = [o for o in members if o.data.materials and o.data.materials[0].name in E.get('disc', ('glow',))]
         core = disc + [o for o in members if o.get('emissive_zone') == 'plug']      # the throat disc and the plug: the core's surfaces
         Dv = [o.matrix_world @ v.co for o in (disc or members) for v in o.data.vertices]
         cy = sum(v.y for v in Dv) / len(Dv); cz = sum(v.z for v in Dv) / len(Dv)
@@ -676,6 +676,27 @@ def bake_engine_glow(S, objs, out, cell, res, samples):
     def noise(vec, scale, detail=3, rough=.6):
         n = node(nt, 'ShaderNodeTexNoise'); n.inputs['Scale'].default_value = scale; n.inputs['Detail'].default_value = detail
         n.inputs['Roughness'].default_value = rough; nt.links.new(vec, n.inputs['Vector']); return n.outputs['Fac']
+    if hasattr(S, 'engine_glow_nodes'):     # issue 642: a faction whose engine is not a hot throat (the Eclipse ring) draws its own
+        col = S.engine_glow_nodes(nt, r, e, d, a, tc, dict(node=node, math_=math_, ramp=ramp, mixc=mixc, mulc=mulc, noise=noise))
+    else:
+        col = _throat_glow(nt, E, r, e, d, a, tc, noise)
+    nt.links.new(col, em.inputs['Color']); em.inputs['Strength'].default_value = 1
+    for i in range(len(J.material_slots)): J.material_slots[i].material = m
+    im = new_image(f'{cell}_engine_emission', res, colour=True); _target([m], im)
+    INFO['bake_engine_glow_s'] = bake(J, 'EMIT', 4); save(im, out, im.name)
+    for o in objs: o.hide_render = hid[o.name]
+    bpy.data.objects.remove(J)
+    g = bpy.data.materials.new('p3_glow'); g.use_nodes = True; gt = g.node_tree; b = gt.nodes['Principled BSDF']
+    uv = gt.nodes.new('ShaderNodeUVMap'); ti = gt.nodes.new('ShaderNodeTexImage'); ti.image = im; gt.links.new(uv.outputs[0], ti.inputs[0])
+    gt.links.new(ti.outputs[0], b.inputs['Emission Color']); b.inputs['Emission Strength'].default_value = E['strength']
+    b.inputs['Base Color'].default_value = (*E.get('base', (.03, .012, .006)), 1); b.inputs['Roughness'].default_value = .85
+    INFO['engine_glow'] = dict(engines=len(groups), map=im.name + '.png', res=res)
+    return g
+
+
+def _throat_glow(nt, E, r, e, d, a, tc, noise):
+    """the Hullbreaker throat (issue 601): a hot core on the axis grading out to deep red, hot spots, soot streaks, the lining
+    dark toward the lip; returns the emission colour socket"""
     # heat: the core (hot at the axis) on the throat disc, the lining by its depth (dark at the lip, R228 item 5)
     # the core: hottest on the axis (the plug's tip, the throat's centre), falling off toward the wall, each engine its own reach
     e2 = math_(nt, 'FRACT', math_(nt, 'MULTIPLY', e, 7.31))
@@ -701,19 +722,7 @@ def bake_engine_glow(S, objs, out, cell, res, samples):
         el.position = pos; el.color = (*col, 1)
     hue = math_(nt, 'ADD', heat, math_(nt, 'MULTIPLY', math_(nt, 'SUBTRACT', e, .5), E['hue_shift']))
     nt.links.new(math_(nt, 'MINIMUM', math_(nt, 'MAXIMUM', hue, 0.0), 1.0), cr.inputs[0])
-    col = mixc(nt, (0, 0, 0), cr.outputs[0], ramp(nt, heat, 0.0, .25))
-    nt.links.new(col, em.inputs['Color']); em.inputs['Strength'].default_value = 1
-    for i in range(len(J.material_slots)): J.material_slots[i].material = m
-    im = new_image(f'{cell}_engine_emission', res, colour=True); _target([m], im)
-    INFO['bake_engine_glow_s'] = bake(J, 'EMIT', 4); save(im, out, im.name)
-    for o in objs: o.hide_render = hid[o.name]
-    bpy.data.objects.remove(J)
-    g = bpy.data.materials.new('p3_glow'); g.use_nodes = True; gt = g.node_tree; b = gt.nodes['Principled BSDF']
-    uv = gt.nodes.new('ShaderNodeUVMap'); ti = gt.nodes.new('ShaderNodeTexImage'); ti.image = im; gt.links.new(uv.outputs[0], ti.inputs[0])
-    gt.links.new(ti.outputs[0], b.inputs['Emission Color']); b.inputs['Emission Strength'].default_value = E['strength']
-    b.inputs['Base Color'].default_value = (.03, .012, .006, 1); b.inputs['Roughness'].default_value = .85
-    INFO['engine_glow'] = dict(engines=len(groups), map=im.name + '.png', res=res)
-    return g
+    return mixc(nt, (0, 0, 0), cr.outputs[0], ramp(nt, heat, 0.0, .25))
 
 
 # ------------------------------------------------------------------------------------------------------------ the whole stack
@@ -785,8 +794,11 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
         for o in objs:
             o.data.materials.clear(); o.data.materials.append(M); o.data.polygons.foreach_set('material_index', np.zeros(len(o.data.polygons), np.int32))
     glow = {}
-    eng = [o for o in G if (o.data.materials[0].name if o.data.materials else '') in ('glow', 'ember') or o.get('emissive_zone') == 'plug'] \
-        if hasattr(S, 'ENGINE_GLOW') else []
+    # the engine glow's surfaces: the zones the stack names (default the throat and lining, glow and ember), only on the part kind
+    # it names when it names one (issue 642: the Eclipse engine ring is the corona zone, which is also every shade rim's line)
+    ez = S.ENGINE_GLOW.get('zones', ('glow', 'ember')) if hasattr(S, 'ENGINE_GLOW') else (); ek = S.ENGINE_GLOW.get('kind') if hasattr(S, 'ENGINE_GLOW') else None
+    eng = [o for o in G if ((o.data.materials[0].name if o.data.materials else '') in ez and (ek is None or o.get('part_kind') == ek))
+           or o.get('emissive_zone') == 'plug'] if hasattr(S, 'ENGINE_GLOW') else []
     if eng:      # the engine throats and linings: one surface, its own emission map (graded, hot spots, soot, each engine its own)
         glow['engine'] = bake_engine_glow(S, eng, out, cell, max(256, res // 4), samples); glow['engine']['rim_soft'] = 1
         for o in eng:
