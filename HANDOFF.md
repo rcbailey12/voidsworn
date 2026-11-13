@@ -1,6 +1,36 @@
-# Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 11, 2026, 20:30 CST)
+# Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 13, 2026, 08:30 CST)
 
-## 0. Status at Nov 11, 2026, about 20:30 CST (Nov 12 02:30 UTC; read this first)
+## 0. Status at Nov 13, 2026, 08:30 CST (14:30 UTC; read this first)
+
+**Read in this order:** this section; contrib/opus/LOOP.md ("The seats", the LATEST lines); docs/RULEBOOK.md (wins over every
+other doc); FINDINGS R225 to R235 for this stretch's rulings. Section 0b below is the Nov 11 state: where it disagrees, this
+section wins.
+
+**Landed Nov 12 to 13.** Hullbreakers A16 and A17 built, painted and accepted (R235: "looks good but maybe a bit dark", judged in
+play; PR 610). Eclipse E11 and E12 (PR 620) and Chorus C10 and C11 (PR 628) through the recipe and in game, unpainted. Muse's
+design packs for Sunward, Hegemony and Glasswrights (PR 626, R232) and the Hullbreaker and Eclipse class family concepts (PRs 625,
+629). Build manifest check (PR 637), scene gate 4.87 to 3.29 ms (PR 638), check guard on every Godot test (PR 639), Chorus eats a
+core (PR 612). New rules: R233 the Board is the final designer and director, Muse concepts; R234 Codex only for what no other
+seat can do; Kimi Code plan for short reviews only (about 30 minutes of agent work per 5 hours); R231 Muse legs include Grok and
+Google Flash.
+
+**Seats today.** Opus workers in the Board thread (2 to 3 at once). The API workhorse arm `opus` on Ryan's Claude API credit
+($100, expires Nov 22): `work_issue.bat <n> opus`. Codex idle except for running-game captures and benches. DeepSeek off
+(cost). Muse runs when Ryan points it at an issue.
+
+**Open, in order.**
+1. PR 635 (issue 633): A18 Sniffer, A19 Mauler, A20 Den sheets passed round 2; the worker is adding the recipe half and a PC job.
+2. Eclipse paint stack for E11 and E12 (next, Ryan agreed), then Chorus paint, then the Eclipse mote and flare (E13, E14; the
+   flare carries one closed ring, R233), then the Sunward, Hegemony and Glasswright flagships from their packs.
+3. Muse: 631 (Chorus class family), then opus_check_620 (brief on issue 256).
+4. Text floor 17 (RULEBOOK 9.4): 165 font sizes fall under it (issue 632 report), a visible UI job.
+
+**Traps found this stretch.** A q_ file that sets a variable must use setlocal (a leaked WORK_MODEL sent three opus runs to
+Kimi; the runner now guards it, PR 636, copy tools/pc/work_issue.bat to work217\tools when no run is going). Give every new
+version of a PC file a new staged file name (the bridge resent an old upload). One cmd per ship in a two-ship PC job (stage 3
+kept the first ship's CAMJ). Never merge on a wait loop that timed out.
+
+## 0b. Status at Nov 11, 2026, about 20:30 CST (Nov 12 02:30 UTC; read this first)
 
 **Read in this order:** this section; contrib/opus/LOOP.md ("The Board's standing duties", "The seats", the LATEST lines of
 "Current state"); contrib/opus/OPEN_WORK.md (one row per open issue and parked pull request); the playbook for your area
