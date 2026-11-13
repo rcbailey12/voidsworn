@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 const API := preload("res://rules/battle_api.gd")
 const SV := preload("res://render/ship_view.gd")
 const CRAFT := preload("res://render/squadron_craft.gd")
@@ -14,6 +15,7 @@ func check(ok: bool, label: String) -> void:
 		push_error(label)
 
 func _init() -> void:
+	GUARD.arm(self, "squadron_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 func _run() -> void:

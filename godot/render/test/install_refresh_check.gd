@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 592: proves the stage 7 install route refreshes the game's ship cache. With its own ship folder and cache in user://
 # (never the project's gen/), it runs the real asset builder (render/build_assets.gd --ships-only) as a separate Godot
 # process, exactly as tools/recipe/7_export.bat does after an install:
@@ -20,6 +21,7 @@ var run := ""
 
 
 func _init() -> void:
+	GUARD.arm(self, "install_refresh_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 
