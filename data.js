@@ -83,7 +83,7 @@ const HULLS = {
   c_hulk:{n:'Hullbreaker hulk-carrier',cls:'Carrier',fac:'corsair',size:.86,cp:4,hp:170,sh:16,rg:6,ar:.2,sp:2,tn:1,ev:0,w:[['turret','T'],['turret','T']],ab:'launch',hangar:2},
   c_boss:{n:"Warlord's Pyre-Barge",cls:'Battle-barge',fac:'corsair',size:1.22,cp:10,hp:600,sh:30,rg:8,ar:.25,sp:2,tn:1,ev:0,w:[['scatter','P'],['scatter','S'],['htorp','F'],['flak','T']],ab:'launch',hangar:2,boss:true},
   // ---- The Chorus (bio-swarm)
-  b_drone:{n:'Chorus drone-spawn',cls:'Frigate',fac:'chorus',size:.48,cp:1,hp:46,sh:0,rg:0,ar:.05,sp:5,tn:3,ev:15,w:[['tendril','T']],ab:'regrow',regen:3},
+  b_drone:{n:'Chorus drone-spawn',cls:'Frigate',fac:'chorus',size:.48,cp:1,hp:46,sh:0,rg:0,ar:.05,sp:5,tn:3,ev:15,w:[['bioplasma','F'],['tendril','T']],ab:'regrow',regen:3},
   b_spitter:{n:'Chorus spitter',cls:'Destroyer',fac:'chorus',size:.6,cp:2,hp:82,sh:0,rg:0,ar:.1,sp:4,tn:2,ev:8,w:[['bioplasma','T'],['bioplasma','F']],ab:'regrow',regen:4},
   b_razor:{n:'Chorus bladeback',cls:'Cruiser',fac:'chorus',size:.76,cp:3,hp:135,sh:0,rg:0,ar:.2,sp:4,tn:2,ev:4,w:[['tendril','T'],['bioplasma','F']],ab:'frenzy',regen:6},
   b_brood:{n:'Chorus brood-sac',cls:'Carrier',fac:'chorus',size:.9,cp:5,hp:180,sh:0,rg:0,ar:.2,sp:2,tn:1,ev:0,w:[['bioplasma','F'],['spores','T']],ab:'launch',hangar:3,regen:6},

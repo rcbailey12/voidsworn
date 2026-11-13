@@ -4434,7 +4434,7 @@
   "kind": "battle",
   "rounds": 9,
   "bot": "full",
-  "seed": 31713,
+  "seed": 31730,
   "admiral": "razormaw",
   "fleet": [
    "b_razor",
@@ -8576,7 +8576,7 @@
   ],
   "cmdRound": 2,
   "rounds": 5,
-  "seed": 38217,
+  "seed": 38234,
   "lineage": {
    "id": "mending",
    "picks": [
