@@ -50,6 +50,11 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    engine glow so it's not so uniform, just disc color") it varies: a hot core in the centre of the throat (the plug cone glows hottest, never black) grading out to deeper red and orange, uneven hot
    spots and soot streaks across the throat, each engine its own brightness, core reach, hue and hot-spot pattern, baked into
    the engine glow's own emission map by the stack (ENGINE_GLOW); the game's moving plume sits on top, so no flame is painted.
+   Issue 651 (A18 to A20, the Board as designer): only a lit engine glows; a cold spare bell (an engine with no throat glow
+   of its own, A20's on the deck) keeps its throat and plug dark. A flank hangar mouth carries the launch bay's warning
+   stripes, a parked craft takes its sheet zones and its nozzle joins the engine glow, and a sheet zone the stack has no colour
+   for gets one in the faction stack, sampled from the beauty that shows it (the lilac trophy plate, from A20's); the list is
+   in RECIPE.md "The paint stack for sheet ships".
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
    opus_check_341).

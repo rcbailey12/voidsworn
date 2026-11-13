@@ -743,7 +743,9 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
                   open(os.path.join(out, 'lights.json'), 'w'), indent=1)
         H, P, G, I = split()
     if hasattr(S, 'ENGINE_GLOW'):    # the engine's plug cone glows with the throat (it sits where the core is): out of the parts atlas
-        plug = [o for o in P if o.get('part_kind') == 'engine' and o.data.materials and o.data.materials[0].name in S.ENGINE_GLOW.get('plug', ())]
+        # issue 651: only a lit engine's plug glows (its group has a throat or lining, glow or ember); a cold spare bell keeps its dark
+        lit = {o.get('grp') for o in G if o.get('part_kind') == 'engine'}
+        plug = [o for o in P if o.get('part_kind') == 'engine' and o.get('grp') in lit and o.data.materials and o.data.materials[0].name in S.ENGINE_GLOW.get('plug', ())]
         for o in plug: o['emissive_zone'] = 'plug'
         P = [o for o in P if o not in plug]; G = G + plug
     unwrap(H, .0003); unwrap(P, .0004)

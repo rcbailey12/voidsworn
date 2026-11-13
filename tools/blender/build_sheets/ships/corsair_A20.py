@@ -30,12 +30,12 @@ SHEET = dict(version=1, round='first sheet (issue 633)', date='2026-11-12', blen
 
 import math, random
 
-HB = 2.75           # the body's half-beam
+HB = 3.2            # the body's half-beam (issue 651: was 2.75; broadened toward the beauty's slab, the length stays the class length)
 DECK, BELLY = 1.0, -1.05
 # the hangar block on the port flank: two mouths in a recess DEPTH deep; the core's port side is the back wall
-DEPTH = 1.9
+DEPTH = 2.3          # issue 651: was 1.9 (the mouths deeper as well as taller, so the dark reads from above)
 LINER = 0.3          # the dark liner slab on the back wall
-MZ0, MZ1 = -0.86, 0.72                                  # mouth floor and ceiling: three quarters of the flank's height (the beauty)
+MZ0, MZ1 = -0.92, 0.8                                   # mouth floor and ceiling: 0.84 of the flank's height (issue 651: were -0.86 and 0.72)
 MOUTHS = [('H1', 1.65, 3.2, 1), ('H2', -2.65, 2.6, -1)]  # (id, centre x, length, doors slid +1 forward / -1 aft)
 X_FORE, X_AFT = 3.25, -3.95                              # the hangar block's ends (mouth 1 front, mouth 2 back)
 # (x, half-beam port, half-beam starboard, bottom, top, top chamfer, bottom chamfer): the body, its port side stepped in
@@ -56,8 +56,8 @@ ENG = [('E1', -2.1, 0.46, 0.38, ''), ('E2', -1.06, 0.42, 0.33, ''), ('E3', 0.02,
 THR = [(6.6, 1.61, -0.6), (6.6, -1.61, -0.6), (-6.55, HB, -0.1), (-6.55, -HB, -0.1)]
 LAMPS = [(5.5, HB, -0.4, 1), (-6.15, HB, -0.6, 1), (7.0, 1.595, 0.3, 1), (4.6, -HB - 0.14, -0.4, -1),
          (1.4, -HB - 0.14, -0.55, -1), (-2.75, -HB - 0.14, -0.35, -1), (-5.2, -HB - 0.14, -0.55, -1), (7.0, -1.595, 0.3, -1)]   # (x, y, z, side)
-DECK_TIERS = [('D1 fore deck tier', 5.35, 2.05, -2.4, 0.7, 0.34), ('D2 mid deck tier', 1.35, -2.75, -2.5, -0.3, 0.4),
-              ('D3 aft deck tier', -3.25, -6.95, -2.0, 2.1, 0.36)]                  # (name, x fore, x aft, y stbd, y port, height)
+DECK_TIERS = [('D1 fore deck tier', 5.35, 2.05, -2.8, 0.9, 0.34), ('D2 mid deck tier', 1.35, -2.75, -2.9, -0.3, 0.4),
+              ('D3 aft deck tier', -3.25, -6.95, -2.4, 2.5, 0.36)]                  # (name, x fore, x aft, y stbd, y port, height)
 
 
 def build(K):
@@ -127,7 +127,7 @@ def build(K):
         K.keepouts.append((Vector((x, y, z)), 0.3))
     for p_ in ((3.6, -0.7, DECK + 0.34), (-4.9, 0.1, DECK + 0.36)):
         K.keepouts.append((Vector(p_), 0.85))
-    for p_ in ((5.4, 2.1, DECK), (5.4, -2.05, DECK)):
+    for p_ in ((5.4, 2.4, DECK), (5.4, -2.35, DECK)):
         K.keepouts.append((Vector(p_), 0.5))
     K.keepouts.append((Vector((1.45, 1.15, DECK)), 0.95))           # the spare bell
     for (x, y, z, n) in LAMPS:
@@ -183,8 +183,8 @@ def build(K):
                    inv='grapples', housing=(-7.35, -6.5, 2.02 * side - 0.3, 2.02 * side + 0.3, -1.58, -0.95),
                    note='%s grapple arm, folded flat under the stern quarter' % ('port' if side > 0 else 'starboard'))
     # ---------------- the dishes on the body's front shoulders, uneven ----------------
-    K.dish('D1', (5.4, 2.1, DECK), 0.6, yaw=30, pitch=18, post=0.95, inv='dishes', note='the larger dish on the port shoulder')
-    K.dish('D2', (5.4, -2.05, DECK), 0.42, yaw=-35, pitch=15, post=1.0, inv='dishes', note='the smaller dish on the starboard shoulder')
+    K.dish('D1', (5.4, 2.4, DECK), 0.6, yaw=30, pitch=18, post=0.95, inv='dishes', note='the larger dish on the port shoulder')
+    K.dish('D2', (5.4, -2.35, DECK), 0.42, yaw=-35, pitch=15, post=1.0, inv='dishes', note='the smaller dish on the starboard shoulder')
     # ---------------- the spare engine bell, bolted down flat on the deck (field repairs) ----------------
     sp = HP.engine_bell(0.5, 0.75, bell_len=0.55, body_r=0.44, rings=3, nose='flat')
     for c in sp.comps:
@@ -222,17 +222,17 @@ def build(K):
         K.bulkhead('F%d' % i, x, inset=0.2, t=0.08)
     for (hid, xc, L, slide) in MOUTHS:
         x0, x1 = xc - L / 2 + 0.1, xc + L / 2 - 0.1
-        K.room('%s_hangar_lower' % hid, 'hangar', x0, x1, -1.9, HB - DEPTH - 0.2, -0.75, -0.2, note='lower hangar deck behind the %s mouth: half-built fighters on scavenged frames' % hid)
-        K.room('%s_hangar_upper' % hid, 'hangar', x0, x1, -1.9, HB - DEPTH - 0.2, -0.04, 0.4, note='upper hangar deck behind the %s mouth: bombers and spares' % hid)
+        K.room('%s_hangar_lower' % hid, 'hangar', x0, x1, -2.3, HB - DEPTH - 0.2, -0.75, -0.2, note='lower hangar deck behind the %s mouth: half-built fighters on scavenged frames' % hid)
+        K.room('%s_hangar_upper' % hid, 'hangar', x0, x1, -2.3, HB - DEPTH - 0.2, -0.04, 0.4, note='upper hangar deck behind the %s mouth: bombers and spares' % hid)
     K.room('loot_hold_fore', 'hold', 5.45, 7.6, -0.8, 0.8, -0.6, 0.0, note='loot hold in the bow block (designs.md)')
-    K.room('loot_hold_body', 'hold', 3.45, 5.2, -2.3, 2.3, -0.75, -0.2, note='loot hold at the front of the body')
-    K.room('kennel_deck', 'crew', 3.45, 5.2, -2.3, 2.3, -0.04, 0.6, note='kennel deck for the boarding crews')
+    K.room('loot_hold_body', 'hold', 3.45, 5.2, -2.7, 2.7, -0.75, -0.2, note='loot hold at the front of the body')
+    K.room('kennel_deck', 'crew', 3.45, 5.2, -2.7, 2.7, -0.04, 0.6, note='kennel deck for the boarding crews')
     K.room('turret_magazine_fore', 'magazine', 2.95, 4.25, -1.8, -0.1, 0.55, 0.82, note='under the fore turret')
-    K.room('core', 'core', -1.5, 0.4, -2.2, 0.6, -0.75, -0.2, note='reactor core (hp_core), between the hangar decks')
-    K.room('crew_decks', 'crew', -1.5, 0.4, -2.2, 0.6, -0.04, 0.6, note='crew decks over the core')
+    K.room('core', 'core', -1.5, 0.4, -2.6, 0.6, -0.75, -0.2, note='reactor core (hp_core), between the hangar decks')
+    K.room('crew_decks', 'crew', -1.5, 0.4, -2.6, 0.6, -0.04, 0.6, note='crew decks over the core')
     K.room('turret_magazine_aft', 'magazine', -5.6, -4.65, -0.6, 0.8, 0.55, 0.82, note='under the aft turret')
-    K.room('machinery', 'machinery', -5.9, -4.65, -2.3, 2.3, -0.75, 0.3, note='machinery aft')
-    K.room('engine_room', 'engroom', -7.05, -6.35, -2.3, 2.3, -0.75, 0.6, note='engine room and the bell feeds')
+    K.room('machinery', 'machinery', -5.9, -4.65, -2.7, 2.7, -0.75, 0.3, note='machinery aft')
+    K.room('engine_room', 'engroom', -7.05, -6.35, -2.7, 2.7, -0.75, 0.6, note='engine room and the bell feeds')
     K.armour('bow block', 0.25, 'the intake face')
     K.armour('starboard wall', 0.22, 'the closed wall and its bricks')
     K.armour('hangar block', 0.12, 'thin round the mouths: the bay side tears open first (designs.md)')
@@ -242,13 +242,16 @@ def build(K):
     # bow's dishes, thrusters and grabbers; B-2 tears the hangar block between the mouths (the plate between them goes); B-3 (aft
     # weld) runs between mouth 2 and the aft turret T2 and the stern machines
     K.break_line('B-1', 4.75, 'the fore weld: the bow block and the front of the body tear away with the dishes and the grabbers, opening the loot holds',
-                 path=[(4.85, 4.2), (4.85, 3.0), (4.6, 1.9), (4.8, 0.9), (4.55, 0.1), (4.75, -0.7), (4.62, -1.6), (4.82, -2.3), (4.65, -3.0), (4.65, -4.2)])
+                 path=[(4.85, 4.9), (4.85, 3.49), (4.6, 2.21), (4.8, 1.05), (4.55, 0.12), (4.75, -0.81), (4.62, -1.86), (4.82, -2.68), (4.65, -3.49), (4.65, -4.9)])
     K.break_line('B-2', -0.55, 'the hangar block parts between the mouths: the plate between them tears first and the craft spill (designs.md)',
-                 path=[(-0.5, 4.2), (-0.5, 3.0), (-0.65, 2.0), (-0.45, 1.0), (-0.7, 0.2), (-0.48, -0.6), (-0.68, -1.5), (-0.5, -2.3), (-0.62, -3.0), (-0.62, -4.2)])
+                 path=[(-0.5, 4.9), (-0.5, 3.49), (-0.65, 2.33), (-0.45, 1.16), (-0.7, 0.23), (-0.48, -0.7), (-0.68, -1.75), (-0.5, -2.68), (-0.62, -3.49), (-0.62, -4.9)])
     K.break_line('B-3', -4.0, 'the aft weld: the stern, the bell row and the aft turret tear away, opening the machinery and the engine room',
-                 path=[(-3.9, 4.2), (-3.9, 3.0), (-4.05, 2.0), (-3.88, 1.1), (-4.08, 0.3), (-3.9, -0.5), (-4.1, -1.4), (-3.92, -2.3), (-4.05, -3.0), (-4.05, -4.2)])
+                 path=[(-3.9, 4.9), (-3.9, 3.49), (-4.05, 2.33), (-3.88, 1.28), (-4.08, 0.35), (-3.9, -0.58), (-4.1, -1.63), (-3.92, -2.68), (-4.05, -3.49), (-4.05, -4.9)])
     # issue 633 recipe (as C10 and C11, issue 623): each seam path runs straight on past the flanks to 4.2 off the axis; a path
-    # that stopped at 3.0, inside the widest parts (3.1), tore the starboard rooms apart from their plating in the death check
+    # that stopped at 3.0, inside the widest parts (3.1), tore the starboard rooms apart from their plating in the death check.
+    # issue 651: the slab broadened (HB 2.75 to 3.2), so every path's y is stretched by the same 3.2 / 2.75 (the kinks keep
+    # their place against the flanks and the machines that moved out with them) and runs on to 4.9; at round 2's y the last
+    # kinks (3.0) fell inside the broadened flanks and the death check found 2 liner triangles outside their piece
     K.inside.append(dict(kind='note', name='insides', note='Full interiors through the hull (R215), hidden until a piece breaks. The bay side tears open first, then the hull parts at the fore and aft welds: bow, hangar sections and stern, never halves (designs.md, R186).'))
     K.point('core', 'hp_core', (-0.55, -0.7, -0.45))
     for i, (x, y, z, sec, side) in enumerate([(5.2, HB, 0.25, 'prow', 'port'), (3.9, -HB, 0.3, 'prow', 'stbd'), (-0.65, HB, -0.06, 'mid', 'port'),

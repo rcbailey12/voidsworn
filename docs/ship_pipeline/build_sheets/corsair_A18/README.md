@@ -6,6 +6,17 @@ Ashfall Hullbreakers frigate (the Sniffer, the pack's finder), class Frigate (6.
 
 **Start here (R229, the whole concept first):** [whole beauty beside the whole build](../../../shots/issue_633_hullbreakers/a18_whole_compare.jpg), [side against the concept sheet's side](../../../shots/issue_633_hullbreakers/a18_side_compare.jpg), [plan against plan](../../../shots/issue_633_hullbreakers/a18_top_compare.jpg), then the [bow](../../../shots/issue_633_hullbreakers/a18_bow_compare.jpg) and [stern](../../../shots/issue_633_hullbreakers/a18_stern_compare.jpg); the five Hullbreakers from above at one scale: [hullbreakers_lineup_top.jpg](../../../shots/issue_633_hullbreakers/hullbreakers_lineup_top.jpg). Then [side_by_side.jpg](side_by_side.jpg), [cells.jpg](cells.jpg) and [fit_view.jpg](fit_view.jpg).
 
+## Paint (issue 651, Nov 13 2026)
+
+A18 is painted by the same Hullbreaker paint stack as A16 and A17 (`"bake": "stack"`, tools/blender/kits/hullbreakers/stack.py),
+nothing ship-specific: the colour zones are this sheet's own materials (its grille nose is built from kinds the stack already
+knew, so it needed no new zone). Sandbox preview (stages 4 to 7 on the CPU, 1024 atlases, 16 samples):
+[full](paint/A18_paint_full.jpg), [six views beside the whole beauty](paint/A18_paint_views.jpg),
+[bow](paint/A18_paint_bow.jpg), [midships](paint/A18_paint_midships.jpg), [stern](paint/A18_paint_stern.jpg),
+[engines](paint/A18_paint_engines.jpg). Surface check 0 ([json](paint/surface_check_after.json)); R224 paint and mesh flags
+none ([density](paint/density_sandbox.json)); 16 running lamps (0.8 px on a 70 px ship); authored interiors and the death seam
+check pass on the export. As A17, the stack's colours are sampled from A16, so A18 paints darker than its picture.
+
 ## What the class is (the Board as designer, R233)
 
 A chunky nose that tapers forward to a small wide-grilled face over a cut-in chin with one pair of grabbers, the body swelling behind it to its widest at midships (round 2: the Board found round 1 a long box with a dish at the front), a raised spine of five stacked blocks carrying the one twin autocannon turret, and two engine drums on short pylons at the stern quarters with a small bell between. Its outline from above is its own: a nose that widens from 0.85 at the face to 1.7 over the first 40 percent, the one oversized listening dish set nearly flush on a low mount on the nose to starboard (the picture's flush disc; designs.md's "little brick with one big ear"), and the PORT drum the larger, so the frigate is lopsided corner to corner. Every face is plated in courses at the frigate's plate size with patches over joints and plates, the top faces stepped (R196, R197). It is not a small A16 (no wide body, no gun rows, no stern pods block) or a small A17 (no boxy head, one ear).

@@ -6,6 +6,16 @@ Ashfall Hullbreakers destroyer (the Mauler, the pack's gun ship), class Destroye
 
 **Start here (R229, the whole concept first):** [whole beauty beside the whole build](../../../shots/issue_633_hullbreakers/a19_whole_compare.jpg), [side against the concept sheet's side](../../../shots/issue_633_hullbreakers/a19_side_compare.jpg), [plan against plan](../../../shots/issue_633_hullbreakers/a19_top_compare.jpg), then the [bow](../../../shots/issue_633_hullbreakers/a19_bow_compare.jpg) and [stern](../../../shots/issue_633_hullbreakers/a19_stern_compare.jpg); the five Hullbreakers from above at one scale: [hullbreakers_lineup_top.jpg](../../../shots/issue_633_hullbreakers/hullbreakers_lineup_top.jpg). Then [side_by_side.jpg](side_by_side.jpg), [cells.jpg](cells.jpg) and [fit_view.jpg](fit_view.jpg).
 
+## Paint (issue 651, Nov 13 2026)
+
+A19 is painted by the same Hullbreaker paint stack as A16 and A17 (`"bake": "stack"`, tools/blender/kits/hullbreakers/stack.py),
+nothing ship-specific: the colour zones are this sheet's own materials. Sandbox preview (stages 4 to 7 on the CPU, 1024
+atlases, 16 samples): [full](paint/A19_paint_full.jpg), [six views beside the whole beauty](paint/A19_paint_views.jpg),
+[bow](paint/A19_paint_bow.jpg), [midships](paint/A19_paint_midships.jpg), [stern](paint/A19_paint_stern.jpg),
+[engines](paint/A19_paint_engines.jpg). Surface check 0 ([json](paint/surface_check_after.json)); R224 paint and mesh flags
+none ([density](paint/density_sandbox.json)); 16 running lamps (0.8 px on a 70 px ship); authored interiors and the death seam
+check pass on the export. As A17, the stack's colours are sampled from A16, so A19 paints darker than its picture.
+
 ## What the class is (the Board as designer, R233)
 
 A long low slab whose defining shape is the arrow-head prow (round 2: the Board found round 1's bow blunt and square from above): a broad flat bow plate runs from a blunt point to the full beam over the first third, overhanging a narrow bow face that holds the two mismatched rocket casemates (Ryan's ruling: IN the bow face), a long braced tube to port and a short fat cluster of three to starboard, under a sloped chin with a pair of grabbers and a second pair under the forefoot. Behind the wedge a spine of three stacked blocks carries two scatter turrets, the whole scatter battery is on the STARBOARD side (three flank casemates between armour bricks), the port flank is widened by a side block with a big pale trophy plate in three torn sheets, and a raised stern block carries three lopsided bells. Every face is plated in courses at the destroyer's plate size with patches over joints and plates, the top faces stepped (R196, R197). It is not a small A16 (the barge's wide body and pods) or a small A17 (the cruiser's boxy head with two ears).
