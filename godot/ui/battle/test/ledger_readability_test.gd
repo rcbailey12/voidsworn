@@ -196,15 +196,13 @@ func acts(h) -> Dictionary:
 	return a
 
 
-# no lime anywhere the player can see: walk the HUD's visible controls (the hidden previous build excluded)
+# no lime anywhere the player can see: walk the HUD's visible controls
 func no_lime(h, label: String) -> void:
 	var lime := [GS.GILT, GS.GILT2, GS.GILT_HOVER, Color(0.78, 0.96, 0.23), GS.SHIELD]
 	var bad := PackedStringArray()
 	var stack: Array = [h.root]
 	while not stack.is_empty():
 		var n: Node = stack.pop_back()
-		if n == h.legacy:
-			continue
 		if n is CanvasItem and not (n as CanvasItem).visible:
 			continue
 		for c in n.get_children():
