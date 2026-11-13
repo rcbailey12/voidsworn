@@ -6,9 +6,9 @@
 INVENTORY = [
     # ---------------- bow: the foredeck plate, the face, the chin (prow to about 33 percent) ----------------
     dict(id='hull_form', job='the gutship\'s hull: a long lean slab that carries the guns to the fight', type='hull',
-         what='the blunt bow face over a sloped chin, the long low body, the taper into the stern block', count=1,
+         what='an arrow-head wedge over the first third (a narrow bow face over a sloped chin, the flanks widening back to full beam), the long low body, the taper into the stern block', count=1,
          cells=['bow/top', 'bow/side', 'mid/side', 'stern/side'], reads='bevels, steps, an overhang (the foredeck plate over the face)', src='picture'),
-    dict(id='spade', job='armour over the bow: the foredeck plate the casemates fire from under', type='tier', what='the broad flat foredeck plate with chamfered corners',
+    dict(id='spade', job='armour over the bow: the foredeck plate the casemates fire from under', type='tier', what='the broad flat bow plate, an arrow-head from above: a blunt point that widens over the first third, overhanging the bow face',
          count=1, cells=['bow/top', 'bow/side'], reads='a face, a roof, an overhang', src='picture'),
     dict(id='spade_plates', job='armour', type='plate', what='plates over the foredeck plate', count=1, cells=['bow/top'], reads='slabs with steps, bevels, rivets', src='picture'),
     dict(id='bow_launchers', job='data.js torp F: the rattle-rocket salvo, fired straight ahead from the bow face', type='bow_launcher',

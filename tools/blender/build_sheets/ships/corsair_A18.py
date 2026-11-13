@@ -2,14 +2,15 @@
 # Accepted picture: contrib/muse/design/class_family_corsair_2026_11/corsair_A18_beauty.jpg (v3, accepted by Ryan Nov 12 2026,
 # PR 625) and corsair_A18_sheet.jpg; designs.md (the merged five-leg design) is the design of record for the fittings.
 # data.js c_raider: autocannon T, ability overburn, speed 6, evasion 28 (the fastest, most evasive Hullbreaker).
-# Measured off the whole concept first (R229): the sheet's true views give a long low wedge, hull length to beam about 4.4
-# and length to height about 6.6 (5 over the raised spine); designs.md's "about 3:1" is the chair's text, the picture is longer; the bow a sloped wedge running down to a small face
-# over a cut-in chin, a raised spine of stacked blocks from a third of the length to the engine block, a lower aft engine
-# block, two engine drums on short pylons at the stern quarters and smaller bells between them, grabbers under the chin.
-# The Board is the final designer (R233): the build keeps that mass and gives the frigate its own outline from above: a lean
-# wedge whose PORT bow shoulder swells out round one oversized listening dish (designs.md, "a little brick with one big
-# ear"), and lopsided engine pods (the starboard drum clearly larger). It is never a small A16 (the barge's wide body and
-# gun rows) or a small A17 (the cruiser's boxy head with two ears).
+# Measured off the whole concept first (R229): the sheet's true views give a chunky nose that tapers forward to a wide grilled
+# face (1.0 across and about 0.7 tall at the face), the body swelling behind it to about 1.7 at 40 percent of the length, a
+# raised spine of stacked blocks from a third of the length to the engine block, a lower aft engine block, two engine drums
+# on short pylons at the stern quarters and smaller bells between them, grabbers under the chin, a big flush disc on the nose.
+# The Board is the final designer (R233): the build keeps that mass, and its outline from above is its own: a tapering nose
+# that swells into the body (round 2: the Board found round 1 a long box with a dish at the front), one oversized listening
+# dish nearly flush on the nose to starboard (designs.md, "a little brick with one big ear"), and lopsided engine drums (the
+# port drum clearly larger). It is never a small A16 (the barge's wide body and gun rows) or a small A17 (the cruiser's
+# boxy head with two ears).
 # +X bow, +Y port, +Z up. Grabber tips about x = +3.3, engine exits about x = -3.2. Flat belly z = -0.57, spine top 0.69.
 CODE = 'corsair_A18'
 NAME = 'Hullbreaker raider (the Sniffer)'
@@ -41,7 +42,7 @@ HULL = [
     (-2.25, 0.74, 0.74, -0.53, 0.45, 0.16, 0.15),
     (-2.78, 0.65, 0.65, -0.46, 0.4, 0.14, 0.14),
 ]
-PL = dict(keep3d=True, courses=True, size=(0.16, 0.36), thick=(0.02, 0.05), step=0.025, gap=0.018, over=0.2, skip=0.04, stack=0.2, rivets_share=0.3, mats={'soot': 4, 'iron': 4, 'pale': 2, 'rust': 3, 'soot2': 2, 'violet': 1})
+PL = dict(keep3d=True, courses=True, size=(0.16, 0.36), thick=(0.02, 0.05), step=0.025, gap=0.018, over=0.2, skip=0.04, stack=0.2, rivets_share=0.3, mats={'soot': 3, 'iron': 4, 'pale': 2, 'rust': 3, 'soot2': 2, 'violet': 1, 'steel': 2})
 # the spine, bow to stern: stacked blocks (name, x fore, x aft, half-beam, top, front slope, y offset), with gaps between them
 SPINE = [
     ('S1 fore spine block', 1.45, 0.78, 0.45, 0.6, 0.22, 0.0),
@@ -53,6 +54,17 @@ SPINE = [
 THR = [(0.62, -0.36, 1), (0.62, -0.36, -1), (-1.3, -0.37, 1), (-1.3, -0.37, -1)]     # attitude thrusters (x, z, side)
 LAMPS = [(2.2, 1), (-0.35, 1), (-1.65, 1), (-0.35, -1), (-1.65, -1)]                 # running lights low on the flanks (x, side)
 ENG = ((1, 1.1, 0.3, -3.2, 'port drum, the larger'), (-1, -1.01, 0.245, -3.17, 'starboard drum'))
+
+
+def small_antenna(K, fid, pos, h, whips, k, inv, note):
+    """the kit's antenna array at k of its size: on the frigate the kit array's base block (sized for the barge) would carry
+    half the hull's detail per square unit (R224; issue 618: detail scales with the part's size)"""
+    from mathutils import Vector, Matrix
+    import kit as _k
+    p = Vector(pos)
+    K.emit(fid, _k.HP.antenna(h / k, whips), _k.HP.frame(p, (1, 0, 0), (0, 0, 1)) @ Matrix.Scale(k, 4), inv)
+    K.features.append(dict(id=fid, kind='antenna', what='antenna array, %.1f tall, %d whips (the kit array at %d percent)' % (h, whips, round(k * 100)), count=1,
+                           pos=tuple(p), aim=None, src='picture', note=note, inv=[inv]))
 
 
 def build(K):
@@ -84,8 +96,12 @@ def build(K):
         K.patch('FC%s' % ('p' if side > 0 else 's'), (2.95, 0.57 * side, -0.05), (0.42, 0.91 * side, 0), 0.36, 0.42, ang=0.05 * side, lift=0.02, t=0.03,
                 m='iron' if side > 0 else 'rust', inv='face_plates')
     K.mark('face_plates', 'plate', ['slab', 'step', 'bevel', 'rivet'])
-    K.vent('I1', (3.11, 0.0, -0.045), (1, 0, 0), 0.66, 0.3, slats=7, inv='scoop',
-           note='the wide intake grille that fills the bow face: the wake-sniffer scoop tastes the wake of ships ahead (designs.md: the chin scoop, moved up into the face as the picture draws it)')
+    # the wide intake grille that fills the face: three louvre panels side by side in one frame (a kit vent sized to the
+    # frigate, so its detail per square unit stays at the hull's, issue 618's rule)
+    for i, y in enumerate((0.222, 0.0, -0.222)):
+        K.vent('I%d' % (i + 1), (3.11, y, -0.045), (1, 0, 0), 0.212, 0.3, slats=6, inv='scoop',
+               note='%s panel of the wide intake grille that fills the bow face: the wake-sniffer scoop tastes the wake of ships ahead '
+                    '(designs.md: the chin scoop, moved up into the face as the picture draws it)' % ('port', 'middle', 'starboard')[i])
     # ---------------- the dish mount: a low raised block on the nose, starboard, that carries the one big ear nearly flush ----------------
     K.mass('Dish mount (raised block on the nose, starboard)', K.loft('A18_sponson', [(2.45, 0.28, 0.28, 0.15, 0.55, 0.06, 0.0, -0.36),
                                                                                      (2.27, 0.32, 0.32, 0.15, 0.6, 0.07, 0.0, -0.37),
@@ -110,8 +126,8 @@ def build(K):
     K.hatch('HS1', (-1.45, 0.45, 0.535), (0, 1, 0), 0.2, 0.1, up=(0, 0, -1), inv='spine_hatch', note='crew hatch on the aft spine block, port')
     K.hatchbox('HB1', (-0.62, 0.2, 0.69), 0.24, 0.28, 0.09, inv='spine_boxes', note='framed box on the sensor block')
     K.hatchbox('HB2', (-2.05, 0.0, 0.61), 0.28, 0.32, 0.1, inv='spine_boxes', note='ready-use locker on the aft spine block')
-    K.antenna('AN1', (-1.33, -0.2, 0.61), 0.66, whips=2, inv='antenna', note='comms array on the aft spine block: calls the pack in on what the dish heard')
-    K.vent('VT1', (-2.76, 0.0, 0.503), (0, 0, 1), 0.48, 0.24, slats=4, inv='vents', note='engine-room louvre on the engine block roof')
+    small_antenna(K, 'AN1', (-1.33, -0.2, 0.61), 0.66, 3, 0.65, 'antenna', 'comms array on the aft spine block: calls the pack in on what the dish heard')
+    K.vent('VT1', (-2.76, 0.0, 0.503), (0, 0, 1), 0.3, 0.2, slats=4, inv='vents', note='engine-room louvre on the engine block roof')
 
     # ---------------- the flanks: bolted armour bricks, unmatched; the port trophy plate ----------------
     rb = random.Random(1818)
@@ -207,15 +223,21 @@ def build(K):
     # ---------- changed from the picture (designer's decisions, R207, R233) ----------
     K.change('One gun: a twin autocannon turret on the spine\'s gun block', 'data.js c_raider carries one weapon, autocannon T (R221: weapons from data.js); the picture\'s rows of flank guns, '
              'designs.md\'s two bow casemates and its rocket rack have no slot, so they are not built')
-    K.change('The one big ear: an oversized listening dish (1.1 across, three quarters of the beam) on a bolted sponson that swells the PORT bow shoulder',
-             'designs.md ("a little brick with one big ear", "the port shoulder swollen out past the hull line by the dish mount"); the v3 picture draws a flush disc '
-             'on the starboard foredeck. On the port side it gives the frigate its own outline from above (R233)')
-    K.change('Lopsided engines: two drums on short pylons at the stern quarters, the starboard drum clearly larger, and one small centre bell',
-             'designs.md (two bells, the starboard larger) with the picture\'s outrigger drums; the picture\'s three stacked centre bells become one, so the stern does not read as A16\'s pods')
-    K.change('The wake-sniffer scoop sits in the bow face, behind a grille', 'designs.md puts it under the chin; the picture\'s face is a grilled mouth, and the chin carries the grabbers')
+    K.change('The nose is chunky and tapers forward to the face: 1.0 across and 0.7 tall at the face, widening over the first 40 percent to 1.7 at midships, where the body is widest, then easing aft',
+             'the Board on round 1 (Nov 13, R233): the build was a long box (1.46 wide almost bow to stern, a 0.4 tall face) with a dish at the front; the concept sheet draws the nose 1.0 across at the face and 1.6 to 1.7 by 40 percent of the length')
+    K.change('The one big ear: an oversized listening dish (0.9 across, more than half the beam) set nearly flush on a low raised dish mount on the nose, to starboard',
+             'the picture\'s flush disc on the starboard foredeck; designs.md\'s "a little brick with one big ear". Round 2 drops round 1\'s sponson that bulged the shoulder: the outline from above is the nose\'s own taper and swell (the Board)')
+    K.change('Lopsided engines: two drums on short pylons at the stern quarters, the port drum clearly larger, and one small centre bell',
+             'designs.md (two bells of uneven size) with the picture\'s outrigger drums, the larger on the side the picture draws it; the picture\'s three stacked centre bells become one, so the stern does not read as A16\'s pods')
+    K.change('The bow face is a wide intake grille: three louvre panels in one steel frame, 0.66 across, at the end of the nose; the wake-sniffer scoop is that grille',
+             'the picture\'s wide grilled face (the Board on round 1: "a chunky tapering nose that ends in a wide intake grille"); designs.md puts the scoop under the chin, and the chin carries the grabbers')
     K.change('One pair of small grabber arms under the chin, splayed a little', 'designs.md: one pair (A17 carries two pairs); the picture shows a pair of hooked claws there')
     K.change('The spine is five stacked blocks with gaps, the gun block and the sensor block the tallest', 'the picture\'s raised spine; stacked and bolted scrap brick (R196, R197), not one smooth deckhouse')
-    K.change('Armour bricks bolted on the flanks, three to port and two to starboard; the starboard flank keeps a pale Hegemony trophy plate', 'the picture\'s patchwork flank; designs.md\'s trophy plate')
+    K.change('Armour bricks bolted on the flanks, two to port and three to starboard; the port flank keeps a pale Hegemony trophy plate', 'the picture\'s patchwork flank; designs.md\'s trophy plate')
+    K.change('The antenna array is the kit\'s at 65 percent of its size', 'R224: at full size its base block, sized for the barge, carried half the frigate\'s hull detail per square unit (issue 618: detail scales with the part\'s size)')
+    K.change('Every face is plated in courses at the hull\'s plate size (0.16 to 0.36), each course jointed on its own (a brick bond), patches laid over joints and offset patches over plates; upward faces stepped in terraces of one to three plate thicknesses',
+             'the Board on round 1 (Nov 13): the faces read as big smooth grey planes with a few greebles; the concept is scrap brick, plates over plates on every face (R196, R197). Kit: the sheet kit\'s courses plating (kit.py, opt-in, issue 633)')
+
     K.change('Four small attitude thrusters', 'a ship in space needs them to turn (the overburn raider turns hard)')
     K.change('Insides: one deck with the listening room, a kennel nook, a closet loot hold, the core and the engine room', 'designs.md; R209, R215')
     K.open_item('Belly detail between the grabber housings and the engine block is designed here; the picture does not show the underside')

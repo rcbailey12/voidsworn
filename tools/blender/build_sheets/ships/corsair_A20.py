@@ -5,12 +5,12 @@
 # the layout of record; its front view's mouths either side of the intakes are a drift), and they must read as launch bays
 # with depth (the Board's brief).
 # Measured off the whole concept first (R229): a wide flat slab (the sheet's top view length to beam about 3.4, the beauty, the
-# accepted picture, about 2.4: the build takes 2.7, the beauty's deepened hull),
-# a narrower bow block carrying two big intake tubes in its face, a flat salvage deck with a spare engine bell and junk bolted
-# down, a row of mismatched bells along the top of the stern, two big dark mouths low on the port flank with a fighter
-# nosing out of one.
+# accepted picture, about 2.4: the build takes 2.7, the beauty's deepened hull), a bow block as tall as the slab carrying two
+# huge intake tubes side by side in its face, a flat salvage deck with a spare engine bell and junk bolted down, a row of
+# mismatched bells along the top of the stern, two big dark mouths on the port flank with a fighter nosing out of one.
 # The Board is the final designer (R233): the build keeps that mass and gives the carrier its own outline from above: the
-# widest Hullbreaker for its length, a long rectangle with a narrow bow block, flat-sided, lopsided by its open port flank.
+# widest Hullbreaker for its length, a heavy rectangle with the bow block standing out ahead of it, flat-sided, lopsided by
+# its open port flank (round 2: the Board found round 1's tubes missing and its mouths barely showing).
 # It is never a small A16 (the barge's long body, gun rows and stern pods) or a stretched A17 (the cruiser's boxy head).
 # +X bow, +Y port, +Z up. Grabber tips about x = +8.25, engine exits about x = -8.2. Flat belly z = -1.05, deck 1.0.
 CODE = 'corsair_A20'
@@ -50,7 +50,7 @@ HULL = [
     (-7.2, HB, HB, BELLY, DECK, 0.3, 0.28),
     (-7.45, HB - 0.2, HB - 0.2, BELLY + 0.1, DECK - 0.08, 0.26, 0.24),
 ]
-PL = dict(keep3d=True, courses=True, size=(0.4, 0.9), thick=(0.035, 0.08), step=0.045, gap=0.03, over=0.22, skip=0.05, stack=0.22, rivets_share=0.3, mats={'soot': 5, 'iron': 3, 'pale': 3, 'rust': 2, 'soot2': 2, 'violet': 2})
+PL = dict(keep3d=True, courses=True, size=(0.4, 0.9), thick=(0.035, 0.08), step=0.045, gap=0.03, over=0.22, skip=0.05, stack=0.22, rivets_share=0.3, mats={'soot': 4, 'iron': 3, 'pale': 3, 'rust': 2, 'soot2': 2, 'violet': 2, 'steel': 2})
 ENG = [('E1', -2.1, 0.46, 0.38, ''), ('E2', -1.06, 0.42, 0.33, ''), ('E3', 0.02, 0.44, 0.47, 'the largest'),
        ('E4', 1.1, 0.4, 0.35, 'in a violet Eclipse trophy housing'), ('E5', 2.12, 0.48, 0.4, '')]   # (id, y, z, r, note)
 THR = [(6.6, 1.61, -0.6), (6.6, -1.61, -0.6), (-6.55, HB, -0.1), (-6.55, -HB, -0.1)]
@@ -255,11 +255,16 @@ def build(K):
         K.point('bay', 'hp_bay_%d' % i, (xc, HB - 0.3, (MZ0 + MZ1) / 2), side='port', note='launch out of the %s mouth' % hid, dir=(0, 1, 0))
 
     # ---------- changed from the picture (designer's decisions, R207, R233) ----------
-    K.change('Both hangar mouths on the PORT flank, low, the forward one 3.4 long and the aft one 2.8, 1.37 high and 1.9 deep',
+    K.change('Both hangar mouths on the PORT flank, big: the forward one 3.6 long and the aft one 3.0, 1.58 high (three quarters of the flank), 1.9 deep to the back wall and 1.6 to the blast door',
              'Ryan\'s ruling for the round (the sheet\'s side view is the layout of record; the front view\'s mouths either side of the intakes are a drift); '
              'sized between the sheet\'s side view and the beauty so a 1.6 fighter fits and they read as launch bays with depth')
     K.change('Each mouth is a real recess with a torn plate rim, armoured doors slid clear on rails, launch rails on the floor, ceiling beams, a dim red lamp, '
              'frame ribs and an inner blast door on the back wall', 'the Board\'s brief: they must read as launch bays with depth; designs.md\'s armoured doors slid open and red lamps')
+    K.change('The mouths are lined dark (floor, ceiling, back wall and ends): only the rails, ribs, red lamps and the fighters catch the light',
+             'the Board on round 1 (Nov 13): the mouths must be big, deep, dark openings that show from the beauty camera with the fighter in them; round 1\'s were 1.37 high and lit grey inside, so they read as shallow grilles')
+    K.change('The bow block is as tall as the slab and about half its beam (3.2 across, 1.9 tall, 2.7 long); its face carries two huge intake tubes side by side, each 1.1 across (three quarters of the face\'s height), reaching 2.3 back into the block',
+             'the Board on round 1 (Nov 13): the build had no twin tubes (two 0.8 tubes in a narrow block); the README\'s bow intakes and the beauty\'s two huge tubes. The concept sheet\'s plan draws the block about 0.4 of the beam; it is widened so the tubes fit side by side')
+    K.change('Bow thrusters and the bow lamps on the bow block\'s flanks, the chin scoop under the web between the tubes', 'the wider block and its tubes fill the old places')
     K.change('The bow block\'s front corners are closed plate, carrying the two shoulder dishes', 'the beauty\'s front openings beside the intake block are the drift Ryan ruled out; designs.md puts the dishes on the shoulders')
     K.change('The slab is 5.5 wide over its hull, about 6 over the starboard bricks (hull length to beam 2.7 on the top view) and 2.05 deep', 'the accepted beauty (v2s, "hull deepened") draws it about 2.4 long for its width, the sheet\'s top view 3.4; the build sits between, nearer the beauty (R229: the whole concept; as A17\'s head followed its beauty)')
     K.change('Two dorsal turrets, one on the fore deck tier and one on the aft', 'data.js c_hulk: turret T twice (R221); designs.md\'s bow casemates, starboard flank guns and rocket rack have no slot, so they are not built')
@@ -269,6 +274,9 @@ def build(K):
     K.change('The salvage deck is three low tiers of stacked plate with lockers bolted down, not loose junk', 'Ryan R185: nothing hangs off the ship; stacked and bolted scrap brick (R196, R197)')
     K.change('One pair of grabbers under the bow block and two heavy grapple arms folded flat under the stern quarters', 'designs.md (four bow arms become two, so the jaw is not A17\'s; the grapples drag prizes alongside)')
     K.change('Four attitude thrusters', 'a ship in space needs them to turn')
+    K.change('Every face is plated in courses at the hull\'s plate size (0.4 to 0.9), each course jointed on its own (a brick bond), patches laid over joints and offset patches over plates; upward faces stepped in terraces of one to three plate thicknesses',
+             'the Board on round 1 (Nov 13): the faces read as big smooth grey planes with a few greebles; the concept is scrap brick, plates over plates on every face (R196, R197). Kit: the sheet kit\'s courses plating (kit.py, opt-in, issue 633)')
+
     K.change('Insides: two hangar deck levels behind each mouth, loot holds in the bow, a kennel deck, the core between the hangar decks, machinery and the engine room aft',
              'designs.md; R209, R215')
     K.open_item('Belly detail between the bow grabbers and the stern grapples is designed here; the picture does not show the underside')

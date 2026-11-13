@@ -3,13 +3,16 @@
 # PR 625) and corsair_A19_sheet.jpg; designs.md is the design of record for the fittings. data.js c_reaver: torp F, scatter S,
 # ability reload. Ryan's ruling for the round: "the two mismatched casemates sit IN the bow face", whatever the beauty's
 # foredeck housings suggest; and on v4 and v5, no big gun on the prow ("added a giant front gun again?").
-# Measured off the whole concept first (R229): a long flat slab (hull length to beam about 5, length to height about 8.5), a
-# broad flat foredeck plate with chamfered corners over a sloped chin, a raised spine of blocks along the middle, a lower side
-# block widening one flank amidships, a raised stern block with the engines, grabber arms under the bow and under the forefoot.
-# The Board is the final designer (R233): the build keeps that mass and gives the destroyer its own outline from above: a long
-# lean slab, lopsided, its whole scatter battery on the STARBOARD side (data.js scatter S) and the port flank widened by the
-# side block with a big pale trophy plate, the foredeck plate a spade at the bow. It is never a small A16 (the barge's wide body
-# and pods) or a small A17 (the cruiser's boxy head with two ears).
+# Measured off the whole concept first (R229): a long flat slab (hull length to beam about 5, length to height about 8.5), its
+# defining shape the arrow-head wedge prow: a broad flat bow plate that tapers to a blunt point over the first third (the
+# concept sheet: 0.4 across at the tip, 1.3 just behind it, 2.1 by a third of the length) over a sloped chin, a raised spine
+# of blocks along the middle, a lower side block widening one flank amidships, a raised stern block with the engines, grabber
+# arms under the bow and under the forefoot.
+# The Board is the final designer (R233): the build keeps that mass and the wedge (round 2: the Board found round 1's bow
+# blunt and square from above), the two casemates in the narrow bow face under the plate's point, and makes the destroyer
+# lopsided: its whole scatter battery on the STARBOARD side (data.js scatter S) and the port flank widened by the side block
+# with a big pale trophy plate. It is never a small A16 (the barge's wide body and pods) or a small A17 (the cruiser's boxy
+# head with two ears).
 # +X bow, +Y port, +Z up. Long tube muzzle about x = +4.83, engine exits about x = -4.66. Flat belly z = -0.5, stern block top 0.66.
 CODE = 'corsair_A19'
 NAME = 'Hullbreaker gutship (the Mauler)'
@@ -38,7 +41,7 @@ HULL = [
     (-3.1, 0.86, 0.86, -0.5, 0.34, 0.14, 0.15),
     (-3.6, 0.79, 0.79, -0.46, 0.32, 0.13, 0.14),
 ]
-PL = dict(keep3d=True, courses=True, size=(0.2, 0.46), thick=(0.025, 0.06), step=0.03, gap=0.02, over=0.2, skip=0.04, stack=0.2, rivets_share=0.3, mats={'soot': 4, 'iron': 4, 'pale': 2, 'rust': 3, 'soot2': 2, 'violet': 1})
+PL = dict(keep3d=True, courses=True, size=(0.2, 0.46), thick=(0.025, 0.06), step=0.03, gap=0.02, over=0.2, skip=0.04, stack=0.2, rivets_share=0.3, mats={'soot': 3, 'iron': 4, 'pale': 2, 'rust': 3, 'soot2': 2, 'violet': 1, 'steel': 2})
 # the spine, bow to stern: stacked blocks (name, x fore, x aft, half-beam, top, front slope, y offset), gaps between them
 SPINE = [
     ('M1 fore spine block', 1.7, 0.55, 0.54, 0.58, 0.2, 0.02),
@@ -200,7 +203,7 @@ def build(K):
     for i, x in enumerate((3.55, 2.05, 0.2, -1.35, -2.65)):
         K.bulkhead('F%d' % i, x, inset=0.14, t=0.06)
     K.room('rocket_magazine', 'magazine', 3.15, 3.85, -0.5, 0.5, -0.2, 0.18, note='the casemates\' rockets, behind the bow face')
-    K.room('kennel_deck', 'crew', 2.45, 3.45, -0.62, 0.62, -0.42, -0.28, note='boarding gangs under the bow, behind the chin grabbers')
+    K.room('kennel_deck', 'crew', 2.45, 3.4, -0.55, 0.55, -0.42, -0.28, note='boarding gangs under the bow, behind the chin grabbers')
     K.room('gun_gallery', 'crew', -2.6, 1.55, -0.7, -0.44, -0.2, 0.12, note='the scatter crews\' gallery along the starboard casemates')
     K.room('shell_magazine', 'magazine', -1.2, 0.0, -0.3, 0.3, 0.2, 0.46, note='scatter shells in the battery block')
     K.room('crew_decks', 'crew', -2.6, -1.45, -0.3, 0.46, 0.2, 0.44, note='bunks and galley in the aft spine block')
@@ -233,7 +236,11 @@ def build(K):
     K.change('The two mismatched casemates sit IN the bow face: port, one long rocket tube on a brace; starboard, three short fat tubes banded together',
              'Ryan, Nov 12 (the round\'s ruling): "the two mismatched casemates sit IN the bow face", whatever the beauty\'s foredeck housings suggest. data.js c_reaver\'s '
              'only forward weapon is torp F, so both are rocket casemates (the Hullbreaker rattle rockets); the long tube stays short of a prow gun (RULEBOOK 4.4, Ryan on v5 "added a giant front gun again?")')
-    K.change('A blunt bow face, 0.52 tall, under the overhanging foredeck plate, instead of the picture\'s thin wedge edge', 'the casemates need a face to sit in; the family keeps a blunt bow (designs.md)')
+    K.change('The bow is an arrow-head from above: the broad flat bow plate runs from a blunt point 0.4 across to the full beam over the first third, overhanging a narrow bow face (1.1 across, 0.52 tall) that holds the two casemates; the hull\'s flanks widen back behind it',
+             'the Board on round 1 (Nov 13, R233): the build had a blunt square bow; the picture\'s defining shape is the wedge prow (the concept sheet: 0.4 across at the tip, 1.3 just behind it, 2.1 by a third of the length). The face stays blunt and narrow, not a thin edge: the casemates need a face to sit in (designs.md)')
+    K.change('Every face is plated in courses at the hull\'s plate size (0.2 to 0.46), each course jointed on its own (a brick bond), patches laid over joints and offset patches over plates; upward faces stepped in terraces of one to three plate thicknesses',
+             'the Board on round 1 (Nov 13): the faces read as big smooth grey planes with a few greebles; the concept is scrap brick, plates over plates on every face (R196, R197). Kit: the sheet kit\'s courses plating (kit.py, opt-in, issue 633)')
+
     K.change('The whole scatter battery on the starboard side: three flank casemates of mixed calibre and two spine turrets resting to starboard',
              'data.js c_reaver: scatter S (one starboard battery); the picture\'s pods on both flanks and its foredeck guns have no other slot (R221)')
     K.change('No rocket racks on the middle deck', 'designs.md\'s two racks would be a second forward launcher; data.js gives one torp slot and the bow casemates fire it')

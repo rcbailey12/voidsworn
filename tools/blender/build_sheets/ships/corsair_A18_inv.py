@@ -5,19 +5,19 @@
 # Fields as in corsair_A16_inv.py; each line names its job (R221).
 INVENTORY = [
     # ---------------- bow: the wedge, face, chin and the dish shoulder (prow to about 33 percent) ----------------
-    dict(id='hull_form', job='the raider\'s hull: a lean wedge that cuts a small target head-on', type='hull',
-         what='the sloped wedge bow running down to a small face over a cut-in chin, the long low body, the aft taper', count=1,
+    dict(id='hull_form', job='the raider\'s hull: a chunky nose that cuts a small target head-on, room behind it for the crew and the core', type='hull',
+         what='a chunky nose tapering forward to a wide grilled face over a cut-in chin, the body swelling behind it to its widest at midships, the aft taper', count=1,
          cells=['bow/top', 'bow/side', 'mid/side', 'stern/side'], reads='bevels, steps, an overhang (the face over the chin)', src='picture'),
     dict(id='face_plates', job='armour over the face and brow, where head-on fire lands', type='plate', what='brow and cheek plates round the face, a lip and straps',
          count=1, cells=['bow/side', 'bow/top'], reads='slabs with steps, bevels and rivets', src='picture'),
-    dict(id='scoop', job='the wake-sniffer scoop: tastes the wake of ships ahead so the pack can follow them', type='tube',
-         what='a scoop drum with a grille in the bow face', count=1, cells=['bow/side'], reads='ribbed drum, bands, rolled lip, a grille in a dark mouth', src='picture',
-         note='the picture\'s grilled mouth; designs.md puts it under the chin'),
-    dict(id='sponson', job='carries the dish out past the hull so it hears round the bow', type='tier', what='the dish sponson swelling the port bow shoulder, a vision slit in its front',
-         count=1, cells=['bow/top', 'bow/side'], reads='a face, a roof, an opening', src='designed', note='designs.md: the port shoulder swollen out by the dish mount'),
-    dict(id='sponson_plates', job='armour', type='plate', what='plates over the sponson', count=1, cells=['bow/top', 'bow/side'], reads='slabs with steps, bevels, rivets', src='designed'),
+    dict(id='scoop', job='the wake-sniffer scoop: tastes the wake of ships ahead so the pack can follow them', type='vent',
+         what='a wide intake grille of three louvre panels filling the bow face, in a steel frame', count=3, cells=['bow/side', 'bow/top'], reads='frames, slats, a dark recess', src='picture',
+         note='the picture\'s wide grilled face; designs.md puts the scoop under the chin'),
+    dict(id='sponson', job='lifts the dish clear of the nose\'s plating so it hears round the bow', type='tier', what='the raised dish mount on the nose to starboard, a vision slit in its front',
+         count=1, cells=['bow/top', 'bow/side'], reads='a face, a roof, an opening', src='designed', note='the picture\'s flush disc needs a seat; designs.md\'s swollen shoulder is the nose\'s own swell now'),
+    dict(id='sponson_plates', job='armour', type='plate', what='plates over the dish mount', count=1, cells=['bow/top', 'bow/side'], reads='slabs with steps, bevels, rivets', src='designed'),
     dict(id='ear', job='the one big ear: hears prey before anything else in the pack (the Sniffer\'s job)', type='dish',
-         what='an oversized listening dish on the port shoulder, three quarters of the beam across', count=1, cells=['bow/top', 'bow/side'],
+         what='an oversized listening dish set nearly flush on the dish mount, starboard on the nose, more than half the beam across', count=1, cells=['bow/top', 'bow/side'],
          reads='ribbed bowl with a rim, a feed horn on struts, a yoke, a post, a base', src='picture', note='the picture\'s big round disc on the foredeck'),
     dict(id='grabbers', job='boarding grabbers: pin a fleeing hull long enough for the pack to catch up', type='claw_arm',
          what='one pair of small grabber arms under the chin', count=2, cells=['bow/below', 'bow/side'],
@@ -44,7 +44,7 @@ INVENTORY = [
     dict(id='flank_bricks', job='armour bricks over the flank where the crew space is', type='tier', what='bolted armour bricks on both flanks, unmatched', count=1,
          cells=['mid/side', 'bow/side', 'stern/side'], reads='a face, a roof, an undercut', src='picture'),
     dict(id='trophy', job='armour, and the pack\'s boast: plate torn from a Hegemony hull and an Eclipse one', type='patch',
-         what='a pale Hegemony trophy plate bolted flat on the starboard flank; a violet Eclipse patch on the foredeck', count=2, cells=['mid/side', 'mid/top', 'bow/top'],
+         what='a pale Hegemony trophy plate bolted flat on the port flank; a violet Eclipse patch on the nose', count=2, cells=['mid/side', 'mid/top', 'bow/top'],
          reads='crooked slabs, a lifted corner, rivets', src='picture'),
     dict(id='lamps', job='running lights: pack mates see where it is (sparse and dim, it runs dark)', type='lamp', what='dim red lamps at bow (port), midships and stern',
          count=5, cells=['bow/side', 'mid/side', 'stern/side'], reads='hooded housings, red lenses', src='picture'),
@@ -52,7 +52,7 @@ INVENTORY = [
          cells=['bow/below', 'mid/below', 'stern/below'], reads='slabs with steps and rivets', src='designed', note='the picture shows no underside'),
     # ---------------- stern (66 to 100 percent) ----------------
     dict(id='engines', job='main thrust: the overburn engines that make it the fastest Hullbreaker', type='engine',
-         what='two engine drums at the stern quarters (starboard larger) and a small centre bell', count=3, cells=['stern/side', 'stern/top', 'stern/below'],
+         what='two engine drums at the stern quarters (port larger) and a small centre bell', count=3, cells=['stern/side', 'stern/top', 'stern/below'],
          reads='banded housings, bells with lips, throats, inner cones, cooling rings, struts, collars', src='picture'),
     dict(id='pylons', job='hold the engine drums out from the hull', type='pylon', what='short pylons from the stern quarters to the drums', count=1, cells=['stern/top', 'stern/side'],
          reads='a web with plates', src='picture'),
@@ -64,7 +64,7 @@ INVENTORY = [
 # Structure: distinct block masses per blob-sweep cell, counted by eye on the concept sheet's top and side views (thirds of the
 # length). The concept has no underside view.
 STRUCTURE = {'bow/top': 4, 'bow/side': 4, 'mid/top': 5, 'mid/side': 5, 'stern/top': 5, 'stern/side': 5}
-STRUCTURE_NOTE = ('A18 sheet: bow, the wedge, the face and chin, the flush disc, the spine\'s front block; midships, two spine blocks, the flank '
+STRUCTURE_NOTE = ('A18 sheet: bow, the tapering nose, the grilled face and chin, the flush disc, the spine\'s front block; midships, two spine blocks, the flank '
                   'tier and two flank bricks; stern, the aft spine, the engine block, two engine drums and the centre bells')
 LEFT_PLAIN = [
     'Grime, rust streaks, scratches, worn edges and decals: surface texture, painted in the build (recipe stage 5), not modelled.',
