@@ -93,6 +93,7 @@ ACT.saveQuit=()=>{ saveRun(); titleScreen(); };
 ACT.enterNode=id=>{
   if(!availableNodes().includes(id)) return;
   if(showBeat3()) return;
+  if(showEatenCore()) return; // R78 Q15: the offer comes before the first sector 3 node
   const n=findNode(id); RUN.pos=id; RUN.curNode=id;
   tel('node',{type:n.type,col:n.col});
   if(n.type==='battle'||n.type==='elite'||n.type==='boss'){
@@ -532,6 +533,14 @@ function showBeat3(){
   modal(`<h2>${esc(ev.t)}</h2><p style="white-space:pre-line">${esc(ev.b)}</p>${ev.o.map((o,i)=>`<button class="choice" data-act="eventChoice" data-arg="${i}"><b>${esc(o.l)}</b></button>`).join('')}`); return true;
 }
 ACT.beat3=()=>{ if(!showBeat3()) closeModal(); };
+// R78 Q15: a Chorus run reaching sector 3 is offered, once, to eat one core it has not synced with (rules in core.js)
+function showEatenCore(){ const ps=eatenCoreOffer(); if(!ps.length) return false;
+  modal(`<h2>The swarm hungers.</h2><p class="muted" style="max-width:64ch">A core the swarm has not synced with can be devoured instead. Its flesh becomes growth; its voice is lost to this ${esc(runWord())}.</p>
+    ${ps.map(p=>{ const P=PATRONS[p]; return `<button class="choice" data-act="eatCore" data-arg="${p}"><span class="sigil" style="background:${P.col}">${P.glyph}</span> <b>Eat ${esc(P.short)}</b> <span class="dim">(${esc(P.n)})</span><small>Eat ${esc(P.short)}: every ship +10% hull for this run; lose its protocols for this run.</small></button>`; }).join('')}
+    <div class="row" style="margin-top:10px"><button data-act="eatRefuse">Refuse</button></div>`);
+  return true; }
+ACT.eatCore=p=>{ if(!eatenCoreEat(p)) return; saveRun(); closeModal(); mapScreen(); toast(`The swarm ate ${PATRONS[p].short}. Every Chorus ship grows +10% hull for this run.`); };
+ACT.eatRefuse=()=>{ if(!RUN||RUN.eatenOfferSeen) return; RUN.eatenCore=null; RUN.eatenOfferSeen=true; saveRun(); closeModal(); mapScreen(); toast('The swarm abides.'); };
 function beat3Debrief(){ const a=RUN&&STORY_BEAT3[RUN.fac]; return a&&RUN.flags&&RUN.flags[a.id]!=null?a.debrief:''; }
 function applyBeat3Outcome(r){
   const out=applyOutcome({...r,cred:r.credits,healAll:r.repair,nemIntel:r.weak,nemClock:r.clock}).filter(l=>l!=='You move on.');
@@ -569,7 +578,7 @@ function rewardFlow(summary){
   if(rf.salvage){ credits+=15; RUN.fleet.forEach(sh=>{ const d=derive(sh); sh.hp=Math.min(d.maxHp,sh.hp+Math.round(d.maxHp*.08)); }); }
   RUN.credits+=credits;
   // the node's payout: a patron's boon (pick 1 of 3), a refit (pick 1 of 3), or credits or repairs
-  const node=cfg.node&&findNode(cfg.node); ensurePatrons(); const rw=(node&&node.rw)||(cfg.kind==='battle'?{k:'boon',p:pick(RUN.patrons)}:{k:'boon',p:pick(RUN.patrons),min:1});
+  const node=cfg.node&&findNode(cfg.node); ensurePatrons(); const rw=(node&&node.rw)||(cfg.kind==='battle'?{k:'boon',p:pick(livingPatrons())}:{k:'boon',p:pick(livingPatrons()),min:1});
   const fl0=RUN.flagUid; ensureFlagship(); const flagMoved=fl0&&RUN.flagUid!==fl0&&flagshipOf();
   let extra=''; if(rw.k==='cred'){ const v=35+10*s; RUN.credits+=v; extra=`<p class="gilt">Spoils: +${v} credits.</p>`; }
   if(rw.k==='repair'){ RUN.fleet.forEach(sh=>{ const d=derive(sh); sh.hp=Math.min(d.maxHp,sh.hp+Math.round(d.maxHp*.25*repairMult())); }); extra='<p class="verd">Field repairs: every ship repairs 25% of its hull.</p>'; }

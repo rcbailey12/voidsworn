@@ -1434,6 +1434,8 @@ func _end(d: Dictionary) -> Control:
 	var stl = _story_text()
 	if stl != "":
 		var sll = lbl(stl, 18, GILT); sll.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(sll)
+	if R.get("eatenCore") is String and C.PATRONS.has(R["eatenCore"]):   # R78 Q15: the one debrief line
+		var el = lbl("The swarm ate " + str(C.PATRONS[R["eatenCore"]]["short"]) + ".", 18, GILT); el.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(el)
 	var carry = panel(GILT, Color(0.37, 0.7, 0.65, 0.08), 12); var cv = vbox(4); carry.add_child(cv)
 	var receipt = cy["inheritance"]; var flown = receipt["flown"]
 	cv.add_child(lbl("YOUR INHERITANCE", 24, GILT, font_semi))
@@ -1760,6 +1762,13 @@ func _modal(md: Dictionary) -> void:
 		"retreat":
 			h2.call("Retreat?"); p.call("The fleet jumps out. Every surviving ship loses 10% of its hull, and this node counts as passed.")
 			v.add_child(foot([abtn("Stay and fight", "c3retreatNo", "", false, false, acts), fin("Jump out", "c3retreatYes", "", acts)]))
+		"eatenCore":   # R78 Q15: the swarm hungers (once a run, sector 3, Chorus)
+			h2.call("The swarm hungers.")
+			p.call("A core the swarm has not synced with can be devoured instead. Its flesh becomes growth; its voice is lost to this " + C.runWord() + ".", BONE2)
+			for q in d["cores"]:
+				var P = C.PATRONS[q]
+				add(v, choice("Eat " + str(P["short"]) + " (" + str(P["n"]) + ")", "Eat " + str(P["short"]) + ": every ship +10% hull for this run; lose its protocols for this run.", "eatCore", q, acts, Color(P["col"]), str(P["glyph"]), Color(P["col"])))
+			v.add_child(foot([abtn("Refuse", "eatRefuse", "", false, false, acts)]))
 		_:
 			for a in acts: add(v, abtn(a[0] + " " + a[1], a[0], a[1], false, false, acts))
 	_well_text(v)

@@ -327,6 +327,7 @@ function endRun(victory, abandoned){
   RUN.over=true; SAVED_RUN=null; Persist.save();
   const nf=victory?nextFacPick():null, NF=nf&&FACTIONS[nf];
   const lines=`<p class="gilt">${esc(STORY_BEAT3[RUN.fac].learning)}</p>${inheritanceHtml(RUN)}${runRecap(victory)}
+    ${RUN.eatenCore&&PATRONS[RUN.eatenCore]?`<p class="gilt">The swarm ate ${esc(PATRONS[RUN.eatenCore].short)}.</p>`:''}
     ${RUN.fallen.length?`<p class="muted">Captains lost this run: ${RUN.fallen.map(f=>esc(f.name)).join(', ')}.</p>`:''}
     ${victory?`<p class="gilt num" style="font-size:18px">${META.stats.wins>1?`Victories so far: ${META.stats.wins}`:'Your first victory.'} Won with: ${(META.stats.wonFacs||[]).map(f=>esc(FACTIONS[f].n)).join(', ')}.</p>`:`<p class="gilt num" style="font-size:20px">${RUN.sector>prevBest?`New best: sector ${roman(RUN.sector)}`:`Best so far: sector ${roman(Math.min(3,META.stats.best))}`}</p>`}
     ${NF?`<div class="nextfac"><div class="dim" style="font-size:12px;letter-spacing:.08em;text-transform:uppercase">Next run</div><b>Try the ${esc(NF.n.replace(/^The /,''))}</b><p class="muted" style="margin:4px 0 0">${esc(NF.blurb||'')}</p></div>`:''}`;

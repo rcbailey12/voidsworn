@@ -406,7 +406,7 @@ func derive(ship: Dictionary) -> Dictionary:
 	var fx = sumFx(lst)
 	var mk = ship["mk"] if jt(ship.get("mk")) else 1
 	var mm = 1.0 + 0.2 * (float(mk) - 1.0); var tr = classTrack(t.get("cls"))
-	var maxHp = JSM.jsround(float(t["hp"]) * mm * (1.0 + float(z0(fx.get("hpPct"))) + 0.06 * tr))
+	var maxHp = JSM.jsround(float(t["hp"]) * mm * (1.0 + float(z0(fx.get("hpPct"))) + 0.06 * tr) * (1.0 + float(TB.EATEN_CORE["hull"]) if (RUN != null and RUN.get("eatenCore") is String and TB.PATRONS.has(RUN["eatenCore"]) and factionOfTpl(ship["tpl"]) == "chorus") else 1.0))   # R78 Q15: the eaten core's growth
 	var ws = []
 	for e in t["w"]: ws.append(mkWeapon(e[0], e[1], fx))
 	return {

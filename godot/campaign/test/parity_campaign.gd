@@ -14,7 +14,7 @@ const WT := {"enterNode": 10, "c3retreat": 2, "c3retreatYes": 1, "c3retreatNo": 
 	"takeBoon": 1, "takeMod": 1, "takeRelic": 1, "takePerk": 1, "eventChoice": 1, "pickAspect": 1, "closeModal": 1, "fleetFromModal": 1, "buyHull": 3, "buyMod": 3, "repair": 2, "repairAll": 3,
 	"upgradeMk": 3, "sellShip": 1, "sellConfirm": 1, "yardFleet": 1, "leaveYard": 2, "equip": 4, "unequip": 1, "promote": 4, "backMap": 3, "backShipyard": 3, "fleetScreen": 1, "saveQuit": 1,
 	"continueRun": 20, "newRunScreen": 2, "pickFaction": 1, "pickAdmiral": 2, "optAlt": 1, "optCmd": 1, "optHeat": 1, "startRun": 3, "progTab": 1, "buyVariant": 3, "nextFac": 0, "abandonRun": 0,
-	"discardBrokenRun": 0, "factionVerb": 2, "boonReroll": 1, "boonDecline": 1, "buyTrack": 2, "buyLegacy": 3, "buyAdmiral": 2}   # R1: the purchase paths (PROG-2)
+	"discardBrokenRun": 0, "factionVerb": 2, "boonReroll": 1, "boonDecline": 1, "buyTrack": 2, "buyLegacy": 3, "buyAdmiral": 2, "eatCore": 2, "eatRefuse": 1}   # R1: the purchase paths (PROG-2); R78 Q15: the eaten-core offer
 const BATTLE_WT := {"win": 40, "partial": 4, "loss": 1}
 var bot := {"s": 0, "streak": 0, "legacy": false, "help": false, "reloads": 0}
 

@@ -64,7 +64,7 @@ var tel_log: Array = []     # a slim run log (events only), kept with the save; 
 # ======================= setup =======================
 # Every table the campaign reads. load_tables refuses to start when one is missing, and export_campaign.js fails when the oracle
 # lacks one (it also scans the campaign scripts for every TB table they read, so a new table cannot slip past this list).
-const REQUIRED_TABLES = ["ABILITIES", "ADMIRALS", "ARCHETYPES", "ARC_NAME", "ARC_VARIANT", "ASPECTS", "BEVENTS", "BOONS", "BOON_D", "BOON_FX", "BOON_NEED", "BOSS_DMG", "BOSS_ENC", "BOSS_FAC", "BOSS_SCALE", "CAPTAINS", "CAUSE_WORD", "CLASS_TRACK_MAX", "CMD_TEXT", "DEEP_MAPS", "ENCOUNTERS", "ENC_POOL", "ENC_SPECIAL", "EVENTS", "EVENT_FALLBACK", "FACTIONS", "FAC_GATES", "FAC_MAP", "FAC_REGION", "FAC_VERBS", "FAC_WNAMES", "FAC_WTRAIT", "FAVOUR_TIERS", "FNAMES", "FX_CAPS", "HEAT", "HULLS", "HULL_VARIANTS", "KILL_CAUSES", "KIND_WORD", "LEGACY", "MAP_NAME", "MASTERY_PERKS", "MASTERY_XP", "LINEAGE_XP", "LINEAGE_TREES", "CAPSTONE_MASTERY_XP", "CAPSTONE_MASTERY_PERKS", "MODULES", "MOD_NAMES", "MOD_NEED", "MORE_SHIP_NAMES", "NEM_ADAPT", "NEM_ADAPT_FAC", "NEM_BEAT_WORD", "NEM_CLOCK", "NEM_FAC", "NEM_LINES", "NEM_PERSONA", "NEM_TRAITS", "NEM_VOICE", "NEM_WEAK", "NODE_INFO", "NODE_MODS", "PATRONS", "PERKS", "RAMP", "RANKS", "RANK_XP", "RARITY", "REGIONS", "REGION_BIOME", "RELICS", "RELIC_NAMES", "REWARD_DEF", "ROCK_KINDS", "RUN_FACTIONS", "RUN_WORD", "SECTOR_CONDS", "SECTOR_POOL", "SHAPES", "SHIP_NAMES", "TREE_FX", "W", "WING_PERKS", "WING_XP", "WIN_TITLE", "WTRAITS"]
+const REQUIRED_TABLES = ["ABILITIES", "ADMIRALS", "ARCHETYPES", "ARC_NAME", "ARC_VARIANT", "ASPECTS", "BEVENTS", "BOONS", "BOON_D", "BOON_FX", "BOON_NEED", "BOSS_DMG", "BOSS_ENC", "BOSS_FAC", "BOSS_SCALE", "CAPTAINS", "CAUSE_WORD", "CLASS_TRACK_MAX", "CMD_TEXT", "DEEP_MAPS", "EATEN_CORE", "ENCOUNTERS", "ENC_POOL", "ENC_SPECIAL", "EVENTS", "EVENT_FALLBACK", "FACTIONS", "FAC_GATES", "FAC_MAP", "FAC_REGION", "FAC_VERBS", "FAC_WNAMES", "FAC_WTRAIT", "FAVOUR_TIERS", "FNAMES", "FX_CAPS", "HEAT", "HULLS", "HULL_VARIANTS", "KILL_CAUSES", "KIND_WORD", "LEGACY", "MAP_NAME", "MASTERY_PERKS", "MASTERY_XP", "LINEAGE_XP", "LINEAGE_TREES", "CAPSTONE_MASTERY_XP", "CAPSTONE_MASTERY_PERKS", "MODULES", "MOD_NAMES", "MOD_NEED", "MORE_SHIP_NAMES", "NEM_ADAPT", "NEM_ADAPT_FAC", "NEM_BEAT_WORD", "NEM_CLOCK", "NEM_FAC", "NEM_LINES", "NEM_PERSONA", "NEM_TRAITS", "NEM_VOICE", "NEM_WEAK", "NODE_INFO", "NODE_MODS", "PATRONS", "PERKS", "RAMP", "RANKS", "RANK_XP", "RARITY", "REGIONS", "REGION_BIOME", "RELICS", "RELIC_NAMES", "REWARD_DEF", "ROCK_KINDS", "RUN_FACTIONS", "RUN_WORD", "SECTOR_CONDS", "SECTOR_POOL", "SHAPES", "SHIP_NAMES", "TREE_FX", "W", "WING_PERKS", "WING_XP", "WIN_TITLE", "WTRAITS"]
 func load_tables(path: String = TABLES_PATH) -> String:
 	var txt = FileAccess.get_file_as_string(path)
 	var j = JSON.parse_string(txt)
@@ -243,7 +243,7 @@ func runDefaults() -> Dictionary:
 	return {"fac": "voidsworn", "foes": null, "admiral": "vex", "credits": 0, "cpCap": 10, "sector": 1, "relics": [], "inventory": [], "fleet": [], "pos": null,
 		"stats": {"battles": 0, "elites": 0, "bosses": 0, "kills": 0, "lost": 0}, "t0": 0, "fallen": [], "ambush": false, "over": false, "boons": [], "patrons": [],
 		"aspect": null, "flagUid": null, "heat": [], "mastery": 0, "ransoms": 0, "altFleet": false, "cmdOverride": null, "giftBoon": null, "reserve": [], "seenEvents": [],
-		"regionsUsed": [], "condsUsed": [], "curNode": null, "reinf": 0, "flags": {}, "nem": null, "verbUsed": 0, "verbNext": null, "classTrack": {}, "boonRerolls": 0}
+		"regionsUsed": [], "condsUsed": [], "curNode": null, "reinf": 0, "flags": {}, "nem": null, "verbUsed": 0, "verbNext": null, "classTrack": {}, "boonRerolls": 0, "eatenCore": null, "eatenOfferSeen": false}
 func normalizeRun(r) -> Variant:
 	if not (r is Dictionary): return r
 	var d = runDefaults()
@@ -303,6 +303,7 @@ func repairRunIds(r) -> Variant:
 	r["patrons"] = _keep(r["patrons"], PATRONS, "patron", rep)
 	if r.get("aspect") != null and not ASPECTS.has(r["aspect"]): rep.append("aspect " + str(r["aspect"])); r["aspect"] = null
 	if r.get("giftBoon") != null and not BOONS.has(r["giftBoon"]): r["giftBoon"] = null
+	if r.get("eatenCore") != null and not PATRONS.has(r["eatenCore"]): rep.append("eaten core " + str(r["eatenCore"]).substr(0, 40)); r["eatenCore"] = null
 	var before = r["fleet"].size()
 	r["fleet"] = _keep(r["fleet"], HULLS, "ship hull", rep, func(s): return s.get("tpl"))
 	for s in r["fleet"]:
@@ -559,13 +560,13 @@ func boonOfferPool(p) -> Array:
 	var kit = fleetKit(); var pool = []
 	for id in BOONS.keys():
 		var b = BOONS[id]; var bp = b.get("p")
-		if jt(bp) and not jt(b.get("leg")) and (bp == p or RUN["patrons"].has(bp)) and not hasBoon(id) and boonUseful(id, kit): pool.append(id)
+		if jt(bp) and not jt(b.get("leg")) and (bp == p or RUN["patrons"].has(bp)) and not hasBoon(id) and boonUseful(id, kit) and not (eatenCoreOn() and bp == RUN["eatenCore"]): pool.append(id)
 	return pool
 func boonOfferDuos(p) -> Array:
 	var have = boonPatrons(); var kit = fleetKit(); var duos = []
 	for id in BOONS.keys():
 		var b = BOONS[id]
-		if not jt(b.get("duo")) or hasBoon(id) or not boonUseful(id, kit) or not b["duo"].has(p): continue
+		if not jt(b.get("duo")) or hasBoon(id) or not boonUseful(id, kit) or not b["duo"].has(p) or (eatenCoreOn() and b["duo"].has(RUN["eatenCore"])): continue
 		var all_ok = true; var some = false
 		for q in b["duo"]:
 			if not (have.has(q) or q == p): all_ok = false
@@ -601,6 +602,7 @@ func boonOfferCan(p, minR) -> Array:
 	return out
 func legendaryFor(p, minR) -> Variant:
 	if not (float(z0(minR)) >= 1): return null
+	if eatenCoreOn() and p == RUN["eatenCore"]: return null
 	var L = null
 	for id in BOONS.keys():
 		if jt(BOONS[id].get("leg")) and BOONS[id].get("p") == p:
@@ -612,7 +614,7 @@ func legendaryFor(p, minR) -> Variant:
 	return L if n >= 2 else null
 func rollNodeReward(type) -> Dictionary:
 	ensurePatrons()
-	var p = pick(RUN["patrons"])
+	var p = pick(livingPatrons())
 	if type == "elite" or type == "boss": return {"k": "boon", "p": p, "min": 1}
 	var x = rnd()
 	if x < 0.62: return {"k": "boon", "p": p}
@@ -672,7 +674,7 @@ func derive(ship: Dictionary) -> Dictionary:
 	var fx = sumFx(lst)
 	var mk = float(ship["mk"]) if jt(ship.get("mk")) else 1.0
 	var mm = 1.0 + 0.2 * (mk - 1.0); var tr = classTrack(t.get("cls"))   # B4 step 3: the class refit track adds 6% hull and 6% damage per level
-	var maxHp = jsround(float(t["hp"]) * mm * (1.0 + float(z0(fx.get("hpPct"))) + 0.06 * tr))
+	var maxHp = jsround(float(t["hp"]) * mm * (1.0 + float(z0(fx.get("hpPct"))) + 0.06 * tr) * (1.0 + float(TB.EATEN_CORE["hull"]) if eatenCoreOn() and factionOfTpl(ship["tpl"]) == "chorus" else 1.0))   # R78 Q15: the eaten core's growth, here so new ships get it too
 	var ws = []
 	for e in t["w"]: ws.append(mkWeapon(e[0], e[1], fx))
 	return {
@@ -1046,6 +1048,34 @@ func favourTier(p) -> int:
 	for i in range(FAVOUR_TIERS.size()):
 		if f >= float(FAVOUR_TIERS[i]["at"]): t = i
 	return t
+# R78 Q15 (pick A): the Chorus eats one unsynced core in sector 3, once a run (the numbers are EATEN_CORE in data.js)
+func eatenCoreOn() -> bool:
+	return RUN != null and RUN.get("eatenCore") is String and PATRONS.has(RUN["eatenCore"])
+func eatenCoreTier() -> int:   # the Synced tier's index
+	for i in range(FAVOUR_TIERS.size()):
+		if float(FAVOUR_TIERS[i]["at"]) == float(TB.EATEN_CORE["belowTierAt"]): return i
+	return 2
+func eatenCoreOffer() -> Array:
+	if RUN == null or RUN["fac"] != "chorus" or float(RUN["sector"]) != float(TB.EATEN_CORE["sector"]) or jt(RUN.get("eatenOfferSeen")): return []
+	return PATRONS.keys().filter(func(p): return favourTier(p) < eatenCoreTier())
+# the run's cores that still offer protocols: an eaten core never offers again this run
+func livingPatrons() -> Array:
+	var ps = or_(RUN.get("patrons"), []) if RUN != null else []
+	return ps.filter(func(p): return p != RUN["eatenCore"]) if eatenCoreOn() else ps
+# the eat itself: the growth goes through derive (changeFleet lifts current hull by the same amount), the core's protocols
+# (its own and every duo it sits in) are lost, and its signals still on the sector map are rolled again without it
+func eatenCoreEat(p) -> bool:
+	if not eatenCoreOffer().has(p): return false
+	changeFleet(func():
+		RUN["eatenCore"] = p; RUN["eatenOfferSeen"] = true
+		RUN["boons"] = or_(RUN.get("boons"), []).filter(func(b): return not BOONS.has(b["id"]) or (BOONS[b["id"]].get("p") != p and not or_(BOONS[b["id"]].get("duo"), []).has(p)))
+		if jt(RUN.get("giftBoon")) and BOONS.has(RUN["giftBoon"]) and (BOONS[RUN["giftBoon"]].get("p") == p or or_(BOONS[RUN["giftBoon"]].get("duo"), []).has(p)): RUN["giftBoon"] = null)
+	if RUN.get("map") != null:
+		for col in RUN["map"]["cols"]:
+			for n in col:
+				if not jt(n.get("done")) and n.get("rw") is Dictionary and n["rw"].get("k") == "boon" and n["rw"].get("p") == p: n["rw"] = rollNodeReward(n["type"])
+	tel("eaten_core", {"p": p})
+	return true
 func heatLevel(list) -> float:
 	var t = 0.0
 	for k in or_(list, []): t += float(z0(HEAT[k].get("w"))) if HEAT.has(k) else 0.0
@@ -1276,6 +1306,8 @@ func act(name: String, arg = "") -> void:
 		"boonReroll": ACT_boonReroll(a)
 		"boonDecline": ACT_boonDecline()
 		"buyTrack": ACT_buyTrack(a)
+		"eatCore": ACT_eatCore(a)
+		"eatRefuse": ACT_eatRefuse()
 		_: push_warning("campaign: unknown action " + name)
 
 # ======================= campaign_meta.js: title, admiral, aspect, progression, help, run end =======================
@@ -1578,6 +1610,7 @@ func mapScreen() -> void:
 func ACT_enterNode(id: String) -> void:
 	if not availableNodes().has(id): return
 	if showBeat3(): return
+	if showEatenCore(): return   # R78 Q15: the offer comes before the first sector 3 node
 	var n = findNode(id); RUN["pos"] = id; RUN["curNode"] = id
 	tel("node", {"type": n["type"], "col": n["col"]})
 	if _is(n, ["battle", "elite", "boss"]):
@@ -2700,6 +2733,24 @@ func showBeat3() -> bool:
 	for i in range(ev["o"].size()): A(acts, "eventChoice", i)
 	show_modal("event", {"ev": ev}, acts)
 	return true
+# R78 Q15: a Chorus run reaching sector 3 is offered, once, to eat one core it has not synced with (rules above)
+func showEatenCore() -> bool:
+	var ps = eatenCoreOffer()
+	if ps.is_empty(): return false
+	var acts = []
+	for p in ps: A(acts, "eatCore", p)
+	A(acts, "eatRefuse")
+	show_modal("eatenCore", {"cores": ps}, acts)
+	return true
+func ACT_eatCore(p: String) -> void:
+	if not eatenCoreEat(p): return
+	saveRun(); close_modal(); mapScreen()
+	toast("The swarm ate " + str(PATRONS[p]["short"]) + ". Every Chorus ship grows +10% hull for this run.")
+func ACT_eatRefuse() -> void:
+	if RUN == null or jt(RUN.get("eatenOfferSeen")): return
+	RUN["eatenCore"] = null; RUN["eatenOfferSeen"] = true
+	saveRun(); close_modal(); mapScreen()
+	toast("The swarm abides.")
 func beat3Debrief() -> String:
 	if RUN == null: return ""
 	var row: Dictionary = TB.STORY_BEAT3[RUN["fac"]]
@@ -2737,8 +2788,8 @@ func rewardFlow(summary: Dictionary) -> void:
 	ensurePatrons()
 	var rw
 	if node != null and jt(node.get("rw")): rw = node["rw"]
-	elif cfg["kind"] == "battle": rw = {"k": "boon", "p": pick(RUN["patrons"])}
-	else: rw = {"k": "boon", "p": pick(RUN["patrons"]), "min": 1}
+	elif cfg["kind"] == "battle": rw = {"k": "boon", "p": pick(livingPatrons())}
+	else: rw = {"k": "boon", "p": pick(livingPatrons()), "min": 1}
 	var fl0 = RUN.get("flagUid"); ensureFlagship()
 	var flagMoved = flagshipOf() if (jt(fl0) and RUN.get("flagUid") != fl0) else null
 	var extra = ""
