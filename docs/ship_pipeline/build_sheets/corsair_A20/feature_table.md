@@ -155,14 +155,14 @@ Full interiors through the hull (R215), hidden until a piece breaks. The bay sid
 | hp_core | 53.4 | -0.70 | -0.45 |  |  |  |
 | hp_breach_0 | 18.5 | 2.75 | 0.25 | port | prow |  |
 | hp_breach_1 | 26.4 | -2.75 | 0.30 | stbd | prow |  |
-| hp_breach_2 | 53.4 | 2.75 | -0.06 | port | mid |  |
+| hp_breach_2 | 54.3 | 2.75 | -0.06 | port | mid | moved from 53.4 in the recipe (clear of the H1 rim) |
 | hp_breach_3 | 44.0 | -2.75 | -0.25 | stbd | mid |  |
 | hp_breach_4 | 69.4 | -2.75 | -0.05 | stbd | mid |  |
 | hp_breach_5 | 88.8 | 2.75 | 0.35 | port | eng |  |
 | hp_breach_6 | 92.5 | -2.75 | -0.45 | stbd | eng |  |
 | hp_rcs_0 | 10.1 | 1.61 | -0.60 | port |  |  |
 | hp_rcs_1 | 10.1 | -1.61 | -0.60 | stbd |  |  |
-| hp_board_0 | 53.4 | 2.75 | -0.40 | port |  |  |
+| hp_board_0 | 54.3 | 2.75 | -0.40 | port |  | moved from 53.4 in the recipe, with hp_breach_2 |
 | hp_board_1 | 55.5 | -2.75 | -0.30 | stbd |  |  |
 | hp_bay_0 | 41.6 | 2.45 | -0.07 | port |  | launch out of the H1 mouth |
 | hp_bay_1 | 65.2 | 2.45 | -0.07 | port |  | launch out of the H2 mouth |

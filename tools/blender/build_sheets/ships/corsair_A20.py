@@ -36,8 +36,8 @@ DECK, BELLY = 1.0, -1.05
 DEPTH = 1.9
 LINER = 0.3          # the dark liner slab on the back wall
 MZ0, MZ1 = -0.86, 0.72                                  # mouth floor and ceiling: three quarters of the flank's height (the beauty)
-MOUTHS = [('H1', 1.4, 3.6, 1), ('H2', -2.5, 3.0, -1)]  # (id, centre x, length, doors slid +1 forward / -1 aft)
-X_FORE, X_AFT = 3.25, -4.05                              # the hangar block's ends (mouth 1 front, mouth 2 back)
+MOUTHS = [('H1', 1.65, 3.2, 1), ('H2', -2.65, 2.6, -1)]  # (id, centre x, length, doors slid +1 forward / -1 aft)
+X_FORE, X_AFT = 3.25, -3.95                              # the hangar block's ends (mouth 1 front, mouth 2 back)
 # (x, half-beam port, half-beam starboard, bottom, top, top chamfer, bottom chamfer): the body, its port side stepped in
 # to the back wall of the hangar block between X_FORE and X_AFT
 HULL = [
@@ -157,7 +157,7 @@ def build(K):
                                note='%s mouth on the port flank: torn plate rim, armoured doors slid clear, launch rails, a dim red lamp' % ('forward' if slide > 0 else 'aft'),
                                inv=['hangars']))
     # the craft: a fighter nosing out of the forward mouth, a second parked deeper in the aft one (the game's squadron, 1.6)
-    for (cid, xc, y, var, fwd) in (('C1', 1.5, HB - 0.65, 0, (0, 1, 0)), ('C2', -2.3, HB - 0.62, 1, (-0.3, 0.954, 0))):
+    for (cid, xc, y, var, fwd) in (('C1', 1.5, HB - 0.65, 0, (0, 1, 0)), ('C2', -2.65, HB - 0.62, 1, (-0.3, 0.954, 0))):
         part = HP.craft(1.6, variant=var)
         K.emit(cid, part, HP.frame((xc, y, MZ0), fwd, (0, 0, 1)), 'craft', keep=False)
         K.features.append(dict(id=cid, kind='craft', what='cobbled fighter, 1.6 long', count=1, pos=(xc, y, MZ0), aim=(90.0, 0.0), src='picture',
@@ -242,26 +242,28 @@ def build(K):
     # bow's dishes, thrusters and grabbers; B-2 tears the hangar block between the mouths (the plate between them goes); B-3 (aft
     # weld) runs between mouth 2 and the aft turret T2 and the stern machines
     K.break_line('B-1', 4.75, 'the fore weld: the bow block and the front of the body tear away with the dishes and the grabbers, opening the loot holds',
-                 path=[(4.85, 3.0), (4.6, 1.9), (4.8, 0.9), (4.55, 0.1), (4.75, -0.7), (4.62, -1.6), (4.82, -2.3), (4.65, -3.0)])
+                 path=[(4.85, 4.2), (4.85, 3.0), (4.6, 1.9), (4.8, 0.9), (4.55, 0.1), (4.75, -0.7), (4.62, -1.6), (4.82, -2.3), (4.65, -3.0), (4.65, -4.2)])
     K.break_line('B-2', -0.55, 'the hangar block parts between the mouths: the plate between them tears first and the craft spill (designs.md)',
-                 path=[(-0.5, 3.0), (-0.65, 2.0), (-0.45, 1.0), (-0.7, 0.2), (-0.48, -0.6), (-0.68, -1.5), (-0.5, -2.3), (-0.62, -3.0)])
+                 path=[(-0.5, 4.2), (-0.5, 3.0), (-0.65, 2.0), (-0.45, 1.0), (-0.7, 0.2), (-0.48, -0.6), (-0.68, -1.5), (-0.5, -2.3), (-0.62, -3.0), (-0.62, -4.2)])
     K.break_line('B-3', -4.0, 'the aft weld: the stern, the bell row and the aft turret tear away, opening the machinery and the engine room',
-                 path=[(-3.9, 3.0), (-4.05, 2.0), (-3.88, 1.1), (-4.08, 0.3), (-3.9, -0.5), (-4.1, -1.4), (-3.92, -2.3), (-4.05, -3.0)])
+                 path=[(-3.9, 4.2), (-3.9, 3.0), (-4.05, 2.0), (-3.88, 1.1), (-4.08, 0.3), (-3.9, -0.5), (-4.1, -1.4), (-3.92, -2.3), (-4.05, -3.0), (-4.05, -4.2)])
+    # issue 633 recipe (as C10 and C11, issue 623): each seam path runs straight on past the flanks to 4.2 off the axis; a path
+    # that stopped at 3.0, inside the widest parts (3.1), tore the starboard rooms apart from their plating in the death check
     K.inside.append(dict(kind='note', name='insides', note='Full interiors through the hull (R215), hidden until a piece breaks. The bay side tears open first, then the hull parts at the fore and aft welds: bow, hangar sections and stern, never halves (designs.md, R186).'))
     K.point('core', 'hp_core', (-0.55, -0.7, -0.45))
-    for i, (x, y, z, sec, side) in enumerate([(5.2, HB, 0.25, 'prow', 'port'), (3.9, -HB, 0.3, 'prow', 'stbd'), (-0.55, HB, -0.06, 'mid', 'port'),
+    for i, (x, y, z, sec, side) in enumerate([(5.2, HB, 0.25, 'prow', 'port'), (3.9, -HB, 0.3, 'prow', 'stbd'), (-0.65, HB, -0.06, 'mid', 'port'),
                                               (1.0, -HB, -0.25, 'mid', 'stbd'), (-3.2, -HB, -0.05, 'mid', 'stbd'), (-6.4, HB, 0.35, 'eng', 'port'),
                                               (-7.0, -HB, -0.45, 'eng', 'stbd')]):
         K.point('breach', 'hp_breach_%d' % i, (x, y, z), side=side, section=sec)
     K.point('rcs', 'hp_rcs_0', (6.6, 1.61, -0.6), side='port')
     K.point('rcs', 'hp_rcs_1', (6.6, -1.61, -0.6), side='stbd')
-    K.point('board', 'hp_board_0', (-0.55, HB, -0.4), side='port')
+    K.point('board', 'hp_board_0', (-0.65, HB, -0.4), side='port')
     K.point('board', 'hp_board_1', (-0.9, -HB, -0.3), side='stbd')
     for i, (hid, xc, L, slide) in enumerate(MOUTHS):
-        K.point('bay', 'hp_bay_%d' % i, (xc, HB - 0.3, (MZ0 + MZ1) / 2), side='port', note='launch out of the %s mouth' % hid, dir=(0, 1, 0))
+        K.point('bay', 'hp_bay_%d' % i, (xc, HB - 0.2, MZ0 + 0.012), side='port', note='launch out of the %s mouth, on its floor at the lip (the recipe: a hard point sits on the mesh, the mouth itself is open air)' % hid, dir=(0, 1, 0))
 
     # ---------- changed from the picture (designer's decisions, R207, R233) ----------
-    K.change('Both hangar mouths on the PORT flank, big: the forward one 3.6 long and the aft one 3.0, 1.58 high (three quarters of the flank), 1.9 deep to the back wall and 1.6 to the blast door',
+    K.change('Both hangar mouths on the PORT flank, big: the forward one 3.2 long and the aft one 2.6, 1.58 high (three quarters of the flank), 1.9 deep to the back wall and 1.6 to the blast door',
              'Ryan\'s ruling for the round (the sheet\'s side view is the layout of record; the front view\'s mouths either side of the intakes are a drift); '
              'sized between the sheet\'s side view and the beauty so a 1.6 fighter fits and they read as launch bays with depth')
     K.change('Each mouth is a real recess with a torn plate rim, armoured doors slid clear on rails, launch rails on the floor, ceiling beams, a dim red lamp, '
@@ -280,6 +282,7 @@ def build(K):
     K.change('The salvage deck is three low tiers of stacked plate with lockers bolted down, not loose junk', 'Ryan R185: nothing hangs off the ship; stacked and bolted scrap brick (R196, R197)')
     K.change('One pair of grabbers under the bow block and two heavy grapple arms folded flat under the stern quarters', 'designs.md (four bow arms become two, so the jaw is not A17\'s; the grapples drag prizes alongside)')
     K.change('Four attitude thrusters', 'a ship in space needs them to turn')
+    K.change('The plate between the mouths is 1.4 wide (the mouths 3.2 and 2.6 long, were 3.6 and 3.0), and the port mid breach anchor and boarding origin sit on it at x -0.65', 'the recipe (issue 633): the export puts a breach anchor on open hull at least 0.03 of the ship\'s length (0.5) from every part; between round 2\'s mouths the plate was 0.6 wide, so no point on the port flank amidships was that clear of the rims (the plate between the mouths tears first, designs.md, so the anchor belongs there)')
     K.change('Every face is plated in courses at the hull\'s plate size (0.4 to 0.9), each course jointed on its own (a brick bond), patches laid over joints and offset patches over plates; upward faces stepped in terraces of one to three plate thicknesses',
              'the Board on round 1 (Nov 13): the faces read as big smooth grey planes with a few greebles; the concept is scrap brick, plates over plates on every face (R196, R197). Kit: the sheet kit\'s courses plating (kit.py, opt-in, issue 633)')
 
