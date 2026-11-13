@@ -103,7 +103,7 @@ def pair(k):
 # ------------------------------------------------------------------------------------------------------------ the layers
 SCALE = 1.0          # every size below is in ship lengths (the recipe's frame: the ship is 1.0 long)
 LAYERS = dict(
-    ao_short=.004, ao_long=.025, edge_radius=.0010, edge_gain=14.0,      # the masks
+    ao_short=.004, ao_long=.025, edge_radius=.0014, edge_gain=14.0,      # the masks (a wider edge than the Hullbreakers': the machined bevels read)
     patch_scale=4.0, plate_var=.30, side_dark=.22, grain_scale=260.0, mottle_scale=40.0, mottle=.03, grain=.003,   # no salt and pepper
     rough=.66, metal=.50, wear=1.0, grime=.55, ao_dark=.90, red_tone=0.0,
     rough_floor=.60,     # the roughness floor (ships.md section 0 item 2, pass 5): no white specular glare at the game's key light
@@ -111,7 +111,7 @@ LAYERS = dict(
     # sheet's modelled plates each take their own tone by UV island on top of it
     patch_big=(.046, .030, .026), patch_small=(.017, .012, .010), patch_over=(.060, .036, .030), patch_over_share=.08,
     patch_region=6.0, patch_parts=((.018, .014, .012), (.010, .008, .007), (.022, .016, .014)), patch_seam=.0010, seam_dark=.88,
-    cavity_pow=2.2, wear_lo=.28, wear_hi=.50,
+    cavity_pow=2.2, wear_lo=.22, wear_hi=.44,
     scuff=.22, scuff_size=.050,                                           # fine machining scratches, never chips
     rivets=1, rivet_pitch=.012, rivet_band=(.0012, .0040),               # flush fasteners in a band in from each plate edge
     trim_size=dict(), trim_aspect=dict(),

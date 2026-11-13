@@ -105,7 +105,7 @@ def main():
     cr, cc = os.path.join(P, 'paint_close_rim.png'), os.path.join(P, 'paint_close_core.png')
     if os.path.exists(cr) and os.path.exists(cc):      # issue 642: the glow a faction stack asks to see close (the corona line, the core)
         img = Image.new('RGB', (1280, 60 + 600), BG)
-        head(img, f'{N} close: the corona line on a shade rim (left), the core through its port (right)', f'game light, battle lift {lift:g}; the green is a thin line on the rim and the core, never pooled in hollows')
+        head(img, f'{N} close: the corona line on a shade rim (left), the core in its port or cage (right)', f'game light, battle lift {lift:g}; the green is a thin line on the rim and the core, never pooled in hollows')
         img.paste(fit(Image.open(cr).convert('RGB'), 636, 600), (0, 60)); img.paste(fit(Image.open(cc).convert('RGB'), 636, 600), (644, 60))
         p = os.path.join(OUT, f'{N}_paint_close.jpg'); img.save(p, quality=92); made.append(p)
     if SH != '-':
