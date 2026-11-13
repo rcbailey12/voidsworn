@@ -135,9 +135,6 @@ function jsSizes(files) {
 const PAIRS = [
   ['HD2', 'battle body text size', ['head.html', /body\{[^}]*font-size:(\d+(?:\.\d+)?)px/], ['godot/ui/battle/hud.gd', /default_font_size = s\((\d+)\)/]],
   ['HD2', 'battle button text size', ['head.html', /\nbutton\{[^}]*font-size:(\d+(?:\.\d+)?)px/], ['godot/ui/battle/hud.gd', /set_font_size\("font_size", "Button", s\((\d+)\)\)/]],
-  ['HD3', 'top bar height', ['head.html', /#btop\{[^}]*height:(\d+)px/], ['godot/ui/battle/hud.gd', /const TOP_H := (\d+)/]],
-  ['HD3', 'top bar title size', ['head.html', /#btop \.t\{[^}]*font-size:(\d+)px/], ['godot/ui/battle/hud.gd', /title_lbl = _label\("[^"]*", (\d+)/]],
-  ['HD4', 'fleet roster width', ['head.html', /#roster\{[^}]*width:(\d+)px/], ['godot/ui/battle/hud.gd', /const FLEET_W := (\d+)/]],
   ['HD5', 'selected-ship panel width (outer)', ['head.html', /#panel\{[^}]*width:(\d+)px/], ['godot/ui/battle/hud.gd', /const COL_W := (\d+)/]],
   ['HD6', 'battle log width', ['head.html', /#log\{[^}]*width:(\d+)px/], ['godot/ui/battle/hud.gd', /const LOG_W := (\d+)/]],
   ['HD6', 'battle log height', ['head.html', /#log\{[^}]*height:(\d+)px/], ['godot/ui/battle/hud.gd', /const LOG_H := (\d+)/]],

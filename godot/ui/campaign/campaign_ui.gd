@@ -66,6 +66,7 @@ var hide_on_battle := false           # the game shell shows its own battle scen
 var _acts: Array = []                 # the buttons the current screen allows
 var _modal_acts: Array = []
 var _dirty := false
+var _yard_bar: Button = null     # the shipyard's repair bar of the last render (the teaching card keeps off it)
 var _fs_name := ""
 
 func _ready() -> void:
@@ -379,6 +380,10 @@ func _teaching_screen() -> void:
 			"admiral":
 				# Automatic mastery is not spendable experience. Keep this hook ready for the skill-tree port.
 				if C.has_method("admiralXPToSpend") and float(C.call("admiralXPToSpend", C.picked_admiral)) > 0: ids = ["c_tree"]
+	# the first-visit card stays off the Map key and the Dossier (it waits while one is open) and off the shipyard's repair bar
+	var clear: Array = []
+	if kind == "shipyard" and modal == "" and _yard_bar != null and is_instance_valid(_yard_bar): clear.append(_yard_bar)
+	teaching.set_context(_overlay != "", clear)
 	teaching.open_screen(kind + "|" + sector + "|" + pos + "|" + modal, ids)
 
 func _focus_first() -> void:
@@ -1247,7 +1252,8 @@ func _shipyard() -> Control:
 	v.add_child(lbl("Repairs cost 1 credit per 2 hull. A Mark upgrade adds 20% hull and shields and 15% damage. New hulls come with a fresh lieutenant.", 18, BONE2))
 	var allMiss = 0.0
 	for s in R["fleet"]: allMiss += float(C.derive(s)["maxHp"]) - float(s["hp"])
-	add(v, abtn(("Repair entire fleet for " + C.numstr(ceil(allMiss / 2.0 * pm))) if allMiss > 0 else "Fleet fully repaired", "repairAll"))
+	_yard_bar = abtn(("Repair entire fleet for " + C.numstr(ceil(allMiss / 2.0 * pm))) if allMiss > 0 else "Fleet fully repaired", "repairAll")   # the teaching card keeps off this bar
+	add(v, _yard_bar)
 	var cards = flow()
 	for s in R["fleet"]:
 		var d = C.derive(s); var miss = float(d["maxHp"]) - float(s["hp"]); var rc = ceil(miss / 2.0 * pm); var mc = C.mkCost(s); var sell = C.prizeScrap(s["tpl"])   # R1 (TXT-8): what the button pays; hulls without a shop price too

@@ -79,14 +79,16 @@ const gs = diff.godotSizes(files);
 const low = gs.filter(r => r.v < MIN_TEXT && !(r.text && /^"[^\w\s]"$/.test(r.text)));
 for (const r of low) check(false, `text size ${r.v} under the ${MIN_TEXT} floor at ${r.at} (ui_spec.md 4.3)`);
 // #282 (N1): a real assertion that the scan read rows, so a regex that stops matching fails instead of passing silently
-check(gs.length >= 300, `text floor scan read ${gs.length} font size literals (expected at least 300; check godotSizes in ui_constants_diff.js)`);
+// (issue 652: the retired Lime builders left hud.gd, about 100 literals; the scan reads 284 now, so the guard is 250)
+check(gs.length >= 250, `text floor scan read ${gs.length} font size literals (expected at least 250; check godotSizes in ui_constants_diff.js)`);
 check(gs.some(r => r.at.startsWith('godot/ui/')) && gs.some(r => r.at.startsWith('godot/main/')), 'text floor scan covers font sizes in both godot/ui and godot/main');
 check(gs.some(r => r.how === 'theme default'), 'text floor scan reads the theme default font size form (default_font_size = s(15), N1)');
 
 // 5. HD9: one hull-low line in the port
 const campaignHull = read('godot/ui/campaign/campaign_ui.gd');
 const lows = [...hud.matchAll(/HULL_LOW if \w+ < ([\d.]+)/g), ...campaignHull.matchAll(/(?:BLOOD|HULL_LOW) if f < ([\d.]+)/g), ...campaignHull.matchAll(/HULL_LOW if float\(s\["frac"\]\) < ([\d.]+)/g)].map(m => +m[1]);
-check(lows.length >= 4 && lows.every(v => v === 0.35), `every hull-low line is 0.35: battle roster, nameplate, campaign bars and hull figures (HD9; found ${lows.join(', ')})`);
+// (issue 652: the Lime roster row left hud.gd; the battle's fleet foot is drawn by ledger.gd with its own hull line)
+check(lows.length >= 3 && lows.every(v => v === 0.35), `every hull-low line is 0.35: nameplate, campaign bars and hull figures (HD9; found ${lows.join(', ')})`);
 
 // 7. issue #344 (UI rollout 1): the campaign pages are in Lime Tactical, and the campaign map is the Briefing layout
 // (Ryan's pick, FINDINGS R165; docs/archive/briefs/campaign_map_briefing.md). These are code-structure checks: they read
