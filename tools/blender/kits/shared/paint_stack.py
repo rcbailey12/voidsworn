@@ -649,13 +649,14 @@ def bake_engine_glow(S, objs, out, cell, res, samples):
         rnd = float(rng.random())
         W = [o.matrix_world @ v.co for o in members for v in o.data.vertices]
         disc = [o for o in members if o.data.materials and o.data.materials[0].name == 'glow']
+        core = disc + [o for o in members if o.get('emissive_zone') == 'plug']      # the throat disc and the plug: the core's surfaces
         Dv = [o.matrix_world @ v.co for o in (disc or members) for v in o.data.vertices]
         cy = sum(v.y for v in Dv) / len(Dv); cz = sum(v.z for v in Dv) / len(Dv)
         rmax = max(math.hypot(v.y - cy, v.z - cz) for v in Dv) or 1.0
         x0 = min(v.x for v in W); x1 = max(v.x for v in W)
         for o in members:
             me = o.data; ca = me.color_attributes.get('ps_glow') or me.color_attributes.new('ps_glow', 'FLOAT_COLOR', 'POINT')
-            is_disc = o in disc
+            is_disc = o in core
             for i, v in enumerate(me.vertices):
                 w = o.matrix_world @ v.co
                 r = min(1.0, math.hypot(w.y - cy, w.z - cz) / rmax) if is_disc else 1.0
@@ -676,9 +677,17 @@ def bake_engine_glow(S, objs, out, cell, res, samples):
         n = node(nt, 'ShaderNodeTexNoise'); n.inputs['Scale'].default_value = scale; n.inputs['Detail'].default_value = detail
         n.inputs['Roughness'].default_value = rough; nt.links.new(vec, n.inputs['Vector']); return n.outputs['Fac']
     # heat: the core (hot at the axis) on the throat disc, the lining by its depth (dark at the lip, R228 item 5)
-    heat = math_(nt, 'MULTIPLY', math_(nt, 'SUBTRACT', 1, ramp(nt, r, 0.0, 1.0)), math_(nt, 'POWER', d, E['lining_falloff']))
-    # uneven hot spots, and soot streaks running out from the axis (by angle, each engine its own)
-    hs = ramp(nt, noise(tc.outputs['Object'], E['hotspot_scale'], 4), E['hotspot'][0], E['hotspot'][1])
+    # the core: hottest on the axis (the plug's tip, the throat's centre), falling off toward the wall, each engine its own reach
+    e2 = math_(nt, 'FRACT', math_(nt, 'MULTIPLY', e, 7.31))
+    reach = math_(nt, 'ADD', E['core_reach'][0], math_(nt, 'MULTIPLY', e2, E['core_reach'][1] - E['core_reach'][0]))
+    corev = math_(nt, 'POWER', math_(nt, 'SUBTRACT', 1, ramp(nt, r, 0.0, 1.0)), reach)
+    lining = math_(nt, 'MULTIPLY', ramp(nt, r, .98, 1.0), math_(nt, 'MULTIPLY', math_(nt, 'POWER', d, E['lining_falloff']), E['lining_gain']))
+    heat = math_(nt, 'ADD', math_(nt, 'MULTIPLY', corev, math_(nt, 'SUBTRACT', 1, ramp(nt, r, .98, 1.0))), lining)
+    # uneven hot spots (each engine's own pattern), and soot streaks running out from the axis
+    hn = node(nt, 'ShaderNodeTexNoise'); hn.noise_dimensions = '4D'; hn.inputs['Scale'].default_value = E['hotspot_scale']
+    hn.inputs['Detail'].default_value = 4; hn.inputs['Roughness'].default_value = .6
+    nt.links.new(tc.outputs['Object'], hn.inputs['Vector']); nt.links.new(math_(nt, 'MULTIPLY', e, 13.0), hn.inputs['W'])
+    hs = ramp(nt, hn.outputs['Fac'], E['hotspot'][0], E['hotspot'][1])
     heat = math_(nt, 'ADD', heat, math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', hs, d), E['hotspot_gain']))
     av = node(nt, 'ShaderNodeCombineXYZ'); nt.links.new(math_(nt, 'MULTIPLY', a, E['streaks']), av.inputs[0]); nt.links.new(math_(nt, 'MULTIPLY', e, 31.0), av.inputs[1])
     nt.links.new(math_(nt, 'MULTIPLY', r, 1.5), av.inputs[2])
@@ -733,6 +742,10 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
                                                source='measured: the lens size the stack built, on a 70 px ship; point lights (R228 item 4): brightness, not size, carries the read')}),
                   open(os.path.join(out, 'lights.json'), 'w'), indent=1)
         H, P, G, I = split()
+    if hasattr(S, 'ENGINE_GLOW'):    # the engine's plug cone glows with the throat (it sits where the core is): out of the parts atlas
+        plug = [o for o in P if o.get('part_kind') == 'engine' and o.data.materials and o.data.materials[0].name in S.ENGINE_GLOW.get('plug', ())]
+        for o in plug: o['emissive_zone'] = 'plug'
+        P = [o for o in P if o not in plug]; G = G + plug
     unwrap(H, .0003); unwrap(P, .0004)
     maps = {}
     for group, objs, R in (('H', H, res), ('P', P, parts_res)):
@@ -769,7 +782,8 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
         for o in objs:
             o.data.materials.clear(); o.data.materials.append(M); o.data.polygons.foreach_set('material_index', np.zeros(len(o.data.polygons), np.int32))
     glow = {}
-    eng = [o for o in G if (o.data.materials[0].name if o.data.materials else '') in ('glow', 'ember')] if hasattr(S, 'ENGINE_GLOW') else []
+    eng = [o for o in G if (o.data.materials[0].name if o.data.materials else '') in ('glow', 'ember') or o.get('emissive_zone') == 'plug'] \
+        if hasattr(S, 'ENGINE_GLOW') else []
     if eng:      # the engine throats and linings: one surface, its own emission map (graded, hot spots, soot, each engine its own)
         glow['engine'] = bake_engine_glow(S, eng, out, cell, max(256, res // 4), samples)
         for o in eng:

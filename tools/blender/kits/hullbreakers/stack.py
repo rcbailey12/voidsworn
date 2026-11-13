@@ -122,9 +122,14 @@ GLOW = ('glow', 'ember', 'light')
 # Ryan, Nov 12 19:16 CST: "more variation to the engine glow so it's not so uniform, just disc color". The throat and lining
 # carry an emission map (shared/paint_stack.bake_engine_glow): a hot core grading out to deeper red and orange, uneven hot spots,
 # soot streaks out from the axis, the lining dark toward the lip, each engine a little different. The plume is the game's.
-ENGINE_GLOW = dict(ramp=[(0.0, (.10, .008, .003)), (.35, (.55, .05, .012)), (.65, (.95, .20, .04)), (.85, (1.0, .42, .10)), (1.0, (1.0, .66, .30))],
-                   lining_falloff=3.0, hotspot_scale=900.0, hotspot=(.58, .72), hotspot_gain=.30, streaks=14.0, soot=(.52, .70),
-                   soot_gain=.55, bright=(.70, 1.05), hue_shift=.18, strength=1.15)
+# Board, pass 5 review: the core sits IN THE CENTRE of the throat, and the plug cone there glows hottest (never black); each
+# engine differs in brightness, in how far its core reaches (core_reach: the exponent of the fall-off from the axis) and in where
+# its hot spots sit; the lining glows dimly near the throat and is dark at the lip.
+ENGINE_GLOW = dict(ramp=[(0.0, (.08, .006, .002)), (.25, (.45, .04, .010)), (.50, (.90, .15, .030)), (.72, (1.0, .38, .08)),
+                         (.88, (1.0, .62, .25)), (1.0, (1.0, .88, .60))],
+                   core_reach=(.55, 1.8), lining_gain=.32, lining_falloff=3.0, hotspot_scale=700.0, hotspot=(.56, .70),
+                   hotspot_gain=.35, streaks=14.0, soot=(.50, .68), soot_gain=.60, bright=(.55, 1.15), hue_shift=.30, strength=1.15,
+                   plug=('dark',))      # the engine part's own zone(s) that are the plug cone: glow with the throat
 GLOW_STRENGTH = dict(glow=.9, ember=.035)    # the running lights' strength is LIGHT_STRENGTH (below)
 GLOW_TINT = dict(glow=(1.0, .45, .30), ember=(.60, .18, .12))   # times the faction's engine colour: redder, never peach
 

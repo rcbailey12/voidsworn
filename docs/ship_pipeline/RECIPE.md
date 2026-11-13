@@ -134,7 +134,8 @@ job's `lights.json` as point lights, which `standing.py lights` reports without 
 and trim lights. Plate patchwork, seams and brick rust (R228) are the faction stack's `PATCH_FAMILIES`,
 `patch_cell` and `CONCEPT`. Engine glow is the game's (R228): the export's `hp_eng` points with their bell radius drive the
 game's engine effect (`godot/fx/fx_hull.gd` reads them as the nozzles), beside the sheet's throat and bell lining, which the
-stack gives one emissive surface with its own map (`bake_engine_glow`: hot core to deep red, hot spots, soot streaks, the lining
+stack gives one emissive surface with the plug cone, with its own map (`bake_engine_glow`: the hot core on the axis, the plug
+hottest, to deep red at the wall, each engine its own reach, hot spots, soot streaks, the lining
 dark toward the lip, each engine its own; written by stage 7 as `<code>_glow_emission.jpg`).
 
 Stage 5 then runs the surface check (`tools/recipe/surface_check.py`, issue 601, after Ryan saw "a white square near the back
@@ -145,7 +146,9 @@ hall, shell magazines, bridge, engine room); after: 0. The rooms poking out are 
 dark meanwhile.
 
 Pictures: `tools/blender/build_sheets/paint_sheet.py` renders the painted blend at the sheet's concept camera and the four flat
-views (and bow on and stern on) under the game's light with the battle lift; `paint_compare.py` lays them beside the concept (and the game's camera 170
+views (and bow on, stern on, every bell stern-on zoomed and the biggest bell up close) under the game's light with the battle lift,
+and measures the bow, midships and stern windows on its own camera; `paint_compare.py` lays them beside the concept (each
+compare crop holds the same third of the ship on both sides) (and the game's camera 170
 and 60 shots, `a4_shots.gd` set `cams`) as pictures for Ryan. The PC run for A16 is `tools/pc/jobs/A16_RUN_601.bat`; for both Hullbreaker sheet ships (A16, A17) `tools/pc/jobs/PAINT_RUN_601.bat`.
 
 

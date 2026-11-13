@@ -22,7 +22,28 @@ def head(img, title, sub):
 
 
 def fit(im, w, h):
-    im = im.copy(); im.thumbnail((w, h)); c = Image.new('RGB', (w, h), BG); c.paste(im, ((w - im.width) // 2, (h - im.height) // 2)); return c
+    k = min(w / im.width, h / im.height); im = im.resize((max(1, int(im.width * k)), max(1, int(im.height * k))), Image.LANCZOS)
+    c = Image.new('RGB', (w, h), BG); c.paste(im, ((w - im.width) // 2, (h - im.height) // 2)); return c
+
+
+def concept_thirds(con, rwin):
+    """the concept's own bow, midships and stern windows: its ship (the largest shape over luminance 28, as the build sheets cut
+    it) split in thirds along the ship's axis as the render shows it (stern window centre to bow window centre), so each crop
+    holds the same part of the ship on both sides even where the build and the picture do not sit on the same pixels"""
+    import numpy as np
+    from scipy import ndimage
+    a = np.asarray(con.convert('L')); m = a > 28; lab, n = ndimage.label(ndimage.binary_closing(m, iterations=3))
+    if n == 0: return None
+    big = 1 + int(np.argmax(ndimage.sum(np.ones_like(lab), lab, range(1, n + 1)))); ys, xs = np.nonzero(lab == big)
+    H, W = a.shape
+    cen = lambda w: np.array([(w[0] + w[2]) / 2 * W, (w[1] + w[3]) / 2 * H])      # noqa: E731
+    ax = cen(rwin['bow']) - cen(rwin['stern']); ax /= (np.linalg.norm(ax) or 1)
+    t = (xs - xs.mean()) * ax[0] + (ys - ys.mean()) * ax[1]; lo, hi = np.percentile(t, 1), np.percentile(t, 99); third = (hi - lo) / 3
+    out = {}
+    for k, (a0, a1) in (('stern', (lo, lo + third)), ('midships', (lo + third, hi - third)), ('bow', (hi - third, hi))):
+        sel = (t >= a0) & (t <= a1); px, py = xs[sel], ys[sel]; pad = .04
+        out[k] = [max(0, px.min() / W - pad), max(0, py.min() / H - pad), min(1, px.max() / W + pad), min(1, py.max() / H + pad)]
+    return out
 
 
 def pair(a, b, title, sub, out, w=640, maxh=660):
@@ -40,9 +61,17 @@ def main():
                  'Hullbreaker paint stack (issue 601): game light, battle lift 1.25; colours sampled from the concept, never projected',
                  os.path.join(OUT, f'{N}_paint_full.jpg'))]
     W, H = con.size
-    for k, (x0, y0, x1, y1) in WIN.items():
-        box = (int(x0 * W), int(y0 * H), int(x1 * W), int(y1 * H))
-        made.append(pair(con.crop(box), bea.crop(box), f'{N} paint, {k}: concept (left), painted build (right)', 'same camera, same window',
+    js = os.path.join(P, 'paint_shots.json')
+    win = dict(WIN)
+    if os.path.exists(js): win.update(__import__('json').load(open(js)).get('windows', {}))     # measured on the render's own camera
+    cwin = None
+    try: cwin = concept_thirds(con, win)
+    except Exception as e: print('[601] concept thirds not measured:', e)
+    for k in ('bow', 'midships', 'stern'):
+        box = tuple(int(f * d) for f, d in zip(win[k], (W, H, W, H)))
+        cbox = tuple(int(f * d) for f, d in zip(cwin[k], (W, H, W, H))) if cwin else box
+        made.append(pair(con.crop(cbox), bea.crop(box), f'{N} paint, {k}: concept (left), painted build (right)',
+                         'the same third of the ship on each side, at the same camera' if cwin else 'same camera, same window',
                          os.path.join(OUT, f'{N}_paint_{k}.jpg')))
     views = [('concept', None), ('side (port)', 'paint_side.png'), ('far side (starboard)', 'paint_side_s.png'), ('top', 'paint_top.png'),
              ('below', 'paint_below.png'), ('bow on', 'paint_bow.png'), ('stern on', 'paint_stern.png')]
@@ -54,6 +83,12 @@ def main():
         t = fit(src, 316, 300); x, y = (i % 4) * 321, 60 + (i // 4) * 326
         img.paste(t, (x, y + 22)); ImageDraw.Draw(img).text((x + 6, y + 2), lab, fill=DIM, font=font(14))
     p = os.path.join(OUT, f'{N}_paint_views.jpg'); img.save(p, quality=90); made.append(p)
+    zs, bl = os.path.join(P, 'paint_stern_zoom.png'), os.path.join(P, 'paint_bell.png')
+    if os.path.exists(zs) and os.path.exists(bl):      # the engines up close: every bell stern-on, and the biggest bell at a close camera
+        img = Image.new('RGB', (1280, 60 + 600), BG)
+        head(img, f'{N} engines: every bell stern-on (left), the biggest bell up close (right)', 'the throat glow: hot core in the centre, hot spots and soot, each engine its own; the lip dark')
+        img.paste(fit(Image.open(zs).convert('RGB'), 636, 600), (0, 60)); img.paste(fit(Image.open(bl).convert('RGB'), 636, 600), (644, 60))
+        p = os.path.join(OUT, f'{N}_paint_engines.jpg'); img.save(p, quality=92); made.append(p)
     if SH != '-':
         for cam in ('cam170', 'cam60'):
             g = os.path.join(SH, f'{CODE}_{cam}.jpg')

@@ -101,4 +101,36 @@ top = ortho('top', (0, 0, 3), (0, 0, 0), (0, -1, 0), 1.12, (2400, 1000)); shots[
 below = ortho('below', (0, 0, -3), (0, 0, 0), (0, 1, 0), 1.12, (2400, 1000)); shots['below'] = shoot(below, 'paint_below', SCALE * .55)
 bow = ortho('bow', (3, 0, 0), (0, 0, 0), (0, 0, 1), .62, (1200, 1000)); shots['bow'] = shoot(bow, 'paint_bow', SCALE * .55)
 stern = ortho('stern', (-3, 0, 0), (0, 0, 0), (0, 0, 1), .62, (1200, 1000)); shots['stern'] = shoot(stern, 'paint_stern', SCALE * .55)
-json.dump(dict(shots=shots, lift=LIFT, samples=SAMP, camera=SHEET + '_camera.json'), open(os.path.join(OUT, 'paint_shots.json'), 'w'), indent=1)
+# the region windows for the compare (bow, midships, stern thirds of the ship's length), measured on this render's own camera:
+# each third's outside meshes projected through the beauty camera, so the stern window holds the engines on every ship
+from bpy_extras.object_utils import world_to_camera_view
+import numpy as np
+sc.camera = beauty; sc.render.resolution_percentage = 100; sc.render.resolution_x, sc.render.resolution_y = tuple(fc['res'])
+pts = []
+dg = bpy.context.evaluated_depsgraph_get()
+for o in sc.objects:
+    if o.type != 'MESH' or o.get('role') == 'interior' or o.hide_render: continue
+    M = o.matrix_world; vs = o.data.vertices
+    step = max(1, len(vs) // 400)
+    for i in range(0, len(vs), step): pts.append(M @ vs[i].co)
+X = np.array([p.x for p in pts]); x0, x1 = X.min(), X.max(); third = (x1 - x0) / 3
+windows = {}
+for name, lo, hi in (('bow', x1 - third, x1), ('midships', x0 + third, x1 - third), ('stern', x0, x0 + third)):
+    uv = [world_to_camera_view(sc, beauty, p) for p in pts if lo - 1e-6 <= p.x <= hi + 1e-6]
+    us = [c.x for c in uv if c.z > 0]; vv = [1 - c.y for c in uv if c.z > 0]
+    if not us: continue
+    pad = .04
+    u0, u1 = max(0, min(us) - pad), min(1, max(us) + pad); v0, v1 = max(0, min(vv) - pad), min(1, max(vv) + pad)
+    windows[name] = [round(u0, 4), round(v0, 4), round(u1, 4), round(v1, 4)]
+# the engines up close (Board, pass 5: judge the glow on a zoomed stern-on view and one bell at the close camera)
+hp = json.loads(sc.get('r209_hp', '{}')).get('engines', [])
+if hp:
+    E = np.array([e['pos'] for e in hp]); R = max(e['radius'] for e in hp)
+    cy, cz = E[:, 1].mean(), E[:, 2].mean(); span = max(np.ptp(E[:, 1]), np.ptp(E[:, 2])) + 4 * R
+    z = ortho('stern_zoom', (-3, cy, cz), (0, cy, cz), (0, 0, 1), span * 1.15, (1200, 1000)); shots['stern_zoom'] = shoot(z, 'paint_stern_zoom', SCALE * .6)
+    big = max(hp, key=lambda e: e['radius']); bp = Vector(big['pos']); r = big['radius']
+    c = bpy.data.cameras.new('bell'); o = bpy.data.objects.new('bell', c); sc.collection.objects.link(o)
+    loc = bp + Vector((-7.0 * r, 2.2 * r * (1 if bp.y >= 0 else -1), 2.0 * r)); o.location = loc
+    o.rotation_euler = (bp + Vector((r * .6, 0, 0)) - loc).to_track_quat('-Z', 'Y').to_euler(); c.lens = 50; c.clip_start = .0005
+    sc.render.resolution_x, sc.render.resolution_y = 1200, 1000; shots['bell'] = shoot(o, 'paint_bell', SCALE * .6)
+json.dump(dict(shots=shots, windows=windows, lift=LIFT, samples=SAMP, camera=SHEET + '_camera.json'), open(os.path.join(OUT, 'paint_shots.json'), 'w'), indent=1)

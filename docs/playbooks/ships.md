@@ -46,8 +46,8 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    PC run): painted metal has a roughness floor (no white specular glare at the game's key light; bells and dishes matte, the
    concept's metal is dull and grimy); light grey is for scrapes and small patches only, never whole big plates; the trophy
    grey is weathered dark; grime goes over everything; the throat glow sits deep in the bell, the lip and rim stay dark, and (Ryan, Nov 12 19:16 CST: "more variation to the
-   engine glow so it's not so uniform, just disc color") it varies: a hot core grading out to deeper red and orange, uneven hot
-   spots and soot streaks across the throat, each engine a little dimmer, more orange or more red than its neighbours, baked into
+   engine glow so it's not so uniform, just disc color") it varies: a hot core in the centre of the throat (the plug cone glows hottest, never black) grading out to deeper red and orange, uneven hot
+   spots and soot streaks across the throat, each engine its own brightness, core reach, hue and hot-spot pattern, baked into
    the engine glow's own emission map by the stack (ENGINE_GLOW); the game's moving plume sits on top, so no flame is painted.
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
