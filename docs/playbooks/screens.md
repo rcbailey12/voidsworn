@@ -39,6 +39,11 @@ battle screen (godot/ui/battle/ledger.gd) is the second screen built in it; buil
 - **Readability, checked by a test**: nothing under 17 px at 1080, three strengths, 4.5 to 1 over the brightest and darkest
   board, no overlaps at any fleet size or name length (the battle screen's check, godot/ui/battle/test/ledger_readability_test.gd,
   composites the screen's own darkening over pure white and black, so a pass holds over any backdrop).
+- **One small type scale per screen** (issue 644, all at 1080): campaign pages 17 small, 18 body, 19 to 20 card titles and
+  sub-heads, 24 and up for heads; Career 17 detail, 18 to 19 names, 34 and 40 figures and title; title screen 17 body, 18 to 19
+  menu, 24 and 84; battle HUD 17 keys, 18 tips and log, 19 buttons, 21 and up for heads; the shared theme's own defaults 17.
+  A new size goes onto its screen's scale, never between two steps. Where 17 does not fit, the words get shorter or move to a
+  hover; they are never squeezed.
 - **Board colours follow**: no lime on the 3D board either (the ring under the ship that is up and the hovered hex are ember);
   the threat map and the reach hatching are bone (TEXT), because red is the Nemesis alarm's and purple is on Ryan's list.
 - Palette and faces come from godot/ui/theme/glass_shell.gd (MAP_EMBER, TEXT, TEXT2, TEXT3, NEM, GLACIER, sheet_name,

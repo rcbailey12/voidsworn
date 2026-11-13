@@ -18,7 +18,7 @@ const K_MIN = +(/const K_MIN := ([\d.]+)/.exec(law) || [])[1];
 const MIN_TEXT = +(/const MIN_TEXT := (\d+)/.exec(law) || [])[1];
 check(/const DESIGN_HEIGHT := 1080\.0/.test(law), 'ui_scale.gd keeps the 1080 design height');
 check(K_MIN === 0.6 && K_MAX === 2.2, `ui_scale.gd floor and ceiling are the spec's provisional 0.6 and 2.2 (got ${K_MIN}, ${K_MAX}); change ui_spec.md 4.1 with them`);
-check(MIN_TEXT === 12, `ui_scale.gd text floor is the spec's 12 (got ${MIN_TEXT}); change ui_spec.md 4.3 with it`);
+check(MIN_TEXT === 17, `ui_scale.gd text floor is RULEBOOK 9.4's 17 (got ${MIN_TEXT}); change ui_spec.md 4.3 with it`);
 
 // 1. one law: no screen keeps its own height / 1080 clamp
 const files = diff.godotFiles();

@@ -147,7 +147,7 @@ func _make_theme() -> Theme:
 	t.set_font_size("font_size", "Button", px(17))
 	for f in ["normal_font_size", "bold_font_size", "mono_font_size"]: t.set_font_size(f, "RichTextLabel", px(17))
 	t.set_color("font_focus_color", "Button", BONE)
-	t.set_font_size("font_size", "TooltipLabel", px(15))
+	t.set_font_size("font_size", "TooltipLabel", px(17))
 	t.set_stylebox("panel", "PanelContainer", GS.well(k))
 	var sep = StyleBoxLine.new(); sep.color = GS.LINE; sep.thickness = max(1, px(1))
 	t.set_stylebox("separator", "HSeparator", sep)
@@ -170,7 +170,7 @@ func rich(bb: String, size: float = 17) -> RichTextLabel:
 	r.add_theme_font_size_override("normal_font_size", px(size)); r.add_theme_font_size_override("bold_font_size", px(size)); r.add_theme_font_size_override("mono_font_size", px(size))
 	r.mouse_filter = Control.MOUSE_FILTER_PASS; r.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return r
-func rich_inline(bb: String, size: float = 15) -> RichTextLabel:   # one line, as wide as its text (for flow rows)
+func rich_inline(bb: String, size: float = 17) -> RichTextLabel:   # one line, as wide as its text (for flow rows)
 	var r = rich(bb, size); r.autowrap_mode = TextServer.AUTOWRAP_OFF; r.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN; r.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return r
 func c(text: String, col: Color) -> String: return "[color=" + hexs(col) + "]" + text + "[/color]"
@@ -178,7 +178,7 @@ func n_(text: String, col: Color = BONE) -> String: return "[code]" + c(text, co
 # a page or dialog title: Chakra Petch Bold caps, tracked (GS.display); the size argument keeps the old scale (x 0.7)
 func gothic(text: String, size: float = 52) -> Label: return lbl(text.to_upper(), size * 0.7, BONE, font_goth, true)
 func _readout(label: String, value: String, col: Color, right: bool = false) -> Control:   # a big number: Azeret Mono, its label in caps
-	var v = vbox(0); var a = caps(label, 12, BONE3); var b = num(value, 28, col)   # label 12: the text floor (ui_spec.md 4.3)
+	var v = vbox(0); var a = caps(label, 17, BONE3); var b = num(value, 28, col)   # label 17: the text floor (RULEBOOK 9.4)
 	if right: a.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT; b.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	v.add_child(a); v.add_child(b); return v
 
@@ -211,17 +211,17 @@ func shell_panel(pad: float = 14) -> PanelContainer:
 # A section head inside a panel: lime caps, tracked (GS.caps), as the battle HUD's "1 MOVE"
 func sec_head(t: String, right: String = "", right_col: Color = BONE3) -> Control:
 	var h = hbox(8); h.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	h.add_child(lbl(t.to_upper(), 13, GILT, font_caps, false))
-	if right != "": h.add_child(spacer()); h.add_child(lbl(right, 13, right_col, font_caps, false))
+	h.add_child(lbl(t.to_upper(), 17, GILT, font_caps, false))
+	if right != "": h.add_child(spacer()); h.add_child(lbl(right, 17, right_col, font_caps, false))
 	return h
 # A small square tag (UP, NEMESIS, ELITE, LOCKED): filled for a state, outlined for a side or a kind
-func tagl(t: String, col: Color, filled: bool = false, size: float = 12) -> Label:
+func tagl(t: String, col: Color, filled: bool = false, size: float = 17) -> Label:
 	var l = lbl(t.to_upper(), size, GS.ON_GILT if filled and col == GILT else (INK if filled else col), font_caps, false)
 	l.add_theme_stylebox_override("normal", GS.tag(k, col, filled)); l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	return l
 # A key cap beside an action ("1", "Esc"): the key always shows next to what it does
 func keycap(key: String, on_gilt: bool = false) -> Label:
-	var l = lbl(key, 12 if key.length() > 2 else 13, GS.ON_GILT if on_gilt else GS.KEY_FG, font_num_b, false)
+	var l = lbl(key, 17, GS.ON_GILT if on_gilt else GS.KEY_FG, font_num_b, false)
 	l.add_theme_stylebox_override("normal", GS.keycap_on_gilt(k) if on_gilt else GS.keycap(k))
 	l.size_flags_vertical = Control.SIZE_SHRINK_CENTER; l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	return l
@@ -253,7 +253,7 @@ func abtn(text: String, act: String, arg = "", primary: bool = false, small: boo
 	var found = _find(list if list != null else _acts, act, arg)
 	if found.is_empty(): return null
 	var b = Button.new(); b.text = text; b.disabled = found[2] == 0; b.focus_mode = Control.FOCUS_ALL
-	if small: b.add_theme_font_size_override("font_size", px(15))
+	if small: b.add_theme_font_size_override("font_size", px(17))
 	if primary:
 		var lb = GS.lit_boxes(k)
 		for st in ["normal", "hover", "pressed", "disabled"]: b.add_theme_stylebox_override(st, lb[st])
@@ -304,9 +304,9 @@ func choice(title: String, small: String, act: String, arg = "", list = null, ac
 	b.ring = GS.focus_ring(k)
 	var row = hbox(10); row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var v = vbox(2); v.mouse_filter = Control.MOUSE_FILTER_IGNORE; v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	if tag_t != "": v.add_child(lbl(tag_t.to_upper(), 12, BONE3 if off else tagcol, font_caps))
+	if tag_t != "": v.add_child(lbl(tag_t.to_upper(), 17, BONE3 if off else tagcol, font_caps))
 	v.add_child(lbl(title, 18, BONE3 if off else (GILT if sel else BONE), font_semi))
-	if small != "": v.add_child(lbl(small, 15, BONE3 if off else BONE2))
+	if small != "": v.add_child(lbl(small, 17, BONE3 if off else BONE2))
 	for l in v.get_children():
 		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(v)
@@ -322,7 +322,7 @@ func add(parent: Node, child) -> void:
 	if child != null: parent.add_child(child)
 func _toast(msg: String) -> void:   # a strip with a calm VERD bar (ui_style.md 3): toasts here are news, not warnings
 	var p = PanelContainer.new(); var sb = GS.strip(k, VERD); sb.content_margin_left = px(14); sb.content_margin_right = px(18); sb.content_margin_top = px(8); sb.content_margin_bottom = px(8)
-	p.add_theme_stylebox_override("panel", sb); p.add_child(lbl(msg, 16, BONE)); p.custom_minimum_size.x = px(min(900, 260 + msg.length() * 7))
+	p.add_theme_stylebox_override("panel", sb); p.add_child(lbl(msg, 18, BONE)); p.custom_minimum_size.x = px(min(900, 260 + msg.length() * 7))
 	toast_box.add_child(p)
 	while toast_box.get_child_count() > 3: var o = toast_box.get_child(0); toast_box.remove_child(o); o.queue_free()
 	var tw = create_tween(); tw.tween_interval(clamp(msg.length() * 0.06, 2.2, 9.0)); tw.tween_property(p, "modulate:a", 0.0, 0.4); tw.tween_callback(p.queue_free)
@@ -441,10 +441,10 @@ func _title() -> Control:
 	var mc = CenterContainer.new(); mc.add_child(menu); v.add_child(mc)
 	if C.has_method("playtestAll"):   # R1 (Ryan, Nov 1): the playtest switch, one plain line and a toggle (not a campaign act, so parity is untouched)
 		var on = C.playtestAll()
-		var pl = lbl("Playtest: everything unlocked (all admirals, carriers, battleships and hull variants). " + ("On." if on else "Off: unlock them with renown."), 16, GILT if on else BONE3)
+		var pl = lbl("Playtest: everything unlocked (all admirals, carriers, battleships and hull variants). " + ("On." if on else "Off: unlock them with renown."), 18, GILT if on else BONE3)
 		pl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(pl)
 		var pb = Button.new(); pb.text = "Switch playtest unlocks " + ("off" if on else "on"); pb.focus_mode = Control.FOCUS_ALL
-		pb.add_theme_font_size_override("font_size", px(15))
+		pb.add_theme_font_size_override("font_size", px(17))
 		pb.pressed.connect(func(): C.set_playtest_all(not C.playtestAll()); C.titleScreen())
 		var pc = CenterContainer.new(); pc.add_child(pb); v.add_child(pc)
 	var st = C.META["stats"]; var best = float(C.z0(st.get("best"))); var wins = int(C.z0(st.get("wins")))
@@ -473,23 +473,25 @@ func _admiral() -> Control:
 		if face != null:   # godot/portraits: the painting when one is picked, else the crest
 			var hr = hbox(10); var tr = TextureRect.new(); tr.texture = face; tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			tr.custom_minimum_size = Vector2(px(84), px(84)); hr.add_child(tr)
-			var nv = vbox(2); nv.size_flags_horizontal = Control.SIZE_EXPAND_FILL; nv.add_child(lbl(_admiral_title(id), 20, BONE, font_semi)); nv.add_child(lbl(a["doc"], 16, GILT)); hr.add_child(nv); col.add_child(hr)
-		else: col.add_child(lbl(_admiral_title(id), 20, BONE, font_semi)); col.add_child(lbl(a["doc"], 16, GILT))
-		col.add_child(lbl(a["d"], 16, BONE2))
+			var nv = vbox(2); nv.size_flags_horizontal = Control.SIZE_EXPAND_FILL; nv.add_child(lbl(_admiral_title(id), 20, BONE, font_semi)); nv.add_child(lbl(a["doc"], 18, GILT)); hr.add_child(nv); col.add_child(hr)
+		else: col.add_child(lbl(_admiral_title(id), 20, BONE, font_semi)); col.add_child(lbl(a["doc"], 18, GILT))
+		col.add_child(lbl(a["d"], 18, BONE2))
 		col.add_child(_mastery_bar(id))
 		if C.LINEAGE_TREES.has(id): add(col, abtn("View lineage tree", "lineage", id))
 		var fleet = []
 		for t in a["start"]: fleet.append(C.HULLS[C.equivHull(t, C.picked_faction)]["n"])
-		col.add_child(rich(c("Starting fleet:", BONE3) + " " + esc(", ".join(PackedStringArray(fleet))), 16))
+		col.add_child(rich(c("Starting fleet:", BONE3) + " " + esc(", ".join(PackedStringArray(fleet))), 18))
 		if C.jt(a.get("cmd")):
-			col.add_child(rich(c("Command:", BONE3) + " [b]" + c(esc(a["cmd"]["n"]), GILT) + "[/b]. " + esc(_cmd_text(a["cmd"], C.picked_faction)) + " " + c("Gets stronger each round you hold it.", BONE3), 16))
+			# issue 644 (say less at 17 px): "Gets stronger each round you hold it." moved to the hover on the Command line
+			var cmd_l = rich(c("Command:", BONE3) + " [b]" + c(esc(a["cmd"]["n"]), GILT) + "[/b]. " + esc(_cmd_text(a["cmd"], C.picked_faction)), 18)
+			cmd_l.tooltip_text = "Gets stronger each round you hold it."; col.add_child(cmd_l)
 		if un: add(col, abtn("Selected" if C.picked_admiral == id else "Select", "pickAdmiral", id, C.picked_admiral == id))
 		else:   # R1 (PROG-2): unlock it here with renown; the card reads locked (dimmed), the button stays bright and gilt when you can afford it
 			for ch in col.get_children(): ch.modulate.a = 0.55
 			var can = float(C.z0(C.META.get("renown"))) >= float(C.z0(a.get("cost")))
 			var ub = abtn("Unlock for " + C.numstr(a.get("cost")) + " renown", "buyAdmiral", id, can)
 			if ub != null: col.add_child(ub)
-			else: col.add_child(lbl("Unlock for " + C.numstr(a.get("cost")) + " renown", 15, BONE2))
+			else: col.add_child(lbl("Unlock for " + C.numstr(a.get("cost")) + " renown", 17, BONE2))
 		cards.add_child(cv[0])
 	v.add_child(cards)
 	_story_line(v)
@@ -535,9 +537,9 @@ func _mastery_bar(id) -> Control:
 		right = (C.numstr(x) + "/" + C.numstr(nx) + ": next " + str(C.masteryPerk(l + 1)["n"]).to_lower()) if nx != null else ("Level 8 reached: choose a Command evolution" if tree else "mastered")
 		f = min(1.0, (x - float(thresholds[l])) / (float(nx) - float(thresholds[l]))) if nx != null else 1.0
 	var v = vbox(3)
-	v.add_child(rich(c(label, GILT) + " " + c(right, BONE3), 14))
+	v.add_child(rich(c(label, GILT) + " " + c(right, BONE3), 17))
 	var b = GS.seg_bar(k, f, VERD, GS.BAR_TRACK, 6, 10); b.size_flags_horizontal = Control.SIZE_EXPAND_FILL; v.add_child(b)   # progress, not an action: VERD
-	v.add_child(lbl(("Heir: 50%" if C.META["heirs"].get(C.or_(C.ADMIRALS[id].get("fac"), "voidsworn")) == id else "Shadow: 25%") + " XP while benched", 13, BONE3))
+	v.add_child(lbl(("Heir: 50%" if C.META["heirs"].get(C.or_(C.ADMIRALS[id].get("fac"), "voidsworn")) == id else "Shadow: 25%") + " XP while benched", 17, BONE3))
 	return v
 func _run_options() -> Control:
 	var v = vbox(10)
@@ -562,14 +564,14 @@ func _run_options() -> Control:
 		var hl = C.heatLevel(C.run_opt["heat"]); var best = float(C.z0(C.META["heatBest"].get(C.picked_faction)))
 		var cv3 = card(false, 420)
 		cv3[1].add_child(rich("[b]Heat " + c(C.numstr(hl), GILT) + "[/b] " + c("+" + C.numstr(hl * 10) + "% renown" + ((" · best win with this faction: Heat " + C.numstr(best)) if best > 0 else ""), BONE3), 19))
-		cv3[1].add_child(lbl("Optional rules that make the run harder. Pick any.", 15, BONE3))
+		cv3[1].add_child(lbl("Optional rules that make the run harder. Pick any.", 17, BONE3))
 		for kk in C.HEAT.keys():
 			var h = C.HEAT[kk]
 			add(cv3[1], choice(h["n"] + "  +" + C.numstr(h["w"]), h["d"], "optHeat", kk, null, null, "", BONE2, C.run_opt["heat"].has(kk)))
 		cards.add_child(cv3[0])
 	else:
 		var cv4 = card(false, 380); cv4[0].modulate.a = 0.55; cv4[1].add_child(lbl("Heat", 20, BONE, font_semi))
-		cv4[1].add_child(lbl("Lose a run to unlock Heat: optional rules that make runs harder and pay more renown.", 16, BONE3)); cards.add_child(cv4[0])
+		cv4[1].add_child(lbl("Lose a run to unlock Heat: optional rules that make runs harder and pay more renown.", 18, BONE3)); cards.add_child(cv4[0])
 	v.add_child(cards)
 	return v
 
@@ -580,7 +582,7 @@ func _aspect() -> Control:
 	v.add_child(rich(c("The ", BONE2) + "[b]" + esc(f["name"]) + "[/b]" + c(" (" + esc(C.HULLS[f["tpl"]]["n"]) + ") carries your flag. Pick one aspect for it; it lasts the whole run, and passes to your next-largest ship if the flagship falls.", BONE2), 18))
 	var cards = flow()
 	for kk in d["opts"]:
-		var cv = card(false, 320); cv[1].add_child(lbl(C.ASPECTS[kk]["n"], 20, BONE, font_semi)); cv[1].add_child(lbl(C.ASPECTS[kk]["d"], 16, BONE2))
+		var cv = card(false, 320); cv[1].add_child(lbl(C.ASPECTS[kk]["n"], 20, BONE, font_semi)); cv[1].add_child(lbl(C.ASPECTS[kk]["d"], 18, BONE2))
 		add(cv[1], abtn("Take this aspect", "pickAspect", kk, true)); cards.add_child(cv[0])
 	v.add_child(cards)
 	var R = C.RUN
@@ -592,7 +594,7 @@ func _aspect() -> Control:
 		v.add_child(lbl("Heat " + C.numstr(C.heatLevel(R["heat"])) + ": " + ", ".join(PackedStringArray(hn)) + ".", 17, BLOOD))
 	var ps = []
 	for p in R["patrons"]: ps.append("[b]" + c(esc(C.PATRONS[p]["n"]), Color(C.PATRONS[p]["col"])) + "[/b] (" + esc(str(C.PATRONS[p]["theme"]).to_lower()) + ")")
-	v.add_child(rich(c("Cores in range of this " + C.runWord() + ": ", BONE3) + "; ".join(PackedStringArray(ps)) + c(". Win battles carrying their signal to earn their protocols.", BONE3), 16))
+	v.add_child(rich(c("Cores in range of this " + C.runWord() + ": ", BONE3) + "; ".join(PackedStringArray(ps)) + c(". Win battles carrying their signal to earn their protocols.", BONE3), 18))
 	return v
 
 # ---------------- the sector map: the Briefing layout (Ryan's pick, Nov 10 2026, FINDINGS R165) ----------------
@@ -614,7 +616,7 @@ var _jump_btn: Button = null
 var _jump_lbl: Label = null
 var _rail_host: Control
 var _rail_pending := false
-func caps(text: String, size: float = 12, col: Color = BONE3) -> Label: return lbl(text.to_upper(), size, col, font_caps, false)
+func caps(text: String, size: float = 17, col: Color = BONE3) -> Label: return lbl(text.to_upper(), size, col, font_caps, false)
 # a well holding a block of a dialog: [PanelContainer, VBoxContainer]; bar is the left bar's colour
 func blk(bar_col: Color = Color(0, 0, 0, 0), sep: float = 5, pad_x: float = 12, pad_y: float = 9) -> Array:
 	var p = PanelContainer.new(); p.add_theme_stylebox_override("panel", GS.well(k, Color(0, 0, 0, 0), pad_x, pad_y, bar_col))
@@ -1169,38 +1171,38 @@ func _ship_card(s: Dictionary, refit: bool, extra: Array = []) -> Control:
 	var t = C.HULLS[s["tpl"]]; var d = C.derive(s); var cap = s["cap"]
 	var cv = card(false, 330); var v = cv[1]
 	var r0 = hbox(); var name_label = lbl(s["name"], 20, BONE, font_semi); name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	r0.add_child(name_label); r0.add_child(lbl("MK " + C.roman(s["mk"]), 13, BONE2, font_caps, false)); v.add_child(r0)
-	v.add_child(lbl(t["n"], 16, BONE2))
-	var r1 = hbox(); r1.add_child(lbl("Hull " + C.numstr(s["hp"]) + "/" + C.numstr(d["maxHp"]), 15)); r1.add_child(spacer()); r1.add_child(lbl(C.numstr(t["cp"]) + " CP", 15, BONE3, null, false)); v.add_child(r1)
+	r0.add_child(name_label); r0.add_child(lbl("MK " + C.roman(s["mk"]), 17, BONE2, font_caps, false)); v.add_child(r0)
+	v.add_child(lbl(t["n"], 18, BONE2))
+	var r1 = hbox(); r1.add_child(lbl("Hull " + C.numstr(s["hp"]) + "/" + C.numstr(d["maxHp"]), 17)); r1.add_child(spacer()); r1.add_child(lbl(C.numstr(t["cp"]) + " CP", 17, BONE3, null, false)); v.add_child(r1)
 	v.add_child(bar(float(s["hp"]) / float(d["maxHp"])))
-	v.add_child(rich("[b]" + c("Shields", BONE2) + "[/b] " + C.numstr(d["shMax"]) + ", +" + C.numstr(d["regen"]) + "/turn   [b]" + c("Armor", BONE2) + "[/b] " + C.pct(d["armor"]) + "\n[b]" + c("Speed", BONE2) + "[/b] " + C.numstr(d["speed"]) + "   [b]" + c("Turns", BONE2) + "[/b] " + C.numstr(d["turns"]) + "   [b]" + c("Evasion", BONE2) + "[/b] " + C.numstr(d["ev"]), 15))
-	if C.jt(t.get("ab")) and C.ABILITIES.has(t["ab"]): v.add_child(rich(c(esc(C.ABILITIES[t["ab"]]["n"]) + ".", VERD) + " " + c(esc(C.ABILITIES[t["ab"]]["d"]), BONE3), 15))
+	v.add_child(rich("[b]" + c("Shields", BONE2) + "[/b] " + C.numstr(d["shMax"]) + ", +" + C.numstr(d["regen"]) + "/turn   [b]" + c("Armor", BONE2) + "[/b] " + C.pct(d["armor"]) + "\n[b]" + c("Speed", BONE2) + "[/b] " + C.numstr(d["speed"]) + "   [b]" + c("Turns", BONE2) + "[/b] " + C.numstr(d["turns"]) + "   [b]" + c("Evasion", BONE2) + "[/b] " + C.numstr(d["ev"]), 17))
+	if C.jt(t.get("ab")) and C.ABILITIES.has(t["ab"]): v.add_child(rich(c(esc(C.ABILITIES[t["ab"]]["n"]) + ".", VERD) + " " + c(esc(C.ABILITIES[t["ab"]]["d"]), BONE3), 17))
 	for w in d["weapons"]:
 		var arc = "Turret" if w["arc"] == "T" else str(C.ARC_NAME.get(w["arc"], w["arc"]))
-		v.add_child(lbl(str(w["n"]) + "  " + arc + "  " + C.numstr(w["shots"]) + "×" + C.numstr(w["dmg"]) + ", range " + C.numstr(w["r"]) + ((", reload " + C.numstr(w["cd"])) if C.jt(w.get("cd")) else ""), 14, BONE3))
+		v.add_child(lbl(str(w["n"]) + "  " + arc + "  " + C.numstr(w["shots"]) + "×" + C.numstr(w["dmg"]) + ", range " + C.numstr(w["r"]) + ((", reload " + C.numstr(w["cd"])) if C.jt(w.get("cd")) else ""), 17, BONE3))
 	var sect = vbox(4); sect.add_child(HSeparator.new())
-	sect.add_child(lbl(C.rankName(cap) + " " + str(cap["name"]), 16, BONE, font_semi))
+	sect.add_child(lbl(C.rankName(cap) + " " + str(cap["name"]), 18, BONE, font_semi))
 	var nx = C.RANK_XP[int(cap["rank"]) + 1] if int(cap["rank"]) + 1 < C.RANK_XP.size() else null
 	if nx != null:
 		var nxt = cap.duplicate(); nxt["rank"] = float(cap["rank"]) + 1
-		sect.add_child(lbl(C.numstr(cap["xp"]) + "/" + C.numstr(nx) + " experience to " + C.rankName(nxt), 14, BONE3))
-	else: sect.add_child(lbl(C.numstr(cap["xp"]) + " experience, highest rank", 14, BONE3))
+		sect.add_child(lbl(C.numstr(cap["xp"]) + "/" + C.numstr(nx) + " experience to " + C.rankName(nxt), 17, BONE3))
+	else: sect.add_child(lbl(C.numstr(cap["xp"]) + " experience, highest rank", 17, BONE3))
 	if cap["perks"].size() > 0:
 		var pf = flow(4)
 		for p in cap["perks"]:
-			var pl = lbl(str(C.PERKS[p]["n"]), 13, VERD, null, false); pl.tooltip_text = str(C.PERKS[p]["d"]); pl.mouse_filter = Control.MOUSE_FILTER_PASS; pf.add_child(pl)
+			var pl = lbl(str(C.PERKS[p]["n"]), 17, VERD, null, false); pl.tooltip_text = str(C.PERKS[p]["d"]); pl.mouse_filter = Control.MOUSE_FILTER_PASS; pf.add_child(pl)
 		sect.add_child(pf)
-	else: sect.add_child(lbl("No perks yet.", 14, BONE3))
+	else: sect.add_child(lbl("No perks yet.", 17, BONE3))
 	add(sect, abtn("Choose promotion perk", "promote", s["uid"], true, true))
 	v.add_child(sect)
 	var rs = vbox(4); rs.add_child(HSeparator.new()); rs.add_child(sec_head("Refits"))
 	for i in range(int(C.z0(t.get("slots")))):   # R1: hulls without refit slots (sector flagships) show none
 		if i < s["mods"].size() and C.jt(s["mods"][i]):
 			var m = s["mods"][i]; var rr = hbox(6)
-			rr.add_child(rich("[b]" + esc(C.modName(m)) + "[/b] " + c(esc(C.MODULES[m]["d"]), BONE3), 14))
+			rr.add_child(rich("[b]" + esc(C.modName(m)) + "[/b] " + c(esc(C.MODULES[m]["d"]), BONE3), 17))
 			if refit: add(rr, abtn("Remove", "unequip", s["uid"] + ":" + str(i), false, true))
 			rs.add_child(rr)
-		else: rs.add_child(lbl("Empty refit slot", 14, BONE3))
+		else: rs.add_child(lbl("Empty refit slot", 17, BONE3))
 	v.add_child(rs)
 	if extra.size() > 0:
 		var ex = flow(6)
@@ -1223,12 +1225,12 @@ func _fleet(d: Dictionary) -> Control:
 		var inv = flow()
 		for i in range(R["inventory"].size()):
 			var m = R["inventory"][i]; var cv = card(false, 300)
-			cv[1].add_child(lbl(C.modName(m), 20, BONE, font_semi)); cv[1].add_child(lbl(C.MODULES[m]["d"], 16, BONE2))
+			cv[1].add_child(lbl(C.modName(m), 20, BONE, font_semi)); cv[1].add_child(lbl(C.MODULES[m]["d"], 18, BONE2))
 			var fr = flow(6); var any = false
 			for s in R["fleet"]:
 				var b = abtn("Fit to " + str(s["name"]), "equip", str(i) + ":" + s["uid"], false, true)
 				if b != null: fr.add_child(b); any = true
-			if not any: fr.add_child(lbl("No free compatible slot. Remove a refit first.", 14, BONE3))
+			if not any: fr.add_child(lbl("No free compatible slot. Remove a refit first.", 17, BONE3))
 			cv[1].add_child(fr); inv.add_child(cv[0])
 		v.add_child(inv)
 	var cards = flow()
@@ -1261,28 +1263,28 @@ func _shipyard() -> Control:
 		var uniq = C.jt(t.get("unique")) and R["fleet"].any(func(s): return s["tpl"] == h)
 		var cv = card(false, 320); var cvv = cv[1]
 		cvv.add_child(rich("[b]" + esc(t["n"]) + "[/b]" + (" " + c("Variant", VERD) if C.jt(t.get("variant")) else ""), 20))
-		if C.jt(t.get("variant")): cvv.add_child(lbl(C.HULL_VARIANTS[t["variant"]]["d"], 15, VERD))
-		cvv.add_child(lbl(C.numstr(t["cp"]) + " CP. Hull " + C.numstr(t["hp"]) + ", shields " + C.numstr(t["sh"]) + ", speed " + C.numstr(t["sp"]) + ", turns " + C.numstr(t["tn"]) + ".", 15, BONE2))
+		if C.jt(t.get("variant")): cvv.add_child(lbl(C.HULL_VARIANTS[t["variant"]]["d"], 17, VERD))
+		cvv.add_child(lbl(C.numstr(t["cp"]) + " CP. Hull " + C.numstr(t["hp"]) + ", shields " + C.numstr(t["sh"]) + ", speed " + C.numstr(t["sp"]) + ", turns " + C.numstr(t["tn"]) + ".", 17, BONE2))
 		var ws = []
 		for e in t["w"]: ws.append(str(C.W_[e[0]]["n"]) + " (" + ("turret" if e[1] == "T" else str(C.ARC_NAME.get(e[1], e[1])).to_lower()) + ")")
-		cvv.add_child(lbl(", ".join(PackedStringArray(ws)) + ".", 15, BONE2))
-		cvv.add_child(lbl("Ability: " + (str(C.ABILITIES[t["ab"]]["n"]) if C.jt(t.get("ab")) and C.ABILITIES.has(t["ab"]) else "none"), 15, BONE3))
+		cvv.add_child(lbl(", ".join(PackedStringArray(ws)) + ".", 17, BONE2))
+		cvv.add_child(lbl("Ability: " + (str(C.ABILITIES[t["ab"]]["n"]) if C.jt(t.get("ab")) and C.ABILITIES.has(t["ab"]) else "none"), 17, BONE3))
 		var fr = hbox(); add(fr, abtn("Buy for " + C.numstr(cost), "buyHull", h))
-		if not fits: fr.add_child(lbl("Not enough command points", 14, BONE3, null, false))
-		elif uniq: fr.add_child(lbl("Only one allowed", 14, BONE3, null, false))
+		if not fits: fr.add_child(lbl("Not enough command points", 17, BONE3, null, false))
+		elif uniq: fr.add_child(lbl("Only one allowed", 17, BONE3, null, false))
 		cvv.add_child(fr); hs.add_child(cv[0])
 	v.add_child(hs)
 	v.add_child(sec_head("Refits for sale"))
 	var ms = flow()
 	for i in range(st["mods"].size()):
 		var m = st["mods"][i]; var cv2 = card(false, 300)
-		cv2[1].add_child(lbl(C.modName(m), 20, BONE, font_semi)); cv2[1].add_child(lbl(C.MODULES[m]["d"], 16, BONE2))
-		if C._has_num(st["sold"], i): cv2[1].add_child(lbl("Bought", 16, VERD))
+		cv2[1].add_child(lbl(C.modName(m), 20, BONE, font_semi)); cv2[1].add_child(lbl(C.MODULES[m]["d"], 18, BONE2))
+		if C._has_num(st["sold"], i): cv2[1].add_child(lbl("Bought", 18, VERD))
 		else: add(cv2[1], abtn("Buy for " + C.numstr(C.jsround(float(C.MODULES[m]["cost"]) * pm)), "buyMod", i))
 		ms.add_child(cv2[0])
 	v.add_child(ms)
 	v.add_child(sec_head("Class refits"))
-	v.add_child(lbl("A class refit upgrades every ship of that class you own now or later: +6% hull and +6% damage per level, up to " + C.numstr(C.CLASS_TRACK_MAX) + ".", 15, BONE3))
+	v.add_child(lbl("A class refit upgrades every ship of that class you own now or later: +6% hull and +6% damage per level, up to " + C.numstr(C.CLASS_TRACK_MAX) + ".", 17, BONE3))
 	var tr = flow(8)
 	for cls in C.fleetClasses():
 		var lv = int(C.classTrack(cls)); var mx = lv >= int(C.CLASS_TRACK_MAX)
@@ -1298,7 +1300,7 @@ func _battle_stub(d: Dictionary) -> Control:
 	var kind = "flagship battle" if cfg["kind"] == "boss" else (("elite " if cfg["kind"] == "elite" else "") + str(E["n"]).to_lower())
 	v.add_child(lbl("Sector " + C.roman(C.RUN["sector"]) + ": " + kind + " against " + str(C.FACTIONS[cfg["fac"]]["n"]), 22, BONE, font_goth))
 	v.add_child(lbl(("The sector flagship and its escort." if cfg["kind"] == "boss" else str(E["d"])), 17, BONE2))
-	v.add_child(lbl("Test battle: the real battle scene plugs in here. Pick how this fight ends.", 15, BONE3))
+	v.add_child(lbl("Test battle: the real battle scene plugs in here. Pick how this fight ends.", 17, BONE3))
 	var row = flow(8)
 	add(row, abtn("Win", "battle", "win", true)); add(row, abtn("Win, objective missed (half pay)", "battle", "partial")); add(row, abtn("Lose the fleet", "battle", "loss")); add(row, abtn("Retreat", "c3retreat"))
 	v.add_child(row)
@@ -1327,12 +1329,12 @@ func _legacy() -> Control:
 				var cards = flow()
 				for vid in vs:
 					var hv = C.HULL_VARIANTS[vid]; var own = C.jt(M["variants"].get(vid)); var t = C.HULLS[vid]
-					var cv = card(own, 320); cv[1].add_child(lbl(hv["n"], 20, BONE, font_semi)); cv[1].add_child(lbl("Variant of the " + str(C.HULLS[hv["base"]]["n"]), 14, BONE3)); cv[1].add_child(lbl(hv["d"], 16, BONE2))
+					var cv = card(own, 320); cv[1].add_child(lbl(hv["n"], 20, BONE, font_semi)); cv[1].add_child(lbl("Variant of the " + str(C.HULLS[hv["base"]]["n"]), 17, BONE3)); cv[1].add_child(lbl(hv["d"], 18, BONE2))
 					var ws = []
 					for e in t["w"]: ws.append(str(C.W_[e[0]]["n"]) + " (" + ("turret" if e[1] == "T" else str(C.ARC_NAME.get(e[1], e[1])).to_lower()) + ")")
-					cv[1].add_child(lbl(C.numstr(t["cp"]) + " CP. Hull " + C.numstr(t["hp"]) + ", shields " + C.numstr(t["sh"]) + ", speed " + C.numstr(t["sp"]) + ". " + ", ".join(PackedStringArray(ws)) + ".", 14, BONE2))
-					if own: cv[1].add_child(lbl("In your shipyards", 16, VERD))
-					elif C.jt(hv.get("arc")): cv[1].add_child(lbl("Finish the " + str(C.FACTIONS[hv["arc"]]["n"]) + " story to unlock", 15, BONE3))
+					cv[1].add_child(lbl(C.numstr(t["cp"]) + " CP. Hull " + C.numstr(t["hp"]) + ", shields " + C.numstr(t["sh"]) + ", speed " + C.numstr(t["sp"]) + ". " + ", ".join(PackedStringArray(ws)) + ".", 17, BONE2))
+					if own: cv[1].add_child(lbl("In your shipyards", 18, VERD))
+					elif C.jt(hv.get("arc")): cv[1].add_child(lbl("Finish the " + str(C.FACTIONS[hv["arc"]]["n"]) + " story to unlock", 17, BONE3))
 					else: add(cv[1], abtn("Unlock for " + C.numstr(hv["cost"]) + " renown", "buyVariant", vid))
 					cards.add_child(cv[0])
 				v.add_child(cards)
@@ -1341,9 +1343,9 @@ func _legacy() -> Control:
 			var lc = flow()
 			for id in C.LEGACY.keys():
 				var u = C.LEGACY[id]; var own = C.jt(M["unlocked"].get(id)); var lock = C.jt(u.get("req")) and not C.jt(M["unlocked"].get(u["req"]))
-				var cv = card(own, 300); cv[1].add_child(lbl(u["n"], 20, BONE, font_semi)); cv[1].add_child(lbl(u.get("group", ""), 14, BONE3)); cv[1].add_child(lbl(u["d"], 16, BONE2))
-				if own: cv[1].add_child(lbl("Unlocked", 16, VERD))
-				elif lock: cv[1].add_child(lbl("Needs " + str(C.LEGACY[u["req"]]["n"]) + " first", 15, BONE3))
+				var cv = card(own, 300); cv[1].add_child(lbl(u["n"], 20, BONE, font_semi)); cv[1].add_child(lbl(u.get("group", ""), 17, BONE3)); cv[1].add_child(lbl(u["d"], 18, BONE2))
+				if own: cv[1].add_child(lbl("Unlocked", 18, VERD))
+				elif lock: cv[1].add_child(lbl("Needs " + str(C.LEGACY[u["req"]]["n"]) + " first", 17, BONE3))
 				else: add(cv[1], abtn("Unlock for " + C.numstr(u["cost"]) + " renown", "buyLegacy", id))
 				lc.add_child(cv[0])
 			v.add_child(lc)
@@ -1351,14 +1353,14 @@ func _legacy() -> Control:
 			v.add_child(lbl("Every run levels up the admiral who led it: 1 per battle won, 2 per elite, 5 per flagship and 10 for a victory.", 17, BONE2))
 			var mc = flow()
 			for i in range(1, C.MASTERY_PERKS.size()):
-				var cv = card(false, 300); cv[1].add_child(lbl("Level " + str(i) + ": " + str(C.MASTERY_PERKS[i]["n"]), 19, BONE, font_semi)); cv[1].add_child(lbl(C.MASTERY_PERKS[i]["d"], 16, BONE2)); cv[1].add_child(lbl(C.numstr(C.MASTERY_XP[i]) + " mastery", 14, BONE3)); mc.add_child(cv[0])
-			var cv_m = card(false, 300); cv_m[1].add_child(lbl("Capstone mastery", 19, BONE, font_semi)); cv_m[1].add_child(lbl("Choose a Command evolution at level 8 (230 XP), then keep deepening it at 320, 440 and 600 XP.", 16, BONE2)); mc.add_child(cv_m[0])
+				var cv = card(false, 300); cv[1].add_child(lbl("Level " + str(i) + ": " + str(C.MASTERY_PERKS[i]["n"]), 19, BONE, font_semi)); cv[1].add_child(lbl(C.MASTERY_PERKS[i]["d"], 18, BONE2)); cv[1].add_child(lbl(C.numstr(C.MASTERY_XP[i]) + " mastery", 17, BONE3)); mc.add_child(cv[0])
+			var cv_m = card(false, 300); cv_m[1].add_child(lbl("Capstone mastery", 19, BONE, font_semi)); cv_m[1].add_child(lbl("Choose a Command evolution at level 8 (230 XP), then keep deepening it at 320, 440 and 600 XP.", 18, BONE2)); mc.add_child(cv_m[0])
 			v.add_child(mc)
 			for f in C.favFirst():
 				v.add_child(lbl(C.FACTIONS[f]["n"], 20, BONE, font_semi)); var ac = flow()
 				for id in C.ADMIRALS.keys():
 					if C.or_(C.ADMIRALS[id].get("fac"), "voidsworn") != f: continue
-					var cv2 = card(false, 300); cv2[1].add_child(lbl(C.ADMIRALS[id]["n"], 19, BONE, font_semi)); cv2[1].add_child(lbl(C.ADMIRALS[id]["doc"], 15, GILT)); cv2[1].add_child(_mastery_bar(id))
+					var cv2 = card(false, 300); cv2[1].add_child(lbl(C.ADMIRALS[id]["n"], 19, BONE, font_semi)); cv2[1].add_child(lbl(C.ADMIRALS[id]["doc"], 17, GILT)); cv2[1].add_child(_mastery_bar(id))
 					if C.LINEAGE_TREES.has(id): add(cv2[1], abtn("View lineage tree", "lineage", id))
 					ac.add_child(cv2[0])
 				v.add_child(ac)
@@ -1366,23 +1368,23 @@ func _legacy() -> Control:
 			v.add_child(lbl("Every protocol you take raises your sync with that core (rare protocols count double, epic triple).", 17, BONE2))
 			var fc = flow()
 			for i in range(1, C.FAVOUR_TIERS.size()):
-				var cv = card(false, 300); cv[1].add_child(rich("[b]" + esc(C.FAVOUR_TIERS[i]["n"]) + "[/b] " + c(C.numstr(C.FAVOUR_TIERS[i]["at"]) + "+", BONE3), 19)); cv[1].add_child(lbl(C.FAVOUR_TIERS[i].get("d", ""), 16, BONE2)); fc.add_child(cv[0])
+				var cv = card(false, 300); cv[1].add_child(rich("[b]" + esc(C.FAVOUR_TIERS[i]["n"]) + "[/b] " + c(C.numstr(C.FAVOUR_TIERS[i]["at"]) + "+", BONE3), 19)); cv[1].add_child(lbl(C.FAVOUR_TIERS[i].get("d", ""), 18, BONE2)); fc.add_child(cv[0])
 			v.add_child(fc)
 			for p in C.PATRONS.keys():
 				var P = C.PATRONS[p]; var f = C.favourOf(p); var t = C.favourTier(p); var nx = C.FAVOUR_TIERS[t + 1] if t + 1 < C.FAVOUR_TIERS.size() else null
-				var r = hbox(); r.add_child(lbl(P["glyph"], 18, Color(P["col"]), font_semi, false)); r.add_child(rich("[b]" + esc(P["n"]) + "[/b]\n" + c(esc(P["theme"]), BONE3), 15))
-				r.add_child(rich("[right][b]" + c(esc(C.FAVOUR_TIERS[t]["n"]), Color(P["col"])) + "[/b]\n" + c(C.numstr(f) + ((" / " + C.numstr(nx["at"])) if nx != null else ""), BONE3) + "[/right]", 15)); v.add_child(r)
+				var r = hbox(); r.add_child(lbl(P["glyph"], 18, Color(P["col"]), font_semi, false)); r.add_child(rich("[b]" + esc(P["n"]) + "[/b]\n" + c(esc(P["theme"]), BONE3), 17))
+				r.add_child(rich("[right][b]" + c(esc(C.FAVOUR_TIERS[t]["n"]), Color(P["col"])) + "[/b]\n" + c(C.numstr(f) + ((" / " + C.numstr(nx["at"])) if nx != null else ""), BONE3) + "[/right]", 17)); v.add_child(r)
 		"heat":
 			var heat_open = C.heatUnlocked()
 			v.add_child(lbl("Heat is open. Pick rules on the admiral screen before a run; each level adds 10% renown." if heat_open else "Lose a run to open Heat.", 17, BONE2))
 			var hc = flow()
 			for kk in C.HEAT.keys():
-				var cv = card(false, 300); cv[1].add_child(rich("[b]" + esc(C.HEAT[kk]["n"]) + "[/b] " + c("+" + C.numstr(C.HEAT[kk]["w"]), BONE3), 19)); cv[1].add_child(lbl(C.HEAT[kk]["d"], 16, BONE2)); hc.add_child(cv[0])
+				var cv = card(false, 300); cv[1].add_child(rich("[b]" + esc(C.HEAT[kk]["n"]) + "[/b] " + c("+" + C.numstr(C.HEAT[kk]["w"]), BONE3), 19)); cv[1].add_child(lbl(C.HEAT[kk]["d"], 18, BONE2)); hc.add_child(cv[0])
 			v.add_child(hc); v.add_child(lbl("Best Heat won", 20, BONE, font_semi))
 			var bc = flow()
 			for f in C.RUN_FACTIONS:
 				var hb = float(C.z0(M["heatBest"].get(f))); var won = C.or_(st.get("wonFacs"), []).has(f)
-				var cv = card(false, 220); cv[1].add_child(lbl(C.FACTIONS[f]["n"], 18, BONE, font_semi)); cv[1].add_child(lbl(("Heat " + C.numstr(hb)) if hb > 0 else ("Won at Heat 0" if won else "Not yet won"), 16, GILT if hb > 0 else BONE3)); bc.add_child(cv[0])
+				var cv = card(false, 220); cv[1].add_child(lbl(C.FACTIONS[f]["n"], 18, BONE, font_semi)); cv[1].add_child(lbl(("Heat " + C.numstr(hb)) if hb > 0 else ("Won at Heat 0" if won else "Not yet won"), 18, GILT if hb > 0 else BONE3)); bc.add_child(cv[0])
 			v.add_child(bc)
 		"fallen":
 			var fallen = M["fallen"].slice(max(0, M["fallen"].size() - 40)); fallen.reverse()
@@ -1390,7 +1392,7 @@ func _legacy() -> Control:
 			else:
 				var fc2 = flow()
 				for f in fallen:
-					var cv = card(false, 260); cv[1].add_child(lbl(f["name"], 18, BONE, font_semi)); cv[1].add_child(lbl(C.rankName(f) + " of the " + str(f.get("ship", "")), 15, BONE2)); cv[1].add_child(lbl("Lost in sector " + C.roman(f.get("sector", 1)), 14, BONE3)); fc2.add_child(cv[0])
+					var cv = card(false, 260); cv[1].add_child(lbl(f["name"], 18, BONE, font_semi)); cv[1].add_child(lbl(C.rankName(f) + " of the " + str(f.get("ship", "")), 17, BONE2)); cv[1].add_child(lbl("Lost in sector " + C.roman(f.get("sector", 1)), 17, BONE3)); fc2.add_child(cv[0])
 				v.add_child(fc2)
 	add(v, abtn("Back to title", "title", "", true))
 	return v
@@ -1438,54 +1440,55 @@ func _end(d: Dictionary) -> Control:
 	var carry = panel(GILT, Color(0.37, 0.7, 0.65, 0.08), 12); var cv = vbox(4); carry.add_child(cv)
 	var receipt = cy["inheritance"]; var flown = receipt["flown"]
 	cv.add_child(lbl("YOUR INHERITANCE", 24, GILT, font_semi))
-	cv.add_child(lbl("What this run leaves for the next generation.", 16, BONE2))
+	cv.add_child(lbl("What this run leaves for the next generation.", 18, BONE2))
 	cv.add_child(rich("[b]" + c("+" + C.numstr(cy["ren"]) + " renown", GILT) + "[/b]" + ((" (Heat " + C.numstr(cy["hl"]) + ": +" + C.numstr(cy["hl"] * 10) + "%)") if C.jt(cy["hl"]) else "") + ". Balance: " + C.numstr(receipt["balance"]) + " renown.", 18))
-	cv.add_child(lbl("Affordable now", 20, GILT, font_semi))
-	cv.add_child(lbl("Each reward can be bought on its own. Choose how to spend your renown in Progression.", 15, BONE3))
+	# issue 644 (say less at 17 px): the how-to sentence moved to the hover on this heading
+	var aff = lbl("Affordable now", 20, GILT, font_semi); aff.mouse_filter = Control.MOUSE_FILTER_PASS
+	aff.tooltip_text = "Each reward can be bought on its own. Choose how to spend your renown in Progression."; cv.add_child(aff)
 	for u in receipt["affordable"]:
-		cv.add_child(lbl(str(u["n"]) + ": " + C.numstr(u["cost"]) + " renown (" + str(u["kind"]) + ")" + (" - Newly affordable" if u["fresh"] else ""), 16, GILT if u["fresh"] else BONE2))
-	if receipt["affordable"].is_empty(): cv.add_child(lbl("No unowned doctrine or hull reward is affordable yet. Your renown stays saved.", 16, BONE3))
+		cv.add_child(lbl(str(u["n"]) + ": " + C.numstr(u["cost"]) + " renown (" + str(u["kind"]) + ")" + (" - Newly affordable" if u["fresh"] else ""), 18, GILT if u["fresh"] else BONE2))
+	if receipt["affordable"].is_empty(): cv.add_child(lbl("No unowned doctrine or hull reward is affordable yet. Your renown stays saved.", 18, BONE3))
 	cv.add_child(lbl(str(C.ADMIRALS[flown["id"]]["n"]) + (": lineage tree" if flown["tree"] else ": admiral line"), 20, GILT, font_semi))
 	cv.add_child(lbl("+" + C.numstr(snapped(float(cy["mxGain"]), 0.01)) + " XP. Level " + str(flown["level"]) + ((" (was " + C.numstr(cy["mx0"]) + ")") if cy["mx1"] > cy["mx0"] else "") + ".", 17, BONE))
-	for perk in flown["earned"]: cv.add_child(lbl(str(perk["n"]) + " earned: " + str(perk["d"]), 16, GILT))
+	for perk in flown["earned"]: cv.add_child(lbl(str(perk["n"]) + " earned: " + str(perk["d"]), 18, GILT))
 	if flown.get("hasCap", false):
-		if flown["next"] == null: cv.add_child(lbl(C.numstr(flown["xp"]) + " XP. This evolution is at full mastery.", 16, BONE3))
-		else: cv.add_child(lbl(C.numstr(flown["xp"]) + " / " + C.numstr(flown["next"]) + " XP. " + C.numstr(flown["remaining"]) + " XP to capstone mastery " + C.roman(int(flown["capLevel"]) + 1) + ".", 16, BONE3))
+		if flown["next"] == null: cv.add_child(lbl(C.numstr(flown["xp"]) + " XP. This evolution is at full mastery.", 18, BONE3))
+		else: cv.add_child(lbl(C.numstr(flown["xp"]) + " / " + C.numstr(flown["next"]) + " XP. " + C.numstr(flown["remaining"]) + " XP to capstone mastery " + C.roman(int(flown["capLevel"]) + 1) + ".", 18, BONE3))
 		if int(flown["capLevel"]) > 0:
 			var cap_perk = C.CAPSTONE_MASTERY_PERKS[int(flown["capLevel"]) - 1]
-			cv.add_child(lbl("Capstone mastery " + C.roman(int(flown["capLevel"])) + ": " + str(cap_perk["d"]), 16, GILT))
-	elif flown["next"] == null: cv.add_child(lbl(C.numstr(flown["xp"]) + " XP. This line is at its current cap.", 16, BONE3))
-	else: cv.add_child(lbl(C.numstr(flown["xp"]) + " / " + C.numstr(flown["next"]) + " XP. " + C.numstr(flown["remaining"]) + " XP to level " + str(int(flown["level"]) + 1) + ": " + str(C.masteryPerk(int(flown["level"]) + 1)["n"]) + ".", 16, BONE3))
+			cv.add_child(lbl("Capstone mastery " + C.roman(int(flown["capLevel"])) + ": " + str(cap_perk["d"]), 18, GILT))
+	elif flown["next"] == null: cv.add_child(lbl(C.numstr(flown["xp"]) + " XP. This line is at its current cap.", 18, BONE3))
+	else: cv.add_child(lbl(C.numstr(flown["xp"]) + " / " + C.numstr(flown["next"]) + " XP. " + C.numstr(flown["remaining"]) + " XP to level " + str(int(flown["level"]) + 1) + ": " + str(C.masteryPerk(int(flown["level"]) + 1)["n"]) + ".", 18, BONE3))
 	if flown["tree"]:
 		cv.add_child(lbl(str(flown["pending"]) + (" branch pick ready." if flown["pending"] == 1 else " branch picks ready.") + (" Command evolution ready." if flown["capstoneReady"] else ""), 17, GILT))
-		cv.add_child(lbl("Recorded skills: " + (", ".join(PackedStringArray(flown["chosen"])) if not flown["chosen"].is_empty() else "None yet") + ".", 15, BONE3))
+		cv.add_child(lbl("Recorded skills: " + (", ".join(PackedStringArray(flown["chosen"])) if not flown["chosen"].is_empty() else "None yet") + ".", 17, BONE3))
 	var sv = cv
-	sv.add_child(lbl("SHADOW LEARNING", 16, GILT, font_semi))
+	sv.add_child(lbl("SHADOW LEARNING", 18, GILT, font_semi))
 	for row in receipt["shadow"]:
 		var snext = ((", fully mastered") if row.get("hasCap", false) else (", at current cap")) if row["next"] == null else ((", " + C.numstr(snapped(float(row["remaining"]), 0.01)) + " XP to capstone mastery " + C.roman(int(row.get("capLevel", 0)) + 1)) if row.get("hasCap", false) else (", " + C.numstr(snapped(float(row["remaining"]), 0.01)) + " XP to level " + str(int(row["level"]) + 1)))
-		sv.add_child(lbl(str(C.ADMIRALS[row["id"]]["n"]) + ": +" + C.numstr(snapped(float(row["xp"]), 0.01)) + " shadow XP" + (" (heir rate)" if row["rate"] == 0.5 else "") + ". Total " + C.numstr(snapped(float(row["total"]), 0.01)) + " XP, level " + C.numstr(row["level"]) + snext + ".", 15, BONE2))
-	if cy["mxOverflow"] > 0: sv.add_child(lbl(C.numstr(snapped(float(cy["mxOverflow"]), 0.01)) + " XP past this line's cap went to shadow learning.", 15, BONE3))
-	if cy["shadowBank"] > 0: sv.add_child(lbl(C.numstr(snapped(float(cy["shadowBank"]), 0.01)) + " shadow XP saved for an uncapped benched line.", 15, BONE3))
+		sv.add_child(lbl(str(C.ADMIRALS[row["id"]]["n"]) + ": +" + C.numstr(snapped(float(row["xp"]), 0.01)) + " shadow XP" + (" (heir rate)" if row["rate"] == 0.5 else "") + ". Total " + C.numstr(snapped(float(row["total"]), 0.01)) + " XP, level " + C.numstr(row["level"]) + snext + ".", 17, BONE2))
+	if cy["mxOverflow"] > 0: sv.add_child(lbl(C.numstr(snapped(float(cy["mxOverflow"]), 0.01)) + " XP past this line's cap went to shadow learning.", 17, BONE3))
+	if cy["shadowBank"] > 0: sv.add_child(lbl(C.numstr(snapped(float(cy["shadowBank"]), 0.01)) + " shadow XP saved for an uncapped benched line.", 17, BONE3))
 	if not receipt.get("cores", []).is_empty():
 		cv.add_child(lbl("CORE SYNC", 20, GILT, font_semi))
 		for row in receipt["cores"]:
 			cv.add_child(lbl(str(C.PATRONS[row["id"]]["n"]) + ": +" + C.numstr(row["gain"]) + " sync. " + str(C.FAVOUR_TIERS[row["tier"]]["n"]) + (" (Tier up this run)" if row["tierUp"] else "") + ".", 17, Color(C.PATRONS[row["id"]]["col"])))
-			cv.add_child(lbl((C.numstr(row["total"]) + " sync. Full sync reached.") if row["next"] == null else (C.numstr(row["total"]) + " / " + C.numstr(row["next"]) + " sync. " + C.numstr(row["remaining"]) + " to " + str(C.FAVOUR_TIERS[int(row["tier"]) + 1]["n"]) + "."), 15, BONE3))
+			cv.add_child(lbl((C.numstr(row["total"]) + " sync. Full sync reached.") if row["next"] == null else (C.numstr(row["total"]) + " / " + C.numstr(row["next"]) + " sync. " + C.numstr(row["remaining"]) + " to " + str(C.FAVOUR_TIERS[int(row["tier"]) + 1]["n"]) + "."), 17, BONE3))
 	# Job 7 step 7 (R85 Q5): the run's Nemesis lesson, recorded on the commander who fought the lost meeting
 	var nz = receipt.get("nem") if receipt.get("nem") is Dictionary else {"met": 0, "lessons": []}
 	cv.add_child(lbl("Nemesis lesson", 20, GILT, font_semi))
 	var nl = nz.get("lessons") if nz.get("lessons") is Array else []
-	if nl.is_empty(): cv.add_child(lbl("No weakness was taught this run." if int(nz.get("met", 0)) > 0 else "No Nemesis meeting this run.", 16, BONE3))
+	if nl.is_empty(): cv.add_child(lbl("No weakness was taught this run." if int(nz.get("met", 0)) > 0 else "No Nemesis meeting this run.", 18, BONE3))
 	for l in nl:
 		var NW = C.NEM_WEAK.get(l.get("w")) if l.get("w") != null else null
 		if NW != null: cv.add_child(rich("Nemesis lesson: [b]" + c(esc(l.get("name")), BLOOD) + "[/b] beat you and taught you a weakness: [b]" + c(esc(NW["n"]), GILT) + "[/b].", 17))
 		else: cv.add_child(rich("Nemesis lesson: [b]" + c(esc(l.get("name")), BLOOD) + "[/b] beat you.", 17))
-		if l.get("text") != null and str(l.get("text")) != "": cv.add_child(lbl(str(l["text"]), 15, BONE3))
+		if l.get("text") != null and str(l.get("text")) != "": cv.add_child(lbl(str(l["text"]), 17, BONE3))
 	var choices = flow(8)
 	add(choices, abtn("Choose doctrine", "progTab", "legacy")); add(choices, abtn("Choose hull rewards", "progTab", "variants"))
 	add(choices, abtn("View admiral line", "lineage" if flown["tree"] else "progTab", flown["id"] if flown["tree"] else "mastery")); sv.add_child(choices)
 	sv.add_child(lbl("Name an heir", 20, GILT, font_semi))
-	sv.add_child(lbl("Benched lines of this faction earn 25% shadow XP. Your named heir earns 50% on future runs. You can replace this faction's heir after any run.", 15, BONE2))
+	sv.add_child(lbl("Benched lines of this faction earn 25% shadow XP. Your named heir earns 50% on future runs. You can replace this faction's heir after any run.", 17, BONE2))
 	for id in C.shadowAdmirals(R["fac"], R["admiral"]):
 		var heir = C.META["heirs"].get(R["fac"]) == id
 		add(sv, abtn(("Heir: " if heir else "Name ") + str(C.ADMIRALS[id]["n"]), "nameHeir", id, heir))
@@ -1496,7 +1499,7 @@ func _end(d: Dictionary) -> Control:
 	for t in tl:
 		var p = panel(IRON3, GLASS, 8); p.custom_minimum_size.x = px(120); var tv = vbox(0)
 		var a = lbl(str(t[0]) if t[0] is String else C.numstr(t[0]), 26, GILT, font_semi); a.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; tv.add_child(a)
-		var b = lbl(t[1], 13, BONE2); b.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; tv.add_child(b); p.add_child(tv); tiles.add_child(p)
+		var b = lbl(t[1], 17, BONE2); b.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; tv.add_child(b); p.add_child(tv); tiles.add_child(p)
 	v.add_child(tiles)
 	var fl = R["fleet"].filter(func(x): return float(x["hp"]) > 0)
 	var score = func(x): return (float(x["car"]["dealt"]) + float(x["car"]["kills"]) * 40.0) if x.get("car") != null else 0.0
@@ -1508,24 +1511,24 @@ func _end(d: Dictionary) -> Control:
 		for x in fl:
 			var cr = x.get("car") if x.get("car") != null else {"dealt": 0, "kills": 0}
 			var p = panel(GILT if (x == best and score.call(x) > 0) else IRON3, GLASS, 8); var r = hbox()
-			r.add_child(rich("[b]" + esc(x["name"]) + "[/b] " + c(esc(C.HULLS[x["tpl"]]["n"]), BONE3) + "\n" + c(esc(C.rankName(x["cap"])) + " " + esc(x["cap"]["name"]), BONE3), 15))
-			r.add_child(rich("[right]" + C.numstr(cr["kills"]) + " kills\n" + c(C.numstr(cr["dealt"]) + " dmg", BONE3) + "[/right]", 15)); p.add_child(r); v.add_child(p)
+			r.add_child(rich("[b]" + esc(x["name"]) + "[/b] " + c(esc(C.HULLS[x["tpl"]]["n"]), BONE3) + "\n" + c(esc(C.rankName(x["cap"])) + " " + esc(x["cap"]["name"]), BONE3), 17))
+			r.add_child(rich("[right]" + C.numstr(cr["kills"]) + " kills\n" + c(C.numstr(cr["dealt"]) + " dmg", BONE3) + "[/right]", 17)); p.add_child(r); v.add_child(p)
 	if R["fallen"].size() > 0:
 		var nm = []
 		for f in R["fallen"]: nm.append(f["name"])
-		v.add_child(lbl("Captains lost this run: " + ", ".join(PackedStringArray(nm)) + ".", 16, BONE2))
+		v.add_child(lbl("Captains lost this run: " + ", ".join(PackedStringArray(nm)) + ".", 18, BONE2))
 	if victory:
 		var wf = []
 		for f in C.or_(C.META["stats"].get("wonFacs"), []): wf.append(C.FACTIONS[f]["n"])
 		var w = int(C.META["stats"]["wins"])
 		v.add_child(lbl(("Victories so far: " + str(w)) if w > 1 else "Your first victory." + "", 18, GILT))
-		v.add_child(lbl("Won with: " + ", ".join(PackedStringArray(wf)) + ".", 16, GILT))
+		v.add_child(lbl("Won with: " + ", ".join(PackedStringArray(wf)) + ".", 18, GILT))
 	else:
 		var pb = float(d["prevBest"])
 		v.add_child(lbl(("New best: sector " + C.roman(R["sector"])) if float(R["sector"]) > pb else ("Best so far: sector " + C.roman(min(3, float(C.META["stats"]["best"])))), 20, GILT))
 	if d["next"] != null:
 		var NF = C.FACTIONS[d["next"]]; var p2 = panel(VERD, Color(0.37, 0.7, 0.65, 0.08), 12); var nv = vbox(4); p2.add_child(nv)
-		nv.add_child(lbl("NEXT RUN", 12, BONE3)); nv.add_child(lbl("Try the " + str(NF["n"]).trim_prefix("The "), 18, BONE, font_semi)); nv.add_child(lbl(NF.get("blurb", ""), 15, BONE2)); v.add_child(p2)
+		nv.add_child(lbl("NEXT RUN", 17, BONE3)); nv.add_child(lbl("Try the " + str(NF["n"]).trim_prefix("The "), 18, BONE, font_semi)); nv.add_child(lbl(NF.get("blurb", ""), 17, BONE2)); v.add_child(p2)
 	var menu = hbox(); menu.alignment = BoxContainer.ALIGNMENT_CENTER
 	if d["next"] != null:
 		add(menu, abtn("Play as " + str(C.FACTIONS[d["next"]]["n"]), "nextFac", d["next"], true)); add(menu, abtn("Pick a faction", "newRunScreen"))
@@ -1552,7 +1555,7 @@ func _tree_name(key: String) -> String:
 	return str(pair[c2]["n"]) if c2 < pair.size() else key
 func _lineage_node(n) -> Control:
 	var chosen = n["state"] == "chosen"; var cv = card(chosen, 300); var col = cv[1]
-	col.add_child(lbl(n["n"], 19, GILT if chosen else BONE, font_semi)); col.add_child(lbl(n["d"], 16, BONE2))
+	col.add_child(lbl(n["n"], 19, GILT if chosen else BONE, font_semi)); col.add_child(lbl(n["d"], 18, BONE2))
 	var labels = {"chosen": "Recorded", "locked": "Locked until reset", "available": "Choose this skill", "future": "Not yet available"}
 	add(col, abtn(labels[n["state"]], "offerLineage", n["key"], n["state"] == "available"))
 	if n["state"] == "locked": cv[0].modulate.a = 0.55
@@ -1563,19 +1566,19 @@ func _lineage(id) -> Control:
 	v.add_child(lbl("Recorded in the glass. One pick at each of levels 5, 6 and 7. Choose a branch, then one skill at its next tier. Its partner locks until you reset this line.", 17, BONE2))
 	v.add_child(_mastery_bar(id))
 	v.add_child(lbl(str(maxi(0, mini(3, level - 4) - build["picks"].size())) + " branch picks ready. Capstone at level 8 (230 XP).", 17, GILT))
-	v.add_child(lbl("Command skills and capstones use " + str(C.ADMIRALS[id]["cmd"]["n"]) + ", the primary Command. Fleet and flagship branches open their first tier.", 15, BONE3))
+	v.add_child(lbl("Command skills and capstones use " + str(C.ADMIRALS[id]["cmd"]["n"]) + ", the primary Command. Fleet and flagship branches open their first tier.", 17, BONE3))
 	if not C.lineageBetweenRuns(): v.add_child(lbl("Finish or abandon your saved run before changing this line.", 17, BLOOD))
 	var columns = flow(16); var trunk = vbox(8); trunk.custom_minimum_size.x = px(300)
 	trunk.add_child(lbl("Trunk: levels 1 to 4", 20, BONE, font_semi))
 	for i in range(1, C.MASTERY_PERKS.size()):
-		var cv = card(false, 300); cv[1].add_child(lbl(str(i) + ". " + str(C.MASTERY_PERKS[i]["n"]), 19, BONE, font_semi)); cv[1].add_child(lbl(C.MASTERY_PERKS[i]["d"], 16, BONE2)); cv[1].add_child(lbl(C.numstr(C.MASTERY_XP[i]) + " XP: " + ("earned" if level >= i else "not yet earned"), 14, BONE3)); trunk.add_child(cv[0])
+		var cv = card(false, 300); cv[1].add_child(lbl(str(i) + ". " + str(C.MASTERY_PERKS[i]["n"]), 19, BONE, font_semi)); cv[1].add_child(lbl(C.MASTERY_PERKS[i]["d"], 18, BONE2)); cv[1].add_child(lbl(C.numstr(C.MASTERY_XP[i]) + " XP: " + ("earned" if level >= i else "not yet earned"), 17, BONE3)); trunk.add_child(cv[0])
 	columns.add_child(trunk)
 	for b in tree["branches"].keys():
 		var col = vbox(8); col.custom_minimum_size.x = px(300)
 		var glyph = {"A": "[+] Command", "B": "[=] Fleet", "C": "[*] Flagship and line"}
 		col.add_child(lbl(glyph[b] + ": " + str(tree["branches"][b]["n"]), 20, GILT, font_semi))
 		for t in range(tree["branches"][b]["tiers"].size()):
-			col.add_child(lbl("Tier " + str(t + 1), 16, BONE3))
+			col.add_child(lbl("Tier " + str(t + 1), 18, BONE3))
 			for n in nodes:
 				if n["branch"] == b and n["tier"] == t + 1: col.add_child(_lineage_node(n))
 		columns.add_child(col)
@@ -1585,23 +1588,23 @@ func _lineage(id) -> Control:
 	for n in nodes:
 		if n["branch"] == "cap": capnodes.add_child(_lineage_node(n))
 	capv.add_child(capnodes); capv.add_child(_capstone_mastery(id)); v.add_child(cap)
-	v.add_child(lbl("Reset clears all branch picks and the capstone. XP and trunk perks stay. This line has been reset " + C.numstr(build["respecs"]) + " times. You have " + C.numstr(C.z0(C.META.get("renown"))) + " renown.", 16, BONE3))
+	v.add_child(lbl("Reset clears all branch picks and the capstone. XP and trunk perks stay. This line has been reset " + C.numstr(build["respecs"]) + " times. You have " + C.numstr(C.z0(C.META.get("renown"))) + " renown.", 18, BONE3))
 	var row = hbox(); add(row, abtn("Reset line: " + C.numstr(C.lineageRespecCost(id)) + " renown", "offerRespec", id)); add(row, abtn("Back to Admiral mastery", "progTab", "mastery")); v.add_child(row)
 	return v
 # Job 7 step 14: the mastery levels on the chosen capstone evolution, in the same block as the evolution choice.
 func _capstone_mastery(id) -> Control:
 	var tree = C.LINEAGE_TREES[id]; var build = C.lineageBuild(id); var v = vbox(6)
 	if build["capstone"] == null:
-		v.add_child(lbl("Choose a Command evolution to open capstone mastery at 320, 440 and 600 XP.", 15, BONE3)); return v
+		v.add_child(lbl("Choose a Command evolution to open capstone mastery at 320, 440 and 600 XP.", 17, BONE3)); return v
 	var chosen = tree["capstones"][int(build["capstone"])]; var xp = C.masteryXP(id); var l = C.capstoneMasteryLevel(id); var nx = C.capstoneMasteryNext(id)
 	v.add_child(lbl("Capstone mastery: " + str(chosen["n"]), 20, GILT, font_semi))
-	v.add_child(lbl((C.numstr(xp) + " XP. This evolution is at full mastery.") if nx == null else (C.numstr(xp) + " / " + C.numstr(nx) + " XP. " + C.numstr(float(nx) - xp) + " XP to capstone mastery " + C.roman(l + 1) + "."), 15, BONE3))
+	v.add_child(lbl((C.numstr(xp) + " XP. This evolution is at full mastery.") if nx == null else (C.numstr(xp) + " / " + C.numstr(nx) + " XP. " + C.numstr(float(nx) - xp) + " XP to capstone mastery " + C.roman(l + 1) + "."), 17, BONE3))
 	var row = flow(10)
 	for i in range(C.CAPSTONE_MASTERY_PERKS.size()):
 		var earned = l > i; var cv = card(earned, 300)
 		cv[1].add_child(lbl("Mastery " + C.roman(i + 1) + (" (earned)" if earned else ""), 18, GILT if earned else BONE, font_semi))
-		cv[1].add_child(lbl(str(C.CAPSTONE_MASTERY_PERKS[i]["d"]), 15, BONE2))
-		cv[1].add_child(lbl(C.numstr(C.CAPSTONE_MASTERY_XP[i]) + " XP", 14, BONE3))
+		cv[1].add_child(lbl(str(C.CAPSTONE_MASTERY_PERKS[i]["d"]), 17, BONE2))
+		cv[1].add_child(lbl(C.numstr(C.CAPSTONE_MASTERY_XP[i]) + " XP", 17, BONE3))
 		if not earned: cv[0].modulate.a = 0.55
 		row.add_child(cv[0])
 	v.add_child(row)
@@ -1638,10 +1641,10 @@ func _modal(md: Dictionary) -> void:
 				var na = d["adapt"]; var nf = d["adaptFac"]
 				# the Nemesis adaptation: its own well with the reserved red bar and the NEMESIS tag, as the battle's Nemesis block
 				var aw = blk(ALERT, 5, 14, 10); aw[0].set_meta("keep", true)
-				var ah = hbox(8); ah.add_child(tagl("Nemesis", ALERT, true)); ah.add_child(lbl("ADAPTED TO YOU", 13, GILT, font_caps, false)); aw[1].add_child(ah)
+				var ah = hbox(8); ah.add_child(tagl("Nemesis", ALERT, true)); ah.add_child(lbl("ADAPTED TO YOU", 17, GILT, font_caps, false)); aw[1].add_child(ah)
 				aw[1].add_child(rich(c(esc(str(d.get("adaptWho", ""))) + " has adapted: ", BONE2) + "[b]" + c(esc(C.nemAdaptName(na, nf)), BLOOD) + "[/b] " + c("(" + esc(str(d.get("adaptWhy", ""))) + ")", BONE3), 17))
-				aw[1].add_child(rich(c(esc(C.nemAdaptDesc(na, nf)), BONE2), 16))
-				if str(d.get("adaptLine", "")) != "": aw[1].add_child(rich("[i]" + c(esc(str(d["adaptLine"])), BLOOD) + "[/i]", 15))
+				aw[1].add_child(rich(c(esc(C.nemAdaptDesc(na, nf)), BONE2), 18))
+				if str(d.get("adaptLine", "")) != "": aw[1].add_child(rich("[i]" + c(esc(str(d["adaptLine"])), BLOOD) + "[/i]", 17))
 				v.add_child(aw[0])
 			if d["cond"] != null: v.add_child(rich(c("Sector condition: [b]" + esc(d["cond"]["n"]) + "[/b].", EMBER) + " " + c(esc(d["cond"]["d"]), BONE2), 17))
 			if md["kind"] == "sector": p.call(F.get("blurb", ""), BONE2)
@@ -1687,7 +1690,7 @@ func _modal(md: Dictionary) -> void:
 				for key in tks: tls.append(_tree_name(str(key)) + " x" + C.numstr(tstats[key]))
 				p.call("Lineage in action: " + ", ".join(PackedStringArray(tls)) + ".", VERD)
 			if d["flagMoved"] != null: p.call("The admiral transfers the flag to the " + str(d["flagMoved"]["name"]) + ". Its aspect goes with it.", VERD)
-			for x in sm["xp"]: v.add_child(rich("• " + esc(x["cap"]) + " of the " + esc(x["ship"]) + ": +" + C.numstr(x["xp"]) + " experience" + ((" " + c("promoted to " + str(C.RANKS[int(x["rank"])]), VERD)) if x["up"] else ""), 16))
+			for x in sm["xp"]: v.add_child(rich("• " + esc(x["cap"]) + " of the " + esc(x["ship"]) + ": +" + C.numstr(x["xp"]) + " experience" + ((" " + c("promoted to " + str(C.RANKS[int(x["rank"])]), VERD)) if x["up"] else ""), 18))
 			var rw = d["rw"]
 			var nx: Button = null
 			if _find(acts, "prizeStep", "").size() > 0: nx = fin("Decide on the prize ship" + ("s" if R["reward"]["prizes"].size() > 1 else ""), "prizeStep", "", acts)
@@ -1711,7 +1714,7 @@ func _modal(md: Dictionary) -> void:
 			for i in range(n):
 				var r = rows[i]; var H = C.HULLS[r["p"]["tpl"]]; var hp = int(C.jsround(float(C.or_(r["p"].get("hpf"), 1)) * 100))
 				var pp = panel(IRON3, IRON2, 10); var pv = vbox(6); pp.add_child(pv)
-				pv.add_child(rich("[b]" + esc(r["p"]["name"]) + "[/b] " + c(esc(H["n"]) + ", " + C.numstr(C.or_(H.get("cp"), 1)) + " command point" + ("s" if float(C.or_(H.get("cp"), 1)) > 1 else "") + ", " + str(hp) + "% hull", BONE3), 16))
+				pv.add_child(rich("[b]" + esc(r["p"]["name"]) + "[/b] " + c(esc(H["n"]) + ", " + C.numstr(C.or_(H.get("cp"), 1)) + " command point" + ("s" if float(C.or_(H.get("cp"), 1)) > 1 else "") + ", " + str(hp) + "% hull", BONE3), 18))
 				var g = GridContainer.new(); g.columns = 3; g.add_theme_constant_override("h_separation", px(6))
 				var sm2 = (C.modName(r["o"]["strip"]["mod"]) + " + ") if C.jt(r["o"]["strip"]["mod"]) else ""
 				for opt in [["add", "Add", ("Joins at " + str(hp) + "% hull") if r["room"] else ("Your faction cannot field it" if r.get("gate") != null else "No command points left")], ["strip", "Strip", sm2 + C.numstr(r["o"]["strip"]["cred"]) + " credits"], ["ransom", "Ransom", C.numstr(r["o"]["ransom"]) + " credits"]]:
@@ -1730,7 +1733,7 @@ func _modal(md: Dictionary) -> void:
 			for i in range(ws.size()):
 				var w = ws[i]; var y = w["yield"]; var F = C.FACTIONS.get(w.get("fac"))
 				var pp = panel(IRON3, IRON2, 10); var pv = vbox(6); pp.add_child(pv)
-				pv.add_child(rich("[b]" + esc(w["name"]) + "[/b] " + c(esc(C.clsName(C.or_(w.get("cls"), ""))) + ((", " + esc(F["n"])) if F != null else ""), BONE3) + "\n" + c(esc(C.CAUSE_WORD.get(w.get("cause"), "destroyed")) + ((" by the " + esc(w["by"])) if C.jt(w.get("by")) else "") + ".", BONE2), 16))
+				pv.add_child(rich("[b]" + esc(w["name"]) + "[/b] " + c(esc(C.clsName(C.or_(w.get("cls"), ""))) + ((", " + esc(F["n"])) if F != null else ""), BONE3) + "\n" + c(esc(C.CAUSE_WORD.get(w.get("cause"), "destroyed")) + ((" by the " + esc(w["by"])) if C.jt(w.get("by")) else "") + ".", BONE2), 18))
 				var g = GridContainer.new(); g.columns = 3; g.add_theme_constant_override("h_separation", px(6))
 				if C.jt(y.get("mod")): add(g, choice("Strip it: " + C.modName(y["mod"]), C.MODULES[y["mod"]]["d"], "takeSalvage", str(i) + ":mod", acts))
 				add(g, choice("Scrap it", "+" + C.numstr(y["cred"]) + " credits", "takeSalvage", str(i) + ":cred", acts))
@@ -1742,7 +1745,7 @@ func _modal(md: Dictionary) -> void:
 		"boon":
 			var P = C.PATRONS[d["patron"]]; var pc = Color(P["col"])
 			var hd = hbox(12); var sg = lbl(P["glyph"], 26, INK, font_semi, false); var sgp = panel(pc, pc, 6); sgp.size_flags_vertical = Control.SIZE_SHRINK_BEGIN; sgp.add_child(sg); hd.add_child(sgp)
-			var hv = vbox(0); hv.size_flags_horizontal = Control.SIZE_EXPAND_FILL; hv.add_child(lbl(P["n"], 23, pc, font_goth)); hv.add_child(lbl(P["theme"], 15, BONE2)); hd.add_child(hv); v.add_child(hd)
+			var hv = vbox(0); hv.size_flags_horizontal = Control.SIZE_EXPAND_FILL; hv.add_child(lbl(P["n"], 23, pc, font_goth)); hv.add_child(lbl(P["theme"], 17, BONE2)); hd.add_child(hv); v.add_child(hd)
 			p.call("“" + str(P["quote"]) + "”", BONE2); p.call(str(C.REWARD_DEF["boon"]), BONE3)
 			var offer = d["offer"]
 			for i in range(offer.size()):
