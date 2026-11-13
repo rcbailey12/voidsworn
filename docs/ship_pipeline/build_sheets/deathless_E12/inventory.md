@@ -16,8 +16,8 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 | main_guns | the two null cannons (gauss T, gauss T): armour-piercing rail guns either side of the core | nullcannon | two twin turrets on oval saddles on the spine, one either side of the core (data.js gauss T, gauss T) | 2 | bow/top, bow/side, mid/top, mid/side | a thin round foot, a small oval shell, an arched crescent shade of seamed bevelled plates with a second layer and a corona crest, rod yokes, crescent capacitor fins, two slim round rail pairs with banded collars and shock rings (R221) | picture |
 | saddles | seat the batteries on the thin spine and carry their feeds | pylon | the oval saddles the turrets stand on | 2 | bow/side, mid/side | a stepped web, plates | picture |
 | core | the trapped light core: powers the ship and the reclaim (repair) ability | core | the caged green core at the centre of the ring | 1 | mid/top, mid/side, mid/below | hub collars, a bright sphere, gimbal rings, meridian bars | picture |
-| stern_block | holds the engines, the engine room and the sentry | tier | the stern block: a broad faceted block tapering forward into the spine, the engines in its face | 1 | stern/top, stern/side, stern/below | faceted faces, a stepped roof, openings (lights, vents, hatches) | picture |
-| engines | drive (sp 2): three eclipse-ring engines, no flame | engine | three engines side by side in the stern block | 3 | stern/top, stern/side, stern/below | faceted ribbed drums, mount collars, vanes, short bells, a corona ring round a black shade disc (no flame) | picture |
+| stern_block | holds the engines, the engine room and the sentry | tier | the stern block: a narrow faceted block stepping down to the spine, the engines stacked on its face (issue 618) | 1 | stern/top, stern/side, stern/below | faceted faces, a stepped roof, openings (lights, vents, hatches) | picture |
+| engines | drive (sp 2): three eclipse-ring engines, no flame | engine | three engines stacked one over another on the stern block (issue 618) | 3 | stern/top, stern/side, stern/below | faceted ribbed drums, mount collars, vanes, short bells, a corona ring round a black shade disc (no flame) | picture |
 | sentry | the null spire (gsentry T): point defence against craft, standing high to see over the hull | spire | the small turret on the stern block roof with green sights (data.js gsentry T, the null spire) | 1 | stern/top, stern/side | a thin round foot, a tall slim round spire with banded collars and green sight slits, an oval head pod, a layered crescent fin with a corona crest, two thin needle rails with banded collars (R221) | picture |
 | block_lights | running lights and the corona line on the block | lamp | the green light panel on the stern block flanks (the picture shows three on the near flank; matched on the far one) | 6 | stern/side | a housing, a green-white bar lens | picture |
 | block_vents | dump heat from the engine room | vent | heat slot panels on the stern block flanks | 2 | stern/side | a frame, slats | designed |
@@ -123,8 +123,8 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | struts | truss struts from the spine to the arcs (four in the picture; every ar | 8 / 8 | Y | Y | Y |
 | spine | the spine: a long plated beam, stepped where it meets each fitting, ov | 1 / 1 | Y | Y | Y |
 | spine_plates | plate blocks along the spine | 3 / 1 | Y | Y | Y |
-| stern_block | the stern block: a broad faceted block tapering forward into the spine | 1 / 1 | Y | Y | Y |
-| engines | three engines side by side in the stern block | 3 / 3 | Y | Y | Y |
+| stern_block | the stern block: a narrow faceted block stepping down to the spine, th | 1 / 1 | Y | Y | Y |
+| engines | three engines stacked one over another on the stern block (issue 618) | 3 / 3 | Y | Y | Y |
 | sentry | the small turret on the stern block roof with green sights (data.js gs | 1 / 1 | Y | Y | Y |
 | block_hatches | hatches on the stern block roof | 2 / 2 | Y | Y | Y |
 
@@ -134,8 +134,8 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 |---|---|---|---|---|---|
 | arcs | the broken shade ring: flat box-section arcs on an oval round the spin | 8 / 8 | Y | Y | Y |
 | spine | the spine: a long plated beam, stepped where it meets each fitting, ov | 1 / 1 | Y | Y | Y |
-| stern_block | the stern block: a broad faceted block tapering forward into the spine | 1 / 1 | Y | Y | Y |
-| engines | three engines side by side in the stern block | 3 / 3 | Y | Y | Y |
+| stern_block | the stern block: a narrow faceted block stepping down to the spine, th | 1 / 1 | Y | Y | Y |
+| engines | three engines stacked one over another on the stern block (issue 618) | 3 / 3 | Y | Y | Y |
 | sentry | the small turret on the stern block roof with green sights (data.js gs | 1 / 1 | Y | Y | Y |
 | block_lights | the green light panel on the stern block flanks | 10 / 6 | Y | Y | Y |
 | block_vents | heat slot panels on the stern block flanks | 2 / 2 | Y | Y | Y |
@@ -146,8 +146,8 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
 | arcs | the broken shade ring: flat box-section arcs on an oval round the spin | 8 / 8 | Y | Y | Y |
-| stern_block | the stern block: a broad faceted block tapering forward into the spine | 1 / 1 | Y | Y | Y |
-| engines | three engines side by side in the stern block | 3 / 3 | Y | Y | Y |
+| stern_block | the stern block: a narrow faceted block stepping down to the spine, th | 1 / 1 | Y | Y | Y |
+| engines | three engines stacked one over another on the stern block (issue 618) | 3 / 3 | Y | Y | Y |
 
 
 ## Structure per cell: distinct masses (blocks, tiers, belts), concept against build
@@ -173,6 +173,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 1.77 | 5.94 | 1.94 | 15.57 |
-| build | 1.72 | 5.72 | 1.90 | 10.14 |
+| build | 1.72 | 5.32 | 1.90 | 11.54 |
 
 Lines not present, shaped and detailed without a reason: 0.

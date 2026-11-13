@@ -95,7 +95,7 @@
   {
    "id": "C1",
    "kind": "core",
-   "what": "caged core of trapped light, 1.5 across",
+   "what": "caged core of trapped light, 1.7 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -163,7 +163,7 @@
   {
    "id": "E1",
    "kind": "engine",
-   "what": "engine, bell 1.0 across",
+   "what": "engine, bell 0.7 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -174,7 +174,7 @@
   {
    "id": "E2",
    "kind": "engine",
-   "what": "engine, bell 1.0 across",
+   "what": "engine, bell 0.7 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -185,7 +185,7 @@
   {
    "id": "E3",
    "kind": "engine",
-   "what": "engine, bell 1.0 across",
+   "what": "engine, bell 0.7 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -251,7 +251,7 @@
   {
    "id": "V1p",
    "kind": "vent",
-   "what": "louvre panel 0.4 x 0.3",
+   "what": "louvre panel 0.3 x 0.2",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -350,7 +350,7 @@
   {
    "id": "V1s",
    "kind": "vent",
-   "what": "louvre panel 0.4 x 0.3",
+   "what": "louvre panel 0.3 x 0.2",
    "count": 1,
    "route": "kit",
    "source": "picture",

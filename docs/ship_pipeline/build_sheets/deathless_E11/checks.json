@@ -1,17 +1,17 @@
 {
  "length_from_game": 28.0,
- "model_length": 28.041,
- "length_side": 28.062,
- "length_top": 28.062,
- "length_disagreement_percent": 0.0,
- "model_vs_game_percent": 0.15,
- "beam_top": 10.85,
- "beam_bow": 10.85,
- "beam_disagreement_percent": 0.0,
- "height_side": 6.85,
- "height_bow": 6.862,
+ "model_length": 28.074,
+ "length_side": 28.1,
+ "length_top": 28.087,
+ "length_disagreement_percent": 0.04,
+ "model_vs_game_percent": 0.26,
+ "beam_top": 11.025,
+ "beam_bow": 11.075,
+ "beam_disagreement_percent": 0.18,
+ "height_side": 6.862,
+ "height_bow": 6.85,
  "height_disagreement_percent": 0.04,
- "widest_at_station_percent": 17.6,
+ "widest_at_station_percent": 18.3,
  "hull_beam": 4.76,
  "hull_depth": 4.0,
  "L_to_B_hull": 5.88,
@@ -28,5 +28,5 @@
   "sx": -0.11446091060815976,
   "sy": 0.10129605437090286
  },
- "prow_overhang": 8.41
+ "prow_overhang": 8.45
 }

@@ -76,7 +76,7 @@ def _zrev(profile, n, phase=0.0, **kw):
 
 
 # ---------------------------------------------------------------------------------------------------- plate courses
-PANEL = (0.2, 0.4)   # world units across and along: the small end of the hull's plate sizes (the sheets' PL run 0.2 to 0.32 by 0.45 to 0.75)
+PANEL = (0.18, 0.36)   # world units across and along: the small end of the hull's plate sizes (the sheets' PL run 0.2 to 0.32 by 0.45 to 0.75)
 
 
 def panels(p, tag, role, mats, x0, x1, r, n, phase, skip=(), th=0.022, size=PANEL, seed=0):

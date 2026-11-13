@@ -25,7 +25,7 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 | flak | the null shredder (flak T): screens the stern and deck against craft | shredder | the small twin turret aft on the deck (data.js flak T) | 1 | stern/top, stern/side | a thin round foot, a small oval shell, a layered crescent shade with the firing slot and a corona crest, two crescent capacitor fins, a fan of five thin needle rails with banded collars (R221) | picture |
 | band_collar | the structural ring where the stern section joins the body (B-2 tears here) | belt | the heavy band collar round the body at about three quarters of the length | 1 | stern/top, stern/side, stern/below | a raised ring following the hull, segmented plates | picture |
 | feathers | stern shade blades that shield the engine room and dump heat aft | feather | layered swept shade blades round the stern, row over row, flaring toward the engines | 24 | stern/top, stern/side, stern/below | tapered blades with a thickness step, overlapping rows | picture |
-| engines | drive (sp 1): four eclipse-ring engines, no flame | engine | the engine cluster: three bells stacked in the side view, two side by side in plan (a diamond of four) | 4 | stern/side, stern/top, stern/below | faceted ribbed drums, mount collars, vanes, short bells, a corona ring round a black shade disc (no flame) | picture |
+| engines | drive (sp 1): three eclipse-ring engines, no flame | engine | the engine cluster: three big bells stacked one over another, filling the stern (issue 618) | 3 | stern/side, stern/top, stern/below | faceted ribbed drums, mount collars, vanes, short bells, a corona ring round a black shade disc (no flame) | picture |
 | vents | dump heat from the shade machinery and the core | vent | heat slot panels on the aft flanks over the belt | 2 | stern/side | a frame, slanted slats | designed |
 | stern_thrusters | attitude control at the stern, paired with the neck thrusters to turn the hull | thruster | attitude thrusters on the stern flanks | 2 | stern/side | a block, slot nozzles | designed |
 
@@ -55,7 +55,7 @@ Left as surface, and why:
 
 ## Every built part has a job (R221)
 
-Built kit parts: 80; parts whose inventory id names no line with a job: 0.
+Built kit parts: 79; parts whose inventory id names no line with a job: 0.
 
 ## Per cell: present, shaped, detailed (from the model, deathless_E11_model.json)
 
@@ -133,7 +133,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | flak | the small twin turret aft on the deck (data.js flak T) | 1 / 1 | Y | Y | Y |
 | band_collar | the heavy band collar round the body at about three quarters of the le | 2 / 1 | Y | Y | Y |
 | feathers | layered swept shade blades round the stern, row over row, flaring towa | 36 / 24 | Y | Y | Y |
-| engines | the engine cluster: three bells stacked in the side view, two side by  | 4 / 4 | Y | Y | Y |
+| engines | the engine cluster: three big bells stacked one over another, filling  | 3 / 3 | Y | Y | Y |
 
 ### stern/side
 
@@ -147,7 +147,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | flak | the small twin turret aft on the deck (data.js flak T) | 1 / 1 | Y | Y | Y |
 | band_collar | the heavy band collar round the body at about three quarters of the le | 2 / 1 | Y | Y | Y |
 | feathers | layered swept shade blades round the stern, row over row, flaring towa | 36 / 24 | Y | Y | Y |
-| engines | the engine cluster: three bells stacked in the side view, two side by  | 4 / 4 | Y | Y | Y |
+| engines | the engine cluster: three big bells stacked one over another, filling  | 3 / 3 | Y | Y | Y |
 | vents | heat slot panels on the aft flanks over the belt | 2 / 2 | Y | Y | Y |
 | stern_thrusters | attitude thrusters on the stern flanks | 2 / 2 | Y | Y | Y |
 
@@ -159,7 +159,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | body_plates | the plate rows over the body: rows of small plates across the deck, ri | 2 / 1 | Y | Y | Y |
 | band_collar | the heavy band collar round the body at about three quarters of the le | 2 / 1 | Y | Y | Y |
 | feathers | layered swept shade blades round the stern, row over row, flaring towa | 36 / 24 | Y | Y | Y |
-| engines | the engine cluster: three bells stacked in the side view, two side by  | 4 / 4 | Y | Y | Y |
+| engines | the engine cluster: three big bells stacked one over another, filling  | 3 / 3 | Y | Y | Y |
 
 
 ## Structure per cell: distinct masses (blocks, tiers, belts), concept against build
@@ -170,10 +170,10 @@ Concept counts read off the concept sheet by eye (E11 sheet: bow, the crescent's
 |---|---:|---:|---|
 | bow/top | 6 | 7 | Hull: the oval body; Crescent lower blade; Crescent upper layer; Crescent root layer; Projector breech collars; Projector shaft; Projector muzzle block |
 | bow/side | 5 | 7 | Hull: the oval body; Crescent lower blade; Crescent upper layer; Crescent root layer; Projector breech collars; Projector shaft; Projector muzzle block |
-| bow/below | no view | 1 | Hull: the oval body |
-| mid/top | 8 | 9 | Hull: the oval body; Crescent lower blade; Crescent upper layer; Projector breech collars; Dorsal tier; Barbette, fore battery; Barbette, aft battery; Flank belt; Lower skirt |
-| mid/side | 8 | 9 | Hull: the oval body; Crescent lower blade; Crescent upper layer; Projector breech collars; Dorsal tier; Barbette, fore battery; Barbette, aft battery; Flank belt; Lower skirt |
-| mid/below | no view | 2 | Hull: the oval body; Lower skirt |
+| bow/below | no view | 2 | Hull: the oval body; Crescent lower blade |
+| mid/top | 8 | 10 | Hull: the oval body; Crescent lower blade; Crescent upper layer; Crescent root layer; Projector breech collars; Dorsal tier; Barbette, fore battery; Barbette, aft battery; Flank belt; Lower skirt |
+| mid/side | 8 | 10 | Hull: the oval body; Crescent lower blade; Crescent upper layer; Crescent root layer; Projector breech collars; Dorsal tier; Barbette, fore battery; Barbette, aft battery; Flank belt; Lower skirt |
+| mid/below | no view | 3 | Hull: the oval body; Crescent lower blade; Lower skirt |
 | stern/top | 8 | 17 | Hull: the oval body; Dorsal tier; Flank belt; Lower skirt; Band collar; Feather row 1, blade 1; Feather row 1, blade 4; Feather row 1, blade 7; Feather row 1, blade 10; Feather row 2, blade 1; Feather row 2, blade 4; Feather row 2, blade 7; |
 | stern/side | 8 | 12 | Hull: the oval body; Dorsal tier; Flank belt; Lower skirt; Band collar; Feather row 1, blade 1; Feather row 1, blade 4; Feather row 1, blade 10; Feather row 2, blade 1; Feather row 2, blade 10; Feather row 3, blade 1; Feather row 3, blade 1 |
 | stern/below | no view | 7 | Hull: the oval body; Lower skirt; Band collar; Feather row 1, blade 10; Feather row 2, blade 7; Feather row 2, blade 10; Feather row 3, blade 10 |
@@ -185,6 +185,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 2.49 | 4.49 | 5.72 | 7.00 |
-| build | 2.59 | 4.11 | 5.59 | 6.54 |
+| build | 2.54 | 4.11 | 5.60 | 6.55 |
 
 Lines not present, shaped and detailed without a reason: 0.

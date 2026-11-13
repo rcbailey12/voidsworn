@@ -345,8 +345,8 @@
   {
    "cell": "stern/top",
    "id": "engines",
-   "built": 4,
-   "listed": 4,
+   "built": 3,
+   "listed": 3,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -426,8 +426,8 @@
   {
    "cell": "stern/side",
    "id": "engines",
-   "built": 4,
-   "listed": 4,
+   "built": 3,
+   "listed": 3,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -489,8 +489,8 @@
   {
    "cell": "stern/below",
    "id": "engines",
-   "built": 4,
-   "listed": 4,
+   "built": 3,
+   "listed": 3,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -511,22 +511,22 @@
   {
    "cell": "bow/below",
    "concept": null,
-   "build": 1
+   "build": 2
   },
   {
    "cell": "mid/top",
    "concept": 8,
-   "build": 9
+   "build": 10
   },
   {
    "cell": "mid/side",
    "concept": 8,
-   "build": 9
+   "build": 10
   },
   {
    "cell": "mid/below",
    "concept": null,
-   "build": 2
+   "build": 3
   },
   {
    "cell": "stern/top",
@@ -552,10 +552,10 @@
    "hull_LH": 7.0
   },
   "build": {
-   "env_LB": 2.59,
+   "env_LB": 2.54,
    "env_LH": 4.11,
-   "hull_LB": 5.59,
-   "hull_LH": 6.54
+   "hull_LB": 5.6,
+   "hull_LH": 6.55
   }
  }
 }

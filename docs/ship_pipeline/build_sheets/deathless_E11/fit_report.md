@@ -46,7 +46,7 @@ While designing, the check also caught (and the design fixed): deck hatches and 
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 253 objects, 29 parts, 771 close pairs, 475 rays, 5 guns, 4 turrets swept, 8 cones, 15 apertures, 1 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 244 objects, 28 parts, 639 close pairs, 463 rays, 5 guns, 4 turrets swept, 7 cones, 15 apertures, 1 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 

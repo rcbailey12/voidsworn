@@ -14,21 +14,26 @@ language; the barbettes slimmed to the turret feet; the hull, crescent, engines 
 
 Recipe entry `tools/recipe/ships/deathless_E11.json`: data.js `d_boss`, game folder `D22_23` (the Eclipse Tomb-ark), length 28.0
 read from this sheet, `bake: none` (unpainted until the Eclipse paint stack). Pictures beside the WHOLE concept at the same camera
-(R229): [whole ship](../../../shots/issue_618/e11_whole_compare.jpg), [side against the sheet's side view](../../../shots/issue_618/e11_side_compare.jpg),
-then the [bow](../../../shots/issue_618/e11_bow_compare.jpg) and the [stern](../../../shots/issue_618/e11_stern_compare.jpg).
+(R229): [whole ship](../../../shots/issue_618/e11_whole_compare.jpg), [plan against the sheet's top view](../../../shots/issue_618/e11_plan_compare.jpg),
+[side against the sheet's side view](../../../shots/issue_618/e11_side_compare.jpg), the [stern](../../../shots/issue_618/e11_stern_compare.jpg)
+and the [bow](../../../shots/issue_618/e11_bow_compare.jpg); the same before the massing round are in [before/](../../../shots/issue_618/before/).
 Views and the sheet re-rendered in the sandbox (Blender 5.3, Cycles CPU, 12 samples).
 
 Changes for the build (each is in "Changed from the picture" in [feature_table.md](feature_table.md)):
+- **The Board's massing round, judged against the whole concept.** The crescent is one thick tiered band: the broad outer band
+  flush with a thick outer wall, the inner layer stepped down close inside it, the root layer on the band (it read as two thin
+  blades with a wide gap). The stern carries three big nozzles stacked one over another, each a third of the stern's height,
+  standing 2.3 clear behind the body (it was a diamond of four hidden behind the feathers): the body ends 0.6 sooner and the
+  last feather row ends with it.
 - **Seams round machines (R226).** B-1 kinks aft round the projector's breech collars; B-2 runs aft of the collar thrusters.
-- **Two peel seams.** B-3 (dorsal tiers) raised to about 1.7 so its torn edge clears the upper deck; B-4 (crescent layers) is a
-  level plane at 0.9, over the projector, because the game's peel seam is one level plane per compartment.
+- **Two peel seams.** B-3 (dorsal tiers) about 1.7, so its torn edge clears the upper deck; B-4 (crescent layers) a level plane
+  at 0.9 over the projector, because the game's peel seam is one level plane per compartment.
 - **Detail density (R224).** The kit lays plate courses at the hull's plate size on the projector and stiffener rings on the
-  engine bells. Mesh density against the hull (triangles / edges per square unit): projector 0.44 / 0.33 to 0.83 / 0.78,
-  engines 1.55 / 0.68 to 2.09 / 1.24; no part type under 0.75.
+  engine bells. Lowest part type against the hull: the projector, 0.89 (was 0.44 / 0.33 before this job).
 - **Hard points.** Two boarding origins on the flanks; the projector's hard point is its lens (the horns' meeting point is open space).
 
-Outline overlap at the camera of record: 75.6 percent with this job's mask (luminance over 28, closed, filled, largest shape;
-the sheet geometry scores the same 75.6 with it). Reported, not a bar.
+Outline overlap at the camera of record: 74.9 percent with this job's mask (luminance over 28, closed, filled, largest shape;
+75.6 before the massing round and on the sheet geometry). Reported, not a bar.
 
 Start here: **[side_by_side.jpg](side_by_side.jpg)** (concept left, blockout right, same camera, full view then bow, midships
 and stern at the same windows), then [fit_view.jpg](fit_view.jpg) and [cells.jpg](cells.jpg).

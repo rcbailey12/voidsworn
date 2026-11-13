@@ -40,7 +40,7 @@ HULL = [
     (-8.4, 1.92, 1.92, -1.85, 1.76, 0, 0),
     (-9.8, 2.04, 2.04, -1.98, 1.9, 0, 0),
     (-11.2, 2.08, 2.08, -2.02, 1.95, 0, 0),
-    (-12.3, 1.9, 1.9, -1.88, 1.8, 0, 0),
+    (-11.7, 1.95, 1.95, -1.93, 1.85, 0, 0),   # issue 618: the body ends 0.6 sooner, so the stacked nozzles stand 2.3 clear behind it
 ]
 PL = dict(keep3d=True, size=(0.32, 0.75), thick=(0.03, 0.09), skip=0.07, stack=0.35, mats={'violet': 5, 'mauve': 4, 'shade2': 2, 'lilac': 1})
 
@@ -66,8 +66,9 @@ def cz(phi_deg, u):
     """the lower blade's top and bottom at (phi, u): thick at the inner wall, knife-thin at the rim, drooping to the horns"""
     f = min(1.0, abs(phi_deg) / PHI_H)
     zc = ZC - 1.6 * f ** 1.3
-    h_in = 0.16 + 1.0 * (1 - f) ** 0.8
-    h_out = 0.08 + 0.55 * (1 - f) ** 1.5
+    # issue 618 (the Board's massing round): one thick band, its outer wall carrying thickness far round the horns
+    h_in = 0.2 + 1.0 * (1 - f) ** 0.7
+    h_out = 0.12 + 0.6 * (1 - f) ** 0.8
     th = h_in * (1 - u) + h_out * u
     return zc - 0.4 * th, zc + 0.6 * th
 
@@ -95,47 +96,49 @@ def build(K):
             bot.append((x, y, zb)); top.append((x, y, zt))
         rings.append(bot + top[::-1])
     K.mass('Crescent lower blade', K.loft_rings('E11_crescent_blade', rings, 'violet',
-                                                plates=dict(PL, seed=21, faces=[0, 1, 2, 4, 5, 6, 7], size=(0.3, 0.65), stride=2, inv='crescent_plates')),
+                                                plates=dict(PL, seed=21, faces=[0, 1, 2, 3, 4, 5, 6, 7], size=(0.3, 0.65), stride=2, inv='crescent_plates')),
            'Eclipse violet and mauve plate', note='a broad brim: 1.2 thick at the inner wall, 0.6 at the back rim, thin at the horns; it falls 1.6 from the root to the horns')
-    PHI_U, U_U = 122.0, 0.55
+    # issue 618 (the Board's massing round, against the whole concept): one thick tiered band, not two thin blades with a gap.
+    # The upper layer is the broad outer band, flush with the blade's outer wall (so the rim is one thick wall) over the outer
+    # 62 percent of the width, to 140 degrees either side; the inner 38 percent is the stepped inner layer close against it,
+    # a step down at U_S; the root layer sits on the broad band over the root
+    PHI_U, U_S = 140.0, 0.38
+
+    def t_up(ph):
+        return max(0.08, 0.34 * (1 - min(1.0, abs(ph) / PHI_U) ** 2) ** 0.5)
     up_rings = []
     for i in range(N + 1):
         ph = -PHI_U + 2 * PHI_U * i / N
-        f = abs(ph) / PHI_U
-        t = max(0.05, 0.25 * (1 - f ** 2) ** 0.5)
+        t = t_up(ph)
         bot = []; top = []
-        for u in (0.0, U_U * 0.5, U_U):
+        for u in (U_S, (U_S + 1.0) / 2, 1.0):
             x, y = cres(ph, u); zb, zt = cz(ph, u)
-            bot.append((x, y, zt - 0.02)); top.append((x, y, zt + t - (0.06 if u == U_U else 0.0)))
+            bot.append((x, y, zt - 0.02)); top.append((x, y, zt + t - (0.045 if u == 1.0 else 0.0)))
         up_rings.append(bot + top[::-1])
     K.mass('Crescent upper layer', K.loft_rings('E11_crescent_upper', up_rings, 'mauve',
-                                                plates=dict(PL, seed=22, faces=[3, 4, 5], size=(0.3, 0.6), stride=2, inv='crescent_plates')),
-           'mauve plate', note='stepped in from the rim, over the inner half of the blade, to 122 degrees either side')
-    PHI_R, U_R = 64.0, 0.3
+                                                plates=dict(PL, seed=22, faces=[2, 3, 4, 5], size=(0.3, 0.6), stride=2, inv='crescent_plates')),
+           'mauve plate', note='the broad outer band, flush with the outer wall, to 140 degrees either side; the inner layer steps down inside it')
+    PHI_R, U_R0, U_R1 = 64.0, 0.5, 0.85
     r_rings = []
     for i in range(N // 2 + 1):
         ph = -PHI_R + 2 * PHI_R * i / (N // 2)
         f = abs(ph) / PHI_R
-        t0 = 0.25 * (1 - (ph / PHI_U) ** 2) ** 0.5
+        t0 = t_up(ph)
         t = max(0.04, 0.2 * (1 - f ** 2) ** 0.5)
         bot = []; top = []
-        for u in (0.0, U_R * 0.5, U_R):
+        for u in (U_R0, (U_R0 + U_R1) / 2, U_R1):
             x, y = cres(ph, u); zb, zt = cz(ph, u)
-            bot.append((x, y, zt + t0 - 0.02)); top.append((x, y, zt + t0 + t - (0.05 if u == U_R else 0.0)))
+            bot.append((x, y, zt + t0 - 0.02)); top.append((x, y, zt + t0 + t - (0.05 if u in (U_R0, U_R1) else 0.0)))
         r_rings.append(bot + top[::-1])
     K.mass('Crescent root layer', K.loft_rings('E11_crescent_root', r_rings, 'violet',
-                                               plates=dict(PL, seed=23, faces=[3, 4, 5], size=(0.3, 0.55), stride=2, inv='crescent_plates')),
-           'violet plate', note='the third, shortest layer over the root')
-    # corona lines: the blade's rim, the upper layer's rim, the inner rim
-    K.strip('E11_corona_rim', [(*cres(ph, 1.0), cz(ph, 1.0)[1] + 0.005) for ph in phis], w=0.034, t=0.025)
-    K.strip('E11_corona_upper', [(*cres(ph, U_U), cz(ph, U_U)[1] + max(0.05, 0.25 * (1 - (ph / PHI_U) ** 2) ** 0.5) - 0.055)
-                                 for ph in [-PHI_U + 2 * PHI_U * i / N for i in range(N + 1)]], w=0.032, t=0.022)
+                                               plates=dict(PL, seed=23, faces=[2, 3, 4, 5], size=(0.3, 0.55), stride=2, inv='crescent_plates')),
+           'violet plate', note='the third, shortest layer on the broad band over the root')
+    # corona lines (factions.md: a thin cold line along the rim of every shade plate): the band's outer rim and the inner rim
+    K.strip('E11_corona_rim', [(*cres(ph, 1.0), cz(ph, 1.0)[1] + (t_up(ph) - 0.045 if abs(ph) <= PHI_U else 0.0) + 0.005) for ph in phis], w=0.034, t=0.025)
     inner = []
-    for ph in [-PHI_U + 2 * PHI_U * i / N for i in range(N + 1)]:
-        t0 = max(0.05, 0.25 * (1 - (ph / PHI_U) ** 2) ** 0.5)
-        tr = max(0.04, 0.2 * (1 - (ph / PHI_R) ** 2) ** 0.5) if abs(ph) < PHI_R else 0.0
+    for ph in phis:
         x, y = cres(ph, 0.0)
-        inner.append((x + 0.04, y, cz(ph, 0.0)[1] + t0 + tr + 0.005))
+        inner.append((x + 0.04, y, cz(ph, 0.0)[1] + 0.005))
     K.strip('E11_corona_inner', inner, w=0.032, t=0.022)
     K.mark('crescent', 'shade', ['band', 'layer', 'corona', 'plate'])
     K.mark('crescent_plates', 'plate', ['slab', 'step', 'bevel', 'fastener'])
@@ -187,7 +190,8 @@ def build(K):
     # ---------------- the stern feathers: three rows of eight swept shade blades ----------------
     import kit as kk
     nf = 0
-    for row, (x0, lift0, lift1, L) in enumerate(((-8.2, 0.02, 0.06, 2.0), (-9.4, 0.03, 0.08, 2.0), (-10.6, 0.04, 0.15, 2.3))):
+    # issue 618: the last row ends at the hull's end (was 0.6 past the old end), so the stacked nozzles stand clear behind the feathers
+    for row, (x0, lift0, lift1, L) in enumerate(((-8.2, 0.02, 0.06, 2.0), (-9.4, 0.03, 0.08, 2.0), (-10.6, 0.04, 0.15, 1.1))):
         for k in range(12):
             a = math.radians(15 + 30 * k + (15 if row == 1 else 0))
             sec = []
@@ -246,10 +250,12 @@ def build(K):
                inv='vents', note='heat slot panel over the belt, ahead of the band collar')
         K.thruster('Q2' + sn, (-7.5, side * 2.1, 0.0), (0, side, 0), inv='stern_thrusters', note='on the band collar')
 
-    # ---------------- engines: a diamond of four ----------------
-    for i, (y, z, nm) in enumerate(((0.0, 1.2, 'upper'), (1.2, 0.0, 'port'), (-1.2, 0.0, 'starboard'), (0.0, -1.2, 'lower'))):
-        K.engine('E%d' % (i + 1), (-14.0, y, z), 0.56, 1.25, bell=1.2, body_r=0.66, rings=3, nose='flat', inv='engines',
-                 src='picture' if nm != 'starboard' else 'designed', note='%s engine of the diamond' % nm)
+    # ---------------- engines: three stacked ----------------
+    # issue 618 (the Board's massing round): three big nozzles stacked one over another, filling the stern's height (the
+    # concept's side view and beauty), each a third of it, standing 2.3 clear behind the hull and its feathers
+    for i, (z, nm) in enumerate(((1.35, 'upper'), (-0.04, 'centre'), (-1.43, 'lower'))):
+        K.engine('E%d' % (i + 1), (-14.0, 0.0, z), 0.5, 1.84, bell=1.2, body_r=0.62, rings=3, nose='flat', inv='engines',
+                 src='picture', note='%s engine of the stack' % nm)
 
     # ---------------- colour zones ----------------
     K.colour('Eclipse violet and mauve plate, violet-black shade (paint stage)', 14.0, -14.0, 'whole hull')
@@ -265,8 +271,8 @@ def build(K):
             secs.append((x, max(hw, 0.3), max(hw, 0.3), z - 0.04, z + 0.04, 0, 0))
         K.loft('in_deck_' + name, secs, 'darkdeck', inside=True)
         K.inside.append(dict(kind='deck', name=name, z=z, x=(x1, x0)))
-    deck('lower', -0.95, 4.6, -12.0); deck('main', 0.3, 5.0, -12.0); deck('upper', 1.2, 3.0, -11.4)
-    for i, x in enumerate((4.6, 2.2, -0.4, -3.0, -5.5, -7.5, -9.8, -12.0)):
+    deck('lower', -0.95, 4.6, -11.3); deck('main', 0.3, 5.0, -11.3); deck('upper', 1.2, 3.0, -11.0)
+    for i, x in enumerate((4.6, 2.2, -0.4, -3.0, -5.5, -7.5, -9.8, -11.3)):
         s = _k.sec_at(HULL, x)
         K.loft('in_bh_F%d' % i, [(x + 0.05, s[1] - 0.3, s[2] - 0.3, s[3] + 0.3, s[4] - 0.3, 0, 0), (x - 0.05, s[1] - 0.3, s[2] - 0.3, s[3] + 0.3, s[4] - 0.3, 0, 0)],
                'frame', inside=True, rounded=True, pexp=PEXP)
@@ -280,7 +286,7 @@ def build(K):
     K.room('archive_vault_aft', 'archive', -7.3, -5.6, -1.2, 1.2, -0.9, 0.25, note='archive vaults')
     K.room('shade_machinery', 'machinery', -7.3, -5.6, -1.0, 1.0, 0.4, 1.15, note='shade generators and the band collar\'s drives')
     K.room('flak_magazine', 'magazine', -1.8, -0.2, -0.7, 0.7, -1.5, -1.0, note='over the belly twin')
-    K.room('engine_room', 'engroom', -11.9, -9.9, -1.4, 1.4, -0.9, 1.15, note='engine room and the four drives\' feeds')
+    K.room('engine_room', 'engroom', -11.0, -9.9, -1.4, 1.4, -0.9, 1.15, note='engine room and the four drives\' feeds')
     K.armour('crescent (shade layers)', 0.6, 'three layers, thickest at the inner wall; the rims knife-thin')
     K.armour('dorsal tiers and barbettes', 0.4, '')
     K.armour('flank belt', 0.3, 'over the vaults and magazines')
@@ -311,11 +317,12 @@ def build(K):
     K.point('board', 'hp_board_0', (-2.4, surf(-2.4, 1, 0.95), 0.95), side='port'); K.point('board', 'hp_board_1', (-2.4, surf(-2.4, -1, 0.95), 0.95), side='stbd')
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
-    K.change('The engine cluster is a diamond of four', 'the side view and the beauty show three bells stacked, the plan shows two side by side; a diamond of four is the one layout that reads as all three pictures, and keeps the stern wide and flat')
+    K.change('Three big engines stacked one over another, each about a third of the stern\'s height, standing 2.3 behind the hull, which ends 0.6 sooner (issue 618, the Board\'s massing round)', 'the side view and the beauty show three big bells stacked filling the stern; the sheet\'s diamond of four read small and hid behind the feathers, whose last row now ends at the hull\'s end')
     K.change('Engines are eclipse rings, not flame', 'factions.md: "no flaming bells. An eclipse ring of pale light": each bell has a black shade disc with a thin pale green-white ring inside its lip')
     K.change('Batteries by data.js slot', 'd_boss carries gauss T twice, doom F and flak T: the two big mounts are the null cannons (the aft one superfires on a barbette), the projector is the corona arc, the small aft mount and a belly mount are the null shredders')
     K.change('Weapons built from the lore, not the picture\'s generic turrets (R221)', 'Ryan: "their turrets look the same as hullbreakers"; the picture draws box turrets with round twin barrels. The null cannons are rail guns (slim round rail pairs with banded collars) firing through the slot of a thin arched crescent shade, the shredders fans of needle rails, all in the hull\'s curved, layered, banded language (pass 2: "super blocky"), the projector an arc emitter with a crown of electrode horns round the crest\'s black disc (tools/blender/kits/eclipse/README.md)')
     K.change('The green hexagon on the deck is the core port, not a gun', 'the faction\'s green is the trapped core seen through gaps; the flak slot is the small twin')
+    K.change('The crescent is one thick tiered band: the broad outer band flush with a thick outer wall, the inner layer stepped down close inside it, the root layer on the band (issue 618, the Board\'s massing round)', 'judged against the whole concept: the sheet\'s thin blade with a raised inner ribbon read as two thin blades with a wide gap between them; the concept is one broad plated band with a stepped inner layer close against it')
     K.change('The crescent is three stacked layers with a corona line on each rim', 'factions.md: broad layered plates, the green a thin line on every shade rim; the concept shows two stepped bands and a lip; the layers are also how it breaks (band by band)')
     K.change('Low round drums under both batteries, slimmed to the turret feet (R221 pass 2)', 'so the fore twin clears the tier when it trains aft and fires aft over the aft twin\'s muzzles, and the aft twin fires over the fore one (the fit check found both)')
     K.change('Belly twin, attitude thrusters, deck and belly hatches, corona strip lights, heat panels added', 'the belly needs cover and a ship in space needs thrusters; the picture shows no underside')
