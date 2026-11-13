@@ -80,11 +80,78 @@ func try_show(id: String, clock_pair := false) -> bool:
 func _card_only() -> void:
 	for child in hud.root.get_children():
 		if child is CanvasItem: child.visible = child == hud.tipcard
-	if hud.tipcard != null:
-		hud.tipcard.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-		hud.tipcard.offset_left = -hud.s(390)
-		hud.tipcard.offset_right = -hud.s(24)
-		hud.tipcard.offset_top = hud.s(90)
+	_sig = -1
+	_place()
+	_settle = 12
+
+# Issue 652: the card no longer sits on top of the page (it covered the Map key slide-over and the shipyard's repair
+# bar). Its spot is the top right corner as before when that is clear; when something on the page is there, the card
+# takes the nearest clear spot, searching down and then left from that corner. "Something" is a word, a button, a
+# picture or a box the page draws; a backdrop as big as the page is not. It looks again while the card is up, so a
+# slide-over that opens under it moves it, and it stays still while its spot is clear.
+var _sig := -1          # the page's layout last placed against (a hash of what is on it)
+var _settle := 0        # frames left to look every frame (the page lays out over its first frames)
+var _wait := 0.0
+
+func _process(dt: float) -> void:
+	if current == "" or hud == null or hud.tipcard == null: return
+	_wait -= dt
+	if _settle > 0: _settle -= 1
+	elif _wait > 0.0: return
+	_wait = 0.25
+	_place()
+
+func _place() -> void:
+	if hud == null or hud.tipcard == null or not is_instance_valid(hud.tipcard): return
+	var card: Control = hud.tipcard
+	var vs := get_viewport().get_visible_rect().size
+	var sz := card.get_combined_minimum_size()
+	var busy: Array = []
+	_busy(get_tree().root, vs, busy)
+	var sig := hash([vs, sz, busy])
+	if sig == _sig: return
+	_sig = sig
+	var m := float(hud.s(24))
+	var start := Vector2(vs.x - m - sz.x, float(hud.s(90)))
+	var here := Rect2(card.position, sz)
+	if card.has_meta("placed") and _hits(here, busy) == 0 and Rect2(Vector2.ZERO, vs).encloses(here): return
+	var step := float(hud.s(24))
+	var best := start
+	var best_n := 1 << 30
+	var x := start.x
+	while x >= m:
+		var y := start.y
+		while y + sz.y <= vs.y - m:
+			var n := _hits(Rect2(Vector2(x, y), sz), busy)
+			if n == 0:
+				best = Vector2(x, y); best_n = 0; break
+			if n < best_n:
+				best = Vector2(x, y); best_n = n
+			y += step
+		if best_n == 0: break
+		x -= step
+	card.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	card.position = best.round()
+	card.size = sz
+	card.set_meta("placed", true)
+
+func _hits(r: Rect2, busy: Array) -> int:
+	var n := 0
+	for b in busy:
+		if r.intersects(b): n += 1
+	return n
+
+# what the card must not cover: every visible word, button, picture and box outside this node (the card's own HUD),
+# skipping backdrops wider and taller than most of the screen and anything inside a SubViewport (the 3D map's own space)
+func _busy(n: Node, vs: Vector2, out: Array) -> void:
+	if n == self or n is SubViewport: return
+	if n is CanvasItem and not (n as CanvasItem).visible: return
+	if n is Label or n is RichTextLabel or n is BaseButton or n is TextureRect or n is Panel or n is PanelContainer or n is ColorRect:
+		var r: Rect2 = (n as Control).get_global_rect()
+		if r.size.x >= 1.0 and r.size.y >= 1.0 and not (r.size.x > vs.x * 0.6 and r.size.y > vs.y * 0.6) and r.intersects(Rect2(Vector2.ZERO, vs)):
+			out.append(r)
+	for c in n.get_children():
+		_busy(c, vs, out)
 
 func _resize() -> void:
 	if hud == null: return

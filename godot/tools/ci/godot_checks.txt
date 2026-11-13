@@ -76,6 +76,7 @@ gpu|campaign/test/map_region_shots.gd|-|{out} --no-tips|all five generated regio
 gpu|campaign/test/nemesis_teach_shots.gd|-|{out}|Nemesis teaching screenshots: needs a window
 gpu|campaign/test/onboarding_visual.gd|compat|{repo}\.onboarding_checks\gpu_visual|renders the HUD tip card; writes inside the checkout only, as RUN_ONBOARDING_SHOTS.bat does
 gpu|campaign/test/r1_ui_shots.gd|-|{out}|R1 campaign screen screenshots: needs a window
+gpu|campaign/test/tipcard_place_shots.gd|-|{out} capture|issue 652: the first-visit tip card on the map, the map with the Map key open and the shipyard sits on nothing; needs a window
 gpu|render/test/installed_ship_check.gd|-|C19_51|issue 592: the install readback stage 7 runs after an install (needs the PC's built ship cache, godot/gen): the cache was built from the installed C19_51 files, names no damage or wreck scene the folder lacks, and ShipView draws every hard point and turret node of the glb
 gpu|story/test/career_shots.gd|compat|{out}|Career screen screenshots: needs a window
 gpu|fx/test/damage_alpha_probe.gd|env:SAIL_ALPHA_OUT|-|issue 569: one damaged Glasswright cruiser at camera 60 over a checker, so a see-through sail is plain; needs the GPU and the ship files
