@@ -267,6 +267,10 @@ def plate_slab(bot, nrm, t, bevel=0.35, rivets=True, lift=0.0, rr=0.03):
     n = 8
     V = []
     jit = [0.82 + 0.18 * rnd.random() for _ in range(n)]
+    # each pad shifted, sized and turned at random inside its patch, so the hide never shows rows
+    mid = mid + eu * rnd.uniform(-0.18, 0.18) + ev * rnd.uniform(-0.18, 0.18)
+    ang_ = rnd.uniform(0, math.pi); sc_ = rnd.uniform(0.6, 1.1)
+    eu, ev = (eu * math.cos(ang_) + ev * math.sin(ang_)) * sc_, (ev * math.cos(ang_) - eu * math.sin(ang_)) * sc_
     for lay, (sc, hh) in enumerate(((0.5, -0.03), (0.44, t * 0.7), (0.26, t * (1.1 + lift)))):
         for k in range(n):
             a = 2 * math.pi * k / n
@@ -318,12 +322,12 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
         # the rolled fold lips: full rolls stacked round the mouth, each larger and further back, lumpy and twisting, so the
         # mouth sits deep in coiled flesh (the picture's folded mouth); the outer ones grow into the head (mount)
         for i in range(rolls):
-            R = r * (1.12 + 0.36 * i); rs = r * (0.27 + 0.05 * i); x0 = L * (1.0 - 0.085 * i)
+            R = r * (1.18 + 0.44 * i); rs = r * (0.36 + 0.08 * i); x0 = L * (1.0 - 0.16 * i)   # each roll further back: a domed lobe
             m = 84
             pts = []; rad = []
             for k in range(m):
                 a = 2 * math.pi * k / m + 0.3 * i
-                rr = rs * (1 + 0.28 * nf(Vector((math.cos(a * 2 + i), math.sin(a * 3), 0.3 * i))))
+                rr = rs * (1 + 0.38 * nf(Vector((math.cos(a * 2 + i), math.sin(a * 3), 0.3 * i))))
                 pts.append(Vector((x0 + 0.06 * math.sin(a * 5 + i) - (0.12 * r if math.sin(a) < -0.3 else 0.0) * i,
                                    R * math.cos(a) * (1.0 + 0.06 * math.sin(a * 3 + i)), R * math.sin(a) * (1.08 if math.sin(a) > 0 else 0.95))))
                 rad.append(rr)
@@ -335,7 +339,7 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
                 q = pts[k]; out = (q - Vector((q.x, 0, 0))).normalized()
                 for off in (0.0, 0.9):
                     nn = (out * math.cos(off) + Vector((1, 0, 0)) * math.sin(off)).normalized()
-                    vv, ff = pore(q + nn * rad[k] * 0.98, nn, rs * 0.12, n=5)
+                    vv, ff = pore(q + nn * rad[k] * 0.98, nn, rs * 0.07, n=5)
                     o = len(PV); PV += vv; PF += [tuple(x + o for x in f) for f in ff]
             p.add('foldp%d' % i, 'body' if i == 0 else 'mount', 'pore', (PV, PF))
             # creases across each roll (the coil's wrinkles)
@@ -380,7 +384,6 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
             o = len(PV); PV += vv; PF += [tuple(x + o for x in f) for f in ff]
         p.add('lipp', 'mount', 'flesh2', (PV, PF))
         # the throat's lining lit by the gland (the picture's warm glow on the inner wall)
-        p.add('lining', 'mount', 'gland', revolve([(L * 0.86, r * 0.97), (L * 0.7, r * 0.93), (L * 0.55, r * 0.88)], seg))
         for k in range(10):
             a = 2 * math.pi * (k + 0.25) / 10
             pts = [Vector((L * 1.03 + 0.01 * j, (r * 1.18 + (lr - r * 1.18) * j / 4) * math.cos(a), (r * 1.18 + (lr - r * 1.18) * j / 4) * math.sin(a)))
@@ -390,12 +393,6 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
             a = 2 * math.pi * (k + 0.5) / 12
             pts = [Vector((L * (0.82 - 0.16 * j), lr * (1.0 - 0.02 * j) * math.cos(a + 0.04 * j), lr * (1.0 - 0.02 * j) * math.sin(a + 0.04 * j))) for j in range(5)]
             p.add('foldw%d' % k, 'mount', 'flesh2', tube(pts, [r * 0.1 * (1 - 0.12 * j) for j in range(5)], n=6, flat=0.6))
-    if style == 'flared':
-        # the throat wall: longitudinal wrinkles inside the bore, lit by the gland
-        for k in range(14):
-            a = 2 * math.pi * (k + 0.5) / 14
-            pts = [Vector((L * (0.55 + 0.05 * j), r * 0.86 * math.cos(a + 0.03 * j), r * 0.86 * math.sin(a + 0.03 * j))) for j in range(7)]
-            p.add('borew%d' % k, 'mount', 'tissue', tube(pts, [r * 0.05] * 7, n=5, flat=0.6))
     # the sphincter: a muscle ring a little way inside the mouth, with radial wrinkles
     xs = L * (0.9 if style == 'folded' else 0.84)
     srole = 'body' if style == 'folded' else 'mount'   # a flared throat's sphincter sits in the head's flesh
@@ -411,16 +408,22 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
         c, s = math.cos(a), math.sin(a)
         b0 = Vector((L * (0.8 + tz), r * 0.92 * c, r * 0.92 * s)); b1 = Vector((L * (0.86 + tz), r * 0.72 * c, r * 0.72 * s)); b2 = Vector((L * (0.93 + tz), r * 0.55 * c, r * 0.55 * s))
         p.add('tooth%d' % k, 'body' if style == 'folded' else 'mount', 'chitin', tube([b0, b1, b2], [r * 0.07, r * 0.04, r * 0.005], n=5))
-    # the bore and the gland
-    p.add('bore', 'mount', 'maw', revolve([(L * 0.9, r * 0.92), (L * 0.75, r * 0.9), (L * 0.55, r * 0.82), (L * 0.35, r * 0.7), (0.0, r * 0.55)], seg, cap1=True))
-    # the bile gland fills the back of the throat: its light is what the picture shows in each mouth
-    ga = gland_at; gr = 0.86 if ga > 0.65 else 0.74
-    p.add('gland', 'mount', 'bile', blob(r * 0.3, r * gr, r * gr, centre=(L * ga, 0, 0), nu=20, nv=12, seed=seed + 3, amp=0.1))
-    for k in range(7):
-        a = 2 * math.pi * k / 7
-        p.add('glandv%d' % k, 'mount', 'tissue', tube([Vector((L * ga + r * 0.26, r * 0.15 * math.cos(a), r * 0.15 * math.sin(a))),
-                                                       Vector((L * ga + L * 0.05, r * 0.55 * math.cos(a + 0.2), r * 0.55 * math.sin(a + 0.2))),
-                                                       Vector((L * ga + L * 0.08, r * gr * 0.98 * math.cos(a + 0.3), r * gr * 0.98 * math.sin(a + 0.3)))], [r * 0.035, r * 0.045, r * 0.03], n=5))
+    # the bore and the gland: the gland sits deep in the throat; its light falls on the bore's wet wall, brightest at the
+    # back and fading to dark tissue at the lip (the glow is down inside, never a disc at the mouth; R228 item 5 in spirit)
+    ga = gland_at; gr = 0.62
+    xg = L * ga
+    p.add('bore', 'mount', 'maw', revolve([(xg + r * 0.05, r * 0.7), (xg - r * 0.3, r * 0.6), (0.0, r * 0.5)], seg, cap1=True))
+    xl = L * 0.9; bands = (('gland', 0.0, 0.3), ('bilewet', 0.3, 0.62), ('tissue', 0.62, 1.0))
+    for mat_, f0, f1 in bands:
+        a0 = xg + (xl - xg) * f0; a1 = xg + (xl - xg) * f1
+        rad0 = r * (0.7 + 0.25 * f0); rad1 = r * (0.7 + 0.25 * f1)
+        p.add('bore%s' % mat_, 'mount', mat_, revolve([(a0, rad0), ((a0 + a1) / 2, (rad0 + rad1) / 2 * 0.985), (a1, rad1)], seg))
+    # wet wall wrinkles along the bore, catching the light
+    for k in range(16):
+        a = 2 * math.pi * (k + 0.5) / 16
+        pts = [Vector((xg + (xl - xg) * j / 7, r * (0.69 + 0.25 * j / 7) * math.cos(a + 0.03 * j), r * (0.69 + 0.25 * j / 7) * math.sin(a + 0.03 * j))) for j in range(8)]
+        p.add('borew%d' % k, 'mount', 'bilewet' if k % 3 == 0 else 'tissue', tube(pts, [r * 0.045] * 8, n=5, flat=0.6))
+    p.add('gland', 'mount', 'bile', blob(r * 0.22, r * gr, r * gr, centre=(xg, 0, 0), nu=20, nv=12, seed=seed + 3, amp=0.1))
     if side < 0:
         # the starboard throat is the port one mirrored: its outer fold rolls lie over the top and the outer (starboard) side
         for c in p.comps:
@@ -666,7 +669,7 @@ def thruster(r=0.3, nozzles=3):
 
 
 # ------------------------------------------------------------------------------------------------ sacs, blades, scutes
-def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim=1.0, pores=None):
+def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim=1.0, pores=None, hang=1.0):
     """a sac grown out of the hull (local +Z out of the hull): root, a socket of wrinkled tissue (mount); sac, the bulge (mount:
     it grows into the hull); crease, creases across it; vein, veins over it; glow, windows where the bile shows through.
     kind 'brood' adds the birth slit (slit: its length as a share of the sac) between two lip rolls (lip): a launch opening for
@@ -674,19 +677,25 @@ def sac(r, h=None, seed=0, glow=3, creases=2, veins=5, kind='sac', slit=0.0, rim
     p = Part(kind)
     h = h or r * 1.1
     cz = h - r * 1.0
-    p.add('sac', 'mount', 'flesh', blob(r, r * 0.96, r * 1.0, centre=(0, 0, cz), nu=40, nv=24, seed=seed, amp=0.06))
+    # hang > 1: a pendulous lobe, swelling away from the body and narrowing to a soft neck where it grows out
+    p.add('sac', 'mount', 'flesh', blob(r, r * 0.96, r * 1.0, centre=(0, 0, cz), nu=40, nv=24, seed=seed, amp=0.06,
+                                         squash=(lambda uz: 1.0 if uz >= 0 else max(0.5, 1.0 - (hang - 1.0) * 1.1 * uz * uz)) if hang > 1 else None))
     # the root: a broad swelling where the sac grows out of the body, so it reads as a bulge of the flank, not a ball stuck on
-    p.add('rootf', 'mount', 'flesh', blob(r * 1.1, r * 1.05, r * 0.3, centre=(0, 0, 0.0), nu=28, nv=10, seed=seed + 7, amp=0.08))
+    p.add('rootf', 'mount', 'flesh', blob(r * (0.85 if hang > 1 else 1.1), r * (0.8 if hang > 1 else 1.05), r * (0.55 if hang > 1 else 0.3), centre=(0, 0, 0.0), nu=28, nv=10, seed=seed + 7, amp=0.08))
     # the socket: wrinkle rolls round the base, where the sac meets the hull (z about 0)
     for k in range(3):
         zz = 0.02 + r * 0.07 * (2 - k)
         R = (max(0.05, r * r - (cz - zz) ** 2) ** 0.5 + r * 0.06 * (k + 1)) * rim
+        if hang > 1:
+            uz_ = max(-1.0, min(0.0, (zz - cz) / r)); R *= max(0.5, 1.0 - (hang - 1.0) * 1.1 * uz_ * uz_)
         m = 36
         pts = [Vector((R * math.cos(2 * math.pi * j / m), R * math.sin(2 * math.pi * j / m), zz + 0.03 * math.sin(j * 1.7 + k))) for j in range(m + 1)]
         p.add('root%d' % k, 'mount', 'flesh2' if k % 2 else 'flesh', tube(pts, [r * (0.09 - 0.015 * k)] * (m + 1), n=6, cap0=False, cap1=False))
     import random
     rnd = random.Random(seed + 3)
     thb = math.asin(max(-1.0, min(1.0, -cz / r))) + 0.14   # the lowest latitude on the sac that is clear of the hull
+    if hang > 1:
+        thb += 0.55   # a hanging sac leans into the body near its neck: keep the surface detail to its free lobe
     # creases: shallow grooves read as a pair of welts with a dark line between (the concept's "smile" creases)
     for i in range(creases):
         th0 = max(thb + 0.1, rnd.uniform(-0.5, 0.1) + i * 0.35); a0 = rnd.uniform(-0.6, 0.6) + (math.pi if i % 2 else 0)
@@ -828,3 +837,54 @@ def gun_what(part, kind):
     n = sum(1 for c in part.comps if c['name'].startswith('stalk'))
     return {'tendril': 'crown of %d hooked tendrils (turns)' % n, 'mane': 'mane of %d hooked tendrils (fixed)' % n,
             'spore': 'spore gland, pore rosette (swings on its neck)'}.get(t, kind)
+
+
+def bone_crest(length, h, w=None, knuckles=3, seed=0):
+    """a knuckled bone crest (local +Z out of the hull, +X along the crest): collar, the raw tissue it grows from (mount);
+    blade, a thick bony ridge whose top rises and falls in knuckles; edge, the knuckle knobs on the ridge; growth, growth
+    ridges across its flanks. Uneven by design: no two crests alike (the bladeback's back, issue 623)."""
+    import random
+    rnd = random.Random(seed)
+    w = w or h * 0.55
+    p = Part('spine')
+    p.add('collar', 'mount', 'tissue', blob(length * 0.58, w * 0.95, h * 0.18, centre=(0, 0, 0.0), nu=24, nv=8, seed=seed, amp=0.18))
+    k = 18
+    peaks = sorted(rnd.uniform(-0.38, 0.38) for _ in range(knuckles))
+    hts = [rnd.uniform(0.6, 1.0) for _ in range(knuckles)]
+
+    def top(t):
+        # the ridge line: a sum of knuckle humps over a low base, falling to the ends
+        x = (t - 0.5)
+        v = 0.55 + sum(0.45 * hk * math.exp(-((x - pk) / 0.16) ** 2) for pk, hk in zip(peaks, hts))
+        return h * min(1.0, v) * math.sin(math.pi * t) ** 0.45
+    secs = []
+    for j in range(k + 1):
+        t = j / k
+        x = -length / 2 + length * t
+        zt = top(t) + 0.02
+        ww = w * (0.55 + 0.45 * math.sin(math.pi * t) ** 0.6)
+        ring = []
+        for q in range(10):
+            a = math.pi * q / 9
+            # a thick base narrowing to a rounded bony ridge
+            yy = ww / 2 * math.cos(a) * (1 - 0.65 * math.sin(a) ** 2)
+            zz = zt * math.sin(a) ** 0.8 - 0.06
+            ring.append((yy, zz))
+        secs.append((x, ring))
+    V, F = prism(secs)
+    V = [(x, y * (1 + 0.12 * math.sin(7 * x + seed)), z) for (x, y, z) in V]
+    p.add('blade', 'body', 'bone', (V, F))
+    for i, (pk, hk) in enumerate(zip(peaks, hts)):
+        t = pk + 0.5; x = -length / 2 + length * t
+        p.add('edge%d' % i, 'body', 'bone', blob(w * 0.22, w * 0.2, h * 0.12, centre=(x, 0, top(t) - h * 0.02), nu=12, nv=8, seed=seed + i, amp=0.2))
+    for g in range(int(length / 0.12)):
+        t = (g + 0.5) * 0.12 / length
+        x = -length / 2 + length * t; zt = top(t)
+        if zt < h * 0.15:
+            continue
+        ww = w * (0.55 + 0.45 * math.sin(math.pi * t) ** 0.6)
+        for sg in (1, -1):
+            pts = [Vector((x, sg * ww / 2 * math.cos(a) * (1 - 0.65 * math.sin(a) ** 2) * 1.02, zt * math.sin(a) ** 0.8 - 0.06)) for a in (0.15, 0.6, 1.1)]
+            p.add('growth%d%d' % (g, sg > 0), 'body', 'chitin', tube(pts, [h * 0.018] * 3, n=4))
+    p.fit = dict(top=P((0, 0, h)), radius=length / 2)
+    return p

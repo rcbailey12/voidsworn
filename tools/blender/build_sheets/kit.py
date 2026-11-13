@@ -201,7 +201,17 @@ class Kit:
         bm = bmesh.new(); bm.from_mesh(ob.data); bmesh.ops.recalc_face_normals(bm, faces=bm.faces); bm.to_mesh(ob.data); bm.free()
         return ob
 
-    def loft(self, name, sections, m, inside=False, shell=0.0, ytilt=None, plates=None, grp=None, rounded=False, pexp=None, n=None, smooth=False):
+    def wob(self, x, t):
+        """the grown hull's unevenness (issue 623): a smooth radial swell at station x and section angle t (radians), 0 when the
+        hull has none; the hull loft and hpt both use it, so grown detail laid with hpt sits on the swollen skin"""
+        w = getattr(self, 'wobble', None)
+        if not w:
+            return 0.0
+        a, sd = w
+        return a * (0.55 * math.sin(0.55 * x + 1.7 * t + sd) + 0.3 * math.sin(1.3 * x - 2.2 * t + 2.1 * sd) + 0.25 * math.sin(2.1 * x + 3.1 * t + 0.7 * sd)
+                    + 0.2 * math.cos(0.9 * x - 1.0 * t))
+
+    def loft(self, name, sections, m, inside=False, shell=0.0, ytilt=None, plates=None, grp=None, rounded=False, pexp=None, n=None, smooth=False, wobble=False):
         """sections: (x, hw_port, hw_stbd, z_bottom, z_top, chamfer_top, chamfer_bottom[, y_offset]) bow first.
         rounded: a rounded wedge section instead of the octagon (round 3c), the chamfers ignored"""
         rings = []
@@ -209,6 +219,12 @@ class Kit:
             x, hwp, hws, zb, zt, ct, cb = s[:7]
             yo = s[7] if len(s) > 7 else 0.0
             ring = _round_sec(hwp, hws, zb, zt, yo, n=n or 24, p_top=(pexp or (None, None))[0], p_bot=(pexp or (None, None))[1]) if rounded else _octa(hwp, hws, zb, zt, ct, cb, yo)
+            if wobble and rounded:
+                zc_ = (zb + zt) / 2; nn_ = len(ring); rr_ = []
+                for i_, (y, z) in enumerate(ring):
+                    t_ = 2 * math.pi * i_ / nn_; d_ = self.wob(x, t_); l_ = math.hypot(y - yo, z - zc_) or 1.0
+                    rr_.append((y + (y - yo) / l_ * d_, z + (z - zc_) / l_ * d_))
+                ring = rr_
             rings.append([(x, y, z) for (y, z) in ring])
         verts = [v for r in rings for v in r]
         n = len(rings[0])
@@ -383,13 +399,14 @@ class Kit:
         return self._obj(name, verts, faces, m, inside, smooth=True, grp=grp)
 
     # ---------- surface helpers ----------
-    def hull(self, sections, m='soot', shell=0.25, plates=None, rounded=False, pexp=None, n=None, smooth=False):
+    def hull(self, sections, m='soot', shell=0.25, plates=None, rounded=False, pexp=None, n=None, smooth=False, wobble=None):
         """pexp: (deck exponent, flank and belly exponent) of the rounded section for this hull (default P_TOP, P_BOT);
         n: points round each section (24 by default); smooth: smooth shading (grown hulls, issue 623)"""
         self.hull_sections = sections
         self.hull_rounded = rounded
         self.p_top, self.p_bot = pexp or (P_TOP, P_BOT)
-        return self.loft(self.code + '_hull', sections, m, shell=shell, plates=plates, rounded=rounded, pexp=pexp, n=n, smooth=smooth)
+        self.wobble = wobble   # (amplitude, seed): the grown hull's unevenness, no flat faces and no straight lines (issue 623)
+        return self.loft(self.code + '_hull', sections, m, shell=shell, plates=plates, rounded=rounded, pexp=pexp, n=n, smooth=smooth, wobble=bool(wobble))
 
     def hpt(self, x, th, out=0.0):
         """a point on the rounded hull at station x and section angle th (radians: 0 = port beam, pi/2 = the top, -pi/2 the
@@ -410,6 +427,10 @@ class Kit:
         s_ = sec_at(self.hull_sections, x)
         if nrm.dot(p0 - Vector((x, 0, (s_[3] + s_[4]) / 2))) < 0:
             nrm = -nrm
+        if getattr(self, 'wobble', None):
+            zc0 = (s_[3] + s_[4]) / 2; rd = Vector((0, p0.y, p0.z - zc0))
+            if rd.length > 1e-9:
+                p0 = p0 + rd.normalized() * self.wob(x, th % (2 * math.pi))
         return p0 + nrm * out, nrm
 
     def surf(self, x, side, z):

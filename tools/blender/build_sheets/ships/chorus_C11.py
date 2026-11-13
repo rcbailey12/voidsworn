@@ -21,22 +21,23 @@ KIT = 'chorus'
 CONCEPT_SHEET = 'contrib/muse/design/concept_round8b_2026_11/chorus_C11_sheet.jpg'
 CONCEPT_VIEWS = dict(top=dict(box=(100, 40, 1730, 665), largest=True, flip=False), side=dict(box=(110, 730, 1740, 1250), largest=True, flip=False))
 CROPS = [('bow (the two throats)', (100, 650, 1000, 1250)), ('midships (blades and sacs)', (480, 250, 1380, 1050)), ('stern (mane and vents)', (1050, 0, 1920, 750))]
-SHEET = dict(version=1, round='first sheet', date='2026-11-12', blend='opus623\\chorus_C11',
+SHEET = dict(version=2, round='round 2, the massing', date='2026-11-12', blend='opus623\\chorus_C11',
              before='First full layout', before_note='The first complete C11 layout with the Chorus kit, run through the check before any fix.')
 
-PEXP = (2.25, 2.1)
+PEXP = (2.0, 1.9)    # round over the top and round in the belly: no flat faces (the Board on PR 628)
+WOBBLE = (0.09, 2.1)  # the body's unevenness
+# a bulbous seed: widest and tallest in the front third, rounding over and narrowing aft; the head is the body's own swell
 KEY = [
-    (6.5, 1.6, 1.6, -1.3, 1.0),
-    (6.25, 2.15, 2.15, -1.75, 1.52),
-    (5.7, 2.45, 2.45, -2.0, 1.86),
-    (5.2, 2.58, 2.58, -2.13, 2.02),
-    (3.5, 2.6, 2.6, -2.22, 2.1),
-    (2.0, 2.62, 2.62, -2.27, 2.15),
-    (-0.2, 2.55, 2.55, -2.2, 2.08),
-    (-1.3, 2.4, 2.4, -2.1, 2.0),
-    (-3.5, 1.75, 1.75, -1.55, 1.55),
-    (-4.6, 1.25, 1.25, -1.15, 1.2),
-    (-5.25, 0.95, 0.95, -0.9, 0.95),
+    (6.4, 1.75, 1.75, -1.42, 1.1),
+    (6.05, 2.4, 2.4, -2.0, 1.78),
+    (5.3, 2.78, 2.78, -2.35, 2.28),
+    (4.2, 2.88, 2.88, -2.45, 2.42),
+    (2.6, 2.8, 2.8, -2.36, 2.34),
+    (0.6, 2.55, 2.55, -2.12, 2.1),
+    (-1.4, 2.15, 2.15, -1.78, 1.8),
+    (-3.2, 1.6, 1.6, -1.3, 1.38),
+    (-4.5, 1.1, 1.1, -0.9, 0.98),
+    (-5.25, 0.82, 0.82, -0.66, 0.74),
 ]
 
 
@@ -71,7 +72,7 @@ def build(K):
     import random
     HP = _k.HP
 
-    hull = K.hull(HULL, 'flesh', shell=0.25, plates=dict(PL, seed=21, inv='hide'), rounded=True, pexp=PEXP, n=40, smooth=True)
+    hull = K.hull(HULL, 'flesh', shell=0.25, plates=dict(PL, seed=21, inv='hide'), rounded=True, pexp=PEXP, n=40, smooth=True, wobble=WOBBLE)
     K.mass('Hull: the short broad body', hull, 'dark olive flesh', note='blunt at the bow, widest at 40 percent, tapering hard aft')
     K.mark('body', 'hull', ['ridge', 'fold', 'pore'])
 
@@ -81,7 +82,7 @@ def build(K):
     # ---------------- the two throats (bioplasma F) ----------------
     for i, side in enumerate((1, -1)):
         K.spinal('M%d' % (i + 1), (5.6, 1.25 * side, -0.2), 1.6, r=0.84, slot='F', weapon='bioplasma', inv='throats', style='flared', lip_r=1.24,
-                 teeth=11, seed=7 + i, side=side, gland_at=0.74, note='%s throat: a flared rim, an inner sphincter, a ring of spines, the bile gland glowing deep inside'
+                 teeth=11, seed=7 + i, side=side, gland_at=0.62, note='%s throat: a flared rim, an inner sphincter, a ring of spines, the bile gland glowing deep inside'
                                                        % ('port' if side > 0 else 'starboard'))
     K.allow_touch('M1', 'M2', 'the two throats\' rims meet at the bow\'s centre (the picture\'s throats side by side)')
     K.mass('Port throat', _bpy.data.objects['M1_mount_flesh'], 'flesh rim', note='a flared rim 2.7 across')
@@ -99,9 +100,10 @@ def build(K):
     for i, x in enumerate(SACS):
         for side in (1, -1):
             sn = 'p' if side > 0 else 's'
-            pos, nrm = K.hpt(x, side_th(-0.28, side), out=-0.03)
+            pos, nrm = K.hpt(x, side_th(-0.78, side), out=-0.05)
+            hang = (Vector(nrm) * 0.7 + Vector((0, 0, -0.9))).normalized()   # hanging below the flank, as on C10
             fid = 'S%d%s' % (i + 1, sn)
-            K.organ(fid, HP.sac(0.95, h=0.95 * 1.12, seed=60 + 2 * i + (side > 0), kind='sac', glow=1, rim=1.0), pos, nrm, fwd=(1, 0, 0), inv='bile_sacs',
+            K.organ(fid, HP.sac(0.95, h=0.95 * 1.75, seed=60 + 2 * i + (side > 0), kind='sac', glow=1, rim=1.0, hang=1.35), pos, hang, fwd=(1, 0, 0), inv='bile_sacs',
                     what='bile sac, 1.9 across', note='a bile reservoir in a wrinkled socket, fed forward to the throats by the veins')
             K.mass('Bile sac %d (%s)' % (i + 1, 'port' if side > 0 else 'starboard'), _bpy.data.objects['%s_mount_flesh' % fid], 'flesh dome', note='a dome on the flank below the shoulder')
 
@@ -123,12 +125,6 @@ def build(K):
     K.mass('Vent ring', _bpy.data.objects['E1_mount_flesh'], 'flesh', note='six pulse vents round the stern\'s end')
 
     rnd = random.Random(611)
-    # the head: a brow bulging forward over the throats and a chin under them, so the throats sit in a rounded head (the
-    # picture's bulbous bow), not on a flat face
-    K.hull_detail('brow', HP.blob(1.0, 1.9, 0.75, centre=(6.1, 0.0, 1.1), nu=40, nv=20, seed=5, amp=0.07), 'flesh')
-    K.hull_detail('chin', HP.blob(0.95, 1.6, 0.55, centre=(6.1, 0.0, -1.4), nu=40, nv=16, seed=6, amp=0.07), 'flesh')
-    K.mass('Head: the brow', _bpy.data.objects['brow'], 'flesh', note='the brow bulging over the throats')
-    K.mass('Head: the chin', _bpy.data.objects['chin'], 'flesh', note='the chin under the throats')
     # ---------------- the blade row, the side blades and the wound they grow from ----------------
     wound = [K.hpt(x, math.pi / 2, out=-0.02) for x in [4.7 - 0.3 * k for k in range(20)]]
     K.hull_detail('wound_channel', HP.welt([p_ for p_, n_ in wound], [n_ for p_, n_ in wound], 0.46, 0.04, n=6), 'tissue', inv='wound', kind='wound',
@@ -136,28 +132,35 @@ def build(K):
     for sg in (1, -1):
         lip = [K.hpt(x, math.pi / 2 - sg * 0.12, out=-0.02) for x in [4.8 - 0.3 * k for k in range(20)]]
         K.hull_detail('wound_lip_%d' % (sg > 0), HP.welt([p_ for p_, n_ in lip], [n_ for p_, n_ in lip], 0.18, 0.1, n=6), 'flesh2')
+    # the back: knuckled bone crests of uneven size, with gaps, growing out of the wound (never a neat sawtooth row)
     items = []
-    for k, x in enumerate([4.3 - 0.58 * j for j in range(9)]):
-        f = k / 8
-        # a cluster of two or three blades of different heights and rakes: a jagged bone crest, not a row of spikes
-        for q, (dx, dy, hk, wk, rk, yaw) in enumerate(((0.0, 0.0, 1.0, 1.0, 0, 0), (-0.22, 0.14, 0.62, 0.7, 12, 24), (0.18, -0.12, 0.5, 0.6, -8, -28))[:3 if k % 2 == 0 else 2]):
-            pos, nrm = K.hpt(x + dx, math.pi / 2 - dy / 2.4, out=-0.05)
-            yaw += rnd.uniform(-18, 18)
-            fw = Vector((math.cos(math.radians(yaw)), math.sin(math.radians(yaw)), 0))
-            items.append((HP.spine_blade((0.98 - 0.4 * f) * hk * (0.85 + 0.3 * rnd.random()), (0.95 - 0.3 * f) * wk, t=0.11 * wk, rake=22 + rk + 8 * f, teeth=5, growth=4,
-                                         seed=k * 3 + q), HP.frame(pos, fw, nrm)))
+    x = 4.5
+    for k in range(7):
+        # each crest lies across the back at a slant, like a broken plate of bone (the picture's crests spread sideways)
+        ln = rnd.uniform(1.1, 2.0); hh = rnd.uniform(0.42, 0.85) * (1.0 - 0.3 * k / 6)
+        yaw = rnd.choice((1, -1)) * rnd.uniform(45, 75)
+        span = abs(ln * math.cos(math.radians(yaw)))
+        if x - span < -0.45:
+            break   # the crests stop short of the mane
+        xc = x - span / 2
+        pos, nrm = K.hpt(xc, math.pi / 2 + rnd.uniform(-0.08, 0.08), out=-0.06)
+        fw = Vector((math.cos(math.radians(yaw)), math.sin(math.radians(yaw)), 0))
+        items.append((HP.bone_crest(ln, hh, w=rnd.uniform(0.32, 0.5), knuckles=2 + k % 3, seed=k), HP.frame(pos, fw, nrm)))
+        x -= span + rnd.uniform(0.1, 0.4)
+        if x < -0.6:
+            break
     K.grown_hull('blade_row', items, inv='blade_row', kind='spine')
-    K.mass('Blade row', _bpy.data.objects['blade_row_bone'], 'pale bone', note='the jagged bone crest down the back')
+    K.mass('Bone crest', _bpy.data.objects['blade_row_bone'], 'pale bone', note='knuckled bone crests down the back')
     for side in (1, -1):
         items = []
-        for k, x in enumerate([3.7 - 1.2 * j + rnd.uniform(-0.2, 0.2) for j in range(6)]):
-            th = side_th(1.0 - 0.03 * k + rnd.uniform(-0.08, 0.08), side)
-            pos, nrm = K.hpt(x, th, out=-0.04)
-            # shards lying back along the shoulder and leaning out (the plan's separate pale plates), no two alike
-            items.append((HP.spine_blade(0.4 + 0.25 * rnd.random(), 0.6 + 0.35 * rnd.random(), t=0.09, rake=40 + 20 * rnd.random(), teeth=3 + k % 3, growth=3, seed=20 + k),
-                          HP.frame(pos, (1, side * rnd.uniform(0.1, 0.45), 0), nrm)))
+        for k, x in enumerate([3.6 - 1.15 * j + rnd.uniform(-0.25, 0.25) for j in range(5)]):
+            th = side_th(0.95 - 0.03 * k + rnd.uniform(-0.1, 0.1), side)
+            pos, nrm = K.hpt(x, th, out=-0.05)
+            # smaller knuckled shards lying along the shoulder (the plan's separate pale plates), no two alike
+            items.append((HP.bone_crest(rnd.uniform(0.6, 1.1), rnd.uniform(0.22, 0.4), w=rnd.uniform(0.25, 0.36), knuckles=1 + k % 2, seed=20 + k),
+                          HP.frame(pos, (1, side * rnd.uniform(0.5, 1.2), 0), nrm)))
         K.grown_hull('side_blades_%s' % ('p' if side > 0 else 's'), items, inv='side_blades', kind='spine')
-        K.mass('Shoulder blades (%s)' % ('port' if side > 0 else 'starboard'), _bpy.data.objects['side_blades_%s_bone' % ('p' if side > 0 else 's')], 'pale bone', note='shards lying back along the shoulder')
+        K.mass('Shoulder crests (%s)' % ('port' if side > 0 else 'starboard'), _bpy.data.objects['side_blades_%s_bone' % ('p' if side > 0 else 's')], 'pale bone', note='shards along the shoulder')
     # pore fields: the head and the upper flanks (dense, as the picture)
     for name, x0, x1, t0, t1, nper in (('head', 3.2, 6.4, 0.2, 1.45, 260), ('flank', -1.8, 4.2, 0.18, 0.62, 160)):
         V, F = [], []
@@ -227,7 +230,7 @@ def build(K):
     K.organ_room('ram_muscle', 'organ', (1.8, 0.0, 1.35), (2.3, 0.5, 0.32), note='the muscle under the blade row (it drives the blades into a hull)', seed=4)
     for i, x in enumerate(SACS):
         for side in (1, -1):
-            K.organ_room('bile_store_%d%s' % (i + 1, 'p' if side > 0 else 's'), 'gland', (x, side * (1.25 - 0.12 * i), -0.4), (0.55 - 0.05 * i, 0.42, 0.38),
+            K.organ_room('bile_store_%d%s' % (i + 1, 'p' if side > 0 else 's'), 'gland', (x, side * (1.25 - 0.2 * i), -0.4), (0.55 - 0.05 * i, 0.42, 0.38),
                          note='the bile store behind the sac', seed=10 + i)
     K.organ_room('heart_vat', 'vat', (0.6, 0.0, -0.05), (0.95, 0.75, 0.65), note='the heart vat: the core (hp_core), lit bile-green', seed=20)
     K.organ_room('gut_fore', 'gut', (2.8, 0.0, -1.0), (1.5, 0.85, 0.55), note='the gut', seed=21)
@@ -236,7 +239,7 @@ def build(K):
     K.organ_room('regrowth_s', 'organ', (-2.7, -0.85, 0.55), (0.5, 0.38, 0.32), note='regrowth tissue', seed=24)
     K.organ_room('mane_muscle', 'organ', (-2.35, 0.0, 1.0), (1.05, 0.42, 0.28), note='the mane\'s root muscle', seed=25)
     K.organ_room('pulse_bladder', 'engroom', (-4.35, 0.0, 0.0), (0.65, 0.55, 0.45), note='the pulse bladder: fills and squeezes the six vents (the engine room)', seed=26)
-    K.armour('brow and throats', 0.4, 'the thickest flesh, over the throat roots')
+    K.armour('head and throats', 0.4, 'the thickest flesh, over the throat roots')
     K.armour('back (the blade row)', 0.35, 'bone under the wound channel')
     K.armour('flanks and sacs', 0.25, 'thin over the sacs: they rupture first')
     K.armour('belly', 0.25, '')
@@ -261,7 +264,7 @@ def build(K):
     K.change('Colour: bile yellow-green light over dark olive flesh, pale ochre bone and ochre chitin', 'R204 and the lore: the colour is fixed in the build; the picture\'s hide is green-brown with amber light')
     K.change('The two throats are one battery, the Spine volley (bioplasma F)', 'data.js b_razor has one bioplasma slot; both throats fire it (two muzzles, one slot). R184\'s single throat stays a later fleet-sheet question; the accepted picture has two')
     K.change('The plume of hair on the back is the boarding tendrils (tendril T), a fixed mane on a muscle crest', 'the slot is all round; a mane reaches every way at once, so it is fixed, not a turret. Its roots stop well forward of the stern so no tendril hangs in a vent\'s jet')
-    K.change('The bone ridge is a row of ram blades growing from an open wound channel, with smaller blades along each shoulder', 'the bladeback closes and cuts (Razormaw); the plan draws separate pale plates, the profile a row (README 8b: the profile is the view of record)')
+    K.change('The bone ridge is a run of knuckled bone crests of uneven size growing from an open wound channel, with smaller crests along each shoulder', 'the bladeback closes and cuts (Razormaw); the plan draws separate pale plates, the profile a row (README 8b: the profile is the view of record)')
     K.change('The domes are bile sacs feeding the throats; veins run forward to them', 'every part has a job (R221): the picture\'s domes become the throats\' reservoirs')
     K.change('The stern ends in a ring of six pulse vents, each with three glowing filaments splayed outward', 'factions.md: no nozzles; the picture\'s amber nodes and filament plume. The filaments are cut to about a third of the picture\'s so the ship is 14.5 throat rim to filament tip, and splayed so none hangs in a neighbour\'s jet')
     K.change('Siphons added, a pair forward and a pair aft', 'a ship in space must turn; the picture shows none')

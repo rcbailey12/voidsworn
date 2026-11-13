@@ -528,17 +528,17 @@
   {
    "cell": "bow/top",
    "concept": 4,
-   "build": 10
+   "build": 8
   },
   {
    "cell": "bow/side",
    "concept": 3,
-   "build": 7
+   "build": 5
   },
   {
    "cell": "bow/below",
    "concept": 2,
-   "build": 6
+   "build": 3
   },
   {
    "cell": "mid/top",
@@ -558,12 +558,12 @@
   {
    "cell": "stern/top",
    "concept": 3,
-   "build": 7
+   "build": 5
   },
   {
    "cell": "stern/side",
    "concept": 3,
-   "build": 5
+   "build": 4
   },
   {
    "cell": "stern/below",
@@ -579,10 +579,10 @@
    "hull_LH": 3.44
   },
   "build": {
-   "env_LB": 2.04,
-   "env_LH": 1.99,
-   "hull_LB": 2.49,
-   "hull_LH": 2.82
+   "env_LB": 2.38,
+   "env_LH": 1.82,
+   "hull_LB": 2.73,
+   "hull_LH": 2.68
   }
  }
 }

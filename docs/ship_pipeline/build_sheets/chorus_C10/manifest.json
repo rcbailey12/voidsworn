@@ -1,6 +1,6 @@
 {
  "code": "chorus_C10",
- "sheet_version": 1,
+ "sheet_version": 2,
  "routes_note": "kit = the Chorus parts kit (tools/blender/kits/chorus/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
  "turret_marking": "R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).",
  "parts": [
@@ -121,7 +121,7 @@
   {
    "id": "B1p",
    "kind": "brood",
-   "what": "brood sac, 2.8 across, birth slit",
+   "what": "brood sac, 2.5 across, birth slit",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -132,7 +132,7 @@
   {
    "id": "B1s",
    "kind": "brood",
-   "what": "brood sac, 2.8 across, birth slit",
+   "what": "brood sac, 2.5 across, birth slit",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -143,7 +143,7 @@
   {
    "id": "B2p",
    "kind": "brood",
-   "what": "brood sac, 2.2 across, birth slit",
+   "what": "brood sac, 2.0 across, birth slit",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -154,7 +154,7 @@
   {
    "id": "B2s",
    "kind": "brood",
-   "what": "brood sac, 2.2 across, birth slit",
+   "what": "brood sac, 2.0 across, birth slit",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -165,7 +165,7 @@
   {
    "id": "B3p",
    "kind": "brood",
-   "what": "brood sac, 1.7 across, birth slit",
+   "what": "brood sac, 1.5 across, birth slit",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -176,7 +176,7 @@
   {
    "id": "B3s",
    "kind": "brood",
-   "what": "brood sac, 1.7 across, birth slit",
+   "what": "brood sac, 1.5 across, birth slit",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -231,7 +231,7 @@
   {
    "id": "E1",
    "kind": "engine",
-   "what": "pulse vent, mouth 0.5 across",
+   "what": "pulse vent, mouth 0.4 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -242,7 +242,7 @@
   {
    "id": "E2",
    "kind": "engine",
-   "what": "pulse vent, mouth 0.4 across",
+   "what": "pulse vent, mouth 0.3 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -253,7 +253,7 @@
   {
    "id": "E3",
    "kind": "engine",
-   "what": "pulse vent, mouth 0.4 across",
+   "what": "pulse vent, mouth 0.3 across",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -347,7 +347,7 @@
  "break_pieces": [
   {
    "name": "bow piece, upper half",
-   "stations": "0.0 to 24.5 percent",
+   "stations": "0.0 to 24.4 percent",
    "bounded_by": [
     "B-1",
     "B-4"
@@ -356,7 +356,7 @@
   },
   {
    "name": "bow piece, lower half",
-   "stations": "0.0 to 24.5 percent",
+   "stations": "0.0 to 24.4 percent",
    "bounded_by": [
     "B-1",
     "B-4"
@@ -365,7 +365,7 @@
   },
   {
    "name": "midships piece 1, upper half",
-   "stations": "24.5 to 55.9 percent",
+   "stations": "24.4 to 55.8 percent",
    "bounded_by": [
     "B-1",
     "B-2",
@@ -375,7 +375,7 @@
   },
   {
    "name": "midships piece 1, lower half",
-   "stations": "24.5 to 55.9 percent",
+   "stations": "24.4 to 55.8 percent",
    "bounded_by": [
     "B-1",
     "B-2",
@@ -385,7 +385,7 @@
   },
   {
    "name": "midships piece 2, upper half",
-   "stations": "55.9 to 73.1 percent",
+   "stations": "55.8 to 73.0 percent",
    "bounded_by": [
     "B-2",
     "B-3",
@@ -395,7 +395,7 @@
   },
   {
    "name": "midships piece 2, lower half",
-   "stations": "55.9 to 73.1 percent",
+   "stations": "55.8 to 73.0 percent",
    "bounded_by": [
     "B-2",
     "B-3",
@@ -405,7 +405,7 @@
   },
   {
    "name": "stern piece",
-   "stations": "73.1 to 100.0 percent",
+   "stations": "73.0 to 100.0 percent",
    "bounded_by": [
     "B-3"
    ],

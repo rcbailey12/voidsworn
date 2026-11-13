@@ -1,7 +1,7 @@
-# chorus_C10 build sheet: The Ninefold Maw, the Chorus flagship (first sheet)
+# chorus_C10 build sheet: The Ninefold Maw, the Chorus flagship (round 2: the massing)
 
 The Chorus, class Bio-titan, **28.0 world units** mouth to membrane tip (godot/render/hull_table.gd CLS_LEN; data.js `b_boss`:
-bioplasma F, bioplasma F, tendril T, spores T; hangar 3; regen 20; no shields). The model is 28.03. Version 1, 2026-11-12,
+bioplasma F, bioplasma F, tendril T, spores T; hangar 3; regen 20; no shields). The model is 28.0. Version 2 (round 2, the massing), 2026-11-12,
 issue 623. Designer of record: Opus (R205, R207). Accepted picture: contrib/muse/design/concept_round8b_2026_11/chorus_C10_beauty.jpg
 and chorus_C10_sheet.jpg (R204). Built with the new Chorus kit, `tools/blender/kits/chorus/` (grown parts; its README says what
 each part is and does). The views were rendered in the Opus sandbox (Blender 5.3, CPU, 20 samples) from the same build.py the PC
@@ -15,6 +15,23 @@ the [bow](../../../shots/issue_623_chorus/c10_bow_compare.jpg) and the [stern](.
 The two classes from above at one scale: [c10_c11_classes.jpg](../../../shots/issue_623_chorus/c10_c11_classes.jpg).
 Then [side_by_side.jpg](side_by_side.jpg), [cells.jpg](cells.jpg) and [fit_view.jpg](fit_view.jpg).
 
+## Round 2: the massing (the Board on PR 628, Nov 12)
+
+The Board passed the parts, jobs and checks and failed the massing: "both ships read as machines, not creatures". What changed:
+
+1. **One lofted, varying body.** Fullest just behind the mouth's fold lips (5.5 across), tapering steadily and convexly to a thin
+   tail; a soft back and a round belly (section exponents 2.3 and 2.0, were 3.0 and 2.3, so no flat top and no parallel sides);
+   and a smooth swell over the whole skin (the hull's unevenness, up to 0.12, the same one the grown detail is laid on), so
+   there are no flat faces and no straight lines.
+2. **The brood sacs hang.** Each grows out of the lower flank on a soft neck and hangs below the belly as a heavy pendulous lobe
+   (its axis leans from the flank's normal toward straight down); from above only the curve of each shows past the outline.
+3. **The mouth's lips are thick, rolled and layered**: three fat rolls, each further back than the last, so each mouth is a
+   domed lobe of coiled flesh.
+4. **The glow is down in the throat** (R228 item 5 in spirit): the bile gland sits deep in the bore and its light falls on the
+   wet throat wall, bright at the back and fading to dark tissue at the lip, never a disc at the mouth.
+5. The shoulder's chitin seam wanders along the body instead of running ruled; the hide's pads are shifted, sized and turned at
+   random so they never fall in rows; the vent crown is smaller to suit the thinner tail.
+
 ## What it is
 
 Something vast and eyeless that was grown as a weapon. The double mouth at the bow is its two bile spitters; the tendril crown
@@ -27,13 +44,13 @@ veins carrying bile, scars knitting shut.
 
 | Check | Result |
 |---|---|
-| Views agree (side, top, bow): length, beam, height | 0.0, 0.04 and 0.0 percent apart; length 28.05 on the views, 0.1 percent over the class (checks.json, PASS) |
+| Views agree (side, top, bow): length, beam, height | 0.0, 0.04 and 0.0 percent apart; length 27.99 on the views (model 27.96), within 0.2 percent of the class (checks.json, PASS) |
 | Fit check (R217, R219, R221): clash, mount, arc, sweep, exhaust, exit, lane | **0** in all seven ([fit_report.md](fit_report.md), [fit_view.jpg](fit_view.jpg)) |
 | Machines on a seam (R226) | **0** of 15 machines (2 throats, the crown, 5 spore glands, 3 vents, 4 siphons) across 4 seams |
 | Insides inside the skin | 0 of 7,484 inside vertices within 0.15 of the skin |
 | Inventory (R218, R221) | 15 lines, every one with a job; 0 not present, shaped and detailed ([inventory.md](inventory.md)) |
-| Outline overlap at the concept's camera (reported, not a bar) | 76.8 percent ([outline_check.jpg](outline_check.jpg)) |
-| Proportions, hull length to beam / to height (concept sheet against build, same measure) | 5.74 / 6.21 against 5.87 / 6.03 |
+| Outline overlap at the concept's camera (reported, not a bar) | 75.5 percent ([outline_check.jpg](outline_check.jpg)) |
+| Proportions, hull length to beam / to height (concept sheet against build, same measure) | 5.74 / 6.21 against 5.97 / 5.83 |
 
 ### Detail density per part type (R224, measured on the blockout; numbers in [density_seams.json](density_seams.json))
 
@@ -42,18 +59,18 @@ Triangles and edge features (faces meeting at over 30 degrees, or an open rim) p
 
 | Part type | Triangles per unit2 (vs hull) | Edge features per unit2 (vs hull) |
 |---|---|---|
-| hull (the body, hide pads, folds, chitin trim, veins, pores, scars) | 201.5 (1.00) | 116.5 (1.00) |
-| spinal (the two throats) | 258.3 (1.28) | 198.2 (1.70) |
-| gun (the crown and the spore glands) | 209.4 (1.04) | 113.0 (0.97) |
-| brood (the brood sacs) | 202.4 (1.00) | 122.1 (1.05) |
-| engine (the pulse vents and membranes) | 287.2 (1.43) | 146.5 (1.26) |
-| thruster (the siphons) | 555.2 (2.76) | 252.1 (2.16) |
+| hull (the body, hide pads, folds, chitin trim, veins, pores, scars) | 195.4 (1.00) | 110.4 (1.00) |
+| spinal (the two throats) | 227.4 (1.16) | 169.1 (1.53) |
+| gun (the crown and the spore glands) | 209.4 (1.07) | 113.0 (1.02) |
+| brood (the brood sacs) | 291.3 (1.49) | 168.6 (1.53) |
+| engine (the pulse vents and membranes) | 374.3 (1.92) | 190.6 (1.73) |
+| thruster (the siphons) | 555.2 (2.84) | 252.1 (2.28) |
 
 ## Weapons, each from the lore (R221)
 
 | Slot | Weapon | Built as |
 |---|---|---|
-| F, F | Spine volley (bioplasma) | the two throats of the double mouth: rolled fold lips stacked round each mouth, an inner sphincter, a ring of chitin spines (the spines it spits), a dark bore, the bile gland glowing at its back. Fixed forward. |
+| F, F | Spine volley (bioplasma) | the two throats of the double mouth: three fat rolled fold lips stacked round each mouth, an inner sphincter, a ring of chitin spines (the spines it spits), the bile gland deep in the bore lighting the wet throat wall. Fixed forward. |
 | T | Boarding tendrils (tendril) | a crown of thirteen hooked tendrils on a muscle mound, each with grip rings, a chitin barb and acid pores; it turns to lean toward its prey (R219 turret marking) |
 | T | Spore cloud (spores) | five spore glands hanging on necks under the belly, veined sacs whose spouts curl forward to a rosette of pores; each swings on its neck |
 
@@ -84,8 +101,8 @@ no machine on any of them. Nine breach anchors (Bio-titan 8, Chorus +1 on the bi
 ## What still differs from the concept, and why
 
 - **The hide's surface** (fine wrinkle grain, mottling, wet sheen, scar colour) is paint: recipe stages 4 and 5. The blockout is schematic colour.
-- **The head reads blunter** than the beauty's coiled mouth lobes: the beauty's strong perspective swells the bow, and the fold rolls are modelled at the sheet's true size. The plan and profile widths match the concept sheet (the side and plan compares).
-- **The brood sacs sit a little higher** on the flank than the picture's hanging bulges, so their birth slits face out and down clear of the belly glands.
+- **The head reads a little smaller** than the beauty's coiled mouth lobes: the beauty's strong perspective swells the bow; the lobes are modelled at the sheet's true size, and the body is now fullest just behind them.
+- **The brood sacs hang a little further out** than the picture's, so their birth slits face down and out clear of the belly glands as they swing.
 - **No underside view** on the concept sheet: the belly between the sacs is designed here.
 
 The blockout .blend is not on Ryan's PC (nothing ran there); build.py rebuilds it from `tools/blender/build_sheets/ships/chorus_C10.py`.

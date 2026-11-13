@@ -164,7 +164,7 @@ Concept counts read off the concept sheet by eye (C10 sheet: bow = the two mouth
 | bow/below | 3 | 3 | Spore gland 1; Brood sac 1 (port); Brood sac 1 (starboard) |
 | mid/top | 6 | 15 | Hull: the long body; Tendril crown; Spore gland 1; Spore gland 2; Spore gland 3; Spore gland 4; Spore gland 5; Brood sac 1 (port); Brood sac 1 (starboard); Brood sac 2 (port); Brood sac 2 (starboard); Brood sac 3 (port); Brood sac 3 (starbo |
 | mid/side | 7 | 11 | Hull: the long body; Tendril crown; Spore gland 1; Spore gland 2; Spore gland 3; Spore gland 4; Spore gland 5; Brood sac 1 (port); Brood sac 2 (port); Brood sac 3 (port); Chitin trim (port) |
-| mid/below | 6 | 6 | Spore gland 1; Spore gland 2; Spore gland 3; Spore gland 4; Brood sac 1 (port); Brood sac 1 (starboard) |
+| mid/below | 6 | 6 | Spore gland 1; Spore gland 2; Spore gland 3; Brood sac 1 (port); Brood sac 1 (starboard); Brood sac 2 (starboard) |
 | stern/top | 3 | 5 | Hull: the long body; Spore gland 5; Vent crown; Chitin trim (port); Chitin trim (starboard) |
 | stern/side | 3 | 4 | Hull: the long body; Spore gland 5; Vent crown; Chitin trim (port) |
 | stern/below | 2 | 0 |  |
@@ -176,6 +176,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 3.08 | 3.18 | 5.74 | 6.21 |
-| build | 3.50 | 3.35 | 5.87 | 6.03 |
+| build | 4.28 | 3.25 | 5.97 | 5.83 |
 
 Lines not present, shaped and detailed without a reason: 0.

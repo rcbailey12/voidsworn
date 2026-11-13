@@ -1,4 +1,4 @@
-# chorus_C10 fit report (first sheet; RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
+# chorus_C10 fit report (round 2, the massing; RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
 
 Made by `tools/blender/build_sheets/clash.py` on the built blockout (it runs inside every `build.py ... render` and on its own
 with `build.py <code> <out> fit`). What it tests, on every part of every type:
@@ -26,7 +26,7 @@ also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on t
 (`turret=0`, `gun_fixed=1`).
 
 
-## How first sheet fixed them
+## How round 2, the massing fixed them
 
 | Clash (before) | Fix |
 |---|---|
@@ -38,7 +38,7 @@ turret's swept circle (moved out).
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 179 objects, 21 parts, 698 close pairs, 691 rays, 8 guns, 6 turrets swept, 7 cones, 6 apertures, 2 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 183 objects, 21 parts, 592 close pairs, 836 rays, 8 guns, 6 turrets swept, 7 cones, 6 apertures, 2 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 

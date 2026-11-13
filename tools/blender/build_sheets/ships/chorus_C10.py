@@ -22,26 +22,26 @@ CONCEPT_SHEET = 'contrib/muse/design/concept_round8b_2026_11/chorus_C10_sheet.jp
 # the true views on the 8b sheet (x0, y0, x1, y1), bow on the LEFT already; the escort (right) is a separate shape, left out
 CONCEPT_VIEWS = dict(top=dict(box=(75, 30, 1840, 600), largest=True, flip=False), side=dict(box=(65, 600, 1860, 1195), largest=True, flip=False))
 CROPS = [('bow (the double mouth)', (90, 480, 1000, 1010)), ('midships (crown and sacs)', (560, 60, 1450, 960)), ('stern (vent crown and membranes)', (1150, 30, 1920, 700))]
-SHEET = dict(version=1, round='first sheet', date='2026-11-12', blend='opus623\\chorus_C10',
+SHEET = dict(version=2, round='round 2, the massing', date='2026-11-12', blend='opus623\\chorus_C10',
              before='First full layout', before_note='The first complete C10 layout with the Chorus kit, run through the check before any fix.')
 
-PEXP = (3.0, 2.3)   # broad flat back, rounder flanks and belly
-# key sections (x, half-beam port, half-beam starboard, belly, back): the head cap the throats grow out of, the body, the tail
+PEXP = (2.3, 2.0)   # a soft back, a round belly: no flat top, no parallel sides (the Board on PR 628)
+WOBBLE = (0.12, 1.3)   # the body's unevenness: no flat faces and no straight lines
+# key sections (x, half-beam port, half-beam starboard, belly, back): fullest just behind the mouth's fold lips, tapering
+# steadily all the way to a thin tail that rises to the back line
 KEY = [
-    (12.95, 1.85, 1.85, -1.85, 1.1),
-    (12.4, 2.3, 2.3, -2.3, 1.5),
-    (11.5, 2.48, 2.48, -2.42, 1.7),
-    (10.3, 2.42, 2.42, -2.3, 1.7),
-    (8.8, 2.3, 2.3, -2.08, 1.74),
-    (5.1, 2.3, 2.3, -1.95, 1.9),
-    (2.0, 2.38, 2.38, -1.85, 1.94),
-    (0.0, 2.36, 2.36, -1.7, 1.94),
-    (-2.0, 2.2, 2.2, -1.45, 1.88),
-    (-4.1, 1.95, 1.95, -1.1, 1.78),
-    (-6.7, 1.35, 1.35, -0.5, 1.6),
-    (-8.4, 0.95, 0.95, 0.0, 1.45),
-    (-9.6, 0.8, 0.8, 0.18, 1.4),
-    (-10.15, 0.66, 0.66, 0.3, 1.3),
+    (12.3, 2.05, 2.05, -2.0, 1.2),
+    (11.8, 2.55, 2.55, -2.45, 1.68),
+    (10.8, 2.74, 2.74, -2.62, 1.9),
+    (9.2, 2.72, 2.72, -2.56, 1.92),
+    (6.5, 2.6, 2.6, -2.38, 1.88),
+    (3.0, 2.4, 2.4, -2.1, 1.8),
+    (0.0, 2.14, 2.14, -1.8, 1.7),
+    (-3.0, 1.76, 1.76, -1.36, 1.56),
+    (-6.0, 1.22, 1.22, -0.76, 1.38),
+    (-8.4, 0.78, 0.78, -0.2, 1.22),
+    (-9.6, 0.58, 0.58, 0.1, 1.12),
+    (-10.15, 0.48, 0.48, 0.24, 1.04),
 ]
 
 
@@ -68,7 +68,7 @@ PL = dict(size=(0.5, 1.1), thick=(0.02, 0.045), skip=0.18, stack=0.0, mats={'fle
           rivet_mat='pore', subs=['pad', 'pore'], rivets=True, rr=0.03)
 
 GLANDS = (4.9, 2.55, 0.2, -2.9, -5.1)          # the spore glands' stations under the belly
-SACS = ((5.06, 1.4, -0.52), (0.34, 1.1, -0.58), (-3.6, 0.85, -0.5))   # brood sacs: station, radius, section angle (port)
+SACS = ((5.06, 1.25, -0.8), (0.34, 1.0, -0.82), (-3.6, 0.75, -0.8))   # brood sacs: station, radius, section angle (port) where the neck grows out   # brood sacs: station, radius, section angle (port)
 
 
 def build(K):
@@ -76,7 +76,7 @@ def build(K):
     from mathutils import Vector, Matrix
     HP = _k.HP
 
-    hull = K.hull(HULL, 'flesh', shell=0.3, plates=dict(PL, seed=11, inv='hide'), rounded=True, pexp=PEXP, n=40, smooth=True)
+    hull = K.hull(HULL, 'flesh', shell=0.3, plates=dict(PL, seed=11, inv='hide'), rounded=True, pexp=PEXP, n=40, smooth=True, wobble=WOBBLE)
     K.mass('Hull: the long body', hull, 'dark olive flesh', note='broad flat back, rounder belly, tapering to a tail that rises to the back line')
     K.mark('body', 'hull', ['ridge', 'fold', 'pore'])
 
@@ -86,8 +86,8 @@ def build(K):
     # ---------------- the double mouth: two bile spitters (bioplasma F, F) ----------------
     for i, side in enumerate((1, -1)):
         fid = 'M%d' % (i + 1)
-        K.spinal(fid, (11.3, 1.12 * side, -0.35), 2.5, r=0.68, slot='F', weapon='bioplasma', inv='throats', style='folded', lip_r=1.0,
-                 rolls=4, teeth=9, seed=3 + i, side=side,
+        K.spinal(fid, (11.15, 1.2 * side, -0.35), 2.5, r=0.68, slot='F', weapon='bioplasma', inv='throats', style='folded', lip_r=1.0,
+                 rolls=3, teeth=9, seed=3 + i, side=side, gland_at=0.62,
                  note='%s throat of the double mouth: rolled fold lips, an inner sphincter, a ring of spines, the bile gland glowing deep inside'
                       % ('port' if side > 0 else 'starboard'))
     K.allow_touch('M1', 'M2', 'the two throats grow from one fused mouth mass (the picture\'s folded double mouth)')
@@ -102,8 +102,8 @@ def build(K):
 
     # ---------------- the spore glands under the belly (spores T) ----------------
     for i, x in enumerate(GLANDS):
-        zb = _k.sec_at(HULL, x)[3]
-        K.gun('G%d' % (i + 1), (x, 0.0, zb + 0.06), 0, 0, barrels=2, cal=0.06, blen=0.6, size=1.15, normal=(0, 0, -1), slot='T', weapon='spores',
+        zb = K.hpt(x, -math.pi / 2)[0].z   # the belly's skin, swell included
+        K.gun('G%d' % (i + 1), (x, 0.0, zb - 0.04), 0, 0, barrels=2, cal=0.06, blen=0.6, size=1.15, normal=(0, 0, -1), slot='T', weapon='spores',
               inv='spore_glands', kw=dict(seed=20 + i), note='spore gland on its neck under the belly, the spout curled forward to a rosette of pores')
         K.mass('Spore gland %d' % (i + 1), _bpy.data.objects['G%d_turn_flesh' % (i + 1)], 'flesh sac', note='hanging on its neck under the belly')
 
@@ -111,10 +111,12 @@ def build(K):
     for i, (x, r, th) in enumerate(SACS):
         for side in (1, -1):
             sn = 'p' if side > 0 else 's'
-            pos, nrm = K.hpt(x, side_th(th, side), out=-0.03)
+            pos, nrm = K.hpt(x, side_th(th, side), out=-0.05)
+            # the sac hangs: its axis leans from the flank's normal toward straight down, so from above only its curve shows
+            hang = (Vector(nrm) * 0.7 + Vector((0, 0, -0.9))).normalized()
             fid = 'B%d%s' % (i + 1, sn)
-            part = HP.sac(r, h=r * 1.5, seed=40 + i * 2 + (side > 0), kind='brood', slit=0.55, glow=2)
-            K.organ(fid, part, pos, nrm, fwd=(1, 0, 0), inv='brood_sacs', what='brood sac, %.1f across, birth slit' % (2 * r),
+            part = HP.sac(r, h=r * 1.9, seed=40 + i * 2 + (side > 0), kind='brood', slit=0.55, glow=2, hang=1.45)
+            K.organ(fid, part, pos, hang, fwd=(1, 0, 0), inv='brood_sacs', what='brood sac, %.1f across, birth slit' % (2 * r),
                     note='brood sac on the lower flank: the spore swarms grow in it and are born through the slit', aperture=(2.0, 0.0))
             K.mass('Brood sac %d (%s)' % (i + 1, 'port' if side > 0 else 'starboard'), _bpy.data.objects['%s_mount_flesh' % fid], 'flesh sac',
                    note='bulging out and down from the lower flank')
@@ -128,7 +130,7 @@ def build(K):
         K.thruster('Q2' + sn, tuple(pos), tuple(nrm), r=0.26, inv='siphons', note='siphon on the tail: swings the stern')
 
     # ---------------- the vent crown (engines) ----------------
-    for fid, y, z, r, nt, od, sd in (('E1', 0.0, 1.0, 0.22, 3, (0, 0, 1), 1), ('E2', 0.4, 0.5, 0.19, 2, (0, 1, -0.6), 2), ('E3', -0.4, 0.5, 0.19, 2, (0, -1, -0.6), 3)):
+    for fid, y, z, r, nt, od, sd in (('E1', 0.0, 0.82, 0.18, 3, (0, 0, 1), 1), ('E2', 0.3, 0.42, 0.14, 2, (0, 1, -0.6), 2), ('E3', -0.3, 0.42, 0.14, 2, (0, -1, -0.6), 3)):
         K.engine(fid, (-10.45, y, z), r, 1.0, bell=1.0, body_r=r * 1.35, inv='vents', src='picture',
                  kw=dict(trail='membrane', trails=nt, trail_len=3.5, out_dir=od, seed=sd),
                  note='pulse vent with %d trailing membrane veils, splayed away from the crown\'s centre' % nt)
@@ -144,10 +146,11 @@ def build(K):
         rp = []; rn = []
         for k, x in enumerate(xs):
             f = k / (len(xs) - 1)
-            pos, nrm = K.hpt(x, side_th(0.62 - 0.12 * f, side), out=0.02)
-            rp.append(K.hpt(x, side_th(0.62 - 0.12 * f, side), out=-0.02)[0]); rn.append(nrm)
+            thx = 0.62 - 0.12 * f + 0.07 * math.sin(x * 0.45 + 0.5) + 0.03 * math.sin(x * 1.3)   # a seam that wanders, never a ruled line
+            pos, nrm = K.hpt(x, side_th(thx, side), out=0.02)
+            rp.append(K.hpt(x, side_th(thx, side), out=-0.02)[0]); rn.append(nrm)
             sc = HP.chitin(0.3 - 0.1 * f, 0.78 - 0.25 * f, t=0.06, growth=2, seed=k)
-            tang = (K.hpt(x - 0.1, side_th(0.62 - 0.12 * f, side))[0] - K.hpt(x + 0.1, side_th(0.62 - 0.12 * f, side))[0]).normalized()
+            tang = (K.hpt(x - 0.1, side_th(thx, side))[0] - K.hpt(x + 0.1, side_th(thx, side))[0]).normalized()
             items.append((sc, HP.frame(pos, -tang, nrm)))
         K.grown_hull('chitin_trim_%s' % ('p' if side > 0 else 's'), items, inv='chitin_trim', kind='chitin')
         K.mass('Chitin trim (%s)' % ('port' if side > 0 else 'starboard'), _bpy.data.objects['chitin_trim_%s_chitin' % ('p' if side > 0 else 's')], 'ochre chitin', note='the shoulder ridge')
@@ -160,7 +163,7 @@ def build(K):
             pts = []; nrms = []; ws = []; hs = []
             for j in range(12):
                 t = j / 11
-                x = 12.75 - 4.6 * t * (0.85 + 0.15 * math.sin(k * 1.7))
+                x = 12.25 - 4.4 * t * (0.85 + 0.15 * math.sin(k * 1.7))
                 th = th0 + (0.62 - th0) * t ** 1.4 * 0.55 + 0.05 * math.sin(j * 0.9 + k)
                 p_, n_ = K.hpt(x, side_th(th, side), out=-0.02); pts.append(p_); nrms.append(n_)
                 ws.append((0.62 * (1 - 0.75 * t) + 0.06) * (1 + 0.18 * math.sin(j * 1.9 + k))); hs.append((0.3 * (1 - 0.8 * t) + 0.03) * (1 + 0.25 * math.sin(j * 1.3 + 2 * k)))
@@ -225,7 +228,7 @@ def build(K):
     K.colour('pale regrowing scar', 9.3, -6.0, 'scar patches')
 
     # ---------- INSIDE: flesh, bone and organs (R98, R209; factions.md: "Inside: flesh and bone, wet and lit from within") ----------
-    K.septum('lower', -0.9, 10.4, -3.2)
+    K.septum('lower', -0.9, 10.4, -2.4)
     K.septum('upper', 0.85, 10.2, -7.0)
     for i, x in enumerate((10.6, 8.9, 6.2, 4.4, 2.6, 0.8, -0.6, -2.5, -4.2, -5.4, -7.4, -8.8)):
         K.hoop('F%d' % i, x)
@@ -242,12 +245,12 @@ def build(K):
     for i, x in enumerate(GLANDS):
         zb = _k.sec_at(HULL, x)[3]
         K.organ_room('spore_store_%d' % (i + 1), 'gland', (x, 0.0, zb + 0.62), (0.55, 0.42, 0.3), note='spore store over the gland below', seed=20 + i)
-    K.organ_room('tendril_muscle', 'organ', (1.7, 0.0, 1.2), (0.75, 0.7, 0.4), note='the crown\'s root muscle', seed=30)
+    K.organ_room('tendril_muscle', 'organ', (1.7, 0.0, 1.0), (0.7, 0.6, 0.35), note='the crown\'s root muscle', seed=30)
     K.organ_room('heart_vat', 'vat', (0.1, 0.0, -0.05), (1.15, 0.9, 0.75), note='the heart vat: the core (hp_core), lit bile-green', seed=31)
     K.organ_room('gut_aft', 'gut', (-2.9, 0.0, 0.35), (1.6, 0.95, 0.65), note='the second stomach', seed=32)
-    K.organ_room('regrowth_aft_p', 'organ', (-5.3, 0.8, 0.95), (0.65, 0.38, 0.32), note='regrowth tissue', seed=33)
-    K.organ_room('regrowth_aft_s', 'organ', (-5.3, -0.8, 0.95), (0.65, 0.38, 0.32), note='regrowth tissue', seed=34)
-    K.organ_room('pulse_bladder', 'engroom', (-8.2, 0.0, 0.78), (1.25, 0.52, 0.4), note='the pulse bladder: fills and squeezes the vents (the engine room)', seed=35)
+    K.organ_room('regrowth_aft_p', 'organ', (-5.0, 0.52, 0.6), (0.55, 0.3, 0.28), note='regrowth tissue', seed=33)
+    K.organ_room('regrowth_aft_s', 'organ', (-5.0, -0.52, 0.6), (0.55, 0.3, 0.28), note='regrowth tissue', seed=34)
+    K.organ_room('pulse_bladder', 'engroom', (-7.8, 0.0, 0.62), (1.0, 0.4, 0.32), note='the pulse bladder: fills and squeezes the vents (the engine room)', seed=35)
     K.armour('head and mouth folds', 0.45, 'the thickest flesh: the folds close over the throats')
     K.armour('back and shoulders', 0.35, 'callused hide under the chitin trim')
     K.armour('flanks and sacs', 0.25, 'thin over the brood sacs: they rupture first')
@@ -280,7 +283,7 @@ def build(K):
     K.change('The two mouths are the two bile spitters (bioplasma F, F)', 'data.js b_boss carries two Spine volleys forward; a weapon is an organ (factions.md). Each throat gets an inner sphincter, a ring of chitin spines (the spines it spits) and its glowing bile gland; the picture shows only the glow')
     K.change('The tendril cluster is the boarding tendrils (tendril T), a crown on a muscle mound that turns', 'the slot is all round; the profile (the view of record for anatomy, README 8b) curls them up, the plan splays them flat; built as the profile with the tips splayed')
     K.change('The belly row is five spore glands (spores T) on necks, spouts forward', 'the picture\'s small hanging sacs; the last two moved about one unit aft so the B-2 seam passes behind the crown and between two glands (R226)')
-    K.change('The big flank sacs are brood sacs, the hangar (hangar 3), with birth slits', 'the picture\'s crease on each sac becomes the slit the spore swarms are born through; a launch opening kept clear (fit check EXIT)')
+    K.change('The big flank sacs are brood sacs, the hangar (hangar 3), with birth slits', 'the picture\'s crease on each sac becomes the slit the spore swarms are born through; a launch opening kept clear (fit check EXIT). They hang below the lower flank as heavy lobes on soft necks, so from above only their curve shows (the Board on PR 628)')
     K.change('The shoulder ridge line is a row of ochre chitin scutes', 'the picture draws a raised seam; the lore gives ochre chitin trim; it is also where the hide tears first')
     K.change('The tail ends in a crown of three pulse vents with trailing membranes', 'factions.md: no nozzles, pulsing vents or trailing membranes; the picture\'s spike with three or four glow points and long wisps. The membranes are about two thirds of the picture\'s wisps so the whole ship is 28.0, mouth to membrane tip')
     K.change('Siphons added, a pair behind the mouths and a pair on the tail', 'a ship in space must turn; the picture shows none; siphons, not nozzles')
