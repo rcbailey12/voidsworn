@@ -140,6 +140,11 @@ global learning and shaping the approach". So the method, for every ship of ever
   such as a launch bay may tear across. The stage 4 audit tests each seam along its path and fails only a machine on it.
   A longitudinal seam (a peel) is one level plane in the game: the sheet sets its height clear of every machine under it, one
   per compartment, as many as the faction's breaking needs (issue 618: E11 peels its dorsal tiers and its crescent layers).
+  The plane takes everything above it, so the insides need a clear band just above it (E11's deck kept 0.5 below its peel);
+  a peel through decks, septa or rooms leaves their halves outside the torn hull (issue 623: C10's belly peel, 1512 triangles,
+  was dropped). A transverse path runs on straight past both flanks (E11 to 6.2 off the axis, C10 to 7.5): the game weighs the
+  tear's height by how far across the path a point is, so a path that stops at the flank tears the insides and the plating at
+  different places there (C11: 171 triangles outside, 0 once the paths ran on). death_seam_check counts both.
 - Detail scales with the part's size (issue 618, from R224 measured on E11): a kit part built large keeps the hull's detail
   density only if its plate courses, rings and bands are laid at the hull's own plate size in world units, never as a fixed
   count per part. The E11 projector at 7.6 long read 0.44 of the hull's triangles per square unit with the counts that served

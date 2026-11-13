@@ -22,7 +22,7 @@ CONCEPT_SHEET = 'contrib/muse/design/concept_round8b_2026_11/chorus_C10_sheet.jp
 # the true views on the 8b sheet (x0, y0, x1, y1), bow on the LEFT already; the escort (right) is a separate shape, left out
 CONCEPT_VIEWS = dict(top=dict(box=(75, 30, 1840, 600), largest=True, flip=False), side=dict(box=(65, 600, 1860, 1195), largest=True, flip=False))
 CROPS = [('bow (the double mouth)', (90, 480, 1000, 1010)), ('midships (crown and sacs)', (560, 60, 1450, 960)), ('stern (vent crown and membranes)', (1150, 30, 1920, 700))]
-SHEET = dict(version=4, round='round 4, the body', date='2026-11-12', blend='opus623\\chorus_C10',
+SHEET = dict(version=5, round='the recipe (issue 623)', date='2026-11-13', blend='opus623\\chorus_C10',
              before='First full layout', before_note='The first complete C10 layout with the Chorus kit, run through the check before any fix.')
 
 PEXP = (2.3, 2.0)   # a soft back, a round belly: no flat top, no parallel sides (the Board on PR 628)
@@ -271,13 +271,11 @@ def build(K):
     K.armour('belly', 0.25, '')
     K.armour('tail', 0.2, '')
     K.break_line('B-1', 7.2, 'behind the head: the mouth mass tears away, opening the glands and the Node',
-                 path=[(7.5, 2.7), (6.9, 1.6), (7.6, 0.6), (6.8, -0.5), (7.5, -1.5), (7.0, -2.7)])
+                 path=[(7.5, 7.5), (7.5, 2.7), (6.9, 1.6), (7.6, 0.6), (6.8, -0.5), (7.5, -1.5), (7.0, -2.7), (7.0, -7.5)])
     K.break_line('B-2', -1.6, 'behind the tendril crown: the body tears open across the heart vat\'s aft end and the second stomach',
-                 path=[(-1.9, 2.6), (-1.45, 1.4), (-1.6, 0.0), (-1.4, -1.4), (-1.95, -2.6)])
+                 path=[(-1.9, 7.5), (-1.9, 2.6), (-1.45, 1.4), (-1.6, 0.0), (-1.4, -1.4), (-1.95, -2.6), (-1.95, -7.5)])
     K.break_line('B-3', -6.4, 'ahead of the tail: the tail and the vent crown tear free, opening the pulse bladder',
-                 path=[(-6.1, 1.6), (-6.7, 0.7), (-6.2, -0.2), (-6.6, -1.0), (-6.2, -1.6)])
-    K.break_line('B-4', 0.0, 'the belly tears away along the brood sacs\' roots, the sacs bursting first (factions.md: sacs rupture first, then the body tears open)',
-                 path=[(7.6, -1.0), (5.5, -0.75), (3.5, -1.0), (0.0, -0.75), (-3.5, -0.6), (-6.0, -0.3)], kind='long')
+                 path=[(-6.1, 7.5), (-6.1, 1.6), (-6.7, 0.7), (-6.2, -0.2), (-6.6, -1.0), (-6.2, -1.6), (-6.2, -7.5)])
     K.inside.append(dict(kind='note', name='insides', note='Flesh, bone and organs through the whole body (R215), hidden until a piece breaks: bone hoops for frames, '
                                                           'membrane septa for decks, organs and chambers that never reach the skin. The Chorus bursts and tears: sacs rupture first, '
                                                           'then the body tears open along ragged lines (R186).'))
@@ -285,12 +283,26 @@ def build(K):
     # nine breach anchors (Bio-titan base 8, Chorus +1 on the big ones): prow 3, mid 3, engine 3, alternating sides, next to the sacs
     for i, (x, th, sec, side) in enumerate(((9.6, -0.35, 'prow', 1), (8.0, -0.45, 'prow', -1), (6.6, 0.95, 'prow', 1),
                                             (2.9, -0.15, 'mid', -1), (-1.0, -0.2, 'mid', 1), (-2.2, 0.85, 'mid', -1),
-                                            (-5.6, -0.1, 'eng', 1), (-7.0, 0.9, 'eng', -1), (-8.6, -0.2, 'eng', 1))):
+                                            (-4.9, -0.1, 'eng', 1), (-7.0, 0.55, 'eng', -1), (-8.9, -0.45, 'eng', 1))):
         pos, nrm = K.hpt(x, side_th(th, side), out=0.02)
         K.point('breach', 'hp_breach_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd', section=sec, note='open hide beside a sac or the trim')
     for i, (x, th, side) in enumerate(((8.6, -0.45, 1), (8.6, -0.45, -1), (-7.4, 0.55, 1), (-7.4, 0.55, -1))):
         pos, nrm = K.hpt(x, side_th(th, side), out=0.02)
         K.point('rcs', 'hp_rcs_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd')
+    # launch mouths (hangar 3): each brood sac's birth slit, on its skin, launching along the sac's hang (out and down)
+    for i, (x, r, th) in enumerate(SACS):
+        for side in (1, -1):
+            fid = 'B%d%s' % (i + 1, 'p' if side > 0 else 's')
+            ob = _bpy.data.objects['%s_body_maw' % fid]
+            vs = [ob.matrix_world @ v.co for v in ob.data.vertices]
+            c = sum(vs, Vector()) / len(vs); q = min(vs, key=lambda v: (v - c).length)
+            pos, nrm = K.hpt(x, side_th(th, side), out=-0.05)
+            hang = (Vector(nrm) * 0.7 + Vector((0, 0, -0.9))).normalized()
+            K.point('bay', 'hp_bay_%d' % (2 * i + (side < 0)), tuple(q), side='port' if side > 0 else 'stbd', note='brood sac birth slit', dir=tuple(hang))
+    # boarding origins (export7: one port, one starboard on the mid hull): where the boarding tendrils' parties leave the body
+    for i, side in enumerate((1, -1)):
+        pos, nrm = K.hpt(2.0, side_th(0.35, side), out=0.02)
+        K.point('board', 'hp_board_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd')
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
     K.change('Colour: bile yellow-green light over dark olive flesh and ochre chitin', 'R204 and the lore: the colour is fixed in the build; the picture came out grey with amber light (README 8b)')
@@ -303,5 +315,9 @@ def build(K):
     K.change('Siphons added, a pair behind the mouths and a pair on the tail', 'a ship in space must turn; the picture shows none; siphons, not nozzles')
     K.change('Pore fields on the head and round the tail, veins along the flanks', 'the Chorus has no eyes: it tastes (lore 5.8); the veins carry bile to the throats (README 8b: C9\'s vein tracery faded in this pass)')
     K.change('Scars carry knit ridges', 'regrowing scar tissue (lore 5.3; regen 20): the wound pulling shut')
+    K.change('The belly seam B-4 is gone; B-1 to B-3 run on straight past the flanks (issue 623, the recipe)', 'the game\'s longitudinal seam is one level plane over its whole compartment that takes everything above it (fx_death.gd); at the belly it would cut through the lower septum, the brood chambers, the heart vat and the spore stores and leave their halves outside the torn hull (death_seam_check: 1512 triangles). The transverse paths end in straight runs to 7.5 off the axis, as E11\'s do: the game weighs the tear\'s height by how far across the path it is, so a path that stops at the flank tears the insides and the plating at different places near the flanks. The body still bursts at its sacs and tears across in four pieces')
+    K.change('Six launch mouths, one per brood sac\'s birth slit, launching out and down along the sac (issue 623)', 'data.js hangar 3; the export needs a hp_bay on the mesh for each mouth')
+    K.change('Boarding origins on the mid flanks at x 2.0; the throats\' hard points are the bile glands\' faces deep in the throats (issue 623)', 'the game contract needs one boarding origin a side; the mouth\'s centre is open air, which the export check refuses as off the mesh, so the shot leaves from the gland and the arcs and the firing lane are still taken from the mouth')
+    K.change('Breach anchors 6 to 8 moved to x -4.9, -7.0 (higher on the flank) and -8.9 (issue 623)', 'the export puts each anchor on open hull 0.03 of the length clear of every part and apart from the others; at -5.6, -7.0 and -8.6 the last one found no open hull left beside the vents')
     K.open_item('The belly between the sacs is designed here; the sheet has no underside view (its side view shows the belly row)')
     # fixes found by the fit check on the first full layout are listed by K.fix as they are made

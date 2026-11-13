@@ -1,7 +1,7 @@
-# chorus_C10 build sheet: The Ninefold Maw, the Chorus flagship (round 4: the body)
+# chorus_C10 build sheet: The Ninefold Maw, the Chorus flagship (version 5: the recipe)
 
 The Chorus, class Bio-titan, **28.0 world units** mouth to membrane tip (godot/render/hull_table.gd CLS_LEN; data.js `b_boss`:
-bioplasma F, bioplasma F, tendril T, spores T; hangar 3; regen 20; no shields). The model is 28.0. Version 4 (round 4, the body), 2026-11-12,
+bioplasma F, bioplasma F, tendril T, spores T; hangar 3; regen 20; no shields). The model is 28.0. Version 5 (the recipe, issue 623), 2026-11-13,
 issue 623. Designer of record: Opus (R205, R207). Accepted picture: contrib/muse/design/concept_round8b_2026_11/chorus_C10_beauty.jpg
 and chorus_C10_sheet.jpg (R204). Built with the new Chorus kit, `tools/blender/kits/chorus/` (grown parts; its README says what
 each part is and does). The views were rendered in the Opus sandbox (Blender 5.3, CPU, 20 samples) from the same build.py the PC
@@ -14,6 +14,38 @@ runs; nothing ran on Ryan's PC.
 the [bow](../../../shots/issue_623_chorus/c10_bow_compare.jpg) and the [stern](../../../shots/issue_623_chorus/c10_stern_compare.jpg).
 The two classes from above at one scale: [c10_c11_classes.jpg](../../../shots/issue_623_chorus/c10_c11_classes.jpg).
 Then [side_by_side.jpg](side_by_side.jpg), [cells.jpg](cells.jpg) and [fit_view.jpg](fit_view.jpg).
+
+## The recipe (issue 623): unpainted, bake none, the route E11 and E12 took
+
+The ship json is [tools/recipe/ships/chorus_C10.json](../../../../tools/recipe/ships/chorus_C10.json): game_code **B16_23**, the
+`chorus|Bio-titan` folder of godot/render/hull_table.gd AI_HULLS. Proved in the Opus sandbox on the sheet hull build (stage 4) and
+the unbaked export (stage 7); the PC run is tools/pc/jobs/C10_C11_RUN_623.bat (the Board queues it).
+
+| check | result |
+|---|---|
+| fit check | 0 of every kind (CLASH, MOUNT, ARC, SWEEP, EXHAUST, EXIT, LANE) |
+| machines on a seam, insides outside the skin | 0 of 15; 0 of 7484 vertices |
+| build sheet contract self-test | PASS |
+| stage 4 audit, audit self-test | PASS (sacs cross seams as structure; no machine does), PASS |
+| export (default tolerance) | 163,849 triangles; gun 15, engine 3, bay 6, breach 9, core 1, rcs 4, board 2; 6 turrets |
+| check_export, its self-test | PASS, PASS |
+| install, cache, readback | manifest PASS, ships refreshed, INSTALL READBACK PASS (52 nodes) |
+| authored_interiors_check | 0 failures (21,778 interior triangles) |
+| death_seam_check | 0 machines split of 15; 0 insides outside of 16,865 (4 main pieces) |
+
+What the recipe changed on the sheet (each is in the sheet's changes list):
+1. **The belly seam B-4 is gone.** The game's longitudinal seam is one level plane over its whole compartment that takes
+   everything above it (fx_death.gd); at the belly it cut through the lower septum, the brood chambers, the heart vat and the
+   spore stores and left 1512 inside triangles outside their piece. A peel needs a clear band in the insides; this body has none
+   at the belly, so it breaks across in four pieces and bursts at its sacs.
+2. **B-1 to B-3 run on straight past the flanks**, to 7.5 off the axis, as E11's do. The game weighs a tear's height by how far
+   across the path it is (fx_death.gd _break_f), so a path that stops at the flank tears the septa and the liner at different
+   places from the plating there.
+3. **Six launch mouths** (hp_bay), one on each brood sac's birth slit, launching out and down (data.js hangar 3).
+4. **Boarding origins** on the mid flanks, and the **throats' hard points on the bile glands' faces** deep in the throats (the
+   mouth's centre is open air, which check_export refuses as off the mesh); the arcs and the firing lane still start at the mouth
+   (the Chorus kit's lane_from).
+5. **Breach anchors 6 to 8 moved** (x -4.9, -7.0 higher on the flank, -8.9) so the export finds open hull for the last one.
 
 ## Round 4: the body (the Board on round 3)
 
@@ -105,8 +137,8 @@ shot's magazine), the Node (the knot of nerve that steers it; no bridge), the fo
 hp_core, lit bile-green), six brood chambers beside the brood sacs, five spore stores over the glands, the crown's root muscle,
 four regrowth tissue chambers and the pulse bladder that squeezes the vents (the engine room). Armour by zone in the sheet's
 INSIDE list. Break lines by the Chorus rule ("it bursts and tears: sacs rupture first, then the body tears open"): B-1 behind
-the head, B-2 behind the crown, B-3 ahead of the tail, and B-4 along the belly through the brood sacs' roots; ragged plan paths,
-no machine on any of them. Nine breach anchors (Bio-titan 8, Chorus +1 on the big ones), next to the sacs and the trim.
+the head, B-2 behind the crown, B-3 ahead of the tail; ragged plan paths across the body that run on straight past the flanks,
+no machine on any of them. (Version 4's belly seam B-4 is gone: see "The recipe" above.) Nine breach anchors (Bio-titan 8, Chorus +1 on the big ones), next to the sacs and the trim.
 
 ## Changed from the picture (R207)
 

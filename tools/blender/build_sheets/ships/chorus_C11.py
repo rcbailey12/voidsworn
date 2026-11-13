@@ -21,7 +21,7 @@ KIT = 'chorus'
 CONCEPT_SHEET = 'contrib/muse/design/concept_round8b_2026_11/chorus_C11_sheet.jpg'
 CONCEPT_VIEWS = dict(top=dict(box=(100, 40, 1730, 665), largest=True, flip=False), side=dict(box=(110, 730, 1740, 1250), largest=True, flip=False))
 CROPS = [('bow (the two throats)', (100, 650, 1000, 1250)), ('midships (blades and sacs)', (480, 250, 1380, 1050)), ('stern (mane and vents)', (1050, 0, 1920, 750))]
-SHEET = dict(version=3, round='round 3, face and massing', date='2026-11-12', blend='opus623\\chorus_C11',
+SHEET = dict(version=4, round='the recipe (issue 623)', date='2026-11-13', blend='opus623\\chorus_C11',
              before='First full layout', before_note='The first complete C11 layout with the Chorus kit, run through the check before any fix.')
 
 PEXP = (2.0, 1.9)    # round over the top and round in the belly: no flat faces (the Board on PR 628)
@@ -283,9 +283,9 @@ def build(K):
     K.armour('belly', 0.25, '')
     K.armour('stern', 0.2, '')
     K.break_line('B-1', 3.0, 'behind the head: the throats and the brow tear away, opening the bile glands and the Node',
-                 path=[(3.3, 2.6), (2.7, 1.4), (3.25, 0.3), (2.75, -0.8), (3.2, -1.7), (2.8, -2.6)])
+                 path=[(3.3, 6.0), (3.3, 2.6), (2.7, 1.4), (3.25, 0.3), (2.75, -0.8), (3.2, -1.7), (2.8, -2.6), (2.8, -6.0)])
     K.break_line('B-2', -0.6, 'ahead of the mane: the stern half tears away through the heart vat\'s aft end, the sacs bursting first',
-                 path=[(-0.3, 2.5), (-0.85, 1.4), (-0.45, 0.2), (-0.9, -0.9), (-0.35, -2.5)])
+                 path=[(-0.3, 6.0), (-0.3, 2.5), (-0.85, 1.4), (-0.45, 0.2), (-0.9, -0.9), (-0.35, -2.5), (-0.35, -6.0)])
     K.inside.append(dict(kind='note', name='insides', note='Flesh, bone and organs through the whole body (R215), hidden until a piece breaks: bone hoops for frames, '
                                                           'membrane septa for decks, organs and chambers that never reach the skin. The Chorus bursts and tears: sacs rupture first, '
                                                           'then the body tears open along ragged lines (R186).'))
@@ -297,6 +297,10 @@ def build(K):
     for i, (x, th, side) in enumerate(((4.55, -0.62, 1), (4.55, -0.62, -1), (-3.95, 0.25, 1), (-3.95, 0.25, -1))):
         pos, nrm = K.hpt(x, side_th(th, side), out=0.02)
         K.point('rcs', 'hp_rcs_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd')
+    # boarding origins (export7: one port, one starboard on the mid hull): where the boarding tendrils' parties leave the body
+    for i, side in enumerate((1, -1)):
+        pos, nrm = K.hpt(0.8, side_th(0.12, side), out=0.02)
+        K.point('board', 'hp_board_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd')
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
     K.change('Colour: bile yellow-green light over dark olive flesh, pale ochre bone and ochre chitin', 'R204 and the lore: the colour is fixed in the build; the picture\'s hide is green-brown with amber light')
@@ -307,4 +311,6 @@ def build(K):
     K.change('The stern ends in a ring of six pulse vents, each with three glowing filaments splayed outward', 'factions.md: no nozzles; the picture\'s amber nodes and filament plume. The filaments are cut to about a third of the picture\'s so the ship is 14.5 throat rim to filament tip, and splayed so none hangs in a neighbour\'s jet')
     K.change('Siphons added, a pair forward and a pair aft', 'a ship in space must turn; the picture shows none')
     K.change('The small spines along the lower stern are cut', 'no job (R221)')
+    K.change('B-1 and B-2 run on straight past the flanks to 6.0 off the axis (issue 623, the recipe)', 'the game weighs the tear\'s height by how far across the path it is, so a path that stops at the flank tears the septa and the liner at different places from the plating near the flanks (death_seam_check: 171 triangles outside their piece); E11\'s paths run on the same way')
+    K.change('Boarding origins on the flanks at x 0.8; the throats\' hard points are the bile glands\' faces deep in the throats (issue 623)', 'the game contract needs one boarding origin a side; the mouth\'s centre is open air, which the export check refuses as off the mesh, so the shot leaves from the gland and the arcs and the firing lane are still taken from the mouth')
     K.open_item('The belly is designed here; the sheet has no underside view')

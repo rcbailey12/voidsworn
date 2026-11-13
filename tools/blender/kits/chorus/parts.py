@@ -459,7 +459,9 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
         # the starboard throat is the port one mirrored: its outer fold rolls lie over the top and the outer (starboard) side
         for c in p.comps:
             c['verts'] = [Vector((v.x, -v.y, v.z)) for v in c['verts']]
-    p.fit = dict(muzzles=[P((L * 1.02, 0, 0))], pivot=P((L * 1.02, 0, 0)), trunnion=P((L * 1.02, 0, 0)), reach=0.3, aim=D((1, 0, 0)),
+    # the hard point is the bile gland's face, deep in the throat (on the mesh; the glob leaves from there, issue 623 recipe);
+    # the arcs and the firing lane are taken from the mouth
+    p.fit = dict(muzzles=[P((xg + r * 0.22, 0, 0))], pivot=P((L * 1.02, 0, 0)), trunnion=P((L * 1.02, 0, 0)), reach=0.3, aim=D((1, 0, 0)), bore=r * 0.7, lane_from=P((L * 1.02, 0, 0)),
                  up=D((0, 0, 1)), mount='spinal', radius=r * 1.15)   # the shot leaves the bore: its lane is the bore's width
     return p
 

@@ -1,7 +1,7 @@
-# chorus_C11 build sheet: the bladeback, the Chorus cruiser (round 3: the face)
+# chorus_C11 build sheet: the bladeback, the Chorus cruiser (version 4: the recipe)
 
 The Chorus, class Cruiser, **14.5 world units** throat rim to filament tip (godot/render/hull_table.gd CLS_LEN; data.js `b_razor`,
-"Chorus bladeback": tendril T, bioplasma F; ability frenzy; regen 6; no shields). Version 3 (round 3, the face), 2026-11-12, issue 623. Designer of
+"Chorus bladeback": tendril T, bioplasma F; ability frenzy; regen 6; no shields). Version 4 (the recipe, issue 623), 2026-11-13. Designer of
 record: Opus (R205, R207). Accepted picture: contrib/muse/design/concept_round8b_2026_11/chorus_C11_beauty.jpg and
 chorus_C11_sheet.jpg (R204). Built with the Chorus kit, `tools/blender/kits/chorus/`. Rendered in the Opus sandbox (Blender 5.3,
 CPU, 20 samples) from the same build.py the PC runs; nothing ran on Ryan's PC.
@@ -13,6 +13,32 @@ CPU, 20 samples) from the same build.py the PC runs; nothing ran on Ryan's PC.
 the [bow](../../../shots/issue_623_chorus/c11_bow_compare.jpg) and the [stern](../../../shots/issue_623_chorus/c11_stern_compare.jpg).
 The two classes from above at one scale: [c10_c11_classes.jpg](../../../shots/issue_623_chorus/c10_c11_classes.jpg).
 Then [side_by_side.jpg](side_by_side.jpg), [cells.jpg](cells.jpg) and [fit_view.jpg](fit_view.jpg).
+
+## The recipe (issue 623): unpainted, bake none, the route E11 and E12 took
+
+The ship json is [tools/recipe/ships/chorus_C11.json](../../../../tools/recipe/ships/chorus_C11.json): game_code **B21_11**, the
+`chorus|Cruiser` folder of godot/render/hull_table.gd AI_HULLS. Proved in the Opus sandbox on the sheet hull build (stage 4) and
+the unbaked export (stage 7); the PC run is tools/pc/jobs/C10_C11_RUN_623.bat (the Board queues it).
+
+| check | result |
+|---|---|
+| fit check | 0 of every kind (CLASH, MOUNT, ARC, SWEEP, EXHAUST, EXIT, LANE) |
+| machines on a seam, insides outside the skin | 0 of 13; 0 of 5764 vertices |
+| build sheet contract self-test | PASS |
+| stage 4 audit, audit self-test | PASS, PASS |
+| export (default tolerance) | 208,646 triangles; gun 5, engine 6, breach 4, core 1, rcs 4, board 2 (no hangar; the mane is fixed, so no turret) |
+| check_export, its self-test | PASS, PASS |
+| install, cache, readback | manifest PASS, ships refreshed, INSTALL READBACK PASS (22 nodes) |
+| authored_interiors_check | 0 failures (20,850 interior triangles) |
+| death_seam_check | 0 machines split of 13; 0 insides outside of 16,363 (3 main pieces) |
+
+What the recipe changed on the sheet (each is in the sheet's changes list):
+1. **B-1 and B-2 run on straight past the flanks**, to 6.0 off the axis, as E11's do. The game weighs a tear's height by how far
+   across the path it is (fx_death.gd _break_f), so a path that stopped at the flank tore the septa and the liner at different
+   places from the plating there (171 inside triangles outside their piece before the change).
+2. **Boarding origins** on the flanks at x 0.8, and the **throats' hard points on the bile glands' faces** deep in the throats
+   (the mouth's centre is open air, which check_export refuses as off the mesh); the arcs and the firing lane still start at the
+   mouth (the Chorus kit's lane_from).
 
 ## Round 3: the face (the Board on round 2)
 

@@ -806,7 +806,7 @@ class Kit:
                 ob['gun_fixed'] = 1; ob['turret'] = 0
         # R221: the fixed weapon's firing lane, forward of its muzzle along the axis (4 degree spread, to 80 percent of the length):
         # a gun resting in it, or turned into it through its arc, is a LANE clash in clash.py, as for a launcher
-        mz = Vector(fd['muzzles'][0][1]); hr = fd['radius']
+        mz = Vector(fd.get('lane_from', fd['muzzles'][0])[1]); hr = fd['radius']   # a kit may start the lane at the mouth (Chorus throats, issue 623)
         lane = dict(apex=tuple(mz), dir=(1.0, 0.0, 0.0), u=(0.0, 1.0, 0.0), w=(0.0, 0.0, 1.0), hu=hr, hw=hr, half=4.0, length=self.length * 0.8,
                     what='firing lane')
         self.fitdata.append(dict(id=fid, kind='gun', slot=slot, pivot=tuple(fd['pivot'][1]), up=(0, 0, 1), mount='spinal', ring=tuple(p),

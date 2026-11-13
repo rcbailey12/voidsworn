@@ -4,6 +4,8 @@
 #   pass            the folder as written                                          must PASS
 #   no_slot         every hard point of the last weapon slot renamed away          must FAIL (a weapon slot with no hard point)
 #   off_mesh        the first weapon hard point moved 0.05 of the ship's length    must FAIL (a hard point off the mesh)
+#                   above the ship mesh's top (issue 623: a point deep in a Chorus throat, moved 0.05 up and out,
+#                   still lay on the head's skin)
 #   backward        the first weapon hard point turned to aim aft                  must FAIL (a weapon resting aimed backward)
 #   wrong_side      the first port weapon point mirrored to starboard (a ship       must FAIL (a port mount on the starboard side)
 #                   with no port arc: its port boarding origin, issue 618)
@@ -47,8 +49,11 @@ def qmul(a, b):         # glTF quaternions (x, y, z, w): a then b in the node's 
 def no_slot(g):
     for n in g['nodes']:
         if str(n.get('name', '')).startswith(f'hp_w{last}_'): n['name'] = 'x' + n['name']
+def top(g):             # the y top of the ship mesh, from the same accessors
+    root = next(n for n in g['nodes'] if n.get('name') == code)
+    return max(g['accessors'][pr['attributes']['POSITION']]['max'][1] for pr in g['meshes'][root['mesh']]['primitives'])
 def off_mesh(g):
-    n = first(g, 'hp_w'); t = n['translation']; d = .05 * length(g); n['translation'] = [t[0], t[1] + d, t[2] + (d if t[2] > 0 else -d)]
+    n = first(g, 'hp_w'); t = n['translation']; d = .05 * length(g); n['translation'] = [t[0], max(t[1], top(g)) + d, t[2] + (d if t[2] > 0 else -d)]
 def backward(g):
     n = first(g, 'hp_w'); n['rotation'] = [0, .7071068, 0, .7071068]   # a quarter turn about +Y: the node's -Z now points along -X (aft)
 def port_point(g):      # the first port weapon point; a ship with no port arc (issue 618: Eclipse fires T and F) mirrors its port boarding origin
