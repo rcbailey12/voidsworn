@@ -806,8 +806,12 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
     for o in G:
         if o in eng: continue
         z = o.data.materials[0].name if o.data.materials else 'glow'
-        if z not in glow: glow[z] = S.glow_material(z)
-        o.data.materials.clear(); o.data.materials.append(glow[z])
+        # issue 642: a glow zone the stack lists in GLOW_HULL that the sheet puts on the hull itself (the Eclipse corona line on a
+        # shade rim) is hull trim, not a part: its own material, marked hull_surface, so the export check measures breach
+        # clearance from the parts and not from the hull's own rim line
+        k = (z, 'hull') if o.get('role') == 'hull' and z in getattr(S, 'GLOW_HULL', ()) else z
+        if k not in glow: glow[k] = S.glow_material(z, hull=True) if isinstance(k, tuple) else S.glow_material(z)
+        o.data.materials.clear(); o.data.materials.append(glow[k])
     for o in I: o.hide_render = False
     INFO['glow_materials'] = sorted(m.name for m in glow.values())
     # the insides: an inside seen from outside (an opening, a gap) reads as the dark inner liner, never a sheet room colour (R99 Q1;

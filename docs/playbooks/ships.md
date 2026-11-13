@@ -50,6 +50,19 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    engine glow so it's not so uniform, just disc color") it varies: a hot core in the centre of the throat (the plug cone glows hottest, never black) grading out to deeper red and orange, uneven hot
    spots and soot streaks across the throat, each engine its own brightness, core reach, hue and hot-spot pattern, baked into
    the engine glow's own emission map by the stack (ENGINE_GLOW); the game's moving plume sits on top, so no flame is painted.
+   **The Eclipse paint** (issue 642, set in `tools/blender/kits/eclipse/stack.py` for every Eclipse sheet ship, never on one
+   ship; factions.md Eclipse and Ryan's rulings): a black shade with a thin ring of green-white fire at its edge. (1) Dark
+   violet-black plates judged under the game's Eclipse battle lift 2.2 (R227): the stack's colours are the tones to show at the
+   lift, divided by it (read from look.gd), never lavender or grey; plates in large and small sizes from the patchwork and the
+   modelled plates' own islands, a few weathered pale plates on small plates only; (2) contrast from black seams and recesses
+   and dulled pale-violet worn edges; no rust or soot (machines, not scavengers); no grain at close range; a roughness floor of
+   0.60; (3) the green only as a thin cold green-white line on every shade rim (the sheet's corona strips) and the small bright
+   core seen through its port or cage, never pooled in hollows, ribs or sockets; (4) engines are an eclipse ring of pale light
+   round a black shade disc, in the game's Eclipse engine colour paled toward white, each engine its own brightness, tint, hot
+   spots and dim gaps (Ryan's "not so uniform" carried over), no flame; (5) no added running lamps (the red lamps are a
+   Hullbreaker rule; the Eclipse show only the corona, the core and the rings, and the sheet's corona strip lights); (6) the
+   stack's surfaces are rim_soft, parts carry the hull's plates and seams (R224 in paint), the liner is dark violet-black, and
+   stage 5's surface check is 0 px.
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
    opus_check_341).

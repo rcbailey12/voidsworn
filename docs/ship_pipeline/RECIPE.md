@@ -158,6 +158,36 @@ and measures the bow, midships and stern windows on its own camera; `paint_compa
 compare crop holds the same third of the ship on both sides) (and the game's camera 170
 and 60 shots, `a4_shots.gd` set `cams`) as pictures for Ryan. The PC run for A16 is `tools/pc/jobs/A16_RUN_601.bat`; for both Hullbreaker sheet ships (A16, A17) `tools/pc/jobs/PAINT_RUN_601.bat`.
 
+**The Eclipse stack (issue 642; ships.md section 0 item 2, "The Eclipse paint").** `tools/blender/kits/eclipse/stack.py` paints E11
+and E12 (and every later Eclipse sheet ship) on the same shared machinery. What is the faction's own, and where it lives:
+- the battle lift is in the colours: every `CONCEPT` tone is the tone the plate must show in the game, and `lin()` divides it
+  by the light gain and by the Eclipse lift read from `godot/render/look.gd` (2.2, R227; its one home, never copied), with the
+  hue held (`SAT`: AgX and the warm key take the colour out of dark tones), so the ship reads dark violet-black at the lift and
+  never lavender or grey. Unpainted, E11 and E12 rendered glowing white in the game;
+- the plate tones are sampled from both concepts (E11 and E12 `_beauty.jpg`, `sample_concept()`), the lightness held to the
+  concepts' lower half (E11's lit plates are the lavender grey Ryan ruled out); no rust, no soot; flush fasteners and fine
+  machining scratches in the trim sheet; worn edges a dulled pale violet; black seams; a roughness floor of 0.60;
+- glow: the sheet's `corona` (every shade rim), `ecore` (the core) and `lens` zones are emissive surfaces in a cold
+  green-white (the concepts' rim hue, whitened), the corona line just over the game's 0.8 glow threshold so a thin line gets a
+  faint edge and no fat halo. The engine is an eclipse ring: the engine part's `corona` ring is the engine glow surface
+  (`ENGINE_GLOW` names its zone and part kind; the shared stack's `bake_engine_glow` calls the stack's `engine_glow_nodes`):
+  pale light in the game's Eclipse engine colour (`faction_looks.json` deathless `engine`, paled, a touch of its `accent`) with
+  hot spots and dim gaps round the ring, each engine its own brightness and tint, round the black shade disc; no flame;
+- running lights: none added (`RUNNING_LIGHTS = None`, the builder's call, on each sheet): the corona line, the core, the
+  engine rings and the sheet's corona strip lights are the Eclipse's only lights; no `lights.json` is written;
+- decals: the eclipse sigil, a line of archive glyphs (each ship's own, seeded by its game code), band ticks, all a dulled
+  paler violet; the liner is a dark violet-black, the core keeps its light.
+The shared changes are hooks whose defaults keep the Hullbreaker path as it was (A16 baked on main and on this branch: the
+same maps, byte for byte): `ENGINE_GLOW` `zones`, `kind`, `disc`, `base` and a stack's own `engine_glow_nodes`; a glow
+material a stack marks `ps_glow` counts as glow in the surface check and is left out of the density measure; a glow zone a stack lists in `GLOW_HULL` that the sheet lays on
+the hull itself (the Eclipse corona line on a shade rim) gets its own material marked `hull_surface`, which `check_export.py`
+counts as hull trim, not a part, when it measures breach clearance (the first sandbox export of E11 failed 3 breach anchors
+0.011 to 0.023 from the rim line beside them; the unpainted export, where the line was part of the hull surface, passed); `paint_sheet.py`
+renders a close view of each glow a stack marks `ps_close` (the corona line on a shade rim, the core) and takes `sky_spec=0`
+(the battle reflects its near-black sky, so the preview's ambient lights the diffuse colour and not a grey sheen; the
+Hullbreaker pictures keep the default); `paint_compare.py` takes `stack=` and `issue=` for its captions and adds the close
+picture. The PC run for both is `tools/pc/jobs/E11_E12_PAINT_642.bat` (queue `q_paint_642.bat`).
+
 
 ## What a ship needs (the per-ship data)
 
@@ -371,7 +401,7 @@ example `{"windows": 2.5, "trim": 2.0}`. Empty `lights` means the paint has no s
 | Generic (any concept, any faction) | Per ship today | Next |
 |---|---|---|
 | stages 1, 2, 5, 6, 7; the outline overlap report and the standing checks (per third, inner edge, second camera, paint sides, blink sheet, licences, light sizes); the fitted concept camera; the shared plumbing (sockets, seating, scale rules, audit, tags, the muzzle, engine and bay registry); the hard point contract and its one count table (`kits/shared/hardpoints.py`); bake, LOD chain, cost bench; the game export, its hard points and its check | the hull module's block table (C15s: raised forward deck, deckhouse and tower tiers, hump, aft body, stern block, sponsons, modules, cargo blocks; `armA5.py`); the sockets in the ship json | a block table as data in the ship json, so a new hull needs no Python; the wreck and damage glbs and the scene gate (stage 7, list above) |
-| the Hullbreaker kit and paint (`kits/hullbreakers/`); the paint stack for sheet ships (`kits/shared/paint_stack.py`, the Hullbreakers' `kits/hullbreakers/stack.py`) | | a kit per faction: Sunward Crusade, Glasswrights, Eclipse, Chorus, Hegemony Navy, each with its own shape language and paint |
+| the Hullbreaker kit and paint (`kits/hullbreakers/`); the paint stack for sheet ships (`kits/shared/paint_stack.py`, the Hullbreakers' `kits/hullbreakers/stack.py`, the Eclipse's `kits/eclipse/stack.py`) | | a kit per faction: Sunward Crusade, Glasswrights, Eclipse, Chorus, Hegemony Navy, each with its own shape language and paint |
 
 The section fits in stage 3 (`b0trace.py`) are generic; turning them into the hull module's knot table was a hand step in round 5
 (smoothed and squared up), and the block table is a design step: which blocks the concept has. That is the one creative step left

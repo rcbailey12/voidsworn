@@ -163,13 +163,17 @@ def faction_look():
     return d.get(FACTION) or d.get('factions', {}).get(FACTION)
 
 
-def glow_material(zone):
-    m = bpy.data.materials.new(f'p3_{zone}'); m.use_nodes = True
+GLOW_HULL = ('corona',)      # the corona line the sheet lays on the hull's own shade rims is hull trim (shared run, export check)
+
+
+def glow_material(zone, hull=False):
+    m = bpy.data.materials.new(f'p3_{zone}_hull' if hull else f'p3_{zone}'); m.use_nodes = True
     b = m.node_tree.nodes['Principled BSDF']
     col = lin_raw(CORE_RGB if zone in ('ecore', 'lens') else CORONA_RGB)
     b.inputs['Base Color'].default_value = (col[0] * .05, col[1] * .05, col[2] * .05, 1); b.inputs['Roughness'].default_value = .6
     b.inputs['Emission Color'].default_value = (*col, 1); b.inputs['Emission Strength'].default_value = GLOW_STRENGTH.get(zone, 1.0)
     m['ps_glow'] = 1; m['rim_soft'] = 1
+    if hull: m['hull_surface'] = 1
     if zone in CLOSE: m['ps_close'] = CLOSE[zone]
     return m
 
