@@ -229,24 +229,19 @@ Must-avoid:
   decisions with chair picks already printed. They are not sheet
   questions and do not block this route.
 
-## 9. Questions for Ryan (chair picks marked)
+## 9. Questions for Ryan (ruled Nov 12, 2026)
 
-1. The Iron Mandate. The super-dreadnought (31.0) is a boss class in
-   data.js with no concept of its own; the H10 shape belongs to the
-   Dominion (21.0). Does this route derive The Iron Mandate from H10
-   at scale?
-   A. Yes: derive it from the Dominion sheet, same parts larger,
-   flagged as derived on its sheet. (Chair pick.)
-   B. No: leave it out until it gets its own design pass.
-2. Drone bay doors. The Vanguard and the Dominion carry hangar 1. How
-   do the flank bays read on the intact ship?
-   A. Flush armoured doors, a seam line only, opening in the break
-   state. (Chair pick: keeps the flush-panel language of the faction
-   sheet.)
-   B. Visible open bay mouths, like the Hullbreaker carrier's.
-3. Style sign-off. H10's open item is style, and R198 (3) makes the
-   style call Ryan's, judged against corsair_A.jpg.
-   A. Ryan judges the H10 build sheet beside corsair_A.jpg before the
-   sheet is final. (Chair pick, per R198 (3).)
-   B. The sheet proceeds on the Board's eye and style is judged on
-   the painted build.
+Ryan answered all three on Nov 12, 2026. These answers govern the
+sheets.
+
+1. The Iron Mandate. ANSWERED, leaning: it stays unique. Ryan: "I
+   like it being unique from existing ships" (his answer opened with
+   "Idk", so the lean is tentative). The super-dreadnought is NOT
+   derived by scaling the Dominion sheet; it gets its own design
+   inside the wedge language when its turn comes.
+2. Drone bay doors. ANSWERED, agreed with the chair pick: flush
+   armoured doors on the Vanguard and the Dominion, a seam line only
+   on the intact ship, opening in the break state.
+3. Style sign-off. ANSWERED, agreed with the chair pick: Ryan judges
+   the H10 build sheet beside corsair_A.jpg before the sheet is
+   final (per R198 (3), the style call is his).

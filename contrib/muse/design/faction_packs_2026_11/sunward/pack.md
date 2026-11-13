@@ -29,6 +29,10 @@ image round (R206).
   failures, not shape failures: the S8 shape stands, its dressing in
   the one concept style does not exist yet. Closing that gap is this
   route's job.
+- Family note (ruled Nov 12, 2026): the other Sunward classes are not
+  scaled copies of S8. Each class gets its own silhouette inside the
+  blade language, the way the Hullbreaker family round gave A16 to
+  A20 one language and five shapes. See question 1.
 
 ## 2. Rulings that bind this faction's sheet designer
 
@@ -214,29 +218,23 @@ Must-avoid:
   decisions with chair picks already printed. They are not sheet
   questions and do not block this route.
 
-## 9. Questions for Ryan (chair picks marked)
+## 9. Questions for Ryan (ruled Nov 12, 2026)
 
-1. The flagship's fork. S8's forked prow is shaped to house the
-   recessed lance (R183 (1)), but the Daybreak dreadnought, the
-   flagship class, has no lance slot in data.js; its forward fire is
-   its turret and flak. What does the flagship's fork carry?
-   A. Nothing: the fork is prow shape only on the flagship, and the
-   lance recess appears on the Vigil and the Bastion, which carry the
-   slot. (Chair pick: the shape stays one family language, the data
-   stays untouched.)
-   B. A lance: add an Oath lance slot to the Daybreak in data.js so
-   the flagship's fork has its weapon.
-   C. The flagship's Sear turret, recessed into the fork.
-2. Radiator spires on the small classes. The faction sheet gives every
-   Sunward ship the spine row. On a 6.5 frigate the row is a large
-   share of the hull.
-   A. The spire row on every class, scaled, tallest amidships.
-   (Chair pick: one silhouette language across the fleet, per
-   R183 (2).)
-   B. Full spires on cruiser and above; frigate and destroyer carry
-   low radiator blocks instead.
-3. The Hearth carrier's hangar 2. A blade hull has no obvious bay.
-   Where do its squadrons launch from on the sheet?
-   A. Low flank sponson bays, both sides, outline kept. (Chair pick.)
-   B. A stern bay under the engine bells.
-   C. A dorsal bay behind the spire line.
+Ryan answered all three on Nov 12, 2026. These answers govern the
+sheets.
+
+1. The flagship's fork. ANSWERED: replace it. Ryan: "It shouldn't be
+   the same shape for everything, same as we adjusted for
+   hullbreakers." The Daybreak dreadnought does not carry S8's forked
+   lance prow as a copy; each class's bow is designed for that class
+   inside the blade language. The lance recess appears only where the
+   class carries the lance (the Vigil and the Bastion), shaped for
+   that class. No lance is added to the Daybreak's data.
+2. Radiator spires on the small classes. ANSWERED: the spire row
+   stands on every class, "but again, not exactly the same shape for
+   every ship". Spire profiles vary by class; tallest amidships and
+   the ember glow hold across the fleet.
+3. The Hearth carrier's hangar 2. ANSWERED, tentatively: low flank
+   sponson bays on both sides, outline kept. Ryan: "Tentatively
+   agree, need to see." The carrier sheet shows the bays for his yes
+   before that design is treated as settled.

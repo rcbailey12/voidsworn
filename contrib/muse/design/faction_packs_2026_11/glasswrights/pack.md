@@ -37,6 +37,9 @@ issue 532), not another image round (R206).
   R196". Both failures are the same failure from two sides: a lens
   that sits on the ship instead of growing in it, and a forward lens
   that does not visibly point forward.
+- Family note (ruled Nov 12, 2026): the other classes are family, not
+  copies. Each gets its own concept inside the G15 language. See
+  question 2.
 
 ## 2. Rulings that bind this faction's sheet designer
 
@@ -247,34 +250,21 @@ Must-avoid:
   that doc (glass in the body, colour as an emotion tell) govern
   portraits, not hulls.
 
-## 9. Questions for Ryan (chair picks marked)
+## 9. Questions for Ryan (ruled Nov 12, 2026)
 
-1. The bow optic: one or two? R183 (1) gives the Glasswrights "twin
-   lens apertures in the bow shoulders"; the faction sheet describes
-   the prism lance as stored light let out "through the bow optic",
-   singular. data.js gives the prism and the Ark two forward Prism
-   lance slots each.
-   A. Twin apertures in the bow shoulders, matching R183 (1) and the
-   two forward slots; the two beams read as one lance on the axis.
-   (Chair pick.)
-   B. One central bow optic; the second forward slot is a shoulder
-   lens that fires with it.
-   C. Twin apertures that merge into a single beam before leaving the
-   hull.
-2. G15 at Ark scale. G15 is the flagship's shape and the Ark is
-   26.0 long. Do the other four classes derive from G15's language,
-   or does the Ark get its own sheet design first?
-   A. G15's language scales: the Ark sheets from G15, the four
-   smaller classes derive as smaller instruments of the same make.
-   (Chair pick.)
-   B. The Ark gets a bespoke sheet design from G15's language before
-   any class derives.
-3. The aperture carrier's hangar 2. A Glasswright hull has no bay
-   tradition in any source. Where do its wings launch from on the
-   sheet?
-   A. Grown lens bays in the flanks: apertures that open like the
-   ship's other optics. (Chair pick: keeps every opening an optic,
-   per R192.)
-   B. A stern aperture under the engine bloom.
-   C. No visible bays; the hangar is internal and only the break
-   state shows it.
+Ryan answered all three on Nov 12, 2026. These answers govern the
+sheets.
+
+1. The bow optic: one or two? ANSWERED: twin apertures in the bow
+   shoulders, matching R183 (1) and the two forward Prism lance slots
+   the prism and the Ark carry in data.js. The two beams read as one
+   lance on the optical axis.
+2. G15 and the family. ANSWERED: family, but unique. Ryan: "Family
+   but unique, not exactly same. Family but different concepts
+   within." Each class gets its own concept inside the G15 language;
+   no class is a scaled copy of G15 or of another class.
+3. The aperture carrier's hangar 2. ANSWERED: grown lens bays in the
+   flanks, with Ryan's condition: "it shouldn't look like the
+   weapons". Launch apertures must read differently from weapon
+   lenses at the battle camera (size, rhythm or glow), so a player
+   never mistakes a hangar for a gun.
