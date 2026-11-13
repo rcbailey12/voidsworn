@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 504: the flash counter by area (fx.gd flash_at), checked on a staged worst second.
 # W3C Understanding SC 2.3.1: a general flash counts only when "the combined area of flashes occurring concurrently"
 # passes "25% of any 10 degree visual field on the screen"; at most three in any one second.
@@ -25,6 +26,7 @@ var cell := 4.0
 
 
 func _init() -> void:
+	GUARD.arm(self, "flash_area_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 

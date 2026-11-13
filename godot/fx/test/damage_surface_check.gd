@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # R80 contracts on actual rebuilt arrays, shader mouths and emitter allocations.
 const FX := preload("res://fx/fx.gd")
 const BREACH := preload("res://fx/fx_breach.gd")
@@ -7,6 +8,7 @@ var fx
 var world: Node3D
 
 func _init() -> void:
+	GUARD.arm(self, "damage_surface_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 func check(ok: bool, message: String) -> void:

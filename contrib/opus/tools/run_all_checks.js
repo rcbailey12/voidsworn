@@ -131,6 +131,8 @@ function buildChecks() {
   const add = (file, extra = [], kind = 'normal', timeout = 300, gate = false) => {
     checks.push({ name: path.basename(file, '.js'), file, args: extra, kind, timeout, gate });
   };
+  // Every *_tests.js here runs as a row, among them build_manifest_tests.js (#550, R214: each build sheet manifest's routes,
+  // library entries and break-piece interiors held against its sheet; docs/ship_pipeline/build_sheets/manifest_schema.md).
   fs.readdirSync(__dirname).filter(f => f.endsWith('_tests.js') || f === 'campaign_start_test.js').sort().forEach(f => add(OPUS + f));
   add(OPUS + 'progression_telemetry_test.js'); // #27 step 11: per run XP by line and the F1 play log report
   add(OPUS + 'tree_effects_test.js'); // #305 jobs 1 to 4: every Glasswrights, Sunward, Eclipse and Chorus parity fixture actually fires its pick

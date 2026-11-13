@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 354 check: every picture a death spawns (vent, flash and any other baked kind) records its spawn with
 # fx.record_spawn, and the gas root sits on the real plating, not at the centre of a picture pushed out by a fixed share
 # of the ship's length. The test ship is the Eclipse cruiser, a disc with a tower, which does not fill its bounding box,
@@ -29,6 +30,7 @@ var band := "cruiser"
 
 
 func _init() -> void:
+	GUARD.arm(self, "death_spawn_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 

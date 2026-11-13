@@ -77,17 +77,19 @@ reads, one authority per datum:
 | hull thickness | the hull loft's solidify modifier `shell` | the same modifier, named `skin`, thickness scaled |
 | insides | `inside=True` objects (decks, bulkheads, rooms) | role `interior`, visible to the render and the export |
 | hull and parts | role `hull` (masses, plates); any other role is a part; one object per part and material, sharing `grp` | export7 joins role `hull` as the hull surface; the audit holds a part by its `grp` |
-| seams | `K.break_line`: kind `trans` at x with its plan path of (x, y); kind `long` along a path of (x, z) | `r209_t_lines` (x), `r209_t_paths` (the plan paths, read by the audit and written into the GLB seams); `r209_l_line` = [mean z, min x, max x] of the path, or [] |
+| seams | `K.break_line`: kind `trans` at x with its plan path of (x, y); kind `long` along a path of (x, z), as many as the sheet needs, each inside one compartment (issue 618: E11 peels its dorsal tiers and its crescent layers) | `r209_t_lines` (x), `r209_t_paths` (the plan paths, read by the audit and written into the GLB seams); `r209_l_lines` = one [mean z, min x, max x] per longitudinal seam (the audit tests every one, the export writes every one), and `r209_l_line` = the first, or [], for the older one-seam readers; a longitudinal seam whose span runs across a transverse seam is refused by name |
 | part kinds | each part's objects: `part_kind` and `machine`, from the faction kit's `MACHINES` | unchanged: the stage 4 audit (R226) |
-| guns and launchers | the kit's fit records: muzzles, barrel aim, bore, mount normal, the slot letter and weapon | `r209_hp` muzzles, slot = the data.js index of that weapon and arc (one entry, or the contract refuses it); `r209_guns` |
+| guns and launchers | the kit's fit records: muzzles, barrel aim, bore, mount normal, the slot letter and weapon (a fixed spinal weapon too: its aim and bore, issue 618) | `r209_hp` muzzles, slot = the data.js index of that weapon and arc; a weapon and arc data.js lists more than once (Eclipse `gauss T` twice) deals the sheet's mounts of it over those slots in build order (the first mounts to the first slot), refused by name when there are fewer mounts than slots or no slot (`contract.slot_map`); `r209_guns` |
 | turrets | pivots `<id>_turret` with their turning meshes as children (R219) | the same hierarchy; the pivot's slot becomes the data.js index |
 | engines | `K.engine`: the bell exit centre and its radius | `r209_hp` engines: aft, at the open bell's centre (stage 7's bell check) |
 | core, breach, rcs, board, bay | `K.point` rows (a bay with its launch `dir`) | `r209_points` and `r209_hp` bays. Export7 uses the build's points instead of placing its own: each side point goes onto the hull side within 0.04 of where the sheet put it (a breach anchor also 0.03 clear of every part), and how far each moved is in the export json; the breach count must still be the class and faction count |
 
 `tools/recipe/sheet_contract_selftest.py` (stage 4, every sheet ship) rebuilds the sheet and proves each row: the outside is one
 length long, the length, seams, muzzles and slots, turret pivots, engines, insides and hull thickness are the sheet's, and a
-ship whose weapon list lacks a sheet weapon, or a sheet with two longitudinal seams, is refused by name. A sheet ship is painted by its faction kit's paint stack (`"bake": "stack"`, below); `bakeAb6.py` refuses a sheet hull rather
-than add C15s's break structure to it.
+ship whose weapon list lacks a sheet weapon, or a longitudinal seam across a transverse seam, is refused by name; every
+longitudinal seam reaches `r209_l_lines` at its own height and span, and every data.js slot has muzzles of its own. A sheet ship
+is painted by its faction kit's paint stack (`"bake": "stack"`, below), or carries `"bake": "none"` until its kit has one;
+`bakeAb6.py` refuses a sheet hull rather than add C15s's break structure to it.
 
 ## The paint stack for sheet ships (issue 601; ships.md section 0 item 2)
 
@@ -252,7 +254,7 @@ muzzles hang on the ship node (the export merged it), or a turret node lacks its
 mesh, rests aimed aft or rests outside its own arc. Every point is read through the node tree, so a turret's muzzle is checked
 where the turret puts it. `check_export_selftest.py` then breaks copies of the real
 export (a slot's points removed, a point moved 0.05 of the ship's length off the hull, a gun turned aft, a port point mirrored to
-starboard, `hp_core` removed, a weapon's `extras.socket` removed, an engine, rcs and board origin removed, a breach anchor removed,
+starboard (a port weapon point, or on a ship with no port arc its port boarding origin, issue 618), `hp_core` removed, a weapon's `extras.socket` removed, an engine, rcs and board origin removed, a breach anchor removed,
 a breach anchor moved onto a muzzle, a breach anchor turned to face in; on an export with turrets, the turrets folded back into
 the ship mesh and the turning meshes taken away; on an export with an open bell, that engine's radius doubled and its point
 moved half a radius down its exhaust) and the check must refuse every copy, each for its own reason. `contract_selftest.py` proves the same check on the round 7 ship (C15s_23) in the sandbox, with its real `data.js` weapon
@@ -294,9 +296,11 @@ triangles, surfaces, memory and renderer work: occlusion is not a promise of zer
 Transverse seams have normal `[1,0,0]`; one built from a sheet also carries `path`, its plan path as `[x, z]` points in the
 GLB ship frame (R226: it kinks round machines; the game's death cut follows it, issue 600). `machines: [{name, kind, lo,
 hi}, ...]` gives each machine part's box (its fixed objects, the build's `machine` stamp, grouped by `grp`; a turret's
-turning mesh is its own node), so a death rides each machine whole with one piece. The optional longitudinal seam has normal `[0,1,0]` and `span: [x0,x1]`, identifying
-the transverse compartment it weakens. Positions are points, normals are unit vectors. The writer converts Blender Z up
-to glTF Y up once. Its inputs are the build's scene `r209_t_lines` and `r209_l_line`; no default joints are supplied.
+turning mesh is its own node), so a death rides each machine whole with one piece. An optional longitudinal seam has normal `[0,1,0]` and `span: [x0,x1]`, identifying
+the transverse compartment it weakens; it is one level plane at its height, so a sheet sets that height clear of every machine
+in its span (R226). A ship may carry several, one per compartment it peels (issue 618; `fx_death.gd` weakens the compartment
+each span's middle sits in). Positions are points, normals are unit vectors. The writer converts Blender Z up
+to glTF Y up once. Its inputs are the build's scene `r209_t_lines` and `r209_l_lines` (or the one `r209_l_line` of an older build); no default joints are supplied.
 `interior_materials` names actual nonempty surfaces, including `<code>_inside_skin` for the retained inner liner.
 The reader `fx_hull.gd` transforms seams into the hull analysis frame, accounting for ship scale, and recognises those
 materials before the damage and fracture fallback. A GLB extra was chosen so installing the ship also installs its seams

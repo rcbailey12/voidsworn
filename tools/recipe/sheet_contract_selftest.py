@@ -4,7 +4,9 @@
 # transverse seam sits at the sheet's x; every gun and launcher muzzle is the kit's own, in the right data.js slot; every turret
 # pivot survives with its turning meshes; every engine exit is the sheet's; the insides are visible as role interior; the hull
 # thickness is the sheet's, scaled. Then two broken inputs must be refused, each by name: a ship whose data.js weapon list
-# lacks one of the sheet's weapons, and a sheet with two longitudinal seams (format version 1 holds one).
+# lacks one of the sheet's weapons, and a longitudinal seam that runs across a transverse seam (each weakens one compartment).
+# Every longitudinal seam of the sheet reaches r209_l_lines at its own height and span (issue 618: E11 authors two), and a
+# data.js weapon and arc listed twice gets a gun of its own in each slot (issue 618: 'gauss T' twice on d_boss, d_harvester).
 # Stage 4 runs it for every ship built from a sheet. usage: blender -b -P sheet_contract_selftest.py -- SHIP_JSON OUT_DIR
 import os, sys, json, copy, importlib.util
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.normpath(os.path.join(HERE, '..', '..'))
@@ -43,6 +45,11 @@ check(sc['r209_length_world'] == d.LENGTH, f'the class length is the sheet\'s ({
 tx = sorted(r['x'] for r in inside if r.get('kind') == 'break' and r.get('orient', 'trans') == 'trans')
 check(len(tx) == len(sc['r209_t_lines']) and all(abs(x * s - t) < 1e-6 for x, t in zip(tx, sc['r209_t_lines'])),
       f'{len(tx)} transverse seams at the sheet\'s stations')
+lw = sorted([sum(p[1] for p in r['path']) / len(r['path']) * s, min(p[0] for p in r['path']) * s, max(p[0] for p in r['path']) * s]
+            for r in inside if r.get('kind') == 'break' and r.get('orient') == 'long')
+lg = sorted(json.loads(sc['r209_l_lines']))
+check(len(lw) == len(lg) and all(abs(a_ - b_) < 1e-6 for u, v in zip(lw, lg) for a_, b_ in zip(u, v)),
+      f'{len(lw)} longitudinal seams at the sheet\'s heights and spans')
 hp = json.loads(sc['r209_hp']); weapons = gamedata.weapons(SHIP['game_ship'])
 mz = {}
 for m in hp['muzzles']: mz.setdefault(m['socket'], []).append(m)
@@ -55,8 +62,9 @@ for f in fit:
     ok &= len(got) == len(src) and all((Vector(m['tip']) - Vector(p) * s).length < 1e-6 for m, p in zip(got, src))
     ok &= all(weapons[m['slot']] == (wk, f['slot']) for m in got)
 check(ok, f'{len(hp["muzzles"])} muzzles are the kit\'s own, each in the data.js slot of its weapon and arc')
+check(set(m['slot'] for m in hp['muzzles']) == set(range(len(weapons))), f'every data.js slot ({len(weapons)}) has muzzles of its own')
 pivots = [o for o in sc.objects if o.type == 'EMPTY' and o.get('turret')]
-want = [f['id'] for f in fit if f['kind'] == 'gun' and f.get('mount') != 'casemate']
+want = [f['id'] for f in fit if f['kind'] == 'gun' and f.get('mount') not in ('casemate', 'spinal')]   # a casemate or spinal gun is fixed
 check(sorted(p.name[:-7] for p in pivots) == sorted(want) and all(any(c.type == 'MESH' for c in p.children) and isinstance(p['slot'], int) for p in pivots),
       f'{len(pivots)} turret pivots kept, each with its turning meshes and a data.js slot')
 eng = [x for x in feats if x['kind'] == 'engine']
@@ -79,9 +87,10 @@ try: contract.to_recipe(K, SHIP); check(False, f'a ship whose weapon list lacks 
 except contract.ContractError as e: check('names 0 slots' in str(e), f'a ship whose weapon list lacks a sheet weapon ({drop[0]} {drop[1]}) was refused: {e}')
 finally: gamedata.weapons = _weapons
 d, K = build()
-K.inside += [dict(kind='break', name='L-a', x=0, orient='long', path=[(1, 0.5), (-1, 0.5)]), dict(kind='break', name='L-b', x=0, orient='long', path=[(1, 1.0), (-1, 1.0)])]
-try: contract.to_recipe(K, SHIP); check(False, 'two longitudinal seams were refused')
-except contract.ContractError as e: check('format version 1 holds one' in str(e), f'two longitudinal seams were refused: {e}')
+t0 = tx[0]
+K.inside += [dict(kind='break', name='L-x', x=0, orient='long', path=[(t0 + 0.5, 0.5), (t0 - 0.5, 0.5)])]
+try: contract.to_recipe(K, SHIP); check(False, 'a longitudinal seam across a transverse seam was refused')
+except contract.ContractError as e: check('runs across the transverse seam' in str(e), f'a longitudinal seam across a transverse seam was refused: {e}')
 json.dump(dict(ok=not bad, rows=rows, record=rec), open(os.path.join(OUT, 'sheet_contract_selftest.json'), 'w'), indent=1)
 print('PASS the build sheet contract keeps the sheet\'s data' if not bad else 'FAIL the build sheet contract changed or lost a datum', flush=True)
 sys.exit(1 if bad else 0)

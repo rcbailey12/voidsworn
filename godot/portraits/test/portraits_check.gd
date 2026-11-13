@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Headless check of the portrait lookup:
 #   godot --headless --path godot --script res://portraits/test/portraits_check.gd
 # Every admiral gets a face (painting or crest), painted admirals get their painting, every Nemesis in index.json composes
@@ -15,6 +16,7 @@ func _ok(c: bool, msg: String) -> void:
 
 
 func _init() -> void:
+	GUARD.arm(self, "portraits_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	var crests = JSON.parse_string(FileAccess.get_file_as_string("res://portraits/crests/index.json"))
 	var painted := 0
 	for id in crests:

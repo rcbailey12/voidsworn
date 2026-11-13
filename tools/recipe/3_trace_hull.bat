@@ -14,8 +14,12 @@ if "%HULL%"=="" (echo Stage 3 FAILED: no hull module in ships\%SHIP%.json. Copy 
 if errorlevel 1 (echo Stage 3 FAILED: the concept PNG was not written. & goto bad)
 "%B%" -b -P "%R%\sil_dump.py" -- "%JOB%\b0.npz" b0 "%B0%" > "%JOB%\log_b0dump.txt" 2>&1
 findstr /L /c:"[sil] dumped" "%JOB%\log_b0dump.txt" > nul || (echo Stage 3 FAILED: the shape reference could not be read. See %JOB%\log_b0dump.txt & goto bad)
+rem issue 618 PC run: a job that runs two ships in one window kept the first ship's CAMJ, so the second skipped its camera fit
+rem and scored against a file that was never written; clear it first, as stages 4 and 5 do
+set CAMJ=
 for /f "usebackq delims=" %%L in (`""%BPY%" "%RC%\ship.py" %SHIP% get concept_camera"`) do set CAMJ=%%L
-if "%CAMJ%"=="" (set CAMJ=%JOB%\concept_camera.json & "%BPY%" "%R%\silhouette4.py" fit "%JOB%\concept.png" "%JOB%\b0.npz" "%JOB%\concept_camera.json") else (set CAMJ=%REPO%\%CAMJ%)
+if "%CAMJ%"=="" (set "CAMJ=%JOB%\concept_camera.json" & "%BPY%" "%R%\silhouette4.py" fit "%JOB%\concept.png" "%JOB%\b0.npz" "%JOB%\concept_camera.json") else (set CAMJ=%REPO%\%CAMJ%)
+if not exist "%CAMJ%" (echo Stage 3 FAILED: no concept camera at %CAMJ%: the camera fit wrote nothing. & goto bad)
 "%BPY%" "%R%\b0trace.py" slices "%JOB%\b0.npz" "%JOB%\slices.npz" > "%JOB%\log_trace.txt" 2>&1
 if errorlevel 1 (echo Stage 3 FAILED: the trace failed. See %JOB%\log_trace.txt & goto bad)
 if not "%SHEET%"=="" (echo The hull is the build sheet %SHEET%: no tune. & goto tuned)

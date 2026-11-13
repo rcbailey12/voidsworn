@@ -1,0 +1,22 @@
+{
+ "code": "fixture_X1",
+ "sheet_version": 1,
+ "routes_note": "kit = the Hullbreakers parts kit (tools/blender/kits/hullbreakers/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
+ "parts": [
+  {"id": "K1", "kind": "gun", "what": "twin turret", "count": 2, "route": "hand-built", "source": "picture", "inventory": []},
+  {"id": "K2", "kind": "engine", "what": "engine, bell 1.2 across", "count": 1, "route": "kit", "source": "picture", "inventory": []},
+  {"id": "G1", "kind": "dish", "what": "listening dish, 1.8 across", "count": 1, "route": "generated", "source": "picture", "inventory": []},
+  {"id": "G2", "kind": "claw", "what": "boarding claw, 2 segments, 3 fingers", "count": 1, "route": "generated", "source": "picture", "inventory": [], "library_entry": "test_lib/unreviewed_claw"},
+  {"id": "G3", "kind": "dish", "what": "listening dish, 1.2 across", "count": 1, "route": "generated", "source": "picture", "inventory": [], "library_entry": "test_lib/reviewed_dish"},
+  {"id": "G4", "kind": "antenna", "what": "antenna array, 1.4 tall, 2 whips", "count": 1, "route": "generated", "source": "picture", "inventory": [], "library_entry": "test_lib/missing_part"}
+ ],
+ "masses": [
+  {"name": "Hull slab", "route": "kit"},
+  {"name": "Deck", "route": "hand-built"}
+ ],
+ "break_pieces": [
+  {"name": "bow piece", "stations": "0.0 to 40.0 percent", "bounded_by": ["B-1"], "full_interior": true},
+  {"name": "midships piece 1", "stations": "40.0 to 70.0 percent", "bounded_by": ["B-1", "B-2"], "full_interior": false}
+ ],
+ "insides": "full interiors throughout the hull, hidden until a piece breaks (R215); every break piece carries its share"
+}
