@@ -2063,7 +2063,10 @@ func set_plate(id: String, screen: Vector2, on: bool, name_txt: String, friend: 
 	nm.text = name_txt
 	var target: bool = extra.get("target", false)
 	var col := S_EMBER if up else (S_NEM if bool(extra.get("nem", false)) else S_TEXT)
-	nm.add_theme_color_override("font_color", col)
+	# issue 221: an override sends THEME_CHANGED, which reshapes the label's text and re-sorts the plate; set it only when
+	# the colour changes, not every frame for every ship
+	if not nm.has_theme_color_override("font_color") or nm.get_theme_color("font_color") != col:
+		nm.add_theme_color_override("font_color", col)
 	c.set_meta("keep", up or target)
 	var bars_c := c.get_node("st/v/bars") as Control
 	var f := clampf(hp / maxf(mx, 1.0), 0.0, 1.0)

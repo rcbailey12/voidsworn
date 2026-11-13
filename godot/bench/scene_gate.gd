@@ -44,6 +44,8 @@ extends Node
 # (1280x720), a short film of the same fixed-clock fight at the battle camera (r 170, or --film_r R), centred where the
 # third death happens (the close stills are skipped). --trace and the base and deaths rows also report the flash
 # counter's requests, counted and refused flashes (row "flash", issue 461).
+# --profile (issue 221): with Godot started with -d, the base mode's measured frames also run under Godot's script
+# profiler, and the log gets its ACCUMULATED per-function table (contrib/opus/tools/scene_gate_profile.js reads it).
 # Not in the default list (run with --modes): the 3D scene drawn at more pixels than the 1080p window, so the cost at
 # Ryan's real screens shows whatever monitor the window sits on (the HUD stays at 1080p):
 #   res_1440     3D at 2560x1440 (scaling_3d_scale 1.333)
@@ -745,6 +747,13 @@ func _mode(mode: String, s: int) -> Dictionary:
 		(b.gfx.flash_area_log as Array).clear()
 		fl0 = b.gfx.flash_log.size()
 	vol_looks.clear()
+	# --profile (issue 221): Godot's own script profiler over the measured frames of the base mode. Run Godot with -d
+	# (the local debugger); turning the profiler off prints the ACCUMULATED per-function totals (script and function,
+	# total and self seconds, calls) to the log. The profiler slows scripts, so a --profile run is never a timing run.
+	var prof := bool(args.get("profile", false)) and mode == "base" and EngineDebugger.is_active()
+	if prof:
+		print("[scene_gate] PROFILE BEGIN %d %s frames %d" % [s + 1, mode, n])
+		EngineDebugger.profiler_enable("scripts", true)
 	for i in n:
 		if mode == "deaths" and b.gfx != null:
 			for d in deaths.size():
@@ -788,6 +797,9 @@ func _mode(mode: String, s: int) -> Dictionary:
 			vol0 = vol
 			obj0 = obj
 		vol_looks.clear()
+	if prof:
+		EngineDebugger.profiler_enable("scripts", false)
+		print("[scene_gate] PROFILE END %d %s" % [s + 1, mode])
 	var late: Array = HULL.late_shader_names()
 	var row := {"mode": mode, "frames": n, "warmup": warm, "seconds": (Time.get_ticks_usec() - t0) / 1e6,
 		"viewport": [vp.get_visible_rect().size.x, vp.get_visible_rect().size.y], "msaa_3d": vp.msaa_3d,
