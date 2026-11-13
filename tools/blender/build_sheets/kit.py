@@ -75,6 +75,30 @@ MATS = {
     'lens': ((0.15, 1.0, 0.28), 1.2),          # the corona arc emitter lens
     'archive': ((0.30, 0.55, 0.42), 0),      # inside: archive vaults
     'darkdeck': ((0.20, 0.18, 0.24), 0),     # inside: dark decks
+    # The Chorus (issue 623, C10 and C11; lore 5.3 and factions.md: dark olive flesh, ochre bone and chitin, bile yellow-green
+    # light from inside; R204: colour is fixed in the build, not in the concept, which came out grey with amber light).
+    'flesh': ((0.068, 0.056, 0.029), 0),     # dark olive flesh
+    'flesh2': ((0.042, 0.035, 0.019), 0),    # darker olive-brown flesh (folds, creases)
+    'vein': ((0.075, 0.085, 0.022), 0.12),   # veins: raised, a faint bile light in them
+    'hide': ((0.092, 0.080, 0.045), 0),      # callused olive hide (the pads)
+    'scar': ((0.17, 0.125, 0.07), 0),        # pale regrowing scar tissue (ochre-brown, never red)
+    'chitin': ((0.25, 0.15, 0.045), 0),      # ochre chitin
+    'bone': ((0.55, 0.45, 0.27), 0),         # pale ochre bone
+    'tissue': ((0.13, 0.075, 0.035), 0),     # raw transition tissue (sphincters, lips, the wound along the spine)
+    'maw': ((0.022, 0.014, 0.008), 0),       # wet dark throats and slits
+    'pore': ((0.012, 0.010, 0.005), 0),      # pore pits
+    'membrane': ((0.22, 0.19, 0.06), 0.25),  # vent membranes and filaments, lit faintly by the vent
+    'bile': ((0.55, 0.85, 0.08), 3.0),       # bile yellow-green light (glands, vents, glow windows)
+    'bilewet': ((0.10, 0.14, 0.025), 0.35),  # dim bile in veins and pores
+    # Chorus insides (cutaway only): flesh, bone and organs (R98, R209)
+    'organ': ((0.30, 0.20, 0.07), 0),
+    'gut': ((0.24, 0.13, 0.06), 0),
+    'gland': ((0.42, 0.55, 0.07), 0.6),
+    'brood': ((0.36, 0.33, 0.10), 0),
+    'vat': ((0.55, 0.85, 0.10), 2.0),
+    'ganglion': ((0.50, 0.42, 0.24), 0),
+    'septum': ((0.20, 0.17, 0.08), 0),
+    'bonefr': ((0.52, 0.43, 0.24), 0),
 }
 ARCS = {'F': (-60.0, 60.0), 'P': (30.0, 150.0), 'S': (-150.0, -30.0), 'T': (-180.0, 180.0), 'R': (120.0, 240.0)}  # core.js inArc
 
@@ -177,14 +201,30 @@ class Kit:
         bm = bmesh.new(); bm.from_mesh(ob.data); bmesh.ops.recalc_face_normals(bm, faces=bm.faces); bm.to_mesh(ob.data); bm.free()
         return ob
 
-    def loft(self, name, sections, m, inside=False, shell=0.0, ytilt=None, plates=None, grp=None, rounded=False, pexp=None):
+    def wob(self, x, t):
+        """the grown hull's unevenness (issue 623): a smooth radial swell at station x and section angle t (radians), 0 when the
+        hull has none; the hull loft and hpt both use it, so grown detail laid with hpt sits on the swollen skin"""
+        w = getattr(self, 'wobble', None)
+        if not w:
+            return 0.0
+        a, sd = w
+        return a * (0.55 * math.sin(0.55 * x + 1.7 * t + sd) + 0.3 * math.sin(1.3 * x - 2.2 * t + 2.1 * sd) + 0.25 * math.sin(2.1 * x + 3.1 * t + 0.7 * sd)
+                    + 0.2 * math.cos(0.9 * x - 1.0 * t))
+
+    def loft(self, name, sections, m, inside=False, shell=0.0, ytilt=None, plates=None, grp=None, rounded=False, pexp=None, n=None, smooth=False, wobble=False):
         """sections: (x, hw_port, hw_stbd, z_bottom, z_top, chamfer_top, chamfer_bottom[, y_offset]) bow first.
         rounded: a rounded wedge section instead of the octagon (round 3c), the chamfers ignored"""
         rings = []
         for s in sections:
             x, hwp, hws, zb, zt, ct, cb = s[:7]
             yo = s[7] if len(s) > 7 else 0.0
-            ring = _round_sec(hwp, hws, zb, zt, yo, p_top=(pexp or (None, None))[0], p_bot=(pexp or (None, None))[1]) if rounded else _octa(hwp, hws, zb, zt, ct, cb, yo)
+            ring = _round_sec(hwp, hws, zb, zt, yo, n=n or 24, p_top=(pexp or (None, None))[0], p_bot=(pexp or (None, None))[1]) if rounded else _octa(hwp, hws, zb, zt, ct, cb, yo)
+            if wobble and rounded:
+                zc_ = (zb + zt) / 2; nn_ = len(ring); rr_ = []
+                for i_, (y, z) in enumerate(ring):
+                    t_ = 2 * math.pi * i_ / nn_; d_ = self.wob(x, t_); l_ = math.hypot(y - yo, z - zc_) or 1.0
+                    rr_.append((y + (y - yo) / l_ * d_, z + (z - zc_) / l_ * d_))
+                ring = rr_
             rings.append([(x, y, z) for (y, z) in ring])
         verts = [v for r in rings for v in r]
         n = len(rings[0])
@@ -195,7 +235,7 @@ class Kit:
                 faces.append((a, b, b + n, a + n))
         faces.append(tuple(range(n))[::-1])
         faces.append(tuple(range((len(rings) - 1) * n, len(rings) * n)))
-        ob = self._obj(name, verts, faces, m, inside, grp=grp)
+        ob = self._obj(name, verts, faces, m, inside, grp=grp, smooth=smooth)
         if plates:
             self._pending.append((name, rings, plates))
         if shell:
@@ -277,11 +317,11 @@ class Kit:
             if V:
                 self._obj('%s_plates_%s' % (name, k), V, Fc, k, grp='hull')
         if RV:
-            self._obj('%s_rivets' % name, RV, RF, 'iron', grp='hull')
+            self._obj('%s_rivets' % name, RV, RF, spec.get('rivet_mat', 'iron'), grp='hull')
         if spec.get('inv'):
             for iid in ([spec['inv']] if isinstance(spec['inv'], str) else spec['inv']):
                 self.built.append(dict(id=name + '_plates', kind='plate', inv=[iid], shaped=True, detailed=kept > 0 and spec.get('rivets', True),
-                                       subs=['slab', 'step', 'bevel', 'rivet']))
+                                       subs=spec.get('subs', ['slab', 'step', 'bevel', 'rivet'])))
 
     def _plates_courses(self, name, rings, spec):
         """scrap brick in courses (issue 633; the Board on round 1: "lay plates in courses at the hull's plate size so every
@@ -473,12 +513,39 @@ class Kit:
         return self._obj(name, verts, faces, m, inside, smooth=True, grp=grp)
 
     # ---------- surface helpers ----------
-    def hull(self, sections, m='soot', shell=0.25, plates=None, rounded=False, pexp=None):
-        """pexp: (deck exponent, flank and belly exponent) of the rounded section for this hull (default P_TOP, P_BOT)"""
+    def hull(self, sections, m='soot', shell=0.25, plates=None, rounded=False, pexp=None, n=None, smooth=False, wobble=None):
+        """pexp: (deck exponent, flank and belly exponent) of the rounded section for this hull (default P_TOP, P_BOT);
+        n: points round each section (24 by default); smooth: smooth shading (grown hulls, issue 623)"""
         self.hull_sections = sections
         self.hull_rounded = rounded
         self.p_top, self.p_bot = pexp or (P_TOP, P_BOT)
-        return self.loft(self.code + '_hull', sections, m, shell=shell, plates=plates, rounded=rounded, pexp=pexp)
+        self.wobble = wobble   # (amplitude, seed): the grown hull's unevenness, no flat faces and no straight lines (issue 623)
+        return self.loft(self.code + '_hull', sections, m, shell=shell, plates=plates, rounded=rounded, pexp=pexp, n=n, smooth=smooth, wobble=bool(wobble))
+
+    def hpt(self, x, th, out=0.0):
+        """a point on the rounded hull at station x and section angle th (radians: 0 = port beam, pi/2 = the top, -pi/2 the
+        belly), pushed `out` along the outward normal: (point, normal). For laying grown detail on the hull (issue 623)."""
+        def at(x_, t_):
+            s_ = sec_at(self.hull_sections, x_)
+            c, sn = math.cos(t_), math.sin(t_)
+            p = self.p_top if sn >= 0 else self.p_bot
+            hw = s_[1] if c >= 0 else s_[2]
+            zc = (s_[3] + s_[4]) / 2; hz = (s_[4] - s_[3]) / 2
+            return Vector((x_, hw * math.copysign(abs(c) ** (2.0 / p), c), zc + hz * math.copysign(abs(sn) ** (2.0 / p), sn)))
+        p0 = at(x, th)
+        tx = at(x + 0.02, th) - at(x - 0.02, th); tt = at(x, th + 0.01) - at(x, th - 0.01)
+        nrm = tt.cross(tx)
+        if nrm.length < 1e-9:
+            nrm = Vector((0, math.cos(th), math.sin(th)))
+        nrm.normalize()
+        s_ = sec_at(self.hull_sections, x)
+        if nrm.dot(p0 - Vector((x, 0, (s_[3] + s_[4]) / 2))) < 0:
+            nrm = -nrm
+        if getattr(self, 'wobble', None):
+            zc0 = (s_[3] + s_[4]) / 2; rd = Vector((0, p0.y, p0.z - zc0))
+            if rd.length > 1e-9:
+                p0 = p0 + rd.normalized() * self.wob(x, th % (2 * math.pi))
+        return p0 + nrm * out, nrm
 
     def surf(self, x, side, z):
         """the hull's flank surface y at station x and height z (rounded or octagonal section), signed by side"""
@@ -570,11 +637,11 @@ class Kit:
             Minv = M.inverted()
         for (role, m), (V, F) in groups.items():
             if role == 'turn' and piv is not None:
-                ob = self._obj('%s_%s_%s' % (fid, role, m), [Minv @ v for v in V], F, m, grp=fid, role=role, smooth=False)
+                ob = self._obj('%s_%s_%s' % (fid, role, m), [Minv @ v for v in V], F, m, grp=fid, role=role, smooth=getattr(HP, 'SMOOTH', False))
                 ob.parent = piv
                 ob['turret'] = 1
             else:
-                ob = self._obj('%s_%s_%s' % (fid, role, m), V, F, m, grp=fid, role=role, smooth=False)
+                ob = self._obj('%s_%s_%s' % (fid, role, m), V, F, m, grp=fid, role=role, smooth=getattr(HP, 'SMOOTH', False))
                 if part.kind == 'gun':
                     ob['turret'] = 1 if pivot is not None else 0
                     if pivot is None:
@@ -605,13 +672,14 @@ class Kit:
         return Vector((math.cos(y) * math.cos(p), math.sin(y) * math.cos(p), math.sin(p)))
 
     def gun(self, fid, pos, yaw, pitch=0.0, barrels=1, cal=0.12, blen=2.0, mount='turret', normal=(0, 0, 1),
-            slot='', weapon='', src='picture', note='', size=1.0, inv=(), variant=0, band=None):
+            slot='', weapon='', src='picture', note='', size=1.0, inv=(), variant=0, band=None, kw=None, fixed=False):
         """a gun from the kit. turret: on a deck (normal +Z) or the belly (-Z), rest aim yaw, barrels elevated pitch.
         casemate: on a flank (normal +-Y), the ball in the sponson's outer face, barrels trained yaw (from the bow)."""
         assert -100 < yaw < 100, fid + ' would aim aft'
         p = Vector(pos); nrm = Vector(normal).normalized()
         import inspect
         wk = {'weapon': weapon} if 'weapon' in inspect.signature(HP.gun).parameters else {}   # R221: a kit that builds each weapon its own way
+        wk.update(kw or {})   # a kit's own options (the Chorus tendril count, the mane; issue 623)
         if abs(nrm.z) > 0.5:
             fwd = Vector((math.cos(math.radians(yaw)), math.sin(math.radians(yaw)), 0))
             part = HP.gun(barrels, cal, blen, size, 'turret', pitch=pitch, variant=variant, **wk)
@@ -626,18 +694,26 @@ class Kit:
             kind = 'casemate'
         lo_, hi_ = ARCS.get(slot or 'T', (-180.0, 180.0))
         pv = None
-        if kind != 'casemate':
+        if fixed:
+            kind = 'fixed organ'   # a weapon that does not turn on a mount (the Chorus mane, issue 623): never marked as a turret
+        if kind not in ('casemate', 'fixed organ'):
             pv = dict(turret=1, slot=slot or 'T', weapon=weapon, arc_lo=lo_, arc_hi=hi_, arc_deg=hi_ - lo_, rest_yaw=float(yaw),
                       rest_pitch=float(pitch), turns_about='local +Z (the mount normal)', arc_frame='bearing from the bow, + to port (core.js inArc)')
         part = self.emit(fid, part, M, inv, pivot=pv)
         fd = part.fit
         piv = fd['pivot'][1] if kind != 'casemate' else fd['trunnion'][1]
-        self.fitdata.append(dict(id=fid, kind='gun', slot=slot, pivot=tuple(piv), up=tuple(nrm), mount=kind, ring=tuple(p), rest_yaw=yaw,
-                                 reach=fd['reach'], band=band or ((0, 10, 20, 30, 45, 60) if weapon == 'flak' else (0, 10, 20, 30) if kind != 'casemate' else (-10, 0, 10, 20)),
+        if fixed:
+            for ob in self.coll.objects:
+                if ob.get('grp') == fid and ob.get('role') != 'mount':
+                    ob['gun_fixed'] = 1; ob['turret'] = 0
+        self.fitdata.append(dict(id=fid, kind='gun', slot=slot, pivot=tuple(piv), up=tuple(nrm), mount='spinal' if fixed else kind, ring=tuple(p), rest_yaw=yaw,
+                                 reach=fd['reach'], band=band or ((0, 10, 20, 30, 45, 60) if weapon in ('flak', 'spores') else (0, 10, 20, 30) if kind not in ('casemate', 'fixed organ') else (-10, 0, 10, 20)),
                                  muzzles=[tuple(m[1]) for m in fd['muzzles']], cal=cal * 1.55, hous_r=fd['radius'], rest_pitch=pitch,
                                  aim=tuple(fd['aim'][1]), bore=cal / 2))   # aim, bore: the barrel axis and radius the recipe's hard points read
         wn = getattr(HP, 'WEAPONS', {}).get(weapon, {}).get('name')
         what = '%s %s' % ({1: 'single', 2: 'twin', 3: 'triple'}.get(barrels, str(barrels)), kind)
+        if hasattr(HP, 'gun_what'):
+            what = HP.gun_what(part, kind)   # a kit that names its own organs (the Chorus, issue 623)
         self.features.append(dict(id=fid, kind='gun', what=('%s, %s' % (wn.lower(), what)) if wn else what,
                                   count=barrels, pos=tuple(p), aim=(yaw, pitch), slot=slot, weapon=weapon, src=src, note=note,
                                   muzzle=[tuple(m[1]) for m in fd['muzzles']], normal=tuple(nrm), inv=list(inv) if not isinstance(inv, str) else [inv]))
@@ -673,16 +749,16 @@ class Kit:
         self.features.append(dict(id=fid, kind='launcher', what='rocket rack, %d by %d cells' % (rows, cols), count=rows * cols,
                                   pos=tuple(p), aim=(yaw, pitch), slot=slot, weapon=weapon, src=src, note=note, inv=[inv] if isinstance(inv, str) else list(inv)))
 
-    def engine(self, fid, pos, r, length, bell=1.25, src='picture', note='', inv=(), nose='dome', body_r=None, rings=3):
+    def engine(self, fid, pos, r, length, bell=1.25, src='picture', note='', inv=(), nose='dome', body_r=None, rings=3, kw=None):
         """an engine from the kit: pos is the centre of the bell exit; the housing runs forward `length`; exhaust aft"""
         p = Vector(pos)
         rex = r * bell
-        part = HP.engine_bell(rex, length, bell_len=rex * 1.1, body_r=body_r or r, rings=rings, nose=nose)
+        part = HP.engine_bell(rex, length, bell_len=rex * 1.1, body_r=body_r or r, rings=rings, nose=nose, **(kw or {}))
         part = self.emit(fid, part, HP.frame(p, (1, 0, 0), (0, 0, 1)), inv)
         rad = part.fit['radius']
         self.fitdata.append(dict(id=fid, kind='engine', cones=[dict(apex=tuple(p), dir=(-1, 0, 0), r0=rad, half=12.0,
                                                                     length=max(2.5 * 2 * rad, 0.22 * self.length))]))
-        self.features.append(dict(id=fid, kind='engine', what='engine, bell %.1f across' % (2 * rad), count=1,
+        self.features.append(dict(id=fid, kind='engine', what=(getattr(HP, 'ENGINE_WHAT', 'engine, bell %.1f across') % (2 * rad)), count=1,
                                   pos=tuple(p), aim=(180.0, 0.0), src=src, note=note, exit=tuple(p), radius=rad, inv=[inv] if isinstance(inv, str) else list(inv)))
 
     def tube(self, fid, pos, r, depth, hood=0.0, grille=False, src='picture', note='', inv=(), what='front tube', bands=2, yaw=0.0, pitch=0.0):
@@ -844,14 +920,17 @@ class Kit:
                 ob['gun_fixed'] = 1; ob['turret'] = 0
         # R221: the fixed weapon's firing lane, forward of its muzzle along the axis (4 degree spread, to 80 percent of the length):
         # a gun resting in it, or turned into it through its arc, is a LANE clash in clash.py, as for a launcher
-        mz = Vector(fd['muzzles'][0][1]); hr = fd['radius']
+        mz = Vector(fd.get('lane_from', fd['muzzles'][0])[1]); hr = fd['radius']   # a kit may start the lane at the mouth (Chorus throats, issue 623)
         lane = dict(apex=tuple(mz), dir=(1.0, 0.0, 0.0), u=(0.0, 1.0, 0.0), w=(0.0, 0.0, 1.0), hu=hr, hw=hr, half=4.0, length=self.length * 0.8,
                     what='firing lane')
         self.fitdata.append(dict(id=fid, kind='gun', slot=slot, pivot=tuple(fd['pivot'][1]), up=(0, 0, 1), mount='spinal', ring=tuple(p),
                                  rest_yaw=0.0, reach=fd['reach'], band=(-10, 0, 10, 20), muzzles=[tuple(m[1]) for m in fd['muzzles']],
                                  cal=r, hous_r=fd['radius'], rest_pitch=0.0, lanes=[lane],
                                  aim=tuple(fd['aim'][1]), bore=fd.get('bore', r)))   # aim, bore: what the recipe's hard points read (issue 618)
-        self.features.append(dict(id=fid, kind='gun', what='spinal %s (fixed)' % ('arc emitter' if getattr(part, 'type', '') == 'corona_arc' else 'projector'), count=1, pos=tuple(p), aim=(0.0, 0.0), slot=slot,
+        wn_ = getattr(HP, 'WEAPONS', {}).get(weapon, {}).get('name')
+        what_ = ('%s, %s (fixed)' % (wn_.lower(), getattr(part, 'type', 'organ'))) if getattr(part, 'type', '') == 'throat' and wn_ else \
+            'spinal %s (fixed)' % ('arc emitter' if getattr(part, 'type', '') == 'corona_arc' else 'projector')
+        self.features.append(dict(id=fid, kind='gun', what=what_, count=1, pos=tuple(p), aim=(0.0, 0.0), slot=slot,
                                   weapon=weapon, src=src, note=note, muzzle=[tuple(m[1]) for m in fd['muzzles']], normal=(1, 0, 0),
                                   fixed=True, inv=[inv] if isinstance(inv, str) else list(inv)))
 
@@ -869,6 +948,82 @@ class Kit:
     def corewin(self, fid, pos, normal, r, inv=(), src='picture', note=''):
         return self._surface_part(fid, HP.corewin(r), pos, normal, (1, 0, 0), inv, 'core port, hexagonal, %.1f across' % (2 * r), 'corewin',
                                   src, note, aperture=0.5)
+
+    # ---------- grown parts and insides (the Chorus, issue 623) ----------
+    def organ(self, fid, part, pos, normal, fwd=(1, 0, 0), inv=(), what='', kind=None, src='picture', note='', aperture=None, keep_r=None):
+        """place a grown part from the faction kit (a sac, brood sac, blade or scute): local +Z along normal, local +X along fwd
+        (projected into the surface). aperture: (length, cone) for an opening along the part's own fit exit (a brood sac's birth
+        slit); the fit check keeps it clear (EXIT)."""
+        p = Vector(pos); n = Vector(normal).normalized(); u = Vector(fwd)
+        u = u - n * u.dot(n)
+        if u.length < 1e-4:
+            u = n.orthogonal()
+        part = self.emit(fid, part, HP.frame(p, u, n), inv, keep_r=keep_r)
+        if aperture and 'exit' in part.fit:
+            self.fitdata.append(dict(id=fid, kind=part.kind, apertures=[dict(pos=tuple(part.fit['exit'][1] + part.fit['axis'][1] * 0.05), dir=tuple(part.fit['axis'][1]),
+                                                                           length=aperture[0], cone=aperture[1], what='birth slit', r=part.fit['radius'] * 0.3)]))
+        self.features.append(dict(id=fid, kind=kind or part.kind, what=what or part.kind, count=1, pos=tuple(p), aim=None, src=src, note=note,
+                                  inv=[inv] if isinstance(inv, str) else list(inv)))
+        return part
+
+    def hull_detail(self, name, vf, m, inv=None, kind=None, subs=None):
+        """grown surface detail laid on the hull itself (ridges, veins, pores, scars, folds): part of the hull, not a part"""
+        V, F = vf
+        if not V:
+            return None
+        ob = self._obj(name, V, F, m, grp='hull', smooth=getattr(HP, 'SMOOTH', False))
+        if inv:
+            self.built.append(dict(id=name, kind=kind or 'hull', type=kind or 'hull', inv=[inv], shaped=True,
+                                   detailed=all(s_ in (subs or []) for s_ in HP.SUBPARTS.get(kind or 'hull', [])), subs=list(subs or [])))
+        return ob
+
+    def grown_hull(self, name, items, inv=None, kind=None):
+        """kit parts grown into the hull itself (a row of chitin scutes, bone blades): items = [(part, matrix)], merged by
+        material into hull objects (structure: they tear with the hull, R226); registered for the inventory as one built item"""
+        groups = {}; names = []
+        for part, M in items:
+            part.transform(M)
+            for c in part.comps:
+                V, F = groups.setdefault(c['mat'], ([], []))
+                o = len(V); V.extend(c['verts']); F.extend([tuple(x + o for x in f) for f in c['faces']])
+                names.append(c['name'])
+        for m, (V, F) in groups.items():
+            self._obj('%s_%s' % (name, m), V, F, m, grp='hull', smooth=getattr(HP, 'SMOOTH', False))
+        if inv:
+            typ = kind or (items[0][0].kind if items else 'hull')
+            self.built.append(dict(id=name, kind=typ, type=typ, inv=[inv], shaped=True, detailed=HP.detail_ok(typ, names),
+                                   subs=sorted({n.rstrip('0123456789').split('_')[-1] for n in names})))
+
+    def organ_room(self, name, kind, centre, radii, note='', seed=0, n=(22, 12)):
+        """a grown organ or chamber inside the hull (a lumpy ellipsoid, never a box that reaches the skin)"""
+        V, F = HP.blob(*radii, centre=centre, nu=n[0], nv=n[1], seed=seed, amp=0.1)
+        self._obj('in_' + name, V, F, kind, inside=True, smooth=True)
+        c = centre; r = radii
+        self.inside.append(dict(kind='space', name=name, mat=kind, x=(c[0] - r[0], c[0] + r[0]), y=(c[1] - r[1], c[1] + r[1]), z=(c[2] - r[2], c[2] + r[2]), note=note))
+
+    def hoop(self, name, x, inset=0.3, w=0.14, t=0.12, kind='bonefr'):
+        """a bone frame hoop inside the rounded hull at station x: a ring following the hull's section, inset from the skin"""
+        s_ = sec_at(self.hull_sections, x)
+        ring_o = _round_sec(s_[1] - inset, s_[2] - inset, s_[3] + inset, s_[4] - inset, 0.0, 32, self.p_top, self.p_bot)
+        ring_i = _round_sec(s_[1] - inset - t, s_[2] - inset - t, s_[3] + inset + t, s_[4] - inset - t, 0.0, 32, self.p_top, self.p_bot)
+        V = []
+        for dx in (w / 2, -w / 2):
+            V += [(x + dx, y, z) for (y, z) in ring_o] + [(x + dx, y, z) for (y, z) in ring_i]
+        nn = 32; F = []
+        for k in range(nn):
+            a, b = k, (k + 1) % nn
+            F += [(a, b, 2 * nn + b, 2 * nn + a), (nn + b, nn + a, 3 * nn + a, 3 * nn + b), (a, nn + a, nn + b, b), (2 * nn + b, 3 * nn + b, 3 * nn + a, 2 * nn + a)]
+        self._obj('in_bh_' + name, V, F, kind, inside=True)
+        self.inside.append(dict(kind='bulkhead', name=name, x=x))
+
+    def septum(self, name, z, x0, x1, inset=0.35, t=0.07, kind='septum'):
+        """a grown membrane shelf (the Chorus deck) at height z, from x0 (fore) to x1 (aft), following the rounded hull's inside"""
+        secs = []
+        for x in [x0 + (x1 - x0) * i / 6 for i in range(7)]:
+            hw = abs(self.surf(x, 1, z)) - inset
+            secs.append((x, max(hw, 0.2), max(hw, 0.2), z - t / 2, z + t / 2, 0, 0))
+        self.loft('in_deck_' + name, secs, kind, inside=True, rounded=True, pexp=(6.0, 6.0))
+        self.inside.append(dict(kind='deck', name=name, z=z, x=(x1, x0)))
 
     def allow_touch(self, a, b, why):
         self.allow.append((a, b, why))

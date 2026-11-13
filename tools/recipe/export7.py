@@ -456,7 +456,9 @@ def use(mat, slot, tex):
     if role.get(i, nm) != nm: die(f'one image does two jobs ({role[i]} and {nm}): the ORM map must hold occlusion, roughness and metal together')
     role[i] = nm
 for mat in sorted(g.get('materials', []), key=lambda m: m.get('name') in destruction['interior_materials']):
-    if mat.get('name') not in [CODE + '_hull', CODE + '_parts'] + destruction['interior_materials']: continue
+    if mat.get('name') not in [CODE + '_hull', CODE + '_parts', CODE + '_glow'] + destruction['interior_materials']: continue
+    if mat.get('name') == CODE + '_glow':      # issue 601: the engine glow's own emission map (graded throat, hot spots, soot)
+        use(mat, 'emission', mat.get('emissiveTexture')); continue
     pbr = mat.get('pbrMetallicRoughness', {})
     use(mat, 'base', pbr.get('baseColorTexture')); use(mat, 'orm', pbr.get('metallicRoughnessTexture')); use(mat, 'orm', mat.get('occlusionTexture'))
     use(mat, 'normal', mat.get('normalTexture'))

@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 600 (RULEBOOK 5.17, R226; RULEBOOK 6.5, R186 "blown apart, never sliced"): kill A16 (C19_51) and count two things.
 # Both must be zero:
 #   machines split: a gun, turret, casemate, launcher, engine, thruster, claw or sensor mast whose triangles land on more
@@ -27,6 +28,7 @@ var failures := 0
 
 
 func _init() -> void:
+	GUARD.arm(self, "death_seam_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 

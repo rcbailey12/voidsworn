@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Exercise ShipView and FX together, as battle.gd does when it marks a view dead.
 const FX := preload("res://fx/fx.gd")
 const SV := preload("res://render/ship_view.gd")
@@ -6,6 +7,7 @@ const DEATH := preload("res://fx/fx_death.gd")
 var failures := 0
 
 func _init() -> void:
+	GUARD.arm(self, "death_plane_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 func _check(ok: bool, message: String) -> void:

@@ -180,7 +180,7 @@ for xx in (sx0, sx1):
     dr.line((xx, y0 - 10, xx, y0 + 10), fill=CYAN, width=2)
 label(dr, ((sx0 + sx1) / 2 - 150, y0 - 34), 'length %.2f units (game %.1f)' % (len_side, L), f_m, CYAN)
 dr.line((sx1 + 30, sz0, sx1 + 30, sz1), fill=CYAN, width=2)
-label(dr, (sx1 - 330 * SC, sz1 - 40 * SC), 'height %.2f (claw tip to turret); hull %.2f' % (height, checks['hull_depth']), f_s, CYAN)
+label(dr, (sx1 - 330 * SC, sz1 - 40 * SC), 'height %.2f overall; hull %.2f' % (height, checks['hull_depth']), f_s, CYAN)
 
 
 def scalebar(dr, x, y):
@@ -295,7 +295,8 @@ man = dict(code=CODE, sheet_version=SHT.get('version', 3), routes_note='kit = th
            turret_marking='R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).',
            parts=[], masses=[], break_pieces=[])
 KITK = ('gun', 'launcher', 'engine', 'dish', 'intake', 'claw', 'chain', 'thruster', 'hatch', 'hatchbox', 'vent', 'lamp', 'antenna', 'pipe', 'bay', 'slit',
-        'core', 'strut', 'corewin', 'hangar', 'craft', 'spare')  # issue 633: hangar_mouth, craft and the spare engine_bell are kit builders
+        'core', 'strut', 'corewin', 'sac', 'brood', 'spine', 'chitin',
+        'hangar', 'craft', 'spare')  # issue 633: hangar_mouth, craft and the spare engine_bell are kit builders
 for f in F:
     row = dict(id=f['id'], kind=f['kind'], what=f['what'], count=f['count'], route='kit' if f['kind'] in KITK else 'hand-built',
                source=f['src'], inventory=f.get('inv', []))

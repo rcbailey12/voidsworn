@@ -1,10 +1,12 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Runtime contracts for staged deaths, class gating, flash limits and the hurry key.
 const FX := preload("res://fx/fx.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 var failures := 0
 
 func _init() -> void:
+	GUARD.arm(self, "destruction_staging_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 func _check(ok: bool, message: String) -> void:

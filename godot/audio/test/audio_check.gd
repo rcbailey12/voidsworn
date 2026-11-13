@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Data, real player starts, variants, and independent SFX/music mute.
 const Sfx := preload("res://audio/sfx.gd")
 const Music := preload("res://music/music_player.gd")
@@ -48,6 +49,7 @@ class FakeFX extends Node:
 	var reduce_flashing := false
 
 func _init() -> void:
+	GUARD.arm(self, "audio_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	call_deferred("_run")
 
 func _ok(c: bool, message: String) -> void:

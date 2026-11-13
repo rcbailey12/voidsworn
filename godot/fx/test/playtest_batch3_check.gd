@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Presentation contracts: ordinary hits preserve the skin, heavy section damage
 # opens a break, and emitted exhaust stays in space after a turn and a stop.
 const FX := preload("res://fx/fx.gd")
@@ -6,6 +7,7 @@ const BREACH := preload("res://fx/fx_breach.gd")
 var failures := 0
 
 func _init() -> void:
+	GUARD.arm(self, "playtest_batch3_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 func check(ok: bool, message: String) -> void:

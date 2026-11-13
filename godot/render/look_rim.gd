@@ -19,6 +19,9 @@ extends DirectionalLight3D
 const LOOK := preload("res://render/look.gd")
 
 var _cfg := {}
+# issue 601: the soft rim light (LookRimSoft) lights only the stack-painted surfaces, with RIM soft of the specular
+var soft := false
+var _soft_seen := false
 
 
 func _ready() -> void:
@@ -32,10 +35,10 @@ func configure() -> void:
 	_cfg = LOOK.rim_of()
 	light_color = _cfg.get("color", Color(0.85, 0.9, 1.0))
 	light_energy = float(_cfg.get("energy", 0.35))
-	light_specular = float(_cfg.get("spec", 8.0))
-	light_cull_mask = LOOK.RIM_LAYER
+	light_specular = float(_cfg.get("spec", 8.0)) * (float(_cfg.get("soft", 0.25)) if soft else 1.0)
+	light_cull_mask = LOOK.RIM_SOFT_LAYER if soft else LOOK.RIM_LAYER
 	shadow_enabled = false
-	visible = light_energy > 0.0
+	visible = light_energy > 0.0 and (not soft or _soft_seen)
 
 
 func _process(_dt: float) -> void:
@@ -72,10 +75,17 @@ func _mark(n) -> void:
 	if not is_instance_valid(n) or not (n is GeometryInstance3D):
 		return
 	var g := n as GeometryInstance3D
-	if g.layers & LOOK.RIM_LAYER:
+	if g.layers & (LOOK.RIM_LAYER | LOOK.RIM_SOFT_LAYER):
 		return
 	if _is_hull(g):
-		g.layers |= LOOK.RIM_LAYER
+		if _is_soft(g):      # issue 601: a stack-painted hull joins the soft rim light's layer instead
+			g.layers |= LOOK.RIM_SOFT_LAYER
+			var sl = get_parent().get_node_or_null("LookRimSoft") if get_parent() else null
+			if sl and not sl.get("_soft_seen"):
+				sl.set("_soft_seen", true)
+				sl.call("configure")
+		else:
+			g.layers |= LOOK.RIM_LAYER
 
 
 static func _hull_mat(m: Material) -> bool:
@@ -86,6 +96,29 @@ static func _hull_mat(m: Material) -> bool:
 	if m.has_meta("fx_hull_source"):
 		var src = m.get_meta("fx_hull_source")
 		return src is Material and (src as Material).has_meta("look_hull")
+	return false
+
+
+static func _soft_mat(m: Material) -> bool:
+	if m == null:
+		return false
+	if m.has_meta("look_rim_soft"):
+		return true
+	if m.has_meta("fx_hull_source"):
+		var src = m.get_meta("fx_hull_source")
+		return src is Material and (src as Material).has_meta("look_rim_soft")
+	return false
+
+
+static func _is_soft(g: GeometryInstance3D) -> bool:
+	if _soft_mat(g.material_override):
+		return true
+	var mi := g as MeshInstance3D
+	if mi == null or mi.mesh == null:
+		return false
+	for i in mi.get_surface_override_material_count():
+		if _soft_mat(mi.get_surface_override_material(i)):
+			return true
 	return false
 
 

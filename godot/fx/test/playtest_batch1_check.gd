@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Regression checks with loaded stand-in hull scenes, no GLB files required.
 const FX := preload("res://fx/fx.gd")
 const BREACH := preload("res://fx/fx_breach.gd")
@@ -11,7 +12,9 @@ var world: Node3D
 class StandIn extends Node3D:
 	var fac := "hegemony"
 	var meshes: Array = []
-func _init() -> void: process_frame.connect(_run, CONNECT_ONE_SHOT)
+func _init() -> void:
+	GUARD.arm(self, "playtest_batch1_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
+	process_frame.connect(_run, CONNECT_ONE_SHOT)
 func check(ok: bool, message: String) -> void:
 	if not ok: failures += 1; push_error(message)
 func ship(id: String, faction: String, pos := Vector3.ZERO):

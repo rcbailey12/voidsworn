@@ -35,6 +35,15 @@ rem ship whose hull module follows armA5 to armA7; a ship with its own bake name
 set BAKE=
 for /f "usebackq delims=" %%L in (`""%BPY%" "%RC%\ship.py" %SHIP% get bake"`) do set BAKE=%%L
 if "%BAKE%"=="" set BAKE=bakeAb6.py
+rem issue 601: "stack" is the faction kit's paint stack for a ship built from a build sheet (bake_sheet.py with
+rem tools\blender\kits\FACTION\stack.py). A faction whose kit has no stack yet takes the unpainted route ("none"), and the
+rem stages say so (STACK_NOTE).
+set FACTION=
+for /f "usebackq delims=" %%L in (`""%BPY%" "%RC%\ship.py" %SHIP% get faction"`) do set FACTION=%%L
+set STACK_NOTE=
+if /i "%BAKE%"=="stack" if not exist "%REPO%\tools\blender\kits\%FACTION%\stack.py" set "STACK_NOTE=the %FACTION% kit has no paint stack yet (tools\blender\kits\%FACTION%\stack.py): unpainted"
+if /i "%BAKE%"=="stack" if exist "%REPO%\tools\blender\kits\%FACTION%\stack.py" set BAKE=bake_sheet.py
+if /i "%BAKE%"=="stack" set BAKE=none
 rem issue 592: a ship built from a build sheet names it ("sheet"); its class length (LEN) is read from the sheet, else the json
 set SHEET=
 for /f "usebackq delims=" %%L in (`""%BPY%" "%RC%\ship.py" %SHIP% get sheet"`) do set SHEET=%%L

@@ -12,13 +12,18 @@ tools/blender/kits/
   hullbreakers/kit.py     the Ashfall Hullbreakers parts: casemate, bow_battery, drum_rack (drums), turret (own and borrowed),
                           marking (stencils, tags, lamps); salvage helpers (weld beads, patch plates, quilted sleeves)
   hullbreakers/paint.py   the Hullbreaker paint bands (red-forward, gunmetal-aft, heavy rust and grime, worn edges, markings)
+  shared/paint_stack.py   issue 601: the paint stack machinery for sheet ships (masks baked from the ship's own geometry, the
+                          layers, trim sheet sampling, decal placement by ray cast, the atlas bake). No look of its own.
+  hullbreakers/stack.py   issue 601: the Hullbreaker paint stack for sheet ships: concept colour samples, zones, layer sizes,
+                          the trim sheet and decal art, the decal rules. Every Hullbreaker sheet ship uses it.
   <faction>/kit.py        one per faction, same function shape: part(socket, seat, rnd), PARTS dict, build(sockets, seat)
   <faction>/paint.py      the faction's own bands and masks, same make / assign interface (bake, LOD, export are shared)
 ```
 
 Faction ids (AGENTS.md): `corsair` = Ashfall Hullbreakers (`hullbreakers/`), `voidsworn` = Sunward Crusade, `ithar` = the
-Glasswrights, `deathless` = Eclipse, `chorus` = the Chorus, `hegemony` = Hegemony Navy. Only `hullbreakers/` exists so far (issue
-209 round 6 proves it on the C15s cruiser).
+Glasswrights, `deathless` = Eclipse, `chorus` = the Chorus, `hegemony` = Hegemony Navy. Kits so far: `hullbreakers/` (issue 209
+round 6 proves it on the C15s cruiser), `eclipse/` (issue 532, the E11 and E12 sheets) and `chorus/` (issue 623, the C10 and C11
+sheets: grown parts, weapons as organs; its README says what each part is and does).
 
 ## What is shared and what is not
 
