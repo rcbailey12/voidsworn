@@ -22,24 +22,25 @@ CONCEPT_SHEET = 'contrib/muse/design/concept_round8b_2026_11/chorus_C10_sheet.jp
 # the true views on the 8b sheet (x0, y0, x1, y1), bow on the LEFT already; the escort (right) is a separate shape, left out
 CONCEPT_VIEWS = dict(top=dict(box=(75, 30, 1840, 600), largest=True, flip=False), side=dict(box=(65, 600, 1860, 1195), largest=True, flip=False))
 CROPS = [('bow (the double mouth)', (90, 480, 1000, 1010)), ('midships (crown and sacs)', (560, 60, 1450, 960)), ('stern (vent crown and membranes)', (1150, 30, 1920, 700))]
-SHEET = dict(version=3, round='round 3, face and massing', date='2026-11-12', blend='opus623\\chorus_C10',
+SHEET = dict(version=4, round='round 4, the body', date='2026-11-12', blend='opus623\\chorus_C10',
              before='First full layout', before_note='The first complete C10 layout with the Chorus kit, run through the check before any fix.')
 
 PEXP = (2.3, 2.0)   # a soft back, a round belly: no flat top, no parallel sides (the Board on PR 628)
 WOBBLE = (0.12, 1.3)   # the body's unevenness: no flat faces and no straight lines
-# key sections (x, half-beam port, half-beam starboard, belly, back): the head swells tallest and fullest just behind the
-# mouth's fold lips (round 3: the ship reads face first), then the back line falls away and the body tapers to a thin tail
+# key sections (x, half-beam port, half-beam starboard, belly, back): the head swells tallest just behind the mouth's fold
+# lips (round 3: face first); behind it the body is broad and low, a flattened oval about 1.4 wide to 1 tall with a soft
+# dorsal dome (round 4), swelling a little just behind the head and tapering in one smooth curve to a thin tail
 KEY = [
     (11.75, 2.25, 2.25, -2.25, 1.7),
     (11.2, 2.8, 2.8, -2.75, 2.25),
     (10.2, 2.98, 2.98, -2.9, 2.5),
-    (8.8, 2.88, 2.88, -2.74, 2.4),
-    (6.5, 2.62, 2.62, -2.42, 2.08),
-    (3.0, 2.35, 2.35, -2.06, 1.82),
-    (0.0, 2.1, 2.1, -1.76, 1.64),
-    (-3.0, 1.74, 1.74, -1.34, 1.5),
-    (-6.0, 1.22, 1.22, -0.76, 1.36),
-    (-8.4, 0.78, 0.78, -0.2, 1.22),
+    (8.0, 3.05, 3.05, -2.3, 2.15),
+    (5.0, 2.87, 2.87, -1.96, 1.96),
+    (2.0, 2.57, 2.57, -1.74, 1.86),
+    (-1.0, 2.2, 2.2, -1.42, 1.7),
+    (-4.0, 1.71, 1.71, -0.96, 1.5),
+    (-6.5, 1.16, 1.16, -0.42, 1.26),
+    (-8.4, 0.78, 0.78, -0.12, 1.18),
     (-9.6, 0.58, 0.58, 0.1, 1.12),
     (-10.15, 0.48, 0.48, 0.24, 1.04),
 ]
@@ -126,7 +127,7 @@ def build(K):
         sn = 'p' if side > 0 else 's'
         pos, nrm = K.hpt(8.6, side_th(-0.45, side), out=-0.03)
         K.thruster('Q1' + sn, tuple(pos), tuple(nrm), r=0.3, inv='siphons', note='siphon behind the mouth: swings the head')
-        pos, nrm = K.hpt(-7.4, side_th(0.15, side), out=-0.03)
+        pos, nrm = K.hpt(-7.4, side_th(0.55, side), out=-0.03)
         K.thruster('Q2' + sn, tuple(pos), tuple(nrm), r=0.26, inv='siphons', note='siphon on the tail: swings the stern')
 
     # ---------------- the vent crown (engines) ----------------
@@ -147,14 +148,14 @@ def build(K):
         rings = []; edge = []
         for k, x in enumerate(xs):
             f = k / (len(xs) - 1)
-            thx = 0.55 - 0.1 * f + 0.07 * math.sin(x * 0.45 + 0.5) + 0.03 * math.sin(x * 1.3)
+            thx = 0.04 + 0.05 * math.sin(x * 0.45 + 0.5) + 0.02 * math.sin(x * 1.3)   # on the widest line, like a ray's edge
             b, nrm = K.hpt(x, side_th(thx, side), out=-0.05)
             b2 = K.hpt(x - 0.05, side_th(thx, side), out=-0.05)[0]
             tang = (b2 - b).normalized(); nrm = Vector(nrm)
-            d = (nrm * 0.8 + Vector((0, 0, 0.35))).normalized()   # it stands out and a little up from the flank
+            d = (nrm * 0.95 + Vector((0, 0, 0.08))).normalized()   # it stands straight out from the widest line
             sv = tang.cross(d).normalized()
             env = math.sin(math.pi * min(1.0, f * 1.15)) ** 0.5
-            hgt = (0.12 + 0.42 * env) * (1 + 0.15 * math.sin(x * 2.3 + side))
+            hgt = (0.12 + 0.5 * env) * (1 + 0.15 * math.sin(x * 2.3 + side))
             w = 0.34 * (0.6 + 0.4 * env)
             tip = b + d * hgt + sv * 0.04 * math.sin(x * 3.1)
             rings.append([b - sv * w / 2, b + d * hgt * 0.45 - sv * w * 0.32, tip - sv * 0.03, tip + sv * 0.03, b + d * hgt * 0.45 + sv * w * 0.32, b + sv * w / 2])
@@ -206,12 +207,12 @@ def build(K):
                 p_, n_ = K.hpt(x, side_th(th, side), out=0.0); pts.append(p_); nrms.append(n_)
             vv, ff = HP.welt(pts, nrms, w, w * 0.5, n=5)
             o = len(V); V.extend(vv); F.extend([tuple(q + o for q in f) for f in ff])
-        main = [(x, 0.18 + 0.06 * math.sin(x * 1.3)) for x in [0.4 + 0.35 * k for k in range(19)]]
-        main += [(7.0 + 0.35 * k, 0.18 - 0.4 * min(1, k / 4)) for k in range(1, 11)]
+        main = [(x, -0.24 + 0.04 * math.sin(x * 1.3)) for x in [0.4 + 0.35 * k for k in range(19)]]
+        main += [(7.0 + 0.35 * k, -0.24) for k in range(1, 4)]
         run(main, 0.1)
         for bx in (5.3, 2.2, -0.2):
-            run([(bx + 0.25 * k, 0.2 - 0.12 * k) for k in range(5)], 0.06)
-        run([(0.4 - 0.3 * k, 0.18 + 0.05 * k) for k in range(8)], 0.07)
+            run([(bx + 0.25 * k, -0.24 - 0.1 * k) for k in range(5)], 0.06)
+        run([(0.4 - 0.3 * k, -0.24 + 0.02 * k) for k in range(8)], 0.07)
         K.hull_detail('veins_%s' % ('p' if side > 0 else 's'), (V, F), 'vein', inv='veins', kind='vein', subs=['vein', 'branch'])
     # scars: regrowth patches with knit ridges
     for k, (x, th, r, side) in enumerate(((9.3, 1.15, 0.42, 1), (6.4, 1.45, 0.55, -1), (3.7, 0.95, 0.45, 1), (-0.4, 1.3, 0.5, -1), (-2.6, 0.38, 0.4, 1),
@@ -241,7 +242,7 @@ def build(K):
     K.colour('pale regrowing scar', 9.3, -6.0, 'scar patches')
 
     # ---------- INSIDE: flesh, bone and organs (R98, R209; factions.md: "Inside: flesh and bone, wet and lit from within") ----------
-    K.septum('lower', -0.9, 10.4, -2.4)
+    K.septum('lower', -0.9, 10.4, -1.4)
     K.septum('upper', 0.85, 10.2, -7.0)
     for i, x in enumerate((10.6, 8.9, 6.2, 4.4, 2.6, 0.8, -0.6, -2.5, -4.2, -5.4, -7.4, -8.8)):
         K.hoop('F%d' % i, x)
@@ -287,7 +288,7 @@ def build(K):
                                             (-5.6, -0.1, 'eng', 1), (-7.0, 0.9, 'eng', -1), (-8.6, -0.2, 'eng', 1))):
         pos, nrm = K.hpt(x, side_th(th, side), out=0.02)
         K.point('breach', 'hp_breach_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd', section=sec, note='open hide beside a sac or the trim')
-    for i, (x, th, side) in enumerate(((8.6, -0.45, 1), (8.6, -0.45, -1), (-7.4, 0.15, 1), (-7.4, 0.15, -1))):
+    for i, (x, th, side) in enumerate(((8.6, -0.45, 1), (8.6, -0.45, -1), (-7.4, 0.55, 1), (-7.4, 0.55, -1))):
         pos, nrm = K.hpt(x, side_th(th, side), out=0.02)
         K.point('rcs', 'hp_rcs_%d' % i, tuple(pos), side='port' if side > 0 else 'stbd')
 

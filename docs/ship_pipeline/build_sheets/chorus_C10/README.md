@@ -1,7 +1,7 @@
-# chorus_C10 build sheet: The Ninefold Maw, the Chorus flagship (round 3: the face)
+# chorus_C10 build sheet: The Ninefold Maw, the Chorus flagship (round 4: the body)
 
 The Chorus, class Bio-titan, **28.0 world units** mouth to membrane tip (godot/render/hull_table.gd CLS_LEN; data.js `b_boss`:
-bioplasma F, bioplasma F, tendril T, spores T; hangar 3; regen 20; no shields). The model is 28.0. Version 3 (round 3, the face), 2026-11-12,
+bioplasma F, bioplasma F, tendril T, spores T; hangar 3; regen 20; no shields). The model is 28.0. Version 4 (round 4, the body), 2026-11-12,
 issue 623. Designer of record: Opus (R205, R207). Accepted picture: contrib/muse/design/concept_round8b_2026_11/chorus_C10_beauty.jpg
 and chorus_C10_sheet.jpg (R204). Built with the new Chorus kit, `tools/blender/kits/chorus/` (grown parts; its README says what
 each part is and does). The views were rendered in the Opus sandbox (Blender 5.3, CPU, 20 samples) from the same build.py the PC
@@ -14,6 +14,19 @@ runs; nothing ran on Ryan's PC.
 the [bow](../../../shots/issue_623_chorus/c10_bow_compare.jpg) and the [stern](../../../shots/issue_623_chorus/c10_stern_compare.jpg).
 The two classes from above at one scale: [c10_c11_classes.jpg](../../../shots/issue_623_chorus/c10_c11_classes.jpg).
 Then [side_by_side.jpg](side_by_side.jpg), [cells.jpg](cells.jpg) and [fit_view.jpg](fit_view.jpg).
+
+## Round 4: the body (the Board on round 3)
+
+The Board passed the face (and passed C11). The body behind the head was a round cylinder whose sides ran parallel to
+mid-ship and then turned into a cone. Now:
+
+1. **Broad and low.** Behind the head the section is a flattened oval, about 1.4 wide to 1 tall mid-body, with a soft dorsal
+   dome.
+2. **One smooth taper.** From above, the outline swells a little just behind the head (6.1 across) and then tapers in one
+   smooth curve to the tail. There is no parallel run and no corner where a cone starts.
+3. **The membrane fold runs along the widest line of each flank**, standing straight out like a ray's edge, up to about 0.6.
+4. The length, the crown, the sacs and the face are unchanged. The veins move below the fold, and the aft siphons move above
+   it.
 
 ## Round 3: the face (the Board on round 2)
 
@@ -53,13 +66,13 @@ veins carrying bile, scars knitting shut.
 
 | Check | Result |
 |---|---|
-| Views agree (side, top, bow): length, beam, height | 0.0, 0.04 and 0.0 percent apart; length 28.02 on the views (model 28.0) (checks.json, PASS) |
+| Views agree (side, top, bow): length, beam, height | 0.0, 0.31 and 0.0 percent apart; length 28.02 on the views (model 28.0) (checks.json, PASS) |
 | Fit check (R217, R219, R221): clash, mount, arc, sweep, exhaust, exit, lane | **0** in all seven ([fit_report.md](fit_report.md), [fit_view.jpg](fit_view.jpg)) |
 | Machines on a seam (R226) | **0** of 15 machines (2 throats, the crown, 5 spore glands, 3 vents, 4 siphons) across 4 seams |
 | Insides inside the skin | 0 of 7,484 inside vertices within 0.15 of the skin |
 | Inventory (R218, R221) | 15 lines, every one with a job; 0 not present, shaped and detailed ([inventory.md](inventory.md)) |
 | Outline overlap at the concept's camera (reported, not a bar) | 76.4 percent ([outline_check.jpg](outline_check.jpg)) |
-| Proportions, hull length to beam / to height (concept sheet against build, same measure) | 5.74 / 6.21 against 6.04 / 5.62 |
+| Proportions, hull length to beam / to height (concept sheet against build, same measure) | 5.74 / 6.21 against 4.60 / 5.98 (broader: the body is now wider than tall, 1.4 to 1 mid-body, as the Board asked) |
 
 ### Detail density per part type (R224, measured on the blockout; numbers in [density_seams.json](density_seams.json))
 
@@ -68,12 +81,12 @@ Triangles and edge features (faces meeting at over 30 degrees, or an open rim) p
 
 | Part type | Triangles per unit2 (vs hull) | Edge features per unit2 (vs hull) |
 |---|---|---|
-| hull (the body, hide pads, head folds, flank folds, veins, pores, scars) | 107.0 (1.00) | 64.2 (1.00) |
-| spinal (the two throats) | 154.2 (1.44) | 111.2 (1.73) |
-| gun (the crown and the spore glands) | 209.4 (1.96) | 113.0 (1.76) |
-| brood (the brood sacs) | 291.3 (2.72) | 168.6 (2.63) |
-| engine (the pulse vents and membranes) | 374.3 (3.50) | 190.6 (2.97) |
-| thruster (the siphons) | 555.2 (5.19) | 252.1 (3.93) |
+| hull (the body, hide pads, head folds, flank folds, veins, pores, scars) | 99.9 (1.00) | 59.5 (1.00) |
+| spinal (the two throats) | 154.2 (1.54) | 111.2 (1.87) |
+| gun (the crown and the spore glands) | 209.4 (2.09) | 113.0 (1.90) |
+| brood (the brood sacs) | 291.3 (2.91) | 168.6 (2.83) |
+| engine (the pulse vents and membranes) | 374.3 (3.74) | 190.6 (3.20) |
+| thruster (the siphons) | 555.2 (5.56) | 252.1 (4.23) |
 
 ## Weapons, each from the lore (R221)
 

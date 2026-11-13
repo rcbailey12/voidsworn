@@ -1,21 +1,21 @@
 {
- "az": 42.932838110249655,
- "el": 16.256650191735005,
- "roll": 0.4848079755667746,
- "dist": 92.71831029432437,
- "mm": 149.64280538984042,
+ "az": 43.33359371393643,
+ "el": 16.462395474801912,
+ "roll": 0.35329127686124745,
+ "dist": 93.23068059095436,
+ "mm": 149.66158942487644,
  "target": [
   0.0,
   0.0,
   0.0
  ],
- "sx": 0.11235252227689949,
- "sy": 0.0727943704860575,
+ "sx": 0.1120173246248292,
+ "sy": 0.07306501620415658,
  "res": [
   1920,
   1280
  ],
- "iou": 0.7636,
- "body_iou": 0.7697,
+ "iou": 0.7638,
+ "body_iou": 0.7511,
  "note": "C10 sheet: view angles from a coarse grid over azimuth, elevation and roll on the thinned mesh, then fit.py refined all seven camera numbers (never the ship); concept mask: luminance over 13, closed, holes filled, largest shape (the escort left out)"
 }

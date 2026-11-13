@@ -160,13 +160,13 @@ Concept counts read off the concept sheet by eye (C10 sheet: bow = the two mouth
 |---|---:|---:|---|
 | bow/top | 4 | 10 | Hull: the long body; Mouth, port throat; Mouth, starboard throat; Spore gland 1; Brood sac 1 (port); Brood sac 1 (starboard); Flank fold (port); Flank fold (starboard); Head folds (port); Head folds (starboard) |
 | bow/side | 4 | 6 | Hull: the long body; Mouth, port throat; Spore gland 1; Brood sac 1 (port); Flank fold (port); Head folds (port) |
-| bow/below | 3 | 3 | Spore gland 1; Brood sac 1 (port); Brood sac 1 (starboard) |
+| bow/below | 3 | 4 | Hull: the long body; Spore gland 1; Brood sac 1 (port); Brood sac 1 (starboard) |
 | mid/top | 6 | 15 | Hull: the long body; Tendril crown; Spore gland 1; Spore gland 2; Spore gland 3; Spore gland 4; Spore gland 5; Brood sac 1 (port); Brood sac 1 (starboard); Brood sac 2 (port); Brood sac 2 (starboard); Brood sac 3 (port); Brood sac 3 (starbo |
 | mid/side | 7 | 11 | Hull: the long body; Tendril crown; Spore gland 1; Spore gland 2; Spore gland 3; Spore gland 4; Spore gland 5; Brood sac 1 (port); Brood sac 2 (port); Brood sac 3 (port); Flank fold (port) |
-| mid/below | 6 | 6 | Spore gland 1; Spore gland 2; Spore gland 3; Brood sac 1 (port); Brood sac 1 (starboard); Brood sac 2 (starboard) |
+| mid/below | 6 | 7 | Hull: the long body; Spore gland 1; Spore gland 2; Spore gland 3; Brood sac 1 (port); Brood sac 1 (starboard); Brood sac 2 (starboard) |
 | stern/top | 3 | 5 | Hull: the long body; Spore gland 5; Vent crown; Flank fold (port); Flank fold (starboard) |
 | stern/side | 3 | 4 | Hull: the long body; Spore gland 5; Vent crown; Flank fold (port) |
-| stern/below | 2 | 0 |  |
+| stern/below | 2 | 1 | Hull: the long body |
 
 ## Proportions: length to beam and length to height, concept against build (the Board on round 3)
 
@@ -175,6 +175,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 3.08 | 3.18 | 5.74 | 6.21 |
-| build | 4.07 | 3.27 | 6.04 | 5.62 |
+| build | 3.98 | 3.32 | 4.60 | 5.98 |
 
 Lines not present, shaped and detailed without a reason: 0.

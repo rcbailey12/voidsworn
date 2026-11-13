@@ -49,7 +49,7 @@ ring of six pulse vents with glowing filaments drives it.
 
 ## Two classes (the brief's question)
 
-C10 is long and tapering (hull length to beam 6.0, to height 5.8): a folded double mouth, a tendril crown, hanging brood sacs,
+C10 is long and tapering (hull length to beam 4.6, to height 6.0): a folded double mouth, a tendril crown, hanging brood sacs,
 flank folds and a vent crown with membranes. C11 is a short, broad seed (2.7 and 2.7): two throats flush in a domed face, knuckled bone
 crests, a streaming mane, domed sacs and a filament ring. From above at one scale they share nothing but the hide and the
 family grammar ([c10_c11_classes.jpg](../../../shots/issue_623_chorus/c10_c11_classes.jpg)).
