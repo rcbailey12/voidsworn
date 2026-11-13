@@ -29,19 +29,21 @@ SHEET = dict(version=4, round='fourth sheet (R221 weapons, pass 2)', date='2026-
                     'thruster, the block\'s green lights inside the stern arcs (raised), and the heat panels touching the outer engine housings (moved forward).' + ' ' + 'R221 weapon rebuild (this sheet): the new null cannons, null spire and corona arc emitter checked at zero on their first full run, with the new LANE test and the emitter\'s own firing lane.')
 
 XC, AR, BR, WR = 0.97, 6.5, 4.07, 1.4    # the ring: centre x, outer semi-axes (along, across), radial depth
-ZR, HR = -0.1, 0.42                      # the ring plane and its depth
+ZR, HR = 0.15, 0.42                      # the ring plane (on the spine's axis, issue 618: the core shows above and below it) and its depth
 ZS = 0.15                                # the spine axis
 ARCS_T = [('fore', 15.0, 62.0), ('centre', 66.0, 104.0), ('aft', 108.0, 146.0), ('stern', 150.0, 168.0)]   # parametric angle, from the bow to port
-# the stern spine and block, one loft (x, half-beam port, starboard, bottom, top, top chamfer, bottom chamfer): the hull
+# the stern spine and block, one loft (x, half-beam port, starboard, bottom, top, top chamfer, bottom chamfer): the hull.
+# Issue 618 (the Board's R224 pick): the block is the concept's faceted box, chamfered at every long edge, its front a short
+# stepped neck face (the green light panel) then a facet wedge into the full block, never the long round cone of the sheet.
 HULL = [
-    (0.2, 0.18, 0.18, ZS - 0.16, ZS + 0.16, 0, 0),
-    (-2.6, 0.2, 0.2, ZS - 0.17, ZS + 0.17, 0, 0),
-    (-3.3, 0.85, 0.85, -0.36, 0.56, 0, 0),
-    (-4.0, 1.38, 1.38, -0.6, 0.76, 0, 0),
-    (-5.95, 1.48, 1.48, -0.62, 0.78, 0, 0),
-    (-6.3, 1.38, 1.38, -0.55, 0.7, 0, 0),
-]
-PEXP = (3.0, 3.0)   # the block's section: a rounded box (the concept's block is round-shouldered, never a slab)
+    (0.12, 0.18, 0.18, ZS - 0.16, ZS + 0.16, 0.05, 0.05),   # issue 618: seated in the bigger core's aft hub, clear of its equator gimbal
+    (-2.7, 0.2, 0.2, ZS - 0.17, ZS + 0.17, 0.05, 0.05),
+    (-2.95, 0.42, 0.42, -0.3, 0.52, 0.12, 0.1),
+    (-3.7, 0.68, 0.68, -0.6, 0.82, 0.22, 0.18),
+    (-5.95, 0.72, 0.72, -0.62, 0.84, 0.24, 0.2),
+    (-6.3, 0.68, 0.68, -0.55, 0.76, 0.22, 0.18),
+]   # issue 618, the Board's massing round: the plan beam 1.44 (was 3.0), the concept's pod about a third of the ring's half-height across; the side height kept
+PEXP = None         # the block's section is the chamfered octagon (issue 618); the sheet's rounded box read as a cone
 PL = dict(keep3d=True, size=(0.2, 0.45), thick=(0.04, 0.1), skip=0.06, stack=0.5, mats={'shade2': 5, 'violet': 3, 'shade': 3, 'mauve': 1})
 
 
@@ -56,16 +58,18 @@ def build(K):
     import kit as _k
     from mathutils import Vector
 
-    hull = K.hull(HULL, 'shade', shell=0.12, plates=dict(PL, seed=51, inv='spine_plates'), rounded=True, pexp=PEXP)
-    K.mass('Hull: the stern block and the aft spine', hull, 'deep violet plate', note='a round-shouldered block tapering forward into the spine')
-    K.mass('Block roof step', K.loft('E12_roofstep', [(-4.2, 0.75, 0.75, 0.55, 0.86, 0.1, 0.0), (-4.45, 0.85, 0.85, 0.55, 0.9, 0.12, 0.0), (-5.7, 0.85, 0.85, 0.55, 0.9, 0.12, 0.0),
-                                                     (-5.9, 0.75, 0.75, 0.55, 0.85, 0.1, 0.0)], 'violet', plates=dict(PL, seed=53, faces=[0, 1, 2, 3], size=(0.2, 0.4))),
+    hull = K.hull(HULL, 'shade', shell=0.12, plates=dict(PL, seed=51, inv='spine_plates'))
+    K.mass('Hull: the stern block and the aft spine', hull, 'deep violet plate', note='a faceted box, chamfered on every long edge, stepping down to the spine through a neck face (issue 618)')
+    K.mass('Block roof step', K.loft('E12_roofstep', [(-3.95, 0.34, 0.34, 0.6, 0.92, 0.08, 0.0), (-4.2, 0.42, 0.42, 0.6, 0.98, 0.1, 0.0), (-5.75, 0.42, 0.42, 0.6, 0.98, 0.1, 0.0),
+                                                     (-5.95, 0.34, 0.34, 0.6, 0.93, 0.08, 0.0)], 'violet', plates=dict(PL, seed=53, faces=[0, 1, 2, 3], size=(0.2, 0.4))),
            'violet plate', note='a raised plate step on the block roof, the sentry on it')
-    K.mass('Block flank cheeks', K.loft('E12_cheeks', [(-4.3, 1.5, 1.5, -0.3, 0.42, 0.08, 0.08), (-5.75, 1.56, 1.56, -0.3, 0.42, 0.08, 0.08)], 'violet',
+    K.mass('Block flank cheeks', K.loft('E12_cheeks', [(-3.95, 0.72, 0.72, -0.26, 0.4, 0.08, 0.08), (-4.15, 0.78, 0.78, -0.3, 0.44, 0.08, 0.08), (-5.75, 0.8, 0.8, -0.3, 0.44, 0.08, 0.08)], 'violet',
                                         plates=dict(PL, seed=54, faces=[6, 7, 0, 2, 3, 4], size=(0.2, 0.4))), 'violet plate', note='armour cheeks on the block flanks, the lights in them')
+    K.mass('Block neck face', K.loft('E12_neckface', [(-2.9, 0.38, 0.38, -0.24, 0.47, 0.1, 0.08), (-3.05, 0.47, 0.47, -0.3, 0.52, 0.12, 0.1)], 'violet',
+                                     plates=dict(PL, seed=55, faces=[0, 1, 2, 7], size=(0.18, 0.3))), 'violet plate', note='the stepped neck face where the spine enters the block, the green light panel on it')
     K.mark('stern_block', 'tier', ['face', 'roof', 'opening'])
     fore = K.loft('E12_spine_fore', [(5.35, 0.17, 0.17, ZS - 0.15, ZS + 0.15, 0.05, 0.05), (4.9, 0.18, 0.18, ZS - 0.16, ZS + 0.16, 0.05, 0.05),
-                                     (1.75, 0.18, 0.18, ZS - 0.16, ZS + 0.16, 0.05, 0.05)], 'shade2', plates=dict(PL, seed=52, inv='spine_plates'))
+                                     (1.82, 0.18, 0.18, ZS - 0.16, ZS + 0.16, 0.05, 0.05)], 'shade2', plates=dict(PL, seed=52, inv='spine_plates'))
     K.mass('Spine, fore', fore, 'deep violet plate', note='the plated beam from the core to the emitter')
     # spine collars where fittings meet it (the steps)
     for i, x in enumerate((5.0, 2.25, -0.75, -1.95)):
@@ -134,39 +138,52 @@ def build(K):
                     inv='struts', note='truss from the spine to the %s %s arc' % (nm, 'port' if side > 0 else 'starboard'))
 
     # ---------------- the core, caged at the ring's centre ----------------
-    K.core('C1', (XC, 0.0, ZS), 0.75, inv='core', note='the trapped light core in gimbal rings; the spine enters its hubs')
+    K.core('C1', (XC, 0.0, ZS), 0.85, inv='core', note='the trapped light core in gimbal rings; the spine enters its hubs')
 
     # ---------------- weapons, by data.js slot ----------------
+    # issue 618 (the Board's R224 pick): bulkier saddles, the concept's long hexagonal platforms: a wide sloped lower plinth
+    # (1.7 long, 1.04 across, twice the sheet's footprint) under a stepped upper deck the turret stands on
     for i, (x, nm) in enumerate(((3.2, 'fore'), (-1.35, 'aft'))):
-        sad = K.loft('E12_saddle%d' % (i + 1), [(x + 0.75, 0.22, 0.22, ZS + 0.06, ZS + 0.3, 0.06, 0.0), (x + 0.5, 0.42, 0.42, ZS - 0.02, ZS + 0.42, 0.12, 0.0),
-                                                 (x - 0.5, 0.42, 0.42, ZS - 0.02, ZS + 0.42, 0.12, 0.0), (x - 0.75, 0.22, 0.22, ZS + 0.06, ZS + 0.3, 0.06, 0.0)],
+        sad = K.loft('E12_saddle%d' % (i + 1), [(x + 0.85, 0.2, 0.2, ZS - 0.06, ZS + 0.2, 0.08, 0.0), (x + 0.42, 0.52, 0.52, ZS - 0.1, ZS + 0.3, 0.17, 0.04),
+                                                 (x - 0.42, 0.52, 0.52, ZS - 0.1, ZS + 0.3, 0.17, 0.04), (x - 0.85, 0.2, 0.2, ZS - 0.06, ZS + 0.2, 0.08, 0.0)],
                      'violet', plates=dict(PL, seed=80 + i, faces=[0, 1, 2, 3], size=(0.2, 0.35)))
-        K.mass('Saddle, %s battery' % nm, sad, 'violet plate', note='the oval saddle the turret stands on')
-        K.gun('T%d' % (i + 1), (x, 0.0, ZS + 0.42), 0, 4, barrels=2, cal=0.08, blen=1.3, size=0.86, slot='T', weapon='gauss', inv='main_guns',
+        K.mass('Saddle, %s battery' % nm, sad, 'violet plate', note='the long hexagonal plinth the battery stands on')
+        sad2 = K.loft('E12_saddle%d_deck' % (i + 1), [(x + 0.58, 0.24, 0.24, ZS + 0.22, ZS + 0.4, 0.06, 0.0), (x + 0.32, 0.38, 0.38, ZS + 0.22, ZS + 0.46, 0.09, 0.0),
+                                                       (x - 0.32, 0.38, 0.38, ZS + 0.22, ZS + 0.46, 0.09, 0.0), (x - 0.58, 0.24, 0.24, ZS + 0.22, ZS + 0.4, 0.06, 0.0)],
+                      'mauve', plates=dict(PL, seed=84 + i, faces=[0, 1, 2, 3], size=(0.16, 0.3)))
+        K.mass('Saddle deck, %s battery' % nm, sad2, 'mauve plate', note='the stepped upper deck of the saddle, the turret on it')
+        K.gun('T%d' % (i + 1), (x, 0.0, ZS + 0.46), 0, 4, barrels=2, cal=0.08, blen=1.3, size=0.86, slot='T', weapon='gauss', inv='main_guns',
               variant=i, note='%s null cannon: twin rail pairs through a crescent shade, on its saddle' % nm)
-    K.mark('saddles', 'pylon', ['web', 'plate'])
+    K.mark('saddles', 'pylon', ['web', 'plate', 'step'])
     K.spinal('A1', (5.3, 0.0, ZS), 1.05, r=0.24, collar_r=0.4, collar_len=0.45, block_len=0.36, block_r=0.33, slot='F', weapon='doom', inv='emitter',
              note='the corona arc emitter on the spine head (a crown of electrode horns round a black shade disc), firing through the ring\'s bow gap')
     import bpy as _bpy
     for nm_, ob_, col_ in (('Emitter collars', 'A1_mount_mauve', 'mauve and violet'), ('Emitter shaft', 'A1_body_violet', 'violet and mauve'), ('Emitter block', 'A1_body_mauve', 'mauve')):
         K.mass(nm_, _bpy.data.objects[ob_], col_, note='a part of the kit projector, counted as its own mass')
-    K.gun('G1', (-5.25, 0.0, 0.9), 0, 6, barrels=2, cal=0.055, blen=0.8, size=0.62, slot='T', weapon='gsentry', inv='sentry', variant=2,
+    K.gun('G1', (-5.1, 0.0, 0.98), 0, 6, barrels=2, cal=0.055, blen=0.8, size=0.62, slot='T', weapon='gsentry', inv='sentry', variant=2,
           note='the null spire: a tall turning spire on the block roof, green sight slits, two needle rails through a shade fin at its head')
 
     # ---------------- engines: three side by side ----------------
-    for i, y in enumerate((1.02, 0.0, -1.02)):
-        K.engine('E%d' % (i + 1), (-7.25, y, 0.08), 0.39, 0.9, bell=1.18, body_r=0.44, rings=2, nose='flat', inv='engines',
-                 src='picture', note=('port', 'centre', 'starboard')[i] + ' engine')
+    # issue 618, the Board's massing round: three big round nozzles stacked one over another (the concept's side view), each about
+    # a third of the stern's height, filling the block's aft face and standing out 0.95 behind it
+    for i, z in enumerate((0.77, 0.07, -0.63)):
+        K.engine('E%d' % (i + 1), (-7.25, 0.0, z), 0.26, 0.62, bell=1.18, body_r=0.3, rings=2, nose='flat', inv='engines',
+                 src='picture', note=('upper', 'centre', 'lower')[i] + ' engine of the stack')
 
     # ---------------- block fittings ----------------
     for side in (1, -1):
         sn = 'p' if side > 0 else 's'
-        for j, x in enumerate((-4.45, -4.75, -5.05)):
-            K.lamp('L%d%s' % (j, sn), (x, side * 1.56, 0.3), (0, side, 0), inv='block_lights', note='green light panel on the block flank', up=(0, 0, 1))
-        K.vent('V1' + sn, (-5.45, side * 1.565, 0.06), (0, side, 0), 0.4, 0.3, slats=4, inv='block_vents', note='heat slot panel on the block flank')
-        K.hatch('H1' + sn, (-5.65, side * 0.5, 0.9), (0, 0, 1), 0.26, inv='block_hatches', note='hatch on the block roof')
-        K.thruster('Q1' + sn, (-4.0, side * 1.0, K.deck_z(-4.0, 1.0) - 0.02), (0, side * 0.6, 0.8), r=0.2, inv='thrusters', note='block roof edge, firing up and out over the ring')
-        K.thruster('Q2' + sn, (-4.0, side * 1.0, 0.16 - (K.deck_z(-4.0, 1.0) - 0.08) - 0.02), (0, side * 0.6, -0.8), r=0.2, inv='thrusters', note='block belly edge, firing down and out')
+        for j, x in enumerate((-4.62, -4.88, -5.14)):
+            K.lamp('L%d%s' % (j, sn), (x, side * 0.735, 0.565), (0, side, 0), inv='block_lights', note='green light panel on the block flank', up=(0, 0, 1))
+        for j, x in enumerate((-3.22, -3.42)):
+            hw = 0.42 + 0.26 * (-2.95 - x) / 0.75
+            K.lamp('LN%d%s' % (j, sn), (x, side * (hw + 0.012), 0.12), (0.33, side * 0.94, 0), inv='block_lights', up=(0, 0, 1),
+                   note='green light panel on the neck wedge (the concept\'s lit panel ahead of the block)')
+        K.vent('V1' + sn, (-5.62, side * 0.81, -0.16), (0, side, 0), 0.34, 0.22, slats=4, inv='block_vents', note='heat slot panel on the block flank')
+        K.hatch('H1' + sn, (-4.45, side * 0.2, 0.985), (0, 0, 1), 0.26, inv='block_hatches', note='hatch on the block roof')
+        # issue 618 (R226): aft of the B-2 tear at the block's front (it was on it at 4.0); on the chamfers, normal to them
+        K.thruster('Q1' + sn, (-4.3, side * 0.585, 0.72), (0, side * 0.7, 0.7), r=0.2, inv='thrusters', note='block roof chamfer, firing up and out over the ring')
+        K.thruster('Q2' + sn, (-4.3, side * 0.6, -0.52), (0, side * 0.7, -0.7), r=0.2, inv='thrusters', note='block belly chamfer, firing down and out')
 
     # ---------------- colour zones ----------------
     K.colour('deep violet plate, violet-black shade (paint stage)', 7.25, -7.25, 'whole ship')
@@ -184,15 +201,15 @@ def build(K):
         K.inside.append(dict(kind='deck', name=nm_, z=z_, x=(-5.95, -4.0)))
     for i, x in enumerate((-3.4, -4.4, -5.3, -6.0)):
         s_ = _k.sec_at(HULL, x)
-        K.loft('in_bh_F%d' % i, [(x + 0.05, s_[1] - 0.22, s_[2] - 0.22, s_[3] + 0.22, s_[4] - 0.22, 0, 0), (x - 0.05, s_[1] - 0.22, s_[2] - 0.22, s_[3] + 0.22, s_[4] - 0.22, 0, 0)],
-               'frame', inside=True, rounded=True, pexp=PEXP)
+        K.loft('in_bh_F%d' % i, [(x + 0.05, s_[1] - 0.22, s_[2] - 0.22, s_[3] + 0.22, s_[4] - 0.22, s_[5], s_[6]), (x - 0.05, s_[1] - 0.22, s_[2] - 0.22, s_[3] + 0.22, s_[4] - 0.22, s_[5], s_[6])],
+               'frame', inside=True)
         K.inside.append(dict(kind='bulkhead', name='F%d' % i, x=x))
-    K.room('conduit_aft', 'machinery', -3.2, 0.1, -0.1, 0.1, ZS - 0.09, ZS + 0.09, note='the spine\'s power conduits from the core to the drives')
-    K.room('conduit_fore', 'machinery', 1.9, 5.2, -0.1, 0.1, ZS - 0.09, ZS + 0.09, note='conduits to the emitter and the fore battery')
-    K.room('archive_vault', 'archive', -4.0, -3.4, -0.5, 0.5, -0.3, 0.4, note='the archive vault in the block\'s forward taper')
-    K.room('dark_decks', 'darkdeck', -4.8, -4.05, -0.9, 0.9, 0.4, 0.6, note='dark decks: machine crew stations')
-    K.room('sentry_magazine', 'magazine', -5.8, -4.85, -0.6, 0.6, 0.4, 0.6, note='under the null spire')
-    K.room('engine_room', 'engroom', -6.0, -4.4, -0.9, 0.9, -0.55, 0.3, note='engine room and the three drives\' feeds')
+    K.room('conduit_aft', 'machinery', -3.2, 0.0, -0.1, 0.1, ZS - 0.09, ZS + 0.09, note='the spine\'s power conduits from the core to the drives')
+    K.room('conduit_fore', 'machinery', 2.0, 5.2, -0.1, 0.1, ZS - 0.09, ZS + 0.09, note='conduits to the emitter and the fore battery')
+    K.room('archive_vault', 'archive', -4.0, -3.4, -0.34, 0.34, -0.3, 0.4, note='the archive vault in the block\'s forward taper')
+    K.room('dark_decks', 'darkdeck', -4.8, -4.05, -0.4, 0.4, 0.4, 0.6, note='dark decks: machine crew stations')
+    K.room('sentry_magazine', 'magazine', -5.8, -4.85, -0.34, 0.34, 0.4, 0.6, note='under the null spire')
+    K.room('engine_room', 'engroom', -6.0, -4.4, -0.44, 0.44, -0.45, 0.3, note='engine room and the three drives\' feeds')
     K.room('battery_feeds', 'magazine', 3.0, 3.4, -0.12, 0.12, ZS + 0.18, ZS + 0.38, note='the fore battery\'s feed under its saddle')
     K.inside.append(dict(kind='space', name='core', mat='ecore', x=(XC - 0.55, XC + 0.55), y=(-0.55, 0.55), z=(ZS - 0.55, ZS + 0.55),
                          note='the core of trapped light, caged in the open (hp_core)'))
@@ -209,19 +226,32 @@ def build(K):
     for i, (t, sec, side) in enumerate(((40.0, 'prow', 'port'), (-85.0, 'mid', 'stbd'), (95.0, 'mid', 'port'), (-135.0, 'eng', 'stbd'))):
         x, y = ring_pt(t, 0.3)
         K.point('breach', 'hp_breach_%d' % i, (x, y, zt + 0.01), side=side, section=sec, note='on a shade arc')
-    for i, (x, y, z) in enumerate(((-4.0, 1.0, K.deck_z(-4.0, 1.0)), (-4.0, -1.0, K.deck_z(-4.0, 1.0)), (-4.0, 1.0, 0.16 - K.deck_z(-4.0, 1.0)), (-4.0, -1.0, 0.16 - K.deck_z(-4.0, 1.0)))):
+    for i, (x, y, z) in enumerate(((-4.3, 0.585, 0.72), (-4.3, -0.585, 0.72), (-4.3, 0.6, -0.52), (-4.3, -0.6, -0.52))):
         K.point('rcs', 'hp_rcs_%d' % i, (x, y, z), side='port' if y > 0 else 'stbd')
+    # issue 618: the boarding origins the game contract needs (HARDPOINTS.md: one a side, mid hull): the centre arcs' outer
+    # walls, where the reclaim swarms leave the open bays
+    for i, t in enumerate((85.0, -85.0)):
+        x, y = ring_pt(t, 0.0)
+        K.point('board', 'hp_board_%d' % i, (x, y, ZR), side='port' if t > 0 else 'stbd')
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
     K.change('Every arc has its own truss struts (eight)', 'R207: the picture leaves four of seven arcs floating; the centre arcs get two struts each, clear of the core cage, the stern arcs sit into the block')
     K.change('Eight arcs, the stern pair matched', 'the picture has one stern arc on the starboard side only; matched pairs (factions.md) unless a break is drawn on purpose')
-    K.change('The spine slimmed to a rod (0.36 across); the block made compact and low (1.4 tall), its aft face filled by three 0.92 bells standing out 0.95 behind it', 'the Board on the first sheet: the concept\'s spine is a thin rod carrying the fittings, and its three large dark bells are the stern\'s most prominent feature')
-    K.change('Three engines side by side in one row', 'the plan and the beauty show three across; the side view stacks them, which the plan cannot; one row keeps the block broad and low')
+    K.change('The spine slimmed to a rod (0.36 across); the block made compact and low (1.4 tall), its aft face carrying the three bells, standing out 0.95 behind it', 'the Board on the first sheet: the concept\'s spine is a thin rod carrying the fittings, and its three large dark bells are the stern\'s most prominent feature')
+    K.change('Three engines stacked one over another, each about a third of the stern\'s height (issue 618, the Board\'s massing round)', 'the concept\'s side view stacks three big round nozzles filling the stern; the sheet\'s row of three read small, and the narrower block (below) cannot carry three across')
     K.change('Engines are eclipse rings, not flame', 'factions.md: "no flaming bells. An eclipse ring of pale light"')
     K.change('Arcs are real box sections, 0.42 deep', 'the side view draws the ring as a line; the beauty shows thick box sections with open bays, which carry frames and machinery')
     K.change('Weapons built from the lore, not the picture\'s generic turrets (R221)', 'Ryan: "their turrets look the same as hullbreakers"; the picture draws box turrets with round twin barrels. The null cannons are rail guns (slim round rail pairs with banded collars) firing through the slot of a thin arched crescent shade, the null spire a tall slim banded sentry spire with needle rails, all in the hull\'s curved, layered, banded language (pass 2: "super blocky"), the emitter a crown of electrode horns round the crest\'s black disc (tools/blender/kits/eclipse/README.md)')
     K.change('Weapons by data.js slot', 'd_harvester: gauss T twice on the spine saddles, doom F the bow emitter, gsentry T the null spire on the block roof (the picture\'s small green-lit turret)')
     K.change('Thrusters, hatches and heat panels added', 'a ship in space needs thrusters; the picture shows no underside')
+    K.change('The stern block is a faceted box: chamfered long edges, a stepped neck face where the spine enters (green light panel on its wedge), then a short facet wedge to the full block (issue 618)',
+             'the Board\'s R224 pick for the build: the sheet\'s rounded block tapered over 1.4 units and read as a cone at the aft camera; the concept\'s block is a chamfered box that steps down to the spine')
+    K.change('The stern block narrowed in plan to 1.44 (was 3.0), its side height kept (issue 618, the Board\'s massing round)', 'judged against the whole concept: its stern pod is about a third of the ring\'s half-height across; the sheet\'s block was twice that')
+    K.change('The core a whole sphere 1.26 across in a frame 1.63 across (was 1.11 and 1.44), the ring plane on the spine\'s axis (was 0.25 below it) (issue 618)', 'the concept\'s core is a full sphere in a ring frame that shows above and below the spine and the ring, which crosses it at its middle; the sheet\'s core read as a dome above the ring with a small arc below')
+    K.change('Bulkier saddles: a long hexagonal plinth 1.7 by 1.04 under a stepped upper deck (issue 618)', 'the Board\'s R224 pick for the build: the concept seats each battery on a broad stepped platform; the sheet\'s 1.5 by 0.84 oval pads read thin beside the arcs')
+    K.change('The block thrusters sit on the roof and belly chamfers at 4.3 (were at 4.0)', 'R226: at 4.0 they sat on B-2, where the block tears from the spine; a machine rides whole with one piece')
+    K.change('Two boarding origins on the centre arcs\' outer walls (issue 618)', 'the game contract needs one a side on the mid hull (HARDPOINTS.md); the reclaim swarms leave the open arc bays')
+    K.change('The emitter\'s hard point is its lens, at the crest\'s centre (issue 618)', 'the horns\' meeting point ahead of it is open space, which the export check refuses as off the mesh; the arc leaves from the lens')
     K.open_item('The underside of the block and the ring is designed here; the picture shows no underside')
     # ---------- the fit report's fix column: every finding on the first full layout ----------
     K.fix('E1, E2, E3 bells inside the stern block', 'the block\'s aft face moved forward to 6.65 aft of the bow datum, so the bells stand clear of it')

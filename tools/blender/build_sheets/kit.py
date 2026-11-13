@@ -811,7 +811,8 @@ class Kit:
                     what='firing lane')
         self.fitdata.append(dict(id=fid, kind='gun', slot=slot, pivot=tuple(fd['pivot'][1]), up=(0, 0, 1), mount='spinal', ring=tuple(p),
                                  rest_yaw=0.0, reach=fd['reach'], band=(-10, 0, 10, 20), muzzles=[tuple(m[1]) for m in fd['muzzles']],
-                                 cal=r, hous_r=fd['radius'], rest_pitch=0.0, lanes=[lane]))
+                                 cal=r, hous_r=fd['radius'], rest_pitch=0.0, lanes=[lane],
+                                 aim=tuple(fd['aim'][1]), bore=fd.get('bore', r)))   # aim, bore: what the recipe's hard points read (issue 618)
         wn_ = getattr(HP, 'WEAPONS', {}).get(weapon, {}).get('name')
         what_ = ('%s, %s (fixed)' % (wn_.lower(), getattr(part, 'type', 'organ'))) if getattr(part, 'type', '') == 'throat' and wn_ else \
             'spinal %s (fixed)' % ('arc emitter' if getattr(part, 'type', '') == 'corona_arc' else 'projector')

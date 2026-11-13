@@ -5,7 +5,8 @@
 #   no_slot         every hard point of the last weapon slot renamed away          must FAIL (a weapon slot with no hard point)
 #   off_mesh        the first weapon hard point moved 0.05 of the ship's length    must FAIL (a hard point off the mesh)
 #   backward        the first weapon hard point turned to aim aft                  must FAIL (a weapon resting aimed backward)
-#   wrong_side      the first port weapon point mirrored to starboard              must FAIL (a port mount on the starboard side)
+#   wrong_side      the first port weapon point mirrored to starboard (a ship       must FAIL (a port mount on the starboard side)
+#                   with no port arc: its port boarding origin, issue 618)
 #   no_core         hp_core renamed away                                           must FAIL (a required hard point missing)
 #   no_socket       extras.socket taken off the first weapon point                 must FAIL (a weapon extra missing)
 #   no_engine       every hp_eng renamed away                                      must FAIL (a required hard point missing)
@@ -50,8 +51,11 @@ def off_mesh(g):
     n = first(g, 'hp_w'); t = n['translation']; d = .05 * length(g); n['translation'] = [t[0], t[1] + d, t[2] + (d if t[2] > 0 else -d)]
 def backward(g):
     n = first(g, 'hp_w'); n['rotation'] = [0, .7071068, 0, .7071068]   # a quarter turn about +Y: the node's -Z now points along -X (aft)
+def port_point(g):      # the first port weapon point; a ship with no port arc (issue 618: Eclipse fires T and F) mirrors its port boarding origin
+    n = next((n for n in g['nodes'] if re.fullmatch(r'hp_w\d+_.+_P_\d+', str(n.get('name', '')))), None)
+    return n or next(n for n in g['nodes'] if str(n.get('name', '')).startswith('hp_board_') and (n.get('extras') or {}).get('side') == 'P')
 def wrong_side(g):
-    n = next(n for n in g['nodes'] if re.fullmatch(r'hp_w\d+_.+_P_\d+', str(n.get('name', '')))); t = n['translation']; n['translation'] = [t[0], t[1], -t[2]]
+    n = port_point(g); t = n['translation']; n['translation'] = [t[0], t[1], -t[2]]
 def no_core(g): first(g, 'hp_core')['name'] = 'x_core'
 def no_socket(g): first(g, 'hp_w')['extras'].pop('socket')
 def no_engine(g):
@@ -94,15 +98,16 @@ def turret_merged(g):   # issue 560: the turrets folded back into the ship mesh 
 def turret_no_mesh(g):
     for n in g['nodes']:
         if re.fullmatch(r'turret_\d+_turn', str(n.get('name', ''))): n['name'] += 'x'
+_g0, _ = CE.read_glb(os.path.join(src, code + '.glb'))
+WRONG_SIDE = 'a port mount must sit' if str(port_point(_g0).get('name', '')).startswith('hp_w') else 'a port boarding origin sits on the other side'
 CASES = (('pass', None, 0, ''), ('no_slot', no_slot, 1, f'weapon slot {last} '), ('off_mesh', off_mesh, 1, 'off the mesh'),
-         ('backward', backward, 1, 'aimed backward'), ('wrong_side', wrong_side, 1, 'a port mount must sit'), ('no_core', no_core, 1, 'hp_core'),
+         ('backward', backward, 1, 'aimed backward'), ('wrong_side', wrong_side, 1, WRONG_SIDE), ('no_core', no_core, 1, 'hp_core'),
          ('no_socket', no_socket, 1, 'no extras.socket'), ('no_engine', no_engine, 1, 'hp_eng'),
          ('no_rcs', no_rcs, 1, 'hp_rcs'), ('no_board', no_board, 1, 'hp_board'),
          ('breach_count', breach_count, 1, 'hp_breach'), ('breach_near', breach_near, 1, 'from a part (at least'),
          ('breach_inward', breach_inward, 1, 'is not the outward normal'),
          ('no_interior', no_interior, 1, 'no authored interior geometry'), ('no_seams', no_seams, 1, 'no authored break seams'),
          ('liner_only', liner_only, 1, 'no authored interior rooms'))
-_g0, _ = CE.read_glb(os.path.join(src, code + '.glb'))
 if any(re.fullmatch(r'turret_\d+', str(n.get('name', ''))) for n in _g0['nodes']):     # issue 560: only an export that has turrets
     CASES += (('turret_merged', turret_merged, 1, 'merged it into the ship mesh'), ('turret_no_mesh', turret_no_mesh, 1, 'no turning mesh'))
 def open_bells():       # the engines the check passed as open bells (its own record of the export as written)
