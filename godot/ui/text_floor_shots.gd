@@ -1,7 +1,9 @@
 extends SceneTree
 # Issue 644: before and after captures for the 17 px text floor (RULEBOOK 9.4), five screens at 1920 by 1080.
-#   godot --path godot --resolution 1920x1080 --script res://ui/text_floor_shots.gd -- <out dir> [campaign|career|title|all]
-# Campaign pages (map, fleet at the smallest and largest fleet, shipyard, event, progression, run end), the Career screen
+#   godot --path godot --resolution 1920x1080 --script res://ui/text_floor_shots.gd -- <out dir> [campaign|battle|glass|career|title|all]
+# Campaign pages (map, fleet at the smallest and largest fleet, shipyard, event, progression, run end), the battle HUD
+# (the orders sheet with one ship and with twenty, fed the readability test's sample moment over a plain dark board: a
+# battle with real ships needs the built ship files, which the sandbox lacks), the Career screen
 # with sample data, and the title's Credits and Settings panels. Sample data only: no save, no career file, no settings
 # file is written (the campaign's persistence is off, the career is a fresh default profile in memory).
 # Prints one TEXT_FLOOR line per capture with the smallest font size found in the visible tree and any overlapping
@@ -38,6 +40,10 @@ func _run(which: String) -> void:
 	await _frames(8)
 	if which in ["campaign", "all"]:
 		await _campaign()
+	if which in ["battle", "all"]:
+		await _battle()
+	if which in ["glass", "all"]:
+		await _glass()
 	if which in ["career", "all"]:
 		await _career()
 	if which in ["title", "all"]:
@@ -161,6 +167,13 @@ func _campaign() -> void:
 	C.act("closeModal")
 	await _frames(30)
 	await _shot("campaign_map", ui)
+	# the two slide-overs on the map take the shared orders-sheet theme (glass_shell.gd sheet_theme and make_theme)
+	ui._open_overlay("dossier")
+	await _shot("glass_dossier", ui)
+	ui._open_overlay("key")
+	await _shot("glass_map_key", ui)
+	ui._close_overlay()
+	await _frames(4)
 	C.act("fleetScreen", "")
 	await _shot("campaign_fleet_small", ui)
 	C.act("backMap", "")
@@ -204,6 +217,119 @@ func _campaign() -> void:
 	await _frames(4)
 
 
+# ---------------------------------------------------------------- the battle HUD (sample moment from ledger_readability_test.gd)
+func _bweapons() -> Array:
+	return [
+		{"i": 0, "name": "Sear battery", "arc": "P", "rng": "1-5", "hit": -1, "why": "out of range", "right": "ready", "ready": true, "armed": false, "dmg": -1, "cost": "free", "desc": "Port broadside, 3x6 damage, range 5", "arc_tip": "Port broadside, range 1 to 5 hexes."},
+		{"i": 1, "name": "Sear battery", "arc": "S", "rng": "1-5", "hit": -1, "why": "out of range", "right": "ready", "ready": true, "armed": false, "dmg": -1, "cost": "free", "desc": "Starboard broadside, 3x6 damage, range 5", "arc_tip": "Starboard broadside, range 1 to 5 hexes."},
+		{"i": 2, "name": "Oath lance", "arc": "F", "rng": "1-7", "hit": 92, "why": "92%", "right": "92%", "ready": true, "armed": false, "dmg": 16, "cost": "CD 2", "desc": "Forward, 1x18 damage, range 7, reload 2", "arc_tip": "Forward, range 1 to 7 hexes."}]
+
+
+func _brows(n: int) -> Array:
+	var names := ["Unyielding Oath", "Unpaid Debt", "Iron Dusk"]
+	var out: Array = []
+	for i in n:
+		var nm: String = names[i] if i < names.size() else ("Sunward Martyr of the Ninth Pyre" if i == 3 else "Ember Picket %d" % (i + 1))
+		var st := "Up" if i == 0 else ("Ready" if i < n / 2 else "Done")
+		out.append({"id": "p%d" % i, "name": nm, "cls": "Picket", "hp": 135 - i * 3 if i != 1 else 85, "maxHp": 135, "sh": [10, 10, 10, 10], "shMax": 10,
+			"status": st, "sel": i == 0, "done": st == "Done", "flag": i == 0, "new": false, "danger": 1 if i == 1 else 0})
+	return out
+
+
+func _battle() -> void:
+	var board := ColorRect.new()
+	board.color = Color("#1d2430")   # a plain mid-dark board: the sheet's own darkening does the rest
+	board.set_anchors_preset(Control.PRESET_FULL_RECT)
+	var bl := CanvasLayer.new()
+	bl.layer = -1
+	bl.add_child(board)
+	root.add_child(bl)
+	for n in [1, 20]:
+		var h = load("res://ui/battle/hud.gd").new()
+		root.add_child(h)
+		await _frames(2)
+		h.set_info({"foe_name": "Hegemony Navy", "foe_ships": 2, "heat": 3, "heat_tip": "Heat 3 of 9."})
+		h.set_command("Fire for effect", true)
+		h.set_top(1, "Your turn (%d ready)" % maxi(1, n / 2), "Objective: break their fleet", "End ship (Space)", true, false, false)
+		h.set_nemesis({"name": "Fleet Marshal Petra Valk", "ship": "Dominion", "flee": "flees below 25% hull", "adapted": [["Layered screens", "Shields +10%.", "you leaned on lances"]], "weak": [], "state": ""})
+		h.set_roster(_brows(n))
+		h.set_panel({"name": "Unyielding Oath", "cls": "Vigil-class cruiser", "side": "player", "flag": true, "hp": 135, "maxHp": 135, "sh": [20, 20, 20, 20], "shMax": 20,
+			"stats": "Hull 135/135   Armor 20%   Evasion 10\nMovement 0 of 4   Turns 1", "captain": "Captain Ilsa Marr", "move": [0, 4], "arm": 20, "turns": 1,
+			"tag": "UP", "danger": 2, "flags": "[color=#ff8a72]The enemy fleet is focusing its fire on this ship.[/color]", "weapons": _bweapons(),
+			"orders": [{"text": "Brace (B)", "act": "brace", "on": true, "tip": "Hull damage -40% until its next turn."}, {"text": "Concentrated fire", "act": "ability", "on": true, "tip": "+15 aim this round."},
+				{"text": "Turn left (Q)", "act": "rotl", "on": true}, {"text": "Turn right (E)", "act": "rotr", "on": true}]})
+		h.set_target({"name": "Fleet Marshal Petra Valk", "flag": true, "nem": true, "hp": 120, "maxHp": 120, "sh": [20, 20, 20, 20], "shMax": 20, "exp_hull": 8.0, "exp_sh": [7.0, 0.0, 0.0, 0.0],
+			"line": "The bearing gun: about 15 damage, about 7 on its prow shield and 8 on hull."})
+		h.set_card({"name": "Unyielding Oath", "cls": "Vigil-class cruiser", "flag": true, "tag": "UP", "more": "2 more ready",
+			"steps": [{"n": 1, "label": "Move", "detail": "0 of 4 left", "st": "done"}, {"n": 2, "label": "Fire", "detail": "3 of 3 guns ready", "st": "now"}, {"n": 3, "label": "End ship", "detail": "Space", "st": "todo"}],
+			"hint": "[color=#ff8a6a]Target: Fleet Marshal Petra Valk.[/color] 1 gun bears from here. [b]Click it again or press Enter to fire.[/b] Esc cancels.", "say": "",
+			"buttons": [{"text": "Fire 1 weapon (Enter)", "act": "confirm", "on": true, "primary": true}, {"text": "Cancel (Esc)", "act": "cancel", "on": true},
+				{"text": "Next ship (Tab)", "act": "next", "on": true, "big": true}, {"text": "End ship (Space)", "act": "end", "on": true, "big": true}], "aim": true})
+		h.set_phase("player", "", -1.0)
+		for line in ["Contact: Hegemony Navy, 2 ships on the scanners.", "Fleet Marshal Petra Valk: \"All reserve squadrons, jump in now.\"", "Unyielding Oath moves 2 hexes."]:
+			h.add_log(line, "e")
+		await _frames(4)
+		await _shot("battle_fleet_%d" % n, h)
+		var lg = h.ledger
+		var line := "TEXT_FLOOR battle_fleet_%d sheet words=%d fleet=%s" % [n, lg.items.size(), str(lg.fleet_fit)]
+		print(line)
+		report.append(line)
+		h.queue_free()
+		await _frames(2)
+	bl.queue_free()
+
+
+# ---------------------------------------------------------------- the shared theme (glass_shell.gd make_theme): what a
+# screen gets when it sets no size of its own, a button, rich text and a hover tip, with the orders-sheet faces
+const GS := preload("res://ui/theme/glass_shell.gd")
+
+
+func _glass() -> void:
+	var host := Control.new()
+	host.set_anchors_preset(Control.PRESET_FULL_RECT)
+	host.theme = GS.make_theme(1.0, GS.sheet_body(), GS.sheet_medium())
+	var bg := ColorRect.new()
+	bg.color = Color("#0b0a09")
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	host.add_child(bg)
+	var v := VBoxContainer.new()
+	v.position = Vector2(120, 140)
+	v.custom_minimum_size = Vector2(760, 0)
+	v.add_theme_constant_override("separation", 24)
+	host.add_child(v)
+	var head := Label.new()
+	head.text = "The shared theme's own sizes (a screen that sets none gets these)"
+	head.add_theme_font_size_override("font_size", 24)
+	v.add_child(head)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 16)
+	for t in ["Got it", "Turn off all tips", "Fleet and refits"]:
+		var b := Button.new()
+		b.text = t
+		row.add_child(b)
+	v.add_child(row)
+	var r := RichTextLabel.new()
+	r.bbcode_enabled = true
+	r.fit_content = true
+	r.text = "Rich text: [b]Shipyard[/b] buy, repair, upgrade. [b]Drydock[/b] free repairs. [code]135 / 135[/code] hull."
+	v.add_child(r)
+	var tip := PanelContainer.new()
+	tip.add_theme_stylebox_override("panel", host.theme.get_stylebox("panel", "TooltipPanel"))
+	var tl := Label.new()
+	tl.text = "A hover tip: Captains, perks, refits, the hold and your faction purchase."
+	tl.add_theme_font_size_override("font_size", host.theme.get_font_size("font_size", "TooltipLabel"))
+	tip.add_child(tl)
+	v.add_child(tip)
+	var plain := Label.new()
+	plain.text = "A plain label at the theme's base size."
+	v.add_child(plain)
+	root.add_child(host)
+	await _frames(6)
+	await _shot("glass_theme", host)
+	host.queue_free()
+	await _frames(2)
+
+
 # ---------------------------------------------------------------- the Career screen (sample data, never the real file)
 func _B(kind: String, lost: int, kills: int, us: Dictionary) -> Dictionary:
 	var units: Array = []
@@ -222,7 +348,7 @@ func _career() -> void:
 	c.P = Career.default_profile()
 	var runs := [
 		{"t0": 1, "admiral": "grax", "fac": "corsair", "sector": 3, "won": true, "us": {"kind": {"battery": 20, "torp": 6}, "ram": 3, "board": 2, "cap": 1}, "flag": "Rust Bucket"},
-		{"t0": 2, "admiral": "aelith", "fac": "ithar", "sector": 2, "won": false, "us": {"kind": {"sq": 30, "lance": 10}}, "flag": "Glasswing"},
+		{"t0": 2, "admiral": "aelith", "fac": "ithar", "sector": 2, "won": false, "us": {"kind": {"sq": 30, "lance": 10}}, "flag": "Clear Facet"},
 		{"t0": 3, "admiral": "kassar", "fac": "hegemony", "sector": 3, "won": true, "us": {"kind": {"battery": 40}, "fire": {"Port broadside": 20, "Starboard broadside": 18, "Prow": 5}}, "flag": "Order Forty-One"},
 		{"t0": 4, "admiral": "vex", "fac": "voidsworn", "sector": 1, "won": false, "us": {"kind": {"lance": 20, "battery": 15}, "aim": 9}, "flag": "Wrath of Vesper"}]
 	for r in runs:
