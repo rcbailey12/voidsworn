@@ -141,6 +141,12 @@ global learning and shaping the approach". So the method, for every ship of ever
 - Seams go round machines (R226, RULEBOOK 5.17): a gun, turret, casemate, launcher, engine, thruster, claw or sensor mast
   sits wholly in one piece, so the sheet moves or kinks each seam's plan path round them; plating, ribs, rails and openings
   such as a launch bay may tear across. The stage 4 audit tests each seam along its path and fails only a machine on it.
+  A longitudinal seam (a peel) is one level plane in the game: the sheet sets its height clear of every machine under it, one
+  per compartment, as many as the faction's breaking needs (issue 618: E11 peels its dorsal tiers and its crescent layers).
+- Detail scales with the part's size (issue 618, from R224 measured on E11): a kit part built large keeps the hull's detail
+  density only if its plate courses, rings and bands are laid at the hull's own plate size in world units, never as a fixed
+  count per part. The E11 projector at 7.6 long read 0.44 of the hull's triangles per square unit with the counts that served
+  E12's 1.05 emitter; the Eclipse kit now lays its plates by size (tools/blender/kits/eclipse/parts.py, panels).
 - Massing is checked as hard as parts (Board, Nov 12, from round 3: every part passed its tick while the hull still read as a
   lump). The sheet reports the concept's and the build's length to beam to height ratios, and the per-cell table adds a
   structure count: distinct masses, tiers and steps per cell, concept against build. A part list that passes over the wrong

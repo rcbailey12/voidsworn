@@ -4,7 +4,7 @@
 # every mount normal removed, and one gun's mount normal removed (on a one-gun ship, a second record of that gun without its
 # normal, issue 633). audit.py must refuse all six. A case whose break cannot be made
 # on this build (for example no gun carries a normal to turn against) counts as a self-test failure, never as a pass.
-# One more copy proves the longitudinal seam is optional (issue 592): with r209_l_line removed, the audit must not name the
+# One more copy proves the longitudinal seam is optional (issue 592): with r209_l_line (and r209_l_lines) removed, the audit must not name the
 # break lines among its failures (it may still fail for something else the build really has).
 # R226, one case each way, on a build whose parts carry their kind (machine=0 or 1): a machine moved onto the first seam (along
 # its path) must be listed across the seam; a structure part moved the same way must not be (it is listed as structure).
@@ -42,9 +42,12 @@ for case in ('into_ship', 'no_break_lines', 'empty_break_lines', 'bad_longitudin
         made = 'r209_t_lines' in sc
         if made: del sc['r209_t_lines']
     elif case == 'empty_break_lines': sc['r209_t_lines'] = []
-    elif case == 'bad_longitudinal': sc['r209_l_line'] = [0.0, 0.2, -0.2]                    # x0 above x1: not a seam
+    elif case == 'bad_longitudinal':
+        sc['r209_l_line'] = [0.0, 0.2, -0.2]                    # x0 above x1: not a seam
+        if 'r209_l_lines' in sc: sc['r209_l_lines'] = json.dumps([[0.0, 0.2, -0.2]])   # a sheet build keeps every seam there (issue 618)
     elif case == 'no_longitudinal':
-        if 'r209_l_line' in sc: del sc['r209_l_line']
+        for k_ in ('r209_l_line', 'r209_l_lines'):
+            if k_ in sc: del sc[k_]
     elif case in ('machine_across', 'structure_across'):
         moved = onto_seam(sc, 1 if case == 'machine_across' else 0)
         if moved is None:

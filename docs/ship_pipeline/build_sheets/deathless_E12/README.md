@@ -10,6 +10,30 @@ engines and both cameras are unchanged from the second.
 
 ![deathless_E12 preview](preview.jpg)
 
+## Through the recipe (issue 618)
+
+Recipe entry `tools/recipe/ships/deathless_E12.json`: data.js `d_harvester`, game folder `D21_23` (the Eclipse Cruiser), length
+14.5 read from this sheet, `bake: none` (unpainted until the Eclipse paint stack). Pictures beside the WHOLE concept at the same
+camera (R229): [whole ship, both cameras](../../../shots/issue_618/e12_whole_compare.jpg), [plan against the sheet's top view](../../../shots/issue_618/e12_plan_compare.jpg),
+[side against the sheet's side view](../../../shots/issue_618/e12_side_compare.jpg), the [stern](../../../shots/issue_618/e12_stern_compare.jpg)
+and the [bow](../../../shots/issue_618/e12_bow_compare.jpg); the same before the massing round are in [before/](../../../shots/issue_618/before/).
+Views and the sheet re-rendered in the sandbox (Blender 5.3, Cycles CPU, 12 samples).
+
+Changes for the build (each is in "Changed from the picture" in [feature_table.md](feature_table.md)):
+- **The stern block** (the Board's R224 pick, then its massing round): the concept's faceted box, chamfered long edges, a stepped
+  neck face with green light panels on its wedge, now 1.44 across in plan (was 3.0; the concept's pod is about a third of the
+  ring's half-height across), its side height kept; three big nozzles stacked one over another on its aft face, each about a
+  third of the stern's height (they were three across and read small).
+- **The core** is a whole sphere 1.26 across in a frame 1.63 across (was 1.11 and 1.44), and the ring plane sits on the spine's
+  axis (was 0.25 below), so the sphere and frame show above and below the ring as in the concept's side view.
+- **Bulkier saddles** (the Board's R224 pick): a long hexagonal plinth 1.7 by 1.04 under a stepped upper deck.
+- **Seams round machines (R226)**: the block thrusters sit on the roof and belly chamfers at 4.3, off B-2.
+- **Hard points**: two boarding origins on the centre arcs' outer walls; the emitter's hard point is its lens.
+
+Outline overlap with this job's mask (luminance over 28, closed, filled, every ring piece but the escort): 38.8 percent at the
+camera of record, 45.0 at the second camera (before the massing round 38.9 and 45.7; the sheet geometry 39.0 and 46.1).
+Reported, not a bar.
+
 Start here: **[side_by_side.jpg](side_by_side.jpg)**, then [fit_view.jpg](fit_view.jpg) and [cells.jpg](cells.jpg).
 
 ## Weapons (R221): each built from what it is

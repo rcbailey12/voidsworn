@@ -182,3 +182,10 @@ jobs:
           { echo '### Bot battle'; echo '```'; grep '^bot battle:' "$RUNNER_TEMP/bot_battle.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           if grep -qE 'SCRIPT ERROR|unknown event' "$RUNNER_TEMP/bot_battle.log"; then echo "SCRIPT ERROR or unknown event lines above"; exit 1; fi
           exit $code
+      # (d) the unpainted A16 fixture that fx/test/death_seam_check.gd falls back to is fresh: the sha256 of every file that makes
+      # its geometry matches its record (tools/recipe/sheet_fixture_hash.py; Muse's check of PR 611, BLOCKING 1). Plain Python, no
+      # Blender: a PR that changes an input without regenerating the fixture fails here by name.
+      - name: A16 death fixture is fresh (sheet_fixture_hash.py --check)
+        if: ${{ !cancelled() }}
+        run: |
+          python3 tools/recipe/sheet_fixture_hash.py --check | tee -a "$GITHUB_STEP_SUMMARY"; exit ${PIPESTATUS[0]}
