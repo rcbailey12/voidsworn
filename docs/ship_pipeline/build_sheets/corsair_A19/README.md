@@ -1,15 +1,17 @@
-# corsair_A19 build sheet: Hullbreaker gutship (the Mauler) (issue 633, round 2)
+# corsair_A19 build sheet: Hullbreaker gutship (the Mauler) (issue 668, broadened)
 
 Ashfall Hullbreakers destroyer (the Mauler, the pack's gun ship), class Destroyer (9.5 world units, godot/render/hull_table.gd CLS_LEN); data.js c_reaver: torp F, scatter S, ability reload. The model is 9.50 long. Designer of record: Opus (R205, R207); the Board is the final designer (R233). Built from the accepted concept of PR 625 (contrib/muse/design/class_family_corsair_2026_11/, corsair_A19_beauty.jpg, v6, Ryan Nov 12 2026) and designs.md, the design of record for the fittings. The views were rendered in the Opus sandbox (Blender 5.3 as a Python module, CPU, 20 samples) from the same build.py; no PC run yet: the Board runs the recipe there after reviewing this sheet. Paint: `bake: none` (the sheet paint stack, PR 610, is not merged).
+
+**Issue 668 (R239): broader, toward the beauty.** Ryan, Nov 13 2026: "a18 and a19 are much slimmer than concept. It's not a huge deal but it'd add some variety." Everything behind the bow face is broader by a fifth: the hull 1.76 to 2.12 across on checks.json's measure (hull length to beam 5.4 to 4.48 on the top view), the bow plate 2.08 to 2.5, the port side block 2.24 to 2.69 over the flank; the bow face, the bow plate's blunt tip, the class length 9.5 and the height are kept, so the wedge from above is sharper. The spine blocks, casemates, side and stern blocks, bricks, grabbers, insides, seam paths, breach anchors and boarding points moved out with it; the lower band's first station moved to 0.96 so the forward casemates clear it (the fit check found a CLASH there until then). The views, the fit check, the inventory, the outline camera and the paint preview were all re-run on the broadened build (Blender 4.5, CPU). Sheet before this change: git history of this folder (issue 651).
 
 ![corsair_A19 preview](preview.jpg)
 
 **Start here (R229, the whole concept first):** [whole beauty beside the whole build](../../../shots/issue_633_hullbreakers/a19_whole_compare.jpg), [side against the concept sheet's side](../../../shots/issue_633_hullbreakers/a19_side_compare.jpg), [plan against plan](../../../shots/issue_633_hullbreakers/a19_top_compare.jpg), then the [bow](../../../shots/issue_633_hullbreakers/a19_bow_compare.jpg) and [stern](../../../shots/issue_633_hullbreakers/a19_stern_compare.jpg); the five Hullbreakers from above at one scale: [hullbreakers_lineup_top.jpg](../../../shots/issue_633_hullbreakers/hullbreakers_lineup_top.jpg). Then [side_by_side.jpg](side_by_side.jpg), [cells.jpg](cells.jpg) and [fit_view.jpg](fit_view.jpg).
 
-## Paint (issue 651, Nov 13 2026)
+## Paint (issue 651; repainted for issue 668, Nov 13 2026)
 
 A19 is painted by the same Hullbreaker paint stack as A16 and A17 (`"bake": "stack"`, tools/blender/kits/hullbreakers/stack.py),
-nothing ship-specific: the colour zones are this sheet's own materials. Sandbox preview (stages 4 to 7 on the CPU, 1024
+nothing ship-specific: the colour zones are this sheet's own materials. Issue 668 repainted the broadened build the same way. Sandbox preview (stages 4 to 7 on the CPU, 1024
 atlases, 16 samples): [full](paint/A19_paint_full.jpg), [six views beside the whole beauty](paint/A19_paint_views.jpg),
 [bow](paint/A19_paint_bow.jpg), [midships](paint/A19_paint_midships.jpg), [stern](paint/A19_paint_stern.jpg),
 [engines](paint/A19_paint_engines.jpg). Surface check 0 ([json](paint/surface_check_after.json)); R224 paint and mesh flags
@@ -30,10 +32,10 @@ A long low slab whose defining shape is the arrow-head prow (round 2: the Board 
 | Audit self-test (audit_selftest.py) | PASS, all nine cases |
 | Contract self-test (sheet_contract_selftest.py) | PASS (this branch carries PR 618's contract, merged in round 2) |
 | Insides inside the skin (every inside vertex enclosed by the intact outside, rays six ways) | 0 of 264 outside |
-| Detail density per part type (R224, under 0.75 of the hull is a fault) | none under; lowest antenna at 1.01 of the hull's triangles and 0.95 of its edge features per square unit |
+| Detail density per part type (R224, under 0.75 of the hull is a fault) | issue 668 (paint sandbox, density.json): paint and mesh flags none; lowest antenna at 0.94 of the hull's triangles and 0.89 of its edge features per square unit. Issue 633: none under; lowest antenna at 1.01 of the hull's triangles and 0.95 of its edge features per square unit |
 | Inventory (every part has a job, present, shaped, detailed per cell) | 0 failing ([inventory.md](inventory.md)) |
-| Triangles (reported, never capped) | 70054 outside, 464 inside, 70518 in all (round 1: 49934 and 464; the plates in courses carry the scrap brick, R196) |
-| Outline overlap with the beauty at the sheet camera (reported, not a bar, RULEBOOK 5.8) | 77.9 percent (mass outline 80.2; round 1 77.3) |
+| Triangles (reported, never capped) | issue 668: the game export C14s_23 is 77022; issue 633: 70054 outside, 464 inside, 70518 in all (round 1: 49934 and 464; the plates in courses carry the scrap brick, R196) |
+| Outline overlap with the beauty at the sheet camera (reported, not a bar, RULEBOOK 5.8) | issue 668: 79.9 percent (mass outline 81.7) at the refitted camera; issue 651's build at the same mask refit 78.8 (round 2 77.9, round 1 77.3) |
 
 The fit check, the seam and inside tests and the density were run in the sandbox (tools/blender/build_sheets/build.py fit mode; the seam, inside and density measures are scripted the same way as the Chorus sheets' check, issue 623). PR 608's death check in Godot needs the exported ship and runs on the PC.
 
@@ -42,9 +44,10 @@ The fit check, the seam and inside tests and the density were run in the sandbox
 | | Hull length:beam | Hull length:height |
 |---|---:|---:|
 | Concept sheet, true top and side views (luminance mask over 14, median over the middle 60 percent) | 4.57 | 7.18 |
-| Build (the sheet's top and side renders, same measure) | 4.10 | 6.15 |
+| Build, issue 633 (the sheet's top and side renders, same measure) | 4.10 | 6.15 |
+| Build hull measure (checks.json), issue 651 build against issue 668 broadened | 5.4 to 4.48 | kept |
 
-Re-measured in round 2 with one script on both (round 1 read the concept at 4.58 and 7.33). The build is about a tenth wider and a sixth taller than the sheet's true views; the concept's dark belly drops out of the mask, which makes it read thinner. From above, the first third is now the concept's arrow-head (0.4 across at the tip, 1.3 just behind it, 2.1 by a third of the length). The inventory's own table ([inventory.md](inventory.md)) uses a colour-difference mask that drops most of the dark concept hull; the row above is the one to read.
+Issue 668: Ryan found the build much slimmer than the concept (R239); the concept sheet draws 2.1 across by a third of the length and the beauty wide flanks, so the hull length to beam went from 5.4 to 4.48 on checks.json's hull measure (the same measure on both builds; the concept's 4.57 above is the luminance measure on the sheet's top view, a different measure). Round 2: re-measured with one script on both (round 1 read the concept at 4.58 and 7.33). The build is about a tenth wider and a sixth taller than the sheet's true views; the concept's dark belly drops out of the mask, which makes it read thinner. From above, the first third is now the concept's arrow-head (0.4 across at the tip, 1.3 just behind it, 2.1 by a third of the length). The inventory's own table ([inventory.md](inventory.md)) uses a colour-difference mask that drops most of the dark concept hull; the row above is the one to read.
 
 ## Weapons, seams, breach anchors
 
@@ -52,21 +55,24 @@ data.js c_reaver: torp F (slot 0) fired by the bow-face casemates R1 and R2; sca
 
 ## The recipe (issue 633)
 
+Issue 668, on the broadened build (CPU sandbox, stages 4 and 5 at 1024 atlases and 16 samples): contract self-test PASS; audit PASS, 0 machines across a seam (structure across: PH1, a pipe), and its self-test PASS; surface check 0 and 0; export7 C14s_23 with the paint stack, 77022 triangles, hard points gun 13, engine 3, breach 4, core 1, rcs 2, board 2, two turrets; check_export PASS and its self-test PASS. Not run: the PC job and the Godot install and death checks; the Board runs those on the PC.
+
 C14s_23 (`corsair|Destroyer` in godot/render/hull_table.gd AI_HULLS), bake none. In the sandbox: contract self-test PASS; stage 4 audit and its self-test PASS; export7 unbaked at the default tolerance 67666 triangles, hard points gun 13, engine 3, breach 4, core 1, rcs 2, board 2, two turrets; check_export PASS and its self-test PASS; install (manifest_merge, build_assets --ships-only) and INSTALL READBACK PASS (29 nodes); authored_interiors_check 0 failures (6938 interior triangles); death_seam_check 0 of 22 machines split, 0 of 3114 insides outside their piece. No sheet change came from the recipe. The PC run: tools/pc/jobs/A18_A20_RUN_633.bat (queue file q_a633.bat), not queued.
 
 ## Changed from the picture (R207, R233)
 
-- **The two mismatched casemates sit IN the bow face: port, one long rocket tube on a brace; starboard, three short fat tubes banded together.** Ryan, Nov 12 (the round's ruling): "the two mismatched casemates sit IN the bow face", whatever the beauty's foredeck housings suggest. data.js c_reaver's only forward weapon is torp F, so both are rocket casemates (the Hullbreaker rattle rockets); the long tube stays short of a prow gun (RULEBOOK 4.4, Ryan on v5 "added a giant front gun again?")
-- **The bow is an arrow-head from above: the broad flat bow plate runs from a blunt point 0.4 across to the full beam over the first third, overhanging a narrow bow face (1.1 across, 0.52 tall) that holds the two casemates; the hull's flanks widen back behind it.** the Board on round 1 (Nov 13, R233): the build had a blunt square bow; the picture's defining shape is the wedge prow (the concept sheet: 0.4 across at the tip, 1.3 just behind it, 2.1 by a third of the length). The face stays blunt and narrow, not a thin edge: the casemates need a face to sit in (designs.md)
-- **Every face is plated in courses at the hull's plate size (0.2 to 0.46), each course jointed on its own (a brick bond), patches laid over joints and offset patches over plates; upward faces stepped in terraces of one to three plate thicknesses.** the Board on round 1 (Nov 13): the faces read as big smooth grey planes with a few greebles; the concept is scrap brick, plates over plates on every face (R196, R197). Kit: the sheet kit's courses plating (kit.py, opt-in, issue 633)
-- **The whole scatter battery on the starboard side: three flank casemates of mixed calibre and two spine turrets resting to starboard.** data.js c_reaver: scatter S (one starboard battery); the picture's pods on both flanks and its foredeck guns have no other slot (R221)
-- **No rocket racks on the middle deck.** designs.md's two racks would be a second forward launcher; data.js gives one torp slot and the bow casemates fire it
-- **Port flank: the side block carries one big pale Hegemony trophy plate, in three torn sheets bolted edge to edge.** designs.md (the trophy plate widening the port outline amidships) on the picture's side block
-- **Two grabber pairs: one under the chin, one under the forefoot.** the picture's claws at the chin and further aft; designs.md's four arms; split so the jaw is not a copy of A17's
-- **Three engine bells, the centre the largest, staggered in the stern block.** designs.md; the picture's four become three, lopsided (port small and high, starboard lower)
-- **Two dishes: the large one standing on the foredeck plate to port, a small one on the stern block to starboard.** designs.md; the picture shows one on the foredeck
-- **Four attitude thrusters.** a ship in space needs them to turn
-- **Insides: two decks, the gun crews' gallery along the starboard casemates, a kennel deck under the bow, the loot hold aft.** designs.md; R209, R215
+- **Issue 668: everything behind the bow face broadened by a fifth (the hull 1.76 to 2.11 across, the bow plate 2.08 to 2.5, the port side block 2.24 to 2.69 over the flank); the bow face, the bow plate's blunt tip, the class length and the height kept, so the wedge from above is sharper.** Ryan, Nov 13 (R239): "a18 and a19 are much slimmer than concept. It's not a huge deal but it'd add some variety." The concept sheet draws 2.1 across by a third of the length.
+- **The two mismatched casemates sit IN the bow face: port, one long rocket tube on a brace; starboard, three short fat tubes banded together.** Ryan, Nov 12 (the round's ruling): "the two mismatched casemates sit IN the bow face", whatever the beauty's foredeck housings suggest. data.js c_reaver's only forward weapon is torp F, so both are rocket casemates (the Hullbreaker rattle rockets); the long tube stays short of a prow gun (RULEBOOK 4.4, Ryan on v5 "added a giant front gun again?").
+- **The bow is an arrow-head from above: the broad flat bow plate runs from a blunt point 0.4 across to the full beam over the first third, overhanging a narrow bow face (1.1 across, 0.52 tall) that holds the two casemates; the hull's flanks widen back behind it.** the Board on round 1 (Nov 13, R233): the build had a blunt square bow; the picture's defining shape is the wedge prow (the concept sheet: 0.4 across at the tip, 1.3 just behind it, 2.1 by a third of the length). The face stays blunt and narrow, not a thin edge: the casemates need a face to sit in (designs.md).
+- **Every face is plated in courses at the hull's plate size (0.2 to 0.46), each course jointed on its own (a brick bond), patches laid over joints and offset patches over plates; upward faces stepped in terraces of one to three plate thicknesses.** the Board on round 1 (Nov 13): the faces read as big smooth grey planes with a few greebles; the concept is scrap brick, plates over plates on every face (R196, R197). Kit: the sheet kit's courses plating (kit.py, opt-in, issue 633).
+- **The whole scatter battery on the starboard side: three flank casemates of mixed calibre and two spine turrets resting to starboard.** data.js c_reaver: scatter S (one starboard battery); the picture's pods on both flanks and its foredeck guns have no other slot (R221).
+- **No rocket racks on the middle deck.** designs.md's two racks would be a second forward launcher; data.js gives one torp slot and the bow casemates fire it.
+- **Port flank: the side block carries one big pale Hegemony trophy plate, in three torn sheets bolted edge to edge.** designs.md (the trophy plate widening the port outline amidships) on the picture's side block.
+- **Two grabber pairs: one under the chin, one under the forefoot.** the picture's claws at the chin and further aft; designs.md's four arms; split so the jaw is not a copy of A17's.
+- **Three engine bells, the centre the largest, staggered in the stern block.** designs.md; the picture's four become three, lopsided (port small and high, starboard lower).
+- **Two dishes: the large one standing on the foredeck plate to port, a small one on the stern block to starboard.** designs.md; the picture shows one on the foredeck.
+- **Four attitude thrusters.** a ship in space needs them to turn.
+- **Insides: two decks, the gun crews' gallery along the starboard casemates, a kennel deck under the bow, the loot hold aft.** designs.md; R209, R215.
 
 ## Open
 

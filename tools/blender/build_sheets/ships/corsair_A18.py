@@ -24,7 +24,7 @@ CONCEPT_SHEET = 'contrib/muse/design/class_family_corsair_2026_11/corsair_A18_sh
 CONCEPT_VIEWS = dict(top=dict(box=(250, 30, 1650, 480), largest=True, flip=False), side=dict(box=(240, 490, 1750, 830), largest=True, flip=False))
 CROPS = [('bow (wedge, face, chin, grabbers)', (60, 380, 1000, 1220)), ('midships (spine and flank)', (500, 120, 1400, 900)),
          ('stern (engine block and drums)', (1050, 40, 1920, 640))]
-SHEET = dict(version=1, round='first sheet (issue 633)', date='2026-11-12', blend='opus633\\corsair_A18',
+SHEET = dict(version=2, round='issue 668 (R239): broader, toward the beauty', date='2026-11-13', blend='opus668\\corsair_A18',
              before='First full layout', before_note='The first complete A18 layout, built with the Hullbreaker kit and run through the check before any fix.',
              during='While designing, the check also caught (and the design fixed): see the fit report\'s fix column.')
 
@@ -33,27 +33,31 @@ import math, random
 # (x, half-beam port, half-beam starboard, bottom, top, top chamfer, bottom chamfer): the wedge bow over a cut-in chin, the
 # body, the aft taper into the engine block. Section 1.46 wide by 0.98 deep, to the sheet's true top and side views (hull
 # length to beam 4.4); the beauty's three-quarter reads deeper, its perspective (the sheet's proportions table reports both).
+# Issue 668 (R239, Ryan, Nov 13: "a18 and a19 are much slimmer than concept. It's not a huge deal but it'd add some variety"):
+# the body broadened toward the beauty's beam, 1.68 to 2.12 across at its widest (hull length to beam 3.87 to 3.07); the
+# face only a little (0.84 to 0.92), so the nose still tapers hard to its grille and the class length and height stay.
+BW = 1.26            # issue 668: the body's broadening (the face's half-beam 0.42 to 0.46, the rest by BW)
 HULL = [
-    (3.1, 0.42, 0.42, -0.28, 0.22, 0.13, 0.11),
-    (2.5, 0.6, 0.6, -0.46, 0.36, 0.17, 0.15),
-    (1.5, 0.78, 0.78, -0.55, 0.45, 0.18, 0.16),
-    (0.4, 0.84, 0.84, -0.55, 0.46, 0.18, 0.16),
-    (-1.3, 0.8, 0.8, -0.53, 0.45, 0.17, 0.15),
-    (-2.25, 0.74, 0.74, -0.53, 0.45, 0.16, 0.15),
-    (-2.78, 0.65, 0.65, -0.46, 0.4, 0.14, 0.14),
+    (3.1, 0.46, 0.46, -0.28, 0.22, 0.13, 0.11),
+    (2.5, 0.72, 0.72, -0.46, 0.36, 0.17, 0.15),
+    (1.5, 0.78 * BW, 0.78 * BW, -0.55, 0.45, 0.18, 0.16),
+    (0.4, 0.84 * BW, 0.84 * BW, -0.55, 0.46, 0.18, 0.16),
+    (-1.3, 0.8 * BW, 0.8 * BW, -0.53, 0.45, 0.17, 0.15),
+    (-2.25, 0.74 * BW, 0.74 * BW, -0.53, 0.45, 0.16, 0.15),
+    (-2.78, 0.65 * BW, 0.65 * BW, -0.46, 0.4, 0.14, 0.14),
 ]
 PL = dict(keep3d=True, courses=True, size=(0.16, 0.36), thick=(0.02, 0.05), step=0.025, gap=0.018, over=0.2, skip=0.04, stack=0.2, rivets_share=0.25, rivet_r=0.02, mats={'soot': 3, 'iron': 4, 'pale': 2, 'rust': 3, 'soot2': 2, 'violet': 1, 'steel': 2})
 # the spine, bow to stern: stacked blocks (name, x fore, x aft, half-beam, top, front slope, y offset), with gaps between them
-SPINE = [
-    ('S1 fore spine block', 1.45, 0.78, 0.45, 0.6, 0.22, 0.0),
-    ('S2 gun block', 0.72, 0.18, 0.43, 0.66, 0.1, 0.02),
-    ('S3 mid spine block', 0.12, -0.36, 0.4, 0.61, 0.08, -0.03),
-    ('S4 sensor block', -0.42, -1.0, 0.43, 0.69, 0.1, 0.02),
-    ('S5 aft spine block', -1.06, -2.3, 0.45, 0.61, 0.08, 0.0),
+SPINE = [                                     # issue 668: each block 0.1 wider a side with the broader body
+    ('S1 fore spine block', 1.45, 0.78, 0.55, 0.6, 0.22, 0.0),
+    ('S2 gun block', 0.72, 0.18, 0.53, 0.66, 0.1, 0.02),
+    ('S3 mid spine block', 0.12, -0.36, 0.5, 0.61, 0.08, -0.03),
+    ('S4 sensor block', -0.42, -1.0, 0.53, 0.69, 0.1, 0.02),
+    ('S5 aft spine block', -1.06, -2.3, 0.55, 0.61, 0.08, 0.0),
 ]
 THR = [(0.62, -0.36, 1), (0.62, -0.36, -1), (-1.3, -0.37, 1), (-1.3, -0.37, -1)]     # attitude thrusters (x, z, side)
 LAMPS = [(2.2, 1), (-0.35, 1), (-1.65, 1), (-0.35, -1), (-1.65, -1)]                 # running lights low on the flanks (x, side)
-ENG = ((1, 1.1, 0.3, -3.2, 'port drum, the larger'), (-1, -1.01, 0.245, -3.17, 'starboard drum'))
+ENG = ((1, 1.32, 0.3, -3.2, 'port drum, the larger'), (-1, -1.23, 0.245, -3.17, 'starboard drum'))   # issue 668: out with the flanks (were 1.1, -1.01)
 
 
 def small_antenna(K, fid, pos, h, whips, k, inv, note):
@@ -74,17 +78,17 @@ def build(K):
     K.mass('Base hull (wedge bow, body, aft taper)', K.hull(HULL, 'soot', shell=0.08, plates=dict(PL, seed=18, inv=['hull_plates', 'belly_plates'])),
            'soot and patched plate', note='the sloped wedge bow over a cut-in chin, then the long body')
     K.mark('hull_form', 'hull', ['bevel', 'step', 'overhang'])
-    K.mass('Lower hull band', K.loft('A18_lowband', [(1.85, 0.7, 0.7, -0.6, -0.4, 0.0, 0.08), (0.4, 0.76, 0.76, -0.6, -0.4, 0.0, 0.08), (-1.3, 0.72, 0.72, -0.6, -0.4, 0.0, 0.08),
-                                                     (-2.55, 0.68, 0.68, -0.6, -0.4, 0.0, 0.08)], 'soot2',
+    K.mass('Lower hull band', K.loft('A18_lowband', [(1.85, 0.7 * BW, 0.7 * BW, -0.6, -0.4, 0.0, 0.08), (0.4, 0.76 * BW, 0.76 * BW, -0.6, -0.4, 0.0, 0.08), (-1.3, 0.72 * BW, 0.72 * BW, -0.6, -0.4, 0.0, 0.08),
+                                                     (-2.55, 0.68 * BW, 0.68 * BW, -0.6, -0.4, 0.0, 0.08)], 'soot2',
                                      plates=dict(PL, seed=19, faces=[3, 4, 5, 6, 7, 0], inv='belly_plates')), 'dark soot', note='the belly steps in under the flank')
     # the engine pylons and the engine block (masses first, so the plates go on before any part claims its mount, R224)
     for side, y, r, ex, nm in ENG:
         K.mass('Engine pylon %s' % ('port' if side > 0 else 'starboard'),
-               K.box('A18_pylon_%s' % ('p' if side > 0 else 's'), -2.75, -2.0, min(side * 0.55, side * (abs(y) - r * 0.6)), max(side * 0.55, side * (abs(y) - r * 0.6)),
+               K.box('A18_pylon_%s' % ('p' if side > 0 else 's'), -2.75, -2.0, min(side * 0.69, side * (abs(y) - r * 0.6)), max(side * 0.69, side * (abs(y) - r * 0.6)),
                      -0.15, 0.12, 'iron', ch=0.04, plates=dict(PL, seed=40 + (side > 0), faces=[0, 1, 2, 7], size=(0.12, 0.26))),
                'iron', note='short pylon out to the engine drum')
     K.mark('pylons', 'pylon', ['web', 'plate'])
-    K.mass('Engine block', K.box('A18_engblock', -2.9, -2.6, -0.56, 0.56, -0.42, 0.5, 'soot', ch=0.09, plates=dict(PL, seed=57, size=(0.12, 0.26))), 'soot, steel')
+    K.mass('Engine block', K.box('A18_engblock', -2.9, -2.6, -0.7, 0.7, -0.42, 0.5, 'soot', ch=0.09, plates=dict(PL, seed=57, size=(0.12, 0.26))), 'soot, steel')
     K.mark('engine_block', 'pylon', ['web', 'plate'])
     # ---------------- the face and chin: a framed face with the wake-sniffer scoop, a brow plate over it ----------------
     K.box('A18_face_lip', 3.04, 3.15, -0.3, 0.3, -0.2, -0.15, 'steel', ch=0.015)
@@ -93,7 +97,7 @@ def build(K):
         K.box('A18_face_cheek%d' % (side > 0), 3.02, 3.15, min(side * 0.28, side * 0.33), max(side * 0.28, side * 0.33), -0.2, 0.12, 'steel', ch=0.015)
     K.patch('FBR', (2.84, 0.0, 0.285), (0.23, 0, 0.97), 0.5, 0.3, ang=0.03, lift=0.02, t=0.03, m='pale', inv='face_plates')
     for side in (1, -1):
-        K.patch('FC%s' % ('p' if side > 0 else 's'), (2.93, 0.475 * side, -0.04), (0.3, 0.95 * side, 0), 0.3, 0.3, ang=0.05 * side, lift=0.02, t=0.03,
+        K.patch('FC%s' % ('p' if side > 0 else 's'), (2.93, (sy(2.93, side) + 0.005 * side), -0.04), (0.3, 0.95 * side, 0), 0.3, 0.3, ang=0.05 * side, lift=0.02, t=0.03,
                 m='iron' if side > 0 else 'rust', inv='face_plates')
     K.mark('face_plates', 'plate', ['slab', 'step', 'bevel', 'rivet'])
     # the wide intake grille that fills the face: three louvre panels side by side in one frame (a kit vent sized to the
@@ -103,14 +107,14 @@ def build(K):
                note='%s panel of the wide intake grille that fills the bow face: the wake-sniffer scoop tastes the wake of ships ahead '
                     '(designs.md: the chin scoop, moved up into the face as the picture draws it)' % ('port', 'middle', 'starboard')[i])
     # ---------------- the dish mount: a low raised block on the nose, starboard, that carries the one big ear nearly flush ----------------
-    K.mass('Dish mount (raised block on the nose, starboard)', K.loft('A18_sponson', [(2.45, 0.28, 0.28, 0.15, 0.6, 0.06, 0.0, -0.36),
-                                                                                     (2.27, 0.32, 0.32, 0.15, 0.6, 0.07, 0.0, -0.37),
-                                                                                     (1.62, 0.32, 0.32, 0.15, 0.62, 0.07, 0.0, -0.37),
-                                                                                     (1.46, 0.28, 0.28, 0.15, 0.58, 0.06, 0.0, -0.36)],
+    K.mass('Dish mount (raised block on the nose, starboard)', K.loft('A18_sponson', [(2.45, 0.28, 0.28, 0.15, 0.6, 0.06, 0.0, -0.44),
+                                                                                     (2.27, 0.32, 0.32, 0.15, 0.6, 0.07, 0.0, -0.45),
+                                                                                     (1.62, 0.32, 0.32, 0.15, 0.62, 0.07, 0.0, -0.45),
+                                                                                     (1.46, 0.28, 0.28, 0.15, 0.58, 0.06, 0.0, -0.44)],
                                                                      'iron', plates=dict(PL, seed=23, faces=[0, 1, 2, 3, 7], inv='sponson_plates', size=(0.12, 0.26))),
            'bare iron, patched', note='a low armoured block bolted on the nose to starboard, the dish set nearly flush on it (the picture\'s flush disc)')
     K.mark('sponson', 'tier', ['face', 'roof', 'opening'])
-    K.slit('SL1', (2.452, -0.47, 0.52), (1, 0, 0), 0.2, 0.06, inv='sponson', note='vision slit in the dish mount\'s front: the dish operator\'s port')
+    K.slit('SL1', (2.452, -0.55, 0.52), (1, 0, 0), 0.2, 0.06, inv='sponson', note='vision slit in the dish mount\'s front: the dish operator\'s port')
     # ---------------- the spine: stacked blocks with gaps and undercut bases ----------------
     for (nm, x0, x1, hw, top, slope, yo) in SPINE:
         base = 0.36
@@ -123,7 +127,7 @@ def build(K):
     K.mark('spine', 'tier', ['face', 'roof', 'opening'])
     K.slit('SL2', (1.33, 0.22, 0.555), (0.62, 0.0, 0.79), 0.2, 0.065, inv='spine', note='slit in the fore spine block\'s slope, port (the dish fills the starboard view)')
     K.patch('RC1', (-1.62, 0.12, 0.61), (0, 0, 1), 0.55, 0.38, ang=0.06, lift=0.02, t=0.03, m='blood', inv='trophy')
-    K.hatch('HS1', (-1.45, 0.45, 0.535), (0, 1, 0), 0.2, 0.1, up=(0, 0, -1), inv='spine_hatch', note='crew hatch on the aft spine block, port')
+    K.hatch('HS1', (-1.45, 0.55, 0.535), (0, 1, 0), 0.2, 0.1, up=(0, 0, -1), inv='spine_hatch', note='crew hatch on the aft spine block, port')
     K.hatchbox('HB1', (-0.62, 0.2, 0.69), 0.24, 0.28, 0.09, inv='spine_boxes', note='framed box on the sensor block')
     K.hatchbox('HB2', (-2.05, 0.0, 0.61), 0.28, 0.32, 0.1, inv='spine_boxes', note='ready-use locker on the aft spine block')
     small_antenna(K, 'AN1', (-1.33, -0.2, 0.61), 0.66, 3, 0.65, 'antenna', 'comms array on the aft spine block: calls the pack in on what the dish heard')
@@ -151,20 +155,20 @@ def build(K):
     for (x, side) in LAMPS:
         K.keepouts.append((Vector((x, sy(x, side), -0.36)), 0.12))
     K.keepouts.append((Vector((0.45, 0.02, 0.66)), 0.44))
-    K.keepouts.append((Vector((1.98, -0.37, 0.62)), 0.34))        # the dish's base and post
-    K.keepouts.append((Vector((2.55, -0.47, 0.45)), 0.2))           # the dish operator's slit
+    K.keepouts.append((Vector((1.98, -0.45, 0.62)), 0.34))        # the dish's base and post
+    K.keepouts.append((Vector((2.55, -0.55, 0.45)), 0.2))           # the dish operator's slit
     for side in (1, -1):                                           # the grabber shoulders under the chin
-        K.keepouts.append((Vector((2.15, 0.34 * side, -0.6)), 0.26))
+        K.keepouts.append((Vector((2.15, 0.4 * side, -0.6)), 0.26))
     K.finish()
 
     # the one big ear, after the plates (a plate keep-out round its base would strip the small sponson bare)
-    K.dish('D1', (1.98, -0.37, 0.62), 0.46, yaw=-15, pitch=84, post=0.16, inv='ear',
-           note='the one oversized listening dish, 0.9 across (more than half the beam), set nearly flush on the raised dish mount, canted a little forward, on the starboard side of the nose')
+    K.dish('D1', (1.98, -0.45, 0.62), 0.46, yaw=-15, pitch=84, post=0.16, inv='ear',
+           note='the one oversized listening dish, 0.9 across (more than two fifths of the beam), set nearly flush on the raised dish mount, canted a little forward, on the starboard side of the nose')
 
     # ---------------- the grabbers: one pair of small arms under the chin ----------------
     for side, fi in ((1, 'J1'), (-1, 'J2')):
-        K.claw_arm(fi, (2.2, 0.34 * side, -0.72), [(2.6, 0.41 * side, -0.82), (2.88, 0.45 * side, -0.76)], w=0.22, hook=-1.0 if side > 0 else 1.0, fork=0.32,
-                   inv='grabbers', housing=(1.9, 2.37, 0.34 * side - 0.15, 0.34 * side + 0.15, -0.8, -0.46),
+        K.claw_arm(fi, (2.2, 0.4 * side, -0.72), [(2.6, 0.47 * side, -0.82), (2.88, 0.51 * side, -0.76)], w=0.22, hook=-1.0 if side > 0 else 1.0, fork=0.32,
+                   inv='grabbers', housing=(1.9, 2.37, 0.4 * side - 0.15, 0.4 * side + 0.15, -0.8, -0.46),
                    note='%s grabber arm under the chin: pins a fleeing hull long enough for the pack to catch up' % ('port' if side > 0 else 'starboard'))
     K.pipe('PH1', [(2.75, 0.0, -0.42), (2.35, 0.0, -0.53), (2.0, 0.0, -0.58)], r=0.03, inv='chin_pipes', note='the rams\' hydraulic feed')
 
@@ -194,14 +198,14 @@ def build(K):
     K.deck('main', -0.16, -2.5, 2.25, inset=0.18, t=0.05)
     for i, x in enumerate((2.3, 1.38, -0.25, -1.55, -2.45)):
         K.bulkhead('F%d' % i, x, inset=0.12, t=0.05)
-    K.room('sensor_room', 'bridge', 1.55, 2.3, -0.3, 0.3, -0.11, 0.21, note='the listening room under the dish: plotters and the dish feed')
-    K.room('grabber_rams', 'machinery', 1.6, 2.2, -0.29, 0.29, -0.39, -0.22, note='rams and winches for the chin grabbers')
-    K.room('kennel_nook', 'crew', 0.45, 0.95, -0.48, 0.48, -0.44, -0.22, note='boarding crew kennel')
-    K.room('loot_hold', 'hold', -0.15, 0.3, -0.39, 0.39, -0.44, -0.22, note='a loot hold the size of a closet (designs.md)')
+    K.room('sensor_room', 'bridge', 1.55, 2.3, -0.38, 0.38, -0.11, 0.21, note='the listening room under the dish: plotters and the dish feed')
+    K.room('grabber_rams', 'machinery', 1.6, 2.2, -0.37, 0.37, -0.39, -0.22, note='rams and winches for the chin grabbers')
+    K.room('kennel_nook', 'crew', 0.45, 0.95, -0.6, 0.6, -0.44, -0.22, note='boarding crew kennel')
+    K.room('loot_hold', 'hold', -0.15, 0.3, -0.49, 0.49, -0.44, -0.22, note='a loot hold the size of a closet (designs.md)')
     K.room('ready_magazine', 'magazine', 0.3, 0.68, -0.25, 0.25, -0.11, 0.3, note='autocannon belts under the turret')
-    K.room('crew_space', 'crew', -1.4, -0.4, -0.43, 0.43, -0.11, 0.3, note='crew bunks and galley, scavenged frames')
-    K.room('core', 'core', -1.45, -0.5, -0.39, 0.39, -0.44, -0.22, note='reactor core (hp_core)')
-    K.room('engine_room', 'engroom', -2.4, -1.65, -0.48, 0.48, -0.44, 0.26, note='engine room and the overburn feeds to the drums')
+    K.room('crew_space', 'crew', -1.4, -0.4, -0.54, 0.54, -0.11, 0.3, note='crew bunks and galley, scavenged frames')
+    K.room('core', 'core', -1.45, -0.5, -0.49, 0.49, -0.44, -0.22, note='reactor core (hp_core)')
+    K.room('engine_room', 'engroom', -2.4, -1.65, -0.6, 0.6, -0.44, 0.26, note='engine room and the overburn feeds to the drums')
     K.armour('wedge bow (forward of 1.6)', 0.12, 'face plate and the sponson\'s front')
     K.armour('flank bricks', 0.08, 'bolted bricks over the flank')
     K.armour('spine', 0.06, '')
@@ -211,7 +215,7 @@ def build(K):
     # bow thrusters Q1 and Q2 and the autocannon T1 with the body
     K.break_line('B-1', 1.12, 'behind the sensor head: the head tears away as one ragged piece with the dish still on it (designs.md), '
                  'opening the listening room and the grabber rams',
-                 path=[(1.18, 1.3), (1.05, 0.88), (1.16, 0.4), (1.0, -0.05), (1.14, -0.5), (1.04, -0.88), (1.15, -1.3)])
+                 path=[(1.18, 1.65), (1.18, 1.3), (1.05, 0.88), (1.16, 0.4), (1.0, -0.05), (1.14, -0.5), (1.04, -0.88), (1.15, -1.3), (1.15, -1.65)])   # issue 668: runs on past the broader flanks
     K.inside.append(dict(kind='note', name='insides', note='Full interiors through the hull (R215), hidden until a piece breaks. Patch plates tear first; the hull parts at the weld behind the head, ragged (R186).'))
     K.point('core', 'hp_core', (-1.0, 0, -0.33))
     for i, (x, y, z, sec, side) in enumerate([(0.9, sy(0.9, 1), 0.08, 'prow', 'port'), (-0.65, sy(-0.65, -1), -0.05, 'mid', 'stbd'), (-2.05, sy(-2.05, 1), -0.05, 'eng', 'port')]):
@@ -224,9 +228,11 @@ def build(K):
     # ---------- changed from the picture (designer's decisions, R207, R233) ----------
     K.change('One gun: a twin autocannon turret on the spine\'s gun block', 'data.js c_raider carries one weapon, autocannon T (R221: weapons from data.js); the picture\'s rows of flank guns, '
              'designs.md\'s two bow casemates and its rocket rack have no slot, so they are not built')
-    K.change('The nose is chunky and tapers forward to the face: 0.84 across and 0.5 tall at the face, widening and deepening over the first 40 percent to 1.7 across at midships, where the body is widest, then easing aft',
+    K.change('Issue 668: the body broadened, 1.68 to 2.12 across at its widest (hull length to beam on the top view 3.87 to 3.07), the face 0.84 to 0.92; the class length 6.5, the height, the grille nose and the spine kept; the spine blocks, the engine block, the drums, the dish and the grabbers moved out with the flanks',
+             'Ryan, Nov 13 (R239): "a18 and a19 are much slimmer than concept. It\'s not a huge deal but it\'d add some variety." The accepted beauty draws a broad deck and wide flanks behind the grille face; the build had followed the sheet\'s narrower true top view')
+    K.change('The nose is chunky and tapers forward to the face: 0.92 across and 0.5 tall at the face (issue 668; was 0.84), widening and deepening over the first 40 percent to 2.1 across at midships (issue 668; was 1.7), where the body is widest, then easing aft',
              'the Board on round 1 (Nov 13, R233): the build was a long box (1.46 wide almost bow to stern, a 0.4 tall face) with a dish at the front; the concept sheet draws the nose 1.0 across at the face and 1.6 to 1.7 by 40 percent of the length')
-    K.change('The one big ear: an oversized listening dish (0.9 across, more than half the beam) set nearly flush on a low raised dish mount on the nose, to starboard',
+    K.change('The one big ear: an oversized listening dish (0.9 across, more than two fifths of the beam) set nearly flush on a low raised dish mount on the nose, to starboard',
              'the picture\'s flush disc on the starboard foredeck; designs.md\'s "a little brick with one big ear". Round 2 drops round 1\'s sponson that bulged the shoulder: the outline from above is the nose\'s own taper and swell (the Board)')
     K.change('Lopsided engines: two drums on short pylons at the stern quarters, the port drum clearly larger, and one small centre bell',
              'designs.md (two bells of uneven size) with the picture\'s outrigger drums, the larger on the side the picture draws it; the picture\'s three stacked centre bells become one, so the stern does not read as A16\'s pods')

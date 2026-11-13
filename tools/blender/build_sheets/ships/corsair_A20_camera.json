@@ -1,21 +1,21 @@
 {
- "az": 36.05821718357215,
- "el": 19.392749400127272,
- "roll": 0.3634306140790746,
- "dist": 23.279953778404373,
- "mm": 55.83896136859027,
+ "az": 34.887662384391234,
+ "el": 16.416939151424767,
+ "roll": -1.84537267457885,
+ "dist": 22.639414445108304,
+ "mm": 56.494214751382856,
  "target": [
   -1.0,
   0,
   0.0
  ],
- "sx": 0.15113104188881127,
- "sy": 0.10429425423077063,
+ "sx": 0.17140412601231797,
+ "sy": 0.10490016686583972,
  "res": [
   1920,
   1280
  ],
- "note": "A20 build sheet (issue 633): the view set by hand to the beauty's (az 46 from the bow toward port, el 30, roll -4, 40 mm), the framing from three point matches (the bow face between the intakes, the forward mouth, the middle of the bell row), because the beauty's dark hull on a lit nebula gives no clean outline mask to fit (the outline fits ran side-on or framed the nebula). The beauty draws the slab wider for its length than the build (the proportions table). IoU against a luminance-19 mask of the beauty. Round 2 (issue 633): refitted to the round 2 build from the round 1 camera, the camera only, never the ship. Issue 651 (slab broadened, mouths opened): refitted to the broadened build from the round 2 camera, the camera only, never the ship; the round 2 camera scored 75.3 percent on the broadened build and 73.9 on the round 2 build against the same mask (the mask was remade the same way, luminance over 19, the largest piece, holes filled).",
- "iou": 0.7864,
- "body_iou": 0.7799
+ "note": "A20 build sheet (issue 633): the view set by hand to the beauty's (az 46 from the bow toward port, el 30, roll -4, 40 mm), the framing from three point matches (the bow face between the intakes, the forward mouth, the middle of the bell row), because the beauty's dark hull on a lit nebula gives no clean outline mask to fit (the outline fits ran side-on or framed the nebula). The beauty draws the slab wider for its length than the build (the proportions table). IoU against a luminance-19 mask of the beauty. Round 2 (issue 633): refitted to the round 2 build from the round 1 camera, the camera only, never the ship. Issue 651 (slab broadened, mouths opened): refitted to the broadened build from the round 2 camera, the camera only, never the ship; the round 2 camera scored 75.3 percent on the broadened build and 73.9 on the round 2 build against the same mask (the mask was remade the same way, luminance over 19, the largest piece, holes filled). Issue 668 (R239, the bays moved into the bow face, the slab 6.4 to 6.9 across): refitted to this build from the issue 651 camera, the camera only, never the ship; against the same luminance-19 mask the main build refitted scores 78.7 percent and this build 78.1 (the open port-flank mouths filled the beauty's flank outline; the beauty's own bays are not in its silhouette).",
+ "iou": 0.7813,
+ "body_iou": 0.7762
 }

@@ -1,4 +1,4 @@
-# corsair_A19 fit report (first sheet (issue 633); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
+# corsair_A19 fit report (issue 668 (R239): broader, toward the beauty; RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
 
 Made by `tools/blender/build_sheets/clash.py` on the built blockout (it runs inside every `build.py ... render` and on its own
 with `build.py <code> <out> fit`). What it tests, on every part of every type:
@@ -26,7 +26,7 @@ also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on t
 (`turret=0`, `gun_fixed=1`).
 
 
-## How first sheet (issue 633) fixed them
+## How issue 668 (R239): broader, toward the beauty fixed them
 
 | Clash (before) | Fix |
 |---|---|
@@ -35,7 +35,7 @@ While designing, the check also caught (and the design fixed): see the fit repor
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 252 objects, 37 parts, 815 close pairs, 263 rays, 5 guns, 2 turrets swept, 7 cones, 19 apertures, 4 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 253 objects, 37 parts, 830 close pairs, 263 rays, 5 guns, 2 turrets swept, 7 cones, 19 apertures, 4 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 

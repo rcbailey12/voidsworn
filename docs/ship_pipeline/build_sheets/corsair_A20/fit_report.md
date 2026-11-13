@@ -1,4 +1,4 @@
-# corsair_A20 fit report (first sheet (issue 633); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
+# corsair_A20 fit report (issue 668 (R239): the bays facing forward in the bow face; RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
 
 Made by `tools/blender/build_sheets/clash.py` on the built blockout (it runs inside every `build.py ... render` and on its own
 with `build.py <code> <out> fit`). What it tests, on every part of every type:
@@ -26,7 +26,7 @@ also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on t
 (`turret=0`, `gun_fixed=1`).
 
 
-## How first sheet (issue 633) fixed them
+## How issue 668 (R239): the bays facing forward in the bow face fixed them
 
 | Clash (before) | Fix |
 |---|---|
@@ -35,7 +35,7 @@ While designing, the check also caught (and the design fixed): see the fit repor
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 362 objects, 44 parts, 1474 close pairs, 319 rays, 2 guns, 2 turrets swept, 9 cones, 17 apertures, 0 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 372 objects, 44 parts, 1158 close pairs, 319 rays, 2 guns, 2 turrets swept, 9 cones, 17 apertures, 0 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 

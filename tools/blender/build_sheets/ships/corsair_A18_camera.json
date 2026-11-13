@@ -1,21 +1,21 @@
 {
- "az": 61.864897954377724,
- "el": 28.00962173142033,
- "roll": -9.61969350353554,
- "dist": 17.124560327583445,
- "mm": 82.88992172575661,
+ "az": 65.45471310752946,
+ "el": 26.8790762168663,
+ "roll": -10.203823172068974,
+ "dist": 17.407410987254554,
+ "mm": 80.47724987651901,
  "target": [
   0.0,
   0,
   0.1
  ],
- "sx": -0.0049928349120777205,
- "sy": 0.09290790784802992,
+ "sx": -0.010429300977436556,
+ "sy": 0.10142764701937834,
  "res": [
   1920,
   1280
  ],
- "iou": 0.7617,
- "body_iou": 0.7673,
- "note": "A18 build sheet (issue 633): fitted to the whole beauty from a hand start at its bow-on three-quarter (az 45, el 30, roll -9); fit.py moves the camera only, never the ship. Concept mask: luminance over 28, closed, holes filled, largest shape (the dark belly drops out, so the IoU is a lower bound). Round 2 (issue 633): refitted to the round 2 build from the round 1 camera, the camera only, never the ship."
+ "iou": 0.7724,
+ "body_iou": 0.7662,
+ "note": "A18 build sheet (issue 633): fitted to the whole beauty from a hand start at its bow-on three-quarter (az 45, el 30, roll -9); fit.py moves the camera only, never the ship. Concept mask: luminance over 28, closed, holes filled, largest shape (the dark belly drops out, so the IoU is a lower bound). Round 2 (issue 633): refitted to the round 2 build from the round 1 camera, the camera only, never the ship. Issue 668 (R239, body broadened): refitted to the broadened build from the round 2 camera, the camera only, never the ship; against the same mask (remade the same way, luminance over 28) the main build refitted scores 76.9 percent, the broadened build 77.2."
 }

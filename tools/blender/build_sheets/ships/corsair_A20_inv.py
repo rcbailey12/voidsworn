@@ -1,13 +1,15 @@
 # corsair_A20 parts inventory (R218): every feature the concept shows, region by region, written BEFORE modelling (issue 633).
 # Read from the WHOLE concept first (R229): contrib/muse/design/class_family_corsair_2026_11/corsair_A20_beauty.jpg (v2s, three
 # quarter from the port bow, above) and corsair_A20_sheet.jpg (top view, true side view, bow-on), with designs.md for the
-# fittings the picture drifted on, Ryan's ruling (both hangar mouths on the port flank) and data.js c_hulk (turret T twice,
-# launch, hangar 2). Fields as in corsair_A16_inv.py; each line names its job (R221).
+# fittings the picture drifted on and data.js c_hulk (turret T twice, launch, hangar 2). Issue 668 (R239, Ryan:
+# "I prefer the concepts version of the bays facing forward"): both hangar mouths open in the bow face beside the bow block, as the beauty and the
+# sheet's bow-on view draw them (issue 633 had them on the port flank). Fields as in corsair_A16_inv.py; each line names its
+# job (R221).
 INVENTORY = [
     # ---------------- bow: the bow block, intakes, shoulders (prow to about 33 percent) ----------------
     dict(id='hull_form', job='the hulk-carrier\'s hull: a wide flat slab built round the hangar block', type='hull',
-         what='the wide flat slab, its port side stepped in at the hangar block, chamfered at both ends', count=1,
-         cells=['bow/top', 'bow/side', 'mid/top', 'mid/side', 'stern/top', 'stern/side'], reads='bevels, steps (the recess), an overhang (the lintel)', src='picture'),
+         what='the broad flat slab, its front narrowed to the core between the two bow mouths, chamfered at both ends', count=1,
+         cells=['bow/top', 'bow/side', 'mid/top', 'mid/side', 'stern/top', 'stern/side'], reads='bevels, steps (the recesses), an overhang (the lintels)', src='picture'),
     dict(id='bow_block', job='the armoured bow block: carries the intakes and the bow grabbers, takes the first hits', type='tier',
          what='the bow block in front of the body, as tall as the slab and about half its beam, housing the two intake tubes', count=1, cells=['bow/top', 'bow/side'], reads='a face, a roof, openings (the intakes)', src='picture'),
     dict(id='bow_plates', job='armour', type='plate', what='plates over the bow block', count=1, cells=['bow/top', 'bow/side'], reads='slabs with steps, bevels, rivets', src='picture'),
@@ -25,16 +27,16 @@ INVENTORY = [
     dict(id='thrusters', job='attitude thrusters: turn the slow hulk (turn 1 in data.js)', type='thruster', what='attitude thruster quads on the bow block and the stern', count=4,
          cells=['bow/side', 'stern/side'], reads='a block, splayed nozzles', src='designed'),
     # ---------------- midships: the hangar block, the salvage deck (33 to 66 percent) ----------------
-    dict(id='hangar_block', job='the hangar block: sill, lintel and the plate between the two mouths', type='tier', what='the port flank\'s hangar block round the two mouths',
-         count=1, cells=['mid/side', 'bow/side', 'mid/top'], reads='a face, a roof, openings (the mouths)', src='picture'),
-    dict(id='hangar_plates', job='armour', type='plate', what='plates over the sill, the lintel and the plate between the mouths', count=1, cells=['mid/side'],
+    dict(id='hangar_block', job='the hangar blocks: per mouth a sill, a lintel and an outer cheek', type='tier', what='the two hangar blocks either side of the core, framing the bow mouths',
+         count=1, cells=['bow/side', 'bow/top', 'mid/top'], reads='a face, a roof, openings (the mouths)', src='picture'),
+    dict(id='hangar_plates', job='armour', type='plate', what='plates over the sills, the lintels and the cheeks', count=1, cells=['bow/side'],
          reads='slabs with steps, bevels, rivets', src='picture'),
     dict(id='hangars', job='data.js launch and hangar 2: the two mouths the squadrons launch from', type='hangar',
-         what='two big open hangar mouths on the port flank, three quarters of its height, uneven, dark inside, framed in torn plate, doors slid clear', count=2, cells=['mid/side', 'bow/side'],
-         reads='a rim, torn plate teeth, door leaves with stiffeners, rails on brackets, launch rails, ceiling beams, lamps, an inner blast door, wall ribs', src='picture',
-         note='Ryan\'s ruling: both on the port flank'),
+         what='two big open hangar mouths in the bow face either side of the bow block, three quarters of its height, uneven, dark inside, framed in torn plate', count=2, cells=['bow/side', 'bow/top'],
+         reads='a rim, torn plate teeth, launch rails, ceiling beams, lamps, an inner blast door, wall ribs', src='picture',
+         note='issue 668 (R239): in the bow face, as the beauty and the sheet\'s bow-on view draw them; no slid doors (no face beside a bow mouth for them)'),
     dict(id='craft', job='the squadrons the Den launches (data.js hangar 2), and the scale', type='craft',
-         what='a cobbled fighter nosing out of the forward mouth, a second parked in the aft one', count=2, cells=['mid/side'],
+         what='a cobbled fighter nosing out of the port mouth, a second parked in the starboard one', count=2, cells=['bow/side'],
          reads='a fuselage, a canopy, mismatched wings, nozzles with a glow, nose guns, skids, a patch', src='picture'),
     dict(id='turrets', job='data.js turret T, twice: the dorsal turrets that keep escorts off the hulk', type='gun',
          what='two twin dorsal turrets, one on the fore deck tier, one on the aft', count=2, cells=['bow/top', 'stern/top', 'mid/side'],
@@ -68,8 +70,8 @@ INVENTORY = [
          reads='a base, a mast, whips, a pod (never a crossbar mast)', src='picture', note='the picture\'s small dishes and masts on the aft deck'),
 ]
 STRUCTURE = {'bow/top': 3, 'bow/side': 4, 'mid/top': 3, 'mid/side': 4, 'stern/top': 3, 'stern/side': 3}
-STRUCTURE_NOTE = ('A20 sheet: bow, the bow block, the body\'s front, a deck step and the first mouth\'s frame; midships, the deck, the sill, the lintel and the '
-                  'plate between the mouths; stern, the deck, the stern edge and the bell row')
+STRUCTURE_NOTE = ('A20 sheet: bow, the bow block, the two mouth frames (sill, lintel, cheek) and a deck step; midships, the deck, a deck tier, the flank '
+                  'and the starboard bricks; stern, the deck, the stern edge and the bell row')
 LEFT_PLAIN = [
     'Grime, rust streaks, scratches, worn edges and decals: surface texture, painted in the build (recipe stage 5), not modelled.',
     'designs.md\'s two bow casemates, two starboard flank guns and its rocket rack: data.js c_hulk carries two dorsal turrets only; a gun with no slot has no job (R221).',

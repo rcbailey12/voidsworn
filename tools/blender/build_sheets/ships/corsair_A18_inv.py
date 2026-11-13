@@ -17,7 +17,7 @@ INVENTORY = [
          count=1, cells=['bow/top', 'bow/side'], reads='a face, a roof, an opening', src='designed', note='the picture\'s flush disc needs a seat; designs.md\'s swollen shoulder is the nose\'s own swell now'),
     dict(id='sponson_plates', job='armour', type='plate', what='plates over the dish mount', count=1, cells=['bow/top', 'bow/side'], reads='slabs with steps, bevels, rivets', src='designed'),
     dict(id='ear', job='the one big ear: hears prey before anything else in the pack (the Sniffer\'s job)', type='dish',
-         what='an oversized listening dish set nearly flush on the dish mount, starboard on the nose, more than half the beam across', count=1, cells=['bow/top', 'bow/side'],
+         what='an oversized listening dish set nearly flush on the dish mount, starboard on the nose, more than two fifths of the beam across', count=1, cells=['bow/top', 'bow/side'],
          reads='ribbed bowl with a rim, a feed horn on struts, a yoke, a post, a base', src='picture', note='the picture\'s big round disc on the foredeck'),
     dict(id='grabbers', job='boarding grabbers: pin a fleeing hull long enough for the pack to catch up', type='claw_arm',
          what='one pair of small grabber arms under the chin', count=2, cells=['bow/below', 'bow/side'],
