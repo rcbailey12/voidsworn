@@ -128,7 +128,7 @@
   {
    "id": "H1",
    "kind": "hangar",
-   "what": "open hangar mouth 3.4 long, 1.4 high, 1.9 deep, doors slid forward",
+   "what": "open hangar mouth 3.6 long, 1.6 high, 1.9 deep, doors slid forward",
    "count": 1,
    "route": "hand-built",
    "source": "picture",
@@ -139,7 +139,7 @@
   {
    "id": "H2",
    "kind": "hangar",
-   "what": "open hangar mouth 2.8 long, 1.4 high, 1.9 deep, doors slid aft",
+   "what": "open hangar mouth 3.0 long, 1.6 high, 1.9 deep, doors slid aft",
    "count": 1,
    "route": "hand-built",
    "source": "picture",
@@ -172,7 +172,7 @@
   {
    "id": "I1",
    "kind": "intake",
-   "what": "intake tube, 0.8 across, 1.6 deep",
+   "what": "intake tube, 1.1 across, 2.2 deep",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -183,7 +183,7 @@
   {
    "id": "I2",
    "kind": "intake",
-   "what": "intake tube, 0.8 across, 1.6 deep",
+   "what": "intake tube, 1.1 across, 2.2 deep",
    "count": 1,
    "route": "kit",
    "source": "picture",

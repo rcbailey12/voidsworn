@@ -30,7 +30,9 @@ and A17 (tools/blender/build_sheets/kit.py, issue 532) marks its turrets in the 
 Class family parts (issue 633, `parts.py`; used by the A18, A19 and A20 build sheets, built at the hull's detail level like the rest):
 `bow_launcher` (a rocket casemate set IN a bow face: armour plate, box housing with a brow, one long braced tube or a short fat
 cluster of three, lips, bands, bolts, bores and rocket noses; a machine, R226), `hangar_mouth` (the dressing of a flank hangar
-recess: a rim with torn plate teeth, armoured door leaves slid clear on railed brackets, launch rails, ceiling beams with a dim red
+recess: a rim with torn plate teeth, armoured door leaves slid clear on railed brackets (the outer leaf patched with plates at the
+hull's plate size, round 2), launch rails, ceiling beams with a dim red
 lamp, wall ribs and an inner blast door; structure, it may tear across a seam) and `craft` (a cobbled fighter at the game's squadron
 length, 1.6). A sheet whose plates sit on small masses uses the sheet kit's `keep3d` plate option, so a keep-out clears only the
-plates it touches.
+plates it touches. From round 2 (issue 633) the three class sheets lay their plates in courses (the sheet kit's `courses` option: plates at
+the hull's plate size both ways, patches over joints and over plates, upward faces terraced; `rivet_r` sizes the rivets to the hull).

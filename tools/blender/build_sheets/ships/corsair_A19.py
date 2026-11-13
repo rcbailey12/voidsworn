@@ -246,7 +246,7 @@ def build(K):
     K.change('The whole scatter battery on the starboard side: three flank casemates of mixed calibre and two spine turrets resting to starboard',
              'data.js c_reaver: scatter S (one starboard battery); the picture\'s pods on both flanks and its foredeck guns have no other slot (R221)')
     K.change('No rocket racks on the middle deck', 'designs.md\'s two racks would be a second forward launcher; data.js gives one torp slot and the bow casemates fire it')
-    K.change('Port flank: the side block carries one big pale Hegemony trophy plate', 'designs.md (the trophy plate widening the port outline amidships) on the picture\'s side block')
+    K.change('Port flank: the side block carries one big pale Hegemony trophy plate, in three torn sheets bolted edge to edge', 'designs.md (the trophy plate widening the port outline amidships) on the picture\'s side block')
     K.change('Two grabber pairs: one under the chin, one under the forefoot', 'the picture\'s claws at the chin and further aft; designs.md\'s four arms; split so the jaw is not a copy of A17\'s')
     K.change('Three engine bells, the centre the largest, staggered in the stern block', 'designs.md; the picture\'s four become three, lopsided (port small and high, starboard lower)')
     K.change('Two dishes: the large one standing on the foredeck plate to port, a small one on the stern block to starboard', 'designs.md; the picture shows one on the foredeck')

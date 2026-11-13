@@ -8,9 +8,9 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 | ID | Job | Type | What | Count | Cells | Reads as (sub-parts) | Source |
 |---|---|---|---|---:|---|---|---|
 | hull_form | the hulk-carrier's hull: a wide flat slab built round the hangar block | hull | the wide flat slab, its port side stepped in at the hangar block, chamfered at both ends | 1 | bow/top, bow/side, mid/top, mid/side, stern/top, stern/side | bevels, steps (the recess), an overhang (the lintel) | picture |
-| bow_block | the armoured bow block: carries the intakes and the bow grabbers, takes the first hits | tier | the narrow bow block in front of the body | 1 | bow/top, bow/side | a face, a roof, openings (the intakes) | picture |
+| bow_block | the armoured bow block: carries the intakes and the bow grabbers, takes the first hits | tier | the bow block in front of the body, as tall as the slab and about half its beam, housing the two intake tubes | 1 | bow/top, bow/side | a face, a roof, openings (the intakes) | picture |
 | bow_plates | armour | plate | plates over the bow block | 1 | bow/top, bow/side | slabs with steps, bevels, rivets | picture |
-| intakes | the family's face: scoop gas and dust for the reactor and the squadrons' fuel | tube | two big intake tubes side by side in the bow face | 2 | bow/side, bow/top | tubes with depth, hooded lips, bands, bolts, stiffeners, dark bores | picture |
+| intakes | the family's face: scoop gas and dust for the reactor and the squadrons' fuel | tube | two huge intake tubes side by side filling the bow block's face, each three quarters of its height | 2 | bow/side, bow/top | tubes with depth, hooded lips, bands, bolts, stiffeners, dark bores | picture |
 | scoop | the wake-sniffer scoop | tube | a small scoop with a grille under the chin (designs.md: one chin scoop) | 1 | bow/below, bow/side | ribbed drum, bands, rolled lip, a grille in a dark mouth | designed |
 | grabbers | boarding grabbers: pin a prize at the bow | claw_arm | a pair of grabber arms under the bow block (designs.md: four bow arms; two here, so the jaw is not A17's) | 2 | bow/below, bow/side | shoulder hinges on brackets, box segments, knuckles, rams, forked pincers | designed |
 | dishes | listening dishes: find prey and call the squadrons home | dish | two dishes of uneven size on the body's front shoulders | 2 | bow/top, bow/side | ribbed bowls with rims, feed horns on struts, yokes, posts, bases | picture |
@@ -18,7 +18,7 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 | thrusters | attitude thrusters: turn the slow hulk (turn 1 in data.js) | thruster | attitude thruster quads on the bow block and the stern | 4 | bow/side, stern/side | a block, splayed nozzles | designed |
 | hangar_block | the hangar block: sill, lintel and the plate between the two mouths | tier | the port flank's hangar block round the two mouths | 1 | mid/side, bow/side, mid/top | a face, a roof, openings (the mouths) | picture |
 | hangar_plates | armour | plate | plates over the sill, the lintel and the plate between the mouths | 1 | mid/side | slabs with steps, bevels, rivets | picture |
-| hangars | data.js launch and hangar 2: the two mouths the squadrons launch from | hangar | two open hangar mouths low on the port flank, uneven, framed in torn plate, doors slid clear (Ryan's ruling: both on the port flank) | 2 | mid/side, bow/side | a rim, torn plate teeth, door leaves with stiffeners, rails on brackets, launch rails, ceiling beams, lamps, an inner blast door, wall ribs | picture |
+| hangars | data.js launch and hangar 2: the two mouths the squadrons launch from | hangar | two big open hangar mouths on the port flank, three quarters of its height, uneven, dark inside, framed in torn plate, doors slid clear (Ryan's ruling: both on the port flank) | 2 | mid/side, bow/side | a rim, torn plate teeth, door leaves with stiffeners, rails on brackets, launch rails, ceiling beams, lamps, an inner blast door, wall ribs | picture |
 | craft | the squadrons the Den launches (data.js hangar 2), and the scale | craft | a cobbled fighter nosing out of the forward mouth, a second parked in the aft one | 2 | mid/side | a fuselage, a canopy, mismatched wings, nozzles with a glow, nose guns, skids, a patch | picture |
 | turrets | data.js turret T, twice: the dorsal turrets that keep escorts off the hulk | gun | two twin dorsal turrets, one on the fore deck tier, one on the aft (the picture shows no turret; data.js gives two) | 2 | bow/top, stern/top, mid/side | turret rings, faceted housings, mantlets, breeches, barrels with sleeves and brakes | designed |
 | deck_tiers | the salvage deck: stacked plate over the hangar decks | tier | three low tiers of stacked plate on the deck | 1 | bow/top, mid/top, stern/top | a face, a roof, an edge | picture |
@@ -64,7 +64,7 @@ Left as surface, and why:
 
 ## Every built part has a job (R221)
 
-Built kit parts: 62; parts whose inventory id names no line with a job: 0.
+Built kit parts: 68; parts whose inventory id names no line with a job: 0.
 
 ## Per cell: present, shaped, detailed (from the model, corsair_A20_model.json)
 
@@ -75,9 +75,9 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
 | hull_form | the wide flat slab, its port side stepped in at the hangar block, cham | 1 / 1 | Y | Y | Y |
-| bow_block | the narrow bow block in front of the body | 1 / 1 | Y | Y | Y |
-| bow_plates | plates over the bow block | 1 / 1 | Y | Y | Y |
-| intakes | two big intake tubes side by side in the bow face | 2 / 2 | Y | Y | Y |
+| bow_block | the bow block in front of the body, as tall as the slab and about half | 1 / 1 | Y | Y | Y |
+| bow_plates | plates over the bow block | 7 / 1 | Y | Y | Y |
+| intakes | two huge intake tubes side by side filling the bow block's face, each  | 2 / 2 | Y | Y | Y |
 | dishes | two dishes of uneven size on the body's front shoulders | 2 / 2 | Y | Y | Y |
 | hull_plates | patch plating over the whole hull, many in trophy colours | 1 / 1 | Y | Y | Y |
 | turrets | two twin dorsal turrets, one on the fore deck tier, one on the aft | 2 / 2 | Y | Y | Y |
@@ -91,16 +91,16 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
 | hull_form | the wide flat slab, its port side stepped in at the hangar block, cham | 1 / 1 | Y | Y | Y |
-| bow_block | the narrow bow block in front of the body | 1 / 1 | Y | Y | Y |
-| bow_plates | plates over the bow block | 1 / 1 | Y | Y | Y |
-| intakes | two big intake tubes side by side in the bow face | 2 / 2 | Y | Y | Y |
+| bow_block | the bow block in front of the body, as tall as the slab and about half | 1 / 1 | Y | Y | Y |
+| bow_plates | plates over the bow block | 7 / 1 | Y | Y | Y |
+| intakes | two huge intake tubes side by side filling the bow block's face, each  | 2 / 2 | Y | Y | Y |
 | scoop | a small scoop with a grille under the chin | 1 / 1 | Y | Y | Y |
 | grabbers | a pair of grabber arms under the bow block | 2 / 2 | Y | Y | Y |
 | dishes | two dishes of uneven size on the body's front shoulders | 2 / 2 | Y | Y | Y |
 | hull_plates | patch plating over the whole hull, many in trophy colours | 1 / 1 | Y | Y | Y |
 | thrusters | attitude thruster quads on the bow block and the stern | 4 / 4 | Y | Y | Y |
 | hangar_block | the port flank's hangar block round the two mouths | 1 / 1 | Y | Y | Y |
-| hangars | two open hangar mouths low on the port flank, uneven, framed in torn p | 2 / 2 | Y | Y | Y |
+| hangars | two big open hangar mouths on the port flank, three quarters of its he | 2 / 2 | Y | Y | Y |
 | wall_bricks | four big bricks on the starboard flank | 1 / 1 | Y | Y | Y |
 | lamps | dim red lamps on both flanks and the bow block | 8 / 8 | Y | Y | Y |
 
@@ -133,7 +133,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | hull_plates | patch plating over the whole hull, many in trophy colours | 1 / 1 | Y | Y | Y |
 | hangar_block | the port flank's hangar block round the two mouths | 1 / 1 | Y | Y | Y |
 | hangar_plates | plates over the sill, the lintel and the plate between the mouths | 3 / 1 | Y | Y | Y |
-| hangars | two open hangar mouths low on the port flank, uneven, framed in torn p | 2 / 2 | Y | Y | Y |
+| hangars | two big open hangar mouths on the port flank, three quarters of its he | 2 / 2 | Y | Y | Y |
 | craft | a cobbled fighter nosing out of the forward mouth, a second parked in  | 2 / 2 | Y | Y | Y |
 | turrets | two twin dorsal turrets, one on the fore deck tier, one on the aft | 2 / 2 | Y | Y | Y |
 | spare_bell | a spare engine bell lying across the deck in a cradle, cold | 1 / 1 | Y | Y | Y |
@@ -209,6 +209,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 3.30 | 9.60 | 3.88 | 24.56 |
-| build | 2.63 | 3.60 | 2.71 | 5.75 |
+| build | 2.66 | 3.60 | 2.71 | 5.87 |
 
 Lines not present, shaped and detailed without a reason: 0.

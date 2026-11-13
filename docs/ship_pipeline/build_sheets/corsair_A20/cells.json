@@ -21,7 +21,7 @@
   {
    "cell": "bow/top",
    "id": "bow_plates",
-   "built": 1,
+   "built": 7,
    "listed": 1,
    "present": true,
    "shaped": true,
@@ -120,7 +120,7 @@
   {
    "cell": "bow/side",
    "id": "bow_plates",
-   "built": 1,
+   "built": 7,
    "listed": 1,
    "present": true,
    "shaped": true,
@@ -687,10 +687,10 @@
    "hull_LH": 24.56
   },
   "build": {
-   "env_LB": 2.63,
+   "env_LB": 2.66,
    "env_LH": 3.6,
    "hull_LB": 2.71,
-   "hull_LH": 5.75
+   "hull_LH": 5.87
   }
  }
 }
