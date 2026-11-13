@@ -292,7 +292,7 @@ def build(K):
     K.break_line('B-2', -7.5, 'at the band collar: the stern (feathers and drives) tears away, opening the engine room and the aft vault',
                  path=[(-8.02, 2.5), (-8.02, 1.9), (-7.4, 1.1), (-7.95, 0.2), (-7.2, -0.7), (-8.02, -1.8), (-8.02, -2.5)])   # issue 618 (R226): aft of the collar thrusters Q2
     K.break_line('B-3', 0.0, 'the dorsal tiers peel off band by band along their base, taking the batteries, laying the dark decks bare',
-                 path=[(1.3, 1.5), (-0.8, 1.35), (-2.6, 1.55), (-4.2, 1.35), (-5.4, 1.5)], kind='long')
+                 path=[(1.3, 1.72), (-0.8, 1.62), (-2.6, 1.76), (-4.2, 1.62), (-5.4, 1.7)], kind='long')   # issue 618: through the tiers, clear of the upper deck (1.2) and its torn edge
     # issue 618: the game's longitudinal seam is one level plane over its compartment (RECIPE.md, format version 1); B-4 lies at 0.9,
     # over the projector's collars (top 0.74, R226) and through the crescent's root, where the upper and root layers sit on the blade
     K.break_line('B-4', 9.0, 'the crescent\'s upper layers peel from the lower blade at the root, band by band, over the projector',
@@ -320,6 +320,7 @@ def build(K):
     K.change('Low round drums under both batteries, slimmed to the turret feet (R221 pass 2)', 'so the fore twin clears the tier when it trains aft and fires aft over the aft twin\'s muzzles, and the aft twin fires over the fore one (the fit check found both)')
     K.change('Belly twin, attitude thrusters, deck and belly hatches, corona strip lights, heat panels added', 'the belly needs cover and a ship in space needs thrusters; the picture shows no underside')
     K.change('B-1 kinks aft round the projector\'s breech collars (to 4.1 on the axis); B-2 runs aft of the collar thrusters at the flanks (issue 618)', 'R226: a machine never crosses a seam; the projector and the thrusters ride whole with one piece')
+    K.change('B-3 (the dorsal tiers\' peel) raised to about 1.7, through the tiers (issue 618)', 'at 1.45 the game\'s torn peel plane reached the upper deck\'s edge (1.2) and left 15 deck triangles past the torn plating (death_seam_check); at 1.7 it still takes the tiers and the batteries')
     K.change('B-4 (the crescent layers\' peel) is a level plane at 0.9 over the bow compartment (issue 618)', 'the game\'s longitudinal seam is one level plane (RECIPE.md, format version 1); at 0.9 it clears the projector\'s collars and peels the root and upper layers off the blade')
     K.change('Two boarding origins on the flanks over the belt, between the strip lights (issue 618)', 'the game contract needs one a side on the mid hull (HARDPOINTS.md)')
     K.change('The projector\'s hard point is its lens, at the crest\'s centre (issue 618)', 'the horns\' meeting point ahead of it is open space, which the export check refuses as off the mesh; the arc leaves from the lens')
