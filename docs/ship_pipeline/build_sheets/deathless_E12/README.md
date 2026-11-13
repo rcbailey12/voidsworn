@@ -41,7 +41,7 @@ Start here: **[side_by_side.jpg](side_by_side.jpg)**, then [fit_view.jpg](fit_vi
 `"bake": "stack"`: stage 5 paints this ship with the Eclipse kit's paint stack (`tools/blender/kits/eclipse/stack.py` on
 `tools/blender/kits/shared/paint_stack.py`; RECIPE.md "The paint stack for sheet ships", ships.md section 0 item 2 "The Eclipse
 paint"). Masks from the ship's own geometry, a drawn trim sheet and decals, colours sampled from the concepts, never projected.
-Pictures (sandbox, Blender 5.3 CPU, 1024 atlases; game light, battle lift 2.2): [beside the concept](paint/E12_paint_full.jpg),
+Pictures (sandbox, Blender 5.3 CPU, **2048 atlases** and a 1024 light map, the PC bakes 4096; game light, battle lift 2.2): [beside the concept](paint/E12_paint_full.jpg), [at the battle camera's pixel size](paint/E12_paint_cam170.jpg),
 [bow](paint/E12_paint_bow.jpg), [midships](paint/E12_paint_midships.jpg), [stern](paint/E12_paint_stern.jpg),
 [six views](paint/E12_paint_views.jpg), [engines](paint/E12_paint_engines.jpg), [corona line and core close](paint/E12_paint_close.jpg);
 [surface check](paint/surface_check.json), [R224 density](paint/density_sandbox.json). The game shots at camera 170 and 60
@@ -53,15 +53,26 @@ show at that lift, divided by it (read from look.gd), so the ship reads dark vio
 sampled from both Eclipse concepts, held to their lower half (E11's lit lilac-grey plates are the lavender Ryan ruled out);
 the hue held a little stronger than the tone because AgX and the warm key take colour out of dark tones (`SAT`).
 
+**Pass 2 (Ryan, Nov 13 2026 11:06 CST, on E11_paint_full.jpg):** "that green looks so plain and stark, just like neon paint.
+Not a ton of details elsewhere, it looks like grainy paint almost. Everything kind of blends together." And the Board's review of
+PR 643: the core read as a white blob. What changed, in the Eclipse stack (never per ship): the corona line and the core became
+light drawn on one emission map (below); the plates separate by value steps between big calm panels and plate families
+(near-black heat-shield plates, deep violet, a lighter dusk violet, a few mauve and cool dark gunmetal plates; factions.md lists
+only violet-black plates, so no bronze), dark seams that read at camera 170, brighter worn edges on rims and plate lips, a
+different finish for the matte shade plates, the satin body and the worked-metal machines; the fine mottle, grain and per-plate
+speckle are gone. The tone stays dark violet-black at the 2.2 lift.
+
 **Changed from the picture, paint (the builder's calls, R207, R233):**
 - **No added running lamps** (`RUNNING_LIGHTS = None`). The red lamps are a Hullbreaker rule (R228 item 4); a row of coloured
   points along the flanks reads as a navy's or a pirate's ship. The Eclipse are machines in a system they made dark (lore 7.1):
   their only lights are the corona (the thin green-white line on every shade rim, which already marks the outline and heading
   at the battle camera), the core, the pale engine rings and the sheet's own corona strip lights over the belts. No
   `lights.json` is written; the standing light check passes with nothing to hold.
-- **The green is whitened**: the corona line and the core take the concepts' rim hue whitened toward a cold white (factions.md:
-  "a thin, cold green-white line"; the concepts' saturated green reads as a toxic glow). The corona line sits just over the
-  game's 0.8 glow threshold, a faint edge of fire and no fat halo; the core is the one bright point.
+- **The green is light, not paint** (pass 2): the corona line is drawn on the ship's emission map as the faint ring of a real
+  eclipse: thin at rest, brighter arcs and dimmer stretches with a few short breaks, a soft falloff into the plate edge, cold
+  green-white at its hottest and deeper green where dim, mostly under the game's 0.8 glow threshold with only the brightest arcs
+  over it. The core is green-white at its centre grading to the concepts' core green at its edge, the brightest light on the
+  ship but never white all over.
 - **The engine ring is the game's Eclipse engine colour** (`godot/fx/faction_looks.json` deathless `engine`, a pale violet, the
   colour the game's plume is drawn in) paled toward white with a touch of its white-gold `accent`, not the sheet's green: each
   ring its own brightness and tint, hot spots and dim gaps round it, the shade disc black. No flame.

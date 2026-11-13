@@ -166,13 +166,23 @@ and E12 (and every later Eclipse sheet ship) on the same shared machinery. What 
   never lavender or grey. Unpainted, E11 and E12 rendered glowing white in the game;
 - the plate tones are sampled from both concepts (E11 and E12 `_beauty.jpg`, `sample_concept()`), the lightness held to the
   concepts' lower half (E11's lit plates are the lavender grey Ryan ruled out); no rust, no soot; flush fasteners and fine
-  machining scratches in the trim sheet; worn edges a dulled pale violet; black seams; a roughness floor of 0.60;
-- glow: the sheet's `corona` (every shade rim), `ecore` (the core) and `lens` zones are emissive surfaces in a cold
-  green-white (the concepts' rim hue, whitened), the corona line just over the game's 0.8 glow threshold so a thin line gets a
-  faint edge and no fat halo. The engine is an eclipse ring: the engine part's `corona` ring is the engine glow surface
-  (`ENGINE_GLOW` names its zone and part kind; the shared stack's `bake_engine_glow` calls the stack's `engine_glow_nodes`):
-  pale light in the game's Eclipse engine colour (`faction_looks.json` deathless `engine`, paled, a touch of its `accent`) with
-  hot spots and dim gaps round the ring, each engine its own brightness and tint, round the black shade disc; no flame;
+  machining scratches in the trim sheet; worn edges a dulled pale violet; black seams; a roughness floor of 0.50;
+- light (pass 2, after Ryan's "that green looks so plain and stark, just like neon paint", Nov 13): every light of the ship is
+  one emissive surface with one emission map (the export's `CODE_glow` and `CODE_glow_emission.jpg`): `ENGINE_GLOW` names the
+  engine ring (zone `corona`, part kind `engine`) and `extra_zones` (`corona`, `ecore`, `lens` on any part, the hull's rim line
+  too); the shared `bake_engine_glow` asks the stack's `glow_vertex` for the other lights' inputs (the place across a rim strip,
+  a core's distance from its centre, `ps_kind`) and draws them all with the stack's `engine_glow_nodes`. The corona line: thin
+  at rest, brighter arcs, dimmer stretches and a few short breaks along it, a soft falloff to its edges, cold green-white
+  hottest and deeper green dim, mostly under the 0.8 glow threshold. The core and lens: green-white centre grading to green.
+  The engine ring: pale light in the game's Eclipse engine colour (`faction_looks.json` deathless `engine`, paled, a touch of
+  its `accent`) with hot spots and dim gaps, each engine its own, round the black shade disc; no flame. The map is half the
+  atlas size (`res_frac`). Because the glow surface carries the hull's own rim line, the stack (`GLOW_HULL`) marks it
+  `hull_surface`, and `check_export.py` leaves it out of the part surfaces it measures breach clearance from (every other light
+  on it sits on a part whose other surfaces are measured);
+- surface (pass 2, Ryan: "it looks like grainy paint almost. Everything kind of blends together"): big calm panels with value
+  steps between plate families, dark seams that read at camera 170, brighter worn edges, a finish per zone (matte shades, satin
+  body, worked-metal machines), no mottle or grain, and `island_tone` 0.15 (a new shared layer setting, default 0.75 as before:
+  the sheet's thousands of tiny plate islands each took their own tone, which read as grain);
 - running lights: none added (`RUNNING_LIGHTS = None`, the builder's call, on each sheet): the corona line, the core, the
   engine rings and the sheet's corona strip lights are the Eclipse's only lights; no `lights.json` is written;
 - decals: the eclipse sigil, a line of archive glyphs (each ship's own, seeded by its game code), band ticks, all a dulled
@@ -183,7 +193,7 @@ material a stack marks `ps_glow` counts as glow in the surface check and is left
 the hull itself (the Eclipse corona line on a shade rim) gets its own material marked `hull_surface`, which `check_export.py`
 counts as hull trim, not a part, when it measures breach clearance (the first sandbox export of E11 failed 3 breach anchors
 0.011 to 0.023 from the rim line beside them; the unpainted export, where the line was part of the hull surface, passed); `paint_sheet.py`
-renders a close view of each glow a stack marks `ps_close` (the corona line on a shade rim, the core) and takes `sky_spec=0`
+renders a close view of each glow a stack marks `ps_close` on the object or its material (the corona line on a shade rim, the core), and with `cam170=1` the ship at the battle camera's pixel size (fov 45, distance 170, pitch 0.98: the middle 640 x 360 of a 1920 x 1080 screen) and takes `sky_spec=0`
 (the battle reflects its near-black sky, so the preview's ambient lights the diffuse colour and not a grey sheen; the
 Hullbreaker pictures keep the default); `paint_compare.py` takes `stack=` and `issue=` for its captions and adds the close
 picture. The PC run for both is `tools/pc/jobs/E11_E12_PAINT_642.bat` (queue `q_paint_642.bat`).
