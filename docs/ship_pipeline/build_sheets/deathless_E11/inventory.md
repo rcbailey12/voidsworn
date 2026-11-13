@@ -170,10 +170,10 @@ Concept counts read off the concept sheet by eye (E11 sheet: bow, the crescent's
 |---|---:|---:|---|
 | bow/top | 6 | 7 | Hull: the oval body; Crescent lower blade; Crescent upper layer; Crescent root layer; Projector breech collars; Projector shaft; Projector muzzle block |
 | bow/side | 5 | 7 | Hull: the oval body; Crescent lower blade; Crescent upper layer; Crescent root layer; Projector breech collars; Projector shaft; Projector muzzle block |
-| bow/below | no view | 2 | Hull: the oval body; Crescent lower blade |
+| bow/below | no view | 1 | Hull: the oval body |
 | mid/top | 8 | 10 | Hull: the oval body; Crescent lower blade; Crescent upper layer; Crescent root layer; Projector breech collars; Dorsal tier; Barbette, fore battery; Barbette, aft battery; Flank belt; Lower skirt |
 | mid/side | 8 | 10 | Hull: the oval body; Crescent lower blade; Crescent upper layer; Crescent root layer; Projector breech collars; Dorsal tier; Barbette, fore battery; Barbette, aft battery; Flank belt; Lower skirt |
-| mid/below | no view | 3 | Hull: the oval body; Crescent lower blade; Lower skirt |
+| mid/below | no view | 2 | Hull: the oval body; Lower skirt |
 | stern/top | 8 | 17 | Hull: the oval body; Dorsal tier; Flank belt; Lower skirt; Band collar; Feather row 1, blade 1; Feather row 1, blade 4; Feather row 1, blade 7; Feather row 1, blade 10; Feather row 2, blade 1; Feather row 2, blade 4; Feather row 2, blade 7; |
 | stern/side | 8 | 12 | Hull: the oval body; Dorsal tier; Flank belt; Lower skirt; Band collar; Feather row 1, blade 1; Feather row 1, blade 4; Feather row 1, blade 10; Feather row 2, blade 1; Feather row 2, blade 10; Feather row 3, blade 1; Feather row 3, blade 1 |
 | stern/below | no view | 7 | Hull: the oval body; Lower skirt; Band collar; Feather row 1, blade 10; Feather row 2, blade 7; Feather row 2, blade 10; Feather row 3, blade 10 |

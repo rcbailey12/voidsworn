@@ -23,8 +23,10 @@ Changes for the build (each is in "Changed from the picture" in [feature_table.m
 - **The Board's massing round, judged against the whole concept.** The crescent is one thick tiered band: the broad outer band
   flush with a thick outer wall, the inner layer stepped down close inside it, the root layer on the band (it read as two thin
   blades with a wide gap). The stern carries three big nozzles stacked one over another, each a third of the stern's height,
-  standing 2.3 clear behind the body (it was a diamond of four hidden behind the feathers): the body ends 0.6 sooner and the
-  last feather row ends with it.
+  standing 2.6 clear behind the body (it was a diamond of four hidden behind the feathers). Round 2: the body ends 0.9 sooner
+  and narrows in plan from the band collar aft to the stack's own width (1.92 half-beam at 8.4 aft of amidships to 0.76 at
+  the end; its height kept, so the side view holds), the fins grip the stack, and all three nozzles show at the beauty camera:
+  the drums' camera-facing sides 99, 47 and 42 percent in view (top to bottom; 75, 0 and 0 before the massing round).
 - **Seams round machines (R226).** B-1 kinks aft round the projector's breech collars; B-2 runs aft of the collar thrusters.
 - **Two peel seams.** B-3 (dorsal tiers) about 1.7, so its torn edge clears the upper deck; B-4 (crescent layers) a level plane
   at 0.9 over the projector, because the game's peel seam is one level plane per compartment.
@@ -32,8 +34,8 @@ Changes for the build (each is in "Changed from the picture" in [feature_table.m
   engine bells. Lowest part type against the hull: the projector, 0.89 (was 0.44 / 0.33 before this job).
 - **Hard points.** Two boarding origins on the flanks; the projector's hard point is its lens (the horns' meeting point is open space).
 
-Outline overlap at the camera of record: 74.9 percent with this job's mask (luminance over 28, closed, filled, largest shape;
-75.6 before the massing round and on the sheet geometry). Reported, not a bar.
+Outline overlap at the camera of record: 74.5 percent with this job's mask (luminance over 28, closed, filled, largest shape;
+74.9 after round 1, 75.6 before the massing round and on the sheet geometry). Reported, not a bar.
 
 Start here: **[side_by_side.jpg](side_by_side.jpg)** (concept left, blockout right, same camera, full view then bow, midships
 and stern at the same windows), then [fit_view.jpg](fit_view.jpg) and [cells.jpg](cells.jpg).

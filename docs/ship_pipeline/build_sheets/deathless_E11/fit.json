@@ -13,8 +13,8 @@
  "tested": {
   "objects": 244,
   "parts": 28,
-  "close_pairs": 639,
-  "rays": 463,
+  "close_pairs": 650,
+  "rays": 462,
   "guns": 5,
   "turrets_swept": 4,
   "cones": 7,
@@ -1058,7 +1058,7 @@
     ],
     [
      170.0,
-     10
+     0
     ],
     [
      175.0,

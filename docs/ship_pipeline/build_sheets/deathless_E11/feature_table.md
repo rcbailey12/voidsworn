@@ -77,7 +77,7 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 
 | Mass | Station % | Offset range | Height range | Colour | Note |
 |---|---|---|---|---|---|
-| Hull: the oval body | 30.1 to 91.7 | -2.38 to 2.38 | -2.05 to 1.95 | Eclipse violet plate | widest behind the crescent, waisted at the band collar, flaring at the stern |
+| Hull: the oval body | 30.1 to 90.7 | -2.38 to 2.38 | -2.05 to 1.95 | Eclipse violet plate | widest behind the crescent, waisted at the band collar, flaring at the stern |
 | Crescent lower blade | 0.2 to 39.7 | -5.40 to 5.40 | -1.38 to 1.02 | Eclipse violet and mauve plate | a broad brim: 1.2 thick at the inner wall, 0.6 at the back rim, thin at the horns; it falls 1.6 from the root to the horns |
 | Crescent upper layer | 2.2 to 39.7 | -5.40 to 5.40 | -1.06 to 1.25 | mauve plate | the broad outer band, flush with the outer wall, to 140 degrees either side; the inner layer steps down inside it |
 | Crescent root layer | 23.4 to 37.6 | -4.60 to 4.60 | 0.39 to 1.37 | violet plate | the third, shortest layer on the broad band over the root |
@@ -90,24 +90,24 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Flank belt | 40.1 to 73.9 | -2.50 to 2.50 | -0.05 to 0.42 | grey-mauve armour boxes | a raised strake at mid height, both flanks |
 | Lower skirt | 40.8 to 73.9 | -2.42 to 2.42 | -1.66 to -0.46 | deep violet tall plates | tall narrow plates hanging below the belt |
 | Band collar | 74.8 to 78.4 | -2.11 to 2.11 | -2.04 to 1.95 | violet gunmetal with segmented blocks | the heavy band ring at 77 percent |
-| Feather row 1, blade 1 | 79.3 to 86.4 | 1.82 to 2.14 | 0.01 to 1.03 | violet blade | swept shade blade, lifting aft |
+| Feather row 1, blade 1 | 79.3 to 86.4 | 1.46 to 2.06 | 0.00 to 1.03 | violet blade | swept shade blade, lifting aft |
 | Feather row 1, blade 4 | 79.3 to 86.4 | -0.97 to 0.07 | 1.71 to 2.01 | violet blade | swept shade blade, lifting aft |
-| Feather row 1, blade 7 | 79.3 to 86.4 | -2.15 to -1.74 | -1.11 to -0.11 | violet blade | swept shade blade, lifting aft |
-| Feather row 1, blade 10 | 79.3 to 86.4 | -0.04 to 0.98 | -2.08 to -1.74 | violet blade | swept shade blade, lifting aft |
-| Feather row 2, blade 1 | 83.5 to 90.7 | 1.66 to 2.16 | 0.56 to 1.51 | violet blade | swept shade blade, lifting aft |
-| Feather row 2, blade 4 | 83.5 to 90.7 | -1.52 to -0.53 | 1.61 to 2.01 | violet blade | swept shade blade, lifting aft |
-| Feather row 2, blade 7 | 83.5 to 90.7 | -2.12 to -1.52 | -1.55 to -0.65 | violet blade | swept shade blade, lifting aft |
-| Feather row 2, blade 10 | 83.5 to 90.7 | 0.53 to 1.47 | -2.07 to -1.58 | violet blade | swept shade blade, lifting aft |
-| Feather row 3, blade 1 | 87.8 to 91.7 | 1.99 to 2.23 | 0.07 to 1.10 | violet blade | swept shade blade, lifting aft |
-| Feather row 3, blade 4 | 87.8 to 91.7 | -1.01 to 0.03 | 1.91 to 2.08 | violet blade | swept shade blade, lifting aft |
-| Feather row 3, blade 7 | 87.8 to 91.7 | -2.24 to -1.96 | -1.03 to -0.01 | violet blade | swept shade blade, lifting aft |
-| Feather row 3, blade 10 | 87.8 to 91.7 | -0.00 to 1.02 | -2.17 to -1.91 | violet blade | swept shade blade, lifting aft |
+| Feather row 1, blade 7 | 79.3 to 86.4 | -2.08 to -1.45 | -1.11 to -0.11 | violet blade | swept shade blade, lifting aft |
+| Feather row 1, blade 10 | 79.3 to 86.4 | -0.04 to 0.98 | -2.07 to -1.74 | violet blade | swept shade blade, lifting aft |
+| Feather row 2, blade 1 | 83.5 to 90.7 | 0.82 to 1.90 | 0.27 to 1.43 | violet blade | swept shade blade, lifting aft |
+| Feather row 2, blade 4 | 83.5 to 90.7 | -1.46 to -0.52 | 1.01 to 2.02 | violet blade | swept shade blade, lifting aft |
+| Feather row 2, blade 7 | 83.5 to 90.7 | -1.88 to -0.80 | -1.47 to -0.37 | violet blade | swept shade blade, lifting aft |
+| Feather row 2, blade 10 | 83.5 to 90.7 | 0.53 to 1.42 | -2.07 to -1.08 | violet blade | swept shade blade, lifting aft |
+| Feather row 3, blade 1 | 87.8 to 90.7 | 0.87 to 1.34 | -0.27 to 0.77 | violet blade | swept shade blade, lifting aft |
+| Feather row 3, blade 4 | 87.8 to 90.7 | -1.02 to -0.08 | 1.62 to 2.16 | violet blade | swept shade blade, lifting aft |
+| Feather row 3, blade 7 | 87.8 to 90.7 | -1.35 to -0.87 | -0.90 to 0.13 | violet blade | swept shade blade, lifting aft |
+| Feather row 3, blade 10 | 87.8 to 90.7 | 0.10 to 0.97 | -2.25 to -1.62 | violet blade | swept shade blade, lifting aft |
 
 ## INSIDE (R98, R209): what each break reveals
 
-Deck levels (height): lower deck -0.95 (34% to 90%); main deck 0.30 (32% to 90%); upper deck 1.20 (39% to 89%).
+Deck levels (height): lower deck -0.95 (34% to 89%); main deck 0.30 (32% to 89%); upper deck 1.20 (39% to 88%).
 
-Bulkhead and frame stations: F0 33.7%, F1 42.2%, F2 51.5%, F3 60.7%, F4 69.6%, F5 76.8%, F6 85.0%, F7 90.3%.
+Bulkhead and frame stations: F0 33.7%, F1 42.2%, F2 51.5%, F3 60.7%, F4 69.6%, F5 76.8%, F6 85.0%, F7 89.2%.
 
 | Space | Station % | Offset range | Height range | Note |
 |---|---|---|---|---|
@@ -120,7 +120,7 @@ Bulkhead and frame stations: F0 33.7%, F1 42.2%, F2 51.5%, F3 60.7%, F4 69.6%, F
 | archive vault aft (archive) | 70.0 to 76.0 | -1.20 to 1.20 | -0.90 to 0.25 | archive vaults |
 | shade machinery (machinery) | 70.0 to 76.0 | -1.00 to 1.00 | 0.40 to 1.15 | shade generators and the band collar's drives |
 | flak magazine (magazine) | 50.8 to 56.5 | -0.70 to 0.70 | -1.50 to -1.00 | over the belly twin |
-| engine room (engroom) | 85.3 to 89.2 | -1.40 to 1.40 | -0.90 to 1.15 | engine room and the four drives' feeds |
+| engine room (engroom) | 85.3 to 87.8 | -0.70 to 0.70 | -0.90 to 1.15 | engine room and the three drives' feeds |
 
 | Armour zone | Thickness (units) | Note |
 |---|---:|---|
@@ -151,8 +151,8 @@ Full interiors throughout the hull (R215), hidden until a piece breaks. Eclipse 
 | hp_breach_3 | 53.3 | -1.40 | 2.00 | stbd | mid | on a shade band |
 | hp_breach_4 | 63.6 | 1.30 | 1.98 | port | mid | on a shade band |
 | hp_breach_5 | 46.8 | -2.40 | 0.50 | stbd | mid | on a shade band |
-| hp_breach_6 | 83.2 | 1.90 | 0.90 | port | eng | on a shade band |
-| hp_breach_7 | 87.1 | -1.90 | -0.90 | stbd | eng | on a shade band |
+| hp_breach_6 | 83.2 | 1.78 | 0.90 | port | eng | on a shade band |
+| hp_breach_7 | 86.4 | -1.42 | -0.90 | stbd | eng | on a shade band |
 | hp_rcs_0 | 44.3 | 2.24 | 0.95 | port |  |  |
 | hp_rcs_1 | 44.3 | -2.24 | 0.95 | stbd |  |  |
 | hp_rcs_2 | 76.8 | 2.10 | 0.00 | port |  |  |
@@ -162,7 +162,7 @@ Full interiors throughout the hull (R215), hidden until a piece breaks. Eclipse 
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 244 objects, 28 parts, 639 close pairs, 463 rays, 5 guns, 4 turrets swept, 7 cones, 15 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 244 objects, 28 parts, 650 close pairs, 462 rays, 5 guns, 4 turrets swept, 7 cones, 15 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -170,7 +170,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 
 ## Changed from the picture (R207)
 
-- **Three big engines stacked one over another, each about a third of the stern's height, standing 2.3 behind the hull, which ends 0.6 sooner (issue 618, the Board's massing round).** the side view and the beauty show three big bells stacked filling the stern; the sheet's diamond of four read small and hid behind the feathers, whose last row now ends at the hull's end.
+- **Three big engines stacked one over another, each about a third of the stern's height, standing 2.6 behind the hull, which ends 0.9 sooner and narrows in plan round them (issue 618, the Board's massing round).** the side view and the beauty show three big bells stacked filling the stern; the sheet's diamond of four read small and hid behind the feathers, whose last row now ends at the hull's end.
 - **Engines are eclipse rings, not flame.** factions.md: "no flaming bells. An eclipse ring of pale light": each bell has a black shade disc with a thin pale green-white ring inside its lip.
 - **Batteries by data.js slot.** d_boss carries gauss T twice, doom F and flak T: the two big mounts are the null cannons (the aft one superfires on a barbette), the projector is the corona arc, the small aft mount and a belly mount are the null shredders.
 - **Weapons built from the lore, not the picture's generic turrets (R221).** Ryan: "their turrets look the same as hullbreakers"; the picture draws box turrets with round twin barrels. The null cannons are rail guns (slim round rail pairs with banded collars) firing through the slot of a thin arched crescent shade, the shredders fans of needle rails, all in the hull's curved, layered, banded language (pass 2: "super blocky"), the projector an arc emitter with a crown of electrode horns round the crest's black disc (tools/blender/kits/eclipse/README.md).

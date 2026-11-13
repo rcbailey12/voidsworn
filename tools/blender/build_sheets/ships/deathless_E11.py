@@ -38,9 +38,12 @@ HULL = [
     (-5.6, 2.1, 2.1, -1.95, 1.85, 0, 0),
     (-7.0, 1.88, 1.88, -1.82, 1.72, 0, 0),
     (-8.4, 1.92, 1.92, -1.85, 1.76, 0, 0),
-    (-9.8, 2.04, 2.04, -1.98, 1.9, 0, 0),
-    (-11.2, 2.08, 2.08, -2.02, 1.95, 0, 0),
-    (-11.7, 1.95, 1.95, -1.93, 1.85, 0, 0),   # issue 618: the body ends 0.6 sooner, so the stacked nozzles stand 2.3 clear behind it
+    (-9.4, 1.75, 1.75, -1.94, 1.86, 0, 0),
+    (-10.2, 1.42, 1.42, -2.0, 1.92, 0, 0),
+    (-10.8, 1.1, 1.1, -2.0, 1.92, 0, 0),
+    (-11.4, 0.76, 0.76, -1.93, 1.85, 0, 0),   # issue 618: the body ends 0.9 sooner and narrows in plan to the nozzle stack's own
+                                              # width (its height kept, so the side view holds): the fins grip the stack and every
+                                              # nozzle stands 2.6 clear behind it, seen past the flanks from the beauty camera
 ]
 PL = dict(keep3d=True, size=(0.32, 0.75), thick=(0.03, 0.09), skip=0.07, stack=0.35, mats={'violet': 5, 'mauve': 4, 'shade2': 2, 'lilac': 1})
 
@@ -191,7 +194,7 @@ def build(K):
     import kit as kk
     nf = 0
     # issue 618: the last row ends at the hull's end (was 0.6 past the old end), so the stacked nozzles stand clear behind the feathers
-    for row, (x0, lift0, lift1, L) in enumerate(((-8.2, 0.02, 0.06, 2.0), (-9.4, 0.03, 0.08, 2.0), (-10.6, 0.04, 0.15, 1.1))):
+    for row, (x0, lift0, lift1, L) in enumerate(((-8.2, 0.02, 0.06, 2.0), (-9.4, 0.03, 0.08, 2.0), (-10.6, 0.04, 0.12, 0.8))):
         for k in range(12):
             a = math.radians(15 + 30 * k + (15 if row == 1 else 0))
             sec = []
@@ -252,9 +255,9 @@ def build(K):
 
     # ---------------- engines: three stacked ----------------
     # issue 618 (the Board's massing round): three big nozzles stacked one over another, filling the stern's height (the
-    # concept's side view and beauty), each a third of it, standing 2.3 clear behind the hull and its feathers
+    # concept's side view and beauty), each a third of it, standing 2.6 clear behind the hull and its feathers
     for i, (z, nm) in enumerate(((1.35, 'upper'), (-0.04, 'centre'), (-1.43, 'lower'))):
-        K.engine('E%d' % (i + 1), (-14.0, 0.0, z), 0.5, 1.84, bell=1.2, body_r=0.62, rings=3, nose='flat', inv='engines',
+        K.engine('E%d' % (i + 1), (-14.0, 0.0, z), 0.5, 2.14, bell=1.2, body_r=0.62, rings=3, nose='flat', inv='engines',
                  src='picture', note='%s engine of the stack' % nm)
 
     # ---------------- colour zones ----------------
@@ -271,8 +274,8 @@ def build(K):
             secs.append((x, max(hw, 0.3), max(hw, 0.3), z - 0.04, z + 0.04, 0, 0))
         K.loft('in_deck_' + name, secs, 'darkdeck', inside=True)
         K.inside.append(dict(kind='deck', name=name, z=z, x=(x1, x0)))
-    deck('lower', -0.95, 4.6, -11.3); deck('main', 0.3, 5.0, -11.3); deck('upper', 1.2, 3.0, -11.0)
-    for i, x in enumerate((4.6, 2.2, -0.4, -3.0, -5.5, -7.5, -9.8, -11.3)):
+    deck('lower', -0.95, 4.6, -11.0); deck('main', 0.3, 5.0, -11.0); deck('upper', 1.2, 3.0, -10.7)
+    for i, x in enumerate((4.6, 2.2, -0.4, -3.0, -5.5, -7.5, -9.8, -11.0)):
         s = _k.sec_at(HULL, x)
         K.loft('in_bh_F%d' % i, [(x + 0.05, s[1] - 0.3, s[2] - 0.3, s[3] + 0.3, s[4] - 0.3, 0, 0), (x - 0.05, s[1] - 0.3, s[2] - 0.3, s[3] + 0.3, s[4] - 0.3, 0, 0)],
                'frame', inside=True, rounded=True, pexp=PEXP)
@@ -286,7 +289,7 @@ def build(K):
     K.room('archive_vault_aft', 'archive', -7.3, -5.6, -1.2, 1.2, -0.9, 0.25, note='archive vaults')
     K.room('shade_machinery', 'machinery', -7.3, -5.6, -1.0, 1.0, 0.4, 1.15, note='shade generators and the band collar\'s drives')
     K.room('flak_magazine', 'magazine', -1.8, -0.2, -0.7, 0.7, -1.5, -1.0, note='over the belly twin')
-    K.room('engine_room', 'engroom', -11.0, -9.9, -1.4, 1.4, -0.9, 1.15, note='engine room and the four drives\' feeds')
+    K.room('engine_room', 'engroom', -10.6, -9.9, -0.7, 0.7, -0.9, 1.15, note='engine room and the three drives\' feeds')
     K.armour('crescent (shade layers)', 0.6, 'three layers, thickest at the inner wall; the rims knife-thin')
     K.armour('dorsal tiers and barbettes', 0.4, '')
     K.armour('flank belt', 0.3, 'over the vaults and magazines')
@@ -308,7 +311,7 @@ def build(K):
     # eight breach anchors on the shade bands (Tomb-ark base 8, Eclipse +0): prow 3, mid 3, engine 2, alternating sides
     for i, (x, y, z, sec, side) in enumerate([(8.5, 3.6, -0.3, 'prow', 'port'), (8.0, -3.9, -0.35, 'prow', 'stbd'), (11.0, 2.6, -1.0, 'prow', 'port'),
                                               (-0.9, -1.4, 2.0, 'mid', 'stbd'), (-3.8, 1.3, 1.98, 'mid', 'port'), (0.9, -2.4, 0.5, 'mid', 'stbd'),
-                                              (-9.3, 1.9, 0.9, 'eng', 'port'), (-10.4, -1.9, -0.9, 'eng', 'stbd')]):
+                                              (-9.3, 1.78, 0.9, 'eng', 'port'), (-10.2, -1.42, -0.9, 'eng', 'stbd')]):
         K.point('breach', 'hp_breach_%d' % i, (x, y, z), side=side, section=sec, note='on a shade band')
     K.point('rcs', 'hp_rcs_0', (1.6, surf(1.6, 1, 0.95), 0.95), side='port'); K.point('rcs', 'hp_rcs_1', (1.6, surf(1.6, -1, 0.95), 0.95), side='stbd')
     K.point('rcs', 'hp_rcs_2', (-7.5, 2.1, 0.0), side='port'); K.point('rcs', 'hp_rcs_3', (-7.5, -2.1, 0.0), side='stbd')
@@ -317,7 +320,7 @@ def build(K):
     K.point('board', 'hp_board_0', (-2.4, surf(-2.4, 1, 0.95), 0.95), side='port'); K.point('board', 'hp_board_1', (-2.4, surf(-2.4, -1, 0.95), 0.95), side='stbd')
 
     # ---------- changed from the picture (designer's decisions, R207) ----------
-    K.change('Three big engines stacked one over another, each about a third of the stern\'s height, standing 2.3 behind the hull, which ends 0.6 sooner (issue 618, the Board\'s massing round)', 'the side view and the beauty show three big bells stacked filling the stern; the sheet\'s diamond of four read small and hid behind the feathers, whose last row now ends at the hull\'s end')
+    K.change('Three big engines stacked one over another, each about a third of the stern\'s height, standing 2.6 behind the hull, which ends 0.9 sooner and narrows in plan round them (issue 618, the Board\'s massing round)', 'the side view and the beauty show three big bells stacked filling the stern; the sheet\'s diamond of four read small and hid behind the feathers, whose last row now ends at the hull\'s end')
     K.change('Engines are eclipse rings, not flame', 'factions.md: "no flaming bells. An eclipse ring of pale light": each bell has a black shade disc with a thin pale green-white ring inside its lip')
     K.change('Batteries by data.js slot', 'd_boss carries gauss T twice, doom F and flak T: the two big mounts are the null cannons (the aft one superfires on a barbette), the projector is the corona arc, the small aft mount and a belly mount are the null shredders')
     K.change('Weapons built from the lore, not the picture\'s generic turrets (R221)', 'Ryan: "their turrets look the same as hullbreakers"; the picture draws box turrets with round twin barrels. The null cannons are rail guns (slim round rail pairs with banded collars) firing through the slot of a thin arched crescent shade, the shredders fans of needle rails, all in the hull\'s curved, layered, banded language (pass 2: "super blocky"), the projector an arc emitter with a crown of electrode horns round the crest\'s black disc (tools/blender/kits/eclipse/README.md)')
