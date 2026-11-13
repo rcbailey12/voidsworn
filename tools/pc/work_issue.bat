@@ -184,7 +184,12 @@ if /i not "%ARM%"=="kimicode" goto :agent_oc
 if /i not "%WORK_HARNESS%"=="kimi" goto :agent_oc
 set "KIMIEXE="
 for /f "delims=" %%k in ('where kimi 2^>nul') do if not defined KIMIEXE set "KIMIEXE=%%k"
-if not defined KIMIEXE if exist "%USERPROFILE%\.local\bin\kimi.exe" set "KIMIEXE=%USERPROFILE%\.local\bin\kimi.exe"
+rem the queue watcher may have been started before Kimi Code was installed, so its PATH is old: add the user PATH from the registry
+set "UPATH="
+for /f "tokens=2,*" %%a in ('reg query HKCU\Environment /v Path 2^>nul ^| find /i "Path"') do set "UPATH=%%b"
+if defined UPATH call set "PATH=%PATH%;%UPATH%"
+if not defined KIMIEXE for /f "delims=" %%k in ('where kimi 2^>nul') do if not defined KIMIEXE set "KIMIEXE=%%k"
+for %%c in ("%APPDATA%\npm\kimi.cmd" "%USERPROFILE%\.local\bin\kimi.exe" "%USERPROFILE%\.kimi-code\bin\kimi.exe" "%LOCALAPPDATA%\Programs\kimi-code\kimi.exe") do if not defined KIMIEXE if exist %%c set "KIMIEXE=%%~c"
 if not defined KIMIEXE (echo Kimi Code CLI not found: kimi is not on PATH >> "%O%\result.txt" & (echo 3)> "%O%\exit.txt" & goto :agent_end)
 set "KMODEL=kimi-code/kimi-for-coding"
 if defined WORK_KIMI_MODEL set "KMODEL=%WORK_KIMI_MODEL%"
