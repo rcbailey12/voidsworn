@@ -6,22 +6,22 @@
  },
  "views": {
   "top": {
-   "stack": 99792,
-   "glow": 81,
+   "stack": 99796,
+   "glow": 79,
    "liner": 0,
    "room": 0,
    "bare": 0
   },
   "below": {
-   "stack": 99799,
-   "glow": 72,
+   "stack": 99800,
+   "glow": 73,
    "liner": 0,
    "room": 0,
    "bare": 0
   },
   "port": {
-   "stack": 65167,
-   "glow": 232,
+   "stack": 65165,
+   "glow": 234,
    "liner": 0,
    "room": 0,
    "bare": 0
@@ -34,14 +34,14 @@
    "bare": 0
   },
   "bow": {
-   "stack": 28684,
+   "stack": 28689,
    "glow": 21,
    "liner": 0,
    "room": 0,
    "bare": 0
   },
   "stern": {
-   "stack": 22876,
+   "stack": 22881,
    "glow": 5830,
    "liner": 0,
    "room": 0,
