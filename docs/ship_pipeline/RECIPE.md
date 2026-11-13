@@ -135,7 +135,7 @@ kit's `spare_bell`: cold) is a matte bell and, not being kind `engine`, its dark
 airframe (`craft`, the carrier's fighters) takes the stack's `craft` zone (dark soot, worn edges, no plate patchwork; its
 salvaged wing keeps its own rust or pale, its canopy dark, its nozzles the faction's glow). Every other zone of these parts is the
 sheet's own, as on any part. A18's grille nose is three kit louvre panels (`vent`): the existing zones cover it. A16 and A17 carry
-none of these kinds, so their paint is unchanged (proved in PR for issue 651: their stage 5 maps rebuilt byte for byte).
+none of these kinds, so their paint is unchanged (issue 651: every outside object of A16 and A17 resolves to the same zone with the same recipe under the old and new stack).
 Running lights (R228 item 4: visible as small red points at battle size; brightness, not size, carries the read): the faction
 stack's `RUNNING_LIGHTS` rule builds small round deep-red lamps (0.0115 of the ship's length, #c41e14, emissive under the game's
 0.8 glow threshold) in iron bezels on the hull, never on or right beside a machine (a row per flank at the sheet's lamp height, deck-edge points; clear of parts, decals
