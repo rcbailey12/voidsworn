@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 560 (RULEBOOK 6.17, Ryan R219: turret guns turn to face their target when they fire; fixed side guns stay fixed).
 # The turret check, headless, on the turret test ship: godot/render/test/fixtures/T560_fx/T560_fx.glb, written by the real
 # stage 7 export (tools/recipe/turret_fixture.py: a small test hull with the recipe Hullbreaker kit's own turret parts, two
@@ -41,6 +42,7 @@ class StandIn extends Node3D:
 
 
 func _init() -> void:
+	GUARD.arm(self, "turret_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 

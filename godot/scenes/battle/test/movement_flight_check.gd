@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 505: flown movement, headless. Flies the moves the capture strips show (straight, a turn then a run, a run then
 # the final facing, a big turn at a corner, a sidestep, a back-off) for a frigate, a cruiser, a battleship and a
 # dreadnought through ShipView.play_glide at the battle's own pace, 60 frames a second, and checks what Ryan asked for:
@@ -21,6 +22,7 @@ var SV
 
 
 func _init() -> void:
+	GUARD.arm(self, "movement_flight_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	var a := OS.get_cmdline_user_args()
 	var sv_path := "res://render/ship_view.gd"
 	var i := a.find("--sv")

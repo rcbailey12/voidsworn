@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 370: the attach point check. Every point the attach point service (fx/fx_hull.gd, "the attach point service")
 # can hand an effect lies on the hull: within TOL_FRAC of the ship's length of its triangles (the export check's own limit,
 # tools/recipe/check_export.py tol 0.012), plus the barrel or bell radius for an authored muzzle or engine exit (the point is
@@ -42,6 +43,7 @@ class StandIn extends Node3D:
 
 
 func _init() -> void:
+	GUARD.arm(self, "attach_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 

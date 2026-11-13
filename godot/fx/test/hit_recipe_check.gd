@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 461: the hits, upgraded (docs/playbooks/deaths_and_hits.md "The hits, upgraded"; cinematic audit items 1, 4, 11).
 # Box ships at the battle camera, headless. Asserts:
 #   1. the ladder: las, macro, lance, torpedo on a hull, torpedo on a shield are each plainly bigger than the step before
@@ -25,6 +26,7 @@ var failures := 0
 
 
 func _init() -> void:
+	GUARD.arm(self, "hit_recipe_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 

@@ -1,4 +1,5 @@
 extends SceneTree
+const GUARD = preload("res://tools/ci/check_guard.gd")
 # Issue 592: the install readback. After stage 7 installs a ship into a Godot project and the asset builder refreshes the
 # ship cache (render/build_assets.gd --ships-only), this proves the game will draw the new hull:
 #   1. gen/manifest.json has the ship, its cached scene exists, and its source stamp is the installed files' stamp now
@@ -16,6 +17,7 @@ var fails: Array = []
 
 
 func _init() -> void:
+	GUARD.arm(self, "installed_ship_check")  # issue 632: a SCRIPT ERROR or a stuck run ends the check, never waits
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 
