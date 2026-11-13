@@ -227,6 +227,28 @@
    ]
   },
   {
+   "id": "LN0p",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "block_lights"
+   ]
+  },
+  {
+   "id": "LN1p",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "block_lights"
+   ]
+  },
+  {
    "id": "V1p",
    "kind": "vent",
    "what": "louvre panel 0.4 x 0.3",
@@ -304,6 +326,28 @@
    ]
   },
   {
+   "id": "LN0s",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "block_lights"
+   ]
+  },
+  {
+   "id": "LN1s",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "block_lights"
+   ]
+  },
+  {
    "id": "V1s",
    "kind": "vent",
    "what": "louvre panel 0.4 x 0.3",
@@ -362,6 +406,10 @@
    "route": "hand-built"
   },
   {
+   "name": "Block neck face",
+   "route": "hand-built"
+  },
+  {
    "name": "Spine, fore",
    "route": "hand-built"
   },
@@ -402,7 +450,15 @@
    "route": "hand-built"
   },
   {
+   "name": "Saddle deck, fore battery",
+   "route": "hand-built"
+  },
+  {
    "name": "Saddle, aft battery",
+   "route": "hand-built"
+  },
+  {
+   "name": "Saddle deck, aft battery",
    "route": "hand-built"
   },
   {

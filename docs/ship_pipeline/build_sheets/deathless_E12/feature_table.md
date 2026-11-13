@@ -10,19 +10,19 @@ Eclipse (deathless) | class Cruiser | version 4 (fourth sheet (R221 weapons, pas
 |---|---|
 | model length | 14.564 |
 | length side | 14.588 |
-| length top | 14.588 |
-| length disagreement percent | 0.0 |
+| length top | 14.575 |
+| length disagreement percent | 0.09 |
 | beam top | 8.475 |
 | beam bow | 8.475 |
 | beam disagreement percent | 0.0 |
-| height side | 2.513 |
-| height bow | 2.513 |
+| height side | 2.6 |
+| height bow | 2.6 |
 | height disagreement percent | 0.0 |
-| widest at station percent | 44.6 |
-| hull beam | 2.96 |
-| hull depth | 1.4 |
-| L to B hull | 4.9 |
-| L to H hull | 10.36 |
+| widest at station percent | 44.5 |
+| hull beam | 3.0 |
+| hull depth | 1.46 |
+| L to B hull | 4.83 |
+| L to H hull | 9.93 |
 | prow overhang | 7.09 |
 | outline iou percent | 45.5 |
 | mass outline iou percent | 44.9 |
@@ -41,27 +41,31 @@ Eclipse (deathless) | class Cruiser | version 4 (fourth sheet (R221 weapons, pas
 | S3s | truss strut, 2.5 long | 1 | 51.4 | -0.16 | 0.13 | - | - | designed | truss from the spine to the centre starboard arc |
 | S4s | truss strut, 1.9 long | 1 | 66.2 | -0.18 | 0.13 | - | - | picture | truss from the spine to the aft starboard arc |
 | C1 | caged core of trapped light, 1.5 across | 1 | 43.4 | 0.00 | 0.15 | - | - | picture | the trapped light core in gimbal rings; the spine enters its hubs |
-| T1 | null cannon, twin turret | 2 barrels | 28.1 | 0.00 | 0.57 | forward, +4 elev | T gauss | picture | fore null cannon: twin rail pairs through a crescent shade, on its saddle |
-| T2 | null cannon, twin turret | 2 barrels | 59.4 | 0.00 | 0.57 | forward, +4 elev | T gauss | picture | aft null cannon: twin rail pairs through a crescent shade, on its saddle |
+| T1 | null cannon, twin turret | 2 barrels | 28.1 | 0.00 | 0.61 | forward, +4 elev | T gauss | picture | fore null cannon: twin rail pairs through a crescent shade, on its saddle |
+| T2 | null cannon, twin turret | 2 barrels | 59.4 | 0.00 | 0.61 | forward, +4 elev | T gauss | picture | aft null cannon: twin rail pairs through a crescent shade, on its saddle |
 | A1 | spinal arc emitter (fixed) | 1 barrel | 13.7 | 0.00 | 0.15 | forward | F doom | picture | the corona arc emitter on the spine head (a crown of electrode horns round a black shade disc), firing through the ring's bow gap |
-| G1 | null spire, twin turret | 2 barrels | 86.1 | 0.00 | 0.90 | forward, +6 elev | T gsentry | picture | the null spire: a tall turning spire on the block roof, green sight slits, two needle rails through a shade fin at its head |
+| G1 | null spire, twin turret | 2 barrels | 85.1 | 0.00 | 0.98 | forward, +6 elev | T gsentry | picture | the null spire: a tall turning spire on the block roof, green sight slits, two needle rails through a shade fin at its head |
 | E1 | engine, bell 1.0 across | 1 | 99.9 | 1.02 | 0.08 | exhaust aft | - | picture | port engine |
 | E2 | engine, bell 1.0 across | 1 | 99.9 | 0.00 | 0.08 | exhaust aft | - | picture | centre engine |
 | E3 | engine, bell 1.0 across | 1 | 99.9 | -1.02 | 0.08 | exhaust aft | - | picture | starboard engine |
-| L0p | running light | 1 | 80.6 | 1.56 | 0.30 | - | - | picture | green light panel on the block flank |
-| L1p | running light | 1 | 82.7 | 1.56 | 0.30 | - | - | picture | green light panel on the block flank |
-| L2p | running light | 1 | 84.8 | 1.56 | 0.30 | - | - | picture | green light panel on the block flank |
-| V1p | louvre panel 0.4 x 0.3 | 1 | 87.5 | 1.56 | 0.06 | - | - | picture | heat slot panel on the block flank |
-| H1p | square hatch 0.3 | 1 | 88.9 | 0.50 | 0.90 | - | - | picture | hatch on the block roof |
-| Q1p | attitude thruster quad | 1 | 77.6 | 1.00 | 0.64 | - | - | designed | block roof edge, firing up and out over the ring |
-| Q2p | attitude thruster quad | 1 | 77.6 | 1.00 | -0.44 | - | - | designed | block belly edge, firing down and out |
-| L0s | running light | 1 | 80.6 | -1.56 | 0.30 | - | - | picture | green light panel on the block flank |
-| L1s | running light | 1 | 82.7 | -1.56 | 0.30 | - | - | picture | green light panel on the block flank |
-| L2s | running light | 1 | 84.8 | -1.56 | 0.30 | - | - | picture | green light panel on the block flank |
-| V1s | louvre panel 0.4 x 0.3 | 1 | 87.5 | -1.56 | 0.06 | - | - | picture | heat slot panel on the block flank |
-| H1s | square hatch 0.3 | 1 | 88.9 | -0.50 | 0.90 | - | - | picture | hatch on the block roof |
-| Q1s | attitude thruster quad | 1 | 77.6 | -1.00 | 0.64 | - | - | designed | block roof edge, firing up and out over the ring |
-| Q2s | attitude thruster quad | 1 | 77.6 | -1.00 | -0.44 | - | - | designed | block belly edge, firing down and out |
+| L0p | running light | 1 | 80.6 | 1.60 | 0.30 | - | - | picture | green light panel on the block flank |
+| L1p | running light | 1 | 82.7 | 1.60 | 0.30 | - | - | picture | green light panel on the block flank |
+| L2p | running light | 1 | 84.8 | 1.60 | 0.30 | - | - | picture | green light panel on the block flank |
+| LN0p | running light | 1 | 72.2 | 0.95 | 0.12 | - | - | picture | green light panel on the neck wedge (the concept's lit panel ahead of the block) |
+| LN1p | running light | 1 | 73.6 | 1.15 | 0.12 | - | - | picture | green light panel on the neck wedge (the concept's lit panel ahead of the block) |
+| V1p | louvre panel 0.4 x 0.3 | 1 | 87.5 | 1.61 | 0.06 | - | - | picture | heat slot panel on the block flank |
+| H1p | square hatch 0.3 | 1 | 88.2 | 0.50 | 0.98 | - | - | picture | hatch on the block roof |
+| Q1p | attitude thruster quad | 1 | 79.6 | 1.22 | 0.65 | - | - | designed | block roof chamfer, firing up and out over the ring |
+| Q2p | attitude thruster quad | 1 | 79.6 | 1.27 | -0.47 | - | - | designed | block belly chamfer, firing down and out |
+| L0s | running light | 1 | 80.6 | -1.60 | 0.30 | - | - | picture | green light panel on the block flank |
+| L1s | running light | 1 | 82.7 | -1.60 | 0.30 | - | - | picture | green light panel on the block flank |
+| L2s | running light | 1 | 84.8 | -1.60 | 0.30 | - | - | picture | green light panel on the block flank |
+| LN0s | running light | 1 | 72.2 | -0.95 | 0.12 | - | - | picture | green light panel on the neck wedge (the concept's lit panel ahead of the block) |
+| LN1s | running light | 1 | 73.6 | -1.15 | 0.12 | - | - | picture | green light panel on the neck wedge (the concept's lit panel ahead of the block) |
+| V1s | louvre panel 0.4 x 0.3 | 1 | 87.5 | -1.61 | 0.06 | - | - | picture | heat slot panel on the block flank |
+| H1s | square hatch 0.3 | 1 | 88.2 | -0.50 | 0.98 | - | - | picture | hatch on the block roof |
+| Q1s | attitude thruster quad | 1 | 79.6 | -1.22 | 0.65 | - | - | designed | block roof chamfer, firing up and out over the ring |
+| Q2s | attitude thruster quad | 1 | 79.6 | -1.27 | -0.47 | - | - | designed | block belly chamfer, firing down and out |
 
 Totals: 4 gun mounts with 7 barrels; 0 launcher tubes; 3 engines; 0 intakes; 0 dishes; 0 claws; 0 chains.
 No gun rests facing aft: every gun row above points forward or out to the side (yaw under 90 degrees).
@@ -79,9 +83,10 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 
 | Mass | Station % | Offset range | Height range | Colour | Note |
 |---|---|---|---|---|---|
-| Hull: the stern block and the aft spine | 48.7 to 93.4 | -1.48 to 1.48 | -0.62 to 0.78 | deep violet plate | a round-shouldered block tapering forward into the spine |
-| Block roof step | 78.9 to 90.6 | -0.85 to 0.85 | 0.55 to 0.90 | violet plate | a raised plate step on the block roof, the sentry on it |
-| Block flank cheeks | 79.6 to 89.6 | -1.56 to 1.56 | -0.30 to 0.42 | violet plate | armour cheeks on the block flanks, the lights in them |
+| Hull: the stern block and the aft spine | 48.7 to 93.4 | -1.50 to 1.50 | -0.62 to 0.84 | deep violet plate | a faceted box, chamfered on every long edge, stepping down to the spine through a neck face (issue 618) |
+| Block roof step | 77.2 to 90.9 | -0.85 to 0.85 | 0.60 to 0.98 | violet plate | a raised plate step on the block roof, the sentry on it |
+| Block flank cheeks | 77.2 to 89.6 | -1.60 to 1.60 | -0.30 to 0.44 | violet plate | armour cheeks on the block flanks, the lights in them |
+| Block neck face | 70.0 to 71.0 | -0.72 to 0.72 | -0.30 to 0.52 | violet plate | the stepped neck face where the spine enters the block, the green light panel on it |
 | Spine, fore | 13.4 to 38.1 | -0.18 to 0.18 | -0.01 to 0.31 | deep violet plate | the plated beam from the core to the emitter |
 | Arc, fore port | 0.3 to 27.0 | 0.69 to 3.59 | -0.31 to 0.11 | deep violet plate | box-section shade arc, the inner bay open |
 | Arc, centre port | 25.3 to 54.2 | 2.44 to 4.07 | -0.31 to 0.11 | deep violet plate | box-section shade arc, the inner bay open |
@@ -91,10 +96,12 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Arc, centre starboard | 25.3 to 54.2 | -4.07 to -2.44 | -0.31 to 0.11 | deep violet plate | box-section shade arc, the inner bay open |
 | Arc, aft starboard | 54.3 to 80.4 | -3.87 to -1.49 | -0.31 to 0.11 | deep violet plate | box-section shade arc, the inner bay open |
 | Arc, stern starboard | 73.8 to 87.1 | -2.04 to -0.56 | -0.31 to 0.11 | deep violet plate | box-section shade arc, the inner bay open |
-| Saddle, fore battery | 23.0 to 33.3 | -0.42 to 0.42 | 0.13 to 0.57 | violet plate | the oval saddle the turret stands on |
-| Saddle, aft battery | 54.2 to 64.5 | -0.42 to 0.42 | 0.13 to 0.57 | violet plate | the oval saddle the turret stands on |
-| Emitter collars | 10.7 to 17.8 | -0.37 to 0.37 | -0.22 to 0.52 | mauve and violet | a part of the kit projector, counted as its own mass |
-| Emitter shaft | 7.7 to 10.1 | -0.32 to 0.32 | -0.17 to 0.47 | violet and mauve | a part of the kit projector, counted as its own mass |
+| Saddle, fore battery | 22.3 to 34.0 | -0.52 to 0.52 | 0.05 to 0.45 | violet plate | the long hexagonal plinth the battery stands on |
+| Saddle deck, fore battery | 24.1 to 32.1 | -0.38 to 0.38 | 0.37 to 0.61 | mauve plate | the stepped upper deck of the saddle, the turret on it |
+| Saddle, aft battery | 53.5 to 65.2 | -0.52 to 0.52 | 0.05 to 0.45 | violet plate | the long hexagonal plinth the battery stands on |
+| Saddle deck, aft battery | 55.4 to 63.3 | -0.38 to 0.38 | 0.37 to 0.61 | mauve plate | the stepped upper deck of the saddle, the turret on it |
+| Emitter collars | 10.7 to 17.8 | -0.39 to 0.37 | -0.24 to 0.52 | mauve and violet | a part of the kit projector, counted as its own mass |
+| Emitter shaft | 6.9 to 10.3 | -0.33 to 0.32 | -0.18 to 0.47 | violet and mauve | a part of the kit projector, counted as its own mass |
 | Emitter block | 6.5 to 10.6 | -0.33 to 0.33 | -0.18 to 0.48 | mauve | a part of the kit projector, counted as its own mass |
 
 ## INSIDE (R98, R209): what each break reveals
@@ -137,14 +144,16 @@ Eclipse breaks in layers (factions.md): the ring arcs peel away first, band by b
 | hp_breach_1 | 39.8 | -3.64 | 0.12 | stbd | mid | on a shade arc |
 | hp_breach_2 | 47.1 | 3.64 | 0.12 | port | mid | on a shade arc |
 | hp_breach_3 | 73.0 | -2.58 | 0.12 | stbd | eng | on a shade arc |
-| hp_rcs_0 | 77.6 | 1.00 | 0.66 | port |  |  |
-| hp_rcs_1 | 77.6 | -1.00 | 0.66 | stbd |  |  |
-| hp_rcs_2 | 77.6 | 1.00 | -0.50 | port |  |  |
-| hp_rcs_3 | 77.6 | -1.00 | -0.50 | stbd |  |  |
+| hp_rcs_0 | 79.6 | 1.22 | 0.65 | port |  |  |
+| hp_rcs_1 | 79.6 | -1.22 | 0.65 | stbd |  |  |
+| hp_rcs_2 | 79.6 | 1.27 | -0.47 | port |  |  |
+| hp_rcs_3 | 79.6 | -1.27 | -0.47 | stbd |  |  |
+| hp_board_0 | 39.5 | 4.05 | -0.10 | port |  |  |
+| hp_board_1 | 39.5 | -4.05 | -0.10 | stbd |  |  |
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 457 objects, 30 parts, 314 close pairs, 360 rays, 4 guns, 3 turrets swept, 7 cones, 10 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 478 objects, 34 parts, 444 close pairs, 366 rays, 4 guns, 3 turrets swept, 7 cones, 14 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -161,6 +170,11 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **Weapons built from the lore, not the picture's generic turrets (R221).** Ryan: "their turrets look the same as hullbreakers"; the picture draws box turrets with round twin barrels. The null cannons are rail guns (slim round rail pairs with banded collars) firing through the slot of a thin arched crescent shade, the null spire a tall slim banded sentry spire with needle rails, all in the hull's curved, layered, banded language (pass 2: "super blocky"), the emitter a crown of electrode horns round the crest's black disc (tools/blender/kits/eclipse/README.md).
 - **Weapons by data.js slot.** d_harvester: gauss T twice on the spine saddles, doom F the bow emitter, gsentry T the null spire on the block roof (the picture's small green-lit turret).
 - **Thrusters, hatches and heat panels added.** a ship in space needs thrusters; the picture shows no underside.
+- **The stern block is a faceted box: chamfered long edges, a stepped neck face where the spine enters (green light panel on its wedge), then a short facet wedge to the full block (issue 618).** the Board's R224 pick for the build: the sheet's rounded block tapered over 1.4 units and read as a cone at the aft camera; the concept's block is a chamfered box that steps down to the spine.
+- **Bulkier saddles: a long hexagonal plinth 1.7 by 1.04 under a stepped upper deck (issue 618).** the Board's R224 pick for the build: the concept seats each battery on a broad stepped platform; the sheet's 1.5 by 0.84 oval pads read thin beside the arcs.
+- **The block thrusters sit on the roof and belly chamfers at 4.3 (were at 4.0).** R226: at 4.0 they sat on B-2, where the block tears from the spine; a machine rides whole with one piece.
+- **Two boarding origins on the centre arcs' outer walls (issue 618).** the game contract needs one a side on the mid hull (HARDPOINTS.md); the reclaim swarms leave the open arc bays.
+- **The emitter's hard point is its lens, at the crest's centre (issue 618).** the horns' meeting point ahead of it is open space, which the export check refuses as off the mesh; the arc leaves from the lens.
 
 ## Designed here, not shown in the picture
 
@@ -169,7 +183,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - S3p (truss strut, 2.5 long): truss from the spine to the centre port arc.
 - S2s (truss strut, 2.5 long): truss from the spine to the centre starboard arc.
 - S3s (truss strut, 2.5 long): truss from the spine to the centre starboard arc.
-- Q1p (attitude thruster quad): block roof edge, firing up and out over the ring.
-- Q2p (attitude thruster quad): block belly edge, firing down and out.
-- Q1s (attitude thruster quad): block roof edge, firing up and out over the ring.
-- Q2s (attitude thruster quad): block belly edge, firing down and out.
+- Q1p (attitude thruster quad): block roof chamfer, firing up and out over the ring.
+- Q2p (attitude thruster quad): block belly chamfer, firing down and out.
+- Q1s (attitude thruster quad): block roof chamfer, firing up and out over the ring.
+- Q2s (attitude thruster quad): block belly chamfer, firing down and out.

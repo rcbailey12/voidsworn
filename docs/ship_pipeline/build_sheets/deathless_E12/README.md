@@ -10,6 +10,25 @@ engines and both cameras are unchanged from the second.
 
 ![deathless_E12 preview](preview.jpg)
 
+## Through the recipe (issue 618)
+
+Recipe entry `tools/recipe/ships/deathless_E12.json`: data.js `d_harvester`, game folder `D21_23` (the Eclipse Cruiser), length
+14.5 read from this sheet, `bake: none` (unpainted until the Eclipse paint stack). Pictures beside the WHOLE concept at the same
+camera (R229): [whole ship, both cameras](../../../shots/issue_618/e12_whole_compare.jpg), [side against the sheet's side view](../../../shots/issue_618/e12_side_compare.jpg),
+then the [bow](../../../shots/issue_618/e12_bow_compare.jpg) and the [stern](../../../shots/issue_618/e12_stern_compare.jpg).
+Views and the sheet re-rendered in the sandbox (Blender 5.3, Cycles CPU, 12 samples).
+
+The Board's R224 picks, built (each is in "Changed from the picture" in [feature_table.md](feature_table.md)):
+- **The stern block** is the concept's faceted box: chamfered long edges, a stepped neck face where the spine enters (green
+  light panels on its wedge), then a short facet wedge to the full block. The sheet's rounded block tapered over 1.4 units and
+  read as a cone at the aft camera.
+- **Bulkier saddles**: a long hexagonal plinth 1.7 by 1.04 (was a 1.5 by 0.84 oval pad) under a stepped upper deck.
+- **Seams round machines (R226)**: the block thrusters moved off B-2 onto the roof and belly chamfers at 4.3.
+- **Hard points**: two boarding origins on the centre arcs' outer walls; the emitter's hard point is its lens.
+
+Outline overlap with this job's mask (luminance over 28, closed, filled, every ring piece but the escort): 38.9 percent at the
+camera of record, 45.7 at the second camera (the sheet geometry: 39.0 and 46.1 with the same mask). Reported, not a bar.
+
 Start here: **[side_by_side.jpg](side_by_side.jpg)**, then [fit_view.jpg](fit_view.jpg) and [cells.jpg](cells.jpg).
 
 ## Weapons (R221): each built from what it is

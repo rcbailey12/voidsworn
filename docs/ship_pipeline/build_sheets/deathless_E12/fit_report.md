@@ -61,7 +61,7 @@ While designing, the check also caught (and the design fixed): the sentry twin s
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 457 objects, 30 parts, 314 close pairs, 360 rays, 4 guns, 3 turrets swept, 7 cones, 10 apertures, 1 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 478 objects, 34 parts, 444 close pairs, 366 rays, 4 guns, 3 turrets swept, 7 cones, 14 apertures, 1 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 

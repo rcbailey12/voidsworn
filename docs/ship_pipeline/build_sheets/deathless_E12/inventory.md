@@ -49,7 +49,7 @@ Left as surface, and why:
 
 ## Every built part has a job (R221)
 
-Built kit parts: 53; parts whose inventory id names no line with a job: 0.
+Built kit parts: 57; parts whose inventory id names no line with a job: 0.
 
 ## Per cell: present, shaped, detailed (from the model, deathless_E12_model.json)
 
@@ -137,7 +137,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | stern_block | the stern block: a broad faceted block tapering forward into the spine | 1 / 1 | Y | Y | Y |
 | engines | three engines side by side in the stern block | 3 / 3 | Y | Y | Y |
 | sentry | the small turret on the stern block roof with green sights (data.js gs | 1 / 1 | Y | Y | Y |
-| block_lights | the green light panel on the stern block flanks | 6 / 6 | Y | Y | Y |
+| block_lights | the green light panel on the stern block flanks | 10 / 6 | Y | Y | Y |
 | block_vents | heat slot panels on the stern block flanks | 2 / 2 | Y | Y | Y |
 | thrusters | attitude thrusters on the stern block's roof and belly edges | 4 / 4 | Y | Y | Y |
 
@@ -156,15 +156,15 @@ Concept counts read off the concept sheet by eye (E12 sheet: bow, the two fore a
 
 | Cell | Concept | Build | Build masses |
 |---|---:|---:|---|
-| bow/top | 5 | 9 | Spine, fore; Arc, fore port; Arc, centre port; Arc, fore starboard; Arc, centre starboard; Saddle, fore battery; Emitter collars; Emitter shaft; Emitter block |
-| bow/side | 4 | 7 | Spine, fore; Arc, fore port; Arc, centre port; Saddle, fore battery; Emitter collars; Emitter shaft; Emitter block |
+| bow/top | 5 | 10 | Spine, fore; Arc, fore port; Arc, centre port; Arc, fore starboard; Arc, centre starboard; Saddle, fore battery; Saddle deck, fore battery; Emitter collars; Emitter shaft; Emitter block |
+| bow/side | 4 | 8 | Spine, fore; Arc, fore port; Arc, centre port; Saddle, fore battery; Saddle deck, fore battery; Emitter collars; Emitter shaft; Emitter block |
 | bow/below | no view | 9 | Spine, fore; Arc, fore port; Arc, centre port; Arc, fore starboard; Arc, centre starboard; Saddle, fore battery; Emitter collars; Emitter shaft; Emitter block |
-| mid/top | 5 | 7 | Hull: the stern block and the aft spine; Spine, fore; Arc, centre port; Arc, aft port; Arc, centre starboard; Arc, aft starboard; Saddle, aft battery |
-| mid/side | 4 | 5 | Hull: the stern block and the aft spine; Spine, fore; Arc, centre port; Arc, aft port; Saddle, aft battery |
-| mid/below | no view | 7 | Hull: the stern block and the aft spine; Spine, fore; Arc, centre port; Arc, aft port; Arc, centre starboard; Arc, aft starboard; Saddle, aft battery |
-| stern/top | 6 | 7 | Hull: the stern block and the aft spine; Block roof step; Block flank cheeks; Arc, aft port; Arc, stern port; Arc, aft starboard; Arc, stern starboard |
-| stern/side | 5 | 5 | Hull: the stern block and the aft spine; Block roof step; Block flank cheeks; Arc, aft port; Arc, stern port |
-| stern/below | no view | 6 | Hull: the stern block and the aft spine; Block flank cheeks; Arc, aft port; Arc, stern port; Arc, aft starboard; Arc, stern starboard |
+| mid/top | 5 | 9 | Hull: the stern block and the aft spine; Spine, fore; Arc, centre port; Arc, aft port; Arc, centre starboard; Arc, aft starboard; Saddle, fore battery; Saddle, aft battery; Saddle deck, aft battery |
+| mid/side | 4 | 7 | Hull: the stern block and the aft spine; Spine, fore; Arc, centre port; Arc, aft port; Saddle, fore battery; Saddle, aft battery; Saddle deck, aft battery |
+| mid/below | no view | 8 | Hull: the stern block and the aft spine; Spine, fore; Arc, centre port; Arc, aft port; Arc, centre starboard; Arc, aft starboard; Saddle, fore battery; Saddle, aft battery |
+| stern/top | 6 | 8 | Hull: the stern block and the aft spine; Block roof step; Block flank cheeks; Block neck face; Arc, aft port; Arc, stern port; Arc, aft starboard; Arc, stern starboard |
+| stern/side | 5 | 6 | Hull: the stern block and the aft spine; Block roof step; Block flank cheeks; Block neck face; Arc, aft port; Arc, stern port |
+| stern/below | no view | 7 | Hull: the stern block and the aft spine; Block flank cheeks; Block neck face; Arc, aft port; Arc, stern port; Arc, aft starboard; Arc, stern starboard |
 
 ## Proportions: length to beam and length to height, concept against build (the Board on round 3)
 
@@ -173,6 +173,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 1.77 | 5.94 | 1.94 | 15.57 |
-| build | 1.72 | 5.86 | 1.89 | 10.41 |
+| build | 1.72 | 5.72 | 1.90 | 10.14 |
 
 Lines not present, shaped and detailed without a reason: 0.

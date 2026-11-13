@@ -15,9 +15,9 @@ Eclipse (deathless) | class Tomb-ark | version 3 (third sheet (R221 weapons, pas
 | beam top | 10.85 |
 | beam bow | 10.85 |
 | beam disagreement percent | 0.0 |
-| height side | 6.838 |
+| height side | 6.85 |
 | height bow | 6.862 |
-| height disagreement percent | 0.09 |
+| height disagreement percent | 0.04 |
 | widest at station percent | 17.6 |
 | hull beam | 4.76 |
 | hull depth | 4.0 |
@@ -82,8 +82,8 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Crescent lower blade | 0.1 to 39.6 | -5.40 to 5.40 | -1.36 to 1.00 | Eclipse violet and mauve plate | a broad brim: 1.2 thick at the inner wall, 0.6 at the back rim, thin at the horns; it falls 1.6 from the root to the horns |
 | Crescent upper layer | 5.7 to 33.4 | -4.64 to 4.64 | -0.78 to 1.25 | mauve plate | stepped in from the rim, over the inner half of the blade, to 122 degrees either side |
 | Crescent root layer | 18.8 to 29.9 | -3.67 to 3.67 | 0.36 to 1.45 | violet plate | the third, shortest layer over the root |
-| Projector breech collars | 20.4 to 33.9 | -0.94 to 0.94 | -1.14 to 0.74 | mauve and violet | a part of the kit projector, counted as its own mass |
-| Projector shaft | 7.7 to 17.1 | -0.82 to 0.82 | -1.02 to 0.62 | violet and mauve | a part of the kit projector, counted as its own mass |
+| Projector breech collars | 20.4 to 33.9 | -0.97 to 0.97 | -1.17 to 0.77 | mauve and violet | a part of the kit projector, counted as its own mass |
+| Projector shaft | 5.7 to 19.3 | -0.82 to 0.82 | -1.02 to 0.62 | violet and mauve | a part of the kit projector, counted as its own mass |
 | Projector muzzle block | 4.8 to 20.4 | -0.84 to 0.84 | -1.04 to 0.64 | mauve | a part of the kit projector, counted as its own mass |
 | Dorsal tier | 50.7 to 69.6 | -1.42 to 1.42 | 1.40 to 2.21 | mauve plate | the layered plate tier along the spine (the concept's raised plate rows), a quarter unit proud |
 | Barbette, fore battery | 38.9 to 43.9 | -0.70 to 0.70 | 1.50 to 2.12 | violet plate | a low round drum, slimmed to the turret's foot (R221 pass 2): the fore battery fires aft over the tier and the aft battery's muzzles |
@@ -133,10 +133,10 @@ Bulkhead and frame stations: F0 33.6%, F1 42.1%, F2 51.4%, F3 60.7%, F4 69.6%, F
 
 | Break line | Station % | What it opens |
 |---|---|---|
-| B-1 | 31.4 (seam wanders 30.0 to 32.9) | the crescent root seam: the shade and the projector tear away from the neck, opening the capacitor bank |
-| B-2 | 76.7 (seam wanders 75.3 to 78.1) | at the band collar: the stern (feathers and drives) tears away, opening the engine room and the aft vault |
+| B-1 | 31.4 (seam wanders 30.4 to 35.4) | the crescent root seam: the shade and the projector tear away from the neck, opening the capacitor bank |
+| B-2 | 76.7 (seam wanders 75.7 to 78.6) | at the band collar: the stern (feathers and drives) tears away, opening the engine room and the aft vault |
 | B-3 | 45.3 to 69.2 (along) | the dorsal tiers peel off band by band along their base, taking the batteries, laying the dark decks bare |
-| B-4 | 5.4 to 29.3 (along) | the crescent's upper layers peel from the lower blade, band by band, then the blade splits at a horn root |
+| B-4 | 5.4 to 29.3 (along) | the crescent's upper layers peel from the lower blade at the root, band by band, over the projector |
 
 Full interiors throughout the hull (R215), hidden until a piece breaks. Eclipse breaks in layers (factions.md): shade plates peel band by band, then the body behind is bare; deaths blow it apart unevenly, a ragged bite where the core goes (R186).
 
@@ -158,10 +158,12 @@ Full interiors throughout the hull (R215), hidden until a piece breaks. Eclipse 
 | hp_rcs_1 | 44.3 | -2.24 | 0.95 | stbd |  |  |
 | hp_rcs_2 | 76.7 | 2.10 | 0.00 | port |  |  |
 | hp_rcs_3 | 76.7 | -2.10 | 0.00 | stbd |  |  |
+| hp_board_0 | 58.5 | 2.15 | 0.95 | port |  |  |
+| hp_board_1 | 58.5 | -2.15 | 0.95 | stbd |  |  |
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 243 objects, 29 parts, 670 close pairs, 475 rays, 5 guns, 4 turrets swept, 8 cones, 15 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 253 objects, 29 parts, 771 close pairs, 475 rays, 5 guns, 4 turrets swept, 8 cones, 15 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -177,6 +179,12 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **The crescent is three stacked layers with a corona line on each rim.** factions.md: broad layered plates, the green a thin line on every shade rim; the concept shows two stepped bands and a lip; the layers are also how it breaks (band by band).
 - **Low round drums under both batteries, slimmed to the turret feet (R221 pass 2).** so the fore twin clears the tier when it trains aft and fires aft over the aft twin's muzzles, and the aft twin fires over the fore one (the fit check found both).
 - **Belly twin, attitude thrusters, deck and belly hatches, corona strip lights, heat panels added.** the belly needs cover and a ship in space needs thrusters; the picture shows no underside.
+- **B-1 kinks aft round the projector's breech collars (to 4.1 on the axis); B-2 runs aft of the collar thrusters at the flanks (issue 618).** R226: a machine never crosses a seam; the projector and the thrusters ride whole with one piece.
+- **B-3 (the dorsal tiers' peel) raised to about 1.7, through the tiers (issue 618).** at 1.45 the game's torn peel plane reached the upper deck's edge (1.2) and left 15 deck triangles past the torn plating (death_seam_check); at 1.7 it still takes the tiers and the batteries.
+- **B-4 (the crescent layers' peel) is a level plane at 0.9 over the bow compartment (issue 618).** the game's longitudinal seam is one level plane (RECIPE.md, format version 1); at 0.9 it clears the projector's collars and peels the root and upper layers off the blade.
+- **Two boarding origins on the flanks over the belt, between the strip lights (issue 618).** the game contract needs one a side on the mid hull (HARDPOINTS.md).
+- **The projector's hard point is its lens, at the crest's centre (issue 618).** the horns' meeting point ahead of it is open space, which the export check refuses as off the mesh; the arc leaves from the lens.
+- **Plate courses on the projector's collars, column and head, and stiffener rings on the engine bells (issue 618).** R224 measured on the build: the projector was 0.44 of the hull's triangles and 0.33 of its edges per square unit, the engines 0.68 of its edges; the kit now lays plates at the hull's plate size, so a big part keeps the density.
 - **The crescent band is 1.65 wide at its sides.** the plan of record (the 8c sheet's top view) gives 1.3, the beauty reads broader; the band sits between the two so the beauty's fat brim reads without losing the plan.
 
 ## Designed here, not shown in the picture
