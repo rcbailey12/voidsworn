@@ -39,7 +39,7 @@ HULL = [
     (-2.25, 0.73, 0.73, -0.53, 0.45, 0.16, 0.15),
     (-2.78, 0.65, 0.65, -0.46, 0.4, 0.14, 0.14),
 ]
-PL = dict(size=(0.2, 0.55), thick=(0.03, 0.09), skip=0.08, stack=0.55, mats={'soot': 4, 'iron': 4, 'pale': 2, 'rust': 3, 'soot2': 2, 'violet': 1})
+PL = dict(keep3d=True, size=(0.2, 0.55), thick=(0.03, 0.09), skip=0.08, stack=0.55, mats={'soot': 4, 'iron': 4, 'pale': 2, 'rust': 3, 'soot2': 2, 'violet': 1})
 # the spine, bow to stern: stacked blocks (name, x fore, x aft, half-beam, top, front slope, y offset), with gaps between them
 SPINE = [
     ('S1 fore spine block', 1.45, 0.78, 0.45, 0.6, 0.22, 0.0),
@@ -87,12 +87,10 @@ def build(K):
                                                                            (2.22, -0.2, 0.98, -0.31, 0.51, 0.11, 0.11, 0.0),
                                                                            (1.5, -0.2, 0.98, -0.31, 0.53, 0.11, 0.11, 0.0),
                                                                            (1.3, -0.2, 0.84, -0.24, 0.45, 0.09, 0.09, 0.0)],
-                                                           'iron', plates=dict(PL, seed=23, faces=[1, 2, 3, 4], inv='sponson_plates')),
+                                                           'iron', plates=dict(PL, seed=23, faces=[1, 2, 3, 4], inv='sponson_plates', size=(0.12, 0.24))),
            'bare iron, patched', note='bolted onto the starboard shoulder, swelling the outline from above (designs.md\'s swollen shoulder, on the picture\'s side)')
     K.mark('sponson', 'tier', ['face', 'roof', 'opening'])
     K.slit('SL1', (1.8, -0.981, -0.05), (0, -1, 0), 0.34, 0.09, inv='sponson', note='vision slit in the sponson\'s outboard face: the dish operator\'s port')
-    K.dish('D1', (1.98, -0.55, 0.53), 0.5, yaw=-15, pitch=84, post=0.16, inv='ear',
-           note='the one oversized listening dish, 1.0 across (two thirds of the beam), set nearly flush on the raised sponson, canted a little forward, on the starboard shoulder')
     # ---------------- the spine: stacked blocks with gaps and undercut bases ----------------
     for (nm, x0, x1, hw, top, slope, yo) in SPINE:
         base = 0.36
@@ -100,7 +98,7 @@ def build(K):
                 (x0 - slope * 0.8, hw, hw, base, top, 0.09, 0.03, yo),
                 (x1 + 0.06, hw, hw, base, top, 0.09, 0.03, yo),
                 (x1, hw - 0.05, hw - 0.05, base, top - 0.05, 0.07, 0.03, yo)]
-        K.mass(nm, K.loft('A18_' + nm.split()[0], secs, 'soot', plates=dict(PL, seed=abs(hash(nm)) % 997, faces=[0, 1, 2, 3, 7], size=(0.14, 0.34))),
+        K.mass(nm, K.loft('A18_' + nm.split()[0], secs, 'soot', plates=dict(PL, seed=sum(map(ord, nm)) % 997, faces=[0, 1, 2, 3, 7], size=(0.11, 0.24))),
                'soot with dried-blood patches', note='stacked spine block, top %.2f' % top)
     K.mark('spine', 'tier', ['face', 'roof', 'opening'])
     K.slit('SL2', (1.33, 0.22, 0.555), (0.62, 0.0, 0.79), 0.2, 0.065, inv='spine', note='slit in the fore spine block\'s slope, port (the dish fills the starboard view)')
@@ -133,7 +131,12 @@ def build(K):
     for (x, side) in LAMPS:
         K.keepouts.append((Vector((x, sy(x, side), -0.36)), 0.12))
     K.keepouts.append((Vector((0.45, 0.02, 0.66)), 0.44))
+    K.keepouts.append((Vector((1.98, -0.55, 0.53)), 0.36))        # the dish's base and post
     K.finish()
+
+    # the one big ear, after the plates (a plate keep-out round its base would strip the small sponson bare)
+    K.dish('D1', (1.98, -0.55, 0.53), 0.5, yaw=-15, pitch=84, post=0.16, inv='ear',
+           note='the one oversized listening dish, 1.0 across (two thirds of the beam), set nearly flush on the raised sponson, canted a little forward, on the starboard shoulder')
 
     # ---------------- the grabbers: one pair of small arms under the chin ----------------
     for side, fi in ((1, 'J1'), (-1, 'J2')):
@@ -156,7 +159,6 @@ def build(K):
     for (x, side) in LAMPS:
         i = {2.2: 0, -0.35: 1, -1.65: 2}[x]
         K.lamp('L%d%s' % (i, 'p' if side > 0 else 's'), (x, max(sy(x - 0.05, side), sy(x + 0.05, side), key=abs) + 0.01 * side, -0.36), (0, side, 0), inv='lamps')
-    K.lamp('L0s', (2.25, -0.935, -0.18), (0, -1, 0), inv='lamps')    # the starboard bow lamp sits on the sponson
 
     # ---- colour zones ----
     K.colour('soot and weathered plate', 3.3, -3.2, 'whole hull')

@@ -46,8 +46,8 @@ INVENTORY = [
     dict(id='trophy', job='armour, and the pack\'s boast: plate torn from a Hegemony hull and an Eclipse one', type='patch',
          what='a pale Hegemony trophy plate bolted flat on the starboard flank; a violet Eclipse patch on the foredeck', count=2, cells=['mid/side', 'mid/top', 'bow/top'],
          reads='crooked slabs, a lifted corner, rivets', src='picture'),
-    dict(id='lamps', job='running lights: pack mates see where it is (sparse and dim, it runs dark)', type='lamp', what='dim red lamps at bow, midships and stern',
-         count=6, cells=['bow/side', 'mid/side', 'stern/side'], reads='hooded housings, red lenses', src='picture'),
+    dict(id='lamps', job='running lights: pack mates see where it is (sparse and dim, it runs dark)', type='lamp', what='dim red lamps at bow (port), midships and stern',
+         count=5, cells=['bow/side', 'mid/side', 'stern/side'], reads='hooded housings, red lenses', src='picture'),
     dict(id='belly_plates', job='armour under the hull', type='plate', what='flat armoured belly with the band stepping in', count=1,
          cells=['bow/below', 'mid/below', 'stern/below'], reads='slabs with steps and rivets', src='designed', note='the picture shows no underside'),
     # ---------------- stern (66 to 100 percent) ----------------
@@ -58,7 +58,7 @@ INVENTORY = [
          reads='a web with plates', src='picture'),
     dict(id='engine_block', job='the stern block the engines bolt to; houses the engine room', type='pylon', what='the low engine block at the stern', count=1,
          cells=['stern/top', 'stern/side'], reads='a web with plates', src='picture'),
-    dict(id='vents', job='shed engine-room heat (overburn runs hot)', type='vent', what='louvre panels on the engine block flanks', count=2, cells=['stern/side'],
+    dict(id='vents', job='shed engine-room heat (overburn runs hot)', type='vent', what='a louvre panel on the engine block roof', count=1, cells=['stern/top'],
          reads='frames, slats', src='designed'),
 ]
 # Structure: distinct block masses per blob-sweep cell, counted by eye on the concept sheet's top and side views (thirds of the

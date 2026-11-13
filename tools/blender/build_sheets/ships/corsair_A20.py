@@ -5,7 +5,7 @@
 # the layout of record; its front view's mouths either side of the intakes are a drift), and they must read as launch bays
 # with depth (the Board's brief).
 # Measured off the whole concept first (R229): a wide flat slab (the sheet's top view length to beam about 3.4, the beauty, the
-# accepted picture, about 2.4: the build takes 3.0, the beauty's deepened hull),
+# accepted picture, about 2.4: the build takes 2.7, the beauty's deepened hull),
 # a narrower bow block carrying two big intake tubes in its face, a flat salvage deck with a spare engine bell and junk bolted
 # down, a row of mismatched bells along the top of the stern, two big dark mouths low on the port flank with a fighter
 # nosing out of one.
@@ -49,7 +49,7 @@ HULL = [
     (-7.2, HB, HB, BELLY, DECK, 0.3, 0.28),
     (-7.45, HB - 0.2, HB - 0.2, BELLY + 0.1, DECK - 0.08, 0.26, 0.24),
 ]
-PL = dict(size=(0.42, 1.05), thick=(0.05, 0.15), skip=0.08, stack=0.5, mats={'soot': 5, 'iron': 3, 'pale': 3, 'rust': 2, 'soot2': 2, 'violet': 2})
+PL = dict(keep3d=True, size=(0.42, 1.05), thick=(0.05, 0.15), skip=0.08, stack=0.5, mats={'soot': 5, 'iron': 3, 'pale': 3, 'rust': 2, 'soot2': 2, 'violet': 2})
 ENG = [('E1', -2.1, 0.46, 0.38, ''), ('E2', -1.06, 0.42, 0.33, ''), ('E3', 0.02, 0.44, 0.47, 'the largest'),
        ('E4', 1.1, 0.4, 0.35, 'in a violet Eclipse trophy housing'), ('E5', 2.12, 0.48, 0.4, '')]   # (id, y, z, r, note)
 THR = [(6.4, 1.16, -0.25), (6.4, -1.16, -0.25), (-6.55, HB, -0.1), (-6.55, -HB, -0.1)]
@@ -253,7 +253,7 @@ def build(K):
     K.change('Each mouth is a real recess with a torn plate rim, armoured doors slid clear on rails, launch rails on the floor, ceiling beams, a dim red lamp, '
              'frame ribs and an inner blast door on the back wall', 'the Board\'s brief: they must read as launch bays with depth; designs.md\'s armoured doors slid open and red lamps')
     K.change('The bow block\'s front corners are closed plate, carrying the two shoulder dishes', 'the beauty\'s front openings beside the intake block are the drift Ryan ruled out; designs.md puts the dishes on the shoulders')
-    K.change('The slab is 5.5 wide (length to beam 3.0) and 2.05 deep', 'the accepted beauty (v2s, "hull deepened") draws it wider and deeper than the sheet\'s top view (3.4); the build sits between, nearer the beauty (R229: the whole concept; as A17\'s head followed its beauty)')
+    K.change('The slab is 5.5 wide over its hull, about 6 over the starboard bricks (hull length to beam 2.7 on the top view) and 2.05 deep', 'the accepted beauty (v2s, "hull deepened") draws it about 2.4 long for its width, the sheet\'s top view 3.4; the build sits between, nearer the beauty (R229: the whole concept; as A17\'s head followed its beauty)')
     K.change('Two dorsal turrets, one on the fore deck tier and one on the aft', 'data.js c_hulk: turret T twice (R221); designs.md\'s bow casemates, starboard flank guns and rocket rack have no slot, so they are not built')
     K.change('Five mismatched bells in a row along the top of the stern, one in a violet Eclipse trophy housing', 'designs.md; the picture\'s eight become five')
     K.change('A fighter nosing out of the forward mouth and a second parked deeper in the aft one, both 1.6 long', 'designs.md (the forward mouth); the game\'s squadron length gives the scale')
