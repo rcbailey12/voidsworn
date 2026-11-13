@@ -327,9 +327,11 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
             pts = []; rad = []
             for k in range(m):
                 a = 2 * math.pi * k / m + 0.3 * i
-                rr = rs * (1 + 0.38 * nf(Vector((math.cos(a * 2 + i), math.sin(a * 3), 0.3 * i))))
-                pts.append(Vector((x0 + 0.06 * math.sin(a * 5 + i) - (0.12 * r if math.sin(a) < -0.3 else 0.0) * i,
-                                   R * math.cos(a) * (1.0 + 0.06 * math.sin(a * 3 + i)), R * math.sin(a) * (1.08 if math.sin(a) > 0 else 0.95))))
+                # folded flesh, not a tube: the roll's reach, set-back and thickness all wander round the mouth
+                rr = rs * (0.7 + 0.35 * (1 + math.sin(3 * a + 2 * i)) + 0.35 * nf(Vector((math.cos(a * 2 + i), math.sin(a * 3), 0.3 * i))))
+                Ra = R * (1 + 0.12 * math.sin(2 * a + 1.3 * i) + 0.07 * math.sin(5 * a + i))
+                pts.append(Vector((x0 + r * (0.25 * math.sin(3 * a + 0.7 * i) + 0.1 * math.sin(7 * a) - 0.3) - (0.12 * r if math.sin(a) < -0.3 else 0.0) * i,
+                                   Ra * math.cos(a), Ra * math.sin(a) * (1.08 if math.sin(a) > 0 else 0.95))))
                 rad.append(rr)
             pts.append(pts[0]); rad.append(rad[0])
             p.add('fold%d' % i, 'body' if i == 0 else 'mount', 'flesh' if i % 2 == 0 else 'flesh2', tube(pts, rad, n=10, cap0=False, cap1=False))
@@ -350,6 +352,35 @@ def spinal(length, r=0.55, style='folded', lip_r=None, rolls=3, teeth=9, seed=0,
                                                                                          [rs * 0.12, rs * 0.16, rs * 0.1], n=5))
         p.add('lip0', 'body', 'tissue', tube([Vector((L * 1.0 + 0.02, r * 1.0 * math.cos(2 * math.pi * k / 30), r * 1.0 * math.sin(2 * math.pi * k / 30)))
                                               for k in range(31)], [r * 0.1] * 31, n=6, cap0=False, cap1=False))
+    elif style == 'flush':
+        # a fleshy rimmed hole flush in the face (C11, round 3): one thick lumpy lip round the opening, a few uneven creases
+        # across it, the throat going straight back from it; no collar standing out, no ribs, no disc
+        m = 72; pts = []; rad = []
+        for k in range(m):
+            a = 2 * math.pi * k / m
+            Ra = r * (1.12 + 0.06 * math.sin(3 * a + seed) + 0.04 * math.sin(7 * a))
+            pts.append(Vector((L * 1.0 - r * 0.12 + r * 0.05 * math.sin(2 * a + seed), Ra * math.cos(a), Ra * math.sin(a) * (0.97 if math.sin(a) > 0 else 1.04))))
+            rad.append(r * (0.3 + 0.08 * math.sin(4 * a + seed) + 0.06 * nf(Vector((math.cos(a), math.sin(a), 0.4)))))
+        pts.append(pts[0]); rad.append(rad[0])
+        p.add('lip0', 'mount', 'flesh', tube(pts, rad, n=10, cap0=False, cap1=False))
+        import random
+        rp = random.Random(seed + 31)
+        # pores and small wrinkles over the lip, at the hide's grain (never radial ribs)
+        PV, PF = [], []
+        for k in range(170):
+            kk = rp.randrange(m); q = pts[kk]; rr_ = rad[kk]
+            out = (q - Vector((q.x, 0, 0))).normalized(); ang = rp.uniform(-1.2, 1.6)
+            nn = (out * math.cos(ang) + Vector((1, 0, 0)) * math.sin(ang)).normalized()
+            vv, ff = pore(q + nn * rr_ * 0.98, nn, r * rp.uniform(0.02, 0.035), n=5)
+            o = len(PV); PV += vv; PF += [tuple(x + o for x in f) for f in ff]
+        p.add('lipp', 'mount', 'pore', (PV, PF))
+        for k in range(16):
+            a = rp.uniform(0, 2 * math.pi); ln = rp.uniform(0.35, 0.8)
+            c0 = pts[int(a / (2 * math.pi) * m) % m]; out = (c0 - Vector((c0.x, 0, 0))).normalized()
+            q = [c0 + out * r * 0.05 + Vector((r * 0.3, 0, 0)), c0 + out * r * 0.28 + Vector((r * 0.12, 0, 0)), c0 + out * r * (0.28 + ln * 0.4) - Vector((r * 0.05, 0, 0))]
+            p.add('fold%d' % k, 'mount', 'flesh2', tube(q, [r * 0.05, r * 0.06, r * 0.03], n=5, flat=0.6))
+        p.add('lipt', 'mount', 'tissue', tube([Vector((L * 1.0 - r * 0.12, r * 0.86 * math.cos(2 * math.pi * k / 40), r * 0.86 * math.sin(2 * math.pi * k / 40)))
+                                                for k in range(41)], [r * 0.07] * 41, n=6, cap0=False, cap1=False))
     else:
         # flared rim: a thick lip rolled outward, with radial creases on its face
         # a rolled lip: the throat wall curls out and back over itself in a fat round roll
@@ -839,7 +870,7 @@ def gun_what(part, kind):
             'spore': 'spore gland, pore rosette (swings on its neck)'}.get(t, kind)
 
 
-def bone_crest(length, h, w=None, knuckles=3, seed=0):
+def bone_crest(length, h, w=None, knuckles=3, seed=0, jagged=0.0):
     """a knuckled bone crest (local +Z out of the hull, +X along the crest): collar, the raw tissue it grows from (mount);
     blade, a thick bony ridge whose top rises and falls in knuckles; edge, the knuckle knobs on the ridge; growth, growth
     ridges across its flanks. Uneven by design: no two crests alike (the bladeback's back, issue 623)."""
@@ -852,11 +883,14 @@ def bone_crest(length, h, w=None, knuckles=3, seed=0):
     peaks = sorted(rnd.uniform(-0.38, 0.38) for _ in range(knuckles))
     hts = [rnd.uniform(0.6, 1.0) for _ in range(knuckles)]
 
+    jag = [rnd.uniform(-1, 1) for _ in range(k + 1)]
+
     def top(t):
-        # the ridge line: a sum of knuckle humps over a low base, falling to the ends
+        # the ridge line: knuckle humps over a base, broken by jagged notches, falling to the ends
         x = (t - 0.5)
-        v = 0.55 + sum(0.45 * hk * math.exp(-((x - pk) / 0.16) ** 2) for pk, hk in zip(peaks, hts))
-        return h * min(1.0, v) * math.sin(math.pi * t) ** 0.45
+        v = 0.5 + sum(0.5 * hk * math.exp(-((x - pk) / 0.13) ** 2) for pk, hk in zip(peaks, hts))
+        j = jag[min(k, int(t * k + 0.5))] * jagged
+        return h * max(0.12, min(1.05, v + j)) * math.sin(math.pi * t) ** 0.4
     secs = []
     for j in range(k + 1):
         t = j / k

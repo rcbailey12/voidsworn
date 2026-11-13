@@ -1,5 +1,5 @@
 {
- "note": "R224 per part type, measured on the sheet blockout (sandbox, issue 623, round 2): triangles and edge features (faces at over 30 degrees, or open rims) per square unit against the hull; R226 machines on a seam (plan paths); insides within 0.15 of the skin",
+ "note": "R224 per part type, measured on the sheet blockout (sandbox, issue 623, round 3): triangles and edge features (faces at over 30 degrees, or open rims) per square unit against the hull; R226 machines on a seam (plan paths); insides within 0.15 of the skin",
  "seams": {
   "machines": 15,
   "on_seam": []
@@ -13,48 +13,48 @@
    "area": 168.3,
    "tris_per_unit2": 291.3,
    "edges_per_unit2": 168.6,
-   "tris_vs_hull": 1.49,
-   "edges_vs_hull": 1.53,
+   "tris_vs_hull": 2.72,
+   "edges_vs_hull": 2.63,
    "triangles": 49020
   },
   "engine": {
    "area": 20.9,
    "tris_per_unit2": 374.3,
    "edges_per_unit2": 190.6,
-   "tris_vs_hull": 1.92,
-   "edges_vs_hull": 1.73,
+   "tris_vs_hull": 3.5,
+   "edges_vs_hull": 2.97,
    "triangles": 7832
   },
   "gun": {
    "area": 92.5,
    "tris_per_unit2": 209.4,
    "edges_per_unit2": 113.0,
-   "tris_vs_hull": 1.07,
-   "edges_vs_hull": 1.02,
+   "tris_vs_hull": 1.96,
+   "edges_vs_hull": 1.76,
    "triangles": 19371
   },
   "hull": {
-   "area": 535.8,
-   "tris_per_unit2": 195.4,
-   "edges_per_unit2": 110.4,
+   "area": 503.8,
+   "tris_per_unit2": 107.0,
+   "edges_per_unit2": 64.2,
    "tris_vs_hull": 1.0,
    "edges_vs_hull": 1.0,
-   "triangles": 104687
+   "triangles": 53904
   },
   "spinal": {
-   "area": 185.6,
-   "tris_per_unit2": 227.4,
-   "edges_per_unit2": 169.1,
-   "tris_vs_hull": 1.16,
-   "edges_vs_hull": 1.53,
-   "triangles": 42196
+   "area": 205.0,
+   "tris_per_unit2": 154.2,
+   "edges_per_unit2": 111.2,
+   "tris_vs_hull": 1.44,
+   "edges_vs_hull": 1.73,
+   "triangles": 31604
   },
   "thruster": {
    "area": 4.1,
    "tris_per_unit2": 555.2,
    "edges_per_unit2": 252.1,
-   "tris_vs_hull": 2.84,
-   "edges_vs_hull": 2.28,
+   "tris_vs_hull": 5.19,
+   "edges_vs_hull": 3.93,
    "triangles": 2304
   }
  },

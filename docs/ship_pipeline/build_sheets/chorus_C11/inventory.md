@@ -162,15 +162,15 @@ Concept counts read off the concept sheet by eye (C11 sheet: bow = the two throa
 
 | Cell | Concept | Build | Build masses |
 |---|---:|---:|---|
-| bow/top | 4 | 8 | Hull: the short broad body; Port throat; Starboard throat; Bile sac 1 (port); Bile sac 1 (starboard); Bone crest; Shoulder crests (port); Shoulder crests (starboard) |
-| bow/side | 3 | 5 | Hull: the short broad body; Port throat; Bile sac 1 (port); Bone crest; Shoulder crests (port) |
-| bow/below | 2 | 3 | Hull: the short broad body; Bile sac 1 (port); Bile sac 1 (starboard) |
+| bow/top | 4 | 7 | Hull: the short broad body; Head: the face; Bile sac 1 (port); Bile sac 1 (starboard); Bone crest; Shoulder crests (port); Shoulder crests (starboard) |
+| bow/side | 3 | 5 | Hull: the short broad body; Head: the face; Bile sac 1 (port); Bone crest; Shoulder crests (port) |
+| bow/below | 2 | 4 | Hull: the short broad body; Head: the face; Bile sac 1 (port); Bile sac 1 (starboard) |
 | mid/top | 6 | 11 | Hull: the short broad body; Mane; Bile sac 1 (port); Bile sac 1 (starboard); Bile sac 2 (port); Bile sac 2 (starboard); Bile sac 3 (port); Bile sac 3 (starboard); Bone crest; Shoulder crests (port); Shoulder crests (starboard) |
 | mid/side | 5 | 7 | Hull: the short broad body; Mane; Bile sac 1 (port); Bile sac 2 (port); Bile sac 3 (port); Bone crest; Shoulder crests (port) |
-| mid/below | 3 | 7 | Hull: the short broad body; Bile sac 1 (port); Bile sac 1 (starboard); Bile sac 2 (port); Bile sac 2 (starboard); Bile sac 3 (port); Bile sac 3 (starboard) |
+| mid/below | 3 | 5 | Hull: the short broad body; Bile sac 1 (port); Bile sac 1 (starboard); Bile sac 2 (port); Bile sac 2 (starboard) |
 | stern/top | 3 | 5 | Hull: the short broad body; Mane; Bile sac 3 (port); Bile sac 3 (starboard); Vent ring |
 | stern/side | 3 | 4 | Hull: the short broad body; Mane; Bile sac 3 (port); Vent ring |
-| stern/below | 2 | 3 | Hull: the short broad body; Bile sac 3 (port); Bile sac 3 (starboard) |
+| stern/below | 2 | 1 | Hull: the short broad body |
 
 ## Proportions: length to beam and length to height, concept against build (the Board on round 3)
 
@@ -179,6 +179,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 2.27 | 2.88 | 2.78 | 3.44 |
-| build | 2.38 | 1.82 | 2.73 | 2.68 |
+| build | 1.95 | 2.01 | 2.44 | 2.81 |
 
 Lines not present, shaped and detailed without a reason: 0.

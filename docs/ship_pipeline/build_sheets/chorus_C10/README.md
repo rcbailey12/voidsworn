@@ -1,7 +1,7 @@
-# chorus_C10 build sheet: The Ninefold Maw, the Chorus flagship (round 2: the massing)
+# chorus_C10 build sheet: The Ninefold Maw, the Chorus flagship (round 3: the face)
 
 The Chorus, class Bio-titan, **28.0 world units** mouth to membrane tip (godot/render/hull_table.gd CLS_LEN; data.js `b_boss`:
-bioplasma F, bioplasma F, tendril T, spores T; hangar 3; regen 20; no shields). The model is 28.0. Version 2 (round 2, the massing), 2026-11-12,
+bioplasma F, bioplasma F, tendril T, spores T; hangar 3; regen 20; no shields). The model is 28.0. Version 3 (round 3, the face), 2026-11-12,
 issue 623. Designer of record: Opus (R205, R207). Accepted picture: contrib/muse/design/concept_round8b_2026_11/chorus_C10_beauty.jpg
 and chorus_C10_sheet.jpg (R204). Built with the new Chorus kit, `tools/blender/kits/chorus/` (grown parts; its README says what
 each part is and does). The views were rendered in the Opus sandbox (Blender 5.3, CPU, 20 samples) from the same build.py the PC
@@ -14,6 +14,15 @@ runs; nothing ran on Ryan's PC.
 the [bow](../../../shots/issue_623_chorus/c10_bow_compare.jpg) and the [stern](../../../shots/issue_623_chorus/c10_stern_compare.jpg).
 The two classes from above at one scale: [c10_c11_classes.jpg](../../../shots/issue_623_chorus/c10_c11_classes.jpg).
 Then [side_by_side.jpg](side_by_side.jpg), [cells.jpg](cells.jpg) and [fit_view.jpg](fit_view.jpg).
+
+## Round 3: the face (the Board on round 2)
+
+1. **Face first.** The head swells tallest and fullest just behind the lips (5.4 deep, 6.0 across), then the back line falls
+   away. The two throats are big (1.7 across, about a third of the head's height), glowing deep inside.
+2. **The lips are folded flesh**: two thick rolls whose reach, set-back and thickness wander round each mouth, merging into the
+   head's fold rolls. They are no longer even tubes.
+3. **The long ridge down each flank is a raised membrane fold** with height (up to about half a unit), wandering, with an
+   ochre chitin edge. It replaces the beaded chitin row.
 
 ## Round 2: the massing (the Board on PR 628, Nov 12)
 
@@ -37,20 +46,20 @@ The Board passed the parts, jobs and checks and failed the massing: "both ships 
 Something vast and eyeless that was grown as a weapon. The double mouth at the bow is its two bile spitters; the tendril crown
 on its back boards and holds; five spore glands hang under the belly as its point defence; three brood sacs a side carry the
 spore swarms (hangar 3) and give birth to them through slits; a crown of three pulse vents with trailing membranes drives it.
-No panels, no pipes, no metal: hide with callus pads and sense pores, fold rolls, an ochre chitin ridge along each shoulder,
+No panels, no pipes, no metal: hide with callus pads and sense pores, fold rolls, a raised membrane fold down each flank with an ochre chitin edge,
 veins carrying bile, scars knitting shut.
 
 ## The checks
 
 | Check | Result |
 |---|---|
-| Views agree (side, top, bow): length, beam, height | 0.0, 0.04 and 0.0 percent apart; length 27.99 on the views (model 27.96), within 0.2 percent of the class (checks.json, PASS) |
+| Views agree (side, top, bow): length, beam, height | 0.0, 0.04 and 0.0 percent apart; length 28.02 on the views (model 28.0) (checks.json, PASS) |
 | Fit check (R217, R219, R221): clash, mount, arc, sweep, exhaust, exit, lane | **0** in all seven ([fit_report.md](fit_report.md), [fit_view.jpg](fit_view.jpg)) |
 | Machines on a seam (R226) | **0** of 15 machines (2 throats, the crown, 5 spore glands, 3 vents, 4 siphons) across 4 seams |
 | Insides inside the skin | 0 of 7,484 inside vertices within 0.15 of the skin |
 | Inventory (R218, R221) | 15 lines, every one with a job; 0 not present, shaped and detailed ([inventory.md](inventory.md)) |
-| Outline overlap at the concept's camera (reported, not a bar) | 75.5 percent ([outline_check.jpg](outline_check.jpg)) |
-| Proportions, hull length to beam / to height (concept sheet against build, same measure) | 5.74 / 6.21 against 5.97 / 5.83 |
+| Outline overlap at the concept's camera (reported, not a bar) | 76.4 percent ([outline_check.jpg](outline_check.jpg)) |
+| Proportions, hull length to beam / to height (concept sheet against build, same measure) | 5.74 / 6.21 against 6.04 / 5.62 |
 
 ### Detail density per part type (R224, measured on the blockout; numbers in [density_seams.json](density_seams.json))
 
@@ -59,12 +68,12 @@ Triangles and edge features (faces meeting at over 30 degrees, or an open rim) p
 
 | Part type | Triangles per unit2 (vs hull) | Edge features per unit2 (vs hull) |
 |---|---|---|
-| hull (the body, hide pads, folds, chitin trim, veins, pores, scars) | 195.4 (1.00) | 110.4 (1.00) |
-| spinal (the two throats) | 227.4 (1.16) | 169.1 (1.53) |
-| gun (the crown and the spore glands) | 209.4 (1.07) | 113.0 (1.02) |
-| brood (the brood sacs) | 291.3 (1.49) | 168.6 (1.53) |
-| engine (the pulse vents and membranes) | 374.3 (1.92) | 190.6 (1.73) |
-| thruster (the siphons) | 555.2 (2.84) | 252.1 (2.28) |
+| hull (the body, hide pads, head folds, flank folds, veins, pores, scars) | 107.0 (1.00) | 64.2 (1.00) |
+| spinal (the two throats) | 154.2 (1.44) | 111.2 (1.73) |
+| gun (the crown and the spore glands) | 209.4 (1.96) | 113.0 (1.76) |
+| brood (the brood sacs) | 291.3 (2.72) | 168.6 (2.63) |
+| engine (the pulse vents and membranes) | 374.3 (3.50) | 190.6 (2.97) |
+| thruster (the siphons) | 555.2 (5.19) | 252.1 (3.93) |
 
 ## Weapons, each from the lore (R221)
 
@@ -93,7 +102,7 @@ no machine on any of them. Nine breach anchors (Bio-titan 8, Chorus +1 on the bi
 3. **The tendril cluster is the boarding tendrils** (tendril T), a turning crown on a muscle mound; built as the profile draws it (curling), the tips splayed outward as the plan shows.
 4. **The belly row is five spore glands** (spores T); the last two sit about a unit further aft than the picture's so the B-2 seam passes behind the crown and between two glands (R226).
 5. **The flank sacs are brood sacs** (hangar 3): the picture's crease on each becomes the birth slit, kept clear by the fit check.
-6. **The shoulder ridge is a row of ochre chitin scutes** on a raised welt (the lore's ochre trim; the line the hide tears first).
+6. **The long flank ridge is a raised membrane fold** with an ochre chitin edge (the lore's ochre trim; the line the hide tears first).
 7. **The tail ends in a crown of three pulse vents** with trailing membrane veils (factions.md: no nozzles). The membranes are about two thirds of the picture's wisps so the ship is 28.0 mouth to membrane tip.
 8. **Siphons added** (two pairs): a ship in space must turn, with siphons, not nozzles.
 9. **Pore fields, veins and knit scars added**: the Chorus has no eyes and tastes the dark (lore 5.8); the veins carry bile to the throats (README 8b noted C9's vein tracery faded); scars knit shut (regen 20).

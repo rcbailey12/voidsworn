@@ -1,7 +1,7 @@
-# chorus_C11 build sheet: the bladeback, the Chorus cruiser (round 2: the massing)
+# chorus_C11 build sheet: the bladeback, the Chorus cruiser (round 3: the face)
 
 The Chorus, class Cruiser, **14.5 world units** throat rim to filament tip (godot/render/hull_table.gd CLS_LEN; data.js `b_razor`,
-"Chorus bladeback": tendril T, bioplasma F; ability frenzy; regen 6; no shields). Version 2 (round 2, the massing), 2026-11-12, issue 623. Designer of
+"Chorus bladeback": tendril T, bioplasma F; ability frenzy; regen 6; no shields). Version 3 (round 3, the face), 2026-11-12, issue 623. Designer of
 record: Opus (R205, R207). Accepted picture: contrib/muse/design/concept_round8b_2026_11/chorus_C11_beauty.jpg and
 chorus_C11_sheet.jpg (R204). Built with the Chorus kit, `tools/blender/kits/chorus/`. Rendered in the Opus sandbox (Blender 5.3,
 CPU, 20 samples) from the same build.py the PC runs; nothing ran on Ryan's PC.
@@ -13,6 +13,17 @@ CPU, 20 samples) from the same build.py the PC runs; nothing ran on Ryan's PC.
 the [bow](../../../shots/issue_623_chorus/c11_bow_compare.jpg) and the [stern](../../../shots/issue_623_chorus/c11_stern_compare.jpg).
 The two classes from above at one scale: [c10_c11_classes.jpg](../../../shots/issue_623_chorus/c10_c11_classes.jpg).
 Then [side_by_side.jpg](side_by_side.jpg), [cells.jpg](cells.jpg) and [fit_view.jpg](fit_view.jpg).
+
+## Round 3: the face (the Board on round 2)
+
+1. **The mouths are fleshy rimmed holes flush in the face.** The face is a dome of flesh over the body's front, and the throats
+   open in it. Each has one thick, lumpy lip with pores and a few uneven creases, and a dark wet throat with the bile glow deep
+   inside. There is no cylinder, no ribs and no disc.
+2. **The bile sacs are domes half sunk into the lower flank**, bulging out of the hide. They no longer hang like wheels.
+3. **The bone plates are big, jagged and broken**, leaning, uneven and overlapping along the spine. The tallest is about a fifth
+   of the body's height.
+4. **From above it is a seed.** The sides curve from the front third to the stern and the face domes the front. The front
+   corners have no boxes.
 
 ## Round 2: the massing (the Board on PR 628, Nov 12)
 
@@ -39,7 +50,7 @@ ring of six pulse vents with glowing filaments drives it.
 ## Two classes (the brief's question)
 
 C10 is long and tapering (hull length to beam 6.0, to height 5.8): a folded double mouth, a tendril crown, hanging brood sacs,
-a shoulder trim and a vent crown with membranes. C11 is a short, broad seed (2.7 and 2.7): two open flared throats, knuckled bone
+flank folds and a vent crown with membranes. C11 is a short, broad seed (2.7 and 2.7): two throats flush in a domed face, knuckled bone
 crests, a streaming mane, domed sacs and a filament ring. From above at one scale they share nothing but the hide and the
 family grammar ([c10_c11_classes.jpg](../../../shots/issue_623_chorus/c10_c11_classes.jpg)).
 
@@ -47,13 +58,13 @@ family grammar ([c10_c11_classes.jpg](../../../shots/issue_623_chorus/c10_c11_cl
 
 | Check | Result |
 |---|---|
-| Views agree (side, top, bow): length, beam, height | 0.0, 0.0 and 0.09 percent apart; length 14.54 on the views, 0.1 percent over the class (model 14.51) (checks.json, PASS) |
+| Views agree (side, top, bow): length, beam, height | 0.0, 0.09 and 0.09 percent apart; length 14.54 on the views (model 14.52) (checks.json, PASS) |
 | Fit check (R217, R219, R221): clash, mount, arc, sweep, exhaust, exit, lane | **0** in all seven ([fit_report.md](fit_report.md), [fit_view.jpg](fit_view.jpg)) |
 | Machines on a seam (R226) | **0** of 13 machines (2 throats, the mane, 6 vents, 4 siphons) across 2 seams |
 | Insides inside the skin | 0 of 5,764 inside vertices within 0.15 of the skin |
 | Inventory (R218, R221) | 14 lines, every one with a job; 0 not present, shaped and detailed ([inventory.md](inventory.md)) |
-| Outline overlap at the concept's camera (reported, not a bar) | 77.6 percent ([outline_check.jpg](outline_check.jpg)) |
-| Proportions, hull length to beam / to height (concept sheet against build, same measure) | 2.78 / 3.44 against 2.73 / 2.68 (as broad as the concept, a little deeper: the seed swells over the top) |
+| Outline overlap at the concept's camera (reported, not a bar) | 82.8 percent ([outline_check.jpg](outline_check.jpg)) |
+| Proportions, hull length to beam / to height (concept sheet against build, same measure) | 2.78 / 3.44 against 2.44 / 2.81 (broad, as the Board picked) |
 
 ### Detail density per part type (R224, measured on the blockout; numbers in [density_seams.json](density_seams.json))
 
@@ -61,18 +72,18 @@ family grammar ([c10_c11_classes.jpg](../../../shots/issue_623_chorus/c10_c11_cl
 
 | Part type | Triangles per unit2 (vs hull) | Edge features per unit2 (vs hull) |
 |---|---|---|
-| hull (body, hide pads, pore fields, crests, wound, folds, veins, scars) | 243.5 (1.00) | 165.5 (1.00) |
-| spinal (the two throats) | 281.6 (1.16) | 146.9 (0.89) |
-| sac (the bile sacs) | 293.5 (1.21) | 160.9 (0.97) |
-| gun (the mane) | 450.4 (1.85) | 346.0 (2.09) |
-| engine (the six vents and filaments) | 794.6 (3.26) | 457.7 (2.76) |
-| thruster (the siphons) | 833.5 (3.42) | 377.0 (2.28) |
+| hull (body, hide pads, pore fields, crests, wound, folds, veins, scars) | 260.5 (1.00) | 164.5 (1.00) |
+| spinal (the two throats) | 266.0 (1.02) | 196.3 (1.19) |
+| sac (the bile sacs) | 237.5 (0.91) | 133.7 (0.81) |
+| gun (the mane) | 450.4 (1.73) | 346.0 (2.10) |
+| engine (the six vents and filaments) | 794.6 (3.05) | 457.7 (2.78) |
+| thruster (the siphons) | 833.5 (3.20) | 377.0 (2.29) |
 
 ## Weapons, each from the lore (R221)
 
 | Slot | Weapon | Built as |
 |---|---|---|
-| F | Spine volley (bioplasma) | the two throats, one battery: a fat rolled lip with fine radial wrinkles, a sphincter, a ring of chitin spines deep in the bore, and the bile gland down in the throat lighting its wet wall. Fixed forward. |
+| F | Spine volley (bioplasma) | the two throats, one battery, flush in a domed face: a thick lumpy lip with pores and a few uneven creases, a sphincter, a ring of chitin spines deep in the bore, and the bile gland down in the throat lighting its wet wall. Fixed forward. |
 | T | Boarding tendrils (tendril) | a mane of thirty hooked tendrils on a muscle crest behind the bone crests, each with grip rings, a chitin barb and acid pores, streaming up and aft. Fixed: a mane reaches every way at once (not marked as a turret). |
 
 ## INSIDE (R209): flesh, bone and organs, never rooms that reach the skin

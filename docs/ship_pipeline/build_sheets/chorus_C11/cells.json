@@ -528,7 +528,7 @@
   {
    "cell": "bow/top",
    "concept": 4,
-   "build": 8
+   "build": 7
   },
   {
    "cell": "bow/side",
@@ -538,7 +538,7 @@
   {
    "cell": "bow/below",
    "concept": 2,
-   "build": 3
+   "build": 4
   },
   {
    "cell": "mid/top",
@@ -553,7 +553,7 @@
   {
    "cell": "mid/below",
    "concept": 3,
-   "build": 7
+   "build": 5
   },
   {
    "cell": "stern/top",
@@ -568,7 +568,7 @@
   {
    "cell": "stern/below",
    "concept": 2,
-   "build": 3
+   "build": 1
   }
  ],
  "ratios": {
@@ -579,10 +579,10 @@
    "hull_LH": 3.44
   },
   "build": {
-   "env_LB": 2.38,
-   "env_LH": 1.82,
-   "hull_LB": 2.73,
-   "hull_LH": 2.68
+   "env_LB": 1.95,
+   "env_LH": 2.01,
+   "hull_LB": 2.44,
+   "hull_LH": 2.81
   }
  }
 }

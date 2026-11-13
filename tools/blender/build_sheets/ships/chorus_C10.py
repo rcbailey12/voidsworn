@@ -22,23 +22,23 @@ CONCEPT_SHEET = 'contrib/muse/design/concept_round8b_2026_11/chorus_C10_sheet.jp
 # the true views on the 8b sheet (x0, y0, x1, y1), bow on the LEFT already; the escort (right) is a separate shape, left out
 CONCEPT_VIEWS = dict(top=dict(box=(75, 30, 1840, 600), largest=True, flip=False), side=dict(box=(65, 600, 1860, 1195), largest=True, flip=False))
 CROPS = [('bow (the double mouth)', (90, 480, 1000, 1010)), ('midships (crown and sacs)', (560, 60, 1450, 960)), ('stern (vent crown and membranes)', (1150, 30, 1920, 700))]
-SHEET = dict(version=2, round='round 2, the massing', date='2026-11-12', blend='opus623\\chorus_C10',
+SHEET = dict(version=3, round='round 3, face and massing', date='2026-11-12', blend='opus623\\chorus_C10',
              before='First full layout', before_note='The first complete C10 layout with the Chorus kit, run through the check before any fix.')
 
 PEXP = (2.3, 2.0)   # a soft back, a round belly: no flat top, no parallel sides (the Board on PR 628)
 WOBBLE = (0.12, 1.3)   # the body's unevenness: no flat faces and no straight lines
-# key sections (x, half-beam port, half-beam starboard, belly, back): fullest just behind the mouth's fold lips, tapering
-# steadily all the way to a thin tail that rises to the back line
+# key sections (x, half-beam port, half-beam starboard, belly, back): the head swells tallest and fullest just behind the
+# mouth's fold lips (round 3: the ship reads face first), then the back line falls away and the body tapers to a thin tail
 KEY = [
-    (12.3, 2.05, 2.05, -2.0, 1.2),
-    (11.8, 2.55, 2.55, -2.45, 1.68),
-    (10.8, 2.74, 2.74, -2.62, 1.9),
-    (9.2, 2.72, 2.72, -2.56, 1.92),
-    (6.5, 2.6, 2.6, -2.38, 1.88),
-    (3.0, 2.4, 2.4, -2.1, 1.8),
-    (0.0, 2.14, 2.14, -1.8, 1.7),
-    (-3.0, 1.76, 1.76, -1.36, 1.56),
-    (-6.0, 1.22, 1.22, -0.76, 1.38),
+    (11.75, 2.25, 2.25, -2.25, 1.7),
+    (11.2, 2.8, 2.8, -2.75, 2.25),
+    (10.2, 2.98, 2.98, -2.9, 2.5),
+    (8.8, 2.88, 2.88, -2.74, 2.4),
+    (6.5, 2.62, 2.62, -2.42, 2.08),
+    (3.0, 2.35, 2.35, -2.06, 1.82),
+    (0.0, 2.1, 2.1, -1.76, 1.64),
+    (-3.0, 1.74, 1.74, -1.34, 1.5),
+    (-6.0, 1.22, 1.22, -0.76, 1.36),
     (-8.4, 0.78, 0.78, -0.2, 1.22),
     (-9.6, 0.58, 0.58, 0.1, 1.12),
     (-10.15, 0.48, 0.48, 0.24, 1.04),
@@ -86,8 +86,8 @@ def build(K):
     # ---------------- the double mouth: two bile spitters (bioplasma F, F) ----------------
     for i, side in enumerate((1, -1)):
         fid = 'M%d' % (i + 1)
-        K.spinal(fid, (11.15, 1.2 * side, -0.35), 2.5, r=0.68, slot='F', weapon='bioplasma', inv='throats', style='folded', lip_r=1.0,
-                 rolls=3, teeth=9, seed=3 + i, side=side, gland_at=0.62,
+        K.spinal(fid, (11.27, 1.36 * side, -0.3), 2.3, r=0.86, slot='F', weapon='bioplasma', inv='throats', style='folded', lip_r=1.2,
+                 rolls=2, teeth=11, seed=3 + i, side=side, gland_at=0.6,
                  note='%s throat of the double mouth: rolled fold lips, an inner sphincter, a ring of spines, the bile gland glowing deep inside'
                       % ('port' if side > 0 else 'starboard'))
     K.allow_touch('M1', 'M2', 'the two throats grow from one fused mouth mass (the picture\'s folded double mouth)')
@@ -139,22 +139,35 @@ def build(K):
     # ---------------- grown detail on the hull ----------------
     import random
     rnd = random.Random(623)
-    # the chitin trim: a row of ochre scutes along each shoulder (the picture's ridge line)
+    # the flank fold: a raised fold of membrane running down each flank from behind the head to the tail (the picture's long
+    # ridge), with height, wandering, its edge armoured with ochre chitin (round 3: "give it a real fold with height")
     for side in (1, -1):
-        items = []
-        xs = [8.4 - 0.4 * k for k in range(42)]
-        rp = []; rn = []
+        sn = 'p' if side > 0 else 's'
+        xs = [8.2 - 0.25 * k for k in range(66)]
+        rings = []; edge = []
         for k, x in enumerate(xs):
             f = k / (len(xs) - 1)
-            thx = 0.62 - 0.12 * f + 0.07 * math.sin(x * 0.45 + 0.5) + 0.03 * math.sin(x * 1.3)   # a seam that wanders, never a ruled line
-            pos, nrm = K.hpt(x, side_th(thx, side), out=0.02)
-            rp.append(K.hpt(x, side_th(thx, side), out=-0.02)[0]); rn.append(nrm)
-            sc = HP.chitin(0.3 - 0.1 * f, 0.78 - 0.25 * f, t=0.06, growth=2, seed=k)
-            tang = (K.hpt(x - 0.1, side_th(thx, side))[0] - K.hpt(x + 0.1, side_th(thx, side))[0]).normalized()
-            items.append((sc, HP.frame(pos, -tang, nrm)))
-        K.grown_hull('chitin_trim_%s' % ('p' if side > 0 else 's'), items, inv='chitin_trim', kind='chitin')
-        K.mass('Chitin trim (%s)' % ('port' if side > 0 else 'starboard'), _bpy.data.objects['chitin_trim_%s_chitin' % ('p' if side > 0 else 's')], 'ochre chitin', note='the shoulder ridge')
-        K.hull_detail('ridge_%s' % ('p' if side > 0 else 's'), HP.welt(rp, rn, 0.42, 0.1, n=6), 'flesh2')
+            thx = 0.55 - 0.1 * f + 0.07 * math.sin(x * 0.45 + 0.5) + 0.03 * math.sin(x * 1.3)
+            b, nrm = K.hpt(x, side_th(thx, side), out=-0.05)
+            b2 = K.hpt(x - 0.05, side_th(thx, side), out=-0.05)[0]
+            tang = (b2 - b).normalized(); nrm = Vector(nrm)
+            d = (nrm * 0.8 + Vector((0, 0, 0.35))).normalized()   # it stands out and a little up from the flank
+            sv = tang.cross(d).normalized()
+            env = math.sin(math.pi * min(1.0, f * 1.15)) ** 0.5
+            hgt = (0.12 + 0.42 * env) * (1 + 0.15 * math.sin(x * 2.3 + side))
+            w = 0.34 * (0.6 + 0.4 * env)
+            tip = b + d * hgt + sv * 0.04 * math.sin(x * 3.1)
+            rings.append([b - sv * w / 2, b + d * hgt * 0.45 - sv * w * 0.32, tip - sv * 0.03, tip + sv * 0.03, b + d * hgt * 0.45 + sv * w * 0.32, b + sv * w / 2])
+            edge.append(tip + d * 0.02)
+        V = [tuple(q) for r_ in rings for q in r_]; n_ = 6; F = []
+        for j in range(len(rings) - 1):
+            for q in range(n_):
+                a_, b_ = j * n_ + q, j * n_ + (q + 1) % n_
+                F.append((a_, b_, b_ + n_, a_ + n_))
+        F.append(tuple(range(n_))[::-1]); F.append(tuple(range((len(rings) - 1) * n_, len(rings) * n_)))
+        fold = K.hull_detail('flank_fold_' + sn, (V, F), 'flesh2', inv='flank_fold', kind='welt', subs=['welt'])
+        K.hull_detail('flank_fold_edge_' + sn, HP.tube(edge, [0.045] * len(edge), n=6), 'chitin')
+        K.mass('Flank fold (%s)' % ('port' if side > 0 else 'starboard'), fold, 'flesh fold, ochre edge', note='the raised membrane fold down the flank')
     # the head folds: heavy fold rolls running back from the mouths over the head, converging into the shoulders (the
     # picture's coiled bow: the folds reach about a fifth of the length back)
     for side in (1, -1):
@@ -163,7 +176,7 @@ def build(K):
             pts = []; nrms = []; ws = []; hs = []
             for j in range(12):
                 t = j / 11
-                x = 12.25 - 4.4 * t * (0.85 + 0.15 * math.sin(k * 1.7))
+                x = 11.9 - 4.2 * t * (0.85 + 0.15 * math.sin(k * 1.7))
                 th = th0 + (0.62 - th0) * t ** 1.4 * 0.55 + 0.05 * math.sin(j * 0.9 + k)
                 p_, n_ = K.hpt(x, side_th(th, side), out=-0.02); pts.append(p_); nrms.append(n_)
                 ws.append((0.62 * (1 - 0.75 * t) + 0.06) * (1 + 0.18 * math.sin(j * 1.9 + k))); hs.append((0.3 * (1 - 0.8 * t) + 0.03) * (1 + 0.25 * math.sin(j * 1.3 + 2 * k)))
@@ -221,7 +234,7 @@ def build(K):
 
     # ---------------- colour zones ----------------
     K.colour('dark olive flesh, callused olive hide (paint stage)', 14.0, -10.2, 'whole body')
-    K.colour('ochre chitin', 8.6, -8.0, 'the shoulder trim')
+    K.colour('ochre chitin', 8.2, -8.0, 'the edge of each flank fold')
     K.colour('bile yellow-green light', 14.0, 12.0, 'the throat glands, deep in the mouths')
     K.colour('bile yellow-green light', -10.2, -14.0, 'the vents and the light in the membranes')
     K.colour('dim bile', 10.6, 0.4, 'the veins, the sac windows, the acid pores')
@@ -252,7 +265,7 @@ def build(K):
     K.organ_room('regrowth_aft_s', 'organ', (-5.0, -0.52, 0.6), (0.55, 0.3, 0.28), note='regrowth tissue', seed=34)
     K.organ_room('pulse_bladder', 'engroom', (-7.8, 0.0, 0.62), (1.0, 0.4, 0.32), note='the pulse bladder: fills and squeezes the vents (the engine room)', seed=35)
     K.armour('head and mouth folds', 0.45, 'the thickest flesh: the folds close over the throats')
-    K.armour('back and shoulders', 0.35, 'callused hide under the chitin trim')
+    K.armour('back and shoulders', 0.35, 'callused hide; the flank folds over the organs')
     K.armour('flanks and sacs', 0.25, 'thin over the brood sacs: they rupture first')
     K.armour('belly', 0.25, '')
     K.armour('tail', 0.2, '')
@@ -284,7 +297,7 @@ def build(K):
     K.change('The tendril cluster is the boarding tendrils (tendril T), a crown on a muscle mound that turns', 'the slot is all round; the profile (the view of record for anatomy, README 8b) curls them up, the plan splays them flat; built as the profile with the tips splayed')
     K.change('The belly row is five spore glands (spores T) on necks, spouts forward', 'the picture\'s small hanging sacs; the last two moved about one unit aft so the B-2 seam passes behind the crown and between two glands (R226)')
     K.change('The big flank sacs are brood sacs, the hangar (hangar 3), with birth slits', 'the picture\'s crease on each sac becomes the slit the spore swarms are born through; a launch opening kept clear (fit check EXIT). They hang below the lower flank as heavy lobes on soft necks, so from above only their curve shows (the Board on PR 628)')
-    K.change('The shoulder ridge line is a row of ochre chitin scutes', 'the picture draws a raised seam; the lore gives ochre chitin trim; it is also where the hide tears first')
+    K.change('The long ridge down each flank is a raised membrane fold with an ochre chitin edge', 'the picture\'s long flank ridge, given height; the lore\'s ochre chitin trim on its edge; it is also where the hide tears first')
     K.change('The tail ends in a crown of three pulse vents with trailing membranes', 'factions.md: no nozzles, pulsing vents or trailing membranes; the picture\'s spike with three or four glow points and long wisps. The membranes are about two thirds of the picture\'s wisps so the whole ship is 28.0, mouth to membrane tip')
     K.change('Siphons added, a pair behind the mouths and a pair on the tail', 'a ship in space must turn; the picture shows none; siphons, not nozzles')
     K.change('Pore fields on the head and round the tail, veins along the flanks', 'the Chorus has no eyes: it tastes (lore 5.8); the veins carry bile to the throats (README 8b: C9\'s vein tracery faded in this pass)')

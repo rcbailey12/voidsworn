@@ -14,7 +14,7 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 | siphons | attitude: squirt to swing the head and the tail (no nozzles, factions.md) | thruster | puckered jet siphons, a pair behind the mouths and a pair on the tail (the picture shows none; a ship in space must turn) | 4 | bow/side, stern/side | a muscle collar, a puckered lip, a dark bore | designed |
 | crown | boarding tendrils (tendril T): lash and hold an enemy hull, the acid pores eat through its armour | tendril | the dorsal tendril cluster amidships, curling up in profile, splayed in plan | 1 | mid/top, mid/side | a muscle mound with radial welts, a sphincter, hooked tendrils with grip rings, chitin barbs and acid pores | picture |
 | spore_glands | the Spore cloud (spores T): point defence against craft, puffing spore clouds | spore | the row of small sacs hanging under the belly on short necks | 5 | mid/side, mid/below | a neck collar, a veined sac, a spout curling forward, a rosette of pores | picture |
-| chitin_trim | armour strake over the flank organs, and the line the hide tears along first (how it breaks) | chitin | the raised ridge line along each shoulder from behind the mouths to the tail (the picture draws a raised seam; the lore gives the Chorus ochre chitin trim) | 2 | bow/top, bow/side, mid/top, mid/side, stern/top, stern/side | a row of overlapping ochre scutes, each a domed plate with a raised rim and growth lines | picture |
+| flank_fold | armour strake over the flank organs, and the line the hide tears along first (how it breaks) | welt | the long raised ridge down each flank from behind the head to the tail (the picture draws a long raised fold; the lore gives the Chorus ochre chitin trim, here on its edge) | 2 | bow/top, bow/side, mid/top, mid/side, stern/top, stern/side | a raised fold of membrane with height, its edge armoured with ochre chitin | picture |
 | veins | carry bile from the heart vat to the throat glands and the sacs; their dim light is the lore's light inside the body | vein | branching vein runs along both flanks (the C9 tracery the round 8b pass faded (README); built back faintly) | 2 | bow/side, mid/side | a raised vein, branches | picture |
 | scars | regrowth (regen 20, the Mending): wounds knitting shut | scar | pale scarred patches on the back and flanks | 8 | bow/top, mid/top, mid/side, stern/top | a raised irregular patch, knit ridges across it | picture |
 | body | the body: holds the organs, the heart vat and the brood chambers | hull | the long body: broad flat back, rounder belly, tapering to the tail | 1 | bow/top, bow/side, bow/below, mid/top, mid/side, mid/below, stern/top, stern/side, stern/below | the shoulder ridges, fold wrinkles, pore fields | picture |
@@ -25,7 +25,6 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 Kit sub-parts per type (what DETAILED checks):
 
 - brood: root, sac, crease, slit, lip, vein
-- chitin: plate, rim, growth
 - engine: root, fold, sphincter, throat, glow, membrane|filament
 - hull: ridge, fold, pore
 - plate: pad, pore
@@ -59,7 +58,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | head_folds | heavy fold rolls running back from the mouths over the head to the sho | 2 / 2 | Y | Y | Y |
 | head_pores | pore fields over the head behind the mouths, and round the vent crown | 2 / 2 | Y | Y | Y |
 | brood_sacs | three big sacs a side bulging from the lower flanks, largest forward,  | 6 / 6 | Y | Y | Y |
-| chitin_trim | the raised ridge line along each shoulder from behind the mouths to th | 2 / 2 | Y | Y | Y |
+| flank_fold | the long raised ridge down each flank from behind the head to the tail | 2 / 2 | Y | Y | Y |
 | scars | pale scarred patches on the back and flanks | 8 / 8 | Y | Y | Y |
 | body | the long body: broad flat back, rounder belly, tapering to the tail | 1 / 1 | Y | Y | Y |
 | hide | the hide over the whole body | 1 / 1 | Y | Y | Y |
@@ -73,7 +72,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | head_pores | pore fields over the head behind the mouths, and round the vent crown | 2 / 2 | Y | Y | Y |
 | brood_sacs | three big sacs a side bulging from the lower flanks, largest forward,  | 6 / 6 | Y | Y | Y |
 | siphons | puckered jet siphons, a pair behind the mouths and a pair on the tail | 4 / 4 | Y | Y | Y |
-| chitin_trim | the raised ridge line along each shoulder from behind the mouths to th | 2 / 2 | Y | Y | Y |
+| flank_fold | the long raised ridge down each flank from behind the head to the tail | 2 / 2 | Y | Y | Y |
 | veins | branching vein runs along both flanks | 2 / 2 | Y | Y | Y |
 | body | the long body: broad flat back, rounder belly, tapering to the tail | 1 / 1 | Y | Y | Y |
 | hide | the hide over the whole body | 1 / 1 | Y | Y | Y |
@@ -93,7 +92,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 |---|---|---|---|---|---|
 | brood_sacs | three big sacs a side bulging from the lower flanks, largest forward,  | 6 / 6 | Y | Y | Y |
 | crown | the dorsal tendril cluster amidships, curling up in profile, splayed i | 1 / 1 | Y | Y | Y |
-| chitin_trim | the raised ridge line along each shoulder from behind the mouths to th | 2 / 2 | Y | Y | Y |
+| flank_fold | the long raised ridge down each flank from behind the head to the tail | 2 / 2 | Y | Y | Y |
 | scars | pale scarred patches on the back and flanks | 8 / 8 | Y | Y | Y |
 | body | the long body: broad flat back, rounder belly, tapering to the tail | 1 / 1 | Y | Y | Y |
 | hide | the hide over the whole body | 1 / 1 | Y | Y | Y |
@@ -105,7 +104,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | brood_sacs | three big sacs a side bulging from the lower flanks, largest forward,  | 6 / 6 | Y | Y | Y |
 | crown | the dorsal tendril cluster amidships, curling up in profile, splayed i | 1 / 1 | Y | Y | Y |
 | spore_glands | the row of small sacs hanging under the belly on short necks | 5 / 5 | Y | Y | Y |
-| chitin_trim | the raised ridge line along each shoulder from behind the mouths to th | 2 / 2 | Y | Y | Y |
+| flank_fold | the long raised ridge down each flank from behind the head to the tail | 2 / 2 | Y | Y | Y |
 | veins | branching vein runs along both flanks | 2 / 2 | Y | Y | Y |
 | scars | pale scarred patches on the back and flanks | 8 / 8 | Y | Y | Y |
 | body | the long body: broad flat back, rounder belly, tapering to the tail | 1 / 1 | Y | Y | Y |
@@ -125,7 +124,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
 | head_pores | pore fields over the head behind the mouths, and round the vent crown | 2 / 2 | Y | Y | Y |
-| chitin_trim | the raised ridge line along each shoulder from behind the mouths to th | 2 / 2 | Y | Y | Y |
+| flank_fold | the long raised ridge down each flank from behind the head to the tail | 2 / 2 | Y | Y | Y |
 | scars | pale scarred patches on the back and flanks | 8 / 8 | Y | Y | Y |
 | body | the long body: broad flat back, rounder belly, tapering to the tail | 1 / 1 | Y | Y | Y |
 | hide | the hide over the whole body | 1 / 1 | Y | Y | Y |
@@ -138,7 +137,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 |---|---|---|---|---|---|
 | head_pores | pore fields over the head behind the mouths, and round the vent crown | 2 / 2 | Y | Y | Y |
 | siphons | puckered jet siphons, a pair behind the mouths and a pair on the tail | 4 / 4 | Y | Y | Y |
-| chitin_trim | the raised ridge line along each shoulder from behind the mouths to th | 2 / 2 | Y | Y | Y |
+| flank_fold | the long raised ridge down each flank from behind the head to the tail | 2 / 2 | Y | Y | Y |
 | body | the long body: broad flat back, rounder belly, tapering to the tail | 1 / 1 | Y | Y | Y |
 | hide | the hide over the whole body | 1 / 1 | Y | Y | Y |
 | tail_folds | wrinkle folds converging on the tail end | 1 / 1 | Y | Y | Y |
@@ -159,14 +158,14 @@ Concept counts read off the concept sheet by eye (C10 sheet: bow = the two mouth
 
 | Cell | Concept | Build | Build masses |
 |---|---:|---:|---|
-| bow/top | 4 | 10 | Hull: the long body; Mouth, port throat; Mouth, starboard throat; Spore gland 1; Brood sac 1 (port); Brood sac 1 (starboard); Chitin trim (port); Chitin trim (starboard); Head folds (port); Head folds (starboard) |
-| bow/side | 4 | 7 | Hull: the long body; Mouth, port throat; Mouth, starboard throat; Spore gland 1; Brood sac 1 (port); Chitin trim (port); Head folds (port) |
+| bow/top | 4 | 10 | Hull: the long body; Mouth, port throat; Mouth, starboard throat; Spore gland 1; Brood sac 1 (port); Brood sac 1 (starboard); Flank fold (port); Flank fold (starboard); Head folds (port); Head folds (starboard) |
+| bow/side | 4 | 6 | Hull: the long body; Mouth, port throat; Spore gland 1; Brood sac 1 (port); Flank fold (port); Head folds (port) |
 | bow/below | 3 | 3 | Spore gland 1; Brood sac 1 (port); Brood sac 1 (starboard) |
 | mid/top | 6 | 15 | Hull: the long body; Tendril crown; Spore gland 1; Spore gland 2; Spore gland 3; Spore gland 4; Spore gland 5; Brood sac 1 (port); Brood sac 1 (starboard); Brood sac 2 (port); Brood sac 2 (starboard); Brood sac 3 (port); Brood sac 3 (starbo |
-| mid/side | 7 | 11 | Hull: the long body; Tendril crown; Spore gland 1; Spore gland 2; Spore gland 3; Spore gland 4; Spore gland 5; Brood sac 1 (port); Brood sac 2 (port); Brood sac 3 (port); Chitin trim (port) |
+| mid/side | 7 | 11 | Hull: the long body; Tendril crown; Spore gland 1; Spore gland 2; Spore gland 3; Spore gland 4; Spore gland 5; Brood sac 1 (port); Brood sac 2 (port); Brood sac 3 (port); Flank fold (port) |
 | mid/below | 6 | 6 | Spore gland 1; Spore gland 2; Spore gland 3; Brood sac 1 (port); Brood sac 1 (starboard); Brood sac 2 (starboard) |
-| stern/top | 3 | 5 | Hull: the long body; Spore gland 5; Vent crown; Chitin trim (port); Chitin trim (starboard) |
-| stern/side | 3 | 4 | Hull: the long body; Spore gland 5; Vent crown; Chitin trim (port) |
+| stern/top | 3 | 5 | Hull: the long body; Spore gland 5; Vent crown; Flank fold (port); Flank fold (starboard) |
+| stern/side | 3 | 4 | Hull: the long body; Spore gland 5; Vent crown; Flank fold (port) |
 | stern/below | 2 | 0 |  |
 
 ## Proportions: length to beam and length to height, concept against build (the Board on round 3)
@@ -176,6 +175,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 3.08 | 3.18 | 5.74 | 6.21 |
-| build | 4.28 | 3.25 | 5.97 | 5.83 |
+| build | 4.07 | 3.27 | 6.04 | 5.62 |
 
 Lines not present, shaped and detailed without a reason: 0.

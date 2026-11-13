@@ -38,7 +38,7 @@
   },
   {
    "cell": "bow/top",
-   "id": "chitin_trim",
+   "id": "flank_fold",
    "built": 2,
    "listed": 2,
    "present": true,
@@ -119,7 +119,7 @@
   },
   {
    "cell": "bow/side",
-   "id": "chitin_trim",
+   "id": "flank_fold",
    "built": 2,
    "listed": 2,
    "present": true,
@@ -209,7 +209,7 @@
   },
   {
    "cell": "mid/top",
-   "id": "chitin_trim",
+   "id": "flank_fold",
    "built": 2,
    "listed": 2,
    "present": true,
@@ -272,7 +272,7 @@
   },
   {
    "cell": "mid/side",
-   "id": "chitin_trim",
+   "id": "flank_fold",
    "built": 2,
    "listed": 2,
    "present": true,
@@ -362,7 +362,7 @@
   },
   {
    "cell": "stern/top",
-   "id": "chitin_trim",
+   "id": "flank_fold",
    "built": 2,
    "listed": 2,
    "present": true,
@@ -434,7 +434,7 @@
   },
   {
    "cell": "stern/side",
-   "id": "chitin_trim",
+   "id": "flank_fold",
    "built": 2,
    "listed": 2,
    "present": true,
@@ -515,7 +515,7 @@
   {
    "cell": "bow/side",
    "concept": 4,
-   "build": 7
+   "build": 6
   },
   {
    "cell": "bow/below",
@@ -561,10 +561,10 @@
    "hull_LH": 6.21
   },
   "build": {
-   "env_LB": 4.28,
-   "env_LH": 3.25,
-   "hull_LB": 5.97,
-   "hull_LH": 5.83
+   "env_LB": 4.07,
+   "env_LH": 3.27,
+   "hull_LB": 6.04,
+   "hull_LH": 5.62
   }
  }
 }
