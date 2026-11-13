@@ -111,6 +111,12 @@ when the picture, the faction guide and the lore conflict, or a change would alt
 Ryan, Nov 12 2026 (R233): "You're the final designer and director. Muse is just concepting." The Board makes the design
 calls between concept and build, family distinctness included, and shows Ryan the result rather than asking first. First
 case: the Eclipse flare (E14) carries one closed ring, so from above it never reads as a small zenith (E12, the split ring).
+Ryan, Nov 13 2026 (R236): "The muse concepts are inspiration. You are the final designer and builder. All ships should fit the
+design, lore bible and ship details from the game. We can revise or adjust the actual ships away from the concept, they're just
+a base." So what a ship must fit is, in order: the game's own ship entry (data.js: class, size, weapons and their arcs, hangar,
+speed), the faction guide and the lore bible, the playbooks; the concept is the starting base. Where they disagree, the game
+data and the lore win and the build moves away from the picture, listed on the build sheet with its reason. A concept that
+needs a data change (C12's forward gun, issue 649) is a data job first, never a silent build change.
 
 ## 2c. Parts that read and fit together (R217)
 
