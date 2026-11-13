@@ -1,0 +1,317 @@
+{
+ "code": "chorus_C11",
+ "sheet_version": 1,
+ "routes_note": "kit = the Chorus parts kit (tools/blender/kits/chorus/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
+ "turret_marking": "R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).",
+ "parts": [
+  {
+   "id": "M1",
+   "kind": "gun",
+   "what": "spine volley, throat (fixed)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "throats"
+   ],
+   "turret": false
+  },
+  {
+   "id": "M2",
+   "kind": "gun",
+   "what": "spine volley, throat (fixed)",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "throats"
+   ],
+   "turret": false
+  },
+  {
+   "id": "T1",
+   "kind": "gun",
+   "what": "boarding tendrils, mane of 30 hooked tendrils (fixed)",
+   "count": 3,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "mane"
+   ],
+   "turret": true,
+   "pivot_object": "T1_turret",
+   "arc_lo": -180.0,
+   "arc_hi": 180.0
+  },
+  {
+   "id": "S1p",
+   "kind": "sac",
+   "what": "bile sac, 1.9 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "bile_sacs"
+   ]
+  },
+  {
+   "id": "S1s",
+   "kind": "sac",
+   "what": "bile sac, 1.9 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "bile_sacs"
+   ]
+  },
+  {
+   "id": "S2p",
+   "kind": "sac",
+   "what": "bile sac, 1.9 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "bile_sacs"
+   ]
+  },
+  {
+   "id": "S2s",
+   "kind": "sac",
+   "what": "bile sac, 1.9 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "bile_sacs"
+   ]
+  },
+  {
+   "id": "S3p",
+   "kind": "sac",
+   "what": "bile sac, 1.9 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "bile_sacs"
+   ]
+  },
+  {
+   "id": "S3s",
+   "kind": "sac",
+   "what": "bile sac, 1.9 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "bile_sacs"
+   ]
+  },
+  {
+   "id": "Q1p",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "siphons"
+   ]
+  },
+  {
+   "id": "Q2p",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "siphons"
+   ]
+  },
+  {
+   "id": "Q1s",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "siphons"
+   ]
+  },
+  {
+   "id": "Q2s",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "route": "kit",
+   "source": "designed",
+   "inventory": [
+    "siphons"
+   ]
+  },
+  {
+   "id": "E1",
+   "kind": "engine",
+   "what": "pulse vent, mouth 0.4 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "E2",
+   "kind": "engine",
+   "what": "pulse vent, mouth 0.4 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "E3",
+   "kind": "engine",
+   "what": "pulse vent, mouth 0.4 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "E4",
+   "kind": "engine",
+   "what": "pulse vent, mouth 0.4 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "E5",
+   "kind": "engine",
+   "what": "pulse vent, mouth 0.4 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  },
+  {
+   "id": "E6",
+   "kind": "engine",
+   "what": "pulse vent, mouth 0.4 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "vents"
+   ]
+  }
+ ],
+ "masses": [
+  {
+   "name": "Hull: the short broad body",
+   "route": "hand-built"
+  },
+  {
+   "name": "Port throat",
+   "route": "hand-built"
+  },
+  {
+   "name": "Starboard throat",
+   "route": "hand-built"
+  },
+  {
+   "name": "Mane",
+   "route": "hand-built"
+  },
+  {
+   "name": "Bile sac 1 (port)",
+   "route": "hand-built"
+  },
+  {
+   "name": "Bile sac 1 (starboard)",
+   "route": "hand-built"
+  },
+  {
+   "name": "Bile sac 2 (port)",
+   "route": "hand-built"
+  },
+  {
+   "name": "Bile sac 2 (starboard)",
+   "route": "hand-built"
+  },
+  {
+   "name": "Bile sac 3 (port)",
+   "route": "hand-built"
+  },
+  {
+   "name": "Bile sac 3 (starboard)",
+   "route": "hand-built"
+  },
+  {
+   "name": "Vent ring",
+   "route": "hand-built"
+  },
+  {
+   "name": "Head: the brow",
+   "route": "hand-built"
+  },
+  {
+   "name": "Head: the chin",
+   "route": "hand-built"
+  },
+  {
+   "name": "Blade row",
+   "route": "hand-built"
+  },
+  {
+   "name": "Shoulder blades (port)",
+   "route": "hand-built"
+  },
+  {
+   "name": "Shoulder blades (starboard)",
+   "route": "hand-built"
+  }
+ ],
+ "break_pieces": [
+  {
+   "name": "bow piece",
+   "stations": "0.0 to 29.9 percent",
+   "bounded_by": [
+    "B-1"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "midships piece 1",
+   "stations": "29.9 to 54.7 percent",
+   "bounded_by": [
+    "B-1",
+    "B-2"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "stern piece",
+   "stations": "54.7 to 100.0 percent",
+   "bounded_by": [
+    "B-2"
+   ],
+   "full_interior": true
+  }
+ ],
+ "insides": "full interiors throughout the hull, hidden until a piece breaks (R215); every break piece carries its share"
+}

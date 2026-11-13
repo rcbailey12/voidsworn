@@ -1,0 +1,62 @@
+{
+ "note": "R224 per part type, measured on the sheet blockout (sandbox, issue 623): triangles and edge features (faces at over 30 degrees, or open rims) per square unit against the hull; R226 machines on a seam (plan paths); insides within 0.15 of the skin",
+ "seams": {
+  "machines": 13,
+  "on_seam": []
+ },
+ "insides": {
+  "outside": 0,
+  "total": 5764
+ },
+ "density": {
+  "engine": {
+   "area": 13.8,
+   "tris_per_unit2": 794.6,
+   "edges_per_unit2": 457.7,
+   "tris_vs_hull": 3.18,
+   "edges_vs_hull": 2.71,
+   "triangles": 10998
+  },
+  "gun": {
+   "area": 41.5,
+   "tris_per_unit2": 450.7,
+   "edges_per_unit2": 346.2,
+   "tris_vs_hull": 1.8,
+   "edges_vs_hull": 2.05,
+   "triangles": 18688
+  },
+  "hull": {
+   "area": 406.7,
+   "tris_per_unit2": 249.9,
+   "edges_per_unit2": 169.0,
+   "tris_vs_hull": 1.0,
+   "edges_vs_hull": 1.0,
+   "triangles": 101647
+  },
+  "sac": {
+   "area": 176.8,
+   "tris_per_unit2": 246.0,
+   "edges_per_unit2": 135.4,
+   "tris_vs_hull": 0.98,
+   "edges_vs_hull": 0.8,
+   "triangles": 43488
+  },
+  "spinal": {
+   "area": 144.0,
+   "tris_per_unit2": 256.6,
+   "edges_per_unit2": 134.0,
+   "tris_vs_hull": 1.03,
+   "edges_vs_hull": 0.79,
+   "triangles": 36940
+  },
+  "thruster": {
+   "area": 2.8,
+   "tris_per_unit2": 833.5,
+   "edges_per_unit2": 377.0,
+   "tris_vs_hull": 3.34,
+   "edges_vs_hull": 2.23,
+   "triangles": 2304
+  }
+ },
+ "flags": []
+}
