@@ -7,8 +7,8 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 
 | ID | Job | Type | What | Count | Cells | Reads as (sub-parts) | Source |
 |---|---|---|---|---:|---|---|---|
-| hull_form | the gutship's hull: a long lean slab that carries the guns to the fight | hull | the blunt bow face over a sloped chin, the long low body, the taper into the stern block | 1 | bow/top, bow/side, mid/side, stern/side | bevels, steps, an overhang (the foredeck plate over the face) | picture |
-| spade | armour over the bow: the foredeck plate the casemates fire from under | tier | the broad flat foredeck plate with chamfered corners | 1 | bow/top, bow/side | a face, a roof, an overhang | picture |
+| hull_form | the gutship's hull: a long lean slab that carries the guns to the fight | hull | an arrow-head wedge over the first third (a narrow bow face over a sloped chin, the flanks widening back to full beam), the long low body, the taper into the stern block | 1 | bow/top, bow/side, mid/side, stern/side | bevels, steps, an overhang (the foredeck plate over the face) | picture |
+| spade | armour over the bow: the foredeck plate the casemates fire from under | tier | the broad flat bow plate, an arrow-head from above: a blunt point that widens over the first third, overhanging the bow face | 1 | bow/top, bow/side | a face, a roof, an overhang | picture |
 | spade_plates | armour | plate | plates over the foredeck plate | 1 | bow/top | slabs with steps, bevels, rivets | picture |
 | bow_launchers | data.js torp F: the rattle-rocket salvo, fired straight ahead from the bow face | bow_launcher | two mismatched rocket casemates IN the bow face: one long tube, one short fat cluster of three (Ryan's ruling: the casemates sit in the face) | 2 | bow/side, bow/top | an armour plate, a box housing with a brow, launch tubes with lips, bands, bores and rocket noses, bolts | picture |
 | scoop | the wake-sniffer scoop: tastes the wake of ships ahead | tube | a scoop drum with a grille under the chin (designs.md: one chin scoop) | 1 | bow/side, bow/below | ribbed drum, bands, rolled lip, a grille in a dark mouth | designed |
@@ -62,7 +62,7 @@ Left as surface, and why:
 
 ## Every built part has a job (R221)
 
-Built kit parts: 53; parts whose inventory id names no line with a job: 0.
+Built kit parts: 55; parts whose inventory id names no line with a job: 0.
 
 ## Per cell: present, shaped, detailed (from the model, corsair_A19_model.json)
 
@@ -72,21 +72,21 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| hull_form | the blunt bow face over a sloped chin, the long low body, the taper in | 1 / 1 | Y | Y | Y |
-| spade | the broad flat foredeck plate with chamfered corners | 1 / 1 | Y | Y | Y |
+| hull_form | an arrow-head wedge over the first third (a narrow bow face over a slo | 1 / 1 | Y | Y | Y |
+| spade | the broad flat bow plate, an arrow-head from above: a blunt point that | 1 / 1 | Y | Y | Y |
 | spade_plates | plates over the foredeck plate | 1 / 1 | Y | Y | Y |
 | bow_launchers | two mismatched rocket casemates IN the bow face: one long tube, one sh | 2 / 2 | Y | Y | Y |
 | dishes | a large dish on the foredeck plate to port, a small one on the stern b | 2 / 2 | Y | Y | Y |
 | hull_plates | patch plating over the whole hull, a few plates in trophy colours | 1 / 1 | Y | Y | Y |
 | spine | three stacked spine blocks with gaps, a slit in the fore block | 2 / 1 | Y | Y | Y |
-| trophy | the big pale Hegemony trophy plate on the port side block; violet and  | 4 / 4 | Y | Y | Y |
+| trophy | the big pale Hegemony trophy plate on the port side block; violet and  | 6 / 4 | Y | Y | Y |
 
 ### bow/side
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| hull_form | the blunt bow face over a sloped chin, the long low body, the taper in | 1 / 1 | Y | Y | Y |
-| spade | the broad flat foredeck plate with chamfered corners | 1 / 1 | Y | Y | Y |
+| hull_form | an arrow-head wedge over the first third (a narrow bow face over a slo | 1 / 1 | Y | Y | Y |
+| spade | the broad flat bow plate, an arrow-head from above: a blunt point that | 1 / 1 | Y | Y | Y |
 | bow_launchers | two mismatched rocket casemates IN the bow face: one long tube, one sh | 2 / 2 | Y | Y | Y |
 | scoop | a scoop drum with a grille under the chin | 1 / 1 | Y | Y | Y |
 | grabbers | four grabber arms: a pair under the chin, a pair under the forefoot | 4 / 4 | Y | Y | Y |
@@ -116,13 +116,13 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | deck_turrets | two twin turrets on the spine, resting to starboard | 2 / 2 | Y | Y | Y |
 | spine_boxes | framed boxes on the spine | 2 / 2 | Y | Y | Y |
 | side_block | the port side block amidships | 1 / 1 | Y | Y | Y |
-| trophy | the big pale Hegemony trophy plate on the port side block; violet and  | 4 / 4 | Y | Y | Y |
+| trophy | the big pale Hegemony trophy plate on the port side block; violet and  | 6 / 4 | Y | Y | Y |
 
 ### mid/side
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| hull_form | the blunt bow face over a sloped chin, the long low body, the taper in | 1 / 1 | Y | Y | Y |
+| hull_form | an arrow-head wedge over the first third (a narrow bow face over a slo | 1 / 1 | Y | Y | Y |
 | hull_plates | patch plating over the whole hull, a few plates in trophy colours | 1 / 1 | Y | Y | Y |
 | spine | three stacked spine blocks with gaps, a slit in the fore block | 2 / 1 | Y | Y | Y |
 | casemates | three starboard flank casemates of mixed calibre | 3 / 3 | Y | Y | Y |
@@ -130,7 +130,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | side_block | the port side block amidships | 1 / 1 | Y | Y | Y |
 | side_block_plates | plates over the side block | 1 / 1 | Y | Y | Y |
 | bricks | four bolted bricks on the starboard flank | 1 / 1 | Y | Y | Y |
-| trophy | the big pale Hegemony trophy plate on the port side block; violet and  | 4 / 4 | Y | Y | Y |
+| trophy | the big pale Hegemony trophy plate on the port side block; violet and  | 6 / 4 | Y | Y | Y |
 | hatches | a hatch in the port side block, one on the stern block | 2 / 2 | Y | Y | Y |
 | lamps | dim red lamps low on both flanks | 7 / 7 | Y | Y | Y |
 
@@ -157,7 +157,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| hull_form | the blunt bow face over a sloped chin, the long low body, the taper in | 1 / 1 | Y | Y | Y |
+| hull_form | an arrow-head wedge over the first third (a narrow bow face over a slo | 1 / 1 | Y | Y | Y |
 | hull_plates | patch plating over the whole hull, a few plates in trophy colours | 1 / 1 | Y | Y | Y |
 | thrusters | attitude thruster quads at bow and stern | 4 / 4 | Y | Y | Y |
 | bricks | four bolted bricks on the starboard flank | 1 / 1 | Y | Y | Y |
@@ -200,6 +200,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 4.12 | 4.89 | 7.57 | 10.07 |
-| build | 2.92 | 3.49 | 4.11 | 6.29 |
+| build | 2.92 | 3.49 | 4.11 | 6.24 |
 
 Lines not present, shaped and detailed without a reason: 0.

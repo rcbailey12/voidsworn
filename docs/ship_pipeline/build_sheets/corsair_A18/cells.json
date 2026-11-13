@@ -20,6 +20,15 @@
   },
   {
    "cell": "bow/top",
+   "id": "scoop",
+   "built": 3,
+   "listed": 3,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
    "id": "sponson",
    "built": 2,
    "listed": 1,
@@ -93,8 +102,8 @@
   {
    "cell": "bow/side",
    "id": "scoop",
-   "built": 1,
-   "listed": 1,
+   "built": 3,
+   "listed": 3,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -553,9 +562,9 @@
   },
   "build": {
    "env_LB": 2.3,
-   "env_LH": 2.98,
-   "hull_LB": 3.72,
-   "hull_LH": 4.2
+   "env_LH": 2.88,
+   "hull_LB": 3.5,
+   "hull_LH": 4.13
   }
  }
 }

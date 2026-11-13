@@ -15,7 +15,7 @@
   1920,
   1280
  ],
- "iou": 0.7802,
- "body_iou": 0.803,
+ "iou": 0.7791,
+ "body_iou": 0.8018,
  "note": "A19 build sheet (issue 633): fitted to the whole beauty from a hand start at its three-quarter from the port bow (az 40, el 32, roll -8); fit.py moves the camera only, never the ship. Concept mask: luminance over 28, closed, holes filled, largest shape (the dark belly drops out, so the IoU is a lower bound). Round 2 (issue 633): refitted to the round 2 build from the round 1 camera, the camera only, never the ship."
 }

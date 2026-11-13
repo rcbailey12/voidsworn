@@ -164,10 +164,10 @@ def build(K):
                                note='nosing out of the forward mouth' if var == 0 else 'parked deeper in the aft mouth, half refitted', inv=['craft']))
     # ---------------- the bow: two big intake tubes in the bow block's face, a chin scoop, a pair of grabbers ----------------
     for i, (y, r) in enumerate(((0.73, 0.56), (-0.73, 0.54))):
-        K.tube('I%d' % (i + 1), (8.2, y, -0.12), r, 2.3, hood=0.18, bands=3, inv='intakes', what='intake tube',
+        K.tube('I%d' % (i + 1), (8.13, y, -0.12), r, 2.25, hood=0.18, bands=3, inv='intakes', what='intake tube',
                note='%s intake: the family\'s face (designs.md "two low intake tubes")' % ('port' if y > 0 else 'starboard'))
         # a soot-black liner down the bore, so each mouth reads as a deep dark hole from the beauty camera (round 2)
-        K.cyl('A20_I%d_liner' % (i + 1), (8.14, y, -0.12), (6.05, y, -0.12), r * 0.985, 'dark', cap=False)
+        K.cyl('A20_I%d_liner' % (i + 1), (8.07, y, -0.12), (6.05, y, -0.12), r * 0.985, 'dark', cap=False)
     # the bow face round the tubes: torn plates bolted over the block's face, not one smooth plane (round 2)
     for k, (y, z, w, h, m) in enumerate(((0.0, 0.66, 1.9, 0.22, 'iron'), (1.42, 0.3, 0.22, 0.62, 'soot2'), (-1.42, 0.25, 0.22, 0.7, 'rust'),
                                           (0.95, -0.95, 0.75, 0.16, 'soot2'), (-0.9, -0.95, 0.7, 0.16, 'iron'), (0.0, 0.42, 0.24, 0.3, 'pale'))):
