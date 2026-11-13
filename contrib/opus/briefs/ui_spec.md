@@ -2,7 +2,7 @@
 
 **Status Nov 11 2026 (issue 492 clean-up):** live for the scale law (4.1), the focus ring (6), settings (7), the faction colour
 rule (5.4) and the debrief order (10). Superseded: the gold and Lime palettes and fonts (the look is the orders sheet,
-docs/playbooks/screens.md section 2 and RULEBOOK 9.1) and the 12 px floor (one floor of 17 px, RULEBOOK 9.4). Where this file
+docs/playbooks/screens.md section 2 and RULEBOOK 9.1). The floor is 17 px (RULEBOOK 9.4; raised from 12 in issue 644). Where this file
 and the rulebook disagree, the rulebook wins.
 
 Opus, Nov 8 2026. FINDINGS R136. This is settlement U-B of the Nov 6 UI and campaign map audit (contrib/muse/reviews/ui_audit_2026_11/, synthesis section 6, the blind Rey table at legs/rey_blind.md section 5, owner rulings R1 to R3 in synthesis section 9 and issue #215). It also carries the U-E pieces #231 names: the MN10 host read, the MP9 precedence read, the MN3 defaults block, and the MN8 debrief spec (with MN9 folded in), which lives in its own file: [debrief_spec.md](debrief_spec.md).
@@ -77,17 +77,17 @@ k = clamp(window height / 1080, 0.6, 2.2) x player UI scale
 
 Two bases, by reading distance, written at the 1080 design height:
 
-- Battle HUD and battle overlays: body 15, buttons 14, rich text 14 (shipped).
+- Battle HUD and battle overlays: body 17, buttons 19, rich text 18 (issue 644; the orders sheet itself, ledger.gd, sets its own sizes from 17 up).
 - Campaign, menus and the debrief: body 17 (rich text and buttons at 17 today); the campaign theme's default label size 18 drops to 17 on the next touch of `_make_theme` (it only reaches labels built without a size).
-- Steps above the base: 20 sub-head, 24 panel title, 34 end card title, 46 banner, 62 page title, 84 game title (shipped values). Below: 15 and 13 secondary, 12 the floor.
+- Steps above the base: 20 sub-head, 24 panel title, 34 end card title, 46 banner, 62 page title, 84 game title (shipped values). Below: 17, the floor (issue 644 moved the old 12 to 16 sizes onto it).
 - The fallback campaign UI (15, 16) is a development scaffold (section 9) and is held to nothing beyond the scale law.
 - **Provisional**: U-A judges both bases at 1440p and 4K.
 
 ### 4.3 Minimum text size (TY6, TY9)
 
-- No text below 12 at the design height (12 px at 1080 lines, 24 at 4K). `MIN_TEXT` in ui_scale.gd; ui_spec_tests.js scans every font size literal in godot/ui and godot/main. A one-glyph ornament (the side panel's gilt diamond) is not text and is exempt. The frozen browser build has seven sizes under it (10 to 11.5 px, listed in ui_spec_constants.md section 6); recorded, not changed.
-- This PR raised three campaign side panel small-caps labels from 11 to 12 (the fight card head, the briefing box heads, the readout labels).
-- TY9: brand.gd `fit_size` stops shrinking at 12 absolute pixels. The floor should scale: on the next touch, `fit_size` takes its floor as `px(MIN_TEXT, k)`, and a title that would go below it breaks onto two lines, as title.gd already does for a narrow window (MN1 interaction).
+- No text below 17 at the design height (17 px at 1080 lines, 34 at 4K; RULEBOOK 9.4, issue 644). `MIN_TEXT` in ui_scale.gd; ui_spec_tests.js scans every font size literal in godot/ui and godot/main. A one-glyph ornament (the side panel's gilt diamond) is not text and is exempt. The frozen browser build has seven sizes under it (10 to 11.5 px, listed in ui_spec_constants.md section 6); recorded, not changed.
+- Issue 644 raised every size under 17 on the campaign pages, the battle HUD, the Career screen, the shared theme and the title to 17 or more, then raised `MIN_TEXT` to 17. The type scale per screen is in the issue 644 pull request.
+- TY9: brand.gd `fit_size` stops shrinking at 17 absolute pixels (issue 644; its two users, the title and the battle banner, never reach it). The floor should scale: on the next touch, `fit_size` takes its floor as `px(MIN_TEXT, k)`, and a title that would go below it breaks onto two lines, as title.gd already does for a narrow window (MN1 interaction).
 - **Provisional**: U-A can raise the floor; it cannot be lowered without a capture that shows smaller text reading.
 
 ### 4.4 Player UI scale (R2, AC2)

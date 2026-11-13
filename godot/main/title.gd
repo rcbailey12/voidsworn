@@ -378,8 +378,8 @@ func _credits() -> void:
 	t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	t.add_theme_font_override("normal_font", font)
 	t.add_theme_font_override("bold_font", font_semi)
-	t.add_theme_font_size_override("normal_font_size", s(16))
-	t.add_theme_font_size_override("bold_font_size", s(16))
+	t.add_theme_font_size_override("normal_font_size", s(17))
+	t.add_theme_font_size_override("bold_font_size", s(17))
 	t.add_theme_color_override("default_color", T_BONE2)
 	t.text = credits_bbcode()
 	sc.add_child(t)
@@ -425,7 +425,7 @@ func credits_bbcode() -> String:
 		var line := "\n[b][color=#e6dcc4]%s[/color][/b] by %s  [color=#7d7768](%s)[/color]" % [str(c.get("title", "")), str(c.get("author", "")), str(c.get("licence", ""))]
 		var at := str(c.get("attribution", ""))
 		if at != "":
-			line += "\n[font_size=%d]%s[/font_size]" % [s(14), at.replace("[", "(").replace("]", ")")]
+			line += "\n[font_size=%d]%s[/font_size]" % [s(17), at.replace("[", "(").replace("]", ")")]
 		out += line + "\n"
 	return out
 

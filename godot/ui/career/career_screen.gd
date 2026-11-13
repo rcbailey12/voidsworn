@@ -168,7 +168,7 @@ func _tile(label: String, value: String, col := BONE) -> Control:
 	p.custom_minimum_size.x = px(150)
 	var v := VBoxContainer.new()
 	v.add_child(lbl(value, 34, col, semi, false))
-	v.add_child(lbl(label.to_upper(), 12, BONE3, caps, false))
+	v.add_child(lbl(label.to_upper(), 17, BONE3, caps, false))
 	p.add_child(v)
 	return p
 
@@ -224,20 +224,20 @@ func _admiral_card(id: String, a: Dictionary) -> Control:
 	v.add_theme_constant_override("separation", px(3))
 	v.add_child(lbl(story.titled_name(id), 19, BONE if served else BONE3, semi))
 	if not served:
-		v.add_child(lbl(str(story.ADM[id].get("doc", "")) + ". No service yet.", 15, BONE3))
+		v.add_child(lbl(str(story.ADM[id].get("doc", "")) + ". No service yet.", 17, BONE3))
 		p.add_child(v)
 		return p
 	var best := int(a.get("best", 0))
-	v.add_child(lbl("%s, %s won. Best: sector %s. %s, %s, %s lost." % [_pl(a.get("runs"), "run"), _n(a.get("wins")), ROMAN[clampi(best, 0, 5)], _pl(a.get("battles"), "battle"), _pl(a.get("kills"), "kill"), _pl(a.get("lost"), "ship")], 15, BONE2))
+	v.add_child(lbl("%s, %s won. Best: sector %s. %s, %s, %s lost." % [_pl(a.get("runs"), "run"), _n(a.get("wins")), ROMAN[clampi(best, 0, 5)], _pl(a.get("battles"), "battle"), _pl(a.get("kills"), "kill"), _pl(a.get("lost"), "ship")], 17, BONE2))
 	var tl: Dictionary = a.get("titles", {})
 	if not tl.is_empty():
 		var parts: Array = []
 		for t in tl:
 			parts.append("%s (%d)" % [story.career.title_name(str(t), story.admiral_fac(id)), int(tl[t])])
-		v.add_child(lbl("Titles: " + ", ".join(PackedStringArray(parts)), 15, GILT))
+		v.add_child(lbl("Titles: " + ", ".join(PackedStringArray(parts)), 17, GILT))
 	var fl: Array = a.get("flagships", [])
 	if not fl.is_empty():
-		v.add_child(lbl("Flagships: " + ", ".join(PackedStringArray(fl)), 15, BONE3))
+		v.add_child(lbl("Flagships: " + ", ".join(PackedStringArray(fl)), 17, BONE3))
 	p.add_child(v)
 	return p
 
@@ -269,7 +269,7 @@ func _medals() -> void:
 		var v := VBoxContainer.new()
 		v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		v.add_child(lbl(str(m["n"]) + ("" if got.is_empty() or int(got.get("count", 1)) <= 1 else "  x%d" % int(got["count"])), 18, BONE if not got.is_empty() else BONE3, semi))
-		v.add_child(lbl(str(m["d"]), 14, BONE2 if not got.is_empty() else BONE3))
+		v.add_child(lbl(str(m["d"]), 17, BONE2 if not got.is_empty() else BONE3))
 		h.add_child(v)
 		p.add_child(h)
 		g.add_child(p)
@@ -297,7 +297,7 @@ func _titles() -> void:
 		for fac in story.FACS:
 			names.append(str(t.get("n", {}).get(fac, "")))
 		v.add_child(lbl(" / ".join(PackedStringArray(names)), 18, GILT if cnt > 0 else BONE2, semi))
-		v.add_child(lbl(str(t.get("rule", "")) + ("  Earned %d time%s." % [cnt, "" if cnt == 1 else "s"] if cnt > 0 else ""), 15, BONE2 if cnt > 0 else BONE3))
+		v.add_child(lbl(str(t.get("rule", "")) + ("  Earned %d time%s." % [cnt, "" if cnt == 1 else "s"] if cnt > 0 else ""), 17, BONE2 if cnt > 0 else BONE3))
 		p.add_child(v)
 		body.add_child(p)
 
@@ -324,7 +324,7 @@ func _history() -> void:
 		var flag := str(r.get("flagship", ""))
 		var date := Time.get_date_string_from_unix_time(int(r.get("t", 0)))
 		v.add_child(lbl("%s. %d battles, %d kills, %d ships lost, %d prizes%s%s." % [date, int(r.get("battles", 0)), int(r.get("kills", 0)), int(r.get("lost", 0)), int(r.get("captures", 0)),
-			(". Flagship: the " + flag) if flag != "" else "", (", %d minutes" % int(r.get("mins", 0))) if int(r.get("mins", 0)) > 0 else ""], 15, BONE2))
+			(". Flagship: the " + flag) if flag != "" else "", (", %d minutes" % int(r.get("mins", 0))) if int(r.get("mins", 0)) > 0 else ""], 17, BONE2))
 		row.add_child(v)
 		p.add_child(row)
 		body.add_child(p)
@@ -353,12 +353,12 @@ func _chronicle() -> void:
 		v.add_child(lbl(str(story.FAC.get(fac, {}).get("n", fac)), 18, BONE if not done.is_empty() else BONE3, semi))
 		var A: Dictionary = story.career.arcs().get(fac, {})
 		var rw: Dictionary = _P().get("arc_rewards", {}).get(fac, {})
-		v.add_child(lbl(str(A.get("arc", "")), 15, GILT if not rw.is_empty() else BONE3))
+		v.add_child(lbl(str(A.get("arc", "")), 17, GILT if not rw.is_empty() else BONE3))
 		if done.is_empty():
-			v.add_child(lbl("Not yet told.", 15, BONE3))
+			v.add_child(lbl("Not yet told.", 17, BONE3))
 		else:
 			var last: Dictionary = done[done.size() - 1]
-			v.add_child(lbl("%s. Rival: %s." % ["Finished" if bool(last.get("won", false)) else "Fell at the Hollow Sun", str(last.get("rival", "")) + ((" of " + str(last["rival_fac"])) if str(last.get("rival_fac", "")) != "" else "")], 15, BONE2))
+			v.add_child(lbl("%s. Rival: %s." % ["Finished" if bool(last.get("won", false)) else "Fell at the Hollow Sun", str(last.get("rival", "")) + ((" of " + str(last["rival_fac"])) if str(last.get("rival_fac", "")) != "" else "")], 17, BONE2))
 			var said: Dictionary = last.get("said", {}) if last.get("said") is Dictionary else {}
 			if not said.is_empty():
 				var ks: Array = said.keys()
@@ -366,11 +366,11 @@ func _chronicle() -> void:
 				var parts: Array = []
 				for k in ks:
 					parts.append(str(said[k]).trim_suffix("."))
-				v.add_child(lbl(". ".join(PackedStringArray(parts)) + ".", 14, BONE3))
+				v.add_child(lbl(". ".join(PackedStringArray(parts)) + ".", 17, BONE3))
 			if str(last.get("first_lost", "")) != "":
-				v.add_child(lbl("First ship lost: the " + str(last["first_lost"]) + ".", 14, BONE3))
+				v.add_child(lbl("First ship lost: the " + str(last["first_lost"]) + ".", 17, BONE3))
 		if not rw.is_empty():
-			v.add_child(lbl("Title: " + str(rw.get("title", "")), 15, GILT))
+			v.add_child(lbl("Title: " + str(rw.get("title", "")), 17, GILT))
 			var pt: Dictionary = A.get("paint", {})
 			var prow := HBoxContainer.new()
 			prow.add_theme_constant_override("separation", px(6))
@@ -380,11 +380,11 @@ func _chronicle() -> void:
 				sw.custom_minimum_size = Vector2(px(18), px(18))
 				prow.add_child(sw)
 			var on: bool = bool(_P().get("paint_on", {}).get(fac, false))
-			prow.add_child(lbl("Paint: " + str(pt.get("n", "")), 15, BONE2, null, false))
+			prow.add_child(lbl("Paint: " + str(pt.get("n", "")), 17, BONE2, null, false))
 			prow.add_child(_btn("Flying it" if on else "Not flying it", _toggle_paint.bind(fac, not on), on))
 			v.add_child(prow)
 			if str(rw.get("unlock", "")) != "":
-				v.add_child(lbl("Hull unlocked: " + str(A.get("unlock_name", rw["unlock"])), 14, BONE3))
+				v.add_child(lbl("Hull unlocked: " + str(A.get("unlock_name", rw["unlock"])), 17, BONE3))
 		h.add_child(v)
 		p.add_child(h)
 		g.add_child(p)
