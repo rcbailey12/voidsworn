@@ -41,8 +41,8 @@
    "bare": 0
   },
   "stern": {
-   "stack": 22881,
-   "glow": 5830,
+   "stack": 22028,
+   "glow": 6683,
    "liner": 0,
    "room": 0,
    "bare": 0
@@ -50,8 +50,8 @@
  },
  "seen_from_outside": {},
  "objects": {
-  "stack": 391,
-  "glow": 41,
+  "stack": 385,
+  "glow": 47,
   "liner": 24
  },
  "res": 640

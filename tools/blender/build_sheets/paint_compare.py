@@ -67,9 +67,14 @@ def main():
     cwin = None
     try: cwin = concept_thirds(con, win)
     except Exception as e: print('[601] concept thirds not measured:', e)
+    def square(w):
+        """the window as a square round its centre, as wide as its longer side (both sides of a pair fill the same frame)"""
+        x0, y0, x1, y1 = w[0] * W, w[1] * H, w[2] * W, w[3] * H; cx, cy = (x0 + x1) / 2, (y0 + y1) / 2; h = max(x1 - x0, y1 - y0) / 2
+        cx = min(max(cx, h), W - h) if 2 * h < W else W / 2; cy = min(max(cy, h), H - h) if 2 * h < H else H / 2
+        return (int(cx - h), int(cy - h), int(cx + h), int(cy + h))
     for k in ('bow', 'midships', 'stern'):
-        box = tuple(int(f * d) for f, d in zip(win[k], (W, H, W, H)))
-        cbox = tuple(int(f * d) for f, d in zip(cwin[k], (W, H, W, H))) if cwin else box
+        box = square(win[k])
+        cbox = square(cwin[k]) if cwin else box
         made.append(pair(con.crop(cbox), bea.crop(box), f'{N} paint, {k}: concept (left), painted build (right)',
                          'the same third of the ship on each side, at the same camera' if cwin else 'same camera, same window',
                          os.path.join(OUT, f'{N}_paint_{k}.jpg')))
