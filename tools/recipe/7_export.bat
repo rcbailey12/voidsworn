@@ -20,6 +20,7 @@ set EX=%JOB%\export\%CODE%
 rem issue 592: a ship with no paint stack yet ("bake": "none") is exported and checked as an unbaked test export
 set UNB=
 if /i "%BAKE%"=="none" set UNB=unbaked=1
+if not "%STACK_NOTE%"=="" echo Stage 7: %STACK_NOTE%: an unbaked test export
 if not exist "%JOB%\%CELL%.blend" (echo Stage 7 FAILED: no baked ship at %JOB%\%CELL%.blend. Run stage 5 first. & goto bad)
 if not exist "%EX%" mkdir "%EX%"
 echo RUNNING > "%EX%\export_status.txt"

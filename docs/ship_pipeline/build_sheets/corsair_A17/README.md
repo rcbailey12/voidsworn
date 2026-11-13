@@ -13,6 +13,15 @@ saves the recipe build at `Downloads\voidsworn_test\recipe\corsair_A17\build\A17
 from brackets at its upper corners, and broad flat prongs (0.7 and 0.55 wide). The neck turrets and the rocket pod were lifted
 so their arcs and exits clear the taller head; the fit check is still zero.
 
+## Paint (issue 601, Nov 12 2026)
+
+A17 is painted by the same Hullbreaker paint stack as A16 (`"bake": "stack"`, tools/blender/kits/hullbreakers/stack.py),
+nothing ship-specific: the colour zones are this sheet's own materials. Sandbox preview (1024 atlases):
+[full](paint/A17_paint_full.jpg), [six views beside the whole beauty](paint/A17_paint_views.jpg),
+[bow](paint/A17_paint_bow.jpg), [midships](paint/A17_paint_midships.jpg), [stern](paint/A17_paint_stern.jpg). Surface check 0
+([json](paint/surface_check_after.json)); R224 paint flags none; 15 running lamps (1.44 px on a 70 px ship). The A17 concept
+reads lighter and greyer than A16's; the stack's colours are sampled from A16, so A17 paints darker than its picture.
+
 ## Into the recipe (issue 532, the A17 build, Nov 12 2026)
 
 The recipe builds this sheet itself, the route A16 proved (issue 592): ship file `tools/recipe/ships/corsair_A17.json`

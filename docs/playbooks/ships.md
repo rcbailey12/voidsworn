@@ -17,7 +17,39 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    concept, for the outline score and the grime.
 2. **Paint.** Procedural materials driven by masks baked from the ship's own geometry (curvature, ambient occlusion, edge
    wear), plus trim sheets and decals; colours may be sampled from the concept; the concept picture is never projected onto
-   the ship (R96 Q1). Local AI texturing only after a one-hull proof of unlit PBR output (R96 Q1).
+   the ship (R96 Q1). Local AI texturing only after a one-hull proof of unlit PBR output (R96 Q1). A ship built from a build
+   sheet is painted by its faction kit's paint stack (issue 601): the ship json says `"bake": "stack"`, the stack is written
+   once per faction (`tools/blender/kits/FACTION/stack.py`: colours sampled from the concept, the layers, the trim sheet, the
+   decal rules) on the shared machinery (`tools/blender/kits/shared/paint_stack.py`: masks baked from the ship's own geometry,
+   the bake), and the sheet's materials say where each colour zone sits. A faction with no stack yet stays unpainted
+   (RECIPE.md "The paint stack for sheet ships"). Nobody paints a ship by hand.
+   What the Hullbreaker stack must show (R228, Ryan, Nov 12 2026 14:21 CST, agreeing with the Board's review of A16 pass 1:
+   "Yep completely agree with your findings"), set in the faction stack for every Hullbreaker sheet ship, never on one ship:
+   (1) a plate patchwork at the concept's density, many small plates each with its own tone (soot, gun-metal, brick-red rust,
+   bare-steel scrapes, the purple trophy panels), driven by panel cells and the modelled plates' own islands (the stack's
+   PATCH_FAMILIES, patch_cell); (2) contrast: black seams and dark recesses, brighter worn edges and scrapes, never flat grey
+   at camera 170; (3) rust is a dark brick red, never pink, judged under the battle lift (1.25, R227); (4) red running lights
+   visible as small red points at battle size; brightness, not size, carries the read (the Board's correction of its first
+   call, Nov 12): small round lamps 0.0115 of the ship's length across (0.3 units on A16: about 1 px at camera 170, 3 px at
+   camera 60), on hull and deck edges only, never on a machine (turret, gun, launcher, engine), deep red
+   (#c41e14), emissive but under the game's glow threshold so no halo, about 16 in all: a row along each flank at the
+   sheet's lamp height plus deck-edge points, built by the stack's RUNNING_LIGHTS rule and reported in the job's lights.json
+   (point lights: the standing light check reports their size, the 2 px floor is for painted window and trim lights);
+   (5) engine glow is the
+   game's: the export marks each bell (hp_eng with its radius) and the game's engine effect draws the plume there, with the
+   sheet's own emissive throat and bell lining, a hot red-orange deep in the bell and a dimmer red lining so the dark rim and
+   lip read, never a flat peach cap; the paint never fakes a glow. And from the first PC run (Board and Ryan, Nov 12 16:32
+   CST): every surface seen from outside carries the stack, an inside seen through an opening reads as the dark liner, never a
+   room colour (stage 5's surface check, zero pixels allowed); plates come in large and small sizes, offset rows and a few
+   overlaid patches, never a regular grid (RULEBOOK 0.5); no salt-and-pepper grain at close range (edge wear, grime and plate
+   tone carry the look); big part faces carry the hull's plates and seams (R224 in paint). Pass 5 (Board, the two-ship
+   PC run): painted metal has a roughness floor (no white specular glare at the game's key light; bells and dishes matte, the
+   concept's metal is dull and grimy); light grey is for scrapes and small patches only, never whole big plates; the trophy
+   grey is weathered dark; grime goes over everything; in the game the stack's surfaces take the soft rim light (look.gd RIM
+   soft: the full rim specular flared white on them at the close cameras); the throat glow sits deep in the bell, the lip and rim stay dark, and (Ryan, Nov 12 19:16 CST: "more variation to the
+   engine glow so it's not so uniform, just disc color") it varies: a hot core in the centre of the throat (the plug cone glows hottest, never black) grading out to deeper red and orange, uneven hot
+   spots and soot streaks across the throat, each engine its own brightness, core reach, hue and hot-spot pattern, baked into
+   the engine glow's own emission map by the stack (ENGINE_GLOW); the game's moving plume sits on top, so no flame is painted.
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
    opus_check_341).
@@ -61,7 +93,8 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    break lines, the three or four features that make it that ship). The table outranks every picture.
 3. A three-view concept sheet for the ship, to contrib/muse/design/concept_standard_2026_11/standard.md: side, top, front, one
    light, plain background. A generated sheet is an identity and proportion reference: it never settles counts.
-4. The faction's parts kit and paint (tools/blender/kits/FACTION/kit.py and paint.py). A faction's first hull builds them.
+4. The faction's parts kit and paint (tools/blender/kits/FACTION/kit.py and paint.py; for sheet ships, parts.py and the paint
+   stack stack.py). A faction's first hull builds them.
 5. A build sheet that passes standard.md (R203, Ryan: "good enough to actually hand build from in blender"): true side, top,
    underside and bow-on views of one design at one scale, rendered from one Blender blockout; the length from data.js; a
    scale bar; the feature table; an INSIDE section (below); and a "Changed from the picture" list (R207).
@@ -132,7 +165,10 @@ global learning and shaping the approach". So the method, for every ship of ever
   less detailed, maybe slightly less poly than the rest of the ship"). The fit check reports, per part type, triangles
   per square unit of surface and edge features (seams, steps, bevels, greebles) per square unit against the hull's own; a
   part type more than 25 percent under the hull on either is flagged on the sheet and fixed in the build. This applies to
-  every faction and every part type, not only weapons.
+  every faction and every part type, not only weapons. The paint carries it too (issue 601): the paint stack puts its
+  scuffs, rivet rows and wear on at ship scale, the same on a gun as on a hull plate, and stage 5 measures every part type's
+  texels and paint detail per square unit against the hull's beside the mesh numbers (tools/recipe/density.py, the job's
+  density.json; a part type under 0.75 of the hull is flagged).
 - Weapons are designed per faction from the lore (R221: "their turrets look the same as hullbreakers. We should have those
   be more unique per factions and fit the actual weapons they use per lore Bible and faction rules"). Each faction kit's
   guns, turrets and launchers are built from what that faction's weapons are (data.js weapon ids, the lore bible, the
@@ -241,7 +277,7 @@ Done when: stages 1 to 7 end without FAILED; the outline overlap is reported, th
 Build sheet: docs/ship_pipeline/build_sheets/SHIP/ (passed standard.md on <date>; Ryan's look on <date>)
 Route per part: kit, hand-built, or generated (generated names its reviewed part-library entry, R96 Q5)
 Inside: the sheet's INSIDE section (decks, frames, spaces and machinery through the whole hull, armour, break lines by the faction's rule, breach anchors)
-Paint stack: the faction paint by name (tools/blender/kits/FACTION/paint.py), its masks, trim sheets and decals (R96 Q1)
+Paint stack: the faction paint by name (sheet ships: tools/blender/kits/FACTION/stack.py, "bake": "stack"; traced hulls: paint.py), its masks, trim sheets and decals (R96 Q1)
 Budget: triangles, draw calls and surfaces reported; scene gate ms measured on the 5080 (R111)
 ```
 
