@@ -147,6 +147,13 @@ global learning and shaping the approach". So the method, for every ship of ever
   density only if its plate courses, rings and bands are laid at the hull's own plate size in world units, never as a fixed
   count per part. The E11 projector at 7.6 long read 0.44 of the hull's triangles per square unit with the counts that served
   E12's 1.05 emitter; the Eclipse kit now lays its plates by size (tools/blender/kits/eclipse/parts.py, panels).
+- Every face reads as stacked scrap where the faction's language is scrap brick (the Board on issue 633 round 1, Nov 13: the
+  Hullbreaker class builds read as big smooth grey faces with a few small greebles; R196, R197): plates laid in courses at the
+  hull's plate size in world units both ways, patches over joints and over plates, upward faces terraced in steps, never flat
+  lids (the sheet kit's courses plating, tools/blender/build_sheets/kit.py, opt-in per ship).
+- The outline from above is measured before dressing (the same review, R233): the plan's width at stations along the length,
+  off the concept sheet's top view, so the class's defining shape (a wedge prow, a tapering nose, a bow block) is carried by
+  the hull itself, never by a part bolted to the same box.
 - Massing is checked as hard as parts (Board, Nov 12, from round 3: every part passed its tick while the hull still read as a
   lump). The sheet reports the concept's and the build's length to beam to height ratios, and the per-cell table adds a
   structure count: distinct masses, tiers and steps per cell, concept against build. A part list that passes over the wrong

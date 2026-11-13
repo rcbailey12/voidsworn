@@ -3,7 +3,7 @@
 # PR 625) and corsair_A18_sheet.jpg; designs.md (the merged five-leg design) is the design of record for the fittings.
 # data.js c_raider: autocannon T, ability overburn, speed 6, evasion 28 (the fastest, most evasive Hullbreaker).
 # Measured off the whole concept first (R229): the sheet's true views give a chunky nose that tapers forward to a wide grilled
-# face (1.0 across and about 0.7 tall at the face), the body swelling behind it to about 1.7 at 40 percent of the length, a
+# face (about 0.85 across and 0.5 tall at the face), the body swelling behind it to about 1.7 at 40 percent of the length, a
 # raised spine of stacked blocks from a third of the length to the engine block, a lower aft engine block, two engine drums
 # on short pylons at the stern quarters and smaller bells between them, grabbers under the chin, a big flush disc on the nose.
 # The Board is the final designer (R233): the build keeps that mass, and its outline from above is its own: a tapering nose
@@ -34,15 +34,15 @@ import math, random
 # body, the aft taper into the engine block. Section 1.46 wide by 0.98 deep, to the sheet's true top and side views (hull
 # length to beam 4.4); the beauty's three-quarter reads deeper, its perspective (the sheet's proportions table reports both).
 HULL = [
-    (3.1, 0.5, 0.5, -0.4, 0.3, 0.16, 0.14),
-    (2.5, 0.64, 0.64, -0.52, 0.4, 0.18, 0.16),
+    (3.1, 0.42, 0.42, -0.28, 0.22, 0.13, 0.11),
+    (2.5, 0.6, 0.6, -0.46, 0.36, 0.17, 0.15),
     (1.5, 0.78, 0.78, -0.55, 0.45, 0.18, 0.16),
     (0.4, 0.84, 0.84, -0.55, 0.46, 0.18, 0.16),
     (-1.3, 0.8, 0.8, -0.53, 0.45, 0.17, 0.15),
     (-2.25, 0.74, 0.74, -0.53, 0.45, 0.16, 0.15),
     (-2.78, 0.65, 0.65, -0.46, 0.4, 0.14, 0.14),
 ]
-PL = dict(keep3d=True, courses=True, size=(0.16, 0.36), thick=(0.02, 0.05), step=0.025, gap=0.018, over=0.2, skip=0.04, stack=0.2, rivets_share=0.3, mats={'soot': 3, 'iron': 4, 'pale': 2, 'rust': 3, 'soot2': 2, 'violet': 1, 'steel': 2})
+PL = dict(keep3d=True, courses=True, size=(0.16, 0.36), thick=(0.02, 0.05), step=0.025, gap=0.018, over=0.2, skip=0.04, stack=0.2, rivets_share=0.25, rivet_r=0.02, mats={'soot': 3, 'iron': 4, 'pale': 2, 'rust': 3, 'soot2': 2, 'violet': 1, 'steel': 2})
 # the spine, bow to stern: stacked blocks (name, x fore, x aft, half-beam, top, front slope, y offset), with gaps between them
 SPINE = [
     ('S1 fore spine block', 1.45, 0.78, 0.45, 0.6, 0.22, 0.0),
@@ -87,30 +87,30 @@ def build(K):
     K.mass('Engine block', K.box('A18_engblock', -2.9, -2.6, -0.56, 0.56, -0.42, 0.5, 'soot', ch=0.09, plates=dict(PL, seed=57, size=(0.12, 0.26))), 'soot, steel')
     K.mark('engine_block', 'pylon', ['web', 'plate'])
     # ---------------- the face and chin: a framed face with the wake-sniffer scoop, a brow plate over it ----------------
-    K.box('A18_face_lip', 3.04, 3.15, -0.35, 0.35, -0.29, -0.22, 'steel', ch=0.02)
-    K.box('A18_face_brow', 3.02, 3.15, -0.35, 0.35, 0.13, 0.2, 'steel', ch=0.02)
+    K.box('A18_face_lip', 3.04, 3.15, -0.3, 0.3, -0.2, -0.15, 'steel', ch=0.015)
+    K.box('A18_face_brow', 3.02, 3.15, -0.3, 0.3, 0.07, 0.12, 'steel', ch=0.015)
     for side in (1, -1):
-        K.box('A18_face_cheek%d' % (side > 0), 3.02, 3.15, min(side * 0.34, side * 0.4), max(side * 0.34, side * 0.4), -0.29, 0.2, 'steel', ch=0.02)
-    K.patch('FBR', (2.84, 0.0, 0.345), (0.16, 0, 0.99), 0.62, 0.34, ang=0.03, lift=0.02, t=0.03, m='pale', inv='face_plates')
+        K.box('A18_face_cheek%d' % (side > 0), 3.02, 3.15, min(side * 0.28, side * 0.33), max(side * 0.28, side * 0.33), -0.2, 0.12, 'steel', ch=0.015)
+    K.patch('FBR', (2.84, 0.0, 0.285), (0.23, 0, 0.97), 0.5, 0.3, ang=0.03, lift=0.02, t=0.03, m='pale', inv='face_plates')
     for side in (1, -1):
-        K.patch('FC%s' % ('p' if side > 0 else 's'), (2.95, 0.57 * side, -0.05), (0.42, 0.91 * side, 0), 0.36, 0.42, ang=0.05 * side, lift=0.02, t=0.03,
+        K.patch('FC%s' % ('p' if side > 0 else 's'), (2.93, 0.475 * side, -0.04), (0.3, 0.95 * side, 0), 0.3, 0.3, ang=0.05 * side, lift=0.02, t=0.03,
                 m='iron' if side > 0 else 'rust', inv='face_plates')
     K.mark('face_plates', 'plate', ['slab', 'step', 'bevel', 'rivet'])
     # the wide intake grille that fills the face: three louvre panels side by side in one frame (a kit vent sized to the
     # frigate, so its detail per square unit stays at the hull's, issue 618's rule)
-    for i, y in enumerate((0.222, 0.0, -0.222)):
-        K.vent('I%d' % (i + 1), (3.11, y, -0.045), (1, 0, 0), 0.212, 0.3, slats=6, inv='scoop',
+    for i, y in enumerate((0.188, 0.0, -0.188)):
+        K.vent('I%d' % (i + 1), (3.11, y, -0.04), (1, 0, 0), 0.18, 0.21, slats=5, inv='scoop',
                note='%s panel of the wide intake grille that fills the bow face: the wake-sniffer scoop tastes the wake of ships ahead '
                     '(designs.md: the chin scoop, moved up into the face as the picture draws it)' % ('port', 'middle', 'starboard')[i])
     # ---------------- the dish mount: a low raised block on the nose, starboard, that carries the one big ear nearly flush ----------------
-    K.mass('Dish mount (raised block on the nose, starboard)', K.loft('A18_sponson', [(2.45, 0.28, 0.28, 0.15, 0.55, 0.06, 0.0, -0.36),
+    K.mass('Dish mount (raised block on the nose, starboard)', K.loft('A18_sponson', [(2.45, 0.28, 0.28, 0.15, 0.6, 0.06, 0.0, -0.36),
                                                                                      (2.27, 0.32, 0.32, 0.15, 0.6, 0.07, 0.0, -0.37),
                                                                                      (1.62, 0.32, 0.32, 0.15, 0.62, 0.07, 0.0, -0.37),
                                                                                      (1.46, 0.28, 0.28, 0.15, 0.58, 0.06, 0.0, -0.36)],
                                                                      'iron', plates=dict(PL, seed=23, faces=[0, 1, 2, 3, 7], inv='sponson_plates', size=(0.12, 0.26))),
            'bare iron, patched', note='a low armoured block bolted on the nose to starboard, the dish set nearly flush on it (the picture\'s flush disc)')
     K.mark('sponson', 'tier', ['face', 'roof', 'opening'])
-    K.slit('SL1', (2.452, -0.47, 0.47), (1, 0, 0), 0.2, 0.06, inv='sponson', note='vision slit in the dish mount\'s front: the dish operator\'s port')
+    K.slit('SL1', (2.452, -0.47, 0.52), (1, 0, 0), 0.2, 0.06, inv='sponson', note='vision slit in the dish mount\'s front: the dish operator\'s port')
     # ---------------- the spine: stacked blocks with gaps and undercut bases ----------------
     for (nm, x0, x1, hw, top, slope, yo) in SPINE:
         base = 0.36
@@ -152,6 +152,7 @@ def build(K):
         K.keepouts.append((Vector((x, sy(x, side), -0.36)), 0.12))
     K.keepouts.append((Vector((0.45, 0.02, 0.66)), 0.44))
     K.keepouts.append((Vector((1.98, -0.37, 0.62)), 0.34))        # the dish's base and post
+    K.keepouts.append((Vector((2.55, -0.47, 0.45)), 0.2))           # the dish operator's slit
     for side in (1, -1):                                           # the grabber shoulders under the chin
         K.keepouts.append((Vector((2.15, 0.34 * side, -0.6)), 0.26))
     K.finish()
@@ -165,7 +166,7 @@ def build(K):
         K.claw_arm(fi, (2.2, 0.34 * side, -0.72), [(2.6, 0.41 * side, -0.82), (2.88, 0.45 * side, -0.76)], w=0.22, hook=-1.0 if side > 0 else 1.0, fork=0.32,
                    inv='grabbers', housing=(1.9, 2.37, 0.34 * side - 0.15, 0.34 * side + 0.15, -0.8, -0.46),
                    note='%s grabber arm under the chin: pins a fleeing hull long enough for the pack to catch up' % ('port' if side > 0 else 'starboard'))
-    K.pipe('PH1', [(2.75, 0.0, -0.5), (2.35, 0.0, -0.56), (2.0, 0.0, -0.58)], r=0.03, inv='chin_pipes', note='the rams\' hydraulic feed')
+    K.pipe('PH1', [(2.75, 0.0, -0.42), (2.35, 0.0, -0.53), (2.0, 0.0, -0.58)], r=0.03, inv='chin_pipes', note='the rams\' hydraulic feed')
 
     # ---------------- the one gun: data.js autocannon T, on the gun block of the spine ----------------
     K.gun('T1', (0.45, 0.02, 0.66), 0, 6, barrels=2, cal=0.052, blen=0.74, size=0.52, slot='T', weapon='autocannon', inv='autocannon',
@@ -223,13 +224,13 @@ def build(K):
     # ---------- changed from the picture (designer's decisions, R207, R233) ----------
     K.change('One gun: a twin autocannon turret on the spine\'s gun block', 'data.js c_raider carries one weapon, autocannon T (R221: weapons from data.js); the picture\'s rows of flank guns, '
              'designs.md\'s two bow casemates and its rocket rack have no slot, so they are not built')
-    K.change('The nose is chunky and tapers forward to the face: 1.0 across and 0.7 tall at the face, widening over the first 40 percent to 1.7 at midships, where the body is widest, then easing aft',
+    K.change('The nose is chunky and tapers forward to the face: 0.84 across and 0.5 tall at the face, widening and deepening over the first 40 percent to 1.7 across at midships, where the body is widest, then easing aft',
              'the Board on round 1 (Nov 13, R233): the build was a long box (1.46 wide almost bow to stern, a 0.4 tall face) with a dish at the front; the concept sheet draws the nose 1.0 across at the face and 1.6 to 1.7 by 40 percent of the length')
     K.change('The one big ear: an oversized listening dish (0.9 across, more than half the beam) set nearly flush on a low raised dish mount on the nose, to starboard',
              'the picture\'s flush disc on the starboard foredeck; designs.md\'s "a little brick with one big ear". Round 2 drops round 1\'s sponson that bulged the shoulder: the outline from above is the nose\'s own taper and swell (the Board)')
     K.change('Lopsided engines: two drums on short pylons at the stern quarters, the port drum clearly larger, and one small centre bell',
              'designs.md (two bells of uneven size) with the picture\'s outrigger drums, the larger on the side the picture draws it; the picture\'s three stacked centre bells become one, so the stern does not read as A16\'s pods')
-    K.change('The bow face is a wide intake grille: three louvre panels in one steel frame, 0.66 across, at the end of the nose; the wake-sniffer scoop is that grille',
+    K.change('The bow face is a wide intake grille: three louvre panels in one steel frame, 0.56 across, at the end of the nose; the wake-sniffer scoop is that grille',
              'the picture\'s wide grilled face (the Board on round 1: "a chunky tapering nose that ends in a wide intake grille"); designs.md puts the scoop under the chin, and the chin carries the grabbers')
     K.change('One pair of small grabber arms under the chin, splayed a little', 'designs.md: one pair (A17 carries two pairs); the picture shows a pair of hooked claws there')
     K.change('The spine is five stacked blocks with gaps, the gun block and the sensor block the tallest', 'the picture\'s raised spine; stacked and bolted scrap brick (R196, R197), not one smooth deckhouse')

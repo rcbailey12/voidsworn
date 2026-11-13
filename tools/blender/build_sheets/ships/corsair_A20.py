@@ -166,6 +166,12 @@ def build(K):
     for i, (y, r) in enumerate(((0.73, 0.56), (-0.73, 0.54))):
         K.tube('I%d' % (i + 1), (8.2, y, -0.12), r, 2.3, hood=0.18, bands=3, inv='intakes', what='intake tube',
                note='%s intake: the family\'s face (designs.md "two low intake tubes")' % ('port' if y > 0 else 'starboard'))
+        # a soot-black liner down the bore, so each mouth reads as a deep dark hole from the beauty camera (round 2)
+        K.cyl('A20_I%d_liner' % (i + 1), (8.14, y, -0.12), (6.05, y, -0.12), r * 0.985, 'dark', cap=False)
+    # the bow face round the tubes: torn plates bolted over the block's face, not one smooth plane (round 2)
+    for k, (y, z, w, h, m) in enumerate(((0.0, 0.66, 1.9, 0.22, 'iron'), (1.42, 0.3, 0.22, 0.62, 'soot2'), (-1.42, 0.25, 0.22, 0.7, 'rust'),
+                                          (0.95, -0.95, 0.75, 0.16, 'soot2'), (-0.9, -0.95, 0.7, 0.16, 'iron'), (0.0, 0.42, 0.24, 0.3, 'pale'))):
+        K.patch('FP%d' % k, (8.0, y, z), (1, 0, 0), w, h, ang=0.02 * (k - 2), lift=0.02, t=0.05, m=m, inv='bow_plates')
     K.tube('I3', (8.1, 0.0, -0.86), 0.1, 0.42, grille=True, bands=2, inv='scoop', what='wake-sniffer scoop with a grille', note='chin scoop (designs.md)')
     for side, fi in ((1, 'J1'), (-1, 'J2')):
         K.claw_arm(fi, (6.8, 0.68 * side, -1.42), [(7.3, 0.74 * side, -1.56), (7.64, 0.78 * side, -1.5)], w=0.34, hook=-1.0, fork=0.32,

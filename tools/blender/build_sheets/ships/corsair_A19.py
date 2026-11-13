@@ -41,7 +41,7 @@ HULL = [
     (-3.1, 0.86, 0.86, -0.5, 0.34, 0.14, 0.15),
     (-3.6, 0.79, 0.79, -0.46, 0.32, 0.13, 0.14),
 ]
-PL = dict(keep3d=True, courses=True, size=(0.2, 0.46), thick=(0.025, 0.06), step=0.03, gap=0.02, over=0.2, skip=0.04, stack=0.2, rivets_share=0.3, mats={'soot': 3, 'iron': 4, 'pale': 2, 'rust': 3, 'soot2': 2, 'violet': 1, 'steel': 2})
+PL = dict(keep3d=True, courses=True, size=(0.2, 0.46), thick=(0.025, 0.06), step=0.03, gap=0.02, over=0.2, skip=0.04, stack=0.2, rivets_share=0.25, rivet_r=0.026, mats={'soot': 3, 'iron': 4, 'pale': 2, 'rust': 3, 'soot2': 2, 'violet': 1, 'steel': 2})
 # the spine, bow to stern: stacked blocks (name, x fore, x aft, half-beam, top, front slope, y offset), gaps between them
 SPINE = [
     ('M1 fore spine block', 1.7, 0.55, 0.54, 0.58, 0.2, 0.02),
@@ -123,7 +123,9 @@ def build(K):
                                     'soot', plates=dict(PL, seed=26, inv='stern_plates', size=(0.16, 0.36))), 'soot, rust', note='the raised stern block that carries the engines')
     K.mark('stern_block', 'tier', ['face', 'roof', 'opening'])
     # small fittings on the plated masses
-    K.patch('TP1', (-0.7, 1.131, -0.2), (0, 1, 0), 2.1, 0.5, ang=0.02, lift=0.04, t=0.05, m='pale', inv='trophy')
+    # the big pale trophy plate: three torn Hegemony sheets bolted edge to edge, not one smooth face (round 2)
+    for k, (x, w, h, a) in enumerate(((0.05, 0.75, 0.46, 0.03), (-0.73, 0.62, 0.5, -0.05), (-1.43, 0.66, 0.42, 0.06))):
+        K.patch('TP1%s' % 'abc'[k], (x, 1.131, -0.2 + 0.02 * (k - 1)), (0, 1, 0), w, h, ang=a, lift=0.04, t=0.05, m='pale', inv='trophy')
     K.patch('TP2', (3.0, -0.45, 0.435), (0, 0, 1), 0.7, 0.48, ang=0.2, lift=0.03, t=0.04, m='violet', inv='trophy')
     K.patch('TP3', (2.1, 0.55, 0.445), (0, 0, 1), 0.6, 0.42, ang=-0.15, lift=0.03, t=0.04, m='rust', inv='trophy')
     K.patch('RC1', (0.12, -0.25, 0.625), (0, 0, 1), 0.6, 0.4, ang=0.06, lift=0.02, t=0.03, m='blood', inv='trophy')

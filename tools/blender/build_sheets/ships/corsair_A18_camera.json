@@ -1,21 +1,21 @@
 {
- "az": 61.429499292894896,
- "el": 28.595670771050212,
- "roll": -9.648731997410517,
- "dist": 17.093969750303966,
- "mm": 80.45954540490044,
+ "az": 61.864897954377724,
+ "el": 28.00962173142033,
+ "roll": -9.61969350353554,
+ "dist": 17.124560327583445,
+ "mm": 82.88992172575661,
  "target": [
   0.0,
   0,
   0.1
  ],
- "sx": -0.007061582724621317,
- "sy": 0.0855887732866071,
+ "sx": -0.0049928349120777205,
+ "sy": 0.09290790784802992,
  "res": [
   1920,
   1280
  ],
- "iou": 0.7776,
- "body_iou": 0.7841,
- "note": "A18 build sheet (issue 633): fitted to the whole beauty from a hand start at its bow-on three-quarter (az 45, el 30, roll -9); fit.py moves the camera only, never the ship. Concept mask: luminance over 28, closed, holes filled, largest shape (the dark belly drops out, so the IoU is a lower bound)."
+ "iou": 0.7625,
+ "body_iou": 0.7682,
+ "note": "A18 build sheet (issue 633): fitted to the whole beauty from a hand start at its bow-on three-quarter (az 45, el 30, roll -9); fit.py moves the camera only, never the ship. Concept mask: luminance over 28, closed, holes filled, largest shape (the dark belly drops out, so the IoU is a lower bound). Round 2 (issue 633): refitted to the round 2 build from the round 1 camera, the camera only, never the ship."
 }

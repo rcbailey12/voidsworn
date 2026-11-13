@@ -981,6 +981,20 @@ def hangar_mouth(L, H, depth, slide=1, b=0.16, seed=7):
             xj = xa + dl * (j + 0.5) / 4
             V, F = block(y1_, y1_ + 0.05, 0.035, hh * 0.9, 0.0, yo=xj, zo=0.0)
             p.add('stiff%d_%d' % (i, j), 'mount', 'iron', ([(y, x, z) for (x, y, z) in V], F))
+        if i == 1:
+            # the outer leaf is scrap too (issue 633 round 2: a door leaf read as one big smooth face): patch plates of mixed
+            # size and colour bolted over it between the stiffeners, at the hull's plate size
+            zz = -hh
+            while zz < hh - 0.12:
+                zh = min(hh - zz, rnd.uniform(0.28, 0.6)); xx = xa + 0.06
+                while xx < xa + dl - 0.15:
+                    xw = min(xa + dl - xx, rnd.uniform(0.3, 0.75))
+                    if rnd.random() < 0.8:
+                        V, F = block(y1_, y1_ + rnd.uniform(0.025, 0.06), xw / 2 - 0.03, zh / 2 - 0.03, 0.01, yo=xx + xw / 2, zo=zz + zh / 2)
+                        p.add('dplate%d_%d_%d' % (i, int(xx * 100), int(zz * 100)), 'mount', rnd.choice(['soot', 'iron', 'rust', 'soot2', 'pale']),
+                              ([(y, x, z) for (x, y, z) in V], F))
+                    xx += xw
+                zz += zh
     xr0 = min(-hl - b, xs) - 0.05; xr1 = max(hl + b, xs + dl + 0.15) + 0.05
     for sg in (1, -1):
         zr = sg * (hh + b + 0.07)

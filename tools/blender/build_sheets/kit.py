@@ -292,7 +292,7 @@ class Kit:
         over plates), a share of plates carries a smaller offset patch, and upward faces are terraced: the plates stand in
         slabs of one, two or three steps (step: units per step), set by a coarse grid in world space so neighbouring faces
         agree. Rivets on a share of plates only (rivets: the share), so the hull's density per square unit stays near the
-        default plating's. Keep-outs as keep3d."""
+        default plating's; rivet_r sizes the rivet heads to the hull (default the kit's 0.035). Keep-outs as keep3d."""
         import random
         rnd = random.Random(spec.get('seed', 1))
         lo, hi = spec.get('size', (0.9, 2.2)); tlo, thi = spec.get('thick', (0.05, 0.2))
@@ -318,7 +318,7 @@ class Kit:
 
         def slab(bot, nrm, t, mat, riv):
             nonlocal kept
-            (V, F), (rv, rf) = HP.plate_slab(bot, nrm, t, rivets=riv)
+            (V, F), (rv, rf) = HP.plate_slab(bot, nrm, t, rivets=riv, rr=spec.get('rivet_r', 0.035))
             bv, bf = buckets[mat]; o = len(bv); bv.extend(V); bf.extend([tuple(x + o for x in f) for f in F])
             if riv:
                 o = len(RV); RV.extend(rv); RF.extend([tuple(x + o for x in f) for f in rf])
