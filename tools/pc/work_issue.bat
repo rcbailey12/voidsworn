@@ -48,7 +48,9 @@ if /i "%ARM%"=="sonnet" set "MODEL=anthropic/claude-sonnet-5-5"
 rem opus: Claude Opus 5.5 on the same credits (Ryan, Nov 12 16:15: "why not use it as another opus worker")
 if /i "%ARM%"=="opus" set "MODEL=anthropic/claude-opus-5-5"
 if not defined MODEL (echo usage: work_issue.bat issue-number deepseek-deepseekpro-kimi-kimicode-sonnet-or-opus [dryrun] & exit /b 2)
-if defined WORK_MODEL set "MODEL=%WORK_MODEL%"
+rem WORK_MODEL overrides the model only within the arm's own provider (Board, Nov 13: a q_ file set WORK_MODEL=kimicode/k3 in the
+rem queue watcher's window, and three later opus-arm runs ran on Kimi and stopped on its quota); one from another provider is ignored
+if defined WORK_MODEL for /f "tokens=1 delims=/" %%P in ("%MODEL%") do for /f "tokens=1 delims=/" %%Q in ("%WORK_MODEL%") do if /i "%%P"=="%%Q" (set "MODEL=%WORK_MODEL%") else (echo WORK_MODEL %WORK_MODEL% ignored: arm %ARM% runs on %%P)
 rem The repo's bundled Node 22 first: the shell's Node 24 gives a false 4,048 pow differences in the parity math sweep (#217 trial)
 set "PATH=%USERPROFILE%\Downloads\voidsworn_test\node;C:\Program Files\nodejs;C:\Program Files\Git\cmd;%APPDATA%\npm;%PATH%"
 rem The same bundled Node 22 for the runner's own check step (a quoted full path survives the time-limit wrapper)
