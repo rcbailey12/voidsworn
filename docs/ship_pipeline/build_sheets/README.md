@@ -8,6 +8,8 @@ construction. The feature table is written by the same model, and on counts it o
 |---|---|---|
 | corsair_A16, Warlord's Pyre-Barge | [sheet](corsair_A16/sheet.jpg) | [feature_table.md](corsair_A16/feature_table.md) |
 | corsair_A17, Hullbreaker wrecker (Pack Hunter) | [sheet](corsair_A17/sheet.jpg) | [feature_table.md](corsair_A17/feature_table.md) |
+| chorus_C10, The Ninefold Maw (Chorus flagship) | [sheet](chorus_C10/sheet.jpg) | [feature_table.md](chorus_C10/feature_table.md) |
+| chorus_C11, the bladeback (Chorus cruiser) | [sheet](chorus_C11/sheet.jpg) | [feature_table.md](chorus_C11/feature_table.md) |
 
 How it is made (tools/blender/build_sheets/):
 
