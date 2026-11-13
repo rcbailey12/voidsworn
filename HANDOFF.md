@@ -1,4 +1,4 @@
-# Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 11, 2026, 20:30 CST)
+# Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 13, 2026, 08:30 CST)
 
 ## 0. Status at Nov 13, 2026, 08:30 CST (14:30 UTC; read this first)
 
