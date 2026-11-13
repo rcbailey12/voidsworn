@@ -133,7 +133,10 @@ No Fable helpers: Ryan's Fable allowance is spent ("I just used the final fable 
 credits (Ryan, Nov 12): the credits do not roll over, so they are spent each month, Opus first, on jobs that would otherwise take an Opus
 worker seat; it is the same model family as the Board, so it never serves as the different-model check of Opus work (R219). Codex's weekly usage is watched at every board check (it was at 19 percent with
 six days to its reset on Nov 11, R219): when it runs low, code jobs go to the DeepSeek workhorse and Opus workers, and Codex
-keeps only what needs it. Ids: R128, R180e, R205, R206, R219, agents-12.
+keeps only what needs it. Codex gets only what no other seat can do (Ryan, Nov 12 22:58 CST: "codex doesn't have a ton of usage so
+use it when it can only do something others can't", R234): code and check jobs go to the API Opus arm or an Opus worker first.
+The Kimi Code plan holds about 30 minutes of agent work per 5-hour window, so it takes short reviews only, never builds (issue
+597 verdict, Nov 12). Ids: R128, R180e, R205, R206, R219, R234, agents-12.
 
 2.7 **Codex runs the model Ryan picked: GPT 6.1 Sol today, pinned by name in tools/pc/codex_issue.bat.** Never a weaker
 model by accident (Luna) and never switched to another one (Astra) without his yes; no Codex cloud tasks or cloud reviews.
