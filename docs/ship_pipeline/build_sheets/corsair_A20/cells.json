@@ -56,6 +56,24 @@
   },
   {
    "cell": "bow/top",
+   "id": "hangar_block",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
+   "id": "hangars",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
    "id": "turrets",
    "built": 2,
    "listed": 2,
@@ -191,7 +209,25 @@
   },
   {
    "cell": "bow/side",
+   "id": "hangar_plates",
+   "built": 6,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
    "id": "hangars",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "craft",
    "built": 2,
    "listed": 2,
    "present": true,
@@ -329,42 +365,6 @@
    "id": "hull_plates",
    "built": 1,
    "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/side",
-   "id": "hangar_block",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/side",
-   "id": "hangar_plates",
-   "built": 3,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/side",
-   "id": "hangars",
-   "built": 2,
-   "listed": 2,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/side",
-   "id": "craft",
-   "built": 2,
-   "listed": 2,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -636,22 +636,22 @@
   {
    "cell": "bow/top",
    "concept": 3,
-   "build": 6
+   "build": 10
   },
   {
    "cell": "bow/side",
    "concept": 4,
-   "build": 5
+   "build": 6
   },
   {
    "cell": "bow/below",
    "concept": null,
-   "build": 4
+   "build": 7
   },
   {
    "cell": "mid/top",
    "concept": 3,
-   "build": 8
+   "build": 11
   },
   {
    "cell": "mid/side",
@@ -661,22 +661,22 @@
   {
    "cell": "mid/below",
    "concept": null,
-   "build": 5
+   "build": 7
   },
   {
    "cell": "stern/top",
    "concept": 3,
-   "build": 9
+   "build": 7
   },
   {
    "cell": "stern/side",
    "concept": 3,
-   "build": 6
+   "build": 4
   },
   {
    "cell": "stern/below",
    "concept": null,
-   "build": 4
+   "build": 3
   }
  ],
  "ratios": {
@@ -687,9 +687,9 @@
    "hull_LH": 24.56
   },
   "build": {
-   "env_LB": 2.66,
-   "env_LH": 3.6,
-   "hull_LB": 2.72,
+   "env_LB": 2.19,
+   "env_LH": 3.59,
+   "hull_LB": 2.28,
    "hull_LH": 5.84
   }
  }

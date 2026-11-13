@@ -457,6 +457,7 @@ SUBPARTS = {
     'bay': ['rim', 'leaf', 'seam', 'hinge', 'ram', 'frame', 'stiff', 'rail', 'bracket', 'rivet'],
     'bow_launcher': ['plate', 'housing', 'tube', 'bore', 'band', 'nose', 'bolt'],
     'hangar': ['rim', 'tooth', 'door', 'stiff', 'rail', 'bracket', 'lrail', 'beam', 'lamp', 'inner', 'rib'],
+    'hangar_open': ['rim', 'tooth', 'lrail', 'beam', 'lamp', 'inner', 'rib'],     # issue 651: a hangar mouth with no door leaves (doors=False)
     'craft': ['fuselage', 'canopy', 'wing', 'nozzle', 'glow', 'barrel', 'skid', 'patch'],
     'slit': ['frame', 'glass'],
     'plate': ['slab', 'step', 'bevel', 'rivet'],
@@ -936,7 +937,7 @@ def bow_launcher(tubes=1, r=0.14, reach=1.0, w=None, h=None, depth=0.55, variant
     return p
 
 
-def hangar_mouth(L, H, depth, slide=1, b=0.16, seed=7):
+def hangar_mouth(L, H, depth, slide=1, b=0.16, seed=7, doors=True):
     """the dressing of a flank hangar mouth (issue 633, the Den: "two large, uneven open hangar mouths, dark rectangles framed in
     torn plate with their armoured doors slid open"). The opening itself is the hull's own recess (the sheet leaves the flank
     blocks out over it); this part frames it and fits it out so it reads as a launch bay with depth: a heavy rim round the
@@ -944,7 +945,8 @@ def hangar_mouth(L, H, depth, slide=1, b=0.16, seed=7):
     launch rails on the floor running in to the back wall, ceiling beams with a dim red lamp, frame ribs on the side walls and
     an inner blast door frame on the back wall (the way through to the hangar decks). Frame: origin at the mouth centre on
     the flank face; +X forward, +Y out of the flank (a port mouth; mirror for starboard), +Z up. Kind hangar: structure (an
-    opening, R226), it may tear across a seam."""
+    opening, R226), it may tear across a seam. doors=False (issue 651, a mouth in a bow face with no face beside it for the
+    leaves to slide onto): no door leaves and no door rails; the rim, teeth and the fit-out inside are the same."""
     import random
     rnd = random.Random(seed)
     p = Part('hangar')
@@ -970,40 +972,41 @@ def hangar_mouth(L, H, depth, slide=1, b=0.16, seed=7):
                 F = [tuple(reversed(f)) for f in F]
             p.add('tooth%d' % k, 'mount', rnd.choice(['soot', 'rust', 'iron']), (V, F)); k += 1
             x = x1_ + rnd.uniform(0.04, 0.2)
-    # the two armoured door leaves, slid clear beside the mouth on the flank (outer leaf over the inner), and their rails
-    dl = hl + 0.08
-    xs = hl + b + 0.04 if slide > 0 else -hl - b - 0.04 - dl
-    for i, (y0_, y1_) in enumerate(((0.1, 0.2), (0.22, 0.32))):
-        xa = xs + (0.12 * i if slide > 0 else -0.12 * i)
-        V, F = block(y0_, y1_, dl / 2, hh + 0.04, 0.03, yo=xa + dl / 2, zo=0.0)
-        p.add('door%d' % i, 'mount', 'soot' if i else 'soot2', ([(y, x, z) for (x, y, z) in V], F))
-        for j in range(4):
-            xj = xa + dl * (j + 0.5) / 4
-            V, F = block(y1_, y1_ + 0.05, 0.035, hh * 0.9, 0.0, yo=xj, zo=0.0)
-            p.add('stiff%d_%d' % (i, j), 'mount', 'iron', ([(y, x, z) for (x, y, z) in V], F))
-        if i == 1:
-            # the outer leaf is scrap too (issue 633 round 2: a door leaf read as one big smooth face): patch plates of mixed
-            # size and colour bolted over it between the stiffeners, at the hull's plate size
-            zz = -hh
-            while zz < hh - 0.12:
-                zh = min(hh - zz, rnd.uniform(0.28, 0.6)); xx = xa + 0.06
-                while xx < xa + dl - 0.15:
-                    xw = min(xa + dl - xx, rnd.uniform(0.3, 0.75))
-                    if rnd.random() < 0.8:
-                        V, F = block(y1_, y1_ + rnd.uniform(0.025, 0.06), xw / 2 - 0.03, zh / 2 - 0.03, 0.01, yo=xx + xw / 2, zo=zz + zh / 2)
-                        p.add('dplate%d_%d_%d' % (i, int(xx * 100), int(zz * 100)), 'mount', rnd.choice(['soot', 'iron', 'rust', 'soot2', 'pale']),
-                              ([(y, x, z) for (x, y, z) in V], F))
-                    xx += xw
-                zz += zh
-    xr0 = min(-hl - b, xs) - 0.05; xr1 = max(hl + b, xs + dl + 0.15) + 0.05
-    for sg in (1, -1):
-        zr = sg * (hh + b + 0.07)
-        V, F = block(-0.02, 0.36, (xr1 - xr0) / 2, 0.05, 0.015, yo=(xr0 + xr1) / 2, zo=zr)
-        p.add('rail_%d' % (sg > 0), 'mount', 'iron', ([(y, x, z) for (x, y, z) in V], F))
-        for j in range(6):
-            xj = xr0 + (xr1 - xr0) * (j + 0.5) / 6
-            V, F = block(-0.05, 0.3, 0.05, 0.07, 0.01, yo=xj, zo=zr - sg * 0.06)
-            p.add('bracket_%d_%d' % (sg > 0, j), 'mount', 'steel', ([(y, x, z) for (x, y, z) in V], F))
+    if doors:
+        # the two armoured door leaves, slid clear beside the mouth on the flank (outer leaf over the inner), and their rails
+        dl = hl + 0.08
+        xs = hl + b + 0.04 if slide > 0 else -hl - b - 0.04 - dl
+        for i, (y0_, y1_) in enumerate(((0.1, 0.2), (0.22, 0.32))):
+            xa = xs + (0.12 * i if slide > 0 else -0.12 * i)
+            V, F = block(y0_, y1_, dl / 2, hh + 0.04, 0.03, yo=xa + dl / 2, zo=0.0)
+            p.add('door%d' % i, 'mount', 'soot' if i else 'soot2', ([(y, x, z) for (x, y, z) in V], F))
+            for j in range(4):
+                xj = xa + dl * (j + 0.5) / 4
+                V, F = block(y1_, y1_ + 0.05, 0.035, hh * 0.9, 0.0, yo=xj, zo=0.0)
+                p.add('stiff%d_%d' % (i, j), 'mount', 'iron', ([(y, x, z) for (x, y, z) in V], F))
+            if i == 1:
+                # the outer leaf is scrap too (issue 633 round 2: a door leaf read as one big smooth face): patch plates of mixed
+                # size and colour bolted over it between the stiffeners, at the hull's plate size
+                zz = -hh
+                while zz < hh - 0.12:
+                    zh = min(hh - zz, rnd.uniform(0.28, 0.6)); xx = xa + 0.06
+                    while xx < xa + dl - 0.15:
+                        xw = min(xa + dl - xx, rnd.uniform(0.3, 0.75))
+                        if rnd.random() < 0.8:
+                            V, F = block(y1_, y1_ + rnd.uniform(0.025, 0.06), xw / 2 - 0.03, zh / 2 - 0.03, 0.01, yo=xx + xw / 2, zo=zz + zh / 2)
+                            p.add('dplate%d_%d_%d' % (i, int(xx * 100), int(zz * 100)), 'mount', rnd.choice(['soot', 'iron', 'rust', 'soot2', 'pale']),
+                                  ([(y, x, z) for (x, y, z) in V], F))
+                        xx += xw
+                    zz += zh
+        xr0 = min(-hl - b, xs) - 0.05; xr1 = max(hl + b, xs + dl + 0.15) + 0.05
+        for sg in (1, -1):
+            zr = sg * (hh + b + 0.07)
+            V, F = block(-0.02, 0.36, (xr1 - xr0) / 2, 0.05, 0.015, yo=(xr0 + xr1) / 2, zo=zr)
+            p.add('rail_%d' % (sg > 0), 'mount', 'iron', ([(y, x, z) for (x, y, z) in V], F))
+            for j in range(6):
+                xj = xr0 + (xr1 - xr0) * (j + 0.5) / 6
+                V, F = block(-0.05, 0.3, 0.05, 0.07, 0.01, yo=xj, zo=zr - sg * 0.06)
+                p.add('bracket_%d_%d' % (sg > 0, j), 'mount', 'steel', ([(y, x, z) for (x, y, z) in V], F))
     # inside the mouth: launch rails on the floor, ceiling beams, lamps, side wall ribs and the inner blast door frame
     for i, xl in enumerate((-hl * 0.45, hl * 0.45)):
         p.add('lrail%d' % i, 'mount', 'iron', block(-depth + 0.05, 0.02, 0.045, 0.04, 0.01, yo=xl, zo=-hh + 0.04))
@@ -1030,6 +1033,22 @@ def hangar_mouth(L, H, depth, slide=1, b=0.16, seed=7):
     V, F = block(-depth - 0.02, -depth + 0.03, fw - 0.1, (fh + hh - 0.1) / 2, 0.0, zo=(fh - 0.1 - hh + 0.1) / 2)
     p.add('inner_gap', 'mount', 'dark', ([(y, x, z) for (x, y, z) in V], F))
     p.fit = dict(mouth=P((0, 0, 0)), axis=D((0, 1, 0)), L=L, H=H, depth=depth)
+    if not doors:
+        p.type = 'hangar_open'     # its own subpart list for the inventory's detail test (no door leaves, no door rails)
+    return p
+
+
+def spare_bell(r_exit, body_len, **kw):
+    """a spare engine bell carried cold for field repairs (issue 651; designs.md, the Den: "a spare engine bell bolted down flat"):
+    the kit's engine bell with its throat and lining dark, because it is not running. Kind 'spare' (type 'engine', so the
+    inventory still asks for an engine's subparts): not one of the ship's machines and not one of its engines (no hp_eng, no
+    plume), and the faction paint stack paints it as a matte bell, never as a glowing engine (stack.py ZONE_BY_KIND)."""
+    p = engine_bell(r_exit, body_len, **kw)
+    for c in p.comps:
+        if c['mat'] in ('glow', 'ember'):
+            c['mat'] = 'dark'
+    p.kind = 'spare'
+    p.type = 'engine'
     return p
 
 

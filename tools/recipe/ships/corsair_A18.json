@@ -11,12 +11,12 @@
  "concept_camera": "",
  "hull": "sheet_hull",
  "tune": "",
- "bake": "none",
+ "bake": "stack",
  "cell": "A18",
  "outline_gate": 0.9,
  "outline_third_slack": 5.0,
  "lights": {},
  "light_min_px": 2.0,
- "notes": "Built from the build sheet docs/ship_pipeline/build_sheets/corsair_A18/ (design file tools/blender/build_sheets/ships/corsair_A18.py; issue 633). The sheet is the one home of the design (RULEBOOK 0.9, R225): masses, parts, mounts, seams, insides, hard points and the class length (LENGTH 6.5, the Frigate class) come from it through tools/blender/build_sheets/contract.py; this file only names the sheet, the game ids, the concept and the recipe settings. No parts list here: the sheet places every part. game_code C13s_23 is the Frigate folder the game picks for corsair (godot/render/hull_table.gd AI_HULLS); an install replaces the old hull there, copied aside first. bake none until the sheet paint stack (issue 601, PR 610) lands. Stage 3 does not trace or tune a sheet hull; it fits the concept camera and reports the outline.",
+ "notes": "Built from the build sheet docs/ship_pipeline/build_sheets/corsair_A18/ (design file tools/blender/build_sheets/ships/corsair_A18.py; issue 633). The sheet is the one home of the design (RULEBOOK 0.9, R225): masses, parts, mounts, seams, insides, hard points and the class length (LENGTH 6.5, the Frigate class) come from it through tools/blender/build_sheets/contract.py; this file only names the sheet, the game ids, the concept and the recipe settings. No parts list here: the sheet places every part. game_code C13s_23 is the Frigate folder the game picks for corsair (godot/render/hull_table.gd AI_HULLS); an install replaces the old hull there, copied aside first. Painted by the Hullbreaker paint stack (bake stack, issue 651): the stack Ryan accepted on A16 and A17 (R235), nothing ship-specific. Stage 3 does not trace or tune a sheet hull; it fits the concept camera and reports the outline.",
  "parts": []
 }

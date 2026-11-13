@@ -128,7 +128,15 @@ R225: one home per fact):
    unit and paint detail (the share of the surface as busy as the hull's busiest 30 percent), each against the hull; a part type
    under 0.75 of the hull is flagged in `density.json` and printed by stage 5 (reported, not a pass bar).
 The job's `textures\` holds the trim sheet and the decal atlas and `licences.json` their lines, so the licence check now
-reads real entries. Running lights (R228 item 4: visible as small red points at battle size; brightness, not size, carries the read): the faction
+reads real entries. Part types a faction's ships share get their rule in the faction stack, never on one ship (issue 651, A18 to A20): the stack's
+`ZONE_BY_KIND` maps a (part kind, sheet zone) pair to a stack zone. The Hullbreaker rules: a launch bay mouth and a hangar mouth
+(`hangar`, A20's two bow mouths) carry the warning stripes on their iron rims and launch rails; a spare engine bell (`spare`, the
+kit's `spare_bell`: cold) is a matte bell and, not being kind `engine`, its dark plug never joins the engine glow; a craft's
+airframe (`craft`, the carrier's fighters) takes the stack's `craft` zone (dark soot, worn edges, no plate patchwork; its
+salvaged wing keeps its own rust or pale, its canopy dark, its nozzles the faction's glow). Every other zone of these parts is the
+sheet's own, as on any part. A18's grille nose is three kit louvre panels (`vent`): the existing zones cover it. A16 and A17 carry
+none of these kinds, so their paint is unchanged (proved in PR for issue 651: their stage 5 maps rebuilt byte for byte).
+Running lights (R228 item 4: visible as small red points at battle size; brightness, not size, carries the read): the faction
 stack's `RUNNING_LIGHTS` rule builds small round deep-red lamps (0.0115 of the ship's length, #c41e14, emissive under the game's
 0.8 glow threshold) in iron bezels on the hull, never on or right beside a machine (a row per flank at the sheet's lamp height, deck-edge points; clear of parts, decals
 and the breach, braking and boarding points; each bezel bridges the plate steps under it); their size and count go into the

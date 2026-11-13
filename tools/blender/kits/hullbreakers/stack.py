@@ -92,9 +92,12 @@ ZONES = dict(
     warhead=dict(rust=.35, metal=.30, rough=.65, rivets=0),
     brass=dict(rust=.20, metal=.60, rough=.50, rivets=0),
     iron_bay=dict(base='iron', rust=.4, metal=.45, rough=.72, trim=('stripes',), trim_amount=.75),
+    # issue 651: the carrier's own craft (the kit's craft part, a 1.6 fighter at the squadron's size): a dark soot airframe with
+    # bare worn edges, no plate patchwork (it is one small machine, not a hull: its salvaged wing keeps its own rust or pale)
+    craft=dict(base='soot2', rust=.25, grime=.55, wear=1.0, plate_var=.15, rivets=0, scuff=.6),
 )
 _BASE = dict(soot='soot', soot2='soot2', iron='iron', rust='rust', blood='blood', pale='pale', violet='violet', steel='steel',
-             dark='grime', dish='bare', warhead='rust', brass='bare', iron_bay='iron', bell='steel')
+             dark='grime', dish='bare', warhead='rust', brass='bare', iron_bay='iron', bell='steel', craft='soot2')
 for _k, _z in ZONES.items():
     _lo, _hi = pair(_BASE[_k])
     if _k == 'dish': _lo, _hi = lin((70, 66, 64)), lin((120, 112, 108))
@@ -103,6 +106,13 @@ for _k, _z in ZONES.items():
     _z['lo'], _z['hi'] = _lo, _hi
 FALLBACK = 'soot'
 ZONE_BY_KIND = {('bay', 'iron'): 'iron_bay', ('engine', 'steel'): 'bell', ('engine', 'iron'): 'bell', ('engine', 'soot'): 'bell'}      # (part kind, sheet zone): the launch bay mouth carries the warning stripes
+# issue 651, the part types A18 to A20 brought, for every Hullbreaker ship that carries them (never one ship's): a hangar mouth
+# is a launch bay, so its iron rim and launch rails carry the bay's warning stripes; a spare engine bell (the kit's spare_bell,
+# kind spare: cold, not one of the ship's engines) is painted as a matte bell and, not being kind engine, its dark plug never
+# joins the engine glow; a craft's airframe takes the craft zone. Their other zones (the mouth's dark gap and red lamps, the
+# craft's canopy, salvaged wing and nozzle glow) are the sheet's own, as on any part.
+ZONE_BY_KIND.update({('hangar', 'iron'): 'iron_bay', ('spare', 'steel'): 'bell', ('spare', 'iron'): 'bell', ('spare', 'soot'): 'bell',
+                     ('craft', 'soot'): 'craft', ('craft', 'iron'): 'craft', ('craft', 'steel'): 'craft'})
 BARE = lin(CONCEPT['bare'][1])
 RUST = lin(CONCEPT['rust_streak'][1]); RUST_DARK = lin(CONCEPT['rust_streak'][0])
 GRIME = lin(CONCEPT['grime'][0])
