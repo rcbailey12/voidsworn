@@ -128,7 +128,7 @@
   {
    "id": "H1",
    "kind": "hangar",
-   "what": "open hangar mouth 3.6 long, 1.6 high, 1.9 deep, doors slid forward",
+   "what": "open hangar mouth 3.2 long, 1.6 high, 1.9 deep, doors slid forward",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -139,7 +139,7 @@
   {
    "id": "H2",
    "kind": "hangar",
-   "what": "open hangar mouth 3.0 long, 1.6 high, 1.9 deep, doors slid aft",
+   "what": "open hangar mouth 2.6 long, 1.6 high, 1.9 deep, doors slid aft",
    "count": 1,
    "route": "kit",
    "source": "picture",

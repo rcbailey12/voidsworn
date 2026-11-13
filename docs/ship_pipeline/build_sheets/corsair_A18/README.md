@@ -40,6 +40,10 @@ Re-measured in round 2 with one script on both (round 1 read the concept at 3.62
 
 One weapon slot (data.js c_raider): the twin autocannon turret T1 on the spine's gun block, all round, resting forward. One authored seam, B-1, behind the sensor head (the head tears away with the dish still on it, designs.md), kinked round the dish, the bow thrusters and the turret. Three breach anchors (frigate base 2, plus one for the Hullbreakers), uneven: port behind the head, starboard midships, port ahead of the engine block.
 
+## The recipe (issue 633)
+
+C13s_23 (`corsair|Frigate` in godot/render/hull_table.gd AI_HULLS), bake none. In the sandbox: contract self-test PASS; stage 4 audit and its self-test PASS; export7 unbaked at the default tolerance 57508 triangles, hard points gun 2, engine 3, breach 3, core 1, rcs 2, board 2, one turret; check_export PASS and its self-test PASS (the self-test now breaks a turret's muzzle through its turret, since the frigate's only gun is a turret); install (manifest_merge, build_assets --ships-only) and INSTALL READBACK PASS (15 nodes); authored_interiors_check 0 failures (4583 interior triangles); death_seam_check 0 of 12 machines split, 0 of 2055 insides outside their piece. No sheet change came from the recipe. The PC run: tools/pc/jobs/A18_A20_RUN_633.bat (queue file q_a633.bat), not queued.
+
 ## Changed from the picture (R207, R233)
 
 - **One gun: a twin autocannon turret on the spine's gun block.** data.js c_raider carries one weapon, autocannon T (R221: weapons from data.js); the picture's rows of flank guns, designs.md's two bow casemates and its rocket rack have no slot, so they are not built

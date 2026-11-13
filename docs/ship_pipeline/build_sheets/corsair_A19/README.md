@@ -40,6 +40,10 @@ Re-measured in round 2 with one script on both (round 1 read the concept at 4.58
 
 data.js c_reaver: torp F (slot 0) fired by the bow-face casemates R1 and R2; scatter S (slot 1) by casemates S1 to S3 and turrets S4 and S5. Two authored seams: B-1, the bow block weld (the bow tears away whole with its casemates, designs.md), and B-2, the stern block weld, each kinked round the machines near it. Four breach anchors (destroyer base 3, plus one), uneven: the bow seam to port, two along the middle deck (starboard, port), the stern block to starboard.
 
+## The recipe (issue 633)
+
+C14s_23 (`corsair|Destroyer` in godot/render/hull_table.gd AI_HULLS), bake none. In the sandbox: contract self-test PASS; stage 4 audit and its self-test PASS; export7 unbaked at the default tolerance 67666 triangles, hard points gun 13, engine 3, breach 4, core 1, rcs 2, board 2, two turrets; check_export PASS and its self-test PASS; install (manifest_merge, build_assets --ships-only) and INSTALL READBACK PASS (29 nodes); authored_interiors_check 0 failures (6938 interior triangles); death_seam_check 0 of 22 machines split, 0 of 3114 insides outside their piece. No sheet change came from the recipe. The PC run: tools/pc/jobs/A18_A20_RUN_633.bat (queue file q_a633.bat), not queued.
+
 ## Changed from the picture (R207, R233)
 
 - **The two mismatched casemates sit IN the bow face: port, one long rocket tube on a brace; starboard, three short fat tubes banded together.** Ryan, Nov 12 (the round's ruling): "the two mismatched casemates sit IN the bow face", whatever the beauty's foredeck housings suggest. data.js c_reaver's only forward weapon is torp F, so both are rocket casemates (the Hullbreaker rattle rockets); the long tube stays short of a prow gun (RULEBOOK 4.4, Ryan on v5 "added a giant front gun again?")

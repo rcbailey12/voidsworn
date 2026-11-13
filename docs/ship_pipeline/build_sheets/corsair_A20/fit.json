@@ -11,9 +11,9 @@
   "LANE": 0
  },
  "tested": {
-  "objects": 359,
+  "objects": 361,
   "parts": 44,
-  "close_pairs": 1402,
+  "close_pairs": 1391,
   "rays": 319,
   "guns": 2,
   "turrets_swept": 2,
