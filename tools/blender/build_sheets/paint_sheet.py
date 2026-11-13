@@ -3,7 +3,7 @@
 # sheet's side_by_side.jpg, under the GAME's light (godot/render/look.gd: key 2.0 from KEY_DIR, fill a quarter, cool ambient,
 # AgX) with the faction's battle albedo lift (R227: Hullbreakers 1.25), then lays each beside the concept at the same camera.
 # One picture per item, its code name on it, 1280 wide and no taller than 720 (RULEBOOK 1.2).
-# usage: blender -b CELL.blend -P paint_sheet.py -- OUT_DIR SHEET CONCEPT_JPG [lift=1.25] [samples=32] [scale=0.5] [gpu=1] [sky_spec=0]
+# usage: blender -b CELL.blend -P paint_sheet.py -- OUT_DIR SHEET CONCEPT_JPG [lift=1.25] [samples=32] [scale=0.5] [gpu=1] [sky_spec=0] [cam170=1]
 #        (python3 with the bpy module works the same: python3 paint_sheet.py CELL.blend OUT_DIR SHEET CONCEPT_JPG ...)
 import os, sys, math, json
 import bpy
@@ -145,7 +145,7 @@ if hp:
 close = {}
 for o in sc.objects:
     if o.type != 'MESH' or o.hide_render or o.get('role') == 'interior' or not o.data.materials or o.data.materials[0] is None: continue
-    tag = o.data.materials[0].get('ps_close')
+    tag = o.get('ps_close') or o.data.materials[0].get('ps_close')      # the stack marks the object, or its glow material
     if tag: close.setdefault(str(tag), []).append(o)
 for tag, objs in sorted(close.items()):
     if tag == 'rim':      # the longest corona line, at its point farthest out from the ship's axis
@@ -158,4 +158,13 @@ for tag, objs in sorted(close.items()):
     c = bpy.data.cameras.new('close_' + tag); o2 = bpy.data.objects.new('close_' + tag, c); sc.collection.objects.link(o2)
     o2.location = p + out_ * dist; o2.rotation_euler = (p - o2.location).to_track_quat('-Z', 'Y').to_euler(); c.lens = 50; c.clip_start = .0005
     sc.render.resolution_x, sc.render.resolution_y = 1200, 1000; shots['close_' + tag] = shoot(o2, 'paint_close_' + tag, SCALE * .6)
+if kw.get('cam170') == '1':
+    # issue 642: the ship at the size the battle camera shows it (godot/render/camera_rig.gd fov 45 vertical; a4_shots.gd set cams:
+    # distance 170, pitch 0.98, bow to screen right) on a 1920 x 1080 screen, the middle 640 x 360 of it, never scaled: a sandbox
+    # preview of the pixel size, beside which the PC run's own CODE_cam170.jpg is the game's
+    Lw = float(sc.get('r209_length_world', 0) or 0) or 1.0; b_ = 0.98; dist = 170.0 / Lw
+    c = bpy.data.cameras.new('cam170'); o2 = bpy.data.objects.new('cam170', c); sc.collection.objects.link(o2)
+    o2.location = Vector((0, -math.cos(b_) * dist, math.sin(b_) * dist)); o2.rotation_euler = (-o2.location).to_track_quat('-Z', 'Y').to_euler()
+    c.sensor_fit = 'VERTICAL'; c.angle_y = 2 * math.atan(math.tan(math.radians(22.5)) * 360 / 1080); c.clip_start = .01; c.clip_end = dist * 3
+    sc.render.resolution_x, sc.render.resolution_y = 640, 360; shots['cam170'] = shoot(o2, 'paint_cam170', 1.0)
 json.dump(dict(shots=shots, windows=windows, lift=LIFT, samples=SAMP, camera=SHEET + '_camera.json'), open(os.path.join(OUT, 'paint_shots.json'), 'w'), indent=1)

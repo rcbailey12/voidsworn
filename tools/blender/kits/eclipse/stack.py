@@ -54,26 +54,37 @@ LIFT = battle_lift()
 # faction sheet, not by the pictures' lighting: E11's lit plates at 124 to 188 are the lavender grey Ryan ruled out, so every
 # tone here sits in the concepts' lower half (E12's 12 to 84, E11's 22 to 93), scaled to read dark violet-black under the lift.
 # (low tone, lit tone): the tone the plate should SHOW in the game at the battle camera, face-on to the key light.
+# Pass 2 (Ryan, Nov 13 2026 11:06 CST, on E11_paint_full.jpg: "Not a ton of details elsewhere, it looks like grainy paint almost.
+# Everything kind of blends together"): separation by value steps between plates and plate families, not by noise. Near-black
+# heat-shield plates, a deep violet, a lighter dusk violet, a few cool dark gunmetal plates (factions.md "Colours" lists only the
+# violet-black plates, so no bronze: the gunmetal is the plates' own metal, kept cool and dark), and brighter worn edges.
 CONCEPT = dict(
-    shade=((13, 11, 19), (30, 25, 42)),         # violet-black shade plate, most of the ship (E12 12,15,25 and 25,24,38; the hue of 43,36,60)
-    shade2=((16, 12, 24), (36, 28, 52)),        # deep violet plate (E12 25,24,38 to 43,36,60)
-    violet=((19, 13, 30), (52, 38, 78)),        # Eclipse violet plate (E12 43,36,60 and 61,51,82, darkened)
-    mauve=((22, 15, 25), (58, 43, 62)),         # dusty mauve plate (E11 42,32,40 and 64,51,61, darkened: E11's redder violet)
-    lilac=((26, 21, 30), (64, 54, 72)),         # weathered pale plate (E11 64,51,61 and 93,76,87 held well down: never lavender)
-    gunv=((12, 10, 16), (30, 26, 38)),          # violet gunmetal: frames, rails, collars, the barrels of machines
-    steel=((16, 14, 20), (38, 34, 46)),         # machinery metal (the gun cores, the core cage hubs)
+    shade=((7, 6, 11), (18, 15, 26)),           # near-black heat-shield plate (E12's darkest plates 12,15,25, held down)
+    shade2=((10, 8, 16), (23, 17, 34)),        # deep violet plate (E12 25,24,38 to 43,36,60)
+    violet=((16, 11, 26), (40, 29, 62)),        # dusk violet plate, the lighter step (E12 43,36,60 and 61,51,82)
+    mauve=((16, 11, 19), (38, 28, 44)),         # dusty mauve plate (E11 42,32,40 and 64,51,61, darkened: E11's redder violet)
+    lilac=((24, 20, 30), (58, 49, 68)),         # weathered pale plate (E11 64,51,61 and 93,76,87 held well down: never lavender)
+    gunmetal=((16, 16, 21), (38, 38, 47)),      # a few cool dark gunmetal plates, the plates' own metal (small share)
+    gunv=((14, 12, 18), (36, 32, 44)),          # violet gunmetal: frames, rails, collars, the machines
+    steel=((18, 16, 22), (44, 40, 52)),         # machinery metal (the gun cores, the core cage hubs)
     iron=((11, 9, 14), (26, 22, 32)),           # the sheet's flush fasteners on the plates
-    bare=((70, 63, 84), (112, 102, 130)),         # worn edges: the machined metal under the dark coat, cool and dulled, a little violet
-    grime=((6, 5, 8), (12, 10, 14)),            # the dark of seams and deep recesses (the concepts' darkest 3,7,10 to 17,12,17)
-    seam=((8, 6, 11), (16, 12, 20)),
+    bare=((76, 68, 92), (124, 112, 144)),      # worn edges on rims and plate lips: the machined metal under the dark coat
+    grime=((5, 4, 7), (10, 8, 12)),             # the dark of seams and deep recesses (the concepts' darkest 3,7,10 to 17,12,17)
 )
 # The game's light on a face at about 45 degrees to the key (godot/render/look.gd: key 2.0, ambient 0.25 x key): the factor
 # between an albedo and the tone the face shows (the Hullbreaker stack's figure, checked again by this job's preview).
 LIGHT_GAIN = 1.45
-# the green-white corona: the hue of the concepts' brightest rim pixels (E12 132,228,88; E11 101,152,115), whitened toward a cold
-# white (factions.md: "a thin, cold green-white line"; the concepts' saturated green reads as a toxic or undead glow)
-CORONA_RGB = (128, 242, 164)
-CORE_RGB = (186, 255, 204)       # the trapped light core: the same light, hotter, nearly white at its heart
+# The light (pass 2, Ryan: "that green looks so plain and stark, just like neon paint"): the corona is light, not paint, the faint
+# green ring of a real eclipse. Cold green-white at its hottest (the hue of the concepts' brightest rim pixels, E12 132,228,88,
+# whitened), a deeper green where it is dim (E12 48,92,49 and 84,136,82, brightened to read as light).
+CORONA_HOT = (176, 255, 206)
+CORONA_DIM = (40, 190, 96)
+# the trapped light core (Board review of PR 643: the first core, near white at 1.9, flattened to a white blob): green-white at its
+# centre grading to the concepts' core green at its edge (E12 66,203,23 to 132,228,88), never white all over
+CORE_HOT = (190, 255, 196)
+CORE_EDGE = (40, 196, 64)
+CORONA_RGB = (128, 242, 164)     # the flat colour glow_material gives a corona surface the glow map does not hold (none on E11, E12)
+CORE_RGB = (112, 240, 118)
 
 
 # AgX and the warm key take colour out of dark tones: the first preview (sandbox, game light, lift 2.2) showed the shade plates
@@ -103,33 +114,37 @@ def pair(k):
 # ------------------------------------------------------------------------------------------------------------ the layers
 SCALE = 1.0          # every size below is in ship lengths (the recipe's frame: the ship is 1.0 long)
 LAYERS = dict(
-    ao_short=.004, ao_long=.025, edge_radius=.0014, edge_gain=14.0,      # the masks (a wider edge than the Hullbreakers': the machined bevels read)
-    patch_scale=4.0, plate_var=.30, side_dark=.22, grain_scale=260.0, mottle_scale=40.0, mottle=.03, grain=.003,   # no salt and pepper
-    rough=.66, metal=.50, wear=1.0, grime=.55, ao_dark=.90, red_tone=0.0,
-    rough_floor=.60,     # the roughness floor (ships.md section 0 item 2, pass 5): no white specular glare at the game's key light
-    # the plate patchwork in mixed sizes, rows offset at random, a few larger plates laid over (RULEBOOK 0.5: never a grid); the
-    # sheet's modelled plates each take their own tone by UV island on top of it
-    patch_big=(.046, .030, .026), patch_small=(.017, .012, .010), patch_over=(.060, .036, .030), patch_over_share=.08,
-    patch_region=6.0, patch_parts=((.018, .014, .012), (.010, .008, .007), (.022, .016, .014)), patch_seam=.0010, seam_dark=.88,
-    cavity_pow=2.2, wear_lo=.22, wear_hi=.44,
-    scuff=.22, scuff_size=.050,                                           # fine machining scratches, never chips
-    rivets=1, rivet_pitch=.012, rivet_band=(.0012, .0040),               # flush fasteners in a band in from each plate edge
+    ao_short=.004, ao_long=.025, edge_radius=.0014, edge_gain=18.0,      # the masks (a wider edge than the Hullbreakers': the machined bevels read)
+    # pass 2: no fine mottle, no grain, almost none of the per-island tone (the sheet's thousands of tiny plate islands each took
+    # their own tone, which read as grainy paint); the plate families and their seams carry the variety, in big calm panels
+    patch_scale=4.0, plate_var=.10, island_tone=.15, side_dark=.30, grain_scale=260.0, mottle_scale=40.0, mottle=0.0, grain=0.0,
+    rough=.66, metal=.40, wear=1.0, grime=.50, ao_dark=.92, red_tone=0.0,
+    rough_floor=.50,     # the roughness floor (ships.md section 0 item 2, pass 5): no white specular glare at the game's key light
+    # the plate patchwork: big calm panels and a band of smaller ones, rows offset at random, a few larger plates laid over
+    # (RULEBOOK 0.5: never a grid), with dark seams wide enough to read at the battle camera
+    patch_big=(.090, .060, .050), patch_small=(.040, .026, .022), patch_over=(.110, .070, .060), patch_over_share=.06,
+    patch_region=3.0, patch_parts=((.035, .025, .020), (.018, .014, .012), (.045, .030, .025)), patch_seam=.0020, seam_dark=.95,
+    cavity_pow=1.6, wear_lo=.16, wear_hi=.38,
+    scuff=.08, scuff_size=.050,                                           # a few machining scratches, never chips
+    rivets=0, rivet_pitch=.016, rivet_band=(.0015, .0045),               # flush fasteners only on the body plates (zone violet)
     trim_size=dict(), trim_aspect=dict(),
     streak_scale=4.0, streak_stretch=60.0, rust_blot=26.0,                # no rust on the Eclipse (every zone's rust is 0)
     grime_z=(-.12, -.04), soot_x=(-.50, -.30), soot_aft=.10,              # a little grime low and toward the engines; no soot (no flame)
-    wear_scale=70.0, wear_patch=5.0, bump_distance=.0008, bump_strength=.50,
+    wear_scale=40.0, wear_patch=3.0, bump_distance=.0008, bump_strength=.50,
 )
+# pass 2: the shade plates, the body behind them and the machinery differ in finish, not only colour: the shades a matte heat
+# shield, the body a satin metal, the machines (guns, engines, saddles, rails) a brighter worked metal
 ZONES = dict(
-    shade=dict(rust=0, grime=.55, patchwork=1.0, patchwork_parts=.8),
-    shade2=dict(rust=0, grime=.60, patchwork=1.0, patchwork_parts=.8),
-    violet=dict(rust=0, grime=.55, patchwork=.9, patchwork_parts=.7),
-    mauve=dict(rust=0, grime=.55, patchwork=.7, patchwork_parts=.6),
-    lilac=dict(rust=0, grime=.70, patchwork=.6, plate_var=.25),
-    gunv=dict(rust=0, metal=.50, rough=.62, wear=1.0, patchwork_parts=.6),
-    steel=dict(rust=0, metal=.55, rough=.60, wear=.9, patchwork_parts=.6),
-    iron=dict(rust=0, metal=.45, rough=.66, rivets=0, scuff=.1),
-    dark=dict(rust=0, grime=.2, wear=.10, scuff=.05, rivets=0, metal=.1, rough=.92, plate_var=.08),
-    bell=dict(base='gunv', rust=0, metal=.30, rough=.82, wear=.5, grime=.8),     # engine bells and housings: matte, never mirror black
+    shade=dict(rust=0, grime=.50, patchwork=1.0, patchwork_parts=.8, rough=.80, metal=.15),
+    shade2=dict(rust=0, grime=.55, patchwork=1.0, patchwork_parts=.8, rough=.74, metal=.20),
+    violet=dict(rust=0, grime=.50, patchwork=.9, patchwork_parts=.7, rough=.58, metal=.50, rivets=1),
+    mauve=dict(rust=0, grime=.50, patchwork=.7, patchwork_parts=.6, rough=.60, metal=.45),
+    lilac=dict(rust=0, grime=.60, patchwork=.6, rough=.66, metal=.35),
+    gunv=dict(rust=0, metal=.78, rough=.50, wear=1.2, patchwork_parts=.6),
+    steel=dict(rust=0, metal=.80, rough=.48, wear=1.1, patchwork_parts=.6),
+    iron=dict(rust=0, metal=.60, rough=.55, rivets=0, scuff=.05),
+    dark=dict(rust=0, grime=.2, wear=.10, scuff=.05, rivets=0, metal=.1, rough=.92, plate_var=.05),
+    bell=dict(base='gunv', rust=0, metal=.35, rough=.80, wear=.6, grime=.7),     # engine bells and housings: matte, never mirror black
 )
 _BASE = dict(shade='shade', shade2='shade2', violet='violet', mauve='mauve', lilac='lilac', gunv='gunv', steel='steel', iron='iron',
              dark='grime', bell='gunv')
@@ -141,29 +156,40 @@ BARE = lin(CONCEPT['bare'][1])
 GRIME = lin(CONCEPT['grime'][0])
 RUST = RUST_DARK = GRIME          # read by the shared rust layer only where a zone has rust, and no Eclipse zone has
 RED_PLATE = pair('shade')         # read only where a zone has a red_share, and no Eclipse zone has
-# the patchwork families: (share of panels, colour pair[, 'small']). Shares by eye from the concepts' plate clusters: the dark
-# shade most, then deep violet, the redder mauve, a few weathered pale plates, small only (never whole big pale plates)
-PATCH_FAMILIES = [(.30, pair('shade')), (.22, pair('shade2')), (.16, pair('violet')), (.10, pair('mauve')), (.03, pair('lilac'), 'small')]
-PATCH_FAMILIES_PARTS = [(.28, pair('gunv')), (.22, pair('shade')), (.16, pair('violet')), (.10, pair('mauve')), (.03, pair('lilac'), 'small')]
+# the patchwork families: (share of panels, colour pair[, 'small']). Clear value steps (pass 2): near-black shade plates most, then
+# deep violet, the lighter dusk violet, a few mauve and cool gunmetal plates, rare weathered pale plates on small plates only
+PATCH_FAMILIES = [(.32, pair('shade')), (.22, pair('shade2')), (.14, pair('violet')), (.08, pair('mauve')), (.05, pair('gunmetal')),
+                  (.03, pair('lilac'), 'small')]
+PATCH_FAMILIES_PARTS = [(.30, pair('gunv')), (.18, pair('shade')), (.14, pair('violet')), (.06, pair('gunmetal')), (.03, pair('lilac'), 'small')]
 
 # ------------------------------------------------------------------------------------------------------------ the light
-# glowing zones keep their own emissive surface. The corona line and the core are the faction's green-white (factions.md; their
-# colour is the sheet's zone, whitened here as above); the engine ring is the game's Eclipse engine colour (godot/fx/
-# faction_looks.json deathless engine, the colour the game's engine plume is drawn in), paled toward white, with a touch of its
-# accent (the white-gold corona the game puts round each engine core). Brightness: the corona line just over the game's 0.8 glow
-# threshold, so a thin line gets a faint edge of fire and never a fat halo; the core brighter, it is the one bright point.
+# Every light of the ship is one emissive surface with its own emission map (shared/paint_stack.bake_engine_glow, the export's
+# CODE_glow surface and CODE_glow_emission.jpg): the engine rings, the corona line on every shade rim, the corona strip lights,
+# the gun shades' rims, the core and the arc emitter's lens. A flat emissive colour read as neon paint (Ryan, Nov 13 11:06 CST:
+# "that green looks so plain and stark, just like neon paint"), so each kind of light is drawn on the map:
+#   the corona line (pass 2): the faint green ring of a real eclipse. Thin at rest: brightest along the middle of the strip and
+#     falling softly to its edges and sides (into the plate edge, never a hard band), and the bright core of it widens only in the
+#     brighter arcs. Its brightness varies along its length (brighter arcs, dimmer stretches, a few short breaks where plates
+#     overlap); cold green-white at its hottest, deeper green where dim. Mostly under the game's 0.8 glow threshold, only the
+#     brightest arcs over it.
+#   the core and the lens: green-white at the centre grading to the concepts' core green at the edge, the brightest light on the
+#     ship, never a white blob (Board review of PR 643).
+#   the engine ring: as below.
+# The glTF surface takes the hull's rim line with it, so the stack marks the glow surface hull_surface (GLOW_HULL): the export
+# check measures breach clearance from the parts, not from this light (every other light it holds sits on a part whose other
+# surfaces are measured).
 GLOW = ('corona', 'ecore', 'lens')
-GLOW_STRENGTH = dict(corona=1.05, ecore=1.9, lens=1.6)
-CLOSE = dict(corona='rim', ecore='core')       # paint_sheet.py renders a close view of each of these (the rim line, the core)
+GLOW_STRENGTH = dict(corona=1.05, ecore=1.35, lens=1.25)     # only for a glow surface the map does not hold (none on E11, E12)
+GLOW_HULL = ('corona',)
+CORONA = dict(base=.50, arc=.50, arc_scale=9.0, arc_band=(.48, .78), breaks_scale=26.0, breaks=(.20, .25), rest_width=2.0,
+              arc_width=1.2, hot=.85)
+CORE = dict(edge=.55, falloff=1.4)
 
 
 def faction_look():
     p = os.path.join(REPO, 'godot', 'fx', 'faction_looks.json')
     d = json.load(open(p, encoding='utf-8'))
     return d.get(FACTION) or d.get('factions', {}).get(FACTION)
-
-
-GLOW_HULL = ('corona',)      # the corona line the sheet lays on the hull's own shade rims is hull trim (shared run, export check)
 
 
 def glow_material(zone, hull=False):
@@ -174,28 +200,51 @@ def glow_material(zone, hull=False):
     b.inputs['Emission Color'].default_value = (*col, 1); b.inputs['Emission Strength'].default_value = GLOW_STRENGTH.get(zone, 1.0)
     m['ps_glow'] = 1; m['rim_soft'] = 1
     if hull: m['hull_surface'] = 1
-    if zone in CLOSE: m['ps_close'] = CLOSE[zone]
     return m
+
+
+def glow_vertex(o):
+    """the per-vertex inputs of a light that is not an engine ring (shared bake_engine_glow calls this): colour attribute ps_glow
+    R the place across a corona strip (0 and 1 its two edges, 0.5 its middle), G the light's own random, B the distance from a
+    core's centre over its radius; float attribute ps_kind 1 a corona line, 2 the core or the lens. The sheet's rim strips
+    (kit.strip) are four vertices per station: the base edges and the top edges, left, right, right, left."""
+    me = o.data; z = me.materials[0].name if me.materials else ''
+    ca = me.color_attributes.get('ps_glow') or me.color_attributes.new('ps_glow', 'FLOAT_COLOR', 'POINT')
+    ka = me.attributes.get('ps_kind') or me.attributes.new('ps_kind', 'FLOAT', 'POINT')
+    rnd = (sum(ord(c) for c in o.name) * 0.61803) % 1.0
+    W = [o.matrix_world @ v.co for v in me.vertices]
+    if z == 'corona':
+        strip = o.get('role') == 'hull' and len(W) % 4 == 0 and len(W) >= 8
+        for i in range(len(W)):
+            ca.data[i].color = ((0.0, 1.0, 1.0, 0.0)[i % 4] if strip else 0.5, rnd, 0.0, 0.0); ka.data[i].value = 1.0
+        if o.get('role') == 'hull': o['ps_close'] = 'rim'
+    else:
+        c = sum(W, W[0] * 0) / len(W); ext = [max(v[k] for v in W) - min(v[k] for v in W) for k in range(3)]
+        thin = ext.index(min(ext)) if max(ext) > 2.5 * min(ext) else 2       # a flat port: across its face; a sphere: round its top
+        R = max(math.hypot(*[(v - c)[k] for k in range(3) if k != thin]) for v in W) or 1.0
+        for i, v in enumerate(W):
+            q = math.hypot(*[(v - c)[k] for k in range(3) if k != thin]) / R
+            ca.data[i].color = (0.5, rnd, min(1.0, q), 0.0); ka.data[i].value = 2.0
+        if z == 'ecore': o['ps_close'] = 'core'
 
 
 # The engine (Ryan, Nov 12, on the Hullbreaker engines: "more variation to the engine glow so it's not so uniform, just disc
 # color"; factions.md: no flaming bells, an eclipse ring of pale light). The sheet's engine is a bell with a thin corona ring just
 # inside the lip round a black shade disc set back (tools/blender/kits/eclipse/parts.py engine_bell): an eclipse seen end on. The
-# stack gives the ring its own emission map (shared/paint_stack.bake_engine_glow with this stack's engine_glow_nodes): bright
-# round most of the ring, brighter on its inner edge (the light leaking round the disc), uneven hot spots and dim gaps round the
-# circle (each engine its own pattern), each engine its own brightness and its own tint (paler, or warmer toward the accent).
-# The disc stays the dark zone: the ring is the light, the middle is black. The game's moving plume sits on top; no flame.
-ENGINE_GLOW = dict(zones=('corona',), kind='engine', disc=('corona',), plug=(),
+# ring is bright round most of its circle, brighter on its inner edge (the light leaking round the disc), with uneven hot spots
+# and dim gaps (each engine its own pattern), each engine its own brightness and its own tint (paler, or warmer toward the
+# accent), in the game's Eclipse engine colour. The disc stays the dark zone. The game's moving plume sits on top; no flame.
+ENGINE_GLOW = dict(zones=('corona',), kind='engine', disc=('corona',), plug=(), extra_zones=('corona', 'ecore', 'lens'), res_frac=.5,
                    pale=.25, accent=(0.0, .35), bright=(.45, 1.15), hotspot_scale=7.0, hotspot=(.40, .72), hotspot_gain=.90,
-                   gaps=(.30, .55), gap_dark=.90, inner_gain=.35, norm=.50, strength=1.0, base=(.008, .006, .012))
+                   gaps=(.30, .55), gap_dark=.90, inner_gain=.35, norm=.32, strength=1.6, base=(.008, .006, .012))
 
 
 def engine_glow_nodes(nt, r, e, d, a, tc, H):
-    """the ring's emission colour (H: the shared node helpers node, math_, ramp, mixc, noise)"""
+    """the emission colour of every light on the map (H: the shared node helpers, and kind: 0 engine ring, 1 corona line, 2 core)"""
     E = ENGINE_GLOW; f = faction_look()
     eng = [float(c) for c in f['engine']]; acc = [float(c) for c in (f.get('accent') or f['engine'])]
     pale = [c + (1 - c) * E['pale'] for c in eng]
-    math_, ramp, mixc, node = H['math_'], H['ramp'], H['mixc'], H['node']
+    math_, ramp, mixc, node, mulc = H['math_'], H['ramp'], H['mixc'], H['node'], H['mulc']
     e2 = math_(nt, 'FRACT', math_(nt, 'MULTIPLY', e, 7.31))
     col = mixc(nt, tuple(pale), tuple(acc), math_(nt, 'ADD', E['accent'][0], math_(nt, 'MULTIPLY', e2, E['accent'][1] - E['accent'][0])))
     # round the ring: hot spots and dim gaps by the angle, each engine its own pattern (W = the engine's random)
@@ -209,10 +258,29 @@ def engine_glow_nodes(nt, r, e, d, a, tc, H):
     gn.inputs['Detail'].default_value = 2
     nt.links.new(av.outputs[0], gn.inputs['Vector']); nt.links.new(math_(nt, 'ADD', math_(nt, 'MULTIPLY', e, 5.0), 3.3), gn.inputs['W'])
     heat = math_(nt, 'MULTIPLY', heat, math_(nt, 'SUBTRACT', 1, math_(nt, 'MULTIPLY', ramp(nt, gn.outputs['Fac'], E['gaps'][1], E['gaps'][0]), E['gap_dark'])))
-    # the inner edge of the ring is brighter (the light round the disc); r is the distance from the axis over the ring's outer radius
     heat = math_(nt, 'MULTIPLY', heat, math_(nt, 'ADD', 1.0, math_(nt, 'MULTIPLY', ramp(nt, r, .97, .90), E['inner_gain'])))
     heat = math_(nt, 'MULTIPLY', heat, math_(nt, 'ADD', E['bright'][0], math_(nt, 'MULTIPLY', e, E['bright'][1] - E['bright'][0])))
-    return H['mulc'](nt, col, math_(nt, 'MULTIPLY', heat, E['norm'], clamp=True))     # the map holds 0..1; strength sets the light
+    ring = mulc(nt, col, math_(nt, 'MULTIPLY', heat, E['norm'], clamp=True))
+    # the corona line: brighter arcs and dimmer stretches along it (noise on the ship's own position), a few short breaks, a soft
+    # falloff from the middle of the strip to its edges; the bright middle widens only where the arc is bright
+    C = CORONA; pos = tc.outputs['Object']
+    an = node(nt, 'ShaderNodeTexNoise'); an.inputs['Scale'].default_value = C['arc_scale']; an.inputs['Detail'].default_value = 2
+    an.inputs['Roughness'].default_value = .5; nt.links.new(pos, an.inputs['Vector'])
+    arc = ramp(nt, an.outputs['Fac'], C['arc_band'][0], C['arc_band'][1])
+    bn = node(nt, 'ShaderNodeTexNoise'); bn.inputs['Scale'].default_value = C['breaks_scale']; bn.inputs['Detail'].default_value = 1
+    nt.links.new(pos, bn.inputs['Vector'])
+    brk = ramp(nt, bn.outputs['Fac'], C['breaks'][0], C['breaks'][1])          # 0 in a short break, 1 elsewhere
+    across = math_(nt, 'SUBTRACT', 1, math_(nt, 'POWER', math_(nt, 'ABSOLUTE', math_(nt, 'MULTIPLY', math_(nt, 'SUBTRACT', r, .5), 2.0)), 2.0))
+    width = math_(nt, 'ADD', C['rest_width'], math_(nt, 'MULTIPLY', arc, C['arc_width'] - C['rest_width']))
+    prof = math_(nt, 'POWER', math_(nt, 'MAXIMUM', across, 0.0), width)
+    lh = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', math_(nt, 'ADD', C['base'], math_(nt, 'MULTIPLY', arc, C['arc'])), prof), brk)
+    line = mulc(nt, mixc(nt, lin_raw(CORONA_DIM), lin_raw(CORONA_HOT), math_(nt, 'POWER', lh, .8)), math_(nt, 'MULTIPLY', lh, C['hot']))
+    # the core: green-white in the middle grading to green at the edge (B = distance from the centre over the radius)
+    k = math_(nt, 'POWER', math_(nt, 'SUBTRACT', 1, math_(nt, 'MINIMUM', d, 1.0)), CORE['falloff'])
+    core = mulc(nt, mixc(nt, lin_raw(CORE_EDGE), lin_raw(CORE_HOT), k), math_(nt, 'ADD', CORE['edge'], math_(nt, 'MULTIPLY', k, 1 - CORE['edge'])))
+    kd = H['kind']
+    out = mixc(nt, ring, line, math_(nt, 'GREATER_THAN', kd, .5))
+    return mixc(nt, out, core, math_(nt, 'GREATER_THAN', kd, 1.5))
 
 
 # ------------------------------------------------------------------------------------------------------------ insides

@@ -108,6 +108,12 @@ def main():
         head(img, f'{N} close: the corona line on a shade rim (left), the core in its port or cage (right)', f'game light, battle lift {lift:g}; the green is a thin line on the rim and the core, never pooled in hollows')
         img.paste(fit(Image.open(cr).convert('RGB'), 636, 600), (0, 60)); img.paste(fit(Image.open(cc).convert('RGB'), 636, 600), (644, 60))
         p = os.path.join(OUT, f'{N}_paint_close.jpg'); img.save(p, quality=92); made.append(p)
+    c170 = os.path.join(P, 'paint_cam170.png')
+    if os.path.exists(c170):      # issue 642: the battle camera's pixel size (paint_sheet.py cam170=1), true pixels and enlarged 2x
+        g = Image.open(c170).convert('RGB'); img = Image.new('RGB', (1280, 60 + 360 + 4 + 240), BG)
+        head(img, f'{N} at the battle camera (170), true pixels (left) and enlarged 2x from its middle (right)', f'sandbox preview of the game\'s pixel size: middle 640 x 360 of a 1920 x 1080 screen, game light, lift {lift:g}')
+        img.paste(g, (0, 60)); z = g.crop((160, 90, 480, 270)).resize((640, 360), Image.NEAREST); img.paste(z, (640, 60))
+        img = img.crop((0, 0, 1280, 60 + 360)); p = os.path.join(OUT, f'{N}_paint_cam170.jpg'); img.save(p, quality=95); made.append(p)
     if SH != '-':
         for cam in ('cam170', 'cam60'):
             g = os.path.join(SH, f'{CODE}_{cam}.jpg')
