@@ -60,6 +60,16 @@ closed engine bells), a launcher quoting bug and a stale game cache only show on
 had gone from sheet to game since the sheet method changed. Set: Board, Nov 12, on Ryan's ask to learn from the gaps at
 the level of design and setup, not patches (R225).
 
+
+0.9 **How the repo carries memory (R251).** A standing rule comes only from Ryan's words, quoted in FINDINGS and landed here; a row
+that stretches his words past what he named says so and asks him. Board choices for one day or one job (effort, caps, job order,
+wrappers, which seat took a job) are operating notes in LOOP.md, never rules. A new ruling names what it replaces and the old row is
+marked SUPERSEDED, so no two live rules conflict. One live place per kind: rules in this book, status in LOOP.md's newest LATEST
+lines and The seats, the hand-over in HANDOFF section 0 (about one page; older sections go to docs/archive), history in FINDINGS.
+LOOP.md's LATEST lines roll into a dated summary once they pass about 15. Muse audits for stale or conflicting docs now and then.
+Why: several models and fresh chats read the repo cold; on Nov 14 a one-day choice nearly became a rule, an A20 note was stretched to
+every ship, and a summary line inverted Ryan's call on A18 and A19.
+
 ## 1. Working with Ryan
 
 1.1 **Plain words, the answer first, your pick and why; no em dashes; no human-hour estimates** (estimate in agent runs and
