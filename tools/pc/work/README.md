@@ -10,7 +10,8 @@ Ryan's two double-click files (copies sit in Downloads\voidsworn_test; the scrip
   work217\trial_summary.txt.
 
 One run (tools/pc/work_issue.bat `<issue> <deepseek|kimi> [dryrun]`):
-1. Fresh clone of main in work217\issue-N-arm\<date_time>\repo on branch work/issue-N-arm (no deletes; latest.txt names the newest).
+1. Refresh the shared bare repo, then clone main from disk into work217\issue-N-arm\<date_time>\repo on branch work/issue-N-arm.
+   Merge that arm's partial branch if present (no deletes; latest.txt names the newest).
 2. WORK_TASK.md: runner notes (Git Bash, checks, parity command, Godot path, shot folder) plus the issue body, read live from GitHub.
 3. Balance read, then `opencode run --auto --format json -m <model>` under tmo.bat (one hour cap). Events in out\events.jsonl.
 4. Balance read again a minute later; out\stats.txt holds steps, tool calls, tokens, OpenCode's own cost estimate, and the real charge
@@ -56,18 +57,59 @@ work_issue.ps1):
   (`remove_repo_copy_after_push=no` by default; WORKHORSE_CLEANUP.bat, from tools/pc/work_cleanup_setting.bat, turns it on).
   With it on, a run whose push was checked removes its own repo\ copy and keeps out\. A dry run never removes anything.
 
-Every path after the agent has run still writes "pushed", "no changes" or "failed" into result.txt (the size lines come
-after it), so launcher chains that wait on those words keep working.
+result.txt is for people. Chains use status.json as described below; matching words in result.txt cannot prove success.
 Exit codes: 0 pushed, 7 no changes, 8 push refused (change.patch kept), 10 diff mismatch, 11 commit failed, 12 the branch's
 earlier tip could not be read, 13 the refuse step failed.
 
 Dry-run knobs (only with `dryrun`): WORK_DRY_SCENARIO (refuse, timecap, merge: scripts in mock_llm.js), WORK_TEST_BRANCH
 (push for real to a branch outside codex/, muse/, work/ and opus/, so no PR opens), WORK_SKIP_CHECKS=1, WORK_DRY_SPARSE
-(a lean blobless clone of the named folders), WORK_TEST_FAULT=skipcommit (replays the issue 541 failure). WORK_ROOT moves
+(a local clone checking out only the named folders), WORK_TEST_FAULT=skipcommit (replays the issue 541 failure). WORK_ROOT moves
 the run folders. codex_issue.bat has CODEX_TEST_ROOT, CODEX_TEST_AGENT, CODEX_TEST_BRANCH and CODEX_TEST_SPARSE. The proof
 runs are in contrib/opus/reviews/runner2_377.md.
 
+## Reliable starts and restarts (issue 687, Board note)
+
+Ryan approved these five changes on Nov 14 after overlapping downloads, expired login, spent credit and a failed predecessor
+cost several runs. Both entry points, `work_issue.bat` and `codex_issue.bat`, use `runner_common.ps1`:
+
+- **One download source on the PC.** `%USERPROFILE%\Downloads\voidsworn_test\repo-mirror.git` is a bare mirror of GitHub.
+  Every job fetches it under an exclusive file lock and clones from that disk copy while still holding the lock. The first
+  fetch downloads the history; later fetches download changes. Local clones hardlink immutable Git objects, have no alternates,
+  and set origin back to GitHub, so a push never writes into the mirror. A killed runner releases the lock automatically.
+- **Three attempts.** Each mirror fetch, local clone and earlier-branch fetch gets three attempts total, 120 seconds apart.
+  A failed clone folder is renamed beside repo and kept before the next attempt. Network failure stops before the model.
+- **Model preflight.** Before ship copying or agent work, a tiny prompt must return exactly RUNNER_READY within 90 seconds.
+  opus, sonnet and deepseek use OpenCode with the job's model; kimicode always uses Kimi Code CLI and its saved subscription
+  login (no API key required); Codex uses the pinned gpt-6.1-sol. Error events fail even with exit 0. result.txt gets a one-line
+  reason and preflight_log.txt holds the details. No automatic model fallback or login is attempted.
+- **Safe chains.** Use `chain_issue.bat "<first run out>\status.json" work_issue.bat 642 opus` (or `codex_issue.bat 687`).
+  The child writes its own result, then waits before checkout or model use. Only status checked_push with a commit id releases
+  it: a non-partial real push confirmed by the diff check, with passing runner standing checks and parity. Both runners run
+  those checks; failed checks can still push work for review but cannot release a chain. Partial, no changes, failed, dry/test,
+  missing status and a changed predecessor run all stop it. Waiting is capped at 12 hours (PC_WAIT_SECONDS overrides it).
+  PC_WAIT_RUN can pin the predecessor's run id. Point to the exact run, not a moving latest.txt. Replace older external
+  waiters that search result.txt with this launcher; those unversioned PC files are not changed by this patch.
+- **Resume by default.** The fresh branch starts at current main and merges `<branch>-partial` before task generation.
+  Both task files name the partial branch and commit and tell the agent to finish that work. A merge conflict stops before
+  preflight, preserving the checkout for the Board. Existing Codex checkouts are renamed and kept instead of reset or cleaned.
+  Already committed resumed work can still reach a checked push when the agent needs no further edits.
+
+Deploy work_issue.bat/.ps1, codex_issue.bat/.ps1, runner_common.ps1, chain_issue.bat and work/mock_llm.js together to each
+runner tools folder while its lane is idle. Existing settings and refused-file guards still apply. status.json records a run
+id, branch, state, reason and commit; updates are atomic, with previous versions kept. Unexpected stops stay running and a
+chain times out instead of guessing success. Helper failures use exit 14; other runner exit codes keep their earlier meaning.
+
+Free proof: double-click `tools\pc\runner_selftest.bat`. It makes tiny Git fixture data and stub agents under TEMP, runs all
+five arms, and prints its evidence folder. It makes no commits, pushes or model calls. Standing checks call the JS test too;
+non-Windows CI checks the entry-point contract and reports the Windows matrix skipped. Test-only overrides are enabled by
+WORK_TEST_AGENT plus dryrun, or CODEX_TEST_AGENT plus CODEX_TEST_ROOT: PC_TEST_SOURCE, PC_TEST_MIRROR, PC_TEST_ISSUE,
+PC_TEST_PREFLIGHT and PC_TEST_GIT isolate dependencies; PC_TEST_RETRY_SECONDS shortens waits;
+PC_TEST_STOP_BEFORE_PUBLISH=1 keeps files but stops before any commit or push. Never set these on a real job.
+
 ## Reasoning effort (issue 656, Opus, Nov 13 2026)
+
+Live kimicode jobs now use Kimi Code CLI (issue 687). WORK_EFFORT and the OpenCode variants below apply to the legacy
+OpenCode dry-run path only; the CLI uses its own saved settings and WORK_KIMI_MODEL. This patch adds no CLI effort flag.
 
 - `WORK_EFFORT=low`, `high` or `max` (any case) before calling work_issue.bat adds `--variant <effort>` to the OpenCode run.
   Unset, nothing is added and every arm runs as before. Only the kimicode arm takes it; on any other arm, or with any other

@@ -1,6 +1,8 @@
 @echo off
 rem Workhorse (#217, Opus, Nov 7 2026): one job-board issue, one model, OpenCode headless on Ryan's PC. Nobody watches the run.
-rem Usage: work_issue.bat <issue number> <arm: deepseek, deepseekpro, kimi, kimicode, sonnet or opus> [dryrun]   (WORK_MODEL overrides the arm's model id; WORK_EFFORT=low, high or max sets the kimicode arm's reasoning effort); WORK_HARNESS=kimi runs the kimicode arm on Kimi Code CLI instead of OpenCode, issue 664
+rem Usage: work_issue.bat <issue number> <arm: deepseek, deepseekpro, kimi, kimicode, sonnet or opus> [dryrun]
+rem WORK_MODEL overrides an OpenCode model within its provider. kimicode uses Kimi CLI and WORK_KIMI_MODEL.
+rem PC_WAIT_FOR names the predecessor's status.json; only a checked non-partial push with passing checks releases it.
 rem Each run gets its own folder, Downloads\voidsworn_test\work217\issue-<n>-<arm>\<date_time>\, holding repo\ (a fresh clone of
 rem main on branch work/issue-<n>-<arm>) and out\ (OpenCode events, the agent's report, run stats, balances, shots).
 rem latest.txt in issue-<n>-<arm>\ names the newest run folder.
@@ -79,6 +81,11 @@ set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 if not defined WORK_ROOT set "WORK_ROOT=%VT%\work217"
 set "T=%~dp0"
 set "PS=powershell -NoProfile -ExecutionPolicy Bypass -File "%T%work_issue.ps1""
+set "COMMON=powershell -NoProfile -ExecutionPolicy Bypass -File "%T%runner_common.ps1""
+set "PC_RUNNER_TEST=0"
+if /i "%MODE%"=="dryrun" if defined WORK_TEST_AGENT set "PC_RUNNER_TEST=1"
+rem Kimi Code runs on its own CLI and saved plan login, never an API key.
+if /i "%ARM%"=="kimicode" set "WORK_HARNESS=kimi"
 set "OC=%APPDATA%\npm\opencode.cmd"
 set "BR=work/issue-%N%-%ARM%"
 rem How the run ends: real pushes to GitHub; dry is "git push --dry-run"; test pushes for real to WORK_TEST_BRANCH.
@@ -106,14 +113,22 @@ set "R=%A%\repo"
 set "O=%A%\out"
 set "RC=0"
 set "OK=0"
+set "CHECKS_OK=0"
 mkdir "%O%"
 echo %A%> "%WORK_ROOT%\%K%\latest.txt"
 echo started %date% %time% (%MODE%) > "%O%\result.txt"
+%COMMON% init "%O%" "%BR%"
+if errorlevel 1 exit /b 14
+%COMMON% wait "%O%"
+if errorlevel 1 exit /b 14
 if defined VARIANT (echo %MODEL% %VARIANT%> "%O%\model.txt") else (echo %MODEL%> "%O%\model.txt")
 rem Ryan's one cleanup switch (issue 377). The runner only creates the file, with the setting off, and then only reads it.
 set "SETF=%WORK_ROOT%\runner_settings.txt"
 if not exist "%SETF%" call :settings
-if not exist "%OC%" (echo OpenCode is not installed: run WORKHORSE_SETUP.bat first >> "%O%\result.txt" & exit /b 3)
+if "%PC_RUNNER_TEST%"=="1" goto :toolsready
+if /i "%ARM%"=="kimicode" goto :toolsready
+if not exist "%OC%" (echo OpenCode is not installed: run WORKHORSE_SETUP.bat first >> "%O%\result.txt" & goto :setupfail)
+:toolsready
 rem parity.bat in a repo checkout reads godot_path.txt one folder above the repo
 copy /y "%VT%\godot_path.txt" "%A%\godot_path.txt" >nul
 set /p G=<"%VT%\godot_path.txt"
@@ -138,50 +153,69 @@ call :getkey DEEPSEEK_API_KEY
 call :getkey MOONSHOT_API_KEY
 call :getkey KIMI_CODE_API_KEY
 call :getkey VOIDSWORN_CLAUDE_API_KEY
-if /i "%ARM%"=="sonnet" if not defined VOIDSWORN_CLAUDE_API_KEY (echo no Claude API key saved: run CLAUDE_API_KEY.bat >> "%O%\result.txt" & exit /b 3)
+if /i "%ARM%"=="sonnet" if not defined VOIDSWORN_CLAUDE_API_KEY (echo no Claude API key saved: run CLAUDE_API_KEY.bat >> "%O%\result.txt" & goto :setupfail)
 if /i "%ARM%"=="sonnet" goto :clone
-if /i "%ARM%"=="opus" if not defined VOIDSWORN_CLAUDE_API_KEY (echo no Claude API key saved: run CLAUDE_API_KEY.bat >> "%O%\result.txt" & exit /b 3)
+if /i "%ARM%"=="opus" if not defined VOIDSWORN_CLAUDE_API_KEY (echo no Claude API key saved: run CLAUDE_API_KEY.bat >> "%O%\result.txt" & goto :setupfail)
 if /i "%ARM%"=="opus" goto :clone
-if /i "%ARM%"=="kimicode" if not defined KIMI_CODE_API_KEY (echo no Kimi Code key saved: run KIMI_CODE_KEY.bat >> "%O%\result.txt" & exit /b 3)
 if /i "%ARM%"=="kimicode" goto :clone
-if /i not "%ARM%"=="kimi" if not defined DEEPSEEK_API_KEY (echo no DeepSeek key saved: run WORKHORSE_SETUP.bat >> "%O%\result.txt" & exit /b 3)
-if /i "%ARM%"=="kimi" if not defined MOONSHOT_API_KEY (echo no Moonshot key saved: run WORKHORSE_SETUP.bat >> "%O%\result.txt" & exit /b 3)
+if /i not "%ARM%"=="kimi" if not defined DEEPSEEK_API_KEY (echo no DeepSeek key saved: run WORKHORSE_SETUP.bat >> "%O%\result.txt" & goto :setupfail)
+if /i "%ARM%"=="kimi" if not defined MOONSHOT_API_KEY (echo no Moonshot key saved: run WORKHORSE_SETUP.bat >> "%O%\result.txt" & goto :setupfail)
 goto :clone
 :drysetup
+if "%PC_RUNNER_TEST%"=="1" goto :clone
 set "DEEPSEEK_API_KEY=dry"
 set "MOONSHOT_API_KEY=dry"
 set "KIMI_CODE_API_KEY=dry"
 set "VOIDSWORN_CLAUDE_API_KEY=dry"
 set "OPENCODE_CONFIG=%T%work\opencode_mock.json"
-start "workhorse stand-in model" /min "C:\Program Files\nodejs\node.exe" "%T%work\mock_llm.js" 8765 "%O%\mock_log.txt" %WORK_DRY_SCENARIO%
+powershell -NoProfile -Command "$dq=[char]34; Start-Process -WindowStyle Hidden -FilePath 'C:\Program Files\nodejs\node.exe' -ArgumentList ($dq+$env:T+'work\mock_llm.js'+$dq+' 8765 '+$dq+$env:O+'\mock_log.txt'+$dq+' '+$env:WORK_DRY_SCENARIO)"
 rem wait until the stand-in is listening (an earlier one may still hold the port for a few seconds)
 powershell -NoProfile -Command "$f='%O%\mock_log.txt'; for($i=0;$i -lt 300;$i++){ if((Test-Path $f) -and (Select-String -Quiet -Path $f -Pattern 'listening')){exit 0}; Start-Sleep 1 }; exit 1"
 
 :clone
-if /i "%MODE%"=="dryrun" if defined WORK_DRY_SPARSE goto :leanclone
-git clone -q -c core.autocrlf=false --depth 1 https://github.com/rcbailey12/voidsworn "%R%" > "%O%\git_log.txt" 2>&1
-goto :cloned
-:leanclone
-rem Dry runs only: a blobless clone that checks out the named folders, so a test run keeps the PC folder lean.
-git clone -q -c core.autocrlf=false --depth 1 --filter=blob:none --sparse https://github.com/rcbailey12/voidsworn "%R%" > "%O%\git_log.txt" 2>&1
-if exist "%R%\.git" git -C "%R%" sparse-checkout add %WORK_DRY_SPARSE% >> "%O%\git_log.txt" 2>&1
-:cloned
-if not exist "%R%\.git" (echo clone failed >> "%O%\result.txt" & exit /b 4)
+set "SPARSE="
+if /i "%MODE%"=="dryrun" set "SPARSE=%WORK_DRY_SPARSE%"
+%COMMON% checkout "%R%" "%O%" "%BR%" "%SPARSE%"
+if errorlevel 1 exit /b 14
 pushd "%R%"
-git checkout -q -B %BR%
-git log -1 --format=%%H > "%O%\base_commit.txt"
 %PS% prep %N% %ARM% "%R%" "%O%" "%G%" >> "%O%\result.txt" 2>&1
 if errorlevel 1 goto :prepfail
+rem Tiny model call before ship copying or the full agent. CLI login and billing failures stop here.
+if "%PC_RUNNER_TEST%"=="1" goto :testpreflight
+if /i "%MODE%"=="dryrun" goto :ocpreflight
+if /i "%ARM%"=="kimicode" goto :kimisetup
+:ocpreflight
+%COMMON% preflight "%O%" "%R%" opencode "%OC%" "%MODEL%" "%VARIANT%"
+if errorlevel 1 goto :probefail
+goto :ready
+:testpreflight
+set "PKIND=opencode"
+set "PKMODEL=%MODEL%"
+if /i "%ARM%"=="kimicode" set "PKIND=kimi"
+if /i "%ARM%"=="kimicode" set "PKMODEL=kimi-code/kimi-for-coding"
+if /i "%ARM%"=="kimicode" if defined WORK_KIMI_MODEL set "PKMODEL=%WORK_KIMI_MODEL%"
+%COMMON% preflight "%O%" "%R%" "%PKIND%" "%WORK_TEST_AGENT%" "%PKMODEL%" "%VARIANT%"
+if errorlevel 1 goto :probefail
+goto :ready
+:kimisetup
+call :findkimi
+if not defined KIMIEXE (echo preflight failed: Kimi Code CLI not found >> "%O%\result.txt" & goto :probefail)
+%COMMON% preflight "%O%" "%R%" kimi "%KIMIEXE%" "%KMODEL%" ""
+if errorlevel 1 goto :probefail
+:ready
 rem Only capture jobs copy the ship files: the launcher sets WORK_SHIPS=1. They are large and every run keeps its checkout (Board, Nov 10).
 if defined WORK_SHIPS call "%T%get_ship_files.bat" "%VT%\build\godot" "%R%" "%R%\WORK_TASK.md" >> "%O%\ship_files.txt" 2>&1
 if /i "%MODE%"=="dryrun" (echo dry> "%O%\balance_before.txt") else (%PS% balance %ARM% "%O%\balance_before.txt" > nul)
 powershell -NoProfile -Command "(Get-Date).ToString('s')" > "%O%\time_start.txt"
 echo agent running %time% >> "%O%\result.txt"
-rem WORK_HARNESS=kimi (issue 664, Board, Nov 13): on the kimicode arm only, the agent is Kimi Code CLI (kimi -p, print mode, auto permission,
-rem the plan login of the PC user) instead of OpenCode; the model is kimi-code/kimi-for-coding unless WORK_KIMI_MODEL says otherwise. Everything
-rem else (clone, task, guard, commit, push, checks) is the same. Unset, or on any other arm, nothing changes.
+if "%PC_RUNNER_TEST%"=="1" goto :testagent
+if /i "%MODE%"=="dryrun" goto :agent_oc
+rem The kimicode arm uses Kimi Code CLI and the PC user's plan login, matching its preflight.
 if /i not "%ARM%"=="kimicode" goto :agent_oc
-if /i not "%WORK_HARNESS%"=="kimi" goto :agent_oc
+set "KIMIEXE="
+call :findkimi
+goto :kimiagent
+:findkimi
 set "KIMIEXE="
 for /f "delims=" %%k in ('where kimi 2^>nul') do if not defined KIMIEXE set "KIMIEXE=%%k"
 rem the queue watcher may have been started before Kimi Code was installed, so its PATH is old: add the user PATH from the registry
@@ -190,12 +224,17 @@ for /f "tokens=2,*" %%a in ('reg query HKCU\Environment /v Path 2^>nul ^| find /
 if defined UPATH call set "PATH=%PATH%;%UPATH%"
 if not defined KIMIEXE for /f "delims=" %%k in ('where kimi 2^>nul') do if not defined KIMIEXE set "KIMIEXE=%%k"
 for %%c in ("%APPDATA%\npm\kimi.cmd" "%USERPROFILE%\.local\bin\kimi.exe" "%USERPROFILE%\.kimi-code\bin\kimi.exe" "%LOCALAPPDATA%\Programs\kimi-code\kimi.exe") do if not defined KIMIEXE if exist %%c set "KIMIEXE=%%~c"
-if not defined KIMIEXE (echo Kimi Code CLI not found: kimi is not on PATH >> "%O%\result.txt" & (echo 3)> "%O%\exit.txt" & goto :agent_end)
 set "KMODEL=kimi-code/kimi-for-coding"
 if defined WORK_KIMI_MODEL set "KMODEL=%WORK_KIMI_MODEL%"
+exit /b 0
+:kimiagent
 echo harness: Kimi Code CLI %KIMIEXE% -m %KMODEL% >> "%O%\result.txt"
 echo kimi-cli %KMODEL%> "%O%\model.txt"
 call "%T%tmo.bat" %WORK_CAP% "%KIMIEXE%" -m %KMODEL% --output-format stream-json -p "Read WORK_TASK.md in this folder and do exactly what it says. Do not commit and do not push." > "%O%\events.jsonl" 2> "%O%\stderr.txt"
+> "%O%\exit.txt" echo %ERRORLEVEL%
+goto :agent_end
+:testagent
+call "%WORK_TEST_AGENT%" > "%O%\events.jsonl" 2> "%O%\stderr.txt"
 > "%O%\exit.txt" echo %ERRORLEVEL%
 goto :agent_end
 :agent_oc
@@ -220,6 +259,7 @@ if /i not "%MODE%"=="dryrun" timeout /t 60 /nobreak > nul
 if /i "%MODE%"=="dryrun" (echo dry> "%O%\balance_after.txt") else (%PS% balance %ARM% "%O%\balance_after.txt" > nul)
 %PS% stats %N% %ARM% "%O%" > nul
 move /y WORK_TASK.md "%O%\WORK_TASK.md" > nul
+if "%PC_RUNNER_TEST%"=="1" if "%PC_TEST_STOP_BEFORE_PUBLISH%"=="1" goto :testfinish
 if exist "%O%\shots\*.png" (
   if not exist "docs\shots\issue-%N%-%ARM%" mkdir "docs\shots\issue-%N%-%ARM%"
   copy /y "%O%\shots\*.png" "docs\shots\issue-%N%-%ARM%\" > nul
@@ -231,7 +271,10 @@ rem (b) The refuse list and the Deliver to warning (issue 377).
 %PS% guard %N% %ARM% "%R%" "%O%" >> "%O%\result.txt" 2>&1
 if errorlevel 1 goto :guardfail
 git diff --cached --quiet
-if not errorlevel 1 goto :nochange
+if errorlevel 1 goto :haschange
+findstr /c:"Resumed by merging" "%O%\resume.txt" >nul
+if errorlevel 1 goto :nochange
+:haschange
 git diff --cached --stat > "%O%\diffstat.txt"
 if defined PARTIAL (> "%O%\checks.txt" echo runner checks skipped: partial run & goto :afterchecks)
 if /i "%MODE%"=="dryrun" if "%WORK_SKIP_CHECKS%"=="1" (> "%O%\checks.txt" echo runner checks skipped: dry run with WORK_SKIP_CHECKS=1 & goto :afterchecks)
@@ -250,6 +293,7 @@ type "%O%\checks_node.txt" >> "%O%\checks.txt"
 if "%PARITY_EXIT%"=="124" (echo TIMEOUT: tools\pc\parity.bat nopause hit its %PARITY_CAP% s limit >> "%O%\checks.txt") else (echo exit %PARITY_EXIT% >> "%O%\checks.txt")
 type "%O%\checks_parity.txt" >> "%O%\checks.txt"
 echo checks: node exit %NODE_EXIT%, parity exit %PARITY_EXIT% at %time% >> "%O%\result.txt"
+if "%NODE_EXIT%"=="0" if "%PARITY_EXIT%"=="0" set "CHECKS_OK=1"
 :afterchecks
 %PS% msg %N% %ARM% "%O%"
 rem (c) and the issue 541 check: one checked commit that keeps the branch's earlier tip, then a push with no force.
@@ -276,6 +320,10 @@ exit /b 0
 >> "%SETF%" echo # remove_repo_copy_after_push=yes: after a push the runner has checked, it removes that run's repo copy and keeps out.
 >> "%SETF%" echo remove_repo_copy_after_push=no
 exit /b 0
+:testfinish
+rem Free integration proof: keep the agent's files but never create a commit or push.
+set "RC=0"
+goto :finish
 :pushfail
 set /p PRE=<"%O%\pre_commit.txt"
 git diff --binary --output="%O%\change.patch" %PRE% HEAD
@@ -298,8 +346,16 @@ goto :finish
 echo could not read the issue from GitHub >> "%O%\result.txt"
 set "RC=6"
 goto :finish
+:probefail
+set "RC=14"
+goto :finish
+:setupfail
+%COMMON% finish "%O%" 3 "" "%PUSHMODE%" 0
+exit /b 3
 :finish
 popd
+%COMMON% finish "%O%" "%RC%" "%PARTIAL%" "%PUSHMODE%" "%CHECKS_OK%"
+if errorlevel 1 set "RC=14"
 rem (disk) The run folder's size, and the repo copy removed only when Ryan's setting allows it and the push was checked.
 %PS% tidy "%A%" "%WORK_ROOT%" "%SETF%" %OK% %DRY% >> "%O%\result.txt" 2>&1
 exit /b %RC%

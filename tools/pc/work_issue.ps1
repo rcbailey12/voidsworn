@@ -92,7 +92,12 @@ function Save-Patch($out, $pre) { & git diff --cached --binary "--output=$(Join-
 
 if ($mode -eq 'prep') {
   $n = $args[1]; $arm = $args[2]; $repo = $args[3]; $out = $args[4]; $godot = $args[5]
-  $i = Invoke-RestMethod -UseBasicParsing -Headers @{ 'User-Agent' = 'voidsworn-workhorse' } -Uri "https://api.github.com/repos/rcbailey12/voidsworn/issues/$n"
+  if ($env:PC_RUNNER_TEST -eq '1') {
+    $i = Get-Content -LiteralPath $env:PC_TEST_ISSUE -Raw | ConvertFrom-Json
+  } else {
+    $i = Invoke-RestMethod -UseBasicParsing -Headers @{ 'User-Agent' = 'voidsworn-workhorse' } -Uri "https://api.github.com/repos/rcbailey12/voidsworn/issues/$n"
+  }
+  $resume = Read-Txt (Join-Path $out 'resume.txt')
   $task = @"
 # Workhorse job: issue #$n, "$($i.title)"
 
@@ -100,6 +105,7 @@ You are the coding seat on the Voidsworn job board (github.com/rcbailey12/voidsw
 This folder is a fresh checkout of main on the branch work/issue-$n-$arm. Follow AGENTS.md and CLAUDE.md, except the
 "work in your own folder" rule: you are the main coding seat for this job, so edit the game files the job names.
 Nobody is watching this run and nobody can answer questions. Make the sensible call, say what you chose in your report, and keep going.
+$resume
 
 Rules:
 - Do exactly what the job below asks. Change nothing else. Read the brief it names first.
@@ -311,7 +317,13 @@ elseif ($mode -eq 'commit') {
   $pre = Git-One rev-parse HEAD
   [IO.File]::WriteAllText((Join-Path $out 'pre_commit.txt'), $pre, [Text.Encoding]::ASCII)
   & git diff --cached --quiet 2>$null
-  if ($LASTEXITCODE -eq 0) { Write-Host 'nothing left to commit after the refuse list'; Pop-Location; exit 7 }
+  if ($LASTEXITCODE -eq 0) {
+    $base = Read-Txt (Join-Path $out 'base_commit.txt')
+    $resumed = Read-Txt (Join-Path $out 'resume.txt')
+    & git diff --quiet $base HEAD 2>$null
+    if (-not $resumed -or $LASTEXITCODE -eq 0) { Write-Host 'nothing left to commit after the refuse list'; Pop-Location; exit 7 }
+    Write-Host 'resumed work is already committed; carry it through the checked push'
+  }
   $num = @(Git-Lines -c core.quotepath=off diff --cached --numstat --no-renames)
   Write-Lines (Join-Path $out 'diff_numstat.txt') $num
   Write-Lines (Join-Path $out 'diffstat.txt') @(Git-Lines -c core.quotepath=off diff --cached --stat --no-renames)
@@ -321,7 +333,8 @@ elseif ($mode -eq 'commit') {
   if ($gx -ne 0) { Write-Host "push stopped: could not read branch $br on GitHub, the check failed; change kept as out\change.patch"; Save-Patch $out $pre; Pop-Location; exit 12 }
   if ($ls.Count) {
     $want = ($ls[0] -split '\s+')[0]
-    & git fetch -q --depth 1 origin "+refs/heads/${br}:refs/remotes/origin/runner-prev" 2>$null
+    & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'runner_common.ps1') fetch $repo $out "+refs/heads/${br}:refs/remotes/origin/runner-prev"
+    if ($LASTEXITCODE -ne 0) { Write-Host 'push stopped: earlier tip fetch failed after retries'; Save-Patch $out $pre; Pop-Location; exit 12 }
     $old = Git-One rev-parse -q --verify 'refs/remotes/origin/runner-prev^{commit}'
     if (-not $old) { Write-Host "push stopped: could not fetch the earlier tip $want of $br, the check failed; change kept as out\change.patch"; Save-Patch $out $pre; Pop-Location; exit 12 }
   }
@@ -415,6 +428,7 @@ elseif ($mode -eq 'confirm') {
     Pop-Location; exit 10
   }
   Write-Host "pushed diff checked: GitHub's $br ($($remote.Substring(0, 9))) carries exactly out\diffstat.txt ($($num.Count) files)"
+  [IO.File]::WriteAllText((Join-Path $out 'confirmed_commit.txt'), $remote, [Text.Encoding]::ASCII)
   Pop-Location; exit 0
 }
 elseif ($mode -eq 'tidy') {
