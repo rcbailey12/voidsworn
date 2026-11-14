@@ -28,7 +28,7 @@ def cls_of(o):
     for n in names:
         m = bpy.data.materials.get(n)
         if m is not None and m.get('p3_textured'): continue
-        if n.startswith(GLOW): worst = 'glow' if worst == 'stack' else worst; continue
+        if n.startswith(GLOW) or (m is not None and m.get('ps_glow')): worst = 'glow' if worst == 'stack' else worst; continue     # issue 642: a stack's own glow zones (the Eclipse corona, core, lens) say so
         return 'bare'
     return worst
 

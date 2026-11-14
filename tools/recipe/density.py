@@ -55,7 +55,7 @@ def measure(scene, hull_albedo, parts_albedo):
         role = o.get('role')
         if role == 'interior' or not o.data.uv_layers: continue
         mat = o.data.materials[0].name if o.data.materials else ''
-        if mat.startswith('p3_glow'): continue
+        if mat.startswith('p3_glow') or (o.data.materials and o.data.materials[0] is not None and o.data.materials[0].get('ps_glow')): continue     # glow surfaces carry light, not paint
         kind = 'hull' if role == 'hull' else (o.get('part_kind') or 'part')
         V, T, UV = _tris(o)
         if not len(T): continue
