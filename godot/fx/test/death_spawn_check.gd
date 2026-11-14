@@ -119,7 +119,7 @@ func _scan() -> void:
 			# The code before issue 354 has no picture metadata, and Godot renames a duplicate sibling, so read the
 			# kind from the shader it was built with.
 			var m := node.material_override as ShaderMaterial
-			kind = "vent" if float(m.get_shader_parameter("directional")) > 0.5 else ("flash" if float(m.get_shader_parameter("plasma")) > 0.5 else "cool")
+			kind = "vent" if _shader_num(m, "directional") > 0.5 else ("flash" if _shader_num(m, "plasma") > 0.5 else "cool")
 		if kind == "":
 			continue
 		var seen := false
@@ -140,7 +140,7 @@ func _picture_root(node: Node3D) -> Vector3:
 	var is_vent: bool = (str(node.get_meta("fx_picture_kind", "")) == "vent") or String(node.name).begins_with("fx_baked_vent")
 	var m = node.material_override
 	if not is_vent and m is ShaderMaterial:
-		is_vent = float((m as ShaderMaterial).get_shader_parameter("directional")) > 0.5
+		is_vent = _shader_num(m as ShaderMaterial, "directional") > 0.5
 	if is_vent and m is ShaderMaterial:
 		var up = (m as ShaderMaterial).get_shader_parameter("tear_normal")
 		var extent = (m as ShaderMaterial).get_shader_parameter("extent")
@@ -198,3 +198,12 @@ func _nearest(p: Vector3, samples: PackedVector3Array) -> float:
 	for q in samples:
 		best = minf(best, p.distance_to(q))
 	return best
+
+
+# A shader parameter as a number, 0.0 when the material does not have it. get_shader_parameter returns null for a name the
+# shader does not declare, and Godot 4.7 has no float constructor that takes null.
+func _shader_num(m: ShaderMaterial, pname: String) -> float:
+	var v = m.get_shader_parameter(pname)
+	if v is float or v is int:
+		return float(v)
+	return 0.0
