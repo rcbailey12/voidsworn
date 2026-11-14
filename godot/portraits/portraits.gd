@@ -4,6 +4,8 @@ extends RefCounted
 #   var tex: Texture2D = Portraits.face("vex")      # painted portrait when one is chosen, else the admiral's crest
 #   var tex2: Texture2D = Portraits.crest("vex")    # always the crest (small slots, lists, map tokens)
 #   Portraits.has_painting("vex")                   # true when a painted portrait is in godot/portraits/painted/
+#   Portraits.face("nekhet", 3)                     # Eclipse only (R78 Q17, issue 43): mastery level adds restoration
+#                                                   # frame marks; capstone mastery (third arg) adds the outer hairline
 # Admiral ids are data.js ADMIRALS keys (vex, kassar, grax, matriarch, aelith, nekhet, ...).
 # index.json lists the picked painting per admiral and the kept alternates (alts/) Ryan can swap in by editing "pick".
 
@@ -25,13 +27,60 @@ static func has_painting(id: String) -> bool:
 	return e is Dictionary and String(e.get("pick", "")) != "" and _exists("res://portraits/" + String(e["pick"]))
 
 
-static func face(id: String) -> Texture2D:
-	if has_painting(id):
-		var e: Dictionary = _index()["painted"][id]
-		var t := _tex("res://portraits/" + String(e["pick"]))
-		if t != null:
-			return t
-	return crest(id)
+static func face(id: String, level: int = 0, capstone: int = 0) -> Texture2D:
+	var base := _face_base(id)
+	if base == null:
+		return null
+	if level <= 0 and capstone <= 0:
+		return base
+	if _restore_faction(id) != RESTORE_FAC:
+		return base
+	var key := "%s|r%d|c%d" % [id, clampi(level, 0, 99), clampi(capstone, 0, 9)]
+	if _cache.has(key):
+		return _cache[key]
+	# Work on a copy of the face image: get_image() may hand back the texture's own image, and
+	# marking it in place would bleed the frame onto the plain face too.
+	var img := _face_image(id)
+	if img == null:
+		return base
+	var ov := _restore_overlay(clampi(level, 0, RESTORE_MAX_LEVEL), clampi(capstone, 0, 3), img.get_width())
+	img.blend_rect(ov, Rect2i(0, 0, ov.get_width(), ov.get_height()), Vector2i.ZERO)
+	var t := ImageTexture.create_from_image(img)
+	_cache[key] = t
+	return t
+
+
+static func _face_path(id: String) -> String:
+	var e = _index().get("painted", {}).get(id, {})
+	if e is Dictionary and String(e.get("pick", "")) != "" and _exists("res://portraits/" + String(e["pick"])):
+		return "res://portraits/" + String(e["pick"])
+	return "res://portraits/crests/" + id + ".svg"
+
+
+static func _face_image(id: String) -> Image:
+	var p := _face_path(id)
+	var img: Image = null
+	if ResourceLoader.exists(p):
+		var r = load(p)
+		if r is Texture2D and r.get_image() != null:
+			img = r.get_image().duplicate()
+	if img == null and FileAccess.file_exists(p):
+		# fresh checkout run headless: no import cache yet, decode the raw file (as _tex does)
+		var d := Image.new()
+		var err := d.load_svg_from_buffer(FileAccess.get_file_as_bytes(p)) if p.ends_with(".svg") else d.load(p)
+		if err == OK:
+			img = d
+	if img == null:
+		return null
+	if img.is_compressed():
+		img.decompress()
+	if img.get_format() != Image.FORMAT_RGBA8:
+		img.convert(Image.FORMAT_RGBA8)
+	return img
+
+
+static func _face_base(id: String) -> Texture2D:
+	return _tex(_face_path(id))
 
 
 static func crest(id: String) -> Texture2D:
@@ -144,6 +193,149 @@ static func _scars() -> Dictionary:
 	return _sc
 
 
+# ---------- Restoration frames (R78 Q17, issue 43) ----------
+# Eclipse admirals (faction id deathless) level by restoration, so their portrait frame changes with
+# mastery level: dark plates stack in the four corners, white-gold ring pieces light one per level
+# around the frame, and the visor slit at the bottom widens and brightens. Capstone mastery (the
+# lineage cap, up to 3 more levels) draws a thin outer hairline in brighter gold. Other factions
+# ignore the level arguments and get the plain face. Marks are drawn once per (level, capstone,
+# size) and cached; the base portrait is never edited.
+const RESTORE_FAC := "deathless"
+const RESTORE_MAX_LEVEL := 8
+
+static var _rfac := {}
+
+
+static func _restore_faction(id: String) -> String:
+	if _rfac.is_empty() and FileAccess.file_exists("res://portraits/crests/index.json"):
+		var d = JSON.parse_string(FileAccess.get_file_as_string("res://portraits/crests/index.json"))
+		if d is Dictionary:
+			for k in d:
+				if d[k] is Dictionary:
+					_rfac[k] = str(d[k].get("faction", ""))
+	return str(_rfac.get(id, ""))
+
+
+static func _restore_overlay(level: int, capstone: int, size: int) -> Image:
+	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
+	var S := float(size)
+	var c := S * 0.5
+	if level > 0:
+		_ring_pass(img, S, c, S * 0.452, maxf(1.5, S * 0.006), S * 0.016, mini(level, RESTORE_MAX_LEVEL), 0.16, 0.95, Color8(0xf0, 0xd6, 0x90))
+		_plates_pass(img, S, c, clampi(int(ceil(float(level) / 2.0)), 0, 4))
+		_visor_pass(img, S, level, capstone)
+	if capstone > 0:
+		_ring_pass(img, S, c, S * 0.470, maxf(1.2, S * 0.0032), S * 0.007, RESTORE_MAX_LEVEL, 0.0, 0.15 * float(mini(capstone, 3)), Color8(0xff, 0xf2, 0xc8))
+	return img
+
+
+# One white-gold arc band split into 8 slots, lit clockwise from the top; `lit` slots show, `gap` is
+# the empty fraction of each slot. With gap 0 every slot shows (the capstone hairline). The band is
+# drawn core plus a soft glow, alpha-composited over whatever is already in the overlay.
+static func _ring_pass(img: Image, S: float, c: float, r0: float, th: float, glow: float, lit: int, gap: float, a: float, col: Color) -> void:
+	var size := img.get_width()
+	var lo := int(max(0.0, c - r0 - glow - 2.0))
+	var hi := int(min(float(size - 1), c + r0 + glow + 2.0))
+	var seg := TAU / 8.0
+	var g2 := (r0 - glow) * (r0 - glow)
+	var h2 := (r0 + glow) * (r0 + glow)
+	for y in range(lo, hi + 1):
+		var dy := float(y) + 0.5 - c
+		for x in range(lo, hi + 1):
+			var dx := float(x) + 0.5 - c
+			var d2 := dx * dx + dy * dy
+			if d2 < g2 or d2 > h2:
+				continue
+			var d := sqrt(d2)
+			var band := absf(d - r0)
+			var core := clampf(th + 0.5 - band, 0.0, 1.0)
+			var glo := clampf(1.0 - band / glow, 0.0, 1.0)
+			var alpha := (core + glo * glo * 0.35 * (1.0 - core)) * a
+			if alpha <= 0.004:
+				continue
+			var on := true
+			if lit < 8:
+				var t := fposmod(atan2(dy, dx) + PI * 0.5, TAU)
+				on = int(t / seg) < lit and (gap <= 0.0 or fposmod(t, seg) < seg * (1.0 - gap))
+			if not on:
+				continue
+			var dst := img.get_pixel(x, y)
+			img.set_pixel(x, y, col.lerp(dst, 1.0 - alpha))
+
+
+# Layered dark plates with a gold edge, stacked along each frame corner diagonal. `count` is the
+# layers per corner (0 to 4): one layer per two restoration levels.
+static func _plates_pass(img: Image, S: float, c: float, count: int) -> void:
+	if count <= 0:
+		return
+	var hw := S * 0.034
+	var hh := S * 0.016
+	var edge := maxf(1.2, S * 0.0032)
+	var step := S * 0.046
+	var fill := Color(0.10, 0.075, 0.14)
+	var gold := Color8(0xf0, 0xd6, 0x90)
+	var size := img.get_width()
+	var r := hw + edge + 2.0
+	for sx: float in [-1.0, 1.0]:
+		for sy: float in [-1.0, 1.0]:
+			# plates lie tangential to the ring, stacked along the corner diagonal like bracket layers
+			var theta := sx * sy * PI * 0.25 + PI * 0.5
+			var ct := cos(theta)
+			var st := sin(theta)
+			var ux := 0.70710678 * sx
+			var uy := 0.70710678 * sy
+			for k in range(count):
+				var dist := S * 0.505 + float(k) * step
+				var pcx := c + ux * dist
+				var pcy := c + uy * dist
+				var x0 := int(max(0.0, pcx - r))
+				var x1 := int(min(float(size - 1), pcx + r))
+				var y0 := int(max(0.0, pcy - r))
+				var y1 := int(min(float(size - 1), pcy + r))
+				for y in range(y0, y1 + 1):
+					var dy := float(y) + 0.5 - pcy
+					for x in range(x0, x1 + 1):
+						var dx := float(x) + 0.5 - pcx
+						var lx := dx * ct + dy * st
+						var ly := -dx * st + dy * ct
+						var d := maxf(absf(lx) - hw, absf(ly) - hh)
+						var aa := clampf(0.5 - d, 0.0, 1.0)
+						if aa <= 0.004:
+							continue
+						var dst := img.get_pixel(x, y)
+						var out := fill if d < -edge else gold
+						img.set_pixel(x, y, out.lerp(dst, 1.0 - aa))
+
+
+# The visor: a white-gold slit on the bottom frame edge, widening and brightening with level, with a
+# soft glow. A capsule along x: straight middle, round ends.
+static func _visor_pass(img: Image, S: float, level: int, capstone: int) -> void:
+	var wv := S * (0.05 + 0.023 * float(mini(level, RESTORE_MAX_LEVEL)))
+	var hv := maxf(1.5, S * 0.0052)
+	var cx := S * 0.5
+	var cy := S * 0.956
+	var size := img.get_width()
+	var x0 := int(max(0.0, cx - wv - hv * 4.0))
+	var x1 := int(min(float(size - 1), cx + wv + hv * 4.0))
+	var y0 := int(max(0.0, cy - hv * 4.0))
+	var y1 := int(min(float(size - 1), cy + hv * 4.0))
+	var col := Color(1.0, 0.949, 0.784)
+	var a := clampf(0.5 + 0.055 * float(mini(level, RESTORE_MAX_LEVEL)) + 0.07 * float(capstone), 0.0, 0.97)
+	for y in range(y0, y1 + 1):
+		var dy := float(y) + 0.5 - cy
+		for x in range(x0, x1 + 1):
+			var dx := absf(float(x) + 0.5 - cx)
+			var qx := maxf(dx - wv + hv, 0.0)
+			var d := sqrt(qx * qx + dy * dy) - hv
+			var core := clampf(0.5 - d, 0.0, 1.0)
+			var glo := clampf(1.0 - maxf(d, 0.0) / (hv * 3.0), 0.0, 1.0)
+			var alpha := clampf((core + glo * glo * 0.4 * (1.0 - core)) * a * (0.35 + 0.65 * core), 0.0, 1.0)
+			if alpha <= 0.004:
+				continue
+			var dst := img.get_pixel(x, y)
+			img.set_pixel(x, y, col.lerp(dst, 1.0 - alpha))
+
+
 static func _img(p: String) -> Image:
 	var t := _tex(p)
 	if t == null:
@@ -158,3 +350,4 @@ static func clear_static() -> void:
 	_sc.clear()
 	_cache.clear()
 	_idx.clear()
+	_rfac.clear()
