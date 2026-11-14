@@ -50,7 +50,7 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 Kit sub-parts per type (what DETAILED checks):
 
 - antenna: base, mast, whip, pod
-- bay: rim, leaf, seam, hinge
+- bay: rim, leaf, seam, hinge, ram, frame, stiff, rail, bracket, rivet
 - claw: hinge, arm, joint, ram, finger
 - dish: bowl, rib, feed, strut, yoke, post, base
 - engine: housing, collar, band, bell, lining, throat_glow, cone, cool, strut
@@ -67,7 +67,7 @@ Kit sub-parts per type (what DETAILED checks):
 - rib: rib
 - thruster: block, nozzle
 - tier: face, roof, opening
-- tube: tube, bore, band
+- tube: tube, bore, band, ring, bolt, stiff
 - vent: frame, slat
 
 Left as surface, and why:
@@ -197,7 +197,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 ## Structure per cell: distinct masses (blocks, tiers, belts), concept against build
 
-Concept counts read off the round 8 sheet by eye (A16 sheet: bow, the prow cap, brow steps, tube housing, chin and layered flank belts; midships, tier 2, the rack plinth, the vent box, three flank bands and the sponson; stern, castle, bridge, stern deck, two pod housings and flank bands); build counts are the model's registered masses whose station range overlaps the third (below: masses reaching within 0.8 of the belly).
+Concept counts read off the concept sheet by eye (A16 sheet: bow, the prow cap, brow steps, tube housing, chin and layered flank belts; midships, tier 2, the rack plinth, the vent box, three flank bands and the sponson; stern, castle, bridge, stern deck, two pod housings and flank bands); build counts are the model's registered masses whose station range overlaps the third (below: masses reaching within 0.8 of the belly).
 
 | Cell | Concept | Build | Build masses |
 |---|---:|---:|---|
@@ -218,6 +218,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 2.46 | 3.17 | 3.04 | 4.45 |
-| build | 2.13 | 2.80 | 3.04 | 4.05 |
+| build | 2.13 | 2.80 | 3.01 | 4.08 |
 
 Lines not present, shaped and detailed without a reason: 0.

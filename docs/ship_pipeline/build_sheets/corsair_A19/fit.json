@@ -5,6 +5,7 @@
   "CLASH": 0,
   "MOUNT": 0,
   "ARC": 0,
+  "SENSOR": 0,
   "SWEEP": 0,
   "EXHAUST": 0,
   "EXIT": 0,
@@ -16,6 +17,7 @@
   "close_pairs": 862,
   "rays": 263,
   "guns": 5,
+  "sensor_pairs": 45,
   "turrets_swept": 2,
   "cones": 7,
   "apertures": 19,
@@ -947,7 +949,7 @@
    "kind": "dish",
    "pos": [
     -3.3419902324676514,
-    -0.7042538523674011,
+    -0.4542538523674011,
     0.9961854219436646
    ],
    "dir": [
@@ -1185,6 +1187,11 @@
    "what": "backblast"
   }
  ],
- "fixes": [],
+ "fixes": [
+  [
+   "SENSOR: S5 aiming through the small dish D2 at its aft bearings",
+   "R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): D2 moved inboard on the stern block (y -0.55 to -0.3), out of the arc of S5"
+  ]
+ ],
  "allowed": []
 }

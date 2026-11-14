@@ -15,8 +15,8 @@ Ashfall Hullbreakers (corsair) | class Frigate | version 1 (first sheet (issue 6
 | beam top | 3.2 |
 | beam bow | 3.2 |
 | beam disagreement percent | 0.0 |
-| height side | 2.275 |
-| height bow | 2.275 |
+| height side | 2.375 |
+| height bow | 2.375 |
 | height disagreement percent | 0.0 |
 | widest at station percent | 80.1 |
 | hull beam | 2.04 |
@@ -40,13 +40,13 @@ Ashfall Hullbreakers (corsair) | class Frigate | version 1 (first sheet (issue 6
 | HS1 | square hatch 0.2 | 1 | 72.9 | 0.53 | 0.54 | - | - | picture | crew hatch on the aft spine block, port |
 | HB1 | framed deck box 0.3 x 0.2 | 1 | 60.2 | 0.20 | 0.69 | - | - | picture | framed box on the sensor block |
 | HB2 | framed deck box 0.3 x 0.3 | 1 | 82.1 | 0.00 | 0.61 | - | - | picture | ready-use locker on the aft spine block |
-| AN1 | antenna array, 0.7 tall, 3 whips (the kit array at 65 percent) | 1 | 71.1 | -0.20 | 0.61 | - | - | picture | comms array on the aft spine block: calls the pack in on what the dish heard |
+| AN1 | antenna array, 0.5 tall, 3 whips (the kit array at 65 percent) | 1 | 71.1 | -0.20 | 0.61 | - | - | picture | comms array on the aft spine block: calls the pack in on what the dish heard |
 | VT1 | louvre panel 0.3 x 0.2 | 1 | 93.1 | 0.00 | 0.50 | - | - | picture | engine-room louvre on the engine block roof |
 | D1 | listening dish, 0.9 across | 1 | 20.2 | -0.37 | 0.62 | 15 deg off the bow to starboard, +84 elev | - | picture | the one oversized listening dish, 0.9 across (more than half the beam), set nearly flush on the raised dish mount, canted a little forward, on the starboard side of the nose |
 | J1 | grabber arm, 2 segments, knuckles, rams, forked pincer | 1 | 16.8 | 0.34 | -0.72 | hook forward and down | - | picture | port grabber arm under the chin: pins a fleeing hull long enough for the pack to catch up |
 | J2 | grabber arm, 2 segments, knuckles, rams, forked pincer | 1 | 16.8 | -0.34 | -0.72 | hook forward and down | - | picture | starboard grabber arm under the chin: pins a fleeing hull long enough for the pack to catch up |
 | PH1 | pipe run, 0.06 bore | 1 | 8.4 | 0.00 | -0.42 | - | - | picture | the rams' hydraulic feed |
-| T1 | twin turret | 2 barrels | 43.7 | 0.02 | 0.66 | forward, +6 elev | T autocannon | picture | twin autocannon turret on the spine's gun block, all round (data.js c_raider's only weapon) |
+| T1 | twin turret | 2 barrels | 43.7 | 0.02 | 1.06 | forward, +6 elev | T autocannon | picture | twin autocannon turret on a barbette on the spine's gun block, all round (data.js c_raider's only weapon) |
 | E1 | engine, bell 0.7 across | 1 | 99.8 | 1.28 | 0.00 | exhaust aft | - | picture | port drum, the larger: the overburn engine |
 | E2 | engine, bell 0.6 across | 1 | 99.4 | -1.19 | 0.00 | exhaust aft | - | picture | starboard drum: the overburn engine |
 | E3 | engine, bell 0.4 across | 1 | 99.0 | 0.00 | -0.09 | exhaust aft | - | picture | small centre bell under the block |
@@ -141,7 +141,7 @@ Full interiors through the hull (R215), hidden until a piece breaks. Patch plate
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 247 objects, 27 parts, 713 close pairs, 189 rays, 1 guns, 1 turrets swept, 7 cones, 13 apertures, 0 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 248 objects, 27 parts, 696 close pairs, 181 rays, 1 guns, 6 sensor pairs, 1 turrets swept, 7 cones, 13 apertures, 0 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 

@@ -9,6 +9,9 @@ with `build.py <code> <out> fit`). What it tests, on every part of every type:
 3. **ARC**: every gun, at every bearing of its data.js slot arc (core.js inArc: F 60 degrees either side of the bow, P and S
    30 to 150 off the bow, T all round, 5 degree steps), has a clear line at an elevation it can reach (turrets 0 to 30, flak
    0 to 60, casemates -10 to +20), out to 60 percent of the ship's length.
+3b. **SENSOR** (R240): no gun sits behind or aims through a dish, antenna or mast: the gun's whole firing volume (every
+   bearing of its slot arc, every elevation it can reach, out to 60 percent of the ship's length) misses every sensor piece's
+   box padded by the gun's calibre; firing just over a dish is not enough.
 4. **SWEEP** (R219): every turret's turning pieces turned through every bearing of its arc touch nothing; no two turrets meet
    when both turn through their arcs.
 5. **EXHAUST**: nothing in any engine or thruster exhaust cone.
@@ -30,12 +33,13 @@ also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on t
 
 | Clash (before) | Fix |
 |---|---|
+| SENSOR: T1 (all round) aiming through the dish D1 and the antenna AN1 | R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): T1 lifted onto a 0.4 barbette on the gun block and AN1 cut from 0.66 to 0.45 tall, so the gun fires over both |
 
 While designing, the check also caught (and the design fixed): see the fit report's fix column.
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 247 objects, 27 parts, 713 close pairs, 189 rays, 1 guns, 1 turrets swept, 7 cones, 13 apertures, 0 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 248 objects, 27 parts, 696 close pairs, 181 rays, 1 guns, 6 sensor pairs, 1 turrets swept, 7 cones, 13 apertures, 0 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 

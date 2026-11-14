@@ -95,7 +95,7 @@
   {
    "id": "AN1",
    "kind": "antenna",
-   "what": "antenna array, 0.7 tall, 3 whips (the kit array at 65 percent)",
+   "what": "antenna array, 0.5 tall, 3 whips (the kit array at 65 percent)",
    "count": 1,
    "route": "kit",
    "source": "picture",

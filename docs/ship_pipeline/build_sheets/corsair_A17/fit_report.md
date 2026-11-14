@@ -9,6 +9,9 @@ with `build.py <code> <out> fit`). What it tests, on every part of every type:
 3. **ARC**: every gun, at every bearing of its data.js slot arc (core.js inArc: F 60 degrees either side of the bow, P and S
    30 to 150 off the bow, T all round, 5 degree steps), has a clear line at an elevation it can reach (turrets 0 to 30, flak
    0 to 60, casemates -10 to +20), out to 60 percent of the ship's length.
+3b. **SENSOR** (R240): no gun sits behind or aims through a dish, antenna or mast: the gun's whole firing volume (every
+   bearing of its slot arc, every elevation it can reach, out to 60 percent of the ship's length) misses every sensor piece's
+   box padded by the gun's calibre; firing just over a dish is not enough.
 4. **SWEEP** (R219): every turret's turning pieces turned through every bearing of its arc touch nothing; no two turrets meet
    when both turn through their arcs.
 5. **EXHAUST**: nothing in any engine or thruster exhaust cone.
@@ -27,7 +30,7 @@ also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on t
 
 ## Round 2 layout, checked (before)
 
-The round 2 design (`tools/blender/build_sheets/ships/r2/corsair_A17.py`, the PR 547 layout) built with the round 3 kit parts and run through the same check. Counts: CLASH 20, MOUNT 2, ARC 6, SWEEP 7, EXHAUST 8, EXIT 0.
+The round 2 design (`tools/blender/build_sheets/ships/r2/corsair_A17.py`, the PR 547 layout) built with the round 3 kit parts and run through the same check. Counts: CLASH 20, MOUNT 2, ARC 6, SENSOR 4, SWEEP 7, EXHAUST 8, EXIT 0, LANE 2.
 
 | Check | Part | Against | Hits | What |
 |---|---|---|---:|---|
@@ -38,10 +41,10 @@ The round 2 design (`tools/blender/build_sheets/ships/r2/corsair_A17.py`, the PR
 | CLASH | P2 | hull | 4 | turn piece inside the hull or a hull mass (P2_turn_soot in A17_hump) |
 | CLASH | S2 | hull | 4 | turn piece inside the hull or a hull mass (S2_turn_soot in A17_hump) |
 | CLASH | E2 | hull | 2 | body piece inside the hull or a hull mass (E2_body_steel in A17_engblock) |
-| CLASH | I1 | Q1 | 6 | parts intersect: I1_mount_soot and Q1_mount_iron |
+| CLASH | I1 | Q1 | 7 | parts intersect: I1_mount_soot and Q1_mount_iron |
 | CLASH | Q1 | hull | 1 | body piece inside the hull or a hull mass (Q1_body_steel in A17_I1_rib1) |
 | CLASH | D1 | P1 | 3 | parts intersect: D1_body_steel and P1_turn_steel |
-| CLASH | I2 | Q2 | 5 | parts intersect: I2_mount_soot and Q2_mount_iron |
+| CLASH | I2 | Q2 | 8 | parts intersect: I2_mount_soot and Q2_mount_iron |
 | CLASH | Q2 | hull | 1 | body piece inside the hull or a hull mass (Q2_body_steel in A17_I2_rib1) |
 | CLASH | D2 | S1 | 3 | parts intersect: D2_body_steel and S1_turn_steel |
 | CLASH | C2 | P2 | 2 | parts intersect: C2_mount_iron and P2_mount_iron |
@@ -59,6 +62,10 @@ The round 2 design (`tools/blender/build_sheets/ships/r2/corsair_A17.py`, the PR
 | ARC | S1 | D2 | 5 | barrels would strike D2 (slot S): D2_body_dish; blocked bearings -50 to -30 |
 | ARC | S2 | hull | 24 | barrels would strike hull (slot S): A17_hump; blocked bearings -150, -140 to -30 |
 | ARC | S2 | C2 | 1 | barrels would strike C2 (slot S): C2_mount_iron; blocked bearings -145 |
+| SENSOR | P1 | D1 | 15 | gun (slot P) behind or aiming through sensor D1 (dish), 0.9 away; blocked bearings 30 to 70 |
+| SENSOR | P2 | D1 | 2 | gun (slot P) behind or aiming through sensor D1 (dish), 3.0 away; blocked bearings 30 |
+| SENSOR | S1 | D2 | 15 | gun (slot S) behind or aiming through sensor D2 (dish), 0.9 away; blocked bearings -70 to -30 |
+| SENSOR | S2 | D2 | 2 | gun (slot S) behind or aiming through sensor D2 (dish), 3.0 away; blocked bearings -30 |
 | SWEEP | T2 | hull | 45 | turning through its arc hits corsair_A17_hull_plates_soot; blocked bearings -135 to 85 |
 | SWEEP | P1 | D1 | 7 | turning through its arc hits D1_body_steel; blocked bearings 30 to 60 |
 | SWEEP | P1 | P2 | 9 | turning through its arc hits P2_turn_dark; blocked bearings 115 to 150 |
@@ -74,6 +81,8 @@ The round 2 design (`tools/blender/build_sheets/ships/r2/corsair_A17.py`, the PR
 | EXHAUST | Q1 | hull | 2 | exhaust cone hits A17_I1_rib1 at 0.2 behind the exit |
 | EXHAUST | Q2 | I2 | 5 | exhaust cone hits I2_mount_soot at 0.0 behind the exit |
 | EXHAUST | Q2 | hull | 1 | part inside the exhaust cone: A17_I2_rib1 |
+| LANE | P2 | R1 | 1 | gun P2 sits in R1's backblast (resting) |
+| LANE | S2 | R1 | 1 | gun S2 sits in R1's backblast (resting) |
 
 ## How round 3 fixed them
 
@@ -86,6 +95,8 @@ The round 2 design (`tools/blender/build_sheets/ships/r2/corsair_A17.py`, the PR
 | Q1 and Q2 bow thrusters inside the scoop drums, their exhaust on the drum ribs | bow thrusters on the body flank behind the drums, firing clear outboard |
 | Jaw blades inside the hull and the jaw housing | four grabber arms (R229), each shoulder in its own housing under the jaw, clear of the hull |
 | C2 girdle through the P2 and S2 turret rings | C2 runs in the gap between the mid and saddle blocks, clear of every ring |
+| SENSOR: P1 and S1 aiming through the ear dishes D1 and D2 at their forward bearings | R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): the neck turret barbettes raised 0.14 (top 1.78 to 1.92), so the lowest line of fire of P1 and S1 passes over the ears |
+| SENSOR: T1 (flak, all round) aiming through the saddle antennas AN1 and AN2 | R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): T1 lifted onto a 0.55 barbette and the antennas cut (1.3 to 0.75, 1.0 to 0.6 tall), so the crest gun fires over them |
 | Crest and belly turret housings sunk in the crest and the belly | turrets sit on their rings on block tops and the belly band, plates cleared under each mount |
 
 While designing round 3 the check also caught (and the design fixed) plates swallowing slits and lamps, casemate breeches pushed
@@ -95,7 +106,7 @@ turret's swept circle (moved out).
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 371 objects, 56 parts, 953 close pairs, 506 rays, 8 guns, 6 turrets swept, 10 cones, 28 apertures, 2 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 371 objects, 56 parts, 932 close pairs, 501 rays, 8 guns, 96 sensor pairs, 6 turrets swept, 10 cones, 28 apertures, 2 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 

@@ -216,9 +216,30 @@ def decal_layer(c, col, height, rough, decals, atlas, cells, wear):
     return col, height, rough
 
 
-def _grid(c, cell, seed, shift):
-    """one panel grid in the ship frame: rows (along z) each shifted along x and y by their own random amount (never a regular
-    stagger), cells of the given size; returns (cell id vector, the three in-cell coordinates)"""
+def _wn(nt, x, y, z):
+    """white noise of three scalars (sockets or numbers): (value, r, g, b), each 0..1"""
+    cv = node(nt, 'ShaderNodeCombineXYZ')
+    for i, v in enumerate((x, y, z)):
+        if isinstance(v, (int, float)): cv.inputs[i].default_value = v
+        else: nt.links.new(v, cv.inputs[i])
+    wn = node(nt, 'ShaderNodeTexWhiteNoise', noise_dimensions='3D'); nt.links.new(cv.outputs[0], wn.inputs['Vector'])
+    sc = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(wn.outputs['Color'], sc.inputs[0])
+    return wn.outputs['Value'], sc.outputs[0], sc.outputs[1], sc.outputs[2]
+
+
+def _warp(c, v, size, amp, seed):
+    """a coordinate in cells whose cells are of uneven size: the cell count plus a slow 1D noise (amp small enough that it never
+    turns back, so every cell is between about a third and three times the mean size)"""
+    nt = c.nt; q = math_(nt, 'DIVIDE', v, size)
+    n = node(nt, 'ShaderNodeTexNoise', noise_dimensions='1D'); n.inputs['Scale'].default_value = 1.0; n.inputs['Detail'].default_value = 0.0
+    nt.links.new(math_(nt, 'ADD', math_(nt, 'MULTIPLY', q, .43), seed), n.inputs['W'])
+    return math_(nt, 'ADD', q, math_(nt, 'MULTIPLY', math_(nt, 'SUBTRACT', n.outputs['Fac'], .5), 2 * amp))
+
+
+def _grid_even(c, cell, seed, shift):
+    """the even panel grid, for a stack that does not ask for the uneven one (no patch_warp in its LAYERS: Eclipse, and any clean,
+    ordered faction, R243): rows (along z) each shifted along x and y by their own random amount, cells of the given size; returns
+    (cell id vector, seam lines) in _grid's form. The node graph and its values are the pre-R240 grid's."""
     nt = c.nt; cx, cy, cz = cell
     off = node(nt, 'ShaderNodeVectorMath', operation='ADD'); nt.links.new(c.pos, off.inputs[0]); off.inputs[1].default_value = shift
     q = node(nt, 'ShaderNodeVectorMath', operation='DIVIDE'); nt.links.new(off.outputs[0], q.inputs[0]); q.inputs[1].default_value = (cx, cy, cz)
@@ -229,31 +250,79 @@ def _grid(c, cell, seed, shift):
     qx = math_(nt, 'ADD', sq.outputs[0], rc.outputs[0]); qy = math_(nt, 'ADD', sq.outputs[1], rc.outputs[1])
     cq = node(nt, 'ShaderNodeCombineXYZ'); nt.links.new(math_(nt, 'FLOOR', qx), cq.inputs[0]); nt.links.new(math_(nt, 'FLOOR', qy), cq.inputs[1])
     nt.links.new(math_(nt, 'ADD', row, seed), cq.inputs[2])
-    return cq.outputs[0], (qx, qy, sq.outputs[2])
+    lines = []
+    for k, (qa, size) in enumerate(zip((qx, qy, sq.outputs[2]), cell)):
+        f = math_(nt, 'FRACT', qa); lines.append((math_(nt, 'MULTIPLY', math_(nt, 'MINIMUM', f, math_(nt, 'SUBTRACT', 1, f)), size), k))
+    return cq.outputs[0], lines
 
 
-def _seams(c, S, coords, cell):
-    """the panel borders on the face's own plane (an axis along the face normal never draws a seam)"""
+def _grid(c, cell, seed, shift, L):
+    """one uneven panel grid in the ship frame (R240, RULEBOOK 0.5: patchwork never reads even or ordered). Every axis is warped
+    (cells of uneven size, so no two rows or columns match); the z axis is cut into bands of a few rows whose edges step every
+    few columns; the x columns shift per band and per strip of a few y cells; each x column shifts its y cells, and each (x, y)
+    column its z rows, so no seam runs on across a face (a deck's cross seams break every strip, a flank's row seams at every
+    column); a share of the cells is split
+    once more at a random place along a random axis (two plates where one stood). Returns (cell id vector, seam lines), each seam
+    line (distance to it in ship units, the axis it is measured along)."""
+    if 'patch_warp' not in L:      # Board review of PR 682: the uneven grid is the Hullbreakers' opt-in, never every faction's
+        return _grid_even(c, cell, seed, shift)
+    nt = c.nt; cx, cy, cz = cell
+    amp = L['patch_warp']; hb = L.get('patch_band', 2.3); share = L.get('patch_split', .55)
+    off = node(nt, 'ShaderNodeVectorMath', operation='ADD'); nt.links.new(c.pos, off.inputs[0]); off.inputs[1].default_value = shift
+    sq = node(nt, 'ShaderNodeSeparateXYZ'); nt.links.new(off.outputs[0], sq.inputs[0])
+    wx = _warp(c, sq.outputs[0], cx, amp, seed + .1); wy = _warp(c, sq.outputs[1], cy, amp, seed + .2); wz = _warp(c, sq.outputs[2], cz, amp, seed + .3)
+    # the bands step up and down every few columns (no flank seam runs the whole length); the x columns shift per band and per
+    # strip of a few y cells (no deck cross seam runs the whole width)
+    _, rb, _, _ = _wn(nt, math_(nt, 'FLOOR', math_(nt, 'DIVIDE', wx, 2.7)), seed, 3.0)
+    bq = math_(nt, 'DIVIDE', math_(nt, 'ADD', wz, math_(nt, 'MULTIPLY', rb, hb)), hb); band = math_(nt, 'FLOOR', bq)
+    _, r0, _, _ = _wn(nt, band, math_(nt, 'FLOOR', math_(nt, 'DIVIDE', wy, 1.9)), seed + 1.0)
+    X = math_(nt, 'ADD', wx, r0); ix = math_(nt, 'FLOOR', X)
+    _, _, g1, _ = _wn(nt, ix, band, seed + 2.0)
+    Y = math_(nt, 'ADD', wy, g1); iy = math_(nt, 'FLOOR', Y)
+    _, _, _, b2 = _wn(nt, ix, iy, math_(nt, 'ADD', band, seed * 3.0))
+    Z = math_(nt, 'ADD', wz, b2); iz = math_(nt, 'FLOOR', Z)
+    bx = math_(nt, 'ADD', ix, math_(nt, 'MULTIPLY', band, 17.13))
+    v3, r3, g3, _ = _wn(nt, bx, iy, math_(nt, 'ADD', iz, seed + 5.0))
+    on = math_(nt, 'LESS_THAN', v3, share); at = math_(nt, 'ADD', .28, math_(nt, 'MULTIPLY', g3, .44))
+    ids, lines = [], []
+    for k, (Q, size) in enumerate(((X, cx), (Y, cy), (Z, cz))):
+        mk = math_(nt, 'MULTIPLY', on, math_(nt, 'MULTIPLY', math_(nt, 'GREATER_THAN', r3, k / 3.0 - 1e-4), math_(nt, 'LESS_THAN', r3, (k + 1) / 3.0)))
+        f = math_(nt, 'FRACT', Q)
+        ids.append(math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', mk, math_(nt, 'GREATER_THAN', f, at)), .5))
+        lines.append((math_(nt, 'MULTIPLY', math_(nt, 'MINIMUM', f, math_(nt, 'SUBTRACT', 1, f)), size), k))
+        # the split line, only in a split cell (elsewhere pushed far away)
+        d = math_(nt, 'MULTIPLY', math_(nt, 'ABSOLUTE', math_(nt, 'SUBTRACT', f, at)), size)
+        lines.append((math_(nt, 'ADD', d, math_(nt, 'MULTIPLY', math_(nt, 'SUBTRACT', 1, mk), 10.0)), k))
+    fb = math_(nt, 'FRACT', bq)
+    lines.append((math_(nt, 'MULTIPLY', math_(nt, 'MINIMUM', fb, math_(nt, 'SUBTRACT', 1, fb)), cz * hb), 2))    # the band edges
+    cq = node(nt, 'ShaderNodeCombineXYZ')
+    nt.links.new(math_(nt, 'ADD', bx, ids[0]), cq.inputs[0]); nt.links.new(math_(nt, 'ADD', iy, ids[1]), cq.inputs[1])
+    nt.links.new(math_(nt, 'ADD', math_(nt, 'ADD', iz, ids[2]), seed), cq.inputs[2])
+    return cq.outputs[0], lines
+
+
+def _seams(c, S, lines):
+    """the panel borders on the face's own plane (a line measured along the face normal never draws a seam)"""
     nt = c.nt; L = S.LAYERS
     nrm = node(nt, 'ShaderNodeSeparateXYZ'); nt.links.new(c.geo.outputs['Normal'], nrm.inputs[0]); seam = None
-    for qa, size, na in zip(coords, cell, nrm.outputs[:3]):
-        f = math_(nt, 'FRACT', qa); d = math_(nt, 'MULTIPLY', math_(nt, 'MINIMUM', f, math_(nt, 'SUBTRACT', 1, f)), size)
+    for d, k in lines:
         e = math_(nt, 'SUBTRACT', 1, ramp(nt, d, L['patch_seam'] * .4, L['patch_seam']))
-        e = math_(nt, 'MULTIPLY', e, ramp(nt, math_(nt, 'SUBTRACT', 1, math_(nt, 'ABSOLUTE', na)), .35, .65))
+        e = math_(nt, 'MULTIPLY', e, ramp(nt, math_(nt, 'SUBTRACT', 1, math_(nt, 'ABSOLUTE', nrm.outputs[k])), .35, .65))
         seam = e if seam is None else math_(nt, 'MAXIMUM', seam, e)
     return seam
 
 
 def patchwork(c, S, col, amount, families=None, cells=None):
-    """the plate patchwork (R228; RULEBOOK 0.5, tidy is a fault): two panel grids of different sizes, the region of each chosen by
-    a broad noise, rows offset at random, plus a sparse layer of larger patch plates laid over them; each panel (and each modelled
-    plate, by its UV island) picks one of the faction's plate families. Returns the colour and the seam mask."""
+    """the plate patchwork (R228, R240; RULEBOOK 0.5, tidy is a fault): two uneven panel grids of different sizes (_grid: no even
+    row, no repeated cell, no row running on across a face), the region of each chosen by a broad noise, plus a sparse layer of
+    larger patch plates laid over them; each panel (and each modelled plate, by its UV island) picks one of the faction's plate
+    families. Returns the colour and the seam mask."""
     nt = c.nt; L = S.LAYERS; families = families or S.PATCH_FAMILIES
     big, small, patch = cells or (L['patch_big'], L['patch_small'], L['patch_over'])
     region = ramp(nt, c.noise(L['patch_region'], 2), .42, .58)          # 0: big plates, 1: small plates
     ids = []; seam = None
     for k, (cell, seed, sh) in enumerate(((big, 11.0, (0, 0, 0)), (small, 37.0, (.013, .007, .005)))):
-        cid, co = _grid(c, cell, seed, sh); sm = _seams(c, S, co, cell)
+        cid, co = _grid(c, cell, seed, sh, L); sm = _seams(c, S, co)
         w = region if k else math_(nt, 'SUBTRACT', 1, region)
         ids.append((cid, w)); sm = math_(nt, 'MULTIPLY', sm, w)
         seam = sm if seam is None else math_(nt, 'ADD', seam, sm)
@@ -273,11 +342,11 @@ def patchwork(c, S, col, amount, families=None, cells=None):
         return col
     for k, (cid, w) in enumerate(ids): col = pick(cid, w, col, small=k == 1)
     # the overlaid patch plates: a sparse few larger plates, bolted over whatever is under them, with their own seam
-    pid, pco = _grid(c, patch, 71.0, (.021, .011, .009))
+    pid, pco = _grid(c, patch, 71.0, (.021, .011, .009), L)
     pw = node(nt, 'ShaderNodeTexWhiteNoise', noise_dimensions='3D'); nt.links.new(pid, pw.inputs['Vector'])
     on = math_(nt, 'LESS_THAN', pw.outputs['Value'], L['patch_over_share'])
     col = pick(pid, on, col)
-    seam = math_(nt, 'MAXIMUM', math_(nt, 'MULTIPLY', seam, math_(nt, 'SUBTRACT', 1, on)), math_(nt, 'MULTIPLY', _seams(c, S, pco, patch), on))
+    seam = math_(nt, 'MAXIMUM', math_(nt, 'MULTIPLY', seam, math_(nt, 'SUBTRACT', 1, on)), math_(nt, 'MULTIPLY', _seams(c, S, pco), on))
     return col, math_(nt, 'MULTIPLY', seam, amount, clamp=True)
 
 

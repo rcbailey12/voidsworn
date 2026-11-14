@@ -946,7 +946,12 @@ def hangar_mouth(L, H, depth, slide=1, b=0.16, seed=7, doors=True):
     an inner blast door frame on the back wall (the way through to the hangar decks). Frame: origin at the mouth centre on
     the flank face; +X forward, +Y out of the flank (a port mouth; mirror for starboard), +Z up. Kind hangar: structure (an
     opening, R226), it may tear across a seam. doors=False (issue 668, a mouth in a bow face with no face beside it for the
-    leaves to slide onto): no door leaves and no door rails; the rim, teeth and the fit-out inside are the same."""
+    leaves to slide onto): no door leaves and no door rails; the rim, teeth and the fit-out inside are the same.
+    R240 (Ryan, Nov 13 2026: "some sort of weird paint pattern in the opening of the carrier"): the inside reads as a dark, deep
+    bay with a few warm deck lights and worn edging, nothing patterned in it. The fit-out inside is dark (rails, beams, ribs and
+    the blast door frame in the dark liner's zone, so no stripes or plates catch the light in there), spaced unevenly, with no
+    rail ties (their even ladder read as a pattern); three small warm deck lights (material lamp) sit at uneven depths by the
+    floor's edge; only the rim and its torn teeth carry the worn iron edging."""
     import random
     rnd = random.Random(seed)
     p = Part('hangar')
@@ -1007,29 +1012,28 @@ def hangar_mouth(L, H, depth, slide=1, b=0.16, seed=7, doors=True):
                 xj = xr0 + (xr1 - xr0) * (j + 0.5) / 6
                 V, F = block(-0.05, 0.3, 0.05, 0.07, 0.01, yo=xj, zo=zr - sg * 0.06)
                 p.add('bracket_%d_%d' % (sg > 0, j), 'mount', 'steel', ([(y, x, z) for (x, y, z) in V], F))
-    # inside the mouth: launch rails on the floor, ceiling beams, lamps, side wall ribs and the inner blast door frame
-    for i, xl in enumerate((-hl * 0.45, hl * 0.45)):
-        p.add('lrail%d' % i, 'mount', 'iron', block(-depth + 0.05, 0.02, 0.045, 0.04, 0.01, yo=xl, zo=-hh + 0.04))
+    # inside the mouth (R240): dark launch rails on the floor, dark ceiling beams and side wall ribs at uneven spacing, the dark
+    # inner blast door frame, and three small warm deck lights at uneven depths by the floor's edge; no ties, no stripes
+    for i, xl in enumerate((-hl * rnd.uniform(0.38, 0.5), hl * rnd.uniform(0.4, 0.52))):
+        p.add('lrail%d' % i, 'mount', 'dark', block(-depth + 0.05, 0.02, 0.045, 0.04, 0.01, yo=xl, zo=-hh + 0.04))
         p.comps[-1]['verts'] = [Vector((v.y, v.x, v.z)) for v in p.comps[-1]['verts']]
-        for j in range(5):
-            yj = -depth * (j + 0.5) / 5
-            p.add('lrail_tie%d_%d' % (i, j), 'mount', 'steel', block(xl - 0.12, xl + 0.12, 0.04, 0.02, 0.0, yo=yj, zo=-hh + 0.02))
-    for j in range(3):
-        xb = -hl * 0.7 + hl * 0.7 * j
+    for j, xb in enumerate((-hl * rnd.uniform(0.6, 0.78), hl * rnd.uniform(-0.12, 0.12), hl * rnd.uniform(0.55, 0.75))):
         V, F = block(-depth + 0.05, 0.0, 0.07, 0.08, 0.02, yo=xb, zo=hh - 0.08)
-        p.add('beam%d' % j, 'mount', 'steel', ([(y, x, z) for (x, y, z) in V], F))
-    for j, xb in enumerate((-hl * 0.35, hl * 0.35)):
-        p.add('lamp%d' % j, 'mount', 'light', block(xb - 0.09, xb + 0.09, 0.07, 0.03, 0.0, yo=-depth * 0.45, zo=hh - 0.03))
-        p.add('lamp_hood%d' % j, 'mount', 'iron', block(xb - 0.13, xb + 0.13, 0.1, 0.02, 0.0, yo=-depth * 0.45, zo=hh - 0.005))
+        p.add('beam%d' % j, 'mount', 'dark', ([(y, x, z) for (x, y, z) in V], F))
+    for j, (xs_, ys_) in enumerate(((-1, rnd.uniform(0.12, 0.2)), (1, rnd.uniform(0.38, 0.5)), (-1, rnd.uniform(0.7, 0.8)))):
+        xl_ = xs_ * (hl - 0.07)
+        p.add('lamp%d' % j, 'mount', 'lamp', block(xl_ - 0.025, xl_ + 0.025, 0.05, 0.018, 0.0, yo=-depth * ys_, zo=-hh + 0.03))
     for sg in (1, -1):
+        y_ = -rnd.uniform(0.18, 0.4) * depth
         for j in range(3):
-            yj = -depth * (j + 0.6) / 3.2
-            V, F = block(-0.04, 0.06, 0.05, hh - 0.05, 0.01, yo=yj, zo=0.0)
-            p.add('rib_%d_%d' % (sg > 0, j), 'mount', 'iron', ([(sg * (hl - x), y, z) for (x, y, z) in V], F if sg > 0 else [tuple(reversed(f)) for f in F]))
+            V, F = block(-0.04, 0.06, 0.05, hh - 0.05, 0.01, yo=y_, zo=0.0)
+            p.add('rib_%d_%d' % (sg > 0, j), 'mount', 'dark', ([(sg * (hl - x), y, z) for (x, y, z) in V], F if sg > 0 else [tuple(reversed(f)) for f in F]))
+            y_ -= rnd.uniform(0.22, 0.36) * depth
+            if y_ < -depth + 0.15: break
     fw, fh = hl * 0.62, hh * 0.72
     for nm, (a0, a1, c0, c1) in (('top', (-fw, fw, fh - 0.1, fh)), ('bot', (-fw, fw, -hh, -hh + 0.1)), ('l', (-fw, -fw + 0.1, -hh, fh)), ('r', (fw - 0.1, fw, -hh, fh))):
         V, F = block(-depth - 0.04, -depth + 0.08, (a1 - a0) / 2, (c1 - c0) / 2, 0.01, yo=(a0 + a1) / 2, zo=(c0 + c1) / 2)
-        p.add('inner_%s' % nm, 'mount', 'iron', ([(y, x, z) for (x, y, z) in V], F))
+        p.add('inner_%s' % nm, 'mount', 'dark', ([(y, x, z) for (x, y, z) in V], F))
     V, F = block(-depth - 0.02, -depth + 0.03, fw - 0.1, (fh + hh - 0.1) / 2, 0.0, zo=(fh - 0.1 - hh + 0.1) / 2)
     p.add('inner_gap', 'mount', 'dark', ([(y, x, z) for (x, y, z) in V], F))
     p.fit = dict(mouth=P((0, 0, 0)), axis=D((0, 1, 0)), L=L, H=H, depth=depth)

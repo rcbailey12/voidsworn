@@ -407,7 +407,7 @@
   {
    "id": "AN1",
    "kind": "antenna",
-   "what": "antenna array, 1.3 tall, 3 whips",
+   "what": "antenna array, 0.8 tall, 3 whips",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -418,7 +418,7 @@
   {
    "id": "AN2",
    "kind": "antenna",
-   "what": "antenna array, 1.0 tall, 2 whips",
+   "what": "antenna array, 0.6 tall, 2 whips",
    "count": 1,
    "route": "kit",
    "source": "picture",

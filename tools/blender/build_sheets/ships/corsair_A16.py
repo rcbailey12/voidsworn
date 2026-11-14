@@ -189,7 +189,7 @@ def build(K):
         K.thruster('Q%d' % (i + 1), (x, y, z), n, inv='bow_thrusters' if x > 0 else 'stern_thrusters', note='bow' if x > 0 else 'stern')
     for side in (1, -1):
         K.pipe('PP%d' % (1 if side > 0 else 2), [(-7.85, side * 2.35, 1.6), (-9.0, side * 2.35, 1.6), (-9.0, side * 2.35, 0.97)], r=0.09, inv='stern_pipes')
-    K.antenna('AN1', (-9.75, 1.25, 1.7), 1.8, whips=3, inv='antennas', note='antenna array on the stern deck, port')
+    K.antenna('AN1', (-9.75, 1.25, 1.7), 1.5, whips=3, inv='antennas', note='antenna array on the stern deck, port')
     K.antenna('AN2', (-8.9, -0.15, 1.7), 1.4, whips=2, inv='antennas', note='antenna array on the stern deck, centre')
 
     # ---------------- the recessed band: vents and lamps; belly bay ----------------
@@ -293,6 +293,7 @@ def build(K):
     K.fix('Tube bores I1 and I2 inside the prow', 'a sunk tube is a mount by design: its bore runs back into the prow; the mouth must be clear (EXIT check)')
     K.fix('Casemate housings P4, P5, S4, S5, SB inside hull masses', 'casemates set onto the sponson outer faces and the bow flank surface, plates cleared under each mount')
     K.fix('Dish posts D1 and D2 inside the plinth', 'dishes stand on the plinth top on their own base plates')
+    K.fix('SENSOR: T2 (flak, all round) aiming through the port antenna AN1 when trained aft', 'R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): AN1 cut from 1.8 to 1.5 tall, so its whips stay under the lowest line of fire of the barbette turret')
 
 
 def bpy_obj(name):
