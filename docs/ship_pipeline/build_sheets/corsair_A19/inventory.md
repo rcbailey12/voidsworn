@@ -10,7 +10,7 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 | hull_form | the gutship's hull: a long lean slab that carries the guns to the fight | hull | an arrow-head wedge over the first third (a narrow bow face over a sloped chin, the flanks widening back to full beam), the long low body, the taper into the stern block | 1 | bow/top, bow/side, mid/side, stern/side | bevels, steps, an overhang (the foredeck plate over the face) | picture |
 | spade | armour over the bow: the foredeck plate the casemates fire from under | tier | the broad flat bow plate, an arrow-head from above: a blunt point that widens over the first third, overhanging the bow face | 1 | bow/top, bow/side | a face, a roof, an overhang | picture |
 | spade_plates | armour | plate | plates over the foredeck plate | 1 | bow/top | slabs with steps, bevels, rivets | picture |
-| bow_launchers | data.js torp F: the rattle-rocket salvo, fired straight ahead from the bow face | bow_launcher | two mismatched rocket casemates IN the bow face: one long tube, one short fat cluster of three (Ryan's ruling: the casemates sit in the face) | 2 | bow/side, bow/top | an armour plate, a box housing with a brow, launch tubes with lips, bands, bores and rocket noses, bolts | picture |
+| bow_launchers | data.js torp F: the rattle-rocket salvo, fired straight ahead from the bow face | bow_launcher | one rocket casemate IN the bow face: a short fat cluster of three tubes (R241: the long tube is cut, issue 676) (Ryan's ruling: the casemates sit in the face) | 1 | bow/side, bow/top | an armour plate, a box housing with a brow, launch tubes with lips, bands, bores and rocket noses, bolts | picture |
 | scoop | the wake-sniffer scoop: tastes the wake of ships ahead | tube | a scoop drum with a grille under the chin (designs.md: one chin scoop) | 1 | bow/side, bow/below | ribbed drum, bands, rolled lip, a grille in a dark mouth | designed |
 | grabbers | boarding grabbers: pin a hull for the boarding gangs | claw_arm | four grabber arms: a pair under the chin, a pair under the forefoot | 4 | bow/below, bow/side | shoulder hinges on brackets, box segments, knuckles, rams, forked pincers | picture |
 | belly_pipes | hydraulics for the grabber rams | pipe | a pipe run under the belly between the grabber pairs | 1 | bow/below | a run with flange rings | designed |
@@ -18,8 +18,7 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 | hull_plates | armour, salvaged and mismatched | plate | patch plating over the whole hull, a few plates in trophy colours | 1 | bow/top, bow/side, mid/top, mid/side, stern/top, stern/side | slabs with steps, bevels, rivets | picture |
 | thrusters | attitude thrusters: turn the long hull | thruster | attitude thruster quads at bow and stern | 4 | bow/side, stern/side | a block, splayed nozzles | designed |
 | spine | the armoured spine over the decks; lifts the turrets so they fire over the casemates | tier | three stacked spine blocks with gaps, a slit in the fore block | 1 | mid/top, mid/side, bow/top, stern/top | faces, roof lines with steps, openings | picture |
-| casemates | data.js scatter S: the starboard broadside | gun | three starboard flank casemates of mixed calibre (the picture's flank pods, all on the starboard side (data.js scatter S)) | 3 | mid/side, mid/top, bow/side | a sponson plate, a box housing, a ball mantlet, barrels with sleeves and brakes | picture |
-| deck_turrets | data.js scatter S: superfiring over the casemates to starboard | gun | two twin turrets on the spine, resting to starboard | 2 | mid/top, mid/side | turret rings, faceted housings, mantlets, breeches, barrels with sleeves and brakes | picture |
+| deck_turrets | data.js scatter S: the starboard broadside, turning through the S arc | gun | two twin turrets on the spine, resting to starboard | 2 | mid/top, mid/side | turret rings, faceted housings, mantlets, breeches, barrels with sleeves and brakes | picture |
 | spine_boxes | ready-use lockers for the gun crews | hatchbox | framed boxes on the spine | 2 | mid/top, stern/top | a framed box, an inset lid, side ribs | picture |
 | side_block | armour over the port flank and the crew hatch; widens the hull for the decks | tier | the port side block amidships | 1 | mid/top, mid/side | a face, a roof, an undercut | picture |
 | side_block_plates | armour | plate | plates over the side block | 1 | mid/side | slabs with steps, bevels, rivets | picture |
@@ -62,7 +61,7 @@ Left as surface, and why:
 
 ## Every built part has a job (R221)
 
-Built kit parts: 55; parts whose inventory id names no line with a job: 0.
+Built kit parts: 51; parts whose inventory id names no line with a job: 0.
 
 ## Per cell: present, shaped, detailed (from the model, corsair_A19_model.json)
 
@@ -75,7 +74,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | hull_form | an arrow-head wedge over the first third (a narrow bow face over a slo | 1 / 1 | Y | Y | Y |
 | spade | the broad flat bow plate, an arrow-head from above: a blunt point that | 1 / 1 | Y | Y | Y |
 | spade_plates | plates over the foredeck plate | 1 / 1 | Y | Y | Y |
-| bow_launchers | two mismatched rocket casemates IN the bow face: one long tube, one sh | 2 / 2 | Y | Y | Y |
+| bow_launchers | one rocket casemate IN the bow face: a short fat cluster of three tube | 1 / 1 | Y | Y | Y |
 | dishes | a large dish on the foredeck plate to port, a small one on the stern b | 2 / 2 | Y | Y | Y |
 | hull_plates | patch plating over the whole hull, a few plates in trophy colours | 1 / 1 | Y | Y | Y |
 | spine | three stacked spine blocks with gaps, a slit in the fore block | 2 / 1 | Y | Y | Y |
@@ -87,13 +86,12 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 |---|---|---|---|---|---|
 | hull_form | an arrow-head wedge over the first third (a narrow bow face over a slo | 1 / 1 | Y | Y | Y |
 | spade | the broad flat bow plate, an arrow-head from above: a blunt point that | 1 / 1 | Y | Y | Y |
-| bow_launchers | two mismatched rocket casemates IN the bow face: one long tube, one sh | 2 / 2 | Y | Y | Y |
+| bow_launchers | one rocket casemate IN the bow face: a short fat cluster of three tube | 1 / 1 | Y | Y | Y |
 | scoop | a scoop drum with a grille under the chin | 1 / 1 | Y | Y | Y |
 | grabbers | four grabber arms: a pair under the chin, a pair under the forefoot | 4 / 4 | Y | Y | Y |
 | dishes | a large dish on the foredeck plate to port, a small one on the stern b | 2 / 2 | Y | Y | Y |
 | hull_plates | patch plating over the whole hull, a few plates in trophy colours | 1 / 1 | Y | Y | Y |
 | thrusters | attitude thruster quads at bow and stern | 4 / 4 | Y | Y | Y |
-| casemates | three starboard flank casemates of mixed calibre | 3 / 3 | Y | Y | Y |
 | bricks | four bolted bricks on the starboard flank | 1 / 1 | Y | Y | Y |
 | lamps | dim red lamps low on both flanks | 7 / 7 | Y | Y | Y |
 
@@ -112,7 +110,6 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 |---|---|---|---|---|---|
 | hull_plates | patch plating over the whole hull, a few plates in trophy colours | 1 / 1 | Y | Y | Y |
 | spine | three stacked spine blocks with gaps, a slit in the fore block | 2 / 1 | Y | Y | Y |
-| casemates | three starboard flank casemates of mixed calibre | 3 / 3 | Y | Y | Y |
 | deck_turrets | two twin turrets on the spine, resting to starboard | 2 / 2 | Y | Y | Y |
 | spine_boxes | framed boxes on the spine | 2 / 2 | Y | Y | Y |
 | side_block | the port side block amidships | 1 / 1 | Y | Y | Y |
@@ -125,7 +122,6 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | hull_form | an arrow-head wedge over the first third (a narrow bow face over a slo | 1 / 1 | Y | Y | Y |
 | hull_plates | patch plating over the whole hull, a few plates in trophy colours | 1 / 1 | Y | Y | Y |
 | spine | three stacked spine blocks with gaps, a slit in the fore block | 2 / 1 | Y | Y | Y |
-| casemates | three starboard flank casemates of mixed calibre | 3 / 3 | Y | Y | Y |
 | deck_turrets | two twin turrets on the spine, resting to starboard | 2 / 2 | Y | Y | Y |
 | side_block | the port side block amidships | 1 / 1 | Y | Y | Y |
 | side_block_plates | plates over the side block | 1 / 1 | Y | Y | Y |
@@ -186,9 +182,9 @@ Concept counts read off the concept sheet by eye (A19 sheet: bow, the foredeck p
 | bow/top | 3 | 5 | Base hull (blunt bow, chin, long body); Lower hull band; Foredeck plate (the spade); M1 fore spine block; Starboard brick 1 |
 | bow/side | 4 | 4 | Base hull (blunt bow, chin, long body); Lower hull band; Foredeck plate (the spade); M1 fore spine block |
 | bow/below | no view | 4 | Base hull (blunt bow, chin, long body); Lower hull band; Foredeck plate (the spade); Starboard brick 1 |
-| mid/top | 5 | 10 | Base hull (blunt bow, chin, long body); Lower hull band; Foredeck plate (the spade); M1 fore spine block; M2 battery block; M3 aft spine block; Port side block; Starboard brick 1; Starboard brick 2; Starboard brick 3 |
+| mid/top | 5 | 9 | Base hull (blunt bow, chin, long body); Lower hull band; Foredeck plate (the spade); M1 fore spine block; M2 battery block; M3 aft spine block; Port side block; Starboard brick 2; Starboard brick 3 |
 | mid/side | 5 | 7 | Base hull (blunt bow, chin, long body); Lower hull band; Foredeck plate (the spade); M1 fore spine block; M2 battery block; M3 aft spine block; Port side block |
-| mid/below | no view | 7 | Base hull (blunt bow, chin, long body); Lower hull band; Foredeck plate (the spade); Port side block; Starboard brick 1; Starboard brick 2; Starboard brick 3 |
+| mid/below | no view | 6 | Base hull (blunt bow, chin, long body); Lower hull band; Foredeck plate (the spade); Port side block; Starboard brick 2; Starboard brick 3 |
 | stern/top | 4 | 6 | Base hull (blunt bow, chin, long body); Lower hull band; M3 aft spine block; Port side block; Starboard brick 4; Stern block |
 | stern/side | 4 | 5 | Base hull (blunt bow, chin, long body); Lower hull band; M3 aft spine block; Port side block; Stern block |
 | stern/below | no view | 5 | Base hull (blunt bow, chin, long body); Lower hull band; Port side block; Starboard brick 4; Stern block |
@@ -200,6 +196,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 4.12 | 4.89 | 7.57 | 10.07 |
-| build | 2.46 | 3.49 | 3.27 | 6.19 |
+| build | 3.11 | 3.42 | 3.39 | 6.04 |
 
 Lines not present, shaped and detailed without a reason: 0.

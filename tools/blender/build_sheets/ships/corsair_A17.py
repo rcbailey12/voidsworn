@@ -160,17 +160,17 @@ def build(K):
     K.mass('Rack plinth', K.box('A17_plinth', 0.95, 2.1, -0.72, 0.72, 0.8, 1.7, 'iron', ch=0.12), 'iron', note='lifts the rocket pod clear over the neck turrets')
     K.launcher('R1', (1.95, 0.0, 1.7), 2, 3, cell=0.33, depth=1.0, pitch=10, slot='F', weapon='torp', inv='brow_rack',
                note='rattle-rocket pod on the fore block, firing over the head')
-    K.gun('T1', (-4.6, 0.0, 1.52), 0, 8, barrels=2, cal=0.09, blen=1.25, size=0.85, slot='T', weapon='flak', inv='crest_gun', note='aft block twin, all round')
+    K.box('A17_barbette_T1', -5.1, -4.1, -0.5, 0.5, 1.45, 2.07, 'iron', ch=0.1)     # R240: lifts the crest flak over the saddle antennas
+    K.gun('T1', (-4.6, 0.0, 2.07), 0, 8, barrels=2, cal=0.09, blen=1.25, size=0.85, slot='T', weapon='flak', inv='crest_gun', note='aft block twin on a barbette, all round, firing over the saddle antennas')
     K.gun('T2', (-1.0, 0.0, -1.64), 0, 8, barrels=2, cal=0.08, blen=1.1, size=0.75, normal=(0, 0, -1), slot='T', weapon='flak', inv='belly_turret',
           note='belly twin, covers below')
     for side, sl in ((1, 'P'), (-1, 'S')):
-        K.box('A17_barbette_%s1' % sl, 2.9, 3.6, min(side * 0.95, side * 1.65), max(side * 0.95, side * 1.65), 0.7, 1.78, 'iron', ch=0.1)
-        K.gun('%s1' % sl, (3.25, side * 1.3, 1.78), side * 40, 2, barrels=2, cal=0.08, blen=1.1, size=0.75, slot=sl, weapon='scatter', inv='deck_guns',
+        K.box('A17_barbette_%s1' % sl, 2.9, 3.6, min(side * 0.95, side * 1.65), max(side * 0.95, side * 1.65), 0.7, 1.92, 'iron', ch=0.1)     # R240: 0.14 taller, over the ears
+        K.gun('%s1' % sl, (3.25, side * 1.3, 1.92), side * 40, 2, barrels=2, cal=0.08, blen=1.1, size=0.75, slot=sl, weapon='scatter', inv='deck_guns',
               note='neck block twin turret on a low barbette')
         K.gun('%s2' % sl, (-1.4, side * 1.8 + 0.1, 1.3), side * 35, 3, barrels=2, cal=0.08, blen=1.15, size=0.75, slot=sl, weapon='scatter', inv='deck_guns',
               variant=1, note='mid block twin turret, superfiring')
-        K.gun('%s3' % sl, (-2.2, sy(-2.2, side) + 0.28 * side, -0.25), side * 35, 0, barrels=2, cal=0.08, blen=1.05, size=0.75, normal=(0, side, 0),
-              slot=sl, weapon='scatter', inv='flank_casemates', note='flank casemate on the flank tier')
+        # R241 (issue 676): the flank casemates P3 and S3 are cut: a fixed casemate on the same slot as two turning turrets
 
     # ---------------- engines: two columns a side, the inner a main over a lower, the outer between them; exits level ----------------
     for side, base in ((1, 1), (-1, 4)):
@@ -181,8 +181,8 @@ def build(K):
     for i, (x, y, z, n) in enumerate([(3.75, sy(3.75, 1), -0.05, (0, 1, 0)), (3.75, sy(3.75, -1), -0.05, (0, -1, 0)),
                                       (-4.95, sy(-4.95, 1), -0.3, (0, 1, 0)), (-4.95, sy(-4.95, -1), -0.3, (0, -1, 0))]):
         K.thruster('Q%d' % (i + 1), (x, y, z), n, inv='bow_thrusters' if x > 0 else 'stern_thrusters', note='bow' if x > 0 else 'stern')
-    K.antenna('AN1', (-2.65, 0.55, 1.4), 1.3, whips=3, inv='antennas', note='antenna array on the saddle block, port')
-    K.antenna('AN2', (-2.8, -0.6, 1.4), 1.0, whips=2, inv='antennas', note='antenna array on the saddle block, starboard (shorter)')
+    K.antenna('AN1', (-2.65, 0.55, 1.4), 0.75, whips=3, inv='antennas', note='antenna array on the saddle block, port')
+    K.antenna('AN2', (-2.8, -0.6, 1.4), 0.6, whips=2, inv='antennas', note='antenna array on the saddle block, starboard (shorter)')
     for side in (1, -1):
         K.vent('VS%s' % ('p' if side > 0 else 's'), (-5.0, 2.15 if side > 0 else -2.05, 0.92), (0, side, 0), 0.5, 0.45, inv='stern_vents')
         for i, x in enumerate((3.3, 1.85, 0.2, -1.6, -3.4)):
@@ -249,7 +249,8 @@ def build(K):
     K.change('The body is stacked angular blocks: a base hull, flank blocks, six top blocks stepping up toward the stern with gaps and undercuts', 'the concept\'s dense stack of armoured blocks; round 3 was one smooth body with plates stuck on')
     K.change('The head is narrow, chamfered and stepped, a face overhanging a cut-in jaw mouth, the scoop drums on its flanks', 'Ryan R217: "the front is also just a flat block"')
     K.change('The jaws are four articulated grabber arms (two segments, knuckles, rams, forked pincers), a pair a side closing toward each other', 'Ryan, R229: the round 3b flat prongs came from a bow crop that cut the grabbers off; the whole beauty and the sheet\'s side view show jointed arms (new kit part claw_arm)')
-    K.change('Guns laid out as matched batteries by game slot', 'the picture scatters guns; scatter P and S are mirrored (a neck block turret, a mid block turret superfiring, a flank casemate per side), flak on the aft block and the belly, the rocket pod on the fore block')
+    K.change('Guns laid out as matched batteries by game slot', 'the picture scatters guns; scatter P and S are mirrored (a neck block turret, a mid block turret superfiring), flak on the aft block and the belly, the rocket pod on the fore block')
+    K.change('Flank casemates P3 and S3 cut', 'R241 (Ryan, Nov 13 2026: "all ships should have weapons that match their actual weapons in game"; issue 676 weapon-match check): a fixed casemate shared each broadside slot with two turning turrets, so the mounts on one slot did not turn together; each broadside slot now shows its two matched twin turrets, all four barrels firing on every 5-shot volley')
     K.change('Engines are squat drums in two columns a side, exits level, no bell touching another', 'the concept\'s stacked cluster; the fit check found round 2\'s bells inside each other')
     K.change('The head follows the beauty: a big, tall, boxy front block over the neck, ear dishes on its shoulders (R229 sizes them)', 'the Board on round 3b: Ryan judges against the accepted picture, which draws the head larger than the round 8 sheet')
     K.change('Forward rocket pod, belly flak turret and four attitude thrusters added', 'data.js gives a forward rocket slot (torp F); the belly needs cover; a ship in space needs thrusters')
@@ -276,4 +277,6 @@ def build(K):
     K.fix('Q1 and Q2 bow thrusters inside the scoop drums, their exhaust on the drum ribs', 'bow thrusters on the body flank behind the drums, firing clear outboard')
     K.fix('Jaw blades inside the hull and the jaw housing', 'four grabber arms (R229), each shoulder in its own housing under the jaw, clear of the hull')
     K.fix('C2 girdle through the P2 and S2 turret rings', 'C2 runs in the gap between the mid and saddle blocks, clear of every ring')
+    K.fix('SENSOR: P1 and S1 aiming through the ear dishes D1 and D2 at their forward bearings', 'R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): the neck turret barbettes raised 0.14 (top 1.78 to 1.92), so the lowest line of fire of P1 and S1 passes over the ears')
+    K.fix('SENSOR: T1 (flak, all round) aiming through the saddle antennas AN1 and AN2', 'R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): T1 lifted onto a 0.55 barbette and the antennas cut (1.3 to 0.75, 1.0 to 0.6 tall), so the crest gun fires over them')
     K.fix('Crest and belly turret housings sunk in the crest and the belly', 'turrets sit on their rings on block tops and the belly band, plates cleared under each mount')

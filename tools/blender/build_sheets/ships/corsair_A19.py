@@ -53,7 +53,6 @@ SPINE = [
     ('M2 battery block', 0.42, -0.98, 0.67, 0.62, 0.1, -0.03),
     ('M3 aft spine block', -1.08, -2.95, 0.64, 0.6, 0.1, 0.0),
 ]
-CASEMATES = [('S1', 1.15, 2, 0.065, 0.62, 0.6, -50), ('S2', -0.45, 1, 0.1, 0.72, 0.72, -45), ('S3', -2.0, 2, 0.055, 0.55, 0.55, -55)]   # (id, x, barrels, cal, blen, size, yaw)
 THR = [(2.75, -0.24, 1), (2.75, -0.24, -1), (-3.55, -0.24, 1), (-3.55, -0.24, -1)]
 LAMPS = [(3.3, 1, -0.3), (1.9, 1, -0.32), (-1.95, 1, -0.38)]   # port; the starboard lamps sit on the brick faces (BRICKS)
 BRICKS = [(2.35, 1.6, 0.12), (0.55, 0.12, 0.04), (-1.02, -1.5, 0.15), (-2.45, -2.95, 0.07)]   # starboard bricks (x fore, x aft, top)
@@ -150,8 +149,6 @@ def build(K):
         K.keepouts.append((Vector((x, 1.42 if -2.55 < x < 0.6 else sy(x, side), z)), 0.13))
     for (x0, x1, top) in BRICKS:
         K.keepouts.append((Vector(((x0 + x1) / 2, -abs(sy((x0 + x1) / 2, -1)) - 0.1, -0.2)), 0.13))
-    for (fid, x, *_r) in CASEMATES:
-        K.keepouts.append((Vector((x, sy(x, -1), -0.1)), 0.32))
     K.keepouts.append((Vector((3.0, 0.55, 0.43)), 0.22))           # the dishes' bases
     K.keepouts.append((Vector((-3.45, -0.55, SB_TOP)), 0.2))
     for x, z in ((1.12, 0.58), (-1.85, 0.6)):
@@ -159,8 +156,8 @@ def build(K):
     K.finish()
 
     # ---------------- the bow face: the two mismatched rocket casemates IN it (data.js torp F; Ryan's ruling) ----------------
-    face_launcher(K, 'R1', (4.06, 0.32, 0.0), 1, 0.09, 0.52, 0.24, 0, 'bow_launchers',
-                  'port casemate: one long rocket tube on a brace (the long-barrelled one)')
+    # R241 (issue 676): one launcher for the one torp slot (1 shot a volley); the port long tube R1 is cut (one long tube and
+    # a three-tube cluster are two different mounts on one slot)
     face_launcher(K, 'R2', (4.06, -0.3, -0.01), 3, 0.074, 0.13, 0.24, 1, 'bow_launchers',
                   'starboard casemate: three short fat tubes banded together (the short and fat one)')
     K.tube('I1', (3.98, 0.0, -0.58), 0.11, 0.4, grille=True, bands=2, inv='scoop', what='wake-sniffer scoop with a grille',
@@ -177,13 +174,12 @@ def build(K):
     K.pipe('PH1', [(3.1, 0.0, -0.56), (2.3, 0.0, -0.58), (1.55, 0.0, -0.6)], r=0.035, inv='belly_pipes', note='hydraulic feed between the two grabber pairs')
     # ---------------- the dishes: large on the port bow shoulder, small on the starboard side of the stern block ----------------
     K.dish('D1', (3.0, 0.55, 0.427), 0.28, yaw=30, pitch=22, post=1.3, inv='dishes', note='the larger listening dish on the foredeck plate to port')
-    K.dish('D2', (-3.45, -0.55, SB_TOP), 0.22, yaw=-55, pitch=18, post=1.25, inv='dishes', note='the small dish on the stern block, starboard')
+    K.dish('D2', (-3.45, -0.3, SB_TOP), 0.22, yaw=-55, pitch=18, post=1.25, inv='dishes', note='the small dish on the stern block, starboard')
     # ---------------- the scatter battery: data.js scatter S, all on the starboard side ----------------
-    for (fid, x, nb, cal, blen, size, yaw) in CASEMATES:
-        K.gun(fid, (x, sy(x, -1) - 0.02, -0.1), yaw, 0, barrels=nb, cal=cal, blen=blen, size=size, normal=(0, -1, 0), slot='S', weapon='scatter',
-              inv='casemates', variant=int(x < 0), note='starboard flank casemate, %s' % ({1: 'one fat barrel', 2: 'twin barrels'}[nb]))
+    # R241 (issue 676): the scatter S slot (5 shots) shows its two matched spine turrets only; the three flank casemates S1 to S3
+    # are cut (mixed barrels and sizes and fixed beside turning turrets)
     K.gun('S4', (1.12, -0.05, 0.58), -35, 4, barrels=2, cal=0.062, blen=0.72, size=0.62, slot='S', weapon='scatter', inv='deck_turrets',
-          note='fore spine turret, superfiring over the casemates to starboard')
+          note='fore spine turret, resting to starboard')
     K.gun('S5', (-1.85, -0.05, 0.6), -40, 4, barrels=2, cal=0.06, blen=0.7, size=0.6, slot='S', weapon='scatter', inv='deck_turrets', variant=1,
           note='aft spine turret')
     # ---------------- engines: three bells in the stern block, the centre the largest ----------------
@@ -224,7 +220,7 @@ def build(K):
     K.armour('spine', 0.08, '')
     K.armour('stern block', 0.1, '')
     # R226 (RULEBOOK 5.17): each seam kinks round the machines near it: B-1 runs between the forefoot grabbers (with the body)
-    # and the bow's thrusters and dish; B-2 between the aft turret S5 and casemate S3 (body) and the stern block's machines
+    # and the bow's thrusters and dish; B-2 between the aft turret S5 (body) and the stern block's machines
     K.break_line('B-1', 2.42, 'the bow block weld: the bow tears away whole with its casemates, the foredeck plate\'s front, the dish and the chin grabbers (designs.md)',
                  path=[(2.44, 1.6), (2.37, 0.8), (2.5, 0.3), (2.36, -0.1), (2.48, -0.5), (2.36, -0.9), (2.42, -1.6)])
     K.break_line('B-2', -2.95, 'the stern block weld: the stern block and its engines tear away, opening the engine room and the loot hold',
@@ -250,13 +246,19 @@ def build(K):
     K.change('Every face is plated in courses at the hull\'s plate size (0.2 to 0.46), each course jointed on its own (a brick bond), patches laid over joints and offset patches over plates; upward faces stepped in terraces of one to three plate thicknesses',
              'the Board on round 1 (Nov 13): the faces read as big smooth grey planes with a few greebles; the concept is scrap brick, plates over plates on every face (R196, R197). Kit: the sheet kit\'s courses plating (kit.py, opt-in, issue 633)')
 
-    K.change('The whole scatter battery on the starboard side: three flank casemates of mixed calibre and two spine turrets resting to starboard',
+    K.change('The whole scatter battery on the starboard side: two spine turrets resting to starboard',
              'data.js c_reaver: scatter S (one starboard battery); the picture\'s pods on both flanks and its foredeck guns have no other slot (R221)')
+    K.change('One rocket casemate in the bow face (R2, the three short fat tubes); the long tube R1 and the three starboard flank casemates S1 to S3 cut',
+             'R241 (Ryan, Nov 13 2026: "all ships should have weapons that match their actual weapons in game"; issue 676 weapon-match check): '
+             'the mounts on one slot must match: a single long tube beside a three-tube cluster did not, and torp fires one shot a volley, so one launcher is the plain match; the casemates mixed one and two barrels and '
+             'sizes on one slot, and sat fixed beside turning turrets. R241 is later than the Nov 12 ruling of two '
+             'mismatched casemates in the bow face and replaces it; the starboard armour bricks stay')
     K.change('No rocket racks on the middle deck', 'designs.md\'s two racks would be a second forward launcher; data.js gives one torp slot and the bow casemates fire it')
     K.change('Port flank: the side block carries one big pale Hegemony trophy plate, in three torn sheets bolted edge to edge', 'designs.md (the trophy plate widening the port outline amidships) on the picture\'s side block')
     K.change('Two grabber pairs: one under the chin, one under the forefoot', 'the picture\'s claws at the chin and further aft; designs.md\'s four arms; split so the jaw is not a copy of A17\'s')
     K.change('Three engine bells, the centre the largest, staggered in the stern block', 'designs.md; the picture\'s four become three, lopsided (port small and high, starboard lower)')
     K.change('Two dishes: the large one standing on the foredeck plate to port, a small one on the stern block to starboard', 'designs.md; the picture shows one on the foredeck')
+    K.fix('SENSOR: S5 aiming through the small dish D2 at its aft bearings', 'R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): D2 moved inboard on the stern block (y -0.55 to -0.3), out of the arc of S5')
     K.change('Four attitude thrusters', 'a ship in space needs them to turn')
     K.change('Insides: two decks, the gun crews\' gallery along the starboard casemates, a kennel deck under the bow, the loot hold aft', 'designs.md; R209, R215')
     K.open_item('Belly detail between the grabber pairs and the stern block is designed here; the picture shows little of the underside')

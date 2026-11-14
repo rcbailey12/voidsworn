@@ -35,11 +35,9 @@ The Chorus (chorus) | class Bio-titan | version 5 (the recipe (issue 623)), 2026
 | M1 | spine volley, throat (fixed) | 1 barrel | 9.9 | 1.36 | -0.30 | forward | F bioplasma | picture | port throat of the double mouth: rolled fold lips, an inner sphincter, a ring of spines, the bile gland glowing deep inside |
 | M2 | spine volley, throat (fixed) | 1 barrel | 9.9 | -1.36 | -0.30 | forward | F bioplasma | picture | starboard throat of the double mouth: rolled fold lips, an inner sphincter, a ring of spines, the bile gland glowing deep inside |
 | T1 | boarding tendrils, crown of 13 hooked tendrils (turns) | 3 barrels | 44.1 | 0.00 | 1.79 | forward | T tendril | picture | boarding tendrils: a crown of fourteen hooked tendrils on a muscle mound; it leans toward its prey (turns) |
-| G1 | spore cloud, spore gland, pore rosette (swings on its neck) | 2 barrels | 32.7 | 0.00 | -1.96 | forward | T spores | picture | spore gland on its neck under the belly, the spout curled forward to a rosette of pores |
-| G2 | spore cloud, spore gland, pore rosette (swings on its neck) | 2 barrels | 41.1 | 0.00 | -1.80 | forward | T spores | picture | spore gland on its neck under the belly, the spout curled forward to a rosette of pores |
-| G3 | spore cloud, spore gland, pore rosette (swings on its neck) | 2 barrels | 49.5 | 0.00 | -1.56 | forward | T spores | picture | spore gland on its neck under the belly, the spout curled forward to a rosette of pores |
-| G4 | spore cloud, spore gland, pore rosette (swings on its neck) | 2 barrels | 60.5 | 0.00 | -1.30 | forward | T spores | picture | spore gland on its neck under the belly, the spout curled forward to a rosette of pores |
-| G5 | spore cloud, spore gland, pore rosette (swings on its neck) | 2 barrels | 68.4 | 0.00 | -0.69 | forward | T spores | picture | spore gland on its neck under the belly, the spout curled forward to a rosette of pores |
+| G1 | spore cloud, spore gland, pore rosette (swings on its neck) | 1 barrel | 32.7 | 0.00 | -1.96 | forward | T spores | picture | spore gland on its neck under the belly, the spout curled forward to a rosette of pores |
+| G2 | spore cloud, spore gland, pore rosette (swings on its neck) | 1 barrel | 49.5 | 0.00 | -1.56 | forward | T spores | picture | spore gland on its neck under the belly, the spout curled forward to a rosette of pores |
+| G3 | spore cloud, spore gland, pore rosette (swings on its neck) | 1 barrel | 68.4 | 0.00 | -0.69 | forward | T spores | picture | spore gland on its neck under the belly, the spout curled forward to a rosette of pores |
 | B1p | brood sac, 2.5 across, birth slit | 1 | 32.1 | 2.01 | -1.39 | - | - | picture | brood sac on the lower flank: the spore swarms grow in it and are born through the slit |
 | B1s | brood sac, 2.5 across, birth slit | 1 | 32.1 | -1.93 | -1.34 | - | - | picture | brood sac on the lower flank: the spore swarms grow in it and are born through the slit |
 | B2p | brood sac, 2.0 across, birth slit | 1 | 48.9 | 1.53 | -1.04 | - | - | picture | brood sac on the lower flank: the spore swarms grow in it and are born through the slit |
@@ -54,7 +52,7 @@ The Chorus (chorus) | class Bio-titan | version 5 (the recipe (issue 623)), 2026
 | E2 | pulse vent, mouth 0.3 across | 1 | 87.5 | 0.30 | 0.42 | exhaust aft | - | picture | pulse vent with 2 trailing membrane veils, splayed away from the crown's centre |
 | E3 | pulse vent, mouth 0.3 across | 1 | 87.5 | -0.30 | 0.42 | exhaust aft | - | picture | pulse vent with 2 trailing membrane veils, splayed away from the crown's centre |
 
-Totals: 8 gun mounts with 15 barrels; 0 launcher tubes; 3 engines; 0 intakes; 0 dishes; 0 claws; 0 chains.
+Totals: 6 gun mounts with 8 barrels; 0 launcher tubes; 3 engines; 0 intakes; 0 dishes; 0 claws; 0 chains.
 No gun rests facing aft: every gun row above points forward or out to the side (yaw under 90 degrees).
 
 ## Colour zones (break stations from the side view; finish from the beauty)
@@ -77,10 +75,8 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Mouth, starboard throat | 2.1 to 11.0 | -2.47 to -0.21 | -1.45 to 0.81 | flesh folds | the starboard lobe |
 | Tendril crown | 41.0 to 47.2 | -0.86 to 0.87 | 1.42 to 2.05 | flesh mound, tendrils | a muscle mound with radial welts, the crown on it |
 | Spore gland 1 | 30.5 to 34.4 | -0.51 to 0.50 | -3.55 to -2.40 | flesh sac | hanging on its neck under the belly |
-| Spore gland 2 | 38.9 to 42.8 | -0.50 to 0.52 | -3.38 to -2.24 | flesh sac | hanging on its neck under the belly |
-| Spore gland 3 | 47.3 to 51.2 | -0.52 to 0.52 | -3.14 to -1.99 | flesh sac | hanging on its neck under the belly |
-| Spore gland 4 | 58.4 to 62.3 | -0.50 to 0.53 | -2.88 to -1.74 | flesh sac | hanging on its neck under the belly |
-| Spore gland 5 | 66.2 to 70.1 | -0.51 to 0.51 | -2.28 to -1.13 | flesh sac | hanging on its neck under the belly |
+| Spore gland 2 | 47.3 to 51.2 | -0.50 to 0.52 | -3.14 to -2.00 | flesh sac | hanging on its neck under the belly |
+| Spore gland 3 | 66.2 to 70.1 | -0.52 to 0.52 | -2.27 to -1.13 | flesh sac | hanging on its neck under the belly |
 | Brood sac 1 (port) | 27.8 to 36.5 | 1.02 to 3.47 | -3.75 to -0.70 | flesh sac | bulging out and down from the lower flank |
 | Brood sac 1 (starboard) | 27.9 to 36.7 | -3.45 to -0.96 | -3.65 to -0.64 | flesh sac | bulging out and down from the lower flank |
 | Brood sac 2 (port) | 45.5 to 52.6 | 0.74 to 2.74 | -2.88 to -0.46 | flesh sac | bulging out and down from the lower flank |
@@ -114,10 +110,8 @@ Bulkhead and frame stations: F0 12.3%, F1 18.4%, F2 28.0%, F3 34.5%, F4 40.9%, F
 | brood chamber 3p (brood) | 61.2 to 64.8 | 0.33 to 1.09 | -0.69 to -0.09 | brood chamber feeding the sac beside it (hangar 3) |
 | brood chamber 3s (brood) | 61.2 to 64.8 | -1.09 to -0.33 | -0.69 to -0.09 | brood chamber feeding the sac beside it (hangar 3) |
 | spore store 1 (gland) | 30.7 to 34.6 | -0.42 to 0.42 | -1.63 to -1.03 | spore store over the gland below |
-| spore store 2 (gland) | 39.1 to 43.0 | -0.42 to 0.42 | -1.46 to -0.86 | spore store over the gland below |
-| spore store 3 (gland) | 47.5 to 51.4 | -0.42 to 0.42 | -1.24 to -0.64 | spore store over the gland below |
-| spore store 4 (gland) | 58.6 to 62.5 | -0.42 to 0.42 | -0.83 to -0.23 | spore store over the gland below |
-| spore store 5 (gland) | 66.4 to 70.3 | -0.42 to 0.42 | -0.41 to 0.19 | spore store over the gland below |
+| spore store 2 (gland) | 47.5 to 51.4 | -0.42 to 0.42 | -1.24 to -0.64 | spore store over the gland below |
+| spore store 3 (gland) | 66.4 to 70.3 | -0.42 to 0.42 | -0.41 to 0.19 | spore store over the gland below |
 | tendril muscle (organ) | 41.6 to 46.6 | -0.60 to 0.60 | 0.65 to 1.35 | the crown's root muscle |
 | heart vat (vat) | 45.7 to 53.9 | -0.90 to 0.90 | -0.80 to 0.70 | the heart vat: the core (hp_core), lit bile-green |
 | gut aft (gut) | 54.8 to 66.2 | -0.95 to 0.95 | -0.30 to 1.00 | the second stomach |
@@ -171,7 +165,7 @@ Flesh, bone and organs through the whole body (R215), hidden until a piece break
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 181 objects, 21 parts, 588 close pairs, 836 rays, 8 guns, 6 turrets swept, 7 cones, 6 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 169 objects, 19 parts, 534 close pairs, 581 rays, 6 guns, 0 sensor pairs, 4 turrets swept, 7 cones, 6 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -182,7 +176,8 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **Colour: bile yellow-green light over dark olive flesh and ochre chitin.** R204 and the lore: the colour is fixed in the build; the picture came out grey with amber light (README 8b).
 - **The two mouths are the two bile spitters (bioplasma F, F).** data.js b_boss carries two Spine volleys forward; a weapon is an organ (factions.md). Each throat gets an inner sphincter, a ring of chitin spines (the spines it spits) and its glowing bile gland; the picture shows only the glow.
 - **The tendril cluster is the boarding tendrils (tendril T), a crown on a muscle mound that turns.** the slot is all round; the profile (the view of record for anatomy, README 8b) curls them up, the plan splays them flat; built as the profile with the tips splayed.
-- **The belly row is five spore glands (spores T) on necks, spouts forward.** the picture's small hanging sacs; the last two moved about one unit aft so the B-2 seam passes behind the crown and between two glands (R226).
+- **The belly row is three spore glands (spores T) on necks, spouts forward.** the picture's small hanging sacs; spaced so the B-2 seam passes behind the crown and between two glands (R226).
+- **Spore glands cut from five to three, one firing pore each (G1 at 4.9, G2 at 0.2, G3 at -5.1).** R241 (Ryan, Nov 13 2026: "all ships should have weapons that match their actual weapons in game"; issue 676 weapon-match check): spores fires 3 shots a volley; five glands of two pores each left every gland silent on some volleys, so the shots did not split the same way every time. Three glands of one pore each fire on every volley.
 - **The big flank sacs are brood sacs, the hangar (hangar 3), with birth slits.** the picture's crease on each sac becomes the slit the spore swarms are born through; a launch opening kept clear (fit check EXIT). They hang below the lower flank as heavy lobes on soft necks, so from above only their curve shows (the Board on PR 628).
 - **The long ridge down each flank is a raised membrane fold with an ochre chitin edge.** the picture's long flank ridge, given height; the lore's ochre chitin trim on its edge; it is also where the hide tears first.
 - **The tail ends in a crown of three pulse vents with trailing membranes.** factions.md: no nozzles, pulsing vents or trailing membranes; the picture's spike with three or four glow points and long wisps. The membranes are about two thirds of the picture's wisps so the whole ship is 28.0, mouth to membrane tip.

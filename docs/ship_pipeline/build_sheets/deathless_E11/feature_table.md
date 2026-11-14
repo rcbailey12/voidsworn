@@ -10,15 +10,15 @@ Eclipse (deathless) | class Tomb-ark | version 3 (third sheet (R221 weapons, pas
 |---|---|
 | model length | 28.074 |
 | length side | 28.1 |
-| length top | 28.087 |
-| length disagreement percent | 0.04 |
+| length top | 28.1 |
+| length disagreement percent | 0.0 |
 | beam top | 11.025 |
 | beam bow | 11.075 |
 | beam disagreement percent | 0.18 |
-| height side | 6.862 |
-| height bow | 6.85 |
+| height side | 6.425 |
+| height bow | 6.412 |
 | height disagreement percent | 0.04 |
-| widest at station percent | 18.3 |
+| widest at station percent | 18.4 |
 | hull beam | 4.76 |
 | hull depth | 4.0 |
 | L to B hull | 5.88 |
@@ -36,7 +36,6 @@ Eclipse (deathless) | class Tomb-ark | version 3 (third sheet (R221 weapons, pas
 | T1 | null cannon, twin turret | 2 barrels | 41.5 | 0.00 | 2.10 | forward, +5 elev | T gauss | picture | fore null cannon: twin rail pairs through a crescent shade, on a low drum behind the crescent |
 | T2 | null cannon, twin turret | 2 barrels | 57.9 | 0.00 | 2.85 | forward, +3 elev | T gauss | picture | aft null cannon, superfiring over T1; far enough aft that T1 fires aft over its muzzles |
 | F1 | null shredder, twin turret | 2 barrels | 72.8 | 0.00 | 1.78 | forward, +12 elev | T flak | picture | null shredder: a fan of five needle rails, aft on the deck |
-| F2 | null shredder, twin belly turret | 2 barrels | 53.6 | 0.00 | -2.05 | forward, +10 elev | T flak | picture | null shredder on the belly, covering below |
 | CW1 | core port, hexagonal, 0.7 across | 1 | 63.4 | 0.00 | 2.15 | - | - | picture | the core's light through a hex port in tier 1 |
 | HB1 | framed deck box 0.5 x 0.9 | 1 | 66.4 | 0.00 | 2.12 | - | - | picture | raised deck housing (the shade generator) on tier 1 |
 | H1 | square hatch 0.3 | 1 | 71.8 | 1.35 | 1.60 | - | - | picture | deck hatch aft, port |
@@ -61,7 +60,7 @@ Eclipse (deathless) | class Tomb-ark | version 3 (third sheet (R221 weapons, pas
 | E2 | engine, bell 1.3 across | 1 | 99.9 | 0.00 | -0.04 | exhaust aft | - | picture | centre engine of the stack |
 | E3 | engine, bell 1.3 across | 1 | 99.9 | 0.00 | -1.43 | exhaust aft | - | picture | lower engine of the stack |
 
-Totals: 5 gun mounts with 9 barrels; 0 launcher tubes; 3 engines; 0 intakes; 0 dishes; 0 claws; 0 chains.
+Totals: 4 gun mounts with 7 barrels; 0 launcher tubes; 3 engines; 0 intakes; 0 dishes; 0 claws; 0 chains.
 No gun rests facing aft: every gun row above points forward or out to the side (yaw under 90 degrees).
 
 ## Colour zones (break stations from the side view; finish from the beauty)
@@ -119,7 +118,7 @@ Bulkhead and frame stations: F0 33.7%, F1 42.2%, F2 51.5%, F3 60.7%, F4 69.6%, F
 | core (ecore) | 61.1 to 68.9 | -1.10 to 1.10 | -0.90 to 1.15 | the core of trapped light (hp_core); its port opens on the deck |
 | archive vault aft (archive) | 70.0 to 76.0 | -1.20 to 1.20 | -0.90 to 0.25 | archive vaults |
 | shade machinery (machinery) | 70.0 to 76.0 | -1.00 to 1.00 | 0.40 to 1.15 | shade generators and the band collar's drives |
-| flak magazine (magazine) | 50.8 to 56.5 | -0.70 to 0.70 | -1.50 to -1.00 | over the belly twin |
+| flak magazine (magazine) | 50.8 to 56.5 | -0.70 to 0.70 | -1.50 to -1.00 | the shredder magazine, hoisting aft to F1 |
 | engine room (engroom) | 85.3 to 87.8 | -0.70 to 0.70 | -0.90 to 1.15 | engine room and the three drives' feeds |
 
 | Armour zone | Thickness (units) | Note |
@@ -162,7 +161,7 @@ Full interiors throughout the hull (R215), hidden until a piece breaks. Eclipse 
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 244 objects, 28 parts, 650 close pairs, 462 rays, 5 guns, 4 turrets swept, 7 cones, 15 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 237 objects, 27 parts, 634 close pairs, 389 rays, 4 guns, 0 sensor pairs, 3 turrets swept, 7 cones, 15 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -172,13 +171,14 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 
 - **Three big engines stacked one over another, each about a third of the stern's height, standing 2.6 behind the hull, which ends 0.9 sooner and narrows in plan round them (issue 618, the Board's massing round).** the side view and the beauty show three big bells stacked filling the stern; the sheet's diamond of four read small and hid behind the feathers, whose last row now ends at the hull's end.
 - **Engines are eclipse rings, not flame.** factions.md: "no flaming bells. An eclipse ring of pale light": each bell has a black shade disc with a thin pale green-white ring inside its lip.
-- **Batteries by data.js slot.** d_boss carries gauss T twice, doom F and flak T: the two big mounts are the null cannons (the aft one superfires on a barbette), the projector is the corona arc, the small aft mount and a belly mount are the null shredders.
+- **Batteries by data.js slot.** d_boss carries gauss T twice, doom F and flak T: the two big mounts are the null cannons (the aft one superfires on a barbette), the projector is the corona arc, the small aft mount is the null shredder.
+- **Belly shredder F2 cut; the deck shredder F1 is the whole flak slot.** R241 (Ryan, Nov 13 2026: "all ships should have weapons that match their actual weapons in game"; issue 676 weapon-match check): flak fires 3 shots a volley and each shredder has five needle muzzles, so two shredders took turns and each fell silent on some volleys; one shredder fires on every volley. The board is flat, so the belly added no cover the game uses.
 - **Weapons built from the lore, not the picture's generic turrets (R221).** Ryan: "their turrets look the same as hullbreakers"; the picture draws box turrets with round twin barrels. The null cannons are rail guns (slim round rail pairs with banded collars) firing through the slot of a thin arched crescent shade, the shredders fans of needle rails, all in the hull's curved, layered, banded language (pass 2: "super blocky"), the projector an arc emitter with a crown of electrode horns round the crest's black disc (tools/blender/kits/eclipse/README.md).
 - **The green hexagon on the deck is the core port, not a gun.** the faction's green is the trapped core seen through gaps; the flak slot is the small twin.
 - **The crescent is one thick tiered band: the broad outer band flush with a thick outer wall, the inner layer stepped down close inside it, the root layer on the band (issue 618, the Board's massing round).** judged against the whole concept: the sheet's thin blade with a raised inner ribbon read as two thin blades with a wide gap between them; the concept is one broad plated band with a stepped inner layer close against it.
 - **The crescent is three stacked layers with a corona line on each rim.** factions.md: broad layered plates, the green a thin line on every shade rim; the concept shows two stepped bands and a lip; the layers are also how it breaks (band by band).
 - **Low round drums under both batteries, slimmed to the turret feet (R221 pass 2).** so the fore twin clears the tier when it trains aft and fires aft over the aft twin's muzzles, and the aft twin fires over the fore one (the fit check found both).
-- **Belly twin, attitude thrusters, deck and belly hatches, corona strip lights, heat panels added.** the belly needs cover and a ship in space needs thrusters; the picture shows no underside.
+- **Attitude thrusters, deck and belly hatches, corona strip lights, heat panels added.** a ship in space needs thrusters; the picture shows no underside.
 - **B-1 kinks aft round the projector's breech collars (to 4.1 on the axis); B-2 runs aft of the collar thrusters at the flanks (issue 618).** R226: a machine never crosses a seam; the projector and the thrusters ride whole with one piece.
 - **B-3 (the dorsal tiers' peel) raised to about 1.7, through the tiers (issue 618).** at 1.45 the game's torn peel plane reached the upper deck's edge (1.2) and left 15 deck triangles past the torn plating (death_seam_check); at 1.7 it still takes the tiers and the batteries.
 - **B-4 (the crescent layers' peel) is a level plane at 0.9 over the bow compartment (issue 618).** the game's longitudinal seam is one level plane (RECIPE.md, format version 1); at 0.9 it clears the projector's collars and peels the root and upper layers off the blade.
@@ -189,7 +189,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 
 ## Designed here, not shown in the picture
 
-- The belly between the skirt and the belly twin is designed here; the picture does not show the underside.
+- The belly under the skirt is designed here; the picture does not show the underside.
 - Q1p (attitude thruster quad): neck flank.
 - Q2p (attitude thruster quad): on the band collar.
 - Q1s (attitude thruster quad): neck flank.

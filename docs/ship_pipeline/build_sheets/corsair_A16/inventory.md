@@ -12,7 +12,6 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 | ftube_spine | carries the scoop ducting between the tubes into the hull | vent | ribbed housing between and above the tubes | 1 | bow/side | a frame with vertical ribs and a dark recess | picture |
 | dishes | listening dishes: hear targets ahead (the ship's eyes forward) | dish | listening dishes side by side on a plinth over the prow | 2 | bow/top, bow/side | ribbed shallow bowls with rolled rims, feed horns on struts, yokes, a base | picture |
 | bow_guns | scatter guns, data.js slots P and S: the broadside battery forward | gun | deck-edge twin turrets in a row along the forward deck edges (picture: port edge only) (mirrored to starboard as a matched battery (R213)) | 4 | bow/top, bow/side | rings, faceted housings, mantlets, breeches, long barrels with sleeves and brakes | picture |
-| bow_casemates | scatter casemates, slots P and S: low cover over the bow quarters | gun | bow casemates low on the flanks | 2 | bow/side | a sponson plate, a box housing, a ball mantlet, barrels with brakes | picture |
 | bow_claws | boarding pincers: seize a victim's hull for the boarders (the Hullbreakers' trade) | claw | big hooked boarding claws under the chin | 2 | bow/below, bow/side | hinge drums with caps, armoured segments, joint drums, piston rams, hooked fingers | picture |
 | bow_hatchboxes | deck access and ready stores for the forward guns | hatchbox | raised framed deck boxes on the forward deck | 2 | bow/top | a framed box, an inset lid, side ribs | picture |
 | bow_trophy | armour taken from beaten Eclipse ships, bolted on as plate and as a kill mark | plate | violet Eclipse trophy plates (deck and port flank) | 2 | bow/top, bow/side | thick slabs with bevels and rivets in their old colour | picture |
@@ -24,7 +23,6 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 | rack | heavy rockets, data.js slot F (htorp) | rack | heavy rocket rack, 2 by 5 cells, on the spine | 1 | mid/top | a framed box of cells, rocket noses set back in each cell, dividers, side cheeks, a yoke and a ring | picture |
 | armour_vent | armoured vent: dumps magazine and gun-deck heat | hatchbox | armoured vent housing forward of the rack: a raised box with two slanted blades | 1 | mid/top | a frame, an inset lid, ribs, two slanted armour fins | picture |
 | mid_guns | scatter guns, slots P and S: the broadside battery amidships | gun | deck-edge twin turrets amidships | 2 | mid/top, mid/side | as the bow turrets | picture |
-| mid_casemates | scatter casemates, slots P and S: low cover over the flanks | gun | flank twin casemates amidships | 2 | mid/side | a sponson plate, a box housing, a ball mantlet, twin barrels with brakes | picture |
 | patches | field repairs: plate welded over battle damage | patch | torn patch plates, crooked and overlapping, mid-flank and the tier 2 shoulder | 8 | mid/side, mid/top | crooked slabs, one corner lifted, rivets | picture |
 | pale_plates | armour taken from Hegemony ships, bolted on as plate and as a kill mark | plate | pale Hegemony grey trophy plates on the port flank | 1 | mid/side | thick slabs with bevels and rivets | picture |
 | flank_ribs | frame ribs: the hull's structure, showing through the plate | rib | vertical frame ribs dividing the flank into sections | 8 | mid/side, stern/side, bow/side | raised rib bars from the belt to the deck edge | picture |
@@ -37,7 +35,6 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 | castle | armoured citadel over the engine room and crew decks | tier | the castle (tier 3): sloped front with a dried-blood band, flank faces, window slits and hatches | 1 | stern/top, stern/side | sloped faces, a roof line, openings (slits and a hatch), edge bevels | picture |
 | bridge | command deck: where the warlord fights the ship | tier | bridge block on the castle roof with a vision slit | 1 | stern/top, stern/side | a face, a roof line, a vision slit | picture |
 | top_turret | flak, data.js slot T: all-round cover from the bridge | gun | castle-top turret with a long barrel (turned to face forward (R204: no gun aft)) | 1 | stern/top | ring, housing, mantlet, breeches, long barrels with brakes | picture |
-| stern_casemates | scatter casemates, slots P and S: broadside cover aft | gun | castle flank twin casemates in boxy housings | 4 | stern/side | a sponson plate, a box housing, a ball mantlet, twin barrels with brakes | picture |
 | main_engine | main thrust | engine | big main engine bells: the port pod the larger, a centre main | 3 | stern/side, stern/top | a bell with a thick lip, a throat, an inner cone, cooling rings, gimbal struts, a banded housing, a mount collar | picture |
 | boosters | extra thrust for a ramming run | engine | small lower booster bells | 2 | stern/side, stern/below | as the main engines | picture |
 | upper_pod | thrust (a salvaged pod set high) | engine | upper pod engine on the stern deck | 1 | stern/top | as the main engines | picture |
@@ -50,7 +47,7 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 Kit sub-parts per type (what DETAILED checks):
 
 - antenna: base, mast, whip, pod
-- bay: rim, leaf, seam, hinge
+- bay: rim, leaf, seam, hinge, ram, frame, stiff, rail, bracket, rivet
 - claw: hinge, arm, joint, ram, finger
 - dish: bowl, rib, feed, strut, yoke, post, base
 - engine: housing, collar, band, bell, lining, throat_glow, cone, cool, strut
@@ -67,7 +64,7 @@ Kit sub-parts per type (what DETAILED checks):
 - rib: rib
 - thruster: block, nozzle
 - tier: face, roof, opening
-- tube: tube, bore, band
+- tube: tube, bore, band, ring, bolt, stiff
 - vent: frame, slat
 
 Left as surface, and why:
@@ -78,7 +75,7 @@ Left as surface, and why:
 
 ## Every built part has a job (R221)
 
-Built kit parts: 101; parts whose inventory id names no line with a job: 0.
+Built kit parts: 93; parts whose inventory id names no line with a job: 0.
 
 ## Per cell: present, shaped, detailed (from the model, corsair_A16_model.json)
 
@@ -105,7 +102,6 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | ftube_spine | ribbed housing between and above the tubes | 1 / 1 | Y | Y | Y |
 | dishes | listening dishes side by side on a plinth over the prow | 2 / 2 | Y | Y | Y |
 | bow_guns | deck-edge twin turrets in a row along the forward deck edges (picture: | 4 / 4 | Y | Y | Y |
-| bow_casemates | bow casemates low on the flanks | 2 / 2 | Y | Y | Y |
 | bow_claws | big hooked boarding claws under the chin | 2 / 2 | Y | Y | Y |
 | bow_trophy | violet Eclipse trophy plates (deck and port flank) | 1 / 2 | Y | Y | Y |
 | bow_plates | armour plating of mixed size over the whole bow | 5 / 1 | Y | Y | Y |
@@ -142,7 +138,6 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | lamps | dim red running lights along both flanks and on the castle | 14 / 14 | Y | Y | Y |
 | tier2 | raised armoured deck (tier 2) with a sloped, stepped front | 3 / 1 | Y | Y | Y |
 | mid_guns | deck-edge twin turrets amidships | 2 / 2 | Y | Y | Y |
-| mid_casemates | flank twin casemates amidships | 2 / 2 | Y | Y | Y |
 | patches | torn patch plates, crooked and overlapping, mid-flank and the tier 2 s | 8 / 8 | Y | Y | Y |
 | pale_plates | pale Hegemony grey trophy plates on the port flank | 1 / 1 | Y | Y | Y |
 | flank_ribs | vertical frame ribs dividing the flank into sections | 6 / 8 | Y | Y | Y |
@@ -178,7 +173,6 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | flank_ribs | vertical frame ribs dividing the flank into sections | 6 / 8 | Y | Y | Y |
 | castle | the castle (tier 3): sloped front with a dried-blood band, flank faces | 3 / 1 | Y | Y | Y |
 | bridge | bridge block on the castle roof with a vision slit | 3 / 1 | Y | Y | Y |
-| stern_casemates | castle flank twin casemates in boxy housings | 4 / 4 | Y | Y | Y |
 | main_engine | big main engine bells: the port pod the larger, a centre main | 3 / 3 | Y | Y | Y |
 | boosters | small lower booster bells | 2 / 2 | Y | Y | Y |
 | pylons | armoured engine housings and pylons around the pods | 1 / 2 | Y | Y | Y |
@@ -197,7 +191,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 ## Structure per cell: distinct masses (blocks, tiers, belts), concept against build
 
-Concept counts read off the round 8 sheet by eye (A16 sheet: bow, the prow cap, brow steps, tube housing, chin and layered flank belts; midships, tier 2, the rack plinth, the vent box, three flank bands and the sponson; stern, castle, bridge, stern deck, two pod housings and flank bands); build counts are the model's registered masses whose station range overlaps the third (below: masses reaching within 0.8 of the belly).
+Concept counts read off the concept sheet by eye (A16 sheet: bow, the prow cap, brow steps, tube housing, chin and layered flank belts; midships, tier 2, the rack plinth, the vent box, three flank bands and the sponson; stern, castle, bridge, stern deck, two pod housings and flank bands); build counts are the model's registered masses whose station range overlaps the third (below: masses reaching within 0.8 of the belly).
 
 | Cell | Concept | Build | Build masses |
 |---|---:|---:|---|
@@ -218,6 +212,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 2.46 | 3.17 | 3.04 | 4.45 |
-| build | 2.13 | 2.80 | 3.04 | 4.05 |
+| build | 2.68 | 2.80 | 3.06 | 4.08 |
 
 Lines not present, shaped and detailed without a reason: 0.

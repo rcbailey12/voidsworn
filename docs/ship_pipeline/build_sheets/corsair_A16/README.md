@@ -1,5 +1,7 @@
 # corsair_A16 build sheet: the Warlord's Pyre-Barge (round 3c, R221 clean-ups)
 
+**Issue 676 (R241): the casemates are cut; each broadside is its three twin turrets.** Ryan, Nov 13 2026 (R241): "all ships should have weapons that match their actual weapons in game, so they line up with firing, effects, turns, etc". The bow casemates PB and SB and the flank casemates PM and SM aimed outside the P and S arcs (bearing 20 and 29), and the sponson casemates P4, P5, S4 and S5 sat fixed on the same slot as turning turrets, so 13 muzzles shared scatter's 5 shots and most mounts fell silent on most volleys. Each broadside now shows its three matched twin turrets (P1 to P3, S1 to S3: 6 muzzles for 5 shots, every turret firing on every volley). Seam notes below that name the cut casemates are the history of where the seams were placed. The weapon-match check (tools/blender/build_sheets/weapon_match.py; `corsair_A16_weapon_match.json` from every build) passes on this sheet; the views on this page were re-rendered from the changed design file in the issue 676 sandbox (Blender 4.5, CPU); the outline check picture is unchanged.
+
 Ashfall Hullbreakers flagship, class Battle-barge, **26.0 world units** (godot/render/hull_table.gd CLS_LEN; data.js c_boss).
 Version 3, 2026-11-11, after Ryan's review of round 2 (R217: tubes as circles, guns blocking the rockets and in front of an
 engine, engines and guns plain tubes) and his scaling rule (R218: whole-ship fidelity), with turrets that turn (R219).
@@ -138,7 +140,7 @@ deep in the bell, the lining near dark. [Six views beside the concept](paint/A16
 
 1. **A long, low slab** about 4 deep, with tier 2 and the castle as low steps (the whole ship about 5.7 tall, like the
    concept), the bow tapering in plan from the tube cluster (about 4.3 wide) and rounded by heavy chamfers.
-2. **Layered flank belts**: an upper armour belt, a recessed band carrying the lights, vents and bow casemates, a lower belt.
+2. **Layered flank belts**: an upper armour belt, a recessed band carrying the lights and vents (its bow casemates cut in issue 676, R241), a lower belt.
 3. **The two tubes are the face**: big, side by side across the nose, standing fully proud of a shortened brow and chin.
 4. **Curved pincers under the bow tip**; short grabbers under the stern instead of legs under midships; the engine pods
    brought in close to the hull.

@@ -33,7 +33,7 @@ INVENTORY = [
          what='the dorsal tendril cluster amidships, curling up in profile, splayed in plan', count=1, cells=['mid/top', 'mid/side'],
          reads='a muscle mound with radial welts, a sphincter, hooked tendrils with grip rings, chitin barbs and acid pores', src='picture'),
     dict(id='spore_glands', job='the Spore cloud (spores T): point defence against craft, puffing spore clouds', type='spore',
-         what='the row of small sacs hanging under the belly on short necks', count=5, cells=['mid/side', 'mid/below'],
+         what='the row of small sacs hanging under the belly on short necks (R241: three, one firing pore each)', count=3, cells=['mid/side', 'mid/below'],
          reads='a neck collar, a veined sac, a spout curling forward, a rosette of pores', src='picture'),
     dict(id='flank_fold', job='armour strake over the flank organs, and the line the hide tears along first (how it breaks)', type='welt',
          what='the long raised ridge down each flank from behind the head to the tail', count=2,

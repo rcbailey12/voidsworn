@@ -9,6 +9,9 @@ with `build.py <code> <out> fit`). What it tests, on every part of every type:
 3. **ARC**: every gun, at every bearing of its data.js slot arc (core.js inArc: F 60 degrees either side of the bow, P and S
    30 to 150 off the bow, T all round, 5 degree steps), has a clear line at an elevation it can reach (turrets 0 to 30, flak
    0 to 60, casemates -10 to +20), out to 60 percent of the ship's length.
+3b. **SENSOR** (R240): no gun sits behind or aims through a dish, antenna or mast: the gun's whole firing volume (every
+   bearing of its slot arc, every elevation it can reach, out to 60 percent of the ship's length) misses every sensor piece's
+   box padded by the gun's calibre; firing just over a dish is not enough.
 4. **SWEEP** (R219): every turret's turning pieces turned through every bearing of its arc touch nothing; no two turrets meet
    when both turn through their arcs.
 5. **EXHAUST**: nothing in any engine or thruster exhaust cone.
@@ -25,54 +28,10 @@ core.js inArc), `rest_yaw`, `rest_pitch`; its turning meshes `<id>_turn_<materia
 also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on the hull. Casemates are single fixed parts
 (`turret=0`, `gun_fixed=1`).
 
-## Round 2 layout, checked (before)
-
-The round 2 design (`tools/blender/build_sheets/ships/r2/corsair_A16.py`, the PR 547 layout) built with the round 3 kit parts and run through the same check. Counts: CLASH 16, MOUNT 0, ARC 0, SWEEP 11, EXHAUST 10, EXIT 1.
-
-| Check | Part | Against | Hits | What |
-|---|---|---|---:|---|
-| CLASH | H3 | hull | 4 | body piece inside the hull or a hull mass (H3_body_steel in corsair_A16_hull) |
-| CLASH | H4 | hull | 4 | body piece inside the hull or a hull mass (H4_body_steel in corsair_A16_hull) |
-| CLASH | PB | hull | 1 | body piece inside the hull or a hull mass (PB_body_soot in corsair_A16_hull) |
-| CLASH | SB | hull | 1 | body piece inside the hull or a hull mass (SB_body_soot in corsair_A16_hull) |
-| CLASH | E0 | hull | 3 | body piece inside the hull or a hull mass (E0_body_steel in corsair_A16_hull) |
-| CLASH | E3 | hull | 5 | body piece inside the hull or a hull mass (E3_body_steel in corsair_A16_hull) |
-| CLASH | E4 | hull | 5 | body piece inside the hull or a hull mass (E4_body_steel in corsair_A16_hull) |
-| CLASH | E5 | hull | 3 | body piece inside the hull or a hull mass (E5_body_steel in A16_aftdeck) |
-| CLASH | H1 | hull | 2 | body piece inside the hull or a hull mass (H1_body_steel in A16_H1_housing) |
-| CLASH | H2 | hull | 2 | body piece inside the hull or a hull mass (H2_body_steel in A16_H2_housing) |
-| CLASH | PB | Q1 | 2 | parts intersect: PB_mount_iron and Q1_mount_iron |
-| CLASH | SB | Q2 | 2 | parts intersect: SB_mount_iron and Q2_mount_iron |
-| CLASH | E1 | hull | 5 | body piece inside the hull or a hull mass (E1_body_steel in A16_E1_pylon) |
-| CLASH | Q3 | hull | 1 | body piece inside the hull or a hull mass (Q3_body_steel in A16_E1_pylon) |
-| CLASH | E2 | hull | 5 | body piece inside the hull or a hull mass (E2_body_steel in A16_E2_pylon) |
-| CLASH | Q4 | hull | 1 | body piece inside the hull or a hull mass (Q4_body_steel in A16_E2_pylon) |
-| SWEEP | T1 | R1 | 18 | turning through its arc hits R1_body_soot; blocked bearings -180 to -140, 140 to 180 |
-| SWEEP | P1 | P2 | 15 | turning through its arc hits P2_turn_dark; blocked bearings 85 to 150 |
-| SWEEP | P2 | P3 | 15 | turning through its arc hits P3_turn_dark; blocked bearings 85 to 150 |
-| SWEEP | S1 | S2 | 15 | turning through its arc hits S2_turn_iron; blocked bearings -150 to -85 |
-| SWEEP | S2 | S3 | 15 | turning through its arc hits S3_turn_iron; blocked bearings -150 to -85 |
-| SWEEP | T1 | P1 | 1 | T1 barrels at bearing 60 reach P1's housing |
-| SWEEP | T1 | P2 | 1 | T1 barrels at bearing 110 reach P2's housing |
-| SWEEP | T1 | S1 | 1 | T1 barrels at bearing -70 reach S1's housing |
-| SWEEP | T1 | S2 | 1 | T1 barrels at bearing -120 reach S2's housing |
-| SWEEP | P1 | P3 | 1 | barrels meet with P1 at 150 and P3 at 30 |
-| SWEEP | S1 | S3 | 1 | barrels meet with S1 at -150 and S3 at -30 |
-| EXHAUST | E3 | hull | 7 | exhaust cone hits corsair_A16_hull at 0.1 behind the exit |
-| EXHAUST | E3 | E0 | 1 | part inside the exhaust cone: E0_body_steel |
-| EXHAUST | E4 | hull | 7 | exhaust cone hits corsair_A16_hull at 0.1 behind the exit |
-| EXHAUST | E4 | E0 | 1 | part inside the exhaust cone: E0_body_steel |
-| EXHAUST | Q1 | PB | 4 | exhaust cone hits PB_body_steel at 1.2 behind the exit |
-| EXHAUST | Q2 | SB | 5 | exhaust cone hits SB_body_steel at 0.7 behind the exit |
-| EXHAUST | Q3 | E1 | 8 | exhaust cone hits E1_mount_steel at 0.5 behind the exit |
-| EXHAUST | Q3 | hull | 2 | exhaust cone hits A16_E1_pylon at 0.2 behind the exit |
-| EXHAUST | Q4 | E2 | 7 | exhaust cone hits E2_mount_steel at 0.6 behind the exit |
-| EXHAUST | Q4 | hull | 2 | exhaust cone hits A16_E2_pylon at 0.2 behind the exit |
-| EXIT | R1 | T1 | 6 | launch cell covered by T1_turn_soot at 1.8 |
 
 ## How round 3 fixed them
 
-| Clash (round 2) | Fix (round 3) |
+| Clash (before) | Fix |
 |---|---|
 | R1 launch cells covered by T1 (the bunker turret in front of the rack) | bunker turret removed; flak moved to a bridge barbette (T2) and, after R221, the belly (T1); the rack raised on a plinth and pitched 12 degrees |
 | Q1 and Q2 exhaust into the bow casemates PB and SB | bow quads moved up onto the upper chamfer of the prow, firing up and out; casemates moved aft to 9.0 |
@@ -83,15 +42,16 @@ The round 2 design (`tools/blender/build_sheets/ships/r2/corsair_A16.py`, the PR
 | Tube bores I1 and I2 inside the prow | a sunk tube is a mount by design: its bore runs back into the prow; the mouth must be clear (EXIT check) |
 | Casemate housings P4, P5, S4, S5, SB inside hull masses | casemates set onto the sponson outer faces and the bow flank surface, plates cleared under each mount |
 | Dish posts D1 and D2 inside the plinth | dishes stand on the plinth top on their own base plates |
+| SENSOR: T2 (flak, all round) aiming through the port antenna AN1 when trained aft | R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): AN1 cut from 1.8 to 1.5 tall, so its whips stay under the lowest line of fire of the barbette turret |
 
 While designing round 3 the check also caught (and the design fixed) plates swallowing slits and lamps, casemate breeches pushed
 into the hull, a pipe through a pod, chains through casemates, dishes too low on their posts, and, once turrets turned (R219),
 neighbouring deck-edge turrets meeting when trained aft (the middle ones now superfire on barbettes) and antennas inside a
 turret's swept circle (moved out).
 
-## Round 3 (after)
+## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 400 objects, 73 parts, 1037 close pairs, 753 rays, 16 guns, 8 turrets swept, 10 cones, 45 apertures, 2 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 371 objects, 65 parts, 922 close pairs, 533 rays, 8 guns, 96 sensor pairs, 8 turrets swept, 10 cones, 45 apertures, 2 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 
@@ -99,13 +59,13 @@ Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 400
 |---|---|---|---:|---:|---:|---|---:|---|---|
 | T1 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
 | T2 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
-| P1 | P | 30 to 150 | 25 | 15 | 140 | A16_barbette_P2 | 120 | HB3_body_soot | no |
-| P2 | P | 30 to 150 | 25 | 20 | all round | - | 70 | R1_body_iron | no |
-| P3 | P | 30 to 150 | 25 | 25 | 140 | A16_redband | 0 | A16_barbette_P2 | yes |
-| S1 | S | -150 to -30 | 25 | -15 | 170 | A16_barbette_S2 | 140 | A16_barbette_S2 | no |
-| S2 | S | -150 to -30 | 25 | -20 | 70 | R1_body_iron | all round | - | no |
-| S3 | S | -150 to -30 | 25 | -25 | 0 | A16_barbette_S2 | 140 | A16_castle | yes |
+| P1 | P | 30 to 150 | 25 | 30 | 125 | A16_barbette_P2 | 135 | HB3_body_soot | no |
+| P2 | P | 30 to 150 | 25 | 35 | 170 | R1_body_soot | 85 | R1_body_iron | no |
+| P3 | P | 30 to 150 | 25 | 40 | 125 | A16_redband | 15 | A16_barbette_P2 | yes |
+| S1 | S | -150 to -30 | 25 | -30 | all round | - | 125 | A16_barbette_S2 | no |
+| S2 | S | -150 to -30 | 25 | -35 | 85 | R1_body_iron | 170 | R1_body_soot | no |
+| S3 | S | -150 to -30 | 25 | -40 | 15 | A16_barbette_S2 | 125 | A16_castle | yes |
 
-Reach is measured from the rest bearing, in degrees, turning toward port (bearings rising) and toward starboard; "all round" means nothing stops it within 180. Every turret clears its whole data.js slot arc (sweep steps above). Under 60 degrees either way: P3 (starboard 0); S3 (port 0).
+Reach is measured from the rest bearing, in degrees, turning toward port (bearings rising) and toward starboard; "all round" means nothing stops it within 180. Every turret clears its whole data.js slot arc (sweep steps above). Under 60 degrees either way: P3 (starboard 15); S3 (port 15).
 
 Picture: [fit_view.jpg](fit_view.jpg) (top and side with arcs, sweep circles, exhaust cones and exits).

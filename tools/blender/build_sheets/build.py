@@ -5,6 +5,8 @@
 # mesh:   builds and writes <code>_tris.npz (exterior triangles) for the outline fit, no renders.
 # weapons: builds and renders only the weapon close-ups (weapon_<id>.png, <code>_weapons.json; R221).
 # fit:    builds, runs the fit check (clash.py) and writes <code>_fit.json and <code>_model.json, no renders.
+# match:  builds and runs only the weapon-match check (weapon_match.py, R241); exit 1 when it fails. Every mode that builds
+#         runs it and writes <code>_weapon_match.json.
 # render runs the fit check too (round 3, R217).
 import sys, os, json, math, importlib.util
 import bpy
@@ -95,10 +97,27 @@ def write_model():
     model['parts'] = K.built
     model['weapons'] = globals().get('WEAPON_ROWS', [])
     model['fit_counts'] = FIT['counts']
+    model['weapon_match'] = MATCH
     json.dump(model, open(os.path.join(OUT, CODE + '_model.json'), 'w'), indent=1)
 
 
 views = {}
+# issue 676 (R241): the weapon-match check on every build: every weapon the ship shows is one of its data.js weapons, tied to
+# that slot's hard point, of a kind that fits it, facing its arc, a turret turning under its own node (weapon_match.py)
+import re as _re  # noqa: E402
+import weapon_match  # noqa: E402
+_gm = _re.search(r'data\.js\s+([A-Za-z0-9_]+)', str(getattr(ship, 'GAME', '')))
+if _gm:
+    MATCH, _mp = weapon_match.run(K, _gm.group(1))
+    json.dump(MATCH, open(os.path.join(OUT, CODE + '_weapon_match.json'), 'w'), indent=1)
+    print('%s weapon match %s (%d problems)' % ('PASS' if not _mp else 'FAIL', CODE, len(_mp)))
+    for _p in _mp:
+        print('  ', _p)
+else:
+    MATCH = dict(code=CODE, result='SKIPPED', problems=['the sheet GAME line names no data.js ship'])
+    print('FAIL weapon match %s: the sheet GAME line names no data.js ship' % CODE)
+if MODE == 'match':
+    sys.exit(0 if MATCH.get('result') == 'PASS' else 1)
 FIT = clash.run(K, OUT, CODE, ship.LENGTH) if MODE in ('fit', 'render') else dict(counts={})
 if MODE == 'fit':
     write_model()

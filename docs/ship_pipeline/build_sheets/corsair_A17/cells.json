@@ -245,15 +245,6 @@
   },
   {
    "cell": "mid/side",
-   "id": "flank_casemates",
-   "built": 2,
-   "listed": 2,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/side",
    "id": "patches",
    "built": 8,
    "listed": 8,
@@ -336,15 +327,6 @@
   {
    "cell": "stern/top",
    "id": "stern_hatch",
-   "built": 2,
-   "listed": 2,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "stern/side",
-   "id": "flank_casemates",
    "built": 2,
    "listed": 2,
    "present": true,
@@ -489,10 +471,10 @@
    "hull_LH": 4.06
   },
   "build": {
-   "env_LB": 1.92,
-   "env_LH": 2.76,
+   "env_LB": 2.21,
+   "env_LH": 2.8,
    "hull_LB": 2.83,
-   "hull_LH": 3.79
+   "hull_LH": 3.69
   }
  }
 }

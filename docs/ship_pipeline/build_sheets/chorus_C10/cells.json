@@ -264,8 +264,8 @@
   {
    "cell": "mid/side",
    "id": "spore_glands",
-   "built": 5,
-   "listed": 5,
+   "built": 3,
+   "listed": 3,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -327,8 +327,8 @@
   {
    "cell": "mid/below",
    "id": "spore_glands",
-   "built": 5,
-   "listed": 5,
+   "built": 3,
+   "listed": 3,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -525,17 +525,17 @@
   {
    "cell": "mid/top",
    "concept": 6,
-   "build": 15
+   "build": 13
   },
   {
    "cell": "mid/side",
    "concept": 7,
-   "build": 11
+   "build": 9
   },
   {
    "cell": "mid/below",
    "concept": 6,
-   "build": 7
+   "build": 6
   },
   {
    "cell": "stern/top",
@@ -563,8 +563,8 @@
   "build": {
    "env_LB": 3.98,
    "env_LH": 3.32,
-   "hull_LB": 4.6,
-   "hull_LH": 5.98
+   "hull_LB": 4.61,
+   "hull_LH": 6.19
   }
  }
 }

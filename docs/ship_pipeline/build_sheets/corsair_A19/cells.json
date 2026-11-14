@@ -30,8 +30,8 @@
   {
    "cell": "bow/top",
    "id": "bow_launchers",
-   "built": 2,
-   "listed": 2,
+   "built": 1,
+   "listed": 1,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -93,8 +93,8 @@
   {
    "cell": "bow/side",
    "id": "bow_launchers",
-   "built": 2,
-   "listed": 2,
+   "built": 1,
+   "listed": 1,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -140,15 +140,6 @@
    "id": "thrusters",
    "built": 4,
    "listed": 4,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "bow/side",
-   "id": "casemates",
-   "built": 3,
-   "listed": 3,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -227,15 +218,6 @@
   },
   {
    "cell": "mid/top",
-   "id": "casemates",
-   "built": 3,
-   "listed": 3,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/top",
    "id": "deck_turrets",
    "built": 2,
    "listed": 2,
@@ -293,15 +275,6 @@
    "id": "spine",
    "built": 2,
    "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/side",
-   "id": "casemates",
-   "built": 3,
-   "listed": 3,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -588,7 +561,7 @@
   {
    "cell": "mid/top",
    "concept": 5,
-   "build": 10
+   "build": 9
   },
   {
    "cell": "mid/side",
@@ -598,7 +571,7 @@
   {
    "cell": "mid/below",
    "concept": null,
-   "build": 7
+   "build": 6
   },
   {
    "cell": "stern/top",
@@ -624,10 +597,10 @@
    "hull_LH": 10.07
   },
   "build": {
-   "env_LB": 2.46,
-   "env_LH": 3.49,
-   "hull_LB": 3.27,
-   "hull_LH": 6.19
+   "env_LB": 3.11,
+   "env_LH": 3.42,
+   "hull_LB": 3.39,
+   "hull_LH": 6.04
   }
  }
 }

@@ -116,7 +116,7 @@ R225: one home per fact):
    B ambient occlusion at a long reach (grime). The hull is baked with the parts in place and the parts with the hull in place;
 4. builds one procedural material per (zone, atlas): the plate's own tone per UV island plus a soft patch and fine mottle; the
    trim sheet's scuffs and rivet rows set back from every plate edge (box projected at ship scale, so a gun and a hull plate
-   carry the same density, R224); the zone's own trim rows (`ZONE_BY_KIND`: the launch bay mouth's warning stripes); rust in
+   carry the same density, R224); the zone's own trim rows (`ZONE_BY_KIND`: the launch bay mouth's warning stripes; never a hangar mouth's, R240); rust in
    cavities, under edges and in a few blooms, running down the sides; grime low, under parts and toward the engines; the decals;
    edge wear to bare metal last, so it eats into the decals;
 5. bakes albedo and ORM for both atlases and the hull's detail normal (the layers' height through a bump), then puts the
@@ -134,7 +134,10 @@ stack's `RUNNING_LIGHTS` rule builds small round deep-red lamps (0.0115 of the s
 and the breach, braking and boarding points; each bezel bridges the plate steps under it); their size and count go into the
 job's `lights.json` as point lights, which `standing.py lights` reports without holding them to the 2 px floor of painted window
 and trim lights. Plate patchwork, seams and brick rust (R228) are the faction stack's `PATCH_FAMILIES`,
-`patch_cell` and `CONCEPT`. The game's rim light (`godot/render/look_rim.gd`, issue 362, specular x8) flared white on the stack's surfaces at the close
+`patch_cell` and `CONCEPT`. The patchwork is never even or ordered (R240): the shared `_grid` warps the cell sizes along every
+axis, lays rows in bands whose edges step every few columns, shifts every column and strip by its own amount and splits a share
+of the cells once more; the faction stack sets how much (`patch_warp`, `patch_band`, `patch_split` in `LAYERS`; zero for all
+three gives the old even grid). The game's rim light (`godot/render/look_rim.gd`, issue 362, specular x8) flared white on the stack's surfaces at the close
 cameras (PC run out3): they carry real roughness, which the old flat-colour hulls did not. The stack marks its textured and engine
 glow materials `rim_soft` (glTF material extras); `look.gd` puts such surfaces on their own layer, lit by a second rim light with
 `RIM soft` (0.25) of the specular. Every other hull keeps the full rim light, pixel for pixel (sandbox probe
@@ -146,8 +149,10 @@ hottest, to deep red at the wall, each engine its own reach, hot spots, soot str
 dark toward the lip, each engine its own; written by stage 7 as `<code>_glow_emission.jpg`).
 
 Kinds and zones a new sheet ship may bring (issue 651, A18 to A20; each is a kit rule, never a ship rule):
-- a flank hangar mouth (part kind `hangar`) is a launch bay mouth: its iron carries the bay's warning stripes
-  (`ZONE_BY_KIND[('hangar', 'iron')]`, as `('bay', 'iron')`); its liner is the dark zone, its lamps the running-light red;
+- a flank hangar mouth (part kind `hangar`) reads as a dark, deep bay (R240, replacing issue 651's warning stripes): its rim
+  and torn teeth are worn iron with no stripes (`ZONE_BY_KIND[('hangar', 'iron')]` = `iron_edge`), everything inside it (rails,
+  beams, ribs, inner door) is the dark zone, and its few deck lamps are the glow zone `lamp` (warm amber `LAMP_RGB`, under the
+  glow threshold, material `p3_lamp`, counted as glow by the surface check);
 - a parked craft (kind `craft`) is painted by its sheet zones like any part; its nozzle `ember` joins the engine glow surface;
 - a cold engine (kind `engine` whose group has no glow or ember, A20's spare bell on the deck) keeps its throat dark: only a
   lit engine's plug cone joins the glow (`shared/paint_stack.py`, `run`);

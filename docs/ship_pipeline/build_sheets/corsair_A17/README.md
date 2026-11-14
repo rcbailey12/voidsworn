@@ -1,5 +1,7 @@
 # corsair_A17 build sheet: Hullbreaker wrecker, the Pack Hunter (round 3c, R221 clean-ups, into the recipe)
 
+**Issue 676 (R241): the flank casemates P3 and S3 are cut.** Ryan, Nov 13 2026 (R241): "all ships should have weapons that match their actual weapons in game, so they line up with firing, effects, turns, etc". A fixed casemate shared each broadside slot with two turning turrets; each broadside now shows its two matched twin turrets (4 muzzles for scatter's 5 shots, all firing on every volley). The weapon-match check (tools/blender/build_sheets/weapon_match.py; `corsair_A17_weapon_match.json` from every build) passes on this sheet; the views on this page were re-rendered from the changed design file in the issue 676 sandbox (Blender 4.5, CPU); the outline check picture is unchanged.
+
 Ashfall Hullbreakers cruiser, class Cruiser (14.5), **this ship 14.6 world units** claw tip to stern (godot/render/hull_table.gd CLS_LEN; data.js c_marauder);
 the model is 14.58. Version 3c, 2026-11-12: round 3's parts, fit check and turret marking (R217 to R219), with the massing
 rebuilt to the concept's measured proportions after the Board's review of round 3 ("short, tall and round, a lump").

@@ -129,7 +129,7 @@ def build(K):
     K.hatch('HS1', (-1.45, 0.53, 0.535), (0, 1, 0), 0.2, 0.1, up=(0, 0, -1), inv='spine_hatch', note='crew hatch on the aft spine block, port')
     K.hatchbox('HB1', (-0.62, 0.2, 0.69), 0.24, 0.28, 0.09, inv='spine_boxes', note='framed box on the sensor block')
     K.hatchbox('HB2', (-2.05, 0.0, 0.61), 0.28, 0.32, 0.1, inv='spine_boxes', note='ready-use locker on the aft spine block')
-    small_antenna(K, 'AN1', (-1.33, -0.2, 0.61), 0.66, 3, 0.65, 'antenna', 'comms array on the aft spine block: calls the pack in on what the dish heard')
+    small_antenna(K, 'AN1', (-1.33, -0.2, 0.61), 0.45, 3, 0.65, 'antenna', 'comms array on the aft spine block: calls the pack in on what the dish heard')
     K.vent('VT1', (-2.76, 0.0, 0.503), (0, 0, 1), 0.3, 0.2, slats=4, inv='vents', note='engine-room louvre on the engine block roof')
 
     # ---------------- the flanks: bolted armour bricks, unmatched; the port trophy plate ----------------
@@ -172,8 +172,9 @@ def build(K):
     K.pipe('PH1', [(2.75, 0.0, -0.42), (2.35, 0.0, -0.53), (2.0, 0.0, -0.58)], r=0.03, inv='chin_pipes', note='the rams\' hydraulic feed')
 
     # ---------------- the one gun: data.js autocannon T, on the gun block of the spine ----------------
-    K.gun('T1', (0.45, 0.02, 0.66), 0, 6, barrels=2, cal=0.052, blen=0.74, size=0.52, slot='T', weapon='autocannon', inv='autocannon',
-          note='twin autocannon turret on the spine\'s gun block, all round (data.js c_raider\'s only weapon)')
+    K.box('A18_barbette_T1', 0.18, 0.72, -0.25, 0.29, 0.6, 1.06, 'iron', ch=0.06)     # R240: lifts the autocannon over the dish and the antenna
+    K.gun('T1', (0.45, 0.02, 1.06), 0, 6, barrels=2, cal=0.052, blen=0.74, size=0.52, slot='T', weapon='autocannon', inv='autocannon',
+          note='twin autocannon turret on a barbette on the spine\'s gun block, all round (data.js c_raider\'s only weapon)')
 
     # ---------------- engines: the overburn drums on short pylons at the stern quarters (port larger, as the picture), a small centre bell ----------------
     for side, y, r, ex, nm in ENG:
@@ -244,6 +245,7 @@ def build(K):
     K.change('Every face is plated in courses at the hull\'s plate size (0.16 to 0.36), each course jointed on its own (a brick bond), patches laid over joints and offset patches over plates; upward faces stepped in terraces of one to three plate thicknesses',
              'the Board on round 1 (Nov 13): the faces read as big smooth grey planes with a few greebles; the concept is scrap brick, plates over plates on every face (R196, R197). Kit: the sheet kit\'s courses plating (kit.py, opt-in, issue 633)')
 
+    K.fix('SENSOR: T1 (all round) aiming through the dish D1 and the antenna AN1', 'R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): T1 lifted onto a 0.4 barbette on the gun block and AN1 cut from 0.66 to 0.45 tall, so the gun fires over both')
     K.change('Four small attitude thrusters', 'a ship in space needs them to turn (the overburn raider turns hard)')
     K.change('Insides: one deck with the listening room, a kennel nook, a closet loot hold, the core and the engine room', 'designs.md; R209, R215')
     K.open_item('Belly detail between the grabber housings and the engine block is designed here; the picture does not show the underside')

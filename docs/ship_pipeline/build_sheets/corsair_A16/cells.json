@@ -110,15 +110,6 @@
   },
   {
    "cell": "bow/side",
-   "id": "bow_casemates",
-   "built": 2,
-   "listed": 2,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "bow/side",
    "id": "bow_claws",
    "built": 2,
    "listed": 2,
@@ -308,15 +299,6 @@
   },
   {
    "cell": "mid/side",
-   "id": "mid_casemates",
-   "built": 2,
-   "listed": 2,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/side",
    "id": "patches",
    "built": 8,
    "listed": 8,
@@ -497,15 +479,6 @@
   },
   {
    "cell": "stern/side",
-   "id": "stern_casemates",
-   "built": 4,
-   "listed": 4,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "stern/side",
    "id": "main_engine",
    "built": 3,
    "listed": 3,
@@ -642,10 +615,10 @@
    "hull_LH": 4.45
   },
   "build": {
-   "env_LB": 2.13,
+   "env_LB": 2.68,
    "env_LH": 2.8,
-   "hull_LB": 3.04,
-   "hull_LH": 4.05
+   "hull_LB": 3.06,
+   "hull_LH": 4.08
   }
  }
 }

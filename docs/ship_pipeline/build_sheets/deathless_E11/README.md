@@ -1,5 +1,7 @@
 # deathless_E11 build sheet: The Unsetting, the Eclipse flagship (third sheet: R221 weapons, pass 2)
 
+**Issue 676 (R241): the belly shredder F2 is cut.** Ryan, Nov 13 2026 (R241): "all ships should have weapons that match their actual weapons in game, so they line up with firing, effects, turns, etc". Flak fires 3 shots a volley and each null shredder has five needle muzzles, so two shredders took turns and each fell silent on some volleys. The deck shredder F1 is now the whole flak slot and fires on every volley; the board is flat, so the belly mount gave no cover the game uses. The weapon-match check (tools/blender/build_sheets/weapon_match.py; `deathless_E11_weapon_match.json` from every build) passes on this sheet; the views on this page were re-rendered from the changed design file in the issue 676 sandbox (Blender 4.5, CPU); the outline check picture is unchanged.
+
 Eclipse flagship, class Tomb-ark, **28.0 world units** (godot/render/hull_table.gd CLS_LEN['Tomb-ark']; data.js `d_boss`:
 gauss T, gauss T, doom F, flak T; ability nova, the spinal shell). Accepted picture:
 contrib/muse/design/concept_round8c_2026_11/deathless_E11_beauty.jpg and _sheet.jpg (R206). Designer of record: Opus (R205,
@@ -102,7 +104,7 @@ and round feet; no boxes, square frames or hex drums. Judged at the beauty camer
 | Weapon | Mounts | Lore and rules | Built as |
 |---|---|---|---|
 | ![](weapon_gauss.jpg) Null cannon (gauss) | T1, T2 | 3 shots, 6 damage, ignores half of armour; the effect lights coils breech to muzzle, a near invisible slug, a shock ring | a rail gun: two slim round rail pairs with banded collars stepping down, reaching well past a thin arched crescent shade (three seamed bevelled plates, a stepped layer, plate courses, a corona crest), crescent capacitor fins behind on a small oval shell |
-| ![](weapon_flak.jpg) Null shredder (flak) | F1, F2 | 3 shots, 3 damage, range 2, point defence; the effect is instant streaks to a spread of airbursts | a fan of five thin round needle rails with banded collars, splayed side to side, out of a small layered crescent shade on an oval shell, two crescent capacitor fins |
+| ![](weapon_flak.jpg) Null shredder (flak) | F1 | 3 shots, 3 damage, range 2, point defence; the effect is instant streaks to a spread of airbursts | a fan of five thin round needle rails with banded collars, splayed side to side, out of a small layered crescent shade on an oval shell, two crescent capacitor fins |
 | ![](weapon_doom.jpg) Corona arc (doom) | A1 | one heavy blow every other turn; arcs crawl on the emitter, then a re-striking arc; the crest is a black disc in a thin ring | an arc emitter: a capacitor column (disc banks, feed conduits) ending in the crest, a black shade disc in a thin corona ring with a small lens, under a crown of six electrode horns |
 
 
@@ -133,7 +135,7 @@ camera and hull are unchanged, only the turrets' outline moved, so it was not re
    boxes; a skirt of tall narrow plates; the heavy band collar; three rows of twelve swept shade blades round the stern.
 4. **Batteries by data.js slot**: T1 and T2, the null cannons (gauss T, gauss T: rail pairs through crescent shades), on the
    centreline on low round drums, T2 superfiring; F1 a null shredder aft (flak T, the concept's small turret: a needle fan)
-   and F2 its twin on the belly.
+   (issue 676, R241: the belly twin F2 is cut; one shredder is the whole flak slot).
 5. **Engines**: a diamond of four eclipse engines (ribbed faceted drums, vanes, a short bell, a pale corona ring round a
    black shade disc; no flame).
 6. **INSIDE**: three decks, eight frames, the capacitor bank behind the projector, two archive vaults, dark decks, magazines,

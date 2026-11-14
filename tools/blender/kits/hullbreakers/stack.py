@@ -72,6 +72,10 @@ LAYERS = dict(
     # panels at the concept's plate size, staggered, each panel and each modelled plate picks a family; black seams between them
     patch_big=(.052, .034, .028), patch_small=(.021, .015, .012), patch_over=(.044, .030, .024), patch_over_share=.10,
     patch_region=7.0, patch_parts=((.020, .016, .014), (.011, .009, .008), (.024, .018, .016)), patch_seam=.0011, seam_dark=.85,
+    # R240 (Ryan, Nov 13 2026): the patchwork is never even or ordered. Cell sizes wander along every axis, roughly two thirds to
+    # twice the mean (patch_warp), rows come in bands of about 2.3 whose edges step every few columns (patch_band), and 55 percent of the plates
+    # are split once more at a random place (patch_split); shared/paint_stack._grid
+    patch_warp=.55, patch_band=2.3, patch_split=.55,
     cavity_pow=2.0, wear_lo=.30, wear_hi=.52,
     scuff=.45, scuff_size=.045,                                           # the trim sheet's scuff tile, 1.2 m across on the barge
     rivets=1, rivet_pitch=.011, rivet_band=(.0012, .0045),               # a rivet every 29 cm, in a band 3 to 12 cm in from each edge
@@ -98,9 +102,11 @@ ZONES = dict(
     warhead=dict(rust=.35, metal=.30, rough=.65, rivets=0),
     brass=dict(rust=.20, metal=.60, rough=.50, rivets=0),
     iron_bay=dict(base='iron', rust=.4, metal=.45, rough=.72, trim=('stripes',), trim_amount=.75),
+    # R240: a hangar mouth's rim and torn teeth: worn iron edging, scuffed bright on the edges, no stripes and no plate patchwork
+    iron_edge=dict(base='iron', rust=.45, metal=.55, rough=.62, wear=1.0, scuff=1.0),
 )
 _BASE = dict(soot='soot', soot2='soot2', iron='iron', rust='rust', blood='blood', pale='pale', violet='violet', lilac='lilac', steel='steel',
-             dark='grime', dish='bare', warhead='rust', brass='bare', iron_bay='iron', bell='steel')
+             dark='grime', dish='bare', warhead='rust', brass='bare', iron_bay='iron', iron_edge='iron', bell='steel')
 for _k, _z in ZONES.items():
     _lo, _hi = pair(_BASE[_k])
     if _k == 'dish': _lo, _hi = lin((70, 66, 64)), lin((120, 112, 108))
@@ -109,10 +115,12 @@ for _k, _z in ZONES.items():
     _z['lo'], _z['hi'] = _lo, _hi
 FALLBACK = 'soot'
 ZONE_BY_KIND = {('bay', 'iron'): 'iron_bay', ('engine', 'steel'): 'bell', ('engine', 'iron'): 'bell', ('engine', 'soot'): 'bell',
-                ('hangar', 'iron'): 'iron_bay'}      # (part kind, sheet zone): the launch bay mouth carries the warning stripes
-# issue 651: a flank hangar mouth (kind hangar, A20) is a launch bay mouth too: its iron rim, rails, ribs and blast door frame carry
-# the same stripes; its dark liner is the dark zone and its lamps the running-light red. A parked craft (kind craft) is painted
-# by its sheet zones like any part, and its nozzle glow (ember) joins the engine glow surface. A spare engine bell (kind engine
+                ('hangar', 'iron'): 'iron_edge'}     # (part kind, sheet zone): a launch bay carries the warning stripes
+# R240 (Ryan, Nov 13 2026: "some sort of weird paint pattern in the opening of the carrier"; replaces issue 651's striped hangar
+# mouth): a hangar mouth (kind hangar, A20) reads as a dark, deep bay. Its iron rim and torn teeth are worn iron edging (iron_edge:
+# no stripes, no patchwork); its fit-out inside is the dark zone like its liner; its few deck lights are the warm lamp glow.
+# A parked craft (kind craft) is painted by its sheet zones like any part, and its nozzle glow (ember) joins the engine glow
+# surface. A spare engine bell (kind engine
 # with no glow or ember of its own: a cold spare, A20) keeps its dark throat dark: the plug cone glows only in a lit engine
 # (shared/paint_stack.run).
 BARE = lin(CONCEPT['bare'][1])
@@ -128,7 +136,7 @@ PATCH_FAMILIES_PARTS = [(.30, pair('gunmetal')), (.25, pair('soot2')), (.08, pai
 
 # glowing zones keep their own emissive surface: engine throat and bell lining in the faction's engine colour, running lights
 # in its accent (godot/fx/faction_looks.json corsair, the game's one home for them); dim, never bright (factions.md)
-GLOW = ('glow', 'ember', 'light')
+GLOW = ('glow', 'ember', 'light', 'lamp')     # lamp: the warm deck lights inside a hangar mouth (R240)
 # engine throat and bell lining (R228 item 5, Board review of the PC run: the bells were filled with a flat peach disc): the throat
 # a hot red-orange deep in the bell, the lining a dimmer deep red toward the lip, so the dark rim and lip read; never blown out
 # Ryan, Nov 12 19:16 CST: "more variation to the engine glow so it's not so uniform, just disc color". The throat and lining
@@ -153,6 +161,7 @@ def faction_look():
 
 
 def glow_material(zone):
+    if zone == 'lamp': return lamp_material()
     f = faction_look(); col = f['accent'] if zone == 'light' else f['engine']
     # the engine throat is the ship's glow surface (export7 names the first p3_glow material CODE_glow); the bell lining and the
     # running lights are their own emissive surfaces
@@ -206,6 +215,17 @@ RUNNING_LIGHTS = dict(length_frac=.0115, round=True, proud=.0012, frame=.30, max
                       clear_points=.045, clear_decals=.035)
 LIGHT_RGB = (196, 30, 20)   # #c41e14, the lens colour (sRGB), deep red, never salmon
 LIGHT_STRENGTH = 1.4        # linear red channel 0.55 x 1.4 = 0.77: lit, under the game's 0.8 glow threshold (no halo)
+# R240: the few deck lights inside a hangar mouth are warm, not the running-light red: a dim amber, small, at uneven depths
+LAMP_RGB = (232, 150, 74)   # #e8964a (sRGB): warm amber
+LAMP_STRENGTH = .9          # linear red channel 0.80 x 0.9 = 0.72: lit, under the game's 0.8 glow threshold (no halo)
+
+
+def lamp_material():
+    m = bpy.data.materials.new('p3_lamp'); m.use_nodes = True
+    b = m.node_tree.nodes['Principled BSDF']; col = [c * LIGHT_GAIN for c in lin(LAMP_RGB)]
+    b.inputs['Base Color'].default_value = (col[0] * .03, col[1] * .03, col[2] * .03, 1); b.inputs['Roughness'].default_value = .6
+    b.inputs['Emission Color'].default_value = (*col, 1); b.inputs['Emission Strength'].default_value = LAMP_STRENGTH
+    return m
 
 
 # ------------------------------------------------------------------------------------------------------------ decals

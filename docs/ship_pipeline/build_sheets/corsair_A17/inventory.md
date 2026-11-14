@@ -21,7 +21,6 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 | hump_hatchboxes | deck access and ready stores for the deck guns | hatchbox | raised framed boxes on the hump and the neck deck | 3 | mid/top | a framed box, an inset lid, side ribs | picture |
 | deck_guns | scatter guns, data.js slots P and S: the broadside battery | gun | deck-edge twin turrets | 4 | mid/top, mid/side | rings, faceted housings, mantlets, breeches, barrels with sleeves and brakes | picture |
 | crest_gun | flak, data.js slot T: all-round cover from the aft block | gun | twin turret on the hump crest | 1 | mid/top | as above | picture |
-| flank_casemates | scatter casemates, slots P and S: low cover over the flanks | gun | hump flank twin casemates | 2 | mid/side, stern/side | a sponson plate, a box housing, a ball mantlet, twin barrels | picture |
 | patches | field repairs: plate welded over battle damage | patch | torn patch plates on the flanks and hump shoulder | 8 | mid/side, mid/top | crooked slabs, a lifted corner, rivets | picture |
 | rust_plates | armour, salvaged and mismatched | plate | rust and dried-blood red plates (hump, deck edges) | 3 | mid/top, mid/side | slabs with steps, bevels, rivets | picture |
 | flank_ribs | frame ribs: the hull's structure, showing through the plate | rib | vertical frame ribs on the flanks | 6 | mid/side, stern/side | raised rib bars | picture |
@@ -65,7 +64,7 @@ Left as surface, and why:
 
 ## Every built part has a job (R221)
 
-Built kit parts: 88; parts whose inventory id names no line with a job: 0.
+Built kit parts: 86; parts whose inventory id names no line with a job: 0.
 
 ## Per cell: present, shaped, detailed (from the model, corsair_A17_model.json)
 
@@ -122,7 +121,6 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 |---|---|---|---|---|---|
 | hump | the shoulder hump: stepped tiers with sloped faces, a crest, openings | 3 / 1 | Y | Y | Y |
 | deck_guns | deck-edge twin turrets | 4 / 4 | Y | Y | Y |
-| flank_casemates | hump flank twin casemates | 2 / 2 | Y | Y | Y |
 | patches | torn patch plates on the flanks and hump shoulder | 8 / 8 | Y | Y | Y |
 | rust_plates | rust and dried-blood red plates (hump, deck edges) | 5 / 3 | Y | Y | Y |
 | flank_ribs | vertical frame ribs on the flanks | 6 / 6 | Y | Y | Y |
@@ -148,7 +146,6 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| flank_casemates | hump flank twin casemates | 2 / 2 | Y | Y | Y |
 | flank_ribs | vertical frame ribs on the flanks | 6 / 6 | Y | Y | Y |
 | lamps | red lamps in rows along the lower flank | 12 / 12 | Y | Y | Y |
 | engines | the stacked engine cluster: three per side, port bells larger | 6 / 6 | Y | Y | Y |
@@ -188,6 +185,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 2.04 | 3.54 | 2.75 | 4.06 |
-| build | 1.92 | 2.76 | 2.83 | 3.79 |
+| build | 2.21 | 2.80 | 2.83 | 3.69 |
 
 Lines not present, shaped and detailed without a reason: 0.

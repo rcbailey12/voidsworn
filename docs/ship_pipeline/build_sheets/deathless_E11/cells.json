@@ -281,15 +281,6 @@
   },
   {
    "cell": "mid/below",
-   "id": "belly_flak",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/below",
    "id": "hatches",
    "built": 4,
    "listed": 4,
@@ -553,9 +544,9 @@
   },
   "build": {
    "env_LB": 2.54,
-   "env_LH": 4.11,
-   "hull_LB": 5.6,
-   "hull_LH": 6.55
+   "env_LH": 4.39,
+   "hull_LB": 5.59,
+   "hull_LH": 6.54
   }
  }
 }

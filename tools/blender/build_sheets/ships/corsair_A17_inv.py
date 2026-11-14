@@ -33,8 +33,6 @@ INVENTORY = [
     dict(id='deck_guns', job='scatter guns, data.js slots P and S: the broadside battery', type='gun', what='deck-edge twin turrets', count=4, cells=['mid/top', 'mid/side'],
          reads='rings, faceted housings, mantlets, breeches, barrels with sleeves and brakes', src='picture'),
     dict(id='crest_gun', job='flak, data.js slot T: all-round cover from the aft block', type='gun', what='twin turret on the hump crest', count=1, cells=['mid/top'], reads='as above', src='picture'),
-    dict(id='flank_casemates', job='scatter casemates, slots P and S: low cover over the flanks', type='gun', what='hump flank twin casemates', count=2, cells=['mid/side', 'stern/side'],
-         reads='a sponson plate, a box housing, a ball mantlet, twin barrels', src='picture'),
     dict(id='patches', job='field repairs: plate welded over battle damage', type='patch', what='torn patch plates on the flanks and hump shoulder', count=8, cells=['mid/side', 'mid/top'],
          reads='crooked slabs, a lifted corner, rivets', src='picture'),
     dict(id='rust_plates', job='armour, salvaged and mismatched', type='plate', what='rust and dried-blood red plates (hump, deck edges)', count=3, cells=['mid/top', 'mid/side'],

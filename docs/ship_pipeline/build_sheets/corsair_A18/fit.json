@@ -5,17 +5,19 @@
   "CLASH": 0,
   "MOUNT": 0,
   "ARC": 0,
+  "SENSOR": 0,
   "SWEEP": 0,
   "EXHAUST": 0,
   "EXIT": 0,
   "LANE": 0
  },
  "tested": {
-  "objects": 247,
+  "objects": 248,
   "parts": 27,
-  "close_pairs": 713,
-  "rays": 189,
+  "close_pairs": 696,
+  "rays": 181,
   "guns": 1,
+  "sensor_pairs": 6,
   "turrets_swept": 1,
   "cones": 7,
   "apertures": 13,
@@ -27,7 +29,7 @@
    "pivot": [
     0.44999998807907104,
     0.019999999552965164,
-    0.8576000332832336
+    1.257599949836731
    ],
    "up": [
     0.0,
@@ -44,7 +46,7 @@
     ],
     [
      -175.0,
-     20
+     0
     ],
     [
      -170.0,
@@ -164,27 +166,27 @@
     ],
     [
      -25.0,
-     10
+     0
     ],
     [
      -20.0,
-     10
+     0
     ],
     [
      -15.0,
-     10
+     0
     ],
     [
      -10.0,
-     10
+     0
     ],
     [
      -5.0,
-     10
+     0
     ],
     [
      0.0,
-     10
+     0
     ],
     [
      5.0,
@@ -678,6 +680,11 @@
   }
  ],
  "lanes": [],
- "fixes": [],
+ "fixes": [
+  [
+   "SENSOR: T1 (all round) aiming through the dish D1 and the antenna AN1",
+   "R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): T1 lifted onto a 0.4 barbette on the gun block and AN1 cut from 0.66 to 0.45 tall, so the gun fires over both"
+  ]
+ ],
  "allowed": []
 }

@@ -13,6 +13,10 @@
 #               5 degree steps at their rest elevation and must not touch the hull, any part or any other turret's resting
 #               pieces; and every pair of turrets, both turning through their arcs (10 degree steps), must never meet
 #               (barrel against barrel, barrel against housing).
+#   3c. SENSOR  (R240, Ryan Nov 13 2026: "guns right behind or facing satellite dishes and antennae") no gun sits behind or aims
+#               through a sensor part (kinds dish, antenna, mast): the gun's whole firing volume (every bearing of its slot
+#               arc, every elevation of its band, out to 60 percent of the ship's length) must miss the box of every sensor
+#               piece, padded by the gun's calibre. Firing over a dish is not enough: the volume must be clear.
 #   4. EXHAUST  nothing sits in an engine's (or thruster's) exhaust cone: 12 degrees half-angle, out to 2.5 bell diameters or
 #               22 percent of the ship's length, whichever is longer (thrusters 20 degrees, 1.2 units).
 #   5. EXIT     no launcher cell, tube mouth, dish beam, hatch, lamp, vent or slit is covered: rays out along its axis (launch
@@ -30,6 +34,7 @@ from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 
 ARCS = {'F': (-60.0, 60.0), 'P': (30.0, 150.0), 'S': (-150.0, -30.0), 'T': (-180.0, 180.0), 'R': (120.0, 240.0)}
+SENSOR_KINDS = ('dish', 'antenna', 'mast')     # R240: the part kinds no gun may sit behind or aim through (check 3c)
 
 
 def _mesh(o, dg):
@@ -52,7 +57,7 @@ def run(K, out, code, length, verbose=True):
             continue
         lo = Vector((min(v.x for v in V), min(v.y for v in V), min(v.z for v in V)))
         hi = Vector((max(v.x for v in V), max(v.y for v in V), max(v.z for v in V)))
-        r = dict(name=o.name, grp=o.get('grp', 'hull'), role=o.get('role', 'hull'), V=V, F=F, lo=lo, hi=hi,
+        r = dict(name=o.name, grp=o.get('grp', 'hull'), role=o.get('role', 'hull'), kind=o.get('part_kind', ''), V=V, F=F, lo=lo, hi=hi,
                  bvh=BVHTree.FromPolygons(V, F, epsilon=0.0))
         rec.append(r)
         o0 = len(allV); allV.extend(V)
@@ -177,6 +182,49 @@ def run(K, out, code, length, verbose=True):
                 add('ARC', f['id'], first[1], first[3], '%s (slot %s): %s' % (what, f['slot'] or 'T', first[2]), bearing=b)
             b += 5.0
         arcs.append(dict(id=f['id'], pivot=list(piv), up=list(up), slot=f['slot'], mount=f['mount'], reach=f['reach'], bearings=bearings))
+
+    # ---- 3c. sensor clearance (R240): the ARC test passes a gun that can fire OVER a dish; this one does not. Every gun's
+    # firing volume (every bearing of its slot arc, every elevation of its band, out to 60 percent of the ship's length) is
+    # measured against the box of every piece of every sensor part (dish, antenna, mast), padded by the gun's calibre; any
+    # box point inside it is a SENSOR clash: the gun sits behind that sensor or aims through it.
+    sens = [r for r in rec if r['kind'] in SENSOR_KINDS]
+    n_sensor = 0
+    for f in K.fitdata:
+        if f['kind'] != 'gun' or not sens:
+            continue
+        lo_, hi_ = ARCS.get(f['slot'] or 'T', (-180, 180))
+        piv = Vector(f['pivot'])
+        up = Vector((0, 0, 1)) if f['mount'] in ('casemate', 'spinal') else Vector(f['up']).normalized()
+        e_lo, e_hi = min(f['band']), max(f['band'])
+        pad = f.get('cal', 0.1)
+        for r in sens:
+            if r['grp'] == f['id']:
+                continue
+            got = {}
+            for i_ in range(5):
+                for j_ in range(5):
+                    for k_ in range(5):
+                        p = Vector((r['lo'].x - pad + (r['hi'].x - r['lo'].x + 2 * pad) * i_ / 4,
+                                    r['lo'].y - pad + (r['hi'].y - r['lo'].y + 2 * pad) * j_ / 4,
+                                    r['lo'].z - pad + (r['hi'].z - r['lo'].z + 2 * pad) * k_ / 4))
+                        rel = p - piv
+                        h = rel - up * rel.dot(up)
+                        if rel.length > env or h.length < 1e-6:
+                            continue
+                        b_ = math.degrees(math.atan2(h.y, h.x))
+                        if (b_ - lo_) % 360.0 > (hi_ - lo_) + 1e-6:
+                            continue
+                        el = math.degrees(math.atan2(rel.dot(up), h.length))
+                        if e_lo <= el <= e_hi:
+                            bb = int(round(b_ / 5.0)) * 5
+                            if bb not in got or rel.length < got[bb][0]:
+                                got[bb] = (rel.length, p)
+            n_sensor += 1
+            if got:
+                near = min(got.values(), key=lambda t: t[0])
+                for bb in sorted(got):
+                    add('SENSOR', f['id'], r['grp'], near[1], 'gun (slot %s) behind or aiming through sensor %s (%s), %.1f away' % (
+                        f['slot'] or 'T', r['grp'], r['kind'], near[0]), bearing=bb)
 
     # ---- 3b. turret sweeps (R219)
     from mathutils import Matrix
@@ -404,8 +452,8 @@ def run(K, out, code, length, verbose=True):
                 else:
                     sec.append([b_, b_])
             c['detail'] += '; blocked bearings ' + ', '.join('%d to %d' % (a_, b_) if a_ != b_ else '%d' % a_ for a_, b_ in sec)
-    res = dict(code=code, clashes=clashes, counts={c: sum(1 for x in clashes if x['check'] == c) for c in ('CLASH', 'MOUNT', 'ARC', 'SWEEP', 'EXHAUST', 'EXIT', 'LANE')},
-               tested=dict(objects=len(rec), parts=len(groups), close_pairs=n_pairs, rays=n_rays, guns=len(arcs), turrets_swept=len(sweeps), cones=len(cones), apertures=len(aps), lanes=len(lanes)),
+    res = dict(code=code, clashes=clashes, counts={c: sum(1 for x in clashes if x['check'] == c) for c in ('CLASH', 'MOUNT', 'ARC', 'SENSOR', 'SWEEP', 'EXHAUST', 'EXIT', 'LANE')},
+               tested=dict(objects=len(rec), parts=len(groups), close_pairs=n_pairs, rays=n_rays, guns=len(arcs), sensor_pairs=n_sensor, turrets_swept=len(sweeps), cones=len(cones), apertures=len(aps), lanes=len(lanes)),
                arcs=arcs, sweeps=sweeps, cones=cones, apertures=aps, lanes=lanes, fixes=[list(x) for x in K.fixes], allowed=[list(x) for x in K.allow])
     json.dump(res, open(os.path.join(out, code + '_fit.json'), 'w'), indent=1, default=lambda v: list(v) if hasattr(v, '__iter__') else str(v))
     if verbose:
