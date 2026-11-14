@@ -351,12 +351,13 @@ func _build_dawn(env: Environment) -> void:
 	mi.position = Vector3(_center.x, _center.y - 2.5, _center.z)
 	add_child(mi)
 	_dawn_mat = m
-	# the light starts on the Hollow Sun's side (the new sun is there); without one it runs left to right
-	_dawn_from = _lo.x - 160.0
-	_dawn_to = _hi.x + 160.0
+	# the light starts on the Hollow Sun's side (the new sun is there); without one it runs left to right. The front
+	# travels exactly across the play area, so all FINALE_STAGES reveal an equal sector and the last is full dawn.
+	_dawn_from = _lo.x
+	_dawn_to = _hi.x
 	if _well != Vector3.INF and _well.x > _center.x:
-		_dawn_from = _hi.x + 160.0
-		_dawn_to = _lo.x - 160.0
+		_dawn_from = _hi.x
+		_dawn_to = _lo.x
 	# the new sun's own warm light, no shadows: the board warms as it rises
 	var sun := DirectionalLight3D.new()
 	sun.name = "NewSun"

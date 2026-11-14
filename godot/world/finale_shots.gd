@@ -10,6 +10,42 @@ extends SceneTree
 
 const WORLD := preload("res://world/world.gd")
 
+# The battle's own board is a separate mesh from the world, so this harness has none. A dim hex grid under the dawn
+# stands in for it, so a dark stage still reads as the war table and every stage shows the light crossing it.
+const BASE_SHADER := """
+shader_type spatial;
+render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+uniform vec3 centre = vec3(0.0);
+uniform vec2 half_ext = vec2(200.0, 130.0);
+uniform vec2 hex_origin = vec2(0.0);
+uniform vec3 hole = vec3(0.0);
+uniform float hole_r = 0.0;
+varying vec3 vW;
+void vertex() { vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
+float hex_edge(vec2 p) {
+	float r = p.y / 15.0;
+	vec2 a = vec2(p.x / 17.3205 - r * 0.5, r);
+	vec3 c = vec3(a.x, a.y, -a.x - a.y);
+	vec3 rc = floor(c + 0.5);
+	vec3 d = abs(rc - c);
+	if (d.x > d.y && d.x > d.z) rc.x = -rc.y - rc.z;
+	else if (d.y > d.z) rc.y = -rc.x - rc.z;
+	else rc.z = -rc.x - rc.y;
+	vec2 loc = a - vec2(rc.x, rc.y);
+	return 0.5 - max(abs(loc.x), max(abs(loc.y), abs(loc.x + loc.y)));
+}
+void fragment() {
+	vec2 q = abs(vW.xz - centre.xz) - half_ext;
+	float sd = length(max(q, vec2(0.0))) + min(max(q.x, q.y), 0.0);
+	float feather = 1.0 - smoothstep(0.0, 22.0, sd);
+	float line = 1.0 - smoothstep(0.0, 0.045, hex_edge(vW.xz - hex_origin));
+	ALBEDO = (vec3(0.045, 0.042, 0.038) + vec3(0.085, 0.072, 0.052) * line);
+	// leave the dead-star hex open, as the battle board does, so the Hollow Sun still shows under the board
+	float hd = length(vW.xz - hole.xz);
+	ALPHA = feather * smoothstep(hole_r - 6.0, hole_r + 6.0, hd);
+}
+"""
+
 var out := "user://finale_shots"
 
 
@@ -84,6 +120,7 @@ func _run() -> void:
 	w.build({"terrain": terrain, "map": {"deadstar": {"q": -6, "r": -5}}, "units": []},
 		{"biome": {"rock": "ice", "planet": 7}, "fac": "deathless", "hex_world": hw, "environment": env,
 		"quality": "max", "finale": true})
+	_board_base(stage_root, w)
 	await w.wait_ready()
 	print("[finale_shots] finale=", w.finale, " children=", w.get_child_count(), " dawnie=", w._dawn_mat != null, " notes=", "; ".join(w.notes))
 	for k in 30:
@@ -96,7 +133,7 @@ func _run() -> void:
 		await RenderingServer.frame_post_draw
 		var img := root.get_texture().get_image()
 		var p := out.path_join("finale_board_%d_of_6.png" % [s + 1])
-		img.save_png(p)
+		_save(img, p)
 		print("[finale_shots] ", p)
 
 	# a wide view at full dawn, framed on the board and the Hollow Sun
@@ -104,7 +141,39 @@ func _run() -> void:
 	for k in 24:
 		await process_frame
 	await RenderingServer.frame_post_draw
-	root.get_texture().get_image().save_png(out.path_join("finale_board_wide.png"))
-	print("[finale_shots] ", out.path_join("finale_board_wide.png"))
+	var wide := out.path_join("finale_board_wide.png")
+	_save(root.get_texture().get_image(), wide)
+	print("[finale_shots] ", wide)
 	print("[finale_shots] done")
 	quit(0)
+
+
+# The owner's picture rule: no taller than 720 px. The window opens at the project's 4K size, so shrink before saving.
+func _save(img: Image, p: String) -> void:
+	var s := minf(1280.0 / float(img.get_width()), 720.0 / float(img.get_height()))
+	img.resize(int(round(float(img.get_width()) * s)), int(round(float(img.get_height()) * s)), Image.INTERPOLATE_LANCZOS)
+	img.save_png(p)
+
+
+func _board_base(parent: Node3D, w) -> void:
+	var ext: Vector3 = (w._hi - w._lo) * 0.5
+	var mi := MeshInstance3D.new()
+	mi.name = "FinaleBoardBase"
+	var pm := PlaneMesh.new()
+	pm.size = Vector2(ext.x * 2.0 + 20.0, ext.z * 2.0 + 20.0)
+	mi.mesh = pm
+	var m := ShaderMaterial.new()
+	var sh := Shader.new()
+	sh.code = BASE_SHADER
+	m.shader = sh
+	m.set_shader_parameter("centre", w._center)
+	m.set_shader_parameter("half_ext", Vector2(ext.x + 10.0, ext.z + 10.0))
+	m.set_shader_parameter("hex_origin", w._hex_origin)
+	m.render_priority = -20   # under the dawn plane (-15), which adds its light on top
+	if w._well != Vector3.INF:
+		m.set_shader_parameter("hole", w._well)
+		m.set_shader_parameter("hole_r", 38.0)
+	mi.material_override = m
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	mi.position = Vector3(w._center.x, w._center.y - 3.5, w._center.z)
+	parent.add_child(mi)

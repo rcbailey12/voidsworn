@@ -171,7 +171,10 @@ var w = WORLD.new()
 world_node.add_child(w)
 w.build(view(), {"biome": biome, "fac": enemy_faction, "hex_world": func(q, r) -> Vector3, "camera": cam, "environment": env, "quality": "max", "fx": fx})
 w.update(delta)                        # or let it run its own _process (default)
+w.finale_stage(n)                      # optional: with opts.finale, move the dawn sweep to stage n (0 dark to 5 full)
 ```
+
+- The run 5 finale (R78 Q18): `opts.finale` adds a warm dawn sweep across the board, a new sun light and a brighter sky and Hollow Sun. `finale_stage(0..FINALE_STAGES-1)` moves it one sector at a time; the battle calls `finale_for_round(round)` so round 1 is dark and round 6 is full dawn, then it holds. It changes pictures only, never `view()` or the rules.
 
 - Backdrop per battle: sky with nebula tinted per enemy faction (the game's BIOMES colours), one planet or moon at most (no twin moons), no stray traffic ships, no rocks over moons.
 - The dead-star board (`view().map.deadstar`): the black hole at that hex with gravitational lensing of the scene behind it, a photon ring and a turning accretion disc (R2, R24). The gravity-well rules stay as they are; this is only the picture.
