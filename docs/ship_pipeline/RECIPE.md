@@ -91,6 +91,23 @@ longitudinal seam reaches `r209_l_lines` at its own height and span, and every d
 is painted by its faction kit's paint stack (`"bake": "stack"`, below), or carries `"bake": "none"` until its kit has one;
 `bakeAb6.py` refuses a sheet hull rather than add C15s's break structure to it.
 
+### Visible weapons match the rules (issue 676, R241)
+
+`tools/blender/build_sheets/weapon_match.py` runs before any sheet render or recipe conversion. It reads the ship's slots
+and each weapon's kind and shots from `data.js`. It rejects missing or extra weapon parts, incompatible weapon kinds,
+muzzles away from their own weapon mesh, wrong facing or turret arcs, and turning parts outside their turret node.
+Multiple mounts may share a slot when their kind, mount, barrels and size match and every mount fires on every volley
+with the game's rotating muzzle order. This implements Ryan's R241 refinement allowing cohesive shared batteries.
+The contract uses these same registered muzzles for `hp_w<slot>`; `sheet_contract_selftest.py` proves their positions and
+slots survive conversion. Stage 7 still reads back the GLB and checks its hard points and turret hierarchy.
+
+Run `build.py -- <sheet> <out> match` inside Blender to check one ship without rendering. Every build writes
+`<sheet>_weapon_match.json`; publishing carries its slot/mount table as `weapon_match.json`. The plain Python
+`weapon_match_selftest.py` plants faults for each rule; `run_all_checks.js` runs it through `weapon_match_tests.js`.
+For CPU-only review renders on Windows set `SHEET_DEVICE=CPU` before running `build.py`. An unpainted sandbox proof
+uses the stage 4 build unchanged at stage 5, exports the stage 6 LOD chain, then runs the stage 7 unbaked export and
+readback/self-test. It does not replace the faction's queued paint bake or the measured scene gate.
+
 ## The paint stack for sheet ships (issue 601; ships.md section 0 item 2)
 
 The method is R96 Q1, binding: procedural materials driven by masks baked from the ship's own geometry, plus a trim sheet and

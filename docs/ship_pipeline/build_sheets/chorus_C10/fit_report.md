@@ -9,6 +9,9 @@ with `build.py <code> <out> fit`). What it tests, on every part of every type:
 3. **ARC**: every gun, at every bearing of its data.js slot arc (core.js inArc: F 60 degrees either side of the bow, P and S
    30 to 150 off the bow, T all round, 5 degree steps), has a clear line at an elevation it can reach (turrets 0 to 30, flak
    0 to 60, casemates -10 to +20), out to 60 percent of the ship's length.
+3b. **SENSOR** (R240): no gun sits behind or aims through a dish, antenna or mast: the gun's whole firing volume (every
+   bearing of its slot arc, every elevation it can reach, out to 60 percent of the ship's length) misses every sensor piece's
+   box padded by the gun's calibre; firing just over a dish is not enough.
 4. **SWEEP** (R219): every turret's turning pieces turned through every bearing of its arc touch nothing; no two turrets meet
    when both turn through their arcs.
 5. **EXHAUST**: nothing in any engine or thruster exhaust cone.
@@ -38,7 +41,7 @@ turret's swept circle (moved out).
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 181 objects, 21 parts, 588 close pairs, 836 rays, 8 guns, 6 turrets swept, 7 cones, 6 apertures, 2 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 169 objects, 19 parts, 534 close pairs, 581 rays, 6 guns, 0 sensor pairs, 4 turrets swept, 7 cones, 6 apertures, 2 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 
@@ -48,8 +51,6 @@ Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 181
 | G1 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
 | G2 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
 | G3 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
-| G4 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
-| G5 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
 
 Reach is measured from the rest bearing, in degrees, turning toward port (bearings rising) and toward starboard; "all round" means nothing stops it within 180. Every turret clears its whole data.js slot arc (sweep steps above). Under 60 degrees either way: none.
 

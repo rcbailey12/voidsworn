@@ -1,0 +1,44 @@
+{
+ "code": "corsair_A19",
+ "result": "PASS",
+ "problems": [],
+ "slots": [
+  {
+   "slot": 0,
+   "weapon": "torp",
+   "arc": "F",
+   "shots": 1,
+   "mounts": [
+    {
+     "id": "R2",
+     "type": "bow_launcher",
+     "mount": "launcher",
+     "barrels": 3,
+     "muzzles": 3
+    }
+   ]
+  },
+  {
+   "slot": 1,
+   "weapon": "scatter",
+   "arc": "S",
+   "shots": 5,
+   "mounts": [
+    {
+     "id": "S4",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    },
+    {
+     "id": "S5",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    }
+   ]
+  }
+ ]
+}

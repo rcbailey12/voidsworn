@@ -6,19 +6,25 @@ Ashfall Hullbreakers (corsair) | class Frigate | version 1 (first sheet (issue 6
 
 ## Measured off the views
 
+Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
+
+| Slot | Weapon | Arc | Shots | Visible mounts (muzzles) |
+|---:|---|---|---:|---|
+| 0 | autocannon | T | 3 | T1 (2) |
+
 | Check | Value |
 |---|---|
 | model length | 6.507 |
 | length side | 6.537 |
-| length top | 6.537 |
-| length disagreement percent | 0.0 |
+| length top | 6.525 |
+| length disagreement percent | 0.19 |
 | beam top | 3.2 |
 | beam bow | 3.2 |
 | beam disagreement percent | 0.0 |
 | height side | 2.375 |
-| height bow | 2.375 |
-| height disagreement percent | 0.0 |
-| widest at station percent | 80.1 |
+| height bow | 2.362 |
+| height disagreement percent | 0.19 |
+| widest at station percent | 80.0 |
 | hull beam | 2.04 |
 | hull depth | 1.01 |
 | L to B hull | 3.19 |

@@ -1,0 +1,22 @@
+{
+ "code": "corsair_A18",
+ "result": "PASS",
+ "problems": [],
+ "slots": [
+  {
+   "slot": 0,
+   "weapon": "autocannon",
+   "arc": "T",
+   "shots": 3,
+   "mounts": [
+    {
+     "id": "T1",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    }
+   ]
+  }
+ ]
+}

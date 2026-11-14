@@ -8,7 +8,8 @@
 #                   still lay on the head's skin)
 #   backward        the first weapon hard point turned to aim aft                  must FAIL (a weapon resting aimed backward)
 #   wrong_side      the first port weapon point mirrored to starboard (a ship       must FAIL (a port mount on the starboard side)
-#                   with no port arc: its port boarding origin, issue 618)
+#                   with no port arc: its port boarding origin, issue 618; a
+#                   turret's muzzle is mirrored in the ship frame, issue 676)
 #   no_core         hp_core renamed away                                           must FAIL (a required hard point missing)
 #   no_socket       extras.socket taken off the first weapon point                 must FAIL (a weapon extra missing)
 #   no_engine       every hp_eng renamed away                                      must FAIL (a required hard point missing)
@@ -89,7 +90,14 @@ def port_point(g):      # the first port weapon point; a ship with no port arc (
     n = next((n for n in g['nodes'] if re.fullmatch(r'hp_w\d+_.+_P_\d+', str(n.get('name', '')))), None)
     return n or next(n for n in g['nodes'] if str(n.get('name', '')).startswith('hp_board_') and (n.get('extras') or {}).get('side') == 'P')
 def wrong_side(g):
-    n = port_point(g); t = n['translation']; n['translation'] = [t[0], t[1], -t[2]]
+    n = port_point(g)
+    if in_turret(g, n):     # issue 676: a ship whose port guns are all turret muzzles (A16, A17 after R241 cut the casemates);
+        # a muzzle is in its turret's frame, so mirror it in the ship (world) frame, then re-express it in the parent frame
+        import numpy as np
+        W, par = CE.world_matrices(g); i = g['nodes'].index(n); p = W[i][:3, 3]
+        n['translation'] = [float(v) for v in (np.linalg.inv(W[par[i]]) @ np.array([p[0], p[1], -p[2], 1.0]))[:3]]
+    else:
+        t = n['translation']; n['translation'] = [t[0], t[1], -t[2]]
 def no_core(g): first(g, 'hp_core')['name'] = 'x_core'
 def no_socket(g): first(g, 'hp_w')['extras'].pop('socket')
 def no_engine(g):

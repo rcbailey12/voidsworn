@@ -6,6 +6,15 @@ Eclipse (deathless) | class Cruiser | version 4 (fourth sheet (R221 weapons, pas
 
 ## Measured off the views
 
+Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
+
+| Slot | Weapon | Arc | Shots | Visible mounts (muzzles) |
+|---:|---|---|---:|---|
+| 0 | gauss | T | 3 | T1 (2) |
+| 1 | gauss | T | 3 | T2 (2) |
+| 2 | doom | F | 1 | A1 (1) |
+| 3 | gsentry | T | 2 | G1 (2) |
+
 | Check | Value |
 |---|---|
 | model length | 14.56 |
@@ -153,7 +162,7 @@ Eclipse breaks in layers (factions.md): the ring arcs peel away first, band by b
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 484 objects, 34 parts, 451 close pairs, 366 rays, 4 guns, 3 turrets swept, 7 cones, 14 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 484 objects, 34 parts, 451 close pairs, 366 rays, 4 guns, 0 sensor pairs, 3 turrets swept, 7 cones, 14 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 

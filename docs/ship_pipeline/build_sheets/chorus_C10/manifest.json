@@ -47,7 +47,7 @@
    "id": "G1",
    "kind": "gun",
    "what": "spore cloud, spore gland, pore rosette (swings on its neck)",
-   "count": 2,
+   "count": 1,
    "route": "kit",
    "source": "picture",
    "inventory": [
@@ -62,7 +62,7 @@
    "id": "G2",
    "kind": "gun",
    "what": "spore cloud, spore gland, pore rosette (swings on its neck)",
-   "count": 2,
+   "count": 1,
    "route": "kit",
    "source": "picture",
    "inventory": [
@@ -77,7 +77,7 @@
    "id": "G3",
    "kind": "gun",
    "what": "spore cloud, spore gland, pore rosette (swings on its neck)",
-   "count": 2,
+   "count": 1,
    "route": "kit",
    "source": "picture",
    "inventory": [
@@ -85,36 +85,6 @@
    ],
    "turret": true,
    "pivot_object": "G3_turret",
-   "arc_lo": -180.0,
-   "arc_hi": 180.0
-  },
-  {
-   "id": "G4",
-   "kind": "gun",
-   "what": "spore cloud, spore gland, pore rosette (swings on its neck)",
-   "count": 2,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "spore_glands"
-   ],
-   "turret": true,
-   "pivot_object": "G4_turret",
-   "arc_lo": -180.0,
-   "arc_hi": 180.0
-  },
-  {
-   "id": "G5",
-   "kind": "gun",
-   "what": "spore cloud, spore gland, pore rosette (swings on its neck)",
-   "count": 2,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "spore_glands"
-   ],
-   "turret": true,
-   "pivot_object": "G5_turret",
    "arc_lo": -180.0,
    "arc_hi": 180.0
   },
@@ -289,14 +259,6 @@
   },
   {
    "name": "Spore gland 3",
-   "route": "hand-built"
-  },
-  {
-   "name": "Spore gland 4",
-   "route": "hand-built"
-  },
-  {
-   "name": "Spore gland 5",
    "route": "hand-built"
   },
   {

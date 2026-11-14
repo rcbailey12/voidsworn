@@ -277,18 +277,6 @@
    "arc_hi": 180.0
   },
   {
-   "id": "PB",
-   "kind": "gun",
-   "what": "single casemate",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "bow_casemates"
-   ],
-   "turret": false
-  },
-  {
    "id": "P1",
    "kind": "gun",
    "what": "twin turret",
@@ -334,54 +322,6 @@
    "arc_hi": 150.0
   },
   {
-   "id": "PM",
-   "kind": "gun",
-   "what": "twin casemate",
-   "count": 2,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "mid_casemates"
-   ],
-   "turret": false
-  },
-  {
-   "id": "P4",
-   "kind": "gun",
-   "what": "twin casemate",
-   "count": 2,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "stern_casemates"
-   ],
-   "turret": false
-  },
-  {
-   "id": "P5",
-   "kind": "gun",
-   "what": "twin casemate",
-   "count": 2,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "stern_casemates"
-   ],
-   "turret": false
-  },
-  {
-   "id": "SB",
-   "kind": "gun",
-   "what": "single casemate",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "bow_casemates"
-   ],
-   "turret": false
-  },
-  {
    "id": "S1",
    "kind": "gun",
    "what": "twin turret",
@@ -425,42 +365,6 @@
    "pivot_object": "S3_turret",
    "arc_lo": -150.0,
    "arc_hi": -30.0
-  },
-  {
-   "id": "SM",
-   "kind": "gun",
-   "what": "twin casemate",
-   "count": 2,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "mid_casemates"
-   ],
-   "turret": false
-  },
-  {
-   "id": "S4",
-   "kind": "gun",
-   "what": "twin casemate",
-   "count": 2,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "stern_casemates"
-   ],
-   "turret": false
-  },
-  {
-   "id": "S5",
-   "kind": "gun",
-   "what": "twin casemate",
-   "count": 2,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "stern_casemates"
-   ],
-   "turret": false
   },
   {
    "id": "E0",

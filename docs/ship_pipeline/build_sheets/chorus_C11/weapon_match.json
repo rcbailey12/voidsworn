@@ -1,0 +1,44 @@
+{
+ "code": "chorus_C11",
+ "result": "PASS",
+ "problems": [],
+ "slots": [
+  {
+   "slot": 0,
+   "weapon": "tendril",
+   "arc": "T",
+   "shots": 2,
+   "mounts": [
+    {
+     "id": "T1",
+     "type": "mane",
+     "mount": "fixed",
+     "barrels": 3,
+     "muzzles": 3
+    }
+   ]
+  },
+  {
+   "slot": 1,
+   "weapon": "bioplasma",
+   "arc": "F",
+   "shots": 2,
+   "mounts": [
+    {
+     "id": "M1",
+     "type": "throat",
+     "mount": "fixed",
+     "barrels": 1,
+     "muzzles": 1
+    },
+    {
+     "id": "M2",
+     "type": "throat",
+     "mount": "fixed",
+     "barrels": 1,
+     "muzzles": 1
+    }
+   ]
+  }
+ ]
+}
