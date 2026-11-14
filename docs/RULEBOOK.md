@@ -61,7 +61,7 @@ had gone from sheet to game since the sheet method changed. Set: Board, Nov 12, 
 the level of design and setup, not patches (R225).
 
 
-0.9 **How the repo carries memory (R251).** A standing rule comes only from Ryan's words, quoted in FINDINGS and landed here; a row
+0.10 **How the repo carries memory (R251).** A standing rule comes only from Ryan's words, quoted in FINDINGS and landed here; a row
 that stretches his words past what he named says so and asks him. Board choices for one day or one job (effort, caps, job order,
 wrappers, which seat took a job) are operating notes in LOOP.md, never rules. A new ruling names what it replaces and the old row is
 marked SUPERSEDED, so no two live rules conflict. One live place per kind: rules in this book, status in LOOP.md's newest LATEST
