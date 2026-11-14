@@ -12,7 +12,11 @@ Today every shielded ship wears one bubble, and the game sums its four sides int
 - Taking a hit: the faction pattern lights only around the impact, three ripple rings spread from it, the background bends inside the ripple, and a short energy crackle replaces the old smoke puff. Brightness is capped (total 0.65 additive, measured on the bench) so the ship stays visible through the flash.
 - Failing, starboard side: that side alone tears open along a moving front with faction debris (gold veil shreds, blue hex cells), stays open as a dark gap, and closes with a bright seam when the side regenerates past a quarter strength.
 
-## The one decision that is yours
+## The decision, made
+
+Ryan ruled Nov 14, 2026: **Rim and Gap** is the resting state. The Board builds Rim and Gap as written in design.md. The alternatives below stand as the record of what was considered and rejected.
+
+## The one decision that was yours
 
 The resting state. The council (blind Rey, DeepSeek, Qwen, Flash; Grok's seat was empty) unanimously recommends Rim and Gap, drawn above: faint rim on live sides, dark gap where a side is down, nothing else at rest. The alternatives, both rejected by every leg: Face Flash (a whole side flashes whenever its strength changes; strobes in a volley and hides the ship) and Veil Then Local (the whole shield veils on any hit before localising; that is the bubble defect again). One honest tension: the playbook line says shields are invisible at rest, and Rim and Gap keeps a faint rim so a downed side can be read without hovering. If you would rather have true invisibility at rest, the gap then only reads on hover or after a hit, and issue 371's camera-170 test gets harder to pass. Your pick is what gets built.
 

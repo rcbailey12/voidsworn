@@ -123,7 +123,7 @@ Degrade order if the budget is missed (in this order, and never the rim/gap read
 
 ## 10. What this design does not decide
 
-- Ryan's resting-state pick (section 2 recommends Rim and Gap; sections 3 records the alternatives). The build starts from the state Ryan picks.
+- Ryan's resting-state pick: RULED Nov 14, 2026, Rim and Gap (section 2 as written). Face Flash and Veil Then Local (section 3) are rejected on the record.
 - Issue 363's contract shield surface and issue 209 round 7: if they change the surface contract or the facing data format, sections 1 and 7 are revised before building.
 - The exact facing axis source: the builder reads the four facing axes and the battle-state field names from the rules code, the same source fx_ship.gd will write from; the drawn weights and the rules must come from that one source or border hits will disagree with the rules (the council's top risk).
 - Audio hooks for hits and breaks: out of scope here; the break and hit events are the hook points.
