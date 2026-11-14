@@ -1,6 +1,28 @@
 # Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 13, 2026, 08:30 CST)
 
-## 0. Status at Nov 13, 2026, 08:30 CST (14:30 UTC; read this first)
+## 0. Status at Nov 14, 2026, 17:10 CST (23:10 UTC; read this first)
+
+A fresh Board thread starts here after the Claude plan reset (about 18:00 CST Nov 14). The last Board thread (Nov 13 08:30 to Nov 14 17:10) ran at 2 percent of the weekly plan from Nov 14 morning, so it queued work and merged only small things. Everything below is in LOOP.md's LATEST lines (Nov 14) and FINDINGS R236 to R249.
+
+**Seats today (LOOP.md "The seats").** Codex is the main builder (fast; about 3 or 4 big jobs per 5 hour window, so build briefs now say Effort (Codex): high). Kimi (Kimi CLI arm, kimicode) does mid-size code, rules and balance jobs; about 2.5 hours of agent time per 5 hour window; list required outputs as a checklist (it skipped the balance pack on 41). DeepSeek takes small exact jobs (runs slow; give 120 min caps). Muse does design, outside checks (issue 256) and audits. The Claude API credit is OUT until its monthly refresh (about Nov 21); Ryan will not add credit, so the opus and sonnet API arms are off. Ryan said no to Gemini 4 Hydrogen for now (Codex is the better buy).
+
+**PC jobs.** Everything runs through Downloads\voidsworn_test\queue on DESKTOP-D5CTOET; long waits go in start-ed windows. Wrappers written Nov 14: RUN_RETRY.bat <issue> <arm> <cap> [kimi] (clone retry, Kimi quota preflight every 15 min), CODEX_CHAIN_14*.bat, LANES_14*.bat, GPU_CHAIN_14.bat. Logs: codex_chain_14h2.txt, retry_<issue>_<arm>.txt. No heavy jobs while Ryan games: ask, and stop only what loses nothing.
+
+**First job for the new Board: the review.** Review by diff, Muse's opus_check files on muse/issue-256 first, then merge in this order:
+1. PR 690 (Codex 687, the five runner fixes Ryan approved: shared local repo copy, clone retry, preflight, safe chains, resume from partial). Muse: GO WITH CONDITIONS (retry count wording, the run_all_checks registration, the Refs #N commit trailer). After merging, copy tools/pc/work_issue.bat, work_issue.ps1 and codex_issue.bat to the PC copies (work217\tools and build_b\tools\pc). Clone failures happened all day Nov 13 and 14 until this lands.
+2. PR 691 (Codex 676, weapon match R241, 253 files). Painted proof in the PC folder hb676out. Muse conditions: ratify the A19 bow launcher cut, ratify SAME and SPLIT as R241's reading, add a PASS guard to publish.py.
+3. PR 694 (Codex 642, Eclipse round 3, R243). Painted proof in ecl642r3out. Muse: ratify the RULEBOOK 0.5 rewrite and the brighter core (send Ryan the picture: the brighter glow is his call), close the stale 642 job files (never delete on the PC).
+4. PR 696 (Codex 688, A20 per R244: real bow openings, angular flanks). After 691: rule 11 numbering clash, render_R244.py string search breaks on 691's SHEET_DEVICE line, sheet.jpg was over the 8 MB cap. Then a GPU paint run of A20.
+5. PR 700 (Codex 373 station T2): check R247 (the station dwarfs every ship class at the battle camera). PR 701 (Codex 463 deaths). PR 702 (Codex 92 debrief).
+6. PR 704 (Kimi 41 captured hulls): Muse GO WITH CONDITIONS, one NO-GO leg: the balance pack is missing; the prize Add path bypasses the ripped rule. Needs a second run or a Board fix. PR 707 (Kimi 43 Eclipse portraits): unanimous GO WITH CONDITIONS; ratify drawing the frames in code instead of ComfyUI.
+7. PR 705 (DeepSeek 44 finale board). PR 709 (DeepSeek 644 text floor report; PR 698 closed as superseded). PR 703 (Muse 250 Glasswright sheet, for Ryan to pick). PR 695 (Muse 689 paint directions, for Ryan). PR 692 (Muse checks on 256).
+Send Ryan one picture per landed visual change, two lines each.
+
+**Running or queued at handoff.** Codex chain H2: 538 (hits pass 2), then 367 (every weapon effect muzzle to impact, R248 and R249), 368 (nebula and storm hexes, R247 scale), 369 (planet and rocks from real data, nothing recognisable, R245). DeepSeek: 710 (one scale table in docs/playbooks/scale.md plus godot/render/test/scale_check.gd, R247 and R249). Kimi: 371 (shield model, R246: one pool, coverage, lossy routing; rules first, balance pack) resumes from its partial when the Kimi quota returns. Muse: 706 (outside audit since Nov 10), 708 (fleet inventory and concept gaps: 49 hulls plus fighter and bomber, only 9 build sheets; Sunward, Hegemony, Glasswrights have none), checks of 700, 701, 702, 705, 709.
+
+**Rulings landed Nov 13 and 14 (FINDINGS).** R236 to R243 (seats, design rulings; R243 surface order per faction: Hullbreakers patchwork, Eclipse precise, Glasswrights blown glass, Sunward triangular, Hegemony rigid), R244 (A20 bow and flanks; no flat disc openings, no flat-box hulls), R245 (planet from real data, nothing recognisable), R246 (shields Rim and Gap, one pool), R247 (scale of everything against ships and hexes, on the sector map too), R248 (doom arc and every effect: core, glow, motion, fade), R249 (scale and effect bar cover every projectile and weapon effect). R243 is still OPEN until its RULEBOOK 0.5 and playbook edits land (PR 694).
+
+## 0c. Status at Nov 13, 2026, 08:30 CST (14:30 UTC; read this first)
 
 **Read in this order:** this section; contrib/opus/LOOP.md ("The seats", the LATEST lines); docs/RULEBOOK.md (wins over every
 other doc); FINDINGS R225 to R235 for this stretch's rulings. Section 0b below is the Nov 11 state: where it disagrees, this
