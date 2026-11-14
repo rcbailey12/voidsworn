@@ -5,17 +5,19 @@
   "CLASH": 0,
   "MOUNT": 0,
   "ARC": 0,
+  "SENSOR": 0,
   "SWEEP": 0,
   "EXHAUST": 0,
   "EXIT": 0,
   "LANE": 0
  },
  "tested": {
-  "objects": 400,
+  "objects": 402,
   "parts": 73,
-  "close_pairs": 1037,
+  "close_pairs": 1052,
   "rays": 753,
   "guns": 16,
+  "sensor_pairs": 192,
   "turrets_swept": 8,
   "cones": 10,
   "apertures": 45,
@@ -2340,13 +2342,13 @@
     150.0
    ],
    "clear_steps": 25,
-   "rest_yaw": 15,
+   "rest_yaw": 30,
    "reach_port": {
-    "deg": 140,
+    "deg": 125,
     "stop": "A16_barbette_P2"
    },
    "reach_stbd": {
-    "deg": 120,
+    "deg": 135,
     "stop": "HB3_body_soot"
    }
   },
@@ -2358,13 +2360,13 @@
     150.0
    ],
    "clear_steps": 25,
-   "rest_yaw": 20,
+   "rest_yaw": 35,
    "reach_port": {
-    "deg": 180,
-    "stop": null
+    "deg": 170,
+    "stop": "R1_body_soot"
    },
    "reach_stbd": {
-    "deg": 70,
+    "deg": 85,
     "stop": "R1_body_iron"
    }
   },
@@ -2376,13 +2378,13 @@
     150.0
    ],
    "clear_steps": 25,
-   "rest_yaw": 25,
+   "rest_yaw": 40,
    "reach_port": {
-    "deg": 140,
+    "deg": 125,
     "stop": "A16_redband"
    },
    "reach_stbd": {
-    "deg": 0,
+    "deg": 15,
     "stop": "A16_barbette_P2"
    }
   },
@@ -2394,13 +2396,13 @@
     -30.0
    ],
    "clear_steps": 25,
-   "rest_yaw": -15,
+   "rest_yaw": -30,
    "reach_port": {
-    "deg": 170,
-    "stop": "A16_barbette_S2"
+    "deg": 180,
+    "stop": null
    },
    "reach_stbd": {
-    "deg": 140,
+    "deg": 125,
     "stop": "A16_barbette_S2"
    }
   },
@@ -2412,14 +2414,14 @@
     -30.0
    ],
    "clear_steps": 25,
-   "rest_yaw": -20,
+   "rest_yaw": -35,
    "reach_port": {
-    "deg": 70,
+    "deg": 85,
     "stop": "R1_body_iron"
    },
    "reach_stbd": {
-    "deg": 180,
-    "stop": null
+    "deg": 170,
+    "stop": "R1_body_soot"
    }
   },
   {
@@ -2430,13 +2432,13 @@
     -30.0
    ],
    "clear_steps": 25,
-   "rest_yaw": -25,
+   "rest_yaw": -40,
    "reach_port": {
-    "deg": 0,
+    "deg": 15,
     "stop": "A16_barbette_S2"
    },
    "reach_stbd": {
-    "deg": 140,
+    "deg": 125,
     "stop": "A16_castle"
    }
   }
@@ -3419,6 +3421,10 @@
   [
    "Dish posts D1 and D2 inside the plinth",
    "dishes stand on the plinth top on their own base plates"
+  ],
+  [
+   "SENSOR: T2 (flak, all round) aiming through the port antenna AN1 when trained aft",
+   "R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): AN1 cut from 1.8 to 1.5 tall, so its whips stay under the lowest line of fire of the barbette turret"
   ]
  ],
  "allowed": []

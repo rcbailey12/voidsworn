@@ -49,7 +49,7 @@ Ashfall Hullbreakers (corsair) | class Destroyer | version 1 (first sheet (issue
 | J4 | grabber arm, 2 segments, knuckles, rams, forked pincer | 1 | 39.3 | -0.48 | -0.86 | hook forward and down | - | picture | starboard forefoot grabber: the second bite, under the body |
 | PH1 | pipe run, 0.07 bore | 1 | 18.2 | 0.00 | -0.56 | - | - | picture | hydraulic feed between the two grabber pairs |
 | D1 | listening dish, 0.6 across | 1 | 19.3 | 0.55 | 0.43 | 30 deg off the bow to port, +22 elev | - | picture | the larger listening dish on the foredeck plate to port |
-| D2 | listening dish, 0.4 across | 1 | 87.1 | -0.55 | 0.66 | 55 deg off the bow to starboard, +18 elev | - | picture | the small dish on the stern block, starboard |
+| D2 | listening dish, 0.4 across | 1 | 87.1 | -0.30 | 0.66 | 55 deg off the bow to starboard, +18 elev | - | picture | the small dish on the stern block, starboard |
 | S1 | twin casemate | 2 barrels | 38.7 | -1.20 | -0.10 | 50 deg off the bow to starboard | S scatter | picture | starboard flank casemate, twin barrels |
 | S2 | single casemate | 1 barrel | 55.6 | -1.19 | -0.10 | 45 deg off the bow to starboard | S scatter | picture | starboard flank casemate, one fat barrel |
 | S3 | twin casemate | 2 barrels | 71.9 | -1.19 | -0.10 | 55 deg off the bow to starboard | S scatter | picture | starboard flank casemate, twin barrels |
@@ -150,7 +150,7 @@ Full interiors through the hull (R215), hidden until a piece breaks. Patch plate
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 254 objects, 37 parts, 862 close pairs, 263 rays, 5 guns, 2 turrets swept, 7 cones, 19 apertures, 4 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 254 objects, 37 parts, 862 close pairs, 263 rays, 5 guns, 45 sensor pairs, 2 turrets swept, 7 cones, 19 apertures, 4 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 

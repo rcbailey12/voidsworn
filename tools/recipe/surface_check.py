@@ -17,7 +17,7 @@ OUT = a[0]; kw = dict(x.split('=', 1) for x in a[1:] if '=' in x); RES = int(kw.
 os.makedirs(OUT, exist_ok=True)
 sc = bpy.context.scene
 CLS = dict(stack=(0, 1, 0), glow=(0, 0, 1), liner=(.5, .5, .5), room=(1, 0, 0), bare=(1, 0, 1))
-GLOW = ('p3_glow', 'p3_ember', 'p3_light')
+GLOW = ('p3_glow', 'p3_ember', 'p3_light', 'p3_lamp')
 
 
 def cls_of(o):

@@ -82,7 +82,7 @@ Ashfall Hullbreakers (corsair) | class Battle-barge | version 3 (round 3), 2026-
 | Q4 | attitude thruster quad | 1 | 78.4 | -2.88 | 2.00 | - | - | designed | stern |
 | PP1 | pipe run, 0.18 bore | 1 | 80.3 | 2.35 | 1.60 | - | - | picture |  |
 | PP2 | pipe run, 0.18 bore | 1 | 80.3 | -2.35 | 1.60 | - | - | picture |  |
-| AN1 | antenna array, 1.8 tall, 3 whips | 1 | 87.6 | 1.25 | 1.70 | - | - | picture | antenna array on the stern deck, port |
+| AN1 | antenna array, 1.5 tall, 3 whips | 1 | 87.6 | 1.25 | 1.70 | - | - | picture | antenna array on the stern deck, port |
 | AN2 | antenna array, 1.4 tall, 2 whips | 1 | 84.4 | -0.15 | 1.70 | - | - | picture | antenna array on the stern deck, centre |
 | VF0p | louvre panel 1.0 x 0.5 | 1 | 26.0 | 3.66 | -0.22 | - | - | picture |  |
 | VF1p | louvre panel 1.0 x 0.5 | 1 | 40.4 | 3.79 | -0.22 | - | - | picture |  |
@@ -149,18 +149,18 @@ Bulkhead and frame stations: F0 10.1%, F1 19.7%, F2 31.9%, F3 47.2%, F4 60.3%, F
 | Space | Station % | Offset range | Height range | Note |
 |---|---|---|---|---|
 | tube ducts (machinery) | 8.6 to 12.2 | -1.80 to 1.80 | -1.00 to 0.60 | front tube ducts and sniffer gear |
-| claw machinery (machinery) | 12.6 to 18.0 | -1.90 to 1.90 | -1.95 to -1.45 | pincer rams and winches |
-| kennel decks (crew) | 13.4 to 31.5 | -2.30 to 2.30 | -1.25 to 1.00 | boarding gangs, two decks |
+| claw machinery (machinery) | 12.8 to 18.2 | -1.90 to 1.90 | -1.95 to -1.45 | pincer rams and winches |
+| kennel decks (crew) | 13.6 to 31.6 | -2.30 to 2.30 | -1.25 to 1.00 | boarding gangs, two decks |
 | rocket magazine (magazine) | 32.3 to 51.8 | -1.50 to 1.50 | 0.10 to 1.30 | under the rocket rack |
-| loot hold (hold) | 32.2 to 46.8 | -2.55 to 2.55 | -2.10 to -1.45 | loot holds |
-| hangar (hangar) | 47.6 to 66.5 | -2.35 to 2.35 | -2.20 to -0.10 | two squadrons, belly drop |
+| loot hold (hold) | 32.3 to 46.9 | -2.55 to 2.55 | -2.10 to -1.45 | loot holds |
+| hangar (hangar) | 47.6 to 66.4 | -2.35 to 2.35 | -2.20 to -0.10 | two squadrons, belly drop |
 | core (core) | 66.8 to 74.4 | -1.20 to 1.20 | -2.20 to -0.10 | reactor core (hp_core) |
-| shell magazine p (magazine) | 60.7 to 74.5 | 1.50 to 2.60 | 0.25 to 0.95 | port battery magazine |
-| shell magazine s (magazine) | 60.7 to 74.5 | -2.60 to -1.50 | 0.25 to 0.95 | starboard battery magazine |
-| gun deck (crew) | 27.2 to 58.0 | -2.20 to 2.20 | 1.70 to 1.85 | turret crews and hoists |
-| warlord hall (crew) | 60.9 to 78.2 | -2.20 to 2.20 | 1.95 to 2.35 | the warlord hall |
-| bridge (bridge) | 68.4 to 77.6 | -1.20 to 1.20 | 2.60 to 2.85 | command deck |
-| engine room (engroom) | 75.3 to 88.6 | -1.45 to 1.45 | -1.60 to 1.00 | engine room and pod feeds |
+| shell magazine p (magazine) | 60.6 to 74.4 | 1.50 to 2.60 | 0.25 to 0.95 | port battery magazine |
+| shell magazine s (magazine) | 60.6 to 74.4 | -2.60 to -1.50 | 0.25 to 0.95 | starboard battery magazine |
+| gun deck (crew) | 27.4 to 58.0 | -2.20 to 2.20 | 1.70 to 1.85 | turret crews and hoists |
+| warlord hall (crew) | 60.8 to 78.0 | -2.20 to 2.20 | 1.95 to 2.35 | the warlord hall |
+| bridge (bridge) | 68.3 to 77.5 | -1.20 to 1.20 | 2.60 to 2.85 | command deck |
+| engine room (engroom) | 75.2 to 88.4 | -1.45 to 1.45 | -1.60 to 1.00 | engine room and pod feeds |
 
 | Armour zone | Thickness (units) | Note |
 |---|---:|---|
@@ -172,7 +172,7 @@ Bulkhead and frame stations: F0 10.1%, F1 19.7%, F2 31.9%, F3 47.2%, F4 60.3%, F
 
 | Break line | Station % | What it opens |
 |---|---|---|
-| B-1 | 20.8 (seam wanders 19.7 to 22.4) | tier 2 seam forward of the P1 and S1 turrets: the bow and the kennel decks tear off |
+| B-1 | 20.9 (seam wanders 19.7 to 22.4) | tier 2 seam forward of the P1 and S1 turrets: the bow and the kennel decks tear off |
 | B-2 | 59.9 (seam wanders 56.8 to 61.0) | castle seam: opens the rocket magazine and tears through the hangar bay; kinks forward of the P4 and S4 casemates and aft of the P3 and S3 turrets |
 | B-3 | 68.3 (seam wanders 67.5 to 75.6) | castle seam through the reactor core: the bridge, its turret T2 and the engine block tear away with the stern; kinks aft of the P5 and S5 casemates at the flanks |
 
@@ -199,7 +199,7 @@ Full interiors throughout the hull (R215): decks, frames, spaces and machinery a
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 400 objects, 73 parts, 1037 close pairs, 753 rays, 16 guns, 8 turrets swept, 10 cones, 45 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 402 objects, 73 parts, 1052 close pairs, 753 rays, 16 guns, 192 sensor pairs, 8 turrets swept, 10 cones, 45 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -226,6 +226,9 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **Engine pods brought in close to the hull.** the concept's pods sit inside the ship's beam (top view); round 3's stood far out.
 - **Ventral launch bay and four attitude thruster quads added.** data.js gives the barge a hangar of 2; a ship in space needs thrusters to turn.
 - **Crystal shard removed.** Ryan, R197.
+- **Front tubes and launch bay raised to the hull's detail density.** R224, measured by the paint job (issue 601): the tubes were 0.45 and the bay 0.18 of the hull's triangles per square unit; the kit tube now has bore rings, a bolted lip, stiffeners and bolted bands (1.02 and 0.80 of the hull), the bay framed leaves with stiffeners, guide rails on brackets, door rams, end frames and rivets (1.64 and 1.61) (A17 build, issue 532).
+- **Gun deck, warlord hall, bridge, engine room, both shell magazines, the gun deck floor and the lower deck kept inside their tiers' plating.** the paint job's surface check (PR 610) saw them reach the plating: corners of the warlord hall stood outside and the others touched the skin (A17 build, issue 532).
+- **Seven rooms fitted inside the rounded hull (claw machinery, kennel decks, loot hold, hangar, engine room, both shell magazines).** their lower corners stood outside the intact plating (about 150 inside triangles, death_seam_check.gd on PR 608); each now fits the section with about 0.1 to spare (A17 build, issue 532).
 
 ## Designed here, not shown in the picture
 

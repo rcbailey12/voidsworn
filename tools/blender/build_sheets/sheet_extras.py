@@ -149,8 +149,8 @@ def fit_view():
     W = max(t2.width + s2.width + 60, 1960); H = max(t2.height, s2.height) + 305
     sh = Image.new('RGB', (W, H), (40, 40, 42)); d = ImageDraw.Draw(sh)
     cnt = FIT['counts']
-    d.text((20, 15), '%s FIT VIEW, %s (R221). Left: clash %d, mount %d, arc %d, sweep %d, exhaust %d, exit %d, lane %d' % (
-        CODE, RND, cnt['CLASH'], cnt['MOUNT'], cnt['ARC'], cnt.get('SWEEP', 0), cnt['EXHAUST'], cnt['EXIT'], cnt.get('LANE', 0)), font=F_M, fill=INK)
+    d.text((20, 15), '%s FIT VIEW, %s (R221). Left: clash %d, mount %d, arc %d, sensor %d, sweep %d, exhaust %d, exit %d, lane %d' % (
+        CODE, RND, cnt['CLASH'], cnt['MOUNT'], cnt['ARC'], cnt.get('SENSOR', 0), cnt.get('SWEEP', 0), cnt['EXHAUST'], cnt['EXIT'], cnt.get('LANE', 0)), font=F_M, fill=INK)
     d.text((20, 75), 'green: each gun\'s data.js firing arc (red if a bearing is blocked); cyan circle: a turret\'s sweep (R219, every bearing turned and tested)', font=F_S, fill=DIM)
     d.text((20, 100), 'orange: exhaust cones (12 deg engines, 20 deg thrusters); yellow: launcher cell and tube exits, other apertures', font=F_S, fill=DIM)
     d.text((20, 125), 'yellow box: each rack\'s firing lane; magenta box: its backblast (no gun may sit in either, R221)', font=F_S, fill=DIM)
@@ -172,6 +172,9 @@ def fit_report():
          '3. **ARC**: every gun, at every bearing of its data.js slot arc (core.js inArc: F 60 degrees either side of the bow, P and S',
          '   30 to 150 off the bow, T all round, 5 degree steps), has a clear line at an elevation it can reach (turrets 0 to 30, flak',
          '   0 to 60, casemates -10 to +20), out to 60 percent of the ship\'s length.',
+         '3b. **SENSOR** (R240): no gun sits behind or aims through a dish, antenna or mast: the gun\'s whole firing volume (every',
+         '   bearing of its slot arc, every elevation it can reach, out to 60 percent of the ship\'s length) misses every sensor piece\'s',
+         '   box padded by the gun\'s calibre; firing just over a dish is not enough.',
          '4. **SWEEP** (R219): every turret\'s turning pieces turned through every bearing of its arc touch nothing; no two turrets meet',
          '   when both turn through their arcs.',
          '5. **EXHAUST**: nothing in any engine or thruster exhaust cone.',

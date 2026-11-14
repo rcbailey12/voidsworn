@@ -143,7 +143,7 @@ def build(K):
     K.hatch('HS2', (0.1, 1.55, DECK + 0.002), (0, 0, 1), 0.55, 0.55, inv='deck_hatches', note='square deck hatch over the hangar decks')
     for i, x in enumerate((-4.6, -5.8)):
         K.vent('VS%d' % i, (x, -HB - 0.141, 0.0) if i == 0 else (x, -HB - 0.141, -0.15), (0, -1, 0), 0.6, 0.4, slats=5, inv='vents', note='engine room louvre in the starboard wall')
-    K.antenna('AN1', (-6.6, 1.5, DECK + 0.36), 1.3, whips=3, inv='antenna', note='comms array on the aft deck: calls the squadrons home')
+    K.antenna('AN1', (-6.6, 2.76, DECK), 1.0, whips=3, inv='antenna', note='comms array on the aft deck, down beside the aft deck tier: calls the squadrons home')
 
     # the plates go on now, before the machines claim their mounts (issue 633: the kit's default keep-outs would strip the deck)
     for (x, y, z) in THR:
@@ -182,7 +182,7 @@ def build(K):
         K.emit(hid, part, Matrix.Translation((X_MF, yc, (MZ0 + MZ1) / 2)) @ Matrix.Rotation(-math.pi / 2, 4, 'Z'), 'hangars', keep=False)
         K.features.append(dict(id=hid, kind='hangar', what='open hangar mouth %.2f wide, %.2f high, %.1f deep, in the bow face' % (W, MZ1 - MZ0, D_),
                                count=1, pos=(X_MF, yc, (MZ0 + MZ1) / 2), aim=(0.0, 0.0), src='picture',
-                               note='%s mouth in the bow face beside the bow block: torn plate rim, launch rails, ceiling beams, a dim red lamp, an inner blast door' % ('port' if side > 0 else 'starboard'),
+                               note='%s mouth in the bow face beside the bow block: a dark deep bay, worn torn plate rim, dark launch rails, beams and ribs, three warm deck lights, an inner blast door' % ('port' if side > 0 else 'starboard'),
                                inv=['hangars']))
     # the craft: a fighter nosing out of the port mouth, a second parked deeper in the starboard one (the game's squadron, 1.6);
     # each set off the mouth's centre toward its shorter wing so both wings clear the wall ribs
@@ -225,10 +225,12 @@ def build(K):
     K.features.append(dict(id='SB1', kind='spare', what='spare engine bell, 1.0 across, lying across the deck in a cradle', count=1, pos=(1.45, 0.55, DECK + 0.54),
                            aim=None, src='picture', note='bolted down flat for field repairs (designs.md); cold, no glow', inv=['spare_bell']))
     # ---------------- the two dorsal turrets: data.js turret T, twice ----------------
-    K.gun('T1', (3.6, -0.7, DECK + 0.34), 0, 6, barrels=2, cal=0.1, blen=1.35, size=1.0, slot='T', weapon='turret', inv='turrets',
-          note='fore dorsal turret on the fore deck tier, all round')
-    K.gun('T2', (-4.9, 0.1, DECK + 0.36), 0, 6, barrels=2, cal=0.095, blen=1.3, size=0.95, slot='T', weapon='turret', inv='turrets', variant=1,
-          note='aft dorsal turret on the aft deck tier, all round (designs.md\'s deck gun aft)')
+    for i_, (x_, y_, z_) in enumerate(((3.6, -0.7, DECK + 0.34), (-4.9, 0.1, DECK + 0.36))):     # R240: the turrets fire over the dishes and the antenna
+        K.box('A20_barbette_T%d' % (i_ + 1), x_ - 0.55, x_ + 0.55, y_ - 0.55, y_ + 0.55, z_ - 0.05, DECK + (1.05, 0.92)[i_], 'iron', ch=0.1)
+    K.gun('T1', (3.6, -0.7, DECK + 1.05), 0, 6, barrels=2, cal=0.1, blen=1.35, size=1.0, slot='T', weapon='turret', inv='turrets',
+          note='fore dorsal turret on a barbette on the fore deck tier, all round, firing over the dishes')
+    K.gun('T2', (-4.9, 0.1, DECK + 0.92), 0, 6, barrels=2, cal=0.095, blen=1.3, size=0.95, slot='T', weapon='turret', inv='turrets', variant=1,
+          note='aft dorsal turret on a barbette on the aft deck tier, all round, firing over the antenna (designs.md\'s deck gun aft)')
     # ---------------- engines: five mismatched bells in a row along the top of the stern ----------------
     for (fid, y, z, r, note) in ENG:
         K.engine(fid, (-8.23, y, z), r, 0.75, bell=1.1, rings=3 if r > 0.33 else 2, body_r=r * 1.08, nose='flat', inv='engines', src='picture',
@@ -308,9 +310,10 @@ def build(K):
     K.change('Issue 668 (R239): both hangar mouths open forward in the bow face, one either side of the bow block beside the twin tubes (port 1.36 wide, starboard 1.32; 1.72 high; 3.0 deep to the back wall, 2.7 to the blast door), framed by a sill, a lintel and an outer cheek each; the port flank is closed plate now',
              'Ryan, Nov 13 2026 (R239), on A20 painted and widened: "on the hullbreakers carrier, I was wrong. I prefer the concepts version of the bays facing forward now that I see it built." '
              'The beauty and the sheet\'s bow-on view draw the two mouths in the bow face beside the twin tubes with a craft visible inside; this replaces his Nov 12 port-flank ruling (issue 633). The layout is the closed PR 658\'s (commit 98e39958), on issue 651\'s 3.2 half-beam; data.js c_hulk (launch, hangar 2) is met either way')
-    K.change('Each mouth is a real recess with a torn plate rim, launch rails on the floor, ceiling beams, a dim red lamp, frame ribs and an inner blast door on the back wall; no door leaves (issue 668)',
-             'the Board\'s brief: they must read as launch bays with depth; in the bow face there is no face beside a mouth for designs.md\'s slid doors (the bow block stands there), so the kit part leaves them out (hangar_mouth doors=False)')
-    K.change('The mouths are lined dark (floor, ceiling, back wall and ends): only the rails, ribs, red lamps and the fighters catch the light',
+    K.change('Each mouth is a real recess with a worn torn plate rim, dark launch rails on the floor, dark ceiling beams and frame ribs at uneven spacing, three small warm deck lights at uneven depths and an inner blast door on the back wall; no door leaves (issue 668, R240)',
+             'the Board\'s brief: they must read as launch bays with depth; in the bow face there is no face beside a mouth for designs.md\'s slid doors (the bow block stands there), so the kit part leaves them out (hangar_mouth doors=False). '
+             'R240 (Ryan, Nov 13 2026: "some sort of weird paint pattern in the opening of the carrier"): the striped iron fit-out, the evenly spaced rail ties and the red lamps are gone; the fit-out is dark, only the rim carries worn iron edging (stack zone iron_edge), the deck lights are warm (glow zone lamp)')
+    K.change('The mouths are lined dark (floor, ceiling, back wall and ends): only the worn rim, the few warm deck lights and the fighters catch the light',
              'the Board on round 1 (Nov 13): the mouths must be big, deep, dark openings that show from the beauty camera with the fighter in them; round 1\'s were 1.37 high and lit grey inside, so they read as shallow grilles')
     K.change('The bow block is as tall as the slab and about half its beam (3.2 across, 1.9 tall, 2.7 long); its face carries two huge intake tubes side by side, each 1.1 across (three quarters of the face\'s height), reaching 2.3 back into the block',
              'the Board on round 1 (Nov 13): the build had no twin tubes (two 0.8 tubes in a narrow block); the README\'s bow intakes and the beauty\'s two huge tubes. The concept sheet\'s plan draws the block about 0.4 of the beam; it is widened so the tubes fit side by side')
@@ -328,6 +331,7 @@ def build(K):
     K.change('Every face is plated in courses at the hull\'s plate size (0.4 to 0.9), each course jointed on its own (a brick bond), patches laid over joints and offset patches over plates; upward faces stepped in terraces of one to three plate thicknesses',
              'the Board on round 1 (Nov 13): the faces read as big smooth grey planes with a few greebles; the concept is scrap brick, plates over plates on every face (R196, R197). Kit: the sheet kit\'s courses plating (kit.py, opt-in, issue 633)')
 
+    K.fix('SENSOR: T1 aiming through the dishes D1 and D2, T2 through the antenna AN1', 'R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): both turrets lifted onto barbettes (rings at deck height plus 1.05 fore and 0.92 aft), AN1 moved off the aft deck tier onto the deck beside it and cut from 1.3 to 1.0 tall')
     K.change('Insides: two hangar deck levels behind each mouth, loot holds in the bow and in the core between the mouths, a kennel deck, the core between the hangar decks, machinery and the engine room aft',
              'designs.md; R209, R215')
     K.open_item('Belly detail between the bow grabbers and the stern grapples is designed here; the picture does not show the underside')

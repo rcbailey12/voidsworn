@@ -5,6 +5,7 @@
   "CLASH": 0,
   "MOUNT": 0,
   "ARC": 0,
+  "SENSOR": 0,
   "SWEEP": 0,
   "EXHAUST": 0,
   "EXIT": 0,
@@ -13,9 +14,10 @@
  "tested": {
   "objects": 369,
   "parts": 44,
-  "close_pairs": 1217,
-  "rays": 318,
+  "close_pairs": 1104,
+  "rays": 302,
   "guns": 2,
+  "sensor_pairs": 18,
   "turrets_swept": 2,
   "cones": 9,
   "apertures": 17,
@@ -27,7 +29,7 @@
    "pivot": [
     3.5999999046325684,
     -0.699999988079071,
-    1.7200000286102295
+    2.429999828338623
    ],
    "up": [
     0.0,
@@ -144,15 +146,15 @@
     ],
     [
      -50.0,
-     10
+     0
     ],
     [
      -45.0,
-     10
+     0
     ],
     [
      -40.0,
-     10
+     0
     ],
     [
      -35.0,
@@ -228,15 +230,15 @@
     ],
     [
      55.0,
-     10
+     0
     ],
     [
      60.0,
-     10
+     0
     ],
     [
      65.0,
-     10
+     0
     ],
     [
      70.0,
@@ -284,27 +286,27 @@
     ],
     [
      125.0,
-     10
+     0
     ],
     [
      130.0,
-     10
+     0
     ],
     [
      135.0,
-     10
+     0
     ],
     [
      140.0,
-     10
+     0
     ],
     [
      145.0,
-     10
+     0
     ],
     [
      150.0,
-     10
+     0
     ],
     [
      155.0,
@@ -337,7 +339,7 @@
    "pivot": [
     -4.900000095367432,
     0.10000000149011612,
-    1.7209999561309814
+    2.2809998989105225
    ],
    "up": [
     0.0,
@@ -498,15 +500,15 @@
     ],
     [
      5.0,
-     10
+     0
     ],
     [
      10.0,
-     10
+     0
     ],
     [
      15.0,
-     10
+     0
     ],
     [
      20.0,
@@ -606,7 +608,7 @@
     ],
     [
      140.0,
-     10
+     0
     ],
     [
      145.0,
@@ -1102,6 +1104,11 @@
   }
  ],
  "lanes": [],
- "fixes": [],
+ "fixes": [
+  [
+   "SENSOR: T1 aiming through the dishes D1 and D2, T2 through the antenna AN1",
+   "R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): both turrets lifted onto barbettes (rings at deck height plus 1.05 fore and 0.92 aft), AN1 moved off the aft deck tier onto the deck beside it and cut from 1.3 to 1.0 tall"
+  ]
+ ],
  "allowed": []
 }

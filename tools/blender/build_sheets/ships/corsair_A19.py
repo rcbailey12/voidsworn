@@ -177,7 +177,7 @@ def build(K):
     K.pipe('PH1', [(3.1, 0.0, -0.56), (2.3, 0.0, -0.58), (1.55, 0.0, -0.6)], r=0.035, inv='belly_pipes', note='hydraulic feed between the two grabber pairs')
     # ---------------- the dishes: large on the port bow shoulder, small on the starboard side of the stern block ----------------
     K.dish('D1', (3.0, 0.55, 0.427), 0.28, yaw=30, pitch=22, post=1.3, inv='dishes', note='the larger listening dish on the foredeck plate to port')
-    K.dish('D2', (-3.45, -0.55, SB_TOP), 0.22, yaw=-55, pitch=18, post=1.25, inv='dishes', note='the small dish on the stern block, starboard')
+    K.dish('D2', (-3.45, -0.3, SB_TOP), 0.22, yaw=-55, pitch=18, post=1.25, inv='dishes', note='the small dish on the stern block, starboard')
     # ---------------- the scatter battery: data.js scatter S, all on the starboard side ----------------
     for (fid, x, nb, cal, blen, size, yaw) in CASEMATES:
         K.gun(fid, (x, sy(x, -1) - 0.02, -0.1), yaw, 0, barrels=nb, cal=cal, blen=blen, size=size, normal=(0, -1, 0), slot='S', weapon='scatter',
@@ -257,6 +257,7 @@ def build(K):
     K.change('Two grabber pairs: one under the chin, one under the forefoot', 'the picture\'s claws at the chin and further aft; designs.md\'s four arms; split so the jaw is not a copy of A17\'s')
     K.change('Three engine bells, the centre the largest, staggered in the stern block', 'designs.md; the picture\'s four become three, lopsided (port small and high, starboard lower)')
     K.change('Two dishes: the large one standing on the foredeck plate to port, a small one on the stern block to starboard', 'designs.md; the picture shows one on the foredeck')
+    K.fix('SENSOR: S5 aiming through the small dish D2 at its aft bearings', 'R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): D2 moved inboard on the stern block (y -0.55 to -0.3), out of the arc of S5')
     K.change('Four attitude thrusters', 'a ship in space needs them to turn')
     K.change('Insides: two decks, the gun crews\' gallery along the starboard casemates, a kennel deck under the bow, the loot hold aft', 'designs.md; R209, R215')
     K.open_item('Belly detail between the grabber pairs and the stern block is designed here; the picture shows little of the underside')

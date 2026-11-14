@@ -51,10 +51,18 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    spots and soot streaks across the throat, each engine its own brightness, core reach, hue and hot-spot pattern, baked into
    the engine glow's own emission map by the stack (ENGINE_GLOW); the game's moving plume sits on top, so no flame is painted.
    Issue 651 (A18 to A20, the Board as designer): only a lit engine glows; a cold spare bell (an engine with no throat glow
-   of its own, A20's on the deck) keeps its throat and plug dark. A flank hangar mouth carries the launch bay's warning
-   stripes, a parked craft takes its sheet zones and its nozzle joins the engine glow, and a sheet zone the stack has no colour
-   for gets one in the faction stack, sampled from the beauty that shows it (the lilac trophy plate, from A20's); the list is
-   in RECIPE.md "The paint stack for sheet ships".
+    of its own, A20's on the deck) keeps its throat and plug dark. A parked craft takes its sheet zones and its nozzle joins
+   the engine glow, and a sheet zone the stack has no colour for gets one in the faction stack, sampled from the beauty that
+   shows it (the lilac trophy plate, from A20's); the list is in RECIPE.md "The paint stack for sheet ships".
+   R240 (Ryan, Nov 13 2026 18:03 CST, on the reshaped A18 to A20: "The armor plates and patchwork is sometimes super even and
+   ordered which doesn't make sense", and "some sort of weird paint pattern in the opening of the carrier"), in the
+   Hullbreaker stack for every Hullbreaker ship: the patchwork never reads even or ordered: plate sizes wander along every
+   axis, rows come in bands whose edges step every few columns, every column and strip shifts its own cells, a share of the
+   plates is split once more at a random place, so no tile repeats and no seam runs on across a face (stack LAYERS
+   patch_warp, patch_band, patch_split; shared paint_stack._grid). A hangar mouth reads as a dark, deep bay with a few warm
+   deck lights and worn edging, nothing patterned inside it: no warning stripes (replaces issue 651's striped mouth), the
+   fit-out inside in the dark liner's zone, only the rim and its torn teeth in worn iron (stack zone iron_edge), a few small
+   warm lamps at uneven depths by the floor (glow zone lamp, amber, under the glow threshold).
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
    opus_check_341).
@@ -172,6 +180,12 @@ global learning and shaping the approach". So the method, for every ship of ever
 - Parts must not look like they conflict, not only not clash (R221: "There's a gun directly behind the rocket pods on a16
   which seems like it conflicts?"). The fit check adds each launcher's backblast cone and each rack's firing lane, and a
   gun whose barrel points at or sits in another weapon's lane or blast is a clash even when no mesh touches.
+- No gun behind or aiming through a sensor (R240, Ryan, Nov 13 2026 18:03 CST: "I still see some guns right behind or facing
+  satellite dishes and antennae"). The fit check's SENSOR test (clash.py check 3c) sweeps each gun's whole firing volume
+  (every bearing of its data.js slot arc, every elevation it can reach, out to 60 percent of the ship's length) against the
+  box of every dish, antenna and mast piece, padded by the gun's calibre; any hit fails the sheet, even where the barrel
+  would fire just over the dish. The fix is the designer's: lift the gun on a barbette, lower or move the sensor, or both,
+  listed on the sheet's fix table.
 - Weapons carry the hull's detail density, measured (R224: Ryan on the Eclipse weapons, "They also just look smoother and
   less detailed, maybe slightly less poly than the rest of the ship"). The fit check reports, per part type, triangles
   per square unit of surface and edge features (seams, steps, bevels, greebles) per square unit against the hull's own; a

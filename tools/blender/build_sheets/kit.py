@@ -48,6 +48,7 @@ MATS = {
     'glow': ((1.0, 0.25, 0.08), 8),          # engine throat glow
     'ember': ((0.9, 0.22, 0.06), 1.6),       # engine bell lining
     'light': ((1.0, 0.1, 0.05), 3),          # running lights
+    'lamp': ((1.0, 0.55, 0.22), 2),          # warm deck lights inside a hangar mouth (R240)
     'warhead': ((0.42, 0.12, 0.06), 0),      # rocket noses
     'brass': ((0.42, 0.30, 0.12), 0),        # salvaged rocket noses
     # inside (cutaway only)

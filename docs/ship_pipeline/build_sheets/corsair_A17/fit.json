@@ -5,6 +5,7 @@
   "CLASH": 0,
   "MOUNT": 0,
   "ARC": 0,
+  "SENSOR": 0,
   "SWEEP": 0,
   "EXHAUST": 0,
   "EXIT": 0,
@@ -13,9 +14,10 @@
  "tested": {
   "objects": 371,
   "parts": 56,
-  "close_pairs": 953,
-  "rays": 506,
+  "close_pairs": 932,
+  "rays": 501,
   "guns": 8,
+  "sensor_pairs": 96,
   "turrets_swept": 6,
   "cones": 10,
   "apertures": 28,
@@ -27,7 +29,7 @@
    "pivot": [
     -4.599999904632568,
     0.0,
-    1.8429999351501465
+    2.3929998874664307
    ],
    "up": [
     0.0,
@@ -168,11 +170,11 @@
     ],
     [
      -20.0,
-     20
+     0
     ],
     [
      -15.0,
-     10
+     0
     ],
     [
      -10.0,
@@ -196,7 +198,7 @@
     ],
     [
      15.0,
-     20
+     0
     ],
     [
      20.0,
@@ -647,7 +649,7 @@
    "pivot": [
     3.25,
     1.2999999523162842,
-    2.065000057220459
+    2.2049999237060547
    ],
    "up": [
     0.0,
@@ -1001,7 +1003,7 @@
    "pivot": [
     3.25,
     -1.2999999523162842,
-    2.065000057220459
+    2.2049999237060547
    ],
    "up": [
     0.0,
@@ -2159,6 +2161,14 @@
   [
    "C2 girdle through the P2 and S2 turret rings",
    "C2 runs in the gap between the mid and saddle blocks, clear of every ring"
+  ],
+  [
+   "SENSOR: P1 and S1 aiming through the ear dishes D1 and D2 at their forward bearings",
+   "R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): the neck turret barbettes raised 0.14 (top 1.78 to 1.92), so the lowest line of fire of P1 and S1 passes over the ears"
+  ],
+  [
+   "SENSOR: T1 (flak, all round) aiming through the saddle antennas AN1 and AN2",
+   "R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): T1 lifted onto a 0.55 barbette and the antennas cut (1.3 to 0.75, 1.0 to 0.6 tall), so the crest gun fires over them"
   ],
   [
    "Crest and belly turret housings sunk in the crest and the belly",

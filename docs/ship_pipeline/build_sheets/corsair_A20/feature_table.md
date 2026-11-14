@@ -15,9 +15,9 @@ Ashfall Hullbreakers (corsair) | class Carrier | version 2 (issue 668: the bow m
 | beam top | 7.05 |
 | beam bow | 7.05 |
 | beam disagreement percent | 0.0 |
-| height side | 4.612 |
-| height bow | 4.612 |
-| height disagreement percent | 0.0 |
+| height side | 4.575 |
+| height bow | 4.588 |
+| height disagreement percent | 0.08 |
 | widest at station percent | 89.7 |
 | hull beam | 6.4 |
 | hull depth | 2.05 |
@@ -42,9 +42,9 @@ Ashfall Hullbreakers (corsair) | class Carrier | version 2 (issue 668: the bow m
 | HS2 | square hatch 0.6 | 1 | 49.4 | 1.55 | 1.00 | - | - | picture | square deck hatch over the hangar decks |
 | VS0 | louvre panel 0.6 x 0.4 | 1 | 77.9 | -3.34 | 0.00 | - | - | picture | engine room louvre in the starboard wall |
 | VS1 | louvre panel 0.6 x 0.4 | 1 | 85.2 | -3.34 | -0.15 | - | - | picture | engine room louvre in the starboard wall |
-| AN1 | antenna array, 1.3 tall, 3 whips | 1 | 90.0 | 1.50 | 1.36 | - | - | picture | comms array on the aft deck: calls the squadrons home |
-| H1 | open hangar mouth 1.36 wide, 1.72 high, 3.0 deep, in the bow face | 1 | 15.5 | 2.40 | -0.06 | forward | - | picture | port mouth in the bow face beside the bow block: torn plate rim, launch rails, ceiling beams, a dim red lamp, an inner blast door |
-| H2 | open hangar mouth 1.32 wide, 1.72 high, 3.0 deep, in the bow face | 1 | 15.5 | -2.38 | -0.06 | forward | - | picture | starboard mouth in the bow face beside the bow block: torn plate rim, launch rails, ceiling beams, a dim red lamp, an inner blast door |
+| AN1 | antenna array, 1.0 tall, 3 whips | 1 | 90.0 | 2.76 | 1.00 | - | - | picture | comms array on the aft deck, down beside the aft deck tier: calls the squadrons home |
+| H1 | open hangar mouth 1.36 wide, 1.72 high, 3.0 deep, in the bow face | 1 | 15.5 | 2.40 | -0.06 | forward | - | picture | port mouth in the bow face beside the bow block: a dark deep bay, worn torn plate rim, dark launch rails, beams and ribs, three warm deck lights, an inner blast door |
+| H2 | open hangar mouth 1.32 wide, 1.72 high, 3.0 deep, in the bow face | 1 | 15.5 | -2.38 | -0.06 | forward | - | picture | starboard mouth in the bow face beside the bow block: a dark deep bay, worn torn plate rim, dark launch rails, beams and ribs, three warm deck lights, an inner blast door |
 | C1 | cobbled fighter, 1.6 long | 1 | 18.5 | 2.35 | -0.92 | forward | - | picture | nosing out of the port mouth |
 | C2 | cobbled fighter, 1.6 long | 1 | 25.5 | -2.43 | -0.92 | forward | - | picture | parked deeper in the starboard mouth, half refitted |
 | I1 | intake tube, 1.1 across, 2.2 deep | 1 | 0.8 | 0.73 | -0.12 | forward | - | picture | port intake: the family's face (designs.md "two low intake tubes") |
@@ -57,8 +57,8 @@ Ashfall Hullbreakers (corsair) | class Carrier | version 2 (issue 668: the bow m
 | D1 | listening dish, 1.2 across | 1 | 18.5 | 2.40 | 1.00 | 30 deg off the bow to port, +18 elev | - | picture | the larger dish on the port shoulder, over the port mouth |
 | D2 | listening dish, 0.8 across | 1 | 18.5 | -2.35 | 1.00 | 35 deg off the bow to starboard, +15 elev | - | picture | the smaller dish on the starboard shoulder, over the starboard mouth |
 | SB1 | spare engine bell, 1.0 across, lying across the deck in a cradle | 1 | 41.3 | 0.55 | 1.54 | - | - | picture | bolted down flat for field repairs (designs.md); cold, no glow |
-| T1 | twin turret | 2 barrels | 28.2 | -0.70 | 1.34 | forward, +6 elev | T turret | picture | fore dorsal turret on the fore deck tier, all round |
-| T2 | twin turret | 2 barrels | 79.7 | 0.10 | 1.36 | forward, +6 elev | T turret | picture | aft dorsal turret on the aft deck tier, all round (designs.md's deck gun aft) |
+| T1 | twin turret | 2 barrels | 28.2 | -0.70 | 2.05 | forward, +6 elev | T turret | picture | fore dorsal turret on a barbette on the fore deck tier, all round, firing over the dishes |
+| T2 | twin turret | 2 barrels | 79.7 | 0.10 | 1.92 | forward, +6 elev | T turret | picture | aft dorsal turret on a barbette on the aft deck tier, all round, firing over the antenna (designs.md's deck gun aft) |
 | E1 | engine, bell 0.9 across | 1 | 99.9 | -2.10 | 0.46 | exhaust aft | - | picture | stern bell |
 | E2 | engine, bell 0.8 across | 1 | 99.9 | -1.06 | 0.42 | exhaust aft | - | picture | stern bell |
 | E3 | engine, bell 1.1 across | 1 | 99.9 | 0.02 | 0.44 | exhaust aft | - | picture | stern bell, the largest |
@@ -172,7 +172,7 @@ Full interiors through the hull (R215), hidden until a piece breaks. The bay sid
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 369 objects, 44 parts, 1217 close pairs, 318 rays, 2 guns, 2 turrets swept, 9 cones, 17 apertures, 0 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 369 objects, 44 parts, 1104 close pairs, 302 rays, 2 guns, 18 sensor pairs, 2 turrets swept, 9 cones, 17 apertures, 0 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -181,8 +181,8 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 ## Changed from the picture (R207)
 
 - **Issue 668 (R239): both hangar mouths open forward in the bow face, one either side of the bow block beside the twin tubes (port 1.36 wide, starboard 1.32; 1.72 high; 3.0 deep to the back wall, 2.7 to the blast door), framed by a sill, a lintel and an outer cheek each; the port flank is closed plate now.** Ryan, Nov 13 2026 (R239), on A20 painted and widened: "on the hullbreakers carrier, I was wrong. I prefer the concepts version of the bays facing forward now that I see it built." The beauty and the sheet's bow-on view draw the two mouths in the bow face beside the twin tubes with a craft visible inside; this replaces his Nov 12 port-flank ruling (issue 633). The layout is the closed PR 658's (commit 98e39958), on issue 651's 3.2 half-beam; data.js c_hulk (launch, hangar 2) is met either way.
-- **Each mouth is a real recess with a torn plate rim, launch rails on the floor, ceiling beams, a dim red lamp, frame ribs and an inner blast door on the back wall; no door leaves (issue 668).** the Board's brief: they must read as launch bays with depth; in the bow face there is no face beside a mouth for designs.md's slid doors (the bow block stands there), so the kit part leaves them out (hangar_mouth doors=False).
-- **The mouths are lined dark (floor, ceiling, back wall and ends): only the rails, ribs, red lamps and the fighters catch the light.** the Board on round 1 (Nov 13): the mouths must be big, deep, dark openings that show from the beauty camera with the fighter in them; round 1's were 1.37 high and lit grey inside, so they read as shallow grilles.
+- **Each mouth is a real recess with a worn torn plate rim, dark launch rails on the floor, dark ceiling beams and frame ribs at uneven spacing, three small warm deck lights at uneven depths and an inner blast door on the back wall; no door leaves (issue 668, R240).** the Board's brief: they must read as launch bays with depth; in the bow face there is no face beside a mouth for designs.md's slid doors (the bow block stands there), so the kit part leaves them out (hangar_mouth doors=False). R240 (Ryan, Nov 13 2026: "some sort of weird paint pattern in the opening of the carrier"): the striped iron fit-out, the evenly spaced rail ties and the red lamps are gone; the fit-out is dark, only the rim carries worn iron edging (stack zone iron_edge), the deck lights are warm (glow zone lamp).
+- **The mouths are lined dark (floor, ceiling, back wall and ends): only the worn rim, the few warm deck lights and the fighters catch the light.** the Board on round 1 (Nov 13): the mouths must be big, deep, dark openings that show from the beauty camera with the fighter in them; round 1's were 1.37 high and lit grey inside, so they read as shallow grilles.
 - **The bow block is as tall as the slab and about half its beam (3.2 across, 1.9 tall, 2.7 long); its face carries two huge intake tubes side by side, each 1.1 across (three quarters of the face's height), reaching 2.3 back into the block.** the Board on round 1 (Nov 13): the build had no twin tubes (two 0.8 tubes in a narrow block); the README's bow intakes and the beauty's two huge tubes. The concept sheet's plan draws the block about 0.4 of the beam; it is widened so the tubes fit side by side.
 - **Bow thrusters and the bow lamps on the bow block's flanks, the chin scoop under the web between the tubes.** the wider block and its tubes fill the old places.
 - **The two shoulder dishes stand on the lintels over the mouths.** designs.md puts the dishes on the shoulders; the mouths took the shoulders' faces (issue 668).
