@@ -865,6 +865,13 @@ const FAC_PRICE={hegemony:{},voidsworn:{Carrier:1.1},corsair:{Frigate:.8,Destroy
 // B3 roster gates and prohibitions: what each faction cannot field or do. Checked by canOrder (brace), the prize screen and towing (weapon kinds).
 const FAC_GATES={corsair:{noKind:['lance'],d:'Hullbreakers field no lance weapons (no long-range beams): they win up close.'},ithar:{noBrace:1,d:'Glasswright hulls cannot Brace for impact: they live by shields and speed.'}};
 function factionGate(fac,tpl){ const G=FAC_GATES[fac], h=HULLS[tpl]; if(!G||!h) return null; if(G.noKind&&h.w.some(([id])=>W[id]&&G.noKind.includes(W[id].k))) return G.d; return null; }
+// R78 Q9 (issue 41): from run 3 the Crusade's Cinder Line yards sell captured Hegemony and Eclipse hulls, links ripped
+// out, at Crusade prices. cinderOpen() gates the yard stock; a 'ripped' ship loses the Hegemony synchronized fire and
+// the Eclipse Archive restore in battle (both key off the hull faction, battle.js). Strip and ransom on the prize
+// screen are unchanged: this adds a way to keep an enemy hull, it does not touch the keep/strip/ransom choice.
+const CINDER_PRIZES=['h_picket','h_interdictor','h_vanguard','h_dominion','d_scythe','d_jackal','d_harvester'];
+const CINDER_FIRST_RUN=3;
+function cinderOpen(){ return typeof RUN!=='undefined'&&!!RUN&&RUN.fac==='voidsworn'&&typeof META!=='undefined'&&!!META&&META.stats&&(META.stats.runs||0)>=CINDER_FIRST_RUN; }
 for(const [fid,F] of Object.entries(FACTIONS)){ if(F.boss&&HULLS[F.boss]) HULLS[F.boss].boss=true;
   for(const id of F.roster){ const h=HULLS[id]; if(!h||h.sq) continue; const cp=h.cp||1;
     if(h.cost==null) h.cost=Math.round((60*cp+10)/5)*5; if(h.slots==null) h.slots=cp<=2?1:cp<=4?2:3;
