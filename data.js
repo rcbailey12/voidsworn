@@ -58,6 +58,14 @@ function nameWeapons(fac,list){ for(const w of list){ w.n=wName(fac,w.id); const
 
 // Ship class display names (lore round 8, rename map row 4.0): cls values stay as lookup keys (models, sizes, fx); show a class through clsName().
 const CLS_NAME={'Battle-barge':'War-barge','Bio-titan':'Colossus','Ark':'Lattice-ship','Tomb-ark':'Archive-ship'}; function clsName(c){ return CLS_NAME[c]||c; }
+// Shield model (R246, issue 371): one shield pool per ship instead of four side strengths.
+// The pool holds shMax = sh * SHIELD_POOL_MULT points; each side catches up to pool * coverage of a hit;
+// when a side is hit the ship routes power to it (coverage +SHIELD_ROUTE_BOOST) but routed absorption
+// drains (1 + SHIELD_ROUTE_LOSS) pool per point, so reinforcing the struck side burns the pool.
+// When the pool empties, shields drop on every side at once. Coverage: [prow, starboard, rear, port].
+const SHIELD_POOL_MULT=1.5, SHIELD_ROUTE_LOSS=.3, SHIELD_ROUTE_BOOST=.2, SHIELD_COV_MAX=.95, SHIELD_COV_MIN=.2;
+const SHIELD_COV={Frigate:[.85,.55,.40,.55],Destroyer:[.85,.60,.45,.60],Cruiser:[.90,.65,.50,.65],Carrier:[.80,.60,.50,.60],Battleship:[.90,.70,.55,.70],Dreadnought:[.90,.70,.60,.70]};
+const SHIELD_COV_FAC={voidsworn:[.05,0,0,0],hegemony:[0,.05,.05,.05],corsair:[-.05,0,-.05,0],ithar:[.05,.05,.10,.05]};
 const HULLS = {
   // ---- player: Voidsworn gothic fleet
   warden:{n:'Warden-class frigate',cls:'Frigate',fac:'voidsworn',size:.5,cp:1,hp:50,sh:10,rg:5,ar:.1,sp:5,tn:3,ev:20,w:[['autocannon','F'],['flak','T']],ab:'evasive',slots:1,cost:70},
@@ -134,10 +142,10 @@ const ABILITIES = {
   reload:{n:'Reload torpedoes',d:'Torpedo tubes are ready to fire again immediately.',cd:3},
   focus:{n:'Concentrated fire',d:'All of this ship\u2019s weapons deal +30% damage this turn.',cd:3},
   launch:{n:'Automatic wings',d:'Carriers start with wings in flight. Wings move and fight on their own each round. At round start, each ready carrier automatically replaces one lost wing if an adjacent hex is open and spares remain. Replacements fight from next round; one spare per hangar slot.',cd:1},
-  surge:{n:'Shield surge',d:'Every shield facing restored to full strength.',cd:4},
+  surge:{n:'Shield surge',d:'The shield pool is restored to full strength.',cd:4},
   nova:{n:'Spinal cannon',d:'Spinal shell: base 40 damage in a prow hex 3\u20139 away, 20 adjacent. Hits friends too.',cd:3,target:true},
   // faction abilities: every faction's line ships get something to press besides fire and brace
-  ionpulse:{n:'Ion pulse',d:'Every enemy ship within 4 hexes loses half of each shield facing.',cd:3},
+  ionpulse:{n:'Ion pulse',d:'Every enemy ship within 4 hexes loses half of its shield pool.',cd:3},
   overburn:{n:'Overburn',d:'+3 movement now, and a ram this turn hits 50% harder.',cd:3},
   frenzy:{n:'Blood frenzy',d:'All of this ship\u2019s weapons deal +30% damage this turn.',cd:3},
   regrow:{n:'Rapid regrowth',d:'Regrow 25% of this ship\u2019s hull right now.',cd:3},
@@ -1818,7 +1826,7 @@ const LINEAGE_TREES={
           [
             {
               "n": "The Column Endures",
-              "d": "while the wall is active, the first ship each round to have a shield facing emptied immediately refills that facing to 25%."
+              "d": "while the wall is active, the first ship each round to have its shield emptied immediately refills it to 25%."
             },
             {
               "n": "Filed in Armor",
@@ -3120,9 +3128,9 @@ const BOONS={
   i_line:{p:'iron',n:'Unbroken Line',d:m=>`Ships next to another of your ships take ${boonPct(.12*m)} less hull damage.${m>=2?' Epic: they are also 5 harder to hit.':''}`,fx:m=>({lineGuard:.12*m,lineEv:m>=2?5:0})},
   // Vyre
   s_cap:{p:'storm',n:'Capacitor Surge',d:m=>`Shields +${boonPct(.2*m)} across the fleet.`,fx:m=>({shPct:.2*m})},
-  s_arc:{p:'storm',n:'Arc Discharge',d:m=>`When your fire knocks out an enemy shield facing, its generator shorts for ${Math.round(9*m)} hull damage.`,fx:m=>({arcShort:Math.round(9*m)})},
+  s_arc:{p:'storm',n:'Arc Discharge',d:m=>`When your fire knocks out an enemy shield, its generator shorts for ${Math.round(9*m)} hull damage.`,fx:m=>({arcShort:Math.round(9*m)})},
   s_ion:{p:'storm',n:'Ion Lash',d:m=>`Your weapons gain +${+(.22*m).toFixed(2)} to their shield damage multiplier.`,fx:m=>({ionPlus:.22*m})},
-  s_regen:{p:'storm',n:'Storm Mantle',d:m=>`Each turn, working shield generators restore an extra ${boonPct(.18*m)} of each facing's strength.`,fx:m=>({stormRegen:.18*m})},
+  s_regen:{p:'storm',n:'Storm Mantle',d:m=>`Each turn, working shield generators restore an extra ${boonPct(.18*m)} of the shield pool.`,fx:m=>({stormRegen:.18*m})},
   s_ev:{p:'storm',n:'Lightning Reflex',d:m=>`+${Math.round(6*m)} evasion across the fleet.`,fx:m=>({ev:Math.round(6*m)})},
   // The Hunger
   h_hatch:{p:'hunger',n:'Swarm Hatch',d:m=>`Launch ships field an extra wing${m>=1.5?` and carry ${m>=2?'2 more spare wings':'1 more spare wing'}`:''}.`,fx:m=>({hangar:1,spareWings:m>=2?2:(m>=1.5?1:0)})},
@@ -3150,7 +3158,7 @@ const BOONS={
   e_hunt:{p:'ember',n:'Funeral Pyre',d:m=>`+${boonPct(.2*m)} damage against ships already below half hull; hits there stop passive regrowth, feeding and reassembly.`,fx:m=>({huntPct:.2*m,pyre:1})},
   // Duo boons: need a boon from each of two patrons
   d_jugg:{duo:['iron','rook'],n:'Juggernaut',d:()=>'Rams deal +50% damage and the rammer takes no recoil.',fx:()=>({ramPct:.5,ramGuard:1})},
-  d_bastion:{duo:['iron','storm'],n:'Fortress',d:()=>'Bracing also refills every shield facing and blocks an extra 10% of hull damage.',fx:()=>({bastion:1,bracePlus:.1})},
+  d_bastion:{duo:['iron','storm'],n:'Fortress',d:()=>'Bracing also refills the shield pool and blocks an extra 10% of hull damage.',fx:()=>({bastion:1,bracePlus:.1})},
   d_ionlance:{duo:['storm','star'],n:'Ion Lance',d:()=>'Lances gain +1 to their shield damage multiplier.',fx:()=>({ionLance:1})},
   d_burnswarm:{duo:['hunger','ember'],n:'Burning Swarm',d:()=>'Squadron hull hits on ships have a 30% chance to start a fire.',fx:()=>({sqIgnite:.3})},
   d_hunter:{duo:['star','rook'],n:"Hunter's Line",d:()=>'Ships that moved 3+ hexes gain +25% critical chance.',fx:()=>({momCrit:25})},
@@ -3160,13 +3168,13 @@ const BOONS={
 // hold two boons from that patron (Hades style), always in the third slot; it never rolls otherwise (leg:true keeps it out of every normal pool).
 Object.assign(BOONS,{
   i_wall:{p:'iron',n:'Shield Wall',d:m=>`Bracing covers every ship next to the braced ship too: they take the brace’s hull cut${m>1?` and an extra ${boonPct(.1*(m-1))} hull cut`:''} until its next turn.`,fx:m=>({wallBrace:1,wallPlus:.1*(m-1)})},
-  s_chain:{p:'storm',n:'Chain Lightning',d:m=>`When your fire knocks out an enemy shield facing, the two facings beside it lose ${Math.round(m/3*100)}% of their strength.`,fx:m=>({chainSh:m/3})},
+  s_chain:{p:'storm',n:'Chain Lightning',d:m=>`When your fire knocks out an enemy shield, the pool loses ${Math.round(m/3*100)}% of its strength.`,fx:m=>({chainSh:m/3})},
   h_brood:{p:'hunger',n:'Brood Harvest',d:m=>`Each enemy capital ship your fleet destroys lets your nearest carrier launch a free wing, if it has a free hex beside it${m>1?`, and repairs ${boonPct(.1*(m-1))} of its hull`:''}.`,fx:m=>({broodTithe:1,broodRepair:.1*(m-1)})},
   a_mark:{p:'star',n:'Marked for Death',d:m=>`Each round, the first enemy ship your lances hit is marked: your whole fleet aims ${Math.round(10*m)} better against it until the round ends.`,fx:m=>({markLance:m})},
   r_slip:{p:'rook',n:'Slip the Net',d:m=>`Your ships may move after firing, up to ${m>=2?'90% of':m>=1.5?'70% of':'half'} the movement they had left (without climbing over or diving under).`,fx:m=>({fade:m>=2?.9:(m>=1.5?.7:.5)})},
   e_spread:{p:'ember',n:'Spread Pattern',d:m=>`If a torpedo finds no target, enemy ships within 1 hex of its aim hex take ${boonPct(.3*m)} of one torpedo\u2019s damage.`,fx:m=>({spread:.3*m})},
   L_iron:{p:'iron',leg:1,n:'Unbreakable',d:()=>'Legendary. Every ship survives its first killing blow each battle at 1 hull.',fx:()=>({lastStand:1})},
-  L_storm:{p:'storm',leg:1,n:'Eye of the Storm',d:()=>'Legendary. Working shield generators refill every facing at the start of your turn, before storm damage.',fx:()=>({stormRegen:1})},
+  L_storm:{p:'storm',leg:1,n:'Eye of the Storm',d:()=>'Legendary. Working shield generators refill the pool at the start of your turn, before storm damage.',fx:()=>({stormRegen:1})},
   L_hunger:{p:'hunger',leg:1,n:'The Endless Swarm',d:()=>'Legendary. Launch ships field two more wings and carry 99 spares.',fx:()=>({hangar:2,endless:1})},
   L_star:{p:'star',leg:1,n:'One Clean Line',d:()=>'Legendary. Lances hit at 95% (75% against Full burn) and pass straight through shields.',fx:()=>({lanceSure:1})},
   L_rook:{p:'rook',leg:1,n:'Unstoppable',d:()=>'Legendary. Rams deal 50% more, can take 70% of a ship’s hull, and the rammer takes no recoil.',fx:()=>({ramPct:.5,ramCap:.3,ramGuard:1})},
