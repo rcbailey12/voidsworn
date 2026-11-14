@@ -93,17 +93,6 @@
    ]
   },
   {
-   "id": "R1",
-   "kind": "launcher",
-   "what": "rocket casemate in the bow face, one long tube",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "bow_launchers"
-   ]
-  },
-  {
    "id": "R2",
    "kind": "launcher",
    "what": "rocket casemate in the bow face, 3 short fat tubes",
@@ -201,42 +190,6 @@
    "inventory": [
     "dishes"
    ]
-  },
-  {
-   "id": "S1",
-   "kind": "gun",
-   "what": "twin casemate",
-   "count": 2,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "casemates"
-   ],
-   "turret": false
-  },
-  {
-   "id": "S2",
-   "kind": "gun",
-   "what": "single casemate",
-   "count": 1,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "casemates"
-   ],
-   "turret": false
-  },
-  {
-   "id": "S3",
-   "kind": "gun",
-   "what": "twin casemate",
-   "count": 2,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "casemates"
-   ],
-   "turret": false
   },
   {
    "id": "S4",
@@ -476,7 +429,7 @@
  "break_pieces": [
   {
    "name": "bow piece",
-   "stations": "0.0 to 25.4 percent",
+   "stations": "0.0 to 24.0 percent",
    "bounded_by": [
     "B-1"
    ],
@@ -484,7 +437,7 @@
   },
   {
    "name": "midships piece 1",
-   "stations": "25.4 to 81.9 percent",
+   "stations": "24.0 to 81.5 percent",
    "bounded_by": [
     "B-1",
     "B-2"
@@ -493,7 +446,7 @@
   },
   {
    "name": "stern piece",
-   "stations": "81.9 to 100.0 percent",
+   "stations": "81.5 to 100.0 percent",
    "bounded_by": [
     "B-2"
    ],

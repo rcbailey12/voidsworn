@@ -43,6 +43,25 @@ def ship_attr(ship_id, key, data_js=None, default=None):
         return v
 
 
+def weapon_stats(weapon_id, data_js=None):
+    """{'k': weapon kind, 'shots': shots per volley, 'n': name} of one weapon in data.js's weapon table W (issue 676, R241:
+    the weapon-match check reads what each weapon is and how many shots its volley fires); raises ValueError when absent"""
+    src = open(data_js or os.path.join(REPO, 'data.js'), encoding='utf-8').read()
+    t = re.search(r'const\s+W\s*=\s*\{(.*?)\n\};', src, re.S)
+    if not t:
+        raise ValueError('data.js has no weapon table W')
+    m = re.search(r'(?<![A-Za-z0-9_])' + re.escape(weapon_id) + r'\s*:\s*\{([^}]*)\}', t.group(1))
+    if not m:
+        raise ValueError(f'weapon {weapon_id} is not in the data.js weapon table W')
+    body = m.group(1)
+    k = re.search(r"(?<![A-Za-z0-9_])k\s*:\s*'([^']*)'", body)
+    s = re.search(r'(?<![A-Za-z0-9_])shots\s*:\s*([0-9]+)', body)
+    n = re.search(r"(?<![A-Za-z0-9_])n\s*:\s*'([^']*)'", body)
+    if not k or not s:
+        raise ValueError(f'weapon {weapon_id} has no kind or shots in data.js')
+    return dict(k=k.group(1), shots=int(s.group(1)), n=n.group(1) if n else weapon_id)
+
+
 if __name__ == '__main__':
     import sys
     print(weapons(sys.argv[1]))

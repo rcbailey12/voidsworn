@@ -170,8 +170,7 @@ def build(K):
               note='neck block twin turret on a low barbette')
         K.gun('%s2' % sl, (-1.4, side * 1.8 + 0.1, 1.3), side * 35, 3, barrels=2, cal=0.08, blen=1.15, size=0.75, slot=sl, weapon='scatter', inv='deck_guns',
               variant=1, note='mid block twin turret, superfiring')
-        K.gun('%s3' % sl, (-2.2, sy(-2.2, side) + 0.28 * side, -0.25), side * 35, 0, barrels=2, cal=0.08, blen=1.05, size=0.75, normal=(0, side, 0),
-              slot=sl, weapon='scatter', inv='flank_casemates', note='flank casemate on the flank tier')
+        # R241 (issue 676): the flank casemates P3 and S3 are cut: a fixed casemate on the same slot as two turning turrets
 
     # ---------------- engines: two columns a side, the inner a main over a lower, the outer between them; exits level ----------------
     for side, base in ((1, 1), (-1, 4)):
@@ -250,7 +249,8 @@ def build(K):
     K.change('The body is stacked angular blocks: a base hull, flank blocks, six top blocks stepping up toward the stern with gaps and undercuts', 'the concept\'s dense stack of armoured blocks; round 3 was one smooth body with plates stuck on')
     K.change('The head is narrow, chamfered and stepped, a face overhanging a cut-in jaw mouth, the scoop drums on its flanks', 'Ryan R217: "the front is also just a flat block"')
     K.change('The jaws are four articulated grabber arms (two segments, knuckles, rams, forked pincers), a pair a side closing toward each other', 'Ryan, R229: the round 3b flat prongs came from a bow crop that cut the grabbers off; the whole beauty and the sheet\'s side view show jointed arms (new kit part claw_arm)')
-    K.change('Guns laid out as matched batteries by game slot', 'the picture scatters guns; scatter P and S are mirrored (a neck block turret, a mid block turret superfiring, a flank casemate per side), flak on the aft block and the belly, the rocket pod on the fore block')
+    K.change('Guns laid out as matched batteries by game slot', 'the picture scatters guns; scatter P and S are mirrored (a neck block turret, a mid block turret superfiring), flak on the aft block and the belly, the rocket pod on the fore block')
+    K.change('Flank casemates P3 and S3 cut', 'R241 (Ryan, Nov 13 2026: "all ships should have weapons that match their actual weapons in game"; issue 676 weapon-match check): a fixed casemate shared each broadside slot with two turning turrets, so the mounts on one slot did not turn together; each broadside slot now shows its two matched twin turrets, all four barrels firing on every 5-shot volley')
     K.change('Engines are squat drums in two columns a side, exits level, no bell touching another', 'the concept\'s stacked cluster; the fit check found round 2\'s bells inside each other')
     K.change('The head follows the beauty: a big, tall, boxy front block over the neck, ear dishes on its shoulders (R229 sizes them)', 'the Board on round 3b: Ryan judges against the accepted picture, which draws the head larger than the round 8 sheet')
     K.change('Forward rocket pod, belly flak turret and four attitude thrusters added', 'data.js gives a forward rocket slot (torp F); the belly needs cover; a ship in space needs thrusters')

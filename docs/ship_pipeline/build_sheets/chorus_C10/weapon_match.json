@@ -1,0 +1,81 @@
+{
+ "code": "chorus_C10",
+ "result": "PASS",
+ "problems": [],
+ "slots": [
+  {
+   "slot": 0,
+   "weapon": "bioplasma",
+   "arc": "F",
+   "shots": 2,
+   "mounts": [
+    {
+     "id": "M1",
+     "type": "throat",
+     "mount": "fixed",
+     "barrels": 1,
+     "muzzles": 1
+    }
+   ]
+  },
+  {
+   "slot": 1,
+   "weapon": "bioplasma",
+   "arc": "F",
+   "shots": 2,
+   "mounts": [
+    {
+     "id": "M2",
+     "type": "throat",
+     "mount": "fixed",
+     "barrels": 1,
+     "muzzles": 1
+    }
+   ]
+  },
+  {
+   "slot": 2,
+   "weapon": "tendril",
+   "arc": "T",
+   "shots": 2,
+   "mounts": [
+    {
+     "id": "T1",
+     "type": "tendril",
+     "mount": "turret",
+     "barrels": 3,
+     "muzzles": 3
+    }
+   ]
+  },
+  {
+   "slot": 3,
+   "weapon": "spores",
+   "arc": "T",
+   "shots": 3,
+   "mounts": [
+    {
+     "id": "G1",
+     "type": "spore",
+     "mount": "turret",
+     "barrels": 1,
+     "muzzles": 1
+    },
+    {
+     "id": "G2",
+     "type": "spore",
+     "mount": "turret",
+     "barrels": 1,
+     "muzzles": 1
+    },
+    {
+     "id": "G3",
+     "type": "spore",
+     "mount": "turret",
+     "barrels": 1,
+     "muzzles": 1
+    }
+   ]
+  }
+ ]
+}

@@ -13,7 +13,7 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 | brood_sacs | the hangar (hangar 3, ability launch): spore swarms grow in them and are born through the slit | brood | three big sacs a side bulging from the lower flanks, largest forward, each with a crease (the picture's crease on each sac is the birth slit) | 6 | bow/top, bow/side, bow/below, mid/top, mid/side, mid/below | a socket of wrinkle rolls, the sac, creases, surface veins, the birth slit between two lip rolls | picture |
 | siphons | attitude: squirt to swing the head and the tail (no nozzles, factions.md) | thruster | puckered jet siphons, a pair behind the mouths and a pair on the tail (the picture shows none; a ship in space must turn) | 4 | bow/side, stern/side | a muscle collar, a puckered lip, a dark bore | designed |
 | crown | boarding tendrils (tendril T): lash and hold an enemy hull, the acid pores eat through its armour | tendril | the dorsal tendril cluster amidships, curling up in profile, splayed in plan | 1 | mid/top, mid/side | a muscle mound with radial welts, a sphincter, hooked tendrils with grip rings, chitin barbs and acid pores | picture |
-| spore_glands | the Spore cloud (spores T): point defence against craft, puffing spore clouds | spore | the row of small sacs hanging under the belly on short necks | 5 | mid/side, mid/below | a neck collar, a veined sac, a spout curling forward, a rosette of pores | picture |
+| spore_glands | the Spore cloud (spores T): point defence against craft, puffing spore clouds | spore | the row of small sacs hanging under the belly on short necks (R241: three, one firing pore each) | 3 | mid/side, mid/below | a neck collar, a veined sac, a spout curling forward, a rosette of pores | picture |
 | flank_fold | armour strake over the flank organs, and the line the hide tears along first (how it breaks) | welt | the long raised ridge down each flank from behind the head to the tail (the picture draws a long raised fold; the lore gives the Chorus ochre chitin trim, here on its edge) | 2 | bow/top, bow/side, mid/top, mid/side, stern/top, stern/side | a raised fold of membrane with height, its edge armoured with ochre chitin | picture |
 | veins | carry bile from the heart vat to the throat glands and the sacs; their dim light is the lore's light inside the body | vein | branching vein runs along both flanks (the C9 tracery the round 8b pass faded (README); built back faintly) | 2 | bow/side, mid/side | a raised vein, branches | picture |
 | scars | regrowth (regen 20, the Mending): wounds knitting shut | scar | pale scarred patches on the back and flanks | 8 | bow/top, mid/top, mid/side, stern/top | a raised irregular patch, knit ridges across it | picture |
@@ -44,7 +44,7 @@ Left as surface, and why:
 
 ## Every built part has a job (R221)
 
-Built kit parts: 40; parts whose inventory id names no line with a job: 0.
+Built kit parts: 38; parts whose inventory id names no line with a job: 0.
 
 ## Per cell: present, shaped, detailed (from the model, chorus_C10_model.json)
 
@@ -103,7 +103,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 |---|---|---|---|---|---|
 | brood_sacs | three big sacs a side bulging from the lower flanks, largest forward,  | 6 / 6 | Y | Y | Y |
 | crown | the dorsal tendril cluster amidships, curling up in profile, splayed i | 1 / 1 | Y | Y | Y |
-| spore_glands | the row of small sacs hanging under the belly on short necks | 5 / 5 | Y | Y | Y |
+| spore_glands | the row of small sacs hanging under the belly on short necks (R241: th | 3 / 3 | Y | Y | Y |
 | flank_fold | the long raised ridge down each flank from behind the head to the tail | 2 / 2 | Y | Y | Y |
 | veins | branching vein runs along both flanks | 2 / 2 | Y | Y | Y |
 | scars | pale scarred patches on the back and flanks | 8 / 8 | Y | Y | Y |
@@ -115,7 +115,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
 | brood_sacs | three big sacs a side bulging from the lower flanks, largest forward,  | 6 / 6 | Y | Y | Y |
-| spore_glands | the row of small sacs hanging under the belly on short necks | 5 / 5 | Y | Y | Y |
+| spore_glands | the row of small sacs hanging under the belly on short necks (R241: th | 3 / 3 | Y | Y | Y |
 | body | the long body: broad flat back, rounder belly, tapering to the tail | 1 / 1 | Y | Y | Y |
 | hide | the hide over the whole body | 1 / 1 | Y | Y | Y |
 
@@ -161,11 +161,11 @@ Concept counts read off the concept sheet by eye (C10 sheet: bow = the two mouth
 | bow/top | 4 | 10 | Hull: the long body; Mouth, port throat; Mouth, starboard throat; Spore gland 1; Brood sac 1 (port); Brood sac 1 (starboard); Flank fold (port); Flank fold (starboard); Head folds (port); Head folds (starboard) |
 | bow/side | 4 | 6 | Hull: the long body; Mouth, port throat; Spore gland 1; Brood sac 1 (port); Flank fold (port); Head folds (port) |
 | bow/below | 3 | 4 | Hull: the long body; Spore gland 1; Brood sac 1 (port); Brood sac 1 (starboard) |
-| mid/top | 6 | 15 | Hull: the long body; Tendril crown; Spore gland 1; Spore gland 2; Spore gland 3; Spore gland 4; Spore gland 5; Brood sac 1 (port); Brood sac 1 (starboard); Brood sac 2 (port); Brood sac 2 (starboard); Brood sac 3 (port); Brood sac 3 (starbo |
-| mid/side | 7 | 11 | Hull: the long body; Tendril crown; Spore gland 1; Spore gland 2; Spore gland 3; Spore gland 4; Spore gland 5; Brood sac 1 (port); Brood sac 2 (port); Brood sac 3 (port); Flank fold (port) |
-| mid/below | 6 | 7 | Hull: the long body; Spore gland 1; Spore gland 2; Spore gland 3; Brood sac 1 (port); Brood sac 1 (starboard); Brood sac 2 (starboard) |
-| stern/top | 3 | 5 | Hull: the long body; Spore gland 5; Vent crown; Flank fold (port); Flank fold (starboard) |
-| stern/side | 3 | 4 | Hull: the long body; Spore gland 5; Vent crown; Flank fold (port) |
+| mid/top | 6 | 13 | Hull: the long body; Tendril crown; Spore gland 1; Spore gland 2; Spore gland 3; Brood sac 1 (port); Brood sac 1 (starboard); Brood sac 2 (port); Brood sac 2 (starboard); Brood sac 3 (port); Brood sac 3 (starboard); Flank fold (port); Flank |
+| mid/side | 7 | 9 | Hull: the long body; Tendril crown; Spore gland 1; Spore gland 2; Spore gland 3; Brood sac 1 (port); Brood sac 2 (port); Brood sac 3 (port); Flank fold (port) |
+| mid/below | 6 | 6 | Hull: the long body; Spore gland 1; Spore gland 2; Brood sac 1 (port); Brood sac 1 (starboard); Brood sac 2 (starboard) |
+| stern/top | 3 | 5 | Hull: the long body; Spore gland 3; Vent crown; Flank fold (port); Flank fold (starboard) |
+| stern/side | 3 | 4 | Hull: the long body; Spore gland 3; Vent crown; Flank fold (port) |
 | stern/below | 2 | 1 | Hull: the long body |
 
 ## Proportions: length to beam and length to height, concept against build (the Board on round 3)
@@ -175,6 +175,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 3.08 | 3.18 | 5.74 | 6.21 |
-| build | 3.98 | 3.32 | 4.60 | 5.98 |
+| build | 3.99 | 3.32 | 4.61 | 6.19 |
 
 Lines not present, shaped and detailed without a reason: 0.

@@ -1,0 +1,37 @@
+{
+ "code": "corsair_A20",
+ "result": "PASS",
+ "problems": [],
+ "slots": [
+  {
+   "slot": 0,
+   "weapon": "turret",
+   "arc": "T",
+   "shots": 2,
+   "mounts": [
+    {
+     "id": "T1",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    }
+   ]
+  },
+  {
+   "slot": 1,
+   "weapon": "turret",
+   "arc": "T",
+   "shots": 2,
+   "mounts": [
+    {
+     "id": "T2",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    }
+   ]
+  }
+ ]
+}

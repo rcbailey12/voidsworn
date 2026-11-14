@@ -28,56 +28,6 @@ core.js inArc), `rest_yaw`, `rest_pitch`; its turning meshes `<id>_turn_<materia
 also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on the hull. Casemates are single fixed parts
 (`turret=0`, `gun_fixed=1`).
 
-## Round 2 layout, checked (before)
-
-The round 2 design (`tools/blender/build_sheets/ships/r2/corsair_A16.py`, the PR 547 layout) built with the round 3 kit parts and run through the same check. Counts: CLASH 16, MOUNT 0, ARC 0, SENSOR 2, SWEEP 11, EXHAUST 10, EXIT 1, LANE 4.
-
-| Check | Part | Against | Hits | What |
-|---|---|---|---:|---|
-| CLASH | H3 | hull | 4 | body piece inside the hull or a hull mass (H3_body_steel in corsair_A16_hull) |
-| CLASH | H4 | hull | 4 | body piece inside the hull or a hull mass (H4_body_steel in corsair_A16_hull) |
-| CLASH | PB | hull | 1 | body piece inside the hull or a hull mass (PB_body_soot in corsair_A16_hull) |
-| CLASH | SB | hull | 1 | body piece inside the hull or a hull mass (SB_body_soot in corsair_A16_hull) |
-| CLASH | E0 | hull | 3 | body piece inside the hull or a hull mass (E0_body_steel in corsair_A16_hull) |
-| CLASH | E3 | hull | 5 | body piece inside the hull or a hull mass (E3_body_steel in corsair_A16_hull) |
-| CLASH | E4 | hull | 5 | body piece inside the hull or a hull mass (E4_body_steel in corsair_A16_hull) |
-| CLASH | E5 | hull | 3 | body piece inside the hull or a hull mass (E5_body_steel in A16_aftdeck) |
-| CLASH | H1 | hull | 2 | body piece inside the hull or a hull mass (H1_body_steel in A16_H1_housing) |
-| CLASH | H2 | hull | 2 | body piece inside the hull or a hull mass (H2_body_steel in A16_H2_housing) |
-| CLASH | PB | Q1 | 2 | parts intersect: PB_mount_iron and Q1_mount_iron |
-| CLASH | SB | Q2 | 2 | parts intersect: SB_mount_iron and Q2_mount_iron |
-| CLASH | E1 | hull | 5 | body piece inside the hull or a hull mass (E1_body_steel in A16_E1_pylon) |
-| CLASH | Q3 | hull | 1 | body piece inside the hull or a hull mass (Q3_body_steel in A16_E1_pylon) |
-| CLASH | E2 | hull | 5 | body piece inside the hull or a hull mass (E2_body_steel in A16_E2_pylon) |
-| CLASH | Q4 | hull | 1 | body piece inside the hull or a hull mass (Q4_body_steel in A16_E2_pylon) |
-| SENSOR | T1 | D1 | 6 | gun (slot T) behind or aiming through sensor D1 (dish), 4.9 away; blocked bearings 0 to 25 |
-| SENSOR | T1 | D2 | 6 | gun (slot T) behind or aiming through sensor D2 (dish), 4.9 away; blocked bearings -25 to 0 |
-| SWEEP | T1 | R1 | 18 | turning through its arc hits R1_body_soot; blocked bearings -180 to -140, 140 to 180 |
-| SWEEP | P1 | P2 | 15 | turning through its arc hits P2_turn_dark; blocked bearings 85 to 150 |
-| SWEEP | P2 | P3 | 15 | turning through its arc hits P3_turn_dark; blocked bearings 85 to 150 |
-| SWEEP | S1 | S2 | 15 | turning through its arc hits S2_turn_iron; blocked bearings -150 to -85 |
-| SWEEP | S2 | S3 | 15 | turning through its arc hits S3_turn_iron; blocked bearings -150 to -85 |
-| SWEEP | T1 | P1 | 1 | T1 barrels at bearing 60 reach P1's housing |
-| SWEEP | T1 | P2 | 1 | T1 barrels at bearing 110 reach P2's housing |
-| SWEEP | T1 | S1 | 1 | T1 barrels at bearing -70 reach S1's housing |
-| SWEEP | T1 | S2 | 1 | T1 barrels at bearing -120 reach S2's housing |
-| SWEEP | P1 | P3 | 1 | barrels meet with P1 at 150 and P3 at 30 |
-| SWEEP | S1 | S3 | 1 | barrels meet with S1 at -150 and S3 at -30 |
-| EXHAUST | E3 | hull | 7 | exhaust cone hits corsair_A16_hull at 0.1 behind the exit |
-| EXHAUST | E3 | E0 | 1 | part inside the exhaust cone: E0_body_steel |
-| EXHAUST | E4 | hull | 7 | exhaust cone hits corsair_A16_hull at 0.1 behind the exit |
-| EXHAUST | E4 | E0 | 1 | part inside the exhaust cone: E0_body_steel |
-| EXHAUST | Q1 | PB | 4 | exhaust cone hits PB_body_steel at 1.2 behind the exit |
-| EXHAUST | Q2 | SB | 5 | exhaust cone hits SB_body_steel at 0.7 behind the exit |
-| EXHAUST | Q3 | E1 | 8 | exhaust cone hits E1_mount_steel at 0.5 behind the exit |
-| EXHAUST | Q3 | hull | 2 | exhaust cone hits A16_E1_pylon at 0.2 behind the exit |
-| EXHAUST | Q4 | E2 | 7 | exhaust cone hits E2_mount_steel at 0.6 behind the exit |
-| EXHAUST | Q4 | hull | 2 | exhaust cone hits A16_E2_pylon at 0.2 behind the exit |
-| EXIT | R1 | T1 | 6 | launch cell covered by T1_turn_soot at 1.6 |
-| LANE | T1 | R1 | 1 | gun T1 sits in R1's firing lane (resting) |
-| LANE | T2 | R1 | 1 | gun T2 sits in R1's backblast (resting) |
-| LANE | P5 | R1 | 1 | gun P5 sits in R1's backblast (resting) |
-| LANE | S5 | R1 | 1 | gun S5 sits in R1's backblast (resting) |
 
 ## How round 3 fixed them
 
@@ -101,7 +51,7 @@ turret's swept circle (moved out).
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 402 objects, 73 parts, 1052 close pairs, 753 rays, 16 guns, 192 sensor pairs, 8 turrets swept, 10 cones, 45 apertures, 2 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 371 objects, 65 parts, 922 close pairs, 533 rays, 8 guns, 96 sensor pairs, 8 turrets swept, 10 cones, 45 apertures, 2 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 

@@ -1,5 +1,11 @@
 # corsair_A17 build sheet: Hullbreaker wrecker, the Pack Hunter (round 3c, R221 clean-ups, into the recipe)
 
+**Issue 676 recipe proof:** [record](weapon_proof.json). Stage 4 contract, audit and audit self-test PASS; stage 5 unpainted geometry carried unchanged; stage 6 four LOD meshes exported and read back in Godot; stage 7 export, readback and planted-fault self-test PASS. Real Godot firing/turning, authored interiors and destruction PASS: 27 machines, zero split, zero inside triangles beyond their piece. Budget: 86208 triangles, 18 surfaces, 8473 inside triangles. Costs reported; the scene gate was not measured.
+
+**Issue 676, PC verification (Nov 14, CPU).** The latest sheet and named [weapon picture](weapon_review.jpg) were rebuilt on this PC with Blender 4.5.14, Cycles CPU, 12 samples. [Weapon match](weapon_match.json): PASS, zero problems; the [feature table](feature_table.md) lists every data slot, its shots and its visible mounts. The outline comparison remains the earlier reported reference. This is an unpainted weapon proof; the Board queues the paint bake.
+
+**Issue 676 (R241): the flank casemates P3 and S3 are cut.** Ryan, Nov 13 2026 (R241): "all ships should have weapons that match their actual weapons in game, so they line up with firing, effects, turns, etc". A fixed casemate shared each broadside slot with two turning turrets; each broadside now shows its two matched twin turrets (4 muzzles for scatter's 5 shots, all firing on every volley). The weapon-match check (tools/blender/build_sheets/weapon_match.py; `corsair_A17_weapon_match.json` from every build) passes on this sheet; the views on this page were re-rendered from the changed design file in the issue 676 sandbox (Blender 4.5, CPU); the outline check picture is unchanged.
+
 Ashfall Hullbreakers cruiser, class Cruiser (14.5), **this ship 14.6 world units** claw tip to stern (godot/render/hull_table.gd CLS_LEN; data.js c_marauder);
 the model is 14.58. Version 3c, 2026-11-12: round 3's parts, fit check and turret marking (R217 to R219), with the massing
 rebuilt to the concept's measured proportions after the Board's review of round 3 ("short, tall and round, a lump").

@@ -154,9 +154,10 @@ def build(K):
           note='belly flak turret, covers below (R221: moved off the castle front, out of the rocket rack\'s backblast)')
     K.gun('T2', (-7.0, 0.0, 3.25), 0, 30, barrels=2, cal=0.16, blen=1.85, size=1.45, slot='T', weapon='flak', inv='top_turret', variant=1,
           note='bridge barbette flak turret, rests at 30 degrees, aft of the rocket rack\'s backblast')
+    # R241 (issue 676): each broadside slot (scatter P, scatter S; 5 shots a volley) shows three matched deck-edge twin turrets,
+    # 6 muzzles, so every turret fires and turns on every volley; the bow, flank and sponson casemates are cut (a mount that
+    # fired on only some volleys, and fixed casemates beside turning turrets on one slot)
     for side, sl in ((1, 'P'), (-1, 'S')):
-        K.gun('%sB' % sl, (9.0, max(sf(8.6, side, RECESS_Z), sf(9.4, side, RECESS_Z), key=abs) + 0.02 * side, RECESS_Z), side * 20, 0, barrels=1, cal=0.18, blen=1.7, size=1.05,
-              normal=(0, side, 0), slot=sl, weapon='scatter', inv='bow_casemates', note='bow casemate in the recessed band, trained forward')
         K.box('A16_barbette_%s2' % sl, 2.05, 3.55, min(side * 1.95, side * 3.45), max(side * 1.95, side * 3.45), 1.9, 2.75, 'iron', ch=0.2,
               plates=dict(PL, seed=80 + side, faces=[0, 2, 3], size=(0.4, 0.8)))
         for i, (x, z) in enumerate(((6.3, 2.0), (2.8, 2.75))):
@@ -164,11 +165,6 @@ def build(K):
                   slot=sl, weapon='scatter', inv='bow_guns', note='deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring)')
         K.gun('%s3' % sl, (-0.7, side * 2.72, 2.0), side * 40, 2, barrels=2, cal=0.14, blen=2.2, size=1.3, variant=1,
               slot=sl, weapon='scatter', inv='mid_guns', note='deck-edge twin turret, tier 2, aft')
-        K.gun('%sM' % sl, (0.9, belt_y(0.9, side, 'up', 0.5) + 0.02 * side, 0.5), side * 35, 0, barrels=2, cal=0.12, blen=1.7, size=1.0, normal=K.surf_n(0.9, side, 0.5),
-              slot=sl, weapon='scatter', inv='mid_casemates', note='flank twin casemate on the upper belt amidships')
-        for i, x in enumerate((-3.75, -5.8)):
-            K.gun('%s%d' % (sl, i + 4), (x, side * 4.3, 0.35), side * 30, 0, barrels=2, cal=0.13, blen=1.9, size=1.1, variant=i,
-                  normal=(0, side, 0), slot=sl, weapon='scatter', inv='stern_casemates', note='sponson twin casemate under the castle')
 
     # ---------------- engines: a centre main, two pods close in (port the larger), lower boosters, an upper pod ----------------
     K.engine('E0', (-12.95, 0.0, -0.35), 1.15, 1.7, bell=1.15, inv='main_engine', note='centre main engine, its housing sunk in the stern')
@@ -239,9 +235,9 @@ def build(K):
     # R226 (Board, Nov 12): a machine never crosses a seam; each seam runs round them in plan (its path, port to starboard)
     K.break_line('B-1', 7.7, 'tier 2 seam forward of the P1 and S1 turrets: the bow and the kennel decks tear off',
                  path=[(7.6, 3.9), (7.3, 2.0), (7.9, 1.0), (7.4, 0.2), (8.0, -0.8), (7.5, -1.8), (7.8, -3.9)])
-    K.break_line('B-2', -2.5, 'castle seam: opens the rocket magazine and tears through the hangar bay; kinks forward of the P4 and S4 casemates and aft of the P3 and S3 turrets',
+    K.break_line('B-2', -2.5, 'castle seam: opens the rocket magazine and tears through the hangar bay; kinks aft of the P3 and S3 turrets',
                  path=[(-1.7, 6.2), (-1.7, 3.9), (-2.4, 3.7), (-2.6, 2.4), (-2.1, 1.0), (-2.8, 0.1), (-2.0, -1.1), (-2.6, -2.4), (-2.4, -3.7), (-1.7, -3.9), (-1.7, -6.2)])
-    K.break_line('B-3', -4.7, 'castle seam through the reactor core: the bridge, its turret T2 and the engine block tear away with the stern; kinks aft of the P5 and S5 casemates at the flanks',
+    K.break_line('B-3', -4.7, 'castle seam through the reactor core: the bridge, its turret T2 and the engine block tear away with the stern; kinks at the flank sponsons',
                  path=[(-6.6, 6.2), (-6.6, 2.3), (-4.6, 2.1), (-4.9, 1.2), (-4.5, 0.2), (-4.8, -0.9), (-4.6, -2.1), (-6.6, -2.3), (-6.6, -6.2)])
     K.inside.append(dict(kind='note', name='insides', note='Full interiors throughout the hull (R215): decks, frames, spaces and machinery along the whole length, hidden until a piece breaks. Deaths blow the hull apart unevenly along these seams with a ragged bite where the core goes (R186).'))
     K.point('core', 'hp_core', (-5.3, 0, -1.1))
@@ -262,7 +258,8 @@ def build(K):
     K.change('The front tubes are the ship\'s face: big, side by side across the prow, jutting ahead of a tapered nose under a stepped brow', 'Ryan R217: "the tubes at the front ... are just circles on the actual build"')
     K.change('Rack raised on a plinth and pitched 12 degrees; no turret in front of it', 'Ryan R217: "the guns are visibly blocking the rockets"; the fit check proves every cell fires clear over the bow')
     K.change('Flak on a bridge barbette (T2) and under the belly (T1)', 'the round 2 bunker turret sat in the rack\'s line of fire and the round 3 castle-front turret in its backblast (R221); the picture puts its top turret on the castle')
-    K.change('Guns laid out as matched port and starboard batteries by game slot', 'the picture has a row of guns on one deck edge and a cluster on the other flank; scatter P and S are mirrored: a bow casemate, three deck-edge twin turrets, a flank casemate amidships and two sponson casemates per side')
+    K.change('Guns laid out as matched port and starboard batteries by game slot', 'the picture has a row of guns on one deck edge and a cluster on the other flank; scatter P and S are mirrored: three deck-edge twin turrets per side')
+    K.change('Broadside casemates cut: the bow casemates PB and SB, the flank casemates PM and SM and the sponson casemates P4, P5, S4 and S5', 'R241 (Ryan, Nov 13 2026: "all ships should have weapons that match their actual weapons in game"; issue 676 weapon-match check): scatter fires 5 shots a volley, so seven mounts per side left most of them silent on any volley, and fixed casemates sat on one slot with turning turrets; each broadside slot now shows only its three matched twin turrets, all firing and turning on every volley')
     K.change('Profile set from a true side reading: deep flat-bellied slab, raised tier 2, castle, bridge block', 'one three-quarter camera cannot see height; the round 8 side view and the shape reference give a hull 4.9 deep, 6.5 to the castle roof')
     K.change('Roof turrets rest facing forward', 'the picture draws its barrel aft; no gun faces aft')
     K.change('Seams moved and kinked so no machine is cut: B-1 from 7.0 to 7.7, B-3 from -7.4 to -4.7, B-2 kinks round the casemates and turrets', 'R226 (Board, Nov 12, from R186): a machine never crosses a seam; the bridge turret T2 and the stern grabber H4 overlap in plan and the engines and antennas fill the stern, so the aft seam moves forward of T2 into the castle')

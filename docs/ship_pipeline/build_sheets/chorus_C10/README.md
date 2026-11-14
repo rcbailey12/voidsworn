@@ -1,5 +1,11 @@
 # chorus_C10 build sheet: The Ninefold Maw, the Chorus flagship (version 5: the recipe)
 
+**Issue 676 recipe proof:** [record](weapon_proof.json). Stage 4 contract, audit and audit self-test PASS; stage 5 unpainted geometry carried unchanged; stage 6 four LOD meshes exported and read back in Godot; stage 7 export, readback and planted-fault self-test PASS. Real Godot firing/turning, authored interiors and destruction PASS: 13 machines, zero split, zero inside triangles beyond their piece. Budget: 175738 triangles, 16 surfaces, 20811 inside triangles. Costs reported; the scene gate was not measured.
+
+**Issue 676, PC verification (Nov 14, CPU).** The latest sheet and named [weapon picture](weapon_review.jpg) were rebuilt on this PC with Blender 4.5.14, Cycles CPU, 12 samples. [Weapon match](weapon_match.json): PASS, zero problems; the [feature table](feature_table.md) lists every data slot, its shots and its visible mounts. The outline comparison remains the earlier reported reference. This is an unpainted weapon proof; the Board queues the paint bake.
+
+**Issue 676 (R241): three spore glands, one firing pore each.** Ryan, Nov 13 2026 (R241): "all ships should have weapons that match their actual weapons in game, so they line up with firing, effects, turns, etc". Spores fires 3 shots a volley; five glands of two pores each left every gland silent on some volleys. Three glands (G1 at 4.9, G2 at 0.2, G3 at -5.1) of one pore each now fire on every volley, and the B-2 seam still passes between two of them. The weapon-match check (tools/blender/build_sheets/weapon_match.py; `chorus_C10_weapon_match.json` from every build) passes on this sheet; the views on this page were re-rendered from the changed design file in the issue 676 sandbox (Blender 4.5, CPU); the outline check picture is unchanged.
+
 The Chorus, class Bio-titan, **28.0 world units** mouth to membrane tip (godot/render/hull_table.gd CLS_LEN; data.js `b_boss`:
 bioplasma F, bioplasma F, tendril T, spores T; hangar 3; regen 20; no shields). The model is 28.0. Version 5 (the recipe, issue 623), 2026-11-13,
 issue 623. Designer of record: Opus (R205, R207). Accepted picture: contrib/muse/design/concept_round8b_2026_11/chorus_C10_beauty.jpg
@@ -89,7 +95,7 @@ The Board passed the parts, jobs and checks and failed the massing: "both ships 
 ## What it is
 
 Something vast and eyeless that was grown as a weapon. The double mouth at the bow is its two bile spitters; the tendril crown
-on its back boards and holds; five spore glands hang under the belly as its point defence; three brood sacs a side carry the
+on its back boards and holds; three spore glands hang under the belly as its point defence; three brood sacs a side carry the
 spore swarms (hangar 3) and give birth to them through slits; a crown of three pulse vents with trailing membranes drives it.
 No panels, no pipes, no metal: hide with callus pads and sense pores, fold rolls, a raised membrane fold down each flank with an ochre chitin edge,
 veins carrying bile, scars knitting shut.
@@ -100,7 +106,7 @@ veins carrying bile, scars knitting shut.
 |---|---|
 | Views agree (side, top, bow): length, beam, height | 0.0, 0.31 and 0.0 percent apart; length 28.02 on the views (model 28.0) (checks.json, PASS) |
 | Fit check (R217, R219, R221): clash, mount, arc, sweep, exhaust, exit, lane | **0** in all seven ([fit_report.md](fit_report.md), [fit_view.jpg](fit_view.jpg)) |
-| Machines on a seam (R226) | **0** of 15 machines (2 throats, the crown, 5 spore glands, 3 vents, 4 siphons) across 4 seams |
+| Machines on a seam (R226) | **0** of 13 machines (2 throats, the crown, 3 spore glands, 3 vents, 4 siphons) across 4 seams (issue 676: two glands cut) |
 | Insides inside the skin | 0 of 7,484 inside vertices within 0.15 of the skin |
 | Inventory (R218, R221) | 15 lines, every one with a job; 0 not present, shaped and detailed ([inventory.md](inventory.md)) |
 | Outline overlap at the concept's camera (reported, not a bar) | 76.4 percent ([outline_check.jpg](outline_check.jpg)) |
@@ -115,7 +121,7 @@ Triangles and edge features (faces meeting at over 30 degrees, or an open rim) p
 |---|---|---|
 | hull (the body, hide pads, head folds, flank folds, veins, pores, scars) | 99.9 (1.00) | 59.5 (1.00) |
 | spinal (the two throats) | 154.2 (1.54) | 111.2 (1.87) |
-| gun (the crown and the spore glands) | 209.4 (2.09) | 113.0 (1.90) |
+| gun (the crown and the spore glands) | 209.4 (2.09) | 113.0 (1.90) (measured with five glands, before issue 676 cut two) |
 | brood (the brood sacs) | 291.3 (2.91) | 168.6 (2.83) |
 | engine (the pulse vents and membranes) | 374.3 (3.74) | 190.6 (3.20) |
 | thruster (the siphons) | 555.2 (5.56) | 252.1 (4.23) |
@@ -126,7 +132,7 @@ Triangles and edge features (faces meeting at over 30 degrees, or an open rim) p
 |---|---|---|
 | F, F | Spine volley (bioplasma) | the two throats of the double mouth: three fat rolled fold lips stacked round each mouth, an inner sphincter, a ring of chitin spines (the spines it spits), the bile gland deep in the bore lighting the wet throat wall. Fixed forward. |
 | T | Boarding tendrils (tendril) | a crown of thirteen hooked tendrils on a muscle mound, each with grip rings, a chitin barb and acid pores; it turns to lean toward its prey (R219 turret marking) |
-| T | Spore cloud (spores) | five spore glands hanging on necks under the belly, veined sacs whose spouts curl forward to a rosette of pores; each swings on its neck |
+| T | Spore cloud (spores) | three spore glands hanging on necks under the belly (issue 676, R241: one firing pore each), veined sacs whose spouts curl forward to a rosette of pores; each swings on its neck |
 
 The weapon pictures are on the sheet (weapon_bioplasma.jpg, weapon_tendril.jpg, weapon_spores.jpg).
 
@@ -134,7 +140,7 @@ The weapon pictures are on the sheet (weapon_bioplasma.jpg, weapon_tendril.jpg, 
 
 Bone hoops for frames (12 stations), two membrane septa for decks, and organs: the two bile glands behind the throats (the
 shot's magazine), the Node (the knot of nerve that steers it; no bridge), the fore and aft guts, the heart vat (the core,
-hp_core, lit bile-green), six brood chambers beside the brood sacs, five spore stores over the glands, the crown's root muscle,
+hp_core, lit bile-green), six brood chambers beside the brood sacs, three spore stores over the glands, the crown's root muscle,
 four regrowth tissue chambers and the pulse bladder that squeezes the vents (the engine room). Armour by zone in the sheet's
 INSIDE list. Break lines by the Chorus rule ("it bursts and tears: sacs rupture first, then the body tears open"): B-1 behind
 the head, B-2 behind the crown, B-3 ahead of the tail; ragged plan paths across the body that run on straight past the flanks,
@@ -145,7 +151,7 @@ no machine on any of them. (Version 4's belly seam B-4 is gone: see "The recipe"
 1. **Colour**: bile yellow-green light over dark olive flesh and ochre chitin (R204, the lore). The picture is grey with amber light.
 2. **The double mouth is the two bile spitters** (bioplasma F, F), each with a sphincter, a spine ring and its gland; the picture shows only the glow.
 3. **The tendril cluster is the boarding tendrils** (tendril T), a turning crown on a muscle mound; built as the profile draws it (curling), the tips splayed outward as the plan shows.
-4. **The belly row is five spore glands** (spores T); the last two sit about a unit further aft than the picture's so the B-2 seam passes behind the crown and between two glands (R226).
+4. **The belly row is three spore glands** (spores T), spaced so the B-2 seam passes behind the crown and between two glands (R226). Issue 676 (R241) cut the row from five glands of two pores to three of one pore, so every gland fires on every 3-shot volley.
 5. **The flank sacs are brood sacs** (hangar 3): the picture's crease on each becomes the birth slit, kept clear by the fit check.
 6. **The long flank ridge is a raised membrane fold** with an ochre chitin edge (the lore's ochre trim; the line the hide tears first).
 7. **The tail ends in a crown of three pulse vents** with trailing membrane veils (factions.md: no nozzles). The membranes are about two thirds of the picture's wisps so the ship is 28.0 mouth to membrane tip.

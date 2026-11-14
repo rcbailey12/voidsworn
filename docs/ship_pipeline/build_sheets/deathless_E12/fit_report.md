@@ -9,6 +9,9 @@ with `build.py <code> <out> fit`). What it tests, on every part of every type:
 3. **ARC**: every gun, at every bearing of its data.js slot arc (core.js inArc: F 60 degrees either side of the bow, P and S
    30 to 150 off the bow, T all round, 5 degree steps), has a clear line at an elevation it can reach (turrets 0 to 30, flak
    0 to 60, casemates -10 to +20), out to 60 percent of the ship's length.
+3b. **SENSOR** (R240): no gun sits behind or aims through a dish, antenna or mast: the gun's whole firing volume (every
+   bearing of its slot arc, every elevation it can reach, out to 60 percent of the ship's length) misses every sensor piece's
+   box padded by the gun's calibre; firing just over a dish is not enough.
 4. **SWEEP** (R219): every turret's turning pieces turned through every bearing of its arc touch nothing; no two turrets meet
    when both turn through their arcs.
 5. **EXHAUST**: nothing in any engine or thruster exhaust cone.
@@ -25,27 +28,6 @@ core.js inArc), `rest_yaw`, `rest_pitch`; its turning meshes `<id>_turn_<materia
 also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on the hull. Casemates are single fixed parts
 (`turret=0`, `gun_fixed=1`).
 
-## First full layout, checked (before)
-
-The first complete E12 layout, built with the Eclipse kit and run through the check before any fix. Counts: CLASH 9, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 6, EXIT 0.
-
-| Check | Part | Against | Hits | What |
-|---|---|---|---:|---|
-| CLASH | E1 | hull | 2 | body piece inside the hull or a hull mass (E1_body_gunv in deathless_E12_hull) |
-| CLASH | E2 | hull | 2 | body piece inside the hull or a hull mass (E2_body_gunv in deathless_E12_hull) |
-| CLASH | E3 | hull | 2 | body piece inside the hull or a hull mass (E3_body_gunv in deathless_E12_hull) |
-| CLASH | S1p | A1 | 5 | parts intersect: S1p_mount_gunv and A1_mount_mauve |
-| CLASH | S3p | C1 | 1 | parts intersect: S3p_mount_mauve and C1_mount_mauve |
-| CLASH | S1s | A1 | 5 | parts intersect: S1s_mount_gunv and A1_mount_mauve |
-| CLASH | S3s | C1 | 1 | parts intersect: S3s_mount_mauve and C1_mount_mauve |
-| CLASH | A1 | Q2p | 1 | parts intersect: A1_mount_mauve and Q2p_mount_gunv |
-| CLASH | A1 | Q2s | 1 | parts intersect: A1_mount_mauve and Q2s_mount_gunv |
-| EXHAUST | Q1p | hull | 7 | exhaust cone hits E12_arc_aft_p at 0.7 behind the exit |
-| EXHAUST | Q2p | S1p | 2 | exhaust cone hits S1p_mount_mauve at 1.0 behind the exit |
-| EXHAUST | Q2p | hull | 2 | exhaust cone hits E12_arc_fore_p at 1.1 behind the exit |
-| EXHAUST | Q1s | hull | 7 | exhaust cone hits E12_arc_aft_s at 0.7 behind the exit |
-| EXHAUST | Q2s | hull | 2 | exhaust cone hits E12_arc_fore_s at 1.1 behind the exit |
-| EXHAUST | Q2s | S1s | 2 | exhaust cone hits S1s_mount_mauve at 1.0 behind the exit |
 
 ## How fourth sheet (R221 weapons, pass 2) fixed them
 
@@ -61,7 +43,7 @@ While designing, the check also caught (and the design fixed): the sentry twin s
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 484 objects, 34 parts, 451 close pairs, 366 rays, 4 guns, 3 turrets swept, 7 cones, 14 apertures, 1 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 484 objects, 34 parts, 451 close pairs, 366 rays, 4 guns, 0 sensor pairs, 3 turrets swept, 7 cones, 14 apertures, 1 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 

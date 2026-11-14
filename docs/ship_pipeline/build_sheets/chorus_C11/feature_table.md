@@ -6,6 +6,13 @@ The Chorus (chorus) | class Cruiser | version 4 (the recipe (issue 623)), 2026-1
 
 ## Measured off the views
 
+Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
+
+| Slot | Weapon | Arc | Shots | Visible mounts (muzzles) |
+|---:|---|---|---:|---|
+| 0 | tendril | T | 2 | T1 (3) |
+| 1 | bioplasma | F | 2 | M1 (1), M2 (1) |
+
 | Check | Value |
 |---|---|
 | model length | 14.515 |
@@ -15,10 +22,10 @@ The Chorus (chorus) | class Cruiser | version 4 (the recipe (issue 623)), 2026-1
 | beam top | 7.375 |
 | beam bow | 7.388 |
 | beam disagreement percent | 0.09 |
-| height side | 7.237 |
-| height bow | 7.25 |
+| height side | 7.25 |
+| height bow | 7.237 |
 | height disagreement percent | 0.09 |
-| widest at station percent | 32.3 |
+| widest at station percent | 33.3 |
 | hull beam | 6.01 |
 | hull depth | 4.93 |
 | L to B hull | 2.41 |
@@ -144,7 +151,7 @@ Flesh, bone and organs through the whole body (R215), hidden until a piece break
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 152 objects, 19 parts, 494 close pairs, 268 rays, 3 guns, 0 turrets swept, 10 cones, 0 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 152 objects, 19 parts, 494 close pairs, 268 rays, 3 guns, 0 sensor pairs, 0 turrets swept, 10 cones, 0 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 

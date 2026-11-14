@@ -1,0 +1,214 @@
+{
+ "code": "corsair_A17",
+ "source": "tools/blender/build_sheets/ships/corsair_A17.py",
+ "source_sha256": "8864b3e3b7ca7f20d3a17e3f10ae460897cf751691fe21ea09fa5acf3ab5ff9b",
+ "weapon_match": {
+  "code": "corsair_A17",
+  "result": "PASS",
+  "problems": [],
+  "slots": [
+   {
+    "slot": 0,
+    "weapon": "scatter",
+    "arc": "P",
+    "shots": 5,
+    "mounts": [
+     {
+      "id": "P1",
+      "type": "gun",
+      "mount": "turret",
+      "barrels": 2,
+      "muzzles": 2
+     },
+     {
+      "id": "P2",
+      "type": "gun",
+      "mount": "turret",
+      "barrels": 2,
+      "muzzles": 2
+     }
+    ]
+   },
+   {
+    "slot": 1,
+    "weapon": "scatter",
+    "arc": "S",
+    "shots": 5,
+    "mounts": [
+     {
+      "id": "S1",
+      "type": "gun",
+      "mount": "turret",
+      "barrels": 2,
+      "muzzles": 2
+     },
+     {
+      "id": "S2",
+      "type": "gun",
+      "mount": "turret",
+      "barrels": 2,
+      "muzzles": 2
+     }
+    ]
+   },
+   {
+    "slot": 2,
+    "weapon": "torp",
+    "arc": "F",
+    "shots": 1,
+    "mounts": [
+     {
+      "id": "R1",
+      "type": "rack",
+      "mount": "launcher",
+      "barrels": 6,
+      "muzzles": 6
+     }
+    ]
+   },
+   {
+    "slot": 3,
+    "weapon": "flak",
+    "arc": "T",
+    "shots": 3,
+    "mounts": [
+     {
+      "id": "T1",
+      "type": "gun",
+      "mount": "turret",
+      "barrels": 2,
+      "muzzles": 2
+     },
+     {
+      "id": "T2",
+      "type": "gun",
+      "mount": "turret",
+      "barrels": 2,
+      "muzzles": 2
+     }
+    ]
+   }
+  ]
+ },
+ "fit": {
+  "CLASH": 0,
+  "MOUNT": 0,
+  "ARC": 0,
+  "SENSOR": 0,
+  "SWEEP": 0,
+  "EXHAUST": 0,
+  "EXIT": 0,
+  "LANE": 0
+ },
+ "stages": {
+  "contract": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 3.2
+  },
+  "build": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 1.4
+  },
+  "audit": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 4.9
+  },
+  "audit_selftest": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 17.9
+  },
+  "stage5": {
+   "ok": true,
+   "route": "unpainted sandbox: stage 4 geometry unchanged, no paint jobs"
+  },
+  "lod": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 24.9
+  },
+  "export": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 1.6
+  },
+  "export_check": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 1.9
+  },
+  "export_selftest": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 49.3
+  },
+  "export_data": {
+   "hardpoints": {
+    "board": 2,
+    "breach": 5,
+    "core": 1,
+    "engine": 6,
+    "rcs": 2,
+    "gun": 18
+   },
+   "ship_length": 0.9999999701976776
+  }
+ },
+ "budget": {
+  "triangles": 86208,
+  "surfaces": 18,
+  "interior_triangles": 8473,
+  "lods": {
+   "lod0": {
+    "triangles": 86208,
+    "objects": 390,
+    "materials": 22
+   },
+   "lod1": {
+    "triangles": 85508,
+    "objects": 370,
+    "materials": 13
+   },
+   "lod2": {
+    "triangles": 46733,
+    "objects": 319,
+    "materials": 12
+   },
+   "lod3": {
+    "triangles": 22352,
+    "objects": 278,
+    "materials": 12
+   }
+  },
+  "scene_gate": "not measured in this CPU sandbox proof"
+ },
+ "stage6_godot_lod_readback": "all four mesh nodes load with the exported triangle counts",
+ "game_firing_and_turning": {
+  "code": "corsair_A17",
+  "failures": 0,
+  "turrets": 6,
+  "volleys": 18
+ },
+ "authored_interiors": {
+  "failures": 0,
+  "triangles": 8473
+ },
+ "destruction": {
+  "failures": 0,
+  "machines": 27,
+  "machines_split": 0,
+  "inside_triangles": 5390,
+  "inside_outside_hull": 0
+ },
+ "export_selftest": {
+  "result": "PASS",
+  "cases": 20
+ },
+ "limitations": [
+  "unpainted sandbox geometry; the Board queues PC paint jobs",
+  "no measured performance or scene gate claim"
+ ]
+}

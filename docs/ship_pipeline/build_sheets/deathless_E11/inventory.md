@@ -19,7 +19,6 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 | main_guns | the two null cannons (gauss T, gauss T): armour-piercing rail guns, the ship's main fire all round | nullcannon | the two big twin turrets on the centreline (data.js gauss T, gauss T) | 2 | mid/top, mid/side | a thin round foot, a small oval shell, an arched crescent shade of three seamed bevelled plates with a stepped second layer, plate courses and a corona crest, rod yokes, layered crescent capacitor fins, two slim round rail pairs with banded collars and a shock ring at each muzzle (R221: rail guns, not barrels) | picture |
 | core_port | shows the trapped core's light through the deck (the faction's green, never a pooled glow); the core vents through it | corewin | the green hexagonal port on the deck: the trapped core's light seen through a gap (factions.md) (README 8c called it a flak cluster; read as the core port) | 1 | mid/top | a hex rim, glowing glass set back, bars | picture |
 | shade_gen | houses the shade generators that drive the plate layers | hatchbox | the raised deck housing between the core port and the aft turret | 1 | mid/top, mid/side | a framed block, an inset lid under a stacked plate, side ribs | picture |
-| belly_flak | the second null shredder (flak T) covers below, where the deck shredder cannot see | shredder | belly twin turret covering below (data.js flak T, second mount) | 1 | mid/below | as the deck shredder | designed |
 | hatches | crew and drone access to the decks and the belly (repair swarms come out here) | hatch | octagonal hatches on the deck tiers and the belly | 4 | mid/top, mid/below | a rim, a door, a seam, hinges | designed |
 | lamps | corona strip lights: running lights and the Eclipse corona line along the belt | lamp | corona strip lights along the flank belt | 8 | mid/side, stern/side | a housing, a green-white bar lens | designed |
 | flak | the null shredder (flak T): screens the stern and deck against craft | shredder | the small twin turret aft on the deck (data.js flak T) | 1 | stern/top, stern/side | a thin round foot, a small oval shell, a layered crescent shade with the firing slot and a corona crest, two crescent capacitor fins, a fan of five thin needle rails with banded collars (R221) | picture |
@@ -55,7 +54,7 @@ Left as surface, and why:
 
 ## Every built part has a job (R221)
 
-Built kit parts: 79; parts whose inventory id names no line with a job: 0.
+Built kit parts: 78; parts whose inventory id names no line with a job: 0.
 
 ## Per cell: present, shaped, detailed (from the model, deathless_E11_model.json)
 
@@ -121,7 +120,6 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | body | the long oval body: widest behind the crescent, a gentle taper aft to  | 1 / 1 | Y | Y | Y |
 | body_plates | the plate rows over the body: rows of small plates across the deck, ri | 2 / 1 | Y | Y | Y |
 | skirt | the lower flank skirt: tall narrow plates hanging in a row below the b | 2 / 2 | Y | Y | Y |
-| belly_flak | belly twin turret covering below (data.js flak T, second mount) | 1 / 1 | Y | Y | Y |
 | hatches | octagonal hatches on the deck tiers and the belly | 4 / 4 | Y | Y | Y |
 
 ### stern/top
@@ -185,6 +183,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 2.49 | 4.49 | 5.72 | 7.00 |
-| build | 2.54 | 4.11 | 5.60 | 6.55 |
+| build | 2.54 | 4.39 | 5.60 | 6.55 |
 
 Lines not present, shaped and detailed without a reason: 0.

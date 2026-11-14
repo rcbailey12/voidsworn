@@ -340,6 +340,14 @@ lines.append('%s | class %s | version %s (%s), %s | blockout: `C:\\Users\\rcbai\
 lines.append('**Length %.1f world units** (%s). Frame: +X bow, +Y port, +Z up; station %% from the prow tip; offset + port / - starboard; '
              'height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.\n' % (L, M['game']))
 lines.append('## Measured off the views\n')
+if M.get('weapon_match'):
+    wm = M['weapon_match']
+    lines.append('Weapon match (R241): **%s**, %d problems. [Full record](weapon_match.json).\n' % (wm['result'], len(wm['problems'])))
+    lines.append('| Slot | Weapon | Arc | Shots | Visible mounts (muzzles) |\n|---:|---|---|---:|---|')
+    for row in wm['slots']:
+        lines.append('| %d | %s | %s | %d | %s |' % (row['slot'], row['weapon'], row['arc'], row['shots'],
+                     ', '.join('%s (%d)' % (m['id'], m['muzzles']) for m in row['mounts'])))
+    lines.append('')
 lines.append('| Check | Value |\n|---|---|')
 for kk in ('model_length', 'length_side', 'length_top', 'length_disagreement_percent', 'beam_top', 'beam_bow', 'beam_disagreement_percent',
            'height_side', 'height_bow', 'height_disagreement_percent', 'widest_at_station_percent', 'hull_beam', 'hull_depth', 'L_to_B_hull', 'L_to_H_hull',
