@@ -1,0 +1,46 @@
+{
+  "block_max_per_second": 1,
+  "build_ms": 14012.428,
+  "cap_per_second": 3,
+  "counted_effect_flashes": 12,
+  "damage_counts": {
+    "fire": 21,
+    "particles": 285,
+    "smoke": 21,
+    "vent": 3
+  },
+  "death_flashes_after_start": [
+    7.329,
+    7.471,
+    7.752,
+    11.428,
+    11.812,
+    12.167,
+    8.643,
+    12.452,
+    9.372
+  ],
+  "death_start_t": 7.083,
+  "effect_flashes_max_per_second": 3,
+  "flash_events_block": 1,
+  "flash_events_mean": 0,
+  "frames": 240,
+  "hud_float_font_px": 16,
+  "kind": "flash",
+  "max_frame_luminance_delta": 0.17579,
+  "max_mean_luminance": 0.07451,
+  "mean_max_per_second": 0,
+  "pass": true,
+  "refused_effect_flashes": 50,
+  "shots": [
+    2,
+    10,
+    30,
+    60,
+    90,
+    120,
+    180,
+    230
+  ],
+  "wire": "WCAG 2.3.1 general flash threshold: opposing relative-luminance changes of 0.10 or more, darker of the pair below 0.80"
+}

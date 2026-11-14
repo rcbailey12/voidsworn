@@ -82,12 +82,12 @@ const LADDER_PX := {"energy": [0.0, 40.0, 46.0, 52.0], "shell": [0.0, 44.0, 56.0
 # capital is a small bright bite, a battleship's on a frigate a big one.
 const GUN_K := {"small": 0.85, "cruiser": 1.0, "capital": 1.2}
 const TARGET_K := {"small": 0.8, "cruiser": 1.0, "capital": 1.2}
-# Issue 461 (R193, "Flame only"): flame still flashes and snuffs out within 0.70 s; the matter a hit throws lives its own
-# life. Seconds, low and high (each piece picks inside its range).
-const SPARK_LIFE := Vector2(0.35, 0.9)     # sparks: under a second
-const DEBRIS_LIFE := Vector2(1.0, 4.0)     # torn plate and slag chips: one to four seconds, drifting on
-const GAS_LIFE := Vector2(2.0, 4.0)        # gas and dust: a few seconds, thinning
-const EMBER_LIFE := Vector2(1.4, 3.0)      # embers: cool orange to dark, no flicker
+# Issue 538 (R193, "Flame only"; R208, "push harder"): flame still snuffs out within 0.70 s; thrown matter has its own
+# longer life so it reads at camera 170. Seconds, low and high (each piece picks inside its range).
+const SPARK_LIFE := Vector2(0.6, 1.6)      # cooling points and trails, independent of flame
+const DEBRIS_LIFE := Vector2(5.0, 10.0)    # torn plates tumble and drift well past the flash
+const GAS_LIFE := Vector2(5.5, 9.0)        # directional gas thins slowly
+const EMBER_LIFE := Vector2(3.5, 7.0)      # cooling coals, no flicker
 # How long the hot spot on the plate glows and cools before the mark (fx_breach) is all that is left, by family.
 const HEAT_LIFE := {"energy": 1.5, "shell": 2.5, "lance": 3.0, "torp": 4.0, "bio": 2.0}
 const FLAME_CAP := 0.70                    # owner ruling: no flame lives longer (deaths_and_hits.md rule 2)
@@ -1008,54 +1008,56 @@ static func _amount(fx, count: int) -> int:
 	return maxi(1, count / (2 if fx.quality != "low" else 4))
 
 
-# Sparks: hot points with short soft trails that slow and cool white to the given colour, under a second each.
+# Issue 538: larger cooling points and trails, with a longer ballistic tail. No added flash or light.
 static func _throw_sparks(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k: float, col: Color, count: int, speed: float,
 		spread: float, fam: String) -> void:
-	for j in _amount(fx, count):
+	for j in _amount(fx, int(ceil(count * 1.5))):
 		var d := _outward(n, fx.rcone(axis, spread), 0.15)
 		var v: Vector3 = d * fx.rng.randf_range(speed * 0.35, speed) * k * fx.unit
-		var drag: float = fx.rng.randf_range(0.8, 2.6)
+		var drag: float = fx.rng.randf_range(0.45, 1.4)
 		var life: float = fx.rng.randf_range(SPARK_LIFE.x, SPARK_LIFE.y)
 		var t: float = T + fx.rng.randf() * 0.04
 		# pixel floors so a spark still reads as a point with a short trail at the battle camera (170)
-		fx.spr(p, t, life, col, 2.4, 0.08 * k, 0.03 * k, 19, v, drag, 0.0, 0.0, 3.0)
-		fx.stk(p, t, life * 0.7, col, 2.0, 0.16 * k, 0.03 * k, 1, v, drag, 0.0, 1.6, 7.0)
+		fx.spr(p, t, life, col, 2.0, 0.16 * k, 0.06 * k, 19, v, drag, 0.0, 0.0, 6.0)
+		fx.stk(p, t, life * 0.75, col, 1.6, 0.20 * k, 0.055 * k, 1, v, drag, 0.0, 2.2, 10.0)
 		_note(fx, "spark", fam, v, n, life)
 
 
 # Debris: torn plate and slag chips, hot for a moment (the chip shader cools them), then dark pieces drifting on.
 static func _throw_debris(fx, p: Vector3, n: Vector3, axis: Vector3, T: float, k: float, count: int, speed: float, size: float,
 		heat: float, fam: String, glass := false) -> void:
-	for j in (_amount(fx, count) if fx.quality != "low" else mini(count, 2)):
+	for j in (_amount(fx, int(ceil(count * 1.75))) if fx.quality != "low" else mini(count, 3)):
 		var d := _outward(n, fx.rcone(axis, 0.65), 0.25)
 		var v: Vector3 = d * fx.rng.randf_range(speed * 0.35, speed) * k
 		var life: float = fx.rng.randf_range(DEBRIS_LIFE.x, DEBRIS_LIFE.y)
-		fx.shd(p + n * 0.1 * k, T + fx.rng.randf() * 0.04, life, v, fx.rng.randf_range(0.8, 1.6) * size * k, heat,
-			fx.rng.randf_range(2.0, 7.0), 0.12, 2.0 if glass else 0.0)
+		fx.shd(p + n * 0.1 * k, T + fx.rng.randf() * 0.04, life, v, fx.rng.randf_range(1.8, 3.4) * size * k, heat,
+			fx.rng.randf_range(1.2, 5.0), 0.055, 4.0 if glass else 3.0)
 		_note(fx, "debris", fam, v, n, life)
 
 
-# Gas and dust: a few faint, slowly spreading puffs that drift off the plate and thin out over seconds.
+# Issue 538: a broken fan of gas along the ejection axis. Kind 27 is unlit, stretched, torn smoke, never flame.
 static func _gas_cloud(fx, p: Vector3, n: Vector3, T: float, k: float, col: Color, count: int, size: float, fam: String,
-		alpha := 0.3, kind := 7) -> void:
+		alpha := 0.3, kind := 7, axis := Vector3.ZERO) -> void:
 	if fx.quality == "low":
 		return
-	for j in _amount(fx, count):
-		var d := _outward(n, fx.rcone(n, 0.9), 0.2)
-		var v: Vector3 = d * fx.rng.randf_range(0.5, 2.0) * k * fx.unit
+	var aim: Vector3 = n if axis.length_squared() < 0.01 else _outward(n, axis)
+	for j in _amount(fx, count * 2 + 1):
+		var d := _outward(n, fx.rcone(aim, 0.65), 0.2)
+		var v: Vector3 = d * fx.rng.randf_range(1.0, 3.8) * k * fx.unit
 		var life: float = fx.rng.randf_range(GAS_LIFE.x, GAS_LIFE.y)
-		var s0: float = size * k * fx.rng.randf_range(0.45, 0.75)
-		fx.spr(p + d * size * 0.25 * k, T + 0.06 + j * 0.05, life, col, alpha, s0, s0 * fx.rng.randf_range(2.0, 3.2), kind, v, 0.5)
+		var s0: float = size * k * fx.rng.randf_range(0.6, 1.0)
+		fx.spr(p + d * size * fx.rng.randf_range(0.05, 0.3) * k, T + 0.06 + j * 0.055, life,
+			col, alpha, s0, s0 * fx.rng.randf_range(2.6, 4.2), 27 if kind in [7, 20] else kind, v, 0.16)
 		_note(fx, "gas", fam, v, n, life)
 
 
 # Embers: small sparks of hot metal that hang near the plate and cool yellow-white to dark red, with no flicker.
 static func _embers(fx, p: Vector3, n: Vector3, T: float, k: float, count: int, fam: String, col := Color(0.42, 0.07, 0.02)) -> void:
-	for j in _amount(fx, count):
+	for j in _amount(fx, int(ceil(count * 1.5))):
 		var d := _outward(n, fx.rcone(n, 0.85), 0.2)
 		var v: Vector3 = d * fx.rng.randf_range(0.6, 3.2) * k * fx.unit
 		var life: float = fx.rng.randf_range(EMBER_LIFE.x, EMBER_LIFE.y)
-		fx.spr(p, T + fx.rng.randf() * 0.12, life, col, 2.2, 0.07 * k, 0.04 * k, 19, v, 1.4, 0.0, 0.0, 3.0)
+		fx.spr(p, T + fx.rng.randf() * 0.12, life, col, 1.6, 0.18 * k, 0.09 * k, 19, v, 0.5, 0.0, 0.0, 6.0)
 		_note(fx, "ember", fam, v, n, life)
 
 
@@ -1097,20 +1099,21 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 		var ln0: Vector3 = tg["ln"]
 		var wound_look: String = tg.get("mark_look", lk)
 		fx.later(T, func l_mark() -> void: Tg.add_mark(fx, wound_look, w, lp0, ln0, ld))
+	var matter_k: float = k * sqrt(float(tg.get("gk", 1.0)))
 	if beam:
-		_beam_burn(fx, lk, Tg, tg, T, sustain, col, k, w, dir)
+		_beam_burn(fx, lk, Tg, tg, T, sustain, col, matter_k, w, dir)
 	elif bio:
-		_bio_splat(fx, Tg, tg, T, col, k, lk == "tendril", w)
+		_bio_splat(fx, Tg, tg, T, col, matter_k, lk == "tendril", w)
 	elif lk == "gauss":
-		_gauss_punch(fx, Tg, tg, T, dir, col, k, w)
+		_gauss_punch(fx, Tg, tg, T, dir, col, matter_k, w)
 	elif torp:
-		_big_hit(fx, Tg, tg, T, k * (1.5 if lk == "ram" else (0.65 if lk == "rockets" else 1.0)), col, lk == "star", lk)
+		_big_hit(fx, Tg, tg, T, matter_k * (1.5 if lk == "ram" else (0.65 if lk == "rockets" else 1.0)), col, lk == "star", lk)
 	elif _old_look(fx):
 		_impact_old(fx, lk, w, Tg, tg, T, col, dir, k, light)
 	elif family_of(lk) == "energy":
-		_energy_hit(fx, lk, w, Tg, tg, T, col, dir, k)
+		_energy_hit(fx, lk, w, Tg, tg, T, col, dir, matter_k)
 	else:
-		_shell_hit(fx, lk, w, Tg, tg, T, col, dir, k)
+		_shell_hit(fx, lk, w, Tg, tg, T, col, dir, matter_k)
 	if crit: _crit(fx,Tg,tg,T+0.12,k,w)
 
 
@@ -1143,7 +1146,7 @@ static func _shell_hit(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col
 	_throw_sparks(fx, p + n * 0.15 * k, n, skip, T, k, ejecta, int(round(14.0 * heavy)), 24.0, 0.45, fam)
 	if substance != "chorus" and fam != "flak":
 		_throw_debris(fx, p, n, skip, T, k, int(round(4.0 * heavy)), 7.0, 0.16, 0.7, fam, substance == "ithar")
-	_gas_cloud(fx, p + n * 0.3 * k, n, T, k, Color(0.40, 0.38, 0.36) if substance != "chorus" else Color(0.30, 0.34, 0.16), 1 if heavy < 0.9 else 2, 1.6 * heavy + 0.6, fam, 0.28)
+	_gas_cloud(fx, p + n * 0.3 * k, n, T, k, Color(0.40, 0.38, 0.36) if substance != "chorus" else Color(0.30, 0.34, 0.16), 1 if heavy < 0.9 else 2, 1.6 * heavy + 0.6, fam, 0.34, 7, skip)
 	if substance != "chorus":
 		_embers(fx, p + n * 0.1 * k, n, T + 0.05, k, int(round(6.0 * heavy)), fam)
 	_heat_spot(fx, p + n * 0.15 * k, T, k, 0.9 * (1.0 + 0.3 * float(w - 1)), fam, 5.0 + 2.0 * float(w))
@@ -1167,7 +1170,7 @@ static func _energy_hit(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, co
 	var t2: Vector3 = n.cross(t1)
 	var run: Vector3 = (dir - n * dir.dot(n))
 	run = run.normalized() if run.length() > 0.05 else t1
-	var drops := 6 + 3 * w
+	var drops := 9 + 4 * w
 	for j in _amount(fx, drops):
 		var a: float = fx.rng.randf() * TAU
 		var tang: Vector3 = (t1 * cos(a) + t2 * sin(a) + run * 0.8).normalized()
@@ -1175,9 +1178,10 @@ static func _energy_hit(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, co
 		var v: Vector3 = d * fx.rng.randf_range(5.0, 13.0) * k * fx.unit
 		var life: float = fx.rng.randf_range(SPARK_LIFE.x, SPARK_LIFE.y)
 		var c: Color = col if lk != "plasma" else PLASMA_HOT
-		fx.spr(p + n * 0.05 * k, T + fx.rng.randf() * 0.03, life, c, 2.2, 0.07 * k, 0.03 * k, 19, v, 3.2, 0.0, 0.0, 2.5)
-		fx.stk(p + n * 0.05 * k, T, life * 0.6, c, 1.6, 0.12 * k, 0.025 * k, 1, v, 3.2, 0.0, 1.4, 5.0)
+		fx.spr(p + n * 0.05 * k, T + fx.rng.randf() * 0.03, life, c, 1.8, 0.14 * k, 0.06 * k, 19, v, 1.8, 0.0, 0.0, 6.0)
+		fx.stk(p + n * 0.05 * k, T, life * 0.6, c, 1.4, 0.16 * k, 0.045 * k, 1, v, 1.8, 0.0, 2.0, 9.0)
 		_note(fx, "spark", "energy", v, n, life)
+	_embers(fx, p + n * 0.1 * k, n, T + 0.08, k, 4 + w, "energy", col * 0.35)
 	if lk == "prism":
 		for j in 3:
 			fx.spr(p + n * 0.2 * k, T + j * 0.04, 0.35, col, 2.6, 0.5 * k, 0.9 * k, 16, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.6)
@@ -1307,20 +1311,22 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 		_heat_spot(fx, pj + nj * 0.1 * k, at, k, 0.55, "lance", 5.0, 1.5)
 		if not ion:
 			# molten metal sprays off the plate: drips with a short trail, and sparks
-			for s in _amount(fx, 3):
+			for s in _amount(fx, 5):
 				var d := _outward(nj, fx.rcone((nj + run * 0.6).normalized(), 0.55), 0.2)
 				var v: Vector3 = d * fx.rng.randf_range(4.0, 11.0) * k
 				var life: float = fx.rng.randf_range(SPARK_LIFE.x, SPARK_LIFE.y)
-				fx.stk(pj, at + fx.rng.randf() * 0.05, life, molten, 2.4, 0.08, 0.10 * k, 7, v, 1.2, 0.0, 2.6, 6.0)
+				fx.stk(pj, at + fx.rng.randf() * 0.05, life, molten, 2.0, 0.12, 0.16 * k, 7, v, 0.7, 0.0, 3.0, 10.0)
 				_note(fx, "spark", "lance", v, nj, life)
 		elif j % 2 == 0:
 			fx.rib(pj, _outward(nj, fx.rdir(), 0.3), 1.8 * k, at, 0.09, Color(0.7, 0.85, 1.0), 1.2, 0.12 * k, 0.04 * k, 6)
 	if not ion:
 		_embers(fx, p, n, T + dur * 0.3, k, 6, "lance")
 		_throw_debris(fx, last, n, (n + run * 0.5).normalized(), T + dur * 0.6, k, 2, 5.0, 0.12, 1.0, "lance")
+	if ion:
+		_embers(fx, last, n, T + dur, k, 5, "lance", Color(0.06, 0.14, 0.3))
 	# the tail when the beam lifts: the contact glow fades over a third of a second
 	fx.spr(last + n * 0.2 * k, T + dur, 0.33, col, 2.6, 1.6 * k, 1.0 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.4)
-	_gas_cloud(fx, p + n * 0.3 * k, n, T + 0.2, k, molten.lerp(Color(0.38, 0.37, 0.36), 0.75), 2, 1.8, "lance", 0.24)
+	_gas_cloud(fx, p + n * 0.3 * k, n, T + 0.2, k, molten.lerp(Color(0.38, 0.37, 0.36), 0.75), 3, 2.2, "lance", 0.28, 7, (n + run * 0.7).normalized())
 	if lk == "doom":
 		for j in 3: fx.rib(p,fx.rcone(n,0.8),2.5*k,T+j*0.12,0.1,col,1.0,0.15*k,0.05*k,6)
 	fx.light(p+n*2.0*k,T,dur+0.15,6.5,col,1)
@@ -1331,13 +1337,14 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 # the wound for a few seconds while the acid keeps eating (fx_breach style 8).
 static func _bio_splat(fx, Tg, tg: Dictionary, T: float, col: Color, k: float, lash: bool, w := 2) -> void:
 	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
-	_burst(fx,p+n*0.3*k,n,T,4.5*k,"flash",0.35,col,1.4,28.0)
+	var px: float = 28.0 * float(tg.get("gk", 1.0)) * float(tg.get("tk", 1.0))
+	_burst(fx,p+n*0.3*k,n,T,4.5*k,"flash",0.35,col,1.4,px)
 	_vent(fx,p+n*0.4*k,n,T,5.0*k,0.65,col,0.8,n*3.0*k,0.65,1.0,w,Tg)
 	for j in 8:
 		var d := _outward(n, fx.rcone(n,0.9), 0.2)
 		var v: Vector3 = d*fx.rng.randf_range(3.0,7.0)*k
-		var life: float = fx.rng.randf_range(0.6, 1.4)
-		fx.spr(p,T+j*0.015,life,col,1.2,0.25*k,0.14*k,15,v,0.6)
+		var life: float = fx.rng.randf_range(1.8, 3.6)
+		fx.spr(p,T+j*0.015,life,col,1.2,0.42*k,0.22*k,15,v,0.35)
 		_note(fx, "drop", "bio", v, n, life)
 	_burst(fx,p+n*k,n,T+0.12,4.5*k,"cool",0.8,col,0.5,0.0,n*k,0.45)
 	_gas_cloud(fx, p + n * 0.4 * k, n, T + 0.1, k, col.lerp(Color(0.3, 0.32, 0.18), 0.5), 2, 2.4, "bio", 0.30, 20)
