@@ -17,6 +17,9 @@
 #   breach_count    the last breach anchor renamed away                            must FAIL (the class and faction count is not met)
 #   breach_near     the first breach anchor moved onto the first weapon's muzzle   must FAIL (closer than 0.03 to a part)
 #   breach_inward   the first breach anchor turned so +Y points into the ship      must FAIL (+Y is not the outward normal)
+#   hull_trim_near  one hull triangle near an anchor marked hull_surface           must PASS (hull trim is exempt)
+#   part_near       the same triangle with an unmarked part material               must FAIL (part clearance)
+#   no_trim_marker a painted hull's rim marker removed                             must FAIL when anchors rely on that trim
 #   turret_merged   (an export with turrets) the turret nodes removed and their      must FAIL (a marked turret merged into the mesh)
 #                   muzzles moved onto the ship node, as the export did before 560
 #   turret_no_mesh  (an export with turrets) the turning meshes renamed away          must FAIL (a turret with no turning mesh)
@@ -112,6 +115,35 @@ def breach_near(g):
 def breach_inward(g):
     n = first(g, 'hp_breach_'); n['rotation'] = qmul(n.get('rotation', [0, 0, 0, 1]), [1, 0, 0, 0])   # a half turn about its own X: +Y now points in
 
+
+def near_anchor_primitive(g, trim):
+    """Duplicate just the hull triangle nearest an anchor, sharing its real geometry accessors.
+    Only its material marker differs between the two cases: hull trim must pass, an unmarked part must fail."""
+    import copy
+    import numpy as np
+    root = next(n for n in g['nodes'] if n.get('name') == code)
+    prims = g['meshes'][root['mesh']]['primitives']
+    hull = next(p for p in prims if g['materials'][p['material']].get('name') == code + '_hull')
+    p = np.array(first(g, 'hp_breach_')['translation'])
+    pos = CE.accessor(g, _blob0, hull['attributes']['POSITION'])
+    ids = CE.accessor(g, _blob0, hull['indices']).reshape(-1, 3)
+    tris = pos[ids]; k = int(np.argmin(CE.tri_dist(p, tris[:, 0], tris[:, 1], tris[:, 2])))
+    assert CE.tri_dist(p, *[tris[k:k + 1, i] for i in range(3)])[0] < CE.BREACH_CLEAR
+    acc = copy.deepcopy(g['accessors'][hull['indices']]); acc['count'] = 3
+    acc['byteOffset'] = acc.get('byteOffset', 0) + k * 3 * np.dtype(CE.CT[acc['componentType']]).itemsize
+    acc.pop('min', None); acc.pop('max', None)
+    probe = copy.deepcopy(hull); probe['indices'] = len(g['accessors']); g['accessors'].append(acc)
+    material = copy.deepcopy(g['materials'][hull['material']]); material['name'] = 'anchor_probe'
+    material.setdefault('extras', {}).pop('hull_surface', None)
+    if trim: material['extras']['hull_surface'] = 1
+    probe['material'] = len(g['materials']); g['materials'].append(material); prims.append(probe)
+
+
+def hull_trim_near(g): near_anchor_primitive(g, True)
+def part_near(g): near_anchor_primitive(g, False)
+def no_trim_marker(g):
+    for m in g['materials']: (m.get('extras') or {}).pop('hull_surface', None)
+
 def no_interior(g):
     root = next(n for n in g['nodes'] if n.get('name') == code)
     mats = root['extras']['voidsworn_destruct']['interior_materials']
@@ -137,7 +169,7 @@ def turret_merged(g):   # issue 560: the turrets folded back into the ship mesh 
 def turret_no_mesh(g):
     for n in g['nodes']:
         if re.fullmatch(r'turret_\d+_turn', str(n.get('name', ''))): n['name'] += 'x'
-_g0, _ = CE.read_glb(os.path.join(src, code + '.glb'))
+_g0, _blob0 = CE.read_glb(os.path.join(src, code + '.glb'))
 WRONG_SIDE = 'a port mount must sit' if str(port_point(_g0).get('name', '')).startswith('hp_w') else 'a port boarding origin sits on the other side'
 CASES = (('pass', None, 0, ''), ('no_slot', no_slot, 1, f'weapon slot {last} '), ('off_mesh', off_mesh, 1, 'off the mesh'),
          ('backward', backward, 1, 'aimed backward'), ('wrong_side', wrong_side, 1, WRONG_SIDE), ('no_core', no_core, 1, 'hp_core'),
@@ -146,7 +178,10 @@ CASES = (('pass', None, 0, ''), ('no_slot', no_slot, 1, f'weapon slot {last} '),
          ('breach_count', breach_count, 1, 'hp_breach'), ('breach_near', breach_near, 1, 'from a part (at least'),
          ('breach_inward', breach_inward, 1, 'is not the outward normal'),
          ('no_interior', no_interior, 1, 'no authored interior geometry'), ('no_seams', no_seams, 1, 'no authored break seams'),
-         ('liner_only', liner_only, 1, 'no authored interior rooms'))
+         ('liner_only', liner_only, 1, 'no authored interior rooms'),
+         ('hull_trim_near', hull_trim_near, 0, ''), ('part_near', part_near, 1, 'from a part (at least'))
+if any((m.get('extras') or {}).get('hull_surface') for m in _g0.get('materials', [])):
+    CASES += (('no_trim_marker', no_trim_marker, 1, 'from a part (at least'),)
 if any(re.fullmatch(r'turret_\d+', str(n.get('name', ''))) for n in _g0['nodes']):     # issue 560: only an export that has turrets
     CASES += (('turret_merged', turret_merged, 1, 'merged it into the ship mesh'), ('turret_no_mesh', turret_no_mesh, 1, 'no turning mesh'))
 def open_bells():       # the engines the check passed as open bells (its own record of the export as written)

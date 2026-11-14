@@ -159,6 +159,10 @@ violet-white): the green stays, as the light of an eclipse.
 - **Shape language:** sunshades and heat shields: broad layered plates with the ship sheltering behind them. The shade always
   faces the enemy, like a shield held forward. Wide and flat, or a forward-facing arc or ring.
 - **Colours:** dark violet-black plates, the green-white corona line, a small bright core.
+- **Panels (R243, Ryan Nov 13):** precise, dead even, ordered and aligned across hull and shade, with recessed seams and
+  slight relief. Keep E11's accepted dark violet-black colour. This is machine precision; the Hullbreakers' irregular
+  patchwork is their own. The thin uneven corona must read at camera 170, including E12's ring segments. The core glows
+  green like the concept, white-hot only at its very centre, and reads at camera 170.
 - **Guns sit:** behind the shade's rim, firing through gaps between plates.
 - **Engines:** no flaming bells. An eclipse ring of pale light.
 - **How it breaks:** in layers. Shade plates peel away band by band, then the body behind is bare. Inside: archive vaults,

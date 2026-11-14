@@ -33,8 +33,12 @@ never the guideline it cited (R187); Ryan wanted the audit to find "these weird 
 it, you know, more restricted and less realistic and cinematic than it should be". Set: Ryan, Nov 7 (R121: assumed gates stop
 binding until a measurement earns them back) and Nov 11 (R187: "Keep comfort, loosen rest").
 
-0.5 **Tidy is a fault on screen.** Even, straight, identical, instant, capped, on rails or one scale reads as staged. Why: the
-wrecks "feel like they're just getting sliced in half" (R186). Set: Ryan's complaint, Board's wording (R187).
+0.5 **Order follows the faction; motion and breaks never feel staged.** Hullbreaker armour is irregular patchwork. Eclipse
+panels are precise, dead even, ordered and aligned, with seams and slight relief (Ryan, Nov 13, R243: "make the eclipse panels
+actually panels and dead even and ordered to align"). Glasswrights are blown glass without panels; Chorus surfaces are grown,
+without plates. Sunward and Hegemony follow factions.md. Instant motion, identical beats, straight cuts and one scale still
+read as staged. Why: the wrecks "feel like they're just getting sliced in half" (R186); applying that to every faction's
+surface erased the Eclipse's machine precision. Set: Ryan's complaints, Board's wording (R187), corrected by Ryan (R243).
 
 0.6 **A rule that rests on a fact that can change names what ends it** (a model's version, a plan's limit, a tool that is
 down). Why: the Codex cloud ban, the Fable helper counts and the Kimi sentence outlived their facts. Set: Board, Nov 11 (Muse
