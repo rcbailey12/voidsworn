@@ -158,6 +158,7 @@ var in_campaign := false   # a campaign battle (no quit to title: the run decide
 var can_retreat := false   # campaign battles (not against a sector flagship): the top bar offers Retreat
 var showcase := false     # the title screen's decorative battle (campaign3d.js setupShowcase): no HUD, no turns, no input, slow orbit
 var boss_fight := false    # a sector flagship fight or the finale (battle kind "boss"): boss music and the champion fanfare
+var finale_fight := false  # R78 Q18: the run's final battle lights the new sun over the board, sector by sector
 var external := false      # run by godot/main (campaign or quick battle): no own restart, the end card says Continue
 var last_progress := 0.0   # real time of the last event batch (softlock watchdog for bot runs)
 var softlock_s := 60.0
@@ -499,6 +500,7 @@ func _begin(a) -> void:
 		_api_set_ai(ai_level)
 	PACE = TBL.get("PACE", {})
 	boss_fight = _api_battle_kind() == "boss"
+	finale_fight = _api_battle_finale()
 	ended = false
 	result = {}
 	errors.clear()
@@ -561,7 +563,7 @@ func _begin(a) -> void:
 		var vb: Dictionary = api.view()
 		var wi: Dictionary = api.world_info()
 		var world_opts := {"biome": wi.get("biome", {}) if wi.get("biome") is Dictionary else {}, "fac": _enemy_fac_of(vb), "hex_world": board.hex_world, "camera": cam, "environment": env,
-			"quality": str(args.get("quality", "max")), "pano": pano, "seed": int(wi.get("seed", 1)) if wi.get("seed") != null else 1}
+			"quality": str(args.get("quality", "max")), "pano": pano, "seed": int(wi.get("seed", 1)) if wi.get("seed") != null else 1, "finale": finale_fight}
 		if args.has("sector_setting"): world_opts["sector_setting"] = args["sector_setting"]
 		world.build(vb, world_opts)
 		for c in backdrop.get_children():
@@ -975,6 +977,21 @@ func _api_battle_kind() -> String:
 	return ""
 
 
+# R78 Q18: a finale battle lights the new sun over the board, sector by sector. The campaign does not write a new cfg
+# field (the JS twin has none): the finale is read here, from the fight that is already in the run. A scenario may also
+# ask for it outright (cfg.finale), for captures and fixtures.
+func _api_battle_finale() -> bool:
+	var B = api.R.B
+	if B is Dictionary and B.get("cfg") is Dictionary:
+		var c: Dictionary = B["cfg"]
+		if bool(c.get("finale", false)):
+			return true
+		var run = api.R.RUN
+		if str(c.get("kind", "")) == "boss" and run is Dictionary:
+			return float(run.get("sector", 0)) >= 3.0
+	return false
+
+
 func _api_tables() -> Dictionary:
 	if api.has_method("tables"):
 		return api.tables()
@@ -1235,6 +1252,8 @@ func _play_event(e: Dictionary) -> void:
 				sfx.play("adapt_shift")
 		"round":
 			_log("Round %d." % int(e["round"]), "x")
+			if finale_fight and world != null and world.has_method("finale_for_round"):
+				world.finale_for_round(int(e["round"]))   # R78 Q18: one more sector catches the new sun
 			if not bot and not showcase:
 				hud.set_phase("", "")
 			fired_in_act.clear()

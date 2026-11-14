@@ -25,6 +25,10 @@ const BL := preload("res://world/board_look.gd")
 const LIV := preload("res://world/world_living.gd")
 const SUN := Vector3(0.45, 0.70, 0.55)   # toward the sun: the battle's key light shines along -SUN (look.gd KEY_DIR)
 const BACKDROP_ROCK_ANGLE := 0.05
+# R78 Q18 (the run 5 finale): the board brightens sector by sector as the new sun catches. Six sectors, one per stage of
+# the fight's opening rounds; the last stage is full dawn.
+const FINALE_STAGES := 6
+const DAWN_COL := Color(1.0, 0.76, 0.46)
 
 var quality := "max"
 var notes: PackedStringArray = []
@@ -60,6 +64,19 @@ var _fac := "voidsworn"
 var _debris_ships: Array = []
 var _living = null              # world_living.gd: B's gas, storm, debris and well (built the first time a look needs it)
 var _pano: Texture2D = null     # the battle's painted panorama (battle.gd passes it; the dead-star board shows it, R2)
+# the run 5 finale (R78 Q18): a warm light field sweeps the board, a new sun light rises, and the sky and the Hollow Sun
+# disc brighten. Built only when opts["finale"] is true; finale_stage() moves it through FINALE_STAGES.
+var finale := false
+var _finale_stage := -1
+var _finale_env: Environment = null
+var _finale_sun: DirectionalLight3D = null
+var _dawn_mat: ShaderMaterial = null
+var _dawn_from := 0.0           # world x the sweep starts at (the Hollow Sun's side when there is one)
+var _dawn_to := 0.0
+var _sky_sun_base := 1.0        # the sky's own sun brightness before dawn (0 on the dead-star board)
+var _disc_mats: Array = []      # [{mat, key, gain}] the Hollow Sun's disc, haze and lens, for the dawn ramp
+var _disc_light: OmniLight3D = null
+var _hex_origin := Vector2.ZERO  # world xz of hex 0,0, so the dawn's hex grid lines up with the board
 var pending_bakes := 0
 
 
@@ -131,12 +148,18 @@ func step(dt: float) -> void:
 func build(view: Dictionary, opts: Dictionary) -> void:
 	var t0 := Time.get_ticks_usec()
 	_backdrop_angle_max = 0.0
+	finale = bool(opts.get("finale", false))
+	_finale_stage = -1
+	_disc_mats.clear()
+	_disc_light = null
 	quality = String(opts.get("quality", "max"))
 	if RenderingServer.get_current_rendering_method() == "gl_compatibility":
 		quality = "low"
 	var biome: Dictionary = opts.get("biome", {}) if opts.get("biome") is Dictionary else {}
 	var fac := String(opts.get("fac", "voidsworn"))
 	var hw: Callable = opts["hex_world"]
+	var hex0: Vector3 = hw.call(0, 0)
+	_hex_origin = Vector2(hex0.x, hex0.z)
 	var bseed := int(opts.get("seed", hash(str(view.get("round", 0)) + fac)))
 	_rng.seed = bseed
 	var map: Dictionary = view.get("map", {}) if view.get("map") is Dictionary else {}
@@ -228,6 +251,8 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	_fac = fac
 	add_to_group("vs_world")
 	set_look()
+	if finale:
+		_build_dawn(env)
 
 
 # The board look trial (world/board_look.gd): the dark floor under the board, today's faint clouds, and B's living
@@ -250,6 +275,130 @@ func set_look() -> void:
 	if _living != null:
 		_living.visible = bool(sp["living"])
 		_living.set_gas_k(float(sp["gas_k"]))
+
+
+# ---------------------------------------------------------------- the run 5 finale (R78 Q18)
+
+# A warm light field just under the board: the part the dawn has reached glows, with a brighter band at the moving edge.
+# It is additive and unshaded, so it reads as sunlight on the vacuum without touching the ships above it.
+const DAWN_SHADER := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+uniform vec3 centre = vec3(0.0);
+uniform vec2 half_ext = vec2(200.0, 130.0);
+uniform vec2 hex_origin = vec2(0.0);
+uniform vec3 col = vec3(1.0, 0.76, 0.46);
+uniform float front = -9999.0;   // world x the dawn has reached: lit where x is below it
+uniform float flip = 0.0;        // 1 when the sweep runs right to left (the Hollow Sun is on the right)
+uniform float soft = 45.0;
+uniform float gain = 0.0;
+varying vec3 vW;
+void vertex() { vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
+// the board's pointy-top hexes (board.gd HS = 10, HW = 17.3205): distance in axial units to the nearest hex edge
+float hex_edge(vec2 p) {
+	float r = p.y / 15.0;
+	vec2 a = vec2(p.x / 17.3205 - r * 0.5, r);
+	vec3 c = vec3(a.x, a.y, -a.x - a.y);
+	vec3 rc = floor(c + 0.5);
+	vec3 d = abs(rc - c);
+	if (d.x > d.y && d.x > d.z) rc.x = -rc.y - rc.z;
+	else if (d.y > d.z) rc.y = -rc.x - rc.z;
+	else rc.z = -rc.x - rc.y;
+	vec2 loc = a - vec2(rc.x, rc.y);
+	return 0.5 - max(abs(loc.x), max(abs(loc.y), abs(loc.x + loc.y)));
+}
+void fragment() {
+	vec2 q = abs(vW.xz - centre.xz) - half_ext;
+	float sd = length(max(q, vec2(0.0))) + min(max(q.x, q.y), 0.0);
+	float feather = 1.0 - smoothstep(0.0, 22.0, sd);          // soft edge: the board, not a floating slab
+	float sx = mix(vW.x, -vW.x, flip);
+	float sf = mix(front, -front, flip);
+	float edge = sf + 7.0 * sin(vW.z * 0.05 + vW.x * 0.011);  // a little uneven, like light through gas
+	float lit = smoothstep(edge + soft, edge - soft, sx);
+	float band = exp(-pow((sx - edge) / (soft * 0.5), 2.0));
+	// slow mottling, so the light reads as dawn through gas and not a painted rectangle
+	float m = 0.72 + 0.28 * (0.5 + 0.5 * sin(vW.x * 0.031 + vW.z * 0.019)) * (0.6 + 0.4 * sin(vW.z * 0.043 - vW.x * 0.011));
+	// the board grid lights with the sweep: the light catches the war table, hex by hex, sector by sector
+	float line = 1.0 - smoothstep(0.0, 0.045, hex_edge(vW.xz - hex_origin));
+	vec3 wash = col * (lit * 0.035 + band * 0.15) * m;
+	vec3 grid = vec3(1.0, 0.88, 0.66) * line * (lit * 0.14 + band * 0.12);
+	ALBEDO = (wash + grid) * gain * feather;
+}
+"""
+
+
+func _build_dawn(env: Environment) -> void:
+	_finale_env = env
+	var ext := (_hi - _lo) * 0.5
+	var mi := MeshInstance3D.new()
+	mi.name = "FinaleDawn"
+	var pm := PlaneMesh.new()
+	# exactly the play area (the camera's board bounds) plus half a hex, so the light stays on the board
+	pm.size = Vector2(ext.x * 2.0 + 20.0, ext.z * 2.0 + 20.0)   # + half a hex (HS 10) each side
+	mi.mesh = pm
+	var m := ShaderMaterial.new()
+	var sh := Shader.new()
+	sh.code = DAWN_SHADER
+	m.shader = sh
+	m.set_shader_parameter("centre", _center)
+	m.set_shader_parameter("half_ext", Vector2(ext.x + 10.0, ext.z + 10.0))
+	m.set_shader_parameter("hex_origin", _hex_origin)
+	m.set_shader_parameter("col", Vector3(DAWN_COL.r, DAWN_COL.g, DAWN_COL.b))
+	m.set_shader_parameter("flip", 1.0 if _well != Vector3.INF and _well.x > _center.x else 0.0)
+	m.render_priority = -15   # over the underlay (look today), under the board and ships
+	mi.material_override = m
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	mi.position = Vector3(_center.x, _center.y - 2.5, _center.z)
+	add_child(mi)
+	_dawn_mat = m
+	# the light starts on the Hollow Sun's side (the new sun is there); without one it runs left to right
+	_dawn_from = _lo.x - 160.0
+	_dawn_to = _hi.x + 160.0
+	if _well != Vector3.INF and _well.x > _center.x:
+		_dawn_from = _hi.x + 160.0
+		_dawn_to = _lo.x - 160.0
+	# the new sun's own warm light, no shadows: the board warms as it rises
+	var sun := DirectionalLight3D.new()
+	sun.name = "NewSun"
+	sun.light_color = DAWN_COL
+	sun.light_energy = 0.0
+	sun.shadow_enabled = false
+	# light travels from the sun toward the board, as the battle's key light does (look.gd KEY_DIR = -SUN)
+	sun.transform = Transform3D(Basis.looking_at(-SUN.normalized(), Vector3.UP), Vector3.ZERO)
+	add_child(sun)
+	_finale_sun = sun
+	finale_stage(0)
+	notes.append("finale: %d-sector dawn sweep, new sun light, sky and Hollow Sun disc brightening" % FINALE_STAGES)
+
+
+# Move the finale to stage n (0 dark to FINALE_STAGES - 1 full dawn). Idempotent: the capture harness and the battle's
+# round events both call it. The sweep runs across the board from one edge to the other, so each stage lights one sector
+# of the fight.
+func finale_stage(n: int) -> void:
+	if _dawn_mat == null:
+		return
+	_finale_stage = clampi(n, 0, FINALE_STAGES - 1)
+	var p := float(_finale_stage) / float(FINALE_STAGES - 1)
+	if _dawn_mat != null:
+		_dawn_mat.set_shader_parameter("front", lerpf(_dawn_from, _dawn_to, p))
+		_dawn_mat.set_shader_parameter("gain", 0.85 + 0.35 * p)
+	if _finale_sun != null:
+		_finale_sun.light_energy = 2.2 * p
+	if _finale_env != null:
+		_finale_env.ambient_light_energy = 0.5 + 0.7 * p
+	if _sky_mat != null:
+		_sky_mat.set_shader_parameter("sun_k", _sky_sun_base + 0.9 * p)
+	for d in _disc_mats:
+		var mat: ShaderMaterial = d["mat"]
+		if is_instance_valid(mat):
+			mat.set_shader_parameter(str(d["key"]), float(d["gain"]) * (1.0 + 2.2 * p))
+	if _disc_light != null:
+		_disc_light.light_energy = 1.6 * (1.0 + 1.8 * p)
+
+
+# The finale rises one sector a round: round 1 is still dark, round 6 is full dawn (then it holds).
+func finale_for_round(round_no: int) -> void:
+	finale_stage(round_no - 1)
 
 
 # The map's kind from what is on it (the rules do not hand the map name to the scene): planet, station, graveyard (wrecks),
@@ -328,9 +477,11 @@ func _make_sky(env: Environment) -> void:
 	# and finds the painting on its sky's "pano" for the next battle
 	if _pano != null:
 		m.set_shader_parameter("pano", _pano)
+	_sky_sun_base = 1.0
 	if bool(setting.get("deadstar", false)):
 		# R2: the dead-star board keeps its painted sky; the gas goes over it at half strength, and no bright sun (the
 		# painting's dim red dead sun is the light's source)
+		_sky_sun_base = 0.0
 		m.set_shader_parameter("sun_k", 0.0)
 		if _pano != null:
 			m.set_shader_parameter("has_pano", 1.0)
@@ -585,6 +736,7 @@ func dead_star(c: Vector3, s: float) -> void:
 	dm.set_shader_parameter("spin", 0.35)
 	dm.set_shader_parameter("gain", 0.62)
 	dm.set_shader_parameter("inner", 1.0)
+	_disc_mats.append({"mat": dm, "key": "gain", "gain": 0.62})
 	disc.material_override = dm
 	disc.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	tilt.add_child(disc)
@@ -597,6 +749,7 @@ func dead_star(c: Vector3, s: float) -> void:
 	dm2.shader = dsh2
 	for pn in ["r_in", "r_out", "spin", "gain"]:
 		dm2.set_shader_parameter(pn, dm.get_shader_parameter(pn))
+	_disc_mats.append({"mat": dm2, "key": "gain", "gain": 0.62})
 	dm2.render_priority = -10
 	disc2.material_override = dm2
 	disc2.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -638,6 +791,7 @@ func dead_star(c: Vector3, s: float) -> void:
 		lm.set_shader_parameter("spin", 0.35)
 		# F4: the lensed far side of the disc over the shadow a little stronger (it read faint and smeared in r1)
 		lm.set_shader_parameter("arc_gain", 1.15)
+		_disc_mats.append({"mat": lm, "key": "arc_gain", "gain": 1.15})
 		lm.render_priority = -30   # drawn first among the see-through things: it copies the opaque picture, so later effects (beams, trails in front of it) draw over it, not under it
 		lens.material_override = lm
 		lens.scale = Vector3.ONE * half
@@ -654,6 +808,7 @@ func dead_star(c: Vector3, s: float) -> void:
 	l.omni_attenuation = 1.6
 	l.shadow_enabled = false
 	root.add_child(l)
+	_disc_light = l
 	notes.append("dead star: core, lensing %s, accretion disc" % ("on" if quality != "low" else "off"))
 
 
