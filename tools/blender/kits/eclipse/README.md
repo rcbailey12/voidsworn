@@ -41,3 +41,14 @@ thrusters, machine-cut plates with flush fasteners. Each part's docstring in par
 units (`PANEL`), so a part built large keeps the hull's detail density: the engine housings, the corona arc's breech collars,
 column and head carry them, and every engine bell gets stiffener rings by its length. The corona arc's hard point is its lens
 (the horns' meeting point ahead of it is open space, off the mesh).
+
+## Paint stack (issue 642)
+
+`stack.py` is the Eclipse paint stack for sheet ships (`"bake": "stack"`), on the shared machinery in
+`tools/blender/kits/shared/paint_stack.py`: the colours as tones to show under the game's battle lift (2.2, read from
+`godot/render/look.gd`), the layers, the patchwork families, the flush-fastener and machining-scratch trim sheet, the decals
+(eclipse sigil, archive glyphs, band ticks), the green-white corona and core, the engine ring (`ENGINE_GLOW`,
+`engine_glow_nodes`), the dark violet-black liner, and no added running lamps. The design lines and their reasons are in the
+file and in docs/playbooks/ships.md section 0 item 2 ("The Eclipse paint"). `glow_vertex` adds `ps_glow` and `ps_kind` before it
+writes either: a handle taken before another attribute is added points at freed memory, which crashed stage 5 on Blender 4.5
+(issue 642, runs 642 and 642b).

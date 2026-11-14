@@ -291,7 +291,8 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas):
     lo, hi = z['lo'], z['hi']
     # 1. base: two tones in broad patches, one tone per plate island (a scavenged hull: no two plates alike)
     # the plate's own tone first (its island), a soft broad patch over it, a fine mottle: a hull of salvaged plates, no camouflage
-    tone = math_(nt, 'ADD', math_(nt, 'MULTIPLY', c.isl, .75), math_(nt, 'MULTIPLY', ramp(nt, c.noise(L['patch_scale'], 3), .3, .7), .25))
+    it = L.get('island_tone', .75)       # issue 642: how much of the base tone is the plate island's own (thousands of tiny islands read as grain)
+    tone = math_(nt, 'ADD', math_(nt, 'MULTIPLY', c.isl, it), math_(nt, 'MULTIPLY', ramp(nt, c.noise(L['patch_scale'], 3), .3, .7), 1 - it))
     col = mixc(nt, lo, hi, tone)
     col = mulc(nt, col, math_(nt, 'ADD', 1 - z.get('plate_var', L['plate_var']) / 2, math_(nt, 'MULTIPLY', c.isl, z.get('plate_var', L['plate_var']))))
     mo = L.get('mottle', .2); col = mulc(nt, col, math_(nt, 'ADD', 1 - mo / 2, math_(nt, 'MULTIPLY', c.noise(L['mottle_scale'], 5, .65), mo)))
@@ -642,13 +643,17 @@ def bake_engine_glow(S, objs, out, cell, res, samples):
     orange or more red than its neighbours. The game's moving plume sits on top; this paints no flame. Per vertex the stack
     writes, in the colour attribute ps_glow: R the distance from the engine's axis over the throat radius, G the engine's own
     random, B the depth into the bell (1 at the throat, 0 at the lip), A the angle round the axis."""
-    E = S.ENGINE_GLOW; groups = {}
-    for o in objs: groups.setdefault(o.get('grp') or o.name.split('_')[0], []).append(o)
+    E = S.ENGINE_GLOW; groups = {}; ek = E.get('kind'); extra = []
+    for o in objs:
+        if ek is not None and o.get('part_kind') != ek and o.get('emissive_zone') != 'plug':
+            extra.append(o); continue        # issue 642: a stack's other lights (the Eclipse rim lines and core) share the map
+        groups.setdefault(o.get('grp') or o.name.split('_')[0], []).append(o)
+    for o in extra: S.glow_vertex(o)
     rng = np.random.default_rng(601)
     for gname, members in sorted(groups.items()):
         rnd = float(rng.random())
         W = [o.matrix_world @ v.co for o in members for v in o.data.vertices]
-        disc = [o for o in members if o.data.materials and o.data.materials[0].name == 'glow']
+        disc = [o for o in members if o.data.materials and o.data.materials[0].name in E.get('disc', ('glow',))]
         core = disc + [o for o in members if o.get('emissive_zone') == 'plug']      # the throat disc and the plug: the core's surfaces
         Dv = [o.matrix_world @ v.co for o in (disc or members) for v in o.data.vertices]
         cy = sum(v.y for v in Dv) / len(Dv); cz = sum(v.z for v in Dv) / len(Dv)
@@ -676,6 +681,28 @@ def bake_engine_glow(S, objs, out, cell, res, samples):
     def noise(vec, scale, detail=3, rough=.6):
         n = node(nt, 'ShaderNodeTexNoise'); n.inputs['Scale'].default_value = scale; n.inputs['Detail'].default_value = detail
         n.inputs['Roughness'].default_value = rough; nt.links.new(vec, n.inputs['Vector']); return n.outputs['Fac']
+    if hasattr(S, 'engine_glow_nodes'):     # issue 642: a faction whose engine is not a hot throat (the Eclipse ring) draws its own
+        kn = node(nt, 'ShaderNodeAttribute'); kn.attribute_type = 'GEOMETRY'; kn.attribute_name = 'ps_kind'
+        col = S.engine_glow_nodes(nt, r, e, d, a, tc, dict(node=node, math_=math_, ramp=ramp, mixc=mixc, mulc=mulc, noise=noise, kind=kn.outputs['Fac']))
+    else:
+        col = _throat_glow(nt, E, r, e, d, a, tc, noise)
+    nt.links.new(col, em.inputs['Color']); em.inputs['Strength'].default_value = 1
+    for i in range(len(J.material_slots)): J.material_slots[i].material = m
+    im = new_image(f'{cell}_engine_emission', res, colour=True); _target([m], im)
+    INFO['bake_engine_glow_s'] = bake(J, 'EMIT', 4); save(im, out, im.name)
+    for o in objs: o.hide_render = hid[o.name]
+    bpy.data.objects.remove(J)
+    g = bpy.data.materials.new('p3_glow'); g.use_nodes = True; gt = g.node_tree; b = gt.nodes['Principled BSDF']
+    uv = gt.nodes.new('ShaderNodeUVMap'); ti = gt.nodes.new('ShaderNodeTexImage'); ti.image = im; gt.links.new(uv.outputs[0], ti.inputs[0])
+    gt.links.new(ti.outputs[0], b.inputs['Emission Color']); b.inputs['Emission Strength'].default_value = E['strength']
+    b.inputs['Base Color'].default_value = (*E.get('base', (.03, .012, .006)), 1); b.inputs['Roughness'].default_value = .85
+    INFO['engine_glow'] = dict(engines=len(groups), map=im.name + '.png', res=res)
+    return g
+
+
+def _throat_glow(nt, E, r, e, d, a, tc, noise):
+    """the Hullbreaker throat (issue 601): a hot core on the axis grading out to deep red, hot spots, soot streaks, the lining
+    dark toward the lip; returns the emission colour socket"""
     # heat: the core (hot at the axis) on the throat disc, the lining by its depth (dark at the lip, R228 item 5)
     # the core: hottest on the axis (the plug's tip, the throat's centre), falling off toward the wall, each engine its own reach
     e2 = math_(nt, 'FRACT', math_(nt, 'MULTIPLY', e, 7.31))
@@ -701,19 +728,7 @@ def bake_engine_glow(S, objs, out, cell, res, samples):
         el.position = pos; el.color = (*col, 1)
     hue = math_(nt, 'ADD', heat, math_(nt, 'MULTIPLY', math_(nt, 'SUBTRACT', e, .5), E['hue_shift']))
     nt.links.new(math_(nt, 'MINIMUM', math_(nt, 'MAXIMUM', hue, 0.0), 1.0), cr.inputs[0])
-    col = mixc(nt, (0, 0, 0), cr.outputs[0], ramp(nt, heat, 0.0, .25))
-    nt.links.new(col, em.inputs['Color']); em.inputs['Strength'].default_value = 1
-    for i in range(len(J.material_slots)): J.material_slots[i].material = m
-    im = new_image(f'{cell}_engine_emission', res, colour=True); _target([m], im)
-    INFO['bake_engine_glow_s'] = bake(J, 'EMIT', 4); save(im, out, im.name)
-    for o in objs: o.hide_render = hid[o.name]
-    bpy.data.objects.remove(J)
-    g = bpy.data.materials.new('p3_glow'); g.use_nodes = True; gt = g.node_tree; b = gt.nodes['Principled BSDF']
-    uv = gt.nodes.new('ShaderNodeUVMap'); ti = gt.nodes.new('ShaderNodeTexImage'); ti.image = im; gt.links.new(uv.outputs[0], ti.inputs[0])
-    gt.links.new(ti.outputs[0], b.inputs['Emission Color']); b.inputs['Emission Strength'].default_value = E['strength']
-    b.inputs['Base Color'].default_value = (.03, .012, .006, 1); b.inputs['Roughness'].default_value = .85
-    INFO['engine_glow'] = dict(engines=len(groups), map=im.name + '.png', res=res)
-    return g
+    return mixc(nt, (0, 0, 0), cr.outputs[0], ramp(nt, heat, 0.0, .25))
 
 
 # ------------------------------------------------------------------------------------------------------------ the whole stack
@@ -787,17 +802,27 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
         for o in objs:
             o.data.materials.clear(); o.data.materials.append(M); o.data.polygons.foreach_set('material_index', np.zeros(len(o.data.polygons), np.int32))
     glow = {}
-    eng = [o for o in G if (o.data.materials[0].name if o.data.materials else '') in ('glow', 'ember') or o.get('emissive_zone') == 'plug'] \
-        if hasattr(S, 'ENGINE_GLOW') else []
+    # the engine glow's surfaces: the zones the stack names (default the throat and lining, glow and ember), only on the part kind
+    # it names when it names one (issue 642: the Eclipse engine ring is the corona zone, which is also every shade rim's line)
+    ez = S.ENGINE_GLOW.get('zones', ('glow', 'ember')) if hasattr(S, 'ENGINE_GLOW') else (); ek = S.ENGINE_GLOW.get('kind') if hasattr(S, 'ENGINE_GLOW') else None
+    ex = S.ENGINE_GLOW.get('extra_zones', ()) if hasattr(S, 'ENGINE_GLOW') else ()      # issue 642: lights of any part kind on the same map
+    eng = [o for o in G if ((o.data.materials[0].name if o.data.materials else '') in ez and (ek is None or o.get('part_kind') == ek))
+           or (o.data.materials[0].name if o.data.materials else '') in ex or o.get('emissive_zone') == 'plug'] if hasattr(S, 'ENGINE_GLOW') else []
     if eng:      # the engine throats and linings: one surface, its own emission map (graded, hot spots, soot, each engine its own)
-        glow['engine'] = bake_engine_glow(S, eng, out, cell, max(256, res // 4), samples); glow['engine']['rim_soft'] = 1
+        glow['engine'] = bake_engine_glow(S, eng, out, cell, max(256, int(res * S.ENGINE_GLOW.get('res_frac', .25))), samples); glow['engine']['rim_soft'] = 1
+        if any(o.get('role') == 'hull' for o in eng) and getattr(S, 'GLOW_HULL', ()):
+            glow['engine']['hull_surface'] = 1      # issue 642: the glow surface carries the hull's own rim line (hull trim, export check)
         for o in eng:
             o.data.materials.clear(); o.data.materials.append(glow['engine'])
     for o in G:
         if o in eng: continue
         z = o.data.materials[0].name if o.data.materials else 'glow'
-        if z not in glow: glow[z] = S.glow_material(z)
-        o.data.materials.clear(); o.data.materials.append(glow[z])
+        # issue 642: a glow zone the stack lists in GLOW_HULL that the sheet puts on the hull itself (the Eclipse corona line on a
+        # shade rim) is hull trim, not a part: its own material, marked hull_surface, so the export check measures breach
+        # clearance from the parts and not from the hull's own rim line
+        k = (z, 'hull') if o.get('role') == 'hull' and z in getattr(S, 'GLOW_HULL', ()) else z
+        if k not in glow: glow[k] = S.glow_material(z, hull=True) if isinstance(k, tuple) else S.glow_material(z)
+        o.data.materials.clear(); o.data.materials.append(glow[k])
     for o in I: o.hide_render = False
     INFO['glow_materials'] = sorted(m.name for m in glow.values())
     # the insides: an inside seen from outside (an opening, a gap) reads as the dark inner liner, never a sheet room colour (R99 Q1;

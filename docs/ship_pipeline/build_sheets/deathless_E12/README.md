@@ -36,6 +36,53 @@ Reported, not a bar.
 
 Start here: **[side_by_side.jpg](side_by_side.jpg)**, then [fit_view.jpg](fit_view.jpg) and [cells.jpg](cells.jpg).
 
+## Paint (issue 642, Nov 13 2026)
+
+`"bake": "stack"`: stage 5 paints this ship with the Eclipse kit's paint stack (`tools/blender/kits/eclipse/stack.py` on
+`tools/blender/kits/shared/paint_stack.py`; RECIPE.md "The paint stack for sheet ships", ships.md section 0 item 2 "The Eclipse
+paint"). Masks from the ship's own geometry, a drawn trim sheet and decals, colours sampled from the concepts, never projected.
+Pictures (sandbox on Blender 4.5.14, the PC's Blender, on the GPU: **4096 atlases** and a 2048 light map, 64 samples, Nov 13; game light, battle lift 2.2): [beside the concept](paint/E12_paint_full.jpg), [at the battle camera's pixel size](paint/E12_paint_cam170.jpg),
+[bow](paint/E12_paint_bow.jpg), [midships](paint/E12_paint_midships.jpg), [stern](paint/E12_paint_stern.jpg),
+[six views](paint/E12_paint_views.jpg), [engines](paint/E12_paint_engines.jpg), [corona line and core close](paint/E12_paint_close.jpg);
+[surface check](paint/surface_check.json), [R224 density](paint/density_sandbox.json). The game shots at camera 170 and 60
+come from the PC run (`tools/pc/jobs/E11_E12_PAINT_642c.bat`; the runs 642 and 642b crashed in stage 5 on Blender 4.5, fixed in
+the stack: it wrote the light inputs through an attribute handle taken before it added another attribute).
+
+**Budget (stage 7, D21_23, unpainted export of PR 620 then this paint):** triangles 41,052 (turrets 10,938) before and after (the paint adds no mesh); surfaces (draw calls) 9 then 10 (the one added is the glow surface: the corona line, core, lens and engine rings on one emission map); textures none then six 2048 maps (hull base, ORM, normal; parts base, ORM; glow emission), baked at 4096 with a 2048 light map; glb 2.4 MB then 4.4 MB. The scene gate is on the PC run.
+
+**Colour, judged at the battle lift.** The game lifts an Eclipse hull's albedo by 2.2 (R227, `godot/render/look.gd`; Ryan: "a bit
+darker for eclipse"); unpainted, this ship rendered glowing white in the game. The stack's colours are the tones the plates must
+show at that lift, divided by it (read from look.gd), so the ship reads dark violet-black, never lavender or grey. Plate tones
+sampled from both Eclipse concepts, held to their lower half (E11's lit lilac-grey plates are the lavender Ryan ruled out);
+the hue held a little stronger than the tone because AgX and the warm key take colour out of dark tones (`SAT`).
+
+**Pass 2 (Ryan, Nov 13 2026 11:06 CST, on E11_paint_full.jpg):** "that green looks so plain and stark, just like neon paint.
+Not a ton of details elsewhere, it looks like grainy paint almost. Everything kind of blends together." And the Board's review of
+PR 643: the core read as a white blob. What changed, in the Eclipse stack (never per ship): the corona line and the core became
+light drawn on one emission map (below); the plates separate by value steps between big calm panels and plate families
+(near-black heat-shield plates, deep violet, a lighter dusk violet, a few mauve and cool dark gunmetal plates; factions.md lists
+only violet-black plates, so no bronze), dark seams that read at camera 170, brighter worn edges on rims and plate lips, a
+different finish for the matte shade plates, the satin body and the worked-metal machines; the fine mottle, grain and per-plate
+speckle are gone. The tone stays dark violet-black at the 2.2 lift.
+
+**Changed from the picture, paint (the builder's calls, R207, R233):**
+- **No added running lamps** (`RUNNING_LIGHTS = None`). The red lamps are a Hullbreaker rule (R228 item 4); a row of coloured
+  points along the flanks reads as a navy's or a pirate's ship. The Eclipse are machines in a system they made dark (lore 7.1):
+  their only lights are the corona (the thin green-white line on every shade rim, which already marks the outline and heading
+  at the battle camera), the core, the pale engine rings and the sheet's own corona strip lights over the belts. No
+  `lights.json` is written; the standing light check passes with nothing to hold.
+- **The green is light, not paint** (pass 2): the corona line is drawn on the ship's emission map as the faint ring of a real
+  eclipse: thin at rest, brighter arcs and dimmer stretches with a few short breaks, a soft falloff into the plate edge, cold
+  green-white at its hottest and deeper green where dim, mostly under the game's 0.8 glow threshold with only the brightest arcs
+  over it. The core is green-white at its centre grading to the concepts' core green at its edge, the brightest light on the
+  ship but never white all over.
+- **The engine ring is the game's Eclipse engine colour** (`godot/fx/faction_looks.json` deathless `engine`, a pale violet, the
+  colour the game's plume is drawn in) paled toward white with a touch of its white-gold `accent`, not the sheet's green: each
+  ring its own brightness and tint, hot spots and dim gaps round it, the shade disc black. No flame.
+- **Decals the concept does not show at its scale**: the eclipse sigil (a black disc in a broken thin ring) on the deck, a line
+  of archive glyphs (this ship's own, seeded by its game code) on each flank, band ticks aft; all a dulled paler violet.
+- **No rust and no soot**: machined plate, dulled and ancient; contrast from black seams and recesses and pale violet worn edges.
+
 ## Weapons (R221): each built from what it is
 
 Ryan, Nov 12 (R221): "their turrets look the same as hullbreakers. We should have those be more unique per fsctions and fit the
