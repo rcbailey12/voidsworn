@@ -73,7 +73,7 @@ def build(K):
     K.box('A17_rust_brow', 4.95, 5.3, 0.9, 1.3, 1.72, 1.8, 'rust')
 
     # ---------------- the body: flank blocks (both sides, junky and unmatched) and the stepped top blocks ----------------
-    import random
+    import random, zlib
     rb = random.Random(1717)
     nfl = 0
     for side in (1, -1):
@@ -96,7 +96,7 @@ def build(K):
                 (x0 - slope * 0.7, hwt, hwt, base, top, 0.18, max(0.0, hwt - hwb), yo),
                 (x1 + 0.12, hwt, hwt, base, top, 0.18, max(0.0, hwt - hwb), yo),
                 (x1, hwt - 0.12, hwt - 0.12, base, top - 0.12, 0.12, max(0.0, hwt - hwb), yo)]
-        K.mass(nm, K.loft('A17_' + nm.split()[0], secs, 'soot', plates=dict(PL, seed=hash(nm) % 997, faces=[0, 1, 2, 3], size=(0.3, 0.7))),
+        K.mass(nm, K.loft('A17_' + nm.split()[0], secs, 'soot', plates=dict(PL, seed=zlib.crc32(nm.encode()) % 997, faces=[0, 1, 2, 3], size=(0.3, 0.7))),
                'soot with dried-blood patches', note='stepped top block, top %.2f, undercut base' % top)
     K.box('A17_red_crest', -3.6, -4.9, -1.1, 0.4, 1.5, 1.54, 'blood')
     for side in (1, -1):

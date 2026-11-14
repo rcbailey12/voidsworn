@@ -140,7 +140,9 @@ func _picture_root(node: Node3D) -> Vector3:
 	var is_vent: bool = (str(node.get_meta("fx_picture_kind", "")) == "vent") or String(node.name).begins_with("fx_baked_vent")
 	var m = node.material_override
 	if not is_vent and m is ShaderMaterial:
-		is_vent = float((m as ShaderMaterial).get_shader_parameter("directional")) > 0.5
+		# Godot 4.7 has no float(Variant) constructor for a Variant that may be null, so test the type first
+		var directional = (m as ShaderMaterial).get_shader_parameter("directional")
+		is_vent = (directional is float or directional is int) and float(directional) > 0.5
 	if is_vent and m is ShaderMaterial:
 		var up = (m as ShaderMaterial).get_shader_parameter("tear_normal")
 		var extent = (m as ShaderMaterial).get_shader_parameter("extent")
