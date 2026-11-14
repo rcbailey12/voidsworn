@@ -668,10 +668,14 @@ func padded(ctl: Control, side: float = COL_PAD) -> MarginContainer:
 func row0(sep: float = 0) -> HBoxContainer:   # a row whose parts keep the mouse off themselves (the row's owner takes it)
 	var h = hbox(sep); h.mouse_filter = Control.MOUSE_FILTER_IGNORE; return h
 # a plain text button in a fixed line box (GS.plain_button): words only
-func tbtn(text: String, size: float, lh: float, cb: Callable, tip_t: String = "") -> Control:
+# over_map: the words sit straight on the chart (Map key, Save and quit), so they carry the map's dark halo (issue 678: the
+# Map key read 2.68 to 1 over a bright star); the same words on the briefing column or a slide-over need none.
+func tbtn(text: String, size: float, lh: float, cb: Callable, tip_t: String = "", over_map: bool = false) -> Control:
 	var w = Control.new()
 	var b = Button.new(); b.text = text; b.alignment = HORIZONTAL_ALIGNMENT_LEFT; GS.plain_button(b, k, maxf(17, size), GS.sheet_body())
 	b.add_theme_color_override("font_color", GS.TEXT2); b.add_theme_color_override("font_hover_color", GS.TEXT); b.add_theme_color_override("font_focus_color", GS.TEXT)
+	if over_map:
+		b.add_theme_color_override("font_outline_color", Color(GS.HALO, 1.0)); b.add_theme_constant_override("outline_size", maxi(6, px(10)))
 	w.custom_minimum_size = Vector2(ceil(GS.sheet_body().get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, px(size)).x) + 2.0, px(lh))
 	if tip_t != "": b.tooltip_text = tip_t
 	b.pressed.connect(cb); w.add_child(b); b.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); w.set_meta("button", b)
@@ -702,8 +706,8 @@ func _map() -> Control:
 	# the right side: plain text buttons top right, the purse bottom right (the chart itself is map3d.gd, under this page)
 	var top = row0(36); top.anchor_left = 1.0; top.anchor_right = 1.0; top.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	top.offset_right = -px(48); top.offset_top = px(44)
-	top.add_child(tbtn("Map key", 17, 24, func(): _open_overlay("key"), "What the marks mean, this sector, your run, the controls."))
-	if not _find(_acts, "saveQuit", "").is_empty(): top.add_child(tbtn("Save and quit", 17, 24, func(): C.act("saveQuit", "")))
+	top.add_child(tbtn("Map key", 17, 24, func(): _open_overlay("key"), "What the marks mean, this sector, your run, the controls.", true))
+	if not _find(_acts, "saveQuit", "").is_empty(): top.add_child(tbtn("Save and quit", 17, 24, func(): C.act("saveQuit", ""), "", true))
 	wrap.add_child(top)
 	var P = View.purse(C)
 	var purse = _baseline_row([["Credits", GS.sheet_body(), 17, GS.TEXT2], [12], [C.numstr(P["credits"]), font_num_b, 28, GS.TEXT], [48],

@@ -229,6 +229,23 @@ func no_lime(h, label: String) -> void:
 	check(bad.is_empty(), "%s: nothing lime (or the old shield cyan) on the screen %s" % [label, ", ".join(bad)])
 
 
+# issue 678: a ship's name over the board (hud.gd plate) must hold 4.5 to 1 over any hull, ring or glow behind it. Measured
+# 4.44 to 1 at 1440 with 20 ships when the halo was an outline at 0.92 alpha alone. The name carries a solid HALO outline and
+# a solid centred shadow of the same glyph, so the pixel under a letter is the halo, never the board; each plate colour is then
+# held against the halo itself.
+func plate_halo(h, tag: String) -> void:
+	var nm := h.plate("probe").get_node("st/v/nm") as Label
+	var oc := nm.get_theme_color("font_outline_color")
+	var sc := nm.get_theme_color("font_shadow_color")
+	check(is_equal_approx(oc.a, 1.0) and oc.is_equal_approx(Color(GS.HALO, 1.0)), "%s: a ship name's outline is the opaque HALO (%s)" % [tag, oc.to_html(true)])
+	check(is_equal_approx(sc.a, 1.0) and sc.is_equal_approx(Color(GS.HALO, 1.0)), "%s: a ship name has a solid HALO shadow under its letters (%s)" % [tag, sc.to_html(true)])
+	check(nm.get_theme_constant("shadow_offset_x") == 0 and nm.get_theme_constant("shadow_offset_y") == 0 and nm.get_theme_constant("shadow_outline_size") >= nm.get_theme_constant("outline_size"), "%s: the shadow sits centred and as wide as the outline" % tag)
+	for cn in [["ember (the ship that is up)", GS.MAP_EMBER], ["text", GS.TEXT], ["Nemesis", GS.NEM]]:
+		var c := contrast(cn[1], Color(GS.HALO, 1.0))
+		check(c >= 4.5, "%s: a ship name in %s over its halo is %.2f to 1 (4.5 or more)" % [tag, cn[0], c])
+	h.plate("probe").queue_free()
+
+
 func _run() -> void:
 	for sz in [Vector2i(1920, 1080), Vector2i(2560, 1440)]:
 		root.size = sz
@@ -240,6 +257,7 @@ func _run() -> void:
 		await process_frame
 		var tag := "%dx%d" % [sz.x, sz.y]
 		check(absf(h.ledger.size.x - sz.x) < 1.0, "%s: the sheet covers the window (%s)" % [tag, str(h.ledger.size)])
+		plate_halo(h, tag)
 		for i in 3:
 			h.add_log(["Fleet Marshal Petra Valk: \"Every move you can make has been planned for.\"", "Fleet Marshal Petra Valk: \"All reserve squadrons, jump in now. Encircle them.\"", "Contact: Hegemony Navy, 2 ships on the scanners."][i], "e")
 		# 1. your turn with a target (the step 1 moment)

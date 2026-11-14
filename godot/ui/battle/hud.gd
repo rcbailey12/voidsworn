@@ -324,6 +324,18 @@ func _halo(l: Label) -> void:
 	l.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
 
 
+# a ship's name over the board (issue 678): the plain halo plus a solid dark underlay. The halo alone left gaps where the
+# outline's coverage thins under a letter, and a bright hull or ring behind showed through (4.44 to 1 measured at 1440 with
+# 20 ships). The shadow is the same glyph and outline drawn first, centred, opaque, so no pixel under a letter is the board.
+func _halo_name(l: Label) -> void:
+	_halo(l)
+	l.add_theme_color_override("font_outline_color", Color(GS.HALO, 1.0))
+	l.add_theme_color_override("font_shadow_color", Color(GS.HALO, 1.0))
+	l.add_theme_constant_override("shadow_offset_x", 0)
+	l.add_theme_constant_override("shadow_offset_y", 0)
+	l.add_theme_constant_override("shadow_outline_size", maxi(3, s(6)))
+
+
 func _label(txt: String, size := 17, col := BONE, f: Font = null) -> Label:
 	var l := Label.new()
 	l.text = txt
@@ -873,7 +885,7 @@ func plate(id: String) -> Control:
 	st.add_child(v)
 	var nm := _label("", 19, S_TEXT, font_semi)
 	nm.name = "nm"
-	_halo(nm)
+	_halo_name(nm)
 	v.add_child(nm)
 	var bars_c := Control.new()
 	bars_c.name = "bars"
