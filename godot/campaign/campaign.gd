@@ -27,7 +27,7 @@ var REGION_BIOME; var ROCK_KINDS; var DEEP_MAPS; var FAC_MAP; var BEVENTS; var K
 var ABILITIES; var ARC_NAME; var NODE_INFO; var NODE_MODS; var ARCHETYPES; var SHAPES; var REWARD_DEF; var MAP_NAME; var WIN_TITLE
 var LEGACY; var CMD_TEXT; var CAUSE_WORD; var RUN_FACTIONS
 var NEM_TRAITS; var NEM_PERSONA; var NEM_FAC; var NEM_ADAPT_FAC; var NEM_LINES; var NEM_BEAT_WORD; var ARC_VARIANT; var NEM_VOICE; var NEM_BEAT_COUNTER
-var NEM_WEAK; var NEM_ADAPT; var NEM_CLOCK; var FAC_VERBS; var WING_PERKS; var WING_XP; var EVENT_FALLBACK; var FAC_GATES; var CLASS_TRACK_MAX; var KIND_WORD
+var NEM_WEAK; var NEM_ADAPT; var NEM_CLOCK; var FAC_VERBS; var WING_PERKS; var WING_XP; var EVENT_FALLBACK; var FAC_GATES; var CLASS_TRACK_MAX; var KIND_WORD; var CINDER_PRIZES; var CINDER_FIRST_RUN
 
 # ---------------- state ----------------
 var META: Dictionary = {}
@@ -64,7 +64,7 @@ var tel_log: Array = []     # a slim run log (events only), kept with the save; 
 # ======================= setup =======================
 # Every table the campaign reads. load_tables refuses to start when one is missing, and export_campaign.js fails when the oracle
 # lacks one (it also scans the campaign scripts for every TB table they read, so a new table cannot slip past this list).
-const REQUIRED_TABLES = ["ABILITIES", "ADMIRALS", "ARCHETYPES", "ARC_NAME", "ARC_VARIANT", "ASPECTS", "BEVENTS", "BOONS", "BOON_D", "BOON_FX", "BOON_NEED", "BOSS_DMG", "BOSS_ENC", "BOSS_FAC", "BOSS_SCALE", "CAPTAINS", "CAUSE_WORD", "CLASS_TRACK_MAX", "CMD_TEXT", "CORE_EAT_HULL", "DEEP_MAPS", "ENCOUNTERS", "ENC_POOL", "ENC_SPECIAL", "EVENTS", "EVENT_FALLBACK", "FACTIONS", "FAC_GATES", "FAC_MAP", "FAC_REGION", "FAC_VERBS", "FAC_WNAMES", "FAC_WTRAIT", "FAVOUR_TIERS", "FNAMES", "FX_CAPS", "HEAT", "HULLS", "HULL_VARIANTS", "KILL_CAUSES", "KIND_WORD", "LEGACY", "MAP_NAME", "MASTERY_PERKS", "MASTERY_XP", "LINEAGE_XP", "LINEAGE_TREES", "CAPSTONE_MASTERY_XP", "CAPSTONE_MASTERY_PERKS", "MODULES", "MOD_NAMES", "MOD_NEED", "MORE_SHIP_NAMES", "NEM_ADAPT", "NEM_ADAPT_FAC", "NEM_BEAT_WORD", "NEM_CLOCK", "NEM_FAC", "NEM_LINES", "NEM_PERSONA", "NEM_TRAITS", "NEM_VOICE", "NEM_WEAK", "NODE_INFO", "NODE_MODS", "PATRONS", "PERKS", "RAMP", "RANKS", "RANK_XP", "RARITY", "REGIONS", "REGION_BIOME", "RELICS", "RELIC_NAMES", "REWARD_DEF", "ROCK_KINDS", "RUN_FACTIONS", "RUN_WORD", "SECTOR_CONDS", "SECTOR_POOL", "SHAPES", "SHIP_NAMES", "TREE_FX", "W", "WING_PERKS", "WING_XP", "WIN_TITLE", "WTRAITS"]
+const REQUIRED_TABLES = ["ABILITIES", "ADMIRALS", "ARCHETYPES", "ARC_NAME", "ARC_VARIANT", "ASPECTS", "BEVENTS", "BOONS", "BOON_D", "BOON_FX", "BOON_NEED", "BOSS_DMG", "BOSS_ENC", "BOSS_FAC", "BOSS_SCALE", "CAPTAINS", "CAUSE_WORD", "CINDER_FIRST_RUN", "CINDER_PRIZES", "CLASS_TRACK_MAX", "CMD_TEXT", "CORE_EAT_HULL", "DEEP_MAPS", "ENCOUNTERS", "ENC_POOL", "ENC_SPECIAL", "EVENTS", "EVENT_FALLBACK", "FACTIONS", "FAC_GATES", "FAC_MAP", "FAC_REGION", "FAC_VERBS", "FAC_WNAMES", "FAC_WTRAIT", "FAVOUR_TIERS", "FNAMES", "FX_CAPS", "HEAT", "HULLS", "HULL_VARIANTS", "KILL_CAUSES", "KIND_WORD", "LEGACY", "MAP_NAME", "MASTERY_PERKS", "MASTERY_XP", "LINEAGE_XP", "LINEAGE_TREES", "CAPSTONE_MASTERY_XP", "CAPSTONE_MASTERY_PERKS", "MODULES", "MOD_NAMES", "MOD_NEED", "MORE_SHIP_NAMES", "NEM_ADAPT", "NEM_ADAPT_FAC", "NEM_BEAT_WORD", "NEM_CLOCK", "NEM_FAC", "NEM_LINES", "NEM_PERSONA", "NEM_TRAITS", "NEM_VOICE", "NEM_WEAK", "NODE_INFO", "NODE_MODS", "PATRONS", "PERKS", "RAMP", "RANKS", "RANK_XP", "RARITY", "REGIONS", "REGION_BIOME", "RELICS", "RELIC_NAMES", "REWARD_DEF", "ROCK_KINDS", "RUN_FACTIONS", "RUN_WORD", "SECTOR_CONDS", "SECTOR_POOL", "SHAPES", "SHIP_NAMES", "TREE_FX", "W", "WING_PERKS", "WING_XP", "WIN_TITLE", "WTRAITS"]
 func load_tables(path: String = TABLES_PATH) -> String:
 	var txt = FileAccess.get_file_as_string(path)
 	var j = JSON.parse_string(txt)
@@ -92,6 +92,7 @@ func load_tables(path: String = TABLES_PATH) -> String:
 	NEM_TRAITS = TB.NEM_TRAITS; NEM_PERSONA = TB.NEM_PERSONA; NEM_FAC = TB.NEM_FAC; NEM_ADAPT_FAC = TB.NEM_ADAPT_FAC; NEM_LINES = TB.NEM_LINES; NEM_BEAT_WORD = TB.NEM_BEAT_WORD; ARC_VARIANT = TB.ARC_VARIANT; NEM_VOICE = TB.NEM_VOICE; NEM_BEAT_COUNTER = TB.NEM_BEAT_COUNTER
 	NEM_WEAK = TB.NEM_WEAK; NEM_ADAPT = TB.NEM_ADAPT; NEM_CLOCK = TB.NEM_CLOCK; FAC_VERBS = TB.FAC_VERBS; WING_PERKS = TB.WING_PERKS; WING_XP = TB.WING_XP
 	EVENT_FALLBACK = TB.EVENT_FALLBACK; FAC_GATES = TB.FAC_GATES; CLASS_TRACK_MAX = TB.CLASS_TRACK_MAX; KIND_WORD = TB.KIND_WORD
+	CINDER_PRIZES = TB.CINDER_PRIZES; CINDER_FIRST_RUN = TB.CINDER_FIRST_RUN   # R78 Q9: captured Hegemony and Eclipse hulls at the Crusade yards from run 3
 	META = defaultMeta(); META["backfilled"] = 1; META["wonFix41"] = 1   # a fresh Godot profile has no browser history to back-fill
 	return ""
 func _dec(v):
@@ -191,6 +192,16 @@ func factionGate(fac, tpl) -> Variant:
 		for e in h["w"]:
 			if W_.has(e[0]) and G["noKind"].has(W_[e[0]].get("k")): return G["d"]
 	return null
+# R78 Q9 (issue 41): from run 3 the Crusade's Cinder Line yards sell captured Hegemony and Eclipse hulls, links ripped
+# out, at Crusade prices. A 'ripped' ship loses the Hegemony sync and Eclipse Archive restore in battle (rules.gd).
+func cinderOpen() -> bool:
+	return RUN != null and RUN.get("fac") == "voidsworn" and META != null and META.get("stats") != null and int(z0(META["stats"].get("runs"))) >= int(z0(CINDER_FIRST_RUN))
+# the price of a captured hull at the Cinder Line yards: the Crusade's own ladder (base cost before the owner's faction
+# pricing, times the Crusade class price), then the yard price multiplier, like any other hull for sale there.
+func capturedHullPrice(t: Dictionary) -> float:
+	var base = float(t["cost0"]) if t.get("cost0") != null else float(t["cost"])
+	var ladder = (TB.FAC_PRICE["voidsworn"].get(t.get("cls")) if jt(TB.FAC_PRICE.get("voidsworn")) else null)
+	return jsround(jsround(base * (float(ladder) if ladder != null else 1.0) / 5.0) * 5.0 * priceMult())
 var _trait_rules = null   # a rules object with no battle loaded, used only for its weapon trait effects (one source: godot/rules/rules.gd)
 func trait_fx(tk: String, w: Dictionary) -> void: # the weapon trait effects, from the rules through the battle API (no copy kept here)
 	if _trait_rules == null: _trait_rules = BattleAPI.RulesScript.new()
@@ -1722,7 +1733,8 @@ func shipyardStock(n: Dictionary) -> Dictionary:
 	for h in pickH.duplicate():
 		for vid in HULL_VARIANTS.keys():
 			if HULL_VARIANTS[vid]["base"] == h and variantOwned(vid): pickH.insert(pickH.find(h) + 1, vid)
-	n["stock"] = {"hulls": pickH, "mods": shuffle(modulePool()).slice(0, 3), "sold": []}
+	var cap = shuffle(CINDER_PRIZES.duplicate()).slice(0, 2) if cinderOpen() else []   # R78 Q9: captured Hegemony and Eclipse hulls from run 3
+	n["stock"] = {"hulls": pickH, "mods": shuffle(modulePool()).slice(0, 3), "sold": [], "cap": cap}
 	return n["stock"]
 func shipyardScreen(n) -> void:
 	yard_node = n
@@ -1743,6 +1755,9 @@ func shipyardScreen(n) -> void:
 		var t = HULLS[h]; var cost = jsround(float(t["cost"]) * pm); var fits = cp + float(t["cp"]) <= float(RUN["cpCap"])
 		var uniq = jt(t.get("unique")) and RUN["fleet"].any(func(s): return s["tpl"] == h)
 		A(acts, "buyHull", h, float(RUN["credits"]) >= cost and fits and not uniq)
+	for h in (st["cap"] if st.get("cap") is Array else []):
+		var ct = HULLS[h]; var ccost = capturedHullPrice(ct); var cfits = cp + float(ct["cp"]) <= float(RUN["cpCap"])
+		A(acts, "buyHull", h, float(RUN["credits"]) >= ccost and cfits)
 	for i in range(st["mods"].size()):
 		if not _has_num(st["sold"], i): A(acts, "buyMod", i, float(RUN["credits"]) >= jsround(float(MODULES[st["mods"][i]]["cost"]) * pm))
 	for cls in fleetClasses():
@@ -1761,11 +1776,13 @@ func ACT_buyTrack(cls: String) -> void:
 	tel("shop", {"k": "track", "id": cls, "lv": classTrack(cls)})
 	toast(clsName(cls) + " refit level " + numstr(classTrack(cls)) + ": every " + clsName(cls).to_lower() + " gains."); shipyardScreen(yard_node)
 func ACT_buyHull(h: String) -> void:
-	var t = HULLS[h]; var cost = jsround(float(t["cost"]) * priceMult())
+	var t = HULLS[h]; var st = yard_node["stock"]; var cap = st["cap"] if st.get("cap") is Array else []
+	var captured = cap.has(h); var cost = capturedHullPrice(t) if captured else jsround(float(t["cost"]) * priceMult())
 	if float(RUN["credits"]) < cost or fleetCP() + float(t["cp"]) > float(RUN["cpCap"]): return
 	RUN["credits"] = float(RUN["credits"]) - cost
 	tel("shop", {"k": "hull", "id": h, "cost": cost})
-	var s = newShip(h); RUN["fleet"].append(s); toast("The " + str(s["name"]) + " joins the fleet."); shipyardScreen(yard_node)
+	var s = newShip(h); if captured: s["ripped"] = true
+	RUN["fleet"].append(s); toast("The " + str(s["name"]) + " joins the fleet."); shipyardScreen(yard_node)
 func ACT_buyMod(a: String) -> void:
 	var i = int(a); var st = yard_node["stock"]; var m = st["mods"][i]; var cost = jsround(float(MODULES[m]["cost"]) * priceMult())
 	if _has_num(st["sold"], i) or float(RUN["credits"]) < cost: return
