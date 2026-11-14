@@ -6,7 +6,7 @@ One pack, four pages: sunward.md, hegemony.md, glasswrights.md, chorus.md in thi
 
 - Sunward: triangles on the flat fields, rectangles on the curves, patch_warp 0, rivets at .011, black iron pairs around #191615 to #525151, ember glow just under threshold, frost white as decals only under a 6 percent cap. Roughness floor .55.
 - Hegemony: the even grid itself, two identical module sizes fleet-wide, a seamline module band at the joints, plate_var .07, steel-blue grey pairs #141c2a to #48505e with a hard cap at #626d7d, implant-blue strips pulsing under threshold. Roughness floor .52.
-- Glasswrights: every patch key 0; variation from glass depth tint by AO, silver gradient zones and the rainbow fringe applied last; glass pair #868688 to #d2d1d2 as a hard cap with the rendered median at #9d9c9e; glass roughness floor .30 with rim_soft; no trim, no decals, no running lights.
+- Glasswrights: every patch key 0; variation from glass depth tint by AO, silver gradient zones and the rainbow fringe applied last; glass pair #868688 to #d2d1d2 as a hard cap with the rendered median at #9d9c9e; glass roughness floor .30 with rim_soft; no trim, no decals, no running lights. Ryan's review ruling added strength here: a wider, more saturated fringe and prism dispersion through the glass (see the rulings below).
 - Chorus: the 670 palette verbatim (#423d27 hide family, bile #77811f / #9dab2c / #c2cf45), patch machinery reused as mottling cells at patch_warp .55, scar furrows as their own line layer, per-tissue roughness floors from 670, metalness 0.0 everywhere.
 
 ## Council record
@@ -15,7 +15,7 @@ Blind Rey leg first, written from the pack alone. DeepSeek (DeepThink on, Search
 
 Chair calls where the legs split:
 
-- Sunward frost lights: Qwen proposed small frost-white running points on the blade's edge (emissive, from the game accent). DeepSeek, Flash and blind Rey kept frost as non-emissive markings and the ember line as the only light. The chair sided with the majority: a second cool accent breaks the one-accent camera read. The question is listed for Ryan below, because the guide calls them markings and the game accent exists; if he wants the points, sunward.md section 5 changes.
+- Sunward frost lights: Qwen proposed small frost-white running points on the blade's edge (emissive, from the game accent). DeepSeek, Flash and blind Rey kept frost as non-emissive markings and the ember line as the only light, and the chair sided with the majority. Ryan overruled the chair at the review (below): Qwen's version stands, and sunward.md is amended.
 - Sunward grime: legs ran .35 to .80. Settled at .55 body: S8 reads sooty, the guide forbids rust, not soot.
 - Hegemony seam strength: legs ran .0008 to .0018 wide, seam_dark .88 to .98. Settled at .0016 and .94: the modules must read at mid range (Qwen's argument) without turning Hegemony into Eclipse (.0020 and .95).
 - Glasswrights roughness floor: blind Rey and Qwen settled at .30 with rim_soft; Flash wrote .50 as a floor while also writing glass roughness .18, which contradicts itself. Settled at .30 with the probe ladder (raise the floor first if it flares).
@@ -25,12 +25,14 @@ Chair calls where the legs split:
 
 Leg slips, recorded so nothing rests on them: DeepSeek described S8's plate fields as already triangular; the picture's fields are rectangular riveted plates, and the triangles come from R243, not the picture (its two-region rule stands on R243 and the curve argument, and was adopted on that basis). Flash called the Eclipse 2.2 lift "standard" for all four stacks; no page in this pack states a lift, and the stacks read look.gd per faction.
 
-## Questions for Ryan at the review
+## Ryan's rulings at the swatch review (Nov 14, 2026)
 
-1. Sunward frost points: markings only (as written), or Qwen's small frost-white running lights on the blade's edge as a second, cool accent?
-2. Hegemony module band: structure (as written), or does any band read as the ornament the guide forbids, in which case the joints are carried by seam_dark alone?
-3. Hegemony value: the pages hold the H10 sample with a cap at #626d7d. If you want the fleet visibly paler than the concept, say so here; it departs from the sample on purpose.
-4. The four pages and sheets themselves: yes, no, or changes, per faction. Stacks get built only after this.
+1. All four pages: yes, with one amendment. Glasswrights carries more rainbow and prism than the chaired pages had: the fringe runs wider and more saturated, the glass throws a low-saturation prism wash where the stored light leaves it at glancing angles, and the bow optic shows a real spectral fan at rest (glasswrights.md sections 1, 5 and 6 amended). The coloured pane fills stay rejected; the colour lives on edges and in dispersion.
+2. Sunward frost: Ryan liked Qwen's suggestion. The blade's edge carries small frost-white running points at about 0.72 of threshold (sunward.md section 5 amended). Frost markings stay decals under the 6 percent cap.
+3. Hegemony module band: Ryan ruled it does not read as ornament. The band stands as structure (hegemony.md section 1 amended).
+4. Hegemony value: Ryan confirmed the H10 sample and the #626d7d cap. No deliberate lightening (hegemony.md section 2 amended).
+
+The pack is approved for stack building on that basis.
 
 ## Questions for the Board (build-time)
 

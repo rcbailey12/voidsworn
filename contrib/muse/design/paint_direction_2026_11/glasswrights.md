@@ -1,6 +1,6 @@
 # Glasswrights: paint direction (issue 689, R243)
 
-Status: direction for Ryan's yes or no at the swatch review. No stack is built from this page until he rules.
+Status: direction for Ryan's yes or no at the swatch review. No stack is built from this page until he rules. RULED Nov 14, 2026: approved (amendments, where any, are in summary.md).
 Ruling answered: FINDINGS R243 (Ryan, Nov 13, 2026): "glasswrights shouldn't have any panels but be more like blown glass." Hull order follows lore: a leaf of cut glass lit from inside, on a silver spine and rim (docs/playbooks/factions.md; G13 base carried by G15). R192: every part is shaped with care and is also the ornament. R196: lenses are grown in, one continuous skin, no pod, bracket, ring mount or visible seam. Reference picture: G15 (contrib/muse/design/concept_round7_2026_11/ithar_G15_sheet.jpg), shape settled, lenses not reached, so its colours are sampled with two picture artefacts rejected below.
 Form: docs/ship_pipeline/RECIPE.md, "The paint stack for sheet ships". CONCEPT pairs are (dark, light) sRGB show-tones; the stack divides by LIGHT_GAIN 1.45 and the battle lift read from godot/render/look.gd. No lift number is stated on this page. Glow colours live in godot/fx/faction_looks.json and are read by the stack, never copied here.
 Council: blind Rey, Qwen and Flash legs chaired (DeepSeek covered Sunward only); Grok's seat empty (bot wall). Where the legs split, the summary file records the chair's call.
@@ -13,7 +13,8 @@ What carries the surface instead:
 
 - Glass depth tint by AO. The glass zone's pair runs from its dark end at full AO to its light end at zero AO, so curvature and depth shade the skin the way thickness shades blown glass. No hue is added: the pair itself is the tint.
 - Silver structure zones (the spine and the rim) with gradient boundaries, not seam lines: the glass is grown onto the silver (R196), so the transition blends over a short distance and never steps.
-- The rainbow fringe on the edge mask, cut edges only, at low saturation. The fringe takes the place of the worked stacks' final step: where other factions run edge wear last, Glasswrights runs the fringe last, over everything.
+- The rainbow fringe on the edge mask, cut edges only. The fringe takes the place of the worked stacks' final step: where other factions run edge wear last, Glasswrights runs the fringe last, over everything.
+- Prism dispersion through the glass (Ryan's ruling at the swatch review, Nov 14, 2026: the direction as first chaired did not carry enough rainbow and prism). Where the stored light passes through the skin at a glancing angle, and strongest where the hull curves away, the glass throws a low-saturation spectral sheen, the way blown glass splits light: a prism wash that follows the curvature and the light, not a painted pattern and not a pane fill. The fringe itself runs wider and more saturated than a hairline: a real band on every cut edge, hue shifting along the edge, at about two to four pixels at sheet resolution. The bow optic is the strongest prism on the ship: at rest its white core carries a visible spectral fan at the optic's edge, and the full prism lance is that fan at firing strength (the game's weapon colour).
 
 ## 2. CONCEPT pairs
 
@@ -38,20 +39,20 @@ There is no trim and there are no applied marks of any kind: no trim sheet, no d
 ## 5. Lights and glow
 
 - Stored light: the core glows deep inside the glass in the game's ithar engine colour, read from faction_looks.json. The stack multiplies the core's show strength by glass depth, so the light reads dimmed and deep (about 0.60 to 0.70 of threshold at the surface), never as a bare bulb.
-- The bow optic at rest is a clear lens with a faint gleam (core about 0.78, just under threshold); the prism lance at full strength is the game's weapon colour when firing. The rainbow fringe rides the optic's cut edge.
+- The bow optic at rest is a clear lens with a visible prism fan at its edge (core about 0.78, just under threshold, spectral split at low intensity); the prism lance at full strength is the game's weapon colour when firing. The rainbow fringe rides the optic's cut edge, wider and stronger than elsewhere.
 - The stern optic is a soft white bloom at about 0.72, diffuse, no flame (guide).
 - No running lights: the stored light is the ship's light, and it is structural, not applied.
 
 ## 6. Camera 170 read
 
-One silhouette: a leaf of cut glass on a silver spine. One main colour: silver, the lightest hull in the game, held to the value rule above so it reads silver and never white: at the battle lift, the hull's median pixel sits in the silver and glass pairs' band, around #9d9c9e, never at #f4f3f3. One accent light: the stored light glowing deep inside. The fringe is a close-up bonus and is not expected to read at 170.
+One silhouette: a leaf of cut glass on a silver spine. One main colour: silver, the lightest hull in the game, held to the value rule above so it reads silver and never white: at the battle lift, the hull's median pixel sits in the silver and glass pairs' band, around #9d9c9e, never at #f4f3f3. One accent light: the stored light glowing deep inside, with the prism sheen riding the curves where the light leaves the glass. The fringe itself is a close-up bonus and is not expected to read at 170.
 
 Checks for the builder: surface check at stage 5; camera 170 read with only the CONCEPT pairs and the stored light, nothing else, to prove the silhouette carries it; value cap audit (glass output never above #d2d1d2 pre-conversion); rim flare probe at the .30 floor before any full paint; emissive audit.
 
 ## 7. NOT ADOPTED
 
 - G15's brass fittings (filtered mean #8c714d, about 3.2 percent of the picture): rejected. The guide says polished silver, and R196 forbids the brackets and mounts the brass belongs to.
-- G15's coloured panes (green, violet, amber fills, about 5 percent of pixels): rejected. The guide says clear glass with a rainbow fringe on cut edges; the colour lives on the edge, never as a pane fill.
+- G15's coloured panes (green, violet, amber fills, about 5 percent of pixels): rejected as fills. The guide says clear glass with a rainbow fringe on cut edges; the colour lives on the edge and in the prism wash, never as a full-strength pane fill. (Ryan's Nov 14, 2026 ruling asked for more rainbow and prism, and sections 1 and 5 carry that as fringe strength and dispersion, not as pane colour.)
 - Panels, seams, rivets, a trim sheet, decals: rejected by R243 and R196.
 - #f4f3f3 and #fcfcfb as surface tones: specular catches, not albedo; see the value cap.
 - Rust, smoke, flame, wings, petals, sails, crystal shapes: rejected by the guide.

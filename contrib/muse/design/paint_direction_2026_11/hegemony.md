@@ -1,6 +1,6 @@
 # Hegemony Navy: paint direction (issue 689, R243)
 
-Status: direction for Ryan's yes or no at the swatch review. No stack is built from this page until he rules.
+Status: direction for Ryan's yes or no at the swatch review. No stack is built from this page until he rules. RULED Nov 14, 2026: approved (amendments, where any, are in summary.md).
 Ruling answered: FINDINGS R243 (Ryan, Nov 13, 2026): "Hegemony also pretty rigid and clean." Hull order follows lore: a pale wedge with a line of blue light, machined, modular, horizontal, a well-kept navy that is never rusty (docs/playbooks/factions.md; R204). Reference picture: H10 (contrib/muse/design/concept_round7_2026_11/hegemony_H10_sheet.jpg), shape settled, style not reached, so its colours are sampled and its rendering is not copied.
 Form: docs/ship_pipeline/RECIPE.md, "The paint stack for sheet ships". CONCEPT pairs are (dark, light) sRGB show-tones; the stack divides by LIGHT_GAIN 1.45 and the battle lift read from godot/render/look.gd. No lift number is stated on this page. Glow colours live in godot/fx/faction_looks.json and are read by the stack, never copied here.
 Council: blind Rey, Qwen and Flash legs chaired (DeepSeek covered Sunward only); Grok's seat empty (bot wall). Where the legs split, the summary file records the chair's call.
@@ -9,7 +9,7 @@ Council: blind Rey, Qwen and Flash legs chaired (DeepSeek covered Sunward only);
 
 The even grid IS the direction. Hegemony panels are flush rectangles in two identical module sizes, repeated across the whole fleet, with straight seams and no variation a sister ship would not share. patch_warp is 0 and the stack carries an R243 comment saying the even grid is deliberate, so nobody "fixes" it into warp later.
 
-One addition the plain grid cannot say on its own: the module joints. Where hull sections butt and where the twin rails meet the hull, a seamline zone (the module band) carries a double-width seam (about three times patch_seam), a deeper seam_dark .96 and an AO-driven recess, so the ship reads as assembled modules rather than one slab at mid range. The band is structure, not ornament: it sits only where the ship genuinely comes apart. (One leg flagged that Ryan might read any band as ornament, which the guide forbids; the question is carried to the summary for his ruling at the review.)
+One addition the plain grid cannot say on its own: the module joints. Where hull sections butt and where the twin rails meet the hull, a seamline zone (the module band) carries a double-width seam (about three times patch_seam), a deeper seam_dark .96 and an AO-driven recess, so the ship reads as assembled modules rather than one slab at mid range. The band is structure, not ornament: it sits only where the ship genuinely comes apart. (One leg flagged that the band might read as ornament, which the guide forbids; Ryan ruled at the swatch review, Nov 14, 2026, that it does not read as ornament. The band stands.)
 
 LAYERS (Hegemony):
 
@@ -34,7 +34,7 @@ Sampled from H10 by the chair (k-means, 9 clusters, background excluded by corne
 - nozzle (rectangular nozzle housings): ((33,43,59),(72,80,94)), hex #212b3b / #48505e.
 - liner (interior): ((10,14,22),(21,29,43)), hex #0a0e16 / #151d2b, dark with a faint cold tint. The core keeps its light.
 
-The value question, settled: the guide's words say "pale grey", and the H10 sample is a steel-blue grey whose main clusters run #212b3b to #48505e, darker than the words. The concept governs (the issue brief samples hexes from the concepts), and the fleet reads pale beside Sunward's black iron and Eclipse's violet-black, which is the comparison the guide's sentence lives in. The cap that keeps this honest: plates are never brightened past #626d7d (the trim pair's light end). The lit cluster #888f9f is a light catch and a wear tone, never a plate tone. If Ryan wants the fleet visibly lighter than the concept, that is his call at the review and it departs from the sample; the summary lists it.
+The value question, settled: the guide's words say "pale grey", and the H10 sample is a steel-blue grey whose main clusters run #212b3b to #48505e, darker than the words. The concept governs (the issue brief samples hexes from the concepts), and the fleet reads pale beside Sunward's black iron and Eclipse's violet-black, which is the comparison the guide's sentence lives in. The cap that keeps this honest: plates are never brightened past #626d7d (the trim pair's light end). The lit cluster #888f9f is a light catch and a wear tone, never a plate tone. Ryan confirmed the value call at the swatch review (Nov 14, 2026): the sample holds, no deliberate lightening.
 
 ## 3. ZONES notes
 

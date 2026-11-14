@@ -1,6 +1,6 @@
 # Sunward Crusade: paint direction (issue 689, R243)
 
-Status: direction for Ryan's yes or no at the swatch review. No stack is built from this page until he rules.
+Status: direction for Ryan's yes or no at the swatch review. No stack is built from this page until he rules. RULED Nov 14, 2026: approved (amendments, where any, are in summary.md).
 Ruling answered: FINDINGS R243 (Ryan, Nov 13, 2026): "Sunward could have more triangle sleek panels." Hull order follows lore: a black iron blade with burning spires (docs/playbooks/factions.md). Reference picture: S8 (contrib/codex/design/concept_round5_2026_11/voidsworn_S8_sheet.jpg), shape settled, style not reached, so its colours are sampled and its plate grid is not copied.
 Form: docs/ship_pipeline/RECIPE.md, "The paint stack for sheet ships". CONCEPT pairs are (dark, light) sRGB show-tones; the stack divides by LIGHT_GAIN 1.45 and the battle lift read from godot/render/look.gd. No lift number is stated on this page. Glow colours live in godot/fx/faction_looks.json and are read by the stack, never copied here.
 Council: blind Rey, DeepSeek, Qwen and Flash legs chaired; Grok's seat empty (bot wall). Where the legs split, the summary file records the chair's call.
@@ -57,12 +57,12 @@ Sampled from S8 by the chair (k-means, 9 clusters, background excluded by corner
 
 - Ember zones: spire bars, engine bell throats, window slits. Colours are the game's (faction_looks.json voidsworn engine and accent), read by the stack.
 - Thresholds: bell throats sit at about 0.75 of the game's 0.8 glow threshold, deep-set so the bloom stays contained; spire bar tips reach about 0.78, just under the threshold, with the gradient running deep #a94911 at the root to hot #fcab3b at the tip. The spires shed the reactor's heat (guide), so they are the ship's signature glow, but nothing on the intact ship crosses into bloom.
-- Frost markings are not emissive. There are no separate running lights: the ember line is the light. (One leg proposed small frost-white running points on the blade's edge; the chair did not adopt it, because a second, cool accent breaks the one-accent read. It is listed in the summary as a question for Ryan.)
+- Frost markings are not emissive, but the blade's edge carries small frost-white running points (game accent colour, read from faction_looks.json) at about 0.72 of threshold: sparse, small, the ship's only cool light. This was Qwen's proposal in its leg; the chair had sided with markings only, and Ryan ruled for Qwen's version at the swatch review (Nov 14, 2026). The ember line stays the accent at camera 170; the frost points are a close and mid-range detail, never a second line of light.
 - Never blue light (guide). The builder verifies no Sunward emissive has blue over green.
 
 ## 6. Camera 170 read
 
-One silhouette: a long narrow dagger with tall spires. One main colour: black iron, hull median inside the iron pair's band. One accent light: the ember line along the spine and the stern bells. The triangular order, the rivet lines and the frost marks are close-up bonuses; if the triangles only show up close, the identity still holds, because the panel order is the surface's lore, not the silhouette.
+One silhouette: a long narrow dagger with tall spires. One main colour: black iron, hull median inside the iron pair's band. One accent light: the ember line along the spine and the stern bells; the frost running points are too small and sparse to compete at 170 and stay a closer-range detail. The triangular order, the rivet lines and the frost marks are close-up bonuses; if the triangles only show up close, the identity still holds, because the panel order is the surface's lore, not the silhouette.
 
 Checks for the builder: surface check at stage 5; camera 170 read; emissive audit (nothing over threshold on the intact ship, no blue over green); frost coverage audit against the 6 percent cap; a lift test in the form of the Chorus one (no hue swing after the battle lift).
 
