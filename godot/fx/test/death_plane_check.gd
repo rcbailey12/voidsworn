@@ -69,7 +69,9 @@ func _run() -> void:
 						if node is RigidBody3D:
 							_check(node.axis_lock_linear_y, "physics cannot push wrecks below the board")
 			_check(s.has_meta("death_hidden"), "FX replaces the live hull")
-			_check(fx.dstate.wrecks.size() == 1, "one independent aftermath per ship")
+			_check(fx.dstate.wrecks.size() == (0 if s.squadron else 1), "ships leave an independent wreck; wings leave none")
+			if s.squadron:
+				_check(fx.dstate.debris.is_empty(), "a wing spark leaves no physical shards")
 			if not fx.dstate.wrecks.is_empty():
 				var w: Dictionary = fx.dstate.wrecks[0]
 				if spec[0] == "chorus":

@@ -1,0 +1,382 @@
+{
+  "cruiser": [
+    {
+      "life": null,
+      "name": "fx_smoke",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_glow",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_streaks",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_rings",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_ribbons",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_chips",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_distort",
+      "px": null
+    },
+    {
+      "life": 0.2,
+      "name": "fx_baked_flash",
+      "px": 302.0
+    }
+  ],
+  "cruiser_reduced": [
+    {
+      "life": null,
+      "name": "fx_smoke",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_glow",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_streaks",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_rings",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_ribbons",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_chips",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_distort",
+      "px": null
+    },
+    {
+      "life": 0.6,
+      "name": "fx_baked_flash",
+      "px": 302.0
+    }
+  ],
+  "destroyer": [
+    {
+      "life": null,
+      "name": "fx_smoke",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_glow",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_streaks",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_rings",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_ribbons",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_chips",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_distort",
+      "px": null
+    },
+    {
+      "life": 0.19,
+      "name": "fx_baked_flash",
+      "px": 255.0
+    }
+  ],
+  "destroyer_body": [
+    {
+      "life": 1.0,
+      "name": "fx_beat_impact",
+      "px": 218.0
+    }
+  ],
+  "destroyer_reduced": [
+    {
+      "life": null,
+      "name": "fx_smoke",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_glow",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_streaks",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_rings",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_ribbons",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_chips",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_distort",
+      "px": null
+    },
+    {
+      "life": 0.575,
+      "name": "fx_baked_flash",
+      "px": 255.0
+    }
+  ],
+  "frigate": [
+    {
+      "life": null,
+      "name": "fx_smoke",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_glow",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_streaks",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_rings",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_ribbons",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_chips",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_distort",
+      "px": null
+    },
+    {
+      "life": 0.18,
+      "name": "fx_baked_flash",
+      "px": 216.0
+    }
+  ],
+  "frigate_body": [
+    {
+      "life": 1.0,
+      "name": "fx_beat_impact",
+      "px": 180.0
+    }
+  ],
+  "frigate_reduced": [
+    {
+      "life": null,
+      "name": "fx_smoke",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_glow",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_streaks",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_rings",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_ribbons",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_chips",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_distort",
+      "px": null
+    },
+    {
+      "life": 0.55,
+      "name": "fx_baked_flash",
+      "px": 216.0
+    }
+  ],
+  "wing": [
+    {
+      "life": null,
+      "name": "fx_smoke",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_glow",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_streaks",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_rings",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_ribbons",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_chips",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_distort",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_trail_wing",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "@MeshInstance3D@207",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "@MeshInstance3D@208",
+      "px": null
+    },
+    {
+      "life": 0.0166666666666667,
+      "name": "fx_beat_flash",
+      "px": 28.0
+    }
+  ],
+  "wing_reduced": [
+    {
+      "life": null,
+      "name": "fx_smoke",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_glow",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_streaks",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_rings",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_ribbons",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_chips",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_distort",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "fx_trail_wing",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "@MeshInstance3D@409",
+      "px": null
+    },
+    {
+      "life": null,
+      "name": "@MeshInstance3D@410",
+      "px": null
+    },
+    {
+      "life": 0.2,
+      "name": "fx_beat_flash",
+      "px": 28.0
+    }
+  ]
+}

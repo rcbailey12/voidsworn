@@ -70,6 +70,9 @@ effect: a weapon hit, a shield response, a trail, a death.
 - Deaths are faint in every route (run 3 of issue 353): the route is not the cure. Deaths need their three beats, issue 366.
 - Effects that float: the death vent sat 6.7 units off the hull until PR 404 rooted it with the hull ray. Anything that
   spawns near a ship uses the ray or a hard point.
+- Small death spin (issue 463): `s.xf()` already follows the spinning mesh. Applying the spin again moves the jet off
+  its plating. Keep the hull's analysis pose from the kill frame and apply the spin once; record that frame with each
+  trail sample. A one-frame wing spark starts on the next effects step so it cannot expire before its first draw.
 - One GPU job at a time on the PC, and the queue is single file: a long bake holds every later job.
 - Editor .import files beside baked pictures are churn: commit them only when the game needs them to load.
 
@@ -78,6 +81,9 @@ effect: a weapon hit, a shield response, a trail, a death.
 - Death puffs on the plating, issue 354, PR 404: a check that fails on main first, the repair, the before and after strip at
   cameras 170 and 26.
 - Explosion routes, issues 353 and 419: two bake routes on one sheet, Ryan's pick of route B with the hot core.
+- Small deaths, issue 463: `godot/bench/look_moments_deaths_small.json` captures the wing, frigate, destroyer and cruiser
+  with normal and reduced flashes at all three cameras. `godot/bench/death_small_measure.gd` isolates the production
+  pictures at 60 Hz for pixel and lifetime measurements.
 
 ## 7. Job template (one effect to its row)
 
