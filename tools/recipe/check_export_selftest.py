@@ -36,14 +36,16 @@ def write_glb(path, g, blob):
         f.write(struct.pack('<4sII', b'glTF', 2, 12 + 8 + len(js) + 8 + len(blob))); f.write(struct.pack('<I4s', len(js), b'JSON')); f.write(js)
         f.write(struct.pack('<I4s', len(blob), b'BIN\0')); f.write(blob)
 
-def first(g, pre):      # the first such node on the ship node itself (a turret's muzzles are in their turret's frame)
-    kids = set(next(n for n in g['nodes'] if n.get('name') == code).get('children', []))
-    n = next((n for i, n in enumerate(g['nodes']) if str(n.get('name', '')).startswith(pre) and i in kids), None)
-    if n is None:       # issue 633: a ship whose every gun is a turret (the A18 frigate's one autocannon) has its weapon points
-        # only under its turret nodes; the case then breaks the first turret's muzzle, read through its turret as the game does
-        under = {c for i in kids for c in g['nodes'][i].get('children', [])}
-        n = next(n for i, n in enumerate(g['nodes']) if str(n.get('name', '')).startswith(pre) and i in under)
-    return n
+def first(g, pre):      # the first such node on the ship node itself, else any depth under it (issue 633, issue 661)
+    root = next(i for i, n in enumerate(g['nodes']) if n.get('name') == code)
+    q, seen = list(g['nodes'][root].get('children', [])), set()
+    while q:            # breadth first: the ship node's own points first, then every depth below them; a turret's muzzle is
+        i = q.pop(0)    # in its turret's frame, and a muzzle nested under a turning mesh is a great-grandchild
+        if i in seen: continue
+        seen.add(i)
+        if str(g['nodes'][i].get('name', '')).startswith(pre): return g['nodes'][i]
+        q.extend(g['nodes'][i].get('children', []))
+    return None
 def length(g):          # the x extent of the ship mesh, from the POSITION accessors' min and max (glTF requires them)
     root = next(n for n in g['nodes'] if n.get('name') == code); acc = [g['accessors'][pr['attributes']['POSITION']] for pr in g['meshes'][root['mesh']]['primitives']]
     return max(a['max'][0] for a in acc) - min(a['min'][0] for a in acc)
@@ -58,7 +60,15 @@ def top(g):             # the y top of the ship mesh, from the same accessors
     root = next(n for n in g['nodes'] if n.get('name') == code)
     return max(g['accessors'][pr['attributes']['POSITION']]['max'][1] for pr in g['meshes'][root['mesh']]['primitives'])
 def off_mesh(g):
-    n = first(g, 'hp_w'); t = n['translation']; d = .05 * length(g); n['translation'] = [t[0], max(t[1], top(g)) + d, t[2] + (d if t[2] > 0 else -d)]
+    n = first(g, 'hp_w'); d = .05 * length(g)
+    if in_turret(g, n):     # issue 661: a turret's muzzle is in its turret's frame, so displace it in the ship (world) frame
+        # first, then re-express the target in the node's parent frame; the numbers the comment names then hold for any turn
+        import numpy as np
+        W, par = CE.world_matrices(g); i = g['nodes'].index(n); p = W[i][:3, 3]
+        target = np.array([p[0], max(p[1], top(g)) + d, p[2] + (d if p[2] > 0 else -d), 1.0])
+        n['translation'] = [float(v) for v in (np.linalg.inv(W[par[i]]) @ target)[:3]]
+    else:
+        t = n['translation']; n['translation'] = [t[0], max(t[1], top(g)) + d, t[2] + (d if t[2] > 0 else -d)]
 def in_turret(g, n):    # issue 633: the point is a turret's muzzle (its frame is the turret's, not the ship node's)
     root = next(i for i, m in enumerate(g['nodes']) if m.get('name') == code)
     return g['nodes'].index(n) not in set(g['nodes'][root].get('children', []))
