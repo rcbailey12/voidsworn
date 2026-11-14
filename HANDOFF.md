@@ -4,6 +4,8 @@
 
 **Rules versus one-off calls.** Only Ryan's words make a standing rule (FINDINGS quotes them). Board choices made for one day or one job (effort levels, caps, job order, which seat took a job, wrappers like RUN_RETRY.bat) are operating notes in LOOP.md, not rules: change them freely when the situation changes. When a FINDINGS row extends Ryan's words beyond what he named, it says so and asks him.
 
+**First clean-up for the new Board (R251, RULEBOOK 0.9):** move HANDOFF sections 0c, 0b and 0a to docs/archive; roll LOOP.md LATEST lines before Nov 14 into one dated summary; mark superseded FINDINGS rows (R163 item 2 by R246; the Nov 12 Kimi 30 minute figure by R250). Then let Muse check the result for conflicts.
+
 **What to trust.** This section, FINDINGS (R236 to R250 are the newest) and LOOP.md's Nov 14 LATEST lines and its "Nov 14 update" in The seats are live. Sections 0c, 0b and 0a below, and LATEST lines before Nov 13, are history: where they differ from this section, this section wins. Older seat text in RULEBOOK 2.6 is overridden by its Nov 14 paragraph (PR on branch opus/issue-545, with the PROGRAM.md shield fix; merge it first). Nothing under docs/archive/ is followed.
 
 A fresh Board thread starts here after the Claude plan reset (about 18:00 CST Nov 14). The last Board thread (Nov 13 08:30 to Nov 14 17:10) ran at 2 percent of the weekly plan from Nov 14 morning, so it queued work and merged only small things. Everything below is in LOOP.md's LATEST lines (Nov 14) and FINDINGS R236 to R249.
