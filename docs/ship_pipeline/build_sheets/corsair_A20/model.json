@@ -1,0 +1,3550 @@
+{
+ "code": "corsair_A20",
+ "name": "Hullbreaker hulk-carrier (the Den)",
+ "faction": "Ashfall Hullbreakers (corsair)",
+ "cls": "Carrier",
+ "length": 16.5,
+ "game": "data.js c_hulk (cls 'Carrier'); length from godot/render/hull_table.gd CLS_LEN['Carrier'] = 16.5",
+ "beauty": "contrib/muse/design/class_family_corsair_2026_11/corsair_A20_beauty.jpg",
+ "model_length": 16.505,
+ "x_tip": 8.259,
+ "lo": [
+  -8.246,
+  -3.598,
+  -1.797
+ ],
+ "hi": [
+  8.259,
+  3.501,
+  2.76
+ ],
+ "views": {
+  "side": {
+   "cam": "side",
+   "res": [
+    1480,
+    525
+   ],
+   "px_per_unit": 80,
+   "right": [
+    -1,
+    0,
+    0
+   ],
+   "up": [
+    0,
+    0,
+    1
+   ],
+   "centre": [
+    0.006804943084716797,
+    -0.048804521560668945,
+    0.48163914680480957
+   ],
+   "w_units": 18.50462818145752,
+   "h_units": 6.5567216873168945
+  },
+  "cutaway": {
+   "cam": "cutaway",
+   "res": [
+    1480,
+    525
+   ],
+   "px_per_unit": 80,
+   "right": [
+    -1,
+    0,
+    0
+   ],
+   "up": [
+    0,
+    0,
+    1
+   ],
+   "centre": [
+    0.006804943084716797,
+    0,
+    0.48163914680480957
+   ],
+   "w_units": 18.50462818145752,
+   "h_units": 6.5567216873168945
+  },
+  "top": {
+   "cam": "top",
+   "res": [
+    728,
+    1480
+   ],
+   "px_per_unit": 80,
+   "right": [
+    0,
+    -1,
+    0
+   ],
+   "up": [
+    1,
+    0,
+    0
+   ],
+   "centre": [
+    0.006804943084716797,
+    -0.048804521560668945,
+    0.48163914680480957
+   ],
+   "w_units": 9.099110126495361,
+   "h_units": 18.50462818145752
+  },
+  "underside": {
+   "cam": "underside",
+   "res": [
+    728,
+    1480
+   ],
+   "px_per_unit": 80,
+   "right": [
+    0,
+    1,
+    0
+   ],
+   "up": [
+    1,
+    0,
+    0
+   ],
+   "centre": [
+    0.006804943084716797,
+    -0.048804521560668945,
+    0.48163914680480957
+   ],
+   "w_units": 9.099110126495361,
+   "h_units": 18.50462818145752
+  },
+  "bow": {
+   "cam": "bow",
+   "res": [
+    728,
+    525
+   ],
+   "px_per_unit": 80,
+   "right": [
+    0,
+    1,
+    0
+   ],
+   "up": [
+    0,
+    0,
+    1
+   ],
+   "centre": [
+    0.006804943084716797,
+    -0.048804521560668945,
+    0.48163914680480957
+   ],
+   "w_units": 9.099110126495361,
+   "h_units": 6.5567216873168945
+  },
+  "stern": {
+   "cam": "stern",
+   "res": [
+    728,
+    525
+   ],
+   "px_per_unit": 80,
+   "right": [
+    0,
+    -1,
+    0
+   ],
+   "up": [
+    0,
+    0,
+    1
+   ],
+   "centre": [
+    0.006804943084716797,
+    -0.048804521560668945,
+    0.48163914680480957
+   ],
+   "w_units": 9.099110126495361,
+   "h_units": 6.5567216873168945
+  }
+ },
+ "features": [
+  {
+   "id": "HB1",
+   "kind": "hatchbox",
+   "what": "framed deck box 0.6 x 0.5",
+   "count": 1,
+   "pos": [
+    4.6,
+    -1.3,
+    1.34
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "salvage locker bolted down on the deck",
+   "inv": [
+    "salvage"
+   ],
+   "station": 22.2
+  },
+  {
+   "id": "HB2",
+   "kind": "hatchbox",
+   "what": "framed deck box 0.5 x 0.5",
+   "count": 1,
+   "pos": [
+    2.7,
+    0.0,
+    1.34
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "salvage locker bolted down on the deck",
+   "inv": [
+    "salvage"
+   ],
+   "station": 33.7
+  },
+  {
+   "id": "HB3",
+   "kind": "hatchbox",
+   "what": "framed deck box 0.7 x 0.6",
+   "count": 1,
+   "pos": [
+    -1.0,
+    -1.15,
+    1.4
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "salvage locker bolted down on the deck",
+   "inv": [
+    "salvage"
+   ],
+   "station": 56.1
+  },
+  {
+   "id": "HB4",
+   "kind": "hatchbox",
+   "what": "framed deck box 0.5 x 0.4",
+   "count": 1,
+   "pos": [
+    -2.2,
+    -0.75,
+    1.4
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "salvage locker bolted down on the deck",
+   "inv": [
+    "salvage"
+   ],
+   "station": 63.4
+  },
+  {
+   "id": "HB5",
+   "kind": "hatchbox",
+   "what": "framed deck box 0.6 x 0.5",
+   "count": 1,
+   "pos": [
+    -3.9,
+    1.1,
+    1.36
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "salvage locker bolted down on the deck",
+   "inv": [
+    "salvage"
+   ],
+   "station": 73.7
+  },
+  {
+   "id": "HB6",
+   "kind": "hatchbox",
+   "what": "framed deck box 0.6 x 0.5",
+   "count": 1,
+   "pos": [
+    -6.3,
+    -0.9,
+    1.36
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "salvage locker bolted down on the deck",
+   "inv": [
+    "salvage"
+   ],
+   "station": 88.2
+  },
+  {
+   "id": "HS1",
+   "kind": "hatch",
+   "what": "round hatch 0.5",
+   "count": 1,
+   "pos": [
+    4.9,
+    1.3,
+    1.002
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "round deck hatch on the port deck behind the bow",
+   "inv": [
+    "deck_hatches"
+   ],
+   "station": 20.4
+  },
+  {
+   "id": "HS2",
+   "kind": "hatch",
+   "what": "square hatch 0.6",
+   "count": 1,
+   "pos": [
+    0.1,
+    1.55,
+    1.002
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "square deck hatch over the hangar decks",
+   "inv": [
+    "deck_hatches"
+   ],
+   "station": 49.4
+  },
+  {
+   "id": "VS0",
+   "kind": "vent",
+   "what": "louvre panel 0.6 x 0.4",
+   "count": 1,
+   "pos": [
+    -4.6,
+    -3.337,
+    0.0
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "engine room louvre mounted on the sloping starboard armour",
+   "inv": [
+    "vents"
+   ],
+   "station": 77.9
+  },
+  {
+   "id": "VS1",
+   "kind": "vent",
+   "what": "louvre panel 0.6 x 0.4",
+   "count": 1,
+   "pos": [
+    -5.8,
+    -3.205,
+    -0.15
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "engine room louvre mounted on the sloping starboard armour",
+   "inv": [
+    "vents"
+   ],
+   "station": 85.2
+  },
+  {
+   "id": "AN1",
+   "kind": "antenna",
+   "what": "antenna array, 1.0 tall, 3 whips",
+   "count": 1,
+   "pos": [
+    -6.6,
+    2.76,
+    1.0
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "comms array on the aft deck, down beside the aft deck tier: calls the squadrons home",
+   "inv": [
+    "antenna"
+   ],
+   "station": 90.0
+  },
+  {
+   "id": "H1",
+   "kind": "hangar",
+   "what": "open hangar mouth 1.36 wide, 1.72 high, 3.0 deep, in the bow face",
+   "count": 1,
+   "pos": [
+    5.7,
+    2.4,
+    -0.06
+   ],
+   "aim": [
+    0.0,
+    0.0
+   ],
+   "src": "picture",
+   "note": "port mouth in the bow face beside the bow block: a dark deep bay, worn torn plate rim, dark launch rails, beams and ribs, three warm deck lights, an inner blast door",
+   "inv": [
+    "hangars"
+   ],
+   "station": 15.5
+  },
+  {
+   "id": "H2",
+   "kind": "hangar",
+   "what": "open hangar mouth 1.32 wide, 1.72 high, 3.0 deep, in the bow face",
+   "count": 1,
+   "pos": [
+    5.7,
+    -2.38,
+    -0.06
+   ],
+   "aim": [
+    0.0,
+    0.0
+   ],
+   "src": "picture",
+   "note": "starboard mouth in the bow face beside the bow block: a dark deep bay, worn torn plate rim, dark launch rails, beams and ribs, three warm deck lights, an inner blast door",
+   "inv": [
+    "hangars"
+   ],
+   "station": 15.5
+  },
+  {
+   "id": "C1",
+   "kind": "craft",
+   "what": "cobbled fighter, 1.6 long",
+   "count": 1,
+   "pos": [
+    5.2,
+    2.35,
+    -0.92
+   ],
+   "aim": [
+    0.0,
+    0.0
+   ],
+   "src": "picture",
+   "note": "nosing out of the port mouth",
+   "inv": [
+    "craft"
+   ],
+   "station": 18.5
+  },
+  {
+   "id": "C2",
+   "kind": "craft",
+   "what": "cobbled fighter, 1.6 long",
+   "count": 1,
+   "pos": [
+    4.05,
+    -2.43,
+    -0.92
+   ],
+   "aim": [
+    0.0,
+    0.0
+   ],
+   "src": "picture",
+   "note": "parked deeper in the starboard mouth, half refitted",
+   "inv": [
+    "craft"
+   ],
+   "station": 25.5
+  },
+  {
+   "id": "I1",
+   "kind": "intake",
+   "what": "intake tube, 1.1 across, 2.2 deep",
+   "count": 1,
+   "pos": [
+    8.13,
+    0.73,
+    -0.12
+   ],
+   "aim": [
+    0.0,
+    0.0
+   ],
+   "src": "picture",
+   "note": "port intake: the family's face (designs.md \"two low intake tubes\")",
+   "inv": [
+    "intakes"
+   ],
+   "station": 0.8
+  },
+  {
+   "id": "I2",
+   "kind": "intake",
+   "what": "intake tube, 1.1 across, 2.2 deep",
+   "count": 1,
+   "pos": [
+    8.13,
+    -0.73,
+    -0.12
+   ],
+   "aim": [
+    0.0,
+    0.0
+   ],
+   "src": "picture",
+   "note": "starboard intake: the family's face (designs.md \"two low intake tubes\")",
+   "inv": [
+    "intakes"
+   ],
+   "station": 0.8
+  },
+  {
+   "id": "I3",
+   "kind": "intake",
+   "what": "wake-sniffer scoop with a grille, 0.2 across, 0.4 deep",
+   "count": 1,
+   "pos": [
+    8.1,
+    0.0,
+    -0.86
+   ],
+   "aim": [
+    0.0,
+    0.0
+   ],
+   "src": "picture",
+   "note": "chin scoop (designs.md)",
+   "inv": [
+    "scoop"
+   ],
+   "station": 1.0
+  },
+  {
+   "id": "J1",
+   "kind": "claw",
+   "what": "grabber arm, 2 segments, knuckles, rams, forked pincer",
+   "count": 1,
+   "pos": [
+    6.8,
+    0.68,
+    -1.42
+   ],
+   "aim": [
+    0.0,
+    0.0
+   ],
+   "src": "picture",
+   "note": "port grabber under the bow block",
+   "tip": [
+    8.438,
+    0.874,
+    -1.359
+   ],
+   "inv": [
+    "grabbers"
+   ],
+   "station": 8.8
+  },
+  {
+   "id": "J2",
+   "kind": "claw",
+   "what": "grabber arm, 2 segments, knuckles, rams, forked pincer",
+   "count": 1,
+   "pos": [
+    6.8,
+    -0.68,
+    -1.42
+   ],
+   "aim": [
+    0.0,
+    0.0
+   ],
+   "src": "picture",
+   "note": "starboard grabber under the bow block",
+   "tip": [
+    8.438,
+    -0.874,
+    -1.359
+   ],
+   "inv": [
+    "grabbers"
+   ],
+   "station": 8.8
+  },
+  {
+   "id": "J3",
+   "kind": "claw",
+   "what": "grabber arm, 2 segments, knuckles, rams, forked pincer",
+   "count": 1,
+   "pos": [
+    -6.85,
+    2.02,
+    -1.48
+   ],
+   "aim": [
+    0.0,
+    0.0
+   ],
+   "src": "picture",
+   "note": "port grapple arm, folded flat under the stern quarter",
+   "tip": [
+    -3.999,
+    2.061,
+    -1.481
+   ],
+   "inv": [
+    "grapples"
+   ],
+   "station": 91.5
+  },
+  {
+   "id": "J4",
+   "kind": "claw",
+   "what": "grabber arm, 2 segments, knuckles, rams, forked pincer",
+   "count": 1,
+   "pos": [
+    -6.85,
+    -2.02,
+    -1.48
+   ],
+   "aim": [
+    0.0,
+    0.0
+   ],
+   "src": "picture",
+   "note": "starboard grapple arm, folded flat under the stern quarter",
+   "tip": [
+    -3.999,
+    -2.061,
+    -1.481
+   ],
+   "inv": [
+    "grapples"
+   ],
+   "station": 91.5
+  },
+  {
+   "id": "D1",
+   "kind": "dish",
+   "what": "listening dish, 1.2 across",
+   "count": 1,
+   "pos": [
+    5.2,
+    2.4,
+    1.0
+   ],
+   "aim": [
+    30,
+    18
+   ],
+   "src": "picture",
+   "note": "the larger dish on the port shoulder, over the port mouth",
+   "inv": [
+    "dishes"
+   ],
+   "station": 18.5
+  },
+  {
+   "id": "D2",
+   "kind": "dish",
+   "what": "listening dish, 0.8 across",
+   "count": 1,
+   "pos": [
+    5.2,
+    -2.35,
+    1.0
+   ],
+   "aim": [
+    -35,
+    15
+   ],
+   "src": "picture",
+   "note": "the smaller dish on the starboard shoulder, over the starboard mouth",
+   "inv": [
+    "dishes"
+   ],
+   "station": 18.5
+  },
+  {
+   "id": "SB1",
+   "kind": "spare",
+   "what": "spare engine bell, 1.0 across, lying across the deck in a cradle",
+   "count": 1,
+   "pos": [
+    1.45,
+    0.55,
+    1.54
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "bolted down flat for field repairs (designs.md); cold, no glow",
+   "inv": [
+    "spare_bell"
+   ],
+   "station": 41.3
+  },
+  {
+   "id": "T1",
+   "kind": "gun",
+   "what": "twin turret",
+   "count": 2,
+   "pos": [
+    3.6,
+    -0.7,
+    2.05
+   ],
+   "aim": [
+    0,
+    6
+   ],
+   "slot": "T",
+   "weapon": "turret",
+   "src": "picture",
+   "note": "fore dorsal turret on a barbette on the fore deck tier, all round, firing over the dishes",
+   "muzzle": [
+    [
+     5.393,
+     -0.88,
+     2.583
+    ],
+    [
+     5.393,
+     -0.52,
+     2.583
+    ]
+   ],
+   "normal": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "inv": [
+    "turrets"
+   ],
+   "station": 28.2
+  },
+  {
+   "id": "T2",
+   "kind": "gun",
+   "what": "twin turret",
+   "count": 2,
+   "pos": [
+    -4.9,
+    0.1,
+    1.92
+   ],
+   "aim": [
+    0,
+    6
+   ],
+   "slot": "T",
+   "weapon": "turret",
+   "src": "picture",
+   "note": "aft dorsal turret on a barbette on the aft deck tier, all round, firing over the antenna (designs.md's deck gun aft)",
+   "muzzle": [
+    [
+     -3.179,
+     -0.071,
+     2.428
+    ],
+    [
+     -3.179,
+     0.271,
+     2.428
+    ]
+   ],
+   "normal": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "inv": [
+    "turrets"
+   ],
+   "station": 79.7
+  },
+  {
+   "id": "E1",
+   "kind": "engine",
+   "what": "engine, bell 0.9 across",
+   "count": 1,
+   "pos": [
+    -8.23,
+    -2.1,
+    0.46
+   ],
+   "aim": [
+    180.0,
+    0.0
+   ],
+   "src": "picture",
+   "note": "stern bell",
+   "exit": [
+    -8.23,
+    -2.1,
+    0.46
+   ],
+   "radius": 0.43890000000000007,
+   "inv": [
+    "engines"
+   ],
+   "station": 99.9
+  },
+  {
+   "id": "E2",
+   "kind": "engine",
+   "what": "engine, bell 0.8 across",
+   "count": 1,
+   "pos": [
+    -8.23,
+    -1.06,
+    0.42
+   ],
+   "aim": [
+    180.0,
+    0.0
+   ],
+   "src": "picture",
+   "note": "stern bell",
+   "exit": [
+    -8.23,
+    -1.06,
+    0.42
+   ],
+   "radius": 0.38300000000000006,
+   "inv": [
+    "engines"
+   ],
+   "station": 99.9
+  },
+  {
+   "id": "E3",
+   "kind": "engine",
+   "what": "engine, bell 1.1 across",
+   "count": 1,
+   "pos": [
+    -8.23,
+    0.02,
+    0.44
+   ],
+   "aim": [
+    180.0,
+    0.0
+   ],
+   "src": "picture",
+   "note": "stern bell, the largest",
+   "exit": [
+    -8.23,
+    0.02,
+    0.44
+   ],
+   "radius": 0.54285,
+   "inv": [
+    "engines"
+   ],
+   "station": 99.9
+  },
+  {
+   "id": "E4",
+   "kind": "engine",
+   "what": "engine, bell 0.8 across",
+   "count": 1,
+   "pos": [
+    -8.23,
+    1.1,
+    0.4
+   ],
+   "aim": [
+    180.0,
+    0.0
+   ],
+   "src": "picture",
+   "note": "stern bell, in a violet Eclipse trophy housing",
+   "exit": [
+    -8.23,
+    1.1,
+    0.4
+   ],
+   "radius": 0.405,
+   "inv": [
+    "engines"
+   ],
+   "station": 99.9
+  },
+  {
+   "id": "E5",
+   "kind": "engine",
+   "what": "engine, bell 0.9 across",
+   "count": 1,
+   "pos": [
+    -8.23,
+    2.12,
+    0.48
+   ],
+   "aim": [
+    180.0,
+    0.0
+   ],
+   "src": "picture",
+   "note": "stern bell",
+   "exit": [
+    -8.23,
+    2.12,
+    0.48
+   ],
+   "radius": 0.4620000000000001,
+   "inv": [
+    "engines"
+   ],
+   "station": 99.9
+  },
+  {
+   "id": "Q1",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "pos": [
+    6.6,
+    1.61,
+    -0.6
+   ],
+   "aim": null,
+   "src": "designed",
+   "note": "bow",
+   "inv": [
+    "thrusters"
+   ],
+   "station": 10.1
+  },
+  {
+   "id": "Q2",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "pos": [
+    6.6,
+    -1.61,
+    -0.6
+   ],
+   "aim": null,
+   "src": "designed",
+   "note": "bow",
+   "inv": [
+    "thrusters"
+   ],
+   "station": 10.1
+  },
+  {
+   "id": "Q3",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "pos": [
+    -6.55,
+    3.19,
+    -0.1
+   ],
+   "aim": null,
+   "src": "designed",
+   "note": "stern",
+   "inv": [
+    "thrusters"
+   ],
+   "station": 89.7
+  },
+  {
+   "id": "Q4",
+   "kind": "thruster",
+   "what": "attitude thruster quad",
+   "count": 1,
+   "pos": [
+    -6.55,
+    -3.2,
+    -0.1
+   ],
+   "aim": null,
+   "src": "designed",
+   "note": "stern",
+   "inv": [
+    "thrusters"
+   ],
+   "station": 89.7
+  },
+  {
+   "id": "L0",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "pos": [
+    5.2,
+    3.21,
+    -0.45
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "",
+   "inv": [
+    "lamps"
+   ],
+   "station": 18.5
+  },
+  {
+   "id": "L1",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "pos": [
+    -6.15,
+    3.128,
+    -0.6
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "",
+   "inv": [
+    "lamps"
+   ],
+   "station": 87.3
+  },
+  {
+   "id": "L2",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "pos": [
+    7.0,
+    1.605,
+    0.3
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "",
+   "inv": [
+    "lamps"
+   ],
+   "station": 7.6
+  },
+  {
+   "id": "L3",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "pos": [
+    4.6,
+    -3.247,
+    -0.4
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "",
+   "inv": [
+    "lamps"
+   ],
+   "station": 22.2
+  },
+  {
+   "id": "L4",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "pos": [
+    1.4,
+    -3.26,
+    -0.55
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "",
+   "inv": [
+    "lamps"
+   ],
+   "station": 41.6
+  },
+  {
+   "id": "L5",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "pos": [
+    -2.75,
+    -3.389,
+    -0.35
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "",
+   "inv": [
+    "lamps"
+   ],
+   "station": 66.7
+  },
+  {
+   "id": "L6",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "pos": [
+    -5.2,
+    -3.179,
+    -0.55
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "",
+   "inv": [
+    "lamps"
+   ],
+   "station": 81.5
+  },
+  {
+   "id": "L7",
+   "kind": "lamp",
+   "what": "running light",
+   "count": 1,
+   "pos": [
+    7.0,
+    -1.605,
+    0.3
+   ],
+   "aim": null,
+   "src": "picture",
+   "note": "",
+   "inv": [
+    "lamps"
+   ],
+   "station": 7.6
+  }
+ ],
+ "masses": [
+  {
+   "name": "Base hull (faceted slab, recessed waist, core between bow mouths)",
+   "obj": "corsair_A20_hull",
+   "role": "soot and patched plate",
+   "src": "picture",
+   "note": "broad shoulder facets and lower chines; diagonal plan shoulders into a narrower waist (R244); forward of the mouths' back wall it is the core between the mouths",
+   "st": [
+    15.2,
+    95.2
+   ],
+   "y": [
+    -3.2,
+    3.2
+   ],
+   "z": [
+    -1.05,
+    1.0
+   ]
+  },
+  {
+   "name": "Bow block",
+   "obj": "A20_bowblock",
+   "role": "dark soot",
+   "src": "picture",
+   "note": "the bow block in front of the body, as tall as the slab and about half its beam: a housing for the two huge intake tubes (the beauty)",
+   "st": [
+    1.6,
+    17.9
+   ],
+   "y": [
+    -1.62,
+    1.62
+   ],
+   "z": [
+    -1.05,
+    0.9
+   ]
+  },
+  {
+   "name": "Hangar sill, port",
+   "obj": "A20_sill_H1",
+   "role": "soot",
+   "src": "picture",
+   "note": "the floor of the port mouth, the belly under it",
+   "st": [
+    15.5,
+    34.0
+   ],
+   "y": [
+    1.67,
+    3.2
+   ],
+   "z": [
+    -1.05,
+    -0.92
+   ]
+  },
+  {
+   "name": "Hangar lintel, port",
+   "obj": "A20_lintel_H1",
+   "role": "dark soot",
+   "src": "picture",
+   "note": "the roof of the port mouth, the deck over it",
+   "st": [
+    15.5,
+    34.0
+   ],
+   "y": [
+    1.67,
+    3.2
+   ],
+   "z": [
+    0.8,
+    1.0
+   ]
+  },
+  {
+   "name": "Hangar cheek, port",
+   "obj": "A20_cheek_H1",
+   "role": "bare iron, patched",
+   "src": "picture",
+   "note": "the outer wall of the port mouth",
+   "st": [
+    15.5,
+    34.0
+   ],
+   "y": [
+    3.08,
+    3.2
+   ],
+   "z": [
+    -0.94,
+    0.82
+   ]
+  },
+  {
+   "name": "Hangar sill, starboard",
+   "obj": "A20_sill_H2",
+   "role": "soot",
+   "src": "picture",
+   "note": "the floor of the starboard mouth, the belly under it",
+   "st": [
+    15.5,
+    34.0
+   ],
+   "y": [
+    -3.2,
+    -1.67
+   ],
+   "z": [
+    -1.05,
+    -0.92
+   ]
+  },
+  {
+   "name": "Hangar lintel, starboard",
+   "obj": "A20_lintel_H2",
+   "role": "dark soot",
+   "src": "picture",
+   "note": "the roof of the starboard mouth, the deck over it",
+   "st": [
+    15.5,
+    34.0
+   ],
+   "y": [
+    -3.2,
+    -1.67
+   ],
+   "z": [
+    0.8,
+    1.0
+   ]
+  },
+  {
+   "name": "Hangar cheek, starboard",
+   "obj": "A20_cheek_H2",
+   "role": "bare iron, patched",
+   "src": "picture",
+   "note": "the outer wall of the starboard mouth",
+   "st": [
+    15.5,
+    34.0
+   ],
+   "y": [
+    -3.2,
+    -3.04
+   ],
+   "z": [
+    -0.94,
+    0.82
+   ]
+  },
+  {
+   "name": "Starboard armour wedge 1",
+   "obj": "A20_brick_0",
+   "role": "patched plate",
+   "src": "picture",
+   "note": "tapered salvage armour with a bevelled shoulder, lower undercut and an offset ledge (R244)",
+   "st": [
+    19.1,
+    30.7
+   ],
+   "y": [
+    -3.34,
+    -2.57
+   ],
+   "z": [
+    -0.55,
+    0.45
+   ]
+  },
+  {
+   "name": "Starboard armour wedge 2",
+   "obj": "A20_brick_1",
+   "role": "patched plate",
+   "src": "picture",
+   "note": "tapered salvage armour with a bevelled shoulder, lower undercut and an offset ledge (R244)",
+   "st": [
+    34.3,
+    48.8
+   ],
+   "y": [
+    -3.48,
+    -2.55
+   ],
+   "z": [
+    -0.7,
+    0.3
+   ]
+  },
+  {
+   "name": "Starboard armour wedge 3",
+   "obj": "A20_brick_2",
+   "role": "patched plate",
+   "src": "picture",
+   "note": "tapered salvage armour with a bevelled shoulder, lower undercut and an offset ledge (R244)",
+   "st": [
+    52.5,
+    67.6
+   ],
+   "y": [
+    -3.52,
+    -2.61
+   ],
+   "z": [
+    -0.5,
+    0.55
+   ]
+  },
+  {
+   "name": "Starboard armour wedge 4",
+   "obj": "A20_brick_3",
+   "role": "patched plate",
+   "src": "picture",
+   "note": "tapered salvage armour with a bevelled shoulder, lower undercut and an offset ledge (R244)",
+   "st": [
+    71.2,
+    90.0
+   ],
+   "y": [
+    -3.46,
+    -2.45
+   ],
+   "z": [
+    -0.7,
+    0.35
+   ]
+  },
+  {
+   "name": "D1 fore deck tier",
+   "obj": "A20_D1",
+   "role": "patched deck plate",
+   "src": "picture",
+   "note": "a low tier of salvage plate on the deck, 0.34 high",
+   "st": [
+    17.6,
+    37.6
+   ],
+   "y": [
+    -1.95,
+    0.9
+   ],
+   "z": [
+    0.96,
+    1.34
+   ]
+  },
+  {
+   "name": "D2 mid deck tier",
+   "obj": "A20_D2",
+   "role": "patched deck plate",
+   "src": "picture",
+   "note": "a low tier of salvage plate on the deck, 0.40 high",
+   "st": [
+    41.9,
+    66.7
+   ],
+   "y": [
+    -2.9,
+    -0.3
+   ],
+   "z": [
+    0.96,
+    1.4
+   ]
+  },
+  {
+   "name": "D3 aft deck tier",
+   "obj": "A20_D3",
+   "role": "patched deck plate",
+   "src": "picture",
+   "note": "a low tier of salvage plate on the deck, 0.36 high",
+   "st": [
+    69.7,
+    92.2
+   ],
+   "y": [
+    -2.4,
+    2.5
+   ],
+   "z": [
+    0.96,
+    1.36
+   ]
+  },
+  {
+   "name": "Stern frame",
+   "obj": "A20_sternframe",
+   "role": "iron",
+   "src": "picture",
+   "note": "the frame along the top of the stern the bell row hangs from",
+   "st": [
+    92.2,
+    95.5
+   ],
+   "y": [
+    -3.15,
+    3.15
+   ],
+   "z": [
+    0.55,
+    1.06
+   ]
+  },
+  {
+   "name": "Violet bell housing",
+   "obj": "A20_violet_housing",
+   "role": "violet Eclipse plate",
+   "src": "picture",
+   "note": "a trophy housing torn from an Eclipse hull, round one bell (designs.md)",
+   "st": [
+    91.8,
+    97.0
+   ],
+   "y": [
+    0.68,
+    1.52
+   ],
+   "z": [
+    -0.02,
+    0.82
+   ]
+  }
+ ],
+ "inside": [
+  {
+   "kind": "colour",
+   "name": "soot and weathered plate",
+   "x": [
+    8.25,
+    -8.25
+   ],
+   "where": "whole hull",
+   "note": ""
+  },
+  {
+   "kind": "colour",
+   "name": "pale Hegemony trophy plates",
+   "x": [
+    -0.3,
+    -2.5
+   ],
+   "where": "starboard wall and the aft deck",
+   "note": ""
+  },
+  {
+   "kind": "colour",
+   "name": "violet Eclipse plate",
+   "x": [
+    4.6,
+    3.6
+   ],
+   "where": "fore deck; the violet bell housing at the stern",
+   "note": ""
+  },
+  {
+   "kind": "colour",
+   "name": "dried-blood red patch",
+   "x": [
+    0.0,
+    -1.2
+   ],
+   "where": "deck over the hangars",
+   "note": ""
+  },
+  {
+   "kind": "colour",
+   "name": "bare iron",
+   "x": [
+    5.7,
+    2.7
+   ],
+   "where": "the outer walls of the two bow mouths",
+   "note": ""
+  },
+  {
+   "kind": "deck",
+   "name": "lower",
+   "z": -0.12,
+   "x": [
+    -6.9,
+    2.6
+   ]
+  },
+  {
+   "kind": "deck",
+   "name": "upper",
+   "z": 0.42,
+   "x": [
+    -6.9,
+    2.6
+   ]
+  },
+  {
+   "kind": "deck",
+   "name": "lower_fore",
+   "z": -0.12,
+   "x": [
+    2.8000000000000003,
+    5.4
+   ]
+  },
+  {
+   "kind": "deck",
+   "name": "upper_fore",
+   "z": 0.42,
+   "x": [
+    2.8000000000000003,
+    5.4
+   ]
+  },
+  {
+   "kind": "bulkhead",
+   "name": "F0",
+   "x": 5.3
+  },
+  {
+   "kind": "bulkhead",
+   "name": "F1",
+   "x": 3.3
+  },
+  {
+   "kind": "bulkhead",
+   "name": "F2",
+   "x": 0.55
+  },
+  {
+   "kind": "bulkhead",
+   "name": "F3",
+   "x": -1.75
+  },
+  {
+   "kind": "bulkhead",
+   "name": "F4",
+   "x": -4.35
+  },
+  {
+   "kind": "bulkhead",
+   "name": "F5",
+   "x": -6.2
+  },
+  {
+   "kind": "space",
+   "name": "H1_hangar_lower",
+   "mat": "hangar",
+   "x": [
+    0.7,
+    2.05
+   ],
+   "y": [
+    0.25,
+    2.8000000000000003
+   ],
+   "z": [
+    -0.75,
+    -0.2
+   ],
+   "note": "lower hangar deck behind the H1 mouth: half-built fighters on scavenged frames"
+  },
+  {
+   "kind": "space",
+   "name": "H1_hangar_upper",
+   "mat": "hangar",
+   "x": [
+    0.7,
+    2.05
+   ],
+   "y": [
+    0.25,
+    2.8000000000000003
+   ],
+   "z": [
+    -0.04,
+    0.4
+   ],
+   "note": "upper hangar deck behind the H1 mouth: bombers and spares"
+  },
+  {
+   "kind": "space",
+   "name": "H2_hangar_lower",
+   "mat": "hangar",
+   "x": [
+    0.7,
+    2.05
+   ],
+   "y": [
+    -2.8000000000000003,
+    -0.25
+   ],
+   "z": [
+    -0.75,
+    -0.2
+   ],
+   "note": "lower hangar deck behind the H2 mouth: half-built fighters on scavenged frames"
+  },
+  {
+   "kind": "space",
+   "name": "H2_hangar_upper",
+   "mat": "hangar",
+   "x": [
+    0.7,
+    2.05
+   ],
+   "y": [
+    -2.8000000000000003,
+    -0.25
+   ],
+   "z": [
+    -0.04,
+    0.4
+   ],
+   "note": "upper hangar deck behind the H2 mouth: bombers and spares"
+  },
+  {
+   "kind": "space",
+   "name": "loot_hold_fore",
+   "mat": "hold",
+   "x": [
+    5.4,
+    5.8
+   ],
+   "y": [
+    -1.25,
+    1.25
+   ],
+   "z": [
+    -0.75,
+    0.6
+   ],
+   "note": "crosswise salvage locker behind the intake wells, clear of both dark bores (R244)"
+  },
+  {
+   "kind": "space",
+   "name": "loot_hold_body",
+   "mat": "hold",
+   "x": [
+    3.45,
+    5.2
+   ],
+   "y": [
+    -1.37,
+    1.37
+   ],
+   "z": [
+    -0.75,
+    -0.2
+   ],
+   "note": "loot hold in the core between the mouths"
+  },
+  {
+   "kind": "space",
+   "name": "kennel_deck",
+   "mat": "crew",
+   "x": [
+    3.45,
+    5.2
+   ],
+   "y": [
+    -1.37,
+    1.37
+   ],
+   "z": [
+    -0.04,
+    0.6
+   ],
+   "note": "kennel deck for the boarding crews, in the core between the mouths"
+  },
+  {
+   "kind": "space",
+   "name": "turret_magazine_fore",
+   "mat": "magazine",
+   "x": [
+    2.95,
+    4.25
+   ],
+   "y": [
+    -1.37,
+    -0.1
+   ],
+   "z": [
+    0.55,
+    0.82
+   ],
+   "note": "under the fore turret"
+  },
+  {
+   "kind": "space",
+   "name": "core",
+   "mat": "core",
+   "x": [
+    -1.5,
+    0.4
+   ],
+   "y": [
+    -2.2,
+    0.6
+   ],
+   "z": [
+    -0.75,
+    -0.2
+   ],
+   "note": "reactor core (hp_core), between the hangar decks"
+  },
+  {
+   "kind": "space",
+   "name": "crew_decks",
+   "mat": "crew",
+   "x": [
+    -1.5,
+    0.4
+   ],
+   "y": [
+    -2.2,
+    0.6
+   ],
+   "z": [
+    -0.04,
+    0.6
+   ],
+   "note": "crew decks over the core"
+  },
+  {
+   "kind": "space",
+   "name": "turret_magazine_aft",
+   "mat": "magazine",
+   "x": [
+    -5.6,
+    -4.65
+   ],
+   "y": [
+    -0.6,
+    0.8
+   ],
+   "z": [
+    0.55,
+    0.82
+   ],
+   "note": "under the aft turret"
+  },
+  {
+   "kind": "space",
+   "name": "machinery",
+   "mat": "machinery",
+   "x": [
+    -5.9,
+    -4.65
+   ],
+   "y": [
+    -2.7,
+    2.7
+   ],
+   "z": [
+    -0.75,
+    0.3
+   ],
+   "note": "machinery aft"
+  },
+  {
+   "kind": "space",
+   "name": "engine_room",
+   "mat": "engroom",
+   "x": [
+    -7.05,
+    -6.35
+   ],
+   "y": [
+    -2.7,
+    2.7
+   ],
+   "z": [
+    -0.75,
+    0.6
+   ],
+   "note": "engine room and the bell feeds"
+  },
+  {
+   "kind": "armour",
+   "name": "bow block",
+   "t": 0.25,
+   "note": "the intake face"
+  },
+  {
+   "kind": "armour",
+   "name": "starboard wall",
+   "t": 0.22,
+   "note": "the closed wall and its bricks"
+  },
+  {
+   "kind": "armour",
+   "name": "hangar blocks",
+   "t": 0.12,
+   "note": "thin round the two bow mouths: the bay frames tear open first (designs.md)"
+  },
+  {
+   "kind": "armour",
+   "name": "deck",
+   "t": 0.12,
+   "note": "the salvage tiers over it"
+  },
+  {
+   "kind": "armour",
+   "name": "engine end",
+   "t": 0.15,
+   "note": ""
+  },
+  {
+   "kind": "break",
+   "name": "B-1",
+   "x": 2.27,
+   "note": "the fore weld behind the mouths: the bow block and both hangar mouths tear away with the dishes, the grabbers and the craft, opening the loot holds and the hangar decks",
+   "path": [
+    [
+     2.3,
+     4.9
+    ],
+    [
+     2.3,
+     3.49
+    ],
+    [
+     2.2,
+     2.0
+    ],
+    [
+     2.35,
+     1.0
+    ],
+    [
+     2.18,
+     0.2
+    ],
+    [
+     2.32,
+     -0.6
+    ],
+    [
+     2.2,
+     -1.5
+    ],
+    [
+     2.36,
+     -2.3
+    ],
+    [
+     2.25,
+     -3.49
+    ],
+    [
+     2.25,
+     -4.9
+    ]
+   ],
+   "orient": "trans"
+  },
+  {
+   "kind": "break",
+   "name": "B-2",
+   "x": -0.55,
+   "note": "the body parts behind the hangar decks, through the core: the bay side tears first and the hangar decks spill (designs.md)",
+   "path": [
+    [
+     -0.5,
+     4.9
+    ],
+    [
+     -0.5,
+     3.49
+    ],
+    [
+     -0.65,
+     2.33
+    ],
+    [
+     -0.45,
+     1.16
+    ],
+    [
+     -0.7,
+     0.23
+    ],
+    [
+     -0.48,
+     -0.7
+    ],
+    [
+     -0.68,
+     -1.75
+    ],
+    [
+     -0.5,
+     -2.68
+    ],
+    [
+     -0.62,
+     -3.49
+    ],
+    [
+     -0.62,
+     -4.9
+    ]
+   ],
+   "orient": "trans"
+  },
+  {
+   "kind": "break",
+   "name": "B-3",
+   "x": -4.0,
+   "note": "the aft weld: the stern, the bell row and the aft turret tear away, opening the machinery and the engine room",
+   "path": [
+    [
+     -3.9,
+     4.9
+    ],
+    [
+     -3.9,
+     3.49
+    ],
+    [
+     -4.05,
+     2.33
+    ],
+    [
+     -3.88,
+     1.28
+    ],
+    [
+     -4.08,
+     0.35
+    ],
+    [
+     -3.9,
+     -0.58
+    ],
+    [
+     -4.1,
+     -1.63
+    ],
+    [
+     -3.92,
+     -2.68
+    ],
+    [
+     -4.05,
+     -3.49
+    ],
+    [
+     -4.05,
+     -4.9
+    ]
+   ],
+   "orient": "trans"
+  },
+  {
+   "kind": "note",
+   "name": "insides",
+   "note": "Full interiors through the hull (R215), hidden until a piece breaks. The bay side tears open first, then the hull parts at the fore and aft welds: bow, hangar sections and stern, never halves (designs.md, R186)."
+  }
+ ],
+ "points": [
+  {
+   "kind": "core",
+   "name": "hp_core",
+   "pos": [
+    -0.55,
+    -0.7,
+    -0.45
+   ],
+   "side": "",
+   "section": "",
+   "note": "",
+   "dir": null,
+   "station": 53.4
+  },
+  {
+   "kind": "breach",
+   "name": "hp_breach_0",
+   "pos": [
+    3.65,
+    0.9,
+    1.22
+   ],
+   "side": "port",
+   "section": "prow",
+   "note": "",
+   "dir": null,
+   "station": 27.9
+  },
+  {
+   "kind": "breach",
+   "name": "hp_breach_1",
+   "pos": [
+    6.39,
+    -1.6,
+    0.83
+   ],
+   "side": "stbd",
+   "section": "prow",
+   "note": "",
+   "dir": null,
+   "station": 11.3
+  },
+  {
+   "kind": "breach",
+   "name": "hp_breach_2",
+   "pos": [
+    -0.65,
+    2.9,
+    -0.06
+   ],
+   "side": "port",
+   "section": "mid",
+   "note": "",
+   "dir": null,
+   "station": 54.0
+  },
+  {
+   "kind": "breach",
+   "name": "hp_breach_3",
+   "pos": [
+    1.0,
+    -3.293,
+    -0.25
+   ],
+   "side": "stbd",
+   "section": "mid",
+   "note": "",
+   "dir": null,
+   "station": 44.0
+  },
+  {
+   "kind": "breach",
+   "name": "hp_breach_4",
+   "pos": [
+    -3.2,
+    -3.148,
+    -0.05
+   ],
+   "side": "stbd",
+   "section": "mid",
+   "note": "",
+   "dir": null,
+   "station": 69.4
+  },
+  {
+   "kind": "breach",
+   "name": "hp_breach_5",
+   "pos": [
+    -6.4,
+    3.184,
+    0.35
+   ],
+   "side": "port",
+   "section": "eng",
+   "note": "",
+   "dir": null,
+   "station": 88.8
+  },
+  {
+   "kind": "breach",
+   "name": "hp_breach_6",
+   "pos": [
+    -7.0,
+    -3.14,
+    -0.45
+   ],
+   "side": "stbd",
+   "section": "eng",
+   "note": "",
+   "dir": null,
+   "station": 92.5
+  },
+  {
+   "kind": "rcs",
+   "name": "hp_rcs_0",
+   "pos": [
+    6.6,
+    1.61,
+    -0.6
+   ],
+   "side": "port",
+   "section": "",
+   "note": "",
+   "dir": null,
+   "station": 10.1
+  },
+  {
+   "kind": "rcs",
+   "name": "hp_rcs_1",
+   "pos": [
+    6.6,
+    -1.61,
+    -0.6
+   ],
+   "side": "stbd",
+   "section": "",
+   "note": "",
+   "dir": null,
+   "station": 10.1
+  },
+  {
+   "kind": "board",
+   "name": "hp_board_0",
+   "pos": [
+    -0.65,
+    2.9,
+    -0.4
+   ],
+   "side": "port",
+   "section": "",
+   "note": "",
+   "dir": null,
+   "station": 54.0
+  },
+  {
+   "kind": "board",
+   "name": "hp_board_1",
+   "pos": [
+    -0.9,
+    -3.296,
+    -0.3
+   ],
+   "side": "stbd",
+   "section": "",
+   "note": "",
+   "dir": null,
+   "station": 55.5
+  },
+  {
+   "kind": "bay",
+   "name": "hp_bay_0",
+   "pos": [
+    5.5,
+    2.4,
+    -0.908
+   ],
+   "side": "port",
+   "section": "",
+   "note": "launch forward out of the H1 mouth, on its floor at the lip (the recipe: a hard point sits on the mesh, the mouth itself is open air)",
+   "dir": [
+    1,
+    0,
+    0
+   ],
+   "station": 16.7
+  },
+  {
+   "kind": "bay",
+   "name": "hp_bay_1",
+   "pos": [
+    5.5,
+    -2.38,
+    -0.908
+   ],
+   "side": "stbd",
+   "section": "",
+   "note": "launch forward out of the H2 mouth, on its floor at the lip (the recipe: a hard point sits on the mesh, the mouth itself is open air)",
+   "dir": [
+    1,
+    0,
+    0
+   ],
+   "station": 16.7
+  }
+ ],
+ "changes": [
+  [
+   "Issue 688 (R244): the two bow intakes are blind wells through the bow housing, with the kit's rolled lips, lip bolts, three inset rings and dark rear baffles exposed; the redundant smooth liners are removed and the bow loot locker sits behind the wells",
+   "Ryan, Nov 14: the front circles should be open holes with detail, never just circles. The solid bow block had capped both kit tubes immediately behind their lips. They remain fuel and dust intakes, not extra weapons (data.js c_hulk has only the two turrets)"
+  ],
+  [
+   "Issue 688 (R244): the slab has 0.7 to 0.92 upper chamfers, lower chines, diagonal shoulders into a 0.3-per-side recessed waist, and four tapered starboard armour wedges with offset ledges; flank fittings and hard points follow the new skin",
+   "Ryan, Nov 14: the sides were flat walls, unlike the angular concept. The carrier keeps its broad deck, forward hangar mouths (R239), two raised turrets clear of sensors (R240), five stern engines and Carrier class length 16.5"
+  ],
+  [
+   "Issue 668 (R239): both hangar mouths open forward in the bow face, one either side of the bow block beside the twin tubes (port 1.36 wide, starboard 1.32; 1.72 high; 3.0 deep to the back wall, 2.7 to the blast door), framed by a sill, a lintel and an outer cheek each; the port flank is closed plate now",
+   "Ryan, Nov 13 2026 (R239), on A20 painted and widened: \"on the hullbreakers carrier, I was wrong. I prefer the concepts version of the bays facing forward now that I see it built.\" The beauty and the sheet's bow-on view draw the two mouths in the bow face beside the twin tubes with a craft visible inside; this replaces his Nov 12 port-flank ruling (issue 633). The layout is the closed PR 658's (commit 98e39958), on issue 651's 3.2 half-beam; data.js c_hulk (launch, hangar 2) is met either way"
+  ],
+  [
+   "Each mouth is a real recess with a worn torn plate rim, dark launch rails on the floor, dark ceiling beams and frame ribs at uneven spacing, three small warm deck lights at uneven depths and an inner blast door on the back wall; no door leaves (issue 668, R240)",
+   "the Board's brief: they must read as launch bays with depth; in the bow face there is no face beside a mouth for designs.md's slid doors (the bow block stands there), so the kit part leaves them out (hangar_mouth doors=False). R240 (Ryan, Nov 13 2026: \"some sort of weird paint pattern in the opening of the carrier\"): the striped iron fit-out, the evenly spaced rail ties and the red lamps are gone; the fit-out is dark, only the rim carries worn iron edging (stack zone iron_edge), the deck lights are warm (glow zone lamp)"
+  ],
+  [
+   "The mouths are lined dark (floor, ceiling, back wall and ends): only the worn rim, the few warm deck lights and the fighters catch the light",
+   "the Board on round 1 (Nov 13): the mouths must be big, deep, dark openings that show from the beauty camera with the fighter in them; round 1's were 1.37 high and lit grey inside, so they read as shallow grilles"
+  ],
+  [
+   "The bow block is as tall as the slab and about half its beam (3.2 across, 1.9 tall, 2.7 long); its face carries two huge intake tubes side by side, each 1.1 across (three quarters of the face's height), reaching 2.3 back into the block",
+   "the Board on round 1 (Nov 13): the build had no twin tubes (two 0.8 tubes in a narrow block); the README's bow intakes and the beauty's two huge tubes. The concept sheet's plan draws the block about 0.4 of the beam; it is widened so the tubes fit side by side"
+  ],
+  [
+   "Bow thrusters and the bow lamps on the bow block's flanks, the chin scoop under the web between the tubes",
+   "the wider block and its tubes fill the old places"
+  ],
+  [
+   "The two shoulder dishes stand on the lintels over the mouths",
+   "designs.md puts the dishes on the shoulders; the mouths took the shoulders' faces (issue 668)"
+  ],
+  [
+   "The slab is 6.4 wide over its hull (hull length to beam 2.58 on the top view) and 2.05 deep; issue 668 keeps issue 651's beam",
+   "the accepted beauty (v2s, \"hull deepened\") draws it about 2.4 long for its width, the sheet's top view 3.4; issue 651 broadened it toward the beauty's broad slab (R229: the whole concept; R233, R236)"
+  ],
+  [
+   "Two dorsal turrets, one on the fore deck tier and one on the aft",
+   "data.js c_hulk: turret T twice (R221); designs.md's bow casemates, starboard flank guns and rocket rack have no slot, so they are not built"
+  ],
+  [
+   "Five mismatched bells in a row along the top of the stern, one in a violet Eclipse trophy housing",
+   "designs.md; the picture's eight become five"
+  ],
+  [
+   "A fighter nosing out of the port mouth and a second parked deeper in the starboard one, both 1.6 long",
+   "designs.md and the beauty (the fighter in the near mouth); the game's squadron length gives the scale"
+  ],
+  [
+   "The spare engine bell lies across the deck in a cradle, cold",
+   "the picture's bell on the deck; designs.md: bolted down flat (field repairs)"
+  ],
+  [
+   "The salvage deck is three low tiers of stacked plate with lockers bolted down, not loose junk",
+   "Ryan R185: nothing hangs off the ship; stacked and bolted scrap brick (R196, R197)"
+  ],
+  [
+   "One pair of grabbers under the bow block and two heavy grapple arms folded flat under the stern quarters",
+   "designs.md (four bow arms become two, so the jaw is not A17's; the grapples drag prizes alongside)"
+  ],
+  [
+   "Four attitude thrusters",
+   "a ship in space needs them to turn"
+  ],
+  [
+   "The fore weld B-1 moved aft to x 2.3, behind the mouths' back wall (issue 668; was 4.75)",
+   "with the mouths in the bow face a weld at 4.75 would cut through both mouths and the port fighter; the bow, both mouths and their craft now tear away as one piece (designs.md: the bay side tears first)"
+  ],
+  [
+   "Every face is plated in courses at the hull's plate size (0.4 to 0.9), each course jointed on its own (a brick bond), patches laid over joints and offset patches over plates; upward faces stepped in terraces of one to three plate thicknesses",
+   "the Board on round 1 (Nov 13): the faces read as big smooth grey planes with a few greebles; the concept is scrap brick, plates over plates on every face (R196, R197). Kit: the sheet kit's courses plating (kit.py, opt-in, issue 633)"
+  ],
+  [
+   "Insides: two hangar deck levels behind each mouth, loot holds in the bow and in the core between the mouths, a kennel deck, the core between the hangar decks, machinery and the engine room aft",
+   "designs.md; R209, R215"
+  ]
+ ],
+ "tbd": [
+  "Belly detail between the bow grabbers and the stern grapples is designed here; the picture does not show the underside"
+ ],
+ "kit": "hullbreakers",
+ "sheet": {
+  "version": 3,
+  "round": "issue 688: open intakes and angular flanks (R244)",
+  "date": "2026-11-14",
+  "blend": "board\\issue-688\\shots",
+  "before": "Before R244",
+  "before_note": "The existing A20 on main, with capped intake housings and straight slab flanks; captured at the same cameras and light.",
+  "during": "While designing, the check also caught (and the design fixed): see the fit report's fix column."
+ },
+ "concept_sheet": "contrib/muse/design/class_family_corsair_2026_11/corsair_A20_sheet.jpg",
+ "concept_views": {
+  "top": {
+   "box": [
+    180,
+    30,
+    1800,
+    520
+   ],
+   "largest": true,
+   "flip": false
+  },
+  "side": {
+   "box": [
+    120,
+    530,
+    1850,
+    830
+   ],
+   "largest": true,
+   "flip": false
+  }
+ },
+ "crops": [
+  [
+   "bow (the bow block, intakes, port shoulder)",
+   [
+    40,
+    520,
+    980,
+    1240
+   ]
+  ],
+  [
+   "the bow face and the port hangar mouth",
+   [
+    820,
+    560,
+    1440,
+    1060
+   ]
+  ],
+  [
+   "stern (the bell row and the aft deck)",
+   [
+    1060,
+    60,
+    1920,
+    620
+   ]
+  ]
+ ],
+ "parts": [
+  {
+   "id": "hull_form",
+   "kind": "hull",
+   "inv": [
+    "hull_form"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "bevel",
+    "step",
+    "overhang"
+   ]
+  },
+  {
+   "id": "bow_block",
+   "kind": "tier",
+   "inv": [
+    "bow_block"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "face",
+    "roof",
+    "opening"
+   ]
+  },
+  {
+   "id": "hangar_block",
+   "kind": "tier",
+   "inv": [
+    "hangar_block"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "face",
+    "roof",
+    "opening"
+   ]
+  },
+  {
+   "id": "wall_bricks",
+   "kind": "tier",
+   "inv": [
+    "wall_bricks"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "face",
+    "roof",
+    "opening"
+   ]
+  },
+  {
+   "id": "deck_tiers",
+   "kind": "tier",
+   "inv": [
+    "deck_tiers"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "face",
+    "roof",
+    "opening"
+   ]
+  },
+  {
+   "id": "stern_frame",
+   "kind": "pylon",
+   "inv": [
+    "stern_frame"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "web",
+    "plate"
+   ]
+  },
+  {
+   "id": "TP1",
+   "kind": "patch",
+   "inv": [
+    "trophy"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "lift",
+    "rivet"
+   ]
+  },
+  {
+   "id": "TP2",
+   "kind": "patch",
+   "inv": [
+    "trophy"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "lift",
+    "rivet"
+   ]
+  },
+  {
+   "id": "TP3",
+   "kind": "patch",
+   "inv": [
+    "trophy"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "lift",
+    "rivet"
+   ]
+  },
+  {
+   "id": "TP4",
+   "kind": "patch",
+   "inv": [
+    "trophy"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "lift",
+    "rivet"
+   ]
+  },
+  {
+   "id": "TP5",
+   "kind": "patch",
+   "inv": [
+    "trophy"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "lift",
+    "rivet"
+   ]
+  },
+  {
+   "id": "TP6",
+   "kind": "patch",
+   "inv": [
+    "trophy"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "lift",
+    "rivet"
+   ]
+  },
+  {
+   "id": "HB1",
+   "kind": "hatchbox",
+   "type": "hatchbox",
+   "inv": [
+    "salvage"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "frame",
+    "lid",
+    "lidseam",
+    "rib"
+   ]
+  },
+  {
+   "id": "HB2",
+   "kind": "hatchbox",
+   "type": "hatchbox",
+   "inv": [
+    "salvage"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "frame",
+    "lid",
+    "lidseam",
+    "rib"
+   ]
+  },
+  {
+   "id": "HB3",
+   "kind": "hatchbox",
+   "type": "hatchbox",
+   "inv": [
+    "salvage"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "frame",
+    "lid",
+    "lidseam",
+    "rib"
+   ]
+  },
+  {
+   "id": "HB4",
+   "kind": "hatchbox",
+   "type": "hatchbox",
+   "inv": [
+    "salvage"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "frame",
+    "lid",
+    "lidseam",
+    "rib"
+   ]
+  },
+  {
+   "id": "HB5",
+   "kind": "hatchbox",
+   "type": "hatchbox",
+   "inv": [
+    "salvage"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "frame",
+    "lid",
+    "lidseam",
+    "rib"
+   ]
+  },
+  {
+   "id": "HB6",
+   "kind": "hatchbox",
+   "type": "hatchbox",
+   "inv": [
+    "salvage"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "frame",
+    "lid",
+    "lidseam",
+    "rib"
+   ]
+  },
+  {
+   "id": "HS1",
+   "kind": "hatch",
+   "type": "hatch",
+   "inv": [
+    "deck_hatches"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "door",
+    "hinge",
+    "rim",
+    "seam",
+    "wheel"
+   ]
+  },
+  {
+   "id": "HS2",
+   "kind": "hatch",
+   "type": "hatch",
+   "inv": [
+    "deck_hatches"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "door",
+    "hinge",
+    "rim",
+    "seam"
+   ]
+  },
+  {
+   "id": "VS0",
+   "kind": "vent",
+   "type": "vent",
+   "inv": [
+    "vents"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "back",
+    "frame",
+    "slat"
+   ]
+  },
+  {
+   "id": "VS1",
+   "kind": "vent",
+   "type": "vent",
+   "inv": [
+    "vents"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "back",
+    "frame",
+    "slat"
+   ]
+  },
+  {
+   "id": "AN1",
+   "kind": "antenna",
+   "type": "antenna",
+   "inv": [
+    "antenna"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "base",
+    "mast",
+    "pod",
+    "whip"
+   ]
+  },
+  {
+   "id": "corsair_A20_hull_plates",
+   "kind": "plate",
+   "inv": [
+    "hull_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "step",
+    "bevel",
+    "rivet"
+   ]
+  },
+  {
+   "id": "corsair_A20_hull_plates",
+   "kind": "plate",
+   "inv": [
+    "belly_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "step",
+    "bevel",
+    "rivet"
+   ]
+  },
+  {
+   "id": "A20_bowblock_plates",
+   "kind": "plate",
+   "inv": [
+    "bow_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "step",
+    "bevel",
+    "rivet"
+   ]
+  },
+  {
+   "id": "A20_sill_H1_plates",
+   "kind": "plate",
+   "inv": [
+    "hangar_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "step",
+    "bevel",
+    "rivet"
+   ]
+  },
+  {
+   "id": "A20_lintel_H1_plates",
+   "kind": "plate",
+   "inv": [
+    "hangar_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "step",
+    "bevel",
+    "rivet"
+   ]
+  },
+  {
+   "id": "A20_cheek_H1_plates",
+   "kind": "plate",
+   "inv": [
+    "hangar_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "step",
+    "bevel",
+    "rivet"
+   ]
+  },
+  {
+   "id": "A20_sill_H2_plates",
+   "kind": "plate",
+   "inv": [
+    "hangar_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "step",
+    "bevel",
+    "rivet"
+   ]
+  },
+  {
+   "id": "A20_lintel_H2_plates",
+   "kind": "plate",
+   "inv": [
+    "hangar_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "step",
+    "bevel",
+    "rivet"
+   ]
+  },
+  {
+   "id": "A20_cheek_H2_plates",
+   "kind": "plate",
+   "inv": [
+    "hangar_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "step",
+    "bevel",
+    "rivet"
+   ]
+  },
+  {
+   "id": "H1",
+   "kind": "hangar",
+   "type": "hangar_open",
+   "inv": [
+    "hangars"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "",
+    "aft",
+    "beam",
+    "bot",
+    "fore",
+    "gap",
+    "l",
+    "lamp",
+    "lrail",
+    "r",
+    "tooth",
+    "top"
+   ]
+  },
+  {
+   "id": "H2",
+   "kind": "hangar",
+   "type": "hangar_open",
+   "inv": [
+    "hangars"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "",
+    "aft",
+    "beam",
+    "bot",
+    "fore",
+    "gap",
+    "l",
+    "lamp",
+    "lrail",
+    "r",
+    "tooth",
+    "top"
+   ]
+  },
+  {
+   "id": "C1",
+   "kind": "craft",
+   "type": "craft",
+   "inv": [
+    "craft"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "barrel",
+    "canopy",
+    "fuselage",
+    "glow",
+    "leg",
+    "nozzle",
+    "patch",
+    "skid",
+    "wing"
+   ]
+  },
+  {
+   "id": "C2",
+   "kind": "craft",
+   "type": "craft",
+   "inv": [
+    "craft"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "barrel",
+    "canopy",
+    "fuselage",
+    "glow",
+    "leg",
+    "nozzle",
+    "patch",
+    "skid",
+    "wing"
+   ]
+  },
+  {
+   "id": "I1",
+   "kind": "tube",
+   "type": "tube",
+   "inv": [
+    "intakes"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "",
+    "band",
+    "bolt",
+    "bore",
+    "ring",
+    "stiff",
+    "tube"
+   ]
+  },
+  {
+   "id": "I2",
+   "kind": "tube",
+   "type": "tube",
+   "inv": [
+    "intakes"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "",
+    "band",
+    "bolt",
+    "bore",
+    "ring",
+    "stiff",
+    "tube"
+   ]
+  },
+  {
+   "id": "FP0",
+   "kind": "patch",
+   "inv": [
+    "bow_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "lift",
+    "rivet"
+   ]
+  },
+  {
+   "id": "FP1",
+   "kind": "patch",
+   "inv": [
+    "bow_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "lift",
+    "rivet"
+   ]
+  },
+  {
+   "id": "FP2",
+   "kind": "patch",
+   "inv": [
+    "bow_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "lift",
+    "rivet"
+   ]
+  },
+  {
+   "id": "FP3",
+   "kind": "patch",
+   "inv": [
+    "bow_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "lift",
+    "rivet"
+   ]
+  },
+  {
+   "id": "FP4",
+   "kind": "patch",
+   "inv": [
+    "bow_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "lift",
+    "rivet"
+   ]
+  },
+  {
+   "id": "FP5",
+   "kind": "patch",
+   "inv": [
+    "bow_plates"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "slab",
+    "lift",
+    "rivet"
+   ]
+  },
+  {
+   "id": "I3",
+   "kind": "tube",
+   "type": "tube",
+   "inv": [
+    "scoop"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "",
+    "band",
+    "bar",
+    "bolt",
+    "bore",
+    "hub",
+    "ring",
+    "stiff",
+    "tube"
+   ]
+  },
+  {
+   "id": "J1",
+   "kind": "claw_arm",
+   "type": "claw_arm",
+   "inv": [
+    "grabbers"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "arm",
+    "armplate",
+    "bracket",
+    "cyl",
+    "finger",
+    "hinge",
+    "joint",
+    "kpin",
+    "kplate",
+    "lug",
+    "rivet",
+    "rod",
+    "s",
+    "wrist"
+   ]
+  },
+  {
+   "id": "J2",
+   "kind": "claw_arm",
+   "type": "claw_arm",
+   "inv": [
+    "grabbers"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "arm",
+    "armplate",
+    "bracket",
+    "cyl",
+    "finger",
+    "hinge",
+    "joint",
+    "kpin",
+    "kplate",
+    "lug",
+    "rivet",
+    "rod",
+    "s",
+    "wrist"
+   ]
+  },
+  {
+   "id": "J3",
+   "kind": "claw_arm",
+   "type": "claw_arm",
+   "inv": [
+    "grapples"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "arm",
+    "armplate",
+    "bracket",
+    "cyl",
+    "finger",
+    "hinge",
+    "joint",
+    "kpin",
+    "kplate",
+    "lug",
+    "rivet",
+    "rod",
+    "s",
+    "wrist"
+   ]
+  },
+  {
+   "id": "J4",
+   "kind": "claw_arm",
+   "type": "claw_arm",
+   "inv": [
+    "grapples"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "arm",
+    "armplate",
+    "bracket",
+    "cyl",
+    "finger",
+    "hinge",
+    "joint",
+    "kpin",
+    "kplate",
+    "lug",
+    "rivet",
+    "rod",
+    "s",
+    "wrist"
+   ]
+  },
+  {
+   "id": "D1",
+   "kind": "dish",
+   "type": "dish",
+   "inv": [
+    "dishes"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "base",
+    "bowl",
+    "feed",
+    "post",
+    "rib",
+    "strut",
+    "yoke"
+   ]
+  },
+  {
+   "id": "D2",
+   "kind": "dish",
+   "type": "dish",
+   "inv": [
+    "dishes"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "base",
+    "bowl",
+    "feed",
+    "post",
+    "rib",
+    "strut",
+    "yoke"
+   ]
+  },
+  {
+   "id": "SB1",
+   "kind": "engine",
+   "type": "engine",
+   "inv": [
+    "spare_bell"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "band",
+    "bell",
+    "collar",
+    "cone",
+    "cool",
+    "glow",
+    "housing",
+    "lining",
+    "strut"
+   ]
+  },
+  {
+   "id": "T1",
+   "kind": "gun",
+   "type": "gun",
+   "inv": [
+    "turrets"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "boltring",
+    "bore",
+    "breech",
+    "clamp",
+    "hatch",
+    "housing",
+    "mantlet",
+    "ring",
+    "trunnion",
+    "tube",
+    "vent",
+    "vision"
+   ]
+  },
+  {
+   "id": "T2",
+   "kind": "gun",
+   "type": "gun",
+   "inv": [
+    "turrets"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "boltring",
+    "bore",
+    "breech",
+    "clamp",
+    "hatch",
+    "housing",
+    "mantlet",
+    "patch",
+    "ring",
+    "trunnion",
+    "tube",
+    "vent",
+    "vision"
+   ]
+  },
+  {
+   "id": "E1",
+   "kind": "engine",
+   "type": "engine",
+   "inv": [
+    "engines"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "band",
+    "bell",
+    "collar",
+    "cone",
+    "cool",
+    "glow",
+    "housing",
+    "lining",
+    "strut"
+   ]
+  },
+  {
+   "id": "E2",
+   "kind": "engine",
+   "type": "engine",
+   "inv": [
+    "engines"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "band",
+    "bell",
+    "collar",
+    "cone",
+    "cool",
+    "glow",
+    "housing",
+    "lining",
+    "strut"
+   ]
+  },
+  {
+   "id": "E3",
+   "kind": "engine",
+   "type": "engine",
+   "inv": [
+    "engines"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "band",
+    "bell",
+    "collar",
+    "cone",
+    "cool",
+    "glow",
+    "housing",
+    "lining",
+    "strut"
+   ]
+  },
+  {
+   "id": "E4",
+   "kind": "engine",
+   "type": "engine",
+   "inv": [
+    "engines"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "band",
+    "bell",
+    "collar",
+    "cone",
+    "cool",
+    "glow",
+    "housing",
+    "lining",
+    "strut"
+   ]
+  },
+  {
+   "id": "E5",
+   "kind": "engine",
+   "type": "engine",
+   "inv": [
+    "engines"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "band",
+    "bell",
+    "collar",
+    "cone",
+    "cool",
+    "glow",
+    "housing",
+    "lining",
+    "strut"
+   ]
+  },
+  {
+   "id": "Q1",
+   "kind": "thruster",
+   "type": "thruster",
+   "inv": [
+    "thrusters"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "block",
+    "nozzle"
+   ]
+  },
+  {
+   "id": "Q2",
+   "kind": "thruster",
+   "type": "thruster",
+   "inv": [
+    "thrusters"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "block",
+    "nozzle"
+   ]
+  },
+  {
+   "id": "Q3",
+   "kind": "thruster",
+   "type": "thruster",
+   "inv": [
+    "thrusters"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "block",
+    "nozzle"
+   ]
+  },
+  {
+   "id": "Q4",
+   "kind": "thruster",
+   "type": "thruster",
+   "inv": [
+    "thrusters"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "block",
+    "nozzle"
+   ]
+  },
+  {
+   "id": "L0",
+   "kind": "lamp",
+   "type": "lamp",
+   "inv": [
+    "lamps"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "hood",
+    "housing",
+    "lens"
+   ]
+  },
+  {
+   "id": "L1",
+   "kind": "lamp",
+   "type": "lamp",
+   "inv": [
+    "lamps"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "hood",
+    "housing",
+    "lens"
+   ]
+  },
+  {
+   "id": "L2",
+   "kind": "lamp",
+   "type": "lamp",
+   "inv": [
+    "lamps"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "hood",
+    "housing",
+    "lens"
+   ]
+  },
+  {
+   "id": "L3",
+   "kind": "lamp",
+   "type": "lamp",
+   "inv": [
+    "lamps"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "hood",
+    "housing",
+    "lens"
+   ]
+  },
+  {
+   "id": "L4",
+   "kind": "lamp",
+   "type": "lamp",
+   "inv": [
+    "lamps"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "hood",
+    "housing",
+    "lens"
+   ]
+  },
+  {
+   "id": "L5",
+   "kind": "lamp",
+   "type": "lamp",
+   "inv": [
+    "lamps"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "hood",
+    "housing",
+    "lens"
+   ]
+  },
+  {
+   "id": "L6",
+   "kind": "lamp",
+   "type": "lamp",
+   "inv": [
+    "lamps"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "hood",
+    "housing",
+    "lens"
+   ]
+  },
+  {
+   "id": "L7",
+   "kind": "lamp",
+   "type": "lamp",
+   "inv": [
+    "lamps"
+   ],
+   "shaped": true,
+   "detailed": true,
+   "subs": [
+    "hood",
+    "housing",
+    "lens"
+   ]
+  }
+ ],
+ "weapons": [
+  {
+   "id": "turret",
+   "example": "T1",
+   "mounts": [
+    "T1",
+    "T2"
+   ],
+   "slot": "T",
+   "image": "weapon_turret.png"
+  }
+ ],
+ "fit_counts": {
+  "CLASH": 0,
+  "MOUNT": 0,
+  "ARC": 0,
+  "SENSOR": 0,
+  "SWEEP": 0,
+  "EXHAUST": 0,
+  "EXIT": 0,
+  "LANE": 0
+ }
+}

@@ -1,91 +1,61 @@
-# corsair_A20 build sheet: Hullbreaker hulk-carrier (the Den) (issue 633, round 2)
+# corsair_A20 build sheet: the Den, R244 (issue 688)
 
-Ashfall Hullbreakers hulk-carrier (the Den), class Carrier (16.5 world units, godot/render/hull_table.gd CLS_LEN); data.js c_hulk: turret T twice, ability launch, hangar 2. The model is 16.50 long. Designer of record: Opus (R205, R207); the Board is the final designer (R233). Built from the accepted concept of PR 625 (contrib/muse/design/class_family_corsair_2026_11/, corsair_A20_beauty.jpg, v2s, Ryan Nov 12 2026) and designs.md, the design of record for the fittings. The views were rendered in the Opus sandbox (Blender 5.3 as a Python module, CPU, 20 samples) from the same build.py; no PC run yet: the Board runs the recipe there after reviewing this sheet. Paint: `bake: stack` since issue 651 (the accepted Hullbreaker stack, R235; [paint/](paint/)).
+A20 now has two deep bow intakes and angular flanks. The bow housing is cut open behind the existing kit tubes, exposing their rolled lips, bolts, three stepped internal rings and dark rear baffles. The broad slab now has shoulder facets, lower chines, a recessed waist in plan and four tapered, stepped starboard armour wedges. The class length stays **16.5**; the exterior extent is exactly the same as before, **16.504628**.
 
-**Issue 651 (the Board as designer, R233, R236): the slab broadened and the mouths opened.** In game (PC run Nov 13, C16s_23_q and _t) the Den read as a long narrow box from above, and the battle three-quarter camera showed the twin tubes but not the hangar mouths. The slab's half beam went from 2.75 to 3.2 (hull 5.5 to 6.4 wide, hull length to beam 2.72 to 2.37 on the proportions measure, the accepted beauty about 2.4); the length stays the class length (16.50). The mouths are taller (1.58 to 1.72, sill -0.92, lintel 0.80) and deeper (1.9 to 2.3 to the back wall), so the dark bays and the fighter in them read from the three-quarter camera; the insides behind them, the dishes, the deck tiers, the stern frame, the bricks, lamps, thrusters and hard points moved out with the flanks. Checked against data.js c_hulk (turret T twice, all round; ability launch; hangar 2): no change needed there, the two turrets keep their places and arcs and both bays still launch to port. The views, the fit check, the inventory and the outline camera were all re-run on the broadened build (Blender 4.5, CPU, the sandbox); the outline camera was refitted, the camera only. Sheet before this change: git history of this folder (round 2, issue 633).
+Ashfall Hullbreakers carrier; game entry `data.js c_hulk`, game asset `C16s_23`. Accepted concept: `contrib/muse/design/class_family_corsair_2026_11/corsair_A20_beauty.jpg` (PR 625). Design: `tools/blender/build_sheets/ships/corsair_A20.py`. This is the CPU geometry revision requested in R244. The Board reviews the look and queues the GPU paint and game run.
 
-**Issue 668 (R239): both hangar mouths in the bow face.** Ryan, Nov 13 2026, on the painted, broadened Den: "on the hullbreakers carrier, I was wrong. I prefer the concepts version of the bays facing forward now that I see it built." Both mouths now open forward in the bow face, one either side of the bow block beside the twin tubes, as the beauty and the sheet's bow-on view draw them: port 1.36 wide, starboard 1.32, both 1.72 high, 3.0 deep to the back wall and 2.7 to the blast door, lined dark, with a cobbled fighter nosing out of the port mouth and a second parked in the starboard one. The layout is the closed PR 658's (commit 98e39958 on opus/issue-651), moved onto issue 651's 3.2 half-beam (PR 658 had 3.45); the port-flank mouths, their slid doors and the 1.4 plate between them are gone and the port flank is closed plate. The kit's hangar_mouth takes doors=False here (no face beside a bow-face mouth for the doors to slide onto). The fore weld B-1 moved aft behind the mouths' back wall, so the bow, both mouths and their craft tear away as one piece; the two bay points sit on the mouth floors at the lip and launch forward; the slab, its beam (6.4, hull length to beam 2.58 on the sheet's hull measure) and the class length (16.50) are unchanged. Fit check all zero (the core between the mouths is 1.72 half-beam and the outer cheeks 0.12 and 0.16, so the mouths' mounts clear each other; the round deck hatch HS1 moved from the bow end, which is now the bow block between the mouths, to the open deck strip on the port side behind it, between the fore deck tier and the port lintel). Sheet before this change: git history of this folder (issue 651).
+## Pictures
 
-![corsair_A20 preview](preview.jpg)
+- [Bow: concept, before and after](A20_bow_R244_before_after.jpg).
+- [Side and plan: concept, before and after](A20_side_R244_before_after.jpg).
+- [Whole concept and current build](beauty_vs_blockout.jpg).
+- Current [bow detail](A20_bow_detail_after.jpg), [port flank](A20_flank_detail_after.jpg) and [starboard flank](A20_flank_starboard_after.jpg).
 
-**Start here (R229, the whole concept first):** [whole beauty beside the whole build](../../../shots/issue_633_hullbreakers/a20_whole_compare.jpg), [side against the concept sheet's side](../../../shots/issue_633_hullbreakers/a20_side_compare.jpg), [plan against plan](../../../shots/issue_633_hullbreakers/a20_top_compare.jpg), then the [bow](../../../shots/issue_633_hullbreakers/a20_bow_compare.jpg) and [stern](../../../shots/issue_633_hullbreakers/a20_stern_compare.jpg); the five Hullbreakers from above at one scale: [hullbreakers_lineup_top.jpg](../../../shots/issue_633_hullbreakers/hullbreakers_lineup_top.jpg). Then [side_by_side.jpg](side_by_side.jpg), [cells.jpg](cells.jpg) and [fit_view.jpg](fit_view.jpg).
+These comparisons are labeled A20 and 1280 x 720. Before and after use the same cameras and lights. They show geometry in sheet colour zones, not a new paint bake. [sheet.jpg](sheet.jpg) is the full construction sheet; [feature_table.md](feature_table.md), [inventory.md](inventory.md), [fit_view.jpg](fit_view.jpg), [fit_report.md](fit_report.md) and [manifest.json](manifest.json) are rebuilt from this design.
 
-## Paint (issue 651, Nov 13 2026)
+## Method and changes
 
-A20 is painted by the same Hullbreaker paint stack as A16 and A17 (`"bake": "stack"`, tools/blender/kits/hullbreakers/stack.py).
-Three things A20 has that the earlier ships did not, each a kit rule, not a ship rule: the hangar mouths (kind hangar) carry the
-launch bay's warning stripes on their iron (as kind bay); the sheet zone lilac (the weathered Eclipse trophy plate on the E4
-bell housing) has its own colour, sampled from this ship's beauty because A16's has too few such pixels; and the spare bell
-on the deck is cold (its plug cone no longer glows: only a lit engine's plug does, shared/paint_stack.py). The parked craft's
-nozzle ember joins the engine glow. Sandbox preview (stages 4 to 7 on the CPU, 1024 atlases, 16 samples; re-rendered for issue 668 with the bow mouths; nothing was installed, so the authored interiors and death seam results below are from the earlier installed run):
-[full](paint/A20_paint_full.jpg), [six views beside the whole beauty](paint/A20_paint_views.jpg),
-[bow](paint/A20_paint_bow.jpg), [midships](paint/A20_paint_midships.jpg), [stern](paint/A20_paint_stern.jpg),
-[engines](paint/A20_paint_engines.jpg). Surface check 0 ([json](paint/surface_check_after.json)); R224 paint and mesh flags
-none ([density](paint/density_sandbox.json)); 19 running lamps (0.8 px on a 70 px ship; 16 before issue 668); authored interiors pass and the death
-seam check passes (0 of 14080 inside triangles outside their piece). As A17, the stack's colours are sampled from A16, so A20
-paints darker than its picture.
+- **Route:** hand-built faceted lofts and applied boolean cuts for the hull and bow housing; the existing Hullbreaker `parts.py` kit for both intake tubes and all machines. No new kit part or generated mesh.
+- **Bow:** each tube remains a fuel and dust intake. No extra torpedo weapon or engine plume is implied. All 34 sampled bore rays used to hit the housing after 0.14 units; they now stay clear for at least 2.08 units before the dark baffles. Testing includes the interior geometry, so hidden room surfaces cannot fill the openings. The bow loot locker moved behind the wells to keep it out of both bores. See [R244_geometry.json](R244_geometry.json) and [R244_before_geometry.json](R244_before_geometry.json).
+- **Flanks:** upper chamfers are 0.70 to 0.92 through the main body, with lower chines, diagonal shoulders into a waist inset 0.30 on port and 0.22 on starboard, and stepped salvage armour on starboard. Lamps, trophies, vents, breach and boarding points follow the new surfaces. The forward hangar cheeks remain the functional frames of the launch bays.
+- **Inside:** full decks, bulkheads and machinery spaces remain, with 23 interior mesh objects. The crosswise bow locker sits aft of both intake wells. The three authored seams stay in their existing positions.
+- **R239 and R240:** both hangar mouths still face forward beside the central bow block; their dark liners, warm deck lamps and parked craft remain. Both raised dorsal turrets remain clear of the dishes and antenna. The accepted Hullbreaker patchwork stack is unchanged.
+- **Paint:** the existing `bake: stack` route and `tools/blender/kits/hullbreakers/stack.py` remain. Files under [paint/](paint/) record earlier painted hulls; they are not pictures of this R244 geometry. The Board's queued paint run replaces that evidence.
 
-## What the class is (the Board as designer, R233)
+## Checks and budget
 
-A wide, flat, heavy slab, the widest Hullbreaker for its length, with a bow block standing out ahead of it as tall as the slab and about half its beam, its face filled by two huge intake tubes side by side (the README's bow intakes; round 2: the Board found round 1's tubes missing), dark-lined down their bores. Both hangar mouths open forward in the bow face, one either side of the bow block (issue 668, Ryan's R239: the concept's bays facing forward), lined dark inside so they read as deep openings from the beauty camera, each with a torn plate rim, launch rails on the floor, ceiling beams with dim red lamps, wall ribs and an inner blast door; a cobbled fighter (the game's 1.6) noses out of the port mouth and a second is parked in the starboard one. A salvage deck of three stacked plate tiers with lockers bolted down and a spare engine bell lying cold in a cradle, five mismatched bells along the top of the stern, one in a violet Eclipse housing. Every face is plated in courses at the carrier's plate size with patches over joints and plates, the top faces stepped (R196, R197). Two dorsal turrets (data.js), two shoulder dishes, a pair of bow grabbers and two heavy grapple arms folded flat under the stern quarters.
-
-## Checks (all on this sheet's build)
-
-| Check | Result |
+| Check | This revision |
 |---|---|
-| Fit check, seven tests (CLASH, MOUNT, ARC, SWEEP, EXHAUST, EXIT, LANE) | CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0, all zero ([fit_report.md](fit_report.md)); issue 651 broadened build: all zero, 362 objects; issue 668 bow mouths: all zero, 369 objects |
-| Machines on a seam (R226), sandbox stage 4 audit | 0 of 22 machines across a seam; structure across: H1 and H2 (the mouths, openings), HB1 and HB5 (deck lockers), L3 (a lamp) |
-| Audit (tools/recipe/audit.py) | PASS: 0 problems |
-| Audit self-test (audit_selftest.py) | PASS, all nine cases |
-| Contract self-test (sheet_contract_selftest.py) | PASS on PR 618's contract, merged into this branch in round 2 (its slot_map deals the two turret T slots; main's slot_index refuses a doubled pair) |
-| Insides inside the skin (every inside vertex enclosed by the intact outside, rays six ways) | 0 of 352 outside |
-| Detail density per part type (R224, under 0.75 of the hull is a fault) | none under; lowest hangar at 0.94 of the hull's triangles and 0.98 of its edge features per square unit |
-| Inventory (every part has a job, present, shaped, detailed per cell) | 0 failing ([inventory.md](inventory.md)) |
-| Triangles (reported, never capped) | issue 651: 93712 outside (the wider faces carry more plate courses); round 2: 91576 outside, 620 inside, 92196 in all (round 1: 75308 and 620; the plates in courses carry the scrap brick, R196) |
-| Outline overlap with the beauty at the sheet camera (reported, not a bar, RULEBOOK 5.8) | issue 668: the camera kept; rescored against a remade beauty mask (luminance over 19, largest piece, holes filled), 55.2 on the bow-mouth build against 54.0 on issue 651's at this camera ([outline_check.jpg](outline_check.jpg) is the rescore); issue 651: 78.6 percent (mass outline 78.0) at the refitted camera; the round 2 camera gives 75.3 on the broadened build against 73.9 on the round 2 build (same remade mask); round 2 recorded 74.8, round 1 55.9 |
+| Sheet proportions (`layout.py`) | PASS; side and top length agree; class length 16.5, exterior extent unchanged |
+| Fit, including 3c sensors | CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0; 368 objects, 44 parts, 18 sensor pairs |
+| Inventory (`inventory.py`) | PASS, 0 failing lines |
+| Build-sheet contract self-test | PASS, all 12 checks; 2 data weapon slots, 4 muzzle points, 2 turret pivots, 5 engine exits and 23 interior objects retained |
+| Recipe audit and its self-test | PASS; 0 problems and 0 machines across seams; all 9 self-test cases behave correctly |
+| Unpainted export and export self-test | PASS at default tolerance; 2 turret slots, 4 gun points, 5 engines, 2 bays, 7 breaches, core, 2 RCS and 2 boarding points |
+| Actual bore clearance, including interiors | PASS, 34 of 34 rays; at least 2.08 clear units; interior faces do not obstruct either bore |
+| Standing suite | Exit 0: 48 PASS, 2 KNOWN baseline rows, 0 FAIL, 0 SKIP; see [R244_validation.json](R244_validation.json) |
+| Dedicated weapon-match checker | Absent from this checkout; contract and export checks verify both actual `turret T` slots and all four muzzles |
 
-The fit check, the seam and inside tests and the density were run in the sandbox (tools/blender/build_sheets/build.py fit mode; the seam, inside and density measures are scripted the same way as the Chorus sheets' check, issue 623). PR 608's death check in Godot needs the exported ship and runs on the PC.
+Before: **90,784 exterior + 708 interior = 91,492 triangles**. After: **90,450 exterior + 708 interior = 91,158 triangles**, 334 fewer. The sheet has 368 exterior mesh objects and 15 exterior material zones. The unpainted test export has 88,306 triangles in the fixed ship mesh plus 2,852 in the two turning turret meshes, also 91,158 total. It has 14 material primitives (12 fixed, one on each turret), an estimate of 14 base draws before painting. Final painted draws and the scene gate belong to the Board's GPU run. Costs are reported, not capped.
 
-## Proportions (concept against build, the same measure on both)
+Outline overlap at the unchanged concept camera is **53.42% after, 54.06% before**, using the same largest-component luminance mask for both. This is reported, not a gate (RULEBOOK 5.8); the camera has not been refitted. [checks.json](checks.json) records the mask and view measurements. The bow tubes, hangars and prescribed game weapons are judged against the pictures and game data, not bent to raise that score.
 
-| | Hull length:beam | Hull length:height |
-|---|---:|---:|
-| Concept sheet, true top and side views (luminance mask over 14, median over the middle 60 percent) | 3.37 | 5.86 |
-| Build, round 2 (the sheet's top and side renders, same measure) | 2.71 | 5.82 |
-| Build, issue 651 broadened (inventory.md's hull measure, which read 2.72 and 5.84 on round 2) | 2.37 | 5.87 |
+## Reproduce
 
-Issue 651: the Board moved the width onto the accepted beauty's proportion (about 2.4), the length and height kept. Re-measured in round 2 with one script on both (round 1 read the concept at 3.40 and 5.83). The width call stays (the Board on round 1): the slab is wider than the sheet's top view, toward the accepted beauty (about 2.4); its height matches the sheet's side view. From above the bow block now stands out ahead of the slab at about half its beam, as wide as the two huge tubes side by side need. The inventory's own table ([inventory.md](inventory.md)) uses a colour-difference mask that drops most of the dark concept hull; the row above is the one to read.
+`render_R244.py` runs the shared renderer with CPU forced in memory, writes the normal views, three detail views and the bore measurements. It does not change the shared renderer or use the GPU. Use Blender 4.5.14, six CPU threads and `SHEET_SAMPLES=16`:
 
-## Weapons, seams, breach anchors
+```
+blender -b -t 6 --python-exit-code 1 -P render_R244.py -- corsair_A20 TEMP_AFTER render
+```
 
-data.js c_hulk lists turret T twice: T1 on the fore deck tier and T2 on the aft, all round. The contract deals them over the two slots in build order (PR 618's slot_map; this branch merged PR 618 in round 2, so the stage 4 stand-in ran on it). Bays: hp_bay_0 and hp_bay_1, one per mouth on its floor at the lip, launching forward (issue 668; they launched to port before), hangar 2. Three authored seams: B-1 the fore weld (issue 668: moved aft to x 2.3, behind the mouths' back wall, so the bow and both mouths tear away as one piece), B-2 behind the hangar decks, through the core (issue 668; it ran between the flank mouths before: the bay side tears first and the hangar decks spill, designs.md), B-3 the aft weld; machines kinked round. Issue 651: with the slab broadened, each seam path's y was stretched by 3.2 / 2.75 and runs on to 4.9 off the axis (round 2's paths ended their kinks at 3.0, inside the new flanks, and the death check found 2 hull-liner triangles outside their piece; with the stretched paths it finds 0 of 14080). Seven breach anchors (carrier base 6, plus one), uneven. Issue 668: the two prow anchors moved: hp_breach_0 up onto the fore deck tier's port wall, hp_breach_1 forward and up onto the bow block's starboard flank, because the thin cheeks beside the bow mouths are within 0.03 of the length (0.5) of the mouths' mounts and stage 7 refused them there.
+For the before capture, set `SHIP_FILE` to a temporary copy of the design from this job's parent revision and use a separate output folder. Reset `SHIP_FILE` for the after capture. Then use Blender's bundled Python (Pillow, numpy, scipy) to assemble the sheet and comparisons in a temporary folder:
 
-## The recipe (issue 633)
+```
+python assemble_R244.py TEMP_BEFORE TEMP_AFTER TEMP_SHEET
+```
 
-C16s_23 (`corsair|Carrier` in godot/render/hull_table.gd AI_HULLS), bake none. In the sandbox: contract self-test PASS; stage 4 audit and its self-test PASS; export7 unbaked at the default tolerance 89344 triangles, hard points gun 4, engine 5, bay 2, breach 7, core 1, rcs 2, board 2, two turrets; check_export PASS and its self-test PASS; install (manifest_merge, build_assets --ships-only) and INSTALL READBACK PASS (27 nodes); authored_interiors_check 0 failures (21161 interior triangles); death_seam_check 0 of 22 machines split, 0 of 11459 insides outside their piece. Three sheet changes came from the recipe (each also on the changes list, and the sheet re-rendered): the plate between the mouths is 1.4 wide (mouths 3.2 and 2.6, were 3.6 and 3.0), because the export puts a breach anchor at least 0.03 of the length (0.5) from every part and the 0.6 plate left no such point on the port flank amidships; the two bay points sit on the mouth floors at the lip (a hard point must be on the mesh, the mouth is open air); the three seam paths run on past the flanks to 4.2 off the axis, as C10's and C11's do (paths that stopped at 3.0, inside the widest parts, left 26 inside triangles outside their piece). The aft fighter moved to the middle of its shorter mouth. The PC run: tools/pc/jobs/A18_A20_RUN_633.bat (queue file q_a633.bat), not queued.
+Copy the resulting JPG, JSON and MD artifacts into this sheet folder. Keep the raw renders, logs and temporary blends in `%TEMP%\voidsworn-688`. Review copies, including the blockout at `shots\corsair_A20\corsair_A20_blockout.blend`, are in `C:\Users\rcbai\Downloads\voidsworn_test\board\issue-688\shots`.
 
-## Changed from the picture (R207, R233)
+The checks used `sheet_contract_selftest.py`, `sheet_hull.py`, `audit.py`, `audit_selftest.py`, `export7.py unbaked=1`, `check_export.py unbaked=1`, `check_export_selftest.py unbaked=1`, `inventory.py`, `layout.py`, the renderer's bore measurements, and `node contrib/opus/tools/run_all_checks.js` with bundled Node 22. The Windows sandbox needs `NODE_OPTIONS=--preserve-symlinks --preserve-symlinks-main` for the standing runner to resolve this checkout.
 
-Issue 668: the list is the design file's change list as built (the same lines as the sheet). Round 2's and issue 651's lines for the port-flank mouths (their doors, the 1.4 plate between them and the port mid anchor on it) are in the git history of this folder.
-
-- **Issue 668 (R239): both hangar mouths open forward in the bow face, one either side of the bow block beside the twin tubes (port 1.36 wide, starboard 1.32; 1.72 high; 3.0 deep to the back wall, 2.7 to the blast door), framed by a sill, a lintel and an outer cheek each; the port flank is closed plate now.** Ryan, Nov 13 2026 (R239), on A20 painted and widened: "on the hullbreakers carrier, I was wrong. I prefer the concepts version of the bays facing forward now that I see it built." The beauty and the sheet's bow-on view draw the two mouths in the bow face beside the twin tubes with a craft visible inside; this replaces his Nov 12 port-flank ruling (issue 633). The layout is the closed PR 658's (commit 98e39958), on issue 651's 3.2 half-beam; data.js c_hulk (launch, hangar 2) is met either way
-- **Each mouth is a real recess with a torn plate rim, launch rails on the floor, ceiling beams, a dim red lamp, frame ribs and an inner blast door on the back wall; no door leaves (issue 668).** the Board's brief: they must read as launch bays with depth; in the bow face there is no face beside a mouth for designs.md's slid doors (the bow block stands there), so the kit part leaves them out (hangar_mouth doors=False)
-- **The mouths are lined dark (floor, ceiling, back wall and ends): only the rails, ribs, red lamps and the fighters catch the light.** the Board on round 1 (Nov 13): the mouths must be big, deep, dark openings that show from the beauty camera with the fighter in them; round 1's were 1.37 high and lit grey inside, so they read as shallow grilles
-- **The bow block is as tall as the slab and about half its beam (3.2 across, 1.9 tall, 2.7 long); its face carries two huge intake tubes side by side, each 1.1 across (three quarters of the face's height), reaching 2.3 back into the block.** the Board on round 1 (Nov 13): the build had no twin tubes (two 0.8 tubes in a narrow block); the README's bow intakes and the beauty's two huge tubes. The concept sheet's plan draws the block about 0.4 of the beam; it is widened so the tubes fit side by side
-- **Bow thrusters and the bow lamps on the bow block's flanks, the chin scoop under the web between the tubes.** the wider block and its tubes fill the old places
-- **The two shoulder dishes stand on the lintels over the mouths.** designs.md puts the dishes on the shoulders; the mouths took the shoulders' faces (issue 668)
-- **The slab is 6.4 wide over its hull (hull length to beam 2.58 on the top view) and 2.05 deep; issue 668 keeps issue 651's beam.** the accepted beauty (v2s, "hull deepened") draws it about 2.4 long for its width, the sheet's top view 3.4; issue 651 broadened it toward the beauty's broad slab (R229: the whole concept; R233, R236)
-- **Two dorsal turrets, one on the fore deck tier and one on the aft.** data.js c_hulk: turret T twice (R221); designs.md's bow casemates, starboard flank guns and rocket rack have no slot, so they are not built
-- **Five mismatched bells in a row along the top of the stern, one in a violet Eclipse trophy housing.** designs.md; the picture's eight become five
-- **A fighter nosing out of the port mouth and a second parked deeper in the starboard one, both 1.6 long.** designs.md and the beauty (the fighter in the near mouth); the game's squadron length gives the scale
-- **The spare engine bell lies across the deck in a cradle, cold.** the picture's bell on the deck; designs.md: bolted down flat (field repairs)
-- **The salvage deck is three low tiers of stacked plate with lockers bolted down, not loose junk.** Ryan R185: nothing hangs off the ship; stacked and bolted scrap brick (R196, R197)
-- **One pair of grabbers under the bow block and two heavy grapple arms folded flat under the stern quarters.** designs.md (four bow arms become two, so the jaw is not A17's; the grapples drag prizes alongside)
-- **Four attitude thrusters.** a ship in space needs them to turn
-- **The fore weld B-1 moved aft to x 2.3, behind the mouths' back wall (issue 668; was 4.75).** with the mouths in the bow face a weld at 4.75 would cut through both mouths and the port fighter; the bow, both mouths and their craft now tear away as one piece (designs.md: the bay side tears first)
-- **Every face is plated in courses at the hull's plate size (0.4 to 0.9), each course jointed on its own (a brick bond), patches laid over joints and offset patches over plates; upward faces stepped in terraces of one to three plate thicknesses.** the Board on round 1 (Nov 13): the faces read as big smooth grey planes with a few greebles; the concept is scrap brick, plates over plates on every face (R196, R197). Kit: the sheet kit's courses plating (kit.py, opt-in, issue 633)
-- **Insides: two hangar deck levels behind each mouth, loot holds in the bow and in the core between the mouths, a kennel deck, the core between the hangar decks, machinery and the engine room aft.** designs.md; R209, R215
-
-## Open
-
-- Belly detail between the bow grabbers and the stern grapples is designed here; the picture does not show the underside
+GPU paint, installation, game captures and the painted scene gate were left to the Board as the brief directs. No game assets were installed by this job. No commit or push was made.

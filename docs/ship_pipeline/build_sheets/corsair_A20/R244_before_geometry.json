@@ -1,0 +1,73 @@
+{
+ "device": "CPU",
+ "class_length": 16.5,
+ "model_length": 16.50462818145752,
+ "openings": [
+  {
+   "id": "I1",
+   "rays": 17,
+   "depths": [
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14
+   ],
+   "minimum_depth": 0.14,
+   "pass_depth": false
+  },
+  {
+   "id": "I2",
+   "rays": 17,
+   "depths": [
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14,
+    0.14
+   ],
+   "minimum_depth": 0.14,
+   "pass_depth": false
+  }
+ ],
+ "triangles": {
+  "outside": 90784,
+  "inside": 708
+ },
+ "exterior_meshes": 369,
+ "exterior_materials": 15,
+ "fit_counts": {
+  "CLASH": 0,
+  "MOUNT": 0,
+  "ARC": 0,
+  "SENSOR": 0,
+  "SWEEP": 0,
+  "EXHAUST": 0,
+  "EXIT": 0,
+  "LANE": 0
+ }
+}
