@@ -1,4 +1,4 @@
-sha256 5ca29fd481eec103bfe9d33750f71dc77dbed3ea386ad37a4dcf7ecb326c4e2c
+sha256 cf4beced38fbb8528756162a198c5959941d1ba39e30396aa3005416858f1aa3
 tools/blender/build_sheets/ships/corsair_A16.py
 tools/blender/build_sheets/kit.py
 tools/blender/kits/hullbreakers/parts.py

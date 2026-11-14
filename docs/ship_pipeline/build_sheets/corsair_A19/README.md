@@ -2,6 +2,8 @@
 
 Ashfall Hullbreakers destroyer (the Mauler, the pack's gun ship), class Destroyer (9.5 world units, godot/render/hull_table.gd CLS_LEN); data.js c_reaver: torp F, scatter S, ability reload. The model is 9.50 long. Designer of record: Opus (R205, R207); the Board is the final designer (R233). Built from the accepted concept of PR 625 (contrib/muse/design/class_family_corsair_2026_11/, corsair_A19_beauty.jpg, v6, Ryan Nov 12 2026) and designs.md, the design of record for the fittings. The views were rendered in the Opus sandbox (Blender 5.3 as a Python module, CPU, 20 samples) from the same build.py; no PC run yet: the Board runs the recipe there after reviewing this sheet. Paint: `bake: none` (the sheet paint stack, PR 610, is not merged).
 
+**Issue 668 (R239): broadened toward the concept.** Ryan, Nov 13 2026: "a18 and a19 are much slimmer than concept. It's not a huge deal but it'd add some variety." Every hull half-beam from 2.55 aft is out by 0.3 (the design file's WIDEN), less toward the face so the arrow-head prow keeps its point and its overhang (the bow face 1.24 across); the foredeck plate, the side block, the stern block, the spine blocks, the lower band and every flank fitting, hatch, keep-out, room, seam path and boarding point moved out with it. The hull is 2.36 wide (was 1.76): hull length to beam 5.40 to 4.03 on the sheet's own hull measure (checks.json), 4.11 to 3.27 on the inventory's (inventory.md; it reads the concept sheet's top view at 7.57). The class length (9.50) and the silhouette (the wedge prow over the bow-face casemates, the starboard battery) are kept. The concept sheet's top view draws A19 slimmer than the beauty does; Ryan's words match the beauty, so the beauty is the target: with the camera refitted (camera only) to the same beauty mask, the outline overlap goes from 68.0 percent on the slim build to 68.4 on the broadened one (body 66.0 to 66.7). Fit check all zero (the lower band's fore section is set at 1.06 so the bow casemates Q1 and Q2 stay clear of it). Sheet before this change: git history of this folder (issue 633 round 2).
+
 ![corsair_A19 preview](preview.jpg)
 
 **Start here (R229, the whole concept first):** [whole beauty beside the whole build](../../../shots/issue_633_hullbreakers/a19_whole_compare.jpg), [side against the concept sheet's side](../../../shots/issue_633_hullbreakers/a19_side_compare.jpg), [plan against plan](../../../shots/issue_633_hullbreakers/a19_top_compare.jpg), then the [bow](../../../shots/issue_633_hullbreakers/a19_bow_compare.jpg) and [stern](../../../shots/issue_633_hullbreakers/a19_stern_compare.jpg); the five Hullbreakers from above at one scale: [hullbreakers_lineup_top.jpg](../../../shots/issue_633_hullbreakers/hullbreakers_lineup_top.jpg). Then [side_by_side.jpg](side_by_side.jpg), [cells.jpg](cells.jpg) and [fit_view.jpg](fit_view.jpg).
@@ -9,11 +11,11 @@ Ashfall Hullbreakers destroyer (the Mauler, the pack's gun ship), class Destroye
 ## Paint (issue 651, Nov 13 2026)
 
 A19 is painted by the same Hullbreaker paint stack as A16 and A17 (`"bake": "stack"`, tools/blender/kits/hullbreakers/stack.py),
-nothing ship-specific: the colour zones are this sheet's own materials. Sandbox preview (stages 4 to 7 on the CPU, 1024
+nothing ship-specific: the colour zones are this sheet's own materials. Sandbox preview (re-rendered for issue 668 on the broadened hull, nothing installed, so the authored interiors and death seam results below are from the earlier installed run; stages 4 to 7 on the CPU, 1024
 atlases, 16 samples): [full](paint/A19_paint_full.jpg), [six views beside the whole beauty](paint/A19_paint_views.jpg),
 [bow](paint/A19_paint_bow.jpg), [midships](paint/A19_paint_midships.jpg), [stern](paint/A19_paint_stern.jpg),
 [engines](paint/A19_paint_engines.jpg). Surface check 0 ([json](paint/surface_check_after.json)); R224 paint and mesh flags
-none ([density](paint/density_sandbox.json)); 16 running lamps (0.8 px on a 70 px ship); authored interiors and the death seam
+none ([density](paint/density_sandbox.json)); 15 running lamps on the broadened hull (0.8 px on a 70 px ship; 16 before issue 668); authored interiors and the death seam
 check pass on the export. As A17, the stack's colours are sampled from A16, so A19 paints darker than its picture.
 
 ## What the class is (the Board as designer, R233)
@@ -24,7 +26,7 @@ A long low slab whose defining shape is the arrow-head prow (round 2: the Board 
 
 | Check | Result |
 |---|---|
-| Fit check, seven tests (CLASH, MOUNT, ARC, SWEEP, EXHAUST, EXIT, LANE) | CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0, all zero ([fit_report.md](fit_report.md)) |
+| Fit check, seven tests (CLASH, MOUNT, ARC, SWEEP, EXHAUST, EXIT, LANE) | CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0, all zero ([fit_report.md](fit_report.md)); issue 668 broadened build: all zero |
 | Machines on a seam (R226), sandbox stage 4 audit | 0 of 22 machines across a seam; structure across: PH1 (a pipe) |
 | Audit (tools/recipe/audit.py) | PASS: 0 problems |
 | Audit self-test (audit_selftest.py) | PASS, all nine cases |
@@ -33,7 +35,7 @@ A long low slab whose defining shape is the arrow-head prow (round 2: the Board 
 | Detail density per part type (R224, under 0.75 of the hull is a fault) | none under; lowest antenna at 1.01 of the hull's triangles and 0.95 of its edge features per square unit |
 | Inventory (every part has a job, present, shaped, detailed per cell) | 0 failing ([inventory.md](inventory.md)) |
 | Triangles (reported, never capped) | 70054 outside, 464 inside, 70518 in all (round 1: 49934 and 464; the plates in courses carry the scrap brick, R196) |
-| Outline overlap with the beauty at the sheet camera (reported, not a bar, RULEBOOK 5.8) | 77.9 percent (mass outline 80.2; round 1 77.3) |
+| Outline overlap with the beauty at the sheet camera (reported, not a bar, RULEBOOK 5.8) | 77.9 percent (mass outline 80.2; round 1 77.3), the round 2 record; issue 668 kept the camera and rescored against a remade beauty mask (luminance over 19, largest piece, holes filled): 62.5 on the broadened build against 64.5 on round 2 at this camera, 68.4 against 68.0 with the camera refitted to each (see the issue 668 note above; [outline_check.jpg](outline_check.jpg) is the rescore) |
 
 The fit check, the seam and inside tests and the density were run in the sandbox (tools/blender/build_sheets/build.py fit mode; the seam, inside and density measures are scripted the same way as the Chorus sheets' check, issue 623). PR 608's death check in Godot needs the exported ship and runs on the PC.
 
@@ -56,6 +58,7 @@ C14s_23 (`corsair|Destroyer` in godot/render/hull_table.gd AI_HULLS), bake none.
 
 ## Changed from the picture (R207, R233)
 
+- **Issue 668: the slab is broadened, every half-beam from 2.55 aft out by 0.3 (2.36 wide, was 1.76), the length, the prow's point and the bow-face casemates kept.** Ryan, Nov 13 2026 (R239): "a18 and a19 are much slimmer than concept. It's not a huge deal but it'd add some variety." The lines below that give round 2's widths are kept as the history
 - **The two mismatched casemates sit IN the bow face: port, one long rocket tube on a brace; starboard, three short fat tubes banded together.** Ryan, Nov 12 (the round's ruling): "the two mismatched casemates sit IN the bow face", whatever the beauty's foredeck housings suggest. data.js c_reaver's only forward weapon is torp F, so both are rocket casemates (the Hullbreaker rattle rockets); the long tube stays short of a prow gun (RULEBOOK 4.4, Ryan on v5 "added a giant front gun again?")
 - **The bow is an arrow-head from above: the broad flat bow plate runs from a blunt point 0.4 across to the full beam over the first third, overhanging a narrow bow face (1.1 across, 0.52 tall) that holds the two casemates; the hull's flanks widen back behind it.** the Board on round 1 (Nov 13, R233): the build had a blunt square bow; the picture's defining shape is the wedge prow (the concept sheet: 0.4 across at the tip, 1.3 just behind it, 2.1 by a third of the length). The face stays blunt and narrow, not a thin edge: the casemates need a face to sit in (designs.md)
 - **Every face is plated in courses at the hull's plate size (0.2 to 0.46), each course jointed on its own (a brick bond), patches laid over joints and offset patches over plates; upward faces stepped in terraces of one to three plate thicknesses.** the Board on round 1 (Nov 13): the faces read as big smooth grey planes with a few greebles; the concept is scrap brick, plates over plates on every face (R196, R197). Kit: the sheet kit's courses plating (kit.py, opt-in, issue 633)
