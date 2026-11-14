@@ -55,6 +55,26 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    stripes, a parked craft takes its sheet zones and its nozzle joins the engine glow, and a sheet zone the stack has no colour
    for gets one in the faction stack, sampled from the beauty that shows it (the lilac trophy plate, from A20's); the list is
    in RECIPE.md "The paint stack for sheet ships".
+   **The Eclipse paint** (issue 642, set in `tools/blender/kits/eclipse/stack.py` for every Eclipse sheet ship, never on one
+   ship; factions.md Eclipse and Ryan's rulings): a black shade with a thin ring of green-white fire at its edge. (1) Dark
+   violet-black plates judged under the game's Eclipse battle lift 2.2 (R227): the stack's colours are the tones to show at the
+   lift, divided by it (read from look.gd), never lavender or grey; (2) separation by structure, not noise (Ryan, Nov 13 2026
+   11:06 CST, on the first E11 picture: "Not a ton of details elsewhere, it looks like grainy paint almost. Everything kind of
+   blends together"): clear value steps between big calm panels and plate families (near-black heat-shield plates most, deep
+   violet, a lighter dusk violet, a few mauve and cool dark gunmetal plates, rare pale plates on small plates only), dark seams
+   wide enough to read at camera 170, brighter worn edges on rims and plate lips, a different finish for the shade plates
+   (matte), the body behind them (satin) and the machines (worked metal), no fine mottle or grain and almost no per-island tone;
+   no rust or soot; a roughness floor of 0.50; (3) the green is light, not paint (Ryan, same message: "that green looks so plain
+   and stark, just like neon paint"): the corona line on every shade rim is the faint green ring of a real eclipse, thin at rest,
+   brighter arcs and dimmer stretches along it with a few short breaks, a soft falloff into the plate edge, cold green-white at
+   its hottest and deeper green where dim, mostly under the game's 0.8 glow threshold with only the brightest arcs over it; the
+   core green-white at its centre grading to green at its edge (never a white blob, Board review of PR 643); never green pooled
+   in hollows, ribs or sockets; every light is drawn on one emission map; (4) engines are an eclipse ring of pale light round a
+   black shade disc, in the game's Eclipse engine colour paled toward white, each engine its own brightness, tint, hot spots and
+   dim gaps, no flame; (5) no added running lamps (the red lamps are a Hullbreaker rule; the Eclipse show only the corona, the
+   core and the rings, and the sheet's corona strip lights; Board accepted, R236); (6) the stack's surfaces are rim_soft, parts
+   carry the hull's plates and seams (R224 in paint), the liner is dark violet-black, and stage 5's surface check is 0 px.
+   Judge the paint at 2048 maps or more (the PC bakes 4096) and at the camera 170 pixel size as well as close.
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
    opus_check_341).

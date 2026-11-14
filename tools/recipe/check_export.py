@@ -161,7 +161,9 @@ def main():
             if mat != code + '_inside_skin': rooms.append(pos[idx])
             continue
         T.append(pos[idx])
+        trim = 'material' in pr and (g['materials'][pr['material']].get('extras') or {}).get('hull_surface')
         if mat == code + '_hull' and M is None: hull_seen = True
+        elif trim and M is None: pass                 # issue 642: the hull's own glowing trim (the Eclipse rim line), marked by the paint stack
         else: PT.append(pos[idx])                     # every surface but the hull is a part surface (parts, glow, turrets)
     if not hull_seen: probs.append(f'no {code}_hull surface: the hull cannot be told from the parts, so breach clearance cannot be measured')
     T = np.concatenate(T); A, B, C = T[:, 0], T[:, 1], T[:, 2]; lo, hi = T.reshape(-1, 3).min(0), T.reshape(-1, 3).max(0)
