@@ -73,12 +73,17 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    violet, a lighter dusk violet, a few mauve and cool dark gunmetal plates, rare pale plates on small plates only), dark seams
    wide enough to read at camera 170, brighter worn edges on rims and plate lips, a different finish for the shade plates
    (matte), the body behind them (satin) and the machines (worked metal), no fine mottle or grain and almost no per-island tone;
-   no rust or soot; a roughness floor of 0.50; (3) the green is light, not paint (Ryan, same message: "that green looks so plain
+   no rust or soot; a roughness floor of 0.50. R243 (Ryan, Nov 13): panels are dead even, ordered and aligned across the hull
+   and crescent, with recessed seams and slight relief; the stack bakes that relief into the hull's detail normal. E11's
+   accepted colour pairs stay unchanged. This order is the Eclipse's own, never the Hullbreakers' patchwork;
+   (3) the green is light, not paint (Ryan, same message: "that green looks so plain
    and stark, just like neon paint"): the corona line on every shade rim is the faint green ring of a real eclipse, thin at rest,
    brighter arcs and dimmer stretches along it with a few short breaks, a soft falloff into the plate edge, cold green-white at
-   its hottest and deeper green where dim, mostly under the game's 0.8 glow threshold with only the brightest arcs over it; the
-   core green-white at its centre grading to green at its edge (never a white blob, Board review of PR 643); never green pooled
-   in hollows, ribs or sockets; every light is drawn on one emission map; (4) engines are an eclipse ring of pale light round a
+   its hottest and deeper green where dim. R243: brighter through the same thin strip so it reads at camera 170, including
+   E12's ring segments; brighter arcs may cross the game's glow threshold. The core glows green like the concept, white-hot
+   only at its very centre, reading at camera 170; never green pooled in hollows, ribs or sockets. Every light is drawn on one
+   emission map; only the hull's rim trim material is marked hull_surface for breach clearance, never engines, core or lens.
+   (4) engines are an eclipse ring of pale light round a
    black shade disc, in the game's Eclipse engine colour paled toward white, each engine its own brightness, tint, hot spots and
    dim gaps, no flame; (5) no added running lamps (the red lamps are a Hullbreaker rule; the Eclipse show only the corona, the
    core and the rings, and the sheet's corona strip lights; Board accepted, R236); (6) the stack's surfaces are rim_soft, parts

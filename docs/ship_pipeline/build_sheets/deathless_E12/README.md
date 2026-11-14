@@ -41,14 +41,7 @@ Start here: **[side_by_side.jpg](side_by_side.jpg)**, then [fit_view.jpg](fit_vi
 `"bake": "stack"`: stage 5 paints this ship with the Eclipse kit's paint stack (`tools/blender/kits/eclipse/stack.py` on
 `tools/blender/kits/shared/paint_stack.py`; RECIPE.md "The paint stack for sheet ships", ships.md section 0 item 2 "The Eclipse
 paint"). Masks from the ship's own geometry, a drawn trim sheet and decals, colours sampled from the concepts, never projected.
-Pictures (sandbox on Blender 4.5.14, the PC's Blender, on the GPU: **4096 atlases** and a 2048 light map, 64 samples, Nov 13; game light, battle lift 2.2): [beside the concept](paint/E12_paint_full.jpg), [at the battle camera's pixel size](paint/E12_paint_cam170.jpg),
-[bow](paint/E12_paint_bow.jpg), [midships](paint/E12_paint_midships.jpg), [stern](paint/E12_paint_stern.jpg),
-[six views](paint/E12_paint_views.jpg), [engines](paint/E12_paint_engines.jpg), [corona line and core close](paint/E12_paint_close.jpg);
-[surface check](paint/surface_check.json), [R224 density](paint/density_sandbox.json). The game shots at camera 170 and 60
-come from the PC run (`tools/pc/jobs/E11_E12_PAINT_642c.bat`; the runs 642 and 642b crashed in stage 5 on Blender 4.5, fixed in
-the stack: it wrote the light inputs through an attribute handle taken before it added another attribute).
-
-**Budget (stage 7, D21_23, unpainted export of PR 620 then this paint):** triangles 41,052 (turrets 10,938) before and after (the paint adds no mesh); surfaces (draw calls) 9 then 10 (the one added is the glow surface: the corona line, core, lens and engine rings on one emission map); textures none then six 2048 maps (hull base, ORM, normal; parts base, ORM; glow emission), baked at 4096 with a 2048 light map; glb 2.4 MB then 4.4 MB. The scene gate is on the PC run.
+Latest: [round 3 method, checks and budget](paint/round3.md), Nov 14 2026. Blender 4.5.14 CPU, **2048 hull/parts atlases**, 1024 emission, 6 bake samples; game-light previews at lift 2.2. [Camera 170 beside concept](paint/E12_paint_cam170.jpg), [camera 60 beside concept](paint/E12_paint_cam60.jpg), [whole ship](paint/E12_paint_full.jpg), [rim and core close](paint/E12_paint_close.jpg), [views](paint/E12_paint_views.jpg), [engines](paint/E12_paint_engines.jpg). These replace the pass 2 previews. Surface check: 0 bare and 0 room pixels. R224 density: 0 flags. Budget: triangles 41,052 unchanged; root surfaces 10 to 11, all mesh surfaces 16 to 17; one new material, no added mesh or image. GPU cost and actual game pictures await the Board's new `E11_E12_PAINT_642d.bat` run.
 
 **Colour, judged at the battle lift.** The game lifts an Eclipse hull's albedo by 2.2 (R227, `godot/render/look.gd`; Ryan: "a bit
 darker for eclipse"); unpainted, this ship rendered glowing white in the game. The stack's colours are the tones the plates must
@@ -71,11 +64,11 @@ speckle are gone. The tone stays dark violet-black at the 2.2 lift.
   their only lights are the corona (the thin green-white line on every shade rim, which already marks the outline and heading
   at the battle camera), the core, the pale engine rings and the sheet's own corona strip lights over the belts. No
   `lights.json` is written; the standing light check passes with nothing to hold.
-- **The green is light, not paint** (pass 2): the corona line is drawn on the ship's emission map as the faint ring of a real
+- **The green is light, not paint** (round 3, R243): the corona line is drawn on the ship's emission map as the faint ring of a real
   eclipse: thin at rest, brighter arcs and dimmer stretches with a few short breaks, a soft falloff into the plate edge, cold
-  green-white at its hottest and deeper green where dim, mostly under the game's 0.8 glow threshold with only the brightest arcs
-  over it. The core is green-white at its centre grading to the concepts' core green at its edge, the brightest light on the
-  ship but never white all over.
+  green-white at its hottest and deeper green where dim, bright enough to read at camera 170 through the same thin strip.
+  Brighter arcs may cross the game's glow threshold. The core glows green like the concept, white-hot only within its central
+  0.18 radius, and reads at camera 170.
 - **The engine ring is the game's Eclipse engine colour** (`godot/fx/faction_looks.json` deathless `engine`, a pale violet, the
   colour the game's plume is drawn in) paled toward white with a touch of its white-gold `accent`, not the sheet's green: each
   ring its own brightness and tint, hot spots and dim gaps round it, the shade disc black. No flame.

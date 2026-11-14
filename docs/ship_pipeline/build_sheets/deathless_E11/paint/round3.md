@@ -1,0 +1,17 @@
+E11 paint round 3, issue 642, Nov 14 2026.
+
+Method: [approved build sheet](../README.md), [manifest](../manifest.json), `bake: stack` in `tools/recipe/ships/deathless_E11.json`, `tools/blender/kits/eclipse/stack.py` on the shared stack. Geometry masks, own drawn CC0 trim and decals, sampled concept colours, never projection. Sheet geometry, routes, insides, mounts and lamp choice are unchanged. No running lamps added.
+
+Changes: aligned cell joints across hull and crescent, recessed seams and shallow relief baked into the hull normal map; brighter corona over the same thin uneven rim; a green core with white confined to its central 0.18 radius. Accepted hull colour pairs are unchanged. Hull rim trim alone gets a marked material, sharing the emission image with unmarked engine, core and lens materials.
+
+[Camera 170 beside concept](E11_paint_cam170.jpg), [camera 60 beside concept](E11_paint_cam60.jpg), [whole ship](E11_paint_full.jpg), [rim and core close](E11_paint_close.jpg). These are Blender CPU game-light previews, lift 2.2, at the true game pixel size. Actual in-game pictures await the Board GPU run. All pictures are named and no taller than 720 px.
+
+CPU proof on Blender 4.5.14: stage 4 build, contract, audit and broken-build selftest PASS; stage 5 2048 hull/parts, 1024 emission, 6 samples, surface 0 bare pixels and 0 room pixels, licences/lights PASS; density 0 mesh and 0 paint flags; stage 6 LOD export PASS; stage 7 painted export, check and selftest PASS. The marked triangle beside an anchor passes; the same unmarked part triangle fails. Removing only the real rim marker fails 3 anchors. [Numbers and every clearance](round3_proof.json).
+
+Budget against the prior painted PC export: triangles 104,804 unchanged (including 15,972 turret triangles); root surfaces 11 to 12; total mesh surfaces, a per-pass draw count before game effects, 19 to 20. One extra material separates hull trim from part lights. Five 2048 maps plus one 1024 emission map in this CPU proof; the Board's 4096 bake exports five 2048 maps and a 2048 emission map, as before. No added mesh or image. GLB 11,500,136 to 11,501,640 bytes.
+
+All breach anchors pass with the trim exemption alone: hp_breach_0 0.1637, hp_breach_1 0.1525, hp_breach_2 0.1335, hp_breach_3 0.0559, hp_breach_4 0.0301, hp_breach_5 0.0306, hp_breach_6 0.0593, hp_breach_7 0.0504. Minimum required clearance 0.0300. Removing the rim marker reports: hp_breach_0 is 0.0105 from a part (at least 0.03); hp_breach_1 is 0.0199 from a part (at least 0.03); hp_breach_2 is 0.0226 from a part (at least 0.03).
+
+A16: ten PNG maps and drawn textures byte-identical to main f1424dd6 at 256 maps, 2 samples on the same Blender CPU. Fixture record PASS. Standing checks on bundled Node 22 exit 0, with only the existing seven listed findings and twelve baseline constant differences. Changed text syntax, JSON, no em dashes and `git diff --check` PASS. The PC scene gate evaluator accepts 12.4 ms, rejects 12.6 ms and rejects a missing mode. Reproduce with Blender's Python: `tools/pc/jobs/eclipse_642d_proof.py REPO NEW_TEMP_DIR`.
+
+Board queues `tools/pc/jobs/q_paint_642d.bat` with `E11_E12_PAINT_642d.bat` staged in the PC root. It runs stages 4 to 7 per ship, installs only into its isolated clone, checks the painted GLBs, captures camera 60/170, and measures the scene gate twice, keeping run 2. The GPU cost bench, scene gate and actual in-game captures were deliberately not run by this CPU proof.

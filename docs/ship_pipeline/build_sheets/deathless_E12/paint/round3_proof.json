@@ -1,0 +1,109 @@
+{
+  "code": "D21_23",
+  "triangles": 41052,
+  "turret_triangles": 10938,
+  "root_surfaces_before": 10,
+  "root_surfaces_after": 11,
+  "mesh_primitives_before": 16,
+  "mesh_primitives_after": 17,
+  "maps": [
+    {
+      "file": "D21_23_glow_emission.jpg",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 345817
+    },
+    {
+      "file": "D21_23_parts_orm.jpg",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 1617727
+    },
+    {
+      "file": "D21_23_parts_base.jpg",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 1042176
+    },
+    {
+      "file": "D21_23_normal.jpg",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 394559
+    },
+    {
+      "file": "D21_23_orm.jpg",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 1485496
+    },
+    {
+      "file": "D21_23_base.jpg",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 1024491
+    }
+  ],
+  "glb_bytes": 4408336,
+  "baseline_glb_bytes": 4406860,
+  "device": "CPU",
+  "map_res": 2048,
+  "samples": 6,
+  "surface": {
+    "room": 0,
+    "bare": 0
+  },
+  "density": {
+    "paint_flags": [],
+    "mesh_flags": [],
+    "hull": {
+      "area": 1.81424,
+      "triangles": 24052,
+      "tris_per_unit2": 13257.4,
+      "edges_per_unit2": 12354.5,
+      "texels_per_unit2": 1167070.9,
+      "atlas": "hull",
+      "paint_detail_share": 0.3
+    },
+    "rule": "R224: a part type more than 25 percent under the hull is flagged",
+    "paint_bar_per_unit": 353.12,
+    "paint_top": 0.3
+  },
+  "export_check_pass": true,
+  "anchors": [
+    {
+      "name": "hp_breach_0",
+      "clear": 0.0874
+    },
+    {
+      "name": "hp_breach_1",
+      "clear": 0.097
+    },
+    {
+      "name": "hp_breach_2",
+      "clear": 0.097
+    },
+    {
+      "name": "hp_breach_3",
+      "clear": 0.0831
+    }
+  ],
+  "failures_without_rim_marker": [
+    "hp_breach_0 is 0.0000 from a part (at least 0.03)",
+    "hp_breach_1 is 0.0000 from a part (at least 0.03)",
+    "hp_breach_2 is 0.0000 from a part (at least 0.03)",
+    "hp_breach_3 is 0.0000 from a part (at least 0.03)"
+  ]
+}
