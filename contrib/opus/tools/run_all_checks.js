@@ -140,6 +140,7 @@ function buildChecks() {
   add(OPUS + 'tree_table_walk_test.js'); // #361: every LINEAGE_TREES row is hand-off tested through the real functions or on the dated waiting list
   add(OPUS + 'tree_last_rows_test.js'); // #529: the last seven tree rows and the you-may prompts move their numbers; fixtures carry the real lineage
   add(OPUS + 'oracle_copy_test.js'); // #335 finding 3: the oracle copies and campaign tables match the root game files (hard, not optional)
+  add('tools/pc/runner_selftest.js', [], 'normal', 600); // #687: free PC runner fault tests; static contract check on other hosts
   add('godot/campaign/test/node/nem_assign_enum.js', [], 'normal', 300, true); // #120 R-Q1: the exact assignment constraints (quick mode) gate every PR; a gating row never SKIPs under --fast (issue 248 NOTE 4)
   add(OPUS + 'nem_direct_reads_report.js'); // #364: report only, the count of direct save reads outside godot/campaign/
   add(OPUS + 'naming_lint_game.test.js');

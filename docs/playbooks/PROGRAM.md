@@ -77,6 +77,13 @@ other work to free you up on these crucial items" (R205, R206). So "Fable" in th
 No Fable helpers (R180). The Board starts agreed work on its own and asks Ryan only for design, key decisions, reviews of what
 he will see, and conflicts (R202).
 
+PC runner starts and restarts (issue 687, Ryan's Nov 14 approval): both runners fetch one shared local bare mirror under
+Downloads\voidsworn_test, clone from disk, retry failed clone/fetch steps three times total with two-minute gaps, and make
+a tiny call to the selected model before agent work. They merge the issue and arm's -partial branch by default and name it
+in the task. Chain jobs through tools/pc/chain_issue.bat and the predecessor run's status.json; only a confirmed non-partial
+real push with passing runner checks releases the next job. A failed, partial, unchanged or dry run stops the chain.
+The one-page Board note, deployment files and free Windows proof are in tools/pc/work/README.md, "Reliable starts and restarts".
+
 ## The tracks, in order
 
 ### 1. Battle effects (first)
