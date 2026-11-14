@@ -78,7 +78,7 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	if squad:
 		squad_kind = CRAFT.kind_for(u)
 		code = fac + "|" + squad_kind
-		L = HT.CLS_LEN["Squadron"] * HT.SHIP_K * 1.5
+		L = HT.CLS_LEN["Squadron"] * HT.SHIP_K * HT.SQUADRON_K
 		bob_seed = float(posmod(hash(str(u.get("id", "wing"))), 10000)) / 1000.0
 		hull = WING.new()
 		hull.name = "hull"

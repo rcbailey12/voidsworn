@@ -83,6 +83,8 @@ const ATLAS_DIR := "res://fx/atlases/death/"
 # One pixel at the staging camera (r 170, vertical FOV 45, 1080 lines). The floor holds distant events readable;
 # the world extent lets them grow naturally as the player zooms in.
 const STAGING_UNITS_PER_PIXEL := 2.0 * 170.0 * tan(PI / 8.0) / 1080.0
+# The one scale table's death core flash (issue 710, R247; docs/playbooks/scale.md), pixels at the staging camera.
+const CORE_FLASH_PX := {"small": 216.0, "cruiser": 302.0, "capital": 423.0}
 
 # Issue 354: where the visible gas starts inside the baked vent picture. Measured on today's pictures
 # (godot/fx/atlases/death/{small,cruiser,capital}/vent_color.png): in frame 0 the gas runs down to row 0.90 of the crop,
@@ -2844,7 +2846,7 @@ static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: 
 	var band := atlas_band(float(src.hull.L) if src != null else R / 0.16)
 	if band_override != "": band = band_override
 	# Pixel targets, normal/soft life, then normal/soft size calibration including the battle look's bloom.
-	var row: Array = {"small": [216.0, 0.18, 0.55, 2.45, 0.96], "cruiser": [302.0, 0.20, 0.60, 1.97, 0.96], "capital": [423.0, 0.22, 0.65, 1.37, 0.96]}[band]
+	var row: Array = {"small": [CORE_FLASH_PX["small"], 0.18, 0.55, 2.45, 0.96], "cruiser": [CORE_FLASH_PX["cruiser"], 0.20, 0.60, 1.97, 0.96], "capital": [CORE_FLASH_PX["capital"], 0.22, 0.65, 1.37, 0.96]}[band]
 	if staged: px = float(row[0])
 	var allowed: bool = fx.flash_ok(fx.now, p, px * STAGING_UNITS_PER_PIXEL if staged else R * 3.0, px, float(row[1]))
 	if staged:
