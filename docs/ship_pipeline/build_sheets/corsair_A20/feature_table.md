@@ -1,6 +1,6 @@
 # corsair_A20: Hullbreaker hulk-carrier (the Den), build sheet
 
-Ashfall Hullbreakers (corsair) | class Carrier | version 2 (issue 668: the bow mouths (R239)), 2026-11-13 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\opus668\corsair_A20\corsair_A20\corsair_A20_blockout.blend`
+Ashfall Hullbreakers (corsair) | class Carrier | version 3 (issue 688: open intakes and angular flanks (R244)), 2026-11-14 | blockout: `C:\Users\rcbai\Downloads\voidsworn_test\board\issue-688\shots\corsair_A20\corsair_A20_blockout.blend`
 
 **Length 16.5 world units** (data.js c_hulk (cls 'Carrier'); length from godot/render/hull_table.gd CLS_LEN['Carrier'] = 16.5). Frame: +X bow, +Y port, +Z up; station % from the prow tip; offset + port / - starboard; height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.
 
@@ -12,12 +12,12 @@ Ashfall Hullbreakers (corsair) | class Carrier | version 2 (issue 668: the bow m
 | length side | 16.525 |
 | length top | 16.525 |
 | length disagreement percent | 0.0 |
-| beam top | 7.05 |
-| beam bow | 7.05 |
-| beam disagreement percent | 0.0 |
-| height side | 4.575 |
+| beam top | 7.038 |
+| beam bow | 7.125 |
+| beam disagreement percent | 0.53 |
+| height side | 4.588 |
 | height bow | 4.588 |
-| height disagreement percent | 0.08 |
+| height disagreement percent | 0.0 |
 | widest at station percent | 89.7 |
 | hull beam | 6.4 |
 | hull depth | 2.05 |
@@ -40,8 +40,8 @@ Ashfall Hullbreakers (corsair) | class Carrier | version 2 (issue 668: the bow m
 | HB6 | framed deck box 0.6 x 0.5 | 1 | 88.2 | -0.90 | 1.36 | - | - | picture | salvage locker bolted down on the deck |
 | HS1 | round hatch 0.5 | 1 | 20.4 | 1.30 | 1.00 | - | - | picture | round deck hatch on the port deck behind the bow |
 | HS2 | square hatch 0.6 | 1 | 49.4 | 1.55 | 1.00 | - | - | picture | square deck hatch over the hangar decks |
-| VS0 | louvre panel 0.6 x 0.4 | 1 | 77.9 | -3.34 | 0.00 | - | - | picture | engine room louvre in the starboard wall |
-| VS1 | louvre panel 0.6 x 0.4 | 1 | 85.2 | -3.34 | -0.15 | - | - | picture | engine room louvre in the starboard wall |
+| VS0 | louvre panel 0.6 x 0.4 | 1 | 77.9 | -3.34 | 0.00 | - | - | picture | engine room louvre mounted on the sloping starboard armour |
+| VS1 | louvre panel 0.6 x 0.4 | 1 | 85.2 | -3.21 | -0.15 | - | - | picture | engine room louvre mounted on the sloping starboard armour |
 | AN1 | antenna array, 1.0 tall, 3 whips | 1 | 90.0 | 2.76 | 1.00 | - | - | picture | comms array on the aft deck, down beside the aft deck tier: calls the squadrons home |
 | H1 | open hangar mouth 1.36 wide, 1.72 high, 3.0 deep, in the bow face | 1 | 15.5 | 2.40 | -0.06 | forward | - | picture | port mouth in the bow face beside the bow block: a dark deep bay, worn torn plate rim, dark launch rails, beams and ribs, three warm deck lights, an inner blast door |
 | H2 | open hangar mouth 1.32 wide, 1.72 high, 3.0 deep, in the bow face | 1 | 15.5 | -2.38 | -0.06 | forward | - | picture | starboard mouth in the bow face beside the bow block: a dark deep bay, worn torn plate rim, dark launch rails, beams and ribs, three warm deck lights, an inner blast door |
@@ -66,15 +66,15 @@ Ashfall Hullbreakers (corsair) | class Carrier | version 2 (issue 668: the bow m
 | E5 | engine, bell 0.9 across | 1 | 99.9 | 2.12 | 0.48 | exhaust aft | - | picture | stern bell |
 | Q1 | attitude thruster quad | 1 | 10.1 | 1.61 | -0.60 | - | - | designed | bow |
 | Q2 | attitude thruster quad | 1 | 10.1 | -1.61 | -0.60 | - | - | designed | bow |
-| Q3 | attitude thruster quad | 1 | 89.7 | 3.20 | -0.10 | - | - | designed | stern |
+| Q3 | attitude thruster quad | 1 | 89.7 | 3.19 | -0.10 | - | - | designed | stern |
 | Q4 | attitude thruster quad | 1 | 89.7 | -3.20 | -0.10 | - | - | designed | stern |
 | L0 | running light | 1 | 18.5 | 3.21 | -0.45 | - | - | picture |  |
-| L1 | running light | 1 | 87.3 | 3.21 | -0.60 | - | - | picture |  |
+| L1 | running light | 1 | 87.3 | 3.13 | -0.60 | - | - | picture |  |
 | L2 | running light | 1 | 7.6 | 1.60 | 0.30 | - | - | picture |  |
-| L3 | running light | 1 | 22.2 | -3.35 | -0.40 | - | - | picture |  |
-| L4 | running light | 1 | 41.6 | -3.35 | -0.55 | - | - | picture |  |
-| L5 | running light | 1 | 66.7 | -3.35 | -0.35 | - | - | picture |  |
-| L6 | running light | 1 | 81.5 | -3.35 | -0.55 | - | - | picture |  |
+| L3 | running light | 1 | 22.2 | -3.25 | -0.40 | - | - | picture |  |
+| L4 | running light | 1 | 41.6 | -3.26 | -0.55 | - | - | picture |  |
+| L5 | running light | 1 | 66.7 | -3.39 | -0.35 | - | - | picture |  |
+| L6 | running light | 1 | 81.5 | -3.18 | -0.55 | - | - | picture |  |
 | L7 | running light | 1 | 7.6 | -1.60 | 0.30 | - | - | picture |  |
 
 Totals: 2 gun mounts with 4 barrels; 0 launcher tubes; 5 engines; 3 intakes; 2 dishes; 4 claws; 0 chains.
@@ -94,7 +94,7 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 
 | Mass | Station % | Offset range | Height range | Colour | Note |
 |---|---|---|---|---|---|
-| Base hull (the slab, its core between the two bow mouths) | 15.2 to 95.2 | -3.20 to 3.20 | -1.05 to 1.00 | soot and patched plate | the broad flat slab; forward of the mouths' back wall it is the core between the two mouths |
+| Base hull (faceted slab, recessed waist, core between bow mouths) | 15.2 to 95.2 | -3.20 to 3.20 | -1.05 to 1.00 | soot and patched plate | broad shoulder facets and lower chines; diagonal plan shoulders into a narrower waist (R244); forward of the mouths' back wall it is the core between the mouths |
 | Bow block | 1.6 to 17.9 | -1.62 to 1.62 | -1.05 to 0.90 | dark soot | the bow block in front of the body, as tall as the slab and about half its beam: a housing for the two huge intake tubes (the beauty) |
 | Hangar sill, port | 15.5 to 34.0 | 1.67 to 3.20 | -1.05 to -0.92 | soot | the floor of the port mouth, the belly under it |
 | Hangar lintel, port | 15.5 to 34.0 | 1.67 to 3.20 | 0.80 to 1.00 | dark soot | the roof of the port mouth, the deck over it |
@@ -102,10 +102,10 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Hangar sill, starboard | 15.5 to 34.0 | -3.20 to -1.67 | -1.05 to -0.92 | soot | the floor of the starboard mouth, the belly under it |
 | Hangar lintel, starboard | 15.5 to 34.0 | -3.20 to -1.67 | 0.80 to 1.00 | dark soot | the roof of the starboard mouth, the deck over it |
 | Hangar cheek, starboard | 15.5 to 34.0 | -3.20 to -3.04 | -0.94 to 0.82 | bare iron, patched | the outer wall of the starboard mouth |
-| Starboard brick 1 | 19.1 to 30.7 | -3.34 to -2.90 | -0.55 to 0.45 | patched plate | armour brick on the closed starboard wall |
-| Starboard brick 2 | 34.3 to 48.8 | -3.34 to -2.90 | -0.70 to 0.30 | patched plate | armour brick on the closed starboard wall |
-| Starboard brick 3 | 52.5 to 67.6 | -3.34 to -2.90 | -0.50 to 0.55 | patched plate | armour brick on the closed starboard wall |
-| Starboard brick 4 | 71.2 to 90.0 | -3.34 to -2.90 | -0.70 to 0.35 | patched plate | armour brick on the closed starboard wall |
+| Starboard armour wedge 1 | 19.1 to 30.7 | -3.34 to -2.57 | -0.55 to 0.45 | patched plate | tapered salvage armour with a bevelled shoulder, lower undercut and an offset ledge (R244) |
+| Starboard armour wedge 2 | 34.3 to 48.8 | -3.48 to -2.55 | -0.70 to 0.30 | patched plate | tapered salvage armour with a bevelled shoulder, lower undercut and an offset ledge (R244) |
+| Starboard armour wedge 3 | 52.5 to 67.6 | -3.52 to -2.61 | -0.50 to 0.55 | patched plate | tapered salvage armour with a bevelled shoulder, lower undercut and an offset ledge (R244) |
+| Starboard armour wedge 4 | 71.2 to 90.0 | -3.46 to -2.45 | -0.70 to 0.35 | patched plate | tapered salvage armour with a bevelled shoulder, lower undercut and an offset ledge (R244) |
 | D1 fore deck tier | 17.6 to 37.6 | -1.95 to 0.90 | 0.96 to 1.34 | patched deck plate | a low tier of salvage plate on the deck, 0.34 high |
 | D2 mid deck tier | 41.9 to 66.7 | -2.90 to -0.30 | 0.96 to 1.40 | patched deck plate | a low tier of salvage plate on the deck, 0.40 high |
 | D3 aft deck tier | 69.7 to 92.2 | -2.40 to 2.50 | 0.96 to 1.36 | patched deck plate | a low tier of salvage plate on the deck, 0.36 high |
@@ -124,7 +124,7 @@ Bulkhead and frame stations: F0 17.9%, F1 30.0%, F2 46.7%, F3 60.6%, F4 76.4%, F
 | H1 hangar upper (hangar) | 37.6 to 45.8 | 0.25 to 2.80 | -0.04 to 0.40 | upper hangar deck behind the H1 mouth: bombers and spares |
 | H2 hangar lower (hangar) | 37.6 to 45.8 | -2.80 to -0.25 | -0.75 to -0.20 | lower hangar deck behind the H2 mouth: half-built fighters on scavenged frames |
 | H2 hangar upper (hangar) | 37.6 to 45.8 | -2.80 to -0.25 | -0.04 to 0.40 | upper hangar deck behind the H2 mouth: bombers and spares |
-| loot hold fore (hold) | 4.0 to 17.0 | -0.80 to 0.80 | -0.60 to 0.00 | loot hold in the bow block (designs.md) |
+| loot hold fore (hold) | 14.9 to 17.3 | -1.25 to 1.25 | -0.75 to 0.60 | crosswise salvage locker behind the intake wells, clear of both dark bores (R244) |
 | loot hold body (hold) | 18.5 to 29.1 | -1.37 to 1.37 | -0.75 to -0.20 | loot hold in the core between the mouths |
 | kennel deck (crew) | 18.5 to 29.1 | -1.37 to 1.37 | -0.04 to 0.60 | kennel deck for the boarding crews, in the core between the mouths |
 | turret magazine fore (magazine) | 24.3 to 32.2 | -1.37 to -0.10 | 0.55 to 0.82 | under the fore turret |
@@ -158,21 +158,21 @@ Full interiors through the hull (R215), hidden until a piece breaks. The bay sid
 | hp_core | 53.4 | -0.70 | -0.45 |  |  |  |
 | hp_breach_0 | 27.9 | 0.90 | 1.22 | port | prow |  |
 | hp_breach_1 | 11.3 | -1.60 | 0.83 | stbd | prow |  |
-| hp_breach_2 | 54.0 | 3.20 | -0.06 | port | mid |  |
-| hp_breach_3 | 44.0 | -3.20 | -0.25 | stbd | mid |  |
-| hp_breach_4 | 69.4 | -3.20 | -0.05 | stbd | mid |  |
-| hp_breach_5 | 88.8 | 3.20 | 0.35 | port | eng |  |
-| hp_breach_6 | 92.5 | -3.20 | -0.45 | stbd | eng |  |
+| hp_breach_2 | 54.0 | 2.90 | -0.06 | port | mid |  |
+| hp_breach_3 | 44.0 | -3.29 | -0.25 | stbd | mid |  |
+| hp_breach_4 | 69.4 | -3.15 | -0.05 | stbd | mid |  |
+| hp_breach_5 | 88.8 | 3.18 | 0.35 | port | eng |  |
+| hp_breach_6 | 92.5 | -3.14 | -0.45 | stbd | eng |  |
 | hp_rcs_0 | 10.1 | 1.61 | -0.60 | port |  |  |
 | hp_rcs_1 | 10.1 | -1.61 | -0.60 | stbd |  |  |
-| hp_board_0 | 54.0 | 3.20 | -0.40 | port |  |  |
-| hp_board_1 | 55.5 | -3.20 | -0.30 | stbd |  |  |
+| hp_board_0 | 54.0 | 2.90 | -0.40 | port |  |  |
+| hp_board_1 | 55.5 | -3.30 | -0.30 | stbd |  |  |
 | hp_bay_0 | 16.7 | 2.40 | -0.91 | port |  | launch forward out of the H1 mouth, on its floor at the lip (the recipe: a hard point sits on the mesh, the mouth itself is open air) |
 | hp_bay_1 | 16.7 | -2.38 | -0.91 | stbd |  | launch forward out of the H2 mouth, on its floor at the lip (the recipe: a hard point sits on the mesh, the mouth itself is open air) |
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 369 objects, 44 parts, 1104 close pairs, 302 rays, 2 guns, 18 sensor pairs, 2 turrets swept, 9 cones, 17 apertures, 0 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 368 objects, 44 parts, 1214 close pairs, 302 rays, 2 guns, 18 sensor pairs, 2 turrets swept, 9 cones, 17 apertures, 0 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -180,6 +180,8 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 
 ## Changed from the picture (R207)
 
+- **Issue 688 (R244): the two bow intakes are blind wells through the bow housing, with the kit's rolled lips, lip bolts, three inset rings and dark rear baffles exposed; the redundant smooth liners are removed and the bow loot locker sits behind the wells.** Ryan, Nov 14: the front circles should be open holes with detail, never just circles. The solid bow block had capped both kit tubes immediately behind their lips. They remain fuel and dust intakes, not extra weapons (data.js c_hulk has only the two turrets).
+- **Issue 688 (R244): the slab has 0.7 to 0.92 upper chamfers, lower chines, diagonal shoulders into a 0.3-per-side recessed waist, and four tapered starboard armour wedges with offset ledges; flank fittings and hard points follow the new skin.** Ryan, Nov 14: the sides were flat walls, unlike the angular concept. The carrier keeps its broad deck, forward hangar mouths (R239), two raised turrets clear of sensors (R240), five stern engines and Carrier class length 16.5.
 - **Issue 668 (R239): both hangar mouths open forward in the bow face, one either side of the bow block beside the twin tubes (port 1.36 wide, starboard 1.32; 1.72 high; 3.0 deep to the back wall, 2.7 to the blast door), framed by a sill, a lintel and an outer cheek each; the port flank is closed plate now.** Ryan, Nov 13 2026 (R239), on A20 painted and widened: "on the hullbreakers carrier, I was wrong. I prefer the concepts version of the bays facing forward now that I see it built." The beauty and the sheet's bow-on view draw the two mouths in the bow face beside the twin tubes with a craft visible inside; this replaces his Nov 12 port-flank ruling (issue 633). The layout is the closed PR 658's (commit 98e39958), on issue 651's 3.2 half-beam; data.js c_hulk (launch, hangar 2) is met either way.
 - **Each mouth is a real recess with a worn torn plate rim, dark launch rails on the floor, dark ceiling beams and frame ribs at uneven spacing, three small warm deck lights at uneven depths and an inner blast door on the back wall; no door leaves (issue 668, R240).** the Board's brief: they must read as launch bays with depth; in the bow face there is no face beside a mouth for designs.md's slid doors (the bow block stands there), so the kit part leaves them out (hangar_mouth doors=False). R240 (Ryan, Nov 13 2026: "some sort of weird paint pattern in the opening of the carrier"): the striped iron fit-out, the evenly spaced rail ties and the red lamps are gone; the fit-out is dark, only the rim carries worn iron edging (stack zone iron_edge), the deck lights are warm (glow zone lamp).
 - **The mouths are lined dark (floor, ceiling, back wall and ends): only the worn rim, the few warm deck lights and the fighters catch the light.** the Board on round 1 (Nov 13): the mouths must be big, deep, dark openings that show from the beauty camera with the fighter in them; round 1's were 1.37 high and lit grey inside, so they read as shallow grilles.

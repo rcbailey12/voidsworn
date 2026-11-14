@@ -5,20 +5,19 @@
  "length_top": 16.525,
  "length_disagreement_percent": 0.0,
  "model_vs_game_percent": 0.03,
- "beam_top": 7.05,
- "beam_bow": 7.05,
- "beam_disagreement_percent": 0.0,
- "height_side": 4.575,
+ "beam_top": 7.038,
+ "beam_bow": 7.125,
+ "beam_disagreement_percent": 0.53,
+ "height_side": 4.588,
  "height_bow": 4.588,
- "height_disagreement_percent": 0.08,
+ "height_disagreement_percent": 0.0,
  "widest_at_station_percent": 89.7,
  "hull_beam": 6.4,
  "hull_depth": 2.05,
  "L_to_B_hull": 2.58,
  "L_to_H_hull": 8.05,
  "PASS": true,
- "outline_iou_percent": 78.6,
- "mass_outline_iou_percent": 78.0,
+ "outline_iou_percent": 53.42,
  "concept_camera": {
   "az": 36.05821718357215,
   "el": 19.392749400127272,
@@ -28,5 +27,7 @@
   "sx": 0.15113104188881127,
   "sy": 0.10429425423077063
  },
- "prow_overhang": 2.51
+ "prow_overhang": 2.51,
+ "outline_before_iou_percent": 54.06,
+ "outline_measure": "same existing camera; beauty luminance >19, 3x3 opening, largest component, filled holes; render alpha >8; reported, not a gate"
 }
