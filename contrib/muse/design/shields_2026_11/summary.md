@@ -14,7 +14,9 @@ Today every shielded ship wears one bubble, and the game sums its four sides int
 
 ## The decision, made
 
-Ryan ruled Nov 14, 2026: **Rim and Gap** is the resting state. The Board builds Rim and Gap as written in design.md. The alternatives below stand as the record of what was considered and rejected.
+Ryan ruled Nov 14, 2026: **Rim and Gap** is the resting state. The Board builds Rim and Gap as written in design.md.
+
+Ryan also directed the strength model the same day (design.md section 11): one universal shield pool instead of four independent side strengths, armor and hull staying side-specific, each side carrying a coverage value, and power routing toward the side under fire at an efficiency loss, so beginners watch one bar while experts play the routing. That revises issue 371's four-strength premise where the two conflict; the Board owns the numbers when it builds. The alternatives below stand as the record of what was considered and rejected.
 
 ## The one decision that was yours
 

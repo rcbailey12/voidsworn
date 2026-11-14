@@ -129,3 +129,21 @@ Degrade order if the budget is missed (in this order, and never the rim/gap read
 - Audio hooks for hits and breaks: out of scope here; the break and hit events are the hook points.
 
 Council record: blind Rey leg, DeepSeek leg, Qwen leg and Flash leg all landed on Rim and Gap, a hull-offset surface for recipe and legacy hulls alike, per-facing data on one surface, local hits, and a stated brightness cap. Differences the chair settled: the offset rule (section 1), strengths as uniforms rather than rewritten vertex colours (section 1, against Flash), the always-on faint rim over Qwen's hover-only rim (section 2), the additive cap scale 0.65 total (section 4, against Flash's multiplier caps and Qwen's alpha clamp under mix blending; the current shader is blend_add and the faction colours are tuned for it), the primary refraction mechanism (section 4, DeepSeek's in-shader pass with Qwen's composite as the costed fallback), and the deciding readability test (section 9, DeepSeek's 10-still form). Grok's seat was empty (bot wall). Full leg texts are held by the chair.
+
+## 11. Strength model direction (ruled by Ryan, Nov 14, 2026, after the pack landed)
+
+Ryan directs a change to the strength model this design was written against. Issue 371's premise was four independent shield strengths, one per facing. The directed model is simpler at the base and deeper at the top:
+
+- **One shield pool per ship.** Shield health is a single universal value, not four. Beginners read one bar; there is one number per ship to tune, regen, and break.
+- **Armor and hull stay side-specific**, as they are. The per-side story lives in the layers under the shield.
+- **Per-side coverage.** Each side has a coverage value: how well the pool protects that side. A side with weaker coverage leaks more, or drains the pool faster under fire (the Board picks the exact form when it builds; the direction is that where a hit lands still matters).
+- **Power routing.** In lore and in the model, the ship routes shield power toward the side under fire, and routing is lossy: reinforcing the struck side costs the pool more than the damage it stops. That is the expert lever: keep feeding the weak side and burn the pool, or let the side's armor take it and save the pool. Ryan's words for the justification: ships trying to route more power to the damaged areas, but less efficiently.
+
+What this changes in this design if the Board builds on the directed model:
+
+- The per-instance data changes shape: pool strength (one value) plus per-side coverage and routing state (one vec4), instead of four independent strengths. The facing weights, the skin surface, and the hit machinery in sections 1, 4 and 7 are unchanged.
+- Strength language (section 5) re-reads per side as coverage and routing state: a side the ship is routing power to shows a brighter, busier rim; a side left unrouted under fire thins out. Flicker now signals routing strain on that side, not an independent pool dying.
+- The break changes meaning: when the pool empties, shields drop everywhere at once (the whole rim dies together, which is its own clear read). There is no per-side shield break; a side is "open" when its armor is gone, and the dark gap in the rim now marks a side the ship has stopped routing power to, or whose coverage has failed. The Board owns how that state is triggered and shown, and the camera 170 readability test in section 9 is re-aimed at whichever open-side read the Board builds.
+- Rim and Gap (section 2, ruled by Ryan Nov 14, 2026) still stands as the resting state.
+
+This section is Ryan's direction recorded verbatim in substance; it supersedes the four-strength premise where the two conflict, and the Board decides the numbers (coverage values per class and faction, the routing loss rate, regen behaviour) when it builds, alongside issue 363 and issue 209 round 7.
