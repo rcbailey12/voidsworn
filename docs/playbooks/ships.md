@@ -59,7 +59,8 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    Hullbreaker stack for every Hullbreaker ship: the patchwork never reads even or ordered: plate sizes wander along every
    axis, rows come in bands whose edges step every few columns, every column and strip shifts its own cells, a share of the
    plates is split once more at a random place, so no tile repeats and no seam runs on across a face (stack LAYERS
-   patch_warp, patch_band, patch_split; shared paint_stack._grid). A hangar mouth reads as a dark, deep bay with a few warm
+   patch_warp, patch_band, patch_split; shared paint_stack._grid; a stack without patch_warp keeps the even grid, so the
+   Eclipse stay precise and ordered, R243). A hangar mouth reads as a dark, deep bay with a few warm
    deck lights and worn edging, nothing patterned inside it: no warning stripes (replaces issue 651's striped mouth), the
    fit-out inside in the dark liner's zone, only the rim and its torn teeth in worn iron (stack zone iron_edge), a few small
    warm lamps at uneven depths by the floor (glow zone lamp, amber, under the glow threshold).

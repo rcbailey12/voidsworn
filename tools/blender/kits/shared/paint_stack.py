@@ -236,6 +236,26 @@ def _warp(c, v, size, amp, seed):
     return math_(nt, 'ADD', q, math_(nt, 'MULTIPLY', math_(nt, 'SUBTRACT', n.outputs['Fac'], .5), 2 * amp))
 
 
+def _grid_even(c, cell, seed, shift):
+    """the even panel grid, for a stack that does not ask for the uneven one (no patch_warp in its LAYERS: Eclipse, and any clean,
+    ordered faction, R243): rows (along z) each shifted along x and y by their own random amount, cells of the given size; returns
+    (cell id vector, seam lines) in _grid's form. The node graph and its values are the pre-R240 grid's."""
+    nt = c.nt; cx, cy, cz = cell
+    off = node(nt, 'ShaderNodeVectorMath', operation='ADD'); nt.links.new(c.pos, off.inputs[0]); off.inputs[1].default_value = shift
+    q = node(nt, 'ShaderNodeVectorMath', operation='DIVIDE'); nt.links.new(off.outputs[0], q.inputs[0]); q.inputs[1].default_value = (cx, cy, cz)
+    sq = node(nt, 'ShaderNodeSeparateXYZ'); nt.links.new(q.outputs[0], sq.inputs[0])
+    row = math_(nt, 'FLOOR', sq.outputs[2])
+    rn = node(nt, 'ShaderNodeTexWhiteNoise', noise_dimensions='1D'); nt.links.new(math_(nt, 'ADD', row, seed), rn.inputs['W'])
+    rc = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(rn.outputs['Color'], rc.inputs[0])
+    qx = math_(nt, 'ADD', sq.outputs[0], rc.outputs[0]); qy = math_(nt, 'ADD', sq.outputs[1], rc.outputs[1])
+    cq = node(nt, 'ShaderNodeCombineXYZ'); nt.links.new(math_(nt, 'FLOOR', qx), cq.inputs[0]); nt.links.new(math_(nt, 'FLOOR', qy), cq.inputs[1])
+    nt.links.new(math_(nt, 'ADD', row, seed), cq.inputs[2])
+    lines = []
+    for k, (qa, size) in enumerate(zip((qx, qy, sq.outputs[2]), cell)):
+        f = math_(nt, 'FRACT', qa); lines.append((math_(nt, 'MULTIPLY', math_(nt, 'MINIMUM', f, math_(nt, 'SUBTRACT', 1, f)), size), k))
+    return cq.outputs[0], lines
+
+
 def _grid(c, cell, seed, shift, L):
     """one uneven panel grid in the ship frame (R240, RULEBOOK 0.5: patchwork never reads even or ordered). Every axis is warped
     (cells of uneven size, so no two rows or columns match); the z axis is cut into bands of a few rows whose edges step every
@@ -244,8 +264,10 @@ def _grid(c, cell, seed, shift, L):
     column); a share of the cells is split
     once more at a random place along a random axis (two plates where one stood). Returns (cell id vector, seam lines), each seam
     line (distance to it in ship units, the axis it is measured along)."""
+    if 'patch_warp' not in L:      # Board review of PR 682: the uneven grid is the Hullbreakers' opt-in, never every faction's
+        return _grid_even(c, cell, seed, shift)
     nt = c.nt; cx, cy, cz = cell
-    amp = L.get('patch_warp', .55); hb = L.get('patch_band', 2.3); share = L.get('patch_split', .55)
+    amp = L['patch_warp']; hb = L.get('patch_band', 2.3); share = L.get('patch_split', .55)
     off = node(nt, 'ShaderNodeVectorMath', operation='ADD'); nt.links.new(c.pos, off.inputs[0]); off.inputs[1].default_value = shift
     sq = node(nt, 'ShaderNodeSeparateXYZ'); nt.links.new(off.outputs[0], sq.inputs[0])
     wx = _warp(c, sq.outputs[0], cx, amp, seed + .1); wy = _warp(c, sq.outputs[1], cy, amp, seed + .2); wz = _warp(c, sq.outputs[2], cz, amp, seed + .3)
