@@ -138,6 +138,14 @@ use it when it can only do something others can't", R234): code and check jobs g
 The Kimi Code plan holds about 30 minutes of agent work per 5-hour window, so it takes short reviews only, never builds (issue
 597 verdict, Nov 12). Ids: R128, R180e, R205, R206, R219, R234, agents-12.
 
+**Nov 14 (R242, R250), wins over the table and paragraph above where they differ:** the seat order is DeepSeek for small jobs, the
+Sonnet API arm for mid-size, Opus (API arm or a plan-side helper) for Blender and large work, Codex for what only it can do, Kimi by
+results (R242). While the API credit is spent (till its monthly refresh, about Nov 21; Ryan adds none) and the Board plan is low,
+Codex is the main builder, Blender builds included ("use codex aggressively", Nov 14), at Effort high for builds; the Board judges
+every model by picture as before. Kimi now holds a seat through the Kimi Code CLI arm (kimicode, WORK_HARNESS=kimi): about 2.5 hours
+of agent time per 5 hour window, so mid-size code, rules and balance jobs with a checklist of required outputs (the 30 minute figure
+above was the OpenCode route). Muse also runs outside audits (issue 706). Not taken: Fable advisor, Gemini 4 Hydrogen.
+
 2.7 **Codex runs the model Ryan picked: GPT 6.1 Sol today, pinned by name in tools/pc/codex_issue.bat.** Never a weaker
 model by accident (Luna) and never switched to another one (Astra) without his yes; no Codex cloud tasks or cloud reviews.
 Why: "We don't want to force using Astra or something. Just not accidentally run Luna or something, that's why we usually
