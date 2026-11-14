@@ -1,0 +1,150 @@
+{
+  "status": "PASS",
+  "scope": "CPU review sheet only. Not approval for production, install or performance.",
+  "checks": [
+    {
+      "name": "source design.py",
+      "pass_": true,
+      "evidence": "e20770dfda3879129fd5a2c1ffacaf273a07fde230b6d6a80a660b6541a5b5da"
+    },
+    {
+      "name": "source parts.py",
+      "pass_": true,
+      "evidence": "11731149d999bfe6ff4bc5826e815710d718af73a03836bf860477e09609934e"
+    },
+    {
+      "name": "source stack.py",
+      "pass_": true,
+      "evidence": "759c45de409956050d17208dc0056d9a953f1705e825898652485392e5529741"
+    },
+    {
+      "name": "source review.py",
+      "pass_": true,
+      "evidence": "88425da32ae392c0b6a65117baf4fbcb1a46a83d04b55ff86bd2ad8d9e1a611a"
+    },
+    {
+      "name": "source inspect.gd",
+      "pass_": true,
+      "evidence": "2c1f470b2e44547f732a05c9a110db39136dff0863c8a3e2015358dc402fc89e"
+    },
+    {
+      "name": "source check.py",
+      "pass_": true,
+      "evidence": "0ae574e10bf5d99ec258729bd5e5f253e5098aaffef870bfbad0c7c8e7c96634"
+    },
+    {
+      "name": "source sheets.py",
+      "pass_": true,
+      "evidence": "ea01358ba71aea4cdeb3c3eb3e2d8afc555280fd473625b8f26439333e36c82b"
+    },
+    {
+      "name": "core and arms",
+      "pass_": true,
+      "evidence": "9 core drums; 4 attached arms including stub; 1 tethered section"
+    },
+    {
+      "name": "towers and gap",
+      "pass_": true,
+      "evidence": "5 towers, 11 of 12 bearing slots occupied"
+    },
+    {
+      "name": "light map",
+      "pass_": true,
+      "evidence": {
+        "blue": 90,
+        "battery": 5
+      }
+    },
+    {
+      "name": "three hex columns",
+      "pass_": true,
+      "evidence": 7
+    },
+    {
+      "name": "static footprint",
+      "pass_": true,
+      "evidence": {
+        "vertices_outside_real_hex_union": 0
+      }
+    },
+    {
+      "name": "taller than ships",
+      "pass_": true,
+      "evidence": {
+        "station": 52.1292839050293,
+        "tallest_loaded_ship": 51.1292686462402,
+        "hulls": 30
+      }
+    },
+    {
+      "name": "flagships measured",
+      "pass_": true,
+      "evidence": "all six factions include their real capital hull"
+    },
+    {
+      "name": "modelled insides",
+      "pass_": true,
+      "evidence": {
+        "modules_without_inside_geometry": [],
+        "inside_triangles": 55092
+      }
+    },
+    {
+      "name": "motion samples",
+      "pass_": true,
+      "evidence": {
+        "poses": 49,
+        "bad_poses": [],
+        "seconds": [
+          0,
+          240
+        ],
+        "scope": "sampled mesh intersections; continuous sweep still pending"
+      }
+    },
+    {
+      "name": "only passive arm animates",
+      "pass_": true,
+      "evidence": [
+        "T2_tethered_arm"
+      ]
+    },
+    {
+      "name": "exported light geometry",
+      "pass_": true,
+      "evidence": {
+        "T2_blue": 1080,
+        "T2_battery": 60
+      }
+    },
+    {
+      "name": "exported motion duration",
+      "pass_": true,
+      "evidence": [
+        240.0
+      ]
+    },
+    {
+      "name": "fitted joint metadata",
+      "pass_": true,
+      "evidence": "exported joints agree with the fitted build, including the vertical height fit"
+    },
+    {
+      "name": "export geometry count",
+      "pass_": true,
+      "evidence": {
+        "GLB": 325900,
+        "built_scene": 325900
+      }
+    }
+  ],
+  "cost": {
+    "triangles": 325900,
+    "primitives": 20,
+    "materials": 11,
+    "mesh_nodes": 2,
+    "glb_bytes": 17826080,
+    "frame_gate": "NOT RUN; requires a GPU window and a station-map game scene",
+    "draw_calls": "NOT MEASURED; GLB primitives are potential surface draws, not GPU draw measurements"
+  }
+}
