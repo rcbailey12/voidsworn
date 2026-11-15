@@ -3,8 +3,9 @@
 # from the sheet unchanged in all but units: the outside is one ship length long; the class length is the sheet's; every
 # transverse seam sits at the sheet's x; every gun and launcher muzzle is the kit's own, in the right data.js slot; every turret
 # pivot survives with its turning meshes; every engine exit is the sheet's; the insides are visible as role interior; the hull
-# thickness is the sheet's, scaled. Then two broken inputs must be refused, each by name: a ship whose data.js weapon list
-# lacks one of the sheet's weapons, and a longitudinal seam that runs across a transverse seam (each weakens one compartment).
+# thickness is the sheet's, scaled. Then three broken inputs must be refused, each by name: a ship whose data.js weapon list
+# lacks one of the sheet's weapons, a longitudinal seam that runs across a transverse seam (each weakens one compartment), and
+# a visible gun that is no data.js weapon (the weapon match, issue 676, R241).
 # Every longitudinal seam of the sheet reaches r209_l_lines at its own height and span (issue 618: E11 authors two), and a
 # data.js weapon and arc listed twice gets a gun of its own in each slot (issue 618: 'gauss T' twice on d_boss, d_harvester).
 # Stage 4 runs it for every ship built from a sheet. usage: blender -b -P sheet_contract_selftest.py -- SHIP_JSON OUT_DIR
@@ -91,6 +92,11 @@ t0 = tx[0]
 K.inside += [dict(kind='break', name='L-x', x=0, orient='long', path=[(t0 + 0.5, 0.5), (t0 - 0.5, 0.5)])]
 try: contract.to_recipe(K, SHIP); check(False, 'a longitudinal seam across a transverse seam was refused')
 except contract.ContractError as e: check('runs across the transverse seam' in str(e), f'a longitudinal seam across a transverse seam was refused: {e}')
+# issue 676 (R241): a visible gun that is no data.js weapon is refused by the weapon match before the recipe sees the ship
+d, K = build()
+K.built.append(dict(id='X9', kind='gun', type='gun'))
+try: contract.to_recipe(K, SHIP); check(False, 'a decorative gun with no data.js slot was refused')
+except contract.ContractError as e: check('weapon match' in str(e) and 'EXTRA X9' in str(e), f'a decorative gun with no data.js slot was refused: {str(e)[:160]}')
 json.dump(dict(ok=not bad, rows=rows, record=rec), open(os.path.join(OUT, 'sheet_contract_selftest.json'), 'w'), indent=1)
 print('PASS the build sheet contract keeps the sheet\'s data' if not bad else 'FAIL the build sheet contract changed or lost a datum', flush=True)
 sys.exit(1 if bad else 0)

@@ -6,19 +6,28 @@ Ashfall Hullbreakers (corsair) | class Battle-barge | version 3 (round 3), 2026-
 
 ## Measured off the views
 
+Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
+
+| Slot | Weapon | Arc | Shots | Visible mounts (muzzles) |
+|---:|---|---|---:|---|
+| 0 | scatter | P | 5 | P1 (2), P2 (2), P3 (2) |
+| 1 | scatter | S | 5 | S1 (2), S2 (2), S3 (2) |
+| 2 | htorp | F | 2 | R1 (10) |
+| 3 | flak | T | 3 | T1 (2), T2 (2) |
+
 | Check | Value |
 |---|---|
 | model length | 26.139 |
 | length side | 26.163 |
 | length top | 26.163 |
 | length disagreement percent | 0.0 |
-| beam top | 12.3 |
-| beam bow | 12.3 |
-| beam disagreement percent | 0.0 |
-| height side | 9.387 |
+| beam top | 9.738 |
+| beam bow | 9.8 |
+| beam disagreement percent | 0.24 |
+| height side | 9.375 |
 | height bow | 9.387 |
-| height disagreement percent | 0.0 |
-| widest at station percent | 66.0 |
+| height disagreement percent | 0.05 |
+| widest at station percent | 46.0 |
 | hull beam | 7.8 |
 | hull depth | 4.0 |
 | L to B hull | 3.33 |
@@ -56,20 +65,12 @@ Ashfall Hullbreakers (corsair) | class Battle-barge | version 3 (round 3), 2026-
 | HB3 | framed deck box 1.3 x 1.2, 2 armour fins | 1 | 32.1 | 1.15 | 2.00 | - | - | picture | armoured vent housing with two slanted blades |
 | T1 | twin belly turret | 2 barrels | 35.0 | 0.00 | -2.62 | forward, +8 elev | T flak | picture | belly flak turret, covers below (R221: moved off the castle front, out of the rocket rack's backblast) |
 | T2 | twin turret | 2 barrels | 77.1 | 0.00 | 3.25 | forward, +30 elev | T flak | picture | bridge barbette flak turret, rests at 30 degrees, aft of the rocket rack's backblast |
-| PB | single casemate | 1 barrel | 15.9 | 3.27 | -0.30 | 20 deg off the bow to port | P scatter | picture | bow casemate in the recessed band, trained forward |
 | P1 | twin turret | 2 barrels | 26.2 | 2.72 | 2.00 | 30 deg off the bow to port | P scatter | picture | deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring) |
 | P2 | twin turret | 2 barrels | 39.6 | 2.72 | 2.75 | 35 deg off the bow to port | P scatter | picture | deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring) |
 | P3 | twin turret | 2 barrels | 53.0 | 2.72 | 2.00 | 40 deg off the bow to port | P scatter | picture | deck-edge twin turret, tier 2, aft |
-| PM | twin casemate | 2 barrels | 46.9 | 3.94 | 0.50 | 35 deg off the bow to port | P scatter | picture | flank twin casemate on the upper belt amidships |
-| P4 | twin casemate | 2 barrels | 64.7 | 4.30 | 0.35 | 30 deg off the bow to port | P scatter | picture | sponson twin casemate under the castle |
-| P5 | twin casemate | 2 barrels | 72.5 | 4.30 | 0.35 | 30 deg off the bow to port | P scatter | picture | sponson twin casemate under the castle |
-| SB | single casemate | 1 barrel | 15.9 | -3.32 | -0.30 | 20 deg off the bow to starboard | S scatter | picture | bow casemate in the recessed band, trained forward |
 | S1 | twin turret | 2 barrels | 26.2 | -2.72 | 2.00 | 30 deg off the bow to starboard | S scatter | picture | deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring) |
 | S2 | twin turret | 2 barrels | 39.6 | -2.72 | 2.75 | 35 deg off the bow to starboard | S scatter | picture | deck-edge twin turret, tier 2 (the middle one on a barbette, superfiring) |
 | S3 | twin turret | 2 barrels | 53.0 | -2.72 | 2.00 | 40 deg off the bow to starboard | S scatter | picture | deck-edge twin turret, tier 2, aft |
-| SM | twin casemate | 2 barrels | 46.9 | -4.04 | 0.50 | 35 deg off the bow to starboard | S scatter | picture | flank twin casemate on the upper belt amidships |
-| S4 | twin casemate | 2 barrels | 64.7 | -4.30 | 0.35 | 30 deg off the bow to starboard | S scatter | picture | sponson twin casemate under the castle |
-| S5 | twin casemate | 2 barrels | 72.5 | -4.30 | 0.35 | 30 deg off the bow to starboard | S scatter | picture | sponson twin casemate under the castle |
 | E0 | engine, bell 2.8 across | 1 | 99.8 | 0.00 | -0.35 | exhaust aft | - | picture | centre main engine, its housing sunk in the stern |
 | E1 | engine, bell 2.6 across | 1 | 97.7 | 3.60 | 0.45 | exhaust aft | - | picture | port main pod, the large one |
 | E2 | engine, bell 2.3 across | 1 | 97.7 | -3.60 | 0.45 | exhaust aft | - | designed | starboard main pod, smaller (mismatched) |
@@ -106,7 +107,7 @@ Ashfall Hullbreakers (corsair) | class Battle-barge | version 3 (round 3), 2026-
 | LCs | running light | 1 | 62.9 | -3.10 | 2.25 | - | - | picture |  |
 | B1 | ventral launch bay 3.4 x 3.2 | 1 | 58.9 | 0.00 | -2.60 | - | - | designed | data.js hangar 2: squadrons drop from the belly |
 
-Totals: 16 gun mounts with 30 barrels; 10 launcher tubes; 6 engines; 2 intakes; 2 dishes; 4 claws; 0 chains.
+Totals: 8 gun mounts with 16 barrels; 10 launcher tubes; 6 engines; 2 intakes; 2 dishes; 4 claws; 0 chains.
 No gun rests facing aft: every gun row above points forward or out to the side (yaw under 90 degrees).
 
 ## Colour zones (break stations from the side view; finish from the beauty)
@@ -173,8 +174,8 @@ Bulkhead and frame stations: F0 10.1%, F1 19.7%, F2 31.9%, F3 47.2%, F4 60.3%, F
 | Break line | Station % | What it opens |
 |---|---|---|
 | B-1 | 20.9 (seam wanders 19.7 to 22.4) | tier 2 seam forward of the P1 and S1 turrets: the bow and the kennel decks tear off |
-| B-2 | 59.9 (seam wanders 56.8 to 61.0) | castle seam: opens the rocket magazine and tears through the hangar bay; kinks forward of the P4 and S4 casemates and aft of the P3 and S3 turrets |
-| B-3 | 68.3 (seam wanders 67.5 to 75.6) | castle seam through the reactor core: the bridge, its turret T2 and the engine block tear away with the stern; kinks aft of the P5 and S5 casemates at the flanks |
+| B-2 | 59.9 (seam wanders 56.8 to 61.0) | castle seam: opens the rocket magazine and tears through the hangar bay; kinks aft of the P3 and S3 turrets |
+| B-3 | 68.3 (seam wanders 67.5 to 75.6) | castle seam through the reactor core: the bridge, its turret T2 and the engine block tear away with the stern; kinks at the flank sponsons |
 
 Full interiors throughout the hull (R215): decks, frames, spaces and machinery along the whole length, hidden until a piece breaks. Deaths blow the hull apart unevenly along these seams with a ragged bite where the core goes (R186).
 
@@ -199,7 +200,7 @@ Full interiors throughout the hull (R215): decks, frames, spaces and machinery a
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 402 objects, 73 parts, 1052 close pairs, 753 rays, 16 guns, 192 sensor pairs, 8 turrets swept, 10 cones, 45 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 371 objects, 65 parts, 922 close pairs, 533 rays, 8 guns, 96 sensor pairs, 8 turrets swept, 10 cones, 45 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -212,7 +213,8 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **The front tubes are the ship's face: big, side by side across the prow, jutting ahead of a tapered nose under a stepped brow.** Ryan R217: "the tubes at the front ... are just circles on the actual build".
 - **Rack raised on a plinth and pitched 12 degrees; no turret in front of it.** Ryan R217: "the guns are visibly blocking the rockets"; the fit check proves every cell fires clear over the bow.
 - **Flak on a bridge barbette (T2) and under the belly (T1).** the round 2 bunker turret sat in the rack's line of fire and the round 3 castle-front turret in its backblast (R221); the picture puts its top turret on the castle.
-- **Guns laid out as matched port and starboard batteries by game slot.** the picture has a row of guns on one deck edge and a cluster on the other flank; scatter P and S are mirrored: a bow casemate, three deck-edge twin turrets, a flank casemate amidships and two sponson casemates per side.
+- **Guns laid out as matched port and starboard batteries by game slot.** the picture has a row of guns on one deck edge and a cluster on the other flank; scatter P and S are mirrored: three deck-edge twin turrets per side.
+- **Broadside casemates cut: the bow casemates PB and SB, the flank casemates PM and SM and the sponson casemates P4, P5, S4 and S5.** R241 (Ryan, Nov 13 2026: "all ships should have weapons that match their actual weapons in game"; issue 676 weapon-match check): scatter fires 5 shots a volley, so seven mounts per side left most of them silent on any volley, and fixed casemates sat on one slot with turning turrets; each broadside slot now shows only its three matched twin turrets, all firing and turning on every volley.
 - **Profile set from a true side reading: deep flat-bellied slab, raised tier 2, castle, bridge block.** one three-quarter camera cannot see height; the round 8 side view and the shape reference give a hull 4.9 deep, 6.5 to the castle roof.
 - **Roof turrets rest facing forward.** the picture draws its barrel aft; no gun faces aft.
 - **Seams moved and kinked so no machine is cut: B-1 from 7.0 to 7.7, B-3 from -7.4 to -4.7, B-2 kinks round the casemates and turrets.** R226 (Board, Nov 12, from R186): a machine never crosses a seam; the bridge turret T2 and the stern grabber H4 overlap in plan and the engines and antennas fill the stern, so the aft seam moves forward of T2 into the castle.

@@ -1,0 +1,67 @@
+{
+ "code": "deathless_E12",
+ "result": "PASS",
+ "problems": [],
+ "slots": [
+  {
+   "slot": 0,
+   "weapon": "gauss",
+   "arc": "T",
+   "shots": 3,
+   "mounts": [
+    {
+     "id": "T1",
+     "type": "nullcannon",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    }
+   ]
+  },
+  {
+   "slot": 1,
+   "weapon": "gauss",
+   "arc": "T",
+   "shots": 3,
+   "mounts": [
+    {
+     "id": "T2",
+     "type": "nullcannon",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    }
+   ]
+  },
+  {
+   "slot": 2,
+   "weapon": "doom",
+   "arc": "F",
+   "shots": 1,
+   "mounts": [
+    {
+     "id": "A1",
+     "type": "corona_arc",
+     "mount": "fixed",
+     "barrels": 1,
+     "muzzles": 1
+    }
+   ]
+  },
+  {
+   "slot": 3,
+   "weapon": "gsentry",
+   "arc": "T",
+   "shots": 2,
+   "mounts": [
+    {
+     "id": "G1",
+     "type": "spire",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    }
+   ]
+  }
+ ]
+}

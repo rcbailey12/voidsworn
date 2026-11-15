@@ -1,5 +1,9 @@
 # deathless_E12 build sheet: Eclipse zenith, the ring cruiser (fourth sheet: R221 weapons, pass 2)
 
+**Issue 676 recipe proof:** [record](weapon_proof.json). Stage 4 contract, audit and audit self-test PASS; stage 5 unpainted geometry carried unchanged; stage 6 four LOD meshes exported and read back in Godot; stage 7 export, readback and planted-fault self-test PASS. Real Godot firing/turning, authored interiors and destruction PASS: 11 machines, zero split, zero inside triangles beyond their piece. Budget: 51990 triangles, 12 surfaces, 1808 inside triangles. Costs reported; the scene gate was not measured.
+
+**Issue 676, PC verification (Nov 14, CPU).** The latest sheet and named [weapon picture](weapon_review.jpg) were rebuilt on this PC with Blender 4.5.14, Cycles CPU, 12 samples. [Weapon match](weapon_match.json): PASS, zero problems; the [feature table](feature_table.md) lists every data slot, its shots and its visible mounts. The existing weapon layout already passes R241, so its geometry is unchanged. The outline comparison remains the earlier reported reference. This is an unpainted weapon proof; the Board queues the paint bake.
+
 Eclipse cruiser, class Cruiser, **14.5 world units** (godot/render/hull_table.gd CLS_LEN['Cruiser']; data.js `d_harvester`:
 gauss T, gauss T, doom F, gsentry T). Accepted picture: contrib/muse/design/concept_round8c_2026_11/deathless_E12_beauty.jpg
 and _sheet.jpg (R206). Designer of record: Opus (R205, R207). Issue 532. Rendered on Ryan's PC (Blender 4.5, GPU), blockout

@@ -28,61 +28,6 @@ core.js inArc), `rest_yaw`, `rest_pitch`; its turning meshes `<id>_turn_<materia
 also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on the hull. Casemates are single fixed parts
 (`turret=0`, `gun_fixed=1`).
 
-## Round 2 layout, checked (before)
-
-The round 2 design (`tools/blender/build_sheets/ships/r2/corsair_A17.py`, the PR 547 layout) built with the round 3 kit parts and run through the same check. Counts: CLASH 20, MOUNT 2, ARC 6, SENSOR 4, SWEEP 7, EXHAUST 8, EXIT 0, LANE 2.
-
-| Check | Part | Against | Hits | What |
-|---|---|---|---:|---|
-| CLASH | J1 | hull | 5 | body piece inside the hull or a hull mass (J1_body_steel in corsair_A17_hull) |
-| CLASH | J3 | hull | 2 | body piece inside the hull or a hull mass (J3_body_steel in corsair_A17_hull) |
-| CLASH | J2 | hull | 5 | body piece inside the hull or a hull mass (J2_body_steel in corsair_A17_hull) |
-| CLASH | J4 | hull | 3 | body piece inside the hull or a hull mass (J4_body_steel in corsair_A17_hull) |
-| CLASH | P2 | hull | 4 | turn piece inside the hull or a hull mass (P2_turn_soot in A17_hump) |
-| CLASH | S2 | hull | 4 | turn piece inside the hull or a hull mass (S2_turn_soot in A17_hump) |
-| CLASH | E2 | hull | 2 | body piece inside the hull or a hull mass (E2_body_steel in A17_engblock) |
-| CLASH | I1 | Q1 | 7 | parts intersect: I1_mount_soot and Q1_mount_iron |
-| CLASH | Q1 | hull | 1 | body piece inside the hull or a hull mass (Q1_body_steel in A17_I1_rib1) |
-| CLASH | D1 | P1 | 3 | parts intersect: D1_body_steel and P1_turn_steel |
-| CLASH | I2 | Q2 | 8 | parts intersect: I2_mount_soot and Q2_mount_iron |
-| CLASH | Q2 | hull | 1 | body piece inside the hull or a hull mass (Q2_body_steel in A17_I2_rib1) |
-| CLASH | D2 | S1 | 3 | parts intersect: D2_body_steel and S1_turn_steel |
-| CLASH | C2 | P2 | 2 | parts intersect: C2_mount_iron and P2_mount_iron |
-| CLASH | C2 | S2 | 1 | parts intersect: C2_mount_iron and S2_mount_steel |
-| CLASH | T2 | hull | 4 | turn piece inside the hull or a hull mass (T2_turn_iron in corsair_A17_hull_plates_soot) |
-| CLASH | E1 | E2 | 12 | parts intersect: E1_body_steel and E2_body_steel |
-| CLASH | E2 | E3 | 13 | parts intersect: E2_body_steel and E3_body_steel |
-| CLASH | E4 | E5 | 9 | parts intersect: E4_body_steel and E5_body_steel |
-| CLASH | E5 | E6 | 10 | parts intersect: E5_body_steel and E6_body_steel |
-| MOUNT | D1 | hull | 1 | no mount piece touches the hull |
-| MOUNT | D2 | hull | 1 | no mount piece touches the hull |
-| ARC | P1 | D1 | 5 | barrels would strike D1 (slot P): D1_body_steel; blocked bearings 30 to 50 |
-| ARC | P2 | hull | 24 | barrels would strike hull (slot P): A17_hump; blocked bearings 30 to 140, 150 |
-| ARC | P2 | C2 | 1 | barrels would strike C2 (slot P): C2_mount_iron; blocked bearings 145 |
-| ARC | S1 | D2 | 5 | barrels would strike D2 (slot S): D2_body_dish; blocked bearings -50 to -30 |
-| ARC | S2 | hull | 24 | barrels would strike hull (slot S): A17_hump; blocked bearings -150, -140 to -30 |
-| ARC | S2 | C2 | 1 | barrels would strike C2 (slot S): C2_mount_iron; blocked bearings -145 |
-| SENSOR | P1 | D1 | 15 | gun (slot P) behind or aiming through sensor D1 (dish), 0.9 away; blocked bearings 30 to 70 |
-| SENSOR | P2 | D1 | 2 | gun (slot P) behind or aiming through sensor D1 (dish), 3.0 away; blocked bearings 30 |
-| SENSOR | S1 | D2 | 15 | gun (slot S) behind or aiming through sensor D2 (dish), 0.9 away; blocked bearings -70 to -30 |
-| SENSOR | S2 | D2 | 2 | gun (slot S) behind or aiming through sensor D2 (dish), 3.0 away; blocked bearings -30 |
-| SWEEP | T2 | hull | 45 | turning through its arc hits corsair_A17_hull_plates_soot; blocked bearings -135 to 85 |
-| SWEEP | P1 | D1 | 7 | turning through its arc hits D1_body_steel; blocked bearings 30 to 60 |
-| SWEEP | P1 | P2 | 9 | turning through its arc hits P2_turn_dark; blocked bearings 115 to 150 |
-| SWEEP | P2 | hull | 25 | turning through its arc hits A17_hump; blocked bearings 30 to 150 |
-| SWEEP | S1 | S2 | 9 | turning through its arc hits S2_turn_iron; blocked bearings -150 to -115 |
-| SWEEP | S1 | D2 | 7 | turning through its arc hits D2_body_dish; blocked bearings -60 to -30 |
-| SWEEP | S2 | hull | 25 | turning through its arc hits A17_hump; blocked bearings -150 to -30 |
-| EXHAUST | E2 | E1 | 1 | part inside the exhaust cone: E1_body_steel |
-| EXHAUST | E2 | E3 | 1 | part inside the exhaust cone: E3_body_steel |
-| EXHAUST | E5 | E6 | 3 | exhaust cone hits E6_body_ember at 0.0 behind the exit |
-| EXHAUST | E5 | E4 | 1 | part inside the exhaust cone: E4_body_steel |
-| EXHAUST | Q1 | I1 | 5 | exhaust cone hits I1_mount_iron at 0.1 behind the exit |
-| EXHAUST | Q1 | hull | 2 | exhaust cone hits A17_I1_rib1 at 0.2 behind the exit |
-| EXHAUST | Q2 | I2 | 5 | exhaust cone hits I2_mount_soot at 0.0 behind the exit |
-| EXHAUST | Q2 | hull | 1 | part inside the exhaust cone: A17_I2_rib1 |
-| LANE | P2 | R1 | 1 | gun P2 sits in R1's backblast (resting) |
-| LANE | S2 | R1 | 1 | gun S2 sits in R1's backblast (resting) |
 
 ## How round 3 fixed them
 
@@ -106,7 +51,7 @@ turret's swept circle (moved out).
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 371 objects, 56 parts, 932 close pairs, 501 rays, 8 guns, 96 sensor pairs, 6 turrets swept, 10 cones, 28 apertures, 2 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 370 objects, 54 parts, 938 close pairs, 451 rays, 6 guns, 72 sensor pairs, 6 turrets swept, 10 cones, 28 apertures, 2 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 

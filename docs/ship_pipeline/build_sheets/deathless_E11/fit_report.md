@@ -9,6 +9,9 @@ with `build.py <code> <out> fit`). What it tests, on every part of every type:
 3. **ARC**: every gun, at every bearing of its data.js slot arc (core.js inArc: F 60 degrees either side of the bow, P and S
    30 to 150 off the bow, T all round, 5 degree steps), has a clear line at an elevation it can reach (turrets 0 to 30, flak
    0 to 60, casemates -10 to +20), out to 60 percent of the ship's length.
+3b. **SENSOR** (R240): no gun sits behind or aims through a dish, antenna or mast: the gun's whole firing volume (every
+   bearing of its slot arc, every elevation it can reach, out to 60 percent of the ship's length) misses every sensor piece's
+   box padded by the gun's calibre; firing just over a dish is not enough.
 4. **SWEEP** (R219): every turret's turning pieces turned through every bearing of its arc touch nothing; no two turrets meet
    when both turn through their arcs.
 5. **EXHAUST**: nothing in any engine or thruster exhaust cone.
@@ -25,15 +28,6 @@ core.js inArc), `rest_yaw`, `rest_pitch`; its turning meshes `<id>_turn_<materia
 also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on the hull. Casemates are single fixed parts
 (`turret=0`, `gun_fixed=1`).
 
-## First full layout, checked (before)
-
-The first complete E11 layout, built with the Eclipse kit and run through the check before any fix. Counts: CLASH 1, MOUNT 0, ARC 1, SWEEP 1, EXHAUST 0, EXIT 0.
-
-| Check | Part | Against | Hits | What |
-|---|---|---|---:|---|
-| CLASH | F1 | HB1 | 2 | parts intersect: F1_turn_mauve and HB1_mount_mauve |
-| ARC | T1 | T2 | 2 | fire blocked by T2 (slot T): T2_mount_shade; blocked bearings -175, 175 |
-| SWEEP | F1 | HB1 | 13 | turning through its arc hits HB1_mount_mauve; blocked bearings -30 to 30 |
 
 ## How third sheet (R221 weapons, pass 2) fixed them
 
@@ -46,7 +40,7 @@ While designing, the check also caught (and the design fixed): deck hatches and 
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 244 objects, 28 parts, 650 close pairs, 462 rays, 5 guns, 4 turrets swept, 7 cones, 15 apertures, 1 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 237 objects, 27 parts, 634 close pairs, 389 rays, 4 guns, 0 sensor pairs, 3 turrets swept, 7 cones, 15 apertures, 1 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 
@@ -55,7 +49,6 @@ Counts: CLASH 0, MOUNT 0, ARC 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 244
 | T1 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
 | T2 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
 | F1 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
-| F2 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
 
 Reach is measured from the rest bearing, in degrees, turning toward port (bearings rising) and toward starboard; "all round" means nothing stops it within 180. Every turret clears its whole data.js slot arc (sweep steps above). Under 60 degrees either way: none.
 

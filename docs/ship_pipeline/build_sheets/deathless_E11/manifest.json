@@ -62,21 +62,6 @@
    "arc_hi": 180.0
   },
   {
-   "id": "F2",
-   "kind": "gun",
-   "what": "null shredder, twin belly turret",
-   "count": 2,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "belly_flak"
-   ],
-   "turret": true,
-   "pivot_object": "F2_turret",
-   "arc_lo": -180.0,
-   "arc_hi": 180.0
-  },
-  {
    "id": "CW1",
    "kind": "corewin",
    "what": "core port, hexagonal, 0.7 across",

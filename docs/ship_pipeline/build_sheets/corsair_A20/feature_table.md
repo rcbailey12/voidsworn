@@ -6,19 +6,26 @@ Ashfall Hullbreakers (corsair) | class Carrier | version 2 (issue 668: the bow m
 
 ## Measured off the views
 
+Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
+
+| Slot | Weapon | Arc | Shots | Visible mounts (muzzles) |
+|---:|---|---|---:|---|
+| 0 | turret | T | 2 | T1 (2) |
+| 1 | turret | T | 2 | T2 (2) |
+
 | Check | Value |
 |---|---|
 | model length | 16.505 |
 | length side | 16.525 |
 | length top | 16.525 |
 | length disagreement percent | 0.0 |
-| beam top | 7.05 |
+| beam top | 7.038 |
 | beam bow | 7.05 |
-| beam disagreement percent | 0.0 |
-| height side | 4.575 |
+| beam disagreement percent | 0.08 |
+| height side | 4.588 |
 | height bow | 4.588 |
-| height disagreement percent | 0.08 |
-| widest at station percent | 89.7 |
+| height disagreement percent | 0.0 |
+| widest at station percent | 89.6 |
 | hull beam | 6.4 |
 | hull depth | 2.05 |
 | L to B hull | 2.58 |

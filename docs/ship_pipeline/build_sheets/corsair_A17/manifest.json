@@ -241,18 +241,6 @@
    "arc_hi": 150.0
   },
   {
-   "id": "P3",
-   "kind": "gun",
-   "what": "twin casemate",
-   "count": 2,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "flank_casemates"
-   ],
-   "turret": false
-  },
-  {
    "id": "S1",
    "kind": "gun",
    "what": "twin turret",
@@ -281,18 +269,6 @@
    "pivot_object": "S2_turret",
    "arc_lo": -150.0,
    "arc_hi": -30.0
-  },
-  {
-   "id": "S3",
-   "kind": "gun",
-   "what": "twin casemate",
-   "count": 2,
-   "route": "kit",
-   "source": "picture",
-   "inventory": [
-    "flank_casemates"
-   ],
-   "turret": false
   },
   {
    "id": "E1",

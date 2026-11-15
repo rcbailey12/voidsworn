@@ -1,0 +1,148 @@
+{
+ "code": "corsair_A18",
+ "source": "tools/blender/build_sheets/ships/corsair_A18.py",
+ "source_sha256": "15d55dfd06de8992a168e42d170439c5a100d00e3fb3ad6f17d99fbd7f02cd2d",
+ "weapon_match": {
+  "code": "corsair_A18",
+  "result": "PASS",
+  "problems": [],
+  "slots": [
+   {
+    "slot": 0,
+    "weapon": "autocannon",
+    "arc": "T",
+    "shots": 3,
+    "mounts": [
+     {
+      "id": "T1",
+      "type": "gun",
+      "mount": "turret",
+      "barrels": 2,
+      "muzzles": 2
+     }
+    ]
+   }
+  ]
+ },
+ "fit": {
+  "CLASH": 0,
+  "MOUNT": 0,
+  "ARC": 0,
+  "SENSOR": 0,
+  "SWEEP": 0,
+  "EXHAUST": 0,
+  "EXIT": 0,
+  "LANE": 0
+ },
+ "stages": {
+  "contract": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 2.6
+  },
+  "build": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 1.1
+  },
+  "audit": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 2.0
+  },
+  "audit_selftest": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 6.2
+  },
+  "stage5": {
+   "ok": true,
+   "route": "unpainted sandbox: stage 4 geometry unchanged, no paint jobs"
+  },
+  "lod": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 13.6
+  },
+  "export": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 1.6
+  },
+  "export_check": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 0.9
+  },
+  "export_selftest": {
+   "ok": true,
+   "exit": 0,
+   "seconds": 16.1
+  },
+  "export_data": {
+   "hardpoints": {
+    "board": 2,
+    "breach": 3,
+    "core": 1,
+    "engine": 3,
+    "rcs": 2,
+    "gun": 2
+   },
+   "ship_length": 1.0
+  }
+ },
+ "budget": {
+  "triangles": 65644,
+  "surfaces": 13,
+  "interior_triangles": 4513,
+  "lods": {
+   "lod0": {
+    "triangles": 65644,
+    "objects": 262,
+    "materials": 22
+   },
+   "lod1": {
+    "triangles": 65128,
+    "objects": 248,
+    "materials": 13
+   },
+   "lod2": {
+    "triangles": 34742,
+    "objects": 243,
+    "materials": 13
+   },
+   "lod3": {
+    "triangles": 14554,
+    "objects": 215,
+    "materials": 12
+   }
+  },
+  "scene_gate": "not measured in this CPU sandbox proof"
+ },
+ "stage6_godot_lod_readback": "all four mesh nodes load with the exported triangle counts",
+ "game_firing_and_turning": {
+  "code": "corsair_A18",
+  "failures": 0,
+  "turrets": 1,
+  "volleys": 2
+ },
+ "authored_interiors": {
+  "failures": 0,
+  "triangles": 4513
+ },
+ "destruction": {
+  "failures": 0,
+  "machines": 12,
+  "machines_split": 0,
+  "inside_triangles": 2206,
+  "inside_outside_hull": 0
+ },
+ "export_selftest": {
+  "result": "PASS",
+  "cases": 20
+ },
+ "limitations": [
+  "unpainted sandbox geometry; the Board queues PC paint jobs",
+  "no measured performance or scene gate claim"
+ ]
+}
