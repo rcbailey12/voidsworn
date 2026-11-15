@@ -1,8 +1,7 @@
 {
- "note": "issue 756 sandbox: Blender 5.3 bpy module, Cycles CPU, 2 cores shared with other workers (times are long and noisy); not the PC (Blender 4.5, GPU)",
- "baked_at_commit": "9f0e04902c2fb26550428665f3f2c1799169721e",
+ "note": "issue 756 sandbox: Blender 5.3 bpy module, Cycles CPU, 2 cores shared with other workers (times are long and noisy); not the PC (Blender 4.5, GPU); re-baked for issue 781 (R258: the x1.85 column, WEAR_STEP 1.85 and IRON_STEP .60); budget_same_settings_1024_4_samples and rivet_ab are still issue 756's figures",
+ "baked_at_commit": "ace39d66f",
  "S8_2048": {
-  "res": 2048,
   "device": "CPU",
   "samples": 6,
   "decals": [
@@ -73,18 +72,18 @@
     "room": 0.78
    }
   ],
-  "bake_H_masks_s": 370.3,
-  "bake_H_albedo_s": 470.8,
-  "bake_H_orm_s": 178.1,
-  "bake_H_normal_s": 659.6,
+  "bake_H_masks_s": 844.7,
+  "bake_H_albedo_s": 800.6,
+  "bake_H_orm_s": 334.1,
+  "bake_H_normal_s": 1943.6,
   "zones_H": [
    "siron",
    "siron2",
    "sworn"
   ],
-  "bake_P_masks_s": 173.6,
-  "bake_P_albedo_s": 87.5,
-  "bake_P_orm_s": 15.2,
+  "bake_P_masks_s": 661.7,
+  "bake_P_albedo_s": 371.4,
+  "bake_P_orm_s": 54.3,
   "zones_P": [
    "dark",
    "siron",
@@ -100,7 +99,7 @@
    "sworn_gun",
    "sworn_radiator"
   ],
-  "bake_engine_glow_s": 3.4,
+  "bake_engine_glow_s": 10.6,
   "engine_glow": {
    "engines": 2,
    "map": "S8_engine_emission.png",
@@ -124,7 +123,8 @@
     "texels_per_unit2": 2719887.7
    }
   },
-  "stack_seconds": 1980.5
+  "stack_seconds": 5071.8,
+  "res": 2048
  },
  "budget_same_settings_1024_4_samples": {
   "note": "S8 at the stack commit before the decal fix (same shader cost); E11 at main; same sandbox, same settings",

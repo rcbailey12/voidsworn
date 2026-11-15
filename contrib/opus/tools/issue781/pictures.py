@@ -1,6 +1,6 @@
 # Issue 781 (R256: the S8 hull one step lighter): issue 756's three named pictures of the painted S8 (RULEBOOK 1.2: one picture
 # per item, its code name on it, 1280 wide, no taller than 720), re-made from preview.py's renders, with the hull medians before
-# and after written on the concept picture (MEDIANS: a json with concept_fitted, before and after, each fitted and battle).
+# and after written on the concept picture (MEDIANS: a json with concept_fitted, before and after, each fitted and battle, and target_note).
 # usage: python pictures.py PREVIEW_DIR OUT_DIR MEDIANS_JSON [note=...]
 import os, sys
 from PIL import Image, ImageDraw, ImageFont
@@ -53,8 +53,8 @@ t = lambda v: '(%d,%d,%d)' % tuple(v)
 d = ImageDraw.Draw(c)
 d.text((14, 518), 'hull median, fitted camera: concept %s | paint before %s, after %s' % (t(M['concept_fitted']), t(M['before']['fitted']),
        t(M['after']['fitted'])), fill=INK, font=F(16))
-d.text((14, 544), 'hull median, battle camera 34 degrees: before %s, after %s, target halfway to the concept %s' % (t(M['before']['battle']),
-       t(M['after']['battle']), t(M['target_battle'])), fill=INK, font=F(16))
+d.text((14, 544), 'hull median, battle camera 34 degrees: before %s, after %s; %s' % (t(M['before']['battle']),
+       t(M['after']['battle']), M['target_note']), fill=INK, font=F(16))
 c.save(os.path.join(OUT, 'voidsworn_S8_paint_concept.jpg'), quality=92)
 
 # 2. the radiator spires close, and the port broadside
