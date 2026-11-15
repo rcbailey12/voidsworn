@@ -20,15 +20,7 @@ otherwise (gpu_go.txt, read back). Every PC write is read back before it is reli
 (merged) and the brief edits on 41, 372, 507. Board pick: the dot as the nightly read-only librarian, a script for mechanical
 checks, Muse for audits; part of the issue 788 plan.
 
-**Running now.** Codex main chain 15F: 800 (doom arc and gauss, R263; mid-run on codex/issue-800-partial), then 368, 369, 688,
-373 (their old PRs 717, 725, 696, 700 get the new pushes). Lane B: 805 delivered as PR 809, Godot game checks FAILED: read the
-log, send it back or fix. Lane C: 733 delivered as PR 810 (one home for the paint colour helpers), checks running.
-DeepSeek: 41 delivered as PR 808 (all green, review the diff); 371 needs a run 3 (work/issue-371-deepseek-partial).
-Opus workers: none live. 784 (d_jackal_h lance sidegrade) and 780 (Hegemony) pushed their branches; check and close.
-
-**Just landed.** E14 round 2 accepted (R269): PR 797 (flare rules, R265) merged; PR 804 (E14 rebuild) merges on green, the
-branch was just brought up to main. New issues: 811 (Codex lane B: lift E14 in the game with a per-hull height, R266), 812
-(backlog: per-variant parts in the ship pipeline, the guard flare spire).
+**Running now and just landed.** Live status is in contrib/opus/LOOP.md (the newest LATEST line) and on GitHub (open PRs, issue labels); this file no longer restates it, so it cannot go stale (the dot's librarian check of Nov 15 found PRs 804 and 810 described here as pending after both merged).
 
 **Next in the queue.** Board: the issue 788 synthesis (legs: PR 801 Board, 790 Muse merged, PR 803 DeepSeek), then the one-page
 plan for Ryan. Opus: 793 (squadron craft builds; R259), 783 (E13 paint even side to side; R256). PC runs by the Board: S8 recipe
