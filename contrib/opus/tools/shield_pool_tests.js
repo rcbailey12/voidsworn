@@ -1,6 +1,8 @@
 // R246 shield pool checks (issue 371): one pool per ship, per-side coverage, lossy routing toward the
 // side under fire, and the pool dropping everywhere at once. Run from the repo root:
-//   node contrib/opus/tools/shield_pool_tests.js
+//   node contrib/opus/tools/shield_pool_tests.js [fixtures.json]
+// With a path it also writes the browser results for the Godot twin, godot/rules/test/shield_pool_test.gd:
+// the coverage of every shielded hull and scripted hit and turn sequences with the pool, catches and routing after each step.
 global.window = {}; global.performance = { now: () => Date.now() };
 const STORE = {}; global.localStorage = { getItem: k => (k in STORE ? STORE[k] : null), setItem: (k, v) => { STORE[k] = String(v); }, removeItem: k => { delete STORE[k]; } };
 const IDS = {};
@@ -17,7 +19,7 @@ function check(name, fn) { tests.push([name, fn]); }
 eval(src + `
 function log(m){ if(B&&B.log) B.log.push({m}); } function fxText(){} function fxShield(){} function fxFlash(){} function tel(){} function nodeSeeds(){ return 0; }
 async function animWeapon(){} async function animExplode(){} function fxShieldBreak(){} function fxCrit(){} function fxWithdraw(){} async function fxRam(){} function fxSectionDown(){} async function fxBoard(){}
-global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get B(){ return B; }, set B(v){ B=v; }, migrateRun, newShip, startBattle, makeUnit, applyHit, startSideTurn, SHIELD_POOL_MULT, SHIELD_ROUTE_LOSS, SHIELD_ROUTE_BOOST, SHIELD_COV, SHIELD_COV_FAC, syncShields, shieldCov };
+global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get B(){ return B; }, set B(v){ B=v; }, migrateRun, newShip, startBattle, makeUnit, HULLS, applyHit, startSideTurn, SHIELD_POOL_MULT, SHIELD_ROUTE_LOSS, SHIELD_ROUTE_BOOST, SHIELD_COV, SHIELD_COV_FAC, syncShields, shieldCov };
 `);
 const base = (o) => Object.assign({ fac: 'voidsworn', admiral: 'vex', credits: 500, cpCap: 30, sector: 1, relics: [], inventory: [], boons: [], map: { cols: [] }, fleet: [] }, o || {});
 function battle(fac, ptpls, efac, etpls) { T.RUN = T.migrateRun(base({ fac, fleet: ptpls.map(t => T.newShip(t)) })); T.RUN.flagUid = T.RUN.fleet[0].uid;
@@ -59,5 +61,51 @@ check('Chorus and Eclipse hulls carry no shield pool at all', () => {
   T.RUN = T.migrateRun(base({ fac: 'deathless', fleet: [T.newShip('d_jackal')] })); T.RUN.flagUid = T.RUN.fleet[0].uid;
   T.startBattle({ kind: 'battle', fac: 'hegemony', col: 3, enemies: [{ tpl: 'h_picket' }], shape: 'open', map: 'open', obj: 'rout', seed: 7, dep: 'line' });
   return T.B.units.find(x => x.tpl === 'd_jackal').shMax === 0; });
+check('a pool under 1 point is empty: the last hit on an unrouted side drops every side at once', () => {
+  battle('voidsworn', ['penitent'], 'hegemony', ['h_dominion']); const t = P()[0], h = E()[0];
+  t.shp = 1.4; t.route = [0, 0, 0, 0]; T.syncShields(t); const w = h.weapons.find(x => x.k !== 'flak');
+  T.applyHit(h, w, t, 20, 0);
+  return t.shp === 0 && t.sh.every(x => x === 0); });
+check('Chain Lightning on a broken pool cuts the next recharge, once', () => {
+  battle('voidsworn', ['penitent'], 'hegemony', ['h_dominion']); const u = P()[0]; u.shp = 0; u.regen = 9; u.chainCut = 1 / 3; T.syncShields(u);
+  T.startSideTurn('player'); const first = u.shp; T.startSideTurn('player');
+  return first === 6 && u.shp === 15 && u.chainCut === 0; });
+check('a Hegemony ion hit stops the pool recharging for one turn start', () => {
+  battle('voidsworn', ['penitent'], 'hegemony', ['h_dominion']); const t = P()[0], h = E()[0]; const w = h.weapons.find(x => x.ion && x.k !== 'flak');
+  T.applyHit(h, w, t, 4, 0); const p1 = t.shp; T.startSideTurn('player'); const locked = t.shp === p1; T.startSideTurn('player');
+  return !!w && locked && t.shp === Math.min(t.shMax, p1 + t.regen); });
+// ---- Godot twin fixtures (shield_pool_test.gd replays these sequences on rules.gd and compares every step) ----
+const SEQS = [
+  { note: 'Sunward cruiser: three prow hits (the second and third routed at a loss), a rear hit, a turn start, then hits until the pool empties',
+    pfac: 'voidsworn', p: 'penitent', efac: 'hegemony', e: 'h_dominion',
+    ops: [['hit', 6, 0, 0], ['hit', 6, 0, 0], ['hit', 6, 0, 0], ['hit', 5, 2, 0], ['turn', 'player'], ['hit', 9, 2, 0], ['hit', 9, 2, 0], ['hit', 9, 0, 0], ['hit', 9, 0, 0], ['hit', 9, 0, 0], ['turn', 'player']] },
+  { note: 'Hegemony ion on a Sunward cruiser: the pool regen is locked for one turn start',
+    pfac: 'voidsworn', p: 'penitent', efac: 'hegemony', e: 'h_dominion',
+    ops: [['hit', 7, 0, 2], ['hit', 3, 2, 2], ['turn', 'player'], ['turn', 'player']] },
+  { note: 'Glasswright sliver: a struck prism recharges twice, an untouched one snaps to full',
+    pfac: 'ithar', p: 'i_wisp', efac: 'corsair', e: 'c_raider',
+    ops: [['hit', 5, 0, 0], ['hit', 5, 0, 0], ['turn', 'player'], ['set', 3], ['turn', 'player']] }
+];
+async function runSeq(q) {
+  battle(q.pfac, [q.p], q.efac, [q.e]); const t = P()[0], a = E()[0];
+  const snap = () => ({ shp: t.shp, sh: t.sh.slice(), route: (t.route || [0, 0, 0, 0]).slice() }); const steps = [snap()];
+  for (const op of q.ops) {
+    if (op[0] === 'hit') T.applyHit(a, a.weapons[op[3]], t, op[1], op[2]);
+    else if (op[0] === 'turn') await T.startSideTurn(op[1]);
+    else if (op[0] === 'set') { t.shp = op[1]; T.syncShields(t); }
+    steps.push(snap());
+  }
+  return { start: { shMax: t.shMax, regen: t.regen, cov: t.cov.slice() }, steps };
+}
+check('the twin fixture sequences run and end with an empty, then refilled, pool', async () => {
+  const r = await runSeq(SEQS[0]); const st = r.steps; return st[st.length - 2].shp === 0 && st[st.length - 1].shp > 0; });
 (async () => { for (const [name, fn] of tests) { try { const r = await fn(); if (r === false) throw new Error('returned false'); pass++; console.log('ok    ' + name); } catch (e) { fail++; console.log('FAIL  ' + name + ': ' + (e && e.message)); } }
+  if (process.argv[2]) {
+    const cov = []; for (const [tpl, h] of Object.entries(T.HULLS)) if (h.sh > 0 && h.fac && h.cls) cov.push({ tpl, fac: h.fac, cls: h.cls, cov: T.shieldCov(h.fac, h.cls) });
+    const seqs = []; for (const q of SEQS) seqs.push(Object.assign({}, q, await runSeq(q)));
+    // non-integers go as exact IEEE hex (#d:...), as effect_caps_tests.js does, so the Godot side reads the same doubles
+    const encode = v => typeof v === 'number' && !Number.isInteger(v) ? (b => (b.writeDoubleBE(v), '#d:' + b.toString('hex')))(Buffer.alloc(8))
+      : Array.isArray(v) ? v.map(encode) : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, encode(x)])) : v;
+    fs.writeFileSync(process.argv[2], JSON.stringify(encode({ cov, seqs }))); console.log('wrote ' + cov.length + ' coverage rows and ' + seqs.length + ' sequences to ' + process.argv[2]);
+  }
   console.log('\nShield pool tests: ' + pass + ' ok, ' + fail + ' FAIL'); process.exitCode = fail ? 1 : 0; })();
