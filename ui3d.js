@@ -468,7 +468,7 @@ function moveDmgLine(s,st){ try{ const t=st.gunTarget; if(!t||t.dead||!st.guns) 
 function motionNote(a,t){ const m=motionHit(t), out=[]; if(m>0) out.push(`<span class="ember">Sitting still: +${m} to hit.</span>`); else if(m<0) out.push(`<span class="muted">Burning evasive: \u2212${-m} to hit.</span>`);
   const rk=a.weapons.some(w=>weaponReady(w)&&rakeBonus(a,w)>0); if(rk) out.push(`<span class="gilt">Raking pass: broadsides +${Math.round(moveRules(a).rake*100)}%.</span>`); return out.length?' '+out.join(' '):''; }
 function unitTip(u){ return `<div class="h ${u.side==='player'?'verd':'blood'}">${esc(u.isSq?u.t.n:u.name)}</div><div class="muted">${esc(u.t.n)}${u.elite?', elite':''}</div>
-  <div class="num">Hull ${Math.max(0,u.hp)}/${u.maxHp}${u.shMax?`. Shields: prow ${Math.round(u.sh[0])}, port ${Math.round(u.sh[3])}, starboard ${Math.round(u.sh[1])}, rear ${Math.round(u.sh[2])}`:''}.</div><div class="dim">Armor ${pct(u.armor)}, evasion ${u.ev+(u.evBuff||0)}, speed ${u.speed}</div>${u.sec?`<div class="dim num">Prow ${u.sec.prow.hp}, midships ${u.sec.mid.hp}, engines ${u.sec.eng.hp}. Crew ${u.crew}/${u.crewMax}.</div>`:''}`; }
+  <div class="num">Hull ${Math.max(0,u.hp)}/${u.maxHp}${u.shMax?`. Shield pool ${Math.round(u.shp||0)}/${u.shMax}; sides catch prow ${Math.round(u.sh[0])}, port ${Math.round(u.sh[3])}, starboard ${Math.round(u.sh[1])}, rear ${Math.round(u.sh[2])}`:''}.</div><div class="dim">Armor ${pct(u.armor)}, evasion ${u.ev+(u.evBuff||0)}, speed ${u.speed}</div>${u.sec?`<div class="dim num">Prow ${u.sec.prow.hp}, midships ${u.sec.mid.hp}, engines ${u.sec.eng.hp}. Crew ${u.crew}/${u.crewMax}.</div>`:''}`; }
 // which boons and aspect bonuses apply to this shot, so the player sees them working
 function boonMods(a,t){ if(!a||a.side!=='player'||typeof RUN==='undefined'||!RUN) return []; const f=a.fx||{}, out=[], quad=shieldQuad(t,a), ready=a.weapons.filter(weaponReady), pctS=x=>Math.round(x*100)+'%';
   const add=(id,txt)=>{ const b=BOONS[id], P=b&&(b.p?PATRONS[b.p]:PATRONS[b.duo[0]]); out.push(`<span style="color:${P?P.col:'#f0b35a'}">${esc(b?b.n:id)}</span> ${txt}`); };
@@ -655,7 +655,7 @@ const TIPS=[
   [
     "move",
     "Shields and hull",
-    "The cyan bars are shields, one for each side of the ship. Shields soak hits and come back each round. The amber bar is hull. Hull damage stays until you pay for repairs. Keep your strongest shield side facing the guns."
+    "The cyan arcs are shields: one pool feeds all four sides, and each side catches a share set by its coverage. Shields soak hits and come back each round. The amber bar is hull. Hull damage stays until you pay for repairs. Keep your strongest shield side facing the guns."
   ],
   [
     "threat",

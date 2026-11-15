@@ -605,7 +605,7 @@ func _target_tip() -> String:
 		var parts := PackedStringArray()
 		for i in 4:
 			parts.append("%s [color=#92b8e8]%d[/color]" % [words[i], int(round(float(sh[i]) if i < sh.size() else 0.0))])
-		s += "\nShields: " + ", ".join(parts) + "."
+		s += "\nShield pool %d of %d. Sides catch: " % [int(round(float(target.get("shp", 0)))), int(round(float(target.get("shMax", 0))))] + ", ".join(parts) + "."
 	if str(target.get("line", "")) != "":
 		s += "\n" + plain(str(target["line"]))
 	return s
