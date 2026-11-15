@@ -57,3 +57,7 @@ Leg slips the chair verified and did not adopt: Flash's ember warning indicator 
 ## Build notes for whichever mockup is picked
 
 All art already exists in the game (painted admiral portraits, crests, ship renders, the nemesis portrait pool); the new work is layout, the hover and key wiring, timeline and meter drawing, and a small icon set. States to cover: win, loss, first ever loss (the debrief_92 set has all three), an abandoned run, and a run with no standout ship. The readability test pattern from the battle screen (godot/ui/battle/test/ledger_readability_test.gd) applies unchanged: 17 px floor, three strengths, 4.5 to 1 over the brightest and darkest board, no overlaps at any name length.
+
+## Owner pick (Ryan, Nov 15, 2026)
+
+Ryan picked DB1, The Ledger Page. DB2 and DB3 were not picked; they stay in this folder as the record of the round. The build brief for the after-run screen starts from DB1 as drawn. The DeepSeek scene side variant (the admiral's portrait and the standout render set large on the scene beside a narrower sheet) stays an open build option for the Board to take or leave at build time; it does not change the pick. Per R260, the screens.md visuals line lands with this pick; that edit is the Board's step on docs/playbooks/screens.md. The pick unlocks stage 3 of issue 794: Fleet and refits, then the Career screen, get the same treatment (mockups first, owner pick, then build).
