@@ -50,15 +50,16 @@ HULL = [
     (-3.5, 0.55, 0.55, -0.5, 0.55, 0.18, 0.15),
     (-3.6, 0.5, 0.5, -0.45, 0.5, 0.16, 0.14),
 ]
-# the gun heart: the lance's breech casing, from the core's fore hub to the lance's seat inside the ring
+# the gun heart: the lance's breech casing, from the core's fore hub to the lance's seat inside the ring; regular octagons, so
+# from ahead it reads round like the beauty's heart, never a box
 DRUM = [
-    (XL, 0.74, 0.74, -0.74, 0.74, 0.23, 0.23),
-    (XL - 0.12, 0.84, 0.84, -0.84, 0.84, 0.26, 0.26),
-    (2.85, 0.84, 0.84, -0.84, 0.84, 0.26, 0.26),
-    (2.72, 0.55, 0.55, -0.55, 0.55, 0.17, 0.17),
+    (XL, 0.74, 0.74, -0.74, 0.74, 0.43, 0.43),
+    (XL - 0.12, 0.84, 0.84, -0.84, 0.84, 0.49, 0.49),
+    (2.85, 0.84, 0.84, -0.84, 0.84, 0.49, 0.49),
+    (2.72, 0.55, 0.55, -0.55, 0.55, 0.32, 0.32),
     (XC + 0.53, 0.22, 0.22, -0.2, 0.2, 0.06, 0.06),       # seated in the core's fore hub collar
 ]
-COLLAR = [(XS + 0.08, 0.94, 0.94, -0.94, 0.94, 0.29, 0.29), (XS - 0.08, 0.94, 0.94, -0.94, 0.94, 0.29, 0.29)]
+COLLAR = [(XS + 0.08, 0.94, 0.94, -0.94, 0.94, 0.55, 0.55), (XS - 0.08, 0.94, 0.94, -0.94, 0.94, 0.55, 0.55)]
 
 
 def dense(sections, step=0.4):
@@ -118,7 +119,7 @@ def build(K):
     K.mass('Gun heart', drum, 'violet plate', note='the lance\'s faceted breech casing from the core forward through the ring\'s centre, the lance on its face')
     panel_jobs.append(('E14_drum', rings_of(dd), [0, 2, 4, 6], 'spar_plates', ('violet', 'shade2')))
     # its stepped bands: a capacitor band behind the ring and the focus collar the spokes land on, in the ring's plane
-    K.loft('E14_drum_band', [(2.8, 0.9, 0.9, -0.9, 0.9, 0.28, 0.28), (2.72, 0.9, 0.9, -0.9, 0.9, 0.28, 0.28)], 'mauve')
+    K.loft('E14_drum_band', [(2.8, 0.9, 0.9, -0.9, 0.9, 0.52, 0.52), (2.72, 0.9, 0.9, -0.9, 0.9, 0.52, 0.52)], 'mauve')
     col = K.loft('E14_focus_collar', COLLAR, 'mauve')
     K.mass('Focus collar', col, 'mauve band', note='the band round the gun heart in the ring\'s plane where the four spokes land')
     K.mark('gun_heart', 'tier', ['face', 'roof', 'opening'])

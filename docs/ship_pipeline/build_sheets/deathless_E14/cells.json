@@ -29,6 +29,15 @@
   },
   {
    "cell": "bow/top",
+   "id": "spokes",
+   "built": 4,
+   "listed": 4,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/top",
    "id": "gun_heart",
    "built": 1,
    "listed": 1,
@@ -38,7 +47,7 @@
   },
   {
    "cell": "bow/top",
-   "id": "fwd_gun",
+   "id": "lance",
    "built": 1,
    "listed": 1,
    "present": true,
@@ -74,6 +83,33 @@
   },
   {
    "cell": "bow/side",
+   "id": "ring_plates",
+   "built": 13,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "hoop",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "spokes",
+   "built": 4,
+   "listed": 4,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
    "id": "gun_heart",
    "built": 1,
    "listed": 1,
@@ -83,7 +119,7 @@
   },
   {
    "cell": "bow/side",
-   "id": "fwd_gun",
+   "id": "lance",
    "built": 1,
    "listed": 1,
    "present": true,
@@ -92,6 +128,96 @@
   },
   {
    "cell": "bow/side",
+   "id": "drone_docks",
+   "built": 4,
+   "listed": 4,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "drone_lights",
+   "built": 4,
+   "listed": 4,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/below",
+   "id": "ring",
+   "built": 12,
+   "listed": 12,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "gun_heart",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "core",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "cage",
+   "built": 6,
+   "listed": 6,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "spar",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "spar_plates",
+   "built": 2,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "capbank",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "gun_heart",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
    "id": "nose_thrusters",
    "built": 2,
    "listed": 2,
@@ -100,150 +226,6 @@
    "detailed": true
   },
   {
-   "cell": "bow/side",
-   "id": "spar",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "bow/below",
-   "id": "ring",
-   "built": 12,
-   "listed": 12,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "bow/below",
-   "id": "hoop",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/top",
-   "id": "ring",
-   "built": 12,
-   "listed": 12,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/top",
-   "id": "ring_plates",
-   "built": 13,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/top",
-   "id": "hoop",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/top",
-   "id": "spokes",
-   "built": 4,
-   "listed": 4,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/top",
-   "id": "gun_heart",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/top",
-   "id": "core",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/top",
-   "id": "cage",
-   "built": 6,
-   "listed": 6,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/top",
-   "id": "spar",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/top",
-   "id": "spar_plates",
-   "built": 2,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/top",
-   "id": "drone_docks",
-   "built": 4,
-   "listed": 4,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/top",
-   "id": "drone_lights",
-   "built": 4,
-   "listed": 4,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/side",
-   "id": "ring",
-   "built": 12,
-   "listed": 12,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/side",
-   "id": "gun_heart",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
    "cell": "mid/side",
    "id": "core",
    "built": 1,
@@ -280,28 +262,10 @@
    "detailed": true
   },
   {
-   "cell": "mid/below",
-   "id": "ring",
-   "built": 12,
-   "listed": 12,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/below",
-   "id": "hoop",
+   "cell": "mid/side",
+   "id": "capbank",
    "built": 1,
    "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/below",
-   "id": "spokes",
-   "built": 4,
-   "listed": 4,
    "present": true,
    "shaped": true,
    "detailed": true
@@ -309,33 +273,6 @@
   {
    "cell": "mid/below",
    "id": "core",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "stern/top",
-   "id": "ring",
-   "built": 12,
-   "listed": 12,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "stern/top",
-   "id": "ring_plates",
-   "built": 13,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "stern/top",
-   "id": "hoop",
    "built": 1,
    "listed": 1,
    "present": true,
@@ -355,33 +292,6 @@
    "cell": "stern/top",
    "id": "spar_plates",
    "built": 2,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "stern/top",
-   "id": "drone_docks",
-   "built": 4,
-   "listed": 4,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "stern/top",
-   "id": "drone_lights",
-   "built": 4,
-   "listed": 4,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "stern/top",
-   "id": "aft_gun",
-   "built": 1,
    "listed": 1,
    "present": true,
    "shaped": true,
@@ -407,15 +317,6 @@
   },
   {
    "cell": "stern/side",
-   "id": "ring",
-   "built": 12,
-   "listed": 12,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "stern/side",
    "id": "spar",
    "built": 1,
    "listed": 1,
@@ -425,16 +326,7 @@
   },
   {
    "cell": "stern/side",
-   "id": "aft_gun",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "stern/side",
-   "id": "saddle",
+   "id": "capbank",
    "built": 1,
    "listed": 1,
    "present": true,
@@ -488,24 +380,6 @@
   },
   {
    "cell": "stern/below",
-   "id": "ring",
-   "built": 12,
-   "listed": 12,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "stern/below",
-   "id": "hoop",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "stern/below",
    "id": "stern_block",
    "built": 1,
    "listed": 1,
@@ -536,48 +410,48 @@
  "structure": [
   {
    "cell": "bow/top",
-   "concept": 4,
-   "build": 5
+   "concept": 3,
+   "build": 7
   },
   {
    "cell": "bow/side",
    "concept": 3,
-   "build": 4
+   "build": 6
   },
   {
    "cell": "bow/below",
    "concept": null,
-   "build": 5
+   "build": 1
   },
   {
    "cell": "mid/top",
-   "concept": 5,
-   "build": 6
+   "concept": 3,
+   "build": 2
   },
   {
    "cell": "mid/side",
-   "concept": 4,
-   "build": 5
+   "concept": 3,
+   "build": 2
   },
   {
    "cell": "mid/below",
    "concept": null,
-   "build": 6
+   "build": 0
   },
   {
    "cell": "stern/top",
-   "concept": 4,
+   "concept": 3,
    "build": 2
   },
   {
    "cell": "stern/side",
-   "concept": 4,
+   "concept": 3,
    "build": 2
   },
   {
    "cell": "stern/below",
    "concept": null,
-   "build": 2
+   "build": 0
   }
  ],
  "ratios": {
@@ -588,10 +462,10 @@
    "hull_LH": 0.79
   },
   "build": {
-   "env_LB": 1.59,
-   "env_LH": 5.05,
-   "hull_LB": 1.96,
-   "hull_LH": 8.67
+   "env_LB": 1.58,
+   "env_LH": 1.58,
+   "hull_LB": 12.52,
+   "hull_LH": 11.58
   }
  }
 }

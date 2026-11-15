@@ -1,4 +1,4 @@
-# deathless_E14 fit report (first sheet (issue 739); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
+# deathless_E14 fit report (redesign, the upright ring and the glass cannon (issue 782, R256); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
 
 Made by `tools/blender/build_sheets/clash.py` on the built blockout (it runs inside every `build.py ... render` and on its own
 with `build.py <code> <out> fit`). What it tests, on every part of every type:
@@ -28,28 +28,14 @@ core.js inArc), `rest_yaw`, `rest_pitch`; its turning meshes `<id>_turn_<materia
 also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on the hull. Casemates are single fixed parts
 (`turret=0`, `gun_fixed=1`).
 
-## First full layout, checked (before)
 
-The first complete E14 layout, built with the Eclipse kit and run through the check before any fix. Counts: CLASH 5, MOUNT 4, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0.
-
-| Check | Part | Against | Hits | What |
-|---|---|---|---:|---|
-| CLASH | Q2s | V1s | 2 | parts intersect: Q2s_mount_gunv and V1s_mount_dark |
-| CLASH | D1 | DL1 | 3 | parts intersect: D1_body_violet and DL1_mount_gunv |
-| CLASH | D2 | DL2 | 3 | parts intersect: D2_body_violet and DL2_mount_gunv |
-| CLASH | D3 | DL3 | 3 | parts intersect: D3_body_violet and DL3_mount_gunv |
-| CLASH | D4 | DL4 | 3 | parts intersect: D4_body_violet and DL4_mount_gunv |
-| MOUNT | DL1 | hull | 1 | no mount piece touches the hull |
-| MOUNT | DL2 | hull | 1 | no mount piece touches the hull |
-| MOUNT | DL3 | hull | 1 | no mount piece touches the hull |
-| MOUNT | DL4 | hull | 1 | no mount piece touches the hull |
-
-## How first sheet (issue 739) fixed them
+## How redesign, the upright ring and the glass cannon (issue 782, R256) fixed them
 
 | Clash (before) | Fix |
 |---|---|
-| Q2s (stern thruster) against V1s (heat panel) | the stern thrusters moved aft to 3.38 and the heat panels forward to 2.9 |
-| D1 to D4 (drone cradles) against DL1 to DL4 (their lights), and the lights with no mount on the hull | each light is mounted on its own cradle on purpose (an allowed touch, as a part on a part) |
+| L1 (the null lance) body inside E14_drum (the gun heart) | the housing starts 0.04 ahead of the gun heart's face; only the seat ring (the mount) sinks into it |
+| DL1 to DL4 (drone lights) inside the ring plates' inner edges | the cradles moved in to radius 1.86 on the hoop's face and each light lies along the hoop, clear of the plates |
+| D1 to D4 (drone cradles) against DL1 to DL4 (their lights) | each light is mounted on its own cradle on purpose (an allowed touch, as a part on a part) |
 
 While designing round 3 the check also caught (and the design fixed) plates swallowing slits and lamps, casemate breeches pushed
 into the hull, a pipe through a pod, chains through casemates, dishes too low on their posts, and, once turrets turned (R219),
@@ -58,14 +44,12 @@ turret's swept circle (moved out).
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 211 objects, 28 parts, 246 close pairs, 176 rays, 2 guns, 0 sensor pairs, 2 turrets swept, 5 cones, 12 apertures, 0 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 222 objects, 27 parts, 197 close pairs, 102 rays, 1 guns, 0 sensor pairs, 0 turrets swept, 5 cones, 12 apertures, 1 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 
 | Turret | Slot | Arc (bearings) | Sweep steps clear | Rest | Reach to port | Stopped by | Reach to starboard | Stopped by | Under 60 |
 |---|---|---|---:|---:|---:|---|---:|---|---|
-| F1 | F | -60 to 60 | 25 | 0 | all round | - | all round | - | no |
-| T1 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
 
 Reach is measured from the rest bearing, in degrees, turning toward port (bearings rising) and toward starboard; "all round" means nothing stops it within 180. Every turret clears its whole data.js slot arc (sweep steps above). Under 60 degrees either way: none.
 

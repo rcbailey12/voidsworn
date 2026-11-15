@@ -5,31 +5,16 @@
  "slots": [
   {
    "slot": 0,
-   "weapon": "gauss",
-   "arc": "T",
-   "shots": 3,
-   "mounts": [
-    {
-     "id": "T1",
-     "type": "nullcannon",
-     "mount": "turret",
-     "barrels": 2,
-     "muzzles": 2
-    }
-   ]
-  },
-  {
-   "slot": 1,
-   "weapon": "gauss",
+   "weapon": "nlance",
    "arc": "F",
    "shots": 3,
    "mounts": [
     {
-     "id": "F1",
+     "id": "L1",
      "type": "nullcannon",
-     "mount": "turret",
-     "barrels": 2,
-     "muzzles": 2
+     "mount": "fixed",
+     "barrels": 1,
+     "muzzles": 1
     }
    ]
   }
