@@ -117,7 +117,7 @@ function shipCard(s, opts={}){
   const slots=[]; for(let i=0;i<t.slots;i++){ const m=s.mods[i];
     slots.push(m?`<div class="row" style="justify-content:space-between;font-size:14px;margin:3px 0"><span><b>${esc(modName(m))}</b> <span class="dim">${esc(MODULES[m].d)}</span></span>${opts.refit?`<button class="small" data-act="unequip" data-arg="${s.uid}:${i}">Remove</button>`:''}</div>`:`<div class="dim" style="font-size:14px;margin:3px 0">Empty refit slot</div>`); }
   return `<div class="card"><div class="row"><h3>${esc(s.name)}</h3><span class="spacer"></span><span class="pill g">Mk ${roman(s.mk)}</span></div>
-    <p style="margin:0">${t.n}</p>
+    <p style="margin:0">${t.n}${s.ripped?' <span class="gilt" style="font-size:13px">captured, links ripped out</span>':''}</p>
     <div class="row num" style="font-size:14px;margin-top:6px"><span>Hull ${s.hp}/${d.maxHp}</span><span class="spacer"></span><span class="dim">${t.cp} CP</span></div>${hpBar(s.hp,d.maxHp)}
     <div class="stats num" style="grid-template-columns:auto 1fr auto 1fr"><b>Shields</b><span style="white-space:nowrap">${d.shMax}, +${d.regen}/turn</span><b>Armor</b><span>${pct(d.armor)}</span><b>Speed</b><span>${d.speed}</span><b>Turns</b><span>${d.turns}</span><b>Evasion</b><span>${d.ev}</span></div>
     ${t.ab?`<p style="margin:0 0 6px;font-size:14px"><span class="gilt">${ABILITIES[t.ab].n}.</span> <span class="dim">${esc(ABILITIES[t.ab].d)}</span></p>`:''}
@@ -159,13 +159,18 @@ ACT.takePerk=arg=>{ const [uid,p]=arg.split(':'); const s=RUN.fleet.find(x=>x.ui
   if(s.cap.pending>0) promoteModal(uid, window._promoteAfter); else window._promoteAfter(); };
 
 // ---------- shipyard ----------
+// R78 Q9: the price of a captured hull at the Cinder Line yards. It is sold off the Crusade's own ladder (the base
+// cost before the owner's faction pricing, times the Crusade class price), then the yard price multiplier applies,
+// so a captured Eclipse mote costs what a Warden costs, not what Eclipse pays for it.
+function capturedHullPrice(t){ return Math.round(Math.round((t.cost0!=null?t.cost0:t.cost)*(FAC_PRICE.voidsworn[t.cls]||1)/5)*5*priceMult()); }
 function shipyardStock(n){
   if(n.stock) return n.stock;
   const hulls=['warden','harrow','penitent']; if(META.unlocked.u_carrier) hulls.push('reliquary'); if(META.unlocked.u_battleship) hulls.push('cathedral'); if(META.unlocked.u_dread) hulls.push('ascendant');
   const own=[...new Set(hulls.map(h=>equivHull(h,RUN.fac)))]; hulls.length=0; hulls.push(...own);
   const pickH=shuffle(hulls.slice()).slice(0,3).sort((a,b)=>(HULLS[a].cp||1)-(HULLS[b].cp||1)); // each yard has its own few hulls
   /* hull variants you've unlocked are sold beside their standard hull */ for(const h of pickH.slice()){ for(const [vid,v] of Object.entries(HULL_VARIANTS)) if(v.base===h&&META.variants&&META.variants[vid]) pickH.splice(pickH.indexOf(h)+1,0,vid); }
-  n.stock={hulls:pickH, mods:shuffle(modulePool()).slice(0,3), sold:[]};
+  const cap=cinderOpen()?shuffle(CINDER_PRIZES.slice()).slice(0,2):[]; // R78 Q9: from run 3 the Crusade yards sell captured Hegemony and Eclipse hulls
+  n.stock={hulls:pickH, mods:shuffle(modulePool()).slice(0,3), sold:[], cap};
   return n.stock;
 }
 let yardNode=null;
@@ -175,6 +180,9 @@ function shipyardScreen(n){
   const hulls=st.hulls.map(h=>{ const t=HULLS[h], cost=Math.round(t.cost*pm); const fits=cp+t.cp<=RUN.cpCap; const uniq=t.unique&&RUN.fleet.some(s=>s.tpl===h);
     return `<div class="card"><h3>${t.n}${t.variant?' <span class="pill g">Variant</span>':''}</h3>${t.variant?`<p class="gilt" style="font-size:14px">${esc(HULL_VARIANTS[t.variant].d)}</p>`:''}<p class="num">${t.cp} CP. Hull ${t.hp}, shields ${t.sh}, speed ${t.sp}, turns ${t.tn}.</p><p>${t.w.map(([id,a])=>W[id].n+' ('+(a==='T'?'turret':ARC_NAME[a].toLowerCase())+')').join(', ')}.</p><p class="dim">Ability: ${t.ab?ABILITIES[t.ab].n:'none'}</p>
       <div class="foot"><button ${RUN.credits>=cost&&fits&&!uniq?'':'disabled'} data-act="buyHull" data-arg="${h}">Buy for ${cost}</button> ${!fits?'<span class="dim">Not enough command points</span>':uniq?'<span class="dim">Only one allowed</span>':''}</div></div>`; }).join('');
+  const capHulls=(st.cap||[]).map(h=>{ const t=HULLS[h], cost=capturedHullPrice(t); const fits=cp+t.cp<=RUN.cpCap;
+    return `<div class="card"><h3>${t.n}</h3><p class="gilt" style="font-size:14px">Captured prize, links ripped out.</p><p class="num">${t.cp} CP. Hull ${t.hp}, shields ${t.sh}, speed ${t.sp}, turns ${t.tn}.</p><p>${t.w.map(([id,a])=>W[id].n+' ('+(a==='T'?'turret':ARC_NAME[a].toLowerCase())+')').join(', ')}.</p><p class="dim">Ability: ${t.ab?ABILITIES[t.ab].n:'none'}</p>
+      <div class="foot"><button ${RUN.credits>=cost&&fits?'':'disabled'} data-act="buyHull" data-arg="${h}">Buy for ${cost}</button> ${!fits?'<span class="dim">Not enough command points</span>':''}</div></div>`; }).join('');
   const mods=st.mods.map((m,i)=>{ const sold=st.sold.includes(i), cost=Math.round(MODULES[m].cost*pm);
     return `<div class="card"><h3>${esc(modName(m))}</h3><p>${esc(MODULES[m].d)}</p><div class="foot">${sold?'<span class="verd">Bought</span>':`<button ${RUN.credits>=cost?'':'disabled'} data-act="buyMod" data-arg="${i}">Buy for ${cost}</button>`}</div></div>`; }).join('');
   const ships=RUN.fleet.map(s=>{ const d=derive(s), miss=d.maxHp-s.hp, rc=Math.ceil(miss/2*pm), mc=mkCost(s), sell=prizeScrap(s.tpl); // R1 (TXT-8): the label pays what the button pays (no NaN for hulls without a shop price)
@@ -190,6 +198,7 @@ function shipyardScreen(n){
     <div class="row" style="margin-bottom:14px"><button ${allMiss>0&&RUN.credits>=allCost?'':'disabled'} data-act="repairAll">${allMiss>0?`Repair entire fleet for ${allCost}`:'Fleet fully repaired'}</button></div>
     <div class="cards">${ships}</div>
     <h3 style="margin:26px 0 10px">Hulls for sale</h3><div class="cards">${hulls}</div>
+    ${capHulls?`<h3 style="margin:26px 0 10px">Captured hulls</h3><p class="muted" style="margin:0 0 10px">Prizes taken from the Hegemony and Eclipse, refitted along the Cinder Line. Their links are ripped out: no synchronized fire, no Archive restore. Sold at Crusade prices.</p><div class="cards">${capHulls}</div>`:''}
     <h3 style="margin:26px 0 10px">Refits for sale</h3><div class="cards">${mods}</div>
     <h3 style="margin:26px 0 10px">Class refits</h3><p class="muted" style="margin:0 0 8px">A class refit upgrades every ship of that class you own now or later: +6% hull and +6% damage per level, up to ${CLASS_TRACK_MAX}.</p>
     <div class="row wrap">${[...new Set(RUN.fleet.map(s=>HULLS[s.tpl].cls))].map(cls=>{ const lv=classTrack(cls), c=classTrackCost(cls), max=lv>=CLASS_TRACK_MAX; return `<button ${!max&&RUN.credits>=c?'':'disabled'} data-act="buyTrack" data-arg="${esc(cls)}">${esc(clsName(cls))} ${'●'.repeat(lv)}${'○'.repeat(CLASS_TRACK_MAX-lv)} ${max?'(full)':`for ${c}`}</button>`; }).join('')}</div>
@@ -199,7 +208,7 @@ ACT.buyTrack=cls=>{ if(!buyClassTrack(cls)) return; try{ tel('shop',{k:'track',i
 ACT.yardFleet=()=>fleetScreen('shipyard');
 ACT.backShipyard=()=>shipyardScreen(yardNode);
 ACT.leaveYard=()=>{ completeNode(); mapScreen(); };
-ACT.buyHull=h=>{ const t=HULLS[h], cost=Math.round(t.cost*priceMult()); if(RUN.credits<cost||fleetCP()+t.cp>RUN.cpCap) return; RUN.credits-=cost; try{ tel('shop',{k:'hull',id:h,cost}); }catch(e){} const s=newShip(h); RUN.fleet.push(s); toast(`The ${s.name} joins the fleet.`); shipyardScreen(yardNode); };
+ACT.buyHull=h=>{ const t=HULLS[h], st=yardNode.stock, cap=(st&&st.cap)||[], captured=cap.includes(h), cost=captured?capturedHullPrice(t):Math.round(t.cost*priceMult()); if(RUN.credits<cost||fleetCP()+t.cp>RUN.cpCap) return; RUN.credits-=cost; try{ tel('shop',{k:'hull',id:h,cost}); }catch(e){} const s=newShip(h); if(captured) s.ripped=true; RUN.fleet.push(s); toast(`The ${s.name} joins the fleet.`); shipyardScreen(yardNode); };
 ACT.buyMod=i=>{ const st=yardNode.stock, m=st.mods[+i], cost=Math.round(MODULES[m].cost*priceMult()); if(st.sold.includes(+i)||RUN.credits<cost) return; RUN.credits-=cost; try{ tel('shop',{k:'mod',id:m,cost}); }catch(e){} st.sold.push(+i); RUN.inventory.push(m); toast(`${modName(m)} is in the hold. Fit it from Refits.`); shipyardScreen(yardNode); };
 ACT.repair=uid=>{ const s=RUN.fleet.find(x=>x.uid===uid), d=derive(s), miss=d.maxHp-s.hp, c=Math.ceil(miss/2*priceMult()); if(RUN.credits<c) return; RUN.credits-=c; s.hp=d.maxHp; shipyardScreen(yardNode); };
 ACT.repairAll=()=>{ const pm=priceMult(); const miss=RUN.fleet.reduce((a,s)=>a+derive(s).maxHp-s.hp,0), c=Math.ceil(miss/2*pm); if(RUN.credits<c) return; RUN.credits-=c; RUN.fleet.forEach(s=>s.hp=derive(s).maxHp); shipyardScreen(yardNode); };
