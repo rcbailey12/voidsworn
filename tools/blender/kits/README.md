@@ -26,7 +26,8 @@ round 6 proves it on the C15s cruiser), `eclipse/` (issue 532, the E11 and E12 s
 sheets: grown parts, weapons as organs; its README says what each part is and does) and `voidsworn/` (issue 738, the
 Sunward flagship sheet voidsworn_S8: forged broadside ports, Sear turrets, spark flak, radiator spires; its README) and `hegemony/`
 (issue 759, the Dominion dreadnought sheet hegemony_H10: sunk lance turrets, the ion trench, picket lasers, rectangular nozzles,
-the sensor fin, flush panels in an even grid; its README).
+the sensor fin, flush panels in an even grid; its README; issue 768 added the Iron Mandate's plasma lance at a smaller size
+and its canyon plant: power trunks, capacitor banks, heat exchangers).
 
 ## What is shared and what is not
 

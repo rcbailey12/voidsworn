@@ -19,6 +19,7 @@ construction. The feature table is written by the same model, and on counts it o
 | deathless_E14, flare (Eclipse annulus destroyer), issue 739 | [sheet](deathless_E14/sheet.jpg) | [feature_table.md](deathless_E14/feature_table.md) |
 | voidsworn_S8, Daybreak-class dreadnought (Sunward flagship), issue 738 | [sheet](voidsworn_S8/sheet.jpg) | [feature_table.md](voidsworn_S8/feature_table.md) |
 | hegemony_H10, Dominion-class dreadnought (Hegemony line flagship), issue 759 | [sheet](hegemony_H10/sheet.jpg) | [feature_table.md](hegemony_H10/feature_table.md) |
+| hegemony_IM5, The Iron Mandate (Hegemony super-dreadnought, the boss), issue 768 | [sheet](hegemony_IM5/sheet.jpg) | [feature_table.md](hegemony_IM5/feature_table.md) |
 
 The Eclipse fleet from above at one scale: [eclipse_lineup.jpg](eclipse_lineup.jpg) (`tools/blender/build_sheets/studies/eclipse_lineup.py`).
 

@@ -42,7 +42,8 @@ import geom  # noqa: E402
 
 # R226: the part kinds that are machines (a machine never crosses a seam; it rides whole with one piece). The sensor fin is a
 # machine (pack.md section 6: "turrets, launchers and the sensor fin are machines and ride whole with their module").
-MACHINES = ('gun', 'engine', 'thruster', 'antenna', 'spinal')
+MACHINES = ('gun', 'engine', 'thruster', 'antenna', 'spinal',
+            'capbank', 'exchanger')   # issue 768: the Iron Mandate's canyon machinery rides whole with its module too
 
 # The Hegemony colour zones (factions.md: pale grey, steel-blue trim, implant-blue light strips; paint direction hegemony.md
 # section 2, the H10 samples: body #48505e over #141c2a, recessed #212b3b, trim #626d7d, implant blue #57b6e5 to #bdf1fd),
@@ -83,6 +84,10 @@ SUBPARTS = {
     'tier': ['face', 'roof', 'opening'],
     'rail': ['facet', 'step', 'strip'],
     'rib': ['rib'],
+    # issue 768 (hegemony_IM5, the Iron Mandate): the canyon machinery
+    'pipe': ['trunk', 'collar', 'flange', 'saddle'],
+    'capbank': ['base', 'cell', 'cap', 'bus', 'strip'],
+    'exchanger': ['base', 'housing', 'fin', 'frame', 'port'],
 }
 
 
@@ -299,6 +304,13 @@ WEAPONS = {
         design=('An emitter trench recessed in the blunt bow face (R183 (1): never a barrel or prongs on the nose): armoured '
                 'walls lined with stacked field coil plates, an emitter block at the back of the trench with a blue lens where '
                 'the beam forms, feed conduits along its floor.')),
+    'turbo': dict(
+        name='Plasma lance', rules='data.js turbo: 2 shots, 9 damage, range 5 (k battery); FAC_WTRAIT plasma',
+        lore='Lore 3.8: the Plasma lance. Battle look: plasma (slow fat bolts with a corona), as the heavy lance.',
+        design=('The heavy lance\'s mount at a smaller size (factions.md: the same parts repeated at different sizes): a low wide '
+                'faceted housing with a sloped glacis, armoured cheeks, a capacitor bustle with a blue charge strip, two short thick '
+                'containment barrels with coil rings, vented shrouds and blue-lit bores. Issue 768 (hegemony_IM5): on the midships '
+                'bridge, turning all round (slot T).')),
     'flak': dict(
         name='Picket lasers', rules='data.js flak: 3 shots, 3 damage, range 2, point defence (vs squadrons x3)',
         lore='Lore 3.8: Picket lasers. Battle look: flak (airbursts in the Hegemony style).',
@@ -413,7 +425,9 @@ def _picket(p, barrels, cal, blen, s, pitch, variant):
     return trunnion, muzzles, trunnion.x + 0.08 * s + blen, rr * 1.1, E
 
 
-GUN_BUILDERS = {'hturbo': _lance_turret, 'flak': _picket}
+# issue 768: the Plasma lance (data.js turbo, 2 shots) is the same lance turret at a smaller size (factions.md: the same parts
+# repeated at different sizes across the fleet)
+GUN_BUILDERS = {'hturbo': _lance_turret, 'turbo': _lance_turret, 'flak': _picket}
 
 
 def gun(barrels=1, cal=0.12, blen=1.6, size=1.0, mount='turret', pitch=0.0, variant=0, seg=12, weapon='hturbo'):
@@ -606,4 +620,78 @@ def thruster(r=0.3, nozzles=2):
     for c in p.comps:
         c['verts'] = [Vector((v.y, v.x, v.z)) for v in c['verts']]
     p.fit = dict(out=D((0, 0, 1)))
+    return p
+
+
+# ---------------------------------------------------------------------------------------------------- canyon machinery
+# Issue 768 (hegemony_IM5, the Iron Mandate): the armoured canyon down the spine carries the ship's heavy plant in the open,
+# shielded by the canyon walls: power trunks from the reactor to the ion cannon and the drives, the ion cannon's capacitor
+# banks, the reactor's heat exchangers. Every piece has a job (R221); the banks and exchangers are machines (MACHINES) and sit
+# whole inside one module; the trunks are structure and stop at a flanged coupling short of every module band.
+def pipe(pts, r=0.16, pitch=0.6):
+    """an armoured power trunk along the world points pts (the sheet kit emits it with no transform): an eight-sided trunk,
+    trim collars at an even pitch, a flange at each end, saddles under it every ~1.2 down to the floor it lies on (the mount)"""
+    p = Part('pipe')
+    pts = [Vector(q) for q in pts]
+    for k, (a, b) in enumerate(zip(pts, pts[1:])):
+        d = b - a; L = d.length
+        if L < 1e-4:
+            continue
+        up = Vector((0, 0, 1)) if abs(d.normalized().z) < 0.9 else Vector((1, 0, 0))
+        M = frame(a, d, up)
+        p.add('trunk%d' % k, 'body', 'hgrey2', moved(revolve([(0, r), (L, r)], 8, cap0=True, cap1=True, phase=math.pi / 8), M))
+        n = max(1, int(L / pitch))
+        for i in range(n):
+            x = L * (i + 0.5) / n
+            p.add('collar%d_%d' % (k, i), 'body', 'htrim', moved(ring_band(x, r, 0.08, 0.035, 8), M))
+        ns = max(1, int(round(L / 1.2)))
+        for i in range(ns):
+            x = L * (i + 0.5) / ns
+            p.add('saddle%d_%d' % (k, i), 'mount', 'hgrey2', moved(block(x - 0.07, x + 0.07, r * 0.9, r * 0.55 + 0.09, 0.02, zo=-r * 0.55 - 0.07), M))
+    for k, (q, d) in enumerate(((pts[0], pts[1] - pts[0]), (pts[-1], pts[-2] - pts[-1]))):
+        M = frame(q, d, Vector((0, 0, 1)))
+        p.add('flange%d' % k, 'body', 'hmetal', moved(revolve([(0.0, r * 1.45), (0.07, r * 1.45), (0.07, r * 0.4), (0.0, r * 0.4)], 8, closed=True, phase=math.pi / 8), M))
+        p.add('flangecap%d' % k, 'body', 'hgrey2', moved(revolve([(-0.06, r * 1.2), (0.0, r * 1.2)], 8, cap0=True, phase=math.pi / 8), M))
+    return p
+
+
+def capbank(n=4, l=2.0, w=1.2, h=0.55):
+    """a capacitor bank (the ion cannon's charge banks): local +Z up, +X along the bank. A machined plinth (the mount), n
+    identical cells in a row (factions.md Inside: racks of identical equipment), each with a trim cap and a blue charge strip, a
+    bus bar along the caps, terminal blocks at both ends"""
+    p = Part('capbank')
+    p.add('base', 'mount', 'hgrey2', _zblock(-l / 2, l / 2, -w / 2, w / 2, -0.04, 0.08, ch=0.03))
+    pitch = (l - 0.24) / n
+    for k in range(n):
+        x0 = -l / 2 + 0.12 + pitch * k + 0.03; x1 = x0 + pitch - 0.06
+        p.add('cell%d' % k, 'body', 'hgrey', _zblock(x0, x1, -w * 0.42, w * 0.42, 0.08, h - 0.06, ch=0.04))
+        p.add('cap%d' % k, 'body', 'htrim', _zblock(x0 + 0.04, x1 - 0.04, -w * 0.36, w * 0.36, h - 0.07, h - 0.02, ch=0.015))
+        for sg in (1, -1):
+            yy = sg * w * 0.42
+            p.add('strip%d%d' % (k, sg > 0), 'body', 'hblue', _zblock(x0 + 0.06, x1 - 0.06, yy - 0.012, yy + 0.012, h * 0.55, h * 0.62))
+            p.add('cellrib%d%d' % (k, sg > 0), 'body', 'hpanel', _zblock(x0 + 0.05, x1 - 0.05, yy - 0.02 if sg > 0 else yy - 0.004, yy + 0.004 if sg > 0 else yy + 0.02, 0.14, h * 0.45))
+    for sg in (1, -1):
+        p.add('bus%d' % (sg > 0), 'body', 'hmetal', rod((-l / 2 + 0.1, sg * w * 0.18, h - 0.005), (l / 2 - 0.1, sg * w * 0.18, h - 0.005), 0.035, 6))
+        p.add('terminal%d' % (sg > 0), 'body', 'hmetal', _zblock(sg * (l / 2 - 0.1) - 0.06, sg * (l / 2 - 0.1) + 0.06, -w * 0.3, w * 0.3, 0.08, h + 0.02, ch=0.02))
+    return p
+
+
+def exchanger(l=1.4, w=1.2, h=0.6, fins=9):
+    """a heat exchanger (the reactor's coolant plant, in the canyon so its heat leaves the hull): local +Z up, +X along it. A
+    plinth (the mount), a chamfered housing, a stack of cooling fin plates across its top in a trim frame, an inlet and an outlet
+    port at its ends"""
+    p = Part('exchanger')
+    p.add('base', 'mount', 'hgrey2', _zblock(-l / 2, l / 2, -w / 2, w / 2, -0.04, 0.08, ch=0.03))
+    p.add('housing', 'body', 'hgrey', _zblock(-l * 0.46, l * 0.46, -w * 0.44, w * 0.44, 0.08, h * 0.55, ch=0.05))
+    for sg in (1, -1):
+        p.add('frame%d' % (sg > 0), 'body', 'htrim', _zblock(-l * 0.44, l * 0.44, sg * w * 0.36 - 0.03, sg * w * 0.36 + 0.03, h * 0.55, h))
+        p.add('frameend%d' % (sg > 0), 'body', 'htrim', _zblock(sg * l * 0.42 - 0.03, sg * l * 0.42 + 0.03, -w * 0.36, w * 0.36, h * 0.55, h))
+    for k in range(fins):
+        x = -l * 0.38 + l * 0.76 * k / max(1, fins - 1)
+        p.add('fin%d' % k, 'body', 'hmetal', _zblock(x - 0.012, x + 0.012, -w * 0.33, w * 0.33, h * 0.55, h - 0.03))
+    p.add('finglow', 'body', 'dark', _zblock(-l * 0.4, l * 0.4, -w * 0.33, w * 0.33, h * 0.55, h * 0.57))
+    for sg in (1, -1):
+        x = sg * l * 0.46
+        p.add('port%d' % (sg > 0), 'body', 'hmetal', moved(revolve([(0.0, 0.11), (0.12, 0.11), (0.12, 0.14), (0.17, 0.14)], 8, cap1=True),
+                                                            Matrix.Translation((x, 0, h * 0.32)) @ (Matrix.Identity(4) if sg > 0 else Matrix.Rotation(math.pi, 4, 'Z'))))
     return p

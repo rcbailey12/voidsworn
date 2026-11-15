@@ -293,6 +293,8 @@ def cells():
     if M.get('concept_views'):
         # per-ship boxes round each true view (the escort left out); flip: the sheet draws the bow on the right
         for nm in ('top', 'side'):
+            if nm not in M['concept_views']:
+                continue   # issue 768: a concept with no true side view (IM5) shows the build's side alone
             v = M['concept_views'][nm]; c = sheet.crop(tuple(v['box']))
             cview[nm] = c.transpose(Image.FLIP_LEFT_RIGHT) if v.get('flip') else c
     else:
