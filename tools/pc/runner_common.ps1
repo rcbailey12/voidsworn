@@ -174,7 +174,12 @@ try {
     $raw = $stdout.Result + "`n" + $stderr.Result
     Put (Join-Path $out 'preflight_log.txt') $raw
     $reply = Read (Join-Path $probe 'reply.txt')
-    if ($kind -eq 'kimi') { $reply = $stdout.Result.Trim() }
+    if ($kind -eq 'kimi') {
+      # Kimi Code prints its thinking and its answer as bullet lines, then a 'To resume this session' line (first live run,
+      # Nov 15): the reply is the answer line, bullet stripped.
+      $reply = ''
+      foreach ($line in ($stdout.Result -split '\r?\n')) { $t = ($line -replace '^[^A-Za-z0-9_]+','').Trim(); if ($t -eq 'RUNNER_READY') { $reply = $t } }
+    }
     if ($kind -eq 'opencode') {
       $reply = ''
       foreach ($line in ($stdout.Result -split '\r?\n')) {
