@@ -80,7 +80,7 @@ jobs:
       - name: Get Godot 4.7.2 (headless)
         id: godot
         run: |
-          curl -sSL -o godot.zip https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          curl -sSL --retry 3 --retry-all-errors -o godot.zip https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
           unzip -q godot.zip -d "$RUNNER_TEMP/godot"
           echo "GODOT=$RUNNER_TEMP/godot/Godot_v4.7.2-stable_linux.x86_64" >> "$GITHUB_ENV"
       # The Godot checks below each run even when an earlier one fails, so one red run shows every failure.
@@ -103,8 +103,9 @@ jobs:
   # The load step is the gate: when a script or scene does not load, the job fails there in seconds and names the file,
   # and the steps after it do not run (they would only repeat the same error, some by waiting out their time limits).
   # When everything loads, the list step and the bot battle each run even if the other fails. Every step has its own
-  # time limit and the limits add up to under 27 minutes, so the job ends red by itself and is never cut off (shown as
-  # "cancelled") by the 30 minute limit: that happened on the broken test commit 138ff38.
+  # time limit: load 120 s, import 300 s, the list 780 s, the bot battle 360 s and the fixture 2 minutes, 28 minutes in all
+  # before setup and the Godot download, so the job can still be cut off (shown as "cancelled") by the 30 minute limit
+  # when every step runs to its cap, as on the broken test commit 138ff38; the load gate makes that rare (audit 706, 9c).
   godot-game:
     name: Godot game checks
     runs-on: ubuntu-latest
@@ -148,7 +149,7 @@ jobs:
           if grep -q 'SCRIPT ERROR' "$RUNNER_TEMP/load_all.log"; then echo "SCRIPT ERROR lines above"; bad=1; fi
           if [ $code -ne 0 ]; then echo "load_all.gd ended with exit code $code (124 or 137 is its 120 s time limit)"; bad=1; fi
           if [ $bad -ne 0 ]; then
-            echo 'The Godot checks after this step were not run: a file above does not load. Repair it first.' | tee -a "$GITHUB_STEP_SUMMARY"
+            echo 'The Godot checks after this step were not run (the A16 fixture step still runs: it needs no Godot): a file above does not load. Repair it first.' | tee -a "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
       # The game's fonts, crests, world and effect textures, imported as the editor would, so the checks below draw with
@@ -187,5 +188,6 @@ jobs:
       # Blender: a PR that changes an input without regenerating the fixture fails here by name.
       - name: A16 death fixture is fresh (sheet_fixture_hash.py --check)
         if: ${{ !cancelled() }}
+        timeout-minutes: 2
         run: |
           python3 tools/recipe/sheet_fixture_hash.py --check | tee -a "$GITHUB_STEP_SUMMARY"; exit ${PIPESTATUS[0]}
