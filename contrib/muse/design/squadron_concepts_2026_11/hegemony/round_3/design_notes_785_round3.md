@@ -24,3 +24,5 @@ Weapon callouts: (1) the gun cassette, three muzzles grouped in the single frame
 ## Owner's ruling (Nov 15, 2026)
 
 HF1D stands, with one amendment: the front of the craft is slimmed down so the whole reads more of a wedge. In sheet terms: the bow block narrows and tapers into the wedge instead of presenting a broad face; the framed recess, the grouped cassette and the sensor slot above it all stay, drawn smaller into the slimmer prow, and the stepped edging follows the taper. The slimmed reference render replaces HF1D.jpg in this folder.
+
+Slim render note (Nov 15, 2026): the replacement render sets the cassette recess into the sloped bow deck near the prow tip rather than a vertical bow face, and the hull reads very flat from above. The sheet governs: the cassette sits in the slim prow's framed face recess, and the hull keeps HF1C's depth. The render stands as the silhouette reference for the slimmed wedge.
