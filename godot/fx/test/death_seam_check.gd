@@ -16,8 +16,9 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 # The ship: the GLB path after "--", else the installed res://assets/ships/C19_51/C19_51.glb, else the unpainted export
 # kept as a fixture (fx/test/fixtures/C19_51_unbaked.glb.gz: tools/recipe/export7.py unbaked=1 on the A16 build, gzipped;
 # regenerate it when A16's sheet changes, by the steps in tools/recipe/sheet_fixture_hash.py). Staleness guard (opus_check_608
-# note 3, issue 532): the fixture's record C19_51_unbaked.sheet.txt holds the sha256 of the files that make A16's geometry and
-# their list; when the check runs on the fixture it hashes the same files and fails when they differ.
+# note 3, issue 532): the fixture's record C19_51_unbaked.sheet.txt holds the sha256 of the files that make A16's geometry,
+# their list and a canonical extract of A16's own data.js entry (c_boss); when the check runs on the fixture it hashes the
+# same files and the extract and fails when they differ.
 const FX := preload("res://fx/fx.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const FIXTURE := "res://fx/test/fixtures/C19_51_unbaked.glb.gz"
@@ -74,10 +75,16 @@ func _fixture_fresh() -> void:
 	var repo := ProjectSettings.globalize_path("res://").path_join("..")
 	var ctx := HashingContext.new()
 	ctx.start(HashingContext.HASH_SHA256)
-	for i in range(1, rec.size()):
+	var i := 1
+	while i < rec.size() and not rec[i].begins_with("#"):
 		var f := repo.path_join(rec[i].strip_edges())
 		check(FileAccess.file_exists(f), "the fixture record names a file that is not there: " + rec[i])
 		ctx.update(FileAccess.get_file_as_string(f).replace("\r\n", "\n").to_utf8_buffer())
+		i += 1
+	# the canonical extract of A16's own data.js entry (c_boss): the line after the marker, written by sheet_fixture_hash.py
+	check(i + 1 < rec.size(), "the fixture record has no data.js extract line after its file list")
+	if i + 1 < rec.size():
+		ctx.update((rec[i + 1].strip_edges() + "\n").to_utf8_buffer())
 	var got := ctx.finish().hex_encode()
 	var want := rec[0].substr(7).strip_edges()
 	print("DEATH_SEAM fixture record ", "fresh" if got == want else "STALE")
