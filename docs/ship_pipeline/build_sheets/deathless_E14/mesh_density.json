@@ -2,82 +2,90 @@
  "rule": "R224: a part kind more than 25 percent under the hull is flagged (mesh half; the paint half is stage 5)",
  "types": {
   "hull": {
-   "area": 235.02,
-   "triangles": 21360,
-   "tris_per_unit2": 90.9,
-   "edges_per_unit2": 83.9
+   "area": 278.64,
+   "triangles": 25476,
+   "tris_per_unit2": 91.4,
+   "edges_per_unit2": 82.2
+  },
+  "corewin": {
+   "area": 1.8,
+   "triangles": 528,
+   "tris_per_unit2": 293.7,
+   "edges_per_unit2": 240.3,
+   "tris_per_unit2_vs_hull": 3.21,
+   "edges_per_unit2_vs_hull": 2.92
   },
   "strut": {
-   "area": 3.87,
+   "area": 3.85,
    "triangles": 736,
-   "tris_per_unit2": 190.0,
-   "edges_per_unit2": 148.7,
+   "tris_per_unit2": 191.0,
+   "edges_per_unit2": 149.5,
    "tris_per_unit2_vs_hull": 2.09,
-   "edges_per_unit2_vs_hull": 1.77
+   "edges_per_unit2_vs_hull": 1.82
   },
   "core": {
-   "area": 3.72,
+   "area": 3.71,
    "triangles": 1760,
-   "tris_per_unit2": 473.5,
-   "edges_per_unit2": 297.0,
-   "tris_per_unit2_vs_hull": 5.21,
-   "edges_per_unit2_vs_hull": 3.54
+   "tris_per_unit2": 473.8,
+   "edges_per_unit2": 297.2,
+   "tris_per_unit2_vs_hull": 5.18,
+   "edges_per_unit2_vs_hull": 3.62
   },
   "spinal": {
-   "area": 29.95,
-   "triangles": 3648,
-   "tris_per_unit2": 121.8,
-   "edges_per_unit2": 67.3,
-   "tris_per_unit2_vs_hull": 1.34,
-   "edges_per_unit2_vs_hull": 0.8
+   "area": 35.84,
+   "triangles": 6208,
+   "tris_per_unit2": 173.2,
+   "edges_per_unit2": 91.5,
+   "tris_per_unit2_vs_hull": 1.89,
+   "edges_per_unit2_vs_hull": 1.11
   },
   "engine": {
-   "area": 13.28,
-   "triangles": 2552,
-   "tris_per_unit2": 192.2,
-   "edges_per_unit2": 89.8,
-   "tris_per_unit2_vs_hull": 2.11,
-   "edges_per_unit2_vs_hull": 1.07
+   "area": 21.67,
+   "triangles": 3032,
+   "tris_per_unit2": 139.9,
+   "edges_per_unit2": 66.8,
+   "tris_per_unit2_vs_hull": 1.53,
+   "edges_per_unit2_vs_hull": 0.81
   },
   "thruster": {
    "area": 0.97,
    "triangles": 448,
-   "tris_per_unit2": 461.6,
-   "edges_per_unit2": 395.7,
-   "tris_per_unit2_vs_hull": 5.08,
-   "edges_per_unit2_vs_hull": 4.72
+   "tris_per_unit2": 461.8,
+   "edges_per_unit2": 395.9,
+   "tris_per_unit2_vs_hull": 5.05,
+   "edges_per_unit2_vs_hull": 4.82
   },
   "lamp": {
-   "area": 1.16,
-   "triangles": 224,
-   "tris_per_unit2": 192.6,
-   "edges_per_unit2": 165.1,
-   "tris_per_unit2_vs_hull": 2.12,
-   "edges_per_unit2_vs_hull": 1.97
+   "area": 2.91,
+   "triangles": 560,
+   "tris_per_unit2": 192.7,
+   "edges_per_unit2": 165.2,
+   "tris_per_unit2_vs_hull": 2.11,
+   "edges_per_unit2_vs_hull": 2.01
   },
   "vent": {
    "area": 1.48,
    "triangles": 376,
-   "tris_per_unit2": 254.3,
-   "edges_per_unit2": 227.3,
-   "tris_per_unit2_vs_hull": 2.8,
-   "edges_per_unit2_vs_hull": 2.71
+   "tris_per_unit2": 254.4,
+   "edges_per_unit2": 227.4,
+   "tris_per_unit2_vs_hull": 2.78,
+   "edges_per_unit2_vs_hull": 2.77
   },
   "hatch": {
    "area": 0.48,
    "triangles": 408,
-   "tris_per_unit2": 843.9,
-   "edges_per_unit2": 711.5,
-   "tris_per_unit2_vs_hull": 9.28,
-   "edges_per_unit2_vs_hull": 8.48
+   "tris_per_unit2": 844.3,
+   "edges_per_unit2": 711.9,
+   "tris_per_unit2_vs_hull": 9.24,
+   "edges_per_unit2_vs_hull": 8.66
   },
   "hatchbox": {
    "area": 1.37,
    "triangles": 1120,
-   "tris_per_unit2": 818.2,
-   "edges_per_unit2": 701.3,
-   "tris_per_unit2_vs_hull": 9.0,
-   "edges_per_unit2_vs_hull": 8.36
+   "tris_per_unit2": 818.6,
+   "edges_per_unit2": 701.7,
+   "tris_per_unit2_vs_hull": 8.96,
+   "edges_per_unit2_vs_hull": 8.54
   }
  },
  "mesh_flags": []

@@ -7,7 +7,7 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 
 | ID | Job | Type | What | Count | Cells | Reads as (sub-parts) | Source |
 |---|---|---|---|---:|---|---|---|
-| ring | the shade held forward at the enemy and the lance's focusing ring: one closed ring of curved shade plates round the gun's muzzle; its plates peel first when hit | shade | the ring: twelve large curved shade plates on one closed hoop, narrow even gaps between them, standing upright across the bow, each plate a deep block with a dished front, a stepped second layer and green-white corona lines on its rim's front and back edges (the beauty and the sheet draw twelve; R233 closes the ring all the way round; R256 stands it upright) | 12 | bow/top, bow/side, bow/below | a broad curved band, a stepped layer, a corona line on the rim, even panels | picture |
+| ring | the shade held forward at the enemy and the lance's focusing ring: one closed ring of curved shade plates round the gun's muzzle; its plates peel first when hit | shade | the ring: twelve large curved shade plates on one closed hoop, narrow even gaps between them, standing upright across the bow, each plate a deep block with a dished front, a stepped second layer and green-white corona lines on its rim's front and back edges (the beauty and the sheet draw twelve; R233 closes the ring all the way round; R256 stands it upright) | 12 | bow/top, bow/side, bow/below | a deep curved block, an inner and an outer armour block on its face, a rim band, corona lines on its rim and down its sides, even panels | picture |
 | ring_plates | armour over the shade plates | plate | even, aligned panels over the shade plates' fronts, backs and rims (R243) | 1 | bow/top, bow/side | chamfered slabs with steps and flush fasteners | picture |
 | hoop | the closed structural ring that carries the twelve plates (R233, R207) | belt | the hoop: one closed box-section ring under the plates' inner edges (the picture leaves the plates floating; R207: every shade has a structural connection) | 1 | bow/side, bow/top | a band, plates | designed |
 | spokes | carry the hoop to the gun heart's focus collar (R207) | strut | truss spokes from the focus collar to the hoop, in an X | 4 | bow/side, bow/top | two rails, a zigzag web, end lugs | designed |
@@ -16,13 +16,16 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 | nose_thrusters | attitude control forward | thruster | attitude thrusters under the spar behind the core (on the gun heart they would fire into the ring's lower plates) | 2 | mid/side | a block, slot nozzles | designed |
 | core | the trapped light core: powers the ship and its phase and regeneration (data.js ab phase, regen 2) | core | the bright core just aft of the ring's centre, the spar and the gun heart entering its hub collars | 1 | mid/top, mid/side, mid/below | hub collars, a bright sphere, gimbal rings, meridian bars | picture |
 | cage | the broken cage of small shade plates that shields the core (designs.md) | feather | small curved shade plates round the core's hub, broken by gaps the light shows through | 6 | mid/top, mid/side | a blade, a thickness step | picture |
-| spar | the keel beam: carries the core, the capacitor housing and the stern block | hull | the layered spar: a slim chamfered beam from the core to the stern block | 1 | mid/top, mid/side, stern/top, stern/side | bevels, steps, an overhang | picture |
+| spar | the keel beam: carries the core, the capacitor housing and the stern block | hull | the body: a chunky faceted beam in steps from the core to the stern block (R266: never a stick) | 1 | mid/top, mid/side, stern/top, stern/side | bevels, steps, an overhang | picture |
+| flank_armour | armour the body's flanks and keel in layers (R266: a plated, stepped body) | hull | layered armour slabs down both flanks with a second step on each, a keel along the belly, collars at the body's steps (the beauty's heavy plated body) | 1 | mid/side, mid/top, stern/side | bevels, steps, an overhang | picture |
+| core_windows | show the core's glow from ahead, through the gun heart (R266) | corewin | four armoured core windows on the gun heart's forward shoulder (the beauty's core glowing in the heart behind the muzzle) | 4 | bow/top, bow/side | a rim, set-back glass that glows, grille bars | picture |
+| hoop_lights | light the ring's open middle (R266) | lamp | twelve small lights on the hoop's inner face, one behind each plate, and a light strip round it (the beauty's lit middle with its small drone lights) | 12 | bow/top, bow/side | a housing, a green-white bar lens | picture |
 | spar_plates | armour over the spar | plate | even, aligned panels along the spar | 1 | mid/top, mid/side, stern/top | chamfered slabs with steps and flush fasteners | picture |
 | drone_docks | dock the repair drones that mend the ring (data.js regen 2, reanimate) | hatchbox | repair drone cradles docked on the hoop's front face (the picture shows drones hovering in the gaps; built docked, so every part sits on the ship) | 4 | bow/top, bow/side | a frame, a lid, ribs | picture |
 | drone_lights | the drones' green work lights | lamp | a green light on each drone cradle | 4 | bow/top, bow/side | a housing, a green-white bar lens | picture |
 | capbank | store the core's charge for the lance's one big shot (the glass cannon) | pylon | the stepped capacitor housing on the spar's dorsal line aft of the core, three ribs across it (the beauty's low dorsal housing on the spar; the first sheet seated the aft gun there, gone with issue 784) | 1 | mid/top, mid/side, stern/side | a stepped web, plates | picture |
 | stern_block | holds the engine, the engine room and the archive vault | tier | the stern block: a faceted chamfered block where the spar thickens before the engine | 1 | stern/top, stern/side, stern/below | faceted faces, a stepped roof, openings (vents, hatches, lights) | picture |
-| engine | drive (sp 3): one eclipse-ring engine, larger than the frigate's, no flame | engine | one engine at the stern: the broad eclipse ring of pale light | 1 | stern/top, stern/side, stern/below | a faceted ribbed drum, a mount collar, vanes, a short bell, a corona ring round a black shade disc (no flame) | picture |
+| engine | drive (sp 3): one eclipse-ring engine, larger than the frigate's, no flame | engine | one engine at the stern: the broad eclipse ring of pale light (R266: the beauty's big glowing ring at the end of the body is the engine's halo) | 1 | stern/top, stern/side, stern/below | a faceted ribbed drum, a mount collar, vanes, a short bell, a corona ring round a black shade disc (no flame), a free halo ring of pale light on four arms | picture |
 | stern_thrusters | attitude control at the stern | thruster | attitude thrusters on the stern block's flanks | 2 | stern/side | a block, slot nozzles | designed |
 | lamps | the corona strip lights along the spar: the faction's only lights besides the corona, the core and the engine ring | lamp | corona strip lights on the stern block's flanks (the beauty's green lights along the spar) | 4 | stern/side | a housing, a green-white bar lens | picture |
 | vents | dump heat from the engine room | vent | heat slot panels on the stern block's flanks | 2 | stern/side | a frame, slats | designed |
@@ -32,6 +35,7 @@ Kit sub-parts per type (what DETAILED checks):
 
 - belt: band, plate
 - core: hub, sphere, gimbal, bar
+- corewin: rim, glass, bar
 - engine: housing, collar, rib, vane, bell, corona, shade
 - feather: blade, step
 - hatch: rim, door, seam, hinge
@@ -54,7 +58,7 @@ Left as surface, and why:
 
 ## Every built part has a job (R221)
 
-Built kit parts: 65; parts whose inventory id names no line with a job: 0.
+Built kit parts: 82; parts whose inventory id names no line with a job: 0.
 
 ## Per cell: present, shaped, detailed (from the model, deathless_E14_model.json)
 
@@ -70,6 +74,8 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | spokes | truss spokes from the focus collar to the hoop, in an X | 4 / 4 | Y | Y | Y |
 | gun_heart | the gun heart: a faceted drum from the core forward through the ring's | 1 / 1 | Y | Y | Y |
 | lance | the null lance on the gun heart's face, its muzzle the ship's bow at t | 1 / 1 | Y | Y | Y |
+| core_windows | four armoured core windows on the gun heart's forward shoulder | 4 / 4 | Y | Y | Y |
+| hoop_lights | twelve small lights on the hoop's inner face, one behind each plate, a | 12 / 12 | Y | Y | Y |
 | drone_docks | repair drone cradles docked on the hoop's front face | 4 / 4 | Y | Y | Y |
 | drone_lights | a green light on each drone cradle | 4 / 4 | Y | Y | Y |
 
@@ -83,6 +89,8 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | spokes | truss spokes from the focus collar to the hoop, in an X | 4 / 4 | Y | Y | Y |
 | gun_heart | the gun heart: a faceted drum from the core forward through the ring's | 1 / 1 | Y | Y | Y |
 | lance | the null lance on the gun heart's face, its muzzle the ship's bow at t | 1 / 1 | Y | Y | Y |
+| core_windows | four armoured core windows on the gun heart's forward shoulder | 4 / 4 | Y | Y | Y |
+| hoop_lights | twelve small lights on the hoop's inner face, one behind each plate, a | 12 / 12 | Y | Y | Y |
 | drone_docks | repair drone cradles docked on the hoop's front face | 4 / 4 | Y | Y | Y |
 | drone_lights | a green light on each drone cradle | 4 / 4 | Y | Y | Y |
 
@@ -99,7 +107,8 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | gun_heart | the gun heart: a faceted drum from the core forward through the ring's | 1 / 1 | Y | Y | Y |
 | core | the bright core just aft of the ring's centre, the spar and the gun he | 1 / 1 | Y | Y | Y |
 | cage | small curved shade plates round the core's hub, broken by gaps the lig | 6 / 6 | Y | Y | Y |
-| spar | the layered spar: a slim chamfered beam from the core to the stern blo | 1 / 1 | Y | Y | Y |
+| spar | the body: a chunky faceted beam in steps from the core to the stern bl | 1 / 1 | Y | Y | Y |
+| flank_armour | layered armour slabs down both flanks with a second step on each, a ke | 1 / 1 | Y | Y | Y |
 | spar_plates | even, aligned panels along the spar | 2 / 1 | Y | Y | Y |
 | capbank | the stepped capacitor housing on the spar's dorsal line aft of the cor | 1 / 1 | Y | Y | Y |
 
@@ -111,7 +120,8 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 | nose_thrusters | attitude thrusters under the spar behind the core | 2 / 2 | Y | Y | Y |
 | core | the bright core just aft of the ring's centre, the spar and the gun he | 1 / 1 | Y | Y | Y |
 | cage | small curved shade plates round the core's hub, broken by gaps the lig | 6 / 6 | Y | Y | Y |
-| spar | the layered spar: a slim chamfered beam from the core to the stern blo | 1 / 1 | Y | Y | Y |
+| spar | the body: a chunky faceted beam in steps from the core to the stern bl | 1 / 1 | Y | Y | Y |
+| flank_armour | layered armour slabs down both flanks with a second step on each, a ke | 1 / 1 | Y | Y | Y |
 | spar_plates | even, aligned panels along the spar | 2 / 1 | Y | Y | Y |
 | capbank | the stepped capacitor housing on the spar's dorsal line aft of the cor | 1 / 1 | Y | Y | Y |
 
@@ -125,7 +135,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| spar | the layered spar: a slim chamfered beam from the core to the stern blo | 1 / 1 | Y | Y | Y |
+| spar | the body: a chunky faceted beam in steps from the core to the stern bl | 1 / 1 | Y | Y | Y |
 | spar_plates | even, aligned panels along the spar | 2 / 1 | Y | Y | Y |
 | stern_block | the stern block: a faceted chamfered block where the spar thickens bef | 1 / 1 | Y | Y | Y |
 | engine | one engine at the stern: the broad eclipse ring of pale light | 1 / 1 | Y | Y | Y |
@@ -134,7 +144,8 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| spar | the layered spar: a slim chamfered beam from the core to the stern blo | 1 / 1 | Y | Y | Y |
+| spar | the body: a chunky faceted beam in steps from the core to the stern bl | 1 / 1 | Y | Y | Y |
+| flank_armour | layered armour slabs down both flanks with a second step on each, a ke | 1 / 1 | Y | Y | Y |
 | capbank | the stepped capacitor housing on the spar's dorsal line aft of the cor | 1 / 1 | Y | Y | Y |
 | stern_block | the stern block: a faceted chamfered block where the spar thickens bef | 1 / 1 | Y | Y | Y |
 | engine | one engine at the stern: the broad eclipse ring of pale light | 1 / 1 | Y | Y | Y |
@@ -174,6 +185,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 1.02 | 0.36 | 1.10 | 0.79 |
-| build | 1.58 | 1.58 | 12.52 | 11.58 |
+| build | 1.56 | 1.56 | 7.42 | 6.95 |
 
 Lines not present, shaped and detailed without a reason: 0.

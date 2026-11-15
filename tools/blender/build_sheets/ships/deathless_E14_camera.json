@@ -1,21 +1,21 @@
 {
- "az": 18.13426207342047,
- "el": 21.865645553203063,
- "roll": 32.03580562602698,
- "dist": 59.91259506582485,
- "mm": 190.41294436860332,
+ "az": 17.930911768952498,
+ "el": 21.887292416933892,
+ "roll": 31.964577314359737,
+ "dist": 59.56656628337539,
+ "mm": 189.05366101257795,
  "target": [
   0.0,
   0.0,
   0.0
  ],
- "sx": -0.046287976030894094,
- "sy": 0.050451283133106185,
+ "sx": -0.04864763371720026,
+ "sy": 0.05171350820521759,
  "res": [
   1920,
   1280
  ],
- "iou": 0.6769,
- "body_iou": 0.6777,
+ "iou": 0.6512,
+ "body_iou": 0.6516,
  "note": "E14 camera of record (issue 782, the upright redesign): the beauty's view from ahead of the port bow and a little above, the ring nearly face-on, the lance's muzzle at its centre lower left and the engine ring upper right. Angles from a coarse grid (contrib/opus/tools/issue738/grid.py), then fit.py refined every value (never the ship). The cut-out (contrib/opus/tools/issue782/mask_e14.py) leaves out the engine's light ring and its glow, the sky's nebula, and the sky seen through the ring's open middle, which the upright build leaves open too."
 }

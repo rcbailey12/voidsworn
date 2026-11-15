@@ -33,33 +33,38 @@ SHEET = dict(version=2, round='redesign, the upright ring and the glass cannon (
 XR = 3.4                                 # the ring's plane (its depth runs XR - D/2 to XR + D/2), on the ship's axis
 D = 0.8                                  # the ring's depth along the ship: edge-on from the beam it is a band this wide
 R_OUT, R_IN, R_HOOP = 3.0, 2.0, (1.8, 2.06)
-NPLATE, GAP = 12, 3.0                    # twelve plates, a narrow even gap (degrees) between them
+NPLATE, GAP = 12, 5.0                    # twelve chunky plates, a clear even gap (degrees) between them (R266: never one smooth band)
 LIP = 0.1                                # the plate's outer rim reaches forward LIP (a shallow dish facing the enemy)
 CH = 0.1                                 # the chamfer on the rim's front and back edges, where the corona lines run
 XC, RCORE = 2.0, 0.5                     # the core, just aft of the ring
 XL, LL, RL = 3.3, 1.45, 0.55             # the null lance: root on the gun heart's face, length, housing radius
-XS = 3.2                                 # the spokes' plane: the focus collar on the gun heart and the hoop's aft half
+XS, XH = 2.86, 3.2                       # the spokes run from the focus collar on the gun heart (XS) out to the hoop (XH)
 PANEL = (0.26, 0.4)                      # the even panel size (R243), as E13
 
 # the spar and the stern block (the hull loft): (x, half-beam port, starboard, bottom, top, top chamfer, bottom chamfer), bow first
+# R266 (Ryan: "the body being too thin with it just looking like a stick is a big one"): a chunky faceted body in steps, about
+# the beauty's mass: 1.0 across behind the core, 1.12 from midships, the stern block 1.44
 HULL = [
     (XC - 0.53, 0.22, 0.22, -0.2, 0.2, 0.06, 0.06),      # seated in the core's aft hub collar, clear of its gimbal
-    (0.95, 0.34, 0.34, -0.29, 0.31, 0.11, 0.09),
-    (-2.3, 0.36, 0.36, -0.3, 0.33, 0.12, 0.1),
-    (-2.55, 0.5, 0.5, -0.45, 0.5, 0.16, 0.14),
-    (-3.5, 0.55, 0.55, -0.5, 0.55, 0.18, 0.15),
-    (-3.6, 0.5, 0.5, -0.45, 0.5, 0.16, 0.14),
+    (1.25, 0.4, 0.4, -0.38, 0.4, 0.15, 0.13),
+    (1.05, 0.5, 0.5, -0.46, 0.5, 0.2, 0.17),             # the first step
+    (-0.9, 0.5, 0.5, -0.46, 0.5, 0.2, 0.17),
+    (-1.0, 0.56, 0.56, -0.5, 0.54, 0.21, 0.18),          # the second step
+    (-2.25, 0.56, 0.56, -0.5, 0.54, 0.21, 0.18),
+    (-2.4, 0.68, 0.68, -0.6, 0.66, 0.24, 0.2),           # the stern block
+    (-3.5, 0.72, 0.72, -0.64, 0.7, 0.25, 0.21),
+    (-3.62, 0.62, 0.62, -0.56, 0.6, 0.22, 0.18),
 ]
 # the gun heart: the lance's breech casing, from the core's fore hub to the lance's seat inside the ring; regular octagons, so
 # from ahead it reads round like the beauty's heart, never a box
 DRUM = [
-    (XL, 0.74, 0.74, -0.74, 0.74, 0.43, 0.43),
-    (XL - 0.12, 0.84, 0.84, -0.84, 0.84, 0.49, 0.49),
-    (2.85, 0.84, 0.84, -0.84, 0.84, 0.49, 0.49),
-    (2.72, 0.55, 0.55, -0.55, 0.55, 0.32, 0.32),
+    (XL, 0.66, 0.66, -0.66, 0.66, 0.39, 0.39),
+    (2.98, 0.94, 0.94, -0.94, 0.94, 0.55, 0.55),          # the forward shoulder carries the core windows (R266)
+    (2.75, 0.94, 0.94, -0.94, 0.94, 0.55, 0.55),
+    (2.62, 0.6, 0.6, -0.6, 0.6, 0.35, 0.35),
     (XC + 0.53, 0.22, 0.22, -0.2, 0.2, 0.06, 0.06),       # seated in the core's fore hub collar
 ]
-COLLAR = [(XS + 0.08, 0.94, 0.94, -0.94, 0.94, 0.55, 0.55), (XS - 0.08, 0.94, 0.94, -0.94, 0.94, 0.55, 0.55)]
+COLLAR = [(XS + 0.07, 1.02, 1.02, -1.02, 1.02, 0.6, 0.6), (XS - 0.07, 1.02, 1.02, -1.02, 1.02, 0.6, 0.6)]
 
 
 def dense(sections, step=0.4):
@@ -118,14 +123,27 @@ def build(K):
     drum = K.loft('E14_drum', dd, 'violet')
     K.mass('Gun heart', drum, 'violet plate', note='the lance\'s faceted breech casing from the core forward through the ring\'s centre, the lance on its face')
     panel_jobs.append(('E14_drum', rings_of(dd), [0, 2, 4, 6], 'spar_plates', ('violet', 'shade2')))
-    # its stepped bands: a capacitor band behind the ring and the focus collar the spokes land on, in the ring's plane
-    K.loft('E14_drum_band', [(2.8, 0.9, 0.9, -0.9, 0.9, 0.52, 0.52), (2.72, 0.9, 0.9, -0.9, 0.9, 0.52, 0.52)], 'mauve')
+    # the focus collar the spokes land on, just behind the ring
     col = K.loft('E14_focus_collar', COLLAR, 'mauve')
-    K.mass('Focus collar', col, 'mauve band', note='the band round the gun heart in the ring\'s plane where the four spokes land')
+    K.mass('Focus collar', col, 'mauve band', note='the band round the gun heart just behind the ring where the four spokes land')
+    # the core windows (R266: the core's glow seen from ahead): four armoured ports on the heart's forward shoulder, onto the
+    # light the heart carries from the core to the lance
+    for j, a in enumerate((0.0, 90.0, 180.0, 270.0)):
+        n_ = (0.66, 0.75 * math.cos(math.radians(a)), 0.75 * math.sin(math.radians(a)))
+        K.corewin('W%d' % (j + 1), rp(3.14, 0.8, a), n_, 0.12, inv='core_windows', note='core window on the gun heart\'s forward shoulder, lit from ahead')
     K.mark('gun_heart', 'tier', ['face', 'roof', 'opening'])
-    # spar collars where the forward thrusters and the dorsal housing meet it
-    for i, x in enumerate((0.95, -2.3)):
-        K.loft('E14_collar%d' % i, [(x + 0.08, 0.4, 0.4, -0.34, 0.37, 0.13, 0.11), (x - 0.08, 0.4, 0.4, -0.34, 0.37, 0.13, 0.11)], 'mauve')
+    # body collars at the steps, and the layered flank armour and keel (R266: a stepped, plated body, never a rod)
+    for i, (x, hw, zb, zt) in enumerate(((1.0, 0.56, -0.52, 0.56), (-0.95, 0.62, -0.56, 0.6))):
+        K.loft('E14_collar%d' % i, [(x + 0.07, hw, hw, zb, zt, 0.22, 0.19), (x - 0.07, hw, hw, zb, zt, 0.22, 0.19)], 'mauve')
+    for side in (1, -1):
+        sn = 'p' if side > 0 else 's'
+        for j, (x0, x1, hw) in enumerate(((0.85, -0.8, 0.5), (-1.12, -2.12, 0.56))):
+            K.loft('E14_flank%s%d' % (sn, j), [(x0, 0.05, 0.05, -0.26, 0.28, 0.04, 0.04, side * (hw + 0.02)), (x0 - 0.08, 0.06, 0.06, -0.3, 0.32, 0.05, 0.05, side * (hw + 0.03)),
+                                               (x1 + 0.08, 0.06, 0.06, -0.3, 0.32, 0.05, 0.05, side * (hw + 0.03)), (x1, 0.05, 0.05, -0.26, 0.28, 0.04, 0.04, side * (hw + 0.02))], 'violet')
+            K.loft('E14_flank%s%d_step' % (sn, j), [(x0 - 0.2, 0.04, 0.04, -0.14, 0.16, 0.03, 0.03, side * (hw + 0.09)), (x1 + 0.2, 0.04, 0.04, -0.14, 0.16, 0.03, 0.03, side * (hw + 0.09))], 'mauve')
+    K.loft('E14_keel', [(0.8, 0.12, 0.12, -0.56, -0.4, 0.0, 0.05), (0.65, 0.26, 0.26, -0.6, -0.4, 0.0, 0.08), (-2.0, 0.28, 0.28, -0.64, -0.44, 0.0, 0.08),
+                        (-2.2, 0.14, 0.14, -0.6, -0.44, 0.0, 0.05)], 'shade2')
+    K.mark('flank_armour', 'hull', ['bevel', 'step', 'overhang'])
 
     # ---------------- the ring: twelve shade plates on one closed hoop, upright, facing the enemy (R233, R256) ----------------
     hoop = []
@@ -144,27 +162,36 @@ def build(K):
             K.mass('Ring plate at %d degrees' % c, ob, 'violet-black shade', note='a deep curved shade block, its front a shallow dish, its rim chamfered fore and aft')
         sub = rings[::3] + ([rings[-1]] if len(rings) % 3 != 1 else [])
         panel_jobs.append((nm, sub, [0, 2, 4], 'ring_plates', ('shade', 'shade2')))
-        # the stepped second layer on the plate's front face, over the middle of its span
-        lay = []
-        for t in [c - h * 0.72 + 2 * h * 0.72 * i / 6 for i in range(7)]:
-            r0, r1 = R_IN + 0.28, R_OUT - CH - 0.2
-            lay.append([rp(x_front(r0) - 0.01, r0, t), rp(x_front(r1) - 0.01, r1, t), rp(x_front(r1) + 0.05, r1, t), rp(x_front(r0) + 0.05, r0, t)])
-        K.loft_rings(nm + '_layer', lay, 'shade2')
+        # the relief (R266: "ring too plain"): on the front face an inner and an outer armour block, each its own height, the
+        # outer one stepped again, and a raised band round the rim; the same on every plate (ordered, R243)
+        for j, (r0, r1, hgt, fr, mat) in enumerate(((R_IN + 0.1, R_IN + 0.42, 0.07, 0.7, 'shade2'), (R_IN + 0.5, R_OUT - CH - 0.08, 0.11, 0.8, 'shade2'),
+                                                    (R_IN + 0.58, R_OUT - CH - 0.2, 0.17, 0.5, 'shade'))):
+            blk = []
+            for t in [c - h * fr + 2 * h * fr * i / 6 for i in range(7)]:
+                blk.append([rp(x_front(r0) - 0.01, r0, t), rp(x_front(r1) - 0.01, r1, t), rp(x_front(r1) + hgt, r1 - 0.02, t), rp(x_front(r0) + hgt, r0 + 0.02, t)])
+            K.loft_rings(nm + '_layer%d' % j, blk, mat)
+        band = []
+        for t in [c - h * 0.6 + 2 * h * 0.6 * i / 8 for i in range(9)]:
+            band.append([rp(XR - 0.2, R_OUT - 0.01, t), rp(XR - 0.18, R_OUT + 0.05, t), rp(XR + 0.18, R_OUT + 0.05, t), rp(XR + 0.2, R_OUT - 0.01, t)])
+        K.loft_rings(nm + '_band', band, 'shade2')
         # the corona lines (factions.md: the thin green-white ring at the rim): along the rim's front and back edges, so
-        # edge-on the ring reads as a band between two bright lines, and along the layer's outer rim
+        # edge-on the ring reads as a band between two bright lines, and down both sides of the plate's front face, so from
+        # ahead every plate is outlined in light as the concept draws it
         ts = [c - h + 2 * h * i / 12 for i in range(1, 12)]
         for tag, xe in (('front', XR + D / 2 + LIP - CH - 0.045), ('back', XR - D / 2 + CH + 0.045)):
             pts = [rp(xe, R_OUT + 0.003, t) for t in ts]
             nrm = [(0.0, math.cos(math.radians(t)), math.sin(math.radians(t))) for t in ts]
             K.strip(nm + '_corona_' + tag, pts, w=0.06, t=0.02, normals=nrm)
-        K.strip(nm + '_corona_layer', [(r[2][0] + 0.003, r[2][1], r[2][2]) for r in lay[1:-1]], w=0.03, t=0.014,
-                normals=[(1.0, 0.0, 0.0)] * 5)
+        for tag, sg in (('side_a', -1), ('side_b', 1)):
+            rs = [R_IN + 0.06 + (R_OUT - CH - 0.1 - R_IN - 0.06) * i / 6 for i in range(7)]
+            pts = [rp(x_front(r) + 0.004, r, c + sg * (h - math.degrees(0.05 / r))) for r in rs]
+            K.strip(nm + '_corona_' + tag, pts, w=0.04, t=0.016, normals=[(1.0, 0.0, 0.0)] * len(pts))
         K.built.append(dict(id='plate_%02d' % k, kind='shade', inv=['ring'], shaped=True, detailed=True, subs=['band', 'corona', 'layer', 'plate']))
 
     # ---------------- the spokes: the hoop carried to the gun heart's focus collar (R207) ----------------
     ra = math.sqrt(2) * (COLLAR[0][1] - COLLAR[0][5] / 2) - 0.03
     for i, th in enumerate((45.0, 135.0, 225.0, 315.0)):
-        K.strut('S%d' % (i + 1), rp(XS, ra, th), rp(XS, R_HOOP[0] + 0.02, th), w=0.18, r=0.03, up=(1, 0, 0), src='designed', inv='spokes',
+        K.strut('S%d' % (i + 1), rp(XS, ra, th), rp(XH, R_HOOP[0] + 0.02, th), w=0.18, r=0.03, up=(1, 0, 0), src='designed', inv='spokes',
                 note='truss spoke from the focus collar to the hoop, %s' % ('upper' if th < 180 else 'lower') + (' port' if th in (45.0, 315.0) else ' starboard'))
 
     # ---------------- the core and its broken cage, just aft of the ring ----------------
@@ -193,16 +220,16 @@ def build(K):
              note='the null lance (data.js nlance F, issue 784): one fixed spinal rail gun on the gun heart\'s face, firing forward through the ring\'s centre; its muzzle, a recessed aperture with a glowing lens and a green focus ring, is the ship\'s bow')
 
     # ---------------- the dorsal housing on the spar: the lance's capacitor bank ----------------
-    cap = K.loft('E14_capbank', [(-0.35, 0.16, 0.16, 0.2, 0.36, 0.05, 0.0), (-0.55, 0.34, 0.34, 0.18, 0.5, 0.11, 0.03), (-1.95, 0.34, 0.34, 0.18, 0.5, 0.11, 0.03),
-                                 (-2.15, 0.16, 0.16, 0.2, 0.36, 0.05, 0.0)], 'violet')
+    cap = K.loft('E14_capbank', [(-0.25, 0.2, 0.2, 0.44, 0.62, 0.06, 0.0), (-0.45, 0.4, 0.4, 0.42, 0.76, 0.13, 0.03), (-2.0, 0.4, 0.4, 0.42, 0.76, 0.13, 0.03),
+                                 (-2.2, 0.2, 0.2, 0.44, 0.62, 0.06, 0.0)], 'violet')
     K.mass('Capacitor housing', cap, 'violet plate', note='the stepped dorsal housing aft of the core that stores the lance\'s charge')
     for i, x in enumerate((-0.8, -1.25, -1.7)):
-        K.loft('E14_capbank_rib%d' % i, [(x + 0.06, 0.37, 0.37, 0.16, 0.56, 0.12, 0.03), (x - 0.06, 0.37, 0.37, 0.16, 0.56, 0.12, 0.03)], 'mauve')
+        K.loft('E14_capbank_rib%d' % i, [(x + 0.06, 0.43, 0.43, 0.4, 0.82, 0.14, 0.03), (x - 0.06, 0.43, 0.43, 0.4, 0.82, 0.14, 0.03)], 'mauve')
     K.mark('capbank', 'pylon', ['web', 'plate'])
 
     # ---------------- the engine ----------------
-    K.engine('E1', (-4.75, 0.0, 0.03), 0.45, 0.56, bell=1.2, body_r=0.47, rings=3, nose='flat', inv='engine', src='picture', kw=dict(struts=12, seg=32),
-             note='the broad eclipse ring of pale light at the stern, larger than the mote\'s; no flame')
+    K.engine('E1', (-4.75, 0.0, 0.0), 0.5, 0.56, bell=1.2, body_r=0.56, rings=3, nose='flat', inv='engine', src='picture', kw=dict(struts=12, seg=32, halo=1.1),
+             note='the broad eclipse ring of pale light at the stern, larger than the mote\'s, and round it the free halo ring of pale light the concept draws at the end of the body (R266); no flame')
 
     # ---------------- fittings ----------------
     def chamfer_pt(secs, x, side, lower=True):
@@ -213,14 +240,14 @@ def build(K):
         return (x, side * (a[0] + b[0]) / 2, (a[1] + b[1]) / 2), (0, side * n.y, n.z)
     for side in (1, -1):
         sn = 'p' if side > 0 else 's'
-        p_, n_ = chamfer_pt(HULL, 1.2, side)
+        p_, n_ = chamfer_pt(HULL, 0.55, side)
         K.thruster('Q1' + sn, p_, n_, r=0.14, inv='nose_thrusters', note='spar lower chamfer behind the core, firing down and out, clear of the ring')
         p_, n_ = chamfer_pt(HULL, -3.38, side)
         K.thruster('Q2' + sn, p_, n_, r=0.17, inv='stern_thrusters', note='stern block lower chamfer, firing down and out')
         for j, x in enumerate((-2.85, -3.3)):
             K.lamp('L%d%s' % (j, sn), (x, side * _k.sec_at(HULL, x)[1], 0.22), (0, side, 0), inv='lamps', note='corona strip light on the stern block flank', up=(1, 0, 0))
         K.vent('V1' + sn, (-2.9, side * _k.sec_at(HULL, -2.9)[1], -0.2), (0, side, 0), 0.32, 0.2, slats=4, inv='vents', note='heat slot panel low on the block flank')
-        K.hatch('H1' + sn, (-2.95, side * 0.18, -0.5), (0, 0, -1), 0.2, inv='hatches', note='belly hatch on the stern block')
+        K.hatch('H1' + sn, (-2.95, side * 0.18, _k.sec_at(HULL, -2.95)[3] - 0.04), (0, 0, -1), 0.2, inv='hatches', note='belly hatch on the stern block')
     # the repair drones: four cradles on the hoop's front face between the spokes, each with its green work light
     for j, a in enumerate((0.0, 90.0, 180.0, 270.0)):
         tang = (0.0, -math.sin(math.radians(a)), math.cos(math.radians(a)))
@@ -229,6 +256,14 @@ def build(K):
                         'repair drone cradle 0.2 x 0.1', 'hatchbox', 'picture', 'repair drone cradle on the hoop\'s front face, under the plates\' inner edge')
         K.lamp('DL%d' % (j + 1), rp(XR + 0.26 + 0.1, 1.86, a), (1, 0, 0), inv='drone_lights', note='the drone\'s green work light', up=tang)
         K.allow_touch('D%d' % (j + 1), 'DL%d' % (j + 1), 'the drone\'s light sits on its cradle')
+    # the light in the ring's open middle (R266, "glow inside the ring"): twelve small lights round the hoop's inner face, one
+    # behind each plate, shining in across the middle, and a light strip round the inner face ahead of them
+    for j in range(NPLATE):
+        a = 360.0 * j / NPLATE
+        K.lamp('HL%02d' % j, rp(XR, R_HOOP[0], a), (0.0, -math.cos(math.radians(a)), -math.sin(math.radians(a))), inv='hoop_lights', up=(1, 0, 0),
+               note='a light on the hoop\'s inner face, shining into the ring\'s open middle')
+    ring_pts = [rp(XR + 0.17, R_HOOP[0] - 0.003, 360.0 * i / 72) for i in range(73)]
+    K.strip('E14_hoop_light', ring_pts, w=0.05, t=0.012, normals=[(0.0, -p[1] / R_HOOP[0], -p[2] / R_HOOP[0]) for p in ring_pts])
 
     # ---------------- the even panels, after every mount has claimed its keep-out ----------------
     for name, rings, faces, inv_id, mats in panel_jobs:
@@ -283,9 +318,9 @@ def build(K):
     # plate and its starboard beam plate on their outer rims between the corona lines, and the stern block's roof
     K.point('breach', 'hp_breach_0', (XR + 0.05, R_OUT + 0.002, 0.0), side='port', section='prow', note='on the ring\'s port beam plate, its outer rim')
     K.point('breach', 'hp_breach_1', (XR - 0.05, -R_OUT - 0.002, 0.0), side='stbd', section='mid', note='on the ring\'s starboard beam plate, its outer rim')
-    K.point('breach', 'hp_breach_2', (-3.1, 0.25, 0.552), side='port', section='eng', note='on the stern block\'s roof (no shade plate reaches the engine third)')
+    K.point('breach', 'hp_breach_2', (-3.1, 0.25, _k.sec_at(HULL, -3.1)[4] + 0.002), side='port', section='eng', note='on the stern block\'s roof (no shade plate reaches the engine third)')
     for i, side in enumerate((1, -1)):
-        p_, n_ = chamfer_pt(HULL, 1.2, side)
+        p_, n_ = chamfer_pt(HULL, 0.55, side)
         K.point('rcs', 'hp_rcs_%d' % i, p_, side='port' if side > 0 else 'stbd')
     for i, side in enumerate((1, -1)):
         K.point('board', 'hp_board_%d' % i, (-0.5, side * _k.sec_at(HULL, -0.5)[1], 0.0), side='port' if side > 0 else 'stbd')
@@ -296,19 +331,24 @@ def build(K):
     K.change('One big fixed gun, the null lance, at the ring\'s centre; its muzzle, a recessed aperture with a glowing lens and a green focus ring, is the bow', 'Ryan, Nov 15: "built around one larger gun and that\'s the center of the ring ... like a glass cannon". data.js gives the flare one forward null lance (issue 784); designs.md\'s fixed forward housing with a recessed aperture and focus ring comes back')
     K.change('No second gun: the aft turret of the first sheet is gone; a stepped capacitor housing on the spar stores the lance\'s charge', 'issue 784 trades both null cannons for the one lance (the glass cannon); every visible gun is a data.js slot (R241)')
     K.change('The gun heart is the lance\'s breech casing, from the core forward through the ring\'s centre; four truss spokes carry the hoop to its focus collar', 'R207: the picture\'s plates float; the ring is the lance\'s focusing ring, so it hangs off the gun\'s own heart')
-    K.change('The core sits just aft of the ring in its broken cage of six small shade plates, its light seen from the beam and the quarters; from ahead the gun heart hides it and the lance\'s glowing lens is the light at the ring\'s centre', 'designs.md: core and main gun together at the ring\'s heart; the beauty shows the core lit inside the heart behind the muzzle, which a heart big enough for the lance covers')
+    K.change('The core sits just aft of the ring in its broken cage of six small shade plates, its light seen from the beam and the quarters; from ahead its glow shows through the four core windows on the gun heart\'s shoulder', 'designs.md: core and main gun together at the ring\'s heart; the beauty shows the core lit inside the heart behind the muzzle')
     K.change('The ring is 6.0 across, 0.63 of the length, standing in the forward fifth; the spar and stern block run 7.6 aft of it', 'the beauty draws a big forward ring with the spar running far aft; kept from the first sheet so the class stays the same size on the board')
     K.change('Twelve plates on one closed hoop (R233)', 'R233: one closed ring, never a small zenith; the upright ring cannot read as the zenith\'s split oval round a spine')
     K.change('The repair drones are docked on the hoop\'s front face, each cradle with a green work light', 'the picture shows drones hovering in the ring\'s gaps; a built ship carries them docked, and every part sits on the ship')
-    K.change('The spar is a layered beam 0.72 across behind the core', 'the beauty draws a heavy spar body running aft to the engine')
+    K.change('The body is a chunky faceted beam in steps, 1.0 across behind the core and 1.12 from midships, the stern block 1.44, with layered flank armour, a keel and collars at the steps', 'R266, Ryan: "the body being too thin with it just looking like a stick is a big one"; the beauty draws a heavy plated body about a sixth as wide as it is long')
+    K.change('A free halo ring of pale light, 2.2 across, stands round the engine at the far end of the body on four arms', 'R266, Ryan: "bow ring missing": the beauty\'s big glowing ring at the end of the body; it is the engine\'s eclipse ring of light, painted by the stack\'s engine rule')
+    K.change('Each ring plate carries its own relief (an inner and an outer armour block, the outer stepped again, a raised rim band) and a corona line down both sides of its face; the gaps between plates are 5 degrees', 'R266, Ryan: "ring too plain": the concept\'s twelve chunky plates, each outlined in light, never one smooth band; the relief is the same on every plate (ordered, R243)')
+    K.change('Twelve small lights round the hoop\'s inner face and a light strip ahead of them light the ring\'s open middle; four core windows on the gun heart\'s forward shoulder show the core\'s glow from ahead', 'R266, Ryan: "glow inside the ring": the beauty\'s lit middle; the lights are the faction\'s green-white (R204 conforms the beauty\'s teal to green), not blue-white')
+    K.change('The lance\'s bore is 0.94 deep: a liner stepping in three stages, coil bands round each, two green focusing bands and a lit throat round the lens', 'R266, Ryan: "the inside of the lance/gun looks pretty plain"')
     K.change('Engines are eclipse rings, not flame', 'factions.md: "no flaming bells. An eclipse ring of pale light"')
     K.change('Panels dead even, aligned rows on every face, tone in ordered bands (R243)', 'Ryan, Nov 13: "make the eclipse panels actually panels and dead even and ordered to align"; the kit lays them by size (eclipse parts.py even_panels)')
     K.change('Thrusters, belly hatches, heat panels and corona strip lights added', 'a ship in space needs thrusters; the picture shows no underside')
-    K.change('The forward thrusters sit under the spar behind the core, not at the nose', 'a thruster on the gun heart fires into the ring\'s lower plates')
+    K.change('The forward thrusters sit under the body behind the core, not at the nose', 'a thruster on the gun heart fires into the ring\'s lower plates')
     K.change('The third breach anchor sits on the stern block\'s roof', 'the class table needs one in the engine third; no shade plate reaches it')
     K.open_item('The underside of the gun heart and the block is designed here; the picture shows no underside')
-    K.open_item('The ring reaches 3.0 below the ship\'s axis (4.8 drawn): the Board checks it against the board plane in the game')
+    K.open_item('The ring reaches 3.05 below the ship\'s axis (4.9 drawn): the game centres every hull on its box (godot/render/ship_view.gd _fit), so lifting the ship above the board is a game-side offset, not a model one (R266)')
     # ---------- the fit report's fix column: every finding on the first full layout ----------
+    K.fix('H1p and H1s (belly hatches) inside the stern block, once the body grew (R266)', 'the hatches sit 0.04 under the block\'s new floor, read off its section')
     K.fix('L1 (the null lance) body inside E14_drum (the gun heart)', 'the housing starts 0.04 ahead of the gun heart\'s face; only the seat ring (the mount) sinks into it')
     K.fix('DL1 to DL4 (drone lights) inside the ring plates\' inner edges', 'the cradles moved in to radius 1.86 on the hoop\'s face and each light lies along the hoop, clear of the plates')
     K.fix('D1 to D4 (drone cradles) against DL1 to DL4 (their lights)', 'each light is mounted on its own cradle on purpose (an allowed touch, as a part on a part)')

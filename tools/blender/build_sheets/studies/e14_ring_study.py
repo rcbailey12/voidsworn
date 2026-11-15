@@ -130,7 +130,7 @@ for j, rec in enumerate(rows):
     else:
         line = 'the ring %.0f px across, %.0f px tall; rim %.0f px deep' % (rec['ring_w_px'], rec['ring_h_px'], rec['band_px'])
     d.text((x0, 582), line, fill=(236, 236, 240), font=F(15))
-d.text((16, 640), 'Ring 6.0 across, %.1f deep at its rim (%.1f at its inner edge); a green-white corona line on its front and back rim edges.' % (E.D + E.LIP, E.D),
+d.text((16, 640), 'Ring 6.0 across, %.1f deep at its rim (%.1f at its inner edge); twelve plates, corona lines on the rim edges and down each plate.' % (E.D + E.LIP, E.D),
        fill=(236, 236, 240), font=F(15))
 d.text((16, 664), 'The null lance\'s muzzle is the bright aperture at the ring\'s centre. Measured by projecting the ring\'s rim through the game-size camera.',
        fill=(186, 190, 198), font=F(15))

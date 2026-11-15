@@ -33,6 +33,7 @@ also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on t
 
 | Clash (before) | Fix |
 |---|---|
+| H1p and H1s (belly hatches) inside the stern block, once the body grew (R266) | the hatches sit 0.04 under the block's new floor, read off its section |
 | L1 (the null lance) body inside E14_drum (the gun heart) | the housing starts 0.04 ahead of the gun heart's face; only the seat ring (the mount) sinks into it |
 | DL1 to DL4 (drone lights) inside the ring plates' inner edges | the cradles moved in to radius 1.86 on the hoop's face and each light lies along the hoop, clear of the plates |
 | D1 to D4 (drone cradles) against DL1 to DL4 (their lights) | each light is mounted on its own cradle on purpose (an allowed touch, as a part on a part) |
@@ -44,7 +45,7 @@ turret's swept circle (moved out).
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 222 objects, 27 parts, 197 close pairs, 102 rays, 1 guns, 0 sensor pairs, 0 turrets swept, 5 cones, 12 apertures, 1 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 315 objects, 43 parts, 320 close pairs, 118 rays, 1 guns, 0 sensor pairs, 0 turrets swept, 5 cones, 28 apertures, 1 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 

@@ -46,6 +46,8 @@ column and head carry them, and every engine bell gets stiffener rings by its le
 ring, an armoured eight-sided housing with a layer sleeve and panels, capacitor discs, four accelerator rails on yokes, and a
 recessed bore with a black shade disc and a glowing lens behind a thin green focus ring (designs.md). Its type is `nullcannon` on
 a fixed mount (weapon_match FITS `nlance`); its hard point is the lens, its firing lane starts at the mouth.
+Its bore (R266) steps in three stages with coil bands and two green focusing bands to a lit throat. `engine_bell(halo=R)`
+adds a free halo ring of pale light of radius R on four arms, forward of the exit plane (the E14 flare's ring at the end of the body).
 
 **Even panels (R243, issue 739).** `even_panels()` and `lay_panels()` lay a sheet ship's hull panels dead even and aligned
 (Ryan, Nov 13 2026: "make the eclipse panels actually panels and dead even and ordered to align"): each loft face split into equal

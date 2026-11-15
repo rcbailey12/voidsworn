@@ -111,12 +111,13 @@ def panels(p, tag, role, mats, x0, x1, r, n, phase, skip=(), th=0.022, size=PANE
 
 
 # ---------------------------------------------------------------------------------------------------- engine
-def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.6, rings=3, struts=6, nose='flat', seg=24):
+def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.6, rings=3, struts=6, nose='flat', seg=24, halo=0.0):
     """the eclipse engine; exhaust leaves along -X; origin at the centre of the bell's exit plane.
     housing: a faceted (octagonal) drum forward of the bell with raised ribs; a heavier mount collar at its front;
     bell: short and wide, a thick rolled lip; inside the lip a thin corona ring of pale light around a black shade disc set a
     little back, so the mouth reads as an eclipse (a dark disc with a ring of light), never a flame; radial vanes tie the
-    housing to the bell."""
+    housing to the bell. halo (issue 782, the E14 flare): the radius of a free ring of pale light standing round the bell just
+    forward of its exit, on four thin arms from the lip (the concept's big glowing ring at the end of the spar); 0 for none."""
     p = Part('engine')
     bl = bell_len or r_exit * 0.8
     br = body_r or r_exit * 0.95
@@ -163,6 +164,21 @@ def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.6, rings=
               (x1, (r1 + t) * c + 0.02 * s, (r1 + t) * s - 0.02 * c), (x1, (r1 + t) * c - 0.02 * s, (r1 + t) * s + 0.02 * c)]
         F = [(0, 1, 2, 3), (7, 6, 5, 4), (0, 4, 5, 1), (1, 5, 6, 2), (2, 6, 7, 3), (3, 7, 4, 0)]
         p.add('vane%d' % i, 'mount', 'gunv', (V, F))
+    if halo:
+        # the halo: a bright ring of pale light on a dark carrier band, held off the bell's back by four arms, standing forward
+        # of the exit plane (so the exhaust leaves through its middle, and the export's open-bell check, which probes the exit
+        # plane, never meets it)
+        xh = xt * 0.55; th = max(0.035, halo * 0.05)
+        rb_ = rt + (r_exit - rt) * (1 - (xh + th * 2.2) / xt) ** 1.3
+        p.add('corona_halo', 'body', 'corona', revolve([(xh - th * 0.5, halo - th * 2.4), (xh + th * 0.5, halo - th * 2.4), (xh + th * 0.5, halo + th * 0.6),
+                                                        (xh - th * 0.5, halo + th * 0.6)], 48, closed=True))
+        p.add('ring_halo', 'body', 'gunv', revolve([(xh - th * 0.9, halo + th * 0.6), (xh + th * 3.2, halo + th * 0.6), (xh + th * 3.2, halo + th * 2.2),
+                                                    (xh - th * 0.9, halo + th * 2.2)], 48, closed=True))
+        for i in range(4):
+            a = 2 * math.pi * (i + 0.5) / 4
+            c, s_ = math.cos(a), math.sin(a)
+            p.add('vane_halo%d' % i, 'body', 'gunv', rod((xh + th * 2.2, (rb_ + t * 0.5) * c, (rb_ + t * 0.5) * s_),
+                                                         (xh + th * 2.2, (halo + th * 1.2) * c, (halo + th * 1.2) * s_), th * 0.7, 6))
     p.fit = dict(exit=P((0, 0, 0)), axis=D((-1, 0, 0)), radius=r_exit + t * 1.1, front=P((xf, 0, 0)), body_r=br)
     return p
 
@@ -437,12 +453,12 @@ def _null_lance(length, r=0.36, seg=8, depth=None, sink=0.32):
     p = Part('spinal')
     p.type = 'nullcannon'   # weapon_match FITS 'nlance': a null cannon on a fixed mount
     L = float(length)
-    dp = depth or r * 0.9
+    dp = depth or r * 1.7
     ph = math.pi / seg
     rb = r * 0.64           # the bore
     # the seat ring: two stepped octagonal bands, the rear one sunk in the hull
-    p.add('ring0', 'mount', 'mauve', revolve([(-sink, r * 1.25), (-sink, r * 1.5), (0.02, r * 1.5), (0.06, r * 1.38), (0.06, r * 1.25)], seg, closed=True, phase=ph))
-    p.add('ring1', 'mount', 'violet', revolve([(0.06, r * 1.15), (0.06, r * 1.32), (0.16, r * 1.32), (0.2, r * 1.22), (0.2, r * 1.15)], seg, closed=True, phase=ph))
+    p.add('ring0', 'mount', 'mauve', revolve([(-sink, r * 1.1), (-sink, r * 1.32), (0.02, r * 1.32), (0.06, r * 1.24), (0.06, r * 1.1)], seg, closed=True, phase=ph))
+    p.add('ring1', 'mount', 'violet', revolve([(0.06, r * 1.08), (0.06, r * 1.22), (0.16, r * 1.22), (0.2, r * 1.16), (0.2, r * 1.08)], seg, closed=True, phase=ph))
     # the housing: an eight-sided armoured tube from the seat to the muzzle lip, a slight swell at the breech, its bore open
     # at the front and set back dp to the shade disc (a solid with an inner wall)
     p.add('housing', 'body', 'violet', revolve([(0.04, r * 1.12), (0.3, r * 1.12), (0.4, r * 1.0), (L - 0.1, r * 0.98), (L - 0.1, rb * 1.18),
@@ -476,8 +492,24 @@ def _null_lance(length, r=0.36, seg=8, depth=None, sink=0.32):
                                              seg, closed=True, phase=ph))
     p.add('corona', 'body', 'corona', revolve([(L - 0.004, r * 0.8), (L + 0.014, r * 0.8), (L + 0.014, r * 0.92), (L - 0.004, r * 0.92)], 32, closed=True))
     p.add('shade', 'body', 'dark', revolve([(L - dp + 0.002, rb * 0.999), (L - dp + 0.002, 0.001)], 32, cap1=True))
+    # the bore (issue 782, R266: "the inside of the lance looks pretty plain"): a liner stepping in toward the throat in three
+    # stages, coil bands round each stage, two thin green focusing bands that glow, and a lit throat ring round the lens
+    steps = [(L - 0.1, L - dp * 0.42, 1.12), (L - dp * 0.42, L - dp * 0.74, 0.96), (L - dp * 0.74, L - dp + 0.004, 0.82)]
+    for i, (xa, xb, k) in enumerate(steps):
+        p.add('liner%d' % i, 'body', 'gunv' if i % 2 == 0 else 'violet',
+              revolve([(xa, rb * 1.18), (xa, rb * k), (xb, rb * k), (xb, rb * 1.18)], 32, closed=True))
+        nb = 3 if i == 0 else 2
+        for j in range(nb):
+            x = xb + (xa - xb) * (j + 0.5) / nb
+            p.add('coil%d_%d' % (i, j), 'body', 'steel', revolve([(x - 0.014, rb * k), (x - 0.014, rb * k * 0.93), (x + 0.014, rb * k * 0.93), (x + 0.014, rb * k)],
+                                                                 32, closed=True))
+        if i:
+            p.add('corona_focus%d' % i, 'body', 'corona', revolve([(xa - 0.004, rb * k * 0.97), (xa - 0.004, rb * k * 1.01), (xa - 0.03, rb * k * 1.01),
+                                                                  (xa - 0.03, rb * k * 0.97)], 32, closed=True))
     xlens = L - dp + 0.05
-    p.add('lens', 'body', 'lens', revolve([(L - dp + 0.004, rb * 0.86), (xlens - 0.025, rb * 0.72), (xlens - 0.008, rb * 0.4), (xlens, 0.001)], 24, cap0=True))
+    p.add('lens_throat', 'body', 'lens', revolve([(L - dp + 0.006, rb * 0.82), (L - dp + 0.006, rb * 0.62), (L - dp + 0.03, rb * 0.62), (L - dp + 0.03, rb * 0.82)],
+                                                 32, closed=True))
+    p.add('lens', 'body', 'lens', revolve([(L - dp + 0.004, rb * 0.62), (xlens - 0.025, rb * 0.5), (xlens - 0.008, rb * 0.28), (xlens, 0.001)], 24, cap0=True))
     p.fit = dict(muzzles=[P((xlens, 0, 0))], pivot=P((L - 0.05, 0, 0)), trunnion=P((L - 0.05, 0, 0)), reach=0.02, lane_from=P((L + 0.02, 0, 0)),
                  aim=D((1, 0, 0)), up=D((0, 0, 1)), mount='spinal', radius=r * 1.14, bore=rb)
     return p
