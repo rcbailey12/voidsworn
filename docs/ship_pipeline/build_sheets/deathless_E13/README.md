@@ -23,7 +23,7 @@ then [side_by_side.jpg](side_by_side.jpg), [fit_view.jpg](fit_view.jpg), [cells.
 | Audit self-test | PASS: every broken copy refused for its own reason |
 | Stage 7 unbaked export and readback (`export7.py unbaked=1`, `check_export.py`, self-test) | PASS: every hard point on the mesh (2 gun muzzles, 1 engine, 2 breach, core, 2 braking, 2 boarding), the breach count is the class and faction's, the turret node and its turning mesh are written; the self-test refuses every broken copy |
 | Density (R224, the mesh half; `studies/mesh_density.py`) | 0 flags; every part kind at or over the hull's triangles and edge features per square unit ([mesh_density.json](mesh_density.json)); the paint half is measured at stage 5 |
-| Inventory (R218, R221) | 15 lines, all present, shaped and detailed; every part has a job ([inventory.md](inventory.md)) |
+| Inventory (R218, R221) | 14 lines, all present, shaped and detailed; every part has a job ([inventory.md](inventory.md)) |
 | Manifest (`build_manifest_tests.js`) | PASS |
 
 Outline overlap with the beauty at the camera of record: 51.1 percent (mass outline 49.9). Reported, not a bar (RULEBOOK 5.8).

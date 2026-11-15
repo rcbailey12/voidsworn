@@ -38,7 +38,7 @@ INVENTORY = [
          what='the bright core at the ring\'s centre, the spar entering its hub collars', count=1, cells=['mid/top', 'mid/side', 'mid/below'],
          reads='hub collars, a bright sphere, gimbal rings, meridian bars', src='picture'),
     dict(id='cage', job='the broken cage of small shade plates that shields the core (designs.md)', type='feather',
-         what='small curved shade plates round the core\'s hub, broken by gaps the light shows through', count=4, cells=['mid/top', 'mid/side'],
+         what='small curved shade plates round the core\'s hub, broken by gaps the light shows through', count=6, cells=['mid/top', 'mid/side'],
          reads='a blade, a thickness step', src='picture'),
     dict(id='spar', job='the keel beam: carries the heart, the gun saddle and the stern block', type='hull',
          what='the layered spar: a slim chamfered beam from the nose to the stern block', count=1,
