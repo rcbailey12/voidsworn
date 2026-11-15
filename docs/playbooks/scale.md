@@ -48,7 +48,7 @@ live constants and the glbs, not estimated). "Target" is the R247 range the chec
 | Wreck | Board hulk | 11.00 | 7.60 to 18.24 | a wreck keeps half to all of the destroyer hull it was |
 | Explosion | Death core flash, Transport | 28.17 | 5.28 to 52.80 | sized to its ship (small band) |
 | Explosion | Death core flash, Frigate | 28.17 | 3.12 to 31.20 | sized to its ship (small band) |
-| Explosion | Death core flash, Destroyer | 28.17 | 4.56 to 45.60 | sized to its ship (small band) |
+| Explosion | Death core flash, Destroyer | 33.25 | 4.56 to 45.60 | sized to its ship (destroyer band, issue 463) |
 | Explosion | Death core flash, Cruiser | 39.38 | 6.96 to 69.60 | sized to its ship (cruiser band) |
 | Explosion | Death core flash, Carrier | 55.16 | 7.92 to 79.20 | sized to its ship (capital band) |
 | Explosion | Death core flash, Battleship | 55.16 | 10.08 to 100.80 | sized to its ship (capital band) |

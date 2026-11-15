@@ -1,0 +1,692 @@
+{
+  "about": "Issue 463: production death calls, normal and reduced. Camera 170 keeps source pixels; larger crops retain the cruiser flash. No atlas override.",
+  "cameras": [
+    170,
+    60,
+    26
+  ],
+  "cell": [
+    640,
+    480
+  ],
+  "crop": {
+    "170": [
+      640,
+      480
+    ],
+    "60": [
+      1280,
+      960
+    ],
+    "26": [
+      1920,
+      1080
+    ]
+  },
+  "rows": [
+    {
+      "id": "ds_wing",
+      "group": "small deaths",
+      "label": "wing death",
+      "tgt": [
+        "voidsworn",
+        "Squadron"
+      ],
+      "do": "death",
+      "cause": "blast",
+      "near": [
+        "voidsworn",
+        "Cruiser",
+        40,
+        0
+      ],
+      "fx": {
+        "reduce_flashing": false
+      },
+      "windows": [
+        [
+          "event",
+          0,
+          1
+        ],
+        [
+          "event",
+          0.016666666666666666,
+          1
+        ],
+        [
+          "event",
+          0.2,
+          1
+        ],
+        [
+          "event",
+          0.5,
+          1
+        ],
+        [
+          "event",
+          0.5666666666666667,
+          1
+        ],
+        [
+          "event",
+          0.733333,
+          1
+        ],
+        [
+          "event",
+          0.85,
+          1
+        ],
+        [
+          "event",
+          1.1,
+          1
+        ],
+        [
+          "event",
+          1.7,
+          1
+        ],
+        [
+          "event",
+          2.5,
+          1
+        ],
+        [
+          "event",
+          6,
+          1
+        ],
+        [
+          "event",
+          7,
+          1
+        ]
+      ],
+      "key": 1
+    },
+    {
+      "id": "ds_wing_calm",
+      "group": "small deaths",
+      "label": "wing death reduced",
+      "tgt": [
+        "voidsworn",
+        "Squadron"
+      ],
+      "do": "death",
+      "cause": "blast",
+      "near": [
+        "voidsworn",
+        "Cruiser",
+        40,
+        0
+      ],
+      "fx": {
+        "reduce_flashing": true
+      },
+      "windows": [
+        [
+          "event",
+          0,
+          1
+        ],
+        [
+          "event",
+          0.016666666666666666,
+          1
+        ],
+        [
+          "event",
+          0.2,
+          1
+        ],
+        [
+          "event",
+          0.5,
+          1
+        ],
+        [
+          "event",
+          0.5666666666666667,
+          1
+        ],
+        [
+          "event",
+          0.733333,
+          1
+        ],
+        [
+          "event",
+          0.85,
+          1
+        ],
+        [
+          "event",
+          1.1,
+          1
+        ],
+        [
+          "event",
+          1.7,
+          1
+        ],
+        [
+          "event",
+          2.5,
+          1
+        ],
+        [
+          "event",
+          6,
+          1
+        ],
+        [
+          "event",
+          7,
+          1
+        ]
+      ],
+      "key": 1
+    },
+    {
+      "id": "ds_frigate",
+      "group": "small deaths",
+      "label": "frigate death",
+      "tgt": [
+        "corsair",
+        "Frigate"
+      ],
+      "do": "death",
+      "cause": "blast",
+      "near": [
+        "voidsworn",
+        "Cruiser",
+        40,
+        0
+      ],
+      "fx": {
+        "reduce_flashing": false
+      },
+      "windows": [
+        [
+          "event",
+          0,
+          1
+        ],
+        [
+          "event",
+          0.016666666666666666,
+          1
+        ],
+        [
+          "event",
+          0.2,
+          1
+        ],
+        [
+          "event",
+          0.5,
+          1
+        ],
+        [
+          "event",
+          0.5666666666666667,
+          1
+        ],
+        [
+          "event",
+          0.733333,
+          1
+        ],
+        [
+          "event",
+          0.85,
+          1
+        ],
+        [
+          "event",
+          1.1,
+          1
+        ],
+        [
+          "event",
+          1.7,
+          1
+        ],
+        [
+          "event",
+          2.5,
+          1
+        ],
+        [
+          "event",
+          6,
+          1
+        ],
+        [
+          "event",
+          7,
+          1
+        ]
+      ],
+      "key": 5
+    },
+    {
+      "id": "ds_frigate_calm",
+      "group": "small deaths",
+      "label": "frigate death reduced",
+      "tgt": [
+        "corsair",
+        "Frigate"
+      ],
+      "do": "death",
+      "cause": "blast",
+      "near": [
+        "voidsworn",
+        "Cruiser",
+        40,
+        0
+      ],
+      "fx": {
+        "reduce_flashing": true
+      },
+      "windows": [
+        [
+          "event",
+          0,
+          1
+        ],
+        [
+          "event",
+          0.016666666666666666,
+          1
+        ],
+        [
+          "event",
+          0.2,
+          1
+        ],
+        [
+          "event",
+          0.5,
+          1
+        ],
+        [
+          "event",
+          0.5666666666666667,
+          1
+        ],
+        [
+          "event",
+          0.733333,
+          1
+        ],
+        [
+          "event",
+          0.85,
+          1
+        ],
+        [
+          "event",
+          1.1,
+          1
+        ],
+        [
+          "event",
+          1.7,
+          1
+        ],
+        [
+          "event",
+          2.5,
+          1
+        ],
+        [
+          "event",
+          6,
+          1
+        ],
+        [
+          "event",
+          7,
+          1
+        ]
+      ],
+      "key": 5
+    },
+    {
+      "id": "ds_destroyer",
+      "group": "small deaths",
+      "label": "destroyer death",
+      "tgt": [
+        "hegemony",
+        "Destroyer"
+      ],
+      "do": "death",
+      "cause": "blast",
+      "near": [
+        "voidsworn",
+        "Cruiser",
+        40,
+        0
+      ],
+      "fx": {
+        "reduce_flashing": false
+      },
+      "windows": [
+        [
+          "event",
+          0,
+          1
+        ],
+        [
+          "event",
+          0.016666666666666666,
+          1
+        ],
+        [
+          "event",
+          0.2,
+          1
+        ],
+        [
+          "event",
+          0.5,
+          1
+        ],
+        [
+          "event",
+          0.5666666666666667,
+          1
+        ],
+        [
+          "event",
+          0.733333,
+          1
+        ],
+        [
+          "event",
+          0.85,
+          1
+        ],
+        [
+          "event",
+          1.1,
+          1
+        ],
+        [
+          "event",
+          1.7,
+          1
+        ],
+        [
+          "event",
+          2.5,
+          1
+        ],
+        [
+          "event",
+          6,
+          1
+        ],
+        [
+          "event",
+          7,
+          1
+        ]
+      ],
+      "key": 5
+    },
+    {
+      "id": "ds_destroyer_calm",
+      "group": "small deaths",
+      "label": "destroyer death reduced",
+      "tgt": [
+        "hegemony",
+        "Destroyer"
+      ],
+      "do": "death",
+      "cause": "blast",
+      "near": [
+        "voidsworn",
+        "Cruiser",
+        40,
+        0
+      ],
+      "fx": {
+        "reduce_flashing": true
+      },
+      "windows": [
+        [
+          "event",
+          0,
+          1
+        ],
+        [
+          "event",
+          0.016666666666666666,
+          1
+        ],
+        [
+          "event",
+          0.2,
+          1
+        ],
+        [
+          "event",
+          0.5,
+          1
+        ],
+        [
+          "event",
+          0.5666666666666667,
+          1
+        ],
+        [
+          "event",
+          0.733333,
+          1
+        ],
+        [
+          "event",
+          0.85,
+          1
+        ],
+        [
+          "event",
+          1.1,
+          1
+        ],
+        [
+          "event",
+          1.7,
+          1
+        ],
+        [
+          "event",
+          2.5,
+          1
+        ],
+        [
+          "event",
+          6,
+          1
+        ],
+        [
+          "event",
+          7,
+          1
+        ]
+      ],
+      "key": 5
+    },
+    {
+      "id": "ds_cruiser",
+      "group": "small deaths",
+      "label": "cruiser death",
+      "tgt": [
+        "voidsworn",
+        "Cruiser"
+      ],
+      "do": "death",
+      "cause": "blast",
+      "near": [
+        "voidsworn",
+        "Cruiser",
+        40,
+        0
+      ],
+      "fx": {
+        "reduce_flashing": false
+      },
+      "windows": [
+        [
+          "event",
+          0,
+          1
+        ],
+        [
+          "event",
+          0.2,
+          1
+        ],
+        [
+          "event",
+          0.5,
+          1
+        ],
+        [
+          "event",
+          0.8,
+          1
+        ],
+        [
+          "event",
+          1.1,
+          1
+        ],
+        [
+          "event",
+          1.4,
+          1
+        ],
+        [
+          "event",
+          1.683333,
+          1
+        ],
+        [
+          "event",
+          1.8,
+          1
+        ],
+        [
+          "event",
+          2.5,
+          1
+        ],
+        [
+          "event",
+          3.5,
+          1
+        ],
+        [
+          "event",
+          6,
+          1
+        ],
+        [
+          "event",
+          10.5,
+          1
+        ]
+      ],
+      "key": 6
+    },
+    {
+      "id": "ds_cruiser_calm",
+      "group": "small deaths",
+      "label": "cruiser death reduced",
+      "tgt": [
+        "voidsworn",
+        "Cruiser"
+      ],
+      "do": "death",
+      "cause": "blast",
+      "near": [
+        "voidsworn",
+        "Cruiser",
+        40,
+        0
+      ],
+      "fx": {
+        "reduce_flashing": true
+      },
+      "windows": [
+        [
+          "event",
+          0,
+          1
+        ],
+        [
+          "event",
+          0.2,
+          1
+        ],
+        [
+          "event",
+          0.5,
+          1
+        ],
+        [
+          "event",
+          0.8,
+          1
+        ],
+        [
+          "event",
+          1.1,
+          1
+        ],
+        [
+          "event",
+          1.4,
+          1
+        ],
+        [
+          "event",
+          1.683333,
+          1
+        ],
+        [
+          "event",
+          1.8,
+          1
+        ],
+        [
+          "event",
+          2.5,
+          1
+        ],
+        [
+          "event",
+          3.5,
+          1
+        ],
+        [
+          "event",
+          6,
+          1
+        ],
+        [
+          "event",
+          10.5,
+          1
+        ]
+      ],
+      "key": 6
+    }
+  ]
+}
