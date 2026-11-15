@@ -47,16 +47,16 @@ The table above is every finding, in the order the check made them. Beyond the f
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 401 objects, 64 parts, 1224 close pairs, 739 rays, 14 guns, 0 sensor pairs, 4 turrets swept, 6 cones, 35 apertures, 0 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 401 objects, 64 parts, 1224 close pairs, 741 rays, 14 guns, 0 sensor pairs, 4 turrets swept, 6 cones, 35 apertures, 0 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 
 | Turret | Slot | Arc (bearings) | Sweep steps clear | Rest | Reach to port | Stopped by | Reach to starboard | Stopped by | Under 60 |
 |---|---|---|---:|---:|---:|---|---:|---|---|
 | T1 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
-| F1 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
+| F1 | T | -180 to 180 | 73 | 30 | all round | - | all round | - | no |
 | T2 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
-| F2 | T | -180 to 180 | 73 | 0 | all round | - | all round | - | no |
+| F2 | T | -180 to 180 | 73 | -30 | all round | - | all round | - | no |
 
 Reach is measured from the rest bearing, in degrees, turning toward port (bearings rising) and toward starboard; "all round" means nothing stops it within 180. Every turret clears its whole data.js slot arc (sweep steps above). Under 60 degrees either way: none.
 

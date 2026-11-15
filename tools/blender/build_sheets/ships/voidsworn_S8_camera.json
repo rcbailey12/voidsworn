@@ -15,7 +15,7 @@
   1536,
   1024
  ],
- "iou": 0.8602,
- "body_iou": 0.8733,
+ "iou": 0.8617,
+ "body_iou": 0.8772,
  "note": "S8 beauty: view angles from a coarse grid over azimuth, elevation and roll (the blockout outline scaled onto the mask's box), then fit.py refined all seven camera numbers (never the ship); concept mask: edges (Sobel over 28) or luminance 25 over the blurred picture, closed 15 px, holes filled, largest shape (the escort left out; the picture's background glow top left kept out by the edge test)"
 }

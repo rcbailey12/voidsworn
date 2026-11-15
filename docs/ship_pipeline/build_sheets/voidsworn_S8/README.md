@@ -54,6 +54,9 @@ ship, so the R240 sensor test has nothing to clear (0 sensor pairs).
 
 ## Checks (sandbox, Nov 15 2026)
 
+Rows marked * use the issue 738 helper scripts in `contrib/opus/tools/issue738/` (sandbox only, not standing checks); the rest are
+the repo's own tools.
+
 | Check | Result |
 |---|---|
 | Fit check (clash.py): clash, mount, arc, sensor, sweep, exhaust, exit, lane | 0 of each; 401 objects, 64 parts, 739 rays, 14 guns, 4 turrets swept all round ([fit_report.md](fit_report.md)) |
@@ -62,14 +65,14 @@ ship, so the R240 sensor test has nothing to clear (0 sensor pairs).
 | Stage 4 audit (`audit.py` on the sheet_hull build) and `audit_selftest.py` | PASS: 322 parts, no machine across a seam, no structure across one, 14 guns, none into the ship; self-test PASS |
 | `build_manifest_tests.js` | PASS, 10 sheets including voidsworn_S8 |
 | Inventory (R218, R221) | 0 failing; every built part has a job ([inventory.md](inventory.md)) |
-| Insides inside the skin (every inside vertex against the hull's inner skin at its own station and height; nothing straddling a peel plane) | 10,828 vertices, 47 objects, 0 outside, 0 straddling |
-| Detail density, mesh (R224; tools/recipe/density.py's mesh half) | no flags; lowest: radiator 0.93 triangles and 0.83 edges, engine 0.95 edges of the hull's per square unit ([density_mesh.json](density_mesh.json)) |
+| * Insides inside the skin (every inside vertex against the hull's inner skin at its own station and height) and the clear band at each peel | 10,252 vertices, 47 objects, 0 outside, none straddling a peel plane; clear band B-3 0.38 above and 0.34 below, B-4 0.52 below (see Open risk) |
+| * Detail density, mesh (R224; tools/recipe/density.py's mesh half) | no flags; lowest: radiator 0.93 triangles and 0.83 edges, engine 0.95 edges of the hull's per square unit ([density_mesh.json](density_mesh.json)) |
 | Outline overlap at the camera fitted to the S8 beauty | 86.2 percent, mass outline 87.7 (reported, not a bar; [outline_check.jpg](outline_check.jpg)) |
 
 ## Budget (the stage 4 sheet_hull build, before the export)
 
-99,690 triangles outside, 16,372 inside (116,062 in all); 8 outside materials (black iron, darker iron, worked iron, dark, ember
-glow, bell lining, throat glow, frost), 10 inside. For comparison, the stage 7 exports: A16 151,844 triangles, 21 surfaces, 18,072
+99,690 triangles outside, 15,508 inside (115,198 in all; * budget.py); 8 outside materials (black iron, darker iron, worked iron, dark, ember
+glow, bell lining, throat glow, frost), 10 inside. These are the stage 4 scene's numbers; for comparison, the stage 7 exports (a different stage): A16 151,844 triangles, 21 surfaces, 18,072
 inside; E11 117,298, 13 surfaces, 7,677 inside. Costs are reported, never capped; the scene gate is not measured here.
 
 ## Proportions (the same measure on S8's sheet and the build)
@@ -82,6 +85,17 @@ inside; E11 117,298, 13 surfaces, 7,677 inside. Costs are reported, never capped
 The build is deeper and wider than S8 by design (listed below): the gun deck and shell rooms need the depth, the faction sheet
 puts the widest point at the stern third, and the spires stand taller than S8's bank. Structure per cell (S8 by eye / build):
 bow top 4/6, bow side 2/5, mid top 8/14, mid side 5/10, stern top 7/9, stern side 6/9.
+
+## Open risk: the gun deck peel's clear band (for the PC's death_seam_check)
+
+B-3, the lengthwise split along the gun deck, is one level plane at z -0.72 over the gun deck compartment (2.5 aft to 4.7
+forward). The nearest insides sit 0.38 above it (the gun deck slab) and 0.34 below it (the shell rooms; the frames stop at the
+same heights). The game tears a peel with a V kink (0.08 per unit along the span) and three waves of 0.008 of the length each
+(godot/fx/fx_death.gd), and E11 needed about 0.5 (its B-3 at 1.45 left 15 deck triangles past the torn plating; at 1.7, 0.5 clear,
+it passed). So this band may leave a few inside triangles outside their piece. The hull's depth (2.75) leaves no more room
+without losing the shell rooms. If death_seam_check counts any, the fix is the designer's: deepen the hull about 0.25 (the shell
+rooms then clear by 0.5), or move the shell rooms into the galleries. Not run here: the death check needs the stage 7 export on
+the PC.
 
 ## Changed from S8 (every change, with its reason)
 

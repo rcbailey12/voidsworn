@@ -16,9 +16,9 @@
 #                  muzzle brakes, an ammunition drum on each cheek, elevating high for craft
 #   engine_bell  a big riveted drum with banded plates and a heavy mount collar, a deep bell with stiffener rings and a rolled
 #                lip, an ember lining, a hot throat and a glowing plug cone deep inside (S8: two big ember bells)
-#   radiator     a radiator spire (never a steeple or a mast): a forged root socket, an iron centre blade with a forged cap, a
-#                fin panel each side leaning out (a frame of rails and posts, ember radiator bars over a dark backing), braces;
-#                four profiles so no two neighbours match (pack.md: "not exactly the same shape for every ship")
+#   radiator     a radiator spire (never a steeple or a mast): a forged root socket, a column of iron posts round a dark core,
+#                a stack of flat radiator fins out to each side glowing ember, rivet lines, a forged cap, gusset braces; four
+#                profiles so no two neighbours match (pack.md: "not exactly the same shape for every ship")
 #   hatch, hatchbox, vent, lamp, slit, thruster, plate_slab, forged_plates: the Sunward versions (forged round hatches with
 #                studs, armoured deck housings, heat louvres, frost-white lamps, ember window slits, round thruster throats
 #                with depth (R244), forged plates with rivet lines in ordered rows and sleek triangles on the flat fields (R243))

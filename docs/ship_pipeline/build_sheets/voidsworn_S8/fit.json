@@ -15,7 +15,7 @@
   "objects": 401,
   "parts": 64,
   "close_pairs": 1224,
-  "rays": 739,
+  "rays": 741,
   "guns": 14,
   "sensor_pairs": 0,
   "turrets_swept": 4,
@@ -1502,7 +1502,7 @@
     ],
     [
      170.0,
-     0
+     10
     ],
     [
      175.0,
@@ -1850,7 +1850,7 @@
     ],
     [
      -170.0,
-     0
+     10
     ],
     [
      -165.0,
@@ -2472,7 +2472,7 @@
     180.0
    ],
    "clear_steps": 73,
-   "rest_yaw": 0,
+   "rest_yaw": 30,
    "reach_port": {
     "deg": 180,
     "stop": null
@@ -2508,7 +2508,7 @@
     180.0
    ],
    "clear_steps": 73,
-   "rest_yaw": 0,
+   "rest_yaw": -30,
    "reach_port": {
     "deg": 180,
     "stop": null

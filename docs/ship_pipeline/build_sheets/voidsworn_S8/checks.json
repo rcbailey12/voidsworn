@@ -17,8 +17,8 @@
  "L_to_B_hull": 5.08,
  "L_to_H_hull": 9.41,
  "PASS": true,
- "outline_iou_percent": 86.0,
- "mass_outline_iou_percent": 87.3,
+ "outline_iou_percent": 86.2,
+ "mass_outline_iou_percent": 87.7,
  "concept_camera": {
   "az": 205.65026149240234,
   "el": 35.62735559400008,

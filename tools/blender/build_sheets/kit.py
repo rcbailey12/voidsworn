@@ -105,7 +105,7 @@ MATS = {
     'siron': ((0.047, 0.045, 0.044), 0),     # black iron plate
     'siron2': ((0.026, 0.025, 0.025), 0),    # darker recessed iron (sockets, frames, the second plate family)
     'sworn': ((0.15, 0.147, 0.142), 0),      # worked bright iron: rivets, bands, rims, machinery
-    'embar': ((1.0, 0.36, 0.07), 3.0),       # ember radiator bars and hot lenses (the spires shed the reactor's heat)
+    'embar': ((1.0, 0.36, 0.07), 1.2),       # ember radiator fins and hot lenses (the spires shed the reactor's heat); 1.2 keeps it ember, not lemon
     'frost': ((0.9, 0.92, 0.92), 0.6),       # frost-white running points (paint direction 5), never blue over green
     'gallery': ((0.72, 0.36, 0.13), 0),      # inside: the gun crews' galleries, ember-lit (factions.md "Inside")
 }

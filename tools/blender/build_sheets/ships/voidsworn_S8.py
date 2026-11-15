@@ -251,7 +251,7 @@ def build(K):
     for side in (1, -1):
         K.gun('T%d' % (1 if side > 0 else 2), (3.4, side * TY, zS[side]), 0, 5, barrels=1, cal=0.125, blen=0.66, size=1.12, slot='T', weapon='turret', inv='sear_turrets',
               note='%s Sear turret: one heavy focusing emitter, on a low tub; the pair is the one Sear turret slot (2 shots: one each, every volley)' % ('port' if side > 0 else 'starboard'))
-        K.gun('F%d' % (1 if side > 0 else 2), (0.6, side * TY, zF[side]), 0, 12, barrels=2, cal=0.075, blen=0.6, size=0.8, slot='T', weapon='flak',
+        K.gun('F%d' % (1 if side > 0 else 2), (0.6, side * TY, zF[side]), 30 * side, 12, barrels=2, cal=0.075, blen=0.6, size=0.8, slot='T', weapon='flak',
               inv='flak', note='%s spark flak twin; the pair is the one flak slot (3 shots over 4 barrels: both fire every volley)' % ('port' if side > 0 else 'starboard'))
 
     # ---------------- the spine block and the spire line ----------------
@@ -398,25 +398,26 @@ def build(K):
     # decks: the bow deck; in the gun deck compartment the gun deck floor and the upper deck (the peel B-3 at z -0.72 lies between
     # the gun deck and the magazines under it, clear of both); aft, the main and upper decks
     deck_slab('bow', -0.12, 10.6, 5.1)
-    deck_slab('upper', 0.58, 4.85, -2.65); deck_slab('gun', -0.45, 4.85, -2.65)
+    deck_slab('upper', 0.58, 4.85, -2.65); deck_slab('gun', -0.3, 4.85, -2.65)
     deck_slab('upper_aft', 0.58, -2.85, -11.3); deck_slab('main_aft', -0.45, -2.85, -11.3)
     for i, x in enumerate((11.2, 9.4, 7.6, 5.25, 4.75, 2.85, 1.5, 0.15, -1.2, -2.6, -3.05, -4.0, -5.8, -7.6, -9.4, -11.3)):
-        # in the gun deck compartment the frames stop clear of the gun deck peel (B-3 at -0.68): an upper and a lower half
+        # in the gun deck compartment the frames stop clear of the gun deck peel (B-3 at -0.72): an upper and a lower half, a band
+        # of about 0.35 kept clear either side (the game tears a peel with a V kink and waves, fx_death.gd)
         if -2.75 < x < 5.0:
-            frame_at('F%d_upper' % i, x, zr=[(-0.58, 99.0)]); frame_at('F%d_lower' % i, x, zr=[(-99.0, -0.8)], record=False)
+            frame_at('F%d_upper' % i, x, zr=[(-0.36, 99.0)]); frame_at('F%d_lower' % i, x, zr=[(-99.0, -1.06)], record=False)
         else:
             frame_at('F%d' % i, x)
     room('fire_control', 'machinery', 9.2, 7.9, -0.08, 0.45, note='the forward fire-control room: the broadside directors (no AI: plotted by hand)')
     room('bow_stores', 'hold', 9.6, 7.9, -0.6, -0.16, note='bow stores and the bow thrusters\' feeds')
     room('crew_fwd', 'crew', 7.5, 5.4, -0.08, 0.74, note='crew decks: the dawn watch berths')
     room('ballast_fwd', 'machinery', 7.5, 5.4, -0.95, -0.16, note='bow trim tanks and pumps')
-    side_room('gun_gallery', 'gallery', 4.6, -2.45, -0.41, 0.53, 1.05, note='the gun crews\' galleries behind the ports, ember-lit: the old manual gun deck (lore 2.5)')
-    room('sear_cells', 'magazine', 4.3, 2.6, -0.41, 0.53, ymax=0.9, note='the Sear turrets\' power cells, hoisted to both tubs')
-    room('fire_plot', 'bridge', 0.2, -1.4, -0.41, 0.53, ymax=0.9, note='the broadside plotting room (no AI: plotted by hand)')
-    room('flak_magazine', 'magazine', 2.2, 0.5, -0.41, 0.53, ymax=0.9, note='the spark flak magazine, between the tubs')
+    side_room('gun_gallery', 'gallery', 4.6, -2.45, -0.26, 0.53, 1.05, note='the gun crews\' galleries behind the ports, ember-lit: the old manual gun deck (lore 2.5)')
+    room('sear_cells', 'magazine', 4.3, 2.6, -0.26, 0.53, ymax=0.9, note='the Sear turrets\' power cells, hoisted to both tubs')
+    room('fire_plot', 'bridge', 0.2, -1.4, -0.26, 0.53, ymax=0.9, note='the broadside plotting room (no AI: plotted by hand)')
+    room('flak_magazine', 'magazine', 2.2, 0.5, -0.26, 0.53, ymax=0.9, note='the spark flak magazine, between the tubs')
     room('upper_fwd_rooms', 'crew', 4.6, -2.45, 0.63, 0.82, note='the gunners\' mess and the chalk wall where the names go up before launch')
-    side_room('shell_rooms', 'magazine', 4.4, -2.4, -1.18, -0.86, 0.15, note='the broadside shell rooms under the galleries (below the gun deck peel)')
-    room('keel_passage', 'machinery', 4.4, -2.4, -1.18, -0.86, ymax=0.12, note='the shell hoists\' drive line along the centreline')
+    side_room('shell_rooms', 'magazine', 4.4, -2.4, -1.18, -1.07, 0.15, note='the broadside shell rooms under the galleries (below the gun deck peel)')
+    room('keel_passage', 'machinery', 4.4, -2.4, -1.18, -1.07, ymax=0.12, note='the shell hoists\' drive line along the centreline')
     room('command', 'bridge', -3.15, -4.0, 0.63, 0.82, note='the command deck under the spine block\'s slits')
     room('reactor', 'core', -4.3, -7.6, -1.18, 0.52, ymax=1.3, note='the reactor: its heat goes up through the plenum into the spires (hp_core)')
     side_room('coolant', 'machinery', -4.3, -7.6, -0.85, 0.5, 1.38, note='coolant pumps and heat exchangers either side of the reactor')
@@ -436,7 +437,7 @@ def build(K):
     K.break_line('B-2', -2.75, 'the gun deck tears from the reactor section, between the last ports and the spine block',
                  path=[(-2.75, reach), (-2.7, 1.4), (-2.6, 0.6), (-2.78, -0.2), (-2.62, -1.0), (-2.72, -1.6), (-2.75, -reach)])
     K.break_line('B-3', 0.0, 'along the gun decks: the hull splits lengthwise between the gun deck and the shell rooms, the galleries and turrets lifting away',
-                 path=[(4.7, -0.68), (2.6, -0.66), (0.2, -0.7), (-1.4, -0.67), (-2.5, -0.68)], kind='long')
+                 path=[(4.7, -0.72), (2.6, -0.7), (0.2, -0.74), (-1.4, -0.71), (-2.5, -0.72)], kind='long')
     K.break_line('B-4', -6.0, 'the spire line snaps off as one piece, the spine block tearing along its root',
                  path=[(-3.05, SPZ - 0.3), (-5.0, SPZ - 0.32), (-7.0, SPZ - 0.3), (-9.2, SPZ - 0.31)], kind='long')
     K.inside.append(dict(kind='note', name='insides', note='Full interiors throughout the hull (R215), hidden until a piece breaks: iron decks, ember-lit gun galleries, frames, the reactor and its machinery. Sunward breaks along the gun decks (factions.md); deaths blow it apart unevenly, a ragged bite where the reactor goes (R186).'))
@@ -474,12 +475,12 @@ def build(K):
     K.change('The forked prow is replaced by a forged spearhead: one point at mid height, diamond in section, a raised centre ridge and two layers of cheek plates along its upper facets', 'Ryan, Nov 12 (R232, pack.md question 1): "It shouldn\'t be the same shape for everything"; the Daybreak carries no lance, so no lance recess; the point at mid height with matching upper and lower facets is a blade, never a ship\'s stem (factions.md Never)')
     K.change('Five broadside ports a side, not seven', 'data.js hbattery fires 5 shots a volley; seven single guns would leave two silent on every volley (R241, the SPLIT rule); five heavy single guns all fire every volley')
     K.change('S8\'s four low deck turrets kept in its grid of two pairs, each pair one data.js slot: the two Sear turrets forward with one heavy emitter each, the two spark flak twins aft, all on low tubs at the deck edges', 'data.js ascendant carries one turret slot (2 shots) and one flak slot (3 shots); four twin turrets would be extra weapons or silent barrels (R241). Two single-emitter Sear turrets fire one shot each every volley; two flak twins share 3 shots over 4 barrels and both fire every volley (weapon_match SPLIT). The emitters are short enough that a pair trained at each other never meets (the fit check\'s SWEEP)')
-    K.change('The radiator bank becomes a row of seven radiator spires on a spine block, tallest at the middle of the row, each with its own profile (blade, raked, stepped, twin)', 'factions.md: "a row of tall radiator spires along the spine, tallest amidships"; Ryan, Nov 12 (R232): "not exactly the same shape for every ship". S8\'s bank rose to its tallest at the stern end; the spires keep its ember bars between iron frames and its place in the stern half')
+    K.change('S8\'s radiator bank (upright ember bars in two wide wedges either side of the spine, rising to the stern end) becomes one row of seven radiator spires on the centreline spine block, tallest at the middle of the row, each its own profile (blade, raked, stepped, twin), each a stack of flat radiator fins glowing ember between iron posts', 'factions.md: "a row of tall radiator spires along the spine, tallest amidships"; Ryan, Nov 12 (R232): "not exactly the same shape for every ship". Upright panels read as organ pipes from the beam and shards from above in the first render; flat fins read as radiators from the battle camera and from above. The ember glow and the line\'s place in the stern half are S8\'s')
     K.change('The spires stand aft of every turret and rise toward the middle of the row', 'so both turret pairs fire aft past and over the whole line (the fit check\'s ARC test); the spires are broad finned radiators, never masts, so nothing reads as a gun aimed through a mast (R240)')
     K.change('The hull is a little deeper (2.75 against S8\'s 2.2) and its flanks are angled facets round a vertical broadside band', 'two deck rows (the gun deck and the shell rooms, the upper deck) and real insides need the depth (R215); R244: big flanks carry angled facets, never a flat wall')
-    K.change('Widest at the stern third (5.3 over the reactor), not amidships', 'factions.md: "widest at the stern third"; S8\'s body is 4.4 from end to end, its width carried by the radiator bank and the guns')
+    K.change('The hull is widest at the stern third (5.3 over the reactor); with the broadside barrels the outline is still widest amidships (7.1 at 56 percent), as S8\'s is', 'factions.md: "widest at the stern third"; S8\'s body is 4.4 from end to end, its width carried by the radiator bank and the guns')
     K.change('The two engine bells are bigger (2.1 across) and their drums run 1.55 deep into the stern', 'factions.md: "big bells, ember orange, deep-set"; S8\'s two bells are its stern\'s identity and must read from the battle camera')
-    K.change('Weapons built from the lore, not S8\'s generic barrels (R221)', 'the broadside guns are heavy short guns in deep round ports (rule 12: a round opening has depth); the Sear turrets are forged turrets with one heavy focusing emitter and radiator fins (las); the spark flak a squat drum with twin braked barrels and ammunition drums (tools/blender/kits/voidsworn/README.md)')
+    K.change('Weapons built from the lore, not S8\'s generic barrels (R221)', 'the broadside guns are heavy short guns in deep round ports (R244: a round opening has depth); the Sear turrets are forged turrets with one heavy focusing emitter and radiator fins (las); the spark flak a squat drum with twin braked barrels and ammunition drums (tools/blender/kits/voidsworn/README.md)')
     K.change('Attitude thrusters, deck and belly hatches, lift heads, heat louvres, ember slits, frost running points, a belly armour step added', 'a ship in space needs thrusters and access; the spires\' reactor needs louvres; S8 shows no underside; every part has a job (R221)')
     K.change('The command deck looks out through ember slits in the spine block\'s forward face, not a box on the deck', 'S8\'s small lit block before the radiators read as a deck house (R185 (5): no deck house); the same ember windows now sit in the spine block itself')
     # ---------- the fit report's fix column: every finding the check made while this sheet was designed (issue 738) ----------
