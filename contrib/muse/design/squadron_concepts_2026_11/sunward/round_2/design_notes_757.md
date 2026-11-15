@@ -52,3 +52,7 @@ Unanimous among the seated legs, and the renders bear the picks out. SF3 is the 
 - SB3 renders two small dorsal mounts on the hull sterns that read as minor turrets. The design has NO such fittings (the bomber's only weapon is the spine's bomb cassette); the sheet omits them. Its first render carried dorsal ordnance racks and was regenerated for the same reason.
 - SB5's connector blocks render flat; the sheet keeps them thick and armoured so they never read as wings. Its core bells render brighter than banked coals; dim per R55. Its first render carried yellow dorsal blocks and a chimneyed spine; it was regenerated, and the delivered picture is the corrected one.
 - All six: panel detail must stay bold and simple at build; fine greeble at this scale reads as a shrunken capital ship (both design legs flagged this independently).
+
+## Ruling (added Nov 14, 2026)
+
+Ryan ruled SF4 and SB4 (Nov 14, 2026, about 23:51 CST) as his picks from this round's six. SB4 confirms the council's unanimous pick. SF4 is his call over the council's fighter pick: the Hammerhead Wedge takes the fighter slot from this set, and SF3 and SF5 stand as unpicked directions, as do SB3 and SB5. His round 2 picks from issue 742 (SF2 and SB2) stand as recorded there; he did not say whether SF4 and SB4 supersede them, so both pairs stand on the record for the Board to reconcile.
