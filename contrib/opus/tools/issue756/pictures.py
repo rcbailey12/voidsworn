@@ -54,7 +54,7 @@ head(c, 'voidsworn_S8 | the spires close (top) and the port broadside (bottom)',
 sp = Image.open(os.path.join(P, 'paint_spires.png')).convert('RGB').resize((1280, 720), Image.LANCZOS)
 c.paste(band(sp, 340), (0, 58)); label(c, (10, 62), 'radiator spires: deep ember at the root to hot at the tip, under the glow threshold')
 br = Image.open(os.path.join(P, 'paint_broad.png')).convert('RGB').resize((1280, 720), Image.LANCZOS)
-c.paste(band(br, 316), (0, 402)); label(c, (10, 406), 'port broadside: triangle plates, rivet rows, frost points on the blade edge, frost deck numbers')
+c.paste(band(br, 316), (0, 402)); label(c, (10, 406), 'port broadside: forged plates and triangle panels, the five gun ports, frost running points, ember window slits')
 c.save(os.path.join(OUT, 'voidsworn_S8_paint_spires_broadside.jpg'), quality=92)
 
 # 3. the battle camera: 34 degrees above the board, port beam, range 170
@@ -70,5 +70,13 @@ crop = g.crop((cx - 200, cy - 90, cx + 200, cy + 90))
 c.paste(crop, (10, 530)); label(c, (14, 534), 'true pixels (1920 x 1080 screen)')
 z = crop.crop((100, 45, 300, 135)).resize((400, 180), Image.NEAREST); c.paste(z, (440, 530)); label(c, (444, 534), 'the same, 2x')
 c.save(os.path.join(OUT, 'voidsworn_S8_paint_battle.jpg'), quality=92)
+# evidence: the forward deck and the port flank close (the triangle plates, rivet rows and frost markings at a judgeable size)
+dp, fp = os.path.join(P, 'paint_deck.png'), os.path.join(P, 'paint_flank.png')
+if os.path.exists(dp) and os.path.exists(fp):
+    c = Image.new('RGB', (1280, 440), BG)
+    head(c, 'voidsworn_S8 | close: the forward deck (left), the port flank (right)', NOTE)
+    c.paste(fit(Image.open(dp).convert('RGB'), 636, 358), (0, 70)); c.paste(fit(Image.open(fp).convert('RGB'), 636, 358), (644, 70))
+    label(c, (10, 52), 'triangle plates, rivet rows, the half-sun crest, the spine line'); label(c, (650, 52), 'flank plates, a frost running point, frost deck numbers')
+    c.save(os.path.join(OUT, 'voidsworn_S8_paint_close.jpg'), quality=92)
 for n in ('voidsworn_S8_paint_concept.jpg', 'voidsworn_S8_paint_spires_broadside.jpg', 'voidsworn_S8_paint_battle.jpg'):
     im = Image.open(os.path.join(OUT, n)); print(n, im.size); assert im.height <= 720

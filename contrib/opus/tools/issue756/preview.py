@@ -7,7 +7,8 @@
 #           its camera at 56 degrees (sin and cos swapped), so it is not used here
 #   spires  the radiator spires close, from above the port quarter
 #   broad   the port broadside: the gun deck, the spire line over it, the frost points on the blade's edge
-# usage: python run_cpu.py preview.py PAINTED.blend -- OUT_DIR [samples=16] [scale=0.5] [only=battle,b170,spires,broad]
+#   deck    the forward deck close (triangle plates, rivet rows, the crest, the spine line); flank the port flank close
+# usage: python run_cpu.py preview.py PAINTED.blend -- OUT_DIR [samples=16] [scale=0.5] [only=battle,b170,spires,broad,deck,flank]
 import os, sys, math, json, runpy
 import bpy
 from mathutils import Vector
@@ -30,7 +31,7 @@ else:
     sys.argv = ['x', '--', OUT, 'voidsworn_S8', os.path.join(REPO, 'contrib/codex/design/concept_round5_2026_11/voidsworn_S8_beauty.jpg'),
                 f'lift={LIFT}', f'samples={SAMP}', f'scale={SCALE}', 'sky_spec=0']
     G = runpy.run_path(os.path.join(REPO, 'tools', 'blender', 'build_sheets', 'paint_sheet.py'))
-want = set((only or 'battle,b170,spires,broad').split(','))
+want = set((only or 'battle,b170,spires,broad,deck,flank').split(','))
 sc = bpy.context.scene; shoot, look_cam = G['shoot'], G['look_cam']
 S = float(sc.get('r209_scale', 1.0)); Lw = float(sc.get('r209_length_world', 27.0) or 27.0)
 bc = json.load(open(os.path.join(REPO, 'tools', 'blender', 'build_sheets', 'ships', 'voidsworn_S8_camera_battle.json')))
@@ -63,4 +64,10 @@ if 'spires' in want:
 if 'broad' in want:
     o = cam('broad', Vector((-0.04, 0, -0.01)), Vector((0.10, 1.0, .22)).normalized() * 1.32, 50, (1280, 720))
     shoot(o, 'paint_broad', float(SCALE) * 2)
+if 'deck' in want:      # the forward deck close: the triangle plates, rivet rows, the crest and the spine line
+    o = cam('deck', Vector((0.25, 0, 0.035)), Vector((-0.30, 0.45, 1.0)).normalized() * .36, 50, (1280, 720))
+    shoot(o, 'paint_deck', float(SCALE) * 2)
+if 'flank' in want:     # the port flank close: the broadside band's plates, a deck number, the frost points
+    o = cam('flank', Vector((0.15, 0.07, -0.02)), Vector((0.05, 1.0, 0.25)).normalized() * .30, 50, (1280, 720))
+    shoot(o, 'paint_flank', float(SCALE) * 2)
 print('[756] preview done', flush=True)

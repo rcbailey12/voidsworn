@@ -440,13 +440,14 @@ RUNNING_LIGHTS = None
 # marks at the spire roots, plus the half-sun crest (the sheet's "Designed here": the crest is paint). Cap: at most 6 percent of
 # any visible face (the stack's frost coverage audit measures it on the flat views). Edge wear runs last, over the decals (the
 # shared stack's order). Placed by rule on each ship's own surfaces (shared/paint_stack.place_decals): x the station from the bow
-# (0) to the stern (1), z the height band on the side, a top decal searches the deck at y.
+# (0) to the stern (1), z the height band on the side, a top decal searches the deck at y. On a top decal the cell's up (its
+# top row) points to the bow and w runs across the beam, h along the hull; on a side decal the cell's up is up.
 DECAL_CELLS = 2      # 2 x 2: 0 the half-sun crest, 1 the spine line, 2 deck row numbers, 3 heat-shed marks
 DECALS = [
     dict(name='half-sun crest', cell=0, face='top', x=(.30, .27, .33, .24, .36, .40), y=(0.0, .012, -.012, .03, -.03), w=.040, h=.026,
          alpha=.85, min_facing=.85, min_room=.6),
-    dict(name='spine line', cell=1, face='top', x=(.10, .13, .16, .19, .22, .25, .08, .82, .86), y=(0.0, .004, -.004, .010, -.010), w=.060,
-         h=.005, alpha=.80, min_facing=.85, min_room=.5),
+    dict(name='spine line', cell=1, face='top', x=(.10, .13, .16, .19, .22, .25, .08, .82, .86), y=(0.0, .004, -.004, .010, -.010), w=.005,
+         h=.060, alpha=.80, min_facing=.85, min_room=.5),
     dict(name='deck row numbers', cell=2, face='side', x=(.44, .40, .48, .36, .52, .56), z=(.30, .75), w=.030, h=.011, alpha=.85,
          min_room=.6),
     dict(name='heat-shed marks port', cell=3, face='top', x=(.62, .58, .66, .70, .55), y=(.07, .06, .08, .05, .09, .10), w=.024, h=.016,
@@ -481,7 +482,7 @@ def decal_atlas(res=1024, code=None):
         cx, cy = cell % 2, cell // 2; sl = (slice(cy * c, cy * c + c), slice(cx * c, cx * c + c))
         a = A[sl]; m = mask.astype(np.float32) * (0.82 + 0.18 * rng.random(mask.shape))
         a[..., :3] = np.where(m[..., None] > 0, col, a[..., :3]); a[..., 3] = np.maximum(a[..., 3], m)
-    # 0 the half-sun crest: a half disc on a horizon bar with seven rays (the Sunward's sun at the horizon), the bow to the right
+    # 0 the half-sun crest: a half disc on a horizon bar with seven rays (the Sunward's sun at the horizon), rising to the bow
     r = np.hypot(u - .5, v - .66); ang = np.arctan2(.66 - v, u - .5)
     disc = (r < .20) & (v <= .66)
     rays = np.zeros_like(disc)
@@ -489,9 +490,9 @@ def decal_atlas(res=1024, code=None):
         t = math.pi * (k + .5) / 7; rays |= (np.abs(ang - t) < .07) & (r > .25) & (r < .42) & (v < .64)
     bar = (np.abs(v - .70) < .022) & (np.abs(u - .5) < .42)
     put(0, disc | rays | bar, frost)
-    # 1 the spine line: a long stencilled band broken into dashes, an arrowhead at the forward (right) end
-    band = (np.abs(v - .5) < .16) & (u > .02) & (u < .84) & (np.mod(u * 9, 1.0) < .82)
-    head = (u >= .86) & (u < .98) & (np.abs(v - .5) < (.98 - u) * 2.6)
+    # 1 the spine line: a long stencilled band along the hull broken into dashes, an arrowhead at the forward end (the top row)
+    band = (np.abs(u - .5) < .16) & (v > .16) & (v < .98) & (np.mod(v * 9, 1.0) < .82)
+    head = (v > .02) & (v <= .14) & (np.abs(u - .5) < (v - .02) * 2.6)
     put(1, band | head, frost)
     # 2 deck row numbers: the deck's index in Roman strokes between two bracket ticks (I to V, seeded per ship)
     g = np.zeros((c, c), bool); n = int(rng.integers(2, 5))
@@ -499,10 +500,10 @@ def decal_atlas(res=1024, code=None):
     for k in range(n):
         xc = .5 + (k - (n - 1) / 2) * .16; g |= (np.abs(u - xc) < .035) & (np.abs(v - .5) < .26)
     put(2, g, frost)
-    # 3 heat-shed marks: three chevrons pointing up and aft (the heat leaves the spire roots), thin
+    # 3 heat-shed marks: three chevrons pointing aft (the bottom rows; the heat leaves the spire roots astern), thin
     h = np.zeros((c, c), bool)
     for k in range(3):
-        x0 = .22 + k * .26; h |= (np.abs(np.abs(u - x0) * 1.1 - (v - .30)) < .045) & (v > .28) & (v < .72) & (np.abs(u - x0) < .17)
+        x0 = .22 + k * .26; h |= (np.abs(np.abs(u - x0) * 1.1 - (.70 - v)) < .045) & (v > .28) & (v < .72) & (np.abs(u - x0) < .17)
     put(3, h, frost)
     # wear: the marks are old; patches gone (edge wear eats them further, on the ship)
     holes = np.kron(rng.random((res // 16, res // 16)) < .12, np.ones((16, 16))) > 0
