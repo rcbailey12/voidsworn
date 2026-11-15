@@ -55,3 +55,7 @@ Unanimous among the seated legs, and the chair agrees. IM5 keeps IM2's channel a
 - IM4's sensor fin sits midships in the three-quarter render and aft in the top view; the design fixes it on the midships bridge.
 - IM5's bow reads rounder in the top view than the wedge the faction wants; the sheet sharpens it.
 - Canyon and channel depths, bridge thicknesses and seam layouts are render-stage values; the blockout settles them (both design legs flagged this honestly).
+
+## Ruling (added Nov 14, 2026)
+
+Ryan ruled IM5 (Nov 14, 2026, about 23:49 CST): "Im5 for sure, it looks good." IM5, the one-hull bridged canyon, is his pick of the mix round. IM1 remains his round 1 pick from issue 741; he did not say whether IM5 supersedes it as the sheet direction, so both picks stand on the record for the Board to reconcile.
