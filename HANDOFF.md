@@ -4,7 +4,7 @@
 
 **What to trust.** docs/RULEBOOK.md for rules (0.10: only Ryan's quoted words make a rule; one-day Board choices are notes in
 LOOP.md). contrib/opus/LOOP.md for status: "The seats" and the newest LATEST lines. contrib/opus/OPEN_WORK.md for every open
-issue and parked pull request and what each waits on. FINDINGS R236 to R262 are the newest rulings. The Nov 14 hand-over is in
+issue and parked pull request and what each waits on. The newest rulings are the FINDINGS rows from R236 on (its last row is always the newest; this file names no range top, so a ruling landing on main never makes it stale). The Nov 14 hand-over is in
 docs/archive/HANDOFF_0_2026-11-14.md; nothing under docs/archive/ is followed.
 
 **The Board.** One Claude thread in the Project, Opus 5.5, with the Fable advisor on (R252). Seats (R253, R257): Opus workers
