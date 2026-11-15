@@ -1,21 +1,21 @@
 {
- "az": 37.367782749576556,
- "el": 63.193629267661315,
- "roll": 34.6764251758086,
- "dist": 31.79268256821172,
- "mm": 103.45379154400996,
+ "az": 18.116393814414987,
+ "el": 21.84047780523218,
+ "roll": 32.06328862951429,
+ "dist": 59.922262991805546,
+ "mm": 190.3860531846765,
  "target": [
-  0.5902202849205378,
-  -3.7464854869829926e-05,
-  0.28648156785662116
+  0.0,
+  0.0,
+  0.0
  ],
- "sx": -0.08467831709914726,
- "sy": 0.0406638421972511,
+ "sx": -0.04621857587974423,
+ "sy": 0.05054299073183182,
  "res": [
   1920,
   1280
  ],
- "iou": 0.593,
- "body_iou": 0.5832,
- "note": "E14 camera of record (issue 739): the beauty's view from above and ahead of the port bow, the ring nearly face-on, the gun heart lower left and the engine ring upper right. Angles from a coarse grid held to the picture's axis (the bow 163 degrees round from screen right, within 25), then fit.py refined every value (never the ship). The flat ring of the build lines up with the beauty's twelve plates at this camera, the check on the ring's plane (R233). The cut-out (luminance over 14, closed, filled) leaves out the engine's light ring and its glow and the sky's teal nebula (pixels greener than red)."
+ "iou": 0.6718,
+ "body_iou": 0.6711,
+ "note": "E14 camera of record (issue 782, the upright redesign): the beauty's view from ahead of the port bow and a little above, the ring nearly face-on, the lance's muzzle at its centre lower left and the engine ring upper right. Angles from a coarse grid (contrib/opus/tools/issue738/grid.py), then fit.py refined every value (never the ship). The cut-out (contrib/opus/tools/issue782/mask_e14.py) leaves out the engine's light ring and its glow, the sky's nebula, and the sky seen through the ring's open middle, which the upright build leaves open too."
 }

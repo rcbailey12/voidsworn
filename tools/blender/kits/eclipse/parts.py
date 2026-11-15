@@ -205,6 +205,16 @@ WEAPONS = {
                'conduits along it) that stores the charge for one blow every other turn; the mouth is the faction crest, a black '
                'shade disc in a thin corona ring, with a crown of six electrode horns curving forward round it where the arcs '
                'crawl before the strike.'),
+    'nlance': dict(
+        name='Null lance', rules='data.js nlance (issue 784, R256): the flare\'s one forward gun, a gauss kind (half of armour '
+                                  'ignored), heavier and longer reaching than a null cannon, F arc only; its numbers are issue 784\'s',
+        lore='Lore 7.5: "Null weapons ignore half of armour". The glass cannon (Ryan, Nov 15: "built around one larger gun and that\'s '
+             'the center of the ring"). Battle effect: the null cannon\'s, from one big muzzle.',
+        design=('A fixed spinal rail gun, the null cannon grown to one heavy gun: an armoured eight-sided housing with four '
+                'accelerator rails along it on yokes, banded collars stepping toward the muzzle, capacitor discs at the breech, and '
+                'the mouth a recessed aperture (designs.md): a black shade disc set back inside the bore, a glowing lens at its '
+                'heart and a thin green focus ring on the lip, never a protruding tube. It fires forward through the centre of '
+                'the flare\'s ring, which is its focusing ring.')),
 }
 
 
@@ -413,13 +423,74 @@ def gun(barrels=2, cal=0.12, blen=2.0, size=1.0, mount='turret', pitch=0.0, vari
     return p
 
 
+# ---------------------------------------------------------------------------------------------------- the null lance
+def _null_lance(length, r=0.36, seg=8, depth=None, sink=0.32):
+    """the null lance (data.js nlance, issue 784; the flare E14, issue 782): a fixed spinal rail gun, the null cannon grown to
+    one heavy gun. Origin at the root on the hull's front face, +X forward. A stepped eight-sided seat ring (the mount: it sinks
+    `sink` into the hull); an armoured eight-sided housing with a raised layer sleeve and plate courses; capacitor discs at the
+    breech; four accelerator rails on its corner faces, held by yokes, banded with collars that step down toward the muzzle;
+    the mouth a recessed aperture (designs.md, opus_check_770 condition 3): a steel muzzle lip, a thin green focus ring on its
+    face, the bore set back `depth` to a black shade disc with a glowing lens at its heart, never a protruding tube. The
+    muzzle (the hard point) is the lens, on the gun's own mesh; the firing lane starts at the mouth."""
+    p = Part('spinal')
+    p.type = 'nullcannon'   # weapon_match FITS 'nlance': a null cannon on a fixed mount
+    L = float(length)
+    dp = depth or r * 0.9
+    ph = math.pi / seg
+    rb = r * 0.64           # the bore
+    # the seat ring: two stepped octagonal bands, the rear one sunk in the hull
+    p.add('ring0', 'mount', 'mauve', revolve([(-sink, r * 1.25), (-sink, r * 1.5), (0.02, r * 1.5), (0.06, r * 1.38), (0.06, r * 1.25)], seg, closed=True, phase=ph))
+    p.add('ring1', 'mount', 'violet', revolve([(0.06, r * 1.15), (0.06, r * 1.32), (0.16, r * 1.32), (0.2, r * 1.22), (0.2, r * 1.15)], seg, closed=True, phase=ph))
+    # the housing: an eight-sided armoured tube from the seat to the muzzle lip, a slight swell at the breech, its bore open
+    # at the front and set back dp to the shade disc (a solid with an inner wall)
+    p.add('housing', 'body', 'violet', revolve([(0.04, r * 1.12), (0.3, r * 1.12), (0.4, r * 1.0), (L - 0.1, r * 0.98), (L - 0.1, rb * 1.18),
+                                                (L - dp, rb), (L - dp - 0.02, rb), (L - dp - 0.02, r * 0.5), (0.04, r * 0.5)], seg, closed=True, phase=ph))
+    # the raised layer sleeve over the middle of the housing, stepped at both ends
+    xl0, xl1 = 0.46, L * 0.62
+    p.add('layer0', 'body', 'mauve', revolve([(xl0, r * 0.97), (xl0, r * 1.05), (xl0 + 0.05, r * 1.08), (xl1 - 0.05, r * 1.08), (xl1, r * 1.05), (xl1, r * 0.97)],
+                                             seg, closed=True, phase=ph))
+    panels(p, 'layer0', 'body', ('violet', 'mauve', 'shade2'), xl0 + 0.08, xl1 - 0.08, r * 1.08, seg, ph, skip=tuple(range(0, seg, 2)), seed=21)
+    panels(p, 'housing', 'body', ('violet', 'shade2'), xl1 + 0.06, L - 0.22, r * 0.98, seg, ph, skip=tuple(range(0, seg, 2)), seed=22)
+    # capacitor discs at the breech: three thin stacked discs, the middle widest
+    for k, (x, rk) in enumerate(((0.24, 1.26), (0.31, 1.38), (0.38, 1.26))):
+        p.add('capacitor%d' % k, 'body', 'steel' if k == 1 else 'gunv',
+              revolve([(x - 0.022, r * 1.1), (x - 0.022, r * rk), (x + 0.022, r * rk), (x + 0.022, r * 1.1)], seg, closed=True, phase=ph))
+    # four accelerator rails on the corner faces (45, 135, 225, 315 degrees), held off the housing by yokes, banded with collars
+    # that step down toward the muzzle (the coils the effect lights in steps)
+    cal = r * 0.15
+    rr = r * 0.98 * math.cos(math.pi / seg) + cal * 1.15
+    for k in range(4):
+        a = math.pi / 4 + k * math.pi / 2
+        c, s_ = math.cos(a), math.sin(a)
+        p.add('rail%d' % k, 'body', 'gunv', rod((0.42, rr * c, rr * s_), (L - 0.16, rr * c, rr * s_), cal, 8, cal * 0.9))
+        for j, x in enumerate((0.5, L * 0.7)):
+            p.add('yoke%d_%d' % (k, j), 'body', 'mauve', rod((x, (rr - cal * 1.6) * c, (rr - cal * 1.6) * s_), (x, (rr + cal * 0.4) * c, (rr + cal * 0.4) * s_), cal * 0.9, 6))
+        for j, t_ in enumerate((0.25, 0.45, 0.65, 0.85)):
+            x = 0.42 + (L - 0.6) * t_
+            ring_ = _collar(0.0, cal * 0.85, cal * (1.9 - 0.25 * j), cal * 0.9, 12)
+            p.add('collar%d_%d' % (k, j), 'body', 'violet' if j % 2 else 'steel', moved(ring_, Matrix.Translation((x, rr * c, rr * s_))))
+    # the mouth: a steel muzzle lip, the green focus ring on its face, the shade disc at the back of the bore and the lens
+    p.add('muzzle', 'body', 'steel', revolve([(L - 0.12, r * 0.97), (L - 0.12, r * 1.12), (L - 0.03, r * 1.14), (L, r * 1.06), (L, rb * 1.18), (L - 0.1, rb * 1.18)],
+                                             seg, closed=True, phase=ph))
+    p.add('corona', 'body', 'corona', revolve([(L - 0.004, r * 0.8), (L + 0.014, r * 0.8), (L + 0.014, r * 0.92), (L - 0.004, r * 0.92)], 32, closed=True))
+    p.add('shade', 'body', 'dark', revolve([(L - dp + 0.002, rb * 0.999), (L - dp + 0.002, 0.001)], 32, cap1=True))
+    xlens = L - dp + 0.05
+    p.add('lens', 'body', 'lens', revolve([(L - dp + 0.004, rb * 0.86), (xlens - 0.025, rb * 0.72), (xlens - 0.008, rb * 0.4), (xlens, 0.001)], 24, cap0=True))
+    p.fit = dict(muzzles=[P((xlens, 0, 0))], pivot=P((L - 0.05, 0, 0)), trunnion=P((L - 0.05, 0, 0)), reach=0.02, lane_from=P((L + 0.02, 0, 0)),
+                 aim=D((1, 0, 0)), up=D((0, 0, 1)), mount='spinal', radius=r * 1.14, bore=rb)
+    return p
+
+
 # ---------------------------------------------------------------------------------------------------- the corona arc projector
-def spinal(length, r=0.55, collar_r=None, collar_len=None, block_len=None, block_r=None, seg=8):
+def spinal(length, r=0.55, collar_r=None, collar_len=None, block_len=None, block_r=None, seg=8, kind='arc'):
     """the corona arc (data.js doom, slot F; the Tomb-ark's spinal shell), an arc emitter, not a barrel. Origin at the root on
     the hull's front face, +X forward. Stepped octagonal breech collars at the root (the mount: they sink into the hull); the
     shaft a capacitor column: octagonal segments with stacked disc banks between them and four feed conduits along them; the
     emitter head: a short octagonal throat, a black shade disc in a thin corona ring (the crest, an eclipsed sun), a small
-    lens at its centre, and a crown of six electrode horns curving forward round the disc where the arcs gather."""
+    lens at its centre, and a crown of six electrode horns curving forward round the disc where the arcs gather.
+    kind='lance': the null lance instead (data.js nlance, _null_lance above; the E14 flare, issue 782)."""
+    if kind == 'lance':
+        return _null_lance(length, r, seg)
     p = Part('spinal')
     p.type = 'corona_arc'
     cr = collar_r or r * 1.6

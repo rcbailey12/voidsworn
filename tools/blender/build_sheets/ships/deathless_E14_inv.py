@@ -1,62 +1,62 @@
-# deathless_E14 parts inventory (R218): every feature the concept shows, region by region, written BEFORE modelling (issue 739).
-# Read from the WHOLE concept first (R229): contrib/muse/design/class_family_deathless_2026_11/deathless_E14_flare.jpg (from
-# ahead and above: the gun heart lower left, the spar running aft to the engine's pale ring upper right),
-# deathless_E14_flare_sheet.jpg (left: the ring flat round the spar, BOW ON THE LEFT; middle and right: views that do not agree
-# with the left one or with each other) and the line-up (contrib/muse/design/class_family_deathless_2026_11/deathless_family_lineup.jpg).
-# Design rulings that bind: one closed ring (R233), never read from above as a small zenith (E12, the split oval ring); the
-# ring's plane is the Board's study (tools/blender/build_sheets/studies/e14_ring_study.py): flat in plan reads as one closed
-# ring from above and at every battle camera bearing. The concept has no underside view. Fields as deathless_E11_inv.py.
+# deathless_E14 parts inventory (R218): every feature the concept shows, region by region, written BEFORE modelling (issue 739;
+# rewritten for the upright redesign, issue 782). Read from the WHOLE concept first (R229):
+# contrib/muse/design/class_family_deathless_2026_11/deathless_E14_flare.jpg (from ahead and to port: the ring upright and nearly
+# face-on, the gun heart's big muzzle at its centre lower left, the spar running aft to the engine's pale ring upper right),
+# deathless_E14_flare_sheet.jpg (middle: the ring upright and edge-on from the beam; right: the ring face-on from ahead with the
+# muzzle at its centre; left: the ring drawn face-on across the spar, which does not agree with the other two) and the line-up
+# (contrib/muse/design/class_family_deathless_2026_11/deathless_family_lineup.jpg).
+# Design rulings that bind: one closed ring (R233); R256 (Ryan, Nov 15): the ring stands upright as in the concept and the ship
+# is built round one larger gun at the ring's centre, "like a glass cannon"; data.js d_jackal after issue 784: one null lance,
+# nlance F. The concept has no underside view. Fields as deathless_E11_inv.py.
 KIT = 'eclipse'
 INVENTORY = [
     # ---------------- bow (the nose to 33 percent) ----------------
-    dict(id='ring', job='the shade: one closed ring of curved shade plates round the gun heart, the faction\'s sunshade; its plates peel first when hit',
-         type='shade', what='the ring: twelve large curved shade plates on one closed hoop, narrow even gaps between them, flat in plan round the spar, '
-         'each plate a slab with a stepped second layer and a thin green-white corona line along its outer rim', count=12,
-         cells=['bow/top', 'bow/side', 'bow/below', 'mid/top', 'mid/side', 'mid/below', 'stern/top', 'stern/side', 'stern/below'],
+    dict(id='ring', job='the shade held forward at the enemy and the lance\'s focusing ring: one closed ring of curved shade plates round the gun\'s muzzle; its plates peel first when hit',
+         type='shade', what='the ring: twelve large curved shade plates on one closed hoop, narrow even gaps between them, standing upright across the bow, '
+         'each plate a deep block with a dished front, a stepped second layer and green-white corona lines on its rim\'s front and back edges', count=12,
+         cells=['bow/top', 'bow/side', 'bow/below'],
          reads='a broad curved band, a stepped layer, a corona line on the rim, even panels', src='picture',
-         note='the beauty and the plan draw twelve; R233 closes the ring all the way round'),
-    dict(id='ring_plates', job='armour over the shade plates', type='plate', what='even, aligned panels over the shade plates (R243)', count=1,
-         cells=['bow/top', 'mid/top', 'stern/top'], reads='chamfered slabs with steps and flush fasteners', src='picture'),
-    dict(id='hoop', job='the closed structural ring that carries the twelve plates and joins the spar at the bow and stern (R233, R207)', type='belt',
+         note='the beauty and the sheet draw twelve; R233 closes the ring all the way round; R256 stands it upright'),
+    dict(id='ring_plates', job='armour over the shade plates', type='plate', what='even, aligned panels over the shade plates\' fronts, backs and rims (R243)', count=1,
+         cells=['bow/top', 'bow/side'], reads='chamfered slabs with steps and flush fasteners', src='picture'),
+    dict(id='hoop', job='the closed structural ring that carries the twelve plates (R233, R207)', type='belt',
          what='the hoop: one closed box-section ring under the plates\' inner edges', count=1,
-         cells=['bow/top', 'bow/below', 'mid/top', 'mid/below', 'stern/top', 'stern/below'], reads='a band, plates', src='designed',
+         cells=['bow/side', 'bow/top'], reads='a band, plates', src='designed',
          note='the picture leaves the plates floating; R207: every shade has a structural connection'),
-    dict(id='spokes', job='carry the hoop to the gun heart at the beams (R207)', type='strut', what='truss spokes from the heart\'s hub collars to the hoop', count=4,
-         cells=['mid/top', 'mid/below'], reads='two rails, a zigzag web, end lugs', src='designed'),
-    dict(id='gun_heart', job='the heart at the ring\'s centre: carries the forward gun, the core and the capacitor bank', type='tier',
-         what='the gun heart: a faceted drum on the spar at the ring\'s centre, stepped down to the spar at both ends', count=1,
-         cells=['bow/top', 'bow/side', 'mid/top', 'mid/side'], reads='faceted faces, a stepped roof, openings (core gaps)', src='picture'),
-    dict(id='fwd_gun', job='the forward null cannon (gauss F): an armour-piercing rail gun over the ring\'s bow plates, turning only through the data arc F',
-         type='nullcannon', what='the forward gun on the gun heart\'s roof (data.js gauss F)', count=1, cells=['bow/top', 'bow/side'],
-         reads='a thin round foot, a small oval shell, an arched crescent shade of seamed bevelled plates with a second layer and a corona crest, '
-               'rod yokes, crescent capacitor fins, two slim round rail pairs with banded collars and shock rings (R221)', src='picture',
-         note='designs.md: a recessed housing; the game\'s gauss is the null cannon on a turret (weapon_match.FITS), limited here to the F arc'),
-    dict(id='nose_thrusters', job='attitude control at the bow', type='thruster', what='attitude thrusters on the spar\'s nose flanks', count=2,
-         cells=['bow/side'], reads='a block, slot nozzles', src='designed'),
+    dict(id='spokes', job='carry the hoop to the gun heart\'s focus collar (R207)', type='strut', what='truss spokes from the focus collar to the hoop, in an X', count=4,
+         cells=['bow/side', 'bow/top'], reads='two rails, a zigzag web, end lugs', src='designed'),
+    dict(id='gun_heart', job='the lance\'s breech casing: carries the lance through the ring\'s centre, its capacitors and magazine, and the focus collar the spokes land on', type='tier',
+         what='the gun heart: a faceted drum from the core forward through the ring\'s centre, a capacitor band and the focus collar round it', count=1,
+         cells=['bow/top', 'bow/side', 'mid/top', 'mid/side'], reads='faceted faces, a stepped roof, openings (the lance\'s seat)', src='picture'),
+    dict(id='lance', job='the null lance (data.js nlance F, issue 784): the one big gun, firing forward through the ring\'s centre (the glass cannon, R256)',
+         type='nullcannon', what='the null lance on the gun heart\'s face, its muzzle the ship\'s bow at the ring\'s centre', count=1, cells=['bow/top', 'bow/side'],
+         reads='a seat ring, an eight-sided armoured housing with a layer sleeve, capacitor discs, four accelerator rails on yokes with banded collars, '
+               'a steel muzzle lip, a green focus ring, a recessed bore with a black shade disc and a glowing lens (R221, designs.md)', src='picture',
+         note='the beauty\'s big round muzzle at the ring\'s heart; designs.md: a fixed forward housing with a recessed aperture and a thin green focus ring, never a protruding tube'),
+    dict(id='nose_thrusters', job='attitude control forward', type='thruster', what='attitude thrusters under the spar behind the core', count=2,
+         cells=['mid/side'], reads='a block, slot nozzles', src='designed', note='on the gun heart they would fire into the ring\'s lower plates'),
     # ---------------- midships ----------------
     dict(id='core', job='the trapped light core: powers the ship and its phase and regeneration (data.js ab phase, regen 2)', type='core',
-         what='the bright core at the ring\'s centre, the spar entering its hub collars', count=1, cells=['mid/top', 'mid/side', 'mid/below'],
+         what='the bright core just aft of the ring\'s centre, the spar and the gun heart entering its hub collars', count=1, cells=['mid/top', 'mid/side', 'mid/below'],
          reads='hub collars, a bright sphere, gimbal rings, meridian bars', src='picture'),
     dict(id='cage', job='the broken cage of small shade plates that shields the core (designs.md)', type='feather',
          what='small curved shade plates round the core\'s hub, broken by gaps the light shows through', count=6, cells=['mid/top', 'mid/side'],
          reads='a blade, a thickness step', src='picture'),
-    dict(id='spar', job='the keel beam: carries the heart, the gun saddle and the stern block', type='hull',
-         what='the layered spar: a slim chamfered beam from the nose to the stern block', count=1,
-         cells=['bow/side', 'mid/top', 'mid/side', 'stern/top', 'stern/side'], reads='bevels, steps, an overhang', src='picture'),
+    dict(id='spar', job='the keel beam: carries the core, the capacitor housing and the stern block', type='hull',
+         what='the layered spar: a slim chamfered beam from the core to the stern block', count=1,
+         cells=['mid/top', 'mid/side', 'stern/top', 'stern/side'], reads='bevels, steps, an overhang', src='picture'),
     dict(id='spar_plates', job='armour over the spar', type='plate', what='even, aligned panels along the spar', count=1,
          cells=['mid/top', 'mid/side', 'stern/top'], reads='chamfered slabs with steps and flush fasteners', src='picture'),
     dict(id='drone_docks', job='dock the repair drones that mend the ring (data.js regen 2, reanimate)', type='hatchbox',
-         what='repair drone cradles docked on the hoop\'s inner face', count=4, cells=['mid/top', 'bow/top', 'stern/top'], reads='a frame, a lid, ribs',
+         what='repair drone cradles docked on the hoop\'s front face', count=4, cells=['bow/top', 'bow/side'], reads='a frame, a lid, ribs',
          src='picture', note='the picture shows drones hovering in the gaps; built docked, so every part sits on the ship'),
     dict(id='drone_lights', job='the drones\' green work lights', type='lamp', what='a green light on each drone cradle', count=4,
-         cells=['mid/top', 'bow/top', 'stern/top'], reads='a housing, a green-white bar lens', src='picture'),
+         cells=['bow/top', 'bow/side'], reads='a housing, a green-white bar lens', src='picture'),
     # ---------------- stern ----------------
-    dict(id='aft_gun', job='the aft null cannon (gauss T): an armour-piercing rail gun that turns all round, firing over the ring', type='nullcannon',
-         what='the low gun housing on the spar\'s dorsal line aft of the ring (data.js gauss T)', count=1, cells=['stern/top', 'stern/side'],
-         reads='a thin round foot, a small oval shell, an arched crescent shade of seamed bevelled plates with a second layer and a corona crest, '
-               'rod yokes, crescent capacitor fins, two slim round rail pairs with banded collars and shock rings (R221)', src='picture'),
-    dict(id='saddle', job='seat the aft gun on the slim spar and carry its feed', type='pylon', what='the stepped saddle under the aft gun', count=1,
-         cells=['stern/side'], reads='a stepped web, plates', src='designed'),
+    dict(id='capbank', job='store the core\'s charge for the lance\'s one big shot (the glass cannon)', type='pylon',
+         what='the stepped capacitor housing on the spar\'s dorsal line aft of the core, three ribs across it', count=1,
+         cells=['mid/top', 'mid/side', 'stern/side'], reads='a stepped web, plates', src='picture',
+         note='the beauty\'s low dorsal housing on the spar; the first sheet seated the aft gun there, gone with issue 784'),
     dict(id='stern_block', job='holds the engine, the engine room and the archive vault', type='tier',
          what='the stern block: a faceted chamfered block where the spar thickens before the engine', count=1,
          cells=['stern/top', 'stern/side', 'stern/below'], reads='faceted faces, a stepped roof, openings (vents, hatches, lights)', src='picture'),
@@ -73,10 +73,10 @@ INVENTORY = [
     dict(id='hatches', job='crew access to the stern block', type='hatch', what='hatches on the stern block\'s belly', count=2,
          cells=['stern/below'], reads='a rim, a door, a seam, hinges', src='designed'),
 ]
-STRUCTURE = {'bow/top': 4, 'bow/side': 3, 'mid/top': 5, 'mid/side': 4, 'stern/top': 4, 'stern/side': 4}
-STRUCTURE_NOTE = ('E14 concept: bow, the ring\'s bow plates, the gun heart and its gun, the nose; midships, the ring\'s side plates, the core '
-                  'in its cage, the spar; stern, the ring\'s stern plates, the spar, the dorsal gun housing, the stern block and the engine ring')
+STRUCTURE = {'bow/top': 3, 'bow/side': 3, 'mid/top': 3, 'mid/side': 3, 'stern/top': 3, 'stern/side': 3}
+STRUCTURE_NOTE = ('E14 concept: bow, the ring\'s plates, the hoop and spokes, the gun heart and its muzzle; midships, the core in its cage, the '
+                  'spar, the dorsal housing; stern, the spar, the stern block and the engine ring')
 LEFT_PLAIN = [
     'Grime, scuffs and decals: surface texture, painted in the build (recipe stages 4 and 5), not modelled.',
-    'The concept sheet\'s middle and right views (the ring edge-on and upright) do not agree with its plan or the beauty; the ring\'s plane is the study\'s pick.',
+    'The concept sheet\'s left view draws the ring face-on across the spar; it does not agree with the beauty or the sheet\'s other two views, which stand the ring upright (R256).',
 ]
