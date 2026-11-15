@@ -81,7 +81,7 @@ checks); the rest are the repo's own tools.
 | Check | Result |
 |---|---|
 | Fit check (clash.py): clash, mount, arc, sensor, sweep, exhaust, exit, lane | 0 of each; 488 objects, 114 parts, 427 rays, 5 guns, 4 turrets swept, 30 sensor pairs ([fit_report.md](fit_report.md)) |
-| Weapon match (R241) and `weapon_match_selftest.py` | PASS; self-test PASS (21 planted faults, 14 sheet ships) |
+| Weapon match (R241) and `weapon_match_selftest.py` | PASS; self-test PASS (26 planted faults, five of them on the Hegemony rows, 14 sheet ships) |
 | Build contract (`tools/recipe/sheet_contract_selftest.py`) | PASS: length 31.0, 4 transverse seams, 9 muzzles in their slots, 4 turret pivots, 6 engines, 70 inside objects, the skin on the hull |
 | Stage 4 audit (`audit.py` on the sheet_hull build) and `audit_selftest.py` | PASS: 404 parts, no machine across a seam, no structure across one, 5 guns, none into the ship; self-test PASS |
 | `build_manifest_tests.js` | PASS, 14 sheets including hegemony_IM5 |
