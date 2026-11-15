@@ -69,3 +69,16 @@ Where the council agreed: manifest or roll plus a narrow sheet (four legs and th
 - ChatGPT's second risk is a genuine catch, flagged here for the Board rather than absorbed: the lifetime band says 4 runs, and the three served records in the capture account for 3 (1 each). The fourth run is not visible in the capture. Whether it belongs to an admiral below the fold, a run with no admiral record, or a totals bug is a data question for the Board; the mockups carry both figures exactly as the capture states them.
 - The contents of the Medals, Titles, History and Chronicle tabs are not in evidence. The designs place the tabs and state the system each follows; nothing more.
 - Portraits: only Vex has a painting in evidence. Kassar and Grax are shown by name and text in the sheet and the hero block; commissioning paintings is a Board call, not assumed. The Fleet round's art note applies here too: pictures should be drawn from the built game, not from older concept rounds.
+
+## Addendum, Nov 15, 2026: Ryan's read and CR4
+
+Ryan's read on the three: CR1 and CR3 are close. He likes the portrait. He leans CR3, because the lines of text on CR1 read unclear to him, and he asked for more of a visual aspect where CR1 carries text.
+
+CR4, The Honours Board, pictured (CR4.png), is the chair's answer, built on CR3 rather than CR1:
+
+- Records are figure groups, not sentences. Each hero's record is six big mono figures with labels (runs, won, best sector, battles, kills, ships lost), the same figure language as the lifetime band at the top.
+- Every hero gets a picture band. Vex keeps his portrait. Kassar and Grax have no painting in evidence, so their band carries the flagship name in display type, marking the slot a flagship picture fills when that art exists.
+- The unserved Sunward three carry their crests, the same crest art as the debrief heir cards. The other six unserved have no crest in evidence and stay text.
+- Everything stays on the surface with no sheet, as CR3. The chair's CR3 objection stands against both CR3 and CR4 and is recorded, not solved: the layout is shaped around today's three served and nine unserved, and a fourth served admiral will need a second hero row while the unserved roster shrinks.
+
+Chair's updated pick: CR4, subject to Ryan's settle between CR3 and CR4.
