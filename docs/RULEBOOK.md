@@ -147,14 +147,19 @@ credit is live, is status and lives in LOOP.md "The seats"):
   for others that only it can do and then Kimi depending on results."
 - Blender ship builds are Opus's (R205: "I think builds in blender should come from Opus"), back on from Nov 14 evening (R253).
 - Codex only for what no other seat can do (R234: "use it when it can only do something others can't"); GPT 6.1 Sol (2.7).
-- Kimi on its own subscription only, no API route (R238), through the Kimi Code CLI arm; it stays (R250 item 4).
+- Kimi is no longer a seat (R257, Ryan, Nov 15: "Kimi is maxed out until 12/12. I just cancelled. I don't think it's worth
+  continuing given the usage issues"). Its jobs go to DeepSeek (mid-size code) or an Opus worker; nothing is sent to Kimi.
+- Codex is near its weekly limit (R257, Ryan, Nov 15: "We probably have like one full session with codex left ... You might need
+  to start taking some of those GPU jobs"): Opus workers take Blender and paint jobs, DeepSeek takes code, and the Board runs the
+  PC GPU steps; Codex's session goes to the jobs that need its whole loop.
 - The API arms (opus, sonnet) run on the Max plan's monthly API credit (Ryan, Nov 12); same model family as the Board, so never
   the different-model check of Opus work (R219).
 - The Board thread may use the Fable advisor (R252: "this chat stands"); no Fable helpers (R180); not taken: Gemini 4 Hydrogen
   (R250).
-Superseded, kept so nobody follows them: "the Kimi Code plan holds about 30 minutes of agent work per 5-hour window, so it takes
+Superseded, kept so nobody follows them: "Kimi on its own subscription only, no API route (R238), through the Kimi Code CLI
+arm; it stays (R250 item 4)" (SUPERSEDED by R257); "the Kimi Code plan holds about 30 minutes of agent work per 5-hour window, so it takes
 short reviews only, never builds" (Nov 12, the OpenCode route; SUPERSEDED by R250) and "Codex is the main builder, Blender builds
-included" (Nov 14; SUPERSEDED by R253). Ids: R128, R180e, R205, R206, R219, R234, R238, R242, R250, R252, R253, agents-12.
+included" (Nov 14; SUPERSEDED by R253). Ids: R128, R180e, R205, R206, R219, R234, R238, R242, R250, R252, R253, R257, agents-12.
 
 2.7 **Codex runs the model Ryan picked: GPT 6.1 Sol today, pinned by name in tools/pc/codex_issue.bat.** Never a weaker
 model by accident (Luna) and never switched to another one (Astra) without his yes; no Codex cloud tasks or cloud reviews.
