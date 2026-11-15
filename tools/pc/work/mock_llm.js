@@ -58,7 +58,10 @@ const server = http.createServer((req, res) => {
     if (!req.url.includes('chat/completions')) { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end('{"object":"list","data":[]}'); }
     let delta, fin;
     const step = toolMsgs.length;
-    if (!(j.tools || []).length) { delta = { role: 'assistant', content: 'Dry run' }; fin = 'stop'; }
+    if (msgs.some(m => m.role === 'user' && JSON.stringify(m.content).includes('Reply with exactly RUNNER_READY.'))) {
+      delta = { role: 'assistant', content: 'RUNNER_READY' }; fin = 'stop';
+    }
+    else if (!(j.tools || []).length) { delta = { role: 'assistant', content: 'Dry run' }; fin = 'stop'; }
     else if (step < SCRIPT.length) {
       const s = SCRIPT[step];
       delta = { role: 'assistant', tool_calls: [{ index: 0, id: 'call_' + step, type: 'function', function: { name: 'bash', arguments: JSON.stringify({ command: s.cmd, description: s.d }) } }] };
