@@ -7,7 +7,7 @@
 # ring stands upright and faces forward as in the concept, the ship runs through its middle, and the ship is built round one
 # big fixed gun whose muzzle is the glowing aperture at the ring's centre: the ring is that gun's focusing ring.
 # data.js d_jackal after issue 784 (branch opus/issue-784, the rules half of R256): one null lance, nlance F, the gauss kind;
-# ability phase, regen 2, reanimate; speed 3; no hangar. Main's data.js still lists gauss T and gauss F until 784 merges.
+# ability phase, regen 2, reanimate; speed 3; no hangar. This branch merges 784's; main's data.js lists gauss T and gauss F until it merges.
 # Designer of record: Opus (R205, R207); the Board is the final designer (R233, R236): the concept is a base.
 # +X bow, +Y port, +Z up. Bow (the lance's muzzle lip) x = +4.75, engine exit x = -4.75. The ring stands in the Y-Z plane.
 import math
