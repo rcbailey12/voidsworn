@@ -1,0 +1,30 @@
+{
+ "concept": {
+  "ship_px": 219023,
+  "mean_value": 62.1,
+  "median_value": 44.0,
+  "pale_px_share": 0.1177,
+  "violet_px_share": 0.0512,
+  "patch_share": 0.0511,
+  "pale_patch_share": 0.0305,
+  "violet_patch_share": 0.0205,
+  "patches": 91,
+  "patch_size_median_pct": 0.025,
+  "patch_size_weighted_pct": 0.291,
+  "largest10_mean_pct": 0.272
+ },
+ "new": {
+  "ship_px": 248412,
+  "mean_value": 51.5,
+  "median_value": 43.0,
+  "pale_px_share": 0.0653,
+  "violet_px_share": 0.0088,
+  "patch_share": 0.0563,
+  "pale_patch_share": 0.048,
+  "violet_patch_share": 0.0083,
+  "patches": 28,
+  "patch_size_median_pct": 0.155,
+  "patch_size_weighted_pct": 0.399,
+  "largest10_mean_pct": 0.399
+ }
+}

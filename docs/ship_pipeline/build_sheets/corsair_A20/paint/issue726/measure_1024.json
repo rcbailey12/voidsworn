@@ -1,0 +1,44 @@
+{
+ "concept": {
+  "ship_px": 242377,
+  "mean_value": 73.9,
+  "median_value": 66.0,
+  "pale_px_share": 0.1856,
+  "violet_px_share": 0.0456,
+  "patch_share": 0.1137,
+  "pale_patch_share": 0.0791,
+  "violet_patch_share": 0.0346,
+  "patches": 113,
+  "patch_size_median_pct": 0.026,
+  "patch_size_weighted_pct": 0.484,
+  "largest10_mean_pct": 0.621
+ },
+ "old": {
+  "ship_px": 293947,
+  "mean_value": 48.8,
+  "median_value": 47.0,
+  "pale_px_share": 0.0107,
+  "violet_px_share": 0.0313,
+  "patch_share": 0.0316,
+  "pale_patch_share": 0.0041,
+  "violet_patch_share": 0.0275,
+  "patches": 38,
+  "patch_size_median_pct": 0.056,
+  "patch_size_weighted_pct": 0.157,
+  "largest10_mean_pct": 0.185
+ },
+ "new": {
+  "ship_px": 294161,
+  "mean_value": 58.2,
+  "median_value": 50.0,
+  "pale_px_share": 0.0982,
+  "violet_px_share": 0.0328,
+  "patch_share": 0.1074,
+  "pale_patch_share": 0.0789,
+  "violet_patch_share": 0.0284,
+  "patches": 112,
+  "patch_size_median_pct": 0.054,
+  "patch_size_weighted_pct": 0.296,
+  "largest10_mean_pct": 0.44
+ }
+}
