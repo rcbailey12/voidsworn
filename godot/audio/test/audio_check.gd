@@ -12,6 +12,7 @@ const CUE_FAMILIES := {
 	"weapon_tails": ["salvo_tail"],
 	"lances": ["lance", "lance_ion", "lance_dark", "lance_choir"],
 	"torpedoes": ["torp", "torp_rocket", "torp_sac", "torp_star", "torp_heavy"],
+	"charges": ["lance_charge", "torp_charge"],
 	"hits": ["hit", "hit_heavy", "hit_las", "hit_plasma", "hit_rail", "hit_wet", "hit_glass", "hit_ion"],
 	"shields": ["shield", "shield_break"],
 	"patterns": ["patter_hull", "patter_shield"],
@@ -20,7 +21,7 @@ const CUE_FAMILIES := {
 	"ui": ["ui_click", "ui_confirm", "ui_cancel", "ui_round", "ui_your", "ui_enemy", "ui_select", "ui_panel", "ui_reward", "ui_alert", "ui_boss"],
 	"stings": ["sting_win", "sting_loss"],
 	"fleet": ["arrive_jump"],
-	"death": ["death_powerdown", "death_vent", "death_crack", "death_run", "chunk_cool", "hulk_vent", "bass_drop", "wreck"],
+	"death": ["death_powerdown", "death_vent", "death_crack", "death_run", "chunk_cool", "hulk_vent", "bass_drop", "wreck", "death_bed", "death_tail"],
 	"orders": ["board_grapple", "brace_lock", "adapt_shift"],
 }
 var fails: Array = []

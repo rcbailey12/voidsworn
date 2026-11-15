@@ -35,9 +35,10 @@ What that means for every sound:
 
 ## 2. Where it stands (Nov 11 evening)
 
-- Done: the sourcing and palette study (contrib/muse/design/sound_sources_2026_11/synthesis.md); sound routing (issue 506).
-- Next, in Ryan's order (R193 (4)): sound weight (tails, sub-bass, the death bed, ducking; held in issue 507), then the
-  listening page below, then the sound redo.
+- Done: the sourcing and palette study (contrib/muse/design/sound_sources_2026_11/synthesis.md); sound routing (issue 506);
+  sound weight (tails, sub-bass, the death bed, ducking, the lance and torpedo charge; issue 771) with its listening page at
+  docs/shots/sound_weight/LISTEN.md.
+- Next, in Ryan's order (R193 (4)): the sound redo.
 
 ## 2a. The first two jobs (as first planned)
 
