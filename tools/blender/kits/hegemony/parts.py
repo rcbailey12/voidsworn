@@ -128,27 +128,30 @@ def _poly_prism(pts, z0, z1, inset=0.0):
 
 
 # ---------------------------------------------------------------------------------------------------- the even panel grid
-def panel_slab(bot, nrm, t, bevel=0.5, gap=0.0):
+def panel_slab(bot, nrm, t, bevel=0.5, gap=0.0, sink=0.02):
     """one flush Hegemony panel on a hull face: bot = four corners on the surface (world), nrm = outward normal. A thin slab of
-    thickness t with a machined chamfer on its top edges (bevel, a share of t); no rivets (paint direction: flush fasteners)."""
+    thickness t with a machined chamfer on its top edges (bevel, a share of t); no rivets (paint direction: flush fasteners).
+    sink: how far its base sits into the hull (issue 793: a craft passes a smaller one)."""
     bot = [Vector(q) for q in bot]; nrm = Vector(nrm); k = len(bot)
     mid = sum(bot, Vector()) / k
     top = []
     for q in bot:
         sh = (mid - q).normalized() * min(t * bevel * 2, (mid - q).length * 0.25)
         top.append(q + nrm * t + sh)
-    base = [q - nrm * 0.02 for q in bot]
+    base = [q - nrm * sink for q in bot]
     V = [tuple(q) for q in base + top]
     F = [tuple(range(k))[::-1], tuple(range(k, 2 * k))] + [(i, (i + 1) % k, k + (i + 1) % k, k + i) for i in range(k)]
     return V, F
 
 
-def module_panels(rings, faces, pv=0.62, t_big=0.034, t_small=0.022, mats=('hgrey', 'hpanel'), keep=None, small=None, closed=True, gap=0.03):
+def module_panels(rings, faces, pv=0.62, t_big=0.034, t_small=0.022, mats=('hgrey', 'hpanel'), keep=None, small=None, closed=True, gap=0.03, unit=1.0):
     """Hegemony plating over the quad strips of a loft whose rings sit at an even pitch along X (the caller lays the rings at
     the module grid's pitch in world units, so seams line up across the whole hull: R243, "rigid and clean"). Every face strip
     between two rings is divided across into round(width / pv) panels, each a flush slab with a machined chamfer and a seam gap
     round it. small(i, b, nb) says which cells carry the second module size (four small panels, a step thinner); the default
     is an even rhythm, symmetric across each face so port and starboard match. keep(p, r) True where a mount claims the surface.
+    unit (issue 793, a squadron craft): scales the smallest face that takes panels and the panels' sink into the hull, so a craft
+    a twentieth of a capital ship's length gets the same grid; 1.0 keeps every capital sheet as it was.
     Returns ({mat: (V, F)}, panels laid)."""
     n = len(rings[0])
     acc = {m: ([], []) for m in mats}
@@ -159,7 +162,7 @@ def module_panels(rings, faces, pv=0.62, t_big=0.034, t_small=0.022, mats=('hgre
             return i % 3 == 1 and min(b, nb - 1 - b) % 2 == 0
 
     def put(mk, bot, nrm, t):
-        V, F = panel_slab(bot, nrm, t)
+        V, F = panel_slab(bot, nrm, t, sink=0.02 * unit)
         bv, bf = acc[mk]; o = len(bv); bv.extend(V); bf.extend(tuple(x + o for x in f) for f in F)
 
     for i in range(len(rings) - 1):
@@ -169,7 +172,7 @@ def module_panels(rings, faces, pv=0.62, t_big=0.034, t_small=0.022, mats=('hgre
             A, B = Vector(rings[i][j]), Vector(rings[i][(j + 1) % n])
             Dq, C = Vector(rings[i + 1][j]), Vector(rings[i + 1][(j + 1) % n])
             flen = ((Dq - A).length + (C - B).length) / 2; fw = ((B - A).length + (C - Dq).length) / 2
-            if flen < 0.2 or fw < 0.16:
+            if flen < 0.2 * unit or fw < 0.16 * unit:
                 continue
             nrm = (B - A).cross(Dq - A)
             if nrm.length < 1e-7:
@@ -203,12 +206,15 @@ def module_panels(rings, faces, pv=0.62, t_big=0.034, t_small=0.022, mats=('hgre
 ENGINE_WHAT = 'engine, rectangular nozzle %.1f across'
 
 
-def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.55, rings=3, nose='flat', w=None, h=None, seg=None):
+def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.55, rings=3, nose='flat', w=None, h=None, seg=None, craft=False, cells=3):
     """the Hegemony engine (factions.md: a flat row of rectangular blue-white nozzles); exhaust leaves along -X; origin at the
     centre of the nozzle's exit plane. w, h: the mouth's width and height (local Y and Z). The mouth is a rounded rectangle
     (its corners eased so the exit rim reads all round, the export's open-bell test, check_export.py) with a thick machined
     lip; inner walls taper in to a recessed throat plate glowing blue-white, three guide vanes deep in the throat; behind it a
-    panelled housing sunk in the engine block (the mount) with two trim bands. fit radius: the rim's mean radius."""
+    panelled housing sunk in the engine block (the mount) with two trim bands. fit radius: the rim's mean radius.
+    craft=True (issue 793): a squadron craft's drive instead, craft_drive below (the sheet kit's K.engine passes it through kw)."""
+    if craft:
+        return craft_drive(w or 2 * r_exit, h or r_exit, body_len, depth=bell_len, cells=cells)
     p = Part('engine')
     w = w or 2 * r_exit * 0.85; h = h or 2 * r_exit * 1.15
     depth = bell_len or max(w, h) * 0.75
@@ -599,13 +605,13 @@ def lamp(r=0.08, hood=True):
     return p
 
 
-def slit(w, h, depth=0.06):
-    """a blue-white window slit (local +Z out; lore 3.3: blue-white windows): a machined frame round a recessed pane"""
+def slit(w, h, depth=0.06, fr=0.035, back=0.02, pane=0.006):
+    """a blue-white window slit (local +Z out; lore 3.3: blue-white windows): a machined frame round a recessed pane. fr, the
+    frame's width, back and pane its setbacks (issue 793: a craft passes smaller ones; the defaults keep every capital sheet as it was)"""
     p = Part('slit')
-    fr = 0.035
     for (yo, zo, hw, hh) in ((0, h / 2 + fr / 2, w / 2 + fr, fr / 2), (0, -h / 2 - fr / 2, w / 2 + fr, fr / 2), (w / 2 + fr / 2, 0, fr / 2, h / 2), (-w / 2 - fr / 2, 0, fr / 2, h / 2)):
-        p.add('frame', 'mount', 'htrim', block(-0.02, depth, hw, hh, 0, yo=yo, zo=zo))
-    p.add('glass', 'body', 'hwin', block(0.006, depth * 0.3, w / 2, h / 2, 0))
+        p.add('frame', 'mount', 'htrim', block(-back, depth, hw, hh, 0, yo=yo, zo=zo))
+    p.add('glass', 'body', 'hwin', block(pane, depth * 0.3, w / 2, h / 2, 0))
     for c in p.comps:
         c['verts'] = [Vector((-v.z, v.y, v.x)) for v in c['verts']]
     return p
@@ -701,4 +707,134 @@ def exchanger(l=1.4, w=1.2, h=0.6, fins=9):
         x = sg * l * 0.46
         p.add('port%d' % (sg > 0), 'body', 'hmetal', moved(revolve([(0.0, 0.11), (0.12, 0.11), (0.12, 0.14), (0.17, 0.14)], 8, cap1=True),
                                                             Matrix.Translation((x, 0, h * 0.32)) @ (Matrix.Identity(4) if sg > 0 else Matrix.Rotation(math.pi, 4, 'Z'))))
+    return p
+
+
+# ---------------------------------------------------------------------------------------------------- squadron craft
+# Issue 793 (R253, R259): the Hegemony fighter, hegemony_HF1D (data.js fighter: guns T). A craft is about a twentieth of the
+# Iron Mandate's length, so every size below comes from its arguments (no fixed world sizes), and it stays bold and simple:
+# fine greeble reads as a shrunken capital ship. Ryan (R254): no canopy, no swept aero wings, no tail fins, nothing hung under
+# a hull; drives are nozzle clusters inside armoured blocks.
+WEAPONS['guns'] = dict(
+    name='Interceptor guns', rules='data.js guns: 3 shots, 4 damage, range 1 (k sq), x2.2 against squadrons, x0.5 against capitals',
+    lore='Lore 3.8: Hegemony weapons are plasma in light blue, machined and modular. The fighter wing\'s only weapon. Battle look: guns.',
+    design=('The gun cassette (HF1D): three short containment barrels grouped tight in one machined box, so the three muzzles read '
+            'as one cassette, not three guns; coil rings, light-blue lenses deep in the bores. The cassette sits in a low flat '
+            'housing on a flush ring sunk in a framed recess at the prow (the concept\'s framed recess), so it turns all round '
+            '(arc T) and at rest faces forward out of its frame.'))
+
+
+def _cassette(p, barrels, cal, blen, s, pitch, variant):
+    """the interceptor gun cassette (data.js guns): s the flush ring's radius, cal a barrel's radius, blen the barrels' reach from
+    the trunnion. Local +Z out of the deck, +X the rest aim. The framed recess is fixed (mount); the housing, the mantlet and the
+    cassette turn (R219)."""
+    ph = math.pi / 16
+    p.add('ring', 'mount', 'hgrey2', _zrev([(-0.6 * s, s), (0.06 * s, s), (0.06 * s, s * 0.92), (0.09 * s, s * 0.88), (0.09 * s, 0.001)], 16, cap0=True, phase=ph))
+    # the framed recess: a squared machined frame round the ring, flush with the deck (four bars and their inner liners)
+    fo, fi = 1.36 * s, 1.1 * s
+    for (x0, x1, y0, y1) in ((fi, fo, -fo, fo), (-fo, -fi, -fo, fo), (-fi, fi, fi, fo), (-fi, fi, -fo, -fi)):
+        p.add('wellframe', 'mount', 'htrim', _zblock(x0, x1, y0, y1, -0.35 * s, 0.1 * s, ch=0.04 * s))
+    p.add('wellfloor', 'mount', 'hgrey2', _zblock(-fi, fi, -fi, fi, -0.4 * s, 0.02 * s))
+    z0 = 0.09 * s
+    d = cal * 2.5
+    offs = [(0.0, d * 0.58), (-d * 0.5, -d * 0.29), (d * 0.5, -d * 0.29)][:max(1, barrels)]
+    cw, ch_ = d * 0.5 + cal * 1.6, d * 0.58 + cal * 1.6
+    # the trunnion stands high enough that the cassette box clears the ring when it elevates, and the housing wraps the mantlet
+    tz = max(z0 + 0.15 * s, z0 + ch_ * 1.25)
+    L, W, H = 0.86 * s, 0.74 * s, max(0.3 * s, tz + ch_ * 0.55 - z0)
+    # the housing: a low flat eight-sided box, a sloped glacis at its front, a seam band, a roof plate, a blue strip aft
+    plan = [(L, W * 0.6), (L * 0.6, W), (-L * 0.7, W), (-L, W * 0.7), (-L, -W * 0.7), (-L * 0.7, -W), (L * 0.6, -W), (L, -W * 0.6)]
+    V, F = _poly_prism(plan, z0, z0 + H)
+    V = [((x - 0.3 * s if (x > L * 0.5 and z > z0 + H * 0.5) else x), y, z) for (x, y, z) in V]
+    p.add('housing', 'body', 'hgrey', (V, F))
+    p.add('housingseam', 'body', 'hgrey2', _poly_prism([(x * 1.015, y * 1.015) for (x, y) in plan], z0 + H * 0.38, z0 + H * 0.5))
+    p.add('roof', 'body', 'hpanel', _poly_prism([(x * 0.6 - 0.1 * s, y * 0.68) for (x, y) in plan], z0 + H - 0.003 * s, z0 + H + 0.05 * s, inset=0.03 * s))
+    p.add('housingstrip', 'body', 'hblue', _zblock(-L * 1.003, -L * 0.6, -W * 0.5, W * 0.5, z0 + H * 0.62, z0 + H * 0.74))
+    trunnion = Vector((L * 0.45, 0, tz))
+    E = Matrix.Translation(trunnion) @ Matrix.Rotation(-math.radians(pitch), 4, 'Y')
+    # the mantlet and the cassette box round all three barrels (one machined block, a trim face frame at its mouth)
+    p.add('mantlet', 'body', 'hgrey2', moved(block(-0.3 * s, 0.12 * s, cw * 1.12, ch_ * 1.05, cal * 0.6, zo=d * 0.05), E))
+    xb = blen * 0.62
+    p.add('cassette', 'body', 'hgrey', moved(block(0.1 * s, xb, cw, ch_, cal * 0.7, zo=d * 0.05), E))
+    p.add('cassetteframe', 'body', 'htrim', moved(block(xb - cal * 0.9, xb, cw * 1.08, ch_ * 1.08, cal * 0.7, zo=d * 0.05), E))
+    for k in range(2):
+        x = 0.1 * s + (xb - 0.1 * s) * (0.3 + 0.35 * k)
+        p.add('cassettecoil%d' % k, 'body', 'htrim', moved(block(x - cal * 0.45, x + cal * 0.45, cw * 1.06, ch_ * 1.06, cal * 0.7, zo=d * 0.05), E))
+    muzzles = []
+    for i, (oy, oz) in enumerate(offs):
+        T = E @ Matrix.Translation((0, oy, oz + d * 0.05))
+        xe = blen
+        p.add('b%d_barrel' % i, 'body', 'hmetal', moved(revolve([(xb - cal, cal), (xe - cal * 1.2, cal * 0.95)], 10, phase=math.pi / 10), T))
+        xc = (xb + xe) / 2 - cal * 0.6   # a coil ring sized to the barrel (the shared ring_band sinks a fixed 0.01, too deep on a craft)
+        p.add('b%d_coil' % i, 'body', 'htrim', moved(revolve([(xc - cal * 0.3, cal * 0.92), (xc - cal * 0.3, cal * 1.25), (xc + cal * 0.3, cal * 1.25),
+                                                              (xc + cal * 0.3, cal * 0.92)], 10, closed=True), T))
+        p.add('b%d_muzzle' % i, 'body', 'hgrey2', moved(revolve([(xe - cal * 1.2, cal * 1.25), (xe, cal * 1.25), (xe, cal * 0.6), (xe - cal * 0.8, cal * 0.6)],
+                                                                8, closed=True, phase=math.pi / 8), T))
+        p.add('b%d_bore' % i, 'body', 'dark', moved(revolve([(xe - cal * 0.8, 0.0001), (xe - cal * 0.8, cal * 0.61)], 10), T))
+        p.add('b%d_lens' % i, 'body', 'hlens', moved(revolve([(xe - cal * 0.75, cal * 0.45), (xe - cal * 0.7, 0.0001)], 10, cap0=True), T))
+        muzzles.append(P(T @ Vector((xe, 0, 0))))
+    return trunnion, muzzles, trunnion.x + blen, fo * 1.42, E
+
+
+GUN_BUILDERS['guns'] = _cassette
+
+
+def craft_drive(w, h, body_len, depth=None, cells=3):
+    """a craft's drive (factions.md: a flat row of rectangular blue-white nozzles; the owner's rule for craft: nozzle clusters inside
+    armoured blocks): one wide rectangular mouth w by h split by upright guide vanes into a row of cells, a thick machined lip,
+    inner walls tapering to a recessed blue-white throat plate, the walls a dimmer blue so the dark lip reads, a sleeve of
+    armoured walls (the mount) with a trim band, a back block seated in the stern. Origin at the centre of the exit plane,
+    exhaust along -X. Every size from w and h."""
+    p = Part('engine')
+    hw, hh = w / 2, h / 2
+    t = min(hw, hh) * 0.28
+    dp = depth or h * 1.6
+    rc = hh * 0.3
+    k = 4
+
+    def rrect(a, b, r):
+        pts = []
+        for cy, cz, a0 in ((a - r, b - r, 0.0), (-a + r, b - r, 90.0), (-a + r, -b + r, 180.0), (a - r, -b + r, 270.0)):
+            pts += [(cy + r * math.cos(math.radians(a0 + 90.0 * i / (k - 1))), cz + r * math.sin(math.radians(a0 + 90.0 * i / (k - 1)))) for i in range(k)]
+        return pts
+
+    def loop_prism(secs, cap_last=False):
+        V, F = [], []
+        m = len(secs[0][1])
+        for x, lp in secs:
+            V.extend((x, y, z) for (y, z) in lp)
+        for j in range(len(secs) - 1):
+            for i in range(m):
+                a, b = j * m + i, j * m + (i + 1) % m
+                F.append((a, b, b + m, a + m))
+        if cap_last:
+            F.append(tuple(range((len(secs) - 1) * m, len(secs) * m)))
+        return V, F
+    outer = rrect(hw + t, hh + t, rc + t); inner = rrect(hw, hh, rc)
+    m = len(outer)
+    V1, F1 = loop_prism([(-t * 0.3, outer), (t * 1.4, outer)])
+    V2, F2 = loop_prism([(-t * 0.3, inner), (t * 1.4, inner)])
+    V = V1 + V2; F = F1 + [tuple(x + len(V1) for x in f[::-1]) for f in F2]
+    for i in range(m):
+        F.append((i + len(V1), (i + 1) % m + len(V1), (i + 1) % m, i))
+    p.add('lip', 'body', 'htrim', (V, F))
+    th = 0.62
+    p.add('lining', 'body', 'hlining', loop_prism([(0.0, rrect(hw * 0.995, hh * 0.995, rc)), (dp, rrect(hw * 0.9, hh * th, rc * th))]))
+    tp = rrect(hw * 0.9, hh * th, rc * th)
+    p.add('throat', 'body', 'hnozzle', ([(dp + t * 0.05, y, z) for (y, z) in tp] + [(dp + t * 0.05, 0.0, 0.0)],
+                                       [(len(tp), (i + 1) % len(tp), i) for i in range(len(tp))]))
+    for c in range(1, cells):
+        y = -hw + w * c / cells
+        p.add('vane%d' % c, 'body', 'hmetal', _zblock(t * 0.3, dp * 0.98, y - t * 0.22, y + t * 0.22, -hh * 0.98, hh * 0.98))
+    # the sleeve and back block: armoured walls round the lining to the throat, a block behind it seated in the stern
+    bh, bz = hw + t * 1.3, hh + t * 1.3
+    xs = t * 1.3
+    for (y0, y1, z0, z1) in ((-bh, bh, hh + t * 0.2, bz), (-bh, bh, -bz, -hh - t * 0.2), (hw + t * 0.2, bh, -bz, bz), (-bh, -hw - t * 0.2, -bz, bz)):
+        p.add('housing', 'mount', 'hgrey2', _zblock(xs, dp + t * 0.2, y0, y1, z0, z1))
+    p.add('housingback', 'mount', 'hgrey2', _zblock(dp + t * 0.2, body_len, -bh, bh, -bz, bz, ch=t * 0.4))
+    ow, oz = bh + t * 0.35, bz + t * 0.35
+    xb = xs + t * 0.4
+    for (y0, y1, z0, z1) in ((-ow, ow, bz - t * 0.1, oz), (-ow, ow, -oz, -bz + t * 0.1), (bh - t * 0.1, ow, -bz, bz), (-ow, -bh + t * 0.1, -bz, bz)):
+        p.add('band', 'mount', 'htrim', _zblock(xb, xb + t * 1.1, y0, y1, z0, z1))
+    p.fit = dict(exit=P((0, 0, 0)), axis=D((-1, 0, 0)), radius=0.55 * (hw + hh), front=P((body_len, 0, 0)), body_r=max(bh, bz), w=w, h=h)
     return p
