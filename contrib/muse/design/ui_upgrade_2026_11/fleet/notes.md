@@ -99,3 +99,7 @@ The ChatGPT leg (GPT-6 at High, its second council leg, filed at legs/leg_chatgp
 FL5, in this folder: the manifest at the left (picture strip, name, class in second strength, CP at the right; damaged ships first under their own heading with figures and a bar; the four fold ships as marked rows), the selected ship large in the middle with its refit slots and the free refit rule at the point of use, and the sheet at the right carrying the full specification for the one selected ship, ending with the shipyard line where it belongs. The doctrine keeps its name, cost and Change on the header line; its effect sentence moves to the doctrine chooser and to hover. Element budget at rest: four elements for a damaged ship, three for a whole one. Everything from the capture is relocated, nothing deleted; the relocation table is in the ChatGPT leg, as amended by the corrections above.
 
 If Ryan settles FL5, it supersedes FL4 and FL1 as the recommendation of record for this screen.
+
+## Ryan's settle (Nov 15, 2026, about 10:32 CST)
+
+Ryan: FL5 looks good. FL5, The Manifest, is the settled direction for the Fleet and refits screen and supersedes FL4 and FL1 as the recommendation of record. He also directed that ChatGPT be used on the rounds that follow; the ChatGPT leg (chat, GPT-6 at High) is a standing part of the council for this issue's remaining rounds, as it was for this one.
