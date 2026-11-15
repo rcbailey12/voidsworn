@@ -162,11 +162,10 @@ short reviews only, never builds" (Nov 12, the OpenCode route; SUPERSEDED by R25
 included" (Nov 14; SUPERSEDED by R253). Ids: R128, R180e, R205, R206, R219, R234, R238, R242, R250, R252, R253, R257, agents-12.
 
 2.7 **Codex runs the model Ryan picked: GPT 6.1 Sol today, pinned by name in tools/pc/codex_issue.bat.** Never a weaker
-model by accident (Luna) and never switched to another one (Astra) without his yes. Codex cloud tasks are allowed for
-code-only jobs that need nothing on the PC (no GPU, Blender, captures or PC files), on the same pinned model, delivered as a
-codex/issue-<n> branch the GitHub checks test and the Board reviews (R267, Ryan Nov 15: "i don't know why we can't do codex in
-the cloud but we should enable that"); anything that needs the PC still runs locally through the queue. No cloud reviews.
-SUPERSEDED, kept so nobody follows it: "no Codex cloud tasks or cloud reviews" (Nov 2, R75; ended by R267).
+model by accident (Luna) and never switched to another one (Astra) without his yes; no Codex cloud tasks or cloud reviews,
+because a cloud task runs the default model OpenAI picks and cannot be pinned (OpenAI's Codex models page, Nov 2026). Code-only
+jobs run on a third local lane on the PC instead (lane C, R268, Ryan Nov 15: "yeah lane c is fine"), pinned like the others.
+If OpenAI lets cloud tasks pin a model, this can be asked again.
 Why: "We don't want to force using Astra or something. Just not accidentally run Luna or something, that's why we usually
 use Sol 6.1" (R216). Ends when Ryan picks another model. Set: Ryan, Nov 2 (R75), Nov 11 (R216) and Nov 15 (R267). Ids: R75b, R267, agents-07.
 
