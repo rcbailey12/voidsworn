@@ -59,3 +59,4 @@ Unanimous among the seated legs, and the chair agrees. IM5 keeps IM2's channel a
 ## Ruling (added Nov 14, 2026)
 
 Ryan ruled IM5 (Nov 14, 2026, about 23:49 CST): "Im5 for sure, it looks good." IM5, the one-hull bridged canyon, is his pick of the mix round. IM1 remains his round 1 pick from issue 741; he did not say whether IM5 supersedes it as the sheet direction, so both picks stand on the record for the Board to reconcile.
+Update, same night: Ryan confirmed IM5 is his final lock above all (Nov 14, 2026, about 23:52 CST). IM5 supersedes the IM1 pick from issue 741 as the Iron Mandate direction; IM1 stands in the round 1 record as an unpicked direction from here.
