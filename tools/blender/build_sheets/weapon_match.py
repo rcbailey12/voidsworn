@@ -49,6 +49,8 @@ FITS = {
     'torp': ({'rack', 'bow_launcher'}, {'launcher'}),         # torp: a rocket rack or a bow launcher
     'htorp': ({'rack', 'bow_launcher'}, {'launcher'}),        # torp
     'bioplasma': ({'throat'}, {'fixed'}),                     # bio: the Chorus throat, fixed forward
+    'hturbo': ({'gun'}, {'turret', 'casemate'}),              # battery: the Hegemony heavy plasma lance (issue 759: low shoulder turrets)
+    'ion': ({'ion_trench'}, {'fixed'}),                       # lance: the Hegemony ion cannon, an emitter trench in the bow face (R183 (1))
     'tendril': ({'tendril', 'mane'}, {'turret', 'fixed'}),    # bio: a tendril crown turns; the mane is a fixed organ
 }
 
