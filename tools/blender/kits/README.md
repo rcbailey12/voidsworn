@@ -23,7 +23,8 @@ tools/blender/kits/
 Faction ids (AGENTS.md): `corsair` = Ashfall Hullbreakers (`hullbreakers/`), `voidsworn` = Sunward Crusade, `ithar` = the
 Glasswrights, `deathless` = Eclipse, `chorus` = the Chorus, `hegemony` = Hegemony Navy. Kits so far: `hullbreakers/` (issue 209
 round 6 proves it on the C15s cruiser), `eclipse/` (issue 532, the E11 and E12 sheets) and `chorus/` (issue 623, the C10 and C11
-sheets: grown parts, weapons as organs; its README says what each part is and does).
+sheets: grown parts, weapons as organs; its README says what each part is and does) and `voidsworn/` (issue 738, the
+Sunward flagship sheet voidsworn_S8: forged broadside ports, Sear turrets, spark flak, radiator spires; its README).
 
 ## What is shared and what is not
 

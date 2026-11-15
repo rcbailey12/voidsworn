@@ -1,0 +1,137 @@
+{
+ "code": "voidsworn_S8",
+ "result": "PASS",
+ "problems": [],
+ "slots": [
+  {
+   "slot": 0,
+   "weapon": "hbattery",
+   "arc": "P",
+   "shots": 5,
+   "mounts": [
+    {
+     "id": "P1",
+     "type": "gun",
+     "mount": "casemate",
+     "barrels": 1,
+     "muzzles": 1
+    },
+    {
+     "id": "P2",
+     "type": "gun",
+     "mount": "casemate",
+     "barrels": 1,
+     "muzzles": 1
+    },
+    {
+     "id": "P3",
+     "type": "gun",
+     "mount": "casemate",
+     "barrels": 1,
+     "muzzles": 1
+    },
+    {
+     "id": "P4",
+     "type": "gun",
+     "mount": "casemate",
+     "barrels": 1,
+     "muzzles": 1
+    },
+    {
+     "id": "P5",
+     "type": "gun",
+     "mount": "casemate",
+     "barrels": 1,
+     "muzzles": 1
+    }
+   ]
+  },
+  {
+   "slot": 1,
+   "weapon": "hbattery",
+   "arc": "S",
+   "shots": 5,
+   "mounts": [
+    {
+     "id": "S1",
+     "type": "gun",
+     "mount": "casemate",
+     "barrels": 1,
+     "muzzles": 1
+    },
+    {
+     "id": "S2",
+     "type": "gun",
+     "mount": "casemate",
+     "barrels": 1,
+     "muzzles": 1
+    },
+    {
+     "id": "S3",
+     "type": "gun",
+     "mount": "casemate",
+     "barrels": 1,
+     "muzzles": 1
+    },
+    {
+     "id": "S4",
+     "type": "gun",
+     "mount": "casemate",
+     "barrels": 1,
+     "muzzles": 1
+    },
+    {
+     "id": "S5",
+     "type": "gun",
+     "mount": "casemate",
+     "barrels": 1,
+     "muzzles": 1
+    }
+   ]
+  },
+  {
+   "slot": 2,
+   "weapon": "turret",
+   "arc": "T",
+   "shots": 2,
+   "mounts": [
+    {
+     "id": "T1",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 1,
+     "muzzles": 1
+    },
+    {
+     "id": "T2",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 1,
+     "muzzles": 1
+    }
+   ]
+  },
+  {
+   "slot": 3,
+   "weapon": "flak",
+   "arc": "T",
+   "shots": 3,
+   "mounts": [
+    {
+     "id": "F1",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    },
+    {
+     "id": "F2",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    }
+   ]
+  }
+ ]
+}

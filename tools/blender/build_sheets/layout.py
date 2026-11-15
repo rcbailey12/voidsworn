@@ -296,7 +296,8 @@ man = dict(code=CODE, sheet_version=SHT.get('version', 3), routes_note='kit = th
            parts=[], masses=[], break_pieces=[])
 KITK = ('gun', 'launcher', 'engine', 'dish', 'intake', 'claw', 'chain', 'thruster', 'hatch', 'hatchbox', 'vent', 'lamp', 'antenna', 'pipe', 'bay', 'slit',
         'core', 'strut', 'corewin', 'sac', 'brood', 'spine', 'chitin',
-        'hangar', 'craft', 'spare')  # issue 633: hangar_mouth, craft and the spare engine_bell are kit builders
+        'hangar', 'craft', 'spare',  # issue 633: hangar_mouth, craft and the spare engine_bell are kit builders
+        'radiator')  # issue 738: the Sunward radiator spire is a kit builder (tools/blender/kits/voidsworn/parts.py)
 for f in F:
     row = dict(id=f['id'], kind=f['kind'], what=f['what'], count=f['count'], route='kit' if f['kind'] in KITK else 'hand-built',
                source=f['src'], inventory=f.get('inv', []))
@@ -335,8 +336,12 @@ def r2(v):
 
 lines = []
 lines.append('# %s: %s, build sheet\n' % (CODE, M['name']))
-lines.append('%s | class %s | version %s (%s), %s | blockout: `C:\\Users\\rcbai\\Downloads\\voidsworn_test\\%s\\%s\\%s_blockout.blend`\n' % (
-    M['faction'], M['cls'], SHT.get('version', 3), SHT.get('round', 'round 3'), SHT.get('date', '2026-11-11'), SHT.get('blend', 'opus532\\r3b'), CODE, CODE))
+if SHT.get('blend_where'):   # issue 738: a sheet rendered off the PC says where its blockout is instead of a PC path it never had
+    lines.append('%s | class %s | version %s (%s), %s | blockout: %s\n' % (M['faction'], M['cls'], SHT.get('version', 3), SHT.get('round', 'round 3'),
+                                                                        SHT.get('date', '2026-11-11'), SHT['blend_where']))
+else:
+    lines.append('%s | class %s | version %s (%s), %s | blockout: `C:\\Users\\rcbai\\Downloads\\voidsworn_test\\%s\\%s\\%s_blockout.blend`\n' % (
+        M['faction'], M['cls'], SHT.get('version', 3), SHT.get('round', 'round 3'), SHT.get('date', '2026-11-11'), SHT.get('blend', 'opus532\\r3b'), CODE, CODE))
 lines.append('**Length %.1f world units** (%s). Frame: +X bow, +Y port, +Z up; station %% from the prow tip; offset + port / - starboard; '
              'height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.\n' % (L, M['game']))
 lines.append('## Measured off the views\n')
@@ -478,7 +483,7 @@ sheet.paste(beauty.resize((BW, BH)), (PAD, head + int(30 * SC)))
 sheet.paste(bcam.resize((BW, BH)), (2 * PAD + BW, head + int(30 * SC)))
 head = head + int(30 * SC) + BH + PAD
 if WEAP:
-    dr.text((PAD, head), 'WEAPONS: each weapon built from what it is (R221; lore bible 7, factions.md, data.js), shown alone at the same angle',
+    dr.text((PAD, head), 'WEAPONS: each weapon built from what it is (R221; the lore bible, factions.md, data.js), shown alone at the same angle',
             font=f_l, fill=INK)
     for i, w in enumerate(WEAP):
         x0 = PAD + i * (WR_W + PAD)
