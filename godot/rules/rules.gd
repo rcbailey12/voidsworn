@@ -200,7 +200,7 @@ var _guard := {}
 var _tc := {}      # terrain by packed hex, inside a scoring window (terrain cannot change there)
 var _ob := {}      # onBoard by packed hex, for the whole battle (the board and its cut-outs are fixed at setup)
 var _mr := {}      # moveRules by faction (read-only tables)
-var _hc := {}      # hitChance inside a scoring window, keyed by both ships' positions and hexes moved
+var _hc := {}      # hitChance inside a scoring window, keyed by both ships' positions and hexes moved (and the shooter's facing under Silent Archive)
 var _lw := {}      # evalThreatVet: each foe's live guns inside a scoring window
 var _slot := {}    # unit id -> small number, for the packed cache keys
 var _runfx = null
@@ -2396,8 +2396,9 @@ func hitChance(u, w, t) -> float:
 			if is_same(ws[i], w):
 				wi = i; break
 		var hu = int(z0(u.get("hexMoved"))); var ht = int(z0(t.get("hexMoved")))
-		if su != null and st != null and su < 128 and st < 128 and wi >= 0 and wi < 16 and hu < 64 and ht < 64:
-			var k = ((((((((su * 16 + wi) * 128 + st) * 128 + (int(u["q"]) + 64)) * 128 + (int(u["r"]) + 64)) * 128 + (int(t["q"]) + 64)) * 128 + (int(t["r"]) + 64)) * 64 + hu) * 64 + ht)
+		var uf = int(z0(u.get("facing"))) if treeSkill("silentArchive") != null else 0   # Silent Archive's aim penalty reads the shooter's facing (issue 784)
+		if su != null and st != null and su < 128 and st < 128 and wi >= 0 and wi < 16 and hu < 64 and ht < 64 and uf >= 0 and uf < 8:
+			var k = ((((((((su * 16 + wi) * 128 + st) * 128 + (int(u["q"]) + 64)) * 128 + (int(u["r"]) + 64)) * 128 + (int(t["q"]) + 64)) * 128 + (int(t["r"]) + 64)) * 64 + hu) * 64 + ht) * 8 + uf
 			var c = _hc.get(k)
 			if c == null:
 				c = _hitChance_raw(u, w, t); _hc[k] = c
