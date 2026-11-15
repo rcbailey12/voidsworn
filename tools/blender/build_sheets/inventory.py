@@ -79,7 +79,7 @@ def ratios(rd):
                 return clean(dd)
             lab, n = ndimage.label(dd); sz = ndimage.sum(dd, lab, range(1, n + 1))
             return np.isin(lab, [i + 1 for i in range(n) if sz[i] >= 400])
-        con = (cut(cv['top']), cut(cv['side']))
+        con = (cut(cv['top']), cut(cv['side']) if cv.get('side') else None)   # issue 768: IM5 has no true side view
     else:
         h2 = im.shape[0] * 7 // 12; w2 = im.shape[1] * 3 // 4
         con = (clean(d[:h2, :w2]), clean(d[h2:, :w2]))
@@ -88,7 +88,11 @@ def ratios(rd):
                         clean(np.asarray(Image.open(os.path.join(rd, 'side.png')))[..., 3] > 8)))
     out = {}
     for k, (t, s_) in views.items():
-        Lt, Bt, Bm = prof(t); Ls, Hs, Hm = prof(s_)
+        Lt, Bt, Bm = prof(t)
+        if s_ is None:   # no side view on the concept (issue 768): no length to height to report for it
+            out[k] = dict(env_LB=round(Lt / Bt, 2), env_LH=None, hull_LB=round(Lt / Bm, 2), hull_LH=None)
+            continue
+        Ls, Hs, Hm = prof(s_)
         out[k] = dict(env_LB=round(Lt / Bt, 2), env_LH=round(Ls / Hs, 2), hull_LB=round(Lt / Bm, 2), hull_LH=round(Ls / Hm, 2))
     return out
 
@@ -158,7 +162,7 @@ if MODEL:
         lines.append('| | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |\n|---|---:|---:|---:|---:|')
         for k_ in ('concept', 'build'):
             r_ = rat[k_]
-            lines.append('| %s | %.2f | %.2f | %.2f | %.2f |' % (k_, r_['env_LB'], r_['env_LH'], r_['hull_LB'], r_['hull_LH']))
+            lines.append('| %s | %s | %s | %s | %s |' % tuple([k_] + ['%.2f' % r_[q] if r_[q] is not None else 'no side view' for q in ('env_LB', 'env_LH', 'hull_LB', 'hull_LH')]))
     json.dump(dict(rows=rows, failing=bad, structure=srows, ratios=rat), open(os.path.join(OUT, 'cells.json'), 'w'), indent=1)
     lines.append('\nLines not present, shaped and detailed without a reason: %d.' % bad)
 open(os.path.join(OUT, 'inventory.md'), 'w').write('\n'.join(lines) + '\n')

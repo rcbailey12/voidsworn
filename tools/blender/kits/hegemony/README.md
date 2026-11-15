@@ -19,6 +19,7 @@ lasers), the lore and the faction sheet. The same lines are `WEAPONS` in parts.p
 |---|---|---|---|
 | `hturbo` | Heavy plasma lance | 3 shots, 9 damage, range 6; plasma: slow fat bolts with a corona | A low wide armoured mount sunk in a shoulder pit (R185 (4): never a tall round turret with long thin barrels): a flush ring, a faceted housing with a sloped glacis and armoured cheeks, a capacitor bustle with a blue charge strip, a deep mantlet, two short thick containment barrels (a heavy breech sleeve, accelerator coil rings with a blue glow between them, a vented eight-sided muzzle shroud, a blue-lit bore). |
 | `ion` | Ion cannon | 1 shot, 12 damage, range 6; strips shields | An emitter trench recessed in the blunt bow face (R183 (1): never a barrel or prongs on the nose): wall liners, stacked field coil plates standing round the trench at an even pitch, an emitter block on the back wall with a blue lens, feed conduits along the floor. `spinal()`, type `ion_trench`; the muzzle is on the lens, the firing lane starts at the mouth. |
+| `turbo` | Plasma lance | 2 shots, 9 damage, range 5; plasma | The heavy lance's mount at a smaller size (factions.md: the same parts repeated at different sizes): the same faceted housing, glacis, cheeks, bustle, twin coil barrels. Issue 768: the Iron Mandate's midships bridge turret. |
 | `flak` | Picket lasers | 3 shots, 3 damage, range 2, point defence | A small low eight-sided turret on a flush ring, a sensor eye, two short emitter tubes with coil collars and lens tips, elevating high (to 60) for craft. |
 
 How many mounts a slot may show follows the game's volleys (ships.md rule 11, weapon_match.py SPLIT): one twin lance turret a
@@ -37,6 +38,11 @@ emitters: both fire every volley).
 - `bay`: flush armoured drone doors (R232): a trim frame, two door leaves with ribs, a centre seam, blue guide lamps.
 - `latch`: a module latch row, the four clamp heads that lock two hull modules together across a module band (H10's rows of
   four blocks).
+- Canyon plant (issue 768, the Iron Mandate, hegemony_IM5): `pipe`, an armoured power trunk (an eight-sided trunk, trim collars
+  at an even pitch, a flange at each end, saddles down to the floor; structure, so it stops at a coupling short of each module
+  band); `capbank`, a capacitor bank of identical cells on a plinth with trim caps, blue charge strips and bus bars;
+  `exchanger`, a heat exchanger (a housing, a stack of cooling fins in a trim frame, inlet and outlet ports). The bank and the
+  exchanger are machines (MACHINES): each sits whole in one module.
 - `hatch` (flush rectangular, a seam and a recessed grip), `hatchbox` (a module housing), `vent` (straight slats over a dark
   recess), `slit` (a blue-white window), `thruster` (rectangular nozzles with depth, R244), `lamp` (a blue strip lamp; sheets
   use the blue line instead, the strips are the running lights).
