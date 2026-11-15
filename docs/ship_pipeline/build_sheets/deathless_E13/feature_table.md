@@ -104,9 +104,8 @@ Bulkhead and frame stations: F0 16.1%, F1 27.6%, F2 39.9%, F3 52.2%, B0 75.7%, B
 | Break line | Station % | What it opens |
 |---|---|---|
 | B-1 | 64.5 (seam wanders 62.5 to 66.8) | the dart parts from the stern block at the core: the cage bursts, the nose and the plates' fore halves tear away (a ragged bite where the core goes) |
-| B-2 | 3.8 to 59.1 (along) | the crest plate peels from the dart, band by band, over the fore compartment (a level plane at 0.25) |
 
-Eclipse breaks in layers (factions.md): the crest plate peels first, then the dart parts from the block at the core and the fan's fore halves go with it; full interiors throughout (R215), hidden until a piece breaks.
+Eclipse breaks in layers (factions.md): one authored break for a frigate (factions.md, the class table): the dart parts from the block at the core and the five plates tear across it, their fore halves going with the nose; no level peel plane (the crest slopes through any one height, so a plane would slice it rather than lift it); full interiors throughout (R215), hidden until a piece breaks.
 
 
 ## Hard points (the contract of PR 530, tools/blender/kits/shared/hardpoints.py)
@@ -139,7 +138,6 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **Engines are eclipse rings, not flame.** factions.md: "no flaming bells. An eclipse ring of pale light".
 - **Panels dead even, aligned rows on every face, tone in ordered bands (R243).** Ryan, Nov 13: "make the eclipse panels actually panels and dead even and ordered to align"; the kit lays them by size (eclipse parts.py even_panels).
 - **Thrusters, belly hatches, heat panels and corona strip lights added.** a ship in space needs thrusters; the picture shows no underside.
-- **The crest plate peels on a level plane at 0.25 over the fore compartment (B-2).** Eclipse breaks in layers: the shade plates peel first (factions.md); one level plane takes the crest and clears the dart's insides.
 - **The fan slimmed and flattened to the concept sheet's measured proportions (envelope length to beam 1.79 against the sheet's 1.87; the core 0.64 across).** the Board's massing check (ships.md 2c): the first layout read 1.38, a third too broad, and twice the sheet's height. The side stays taller than the sheet's (length to height 5.1 against 9.6) because the gun housing and the engine ring stand above and below the plates; the sheet's side view draws the gun as a thin fin.
 - **From above the mote is a leaf of blades with a dart nose, widest at a quarter of its length.** family distinctness (R233): the flagship is a crescent, the cruiser a split oval ring, the flare one closed ring; no Eclipse class is a scaled copy of another from above.
 

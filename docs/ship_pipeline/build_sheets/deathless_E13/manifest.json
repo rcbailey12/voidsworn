@@ -210,20 +210,10 @@
  ],
  "break_pieces": [
   {
-   "name": "bow piece, upper half",
+   "name": "bow piece",
    "stations": "0.0 to 64.5 percent",
    "bounded_by": [
-    "B-1",
-    "B-2"
-   ],
-   "full_interior": true
-  },
-  {
-   "name": "bow piece, lower half",
-   "stations": "0.0 to 64.5 percent",
-   "bounded_by": [
-    "B-1",
-    "B-2"
+    "B-1"
    ],
    "full_interior": true
   },

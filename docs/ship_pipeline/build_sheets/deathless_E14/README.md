@@ -33,6 +33,7 @@ flat, and the beauty's twelve plates line up with the build at the fitted camera
 | Audit self-test | PASS |
 | Stage 7 unbaked export and readback (`export7.py unbaked=1`, `check_export.py`, self-test) | PASS: 4 gun muzzles (2 per slot), 1 engine, 3 breach anchors (Destroyer 3, Eclipse +0), core, 2 braking, 2 boarding, both turret nodes with their turning meshes; the self-test refuses every broken copy |
 | Density (R224, the mesh half; `studies/mesh_density.py`) | 0 flags ([mesh_density.json](mesh_density.json)); the paint half is measured at stage 5 |
+| Rule 12 (R244): openings with depth, shaped flanks | the engine bell has a throat, an inner shade disc and stiffener rings; the thrusters' slot nozzles, the heat panels' slats and the drone cradles are recessed or framed; no flat disc anywhere. The gun heart, the spar and the stern block are chamfered octagon sections with stepped roofs and collars; the ring plates are dished with a stepped layer; no flat-sided box |
 | Inventory (R218, R221) | 21 lines, all present, shaped and detailed; every part has a job ([inventory.md](inventory.md)) |
 | Manifest (`build_manifest_tests.js`) | PASS |
 
@@ -82,13 +83,19 @@ All in [feature_table.md](feature_table.md); the design calls the Board should l
 - **The drones are docked** on the hoop, not hovering.
 - **The spar is heavier** than the zenith's rod, as the beauty draws it.
 - **The third breach anchor is on the stern block**, the one Eclipse anchor not on a shade band.
+- **The guns fire over the ring, not through a gap behind a shade rim, and the flat ring faces up, not forward.** factions.md says
+  the shade faces the enemy and the guns fire through gaps behind its rim. A ring upright and facing forward would put both guns
+  behind it, but it reads as a bar from above (the study), which R233 rules out. The flat ring is a sunshade held over the heart,
+  its rim edge-on to the enemy; the forward gun fires over the bow plates and the aft gun over the whole ring, as the zenith's guns
+  fire over its arcs.
+- **The core cage reads as a small drum from straight above** (six curved plates round the core). At the beauty camera its gaps
+  show the core; if the Board wants it rounder or more open from above, it is the one mass to change.
 
 ## What still differs from the concept, and why
 
 - **Surface and colour**: the concept's plates are thick, heavily panelled blocks; the blockout is flat schematic colour (stage 5).
 - **The gun heart**: the beauty draws a long cylinder with a big round muzzle pointing at the viewer; the build's forward gun is
   the faction's rail gun on a turret, and the heart is a drum holding the core.
-- **The core cage** reads as a small drum from straight above; at the beauty camera its gaps show the core.
 
 ## Files
 

@@ -23,6 +23,7 @@ then [side_by_side.jpg](side_by_side.jpg), [fit_view.jpg](fit_view.jpg), [cells.
 | Audit self-test | PASS: every broken copy refused for its own reason |
 | Stage 7 unbaked export and readback (`export7.py unbaked=1`, `check_export.py`, self-test) | PASS: every hard point on the mesh (2 gun muzzles, 1 engine, 2 breach, core, 2 braking, 2 boarding), the breach count is the class and faction's, the turret node and its turning mesh are written; the self-test refuses every broken copy |
 | Density (R224, the mesh half; `studies/mesh_density.py`) | 0 flags; every part kind at or over the hull's triangles and edge features per square unit ([mesh_density.json](mesh_density.json)); the paint half is measured at stage 5 |
+| Rule 12 (R244): openings with depth, shaped flanks | the engine bell has a throat, an inner shade disc and stiffener rings; the thrusters' slot nozzles and the heat panels' slats are recessed; no flat disc anywhere. The dart and the block are chamfered octagon sections, the block carries a stepped roof and the root collar's stepped band; no flat-sided box |
 | Inventory (R218, R221) | 14 lines, all present, shaped and detailed; every part has a job ([inventory.md](inventory.md)) |
 | Manifest (`build_manifest_tests.js`) | PASS |
 
@@ -56,9 +57,10 @@ Draw calls: one per surface, plus one per turret node. The scene gate (RULEBOOK 
 5. **The stern block and engine**: a chamfered block, the root collar where the plates gather, heat slot panels, belly hatches,
    attitude thrusters on its lower chamfers; one eclipse-ring engine, no flame.
 6. **INSIDE**: dark decks, the archive vault and the capacitor bank in the dart, conduits along its keel; the gun's magazine, the
-   phase coils and the engine room in the block. One transverse break (Frigate): B-1, the dart parts from the block at the core;
-   and B-2, the crest plate peels on a level plane over the fore compartment (Eclipse breaks in layers). Two breach anchors on the
-   shade plates (Frigate base 2, Eclipse +0).
+   phase coils and the engine room in the block. One authored break (Frigate, the class table): B-1, the dart parts from the block
+   at the core and the five plates tear across it, their fore halves going with the nose. No level peel plane: the crest slopes
+   through any one height, so a plane would slice it rather than lift it. Two breach anchors on the shade plates (Frigate base 2,
+   Eclipse +0).
 
 ## Changed from the picture (R207, R233, R236), and why
 
@@ -73,6 +75,9 @@ All in [feature_table.md](feature_table.md); the design calls the Board should l
 - **The core on the axis**, under the crest plate; the beauty shows it on one side only.
 - **Panels dead even and aligned** (R243), laid by size by the Eclipse kit (`even_panels`, new in tools/blender/kits/eclipse/parts.py).
 - **From above, a leaf of blades with a dart nose**: no Eclipse class is a scaled copy of another (R233).
+- **The gun fires over the plates, not through a gap behind a shade rim.** factions.md puts Eclipse guns behind the shade's rim
+  firing through gaps; the mote's one gun turns all round (gauss T), so it stands on the block roof at the plates' root and fires
+  over them, as the zenith's guns fire over its ring. The plates still face the enemy edge-on, a shield held forward.
 
 ## What still differs from the concept, and why
 
