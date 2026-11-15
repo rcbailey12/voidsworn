@@ -2651,7 +2651,9 @@ func dmgMult(u, w, t, rear) -> float:
 	return base * storyDamageMult(u)
 # Inside a scoring window (eval_begin to eval_end) nothing in the battle changes, so expectedVs depends only on the two ships, the gun,
 # the shooter's hex and hexes moved (hit chance, sync, rake), the target's hex, facing (shield quadrant) and hexes moved. Not on the
-# shooter's facing: arcs are checked by the callers. Callers only read the result.
+# shooter's facing: arcs are checked by the callers. Callers only read the result. The one exception is Ostrel's Silent Archive
+# (hitChance: an enemy shooting a ship outside its front arc loses aim), so while that skill is in force the shooter's facing is in
+# the key too (issue 784: the forward-only flare made the AI score one hex at two facings, and the cached aim leaked between them).
 var _ev := {}
 func expectedVs(u, w, t) -> Dictionary:
 	if _evc:
@@ -2662,8 +2664,9 @@ func expectedVs(u, w, t) -> Dictionary:
 				wi = i; break
 		var hu = int(z0(u.get("hexMoved"))); var ht = int(z0(t.get("hexMoved")))
 		var uq = int(u["q"]) + 64; var ur = int(u["r"]); var tq = int(t["q"]) + 64; var tr = int(t["r"]); var tf = int(t["facing"])
-		if su != null and st != null and su < 64 and st < 64 and wi >= 0 and wi < 16 and hu < 16 and ht < 16 and uq >= 0 and uq < 128 and tq >= 0 and tq < 128 and ur >= 0 and ur < 64 and tr >= 0 and tr < 64 and tf >= 0 and tf < 8:
-			var k = (((((((((su * 16 + wi) * 64 + st) * 128 + uq) * 64 + ur) * 128 + tq) * 64 + tr) * 16 + hu) * 16 + ht) * 8 + tf)
+		var uf = int(z0(u.get("facing"))) if treeSkill("silentArchive") != null else 0
+		if su != null and st != null and su < 64 and st < 64 and wi >= 0 and wi < 16 and hu < 16 and ht < 16 and uq >= 0 and uq < 128 and tq >= 0 and tq < 128 and ur >= 0 and ur < 64 and tr >= 0 and tr < 64 and tf >= 0 and tf < 8 and uf >= 0 and uf < 8:
+			var k = (((((((((su * 16 + wi) * 64 + st) * 128 + uq) * 64 + ur) * 128 + tq) * 64 + tr) * 16 + hu) * 16 + ht) * 8 + tf) * 8 + uf
 			var c = _ev.get(k)
 			if c == null:
 				c = _expectedVs_raw(u, w, t); _ev[k] = c
