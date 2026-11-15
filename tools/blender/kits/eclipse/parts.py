@@ -15,6 +15,8 @@
 #                from a layered crescent shade; spire (gsentry): a tall slim banded spire, needles through a crescent fin
 #   spinal       the corona arc (doom): an arc emitter: breech collars, a capacitor column (segments, stacked disc banks,
 #                feed conduits), a black shade disc in a corona ring with a small lens, a crown of six electrode horns
+#                spinal(kind='lance'): the null lance (nlance, issue 784; the E14 flare, issue 782): a fixed spinal rail gun, an
+#                armoured eight-sided housing, four rails on yokes with banded collars, a recessed bore to a glowing lens, a green focus ring
 #   core_cage    the trapped light core: a bright sphere in gimbal rings and meridian bars between two hub collars
 #   strut        a built truss: two rails, a zigzag web and end lugs (R207: real structural connections)
 #   corewin      a hexagonal armoured port onto the core's light: a rim, set-back glass that glows, grille bars

@@ -115,8 +115,9 @@ All in [feature_table.md](feature_table.md); the design calls the Board should l
   focus ring comes back as the null lance; the first sheet's two turrets are gone.
 - **The muzzle stands 0.9 ahead of the ring's front face** (the beauty's heart reaches about that far); from ahead the muzzle is
   at the ring's centre, from the beam the gun reads as part of the ring's heart, not a long nose.
-- **The core sits just aft of the ring**, not in its plane: the gun heart runs through the ring's centre, so the core's light
-  shows round the lance through the ring from ahead and through the cage from the side.
+- **The core sits just aft of the ring**, not in its plane: the gun heart runs through the ring's centre. Its light shows through
+  the cage from the beam and the quarters; from ahead the heart hides it ([bow.jpg](bow.jpg)) and the lance's glowing lens is
+  the light at the ring's centre.
 - **The capacitor housing replaces the aft turret** on the spar's back (the beauty's low dorsal housing).
 - **The forward thrusters sit under the spar behind the core**: on the gun heart they would fire into the ring's lower plates.
 - **Kept from the first sheet**: twelve plates on one closed hoop (R233), the ring 6.0 across (0.63 of the length), the drones
@@ -138,8 +139,12 @@ All in [feature_table.md](feature_table.md); the design calls the Board should l
 ## What still differs from the concept, and why
 
 - **Surface and colour**: the concept's plates are thick heavily panelled blocks; the blockout is flat schematic colour (stage 5).
-- **The core's light**: the beauty shows the core glowing inside the heart right behind the muzzle; here the lance's lens glows
-  in the bore and the core sits behind the ring in its cage.
+- **The core's light from ahead** (the biggest visible gap in the whole compare): the beauty shows the core glowing in a window
+  of the heart right behind the muzzle; here the lance's lens glows in the bore and the core sits behind the ring in its cage,
+  hidden from ahead by the heart. If the Board wants the beauty's glow, a ring of core windows on the gun heart behind the
+  muzzle is the change (a design call, not built here).
+- **The plan pair in whole_compare.jpg** does not compare: the concept sheet's left view draws the ring face-on across the spar,
+  which contradicts the upright ring of the beauty and of the sheet's other two views; the build's plan shows the ring edge-on.
 - **The spar is shorter** than the beauty's, which runs farther aft; the class length holds it.
 - **Proportions**: the concept sheet's left view draws the ring face-on across the spar and its middle view is an edge-on view
   of a shorter ship, so the length to beam and height table in inventory.md does not compare like with like.

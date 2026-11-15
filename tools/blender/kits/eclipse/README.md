@@ -42,6 +42,11 @@ units (`PANEL`), so a part built large keeps the hull's detail density: the engi
 column and head carry them, and every engine bell gets stiffener rings by its length. The corona arc's hard point is its lens
 (the horns' meeting point ahead of it is open space, off the mesh).
 
+**The null lance (issue 782).** `spinal(kind='lance')` builds the flare's one fixed forward gun (data.js nlance, issue 784): a seat
+ring, an armoured eight-sided housing with a layer sleeve and panels, capacitor discs, four accelerator rails on yokes, and a
+recessed bore with a black shade disc and a glowing lens behind a thin green focus ring (designs.md). Its type is `nullcannon` on
+a fixed mount (weapon_match FITS `nlance`); its hard point is the lens, its firing lane starts at the mouth.
+
 **Even panels (R243, issue 739).** `even_panels()` and `lay_panels()` lay a sheet ship's hull panels dead even and aligned
 (Ryan, Nov 13 2026: "make the eclipse panels actually panels and dead even and ordered to align"): each loft face split into equal
 panels at a world size, every panel the same thickness with a narrow even gap, the tone changing in ordered bands along each

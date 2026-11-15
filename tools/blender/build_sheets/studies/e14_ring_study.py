@@ -99,6 +99,7 @@ for name, hd in VIEWS:
             top = project(cam, [E.rp(rim_back, E.R_OUT, 90.0), E.rp(rim_front, E.R_OUT, 90.0)], res)
             rec['band_px'] = round(math.dist(top[0], top[1]), 1)          # the rim's depth at the top plate, on screen
             rec['ring_w_px'] = round(max(xs) - min(xs), 1); rec['ring_h_px'] = round(max(ys) - min(ys), 1)
+            rec['ring_c_px'] = project(cam, [(E.XR, 0.0, 0.0)], res)[0]                 # the ring's centre on screen, for the crop
     rows.append(rec)
 json.dump(dict(px_per_unit=round(PX_UNIT, 2), elevation=round(EL, 1), views=rows), open(os.path.join(OUT, 'ring_study.json'), 'w'), indent=1)
 
@@ -120,8 +121,10 @@ for j, rec in enumerate(rows):
     im.paste(big, (x0, 96))
     g = Image.open(os.path.join(OUT, 'study_game_%d.png' % int(rec['heading']))).convert('RGB')
     im.paste(g, (x0, 404))
-    im.paste(g.crop((65, 45, 155, 115)).resize((180, 140), Image.NEAREST), (x0 + 226, 414))
-    d.text((x0, 566), '1:1, the game\'s size', fill=(186, 190, 198), font=F(13)); d.text((x0 + 226, 566), 'its centre, twice up', fill=(186, 190, 198), font=F(13))
+    cx_, cy_ = [int(round(v)) for v in rec['ring_c_px']]
+    cx_ = max(45, min(GRES[0] - 45, cx_)); cy_ = max(35, min(GRES[1] - 35, cy_))
+    im.paste(g.crop((cx_ - 45, cy_ - 35, cx_ + 45, cy_ + 35)).resize((180, 140), Image.NEAREST), (x0 + 226, 414))
+    d.text((x0, 566), '1:1, the game\'s size', fill=(186, 190, 198), font=F(13)); d.text((x0 + 226, 566), 'the ring\'s centre, twice up', fill=(186, 190, 198), font=F(13))
     if rec['view'] == 'beam':
         line = 'edge-on: a band %.0f px wide and %.0f px tall' % (rec['band_px'], rec['ring_h_px'])
     else:
