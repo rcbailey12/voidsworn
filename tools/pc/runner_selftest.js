@@ -1,5 +1,7 @@
 'use strict';
 // Issue 687: actual Windows .bat runs against tiny local Git fixtures and stub agents.
+// Issue 722 extends it: the resolved-model stamp, the free-space floor and the Board hashes check (audit 706
+// findings 6 and 7), all in test mode through the same entry points.
 // Fixture objects are test data written directly to TEMP. No git commit or push is run.
 const fs = require('fs');
 const os = require('os');
@@ -17,16 +19,19 @@ function pass(s) { passed++; console.log('PASS ' + s); }
 for (const name of ['work_issue', 'codex_issue']) {
   const bat = read(path.join(here, name + '.bat'));
   for (const step of ['init', 'wait', 'checkout', 'preflight', 'finish']) assert(bat.includes('%COMMON% ' + step + ' '), name + ' missing ' + step);
+  for (const step of ['space', 'hashcheck', 'model']) assert(bat.includes('%COMMON% ' + step + ' '), name + ' missing issue 722 step ' + step);
   assert(!/git clone .*https:|git clean -fd/.test(bat), name + ' bypasses safe checkout');
   assert(read(path.join(here, name + '.ps1')).includes('$resume'), name + ' missing task resume note');
 }
 assert(read(path.join(here, 'chain_issue.bat')).includes('set "PC_WAIT_FOR=%~1"'));
+assert(read(path.join(here, 'work_issue.bat')).includes('min_free_gb=60'), 'work_issue.bat must seed the min_free_gb floor in runner_settings.txt');
+assert(read(path.join(here, 'runner_common.ps1')).includes('PC_TEST_SPACE_FREE_MB') && read(path.join(here, 'runner_common.ps1')).includes('PC_TEST_HASHES'), 'runner_common.ps1 must carry the 722 test knobs');
 // The Git helper must call the program, never its own name: PowerShell resolves functions first, so $exe = 'git' recursed
 // until the call depth overflowed on the first live run (Nov 15) while the test stub path passed.
 // Log must never throw when result.txt is held open by the calling .bat's redirect (Nov 15, Kimi 371's push stopped).
 assert(/function Log\(\$line\) \{\s*try \{ Add-Content[^\n]*-ErrorAction Stop \} catch \{ \}/.test(read(path.join(here, 'runner_common.ps1'))), 'runner_common Log must not throw on a locked result.txt');
 assert(/\$exe = 'git\.exe'/.test(read(path.join(here, 'runner_common.ps1'))) && !/\$exe = 'git'[;\s]/.test(read(path.join(here, 'runner_common.ps1'))), 'runner_common Git helper must run git.exe');
-pass('shared runner contract and chain launcher');
+pass('shared runner contract, chain launcher and issue 722 start checks');
 if (process.platform !== 'win32') {
   console.log('SKIP Windows fault matrix: run tools/pc/runner_selftest.bat on the PC');
   process.exit(0);
@@ -113,6 +118,9 @@ const defaults = {
   PC_TEST_STOP_BEFORE_PUBLISH: '1', WORK_TEST_AGENT: agent, CODEX_TEST_AGENT: agent, WORK_SKIP_CHECKS: '1',
   PC_WAIT_FOR: '', PC_WAIT_RUN: '', PC_WAIT_SECONDS: '2', STUB_GIT_FAULT: '', STUB_AUTH_FAIL: '',
   STUB_PROBE_TIMEOUT: '', STUB_FETCH_HOLD: '',
+  // Issue 722: about 68 GB fake free space, above the 60 GB floor, so fixture runs pass the space check on any host;
+  // the dedicated floor tests force 100 MB instead. Settings and hashes fixtures stay unset unless a test names them.
+  PC_TEST_SPACE_FREE_MB: '70000', PC_TEST_SETTINGS: '', PC_TEST_HASHES: '',
   GIT_AUTHOR_NAME: 'Fixture', GIT_AUTHOR_EMAIL: 'fixture@example.invalid', GIT_COMMITTER_NAME: 'Fixture', GIT_COMMITTER_EMAIL: 'fixture@example.invalid'
 };
 function job(arm, label, extra = {}) {
@@ -140,7 +148,11 @@ function job(arm, label, extra = {}) {
     const probe = JSON.parse(read(r.env.PC_TEST_TRACE).trim());
     assert.equal(probe[0], arm === 'codex' ? 'exec' : arm === 'kimicode' ? '-m' : 'run');
     assert.equal(r.state.status, 'unverified');
-    pass(arm + ': local mirror clone, partial merged, task note, correct preflight and stub agent, no publish');
+    const expectModel = arm === 'codex' ? 'gpt-6.1-sol' : arm === 'kimicode' ? 'kimi-code/kimi-for-coding' : arm === 'opus' ? 'anthropic/claude-opus-5-5' : arm === 'sonnet' ? 'anthropic/claude-sonnet-5-5' : 'deepseek/deepseek-flash';
+    assert(r.result.includes('model: ' + expectModel), r.result);
+    assert.equal(r.state.model, expectModel);
+    assert(!r.result.includes('differs from the arm default'), r.result);
+    pass(arm + ': local mirror clone, partial merged, task note, correct preflight and stub agent, model stamped, no publish');
     const why = arm === 'kimicode' ? 'provider managed:kimi-code has no credential configured (expired login)' : arm === 'codex' ? 'quota exhausted' : 'credit balance is too low';
     const bad = job(arm, 'auth', { STUB_AUTH_FAIL: '1', STUB_REASON: why });
     assert.notEqual(bad.code, 0); assert(bad.result.includes(why), bad.result);
@@ -233,6 +245,69 @@ function job(arm, label, extra = {}) {
   assert.equal(ps(['finish',confirmationOut,'0','','real','1'],defaults).code,0);
   assert.equal(JSON.parse(read(path.join(confirmationOut,'status.json'))).status,'checked_push');
   pass('real Git remote confirmation writes the marker required for chain success (fixture ref, no push)');
-  const note = 'PASS runner687: ' + passed + ' checks, Windows entry points, local Git and stub agents only. No commits, pushes or model usage.\nEvidence: ' + root + '\n';
+  // ---- Issue 722 (audit 706 findings 6 and 7): model stamp, free-space floor, Board hashes ----
+  // The stamp warns when the resolved model differs from the arm default, whatever the provider: a same-provider
+  // WORK_MODEL override passes the provider guard silently, so the warning must come from the stamp itself.
+  const overridden = job('deepseek', 'model-override', { WORK_MODEL: 'deepseek/deepseek-v4-pro' });
+  assert.equal(overridden.code, 0, overridden.text + '\n' + overridden.result);
+  assert(overridden.result.includes('model: deepseek/deepseek-v4-pro'), overridden.result);
+  assert(overridden.result.includes('WARNING: resolved model deepseek/deepseek-v4-pro differs from the arm default deepseek/deepseek-flash'), overridden.result);
+  assert.equal(overridden.state.model, 'deepseek/deepseek-v4-pro');
+  pass('resolved model stamp warns when a same-provider override changes the model');
+  const modelOut = path.join(root, 'modelstamp'); fs.mkdirSync(modelOut); write(path.join(modelOut, 'result.txt'), '');
+  assert.equal(ps(['init', modelOut, 'fixture/model'], defaults).code, 0);
+  assert.equal(ps(['model', modelOut, 'provider/x', 'provider/y'], defaults).code, 0);
+  const modelResult = read(path.join(modelOut, 'result.txt'));
+  assert(modelResult.includes('model: provider/x') && modelResult.includes('WARNING: resolved model provider/x differs from the arm default provider/y'), modelResult);
+  assert.equal(JSON.parse(read(path.join(modelOut, 'status.json'))).model, 'provider/x');
+  pass('model mode stamps status.json and result.txt and warns on any difference');
+  // Below the floor the run refuses to start: one line in result.txt, status failed. min_free_gb is a tuning value
+  // in runner_settings.txt; a missing line or file keeps the 60 default.
+  const setFix = path.join(root, 'space_settings.txt'); write(setFix, 'remove_repo_copy_after_push=no\nmin_free_gb=60\n');
+  const spaceOut = path.join(root, 'spacefloor'); fs.mkdirSync(spaceOut); write(path.join(spaceOut, 'result.txt'), '');
+  assert.equal(ps(['init', spaceOut, 'fixture/space'], defaults).code, 0);
+  const low = ps(['space', spaceOut, setFix, path.join(root, 'voidsworn_test')], { ...defaults, PC_TEST_SPACE_FREE_MB: '100' });
+  assert.equal(low.code, 14, low.text);
+  assert.equal(JSON.parse(read(path.join(spaceOut, 'status.json'))).status, 'failed');
+  const lowResult = read(path.join(spaceOut, 'result.txt'));
+  assert(lowResult.includes('refusing to start') && lowResult.includes('below the min_free_gb=60 floor'), lowResult);
+  assert.equal(ps(['space', spaceOut, setFix, path.join(root, 'voidsworn_test')], { ...defaults, PC_TEST_SPACE_FREE_MB: '70000' }).code, 0);
+  write(path.join(root, 'space_settings_low.txt'), 'min_free_gb=1\n');
+  assert.equal(ps(['space', spaceOut, path.join(root, 'space_settings_low.txt'), path.join(root, 'voidsworn_test')], { ...defaults, PC_TEST_SPACE_FREE_MB: '2000' }).code, 0);
+  assert.equal(ps(['space', spaceOut, path.join(root, 'missing_settings.txt'), path.join(root, 'voidsworn_test')], { ...defaults, PC_TEST_SPACE_FREE_MB: '100' }).code, 14);
+  pass('free-space floor refuses below min_free_gb, honors the tuning value, defaults to 60');
+  const noStart = job('deepseek', 'nofreespace', { PC_TEST_SPACE_FREE_MB: '100' });
+  assert.equal(noStart.code, 14, noStart.text + '\n' + noStart.result);
+  assert.equal(noStart.state.status, 'failed');
+  assert(noStart.result.includes('refusing to start: drive'), noStart.result);
+  assert(!fs.existsSync(noStart.env.PC_TEST_TRACE));
+  assert(!fs.existsSync(noStart.repo));
+  pass('a low-disk run stops before the mirror, the model probe and the agent');
+  // The Board writes work217\runner_hashes.txt with hashwrite after copying the five runner files; hashcheck then
+  // guards the running copies. A mismatch or a missing file is a warning, never a stop.
+  const five = ['codex_issue.bat', 'codex_issue.ps1', 'runner_common.ps1', 'work_issue.bat', 'work_issue.ps1'];
+  const hashesGood = path.join(root, 'board_hashes_good.txt');
+  write(hashesGood, five.map(n => crypto.createHash('sha256').update(fs.readFileSync(path.join(here, n))).digest('hex') + '  ' + n).join('\n') + '\n');
+  const hashOut = path.join(root, 'hashcheck'); fs.mkdirSync(hashOut); write(path.join(hashOut, 'result.txt'), '');
+  assert.equal(ps(['init', hashOut, 'fixture/hash'], defaults).code, 0);
+  const hashesWritten = path.join(root, 'board_hashes_written.txt');
+  assert.equal(ps(['hashwrite', here, hashesWritten], defaults).code, 0);
+  assert.equal(read(hashesWritten), read(hashesGood));
+  assert.equal(ps(['hashcheck', hashOut, here, hashesGood], defaults).code, 0);
+  assert(read(path.join(hashOut, 'result.txt')).includes('runner files match the Board hashes (5 checked)'));
+  pass('hashwrite and hashcheck agree on the five runner files');
+  const hashesBad = path.join(root, 'board_hashes_bad.txt');
+  write(hashesBad, read(hashesGood).split('\n').map(l => l.endsWith('runner_common.ps1') ? '0'.repeat(64) + '  runner_common.ps1' : l).join('\n'));
+  assert.equal(ps(['hashcheck', hashOut, here, hashesBad], defaults).code, 0);
+  assert(read(path.join(hashOut, 'result.txt')).includes('WARNING: these runner files differ from the Board-copied hashes: runner_common.ps1'));
+  assert.equal(ps(['hashcheck', hashOut, here, path.join(root, 'no_such_hashes.txt')], defaults).code, 0);
+  assert(read(path.join(hashOut, 'result.txt')).includes('WARNING: no Board hashes file'));
+  pass('a hash mismatch and a missing hashes file warn without stopping');
+  const hashWarn = job('deepseek', 'hashwarn', { PC_TEST_HASHES: hashesBad });
+  assert.equal(hashWarn.code, 0, hashWarn.text + '\n' + hashWarn.result);
+  assert(fs.existsSync(path.join(hashWarn.repo, 'agent_started.txt')));
+  assert(hashWarn.result.includes('WARNING: these runner files differ'), hashWarn.result);
+  pass('a run whose tools folder drifts from the Board hashes still starts and warns');
+  const note = 'PASS runner687+722: ' + passed + ' checks, Windows entry points, local Git and stub agents only. No commits, pushes or model usage.\nEvidence: ' + root + '\n';
   write(path.join(root, 'summary.txt'), note); console.log(note.trim());
 } catch (e) { write(path.join(root, 'failure.txt'), e.stack); console.error('FAIL runner687: ' + e.stack + '\nEvidence: ' + root); process.exitCode = 1; } })();
