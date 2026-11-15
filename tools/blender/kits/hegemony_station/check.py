@@ -8,6 +8,38 @@ import json
 from pathlib import Path
 import struct
 import sys
+import itertools
+from scale import contract
+
+
+def exported_bounds(glb):
+    """Accessor bounds through the actual GLB node transforms, independent of fit output."""
+    identity = [[float(i == j) for j in range(4)] for i in range(4)]
+    def mul(a, b):
+        return [[sum(a[i][k]*b[k][j] for k in range(4)) for j in range(4)] for i in range(4)]
+    def local(node):
+        if 'matrix' in node:
+            return [[node['matrix'][j*4+i] for j in range(4)] for i in range(4)]
+        x,y,z,w = node.get('rotation', [0,0,0,1])
+        r = [[1-2*(y*y+z*z),2*(x*y-z*w),2*(x*z+y*w),0],
+             [2*(x*y+z*w),1-2*(x*x+z*z),2*(y*z-x*w),0],
+             [2*(x*z-y*w),2*(y*z+x*w),1-2*(x*x+y*y),0], [0,0,0,1]]
+        for i in range(3):
+            for j in range(3): r[i][j] *= node.get('scale',[1,1,1])[j]
+            r[i][3] = node.get('translation',[0,0,0])[i]
+        return r
+    points = []
+    def visit(index, parent):
+        node = glb['nodes'][index]
+        xf = mul(parent, local(node))
+        if 'mesh' in node:
+            for primitive in glb['meshes'][node['mesh']]['primitives']:
+                acc = glb['accessors'][primitive['attributes']['POSITION']]
+                for v in itertools.product(*zip(acc['min'], acc['max'])):
+                    points.append([sum(xf[i][j]*v[j] for j in range(3))+xf[i][3] for i in range(3)])
+        for child in node.get('children',[]): visit(child, xf)
+    for index in glb['scenes'][glb.get('scene',0)]['nodes']: visit(index, identity)
+    return [max(p[i] for p in points)-min(p[i] for p in points) for i in range(3)]
 
 
 def glb_json(path):
@@ -21,7 +53,7 @@ def glb_json(path):
         return json.loads(f.read(length))
 
 
-def run(out):
+def run(out, gpu=False):
     here = Path(__file__).resolve().parent
     manifest = json.loads((out/'manifest.json').read_text())
     game = json.loads((out/'game_inputs.json').read_text())
@@ -43,8 +75,19 @@ def run(out):
     # The footprint comes from BattleAPI and Board.hex_world, not a typed fixture.
     cells=game['footprint']['cells']
     check('three hex columns',len({c['q'] for c in cells})>=3,len(cells))
-    inside=sum(m['outside_vertices'] for m in fit['modules'].values())
-    check('static footprint',inside==0,{'vertices_outside_real_hex_union':inside})
+    original=sum(m['source_footprint_outside_vertices'] for m in fit['modules'].values())
+    spill=sum(m['outside_vertices'] for m in fit['modules'].values())
+    check('source plan footprint',original==0,{'source_vertices_outside_real_hex_union':original,
+          'scaled_vertices_outside_live_footprint':spill,'live_footprint_integration':'PENDING; review only'})
+    sizing=contract()  # Read the table and board source afresh, never the fitted range.
+    span=max(exported_bounds(glb))
+    check('R247 exported station range',sizing['range'][0]-.001<=span<=sizing['range'][1]+.001,
+          {'GLB_long_axis':span,'target_from_table':sizing['range'],
+           'live_board_one_hex':sizing['live_one_hex'],'live_board_large':sizing['live_large']})
+    axes=manifest['uniform_fit']['axes']
+    check('uniform proportions',max(axes)-min(axes)<1e-6 and all(abs(
+          manifest['bounds']['size'][i]/manifest['uniform_fit']['source_bounds']['size'][i]-axes[i])<1e-5
+          for i in range(3)),axes)
     height=manifest['bounds']['size'][2]
     check('taller than ships',height>game['max_ship_height'],
           {'station':height,'tallest_loaded_ship':game['max_ship_height'],'hulls':len(game['ships'])})
@@ -58,7 +101,7 @@ def run(out):
     check('modelled insides',not missing,{'modules_without_inside_geometry':missing,
           'inside_triangles':manifest['triangles']['inside']})
     samples=fit['motion_samples']
-    collisions=[s for s in samples if s['intersecting_triangle_pairs'] or s['outside_vertices']]
+    collisions=[s for s in samples if s['intersecting_triangle_pairs'] or s['source_footprint_outside_vertices']]
     check('motion samples',not collisions and len(samples)==49,
           {'poses':len(samples),'bad_poses':collisions,'seconds':[0,240],
            'scope':'sampled mesh intersections; continuous sweep still pending'})
@@ -79,17 +122,40 @@ def run(out):
     roots=[n for n in glb['nodes'] if n.get('name')==manifest['code']]
     check('fitted joint metadata',len(roots)==1 and
           json.loads(roots[0].get('extras',{}).get('joints_json','null'))==manifest['joints'],
-          'exported joints agree with the fitted build, including the vertical height fit')
+          'exported joints agree with the uniformly scaled build')
+    scale_nodes=[n.get('scale',[1,1,1]) for n in roots]
+    check('exported uniform scale',len(scale_nodes)==1 and max(scale_nodes[0])-min(scale_nodes[0])<1e-5
+          and abs(scale_nodes[0][0]-axes[0])<1e-5,scale_nodes)
     check('export geometry count',triangles==manifest['triangles']['total'],
           {'GLB':triangles,'built_scene':manifest['triangles']['total']})
+    if gpu:
+        from PIL import Image
+        captures=json.loads((out/'captures.json').read_text())
+        rows=captures['comparisons']
+        # Combat classes are read from actual real-rule hull definitions, not a typed pick list.
+        table=json.loads((here.parents[3]/'godot/rules/data/tables.json').read_text(encoding='utf-8'))
+        expected={r['cls'] for r in table['tables']['HULLS'].values() if r['cls']!='Squadron'}
+        actual={r['class'] for r in rows if r['file'].startswith('game_compare170_')}
+        check('all combat classes captured',actual==expected,{'expected':sorted(expected),'captured':sorted(actual)})
+        bad=[]
+        for row in rows:
+            picture=out/row['file']
+            with Image.open(picture) as im:
+                if im.size!=(1280,720) or im.convert('RGB').getextrema()==((0,0),(0,0),(0,0)): bad.append(row['file'])
+            if abs(row['camera_radius']-game['camera']['radius'])>.001: bad.append(row['file']+' radius')
+            for key in ('station_pixels','ship_pixels'):
+                x0,y0,x1,y1=row[key]
+                if x0<0 or x1>1280 or y0<78 or y1>665: bad.append(row['file']+' clipped '+key)
+        check('GPU review images',not bad and captures['renderer']=='forward_plus',
+              {'pictures':len(rows),'bad':bad,'renderer':captures['renderer']})
     budget=dict(triangles=triangles,primitives=len(prims),materials=len(glb.get('materials',[])),
                 mesh_nodes=sum('mesh' in n for n in glb['nodes']),
                 glb_bytes=(out/'station_T2_review.glb').stat().st_size,
-                frame_gate='NOT RUN; requires a GPU window and a station-map game scene',
+                frame_gate='NOT RUN; production station-map gate remains outside this review-only run',
                 draw_calls='NOT MEASURED; GLB primitives are potential surface draws, not GPU draw measurements')
     (out/'cost.json').write_text(json.dumps(budget,indent=2)+'\n')
     result=dict(status='PASS' if all(c['pass_'] for c in checks) else 'FAIL',
-                scope='CPU review sheet only. Not approval for production, install or performance.',
+                scope='Review sheet only. Not approval for production, install or performance.',
                 checks=checks,cost=budget)
     (out/'review_checks.json').write_text(json.dumps(result,indent=2)+'\n')
     return result['status']=='PASS'
@@ -97,7 +163,7 @@ def run(out):
 
 if __name__=='__main__':
     try:
-        success=run(Path(sys.argv[1]))
+        success=run(Path(sys.argv[1]),'--gpu' in sys.argv)
     except (OSError,ValueError,KeyError) as exc:
         print('FAIL review inputs: '+str(exc)); success=False
     sys.exit(0 if success else 1)

@@ -8,7 +8,9 @@ CPU studio renders only. The camera170 images use the game radius, beta and vert
 
 Design authority: `tools/blender/kits/hegemony_station/design.py`; Hegemony-only geometry in `parts.py`. The real BattleAPI scenario and Board.hex_world supply the seven blocked cells. No rules cells are changed. Blender uses X/Y for the plan and Z up; the OBJ comparison converts actual fitted ShipView geometry to that frame.
 
-Overall span 51.590 x 37.544 units; height 52.129 units. The tallest of 30 loaded hulls, including all six flagships, is 51.129 units. Vertical fit factor 1.506117 is provisional and must be judged against the accepted concept. The four orthographic views share a 125.110-unit horizontal field and a 10-unit scale bar.
+Overall span 99.200 x 72.189 units; height 66.553 units. The tallest of 30 loaded hulls, including all six flagships, is 51.129 units. Uniform fit factor 1.922853 preserves the source proportions on all three axes. The four orthographic views share a 173.254-unit horizontal field and a 10-unit scale bar.
+
+The review long axis is the minimum of the station target in `docs/playbooks/scale.md`. The check reads that table and the live `godot/render/board.gd` STATION constants independently, and measures the exported GLB. Live station sizes and scale_check KNOWN rows stay unchanged. The larger station extends outside the old seven blocked cells; footprint integration remains open before a swap.
 
 ## Feature table
 
@@ -78,7 +80,7 @@ Core drums carry annular decks, a service shaft, radial frames and equipment rac
 
 | Break intent | Position in fitted world frame | Exposed contents |
 |---|---|---|
-| Eight core bulkhead joints | Z = -4.669, -0.904, 2.862, 6.627, 10.392, 14.157, 17.923, 21.688 | Deck rings, frames, shaft and racks |
+| Eight core bulkhead joints | Z = -5.961, -1.154, 3.653, 8.461, 13.268, 18.075, 22.882, 27.689 | Deck rings, frames, shaft and racks |
 | Habitat modules | Twelve 30-degree bearing boundaries; slot 10 open | Corridor, frames and racks |
 | Arm modules | Root, pressure collars and berth collar | Deck, racks and pipe runs |
 | Tower modules | Base ring, mast rings, whole cap | Cable trunk and equipment |
@@ -88,7 +90,7 @@ Break intent and source module meshes exist. Production seam paths, torn piece e
 
 ## Fit and movement
 
-Every sampled mesh vertex is inside the real seven-cell union. All 49 poses across 240 seconds have zero intersections between the moving arm triangles and static structure, and zero vertices outside the footprint. The intentional tether attachment is excluded from that intersection test. Discrete samples do not prove a continuous sweep or the fit of every static machine. Full fit review remains pending.
+The source plan fits the real seven-cell union. After uniform scaling, 65530 vertices are outside the live union. No blocked cell is changed in this review run. All 49 poses across 240 seconds have zero intersections between the moving arm triangles and static structure. The intentional tether attachment is excluded from that intersection test. Discrete samples do not prove a continuous sweep or the fit of every static machine. Full fit review remains pending.
 
 The animation is a 240-second passive rotation plus a 3-degree, 40-second swing. The ring and battery strips stay static. Board answers on issue 373: no weapons, T1 later, damage cause ambiguous to the player, dust and vented insulation under hits only. The lore bible supplies no station weapon layout; none has been invented.
 
@@ -96,20 +98,20 @@ The animation is a 240-second passive rotation plus a 3-degree, 40-second swing.
 
 `stack.py` currently supplies Hegemony preview materials and schematic ambient occlusion. This is not the production mask, trim and decal stack. Frost, dust, damaged edge wear and the required extra surface detail remain production work after the sheet passes.
 
-325,900 triangles total: 270,808 exterior, 55,092 inside. Review GLB: 20 material primitives, 11 materials, 2 mesh nodes, 17,826,080 bytes. These are reported costs, not caps. Actual draw calls and milliseconds are unmeasured. The station-map scene gate at 1080p and 4K has not run.
+325,652 triangles total: 270,560 exterior, 55,092 inside. Review GLB: 20 material primitives, 11 materials, 2 mesh nodes, 17,801,940 bytes. These are reported costs, not caps. Actual draw calls and milliseconds are unmeasured. The station-map scene gate at 1080p and 4K has not run.
 
 ## Changed from the picture
 
-- The rules main station occupies seven cells (centre plus its six neighbours), not three cells. The plan is fitted inside their union; the full footprint is three hex columns wide.
+- The rules main station occupies seven cells (centre plus its six neighbours), not three cells. The source plan fits inside their union; the source footprint is three hex columns wide. R247 uniform review scaling now exceeds that live union; footprint integration remains open before a swap.
 - The secondary spokes are offset from the docking arms; each tower has a bridge to a spoke or the bearing deck.
 - The drum stack rises above the ring, toward the accepted beauty silhouette. Nine drums share one service shaft; the station does not gain a second core.
-- The upper arm is angled 60 degrees into a blocked outer cell; a straight 90-degree arm would enter the unblocked notch between two cells. The real footprint outranks the concept plan.
+- The upper arm is angled 60 degrees into a blocked outer cell; a straight 90-degree arm would enter the unblocked notch between two cells in the source plan. The larger review still needs a matching live footprint.
 - The loose arm is the six-unit fallback from the pack. Its collar sweeps in an isolated corridor below the ring and outside the core, on two torn conduits. A complete swept-volume check is still required before approval.
 - The ring has six habitat modules over twelve bearing slots; slot 10 is open in the lower-right plan quadrant.
 - Radiators use dense grooves and root manifolds, without a solar-cell grid.
 - The design carries no weapons. lore_bible_r8.md describes the Reach and Hegemony but gives no station battery layout. The live defend objective has rules batteries; it is not the abandoned T2 visual target.
 - The cause of the write-off stays off the player-facing sheet. The damage is permanent, not a running fire effect.
-- Height is fitted to actual loaded capital hulls rather than the pack's provisional 32 units. The resulting proportions require a Board call before further building.
+- R247 replaces the vertical +1-unit fit with uniform scaling to the table minimum. No source geometry axis is stretched independently. The new size requires live footprint work before installation.
 
 ## Review order
 
@@ -118,3 +120,22 @@ The animation is a 240-second passive rotation plus a 3-degree, 40-second swing.
 3. The true top, side, underside and end sheets at one scale, then the inside sheet.
 4. Board design review against the accepted beauty and plan; the sheet has no approval yet.
 5. After acceptance: AI shape reference, production recipe contract, full fit and paint bake, station-map game captures and scene gate, outside check, then Ryan look before install.
+
+## GPU comparisons
+
+Rendered in Godot with real fitted ShipView geometry and the real camera rig. One class per picture, 1280 x 720, radius 170. Isolated studio, not the production station-map gate.
+
+| Class | Code | Length | Picture |
+|---|---|---:|---|
+| Destroyer | V15_37 | 15.20 | game_compare170_destroyer.png |
+| Frigate | V14_23 | 10.40 | game_compare170_frigate.png |
+| Cruiser | V16_37 | 23.20 | game_compare170_cruiser.png |
+| Cruiser | V16_37 | 23.20 | game_compare_low.png |
+| Carrier | V18_51 | 26.40 | game_compare170_carrier.png |
+| Battleship | V17_37 | 33.60 | game_compare170_battleship.png |
+| Dreadnought | V1b_r_23 | 43.20 | game_compare170_dreadnought.png |
+| Super-dreadnought | H4_11 | 49.60 | game_compare170_super_dreadnought.png |
+| Battle-barge | C19_51 | 41.60 | game_compare170_battle_barge.png |
+| Bio-titan | B16_23 | 44.80 | game_compare170_bio_titan.png |
+| Ark | I8_37 | 41.60 | game_compare170_ark.png |
+| Tomb-ark | D22_23 | 44.80 | game_compare170_tomb_ark.png |

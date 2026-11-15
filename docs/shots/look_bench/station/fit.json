@@ -1,0 +1,643 @@
+{
+  "modules": {
+    "core_01": {
+      "vertices": 4772,
+      "inside_triangles": 1580,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    "core_02": {
+      "vertices": 4772,
+      "inside_triangles": 1580,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    "core_03": {
+      "vertices": 4772,
+      "inside_triangles": 1580,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    "core_04": {
+      "vertices": 4772,
+      "inside_triangles": 1580,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    "core_05": {
+      "vertices": 4484,
+      "inside_triangles": 1580,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    "core_06": {
+      "vertices": 4772,
+      "inside_triangles": 1580,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    "core_07": {
+      "vertices": 4772,
+      "inside_triangles": 1580,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    "core_08": {
+      "vertices": 4772,
+      "inside_triangles": 1580,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    "core_09": {
+      "vertices": 3956,
+      "inside_triangles": 1580,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    "bearing_00": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0
+    },
+    "habitat_1_slot_00": {
+      "vertices": 1012,
+      "inside_triangles": 396,
+      "outside_vertices": 1012,
+      "source_footprint_outside_vertices": 0
+    },
+    "bearing_01": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0
+    },
+    "habitat_1_slot_01": {
+      "vertices": 1012,
+      "inside_triangles": 396,
+      "outside_vertices": 1012,
+      "source_footprint_outside_vertices": 0
+    },
+    "bearing_02": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0
+    },
+    "habitat_2_slot_02": {
+      "vertices": 1012,
+      "inside_triangles": 396,
+      "outside_vertices": 1012,
+      "source_footprint_outside_vertices": 0
+    },
+    "bearing_03": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0
+    },
+    "habitat_2_slot_03": {
+      "vertices": 1012,
+      "inside_triangles": 396,
+      "outside_vertices": 1012,
+      "source_footprint_outside_vertices": 0
+    },
+    "bearing_04": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0
+    },
+    "habitat_3_slot_04": {
+      "vertices": 1012,
+      "inside_triangles": 396,
+      "outside_vertices": 1012,
+      "source_footprint_outside_vertices": 0
+    },
+    "bearing_05": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0
+    },
+    "habitat_3_slot_05": {
+      "vertices": 1012,
+      "inside_triangles": 396,
+      "outside_vertices": 1012,
+      "source_footprint_outside_vertices": 0
+    },
+    "bearing_06": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0
+    },
+    "habitat_4_slot_06": {
+      "vertices": 1012,
+      "inside_triangles": 396,
+      "outside_vertices": 1012,
+      "source_footprint_outside_vertices": 0
+    },
+    "bearing_07": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0
+    },
+    "habitat_4_slot_07": {
+      "vertices": 1012,
+      "inside_triangles": 396,
+      "outside_vertices": 1012,
+      "source_footprint_outside_vertices": 0
+    },
+    "bearing_08": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0
+    },
+    "habitat_5_slot_08": {
+      "vertices": 1012,
+      "inside_triangles": 396,
+      "outside_vertices": 1012,
+      "source_footprint_outside_vertices": 0
+    },
+    "bearing_09": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0
+    },
+    "habitat_5_slot_09": {
+      "vertices": 1012,
+      "inside_triangles": 396,
+      "outside_vertices": 1012,
+      "source_footprint_outside_vertices": 0
+    },
+    "bearing_11": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0
+    },
+    "habitat_6_slot_11": {
+      "vertices": 1012,
+      "inside_triangles": 396,
+      "outside_vertices": 1012,
+      "source_footprint_outside_vertices": 0
+    },
+    "spoke_1": {
+      "vertices": 2112,
+      "inside_triangles": 192,
+      "outside_vertices": 722,
+      "source_footprint_outside_vertices": 0
+    },
+    "spoke_2": {
+      "vertices": 2112,
+      "inside_triangles": 192,
+      "outside_vertices": 446,
+      "source_footprint_outside_vertices": 0
+    },
+    "spoke_3": {
+      "vertices": 2112,
+      "inside_triangles": 192,
+      "outside_vertices": 281,
+      "source_footprint_outside_vertices": 0
+    },
+    "spoke_4": {
+      "vertices": 352,
+      "inside_triangles": 88,
+      "outside_vertices": 94,
+      "source_footprint_outside_vertices": 0
+    },
+    "arm_1": {
+      "vertices": 4708,
+      "inside_triangles": 1004,
+      "outside_vertices": 3344,
+      "source_footprint_outside_vertices": 0
+    },
+    "arm_2": {
+      "vertices": 4708,
+      "inside_triangles": 1004,
+      "outside_vertices": 3300,
+      "source_footprint_outside_vertices": 0
+    },
+    "arm_3": {
+      "vertices": 4708,
+      "inside_triangles": 1004,
+      "outside_vertices": 3344,
+      "source_footprint_outside_vertices": 0
+    },
+    "arm_4": {
+      "vertices": 1296,
+      "inside_triangles": 120,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    "tethered_arm": {
+      "vertices": 3372,
+      "inside_triangles": 896,
+      "outside_vertices": 3036,
+      "source_footprint_outside_vertices": 0
+    },
+    "tethers": {
+      "vertices": 96,
+      "inside_triangles": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    "equipment_deck": {
+      "vertices": 216,
+      "inside_triangles": 0,
+      "outside_vertices": 36,
+      "source_footprint_outside_vertices": 0
+    },
+    "tower_1": {
+      "vertices": 18164,
+      "inside_triangles": 6320,
+      "outside_vertices": 15723,
+      "source_footprint_outside_vertices": 0
+    },
+    "tower_2": {
+      "vertices": 18996,
+      "inside_triangles": 6320,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    "tower_3": {
+      "vertices": 19516,
+      "inside_triangles": 6320,
+      "outside_vertices": 3442,
+      "source_footprint_outside_vertices": 0
+    },
+    "tower_4": {
+      "vertices": 18708,
+      "inside_triangles": 6320,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    "tower_5": {
+      "vertices": 19092,
+      "inside_triangles": 6320,
+      "outside_vertices": 19092,
+      "source_footprint_outside_vertices": 0
+    },
+    "radiator_1": {
+      "vertices": 464,
+      "inside_triangles": 56,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    "radiator_2": {
+      "vertices": 464,
+      "inside_triangles": 56,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    "radiator_3": {
+      "vertices": 464,
+      "inside_triangles": 56,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    "radiator_4": {
+      "vertices": 464,
+      "inside_triangles": 56,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    "cargo_1": {
+      "vertices": 144,
+      "inside_triangles": 0,
+      "outside_vertices": 144,
+      "source_footprint_outside_vertices": 0
+    },
+    "cargo_2": {
+      "vertices": 144,
+      "inside_triangles": 0,
+      "outside_vertices": 12,
+      "source_footprint_outside_vertices": 0
+    },
+    "lodged_debris": {
+      "vertices": 288,
+      "inside_triangles": 0,
+      "outside_vertices": 162,
+      "source_footprint_outside_vertices": 0
+    },
+    "emergency_lights": {
+      "vertices": 760,
+      "inside_triangles": 0,
+      "outside_vertices": 252,
+      "source_footprint_outside_vertices": 0
+    }
+  },
+  "motion_samples": [
+    {
+      "seconds": 0,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3036,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 5,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3039,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 10,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3042,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 15,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3039,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 20,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3036,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 25,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3033,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 30,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3033,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 35,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3034,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 40,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3039,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 45,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3044,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 50,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3048,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 55,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3048,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 60,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3048,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 65,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3046,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 70,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3039,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 75,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3042,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 80,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3042,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 85,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3042,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 90,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3042,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 95,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3038,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 100,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3036,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 105,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3036,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 110,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3036,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 115,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3036,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 120,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3036,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 125,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3039,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 130,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3042,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 135,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3039,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 140,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3036,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 145,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3033,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 150,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3033,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 155,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3034,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 160,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3039,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 165,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3044,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 170,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3048,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 175,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3048,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 180,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3048,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 185,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3046,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 190,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3039,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 195,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3042,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 200,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3042,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 205,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3042,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 210,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3042,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 215,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3038,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 220,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3036,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 225,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3036,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 230,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3036,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 235,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3036,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 240,
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 3036,
+      "source_footprint_outside_vertices": 0
+    }
+  ],
+  "motion_envelope": {
+    "min": [
+      -2.639833927154541,
+      -30.940092086791992,
+      -9.562105178833008
+    ],
+    "max": [
+      2.639833927154541,
+      -19.021223068237305,
+      -4.282437324523926
+    ]
+  },
+  "note": "Built triangles, 49 poses across 240 seconds; conduit contact allowed. Discrete samples are not a continuous swept-volume certification."
+}

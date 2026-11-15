@@ -1,38 +1,44 @@
 # Hegemony station kit: station_T2 review
 
-Refs #373. T2 is the damaged fleet station of the Vesper Reach, picked in R206. The design pack is
-`contrib/muse/design/station_pack_2026_11/pack.md`; the Board answered its open questions on issue 373 on Nov 13.
-Fleet comes first. T1 in service follows later from this Hegemony kit; refinery T3 is separate.
+Refs #373. Fleet station first: T2 damaged, Vesper Reach, accepted in R206.
+T1 in service follows later from this kit; refinery T3 is separate.
 
-This is a provisional build sheet. It does not bypass RULEBOOK 5.1, the production recipe, the station-map frame gate,
-or Ryan's look before installation. The ship manifest and export contract do not yet accept station topology. The
-station recipe entry records those gaps instead of giving the station invented ship weapons or engines.
+This is a review sheet. Production paint, recipe/export support, complete fit and tear checks,
+the station-map performance gate and Ryan's look remain open. Nothing installs the model.
 
-Double-click `tools/recipe/station_review.bat`. It runs the real rules/ShipView input probe headless, then builds and
-renders the sheet in Blender Cycles on CPU with eight threads, checks it, and labels the pictures. The Godot and
-Blender steps are watched by `tools/pc/tmo.bat`. No GPU window is used, nothing is installed, and no existing asset file is deleted.
-It writes `board/issue-373/shots/review3` outside the repository. The console can be logged to `%TEMP%` by the queue.
+For the R247 review, double-click `review_run.bat` in this folder after the ship files have been
+copied with `tools/pc/get_ship_files.bat` and the Godot import has completed. The launcher checks
+the Board's `gpu_go.txt`, runs the real rules/ShipView probe headless, builds the sheet in CPU
+Cycles, checks the exported GLB, rejects deliberately undersized and oversized GLBs, then runs
+the Godot GPU studio twice and keeps the second captures. Its output folder is
+`C:/Users/rcbai/Downloads/voidsworn_test/board/issue-373/shots/review4/`.
+Set `RECIPE_NOPAUSE=1` for the queue. Long commands use `tools/pc/tmo.bat`; nothing is deleted.
 
-Files:
+- `design.py`, `parts.py`, `stack.py`: existing station design, Hegemony geometry and preview
+  materials. The materials are not the production geometry-mask, trim and decal bake.
+- `scale.py`: reads the two station ranges from `docs/playbooks/scale.md` and reports the live
+  `godot/render/board.gd` STATION constants. No range is copied from the build's fitted output.
+- `inspect.gd`: makes real BattleAPI scenarios and measures fitted ShipView hulls, flagships
+  included. It exports real unit inputs for comparisons and actual cruiser geometry for CPU
+  sheets. Missing hulls or incomplete texture imports stop the probe.
+- `review.py`: scales the whole station uniformly to the table's minimum long axis, preserving
+  all source proportions and animation transforms. Writes source hashes, measurements, the
+  review blend/GLB and CPU sheets. The former vertical +1-unit fit is gone.
+- `check.py`: independently reads the table and live board constants, measures actual GLB bounds
+  through node transforms, checks uniform export scale, inside geometry, lights and 49 motion
+  poses. `--gpu` also requires a camera-170 capture for every combat class and checks framing.
+- `range_selftest.py`: changes the actual exported GLB scale in preserved TEMP copies while the
+  manifest stays unchanged. Both an undersized and oversized export must be refused.
+- `capture.gd`: isolated Godot GPU viewport with the real camera rig, battle lighting and fitted
+  ShipView hulls. One class per 1280 x 720 picture, with both code names. These are GPU studio
+  comparisons, not a station-map battle or performance gate.
+- `sheets.py`: labels CPU sheets at original pixel size and writes the feature table.
 
-- `design.py`: source dimensions, module counts, positions, joints, light map and motion.
-- `parts.py`: Hegemony station geometry, shell thickness, corridor decks, frames, racks, deep berth bores and cap systems.
-- `stack.py`: preview materials and ambient occlusion only. The production geometry-mask/trim/decal bake is pending.
-- `inspect.gd`: real BattleAPI station scenario, footprint through Board.hex_world, fitted ShipView heights including
-  flagships, and actual comparison cruiser geometry. The placeholder guard stops missing hulls.
-- `review.py`: builds the sheet, fits height to the actual loaded ships, measures the meshes and 49 animation poses,
-  renders on CPU, writes a source-hashed manifest and a review GLB. The camera uses Godot's vertical FOV.
-- `check.py`: compares mesh measurements with real inputs and reads the actual GLB triangle count and animation targets.
-- `sheets.py`: labels each picture at 1280 x 720 and writes the feature table from the built manifest and fit report.
+The original plan fits seven real blocked cells. The R247 scale exceeds them. Both the source
+fit and the scaled spill are reported; no blocked cell, live station constant or scale_check
+KNOWN entry changes in this run. A matching footprint remains required before installation.
 
-The plan fits the seven real station cells, including their concave boundary. A 90-degree upper arm would extend into
-an unblocked notch; its 60-degree placement follows the blocked cells. The height fit found a 51.13-unit loaded
-Eclipse Tomb-ark and provisionally raised the station to 52.13 units. The Board must judge those proportions.
-
-The sampled motion check allows contact at the tether, and tests the moving arm's triangles against the rest of the
-structure at five-second intervals across its full cycle. It is not a continuous sweep or a static fit audit. Whole
-module source meshes and joint intent exist; the review GLB joins static modules and does not prove production tearing.
-
-Next: Board review of the sheet against the accepted pictures, then the approved design through production stages 2 to
-7. Pending work includes the shape reference, station recipe/export contract, full fit and tear checks, geometry-mask
-paint bake, station-map game captures and frame gate at 1080p and 4K, outside check, and Ryan look before a live swap.
+The motion probe permits tether contact and samples mesh intersections across one 240-second
+cycle. It does not certify a continuous sweep or full static fit. The review GLB joins static
+modules for cost inspection; production seams and tearing remain unproved. Costs are reported
+without a triangle cap. RULEBOOK 5.1 still requires the sheet to pass before production.

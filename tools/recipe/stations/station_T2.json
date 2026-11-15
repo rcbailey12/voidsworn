@@ -14,9 +14,9 @@
     "1": "accepted T2 beauty and plan named above",
     "2": "pending: accepted concept AI shape reference; CPU-only Blender run",
     "3": "sheet design is authority, never trace the sheet again",
-    "4": "draft station kit and module insides; footprint and 49 motion poses checked; static fit and production seam export pending",
+    "4": "draft station kit and module insides; uniform R247 sheet scale from scale.md; source footprint and 49 motion poses checked; live footprint integration, static fit and production seam export pending",
     "5": "pending: production geometry-mask and trim bake after sheet approval",
-    "6": "review GLB cost in cost.json; CPU sheets at real camera170 FOV and low camera beside real cruiser; station-map scene gate pending GPU slot",
+    "6": "review GLB cost in cost.json; CPU sheets plus Godot GPU studio comparisons for every combat class at real camera170; production station-map scene gate pending after approval",
     "7": "review GLB only; no install before gate and Ryan look"
   },
   "install": false,

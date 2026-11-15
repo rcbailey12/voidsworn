@@ -65,9 +65,13 @@ lines=['# station_T2: provisional build sheet','',
        'The real BattleAPI scenario and Board.hex_world supply the seven blocked cells. No rules cells are changed. '
        'Blender uses X/Y for the plan and Z up; the OBJ comparison converts actual fitted ShipView geometry to that frame.', '',
        'Overall span %.3f x %.3f units; height %.3f units. The tallest of %d loaded hulls, including all six flagships, '
-       'is %.3f units. Vertical fit factor %.6f is provisional and must be judged against the accepted concept. '
+       'is %.3f units. Uniform fit factor %.6f preserves the source proportions on all three axes. '
        'The four orthographic views share a %.3f-unit horizontal field and a 10-unit scale bar.' % (
-           *M['bounds']['size'],len(G['ships']),G['max_ship_height'],M['height_fit']['scale'],M['orthographic_scale']), '',
+           *M['bounds']['size'],len(G['ships']),G['max_ship_height'],M['uniform_fit']['scale'],M['orthographic_scale']), '',
+       'The review long axis is the minimum of the station target in `docs/playbooks/scale.md`. '
+       'The check reads that table and the live `godot/render/board.gd` STATION constants independently, '
+       'and measures the exported GLB. Live station sizes and scale_check KNOWN rows stay unchanged. '
+       'The larger station extends outside the old seven blocked cells; footprint integration remains open before a swap.', '',
        '## Feature table','',
        '| ID | Kind | Purpose | Route | Inside triangles |',
        '|---|---|---|---|---:|']
@@ -96,9 +100,11 @@ lines+=['','Six habitat modules are subdivided over eleven occupied bearing slot
         'capture proving matching insides are still pending. The review GLB joins static modules for cost inspection; '
         'it is not a destructible game asset.', '',
         '## Fit and movement','',
-        'Every sampled mesh vertex is inside the real seven-cell union. All 49 poses across 240 seconds have '
-        'zero intersections between the moving arm triangles and static structure, and zero vertices outside '
-        'the footprint. The intentional tether attachment is excluded from that intersection test. Discrete '
+        'The source plan fits the real seven-cell union. After uniform scaling, %d vertices are outside '
+        'the live union. No blocked cell is changed in this review run. All 49 poses across 240 seconds have '
+        'zero intersections between the moving arm triangles and static structure. '
+        'The intentional tether attachment is excluded from that intersection test. Discrete ' %
+        sum(row['outside_vertices'] for row in fit['modules'].values()) +
         'samples do not prove a continuous sweep or the fit of every static machine. Full fit review remains pending.', '',
         'The animation is a 240-second passive rotation plus a 3-degree, 40-second swing. '
         'The ring and battery strips stay static. Board answers on issue 373: no weapons, T1 later, '
@@ -116,8 +122,8 @@ lines+=['','Six habitat modules are subdivided over eleven occupied bearing slot
             format(cost['glb_bytes'],',')), '',
         '## Changed from the picture','']
 lines+=['- '+change for change in M['changes']]
-lines+=['- Height is fitted to actual loaded capital hulls rather than the pack\'s provisional 32 units. '
-        'The resulting proportions require a Board call before further building.', '',
+lines+=['- R247 replaces the vertical +1-unit fit with uniform scaling to the table minimum. '
+        'No source geometry axis is stretched independently. The new size requires live footprint work before installation.', '',
         '## Review order','',
         '1. `sheet_camera170.png`, then `sheet_compare170.png`, at true pixel size.',
         '2. `sheet_compare_low.png`, beside the actual cruiser geometry.',
@@ -125,4 +131,12 @@ lines+=['- Height is fitted to actual loaded capital hulls rather than the pack\
         '4. Board design review against the accepted beauty and plan; the sheet has no approval yet.',
         '5. After acceptance: AI shape reference, production recipe contract, full fit and paint bake, '
         'station-map game captures and scene gate, outside check, then Ryan look before install.', '']
+if (OUT/'captures.json').exists():
+    captures=json.loads((OUT/'captures.json').read_text())
+    lines+=['## GPU comparisons','',
+            'Rendered in Godot with real fitted ShipView geometry and the real camera rig. '
+            'One class per picture, 1280 x 720, radius 170. Isolated studio, not the production station-map gate.', '',
+            '| Class | Code | Length | Picture |','|---|---|---:|---|']
+    for row in captures['comparisons']:
+        lines.append('| %s | %s | %.2f | %s |' % (row['class'],row['code'],row['length'],row['file']))
 (OUT/'feature_table.md').write_text('\n'.join(lines),encoding='utf-8')

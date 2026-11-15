@@ -8,30 +8,68 @@
   "units": "world units; Blender Z up; glTF Y up",
   "bounds": {
     "min": [
-      -25.795000076293945,
-      -17.069190979003906,
-      -21.085634231567383
+      -49.599998474121094,
+      -32.82154846191406,
+      -26.919944763183594
     ],
     "max": [
-      25.795000076293945,
-      20.474483489990234,
-      31.043649673461914
+      49.599998474121094,
+      39.367549896240234,
+      39.63328552246094
     ],
     "size": [
-      51.59000015258789,
-      37.54367446899414,
-      52.1292839050293
+      99.19999694824219,
+      72.18910217285156,
+      66.55323028564453
     ]
   },
   "triangles": {
-    "exterior": 270808,
+    "exterior": 270560,
     "inside": 55092,
-    "total": 325900
+    "total": 325652
   },
-  "height_fit": {
-    "scale": 1.5061167160480835,
-    "source": "game_inputs.json max_ship_height",
-    "note": "Vertical sizing is provisional for Board review; the plan stays in the real blocked cells."
+  "uniform_fit": {
+    "scale": 1.9228532604496198,
+    "axes": [
+      1.9228532604496198,
+      1.9228532604496198,
+      1.9228532604496198
+    ],
+    "source_bounds": {
+      "min": [
+        -25.795000076293945,
+        -17.069190979003906,
+        -14.0
+      ],
+      "max": [
+        25.795000076293945,
+        20.473506927490234,
+        20.611705780029297
+      ],
+      "size": [
+        51.59000015258789,
+        37.54269790649414,
+        34.6117057800293
+      ]
+    },
+    "contract": {
+      "range": [
+        99.2,
+        297.6
+      ],
+      "table": "docs/playbooks/scale.md",
+      "table_sha256": "ef5e12a37e3cf9ad65cdd8e4223b482b7af3d1ee7c8fecae17092be23a68b7ef",
+      "live_source": "godot/render/board.gd",
+      "live_constants": {
+        "STATION_BASE_LEN": 22.0,
+        "STATION_PER_HEX": 4.0,
+        "STATION_BIG_LEN": 46.0,
+        "STATION_BIG_HEXES": 5.0
+      },
+      "live_one_hex": 26.0,
+      "live_large": 46.0
+    },
+    "note": "Uniform review scale. Live footprint integration pending; no swap."
   },
   "modules": [
     {
@@ -532,14 +570,14 @@
   ],
   "joints": {
     "core": [
-      -4.668961819749058,
-      -0.9036700296288496,
-      2.861621760491359,
-      6.626913550611568,
-      10.392205340731778,
-      14.157497130851986,
-      17.922788920972195,
-      21.688080711092404
+      -5.960845107393821,
+      -1.1537119562697713,
+      3.6534211948542783,
+      8.460554345978327,
+      13.267687497102377,
+      18.074820648226428,
+      22.881953799350477,
+      27.689086950474525
     ],
     "ring": [
       0.0,
@@ -566,8 +604,8 @@
   "motion": {
     "pivot": [
       0.0,
-      -10.0,
-      -5.422019958496094
+      -19.228532791137695,
+      -6.922271251678467
     ],
     "length": 6.0,
     "period": 240.0,
@@ -576,30 +614,35 @@
     "clearance_radius": 4.0
   },
   "changes": [
-    "The rules main station occupies seven cells (centre plus its six neighbours), not three cells. The plan is fitted inside their union; the full footprint is three hex columns wide.",
+    "The rules main station occupies seven cells (centre plus its six neighbours), not three cells. The source plan fits inside their union; the source footprint is three hex columns wide. R247 uniform review scaling now exceeds that live union; footprint integration remains open before a swap.",
     "The secondary spokes are offset from the docking arms; each tower has a bridge to a spoke or the bearing deck.",
     "The drum stack rises above the ring, toward the accepted beauty silhouette. Nine drums share one service shaft; the station does not gain a second core.",
-    "The upper arm is angled 60 degrees into a blocked outer cell; a straight 90-degree arm would enter the unblocked notch between two cells. The real footprint outranks the concept plan.",
+    "The upper arm is angled 60 degrees into a blocked outer cell; a straight 90-degree arm would enter the unblocked notch between two cells in the source plan. The larger review still needs a matching live footprint.",
     "The loose arm is the six-unit fallback from the pack. Its collar sweeps in an isolated corridor below the ring and outside the core, on two torn conduits. A complete swept-volume check is still required before approval.",
     "The ring has six habitat modules over twelve bearing slots; slot 10 is open in the lower-right plan quadrant.",
     "Radiators use dense grooves and root manifolds, without a solar-cell grid.",
     "The design carries no weapons. lore_bible_r8.md describes the Reach and Hegemony but gives no station battery layout. The live defend objective has rules batteries; it is not the abandoned T2 visual target.",
     "The cause of the write-off stays off the player-facing sheet. The damage is permanent, not a running fire effect."
   ],
-  "orthographic_scale": 125.11028137207032,
+  "orthographic_scale": 173.25384521484375,
   "method": "hand-built station kit; schematic AO material; production mask/trim bake pending sheet approval",
   "scripts": {
-    "design.py": "e20770dfda3879129fd5a2c1ffacaf273a07fde230b6d6a80a660b6541a5b5da",
+    "design.py": "23da8e909b2f07e7c47d6812ddad196bf604cfe8bb15aa1afc10bf138d70e3d7",
     "parts.py": "11731149d999bfe6ff4bc5826e815710d718af73a03836bf860477e09609934e",
     "stack.py": "759c45de409956050d17208dc0056d9a953f1705e825898652485392e5529741",
-    "review.py": "88425da32ae392c0b6a65117baf4fbcb1a46a83d04b55ff86bd2ad8d9e1a611a",
-    "inspect.gd": "2c1f470b2e44547f732a05c9a110db39136dff0863c8a3e2015358dc402fc89e",
-    "check.py": "0ae574e10bf5d99ec258729bd5e5f253e5098aaffef870bfbad0c7c8e7c96634",
-    "sheets.py": "ea01358ba71aea4cdeb3c3eb3e2d8afc555280fd473625b8f26439333e36c82b"
+    "review.py": "9ebb397243836361e14790285703202141eabc802c745c3b9190d90df69862c5",
+    "inspect.gd": "4cf8d13fb6f3e6dd3739c0c31ab320dd349e7ec60df5d6fcf96aa5ee3853726c",
+    "check.py": "dc2c3ba8f834dddde38ef5b27461487367a6957d0f21eda7ca74ed33b955be4e",
+    "sheets.py": "82b98106a1a2d6efd2898595c62f18b7632d9be6848dcc1766594770279b0deb",
+    "scale.py": "0bb6b68ac437faa8862835d347ba5e8cb155892ce6cef5ba0386451f953a1a92",
+    "capture.gd": "fb40254e209feb55143cf1bb78186b5b22a0c2a3d31788324c7121201b0e7eaa",
+    "range_selftest.py": "90dd42d908c2cf8ed5dd7ec7da322218b17382922533fa01d49e4362d79602f2",
+    "review_run.bat": "865d0bf193de7cdb4aacc70ad89df3f54d324655d4523b8345cf80db1bed8a49"
   },
   "pending": [
     "Board sheet review",
-    "AI shape reference (CPU-only job)",
+    "live footprint integration at R247 scale",
+    "AI shape reference",
     "production geometry-mask/trim paint bake",
     "full fit and swept-volume audit",
     "station-map 1080p and 4K scene gate",
