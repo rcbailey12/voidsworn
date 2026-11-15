@@ -549,7 +549,7 @@ def hatchbox(w, l, h, fins=0):
     p = Part('hatchbox')
     p.add('frame', 'mount', 'hgrey2', block(-l / 2, l / 2, w / 2, h / 2, h * 0.25, zo=h / 2 - 0.05, taper=0.94, ztaper=0.96))
     p.add('lid', 'body', 'hpanel', block(-l * 0.4, l * 0.36, w * 0.38, 0.03, 0.02, zo=h * 0.93))
-    p.add('lidseam', 'body', 'dark', block(-l * 0.42, l * 0.38, w * 0.4, 0.012, 0.0, zo=h * 0.9))
+    p.add('seam', 'body', 'dark', block(-l * 0.42, l * 0.38, w * 0.4, 0.012, 0.0, zo=h * 0.9))
     p.add('lidstrip', 'body', 'hblue', block(l * 0.37, l * 0.39, w * 0.3, 0.012, 0.0, zo=h * 0.92))
     return p
 

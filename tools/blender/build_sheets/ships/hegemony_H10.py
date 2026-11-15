@@ -28,7 +28,11 @@ CROPS = [('bow (the blunt wedge and the ion trench)', (1150, 200, 1910, 900)), (
 SHEET = dict(version=1, round='first sheet', date='2026-11-15', blend='opus759',
              blend_where='rendered in the issue 759 sandbox (Blender 5.3, Cycles CPU); not on the PC: `build.py hegemony_H10 <out> render` rebuilds it from this file',
              before='First full layout', before_note='The first complete layout, built with the new Hegemony kit and run through the fit check before any fix.',
-             during='The table above is every finding, in the order the check made them.')
+             during='The table above is every finding, in the order the check made them. Beyond the fit check, the sheet\'s own looks sent back: the first '
+                    'lance turrets (size 0.9, barrels 0.92) read small beside H10\'s big shoulder turrets and their barrels hid behind the glacis, so they grew '
+                    'to 1.1 with 1.25 barrels in a wider, longer pit; the first sensor fin (0.62 tall, 1.8 long) read as a sail from the beam, so it came '
+                    'down to 0.42 and ran out to 2.4; the first panel grid (0.8 by 0.62) left the hull at a seventh of the guns\' triangle density, so it '
+                    'went to 0.6 by 0.45.')
 
 # ---------------------------------------------------------------------------------------------------- the wedge's section
 # The wedge's section (port half; the starboard half mirrors it): a flat deck, a deck-edge chamfer, an upper facet sloping out to
@@ -206,8 +210,8 @@ def build(K):
     K.mass('Hull: the wedge', hull, 'pale grey module plate',
            note='the heavy thick wedge: a flat deck, chamfered deck edges, upper facets out to the knuckle, the flank band with the blue line, lower facets, a flat worked belly; the shoulder terraces where the lance turrets sit low')
     K.mark('wedge', 'hull', ['facet', 'step', 'chamfer'])
-    # panels on an even grid: rings laid at the module pitch (0.8) from the bow, so seams run straight and line up across faces
-    grid = [XB - 0.1 - 0.8 * i for i in range(12)]
+    # panels on an even grid: rings laid at the module pitch (0.6) from the bow, so seams run straight and line up across faces
+    grid = [XB - 0.1 - 0.6 * i for i in range(17)]
     grid = [x for x in grid if x >= XA + 0.05] + [XA + 0.05]
     plate_jobs.append(('wedge_deck', [ring(x) for x in grid], dict(faces=[0, 17, 2, 15], inv='deck_panels')))
     plate_jobs.append(('wedge_flank', [ring(x) for x in grid], dict(faces=[4, 13, 6, 11], inv='flank_panels')))
@@ -268,7 +272,7 @@ def build(K):
         md = ob.modifiers.new('shell', 'SOLIDIFY'); md.thickness = SHELL; md.offset = -1; md.use_rim = True
         rails[side] = ob
         K.mass('Rail, %s' % nm, ob, 'pale grey module plate', note='one of the twin rails: a chamfered block in two module tiers (a recessed band at mid height), the drives at its end')
-        gr = [RX0 - 0.05 - 0.8 * i for i in range(12) if RX0 - 0.05 - 0.8 * i > RX1 + 0.05] + [RX1 + 0.05]
+        gr = [RX0 - 0.05 - 0.6 * i for i in range(16) if RX0 - 0.05 - 0.6 * i > RX1 + 0.05] + [RX1 + 0.05]
         plate_jobs.append(('rail_%s' % nm[0], [rail_ring(x, side) for x in gr], dict(faces=[0, 2, 6, 8, 10, 14], inv='rail_panels')))
     K.mark('rails', 'rail', ['facet', 'step', 'strip'])
     bx = [BAY['x0'], BAY['x0'] - 0.3, BAY['x1'] + 0.3, BAY['x1']]
@@ -367,16 +371,28 @@ def build(K):
         h = half_ring(8.0)
         p = Vector((8.0, side * (h[4][0] + h[5][0]) / 2, (h[4][1] + h[5][1]) / 2)); nrm = Vector((0, side * (h[4][1] - h[5][1]), h[5][0] - h[4][0])).normalized()
         K.thruster('Q2' + sn, tuple(p), tuple(nrm), inv='thrusters', r=0.26, note='bow attitude thruster on the upper facet')
-        K.thruster('Q3' + sn, (-7.0, side * (RY + RHW), 0.42), (0, side, 0), inv='thrusters', r=0.26, note='stern attitude thruster on the rail\'s outer flank')
+        K.thruster('Q3' + sn, (-7.75, side * (RY + RHW), 0.42), (0, side, 0), inv='thrusters', r=0.26, note='stern attitude thruster on the rail\'s outer flank')
         for i, x in enumerate((8.9, 8.2, 7.5)):
             h = half_ring(x)
             K.slit('W%d%s' % (i + 1, sn), (x, side * (h[5][0] + 0.035), h[5][1] - 0.13), (0, side, 0), 0.4, 0.09, inv='windows',
                    note='blue-white window of the forward crew decks')
         for i, x in enumerate((-1.6, -4.3)):
-            K.slit('W%d%s' % (i + 4, sn), (x, side * (RY + RHW + 0.004), 0.45), (0, side, 0), 0.5, 0.09, inv='windows', note='blue-white window of the rails\' crew decks')
+            K.slit('W%d%s' % (i + 4, sn), (x, side * (RY + RHW + 0.004), -0.55), (0, side, 0), 0.5, 0.09, inv='windows', note='blue-white window of the rails\' crew decks')
         for i, x in enumerate((-1.7, -4.3, -6.9)):
             K.vent('V%d%s' % (i + 1, sn), (x, side * RY, RZT), (0, 0, 1), 0.34, 1.2, slats=7, inv='vents',
                    note='heat louvre on the rail deck over the %s' % ('crew decks' if x > -5 else 'engine room'))
+        for i, x in enumerate((-1.7, -4.3, -6.6)):
+            K.vent('V%d%s' % (i + 6, sn), (x, side * (RY + RHW + 0.004), 0.55), (0, side, 0), 1.5, 0.2, slats=3, inv='vents',
+                   note='heat louvre on the rail\'s upper tier (H10\'s long flank slots)')
+        for i, x in enumerate((-2.5, -5.1, -7.7)):
+            K.hatch('H6%d%s' % (i, sn), (x, side * (RY + RHW + 0.004), -0.85), (0, side, 0), 0.5, 0.36, inv='hatches', up=(0, 0, 1),
+                    note='rail flank hatch on the lower tier: access to the plant rooms')
+        for i, x in enumerate((3.2, 1.2)):
+            h = half_ring(x)
+            p = Vector((x, side * (h[6][0] + h[7][0]) / 2, (h[6][1] + h[7][1]) / 2)); nrm = Vector((0, side * (h[6][1] - h[7][1]), h[7][0] - h[6][0])).normalized()
+            if nrm.z > 0:
+                nrm = Vector((0, nrm.y, -nrm.z))
+            K.hatch('H7%d%s' % (i, sn), tuple(p + nrm * 0.004), tuple(nrm), 0.55, 0.4, inv='hatches', note='flank hatch on the lower facet: stores to the lower deck')
         K.vent('V4' + sn, (5.9, side * 0.85, deck_z(5.9, 0) + 0.01), (0.047, 0, 1), 0.3, 1.2, slats=7, inv='vents', note='heat louvre over the lance capacitor rooms')
         K.vent('V5' + sn, (1.0, side * 0.8, deck_z(1.0, 0.8)), (0, 0, 1), 0.3, 0.9, slats=5, inv='vents', note='heat louvre over the reactor')
         for i, xb_ in enumerate(BANDS_W[:2]):
@@ -526,7 +542,7 @@ def build(K):
         K.point('breach', 'hp_breach_%d' % i, (x, side * (y + 0.08), z), side='port' if side > 0 else 'stbd', section=sec, note='on a module joint')
     for i, side in enumerate((1, -1)):
         K.point('rcs', 'hp_rcs_%d' % i, (10.6, side * 1.55, -0.25), side='port' if side > 0 else 'stbd')
-        K.point('rcs', 'hp_rcs_%d' % (i + 2), (-7.0, side * (RY + RHW + 0.2), 0.42), side='port' if side > 0 else 'stbd')
+        K.point('rcs', 'hp_rcs_%d' % (i + 2), (-7.75, side * (RY + RHW + 0.2), 0.42), side='port' if side > 0 else 'stbd')
         K.point('board', 'hp_board_%d' % i, (-2.2, side * (RY + RHW + 0.05), 0.2), side='port' if side > 0 else 'stbd')
     K.point('bay', 'hp_bay_0', (-2.45, 0.0, BAY['z1'] + 0.08), note='the drone bay doors: drones launch up', dir=(0, 0, 1))
 
@@ -542,7 +558,7 @@ def build(K):
             pass
         return any((pc - c).length < r + hd * 0.6 for c, r in K.keepouts)
     for nm_, rs_, spec in plate_jobs:
-        acc, laid = HP.module_panels(rs_, spec['faces'], keep=keep, closed=spec.get('closed', True))
+        acc, laid = HP.module_panels(rs_, spec['faces'], pv=0.45, keep=keep, closed=spec.get('closed', True))
         for m_, (V_, F_) in acc.items():
             if V_:
                 K._obj('H10_%s_panels_%s' % (nm_, m_), V_, F_, m_, grp='hull')
@@ -558,8 +574,8 @@ def build(K):
              'R183 (1): the ion weapon is a recessed emitter trench in a blunt bow face, never prongs or a barrel on the nose; data.js ion F (1 shot)')
     K.change('H10\'s small twin-tube fitting on the centreline is removed; the picket lasers (flak T) are two small twin turrets on the belly',
              'R241: no decorative or extra guns (the little twin tubes read as a gun with no data.js slot); the picket lasers on the belly keep the deck clear for the sensor fin (R240: no gun behind or aiming through a sensor) and cover the underside, where craft come from below')
-    K.change('H10\'s oval sensor panel becomes the one low sensor fin on the centreline between the turrets (0.6 tall, 1.8 long)',
-             'factions.md: "One low sensor fin, not a tower"; R240: no gun sits behind it or fires through it (the turrets fire outboard, the pickets below)')
+    K.change('H10\'s oval sensor panel becomes the one low sensor fin on the centreline between the turrets (0.4 tall, 2.4 long, its leading edge raked)',
+             'factions.md: "One low sensor fin, not a tower"; a taller first fin read as a submarine\'s sail from the beam (factions.md: H7 to H10 read as yachts or submarines); R240: no gun sits behind it or fires through it (the turrets fire outboard, the pickets below)')
     K.change('H10\'s open hangar recess between the rails becomes flush armoured drone doors in a trough between the rails (a seam line only), with blue guide lamps',
              'R232 (pack.md question 2): flush armoured drone doors on the Dominion; data.js hangar 1; the drones launch up out of the trough')
     K.change('H10\'s nozzles (two stacked pairs a rail in the side view, a pair across in the top view) become one flat row of four rectangular nozzle pods, two a rail, each a thick-lipped mouth with a blue-white throat and guide vanes',
@@ -574,6 +590,20 @@ def build(K):
              'R183 (1) and factions.md: a blunt bow face; rule 4.1: no ship\'s prow or keel line')
     K.change('Retro thrusters on the bow face, attitude thrusters on the facets and rails, blue-white window slits, louvres, flush hatches, a lift head, a belly armour step added',
              'a ship in space needs thrusters and access (lore 3.4: retro thrusters make backing off cheap; 3.3: blue-white windows); H10 shows no underside; every part has a job (R221)')
+    # ---------- the fit report's fix column: every finding the check made while this sheet was designed (issue 759) ----------
+    K.fix('HP and HS turning pieces inside the wedge and their bustles turning into the deck panels and the pit lip (the first pit ran 1.95 to 3.6 off the axis)',
+          'the shoulder terrace widened inboard to 1.45 and lengthened (0.55 to 3.85 at full depth); no panel under the turret\'s sweep (a keep-out of 1.45)')
+    K.fix('Window panes W1 to W3 inside the flank band, which tapers in plan', 'the windows set 0.035 proud of the band')
+    K.fix('Nozzle pods E1 against E2 and E3 against E4', 'the pods 1.42 apart across each rail (they overhang the rail by 0.07 a side, as H10\'s pods do)')
+    K.fix('Picket turrets F1 and F2 inside the belly armour step, and turning into it', 'the pickets seated on the step\'s face, 0.1 below the belly')
+    K.fix('Belly hatch H3 half inside the rising belly at 6.0', 'moved to the flat belly at 2.9')
+    K.fix('Reactor louvres V5 inside the pit lip, then V4 into the lift head HB1 and into the latch rows LW0 and LW1', 'V5 beside the sensor fin; the deck louvres turned to run along the length, V4 shortened to 1.2 and tilted to the deck\'s slope')
+    K.fix('Flank hatches H70 and H71 inside the lower facet (their normal pointed in), first on the tapering facets forward', 'the normal turned out; the hatches moved to 3.2 and 1.2, where the facet runs straight')
+    K.fix('Rail windows W4 and W5 against the rail louvres; stern thrusters Q3 against louvre V8', 'the windows to the lower tier, Q3 aft to 7.75, V8 forward to 6.6')
+    K.fix('Rail louvres V2 against the latch rows at the 3.0 band', 'the rail louvres centred in their modules (1.7, 4.3, 6.6 aft)')
+    K.fix('The nozzles failed the export\'s open-bell test (check_export.py, simulated here): the rim covered 0, then 8, of 12 sectors', 'points laid along the mouth\'s straight edges, the mouth made 1.1 by 1.45; all four pass, 12 of 12 sectors, a throat, a clear exhaust')
+    K.fix('Lift head HB1 across seam B-1 (structure, allowed, but avoidable)', 'moved aft to 6.1')
+    K.fix('Inside frames F5 and F8 outside the inner skin on the terrace ramps; the rails\' aft decks past the end cap', 'frames moved to full-terrace or plain stations; the decks end at 8.9 aft')
     K.open_item('The belly is designed here; H10 shows no underside')
     K.open_item('Stencil marks ("HD-14", "SECTION") and the steel-blue trim tone are paint (the Hegemony stack, a later job), not modelled')
 
