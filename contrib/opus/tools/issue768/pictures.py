@@ -55,22 +55,23 @@ for line in ('One broad wedge, an armoured canyon down its spine', 'Three low br
     d.text((856, y), '- ' + line, fill=INK, font=F(14)); y += 29
 c.save(D + '/hegemony_IM5_sheet_overview.jpg', quality=90)
 
-# 2. the whole-concept compare beside IM5 (R229): the accepted picture and the build, whole, at the fitted camera; then IM5's top
-# view over the blockout's at one length (IM5 has no side view)
+# 2. the whole-concept compare beside IM5 (R229): the accepted picture and the build, whole, at the fitted camera and at the
+# standard three-quarter; then IM5's top view beside the blockout's, each whole (IM5 has no side view)
 c = Image.new('RGB', (1280, 720), GREY); d = ImageDraw.Draw(c)
 d.text((18, 10), 'hegemony_IM5 | whole concept beside the build (R229)', fill=INK, font=F(26))
-paste(c, Image.open(C + 'IM5.jpg').convert('RGB'), 18, 70, 615, 400)
-paste(c, on_grey(R + '/beauty_cam.png'), 647, 70, 615, 400)
-d.text((22, 48), 'IM5 (Ryan\'s pick, R255)', fill=ACC, font=F(17)); d.text((651, 48), 'Build, unpainted, at the camera fitted to IM5 (outline overlap %s percent)' % IOU, fill=ACC, font=F(15))
-top = Image.open(D + '/concept_IM5_top_bow_left.jpg').convert('RGB').crop((4, 20, 716, 345))
+d.text((22, 46), 'IM5 (Ryan\'s pick, R255)', fill=ACC, font=F(15))
+d.text((448, 46), 'Build at the camera fitted to IM5 (overlap %s%%)' % IOU, fill=ACC, font=F(15))
+d.text((874, 46), 'Build, standard three-quarter', fill=ACC, font=F(15))
+paste(c, Image.open(C + 'IM5.jpg').convert('RGB'), 18, 68, 414, 290)
+paste(c, on_grey(R + '/beauty_cam.png'), 444, 68, 414, 290)
+paste(c, on_grey(R + '/threequarter.png'), 870, 68, 392, 290)
+top = Image.open(D + '/concept_IM5_top_bow_left.jpg').convert('RGB').crop((2, 30, 718, 350))
 bt = alpha_crop(R + '/top.png', 6).rotate(90, expand=True)
-W = 615
-a = top.resize((W, int(top.height * W / top.width))); b = bt.resize((W, int(bt.height * W / bt.width)))
-y = 482
-d.text((22, y), 'IM5 top view (turned: bow left; its label hides the bow tip)', fill=DIM, font=F(14)); d.text((651, y), 'build top, same length', fill=DIM, font=F(14))
-hmax = 210
-c.paste(a.crop((0, max(0, (a.height - hmax) // 2), W, max(0, (a.height - hmax) // 2) + min(hmax, a.height))), (18, y + 22))
-c.paste(b.crop((0, max(0, (b.height - hmax) // 2), W, max(0, (b.height - hmax) // 2) + min(hmax, b.height))), (647, y + 22))
+d.text((22, 372), 'IM5 top view (turned: bow left; its own label covers the bow)', fill=DIM, font=F(14))
+d.text((651, 372), 'build top, bow left, unpainted', fill=DIM, font=F(14))
+paste(c, top, 18, 394, 615, 310)
+paste(c, bt, 647, 394, 615, 310)
+d.text((22, 700), 'unpainted blockout; the Hegemony paint stack is a later job', fill=DIM, font=F(13))
 c.save(D + '/hegemony_IM5_compare_IM5.jpg', quality=90)
 
 # 3. the battle camera
