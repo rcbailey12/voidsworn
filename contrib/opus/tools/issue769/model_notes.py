@@ -1,5 +1,5 @@
 # Issue 769 helper (sandbox only): refresh the words in a build.py model json (the changed-from-the-picture list, the open items,
-# the fit report's fix column, the SHEET dict) from the design file without rendering again. The geometry is untouched: it refuses
+# the fit report's fix column, the SHEET dict, the INSIDE rows' order and words) from the design file without rendering again. The geometry is untouched: it refuses
 # when the rebuilt sheet's feature count, mass list or part list differs from the json's, so it never papers over a changed design.
 # usage: python model_notes.py CODE RENDER_DIR   (bpy module)
 import sys, os, json, importlib.util
@@ -20,7 +20,7 @@ same = (len(m['features']) == len(K.features) and [x['name'] for x in m['masses'
         and [x['id'] for x in m['parts']] == [x['id'] for x in K.built])
 if not same:
     sys.exit('the design changed since the render: render again (build.py render), do not patch the words')
-m['changes'] = [list(c) for c in K.changes]; m['tbd'] = K.tbd; m['sheet'] = getattr(d, 'SHEET', m.get('sheet'))
+m['changes'] = [list(c) for c in K.changes]; m['tbd'] = K.tbd; m['inside'] = K.inside; m['sheet'] = getattr(d, 'SHEET', m.get('sheet'))
 json.dump(m, open(p, 'w'), indent=1)
 fp = os.path.join(rd, code + '_fit.json')
 if os.path.exists(fp):

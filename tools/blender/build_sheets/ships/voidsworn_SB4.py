@@ -6,7 +6,7 @@
 # drives are nozzle clusters inside armoured blocks; bombers chunkier and visibly built around what they carry.
 # Size: docs/playbooks/scale.md, Squadron row (binding; it wins over the notes' 4.2 units): CLS_LEN['Squadron'] 1.6 long, drawn
 # x SHIP_K 1.6 x SQUADRON_K 1.5 = 3.84 on the board, the same length as the fighter ("same wing frame as a fighter, only its load
-# differs"). The bomber reads apart by its mass: about twice the fighter's beam and three times its depth.
+# differs"). The bomber reads apart by its mass: about twice the fighter's beam and depth.
 # Every station and size below is a share of LENGTH (the U() helper). +X bow, +Y port, +Z up.
 import math
 
@@ -192,17 +192,17 @@ def build(K):
     K._obj('in_bombs', BV, BF, 'magazine', inside=True)
     K.inside.append(dict(kind='space', name='bombs', mat='magazine', x=(U(-0.09), U(0.26)), y=(U(-0.146), U(0.146)), z=(U(-0.034), U(0.034)),
                          note='eight bombs racked in two rows of four (the magazine the hull is built round)'))
-    K.inside.append(dict(kind='note', name='insides', note='A craft: the game shows its death as a spark and hides it (godot/fx/fx_death.gd _wing_death); nothing breaks open. The magazine rooms are here because the build contract needs an inside (tools/blender/build_sheets/contract.py) and because the magazine is the bomber\'s story; they cost few triangles.'))
     K.armour('block', U(0.006), 'the magazine block\'s plate')
     K.armour('bow cassette', U(0.02), 'the heaviest armour, round the tubes')
     reach = 0.4
     K.break_line('B-1', U(-0.185), 'the magazine tears from the reactor section (only for the recipe\'s records: the game never breaks a craft)',
                  path=[(U(-0.185), U(reach)), (U(-0.185), U(0.2)), (U(-0.178), U(0.08)), (U(-0.192), U(-0.03)), (U(-0.181), U(-0.14)), (U(-0.185), U(-reach))])
+    K.inside.append(dict(kind='note', name='insides', note='A craft: the game shows its death as a spark and hides it (godot/fx/fx_death.gd _wing_death); nothing breaks open. The magazine rooms are here because the build contract needs an inside (tools/blender/build_sheets/contract.py) and because the magazine is the bomber\'s story; they cost few triangles.'))
     K.point('core', 'hp_core', (U(-0.25), 0.0, 0.0))
 
     # ---------- changed from the picture (designer's decisions, R207, R233, R236) ----------
     K.change('Length 1.6 (CLS_LEN Squadron; drawn 3.84 on the board), the same as the fighter, not the notes\' 4.2 units',
-             'docs/playbooks/scale.md, Squadron rows, binding (it wins over the design notes); the bomber reads apart by its mass: about twice the fighter\'s beam and three times its depth')
+             'docs/playbooks/scale.md, Squadron rows, binding (it wins over the design notes); the bomber reads apart by its mass: about twice the fighter\'s beam and depth')
     K.change('The two tube mouths sit in a deep armoured cassette that is the bow face: dark bores 0.22 deep with the next bomb\'s nose seated in each, heavy twelve-sided rims with forged lugs',
              'R244: a round opening is a real recess with depth and detail, never a disc; the notes: ordnance internal, the hull IS the magazine')
     K.change('The tubes are fixed forward, not on a traverse cassette',

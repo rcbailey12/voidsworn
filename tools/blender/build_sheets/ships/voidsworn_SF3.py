@@ -196,12 +196,12 @@ def build(K):
     room('pilot', 'crew', -0.16, -0.225, 0.032, 0.062, y=0.03, note='the pilot\'s cell: a prone couch under the sensor slit (one unaugmented pilot, no AI, lore 2.5)')
     room('reactor', 'core', -0.235, -0.3, 0.032, 0.075, y=0.045, note='the drive reactor under the spire: its heat goes up into the spire')
     room('drive_room', 'engroom', -0.31, -0.405, -0.015, 0.075, y=0.06, note='the drive room and the two drives\' feeds')
-    K.inside.append(dict(kind='note', name='insides', note='A craft: the game shows its death as a spark and hides it (godot/fx/fx_death.gd _wing_death); nothing breaks open. These few rooms are here because the build contract needs an inside (tools/blender/build_sheets/contract.py); they cost few triangles.'))
     K.armour('stern block', U(0.0035), 'over the pilot, the reactor and the drives')
     K.armour('blade', U(0.0035), '')
     reach = 0.2
     K.break_line('B-1', U(-0.1), 'the stern block tears from the blade at the block\'s toe (only for the recipe\'s records: the game never breaks a craft)',
                  path=[(U(-0.1), U(reach)), (U(-0.1), U(0.06)), (U(-0.093), U(0.02)), (U(-0.104), U(-0.02)), (U(-0.098), U(-0.06)), (U(-0.1), U(-reach))])
+    K.inside.append(dict(kind='note', name='insides', note='A craft: the game shows its death as a spark and hides it (godot/fx/fx_death.gd _wing_death); nothing breaks open. These few rooms are here because the build contract needs an inside (tools/blender/build_sheets/contract.py); they cost few triangles.'))
     K.point('core', 'hp_core', (U(-0.26), 0.0, U(0.05)))
 
     # ---------- changed from the picture (designer's decisions, R207, R233, R236) ----------

@@ -84,10 +84,10 @@ Bulkhead and frame stations: .
 
 | Break line | Station % | What it opens |
 |---|---|---|
+| B-1 | 60.0 (seam wanders 59.3 to 60.4) | the stern block tears from the blade at the block's toe (only for the recipe's records: the game never breaks a craft) |
 
 A craft: the game shows its death as a spark and hides it (godot/fx/fx_death.gd _wing_death); nothing breaks open. These few rooms are here because the build contract needs an inside (tools/blender/build_sheets/contract.py); they cost few triangles.
 
-| B-1 | 60.0 (seam wanders 59.3 to 60.4) | the stern block tears from the blade at the block's toe (only for the recipe's records: the game never breaks a craft) |
 
 ## Hard points (the contract of PR 530, tools/blender/kits/shared/hardpoints.py)
 

@@ -128,6 +128,11 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    broken inputs. Why: Ryan wants the visible weapons to line up with firing, effects and turns, including shared batteries. The SAME rule (one slot's mounts match in kind,
    mount, barrels and size within x1.3) and SPLIT rule (every mount fires on every volley) are the Board's reading of Ryan's
    "consistent and line up with the in game behavior" (Nov 15, ratified on PR 691), not his words: change them if he rules otherwise.
+   Squadron craft (issue 769, R253): a fighter's guns (data.js `guns`, arc T) turn on a traverse ring like any turret; a bomber's
+   bomb tubes (`bombs`, arc T) may sit fixed forward in a launcher, because a craft turns onto its target on a strafing run
+   (weapon_match.py FITS rows `guns` and `bombs`, with self-test faults). This is the Board's reading for craft, not Ryan's
+   words: change it if he rules otherwise. A craft sheet is LENGTH 1.6 (CLS_LEN Squadron, drawn 3.84, scale.md) and carries a
+   small inside only because the build contract needs one: the game shows a craft's death as a spark (fx_death.gd _wing_death).
 
 ## 1. Target
 

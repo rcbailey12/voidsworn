@@ -36,7 +36,7 @@ def paste(c, im, x, y, w, h):
 LINES = {
     'SF3': ('voidsworn_SF3 | Spire Dart fighter (data.js fighter), first sheet (issue 769)',
             ['One forged blade, a thin knife edge, no wings', 'Interceptor guns: three barrels on a traverse ring (guns T)',
-             'One radiator spire, ember fins (the flagship\'s spire line, reduced to one)', 'Two deep bells in armoured cowls',
+             'One radiator spire with ember fins', 'Two deep bells in armoured cowls',
              'No canopy: an armoured sensor slit', 'Length 1.6 (drawn 3.84 on the board, scale.md)']),
     'SB4': ('voidsworn_SB4 | Magazine Block bomber (data.js bomber), first sheet (issue 769)',
             ['One faceted block built round its magazine', 'Bomb payload: two big tube mouths in the bow cassette (bombs T)',
@@ -98,15 +98,16 @@ im.paste(band, (10, 76))
 d.text((18, 10), 'voidsworn_SF3 and voidsworn_SB4 beside voidsworn_S8 at true game scale (board units, orthographic)', fill=INK, font=F(22))
 d.text((18, 42), 'Measured on this picture: S8 %.1f long, the two craft %.1f and %.1f (game: 43.2 and 3.84; scale.md). Unpainted.' % (L8, Lc[0], Lc[1]),
        fill=DIM, font=F(16))
-cx0 = min(o[1].start for o in cr) - 12; cx1 = max(o[1].stop for o in cr) + 12; cy0 = min(o[0].start for o in cr) - 12; cy1 = max(o[0].stop for o in cr) + 12
-ins = sc.crop((cx0, cy0, cx1, cy1)); f4 = min(4, 600 // ins.width, (720 - 100 - band.height - 70) // ins.height)
-ins = ins.resize((ins.width * f4, ins.height * f4), Image.Resampling.LANCZOS)
-Y = 76 + band.height + 40
-im.paste(ins, (1270 - ins.width, Y)); d.rectangle((1269 - ins.width, Y - 1, 1270, Y + ins.height), outline=ACC, width=1)
-d.text((1270 - ins.width, Y - 22), 'the two craft enlarged x%d (fighter above, bomber below)' % f4, fill=ACC, font=F(15))
-yy = Y
+Y = 76 + band.height + 48; X = 560
+cs = [sc.crop((o[1].start - 10, o[0].start - 10, o[1].stop + 10, o[0].stop + 10)) for o in sorted(cr, key=lambda o: o[0].start)]
+f3 = min(3, (1270 - X - 20) // sum(c_.width for c_ in cs))
+for c_ in cs:
+    c_ = c_.resize((c_.width * f3, c_.height * f3), Image.Resampling.LANCZOS)
+    im.paste(c_, (X, Y)); d.rectangle((X - 1, Y - 1, X + c_.width, Y + c_.height), outline=ACC, width=1); X += c_.width + 20
+d.text((560, Y - 24), 'the two craft enlarged x%d (fighter left, bomber right)' % f3, fill=ACC, font=F(15))
+yy = 76 + band.height + 48
 for line in ('A craft is about a twelfth of the flagship\'s length.', 'Both craft are the same length (scale.md Squadron rows);',
-             'the bomber is about twice as wide and three times as deep.', 'Wings fly in fours (godot/render/squadron_wing.gd).'):
+             'the bomber is about twice as wide and twice as deep.', 'Wings fly in fours (godot/render/squadron_wing.gd).'):
     d.text((18, yy), line, fill=INK, font=F(17)); yy += 30
 im.save(D['SF3'] + '/voidsworn_SF3_SB4_true_scale.jpg', quality=90)
 print('scale: S8 %.2f, craft %s' % (L8, ', '.join('%.2f' % v for v in Lc)))
