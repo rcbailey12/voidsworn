@@ -21,6 +21,9 @@ for (const name of ['work_issue', 'codex_issue']) {
   assert(read(path.join(here, name + '.ps1')).includes('$resume'), name + ' missing task resume note');
 }
 assert(read(path.join(here, 'chain_issue.bat')).includes('set "PC_WAIT_FOR=%~1"'));
+// The Git helper must call the program, never its own name: PowerShell resolves functions first, so $exe = 'git' recursed
+// until the call depth overflowed on the first live run (Nov 15) while the test stub path passed.
+assert(/\$exe = 'git\.exe'/.test(read(path.join(here, 'runner_common.ps1'))) && !/\$exe = 'git'[;\s]/.test(read(path.join(here, 'runner_common.ps1'))), 'runner_common Git helper must run git.exe');
 pass('shared runner contract and chain launcher');
 if (process.platform !== 'win32') {
   console.log('SKIP Windows fault matrix: run tools/pc/runner_selftest.bat on the PC');
