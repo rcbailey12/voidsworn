@@ -8,7 +8,13 @@ $utf8 = New-Object Text.UTF8Encoding($false)
 $test = $env:PC_RUNNER_TEST -eq '1'
 function Put($path, $value) { [IO.File]::WriteAllText($path, [string]$value, $utf8) }
 function Read($path) { if (Test-Path -LiteralPath $path) { return [IO.File]::ReadAllText($path).Trim() }; return '' }
-function Log($line) { Add-Content -LiteralPath (Join-Path $script:out 'result.txt') -Value $line -Encoding UTF8; Write-Host $line }
+# result.txt may be held open by the .bat that redirects a step's output into it (work_issue.ps1 commit runs under
+# '>> result.txt' and calls 'fetch' here): then Write-Host alone reaches result.txt through that redirect. Never throw
+# from Log: on Nov 15 the lock made the earlier-tip fetch report failure and stopped Kimi 371's push.
+function Log($line) {
+  try { Add-Content -LiteralPath (Join-Path $script:out 'result.txt') -Value $line -Encoding UTF8 -ErrorAction Stop } catch { }
+  Write-Host $line
+}
 function State($status, $reason) {
   $p = Join-Path $script:out 'status.json'
   $s = Get-Content -LiteralPath $p -Raw | ConvertFrom-Json
