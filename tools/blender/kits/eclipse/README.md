@@ -44,8 +44,11 @@ column and head carry them, and every engine bell gets stiffener rings by its le
 
 **Even panels (R243, issue 739).** `even_panels()` and `lay_panels()` lay a sheet ship's hull panels dead even and aligned
 (Ryan, Nov 13 2026: "make the eclipse panels actually panels and dead even and ordered to align"): each loft face split into equal
-panels at a world size, every panel the same thickness with a narrow even gap, rows lined up from section to section, the tone
-changing in ordered bands along the mass, mounts' keep-outs honoured, two flush fasteners per panel. E13 and E14 use it; E11 and
+panels at a world size, every panel the same thickness with a narrow even gap, the tone changing in ordered bands along each
+face, mounts' keep-outs honoured, two flush fasteners per panel. What the code does not promise (outside check opus_check_750
+condition 3): each face is split from its own size, so panel rows meet across sections only where neighbouring faces are the
+same size; panels run about half to one and a half times the nominal size by rounding; a face under half the size either way
+gets no panels. E13 and E14 use it; E11 and
 E12 keep their accepted plating (`kit._plates`).
 
 ## Paint stack (issue 642)
