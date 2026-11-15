@@ -72,7 +72,7 @@ marked SUPERSEDED, so no two live rules conflict. One live place per kind: rules
 lines and The seats, the hand-over in HANDOFF section 0 (about one page; older sections go to docs/archive), history in FINDINGS.
 LOOP.md's LATEST lines roll into a dated summary once they pass about 15. Muse audits for stale or conflicting docs now and then.
 Why: several models and fresh chats read the repo cold; on Nov 14 a one-day choice nearly became a rule, an A20 note was stretched to
-every ship, and a summary line inverted Ryan's call on A18 and A19.
+every ship before Ryan ratified it (R244), and a summary line inverted Ryan's call on A18 and A19.
 
 ## 1. Working with Ryan
 
@@ -134,32 +134,27 @@ agents-09.
 | Work | Seat | Why |
 |---|---|---|
 | Board: reviews, merges, specs, visual calls, picks put to Ryan | One Claude thread, Opus 5.5 | judgement is the bottleneck (R128, R194) |
-| Every ship model in Blender (blockouts, build sheets, hulls, kits, the station); hard or open-ended builds; read-only code audits | Opus 5.5 workers, two at most while the Board runs | Ryan: "I think builds in blender should come from Opus" (R205); the five-hour limit was hit with three (R194) |
+| Every ship model in Blender (blockouts, build sheets, hulls, kits, the station); hard or open-ended builds; read-only code audits | Opus 5.5 workers, two or three at once | Ryan: "I think builds in blender should come from Opus" (R205); "keep it to 2 or 3 threads at once, and propose big threads before starting them" (project instructions) |
 | Well-specified code: rules, tests, scripts, screens to a spec | DeepSeek V4.1 Flash workhorse on the PC | merged on one review pass for nine cents (R127, R134) |
 | Pipeline and engine jobs that need Codex's depth (export, import, effects plumbing); captures and benches only when no cheaper seat can run them | Codex on the PC, one job at a time, while its weekly usage lasts | "Codex and deepseek should do other work to free you up on these crucial items" (R206); "We're starting to run low on codex usage ... We may just need to move other things to opus instead of codex being the workhorse with DeepSeek" (R219) |
 | Checks of a seat's own work: a different model checks it (Codex's pipeline work is traced or checked by Opus or Muse) | Opus worker or Muse | "It feels like that makes sense to be checked by a different model" (R219) |
 | Concept pictures by image to image, research, design text, outside checks | Muse (Rey chairs); Ryan starts every run | several models, an outside view (R128) |
 | Ideation and legs | Grok and Google Flash, through Muse: a leg in every Muse action, beside DeepSeek and Qwen (R231) | free and broad; Qwen's daily cap emptied three seats on Nov 12 |
 
-No Fable helpers: Ryan's Fable allowance is spent ("I just used the final fable reset", R180). Kimi was never fairly tested
-(only the pay-as-you-go tier, R164); Ryan took the Kimi Code plan on Nov 12, and it gets one head-to-head job against DeepSeek
-(arm kimicode, issue 597) before it holds a seat. Claude Opus 5.5 (arm opus, Ryan: "why not use it as another opus worker") and Sonnet 5.5 (arm sonnet) run as workhorse arms (issue 614) on the Max plan's $100 a month of API
-credits (Ryan, Nov 12): the credits do not roll over, so they are spent each month, Opus first, on jobs that would otherwise take an Opus
-worker seat; it is the same model family as the Board, so it never serves as the different-model check of Opus work (R219). Codex's weekly usage is watched at every board check (it was at 19 percent with
-six days to its reset on Nov 11, R219): when it runs low, code jobs go to the DeepSeek workhorse and Opus workers, and Codex
-keeps only what needs it. Codex gets only what no other seat can do (Ryan, Nov 12 22:58 CST: "codex doesn't have a ton of usage so
-use it when it can only do something others can't", R234): code and check jobs go to the API Opus arm or an Opus worker first.
-The Kimi Code plan holds about 30 minutes of agent work per 5-hour window, so it takes short reviews only, never builds (issue
-597 verdict, Nov 12). Ids: R128, R180e, R205, R206, R219, R234, agents-12.
-
-**Nov 14 (R242, R250), wins over the table and paragraph above where they differ:** the seat order is DeepSeek for small jobs, the
-Sonnet API arm for mid-size, Opus (API arm or a plan-side helper) for Blender and large work, Codex for what only it can do, Kimi by
-results (R242). While the API credit is spent (till its monthly refresh, about Nov 21; Ryan adds none) and the Board plan is low,
-Codex is the main builder, Blender builds included ("use codex aggressively", Nov 14; the Board sets effort per job); the Board judges
-every model by picture as before. Kimi now holds a seat through the Kimi Code CLI arm (kimicode, WORK_HARNESS=kimi): about 2.5 hours
-of agent time per 5 hour window on Nov 14 (a Board observation, revise with evidence), so mid-size code, rules and balance jobs
-(the 30 minute figure above was the OpenCode route). Muse also runs outside audits (issue 706). Not taken: Gemini 4 Hydrogen. The Board thread may use the Fable advisor
-(Ryan, Nov 14 18:28 CST: "this chat stands", R252, replacing R250's no).
+The standing seat rules (rewritten Nov 15 from Muse's opus_check_719; dated seat state, such as whether this month's API
+credit is live, is status and lives in LOOP.md "The seats"):
+- Seat order (R242): "DeepSeek for cheap, sonnet for mid size, opus via api or helpers for blender or other large work. Codex
+  for others that only it can do and then Kimi depending on results."
+- Blender ship builds are Opus's (R205: "I think builds in blender should come from Opus"), back on from Nov 14 evening (R253).
+- Codex only for what no other seat can do (R234: "use it when it can only do something others can't"); GPT 6.1 Sol (2.7).
+- Kimi on its own subscription only, no API route (R238), through the Kimi Code CLI arm; it stays (R250 item 4).
+- The API arms (opus, sonnet) run on the Max plan's monthly API credit (Ryan, Nov 12); same model family as the Board, so never
+  the different-model check of Opus work (R219).
+- The Board thread may use the Fable advisor (R252: "this chat stands"); no Fable helpers (R180); not taken: Gemini 4 Hydrogen
+  (R250).
+Superseded, kept so nobody follows them: "the Kimi Code plan holds about 30 minutes of agent work per 5-hour window, so it takes
+short reviews only, never builds" (Nov 12, the OpenCode route; SUPERSEDED by R250) and "Codex is the main builder, Blender builds
+included" (Nov 14; SUPERSEDED by R253). Ids: R128, R180e, R205, R206, R219, R234, R238, R242, R250, R252, R253, agents-12.
 
 2.7 **Codex runs the model Ryan picked: GPT 6.1 Sol today, pinned by name in tools/pc/codex_issue.bat.** Never a weaker
 model by accident (Luna) and never switched to another one (Astra) without his yes; no Codex cloud tasks or cloud reviews.

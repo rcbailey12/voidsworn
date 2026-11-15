@@ -4,13 +4,14 @@
 
 **What to trust.** docs/RULEBOOK.md for rules (0.10: only Ryan's quoted words make a rule; one-day Board choices are notes in
 LOOP.md). contrib/opus/LOOP.md for status: "The seats" and the newest LATEST lines. contrib/opus/OPEN_WORK.md for every open
-issue and parked pull request and what each waits on. FINDINGS R236 to R252 are the newest rulings. The Nov 14 hand-over is in
+issue and parked pull request and what each waits on. FINDINGS R236 to R253 are the newest rulings. The Nov 14 hand-over is in
 docs/archive/HANDOFF_0_2026-11-14.md; nothing under docs/archive/ is followed.
 
 **The Board.** One Claude thread in the Project, Opus 5.5 at high effort, with the Fable advisor on (Ryan, R252: "this chat
-stands"). Seats today (LOOP.md): Codex the main builder while the Claude API credit is out (till about Nov 21); Kimi on the
-kimicode arm for mid-size code, rules and balance; DeepSeek for small exact jobs; Muse for design, checks and audits (Ryan starts
-it; briefs go on issue 256).
+stands"). Seats (R253, Nov 14 19:30 CST, after Ryan's weekly reset): Opus workers build every Blender ship again (738 Sunward
+flagship sheet, 739 Eclipse E13 and E14 sheets running); Codex takes pipeline, effects, terrain and capture jobs; Kimi mid-size
+code, rules and balance; DeepSeek small exact jobs; Muse design, checks and audits (Ryan starts it; briefs on issue 256). The
+Board keeps every seat fed from OPEN_WORK.md and brings Ryan only clear inputs (R253).
 
 **Landed this thread (Nov 15 00:00 to 01:30 UTC).** PR 712 (hand-over, RULEBOOK 0.10), 711 (Muse audit 706), 714 (one scale
 table, docs/playbooks/scale.md, and scale_check.gd with six KNOWN rows that jobs 373, 368, 369 clear), 690 (PC runners: shared
