@@ -20,3 +20,7 @@ Weapon callouts: (1) the gun cassette, three muzzles grouped in the single frame
 
 - The delivered render lights the sensor slot ion-blue; the sheet keeps the sensor slit dark, with ion glow only at the stern slit.
 - The render's hull sits slightly wider and flatter than HF1C's proportions; the sheet holds HF1C's narrower sleekness.
+
+## Owner's ruling (Nov 15, 2026)
+
+HF1D stands, with one amendment: the front of the craft is slimmed down so the whole reads more of a wedge. In sheet terms: the bow block narrows and tapers into the wedge instead of presenting a broad face; the framed recess, the grouped cassette and the sensor slot above it all stay, drawn smaller into the slimmer prow, and the stepped edging follows the taper. The slimmed reference render replaces HF1D.jpg in this folder.

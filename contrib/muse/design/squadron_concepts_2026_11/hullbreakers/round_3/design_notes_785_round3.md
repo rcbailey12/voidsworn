@@ -33,3 +33,7 @@ KB1C-A, unanimous among the seated legs and the blind leg: the channel is the cl
 - KB1C-A's mouths render as cylindrical tubes standing in triangular recesses; the sheet keeps them as mouths recessed into the glacis slope itself.
 - KB1C-B's render shows the vehicle read plainly; see the chair's lean above.
 - KB1C-C's render is taken from above and behind, which flatters the platform read; the sheet's proportion guard and collar terms govern the build.
+
+## Owner's ruling (Nov 15, 2026)
+
+KB1C-C, the Wide Glacis, is the pick of the KB1C variations, in the owner's words "the best by far". The council's unanimous lean for KB1C-A is recorded above and was not taken. KB1C-C's sheet terms (extreme-corner mouths in dark collars, the armoured lip, the beam guard) stand as written.
