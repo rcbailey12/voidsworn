@@ -202,7 +202,7 @@ void process() {
 #  18 soft lift (reduce-flashing pop: a gentle glow, no peak)   19 ember   20 acid fume   21 heat glow (cooling metal)
 #  22 coil glow (gauss charge, stepped)   23 craft (a tiny strike craft silhouette with an engine dot)
 #  24 death core (counted, short plateau)   25 death fire (steady ribbon/edge flame)
-#  26 faction-coloured plasma fire (Eclipse damage, steady)
+#  26 faction-coloured plasma fire (Eclipse damage, steady)   27 directional hit gas (no emission)
 const SPRITE := """
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
@@ -283,7 +283,7 @@ void vertex() {
 		// Explicit smoke/gas floors preserve opacity, without adding any light.
 		if (k == 24 || k == 25 || k == 26 || (own && (k == 3 || k == 7 || k == 8))) { boost = 1.0; }
 		vec2 q = VERTEX.xy;
-		if (k == 14 || k == 15 || k == 23) {
+		if (k == 14 || k == 15 || k == 23 || k == 27) {
 			// stretched along the screen-space motion (bolts and globs read as moving, not as dots)
 			vec3 vw = (MODEL_MATRIX * vec4(a1.xyz, 0.0)).xyz;
 			vec2 sv = (VIEW_MATRIX * vec4(vw, 0.0)).xy;
@@ -291,7 +291,7 @@ void vertex() {
 			vec2 dx = sl > 1e-4 ? sv / sl : vec2(1.0, 0.0);
 			vec2 dy = vec2(-dx.y, dx.x);
 			float st = k == 23 ? 1.4 : (k == 14 ? 1.0 + clamp(sl * 0.012, 0.0, 1.6) : 1.0 + clamp(sl * 0.006, 0.0, 0.6));
-			q = dx * VERTEX.x * st + dy * VERTEX.y;
+			q = k == 27 ? dx * VERTEX.x * 1.85 + dy * VERTEX.y * 0.62 : dx * VERTEX.x * st + dy * VERTEX.y;
 		} else {
 			float cs = cos(ang);
 			float sn = sin(ang);
@@ -335,6 +335,15 @@ void fragment() {
 		alpha = m * I * smoothstep(0.0, 0.12, t) * spow(1.0 - t, 1.3);
 		base = vCol.rgb * (0.7 + 0.6 * n);
 		if (k == 3) { add = vec3(1.0, 0.4, 0.1) * spow(1.0 - t, 6.0) * 0.9 * alpha; }
+	} else if (k == 27) {
+		// A tapered, ragged sheet, stretched in the hit's outward velocity direction in vertex().
+		vec2 flow = p + vec2(seed * 9.1, seed * 4.3);
+		float n = fbm(flow * 2.2 + vec2(-t * 0.8, t * 0.2));
+		float taper = 0.7 + 0.3 * p.x;
+		float edge = length(vec2(p.x, p.y / taper));
+		float dens = (1.0 - edge) + (n - 0.5) * 1.7;
+		alpha = smoothstep(0.05, 0.7, dens) * I * smoothstep(0.0, 0.035, t) * spow(1.0 - t, 0.85);
+		base = vCol.rgb * (0.65 + 0.55 * n);
 	} else if (k == 7 || k == 20) {
 		float n = fbm(p * 1.6 + vec2(seed * 9.1, seed * 4.3) + vec2(0.0, -age * 1.4));
 		float dens = (1.0 - r) * 1.1 + (n - 0.5) * 1.3;
@@ -848,24 +857,32 @@ void vertex() {
 		VERTEX = vec3(0.0, -50000.0, 0.0);
 	} else {
 		float t = age / life;
-		float sc = a3.x * (1.0 - smoothstep(0.85, 1.0, t));
+		float size = a3.x;
+		if (a3.z >= 3.0) {
+			// Hit plates must remain pieces at camera 170 after cooling, rather than disappearing into the stars.
+			vec3 centre = a0.xyz + (a3.w > 0.0 ? a1.xyz * (1.0 - exp(-a3.w * age)) / a3.w : a1.xyz * age);
+			float depth = -(VIEW_MATRIX * MODEL_MATRIX * vec4(centre, 1.0)).z;
+			size = max(size, px_world(8.0, depth, PROJECTION_MATRIX));
+		}
+		float sc = size * (1.0 - smoothstep(0.85, 1.0, t));
 		vec3 k = snorm(a2.xyz);
 		float an = age * a2.w + a4.y * 6.2831853;
 		float dr = a3.w;
 		vec3 disp = dr > 0.0 ? a1.xyz * (1.0 - exp(-dr * age)) / dr : a1.xyz * age;
 		VERTEX = a0.xyz + disp + rotA(VERTEX, k, an) * sc;
 		NORMAL = rotA(NORMAL, k, an);
-		vHeat = a4.x * exp(-age * 3.5);
+		vHeat = a4.x * exp(-age * (a3.z >= 3.0 ? 0.85 : 3.5));
 	}
 }
 void fragment() {
 	vec3 alb = vec3(0.032, 0.032, 0.036) * (0.6 + 0.9 * fract(vSeed * 17.3));
 	if (vTint > 0.5) { alb = vec3(0.05, 0.06, 0.035) * (0.6 + 0.9 * fract(vSeed * 17.3)); }
+	if (vTint >= 3.0) { alb = vec3(0.19, 0.16, 0.13) * (0.65 + 0.55 * fract(vSeed * 17.3)); }
 	ALBEDO = alb;
 	METALLIC = 0.5;
 	ROUGHNESS = 0.45;
 	EMISSION = vec3(1.0, 0.33, 0.06) * vHeat * 1.2 * fx_gain;
-	if (vTint > 1.5) {
+	if ((vTint > 1.5 && vTint < 2.5) || vTint > 3.5) {
 		ALBEDO = vec3(0.3, 0.45, 0.6); METALLIC = 0.1; ROUGHNESS = 0.08;
 		EMISSION = mix(vec3(0.2, 0.8, 1.0), vec3(0.9, 0.3, 1.0), abs(dot(NORMAL, VIEW))) * (0.08 + vHeat * 0.3) * fx_gain;
 	}

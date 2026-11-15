@@ -31,7 +31,7 @@ var squadron = false
 var shielded = true
 var flagship = false
 var death_big = false     # R73: class, not draw scale, decides kill slow motion
-var death_tier = ""       # issue 462: "cruiser" or "capital" (deaths_and_hits.md rows), "" for small hulls and craft
+var death_tier = ""       # issue 462: "cruiser" or "capital" (deaths_and_hits.md rows), "small", "destroyer" or "wing" below cruiser
 var hull: HULL
 var dead = false
 var gone = false
@@ -123,7 +123,7 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	death_big = flagship or String(info.get("cls", "")) in DEATH_BIG_CLASSES
 	# Issue 462: the playbook's capital row covers carriers, barges and the capital classes; a flagship of a smaller
 	# class dies as a cruiser.
-	death_tier = ("capital" if String(info.get("cls", "")) in DEATH_CAPITAL_CLASSES else "cruiser") if death_big else ""
+	death_tier = ("capital" if String(info.get("cls", "")) in DEATH_CAPITAL_CLASSES else "cruiser") if death_big else ("wing" if squadron else ("destroyer" if String(info.get("cls", "")) == "Destroyer" else "small"))
 	var sz = float(info.get("size", 0.8))
 	weight = 0 if squadron else (1 if sz < 0.65 else (2 if sz < 0.9 else (3 if sz < 1.1 else 4)))
 	if flagship:

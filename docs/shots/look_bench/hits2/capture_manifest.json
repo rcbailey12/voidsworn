@@ -1,0 +1,369 @@
+{
+  "issue": 538,
+  "baseline_commit": "00ce0417e63cae97173decf6f8fc584459dcc84a",
+  "camera_radius": 170,
+  "source_resolution": [
+    1920,
+    1080
+  ],
+  "flash_counter_changed": false,
+  "reduce_flashing_logic_changed": false,
+  "look_bench_runs_kept": {
+    "before": "second unchanged-source run",
+    "after": "second final debris-floor run"
+  },
+  "source_sha256": {
+    "godot/fx/fx.gd": "52c32e7195e353442a2c048d30ea88b4e6096b07fc5b42dee184b382c8754a4b",
+    "godot/fx/fx_shaders.gd": "5470eeaf3222f601d3da445e5b1c2c57a4a9272b9391089ad955a6085ccb2d42",
+    "godot/fx/fx_weapons.gd": "b7d1f170b0c35033c548d326aa4fb30b3a26b2efdca5516c34d592569047e5d6",
+    "godot/fx/test/hit_recipe_check.gd": "1860452d4ca8b5dd881d299e437f6d0278e50b22dd0fc7a559b4d99ff75ebdf2",
+    "godot/bench/scene_gate.gd": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538",
+    "godot/bench/look_moments_hits2.json": "6e0a30ab69ca9061a4d0ea7dcd5212324764aefcfab54248b43e33bc05cde082",
+    "godot/bench/look_moments_hits2_deaths.json": "c70e0abb9497e402d0338cc1b0c16ca0127415572dcf5d1351906bebdb048ebb",
+    "docs/playbooks/deaths_and_hits.md": "0811d4e2f5558c8833bb287553ddfb146696941a81594775efad15fe3842c4c3",
+    "contrib/opus/reviews/hits2_report.md": "0d2f9e0a0da389af914da6b49e6a7f3abb2becc6104151303543bef4267346c0"
+  },
+  "baseline_fx_sha256": {
+    "godot/fx/fx.gd": "58f4ac88b2304fe60a1b0d44431fa456b9af8cb9538cb5d953b73f15c6dd3b9f",
+    "godot/fx/fx_shaders.gd": "30dfbd9b8e954ca9ac2d9deb532c486b0386c2470b61b7c7de41c72e59ce8226",
+    "godot/fx/fx_weapons.gd": "a5a5125ac288f6eb0d0d291f33a6e526c1c588f1d0c7a55f1549f82c007f70d2"
+  },
+  "movies": {
+    "hits_fight_after.mp4": {
+      "size": [
+        1280,
+        720
+      ],
+      "fps": 30.0,
+      "duration": 14.0,
+      "codec": "h264"
+    },
+    "hits_fight_before.mp4": {
+      "size": [
+        1280,
+        720
+      ],
+      "fps": 30.0,
+      "duration": 14.0,
+      "codec": "h264"
+    }
+  },
+  "artifacts": {
+    "capital_core_full.jpg": {
+      "bytes": 200139,
+      "sha256": "1c23d94779755ccca8ef411e8a4d52671e5df49f47ed3bf5b375c367921c23a9"
+    },
+    "deaths_core_and_wreck.jpg": {
+      "bytes": 288605,
+      "sha256": "a8ec99d0a7badf68e2cd4e3c4f14312ed37f28cda16a71e131d97ddbb90f94dc"
+    },
+    "hits2_report.md": {
+      "bytes": 8759,
+      "sha256": "0d2f9e0a0da389af914da6b49e6a7f3abb2becc6104151303543bef4267346c0"
+    },
+    "hits_beams_and_arcs.jpg": {
+      "bytes": 217156,
+      "sha256": "9ada29ccac8af9c39ff2ee5325626d247aa85e18d8b305f989fc8e1e467d7644"
+    },
+    "hits_energy_and_bio.jpg": {
+      "bytes": 216718,
+      "sha256": "802ac0b8f43393879e974b7ba426c22c9c1b093b6a257d6a55cc3ca2258c70a6"
+    },
+    "hits_fight_after.mp4": {
+      "bytes": 4432672,
+      "sha256": "e60162eba48bae78ab90551ef15ad72761eb819fa24fa9954418c4890d35344a"
+    },
+    "hits_fight_before.mp4": {
+      "bytes": 4394544,
+      "sha256": "719996ff65c1ed9ac0d461e0db10dce5e3e4c5f06fd497e312921656ec6a7dab"
+    },
+    "hits_fight_strip.jpg": {
+      "bytes": 316915,
+      "sha256": "8571a9778f0b24c4a45f8d7e2a195af4592f9697e59e324105fac8c9b1b64d45"
+    },
+    "hits_ladder.jpg": {
+      "bytes": 238220,
+      "sha256": "daa605022fba629718e4f90df732b92e39ea98f2d8c6dc0987751d64253bd120"
+    },
+    "hits_linger_lance.jpg": {
+      "bytes": 212656,
+      "sha256": "ee02ddd7ec70e7a6d6a0a99c4ec6ac6c57c6dcf7700f32c16299b1bfffe479c9"
+    },
+    "hits_linger_macro.jpg": {
+      "bytes": 212772,
+      "sha256": "06aa0f550aee13044a6710b5902c556edfa6bc69bd813f0d8e44bff31757c5dc"
+    },
+    "hits_linger_torpedo.jpg": {
+      "bytes": 218595,
+      "sha256": "cf1b2add8b192daa088bf89d09058182ef181e57cb9e82909d92103156c80456"
+    },
+    "hits_prism_and_early_spray.jpg": {
+      "bytes": 222685,
+      "sha256": "e814b821b0f13f4804bd65a813170f07a7585c2656e00f5cef681d7e9ab6ad3d"
+    },
+    "hits_rockets_and_missiles.jpg": {
+      "bytes": 223258,
+      "sha256": "9438ed53fe1d4f43ff1d80bf97ffc5a6d7fd1059330d4e005d80124350c01886"
+    },
+    "checks/destruction_checks.log": {
+      "bytes": 82083,
+      "sha256": "adc3a67f3d801133cc36c0a539a0af76ee233ac575cc9126e8faba2a1f2f1229"
+    },
+    "checks/flash_after.log": {
+      "bytes": 6409,
+      "sha256": "78e31833364b3345098a40d05f53ad0221cd4a5552daf3d5a7a0cbf41e74f295"
+    },
+    "checks/flash_before.log": {
+      "bytes": 6411,
+      "sha256": "35b39cddf937fa4a0f968f8a5a06d7bb29688270f106928f97b9f5df6b533e6b"
+    },
+    "checks/standing_checks.log": {
+      "bytes": 10711,
+      "sha256": "d825905b3c5058c3ccf939bcb45486eeb23fd4b39ae99632e348507ee44c4229"
+    },
+    "measurements/after_1080.json": {
+      "bytes": 37579,
+      "sha256": "5053042230d134d651e1d80f2bae49ec27421aaeadc10a51e8be869ba9281cb0"
+    },
+    "measurements/after_4k.json": {
+      "bytes": 7125,
+      "sha256": "5799233271387d67a5255ec5ee07c6eaf25e41630970bd0181f1105baed2a45d"
+    },
+    "measurements/after_deaths_bench.json": {
+      "bytes": 1265,
+      "sha256": "2db3c1088286e20377f2518f3a4811d8f2067e1b6924cf447360727fab92323f"
+    },
+    "measurements/after_deaths_moments.json": {
+      "bytes": 1196,
+      "sha256": "c70e0abb9497e402d0338cc1b0c16ca0127415572dcf5d1351906bebdb048ebb"
+    },
+    "measurements/after_film_camera.json": {
+      "bytes": 96691,
+      "sha256": "7f612548182519876fe535fb70480b6ef1419d30cbb987530660a86c6ca62bf4"
+    },
+    "measurements/after_flash.json": {
+      "bytes": 891,
+      "sha256": "3bdca2f30b47b33b33715c2a16867d5205249c8505134b892bb8b29e59cca39f"
+    },
+    "measurements/after_flash_luma.csv": {
+      "bytes": 8316,
+      "sha256": "3ea643fb5b77287238296a4b5c04c59116d42958b9c94cd864664260f96dd789"
+    },
+    "measurements/after_hits_bench.json": {
+      "bytes": 10582,
+      "sha256": "1a63e4501b2e29e2002d8a2506795a7f1c4c8d9c873587a26c9c96b6077acc71"
+    },
+    "measurements/after_hits_moments.json": {
+      "bytes": 10350,
+      "sha256": "6e0a30ab69ca9061a4d0ea7dcd5212324764aefcfab54248b43e33bc05cde082"
+    },
+    "measurements/after_trace_base_s1.json": {
+      "bytes": 151519,
+      "sha256": "a2187bb021169c9a6a16019a1640190c7db445820efa8ca642fcf78153526ede"
+    },
+    "measurements/after_trace_base_s2.json": {
+      "bytes": 153950,
+      "sha256": "85b69a09ba62e1d6ad2820902d0336a36db9c4f1ce4717bc4d5b809821b5293f"
+    },
+    "measurements/after_trace_deaths_s1.json": {
+      "bytes": 152472,
+      "sha256": "a37c9843fa57f7401df33faf63cd841fb4d3c669bd5c1c4edc42a8b46d152f04"
+    },
+    "measurements/after_trace_deaths_s2.json": {
+      "bytes": 155079,
+      "sha256": "40b0cf2b7e1bb95f9ce9621a5b19d47882f335d9c8c8e90ab920c98849a3c1e2"
+    },
+    "measurements/before_1080.json": {
+      "bytes": 35736,
+      "sha256": "956dd47619c9aa050063e950d557602a2d8ed181951897b4b2533419b656f8d7"
+    },
+    "measurements/before_4k.json": {
+      "bytes": 7108,
+      "sha256": "62a8d3175ce7627c587cce857799a858657a17931a8952fe3907bd6547c7bf3f"
+    },
+    "measurements/before_deaths_bench.json": {
+      "bytes": 1265,
+      "sha256": "2db3c1088286e20377f2518f3a4811d8f2067e1b6924cf447360727fab92323f"
+    },
+    "measurements/before_deaths_moments.json": {
+      "bytes": 1196,
+      "sha256": "c70e0abb9497e402d0338cc1b0c16ca0127415572dcf5d1351906bebdb048ebb"
+    },
+    "measurements/before_film_camera.json": {
+      "bytes": 96552,
+      "sha256": "a00368b1ad0a2a00a50a0b2a5c91fab7319f917221af2a080c0c0770652449db"
+    },
+    "measurements/before_flash.json": {
+      "bytes": 901,
+      "sha256": "f7d4c707894d3a691586ab9becc49cd29be633fa4c36bd81bcc66d6503c86254"
+    },
+    "measurements/before_flash_luma.csv": {
+      "bytes": 8316,
+      "sha256": "a67db6aa0c6296d162e1aadc68c643a3d5e2bd4eda56d0d1e268673b880fcf05"
+    },
+    "measurements/before_hits_bench.json": {
+      "bytes": 10582,
+      "sha256": "e5b266abe3a5b4bafc94ec5fcb09caba9b10380342f386e400040a0a544c1a30"
+    },
+    "measurements/before_hits_moments.json": {
+      "bytes": 11266,
+      "sha256": "8d7dcc24d7886583973d11ce1f1219291bb39f5c3e4eb1fea4161c59e51629f4"
+    },
+    "measurements/before_trace_base_s1.json": {
+      "bytes": 151586,
+      "sha256": "87b504dd877db5e0ffa6e27444e23b5a656f0b7341eefbdd8548ca1e0e7d86be"
+    },
+    "measurements/before_trace_base_s2.json": {
+      "bytes": 153949,
+      "sha256": "b179840a58b4b4263dfec7a45e0f628e7a316db470a62d012131eeb02bfee7d1"
+    },
+    "measurements/before_trace_deaths_s1.json": {
+      "bytes": 152173,
+      "sha256": "71122765407dfc7066a068f999d1c551175e86a0b8137b4df5ccc4bf1fea4a11"
+    },
+    "measurements/before_trace_deaths_s2.json": {
+      "bytes": 154954,
+      "sha256": "866554c9c64d47397a8b292ed9b04308f44409aea701ee2981b8b8acd1a77107"
+    },
+    "measurements/summary.json": {
+      "bytes": 1434,
+      "sha256": "61b0794672597b4826a907bb46c270beb723f9277de61f22e8f0207902168e47"
+    },
+    "raw/after_deaths/d_capital__c170.png": {
+      "bytes": 826828,
+      "sha256": "004f23b0eec1c60ffe8e077bd0fc91980b6e98e2575082532aebda266f9209cb"
+    },
+    "raw/after_deaths/d_cruiser__c170.png": {
+      "bytes": 600104,
+      "sha256": "9c5e0370ae1d85fb59ad47d206d43045ae3071b7b91e0340d2a9c0e6c4ec1e5d"
+    },
+    "raw/after_hits/d_capital__c170.png": {
+      "bytes": 662877,
+      "sha256": "42415a93eb1f8287f9d4f753bd417e3753fc53e4cbfa6111c26b3653eb2a5ee3"
+    },
+    "raw/after_hits/d_cruiser__c170.png": {
+      "bytes": 343580,
+      "sha256": "0237b9ad8df788bb5329c584abb37be8f853a2f6148809ad4437fc2fd4e88af2"
+    },
+    "raw/after_hits/h2_arc__c170.png": {
+      "bytes": 326147,
+      "sha256": "370479a66315d75f930ceecad4c08bce741bc7bde39ed6f20ca8f0bb8331c8e3"
+    },
+    "raw/after_hits/h2_bio__c170.png": {
+      "bytes": 238978,
+      "sha256": "60a707d749235792299d185e6ceaeaa93f1f5746e0f59ac0b1444a081d114190"
+    },
+    "raw/after_hits/h2_gauss__c170.png": {
+      "bytes": 240323,
+      "sha256": "7fd995f6970dbab871f352cd4ea7c818949319a553252cf8390c89f20c4f6b03"
+    },
+    "raw/after_hits/h2_ion__c170.png": {
+      "bytes": 307484,
+      "sha256": "74580bc6e3cee85d14904f0ae45861e50e824e8e9b508eccefdf2a3bb2cf146a"
+    },
+    "raw/after_hits/h2_lance__c170.png": {
+      "bytes": 350391,
+      "sha256": "540731d1912662c8f8718bdc30e62ce1b37d74b94505e1c9f89b49749a11441e"
+    },
+    "raw/after_hits/h2_las__c170.png": {
+      "bytes": 209038,
+      "sha256": "349af06435c96df4579fac9472ec672b4b74de763bc4b9e99751b56bfc3c9987"
+    },
+    "raw/after_hits/h2_macro__c170.png": {
+      "bytes": 295912,
+      "sha256": "f65767e6aa6d9dd9df9d2db951958343970bf55b1431fcbf7bf435a2a58c0123"
+    },
+    "raw/after_hits/h2_plasma__c170.png": {
+      "bytes": 277520,
+      "sha256": "a71cc98ac1085cea37ea444faa5a7728802c14e10c6262059b23a3c71d99f9f5"
+    },
+    "raw/after_hits/h2_prism__c170.png": {
+      "bytes": 203323,
+      "sha256": "d86df60e4170f7a26de9e87b62e9755d03b64baa71c5d3d88ee1e3e87c6f47ce"
+    },
+    "raw/after_hits/h2_rockets__c170.png": {
+      "bytes": 257535,
+      "sha256": "ecadf92c7161e63c5ad2bc91732117c45c267e358b87faf08122ae987bf0f510"
+    },
+    "raw/after_hits/h2_star_missile__c170.png": {
+      "bytes": 365071,
+      "sha256": "13c3e088b14f3a8c22b57866bd9d5836c9c38895bad742a14c8e3029de0112f0"
+    },
+    "raw/after_hits/h2_torpedo__c170.png": {
+      "bytes": 349784,
+      "sha256": "7f6bf7fdadc3bee3d0f4d1a8214c8b06501ba1b2fb52d3996f4ca1fb9221a61f"
+    },
+    "raw/after_hits/w_torp_void_shield__c170.png": {
+      "bytes": 895541,
+      "sha256": "fb268d12c7ed0515e8daed45a7c0efb90e652060a5d462cad9f92d9e6e9df828"
+    },
+    "raw/before_deaths/d_capital__c170.png": {
+      "bytes": 826828,
+      "sha256": "004f23b0eec1c60ffe8e077bd0fc91980b6e98e2575082532aebda266f9209cb"
+    },
+    "raw/before_deaths/d_cruiser__c170.png": {
+      "bytes": 600104,
+      "sha256": "9c5e0370ae1d85fb59ad47d206d43045ae3071b7b91e0340d2a9c0e6c4ec1e5d"
+    },
+    "raw/before_hits/d_capital__c170.png": {
+      "bytes": 662877,
+      "sha256": "42415a93eb1f8287f9d4f753bd417e3753fc53e4cbfa6111c26b3653eb2a5ee3"
+    },
+    "raw/before_hits/d_cruiser__c170.png": {
+      "bytes": 343580,
+      "sha256": "0237b9ad8df788bb5329c584abb37be8f853a2f6148809ad4437fc2fd4e88af2"
+    },
+    "raw/before_hits/h2_arc__c170.png": {
+      "bytes": 295498,
+      "sha256": "8059fd62bc622036222c832ee1e9df994c0d682b9be3b69a24b535f1f058b7d8"
+    },
+    "raw/before_hits/h2_bio__c170.png": {
+      "bytes": 217467,
+      "sha256": "56847c535fd98721500ed8134b4ffc5b0565ddb7c9ad52142b2279a06f01f944"
+    },
+    "raw/before_hits/h2_gauss__c170.png": {
+      "bytes": 225306,
+      "sha256": "1e21dbe1bf88250ee8ad39c9eb80e6f02d5cb4bd79c0be4096203d6d95c197da"
+    },
+    "raw/before_hits/h2_ion__c170.png": {
+      "bytes": 280266,
+      "sha256": "74a06129116745efd948a63761e36ca8c883fef7b84db7cd8df6ca5f8ebbc2a3"
+    },
+    "raw/before_hits/h2_lance__c170.png": {
+      "bytes": 309552,
+      "sha256": "c2ebc9c1e478085a27afb85ea0d5d9a58cd96d62ea2806febf17f95e05163066"
+    },
+    "raw/before_hits/h2_las__c170.png": {
+      "bytes": 206654,
+      "sha256": "84bd39e42f90700cc99d8a745c3795c6f7d3493d165cd142c0d341814d50fb2c"
+    },
+    "raw/before_hits/h2_macro__c170.png": {
+      "bytes": 272928,
+      "sha256": "93a16d90716c4a5e12b7504d06c05b117d1ba5d33e9093117ea923389f8cd26a"
+    },
+    "raw/before_hits/h2_plasma__c170.png": {
+      "bytes": 267343,
+      "sha256": "785d9cb358b433002b9d6c483abd0e95e78a3dab0f37d7186a09609eab401b3f"
+    },
+    "raw/before_hits/h2_prism__c170.png": {
+      "bytes": 199935,
+      "sha256": "cbfb0ecbdcd58402471a04ecc3d83df9c1604e190ed25638a12becf1e427369f"
+    },
+    "raw/before_hits/h2_rockets__c170.png": {
+      "bytes": 234894,
+      "sha256": "44c11bc5419fbd45e4d1da9b0432b1d9d285f4efca95aa7f4ac2f5bed8796811"
+    },
+    "raw/before_hits/h2_star_missile__c170.png": {
+      "bytes": 307043,
+      "sha256": "482b296f33a2375bc2047303a4e44207d07848c07ea50c1d2b74b78e132c7dba"
+    },
+    "raw/before_hits/h2_torpedo__c170.png": {
+      "bytes": 291112,
+      "sha256": "84258f024e000bb35b438d3b563433a23903149aadd5612e9191ceb8acb54b5d"
+    },
+    "raw/before_hits/w_torp_void_shield__c170.png": {
+      "bytes": 898586,
+      "sha256": "1a0d73944500ca601500a2ec8b4f1e905777c3ad8ad258052a70932935955bbb"
+    }
+  }
+}

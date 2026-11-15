@@ -22,7 +22,9 @@ function State($status, $reason) {
 }
 function Git([string[]]$words) {
   $ea = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
-  $exe = 'git'; if ($test -and $env:PC_TEST_GIT) { $exe = $env:PC_TEST_GIT }
+  # 'git.exe', never 'git': PowerShell finds this Git function before the program, so 'git' called itself until the
+  # call depth overflowed (first live run, Nov 15). The test stub path never hit it.
+  $exe = 'git.exe'; if ($test -and $env:PC_TEST_GIT) { $exe = $env:PC_TEST_GIT }
   $lines = @(& $exe @words 2>&1); $script:gitExit = $LASTEXITCODE
   $ErrorActionPreference = $ea
   foreach ($line in $lines) { Add-Content -LiteralPath (Join-Path $script:out 'git_log.txt') -Value ([string]$line) -Encoding UTF8 }
@@ -172,7 +174,12 @@ try {
     $raw = $stdout.Result + "`n" + $stderr.Result
     Put (Join-Path $out 'preflight_log.txt') $raw
     $reply = Read (Join-Path $probe 'reply.txt')
-    if ($kind -eq 'kimi') { $reply = $stdout.Result.Trim() }
+    if ($kind -eq 'kimi') {
+      # Kimi Code prints its thinking and its answer as bullet lines, then a 'To resume this session' line (first live run,
+      # Nov 15): the reply is the answer line, bullet stripped.
+      $reply = ''
+      foreach ($line in ($stdout.Result -split '\r?\n')) { $t = ($line -replace '^[^A-Za-z0-9_]+','').Trim(); if ($t -eq 'RUNNER_READY') { $reply = $t } }
+    }
     if ($kind -eq 'opencode') {
       $reply = ''
       foreach ($line in ($stdout.Result -split '\r?\n')) {
