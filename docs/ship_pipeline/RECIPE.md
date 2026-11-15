@@ -296,6 +296,49 @@ size, the spires close and the broadside) and `pictures.py`; pictures in `docs/s
 `camera_rig.gd`, which puts the battle camera 34 degrees above it); the Sunward pictures use their own camera, and the shared
 script is left for the Board.
 
+**The Hegemony stack (issue 780; the direction contrib/muse/design/paint_direction_2026_11/hegemony.md, approved by Ryan at the
+swatch review, Nov 14 2026).** `tools/blender/kits/hegemony/stack.py` paints H10 (the Dominion dreadnought), IM5 (the Iron
+Mandate) and every later Hegemony sheet ship on the same shared machinery, with no change to it (the Eclipse, Hullbreaker and
+Sunward stacks and `kits/shared` untouched). What is the faction's own, and where it lives:
+- colours: hegemony.md's pairs sampled from H10 (the steel-blue grey hull `#141c2a` to `#48505e`, recessed `#0b101c` to
+  `#212b3b`, trim `#2b394d` to `#626d7d`, nozzle housings, a cold dark liner); `lin()` divides each by the light gain and by the
+  Hegemony battle lift read from `godot/render/look.gd` (0.4, never copied) and holds the steel-blue with a small hue boost
+  (`SAT` 1.3, as the Eclipse's `SAT`: AgX and the warm key grey the blue out; 1.5 before the R262 step, lowered so the battle
+  hue holds). Every zone and plate family is a narrow slice of its pair (`slice_()`, plate_var .07, the lowest variation of any
+  faction), the plates at the pair's light end (`TONE_AT` 1.0, the R256 lesson), and the plate tones one step toward the cap
+  (R262, Ryan's "Fix engines, lighten a step", the S8 method of R258: `stepped()`, each tone's brightest channel x to
+  cap x (x / cap) ** `PLATE_STEP`, the others scaled with it, so the hue and the family order hold). The value cap: no plate shows brighter than `#626d7d`; wear and scuffs go toward the cap itself (`BARE`), never
+  past it. Rust 0 in every zone; roughness floor .52; grime body .30, recessed .45, trim .20, nozzle housings .30 (the engine
+  and thruster plates take the nozzle zone by `ZONE_BY_KIND`);
+- surface order (R243, hegemony.md 1): `panel_nodes` draws one plain even grid anchored to the ship (no stagger, warp or split;
+  the beam measured from the centreline, so port and starboard mirror), `patch_big` on the body modules (zone `hgrey`) and
+  `patch_small` on the small module plates, the recessed fields and every part. `patch_warp`, `patch_band` and `patch_split`
+  are 0 with the R243 comment (the even grid is the lore; never warp it). The sheets model the grid as flush slabs
+  (`module_panels`), so on the plated zones the painted seams are faint (`grid_seam` .35) and the cells' calm tones carry it.
+  The module band: every hull object named `*_bandseam_*` (with the `*_band_*` trim rings beside it) is a joint; there the
+  joint between the two rings is seam all across (0.08 world: .0038 ship lengths on H10, .0026 on IM5, against hegemony.md's
+  "about three times patch_seam", .0048), a one-sided seam 1.5 patch_seam wide (`band_seam` / 2) runs where each ring meets the
+  plating, so the rings stay clean trim, the seams reach `band_dark` .96, the short occlusion deepens the recess and grime
+  gathers to .40; over-plates (`patch_over`, share .05) sit only beside the bands. A sheet with no band stops the stack. No rivets
+  (flush fasteners);
+- light (hegemony.md 5): every value is the brightest linear channel of the emission times its strength, under the game's 0.8
+  threshold, and no Hegemony light has red over blue (never warm): the blue line's strips 0.74 (the game's Hegemony engine
+  colour; the game pulses them), the nozzle throats and linings 0.76 on one emission map (the shared throat drawing, the dim end
+  falling off red first, identical nozzles: no hue shift; the lining lit almost to the lip, the throat brightest; since R262 the
+  kit's engine_bell trim bands are open rings, so the throat and vanes show), lenses and bores 0.65 (the sensor fin tip's value), window slits
+  0.60, thruster walls 0.50. The strips on the hull are hull trim (`GLOW_HULL`, `p3_hblue_hull`, marked `hull_surface`);
+  `RUNNING_LIGHTS` is None (the strips are the running lights) and no `lights.json` is written;
+- decals (hegemony.md 4): low-contrast stencils in the cap tone, never ornament: the hull number (the sheet cell) on each
+  flank, module index bars on each flank, corner ticks as a plus and minus y pair on the deck, a registry plate on the
+  centreline; edge wear runs over them;
+- the liner is hegemony.md's cold dark liner; the core and the emergency strips keep their light, in blue.
+The builder's checks (hegemony.md 6) are `contrib/opus/tools/issue780/audits.py`: the emissive audit (the stack's
+`emissive_audit()`: under 0.8, no red over blue), the value cap on both baked atlases, the lift hue test, the hull median at
+the battle cameras against the concept's, and the decal mirror check. The shared wear and scuff noise is not mirrored (it would
+need a shared change). Sandbox previews: `contrib/opus/tools/issue780/preview.py` (paint_sheet.py's views with `cam170`, the
+sheet's battle camera, a module band close and the port flank) and `pictures.py`; pictures in
+`docs/ship_pipeline/build_sheets/hegemony_H10/paint/` and `hegemony_IM5/paint/`.
+
 
 ## What a ship needs (the per-ship data)
 
@@ -509,7 +552,7 @@ example `{"windows": 2.5, "trim": 2.0}`. Empty `lights` means the paint has no s
 | Generic (any concept, any faction) | Per ship today | Next |
 |---|---|---|
 | stages 1, 2, 5, 6, 7; the outline overlap report and the standing checks (per third, inner edge, second camera, paint sides, blink sheet, licences, light sizes); the fitted concept camera; the shared plumbing (sockets, seating, scale rules, audit, tags, the muzzle, engine and bay registry); the hard point contract and its one count table (`kits/shared/hardpoints.py`); bake, LOD chain, cost bench; the game export, its hard points and its check | the hull module's block table (C15s: raised forward deck, deckhouse and tower tiers, hump, aft body, stern block, sponsons, modules, cargo blocks; `armA5.py`); the sockets in the ship json | a block table as data in the ship json, so a new hull needs no Python; the wreck and damage glbs and the scene gate (stage 7, list above) |
-| the Hullbreaker kit and paint (`kits/hullbreakers/`); the paint stack for sheet ships (`kits/shared/paint_stack.py`, the Hullbreakers' `kits/hullbreakers/stack.py`, the Eclipse's `kits/eclipse/stack.py`, the Sunward's `kits/voidsworn/stack.py`) | | a kit per faction: Glasswrights, Eclipse, Chorus, Hegemony Navy, each with its own shape language and paint |
+| the Hullbreaker kit and paint (`kits/hullbreakers/`); the paint stack for sheet ships (`kits/shared/paint_stack.py`, the Hullbreakers' `kits/hullbreakers/stack.py`, the Eclipse's `kits/eclipse/stack.py`, the Sunward's `kits/voidsworn/stack.py`, the Hegemony's `kits/hegemony/stack.py`) | | a kit per faction: Glasswrights, Eclipse, Chorus, each with its own shape language and paint |
 
 The section fits in stage 3 (`b0trace.py`) are generic; turning them into the hull module's knot table was a hand step in round 5
 (smoothed and squared up), and the block table is a design step: which blocks the concept has. That is the one creative step left

@@ -29,7 +29,7 @@ Auditing from outside? Follow `docs/REVIEW_PROTOCOL.md` exactly (RULEBOOK 2.11) 
   checks). A branch with any other name gets no automatic checks: open its pull request by hand, then start them by hand
   (Actions tab, "checks", "Run workflow"; or `gh workflow run checks.yml --ref <branch>`). The Board reviews and merges;
   nobody merges their own pull request (RULEBOOK 2.2).
-- Codex runs locally on the PC only (RULEBOOK 2.7). The Board launches each Codex job itself through the PC queue (LOOP.md
+- Codex runs locally on the PC only, in up to three lanes (RULEBOOK 2.7; no cloud tasks: their model cannot be pinned, R268). The Board launches each Codex job itself through the PC queue (LOOP.md
   "The seats" says how), and every `codex` issue also carries `blocked`, so the old board watcher (tools/pc/codex_board.bat)
   cannot run it a second time.
 - Every issue opens with this fixed block, so any agent can pick it up without asking:

@@ -16,6 +16,12 @@ LAYERS (Hegemony):
 - patch_big (.070,.048,.038), patch_small (.032,.021,.018): the two module sizes, identical on every ship.
 - patch_over (.085,.055,.045), patch_over_share .05: over-plates at the rail joints only.
 - patch_seam .0016, seam_dark .94. Module band: seam width x3, seam_dark .96.
+  As built (Board, Nov 15 2026, PR 796 calls 2 and 3): the sheets model the even grid in geometry (flush slabs at the 0.6
+  module pitch, kits/hegemony/parts.py module_panels), and a painted grid at these sizes cannot fall on the modelled gaps, so on
+  the plated zones (hgrey, hpanel) the painted grid's seams are faint (strength .35; .60 on the recessed fields) and the cells'
+  calm tones carry the painted grid; the module band's seams keep full strength. At a band the joint between the two trim rings
+  is dark all across (0.08 world: .0038 ship lengths on H10, .0026 on IM5) and a one-sided seam 1.5 patch_seam wide runs where
+  each ring meets the plating, so the rings read as clean trim.
 - patch_warp 0, patch_band 0, patch_split 0.
 - plate_var .07, island_tone .10, mottle 0, grain 0. The lowest variation of any faction: the fleet is identical by doctrine.
 - rough .58, rough_floor .52, metal .45.
@@ -35,6 +41,19 @@ Sampled from H10 by the chair (k-means, 9 clusters, background excluded by corne
 - liner (interior): ((10,14,22),(21,29,43)), hex #0a0e16 / #151d2b, dark with a faint cold tint. The core keeps its light.
 
 The value question, settled: the guide's words say "pale grey", and the H10 sample is a steel-blue grey whose main clusters run #212b3b to #48505e, darker than the words. The concept governs (the issue brief samples hexes from the concepts), and the fleet reads pale beside Sunward's black iron and Eclipse's violet-black, which is the comparison the guide's sentence lives in. The cap that keeps this honest: plates are never brightened past #626d7d (the trim pair's light end). The lit cluster #888f9f is a light catch and a wear tone, never a plate tone. Ryan confirmed the value call at the swatch review (Nov 14, 2026): the sample holds, no deliberate lightening.
+
+The hue hold (Board, Nov 15 2026, PR 796 calls 2 and 3): AgX and the warm key grey the steel-blue out of these dark tones (the
+first H10 bake measured blue over red 1.26 against the concept's 1.46), so the stack paints each tone's distance from its own
+grey 1.5 times (SAT 1.5, luminance kept, the Eclipse stack's method), every tone still held under the #626d7d cap. With the
+R262 step below, the boost is 1.3: the brighter plates grey out less under AgX, and at 1.5 the battle hue drifted bluer than the
+concept (blue over red 1.56 against 1.46); at 1.3 it holds.
+
+One step lighter for battle (Ryan, Nov 15 2026, R262): Ryan picked "Fix engines, lighten a step"; the sampled pairs above stay the record,
+and the stack paints the plate tones (hull, the plate-family step, hull_shade, trim, nozzle) one step toward the cap: each
+tone's brightest channel x (linear) goes to cap x (x / cap) ** PLATE_STEP, the other channels scaled with it so the hue holds,
+nothing past #626d7d (the trim pair's light end is the cap and stays there). The worn edges are the cap tone already, so they
+stay the lightest tone. Glow colours, the light gain and the look.gd lift are unchanged. PLATE_STEP and the before and after
+battle medians are in the stack and PR 796.
 
 ## 3. ZONES notes
 
