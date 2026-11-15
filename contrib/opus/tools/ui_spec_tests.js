@@ -84,6 +84,20 @@ check(gs.length >= 250, `text floor scan read ${gs.length} font size literals (e
 check(gs.some(r => r.at.startsWith('godot/ui/')) && gs.some(r => r.at.startsWith('godot/main/')), 'text floor scan covers font sizes in both godot/ui and godot/main');
 check(gs.some(r => r.how === 'theme default'), 'text floor scan reads the theme default font size form (default_font_size = s(15), N1)');
 
+// 4b. issue 729: the Career screen's dim labels (BONE3) hold RULEBOOK 9.4's 4.5:1 on their card (IRON). The real labels
+// are measured by godot/ui/career/test/career_readability_test.gd; this is the standing source guard, with the same
+// luminance and contrast functions as ledger_readability_test.gd.
+{
+  const cs = read('godot/ui/career/career_screen.gd');
+  const hx = n => { const m = new RegExp('const ' + n + ' := Color\\("#([0-9a-fA-F]{6})"\\)').exec(cs); return m ? m[1] : ''; };
+  const lin = v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  const lum = h => { const [r, g, b] = [0, 2, 4].map(i => lin(parseInt(h.slice(i, i + 2), 16) / 255)); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+  const ratio = (a, b) => { const la = lum(a), lb = lum(b); return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05); };
+  const dim = hx('BONE3'), card = hx('IRON');
+  const c = dim && card ? ratio(dim, card) : 0;
+  check(!!dim && !!card && c >= 4.5, `Career dim labels (BONE3 #${dim}) are ${c.toFixed(2)}:1 on the card (IRON #${card}); RULEBOOK 9.4 needs 4.5 (issue 729)`);
+}
+
 // 5. HD9: one hull-low line in the port
 const campaignHull = read('godot/ui/campaign/campaign_ui.gd');
 const lows = [...hud.matchAll(/HULL_LOW if \w+ < ([\d.]+)/g), ...campaignHull.matchAll(/(?:BLOOD|HULL_LOW) if f < ([\d.]+)/g), ...campaignHull.matchAll(/HULL_LOW if float\(s\["frac"\]\) < ([\d.]+)/g)].map(m => +m[1]);
