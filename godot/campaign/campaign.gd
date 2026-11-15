@@ -1474,10 +1474,21 @@ func runRenown() -> float:
 	if RUN == null: return 0.0
 	var s = RUN["stats"]
 	return float(s["battles"]) * 2 + float(s["elites"]) * 4 + float(s["bosses"]) * 15 + floor(float(s["kills"]) / 4.0) + (float(RUN["sector"]) - 1) * 5
+func facProgress(fac: String) -> float:
+	var total = 0.0
+	for id in ADMIRALS.keys():
+		if or_(ADMIRALS[id].get("fac"), "voidsworn") == fac: total += masteryXP(id)
+	return total
 func nextFacPick() -> Variant:
 	var won = or_(META["stats"].get("wonFacs"), [])
 	var pool = RUN_FACTIONS.filter(func(f): return f != RUN["fac"] and not won.has(f))
-	return pick(pool if pool.size() > 0 else RUN_FACTIONS.filter(func(f): return f != RUN["fac"]))
+	if pool.is_empty(): pool = RUN_FACTIONS.filter(func(f): return f != RUN["fac"])
+	if pool.is_empty(): return null
+	var best = pool[0]; var bestv = facProgress(best)
+	for f in pool:
+		var v = facProgress(f)
+		if v > bestv: best = f; bestv = v
+	return best
 func shadowAdmirals(fac, flown) -> Array:
 	return ADMIRALS.keys().filter(func(id): return or_(ADMIRALS[id].get("fac"), "voidsworn") == fac and id != flown)
 func shadowRate(id) -> float:

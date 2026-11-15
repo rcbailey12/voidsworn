@@ -1541,6 +1541,25 @@ func _end_nem(v: VBoxContainer, R: Dictionary) -> void:
 		if N.get("dead", false): v.add_child(rich("Nemesis lesson: " + who + " is dead. What he taught you is yours to keep.", 18)); shown = true
 	if not shown: v.add_child(lbl("No Nemesis meeting this run." if int(nz.get("met", 0)) == 0 else "No weakness was taught this run.", 18, GS.TEXT2))
 
+func _end_heir_rank_words() -> Array:
+	var out = []
+	for f in C.CAPTAINS.keys():
+		for w in C.CAPTAINS[f]["ranks"]:
+			if not out.has(w): out.append(w)
+	for w in ["High Admiral", "First Admiral", "Line Admiral", "Fleet Marshal", "Oath-Captain", "Admiral"]:
+		if not out.has(w): out.append(w)
+	out.sort_custom(func(a, b): return a.length() > b.length())
+	return out
+
+func _end_heir_label(id: String) -> String:
+	# Design 4.5: the row names the candidate, then their rank. A name that already opens with a rank
+	# word keeps that word in the rank slot; otherwise the candidate holds their faction's top rank.
+	var nm = str(C.ADMIRALS[id]["n"])
+	for w in _end_heir_rank_words():
+		if nm.begins_with(w + " "): return nm.substr(w.length() + 1) + ", " + w
+	var ranks = C.CAPTAINS[str(C.or_(C.ADMIRALS[id].get("fac"), "voidsworn"))]["ranks"]
+	return nm + ", " + str(ranks[ranks.size() - 1])
+
 func _end_heir(v: VBoxContainer, R: Dictionary) -> void:
 	var hv = _end_row(v, "Heir to the line")
 	var heir = C.META["heirs"].get(R["fac"])
@@ -1555,7 +1574,7 @@ func _end_heir(v: VBoxContainer, R: Dictionary) -> void:
 	var group = ButtonGroup.new()
 	for id in ids:
 		var b = Button.new(); b.toggle_mode = true; b.button_group = group; b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		b.text = str(C.ADMIRALS[id]["n"]) + ". Shadow " + C.numstr(snapped(C.masteryXP(id), 0.01)) + " XP. Double earnings for this line."
+		b.text = _end_heir_label(id) + ". Shadow " + C.numstr(snapped(C.masteryXP(id), 0.01)) + " XP. Double earnings for this line."
 		b.button_pressed = _end_heir_pick == id; b.pressed.connect(func(): _end_heir_pick = id); rows.add_child(b)
 	var no = Button.new(); no.text = "No heir this run." if heir == null else "Keep current heir."; no.toggle_mode = true; no.button_group = group
 	no.tooltip_text = "Keep the current heir unchanged."; no.pressed.connect(func(): _end_heir_pick = ""); rows.add_child(no)
@@ -1583,7 +1602,7 @@ func _end(d: Dictionary) -> Control:
 	if first: sub = "The last hull goes dark in sector " + C.roman(R["sector"]) + (". The survivors will tell it differently, and the next crusade will read it in chalk before it chooses." if crusade else ". This is not the end of the line. What this run earned is already on its way to the next fleet.")
 	var sl = lbl(sub, 20, GS.TEXT2); sl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var payoff = str(C.TB.STORY_BEAT3[R["fac"]]["learning"]); var stl = _story_text()
-	if stl != "" and stl != payoff: var line = lbl(stl, 18, GS.TEXT2); line.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(line)
+	if stl != "" and stl != payoff: var line = lbl(stl, 18, GILT); line.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(line)
 	if first: v.add_child(lbl("No crusade wins the first dark. That is the oath working, not failing. What this run bought is already written: renown in the vault, mastery in the bloodline, and the weakness the enemy showed you at cost. The next crusade stands at this same dark and reads what you chose. Do not mourn the fleet. Read the record." if crusade else "You will lose runs. That is the design, not a verdict. Every death names what the next generation carries: renown in the vault, mastery in the bloodline, and a lesson the enemy taught you at cost. Read the panel below as an inheritance, not a score.", 18, GS.TEXT))
 	v.add_child(lbl("Recorded" if d["abandoned"] else "WHAT THIS RUN BOUGHT", 24, GS.TEXT))
 	if not d["abandoned"]: v.add_child(lbl("What this victory bought:" if victory else "What this death bought:", 18, GS.TEXT2))
@@ -1630,9 +1649,9 @@ func _end(d: Dictionary) -> Control:
 	var r3 = _end_row(v, "Core sync"); var cores = receipt.get("cores", []).duplicate(); cores.sort_custom(func(x, y): return x["tierUp"] and not y["tierUp"])
 	if cores.is_empty(): r3.add_child(lbl("No protocols taken this run.", 18, GS.TEXT2))
 	for row in cores:
-		var nm = str(C.PATRONS[row["id"]]["n"])
-		if row["tierUp"]: r3.add_child(lbl(nm + ": crossed into " + str(C.FAVOUR_TIERS[row["tier"]]["n"]) + " this run at " + C.numstr(row["total"]) + " protocols.", 18, GS.TEXT))
-		r3.add_child(lbl(nm + (": Full sync, " + C.numstr(row["total"]) + " protocols." if row["next"] == null else ": " + C.numstr(row["total"]) + " of " + C.numstr(row["next"]) + " to " + str(C.FAVOUR_TIERS[int(row["tier"]) + 1]["n"]) + "."), 18, GS.TEXT2))
+		var nm = c(esc(str(C.PATRONS[row["id"]]["n"])), Color(C.PATRONS[row["id"]]["col"]))
+		if row["tierUp"]: r3.add_child(rich(nm + ": crossed into " + esc(str(C.FAVOUR_TIERS[row["tier"]]["n"])) + " this run at " + C.numstr(row["total"]) + " protocols.", 18))
+		r3.add_child(rich(nm + (": Full sync, " + C.numstr(row["total"]) + " protocols." if row["next"] == null else ": " + C.numstr(row["total"]) + " of " + C.numstr(row["next"]) + " to " + esc(str(C.FAVOUR_TIERS[int(row["tier"]) + 1]["n"])) + "."), 18))
 	_end_nem(_end_row(v, "Nemesis lesson"), R)
 	var r5 = _end_row(v, "The record"); r5.add_child(lbl(payoff, 18, GS.TEXT))
 	if C.jt(R.get("eatenCore")) and C.PATRONS.has(R["eatenCore"]): r5.add_child(lbl("The swarm ate " + str(C.PATRONS[R["eatenCore"]]["n"]) + ".", 18, GS.TEXT2))
