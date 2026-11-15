@@ -103,3 +103,4 @@ gpu|fx/test/fx_react_probe.gd|env:PROBE_OUT|-|hit reactions per weapon weight, s
 gpu|fx/test/ship_fire_probe.gd|env:VENT_OUT|-|a recipe ship firing its broadside, guns and gun smoke together (issue 209): needs the GPU and the ship built from its recipe export
 gpu|fx/test/squadron_probe.gd|env:SQUADRON_OUT|-|squadron close, reverse and battle camera evidence: needs the live renderer
 gpu|fx/test/vent_look_probe.gd|env:VENT_OUT|-|muzzle and vent gas recordings (issue 281): needs the GPU and the ship files
+headless|ui/campaign/test/debrief_ledger_test.gd|-|-|issue 805: DB1 receipt reachability, heir gating, real run timeline, read-only drawing, 17 px floor and contrast over black and white at 1080 and 1440

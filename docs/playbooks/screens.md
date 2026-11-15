@@ -82,6 +82,62 @@ What moved behind a hover or a key (all still reachable):
 | the four-line log ticker | three lines; L (or "Log L") opens the full log |
 | the status line's state words | hover the status line for their definitions |
 
+### The after-run screen (DB1, issue 805)
+
+Ryan picked DB1, The Ledger Page (R260 and R261). Build from
+contrib/muse/design/ui_upgrade_2026_11/debrief/DB1.png and notes.md. The decision is to confirm the heir, then choose the
+next run. Keep its figures, timeline, meters, painted admiral, three heir crests and live flagship portrait in one page at
+1920x1080. The five headline figures read the paid run's battle, flagship, kill, loss and time data; a run with no recorded
+time has four. The timeline reads this run's battle_end events, partitioned by sector, with a ring for a won flagship battle
+and a loss mark for a battle with losses. Its hover gives the counts. Older logs without a sequence say so; never invent
+the order from aggregate totals.
+
+The only ember box is Confirm heir. The current heir is selected when eligible, with a visible CURRENT HEIR label; selecting
+a different crest is local until confirmation. Confirm once, then the box becomes Play as the suggested faction (or Pick
+the next faction). Pick a faction and Title screen stay inert until confirmation. Opening doctrine, hull rewards or the
+lineage tree carries a Back to ledger route, including after a purchase, so those screens cannot bypass the heir decision.
+The capture of a lost flagship uses the last real ship dictionary retained by the UI while the run was active. Label it LOST;
+if no ship record exists, show the true empty fleet state. The small viewport uses render/ship_view.gd and the installed hull
+selected from the actual flagship's template. Missing installed hulls show an explicit unavailable state, never concept art
+or a placeholder block. Do not add generated ship art or heir paintings.
+
+The scale is 17 detail and keys, 18 links, 20 supporting figures, 23 verdict, 28 to 30 names, 32 detail heads, 52 to 60 headline figures,
+84 result title, all at 1080. Use the three orders-sheet faces and strengths. The page-wide smooth veil is at least 94%
+black beneath every word; the primary hover uses ON_EMBER. Portrait and crest colours are art, not extra interface accents.
+Long names wrap; the flagship name has the foot strip's full name line. Extra fleet entries and captain names stay in the
+full roster rather than increasing the main page height.
+
+Every moved item and its route:
+
+| Item | Route from DB1 |
+|---|---|
+| Arc line, victory count, factions already won | headline hover; The record R |
+| Original next-run teaching card, first-loss paragraph, story payoff, best sector, eaten core | The record R; the first-loss kicker remains on the page |
+| Renown breakdown, Heat multiplier, zero earnings, affordable reward list and extra rewards within reach | earned figure and vault hover; full receipt B |
+| Spend renown | P, or the words beside the meter; opens actual doctrine spending |
+| View hull rewards | V, or the words beside the meter; opens actual hull rewards |
+| Locked admiral rewards and unlocking them | receipt B, View admirals; purchases return to the ledger |
+| Admiral XP gain, exact progress, cap, recorded skills, earned perks and pending choices | portrait hover; admiral line A, with the existing tree action |
+| Shadow gains and levels, total XP, next threshold and double-rate status | each heir crest hover; admiral line A |
+| Overflow XP, banked shadow XP and Heat XP | admiral line A |
+| Core protocol counts, next sync tier and every crossed-tier sentence | Core sync S, with meters |
+| Nemesis lessons, adaptations, raids, deaths, and no-meeting/no-weakness cases | Nemesis lesson L |
+| Current heir, candidate ranks, standing shadow XP, keep current and confirm | crest cards; current heir preselected; Confirm heir Enter |
+| Exact standout sentence, complete surviving roster, captain ranks and ship figures | flagship-name and picture hovers; full fleet F |
+| Captains lost | foot strip, loss-figure hover, and full fleet F |
+| Next faction description | next-faction name hover |
+| Next run, Pick a faction, Title screen | one action box and exit words, gated by heir confirmation |
+
+R was drawn twice in DB1. The record keeps R; Spend renown uses P. B opens the full receipt, A the admiral details, and F the
+fleet. Esc closes a detail view. Keys 1 to 3 select an heir; Enter confirms once, then advances. The browser template and the
+campaign payout, progression and save functions stay unchanged.
+
+Check: godot --headless --path godot --script res://ui/campaign/test/debrief_ledger_test.gd. It builds the real UI, tests
+read-only drawing, moved-content routes, progression returns and heir gates, and measures glyph bounds and contrast at
+1080 and 1440 across all factions, the long flagship name and a 20-ship fleet. The optional --shots DIR arguments capture
+the same scenarios with a renderer. Keep 1920x1080 originals in the issue's shots folder and comparison sheets at no taller
+than 720 px in docs/shots/debrief_db1/. Stage the installed model cache before captures; a missing model fails the capture.
+
 ## 3. Steps
 
 1. **Name the decision.** One sentence: what does the player decide on this screen? Everything is ranked by how much it
