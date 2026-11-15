@@ -20,7 +20,7 @@ Names follow lore round 8 (R59, `contrib/opus/compute/rename_map_final.md` secti
 | Hullbreakers | **Trophy wrecker** (`c_marauder_g`) | Hullbreaker wrecker | A second prow torpedo instead of flak, and one hex slower. | Plated with trophies from the hunt for Rook, and far too many rockets. |
 | Chorus | **Sun-eater bladeback** (`b_razor_e`) | Chorus bladeback | Its tendril cluster becomes a second spine volley on a turret; regrows more, one hex slower. | Fed on the warm keys: heavier, hotter, slower. |
 | Glasswrights | **Ringing aperture** (`i_carrier_a`) | Glasswright aperture | A third wing, paid for with lighter shields and one hex of speed. | Built from Ringing Field glass on the voyage home with the last lens. |
-| Eclipse | **Archive guard flare** (`d_jackal_h`) | Eclipse flare | Trades the forward null lance for two null cannons on turrets and a null spire, and 5 more hull. | The array's guard frames, standing watch on every side. |
+| Eclipse | **Archive guard flare** (`d_jackal_h`) | Eclipse flare | Trades the forward null lance for two null cannons on turrets and a null spire, at the same hull. | The array's guard frames, standing watch on every side. |
 
 ## For stream B (rules side)
 
