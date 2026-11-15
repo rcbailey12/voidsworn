@@ -31,6 +31,18 @@ var _cancelled_tags := {}
 var _beat := false
 var _ambient_duck_until := 0.0
 var _ambient_duck := 0.0
+# Issue 771: the mix ducks under a core flash and can hold a beat of near-silence after a capital death.
+# legacy = the old dry/unducked behavior, used only by the listening-page bake to render the before pass.
+var legacy := false
+var _base_sfx_db := 0.0
+var _duck_db := 0.0
+var _duck_until := 0.0
+var _quiet_db := 0.0
+var _quiet_until := 0.0
+# Cues changed in issue 771, so the bake's legacy pass can render the old (main) sound:
+# the late tail layers and the small death pitch variation are left out.
+const LEGACY_TAIL_CUES := ["hit_heavy", "shield_break"]
+const LEGACY_PITCH_CUES := ["death_powerdown", "death_vent", "death_crack", "death_run", "chunk_cool", "hulk_vent"]
 
 
 func _ready() -> void:
@@ -124,15 +136,59 @@ func set_volume(v: float) -> void:
 		return
 	vol = clampf(v, 0.0, 1.0)
 	var g := 0.62 * pow(vol, 1.6) if on else 0.0
+	_base_sfx_db = linear_to_db(maxf(g, 1e-5)) + 2.0
 	var i := AudioServer.get_bus_index("sfx")
 	if i >= 0:
-		AudioServer.set_bus_volume_db(i, linear_to_db(maxf(g, 1e-5)) + 2.0)
 		AudioServer.set_bus_mute(i, not on or vol <= 0.001)
+	_apply_mix()
 
 
 func set_on(v: bool) -> void:
 	on = v
 	set_volume(vol)
+
+
+# Issue 771. The beat, the core-flash duck and the near-silence hold are layers on the same buses, so the
+# lowest one wins. The death bus stays out of the beat and the core duck; the near-silence rides the parent
+# sfx bus so it takes the death too. All values are dB; zero means no duck.
+func _apply_mix() -> void:
+	var now := _now()
+	if now >= _duck_until:
+		_duck_db = 0.0
+	if now >= _quiet_until:
+		_quiet_db = 0.0
+	var beat_db := -6.0 if _beat else 0.0
+	var mix := minf(beat_db, _duck_db)
+	for b in ["battle_sfx", "music_duck"]:
+		var i := AudioServer.get_bus_index(b)
+		if i >= 0:
+			# The near-silence hold must take the music too; the music bus is not under sfx.
+			AudioServer.set_bus_volume_db(i, minf(mix, _quiet_db) if b == "music_duck" else mix)
+	var si := AudioServer.get_bus_index("sfx")
+	if si >= 0:
+		AudioServer.set_bus_volume_db(si, _base_sfx_db + _quiet_db)
+
+
+func mix_duck(db: float, seconds: float) -> void:
+	if legacy or db >= 0.0:
+		return
+	var now := _now()
+	_duck_db = minf(_duck_db, db) if now < _duck_until else db
+	_duck_until = maxf(_duck_until, now + seconds)
+	_apply_mix()
+
+
+func quiet(db: float, seconds: float) -> void:
+	if legacy or db >= 0.0:
+		return
+	var now := _now()
+	_quiet_db = minf(_quiet_db, db) if now < _quiet_until else db
+	_quiet_until = maxf(_quiet_until, now + seconds)
+	_apply_mix()
+
+
+func mix_level() -> float:
+	return _duck_db if _now() < _duck_until else 0.0
 
 
 func _pick(arr: Array, key: String):
@@ -149,11 +205,18 @@ func _layers(name: String, cue: Dictionary, variant := "") -> Array:
 	var out: Array = []
 	var sampled := false
 	var sl = null
+	var base := name.split(":")[0]
 	for L in cue["layers"]:
 		if L.has("s"):
+			var d := float(L["d"])
+			if legacy and LEGACY_TAIL_CUES.has(base) and d > 0.02:
+				continue
+			var pj := float(L["pj"]) if L["pj"] != null else float(cue["spj"])
+			if legacy and LEGACY_PITCH_CUES.has(base):
+				pj = 0.0
 			var a: Array = clips.get(L["s"], [])
 			if not a.is_empty():
-				out.append({"st": _pick(a, L["s"]), "g": float(L["g"]), "r": float(L["r"]), "d": float(L["d"]), "pj": float(L["pj"]) if L["pj"] != null else float(cue["spj"])})
+				out.append({"st": _pick(a, L["s"]), "g": float(L["g"]), "r": float(L["r"]), "d": d, "pj": pj})
 				sampled = true
 				if L.has("end_rate"):
 					out[-1]["end_rate"] = L["end_rate"]
@@ -161,7 +224,7 @@ func _layers(name: String, cue: Dictionary, variant := "") -> Array:
 			sl = L
 	var sy: Array = synth.get(name, [])
 	if not sy.is_empty() and (not sampled or sl != null):
-		out.append({"st": _pick(sy, name), "g": float(sl["g"]) if sampled else 1.0, "r": 1.0, "d": 0.0, "pj": float(cue["pj"])})
+		out.append({"st": _pick(sy, name), "g": float(sl["g"]) if sampled else 1.0, "r": 1.0, "d": 0.0, "pj": 0.0 if legacy else float(cue["pj"])})
 	if cue.get("variants", {}).has(variant):
 		var vc: Dictionary = cue.duplicate()
 		vc.merge(cue["variants"][variant], true)
@@ -241,30 +304,36 @@ func _start(name: String, o: Dictionary, lay: Array) -> void:
 			return
 		_steal(active[vi])
 	var u := randf() * 2.0 - 1.0
-	var v := {"name": name, "players": [], "end": t, "pri": int(cue["pri"]), "tag": o.get("tag", "")}
+	var v := {"name": name, "players": [], "start": t, "end": t, "pri": int(cue["pri"]), "tag": o.get("tag", "")}
 	var dur := 0.0
+	# A bed sets the whole voice length (issue 771), so a short looped clip can last the death picture.
+	var limit := float(o.get("duration", cue.get("duration", 0.0)))
 	for L in lay:
 		var rate := maxf(0.25, float(o.get("rate", 1.0)) * float(L.r) * (1.0 + u * float(L.pj)))
+		var st: AudioStream = L.st
+		if bool(cue.get("loop", false)) and st is AudioStreamOggVorbis:
+			var dup: AudioStreamOggVorbis = (st as AudioStreamOggVorbis).duplicate()
+			dup.loop = true
+			st = dup
 		var p: Node
 		if pos is Vector3:
 			var p3 := AudioStreamPlayer3D.new()
 			p3.attenuation_model = AudioStreamPlayer3D.ATTENUATION_DISABLED
 			p3.panning_strength = 0.72
 			p3.position = pos
-			p3.stream = L.st
+			p3.stream = st
 			p3.pitch_scale = rate
 			p3.volume_db = linear_to_db(maxf(gain * float(L.g), 1e-5))
 			p3.bus = "death" if o.get("death", false) else cue["bus"]
 			p = p3
 		else:
 			var p2 := AudioStreamPlayer.new()
-			p2.stream = L.st
+			p2.stream = st
 			p2.pitch_scale = rate
 			p2.volume_db = linear_to_db(maxf(gain * float(L.g), 1e-5))
 			p2.bus = "death" if o.get("death", false) else cue["bus"]
 			p = p2
 		add_child(p)
-		var limit := float(cue.get("duration", 0.0))
 		if limit > 0.0:
 			var envelope := p.create_tween()
 			envelope.tween_interval(maxf(0.0, limit - 0.06))
@@ -279,9 +348,9 @@ func _start(name: String, o: Dictionary, lay: Array) -> void:
 			# avoids a freed lambda capture, which errors before its body can guard it.
 			get_tree().create_timer(start, false, false, true).timeout.connect(_play_pending.bind(weakref(p), v))
 		v.players.append(p)
-		dur = maxf(dur, float(L.d) + (L.st as AudioStream).get_length() / rate)
-	if cue.has("duration"):
-		dur = minf(dur, float(cue["duration"]))
+		dur = maxf(dur, float(L.d) + st.get_length() / rate)
+	if limit > 0.0:
+		dur = limit
 	v.end = t + dur + 0.05
 	list.append(v)
 	by_cue[name] = list
@@ -300,6 +369,7 @@ func _play_pending(player: WeakRef, voice: Dictionary) -> void:
 
 func _process(_delta: float) -> void:
 	_reap(_now())
+	_apply_mix()
 	if _now() >= _ambient_duck_until:
 		_ambient_duck = 0.0
 	var i := AudioServer.get_bus_index("ambient")
@@ -310,10 +380,7 @@ func _process(_delta: float) -> void:
 # R73 hook. The picture owns its clock; audio remains at normal pitch/speed.
 func death_beat(enabled: bool) -> void:
 	_beat = enabled
-	for bus in ["battle_sfx", "music_duck"]:
-		var i := AudioServer.get_bus_index(bus)
-		if i >= 0:
-			AudioServer.set_bus_volume_db(i, -6.0 if enabled else 0.0)
+	_apply_mix()
 	# Music can be created after SFX, so connect its send when the beat is sampled.
 	var music := AudioServer.get_bus_index("music")
 	if music >= 0:
@@ -359,6 +426,10 @@ func _reap(now: float) -> void:
 func stop_all() -> void:
 	_pending_generation += 1
 	last.clear()
+	_duck_db = 0.0
+	_duck_until = 0.0
+	_quiet_db = 0.0
+	_quiet_until = 0.0
 	death_beat(false)
 	for v in active.duplicate():
 		_steal(v)
@@ -381,13 +452,36 @@ func gun(k: String, sq: bool, style, pos = null, delay := 0.0) -> void:
 	play(n if cues.has(n) else "gun_shell", {"pos": pos, "delay": delay})
 
 
+# Issue 771: the lance and the torpedo charge briefly before the shot. Guns stay dry.
+const CHARGE_LEAD := {"lance_charge": 0.26, "torp_charge": 0.30}
+
+
+func _charged(shot: String, charge: String, pos) -> void:
+	if legacy or not cues.has(charge):
+		play(shot, {"pos": pos})
+		return
+	play(charge, {"pos": pos})
+	play(shot, {"pos": pos, "delay": float(CHARGE_LEAD[charge])})
+
+
 func lance(ion: bool, fac: String, pos = null) -> void:
-	play("lance_dark" if fac == "deathless" else "lance_choir" if fac == "ithar" else "lance_ion" if ion else "lance", {"pos": pos})
+	_charged("lance_dark" if fac == "deathless" else "lance_choir" if fac == "ithar" else "lance_ion" if ion else "lance", "lance_charge", pos)
 
 
 func torp(fac: String, pos = null) -> void:
 	var m := {"corsair": "torp_rocket", "chorus": "torp_sac", "ithar": "torp_star", "voidsworn": "torp_heavy"}
-	play(m.get(fac, "torp"), {"pos": pos})
+	_charged(m.get(fac, "torp"), "torp_charge", pos)
+
+
+# The death bed: a looped low rumble held for the whole death picture. Its length comes from the death beats.
+func death_bed(seconds: float, pos = null) -> void:
+	if legacy or seconds <= 0.0:
+		return
+	play("death_bed", {"pos": pos, "duration": seconds, "death": true})
+
+
+func death_tail(pos = null) -> void:
+	play("death_tail", {"pos": pos, "death": true})
 
 
 func hit(pos = null, heavy := false) -> void:
