@@ -1,5 +1,6 @@
 {
- "note": "issue 756 sandbox: Blender 5.3 bpy module, Cycles CPU, 2 cores; not the PC (Blender 4.5, GPU)",
+ "note": "issue 756 sandbox: Blender 5.3 bpy module, Cycles CPU, 2 cores shared with other workers (times are long and noisy); not the PC (Blender 4.5, GPU)",
+ "baked_at_commit": "9f0e04902c2fb26550428665f3f2c1799169721e",
  "S8_2048": {
   "res": 2048,
   "device": "CPU",
@@ -22,10 +23,10 @@
     "placed": true,
     "pos": [
      0.3234,
-     0.01,
-     0.0349
+     0.0,
+     0.0415
     ],
-    "room": 0.67
+    "room": 1.0
    },
    {
     "rule": "deck row numbers",
@@ -72,18 +73,18 @@
     "room": 0.78
    }
   ],
-  "bake_H_masks_s": 197.7,
-  "bake_H_albedo_s": 182.1,
-  "bake_H_orm_s": 95.1,
-  "bake_H_normal_s": 564.9,
+  "bake_H_masks_s": 370.3,
+  "bake_H_albedo_s": 470.8,
+  "bake_H_orm_s": 178.1,
+  "bake_H_normal_s": 659.6,
   "zones_H": [
    "siron",
    "siron2",
    "sworn"
   ],
-  "bake_P_masks_s": 159.6,
-  "bake_P_albedo_s": 78.4,
-  "bake_P_orm_s": 12.9,
+  "bake_P_masks_s": 173.6,
+  "bake_P_albedo_s": 87.5,
+  "bake_P_orm_s": 15.2,
   "zones_P": [
    "dark",
    "siron",
@@ -99,7 +100,7 @@
    "sworn_gun",
    "sworn_radiator"
   ],
-  "bake_engine_glow_s": 3.3,
+  "bake_engine_glow_s": 3.4,
   "engine_glow": {
    "engines": 2,
    "map": "S8_engine_emission.png",
@@ -123,9 +124,10 @@
     "texels_per_unit2": 2719887.7
    }
   },
-  "stack_seconds": 1314.9
+  "stack_seconds": 1980.5
  },
  "budget_same_settings_1024_4_samples": {
+  "note": "S8 at the stack commit before the decal fix (same shader cost); E11 at main; same sandbox, same settings",
   "S8": {
    "device": "CPU",
    "samples": 4,

@@ -29,19 +29,19 @@
   "cap": 0.06,
   "views": {
    "paint_top": {
-    "ship_px": 52989,
-    "frost_px": 49,
-    "share": 0.0009
+    "ship_px": 52991,
+    "frost_px": 60,
+    "share": 0.0011
    },
    "paint_side": {
-    "ship_px": 33749,
+    "ship_px": 33742,
     "frost_px": 7,
     "share": 0.0002
    },
    "paint_side_s": {
     "ship_px": 30716,
-    "frost_px": 14,
-    "share": 0.0005
+    "frost_px": 10,
+    "share": 0.0003
    }
   },
   "pass_": true

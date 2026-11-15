@@ -8,7 +8,8 @@ decals, colours sampled from S8, never projected. Sheet geometry, mounts, inside
 Pictures (Blender 5.3 CPU, game light, Sunward battle lift 1.45 read from look.gd, 2048 maps, 6 bake samples, 16 render samples):
 [beside the S8 concept, fitted camera](voidsworn_S8_paint_concept.jpg),
 [spires close and the port broadside](voidsworn_S8_paint_spires_broadside.jpg),
-[battle camera, 34 degrees, range 170, long lens and true pixels](voidsworn_S8_paint_battle.jpg). In-game pictures await the
+[battle camera, 34 degrees, range 170, long lens and true pixels](voidsworn_S8_paint_battle.jpg); evidence close-up:
+[the forward deck and the port flank](voidsworn_S8_paint_close.jpg). In-game pictures await the
 Board's PC run (Blender 4.5, GPU, 4096 bake).
 
 Checks: [audits_sandbox.json](audits_sandbox.json) (emissive under 0.8 and no blue over green, frost coverage under 6 percent,
