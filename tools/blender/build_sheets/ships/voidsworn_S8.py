@@ -24,8 +24,13 @@ CONCEPT_SHEET = 'contrib/codex/design/concept_round5_2026_11/voidsworn_S8_sheet.
 # the true views on the S8 sheet (x0, y0, x1, y1), bow on the right in both
 CONCEPT_VIEWS = dict(top=dict(box=(15, 150, 1485, 500), largest=True, flip=True), side=dict(box=(15, 590, 1485, 850), largest=True, flip=True))
 CROPS = [('bow (the spearhead)', (1050, 80, 1536, 560)), ('midships (gun deck and turrets)', (550, 100, 1150, 600)), ('stern (spires and engines)', (0, 180, 700, 760))]
-SHEET = dict(version=1, round='first sheet', date='2026-11-15', blend='sandbox w738 (Blender 5.3, CPU)',
-             before='First full layout', before_note='The first complete layout, built with the new Sunward kit and run through the fit check before any fix.')
+SHEET = dict(version=1, round='first sheet', date='2026-11-15', blend='opus738',
+             blend_where='rendered in the issue 738 sandbox (Blender 5.3, Cycles CPU); not on the PC: `build.py voidsworn_S8 <out> render` rebuilds it from this file',
+             before='First full layout', before_note='The first complete layout, built with the new Sunward kit and run through the fit check before any fix.',
+             during='The table above is every finding, in the order the check made them. Beyond the fit check, the sheet\'s own looks sent back: the first hull (3.2 deep, '
+                    'the Sear pair on tall drums) read as a boat with battleship turrets, so the hull came down to 2.75 deep and the turrets went to S8\'s low grid; '
+                    'the first spires (fin panels leaning out) read as organ pipes from the beam and shards from above, so they became fin stacks that glow; the '
+                    'gun jackets\' close fins read as springs, so each carries three cooling rings.')
 
 # ---------------------------------------------------------------------------------------------------- the hull section
 # The blade's section (port half; the starboard half mirrors it): a crowned deck, a deck-edge chamfer, a big upper facet sloping
@@ -50,6 +55,8 @@ ST = [
     (-10.2, 2.44, 1.14, -1.48, 0.42, -0.32, 0.6),
     (-11.6, 2.3, 1.05, -1.36, 0.38, -0.3, 0.58),
 ]
+# the same stations in the sheet kit's loft format (x, half-beam port, half-beam starboard, belly, deck, -, -), for the sheet tools
+HULL = [(r[0], r[1], r[1], r[3], r[2], 0.0, 0.0) for r in ST]
 CROWN = 0.07       # the deck's crown at the centreline
 BWF = 0.58         # the belly's half-width share of hw
 SHELL = 0.28       # hull thickness (the solidify shell)
@@ -272,9 +279,11 @@ def build(K):
     SPIRES = [(-3.75, 1.6, 0.7, 0), (-4.6, 2.0, 0.72, 3), (-5.45, 2.35, 0.72, 1), (-6.3, 2.6, 0.74, 2), (-7.15, 2.35, 0.72, 1),
               (-8.0, 2.0, 0.72, 3), (-8.85, 1.55, 0.62, 0)]
     for i, (x, h, L, prof) in enumerate(SPIRES):
-        part = HP.radiator(h, L, profile=prof, spread=0.3 + 0.04 * (i % 3), seed=i)
+        part = HP.radiator(h, L, profile=prof, spread=0.2 + 0.42 * h / 2.6, seed=i)
         K.organ('R%d' % (i + 1), part, (x, 0.0, SPZ), (0, 0, 1), fwd=(1, 0, 0), inv='spires', what='radiator spire, %.1f tall, profile %s' % (h, ('blade', 'stepped', 'twin', 'raked')[prof]),
                 kind='radiator', note='sheds the reactor\'s heat: a stack of radiator fins glowing ember between iron posts')
+        K.mass('Radiator spire R%d (%s, %.1f tall)' % (i + 1, ('blade', 'stepped', 'twin', 'raked')[prof], h), bpy.data.objects['R%d_body_embar' % (i + 1)], 'ember fins on iron',
+               note='one of the seven spires of the spire line')
 
     # ---------------- the stern: the stern hood over the drums, two big ember bells ----------------
     for side in (1, -1):
@@ -310,9 +319,9 @@ def build(K):
             p, n = lower_pt(x, side, 0.1) if x > 5 else facet_pt(x, side, 0.06)
             K.lamp('L%d%s' % (i + 1, sn), tuple(p + n * 0.01), tuple(n), inv='lamps', note='frost-white running point on the deck edge')
     for i, (x, y) in enumerate(((6.6, 0.75), (6.6, -0.75), (-1.9, 1.3), (-1.9, -1.3))):
-        K.hatch('H%d' % (i + 1), (x, y, deck_z(x, y) + 0.06), (0, -0.07 * (1 if y > 0 else -1), 1), 0.42, inv='hatches', note='deck hatch')
+        K.hatch('H%d' % (i + 1), (x, y, deck_z(x, y) + 0.06), (0, -0.07 * (1 if y > 0 else -1), 1), 0.42, round_=True, inv='hatches', note='deck hatch')
     for i, (x, y) in enumerate(((3.0, 0.6), (3.0, -0.6), (-6.0, 0.6), (-6.0, -0.6))):
-        K.hatch('H%d' % (i + 5), (x, y, st_at(x)[3] - 0.13 - 0.03), (0, 0, -1), 0.46, inv='hatches', note='belly hatch on the armour step')
+        K.hatch('H%d' % (i + 5), (x, y, st_at(x)[3] - 0.13 - 0.03), (0, 0, -1), 0.46, round_=True, inv='hatches', note='belly hatch on the armour step')
     K.hatchbox('HB1', (5.9, 0.0, deck_z(5.9, 0.0)), 0.6, 0.75, 0.3, inv='lift_heads', note='the bow lift head: stores up to the forward decks')
     # the dorsal power trunk: from the reactor section forward along the centreline to the bow lift head (S8's long centre strip)
     tr = []
@@ -343,9 +352,9 @@ def build(K):
             hw = hw_at(x, z, IN) - 0.02
             rs.append([(x, hw, z - 0.04), (x, hw, z + 0.04), (x, -hw, z + 0.04), (x, -hw, z - 0.04)])
         K.loft_rings('in_deck_' + name, rs, 'deck', inside=True)
-        K.inside.append(dict(kind='deck', name=name, z=z, x=(x1, x0)))
+        K.inside.append(dict(kind='deck', name={'upper_aft': 'upper', 'main_aft': 'gun'}.get(name, name), z=z, x=(x1, x0)))
 
-    def frame_at(name, x, zr=None):
+    def frame_at(name, x, zr=None, record=True):
         """a frame ring inside the skin at station x; zr: the heights it keeps (a list of (lo, hi)), so a frame never straddles a
         peel plane (ships.md 2c: a peel through frames leaves their halves outside the torn hull)"""
         ho = half_ring(x, IN); hi = half_ring(x, IN + 0.12)
@@ -371,7 +380,8 @@ def build(K):
             V += [(x + 0.06, y_, z_) for (y_, z_) in q] + [(x - 0.06, y_, z_) for (y_, z_) in q]
             F += [(o, o + 1, o + 2, o + 3), (o + 7, o + 6, o + 5, o + 4), (o, o + 4, o + 5, o + 1), (o + 1, o + 5, o + 6, o + 2), (o + 2, o + 6, o + 7, o + 3), (o + 3, o + 7, o + 4, o)]
         K._obj('in_bh_' + name, V, F, 'frame', inside=True)
-        K.inside.append(dict(kind='bulkhead', name=name, x=x))
+        if record:
+            K.inside.append(dict(kind='bulkhead', name=name.split('_')[0], x=x))
 
     def room(name, kind, x0, x1, z0, z1, ymax=None, note=''):
         # the widest room that stays inside the skin over its whole length and height
@@ -388,12 +398,12 @@ def build(K):
     # decks: the bow deck; in the gun deck compartment the gun deck floor and the upper deck (the peel B-3 at z -0.72 lies between
     # the gun deck and the magazines under it, clear of both); aft, the main and upper decks
     deck_slab('bow', -0.12, 10.6, 5.1)
-    deck_slab('upper_fwd', 0.58, 4.85, -2.65); deck_slab('gun', -0.45, 4.85, -2.65)
+    deck_slab('upper', 0.58, 4.85, -2.65); deck_slab('gun', -0.45, 4.85, -2.65)
     deck_slab('upper_aft', 0.58, -2.85, -11.3); deck_slab('main_aft', -0.45, -2.85, -11.3)
     for i, x in enumerate((11.2, 9.4, 7.6, 5.25, 4.75, 2.85, 1.5, 0.15, -1.2, -2.6, -3.05, -4.0, -5.8, -7.6, -9.4, -11.3)):
         # in the gun deck compartment the frames stop clear of the gun deck peel (B-3 at -0.68): an upper and a lower half
         if -2.75 < x < 5.0:
-            frame_at('F%d_upper' % i, x, zr=[(-0.58, 99.0)]); frame_at('F%d_lower' % i, x, zr=[(-99.0, -0.8)])
+            frame_at('F%d_upper' % i, x, zr=[(-0.58, 99.0)]); frame_at('F%d_lower' % i, x, zr=[(-99.0, -0.8)], record=False)
         else:
             frame_at('F%d' % i, x)
     room('fire_control', 'machinery', 9.2, 7.9, -0.08, 0.45, note='the forward fire-control room: the broadside directors (no AI: plotted by hand)')
@@ -472,6 +482,19 @@ def build(K):
     K.change('Weapons built from the lore, not S8\'s generic barrels (R221)', 'the broadside guns are heavy short guns in deep round ports (rule 12: a round opening has depth); the Sear turrets are forged turrets with one heavy focusing emitter and radiator fins (las); the spark flak a squat drum with twin braked barrels and ammunition drums (tools/blender/kits/voidsworn/README.md)')
     K.change('Attitude thrusters, deck and belly hatches, lift heads, heat louvres, ember slits, frost running points, a belly armour step added', 'a ship in space needs thrusters and access; the spires\' reactor needs louvres; S8 shows no underside; every part has a job (R221)')
     K.change('The command deck looks out through ember slits in the spine block\'s forward face, not a box on the deck', 'S8\'s small lit block before the radiators read as a deck house (R185 (5): no deck house); the same ember windows now sit in the spine block itself')
+    # ---------- the fit report's fix column: every finding the check made while this sheet was designed (issue 738) ----------
+    K.fix('T1 barrels at bearings 150 and -150 reaching the flak housings, and T1 against T2 at 175 to 180 (the first layout: the Sear pair on the centreline on tall drums)',
+          'the Sear pair moved to S8\'s grid: side by side on low tubs at the deck edges (1.42 off the axis), emitters short enough that the pair trained at each other never meets; the tall drums are gone (R185 (5): no battleship turrets)')
+    K.fix('Gallery slits G1 and G2: the ember pane inside the hull face', 'the pane set proud of the frame\'s back (kit slit, glass from 0.006)')
+    K.fix('Deck hatches H1 to H4: the seam ring inside the crowned deck', 'hatches lifted 0.06 onto the crown')
+    K.fix('Lift head HB1 inside the bow ridge', 'the ridge ends at 6.45; HB1 sits ahead of the trunk at 5.9')
+    K.fix('Heat louvres V2 against the running lights L5', 'the aft running lights moved between the louvres (5.3 and 7.1 aft)')
+    K.fix('Command deck slits W1 to W3 covered by the spine block, then by HB2 and the power trunk', 'the slits sit in the spine block\'s vertical forward face; HB2 moved forward to 1.55 aft; the trunk ends at 2.15 aft')
+    K.fix('Spire roots R1 and R2, R6 and R7 intersecting', 'the root sockets shortened to the spire\'s own length')
+    K.fix('Bow running lights L2 inside the cheek plates', 'the bow lights moved down to the knuckle line, the blade\'s edge')
+    K.fix('Belly hatches H5 and H6 not touching the armour step', 'the step lofted through every hull station, so its face follows the belly; the hatches seat on it')
+    K.change('The spires stand taller than S8\'s bank: the tallest 2.6 over the spine block (3.1 over the deck) against S8\'s 1.8', 'factions.md: "a row of tall radiator spires"; the battle camera sees the ship from 34 degrees above the board, so the spire line is the silhouette\'s crown and must read there (voidsworn_S8_battle_cam.jpg)')
+    K.change('Modelled plates: sleek triangles on the spearhead\'s facets and cheek plates, ordered rows of forged plates elsewhere', 'paint direction sunward.md (R243, "more triangle sleek panels") asks for triangles on the flat fields; modelled on the deck in the first render they read as rows of letters at a distance, so the deck keeps forged rows and the Sunward paint stack lays its triangles there')
     K.open_item('The belly is designed here; S8 shows no underside')
     K.open_item('Frost-white markings and the half-sun crest are paint (the Sunward stack, a later job), not modelled')
 

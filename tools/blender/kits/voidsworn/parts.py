@@ -320,10 +320,10 @@ WEAPONS = {
     'turret': dict(
         name='Sear turret', rules='data.js turret: 2 shots, 8 damage, range 5 (k battery); FAC_WTRAIT las',
         lore='Lore 2.11: the Sear turret. Battle look: las (a beam).',
-        design=('A forged faceted turret on a riveted barbette ring: a tall angular housing with a sloped glacis and a stepped '
-                'roof (the layer-cake of forged plate the hull wears), one heavy focusing emitter out of a block mantlet '
-                '(stacked cooling rings on a thick jacket, a slimmer focusing tube, a lens collar with an ember lens deep in '
-                'the bore), and ember-slatted radiator fins on the bustle: a las weapon sheds its heat like the ship\'s spires.')),
+        design=('A low faceted forged dome on a flush riveted ring (S8\'s low round turrets, never a battleship\'s box turret on a '
+                'tall barbette): a twelve-sided drum with a banded, riveted skirt stepping in to a faceted crown and a hatch, one '
+                'short heavy focusing emitter out of a block mantlet (a jacket with cooling rings, a lens collar, an ember lens deep '
+                'in the bore), and a radiator bustle with ember fins behind: a las weapon sheds its heat like the ship\'s spires.')),
     'flak': dict(
         name='Spark flak', rules='data.js flak: 3 shots, 3 damage, range 2, point defence (vs squadrons x3)',
         lore='Lore 2.11: Spark flak. Battle look: flak (a spread of airbursts).',
