@@ -94,7 +94,7 @@ Older items are in docs/archive/LOOP_history_2026-11-14.md and the FINDINGS rows
 
 - The fleet screen (FL1 and FL2 hybrid; Muse's chat, issue 794).
 - The issue 788 plan (synthesis on PR 801): the dot as nightly judge, build order, how reports reach him.
-- Issue 368 route: A (fog, Board pick) or B (denser cards); sheet docs/shots/look_bench/nebula/N368_route_comparison.jpg on PR 717.
+- (answered R270: 368 route A; merges held for his look; dot as nightly judge; all seven 788 steps.)
 - Looks: DB1 after-run screen (PR 809), doom arc and null cannon round 2 (PR 814).
 
 ## Known traps
