@@ -32,3 +32,7 @@ CS1B-A2. DeepSeek, Flash and the blind leg all land there, and the reasoning is 
 - CS1B-A2's bow fork renders as two longish prongs; the sheet keeps the fork short, blunt and low, as in every Chorus sheet so far.
 - CS1B-C2's plates render as segmented shell bands with full bone frames; the sheet keeps a few broad plates with bone as edging, overlapping like shutters.
 - CS1B-A2's amber renders a touch stronger than the sheet's faint translucence; the build keeps it matte and muted.
+
+## Owner's ruling (Nov 15, 2026)
+
+CS1B-A2, the Sealed Gills sleek, is the pick. The Chorus spore swarm direction settles on the sleek sealed-gill craft as written in this sheet, proportion guards included. CS1B-C2 stands as the recorded second.
