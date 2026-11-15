@@ -7,6 +7,11 @@
 # collar, and their tips reach FORWARD past the nose's flanks (designs.md says rooted at the bow); the build follows the
 # accepted pictures and says so on the sheet. The concept has no underside view. Fields as deathless_E11_inv.py.
 KIT = 'eclipse'
+VARIANT_INVENTORY = {
+    'd_scythe_s': [dict(id='sentinel_spire', job='shoot down squadrons and boarding craft on every side (gsentry T)',
+                       type='spire', what='a turning null spire on the dart belly', count=1, cells=['mid/below', 'mid/side'],
+                       reads='a bearing foot, banded spire, sight slits, head shade and twin needle rails', src='designed')],
+}
 INVENTORY = [
     # ---------------- bow (nose tip to 33 percent) ----------------
     dict(id='fan', job='the shade: five layered plates held forward over the body, the faction\'s sunshade toward the enemy; they peel first when hit',

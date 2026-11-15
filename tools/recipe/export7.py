@@ -63,6 +63,8 @@ FAC = gamedata.ship_attr(GAME, 'fac', default=ship.get('faction'))
 HANGAR = int(gamedata.ship_attr(GAME, 'hangar', default=0) or 0)
 EXPECTED_BREACH = HP_CONTRACT.expected_breach(CLS, FAC)
 sc = bpy.context.scene
+if sc.get('r209_game_ship') and sc['r209_game_ship'] != GAME:
+    die(f'this blend was built for {sc["r209_game_ship"]}, not {GAME}: rebuild the selected hull')
 if 'r209_hp' not in sc: die('this blend has no hard point data (scene r209_hp): rebuild it with the current hull module')
 # the class length: a build sheet writes it into the blend (r209_length_world, its one home); other ships keep it in the json
 LENGTH_WORLD = float(sc.get('r209_length_world') or ship.get('length_world', 0) or 0)

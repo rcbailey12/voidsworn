@@ -134,6 +134,34 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    words: change it if he rules otherwise. A craft sheet is LENGTH 1.6 (CLS_LEN Squadron, drawn 3.84, scale.md) and carries a
    small inside only because the build contract needs one: the game shows a craft's death as a spark (fx_death.gd _wing_death).
 
+   **Named hull variants (issue 812).** A sheet lists supported data.js ids in `VARIANTS`, then adds or replaces parts only
+   inside `if K.variant == '<id>':`. `kit.build_sheet` selects the variant before any geometry or plate keep-outs are made;
+   its default is the original base build. Every build mode accepts `--variant <id>` and uses that id for weapon match and
+   model records. Use a separate output folder per variant. Unrelated ids and variants without an authored entry fail.
+   Keep these ids separate from a part builder's numeric `variant` argument, which only varies that part's salvage detail.
+   In the sheet's `_inv.py`, `VARIANT_INVENTORY[id]` lists added inventory rows or updates to a base row by its inventory id
+   (counts, job, description and visible cells). `inventory.py` reads the selected id from the model record.
+
+   For the recipe, run `python tools/blender/build_sheets/variant_recipe.py tools/recipe/ships/deathless_E14.json
+   d_jackal_h OUT_JSON` as one command, with OUT_JSON a new file named `deathless_E14__d_jackal_h.json` under
+   `tools/recipe/ships/`. It refuses to overwrite an existing file. Set `SHIP=deathless_E14__d_jackal_h` before using the ordinary recipe `.bat` stages. Direct Blender runs
+   may set `R209_SHIP` to that json. The recipe's existing `game_ship` selects the same named build in stages 3, 4 and 5;
+   the contract records it in the blend and stage 7 refuses a blend built for a different id. The asset code ends in
+   `__<data.js id>` (E14: `D20_23__d_jackal_h`), preserving the base asset. Stage 7's normal install and cache refresh keep
+   both ships. `ShipView` selects the cached variant from the unit's `tpl`, falling back to the class hull when no variant
+   is installed; an explicit bench `code` still wins. Paint comes from the same faction stack, not a variant paint copy.
+
+   Worked cases: E14 `d_jackal_h` adds the guard spire on its capacitor housing; E13 `d_scythe_s` adds a belly spire clear of
+   the roof cannon; E12 `d_harvester_t` replaces the fore cannon with a turning corona arc and removes the fixed bow emitter,
+   keeping one aft cannon. The arc uses the existing Eclipse projector on its faction bearing ring. All base builds keep
+   their triangle coordinates. Prove changes with Blender `-b -t 4 -P tools/blender/build_sheets/variant_selftest.py -- OUT`
+   (optionally add a pre-change `snapshot.json`), then run `check_export.py` on each generated variant recipe and export with
+   `unbaked=1`. The self-test writes real unpainted stage 7 GLBs, fit and weapon reports, and checks that variants cannot leak
+   into later base builds. Cache those exports with `render/build_assets.gd --ships-only --ships OUT/ships --gen OUT/gen`,
+   then run Godot headless with `tools/blender/build_sheets/variant_game_check.gd -- OUT` to prove selection and authored
+   turning muzzles through the actual game. `studies/variant_preview.py` makes a 1280 by 720 CPU comparison from the exports.
+   `publish.py` keeps variant sheets under the base sheet's `variants/<id>/` folder, never over its approved base pictures.
+
 ## 1. Target
 
 - The faction's sheet in docs/playbooks/factions.md is the law for look: silhouette, shape language, colours, where guns

@@ -14,7 +14,15 @@ MODEL = sys.argv[4] if len(sys.argv) > 4 else None
 os.makedirs(OUT, exist_ok=True)
 sp = importlib.util.spec_from_file_location('inv', os.path.join(REPO, 'tools/blender/build_sheets/ships', CODE + '_inv.py'))
 inv = importlib.util.module_from_spec(sp); sp.loader.exec_module(inv)
-INV = inv.INVENTORY
+INV = list(inv.INVENTORY)
+# A variant's inventory states its added or replaced parts without changing the approved base inventory.
+_model = json.load(open(MODEL)) if MODEL else {}
+for patch in getattr(inv, 'VARIANT_INVENTORY', {}).get(_model.get('variant'), []):
+    index = next((i for i, row in enumerate(INV) if row['id'] == patch['id']), None)
+    if index is None:
+        INV.append(patch)
+    else:
+        INV[index] = dict(INV[index], **patch)
 CELLS = ['%s/%s' % (r, v) for r in ('bow', 'mid', 'stern') for v in ('top', 'side', 'below')]
 TYPES = {}
 import re

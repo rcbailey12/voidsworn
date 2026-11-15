@@ -420,7 +420,23 @@ def _spire(p, barrels, cal, blen, s, pitch, variant):
     return trunnion, muzzles, xf + L, rr * 1.05
 
 
-GUN_BUILDERS = {'gauss': ('nullcannon', _null_cannon), 'flak': ('shredder', _shredder), 'gsentry': ('spire', _spire)}
+def _arc_turret(p, barrels, cal, blen, s, pitch, variant):
+    """Turreted zenith: the existing arc projector on the Eclipse bearing ring. Its whole breech turns with the lens."""
+    rr = 0.36 * s
+    _turntable(p, s, rr, 0.10 * s)
+    z = 0.10 * s + cal * 1.8
+    E = Matrix.Translation((-blen * 0.1, 0, z)) @ Matrix.Rotation(-math.radians(pitch), 4, 'Y')
+    arc = spinal(blen, r=cal, collar_r=cal * 1.5, collar_len=blen * 0.4, block_r=cal * 1.3)
+    arc.transform(E)
+    for c in arc.comps:
+        c['role'] = 'body'
+        p.comps.append(c)
+    muzzle = arc.fit['muzzles']
+    return Vector((0, 0, z)), muzzle, blen * 1.3, rr * 1.05
+
+
+GUN_BUILDERS = {'gauss': ('nullcannon', _null_cannon), 'flak': ('shredder', _shredder), 'gsentry': ('spire', _spire),
+                'doom': ('corona_arc', _arc_turret)}
 
 
 def gun(barrels=2, cal=0.12, blen=2.0, size=1.0, mount='turret', pitch=0.0, variant=0, seg=6, weapon='gauss'):

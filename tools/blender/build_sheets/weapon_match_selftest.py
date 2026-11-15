@@ -349,6 +349,19 @@ def main():
         else:
             print(f'ok   {rule:<6} {what}: {hits[0][:110]}')
     # the game's muzzle rotation (fx_hull.gd guns()): 5 shots over 6 muzzles of 3 twin mounts reaches every mount every volley
+    # issue 812: the turreted zenith's T arc needs a real turning projector; accepting its part type alone is insufficient.
+    arc = dict(code='E12_variant', weapons=[['doom', 'T']], stats={'doom': gamedata.weapon_stats('doom')},
+               mounts=[turret('A1', 'doom', 'T', n=1, typ='corona_arc')],
+               parts=[dict(id='A1', kind='gun', type='corona_arc')])
+    if WM.check(arc):
+        bad.append('the clean turning corona arc fails: ' + '; '.join(WM.check(arc)))
+    arc['mounts'][0]['mount'] = 'fixed'
+    arc['mounts'][0]['turret'] = None
+    if not any(p.startswith('KIND ') for p in WM.check(arc)):
+        bad.append('the turreted zenith accepts a fixed corona arc')
+    else:
+        print('ok   KIND   the turreted zenith refuses a fixed corona arc')
+
     v = WM.volleys(['a', 'a', 'b', 'b', 'c', 'c'], 5)
     if len(v) != 6 or any(x != {'a', 'b', 'c'} for x in v):
         bad.append(f'volleys() wrong for 5 shots over 3 twins: {v}')
@@ -370,7 +383,7 @@ def main():
     print(f'ok   table: {len(games)} sheet ships, every data.js weapon has a FITS row and a shot count' if not any('FITS' in b or 'shot' in b for b in bad) else 'FAIL table')
     for b in bad:
         print('  ' + b)
-    print(('FAIL' if bad else 'PASS') + f' weapon match self-test ({len(CASES) + len(CRAFT_CASES) + len(HEG_CASES) + len(FLARE_CASES)} planted faults, {len(games)} sheet ships in the table)')
+    print(('FAIL' if bad else 'PASS') + f' weapon match self-test ({len(CASES) + len(CRAFT_CASES) + len(HEG_CASES) + len(FLARE_CASES) + 1} planted faults, {len(games)} sheet ships in the table)')
     return 1 if bad else 0
 
 

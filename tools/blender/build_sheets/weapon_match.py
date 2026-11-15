@@ -46,7 +46,7 @@ FITS = {
     'spores': ({'spore'}, {'turret'}),                        # flak: the Chorus spore organ
     'gauss': ({'nullcannon'}, {'turret'}),                    # gauss: the Eclipse null cannon
     'nlance': ({'nullcannon'}, {'fixed'}),                    # gauss: the Eclipse null lance, the flare's one forward gun, fixed (issue 784, R256)
-    'doom': ({'corona_arc'}, {'fixed'}),                      # lance: the Eclipse corona arc projector, spinal
+    'doom': ({'corona_arc'}, {'fixed', 'turret'}),            # corona arc: fixed F or the turreted zenith's T
     'torp': ({'rack', 'bow_launcher'}, {'launcher'}),         # torp: a rocket rack or a bow launcher
     'htorp': ({'rack', 'bow_launcher'}, {'launcher'}),        # torp
     'bioplasma': ({'throat'}, {'fixed'}),                     # bio: the Chorus throat, fixed forward
@@ -58,6 +58,8 @@ FITS = {
     'guns': ({'gun'}, {'turret'}),                            # sq: a fighter's interceptor guns turn on a traverse ring
     'bombs': ({'bomb_tube'}, {'launcher'}),                   # sq: a bomber's bomb tubes, fixed forward in the bow cassette
 }
+# The turreted zenith changes its corona arc from F to T. A fixed projector must still fail that all-round slot.
+MOUNTS_BY_ARC = {'doom': {'F': {'fixed'}, 'T': {'turret'}}}
 # Why a fixed bomb cassette may show an all-round (T) weapon: a craft is not a ship that keeps its heading while its guns turn;
 # the whole craft turns onto its target on a strafing run (godot/fx/fx_weapons.gd, look 'bombs'), so the tubes point where the
 # craft flies. The table allows it for 'bombs' only, and only on a launcher (the Board's reading of rule 11 for craft, issue 769).
@@ -136,6 +138,7 @@ def check(ship):
             probs.append(f'KIND {fid}: weapon {m["weapon"]!r} has no row in the weapon-match table (weapon_match.FITS); add it from data.js')
         else:
             types, mts = row
+            mts = MOUNTS_BY_ARC.get(m['weapon'], {}).get(m['letter'], mts)
             if m['type'] not in types:
                 probs.append(f'KIND {fid}: a {m["type"]} cannot show {m["weapon"]} (the table allows {sorted(types)})')
             if m['mount'] not in mts:
@@ -275,4 +278,7 @@ def run(K, game):
         stats[wk] = gamedata.weapon_stats(wk)
     ship = collect(K, weapons, stats)
     probs = check(ship)
-    return summary(ship, probs), probs
+    report = summary(ship, probs)
+    report['game_ship'] = game
+    report['variant'] = getattr(K, 'variant', '')
+    return report, probs

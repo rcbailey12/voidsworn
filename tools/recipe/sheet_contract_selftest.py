@@ -30,7 +30,7 @@ def build():
     bpy.ops.wm.read_factory_settings(use_empty=True)
     sp = importlib.util.spec_from_file_location(SHIP['sheet'], os.path.join(SHEETS, 'ships', SHIP['sheet'] + '.py'))
     d = importlib.util.module_from_spec(sp); sp.loader.exec_module(d)
-    kit.use_kit(getattr(d, 'KIT', 'hullbreakers')); K = kit.Kit(SHIP['sheet'], d.LENGTH); d.build(K); K.finish(); bpy.context.view_layer.update()
+    K = kit.build_sheet(d, SHIP['sheet'], SHIP.get('game_ship'))
     return d, K
 
 

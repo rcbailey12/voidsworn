@@ -21,6 +21,9 @@ def weapons(ship_id, data_js=None):
     body = _block(ship_id, data_js)
     w = re.search(r'(?<![A-Za-z0-9_])w\s*:\s*\[((?:\s*\[[^\]]*\]\s*,?)*)\s*\]', body)
     if not w:
+        base = ship_attr(ship_id, 'base', data_js)
+        if base:
+            return weapons(base, data_js)
         raise ValueError(f'ship {ship_id} has no weapon list in data.js')
     out = re.findall(r"\[\s*'([A-Za-z0-9_]+)'\s*,\s*'([FTPS])'\s*\]", w.group(1))
     if not out or len(out) != w.group(1).count('['):
@@ -33,6 +36,9 @@ def ship_attr(ship_id, key, data_js=None, default=None):
     body = _block(ship_id, data_js)
     m = re.search(r'(?<![A-Za-z0-9_])' + re.escape(key) + r'\s*:\s*(?:\'([^\']*)\'|"([^"]*)"|([0-9.]+)|(true|false))', body)
     if not m:
+        base = re.search(r"(?<![A-Za-z0-9_])base\s*:\s*'([^']+)'", body)
+        if key != 'base' and base:
+            return ship_attr(base.group(1), key, data_js, default)
         return default
     v = m.group(1) if m.group(1) is not None else m.group(2) if m.group(2) is not None else m.group(3) if m.group(3) is not None else m.group(4)
     if v in ('true', 'false'):

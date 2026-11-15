@@ -18,6 +18,7 @@ LENGTH = 6.5
 GAME = "data.js d_scythe (cls 'Frigate'); length from godot/render/hull_table.gd CLS_LEN['Frigate'] = 6.5 (drawn x SHIP_K 1.6 = 10.4 on the board)"
 BEAUTY = 'contrib/muse/design/class_family_deathless_2026_11/deathless_E13_mote.jpg'
 KIT = 'eclipse'
+VARIANTS = ('d_scythe_s',)
 CONCEPT_SHEET = 'contrib/muse/design/class_family_deathless_2026_11/deathless_E13_mote_sheet.jpg'
 # the sheet's true views (x0, y0, x1, y1): the plan on the left and the side view in the middle, both BOW ON THE LEFT
 CONCEPT_VIEWS = dict(top=dict(box=(28, 420, 650, 870), largest=True, flip=False), side=dict(box=(700, 560, 1365, 725), largest=True, flip=False))
@@ -185,6 +186,13 @@ def build(K):
     # ---------------- the gun, by data.js slot ----------------
     K.gun('T1', (-1.98, 0.0, 0.47), 0, 4, barrels=2, cal=0.042, blen=0.74, size=0.4, slot='T', weapon='gauss', inv='main_gun',
           note='the null cannon: twin rail pairs through a crescent shade on the block roof at the fan\'s root, firing forward over the plates')
+
+    if K.variant == 'd_scythe_s':
+        K.gun('G1', (0.65, 0.0, _k.sec_at(HULL, 0.65)[3] - 0.022), 0, 6, barrels=2, cal=0.026, blen=0.35, size=0.32,
+              normal=(0, 0, -1), slot='T', weapon='gsentry', inv='sentinel_spire', src='designed',
+              note='Sentinel only: the null spire on the dart belly, clear of the roof cannon and the shade plates')
+        K.change('Mote sentinel adds a belly null spire',
+                 'data.js d_scythe_s keeps gauss T and adds gsentry T; the base mote has no spire')
 
     # ---------------- the engine ----------------
     K.engine('E1', (-3.25, 0.0, 0.03), 0.27, 0.49, bell=1.2, body_r=0.29, rings=2, nose='flat', inv='engine', src='picture', kw=dict(struts=12, seg=32),

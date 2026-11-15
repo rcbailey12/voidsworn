@@ -9,6 +9,11 @@
 # is built round one larger gun at the ring's centre, "like a glass cannon"; data.js d_jackal after issue 784: one null lance,
 # nlance F. The concept has no underside view. Fields as deathless_E11_inv.py.
 KIT = 'eclipse'
+VARIANT_INVENTORY = {
+    'd_jackal_h': [dict(id='guard_spire', job='shoot down squadrons and boarding craft on every side (gsentry T)',
+                       type='spire', what='a turning null spire on the capacitor housing', count=1, cells=['mid/top', 'mid/side'],
+                       reads='a bearing foot, banded spire, sight slits, head shade and twin needle rails', src='designed')],
+}
 INVENTORY = [
     # ---------------- bow (the nose to 33 percent) ----------------
     dict(id='ring', job='the shade held forward at the enemy and the lance\'s focusing ring: one closed ring of curved shade plates round the gun\'s muzzle; its plates peel first when hit',

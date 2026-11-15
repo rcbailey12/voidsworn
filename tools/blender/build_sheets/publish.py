@@ -8,6 +8,9 @@ import json
 wm = json.load(open('%s/%s_weapon_match.json' % (R, s)))
 if wm.get('result') != 'PASS':
     sys.exit('weapon match is %s for %s: fix the ship, do not publish (ships.md rule 11)' % (wm.get('result'), s))
+if wm.get('variant'):
+    # A variant's views and slot table must never overwrite the approved base sheet.
+    D += '/variants/' + wm['variant']
 import os; os.makedirs(D, exist_ok=True)
 for n in ['side', 'top', 'underside', 'bow', 'stern', 'cutaway', 'threequarter']:
     Image.open('%s/%s.png' % (O, n)).convert('RGB').save('%s/%s.jpg' % (D, n), quality=88)

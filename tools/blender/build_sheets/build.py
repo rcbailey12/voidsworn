@@ -7,6 +7,7 @@
 # fit:    builds, runs the fit check (clash.py) and writes <code>_fit.json and <code>_model.json, no renders.
 # match:  builds and runs only the weapon-match check (weapon_match.py, R241); exit 1 when it fails. Every mode that builds
 #         runs it and writes <code>_weapon_match.json.
+# Optional --variant <data.js id> selects the sheet's named variant in every mode. Use its own OUT directory.
 # render runs the fit check too (round 3, R217).
 import sys, os, json, math, importlib.util
 import bpy
@@ -18,7 +19,7 @@ import kit  # noqa: E402
 
 argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
 CODE, OUT = argv[0], argv[1]
-MODE = argv[2] if len(argv) > 2 else 'render'
+MODE = argv[2] if len(argv) > 2 and not argv[2].startswith('--') else 'render'
 QUICK = '--quick' in argv
 os.makedirs(OUT, exist_ok=True)
 
@@ -27,11 +28,8 @@ ship = importlib.util.module_from_spec(spec); spec.loader.exec_module(ship)
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 sc = bpy.context.scene
-kit.use_kit(getattr(ship, 'KIT', 'hullbreakers'))
-K = kit.Kit(CODE, ship.LENGTH)
-ship.build(K)
-K.finish()
-bpy.context.view_layer.update()
+GAME_SHIP = argv[argv.index('--variant') + 1] if '--variant' in argv else None
+K = kit.build_sheet(ship, CODE, GAME_SHIP)
 import clash  # noqa: E402
 
 
@@ -72,7 +70,10 @@ def r3(v):
 
 
 def write_model():
-    model = dict(code=CODE, name=ship.NAME, faction=ship.FACTION, cls=ship.CLASS, length=ship.LENGTH, game=ship.GAME,
+    import gamedata
+    name = gamedata.ship_attr(K.game_ship, 'n') if K.variant else ship.NAME
+    game_line = 'data.js ' + K.game_ship + ' (variant; base sheet ' + CODE + ')' if K.variant else ship.GAME
+    model = dict(code=CODE, name=name, faction=ship.FACTION, cls=ship.CLASS, length=ship.LENGTH, game=game_line,
                  beauty=ship.BEAUTY, model_length=round(MODEL_LEN, 3), x_tip=round(XTIP, 3), lo=r3(LO), hi=r3(HI), views=views,
                  features=[], masses=[], inside=K.inside, points=[], changes=K.changes, tbd=K.tbd, kit=kit.KIT_NAME,
                  sheet=getattr(ship, 'SHEET', dict(version=3, round='round 3', date='2026-11-11', blend='opus532\\r3b')),
@@ -98,6 +99,8 @@ def write_model():
     model['weapons'] = globals().get('WEAPON_ROWS', [])
     model['fit_counts'] = FIT['counts']
     model['weapon_match'] = MATCH
+    model['game_ship'] = K.game_ship
+    model['variant'] = K.variant
     json.dump(model, open(os.path.join(OUT, CODE + '_model.json'), 'w'), indent=1)
 
 
@@ -108,7 +111,7 @@ import re as _re  # noqa: E402
 import weapon_match  # noqa: E402
 _gm = _re.search(r'data\.js\s+([A-Za-z0-9_]+)', str(getattr(ship, 'GAME', '')))
 if _gm:
-    MATCH, _mp = weapon_match.run(K, _gm.group(1))
+    MATCH, _mp = weapon_match.run(K, K.game_ship)
     json.dump(MATCH, open(os.path.join(OUT, CODE + '_weapon_match.json'), 'w'), indent=1)
     print('%s weapon match %s (%d problems)' % ('PASS' if not _mp else 'FAIL', CODE, len(_mp)))
     for _p in _mp:

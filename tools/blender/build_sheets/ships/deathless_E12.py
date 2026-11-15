@@ -18,6 +18,7 @@ LENGTH = 14.5
 GAME = "data.js d_harvester (cls 'Cruiser'); length from godot/render/hull_table.gd CLS_LEN['Cruiser'] = 14.5 (drawn x SHIP_K 1.6 = 23.2 on the board)"
 BEAUTY = 'contrib/muse/design/concept_round8c_2026_11/deathless_E12_beauty.jpg'
 KIT = 'eclipse'
+VARIANTS = ('d_harvester_t',)
 CONCEPT_SHEET = 'contrib/muse/design/concept_round8c_2026_11/deathless_E12_sheet.jpg'
 CONCEPT_VIEWS = dict(top=dict(box=(116, 40, 1376, 770), largest=False, flip=True), side=dict(box=(100, 850, 1395, 1080), largest=False, flip=True))
 CROPS = [('bow (fore arcs, emitter, fore battery)', (1150, 40, 2000, 1000)), ('midships (core and centre arcs)', (620, 40, 1300, 1000)),
@@ -152,14 +153,23 @@ def build(K):
                                                        (x - 0.32, 0.38, 0.38, ZS + 0.22, ZS + 0.46, 0.09, 0.0), (x - 0.58, 0.24, 0.24, ZS + 0.22, ZS + 0.4, 0.06, 0.0)],
                       'mauve', plates=dict(PL, seed=84 + i, faces=[0, 1, 2, 3], size=(0.16, 0.3)))
         K.mass('Saddle deck, %s battery' % nm, sad2, 'mauve plate', note='the stepped upper deck of the saddle, the turret on it')
-        K.gun('T%d' % (i + 1), (x, 0.0, ZS + 0.46), 0, 4, barrels=2, cal=0.08, blen=1.3, size=0.86, slot='T', weapon='gauss', inv='main_guns',
-              variant=i, note='%s null cannon: twin rail pairs through a crescent shade, on its saddle' % nm)
+        if K.variant == 'd_harvester_t' and i == 0:
+            K.gun('A1', (x, 0.0, ZS + 0.46), 0, 0, barrels=1, cal=0.16, blen=1.05, size=0.86,
+                  slot='T', weapon='doom', inv='emitter', src='designed',
+                  note='Turreted zenith only: the corona arc turns on the fore saddle; one null cannon remains aft')
+        else:
+            K.gun('T%d' % (i + 1), (x, 0.0, ZS + 0.46), 0, 4, barrels=2, cal=0.08, blen=1.3, size=0.86, slot='T', weapon='gauss', inv='main_guns',
+                  variant=i, note='%s null cannon: twin rail pairs through a crescent shade, on its saddle' % nm)
     K.mark('saddles', 'pylon', ['web', 'plate', 'step'])
-    K.spinal('A1', (5.3, 0.0, ZS), 1.05, r=0.24, collar_r=0.4, collar_len=0.45, block_len=0.36, block_r=0.33, slot='F', weapon='doom', inv='emitter',
-             note='the corona arc emitter on the spine head (a crown of electrode horns round a black shade disc), firing through the ring\'s bow gap')
-    import bpy as _bpy
-    for nm_, ob_, col_ in (('Emitter collars', 'A1_mount_mauve', 'mauve and violet'), ('Emitter shaft', 'A1_body_violet', 'violet and mauve'), ('Emitter block', 'A1_body_mauve', 'mauve')):
-        K.mass(nm_, _bpy.data.objects[ob_], col_, note='a part of the kit projector, counted as its own mass')
+    if K.variant != 'd_harvester_t':
+        K.spinal('A1', (5.3, 0.0, ZS), 1.05, r=0.24, collar_r=0.4, collar_len=0.45, block_len=0.36, block_r=0.33, slot='F', weapon='doom', inv='emitter',
+                 note='the corona arc emitter on the spine head (a crown of electrode horns round a black shade disc), firing through the ring\'s bow gap')
+        import bpy as _bpy
+        for nm_, ob_, col_ in (('Emitter collars', 'A1_mount_mauve', 'mauve and violet'), ('Emitter shaft', 'A1_body_violet', 'violet and mauve'), ('Emitter block', 'A1_body_mauve', 'mauve')):
+            K.mass(nm_, _bpy.data.objects[ob_], col_, note='a part of the kit projector, counted as its own mass')
+    else:
+        K.change('Turreted zenith moves the corona arc to the fore saddle and keeps one aft null cannon',
+                 'data.js d_harvester_t replaces two gauss T and doom F with one gauss T and doom T; the base zenith is unchanged')
     K.gun('G1', (-5.1, 0.0, 0.98), 0, 6, barrels=2, cal=0.055, blen=0.8, size=0.62, slot='T', weapon='gsentry', inv='sentry', variant=2,
           note='the null spire: a tall turning spire on the block roof, green sight slits, two needle rails through a shade fin at its head')
 

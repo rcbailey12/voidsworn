@@ -3,6 +3,12 @@
 # bow on the right) and deathless_E12_sheet.jpg (plan above, side view below, BOW ON THE RIGHT; the smaller ship at the right
 # of each view is the escort, not this hull). The concept has no underside view. Fields as deathless_E11_inv.py.
 KIT = 'eclipse'
+VARIANT_INVENTORY = {
+    'd_harvester_t': [dict(id='main_guns', count=1, cells=['mid/top', 'mid/side'],
+                          job='one aft null cannon (gauss T)', what='one twin null cannon on the aft saddle'),
+                      dict(id='emitter', job='a turning corona arc (doom T)',
+                           what='the corona arc on the fore saddle, its whole breech and lens turning', src='designed')],
+}
 INVENTORY = [
     # ---------------- bow (prow tip to 33 percent) ----------------
     dict(id='arcs', job='the broken shade ring: shields round the spine on every side, and they peel first when hit', type='arc', what='the broken shade ring: flat box-section arcs on an oval round the spine, open at the bow and stern, '

@@ -161,10 +161,39 @@ def sec_at(sections, x):
             return [a[i] + (b[i] - a[i]) * t for i in range(len(a))]
 
 
+def build_sheet(design, code=None, game_ship=None):
+    """Select one data.js hull before building. Unlisted or unrelated variants fail before geometry is made.
+    A sheet lists its supported ids in VARIANTS and branches on K.variant; game_ship is the recipe's existing selector.
+    No selector follows the original base build, including its part order and plate keep-outs."""
+    import re
+    sys.path.insert(0, os.path.normpath(os.path.join(_KITS, '..', '..', 'recipe')))
+    import gamedata
+    m = re.search(r'data\.js\s+([A-Za-z0-9_]+)', design.GAME)
+    if not m:
+        raise ValueError('the sheet GAME line names no data.js ship')
+    base = m.group(1)
+    game = game_ship or base
+    if game != base:
+        if gamedata.ship_attr(game, 'base') != base:
+            raise ValueError(f'{game}: not a variant of this sheet\'s {base}')
+        if game not in getattr(design, 'VARIANTS', ()):
+            raise ValueError(f'{game}: this sheet has no authored variant parts')
+    use_kit(getattr(design, 'KIT', 'hullbreakers'))
+    K = Kit(code or design.CODE, design.LENGTH)
+    K.game_ship = game
+    K.variant = game if game != base else ''
+    design.build(K)
+    K.finish()
+    bpy.context.view_layer.update()
+    return K
+
+
 class Kit:
     def __init__(self, code, length):
         self.code = code
         self.length = length
+        self.game_ship = ''
+        self.variant = ''
         self.features = []      # feature table rows
         self.masses = []        # major masses
         self.inside = []        # inside rows (decks, bulkheads, spaces, armour, breaks)

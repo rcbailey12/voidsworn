@@ -159,15 +159,12 @@ All in [feature_table.md](feature_table.md); the design calls the Board should l
 - **factions.md "Never: a spire through the centre of a disc"**: the lance runs through the ring's centre on its side, not
   upright. It is the R256 exception (factions.md names E14 as being redesigned round one gun at the ring's centre), and the
   ring's middle stays open round the gun heart.
-- **Open item: the Archive guard flare's spire** (`d_jackal_h`, PR 797 at f2b43a8a0: `nlance` F plus `gsentry` T, hull 85). It
-  shares this model, and the pipeline has no per-variant part: a sheet, its weapon match, its build contract and its export are
-  keyed to one data.js ship (`GAME`, d_jackal), and data.js HULL_VARIANTS entries only change the weapon list. The sheets so far
-  build the base ship alone (E13 mote has no spire for `d_scythe_s`, E12 zenith no turreted arc for `d_harvester_t`). In the
-  game a variant slot with no authored point falls back (godot/fx/fx_hull.gd `_gun_points`: that weapon's points on any slot,
-  else that slot's, else rays off the plating), so the variant's spire fires from the hull's surface with no visible spire. So
-  this sheet builds the base flare as briefed and leaves the spire out. Closing it needs a pipeline feature (a per-variant part
-  list in the sheet, a variant weapon match, a variant hard point in the export and a variant hull in the game) for every
-  sheet with variants, not only E14.
+- **Archive guard flare's spire, supported by issue 812** (`d_jackal_h`: `nlance` F plus `gsentry` T, hull 85). The base
+  pictures here still show `d_jackal`, with no spire. Selecting `--variant d_jackal_h` builds a null spire on the capacitor
+  housing and checks both weapons against that variant's data.js slots. Its separate recipe exports
+  `D20_23__d_jackal_h`; when installed, ShipView selects it from the unit's `tpl`, with turning muzzle points on the spire.
+  The same feature supports E13's `d_scythe_s` spire and E12's `d_harvester_t` turning arc. Build and install steps are in
+  [ships.md, Named hull variants](../../../playbooks/ships.md). Existing base hull geometry and these base pictures are unchanged.
 - **Merge order**: this branch merges opus/issue-784 (its data.js gives d_jackal the null lance). On main's data.js before 797
   the sheet fails the weapon match (COUNT: gauss T and gauss F have no mount), so 782 and 797 merge together.
 

@@ -100,6 +100,10 @@ def to_recipe(K, ship):
     sc = bpy.context.scene
     game = ship.get('game_ship')
     if not game: raise ContractError('the ship json has no game_ship (the data.js id)')
+    if K.game_ship and K.game_ship != game:
+        raise ContractError(f'built {K.game_ship}, but the recipe requests {game}: rebuild the selected hull')
+    if K.variant and not str(ship.get('game_code', '')).endswith('__' + K.variant):
+        raise ContractError(f'{game}: use a separate game_code ending in __{game}, so the base asset is preserved')
     weapons = gamedata.weapons(game); hangar = int(gamedata.ship_attr(game, 'hangar', default=0) or 0)
     feats = {f['id']: f for f in K.features}
     slots = slot_map(weapons, [(fd['id'], fd['slot'], feats.get(fd['id'], {}).get('weapon')) for fd in K.fitdata if fd['kind'] in ('gun', 'launcher')])
@@ -188,6 +192,7 @@ def to_recipe(K, ship):
         pv['slot'] = slots[fid]; pv['socket'] = fid
 
     sc['r209_length_world'] = float(K.length); sc['r209_sheet'] = K.code; sc['r209_scale'] = s
+    sc['r209_game_ship'] = game
     return dict(sheet=K.code, model_length=round(L, 5), scale=s, length_world=K.length, t_lines=[round(x, 5) for x in t_lines], l_line=l_line, l_lines=l_lines,
                 muzzles=len(hp['muzzles']), guns=len(guns), engines=len(hp['engines']), bays=len(hp['bays']), points=len(pts),
                 turrets=sorted(pv.name for pv in pivots), interior_objects=sum(o.get('role') == 'interior' for o in sc.objects),

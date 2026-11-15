@@ -93,6 +93,11 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	if u.has("code"):
 		code = str(u["code"])
 		L = float(u.get("L", L))
+	else:
+		# Sheet variants export beside the base as CODE__tpl. Only a built and installed variant replaces the class hull.
+		var variant_code := code + "__" + str(u.get("tpl", ""))
+		if manifest().get("ships", {}).has(variant_code):
+			code = variant_code
 	bob_seed = randf() * 10.0
 	hull = Node3D.new()
 	hull.name = "hull"

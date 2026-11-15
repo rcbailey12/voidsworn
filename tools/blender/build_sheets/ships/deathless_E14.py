@@ -20,6 +20,7 @@ LENGTH = 9.5
 GAME = "data.js d_jackal (cls 'Destroyer'); length from godot/render/hull_table.gd CLS_LEN['Destroyer'] = 9.5 (drawn x SHIP_K 1.6 = 15.2 on the board)"
 BEAUTY = 'contrib/muse/design/class_family_deathless_2026_11/deathless_E14_flare.jpg'
 KIT = 'eclipse'
+VARIANTS = ('d_jackal_h',)
 CONCEPT_SHEET = 'contrib/muse/design/class_family_deathless_2026_11/deathless_E14_flare_sheet.jpg'
 # the sheet's middle view draws the ring upright and edge-on from the beam, as built here, so its height now compares; its left
 # view draws the ring face-on with the spar across it (a plan of a flat ring), kept as the plan crop for the length only
@@ -226,6 +227,12 @@ def build(K):
     for i, x in enumerate((-0.8, -1.25, -1.7)):
         K.loft('E14_capbank_rib%d' % i, [(x + 0.06, 0.43, 0.43, 0.4, 0.82, 0.14, 0.03), (x - 0.06, 0.43, 0.43, 0.4, 0.82, 0.14, 0.03)], 'mauve')
     K.mark('capbank', 'pylon', ['web', 'plate'])
+    if K.variant == 'd_jackal_h':
+        K.gun('G1', (-1.25, 0.0, 0.82), 0, 6, barrels=2, cal=0.035, blen=0.45, size=0.42,
+              slot='T', weapon='gsentry', inv='guard_spire', src='designed',
+              note='Archive guard only: a null spire seated on the capacitor housing, clear of the forward lance')
+        K.change('Archive guard adds a null spire on the capacitor housing',
+                 'data.js d_jackal_h keeps nlance F and adds gsentry T; the base flare has no spire')
 
     # ---------------- the engine ----------------
     K.engine('E1', (-4.75, 0.0, 0.0), 0.5, 0.56, bell=1.2, body_r=0.56, rings=3, nose='flat', inv='engine', src='picture', kw=dict(struts=12, seg=32, halo=1.1),

@@ -31,8 +31,7 @@ def build_geometry(hero=(), G=None):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     sp = importlib.util.spec_from_file_location(code, os.path.join(SHEETS, 'ships', code + '.py'))
     design = importlib.util.module_from_spec(sp); sp.loader.exec_module(design)
-    kit.use_kit(getattr(design, 'KIT', 'hullbreakers'))
-    K = kit.Kit(code, design.LENGTH); design.build(K); K.finish(); bpy.context.view_layer.update()
+    K = kit.build_sheet(design, code, ship.get('game_ship'))
     rec = contract.to_recipe(K, ship); RECORD.clear(); RECORD.update(rec)
     sc = bpy.context.scene
     GUNS[:] = [tuple(g) for g in json.loads(sc['r209_guns'])]
