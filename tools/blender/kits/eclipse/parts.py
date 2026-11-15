@@ -695,8 +695,9 @@ def even_panels(rings, faces, size=(0.3, 0.3), thick=0.035, gap=0.03, mats=('sha
     an even, aligned grid over the faces of a loft (rings: section rings of world points, the same count each, in order along
     the mass; faces: indices into a ring's edges). Each face is split into equal panels, as many along and across as the face
     holds at `size` (world units across and along, never a count per part, issue 618), every panel the same thickness, a
-    narrow even gap round each; so the panels of neighbouring sections line up and every row runs on unbroken. The panel tone
-    changes in bands of `band` rows along the mass, the same on every face (ordered, never patchwork, R243). A panel within a
+    narrow even gap round each. Each face's split comes from that face's own size, so rows meet across sections only where the
+    faces match, and a face under half `size` either way gets none. The panel tone changes in bands of `band` rows along each
+    face (ordered, never patchwork, R243). A panel within a
     keep-out's radius ((centre, radius), a mount's footprint) is left out. Each panel is the kit's plate_slab: a machine-cut
     chamfered slab with two flush fasteners. Returns ({mat: (verts, faces)}, (fastener verts, faces), panel count)."""
     n = len(rings[0])

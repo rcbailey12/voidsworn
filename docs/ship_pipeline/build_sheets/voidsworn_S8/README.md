@@ -59,7 +59,7 @@ the repo's own tools.
 
 | Check | Result |
 |---|---|
-| Fit check (clash.py): clash, mount, arc, sensor, sweep, exhaust, exit, lane | 0 of each; 401 objects, 64 parts, 739 rays, 14 guns, 4 turrets swept all round ([fit_report.md](fit_report.md)) |
+| Fit check (clash.py): clash, mount, arc, sensor, sweep, exhaust, exit, lane | 0 of each; 401 objects, 64 parts, 741 rays, 14 guns, 4 turrets swept all round ([fit_report.md](fit_report.md)) |
 | Weapon match (R241) and `weapon_match_selftest.py` | PASS; self-test PASS (21 planted faults) |
 | Build contract (`tools/recipe/sheet_contract_selftest.py`) | PASS: length 27.0, 2 transverse and 2 longitudinal seams, 16 muzzles in their slots, 4 turret pivots, 2 engines, 47 inside objects, the skin |
 | Stage 4 audit (`audit.py` on the sheet_hull build) and `audit_selftest.py` | PASS: 322 parts, no machine across a seam, no structure across one, 14 guns, none into the ship; self-test PASS |
@@ -96,6 +96,11 @@ it passed). So this band may leave a few inside triangles outside their piece. T
 without losing the shell rooms. If death_seam_check counts any, the fix is the designer's: deepen the hull about 0.25 (the shell
 rooms then clear by 0.5), or move the shell rooms into the galleries. Not run here: the death check needs the stage 7 export on
 the PC.
+
+Board note (Nov 15 2026, outside check opus_check_748): on these numbers the Board expects death_seam_check to fail at B-3,
+not just possibly. The fix path is chosen now, before the paint stack and recipe build on this hull: move the shell rooms into
+the galleries (insides only), so the outside Ryan accepted (R254) keeps its proportions. Deepening the hull is the fallback only
+if the move cannot clear 0.5.
 
 ## Changed from S8 (every change, with its reason)
 
