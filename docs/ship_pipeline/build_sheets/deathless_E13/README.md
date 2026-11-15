@@ -32,7 +32,7 @@ The cut-out leaves out the engine's light ring and its glow (the game draws that
 swings round to a bow view (54.3 percent) that no longer shows the beauty's broad fan, so the angles of the first fit are held
 and only the framing is fitted (`ships/deathless_E13_camera.json`).
 
-## Budget (sandbox unbaked export, the same route for all three; reported, never capped, R111)
+## Budget (sandbox unbaked export, the same route for all four Eclipse sheets; reported, never capped, R111)
 
 | Ship | Triangles (readback) | Ship mesh surfaces | Turret triangles | Insides |
 |---|---:|---:|---:|---|
@@ -62,7 +62,7 @@ Draw calls: one per surface, plus one per turret node. The scene gate (RULEBOOK 
    through any one height, so a plane would slice it rather than lift it. Two breach anchors on the shade plates (Frigate base 2,
    Eclipse +0).
 
-## Changed from the picture (R207, R233, R236), and why
+## Changed from the picture and from designs.md (R207, R233, R236), and why
 
 All in [feature_table.md](feature_table.md); the design calls the Board should look at first:
 

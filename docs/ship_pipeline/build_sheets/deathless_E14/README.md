@@ -19,7 +19,7 @@ The concept's three views disagree: the sheet's plan lays the ring flat round th
 edge-on, the beauty shows it almost face-on from above. The study (`tools/blender/build_sheets/studies/e14_ring_study.py`,
 [ring_study.jpg](ring_study.jpg)) renders plain primitives three ways from straight above and at the battle camera's pitch from
 the bow quarter, the beam and the stern quarter: **flat** reads as one closed ring from every view; **upright** reads as a bar from
-above and a line from the beam, so it fails R233's own test; **leaning back** turns edge-on from the stern quarter. The build lies
+above and a line from the beam, so it fails the whole-concept and family-distinctness reading (R229; R233 "family distinctness included"); **leaning back** turns edge-on from the stern quarter. The build lies
 flat, and the beauty's twelve plates line up with the build at the fitted camera ([outline_check.jpg](outline_check.jpg)).
 
 ## Checks (sandbox, this sheet)
@@ -41,7 +41,7 @@ Outline overlap with the beauty at the camera of record: 59.3 percent (mass outl
 cut-out leaves out the engine's light ring and glow and the sky's teal nebula. The proportions table in inventory.md compares the
 build with the sheet's middle view for height; that view draws the ring upright, so its height ratio is not comparable.
 
-## Budget (sandbox unbaked export, the same route for all four; reported, never capped, R111)
+## Budget (sandbox unbaked export, the same route for all four Eclipse sheets; reported, never capped, R111)
 
 | Ship | Triangles (readback) | Ship mesh surfaces | Turret triangles | Insides |
 |---|---:|---:|---:|---|
@@ -70,7 +70,7 @@ Draw calls: one per surface, plus one per turret node. The scene gate (RULEBOOK 
    at the core and the ring's fore half tears away with the heart; B-2, the block tears from the spar. Three breach anchors: the
    ring's bow quarter plate, its starboard beam plate, and the block's roof (no shade plate reaches the engine third).
 
-## Changed from the picture (R207, R233, R236), and why
+## Changed from the picture and from designs.md (R207, R233, R236), and why
 
 All in [feature_table.md](feature_table.md); the design calls the Board should look at first:
 
