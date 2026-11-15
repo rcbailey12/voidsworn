@@ -94,6 +94,9 @@ const FLAME_CAP := 0.70                    # owner ruling: no flame lives longer
 # How far a torpedo hit's light carries (world units; hexes are 17.3 across): about two hexes, so the hulls near it are
 # lit for the length of the flash (audit item 11).
 const TORP_LIGHT_REACH := 36.0
+# The one scale table's big hit (issue 710, R247; docs/playbooks/scale.md): a torpedo's blast ring and dust, world units
+# per scale_k. With the hit's scale k (at least VIS_K_HIT) a frigate's blast is 10.2 and a super-dreadnought's 24.8.
+const BIG_HIT_RING := 12.0
 # The baked flash a _burst draws blooms past its pixel floor by about half again at the battle camera (bench round 1:
 # a 40 px floor drew about 60 px of lit area), so ladder sizes are asked of it at this share.
 const BURST_PX_K := 0.65
@@ -1446,8 +1449,8 @@ static func _big_hit(fx, Tg, tg: Dictionary, T: float, k: float, col: Color, sta
 			fx.spr(p, T + j * 0.02, fx.rng.randf_range(0.8, 1.6), debris_col, 1.2, 0.3 * k, 0.16 * k, 15, v, 0.5)
 	# gas and dust after the fire: born as the baked body thins, drifting off the plate
 	_gas_cloud(fx, p + n * 0.8 * k, n, T + 0.45, k, Color(0.36, 0.34, 0.33) if not organic else Color(0.30, 0.34, 0.16), 3, 4.5 * m, "torp", 0.30, 20 if organic else 7)
-	fx.ring(p,n,T+0.03,0.45,tint,0.65,k,12.0*k,2,0.0,0.0,70.0 * m)
-	fx.dst(p,T,0.4,k,12.0*k,0,0.45)
+	fx.ring(p,n,T+0.03,0.45,tint,0.65,k,BIG_HIT_RING*k,2,0.0,0.0,70.0 * m)
+	fx.dst(p,T,0.4,k,BIG_HIT_RING*k,0,0.45)
 	_heat_spot(fx, p + n * 0.3 * k, T + 0.1, k, 1.6 * m, "torp", 12.0 * m, 1.5)
 	fx.light(p+n*2.5*k,T,0.35,HULL_LIGHT,tint,0, TORP_LIGHT_REACH * m)
 	fx.shake(T,0.4,p); fx.hit_pause(T,4); fx.punch(T,0.012,p)
