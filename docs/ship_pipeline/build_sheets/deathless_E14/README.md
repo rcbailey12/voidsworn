@@ -159,10 +159,15 @@ All in [feature_table.md](feature_table.md); the design calls the Board should l
 - **factions.md "Never: a spire through the centre of a disc"**: the lance runs through the ring's centre on its side, not
   upright. It is the R256 exception (factions.md names E14 as being redesigned round one gun at the ring's centre), and the
   ring's middle stays open round the gun heart.
-- **The hull variant `d_jackal_h`** (Archive guard flare): Ryan's R266 makes it a lance ship too, so this model serves both. But
-  PR 797 (f2b43a8a0) gives it the lance plus a null spire turret (`gsentry` T): on this model that second slot has no mount and
-  no hard point. Either the variant drops the spire, or the sheet gains a spire turret that only the variant shows (a sheet for
-  the variant); the Board's call.
+- **Open item: the Archive guard flare's spire** (`d_jackal_h`, PR 797 at f2b43a8a0: `nlance` F plus `gsentry` T, hull 85). It
+  shares this model, and the pipeline has no per-variant part: a sheet, its weapon match, its build contract and its export are
+  keyed to one data.js ship (`GAME`, d_jackal), and data.js HULL_VARIANTS entries only change the weapon list. The sheets so far
+  build the base ship alone (E13 mote has no spire for `d_scythe_s`, E12 zenith no turreted arc for `d_harvester_t`). In the
+  game a variant slot with no authored point falls back (godot/fx/fx_hull.gd `_gun_points`: that weapon's points on any slot,
+  else that slot's, else rays off the plating), so the variant's spire fires from the hull's surface with no visible spire. So
+  this sheet builds the base flare as briefed and leaves the spire out. Closing it needs a pipeline feature (a per-variant part
+  list in the sheet, a variant weapon match, a variant hard point in the export and a variant hull in the game) for every
+  sheet with variants, not only E14.
 - **Merge order**: this branch merges opus/issue-784 (its data.js gives d_jackal the null lance). On main's data.js before 797
   the sheet fails the weapon match (COUNT: gauss T and gauss F have no mount), so 782 and 797 merge together.
 
