@@ -100,6 +100,14 @@ MATS = {
     'ganglion': ((0.50, 0.42, 0.24), 0),
     'septum': ((0.20, 0.17, 0.08), 0),
     'bonefr': ((0.52, 0.43, 0.24), 0),
+    # Sunward Crusade (issue 738, voidsworn_S8; factions.md: black iron, frost-white markings, bright ember; never rust, never
+    # blue light). Schematic zones; the Sunward paint stack (paint_direction_2026_11/sunward.md) finishes them.
+    'siron': ((0.047, 0.045, 0.044), 0),     # black iron plate
+    'siron2': ((0.026, 0.025, 0.025), 0),    # darker recessed iron (sockets, frames, the second plate family)
+    'sworn': ((0.15, 0.147, 0.142), 0),      # worked bright iron: rivets, bands, rims, machinery
+    'embar': ((1.0, 0.36, 0.07), 3.0),       # ember radiator bars and hot lenses (the spires shed the reactor's heat)
+    'frost': ((0.9, 0.92, 0.92), 0.6),       # frost-white running points (paint direction 5), never blue over green
+    'gallery': ((0.72, 0.36, 0.13), 0),      # inside: the gun crews' galleries, ember-lit (factions.md "Inside")
 }
 ARCS = {'F': (-60.0, 60.0), 'P': (30.0, 150.0), 'S': (-150.0, -30.0), 'T': (-180.0, 180.0), 'R': (120.0, 240.0)}  # core.js inArc
 
@@ -114,7 +122,7 @@ def mat(name):
     b = m.node_tree.nodes.get('Principled BSDF')
     b.inputs['Base Color'].default_value = (*rgb, 1)
     b.inputs['Roughness'].default_value = 0.7
-    b.inputs['Metallic'].default_value = 0.3 if name in ('steel', 'pale', 'dish', 'iron', 'brass', 'gunv') else 0.1
+    b.inputs['Metallic'].default_value = 0.3 if name in ('steel', 'pale', 'dish', 'iron', 'brass', 'gunv', 'sworn') else 0.1
     if em:
         b.inputs['Emission Color'].default_value = (*rgb, 1)
         b.inputs['Emission Strength'].default_value = em
