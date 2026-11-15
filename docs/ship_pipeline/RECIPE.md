@@ -154,7 +154,12 @@ and trim lights. Plate patchwork, seams and brick rust (R228) are the faction st
 `patch_cell` and `CONCEPT`. The patchwork is never even or ordered (R240): the shared `_grid` warps the cell sizes along every
 axis, lays rows in bands whose edges step every few columns, shifts every column and strip by its own amount and splits a share
 of the cells once more; the faction stack sets how much (`patch_warp`, `patch_band`, `patch_split` in `LAYERS`; zero for all
-three gives the old even grid). The game's rim light (`godot/render/look_rim.gd`, issue 362, specular x8) flared white on the stack's surfaces at the close
+three gives the old even grid). Over that patchwork the Hullbreaker stack lays its trophy patches (issue 726, R252: big and pale like
+the A20 concept): `TROPHY` in `kits/hullbreakers/stack.py`, through the shared `panel_nodes` hook, which runs the shared patchwork
+unchanged first. One more uneven grid at the concept's trophy plate size (`cell`, about 0.13 by 0.085 ship lengths, warped, banded
+and split as above); a share of its cells (`share` times the zone's patchwork amount, more in some broad regions, `cluster`) takes
+pale Hegemony grey or violet Eclipse plate (`families`, sampled from the A20 beauty), one colour per trophy cell, never per mesh
+island; parts keep the plain patchwork. The sheet's `pale` zone takes the same trophy grey with no dark families over it. The game's rim light (`godot/render/look_rim.gd`, issue 362, specular x8) flared white on the stack's surfaces at the close
 cameras (PC run out3): they carry real roughness, which the old flat-colour hulls did not. The stack marks its textured and engine
 glow materials `rim_soft` (glTF material extras); `look.gd` puts such surfaces on their own layer, lit by a second rim light with
 `RIM soft` (0.25) of the specular. Every other hull keeps the full rim light, pixel for pixel (sandbox probe
@@ -223,7 +228,8 @@ and E12 (and every later Eclipse sheet ship) on the same shared machinery. What 
   the sheet's thousands of tiny plate islands each took their own tone, which read as grain). R243: `panel_nodes` in the
   Eclipse stack replaces the offset patchwork with a single aligned lattice, periodic half-size columns, calm cell tones
   using the accepted colour pairs, dark recessed joints and shallow relief (`panel_relief`) baked into the hull normal map.
-  The hull's existing modelled plates remain the geometry. The shared hook is absent from the Hullbreaker path;
+  The hull's existing modelled plates remain the geometry. The Hullbreaker stack uses the same hook only to lay its trophy
+  patches over the unchanged shared patchwork (issue 726);
 - running lights: none added (`RUNNING_LIGHTS = None`, the builder's call, on each sheet): the corona line, the core, the
   engine rings and the sheet's corona strip lights are the Eclipse's only lights; no `lights.json` is written;
 - decals: the eclipse sigil, a line of archive glyphs (each ship's own, seeded by its game code), band ticks, all a dulled
