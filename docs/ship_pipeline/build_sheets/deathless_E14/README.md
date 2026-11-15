@@ -159,8 +159,10 @@ All in [feature_table.md](feature_table.md); the design calls the Board should l
 - **factions.md "Never: a spire through the centre of a disc"**: the lance runs through the ring's centre on its side, not
   upright. It is the R256 exception (factions.md names E14 as being redesigned round one gun at the ring's centre), and the
   ring's middle stays open round the gun heart.
-- **The hull variant `d_jackal_h`** (Archive guard flare): Ryan's R266 makes it a lance ship too (PR 797), so this model serves
-  both and needs no turret.
+- **The hull variant `d_jackal_h`** (Archive guard flare): Ryan's R266 makes it a lance ship too, so this model serves both. But
+  PR 797 (f2b43a8a0) gives it the lance plus a null spire turret (`gsentry` T): on this model that second slot has no mount and
+  no hard point. Either the variant drops the spire, or the sheet gains a spire turret that only the variant shows (a sheet for
+  the variant); the Board's call.
 - **Merge order**: this branch merges opus/issue-784 (its data.js gives d_jackal the null lance). On main's data.js before 797
   the sheet fails the weapon match (COUNT: gauss T and gauss F have no mount), so 782 and 797 merge together.
 
