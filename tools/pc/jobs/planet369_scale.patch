@@ -1,0 +1,52 @@
+--- a/godot/world/world.gd
++++ b/godot/world/world.gd
+@@ -728,8 +728,8 @@
+ 
+ # The one scale table's rock sizes (issue 710, R247; docs/playbooks/scale.md): the library rock is 2 units long at
+ # scale 1 (world/rocks/rocks.json ext).
+-const BLOCKER_SCALE_MIN := 6.4
+-const BLOCKER_SCALE_MAX := 7.6
++const BLOCKER_SCALE_MIN := 12.0
++const BLOCKER_SCALE_MAX := 20.0
+ const DEBRIS_FIELD_SCALE_MIN := 0.35
+ const DEBRIS_FIELD_SCALE_MAX := 1.95
+ 
+@@ -741,7 +741,8 @@
+ 	if name == "":
+ 		return
+ 	var mat := _hero_mat(kind)
+-	# the longest half-length stays under the hex's inner radius (8.66), so a blocker never seems to fill a free neighbour
++	# R247: a field has mixed sizes, with the largest rocks dwarfing a frigate.
++	# These silhouettes can overhang hexes; the rules still own the occupied cells.
+ 	var s := _rng.randf_range(BLOCKER_SCALE_MIN, BLOCKER_SCALE_MAX)
+ 	var b := _rand_basis(_rng)
+ 	var crystal := kind == "crystal"
+--- a/godot/render/test/scale_check.gd
++++ b/godot/render/test/scale_check.gd
+@@ -49,7 +49,6 @@
+ 	"map station node": "issue 373 (the station on the sector map, R249)",
+ 	"nebula (one hex cloud)": "issue 368 (nebula and storm hexes)",
+ 	"ion storm (one hex cloud)": "issue 368 (nebula and storm hexes)",
+-	"asteroid field biggest rock": "issue 369 (board planet and rocks)",
+ }
+ 
+ 
+--- a/docs/playbooks/scale.md
++++ b/docs/playbooks/scale.md
+@@ -42,7 +42,7 @@
+ | Terrain | Nebula, one-hex cloud | 46.00 | 74.40 to 297.60 | much larger than any ship and spilling past its hex |
+ | Terrain | Nebula, tying veil | 46.00 | 20.00 to 297.60 | the faint high veil still spans more than a hex |
+ | Terrain | Ion storm, one-hex cloud | 46.00 | 74.40 to 297.60 | a dark vast mass, not a puff the size of a frigate |
+-| Terrain | Asteroid field, biggest rock | 15.20 | 20.80 to 83.20 | the biggest rock dwarfs a frigate |
++| Terrain | Asteroid field, biggest rock | 40.00 | 20.80 to 83.20 | the biggest rock dwarfs a frigate |
+ | Terrain | Debris, biggest piece | 5.60 | 1.00 to 10.40 | rubble and torn plate stay smaller than the smallest hull |
+ | Terrain | Board planet, diameter | 100.00 | 80.00 to 992.00 | a world cap reads bigger than the fleet beside it |
+ | Wreck | Board hulk | 11.00 | 7.60 to 18.24 | a wreck keeps half to all of the destroyer hull it was |
+@@ -105,7 +105,6 @@
+ | Station, five or more hexes | 46.00 | 99.20 to 297.60 | issue 373 (the station) |
+ | Nebula, one-hex cloud | 46.00 | 74.40 to 297.60 | issue 368 (nebula and storm) |
+ | Ion storm, one-hex cloud | 46.00 | 74.40 to 297.60 | issue 368 (nebula and storm) |
+-| Asteroid field, biggest rock | 15.20 | 20.80 to 83.20 | issue 369 (planet and rocks) |
+ | Map station node, shipyard | 6.40 | 12.75 to 51.00 | issue 373 (the station) |
+ 
+ When issue 368, 369 or 373 lands, it changes the live size in the code named in section 2 (never a copy of the table) and

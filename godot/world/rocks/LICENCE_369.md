@@ -56,9 +56,58 @@ Derived files:
 
 | Shipped file | Source and credit | Recipe |
 |---|---|---|
-| r01/colour.png | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio | tools/pc/jobs/planet369_remix.py |
-| r01/relief.png | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio | tools/pc/jobs/planet369_remix.py |
-| r01/roughness.png | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio | tools/pc/jobs/planet369_remix.py |
+| r01/colour_0_0.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/colour_0_1.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/colour_0_2.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/colour_0_3.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/colour_1_0.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/colour_1_1.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/colour_1_2.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/colour_1_3.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/colour_2_0.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/colour_2_1.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/colour_2_2.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/colour_2_3.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/colour_3_0.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/colour_3_1.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/colour_3_2.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/colour_3_3.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/relief_0_0.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/relief_0_1.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/relief_0_2.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/relief_0_3.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/relief_1_0.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/relief_1_1.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/relief_1_2.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/relief_1_3.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/relief_2_0.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/relief_2_1.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/relief_2_2.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/relief_2_3.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/relief_3_0.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/relief_3_1.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/relief_3_2.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/relief_3_3.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/roughness_0_0.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/roughness_0_1.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/roughness_0_2.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/roughness_0_3.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/roughness_1_0.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/roughness_1_1.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/roughness_1_2.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/roughness_1_3.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/roughness_2_0.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/roughness_2_1.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/roughness_2_2.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/roughness_2_3.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/roughness_3_0.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/roughness_3_1.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/roughness_3_2.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/roughness_3_3.res | LROC WAC and LRO LOLA; NASA's Scientific Visualization Studio; US government public domain; read 2026-11-15T00:06:21.205509+00:00 | tools/pc/jobs/planet369_remix.py and planet369_pack.gd |
+| r01/colour.json | R01 tile and bake metadata for the same credited NASA sources | tools/pc/jobs/planet369_pack.gd |
+| r01/relief.json | R01 tile and bake metadata for the same credited NASA sources | tools/pc/jobs/planet369_pack.gd |
+| r01/roughness.json | R01 tile and bake metadata for the same credited NASA sources | tools/pc/jobs/planet369_pack.gd |
+| r01/bake.json | R01 tile and bake metadata for the same credited NASA sources | tools/pc/jobs/planet369_pack.gd |
 | scan_00.glb | namaqualand_boulder_02; Greg Zaal, Rico Cilliers / Poly Haven; CC0-1.0 | tools/pc/jobs/planet369_remix.py |
 | scan_00_lo.glb | namaqualand_boulder_02; Greg Zaal, Rico Cilliers / Poly Haven; CC0-1.0 | tools/pc/jobs/planet369_remix.py |
 | scan_01.glb | namaqualand_boulder_03; Jenelle van Heerden, Dario Barresi / Poly Haven; CC0-1.0 | tools/pc/jobs/planet369_remix.py |
@@ -79,3 +128,5 @@ Derived files:
 The R01 terrain was strongly warped in sphere space, combined from independent instrument fields and recoloured into mineral provinces. It is a fictional surface. Original source geography and RGB colour are not used as the result.
 
 Each scan was centred, normalized to unit radius, converted to scan-derived vertex AO/mineral data and given a separate reduced mesh. Original and derived file hashes are in the source receipt, r01/bake.json and scans.json.
+
+R01 packaging, run 2: the colour, packed 16-bit relief/roughness/cloud data, and review roughness map are each 8192 by 4096. Each is stored in sixteen compressed Godot Image resources, each below 8,000,000 bytes. The loader joins them before generating mipmaps. There is no resolution, channel precision or pixel loss. The three .json descriptors retain hashes of the full decoded pixel arrays; bake.json lists every tile hash and byte count. Original full PNGs stay in TEMP. No replacement sources were downloaded in run 2.

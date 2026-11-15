@@ -1,0 +1,30 @@
+{
+  "camera": 170,
+  "candidate": false,
+  "cold_decode_mip_upload_first_draw_ms": -1,
+  "draw_calls": 857.0,
+  "entities": 24,
+  "frame_median_ms": 3.739,
+  "gpu_board_memory_mib": [
+    "6145, 16303\r\n"
+  ],
+  "gpu_median_ms": 3.51799988746643,
+  "planet_focus": {
+    "camera": 170,
+    "draw_calls": 1190.0,
+    "frame_median_ms": 5.777,
+    "gpu_median_ms": 5.45499992370605,
+    "triangles": 7377245.0
+  },
+  "render_pixels": [
+    3840,
+    2160
+  ],
+  "seed": 5,
+  "ship_hulls": 20,
+  "squadron_entities": 4,
+  "surface_gate": "Additional planet scene only; see gate/scene_gate.json for R116",
+  "texture_memory_bytes": 2625671680.0,
+  "triangles": 6409194.0,
+  "video_memory_bytes": 3526019536.0
+}

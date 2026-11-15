@@ -1,130 +1,136 @@
-# R01, issue 369: first rocky candidate
+# Issue 369: R01 first rocky planet
 
-Prepared, not ready to merge. The production board hook, GPU captures, 4K gate,
-scale verdict and Ryan's first-planet approval are still pending. No other planet
-type was made. Gas and ice giant shaders and bakes are unchanged.
+R01 is the first rocky review candidate, continued from the merged partial run.
+It has real terrain, an air shell, moving clouds with shadows and eight scanned
+rock pairs. No other planet type was made. Gas and ice giants are unchanged.
+Ryan's acceptance and the outside check on issue 256 are still owed.
 
-![R01 with both source datasets](R01_sources.jpg)
+## Files and method
 
-The source comparison is also saved at
-`C:\Users\rcbai\Downloads\voidsworn_test\board\issue-369\shots\R01_sources.jpg`.
-This is a texture comparison, not a battle capture or a claim of visual approval.
+- `godot/world/world_planet.gd`: R01 surface, atmosphere and cloud materials.
+- `godot/world/world_bake.gd`: worker loading, tile assembly, shared mipmaps and
+  texture uploads. Packed height channels use float mipmaps. Byte mipmaps rounded
+  the high height byte first and produced false radial ridges near the pole.
+  Angular sampling and a latitude clamp also prevent opposite-pole wrapping.
+- `godot/world/world_rocks.gd` and `rocks/scan_*`: the first run's eight CC0 scan
+  pairs, five biome materials and the procedural geometry kept for dust.
+- `godot/world/rocks/r01/`: three complete 8192 by 4096 maps, each in sixteen
+  compressed Godot Image resources. The largest file is 7,488,035 bytes. Nothing
+  was lost in resolution, channel precision or pixels. Full PNG hashes also match
+  the first run. The loader joins tiles before mip generation. The roughness map
+  is a review output; the runtime shares colour and packed data between materials.
+- `LICENCE_369.md`, `SOURCES_369.json`, `scans.json`, `r01/bake.json`: credits,
+  source terms, dates, hashes and methods. All 34 cached inputs match the original
+  receipts. No sources were downloaded again during this continuation.
+- `tools/pc/jobs/planet369_*`: download, remix, pack, check, capture, scale and
+  comparison jobs. User entry points are double-click `.bat` files.
 
-## What is prepared
+Two public-domain instrument datasets, LROC WAC and LRO LOLA, are mixed, warped
+in sphere space and recoloured into fictional mineral terrain. See
+[R01_sources.jpg](R01_sources.jpg). Per-file source pages and dates read at download
+time remain in the licence ledger. Current NASA and Poly Haven terms were also
+checked during this continuation.
 
-- `godot/world/rocks/r01/`: an 8192 by 4096 colour, packed relief and roughness set.
-  The two independent public-domain datasets are NASA LROC WAC colour and LRO LOLA
-  laser altimetry. Both describe the Moon in the originals. Broad maria are removed
-  from the colour input, both fields are warped independently in sphere space,
-  mixed, rotated and recoloured. The result still needs Ryan's recognition check.
-- `godot/world/world_planet.gd`: the R01 installer, relief lighting, roughness sheen,
-  separate moving cloud shell, matched moving ground shadows, and the existing air
-  glow shell configured for R01. The data and loader check can install these nodes;
-  their GPU appearance has not been checked.
-- `godot/world/world_bake.gd`: shared worker loading and mip generation for authored
-  maps. The two runtime maps are shared by materials, including cloud shadows.
-  The standalone roughness picture is an output for review, not a third GPU map.
-- `godot/world/world_rocks.gd`, `scan_00` through `scan_07`: eight scanned CC0 rock
-  shapes, with full and explicit reduced meshes. Their scan-derived cavity and
-  mineral values feed the existing five biome materials. Full meshes total 513970
-  unique triangles; reduced meshes total 20089. These are asset counts, not frame
-  counts or a performance pass. Instances smaller than 1.5 units keep rockgen meshes.
-- `godot/world/rocks/LICENCE_369.md`, `SOURCES_369.json`, `scans.json`, `r01/bake.json`:
-  credits, current terms, dates, source and output hashes, and bake methods.
+## Evidence
 
-Every new downloaded source file has a credit and date before conversion. The
-licence ledger lists 34 inputs and all 19 derived asset files. Raw downloads and
-logs remain in TEMP. No assets, caches or PC files were deleted.
+All screenshots, sheets and measurements are saved under:
 
-## Scope gap and continuation
+`C:/Users/rcbai/Downloads/voidsworn_test/board/issue-369/shots/`
 
-The actual board planet uses `godot/render/board.gd` and
-`godot/ui/campaign/map3d_shaders.gd`, not the backdrop's world_planet shader. The
-brief's allowed write list excludes those files. `tools/pc/jobs/planet369_board.patch`
-contains the four-line board hook, restricted to its first rocky look. It passes
-`git apply --check`, but was not applied. Approval to include board.gd was asked
-in chat and has not arrived. The production board planet is therefore unchanged.
-Applying this hook needs no campaign shader edit. The campaign sector captures
-are context checks; this first-planet job does not roll R01 out to that screen.
+Keep `before/run2` and `after/run2`; run 1 pays shader warm-up. Cameras 170, 60
+and 26 keep 1280 by 720 true pixel crops from an actual 1920 by 1080 viewport.
+`home_c170` is the opening view; `c170` pans onto the planet at the same battle
+angle and radius. Nearer checks target the cap height to stay outside the sphere.
+The planet and top-down views are reduced full frames. No radius is below 26.
 
-The capture probe can install the candidate in a real battle without applying
-the production patch. No GPU run was started: RULEBOOK 3.4 and the task require
-a confirmed GPU window and an issue go file. The PC's status was asked in chat;
-no confirmation arrived and `board/issue-369/go.txt` is absent. The palette scope
-picks are also pending. R01 uses the recommended rust/charcoal prototype palette.
+- `R01_compare_c170.jpg`, `R01_compare_c60.jpg`, `R01_compare_c26.jpg`: paired
+  centre crops at 1:1 pixels. Individual full crops are retained in this folder.
+- `after/run2/R01_planet.png` and `R01_cloud_motion.png`: the same view four seconds
+  apart. `R01_shadows_on.png` and `R01_shadows_off.png` hide the cloud shell and
+  hold the field so its effect on terrain can be compared directly.
+- `R01_visual_checks.json`: pixel differences below the captions.
+- `showcase/R01_scan_00.png` through `R01_scan_07.png`: every scan beside its
+  reduced mesh. `R01_biome_*`: all five tints. Every picture has its code name.
+- `showcase/R01_scale_*`: eleven real combat classes at cameras 170 and 60 beside
+  scan_04 at a proposed 20x scale. The rock is 37.91 units long; the frigate is
+  10.4. Units come from the real scenario constructor; only presentation positions
+  change. This is a proposal, not a claim that the production size changed.
+- `before/sector` and `after/sector`: real campaign mapshots, including sector II.
+  This first-planet job does not roll R01 out onto the sector map.
+- `before/gate/scene_gate.json`, `after/gate/scene_gate.json`: three #207 sessions
+  each at 1080p and a 3840 by 2160 3D render size, with real fleets and effects.
 
-After those decisions:
+## Measurements
 
-1. Apply the reviewed board patch if that scope is approved.
-2. The Board supplies `board/issue-369/go.txt` for the confirmed GPU window.
-3. Run `tools/pc/jobs/planet369_bench.bat` through the PC queue and watchdog.
-   It copies PC-built hulls before import, makes two before and after runs, and
-   stops on placeholders. Keep run2. Camera 170 comes first at true pixel size;
-   the 60 and 26 views inspect the planet cap from its surface height. Top-down
-   and planet pictures show the full frame at 1280 by 720.
-4. Inspect all pictures, the cloud motion pair, class scale, the sector map,
-   `R01_metrics.json`, and `gate/scene_gate.json`. The probe uses the real scenario
-   constructor and the #207 fleet inputs to make 20 ships. It reports an extra
-   planet-scene measurement at 4K; the original #207 gate is run separately at
-   1080p and 4K, three sessions per mode. Watch memory with those ships present.
-5. Present this first planet to Ryan and wait for his verdict before making others.
+CPU remix: 25.990 s. Lossless packing and readback: 6.129 s, actual PC runs.
+R01 is authored offline; no runtime geology bake is needed.
 
-The bench launcher and probe parse check pass, but the GPU launcher has not had
-its required end-to-end PC run. They are prepared jobs, not a proven capture route.
-One still per scanned rock and a class-labelled scale sheet remain to be captured.
+| Median of three #207 sessions | Before | Scanned rocks |
+|---|---:|---:|
+| 1080p frame median, ms | 3.801 | 3.779 |
+| 4K GPU median, ms | 5.611 | 5.541 |
+| 4K GPU range, ms | 5.528 to 5.663 | 5.483 to 5.583 |
 
-## Measurements and checks
+Both pass the R116 12.5 ms gate. The small difference is not a speedup claim.
+The R01 surface has separate 4K readings with 20 hulls and four squadron entities
+loaded: `before/run2/R01_metrics.json` and `after/run2/R01_metrics.json`. They also
+measure a pan onto the planet, its process-cold map load through the first drawn
+frame, texture memory and a resident `nvidia-smi` reading.
 
-- Offline 8K CPU remix: 27.15 seconds on the final run. Script retained at
-  `tools/pc/jobs/planet369_remix.py`; launcher is `planet369_remix.bat`.
-- Headless cold map decode plus mip generation: 414 ms colour, 670 ms packed data.
-  These are CPU loader readings, not GPU bake, frame or upload cost. Actual GPU
-  memory and cold upload cost remain unmeasured.
-- `planet369_download.bat` and `planet369_remix.bat`: real PC runs succeeded.
-- `planet369_check.bat`: PASS. Actual GLBs load, reduced meshes have fewer
-  triangles, full meshes have unit radius and scan data; the 8K maps have mipmaps,
-  real height variation and clear/cloudy samples; R01 installs; ground and clouds
-  share the same map. It checks dust geometry through the real batch path.
-- All 19 derived file hashes match their manifests.
-- Godot 4.7.2 headless parse of the capture probe: PASS.
-- `git diff --check` and production patch applicability: PASS.
-- Required `node contrib/opus/tools/run_all_checks.js` on Node 22: 47 PASS,
-  2 KNOWN baseline rows, 1 FAIL. The failure is the existing missing issue-710
-  files below. `git cat-file -e HEAD:<path>` confirms both are absent at HEAD.
 
-```
-FAIL a path named in an entry document does not exist: docs/playbooks/scale.md
-FAIL a path named in an entry document does not exist: godot/render/test/scale_check.gd
-FAIL: 2 entry document problem(s)
-```
+| Separate planet scene at 4K, run 2 | Before | R01 |
+|---|---:|---:|
+| Opening-view GPU median, ms | 3.518 | 3.452 |
+| Planet-focused GPU median, ms | 5.455 | 4.473 |
+| Planet-focused frame median, ms | 5.777 | 4.741 |
+| Resident card memory, MiB | 6145 | 6999 |
+| Card total memory, MiB | 16303 | 16303 |
 
-## Provisional scale rows, pending issue 710 and pictures
+R01 process-cold decode, float mip generation, upload and first draw took 1,611 ms.
+These are process-cold readings with OS/driver caches left alone. Float filtering
+spends about 853 MiB in the two shared 8K GPU maps; the roughness review map is not
+uploaded. The card reading includes desktop and driver use. The original #207
+storm scene does not install R01, so its completed gate is unchanged by the later
+pole-filter correction. The final surface captures were repeated after it.
 
-No scale table or scale_check exists in this checkout. These rows report existing
-game numbers, not a visual pass or a new scale ruling. The R01 package preserves
-unit-radius meshes and the board's real scenario radius.
+The scan library has 513,970 full-mesh triangles and 20,089 reduced-mesh triangles.
+At the planet-focused R01 frame the renderer reported 7,580,724 primitives and
+1,153 draw calls. Per-session visible/shadow counts and per-hull surface counts
+remain in the scene-gate JSON. These are measurements, not triangle/draw limits.
+Cloud motion changed 108,699 pixels below the caption; the isolated shadow pair
+changed 46,620 pixels. The comparison inputs and channel maxima are retained in
+R01_visual_checks.json. The pictures, rather than these counts alone, are the proof.
 
-| Item | World size | Relative to frigate length | Source | Status |
-|---|---|---|---|---|
-| Frigate | length 10.4 | 1 | hull_table CLS_LEN times SHIP_K | Reference |
-| Destroyer | length 15.2 | 1.46 | hull_table | Reference |
-| Cruiser | length 23.2 | 2.23 | hull_table | Reference |
-| Carrier | length 26.4 | 2.54 | hull_table | Reference |
-| Battleship | length 33.6 | 3.23 | hull_table | Reference |
-| Super-dreadnought | length 49.6 | 4.77 | hull_table | Reference |
-| R01 full scan | normalized radius 1 before instance scale | varies by instance | scans.json and GLBs | Data check passes |
-| Board planet for real R=8 scenario | diameter 250, centre y=-97.5, cap height 27.5 | diameter 24.04 | battle.js planetEdge and board.gd | Needs battle and map verdict |
-| Largest backdrop rocks | existing placement and angular-size law | varies with depth | world.gd fields and _backdrop_scale | Needs scale sheet |
+## Checks and remaining scope
 
-R247's judgement that the planet is vast and the biggest rocks dwarf a frigate
-is not certified by these numbers. It remains a picture check at cameras 170 and
-60, top-down and on the sector map, against issue 710 when it lands.
+- Required standing checks: 50 PASS, two KNOWN baseline rows, zero failures.
+- `planet369_check.bat`: all 48 file sizes/hashes, all three full 8K pixel hashes,
+  actual GLB loads and reductions, unit radii, procedural dust, clouds, shared
+  shadow map and material installation pass. Float mip heights agree with the
+  source averages within one 16-bit step; measured maximum error 0.000000088.
+- All 34 source hashes and the first run's three full PNG hashes match.
+- Godot 4.7.2 parses the capture scripts. Placeholder guards accept the PC hulls.
+- `scale_check.gd`: PASS with six existing KNOWN rows. The asteroid row remains
+  KNOWN because the live size change is outside the permitted write list.
+- Both production patches pass `git apply --check`.
 
-Impact sweep (R129): world.gd, blocker_visuals.gd and world_living.gd callers read
-the same rock API and normalized scale; no save schema, rules, ids or oracle data
-changed; no oracle copies needed refresh. The production UI/board path remains
-pending the scope patch. GitHub still runs the existing standing, ASCII, parity
-and Godot check jobs; the task-specific data check is a separate PC job, outside
-the Godot test directory. Outside review on issue 256 is still required.
+The live board planet is made in `godot/render/board.gd`, outside the task's write
+list. `tools/pc/jobs/planet369_board.patch` is the ready hook for its first rocky
+look. `planet369_scale.patch` changes the live rock range to 12x through 20x and
+updates its scale table and check. Its files are also outside that list. Scope
+approval was requested and has not arrived. Neither patch is applied. The probe
+installs R01 for review; live board integration and the live asteroid scale remain
+open. Ryan must approve the first planet before any further types are made.
+
+The first real capture run exposed and corrected the inherited screenshot-tour
+trigger, viewport setup and campaign scene path. Only corrected captures are kept
+as review evidence. Failed-tour scratch was moved intact to TEMP. Nothing was
+deleted. Import-generated edits outside this job are restored before delivery.
+
+R129 impact sweep: world.gd, blocker_visuals.gd and world_living.gd keep the rock API
+and normalized scale. Other image callers keep default loading. Saves, faction
+ids, rules, both exported tables and UI flows are unchanged; no oracle refresh
+is needed. Existing GitHub standing, text, parity and Godot jobs remain in place.
+The task-specific data check stays an explicit PC job outside the Godot test folder.
 
 Refs #369. No commit or push was made.

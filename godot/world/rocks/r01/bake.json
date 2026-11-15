@@ -1,38 +1,222 @@
 {
   "code": "R01",
-  "size": [
-    8192,
-    4096
-  ],
-  "source_receipt": "../SOURCES_369.json",
-  "source_datasets": [
-    "LROC WAC natural colour mosaic",
-    "LRO LOLA gridded laser altimetry"
-  ],
+  "cold_pack_seconds": 6.129,
+  "cold_remix_seconds": 25.9903874000302,
+  "files": {
+    "colour_0_0.res": {
+      "bytes": 2960334,
+      "sha256": "14e14de3ecb7c009bd5f4dd8d08c94d64e9a2b77941faa0e3a89bb2af015cd62"
+    },
+    "colour_0_1.res": {
+      "bytes": 3962841,
+      "sha256": "d61a3a6523ceefac6347269a6978b4659197d09803c8006afc02939f15a8c5a6"
+    },
+    "colour_0_2.res": {
+      "bytes": 4675643,
+      "sha256": "5842920d48cb181217ae8608dbbaf5784c7d74862fa3b2533d6167a95ab45cd9"
+    },
+    "colour_0_3.res": {
+      "bytes": 4209398,
+      "sha256": "6139a6882108426322497d283998a1d1f528af69b2428fafe4e3d785bc234394"
+    },
+    "colour_1_0.res": {
+      "bytes": 2906726,
+      "sha256": "6c628d9799e8dd180ce033e6db5495bdade4d554ca6fb3a89ab0e293f8765394"
+    },
+    "colour_1_1.res": {
+      "bytes": 3727091,
+      "sha256": "caa2172704328ab7ad1b08d1a5bddea1070931f757fe6106c10ea2cd7cbbdd25"
+    },
+    "colour_1_2.res": {
+      "bytes": 4605569,
+      "sha256": "f90e263085c5e67b315d5ca7507856ad4e67c4f352cb02e470f60051f7416236"
+    },
+    "colour_1_3.res": {
+      "bytes": 3432759,
+      "sha256": "ba86e95a13890602ce0f8c681e488e9c9cd42d21d040c595f02fb4a7fb6e30e2"
+    },
+    "colour_2_0.res": {
+      "bytes": 3189639,
+      "sha256": "de914b42120445aa037e44ab39ed78cf31bc842638d1fd26f5bc32fa0da527a0"
+    },
+    "colour_2_1.res": {
+      "bytes": 4600794,
+      "sha256": "84b6138c3aea934beec2fb3cc8a72277f45360781d85c1455c8e14dc58dea2a5"
+    },
+    "colour_2_2.res": {
+      "bytes": 4661218,
+      "sha256": "6f482d2c75b723f3971c313bd637d069f767dfdd9f353d01a1b140fd122ecbd1"
+    },
+    "colour_2_3.res": {
+      "bytes": 3731265,
+      "sha256": "46605f7d98d14d78d0f4df6179ceee05df4b479e02dc71b6b5d3a4cb5d8190e9"
+    },
+    "colour_3_0.res": {
+      "bytes": 3058095,
+      "sha256": "7414554274c34183d04ea1973b17f45ca7d89ce245e60b3c243b127cb961c9f0"
+    },
+    "colour_3_1.res": {
+      "bytes": 4366374,
+      "sha256": "4b58125dab0d289d4429eb0fc809f64df0f39b9a6d35f07265f5879a133d749b"
+    },
+    "colour_3_2.res": {
+      "bytes": 4633952,
+      "sha256": "61bff84d64315cb5ce7f064cd7e1afe85270618494b7b7af31cdaedd062b2ca6"
+    },
+    "colour_3_3.res": {
+      "bytes": 3733844,
+      "sha256": "555805e627b6f7840fca137b2708fc57cb02c76d9d5a3192572bdd67c2f1d086"
+    },
+    "relief_0_0.res": {
+      "bytes": 6811534,
+      "sha256": "4bdde38624a3a5b0a57cd49eb1838a750d6158d5b7cd3b5f81f389b54679388e"
+    },
+    "relief_0_1.res": {
+      "bytes": 7298028,
+      "sha256": "dc5e746afe587a12b620cdb82fc80f909c89b135a008e0a7d455f4aadc0bfd6a"
+    },
+    "relief_0_2.res": {
+      "bytes": 7246550,
+      "sha256": "c9cfd356d0d388487304f1e7ef40b1392fbb72c09ed578cb087f2bbb6e7166cb"
+    },
+    "relief_0_3.res": {
+      "bytes": 6979185,
+      "sha256": "52d1dde6debc3440ae84818eb131174038c6938965bc761b25b782f4c9612c8b"
+    },
+    "relief_1_0.res": {
+      "bytes": 6701562,
+      "sha256": "8f9ba73426349c72e0122fa00864a6b8eb732623fd7d629bf493d69a8ab0481a"
+    },
+    "relief_1_1.res": {
+      "bytes": 7175006,
+      "sha256": "ff38fefe84a436652fedffb0eb12377f5740add5460c8a9c31fbd5640a501955"
+    },
+    "relief_1_2.res": {
+      "bytes": 7469482,
+      "sha256": "d59cd5ef664f9e504954900c683091e2c242fa30d17d1d529e99b49fef332aeb"
+    },
+    "relief_1_3.res": {
+      "bytes": 6800459,
+      "sha256": "4773a51abf9afffaa78f348f01cbcb7a06840bb934f9f29bca9dabe627e42bad"
+    },
+    "relief_2_0.res": {
+      "bytes": 6932826,
+      "sha256": "7a766e3a1972c277b8db98c2833672cf4b607cb8d9d3c6250d238771618a1564"
+    },
+    "relief_2_1.res": {
+      "bytes": 7431868,
+      "sha256": "43364302eeb59cb23f949929e6af4d99f09b143ce00f92a9c1f3c83547910d35"
+    },
+    "relief_2_2.res": {
+      "bytes": 7304081,
+      "sha256": "3bb4e5c55d5b0aaa22b15a71a41bd0f52e64be41ebca49bfd19f03672091476e"
+    },
+    "relief_2_3.res": {
+      "bytes": 6743847,
+      "sha256": "9f97afd0b0150e581d6104ade4d3498e7992e841888b3f2799b62633e902e0ae"
+    },
+    "relief_3_0.res": {
+      "bytes": 6982614,
+      "sha256": "0d9856d9243c236ffe3e80c2252d9fc0753ab1cb3f7ae25ac82ea741754b7909"
+    },
+    "relief_3_1.res": {
+      "bytes": 7259270,
+      "sha256": "ee21bea46e6b712ea521ee0d6af01ca308dfd913ad827350be2c8cf9b909d065"
+    },
+    "relief_3_2.res": {
+      "bytes": 7488035,
+      "sha256": "bef52082c85bcd3058eea9a72aa63b245e3983d5ae9e70a0f6506e5543a5d823"
+    },
+    "relief_3_3.res": {
+      "bytes": 7209441,
+      "sha256": "b7587a93e7d8ab7a76695d619079ffc47de45abbae3c171a1c5eb3b67857a53a"
+    },
+    "roughness_0_0.res": {
+      "bytes": 1041743,
+      "sha256": "b1ae2563c380e14a34b15bc32ef738132c6f4b462cc40ba809bc0ce05a1a1d22"
+    },
+    "roughness_0_1.res": {
+      "bytes": 1416353,
+      "sha256": "fb0a4dac300ef570202cab3883736760c3559583a15c96556fa21c37d7e89186"
+    },
+    "roughness_0_2.res": {
+      "bytes": 1458940,
+      "sha256": "7a4d9396505b103a37994767513bcd0606cd8b96f02b4aa681ac663b8d13fbd4"
+    },
+    "roughness_0_3.res": {
+      "bytes": 1201295,
+      "sha256": "735f8323d1b81997528a05247a9607412b1af482cc6f9dc7dc21f01d3a0dedc6"
+    },
+    "roughness_1_0.res": {
+      "bytes": 1037227,
+      "sha256": "f0fcde1e53ec0eef9fdf60be8c827a354ac8445cee1291a06ab5a6b570cb8b15"
+    },
+    "roughness_1_1.res": {
+      "bytes": 1319917,
+      "sha256": "1a84261dca5367249ce25124ac5cdcde4ba680918ad8424a141ebb2668102b98"
+    },
+    "roughness_1_2.res": {
+      "bytes": 1413281,
+      "sha256": "d949aa6a48a8031a5c7907a93d921fb20526bca003fad76bc0eecba933790b67"
+    },
+    "roughness_1_3.res": {
+      "bytes": 908544,
+      "sha256": "c53c2b4d3467f1dfedbc54d021bbe80cebc3423d5c751c985762155952da2c9b"
+    },
+    "roughness_2_0.res": {
+      "bytes": 1119703,
+      "sha256": "2d051c4565a204a1cc3da97045865402c9c29deacb39316f27afe7f06ec03147"
+    },
+    "roughness_2_1.res": {
+      "bytes": 1397572,
+      "sha256": "20c9cac56b1f663aeda94d04c0c4e8665802c961ef5fcd4fcc17b2fc9c8026c4"
+    },
+    "roughness_2_2.res": {
+      "bytes": 1493385,
+      "sha256": "63e8be0ce9a94a3373e91baedef6f6142457abc15d5ae507d5435170739f3c36"
+    },
+    "roughness_2_3.res": {
+      "bytes": 1221693,
+      "sha256": "348a4f2613166bd3aa68be4f8e745952979cf1e3d379121c739477c331c1b48e"
+    },
+    "roughness_3_0.res": {
+      "bytes": 952768,
+      "sha256": "d01ce770f942d0263755363eecf79c4da4ce86ab0718eb650f52c825704be744"
+    },
+    "roughness_3_1.res": {
+      "bytes": 1389445,
+      "sha256": "0fd3572e7c84d6fe480762103c3ba9018af99744cc0ac8ec2290d9131dd04493"
+    },
+    "roughness_3_2.res": {
+      "bytes": 1508869,
+      "sha256": "74955ff3bf643acaecd0a0f332cc7c3c49c5e3f81f4cd6ea4c8a70dd261742c6"
+    },
+    "roughness_3_3.res": {
+      "bytes": 1202253,
+      "sha256": "0fd96eeb85df99853c988fd58b466b732a75639169a8a174aec79ba5c25b7d5e"
+    }
+  },
+  "pack_script": "tools/pc/jobs/planet369_pack.gd",
+  "pixel_loss": "none",
+  "relief_channels": {
+    "a": "cloud opacity",
+    "b": "roughness",
+    "g": "height low byte",
+    "r": "height high byte"
+  },
+  "script": "tools/pc/jobs/planet369_remix.py",
   "seed": [
     3.69,
     8.17
   ],
-  "script": "tools/pc/jobs/planet369_remix.py",
-  "relief_channels": {
-    "r": "height high byte",
-    "g": "height low byte",
-    "b": "roughness",
-    "a": "cloud opacity"
-  },
-  "cold_remix_seconds": 27.151156299980357,
-  "files": {
-    "colour.png": {
-      "sha256": "60651940007c98a80041a54d40f1f72b5ee776be268b577136173e382161927a",
-      "bytes": 37658083
-    },
-    "relief.png": {
-      "sha256": "c560c7943c948604263999282a6f7a4ce14fc1b20f783383c9dc9e3535122b84",
-      "bytes": 74306361
-    },
-    "roughness.png": {
-      "sha256": "2144f2c6ef222aaf295b862543871277ce9aab33eae3c11f2e1cb12cb76b7679",
-      "bytes": 14395389
-    }
-  }
+  "size": [
+    8192.0,
+    4096.0
+  ],
+  "source_datasets": [
+    "LROC WAC natural colour mosaic",
+    "LRO LOLA gridded laser altimetry"
+  ],
+  "source_receipt": "../SOURCES_369.json",
+  "storage": "Lossless compressed Godot Image tiles, assembled at 8K before mip generation"
 }

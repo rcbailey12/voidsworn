@@ -54,13 +54,13 @@ static func clear_static() -> void:
 
 # Authored R01 maps use the same shared worker and texture cache as the GPU
 # bakes. Decode and mip generation never block the battle's main thread.
-func authored(path: String, size: Vector2i) -> Image:
+func authored(path: String, size: Vector2i, float_mips := false) -> Image:
 	var owner := service(get_tree())
-	var key := (path + "|" + str(FileAccess.get_modified_time(path))).sha256_text()
+	var key := (path + "|" + str(FileAccess.get_modified_time(path)) + "|" + str(size) + "|" + str(float_mips)).sha256_text()
 	if _cache.has(key): return _cache[key]
 	if not owner._jobs.has(key):
 		owner._jobs[key] = {"path": path, "size": size, "done": false,
-			"image": null, "started": Time.get_ticks_msec(), "compute": false}
+			"image": null, "started": Time.get_ticks_msec(), "compute": false, "float_mips": float_mips}
 		owner._queue.append(key)
 	var job: Dictionary = owner._jobs[key]
 	while not job.done: await get_tree().process_frame
@@ -121,9 +121,17 @@ func _exit_tree() -> void:
 
 static func _work(key: String, job: Dictionary) -> Dictionary:
 	if job.has("path"):
-		var authored_image := Image.load_from_file(job.path)
+		var authored_image: Image = null
+		if str(job.path).ends_with(".json"):
+			authored_image = _authored_tiles(job.path, job.size)
+		else:
+			authored_image = Image.load_from_file(job.path)
 		if authored_image == null or authored_image.get_size() != job.size:
 			return {"image": null, "error": "Missing or wrong-size R01 map: " + str(job.path)}
+		# Averaging the high/low height bytes into 8-bit mip levels rounds the
+		# high byte first. Near a pole that makes false radial ridges. Float
+		# channels preserve the linear packed value through filtering and mips.
+		if job.get("float_mips", false): authored_image.convert(Image.FORMAT_RGBAF)
 		authored_image.generate_mipmaps()
 		return {"image": authored_image, "source": "authored"}
 	var folder := OS.get_environment("VS_WORLD_CACHE") if OS.has_environment("VS_WORLD_CACHE") else CACHE_DIR
@@ -144,6 +152,26 @@ static func _work(key: String, job: Dictionary) -> Dictionary:
 				if img.save_png(tmp) == OK: DirAccess.rename_absolute(tmp, path)
 	if img != null and not img.has_mipmaps(): img.generate_mipmaps()
 	return {"image": img, "source": source, "error": error}
+
+
+static func _authored_tiles(path: String, size: Vector2i) -> Image:
+	var desc = JSON.parse_string(FileAccess.get_file_as_string(path))
+	if not desc is Dictionary: return null
+	var stored_size: Array = desc.get("size", [])
+	if stored_size.size() != 2 or Vector2i(int(stored_size[0]), int(stored_size[1])) != size: return null
+	var tiles: Array = desc.get("tiles", [])
+	if tiles.size() != 16: return null
+	var image := Image.create(size.x, size.y, false, int(desc.get("format", -1)))
+	var positions := {}
+	for entry in tiles:
+		var pos := Vector2i(int(entry.x), int(entry.y))
+		var tile_size := size / 4
+		if pos.x < 0 or pos.y < 0 or pos.x % tile_size.x or pos.y % tile_size.y or pos.x >= size.x or pos.y >= size.y or positions.has(pos): return null
+		positions[pos] = true
+		var tile := ResourceLoader.load(path.get_base_dir().path_join(str(entry.file)), "Image", ResourceLoader.CACHE_MODE_IGNORE) as Image
+		if tile == null or tile.get_size() != tile_size or tile.get_format() != image.get_format(): return null
+		image.blit_rect(tile, Rect2i(Vector2i.ZERO, tile_size), pos)
+	return image
 
 static func _finish_image(key: String, img: Image) -> Dictionary:
 	if img != null:

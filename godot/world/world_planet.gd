@@ -17,15 +17,15 @@ const R01_SIZE := Vector2i(8192, 4096)
 # patch in tools/pc/jobs/planet369_board.patch because board.gd is outside 369's
 # listed write scope. Other planet kinds retain their current shaders and bakes.
 static func rocky_available() -> bool:
-	return OS.get_environment("VS_PLANET_REMIX") != "0" and FileAccess.file_exists(R01_DIR + "colour.png") and FileAccess.file_exists(R01_DIR + "relief.png")
+	return OS.get_environment("VS_PLANET_REMIX") != "0" and FileAccess.file_exists(R01_DIR + "colour.json") and FileAccess.file_exists(R01_DIR + "relief.json")
 
 
 static func install_rocky(planet: MeshInstance3D, air: MeshInstance3D, sun_position: Vector3) -> void:
 	if not rocky_available(): return
 	var started := Time.get_ticks_msec()
 	var baker = preload("res://world/world_bake.gd").service(planet.get_tree())
-	var colour: Image = await baker.authored(R01_DIR + "colour.png", R01_SIZE)
-	var data: Image = await baker.authored(R01_DIR + "relief.png", R01_SIZE)
+	var colour: Image = await baker.authored(R01_DIR + "colour.json", R01_SIZE)
+	var data: Image = await baker.authored(R01_DIR + "relief.json", R01_SIZE, true)
 	if not is_instance_valid(planet) or colour == null or data == null: return
 	var light_dir := (sun_position - planet.global_position).normalized()
 	var ground := ShaderMaterial.new()
@@ -72,8 +72,15 @@ vec2 r01_uv(vec3 d) {
 vec3 r01_spin(vec3 d, float a) {
 	return vec3(cos(a)*d.x + sin(a)*d.z, d.y, -sin(a)*d.x + cos(a)*d.z);
 }
-float r01_height(vec2 uv, sampler2D data_map) {
-	vec2 h = texture(data_map, uv).rg;
+vec4 r01_sample(sampler2D map, vec3 d, float lod) {
+	vec2 uv = r01_uv(d);
+	// Longitude wraps. Latitude must never blend the opposite hemisphere.
+	float pole_pad = exp2(lod) / 8192.0;
+	uv.y = clamp(uv.y, pole_pad, 1.0-pole_pad);
+	return textureLod(map, uv, lod);
+}
+float r01_height(vec3 d, sampler2D data_map, float lod) {
+	vec2 h = r01_sample(data_map, d, lod).rg;
 	return dot(h, vec2(65280.0, 255.0)) / 65535.0;
 }
 """
@@ -85,6 +92,8 @@ uniform sampler2D colour_map : source_color, filter_linear_mipmap, repeat_enable
 // Linear data: RG = 16-bit height, B = roughness, A = cloud coverage.
 uniform sampler2D surface_data : filter_linear_mipmap, repeat_enable;
 uniform vec3 sun = vec3(0.45, 0.7, 0.55);
+uniform float cloud_rate = 0.009;
+uniform float shadow_strength = 0.64;
 varying vec3 local_direction;
 varying vec3 world_point;
 varying vec3 world_centre;
@@ -98,14 +107,16 @@ void vertex() {
 }
 void fragment() {
 	vec3 d = normalize(local_direction);
-	vec2 uv = r01_uv(d);
-	vec4 data = texture(surface_data, uv);
+	// Angular footprint stays finite at poles and the longitude seam. UV
+	// derivatives there chose coarse levels in radial bands across the terrain.
+	float lod = clamp(log2(max(length(dFdx(d)),length(dFdy(d)))*1303.7973),0.0,11.0);
+	vec4 data = r01_sample(surface_data, d, lod);
 	vec3 n = normalize(world_point-world_centre);
 	vec3 v = normalize(CAMERA_POSITION_WORLD-world_point);
 	vec3 l = normalize(sun);
 	// Use surface derivatives for relief. This remains stable at the poles and
 	// after a board transform, unlike a fixed world-X normal offset.
-	float h = r01_height(uv, surface_data);
+	float h = r01_height(d, surface_data, lod);
 	vec3 dpdx = dFdx(world_point);
 	vec3 dpdy = dFdy(world_point);
 	vec3 r1 = cross(dpdy,n);
@@ -120,9 +131,9 @@ void fragment() {
 	// A ray from the ground toward the sun reaches the higher cloud layer
 	// ahead of the surface sample, separating shadows from the cloud itself.
 	vec3 toward_light = normalize(d + normalize(local_light)*0.012);
-	float shadow = texture(surface_data,r01_uv(r01_spin(toward_light,TIME*0.009))).a;
-	vec3 albedo = texture(colour_map,uv).rgb;
-	vec3 colour = albedo*(0.022 + lambert*0.88*day)*(1.0-shadow*0.64);
+	float shadow = r01_sample(surface_data,r01_spin(toward_light,TIME*cloud_rate),lod).a;
+	vec3 albedo = r01_sample(colour_map,d,lod).rgb;
+	vec3 colour = albedo*(0.022 + lambert*0.88*day)*(1.0-shadow*shadow_strength);
 	float spec_power = mix(90.0,7.0,data.b);
 	float sheen = pow(max(dot(bumped,normalize(l+v)),0.0),spec_power)*(1.0-data.b)*0.055*day;
 	colour += vec3(1.0,0.87,0.72)*sheen;
@@ -148,7 +159,9 @@ void vertex() {
 }
 void fragment() {
 	vec3 n = normalize(world_point-world_centre);
-	float coverage = texture(surface_data,r01_uv(r01_spin(normalize(local_direction),TIME*0.009))).a;
+	vec3 d = normalize(local_direction);
+	float lod = clamp(log2(max(length(dFdx(d)),length(dFdy(d)))*1303.7973),0.0,11.0);
+	float coverage = r01_sample(surface_data,r01_spin(d,TIME*0.009),lod).a;
 	float day = smoothstep(-0.12,0.3,dot(n,normalize(sun)));
 	ALBEDO = vec3(0.56,0.49,0.38)*(0.045+day*0.72);
 	ALPHA = coverage*0.74;
