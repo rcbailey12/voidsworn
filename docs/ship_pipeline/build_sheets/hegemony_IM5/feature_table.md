@@ -189,8 +189,8 @@ Bulkhead and frame stations: F1 11.2%, F2 15.0%, F3 21.4%, F4 25.9%, F5 29.7%, F
 | ion capacitors (machinery) | 9.4 to 16.6 | -1.30 to 1.30 | -0.75 to 0.60 | the ion cannon's field drivers behind the trench |
 | bow corridor p (hcorr) | 9.9 to 16.6 | 2.16 to 2.61 | 0.75 to 1.05 | white corridors at the ridges' bow ends |
 | bow corridor s (hcorr) | 9.9 to 16.6 | -2.61 to -2.16 | 0.75 to 1.05 | white corridors at the ridges' bow ends |
-| fwd crew p (hcorr) | 18.8 to 29.1 | 2.16 to 2.06 | 0.80 to 1.30 | white corridors and crew berths of the ridges, numbered posts |
-| fwd crew s (hcorr) | 18.8 to 29.1 | -2.06 to -2.16 | 0.80 to 1.30 | white corridors and crew berths of the ridges, numbered posts |
+| fwd crew p (hcorr) | 18.8 to 29.1 | 2.16 to 3.31 | 0.80 to 1.20 | white corridors and crew berths of the ridges, numbered posts |
+| fwd crew s (hcorr) | 18.8 to 29.1 | -3.31 to -2.16 | 0.80 to 1.20 | white corridors and crew berths of the ridges, numbered posts |
 | fwd crew2 p (hcorr) | 30.4 to 45.1 | 2.16 to 4.15 | 0.80 to 1.30 | white corridors and crew berths of the ridges |
 | fwd crew2 s (hcorr) | 30.4 to 45.1 | -4.15 to -2.16 | 0.80 to 1.30 | white corridors and crew berths of the ridges |
 | command (bridge) | 30.4 to 38.1 | -2.20 to 2.20 | -0.85 to -0.30 | the command deck: the Registry link room, under the bow bridge |
@@ -202,8 +202,8 @@ Bulkhead and frame stations: F1 11.2%, F2 15.0%, F3 21.4%, F4 25.9%, F5 29.7%, F
 | rack 5 (hrack) | 27.2 to 28.3 | -2.60 to 2.60 | -0.85 to -0.25 | racks of identical equipment on the lower deck (factions.md "Inside") |
 | ion feed (machinery) | 39.4 to 45.1 | -2.40 to 2.40 | -0.85 to -0.30 | the ion cannon's feed switching, under the second capacitor bank |
 | fwd stores (hold) | 25.9 to 45.1 | -3.00 to 3.00 | -1.55 to -1.10 | stores and the retro thrusters' feeds |
-| emerg fwd p (hemerg) | 19.5 to 44.5 | 2.16 to 2.06 | 1.25 to 1.30 | the blue emergency light strip along the corridor ceilings |
-| emerg fwd s (hemerg) | 19.5 to 44.5 | -2.06 to -2.16 | 1.25 to 1.30 | the blue emergency light strip along the corridor ceilings |
+| emerg fwd p (hemerg) | 19.5 to 44.5 | 2.16 to 3.36 | 1.15 to 1.20 | the blue emergency light strip along the corridor ceilings |
+| emerg fwd s (hemerg) | 19.5 to 44.5 | -3.36 to -2.16 | 1.15 to 1.20 | the blue emergency light strip along the corridor ceilings |
 | reactor (core) | 53.8 to 68.5 | -1.60 to 1.60 | -1.60 to -0.30 | the reactor (hp_core): its power rides the trunks forward to the trench and aft to the drives |
 | lance rooms p (magazine) | 56.7 to 65.6 | 2.90 to 5.48 | 0.30 to 0.95 | the lance capacitor rooms under the shoulder pits |
 | lance rooms s (magazine) | 56.7 to 65.6 | -5.48 to -2.90 | 0.30 to 0.95 | the lance capacitor rooms under the shoulder pits |
@@ -211,8 +211,8 @@ Bulkhead and frame stations: F1 11.2%, F2 15.0%, F3 21.4%, F4 25.9%, F5 29.7%, F
 | mid crew s (hcorr) | 47.4 to 54.1 | -4.92 to -2.16 | 0.80 to 1.30 | white corridors of the ridges, midships |
 | mid racks (hrack) | 47.4 to 53.1 | -2.60 to 2.60 | -0.85 to -0.25 | racks of identical equipment |
 | turbo feed (magazine) | 66.3 to 69.2 | -2.00 to 2.00 | -0.85 to -0.25 | the bridge lance's capacitor feed, up through the midships bridge |
-| emerg mid p (hemerg) | 47.7 to 69.2 | 2.16 to 2.44 | 1.25 to 1.30 | the blue emergency light strip |
-| emerg mid s (hemerg) | 47.7 to 69.2 | -2.44 to -2.16 | 1.25 to 1.30 | the blue emergency light strip |
+| emerg mid p (hemerg) | 47.7 to 53.9 | 2.16 to 4.93 | 1.25 to 1.30 | the blue emergency light strip |
+| emerg mid s (hemerg) | 47.7 to 53.9 | -4.93 to -2.16 | 1.25 to 1.30 | the blue emergency light strip |
 | aft crew p (hcorr) | 71.7 to 85.5 | 2.16 to 4.85 | 0.80 to 1.30 | white corridors and crew decks |
 | aft crew s (hcorr) | 71.7 to 85.5 | -4.85 to -2.16 | 0.80 to 1.30 | white corridors and crew decks |
 | drive plant (machinery) | 71.7 to 85.5 | -2.80 to 2.80 | -1.60 to -0.30 | the drives' coolant and fuel plant |
@@ -220,7 +220,8 @@ Bulkhead and frame stations: F1 11.2%, F2 15.0%, F3 21.4%, F4 25.9%, F5 29.7%, F
 | picket store s (magazine) | 76.9 to 81.3 | -5.31 to -2.40 | 0.15 to 0.60 | the picket lasers' power cells, fed across the stern bridge |
 | emerg aft p (hemerg) | 72.1 to 85.5 | 2.16 to 4.85 | 1.25 to 1.30 | the blue emergency light strip |
 | emerg aft s (hemerg) | 72.1 to 85.5 | -4.85 to -2.16 | 1.25 to 1.30 | the blue emergency light strip |
-| engine room (engroom) | 87.9 to 95.1 | -4.00 to -2.16 | -1.55 to 1.05 | the engine room: the feeds to the six nozzles |
+| engine room (engroom) | 90.8 to 95.1 | -4.00 to 4.00 | -1.55 to 1.05 | the engine room under the stern deck: the feeds to the six nozzles |
+| engine room fwd (engroom) | 87.9 to 90.3 | -3.60 to 3.60 | -1.55 to -0.30 | the engine room's forward bay under the canyon floor |
 | bridge corr bow (hcorr) | 34.6 to 37.8 | -1.50 to 1.50 | 1.38 to 1.47 | the crossing corridor inside the bow bridge deck, from ridge to ridge |
 | bridge corr mid (hcorr) | 58.3 to 64.0 | -1.50 to 1.50 | 1.38 to 1.47 | the crossing corridor inside the mid bridge deck, from ridge to ridge |
 | bridge corr stern (hcorr) | 76.9 to 81.3 | -1.50 to 1.50 | 1.38 to 1.47 | the crossing corridor inside the stern bridge deck, from ridge to ridge |
