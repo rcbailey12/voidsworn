@@ -1,7 +1,8 @@
 # Issue 368: step 1 preparation, waiting for a GPU window
 
 Refs #368. This is not a finished route comparison or a request to approve a look.
-No GPU go file was present during this run. CODEX_TASK.md rule 7 requires that file before a GPU job.
+The resumed CPU run on Nov 15 found the Board's go file explicitly revoked: its first line starts with
+"GPU not cleared." CODEX_TASK.md requires a first line starting with "GPU cleared" at run start before any GPU job.
 No captures, frame timings, GPU timings, recommendation or picked route are claimed.
 Step 2 remains behind Ryan's route pick after the measured sheet.
 
@@ -22,7 +23,7 @@ Step 2 remains behind Ryan's route pick after the measured sheet.
 The fog length in the gate grows to camera radius plus 200, at least 250. The engagement camera can exceed 250 units:
 timing a volume outside the fog integration range would give misleadingly cheap results.
 
-## Checks actually run
+## First CPU run checks
 
 - Godot 4.7.2 headless CPU bake, repeated: byte-identical SHA256
   `92c69b3254aa015cd577bced12f694bfa764e4b8d3d5e2b2a332628f11dc5691`.
@@ -41,9 +42,29 @@ timing a volume outside the fog integration range would give misleadingly cheap 
 
 Scratch logs remain in `%TEMP%/voidsworn_368_*`. CPU result JSON copies are in the issue's shared shots folder.
 
+## Resumed CPU run, Nov 15
+
+- Built on the merged partial branch. No default route or candidate appearance was changed.
+- Replaced the bench's existence-only GPU go check with a first-line prefix check. A headless runtime check exercised
+  eight cases: cleared, revoked, clearance on a later line, leading whitespace, empty contents, empty path, missing path,
+  and the Board's actual revoked file. All eight passed without starting a renderer.
+- Repeated both headless map dry runs: exit 0. All three routes at all three quality tiers retain the first run's
+  geometry results and noise SHA256. Frame and GPU medians remain null, never substituted with CPU timings.
+- Headless timing without `--dry-run`: expected refusal, exit 2.
+- `scale_check.gd`: exit 0, 53 rows with six KNOWN rows, including this job's two undersized terrain rows.
+- `node contrib/opus/tools/run_all_checks.js`: exit 0. Findings retain seven listed failures and the drift guard retains
+  12 listed constant differences; every other row passes, including the formerly failing document check.
+  The sandbox initially blocked Node's path lookup; the authorized retry outside the sandbox completed the suite.
+- `git diff --check` and an em-dash scan of changed files: pass.
+
+This run's scratch logs and CPU JSON remain in `%TEMP%/voidsworn_368_resume_*`. No screenshots, sheets or recordings
+were made because the GPU window was explicitly revoked at run start.
+
 ## Next GPU window
 
-The Board supplies a go file, verifies the PC is free and runs one GPU job at a time through the queue/watchdog.
+The Board supplies a go file whose first line starts with "GPU cleared", verifies the PC is free and runs one GPU job
+at a time through the queue/watchdog. Read that line before launching Godot. File existence alone is not clearance.
+The bench also rejects an empty, missing, unreadable or revoked file before building the battle or capturing it.
 Do not treat the older `paused_for_ryan.txt` or an idle utilization reading as authorization.
 Built `godot/gen` and `godot/assets/ships` exist in this checkout, but their current source/stamps have not been verified
 for this GPU run. Verify them before the first capture; stop on any placeholder.
@@ -67,30 +88,15 @@ The current capture adapter does not yet cover every class or the campaign map. 
 at the GPU window; the generator yielded only six nebula hexes. Neither candidate has been polished.
 Pure fog can affect opaque hulls: cards' depth exclusion alone does not prove that A meets the crisp-hull rule.
 
-## Provisional scale rows while issue 710 is absent
+## Scale acceptance after issue 710
 
-These report current code and candidate geometry, not owner-approved scale. The shared scale playbook and check are absent;
-no replacement playbook was created outside this job's delivery scope.
+Issue 710 has landed. Use the single scale table in `docs/playbooks/scale.md` and its live check
+`godot/render/test/scale_check.gd`; the provisional duplicate table from the first run is retired.
+The headless scale check passes with six KNOWN rows. Nebula and storm are still two of those rows: the current default
+cloud span is 46.0 world units against a target of 74.4 to 297.6. An overall PASS with those KNOWN rows does not complete
+this job's scale requirement. The picked route must meet the target and retire its KNOWN entries at build time.
 
-| Object | World units | Relative to hex corner radius 10 | Source/status |
-|---|---|---|---|
-| Hex | 20 corner diameter; 17.3205 flat diameter | 2; 1.73205 | hull_table.gd HEX_S |
-| Fighter/bomber | 2.56 rendered length | 0.256 | CLS_LEN Squadron times SHIP_K |
-| Frigate | 10.4 rendered length | 1.04 | hull_table.gd |
-| Destroyer | 15.2 rendered length | 1.52 | hull_table.gd |
-| Cruiser | 23.2 rendered length | 2.32 | hull_table.gd |
-| Carrier | 26.4 rendered length | 2.64 | hull_table.gd |
-| Battleship | 33.6 rendered length | 3.36 | hull_table.gd |
-| Dreadnought | 43.2 rendered length | 4.32 | hull_table.gd |
-| Super-dreadnought | 49.6 rendered length | 4.96 | hull_table.gd |
-| Battle-barge / Ark | 41.6 rendered length | 4.16 | hull_table.gd |
-| Bio-titan / Tomb-ark | 44.8 rendered length | 4.48 | hull_table.gd |
-| Transport | 17.6 rendered length | 1.76 | hull_table.gd |
-| Station | 46 for a big cluster in a4_props.gd's current contract | 4.6 | Legacy size; R247 review pending |
-| Candidate nebula/storm | 38.5 high, from -7 to 31.5; connected patch footprint plus soft spill | 3.85 high | Bench geometry only |
-| Candidate card | 33.6 to 47.6 regular width; 50.4 to 64.4 broad width | 3.36 to 6.44 | Shader footprint reduces visible size |
-
-The cloud must read far larger than a capital, with each hex sampling part of it. These prototype numbers and small
+The cloud must read far larger than a capital, with each hex sampling part of it. The prototype geometry and small
 nebula fixture do not yet prove that requirement. Asteroid terrain is left to issue 369's in-game coverage; verify that
 coverage before calling R247 complete. No game rules, saves, oracle copies or ship assets were changed.
 

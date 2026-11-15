@@ -22,8 +22,8 @@ func _run() -> void:
 		get_tree().quit(2)
 		return
 	var go := str(args.get("go-file", ""))
-	if go == "" or not FileAccess.file_exists(go):
-		push_error("Issue 368: Board GPU go file required before drawing")
+	if not _gpu_window_cleared(go):
+		push_error("Issue 368: Board GPU go file must start with GPU cleared before drawing")
 		get_tree().quit(2)
 		return
 	if args.has("captures"):
@@ -31,6 +31,12 @@ func _run() -> void:
 		PG.finish(0)
 		return
 	await super._run()
+
+
+func _gpu_window_cleared(path: String) -> bool:
+	if path == "": return false
+	var file := FileAccess.open(path, FileAccess.READ)
+	return file != null and file.get_line().begins_with("GPU cleared")
 
 
 func _save() -> void:
