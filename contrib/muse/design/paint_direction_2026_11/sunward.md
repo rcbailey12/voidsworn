@@ -51,6 +51,7 @@ Sampled from S8 by the chair (k-means, 9 clusters, background excluded by corner
 - Rivet lines are the trim: rows along the triangles' long edges and the deck bands, pitch .011 to start. The builder A/B tests .013 at camera 170 (heavier forging may want the coarser pitch) and reports which reads.
 - Frost-white markings are decals only, never a plate family: a spine line, broadside deck row numbers, heat-shed marks at the spire roots. Cap: at most 6 percent of any visible face, so the black blade still reads black at camera 170.
 - Wear shows dulled bright iron at the edges, tones #656564 to #848382 (S8's lit-edge clusters). Those clusters are wear tones only, never plate tones.
+  The S8 paint is built one step lighter: the wear tones are painted x1.85 in linear, #878785 to #afadac (WEAR_STEP in the stack), and the iron pairs rise under that new wear floor (IRON_STEP .60), so the worn edges still read lighter than every plate and the whole map rises together. The sampled tones above stay the record of the concept. (Ryan, Nov 15 2026, R258: the x1.85 column)
 - Edge wear runs last, over the decals.
 
 ## 5. Lights and glow
@@ -73,7 +74,7 @@ Checks for the builder: surface check at stage 5; camera 170 read; emissive audi
 - Rust in any layer: rejected by the guide.
 - Blue light: rejected by the guide.
 - Frost white as a plate family: rejected; the guide says markings, and S8 carries none.
-- #848382 and #656564 as plate tones: lit-edge clusters, wear tones only.
+- #848382 and #656564 as plate tones: lit-edge clusters, wear tones only. Since R258 the painted wear floor is #878785; the lightest plate (iron_cast's light end, about #686766) sits under it. (Ryan, Nov 15 2026, R258: the x1.85 column)
 - The S8 picture projected onto the hull: RECIPE forbids it; colours are sampled, the picture is never projected.
 - A battle lift number stated on this page: the stack reads look.gd.
 
