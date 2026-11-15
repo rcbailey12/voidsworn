@@ -73,7 +73,15 @@ jobs:
             # If another run opened it in the meantime, that is a pass, not a failure.
             gh pr create -R "$REPO" --base main --head "$BRANCH" --title "$title" --body-file body.md || {
               sleep 3
-              [ "$(gh pr list -R "$REPO" --head "$BRANCH" --state open --json number --jq 'length')" != "0" ] && echo "PR for $BRANCH was opened by another run"
+              if [ "$(gh pr list -R "$REPO" --head "$BRANCH" --state open --json number --jq 'length')" != "0" ]; then
+                echo "PR for $BRANCH was opened by another run"
+              elif [ "$(gh api "repos/$REPO/compare/main...$BRANCH" --jq .ahead_by 2>/dev/null)" = "0" ]; then
+                # Muse creates its branch from main a second before its first commit: nothing to open yet, the next push opens
+                # it (Nov 15: each such run failed and mailed Ryan).
+                echo "branch $BRANCH has no commits ahead of main yet: no pull request on this push"
+              else
+                exit 1
+              fi
             }
           else
             # A later push from a runner (codex/, muse/, work/) refreshes the text, so the PR describes the newest run
