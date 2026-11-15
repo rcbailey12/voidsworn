@@ -24,18 +24,18 @@ function setup(tpl, fac) {
   return { u, t };
 }
 check('Cordon next to a shieldless Chorus ship cannot use ion pulse', () => {
-  const { u, t } = setup('b_drone', 'chorus'); return t.sh.every(x => x === 0) && !T.canAbility(u);
+  const { u, t } = setup('b_drone', 'chorus'); return (t.shp || 0) === 0 && !T.canAbility(u);
 });
 check('Cordon next to a shielded Hegemony ship can use ion pulse', () => {
-  const { u, t } = setup('h_picket', 'hegemony'); return t.sh.some(x => x > 0) && T.canAbility(u);
+  const { u, t } = setup('h_picket', 'hegemony'); return (t.shp || 0) > 0 && T.canAbility(u);
 });
 check('a squadron alone does not count even with shields', () => {
-  const { u, t } = setup('fighter', 'hegemony'); t.isSq = true; t.sh = [10, 0, 0, 0]; return !T.canAbility(u);
+  const { u, t } = setup('fighter', 'hegemony'); t.isSq = true; t.shp = 10; return !T.canAbility(u);
 });
-check('depleted shields do not count; one positive facing at range four does; range five does not', () => {
-  const { u, t } = setup('h_picket', 'hegemony'); t.sh = [0, 0, 0, 0];
+check('depleted shields do not count; pool left at range four does; range five does not', () => {
+  const { u, t } = setup('h_picket', 'hegemony'); t.shp = 0;
   if (T.canAbility(u)) return false;
-  t.sh[3] = 1; t.q = u.q + 4; if (!T.canAbility(u)) return false;
+  t.shp = 1; t.q = u.q + 4; if (!T.canAbility(u)) return false;
   t.q = u.q + 5; return !T.canAbility(u);
 });
 (async () => { let pass = 0, fail = 0;
