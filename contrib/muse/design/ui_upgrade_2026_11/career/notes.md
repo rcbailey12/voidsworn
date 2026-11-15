@@ -82,3 +82,7 @@ CR4, The Honours Board, pictured (CR4.png), is the chair's answer, built on CR3 
 - Everything stays on the surface with no sheet, as CR3. The chair's CR3 objection stands against both CR3 and CR4 and is recorded, not solved: the layout is shaped around today's three served and nine unserved, and a fourth served admiral will need a second hero row while the unserved roster shrinks.
 
 Chair's updated pick: CR4, subject to Ryan's settle between CR3 and CR4.
+
+## Settle, Nov 15, 2026
+
+Ryan settled CR4, The Honours Board, pictured, as the Career direction of record on Nov 15, 2026. It supersedes the CR1 chair pick and CR3, which stay in this folder as the round's record alongside CR2. The Board builds CR4. Recorded against the build, from the CR4 addendum: the layout is shaped around today's three served and nine unserved, so a fourth served admiral needs a second hero row while the unserved roster shrinks; and the Kassar and Grax bands mark the slot a flagship picture fills when that art exists, drawn from the built game per the Fleet round's art note.
