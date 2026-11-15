@@ -96,8 +96,8 @@ How today's values are read (the check reads the same constants):
 
 ## 3. What is still wrong today
 
-The check is red today on purpose: it is the acceptance test for the three sizing jobs. These rows fail, and every other
-row in the table passes.
+These rows fail today; they are the acceptance test for the three sizing jobs. scale_check.gd lists them as KNOWN (each
+naming its job), so the check stays green and guards every other row; every other row in the table passes.
 
 | Object | Today | Target | Waiting on |
 |---|---|---|---|
@@ -109,13 +109,14 @@ row in the table passes.
 | Map station node, shipyard | 6.40 | 12.75 to 51.00 | issue 373 (the station) |
 
 When issue 368, 369 or 373 lands, it changes the live size in the code named in section 2 (never a copy of the table) and
-this check's row turns PASS. It cannot drift back: the check is in godot/tools/ci/godot_checks.txt and runs in the Godot
-checks.
+this check's row turns PASS; the same change deletes the row's line from KNOWN in scale_check.gd (a KNOWN row that passes
+fails the check until it is deleted). It cannot drift back: the check is in godot/tools/ci/godot_checks.txt and runs in
+the Godot checks.
 
 ## 4. Checks
 
-- `godot --headless --path godot --script res://render/test/scale_check.gd` prints one line per object and exits 1 while
-  any object is outside its target range.
+- `godot --headless --path godot --script res://render/test/scale_check.gd` prints one line per object and exits 1 when
+  an object outside the KNOWN list leaves its target range, or a KNOWN row passes.
 - It is listed in godot/tools/ci/godot_checks.txt, so GitHub and godot/tools/ci/run_checks.sh run it with every other
   headless Godot check.
 - Any new board object that has a size (a new terrain kind, a new station type, a new explosion) adds a row here and a

@@ -16,7 +16,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 #   map         ui/campaign/map3d.gd RING_R, TOKEN_*, REGION_NEBULA_SPREAD; ui/campaign/map3d_system.gd CLOUD_PUFF_MAX
 #
 #   godot --headless --path godot --script res://render/test/scale_check.gd
-# Prints one PASS or FAIL line per object and exits 1 when any object is outside its target range.
+# Prints one PASS, FAIL or KNOWN line per object and exits 1 when any object outside the KNOWN list is out of range, or a KNOWN row passes.
 
 const HT := preload("res://render/hull_table.gd")
 const BRD := preload("res://render/board.gd")
@@ -36,7 +36,21 @@ const LADDER := ["Frigate", "Destroyer", "Cruiser", "Battleship", "Dreadnought",
 
 var fails := 0
 var checks := 0
+var known_seen := 0
 var hex := 0.0
+
+# Rows that fail today on purpose, each with the job that must clear it (Board, Nov 15: merged as known rows so the check
+# guards everything else now). A known row that fails prints KNOWN and does not fail the check; a known row that PASSES
+# fails the check until its line here is deleted, so the job that fixes it also retires it (the same ratchet as
+# contrib/opus/tools/checks_baseline.json). Nothing else may be added here without the Board's review.
+const KNOWN := {
+	"station (one hex)": "issue 373 (station T2, PR 700)",
+	"station (5+ hexes)": "issue 373 (station T2, PR 700)",
+	"map station node": "issue 373 (the station on the sector map, R249)",
+	"nebula (one hex cloud)": "issue 368 (nebula and storm hexes)",
+	"ion storm (one hex cloud)": "issue 368 (nebula and storm hexes)",
+	"asteroid field biggest rock": "issue 369 (board planet and rocks)",
+}
 
 
 func _init() -> void:
@@ -47,9 +61,17 @@ func _init() -> void:
 func row(name: String, today: float, lo: float, hi: float, reason: String) -> void:
 	checks += 1
 	var ok := today >= lo - 0.001 and today <= hi + 0.001
-	if not ok:
+	var verdict := "PASS" if ok else "FAIL"
+	if KNOWN.has(name):
+		known_seen += 1
+		if ok:
+			fails += 1
+			verdict = "FAIL (known row now passes: delete its KNOWN line, %s)" % KNOWN[name]
+		else:
+			verdict = "KNOWN (%s clears it)" % KNOWN[name]
+	elif not ok:
 		fails += 1
-	print("[scale] %-34s today %7.2f  target %7.2f .. %7.2f  %s  (%s)" % [name, today, lo, hi, "PASS" if ok else "FAIL", reason])
+	print("[scale] %-34s today %7.2f  target %7.2f .. %7.2f  %s  (%s)" % [name, today, lo, hi, verdict, reason])
 
 
 func _run() -> void:
@@ -180,8 +202,11 @@ func _run() -> void:
 	row("map nebula region", region, 2.0 * node, 200.0, "a nebula region is larger than a stop's ring")
 	row("map nebula vs fleet", region / fleet, 2.0, 40.0, "a nebula region is larger than the fleet marker")
 
-	print("[scale] %s: %d of %d objects outside their target range (the sizes in docs/playbooks/scale.md)" % [
-		"SCALE_CHECK PASS" if fails == 0 else "SCALE_CHECK FAIL", fails, checks])
+	if known_seen != KNOWN.size():
+		fails += 1
+		print("[scale] FAIL: %d KNOWN rows name an object this check no longer measures; fix the KNOWN list" % (KNOWN.size() - known_seen))
+	print("[scale] %s: %d of %d objects fail outside the KNOWN list, %d KNOWN rows (the sizes in docs/playbooks/scale.md)" % [
+		"SCALE_CHECK PASS" if fails == 0 else "SCALE_CHECK FAIL", fails, checks, KNOWN.size()])
 	quit(0 if fails == 0 else 1)
 
 
