@@ -295,9 +295,11 @@ Sunward stacks and `kits/shared` untouched). What is the faction's own, and wher
 - colours: hegemony.md's pairs sampled from H10 (the steel-blue grey hull `#141c2a` to `#48505e`, recessed `#0b101c` to
   `#212b3b`, trim `#2b394d` to `#626d7d`, nozzle housings, a cold dark liner); `lin()` divides each by the light gain and by the
   Hegemony battle lift read from `godot/render/look.gd` (0.4, never copied) and holds the steel-blue with a small hue boost
-  (`SAT` 1.5, as the Eclipse's `SAT`: AgX and the warm key grey the blue out). Every zone and plate family is a narrow slice of its
-  pair (`slice_()`, plate_var .07, the lowest variation of any faction), the plates at the pair's light end (`TONE_AT` 1.0, the
-  R256 lesson). The value cap: no plate shows brighter than `#626d7d`; wear and scuffs go toward the cap itself (`BARE`), never
+  (`SAT` 1.3, as the Eclipse's `SAT`: AgX and the warm key grey the blue out; 1.5 before the R262 step, lowered so the battle
+  hue holds). Every zone and plate family is a narrow slice of its pair (`slice_()`, plate_var .07, the lowest variation of any
+  faction), the plates at the pair's light end (`TONE_AT` 1.0, the R256 lesson), and the plate tones one step toward the cap
+  (R262, Ryan's "Fix engines, lighten a step", the S8 method of R258: `stepped()`, each tone's brightest channel x to
+  cap x (x / cap) ** `PLATE_STEP`, the others scaled with it, so the hue and the family order hold). The value cap: no plate shows brighter than `#626d7d`; wear and scuffs go toward the cap itself (`BARE`), never
   past it. Rust 0 in every zone; roughness floor .52; grime body .30, recessed .45, trim .20, nozzle housings .30 (the engine
   and thruster plates take the nozzle zone by `ZONE_BY_KIND`);
 - surface order (R243, hegemony.md 1): `panel_nodes` draws one plain even grid anchored to the ship (no stagger, warp or split;
@@ -314,7 +316,8 @@ Sunward stacks and `kits/shared` untouched). What is the faction's own, and wher
 - light (hegemony.md 5): every value is the brightest linear channel of the emission times its strength, under the game's 0.8
   threshold, and no Hegemony light has red over blue (never warm): the blue line's strips 0.74 (the game's Hegemony engine
   colour; the game pulses them), the nozzle throats and linings 0.76 on one emission map (the shared throat drawing, the dim end
-  falling off red first, identical nozzles: no hue shift), lenses and bores 0.65 (the sensor fin tip's value), window slits
+  falling off red first, identical nozzles: no hue shift; the lining lit almost to the lip, the throat brightest; since R262 the
+  kit's engine_bell trim bands are open rings, so the throat and vanes show), lenses and bores 0.65 (the sensor fin tip's value), window slits
   0.60, thruster walls 0.50. The strips on the hull are hull trim (`GLOW_HULL`, `p3_hblue_hull`, marked `hull_surface`);
   `RUNNING_LIGHTS` is None (the strips are the running lights) and no `lights.json` is written;
 - decals (hegemony.md 4): low-contrast stencils in the cap tone, never ornament: the hull number (the sheet cell) on each

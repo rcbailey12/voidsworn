@@ -30,7 +30,7 @@ emitters: both fire every volley).
 
 - `engine_bell`: a rectangular nozzle pod (factions.md: a flat row of rectangular blue-white nozzles): a thick machined lip round
   a rounded-rectangle mouth, inner walls tapering in to a recessed blue-white throat plate, three guide vanes deep in the
-  throat, a sleeve of armoured walls with two trim bands and machined panels, a back block that seats on the hull. The mouth
+  throat, a sleeve of armoured walls with two trim bands (open rings round the walls since R262, so the mouth, the throat and the vanes stay visible) and machined panels, a back block that seats on the hull. The mouth
   carries points along its straight edges so its rim reads all round in the export's open-bell test (check_export.py); keep
   the mouth near square (1.1 by 1.45 passes 12 of 12 sectors; 1.0 by 1.6 does not).
 - `antenna`: the one low sensor fin (factions.md: never a tower): a root plinth, a swept fin with sensor windows, a lens strip,

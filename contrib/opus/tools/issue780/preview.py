@@ -6,8 +6,9 @@
 #           beam, range 170, a long lens so the ship fills the frame)
 #   band    a module band close, from above the port bow quarter: the even grid, the double seam, the latch row
 #   flank   the port flank close: the blue line, its break at a band, the hull number
+#   nozzle  one nozzle from astern, off its axis (as paint_sheet.py's bell camera)
 #   mark    a decal close (only with mark=x,y,z, a position from the job's decal report)
-# usage: python run_cpu.py preview.py PAINTED.blend -- OUT_DIR SHEET CONCEPT_JPG [samples=16] [scale=0.5] [only=battle,band,flank,mark] [mark=x,y,z]
+# usage: python run_cpu.py preview.py PAINTED.blend -- OUT_DIR SHEET CONCEPT_JPG [samples=16] [scale=0.5] [only=battle,band,flank,nozzle,mark] [mark=x,y,z]
 import os, sys, math, json, re, runpy
 import bpy
 from mathutils import Vector
@@ -61,6 +62,12 @@ if 'flank' in want:
     else:
         t = Vector((.25, .15, 0))
     o = cam('flank', t, Vector((0.25, 1.0, 0.30)).normalized() * .34, 50, (1280, 720)); shoot(o, 'paint_flank', float(SCALE) * 2)
+if 'nozzle' in want:     # one nozzle from astern and a little off its axis (paint_sheet.py's bell camera, for the only= mode)
+    hp = json.loads(sc.get('r209_hp', '{}')).get('engines', [])
+    if hp:
+        big = max(hp, key=lambda e: e['radius']); bp = Vector(big['pos']); r = big['radius']
+        o = cam('nozzle', bp + Vector((r * .6, 0, 0)), Vector((-7.0 * r, 2.2 * r * (1 if bp.y >= 0 else -1), 2.0 * r)) - Vector((r * .6, 0, 0)), 50, (1200, 1000))
+        shoot(o, 'paint_nozzle', float(SCALE) * .6)
 if 'mark' in want and kw.get('mark'):      # a decal close (mark=x,y,z from the job's decal report): the stencil read at close range
     t = Vector(tuple(float(v) for v in kw['mark'].split(',')))
     o = cam('mark', t, Vector((0.15, 1.0 if t.y >= 0 else -1.0, 0.35)).normalized() * .12, 50, (1280, 720)); shoot(o, 'paint_mark', float(SCALE) * 2)

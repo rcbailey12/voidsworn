@@ -64,8 +64,10 @@ LIGHT_GAIN = 1.45
 # AgX and the warm key take colour out of dark tones (the Eclipse stack's finding): the first H10 sandbox bake read a grey with
 # little blue in it (battle median blue over red 1.26 against the H10 concept's 1.46). So the albedo carries the steel-blue a
 # little stronger than the tone it must show: its distance from its own grey is scaled by SAT (luminance kept). The value cap
-# audit measures the result against #626d7d.
-SAT = 1.5
+# audit measures the result against #626d7d. SAT was 1.5 on the sampled tones (PR 796's first look, Board call 3); with the R262
+# step below the plates are brighter and AgX greys them less, so at 1.5 the battle hue drifted bluer (blue over red 1.56 against
+# 1.47 before the step and the concept's 1.46); at 1.3 it holds (1.50 on the 1024 check, PLATE_STEP .45)
+SAT = 1.3
 
 
 def lin(srgb):
@@ -82,8 +84,28 @@ def lin_raw(srgb):
     return tuple(float(x) for x in np.where(c <= .04045, c / 12.92, ((c + .055) / 1.055) ** 2.4))
 
 
+# R262 (Ryan, Nov 15 2026, "Fix engines, lighten a step"): the hull one step lighter for battle, the way S8 took its step (R258,
+# PR 787). CONCEPT keeps the sampled tones; the step applies where the plate tones are painted. Each plate tone's brightest
+# channel x (linear) goes to cap x (x / cap) ** PLATE_STEP, where cap is the #626d7d cap's brightest channel, and the other
+# channels scale with it, so the hue holds, the family order holds, and nothing passes the cap (a tone at the cap stays there).
+# The wear and scuff tone is the cap itself already (BARE), so it cannot rise with them: the worn edges stay the lightest tone.
+# Glow colours, LIGHT_GAIN and the look.gd lift are unchanged. PLATE_STEP 1.0 is the sampled tones (PR 796's first look).
+PLATE_STEP = .45
+STEPPED = ('hull', 'hull_step', 'hull_shade', 'trim', 'nozzle')
+
+
+def stepped(srgb):
+    """a sampled plate tone (sRGB 0..255) one step toward the cap (R262), as sRGB 0..255 floats"""
+    c = np.asarray(lin_raw(srgb)); m = float(c.max()); cm = max(lin_raw(CAP))
+    if m <= 0 or m >= cm: return tuple(float(v) for v in srgb)
+    c = c * (cm * (m / cm) ** PLATE_STEP / m)
+    return tuple(float(v) for v in np.where(c <= .0031308, c * 12.92, 1.055 * np.clip(c, 0, 1) ** (1 / 2.4) - .055) * 255)
+
+
 def pair(k):
-    lo, hi = CONCEPT[k]; return lin(lo), lin(hi)
+    lo, hi = CONCEPT[k]
+    if k in STEPPED: lo, hi = stepped(lo), stepped(hi)
+    return lin(lo), lin(hi)
 
 
 # the value cap as an albedo (no hue boost: the cap is the tone itself): every slice, the wear and the scuffs are held under it
@@ -402,11 +424,11 @@ def _ramp_to(col, peak, stops):
 # the nozzle throat (factions.md: a flat row of rectangular blue-white nozzles): the shared throat drawing (shared/paint_stack.
 # _throat_glow: a hot core on the axis, the lining dark toward the lip) in the game's Hegemony engine colour, its top held to
 # NOZZLE_PEAK. Identical by doctrine: no hue shift and almost no brightness spread between the nozzles, faint hot spots, light soot.
-# The lining glows evenly from the throat to the lip (lining_falloff 0): on both sheets the pod's trim bands are solid blocks
-# (kits/hegemony/parts.py engine_bell, band0 and band1) whose aft face closes the mouth a short way inside the lip, so the throat
-# plate is never seen and the lit lining at the lip is the nozzle face the camera gets (a kit fault for the Board, not painted over)
+# The lining glows almost evenly from the throat to the lip (lining_falloff .5, lining_gain .85), the throat plate at the top: the
+# pod's trim bands are open rings since R262 (kits/hegemony/parts.py engine_bell), so the camera sees the throat, the vanes and
+# the lit lining round them, the whole nozzle face blue (PR 796's first bake saw only the lining, behind solid bands)
 ENGINE_GLOW = dict(kind='engine', zones=('hnozzle', 'hlining'), disc=('hnozzle',), plug=(), res_frac=.5,
-                   core_reach=(.55, .65), lining_gain=1.0, lining_falloff=0.0, hotspot_scale=700.0, hotspot=(.60, .72),
+                   core_reach=(.55, .65), lining_gain=.85, lining_falloff=.5, hotspot_scale=700.0, hotspot=(.60, .72),
                    hotspot_gain=.08, streaks=14.0, soot=(.55, .70), soot_gain=.15, bright=(.97, 1.0), hue_shift=0.0, strength=1.0,
                    base=(.006, .010, .020),
                    ramp=_ramp_to(engine_rgb(), NOZZLE_PEAK, [(0.0, .02), (.25, .30), (.50, .62), (.75, .86), (1.0, 1.0)]))
