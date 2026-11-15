@@ -59,7 +59,7 @@ label(c, (10, 56), 'a module band: the even grid, the double seam, a latch row')
 if os.path.exists(os.path.join(P, 'paint_stern_zoom.png')):
     c.paste(fit(img('paint_stern_zoom'), 636, 290), (0, 400)); label(c, (10, 382), 'stern-on: the flat row of rectangular nozzles')
 if os.path.exists(os.path.join(P, 'paint_bell.png')):
-    c.paste(fit(img('paint_bell'), 636, 290), (644, 400)); label(c, (650, 382), 'one nozzle close: housing, lip, blue-white throat')
+    c.paste(fit(img('paint_bell'), 636, 290), (644, 400)); label(c, (650, 382), 'one nozzle: housing, lit lining at the lip (the throat is hidden: see the PR)')
 c.save(os.path.join(OUT, f'{SHEET}_paint_close.jpg'), quality=92)
 
 # 3. the battle camera: 34 degrees above the board, port beam, range 170
@@ -71,7 +71,7 @@ a = np.asarray(g.convert('L')); ys, xs = np.where(a > 14)
 cx, cy = (int(xs.mean()), int(ys.mean())) if len(xs) else (320, 180)
 crop = g.crop((cx - 200, cy - 90, cx + 200, cy + 90))
 c.paste(crop, (10, 530)); label(c, (14, 534), 'true pixels (1920 x 1080 screen)')
-z = crop.crop((100, 45, 300, 135)).resize((400, 180), Image.NEAREST); c.paste(z, (440, 530)); label(c, (444, 534), 'the same, 2x')
+z = crop.crop((0, 45, 400, 135)).resize((800, 180), Image.NEAREST); c.paste(z, (450, 530)); label(c, (454, 534), 'the same, 2x')
 c.save(os.path.join(OUT, f'{SHEET}_paint_battle.jpg'), quality=92)
 for n in ('concept', 'close', 'battle'):
     im = Image.open(os.path.join(OUT, f'{SHEET}_paint_{n}.jpg')); print(n, im.size); assert im.height <= 720

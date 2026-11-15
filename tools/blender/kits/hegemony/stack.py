@@ -145,20 +145,23 @@ _Z = dict(
     hgrey=dict(rust=0, grime=.30, patchwork=1.0, patchwork_parts=.8, rough=.58, metal=.45, wear=.35, grid='big', grid_seam=.35),     # body modules
     hpanel=dict(rust=0, grime=.30, patchwork=1.0, patchwork_parts=.8, rough=.58, metal=.45, wear=.35, grid='small', grid_seam=.35),  # small modules
     hgrey2=dict(rust=0, grime=.45, patchwork=1.0, patchwork_parts=.6, rough=.62, metal=.38, wear=.30, grid='small', grid_seam=.60),  # recessed
-    htrim=dict(rust=0, grime=.20, patchwork=1.0, patchwork_parts=0, rough=.55, metal=.50, wear=.90, grid=None),       # trim, bands
+    htrim=dict(rust=0, grime=.20, patchwork=1.0, patchwork_parts=.6, rough=.55, metal=.50, wear=.90, grid=None),       # trim, bands
     hmetal=dict(rust=0, grime=.20, patchwork=0, patchwork_parts=0, rough=.53, metal=.58, wear=.60),                    # machined
     dark=dict(rust=0, grime=.20, patchwork=0, patchwork_parts=0, rough=.80, metal=.20, wear=.10, scuff=.03),           # deep recess
 )
 _BASE = dict(hgrey='hull', hpanel='hull', hgrey2='hull_shade', htrim='trim', hmetal='trim', dark='hull_shade')
 _AT = dict(hgrey=TONE_AT, hpanel=TONE_AT, hgrey2=TONE_AT, htrim=TONE_AT, hmetal=.80, dark=.15)
 ZONES = dict(_Z)
+# R224 in paint (the density check, tools/recipe/density.py): the trim parts (hatch rims, bay frames, gun rings) and the nozzle
+# housings carry the small module grid too (patchwork_parts .6), or they read under three quarters of the hull's paint detail
+# (the first 2048 H10 bake: engine 0.48, bay 0.57, hatch 0.73 of the hull)
 # the nozzle housings (hegemony.md 2 nozzle pair, 3 metal .48 and grime .30): every plate of an engine or a thruster takes the
 # nozzle zone (ZONE_BY_KIND, read by the shared bake), so the stern's housings read as one machined family
 ZONE_BY_KIND = {}
 for _kind in ('engine', 'thruster'):
     for _zn in ('hgrey', 'hgrey2', 'hpanel', 'htrim', 'hmetal'):
         _nz = f'nozzle_{_zn}'
-        ZONES[_nz] = dict(rust=0, grime=.30, patchwork=0, patchwork_parts=0, rough=.55, metal=.48, wear=.90)
+        ZONES[_nz] = dict(rust=0, grime=.30, patchwork=0, patchwork_parts=.6, rough=.55, metal=.48, wear=.90)
         _BASE[_nz] = 'nozzle'; _AT[_nz] = .45 if _zn == 'hgrey2' else TONE_AT
         ZONE_BY_KIND[(_kind, _zn)] = _nz
 for _k, _z in ZONES.items():
