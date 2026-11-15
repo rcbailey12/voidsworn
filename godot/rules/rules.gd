@@ -235,6 +235,26 @@ func shieldQuad(t, att) -> int:
 	if A < 50: return 0
 	if A > 130: return 2
 	return 1 if b > 0 else 3
+# R246 shield model (issue 371): one pool per ship, mirrored from battle.js shieldCov/syncShields.
+# u.shp is the pool, u.cov the static per-side coverage ([prow, starboard, rear, port]), u.route which
+# sides power is routed to; u.sh stays the four derived per-side catches (pool x coverage, routing boost applied).
+func shieldCov(fac, cls) -> Array:
+	var base: Array = TB.SHIELD_COV[cls] if TB.SHIELD_COV.has(cls) else TB.SHIELD_COV["Dreadnought"]
+	var adj: Array = TB.SHIELD_COV_FAC[fac] if TB.SHIELD_COV_FAC.has(fac) else [0, 0, 0, 0]
+	var out := []
+	for i in range(4):
+		out.append(clamp_(float(base[i]) + float(adj[i]), float(TB.SHIELD_COV_MIN), float(TB.SHIELD_COV_MAX)))
+	return out
+func syncShields(t) -> void:
+	if t == null or jt(t.get("isSq")) or not (float(z0(t.get("shMax"))) > 0): return
+	var cov: Array = t["cov"] if jt(t.get("cov")) else shieldCov(t["fac"], t["cls"])
+	var pool := float(z0(t.get("shp")))
+	var route: Array = t["route"] if jt(t.get("route")) else [0, 0, 0, 0]
+	var sh := []
+	for i in range(4):
+		var c: float = min(float(TB.SHIELD_COV_MAX), float(cov[i]) + (float(TB.SHIELD_ROUTE_BOOST) if jt(route[i]) else 0.0))
+		sh.append(JSM.jsround(pool * c))
+	t["sh"] = sh
 func cubeRound(x: float, z: float) -> Dictionary:
 	var y = -x - z; var rx = JSM.jsround(x); var rz = JSM.jsround(z); var ry = JSM.jsround(y)
 	var dx = absf(rx - x); var dy = absf(ry - y); var dz = absf(rz - z)
@@ -411,7 +431,7 @@ func derive(ship: Dictionary) -> Dictionary:
 	var ws = []
 	for e in t["w"]: ws.append(mkWeapon(e[0], e[1], fx))
 	return {
-		"maxHp": maxHp, "shMax": JSM.jsround(float(t["sh"]) * mm * (1.0 + float(z0(fx.get("shPct"))))), "regen": JSM.jsround(float(t["rg"]) * mm * (1.0 + float(z0(fx.get("regenPct"))))),
+		"maxHp": maxHp, "shMax": JSM.jsround(float(t["sh"]) * mm * (1.0 + float(z0(fx.get("shPct")))) * float(TB.SHIELD_POOL_MULT)), "regen": JSM.jsround(float(t["rg"]) * mm * (1.0 + float(z0(fx.get("regenPct"))))),
 		"armor": min(0.6, float(t["ar"]) + float(z0(fx.get("armor")))), "speed": float(t["sp"]) + float(z0(fx.get("speed"))), "turns": float(t["tn"]) + float(z0(fx.get("turns"))), "ev": float(t["ev"]) + float(z0(fx.get("ev"))),
 		"aim": z0(fx.get("aim")), "crit": z0(fx.get("crit")), "dmg": 1.0 + 0.15 * (float(mk) - 1.0) + float(z0(fx.get("dmgPct"))) + 0.06 * tr, "fx": fx,
 		"hangar": (float(t["hangar"]) + float(z0(fx.get("hangar"))) + float(z0(fx.get("hive")))) if jt(t.get("hangar")) else z0(fx.get("hive")),
@@ -1073,13 +1093,15 @@ func makeUnit(side, tpl, opts: Dictionary = {}) -> Dictionary:
 		var fx = opts["fx"] if jt(opts.get("fx")) else {}
 		var ws = []
 		for e in t["w"]: ws.append(mkWeapon(e[0], e[1], fx))
-		s = {"maxHp": JSM.jsround(float(t["hp"]) * sc * (1.1 if jt(opts.get("elite")) else 1.0)), "shMax": JSM.jsround(float(t["sh"]) * sc), "regen": JSM.jsround(float(t["rg"]) * sc), "armor": t["ar"], "speed": t["sp"], "turns": t["tn"], "ev": t["ev"],
+		s = {"maxHp": JSM.jsround(float(t["hp"]) * sc * (1.1 if jt(opts.get("elite")) else 1.0)), "shMax": JSM.jsround(float(t["sh"]) * sc * float(TB.SHIELD_POOL_MULT)), "regen": JSM.jsround(float(t["rg"]) * sc), "armor": t["ar"], "speed": t["sp"], "turns": t["tn"], "ev": t["ev"],
 			"aim": 6 if jt(opts.get("elite")) else 0, "crit": 5 if jt(opts.get("elite")) else 0, "dmg": opts["dmg"] if jt(opts.get("dmg")) else 1, "fx": fx, "hangar": z0(t.get("hangar")),
 			"hullRegen": JSM.jsround(float(z0(t.get("regen"))) * sc), "weapons": nameWeapons(t.get("fac"), ws)}
 	var ship = opts.get("ship")
+	var ufac: String = t["fac"] if jt(t.get("fac")) else (opts["fac"] if jt(opts.get("fac")) else "voidsworn")
 	var u = {"id": new_id(), "side": side, "tpl": tpl, "t": t, "name": ship["name"] if jt(ship) else (opts["name"] if jt(opts.get("name")) else t["n"]), "cls": t.get("cls"),
-		"fac": t["fac"] if jt(t.get("fac")) else (opts["fac"] if jt(opts.get("fac")) else "voidsworn"), "size": t["size"], "q": 0, "r": 0, "facing": 0 if side == "player" else 3,
-		"hp": min(ship["hp"], s["maxHp"]) if jt(ship) else s["maxHp"], "maxHp": s["maxHp"], "sh": [s["shMax"], s["shMax"], s["shMax"], s["shMax"]], "shMax": s["shMax"], "regen": s["regen"],
+		"fac": ufac, "size": t["size"], "q": 0, "r": 0, "facing": 0 if side == "player" else 3,
+		"hp": min(ship["hp"], s["maxHp"]) if jt(ship) else s["maxHp"], "maxHp": s["maxHp"], "shMax": s["shMax"], "regen": s["regen"],
+		"shp": s["shMax"], "cov": shieldCov(ufac, t["cls"]), "route": [0, 0, 0, 0], "sh": [0, 0, 0, 0],
 		"armor": s["armor"], "speed": s["speed"], "turns": s["turns"], "ev": s["ev"], "aim": s["aim"], "crit": s["crit"], "dmg": s["dmg"], "fx": s["fx"], "hangar": s["hangar"], "hullRegen": s["hullRegen"]}
 	var wl = []
 	for w in s["weapons"]:
@@ -1090,6 +1112,7 @@ func makeUnit(side, tpl, opts: Dictionary = {}) -> Dictionary:
 	u["mp"] = 0; u["turnsLeft"] = 0; u["order"] = null; u["braced"] = false; u["lockOn"] = false; u["focus"] = false; u["fullAhead"] = false; u["noTurn"] = false; u["evBuff"] = 0
 	u["pflag"] = jt(ship) and RUN != null and jt(RUN.get("flagUid")) and ship["uid"] == RUN["flagUid"]
 	u["intercepts"] = 0; u["dealt"] = 0; u["kills"] = 0; u["dead"] = false; u["st"] = {"fire": 0, "shieldOff": 0, "engine": 0}; u["usedLastStand"] = false; u["elite"] = jt(opts.get("elite"))
+	syncShields(u)
 	if u["isSq"] and jt(opts.get("sqHp")):
 		u["maxHp"] = JSM.jsround(u["maxHp"] * (1.0 + opts["sqHp"])); u["hp"] = u["maxHp"]
 	if jt(ship) and u["hp"] <= 0: u["hp"] = 1
@@ -1434,9 +1457,7 @@ func escortsBreak() -> void:
 	for e in esc:
 		e["dead"] = true; e["fled"] = true; emit({"t": "fled", "unit": e["id"]})
 	boss["regen"] = 0; boss["hullRegen"] = 0; boss["reanimate"] = false
-	var nsh = []
-	for v in boss["sh"]: nsh.append(JSM.jsround(v * 0.5))
-	boss["sh"] = nsh; boss["burning"] = true
+	boss["shp"] = JSM.jsround(float(z0(boss.get("shp"))) * 0.5); syncShields(boss); boss["burning"] = true
 	logm(String(boss["name"]) + " is burning. " + ("Its escorts break off and flee. " if esc.size() > 0 else "") + "Its shields falter and it can no longer repair itself.", "s")
 func startSideTurn(side) -> int:
 	var deaths = []
@@ -1466,11 +1487,12 @@ func startSideTurn(side) -> int:
 			if gt(w.get("cdLeft"), 0): w["cdLeft"] = w["cdLeft"] - 1
 			if gt(w.get("off"), 0): w["off"] = w["off"] - 1
 		if u["abCd"] > 0: u["abCd"] = u["abCd"] - 1
+		u["route"] = [0, 0, 0, 0]
 		if u["st"]["shieldOff"] > 0: u["st"]["shieldOff"] = u["st"]["shieldOff"] - 1
 		elif u["shMax"] > 0:
 			var rg = u["regen"] * (B["condRegen"] if B != null and jt(B.get("condRegen")) else 1)
-			for i in range(4):
-				if not (u.get("regenLock") != null and jt(u["regenLock"][i])): u["sh"][i] = min(u["shMax"], u["sh"][i] + rg)
+			if not jt(u.get("regenLock")):
+				u["shp"] = min(u["shMax"], float(z0(u.get("shp"))) + rg); syncShields(u)
 		ithChargeTurn(u); u["regenLock"] = null
 		if jt(u.get("hullRegen")) and u["hp"] < u["maxHp"] and not jt(u.get("pyre")):
 			var mmH = treeRoleMul(u); var hrH = JSM.jsround(u["hullRegen"] * mmH) if mmH != 1.0 else u["hullRegen"]
@@ -1488,11 +1510,11 @@ func startSideTurn(side) -> int:
 			if not jt(u["st"]["fire"]): u["st"]["fireDmg"] = 0
 		u["hexMoved"] = 0
 		if jt(u.get("fx")) and jt(u["fx"].get("stormRegen")) and u["shMax"] > 0 and not (z0(u["st"].get("shieldOff")) > 0):
-			for i in range(4): u["sh"][i] = min(u["shMax"], u["sh"][i] + JSM.jsround(u["shMax"] * u["fx"]["stormRegen"]))
+			u["shp"] = min(u["shMax"], float(z0(u.get("shp"))) + JSM.jsround(u["shMax"] * u["fx"]["stormRegen"])); syncShields(u)
 		u["intercepts"] = max(0, 2 - z0(u.get("treeFlakDown"))) if _has_flak(u) else 0
 		u["boarded"] = false; u["rammed"] = false; u["emerg"] = false; u["repel"] = false
 		if terr(u["q"], u["r"]) == "storm" and not jt(u.get("isSq")) and u["shMax"] > 0:
-			for i in range(4): u["sh"][i] = max(0, u["sh"][i] - 10)
+			u["shp"] = max(0, float(z0(u.get("shp"))) - 10); syncShields(u)
 			emit({"t": "tick", "unit": u["id"], "kind": "storm", "hull": 0}); flt(u, "Ion storm", "#9fb8ff", -24)
 		if jt(u.get("crewMax")) and u["crew"] <= 0:
 			u["mp"] = 0; u["turnsLeft"] = 0
@@ -1501,7 +1523,7 @@ func startSideTurn(side) -> int:
 	var ev = B.get("event")
 	if jt(ev) and ev["k"] == "flare" and B["round"] == ev["r"] and jt(ev.get("done")):
 		for u in B["units"]:
-			if not jt(u.get("dead")) and u["side"] == side and u["shMax"] > 0: u["sh"] = [0, 0, 0, 0]
+			if not jt(u.get("dead")) and u["side"] == side and u["shMax"] > 0: u["shp"] = 0; syncShields(u)
 	for u in risen:
 		for w in u["weapons"]: w["fired"] = true
 	if burned: checkEnd()
@@ -1788,12 +1810,12 @@ func ithChargeTurn(u) -> void:
 	var hit = u["shHit"] if u.get("shHit") != null else [0, 0, 0, 0]
 	if not (z0(u["st"].get("shieldOff")) > 0):
 		var gg = 0; var rg = JSM.jsround(u["regen"] * (B["condRegen"] if (B != null and jt(B.get("condRegen"))) else 1))
-		for i in range(4):
-			if u.get("regenLock") != null and jt(u["regenLock"][i]): continue
-			var add = (u["shMax"] - u["sh"][i]) if not jt(hit[i]) else min(rg, u["shMax"] - u["sh"][i])
+		var struck = jt(hit[0]) or jt(hit[1]) or jt(hit[2]) or jt(hit[3])
+		if not jt(u.get("regenLock")):
+			var add = (u["shMax"] - float(z0(u.get("shp")))) if not struck else min(rg, u["shMax"] - float(z0(u.get("shp"))))
 			if add > 0:
-				gg += add; u["sh"][i] = u["sh"][i] + add
-		if gg > 0: fstat("ithar", "charge", gg)
+				gg += add; u["shp"] = float(z0(u.get("shp"))) + add
+		if gg > 0: fstat("ithar", "charge", gg); syncShields(u)
 	u["shHit"] = [0, 0, 0, 0]
 func chorusFeed(t, by) -> void:
 	if B == null or t == null or jt(t.get("isSq")): return
@@ -1911,9 +1933,7 @@ func applyNemesis(N) -> void: # battle.js applyNemesis (R42 and R49: traits, fac
 		for u in es:
 			u["aim"] = u["aim"] + 3 * h
 			if u["shMax"] > 0:
-				u["shMax"] = JSM.jsround(u["shMax"] * (1.0 + 0.1 * h)); var sh = []
-				for _i in range(u["sh"].size()): sh.append(u["shMax"])
-				u["sh"] = sh
+				u["shMax"] = JSM.jsround(u["shMax"] * (1.0 + 0.1 * h)); u["shp"] = u["shMax"]; syncShields(u)
 	var nr = (z0(N.get("riches")) if beh.get("strike") == "raid" else 0) + (1 if ad.has("riches") else 0) # R42 Corsair riches (R49: only a Corsair)
 	for _i in range(int(nr)):
 		var hx = edgeHex("enemy")
@@ -1937,9 +1957,7 @@ func applyNemesis(N) -> void: # battle.js applyNemesis (R42 and R49: traits, fac
 		if nemWeak("slow"): u["speed"] = max(1, u["speed"] - 1)
 		for a in ad:
 			if a == "shields" and u["shMax"] > 0:
-				u["shMax"] = JSM.jsround(u["shMax"] * 1.2); var sh = []
-				for _i in range(u["sh"].size()): sh.append(u["shMax"])
-				u["sh"] = sh
+				u["shMax"] = JSM.jsround(u["shMax"] * 1.2); u["shp"] = u["shMax"]; syncShields(u)
 			if a == "armor": u["armor"] = min(0.6, u["armor"] + 0.1)
 			if a == "evasion": u["ev"] = u["ev"] + 8
 			if a == "aim": u["aim"] = u["aim"] + 8
@@ -1959,9 +1977,7 @@ func applyNemesis(N) -> void: # battle.js applyNemesis (R42 and R49: traits, fac
 				for sk in u["sec"].keys():
 					u["sec"][sk]["max"] = JSM.jsround(u["sec"][sk]["max"] * k); u["sec"][sk]["hp"] = JSM.jsround(u["sec"][sk]["hp"] * k)
 		if tr.has("shielded") and u["shMax"] > 0:
-			u["shMax"] = JSM.jsround(u["shMax"] * 1.2); var sh = []
-			for _i in range(u["sh"].size()): sh.append(u["shMax"])
-			u["sh"] = sh
+			u["shMax"] = JSM.jsround(u["shMax"] * 1.2); u["shp"] = u["shMax"]; syncShields(u)
 		if tr.has("boarders"):
 			u["crewMax"] = JSM.jsround(u["crewMax"] * 1.3); u["crew"] = u["crewMax"]
 		if tr.has("artillery"):
@@ -2053,10 +2069,7 @@ func nemFleeCheck() -> void:
 		if jt(u.get("nemFlag")) and not jt(u.get("dead")) and u["side"] == "enemy": f = u; break
 	if f == null: return
 	var Rf = B["nemFlee"]
-	var low = f["hp"] <= f["maxHp"] * z0(Rf.get("hull"))
-	if low and jt(Rf.get("shields")) and f["shMax"] > 0:
-		for x in f["sh"]:
-			if x > 0.5: low = false; break
+	var low = f["hp"] <= f["maxHp"] * z0(Rf.get("hull")) and (not jt(Rf.get("shields")) or not (f["shMax"] > 0) or float(z0(f.get("shp"))) <= f["shMax"] * 0.5)
 	if not low: return
 	B["nemFled"] = true; nemSig("flee_battle")
 	for e in alive("enemy"):
@@ -2125,7 +2138,7 @@ func applyVerb(id) -> void:
 	if id == "attune":
 		for u in P:
 			if u["shMax"] > 0:
-				u["shMax"] = JSM.jsround(u["shMax"] * 1.25); u["sh"] = [u["shMax"], u["shMax"], u["shMax"], u["shMax"]]
+				u["shMax"] = JSM.jsround(u["shMax"] * 1.25); u["shp"] = u["shMax"]; syncShields(u)
 	if id == "waken" and B.get("legion") != null: B["legion"]["player"]["max"] = B["legion"]["player"]["max"] + 1
 	for V in TB.FAC_VERBS.values():
 		if V["id"] == id:
@@ -2297,7 +2310,7 @@ func torpImpact(S) -> void:
 		emit({"t": "torpedo_miss", "id": S["id"], "aim": {"q": int(S["aim"]["q"]), "r": int(S["aim"]["r"])}})
 		logm(tv(w.get("n")) + " from " + String(gh["name"]) + " run wide: " + ((String(orig["name"]) + " slipped out of the lane") if (orig != null and not jt(orig.get("dead"))) else "nothing left in the lane") + ".", "x")
 		return
-	var quad = shieldQuad(t, gh); var shBefore = z0(t["sh"][quad]) if t.get("sh") != null else 0
+	var quad = shieldQuad(t, gh); var shBefore = float(z0(t.get("shp")))   # pool before the volley (R246)
 	var res = {"shield": 0, "hull": 0, "crits": 0, "hits": 0, "misses": 0, "sys": null}
 	var hc = clamp_(hitChance(gh, w, t) - pen + (15 if (jt(t.get("nem")) and nemWeak("torp")) else 0), 5, 95); var shots = []
 	for i in range(int(w["shots"])): shots.append(rnd() * 100.0 < hc)
@@ -2696,17 +2709,23 @@ func applyHit(att, w, t, dmg: float, quad: int) -> Dictionary:
 		if t.get("shHit") == null: t["shHit"] = [0, 0, 0, 0]
 		t["shHit"][quad] = 1
 		if jt(w.get("ion")) and att != null and att.get("fac") == "hegemony" and t["shMax"] > 0:
-			if t.get("regenLock") == null: t["regenLock"] = [0, 0, 0, 0]
-			t["regenLock"][quad] = 1
+			t["regenLock"] = 1   # v54 doctrine (decided): Hegemony ion stops the pool's regen for a turn
 	var shieldable: float = dmg * (1.0 - pierce); var through: float = dmg - shieldable
-	var s = z0(t["sh"][quad]); var sh0 = s; var absorbed: float = min(shieldable, float(s) / ion)
-	t["sh"][quad] = max(0, s - absorbed * ion); shieldable -= absorbed
+	var s = z0(t["sh"][quad]); var sh0 = s; var sp0: float = float(z0(t.get("shp"))); var absorbed: float = min(shieldable, float(s) / ion)
+	if absorbed > 0:
+		var lossy: float = 1.0 + float(TB.SHIELD_ROUTE_LOSS) if (jt(t.get("route")) and jt(t["route"][quad])) else 1.0
+		t["shp"] = max(0, sp0 - absorbed * ion * lossy)
+		if float(t["shp"]) > 0:
+			if not jt(t.get("route")): t["route"] = [0, 0, 0, 0]
+			t["route"][quad] = 1
+		syncShields(t)   # R246 (issue 371): the struck side routes power at a loss; when the pool empties, shields drop on every side at once
+	shieldable -= absorbed
 	var gc = treeSkill("glassCorrected")
-	if gc != null and t["side"] == "player" and cmdActive("player", "iron") and not jt(B["tr"].get("glassUsed")) and t["shMax"] > 0 and sh0 > 0 and t["sh"][quad] <= 0:
-		t["sh"][quad] = JSM.jsround(t["shMax"] * float(gc["n"])); B["tr"]["glassUsed"] = 1; treeFx(t, "glassCorrected", "the emptied facing refills")
+	if gc != null and t["side"] == "player" and cmdActive("player", "iron") and not jt(B["tr"].get("glassUsed")) and t["shMax"] > 0 and sp0 > 0 and float(z0(t.get("shp"))) <= 0:
+		t["shp"] = JSM.jsround(t["shMax"] * float(gc["n"])); syncShields(t); B["tr"]["glassUsed"] = 1; treeFx(t, "glassCorrected", "the emptied shield refills")
 	var ceH = treeSkill("columnEndures")
-	if ceH != null and t["side"] == "player" and cmdActive("player", "iron") and not jt(B["tr"].get("columnUsed")) and t["shMax"] > 0 and sh0 > 0 and t["sh"][quad] <= 0:
-		t["sh"][quad] = JSM.jsround(t["shMax"] * float(ceH["n"])); B["tr"]["columnUsed"] = 1; treeFx(t, "columnEndures", "the emptied facing refills")   # Maren T3a
+	if ceH != null and t["side"] == "player" and cmdActive("player", "iron") and not jt(B["tr"].get("columnUsed")) and t["shMax"] > 0 and sp0 > 0 and float(z0(t.get("shp"))) <= 0:
+		t["shp"] = JSM.jsround(t["shMax"] * float(ceH["n"])); syncShields(t); B["tr"]["columnUsed"] = 1; treeFx(t, "columnEndures", "the emptied shield refills")   # Maren T3a
 	var seams: bool = treeSkill("acidSeams") != null and B != null and jt(B.get("volleyMul")) and B["volleyMul"]["side"] == "player" and att != null and att["side"] == "player" and t["side"] == "enemy" and t["hp"] < t["maxHp"] / 2.0   # Voice T3a
 	var arm: float = 0.0 if seams else max(0, t["armor"] - z0(t.get("shredded"))) * (1.0 - z0(w.get("armorPierce"))); var hull: float = (through + shieldable) * (1.0 - (arm * 0.5 if rear else arm))
 	hull *= braceMul(t)
@@ -2771,7 +2790,7 @@ func applyHit(att, w, t, dmg: float, quad: int) -> Dictionary:
 	emit({"t": "hit", "unit": _uid(att), "target": t["id"], "quad": quad, "section": t["_calledSec"] if jt(t.get("_calledSec")) else SEC_OF_QUAD[quad], "shield": JSM.jsround(absorbed * ion), "hull": hull, "crit": crit})
 	var hard = false
 	var hl = treeSkill("hardLight")
-	if hl != null and t["side"] == "player" and cmdActive("player", "iron") and not jt(t.get("treeHardUsed")) and t["shMax"] > 0 and sh0 > 0:
+	if hl != null and t["side"] == "player" and cmdActive("player", "iron") and not jt(t.get("treeHardUsed")) and t["shMax"] > 0 and sp0 > 0:
 		hard = true; t["treeHardUsed"] = 1; treeFx(t, "hardLight", "the shield holds the section")
 	if not hard: damageSection(t, t["_calledSec"] if jt(t.get("_calledSec")) else SEC_OF_QUAD[quad], hull, att)
 	return {"shield": JSM.jsround(absorbed * ion), "hull": hull, "crit": crit}
@@ -2813,7 +2832,7 @@ func damageSection(t, sec, dmg, by) -> void:
 		for w in t["weapons"]:
 			if w["arc"] == "P" or w["arc"] == "S": w["off"] = 999
 		if t["shMax"] > 0:
-			t["st"]["shieldOff"] = 999; t["sh"] = [0, 0, 0, 0]
+			t["st"]["shieldOff"] = 999; t["shp"] = 0; syncShields(t)
 	if sec == "eng":
 		t["secSave"] = {"turns": t["turns"], "ev": t["ev"]}; t["st"]["engine"] = max(0, t["speed"] - 1); t["turns"] = min(t["turns"], 1); t["ev"] = 0
 	flt(t, String(SEC_NAME[sec]).substr(0, 1).to_upper() + String(SEC_NAME[sec]).substr(1) + " destroyed", "#f0b35a", -36)
@@ -2929,7 +2948,7 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 			for x in B["units"]:
 				if jt(x.get("pflag")) and not jt(x.get("dead")): fgF = x; break
 			if fgF != null and not is_same(fgF, t) and hdist(fgF, t) == 1: t = fgF; B["tr"]["firstScarUsed"] = 1; treeFx(fgF, "firstScar", "the flagship takes the first scar")   # Hullbreakers shared C1a
-	var quad = shieldQuad(t, u); var shBefore = z0(t["sh"][quad]) if t.get("sh") != null else 0
+	var quad = shieldQuad(t, u); var shBefore = float(z0(t.get("shp")))   # pool before the volley: a break means the pool emptied, on every side at once (R246)
 	var res = {"shield": 0, "hull": 0, "crits": 0, "hits": 0, "misses": 0, "sys": null}
 	var called = opts["called"] if jt(opts.get("called")) and not jt(t.get("isSq")) and not jt(opts.get("intercept")) else null
 	var su = u.get("sureUsed")
@@ -3045,7 +3064,7 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 	if landed and not jt(opts.get("intercept")) and u["side"] == "player" and not jt(u.get("isSq")) and B["tr"].get("strikeSpeedId") == preSSid:
 		B["tr"]["strikeSpeed"] = u["speed"]; B["tr"]["strikeSpeedId"] = u["id"]   # Vorn T1b: the last ship that fired this round (a nested extra shot stays the last)
 	if landed and not jt(opts.get("intercept")) and u["side"] == "player" and not jt(u.get("isSq")) and inSync(u): treeSecondVolleyAuto(u, t)   # Kassar T1b
-	if landed and not jt(opts.get("intercept")) and u["side"] == "enemy" and t["side"] == "player" and t["shMax"] > 0 and shBefore > 0 and z0(t["sh"][quad]) <= 0:
+	if landed and not jt(opts.get("intercept")) and u["side"] == "enemy" and t["side"] == "player" and t["shMax"] > 0 and shBefore > 0 and float(z0(t.get("shp"))) <= 0:
 		var wa = treeSkill("wallAnswers")
 		if wa != null and cmdActive("player", "iron") and not jt(t.get("treeAnswerUsed")): t["treeAnswerUsed"] = 1; treeWallAnswer(t, u)   # H4 Thale T3b
 	if landed and not jt(opts.get("intercept")) and u["side"] == "player" and jt(u.get("pflag")) and not jt(B["tr"].get("ledgerUsed")):
@@ -3297,15 +3316,14 @@ func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire
 		if jt(u.get("nem")) and t["side"] == "player" and not jt(u.get("isSq")) and hdist(u, t) <= 2: nemTrip("brawl")
 	if res.shield > 0:
 		flt(t, "−" + ns(res.shield) + " shield", "#62ccff", -18)
-		if t["shMax"] > 0 and t["sh"][quad] <= 0.5:
+		if t["shMax"] > 0 and float(z0(t.get("shp"))) <= 0.5 and shBefore > 0.5:
 			emit({"t": "shield_down", "unit": t["id"], "quad": quad}); flt(t, "Shields down", "#9fe2ff", -40)
-		if t["shMax"] > 0 and t["sh"][quad] <= 0.5:
-			if jt(ownerFx(u).get("chainSh")) and shBefore > 0.5 and not jt(t.get("dead")) and t.get("sh") != null:
+			if jt(ownerFx(u).get("chainSh")) and not jt(t.get("dead")):
 				var csh = z0(ownerFx(u).get("chainSh"))
-				for qq in [(quad + 1) % 4, (quad + 3) % 4]: t["sh"][qq] = JSM.jsround(t["sh"][qq] * (1.0 - csh))
+				t["shp"] = JSM.jsround(float(z0(t.get("shp"))) * (1.0 - csh)); syncShields(t)
 				boonFx(t, "s_chain", "chain lightning", -62)
 			var ar = ownerFx(u).get("arcShort")
-			if jt(ar) and shBefore > 0.5 and not jt(t.get("dead")):
+			if jt(ar) and not jt(t.get("dead")):
 				t["hp"] = t["hp"] - ar; res.hull += ar; u["dealt"] = u["dealt"] + ar; boonFx(t, "s_arc", "−" + ns(ar), -56)
 	if res.hull > 0: flt(t, "−" + ns(res.hull) + " hull", "#ffd27a" if res.crits else "#ffae42", 0)
 	if res.hits == 0: flt(t, "Miss", "#9a9384", 0)
@@ -3383,7 +3401,11 @@ func ramUnit(u) -> bool:
 	emit({"t": "ram", "unit": u["id"], "target": t["id"], "path": info.path.duplicate(true), "dmg": e.dmg, "recoil": e.recoil, "soak": e.soak, "section": e.sec}); hook("ram", u)
 	if not live.call() or jt(t.get("dead")): return false
 	var qd = shieldQuad(t, u)
-	if jt(e.soak) and t.get("sh") != null: t["sh"][qd] = max(0, t["sh"][qd] - e.soak * 1.5)
+	if jt(e.soak) and t["shMax"] > 0:
+		t["shp"] = max(0, float(z0(t.get("shp"))) - e.soak * 1.5)
+		if not jt(t.get("route")): t["route"] = [0, 0, 0, 0]
+		t["route"][qd] = 1
+		syncShields(t)
 	t["hp"] = t["hp"] - e.dmg; u["dealt"] = u["dealt"] + e.dmg; damageSection(t, e.sec, e.dmg, u); u["hp"] = u["hp"] - e.recoil; damageSection(u, "prow", e.recoil, t)
 	flt(t, "−" + ns(e.dmg), "#f0b35a", 0); flt(u, "−" + ns(e.recoil), "#ff7a6e", 0)
 	logm(String(u["name"]) + " rams " + String(t["name"]) + " at full speed: " + ns(e.dmg) + " to its " + String(SEC_NAME[e.sec]) + ", " + ns(e.recoil) + " back to the ram.", pp(u))
@@ -3871,9 +3893,7 @@ func _giveOrder_raw(u, o) -> void:
 		for w in u["weapons"]: w["fired"] = true
 		braceCover(u)
 		if jt(u["fx"].get("bastion")) and u["shMax"] > 0:
-			var ns = []
-			for x in u["sh"]: ns.append(u["shMax"])
-			u["sh"] = ns; boonFx(u, "d_bastion", "shields full", -44)
+			u["shp"] = u["shMax"]; syncShields(u); boonFx(u, "d_bastion", "shields full", -44)
 	if o == "full":
 		u["fullAhead"] = true; u["noTurn"] = true; u["mp"] = u["mp"] + ceil(u["mp"] * 0.5)
 	if o == "lock":
@@ -4234,14 +4254,11 @@ func treeHegSyncR() -> float:
 	if lr != null: r *= 2.0
 	return r
 func treeShieldOver(u, frac) -> int:
-	if u == null or jt(u.get("dead")) or jt(u.get("isSq")) or not (z0(u.get("shMax")) > 0): return 0
-	var cap = JSM.jsround(float(u["shMax"]) * 1.25); var add = JSM.jsround(float(u["shMax"]) * float(frac)); var any = 0
-	for i in range(4):
-		var cur = z0(u["sh"][i])
-		if cur < z0(u["shMax"]): continue
-		var v = min(cap, cur + add)
-		if v > cur: any += v - cur; u["sh"][i] = v
-	return any
+	if u == null or jt(u.get("dead")) or jt(u.get("isSq")) or not (z0(u.get("shMax")) > 0) or float(z0(u.get("shp"))) < float(u["shMax"]): return 0
+	var cap = JSM.jsround(float(u["shMax"]) * 1.25)
+	var v: float = min(float(cap), float(z0(u.get("shp"))) + JSM.jsround(float(u["shMax"]) * float(frac)))
+	if v <= float(z0(u.get("shp"))): return 0
+	var any: int = int(v - float(z0(u.get("shp")))); u["shp"] = v; syncShields(u); return any
 func _treeLineVal(v, k) -> int:
 	if k == 0: return int(v["r"])
 	if k == 1: return int(v["q"])
@@ -4484,7 +4501,7 @@ func treeRoundStart() -> void:
 				for u in alive("player"):
 					if jt(u.get("isSq")) or not jt(u.get("shMax")): continue
 					if z0(u["st"].get("shieldOff")) >= 99: continue
-					for i in range(4): u["sh"][i] = min(u["shMax"], u["sh"][i] + u["regen"])
+					u["shp"] = min(u["shMax"], float(z0(u.get("shp"))) + u["regen"]); syncShields(u)
 					any = true
 				if any and s != null: treeFx(_treeFlag(), "rechargeLit", "shields recharge a second time")
 			if p["k"] == "holdCounted":
@@ -4494,13 +4511,13 @@ func treeRoundStart() -> void:
 			if p["k"] == "oathStillness":
 				for u in alive("player"):
 					if not jt(u.get("isSq")) and jt(u.get("shMax")) and z0(u.get("hexMoved")) == 0:
-						for i in range(4): u["sh"][i] = min(u["shMax"], u["sh"][i] + JSM.jsround(u["shMax"] * 0.5))
+						u["shp"] = min(u["shMax"], float(z0(u.get("shp"))) + JSM.jsround(u["shMax"] * 0.5)); syncShields(u)
 				treeFx(_treeFlag(), "oathStillness", "the stillness recharges the wall")
 			if p["k"] == "ironTestament":
 				B["treeIronExtra"] = {"r": B["round"], "pow": z0(p.get("pow"))}
 				for u in alive("player"):
 					if not jt(u.get("isSq")) and jt(u.get("shMax")):
-						for i in range(4): u["sh"][i] = min(u["shMax"], u["sh"][i] + JSM.jsround(u["shMax"] * 0.5))
+						u["shp"] = min(u["shMax"], float(z0(u.get("shp"))) + JSM.jsround(u["shMax"] * 0.5)); syncShields(u)
 				treeFx(_treeFlag(), "ironTestament", "the wall stands a second round")
 			if p["k"] == "salvoTwoHands":
 				for id in (p.get("ids") if p.get("ids") != null else []):
@@ -4807,11 +4824,8 @@ func treeAfterMove(u) -> void:
 			if fs != null and treeInFlagLine(u):
 				if treeShieldOver(u, fs["n"]) > 0: treeFx(u, "flagshipStandard", "the flagship holds the line")
 			var ov = treeSkill("overflow")
-			if ov != null and z0(u.get("shMax")) > 0 and not jt(u.get("treeOverflowUsed")):
-				var allFull = true
-				for i in range(4):
-					if z0(u["sh"][i]) < z0(u["shMax"]): allFull = false; break
-				if allFull: u["treeOverflowUsed"] = 1; u["evBuff"] = min(45, z0(u.get("evBuff")) + int(ov["n"])); treeFx(u, "overflow", "the surplus becomes evasion")
+			if ov != null and z0(u.get("shMax")) > 0 and not jt(u.get("treeOverflowUsed")) and float(z0(u.get("shp"))) >= float(u["shMax"]):
+				u["treeOverflowUsed"] = 1; u["evBuff"] = min(45, z0(u.get("evBuff")) + int(ov["n"])); treeFx(u, "overflow", "the surplus becomes evasion")
 			if treeSkill("rotation") != null: treeRotSwap(u)
 	if u["side"] == "enemy" and treeSkill("drillRevision") != null and not jt(B.get("treeDrillUsed")):
 		B["treeDrillUsed"] = 1; treeDrillMove()
@@ -5314,15 +5328,12 @@ func runCommand(side, c, tier) -> bool:
 			if B.get("treePending") == null: B["treePending"] = []
 			B["treePending"].append({"k": "rechargeLit", "r": B["round"]})
 		for u in alive(side):
-			if jt(u.get("shMax")): u["sh"] = [u["shMax"], u["shMax"], u["shMax"], u["shMax"]]
+			if jt(u.get("shMax")): u["shp"] = u["shMax"]; syncShields(u)
 		if side == "player":
 			for uIP in caps("player"):
 				var ovIP = treeSkill("overflow")
-				if ovIP != null and z0(uIP.get("shMax")) > 0 and not jt(uIP.get("treeOverflowUsed")):
-					var fullIP = true
-					for iIP in range(4):
-						if z0(uIP["sh"][iIP]) < z0(uIP["shMax"]): fullIP = false; break
-					if fullIP: uIP["treeOverflowUsed"] = 1; uIP["evBuff"] = min(45, z0(uIP.get("evBuff")) + int(ovIP["n"])); treeFx(uIP, "overflow", "the surplus becomes evasion")
+				if ovIP != null and z0(uIP.get("shMax")) > 0 and not jt(uIP.get("treeOverflowUsed")) and float(z0(uIP.get("shp"))) >= float(uIP["shMax"]):
+					uIP["treeOverflowUsed"] = 1; uIP["evBuff"] = min(45, z0(uIP.get("evBuff")) + int(ovIP["n"])); treeFx(uIP, "overflow", "the surplus becomes evasion")
 				var csIP = treeSkill("columnStraight")
 				if csIP != null and treeInColumn(uIP):
 					if treeShieldOver(uIP, csIP["n"]) > 0: treeFx(uIP, "columnStraight", "the column adds shield")
@@ -5976,7 +5987,7 @@ func canAbility(u) -> bool:
 	if ab == "blink": return blinkHexes(u).size() > 0
 	if ab == "ionpulse":
 		for t in alive("enemy" if u["side"] == "player" else "player"):
-			if not jt(t.get("isSq")) and hdist(t, u) <= 4 and t["sh"].any(func(x): return x > 0): return true
+			if not jt(t.get("isSq")) and hdist(t, u) <= 4 and z0(t.get("shMax")) > 0 and float(z0(t.get("shp"))) > 0: return true
 		return false
 	return true
 func novaTargets(u) -> Array:
@@ -6052,10 +6063,8 @@ func _useAbility_raw(u, arg = null) -> bool:
 		for t in alive("enemy" if u["side"] == "player" else "player"):
 			if not jt(t.get("isSq")) and hdist(t, u) <= 4:
 				nf += 1
-				if t.get("sh") != null:
-					var nsh = []
-					for x in t["sh"]: nsh.append(floor(x * 0.5))
-					t["sh"] = nsh
+				if z0(t.get("shMax")) > 0:
+					t["shp"] = floor(float(z0(t.get("shp"))) * 0.5); syncShields(t)
 		flt(u, "Ion pulse", "#9fd4ff", -24)
 		logm(String(u["name"]) + " fires an ion pulse: " + ns(nf) + " enemy ship" + ("" if nf == 1 else "s") + " lose half their shields.", pp(u))
 	if a == "blink":
@@ -6073,7 +6082,7 @@ func _useAbility_raw(u, arg = null) -> bool:
 			u["abCd"] = abilityCd(u); return false
 		flt(u, "Phase jump", "#9fe3ff", -24); objAfterMove(u)
 	if a == "surge":
-		for i in range(4): u["sh"][i] = u["shMax"]
+		u["shp"] = u["shMax"]; syncShields(u)
 		flt(u, "Shields surge", "#7fd6c8", -24)
 		if u["st"]["shieldOff"] < 99: u["st"]["shieldOff"] = 0
 	if a == "launch":
@@ -6353,7 +6362,7 @@ func aiAbilities(u, live: Callable, mode) -> bool:
 	for f in foes:
 		if jt(f.get("isSq")): continue
 		if nearF == null or hdist(u, f) < hdist(u, nearF): nearF = f
-	if pre and u.get("ab") == "surge" and canAbility(u) and nearF != null and hdist(u, nearF) <= 8 and u["sh"][shieldQuad(u, nearF)] < u["shMax"] * 0.5:
+	if pre and u.get("ab") == "surge" and canAbility(u) and nearF != null and hdist(u, nearF) <= 8 and float(z0(u.get("shp"))) < float(u["shMax"]) * 0.5:
 		useAbility(u)
 		if not live.call(): return false
 	if aim and (u.get("ab") == "focus" or u.get("ab") == "frenzy") and canAbility(u):

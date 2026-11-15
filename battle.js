@@ -127,7 +127,7 @@ function makeUnit(side, tpl, opts={}){
   const u={id:newId(), side, tpl, t, name:opts.ship?opts.ship.name:(opts.name||t.n), cls:t.cls,
     fac, size:t.size, q:0, r:0, facing: side==='player'?0:3,
     hp:opts.ship?Math.min(opts.ship.hp,s.maxHp):s.maxHp, maxHp:s.maxHp, shMax:s.shMax, regen:s.regen,
-    shp:s.shMax, cov:shieldCov(fac,t.cls), route:[0,0,0,0],
+    shp:s.shMax, cov:shieldCov(fac,t.cls), route:[0,0,0,0], sh:[0,0,0,0],
     armor:s.armor, speed:s.speed, turns:s.turns, ev:s.ev, aim:s.aim, crit:s.crit, dmg:s.dmg, fx:s.fx, hangar:s.hangar, hullRegen:s.hullRegen,
     weapons:s.weapons.map(w=>Object.assign(w,{fired:false,cdLeft:0,off:0})),
     ab:t.ab||null, abCd:0, isSq:!!t.sq, sqKind:t.sq||null, boss:!!t.boss, reanimate:!!t.reanimate, reanimated:false,
@@ -599,7 +599,7 @@ function legionTurn(side){ if(!B||B.over) return []; const out=[]; for(const u o
 // plain-words lines for the ship panel
 function factionTraitLines(u){ if(!u||u.isSq||!B) return []; const out=storyModifierLines(u);
   if(u.fac==='hegemony'){ const a=syncAnchor(u.side); if(!(u.side==='player'&&B.round===1&&B.cfg.storyMods&&B.cfg.storyMods.syncDown)) out.push(!a?'Synchronized fire lost: the flagship is gone.':u.anchor?`Sync anchor: Hegemony ships within ${SYNC_R} hexes fire as one.`:inSync(u)?'In sync with the flagship.':`Out of sync: more than ${SYNC_R} hexes from the flagship.`); }
-  if(u.fac==='ithar'&&u.shMax>0) out.push('Prism charge: facings not hit since its last turn refill to full; hit facings recharge twice.');
+  if(u.fac==='ithar'&&u.shMax>0) out.push('Prism charge: an untouched pool snaps back to full; a pool struck since its last turn recharges twice.');
   if(u.fac==='chorus') out.push(`Feeds on kills nearby (up to ${Math.round(FEED_CAP*100)}% hull a round).`);
   if(u.fac==='deathless'&&u.t&&u.t.reanimate){ const L=B.legion&&B.legion[u.side]; out.push(u.risen?'Reassembled this battle.':L&&L.used<L.max&&!u.pflag&&!u.flagship&&!u.boss?'Archive restore: the first to fall reassembles next round.':'Archive restore spent.'); }
   for(const s of (B.torps||[])) if(s.tid===u.id&&s.side!==u.side) out.push('<span class="blood">Torpedoes inbound: they strike its marked hex next turn. Move 3 or more hexes from it to dodge.</span>');
@@ -1085,7 +1085,7 @@ async function landVolley(u,w,t,o){ const quad=o.quad, shots=o.shots, called=o.c
   if(res.hits>0&&u.side==='player'&&!u.isSq&&!o.torp&&!o.intercept&&(u.ab==='launch'||(u.hangar||0)>0)) B.tr.carrierHit[u.id]=t.id; // Ashgrove T3b: which target the carrier's guns hit this round
   { const rw=treeSkill('rollWings'); if(rw&&u.isSq&&u.side==='player'&&cmdActive('player','scramble')&&res.hits>0&&!o.intercept&&!t.dead){ t.st.fire=Math.max(t.st.fire||0,2); t.st.fireDmg=Math.max(t.st.fireDmg||6,6); t.treeFlakDown=(t.treeFlakDown||0)+1; treeFx(u,'rollWings','the wing sets it burning'); } } // Ashgrove capstone 1
   if(res.hits&&B.nem){ if(t.nem&&u.side==='player'){ if(quad===2) nemTrip('flank'); if((w.ion||w.k==='lance')&&res.shield>0) nemTrip('ion'); if(o.torp) nemTrip('torp'); } if(u.nem&&t.side==='player'&&!u.isSq&&hdist(u,t)<=2) nemTrip('brawl'); } // R42
-  if(res.shield>0){ if(typeof fxShield==='function') fxShield(t,quad); if(typeof fxText==='function') fxText(t,'−'+res.shield+' shield','#62ccff',-18); if(t.shMax>0&&t.shp<=.5&&shBefore>.5){ if(typeof fxShieldBreak==='function') fxShieldBreak(t,quad); if(typeof fxText==='function') fxText(t,'Shields down','#9fe2ff',-40);
+  if(res.shield>0){ if(typeof fxShield==='function') fxShield(t,quad); if(typeof fxText==='function') fxText(t,'−'+res.shield+' shield','#62ccff',-18); if(t.shMax>0&&t.shp<=.5&&o.shBefore>.5){ if(typeof fxShieldBreak==='function') fxShieldBreak(t,quad); if(typeof fxText==='function') fxText(t,'Shields down','#9fe2ff',-40);
       if(ownerFx(u).chainSh&&!t.dead){ const csh=ownerFx(u).chainSh; t.shp=Math.round((t.shp||0)*(1-csh)); syncShields(t); boonFx(t,'s_chain','chain lightning',-62); } // Chain Lightning (RWD-2: chainSh scales with rarity)
       const ar=ownerFx(u).arcShort; if(ar&&!t.dead){ t.hp-=ar; res.hull+=ar; u.dealt+=ar; boonFx(t,'s_arc','−'+ar,-56); } } }
   if(res.hull>0&&typeof fxText==='function') fxText(t,'−'+res.hull+' hull',res.crits?'#ffd27a':'#ffae42',0);
@@ -1673,7 +1673,7 @@ function treeAfterMove(u){ if(!B||!B.tree||!B.tree.length||!u||u.isSq) return;
     if(cmdActive(u.side,'iron')){
       const cs=treeSkill('columnStraight'); if(cs&&treeInColumn(u)){ if(treeShieldOver(u,cs.n)>0) treeFx(u,'columnStraight','the column adds shield'); }
       const fs=treeSkill('flagshipStandard'); if(fs&&treeInFlagLine(u)){ if(treeShieldOver(u,fs.n)>0) treeFx(u,'flagshipStandard','the flagship holds the line'); }
-      const ov=treeSkill('overflow'); if(ov&&u.shMax>0&&u.sh.every(v=>v>=u.shMax)&&!u.treeOverflowUsed){ u.treeOverflowUsed=1; u.evBuff=Math.min(45,(u.evBuff||0)+ov.n); treeFx(u,'overflow','the surplus becomes evasion'); }
+      const ov=treeSkill('overflow'); if(ov&&u.shMax>0&&(u.shp||0)>=u.shMax&&!u.treeOverflowUsed){ u.treeOverflowUsed=1; u.evBuff=Math.min(45,(u.evBuff||0)+ov.n); treeFx(u,'overflow','the surplus becomes evasion'); }
       const rot=treeSkill('rotation'); if(rot) treeRotSwap(u);
     }
   }
@@ -1801,7 +1801,7 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
       if(any) treeFx(treeFlagUnit(),'oneOrder','every gun answers'); } } } // Vorn capstone 2
   if(c.id==='iron'){ const rl=treeSkill('rechargeLit'); if(rl&&side==='player'&&!(B.treePending||[]).some(p=>p.k==='rechargeLit'&&p.r===B.round)) (B.treePending=B.treePending||[]).push({k:'rechargeLit',r:B.round}); for(const u of alive(side)) if(u.shMax){ u.shp=u.shMax; syncShields(u); }
     { if(side==='player'){ for(const u of caps('player')){
-        const ov=treeSkill('overflow'); if(ov&&u.shMax>0&&!u.treeOverflowUsed&&u.sh.every(v=>v>=u.shMax)){ u.treeOverflowUsed=1; u.evBuff=Math.min(45,(u.evBuff||0)+ov.n); treeFx(u,'overflow','the surplus becomes evasion'); }
+        const ov=treeSkill('overflow'); if(ov&&u.shMax>0&&!u.treeOverflowUsed&&(u.shp||0)>=u.shMax){ u.treeOverflowUsed=1; u.evBuff=Math.min(45,(u.evBuff||0)+ov.n); treeFx(u,'overflow','the surplus becomes evasion'); }
         const cs=treeSkill('columnStraight'); if(cs&&treeInColumn(u)){ if(treeShieldOver(u,cs.n)>0) treeFx(u,'columnStraight','the column adds shield'); }
         const fs=treeSkill('flagshipStandard'); if(fs&&treeInFlagLine(u)){ if(treeShieldOver(u,fs.n)>0) treeFx(u,'flagshipStandard','the flagship holds the line'); }
         if(treeSkill('rotation')) treeRotSwap(u); } } } // Hegemony column, overflow and flagship line
@@ -2034,7 +2034,7 @@ function canAbility(u){
   if(u.ab==='regrow') return u.hp<u.maxHp;
   if(u.ab==='reclaim') return alive(u.side).some(x=>!x.isSq&&hdist(x,u)<=3&&x.hp<x.maxHp);
   if(u.ab==='blink') return blinkHexes(u).length>0;
-  if(u.ab==='ionpulse') return alive(u.side==='player'?'enemy':'player').some(t=>!t.isSq&&hdist(t,u)<=4&&t.sh.some(x=>x>0));
+  if(u.ab==='ionpulse') return alive(u.side==='player'?'enemy':'player').some(t=>!t.isSq&&hdist(t,u)<=4&&t.shMax>0&&(t.shp||0)>0);
   return true;
 }
 // Ithar phase jump: any open, playable hex within 3, straight past whatever is in the way
@@ -2057,7 +2057,7 @@ async function useAbility(u,arg){
   if(a==='reclaim'){ const ts=alive(u.side).filter(x=>!x.isSq&&hdist(x,u)<=3&&x.hp<x.maxHp).sort((p,q)=>p.hp/p.maxHp-q.hp/q.maxHp), t=ts[0]; if(t){ const h=Math.min(t.maxHp-t.hp,Math.round(t.maxHp*.2)); t.hp+=h; if(typeof fxText==='function') fxText(t,'+'+h+' hull','#7dff9b',-24); log(u.name+' rebuilds '+(t===u?'its own hull':t.name)+' for '+h+'.',u.side==='player'?'p':'e'); } }
   if(a==='ionpulse'){ const foes=alive(u.side==='player'?'enemy':'player').filter(t=>!t.isSq&&hdist(t,u)<=4); for(const t of foes){ if(t.shMax>0){ t.shp=Math.floor((t.shp||0)*.5); syncShields(t); } try{ if(typeof fxShield==='function') fxShield(t,-1); }catch(e){} } if(typeof fxText==='function') fxText(u,'Ion pulse','#9fd4ff',-24); log(u.name+' fires an ion pulse: '+foes.length+' enemy ship'+(foes.length===1?'':'s')+' lose half their shields.',u.side==='player'?'p':'e'); }
   if(a==='blink'){ const h=arg&&arg.hex?arg.hex:autoBlink(u); if(!h||!blinkHexes(u).some(x=>x.q===h.q&&x.r===h.r)) return false; const live=liveFrom(u), from={q:u.q,r:u.r}; u.q=h.q; u.r=h.r; u.vis=null; try{ if(typeof animBlink==='function') await animBlink(u,from); }catch(e){} if(!live()){ u.abCd=abilityCd(u); return false; } /* B1 (B-6): a jump whose animation stalled still lands, so it still costs the cooldown */ if(typeof fxText==='function') fxText(u,'Phase jump','#9fe3ff',-24); objAfterMove(u); } // v53: hex re-checked before the jump, live check after it (the jump itself is instant, so the hex is set before animBlink draws the arrival)
-  if(a==='surge'){ for(let i=0;i<4;i++) u.sh[i]=u.shMax; if(u.st.shieldOff<99) u.st.shieldOff=0; if(typeof fxShield==='function') fxShield(u,-1); if(typeof fxText==='function') fxText(u,'Shields surge','#7fd6c8',-24); }
+  if(a==='surge'){ u.shp=u.shMax; syncShields(u); if(u.st.shieldOff<99) u.st.shieldOff=0; if(typeof fxShield==='function') fxShield(u,-1); if(typeof fxText==='function') fxText(u,'Shields surge','#7fd6c8',-24); }
   if(a==='launch'){
     const h=arg&&arg.hex ? arg.hex : pick(launchHexes(u));
     const kind = arg&&arg.kind ? arg.kind : wingKind(u);
@@ -2192,8 +2192,8 @@ function fieldDist(D,v,fallback){ const d=D.get(hkey(v.q,v.r)); return d==null?f
 async function aiAbilities(u,live,mode){ const foes=alive('player'); if(!foes.length||u.dead) return live(); const pre=mode==='pre', aim=mode==='aim';
     if(pre&&u.ab==='launch' && canAbility(u)){ const hs=launchHexes(u).sort((a,b)=>Math.min(...foes.map(f=>hdist(a,f)))-Math.min(...foes.map(f=>hdist(b,f)))); await useAbility(u,{hex:hs[0]}); await wait(200); }
     const nearF=foes.filter(f=>!f.isSq).reduce((a,f)=>!a||hdist(u,f)<hdist(u,a)?f:a,null);
-    /* shields: surge when the facing toward the nearest threat is under half, not when all four facings are drained */
-    if(pre&&u.ab==='surge' && canAbility(u) && nearF && hdist(u,nearF)<=8 && u.sh[shieldQuad(u,nearF)]<u.shMax*.5) { await useAbility(u); await wait(200); if(!live()) return false; }
+    /* shields (R246 pool): surge when the pool is under half and the nearest threat is close */
+    if(pre&&u.ab==='surge' && canAbility(u) && nearF && hdist(u,nearF)<=8 && (u.shp||0)<u.shMax*.5) { await useAbility(u); await wait(200); if(!live()) return false; }
     if(aim&&(u.ab==='focus'||u.ab==='frenzy') && canAbility(u) && u.weapons.some(w=>weaponReady(w)&&foes.some(f=>canFire(u,w,f)))) await useAbility(u);
     if(pre&&(u.ab==='evasive'||u.ab==='phase') && canAbility(u) && foes.some(f=>hdist(u,f)<=5)) await useAbility(u);
     if(u.ab==='reload' && canAbility(u) && (pre?foes.some(f=>!f.isSq&&hdist(u,f)<=6+(u.speed||2)):aim&&u.weapons.some(w=>w.k==='torp'&&w.off===0&&!weaponReady(w)&&foes.some(f=>!f.isSq&&inReach(u,w,f))))) { await useAbility(u); if(!live()) return false; }

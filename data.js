@@ -63,7 +63,11 @@ const CLS_NAME={'Battle-barge':'War-barge','Bio-titan':'Colossus','Ark':'Lattice
 // when a side is hit the ship routes power to it (coverage +SHIELD_ROUTE_BOOST) but routed absorption
 // drains (1 + SHIELD_ROUTE_LOSS) pool per point, so reinforcing the struck side burns the pool.
 // When the pool empties, shields drop on every side at once. Coverage: [prow, starboard, rear, port].
-const SHIELD_POOL_MULT=1.5, SHIELD_ROUTE_LOSS=.3, SHIELD_ROUTE_BOOST=.2, SHIELD_COV_MAX=.95, SHIELD_COV_MIN=.2;
+const SHIELD_POOL_MULT=1.5;
+const SHIELD_ROUTE_LOSS=.3;
+const SHIELD_ROUTE_BOOST=.2;
+const SHIELD_COV_MAX=.95;
+const SHIELD_COV_MIN=.2;
 const SHIELD_COV={Frigate:[.85,.55,.40,.55],Destroyer:[.85,.60,.45,.60],Cruiser:[.90,.65,.50,.65],Carrier:[.80,.60,.50,.60],Battleship:[.90,.70,.55,.70],Dreadnought:[.90,.70,.60,.70]};
 const SHIELD_COV_FAC={voidsworn:[.05,0,0,0],hegemony:[0,.05,.05,.05],corsair:[-.05,0,-.05,0],ithar:[.05,.05,.10,.05]};
 const HULLS = {

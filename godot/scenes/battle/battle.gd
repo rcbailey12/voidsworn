@@ -4100,7 +4100,7 @@ func _refresh_ui() -> void:
 			continue
 		var d: Dictionary = disp.get(u["id"], {"hp": u["hp"], "sh": u["sh"]})
 		var status := "Lost" if u["dead"] else ("Acting" if u["active"] else ("Done" if u["activated"] else ("Up" if u["id"] == sel and mine else "Ready")))
-		rows.append({"id": u["id"], "name": u["name"], "cls": u["cls"], "hp": d["hp"], "maxHp": u["maxHp"], "sh": d["sh"], "shMax": u["shMax"], "status": status, "sel": u["id"] == sel, "done": u["activated"] or u["dead"], "flag": u["flagship"],
+		rows.append({"id": u["id"], "name": u["name"], "cls": u["cls"], "hp": d["hp"], "maxHp": u["maxHp"], "sh": d["sh"], "shMax": u["shMax"], "shp": u.get("shp"), "status": status, "sel": u["id"] == sel, "done": u["activated"] or u["dead"], "flag": u["flagship"],
 			"new": arrived.has(str(u["id"])) and int(arrived[str(u["id"])]) >= int(V.get("round", 0)) - 1, "danger": 0 if u["dead"] else _danger_at(u)})
 	hud.set_roster(rows)
 	hud.set_panel(_panel_info())

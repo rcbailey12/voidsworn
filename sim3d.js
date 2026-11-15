@@ -354,7 +354,7 @@ async function ruleCheck(){ const out=[]; const ok=(n,c,note)=>out.push((c?'PASS
   // ---- v53-D enemy AI checks ----
   // per-gun re-pick: the heavy guns are not poured into a 2-hull wreck that the light gun can finish; shield strippers fire first into shields
   { const {P,E}=setup(['penitent','harrow'],null,['h_dominion']); const u=E[0], A=P[0], Bq=P[1]; clearT(); at(u,10,6,3); at(A,8,6,0); at(Bq,8,7,0); for(const w of u.weapons) if(w.k!=='flak') w.arc='T';
-    A.hp=2; A.sh=[0,0,0,0]; A.reanimate=false; B.aiFocus=null; const shots=[]; const keepF=fireWeapon; fireWeapon=async function(x,wi,t){ shots.push([x.weapons[wi],t]); x.weapons[wi].fired=true; return true; };
+    A.hp=2; A.shp=0; A.reanimate=false; B.aiFocus=null; const shots=[]; const keepF=fireWeapon; fireWeapon=async function(x,wi,t){ shots.push([x.weapons[wi],t]); x.weapons[wi].fired=true; return true; };
     try{ await aiVolley(u,()=>true); } finally{ fireWeapon=keepF; } const heavy=u.weapons.filter(w=>w.k!=='flak').sort((a,b)=>b.dmg*b.shots-a.dmg*a.shots)[0], hs=shots.find(x=>x[0]===heavy);
     ok('volley re-pick: heavy guns skip a 2-hull target a lighter gun can kill',shots.length>=2&&hs&&hs[1]===Bq&&shots.some(x=>x[1]===A),shots.map(x=>x[0].n+'>'+(x[1]===A?'wreck':'healthy')).join(', '));
     for(const w of u.weapons) w.fired=false; const ord=aiGunOrder(u,u.weapons.filter(w=>w.k!=='flak'),Bq); ok('shield strippers fire first into a shielded target',ord[0].ion>1,ord.map(w=>w.n).join(' > ')); }
@@ -393,13 +393,13 @@ async function boonCheck(){ const out=[]; const ok=(n,c,note)=>out.push((c?'PASS
   // chain reaction
   { const {P,E}=setup(['e_chain']); place(E[0],10,5); place(E[1],10,6); place(E[2],14,2); const h0=E[1].hp; E[0].hp=0; await killUnit(E[0],P[0]); ok('Chain Reaction scorches neighbours',E[1].hp<h0&&E[2].hp===E[2].maxHp,h0+' -> '+E[1].hp); }
   // kindling (forced)
-  { const {P,E}=setup(['e_kindle']); P[0].fx.igniteCh=1; const t=E[0]; t.sh=[0,0,0,0]; applyHit(P[0],P[0].weapons[0],t,30,0); ok('Kindling sets fires',t.st.fire>0&&t.st.fireDmg>6,'fire '+t.st.fire+' for '+t.st.fireDmg); const hp=t.hp; startSideTurn('enemy'); ok('Fires burn for the boosted amount',hp-t.hp===t.st.fireDmg||hp-t.hp>=10,(hp-t.hp)+' burned'); }
-  // arc discharge
-  { const {P,E}=setup(['s_arc']); const a=P[0], t=E[0]; if(B&&B.terrain) for(const k of Object.keys(B.terrain)) delete B.terrain[k]; place(t,7,5,3); let wi=-1; for(let f=0;f<6&&wi<0;f++){ place(a,5,5,f); wi=a.weapons.findIndex(x=>inReach(a,x,t)); } if(wi<0){ ok('Arc Discharge on a broken facing',false,'no weapon in reach in any facing'); } else { const q=shieldQuad(t,a); t.sh[q]=1; const hp=t.hp; a.aim=300; for(let k=0;k<6&&t.sh[q]>.5;k++){ a.weapons[wi].fired=false; a.weapons[wi].cdLeft=0; await fireWeapon(a,wi,t); } ok('Arc Discharge on a broken facing',wi>=0&&hp-t.hp>=12,'hull lost '+(hp-t.hp)); } }
+  { const {P,E}=setup(['e_kindle']); P[0].fx.igniteCh=1; const t=E[0]; t.shp=0; syncShields(t); applyHit(P[0],P[0].weapons[0],t,30,0); ok('Kindling sets fires',t.st.fire>0&&t.st.fireDmg>6,'fire '+t.st.fire+' for '+t.st.fireDmg); const hp=t.hp; startSideTurn('enemy'); ok('Fires burn for the boosted amount',hp-t.hp===t.st.fireDmg||hp-t.hp>=10,(hp-t.hp)+' burned'); }
+  // arc discharge (R246 pool: the generator shorts when the pool empties)
+  { const {P,E}=setup(['s_arc']); const a=P[0], t=E[0]; if(B&&B.terrain) for(const k of Object.keys(B.terrain)) delete B.terrain[k]; place(t,7,5,3); let wi=-1; for(let f=0;f<6&&wi<0;f++){ place(a,5,5,f); wi=a.weapons.findIndex(x=>inReach(a,x,t)); } if(wi<0){ ok('Arc Discharge when the pool breaks',false,'no weapon in reach in any facing'); } else { t.shp=1; syncShields(t); const hp=t.hp; a.aim=300; for(let k=0;k<6&&(t.shp||0)>.5;k++){ a.weapons[wi].fired=false; a.weapons[wi].cdLeft=0; await fireWeapon(a,wi,t); } ok('Arc Discharge when the pool breaks',wi>=0&&hp-t.hp>=12,'hull lost '+(hp-t.hp)); } }
   // bastion duo
-  { const {P}=setup(['d_bastion']); const u=P[0]; u.sh=[0,0,0,0]; giveOrder(u,'brace'); ok('Bastion refills shields on brace',u.sh.every(x=>x===u.shMax)&&u.shMax>0,u.sh.join('/')); }
+  { const {P}=setup(['d_bastion']); const u=P[0]; u.shp=0; syncShields(u); giveOrder(u,'brace'); ok('Bastion refills the pool on brace',u.shp===u.shMax&&u.shMax>0,'pool '+u.shp+'/'+u.shMax); }
   // storm mantle
-  { const {P}=setup(['s_regen']); const u=P[0]; u.sh=[0,u.shMax,u.shMax,u.shMax]; u.regen=0; startSideTurn('player'); ok('Storm Mantle tops up the weakest facing',u.sh[0]>0,'facing 0 -> '+u.sh[0]); }
+  { const {P}=setup(['s_regen']); const u=P[0]; u.shp=0; u.regen=0; startSideTurn('player'); ok('Storm Mantle feeds the pool',u.shp>0,'pool -> '+u.shp); }
   // hive aspect + feast
   { const {P,E}=setup(['h_feast'],'hive'); const wings=alive('player').filter(u=>u.isSq&&u.parent===P[0].id); ok('Aspect of the Hive launches a wing from a non-carrier flagship',wings.length>=1,wings.length+' wing(s)');
     if(wings.length){ const sp=P[0].spare||0; P[0].hp=P[0].maxHp-50; const h=P[0].hp; E[0].hp=0; await killUnit(E[0],wings[0]); ok('Feast on the Fallen refunds a wing and repairs',(P[0].spare||0)===sp+1&&P[0].hp>h,'spare '+sp+' -> '+P[0].spare+', hull +'+(P[0].hp-h)); } }
@@ -673,7 +673,7 @@ async function cmdCheck(){ const cases=[['vex','barrage'],['malek','hunt'],['ael
     const P=alive('player').filter(u=>!u.isSq), E=alive('enemy').filter(u=>!u.isSq); E.forEach((e,i)=>{ const p=P[i%P.length]; e.q=p.q+3; e.r=p.r+(i>=P.length?1:0); e.facing=3; }); for(const p of P) p.facing=0;
     for(const w of alive().filter(u=>u.isSq)){ const c=B.units.find(x=>x.id===w.parent); const hs=c?launchHexes(c):[]; if(hs.length){ w.q=hs[0].q; w.r=hs[0].r; } } // wings fly with their carrier
     const ehp0=E.reduce((a,u)=>a+u.hp+u.sh.reduce((x,y)=>x+y,0),0), fired0=P.map(u=>u.weapons.map(w=>w.fired).join()), sq0=alive('player').filter(u=>u.isSq).length;
-    if(id==='restore') P.forEach(u=>u.hp=Math.round(u.maxHp*.5)); if(id==='iron') P.forEach(u=>u.sh=u.sh.map(()=>0));
+    if(id==='restore') P.forEach(u=>u.hp=Math.round(u.maxHp*.5)); if(id==='iron') P.forEach(u=>{ u.shp=0; syncShields(u); });
     const hp0=P.map(u=>u.hp), mp0=P.map(u=>u.mp), w0=E[0].weapons.find(w=>w.k!=='flak')||E[0].weapons[0], hit0=hitChance(E[0],w0,P[0]);
     const pw=P[0].weapons.find(w=>w.k!=='flak')||P[0].weapons[0], dm0=dmgMult(P[0],pw,E[0],false), exp0=expectedVs(E[0],w0,P[0]).hull;
     const early=canCommand('player'); B.round=+(process.env.CMDROUND||2); const ok=await useCommand('player');
@@ -682,7 +682,7 @@ async function cmdCheck(){ const cases=[['vex','barrage'],['malek','hunt'],['ael
     if(id==='barrage'){ pass=ehp1<ehp0&&P.map(u=>u.weapons.map(w=>w.fired).join()).join('|')===fired0.join('|'); note=\`enemy hull+shields \${Math.round(ehp0)} -> \${Math.round(ehp1)}, weapons state kept\`; }
     if(id==='hunt'){ const r=dmgMult(P[0],pw,E[0],false)/dm0; const torps=alive('player').flatMap(u=>u.weapons).filter(w=>w.k==='torp'); pass=Math.abs(r-1-cmdPow('hunt'))<.01&&torps.length>0&&torps.every(w=>!w.fired&&!w.cdLeft); note=\`damage x\${r.toFixed(2)}, \${torps.length} torpedo tubes ready\`; }
     if(id==='scramble'){ const wings=B.units.filter(u=>u.isSq&&u.side==='player'); const flew=wings.filter(u=>u.activated&&u.weapons.some(w=>w.fired)); pass=wings.length>sq0&&flew.length===wings.length; note=\`wings launched \${wings.length-sq0}, flew their strike \${flew.length}/\${wings.length}, shot down by flak \${wings.filter(u=>u.dead).length}, enemy hull+shields \${Math.round(ehp0)} -> \${Math.round(ehp1)}\`; }
-    if(id==='iron'){ const r=expectedVs(E[0],w0,P[0]).hull, ip=cmdPow('iron'); pass=P.every(u=>!u.shMax||u.sh.every(x=>x===u.shMax)); note=\`shields refilled; expected hull damage \${exp0.toFixed(1)} -> \${r.toFixed(1)} (shields now soak too)\`; P[0].sh=P[0].sh.map(()=>0); const r2=expectedVs(E[0],w0,P[0]).hull; B.cmd=null; const r3=expectedVs(E[0],w0,P[0]).hull; pass=pass&&Math.abs(r2/r3-(1-ip))<.02; note+=\`; with shields down x\${(r2/r3).toFixed(2)}\`; }
+    if(id==='iron'){ const r=expectedVs(E[0],w0,P[0]).hull, ip=cmdPow('iron'); pass=P.every(u=>!u.shMax||u.shp===u.shMax); note=\`pool refilled; expected hull damage \${exp0.toFixed(1)} -> \${r.toFixed(1)} (shields now soak too)\`; P[0].shp=0; syncShields(P[0]); const r2=expectedVs(E[0],w0,P[0]).hull; B.cmd=null; const r3=expectedVs(E[0],w0,P[0]).hull; pass=pass&&Math.abs(r2/r3-(1-ip))<.02; note+=\`; with shields down x\${(r2/r3).toFixed(2)}\`; }
     if(id==='restore'){ pass=P.every((u,i)=>u.hp===Math.min(u.maxHp,hp0[i]+Math.round(u.maxHp*cmdPow('restore')))); note=\`hull \${hp0.join('/')} -> \${P.map(u=>u.hp).join('/')}\`; }
     if(id==='surge'){ const hit1=hitChance(E[0],w0,P[0]); pass=P.every((u,i)=>u.mp===mp0[i]+cmdPow('surge'))&&Math.abs((hit0-hit1)-20)<.01; note=\`movement +\${cmdPow('surge')}, enemy hit chance \${hit0.toFixed(0)} -> \${hit1.toFixed(0)}\`; }
     const again=canCommand('player'); res.push(\`\${(pass&&ok&&early&&B.cmdUsed&&!again)?'PASS':'FAIL'} \${A.cmd.n} (\${adm}, \${id}): \${note}; usable in round 1 \${early}, usable again \${again}\`); }
