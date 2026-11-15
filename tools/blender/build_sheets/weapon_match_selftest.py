@@ -126,6 +126,47 @@ def plant_split_launchers(s):
     s['mounts'].append(launcher('R2')); s['parts'].append(dict(id='R2', kind='launcher', type='rack'))   # two racks, 1 torp shot
 
 
+def craft(kind):
+    """a squadron craft as data.js fighter (guns T: one three-barrel turret) or bomber (bombs T: one two-tube bomb cassette)"""
+    if kind == 'fighter':
+        weapons = [('guns', 'T')]
+        m = turret('G1', 'guns', 'T', n=3, rest=0.0)
+    else:
+        weapons = [('bombs', 'T')]
+        m = dict(id='BT', weapon='bombs', letter='T', type='bomb_tube', mount='launcher', barrels=2, size=0.2, rest_yaw=0.0,
+                 muzzles=[muz(1.0, 0.1 * i) for i in range(2)], turret=None)
+    stats = {w: gamedata.weapon_stats(w) for w, _ in weapons}
+    parts = [dict(id=m['id'], kind='launcher' if m['mount'] == 'launcher' else 'gun', type=m['type'])]
+    return dict(code=kind.upper(), weapons=weapons, stats=stats, parts=parts, mounts=[m])
+
+
+def plant_craft_bombs_turret(s):
+    m = s['mounts'][0]; lo, hi = WM.ARCS['T']
+    m.update(type='gun', mount='turret', turret=dict(arc_lo=lo, arc_hi=hi, letter='T', under=True))   # bombs shown as a gun turret
+    s['parts'][0].update(kind='gun', type='gun')
+
+
+def plant_craft_guns_casemate(s):
+    m = s['mounts'][0]; m['mount'] = 'casemate'; m['turret'] = None                # the fighter's all-round guns fixed in a casemate
+
+
+def plant_craft_guns_cassette(s):
+    m = s['mounts'][0]; m.update(type='bomb_tube', mount='launcher', turret=None)  # the fighter's guns shown as bomb tubes
+    s['parts'][0].update(kind='launcher', type='bomb_tube')
+
+
+def plant_craft_extra_tube(s):
+    s['parts'].append(dict(id='BX', kind='launcher', type='bomb_tube'))            # a second, silent bomb cassette
+
+
+CRAFT_CASES = [
+    ('KIND', 'bomber', 'a bomber\'s bombs shown as a gun turret', plant_craft_bombs_turret),
+    ('TURRET', 'fighter', 'a fighter\'s all-round guns in a fixed casemate', plant_craft_guns_casemate),
+    ('KIND', 'fighter', 'a fighter\'s guns shown as bomb tubes', plant_craft_guns_cassette),
+    ('EXTRA', 'bomber', 'a second bomb cassette with no slot', plant_craft_extra_tube),
+]
+
+
 CASES = [
     ('EXTRA', 'a decorative gun on no slot', plant_extra),
     ('EXTRA', 'a decorative spore organ on no slot', plant_extra_organ),
@@ -230,6 +271,21 @@ def main():
             bad.append(f'{rule} not raised for {what}: got {probs}')
         else:
             print(f'ok   {rule:<6} {what}: {hits[0][:110]}')
+    # squadron craft (issue 769): a clean fighter and bomber pass; each planted craft fault is named by its rule
+    for kind in ('fighter', 'bomber'):
+        probs = WM.check(craft(kind))
+        if probs:
+            bad.append(f'the clean {kind} fails: ' + '; '.join(probs))
+        else:
+            print(f'ok   clean {kind} (data.js {kind}: ' + ('one three-barrel guns turret' if kind == 'fighter' else 'one two-tube bomb cassette') + '): PASS')
+    for rule, kind, what, plant in CRAFT_CASES:
+        s_ = craft(kind); plant(s_)
+        probs = WM.check(s_)
+        hits = [p for p in probs if p.startswith(rule + ' ')]
+        if not hits:
+            bad.append(f'{rule} not raised for {what}: got {probs}')
+        else:
+            print(f'ok   {rule:<6} {what}: {hits[0][:110]}')
     probs = WM.check(clean_heg())
     if probs:
         bad.append('the clean Hegemony ship fails: ' + '; '.join(probs))
@@ -265,7 +321,7 @@ def main():
     print(f'ok   table: {len(games)} sheet ships, every data.js weapon has a FITS row and a shot count' if not any('FITS' in b or 'shot' in b for b in bad) else 'FAIL table')
     for b in bad:
         print('  ' + b)
-    print(('FAIL' if bad else 'PASS') + f' weapon match self-test ({len(CASES) + len(HEG_CASES)} planted faults, {len(games)} sheet ships in the table)')
+    print(('FAIL' if bad else 'PASS') + f' weapon match self-test ({len(CASES) + len(CRAFT_CASES) + len(HEG_CASES)} planted faults, {len(games)} sheet ships in the table)')
     return 1 if bad else 0
 
 

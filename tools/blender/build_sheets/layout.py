@@ -30,12 +30,16 @@ def font(n, bold=False):
 
 
 OFF = {}
+# issue 769: a craft drawn at many px per unit keeps capital-ship label sizes (SHEET label_scale) and a shorter scale bar
+# (SHEET bar_units); every other sheet keeps label scale = px per unit / 40 and a 5 unit bar
+LS = float((M.get('sheet') or {}).get('label_scale') or 0)
+BAR = float((M.get('sheet') or {}).get('bar_units') or 5)
 PADS = {'side': (40, 70, 90), 'cutaway': (40, 70, 90), 'top': (110, 80, 90), 'underside': (20, 80, 90), 'bow': (20, 90, 20), 'stern': (20, 70, 20)}
 
 
 def flat(name):
     im = Image.open(os.path.join(RD, name + '.png')).convert('RGBA')
-    sc_ = M['views'].get(name, {}).get('px_per_unit', 40) / 40.0
+    sc_ = LS or M['views'].get(name, {}).get('px_per_unit', 40) / 40.0
     l_, t_, b_ = [int(v * sc_) for v in PADS.get(name, (0, 0, 0))]
     bg = Image.new('RGBA', (im.width + 2 * l_, im.height + t_ + b_), GREY + (255,)); bg.alpha_composite(im, (l_, t_))
     a = np.zeros((bg.height, bg.width), bool); a[t_:t_ + im.height, l_:l_ + im.width] = np.asarray(im)[..., 3] > 8
@@ -79,7 +83,7 @@ def label(dr, xy, s, fnt, fill=INK, box=True):
 
 
 k = V['side']['px_per_unit']
-SC = k / 40.0
+SC = LS or k / 40.0
 f_s, f_m, f_l, f_xl = font(int(20 * SC)), font(int(26 * SC)), font(int(36 * SC), True), font(int(56 * SC), True)
 LH = int(30 * SC)
 
@@ -184,10 +188,11 @@ label(dr, (sx1 - 330 * SC, sz1 - 40 * SC), 'height %.2f overall; hull %.2f' % (h
 
 
 def scalebar(dr, x, y):
+    q = k * BAR / 5
     for i in range(5):
-        dr.rectangle((x + i * k, y, x + (i + 1) * k, y + 12), fill=INK if i % 2 == 0 else (90, 90, 90))
-    dr.rectangle((x, y, x + 5 * k, y + 12), outline=INK, width=1)
-    label(dr, (x, y + 16), '0', f_s, INK, box=False); label(dr, (x + 5 * k - 30, y + 16), '5 units', f_s, INK, box=False)
+        dr.rectangle((x + i * q, y, x + (i + 1) * q, y + 12), fill=INK if i % 2 == 0 else (90, 90, 90))
+    dr.rectangle((x, y, x + 5 * q, y + 12), outline=INK, width=1)
+    label(dr, (x, y + 16), '0', f_s, INK, box=False); label(dr, (x + 5 * q - 30, y + 16), '%g units' % BAR, f_s, INK, box=False)
 
 
 import importlib.util as _ilu

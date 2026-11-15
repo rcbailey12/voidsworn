@@ -44,3 +44,21 @@ line snaps off as one piece along its own peel seam.
 
 Materials (this kit's own `MATS`, merged into the sheet kit's table by the ship file, so the shared kit.py is untouched): `siron` black iron, `siron2` darker recessed iron, `sworn` worked bright
 iron, `embar` ember glow, `frost` frost-white lamps, plus the shared `dark`, `glow`, `ember`; insides add `gallery`.
+
+## Squadron craft (issue 769: voidsworn_SF3 fighter, voidsworn_SB4 bomber)
+
+A craft is about a twelfth of the flagship's length, so its parts take every size from their arguments (no fixed world sizes)
+and stay bold and simple (fine greeble reads as a shrunken capital ship). Ryan (R254): no canopy, no swept aero wings, no tail
+fins, no bombs hung under the hull; drives are nozzle clusters inside armoured blocks.
+
+| Part | data.js | What it is |
+|---|---|---|
+| `gun(..., weapon='guns')` (`_interceptor`) | `guns` T, Interceptor guns, 3 shots | three short barrels in one emitter cluster on a shallow traverse ring, in an armoured well with a riveted rim; it turns (arc T) |
+| `rocket_rack` (the bomb cassette, type `bomb_tube`) | `bombs` T, Bomb payload, 2 shots | a deep armoured cassette that is the bomber's bow face: round mouths with worked-iron twelve-sided rims and forged lugs, dark bores with the next bomb's nose seated deep inside, the bombardier's sight slit between; fixed forward (K.launcher asks every kit for `rocket_rack`) |
+| `craft_drive` (`engine_bell(..., craft=True)`) | | a deep bell sunk in an eight-sided armoured cowl whose face stands proud of the lip: ember lining, hot throat, glowing plug, dim |
+| `craft_spire` | | the fighter's one radiator spire: upright and square-topped, ember fins out to each side (never a tail fin) |
+
+Scale hooks with unchanged defaults (the flagship builds the same, its fit check counts are identical): `forged_plates(unit=)`,
+`plate_slab(sink=, inmax=)`, `vent(fr=)`, `slit(fr=)`; the louvre's back plate and the slit's pane now stay behind the slats and
+frame on a small part. `launcher` is a machine (it rides whole with one piece).
+
