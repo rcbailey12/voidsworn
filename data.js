@@ -110,7 +110,7 @@ const MOVE_RULES={
   ithar:{evadeAt:2,evade:18,n:'Crystal vanes',d:'After moving 2+ hexes, enemies get \u221218 to hit it (others need 3 hexes for \u22125).'}, // pass 3 tuning: 14 to 18 (pass 2: 10 to 14)
   deathless:{over:0,n:'Fold drive',d:'Passes through rocks, wrecks and enemy ships at no extra cost.'}};
 const FACTIONS = {
-  voidsworn:{n:'Sunward Crusade',boss:'ascendant',roster:['warden','harrow','penitent','reliquary','cathedral'],hull:'#4a4440',trim:'#c8501f',glow:'#ff7a2a',style:'gothic',blurb:'The frontier the Hegemony wrote off, come to stop the Siphoning. Black-iron battleships: heavy armor, lances, and broadsides that hit harder on the move.'},
+  voidsworn:{n:'Sunward Crusade',boss:'ascendant',roster:['warden','harrow','penitent','reliquary','cathedral'],hull:'#4a4440',trim:'#c8501f',glow:'#ff7a2a',style:'gothic',sq:'fighter',blurb:'The frontier the Hegemony wrote off, come to stop the Siphoning. Black-iron battleships: heavy armor, lances, and broadsides that hit harder on the move.'},
   hegemony:{n:'Hegemony Navy',hull:'#c4ccd5',trim:'#3a78d0',glow:'#5fa0ff',style:'wedge',
     blurb:'The Registry’s navy: linked crews, wedge hulls and drone escorts. Ion cannons strip shields; carriers launch fighter screens.',
     roster:['h_picket','h_interdictor','h_vanguard','h_dominion'],boss:'h_boss',sq:'fighter'},
