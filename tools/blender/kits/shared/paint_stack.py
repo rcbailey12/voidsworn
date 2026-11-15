@@ -317,6 +317,8 @@ def patchwork(c, S, col, amount, families=None, cells=None):
     row, no repeated cell, no row running on across a face), the region of each chosen by a broad noise, plus a sparse layer of
     larger patch plates laid over them; each panel (and each modelled plate, by its UV island) picks one of the faction's plate
     families. Returns the colour and the seam mask."""
+    if hasattr(S, 'panel_nodes'):
+        return S.panel_nodes(c, col, amount, families, cells)
     nt = c.nt; L = S.LAYERS; families = families or S.PATCH_FAMILIES
     big, small, patch = cells or (L['patch_big'], L['patch_small'], L['patch_over'])
     region = ramp(nt, c.noise(L['patch_region'], 2), .42, .58)          # 0: big plates, 1: small plates
@@ -424,7 +426,7 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas):
     col = mulc(nt, col, math_(nt, 'ADD', 1 - L['ao_dark'], math_(nt, 'MULTIPLY', cav, L['ao_dark'])))
     if seam is not None:       # black seams between the panels
         col = mulc(nt, col, math_(nt, 'SUBTRACT', 1, math_(nt, 'MULTIPLY', seam, L.get('seam_dark', .8))))
-        height = math_(nt, 'SUBTRACT', height, math_(nt, 'MULTIPLY', seam, .5))
+        height = math_(nt, 'SUBTRACT', height, math_(nt, 'MULTIPLY', seam, L.get('panel_relief', .5)))
         rough = math_(nt, 'ADD', rough, math_(nt, 'MULTIPLY', seam, .1))
     # 5. decals (hull atlas): before the wear, so the wear eats into them
     wear = math_(nt, 'MULTIPLY', math_(nt, 'MULTIPLY', c.edge, ramp(nt, c.noise(L['wear_scale'], 6, .6), L.get('wear_lo', .38), L.get('wear_hi', .62))), wear_amt)
@@ -879,10 +881,18 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
            or (o.data.materials[0].name if o.data.materials else '') in ex or o.get('emissive_zone') == 'plug'] if hasattr(S, 'ENGINE_GLOW') else []
     if eng:      # the engine throats and linings: one surface, its own emission map (graded, hot spots, soot, each engine its own)
         glow['engine'] = bake_engine_glow(S, eng, out, cell, max(256, int(res * S.ENGINE_GLOW.get('res_frac', .25))), samples); glow['engine']['rim_soft'] = 1
-        if any(o.get('role') == 'hull' for o in eng) and getattr(S, 'GLOW_HULL', ()):
-            glow['engine']['hull_surface'] = 1      # issue 642: the glow surface carries the hull's own rim line (hull trim, export check)
+        hull_glow = getattr(S, 'GLOW_HULL', ())
+        if hull_glow:
+            # One emission image, separate materials: only the hull's own listed trim is exempt from breach clearance.
+            # The engine rings, core and lens keep the unmarked material even when they use that same image.
+            trim = [o for o in eng if o.get('role') == 'hull' and o.data.materials and o.data.materials[0].name in hull_glow]
+            if trim:
+                glow['engine_hull'] = glow['engine'].copy(); glow['engine_hull'].name = 'p3_glow_hull'
+                glow['engine_hull']['hull_surface'] = 1
+        else:
+            trim = []
         for o in eng:
-            o.data.materials.clear(); o.data.materials.append(glow['engine'])
+            o.data.materials.clear(); o.data.materials.append(glow['engine_hull'] if o in trim else glow['engine'])
     for o in G:
         if o in eng: continue
         z = o.data.materials[0].name if o.data.materials else 'glow'
