@@ -12,5 +12,5 @@
   "iron_step_060": [13.7, 19.0, 28.7, 54.0, 78.0],
   "whatif_albedo_x1_85": [16.3, 23.0, 35.3, 62.3, 87.7]
  },
- "concept_fitted_median": {"beauty_both_masks": [52, 47, 47], "sheet_both_views": [59, 58, 58], "sheet_side_view": [55, 53, 53]}
+ "concept_median": {"beauty_fitted_camera_both_masks": [52, 47, 47], "sheet_own_flat_views_both": [59, 58, 58], "sheet_own_flat_side_view": [55, 53, 53]}
 }
