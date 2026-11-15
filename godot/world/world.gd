@@ -726,6 +726,14 @@ func _rand_axis(r: RandomNumberGenerator) -> Vector3:
 	return Vector3(r.randfn(), r.randfn(), r.randfn()).normalized()
 
 
+# The one scale table's rock sizes (issue 710, R247; docs/playbooks/scale.md): the library rock is 2 units long at
+# scale 1 (world/rocks/rocks.json ext).
+const BLOCKER_SCALE_MIN := 6.4
+const BLOCKER_SCALE_MAX := 7.6
+const DEBRIS_FIELD_SCALE_MIN := 0.35
+const DEBRIS_FIELD_SCALE_MAX := 1.95
+
+
 # A blocker on a rock hex: one big rock filling the hex, a few smaller ones round its foot. Obviously solid terrain: lit,
 # shadow-casting, the crispest rocks on screen, and nothing like a hex fill or outline.
 func blocker(p: Vector3, kind: String) -> void:
@@ -734,7 +742,7 @@ func blocker(p: Vector3, kind: String) -> void:
 		return
 	var mat := _hero_mat(kind)
 	# the longest half-length stays under the hex's inner radius (8.66), so a blocker never seems to fill a free neighbour
-	var s := _rng.randf_range(6.4, 7.6)
+	var s := _rng.randf_range(BLOCKER_SCALE_MIN, BLOCKER_SCALE_MAX)
 	var b := _rand_basis(_rng)
 	var crystal := kind == "crystal"
 	_batch.add(name, mat, true, Transform3D(b.scaled(Vector3.ONE * s), p + Vector3(0, _rng.randf_range(0.5, 2.5), 0)),
@@ -762,7 +770,7 @@ func debris_field(p: Vector3, kind: String) -> void:
 	for i in _rng.randi_range(8, 13):
 		var a := _rng.randf() * TAU
 		var rr := sqrt(_rng.randf()) * 7.5
-		var s := 0.35 + 1.6 * pow(_rng.randf(), 2.2)
+		var s := DEBRIS_FIELD_SCALE_MIN + (DEBRIS_FIELD_SCALE_MAX - DEBRIS_FIELD_SCALE_MIN) * pow(_rng.randf(), 2.2)
 		pieces.append({"mesh": _pick(kind, _rng), "shadow": false,
 			"xf": Transform3D(_rand_basis(_rng).scaled(Vector3.ONE * s), p + Vector3(cos(a) * rr, _rng.randf_range(-2.5, 3.0), sin(a) * rr)),
 			"axis": _rand_axis(_rng), "rate": _rng.randf_range(0.06, 0.35), "seed": _rng.randf()})

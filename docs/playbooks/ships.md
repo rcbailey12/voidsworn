@@ -73,12 +73,17 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    violet, a lighter dusk violet, a few mauve and cool dark gunmetal plates, rare pale plates on small plates only), dark seams
    wide enough to read at camera 170, brighter worn edges on rims and plate lips, a different finish for the shade plates
    (matte), the body behind them (satin) and the machines (worked metal), no fine mottle or grain and almost no per-island tone;
-   no rust or soot; a roughness floor of 0.50; (3) the green is light, not paint (Ryan, same message: "that green looks so plain
+   no rust or soot; a roughness floor of 0.50. R243 (Ryan, Nov 13): panels are dead even, ordered and aligned across the hull
+   and crescent, with recessed seams and slight relief; the stack bakes that relief into the hull's detail normal. E11's
+   accepted colour pairs stay unchanged. This order is the Eclipse's own, never the Hullbreakers' patchwork;
+   (3) the green is light, not paint (Ryan, same message: "that green looks so plain
    and stark, just like neon paint"): the corona line on every shade rim is the faint green ring of a real eclipse, thin at rest,
    brighter arcs and dimmer stretches along it with a few short breaks, a soft falloff into the plate edge, cold green-white at
-   its hottest and deeper green where dim, mostly under the game's 0.8 glow threshold with only the brightest arcs over it; the
-   core green-white at its centre grading to green at its edge (never a white blob, Board review of PR 643); never green pooled
-   in hollows, ribs or sockets; every light is drawn on one emission map; (4) engines are an eclipse ring of pale light round a
+   its hottest and deeper green where dim. R243: brighter through the same thin strip so it reads at camera 170, including
+   E12's ring segments; brighter arcs may cross the game's glow threshold. The core glows green like the concept, white-hot
+   only at its very centre, reading at camera 170; never green pooled in hollows, ribs or sockets. Every light is drawn on one
+   emission map; only the hull's rim trim material is marked hull_surface for breach clearance, never engines, core or lens.
+   (4) engines are an eclipse ring of pale light round a
    black shade disc, in the game's Eclipse engine colour paled toward white, each engine its own brightness, tint, hot spots and
    dim gaps, no flame; (5) no added running lamps (the red lamps are a Hullbreaker rule; the Eclipse show only the corona, the
    core and the rings, and the sheet's corona strip lights; Board accepted, R236); (6) the stack's surfaces are rim_soft, parts
@@ -111,7 +116,19 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    one ship has gone from its build sheet to the game on Ryan's PC; the sheet writes each fact once (masses, seams, insides,
    mounts, length) and the recipe reads it; recipe checks read the ship's own entry, never a prior ship's shape (C15s's was the case that bit).
 
-11. **Openings have depth; big flanks have shape (R244, Ryan, Nov 14 2026).** A round opening is a real recess with a lip,
+11. **Visible weapons are the game's weapons (R241, Ryan, Nov 13).** Every visible gun, turret, launcher and weapon organ
+   belongs to a `data.js` weapon slot: its kind and mount fit that weapon (data.js carries no mount size, so size is judged by eye
+   against the class, and checked only between mounts of one slot), its registered muzzle becomes that slot's
+   `hp_w<slot>` at the visible weapon, and it faces the data arc. Turning pieces stay under their turret pivot. No extra or
+   decorative weapons. Ryan allows multiple mounts for one slot when they are consistent with its firing and turning:
+   matching kind, mount, barrel count and size, with their own muzzles and every mount firing on each volley under the
+   game's rotating muzzle order. `tools/blender/build_sheets/weapon_match.py` checks the built ship against `data.js`,
+   including its shot count. Every build mode and `contract.to_recipe` refuse a failure. The sheet carries the slot and
+   mount table (`weapon_match.json`) and lists each design change. Run `weapon_match_selftest.py` to prove the check rejects
+   broken inputs. Why: Ryan wants the visible weapons to line up with firing, effects and turns, including shared batteries. The SAME rule (one slot's mounts match in kind,
+   mount, barrels and size within x1.3) and SPLIT rule (every mount fires on every volley) are the Board's reading of Ryan's
+   "consistent and line up with the in game behavior" (Nov 15, ratified on PR 691), not his words: change them if he rules otherwise.
+12. **Openings have depth; big flanks have shape (R244, Ryan, Nov 14 2026).** A round opening is a real recess with a lip,
    depth and working detail (a tube, launcher or thruster throat, lit or dark as its job says), never a flat painted disc.
    Cut the housing behind the opening too: a detailed tube embedded in a closed hull still reads as a disc. Big hull flanks
    carry angled facets, chamfers and stepped planes as their concept shows. Why: on A20 Ryan saw "just circles" at the bow

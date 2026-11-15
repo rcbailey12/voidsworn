@@ -6,8 +6,14 @@ $ErrorActionPreference = 'Stop'
 $mode = $args[0]; $n = $args[1]; $repo = $args[2]; $out = $args[3]
 $utf8 = New-Object System.Text.UTF8Encoding($false)
 if ($mode -eq 'prep') {
-  $i = Invoke-RestMethod -UseBasicParsing -Headers @{ 'User-Agent' = 'voidsworn-codex-board' } `
-    -Uri "https://api.github.com/repos/rcbailey12/voidsworn/issues/$n"
+  if ($env:PC_RUNNER_TEST -eq '1') {
+    $i = Get-Content -LiteralPath $env:PC_TEST_ISSUE -Raw | ConvertFrom-Json
+  } else {
+    $i = Invoke-RestMethod -UseBasicParsing -Headers @{ 'User-Agent' = 'voidsworn-codex-board' } `
+      -Uri "https://api.github.com/repos/rcbailey12/voidsworn/issues/$n"
+  }
+  $resume = ''; $rp = Join-Path $out 'resume.txt'
+  if (Test-Path -LiteralPath $rp) { $resume = [IO.File]::ReadAllText($rp) }
   $body = [string]$i.body
   $effort = 'high'
   if ($body -match '(?im)^\s*Effort \(Codex\):\s*(xhigh|high|medium)') { $effort = $Matches[1].ToLower() }
@@ -17,6 +23,7 @@ if ($mode -eq 'prep') {
 
 You are Codex, working one job from the Voidsworn job board (github.com/rcbailey12/voidsworn/issues/$n).
 This folder is a fresh checkout of main on the branch codex/issue-$n. Follow AGENTS.md and CLAUDE.md in this folder.
+$resume
 
 Rules:
 - Do exactly what the job below asks. Change nothing else. Read the brief it names first.
@@ -37,6 +44,8 @@ $body
   [IO.File]::WriteAllText((Join-Path $repo 'CODEX_TASK.md'), $task, $utf8)
   [IO.File]::WriteAllText((Join-Path $out 'effort.txt'), $effort, [Text.Encoding]::ASCII)
   [IO.File]::WriteAllText((Join-Path $out 'title.txt'), [string]$i.title, $utf8)
+  $dl = ''; if ($body -match '(?im)^\s*Deliver to:\s*(.+?)\s*$') { $dl = $Matches[1] }
+  [IO.File]::WriteAllText((Join-Path $out 'deliver_to.txt'), $dl, $utf8)
   Write-Host "issue #$n prepared, effort $effort"
 } elseif ($mode -eq 'msg') {
   # Keep Codex's scratch folders out of the commit (it sometimes leaves .codex-* check output in the repo).
@@ -50,6 +59,11 @@ $body
   $lp = Join-Path $out 'last.md'
   if (Test-Path $lp) { $last = [IO.File]::ReadAllText($lp) }
   if ($last.Length -gt 6000) { $last = $last.Substring(0, 6000) + "`n(report cut at 6000 characters; full text on Ryan's PC in board\issue-$n\last.md)" }
-  $msg = "Codex (issue #$n): $title`n`n$last`n`nCloses #$n`n"
+  $checks = ''
+  foreach ($file in @('checks_node.txt','checks_parity.txt')) {
+    $cp = Join-Path $out $file
+    if (Test-Path -LiteralPath $cp) { $checks += "`n$file`n" + [IO.File]::ReadAllText($cp) }
+  }
+  $msg = "Codex (issue #$n): $title`n`n$last`n`nRunner checks:`n$checks`n`nRefs #$n`n"
   [IO.File]::WriteAllText((Join-Path $out 'commit.txt'), $msg, $utf8)
 } else { Write-Host 'usage: codex_issue.ps1 prep|msg <n> <repo> <out>'; exit 2 }

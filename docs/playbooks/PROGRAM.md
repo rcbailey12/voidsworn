@@ -36,7 +36,7 @@ His scope answers:
   passes the concept standard (R203, R205, R207; docs/playbooks/ships.md).
 - **Effects**: every big moment staged to Muse's table (contrib/muse/design/hit_staging_2026_11/synthesis.md): explosions by
   the picked route (issues 353, 365), deaths in three beats (366), one kit of trails, beams and flares (367), effects that
-  start on the ship (370), shields that hug the hull, show four sides and rest invisible (R163 item 2; 371, 372).
+  start on the ship (370), shields that hug the hull with one shield pool, per-side coverage and lossy power routing, resting as Rim and Gap (R246 replaces R163 item 2's four strengths and invisible rest; 371 rules first, then 372 the look; design in contrib/muse/design/shields_2026_11/).
 - **Space**: nebula and ion storm hexes with depth (368), a board planet and rocks from real data, remixed past recognition
   (R163 item 3; 369), the black hole and sky calm enough that ships and effects win.
 - **Screen**: the battle screen in the ember orders-sheet look, layout E1 Ledger, shield readouts in Glacier #92b8e8 (Ryan,
@@ -77,6 +77,13 @@ other work to free you up on these crucial items" (R205, R206). So "Fable" in th
 No Fable helpers (R180). The Board starts agreed work on its own and asks Ryan only for design, key decisions, reviews of what
 he will see, and conflicts (R202).
 
+PC runner starts and restarts (issue 687, Ryan's Nov 14 approval): both runners fetch one shared local bare mirror under
+Downloads\voidsworn_test, clone from disk, retry failed clone/fetch steps three times total with two-minute gaps, and make
+a tiny call to the selected model before agent work. They merge the issue and arm's -partial branch by default and name it
+in the task. Chain jobs through tools/pc/chain_issue.bat and the predecessor run's status.json; only a confirmed non-partial
+real push with passing runner checks releases the next job. A failed, partial, unchanged or dry run stops the chain.
+The one-page Board note, deployment files and free Windows proof are in tools/pc/work/README.md, "Reliable starts and restarts".
+
 ## The tracks, in order
 
 ### 1. Battle effects (first)
@@ -87,8 +94,8 @@ he will see, and conflicts (R202).
 | Ryan's pick of the route | decision 1 | Ryan | 353 |
 | Effects start on the ship: attach point service | 370 | DeepSeek | nothing |
 | Rebake every explosion by the picked route | 365 | Codex (GPU) | decision 1 |
-| Shield options sheet: resting, hit, down side, at camera 170 | new, under 371 and 372 | Fable (Board), with Muse's reference notes | nothing |
-| Shield model and surface, first build | 371, 372 | Fable helper | Ryan's shield pick |
+| Shield options sheet | DONE: Muse design PR 699 (merged Nov 14); Ryan picked Rim and Gap and one pool (R246) | Muse | nothing |
+| Shield model (371, Kimi arm, rules and balance first) then surface (372) | 371, 372 | Kimi for 371; Codex or an Opus worker for 372 | nothing: R246 ruled |
 | Trails, beams and flares: options sheet, then one kit | 367 | Fable options, then DeepSeek | decision on the sheet |
 | Deaths in three beats to the staging table | 366 | DeepSeek build, Fable review | 365, 370 |
 | Every faction readable at the played camera | 362 | Fable helper | the above, last |

@@ -11,6 +11,17 @@ R37 and R40: finish the Chorus set first, then one painted poster admiral per re
 - `sheets/*.webp`: contact sheets per faction (for Ryan's phone) and `crests_all.webp`.
 - `portraits.gd`: lookup for any screen.
 
+## Restoration frames (R78 Q17, issue 43)
+
+Eclipse (faction id `deathless`) level by restoration, so their portraits show mastery level on the frame: `Portraits.face("nekhet", level, capstone)` draws the marks onto a copy of the face, one step per level up to 8. Level 0, any other faction, or a call without the new arguments returns the plain face unchanged.
+
+- Ring pieces: 8 white-gold slots around the inside of the frame, one lit per level from the top, clockwise.
+- Plates: dark violet plates with a gold edge stack in the four corners, one layer per two levels.
+- Visor: a white-gold slit on the bottom frame edge, widening and brightening per level.
+- Capstone mastery (3 more levels, the lineage cap) adds a thin outer hairline in brighter gold.
+
+The hook is `campaign_ui.gd _face()`: it passes `masteryLevel` and `capstoneMasteryLevel` and caches per admiral, level and capstone. Marks are drawn in code (palette from the Eclipse crest, `tools/portraits/crests.py`), so no new paintings are needed; sheet: `docs/shots/portraits/issue43_eclipse/`.
+
 ## Painted admirals (Oct 26 picks)
 
 Seven paintings are in: the Chorus pair plus one poster admiral per other faction. Every other admiral shows its crest. Phone sheets: `sheets/<faction>_portraits.webp` (pick, alternates, crests of the rest). Picks, alternates and the reason for each are in `index.json` and `tools/portraits/picks_b1b2.json`.

@@ -1,0 +1,124 @@
+{
+  "code": "D22_23",
+  "triangles": 104804,
+  "turret_triangles": 15972,
+  "root_surfaces_before": 11,
+  "root_surfaces_after": 12,
+  "mesh_primitives_before": 19,
+  "mesh_primitives_after": 20,
+  "maps": [
+    {
+      "file": "D22_23_glow_emission.jpg",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 200740
+    },
+    {
+      "file": "D22_23_parts_orm.jpg",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 1865818
+    },
+    {
+      "file": "D22_23_parts_base.jpg",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 1181191
+    },
+    {
+      "file": "D22_23_normal.jpg",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 358135
+    },
+    {
+      "file": "D22_23_orm.jpg",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 2260984
+    },
+    {
+      "file": "D22_23_base.jpg",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 1299338
+    }
+  ],
+  "glb_bytes": 11501640,
+  "baseline_glb_bytes": 11500136,
+  "device": "CPU",
+  "map_res": 2048,
+  "samples": 6,
+  "surface": {
+    "room": 0,
+    "bare": 0
+  },
+  "density": {
+    "paint_flags": [],
+    "mesh_flags": [],
+    "hull": {
+      "area": 2.12505,
+      "triangles": 80596,
+      "tris_per_unit2": 37926.6,
+      "edges_per_unit2": 36381.3,
+      "texels_per_unit2": 453009.7,
+      "atlas": "hull",
+      "paint_detail_share": 0.3
+    },
+    "rule": "R224: a part type more than 25 percent under the hull is flagged",
+    "paint_bar_per_unit": 287.47,
+    "paint_top": 0.3
+  },
+  "export_check_pass": true,
+  "anchors": [
+    {
+      "name": "hp_breach_0",
+      "clear": 0.1637
+    },
+    {
+      "name": "hp_breach_1",
+      "clear": 0.1525
+    },
+    {
+      "name": "hp_breach_2",
+      "clear": 0.1335
+    },
+    {
+      "name": "hp_breach_3",
+      "clear": 0.0559
+    },
+    {
+      "name": "hp_breach_4",
+      "clear": 0.0301
+    },
+    {
+      "name": "hp_breach_5",
+      "clear": 0.0306
+    },
+    {
+      "name": "hp_breach_6",
+      "clear": 0.0593
+    },
+    {
+      "name": "hp_breach_7",
+      "clear": 0.0504
+    }
+  ],
+  "failures_without_rim_marker": [
+    "hp_breach_0 is 0.0105 from a part (at least 0.03)",
+    "hp_breach_1 is 0.0199 from a part (at least 0.03)",
+    "hp_breach_2 is 0.0226 from a part (at least 0.03)"
+  ]
+}

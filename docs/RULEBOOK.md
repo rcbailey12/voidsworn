@@ -33,8 +33,12 @@ never the guideline it cited (R187); Ryan wanted the audit to find "these weird 
 it, you know, more restricted and less realistic and cinematic than it should be". Set: Ryan, Nov 7 (R121: assumed gates stop
 binding until a measurement earns them back) and Nov 11 (R187: "Keep comfort, loosen rest").
 
-0.5 **Tidy is a fault on screen.** Even, straight, identical, instant, capped, on rails or one scale reads as staged. Why: the
-wrecks "feel like they're just getting sliced in half" (R186). Set: Ryan's complaint, Board's wording (R187).
+0.5 **Order follows the faction; motion and breaks never feel staged.** Hullbreaker armour is irregular patchwork. Eclipse
+panels are precise, dead even, ordered and aligned, with seams and slight relief (Ryan, Nov 13, R243: "make the eclipse panels
+actually panels and dead even and ordered to align"). Glasswrights are blown glass without panels; Chorus surfaces are grown,
+without plates. Sunward and Hegemony follow factions.md. Instant motion, identical beats, straight cuts and one scale still
+read as staged. Why: the wrecks "feel like they're just getting sliced in half" (R186); applying that to every faction's
+surface erased the Eclipse's machine precision. Set: Ryan's complaints, Board's wording (R187), corrected by Ryan (R243).
 
 0.6 **A rule that rests on a fact that can change names what ends it** (a model's version, a plan's limit, a tool that is
 down). Why: the Codex cloud ban, the Fable helper counts and the Kimi sentence outlived their facts. Set: Board, Nov 11 (Muse
@@ -59,6 +63,16 @@ kept separate copies of the same facts, three checks assumed the old C15s cruise
 closed engine bells), a launcher quoting bug and a stale game cache only show on Windows in a real install, and no ship
 had gone from sheet to game since the sheet method changed. Set: Board, Nov 12, on Ryan's ask to learn from the gaps at
 the level of design and setup, not patches (R225).
+
+
+0.10 **How the repo carries memory (R251).** A standing rule comes only from Ryan's words, quoted in FINDINGS and landed here; a row
+that stretches his words past what he named says so and asks him. Board choices for one day or one job (effort, caps, job order,
+wrappers, which seat took a job) are operating notes in LOOP.md, never rules. A new ruling names what it replaces and the old row is
+marked SUPERSEDED, so no two live rules conflict. One live place per kind: rules in this book, status in LOOP.md's newest LATEST
+lines and The seats, the hand-over in HANDOFF section 0 (about one page; older sections go to docs/archive), history in FINDINGS.
+LOOP.md's LATEST lines roll into a dated summary once they pass about 15. Muse audits for stale or conflicting docs now and then.
+Why: several models and fresh chats read the repo cold; on Nov 14 a one-day choice nearly became a rule, an A20 note was stretched to
+every ship, and a summary line inverted Ryan's call on A18 and A19.
 
 ## 1. Working with Ryan
 
@@ -137,6 +151,15 @@ keeps only what needs it. Codex gets only what no other seat can do (Ryan, Nov 1
 use it when it can only do something others can't", R234): code and check jobs go to the API Opus arm or an Opus worker first.
 The Kimi Code plan holds about 30 minutes of agent work per 5-hour window, so it takes short reviews only, never builds (issue
 597 verdict, Nov 12). Ids: R128, R180e, R205, R206, R219, R234, agents-12.
+
+**Nov 14 (R242, R250), wins over the table and paragraph above where they differ:** the seat order is DeepSeek for small jobs, the
+Sonnet API arm for mid-size, Opus (API arm or a plan-side helper) for Blender and large work, Codex for what only it can do, Kimi by
+results (R242). While the API credit is spent (till its monthly refresh, about Nov 21; Ryan adds none) and the Board plan is low,
+Codex is the main builder, Blender builds included ("use codex aggressively", Nov 14; the Board sets effort per job); the Board judges
+every model by picture as before. Kimi now holds a seat through the Kimi Code CLI arm (kimicode, WORK_HARNESS=kimi): about 2.5 hours
+of agent time per 5 hour window on Nov 14 (a Board observation, revise with evidence), so mid-size code, rules and balance jobs
+(the 30 minute figure above was the OpenCode route). Muse also runs outside audits (issue 706). Not taken: Gemini 4 Hydrogen. The Board thread may use the Fable advisor
+(Ryan, Nov 14 18:28 CST: "this chat stands", R252, replacing R250's no).
 
 2.7 **Codex runs the model Ryan picked: GPT 6.1 Sol today, pinned by name in tools/pc/codex_issue.bat.** Never a weaker
 model by accident (Luna) and never switched to another one (Astra) without his yes; no Codex cloud tasks or cloud reviews.

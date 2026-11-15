@@ -11,15 +11,16 @@ import math
 import sys
 
 import bpy
+import os
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 
 REPO = Path(__file__).resolve().parents[4]
 BUILD = REPO / 'tools/blender/build_sheets/build.py'
+# build.py reads the render device from SHEET_DEVICE (PR 691); CPU keeps the GPU free for the Board's paint run.
+os.environ['SHEET_DEVICE'] = 'CPU'
+print('R244 render device: CPU', flush=True)
 source = BUILD.read_text(encoding='utf-8')
-start = source.index("sc.cycles.device = 'GPU'")
-end = source.index('sc.cycles.samples =', start)
-source = source[:start] + "sc.cycles.device = 'CPU'\nprint('R244 render device: CPU', flush=True)\n" + source[end:]
 scope = dict(__file__=str(BUILD), __name__='__main__')
 exec(compile(source, str(BUILD), 'exec'), scope)
 

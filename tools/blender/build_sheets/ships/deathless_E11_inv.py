@@ -39,8 +39,6 @@ INVENTORY = [
          cells=['mid/top'], reads='a hex rim, glowing glass set back, bars', src='picture', note='README 8c called it a flak cluster; read as the core port'),
     dict(id='shade_gen', job='houses the shade generators that drive the plate layers', type='hatchbox', what='the raised deck housing between the core port and the aft turret', count=1, cells=['mid/top', 'mid/side'],
          reads='a framed block, an inset lid under a stacked plate, side ribs', src='picture'),
-    dict(id='belly_flak', job='the second null shredder (flak T) covers below, where the deck shredder cannot see', type='shredder', what='belly twin turret covering below (data.js flak T, second mount)', count=1, cells=['mid/below'],
-         reads='as the deck shredder', src='designed'),
     dict(id='hatches', job='crew and drone access to the decks and the belly (repair swarms come out here)', type='hatch', what='octagonal hatches on the deck tiers and the belly', count=4, cells=['mid/top', 'mid/below'],
          reads='a rim, a door, a seam, hinges', src='designed'),
     dict(id='lamps', job='corona strip lights: running lights and the Eclipse corona line along the belt', type='lamp', what='corona strip lights along the flank belt', count=8, cells=['mid/side', 'stern/side'],

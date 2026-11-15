@@ -230,8 +230,7 @@ def build(K):
           note='aft null cannon, superfiring over T1; far enough aft that T1 fires aft over its muzzles')
     K.gun('F1', (-6.4, 0.0, K.deck_z(-6.4, 0.0)), 0, 12, barrels=2, cal=0.075, blen=1.1, size=0.85, slot='T', weapon='flak', inv='flak',
           note='null shredder: a fan of five needle rails, aft on the deck')
-    K.gun('F2', (-1.0, 0.0, -2.05), 0, 10, barrels=2, cal=0.075, blen=1.1, size=0.85, normal=(0, 0, -1), slot='T', weapon='flak', inv='belly_flak',
-          note='null shredder on the belly, covering below')
+    # R241 (issue 676): the belly shredder F2 is cut: a second five-needle shredder on flak's 3 shots left each mount silent on some volleys
 
     # ---------------- deck and flank fittings ----------------
     K.corewin('CW1', (-3.75, 0.0, tier_z(-3.75, 0.0) - 0.01), (0, 0, 1), 0.34, inv='core_port', note='the core\'s light through a hex port in tier 1')
@@ -274,8 +273,8 @@ def build(K):
             secs.append((x, max(hw, 0.3), max(hw, 0.3), z - 0.04, z + 0.04, 0, 0))
         K.loft('in_deck_' + name, secs, 'darkdeck', inside=True)
         K.inside.append(dict(kind='deck', name=name, z=z, x=(x1, x0)))
-    deck('lower', -0.95, 4.6, -11.0); deck('main', 0.3, 5.0, -11.0); deck('upper', 1.2, 3.0, -10.7)
-    for i, x in enumerate((4.6, 2.2, -0.4, -3.0, -5.5, -7.5, -9.8, -11.0)):
+    deck('lower', -0.95, 4.6, -11.0); deck('main', 0.3, 4.7, -11.0); deck('upper', 1.2, 3.0, -10.7)
+    for i, x in enumerate((4.3, 2.2, -0.4, -3.0, -5.5, -7.5, -9.8, -11.0)):
         s = _k.sec_at(HULL, x)
         K.loft('in_bh_F%d' % i, [(x + 0.05, s[1] - 0.3, s[2] - 0.3, s[3] + 0.3, s[4] - 0.3, 0, 0), (x - 0.05, s[1] - 0.3, s[2] - 0.3, s[3] + 0.3, s[4] - 0.3, 0, 0)],
                'frame', inside=True, rounded=True, pexp=PEXP)
@@ -288,7 +287,7 @@ def build(K):
     K.room('core', 'ecore', -5.3, -3.1, -1.1, 1.1, -0.9, 1.15, note='the core of trapped light (hp_core); its port opens on the deck')
     K.room('archive_vault_aft', 'archive', -7.3, -5.6, -1.2, 1.2, -0.9, 0.25, note='archive vaults')
     K.room('shade_machinery', 'machinery', -7.3, -5.6, -1.0, 1.0, 0.4, 1.15, note='shade generators and the band collar\'s drives')
-    K.room('flak_magazine', 'magazine', -1.8, -0.2, -0.7, 0.7, -1.5, -1.0, note='over the belly twin')
+    K.room('flak_magazine', 'magazine', -1.8, -0.2, -0.7, 0.7, -1.5, -1.0, note='the shredder magazine, hoisting aft to F1')
     K.room('engine_room', 'engroom', -10.6, -9.9, -0.7, 0.7, -0.9, 1.15, note='engine room and the three drives\' feeds')
     K.armour('crescent (shade layers)', 0.6, 'three layers, thickest at the inner wall; the rims knife-thin')
     K.armour('dorsal tiers and barbettes', 0.4, '')
@@ -296,8 +295,9 @@ def build(K):
     K.armour('belly and skirt', 0.25, '')
     K.armour('stern feathers', 0.15, 'thinnest; they peel first')
     # issue 618 (R226): B-1 kinks aft round the projector's breech collars (A1 runs from 4.5), so the projector rides whole with the bow
+    seam_reach = 2 * max(max(s[1], s[2]) for s in HULL)
     K.break_line('B-1', 5.2, 'the crescent root seam: the shade and the projector tear away from the neck, opening the capacitor bank',
-                 path=[(5.5, 1.6), (4.3, 1.05), (4.1, 0.3), (4.35, -0.4), (4.15, -1.05), (5.4, -1.6)])
+                 path=[(5.5, seam_reach), (5.5, 1.6), (4.3, 1.05), (4.1, 0.3), (4.35, -0.4), (4.15, -1.05), (5.4, -1.6), (5.4, -seam_reach)])
     K.break_line('B-2', -7.5, 'at the band collar: the stern (feathers and drives) tears away, opening the engine room and the aft vault',
                  path=[(-8.02, 2.5), (-8.02, 1.9), (-7.4, 1.1), (-7.95, 0.2), (-7.2, -0.7), (-8.02, -1.8), (-8.02, -2.5)])   # issue 618 (R226): aft of the collar thrusters Q2
     K.break_line('B-3', 0.0, 'the dorsal tiers peel off band by band along their base, taking the batteries, laying the dark decks bare',
@@ -322,20 +322,22 @@ def build(K):
     # ---------- changed from the picture (designer's decisions, R207) ----------
     K.change('Three big engines stacked one over another, each about a third of the stern\'s height, standing 2.6 behind the hull, which ends 0.9 sooner and narrows in plan round them (issue 618, the Board\'s massing round)', 'the side view and the beauty show three big bells stacked filling the stern; the sheet\'s diamond of four read small and hid behind the feathers, whose last row now ends at the hull\'s end')
     K.change('Engines are eclipse rings, not flame', 'factions.md: "no flaming bells. An eclipse ring of pale light": each bell has a black shade disc with a thin pale green-white ring inside its lip')
-    K.change('Batteries by data.js slot', 'd_boss carries gauss T twice, doom F and flak T: the two big mounts are the null cannons (the aft one superfires on a barbette), the projector is the corona arc, the small aft mount and a belly mount are the null shredders')
+    K.change('Batteries by data.js slot', 'd_boss carries gauss T twice, doom F and flak T: the two big mounts are the null cannons (the aft one superfires on a barbette), the projector is the corona arc, the small aft mount is the null shredder')
+    K.change('Belly shredder F2 cut; the deck shredder F1 is the whole flak slot', 'R241 (Ryan, Nov 13 2026: "all ships should have weapons that match their actual weapons in game"; issue 676 weapon-match check): flak fires 3 shots a volley and each shredder has five needle muzzles, so two shredders took turns and each fell silent on some volleys; one shredder fires on every volley. The board is flat, so the belly added no cover the game uses')
+    K.change('B-1 runs on past both flanks to twice the body half-beam', 'issue 676 PC destruction proof: without F2 the hull bounds change; a path ending near the flank let the main deck, forward frame and liner tear at different places from their plating (23 triangles outside their piece). Extending the existing end stations keeps the plan kink while aligning the tear through the hull depth')
     K.change('Weapons built from the lore, not the picture\'s generic turrets (R221)', 'Ryan: "their turrets look the same as hullbreakers"; the picture draws box turrets with round twin barrels. The null cannons are rail guns (slim round rail pairs with banded collars) firing through the slot of a thin arched crescent shade, the shredders fans of needle rails, all in the hull\'s curved, layered, banded language (pass 2: "super blocky"), the projector an arc emitter with a crown of electrode horns round the crest\'s black disc (tools/blender/kits/eclipse/README.md)')
     K.change('The green hexagon on the deck is the core port, not a gun', 'the faction\'s green is the trapped core seen through gaps; the flak slot is the small twin')
     K.change('The crescent is one thick tiered band: the broad outer band flush with a thick outer wall, the inner layer stepped down close inside it, the root layer on the band (issue 618, the Board\'s massing round)', 'judged against the whole concept: the sheet\'s thin blade with a raised inner ribbon read as two thin blades with a wide gap between them; the concept is one broad plated band with a stepped inner layer close against it')
     K.change('The crescent is three stacked layers with a corona line on each rim', 'factions.md: broad layered plates, the green a thin line on every shade rim; the concept shows two stepped bands and a lip; the layers are also how it breaks (band by band)')
     K.change('Low round drums under both batteries, slimmed to the turret feet (R221 pass 2)', 'so the fore twin clears the tier when it trains aft and fires aft over the aft twin\'s muzzles, and the aft twin fires over the fore one (the fit check found both)')
-    K.change('Belly twin, attitude thrusters, deck and belly hatches, corona strip lights, heat panels added', 'the belly needs cover and a ship in space needs thrusters; the picture shows no underside')
+    K.change('Attitude thrusters, deck and belly hatches, corona strip lights, heat panels added', 'a ship in space needs thrusters; the picture shows no underside')
     K.change('B-1 kinks aft round the projector\'s breech collars (to 4.1 on the axis); B-2 runs aft of the collar thrusters at the flanks (issue 618)', 'R226: a machine never crosses a seam; the projector and the thrusters ride whole with one piece')
     K.change('B-3 (the dorsal tiers\' peel) raised to about 1.7, through the tiers (issue 618)', 'at 1.45 the game\'s torn peel plane reached the upper deck\'s edge (1.2) and left 15 deck triangles past the torn plating (death_seam_check); at 1.7 it still takes the tiers and the batteries')
     K.change('B-4 (the crescent layers\' peel) is a level plane at 0.9 over the bow compartment (issue 618)', 'the game\'s longitudinal seam is one level plane (RECIPE.md, format version 1); at 0.9 it clears the projector\'s collars and peels the root and upper layers off the blade')
     K.change('Two boarding origins on the flanks over the belt, between the strip lights (issue 618)', 'the game contract needs one a side on the mid hull (HARDPOINTS.md)')
     K.change('The projector\'s hard point is its lens, at the crest\'s centre (issue 618)', 'the horns\' meeting point ahead of it is open space, which the export check refuses as off the mesh; the arc leaves from the lens')
     K.change('Plate courses on the projector\'s collars, column and head, and stiffener rings on the engine bells (issue 618)', 'R224 measured on the build: the projector was 0.44 of the hull\'s triangles and 0.33 of its edges per square unit, the engines 0.68 of its edges; the kit now lays plates at the hull\'s plate size, so a big part keeps the density')
-    K.open_item('The belly between the skirt and the belly twin is designed here; the picture does not show the underside')
+    K.open_item('The belly under the skirt is designed here; the picture does not show the underside')
 
     K.change('The crescent band is 1.65 wide at its sides', 'the plan of record (the 8c sheet\'s top view) gives 1.3, the beauty reads broader; the band sits between the two so the beauty\'s fat brim reads without losing the plan')
     # ---------- the fit report's fix column: every finding on the first full layout (/tmp before/deathless_E11_fit.json, kept in fit_report.md) ----------

@@ -74,8 +74,12 @@ check(has(rec, 'at most 8.66'), 'environment_reconciliation.md section 2 states 
 check(has(rec, '**Figures of record: nebula alpha 0.075, debris 0.065, ion storm 0.065**'), 'environment_reconciliation.md section 4 states the BD16 alphas 0.075, 0.065, 0.065');
 // 4. AS18: no debris piece over 8.66 units (section 3)
 const CAP = 8.66;
-const living = /var s := 0\.3 \+ 2\.5 \* pow\(rng\.randf\(\), 2\.4\)/.test(liv) ? (0.3 + 2.5) * 2.0 : NaN;
-const plain = /var s := 0\.35 \+ 1\.6 \* pow\(_rng\.randf\(\), 2\.2\)/.test(world) ? (0.35 + 1.6) * 2.0 : NaN;
+// Issue 710 gave both debris formulas named constants (docs/playbooks/scale.md); the largest piece is the scale range's
+// top at the library's 2.0-unit rock length. Read the constants, so the two paths cannot drift from this check.
+const livingMax = parseFloat((/const DEBRIS_ROCK_MAX := ([\d.]+)/.exec(liv) || [])[1]);
+const plainMax = parseFloat((/const DEBRIS_FIELD_SCALE_MAX := ([\d.]+)/.exec(world) || [])[1]);
+const living = Number.isFinite(livingMax) ? livingMax * 2.0 : NaN;
+const plain = Number.isFinite(plainMax) ? plainMax * 2.0 : NaN;
 const hero = /rng\.randf_range\(1\.3, 2\.6\) if i > 0 else rng\.randf_range\(2\.6, 3\.8\)/.test(liv) ? 3.8 * 2.0 * Math.max(...JSON.parse(read('godot/world/wreckage/kit.json')).pieces.map(p => p.radius)) : NaN;
 const ext = Math.max(...JSON.parse(read('godot/world/rocks/rocks.json')).rocks.map(r => Math.max(...r.ext)));
 check(ext === 2.0, `library rocks are 2.0 units long at scale 1 (got ${ext}); the AS16 table assumes it`);

@@ -5,7 +5,7 @@
 # Measured off the round 8b sheet's true views (bow LEFT in both; side view 59.3 px a unit, plan 58.7, the mouth's front to the
 # tail's end 24.6 units, the membranes trail on to the full 28.0): the head and mouth mass 4.9 wide and 3.9 tall, the body
 # 4.7 wide and 3.7 deep through the middle, tapering from 60 percent to a tail that rises toward the back line; three big sacs
-# a side on the lower flanks (2.9, 2.2 and 1.7 across), five small sacs hanging on necks under the belly, the tendril crown at
+# a side on the lower flanks (2.9, 2.2 and 1.7 across), five small sacs hanging on necks under the belly (three built, R241), the tendril crown at
 # about half length on the back, a raised ridge line along each shoulder; hull length to beam 5.2, length to height 6.5.
 # +X bow, +Y port, +Z up. Mouth front x = +14.0, vent mouths x = -10.45, membrane tips x = -13.95.
 import math
@@ -68,7 +68,7 @@ HULL = dense(KEY)
 PL = dict(size=(0.5, 1.1), thick=(0.02, 0.045), skip=0.18, stack=0.0, mats={'flesh': 5, 'hide': 3, 'flesh2': 2, 'scar': 0.35},
           rivet_mat='pore', subs=['pad', 'pore'], rivets=True, rr=0.03)
 
-GLANDS = (4.9, 2.55, 0.2, -2.9, -5.1)          # the spore glands' stations under the belly
+GLANDS = (4.9, 0.2, -5.1)                      # the spore glands' stations under the belly (R241, issue 676: three, one pore-muzzle each)
 SACS = ((5.06, 1.25, -0.8), (0.34, 1.0, -0.82), (-3.6, 0.75, -0.8))   # brood sacs: station, radius, section angle (port) where the neck grows out   # brood sacs: station, radius, section angle (port)
 
 
@@ -104,7 +104,7 @@ def build(K):
     # ---------------- the spore glands under the belly (spores T) ----------------
     for i, x in enumerate(GLANDS):
         zb = K.hpt(x, -math.pi / 2)[0].z   # the belly's skin, swell included
-        K.gun('G%d' % (i + 1), (x, 0.0, zb - 0.04), 0, 0, barrels=2, cal=0.06, blen=0.6, size=1.15, normal=(0, 0, -1), slot='T', weapon='spores',
+        K.gun('G%d' % (i + 1), (x, 0.0, zb - 0.04), 0, 0, barrels=1, cal=0.06, blen=0.6, size=1.15, normal=(0, 0, -1), slot='T', weapon='spores',
               inv='spore_glands', kw=dict(seed=20 + i), note='spore gland on its neck under the belly, the spout curled forward to a rosette of pores')
         K.mass('Spore gland %d' % (i + 1), _bpy.data.objects['G%d_turn_flesh' % (i + 1)], 'flesh sac', note='hanging on its neck under the belly')
 
@@ -308,7 +308,11 @@ def build(K):
     K.change('Colour: bile yellow-green light over dark olive flesh and ochre chitin', 'R204 and the lore: the colour is fixed in the build; the picture came out grey with amber light (README 8b)')
     K.change('The two mouths are the two bile spitters (bioplasma F, F)', 'data.js b_boss carries two Spine volleys forward; a weapon is an organ (factions.md). Each throat gets an inner sphincter, a ring of chitin spines (the spines it spits) and its glowing bile gland; the picture shows only the glow')
     K.change('The tendril cluster is the boarding tendrils (tendril T), a crown on a muscle mound that turns', 'the slot is all round; the profile (the view of record for anatomy, README 8b) curls them up, the plan splays them flat; built as the profile with the tips splayed')
-    K.change('The belly row is five spore glands (spores T) on necks, spouts forward', 'the picture\'s small hanging sacs; the last two moved about one unit aft so the B-2 seam passes behind the crown and between two glands (R226)')
+    K.change('The belly row is three spore glands (spores T) on necks, spouts forward', 'the picture\'s small hanging sacs; spaced so the B-2 seam passes behind the crown and between two glands (R226)')
+    K.change('Spore glands cut from five to three, one firing pore each (G1 at 4.9, G2 at 0.2, G3 at -5.1)',
+             'R241 (Ryan, Nov 13 2026: "all ships should have weapons that match their actual weapons in game"; issue 676 weapon-match check): '
+             'spores fires 3 shots a volley; five glands of two pores each left every gland silent on some volleys, so the shots did not split '
+             'the same way every time. Three glands of one pore each fire on every volley')
     K.change('The big flank sacs are brood sacs, the hangar (hangar 3), with birth slits', 'the picture\'s crease on each sac becomes the slit the spore swarms are born through; a launch opening kept clear (fit check EXIT). They hang below the lower flank as heavy lobes on soft necks, so from above only their curve shows (the Board on PR 628)')
     K.change('The long ridge down each flank is a raised membrane fold with an ochre chitin edge', 'the picture\'s long flank ridge, given height; the lore\'s ochre chitin trim on its edge; it is also where the hide tears first')
     K.change('The tail ends in a crown of three pulse vents with trailing membranes', 'factions.md: no nozzles, pulsing vents or trailing membranes; the picture\'s spike with three or four glow points and long wisps. The membranes are about two thirds of the picture\'s wisps so the whole ship is 28.0, mouth to membrane tip')
