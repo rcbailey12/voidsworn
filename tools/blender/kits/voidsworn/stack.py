@@ -109,7 +109,7 @@ def pair(k):
 SCALE = 1.0          # every size below is in ship lengths (the recipe's frame: the ship is 1.0 long)
 LAYERS = dict(
     ao_short=.004, ao_long=.025, edge_radius=.0012, edge_gain=16.0,
-    # sunward.md 1: forged variation by plate (plate_var, island_tone), no fine mottle and no grain (R237: "grainy paint")
+    # sunward.md 1: forged variation by hull panel cell (panel_nodes), no fine mottle and no grain (R237: "grainy paint")
     patch_scale=4.0, plate_var=.22, island_tone=.50, side_dark=.25, grain_scale=260.0, mottle_scale=40.0, mottle=.05, grain=0.0,
     rough=.68, metal=.48, wear=1.0, grime=.55, ao_dark=.90, red_tone=0.0,
     rough_floor=.55,     # sunward.md 3: the roughness floor in every zone (no white specular glare at the game's key light)
@@ -120,8 +120,9 @@ LAYERS = dict(
     # R243 (Ryan, Nov 13 2026: "Sunward could have more triangle sleek panels"; a hull's order follows its faction's lore): the
     # Sunward plates are FORGED, not scavenged, so their order is deliberate and stays exact. patch_warp, patch_band and
     # patch_split are 0 and stay 0: the uneven warped grid is the Hullbreakers' opt-in only (R240, PR 682), never "fix" this order
-    # into warp. plate_var and island_tone carry the forged variation instead. The Sunward panels are drawn by panel_nodes below
-    # (the shared patchwork hands them over before it reads any of these three), so the shared _grid never sees these zeros.
+    # into warp. The forged variation comes instead from each hull panel cell taking one calm tone of its own: the Sunward
+    # panels are drawn by panel_nodes below (the shared patchwork hands them over before it reads any of these three), so the
+    # shared _grid never sees these zeros. plate_var and island_tone do not carry the hull variation; their values stay in LAYERS.
     patch_warp=0, patch_band=0, patch_split=0,
     cavity_pow=1.6, wear_lo=.22, wear_hi=.46,
     scuff=.35, scuff_size=.050,

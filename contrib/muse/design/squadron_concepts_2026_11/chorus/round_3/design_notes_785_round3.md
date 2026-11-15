@@ -33,3 +33,12 @@ CS1B-A. DeepSeek and the blind leg land there, and it is the only variation that
 - CS1B-A's amber renders stronger between the bands than the sheet's faint blush; the build keeps it muted and transmitted, never a lit groove.
 - CS1B-B's render understates even the refined bulge; the sheet's definite-bulge term governs.
 - CS1B-C's plates render with pale bone edges all round; the sheet keeps the plates flesh-and-bone with the bone as edging, not full frames.
+
+## Owner's ruling (Nov 15, 2026)
+
+This file originally ended at the production notes and carried no owner's reply. The ruling is recorded in the round 4 file's header and FINDINGS R259; quoted as those records give it:
+
+- "the closed-hull Chorus direction is much better"
+- "CS1B-A and CS1B-C are very close to right, but the craft needs to be a bit sleeker"
+
+FINDINGS R259 records the outcome after that direction: CS1B-A2, the Sealed Gills sleek, is the pick, asked for a bit sleeker. Round 3's own outcome was the sleekness pass on A and C with B dropped, as the round 4 sheet records.
