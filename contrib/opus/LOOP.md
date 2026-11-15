@@ -13,8 +13,7 @@ If "Running: no" and the start time is under 90 minutes old, another run is work
 
 ## Timers (every scheduled reminder; a fired reminder re-reads this file and the newest rulings before acting)
 
-- trig_01RPn6kiHJkwjaA9gSQPS2cN, fires 19:39 UTC Nov 15: merge the HANDOFF hand-over PR 806 on green. Expires once 806 is merged.
-- None recurring. Earlier one-off reminders of Nov 14 and 15 have all fired; the 07:30 CST one (end the GPU window) was void because Ryan extended the GPU go at 06:51 (the F2 case in contrib/opus/reviews/repo_memory_788.md).
+- None open. None recurring. Earlier one-off reminders of Nov 14 and 15 have all fired; the 07:30 CST one (end the GPU window) was void because Ryan extended the GPU go at 06:51 (the F2 case in contrib/opus/reviews/repo_memory_788.md).
 
 ## The Board's standing duties (Ryan, Nov 11 2026, FINDINGS R194)
 
@@ -34,7 +33,7 @@ The Board owns the WHOLE board. These duties hold for every Board thread, whatev
 6. **Review.** Nobody grades their own work: an Opus-built change gets an outside check (Muse; issue 256), and the Board looks at every picture itself before Ryan sees it, with the code name written on it.
 7. **Record.** Rulings go to FINDINGS with Ryan's words and the problem he was reacting to. Board state goes here. Rules go to the rulebook (issue 492) with their reasons. HANDOFF.md is rewritten when the thread gets long.
 8. **Ryan.** Plain words, the answer first, your pick and why, pictures one per item with names on them, nothing taller than 720 px, no human-hour estimates. Only message him when something lands or needs him. He should never have to ask what happened to something he already agreed.
-9. **Pace.** Two Opus workers at most while the Board thread is active (the five-hour limit was hit on Nov 11 with three). One Codex job at a time. Never delete anything on Ryan's PC.
+9. **Pace.** About three Opus workers at once (Ryan, Nov 14: "keep it to 2 or 3 threads at once"; the sandbox disk is the other limit). One Codex job at a time. Never delete anything on Ryan's PC.
 
 ## The seats: who does what and how each is started (rewritten Nov 15 2026 from the Nov 14 update, R250; older seat text is in docs/archive/LOOP_history_2026-11-14.md)
 
@@ -89,13 +88,11 @@ Newest first; roll into the summary above once there are about 15.
 
 ## Waiting on Ryan
 
-Older items (Nov 8 to 9) are in docs/archive/LOOP_history_2026-11-14.md; each was answered or overtaken.
+Older items are in docs/archive/LOOP_history_2026-11-14.md and the FINDINGS rows that answered them (R254 to R268).
 
-- Morning (Nov 15): the Iron Mandate sheet (hegemony_IM5_compare_IM5.jpg) and the painted Sunward flagship (voidsworn_S8_paint_concept.jpg).
-- Morning (Nov 15): the Hegemony Dominion sheet (hegemony_H10_compare_H10.jpg, battle cam); the Board's design calls are in PR 767's body.
-- Morning (Nov 15): which Sunward fighter, SF3 (Board chat 23:57) or SF4 (Muse chat 23:51)? PR 776 built SF3 and is held.
-- Morning (Nov 15), design question held: opus_check_750 condition 1. E13 and E14 hold their shades over the ship and fire over them; factions.md says guns fire through gaps behind a forward shade. Which way for the Eclipse family from here (Board: write the over-the-heart posture in, since Ryan accepted E14's flat ring)?
-- Answered Nov 14 18:28 CST (R252): Eclipse core kept (he judges it in play), the Loom replaces the Glasswright body plan, Hullbreaker patches bigger and paler, the Fable advisor stays on. Paint directions (PR 695) were approved at Muse's swatch review.
+- E14 round 2 pictures (issue 782, PR 804); PR 797 (the flare rules, R265) merges with it.
+- The fleet screen (FL1 and FL2 hybrid; Muse's chat, issue 794).
+- The issue 788 plan (the Board's synthesis of three legs).
 
 ## Known traps
 
@@ -127,7 +124,7 @@ Older items (Nov 8 to 9) are in docs/archive/LOOP_history_2026-11-14.md; each wa
 - Duplicate runs: the board (codex_board.ps1, every 10 minutes) queues any unblocked open codex issue that is not in board\queued.txt and has no open PR from codex/issue-N. If you also write a job file, it runs twice. Keep finished issues in queued.txt.
 - A duplicate run of an already merged job force-pushes the branch and auto_pr opens a new PR: close it with a note, do not merge.
 - Usage limit: result.txt says "usage limit hit, left on the board to retry"; grep log.txt for "try again at" (Central time). Do not requeue by hand.
-- Codex has a one-hour cap per run (tmo 3600). Heavy GPU bake-offs can need two runs: back up the branch (git push origin origin/codex/issue-N:refs/heads/opus/issue-N-run1), add a resume note to the issue body, close the PR, drop N from queued.txt.
+- Codex's cap per run is CODEX_CAP (default 3600 s in codex_issue.bat; the Board's chains set 7200). Heavy GPU bake-offs can need two runs: back up the branch (git push origin origin/codex/issue-N:refs/heads/opus/issue-N-run1), add a resume note to the issue body, close the PR, drop N from queued.txt.
 - GitHub's PR list can lag a few minutes after a close, and the board then re-adds the number to queued.txt. Check on the next run.
 - Never put |, &, < or > in job arguments. Job .bat files are CRLF.
 - A4 ship files (glb and maps) live only in build\godot\assets\ships\<code>\ on the PC, out of git by design. A fresh clone builds textureless or old hulls unless they are copied in before its Godot import (tools/pc/jobs/bench207_scene_gate.bat shows the copy, import and rebuild order).
