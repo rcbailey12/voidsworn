@@ -52,7 +52,13 @@ FITS = {
     'hturbo': ({'gun'}, {'turret', 'casemate'}),              # battery: the Hegemony heavy plasma lance (issue 759: low shoulder turrets)
     'ion': ({'ion_trench'}, {'fixed'}),                       # lance: the Hegemony ion cannon, an emitter trench in the bow face (R183 (1))
     'tendril': ({'tendril', 'mane'}, {'turret', 'fixed'}),    # bio: a tendril crown turns; the mane is a fixed organ
+    # squadron craft (issue 769, R253: own fighter and bomber models per faction; data.js fighter and bomber, both arc T)
+    'guns': ({'gun'}, {'turret'}),                            # sq: a fighter's interceptor guns turn on a traverse ring
+    'bombs': ({'bomb_tube'}, {'launcher'}),                   # sq: a bomber's bomb tubes, fixed forward in the bow cassette
 }
+# Why a fixed bomb cassette may show an all-round (T) weapon: a craft is not a ship that keeps its heading while its guns turn;
+# the whole craft turns onto its target on a strafing run (godot/fx/fx_weapons.gd, look 'bombs'), so the tubes point where the
+# craft flies. The table allows it for 'bombs' only, and only on a launcher (the Board's reading of rule 11 for craft, issue 769).
 
 
 def tie_tol(radius):

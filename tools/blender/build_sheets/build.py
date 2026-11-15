@@ -169,6 +169,11 @@ sc.render.image_settings.file_format = 'PNG'
 sc.render.image_settings.color_mode = 'RGBA'
 
 PX_PER_UNIT = 40 if QUICK else 80  # one scale for every orthographic view
+# a hull far smaller than a capital ship (issue 769, the squadron craft, 1.6 units long) sets its own scale and view margin in
+# its SHEET dict; every other sheet keeps 80 px per unit and a margin of 1.0 unit
+_SH = getattr(ship, 'SHEET', {}) or {}
+if _SH.get('px_per_unit'):
+    PX_PER_UNIT = int(_SH['px_per_unit']) // (2 if QUICK else 1)
 
 
 def cam(name, loc, right, up, ortho=None, persp_mm=None, res=(1000, 1000), clip=(0.1, 500), shift=(0, 0)):
@@ -268,7 +273,7 @@ if MODE == 'beauty':
 
 # ortho views: window centred on the model, one px-per-unit for all
 cx, cy, cz = (LO.x + HI.x) / 2, (LO.y + HI.y) / 2, (LO.z + HI.z) / 2
-pad = 1.0
+pad = float(_SH.get('view_pad', 1.0))
 Lx, Ly, Lz = HI.x - LO.x + 2 * pad, HI.y - LO.y + 2 * pad, HI.z - LO.z + 2 * pad
 views = {}
 
