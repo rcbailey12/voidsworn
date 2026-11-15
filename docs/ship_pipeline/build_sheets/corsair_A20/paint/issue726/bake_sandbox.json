@@ -1,0 +1,11 @@
+{
+ "note": "issue 726 sandbox: Blender 5.3 bpy module, Cycles CPU, 6 bake samples, 2 cores shared with two or three other workers' bakes (load 3 to 12), so wall times are noisy; cpu_seconds (the bake process's user plus system time, read from /proc every 5 s) is the fair comparison. Not the PC (Blender 4.5, GPU, 4096): the Board's PC run reports that against the hb682out run.",
+ "stack_commit": "ac3453bf9",
+ "old_stack": "main 608fe532d",
+ "A20_1024": {
+  "old": {"cpu_seconds": 742, "wall_seconds": [781, 2264], "wall_note": "first run at load about 2, rerun at load about 10 (the cpu figure is the rerun's)"},
+  "new": {"cpu_seconds": 749, "wall_seconds": 1058},
+  "cpu_change": "+1 percent (noise level)"
+ },
+ "A16_1024": {"new": {"cpu_seconds": 855, "wall_seconds": 1613}}
+}
