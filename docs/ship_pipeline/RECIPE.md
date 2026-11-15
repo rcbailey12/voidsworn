@@ -306,8 +306,10 @@ Sunward stacks and `kits/shared` untouched). What is the faction's own, and wher
   are 0 with the R243 comment (the even grid is the lore; never warp it). The sheets model the grid as flush slabs
   (`module_panels`), so on the plated zones the painted seams are faint (`grid_seam` .35) and the cells' calm tones carry it.
   The module band: every hull object named `*_bandseam_*` (with the `*_band_*` trim rings beside it) is a joint; there the
-  seams run three times as wide (`band_seam`), reach `band_dark` .96, the short occlusion deepens the recess and grime gathers
-  to .40; over-plates (`patch_over`, share .05) sit only beside the bands. A sheet with no band stops the stack. No rivets
+  joint between the two rings is seam all across (0.08 world: .0038 ship lengths on H10, .0026 on IM5, against hegemony.md's
+  "about three times patch_seam", .0048), a one-sided seam 1.5 patch_seam wide (`band_seam` / 2) runs where each ring meets the
+  plating, so the rings stay clean trim, the seams reach `band_dark` .96, the short occlusion deepens the recess and grime
+  gathers to .40; over-plates (`patch_over`, share .05) sit only beside the bands. A sheet with no band stops the stack. No rivets
   (flush fasteners);
 - light (hegemony.md 5): every value is the brightest linear channel of the emission times its strength, under the game's 0.8
   threshold, and no Hegemony light has red over blue (never warm): the blue line's strips 0.74 (the game's Hegemony engine

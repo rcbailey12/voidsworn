@@ -64,13 +64,13 @@ c.save(os.path.join(OUT, f'{SHEET}_paint_close.jpg'), quality=92)
 
 # 3. the battle camera: 34 degrees above the board, port beam, range 170
 c = Image.new('RGB', (1280, 716), BG)
-head(c, f'{SHEET} | battle camera: 34 degrees above the board, port beam, range 170', NOTE + '; bottom: the game\'s true pixel size')
-c.paste(band(img('paint_battle'), 470), (0, 58)); label(c, (10, 62), 'long lens (the sheet\'s battle camera), the ship filling the frame')
+head(c, f'{SHEET} | battle camera: 34 degrees above the board, range 170', NOTE + '; bottom: the game\'s true pixel size')
+c.paste(band(img('paint_battle'), 470), (0, 58)); label(c, (10, 62), 'port beam, long lens (the sheet\'s battle camera), the ship filling the frame')
 g = img('paint_cam170')
 a = np.asarray(g.convert('L')); ys, xs = np.where(a > 14)
 cx, cy = (int(xs.mean()), int(ys.mean())) if len(xs) else (320, 180)
 crop = g.crop((cx - 200, cy - 90, cx + 200, cy + 90))
-c.paste(crop, (10, 530)); label(c, (14, 534), 'true pixels (1920 x 1080 screen)')
+c.paste(crop, (10, 530)); label(c, (14, 534), 'starboard beam, true pixels (cam170)')
 z = crop.crop((0, 45, 400, 135)).resize((800, 180), Image.NEAREST); c.paste(z, (450, 530)); label(c, (454, 534), 'the same, 2x')
 c.save(os.path.join(OUT, f'{SHEET}_paint_battle.jpg'), quality=92)
 for n in ('concept', 'close', 'battle'):

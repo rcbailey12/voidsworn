@@ -112,7 +112,7 @@ measured here. It is one hull on the board (the boss), not a line ship repeated.
 | **Build** | **2.66** | **7.88** | 2.45 | 6.97 |
 
 What each figure measures (issue 780, Muse's opus_check_775 conditions 1 and 2): the table is the proportions tool's own output
-(`tools/blender/build_sheets/inventory.py`, `proportions()`), measured on the silhouettes of the top and side renders (and of the
+(`tools/blender/build_sheets/inventory.py`, `ratios()`), measured on the silhouettes of the top and side renders (and of the
 concept views). **Hull length:beam 2.66** is the silhouette's length over its MEDIAN width across the middle 60 percent of the
 length (the stations from 20 to 80 percent): the beam of the main body, the swells and the narrowing bow and stern counted only as
 far as they move the median (about 11.7 of 31.2). **Envelope length:beam 2.45** is the silhouette's length over its WIDEST point:

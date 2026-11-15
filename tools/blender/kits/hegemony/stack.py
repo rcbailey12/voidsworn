@@ -121,8 +121,11 @@ LAYERS = dict(
     # are drawn by panel_nodes below (the shared patchwork hands them over before it reads any of these three), so the shared
     # _grid never sees these zeros.
     patch_warp=0, patch_band=0, patch_split=0,
-    # hegemony.md 1, the module band: where hull sections butt and the rails meet the hull, a double-width seam (three times
-    # patch_seam), a deeper seam_dark .96 and an AO-driven recess
+    # hegemony.md 1, the module band: where hull sections butt and the rails meet the hull, a double-width seam (about three times
+    # patch_seam), a deeper seam_dark .96 and an AO-driven recess. As built (panel_nodes): the joint between the band's two trim
+    # rings (the sheet's *_bandseam_*, 0.08 world wide: .0038 ship lengths on H10, .0026 on IM5) is seam all across, and a
+    # one-sided seam band_seam / 2 = 1.5 patch_seam wide runs where each ring meets the plating (a full-width seam there covered
+    # the whole 0.10 world ring on the second sandbox bake)
     band_seam=3.0, band_dark=.96, band_ao=.35, band_grime=.40,
     cavity_pow=1.6, wear_lo=.30, wear_hi=.54,
     scuff=.08, scuff_size=.050,                                           # hegemony.md 1: machining and handling marks
@@ -222,8 +225,8 @@ def panel_nodes(c, col, amount, families=None, cells=None):
     beam measured out from the centreline so port and starboard are mirror images, z up), no stagger, no warp, no split: the same
     module on every sister ship. Two module sizes: patch_big on the body modules (zone hgrey), patch_small on the small module
     plates and recessed fields (hpanel, hgrey2) and on every part. Each plate cell takes one calm tone (a family or the zone's
-    own narrow slice); never per mesh island (R237: grain). The module bands (module_bands()) carry the joint: a double-width
-    seam at each band's edges and its seam, darker (band_dark), an AO-driven recess and a little more grime; over-plates
+    own narrow slice); never per mesh island (R237: grain). The module bands (module_bands()) carry the joint: the band's own
+    seam dark all across and a one-sided seam where each ring meets the plating, darker (band_dark), an AO-driven recess and a little more grime; over-plates
     (patch_over, share .05) sit only beside the bands. Returns the colour and the seam mask (the shared stack darkens the seams by
     seam_dark and bakes their relief into the hull normal)."""
     from paint_stack import node, math_, mixc, ramp
@@ -275,7 +278,7 @@ def panel_nodes(c, col, amount, families=None, cells=None):
     if not hull:
         return col, math_(nt, 'MULTIPLY', seam, amount, clamp=True)
     # the module bands: the box of each band (a little wider, so the joint reaches the plating on both sides of the rings), the
-    # double-width seams at its edges and at its own seam, and a wider neighbourhood where the over-plates may sit
+    # seams at its edges and at its own seam, and a wider neighbourhood where the over-plates may sit
     pad, near = .003, .022
     B = W = bseam = None
     for (x0, x1, y0, y1, z0, z1, xs0, xs1) in module_bands():
@@ -289,7 +292,7 @@ def panel_nodes(c, col, amount, families=None, cells=None):
         B = bi if B is None else math_(nt, 'MAXIMUM', B, bi)
         W = wi if W is None else math_(nt, 'MAXIMUM', W, wi)
         # the joint itself (the band's own seam, between its two trim rings) is seam all across, and where the rings meet the
-        # plating a seam three patch_seam wide runs on the plating side only, so the rings stay clean machined trim
+        # plating a seam band_seam / 2 patch_seam wide runs on the plating side only, so the rings stay clean machined trim
         hw = L['patch_seam'] * L['band_seam'] / 2
         e = math_(nt, 'MULTIPLY', math_(nt, 'GREATER_THAN', c.x, xs0), math_(nt, 'LESS_THAN', c.x, xs1))
         for xe, sgn in ((x0, -1.0), (x1, 1.0)):
