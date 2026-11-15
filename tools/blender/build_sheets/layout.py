@@ -303,7 +303,8 @@ KITK = ('gun', 'launcher', 'engine', 'dish', 'intake', 'claw', 'chain', 'thruste
         'core', 'strut', 'corewin', 'sac', 'brood', 'spine', 'chitin',
         'hangar', 'craft', 'spare',  # issue 633: hangar_mouth, craft and the spare engine_bell are kit builders
         'radiator',  # issue 738: the Sunward radiator spire is a kit builder (tools/blender/kits/voidsworn/parts.py)
-        'latch')  # issue 759: the Hegemony module latch row is a kit builder (tools/blender/kits/hegemony/parts.py)
+        'latch',  # issue 759: the Hegemony module latch row is a kit builder (tools/blender/kits/hegemony/parts.py)
+        'capbank', 'exchanger')  # issue 768: the Iron Mandate's canyon machinery are Hegemony kit builders
 for f in F:
     row = dict(id=f['id'], kind=f['kind'], what=f['what'], count=f['count'], route='kit' if f['kind'] in KITK else 'hand-built',
                source=f['src'], inventory=f.get('inv', []))

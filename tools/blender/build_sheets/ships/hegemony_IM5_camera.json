@@ -1,0 +1,21 @@
+{
+ "az": 14.929016283553768,
+ "el": 14.445477601693069,
+ "roll": 4.849045218148474,
+ "dist": 61.82715982180175,
+ "mm": 115.2098127452902,
+ "target": [
+  0.0,
+  0.0,
+  0.0
+ ],
+ "sx": 0.03957945610402217,
+ "sy": 0.0453047477045949,
+ "res": [
+  1080,
+  720
+ ],
+ "iou": 0.9189,
+ "body_iou": 0.9187,
+ "note": "IM5 beauty: view angles from a coarse grid over azimuth, elevation and roll (contrib/opus/tools/issue738/grid.py: the blockout outline scaled onto the mask box), then fit.py refined all seven camera numbers (never the ship); concept mask: contrib/opus/tools/issue738/mask.py on IM5.jpg with its IM5 label blanked, the engine plumes above the stern edge cut out (contrib/opus/tools/issue768/mask_im5.py)"
+}
