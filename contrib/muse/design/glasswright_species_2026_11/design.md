@@ -1,5 +1,7 @@
 # The Glasswrights (Ithar): Species Design
 
+> **Body plan replaced (Ryan, Nov 14 2026, R252: "replaces it").** The Loom plan of docs/shots/portraits/glasswright_species/round_4_loom/ (PR 703: tall narrow thorax held high on four long support limbs, four arms, vanes carried on the back) replaces this file's low, wide, never-upright body plan for the whole species. Substance, head, light, culture and age read as written below. Sections that state the old stance are being rewritten (issue for Muse); until then the Loom sheet wins where they differ.
+
 ## 1. The substance: lumen-flesh
 
 A Glasswright is made of one tissue only: lumen-flesh, a living silicate matrix that runs on a single continuum from soft flesh to hard optical glass. There is no seam where flesh ends and glass begins, because there is no second material. What changes from place to place on the body is the tissue's state, set by three things:
