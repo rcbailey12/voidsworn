@@ -13,6 +13,13 @@ const BREACH := preload("res://fx/fx_breach.gd")
 const TRAIL_PTS := 96
 const TRAIL_LIFE := 2.6
 const IDLE_GLOW := 0.3                    # engine glow of a parked ship, as a share of cruise (r12)
+# The one scale table's class bands (issue 710, R247; docs/playbooks/scale.md): a death reads as a cruiser or a capital
+# by class, and an effect's size follows the drawn hull length through scale_k.
+const DEATH_BIG_CLASSES := ["Cruiser", "Carrier", "Battleship", "Dreadnought", "Super-dreadnought", "Battle-barge", "Bio-titan", "Ark", "Tomb-ark"]
+const DEATH_CAPITAL_CLASSES := ["Carrier", "Battleship", "Dreadnought", "Super-dreadnought", "Battle-barge", "Bio-titan", "Ark", "Tomb-ark"]
+const SCALE_K_DIV := 24.0
+const SCALE_K_MIN := 0.25
+const SCALE_K_MAX := 2.5
 
 var id = ""
 var root: Node3D
@@ -113,10 +120,10 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	squadron = bool(info.get("squadron", false)) or String(info.get("cls", "")) == "Squadron"
 	shielded = bool(info.get("shielded", fac["shielded"])) and not squadron
 	flagship = bool(info.get("flagship", false))
-	death_big = flagship or String(info.get("cls", "")) in ["Cruiser", "Carrier", "Battleship", "Dreadnought", "Super-dreadnought", "Battle-barge", "Bio-titan", "Ark", "Tomb-ark"]
+	death_big = flagship or String(info.get("cls", "")) in DEATH_BIG_CLASSES
 	# Issue 462: the playbook's capital row covers carriers, barges and the capital classes; a flagship of a smaller
 	# class dies as a cruiser.
-	death_tier = ("capital" if String(info.get("cls", "")) in ["Carrier", "Battleship", "Dreadnought", "Super-dreadnought", "Battle-barge", "Bio-titan", "Ark", "Tomb-ark"] else "cruiser") if death_big else ""
+	death_tier = ("capital" if String(info.get("cls", "")) in DEATH_CAPITAL_CLASSES else "cruiser") if death_big else ""
 	var sz = float(info.get("size", 0.8))
 	weight = 0 if squadron else (1 if sz < 0.65 else (2 if sz < 0.9 else (3 if sz < 1.1 else 4)))
 	if flagship:
@@ -218,7 +225,7 @@ func dir_world(d: Vector3) -> Vector3:
 
 
 func scale_k() -> float:
-	return clampf(hull.L / 24.0, 0.25, 2.5)
+	return clampf(hull.L / SCALE_K_DIV, SCALE_K_MIN, SCALE_K_MAX)
 
 
 # ---------------------------------------------------------------- engines
