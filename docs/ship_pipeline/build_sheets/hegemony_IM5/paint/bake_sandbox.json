@@ -1,24 +1,24 @@
 {
- "note": "issue 780 sandbox: Blender 5.3 bpy module, Cycles CPU, 2 cores shared with other workers (times are long and noisy); not the PC (Blender 4.5, GPU)",
- "baked_at_commit": "2d666cc869e76f97491fe698219c8c14580bf7fd",
+ "note": "issue 780 sandbox: Blender 5.3 bpy module, Cycles CPU, 2 cores shared with other workers (times are long and noisy); not the PC (Blender 4.5, GPU). R262 bake: open nozzles, hull one step lighter",
+ "baked_at_commit": "2e66982f1f00150704d76a4126ef35ccf6045b2c",
  "final": {
   "res": 2048,
   "parts_res": 2048,
   "samples": 6,
   "device": "CPU",
   "bakes": {
-   "bake_H_masks_s": 717.7,
-   "bake_H_albedo_s": 220.8,
-   "bake_H_orm_s": 180.7,
-   "bake_H_normal_s": 806.7,
-   "bake_P_masks_s": 807.6,
-   "bake_P_albedo_s": 85.1,
-   "bake_P_orm_s": 57.5,
-   "bake_engine_glow_s": 9.9
+   "bake_H_masks_s": 264.7,
+   "bake_H_albedo_s": 52.9,
+   "bake_H_orm_s": 42.5,
+   "bake_H_normal_s": 248.1,
+   "bake_P_masks_s": 181.4,
+   "bake_P_albedo_s": 30.3,
+   "bake_P_orm_s": 18.5,
+   "bake_engine_glow_s": 3.3
   },
-  "bake_total_s": 2886.0,
-  "stack_seconds": 2965.2,
-  "wall": "49m31.099s",
+  "bake_total_s": 841.7,
+  "stack_seconds": 872.8,
+  "wall": "14m35.479s",
   "zones_H": [
    "hgrey",
    "hgrey2",
@@ -70,9 +70,9 @@
     "texels_per_unit2": 420954.7
    },
    "parts": {
-    "uv_share": 0.4705,
-    "area": 0.67015,
-    "texels_per_unit2": 2944697.3
+    "uv_share": 0.4435,
+    "area": 0.63785,
+    "texels_per_unit2": 2916363.8
    }
   },
   "decals": [
@@ -216,5 +216,11 @@
   "stack_seconds": 1980.5,
   "bake_total_s": 1958.5,
   "source": "docs/ship_pipeline/build_sheets/voidsworn_S8/paint/bake_sandbox.json S8_2048"
+ },
+ "first_look_2048": {
+  "bake_total_s": 2886.0,
+  "stack_seconds": 2965.2,
+  "wall": "49m31.099s",
+  "baked_at": "2d666cc"
  }
 }

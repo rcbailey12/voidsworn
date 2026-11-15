@@ -37,28 +37,28 @@
   ],
   "atlases": {
    "hull": {
-    "px": 3736278,
+    "px": 3758283,
     "median_show": [
-     44,
-     53,
-     67
+     52,
+     62,
+     79
     ],
     "p99_show": [
-     91,
-     107,
+     93,
+     106,
      123
     ],
     "over_cap_share": 0.0
    },
    "parts": {
-    "px": 3998879,
+    "px": 3984601,
     "median_show": [
-     29,
-     38,
-     52
+     36,
+     46,
+     63
     ],
     "p99_show": [
-     90,
+     91,
      104,
      122
     ],
@@ -69,12 +69,12 @@
  },
  "lift": {
   "lift": 0.4,
-  "hue_before": 219.59,
-  "hue_after": 219.59,
+  "hue_before": 220.4,
+  "hue_after": 220.4,
   "median_albedo_lin": [
-   0.04519,
-   0.06301,
-   0.09759
+   0.05951,
+   0.08438,
+   0.13563
   ]
  },
  "median": {
@@ -86,41 +86,41 @@
   "concept_blue_share": 0.0231,
   "paint_battle": {
    "hull_median": [
-    45,
-    53,
-    66
+    50,
+    61,
+    76
    ],
    "blue_share": 0.0,
    "minus_concept": [
-    -14,
-    -16,
-    -20
+    -9,
+    -8,
+    -10
    ]
   },
   "paint_cam170": {
    "hull_median": [
-    47,
-    56,
-    68
+    55,
+    65,
+    77
    ],
    "blue_share": 0.0,
    "minus_concept": [
-    -12,
-    -13,
-    -18
+    -4,
+    -4,
+    -9
    ]
   },
   "paint_beauty": {
    "hull_median": [
-    58,
     70,
-    84
+    81,
+    96
    ],
    "blue_share": 0.0,
    "minus_concept": [
-    -1,
-    1,
-    -2
+    11,
+    12,
+    10
    ]
   }
  },

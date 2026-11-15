@@ -8,6 +8,16 @@ from PIL import Image, ImageDraw, ImageFont
 P, OUT, SHEET, CONCEPT = sys.argv[1:5]
 kw = dict(x.split('=', 1) for x in sys.argv[5:] if '=' in x)
 NOTE = kw.get('note', 'sandbox preview: Blender CPU, game light, Hegemony battle lift 0.4 (look.gd)')
+# before and after hull medians (R262): before=AUDITS.json (the earlier look), after=AUDITS.json (this look), from audits.py
+import json
+BEF = json.load(open(kw['before']))['median'] if kw.get('before') else None
+AFT = json.load(open(kw['after']))['median'] if kw.get('after') else None
+
+
+def med(view):
+    if not (BEF and AFT and view in BEF and view in AFT): return ''
+    f = lambda m: '(%d,%d,%d)' % tuple(m)      # noqa: E731
+    return 'hull median: before %s, now %s, concept %s' % (f(BEF[view]['hull_median']), f(AFT[view]['hull_median']), f(AFT['concept_hull_median']))
 BG = (16, 18, 24); INK = (226, 234, 244); DIM = (160, 170, 184); ACC = (120, 196, 255)
 os.makedirs(OUT, exist_ok=True)
 
@@ -44,8 +54,9 @@ def img(n):
 
 cell = SHEET.split('_')[-1]
 # 1. the painted ship beside its concept at the fitted camera
-c = Image.new('RGB', (1280, 520), BG)
+c = Image.new('RGB', (1280, 544 if med('paint_beauty') else 520), BG)
 head(c, f'{SHEET} | Hegemony paint beside the {cell} concept, same fitted camera', NOTE)
+if med('paint_beauty'): label(c, (10, 520), 'fitted camera ' + med('paint_beauty'))
 con = Image.open(CONCEPT).convert('RGB'); bea = img('paint_beauty').resize(con.size)
 c.paste(fit(con, 632, 440), (4, 74)); c.paste(fit(bea, 632, 440), (644, 74))
 label(c, (10, 56), f'{cell} concept (colours sampled from H10, never projected)'); label(c, (650, 56), f'{cell} painted by the Hegemony stack')
@@ -59,13 +70,15 @@ label(c, (10, 56), 'a module band: the even grid, the double seam, a latch row')
 if os.path.exists(os.path.join(P, 'paint_stern_zoom.png')):
     c.paste(fit(img('paint_stern_zoom'), 636, 290), (0, 400)); label(c, (10, 382), 'stern-on: the flat row of rectangular nozzles')
 if os.path.exists(os.path.join(P, 'paint_bell.png')):
-    c.paste(fit(img('paint_bell'), 636, 290), (644, 400)); label(c, (650, 382), 'one nozzle: housing, lit lining at the lip (the throat is hidden: see the PR)')
+    c.paste(fit(img('paint_bell'), 636, 290), (644, 400)); label(c, (650, 382), 'one nozzle: open mouth, lit lining, guide vanes, the throat (R262)')
 c.save(os.path.join(OUT, f'{SHEET}_paint_close.jpg'), quality=92)
 
 # 3. the battle camera: 34 degrees above the board, port beam, range 170
 c = Image.new('RGB', (1280, 716), BG)
 head(c, f'{SHEET} | battle camera: 34 degrees above the board, range 170', NOTE + '; bottom: the game\'s true pixel size')
 c.paste(band(img('paint_battle'), 470), (0, 58)); label(c, (10, 62), 'port beam, long lens (the sheet\'s battle camera), the ship filling the frame')
+if med('paint_battle'): label(c, (10, 84), 'port beam ' + med('paint_battle'))
+if med('paint_cam170'): label(c, (10, 106), 'starboard beam (cam170) ' + med('paint_cam170'))
 g = img('paint_cam170')
 a = np.asarray(g.convert('L')); ys, xs = np.where(a > 14)
 cx, cy = (int(xs.mean()), int(ys.mean())) if len(xs) else (320, 180)

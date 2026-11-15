@@ -41,8 +41,8 @@
    "bare": 0
   },
   "stern": {
-   "stack": 16163,
-   "glow": 1015,
+   "stack": 13082,
+   "glow": 4096,
    "liner": 0,
    "room": 0,
    "bare": 0

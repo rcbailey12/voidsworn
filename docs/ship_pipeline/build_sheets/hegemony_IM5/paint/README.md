@@ -11,9 +11,11 @@ Pictures (Blender 5.3 CPU, game light, Hegemony battle lift 0.4 read from look.g
 [battle camera, 34 degrees, range 170, long lens and true pixels](hegemony_IM5_paint_battle.jpg). In-game pictures await the
 Board's PC run (Blender 4.5, GPU, 4096 bake).
 
-Hull median against the concept (hull pixels, the blue light and the background left out): concept [52, 62, 79];
-battle camera long lens [39, 49, 61], cam170 true pixels [52, 62, 74], fitted beauty
-camera [49, 59, 71].
+Hull median against the concept (hull pixels, the blue light and the background left out), before (PR 796's first look) and
+after R262 (open nozzles, the hull one step lighter): concept (52,62,79); battle camera long lens, port beam
+(39,49,61) to (43,53,67); cam170 true pixels, starboard beam
+(52,62,74) to (61,72,85); fitted beauty camera (49,59,71) to
+(56,66,79).
 
 Checks: [audits_sandbox.json](audits_sandbox.json) (emissive under 0.8 and nothing warm, the #626d7d value cap on both atlases,
 lift hue, the medians, the decal mirror check), [surface_check.json](surface_check.json) (0 room, 0 bare pixels),
