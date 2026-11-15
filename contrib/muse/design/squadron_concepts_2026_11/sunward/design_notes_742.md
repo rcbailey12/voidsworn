@@ -29,3 +29,7 @@ SF1 and SB1, the pair Ryan already approved: the dart and the bow-tube wedge are
 ## Council record for round 2
 
 Round 2 was chaired directly against Ryan's live rulings (five test rounds in main chat on Nov 14, 2026, each ruled on by Ryan in minutes), so no separate model legs were run for it; the design authority trail is Ryan's own words, quoted above. Round 1's council record stands in the git history of this file's first version.
+
+## Ryan's ruling (Nov 14, 2026, ~22:50 CST)
+
+Ryan picked SF2 and SB2: "I actually like sf2 and sb2 more." This supersedes the chair's picks above. SF2 (Wedge Turret) is the Sunward fighter direction and SB2 (Sponson Barge) is the Sunward bomber direction; the Board takes those two forward to their sheets. SF1 and SB1 stand in this folder as the unpicked directions. Carried into the SB2 sheet from the notes above: its concept render is a bow view, so the sheet adds the three-quarter and top views the build needs.
