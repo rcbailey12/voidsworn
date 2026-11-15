@@ -42,5 +42,5 @@ line snaps off as one piece along its own peel seam.
   by half a plate on alternate courses, a reinforcing strip on every fifth plate, rivet lines along each plate's long edge;
   `tri=True` lays sleek triangles instead (R243), used on the spearhead's facets. Forged, never scavenged: no patch warp.
 
-Materials (tools/blender/build_sheets/kit.py MATS): `siron` black iron, `siron2` darker recessed iron, `sworn` worked bright
+Materials (this kit's own `MATS`, merged into the sheet kit's table by the ship file, so the shared kit.py is untouched): `siron` black iron, `siron2` darker recessed iron, `sworn` worked bright
 iron, `embar` ember glow, `frost` frost-white lamps, plus the shared `dark`, `glow`, `ember`; insides add `gallery`.

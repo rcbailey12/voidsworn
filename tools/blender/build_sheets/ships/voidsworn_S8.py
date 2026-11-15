@@ -139,6 +139,8 @@ def build(K):
     import kit as _k
     from mathutils import Vector
     HP = _k.HP
+    for k_, v_ in getattr(HP, 'MATS', {}).items():   # the Sunward colour zones live in the faction kit (tools/blender/kits/voidsworn)
+        _k.MATS.setdefault(k_, v_)
     K.hull_sections = [(r[0], r[1], r[1], r[3], r[2], 0.0, 0.0) for r in ST]   # an octagon stand-in for kit helpers that read it
     K.hull_rounded = False
     xs = sorted({r[0] for r in ST} | {x / 2 for x in range(-23, 27)}, reverse=True)
@@ -457,6 +459,9 @@ def build(K):
         hw = st_at(-3.6)[1]
         K.point('board', 'hp_board_%d' % i, (-3.6, side * hw, BALL_Z), side='port' if side > 0 else 'stbd')
 
+    for m_ in getattr(HP, 'METALLIC', ()):   # worked metal, as the sheet kit renders its own metal rows
+        if m_ in bpy.data.materials:
+            bpy.data.materials[m_].node_tree.nodes['Principled BSDF'].inputs['Metallic'].default_value = 0.3
     # ---------- the forged plating, laid last so every mount has claimed its ground (keep-outs) ----------
     def keep(pc, hd):
         return any((pc - c).length < r + hd * 0.6 for c, r in K.keepouts)

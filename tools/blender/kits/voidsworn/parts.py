@@ -24,7 +24,8 @@
 #                with depth (R244), forged plates with rivet lines in ordered rows and sleek triangles on the flat fields (R243))
 # Local frame of every part: +X forward (the aim, or the engine's thrust direction), +Y left, +Z up (the mount normal).
 # Roles: 'mount' parts may sit into the hull; every other role must stay clear of it; 'turn' (turret guns, R219) turns.
-# Materials (mapped by tools/blender/build_sheets/kit.py MATS): siron, siron2, sworn, dark, glow, ember, embar, frost, steel.
+# Materials: the Sunward rows are this kit's own (MATS below; the ship file merges them into the sheet kit's table before it
+# builds, so the shared tools/blender/build_sheets/kit.py is untouched), plus the shared dark, glow, ember and steel.
 import math
 import os
 import sys
@@ -37,6 +38,19 @@ import geom  # noqa: E402
 # R226: the part kinds that are machines (a machine never crosses a seam; it rides whole with one piece). Radiator spires are
 # structure: they belong to the spire line, which snaps off as one piece along its own peel (factions.md "How it breaks").
 MACHINES = ('gun', 'engine', 'thruster')
+
+# The Sunward colour zones (factions.md: black iron, frost-white markings, bright ember; never rust, never blue light), in the
+# sheet kit's format (rgb, emission strength). Schematic; the Sunward paint stack (paint_direction_2026_11/sunward.md) finishes
+# them. METALLIC: the rows the sheet renders as worked metal.
+MATS = {
+    'siron': ((0.047, 0.045, 0.044), 0),     # black iron plate
+    'siron2': ((0.026, 0.025, 0.025), 0),    # darker recessed iron (sockets, frames, the second plate family)
+    'sworn': ((0.15, 0.147, 0.142), 0),      # worked bright iron: rivets, bands, rims, machinery
+    'embar': ((1.0, 0.36, 0.07), 1.2),       # ember radiator fins and hot lenses (the spires shed the reactor's heat); 1.2 keeps it ember, not lemon
+    'frost': ((0.9, 0.92, 0.92), 0.6),       # frost-white running points (paint direction 5), never blue over green
+    'gallery': ((0.72, 0.36, 0.13), 0),      # inside: the gun crews' galleries, ember-lit (factions.md "Inside")
+}
+METALLIC = ('sworn',)
 
 SUBPARTS = {
     'engine': ['housing', 'band', 'collar', 'bell', 'lining', 'throat', 'plug', 'bellring'],
