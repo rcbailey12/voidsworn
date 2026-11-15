@@ -77,8 +77,48 @@ def lin_raw(srgb):
     return tuple(float(x) for x in np.where(c <= .04045, c / 12.92, ((c + .055) / 1.055) ** 2.4))
 
 
+# R256 (Ryan, Nov 15 2026, on the painted S8: "Lighten a step") and R258 (Ryan, Nov 15 2026: "the x1.85 column"; issue 781): the
+# whole painted map about x1.85 lighter in linear, toward the concept's grey at the battle camera (the S8 already matched the
+# concept's median at the fitted camera and read dark only at 34 degrees). Not the lift and not the light (LIFT and LIGHT_GAIN are
+# unchanged). CONCEPT above keeps the tones as sampled (sunward.md section 2; the battle median audit reads its iron band); the
+# steps below are applied where the tones are painted:
+#   WEAR_STEP  the wear tones (edge wear, scuffs and the painted rivet heads all mix toward BARE, the wear pair's light end) times
+#              WEAR_STEP in linear, so the bright edges rise with the plates and still read lighter than them (sunward.md 4)
+#   IRON_STEP  the iron family (pair()): each tone's brightest channel x moves up as WEAR_FLOOR * (x / WEAR_FLOOR) ** IRON_STEP,
+#              WEAR_FLOOR the stepped wear pair's dark end, and its other channels scale with it in linear, so its hue holds: the
+#              dark ends rise most, the light ends less, the family order (shade, dark, iron, cast and worked) holds, and every
+#              plate stays under the wear tones (sunward.md 4: wear tones only, never plate tones)
+# Soot, liner and frost do not move. IRON_STEP 1.0 and WEAR_STEP 1.0 give the sampled tones back.
+WEAR_STEP = 1.85
+IRON_STEP = .60
+IRON_STEP_KEYS = ('iron', 'iron_shade', 'iron_dark', 'iron_cast', 'worked')
+
+
+def _to_srgb255(c):
+    c = np.clip(np.asarray(c, np.float64), 0, 1)
+    return tuple(float(v) * 255.0 for v in np.where(c <= .0031308, c * 12.92, 1.055 * c ** (1 / 2.4) - .055))
+
+
+def wear_tone(srgb):
+    """a wear tone (sRGB show-tone) after the R258 wear step, as sRGB floats"""
+    return _to_srgb255(np.asarray(lin_raw(srgb)) * WEAR_STEP)
+
+
+WEAR_FLOOR = float(min(wear_tone(CONCEPT['wear'][0])))
+
+
+def stepped(srgb):
+    """an iron tone (sRGB show-tone) after the R256 and R258 iron step, as sRGB floats"""
+    x = float(max(srgb))
+    if x <= 0 or x >= WEAR_FLOOR: return tuple(float(c) for c in srgb)
+    k = lin_raw((WEAR_FLOOR * (x / WEAR_FLOOR) ** IRON_STEP,))[0] / lin_raw((x,))[0]
+    return _to_srgb255(np.asarray(lin_raw(srgb)) * k)
+
+
 def pair(k):
-    lo, hi = CONCEPT[k]; return lin(lo), lin(hi)
+    lo, hi = CONCEPT[k]
+    if k in IRON_STEP_KEYS: lo, hi = stepped(lo), stepped(hi)
+    return lin(lo), lin(hi)
 
 
 # ------------------------------------------------------------------------------------------------------------ the layers
@@ -129,7 +169,8 @@ for _kind, _g in _BY_KIND.items():
 for _k, _z in ZONES.items():
     _z['lo'], _z['hi'] = pair(_BASE[_k])
 FALLBACK = 'siron'
-BARE = lin(CONCEPT['wear'][1])        # the wear tone, dulled bright iron (the shared wear and scuff layers mix toward it)
+BARE = lin(wear_tone(CONCEPT['wear'][1]))   # the wear tone, dulled bright iron (the shared wear and scuff layers and the
+#                                              rivet heads mix toward it), after the R258 wear step
 GRIME = lin(CONCEPT['soot'][0])       # carbon soot
 RUST = RUST_DARK = GRIME              # read by the shared rust layer only where a zone has rust, and no Sunward zone has
 RED_PLATE = pair('iron')              # read only where a zone has a red_share, and no Sunward zone has

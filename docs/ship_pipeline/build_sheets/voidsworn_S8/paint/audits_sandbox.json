@@ -29,17 +29,17 @@
   "cap": 0.06,
   "views": {
    "paint_top": {
-    "ship_px": 52991,
-    "frost_px": 60,
-    "share": 0.0011
+    "ship_px": 54744,
+    "frost_px": 78,
+    "share": 0.0014
    },
    "paint_side": {
-    "ship_px": 33742,
+    "ship_px": 37651,
     "frost_px": 7,
     "share": 0.0002
    },
    "paint_side_s": {
-    "ship_px": 30716,
+    "ship_px": 37157,
     "frost_px": 10,
     "share": 0.0003
    }
@@ -48,19 +48,19 @@
  },
  "lift": {
   "lift": 1.45,
-  "hue_before": 0.0,
-  "hue_after": 0.0,
+  "hue_before": 29.66,
+  "hue_after": 29.66,
   "median_albedo_lin": [
-   0.01764,
-   0.01681,
-   0.01681
+   0.02956,
+   0.02843,
+   0.02732
   ]
  },
  "median": {
   "battle_median_srgb": [
-   26,
-   27,
-   28
+   34,
+   35,
+   37
   ],
   "iron_band": [
    [
@@ -75,6 +75,6 @@
    ]
   ],
   "inside_band": true,
-  "ember_share": 0.0457
+  "ember_share": 0.0416
  }
 }
