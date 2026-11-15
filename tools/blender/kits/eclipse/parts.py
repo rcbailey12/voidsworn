@@ -687,3 +687,66 @@ def plate_slab(bot, nrm, t, bevel=0.35, rivets=True, lift=0.0, rr=0.03):
             RV += [tuple(x) for x in q] + [tuple(x + nrm * rr * 0.5) for x in q]
             RF += [tuple(o + i for i in f) for f in F]
     return (V, F), (RV, RF)
+
+
+# ---------------------------------------------------------------------------------------------------- even panels (R243)
+def even_panels(rings, faces, size=(0.3, 0.3), thick=0.035, gap=0.03, mats=('shade2', 'violet'), band=3, keepouts=(), fasteners=True):
+    """R243 (Ryan, Nov 13 2026: "make the eclipse panels actually panels and dead even and ordered to align"): panels laid in
+    an even, aligned grid over the faces of a loft (rings: section rings of world points, the same count each, in order along
+    the mass; faces: indices into a ring's edges). Each face is split into equal panels, as many along and across as the face
+    holds at `size` (world units across and along, never a count per part, issue 618), every panel the same thickness, a
+    narrow even gap round each; so the panels of neighbouring sections line up and every row runs on unbroken. The panel tone
+    changes in bands of `band` rows along the mass, the same on every face (ordered, never patchwork, R243). A panel within a
+    keep-out's radius ((centre, radius), a mount's footprint) is left out. Each panel is the kit's plate_slab: a machine-cut
+    chamfered slab with two flush fasteners. Returns ({mat: (verts, faces)}, (fastener verts, faces), panel count)."""
+    n = len(rings[0])
+    cen = [sum((Vector(v) for v in r), Vector()) / n for r in rings]
+    out = {m: ([], []) for m in mats}
+    RV, RF = [], []
+    kept = 0
+    for i in range(len(rings) - 1):
+        for j in faces:
+            A, B = Vector(rings[i][j]), Vector(rings[i][(j + 1) % n])
+            D_, C = Vector(rings[i + 1][j]), Vector(rings[i + 1][(j + 1) % n])
+            flen = ((D_ - A).length + (C - B).length) / 2; fw = ((B - A).length + (C - D_).length) / 2
+            if flen < size[1] * 0.5 or fw < size[0] * 0.5:
+                continue
+            nrm = (B - A).cross(D_ - A)
+            if nrm.length < 1e-9:
+                continue
+            nrm.normalize()
+            if nrm.dot((A + C) / 2 - (cen[i] + cen[i + 1]) / 2) < 0:
+                nrm = -nrm
+            na = max(1, int(round(flen / size[1]))); nc = max(1, int(round(fw / size[0])))
+            gu = min(gap / flen, 0.2 / na); gv = min(gap / fw, 0.2 / nc)
+
+            def Pq(u, v):
+                return A.lerp(D_, u).lerp(B.lerp(C, u), v)
+            for a in range(na):
+                u0, u1 = a / na + gu, (a + 1) / na - gu
+                m = mats[((i * na + a) // max(1, band)) % len(mats)]
+                for c in range(nc):
+                    v0, v1 = c / nc + gv, (c + 1) / nc - gv
+                    pc = Pq((u0 + u1) / 2, (v0 + v1) / 2); hd = 0.5 * ((u1 - u0) * flen + (v1 - v0) * fw)
+                    if any((pc - Vector(k)).length < r + hd * 0.7 for k, r in keepouts):
+                        continue
+                    (V, F), (rv, rf) = plate_slab([Pq(u0, v0), Pq(u1, v0), Pq(u1, v1), Pq(u0, v1)], nrm, thick, rivets=fasteners, rr=min(0.03, thick * 0.6))
+                    VV, FF = out[m]; o = len(VV); VV.extend(V); FF.extend(tuple(q + o for q in f) for f in F)
+                    o = len(RV); RV.extend(rv); RF.extend(tuple(q + o for q in f) for f in rf)
+                    kept += 1
+    return out, (RV, RF), kept
+
+
+def lay_panels(K, name, rings, faces, inv, **kw):
+    """even_panels on a sheet kit (tools/blender/build_sheets/kit.py Kit): one hull object per tone and one for the flush
+    fasteners, the mounts' keep-outs honoured, the panel line registered for the inventory ticks. Call it after every part is
+    placed (the keep-outs are known then)."""
+    out, (RV, RF), kept = even_panels(rings, faces, keepouts=[(tuple(c), r) for c, r in K.keepouts], **kw)
+    for m, (V, F) in out.items():
+        if F:
+            K._obj('%s_panels_%s' % (name, m), V, F, m, grp='hull')
+    if RF:
+        K._obj('%s_fasteners' % name, RV, RF, 'gunv', grp='hull')
+    K.built.append(dict(id=name + '_panels', kind='plate', inv=[inv], shaped=True, detailed=kept > 0 and bool(RF),
+                        subs=['slab', 'step', 'bevel', 'fastener']))
+    return kept
