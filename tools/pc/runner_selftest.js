@@ -23,6 +23,8 @@ for (const name of ['work_issue', 'codex_issue']) {
 assert(read(path.join(here, 'chain_issue.bat')).includes('set "PC_WAIT_FOR=%~1"'));
 // The Git helper must call the program, never its own name: PowerShell resolves functions first, so $exe = 'git' recursed
 // until the call depth overflowed on the first live run (Nov 15) while the test stub path passed.
+// Log must never throw when result.txt is held open by the calling .bat's redirect (Nov 15, Kimi 371's push stopped).
+assert(/function Log\(\$line\) \{\s*try \{ Add-Content[^\n]*-ErrorAction Stop \} catch \{ \}/.test(read(path.join(here, 'runner_common.ps1'))), 'runner_common Log must not throw on a locked result.txt');
 assert(/\$exe = 'git\.exe'/.test(read(path.join(here, 'runner_common.ps1'))) && !/\$exe = 'git'[;\s]/.test(read(path.join(here, 'runner_common.ps1'))), 'runner_common Git helper must run git.exe');
 pass('shared runner contract and chain launcher');
 if (process.platform !== 'win32') {
