@@ -95,7 +95,9 @@ cost several runs. Both entry points, `work_issue.bat` and `codex_issue.bat`, us
   Already committed resumed work can still reach a checked push when the agent needs no further edits.
 
 Deploy work_issue.bat/.ps1, codex_issue.bat/.ps1, runner_common.ps1, chain_issue.bat and work/mock_llm.js together to each
-runner tools folder while its lane is idle. Existing settings and refused-file guards still apply. status.json records a run
+runner tools folder while its lane is idle, then write the lane's work217\runner_hashes.txt with `runner_common.ps1
+hashwrite <tools folder> <hash file>` so the issue 722 checks below can guard the copies. Existing settings and
+refused-file guards still apply. status.json records a run
 id, branch, state, reason and commit; updates are atomic, with previous versions kept. Unexpected stops stay running and a
 chain times out instead of guessing success. Helper failures use exit 14; other runner exit codes keep their earlier meaning.
 
@@ -105,6 +107,33 @@ non-Windows CI checks the entry-point contract and reports the Windows matrix sk
 WORK_TEST_AGENT plus dryrun, or CODEX_TEST_AGENT plus CODEX_TEST_ROOT: PC_TEST_SOURCE, PC_TEST_MIRROR, PC_TEST_ISSUE,
 PC_TEST_PREFLIGHT and PC_TEST_GIT isolate dependencies; PC_TEST_RETRY_SECONDS shortens waits;
 PC_TEST_STOP_BEFORE_PUBLISH=1 keeps files but stops before any commit or push. Never set these on a real job.
+
+## Runner 3 (issue 722, Nov 15 2026; Muse audit 706 findings 6 and 7)
+
+Three start checks, shared through runner_common.ps1 and run by both entry points right after init, before the chain
+wait, the mirror fetch and any model call:
+
+- **Resolved model stamp.** Every run writes the resolved model id into out\status.json ("model") and result.txt
+  ("model: <id>"), and result.txt warns when it differs from the arm's default, whatever the provider: a
+  same-provider WORK_MODEL override (invisible to PR 636's provider guard) warns here. The kimicode arm stamps the
+  Kimi Code CLI model (kimi-code/kimi-for-coding, or WORK_KIMI_MODEL) whenever the CLI or its test stand-in runs;
+  other arms stamp the OpenCode model; Codex stamps its pinned gpt-6.1-sol.
+- **Free-space floor.** The run refuses to start when the drive holding Downloads\voidsworn_test has less than
+  min_free_gb free: one line in result.txt, status failed, exit 14. No mirror fetch, no model probe, no agent, and a
+  chained child waiting on the run fails closed. min_free_gb is a tuning value in work217\runner_settings.txt;
+  work_issue.bat seeds 60 when it creates the file, and a missing line or file keeps 60.
+- **Board hashes.** When the Board copies the runner files to a PC tools folder it writes work217\runner_hashes.txt:
+  `powershell -NoProfile -ExecutionPolicy Bypass -File runner_common.ps1 hashwrite <tools folder> <hash file>`. At
+  start each runner compares the SHA-256 of its own folder's work_issue.bat, work_issue.ps1, codex_issue.bat,
+  codex_issue.ps1 and runner_common.ps1 against that file. A mismatch, a missing file or an empty file is a warning
+  in result.txt, never a stop, so a run never dies because the Board has not hashed a fresh copy yet. Both lanes read
+  that one work217 file.
+
+Free proof: the same double-click selftest (`tools\pc\runner_selftest.bat`) covers all three in test mode: the stamp
+and its same-provider warning, the floor (direct and end to end, plus the tuning value and the 60 default), and
+hashwrite/hashcheck agreement, mismatch, missing file, and a full run that starts anyway with a drift warning.
+Test-only knobs: PC_TEST_SETTINGS (settings file), PC_TEST_SPACE_FREE_MB (fake free space in MB), PC_TEST_HASHES
+(hashes file). Never set these on a real job.
 
 ## Reasoning effort (issue 656, Opus, Nov 13 2026)
 

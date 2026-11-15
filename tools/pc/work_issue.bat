@@ -31,6 +31,17 @@ rem      in result.txt, out\DIFF_MISMATCH.txt, exit code 10.
 rem  (disk) Every run ends with its folder size in result.txt. Only when work217\runner_settings.txt says
 rem      remove_repo_copy_after_push=yes (off by default; Ryan turns it on once with WORKHORSE_CLEANUP.bat) does a run whose
 rem      push was checked remove its own repo\ copy; out\ is always kept. A dry run never removes anything.
+rem Runner 3 (issue 722, Nov 15 2026; Muse audit 706 findings 6 and 7):
+rem  (model) Every run stamps the resolved model id into out\status.json and result.txt, and result.txt warns when it
+rem      differs from the arm's default, whatever the provider: a same-provider WORK_MODEL override (invisible to the
+rem      provider guard above) warns here. The kimicode arm stamps the Kimi Code CLI model.
+rem  (space) Before anything else the run refuses to start (one line in result.txt, status failed) when the drive
+rem      holding Downloads\voidsworn_test has less than min_free_gb free; the floor is a tuning value in
+rem      work217\runner_settings.txt, seeded at 60 when the runner creates the file.
+rem  (hashes) At start the runner compares the SHA-256 of its own tools folder's work_issue.bat, work_issue.ps1,
+rem      codex_issue.bat, codex_issue.ps1 and runner_common.ps1 against work217\runner_hashes.txt, which the Board
+rem      writes (runner_common.ps1 hashwrite) when it copies the files to the PC. A mismatch or a missing file is a
+rem      warning in result.txt, never a stop.
 rem Dry-run test knobs (ignored unless the third argument is dryrun): WORK_DRY_SCENARIO picks the stand-in model's script;
 rem WORK_TEST_BRANCH pushes for real to that branch (it must not start with codex/, muse/, work/ or opus/, so no PR opens);
 rem WORK_SKIP_CHECKS=1 skips the runner checks; WORK_DRY_SPARSE lists the only folders a lean test clone checks out;
@@ -50,6 +61,8 @@ if /i "%ARM%"=="sonnet" set "MODEL=anthropic/claude-sonnet-5-5"
 rem opus: Claude Opus 5.5 on the same credits (Ryan, Nov 12 16:15: "why not use it as another opus worker")
 if /i "%ARM%"=="opus" set "MODEL=anthropic/claude-opus-5-5"
 if not defined MODEL (echo usage: work_issue.bat issue-number deepseek-deepseekpro-kimi-kimicode-sonnet-or-opus [dryrun] & exit /b 2)
+rem The arm default, captured before WORK_MODEL below: issue 722 stamps the resolved model and warns when it differs.
+set "DEFAULT_MODEL=%MODEL%"
 rem WORK_MODEL overrides the model only within the arm's own provider (Board, Nov 13: a q_ file set WORK_MODEL=kimicode/k3 in the
 rem queue watcher's window, and three later opus-arm runs ran on Kimi and stopped on its quota); one from another provider is ignored
 if defined WORK_MODEL for /f "tokens=1 delims=/" %%P in ("%MODEL%") do for /f "tokens=1 delims=/" %%Q in ("%WORK_MODEL%") do if /i "%%P"=="%%Q" (set "MODEL=%WORK_MODEL%") else (echo WORK_MODEL %WORK_MODEL% ignored: arm %ARM% runs on %%P)
@@ -80,12 +93,25 @@ if not defined PARITY_CAP set "PARITY_CAP=1500"
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 if not defined WORK_ROOT set "WORK_ROOT=%VT%\work217"
 set "T=%~dp0"
+rem %TC% is %T% without its trailing backslash, for passing the tools folder as a bare quoted argument (issue 722:
+rem cmd merges "%T%" with the next quoted argument because of the backslash before the quote).
+set "TC=%T:~0,-1%"
 set "PS=powershell -NoProfile -ExecutionPolicy Bypass -File "%T%work_issue.ps1""
 set "COMMON=powershell -NoProfile -ExecutionPolicy Bypass -File "%T%runner_common.ps1""
 set "PC_RUNNER_TEST=0"
 if /i "%MODE%"=="dryrun" if defined WORK_TEST_AGENT set "PC_RUNNER_TEST=1"
 rem Kimi Code runs on its own CLI and saved plan login, never an API key.
 if /i "%ARM%"=="kimicode" set "WORK_HARNESS=kimi"
+rem (722) What will actually run: the Kimi Code CLI model for the kimicode arm whenever the real CLI or its test
+rem stand-in runs (live, or dryrun in test mode); otherwise the OpenCode model. DEFAULT_MODEL stays the arm's
+rem built-in choice, so WORK_KIMI_MODEL or a same-provider WORK_MODEL shows as a warning through runner_common.
+set "KMODEL=kimi-code/kimi-for-coding"
+if defined WORK_KIMI_MODEL set "KMODEL=%WORK_KIMI_MODEL%"
+set "RESOLVED=%MODEL%"
+if /i "%ARM%"=="kimicode" if /i not "%MODE%"=="dryrun" set "KHARNESS=1"
+if /i "%ARM%"=="kimicode" if "%PC_RUNNER_TEST%"=="1" set "KHARNESS=1"
+if defined KHARNESS set "RESOLVED=%KMODEL%"
+if defined KHARNESS set "DEFAULT_MODEL=kimi-code/kimi-for-coding"
 set "OC=%APPDATA%\npm\opencode.cmd"
 set "BR=work/issue-%N%-%ARM%"
 rem How the run ends: real pushes to GitHub; dry is "git push --dry-run"; test pushes for real to WORK_TEST_BRANCH.
@@ -117,14 +143,22 @@ set "CHECKS_OK=0"
 mkdir "%O%"
 echo %A%> "%WORK_ROOT%\%K%\latest.txt"
 echo started %date% %time% (%MODE%) > "%O%\result.txt"
+rem Ryan's runner switches (issue 377, issue 722). The runner only creates these files, with safe defaults, and then only reads them.
+set "SETF=%WORK_ROOT%\runner_settings.txt"
+set "HASHF=%WORK_ROOT%\runner_hashes.txt"
+if not exist "%SETF%" call :settings
 %COMMON% init "%O%" "%BR%"
 if errorlevel 1 exit /b 14
+rem (722) Nothing runs below the free-space floor: no mirror fetch, no model probe, no agent.
+%COMMON% space "%O%" "%SETF%" "%VT%"
+if errorlevel 1 exit /b 14
+rem (722) The Board's hashes guard the running copies; a mismatch warns and the run goes on (%TC% is set above).
+%COMMON% hashcheck "%O%" "%TC%" "%HASHF%"
+rem (722) Stamp the resolved model before the wait so every later state of the run names it.
+%COMMON% model "%O%" "%RESOLVED%" "%DEFAULT_MODEL%"
 %COMMON% wait "%O%"
 if errorlevel 1 exit /b 14
 if defined VARIANT (echo %MODEL% %VARIANT%> "%O%\model.txt") else (echo %MODEL%> "%O%\model.txt")
-rem Ryan's one cleanup switch (issue 377). The runner only creates the file, with the setting off, and then only reads it.
-set "SETF=%WORK_ROOT%\runner_settings.txt"
-if not exist "%SETF%" call :settings
 if "%PC_RUNNER_TEST%"=="1" goto :toolsready
 if /i "%ARM%"=="kimicode" goto :toolsready
 if not exist "%OC%" (echo OpenCode is not installed: run WORKHORSE_SETUP.bat first >> "%O%\result.txt" & goto :setupfail)
@@ -316,9 +350,11 @@ goto :finish
 for /f "tokens=2,*" %%a in ('reg query HKCU\Environment /v %1 2^>nul ^| findstr /c:"REG_"') do set "%1=%%b"
 exit /b 0
 :settings
-> "%SETF%" echo # Workhorse runner settings (issue 377). The runner only reads this file; Ryan changes it with WORKHORSE_CLEANUP.bat.
+> "%SETF%" echo # Workhorse runner settings (issue 377, issue 722). The runner only reads this file; Ryan changes it with WORKHORSE_CLEANUP.bat.
 >> "%SETF%" echo # remove_repo_copy_after_push=yes: after a push the runner has checked, it removes that run's repo copy and keeps out.
 >> "%SETF%" echo remove_repo_copy_after_push=no
+>> "%SETF%" echo # min_free_gb: the run refuses to start when the drive holding Downloads\voidsworn_test has less free space than this (issue 722).
+>> "%SETF%" echo min_free_gb=60
 exit /b 0
 :testfinish
 rem Free integration proof: keep the agent's files but never create a commit or push.
