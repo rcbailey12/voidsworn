@@ -101,6 +101,8 @@ class and faction (issue 363), never from a constant.
   off the ship: no loose chains, cages or dangling cargo; trophies and cargo are bolted flat (R185 (3); Ryan: "I don't
   understand the random things hanging off, it reads as naval"). Rocket racks sit on the top deck as big mismatched
   bolted-on launchers (R183 (4); Ryan: "rockets need to be on top to fit the scrapped together theme").
+- **Patch size (R252, Ryan, Nov 14: "agree"):** the trophy patches read big and pale like the A20 concept, not small dark
+  plates; still uneven in size, rows and offsets (R240).
 - **Colours:** soot black, rust, dried-blood red, patches of trophy colour (pale Hegemony grey, violet Eclipse plate), dim
   red running lights. No crystal shard: it came off A16 and A17 (R197; Ryan: "Not sure why there is a weird crystal in there
   but we can get rid of that").

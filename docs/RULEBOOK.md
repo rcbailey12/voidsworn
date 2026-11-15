@@ -158,7 +158,8 @@ results (R242). While the API credit is spent (till its monthly refresh, about N
 Codex is the main builder, Blender builds included ("use codex aggressively", Nov 14; the Board sets effort per job); the Board judges
 every model by picture as before. Kimi now holds a seat through the Kimi Code CLI arm (kimicode, WORK_HARNESS=kimi): about 2.5 hours
 of agent time per 5 hour window on Nov 14 (a Board observation, revise with evidence), so mid-size code, rules and balance jobs
-(the 30 minute figure above was the OpenCode route). Muse also runs outside audits (issue 706). Not taken: Fable advisor, Gemini 4 Hydrogen.
+(the 30 minute figure above was the OpenCode route). Muse also runs outside audits (issue 706). Not taken: Gemini 4 Hydrogen. The Board thread may use the Fable advisor
+(Ryan, Nov 14 18:28 CST: "this chat stands", R252, replacing R250's no).
 
 2.7 **Codex runs the model Ryan picked: GPT 6.1 Sol today, pinned by name in tools/pc/codex_issue.bat.** Never a weaker
 model by accident (Luna) and never switched to another one (Astra) without his yes; no Codex cloud tasks or cloud reviews.
