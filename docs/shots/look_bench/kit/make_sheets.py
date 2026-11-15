@@ -6,10 +6,10 @@ from PIL import Image, ImageDraw, ImageFont
 
 TIMES = dict(doom=.60, macro=.40, auto=.15, las=.13, plasma=.38,
     scatter=.25, prism=.20, needle=.28, lance=.50, ion=.50, pulsar=.50,
-    tendril=.60, gauss=.2667, torp=1.0, rockets=.9, star=1.0, flak=.30,
-    pflak=.20, mflak=.20, gflak=.05, spores=.60, bioplasma=.50,
+    tendril=.60, gauss=.25, torp=1.0, rockets=.9, star=1.0, flak=.30,
+    pflak=.20, mflak=.20, gflak=.0667, spores=.60, bioplasma=.50,
     guns=.30, bombs=.30, sporeb=.50, bay=.60, moving_trail=.90,
-    torp_lane=.70, torp_intercept=1.15, rocket_intercept=.95, star_intercept=1.25)
+    torp_lane=.70, torp_intercept=1.43, rocket_intercept=1.40, star_intercept=1.50)
 
 
 def font(size):
@@ -71,6 +71,21 @@ def main():
             tile(build, im, ri*640, 34, f'{label} c26 t={actual:.3f}s')
         build.save(args.out / f'{name}_c26.png')
         manifest.append(dict(id=name, time=desired, comparison=f'{name}.png', build=f'{name}_c26.png'))
+        if row.get('group') == 'weapon kit' and row.get('do') == 'volley':
+            record = am[(name, 170)]
+            impact = record['impacts'][0]
+            sequence = Image.new('RGB', (1280, 716), '#0b1019')
+            ImageDraw.Draw(sequence).text((10, 5),
+                f'KIT 367 / {name} / AFTER SEQUENCE / c170 SOURCE PIXELS',
+                fill='#f1d7a0', font=font(19))
+            phases = [('early', .1), ('selected', desired),
+                      ('contact clock', impact+.0333), ('late', max(1.4, impact+.5))]
+            for i, (label, time) in enumerate(phases):
+                im, actual = frame(args.after, record, time)
+                tile(sequence, im, (i%2)*640, 34+(i//2)*328,
+                     f'{label}  c170  t={actual:.3f}s')
+            sequence.save(args.out / f'{name}_sequence.png')
+            manifest[-1]['sequence'] = f'{name}_sequence.png'
         if name in ['doom', 'lance', 'ion', 'pulsar', 'needle', 'tendril', 'ribbon_0', 'ribbon_1', 'ribbon_3']:
             timeline = Image.new('RGB', (1280, 716), '#0b1019')
             ImageDraw.Draw(timeline).text((10, 5), f'KIT 367 / {name} / AFTER TIMELINE / c170 SOURCE PIXELS', fill='#f1d7a0', font=font(19))
@@ -79,6 +94,18 @@ def main():
                 tile(timeline, im, (i%2)*640, 34+(i//2)*328, f'c170 t={actual:.3f}s')
             timeline.save(args.out / f'{name}_fade.png')
     (args.out / 'sheet_frames.json').write_text(json.dumps(manifest, indent=1))
+    # Four different looks at their original camera-170 pixel size. These
+    # pages let a reviewer sweep the set without shrinking each effect.
+    for start in range(0, len(manifest), 4):
+        page = Image.new('RGB', (1280, 716), '#0b1019')
+        ImageDraw.Draw(page).text((10, 5),
+            f'KIT 367 / AFTER / c170 SOURCE PIXELS / PAGE {start//4+1} / PICK PENDING',
+            fill='#f1d7a0', font=font(19))
+        for i, row in enumerate(manifest[start:start+4]):
+            im, actual = frame(args.after, am[(row['id'], 170)], row['time'])
+            tile(page, im, (i%2)*640, 34+(i//2)*328,
+                 f'{row["id"]}  c170  t={actual:.3f}s')
+        page.save(args.out / f'native_overview_{start//4+1:02d}.png')
     print(f'{len(manifest)} comparison sheets; all at most 716 px tall')
 
 

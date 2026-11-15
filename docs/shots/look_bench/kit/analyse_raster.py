@@ -31,7 +31,7 @@ def main():
         bbox = mask.getbbox()
         result = dict(row, bbox=bbox, width=0 if bbox is None else bbox[2]-bbox[0],
                       height_lit=0 if bbox is None else bbox[3]-bbox[1])
-        if row['test'] in ['lance', 'doom']:
+        if row.get('ribbon_kind', -1) >= 0:
             column = im.crop((im.width//2, 0, im.width//2+1, im.height))
             result['red_fwhm'] = fwhm(list(column.getchannel('R').tobytes()))
             result['green_fwhm'] = fwhm(list(column.getchannel('G').tobytes()))
@@ -66,7 +66,7 @@ def main():
         sheet.save(args.run / f'gauss_two_frames_{height}.png')
     print('RASTER PASS: caps at three cameras, 1080p and 4K; exactly two gauss frames at max and low quality')
     for r in measured:
-        if r['test'] in ['lance', 'doom'] and r['height'] == 1080:
+        if r.get('ribbon_kind', -1) >= 0 and r['height'] == 1080:
             print(r['test'], r['camera'], 'red/green FWHM', r['red_fwhm'], r['green_fwhm'])
 
 

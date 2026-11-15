@@ -10,6 +10,8 @@ var cam
 var fx
 var out: String
 var records: Array = []
+const RIBBON_KINDS := {"plume": 0, "idle": 1, "lance": 2, "sputter": 3,
+	"ion": 5, "doom": 6, "pulsar": 7, "needle": 8, "tendril": 9}
 
 func _initialize() -> void:
 	_run.call_deferred()
@@ -52,7 +54,8 @@ func _run() -> void:
 			cam.r = radius
 			cam.t = Vector3.ZERO
 			cam.snap()
-			for test in ["spark", "spark_no_floor", "shell", "gauss", "gauss_low", "lance", "doom"]:
+			for test in ["spark", "spark_no_floor", "shell", "gauss", "gauss_low",
+				"plume", "idle", "lance", "sputter", "ion", "doom", "pulsar", "needle", "tendril"]:
 				fx = FX.new()
 				stage.add_child(fx)
 				fx.manual = true
@@ -69,13 +72,14 @@ func _run() -> void:
 				elif test in ["gauss", "gauss_low"]:
 					WEAP._gauss_wake(fx, Vector3(-12, 0, 0), Vector3(12, 0, 0), t0, Color(0.6, 1.0, 0.5), 1.0)
 				else:
-					fx.rib(Vector3(-12, 0, 0), Vector3.RIGHT, 24.0, t0, 0.7, Color(0.4, 0.9, 0.5), 2.4, 1.6, 1.6, 6 if test == "doom" else 2)
+					fx.rib(Vector3(-12, 0, 0), Vector3.RIGHT, 24.0, t0, 0.7, Color(0.4, 0.9, 0.5), 2.4, 1.6, 1.6, int(RIBBON_KINDS[test]))
 				var times: Array = [0.20] if not test.begins_with("gauss") else [0.0, 1.0/60.0, 2.0/60.0, 3.0/60.0]
 				for i in times.size():
 					fx.step(t0 + float(times[i]) - fx.now)
 					var name := "%s_h%d_c%d_f%d" % [test, height, radius, i]
 					await save_frame(name)
 					records.append({"file": name + ".png", "test": test, "height": height, "camera": radius, "age": times[i],
+						"ribbon_kind": RIBBON_KINDS.get(test, -1),
 						"projected_axis": [cam.unproject_position(Vector3.ZERO), cam.unproject_position(Vector3.RIGHT)]})
 				stage.remove_child(fx)
 				fx.queue_free()

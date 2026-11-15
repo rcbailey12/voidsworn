@@ -459,6 +459,12 @@ torpedoes keep their running motor. The smoke history still cools separately.
 Bay flashes, interceptions and all eight shared-helper regression rows are
 included in the capture adapter. Lane chevrons remain tactical indicators.
 
+Attack-run craft and live squadron wings use their real stern history with
+the same textured core and sheath. The luminous centreline ends within 24
+render-target pixels of the moving stern and cools over 0.65 s. Its whole
+quad has an 8 px absolute floor (10 px with the usual 1080-line readability
+floor). `warm_craft_trail` primes the actual ImmediateMesh vertex format.
+
 The battle's aggregate `volley` option `pd` is consumed only by false shot
 entries for torpedoes, rockets and star torpedoes. The event has no per-shot PD
 identity, so the first eligible false entries are used. Rolled hits are kept.
@@ -472,5 +478,13 @@ it twice and retain the second run at all three cameras. Use the scripts in
 shots folder. Inspect the default camera at source pixel size first. Measure
 caps without bloom, and report scene-gate frame time at 1080p plus GPU time at
 4K. No headless result stands in for a picture or GPU cost.
+`measure_kit.gd` draws all nine ribbon kinds as well as capped streaks;
+`analyse_raster.py` records channel FWHM separately from the analytic core
+and sheath widths. `verify_evidence.py` checks final source hashes, all 46
+rows at all three cameras, sheet dimensions and the scene-gate results.
+`trace_audit.py` uses the preserved audit checkout only to attribute sh_06;
+it verifies that checkout against the audit pin and records the live callers.
 The adapter reaps completed hull cut jobs before removing each fixture ship,
 then releases static world and puff resources while the renderer is alive.
+Shield-break fixtures require a live shield and fail before capture if it is
+missing. Their four styles are Sunward, Hullbreakers, Hegemony and Glasswrights.

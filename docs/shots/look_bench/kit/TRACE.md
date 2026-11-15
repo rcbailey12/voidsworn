@@ -3,6 +3,8 @@
 Refs #367. This is the original run-1 call trace. Run-2 implementation,
 captures, measurements and approval status are in [REPORT.md](REPORT.md).
 Line numbers and prerequisite notes below describe the dated run-1 checkout.
+The sh_06 attribution was completed on Nov 15 in the section below. Older
+prerequisite and check notes are history, not the current job status.
 
 Read against checkout `6096c4368c1baa8ccebca8170043be4dbfe2f2be` on
 `codex/issue-367`, Nov 14 2026. Runtime files have not been changed. This is
@@ -55,6 +57,36 @@ sparks from `fx_ship.gd:498`, with delays up to 0.4 s and lives up to
 0.7 s. Those can still be present at 10.72 s and are a concrete candidate
 for the crossing yellow lines. This is an inference from the event
 schedule, not a claim that an isolated capture has proved their identity.
+
+## Completed sh_06 attribution, Nov 15
+
+Observed in a replay of gallery g17 from the preserved PC audit checkout.
+`trace_audit.py` first checked the gallery, fx.gd, fx_shaders.gd,
+fx_weapons.gd and fx_ship.gd against the audit commit above. Its wrappers
+record calls and delegate to the original emitters. They do not suppress,
+recolour or replace particles. The original scene, hulls and event schedule
+then rendered g17 at effect time 10.7387 s.
+
+The long green-yellow strokes are Chorus **spore flak**, fired at 9.8 s:
+`gallery._vol("spores") -> fx.volley -> _shot -> _flak:803 ->
+_impact_sparks:530 -> fx.stk(kind 1)`. All 48 live green streaks whose
+projected axes exceeded 50 px came from that call chain. Their colour is
+RGB (0.72, 0.88, 0.18); their projected axes span 55 to 1519 px in the
+2560-wide replay. Those are projected geometry lengths, not measured lit
+extents. The old blur length and speed both scale with the large target.
+
+The same captured frame also contains 18 live gold kind-1 streaks from the
+Sunward shield break and four from the torpedo volley. Hegemony's break
+contributes its rings and kind-16 cross glints. This separates the mixed
+shot's sources; all its kind-1 paths now use the capped textured tail, and
+kind 16 uses the filled flake. The isolated break, spores and torpedo rows
+are in the new three-camera bench.
+
+Evidence is under the task's shots folder:
+`review_20261115/forensic/sh_06_attribution.png`,
+`active_streaks.json` (every live streak and its real call stack) and
+`attribution_summary.json`. This old free-camera replay establishes
+attribution only. The kit's visual comparison uses the real bench cameras.
 
 ## Shared causes that need separate captures
 

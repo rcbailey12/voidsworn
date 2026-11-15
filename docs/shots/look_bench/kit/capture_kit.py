@@ -66,7 +66,7 @@ def rows():
     result.append(dict(id='moving_trail', label='curved engine history', group='engine kit',
         att=['voidsworn', 'Cruiser'], tgt=['hegemony', 'Cruiser'], do='kit_move',
         focus='attacker_engines', engine=1.2, windows=[['event', 0.0, 66]], key=30))
-    for faction in ['voidsworn', 'hegemony', 'ithar', 'deathless']:
+    for faction in ['voidsworn', 'hegemony', 'ithar', 'corsair']:
         result.append(dict(id=f'flakes_{faction}', label=f'shield {faction}', group='shield flakes',
             att=['deathless', 'Cruiser'], tgt=[faction, 'Cruiser'], do='kit_break',
             focus='target', windows=[['event', 0.0, 66]], key=12))
@@ -110,6 +110,10 @@ def main():
 		A.play_moves([{"kind": "run", "w": 1.0, "yaw": 0.0, "pts": [A.position, A.position + Vector3(8, 0, 3), A.position + Vector3(20, 0, 7)]}], 2.0)
 		A.set_meta("kit_move", true)
 	elif what == "kit_break":
+		var target_ship = fx.ship("T")
+		if target_ship == null or target_ship._shield_mat == null:
+			_placeholder("shield-break fixture has no live shield")
+			return false
 		fx.shield_break("T", 3)
 	elif what == "kit_ribbon":
 		var sh = fx.ship("A")
