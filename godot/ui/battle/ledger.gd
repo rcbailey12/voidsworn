@@ -493,7 +493,7 @@ func _shield_plan(c: Vector2, sh: Array, shmax: float) -> void:
 	var lw := maxf(2.0, px(3))
 	var mids := [-PI / 2, 0.0, PI / 2, PI]   # prow, starboard, rear, port (screen angles, y down)
 	var words := ["prow", "starboard", "rear", "port"]
-	var tip := "Shields, %d each at full: " % int(round(shmax))
+	var tip := "Shield pool %d at full; the arcs show how much each side catches: " % int(round(shmax))
 	for q in 4:
 		var v := float(sh[q]) if q < sh.size() else 0.0
 		var f := clampf(v / maxf(shmax, 1.0), 0.0, 1.0)

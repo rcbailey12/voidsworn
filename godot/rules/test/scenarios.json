@@ -1849,6 +1849,34 @@
   "bot": "full",
   "alt": false
  },
+ "s57": {
+  "note": "R246 shield pool (issue 371): Hegemony ion locks pool regen, the ion storm drains pools each turn, repeated hits on one side route power at a loss, and a broken pool drops every side at once.",
+  "seed": 5717,
+  "sector": 1,
+  "admiral": "vex",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "obj": "rout",
+  "shape": "open",
+  "map": "storm",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "alt": false
+ },
  "t_casttwice": {
   "sector": 1,
   "fac_player": "ithar",
@@ -2314,7 +2342,7 @@
   "rounds": 8,
   "bot": "full",
   "note": "Tree fixture: Brin Flaw in the Glass Corrected (mirelle:A:2:0) refills the first emptied facing",
-  "seed": 31215,
+  "seed": 15838,
   "admiral": "mirelle",
   "fleet": [
    "i_wisp",
@@ -3180,7 +3208,7 @@
   "kind": "battle",
   "rounds": 5,
   "bot": "full",
-  "seed": 31523,
+  "seed": 7919,
   "admiral": "thale",
   "fleet": [
    "warden",
@@ -3213,7 +3241,7 @@
   "kind": "battle",
   "rounds": 5,
   "bot": "full",
-  "seed": 31524,
+  "seed": 7919,
   "admiral": "thale",
   "fleet": [
    "warden",
@@ -4434,7 +4462,7 @@
   "kind": "battle",
   "rounds": 9,
   "bot": "full",
-  "seed": 31730,
+  "seed": 76984,
   "admiral": "razormaw",
   "fleet": [
    "b_razor",
@@ -4445,7 +4473,8 @@
   ],
   "fac": "hegemony",
   "enemies": [
-   "h_dominion"
+   "h_dominion",
+   "h_picket"
   ],
   "cmdRound": 5,
   "lineage": {
@@ -5434,7 +5463,7 @@
   "kind": "battle",
   "rounds": 12,
   "bot": "full",
-  "seed": 33014,
+  "seed": 15838,
   "admiral": "sable",
   "fleet": [
    "c_raider",
@@ -5928,7 +5957,7 @@
   "kind": "battle",
   "rounds": 9,
   "bot": "full",
-  "seed": 33030,
+  "seed": 7919,
   "admiral": "vesh",
   "fleet": [
    "c_reaver",
@@ -6081,7 +6110,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 20,
+  "seed": 97794,
   "admiral": "grax",
   "fleet": [
    "c_raider",
@@ -6281,7 +6310,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 33205,
+  "seed": 15838,
   "admiral": "kassar",
   "fleet": [
    "h_dominion",
@@ -6416,7 +6445,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 33209,
+  "seed": 7919,
   "admiral": "kassar",
   "fleet": [
    "h_dominion",
@@ -6773,7 +6802,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 33219,
+  "seed": 15838,
   "admiral": "vorn",
   "fleet": [
    "h_dominion",
@@ -6907,7 +6936,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 33227,
+  "seed": 7919,
   "admiral": "reyes",
   "fleet": [
    "h_vanguard",
@@ -7244,7 +7273,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 33241,
+  "seed": 7919,
   "admiral": "maren",
   "fleet": [
    "h_picket",
@@ -8221,7 +8250,7 @@
   ],
   "cmdRound": 2,
   "rounds": 4,
-  "seed": 38206,
+  "seed": 7919,
   "lineage": {
    "id": "sekhmar",
    "picks": [
@@ -8388,7 +8417,7 @@
   ],
   "cmdRound": 3,
   "rounds": 5,
-  "seed": 38208,
+  "seed": 34623,
   "lineage": {
    "id": "nekhet",
    "picks": [
