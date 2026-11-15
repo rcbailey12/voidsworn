@@ -1,33 +1,28 @@
-# Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 15, 2026, 01:30 UTC)
+# Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 15, 2026, 13:50 UTC)
 
-## 0. Status at Nov 14, 2026, 19:30 CST (Nov 15 01:30 UTC; read this first)
+## 0. Status at Nov 15, 2026, 07:50 CST (13:50 UTC; read this first)
 
 **What to trust.** docs/RULEBOOK.md for rules (0.10: only Ryan's quoted words make a rule; one-day Board choices are notes in
 LOOP.md). contrib/opus/LOOP.md for status: "The seats" and the newest LATEST lines. contrib/opus/OPEN_WORK.md for every open
-issue and parked pull request and what each waits on. FINDINGS R236 to R253 are the newest rulings. The Nov 14 hand-over is in
+issue and parked pull request and what each waits on. FINDINGS R236 to R257 are the newest rulings. The Nov 14 hand-over is in
 docs/archive/HANDOFF_0_2026-11-14.md; nothing under docs/archive/ is followed.
 
-**The Board.** One Claude thread in the Project, Opus 5.5 at high effort, with the Fable advisor on (Ryan, R252: "this chat
-stands"). Seats (R253, Nov 14 19:30 CST, after Ryan's weekly reset): Opus workers build every Blender ship again (738 Sunward
-flagship sheet, 739 Eclipse E13 and E14 sheets running); Codex takes pipeline, effects, terrain and capture jobs; Kimi mid-size
-code, rules and balance; DeepSeek small exact jobs; Muse design, checks and audits (Ryan starts it; briefs on issue 256). The
-Board keeps every seat fed from OPEN_WORK.md and brings Ryan only clear inputs (R253).
+**The Board.** One Claude thread in the Project, Opus 5.5, with the Fable advisor on (R252). Seats (R253, R257): Opus workers
+build every Blender ship and paint stack and now also take Codex's Blender and paint jobs (726); DeepSeek takes code, mid-size
+included (728, then Kimi's 41 and 371 from their kimicode -partial branches); Codex is near its weekly limit (its last
+session: 367 from codex/issue-367-partial, then 368); Kimi is no longer a seat (Ryan cancelled it, R257); Muse does design,
+checks and audits (Ryan starts it; briefs on issue 256). Ryan's GPU go stands until he says otherwise (06:51 CST); gpu_go.txt
+says so. The Board runs every PC GPU step through the queue.
 
-**Landed this thread (Nov 15 00:00 to 01:30 UTC).** PR 712 (hand-over, RULEBOOK 0.10), 711 (Muse audit 706), 714 (one scale
-table, docs/playbooks/scale.md, and scale_check.gd with six KNOWN rows that jobs 373, 368, 369 clear), 690 (PC runners: shared
-mirror, clone retry, preflight, safe chains, resume from partial), 691 (visible weapons match the game, R241), 694 (Eclipse
-round 3, R243), 702 (debrief), 707 (Eclipse portraits), 695, 703, 709, 692, 719 (R251 clean-up and R252), 724.
+**Landed overnight (Nov 15).** 754, 762, 766, 764 (runner; not yet copied to the PC), 760, 761, 763, 765, 767 (Dominion H10),
+770, 773 (sound weight), 774, 772 (Sunward paint stack, sandbox), 775 (Iron Mandate IM5), 777, 778, 776 (Sunward craft SF3 and
+SB4). PC: E13 and E14 passed stages 1 to 7 and every check (ecl1314out).
 
-**Ryan's calls tonight (R252).** Eclipse core kept, he judges it in play; the Glasswright Loom replaces the old body plan
-(issue 727 rewrites the design); Hullbreaker trophy patches bigger and paler like the concepts (issue 726); Fable advisor on.
-He cleared his GPU for Codex through the night until morning: gpu_go.txt in the PC root starts with "GPU cleared"; the
-Board overwrites its first line in the morning (it cannot delete on the PC).
+**Ryan's calls this morning (R256, R257).** SF3 stands; Eclipse shades sit over the ship as E13 is built; E13 edge paint even
+side to side (issue 783); E14 redesigned with its ring upright around one big centre gun, a glass cannon (issue 782), with a
+rules change: one forward null lance and a thinner hull (issue 784; Ryan sees the before and after table before it merges, it
+is never silent); S8 hull a step lighter (issue 781); Hegemony sheets accepted, paint running (issue 780); Kimi cancelled.
 
-**Running on the PC.** DeepSeek 720, 721, 729; Kimi 371 run 3 (resumed from work/issue-371-kimicode-partial), then 722;
-Codex chain 15A from 21:42 CST: 367, 368, 373, 726 (cap 7200 s); Eclipse paint from main (ECL_PAINT_MAIN_1115.bat). Next
-Codex window: 369, 688 (resolve its -partial against 691's A20 sheet first), 728.
-
-**First jobs for the next Board check.** Merge 731 (runner hot fix) before Kimi reaches 722; merge 701 and 715 on green;
-review each Codex run 2 by its pictures; send Ryan one picture per landed visual change. Held, with run 2 briefs in their
-issues: 705 (the finale dawn drew a tan hex sheet), 700 (the station), 704 (balance pack). The runner lessons from its first
-live runs (the Git helper recursion, Kimi's preflight reply) are in LOOP.md and issue 730.
+**Running.** Opus workers 780, 781, 726; queued 784, 782, 783 (three at a time). DeepSeek DS_15G (728), then DS_15H (41, 371).
+Muse: issue 785 (squadron craft for Hegemony, Hullbreakers and Chorus) waits for Ryan to start it. Held with briefs: 705 (the
+finale dawn), 700 (the station, 373), 704 (balance pack, now with 41 on DeepSeek).
