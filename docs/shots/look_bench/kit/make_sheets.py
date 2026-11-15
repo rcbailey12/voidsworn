@@ -1,5 +1,6 @@
 """Make labelled review sheets from real bench images, never redraw effects."""
 import argparse
+import hashlib
 import json
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
@@ -40,7 +41,16 @@ def main():
     p.add_argument('--before', type=Path, required=True)
     p.add_argument('--after', type=Path, required=True)
     p.add_argument('--out', type=Path, required=True)
+    p.add_argument('--provisional', action='store_true',
+        help='Label older candidate captures; do not present them as final-source proof.')
     args = p.parse_args()
+    repo = Path(__file__).resolve().parents[4]
+    captured = json.loads((args.after / 'source_hashes.json').read_text())
+    current = {name: hashlib.sha256((repo / 'godot' / name.replace('\\', '/')).read_bytes()).hexdigest()
+               for name in captured}
+    matches = captured == current
+    if not matches and not args.provisional:
+        p.error('After captures differ from current FX. Recapture, or use --provisional for historical review.')
     args.out.mkdir(parents=True, exist_ok=True)
     before = json.loads((args.before / 'bench.json').read_text())
     after = json.loads((args.after / 'bench.json').read_text())
@@ -56,7 +66,8 @@ def main():
         desired = TIMES.get(name, .25 if not name.startswith('p_') else reference[min(row.get('key', 4), len(reference)-1)]['t'])
         sheet = Image.new('RGB', (1280, 716), '#0b1019')
         d = ImageDraw.Draw(sheet)
-        d.text((10, 5), f'KIT 367 / {name} / BEFORE AND AFTER / PICK PENDING', fill='#f1d7a0', font=font(20))
+        status = 'OLDER CANDIDATE' if args.provisional else 'PICK PENDING'
+        d.text((10, 5), f'KIT 367 / {name} / {status}', fill='#f1d7a0', font=font(20))
         for ci, cam in enumerate([170, 60]):
             for ri, (run, records, label) in enumerate([(args.before, bm, 'BEFORE'), (args.after, am, 'AFTER')]):
                 native = cam == 60 and 'native_file' in records[(name, cam)]
@@ -65,7 +76,7 @@ def main():
                 tile(sheet, im, ri*640, 34+ci*328, f'{label}  c{cam}  t={actual:.3f}s  {scale}')
         sheet.save(args.out / f'{name}.png')
         build = Image.new('RGB', (1280, 366), '#0b1019')
-        ImageDraw.Draw(build).text((10, 5), f'KIT 367 / {name} / CAMERA 26 BUILD CHECK / full view reduced 3x', fill='#f1d7a0', font=font(18))
+        ImageDraw.Draw(build).text((10, 5), f'KIT 367 / {name} / c26 / {status} / full view reduced 3x', fill='#f1d7a0', font=font(18))
         for ri, (run, records, label) in enumerate([(args.before, bm, 'BEFORE'), (args.after, am, 'AFTER')]):
             im, actual = frame(run, records[(name, 26)], desired)
             tile(build, im, ri*640, 34, f'{label} c26 t={actual:.3f}s')
@@ -73,12 +84,17 @@ def main():
         manifest.append(dict(id=name, time=desired, comparison=f'{name}.png', build=f'{name}_c26.png'))
         if name in ['doom', 'lance', 'ion', 'pulsar', 'needle', 'tendril', 'ribbon_0', 'ribbon_1', 'ribbon_3']:
             timeline = Image.new('RGB', (1280, 716), '#0b1019')
-            ImageDraw.Draw(timeline).text((10, 5), f'KIT 367 / {name} / AFTER TIMELINE / c170 SOURCE PIXELS', fill='#f1d7a0', font=font(19))
+            ImageDraw.Draw(timeline).text((10, 5), f'KIT 367 / {name} / {status} / c170 TIMELINE', fill='#f1d7a0', font=font(19))
             for i, time in enumerate([.40, .65, 1.10, 1.30]):
                 im, actual = frame(args.after, am[(name, 170)], time)
                 tile(timeline, im, (i%2)*640, 34+(i//2)*328, f'c170 t={actual:.3f}s')
             timeline.save(args.out / f'{name}_fade.png')
     (args.out / 'sheet_frames.json').write_text(json.dumps(manifest, indent=1))
+    (args.out / 'sheet_provenance.json').write_text(json.dumps(dict(
+        before=str(args.before.resolve()), after=str(args.after.resolve()),
+        captured_fx_sha256=captured, current_fx_sha256=current,
+        matches_current_fx=matches, provisional=args.provisional,
+        final_visual_approval=False), indent=2))
     print(f'{len(manifest)} comparison sheets; all at most 716 px tall')
 
 
