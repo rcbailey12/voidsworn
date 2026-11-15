@@ -64,6 +64,16 @@ closed engine bells), a launcher quoting bug and a stale game cache only show on
 had gone from sheet to game since the sheet method changed. Set: Board, Nov 12, on Ryan's ask to learn from the gaps at
 the level of design and setup, not patches (R225).
 
+
+0.10 **How the repo carries memory (R251).** A standing rule comes only from Ryan's words, quoted in FINDINGS and landed here; a row
+that stretches his words past what he named says so and asks him. Board choices for one day or one job (effort, caps, job order,
+wrappers, which seat took a job) are operating notes in LOOP.md, never rules. A new ruling names what it replaces and the old row is
+marked SUPERSEDED, so no two live rules conflict. One live place per kind: rules in this book, status in LOOP.md's newest LATEST
+lines and The seats, the hand-over in HANDOFF section 0 (about one page; older sections go to docs/archive), history in FINDINGS.
+LOOP.md's LATEST lines roll into a dated summary once they pass about 15. Muse audits for stale or conflicting docs now and then.
+Why: several models and fresh chats read the repo cold; on Nov 14 a one-day choice nearly became a rule, an A20 note was stretched to
+every ship, and a summary line inverted Ryan's call on A18 and A19.
+
 ## 1. Working with Ryan
 
 1.1 **Plain words, the answer first, your pick and why; no em dashes; no human-hour estimates** (estimate in agent runs and
@@ -141,6 +151,14 @@ keeps only what needs it. Codex gets only what no other seat can do (Ryan, Nov 1
 use it when it can only do something others can't", R234): code and check jobs go to the API Opus arm or an Opus worker first.
 The Kimi Code plan holds about 30 minutes of agent work per 5-hour window, so it takes short reviews only, never builds (issue
 597 verdict, Nov 12). Ids: R128, R180e, R205, R206, R219, R234, agents-12.
+
+**Nov 14 (R242, R250), wins over the table and paragraph above where they differ:** the seat order is DeepSeek for small jobs, the
+Sonnet API arm for mid-size, Opus (API arm or a plan-side helper) for Blender and large work, Codex for what only it can do, Kimi by
+results (R242). While the API credit is spent (till its monthly refresh, about Nov 21; Ryan adds none) and the Board plan is low,
+Codex is the main builder, Blender builds included ("use codex aggressively", Nov 14; the Board sets effort per job); the Board judges
+every model by picture as before. Kimi now holds a seat through the Kimi Code CLI arm (kimicode, WORK_HARNESS=kimi): about 2.5 hours
+of agent time per 5 hour window on Nov 14 (a Board observation, revise with evidence), so mid-size code, rules and balance jobs
+(the 30 minute figure above was the OpenCode route). Muse also runs outside audits (issue 706). Not taken: Fable advisor, Gemini 4 Hydrogen.
 
 2.7 **Codex runs the model Ryan picked: GPT 6.1 Sol today, pinned by name in tools/pc/codex_issue.bat.** Never a weaker
 model by accident (Luna) and never switched to another one (Astra) without his yes; no Codex cloud tasks or cloud reviews.
