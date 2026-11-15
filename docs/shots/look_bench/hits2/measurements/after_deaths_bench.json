@@ -1,0 +1,79 @@
+{
+ "adapter": "NVIDIA GeForce RTX 5080",
+ "bench_sha256": "4dfa9ddda9f8745e0fd273eb8cf686e5623de52e366fbbc388011c86b72f9f61",
+ "commit": "",
+ "fixed_fps": 60,
+ "godot": "4.7.2-stable (official)",
+ "late_shader_names": [],
+ "late_shaders_after_warmup": 0,
+ "moments_sha256": "f50b57b8d2081ab80dff6062d141d407cc3eacc3faaf99d3edc53c73dc725ac3",
+ "parts": {
+  "0": {
+   "start_frame": 900
+  },
+  "2": {
+   "start_frame": 1800
+  },
+  "3": {
+   "start_frame": 3600
+  },
+  "moments": {
+   "region": "frontier",
+   "start_frame": 1020
+  }
+ },
+ "pipelines_compiled": 362,
+ "stills": [
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 974,
+     "t": 0.0
+    },
+    {
+     "step": 1075,
+     "t": 1.6833
+    },
+    {
+     "step": 1123,
+     "t": 2.4833
+    },
+    {
+     "step": 1333,
+     "t": 5.9833
+    }
+   ],
+   "file": "moments/d_cruiser__c170.png",
+   "id": "d_cruiser",
+   "impacts": [],
+   "part": "moments"
+  },
+  {
+   "cam": 170,
+   "cells": [
+    {
+     "step": 1406,
+     "t": 0.0
+    },
+    {
+     "step": 1544,
+     "t": 2.3
+    },
+    {
+     "step": 1592,
+     "t": 3.1
+    },
+    {
+     "step": 1802,
+     "t": 6.6
+    }
+   ],
+   "file": "moments/d_capital__c170.png",
+   "id": "d_capital",
+   "impacts": [],
+   "part": "moments"
+  }
+ ],
+ "warnings": []
+}

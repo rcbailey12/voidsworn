@@ -6,7 +6,7 @@ const GUARD = preload("res://tools/ci/check_guard.gd")
 #      (flash, then the shield ripple, the biggest body of any hit), and a hit is sized by the gun as well as the target;
 #   2. each weapon family has its own recipe (shell chips and a skipping spark cone, an energy splash that runs along the
 #      plate, a lance burn that crawls, torpedo gas and debris, an ion burn with no molten spray);
-#   3. thrown matter lives longer than flame: no hit flash lives past the 0.70 s flame cap, sparks stay under a second,
+#   3. thrown matter lives longer than flame: no hit flash lives past the 0.70 s flame cap, sparks use their own cooling life (issue 538),
 #      debris and gas live past a second (R193, "Flame only");
 #   4. direction: every spark, chip, puff and ember leaves along the plate's outward side (nothing sprays into the ship);
 #   5. light on neighbours: a torpedo hit's light reaches about two hexes;
@@ -81,7 +81,9 @@ func _run() -> void:
 	_ladder()
 	var looks := [["battery", "turret", "voidsworn"], ["battery", "hbattery", "voidsworn"], ["lance", "lance", "voidsworn"],
 		["torp", "torp", "voidsworn"], ["bio", "bioplasma", "chorus"], ["gauss", "gauss", "deathless"], ["lance", "ion", "hegemony"],
-		["battery", "hturbo", "hegemony"], ["battery", "shard", "ithar"]]
+		["battery", "hturbo", "hegemony"], ["battery", "shard", "ithar"], ["torp", "htorp", "corsair"], ["torp", "startorp", "ithar"],
+		["lance", "doom", "deathless"], ["battery", "autocannon", "hegemony"], ["battery", "scatter", "corsair"],
+		["battery", "turret", "ithar"], ["lance", "pulsar", "ithar"], ["flak", "flak", "voidsworn"]]
 	var seen := {}
 	for calm in [false, true]:
 		var wf: Array = _world(calm)
@@ -89,21 +91,21 @@ func _run() -> void:
 		var fx = wf[1]
 		var x := -60.0
 		for lk in looks:
-			_ship(world, fx, "A" + str(lk[1]), "Cruiser", 1.0, Vector3(x, 0, 30), str(lk[2]))
-			_ship(world, fx, "T" + str(lk[1]), "Cruiser", 1.0, Vector3(x, 0, -30))
+			_ship(world, fx, "A" + str(lk[1]) + str(lk[2]), "Cruiser", 1.0, Vector3(x, 0, 30), str(lk[2]))
+			_ship(world, fx, "T" + str(lk[1]) + str(lk[2]), "Cruiser", 1.0, Vector3(x, 0, -30))
 			x += 15.0
 		await _advance(fx, 0.8)
 		for lk in looks:
 			fx.dstate["hit_logging"] = true
 			fx.dstate["hit_log"] = []
 			var t0: float = fx.now
-			fx.volley("A" + str(lk[1]), str(lk[0]), "T" + str(lk[1]), {"weapon_id": str(lk[1]), "shots": [true],
+			fx.volley("A" + str(lk[1]) + str(lk[2]), str(lk[0]), "T" + str(lk[1]) + str(lk[2]), {"weapon_id": str(lk[1]), "shots": [true],
 				"hits": [{"shield": 0, "hull": 9, "section": "mid", "crit": false}]})
 			await _advance(fx, 2.5)
 			var log: Array = fx.dstate["hit_log"]
 			if calm:
 				continue
-			seen[str(lk[1])] = log.duplicate()
+			seen["needle" if lk[1] == "turret" and lk[2] == "ithar" else str(lk[1])] = log.duplicate()
 			_matter(str(lk[1]), log, fx, t0)
 		if calm:
 			_check(fx.flash_log.is_empty() and fx.flash_area_log.is_empty(), "reduce flashing: the new hits count and book no flash")
@@ -111,7 +113,7 @@ func _run() -> void:
 			# 5. light on neighbours: the torpedo's light reaches about two hexes (hexes are 17.3 across)
 			var reach := 0.0
 			fx.dstate["hit_logging"] = false
-			fx.volley("Atorp", "torp", "Ttorp", {"weapon_id": "torp", "shots": [true], "hits": [{"shield": 0, "hull": 9, "section": "mid", "crit": false}]})
+			fx.volley("Atorpvoidsworn", "torp", "Ttorpvoidsworn", {"weapon_id": "torp", "shots": [true], "hits": [{"shield": 0, "hull": 9, "section": "mid", "crit": false}]})
 			for i in 240:
 				fx.step(1.0 / 60.0)
 				for e in fx._lev:
@@ -166,7 +168,7 @@ func _matter(wid: String, log: Array, fx, t0: float) -> void:
 		longest[what] = maxf(float(longest.get(what, 0.0)), life)
 		if what == "flash" and life > WEAP.FLAME_CAP:
 			flash_long += 1
-		if what == "spark" and life >= 1.0:
+		if what == "spark" and (life < WEAP.SPARK_LIFE.x or life > WEAP.SPARK_LIFE.y):
 			spark_long += 1
 		if what in ["spark", "debris", "gas", "ember", "drop"]:
 			var v: Vector3 = e["v"]
@@ -175,7 +177,7 @@ func _matter(wid: String, log: Array, fx, t0: float) -> void:
 				bad_dir += 1
 	_check(not log.is_empty(), "%s: the hit made its recipe" % wid)
 	_check(flash_long == 0, "%s: no flash outlives the 0.70 s flame cap" % wid)
-	_check(spark_long == 0, "%s: sparks live under a second" % wid)
+	_check(spark_long == 0, "%s: cooling sparks stay within their own lifetime, separate from flame" % wid)
 	_check(bad_dir == 0, "%s: everything thrown leaves the plate outward (%d inward)" % [wid, bad_dir])
 	print("  %s lives: %s" % [wid, str(longest)])
 

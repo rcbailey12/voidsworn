@@ -94,6 +94,7 @@ var shadow_scan := 0
 var kill_shadows := false
 var build_ms := 0.0
 var vol_looks: Array = []   # --trace: the volleys fired this frame (faction:kind:weapon)
+var film_focus: Array = [] # issue 538: actual impact positions and times, for the proof camera only
 
 
 func _ready() -> void:
@@ -157,7 +158,9 @@ func _volley() -> void:
 		hits.append({"shield": 8 if shield else 0, "hull": 0 if shield else 9, "section": ["prow", "mid", "eng"][rng.randi() % 3], "crit": false})
 	if fx.ships.has(att) and fx.ships.has(tgt) and not fx.ships[att].dead and not fx.ships[tgt].dead:
 		vol_looks.append("%s:%s:%s%s" % [fac_of.get(att, "?"), lk[0], lk[1], ":shield" if shield else ""])
-		fx.volley(att, str(lk[0]), tgt, {"weapon_id": str(lk[1]), "shots": shots, "hits": hits})
+		var result: Dictionary = fx.volley(att, str(lk[0]), tgt, {"weapon_id": str(lk[1]), "shots": shots, "hits": hits})
+		if args.has("follow_hits") and not result.get("impacts", []).is_empty():
+			film_focus.append({"at": fx.now + float(result["impacts"][0]), "p": fx.ship(tgt).to_world(fx.ship(tgt).hull.c), "label": str(lk[1]) + " impact"})
 
 
 func _run() -> void:
@@ -243,18 +246,33 @@ func _still_run() -> void:
 		b.cam.r = float(args.get("film_r", 170.0))
 		b.cam.snap()
 		keep = {"t": b.cam.t, "r": b.cam.r}
-	for st in 471:
+	var film_target: Vector3 = close_t
+	var film_label := "20-ship fight"
+	var film_until := -1.0
+	var film_camera: Array = []
+	for st in (840 if args.has("follow_hits") else 471):
 		_settle(fx)
 		if st % 21 == 0:
 			_volley()
 		for d in deaths.size():
 			if st == 260 + 60 * d and fx.ships.has(deaths[d]):
+				if args.has("follow_hits"):
+					film_target = fx.ship(deaths[d]).to_world(fx.ship(deaths[d]).hull.c)
+					film_label = ["frigate death", "destroyer death", "cruiser death and wreck"][d]
+					film_until = fx.now + (5.5 if d == 2 else 0.9)
 				fx.death(deaths[d], "big" if d == 2 else "blast")
 				side_ids["player"].erase(deaths[d])
 				side_ids["enemy"].erase(deaths[d])
 		if film > 0 and close_t != Vector3.INF:
-			# the battle's own camera follows the selected ship; hold the film on the third death's place every step
-			b.cam.t = close_t
+			# Follow an arriving hit, then hold through its aftermath. Deaths take priority through the core and wreck.
+			if args.has("follow_hits"):
+				while not film_focus.is_empty() and float(film_focus[0]["at"]) <= fx.now + 0.35:
+					var arrival: Dictionary = film_focus.pop_front()
+					if fx.now >= film_until:
+						film_target = arrival["p"]
+						film_label = arrival["label"]
+						film_until = fx.now + 1.6
+			b.cam.t = film_target if args.has("follow_hits") else close_t
 			b.cam.r = float(args.get("film_r", 170.0))
 			b.cam.snap()
 		fx.step(1.0 / 60.0)
@@ -262,6 +280,9 @@ func _still_run() -> void:
 		# Issue 461: --film N also keeps every Nth step as a 1280x720 jpg (film_<step>.jpg), so the same fixed-clock fight
 		# can be played back as a short film for before and after.
 		if film > 0 and st % film == 0:
+			var pixel: Vector2 = b.cam.unproject_position(film_target)
+			film_camera.append({"step": st, "fx_time": fx.now, "focus": [film_target.x, film_target.y, film_target.z],
+				"r": b.cam.r, "pixel_1080": [pixel.x, pixel.y], "label": film_label})
 			var fimg := get_viewport().get_texture().get_image()
 			if fimg != null and not fimg.is_empty():
 				fimg.resize(1280, 720, Image.INTERPOLATE_LANCZOS)
@@ -278,6 +299,9 @@ func _still_run() -> void:
 				b.cam.r = keep["r"]
 				b.cam.snap()
 				await get_tree().process_frame
+	if film > 0:
+		var manifest := FileAccess.open(out.path_join("film_camera.json"), FileAccess.WRITE)
+		manifest.store_string(JSON.stringify(film_camera, " "))
 	print("[scene_gate] STILLS DONE")
 
 
@@ -714,7 +738,7 @@ func _mode(mode: String, s: int) -> Dictionary:
 	var n := int(args.get("frames", 720))
 	# effects need a couple of seconds to reach a steady mix of shots in flight before the warm-up frames count
 	var w0 := Time.get_ticks_msec()
-	while Time.get_ticks_msec() - w0 < 2500:
+	while Time.get_ticks_msec() - w0 < int(args.get("settle_ms", 2500)):
 		await get_tree().process_frame
 	for k in warm:
 		await get_tree().process_frame
@@ -812,6 +836,10 @@ func _mode(mode: String, s: int) -> Dictionary:
 		"buffer_mb": Performance.get_monitor(Performance.RENDER_BUFFER_MEM_USED) / 1048576.0,
 		"late_shaders": late.size(), "late_shader_names": late}
 	if b.gfx != null and "flash_area_log" in b.gfx:
+		row["particle_storage"] = {}
+		for key in b.gfx.pools:
+			var pool = b.gfx.pools[key]
+			row["particle_storage"][key] = {"emitted_including_warmup": pool.emitted, "slots": pool.cap}
 		var req := 0
 		var yielded := 0
 		var refused: Array = []

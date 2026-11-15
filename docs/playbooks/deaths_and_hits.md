@@ -204,8 +204,35 @@ sliver; with no recent hit on record it falls 0.12 of the length off the middle 
 hulls and the Chorus keep their own cuts. Lifting either limit is a look call, not a rule.
 
 Sizes follow the gun as well as the target: a hit's flash is its row's size times the firing hull's band (small 0.85,
-cruiser 1.0, capital 1.2) times the hit hull's band (small 0.8, cruiser 1.0, capital 1.2). Matter lives: sparks 0.35 to
-0.9 s, debris 1 to 4 s, gas and dust 2 to 4 s, embers 1.4 to 3 s; no flash past 0.70 s.
+cruiser 1.0, capital 1.2) times the hit hull's band (small 0.8, cruiser 1.0, capital 1.2). Issue 538 pushes the thrown
+matter: sparks 0.6 to 1.6 s, debris 5 to 10 s, gas and dust 5.5 to 9 s, embers 3.5 to 7 s. These are tuning ranges,
+not comfort limits. Flame still snuffs out within 0.70 s, and every bright flash still uses the existing counter.
+
+Hit debris now uses more, larger plates with a readable metal surface, slower cooling and less drag. An 8 px nominal
+size floor keeps cooled hit shards visible at camera 170; their irregular mesh and tumble determine the actual outline.
+Death shards keep their existing size and cooling. Sparks have
+larger points and trails; cooling embers have larger points without a higher peak. Smoke is a ragged sheet stretched
+along its outward velocity, with a tapered, broken edge and slow thinning, not a round expanding puff. Shell smoke
+follows the reflected shot; beam vapour follows the contact sweep. Bio fume uses the same directional shape in its
+own colour. Las and prism still leave no smoke; ion still throws no molten metal. Existing hull scars and faint
+neighbour light stay in place. The change and its measured cost are in contrib/opus/reviews/hits2_report.md.
+
+Until issue 710's scale table lands, the sizes used are the displayed class lengths in render/hull_table.gd
+(CLS_LEN times SHIP_K 1.6), the hex width 17.32, and the gun and target bands above. Matter also follows the square
+root of the firing gun's band and the existing target geometry scale; rockets retain their smaller recipe. Do not
+invent a separate metres-per-hex value in an effects job. Reconcile these tuning values with the shared table when
+710 lands, using the before and after pictures.
+
+For the pass 2 proof, run look_bench.tscn twice with `--part moments --moments res://bench/look_moments_hits2.json`
+and keep the second run. Its single-shot rows include guns, plasma, prism, gauss, rockets, torpedoes, star torpedoes,
+beams, ion, doom arcs and bio, through 8 s at camera 170 and true source pixels. For the 20-ship film use
+`scene_gate.tscn -- --still --film 2 --follow_hits`: the camera follows arriving hits and holds through deaths,
+and film_camera.json records its position and radius. For timing use `--modes base,deaths --settle_ms 11000`
+before the measured frames, so long-lived matter has time to accumulate. Report frame and GPU medians and p99,
+flash refusals and particle storage use; do not lower counts to hide a cost. `--moments res://bench/look_moments_hits2_deaths.json`
+adds full 640 by 480 source cells at the core and wreck for the death regression strip. A cropped core is labelled as
+a crop, with the complete source cell supplied beside it. The ordinary scene gate defaults stay
+unchanged.
 
 Faction weapons take the nearest row and their faction's matter: the Glasswright prism lance is a lance with a white core and a
 rainbow fringe; the ion beam is a lance burn in blue-white with crawling arcs and no molten metal (built so in issue 461; this line once
