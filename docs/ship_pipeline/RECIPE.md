@@ -159,7 +159,9 @@ the A20 concept): `TROPHY` in `kits/hullbreakers/stack.py`, through the shared `
 unchanged first. One more uneven grid at the concept's trophy plate size (`cell`, about 0.13 by 0.085 ship lengths, warped, banded
 and split as above); a share of its cells (`share` times the zone's patchwork amount, more in some broad regions, `cluster`) takes
 pale Hegemony grey or violet Eclipse plate (`families`, sampled from the A20 beauty), one colour per trophy cell, never per mesh
-island; parts keep the plain patchwork. The sheet's `pale` zone takes the same trophy grey with no dark families over it. The game's rim light (`godot/render/look_rim.gd`, issue 362, specular x8) flared white on the stack's surfaces at the close
+island; parts keep the plain patchwork. The sheet's `pale` zone keeps its own
+dark grey with no dark plate families over it, and the trophy layer covers about 65 percent of it (`trophy_share`), a third of
+that in violet, so a sheet-placed pale patch reads pale, violet or dark grey. The game's rim light (`godot/render/look_rim.gd`, issue 362, specular x8) flared white on the stack's surfaces at the close
 cameras (PC run out3): they carry real roughness, which the old flat-colour hulls did not. The stack marks its textured and engine
 glow materials `rim_soft` (glTF material extras); `look.gd` puts such surfaces on their own layer, lit by a second rim light with
 `RIM soft` (0.25) of the specular. Every other hull keeps the full rim light, pixel for pixel (sandbox probe
