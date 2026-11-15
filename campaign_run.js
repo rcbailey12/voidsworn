@@ -163,13 +163,16 @@ ACT.takePerk=arg=>{ const [uid,p]=arg.split(':'); const s=RUN.fleet.find(x=>x.ui
 // cost before the owner's faction pricing, times the Crusade class price), then the yard price multiplier applies,
 // so a captured Eclipse mote costs what a Warden costs, not what Eclipse pays for it.
 function capturedHullPrice(t){ return Math.round(Math.round((t.cost0!=null?t.cost0:t.cost)*(FAC_PRICE.voidsworn[t.cls]||1)/5)*5*priceMult()); }
+// R78 Q9 (Board call, Nov 15): the captured draw is gated by the same class unlocks as normal stock, so a captured
+// battleship waits for u_battleship like the Cathedral, and likewise a carrier for u_carrier, a dreadnought for u_dread.
+function cinderPool(){ return CINDER_PRIZES.filter(h=>{ const cl=HULLS[h].cls; return cl==='Carrier'?!!META.unlocked.u_carrier:cl==='Battleship'?!!META.unlocked.u_battleship:cl==='Dreadnought'?!!META.unlocked.u_dread:true; }); }
 function shipyardStock(n){
   if(n.stock) return n.stock;
   const hulls=['warden','harrow','penitent']; if(META.unlocked.u_carrier) hulls.push('reliquary'); if(META.unlocked.u_battleship) hulls.push('cathedral'); if(META.unlocked.u_dread) hulls.push('ascendant');
   const own=[...new Set(hulls.map(h=>equivHull(h,RUN.fac)))]; hulls.length=0; hulls.push(...own);
   const pickH=shuffle(hulls.slice()).slice(0,3).sort((a,b)=>(HULLS[a].cp||1)-(HULLS[b].cp||1)); // each yard has its own few hulls
   /* hull variants you've unlocked are sold beside their standard hull */ for(const h of pickH.slice()){ for(const [vid,v] of Object.entries(HULL_VARIANTS)) if(v.base===h&&META.variants&&META.variants[vid]) pickH.splice(pickH.indexOf(h)+1,0,vid); }
-  const cap=cinderOpen()?shuffle(CINDER_PRIZES.slice()).slice(0,2):[]; // R78 Q9: from run 3 the Crusade yards sell captured Hegemony and Eclipse hulls
+  const cap=cinderOpen()?shuffle(cinderPool()).slice(0,2):[]; // R78 Q9: from run 3 the Crusade yards sell captured Hegemony and Eclipse hulls, class unlocks apply
   n.stock={hulls:pickH, mods:shuffle(modulePool()).slice(0,3), sold:[], cap};
   return n.stock;
 }
@@ -631,10 +634,10 @@ function prizeOffer(p,nR){ const v=shipValue(p.tpl), y=salvageYield({wk:p.wk||[]
 // lowers the next one. Default: Add a ship that fits with at least 40% hull, otherwise whichever of Strip or Ransom is worth more (a refit
 // counted at half its shop price).
 function prizePlan(R){ const sel=R.prizeSel||[]; let cp=fleetCP(), nR=RUN.ransoms||0;
-  return R.prizes.map((p,i)=>{ const o=prizeOffer(p,nR), c=p.cp||1, gate=factionGate(RUN.fac,p.tpl), room=cp+c<=RUN.cpCap&&!gate; // B3: a prize your faction cannot field (Corsairs and lances) can only be stripped or ransomed
+  return R.prizes.map((p,i)=>{ const o=prizeOffer(p,nR), c=p.cp||1, gate=factionGate(RUN.fac,p.tpl), hf=HULLS[p.tpl]&&HULLS[p.tpl].fac, rip=RUN.fac==='voidsworn'&&(hf==='hegemony'||hf==='deathless'), cinder=rip&&!cinderOpen(), room=cp+c<=RUN.cpCap&&!gate&&!cinder; // B3: a prize your faction cannot field (Corsairs and lances) can only be stripped or ransomed; R78 Q9: before run 3 the Crusade cannot keep a Hegemony or Eclipse prize
     const sv=o.strip.cred+(o.strip.mod?Math.round(MODULES[o.strip.mod].cost*.5):0), dk=room&&(p.hpf||1)>=.4?'add':sv>=o.ransom?'strip':'ransom';
     let k=sel[i]||dk; if(k==='add'&&!room) k=dk==='add'?(sv>=o.ransom?'strip':'ransom'):dk;
-    if(k==='add') cp+=c; if(k==='ransom') nR++; return {p,o,room,gate,k,mine:!!sel[i]&&sel[i]===k}; }); }
+    if(k==='add') cp+=c; if(k==='ransom') nR++; return {p,o,room,gate,cinder,rip,k,mine:!!sel[i]&&sel[i]===k}; }); }
 ACT.prizeStep=()=>{ closeModal(); const R=RUN.reward; if(!R||!(R.prizes||[]).length){ if(R) R.stage=(window._wrecks||[]).length?'salvage':'pick'; return (window._wrecks||[]).length?ACT.salvageStep():ACT.rewardNext(); }
   const rows=prizePlan(R), n=rows.length, cpAfter=fleetCP()+rows.reduce((t,r)=>t+(r.k==='add'?(r.p.cp||1):0),0);
   const cred=rows.reduce((t,r)=>t+(r.k==='ransom'?r.o.ransom:r.k==='strip'?r.o.strip.cred:0),0), refits=rows.filter(r=>r.k==='strip'&&r.o.strip.mod).length, joins=rows.filter(r=>r.k==='add').length;
@@ -642,14 +645,14 @@ ACT.prizeStep=()=>{ closeModal(); const R=RUN.reward; if(!R||!(R.prizes||[]).len
   modal(`<h2>Prize ship${n>1?'s':''}</h2><p class="dim rdef" style="font-size:13.5px;margin:2px 0 10px">Your boarders took ${n>1?`${n} enemy ships`:'an enemy ship'}. Keep, strip or sell back each one, then confirm once.</p>
     <p class="muted">Command points: ${fleetCP()} of ${RUN.cpCap} used${joins?`, ${cpAfter} after these join`:''}.${RUN.ransoms||rows.some(r=>r.k==='ransom')?' Owners pay less for each ship you sell back to them.':''}</p>
     ${rows.map((r,i)=>{ const H=HULLS[r.p.tpl], hp=Math.round((r.p.hpf||1)*100), b=(k,t,sm,dis)=>`<button class="${r.k===k?'sel':''}" data-act="prizeSet" data-arg="${i}:${k}" ${dis?'disabled':''}><b>${t}</b><small>${sm}</small></button>`;
-      return `<div class="choice" style="cursor:default;margin:6px 0 12px"><b>${esc(r.p.name)}</b> <span class="dim">${esc(H.n)}, ${H.cp||1} command point${(H.cp||1)>1?'s':''}, ${hp}% hull</span>
-      <div class="orders" style="grid-template-columns:1fr 1fr 1fr;margin-top:6px">${b('add','Add',r.room?`Joins at ${hp}% hull`:r.gate?'Your faction cannot field it':'No command points left',!r.room)}${b('strip','Strip',`${r.o.strip.mod?esc(modName(r.o.strip.mod))+' + ':''}${r.o.strip.cred} credits`)}${b('ransom','Ransom',`${r.o.ransom} credits`)}</div></div>`; }).join('')}
+      return `<div class="choice" style="cursor:default;margin:6px 0 12px"><b>${esc(r.p.name)}</b> <span class="dim">${esc(H.n)}, ${H.cp||1} command point${(H.cp||1)>1?'s':''}, ${hp}% hull</span>${r.rip&&!r.cinder?` <span class="gilt" style="font-size:13px">kept, she joins with her links ripped out</span>`:''}
+      <div class="orders" style="grid-template-columns:1fr 1fr 1fr;margin-top:6px">${b('add','Add',r.room?`Joins at ${hp}% hull`:r.cinder?'The Cinder Line opens from run 3':r.gate?'Your faction cannot field it':'No command points left',!r.room)}${b('strip','Strip',`${r.o.strip.mod?esc(modName(r.o.strip.mod))+' + ':''}${r.o.strip.cred} credits`)}${b('ransom','Ransom',`${r.o.ransom} credits`)}</div></div>`; }).join('')}
     <p class="muted" style="margin-top:10px">You get: ${sum}.</p><button class="primary" data-act="prizeConfirm">Confirm</button>`); };
 ACT.prizeSet=a=>{ const R=RUN.reward; if(!R||!(R.prizes||[]).length) return; const [i,k]=String(a).split(':'); if(!R.prizes[+i]||!['add','strip','ransom'].includes(k)) return;
   R.prizeSel=R.prizeSel||[]; R.prizeSel[+i]=k; saveRun(); ACT.prizeStep(); };
 ACT.prizeConfirm=()=>{ const R=RUN.reward; if(!R||!(R.prizes||[]).length) return ACT.prizeStep(); const rows=prizePlan(R), got=[];
   for(const r of rows){ const p=r.p, o=r.o;
-    if(r.k==='add'){ const sh=newShip(p.tpl); sh.name=p.name; sh.hp=clamp(Math.round(derive(sh).maxHp*(p.hpf||1)),1,derive(sh).maxHp); RUN.fleet.push(sh); got.push(`the ${p.name} joins`); }
+    if(r.k==='add'){ const sh=newShip(p.tpl); sh.name=p.name; sh.hp=clamp(Math.round(derive(sh).maxHp*(p.hpf||1)),1,derive(sh).maxHp); if(r.rip) sh.ripped=true; RUN.fleet.push(sh); got.push(`the ${p.name} joins`); }
     else if(r.k==='strip'){ if(o.strip.mod) RUN.inventory.push(o.strip.mod); RUN.credits+=o.strip.cred; got.push(`the ${p.name} is stripped (+${o.strip.cred})`); }
     else { RUN.credits+=o.ransom; RUN.ransoms=(RUN.ransoms||0)+1; got.push(`the ${p.name} is ransomed (+${o.ransom})`); }
     try{ tel('prize_pick',{k:r.k,tpl:p.tpl,def:!r.mine}); }catch(e){} }

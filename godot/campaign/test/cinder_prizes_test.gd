@@ -80,5 +80,62 @@ func _initialize() -> void:
 	battle_with([C.newShip("d_scythe")])
 	check(R.B["legion"]["player"]["max"] == 1, "an ordinary captured mote would still count")
 
+	# the prize screen: before run 3 the Crusade cannot keep a Hegemony or Eclipse prize (strip and ransom only)
+	start_run("voidsworn", 1)
+	C.RUN["cpCap"] = 10.0; C.RUN["fleet"] = []
+	var early = {"tpl": "h_picket", "name": "HNS Early", "cp": 1, "hpf": 0.7, "wk": ["laser"], "ab": null, "regen": 0, "sh": 10}
+	var rows = C.prizePlan({"prizes": [early], "prizeSel": null})
+	check(not rows[0]["room"] and rows[0]["cinder"] and rows[0]["rip"] and rows[0]["k"] != "add", "before run 3 the Add choice is not offered for a Hegemony prize")
+	check(float(rows[0]["o"]["ransom"]) > 0 and float(rows[0]["o"]["strip"]["cred"]) > 0, "strip and ransom are still on offer before run 3")
+	rows = C.prizePlan({"prizes": [early], "prizeSel": ["add"]})
+	check(rows[0]["k"] != "add", "a saved Add pick falls back to strip or ransom before run 3")
+
+	# from run 3 the Add path is back, and a kept Hegemony or Eclipse prize joins with its links ripped out
+	start_run("voidsworn", 2)
+	C.RUN["cpCap"] = 10.0; C.RUN["fleet"] = []
+	var keep = {"tpl": "h_interdictor", "name": "HNS Kept", "cp": 2, "hpf": 0.6, "wk": ["battery"], "ab": null, "regen": 0, "sh": 12}
+	C.RUN["reward"] = {"prizes": [keep], "prizeSel": ["add"]}
+	rows = C.prizePlan(C.RUN["reward"])
+	check(rows[0]["room"] and not rows[0]["cinder"] and rows[0]["rip"], "from run 3 the Add choice is offered again for a Hegemony prize")
+	C.ACT_prizeConfirm()
+	var kept = null
+	for shp in C.RUN["fleet"]:
+		if shp["tpl"] == "h_interdictor": kept = shp
+	check(kept != null and C.jt(kept.get("ripped")) and str(kept["name"]) == "HNS Kept", "the kept Hegemony prize joins with its links ripped out")
+	var keep2 = {"tpl": "c_raider", "name": "RVD Plain", "cp": 1, "hpf": 0.7, "wk": ["autocannon"], "ab": null, "regen": 0, "sh": 8}
+	C.RUN["reward"] = {"prizes": [keep2], "prizeSel": ["add"]}
+	rows = C.prizePlan(C.RUN["reward"])
+	check(not rows[0]["cinder"] and not rows[0]["rip"], "only Hegemony and Eclipse prizes carry the rip")
+	C.ACT_prizeConfirm()
+	var kept2 = null
+	for shp2 in C.RUN["fleet"]:
+		if shp2["tpl"] == "c_raider": kept2 = shp2
+	check(kept2 != null and not C.jt(kept2.get("ripped")), "a Corsair prize is kept without ripping")
+
+	# the captured yard draw waits for the class unlocks like normal stock
+	start_run("voidsworn", 2)
+	C.META["unlocked"] = {}
+	var pool = C.cinderPool()
+	check(not pool.has("h_dominion"), "the captured battleship waits for u_battleship")
+	check(pool.has("h_picket") and pool.has("d_scythe"), "frigates are always in the captured draw")
+	C.META["unlocked"]["u_battleship"] = true
+	pool = C.cinderPool()
+	check(pool.has("h_dominion"), "u_battleship puts the captured battleship in the draw")
+	var st2 = C.shipyardStock({"id": "y6", "type": "shipyard"})
+	check(st2["cap"].size() == 2 and st2["cap"].all(func(h): return pool.has(h)), "the yard stock draws from the unlocked pool")
+
+	# a save and load round trip of a ripped hull
+	start_run("voidsworn", 2)
+	C.RUN["credits"] = 1000.0
+	C.shipyardScreen({"id": "y7", "type": "shipyard", "stock": {"hulls": [], "mods": [], "sold": [], "cap": ["d_scythe"]}})
+	C.ACT_buyHull("d_scythe")
+	C.saveRun()
+	var saved = C.clone(C.SAVED_RUN)
+	C.RUN = C.migrateRun(C.clone(saved))
+	var back = null
+	for shp3 in C.RUN["fleet"]:
+		if shp3["tpl"] == "d_scythe": back = shp3
+	check(back != null and C.jt(back.get("ripped")), "the ripped flag survives save and load")
+
 	print("cinder prizes: " + ("PASS" if fails == 0 else "FAIL (%d)" % fails))
 	quit(1 if fails > 0 else 0)

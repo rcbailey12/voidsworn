@@ -202,6 +202,17 @@ func capturedHullPrice(t: Dictionary) -> float:
 	var base = float(t["cost0"]) if t.get("cost0") != null else float(t["cost"])
 	var ladder = (TB.FAC_PRICE["voidsworn"].get(t.get("cls")) if jt(TB.FAC_PRICE.get("voidsworn")) else null)
 	return jsround(jsround(base * (float(ladder) if ladder != null else 1.0) / 5.0) * 5.0 * priceMult())
+# R78 Q9 (Board call, Nov 15): the captured draw is gated by the same class unlocks as normal stock (legacyHullOn, so
+# the playtest switch keeps working), so a captured battleship waits for u_battleship like the Cathedral.
+func cinderPool() -> Array:
+	var out := []
+	for h in CINDER_PRIZES:
+		var cl = HULLS[h].get("cls")
+		if cl == "Carrier" and not legacyHullOn("u_carrier"): continue
+		if cl == "Battleship" and not legacyHullOn("u_battleship"): continue
+		if cl == "Dreadnought" and not legacyHullOn("u_dread"): continue
+		out.append(h)
+	return out
 var _trait_rules = null   # a rules object with no battle loaded, used only for its weapon trait effects (one source: godot/rules/rules.gd)
 func trait_fx(tk: String, w: Dictionary) -> void: # the weapon trait effects, from the rules through the battle API (no copy kept here)
 	if _trait_rules == null: _trait_rules = BattleAPI.RulesScript.new()
@@ -1733,7 +1744,7 @@ func shipyardStock(n: Dictionary) -> Dictionary:
 	for h in pickH.duplicate():
 		for vid in HULL_VARIANTS.keys():
 			if HULL_VARIANTS[vid]["base"] == h and variantOwned(vid): pickH.insert(pickH.find(h) + 1, vid)
-	var cap = shuffle(CINDER_PRIZES.duplicate()).slice(0, 2) if cinderOpen() else []   # R78 Q9: captured Hegemony and Eclipse hulls from run 3
+	var cap = shuffle(cinderPool()).slice(0, 2) if cinderOpen() else []   # R78 Q9: captured Hegemony and Eclipse hulls from run 3, class unlocks apply
 	n["stock"] = {"hulls": pickH, "mods": shuffle(modulePool()).slice(0, 3), "sold": [], "cap": cap}
 	return n["stock"]
 func shipyardScreen(n) -> void:
@@ -2881,7 +2892,11 @@ func prizePlan(R: Dictionary) -> Array:
 	var sel = or_(R.get("prizeSel"), []); var cp = fleetCP(); var nR = float(z0(RUN.get("ransoms")))
 	var rows = []
 	for i in range(R["prizes"].size()):
-		var p = R["prizes"][i]; var o = prizeOffer(p, nR); var c = float(or_(p.get("cp"), 1)); var gate = factionGate(RUN["fac"], p["tpl"]); var room = cp + c <= float(RUN["cpCap"]) and gate == null   # B3: a prize your faction cannot field can only be stripped or ransomed
+		var p = R["prizes"][i]; var o = prizeOffer(p, nR); var c = float(or_(p.get("cp"), 1)); var gate = factionGate(RUN["fac"], p["tpl"])
+		var hf = HULLS[p["tpl"]]["fac"] if HULLS.has(p["tpl"]) else null
+		var rip = RUN["fac"] == "voidsworn" and (hf == "hegemony" or hf == "deathless")
+		var cinder = rip and not cinderOpen()   # R78 Q9: before run 3 the Crusade cannot keep a Hegemony or Eclipse prize
+		var room = cp + c <= float(RUN["cpCap"]) and gate == null and not cinder   # B3: a prize your faction cannot field can only be stripped or ransomed
 		var sv = float(o["strip"]["cred"]) + (jsround(float(MODULES[o["strip"]["mod"]]["cost"]) * 0.5) if jt(o["strip"]["mod"]) else 0.0)
 		var dk = "add" if (room and float(or_(p.get("hpf"), 1)) >= 0.4) else ("strip" if sv >= float(o["ransom"]) else "ransom")
 		var s_i = sel[i] if i < sel.size() else null
@@ -2889,7 +2904,7 @@ func prizePlan(R: Dictionary) -> Array:
 		if k == "add" and not room: k = ("strip" if sv >= float(o["ransom"]) else "ransom") if dk == "add" else dk
 		if k == "add": cp += c
 		if k == "ransom": nR += 1
-		rows.append({"p": p, "o": o, "room": room, "gate": gate, "k": k, "mine": jt(s_i) and s_i == k})
+		rows.append({"p": p, "o": o, "room": room, "gate": gate, "cinder": cinder, "rip": rip, "k": k, "mine": jt(s_i) and s_i == k})
 	return rows
 func ACT_prizeStep() -> void:
 	close_modal()
@@ -2923,6 +2938,7 @@ func ACT_prizeConfirm() -> void:
 		var p = r["p"]; var o = r["o"]
 		if r["k"] == "add":
 			var sh = newShip(p["tpl"]); sh["name"] = p["name"]; var mx = float(derive(sh)["maxHp"]); sh["hp"] = clampv(jsround(mx * float(or_(p.get("hpf"), 1))), 1, mx)
+			if jt(r.get("rip")): sh["ripped"] = true   # R78 Q9: a kept Hegemony or Eclipse prize joins with its links ripped out
 			RUN["fleet"].append(sh); got.append("the " + str(p["name"]) + " joins")
 		elif r["k"] == "strip":
 			if jt(o["strip"]["mod"]): RUN["inventory"].append(o["strip"]["mod"])

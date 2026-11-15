@@ -20,8 +20,9 @@ function check(name, fn) { tests.push([name, fn]); }
 eval(src + `function log(){} function tel(){} function battleScreen(){} function nodeSeeds(){ return 0; }
 globalThis.T = {
   get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get META(){ return META; }, set META(v){ META=v; }, get B(){ return B; },
-  runDefaults, newShip, derive, shipyardStock, shipyardScreen, capturedHullPrice, cinderOpen, fleetCP, priceMult,
-  startBattle, inSync, legionCan, syncAnchor, factionTraitLines, prizePlan, ACT, HULLS, CINDER_PRIZES, CINDER_FIRST_RUN, FAC_PRICE
+  get SAVED_RUN(){ return SAVED_RUN; },
+  runDefaults, newShip, derive, shipyardStock, shipyardScreen, capturedHullPrice, cinderOpen, cinderPool, fleetCP, priceMult,
+  startBattle, inSync, legionCan, syncAnchor, factionTraitLines, prizePlan, ACT, saveRun, migrateRun, genSector, HULLS, CINDER_PRIZES, CINDER_FIRST_RUN, FAC_PRICE
 };`);
 function setup(fac, runs) {
   // a fresh meta at the given launched-run count, and a plain run standing at a shipyard
@@ -110,6 +111,61 @@ check('the prize screen keep/strip/ransom choice is unchanged', () => {
   if (!rows.length || rows[0].k !== 'add' || !rows[0].room) return false;
   const sel = rows[0].o;
   return sel.ransom > 0 && sel.strip.cred > 0 && T.CINDER_FIRST_RUN === 3;
+});
+check('before run 3 the Crusade cannot keep a Hegemony or Eclipse prize', () => {
+  const r = setup('voidsworn', 2);
+  r.cpCap = 10; r.fleet = [];
+  const prize = { tpl: 'h_picket', name: 'HNS Early', cp: 1, hpf: .7, wk: ['laser'], ab: null, regen: 0, sh: 10 };
+  let rows = T.prizePlan({ prizes: [prize], prizeSel: null });
+  if (rows[0].room || !rows[0].cinder || rows[0].rip !== true || rows[0].k === 'add') return false; // strip and ransom only
+  if (!(rows[0].o.ransom > 0 && rows[0].o.strip.cred > 0)) return false;
+  rows = T.prizePlan({ prizes: [prize], prizeSel: ['add'] }); // even a saved Add pick falls back before run 3
+  if (rows[0].k === 'add') return false;
+  const prize2 = { tpl: 'd_scythe', name: 'EDV Early', cp: 1, hpf: .7, wk: ['laser'], ab: null, regen: 0, sh: 10 };
+  rows = T.prizePlan({ prizes: [prize2], prizeSel: null });
+  return !rows[0].room && rows[0].cinder && rows[0].k !== 'add';
+});
+check('from run 3 a kept Hegemony or Eclipse prize joins with its links ripped out', () => {
+  const r = setup('voidsworn', 3);
+  r.cpCap = 10; r.fleet = [];
+  r.map = T.genSector(1); r.pos = r.map.cols[0][0].id; r.curNode = r.pos; // a real map, so the confirm chain can walk on to the map screen
+  const prize = { tpl: 'h_interdictor', name: 'HNS Kept', cp: 2, hpf: .6, wk: ['battery'], ab: null, regen: 0, sh: 12 };
+  r.reward = { prizes: [prize], prizeSel: ['add'] };
+  let rows = T.prizePlan(r.reward);
+  if (!rows[0].room || rows[0].cinder || rows[0].rip !== true) return false;
+  T.ACT.prizeConfirm();
+  const kept = r.fleet.find(x => x.tpl === 'h_interdictor');
+  if (!kept || kept.ripped !== true || kept.name !== 'HNS Kept') return false;
+  const prize2 = { tpl: 'c_raider', name: 'RVD Plain', cp: 1, hpf: .7, wk: ['autocannon'], ab: null, regen: 0, sh: 8 };
+  r.reward = { prizes: [prize2], prizeSel: ['add'] };
+  rows = T.prizePlan(r.reward);
+  if (rows[0].cinder || rows[0].rip !== false) return false; // only Hegemony and Eclipse prizes rip
+  T.ACT.prizeConfirm();
+  const kept2 = r.fleet.find(x => x.tpl === 'c_raider');
+  return !!kept2 && kept2.ripped !== true;
+});
+check('the captured yard draw waits for the class unlocks like normal stock', () => {
+  const r = setup('voidsworn', 3);
+  T.META.unlocked = {};
+  let pool = T.cinderPool();
+  if (pool.includes('h_dominion')) return false; // the captured battleship waits for u_battleship
+  if (!pool.includes('h_picket') || !pool.includes('d_scythe')) return false; // frigates are always in the draw
+  T.META.unlocked.u_battleship = true;
+  pool = T.cinderPool();
+  if (!pool.includes('h_dominion')) return false;
+  const st = T.shipyardStock({ id: 'y6', type: 'shipyard' });
+  return st.cap.length === 2 && st.cap.every(h => pool.includes(h));
+});
+check('a ripped hull survives a save and a load', () => {
+  const r = setup('voidsworn', 3);
+  T.shipyardScreen({ id: 'y7', type: 'shipyard', stock: { hulls: [], mods: [], sold: [], cap: ['d_scythe'] } });
+  T.ACT.buyHull('d_scythe');
+  T.saveRun();
+  const onDisk = JSON.parse(STORE['voidsworn.v1']); // the registry the game actually writes
+  if (!onDisk.run.fleet.some(s => s.ripped === true)) return false;
+  const back = T.migrateRun(JSON.parse(JSON.stringify(T.SAVED_RUN)));
+  const s = (back.fleet || []).find(x => x.tpl === 'd_scythe');
+  return !!s && s.ripped === true;
 });
 (async () => { let pass = 0, fail = 0;
   for (const [name, fn] of tests) { let ok = false, err = ''; try { ok = await fn(); } catch (e) { err = ' (' + e.message + ')'; }
