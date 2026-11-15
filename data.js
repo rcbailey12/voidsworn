@@ -894,7 +894,7 @@ Object.assign(HULL_VARIANTS,{
   c_marauder_g:{base:'c_marauder',arc:'corsair',n:'Trophy wrecker',d:'A second prow torpedo instead of flak, and one hex slower.',w:[['scatter','P'],['scatter','S'],['torp','F'],['torp','F']],mod:{sp:3},cost:0},
   b_razor_e:{base:'b_razor',arc:'chorus',n:'Sun-eater bladeback',d:'Its tendril cluster becomes a second spine volley on a turret; regrows 9 a round (2 more than the base), one hex slower.',w:[['bioplasma','T'],['bioplasma','F']],mod:{regen:9,sp:3},cost:0},
   i_carrier_a:{base:'i_carrier',arc:'ithar',n:'Ringing aperture',d:'A third wing, paid for with lighter shields (22) and one hex of speed.',w:[['pulsar','F'],['turret','T']],mod:{hangar:3,sh:22,sp:3},cost:0},
-  d_jackal_h:{base:'d_jackal',arc:'deathless',n:'Archive guard flare',d:'Trades the forward null lance for two null cannons on turrets and a null spire, at the same hull.',w:[['gauss','T'],['gauss','T'],['gsentry','T']],mod:{hp:100},cost:0}});
+  d_jackal_h:{base:'d_jackal',arc:'deathless',n:'Archive guard flare',d:'Keeps the forward null lance and adds a null spire turret that shoots down squadrons on every side, paid for with 15 less hull (85).',w:[['nlance','F'],['gsentry','T']],mod:{hp:85},cost:0}});
 const ARC_VARIANT=Object.fromEntries(Object.entries(HULL_VARIANTS).filter(([,v])=>v.arc).map(([id,v])=>[v.arc,id]));
 // Customization reserve (Oct 26, customization brainstorm section 6; schema only, nothing reads these for rules yet).
 // Variant rows: base (parent hull id: the variant inherits its model, sections and sounds), cost (renown; 0 with arc = earned by finishing that story arc), arc.
