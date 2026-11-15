@@ -70,6 +70,7 @@ Ryan, on what a hand-over must carry: "That also includes how we use deepseek, c
 
 Newest first; roll into the summary above once there are about 15.
 
+- LATEST (20:35 UTC Nov 15): Ryan passed E14 round 2 ("Yep, that's perfect", R269). MERGED 797 (flare rules) and 807 (dot fix-ups, Codex lane C, R267 and R268); 804 brought up to main, merges on green. Opened 811 (E14 lift in Godot, lane B) and 812 (per-variant parts, backlog). New PRs: 808 (DeepSeek 41, green), 809 (lane B 805, Godot game checks failed), 810 (lane C 733). Hand-over to a new Board thread: HANDOFF section 0.
 - LATEST (19:45 UTC Nov 15): MERGED 796 (Hegemony paint, engines open, one step lighter, R262; the Board accepted its calls: hue boost 1.3, H10's hatchbox density 0.71 reported not fixed). Still to do for it: re-render the H10 and IM5 sheet pictures (stern.jpg and the rest still show closed nozzle mouths; build.py <sheet> render). Opus workers still running in THIS thread: 782 (E14 round 2) and 784 (d_jackal_h). A new Board thread cannot message them: if they have not reported when it starts, it reads their branches (opus/issue-782, opus/issue-784) and PRs 804 and 797, and relaunches from there. Not started, for the new thread: 793, 783.
 - LATEST (19:35 UTC Nov 15): hand-over prepared for a new Board thread (HANDOFF PR 806). Closed as done after their outside checks: 739, 756, 759, 768, 769; PR 704 closed (Kimi gone, its work rides in work/issue-41-deepseek-partial). Issue 371's brief rewritten clean (the old texts in its first comment) and moved to DeepSeek; DS_15J runs it after DS_15I. MERGED 791 (Hullbreaker patches, Ryan: ship it). Codex lane B runs with its own tools copy (build_c), repo (board_b) and mirror (repo-mirror-b.git): a second run on board\repo would have replaced the main chain's checkout.
 - LATEST (17:40 UTC Nov 15): Codex on the Pro plan (R264); chain 15F running 800, 368, 369, 688, 373 (GPU go read back as cleared). MERGED 786, 789, 790, 792, 795, 787 (S8 x1.85). PR 799 (HANDOFF names no range top) fixes the doc_check trap that failed every branch after each new FINDINGS row. Opus workers: 726, 784, 780 (engines and lighten, R262), 782 (E14 redesign); queued 783, 793, the DB1 build. DeepSeek: 371 running, then 788 leg, then 41 run 2. Ryan's open picks: the fleet screen (FL1 and FL2 hybrid, in Muse's chat).
@@ -90,7 +91,6 @@ Newest first; roll into the summary above once there are about 15.
 
 Older items are in docs/archive/LOOP_history_2026-11-14.md and the FINDINGS rows that answered them (R254 to R268).
 
-- E14 round 2 pictures (issue 782, PR 804); PR 797 (the flare rules, R265) merges with it.
 - The fleet screen (FL1 and FL2 hybrid; Muse's chat, issue 794).
 - The issue 788 plan (the Board's synthesis of three legs).
 
