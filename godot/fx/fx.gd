@@ -295,6 +295,14 @@ func _mat(code: String, prio := 0, defines := "", label := "") -> ShaderMaterial
 	var m = ShaderMaterial.new()
 	m.shader = s
 	m.render_priority = prio
+	# Shared materials reuse the same imported masks, including attached
+	# engine batches. No textures are created per shot.
+	if code.contains("uniform sampler2D kit_flow"):
+		m.set_shader_parameter("kit_flow", load("res://fx/textures/beam_flow.png"))
+	if code.contains("uniform sampler2D kit_tail"):
+		m.set_shader_parameter("kit_tail", load("res://fx/textures/hot_tail.png"))
+	if code.contains("uniform sampler2D kit_flake"):
+		m.set_shader_parameter("kit_flake", load("res://fx/textures/lit_flake.png"))
 	return m
 
 
@@ -1509,6 +1517,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		rb.linear_velocity = Vector3(0.1, 0, 0)
 		DEATH.spawn_debris(self, deep + Vector3(10, 0, 0), Vector3.ZERO, 3, 0.2 * unit)
 		get_tree().create_timer(0.5).timeout.connect(free_effect.bind(weakref(rb)))
+	WEAP.warm_craft_trail(self, tmp)
 	for i in frames:
 		await RenderingServer.frame_post_draw
 	tmp.queue_free()
