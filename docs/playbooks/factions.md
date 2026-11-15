@@ -163,14 +163,16 @@ violet-white): the green stays, as the light of an eclipse.
   pooled glow inside ribs or sockets, which reads as undead.
 - **Shape language:** sunshades and heat shields: broad layered plates with the ship sheltering behind them. The shade always
   faces the enemy, like a shield held forward. Wide and flat, or a forward-facing arc or ring. The shade sits over the ship
-  as a sunshade, the ship's heart and guns under and behind it (R256, Ryan Nov 15: as E13 and E14 are built).
+  as a sunshade, the ship's heart and guns under and behind it, as E13 is built (R256, Ryan Nov 15). Guns never fire through
+  slots in a shade. E14 is the exception being redesigned: its ring stands upright as in the concept, built around one larger
+  gun at its centre, "like a glass cannon" (R256, Ryan Nov 15 07:02).
 - **Colours:** dark violet-black plates, the green-white corona line, a small bright core.
 - **Panels (R243, Ryan Nov 13):** precise, dead even, ordered and aligned across hull and shade, with recessed seams and
   slight relief. Keep E11's accepted dark violet-black colour. This is machine precision; the Hullbreakers' irregular
   patchwork is their own. The thin uneven corona must read at camera 170, including E12's ring segments. The core glows
   green like the concept, white-hot only at its very centre, and reads at camera 170.
-- **Guns sit (R256, Ryan Nov 15):** on mounts at the shade's heart or root, firing over its plates, as E13 and E14 are
-  built. This replaces "behind the shade's rim, firing through gaps between plates" for every Eclipse ship from here.
+- **Guns sit (R256, Ryan Nov 15):** clear of the shades: on mounts at the shade's heart or root firing over its plates (E13),
+  or at the centre of a ring (E14, being redesigned). This replaces "behind the shade's rim, firing through gaps between plates".
 - **Engines:** no flaming bells. An eclipse ring of pale light.
 - **How it breaks:** in layers. Shade plates peel away band by band, then the body behind is bare. Inside: archive vaults,
   dark decks, the core's light. Breach anchors sit on the shade's bands.
