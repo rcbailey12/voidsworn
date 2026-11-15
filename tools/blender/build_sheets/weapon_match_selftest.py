@@ -243,6 +243,37 @@ HEG_CASES = [
 ]
 
 
+def spinal(fid, weapon='nlance', letter='F'):
+    """the Eclipse null lance as a fixed forward gun: one bore firing over the bow (issue 784; the E14 sheet is issue 782)"""
+    return dict(id=fid, weapon=weapon, letter=letter, type='nullcannon', mount='fixed', barrels=1, size=1.0, rest_yaw=0.0,
+                muzzles=[muz(2.0, 0.0)], turret=None)
+
+
+def clean_flare():
+    """an Eclipse ship as data.js d_jackal after issue 784: one null lance, F, nothing else"""
+    weapons = [('nlance', 'F')]
+    stats = {w: gamedata.weapon_stats(w) for w, _ in weapons}
+    mounts = [spinal('L1')]
+    parts = [dict(id='L1', kind='spinal', type='nullcannon')]
+    return dict(code='TESTE', weapons=weapons, stats=stats, parts=parts, mounts=mounts)
+
+
+def plant_lance_turret(s):
+    s['mounts'] = [turret('L1', 'nlance', 'F', n=1, typ='nullcannon')]
+    s['parts'] = [dict(id='L1', kind='turret', type='nullcannon')]
+
+
+def plant_flare_old_turret(s):
+    s['mounts'].append(turret('T1', 'gauss', 'T', typ='nullcannon'))               # the old aft null cannon left on the ship
+    s['parts'].append(dict(id='T1', kind='turret', type='nullcannon'))
+
+
+# the Eclipse flare row of FITS (issue 784): the null lance is fixed, and the old turret is no slot any more
+FLARE_CASES = [
+    ('KIND', 'a null lance built on a turning turret', plant_lance_turret),
+    ('COUNT', 'the old aft null cannon turret kept on the flare', plant_flare_old_turret),
+]
+
 def sheet_games():
     """(code, data.js ship id) for every sheet ship design file"""
     out = []
@@ -299,6 +330,19 @@ def main():
             bad.append(f'{rule} not raised for {what}: got {probs}')
         else:
             print(f'ok   {rule:<6} {what}: {hits[0][:110]}')
+    probs = WM.check(clean_flare())
+    if probs:
+        bad.append('the clean Eclipse flare fails: ' + '; '.join(probs))
+    else:
+        print('ok   clean Eclipse flare (d_jackal: one fixed null lance firing forward): PASS')
+    for rule, what, plant in FLARE_CASES:
+        s = clean_flare(); plant(s)
+        probs = WM.check(s)
+        hits = [p for p in probs if p.startswith(rule + ' ')]
+        if not hits:
+            bad.append(f'{rule} not raised for {what}: got {probs}')
+        else:
+            print(f'ok   {rule:<6} {what}: {hits[0][:110]}')
     # the game's muzzle rotation (fx_hull.gd guns()): 5 shots over 6 muzzles of 3 twin mounts reaches every mount every volley
     v = WM.volleys(['a', 'a', 'b', 'b', 'c', 'c'], 5)
     if len(v) != 6 or any(x != {'a', 'b', 'c'} for x in v):
@@ -321,7 +365,7 @@ def main():
     print(f'ok   table: {len(games)} sheet ships, every data.js weapon has a FITS row and a shot count' if not any('FITS' in b or 'shot' in b for b in bad) else 'FAIL table')
     for b in bad:
         print('  ' + b)
-    print(('FAIL' if bad else 'PASS') + f' weapon match self-test ({len(CASES) + len(CRAFT_CASES) + len(HEG_CASES)} planted faults, {len(games)} sheet ships in the table)')
+    print(('FAIL' if bad else 'PASS') + f' weapon match self-test ({len(CASES) + len(CRAFT_CASES) + len(HEG_CASES) + len(FLARE_CASES)} planted faults, {len(games)} sheet ships in the table)')
     return 1 if bad else 0
 
 
