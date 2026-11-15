@@ -73,3 +73,11 @@ Where the council agreed: all twelve ships on one screen with no scroll (four of
 - Qwen's refit move flow: click a filled slot, then click the target ship; the refit lands in its first empty slot.
 - ChatGPT's ember discipline while a refit is held: ember shows on the refit being acted on and the slot it may enter, and nowhere else.
 - ChatGPT's header counts, kept to the figures the game can state truthfully (ships, damaged), computed live at the build.
+
+## Ryan's response (Nov 15, 2026, about 10:04 CST)
+
+Ryan: FL1 and FL2 are the closest, but FL1 is too busy and FL2 is a bit too much. He also raised the pictures: the concepts have evolved in the actual builds, so the mockups should find a way to use different art, worked on with Opus maybe, possibly live stylistic renders from the game, or an artistic version.
+
+Chair's read of the direction: the hybrid these notes already flagged. FL1's grid, with the card cut down (the weapons line and the captain come off the card surface; both already live in the hover and the sheet), and FL2's sheet as the click state, itself trimmed, since the sheet is where the full sentences belong. No final pick recorded yet.
+
+On the pictures: the mockup strips use concept art (the Sunward S8, S9 and S10 pieces and the squadron concepts) that predates the built hulls, and Ryan is right that they no longer match what the ships became. The layout does not depend on the choice: the picture slots are fixed shapes in all three designs. The art itself is Board work, since the builds and their renders sit with Opus (R205). The two routes Ryan named, for the Board to settle: capture stylistic renders from the game itself, or commission an artistic version of each built ship in the game's look. Either way the pictures should be drawn from the built hulls, not from the concept rounds.
