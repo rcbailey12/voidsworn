@@ -186,8 +186,11 @@ func _initialize() -> void:
 			c.newRun(id, fac); c.RUN["sector"] = 3
 			c.endRun(won)
 			await settle()
-			check(text_of(ui).contains(row["learning"]), str(fac) + " learning renders after " + str(won))
 			await shot(str(fac) + ("_win" if won else "_loss"))
+			# DB1 (R261, issue 805) moved the story payoff off the after-run page into The record (key R).
+			ui.debrief.open_detail("record"); await settle()
+			check(text_of(ui).contains(row["learning"]), str(fac) + " learning renders in The record after " + str(won))
+			ui.debrief.close_detail(); await settle()
 	await reward_checks(c, ui)
 	ui.queue_free()
 	print("PASS: beat 3 screens, all five rewards, exact damage, round 1 sync, free core offers, reloads, all battle kinds and win/loss/retreat expiry." if fails == 0 else "FAIL: %d checks" % fails)
