@@ -250,10 +250,9 @@ def spinal(fid, weapon='nlance', letter='F'):
 
 
 def clean_flare():
-    """an Eclipse ship as data.js d_jackal after issue 784: one null lance, F, nothing else. Its stats are written here (a gauss
-    kind, 3 shots, as issue 784's branch has them) so the test runs on a data.js from before 784 merges (issue 782)"""
+    """an Eclipse ship as data.js d_jackal after issue 784: one null lance, F, nothing else"""
     weapons = [('nlance', 'F')]
-    stats = {'nlance': dict(k='gauss', shots=3, n='Null lance')}
+    stats = {w: gamedata.weapon_stats(w) for w, _ in weapons}
     mounts = [spinal('L1')]
     parts = [dict(id='L1', kind='spinal', type='nullcannon')]
     return dict(code='TESTE', weapons=weapons, stats=stats, parts=parts, mounts=mounts)
@@ -270,16 +269,15 @@ def plant_flare_old_turret(s):
 
 
 def plant_lance_abeam(s):
-    s['mounts'][0]['muzzles'] = [muz(2.0, 0.0, aim=(0.0, 1.0, 0.0))]                # the fixed lance laid along the beam
+    s['mounts'][0]['muzzles'] = [muz(2.0, 0.0, aim=(0.0, 1.0, 0.0))]                # the fixed lance laid along the beam (issue 782)
 
 
-# the Eclipse flare row of FITS (issues 784 and 782): the null lance is fixed, the old turret is no slot, and it aims inside F
+# the Eclipse flare row of FITS (issue 784): the null lance is fixed, and the old turret is no slot any more
 FLARE_CASES = [
     ('KIND', 'a null lance built on a turning turret', plant_lance_turret),
     ('COUNT', 'the old aft null cannon turret kept on the flare', plant_flare_old_turret),
     ('ARC', 'the fixed null lance aimed along the beam', plant_lance_abeam),
 ]
-
 
 def sheet_games():
     """(code, data.js ship id) for every sheet ship design file"""

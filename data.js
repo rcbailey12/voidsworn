@@ -19,6 +19,7 @@ const W = {
   pulsar:{n:'Prism lance',k:'lance',shots:2,dmg:12,r:6,opt:5,acc:80,fall:6,pierce:.6,crit:10},
   startorp:{n:'Star torpedo',k:'torp',shots:1,dmg:38,r:5,opt:5,acc:66,fall:0,pierce:.4,crit:15,cd:2,evMult:2},
   gauss:{n:'Null cannon',k:'gauss',shots:3,dmg:6,r:5,opt:3,acc:74,fall:8,pierce:0.6,crit:5},
+  nlance:{n:'Null lance',k:'gauss',shots:3,dmg:17,r:6,opt:4,acc:74,fall:8,pierce:0.6,crit:5}, // issue 784 (R256): the Eclipse flare's one forward gun, a glass cannon: heavier and longer than a null cannon, forward only
   gsentry:{n:'Null sentries',k:'flak',shots:2,dmg:4,r:3,opt:3,acc:80,fall:10,vsSq:3,vsCap:.6}, // R1 (Nov 1, WPN-1): no longer a copy of flak: one fewer shot, a heavier hit and one hex more reach
   doom:{n:'Corona arc',k:'lance',shots:1,dmg:40,r:5,opt:4,acc:78,fall:6,pierce:.6,crit:12,cd:2},
   shard:{n:'Shard cannon',k:'battery',shots:3,dmg:6,r:4,opt:2,acc:80,fall:8,crit:6,vsSq:1.6},
@@ -53,7 +54,7 @@ const WTRAITS={
   gauss:{d:'ignores half of armor',f:w=>{ w.armorPierce=.5; }}};
 const FAC_WTRAIT={voidsworn:{autocannon:'las',battery:'las',hbattery:'las',turret:'las',torp:'hellfire'},hegemony:{laser:'plasma',turbo:'plasma',hturbo:'plasma'},
   corsair:{autocannon:'scrap',scatter:'scrap',turret:'scrap',torp:'rockets',htorp:'rockets'},chorus:{bioplasma:'spines',tendril:'acid',sporeb:'acid'},
-  ithar:{shard:'needle',turret:'needle',startorp:'star'},deathless:{gauss:'gauss',doom:'gauss'}};
+  ithar:{shard:'needle',turret:'needle',startorp:'star'},deathless:{gauss:'gauss',nlance:'gauss',doom:'gauss'}};
 function nameWeapons(fac,list){ for(const w of list){ w.n=wName(fac,w.id); const tk=!(typeof process!=='undefined'&&process.env&&process.env.NOTRAITS)&&FAC_WTRAIT[fac]&&FAC_WTRAIT[fac][w.id]; if(tk&&WTRAITS[tk]&&!w.trait){ w.trait=tk; WTRAITS[tk].f(w); } } return list; }
 
 // Ship class display names (lore round 8, rename map row 4.0): cls values stay as lookup keys (models, sizes, fx); show a class through clsName().
@@ -96,7 +97,7 @@ const HULLS = {
   i_boss:{n:'The Unfinished',cls:'Ark',fac:'ithar',size:1.26,cp:11,hp:470,sh:34,rg:14,ar:.2,sp:3,tn:2,ev:6,w:[['pulsar','F'],['pulsar','F'],['pulsar','T'],['turret','T'],['flak','T']],ab:'surge',boss:true},
   // ---- The Deathless Dynasty
   d_scythe:{n:'Eclipse mote',cls:'Frigate',fac:'deathless',size:.5,cp:1,hp:56,sh:0,rg:0,ar:.2,sp:4,tn:2,ev:14,w:[['gauss','T']],ab:'phase',regen:2,reanimate:true},
-  d_jackal:{n:'Eclipse flare',cls:'Destroyer',fac:'deathless',size:.62,cp:2,hp:110,sh:0,rg:0,ar:.25,sp:3,tn:2,ev:6,w:[['gauss','T'],['gauss','F']],ab:'phase',regen:2,reanimate:true},
+  d_jackal:{n:'Eclipse flare',cls:'Destroyer',fac:'deathless',size:.62,cp:2,hp:95,sh:0,rg:0,ar:.25,sp:3,tn:2,ev:6,w:[['nlance','F']],ab:'phase',regen:2,reanimate:true},
   d_harvester:{n:'Eclipse zenith',cls:'Cruiser',fac:'deathless',size:.82,cp:4,hp:145,sh:0,rg:0,ar:.3,sp:2,tn:1,ev:0,w:[['gauss','T'],['gauss','T'],['doom','F'],['gsentry','T']],ab:'reclaim',regen:3,reanimate:true},
   d_boss:{n:'The Unsetting',cls:'Tomb-ark',fac:'deathless',size:1.3,cp:12,hp:480,sh:0,rg:0,ar:.35,sp:1,tn:1,ev:0,w:[['gauss','T'],['gauss','T'],['doom','F'],['flak','T']],ab:'nova',regen:8,boss:true},
 };
@@ -893,7 +894,7 @@ Object.assign(HULL_VARIANTS,{
   c_marauder_g:{base:'c_marauder',arc:'corsair',n:'Trophy wrecker',d:'A second prow torpedo instead of flak, and one hex slower.',w:[['scatter','P'],['scatter','S'],['torp','F'],['torp','F']],mod:{sp:3},cost:0},
   b_razor_e:{base:'b_razor',arc:'chorus',n:'Sun-eater bladeback',d:'Its tendril cluster becomes a second spine volley on a turret; regrows 9 a round (2 more than the base), one hex slower.',w:[['bioplasma','T'],['bioplasma','F']],mod:{regen:9,sp:3},cost:0},
   i_carrier_a:{base:'i_carrier',arc:'ithar',n:'Ringing aperture',d:'A third wing, paid for with lighter shields (22) and one hex of speed.',w:[['pulsar','F'],['turret','T']],mod:{hangar:3,sh:22,sp:3},cost:0},
-  d_jackal_h:{base:'d_jackal',arc:'deathless',n:'Archive guard flare',d:'Both null cannons on turrets and a null spire, 10 less hull.',w:[['gauss','T'],['gauss','T'],['gsentry','T']],mod:{hp:100},cost:0}});
+  d_jackal_h:{base:'d_jackal',arc:'deathless',n:'Archive guard flare',d:'Trades the forward null lance for two null cannons on turrets and a null spire, and 5 more hull.',w:[['gauss','T'],['gauss','T'],['gsentry','T']],mod:{hp:100},cost:0}});
 const ARC_VARIANT=Object.fromEntries(Object.entries(HULL_VARIANTS).filter(([,v])=>v.arc).map(([id,v])=>[v.arc,id]));
 // Customization reserve (Oct 26, customization brainstorm section 6; schema only, nothing reads these for rules yet).
 // Variant rows: base (parent hull id: the variant inherits its model, sections and sounds), cost (renown; 0 with arc = earned by finishing that story arc), arc.
