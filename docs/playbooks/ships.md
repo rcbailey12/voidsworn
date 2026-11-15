@@ -323,6 +323,11 @@ hard points.
 
 ## 5. Traps
 
+- A model-space height is undone by ShipView's fit and centring. For board clearance use `HULL_LIFT` in
+  `godot/render/hull_table.gd`, in drawn game units after fitting (E14, D20_23: R266, issue 811). Unlisted hulls keep zero
+  lift. Keep the rules root on its hex; the hull, markers and visual centre carry the lift. Camera framing and fallback
+  effects use that visual centre; authored hard points, weapons and shields follow the fitted mesh. Check at camera 170
+  and at the lowest idle bob before changing the height.
 - One three-quarter concept is not enough: rounds 7 and 8 could not fit the bow from it (R162). Three views, always.
 - Generated sheets hold identity, palette and view angle, and never counts or aspect (Muse's C15s trial). Write the table first.
 - Sea-ship parts creep back in every generated picture: porthole rows, lattice masts, cranes, keel fins, stepped decks. Check
