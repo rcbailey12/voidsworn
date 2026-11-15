@@ -1,6 +1,6 @@
 # Small ship deaths
 
-Refs #463. The shared frigate and escort deaths now cut their lights at once, spin with a hot trail and pop at 0.72 s. Destroyers use their own flash row between frigate and cruiser. Wings leave one spark and a short puff, with no wreck or physical shards.
+Refs #463. The shared frigate and escort deaths now cut their lights at once, spin with a hot trail and pop at 0.72 s. Destroyers use their own flash row between frigate and cruiser: its own size, life and light reach, drawn over the small row's baked flash pictures (the 384 px cells cover both, no rebake). A small hull with no pre-cut pieces at the kill frame still throws one physical shard and an ember (the main fallback, kept by the Board). Wings leave one spark and a short puff, with no wreck or physical shards.
 
 ![Camera 170, before above after](../../../docs/shots/look_bench/deaths_small/deaths_small_c170.jpg)
 

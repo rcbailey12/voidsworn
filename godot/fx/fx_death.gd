@@ -2808,6 +2808,12 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 	# The pop is light first, then a short body. The 384 px cells cover both small rows without a rebake.
 	var body_px := 218.0 if s.death_tier == "destroyer" else 180.0
 	fx.later(T + 0.12, _smoke_one.bind(fx, s, flash_site, body_px, 1.0, xf, inherited * 0.5, {"seed": 0}))
+	if pieces.is_empty():
+		# Restored by the Board (Muse opus_check_701 condition 1): a hull with no pre-cut pieces at the kill frame (a class
+		# without buckets, or a cut job not ready) still throws one pooled physical shard and a visible ember, never light
+		# and smoke alone.
+		spawn_debris(fx, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3))
+		fx.spr(center, T, 5.0, tint, 1.2, R * 0.3, R * 0.05, 19, xf.basis.x * 2.0, 0.25, 0.0, 0.0, 12.0)
 
 
 # Issue 484: the bite's fragments and the chips along the break, as real pieces of the hull (capped, glowing faces,
