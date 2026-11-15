@@ -42,6 +42,12 @@ units (`PANEL`), so a part built large keeps the hull's detail density: the engi
 column and head carry them, and every engine bell gets stiffener rings by its length. The corona arc's hard point is its lens
 (the horns' meeting point ahead of it is open space, off the mesh).
 
+**Even panels (R243, issue 739).** `even_panels()` and `lay_panels()` lay a sheet ship's hull panels dead even and aligned
+(Ryan, Nov 13 2026: "make the eclipse panels actually panels and dead even and ordered to align"): each loft face split into equal
+panels at a world size, every panel the same thickness with a narrow even gap, rows lined up from section to section, the tone
+changing in ordered bands along the mass, mounts' keep-outs honoured, two flush fasteners per panel. E13 and E14 use it; E11 and
+E12 keep their accepted plating (`kit._plates`).
+
 ## Paint stack (issue 642)
 
 `stack.py` is the Eclipse paint stack for sheet ships (`"bake": "stack"`), on the shared machinery in
