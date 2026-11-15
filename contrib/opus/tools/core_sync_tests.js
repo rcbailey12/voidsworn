@@ -43,12 +43,14 @@ globalThis.coreSyncTest = () => {
       ok.equal(row.total,totals[row.id]); ok.equal(row.before,before[row.id]); ok.equal(row.gain,totals[row.id]-before[row.id]);
       ok.equal(row.tier,tier); ok.equal(row.next,next?next.at:null); ok.equal(row.remaining,next?next.at-row.total:0);
       ok.equal(row.tierUp,before[row.id]<FAVOUR_TIERS[tier].at);
-      ok.ok(html.includes(esc(PATRONS[row.id].n)) && html.includes(esc(FAVOUR_TIERS[tier].n)),'new tier on this debrief');
-      ok.ok(html.includes(next?row.total+' / '+next.at+' sync':row.total+' sync. Full sync reached.'));
+      ok.ok(html.includes(esc(PATRONS[row.id].n)) && html.includes(esc(FAVOUR_TIERS[row.tierUp||!next?tier:tier+1].n)),'the crossed tier, or the next one, on this debrief');
+      // issue 92 (Muse debrief design 4.6): '(n) of (threshold) to (next tier).' or 'Full sync, (n) protocols.'; a tier-up line first
+      ok.ok(html.includes(next?row.total+' of '+next.at+' to '+esc(FAVOUR_TIERS[tier+1].n)+'.':'Full sync, '+row.total+' protocols.'));
+      if(row.tierUp) ok.ok(html.includes(esc(PATRONS[row.id].n)+': crossed into '+esc(FAVOUR_TIERS[tier].n)+' this run at '+row.total+' protocols.'),'tier-up line');
       const announced=notices.some(msg=>msg.includes('Core sync: '+PATRONS[row.id].n+' reached '));
       ok.equal(announced,row.tierUp,'announce tier crossings only');
     }
-    if(!cores.length) ok.ok(!html.includes('<h3>Core sync</h3>'),'no empty panel');
+    if(!cores.length) ok.ok(html.includes('No protocols taken this run.'),'empty state names itself (design 3.4)');
     fixtures.push({...f,meta,cores,notices:notices.filter(msg=>msg.startsWith('Core sync: '))});
   }
   return fixtures;
