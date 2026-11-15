@@ -149,9 +149,9 @@ credit is live, is status and lives in LOOP.md "The seats"):
 - Codex only for what no other seat can do (R234: "use it when it can only do something others can't"); GPT 6.1 Sol (2.7).
 - Kimi is no longer a seat (R257, Ryan, Nov 15: "Kimi is maxed out until 12/12. I just cancelled. I don't think it's worth
   continuing given the usage issues"). Its jobs go to DeepSeek (mid-size code) or an Opus worker; nothing is sent to Kimi.
-- Codex is near its weekly limit (R257, Ryan, Nov 15: "We probably have like one full session with codex left ... You might need
-  to start taking some of those GPU jobs"): Opus workers take Blender and paint jobs, DeepSeek takes code, and the Board runs the
-  PC GPU steps; Codex's session goes to the jobs that need its whole loop.
+- Codex is on the Pro plan (R264, Ryan, Nov 15: "it's on the pro plan, so significant usage upgrade") and runs up to three local
+  lanes (R268). SUPERSEDED, kept so nobody follows it: "Codex is near its weekly limit ... the Board runs the PC GPU steps" (R257,
+  ended by R264 the same day).
 - The API arms (opus, sonnet) run on the Max plan's monthly API credit (Ryan, Nov 12); same model family as the Board, so never
   the different-model check of Opus work (R219).
 - The Board thread may use the Fable advisor (R252: "this chat stands"); no Fable helpers (R180); not taken: Gemini 4 Hydrogen
@@ -162,9 +162,12 @@ short reviews only, never builds" (Nov 12, the OpenCode route; SUPERSEDED by R25
 included" (Nov 14; SUPERSEDED by R253). Ids: R128, R180e, R205, R206, R219, R234, R238, R242, R250, R252, R253, R257, agents-12.
 
 2.7 **Codex runs the model Ryan picked: GPT 6.1 Sol today, pinned by name in tools/pc/codex_issue.bat.** Never a weaker
-model by accident (Luna) and never switched to another one (Astra) without his yes; no Codex cloud tasks or cloud reviews.
+model by accident (Luna) and never switched to another one (Astra) without his yes; no Codex cloud tasks or cloud reviews,
+because a cloud task runs the default model OpenAI picks and cannot be pinned (OpenAI's Codex models page, Nov 2026). Code-only
+jobs run on a third local lane on the PC instead (lane C, R268, Ryan Nov 15: "yeah lane c is fine"), pinned like the others.
+If OpenAI lets cloud tasks pin a model, this can be asked again.
 Why: "We don't want to force using Astra or something. Just not accidentally run Luna or something, that's why we usually
-use Sol 6.1" (R216). Ends when Ryan picks another model. Set: Ryan, Nov 2 (R75) and Nov 11 (R216). Ids: R75b, agents-07.
+use Sol 6.1" (R216). Ends when Ryan picks another model. Set: Ryan, Nov 2 (R75), Nov 11 (R216) and Nov 15 (R267). Ids: R75b, R267, agents-07.
 
 2.8 **Muse: a blind Rey leg written before Rey reads the others, on research, design and review jobs** (not on low-code fix
 jobs). Why: "Let's ensure muse is running its own blind leg room not just chairing." Set: Ryan, Nov 3 (R89). Ids: R89,
@@ -191,8 +194,9 @@ not drift (R155b). Set: Ryan, Nov 2 (R81). Ids: R81, agents-15, muse-06.
 2.13 **A job's scope lists every folder its earlier runs touched, and every baked picture keeps its bake script in the repo.**
 Why: PR 327 merged without its bake scripts (R157). Set: Board.
 
-2.14 **Effort follows the kind of job**: high for the Board, audits and design passes; medium for first builds judged by eye;
-low for well-specified code. Why: a miss on a look costs a whole extra round (R168). Set: Board.
+2.14 **Effort follows the kind of job** (an operating note, not a rule, under 0.10 and R251: the Board may change it in LOOP.md):
+high for the Board, audits and design passes; medium for first builds judged by eye; low for well-specified code. Why: a miss on
+a look costs a whole extra round (R168). Set: Board.
 
 2.15 **The repo is the record.** Rulings go to FINDINGS with Ryan's words and the problem he was reacting to; board state to
 LOOP.md; rules to this book. Why: the other models only see the repo. Set: Ryan (project instructions; R189).
@@ -248,8 +252,9 @@ obvious naval-looking ships. again, these are SPACE ships"; Nov 11: "I don't und
 as naval. We need to do a full pass across all ships and factions so not naval" (R185). Set: Ryan (Oct 22, Oct 24, R185). Ids:
 agents-19, agents-25, R8b, R185a, concepts-16. Detail: docs/playbooks/concepts_round2.md gate line 11.
 
-4.2 **No gun faces backward or into the ship.** Why: "no ship in the game fires backward" (Oct 22). Set: Ryan. Ids: agents-17,
-blob-03.
+4.2 **No gun faces backward or into the ship at rest; a turret may turn aft only to follow a target its rules arc lets it hit
+(6.16, R222).** Why: "no ship in the game fires backward" (Oct 22). Set: Ryan (Oct 22; the turret line Nov 12, R222).
+Ids: agents-17, blob-03, R222.
 
 4.3 **Parts look like they belong: snapped to the real hull on a visible mount, in matched pairs at sensible hard points; the
 Hullbreakers may be junky.** Why: bolt-ons on the AI hulls floated, sank or sat anywhere (Oct 21). Set: Ryan, Oct 21. Ids:
@@ -437,9 +442,10 @@ always reads as a death.** Why: every faction died the same faint puff (deaths_a
 staging table; the sizes and times are tuning values (0.4). Ids: deaths-03, deaths-10. Detail:
 docs/playbooks/deaths_and_hits.md.
 
-6.11 **Shields in space keep their faction colours; at rest invisible, a faint edge glow on zoom, hover or a recent hit, a
-downed side a dark gap.** Why: his Oct 24 ruling (the cyan-only rule retired) and his yes to the Board's resting pick (R163).
-Set: Ryan (R3, R163). Ids: R3a, R163a, effects-04.
+6.11 **Shields in space keep their faction colours; at rest, Rim and Gap: a faint rim in the faction edge colour on live
+sides, a dark gap where a side is open, nothing else** (R246, Nov 14). Why: his Oct 24 ruling (the cyan-only rule retired) and his
+Rim and Gap pick with Muse (R246). Set: Ryan (R3, R246). SUPERSEDED, kept so nobody follows it: "at rest invisible, a faint edge
+glow on zoom, hover or a recent hit" (R163, ended by R246). Ids: R3a, R163a, R246, effects-04.
 
 6.12 **Effects may spend the RTX 5080's headroom inside the scene gate, with a lower setting kept.** Set: Ryan (R88c). See
 3.9.
