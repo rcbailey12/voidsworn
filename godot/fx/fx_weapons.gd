@@ -18,7 +18,7 @@ extends RefCounted
 #   flak:    airbursts in the faction's style (Hegemony picket lasers, Chorus spores, Ithar mirror glints, Deathless
 #            gauss shredder streaks, Corsair chaff)
 #   bio:     spine (bioplasma: wobbling globs that splash and corrode)   tendril (boarding tendrils: an organic lash)
-#   gauss:   coil charge, a near invisible slug, a punch-through with an exit spray
+#   gauss:   coil charge, a visible null slug, a punch-through with an exit spray
 #   sq:      guns, bombs, sporeb: craft on a strafing run
 
 const POOLS := preload("res://fx/fx_pool.gd")
@@ -162,6 +162,9 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 	var ka: float = maxf(ka_geo, VIS_K_FIRE)
 	var kt: float = maxf(Tg.scale_k() if Tg != null else 1.0, VIS_K_HIT)
 	var col: Color = fac["weapon"] if lk != "plasma" else PLASMA_COL
+	# R263: Eclipse weapon cores are green, white only in their central filament.
+	if lk in ["doom", "gauss"] and fac.has("weapon_core"):
+		col = fac["weapon_core"]
 	# Issue 461: a hit is sized by the gun that fired it as well as by the ship it lands on
 	var gk: float = float(GUN_K.get(DEATH.atlas_band(float(A.hull.L)), 1.0)) if A != null else 1.0
 	var tk: float = float(TARGET_K.get(DEATH.atlas_band(float(Tg.hull.L)), 1.0)) if Tg != null else 1.0
@@ -196,6 +199,9 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 	var done = 0.0
 	var hj = 0
 	var total = shots.size()
+	# Battle events carry an aggregate PD count, while intercepted entries
+	# remain false in shots. Never turn a rolled hit into an interception.
+	var pd_left := maxi(int(opts.get("pd", 0)), 0)
 	var tur_last := {}    # turret -> its last shot's fire time: it holds its aim through that, then trains back to rest
 	var froms: Array = []   # each shot's muzzle (world) and turret (-1 for a fixed gun), for the checks
 	for i in total:
@@ -204,6 +210,9 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 		if hit:
 			hd = hits[hj] if hj < hits.size() else {"shield": 0, "hull": 1, "section": "mid", "crit": false}
 			hj += 1
+		elif pd_left > 0 and lk in ["torp", "rockets", "star"]:
+			hd = {"pd": true}
+			pd_left -= 1
 		var m: Dictionary = mounts[i % mounts.size()]
 		var from: Vector3 = m["p"]
 		var tgt = _target(fx, Tg, to_c, from, hit, hd, quad, kt)
@@ -274,7 +283,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			_muzzle_blast(fx, from, dir, tf, col, ka * (1.25 if w >= 3 else 1.0), MUZ_PX[clampi(w, 1, 3)] + 4.0, w, A)
 			var spd = float(fx.timing.get("shell_speed", SHELL_SPEED)) * fx.unit
 			ti = tf + dist / spd
-			fx.stk(from, tf, dist / spd, col.lerp(Color.WHITE, 0.3), 18.0, 9.0 * ka, 0.75 * ka * (1.2 if w >= 3 else 1.0), 0, dir * spd, 0.0, 0.0, 4.0 if w >= 3 else 3.4, 26.0)
+			fx.stk(from, tf, dist / spd, col.lerp(Color.WHITE, 0.3), 8.0, 3.2 * ka, 0.60 * ka * (1.2 if w >= 3 else 1.0), 0, dir * spd, 0.0, 0.0, 4.0 if w >= 3 else 3.4, 26.0)
 			fx.light(from + mn * 1.5 * ka, tf, 0.22, 7.8, col.lerp(Color.WHITE, 0.4), 0)
 			fx.shake(tf, 0.03, from)
 		"auto":
@@ -333,6 +342,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			tf = T0 + 0.1 + i * 0.25
 			fx.spr(from, tf - 0.12, 0.12, col, 4.0, 0.3 * ka, 1.6 * ka, 12, Vector3.ZERO, 0.0, 0.0, 0.0, 16.0)
 			fx.rib(from, dir, dist, tf, 0.35, col, 1.6, 0.35 * ka, 0.3 * ka, 8)
+			_beam_ends(fx, from, to, tf, 0.35, col, ka)
 			fx.light(from + mn * 1.2 * ka, tf, 0.35, 5.0, col, 1)
 			ti = tf + 0.03
 			tend = tf + 0.35
@@ -344,12 +354,13 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			fx.spr(from, tf - charge, charge, col.lerp(Color.WHITE, 0.2), 9.0, 0.6 * ka, 5.0 * ka, 12, Vector3.ZERO, 0.0, 0.0, 0.0, 30.0)
 			fx.light(from + dir + mn * ka, tf - charge, charge, 6.0, col, 2)
 			if lk == "doom":
-				# the arc gathers: little crawling arcs on the emitter before it strikes
-				for s in 6:
-					fx.rib(from + fx.rdir() * 1.2 * ka, fx.rdir(), 2.5 * ka, tf - charge + s * 0.05, 0.12, col, 1.4, 0.3 * ka, 0.2 * ka, 6)
-			var rk: int = {"lance": 2, "ion": 5, "pulsar": 7, "doom": 6}[lk]
+				# A visible charging corona stays rooted on the actual emitter.
+				fx.ring(from, dir, tf - charge, charge, col, 1.8, 0.5 * ka, 1.8 * ka, 3, 0.0, 0.0, 32.0)
+				fx.spr(from, tf - charge * 0.55, charge * 0.55, col, 2.5, 0.6 * ka, 1.6 * ka, 12, Vector3.ZERO, 0.0, 0.0, 0.0, 26.0)
+			var rk: int = {"lance": 2, "ion": 5, "pulsar": 7, "doom": 10}[lk]
 			_burst(fx, from, dir, tf, 4.5 * ka, "flash", 0.28, col, 3.6, 22.0)
 			fx.rib(from, dir, dist, tf, dur, col, 2.4, wd, wd * 0.85, rk)
+			_beam_ends(fx, from, to, tf, dur, col, ka, lk == "doom")
 			fx.light(from + dir * 1.5 + mn * ka, tf, dur, 6.0, col, 1)
 			fx.dst(from + dir * dist * 0.5, tf, dur, dist * 0.3, dist * 0.35, 1, 0.6)
 			fx.shake(tf, 0.08, from)
@@ -395,6 +406,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 		"tendril":
 			tf = T0 + 0.2 + i * 0.2
 			fx.rib(from, dir, dist, tf, 0.9, col, 1.4, 1.2 * ka, 0.5 * ka, 9)
+			_beam_ends(fx, from, to, tf, 0.9, col, ka)
 			ti = tf + 0.25
 			tend = tf + 0.9
 		"gauss":
@@ -406,11 +418,11 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 				fx.spr(from - dir * (1.6 - s * 0.5) * ka, tf - wind + s * wind / 4.0, wind - s * wind / 4.0, col, 2.2, 0.5 * ka, 0.9 * ka, 22)
 			fx.light(from, tf - wind, wind, 2.0, col, 2)
 			# round 2: the discharge is a hard white muzzle flash and a fat pale shock ring; the slug's wake is a bright
-			# instant line (the gauss signature: everything at once, no travelling bolt)
+			# short tracer and fading heat shimmer along the shot
 			fx.spr(from, tf, 0.07, Color(0.85, 0.95, 1.0), 12.0, 1.2 * ka, 2.2 * ka, 0, Vector3.ZERO, 0.0, 0.0, 0.0, MUZ_PX[3])
 			fx.ring(from + dir * 0.5 * ka, dir, tf, 0.4, Color(0.8, 0.95, 1.0), 1.8, 0.5 * ka, 4.0 * ka, 3, 0.0, 0.0, 44.0 if heavy else 34.0)
 			fx.dst(from + dir, tf, 0.3, 1.0 * ka, 6.0 * ka, 0, 1.2)
-			fx.stk(from, tf, 0.4, col.lerp(Color.WHITE, 0.5), 4.5, dist, 0.1 * ka, 5, dir, 0.0, 0.0, 3.4 if heavy else 2.8, 0.0)
+			_gauss_wake(fx, from, to, tf, col, ka)
 			fx.ring(from + dir * dist * 0.5, dir, tf + 0.05, 0.45, Color(0.8, 0.9, 1.0), 0.8, 0.5 * ka, 3.0 * ka, 3, 0.0, 0.0, 26.0)
 			fx.light(from + mn * 1.2 * ka, tf, 0.18, 7.8, Color(0.85, 0.95, 1.0), 0)
 			fx.shake(tf, 0.08, from)
@@ -423,11 +435,41 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			ti = T0 + 0.3
 	if tend < ti:
 		tend = ti
-	if not bool(tg.get("miss", false)):
-		_impact(fx, lk, w, Tg, tg, ti, col, dir, hd, kt, tend - ti)
-	else:
-		_miss_fade(fx, lk, tg, ti, col, dir, kt)
+	if not bool(hd.get("pd", false)):
+		if not bool(tg.get("miss", false)):
+			_impact(fx, lk, w, Tg, tg, ti, col, dir, hd, kt, tend - ti)
+		else:
+			_miss_fade(fx, lk, tg, ti, col, dir, kt)
 	return [ti, tend + 0.3, tf]
+
+
+# Issue 367: the wake's only tracer is live for two 60 Hz frames. Kind 5
+# clamps its projected tail to 26 framebuffer pixels, even on a long shot.
+static func _gauss_wake(fx, from: Vector3, to: Vector3, t: float, col: Color, k: float) -> void:
+	var dv := to - from
+	var dist := maxf(dv.length(), 0.01)
+	var axis := dv / dist
+	fx.stk(from, t, (2.0 - 0.001) / 60.0, col, 5.0, dist, 0.4 * k, 5, axis, 0.0, 0.0, 22.0, 16.0)
+	if fx.quality == "max":
+		# Two local wakes follow the two head positions. No full-lane shimmer.
+		for j in 2:
+			var u := (float(j) + 1.0) / 2.0
+			fx.dst(from + dv * u, t + float(j) / 60.0, 0.04, 0.45 * k, 1.8 * k, 1, 0.22)
+
+
+# End flares and a quiet cooling glow belong to the beam itself. The real
+# impact recipe still owns the flash, wound and thrown matter at the target.
+static func _beam_ends(fx, from: Vector3, to: Vector3, t: float, life: float, col: Color, k: float, eclipse := false) -> void:
+	if eclipse:
+		for j in 2:
+			var p: Vector3 = from if j == 0 else to
+			var px := 24.0 if j == 0 else 42.0
+			fx.spr(p, t, life, col, 2.0 if j == 0 else 3.0, 1.2 * k, 1.8 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, px)
+			fx.spr(p, t + life - 0.05, 0.45, col, 1.5, 2.0 * k, 0.4 * k, 18, Vector3.ZERO, 0.0, 0.0, 0.0, px)
+		return
+	for p in [from, to]:
+		fx.spr(p, t, life, col, 2.8, 1.2 * k, 1.5 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, 16.0)
+		fx.spr(p, t + life - 0.05, 0.30, col, 1.4, 1.8 * k, 0.4 * k, 18, Vector3.ZERO, 0.0, 0.0, 0.0, 16.0)
 
 
 # Weapon bursts use leap 1's atlas, flow interpolation, thickness lighting and
@@ -646,7 +688,7 @@ static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf:
 		var end = to + (fx.rdir() * 0.6 * k if lk == "rockets" else Vector3.ZERO)
 		var p = {"lk": lk, "t0": t0, "t1": ti + j * 0.03, "a": from, "b": mid, "c": end, "col": col, "eng": eng, "k": k,
 			"seed": fx.rng.randf(), "last": t0, "mesh": _projectile_body(fx, lk, k, eng), "dead_at": INF}
-		if intercept and j == 0: p["dead_at"] = lerpf(t0, ti, 0.62)
+		if intercept: p["dead_at"] = lerpf(t0, float(p["t1"]), 0.62)
 		var list: Array = fx.dstate.get("proj", [])
 		list.append(p)
 		fx.dstate["proj"] = list
@@ -663,17 +705,21 @@ global uniform float fx_calm;
 uniform vec3 tint = vec3(0.95, 0.55, 0.2);
 uniform float extent = 1.0;
 uniform float seed = 0.0;
+uniform float throttle = 1.0;
 void vertex() {
 	vec3 centre = (VIEW_MATRIX * MODEL_MATRIX[3]).xyz;
 	float size = extent * length(MODEL_MATRIX[0].xyz);
+	// Motor core plus sheath stay resolved on small rockets at battle range.
+	float pixel = 2.0 * max(-centre.z, 0.01) / (max(abs(PROJECTION_MATRIX[1][1]), 0.0001) * VIEWPORT_SIZE.y);
+	size = max(size, pixel * 12.0);
 	POSITION = PROJECTION_MATRIX * vec4(centre + vec3(VERTEX.xy * size, 0.0), 1.0);
 }
 void fragment() {
 	float r = length(UV * 2.0 - 1.0);
 	float pulse = 0.86 + (0.10 * sin(scene_t * 23.0 + seed) + 0.04 * sin(scene_t * 37.0 + seed)) * (1.0 - fx_calm);
-	float core = exp(-r * r * 26.0);
-	float halo = exp(-r * r * 5.0) * (1.0 - smoothstep(0.65, 1.0, r));
-	ALBEDO = (mix(tint, vec3(0.94, 0.87, 0.72), 0.75) * core * 5.0 + tint * halo * 1.4) * pulse * fx_gain;
+	float core = exp(-r * r * 14.0);
+	float halo = exp(-r * r * 3.0) * (1.0 - smoothstep(0.65, 1.0, r));
+	ALBEDO = (mix(tint, vec3(0.94, 0.87, 0.72), 0.75) * core * 3.0 + tint * halo * 1.4) * pulse * throttle * fx_gain;
 }
 """
 
@@ -746,6 +792,7 @@ static func _projectile_body(fx, lk: String, k: float, eng: Color) -> Node3D:
 	mat.set_shader_parameter("extent", 2.5 if lk == "star" else 1.8)
 	mat.set_shader_parameter("seed", fx.rng.randf() * TAU)
 	drive.material_override = mat
+	node.set_meta("motor", mat)
 	drive.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	drive.extra_cull_margin = 3.0
 	node.add_child(drive)
@@ -785,6 +832,11 @@ static func _bez(a: Vector3, b: Vector3, c: Vector3, u: float) -> Vector3:
 static func update(fx, dt: float) -> void:
 	_lanes_update(fx)
 	_craft_update(fx, dt)
+	for ship in fx.ships.values():
+		if is_instance_valid(ship.root):
+			var squad = ship.root.get("squad_kind")
+			if squad != null and not String(squad).is_empty():
+				_wing_trail_update(fx, ship.root.get("hull"))
 	var list: Array = fx.dstate.get("proj", [])
 	var keep: Array = []
 	for p in list:
@@ -817,6 +869,10 @@ static func update(fx, dt: float) -> void:
 			node.global_transform = Transform3D(Basis(d, z.cross(d).normalized(), z).scaled(scale), pos)
 			node.visible = true
 			(node.get_meta("exhaust") as ShaderMaterial).set_shader_parameter("tear_normal",-d)
+			var fade := smoothstep(0.0, 0.06, now - t0)
+			if not p.get("park", false):
+				fade *= 1.0 - smoothstep(t1 - 0.08, t1, now)
+			(node.get_meta("motor") as ShaderMaterial).set_shader_parameter("throttle", fade)
 		_projectile_exhaust(fx, p, d)
 	fx.dstate["proj"] = keep
 # Sample the actual curved path at fixed intervals. Cap catch-up after a hitch,
@@ -867,7 +923,7 @@ static func _flak(fx, lk: String, from: Vector3, dir: Vector3, dist: float, to: 
 			"pflak":
 				fx.stk(from, tb, ft, col.lerp(Color.WHITE, 0.4), 9.0, 3.5 * ka, 0.32 * ka, 4, (bp - from).normalized() * spd, 0.0, 0.0, 3.2, 18.0)
 			"gflak":
-				fx.stk(from, tb, 0.15, col.lerp(Color.WHITE, 0.3), 2.0, from.distance_to(bp), 0.06 * ka, 5, (bp - from).normalized())
+				_gauss_wake(fx, from, bp, tb, col, ka)
 				ft = 0.02
 			"spores":
 				ft *= 2.2
@@ -951,6 +1007,50 @@ static func _craft_update(fx, dt: float) -> void:
 		node.position = (r.a as Vector3).lerp(r.b, progress)
 		node.rotation.y = atan2(-dir.z, dir.x)
 		node.step(dt)
+		_wing_trail_update(fx, node)
+
+
+# Use the real wing's history and engine point. The old wing shader made a
+# .65-second ruler behind a fast craft; the kit clips its centreline at 24 px.
+static func _wing_trail_update(fx, wing) -> void:
+	if wing == null or not is_instance_valid(wing):
+		return
+	if not wing.has_meta("kit_trails"):
+		var materials: Array = []
+		for trail in wing.trails:
+			var material: ShaderMaterial = fx.mat(SH.CRAFT_TRAIL, 1)
+			material.set_shader_parameter("trail_len", wing.length)
+			material.set_shader_parameter("width_k", 0.065 if wing.faction == "chorus" else 0.026)
+			material.set_shader_parameter("alpha_k", 0.22 if wing.faction == "chorus" else 0.56)
+			trail.node.material_override = material
+			materials.append(material)
+		wing.set_meta("kit_trails", materials)
+	var materials: Array = wing.get_meta("kit_trails")
+	for i in mini(materials.size(), wing.craft.size()):
+		var material: ShaderMaterial = materials[i]
+		material.set_shader_parameter("clock_now", wing.clock)
+		var history: Array = wing.trails[i].hist
+		if not history.is_empty():
+			var born := float(history[0][1])
+			# The wing owns the stern anchor. Recover its local point from a
+			# fresh sample, then follow that point between samples.
+			if absf(float(wing.clock) - born) < 0.001:
+				material.set_meta("kit_anchor", wing.craft[i].to_local(history[0][0]))
+				material.set_shader_parameter("anchor_ready", 1.0)
+			if material.has_meta("kit_anchor"):
+				material.set_shader_parameter("head_world", wing.craft[i].to_global(material.get_meta("kit_anchor")))
+			material.set_shader_parameter("newest_birth", born)
+
+
+static func warm_craft_trail(fx, parent: Node3D) -> void:
+	# Warm the real ImmediateMesh format, not a box with different attributes.
+	var wing := WING.new()
+	parent.add_child(wing)
+	wing.setup("hegemony", "fighter", 1.0, 1, 0.0)
+	wing.set_process(false)
+	wing.step(0.04)
+	wing.step(0.04)
+	_wing_trail_update(fx, wing)
 
 
 # ---------------------------------------------------------------- impacts
@@ -1308,7 +1408,7 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 				nj = Tg.dir_world(hit["n"])
 		last = pj
 		if j % 2 == 0:
-			_burst(fx, pj + nj * 0.3 * k, nj, at, 4.0 * k, "flash", 0.16, col.lerp(Color(1.0, 0.72, 0.38), 0.55), 4.2, px * BURST_PX_K)
+			_burst(fx, pj + nj * 0.3 * k, nj, at, 4.0 * k, "flash", 0.16, (col if lk == "doom" else col.lerp(Color(1.0, 0.72, 0.38), 0.55)), 4.2, px * BURST_PX_K)
 			_note(fx, "flash", "lance", Vector3.ZERO, nj, 0.16, px)
 		fx.spr(pj + nj * 0.2 * k, at, 0.18, col, 3.0, 1.2 * k, 1.6 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.45)
 		_heat_spot(fx, pj + nj * 0.1 * k, at, k, 0.55, "lance", 5.0, 1.5)
@@ -1358,7 +1458,7 @@ static func _bio_splat(fx, Tg, tg: Dictionary, T: float, col: Color, k: float, l
 
 static func _gauss_punch(fx, Tg, tg: Dictionary, T: float, dir: Vector3, col: Color, k: float, w: int) -> void:
 	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
-	var tint := Color(0.78,0.86,0.94)
+	var tint := col.lerp(Color.WHITE, 0.25)
 	var px: float = float(LADDER_PX["shell"][clampi(w, 1, 3)]) * float(tg.get("gk", 1.0)) * float(tg.get("tk", 1.0))
 	_burst(fx,p+n*0.35*k,n,T,4.5*k,"flash",0.14,tint,4.5,px * BURST_PX_K)
 	_note(fx, "flash", "shell", Vector3.ZERO, n, 0.14, px)

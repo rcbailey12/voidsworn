@@ -320,7 +320,7 @@ Every faction colour and style the effects, hull fix and backdrops use comes fro
 
 Ryan's first playtest: "effects looked very weak, especially at a distance and for smaller ships." Two causes, two fixes (Claude's calls, vetoable; numbers in docs/shots/f3/):
 
-- **Minimum on-screen size.** Every effect sprite, streak, ring and beam had a size in world units only, so a frigate's tracer (0.26 units wide) was 2 px from the battle camera and a third of a pixel fully zoomed out, where it dropped out of the raster. The effect shaders now keep each kind at least a few pixels across, counted on a 1080-line screen so it looks the same at any resolution (`px_world` in fx_shaders.gd; the global `fx_px` scales them all, `setup({"min_px": 0})` turns them off): pops and the star torpedo 14 px, fireball cores, beam contact flares and plasma bolts 12 px, beam charges, bio globs and soft glows 10 px, squibs, prism glints and strike craft 9 px, flames 8 px, embers and hot spots 4.5 px, engine cores 3 px; tracers and bolts 2.6 by 14 px, sparks and drips 2 by 4 px; beams 3.5 px wide (needle 2.5, engine plumes 2); shock rings 12 px. A grown effect dims as it grows but by less than its area, so small and far effects read brighter without blowing out. Smoke, soot and gas have no floor (no grey haze at distance). Shield hits keep their core, ripple and spread a few pixels wide too.
+- **Minimum on-screen size.** Every effect sprite, streak, ring and beam had a size in world units only, so a frigate's tracer (0.26 units wide) was 2 px from the battle camera and a third of a pixel fully zoomed out, where it dropped out of the raster. The effect shaders keep each kind at least a few pixels across, counted on a 1080-line screen so it looks the same at any resolution (`px_world` in fx_shaders.gd; the global `fx_px` scales these readability floors): pops and the star torpedo 14 px, fireball cores, beam contact flares and plasma bolts 12 px, beam charges, bio globs and soft glows 10 px, squibs, prism chips and strike craft 9 px, flames 8 px, embers and hot spots 4.5 px, engine cores 3 px; shock rings 12 px. Streak and ribbon widths, and absolute pixel caps, now follow section 17. A grown sprite dims as it grows but by less than its area, so small and far effects read brighter without blowing out. Smoke, soot and gas have no floor (no grey haze at distance). Shield hits keep their core, ripple and spread a few pixels wide too.
 - **Small ships' effects at a usable size.** Effects scale with the ship (`scale_k`: frigate 0.43, super-dreadnought 2.07). Fire visuals now use at least 0.75 and impact visuals at least 0.85 (`VIS_K_FIRE`, `VIS_K_HIT` in fx_weapons.gd); geometry (gun mounts, hull marks, hit points) keeps the true scale. A small ship's cook-off pops use at least 0.65.
 - **Hits that last and land.** Shell and bolt hits pop a little longer (0.16 s) and leave a soft afterglow (about a second, below the flash brightness that counts) and a hot spot cooling on the plate (1.6 s); sparks live 0.4 to 0.9 s (were 0.25 to 0.6); hull lights 7.5 for 0.32 s (were 6 for 0.2; still under the light peak that counts as a flash). Beams leave a glow where they cut; torpedo hits a two-second glow and a longer light; bio splashes a green working glow.
 - **Shield hits read as that ship's shield.** A hit lights the whole bubble faintly in its faction colour and pattern for about half a second (stronger when the camera is far out), on top of the hit's ripple; the hit's glow stays on the bubble for most of a second; ripples are 30% stronger.
@@ -377,3 +377,185 @@ Checks: the Forward+ `fx_inside_probe.gd` with `PROBE_BOX=1`; `destruction_steps
 - `fx/test/playtest_batch1_check.gd` checks damage grading/repair, organic rupture and retained wounds, loaded stand-in hull cutting, disk cache invalidation/alpha, and both lane directions. `FB1_SHOTS=DIR` captures the four damage examples, lanes, hull chunks and organic rupture on a renderer. These are stand-in hulls, not full-build ship validation.
 - `world/test_blockers.gd` checks the real world/board builders over all 12 shapes, five terrain maps and two seeds. It checks solid geometry at blocking hexes, named entry reasons, and agreement between the blocker query and the sight predicate. Headless rock coverage reads the real submitted batch transforms because the dummy renderer does not retain MultiMesh buffers. No background dressing or exclusion-only outline can satisfy ordinary blocker coverage.
 - `fx/test/check_destruction.bat` now includes both checks. Results default to `%TEMP%/voidsworn-destruction-<id>`; `FX_CHECK_OUT` overrides that folder. The existing geometry, staging, smoke, box captures and 20-ship frame probe remain included.
+
+## 17. Textured weapon kit (issue 367)
+
+This branch implements the kit; the comparison pictures and measurements are in
+`docs/shots/look_bench/kit/REPORT.md`. Ryan's faction picks and final approval are
+still required. Round 1 kept faction colours and impact recipes; section 18
+records the Eclipse weapon correction. Faction ids and weapon timing stay
+in their existing sources. `docs/playbooks/scale.md` remains the scale table:
+weapon geometry uses the firing ship's `scale_k`; readability floors describe
+light on screen, not a new world scale.
+
+`textures/make_kit.py` makes all three original masks with free Python and
+Pillow. It retains a fixed-seed particle bake for the cooling tail, a periodic
+core/sheath flow mask, and a filled faceted chip. There are no downloaded sprite
+packs. Materials share the imported textures through `_mat`, including the
+attached engine batches; they do not allocate textures per shot.
+
+Streaks retain their existing pool and API. The mask has a bright compact head,
+a short irregular tail, and a soft halo. Spark heads follow drag and a gentle
+curved drift; the cooling history bends inside the quad. After the usual length
+floor, the shader measures the projected head-to-tail distance and shortens it
+with perspective-correct interpolation. The caps are **actual render-target
+pixels**, at cameras 170, 60 and 26, at 1080p or 4K, including `min_px = 0`:
+
+| Streak kind | Maximum projected head-to-tail length | Default quad width floor at 1080 |
+|---|---|---|
+| Spark, bio drop, molten drip, flame tongue | 16 px | 6 px |
+| Shell and tracer | 22 px | 8 px |
+| Gauss and gauss flak | 26 px | 22 px (issue 800) |
+| Las and prism dart | 32 px | 7 px |
+
+These are geometry caps before post-process bloom. They do not cap a halo's
+threshold-dependent lit extent. Width floors are the whole textured quad,
+not a claim that every pixel of it is bright. The absolute length cap is
+independent of `fx_px`; widths still grow with the render scale and world size.
+
+Both gauss emitters use `_gauss_wake`. Its tracer lasts `(2 - 0.001) / 60`
+seconds: two drawn samples on the 60 Hz clock, with the small epsilon preventing
+a third sample from float rounding at the boundary. It advances along the shot
+and carries only a short head/tail. At max quality, ten short distortion puffs
+made a 0.10 s shimmer along the path in round 1. Issue 800 replaces those with
+two local 0.04 s wakes following the two head positions. Low quality keeps the tracer. A full-length
+luminous line is never the wake.
+
+Ribbons keep the segmented camera-facing strip, with independent scrolling
+core and sheath masks. The transverse profiles have stated full width at half
+maximum (FWHM) in render-target pixels. At either camera 170 or 60, the minimum
+core FWHM is 3 px (needle 2 px), and the minimum sheath FWHM is 7 px (kind 6 crackle 11 px).
+World widths can make them larger. The formulas are core `max(3, quad_px * .17)`
+and sheath `max(7, quad_px * .48)`, with the needle and Doom substitutions above.
+For Doom, the trunk stays at 3 px core and 11 px sheath; its wider quad holds
+forks outside the trunk's bloom. The quad floors below fit both profiles. Actual raster measurements are in the
+report, separate from these target profiles.
+
+| Kind | Quad floor, px | Shape and motion |
+|---|---|---|
+| 0 plume | 12 | Turbulent hot throat and broken cooling sheath, tapered fade |
+| 1 idle trail | 10 | Quiet hot centre and slow drifting wisps, fade at both ends |
+| 2 lance | 16 | Sustained core, opposing flow in the broad sheath |
+| 3 sputter plume | 12 | Irregular coughing throat, softened in reduce flashing |
+| 5 ion | 16 | Broken crawling filaments around the core, without diagonal bars |
+| 6 electrical crackle | 64 | Legacy forks outside the 3 px trunk and 11 px sheath |
+| 7 pulsar | 16 | Travelling packets and a moving spectral fringe |
+| 8 needle | 12 | Narrow resolved dart core and moving nodes |
+| 9 tendril | 16 | Wriggling tissue path, mottled luminous interior |
+
+Kind 6 forks are drawn inside the wider segmented strip: their hot FWHM is 2 px,
+with a 5 px glow. They branch from its live trunk. The trunk re-strikes every
+70 ms, or 230 ms in reduce flashing. Every finite ribbon has a soft time fade;
+beam endpoints have a muzzle/contact flare and a separate 0.30 s quiet cooling
+glow. The real impact still owns the wound, flash and thrown matter. The curved
+moving-engine history also has a resolved centre, soft sheath and end fades.
+
+Prism sprite kind 16 is now a small filled lit facet rather than a four-armed
+cross. This intentionally covers every existing kind-16 caller: shield chips,
+prism flight, muzzle and impact glints. No shield recipe or shard count changes.
+
+Rockets and torpedoes retain the real closed casings, fins and sampled baked
+exhaust. Their motor has a 12 px quad floor with distinct core and halo, existing
+pulse motion, a short rise off the rail and a fade before impact. Parked lane
+torpedoes keep their running motor. The smoke history still cools separately.
+Bay flashes, interceptions and all eight shared-helper regression rows are
+included in the capture adapter. Lane chevrons remain tactical indicators.
+
+Attack-run craft and live squadron wings use their real stern history with
+the same textured core and sheath. The luminous centreline ends within 24
+render-target pixels of the moving stern and cools over 0.65 s. Its whole
+quad has an 8 px absolute floor (10 px with the usual 1080-line readability
+floor). `warm_craft_trail` primes the actual ImmediateMesh vertex format.
+
+The battle's aggregate `volley` option `pd` is consumed only by false shot
+entries for torpedoes, rockets and star torpedoes. The event has no per-shot PD
+identity, so the first eligible false entries are used. Rolled hits are kept.
+Every visual body in an intercepted group bursts at 62 percent of its flight;
+there is no later hull hit or miss-end glow for that group. This is visual
+routing of the existing result, with no rules or damage change.
+
+To add or tune a look, capture that row first, change its recipe, then capture
+it twice and retain the second run at all three cameras. Use the scripts in
+`docs/shots/look_bench/kit/`; scratch goes to TEMP and evidence goes to the task's
+shots folder. Inspect the default camera at source pixel size first. Measure
+caps without bloom, and report scene-gate frame time at 1080p plus GPU time at
+4K. No headless result stands in for a picture or GPU cost.
+`measure_kit.gd` draws all nine ribbon kinds as well as capped streaks;
+`analyse_raster.py` records channel FWHM separately from the analytic core
+and sheath widths. `verify_evidence.py` checks final source hashes, all 46
+rows at all three cameras, sheet dimensions and the scene-gate results.
+`trace_audit.py` uses the preserved audit checkout only to attribute sh_06;
+it verifies that checkout against the audit pin and records the live callers.
+The adapter reaps completed hull cut jobs before removing each fixture ship,
+then releases static world and puff resources while the renderer is alive.
+Shield-break fixtures require a live shield and fail before capture if it is
+missing. Their four styles are Sunward, Hullbreakers, Hegemony and Glasswrights.
+
+## 18. Eclipse weapon correction (issue 800, R263)
+
+The Doom weapon uses ribbon kind 10, `ECLIPSE_ARC`, in its own alpha-blended
+pool. Kind 6 remains the kit's small electrical crackle, used by other weapon
+recipes. Other beams keep `RIBBON`. This separation lets the violet-black
+sheath obscure the sky without changing another faction's beam blending.
+The full arc quad is at least 80 actual framebuffer pixels wide at cameras
+170 and 60, including room for forks. The dark trunk extends 10 to 15 pixels
+either side of its centre. Its green core has analytic FWHM 5.5 pixels,
+with a separate 10.5 pixel FWHM packet profile; the
+white centre has FWHM 1 pixel. These describe shader profiles before bloom,
+not measurements of the final tone-mapped picture.
+
+Three energy packets travel from shooter to target along the held jagged
+channel. A separate slower mask moves inside the sheath. Alternating attached
+forks grow and die on staggered clocks; reduce flashing slows those clocks and
+softens the arc's rise. The real emitter charges before firing. The contact
+flare is larger than the emitter flare, and both ends cool in green over
+0.45 seconds. Hit times, damage, weapon ids and hull attachment stay on their
+existing public paths.
+
+`faction_looks.json` owns two weapon-only Eclipse colours: `weapon_core` and
+`weapon_sheath`. The Doom and null cannon recipes use the green core; the two
+alpha materials take their dark sheath from the same data. Existing ship,
+engine, shield and backdrop colours retain their separate fields.
+
+Streak kind 5 routes to `NULL_SLUG` in both gauss emitters. Its dark filled
+body encloses a compact bright head, with a 22 pixel whole-quad floor at 1080.
+The shared `STREAK_VERTEX` owns its motion and absolute 26 pixel length cap.
+It retains the kit's two-frame luminous life. The no-bloom probe measures the
+head itself, requiring at least 3 bright pixels across its half-peak profile,
+at cameras 170 and 60 at max and low quality. Muzzle and real surface impact
+flashes remain separate from the travelling slug.
+
+Both materials are included in the loading-screen warm-up. The round 2
+capture adapter also records the entire 1920x1080 camera-170 frame reduced
+to 390x219 for the phone view. `round2_sheets.py` pairs that view with native
+camera-170 and camera-60 crops, emits a motion GIF, and compares every pixel
+of every kit row against the preceding kit. It keeps evidence separate from
+the accepted look-bench baseline. Cost is measured by the unchanged #207
+scene gate against the kit's historical 2.989 ms at 1080. The initial
+0.300 ms absolute frame allowance was not met. A fresh, source-matched
+original-kit control in this checkout measures 4.097 ms frame median and
+2.420 ms GPU median at 1080; the change measures 4.617 ms and 2.429 ms.
+Session frame ranges overlap. The final stated frame allowance against
+the historical number is 1.710 ms (4.699 ms ceiling), and GPU changes
+must stay within 0.300 ms of the fresh control at both resolutions.
+The standing 12.5 ms scene gate remains unchanged. REPORT.md gives the
+session values and the 4K pair, without treating CPU frame variation as
+a measured shader regression.
+
+Use `capture_round2.py` for the complete 46-row comparison. A long process
+stalled at the Glasswright shield row with Jolt's maximum-job warning in
+this round. The adapter runs the same selected rows in batches of ten,
+using a full row warm-up on the first batch and the bench's material warm-up
+on every row. Later batches reuse the warmed disk pipelines. The changed
+weapon recipes also get a separate preview before the kept after run.
+Before and after use the same batches and time samples. Its aggregate is derived from each
+child's saved report and clean process exit, with source hashes checked
+between batches. Interrupted output is retained separately and does not
+substitute for a completed batch.
+
+The comparison retains raw channel counts. Thirty rows match within one
+8-bit channel value; twelve other unchanged looks have sparse differences
+in impact puffs, debris and isolated pixels. Their peak-difference crops
+are retained for visual review, including the full worst flak and rocket
+frames. They are not labelled pixel identical. Four intended changed rows
+are Doom, gauss, gauss flak and the gauss exit.
