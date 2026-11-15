@@ -1,0 +1,58 @@
+{
+ "types": {
+  "hull": {
+   "triangles": 12462,
+   "area": 0.83803,
+   "tris_per_unit2": 14870.6,
+   "edges_per_unit2": 16228.6
+  },
+  "gun": {
+   "triangles": 1048,
+   "area": 0.02699,
+   "tris_per_unit2": 38830.1,
+   "edges_per_unit2": 27492.3,
+   "tris_per_unit2_vs_hull": 2.61,
+   "edges_per_unit2_vs_hull": 1.69
+  },
+  "radiator": {
+   "triangles": 276,
+   "area": 0.08119,
+   "tris_per_unit2": 3399.6,
+   "edges_per_unit2": 3251.8,
+   "tris_per_unit2_vs_hull": 0.23,
+   "edges_per_unit2_vs_hull": 0.2
+  },
+  "slit": {
+   "triangles": 168,
+   "area": 0.00625,
+   "tris_per_unit2": 26874.9,
+   "edges_per_unit2": 23035.6,
+   "tris_per_unit2_vs_hull": 1.81,
+   "edges_per_unit2_vs_hull": 1.42
+  },
+  "engine": {
+   "triangles": 2712,
+   "area": 0.1223,
+   "tris_per_unit2": 22174.8,
+   "edges_per_unit2": 8569.0,
+   "tris_per_unit2_vs_hull": 1.49,
+   "edges_per_unit2_vs_hull": 0.53
+  },
+  "vent": {
+   "triangles": 376,
+   "area": 0.05655,
+   "tris_per_unit2": 6648.6,
+   "edges_per_unit2": 5941.3,
+   "tris_per_unit2_vs_hull": 0.45,
+   "edges_per_unit2_vs_hull": 0.37
+  }
+ },
+ "flags": [
+  "radiator: tris_per_unit2 0.23 of the hull",
+  "radiator: edges_per_unit2 0.20 of the hull",
+  "engine: edges_per_unit2 0.53 of the hull",
+  "vent: tris_per_unit2 0.45 of the hull",
+  "vent: edges_per_unit2 0.37 of the hull"
+ ],
+ "rule": "R224: a part type more than 25 percent under the hull is flagged (mesh half; the paint half runs at stage 5)"
+}

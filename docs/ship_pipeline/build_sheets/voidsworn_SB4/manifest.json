@@ -1,0 +1,126 @@
+{
+ "code": "voidsworn_SB4",
+ "sheet_version": 1,
+ "routes_note": "kit = the Voidsworn parts kit (tools/blender/kits/voidsworn/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
+ "turret_marking": "R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).",
+ "parts": [
+  {
+   "id": "BT",
+   "kind": "launcher",
+   "what": "bomb cassette, two tube mouths 0.21 across",
+   "count": 2,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "bomb_cassette"
+   ]
+  },
+  {
+   "id": "E1",
+   "kind": "engine",
+   "what": "engine, bell 0.1 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "drives"
+   ]
+  },
+  {
+   "id": "E2",
+   "kind": "engine",
+   "what": "engine, bell 0.1 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "drives"
+   ]
+  },
+  {
+   "id": "E3",
+   "kind": "engine",
+   "what": "engine, bell 0.1 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "drives"
+   ]
+  },
+  {
+   "id": "E4",
+   "kind": "engine",
+   "what": "engine, bell 0.1 across",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "drives"
+   ]
+  },
+  {
+   "id": "V1p",
+   "kind": "vent",
+   "what": "heat louvre 0.080 x 0.176",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "louvres"
+   ]
+  },
+  {
+   "id": "V1s",
+   "kind": "vent",
+   "what": "heat louvre 0.080 x 0.176",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "louvres"
+   ]
+  }
+ ],
+ "masses": [
+  {
+   "name": "Hull: the magazine block",
+   "route": "hand-built"
+  },
+  {
+   "name": "Magazine ridge, port",
+   "route": "hand-built"
+  },
+  {
+   "name": "Magazine ridge, starboard",
+   "route": "hand-built"
+  },
+  {
+   "name": "Magazine belt, port",
+   "route": "hand-built"
+  },
+  {
+   "name": "Magazine belt, starboard",
+   "route": "hand-built"
+  }
+ ],
+ "break_pieces": [
+  {
+   "name": "bow piece",
+   "stations": "0.0 to 68.5 percent",
+   "bounded_by": [
+    "B-1"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "stern piece",
+   "stations": "68.5 to 100.0 percent",
+   "bounded_by": [
+    "B-1"
+   ],
+   "full_interior": true
+  }
+ ],
+ "insides": "full interiors throughout the hull, hidden until a piece breaks (R215); every break piece carries its share"
+}

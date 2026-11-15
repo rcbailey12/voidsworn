@@ -1,0 +1,22 @@
+{
+ "code": "voidsworn_SB4",
+ "result": "PASS",
+ "problems": [],
+ "slots": [
+  {
+   "slot": 0,
+   "weapon": "bombs",
+   "arc": "T",
+   "shots": 2,
+   "mounts": [
+    {
+     "id": "BT",
+     "type": "bomb_tube",
+     "mount": "launcher",
+     "barrels": 2,
+     "muzzles": 2
+    }
+   ]
+  }
+ ]
+}
