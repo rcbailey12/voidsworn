@@ -18,7 +18,7 @@ Start here: [the overview](hegemony_IM5_sheet_overview.jpg), [the whole concept 
 
 Files: design `tools/blender/build_sheets/ships/hegemony_IM5.py`, inventory `hegemony_IM5_inv.py`, beauty camera
 `hegemony_IM5_camera.json`, battle camera `hegemony_IM5_camera_battle.json`, recipe entry `tools/recipe/ships/hegemony_IM5.json`
-(bake none until the Hegemony paint stack; game_code H4_11, the hull table's Super-dreadnought folder). The concept's top view,
+(bake stack since issue 780: the Hegemony paint stack, pictures in [paint/](paint/README.md); game_code H4_11, the hull table's Super-dreadnought folder). The concept's top view,
 turned so the bow is on the left for the sheet tools (they crop and flip only): [concept_IM5_top_bow_left.jpg](concept_IM5_top_bow_left.jpg).
 
 ## The design, in short
@@ -111,15 +111,26 @@ measured here. It is one hull on the board (the boss), not a line ship repeated.
 | IM5 top view | 2.33 | no side view | 2.33 | no side view |
 | **Build** | **2.66** | **7.88** | 2.45 | 6.97 |
 
-IM5_top.jpg's own "IM5 TOP" label sits over the bow, so the tool's concept length reads short; by hand the picture is 706 px long
-and 279 px across at the widest, 2.53. The build's 2.46 over the shoulder swells (2.58 off them) is within that. Structure per
+What each figure measures (issue 780, Muse's opus_check_775 conditions 1 and 2): the table is the proportions tool's own output
+(`tools/blender/build_sheets/inventory.py`, `ratios()`), measured on the silhouettes of the top and side renders (and of the
+concept views). **Hull length:beam 2.66** is the silhouette's length over its MEDIAN width across the middle 60 percent of the
+length (the stations from 20 to 80 percent): the beam of the main body, the swells and the narrowing bow and stern counted only as
+far as they move the median (about 11.7 of 31.2). **Envelope length:beam 2.45** is the silhouette's length over its WIDEST point:
+31.2 (the bow plates and retro thrusters proud of the bow face) over 12.76 (over the pit swells and the parts on them). The
+**2.46 and 2.58** in the text and the design calls are hand figures from the design file's numbers, not the tool's: the hull's
+31.0 over 12.6 across the pit swells (2.46) and over 12.0 across the knuckles (2.58). The figure the tools produce for the main
+body is 2.66; the widest read is 2.45. IM5_top.jpg's own "IM5 TOP" label sits over the bow, so the tool's concept length reads
+short; by hand the picture is 706 px long and 279 px across at the widest, 2.53 (a widest-point measure, so it compares with the
+envelope's 2.45 and the hand 2.46). Structure per
 cell (IM5 top view by eye / build masses): bow top 3/4, mid top 6/4, stern top 5/3 (the build counts registered masses only;
 the turrets, ridges and nozzle row it shows are parts or faces of the one hull, by design: one vessel).
 
 ## Design calls for the Board (and Ryan)
 
 - **Length to beam 2.46 (2.58 off the swells)**, broader than the faction's "about 3 : 1": IM5's top view is about 2.5 and the boss
-  should read as one broad wedge.
+  should read as one broad wedge. These are hand figures (31.0 over 12.6 and over 12.0); the proportions tool prints 2.66 for the
+  main body (length over the median beam of the middle 60 percent) and 2.45 for the envelope (length over the widest point):
+  see the Proportions section for what each measures.
 - **Two ridges stand in for the faction's twin rails**: the canyon between them is the rails' gap made into one hull (R255).
 - **Six nozzles across the whole stern**, not only between the ridge roots as the notes say: IM5's three-quarter shows plumes
   across the whole stern.
@@ -137,7 +148,11 @@ the turrets, ridges and nozzle row it shows are parts or faces of the one hull, 
 ## Open risks (for the PC run)
 
 - **Seam clearance:** every inside stops 0.08 to 0.10 beyond each seam path's band. If death_seam_check counts inside triangles
-  outside their piece, pull them back. Not run here: it needs the stage 7 export on the PC.
+  outside their piece, pull them back. Not run here: it needs the stage 7 export on the PC. The Board expects death_seam_check to
+  fail here at that minimum stand-off (0.08 to 0.10, against the about 0.5 the peel needed on E11 and S8), not just possibly. It
+  runs on the stage 7 export before any paint or recipe stage builds on these room positions; the fix is pulling the insides back
+  from the seams, never moving the outside (Muse's opus_check_775; the same note as hegemony_H10's). The Hegemony paint stack
+  (issue 780) does not read the room positions: it paints the outside and gives every inside the dark liner.
 - **Rectangular nozzles:** the sandbox run of the export's open-bell test passes all six; the export has not run.
 - **The model is 31.2 long** (the bow plates and retro thrusters stand proud of the bow face); the contract scales it to 31.0.
 - **The canyon plant on the board:** the battle camera shows it as dark slots between the bridges; paint (the Hegemony stack)

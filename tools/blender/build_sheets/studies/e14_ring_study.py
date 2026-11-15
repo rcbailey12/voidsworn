@@ -1,105 +1,138 @@
-# E14 flare ring orientation study (issue 739; R233: the flare carries one closed ring and must not read from above as a
-# small zenith, E12). Plain primitives, no design detail: a 9.5 spar and a closed ring of twelve plates 5.4 across, in three
-# orientations, rendered from straight above and at the battle camera's pitch (0.98 rad, about 56 degrees down) from the bow
-# quarter, the beam and the stern quarter. The concept's three views disagree on the ring's plane, so the build picks the one
-# that reads as one closed ring from above and at the battle camera.
-#   python e14_ring_study.py OUT_DIR      (the bpy module, or blender -b -P e14_ring_study.py -- OUT_DIR)
-import sys, os, math
+# E14 flare ring study at the battle camera (issue 782; R256: the ring stands upright as in the concept). The first sheet's
+# study (issue 739) rendered plain primitives three ways and laid the ring flat; Ryan withdrew that (R256). This one renders
+# the BUILT blockout (build.py's deathless_E14_blockout.blend) at the game's battle camera: 34 degrees above the board
+# (godot/render/camera_rig.gd home_b 0.98 rad from straight up, range 170, fov 45 vertical), from the bow quarter, the beam and
+# the stern quarter, each twice: enlarged, and at the size the game draws it (the ship drawn SHIP_K 1.6 times its 9.5 units,
+# 1920 by 1080, about 12.3 px per model unit), the crop shown 1:1 and twice up with no smoothing. It writes on the picture the
+# ring's band width and height in game pixels, measured by projecting the ring's own rim through the game-size camera.
+# From the beam the upright ring is exactly edge-on at any camera height, so its depth along the ship is the whole band.
+#   python e14_ring_study.py BLOCKOUT.blend OUT_DIR [samples]      (the bpy module)
+import sys, os, math, json
 import bpy
-from mathutils import Vector, Matrix
+from mathutils import Vector
+from bpy_extras.object_utils import world_to_camera_view
 
-OUT = (sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:])[0]
+args = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
+BLEND, OUT = args[0], args[1]
+SAMPLES = int(args[2]) if len(args) > 2 else 16
 os.makedirs(OUT, exist_ok=True)
-OPTIONS = [('A_flat', 'ring flat in plan', 0.0), ('B_upright', 'ring upright, facing forward', 90.0), ('C_leaning', 'ring leaning back 40 degrees', 50.0)]
-VIEWS = [('top', None), ('bow_quarter', 35.0), ('beam', 90.0), ('stern_quarter', 145.0)]
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(HERE, '..', 'ships'))
+import deathless_E14 as E  # noqa: E402
+
+bpy.ops.wm.open_mainfile(filepath=BLEND)
+sc = bpy.context.scene
+EL = math.degrees(math.pi / 2 - 0.98)          # 33.9: camera_rig.gd b = 0.98 rad from straight up
+SHIP_K, RANGE, FOV = 1.6, 170.0, 45.0
+GAME_H = 1080
+PX_UNIT = GAME_H / (2 * RANGE * math.tan(math.radians(FOV / 2))) * SHIP_K   # game pixels per model unit at the battle range
+VIEWS = [('bow quarter', 35.0), ('beam', 90.0), ('stern quarter', 145.0)]
+TGT = Vector((0.0, 0.0, 0.0))
+for o in sc.objects:
+    if o.type == 'LIGHT':
+        o.hide_render = True
 
 
-def box_mesh(name, verts, faces, col):
-    me = bpy.data.meshes.new(name); me.from_pydata(verts, [], faces); me.update()
-    ob = bpy.data.objects.new(name, me); bpy.context.scene.collection.objects.link(ob)
-    m = bpy.data.materials.new(name); m.diffuse_color = col; ob.data.materials.append(m)
-    return ob
-
-
-def ring_plates(tilt, xc=2.0, R=2.7, w=0.9, d=0.35, n=12, gap=4.0):
-    """twelve plates on a closed ring; tilt 0 lies flat (normal +Z), 90 stands upright (normal +X)"""
-    M = Matrix.Translation((xc, 0, 0)) @ Matrix.Rotation(math.radians(tilt), 4, 'Y')
-    for k in range(n):
-        a0 = math.radians(360.0 * k / n + gap / 2); a1 = math.radians(360.0 * (k + 1) / n - gap / 2)
-        V = []
-        for a in (a0, a1):
-            for r in (R - w, R):
-                for z in (-d / 2, d / 2):
-                    V.append(tuple(M @ Vector((r * math.cos(a), r * math.sin(a), z))))
-        F = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
-        box_mesh('plate%d' % k, V, F, (0.32, 0.22, 0.45, 1))
-    # the closed hoop under the plates
-    V, F = [], []
-    m = 48
-    for i in range(m):
-        a = 2 * math.pi * i / m
-        for r, z in ((R - w - 0.05, -0.08), (R - w + 0.1, -0.08), (R - w + 0.1, 0.08), (R - w - 0.05, 0.08)):
-            V.append(tuple(M @ Vector((r * math.cos(a), r * math.sin(a), z))))
-    for i in range(m):
-        j = (i + 1) % m
-        for q in range(4):
-            F.append((i * 4 + q, i * 4 + (q + 1) % 4, j * 4 + (q + 1) % 4, j * 4 + q))
-    box_mesh('hoop', V, F, (0.15, 0.85, 0.4, 1))
-
-
-def spar():
-    bpy.ops.mesh.primitive_cylinder_add(vertices=12, radius=0.35, depth=9.5, location=(0, 0, 0), rotation=(0, math.pi / 2, 0))
-    o = bpy.context.object; m = bpy.data.materials.new('spar'); m.diffuse_color = (0.25, 0.2, 0.32, 1); o.data.materials.append(m)
-    bpy.ops.mesh.primitive_uv_sphere_add(radius=0.55, location=(2.0, 0, 0))
-    o = bpy.context.object; m = bpy.data.materials.new('core'); m.diffuse_color = (0.3, 1.0, 0.45, 1); o.data.materials.append(m)
-    bpy.ops.mesh.primitive_torus_add(major_radius=0.7, minor_radius=0.08, location=(-4.75, 0, 0), rotation=(0, math.pi / 2, 0))
-    o = bpy.context.object; m = bpy.data.materials.new('eng'); m.diffuse_color = (0.85, 0.85, 1.0, 1); o.data.materials.append(m)
-
-
-def camera(name, view):
-    c = bpy.data.cameras.new(name); o = bpy.data.objects.new(name, c); bpy.context.scene.collection.objects.link(o)
-    if view is None:
-        c.type = 'ORTHO'; c.ortho_scale = 11.0
-        o.matrix_world = Matrix.Translation((0, 0, 50)) @ Matrix.Rotation(math.radians(90), 4, 'Z')
-    else:
-        pitch = 0.98; dist = 26.0; b = math.radians(view)
-        d = Vector((math.cos(pitch) * math.cos(b), math.cos(pitch) * math.sin(b), math.sin(pitch)))
-        o.location = d * dist
-        o.rotation_euler = (-d).to_track_quat('-Z', 'Y').to_euler()
-        c.lens = 36 / (2 * math.tan(math.radians(45) / 2)) * 1.0; c.sensor_width = 36
+def sun(name, toward, strength, angle=4.0):
+    l = bpy.data.lights.new(name, 'SUN'); l.energy = strength; l.angle = math.radians(angle)
+    o = bpy.data.objects.new(name, l); sc.collection.objects.link(o)
+    o.rotation_euler = Vector(toward).normalized().to_track_quat('Z', 'Y').to_euler()
     return o
 
 
-sc = bpy.context.scene
-sc.render.engine = 'BLENDER_WORKBENCH'
-sc.display.shading.light = 'STUDIO'; sc.display.shading.color_type = 'MATERIAL'
-sc.render.resolution_x = sc.render.resolution_y = 300
-sc.render.film_transparent = False
-for key, label, tilt in OPTIONS:
-    for o in list(bpy.data.objects):
-        bpy.data.objects.remove(o)
-    spar(); ring_plates(tilt)
-    for vn, v in VIEWS:
-        cam = camera('cam_' + vn, v); sc.camera = cam
-        sc.render.filepath = os.path.join(OUT, '%s_%s.png' % (key, vn))
-        bpy.ops.render.render(write_still=True)
+def camera(name, heading, game_size, res):
+    """heading: the camera's bearing from the bow, + to port; el 34 above the board. game_size: the game's lens and range."""
+    a, e = math.radians(heading), math.radians(EL)
+    d = Vector((math.cos(e) * math.cos(a), math.cos(e) * math.sin(a), math.sin(e)))
+    c = bpy.data.cameras.new(name); o = bpy.data.objects.new(name, c); sc.collection.objects.link(o)
+    dist = RANGE / SHIP_K if game_size else 60.0
+    o.location = TGT + d * dist
+    o.rotation_euler = (-d).to_track_quat('-Z', 'Y').to_euler()
+    c.sensor_fit = 'VERTICAL'
+    if game_size:
+        c.angle_y = 2 * math.atan(math.tan(math.radians(FOV / 2)) * res[1] / GAME_H)   # the middle of a 1080-high screen, unscaled
+    else:
+        c.angle_y = 2 * math.atan(6.4 / dist)
+    c.clip_start, c.clip_end = 0.1, dist * 3
+    return o
 
-# one named picture, 1280 by 720 at most: a row per orientation, a column per view
+
+def light_for(heading):
+    """a key from above and to the camera's left, a soft fill from the other side: the ring lit the same way at every heading"""
+    for o in [o for o in sc.objects if o.name.startswith('study_')]:
+        bpy.data.objects.remove(o)
+    a = math.radians(heading + 50.0)
+    sun('study_key', (math.cos(a) * 0.6, math.sin(a) * 0.6, 0.8), 4.0)
+    a = math.radians(heading - 120.0)
+    sun('study_fill', (math.cos(a) * 0.8, math.sin(a) * 0.8, 0.3), 0.8, angle=20)
+
+
+def project(cam, pts, res):
+    out = []
+    for p in pts:
+        v = world_to_camera_view(sc, cam, Vector(p))
+        out.append((v.x * res[0], (1 - v.y) * res[1]))
+    return out
+
+
+sc.render.engine = 'CYCLES'; sc.cycles.device = 'CPU'; sc.cycles.samples = SAMPLES; sc.cycles.use_denoising = True
+sc.render.film_transparent = False
+sc.world.node_tree.nodes['Background'].inputs[0].default_value = (0.012, 0.012, 0.018, 1)
+sc.render.resolution_percentage = 100
+GRES, BRES = (220, 160), (400, 300)
+rows = []
+# the ring's rim: the outer rim's back and front edges at the top plate, and the whole outer circle front and back
+rim_back, rim_front = E.XR - E.D / 2, E.XR + E.D / 2 + E.LIP
+circle = [E.rp(x, E.R_OUT, t) for x in (rim_back, rim_front) for t in range(0, 360, 5)]
+for name, hd in VIEWS:
+    light_for(hd)
+    rec = dict(view=name, heading=hd)
+    for tag, gs, res in (('big', False, BRES), ('game', True, GRES)):
+        cam = camera('study_%s_%s' % (tag, name.replace(' ', '_')), hd, gs, res)
+        sc.camera = cam
+        sc.render.resolution_x, sc.render.resolution_y = res
+        sc.render.filepath = os.path.join(OUT, 'study_%s_%d.png' % (tag, int(hd)))
+        bpy.ops.render.render(write_still=True)
+        if gs:
+            pc = project(cam, circle, res)
+            xs = [p[0] for p in pc]; ys = [p[1] for p in pc]
+            top = project(cam, [E.rp(rim_back, E.R_OUT, 90.0), E.rp(rim_front, E.R_OUT, 90.0)], res)
+            rec['band_px'] = round(math.dist(top[0], top[1]), 1)          # the rim's depth at the top plate, on screen
+            rec['ring_w_px'] = round(max(xs) - min(xs), 1); rec['ring_h_px'] = round(max(ys) - min(ys), 1)
+            rec['ring_c_px'] = project(cam, [(E.XR, 0.0, 0.0)], res)[0]                 # the ring's centre on screen, for the crop
+    rows.append(rec)
+json.dump(dict(px_per_unit=round(PX_UNIT, 2), elevation=round(EL, 1), views=rows), open(os.path.join(OUT, 'ring_study.json'), 'w'), indent=1)
+
+# one named picture, 1280 by 720: a column per view; the enlarged render above, the game-size crop 1:1 and twice up below
 from PIL import Image, ImageDraw, ImageFont
-try:
-    fnt = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 18); big = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 24)
-except OSError:
-    fnt = big = ImageFont.load_default()
-W, H = 1280, 720; cell = 196
+def F(n):
+    for f_ in ('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 'C:/Windows/Fonts/arial.ttf'):
+        if os.path.exists(f_):
+            return ImageFont.truetype(f_, n)
+    return ImageFont.load_default()
+W, H = 1280, 720
 im = Image.new('RGB', (W, H), (40, 40, 42)); d = ImageDraw.Draw(im)
-d.text((16, 10), 'deathless_E14 flare | ring orientation study (R233: one closed ring, never a small zenith from above)', fill=(240, 230, 210), font=big)
-for j, (vn, v) in enumerate(VIEWS):
-    d.text((300 + j * (cell + 40), 48), 'from above' if v is None else 'battle camera, %s' % vn.replace('_', ' '), fill=(200, 196, 186), font=fnt)
-for i, (key, label, tilt) in enumerate(OPTIONS):
-    y = 76 + i * (cell + 18)
-    d.text((16, y + cell // 2 - 10), '%s: %s' % (key[0], label), fill=(240, 180, 90), font=fnt)
-    for j, (vn, v) in enumerate(VIEWS):
-        t = Image.open(os.path.join(OUT, '%s_%s.png' % (key, vn))).convert('RGB').resize((cell, cell))
-        im.paste(t, (300 + j * (cell + 40), y))
+d.text((16, 10), 'deathless_E14 flare | the upright ring at the battle camera (34 degrees above the board, R256)', fill=(240, 230, 210), font=F(22))
+d.text((16, 40), 'the built blockout; below each: the game\'s size at range 170 (%.1f px per unit), 1:1 and twice up' % PX_UNIT, fill=(186, 190, 198), font=F(15))
+for j, rec in enumerate(rows):
+    x0 = 16 + j * 422
+    d.text((x0, 70), 'battle camera, %s' % rec['view'], fill=(240, 180, 90), font=F(17))
+    big = Image.open(os.path.join(OUT, 'study_big_%d.png' % int(rec['heading']))).convert('RGB')
+    im.paste(big, (x0, 96))
+    g = Image.open(os.path.join(OUT, 'study_game_%d.png' % int(rec['heading']))).convert('RGB')
+    im.paste(g, (x0, 404))
+    cx_, cy_ = [int(round(v)) for v in rec['ring_c_px']]
+    cx_ = max(45, min(GRES[0] - 45, cx_)); cy_ = max(35, min(GRES[1] - 35, cy_))
+    im.paste(g.crop((cx_ - 45, cy_ - 35, cx_ + 45, cy_ + 35)).resize((180, 140), Image.NEAREST), (x0 + 226, 414))
+    d.text((x0, 566), '1:1, the game\'s size', fill=(186, 190, 198), font=F(13)); d.text((x0 + 226, 566), 'the ring\'s centre, twice up', fill=(186, 190, 198), font=F(13))
+    if rec['view'] == 'beam':
+        line = 'edge-on: a band %.0f px wide and %.0f px tall' % (rec['band_px'], rec['ring_h_px'])
+    else:
+        line = 'the ring %.0f px across, %.0f px tall; rim %.0f px deep' % (rec['ring_w_px'], rec['ring_h_px'], rec['band_px'])
+    d.text((x0, 582), line, fill=(236, 236, 240), font=F(15))
+d.text((16, 640), 'Ring 6.0 across, %.1f deep at its rim (%.1f at its inner edge); twelve plates, corona lines on the rim edges and down each plate.' % (E.D + E.LIP, E.D),
+       fill=(236, 236, 240), font=F(15))
+d.text((16, 664), 'The null lance\'s muzzle is the bright aperture at the ring\'s centre. Measured by projecting the ring\'s rim through the game-size camera.',
+       fill=(186, 190, 198), font=F(15))
 im.save(os.path.join(OUT, 'deathless_E14_ring_study.jpg'), quality=90)
-print('WROTE', os.path.join(OUT, 'deathless_E14_ring_study.jpg'))
+print('WROTE', os.path.join(OUT, 'deathless_E14_ring_study.jpg'), json.dumps(rows))

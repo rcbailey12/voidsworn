@@ -131,6 +131,7 @@ function makeUnit(side, tpl, opts={}){
     armor:s.armor, speed:s.speed, turns:s.turns, ev:s.ev, aim:s.aim, crit:s.crit, dmg:s.dmg, fx:s.fx, hangar:s.hangar, hullRegen:s.hullRegen,
     weapons:s.weapons.map(w=>Object.assign(w,{fired:false,cdLeft:0,off:0})),
     ab:t.ab||null, abCd:0, isSq:!!t.sq, sqKind:t.sq||null, boss:!!t.boss, reanimate:!!t.reanimate, reanimated:false,
+    ripped:!!(opts.ship&&opts.ship.ripped), // R78 Q9: a captured hull kept through the Cinder Line yards, links ripped out
     ship:opts.ship||null, parent:opts.parent||null, sqPct:opts.sqPct||0,
     mp:0, turnsLeft:0, order:null, braced:false, lockOn:false, focus:false, fullAhead:false, noTurn:false, evBuff:0,
     pflag:!!(opts.ship&&typeof RUN!=='undefined'&&RUN&&RUN.flagUid&&opts.ship.uid===RUN.flagUid), intercepts:0, dealt:0, kills:0, dead:false, st:{fire:0,shieldOff:0,engine:0}, usedLastStand:false, elite:!!opts.elite};
@@ -553,21 +554,21 @@ function fstat(fac,k,n){ if(!B||!fac) return; const F=(B.fstat=B.fstat||{})[fac]
 // Hegemony anchor: the player's flagship (or the biggest Hegemony hull when the flagship is not Hegemony); for the enemy a sector flagship, the
 // objective flagship, or the biggest Hegemony hull. Set once at battle start; when it dies or is captured, sync is lost for that side.
 function setupFactionRules(){ B.syncMark={player:{},enemy:{}}; B.syncLost={player:false,enemy:false}; B.legion={player:{max:0,used:0},enemy:{max:0,used:0}}; B.torps=[];
-  for(const side of ['player','enemy']){ const heg=B.units.filter(u=>u.side===side&&!u.isSq&&!u.transport&&u.fac==='hegemony');
+  for(const side of ['player','enemy']){ const heg=B.units.filter(u=>u.side===side&&!u.isSq&&!u.transport&&u.fac==='hegemony'&&!u.ripped); // R78 Q9: a captured hull with its links ripped out answers no Registry net
     if(heg.length){ const a=heg.find(u=>u.pflag)||heg.find(u=>u.boss)||heg.find(u=>u.flagship)||heg.slice().sort((x,y)=>(y.t.cp||1)-(x.t.cp||1)||y.maxHp-x.maxHp)[0]; a.anchor=true; }
-    const dl=B.units.filter(u=>u.side===side&&!u.isSq&&u.fac==='deathless'&&u.t&&u.t.reanimate).length; B.legion[side].max=dl>=6?2:dl>=1?1:0; }
+    const dl=B.units.filter(u=>u.side===side&&!u.isSq&&u.fac==='deathless'&&!u.ripped&&u.t&&u.t.reanimate).length; B.legion[side].max=dl>=6?2:dl>=1?1:0; }
   { if(B.tree&&B.tree.length&&(treeSkill('wideNet')||treeSkill('livingRelay'))){ B.syncR=Object.assign({},B.syncR||{},{player:treeHegSyncR()});
       const fg=B.units.find(u=>u.side==='player'&&u.anchor&&!u.dead)||B.units.find(u=>u.side==='player'&&u.pflag&&!u.dead);
       if(treeSkill('wideNet')) treeFx(fg,'wideNet','the net reaches one hex further');
       if(treeSkill('livingRelay')) treeFx(fg,'livingRelay','the relay doubles the radius'); } } }
 function syncAnchor(side){ if(!B||!B.syncMark||(B.syncLost&&B.syncLost[side])) return null; return B.units.find(u=>u.anchor&&u.side===side&&!u.dead)||null; }
 function syncR(side){ return (B&&B.syncR&&B.syncR[side])||SYNC_R; } function syncDmg(side){ return (B&&B.syncDmg&&B.syncDmg[side])||SYNC_DMG; }
-function inSync(u){ if(!u||u.isSq||u.fac!=='hegemony'||u.dead||u.side==='player'&&B.round===1&&B.cfg&&B.cfg.storyMods&&B.cfg.storyMods.syncDown) return false; const a=syncAnchor(u.side); return !!a&&hdist(u,a)<=syncR(u.side); }
+function inSync(u){ if(!u||u.isSq||u.fac!=='hegemony'||u.dead||u.ripped||u.side==='player'&&B.round===1&&B.cfg&&B.cfg.storyMods&&B.cfg.storyMods.syncDown) return false; const a=syncAnchor(u.side); return !!a&&hdist(u,a)<=syncR(u.side); }
 function syncOn(u,t){ if(!inSync(u)||!t) return false; const m=B.syncMark[u.side][t.id]; return !!m&&m.r===B.round&&m.ids.some(id=>id!==u.id); }
 function syncMarkShot(u,t){ if(!inSync(u)||!t) return; const M=B.syncMark[u.side]; let m=M[t.id]; if(!m||m.r!==B.round) m=M[t.id]={r:B.round,ids:[]}; if(!m.ids.includes(u.id)) m.ids.push(u.id);
   if(B.tr&&B.tr.syncFirst&&!B.tr.syncFirst[u.side]) B.tr.syncFirst[u.side]={id:t.id,r:B.round}; } // Kassar T1b: the first synced target of the round
 function syncLose(t){ if(!B||!t||!t.anchor||!B.syncLost||B.syncLost[t.side]) return;
-  { const it=treeSkill('ironTempo'); if(it&&t.side==='player'&&B.tr&&!B.tr.ironTempoUsed){ const cand=alive('player').filter(u=>u!==t&&!u.isSq&&!u.dead&&u.fac==='hegemony').sort((a,b)=>(b.maxHp-a.maxHp)||(a.id<b.id?-1:1))[0];
+  { const it=treeSkill('ironTempo'); if(it&&t.side==='player'&&B.tr&&!B.tr.ironTempoUsed){ const cand=alive('player').filter(u=>u!==t&&!u.isSq&&!u.dead&&!u.ripped&&u.fac==='hegemony').sort((a,b)=>(b.maxHp-a.maxHp)||(a.id<b.id?-1:1))[0];
     if(cand){ B.tr.ironTempoUsed=1; t.anchor=false; cand.anchor=true; treeFx(cand,'ironTempo','the line finds a new anchor'); return; } } } // Kassar T3b
   B.syncLost[t.side]=true; t.anchor=false; if(B.units.some(u=>u.side===t.side&&!u.dead&&!u.isSq&&u.fac==='hegemony')){ log(`${t.name} is lost: the ${t.side==='player'?'fleet':'enemy line'} loses its synchronized fire.`,t.side==='player'?'e':'p'); } }
 // AI and bot: how far a Hegemony ship would stray from its anchor (0 inside the radius)
@@ -588,7 +589,7 @@ function chorusRegrow(u,amt,label){ if(!u||u.dead||u.pyre||amt<=0) return 0; { c
 const CHORUS_BITE=.08; // pass 3 tuning: .12 to .08 (pass 2: .2 to .12)
 function chorusBiteEst(u,t,hull){ return u&&t&&u.fac==='chorus'&&!u.isSq&&hdist(u,t)<=2?Math.round(hull*CHORUS_BITE):0; }
 // Deathless endless legion: a fallen Deathless ship lies reassembling and rises at its side's next turn start
-function legionCan(t){ if(!B||!B.legion||t.isSq||t.fac!=='deathless'||!t.t||!t.t.reanimate||t.reanimated||t.pyre||t.boss||t.pflag||t.flagship||t.transport) return false; const L=B.legion[t.side]; return !!L&&L.used<L.max; }
+function legionCan(t){ if(!B||!B.legion||t.isSq||t.fac!=='deathless'||t.ripped||!t.t||!t.t.reanimate||t.reanimated||t.pyre||t.boss||t.pflag||t.flagship||t.transport) return false; const L=B.legion[t.side]; return !!L&&L.used<L.max; }
 function legionRiseHex(u){ const occ=occMap(), ok=h=>onBoard(h.q,h.r)&&!blocks(terr(h.q,h.r))&&!occ.has(hkey(h.q,h.r)); if(ok(u)) return {q:u.q,r:u.r};
   let best=null,bd=9; for(const h of boardHexes()){ const d=hdist(h,u); if(d<=2&&d<bd&&ok(h)){ bd=d; best=h; } } return best; }
 function legionRise(u,quiet){ const h=legionRiseHex(u); if(!h){ u.riseAt=null; if(!quiet) log(`${u.name} cannot find room to reassemble and stays dark.`,'x'); return false; }
@@ -598,10 +599,10 @@ function legionRise(u,quiet){ const h=legionRiseHex(u); if(!h){ u.riseAt=null; i
 function legionTurn(side){ if(!B||B.over) return []; const out=[]; for(const u of B.units) if(u.dead&&u.side===side&&u.riseAt!=null&&B.round>=u.riseAt&&!u.fled&&legionRise(u)) out.push(u); return out; }
 // plain-words lines for the ship panel
 function factionTraitLines(u){ if(!u||u.isSq||!B) return []; const out=storyModifierLines(u);
-  if(u.fac==='hegemony'){ const a=syncAnchor(u.side); if(!(u.side==='player'&&B.round===1&&B.cfg.storyMods&&B.cfg.storyMods.syncDown)) out.push(!a?'Synchronized fire lost: the flagship is gone.':u.anchor?`Sync anchor: Hegemony ships within ${SYNC_R} hexes fire as one.`:inSync(u)?'In sync with the flagship.':`Out of sync: more than ${SYNC_R} hexes from the flagship.`); }
+  if(u.fac==='hegemony'){ if(u.ripped) out.push('Links ripped out: she answers no Registry net, no synchronized fire.'); else { const a=syncAnchor(u.side); if(!(u.side==='player'&&B.round===1&&B.cfg.storyMods&&B.cfg.storyMods.syncDown)) out.push(!a?'Synchronized fire lost: the flagship is gone.':u.anchor?`Sync anchor: Hegemony ships within ${SYNC_R} hexes fire as one.`:inSync(u)?'In sync with the flagship.':`Out of sync: more than ${SYNC_R} hexes from the flagship.`); } }
   if(u.fac==='ithar'&&u.shMax>0) out.push('Prism charge: an untouched pool snaps back to full; a pool struck since its last turn recharges twice.');
   if(u.fac==='chorus') out.push(`Feeds on kills nearby (up to ${Math.round(FEED_CAP*100)}% hull a round).`);
-  if(u.fac==='deathless'&&u.t&&u.t.reanimate){ const L=B.legion&&B.legion[u.side]; out.push(u.risen?'Reassembled this battle.':L&&L.used<L.max&&!u.pflag&&!u.flagship&&!u.boss?'Archive restore: the first to fall reassembles next round.':'Archive restore spent.'); }
+  if(u.fac==='deathless'&&u.t&&u.t.reanimate){ if(u.ripped) out.push('Links ripped out: the Archive does not answer, no restore.'); else { const L=B.legion&&B.legion[u.side]; out.push(u.risen?'Reassembled this battle.':L&&L.used<L.max&&!u.pflag&&!u.flagship&&!u.boss?'Archive restore: the first to fall reassembles next round.':'Archive restore spent.'); } }
   for(const s of (B.torps||[])) if(s.tid===u.id&&s.side!==u.side) out.push('<span class="blood">Torpedoes inbound: they strike its marked hex next turn. Move 3 or more hexes from it to dodge.</span>');
   if(u.ab==='launch'||(u.fx&&u.fx.hive)){ const st=WING_STANCES[u.stance||'strike']; out.push(`Wing stance: ${st.n}. ${st.d}${u.side==='player'?(canStance(u)?' One free change this round.':' Changed this round.'):''}`); const pk=wingPerks(u); if(pk.length) out.push('Wing veterans: '+pk.map(k=>WING_PERKS[k].n+' ('+WING_PERKS[k].d.replace(/\.$/,'')+')').join(', ')+'.'); }
   if(u.nem&&B.nem){ if(u.nemFlag) out.push('<span class="blood">Your Nemesis commands from this ship.</span>'); const kn=(B.nem.revealed||[]).filter(w=>B.nem.weak.includes(w)); if(kn.length&&u.nemFlag) out.push('Known weaknesses: '+kn.map(w=>NEM_WEAK[w].n+' ('+NEM_WEAK[w].d.replace(/\.$/,'')+')').join('; ')+'.'); }

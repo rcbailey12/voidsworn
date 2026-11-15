@@ -14,12 +14,15 @@
 #
 # Where each colour zone sits on a ship is the build sheet's decision (its materials soot, rust, iron, blood, pale, violet, ...);
 # this file says what each zone is made of.
-import os, json, math
+import os, sys, json, math
 import numpy as np
 import bpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, '..', '..', '..', '..'))
+SHARED = os.path.normpath(os.path.join(HERE, '..', 'shared'))
+if SHARED not in sys.path: sys.path.insert(0, SHARED)
+from paint_colors import LIGHT_GAIN, battle_lift, lin
 
 # ------------------------------------------------------------------------------------------------------------ concept colours
 # Sampled from contrib/muse/design/concept_round8_2026_11/corsair_A16_beauty.jpg (the accepted A16 concept; corsair_A.jpg is
@@ -55,14 +58,9 @@ CONCEPT = dict(
     trophy_pale=((132, 128, 127), (177, 174, 170)),
     trophy_violet=((88, 84, 112), (116, 110, 142)),
 )
-# The game's light on a face at about 45 degrees to the key (godot/render/look.gd: key 2.0, ambient 0.25 x key), the factor
-# between an albedo and the lit tone the concept shows; checked by the sandbox preview under the game's light (issue 601).
-LIGHT_GAIN = 1.45
 
 
-def lin(srgb):
-    c = np.asarray(srgb, np.float64) / 255.0
-    return tuple(float(x) / LIGHT_GAIN for x in np.where(c <= .04045, c / 12.92, ((c + .055) / 1.055) ** 2.4))
+# The shared lin() defaults keep the game's battle lift uncompensated for this palette.
 
 
 def pair(k):
