@@ -1,0 +1,167 @@
+{
+ "emissive": {
+  "threshold": 0.8,
+  "lights": {
+   "map": {
+    "max": 0.7605,
+    "warm_px": 0
+   },
+   "p3_hblue": {
+    "max": 0.74,
+    "warm": false
+   },
+   "p3_hlens": {
+    "max": 0.65,
+    "warm": false
+   },
+   "p3_hwin": {
+    "max": 0.6,
+    "warm": false
+   },
+   "p3_hlining": {
+    "max": 0.5,
+    "warm": false
+   },
+   "p3_hnozzle": {
+    "max": 0.76,
+    "warm": false
+   }
+  },
+  "pass": true
+ },
+ "cap": {
+  "cap": [
+   98,
+   109,
+   125
+  ],
+  "atlases": {
+   "hull": {
+    "px": 3604471,
+    "median_show": [
+     42,
+     50,
+     64
+    ],
+    "p99_show": [
+     88,
+     103,
+     119
+    ],
+    "over_cap_share": 0.0
+   },
+   "parts": {
+    "px": 4026379,
+    "median_show": [
+     28,
+     37,
+     52
+    ],
+    "p99_show": [
+     91,
+     105,
+     123
+    ],
+    "over_cap_share": 0.0
+   }
+  },
+  "pass_": true
+ },
+ "lift": {
+  "lift": 0.4,
+  "hue_before": 220.88,
+  "hue_after": 220.88,
+  "median_albedo_lin": [
+   0.04092,
+   0.05613,
+   0.08866
+  ]
+ },
+ "median": {
+  "concept_hull_median": [
+   52,
+   62,
+   79
+  ],
+  "concept_blue_share": 0.0227,
+  "paint_battle": {
+   "hull_median": [
+    39,
+    49,
+    61
+   ],
+   "blue_share": 0.0,
+   "minus_concept": [
+    -13,
+    -13,
+    -18
+   ]
+  },
+  "paint_cam170": {
+   "hull_median": [
+    52,
+    62,
+    74
+   ],
+   "blue_share": 0.0,
+   "minus_concept": [
+    0,
+    0,
+    -5
+   ]
+  },
+  "paint_beauty": {
+   "hull_median": [
+    49,
+    59,
+    71
+   ],
+   "blue_share": 0.0,
+   "minus_concept": [
+    -3,
+    -3,
+    -8
+   ]
+  }
+ },
+ "symmetry": {
+  "decals": [
+   {
+    "rule": "hull number",
+    "side": "port",
+    "mirrored": true
+   },
+   {
+    "rule": "hull number",
+    "side": "stbd",
+    "mirrored": true
+   },
+   {
+    "rule": "module index bars",
+    "side": "port",
+    "mirrored": true
+   },
+   {
+    "rule": "module index bars",
+    "side": "stbd",
+    "mirrored": true
+   },
+   {
+    "rule": "corner tick port",
+    "side": "top",
+    "mirrored": true
+   },
+   {
+    "rule": "corner tick starboard",
+    "side": "top",
+    "mirrored": true
+   },
+   {
+    "rule": "registry plate",
+    "centreline": true
+   }
+  ],
+  "unplaced": [],
+  "pass_": true
+ }
+}

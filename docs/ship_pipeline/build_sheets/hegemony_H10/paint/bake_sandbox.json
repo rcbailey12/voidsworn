@@ -1,0 +1,221 @@
+{
+ "note": "issue 780 sandbox: Blender 5.3 bpy module, Cycles CPU, 2 cores shared with other workers (times are long and noisy); not the PC (Blender 4.5, GPU)",
+ "baked_at_commit": "2d666cc869e76f97491fe698219c8c14580bf7fd",
+ "final": {
+  "res": 2048,
+  "parts_res": 2048,
+  "samples": 6,
+  "device": "CPU",
+  "bakes": {
+   "bake_H_masks_s": 357.0,
+   "bake_H_albedo_s": 122.4,
+   "bake_H_orm_s": 139.0,
+   "bake_H_normal_s": 1124.9,
+   "bake_P_masks_s": 798.2,
+   "bake_P_albedo_s": 99.5,
+   "bake_P_orm_s": 60.7,
+   "bake_engine_glow_s": 9.9
+  },
+  "bake_total_s": 2711.6,
+  "stack_seconds": 2774.1,
+  "wall": "46m18.435s",
+  "zones_H": [
+   "hgrey",
+   "hgrey2",
+   "hpanel",
+   "htrim"
+  ],
+  "zones_P": [
+   "dark",
+   "hgrey",
+   "hgrey2",
+   "hmetal",
+   "hpanel",
+   "htrim",
+   "nozzle_hgrey2",
+   "nozzle_hmetal",
+   "nozzle_hpanel",
+   "nozzle_htrim"
+  ],
+  "glow_materials": [
+   "p3_glow",
+   "p3_hblue",
+   "p3_hblue_hull",
+   "p3_hlens",
+   "p3_hlining",
+   "p3_hwin"
+  ],
+  "inside_materials": [
+   "ps_inside_bridge",
+   "ps_inside_core",
+   "ps_inside_deck",
+   "ps_inside_engroom",
+   "ps_inside_frame",
+   "ps_inside_hangar",
+   "ps_inside_hcorr",
+   "ps_inside_hemerg",
+   "ps_inside_hold",
+   "ps_inside_hrack",
+   "ps_inside_machinery",
+   "ps_inside_magazine"
+  ],
+  "engine_glow": {
+   "engines": 4,
+   "map": "H10_engine_emission.png",
+   "res": 1024
+  },
+  "texel_density": {
+   "hull": {
+    "uv_share": 0.4572,
+    "area": 2.33942,
+    "texels_per_unit2": 819768.0
+   },
+   "parts": {
+    "uv_share": 0.5938,
+    "area": 0.77836,
+    "texels_per_unit2": 3199703.0
+   }
+  },
+  "decals": [
+   {
+    "rule": "hull number",
+    "side": "port",
+    "placed": true,
+    "pos": [
+     0.3682,
+     0.1383,
+     -0.019
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "hull number",
+    "side": "stbd",
+    "placed": true,
+    "pos": [
+     0.3682,
+     -0.1383,
+     -0.019
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "module index bars",
+    "side": "port",
+    "placed": true,
+    "pos": [
+     0.069,
+     0.1863,
+     -0.0273
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "module index bars",
+    "side": "stbd",
+    "placed": true,
+    "pos": [
+     0.069,
+     -0.1863,
+     -0.0273
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "corner tick port",
+    "side": "top",
+    "placed": true,
+    "pos": [
+     0.2747,
+     0.06,
+     0.0444
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "corner tick starboard",
+    "side": "top",
+    "placed": true,
+    "pos": [
+     0.2747,
+     -0.06,
+     0.0444
+    ],
+    "room": 1.0
+   },
+   {
+    "rule": "registry plate",
+    "side": "top",
+    "placed": true,
+    "pos": [
+     0.1999,
+     0.0,
+     0.0481
+    ],
+    "room": 1.0
+   }
+  ],
+  "maps": [
+   "H10_engine_emission.png",
+   "H10_hull_albedo.png",
+   "H10_hull_masks.png",
+   "H10_hull_normal.png",
+   "H10_hull_orm.png",
+   "H10_parts_albedo.png",
+   "H10_parts_masks.png",
+   "H10_parts_orm.png"
+  ],
+  "objects": {
+   "hull": 57,
+   "parts": 247,
+   "glow": 51,
+   "interior": 60
+  }
+ },
+ "at_1024_4_samples": {
+  "res": 1024,
+  "samples": 4,
+  "bakes": {
+   "bake_H_masks_s": 26.5,
+   "bake_H_albedo_s": 30.7,
+   "bake_H_orm_s": 23.5,
+   "bake_H_normal_s": 122.7,
+   "bake_P_masks_s": 74.0,
+   "bake_P_albedo_s": 6.1,
+   "bake_P_orm_s": 3.7,
+   "bake_engine_glow_s": 0.8
+  },
+  "total": 288.0,
+  "zones_H": [
+   "hgrey",
+   "hgrey2",
+   "hpanel",
+   "htrim"
+  ],
+  "zones_P": [
+   "dark",
+   "hgrey",
+   "hgrey2",
+   "hmetal",
+   "hpanel",
+   "htrim",
+   "nozzle_hgrey2",
+   "nozzle_hmetal",
+   "nozzle_hpanel",
+   "nozzle_htrim"
+  ],
+  "note": "measured at 6e104b448 (before the trim parts and nozzle housings took the small grid): the same maps and bakes, a few more shader nodes on those zones since"
+ },
+ "against_S8_Sunward_1024_4_samples": {
+  "bake_total_s": 238.5,
+  "hull_albedo_s": 33.3,
+  "hull_normal_s": 101.8,
+  "zones": "3/13",
+  "source": "docs/ship_pipeline/build_sheets/voidsworn_S8/paint/bake_sandbox.json, PR 772"
+ },
+ "against_S8_Sunward_2048_6_samples": {
+  "stack_seconds": 1980.5,
+  "bake_total_s": 1958.5,
+  "source": "docs/ship_pipeline/build_sheets/voidsworn_S8/paint/bake_sandbox.json S8_2048"
+ }
+}
