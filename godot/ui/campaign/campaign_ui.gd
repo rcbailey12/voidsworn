@@ -120,6 +120,10 @@ func px(v: float) -> int: return int(round(v * k))
 
 func _process(delta: float) -> void:
 	if C == null: return
+	if C.RUN != null:
+		if not is_same(_end_live_run, C.RUN): _end_live_run = C.RUN; _end_last_flagship = {}
+		var fs = C.flagshipOf()
+		if fs != null: _end_last_flagship = fs # Keep the real dictionary, which applyBattle updates before removing a lost hull.
 	if _dirty:
 		_dirty = false; render()
 	if C.arc_source == null and _story() != null:   # story arcs: the campaign asks the story layer for the card (shown only while C.arcs_on)
@@ -253,14 +257,14 @@ func _key_for(list, act: String, arg) -> String:
 func abtn(text: String, act: String, arg = "", primary: bool = false, small: bool = false, list = null) -> Button:
 	var found = _find(list if list != null else _acts, act, arg)
 	if found.is_empty(): return null
-	var b = Button.new(); b.text = text; b.disabled = found[2] == 0; b.focus_mode = Control.FOCUS_ALL
+	var b = Button.new(); b.text = "Back to ledger" if _end_return and act == "title" else text; b.disabled = found[2] == 0; b.focus_mode = Control.FOCUS_ALL
 	if small: b.add_theme_font_size_override("font_size", px(17))
 	if primary:
 		var lb = GS.lit_boxes(k)
 		for st in ["normal", "hover", "pressed", "disabled"]: b.add_theme_stylebox_override(st, lb[st])
 		for fc in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]: b.add_theme_color_override(fc, GILT)
 	var aa = found[1]
-	b.pressed.connect(func(): C.act(act, aa))
+	b.pressed.connect(func(): _campaign_action(act, aa))
 	return b
 # The screen's finishing action (Continue, Confirm, Plot a course, Done, Leave shipyard): the one filled lime slab, its label
 # in action caps, its key cap after the label in a dialog (ui_style.md 7). It sits at the bottom right of its screen or dialog.
@@ -281,7 +285,7 @@ func fin(text: String, act: String, arg = "", list = null) -> Button:
 	b.custom_minimum_size = Vector2(ceil(tw) + px(24) + px(28), px(46))
 	GS.gilt_sheen(b, k)
 	var aa = found[1]
-	b.pressed.connect(func(): C.act(act, aa))
+	b.pressed.connect(func(): _campaign_action(act, aa))
 	return b
 # A footer row: the other buttons on the left of the finishing action, the finishing action last, at the right edge.
 func foot(buttons: Array) -> HBoxContainer:
@@ -317,7 +321,7 @@ func choice(title: String, small: String, act: String, arg = "", list = null, ac
 		if kk != "": row.add_child(keycap(kk))
 	b.add_child(row)
 	var aa = found[1]
-	b.pressed.connect(func(): C.act(act, aa))
+	b.pressed.connect(func(): _campaign_action(act, aa))
 	return b
 func add(parent: Node, child) -> void:
 	if child != null: parent.add_child(child)
@@ -376,7 +380,7 @@ func _teaching_screen() -> void:
 				var n = C.findNode(pos) if pos != "" else null
 				ids = ["c_shipyard"] if n != null and n.get("type") == "field" else ["c_map", "c_clock"]
 			"shipyard": ids = ["c_shipyard"]
-			"end": ids = ["c_loss"]
+			"end": ids = [] # First-loss teaching is on The record R, beside the receipt.
 			"admiral":
 				# Automatic mastery is not spendable experience. Keep this hook ready for the skill-tree port.
 				if C.has_method("admiralXPToSpend") and float(C.call("admiralXPToSpend", C.picked_admiral)) > 0: ids = ["c_tree"]
@@ -1452,7 +1456,6 @@ func _help() -> Control:
 # ---------------- run end ----------------
 # Debrief presentation reads the paid receipt. Local selections never write the profile.
 var _end_run = null
-var _end_heir_open := false
 var _end_heir_pick := ""
 var _end_heir_named := ""
 
@@ -1480,7 +1483,7 @@ func _end_style(n: Node) -> void:
 	if n is Button:
 		var focus = StyleBoxFlat.new(); focus.bg_color = Color(0, 0, 0, 0); focus.border_color = GS.TEXT2; focus.border_width_bottom = maxi(1, px(1)); n.add_theme_stylebox_override("focus", focus)
 	if n is Button and not n.get_meta("end_primary", false):
-		n.add_theme_color_override("font_color", GS.TEXT); n.add_theme_color_override("font_focus_color", GS.TEXT); n.add_theme_color_override("font_hover_color", GS.MAP_EMBER)
+		n.add_theme_color_override("font_color", GS.TEXT); n.add_theme_color_override("font_focus_color", GS.TEXT); n.add_theme_color_override("font_hover_color", GS.TEXT)
 		for state in ["normal", "hover", "pressed", "disabled"]: n.add_theme_stylebox_override(state, GS.flat(Color(0, 0, 0, 0), 10, 8, k))
 	if n is RichTextLabel:
 		n.add_theme_font_override("normal_font", GS.sheet_body()); n.add_theme_font_override("bold_font", GS.sheet_medium())
@@ -1560,147 +1563,152 @@ func _end_heir_label(id: String) -> String:
 	var ranks = C.CAPTAINS[str(C.or_(C.ADMIRALS[id].get("fac"), "voidsworn"))]["ranks"]
 	return nm + ", " + str(ranks[ranks.size() - 1])
 
-func _end_heir(v: VBoxContainer, R: Dictionary) -> void:
-	var hv = _end_row(v, "Heir to the line")
-	var heir = C.META["heirs"].get(R["fac"])
-	hv.add_child(lbl(str(C.ADMIRALS[heir]["n"]) + " is the current heir." if heir != null else "No heir named.", 18, GS.TEXT))
-	if _end_heir_named != "": hv.add_child(lbl("Named: " + str(C.ADMIRALS[_end_heir_named]["n"]) + ". The " + str(C.FACTIONS[R["fac"]]["n"]) + " line earns double shadow until you name another.", 18, GS.TEXT))
-	var ids = C.shadowAdmirals(R["fac"], R["admiral"])
-	if ids.is_empty(): hv.add_child(lbl("No benched admirals of this faction to name.", 18, GS.TEXT2)); return
-	var change = Button.new(); change.text = "Change heir"; change.visible = heir != null and not _end_heir_open
-	change.pressed.connect(func(): _end_heir_open = true; _dirty = true); hv.add_child(change)
-	var rows = vbox(4); rows.visible = heir == null or _end_heir_open; hv.add_child(rows)
-	rows.add_child(lbl("Name an heir to the " + str(C.FACTIONS[R["fac"]]["n"]) + " line?", 18, GS.TEXT))
-	var group = ButtonGroup.new()
-	for id in ids:
-		var b = Button.new(); b.toggle_mode = true; b.button_group = group; b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		b.text = _end_heir_label(id) + ". Shadow " + C.numstr(snapped(C.masteryXP(id), 0.01)) + " XP. Double earnings for this line."
-		b.button_pressed = _end_heir_pick == id; b.pressed.connect(func(): _end_heir_pick = id); rows.add_child(b)
-	var no = Button.new(); no.text = "No heir this run." if heir == null else "Keep current heir."; no.toggle_mode = true; no.button_group = group
-	no.tooltip_text = "Keep the current heir unchanged."; no.pressed.connect(func(): _end_heir_pick = ""); rows.add_child(no)
-	var confirm = Button.new(); confirm.text = "Confirm heir"
-	confirm.pressed.connect(func():
-		if _end_heir_pick == "": _end_heir_open = false; _dirty = true; return
-		if C.META["heirs"].get(R["fac"]) != _end_heir_pick:
-			_end_heir_named = _end_heir_pick; _end_heir_open = false; C.act("nameHeir", _end_heir_pick))
-	rows.add_child(confirm)
+var _end_data: Dictionary = {}
+var _end_confirmed := false
+var _end_return := false
+var _end_last_flagship: Dictionary = {}
+var _end_live_run = null
+var debrief: Control
+const Debrief = preload("res://ui/campaign/debrief_ledger.gd")
 
 func _end(d: Dictionary) -> Control:
+	var R = d["run"]
+	if not is_same(_end_run, R):
+		_end_run = R; _end_heir_named = ""; _end_confirmed = false
+		_end_heir_pick = str(C.META["heirs"].get(R["fac"], ""))
+		if not C.shadowAdmirals(R["fac"], R["admiral"]).has(_end_heir_pick):
+			var ids = C.shadowAdmirals(R["fac"], R["admiral"])
+			_end_heir_pick = str(ids[0]) if not ids.is_empty() else ""
+	_end_data = d; _end_return = false
+	debrief = Debrief.new(); debrief.setup(self, d)
+	return debrief
+
+func _end_confirm() -> void:
+	if _end_confirmed: return
+	_end_confirmed = true
+	if _end_heir_pick != "" and C.META["heirs"].get(_end_run["fac"]) != _end_heir_pick:
+		_end_heir_named = _end_heir_pick; C.act("nameHeir", _end_heir_pick)
+	_dirty = true
+
+func _end_back() -> void:
+	_end_return = false
+	C.show_page("end", _end_data, C.endActions(_end_data["run"], _end_data["next"]))
+
+func _campaign_action(act: String, arg = "") -> void:
+	# All end-page exits, including the old progression page's title link, pass here.
+	if _end_return and act == "title": _end_back(); return
+	var ending = C.page.get("kind") == "end" or _end_return
+	if ending and act in ["title", "newRunScreen", "nextFac"] and not _end_confirmed: return
+	if ending and act in ["progTab", "lineage"]: _end_return = true
+	C.act(act, arg)
+	if ending and act == "buyAdmiral": _end_back()
+
+func _end_detail_body(d: Dictionary, section: String) -> Control:
+	# Original receipt sentences live here, behind their named keys and hovers.
 	var R = d["run"]; var victory = d["victory"]; var s = R["stats"]; var cy = R["carry"]
-	if not is_same(_end_run, R): _end_run = R; _end_heir_open = false; _end_heir_pick = ""; _end_heir_named = ""
 	var receipt = cy["inheritance"]; var flown = receipt["flown"]
-	# The paid loss counter excludes abandons and is persisted by endRun, so drawing is read-only.
 	var first = not victory and not d["abandoned"] and int(C.META["stats"].get("losses", 0)) == 1
 	var crusade = R["fac"] == "voidsworn"
-	var cc = CenterContainer.new(); cc.set_anchors_preset(Control.PRESET_FULL_RECT); cc.theme = GS.sheet_theme(k)
-	var sc = ScrollContainer.new(); sc.custom_minimum_size = Vector2(px(1000), min(px(1000), get_viewport().get_visible_rect().size.y - px(40))); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	var v = vbox(10); v.custom_minimum_size.x = px(960); sc.add_child(v); cc.add_child(sc)
-	if first:
-		var kick = lbl("THE FIRST CRUSADE FALLS. THE CHALK REMEMBERS." if crusade else "THE FIRST RUN ENDS. THE NEXT INHERITS.", 17, GS.TEXT2); kick.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(kick)
-	var title = str(C.WIN_TITLE.get(R["fac"], "Victory")) if victory else ("Run abandoned" if d["abandoned"] else "The fleet is lost")
-	var sub = "Three sectors broken, three flagships burning behind you. " + str(C.ADMIRALS[R["admiral"]]["n"]) + " brings the " + str(C.FACTIONS[R["fac"]]["n"]).trim_prefix("The ") + " home." if victory else ("The fleet stands down. Its deeds are recorded." if d["abandoned"] else "The last hull goes dark in sector " + C.roman(R["sector"]) + ". The survivors will tell it differently.")
-	if first: sub = "The last hull goes dark in sector " + C.roman(R["sector"]) + (". The survivors will tell it differently, and the next crusade will read it in chalk before it chooses." if crusade else ". This is not the end of the line. What this run earned is already on its way to the next fleet.")
-	var sl = lbl(sub, 20, GS.TEXT2); sl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	var payoff = str(C.TB.STORY_BEAT3[R["fac"]]["learning"]); var stl = _story_text()
-	if stl != "" and stl != payoff: var line = lbl(stl, 18, GILT); line.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(line)
-	if first: v.add_child(lbl("No crusade wins the first dark. That is the oath working, not failing. What this run bought is already written: renown in the vault, mastery in the bloodline, and the weakness the enemy showed you at cost. The next crusade stands at this same dark and reads what you chose. Do not mourn the fleet. Read the record." if crusade else "You will lose runs. That is the design, not a verdict. Every death names what the next generation carries: renown in the vault, mastery in the bloodline, and a lesson the enemy taught you at cost. Read the panel below as an inheritance, not a score.", 18, GS.TEXT))
-	v.add_child(lbl("Recorded" if d["abandoned"] else "WHAT THIS RUN BOUGHT", 24, GS.TEXT))
-	if not d["abandoned"]: v.add_child(lbl("What this victory bought:" if victory else "What this death bought:", 18, GS.TEXT2))
-	var r1 = _end_row(v, "Doctrine and renown")
-	r1.add_child(lbl("Renown: " + C.numstr(cy["ren"]) + " earned. " + C.numstr(receipt["balance"]) + " in the vault.", 18, GS.TEXT))
-	if float(cy["ren"]) == 0: r1.add_child(lbl("No renown earned this run", 18, GS.TEXT2))
-	r1.add_child(lbl(C.numstr(float(s["battles"]) * 2) + " from battles, " + C.numstr(float(s["elites"]) * 4) + " from elites, " + C.numstr(float(s["bosses"]) * 15) + " from flagships, " + C.numstr(floor(float(s["kills"]) / 4)) + " from kills, " + C.numstr((float(R["sector"]) - 1) * 5) + " for sectors reached.", 17, GS.TEXT2))
-	if float(cy["hl"]) > 0: r1.add_child(lbl("Heat " + C.numstr(cy["hl"]) + ": renown paid at x" + C.numstr(1 + 0.1 * float(cy["hl"])) + ".", 17, GS.TEXT2))
-	var aff = _end_afford(R); var target = aff[0]
-	var at = "Playtest: everything unlocked. Earnings recorded." if C.playtestAll() else ("Now affordable: " + str(target["n"]) + ", " + C.numstr(target["cost"]) + " renown" + (", and " + str(aff[1] - 1) + " more within reach." if aff[1] > 1 else ".") if aff[2] else ("Next: " + str(target["n"]) + " at " + C.numstr(target["cost"]) + ". " + C.numstr(max(0, float(target["cost"]) - float(receipt["balance"]))) + " more renown." if not target.is_empty() else "All rewards owned."))
-	var affordability = lbl(at, 18, GS.TEXT); affordability.mouse_filter = Control.MOUSE_FILTER_PASS
-	var available = []
-	for item in receipt["affordable"]: available.append(str(item["n"]) + ": " + C.numstr(item["cost"]) + " renown")
-	affordability.tooltip_text = "\n".join(PackedStringArray(available)); r1.add_child(affordability)
-	var spend = flow(8)
-	var tab = str(target.get("tab", "legacy"))
-	add(spend, _end_btn("Spend renown" if not C.playtestAll() and tab == "legacy" else "View doctrine", "progTab", "legacy"))
-	add(spend, _end_btn("Spend renown" if not C.playtestAll() and tab == "variants" else "View hull rewards", "progTab", "variants"))
-	if tab == "admiral":
+	var payoff = str(C.TB.STORY_BEAT3[R["fac"]]["learning"])
+	var v = vbox(10)
+	if section == "renown":
+		var r1 = _end_row(v, "Doctrine and renown")
+		r1.add_child(lbl("Renown: " + C.numstr(cy["ren"]) + " earned. " + C.numstr(receipt["balance"]) + " in the vault.", 18, GS.TEXT))
+		if float(cy["ren"]) == 0: r1.add_child(lbl("No renown earned this run", 18, GS.TEXT2))
+		r1.add_child(lbl(C.numstr(float(s["battles"]) * 2) + " from battles, " + C.numstr(float(s["elites"]) * 4) + " from elites, " + C.numstr(float(s["bosses"]) * 15) + " from flagships, " + C.numstr(floor(float(s["kills"]) / 4)) + " from kills, " + C.numstr((float(R["sector"]) - 1) * 5) + " for sectors reached.", 17, GS.TEXT2))
+		if float(cy["hl"]) > 0: r1.add_child(lbl("Heat " + C.numstr(cy["hl"]) + ": renown paid at x" + C.numstr(1 + 0.1 * float(cy["hl"])) + ".", 17, GS.TEXT2))
+		var aff = _end_afford(R); var target = aff[0]
+		var at = "Playtest: everything unlocked. Earnings recorded." if C.playtestAll() else ("Now affordable: " + str(target["n"]) + ", " + C.numstr(target["cost"]) + " renown" + (", and " + str(aff[1] - 1) + " more within reach." if aff[1] > 1 else ".") if aff[2] else ("Next: " + str(target["n"]) + " at " + C.numstr(target["cost"]) + ". " + C.numstr(max(0, float(target["cost"]) - float(receipt["balance"]))) + " more renown." if not target.is_empty() else "All rewards owned."))
+		var affordability = lbl(at, 18, GS.TEXT); affordability.mouse_filter = Control.MOUSE_FILTER_PASS
+		var available = []
+		for item in receipt["affordable"]: available.append(str(item["n"]) + ": " + C.numstr(item["cost"]) + " renown")
+		affordability.tooltip_text = "\n".join(PackedStringArray(available)); r1.add_child(affordability)
+		var spend = flow(8)
+		var tab = str(target.get("tab", "legacy"))
+		add(spend, _end_btn("Spend renown" if not C.playtestAll() and tab == "legacy" else "View doctrine", "progTab", "legacy"))
+		add(spend, _end_btn("Spend renown" if not C.playtestAll() and tab == "variants" else "View hull rewards", "progTab", "variants"))
+		# Admiral rewards share the receipt view, so they cannot bypass the heir.
 		var admirals = Button.new(); admirals.text = "View admirals" if C.playtestAll() else "Unlock admirals"
-		admirals.pressed.connect(func(): C.act("newRunScreen"); C.act("pickFaction", target["fac"]))
+		admirals.pressed.connect(func(): debrief.open_detail("admirals"))
 		spend.add_child(admirals)
-	r1.add_child(spend)
-	var r2 = _end_row(v, "Lineage")
-	r2.add_child(lbl(str(C.ADMIRALS[flown["id"]]["n"]) + ": +" + C.numstr(snapped(float(cy["mxGain"]), 0.01)) + " XP. Level " + str(flown["level"]) + ".", 18, GS.TEXT))
-	var track = ColorRect.new(); track.color = GS.SHEET_HAIR; track.custom_minimum_size.y = px(6)
-	var fill = ColorRect.new(); fill.color = GS.TEXT2; fill.anchor_bottom = 1; fill.anchor_right = 1.0 if flown["next"] == null else clampf(float(flown["xp"]) / maxf(1, float(flown["next"])), 0, 1); track.add_child(fill); r2.add_child(track)
-	if float(cy["mxGain"]) == 0: r2.add_child(lbl("No mastery earned this run", 18, GS.TEXT2))
-	r2.add_child(lbl(C.numstr(flown["xp"]) + (" XP. This evolution is at full mastery." if flown.get("hasCap", false) else " XP. This line is at its current cap.") if flown["next"] == null else C.numstr(flown["xp"]) + " of " + C.numstr(flown["next"]) + " XP. " + C.numstr(flown["remaining"]) + (" XP to capstone mastery " + C.roman(int(flown.get("capLevel", 0)) + 1) if flown.get("hasCap", false) else " XP to level " + str(int(flown["level"]) + 1)) + ".", 17, GS.TEXT2))
-	var linebtn = _end_btn("Choose " + str(C.ADMIRALS[flown["id"]]["n"]) + "'s level " + str(5 + C.lineageBuild(flown["id"])["picks"].size()) + " skill" if int(flown["pending"]) > 0 else ("Choose Command evolution" if flown["capstoneReady"] else "View admiral line"), "lineage" if flown["tree"] else "progTab", flown["id"] if flown["tree"] else "mastery")
-	if linebtn != null:
-		linebtn.tooltip_text = "Recorded skills: " + (", ".join(PackedStringArray(flown["chosen"])) if not flown["chosen"].is_empty() else "None yet") + "."
-		if flown.get("hasCap", false) and int(flown.get("capLevel", 0)) > 0: linebtn.tooltip_text += "\nCapstone mastery: " + str(C.CAPSTONE_MASTERY_PERKS[int(flown["capLevel"]) - 1]["d"])
-		for perk in flown["earned"]: linebtn.tooltip_text += "\n" + str(perk["n"]) + " earned: " + str(perk["d"])
-		r2.add_child(linebtn)
-	for row in receipt["shadow"]:
-		if float(row["xp"]) > 0:
-			var shadow = lbl(str(C.ADMIRALS[row["id"]]["n"]) + ": +" + C.numstr(snapped(float(row["xp"]), 0.01)) + " shadow XP (Level " + C.numstr(row["level"]) + ")." + (" Heir: double rate." if float(row["rate"]) == 0.5 else ""), 17, GS.TEXT2)
-			shadow.mouse_filter = Control.MOUSE_FILTER_PASS; shadow.tooltip_text = "Total " + C.numstr(row["total"]) + " XP. " + ("Fully mastered." if row["next"] == null else C.numstr(row["remaining"]) + " XP to " + ("capstone mastery " + C.roman(int(row.get("capLevel", 0)) + 1) if row.get("hasCap", false) else "level " + str(int(row["level"]) + 1)) + ".")
-			r2.add_child(shadow)
-	if float(cy["mxOverflow"]) > 0: r2.add_child(lbl(C.numstr(cy["mxOverflow"]) + " XP past this line's cap went to shadow learning.", 17, GS.TEXT2))
-	if float(cy["shadowBank"]) > 0: r2.add_child(lbl(C.numstr(cy["shadowBank"]) + " shadow XP saved for an uncapped benched line.", 17, GS.TEXT2))
-	if float(cy["hl"]) > 0: r2.add_child(lbl("Heat " + C.numstr(cy["hl"]) + " paid " + C.numstr(float(cy["hl"]) * 2) + " XP to " + str(C.ADMIRALS[R["admiral"]]["n"]) + " and " + C.numstr(cy["hl"]) + " XP to the faction shadow pool.", 17, GS.TEXT2))
-	var r3 = _end_row(v, "Core sync"); var cores = receipt.get("cores", []).duplicate(); cores.sort_custom(func(x, y): return x["tierUp"] and not y["tierUp"])
-	if cores.is_empty(): r3.add_child(lbl("No protocols taken this run.", 18, GS.TEXT2))
-	for row in cores:
-		var nm = c(esc(str(C.PATRONS[row["id"]]["n"])), Color(C.PATRONS[row["id"]]["col"]))
-		if row["tierUp"]: r3.add_child(rich(nm + ": crossed into " + esc(str(C.FAVOUR_TIERS[row["tier"]]["n"])) + " this run at " + C.numstr(row["total"]) + " protocols.", 18))
-		r3.add_child(rich(nm + (": Full sync, " + C.numstr(row["total"]) + " protocols." if row["next"] == null else ": " + C.numstr(row["total"]) + " of " + C.numstr(row["next"]) + " to " + esc(str(C.FAVOUR_TIERS[int(row["tier"]) + 1]["n"])) + "."), 18))
-	_end_nem(_end_row(v, "Nemesis lesson"), R)
-	var r5 = _end_row(v, "The record"); r5.add_child(lbl(payoff, 18, GS.TEXT))
-	if C.jt(R.get("eatenCore")) and C.PATRONS.has(R["eatenCore"]): r5.add_child(lbl("The swarm ate " + str(C.PATRONS[R["eatenCore"]]["n"]) + ".", 18, GS.TEXT2))
-	_end_heir(v, R)
-	var tiles = flow(8)
-	var tl = [[s["battles"], "battles won"], [s["bosses"], "flagships destroyed"], [s["kills"], "enemy ships destroyed"], [C.z0(s.get("lost")), "ships lost"]]
-	if d.get("mins") != null: tl.append([(C.numstr(d["mins"]) + "m") if float(d["mins"]) < 90 else (str(snapped(float(d["mins"]) / 60.0, 0.1)) + "h"), "played"])
-	for t in tl:
-		var p = _end_plain(8); p.custom_minimum_size.x = px(150); var tv = vbox(0)
-		var a = num(str(t[0]) if t[0] is String else C.numstr(t[0]), 26, GS.TEXT); a.set_meta("end_number", true); a.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; tv.add_child(a)
-		var b = lbl(t[1], 17, GS.TEXT2); b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; b.custom_minimum_size.x = px(134); b.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; tv.add_child(b); p.add_child(tv); tiles.add_child(p)
-	v.add_child(tiles)
-	var fl = R["fleet"].filter(func(x): return float(x["hp"]) > 0)
-	var score = func(x): return (float(x["car"]["dealt"]) + float(x["car"]["kills"]) * 40.0) if x.get("car") != null else 0.0
-	fl = C.ssort(fl, func(a, b): return score.call(b) - score.call(a))
-	if fl.size() > 0:
-		var best = fl[0]
-		if score.call(best) > 0: v.add_child(rich("Standout ship: [b]" + c(esc(best["name"]), GS.TEXT) + "[/b], " + C.numstr(best["car"]["kills"]) + " kills and " + C.numstr(best["car"]["dealt"]) + " damage across " + C.numstr(best["car"]["battles"]) + " battle" + ("s" if float(best["car"]["battles"]) > 1 else "") + ".", 17))
-		v.add_child(lbl("The fleet that finished it" if victory else "Still flying", 20, GS.TEXT, GS.sheet_medium()))
-		for x in fl:
-			var cr = x.get("car") if x.get("car") != null else {"dealt": 0, "kills": 0}
-			var p = _end_plain(8); var r = hbox()
-			r.add_child(rich("[b]" + esc(x["name"]) + "[/b] " + c(esc(C.HULLS[x["tpl"]]["n"]), GS.TEXT2) + "\n" + c(esc(C.rankName(x["cap"])) + " " + esc(x["cap"]["name"]), GS.TEXT2), 17))
-			r.add_child(rich("[right]" + C.numstr(cr["kills"]) + " kills\n" + c(C.numstr(cr["dealt"]) + " dmg", GS.TEXT2) + "[/right]", 17)); p.add_child(r); v.add_child(p)
-	if R["fallen"].size() > 0:
-		var nm = []
-		for f in R["fallen"]: nm.append(f["name"])
-		v.add_child(lbl("Captains lost this run: " + ", ".join(PackedStringArray(nm)) + ".", 18, GS.TEXT2))
-	if victory:
-		var wf = []
-		for f in C.or_(C.META["stats"].get("wonFacs"), []): wf.append(C.FACTIONS[f]["n"])
-		var w = int(C.META["stats"]["wins"])
-		v.add_child(lbl(("Victories so far: " + str(w)) if w > 1 else "Your first victory." + "", 18, GS.TEXT))
-		v.add_child(lbl("Won with: " + ", ".join(PackedStringArray(wf)) + ".", 18, GS.TEXT))
-	else:
-		var pb = float(d["prevBest"])
-		v.add_child(lbl(("New best: sector " + C.roman(R["sector"])) if float(R["sector"]) > pb else ("Best so far: sector " + C.roman(min(3, float(C.META["stats"]["best"])))), 20, GS.TEXT))
-	if d["next"] != null:
-		var NF = C.FACTIONS[d["next"]]; var p2 = _end_plain(12); var nv = vbox(4); p2.add_child(nv)
-		nv.add_child(lbl("NEXT RUN", 17, GS.TEXT2)); nv.add_child(lbl("Try the " + str(NF["n"]).trim_prefix("The "), 18, GS.TEXT, GS.sheet_medium())); nv.add_child(lbl(NF.get("blurb", ""), 17, GS.TEXT2)); v.add_child(p2)
-	var menu = flow(10)
-	if d["next"] != null:
-		add(menu, _end_btn("Play as " + str(C.FACTIONS[d["next"]]["n"]), "nextFac", d["next"], true)); add(menu, _end_btn("Pick a faction", "newRunScreen"))
-	else: add(menu, _end_btn("New run", "newRunScreen", "", true))
-	add(menu, _end_btn("Title screen", "title")); v.add_child(menu)
+		r1.add_child(spend)
+	if section == "admirals":
+		for id in C.ADMIRALS:
+			var adm = C.ADMIRALS[id]
+			v.add_child(lbl(str(adm["n"]), 20, GS.TEXT))
+			v.add_child(lbl(str(adm.get("doc", "")), 18, GS.TEXT2))
+			if C.jt(C.META["admirals"].get(id)) or float(adm.get("cost", 0)) == 0:
+				v.add_child(lbl("Unlocked", 17, GS.TEXT2))
+			else:
+				var buy = Button.new(); buy.text = "Unlock for " + C.numstr(adm["cost"]) + " renown"
+				buy.disabled = float(C.META.get("renown", 0)) < float(adm["cost"])
+				buy.pressed.connect(func(): _campaign_action("buyAdmiral", id)); v.add_child(buy)
+	if section == "lineage":
+		var r2 = _end_row(v, "Lineage")
+		r2.add_child(lbl(str(C.ADMIRALS[flown["id"]]["n"]) + ": +" + C.numstr(snapped(float(cy["mxGain"]), 0.01)) + " XP. Level " + str(flown["level"]) + ".", 18, GS.TEXT))
+		var track = ColorRect.new(); track.color = GS.SHEET_HAIR; track.custom_minimum_size.y = px(6)
+		var fill = ColorRect.new(); fill.color = GS.TEXT2; fill.anchor_bottom = 1; fill.anchor_right = 1.0 if flown["next"] == null else clampf(float(flown["xp"]) / maxf(1, float(flown["next"])), 0, 1); track.add_child(fill); r2.add_child(track)
+		if float(cy["mxGain"]) == 0: r2.add_child(lbl("No mastery earned this run", 18, GS.TEXT2))
+		r2.add_child(lbl(C.numstr(flown["xp"]) + (" XP. This evolution is at full mastery." if flown.get("hasCap", false) else " XP. This line is at its current cap.") if flown["next"] == null else C.numstr(flown["xp"]) + " of " + C.numstr(flown["next"]) + " XP. " + C.numstr(flown["remaining"]) + (" XP to capstone mastery " + C.roman(int(flown.get("capLevel", 0)) + 1) if flown.get("hasCap", false) else " XP to level " + str(int(flown["level"]) + 1)) + ".", 17, GS.TEXT2))
+		var linebtn = _end_btn("Choose " + str(C.ADMIRALS[flown["id"]]["n"]) + "'s level " + str(5 + C.lineageBuild(flown["id"])["picks"].size()) + " skill" if int(flown["pending"]) > 0 else ("Choose Command evolution" if flown["capstoneReady"] else "View admiral line"), "lineage" if flown["tree"] else "progTab", flown["id"] if flown["tree"] else "mastery")
+		if linebtn != null:
+			linebtn.tooltip_text = "Recorded skills: " + (", ".join(PackedStringArray(flown["chosen"])) if not flown["chosen"].is_empty() else "None yet") + "."
+			if flown.get("hasCap", false) and int(flown.get("capLevel", 0)) > 0: linebtn.tooltip_text += "\nCapstone mastery: " + str(C.CAPSTONE_MASTERY_PERKS[int(flown["capLevel"]) - 1]["d"])
+			for perk in flown["earned"]: linebtn.tooltip_text += "\n" + str(perk["n"]) + " earned: " + str(perk["d"])
+			r2.add_child(linebtn)
+		for row in receipt["shadow"]:
+			if float(row["xp"]) > 0:
+				var shadow = lbl(str(C.ADMIRALS[row["id"]]["n"]) + ": +" + C.numstr(snapped(float(row["xp"]), 0.01)) + " shadow XP (Level " + C.numstr(row["level"]) + ")." + (" Heir: double rate." if float(row["rate"]) == 0.5 else ""), 17, GS.TEXT2)
+				shadow.mouse_filter = Control.MOUSE_FILTER_PASS; shadow.tooltip_text = "Total " + C.numstr(row["total"]) + " XP. " + ("Fully mastered." if row["next"] == null else C.numstr(row["remaining"]) + " XP to " + ("capstone mastery " + C.roman(int(row.get("capLevel", 0)) + 1) if row.get("hasCap", false) else "level " + str(int(row["level"]) + 1)) + ".")
+				r2.add_child(shadow)
+		if float(cy["mxOverflow"]) > 0: r2.add_child(lbl(C.numstr(cy["mxOverflow"]) + " XP past this line's cap went to shadow learning.", 17, GS.TEXT2))
+		if float(cy["shadowBank"]) > 0: r2.add_child(lbl(C.numstr(cy["shadowBank"]) + " shadow XP saved for an uncapped benched line.", 17, GS.TEXT2))
+		if float(cy["hl"]) > 0: r2.add_child(lbl("Heat " + C.numstr(cy["hl"]) + " paid " + C.numstr(float(cy["hl"]) * 2) + " XP to " + str(C.ADMIRALS[R["admiral"]]["n"]) + " and " + C.numstr(cy["hl"]) + " XP to the faction shadow pool.", 17, GS.TEXT2))
+	if section == "cores":
+		var r3 = _end_row(v, "Core sync"); var cores = receipt.get("cores", []).duplicate(); cores.sort_custom(func(x, y): return x["tierUp"] and not y["tierUp"])
+		if cores.is_empty(): r3.add_child(lbl("No protocols taken this run.", 18, GS.TEXT2))
+		for row in cores:
+			var nm = c(esc(str(C.PATRONS[row["id"]]["n"])), GS.TEXT)
+			if row["tierUp"]: r3.add_child(rich(nm + ": crossed into " + esc(str(C.FAVOUR_TIERS[row["tier"]]["n"])) + " this run at " + C.numstr(row["total"]) + " protocols.", 18))
+			r3.add_child(rich(nm + (": Full sync, " + C.numstr(row["total"]) + " protocols." if row["next"] == null else ": " + C.numstr(row["total"]) + " of " + C.numstr(row["next"]) + " to " + esc(str(C.FAVOUR_TIERS[int(row["tier"]) + 1]["n"])) + "."), 18))
+			var total = row["next"] if row["next"] != null else maxf(1, float(row["total"]))
+			r3.add_child(GS.thin_bar(k, float(row["total"]) / float(total), GS.TEXT2, 600, 8, GS.SHEET_HAIR))
+	if section == "fleet":
+		var fl = R["fleet"].filter(func(x): return float(x["hp"]) > 0)
+		var score = func(x): return (float(x["car"]["dealt"]) + float(x["car"]["kills"]) * 40.0) if x.get("car") != null else 0.0
+		fl = C.ssort(fl, func(a, b): return score.call(b) - score.call(a))
+		if fl.size() > 0:
+			var best = fl[0]
+			if score.call(best) > 0: v.add_child(rich("Standout ship: [b]" + c(esc(best["name"]), GS.TEXT) + "[/b], " + C.numstr(best["car"]["kills"]) + " kills and " + C.numstr(best["car"]["dealt"]) + " damage across " + C.numstr(best["car"]["battles"]) + " battle" + ("s" if float(best["car"]["battles"]) > 1 else "") + ".", 17))
+			v.add_child(lbl("The fleet that finished it" if victory else "Still flying", 20, GS.TEXT, GS.sheet_medium()))
+			for x in fl:
+				var cr = x.get("car") if x.get("car") != null else {"dealt": 0, "kills": 0}
+				var p = _end_plain(8); var r = hbox()
+				r.add_child(rich("[b]" + esc(x["name"]) + "[/b] " + c(esc(C.HULLS[x["tpl"]]["n"]), GS.TEXT2) + "\n" + c(esc(C.rankName(x["cap"])) + " " + esc(x["cap"]["name"]), GS.TEXT2), 17))
+				r.add_child(rich("[right]" + C.numstr(cr["kills"]) + " kills\n" + c(C.numstr(cr["dealt"]) + " dmg", GS.TEXT2) + "[/right]", 17)); p.add_child(r); v.add_child(p)
+		if R["fallen"].size() > 0:
+			var nm = []
+			for f in R["fallen"]: nm.append(f["name"])
+			v.add_child(lbl("Captains lost this run: " + ", ".join(PackedStringArray(nm)) + ".", 18, GS.TEXT2))
+	if section == "nemesis": _end_nem(v, R)
+	if section == "record":
+		for teaching_card in CampaignTips.CARDS:
+			if teaching_card[0] == "c_loss": v.add_child(lbl(str(teaching_card[2]), 18, GS.TEXT2))
+		v.add_child(lbl(_story_text(), 18, GS.TEXT2))
+		v.add_child(lbl(payoff, 18, GS.TEXT))
+		if C.jt(R.get("eatenCore")) and C.PATRONS.has(R["eatenCore"]): v.add_child(lbl("The swarm ate " + str(C.PATRONS[R["eatenCore"]]["n"]) + ".", 18, GS.TEXT2))
+		if first: v.add_child(lbl("No crusade wins the first dark. That is the oath working, not failing. What this run bought is already written: renown in the vault, mastery in the bloodline, and the weakness the enemy showed you at cost. The next crusade stands at this same dark and reads what you chose. Do not mourn the fleet. Read the record." if crusade else "You will lose runs. That is the design, not a verdict. Every death names what the next generation carries: renown in the vault, mastery in the bloodline, and a lesson the enemy taught you at cost. Read the panel below as an inheritance, not a score.", 18, GS.TEXT))
+		if victory:
+			var wf = []
+			for f in C.or_(C.META["stats"].get("wonFacs"), []): wf.append(C.FACTIONS[f]["n"])
+			var w = int(C.META["stats"]["wins"])
+			v.add_child(lbl(("Victories so far: " + str(w)) if w > 1 else "Your first victory." + "", 18, GS.TEXT))
+			v.add_child(lbl("Won with: " + ", ".join(PackedStringArray(wf)) + ".", 18, GS.TEXT))
+		else:
+			var pb = float(d["prevBest"])
+			v.add_child(lbl(("New best: sector " + C.roman(R["sector"])) if float(R["sector"]) > pb else ("Best so far: sector " + C.roman(min(3, float(C.META["stats"]["best"])))), 20, GS.TEXT))
 	_end_style(v)
-	var h = lbl(title.to_upper(), 62, GS.TEXT, GS.sheet_name()); h.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(h); v.move_child(h, 1 if first else 0)
-	v.add_child(sl); v.move_child(sl, 2 if first else 1)
-	return cc
+	return v
 
 # ---------------- lineage trees ----------------
 # issue #305: a lineage pick key (admiral:branch:tier:choice or admiral:cap:n) as its skill name
@@ -1968,6 +1976,8 @@ func _unhandled_input(e: InputEvent) -> void:
 			pick_route(str(_routes[rn]["id"])); get_viewport().set_input_as_handled(); return
 		if e.keycode in [KEY_ENTER, KEY_KP_ENTER]:
 			_jump(); get_viewport().set_input_as_handled(); return
+	if C.modal_d == null and C.page.get("kind") == "end" and is_instance_valid(debrief):
+		if debrief.handle_key(e): get_viewport().set_input_as_handled(); return
 	if C.modal_d != null:
 		var acts = C.modal_d["acts"]
 		if e.keycode == KEY_ESCAPE:
