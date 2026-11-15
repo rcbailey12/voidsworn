@@ -5,6 +5,7 @@ const LIVING := preload("res://world/world_living.gd")
 var map_case := "storm"
 var route := "today"
 var patch_rows := {}
+var measured_camera := {}
 
 func _run() -> void:
 	map_case = str(args.get("map-case", "storm"))
@@ -22,7 +23,7 @@ func _run() -> void:
 		get_tree().quit(2)
 		return
 	var go := str(args.get("go-file", ""))
-	if go == "" or not FileAccess.file_exists(go):
+	if go == "" or not FileAccess.file_exists(go) or not FileAccess.get_file_as_string(go).get_slice("\n", 0).begins_with("GPU cleared"):
 		push_error("Issue 368: Board GPU go file required before drawing")
 		get_tree().quit(2)
 		return
@@ -137,11 +138,20 @@ func _geometry_check(api) -> Array:
 			var beyond: Vector3 = points[0] + Vector3(11, 0, 0)
 			var pixel := Vector2i(int((beyond.x - box.x) * box.z * image.get_width()), int((beyond.z - box.y) * box.w * image.get_height()))
 			var outside_alpha := image.get_pixelv(pixel).g
+			var first := image.get_width()
+			var last := -1
+			var center_row := int((points[0].z - box.y) * box.w * image.get_height())
+			for x in image.get_width():
+				if image.get_pixel(x, center_row).g > 0.001:
+					first = mini(first, x)
+					last = maxi(last, x)
+			var soft_span := float(last - first + 1) / (box.z * image.get_width())
 			var expected_fogs: int = patches.size() if candidate == "fog" and tier == "max" else 0
-			if fogs != expected_fogs or (candidate != "today" and outside_alpha <= 0.0):
+			if fogs != expected_fogs or (candidate != "today" and (outside_alpha <= 0.0 or soft_span < 74.4)):
 				push_error("Issue 368: fog tier or soft edge failed")
 				return []
 			rows.append({"route": candidate, "tier": tier, "fog_volumes": fogs, "cards": cards,
+				"one_hex_soft_span": soft_span,
 				"edge_at_x11": outside_alpha, "fog_height": 38.5 if fogs > 0 else null})
 			gas.free()
 			world.free()
@@ -152,6 +162,7 @@ func _build(mode: String, seed: int) -> void:
 	await super._build(mode, seed)
 	if PG.stop_if_any(): return
 	if map_case == "nebula":
+		var camera := {"t": b.cam.t, "r": b.cam.r, "a": b.cam.a, "b": b.cam.b}
 		_nebula_terrain(b.api)
 		b.begin_with(b.api)
 		var began := Time.get_ticks_msec()
@@ -161,10 +172,12 @@ func _build(mode: String, seed: int) -> void:
 				get_tree().quit(1)
 				return
 			await get_tree().process_frame
+		for key in camera: b.cam.set(key, camera[key])
 		b.cam.snap()
 	# The gate's engagement camera may be farther away than 250. Never time invisible fog.
 	if route == "fog": b.env.volumetric_fog_length = maxf(250.0, b.cam.r + 200.0)
 	patch_rows = _patch_metadata(b.api)
+	measured_camera = {"r": b.cam.r, "near": b.cam.near, "t": [b.cam.t.x, b.cam.t.y, b.cam.t.z]}
 
 
 func _mode(mode: String, session: int) -> Dictionary:
@@ -173,6 +186,7 @@ func _mode(mode: String, session: int) -> Dictionary:
 	row["route"] = route
 	row["patches"] = patch_rows
 	row["gate_ms"] = 12.5
+	row["camera"] = measured_camera.duplicate(true)
 	if mode == "base": row["gate_pass"] = float(row.get("frame_median", INF)) <= 12.5
 	if mode == "res_2160": row["gate_pass"] = float(row.get("gpu_median", INF)) <= 12.5
 	return row
@@ -185,8 +199,17 @@ func _capture_routes() -> void:
 	b.hud.visible = false
 	b.set_process(false)
 	b.gfx.manual = true
+	b.cam.screen_shift = 0.0
 	var kind := "neb" if map_case == "nebula" else "storm"
 	var living = b.world._living
+	# Fixed presentation clock for a fair still comparison. Timing runs keep live motion.
+	b.world.set_process(false)
+	living.set_process(false)
+	living.clock = 0.08
+	for i in living.bolts.size():
+		living.bolts[i]["next"] = 1000.0
+		living.bolts[i]["start"] = 0.0 if i == 0 else -10.0
+	living._process(0.0)
 	var patches: Array = living._patches(b.world._terr_pts[kind])
 	patches.sort_custom(func(a, z): return a.size() > z.size())
 	var center := Vector3.ZERO
@@ -204,6 +227,10 @@ func _capture_routes() -> void:
 	for view in _views():
 		view.set_process(false)
 		if not classes.values().has(str(view.u.id)): view.visible = false
+	# Keep one real cruiser at the same point for all three camera distances.
+	var subject = b.views[classes.get("Cruiser", classes.values()[0])]
+	for view in _views(): view.visible = view == subject
+	subject.position = center
 	for radius in [170.0, 60.0, 26.0, -170.0]:
 		b.cam.t = center
 		b.cam.r = absf(radius)
@@ -213,8 +240,68 @@ func _capture_routes() -> void:
 		for frame in 120: await get_tree().process_frame
 		var label := "top" if radius < 0 else "c%d" % int(radius)
 		await _shot("%s_%s_%s.png" % [map_case, route, label])
+		if args.has("four-k") and radius > 0:
+			get_window().size = Vector2i(3840, 2160)
+			for frame in 60: await get_tree().process_frame
+			await _shot("%s_%s_%s_4k.png" % [map_case, route, label])
+			# An identical gas-free frame exposes any lost hull contrast at native pixels.
+			living.visible = false
+			for frame in 60: await get_tree().process_frame
+			await _shot("%s_%s_%s_4k_clear.png" % [map_case, route, label])
+			living.visible = true
+			get_window().size = RES
+	if args.has("scale-captures"):
+		await _scale_captures(center, living)
 	var file := FileAccess.open(out.path_join("capture_metadata.json"), FileAccess.WRITE)
 	file.store_string(JSON.stringify({"route": route, "map": map_case, "patches": patch_rows, "classes": classes,
 		"presentation_positions_only": true, "gpu_measurements": false}, "  ") + "\n")
 	b.queue_free()
 	b = null
+
+
+func _scale_captures(center: Vector3, living) -> void:
+	# Unit dictionaries come from a real scenario, including the game's automatic wings.
+	# Only their presentation positions change. The gate timing fleet is never expanded.
+	var api = API.new()
+	if api.load_rules() != "":
+		get_tree().quit(1)
+		return
+	var fleet: Array = []
+	var seen := {}
+	for tpl in api.R.HULLS:
+		var cls := str(api.R.HULLS[tpl].get("cls", ""))
+		if cls == "" or seen.has(cls) or cls == "Squadron": continue
+		seen[cls] = true
+		fleet.append(tpl)
+	api.new_battle_scenario({"seed": 4207, "sector": 3, "admiral": "vex", "fleet": fleet,
+		"enemies": ["c_raider"], "fac": "corsair", "obj": "rout", "shape": "open", "map": "storm", "dep": "line", "kind": "battle"}, 4207)
+	for view in _views(): view.visible = false
+	var rows: Array = []
+	seen.clear()
+	for unit in api.view().units:
+		# As in the gate's mixed-faction fleet, retain each template's own hull family.
+		if api.R.HULLS.has(unit.tpl) and api.R.HULLS[unit.tpl].get("fac") != null:
+			unit["fac"] = str(api.R.HULLS[unit.tpl].fac)
+		var cls := str(unit.cls)
+		if cls == "Squadron": cls += "_" + str(unit.get("sqKind", unit.get("tpl", "wing")))
+		if seen.has(cls): continue
+		seen[cls] = true
+		var view := SV.new()
+		b.add_child(view)
+		view.setup(unit, center)
+		view.set_process(false)
+		if PG.stop_if_any(): return
+		for radius in [170.0, 60.0]:
+			b.cam.t = center
+			b.cam.r = radius
+			b.cam.b = 0.98
+			b.cam.snap()
+			if route == "fog": b.env.volumetric_fog_length = radius + 200.0
+			for frame in 30: await get_tree().process_frame
+			await _shot("scale_%s_%s_%s_c%d.png" % [map_case, route, cls.to_lower().replace(" ", "_"), int(radius)])
+		rows.append({"class": cls, "tpl": unit.tpl, "code": view.code, "length": view.L})
+		view.queue_free()
+		await get_tree().process_frame
+	var file := FileAccess.open(out.path_join("scale_metadata.json"), FileAccess.WRITE)
+	file.store_string(JSON.stringify({"ships": rows, "terrain": map_case, "center": [center.x, center.y, center.z]}, "  ") + "\n")
+	file.close()

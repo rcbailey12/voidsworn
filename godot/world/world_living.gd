@@ -38,6 +38,8 @@ var gas_route := OS.get_environment("VS_NEBULA_ROUTE")
 var fog_mats: Array[ShaderMaterial] = []
 var _fog_noise: ImageTexture3D = null
 const GAS_HEIGHT := 1.75
+const GAS_CANDIDATE_SCALE := 3.0
+const GAS_CANDIDATE_MARGIN := 48.0
 const FOG_SHADER := """
 shader_type fog;
 uniform sampler3D noise_tex : filter_linear, repeat_enable;
@@ -354,7 +356,7 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 			mm.set_instance_custom_data(i, Color(rng.randf_range(GAS_PUFF_MIN, GAS_PUFF_MAX), rng.randf(), rng.randf_range(0.55, 0.85), layer + rng.randf() * 0.9))
 			if prototype:
 				var cd := mm.get_instance_custom_data(i)
-				cd.r *= 1.4
+				cd.r *= GAS_CANDIDATE_SCALE
 				cd.b *= 0.55 if volume else 1.25
 				mm.set_instance_custom_data(i, cd)
 			i += 1
@@ -368,7 +370,7 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 			transform.origin.y *= GAS_HEIGHT
 			mm.set_instance_transform(i, transform)
 			var custom := mm.get_instance_custom_data(i)
-			custom.r *= 1.4
+			custom.r *= GAS_CANDIDATE_SCALE
 			custom.b *= 0.55 if volume else 1.25
 			mm.set_instance_custom_data(i, custom)
 		i += 1
@@ -423,7 +425,8 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	gas_mats.append([m, g])
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	mi.extra_cull_margin = 30.0
+	# Vertex-expanded cards need bounds that include their scaled visible radius.
+	mi.extra_cull_margin = GAS_VEIL_MAX * GAS_CANDIDATE_SCALE * 0.5 + GAS_PUFF_REACH if prototype else 30.0
 	add_child(mi)
 	if volume:
 		_fog_patch(ps, m, mk, storm)
@@ -442,7 +445,7 @@ func _fog_patch(ps: Array, card: ShaderMaterial, mk: Array, storm: bool) -> void
 	var volume := FogVolume.new()
 	volume.name = "StormFog368" if storm else "NebulaFog368"
 	volume.shape = RenderingServer.FOG_VOLUME_SHAPE_BOX
-	volume.size = Vector3(hi.x - lo.x + 48.0, 38.5, hi.z - lo.z + 48.0)
+	volume.size = Vector3(hi.x - lo.x + GAS_CANDIDATE_MARGIN * 2.0, 38.5, hi.z - lo.z + GAS_CANDIDATE_MARGIN * 2.0)
 	volume.position = Vector3((hi.x + lo.x) * 0.5, 12.25, (hi.z + lo.z) * 0.5)
 	var mat := ShaderMaterial.new()
 	var shader := Shader.new()
@@ -476,8 +479,10 @@ func _mask(ps: Array, feather := 2.0) -> Array:
 	for p in ps:
 		lo = lo.min(Vector2((p as Vector3).x, (p as Vector3).z))
 		hi = hi.max(Vector2((p as Vector3).x, (p as Vector3).z))
-	lo -= Vector2(GAS_MASK_MARGIN, GAS_MASK_MARGIN)
-	hi += Vector2(GAS_MASK_MARGIN, GAS_MASK_MARGIN)
+	var prototype := gas_route in ["fog", "cards"]
+	var margin := GAS_CANDIDATE_MARGIN if prototype else GAS_MASK_MARGIN
+	lo -= Vector2(margin, margin)
+	hi += Vector2(margin, margin)
 	var w := int(ceil((hi.x - lo.x) / STEP)) + 1
 	var h := int(ceil((hi.y - lo.y) / STEP)) + 1
 	var f := PackedFloat32Array()
@@ -487,15 +492,17 @@ func _mask(ps: Array, feather := 2.0) -> Array:
 		f[j * 2 + 1] = 2.0
 	for p in ps:
 		var c := Vector2((p as Vector3).x, (p as Vector3).z)
-		var x0 := int((c.x - 14.0 - lo.x) / STEP)
-		var z0 := int((c.y - 14.0 - lo.y) / STEP)
-		for zi in range(maxi(z0, 0), mini(z0 + int(28.0 / STEP) + 2, h)):
+		var reach := 14.0 * GAS_CANDIDATE_SCALE if prototype else 14.0
+		var x0 := int((c.x - reach - lo.x) / STEP)
+		var z0 := int((c.y - reach - lo.y) / STEP)
+		for zi in range(maxi(z0, 0), mini(z0 + int(reach * 2.0 / STEP) + 2, h)):
 			var dz := absf(lo.y + zi * STEP - c.y)
-			for xi in range(maxi(x0, 0), mini(x0 + int(28.0 / STEP) + 2, w)):
+			for xi in range(maxi(x0, 0), mini(x0 + int(reach * 2.0 / STEP) + 2, w)):
 				var dx := absf(lo.x + xi * STEP - c.x)
 				var j := (zi * w + xi) * 2
-				f[j] += exp(-(dx * dx + dz * dz) / (84.0 if gas_route in ["fog", "cards"] else SIG2))
+				f[j] += exp(-(dx * dx + dz * dz) / (84.0 * GAS_CANDIDATE_SCALE * GAS_CANDIDATE_SCALE if prototype else SIG2))
 				var d := maxf(dx, 0.5 * dx + 0.8660254 * dz) / HIN
+				if prototype: d /= GAS_CANDIDATE_SCALE
 				if d < f[j + 1]:
 					f[j + 1] = d
 	# Shared edges are not boundaries. Feather inward from only the union's outside.
