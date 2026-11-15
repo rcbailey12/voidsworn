@@ -17,23 +17,20 @@
 # Where each colour zone sits on a ship is the build sheet's decision (the kit's materials hgrey, hgrey2, hpanel, htrim, hmetal
 # and the shared dark; glow zones hblue, hlens, hnozzle, hlining, hwin: tools/blender/kits/hegemony/parts.py MATS); this file
 # says what each is made of.
-import os, re, json, math
+import os, sys, json, math
+from functools import partial
 import numpy as np
 import bpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, '..', '..', '..', '..'))
+SHARED = os.path.normpath(os.path.join(HERE, '..', 'shared'))
+if SHARED not in sys.path: sys.path.insert(0, SHARED)
+from paint_colors import LIGHT_GAIN, battle_lift, lin, lin_raw
 FACTION = 'hegemony'
 
 
-def battle_lift():
-    """the game's Hegemony battle lift (godot/render/look.gd READ, the one home; R227), never copied here"""
-    p = os.path.join(REPO, 'godot', 'render', 'look.gd')
-    m = re.search(r'"%s":\s*\{[^}]*"lift":\s*([0-9.]+)' % FACTION, open(p, encoding='utf-8').read())
-    if not m: raise SystemExit('hegemony stack: no %s lift in godot/render/look.gd READ' % FACTION)
-    return float(m.group(1))
-
-
+battle_lift = partial(battle_lift, FACTION)
 LIFT = battle_lift()
 
 # ------------------------------------------------------------------------------------------------------------ concept colours
@@ -56,9 +53,6 @@ CAP = (98, 109, 125)
 # The implant blue of H10 (hegemony.md 2): the blue filter mean and hot decile, plate side. The light itself is the game's colour
 # (faction_looks.json), read below; these two only colour the stencil read and the audit's blue test.
 IMPLANT = ((87, 182, 229), (189, 241, 253))
-# The game's light on a face at about 45 degrees to the key (godot/render/look.gd: key 2.0, ambient 0.25 x key): the factor
-# between an albedo and the tone the face shows (the Hullbreaker stack's figure).
-LIGHT_GAIN = 1.45
 
 
 # AgX and the warm key take colour out of dark tones (the Eclipse stack's finding): the first H10 sandbox bake read a grey with
@@ -70,18 +64,7 @@ LIGHT_GAIN = 1.45
 SAT = 1.3
 
 
-def lin(srgb):
-    """the tone to show in the game (sRGB 0..255) to the albedo to paint: linear, over the light gain and the battle lift (read
-    from look.gd), with the hue held (SAT). The lift is a plain multiply in the game and swings no hue"""
-    c = np.asarray(srgb, np.float64) / 255.0
-    c = np.where(c <= .04045, c / 12.92, ((c + .055) / 1.055) ** 2.4)
-    y = float(c @ np.array((.2126, .7152, .0722))); c = np.clip(y + (c - y) * SAT, y * .15, None)
-    return tuple(float(x) / (LIGHT_GAIN * LIFT) for x in c)
-
-
-def lin_raw(srgb):
-    c = np.asarray(srgb, np.float64) / 255.0
-    return tuple(float(x) for x in np.where(c <= .04045, c / 12.92, ((c + .055) / 1.055) ** 2.4))
+lin = partial(lin, lift=LIFT, saturation=SAT)
 
 
 # R262 (Ryan, Nov 15 2026, "Fix engines, lighten a step"): the hull one step lighter for battle, the way S8 took its step (R258,

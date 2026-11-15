@@ -123,6 +123,7 @@ R225: one home per fact):
 | the trim sheet and the decal art | drawn by the faction stack (`trim_sheet()`, `decal_atlas()`), written to the job's `textures\` with a licence line each (CC0, own work) | the shared stack; `standing.py licences` |
 | where decals go | rules in the faction stack's `DECALS` (station along the ship, height band, face, size), placed on each ship's own surfaces by ray cast | the shared stack (`place_decals`, reported in `CELL.json`) |
 | glow colours (engine throat and bell lining, running lights) | `godot/fx/faction_looks.json` (the game's own: `engine`, `accent`) | the faction stack's `glow_material` |
+| paint light gain, the battle-lift reader and colour conversion (`LIGHT_GAIN`, `battle_lift`, `lin`, `lin_raw`) | `tools/blender/kits/shared/paint_colors.py`; palettes, lift compensation and hue boosts stay in each faction stack | all four faction stacks |
 | the battle albedo lift (R227) | the game (`godot/render/look.gd`); the paint is not lifted | `paint_sheet.py` applies it only to preview the game's read |
 
 `tools/blender/r209/bake_sheet.py` (env.bat sets `BAKE` to it when the ship json says `"stack"` and the kit has `stack.py`):

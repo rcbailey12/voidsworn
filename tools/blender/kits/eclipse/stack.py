@@ -23,23 +23,20 @@
 #
 # Where each colour zone sits on a ship is the build sheet's decision (its materials shade, shade2, violet, mauve, lilac, gunv,
 # steel, iron, dark; glow zones corona, ecore, lens: tools/blender/build_sheets/kit.py MATS); this file says what each is made of.
-import os, re, json, math
+import os, sys, json, math
+from functools import partial
 import numpy as np
 import bpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, '..', '..', '..', '..'))
+SHARED = os.path.normpath(os.path.join(HERE, '..', 'shared'))
+if SHARED not in sys.path: sys.path.insert(0, SHARED)
+from paint_colors import LIGHT_GAIN, battle_lift, lin, lin_raw
 FACTION = 'deathless'
 
 
-def battle_lift():
-    """the game's Eclipse battle lift (godot/render/look.gd READ, the one home; R227)"""
-    p = os.path.join(REPO, 'godot', 'render', 'look.gd')
-    m = re.search(r'"%s":\s*\{[^}]*"lift":\s*([0-9.]+)' % FACTION, open(p, encoding='utf-8').read())
-    if not m: raise SystemExit('eclipse stack: no %s lift in godot/render/look.gd READ' % FACTION)
-    return float(m.group(1))
-
-
+battle_lift = partial(battle_lift, FACTION)
 LIFT = battle_lift()
 
 # ------------------------------------------------------------------------------------------------------------ concept colours
@@ -71,9 +68,6 @@ CONCEPT = dict(
     bare=((76, 68, 92), (124, 112, 144)),      # worn edges on rims and plate lips: the machined metal under the dark coat
     grime=((5, 4, 7), (10, 8, 12)),             # the dark of seams and deep recesses (the concepts' darkest 3,7,10 to 17,12,17)
 )
-# The game's light on a face at about 45 degrees to the key (godot/render/look.gd: key 2.0, ambient 0.25 x key): the factor
-# between an albedo and the tone the face shows (the Hullbreaker stack's figure, checked again by this job's preview).
-LIGHT_GAIN = 1.45
 # The light (pass 2, Ryan: "that green looks so plain and stark, just like neon paint"): the corona is light, not paint, the faint
 # green ring of a real eclipse. Cold green-white at its hottest (the hue of the concepts' brightest rim pixels, E12 132,228,88,
 # whitened), a deeper green where it is dim (E12 48,92,49 and 84,136,82, brightened to read as light).
@@ -93,18 +87,7 @@ CORE_RGB = (44, 255, 24)
 SAT = 2.6
 
 
-def lin(srgb):
-    """the tone to show in the game (sRGB 0..255) to the albedo to paint: linear, over the light gain and the battle lift, with
-    the hue held (SAT)"""
-    c = np.asarray(srgb, np.float64) / 255.0
-    c = np.where(c <= .04045, c / 12.92, ((c + .055) / 1.055) ** 2.4)
-    y = float(c @ np.array((.2126, .7152, .0722))); c = np.clip(y + (c - y) * SAT, y * .15, None)
-    return tuple(float(x) / (LIGHT_GAIN * LIFT) for x in c)
-
-
-def lin_raw(srgb):
-    c = np.asarray(srgb, np.float64) / 255.0
-    return tuple(float(x) for x in np.where(c <= .04045, c / 12.92, ((c + .055) / 1.055) ** 2.4))
+lin = partial(lin, lift=LIFT, saturation=SAT)
 
 
 def pair(k):
