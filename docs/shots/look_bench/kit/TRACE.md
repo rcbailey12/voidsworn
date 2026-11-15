@@ -1,6 +1,8 @@
 # Issue 367: trace before changing the effects
 
-Refs #367. Preparation only, not a completed effects kit.
+Refs #367. This is the original run-1 call trace. Run-2 implementation,
+captures, measurements and approval status are in [REPORT.md](REPORT.md).
+Line numbers and prerequisite notes below describe the dated run-1 checkout.
 
 Read against checkout `6096c4368c1baa8ccebca8170043be4dbfe2f2be` on
 `codex/issue-367`, Nov 14 2026. Runtime files have not been changed. This is
