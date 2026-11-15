@@ -1,57 +1,31 @@
-# Sunward squadron concepts (issue 742): Ember Dart fighter and Pyre-Lance bomber
+# Issue 742, Sunward squadron concepts: round 2 (Ryan's frame rulings applied)
 
-Refs #708. Per-faction own fighter and bomber models (R253). Two directions each, in the S8 language and the realistic Scrap Brick style (R197). Pictures: SF1.jpg, SF2.jpg (Ember Dart), SB1.jpg, SB2.jpg (Pyre-Lance), silhouette_check.jpg. All pictures 1080 x 720.
+Owner: muse. Refs #708. Round 1 (delivered Nov 14, 2026) was rejected by Ryan the same evening and this round replaces its four pictures and the silhouette check. Ryan's words, in order: the round 1 pictures "all look like they're aerial fighters, not space fighters" (glass canopies, thin wings, tail planes, bombs hung under the hull); a first rework that stripped the aircraft cues but kept long vehicle frames was "still off... the bomber looks like a car"; a stacked, chunky rework was rejected outright ("horrible... Fighters should be sleeker. Bombers should be chunkier and sizeable, built around the torpedos and bombs they carry to fire"); and he redirected the reference set: "let's go more like sins of solar empire, eve, star citizen, etc". Round 2 is built in that family and Ryan approved its first two pictures on sight ("Yep much better", Nov 14, 2026, ~22:43 CST): SF1 and SB1 below are those approved renders; SF2 and SB2 are the second directions built inside the same family for the Board's and Ryan's choice.
 
-## The data each craft carries (R241: exactly these weapons, nothing decorative)
+The family grammar (from the EVE Punisher and the Sins Krosov siege frigate, pulled as references during the rework): a small ship is a sectioned hull (bow, machinery midsection, engine stern) with systems carried as architecture: recessed machinery bays and radiator grilles set into the flanks, weapons in armoured mounts on the hull, thrusters as small nozzle clusters at the corners, the crew inside the armour behind viewport slits. Nothing is shaped to move air; ordnance is internal or tube-carried, never hung outside.
 
-- Ember Dart (fighter wing, 4 craft): Interceptor guns (the 'guns' slot, 3 shots), hp 18, speed 6. Length 3.2 units, about 25 px long at the 1080p battle camera.
-- Pyre-Lance (bomber wing, 4 craft): Bomb payload (the 'bombs' slot, 2 shots, pierce .6), hp 28, speed 5. Length 4.2 units, about 32 px at the battle camera.
-- Faction language (factions.md, issue 70 spec): matte hammered black iron #4a4440, trim #c8501f, frost-white #f0f4f8 chalked oath stripes, ember-orange #ff7a2a for viewports, engines and radiator glow only. Radiators shed reactor heat; they are never steeples, crosses or statues. Engines dim like banked coals at rest. No rust (the red-brown in the renders is the painted trim and grime; Sunward plate is maintained iron, and the build sheet should keep weathering off the hull colour).
+Data fits (unchanged, R241): the Ember Dart fighter wing carries only Interceptor guns (w:[['guns','T']], 3 shots); the Pyre-Lance bomber wing carries only the Bomb payload (w:[['bombs','T']], 2 shots, pierce). Game lengths: fighter 3.2 units (about 25 px at the 1080p battle camera), bomber 4.2 (about 32 px). Colours and materials stay the Sunward sheet's: matte hammered black iron, rust-red trim, frost-white chalked oath marks, ember-orange light, radiator heat hardware, never blue light, plate maintained and never rusted.
 
-## SF1: Spire Dart (fighter direction 1)
+## SF1, Recessed Dart (fighter; approved by Ryan; the chair's pick)
 
-The converged spec shape, and the chair's pick. A narrow forward-tapering iron dart, clipped delta winglets at the rear third, two small swept tail fins, one tall dorsal radiator spire behind the cockpit with ember-orange glow slats up its inner edge, and a single deep-bell nozzle.
+A sleek elongated frigate hull in three sections: tapered bow, a midsection with recessed machinery bays in both flanks (dark inset panels with visible machinery), and a stern engine section with faired bells. The crew hump is faired into the hull top with ember viewport slits. A ventral keel fin carries a small engine pod (machinery, on the Punisher pattern). The guns sit in an armoured bow bay: the Interceptor guns, and nothing else. A flush radiator strip runs along the dorsal line. Production notes: the render's bow bay shows the gun barrels in a side recess and drew small extra clusters on the stern top that are not in the data; the build sheet puts the three muzzles in one chin cluster under the bow and deletes the stern clusters. At 32 px it reads as a long swift dart, distinct from SF2 (silhouette check).
 
-Weapon callouts (everything pictured that is a weapon):
-- Three short gun muzzles in a compact nose cluster (one upper centre, two lower flanking): the Interceptor guns, all three shots of the slot in one cluster. Nothing else on the craft is a weapon; the first render carried thin spikes on the wingtips and they were removed for exactly this reason.
+## SF2, Wedge Turret (fighter; second direction)
 
-## SF2: Aft-Wide Spearhead (fighter direction 2)
+A broad, flat, sleek wedge: wider than tall, one flowing armoured plate surface with panel architecture, recessed radiator grilles in both flanks, and ONE low dorsal turret blister carrying the Interceptor guns (three muzzles, the ship's only weapon). Twin engine barrels faired into the trailing edge, viewport slits faired into the bow, frost-white chevron oath stripes on the nose. Production notes: small clusters at the wingtip corners are generator dressing, not data; they come off. At 32 px it reads as a wide flat wedge with a turret mass, clearly distinct from SF1's dart.
 
-The wider, lower alternative. Short beak nose, hull widening early to a broad stern third, big clipped delta winglets set far aft, and two short dorsal radiator blades in a shallow vee with the ember glow in the gap (no tall spire). Frost-white oath chevrons on the nose.
+## SB1, Bow-Tube Wedge (bomber; approved by Ryan; the chair's pick)
 
-Weapon callouts:
-- One gun port in the chin under the nose and one in each winglet root (the dark pods under the wing roots): the Interceptor guns, three ports for three shots.
-- Production note: the chin port rendered as a large round ring at the nose tip, which reads close to an intake. On the build sheet it should shrink to a flush port matching the wing-root pair.
+A Sins-style faceted armoured wedge hull whose bow face is given over to its payload: two torpedo tubes inside the hull open in the bow face, doors open, one huge rust-red-banded bomb-torpedo nosed inside each (the Bomb payload, 2 shots, and nothing else). A raised armoured command block amidships carries the viewport slits; recessed radiator grilles sit in the flanks; twin bells at the stern. The ship is built around its tubes while remaining a ship hull, not two bare pipes. Production notes: the torpedoes sit far out of the tubes in the render; the build sheet seats them deeper, noses just inside the doors. A small cluster mid-bow is dressing and comes off. At 32 px it reads as a heavy diagonal wedge, visibly more massive than either fighter.
 
-## SB1: Cradle Lance (bomber direction 1)
+## SB2, Sponson Barge (bomber; second direction)
 
-The converged spec shape, and the chair's pick. A heavy iron wedge with a broad blunt prow, widest at the stern third, a split vee-tail radiator assembly (two tall angled blades, ember-orange inner faces), twin deep-bell nozzles, and frost-white oath stripes across the prow and spine.
-
-Weapon callouts:
-- Two underslung cradles under the forward hull, each holding one fat bomb with a trim band: the Bomb payload, one bomb per cradle, matching the 2-shot read. No guns anywhere on the craft.
-- Production note: the cradles hang on visible struts, lower than the spec's tight underslung fit; the build sheet can pull them up against the hull.
-
-## SB2: Hammer Anvil (bomber direction 2)
-
-The heavier, squarer alternative. Blunt hammer prow with a frost-white chalked block marking, a deep central keel with a ventral grille, stub wings, a low dorsal radiator block behind the cockpit, broad vee-tail radiator plates, and wide-set twin bells.
-
-Weapon callouts:
-- Two open bays, one in each flank at the wing root, each holding one fat bomb with a trim band: the Bomb payload, two bombs total. No guns anywhere.
-- The chair moved the bays from the blind leg's centreline sled to the flanks during generation; the keel stays clear for the level bomb run's look from the battle camera. Flagged here so the Board can send them back to the centreline if it prefers.
-
-## Silhouette check at 32 px wide (silhouette_check.jpg)
-
-Each picture's craft was cut out, shrunk to 32 px wide and thresholded to a pure silhouette; the sheet shows them at native size (top row, labelled) and at 10x nearest-neighbour zoom (bottom row), in the order SF1, SF2, SB1, SB2.
-
-- SF1 reads: a long dart with one dorsal spike. Fighter, fast, unmistakable.
-- SF2 reads: a broad low delta, clearly a different and heavier fighter than SF1.
-- SB1 reads: a blunt heavy body, vee-tail up, and the two cradle bombs still visible as separate masses under the hull. The payload reads at battle scale, which is the point of the design.
-- SB2 is the weakest of the four: it reads as a big blunt mass, distinct from SB1 by the prow block, but its flank bays merge into the hull at 32 px and the bombs do not read. If Ryan picks SB2, the build sheet should drop the bays lower or open them wider.
+A wide flat armoured barge: a heavy central command block (viewport slits and chalked stripes on its bow face) carried between two enormous torpedo tube sponsons faired into the flanks, each sponson's bow door open with one bomb-torpedo nosed inside (the Bomb payload, and nothing else). Radiator blocks ride on top of the sponsons; twin bells at the stern centre. Production notes: the concept render is a bow view, so the hull's length does not read in it; the build sheet adds the three-quarter and top views. Small clusters under the bow corners are dressing and come off. At 32 px its silhouette is the frontal aspect (a wide block with the two torpedo noses), distinct from SB1's wedge; the Board should weigh that SB1 reads better in plan, which is the battle camera's view.
 
 ## Chair's picks
 
-SF1 and SB1, the converged shapes. All three seated legs (blind Rey, DeepSeek, Flash) picked the same pair independently, and both survive the 32 px check with their weapons legible. SF2 and SB2 are real second directions if Ryan wants the wider fighter and the heavier bomber instead; they are not filler.
+SF1 and SB1, the pair Ryan already approved: the dart and the bow-tube wedge are the clearest reads at battle size and the most distinct from each other. SF2 and SB2 stand as real alternates if the Board wants the wider, flatter plan shapes.
 
-## Council record
+## Council record for round 2
 
-Blind Rey leg first (directions: Spire Dart, Blade Wing, Cradle Lance, Forge Sled). DeepSeek (DeepThink on, Search on, the project's design-leg setting, verified before and after): converged dart and aft-wide spearhead; cradle lance and hammer-prow anvil; picks SF1 and SB1; its three-muzzle nose cluster was adopted into the SF1 render brief. Flash (Gemini "Quick answers 3.5 Flash-Lite", verified selected before and after): Spear-Dart and Chiseled Blade; Heavy Anvil and Forged Wedge; picks SF1 and SB1. Qwen: seat empty, the Qwen3.8-Max daily limit was reached earlier in the evening; no substitution. Grok: seat empty, bot wall at grok.com, the twenty-seventh consecutive empty seat. The chair composited the four render briefs from the legs: SF2 takes DeepSeek's twin-blade aft-wide spearhead (the blind leg's forked nose was dropped, it was the weakest read at 32 px), SB2 takes DeepSeek's hammer-prow anvil mass with the blind leg's open visible bays (Flash's internal flush bays were dropped, hidden bombs fail the weapon-visibility point of the exercise).
+Round 2 was chaired directly against Ryan's live rulings (five test rounds in main chat on Nov 14, 2026, each ruled on by Ryan in minutes), so no separate model legs were run for it; the design authority trail is Ryan's own words, quoted above. Round 1's council record stands in the git history of this file's first version.
