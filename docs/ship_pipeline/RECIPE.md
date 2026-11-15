@@ -248,6 +248,46 @@ writes (`foreach_set`): adding an attribute moves the mesh's attribute storage, 
 memory. Blender 5.3 survived that; Blender 4.5, the PC's, crashed later in the bake (EXCEPTION_ACCESS_VIOLATION in the
 depsgraph). Prove a stack change on Blender 4.5 before the PC run.
 
+**The Sunward stack (issue 756; the direction contrib/muse/design/paint_direction_2026_11/sunward.md, approved by Ryan at the
+swatch review, Nov 14 2026).** `tools/blender/kits/voidsworn/stack.py` paints S8 (the Daybreak flagship) and every later Sunward
+sheet ship on the same shared machinery, with no change to it (the Eclipse and Hullbreaker stacks and `kits/shared` untouched).
+What is the faction's own, and where it lives:
+- colours: sunward.md's pairs sampled from S8 (black iron `#191615` to `#525151`, the recessed shade `#080807` to `#3b3532`,
+  two plate-family casts inside that band, the worked iron of rims and bands differing by finish, not by a pale tone); `lin()`
+  divides each by the light gain and by the Sunward battle lift read from `godot/render/look.gd` (1.45, never copied); no hue
+  boost (black iron is near neutral; a plain multiply swings no hue). Soot is carbon (`#080807`), rust 0 in every zone; wear
+  is dulled bright iron (`#656564` to `#848382`, wear tones only); roughness floor 0.55 in every zone; grime by place (body .55,
+  recessed .70, gun ports .60, spire roots .20, bells .30, by `ZONE_BY_KIND` on the part kinds gun, radiator, engine);
+- surface order (R243, sunward.md 1): `panel_nodes` lays sleek triangular plates on the hull's flat fields (long edge on the
+  hull axis, point forward; two rows pair up so their forward plates meet on one long edge as an arrowhead; on a deck the rows
+  run along the beam, on a flank along the height), the even rectangular grid at the small size on faces turned fore or aft
+  and on every part (spire roots, bell housings, turret domes), over-plates at the deck edges and on the spire roots only, rivet
+  rows along the triangles' long edges at `rivet_pitch` .011. Every plate cell takes one calm tone from a family or the zone's
+  own pair (the shared base's broad noise read as camouflage blotches on the first sandbox bake). `patch_warp`, `patch_band`
+  and `patch_split` are 0 with the R243 comment: the order is forged and deliberate, never warped; `panel_nodes` draws the
+  panels, so the shared `_grid` (which takes the warped path whenever the key is present) never sees those zeros;
+- light (sunward.md 5): every value is the brightest linear channel of the emission times its strength, held under the game's
+  0.8 glow threshold: bell throats 0.75 (the shared throat drawing in the game's Sunward engine colour), spire fins 0.78 at the
+  tip (deep `#a94911` at the root to hot `#fcab3b` at the tip, hottest at the column, cooling out along each fin, cast as
+  upright bars with dark gaps, each spire and fin its own), gun bores and lenses 0.66, the command deck's window slits 0.62, the
+  heat louvres 0.45, the frost running points 0.72 (the game's accent with its blue held to its green: the faction never shows
+  blue light). The throats, linings, spire fins and bores share one emission map (`ENGINE_GLOW` `extra_zones` `embar`,
+  `glow_vertex`, `engine_glow_nodes`); the slits, louvres and frost points are flat lights (`p3_window`, `p3_vent`,
+  `p3_frost`, never named `p3_glow`, which export7 keeps for the map's surface), all marked `ps_glow`. The frost points are the
+  sheet's own lamps on the blade's edge: `RUNNING_LIGHTS` is None and no `lights.json` is written;
+- decals (sunward.md 4): frost-white markings only (`#e7f4ff`), never a plate family: the half-sun crest on the forward deck,
+  a spine line, deck row numbers on each broadside, heat-shed marks beside the spire roots; worn, and edge wear runs over them;
+  `FROST_CAP` 0.06 of any visible face;
+- the liner is sunward.md's dark warm liner; the reactor core keeps its ember light.
+The builder's checks (sunward.md 6) are `contrib/opus/tools/issue756/audits.py`: the emissive audit (the stack's
+`emissive_audit()`: the map's brightest pixel and every flat light, against 0.8, and no blue over green), the frost coverage on
+the flat views against the cap, the lift hue test and the hull median at the battle camera. Sandbox previews:
+`contrib/opus/tools/issue756/preview.py` (paint_sheet.py's views plus the battle camera at 34 degrees, the game's true pixel
+size, the spires close and the broadside) and `pictures.py`; pictures in `docs/ship_pipeline/build_sheets/voidsworn_S8/paint/`.
+`paint_sheet.py`'s own `cam170` places its camera 56 degrees above the board (its sine and cosine are swapped against
+`camera_rig.gd`, which puts the battle camera 34 degrees above it); the Sunward pictures use their own camera, and the shared
+script is left for the Board.
+
 
 ## What a ship needs (the per-ship data)
 
@@ -461,7 +501,7 @@ example `{"windows": 2.5, "trim": 2.0}`. Empty `lights` means the paint has no s
 | Generic (any concept, any faction) | Per ship today | Next |
 |---|---|---|
 | stages 1, 2, 5, 6, 7; the outline overlap report and the standing checks (per third, inner edge, second camera, paint sides, blink sheet, licences, light sizes); the fitted concept camera; the shared plumbing (sockets, seating, scale rules, audit, tags, the muzzle, engine and bay registry); the hard point contract and its one count table (`kits/shared/hardpoints.py`); bake, LOD chain, cost bench; the game export, its hard points and its check | the hull module's block table (C15s: raised forward deck, deckhouse and tower tiers, hump, aft body, stern block, sponsons, modules, cargo blocks; `armA5.py`); the sockets in the ship json | a block table as data in the ship json, so a new hull needs no Python; the wreck and damage glbs and the scene gate (stage 7, list above) |
-| the Hullbreaker kit and paint (`kits/hullbreakers/`); the paint stack for sheet ships (`kits/shared/paint_stack.py`, the Hullbreakers' `kits/hullbreakers/stack.py`, the Eclipse's `kits/eclipse/stack.py`) | | a kit per faction: Sunward Crusade, Glasswrights, Eclipse, Chorus, Hegemony Navy, each with its own shape language and paint |
+| the Hullbreaker kit and paint (`kits/hullbreakers/`); the paint stack for sheet ships (`kits/shared/paint_stack.py`, the Hullbreakers' `kits/hullbreakers/stack.py`, the Eclipse's `kits/eclipse/stack.py`, the Sunward's `kits/voidsworn/stack.py`) | | a kit per faction: Glasswrights, Eclipse, Chorus, Hegemony Navy, each with its own shape language and paint |
 
 The section fits in stage 3 (`b0trace.py`) are generic; turning them into the hull module's knot table was a hand step in round 5
 (smoothed and squared up), and the block table is a design step: which blocks the concept has. That is the one creative step left

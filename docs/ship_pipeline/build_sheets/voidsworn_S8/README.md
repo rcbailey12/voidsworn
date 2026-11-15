@@ -16,7 +16,7 @@ Start here: [the overview](voidsworn_S8_sheet_overview.jpg), [the whole concept 
 
 Files: design `tools/blender/build_sheets/ships/voidsworn_S8.py`, inventory `voidsworn_S8_inv.py`, beauty camera
 `voidsworn_S8_camera.json`, battle camera `voidsworn_S8_camera_battle.json`, recipe entry `tools/recipe/ships/voidsworn_S8.json`
-(bake none until the Sunward paint stack), the new faction kit `tools/blender/kits/voidsworn/` (its README says what each part is).
+(bake stack since issue 756: the Sunward paint stack, pictures in [paint/](paint/README.md)), the new faction kit `tools/blender/kits/voidsworn/` (its README says what each part is).
 
 ## The design, in short
 
