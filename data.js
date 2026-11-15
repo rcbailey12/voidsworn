@@ -3180,7 +3180,7 @@ const BOONS={
 // hold two boons from that patron (Hades style), always in the third slot; it never rolls otherwise (leg:true keeps it out of every normal pool).
 Object.assign(BOONS,{
   i_wall:{p:'iron',n:'Shield Wall',d:m=>`Bracing covers every ship next to the braced ship too: they take the brace’s hull cut${m>1?` and an extra ${boonPct(.1*(m-1))} hull cut`:''} until its next turn.`,fx:m=>({wallBrace:1,wallPlus:.1*(m-1)})},
-  s_chain:{p:'storm',n:'Chain Lightning',d:m=>`When your fire knocks out an enemy shield, the pool loses ${Math.round(m/3*100)}% of its strength.`,fx:m=>({chainSh:m/3})},
+  s_chain:{p:'storm',n:'Chain Lightning',d:m=>`When your fire knocks out an enemy shield, its next recharge is ${Math.round(m/3*100)}% weaker.`,fx:m=>({chainSh:m/3})},
   h_brood:{p:'hunger',n:'Brood Harvest',d:m=>`Each enemy capital ship your fleet destroys lets your nearest carrier launch a free wing, if it has a free hex beside it${m>1?`, and repairs ${boonPct(.1*(m-1))} of its hull`:''}.`,fx:m=>({broodTithe:1,broodRepair:.1*(m-1)})},
   a_mark:{p:'star',n:'Marked for Death',d:m=>`Each round, the first enemy ship your lances hit is marked: your whole fleet aims ${Math.round(10*m)} better against it until the round ends.`,fx:m=>({markLance:m})},
   r_slip:{p:'rook',n:'Slip the Net',d:m=>`Your ships may move after firing, up to ${m>=2?'90% of':m>=1.5?'70% of':'half'} the movement they had left (without climbing over or diving under).`,fx:m=>({fade:m>=2?.9:(m>=1.5?.7:.5)})},

@@ -431,8 +431,8 @@ function startSideTurn(side){
     if(side==='player'&&u.burnCarry){ u.mp+=u.burnCarry.mp||0; u.turnsLeft+=u.burnCarry.turns||0; } // Grax capstone 1: the last burn carries over
     for(const w of u.weapons){ w.fired=false; if(w.cdLeft>0) w.cdLeft--; if(w.off>0) w.off--; }
     if(u.abCd>0) u.abCd--;
-    u.route=[0,0,0,0]; if(u.st.shieldOff>0) u.st.shieldOff--; else if(u.shMax>0){ const rg=u.regen*(((typeof B!=='undefined'&&B&&B.condRegen)||1)); if(!u.regenLock){ u.shp=Math.min(u.shMax,(u.shp||0)+rg); syncShields(u); } }
-    ithChargeTurn(u); u.regenLock=null; // B3 Ithar prism charge (after the normal regen); an ion lock lasts one turn start
+    u.route=[0,0,0,0]; if(u.st.shieldOff>0) u.st.shieldOff--; else if(u.shMax>0){ const rg0=u.regen*(((typeof B!=='undefined'&&B&&B.condRegen)||1)), rg=u.chainCut>0?Math.round(rg0*(1-u.chainCut)):rg0; if(!u.regenLock){ u.shp=Math.min(u.shMax,(u.shp||0)+rg); syncShields(u); } }
+    ithChargeTurn(u); u.regenLock=null; u.chainCut=0; // B3 Ithar prism charge (after the normal regen); an ion lock and a Chain Lightning cut last one turn start
     if(u.hullRegen && u.hp<u.maxHp && !u.pyre){ const mm=treeRoleMul(u), hr=mm!==1?Math.round(u.hullRegen*mm):u.hullRegen; u.hp=Math.min(u.maxHp,u.hp+hr); treeMarkRepair(u); if(mm!==1) treeFx(u,'roles','mend: the regrowth is 10% stronger'); }
     if(u.st.acid>0&&!u.isSq){ u.st.acid--; u.hp-=4; if(typeof fxText==='function') fxText(u,'Acid \u22124','#c8e04a',-12); if(u.hp<=0){ u.hp=0; burned=true; log(`${u.name} dissolves.`, u.side==='player'?'e':'p'); u.killCause='melt'; queueDeath(u,deaths); } }
     if(u.st.fire>0&&!u.dead){ const fd=u.st.fireDmg||6; u.st.fire--; u.hp-=fd; if(typeof fxText==='function') fxText(u,'Fire \u2212'+fd,'#f08a4b'); if(u.hp<=0){ u.hp=0; burned=true; log(`${u.name} burns out.`, u.side==='player'?'e':'p'); u.killCause='dark'; queueDeath(u,deaths); } if(!u.st.fire) u.st.fireDmg=0; }
@@ -544,7 +544,7 @@ const FEED_KILL=.12, FEED_NEAR=.06, FEED_R=2, FEED_CAP=.12; // pass 3 tuning: .1
 const LEGION_HP=.35; // Deathless: hull a reassembled ship comes back with
 const FAC_RULES={
   hegemony:{n:'Synchronized fire',d:`Ships within ${SYNC_R} hexes of their flagship fire as one: a target another synced ship already fired on this round is ${SYNC_AIM} easier to hit and takes +${Math.round(SYNC_DMG*100)}% damage. Lose the flagship and sync is gone for the rest of the battle. Does not stack with Anchored Volley.`},
-  ithar:{n:'Prism charge',d:'At the start of its turn, a shield facing that was not hit since its last turn recharges to full, and a facing that was hit recharges twice. Glasswright hulls cannot Brace.'},
+  ithar:{n:'Prism charge',d:'At the start of its turn, a shield pool that was not hit since its last turn recharges to full, and a pool that was hit recharges twice. Glasswright hulls cannot Brace.'},
   chorus:{n:'Feed',d:`When an enemy ship dies, the Chorus ship that killed it regrows ${Math.round(FEED_KILL*100)}% of its hull and every other Chorus ship within ${FEED_R} hexes regrows ${Math.round(FEED_NEAR*100)}%, up to ${Math.round(FEED_CAP*100)}% per ship each round.`},
   deathless:{n:'Archive restore',d:`The first Eclipse ship to fall each battle (never the flagship) reassembles at the start of the next round with ${Math.round(LEGION_HP*100)}% hull and cannot fire that round; a fleet of 6 or more gets two returns. Funeral Pyre stops it.`},
   corsair:{n:'Close in',d:'Hullbreakers field no lance weapons, and their rocket pods fire salvos that point defense can thin.'},
@@ -575,7 +575,7 @@ function syncLose(t){ if(!B||!t||!t.anchor||!B.syncLost||B.syncLost[t.side]) ret
 function syncPull(u,v){ if(!u||u.isSq||u.fac!=='hegemony'||u.anchor) return 0; const a=syncAnchor(u.side); if(!a) return 0; return Math.max(0,hdist(v,a)-syncR(u.side)); }
 // Ithar prism charge: facings hit since the ship's last turn (applyHit marks them); unmarked facings refill at turn start
 function ithChargeTurn(u){ if(u.fac!=='ithar'||!(u.shMax>0)||u.isSq) return; const hit=u.shHit||[0,0,0,0];
-  if(!(u.st.shieldOff>0)){ let g=0; const rg=Math.round(u.regen*((B&&B.condRegen)||1)), struck=hit.some(x=>x);
+  if(!(u.st.shieldOff>0)){ let g=0; const rg0=Math.round(u.regen*((B&&B.condRegen)||1)), rg=u.chainCut>0?Math.round(rg0*(1-u.chainCut)):rg0, struck=hit.some(x=>x);
     if(!u.regenLock){ const add=!struck?u.shMax-(u.shp||0):Math.min(rg,u.shMax-(u.shp||0)); if(add>0){ g+=add; u.shp=(u.shp||0)+add; } }
     if(g>0){ fstat('ithar','charge',g); syncShields(u); } } u.shHit=[0,0,0,0]; } // R246 pool read: an untouched prism snaps the pool to full, a struck one recharges twice
 // Chorus feed: an enemy capital ship dies; the killing side's Chorus ships nearby regrow hull, capped per round
@@ -657,10 +657,10 @@ function applyNemesis(N){ B.nem=N; let es=B.units.filter(u=>u.side==='enemy'&&!u
 // R49 Voidsworn challenge: his flagship seeks your flagship, or your strongest ship once it is gone, and both deal 20% more damage to each other
 function nemDuelTarget(){ if(!B||!B.nemChallenge) return null; let d=B.nemDuel!=null?B.units.find(u=>u.id===B.nemDuel&&!u.dead&&u.side==='player'):null;
   if(!d){ d=B.units.find(u=>u.pflag&&!u.dead&&u.side==='player')||B.units.filter(u=>u.side==='player'&&!u.dead&&!u.isSq&&!u.reinf).sort((a,b)=>(b.t.cp||1)-(a.t.cp||1)||b.maxHp-a.maxHp||(a.id<b.id?-1:1))[0]||null; if(d){ const first=B.nemDuel==null; B.nemDuel=d.id; if(!first){ const f=B.units.find(u=>u.nemFlag&&!u.dead); if(f) log(`${f.name} turns to ${d.name}: the duel goes on.`,'e'); } } } return d; }
-// R42: a Nemesis who withdraws from a lost fight (Corsair: flagship under 35% hull; Ithar: every flagship shield down and hull under 60%). He and
+// R42: a Nemesis who withdraws from a lost fight (Corsair: flagship under 35% hull; Ithar: the flagship shield pool empty and hull under 60%). He and
 // his escorts jump out; you win the field, he escapes to come back (richer, for a Corsair). Checked at each enemy turn start.
 function nemFleeCheck(){ if(!B||!B.nem||!B.nemFlee||B.nemFled||B.over) return; const f=B.units.find(u=>u.nemFlag&&!u.dead&&u.side==='enemy'); if(!f) return; const R=B.nemFlee;
-  const low=f.hp<=f.maxHp*(R.hull||0)&&(!R.shields||!(f.shMax>0)||(f.shp||0)<=f.shMax*.5); if(!low) return;
+  const low=f.hp<=f.maxHp*(R.hull||0)&&(!R.shields||!(f.shMax>0)||(f.shp||0)<=.5); if(!low) return;
   B.nemFled=true; nemSig('flee_battle'); for(const e of alive('enemy').filter(u=>!u.isSq&&!u.transport)){ e.dead=true; e.fled=true; try{ if(typeof fxWithdraw==='function') fxWithdraw(e); }catch(x){} }
   log(`${f.name} breaks off and jumps out with what is left of his fleet. He will be back.`,'s'); checkEnd(); }
 // R42 personality weights for his ships in the AI's move scoring and target choice
@@ -847,7 +847,7 @@ function applyHit(att,w,t,dmg,quad){
   if(!t.isSq&&quad!=null&&w.ion&&att&&att.fac==='hegemony'&&t.shMax>0) t.regenLock=1; // v54 doctrine (decided): Hegemony ion stops the pool's regen for a turn
   let shieldable=dmg*(1-pierce), through=dmg-shieldable;
   const s=t.sh[quad]||0; const sh0=s, sp0=t.shp||0; const absorbed=Math.min(shieldable,s/ion);
-  if(absorbed>0){ const lossy=(t.route&&t.route[quad])?1+SHIELD_ROUTE_LOSS:1; t.shp=Math.max(0,sp0-absorbed*ion*lossy); if(t.shp>0){ t.route=t.route||[0,0,0,0]; t.route[quad]=1; } syncShields(t); } // R246 (issue 371): the struck side routes power at a loss; when the pool empties, shields drop on every side at once
+  if(absorbed>0){ const lossy=(t.route&&t.route[quad])?1+SHIELD_ROUTE_LOSS:1; t.shp=Math.max(0,sp0-absorbed*ion*lossy); if(t.shp<1) t.shp=0; if(t.shp>0){ t.route=t.route||[0,0,0,0]; t.route[quad]=1; } syncShields(t); } // R246 (issue 371): the struck side routes power at a loss; a pool under 1 point is empty, and an empty pool drops every side at once
   shieldable-=absorbed;
   { const gc=treeSkill('glassCorrected'); if(gc&&t.side==='player'&&cmdActive('player','iron')&&!B.tr.glassUsed&&t.shMax>0&&sp0>0&&t.shp<=0){ t.shp=Math.round(t.shMax*gc.n); syncShields(t); B.tr.glassUsed=1; treeFx(t,'glassCorrected','the emptied shield refills'); } } // Brin T3a
   { const ce=treeSkill('columnEndures'); if(ce&&t.side==='player'&&cmdActive('player','iron')&&!B.tr.columnUsed&&t.shMax>0&&sp0>0&&t.shp<=0){ t.shp=Math.round(t.shMax*ce.n); syncShields(t); B.tr.columnUsed=1; treeFx(t,'columnEndures','the emptied shield refills'); } } // Maren T3a
@@ -1087,7 +1087,7 @@ async function landVolley(u,w,t,o){ const quad=o.quad, shots=o.shots, called=o.c
   { const rw=treeSkill('rollWings'); if(rw&&u.isSq&&u.side==='player'&&cmdActive('player','scramble')&&res.hits>0&&!o.intercept&&!t.dead){ t.st.fire=Math.max(t.st.fire||0,2); t.st.fireDmg=Math.max(t.st.fireDmg||6,6); t.treeFlakDown=(t.treeFlakDown||0)+1; treeFx(u,'rollWings','the wing sets it burning'); } } // Ashgrove capstone 1
   if(res.hits&&B.nem){ if(t.nem&&u.side==='player'){ if(quad===2) nemTrip('flank'); if((w.ion||w.k==='lance')&&res.shield>0) nemTrip('ion'); if(o.torp) nemTrip('torp'); } if(u.nem&&t.side==='player'&&!u.isSq&&hdist(u,t)<=2) nemTrip('brawl'); } // R42
   if(res.shield>0){ if(typeof fxShield==='function') fxShield(t,quad); if(typeof fxText==='function') fxText(t,'−'+res.shield+' shield','#62ccff',-18); if(t.shMax>0&&t.shp<=.5&&o.shBefore>.5){ if(typeof fxShieldBreak==='function') fxShieldBreak(t,quad); if(typeof fxText==='function') fxText(t,'Shields down','#9fe2ff',-40);
-      if(ownerFx(u).chainSh&&!t.dead){ const csh=ownerFx(u).chainSh; t.shp=Math.round((t.shp||0)*(1-csh)); syncShields(t); boonFx(t,'s_chain','chain lightning',-62); } // Chain Lightning (RWD-2: chainSh scales with rarity)
+      if(ownerFx(u).chainSh&&!t.dead){ t.chainCut=Math.max(t.chainCut||0,ownerFx(u).chainSh); boonFx(t,'s_chain','chain lightning',-62); } // Chain Lightning (RWD-2: chainSh scales with rarity; R246 pool: the broken shield's next recharge is cut)
       const ar=ownerFx(u).arcShort; if(ar&&!t.dead){ t.hp-=ar; res.hull+=ar; u.dealt+=ar; boonFx(t,'s_arc','−'+ar,-56); } } }
   if(res.hull>0&&typeof fxText==='function') fxText(t,'−'+res.hull+' hull',res.crits?'#ffd27a':'#ffae42',0);
   if(res.hits===0&&typeof fxText==='function') fxText(t,'Miss','#9a9384',0);

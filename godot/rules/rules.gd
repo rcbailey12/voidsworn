@@ -1492,9 +1492,10 @@ func startSideTurn(side) -> int:
 		if u["st"]["shieldOff"] > 0: u["st"]["shieldOff"] = u["st"]["shieldOff"] - 1
 		elif u["shMax"] > 0:
 			var rg = u["regen"] * (B["condRegen"] if B != null and jt(B.get("condRegen")) else 1)
+			if float(z0(u.get("chainCut"))) > 0: rg = JSM.jsround(rg * (1.0 - float(u["chainCut"])))   # Chain Lightning (R246 pool): the broken shield's next recharge is cut
 			if not jt(u.get("regenLock")):
 				u["shp"] = min(u["shMax"], float(z0(u.get("shp"))) + rg); syncShields(u)
-		ithChargeTurn(u); u["regenLock"] = null
+		ithChargeTurn(u); u["regenLock"] = null; u["chainCut"] = 0
 		if jt(u.get("hullRegen")) and u["hp"] < u["maxHp"] and not jt(u.get("pyre")):
 			var mmH = treeRoleMul(u); var hrH = JSM.jsround(u["hullRegen"] * mmH) if mmH != 1.0 else u["hullRegen"]
 			u["hp"] = min(u["maxHp"], u["hp"] + hrH); treeMarkRepair(u)
@@ -1811,6 +1812,7 @@ func ithChargeTurn(u) -> void:
 	var hit = u["shHit"] if u.get("shHit") != null else [0, 0, 0, 0]
 	if not (z0(u["st"].get("shieldOff")) > 0):
 		var gg = 0; var rg = JSM.jsround(u["regen"] * (B["condRegen"] if (B != null and jt(B.get("condRegen"))) else 1))
+		if float(z0(u.get("chainCut"))) > 0: rg = JSM.jsround(rg * (1.0 - float(u["chainCut"])))
 		var struck = jt(hit[0]) or jt(hit[1]) or jt(hit[2]) or jt(hit[3])
 		if not jt(u.get("regenLock")):
 			var add = (u["shMax"] - float(z0(u.get("shp")))) if not struck else min(rg, u["shMax"] - float(z0(u.get("shp"))))
@@ -2070,7 +2072,7 @@ func nemFleeCheck() -> void:
 		if jt(u.get("nemFlag")) and not jt(u.get("dead")) and u["side"] == "enemy": f = u; break
 	if f == null: return
 	var Rf = B["nemFlee"]
-	var low = f["hp"] <= f["maxHp"] * z0(Rf.get("hull")) and (not jt(Rf.get("shields")) or not (f["shMax"] > 0) or float(z0(f.get("shp"))) <= f["shMax"] * 0.5)
+	var low = f["hp"] <= f["maxHp"] * z0(Rf.get("hull")) and (not jt(Rf.get("shields")) or not (f["shMax"] > 0) or float(z0(f.get("shp"))) <= 0.5)
 	if not low: return
 	B["nemFled"] = true; nemSig("flee_battle")
 	for e in alive("enemy"):
@@ -2720,6 +2722,7 @@ func applyHit(att, w, t, dmg: float, quad: int) -> Dictionary:
 	if absorbed > 0:
 		var lossy: float = 1.0 + float(TB.SHIELD_ROUTE_LOSS) if (jt(t.get("route")) and jt(t["route"][quad])) else 1.0
 		t["shp"] = max(0, sp0 - absorbed * ion * lossy)
+		if float(t["shp"]) < 1: t["shp"] = 0   # a pool under 1 point is empty
 		if float(t["shp"]) > 0:
 			if not jt(t.get("route")): t["route"] = [0, 0, 0, 0]
 			t["route"][quad] = 1
@@ -3324,8 +3327,7 @@ func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire
 		if t["shMax"] > 0 and float(z0(t.get("shp"))) <= 0.5 and shBefore > 0.5:
 			emit({"t": "shield_down", "unit": t["id"], "quad": quad}); flt(t, "Shields down", "#9fe2ff", -40)
 			if jt(ownerFx(u).get("chainSh")) and not jt(t.get("dead")):
-				var csh = z0(ownerFx(u).get("chainSh"))
-				t["shp"] = JSM.jsround(float(z0(t.get("shp"))) * (1.0 - csh)); syncShields(t)
+				t["chainCut"] = max(float(z0(t.get("chainCut"))), float(z0(ownerFx(u).get("chainSh"))))   # R246 pool: the broken shield's next recharge is cut
 				boonFx(t, "s_chain", "chain lightning", -62)
 			var ar = ownerFx(u).get("arcShort")
 			if jt(ar) and not jt(t.get("dead")):

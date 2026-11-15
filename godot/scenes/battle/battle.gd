@@ -4553,7 +4553,7 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 				if not (ru["side"] == "player" and Bs["round"] == 1 and _jt(Bs.get("cfg", {}).get("storyMods", {}).get("syncDown"))):
 					tr.append("Synchronized fire lost: the flagship is gone." if not _jt(anc) else ("Sync anchor: Hegemony ships within %d hexes fire as one." % sr if _jt(ru.get("anchor")) else ("In sync with the flagship." if R.inSync(ru) else "Out of sync: more than %d hexes from the flagship." % sr)))
 		if fac == "ithar" and float(u["shMax"]) > 0.0:
-			tr.append("Prism charge: facings not hit since its last turn refill to full; hit facings recharge twice.")
+			tr.append("Prism charge: an untouched pool snaps back to full; a pool struck since its last turn recharges twice.")
 		if fac == "chorus":
 			tr.append("Feeds on kills nearby (up to %d%% hull a round)." % int(round(float(TBL.get("FEED_CAP", 0.0)) * 100.0)))
 		if fac == "deathless" and _jt(T.get("reanimate")):
