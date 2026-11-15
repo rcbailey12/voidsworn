@@ -155,7 +155,7 @@ def panels(p, tag, role, mats, x0, x1, r, n, phase, skip=(), th=0.024, size=PANE
         p.add('%s_rivet' % tag, role, 'sworn', _join(RV))
 
 
-def plate_slab(bot, nrm, t, bevel=0.3, rivets=True, lift=0.0, rr=0.03):
+def plate_slab(bot, nrm, t, bevel=0.3, rivets=True, lift=0.0, rr=0.03, sink=0.02, inmax=0.07):
     """one forged plate on a hull face: bot = three or four corners on the surface (world), nrm = outward normal. A slab of
     thickness t with a chamfer on its top edges (bevel, a share of t) and a rivet line along its long edge (two studs on a
     triangle, three on a quad). Returns ((verts, faces) of the slab, (verts, faces) of the rivets)."""
@@ -165,7 +165,7 @@ def plate_slab(bot, nrm, t, bevel=0.3, rivets=True, lift=0.0, rr=0.03):
     for i, q in enumerate(bot):
         sh = (mid - q).normalized() * min(t * (1 + bevel * 2), (mid - q).length * 0.3)
         top.append(q + nrm * (t + (lift if i == 2 else 0.0)) + sh)
-    base = [q - nrm * 0.02 for q in bot]
+    base = [q - nrm * sink for q in bot]
     V = [tuple(q) for q in base + top]
     F = [tuple(range(k))[::-1], tuple(range(k, 2 * k))] + [(i, (i + 1) % k, k + (i + 1) % k, k + i) for i in range(k)]
     RV = []
@@ -174,20 +174,22 @@ def plate_slab(bot, nrm, t, bevel=0.3, rivets=True, lift=0.0, rr=0.03):
         ei = max(range(k), key=lambda i: (top[(i + 1) % k] - top[i]).length)
         a, b = top[ei], top[(ei + 1) % k]
         inward = (mid + nrm * t - (a + b) / 2)
-        inward = inward.normalized() * min(0.07, inward.length * 0.35)
+        inward = inward.normalized() * min(inmax, inward.length * 0.35)
         for f in ((0.2, 0.8) if k == 3 else (0.15, 0.5, 0.85)):
             RV.append(_stud(a.lerp(b, f) + inward, nrm, rr))
     return (V, F), _join(RV) if RV else ([], [])
 
 
-def forged_plates(rings, faces, size, thick, mats, seed=1, keep=None, tri=False, offset=True, step_every=5, rr=0.026, closed=True):
+def forged_plates(rings, faces, size, thick, mats, seed=1, keep=None, tri=False, offset=True, step_every=5, rr=0.026, closed=True, unit=1.0):
     """Sunward plating over the quad strips of a loft (rings: lists of world points, the same count each, in order along the
     mass; faces: the ring edge indices to plate). Forged, never scavenged (paint_direction sunward.md: patch_warp 0): every face
     is laid in ordered rows at the plate size in world units both ways, rows offset by half a plate on alternate courses (a
     forged bond, never random), every step_every-th plate carries a narrower reinforcing strip (the thickness step), rivet
     lines along each plate's long edge. tri=True lays the face in sleek triangles instead (R243, Ryan: "Sunward could have more
     triangle sleek panels"): each cell an arrow plate pointing forward with two infill triangles beside it. keep(p, r) returns
-    True where a mount claims the surface (no plate there). Returns ({mat: (V, F)}, (rivet V, F), plates laid)."""
+    True where a mount claims the surface (no plate there). unit (issue 769, the squadron craft) scales the fixed sizes in world
+    units (the smallest face plated, the gaps, the sink under the surface) for a hull far smaller than a capital ship; 1.0 is the
+    capital ships' plating, unchanged. Returns ({mat: (V, F)}, (rivet V, F), plates laid)."""
     import random
     rnd = random.Random(seed)
     lo, hi = size
@@ -206,7 +208,7 @@ def forged_plates(rings, faces, size, thick, mats, seed=1, keep=None, tri=False,
             A, B = Vector(rings[i][j]), Vector(rings[i][(j + 1) % n])
             Dq, C = Vector(rings[i + 1][j]), Vector(rings[i + 1][(j + 1) % n])
             flen = ((Dq - A).length + (C - B).length) / 2; fw = ((B - A).length + (C - Dq).length) / 2
-            if flen < 0.25 or fw < 0.18:
+            if flen < 0.25 * unit or fw < 0.18 * unit:
                 continue
             nrm = (B - A).cross(Dq - A)
             if nrm.length < 1e-7:
@@ -221,7 +223,7 @@ def forged_plates(rings, faces, size, thick, mats, seed=1, keep=None, tri=False,
                 return A.lerp(Dq, u).lerp(B.lerp(C, u), v)
             nv = max(1, int(round(fw / lo)))
             nu = max(1, int(round(flen / hi)))
-            g = 0.035
+            g = 0.035 * unit
             for b in range(nv):
                 v0, v1 = b / nv + g / fw, (b + 1) / nv - g / fw
                 sh = (0.5 / nu) if (offset and b % 2) else 0.0
@@ -230,7 +232,7 @@ def forged_plates(rings, faces, size, thick, mats, seed=1, keep=None, tri=False,
                     us = [0.0] + [(a - 0.5) / nu for a in range(1, nu + 1)] + [1.0]
                 for a0, a1 in zip(us, us[1:]):
                     u0, u1 = a0 + g / flen, a1 - g / flen
-                    if u1 - u0 < 0.08 / flen or v1 <= v0:
+                    if u1 - u0 < 0.08 * unit / flen or v1 <= v0:
                         continue
                     pc = Pq((u0 + u1) / 2, (v0 + v1) / 2); hd = 0.5 * ((u1 - u0) * flen + (v1 - v0) * fw)
                     if keep and keep(pc, hd):
@@ -238,20 +240,20 @@ def forged_plates(rings, faces, size, thick, mats, seed=1, keep=None, tri=False,
                     count += 1
                     t = tlo + (thi - tlo) * (((count * 2654435761 + seed * 97) % 1000) / 1000.0)
                     k_ = names[(i * 3 + j * 5 + b + int(a0 * 7)) % len(names)] if len(names) > 1 and rnd.random() < 0.85 else rnd.choices(names, wts)[0]
-                    if tri and (u1 - u0) * flen > 0.3:
+                    if tri and (u1 - u0) * flen > 0.3 * unit:
                         # two sleek triangles per cell, split on the one diagonal so the rows run straight (point forward)
-                        gu, gv = 0.03 / flen, 0.03 / fw
+                        gu, gv = 0.03 * unit / flen, 0.03 * unit / fw
                         cells = [([Pq(u0 + gu, v0), Pq(u1, v0), Pq(u1, v1 - gv)], k_),
                                  ([Pq(u0, v0 + gv), Pq(u1 - gu, v1), Pq(u0, v1)], names[(count + 1) % len(names)])]
                         for bot, mk in cells:
-                            (V, F), (rv, rf) = plate_slab(bot, nrm, t, rivets=True, rr=rr)
+                            (V, F), (rv, rf) = plate_slab(bot, nrm, t, rivets=True, rr=rr, sink=0.02 * unit, inmax=0.07 * unit)
                             bv, bf = acc[mk]; o = len(bv); bv.extend(V); bf.extend(tuple(x + o for x in f) for f in F)
                             if rv:
                                 RV.append((rv, rf))
                             laid += 1
                     else:
                         bot = [Pq(u0, v0), Pq(u1, v0), Pq(u1, v1), Pq(u0, v1)]
-                        (V, F), (rv, rf) = plate_slab(bot, nrm, t, rivets=True, rr=rr)
+                        (V, F), (rv, rf) = plate_slab(bot, nrm, t, rivets=True, rr=rr, sink=0.02 * unit, inmax=0.07 * unit)
                         bv, bf = acc[k_]; o = len(bv); bv.extend(V); bf.extend(tuple(x + o for x in f) for f in F)
                         if rv:
                             RV.append((rv, rf))
@@ -261,18 +263,21 @@ def forged_plates(rings, faces, size, thick, mats, seed=1, keep=None, tri=False,
                             cv = (v0 + v1) / 2; hv = (v1 - v0) * 0.22
                             b2 = [Pq(u0 + (u1 - u0) * 0.12, cv - hv) + nrm * t, Pq(u1 - (u1 - u0) * 0.12, cv - hv) + nrm * t,
                                   Pq(u1 - (u1 - u0) * 0.12, cv + hv) + nrm * t, Pq(u0 + (u1 - u0) * 0.12, cv + hv) + nrm * t]
-                            (V, F), _ = plate_slab(b2, nrm, t * 0.7, rivets=False)
+                            (V, F), _ = plate_slab(b2, nrm, t * 0.7, rivets=False, sink=0.02 * unit)
                             o = len(bv); bv.extend(V); bf.extend(tuple(x + o for x in f) for f in F)
     return acc, _join(RV) if RV else ([], []), laid
 
 
 # ---------------------------------------------------------------------------------------------------- engine
-def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.55, rings=3, struts=8, nose='flat', seg=28):
+def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.55, rings=3, struts=8, nose='flat', seg=28, craft=False):
     """the Sunward engine (S8: big riveted drums behind deep bells); exhaust leaves along -X; origin at the centre of the bell's
     exit plane. bell: deep, a thick rolled lip, stiffener rings on its back laid at the hull's plate pitch (R224); inside it an
     ember lining, a hot throat and a glowing plug cone (Hullbreaker R228 lesson, held here: the plug glows hottest, never black;
     the paint stack varies the glow later). housing: a 16-sided drum of forged plates in ordered courses, riveted bands round
-    it and a heavy mount collar at its front (deep-set: the collar and drum sit in the stern armour)."""
+    it and a heavy mount collar at its front (deep-set: the collar and drum sit in the stern armour). craft=True (issue 769):
+    a squadron craft's drive instead, craft_drive below (the sheet kit's K.engine passes it through kw)."""
+    if craft:
+        return craft_drive(r_exit, body_len, bell_len=bell_len, cowl_r=body_r, throat=throat)
     p = Part('engine')
     bl = bell_len or r_exit * 1.05
     br = body_r or r_exit * 0.92
@@ -657,19 +662,19 @@ def hatchbox(w, l, h, fins=0):
     return p
 
 
-def vent(w, h, slats=5, depth=0.1):
+def vent(w, h, slats=5, depth=0.1, fr=0.05):
     """a heat louvre (local +Z out): a forged frame and slanted slats over a recess lit dull ember from inside"""
     p = Part('vent')
-    fr = 0.05
-    p.add('back', 'mount', 'ember', block(-0.03, 0.01, w / 2, h / 2, 0))
+    p.add('back', 'mount', 'ember', block(-0.03, min(0.01, depth * 0.1), w / 2, h / 2, 0))   # behind the slats on a small louvre too (issue 769)
     for (yo, zo, hw, hh) in ((0, h / 2 - fr / 2, w / 2, fr / 2), (0, -h / 2 + fr / 2, w / 2, fr / 2), (w / 2 - fr / 2, 0, fr / 2, h / 2), (-w / 2 + fr / 2, 0, fr / 2, h / 2)):
         p.add('frame', 'mount', 'siron2', block(-0.02, depth, hw, hh, 0, yo=yo, zo=zo))
     for i in range(slats):
         z = -h / 2 + fr + (h - 2 * fr) * (i + 0.5) / slats
         dz = (h - 2 * fr) / slats * 0.3
-        p.add('slat%d' % i, 'body', 'siron', prism([(depth * 0.2, [(w / 2 - fr, z - 0.016), (-w / 2 + fr, z - 0.016), (-w / 2 + fr, z + 0.016), (w / 2 - fr, z + 0.016)]),
-                                                    (depth * 0.8, [(w / 2 - fr, z + dz - 0.016), (-w / 2 + fr, z + dz - 0.016), (-w / 2 + fr, z + dz + 0.016),
-                                                                   (w / 2 - fr, z + dz + 0.016)])]))
+        st_ = min(0.016, fr * 0.32)   # the slat's half thickness (fr: the frame width; 0.016 on the capital ships)
+        p.add('slat%d' % i, 'body', 'siron', prism([(depth * 0.2, [(w / 2 - fr, z - st_), (-w / 2 + fr, z - st_), (-w / 2 + fr, z + st_), (w / 2 - fr, z + st_)]),
+                                                    (depth * 0.8, [(w / 2 - fr, z + dz - st_), (-w / 2 + fr, z + dz - st_), (-w / 2 + fr, z + dz + st_),
+                                                                   (w / 2 - fr, z + dz + st_)])]))
     for c in p.comps:
         c['verts'] = [Vector((-v.z, v.y, v.x)) for v in c['verts']]
     return p
@@ -686,15 +691,14 @@ def lamp(r=0.08, hood=True):
     return p
 
 
-def slit(w, h, depth=0.08):
+def slit(w, h, depth=0.08, fr=0.045):
     """an armoured ember window slit (local +Z out; factions.md: ember windows): a forged frame round a recessed glowing pane,
     never a round porthole"""
     p = Part('slit')
-    fr = 0.045
     for (yo, zo, hw, hh) in ((0, h / 2 + fr / 2, w / 2 + fr, fr / 2), (0, -h / 2 - fr / 2, w / 2 + fr, fr / 2), (w / 2 + fr / 2, 0, fr / 2, h / 2), (-w / 2 - fr / 2, 0, fr / 2, h / 2)):
         p.add('frame', 'mount', 'siron2', block(-0.02, depth, hw, hh, 0, yo=yo, zo=zo))
-    p.add('glass', 'body', 'glow', block(0.006, depth * 0.3, w / 2, h / 2, 0))
-    p.add('brow', 'body', 'sworn', block(depth * 0.6, depth * 1.2, w / 2 + fr, 0.012, 0, zo=h / 2 + fr))
+    p.add('glass', 'body', 'glow', block(min(0.006, depth * 0.075), depth * 0.3, w / 2, h / 2, 0))   # recessed on a small slit too (issue 769)
+    p.add('brow', 'body', 'sworn', block(depth * 0.6, depth * 1.2, w / 2 + fr, min(0.012, fr * 0.27), 0, zo=h / 2 + fr))
     for c in p.comps:
         c['verts'] = [Vector((-v.z, v.y, v.x)) for v in c['verts']]
     return p
@@ -714,3 +718,225 @@ def thruster(r=0.3, nozzles=2):
         c['verts'] = [Vector((v.y, v.x, v.z)) for v in c['verts']]
     p.fit = dict(out=D((0, 0, 1)))
     return p
+
+
+# ---------------------------------------------------------------------------------------------------- squadron craft (issue 769)
+# The Sunward fighter (SF3, data.js fighter: guns T) and bomber (SB4, data.js bomber: bombs T), R253 and R255. A craft is about
+# a twelfth of the flagship's length on the board, so these parts take every size from their own arguments (no fixed world
+# sizes, which suit a 27 unit hull and would swamp a 1.6 unit craft), and they stay bold and simple: fine greeble at this size
+# reads as a shrunken capital ship (design_notes_757.md, production notes). Ryan's words that bind (R254, round 1 craft "look
+# like they're aerial fighters, not space fighters"): no canopy, no swept aero wings, no tail fins, no bombs hung under the hull;
+# drives are nozzle clusters inside armoured blocks; ordnance is internal.
+WEAPONS.update({
+    'guns': dict(
+        name='Interceptor guns', rules='data.js guns: 3 shots, 4 damage, range 1 (k sq), 82 aim, x2.2 against squadrons, x0.5 against capitals',
+        lore='The wing\'s only weapon (lore 2.5: unaugmented crews, no AI: a pilot aims it). Battle look: guns (craft on a strafing run).',
+        design=('Three short barrels in one tight emitter cluster on a shallow traverse ring, sunk in an armoured well on the '
+                'blade\'s back near the bow: a low faceted housing, a block mantlet, the three muzzles flared with dark bores. It '
+                'turns (data.js arc T, the fit check sweeps it all round) and sits low, so nothing on the fighter reads as a turret '
+                'on a jet.')),
+    'bombs': dict(
+        name='Bomb payload', rules='data.js bombs: 2 shots, 9 damage, range 1 (k sq), 78 aim, pierce 0.6, crit 10, x0.2 against squadrons',
+        lore='The wing\'s only weapon: the bomber is built round its magazine. Battle look: bombs.',
+        design=('Two big tube mouths in a deep armoured cassette that is the bomber\'s bow face: heavy twelve-sided rims with '
+                'forged lugs, dark bores with the next bomb\'s nose seated deep inside, the bombardier\'s sight slit between them. '
+                'Fixed forward: the bomber turns to bring them to bear. Ordnance is internal, never hung under the hull.')),
+})
+
+
+def _vslab(x0, x1, hy, z0, z1, k_top=1.0, yo=0.0):
+    """an upright slab from z0 to z1, x0 to x1 at the foot, its fore and aft edges drawn in toward the middle by k_top at the top"""
+    xm = (x0 + x1) / 2; a0, a1 = xm + (x0 - xm) * k_top, xm + (x1 - xm) * k_top
+    V = [(x0, yo - hy, z0), (x1, yo - hy, z0), (x1, yo + hy, z0), (x0, yo + hy, z0),
+         (a0, yo - hy, z1), (a1, yo - hy, z1), (a1, yo + hy, z1), (a0, yo + hy, z1)]
+    return V, [(3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
+
+
+def _interceptor(p, barrels, cal, blen, s, pitch, variant):
+    """the interceptor guns (data.js guns): s is the traverse ring's radius, cal a barrel's radius, blen the cluster's reach from
+    the trunnion. Local +Z out of the deck, +X the rest aim."""
+    ph = math.pi / 16
+    p.add('ring', 'mount', 'siron2', _zrev([(-0.6 * s, s), (0.1 * s, s), (0.1 * s, s * 0.9), (0.14 * s, s * 0.86), (0.14 * s, 0.001)], 16, cap0=True, phase=ph))
+    # the armoured well's rim round the ring (the "armoured recess" of the concept), riveted
+    p.add('well', 'mount', 'sworn', _zrev([(-0.05 * s, s * 1.0), (-0.05 * s, s * 1.2), (0.12 * s, s * 1.2), (0.18 * s, s * 1.1), (0.18 * s, s * 1.0)], 16, closed=True, phase=ph))
+    p.add('wellstud', 'mount', 'sworn', _ring_studs(0.18 * s, s * 1.1, 10, 0.035 * s, out=False))
+    R = 0.8 * s
+    p.add('housing', 'body', 'siron', _zrev([(0.14 * s, R), (0.3 * s, R), (0.42 * s, R * 0.74), (0.46 * s, 0.001)], 8, phase=math.pi / 8))
+    p.add('housingband', 'body', 'siron2', _zrev([(0.17 * s, R * 0.99), (0.17 * s, R * 1.05), (0.24 * s, R * 1.05), (0.24 * s, R * 0.99)], 8, closed=True, phase=math.pi / 8))
+    p.add('sight', 'body', 'dark', block(-R * 0.55, -R * 0.15, R * 0.22, 0.025 * s, 0, zo=0.44 * s))
+    trunnion = Vector((0.35 * s, 0, 0.4 * s))
+    E = Matrix.Translation(trunnion) @ Matrix.Rotation(-math.radians(pitch), 4, 'Y')
+    d = cal * 2.0
+    offs = [(0.0, d * 1.0), (-d * 0.87, -d * 0.5), (d * 0.87, -d * 0.5)][:max(1, barrels)]
+    cw = d * 0.87 + cal * 1.7
+    p.add('mantlet', 'body', 'siron2', moved(block(-0.25 * s, 0.1 * s, cw * 1.1, d * 0.75 + cal * 1.7, cal * 0.8, zo=d * 0.25), E))
+    # the emitter cluster: one forged jacket round all three barrels, chamfered, two cooling bands
+    xj = blen * 0.55
+    p.add('cluster_jacket', 'body', 'siron2', moved(block(0.05 * s, xj, cw, d * 0.75 + cal * 1.6, cal * 1.2, zo=d * 0.25), E))
+    for i, f in enumerate((0.35, 0.75)):
+        x = 0.05 * s + (xj - 0.05 * s) * f
+        p.add('cluster_band%d' % i, 'body', 'sworn', moved(block(x - cal * 0.5, x + cal * 0.5, cw * 1.08, d * 0.75 + cal * 1.75, cal * 1.2, zo=d * 0.25), E))
+    muzzles = []
+    for i, (oy, oz) in enumerate(offs):
+        T = E @ Matrix.Translation((0, oy, oz))
+        xe = blen
+        p.add('b%d_barrel' % i, 'body', 'siron', moved(revolve([(xj - cal, cal), (xe - cal * 1.1, cal * 0.92)], 12, phase=math.pi / 12), T))
+        p.add('b%d_muzzle' % i, 'body', 'sworn', moved(revolve([(xe - cal * 1.1, cal * 0.92), (xe - cal * 0.5, cal * 1.3), (xe, cal * 1.35), (xe, cal * 0.62),
+                                                                (xe - cal * 1.6, cal * 0.62)], 12, phase=math.pi / 12), T))
+        p.add('b%d_bore' % i, 'body', 'dark', moved(revolve([(xe - cal * 1.6, 0.0001), (xe - cal * 1.6, cal * 0.63)], 12), T))
+        muzzles.append(P(T @ Vector((xe, 0, 0))))
+    return trunnion, muzzles, trunnion.x + blen, s * 1.2, E
+
+
+GUN_BUILDERS['guns'] = _interceptor
+
+
+def rocket_rack(rows, cols, cell, depth, variant=0):
+    """the Sunward bomb cassette (data.js bombs). The sheet kit's K.launcher asks every faction kit for rocket_rack(rows, cols,
+    cell, depth); the Sunward answer is no rack of rockets but a deep armoured cassette of bomb tubes that forms the bomber's bow
+    face. Local +X the firing direction, +Z up, origin at the centre of the cassette's front face; cell is the tube pitch, depth
+    how far the bores run back. Every piece is mount: the cassette stands on the hull's bow and the bores run back into it."""
+    p = Part('launcher')
+    p.type = 'bomb_tube'
+    r = cell * 0.3
+    hw, hh = cols * cell / 2, rows * cell / 2
+    tf = r * 0.25
+    ch = cell * 0.12
+    n = 16
+    ctr = [((i - (cols - 1) / 2) * cell, (j - (rows - 1) / 2) * cell) for j in range(rows) for i in range(cols)]
+    # the front plate: each cell a square with a round hole, quads from the hole to the square (front at x 0, back at -tf)
+    FV, FF = [], []
+    for (cy, cz) in ctr:
+        for x, flip in ((0.0, False), (-tf, True)):
+            o = len(FV)
+            for k in range(n):
+                a = 2 * math.pi * k / n
+                c, s_ = math.cos(a), math.sin(a)
+                m = max(abs(c), abs(s_))
+                FV.append((x, cy + r * 1.02 * c, cz + r * 1.02 * s_))
+                oy, oz = cy + cell / 2 * c / m, cz + cell / 2 * s_ / m
+                ex = abs(oy) + abs(oz) - (hw + hh - ch)   # past the housing's chamfered corner: pulled in along the ray
+                if ex > 0:
+                    k_ = ex / max(1e-9, abs(oy - cy) * (1 if oy * (oy - cy) > 0 else -1) + abs(oz - cz) * (1 if oz * (oz - cz) > 0 else -1))
+                    oy, oz = oy - (oy - cy) * min(1.0, k_), oz - (oz - cz) * min(1.0, k_)
+                FV.append((x, oy, oz))
+            for k in range(n):
+                a, b = o + 2 * k, o + 2 * ((k + 1) % n)
+                q = (a, b, b + 1, a + 1)
+                FF.append(q[::-1] if flip else q)
+    p.add('face', 'mount', 'siron2', (FV, FF))
+    # the housing round the bores: the cassette's top, bottom and side walls, chamfered, and its back block in the hull
+    w = cell * 0.12
+    p.add('housing', 'mount', 'siron', block(-depth * 1.15, -tf * 0.3, hw, hh, ch))
+    for k_, (cy, cz) in enumerate(ctr):
+        p.add('bore%d' % k_, 'mount', 'siron2', moved(revolve([(0.0, r * 1.02), (-depth, r * 1.02)], n), Matrix.Translation((0, cy, cz))))
+        p.add('back%d' % k_, 'mount', 'dark', moved(revolve([(-depth * 0.99, r * 1.03), (-depth * 0.99, 0.0001)], n), Matrix.Translation((0, cy, cz))))
+        # the next bomb seated deep in the bore: a dark iron nose with a worked band (ordnance internal, never underslung)
+        p.add('warhead%d' % k_, 'mount', 'siron', moved(revolve([(-depth * 0.97, r * 0.82), (-depth * 0.72, r * 0.8), (-depth * 0.55, r * 0.45), (-depth * 0.5, 0.0001)], n),
+                                                        Matrix.Translation((0, cy, cz))))
+        p.add('warheadband%d' % k_, 'mount', 'sworn', moved(ring_band(-depth * 0.78, r * 0.8, r * 0.1, r * 0.05, n), Matrix.Translation((0, cy, cz))))
+        # the heavy shaped rim: a twelve-sided collar of worked iron standing proud of the face, stepped, with forged lugs round it
+        # (worked iron, as the concept's worn grey rims: a light ring round a dark mouth is what reads at the battle camera)
+        p.add('rim%d' % k_, 'mount', 'sworn', moved(revolve([(-tf * 0.5, r * 1.02), (-tf * 0.5, r * 1.4), (r * 0.3, r * 1.4), (r * 0.42, r * 1.27), (r * 0.42, r * 1.02)],
+                                                            12, closed=True, phase=math.pi / 12), Matrix.Translation((0, cy, cz))))
+        lugs = []
+        for a in (60, 120, 240, 300):
+            ar = math.radians(a)
+            u = Vector((0, math.cos(ar), math.sin(ar))); v = Vector((0, -math.sin(ar), math.cos(ar)))
+            c0 = Vector((0, cy, cz)) + u * r * 1.47
+            V_ = []
+            for x in (-tf * 0.5, r * 0.34):
+                for du, dv in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
+                    V_.append(tuple(c0 + Vector((x, 0, 0)) + u * du * r * 0.13 + v * dv * r * 0.18))
+            lugs.append((V_, [(3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]))
+        p.add('lug%d' % k_, 'mount', 'siron2', _join(lugs))
+        st = []
+        for i in range(12):
+            a = 2 * math.pi * (i + 0.5) / 12
+            st.append(_stud((r * 0.42, cy + r * 1.15 * math.cos(a), cz + r * 1.15 * math.sin(a)), (1, 0, 0), r * 0.045))
+        p.add('studs%d' % k_, 'mount', 'sworn', _join(st))
+    if cols == 2 and rows == 1:
+        # the bombardier's sight slit between the two mouths (the concept's recessed sensor slit at the centre): a forged frame
+        # round a recessed ember pane; it aims the tubes, so it belongs to the cassette
+        sw, sh = cell * 0.05, cell * 0.17
+        p.add('sightframe', 'mount', 'siron2', block(-tf * 0.5, r * 0.12, sw + r * 0.06, sh + r * 0.06, r * 0.03))
+        p.add('sight', 'mount', 'glow', block(r * 0.06, r * 0.125, sw, sh, 0))
+    p.fit = dict(exits=[dict(pos=P((r * 0.42, cy, cz)), axis=D((1, 0, 0)), radius=r) for (cy, cz) in ctr])
+    return p
+
+
+def craft_drive(r_exit, body_len, bell_len=None, cowl_r=None, throat=0.55, recess=0.35):
+    """a craft's drive (the owner's rule for craft: thrusters are nozzle clusters inside armoured blocks): a deep bell sunk in an
+    eight-sided armoured cowl, the cowl's aft face standing proud of the bell's lip by recess (a share of r_exit), so the bell
+    sits in a recess; ember lining, a hot throat and a glowing plug cone deep inside (dim, banked coals, R55). Origin at the
+    centre of the bell's exit plane, exhaust along -X; the cowl runs forward body_len into the stern armour."""
+    p = Part('engine')
+    r = r_exit
+    bl = bell_len or r * 1.05
+    t = r * 0.12
+    rt = r * throat
+    k = 6
+    outer = [(bl - bl * i / k, rt + (r - rt) * (i / k) ** 1.5) for i in range(k + 1)]
+    lip = [(-t * 0.5, r + t * 1.1), (-t * 0.5, r - t * 0.5)]
+    inner = [(x, max(rt * 0.8, rr - t * 1.3)) for (x, rr) in reversed(outer)]
+    seg = 20
+    p.add('bell', 'body', 'siron', revolve(outer + lip + inner[1:], seg, closed=True, phase=math.pi / seg))
+    p.add('lining', 'body', 'ember', revolve([(x - r * 0.01, max(rt * 0.78, rr - t * 1.35)) for (x, rr) in outer[::-1][:-1]], seg, phase=math.pi / seg))
+    xr = bl * 0.45; rr_ = rt + (r - rt) * (1 - xr / bl) ** 1.5
+    p.add('bellring0', 'body', 'sworn', revolve([(xr + t * 0.6, rr_ - t * 0.1), (xr + t * 0.6, rr_ + t * 0.7), (xr - t * 0.6, rr_ + t * 0.7), (xr - t * 0.6, rr_ - t * 0.1)],
+                                               seg, closed=True, phase=math.pi / seg))
+    p.add('throat', 'body', 'glow', revolve([(bl * 0.92, rt * 0.82), (bl * 0.98, 0.0001)], seg, cap0=False))
+    p.add('plug', 'body', 'glow', revolve([(bl * 0.9, rt * 0.62), (bl * 0.55, rt * 0.42), (bl * 0.2, 0.0001)], seg, cap0=True))
+    cr = cowl_r or r * 1.5
+    rb = r + t * 1.6
+    xa = -r * recess
+    ph = math.pi / 8
+    p.add('housing', 'mount', 'siron2', revolve([(xa, rb), (xa, cr), (body_len, cr), (body_len, rb)], 8, closed=True, phase=ph))
+    p.add('housingback', 'mount', 'dark', revolve([(bl * 1.04, rb), (bl * 1.04, 0.0001)], 8, phase=ph))
+    p.add('band', 'mount', 'sworn', revolve([(xa + r * 0.08, cr * 0.98), (xa + r * 0.08, cr * 1.07), (xa + r * 0.3, cr * 1.07), (xa + r * 0.3, cr * 0.98)], 8, closed=True, phase=ph))
+    p.add('collar', 'mount', 'siron', revolve([(body_len * 0.5, cr * 0.98), (body_len * 0.5, cr * 1.1), (body_len * 0.7, cr * 1.1), (body_len * 0.7, cr * 0.98)], 8, closed=True, phase=ph))
+    st = []
+    for i in range(8):
+        a = 2 * math.pi * (i + 0.5) / 8 + ph
+        st.append(_stud((xa, (rb + cr) / 2 * math.cos(a), (rb + cr) / 2 * math.sin(a)), (-1, 0, 0), r * 0.06))
+    p.add('facestud', 'mount', 'sworn', _join(st))
+    p.fit = dict(exit=P((0, 0, 0)), axis=D((-1, 0, 0)), radius=r + t * 1.1, front=P((body_len, 0, 0)), body_r=cr)
+    return p
+
+
+def craft_spire(h, L, t, spread, fins=4):
+    """the fighter's one radiator spire (SF3: "a single short radiator spire stands on the spine, ember glow at its root": the
+    flagship's spire row reduced to one). Origin at the root's foot, +X forward, +Z up. Upright and square-topped with its ember
+    fins reaching out to each side, so it reads as a radiator, never a tail fin (no sweep, no rake, no rudder edge)."""
+    p = Part('radiator')
+    p.type = 'radiator'
+    p.add('root', 'mount', 'siron2', block(-L * 0.62, L * 0.62, t * 1.6, h * 0.1, h * 0.03))
+    p.add('rootstep', 'mount', 'siron', block(-L * 0.5, L * 0.5, t * 1.2, h * 0.03, 0.0, zo=h * 0.12))
+    p.add('rootglow', 'body', 'embar', block(-L * 0.42, L * 0.42, t * 1.22, h * 0.012, 0.0, zo=h * 0.155))
+    p.add('bar', 'body', 'siron2', _vslab(-L * 0.36, L * 0.36, t * 0.42, h * 0.14, h * 0.9, 0.85))
+    p.add('column', 'body', 'siron', _join([_vslab(-L * 0.5, -L * 0.32, t * 0.55, h * 0.14, h * 0.9, 1.0), _vslab(L * 0.32, L * 0.5, t * 0.55, h * 0.14, h * 0.9, 1.0)]))
+    p.add('cap', 'body', 'sworn', block(-L * 0.55, L * 0.55, t * 0.85, h * 0.045, h * 0.02, zo=h * 0.93))
+    fv = []
+    for i in range(fins):
+        z = h * (0.28 + 0.56 * i / max(1, fins - 1))
+        f = (z / h - 0.28) / 0.56
+        reach = t * 0.5 + spread * (1 - 0.3 * f)
+        th = h * 0.022
+        for sg in (1, -1):
+            y0, y1 = sg * t * 0.4, sg * reach
+            V = [(-L * 0.3, y0, z - th), (L * 0.3, y0, z - th), (L * 0.3, y1, z - th), (-L * 0.3, y1, z - th),
+                 (-L * 0.26, y0, z + th), (L * 0.26, y0, z + th), (L * 0.26, y1 - sg * th, z + th), (-L * 0.26, y1 - sg * th, z + th)]
+            fv.append((V, [(3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]))
+    p.add('fin', 'body', 'embar', _join(fv))
+    gz = []
+    for sg in (1, -1):
+        for x in (-L * 0.35, L * 0.35):
+            gz.append(([(x - L * 0.05, sg * t * 0.5, h * 0.14), (x + L * 0.05, sg * t * 0.5, h * 0.14), (x + L * 0.05, sg * t * 1.15, h * 0.14),
+                        (x - L * 0.05, sg * t * 1.15, h * 0.14), (x - L * 0.05, sg * t * 0.5, h * 0.36), (x + L * 0.05, sg * t * 0.5, h * 0.36)],
+                       [(0, 1, 2, 3), (0, 4, 5, 1), (1, 5, 2), (3, 2, 5, 4), (0, 3, 4)]))
+    p.add('brace', 'body', 'siron2', _join(gz))
+    return p
+
+
+MACHINES = MACHINES + ('launcher',)   # issue 769: the bomb cassette is a machine (it rides whole with one piece)
+SUBPARTS['bomb_tube'] = ['face', 'housing', 'bore', 'rim', 'warhead', 'back']
