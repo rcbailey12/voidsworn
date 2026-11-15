@@ -164,7 +164,9 @@ if kw.get('cam170') == '1':
     # preview of the pixel size, beside which the PC run's own CODE_cam170.jpg is the game's
     Lw = float(sc.get('r209_length_world', 0) or 0) or 1.0; b_ = 0.98; dist = 170.0 / Lw
     c = bpy.data.cameras.new('cam170'); o2 = bpy.data.objects.new('cam170', c); sc.collection.objects.link(o2)
-    o2.location = Vector((0, -math.cos(b_) * dist, math.sin(b_) * dist)); o2.rotation_euler = (-o2.location).to_track_quat('-Z', 'Y').to_euler()
+    # pitch b_ is measured from straight down, as camera_rig.gd's _cb (y = cos(_cb)): 0.98 rad is 34 degrees above the board
+    # (issue 756 found sin and cos swapped here, which put this camera 56 degrees up; previews before Nov 15 used that)
+    o2.location = Vector((0, -math.sin(b_) * dist, math.cos(b_) * dist)); o2.rotation_euler = (-o2.location).to_track_quat('-Z', 'Y').to_euler()
     c.sensor_fit = 'VERTICAL'; c.angle_y = 2 * math.atan(math.tan(math.radians(22.5)) * 360 / 1080); c.clip_start = .01; c.clip_end = dist * 3
     sc.render.resolution_x, sc.render.resolution_y = 640, 360; shots['cam170'] = shoot(o2, 'paint_cam170', 1.0)
 json.dump(dict(shots=shots, windows=windows, lift=LIFT, samples=SAMP, camera=SHEET + '_camera.json'), open(os.path.join(OUT, 'paint_shots.json'), 'w'), indent=1)

@@ -105,6 +105,9 @@ and point forward). Structure per cell (H10 by eye / build): bow top 2/3, bow si
 - **Seam clearance:** every inside stops 0.14 to 0.16 short of its seam path's furthest kink. The game tears a transverse seam
   along its plan path with the waves of godot/fx/fx_death.gd; if death_seam_check counts inside triangles outside their piece,
   pull the insides back from the seams. Not run here: it needs the stage 7 export on the PC.
+  Board note (Nov 15 2026, opus_check_767 condition 1): the E11 and S8 checks found the peel needs about 0.5 of clearance,
+  so the Board expects death_seam_check to fail here, not just possibly. It runs on the stage 7 export before any paint or
+  recipe stage builds on these room positions; the fix is pulling the insides back from the seams, never moving the outside.
 - **Rectangular nozzles:** the export's open-bell test was written for round bells; the sandbox run of the same function passes
   all four, but the export has not run.
 - **The model is 21.2 long** (the retro thrusters and bow plates stand 0.18 proud of the bow face); the contract scales it to
