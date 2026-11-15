@@ -18,7 +18,7 @@ Start here: [the overview](hegemony_H10_sheet_overview.jpg), [the whole concept 
 
 Files: design `tools/blender/build_sheets/ships/hegemony_H10.py`, inventory `hegemony_H10_inv.py`, beauty camera
 `hegemony_H10_camera.json`, battle camera `hegemony_H10_camera_battle.json`, recipe entry `tools/recipe/ships/hegemony_H10.json`
-(bake none until the Hegemony paint stack), the new faction kit `tools/blender/kits/hegemony/` (its README says what each part is).
+(bake stack since issue 780: the Hegemony paint stack, pictures in [paint/](paint/README.md)), the new faction kit `tools/blender/kits/hegemony/` (its README says what each part is).
 
 ## The design, in short
 

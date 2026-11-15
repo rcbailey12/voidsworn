@@ -262,14 +262,21 @@ def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.55, rings
         z = (k - 1) * hh * throat * 0.55
         p.add('vane%d' % k, 'body', 'hmetal', _zblock(xt * 0.62, xt * 0.97, -hw * throat * 0.98, hw * throat * 0.98, z - 0.018, z + 0.018))
     # the housing: the nozzle pod. A sleeve of four armoured walls round the lining from the lip back to the throat, a solid
-    # block behind the throat that seats on the rail's end (the mount), two trim bands round it, machined side panels (R224)
+    # block behind the throat that seats on the rail's end (the mount), two trim rings round it, machined side panels (R224)
     bh, bz = hw + t * 1.25, hh + t * 1.25
     x0s = t * 1.5
     for (y0, y1, z0, z1) in ((-bh, bh, hh + t * 0.2, bz), (-bh, bh, -bz, -hh - t * 0.2), (hw + t * 0.2, bh, -bz, bz), (-bh, -hw - t * 0.2, -bz, bz)):
         p.add('housing', 'mount', 'hgrey2', _zblock(x0s, xt + 0.02, y0, y1, z0, z1))
     p.add('housingback', 'mount', 'hgrey2', _zblock(xt + 0.02, body_len, -bh, bh, -bz, bz, ch=t * 0.5))
+    # the trim bands are rings round the sleeve, open in the middle (R262, issue 780: as solid blocks their aft face closed the
+    # nozzle mouth just inside the lip, so the throat and the vanes were never seen): each band is four bars round the walls,
+    # their inner edge on the walls' inner face, so the mouth, the lining and the throat stay open
+    ow, oz = bh + 0.035, bz + 0.035; iw, iz = hw + t * 0.2, hh + t * 0.2
     for k, xb in enumerate((x0s + 0.06, max(x0s + 0.3, body_len - 0.35))):
-        p.add('band%d' % k, 'mount', 'htrim', _zblock(xb, xb + 0.12, -bh - 0.035, bh + 0.035, -bz - 0.035, bz + 0.035, ch=0.03))
+        p.add('band%d' % k, 'mount', 'htrim', _zblock(xb, xb + 0.12, -ow, ow, iz, oz, ch=0.03))
+        p.add('band%d' % k, 'mount', 'htrim', _zblock(xb, xb + 0.12, -ow, ow, -oz, -iz))
+        p.add('band%d' % k, 'mount', 'htrim', _zblock(xb, xb + 0.12, iw, ow, -iz, iz))
+        p.add('band%d' % k, 'mount', 'htrim', _zblock(xb, xb + 0.12, -ow, -iw, -iz, iz))
     for s in (1, -1):   # machined side panels: the module grid carried onto the part (R224)
         for k in range(3):
             zc = (k - 1) * bz * 0.62
