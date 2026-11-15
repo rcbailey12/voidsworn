@@ -112,14 +112,17 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    mounts, length) and the recipe reads it; recipe checks read the ship's own entry, never a prior ship's shape (C15s's was the case that bit).
 
 11. **Visible weapons are the game's weapons (R241, Ryan, Nov 13).** Every visible gun, turret, launcher and weapon organ
-   belongs to a `data.js` weapon slot: its kind and size fit that weapon, its registered muzzle becomes that slot's
+   belongs to a `data.js` weapon slot: its kind and mount fit that weapon (data.js carries no mount size, so size is judged by eye
+   against the class, and checked only between mounts of one slot), its registered muzzle becomes that slot's
    `hp_w<slot>` at the visible weapon, and it faces the data arc. Turning pieces stay under their turret pivot. No extra or
    decorative weapons. Ryan allows multiple mounts for one slot when they are consistent with its firing and turning:
    matching kind, mount, barrel count and size, with their own muzzles and every mount firing on each volley under the
    game's rotating muzzle order. `tools/blender/build_sheets/weapon_match.py` checks the built ship against `data.js`,
    including its shot count. Every build mode and `contract.to_recipe` refuse a failure. The sheet carries the slot and
    mount table (`weapon_match.json`) and lists each design change. Run `weapon_match_selftest.py` to prove the check rejects
-   broken inputs. Why: Ryan wants the visible weapons to line up with firing, effects and turns, including shared batteries.
+   broken inputs. Why: Ryan wants the visible weapons to line up with firing, effects and turns, including shared batteries. The SAME rule (one slot's mounts match in kind,
+   mount, barrels and size within x1.3) and SPLIT rule (every mount fires on every volley) are the Board's reading of Ryan's
+   "consistent and line up with the in game behavior" (Nov 15, ratified on PR 691), not his words: change them if he rules otherwise.
 
 ## 1. Target
 

@@ -3,6 +3,11 @@ import sys, shutil
 from PIL import Image, ImageDraw, ImageFont
 s, R, O, ov, REPO = sys.argv[1:6]
 D = '%s/docs/ship_pipeline/build_sheets/%s' % (REPO, s)
+# R241: never publish a sheet whose weapon match failed (Muse opus_check_691 condition 3; build.py writes the record before it exits 1).
+import json
+wm = json.load(open('%s/%s_weapon_match.json' % (R, s)))
+if wm.get('result') != 'PASS':
+    sys.exit('weapon match is %s for %s: fix the ship, do not publish (ships.md rule 11)' % (wm.get('result'), s))
 import os; os.makedirs(D, exist_ok=True)
 for n in ['side', 'top', 'underside', 'bow', 'stern', 'cutaway', 'threequarter']:
     Image.open('%s/%s.png' % (O, n)).convert('RGB').save('%s/%s.jpg' % (D, n), quality=88)
@@ -21,8 +26,6 @@ c.save('%s/beauty_vs_blockout.jpg' % D, quality=85)
 shutil.copy('%s/%s_fit.json' % (R, s), '%s/fit.json' % D)
 shutil.copy('%s/%s_weapon_match.json' % (R, s), '%s/weapon_match.json' % D)
 # R241 review picture: one named item, 1280 by 720, with the actual slot/mount table beside the concept comparison.
-import json
-wm = json.load(open('%s/%s_weapon_match.json' % (R, s)))
 
 
 def review_font(size):
