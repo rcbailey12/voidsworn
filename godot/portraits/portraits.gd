@@ -80,7 +80,10 @@ static func _face_image(id: String) -> Image:
 
 
 static func _face_base(id: String) -> Texture2D:
-	return _tex(_face_path(id))
+	# A picked painting that exists but fails to load falls back to the crest, as face() did before issue 43
+	# (Muse opus_check_707 condition 2).
+	var t := _tex(_face_path(id))
+	return t if t != null else crest(id)
 
 
 static func crest(id: String) -> Texture2D:

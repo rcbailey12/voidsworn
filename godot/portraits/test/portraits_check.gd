@@ -56,6 +56,8 @@ func _restoration_check() -> void:
 	var base: Texture2D = Portraits.face("nekhet")
 	_ok(base != null, "no base face for nekhet")
 	_ok(Portraits.face("nekhet", 0) == base, "level 0 must not reframe an Eclipse admiral")
+	# Snapshot the plain face so a later in-place mark (the bleed face() guards against) is caught (opus_check_707 3a).
+	var base_img: Image = base.get_image().duplicate() if base != null and base.get_image() != null else null
 	var last := 0
 	for lv in [1, 2, 3, 4, 5, 6, 7, 8]:
 		var t: Texture2D = Portraits.face("nekhet", lv)
@@ -63,6 +65,10 @@ func _restoration_check() -> void:
 		var diff := _diff_px(base, t)
 		_ok(diff > last, "nekhet level %d adds no new marks (changed pixels %d, previous %d)" % [lv, diff, last])
 		last = diff
+	var plain_after: Texture2D = Portraits.face("nekhet")
+	_ok(plain_after == base, "the plain face changed object after levelled calls")
+	if base_img != null:
+		_ok(_diff_px(ImageTexture.create_from_image(base_img), plain_after) == 0, "a levelled call marked the plain face in place (frame bleed)")
 	_ok(Portraits.face("nekhet", 8, 3) != Portraits.face("nekhet", 8), "capstone adds no hairline beyond level 8")
 	_ok(_diff_px(Portraits.face("nekhet", 8), Portraits.face("nekhet", 8, 3)) > 0, "capstone hairline changes nothing")
 	for other in ["vex", "grax", "matriarch", "aelith"]:
