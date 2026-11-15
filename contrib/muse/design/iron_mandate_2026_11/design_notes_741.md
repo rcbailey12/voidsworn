@@ -57,3 +57,7 @@ IM1, the Terraced Fortress: the council's convergence, the lowest-risk read as t
 ## Council record
 
 Blind Rey leg first (directions: Catamaran Mandate, Terraced Slab, the Keel; the Keel was dropped at the chair for its naval sail risk, the one direction no other leg echoed). DeepSeek (DeepThink on, Search on, the project's design-leg setting, verified before and after): the Bulwark, the Anvil, the Redoubt; pick IM2 (its Anvil). Flash (Gemini "Quick answers 3.5 Flash-Lite", verified selected before and after): Fortress Monolith, Chevron Bastion, Monolithic Spearhead; pick its IM1 (the fortress). Qwen: seat empty, the Qwen3.8-Max daily limit was reached earlier in the evening; no substitution. Grok: seat empty, bot wall at grok.com, the twenty-eighth consecutive empty seat. The chair composited the three render directions from the legs as described above.
+
+## Ruling (Ryan, Nov 14, 2026, ~21:21 CST)
+
+Ryan picked IM1, the Terraced Fortress, for The Iron Mandate. Recorded by the chair from his message in main chat ("Im1 for the ship"). IM2 and IM3 stand as the unpicked directions in this folder. The Board takes IM1 forward to its sheet.
