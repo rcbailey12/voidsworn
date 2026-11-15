@@ -313,7 +313,8 @@ render(o, res, os.path.join(OUT, 'stern.png'))
 
 
 # standard three-quarter: 45 degrees off the bow toward port, 30 above, bow left
-o = look_cam('threequarter', 45, 30, 120, 50 * 120 / (1.5 * ship.LENGTH) * 0.9, (1600, 1000), (cx, cy, cz))
+# a ship taller than its length allows (E14's upright ring, issue 782) widens the frame with its SHEET 'tq_zoom' (default 1)
+o = look_cam('threequarter', 45, 30, 120, 50 * 120 / (1.5 * ship.LENGTH) * 0.9 * float(_SH.get('tq_zoom', 1.0)), (1600, 1000), (cx, cy, cz))
 render(o, (int(1600 * (0.5 if QUICK else 1)), int(1000 * (0.5 if QUICK else 1))), os.path.join(OUT, 'threequarter.png'))
 # the fitted beauty camera (written by fit.py), for the outline check
 fitp = os.path.join(HERE, 'ships', CODE + '_camera.json')
