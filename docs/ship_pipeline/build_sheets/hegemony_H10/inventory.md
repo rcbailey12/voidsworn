@@ -52,6 +52,7 @@ Kit sub-parts per type (what DETAILED checks):
 Left as surface, and why:
 
 - The flank band carries only the blue line, the windows and the breach anchors: H10 draws it as a plain band under the light strip.
+- H10's two raised boxes at the ends of the bay opening are not built: the flush doors fill the trough and the boxes have no job (listed on the sheet's changes).
 - Stencil marks (H10's "HD-14", "SECTION") are paint, not modelled (the Hegemony stack, a later job).
 
 ## Every built part has a job (R221)
@@ -177,7 +178,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 ## Structure per cell: distinct masses (blocks, tiers, belts), concept against build
 
-Concept counts read off the concept sheet by eye (H10 sheet: bow, the wedge and its bow face; midships, the wedge, the two turret bays, the rails' roots and the bay with its two boxes; stern, the two rails and the nozzle pods; no underside view); build counts are the model's registered masses whose station range overlaps the third (below: masses reaching within 0.8 of the belly).
+Concept counts read off the concept sheet by eye (H10 sheet: bow, the wedge and its bow face; midships, the wedge, the two turret bays, the rails' roots and the bay (its two boxes left out, see the changes); stern, the two rails and the nozzle pods; no underside view); build counts are the model's registered masses whose station range overlaps the third (below: masses reaching within 0.8 of the belly).
 
 | Cell | Concept | Build | Build masses |
 |---|---:|---:|---|

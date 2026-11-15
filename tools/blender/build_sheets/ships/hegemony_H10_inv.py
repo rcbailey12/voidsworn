@@ -63,7 +63,8 @@ INVENTORY = [
 ]
 LEFT_PLAIN = [
     'The flank band carries only the blue line, the windows and the breach anchors: H10 draws it as a plain band under the light strip.',
+    'H10\'s two raised boxes at the ends of the bay opening are not built: the flush doors fill the trough and the boxes have no job (listed on the sheet\'s changes).',
     'Stencil marks (H10\'s "HD-14", "SECTION") are paint, not modelled (the Hegemony stack, a later job).',
 ]
 STRUCTURE = {'bow/top': 2, 'bow/side': 2, 'mid/top': 5, 'mid/side': 4, 'stern/top': 3, 'stern/side': 3}
-STRUCTURE_NOTE = 'H10 sheet: bow, the wedge and its bow face; midships, the wedge, the two turret bays, the rails\' roots and the bay with its two boxes; stern, the two rails and the nozzle pods; no underside view'
+STRUCTURE_NOTE = 'H10 sheet: bow, the wedge and its bow face; midships, the wedge, the two turret bays, the rails\' roots and the bay (its two boxes left out, see the changes); stern, the two rails and the nozzle pods; no underside view'

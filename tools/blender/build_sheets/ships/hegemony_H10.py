@@ -368,10 +368,13 @@ def build(K):
         sn = 'p' if side > 0 else 's'
         K.thruster('Q1' + sn, (10.5, side * 1.55, -0.25), (1, 0, 0), inv='thrusters', r=0.3,
                    note='retro thruster on the bow face (lore 3.4: retro thrusters make backing off cheap)')
+        K.features[-1]['what'] = 'retro thruster, two rectangular nozzles'
         h = half_ring(8.0)
         p = Vector((8.0, side * (h[4][0] + h[5][0]) / 2, (h[4][1] + h[5][1]) / 2)); nrm = Vector((0, side * (h[4][1] - h[5][1]), h[5][0] - h[4][0])).normalized()
         K.thruster('Q2' + sn, tuple(p), tuple(nrm), inv='thrusters', r=0.26, note='bow attitude thruster on the upper facet')
+        K.features[-1]['what'] = 'attitude thruster, two rectangular nozzles'
         K.thruster('Q3' + sn, (-7.75, side * (RY + RHW), 0.42), (0, side, 0), inv='thrusters', r=0.26, note='stern attitude thruster on the rail\'s outer flank')
+        K.features[-1]['what'] = 'attitude thruster, two rectangular nozzles'
         for i, x in enumerate((8.9, 8.2, 7.5)):
             h = half_ring(x)
             K.slit('W%d%s' % (i + 1, sn), (x, side * (h[5][0] + 0.035), h[5][1] - 0.13), (0, side, 0), 0.4, 0.09, inv='windows',
@@ -490,7 +493,7 @@ def build(K):
         frame_at('F%d' % (i + 3), x)
     room('crew_corridor', 'hcorr', 6.65, 4.0, 0.2, 0.6, note='white corridors and crew berths of the main deck, numbered posts')
     room('command', 'bridge', 3.3, 0.5, 0.2, 0.62, ymax=1.2, note='the command deck under the sensor fin: the Registry link room')
-    room('lance_rooms', 'magazine', 3.7, 0.7, -0.85, 0.04, y0=1.35, note='the lance capacitor rooms under the shoulder turrets: plasma containment and charge banks')
+    room('lance_rooms', 'magazine', 3.7, 0.7, -0.85, 0.04, y0=1.35, note='the lance capacitor rooms under the shoulder turrets')
     room('reactor', 'core', 3.3, 0.3, -1.5, 0.04, ymax=1.15, note='the reactor (hp_core): its power runs forward to the trench and out to the lances')
     for k in range(5):
         x0 = 6.55 - k * 0.48
@@ -578,6 +581,8 @@ def build(K):
              'factions.md: "One low sensor fin, not a tower"; a taller first fin read as a submarine\'s sail from the beam (factions.md: H7 to H10 read as yachts or submarines); R240: no gun sits behind it or fires through it (the turrets fire outboard, the pickets below)')
     K.change('H10\'s open hangar recess between the rails becomes flush armoured drone doors in a trough between the rails (a seam line only), with blue guide lamps',
              'R232 (pack.md question 2): flush armoured drone doors on the Dominion; data.js hangar 1; the drones launch up out of the trough')
+    K.change('H10\'s two raised boxes at the ends of the bay opening are left out; the flush doors run the trough\'s length instead',
+             'the doors fill the trough between the junction seam B-2 and the rails\' first band (a box at the bay\'s forward end would sit across B-2), and H10 gives the boxes no job (R221: every part has a job)')
     K.change('H10\'s nozzles (two stacked pairs a rail in the side view, a pair across in the top view) become one flat row of four rectangular nozzle pods, two a rail, each a thick-lipped mouth with a blue-white throat and guide vanes',
              'factions.md: "a flat row of rectangular blue-white nozzles"; H10\'s views disagree with each other on the count; a round opening has depth (R244)')
     K.change('Even panel grid of two module sizes, module bands as raised rings with a deep double seam, flush fasteners (no rivets), H10\'s rows of four blocks kept as module latch rows at the bands',

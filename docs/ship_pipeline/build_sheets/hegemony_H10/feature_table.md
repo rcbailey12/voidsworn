@@ -52,9 +52,9 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | A1 | sensor fin, 0.4 tall, 2.4 long | 1 | 42.8 | 0.00 | 1.02 | - | - | picture | the one low sensor fin on the centreline: sensor windows and a lens strip; the command deck is under it |
 | F1 | picket lasers, twin belly turret | 2 barrels | 30.1 | 1.35 | -1.97 | 40 deg off the bow to port, +10 elev | T flak | picture | port picket laser turret on the belly (flak T: the pair is the one slot, 3 shots over 4 emitters, both fire every volley) |
 | F2 | picket lasers, twin belly turret | 2 barrels | 30.1 | -1.35 | -1.97 | 40 deg off the bow to starboard, +10 elev | T flak | picture | starboard picket laser turret on the belly (flak T: the pair is the one slot, 3 shots over 4 emitters, both fire every volley) |
-| Q1p | attitude thruster quad | 1 | 0.8 | 1.55 | -0.25 | - | - | designed | retro thruster on the bow face (lore 3.4: retro thrusters make backing off cheap) |
-| Q2p | attitude thruster quad | 1 | 12.6 | 2.69 | 0.51 | - | - | designed | bow attitude thruster on the upper facet |
-| Q3p | attitude thruster quad | 1 | 86.9 | 3.28 | 0.42 | - | - | designed | stern attitude thruster on the rail's outer flank |
+| Q1p | retro thruster, two rectangular nozzles | 1 | 0.8 | 1.55 | -0.25 | - | - | designed | retro thruster on the bow face (lore 3.4: retro thrusters make backing off cheap) |
+| Q2p | attitude thruster, two rectangular nozzles | 1 | 12.6 | 2.69 | 0.51 | - | - | designed | bow attitude thruster on the upper facet |
+| Q3p | attitude thruster, two rectangular nozzles | 1 | 86.9 | 3.28 | 0.42 | - | - | designed | stern attitude thruster on the rail's outer flank |
 | W1p | vision slit 0.4 x 0.09 | 1 | 8.4 | 2.75 | 0.16 | - | - | picture | blue-white window of the forward crew decks |
 | W2p | vision slit 0.4 x 0.09 | 1 | 11.7 | 2.89 | 0.17 | - | - | picture | blue-white window of the forward crew decks |
 | W3p | vision slit 0.4 x 0.09 | 1 | 15.0 | 3.02 | 0.19 | - | - | picture | blue-white window of the forward crew decks |
@@ -83,9 +83,9 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | LR1pa | module latch row (4 clamps) | 1 | 78.3 | 1.95 | 1.00 | - | - | picture | locks two rail modules together across the band |
 | LR2pf | module latch row (4 clamps) | 1 | 87.5 | 1.95 | 1.00 | - | - | picture | locks two rail modules together across the band |
 | LR2pa | module latch row (4 clamps) | 1 | 90.6 | 1.95 | 1.00 | - | - | picture | locks two rail modules together across the band |
-| Q1s | attitude thruster quad | 1 | 0.8 | -1.55 | -0.25 | - | - | designed | retro thruster on the bow face (lore 3.4: retro thrusters make backing off cheap) |
-| Q2s | attitude thruster quad | 1 | 12.6 | -2.69 | 0.51 | - | - | designed | bow attitude thruster on the upper facet |
-| Q3s | attitude thruster quad | 1 | 86.9 | -3.28 | 0.42 | - | - | designed | stern attitude thruster on the rail's outer flank |
+| Q1s | retro thruster, two rectangular nozzles | 1 | 0.8 | -1.55 | -0.25 | - | - | designed | retro thruster on the bow face (lore 3.4: retro thrusters make backing off cheap) |
+| Q2s | attitude thruster, two rectangular nozzles | 1 | 12.6 | -2.69 | 0.51 | - | - | designed | bow attitude thruster on the upper facet |
+| Q3s | attitude thruster, two rectangular nozzles | 1 | 86.9 | -3.28 | 0.42 | - | - | designed | stern attitude thruster on the rail's outer flank |
 | W1s | vision slit 0.4 x 0.09 | 1 | 8.4 | -2.75 | 0.16 | - | - | picture | blue-white window of the forward crew decks |
 | W2s | vision slit 0.4 x 0.09 | 1 | 11.7 | -2.89 | 0.17 | - | - | picture | blue-white window of the forward crew decks |
 | W3s | vision slit 0.4 x 0.09 | 1 | 15.0 | -3.02 | 0.19 | - | - | picture | blue-white window of the forward crew decks |
@@ -157,8 +157,8 @@ Bulkhead and frame stations: F1 9.8%, F2 13.8%, F3 20.7%, F4 26.8%, F5 33.4%, F6
 | bow stores (hold) | 9.8 to 15.7 | 0.05 to -0.05 | -1.05 to -0.80 | bow stores and the retro thrusters' feeds |
 | crew corridor (hcorr) | 19.0 to 31.5 | 0.05 to -0.05 | 0.20 to 0.60 | white corridors and crew berths of the main deck, numbered posts |
 | command (bridge) | 34.8 to 48.0 | -1.20 to 1.20 | 0.20 to 0.62 | the command deck under the sensor fin: the Registry link room |
-| lance rooms p (magazine) | 32.9 to 47.1 | 1.35 to 3.32 | -0.85 to 0.04 | the lance capacitor rooms under the shoulder turrets: plasma containment and charge banks |
-| lance rooms s (magazine) | 32.9 to 47.1 | -3.32 to -1.35 | -0.85 to 0.04 | the lance capacitor rooms under the shoulder turrets: plasma containment and charge banks |
+| lance rooms p (magazine) | 32.9 to 47.1 | 1.35 to 3.32 | -0.85 to 0.04 | the lance capacitor rooms under the shoulder turrets |
+| lance rooms s (magazine) | 32.9 to 47.1 | -3.32 to -1.35 | -0.85 to 0.04 | the lance capacitor rooms under the shoulder turrets |
 | reactor (core) | 34.8 to 49.0 | -1.15 to 1.15 | -1.50 to 0.04 | the reactor (hp_core): its power runs forward to the trench and out to the lances |
 | rack 0 p (hrack) | 19.5 to 21.2 | 0.40 to 2.52 | -0.87 to -0.12 | racks of identical equipment on the lower deck (factions.md "Inside") |
 | rack 0 s (hrack) | 19.5 to 21.2 | -2.52 to -0.40 | -0.87 to -0.12 | racks of identical equipment on the lower deck (factions.md "Inside") |
@@ -234,6 +234,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **H10's small twin-tube fitting on the centreline is removed; the picket lasers (flak T) are two small twin turrets on the belly.** R241: no decorative or extra guns (the little twin tubes read as a gun with no data.js slot); the picket lasers on the belly keep the deck clear for the sensor fin (R240: no gun behind or aiming through a sensor) and cover the underside, where craft come from below.
 - **H10's oval sensor panel becomes the one low sensor fin on the centreline between the turrets (0.4 tall, 2.4 long, its leading edge raked).** factions.md: "One low sensor fin, not a tower"; a taller first fin read as a submarine's sail from the beam (factions.md: H7 to H10 read as yachts or submarines); R240: no gun sits behind it or fires through it (the turrets fire outboard, the pickets below).
 - **H10's open hangar recess between the rails becomes flush armoured drone doors in a trough between the rails (a seam line only), with blue guide lamps.** R232 (pack.md question 2): flush armoured drone doors on the Dominion; data.js hangar 1; the drones launch up out of the trough.
+- **H10's two raised boxes at the ends of the bay opening are left out; the flush doors run the trough's length instead.** the doors fill the trough between the junction seam B-2 and the rails' first band (a box at the bay's forward end would sit across B-2), and H10 gives the boxes no job (R221: every part has a job).
 - **H10's nozzles (two stacked pairs a rail in the side view, a pair across in the top view) become one flat row of four rectangular nozzle pods, two a rail, each a thick-lipped mouth with a blue-white throat and guide vanes.** factions.md: "a flat row of rectangular blue-white nozzles"; H10's views disagree with each other on the count; a round opening has depth (R244).
 - **Even panel grid of two module sizes, module bands as raised rings with a deep double seam, flush fasteners (no rivets), H10's rows of four blocks kept as module latch rows at the bands.** paint direction hegemony.md (approved Nov 14): the even grid, two module sizes, the module band as structure; R243 ("Hegemony also pretty rigid and clean"); every part has a job (R221): the latches lock the modules.
 - **The wedge's flanks are faceted round a vertical flank band (upper and lower facets, chamfers, a chine) and the rails carry a recessed mid band, so no flank is a flat wall.** R244 ("the sides of the carrier are just flat walls"), binding on every sheet ship; H10's rails show the two tiers.
@@ -245,9 +246,9 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 
 - The belly is designed here; H10 shows no underside.
 - Stencil marks ("HD-14", "SECTION") and the steel-blue trim tone are paint (the Hegemony stack, a later job), not modelled.
-- Q1p (attitude thruster quad): retro thruster on the bow face (lore 3.4: retro thrusters make backing off cheap).
-- Q2p (attitude thruster quad): bow attitude thruster on the upper facet.
-- Q3p (attitude thruster quad): stern attitude thruster on the rail's outer flank.
-- Q1s (attitude thruster quad): retro thruster on the bow face (lore 3.4: retro thrusters make backing off cheap).
-- Q2s (attitude thruster quad): bow attitude thruster on the upper facet.
-- Q3s (attitude thruster quad): stern attitude thruster on the rail's outer flank.
+- Q1p (retro thruster, two rectangular nozzles): retro thruster on the bow face (lore 3.4: retro thrusters make backing off cheap).
+- Q2p (attitude thruster, two rectangular nozzles): bow attitude thruster on the upper facet.
+- Q3p (attitude thruster, two rectangular nozzles): stern attitude thruster on the rail's outer flank.
+- Q1s (retro thruster, two rectangular nozzles): retro thruster on the bow face (lore 3.4: retro thrusters make backing off cheap).
+- Q2s (attitude thruster, two rectangular nozzles): bow attitude thruster on the upper facet.
+- Q3s (attitude thruster, two rectangular nozzles): stern attitude thruster on the rail's outer flank.

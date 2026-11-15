@@ -145,7 +145,7 @@
   {
    "id": "Q1p",
    "kind": "thruster",
-   "what": "attitude thruster quad",
+   "what": "retro thruster, two rectangular nozzles",
    "count": 1,
    "route": "kit",
    "source": "designed",
@@ -156,7 +156,7 @@
   {
    "id": "Q2p",
    "kind": "thruster",
-   "what": "attitude thruster quad",
+   "what": "attitude thruster, two rectangular nozzles",
    "count": 1,
    "route": "kit",
    "source": "designed",
@@ -167,7 +167,7 @@
   {
    "id": "Q3p",
    "kind": "thruster",
-   "what": "attitude thruster quad",
+   "what": "attitude thruster, two rectangular nozzles",
    "count": 1,
    "route": "kit",
    "source": "designed",
@@ -486,7 +486,7 @@
   {
    "id": "Q1s",
    "kind": "thruster",
-   "what": "attitude thruster quad",
+   "what": "retro thruster, two rectangular nozzles",
    "count": 1,
    "route": "kit",
    "source": "designed",
@@ -497,7 +497,7 @@
   {
    "id": "Q2s",
    "kind": "thruster",
-   "what": "attitude thruster quad",
+   "what": "attitude thruster, two rectangular nozzles",
    "count": 1,
    "route": "kit",
    "source": "designed",
@@ -508,7 +508,7 @@
   {
    "id": "Q3s",
    "kind": "thruster",
-   "what": "attitude thruster quad",
+   "what": "attitude thruster, two rectangular nozzles",
    "count": 1,
    "route": "kit",
    "source": "designed",

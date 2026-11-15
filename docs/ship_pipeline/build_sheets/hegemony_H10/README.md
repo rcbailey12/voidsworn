@@ -84,8 +84,10 @@ are the repo's own tools.
 ## Budget (the stage 4 sheet_hull build, before the export)
 
 53,556 triangles outside, 5,432 inside (58,988 in all; * budget.py); 11 outside materials, 12 inside; 355 outside objects. For
-comparison, the S8 sheet's stage 4 scene: 99,690 outside, 15,508 inside. Costs are reported, never capped; the scene gate is not
-measured here.
+comparison, the S8 sheet's stage 4 scene (the same stage, measured the same way): 99,690 outside, 15,508 inside, 8 outside
+materials. The E11 figures are its stage 7 export, a different stage: 117,298 triangles, 13 surfaces, 7,677 inside. The Dominion
+is a Battleship (21.0) against S8's Dreadnought (27.0), and its flush panels carry no rivets, so it costs about half of S8. Costs
+are reported, never capped; the scene gate is not measured here.
 
 ## Proportions (the same measure on H10's sheet and the build)
 
