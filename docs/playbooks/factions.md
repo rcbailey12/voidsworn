@@ -30,6 +30,9 @@ Ryan, Nov 10 2026 (R164), on hard points: "It should vary by size of ship, facti
 - Breaks look blown apart, never sliced (R186; Ryan: "It's like straight lines and even halves. It doesn't feel like an
   explosion or major hit happened"). The faction's "How it breaks" line says where the hull gives way, not that it parts
   cleanly.
+- Squadron craft are per faction (R253, Ryan, Nov 14: "Own models per faction"): each launching faction has its own
+  fighter-role and bomber-role model in its own shape language (contrib/muse/design/squadrons_2026_11/), never one shared
+  shape repainted.
 - Hard points are not a fixed count (R164). Gun and engine points come from the hull's own weapon slots and engines. Breach
   anchors (where the hull opens when it dies) scale with class and follow the faction's own way of breaking, below.
 
