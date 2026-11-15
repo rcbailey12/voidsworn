@@ -1,0 +1,102 @@
+{
+ "code": "corsair_A16",
+ "result": "PASS",
+ "problems": [],
+ "slots": [
+  {
+   "slot": 0,
+   "weapon": "scatter",
+   "arc": "P",
+   "shots": 5,
+   "mounts": [
+    {
+     "id": "P1",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    },
+    {
+     "id": "P2",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    },
+    {
+     "id": "P3",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    }
+   ]
+  },
+  {
+   "slot": 1,
+   "weapon": "scatter",
+   "arc": "S",
+   "shots": 5,
+   "mounts": [
+    {
+     "id": "S1",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    },
+    {
+     "id": "S2",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    },
+    {
+     "id": "S3",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    }
+   ]
+  },
+  {
+   "slot": 2,
+   "weapon": "htorp",
+   "arc": "F",
+   "shots": 2,
+   "mounts": [
+    {
+     "id": "R1",
+     "type": "rack",
+     "mount": "launcher",
+     "barrels": 10,
+     "muzzles": 10
+    }
+   ]
+  },
+  {
+   "slot": 3,
+   "weapon": "flak",
+   "arc": "T",
+   "shots": 3,
+   "mounts": [
+    {
+     "id": "T1",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    },
+    {
+     "id": "T2",
+     "type": "gun",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    }
+   ]
+  }
+ ]
+}

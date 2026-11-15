@@ -66,6 +66,15 @@ void fog() {
 
 # R82: keep the ends violet even under a warm faction sky.
 const NEBULA_FACTION_END_WEIGHT := 0.25
+# The one scale table's terrain sizes (issue 710, R247; docs/playbooks/scale.md), world units, HEX_S = 10.
+const GAS_PUFF_MIN := 24.0       # a nebula or storm puff's width
+const GAS_PUFF_MAX := 34.0
+const GAS_PUFF_REACH := 6.0      # how far a puff's centre sits off its hex centre
+const GAS_VEIL_MIN := 36.0       # the faint high tying veil
+const GAS_VEIL_MAX := 46.0
+const GAS_MASK_MARGIN := 24.0    # the gas footprint reaches this far past its outermost hex centre
+const DEBRIS_ROCK_MIN := 0.3     # a debris field's own rock, at scale 1 a library rock is 2 units long
+const DEBRIS_ROCK_MAX := 2.8
 # Issue 232 E17/NB5 sheet: the live weight, overridable for the three-weight capture (default is the shipped 0.25).
 var faction_end_weight := float(OS.get_environment("VS_NEB_W")) if OS.get_environment("VS_NEB_W") != "" else NEBULA_FACTION_END_WEIGHT
 
@@ -335,14 +344,14 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	for p in ps:
 		for k in per:
 			var a := rng.randf() * TAU
-			var rr := sqrt(rng.randf()) * 6.0
+			var rr := sqrt(rng.randf()) * GAS_PUFF_REACH
 			# Preserve the count and size; split the existing puffs into height bands.
 			var layer: int = [0, 1, 2, 1, 2][k % 5]
 			var y := rng.randf_range(-2.5, 0.5) if layer == 0 else (rng.randf_range(2.5, 6.5) if layer == 1 else rng.randf_range(8.0, 12.0))
 			if prototype:
 				y *= GAS_HEIGHT
 			mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, (p as Vector3) + Vector3(cos(a) * rr, y, sin(a) * rr)))
-			mm.set_instance_custom_data(i, Color(rng.randf_range(24.0, 34.0), rng.randf(), rng.randf_range(0.55, 0.85), layer + rng.randf() * 0.9))
+			mm.set_instance_custom_data(i, Color(rng.randf_range(GAS_PUFF_MIN, GAS_PUFF_MAX), rng.randf(), rng.randf_range(0.55, 0.85), layer + rng.randf() * 0.9))
 			if prototype:
 				var cd := mm.get_instance_custom_data(i)
 				cd.r *= 1.4
@@ -353,7 +362,7 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	for k in n_big:
 		var p: Vector3 = ps[rng.randi() % ps.size()]
 		mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, p + Vector3(rng.randf_range(-4, 4), rng.randf_range(13.5, 16.5) if k < 2 else rng.randf_range(2.5, 6.5), rng.randf_range(-4, 4))))
-		mm.set_instance_custom_data(i, Color(rng.randf_range(36.0, 46.0), rng.randf(), rng.randf_range(0.3, 0.4), (3 if k < 2 else 1) + rng.randf() * 0.9))
+		mm.set_instance_custom_data(i, Color(rng.randf_range(GAS_VEIL_MIN, GAS_VEIL_MAX), rng.randf(), rng.randf_range(0.3, 0.4), (3 if k < 2 else 1) + rng.randf() * 0.9))
 		if prototype:
 			var transform := mm.get_instance_transform(i)
 			transform.origin.y *= GAS_HEIGHT
@@ -467,8 +476,8 @@ func _mask(ps: Array, feather := 2.0) -> Array:
 	for p in ps:
 		lo = lo.min(Vector2((p as Vector3).x, (p as Vector3).z))
 		hi = hi.max(Vector2((p as Vector3).x, (p as Vector3).z))
-	lo -= Vector2(24, 24)
-	hi += Vector2(24, 24)
+	lo -= Vector2(GAS_MASK_MARGIN, GAS_MASK_MARGIN)
+	hi += Vector2(GAS_MASK_MARGIN, GAS_MASK_MARGIN)
 	var w := int(ceil((hi.x - lo.x) / STEP)) + 1
 	var h := int(ceil((hi.y - lo.y) / STEP)) + 1
 	var f := PackedFloat32Array()
@@ -720,7 +729,7 @@ func _debris(ps: Array) -> void:
 		for i in (rng.randi_range(8, 12) if low else rng.randi_range(15, 22)):
 			var a := rng.randf() * TAU
 			var rr := sqrt(rng.randf()) * 8.6
-			var s := 0.3 + 2.5 * pow(rng.randf(), 2.4)
+			var s := DEBRIS_ROCK_MIN + (DEBRIS_ROCK_MAX - DEBRIS_ROCK_MIN) * pow(rng.randf(), 2.4)
 			var nm: String = W._pick(kind, rng)
 			if nm == "":
 				break

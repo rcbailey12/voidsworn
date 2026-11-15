@@ -369,10 +369,16 @@ func moon(parent: Node3D, center: Vector3, orbit_r: float, radius: float) -> Nod
 	piv.add_child(m)
 	piv.add_child(mi(arc_mesh(orbit_r, 0.08, 0.0, TAU, 64), mat("ORBIT", {"col": Color(0.7, 0.78, 0.95, 0.35)})))
 	return piv
+# The one scale table's cloud puff (issue 710, R247; docs/playbooks/scale.md): a cloud's width is this factor times the
+# bank's spread, so a region bank of spread 10 spans up to 66 map units (2 * spread + the widest puff).
+const CLOUD_PUFF_MIN := 2.6
+const CLOUD_PUFF_MAX := 4.6
+
+
 func clouds(parent: Node3D, a: Color, b: Color, n: int, spread: float, at: Vector3, gain: float = 0.6, storm: float = 0.0) -> Node3D:
 	var w = Node3D.new(); w.position = at; parent.add_child(w)
 	for i in n:
-		var s = rng.randf_range(2.6, 4.6) * spread
+		var s = rng.randf_range(CLOUD_PUFF_MIN, CLOUD_PUFF_MAX) * spread
 		var c = mi(quad(1, 1), mat("CLOUD", {"a": a, "b": b, "gain": gain * rng.randf_range(0.7, 1.1), "seed": rng.randf() * 30.0, "storm": storm, "oct": 4.0 if q > 0.5 else 3.0}),
 			Vector3(rng.randf_range(-1, 1) * spread, rng.randf_range(-0.3, 0.5) * spread, rng.randf_range(-1, 1) * spread), Vector3.ONE * s)
 		c.extra_cull_margin = s; w.add_child(c)

@@ -101,6 +101,8 @@ class and faction (issue 363), never from a constant.
   off the ship: no loose chains, cages or dangling cargo; trophies and cargo are bolted flat (R185 (3); Ryan: "I don't
   understand the random things hanging off, it reads as naval"). Rocket racks sit on the top deck as big mismatched
   bolted-on launchers (R183 (4); Ryan: "rockets need to be on top to fit the scrapped together theme").
+- **Patch size (R252, Ryan, Nov 14: "agree"):** the trophy patches read big and pale like the A20 concept, not small dark
+  plates; still uneven in size, rows and offsets (R240).
 - **Colours:** soot black, rust, dried-blood red, patches of trophy colour (pale Hegemony grey, violet Eclipse plate), dim
   red running lights. No crystal shard: it came off A16 and A17 (R197; Ryan: "Not sure why there is a weird crystal in there
   but we can get rid of that").
@@ -159,6 +161,10 @@ violet-white): the green stays, as the light of an eclipse.
 - **Shape language:** sunshades and heat shields: broad layered plates with the ship sheltering behind them. The shade always
   faces the enemy, like a shield held forward. Wide and flat, or a forward-facing arc or ring.
 - **Colours:** dark violet-black plates, the green-white corona line, a small bright core.
+- **Panels (R243, Ryan Nov 13):** precise, dead even, ordered and aligned across hull and shade, with recessed seams and
+  slight relief. Keep E11's accepted dark violet-black colour. This is machine precision; the Hullbreakers' irregular
+  patchwork is their own. The thin uneven corona must read at camera 170, including E12's ring segments. The core glows
+  green like the concept, white-hot only at its very centre, and reads at camera 170.
 - **Guns sit:** behind the shade's rim, firing through gaps between plates.
 - **Engines:** no flaming bells. An eclipse ring of pale light.
 - **How it breaks:** in layers. Shade plates peel away band by band, then the body behind is bare. Inside: archive vaults,

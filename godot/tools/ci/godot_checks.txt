@@ -37,7 +37,7 @@ headless|rules/test/parity_main.gd|step:Rules parity against the browser game|-|
 headless|rules/test/tree_prompt_test.gd|-|-|issue 529: the you-may yes or no prompt and the Chorus role prompts through the rules API, answers and save shape
 headless|rules/test/thread_test.gd|step:Rules parity against the browser game|-|run by godot/rules/test/run_parity.sh (threads: s4 and s23)
 headless|story/test/story_test.gd|-|-|story data, career records, battle voice over a real rules battle, story attached to whole campaign runs
-headless|portraits/test/portraits_check.gd|-|-|every admiral and Nemesis gets a face from the portrait index
+headless|portraits/test/portraits_check.gd|-|-|every admiral and Nemesis gets a face from the portrait index; Eclipse faces change with restoration level, other factions never do
 headless|music/test/music_check.gd|-|-|music player and tracks walk title, map, battle and victory
 headless|audio/test/audio_check.gd|-|-|sound data, real player starts, variants and the separate mutes
 headless|audio/test/salvo_check.gd|-|-|salvo sounds: counts real player starts and keeps the caps
@@ -61,6 +61,7 @@ headless|fx/test/playtest_batch3_check.gd|-|-|hits keep the skin, heavy damage o
 headless|fx/test/squadron_check.gd|-|-|451 squadron and carrier checks on stand-in craft
 headless|render/test/install_refresh_check.gd|-|-|issue 592: the stage 7 install route in user://: the real asset builder (--ships-only) rebuilds a replaced hull's cache entry, drops its old damage and wreck scenes, and ShipView draws the new hull
 headless|render/test/turret_check.gd|-|-|issue 560: on the exported turret test ship (render/test/fixtures/T560_fx) turrets turn smoothly to the target bearing inside their arc and clear of their own ship, fire from the turned muzzle, go back to rest; fixed guns never move; the same hits as fixed guns
+headless|render/test/scale_check.gd|-|-|issue 710 (R247): reads the live sizes of ships, fighters, station, terrain, planet, wrecks, explosions and the campaign map and fails when any object leaves its target range in docs/playbooks/scale.md
 headless|scenes/battle/test/wing_cancel_test.gd|-|-|UI-5 (issue 387): the battle screen clears its armed wing on a ship pick, the roster, Escape and Cancel
 headless|scenes/battle/test/movement_flight_check.gd|-|-|issue 505 flown movement: ends on the rules hex and facing, no roll, no heading jump, slides hold heading, burn, coast and retro jets, turning jets start and stop turns, weight past battleship
 headless|ui/campaign/test/map_key_halo_test.gd|-|-|issue 678: the campaign map's Map key and Save and quit carry the dark halo, 4.5 to 1 over any backdrop at 1080 and 1440; the same buttons off the chart are unchanged

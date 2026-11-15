@@ -101,6 +101,15 @@ def to_recipe(K, ship):
     game = ship.get('game_ship')
     if not game: raise ContractError('the ship json has no game_ship (the data.js id)')
     weapons = gamedata.weapons(game); hangar = int(gamedata.ship_attr(game, 'hangar', default=0) or 0)
+    feats = {f['id']: f for f in K.features}
+    slots = slot_map(weapons, [(fd['id'], fd['slot'], feats.get(fd['id'], {}).get('weapon')) for fd in K.fitdata if fd['kind'] in ('gun', 'launcher')])
+    # the weapon-match check (issue 676, R241): every visible weapon is a data.js weapon, tied, aimed, turning and split as the
+    # game fires it. Run on the sheet's own units, before the scene is scaled; a ship that fails it does not reach stage 4.
+    if HERE not in sys.path: sys.path.insert(0, HERE)
+    import weapon_match
+    _wm, wm_probs = weapon_match.run(K, game)
+    if wm_probs:
+        raise ContractError(f'weapon match: {len(wm_probs)} problems (R241): ' + '; '.join(wm_probs[:6]) + (' ...' if len(wm_probs) > 6 else ''))
     outside = [o for o in K.coll.objects if o.type == 'MESH']
     lo, hi = _bbox(outside); L = hi.x - lo.x; s = 1.0 / L
     _scale_scene(sc, s)
@@ -137,9 +146,7 @@ def to_recipe(K, ship):
     if not t_lines: raise ContractError('the sheet authors no transverse seam')
     sc['r209_t_lines'] = t_lines; sc['r209_l_line'] = l_line; sc['r209_l_lines'] = json.dumps(l_lines); sc['r209_t_paths'] = json.dumps(t_paths)
 
-    # gun and launcher mounts, engines
-    feats = {f['id']: f for f in K.features}
-    slots = slot_map(weapons, [(fd['id'], fd['slot'], feats.get(fd['id'], {}).get('weapon')) for fd in K.fitdata if fd['kind'] in ('gun', 'launcher')])
+    # gun and launcher mounts (slots dealt above, before the weapon match), engines
     hp = dict(muzzles=[], engines=[], bays=[]); guns = []
     for fd in K.fitdata:
         fid = fd['id']; f = feats.get(fid, {})
