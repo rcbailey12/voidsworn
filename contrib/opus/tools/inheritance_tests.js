@@ -50,11 +50,15 @@ globalThis.inheritanceTest = () => {
       ok.equal(u.fresh, u.cost > meta.renown);
       ok.ok(html.includes(esc(u.n)), 'affordable reward is visible');
     }
-    ok.ok(html.includes('Your inheritance') && html.includes('Affordable now') && html.includes('View admiral line'));
+    // issue 92 (Muse debrief design): the panel header, the five rows, and the lineage button that names the next step
+    ok.ok(html.includes(abandoned ? 'Recorded' : 'WHAT THIS RUN BOUGHT'), 'panel header');
+    for (const r of ['Doctrine and renown', 'Lineage', 'Core sync', 'Nemesis lesson', 'The record']) ok.ok(html.includes('<h3>' + r + '</h3>'), 'row ' + r);
+    const f = receipt.flown;
+    ok.ok(html.includes(f.pending ? 'Choose ' + esc(ADMIRALS[f.id].n) + "'s level" : f.capstoneReady ? 'Choose Command evolution' : 'View admiral line'), 'lineage button');
     if (name === 'loss') ok.equal(receipt.flown.pending, 1, 'level 5 offers a branch pick');
     if (name === 'trunk') { ok.equal(receipt.flown.earned[0].n, 'Alternate fleet'); ok.ok(html.includes('Alternate fleet earned')); }
     if (name === 'capstone') { ok.equal(receipt.flown.capstoneReady, true); ok.equal(receipt.flown.chosen.length, 3); }
-    if (name === 'empty') ok.ok(html.includes('No unowned doctrine or hull reward is affordable yet'));
+    if (name === 'empty') ok.ok(html.includes('No renown earned this run') && /Next: |All rewards owned\.|Playtest: everything unlocked/.test(html), 'empty run: no renown, plus the distance line (design 3.2, 4.7)');
     const before = JSON.stringify(META); endRun(victory, abandoned); ok.equal(JSON.stringify(META), before);
     fixtures.push({name,meta,flown,fac,stats,sector:run.sector,victory,abandoned,carry:JSON.parse(JSON.stringify(cy)),expected:JSON.parse(JSON.stringify(META))});
   }
