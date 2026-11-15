@@ -268,10 +268,15 @@ def plant_flare_old_turret(s):
     s['parts'].append(dict(id='T1', kind='turret', type='nullcannon'))
 
 
+def plant_lance_abeam(s):
+    s['mounts'][0]['muzzles'] = [muz(2.0, 0.0, aim=(0.0, 1.0, 0.0))]                # the fixed lance laid along the beam (issue 782)
+
+
 # the Eclipse flare row of FITS (issue 784): the null lance is fixed, and the old turret is no slot any more
 FLARE_CASES = [
     ('KIND', 'a null lance built on a turning turret', plant_lance_turret),
     ('COUNT', 'the old aft null cannon turret kept on the flare', plant_flare_old_turret),
+    ('ARC', 'the fixed null lance aimed along the beam', plant_lance_abeam),
 ]
 
 def sheet_games():
