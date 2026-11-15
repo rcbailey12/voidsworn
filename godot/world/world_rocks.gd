@@ -18,6 +18,28 @@ const LIB_DIR := "res://world/rocks/"
 static var _meshes := {}      # name -> Mesh
 static var _lib: Dictionary = {}
 static var _detail: Texture3D = null
+static var _scans: Array = []
+static var _scans_checked := false
+
+# The eight CC0 scans and their explicit far meshes are one package. A partial
+# copy must not make some of the seeded choices turn into fallback spheres.
+static func scan_names() -> Array:
+	if OS.get_environment("VS_PLANET_REMIX") == "0": return []
+	if not _scans_checked:
+		_scans_checked = true
+		var path := LIB_DIR + "scans.json"
+		if not FileAccess.file_exists(path): return []
+		var manifest = JSON.parse_string(FileAccess.get_file_as_string(path))
+		if not manifest is Dictionary or manifest.get("rocks", []).size() != 8:
+			push_error("R01 scan manifest is incomplete")
+			return []
+		for entry in manifest.rocks:
+			for suffix in ["", "_lo"]:
+				if not FileAccess.file_exists(LIB_DIR + str(entry.name) + suffix + ".glb"):
+					push_error("Missing scanned rock: " + str(entry.name) + suffix)
+					return []
+		for entry in manifest.rocks: _scans.append(str(entry.name))
+	return _scans
 
 const ROCK_SHADER := """
 shader_type spatial;
@@ -32,6 +54,7 @@ uniform vec3 base = vec3(0.09, 0.075, 0.062);
 uniform vec3 fresh = vec3(0.16, 0.15, 0.14);
 uniform sampler3D detail : filter_linear, repeat_enable;
 uniform float q = 1.0;
+uniform bool scanned = false;
 uniform vec3 board_c = vec3(0.0);
 uniform vec2 haze_r = vec2(320.0, 2200.0);
 uniform vec3 haze_col = vec3(0.01, 0.012, 0.02);
@@ -120,12 +143,16 @@ void fragment() {
 	float fw = length(fwidth(p * 2.6));
 	float n3 = mix(texture(detail, p * 2.6 + 0.57).r, 0.5, clamp(fw * 1.2, 0.0, 1.0));
 	float cav = vC.r;
-	float crat = vC.g;
+	float crat = scanned ? 0.0 : vC.g;
 	// r8: shader craters at two sizes, faded out where they would be smaller than a few pixels (no shimmer far away)
 	vec3 cp = vL + vSeed * 7.31;
 	float fwc = length(fwidth(cp));
-	vec3 c1 = craters(cp * 2.6, 0.55);
-	vec3 c2 = craters(cp * 7.5 + 3.1, 0.6);
+	vec3 c1 = vec3(0.0);
+	vec3 c2 = vec3(0.0);
+	if (!scanned) {
+		c1 = craters(cp * 2.6, 0.55);
+		c2 = craters(cp * 7.5 + 3.1, 0.6);
+	}
 	float k1 = 1.0 - smoothstep(0.05, 0.14, fwc * 2.6);
 	float k2 = 1.0 - smoothstep(0.04, 0.1, fwc * 7.5);
 	float c_h = c1.x / 2.6 * k1 + c2.x / 7.5 * k2;
@@ -354,6 +381,8 @@ static func _find_mesh(n: Node) -> MeshInstance3D:
 
 # the names of the rocks a kind draws on (its families first)
 static func names_for(kind: String) -> Array:
+	var scans := scan_names()
+	if not scans.is_empty(): return scans.duplicate()
 	var L := lib()
 	if L.is_empty():
 		return ["fallback_" + kind]
@@ -402,6 +431,7 @@ static func material(kind: String, look: Dictionary) -> ShaderMaterial:
 	m.set_shader_parameter("fresh", K["fresh"])
 	m.set_shader_parameter("detail", detail_tex())
 	m.set_shader_parameter("q", 1.0 if str(look.get("quality", "max")) == "max" else 0.0)
+	m.set_shader_parameter("scanned", not scan_names().is_empty())
 	m.set_shader_parameter("tumble_k", rock_tumble_k)
 	m.set_shader_parameter("board_c", look.get("board_c", Vector3.ZERO))
 	m.set_shader_parameter("haze_col", look.get("haze", Vector3(0.01, 0.012, 0.02)))
@@ -433,8 +463,21 @@ static func crystal_material(look: Dictionary) -> ShaderMaterial:
 # Collects rock instances per (mesh, layer) and builds one MultiMeshInstance3D each.
 class Batch:
 	var groups := {}     # key -> {mesh, mat, shadow, xf: [], cd: []}
+	var dust_materials := {}
 
 	func add(mesh_name: String, mat: Material, shadow: bool, xf: Transform3D, spin_axis: Vector3, rate: float, seed_v: float) -> void:
+		# Dust-size rocks keep rockgen's light meshes. Large silhouettes use the
+		# scans, at the same radius as the old library, so blocker rules stay put.
+		if mesh_name.begins_with("scan_"):
+			var scale_v := xf.basis.get_scale().abs()
+			if maxf(scale_v.x, maxf(scale_v.y, scale_v.z)) < 1.5:
+				mesh_name = "frag_%02d_lo" % (int(seed_v * 65535.0) % 6)
+				var mat_id := mat.get_instance_id()
+				if not dust_materials.has(mat_id):
+					var dust_mat := mat.duplicate() as ShaderMaterial
+					dust_mat.set_shader_parameter("scanned", false)
+					dust_materials[mat_id] = dust_mat
+				mat = dust_materials[mat_id]
 		var key := "%s|%d|%d" % [mesh_name, mat.get_instance_id(), 1 if shadow else 0]
 		if not groups.has(key):
 			groups[key] = {"mesh": mesh_name, "mat": mat, "shadow": shadow, "xf": [], "cd": []}

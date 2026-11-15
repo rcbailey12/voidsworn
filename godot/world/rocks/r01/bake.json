@@ -1,0 +1,38 @@
+{
+  "code": "R01",
+  "size": [
+    8192,
+    4096
+  ],
+  "source_receipt": "../SOURCES_369.json",
+  "source_datasets": [
+    "LROC WAC natural colour mosaic",
+    "LRO LOLA gridded laser altimetry"
+  ],
+  "seed": [
+    3.69,
+    8.17
+  ],
+  "script": "tools/pc/jobs/planet369_remix.py",
+  "relief_channels": {
+    "r": "height high byte",
+    "g": "height low byte",
+    "b": "roughness",
+    "a": "cloud opacity"
+  },
+  "cold_remix_seconds": 27.151156299980357,
+  "files": {
+    "colour.png": {
+      "sha256": "60651940007c98a80041a54d40f1f72b5ee776be268b577136173e382161927a",
+      "bytes": 37658083
+    },
+    "relief.png": {
+      "sha256": "c560c7943c948604263999282a6f7a4ce14fc1b20f783383c9dc9e3535122b84",
+      "bytes": 74306361
+    },
+    "roughness.png": {
+      "sha256": "2144f2c6ef222aaf295b862543871277ce9aab33eae3c11f2e1cb12cb76b7679",
+      "bytes": 14395389
+    }
+  }
+}
