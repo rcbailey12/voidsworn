@@ -39,7 +39,7 @@ While designing, the check also caught (and the design fixed): see the fit repor
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 254 objects, 37 parts, 862 close pairs, 263 rays, 5 guns, 45 sensor pairs, 2 turrets swept, 7 cones, 19 apertures, 4 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 231 objects, 33 parts, 811 close pairs, 183 rays, 2 guns, 18 sensor pairs, 2 turrets swept, 7 cones, 18 apertures, 2 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 

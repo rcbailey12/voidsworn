@@ -1,5 +1,11 @@
 # deathless_E11 build sheet: The Unsetting, the Eclipse flagship (third sheet: R221 weapons, pass 2)
 
+**Issue 676 recipe proof:** [record](weapon_proof.json). Stage 4 contract, audit and audit self-test PASS; stage 5 unpainted geometry carried unchanged; stage 6 four LOD meshes exported and read back in Godot; stage 7 export, readback and planted-fault self-test PASS. Real Godot firing/turning, authored interiors and destruction PASS: 11 machines, zero split, zero inside triangles beyond their piece. Budget: 117298 triangles, 13 surfaces, 7677 inside triangles. Costs reported; the scene gate was not measured.
+
+**Issue 676, PC verification (Nov 14, CPU).** The latest sheet and named [weapon picture](weapon_review.jpg) were rebuilt on this PC with Blender 4.5.14, Cycles CPU, 12 samples. [Weapon match](weapon_match.json): PASS, zero problems; the [feature table](feature_table.md) lists every data slot, its shots and its visible mounts. The outline comparison remains the earlier reported reference. This is an unpainted weapon proof; the Board queues the paint bake.
+
+**Issue 676 (R241): the belly shredder F2 is cut.** Ryan, Nov 13 2026 (R241): "all ships should have weapons that match their actual weapons in game, so they line up with firing, effects, turns, etc". Flak fires 3 shots a volley and each null shredder has five needle muzzles, so two shredders took turns and each fell silent on some volleys. The deck shredder F1 is now the whole flak slot and fires on every volley; the board is flat, so the belly mount gave no cover the game uses. The weapon-match check (tools/blender/build_sheets/weapon_match.py; `deathless_E11_weapon_match.json` from every build) passes on this sheet; the views on this page were re-rendered from the changed design file in the issue 676 sandbox (Blender 4.5, CPU); the outline check picture is unchanged.
+
 Eclipse flagship, class Tomb-ark, **28.0 world units** (godot/render/hull_table.gd CLS_LEN['Tomb-ark']; data.js `d_boss`:
 gauss T, gauss T, doom F, flak T; ability nova, the spinal shell). Accepted picture:
 contrib/muse/design/concept_round8c_2026_11/deathless_E11_beauty.jpg and _sheet.jpg (R206). Designer of record: Opus (R205,
@@ -45,14 +51,7 @@ and stern at the same windows), then [fit_view.jpg](fit_view.jpg) and [cells.jpg
 `"bake": "stack"`: stage 5 paints this ship with the Eclipse kit's paint stack (`tools/blender/kits/eclipse/stack.py` on
 `tools/blender/kits/shared/paint_stack.py`; RECIPE.md "The paint stack for sheet ships", ships.md section 0 item 2 "The Eclipse
 paint"). Masks from the ship's own geometry, a drawn trim sheet and decals, colours sampled from the concepts, never projected.
-Pictures (sandbox on Blender 4.5.14, the PC's Blender, on the GPU: **4096 atlases** and a 2048 light map, 64 samples, Nov 13; game light, battle lift 2.2): [beside the concept](paint/E11_paint_full.jpg), [at the battle camera's pixel size](paint/E11_paint_cam170.jpg),
-[bow](paint/E11_paint_bow.jpg), [midships](paint/E11_paint_midships.jpg), [stern](paint/E11_paint_stern.jpg),
-[six views](paint/E11_paint_views.jpg), [engines](paint/E11_paint_engines.jpg), [corona line and core close](paint/E11_paint_close.jpg);
-[surface check](paint/surface_check.json), [R224 density](paint/density_sandbox.json). The game shots at camera 170 and 60
-come from the PC run (`tools/pc/jobs/E11_E12_PAINT_642c.bat`; the runs 642 and 642b crashed in stage 5 on Blender 4.5, fixed in
-the stack: it wrote the light inputs through an attribute handle taken before it added another attribute).
-
-**Budget (stage 7, D22_23, unpainted export of PR 620 then this paint):** triangles 104,804 (turrets 15,972) before and after (the paint adds no mesh); surfaces (draw calls) 10 then 11 (the one added is the glow surface: the corona line, core, lens and engine rings on one emission map); textures none then six 2048 maps (hull base, ORM, normal; parts base, ORM; glow emission), baked at 4096 with a 2048 light map; glb 6.8 MB then 11.5 MB. The scene gate is on the PC run.
+Latest: [round 3 method, checks and budget](paint/round3.md), Nov 14 2026. Blender 4.5.14 CPU, **2048 hull/parts atlases**, 1024 emission, 6 bake samples; game-light previews at lift 2.2. [Camera 170 beside concept](paint/E11_paint_cam170.jpg), [camera 60 beside concept](paint/E11_paint_cam60.jpg), [whole ship](paint/E11_paint_full.jpg), [rim and core close](paint/E11_paint_close.jpg), [views](paint/E11_paint_views.jpg), [engines](paint/E11_paint_engines.jpg). These replace the pass 2 previews. Surface check: 0 bare and 0 room pixels. R224 density: 0 flags. Budget: triangles 104,804 unchanged; root surfaces 11 to 12, all mesh surfaces 19 to 20; one new material, no added mesh or image. GPU cost and actual game pictures await the Board's new `E11_E12_PAINT_642d.bat` run.
 
 **Colour, judged at the battle lift.** The game lifts an Eclipse hull's albedo by 2.2 (R227, `godot/render/look.gd`; Ryan: "a bit
 darker for eclipse"); unpainted, this ship rendered glowing white in the game. The stack's colours are the tones the plates must
@@ -75,11 +74,11 @@ speckle are gone. The tone stays dark violet-black at the 2.2 lift.
   their only lights are the corona (the thin green-white line on every shade rim, which already marks the outline and heading
   at the battle camera), the core, the pale engine rings and the sheet's own corona strip lights over the belts. No
   `lights.json` is written; the standing light check passes with nothing to hold.
-- **The green is light, not paint** (pass 2): the corona line is drawn on the ship's emission map as the faint ring of a real
+- **The green is light, not paint** (round 3, R243): the corona line is drawn on the ship's emission map as the faint ring of a real
   eclipse: thin at rest, brighter arcs and dimmer stretches with a few short breaks, a soft falloff into the plate edge, cold
-  green-white at its hottest and deeper green where dim, mostly under the game's 0.8 glow threshold with only the brightest arcs
-  over it. The core is green-white at its centre grading to the concepts' core green at its edge, the brightest light on the
-  ship but never white all over.
+  green-white at its hottest and deeper green where dim, bright enough to read at camera 170 through the same thin strip.
+  Brighter arcs may cross the game's glow threshold. The core glows green like the concept, white-hot only within its central
+  0.18 radius, and reads at camera 170.
 - **The engine ring is the game's Eclipse engine colour** (`godot/fx/faction_looks.json` deathless `engine`, a pale violet, the
   colour the game's plume is drawn in) paled toward white with a touch of its white-gold `accent`, not the sheet's green: each
   ring its own brightness and tint, hot spots and dim gaps round it, the shade disc black. No flame.
@@ -102,7 +101,7 @@ and round feet; no boxes, square frames or hex drums. Judged at the beauty camer
 | Weapon | Mounts | Lore and rules | Built as |
 |---|---|---|---|
 | ![](weapon_gauss.jpg) Null cannon (gauss) | T1, T2 | 3 shots, 6 damage, ignores half of armour; the effect lights coils breech to muzzle, a near invisible slug, a shock ring | a rail gun: two slim round rail pairs with banded collars stepping down, reaching well past a thin arched crescent shade (three seamed bevelled plates, a stepped layer, plate courses, a corona crest), crescent capacitor fins behind on a small oval shell |
-| ![](weapon_flak.jpg) Null shredder (flak) | F1, F2 | 3 shots, 3 damage, range 2, point defence; the effect is instant streaks to a spread of airbursts | a fan of five thin round needle rails with banded collars, splayed side to side, out of a small layered crescent shade on an oval shell, two crescent capacitor fins |
+| ![](weapon_flak.jpg) Null shredder (flak) | F1 | 3 shots, 3 damage, range 2, point defence; the effect is instant streaks to a spread of airbursts | a fan of five thin round needle rails with banded collars, splayed side to side, out of a small layered crescent shade on an oval shell, two crescent capacitor fins |
 | ![](weapon_doom.jpg) Corona arc (doom) | A1 | one heavy blow every other turn; arcs crawl on the emitter, then a re-striking arc; the crest is a black disc in a thin ring | an arc emitter: a capacitor column (disc banks, feed conduits) ending in the crest, a black shade disc in a thin corona ring with a small lens, under a crown of six electrode horns |
 
 
@@ -133,7 +132,7 @@ camera and hull are unchanged, only the turrets' outline moved, so it was not re
    boxes; a skirt of tall narrow plates; the heavy band collar; three rows of twelve swept shade blades round the stern.
 4. **Batteries by data.js slot**: T1 and T2, the null cannons (gauss T, gauss T: rail pairs through crescent shades), on the
    centreline on low round drums, T2 superfiring; F1 a null shredder aft (flak T, the concept's small turret: a needle fan)
-   and F2 its twin on the belly.
+   (issue 676, R241: the belly twin F2 is cut; one shredder is the whole flak slot).
 5. **Engines**: a diamond of four eclipse engines (ribbed faceted drums, vanes, a short bell, a pale corona ring round a
    black shade disc; no flame).
 6. **INSIDE**: three decks, eight frames, the capacitor bank behind the projector, two archive vaults, dark decks, magazines,

@@ -9,6 +9,14 @@ const A4P := preload("res://assets/ships/a4_props.gd")  # A4's painted station a
 const BV := preload("res://world/blocker_visuals.gd")
 const HS := 10.0
 var HW := HS * sqrt(3.0)
+# The one scale table's board-side sizes (issue 710, R247; docs/playbooks/scale.md). All in world units, HEX_S = 10.
+const STATION_BASE_LEN := 22.0     # a small station cluster: 22, then 4 more per hex
+const STATION_PER_HEX := 4.0
+const STATION_BIG_LEN := 46.0      # a cluster of 5 or more station hexes
+const STATION_BIG_HEXES := 5
+const HULK_SCALE := 11.0           # a board wreck: the A4 hull scaled to this length
+const PLANET_R_DEFAULT := 3.0      # the map's planet radius in hexes when it names none
+const PLANET_EDGE_K := 1.5         # planetEdge: R * 1.5 * HEX_S + HEX_S / 2
 
 var api = null               # the rules API (godot/rules/battle_api.gd): read through view() and world_info()
 var VW := {}                 # the view the board was built from
@@ -754,7 +762,7 @@ func _terrain() -> void:
 			var qr2: PackedStringArray = ck.split(",")
 			cen += hex_world(int(qr2[0]), int(qr2[1]))
 		cen /= float(cl.size())
-		_station(cen, rng, 46.0 if cl.size() >= 5 else 22.0 + 4.0 * cl.size())
+		_station(cen, rng, STATION_BIG_LEN if cl.size() >= STATION_BIG_HEXES else STATION_BASE_LEN + STATION_PER_HEX * cl.size())
 
 
 func _rocks(c: Vector3, rng: RandomNumberGenerator, n: int, s0: float, s1: float) -> void:
@@ -780,7 +788,7 @@ func _hulk(c: Vector3, rng: RandomNumberGenerator) -> void:
 	# A4's painted hull, burnt (same random draws as the old path, so the rest of the board does not shift)
 	var a4 := A4P.hulk(code)
 	if a4 != null:
-		a4.transform = Transform3D(Basis.from_euler(Vector3(rng.randf_range(-0.5, 0.5), rng.randf() * TAU, rng.randf_range(-0.6, 0.6))).scaled(Vector3.ONE * 11.0), c)
+		a4.transform = Transform3D(Basis.from_euler(Vector3(rng.randf_range(-0.5, 0.5), rng.randf() * TAU, rng.randf_range(-0.6, 0.6))).scaled(Vector3.ONE * HULK_SCALE), c)
 		props.add_child(a4)
 		BV.fit_hulk(a4, c)
 		return
@@ -795,7 +803,7 @@ func _hulk(c: Vector3, rng: RandomNumberGenerator) -> void:
 	m.roughness = 0.85
 	m.metallic = 0.3
 	mi.material_override = m
-	mi.transform = Transform3D(Basis.from_euler(Vector3(rng.randf_range(-0.5, 0.5), rng.randf() * TAU, rng.randf_range(-0.6, 0.6))).scaled(Vector3(11, 11, -11)), c)
+	mi.transform = Transform3D(Basis.from_euler(Vector3(rng.randf_range(-0.5, 0.5), rng.randf() * TAU, rng.randf_range(-0.6, 0.6))).scaled(Vector3(HULK_SCALE, HULK_SCALE, -HULK_SCALE)), c)
 	props.add_child(mi)
 	BV.fit_hulk(mi, c)
 
@@ -837,7 +845,7 @@ func _planet() -> void:
 	if not (pl is Dictionary) or not pl.has("q"):
 		return
 	# battle.js planetEdge: R * 1.5 * HEX_S + HEX_S / 2
-	var rad: float = float(pl.get("R", 3)) * 1.5 * HS + HS * 0.5 if pl.has("R") else 40.0
+	var rad: float = float(pl.get("R", PLANET_R_DEFAULT)) * PLANET_EDGE_K * HS + HS * 0.5 if pl.has("R") else 40.0
 	var sp := SphereMesh.new()
 	sp.radius = rad
 	sp.height = rad * 2.0

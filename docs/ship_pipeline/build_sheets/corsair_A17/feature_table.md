@@ -6,19 +6,28 @@ Ashfall Hullbreakers (corsair) | class Cruiser | version 3 (round 3), 2026-11-11
 
 ## Measured off the views
 
+Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
+
+| Slot | Weapon | Arc | Shots | Visible mounts (muzzles) |
+|---:|---|---|---:|---|
+| 0 | scatter | P | 5 | P1 (2), P2 (2) |
+| 1 | scatter | S | 5 | S1 (2), S2 (2) |
+| 2 | torp | F | 1 | R1 (6) |
+| 3 | flak | T | 3 | T1 (2), T2 (2) |
+
 | Check | Value |
 |---|---|
 | model length | 14.577 |
 | length side | 14.6 |
 | length top | 14.6 |
 | length disagreement percent | 0.0 |
-| beam top | 7.612 |
-| beam bow | 7.638 |
-| beam disagreement percent | 0.17 |
+| beam top | 6.612 |
+| beam bow | 6.612 |
+| beam disagreement percent | 0.0 |
 | height side | 5.225 |
 | height bow | 5.225 |
 | height disagreement percent | 0.0 |
-| widest at station percent | 59.0 |
+| widest at station percent | 18.9 |
 | hull beam | 4.65 |
 | hull depth | 3.12 |
 | L to B hull | 3.14 |
@@ -52,10 +61,8 @@ Ashfall Hullbreakers (corsair) | class Cruiser | version 3 (round 3), 2026-11-11
 | T2 | twin belly turret | 2 barrels | 57.0 | 0.00 | -1.64 | forward, +8 elev | T flak | picture | belly twin, covers below |
 | P1 | twin turret | 2 barrels | 27.9 | 1.30 | 1.92 | 40 deg off the bow to port | P scatter | picture | neck block twin turret on a low barbette |
 | P2 | twin turret | 2 barrels | 59.8 | 1.90 | 1.30 | 35 deg off the bow to port, +3 elev | P scatter | picture | mid block twin turret, superfiring |
-| P3 | twin casemate | 2 barrels | 65.2 | 2.58 | -0.25 | 35 deg off the bow to port | P scatter | picture | flank casemate on the flank tier |
 | S1 | twin turret | 2 barrels | 27.9 | -1.30 | 1.92 | 40 deg off the bow to starboard | S scatter | picture | neck block twin turret on a low barbette |
 | S2 | twin turret | 2 barrels | 59.8 | -1.70 | 1.30 | 35 deg off the bow to starboard, +3 elev | S scatter | picture | mid block twin turret, superfiring |
-| S3 | twin casemate | 2 barrels | 65.2 | -2.63 | -0.25 | 35 deg off the bow to starboard | S scatter | picture | flank casemate on the flank tier |
 | E1 | engine, bell 1.2 across | 1 | 99.9 | 0.72 | 0.55 | exhaust aft | - | picture | port inner main, a squat drum |
 | E2 | engine, bell 1.0 across | 1 | 99.9 | 1.90 | 0.00 | exhaust aft | - | picture | port outer, a squat drum |
 | E3 | engine, bell 0.9 across | 1 | 99.9 | 0.72 | -0.62 | exhaust aft | - | picture | port inner lower, a squat drum |
@@ -89,7 +96,7 @@ Ashfall Hullbreakers (corsair) | class Cruiser | version 3 (round 3), 2026-11-11
 | HB5 | framed deck box 0.5 x 0.4 | 1 | 61.1 | 0.35 | 1.30 | - | - | picture | framed box on the mid block |
 | HB6 | framed deck box 0.4 x 0.3 | 1 | 86.5 | 1.10 | 1.52 | - | - | picture | framed box on the aft block |
 
-Totals: 8 gun mounts with 16 barrels; 6 launcher tubes; 6 engines; 2 intakes; 2 dishes; 4 claws; 0 chains.
+Totals: 6 gun mounts with 12 barrels; 6 launcher tubes; 6 engines; 2 intakes; 2 dishes; 4 claws; 0 chains.
 No gun rests facing aft: every gun row above points forward or out to the side (yaw under 90 degrees).
 
 ## Colour zones (break stations from the side view; finish from the beauty)
@@ -183,7 +190,7 @@ Full interiors throughout the hull (R215), hidden until a piece breaks. Deaths b
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 371 objects, 56 parts, 932 close pairs, 501 rays, 8 guns, 96 sensor pairs, 6 turrets swept, 10 cones, 28 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 370 objects, 54 parts, 938 close pairs, 451 rays, 6 guns, 72 sensor pairs, 6 turrets swept, 10 cones, 28 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -195,7 +202,8 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **The body is stacked angular blocks: a base hull, flank blocks, six top blocks stepping up toward the stern with gaps and undercuts.** the concept's dense stack of armoured blocks; round 3 was one smooth body with plates stuck on.
 - **The head is narrow, chamfered and stepped, a face overhanging a cut-in jaw mouth, the scoop drums on its flanks.** Ryan R217: "the front is also just a flat block".
 - **The jaws are four articulated grabber arms (two segments, knuckles, rams, forked pincers), a pair a side closing toward each other.** Ryan, R229: the round 3b flat prongs came from a bow crop that cut the grabbers off; the whole beauty and the sheet's side view show jointed arms (new kit part claw_arm).
-- **Guns laid out as matched batteries by game slot.** the picture scatters guns; scatter P and S are mirrored (a neck block turret, a mid block turret superfiring, a flank casemate per side), flak on the aft block and the belly, the rocket pod on the fore block.
+- **Guns laid out as matched batteries by game slot.** the picture scatters guns; scatter P and S are mirrored (a neck block turret, a mid block turret superfiring), flak on the aft block and the belly, the rocket pod on the fore block.
+- **Flank casemates P3 and S3 cut.** R241 (Ryan, Nov 13 2026: "all ships should have weapons that match their actual weapons in game"; issue 676 weapon-match check): a fixed casemate shared each broadside slot with two turning turrets, so the mounts on one slot did not turn together; each broadside slot now shows its two matched twin turrets, all four barrels firing on every 5-shot volley.
 - **Engines are squat drums in two columns a side, exits level, no bell touching another.** the concept's stacked cluster; the fit check found round 2's bells inside each other.
 - **The head follows the beauty: a big, tall, boxy front block over the neck, ear dishes on its shoulders (R229 sizes them).** the Board on round 3b: Ryan judges against the accepted picture, which draws the head larger than the round 8 sheet.
 - **Forward rocket pod, belly flak turret and four attitude thrusters added.** data.js gives a forward rocket slot (torp F); the belly needs cover; a ship in space needs thrusters.
