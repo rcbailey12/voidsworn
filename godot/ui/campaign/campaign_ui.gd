@@ -536,8 +536,14 @@ func _admiral_title(id) -> String:   # the admiral's name with the latest earned
 var _faces := {}
 func _face(id) -> Texture2D:
 	if not ResourceLoader.exists("res://portraits/portraits.gd"): return null
-	if not _faces.has(id): _faces[id] = load("res://portraits/portraits.gd").face(str(id))
-	return _faces[id]
+	# Restoration frames (R78 Q17, issue 43): an Eclipse admiral's portrait shows his mastery level,
+	# so the levelled frame must be part of the cache key or the portrait freezes at its first level.
+	var level := 0; var cap := 0
+	if C.ADMIRALS.has(id) and str(C.ADMIRALS[id].get("fac", "")) == "deathless":
+		level = C.masteryLevel(id); cap = C.capstoneMasteryLevel(id) if C.LINEAGE_TREES.has(id) else 0
+	var key := str(id) + ":" + str(level) + ":" + str(cap)
+	if not _faces.has(key): _faces[key] = load("res://portraits/portraits.gd").face(str(id), level, cap)
+	return _faces[key]
 func _cmd_text(cmd, fac) -> String:
 	var t = C.CMD_TEXT.get(cmd["id"])
 	return str(t.get(fac, "")) if t != null else ""
