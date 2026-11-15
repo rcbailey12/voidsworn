@@ -4545,17 +4545,23 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 	if not _jt(ru.get("isSq")):
 		var fac := str(ru.get("fac", ""))
 		if fac == "hegemony":
-			var anc = R.syncAnchor(ru["side"])
-			var sr := int(TBL.get("SYNC_R", 3))
-			if not (ru["side"] == "player" and Bs["round"] == 1 and _jt(Bs.get("cfg", {}).get("storyMods", {}).get("syncDown"))):
-				tr.append("Synchronized fire lost: the flagship is gone." if not _jt(anc) else ("Sync anchor: Hegemony ships within %d hexes fire as one." % sr if _jt(ru.get("anchor")) else ("In sync with the flagship." if R.inSync(ru) else "Out of sync: more than %d hexes from the flagship." % sr)))
+			if _jt(ru.get("ripped")):
+				tr.append("Links ripped out: she answers no Registry net, no synchronized fire.")
+			else:
+				var anc = R.syncAnchor(ru["side"])
+				var sr := int(TBL.get("SYNC_R", 3))
+				if not (ru["side"] == "player" and Bs["round"] == 1 and _jt(Bs.get("cfg", {}).get("storyMods", {}).get("syncDown"))):
+					tr.append("Synchronized fire lost: the flagship is gone." if not _jt(anc) else ("Sync anchor: Hegemony ships within %d hexes fire as one." % sr if _jt(ru.get("anchor")) else ("In sync with the flagship." if R.inSync(ru) else "Out of sync: more than %d hexes from the flagship." % sr)))
 		if fac == "ithar" and float(u["shMax"]) > 0.0:
 			tr.append("Prism charge: facings not hit since its last turn refill to full; hit facings recharge twice.")
 		if fac == "chorus":
 			tr.append("Feeds on kills nearby (up to %d%% hull a round)." % int(round(float(TBL.get("FEED_CAP", 0.0)) * 100.0)))
 		if fac == "deathless" and _jt(T.get("reanimate")):
-			var L = Bs.get("legion", {}).get(ru["side"]) if Bs.get("legion") is Dictionary else null
-			tr.append("Reassembled this battle." if _jt(ru.get("risen")) else ("Archive restore: the first to fall reassembles next round." if L is Dictionary and float(L.get("used", 0)) < float(L.get("max", 0)) and not _jt(ru.get("pflag")) and not _jt(ru.get("flagship")) and not _jt(ru.get("boss")) else "Archive restore spent."))
+			if _jt(ru.get("ripped")):
+				tr.append("Links ripped out: the Archive does not answer, no restore.")
+			else:
+				var L = Bs.get("legion", {}).get(ru["side"]) if Bs.get("legion") is Dictionary else null
+				tr.append("Reassembled this battle." if _jt(ru.get("risen")) else ("Archive restore: the first to fall reassembles next round." if L is Dictionary and float(L.get("used", 0)) < float(L.get("max", 0)) and not _jt(ru.get("pflag")) and not _jt(ru.get("flagship")) and not _jt(ru.get("boss")) else "Archive restore spent."))
 		for ts in (Bs["torps"] if Bs.get("torps") is Array else []):
 			if ts.get("tid") == ru.get("id") and ts.get("side") != ru.get("side"):
 				tr.append("[color=#ff8a72]Torpedoes inbound: they strike its marked hex next turn. Move 3 or more hexes from it to dodge.[/color]")

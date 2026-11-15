@@ -1086,6 +1086,7 @@ func makeUnit(side, tpl, opts: Dictionary = {}) -> Dictionary:
 		w["fired"] = false; w["cdLeft"] = 0; w["off"] = 0; wl.append(w)
 	u["weapons"] = wl
 	u["ab"] = t["ab"] if jt(t.get("ab")) else null; u["abCd"] = 0; u["isSq"] = jt(t.get("sq")); u["sqKind"] = t["sq"] if jt(t.get("sq")) else null; u["boss"] = jt(t.get("boss")); u["reanimate"] = jt(t.get("reanimate")); u["reanimated"] = false
+	u["ripped"] = jt(ship.get("ripped")) if jt(ship) else false   # R78 Q9: a captured hull kept through the Cinder Line yards, links ripped out
 	u["ship"] = ship if jt(ship) else null; u["parent"] = opts["parent"] if jt(opts.get("parent")) else null; u["sqPct"] = z0(opts.get("sqPct"))
 	u["mp"] = 0; u["turnsLeft"] = 0; u["order"] = null; u["braced"] = false; u["lockOn"] = false; u["focus"] = false; u["fullAhead"] = false; u["noTurn"] = false; u["evBuff"] = 0
 	u["pflag"] = jt(ship) and RUN != null and jt(RUN.get("flagUid")) and ship["uid"] == RUN["flagUid"]
@@ -1704,7 +1705,7 @@ func setupFactionRules() -> void:
 	for side in ["player", "enemy"]:
 		var heg = []
 		for u in B["units"]:
-			if u["side"] == side and not jt(u.get("isSq")) and not jt(u.get("transport")) and u["fac"] == "hegemony": heg.append(u)
+			if u["side"] == side and not jt(u.get("isSq")) and not jt(u.get("transport")) and u["fac"] == "hegemony" and not jt(u.get("ripped")): heg.append(u)   # R78 Q9: a captured hull with its links ripped out answers no Registry net
 		if heg.size() > 0:
 			var a = null
 			for u in heg:
@@ -1722,7 +1723,7 @@ func setupFactionRules() -> void:
 			a["anchor"] = true
 		var dl = 0
 		for u in B["units"]:
-			if u["side"] == side and not jt(u.get("isSq")) and u["fac"] == "deathless" and jt(u.get("t")) and jt(u["t"].get("reanimate")): dl += 1
+			if u["side"] == side and not jt(u.get("isSq")) and u["fac"] == "deathless" and not jt(u.get("ripped")) and jt(u.get("t")) and jt(u["t"].get("reanimate")): dl += 1
 		B["legion"][side]["max"] = 2 if dl >= 6 else (1 if dl >= 1 else 0)
 	if B.get("tree") != null and B["tree"].size() > 0 and (treeSkill("wideNet") != null or treeSkill("livingRelay") != null):
 		var sr = B["syncR"].duplicate() if B.get("syncR") is Dictionary else {}
@@ -1743,7 +1744,7 @@ func syncAnchor(side):
 func syncR(side): return B["syncR"][side] if (B != null and B.get("syncR") != null and jt(B["syncR"].get(side))) else TB.SYNC_R
 func syncDmg(side): return B["syncDmg"][side] if (B != null and B.get("syncDmg") != null and jt(B["syncDmg"].get(side))) else TB.SYNC_DMG
 func inSync(u) -> bool:
-	if u == null or jt(u.get("isSq")) or u.get("fac") != "hegemony" or jt(u.get("dead")): return false
+	if u == null or jt(u.get("isSq")) or u.get("fac") != "hegemony" or jt(u.get("dead")) or jt(u.get("ripped")): return false
 	if u["side"] == "player" and B["round"] == 1 and jt(B.get("cfg", {}).get("storyMods", {}).get("syncDown")): return false
 	var a = syncAnchor(u["side"])
 	return a != null and hdist(u, a) <= syncR(u["side"])
@@ -1767,7 +1768,7 @@ func syncLose(t) -> void:
 	if it != null and t["side"] == "player" and B.get("tr") != null and not jt(B["tr"].get("ironTempoUsed")):
 		var cands = []
 		for u in alive("player"):
-			if not is_same(u, t) and not jt(u.get("isSq")) and not jt(u.get("dead")) and u["fac"] == "hegemony": cands.append(u)
+			if not is_same(u, t) and not jt(u.get("isSq")) and not jt(u.get("dead")) and not jt(u.get("ripped")) and u["fac"] == "hegemony": cands.append(u)
 		JSM.ssort(cands, func(a, b):
 			var d = b["maxHp"] - a["maxHp"]
 			if d != 0: return d
@@ -1825,7 +1826,7 @@ func chorusBiteEst(u, t, hull) -> float:
 	if u != null and t != null and u["fac"] == "chorus" and not jt(u.get("isSq")) and hdist(u, t) <= 2: return JSM.jsround(hull * TB.CHORUS_BITE)
 	return 0.0
 func legionCan(t) -> bool:
-	if B == null or B.get("legion") == null or jt(t.get("isSq")) or t.get("fac") != "deathless" or not jt(t.get("t")) or not jt(t["t"].get("reanimate")) or jt(t.get("reanimated")) or jt(t.get("pyre")) or jt(t.get("boss")) or jt(t.get("pflag")) or jt(t.get("flagship")) or jt(t.get("transport")): return false
+	if B == null or B.get("legion") == null or jt(t.get("isSq")) or t.get("fac") != "deathless" or jt(t.get("ripped")) or not jt(t.get("t")) or not jt(t["t"].get("reanimate")) or jt(t.get("reanimated")) or jt(t.get("pyre")) or jt(t.get("boss")) or jt(t.get("pflag")) or jt(t.get("flagship")) or jt(t.get("transport")): return false
 	var L = B["legion"].get(t["side"])
 	return L != null and L["used"] < L["max"]
 func legionRiseHex(u):

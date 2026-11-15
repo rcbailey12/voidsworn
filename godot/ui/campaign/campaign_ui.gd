@@ -1206,6 +1206,7 @@ func _ship_card(s: Dictionary, refit: bool, extra: Array = []) -> Control:
 	var r0 = hbox(); var name_label = lbl(s["name"], 20, BONE, font_semi); name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	r0.add_child(name_label); r0.add_child(lbl("MK " + C.roman(s["mk"]), 17, BONE2, font_caps, false)); v.add_child(r0)
 	v.add_child(lbl(t["n"], 18, BONE2))
+	if C.jt(s.get("ripped")): v.add_child(lbl("Captured prize, links ripped out.", 17, VERD))
 	var r1 = hbox(); r1.add_child(lbl("Hull " + C.numstr(s["hp"]) + "/" + C.numstr(d["maxHp"]), 17)); r1.add_child(spacer()); r1.add_child(lbl(C.numstr(t["cp"]) + " CP", 17, BONE3, null, false)); v.add_child(r1)
 	v.add_child(bar(float(s["hp"]) / float(d["maxHp"])))
 	v.add_child(rich("[b]" + c("Shields", BONE2) + "[/b] " + C.numstr(d["shMax"]) + ", +" + C.numstr(d["regen"]) + "/turn   [b]" + c("Armor", BONE2) + "[/b] " + C.pct(d["armor"]) + "\n[b]" + c("Speed", BONE2) + "[/b] " + C.numstr(d["speed"]) + "   [b]" + c("Turns", BONE2) + "[/b] " + C.numstr(d["turns"]) + "   [b]" + c("Evasion", BONE2) + "[/b] " + C.numstr(d["ev"]), 17))
@@ -1308,6 +1309,24 @@ func _shipyard() -> Control:
 		elif uniq: fr.add_child(lbl("Only one allowed", 17, BONE3, null, false))
 		cvv.add_child(fr); hs.add_child(cv[0])
 	v.add_child(hs)
+	if st.get("cap") is Array and not st["cap"].is_empty():
+		v.add_child(sec_head("Captured hulls"))
+		v.add_child(lbl("Prizes taken from the Hegemony and Eclipse, refitted along the Cinder Line. Their links are ripped out: no synchronized fire, no Archive restore. Sold at Crusade prices.", 17, BONE3))
+		var cs = flow()
+		for h in st["cap"]:
+			var t2 = C.HULLS[h]; var cost2 = C.capturedHullPrice(t2); var fits2 = cp + float(t2["cp"]) <= float(R["cpCap"])
+			var cv3 = card(false, 320); var cvv3 = cv3[1]
+			cvv3.add_child(rich("[b]" + esc(t2["n"]) + "[/b]", 20))
+			cvv3.add_child(lbl("Captured prize, links ripped out.", 17, VERD))
+			cvv3.add_child(lbl(C.numstr(t2["cp"]) + " CP. Hull " + C.numstr(t2["hp"]) + ", shields " + C.numstr(t2["sh"]) + ", speed " + C.numstr(t2["sp"]) + ", turns " + C.numstr(t2["tn"]) + ".", 17, BONE2))
+			var ws2 = []
+			for e in t2["w"]: ws2.append(str(C.W_[e[0]]["n"]) + " (" + ("turret" if e[1] == "T" else str(C.ARC_NAME.get(e[1], e[1])).to_lower()) + ")")
+			cvv3.add_child(lbl(", ".join(PackedStringArray(ws2)) + ".", 17, BONE2))
+			cvv3.add_child(lbl("Ability: " + (str(C.ABILITIES[t2["ab"]]["n"]) if C.jt(t2.get("ab")) and C.ABILITIES.has(t2["ab"]) else "none"), 17, BONE3))
+			var fr2 = hbox(); add(fr2, abtn("Buy for " + C.numstr(cost2), "buyHull", h))
+			if not fits2: fr2.add_child(lbl("Not enough command points", 17, BONE3, null, false))
+			cvv3.add_child(fr2); cs.add_child(cv3[0])
+		v.add_child(cs)
 	v.add_child(sec_head("Refits for sale"))
 	var ms = flow()
 	for i in range(st["mods"].size()):
@@ -1889,9 +1908,10 @@ func _modal(md: Dictionary) -> void:
 				var r = rows[i]; var H = C.HULLS[r["p"]["tpl"]]; var hp = int(C.jsround(float(C.or_(r["p"].get("hpf"), 1)) * 100))
 				var pp = panel(IRON3, IRON2, 10); var pv = vbox(6); pp.add_child(pv)
 				pv.add_child(rich("[b]" + esc(r["p"]["name"]) + "[/b] " + c(esc(H["n"]) + ", " + C.numstr(C.or_(H.get("cp"), 1)) + " command point" + ("s" if float(C.or_(H.get("cp"), 1)) > 1 else "") + ", " + str(hp) + "% hull", BONE3), 18))
+				if C.jt(r.get("rip")) and not C.jt(r.get("cinder")): pv.add_child(lbl("Kept, she joins with her links ripped out.", 17, VERD))
 				var g = GridContainer.new(); g.columns = 3; g.add_theme_constant_override("h_separation", px(6))
 				var sm2 = (C.modName(r["o"]["strip"]["mod"]) + " + ") if C.jt(r["o"]["strip"]["mod"]) else ""
-				for opt in [["add", "Add", ("Joins at " + str(hp) + "% hull") if r["room"] else ("Your faction cannot field it" if r.get("gate") != null else "No command points left")], ["strip", "Strip", sm2 + C.numstr(r["o"]["strip"]["cred"]) + " credits"], ["ransom", "Ransom", C.numstr(r["o"]["ransom"]) + " credits"]]:
+				for opt in [["add", "Add", ("Joins at " + str(hp) + "% hull") if r["room"] else ("The Cinder Line opens from run 3" if C.jt(r.get("cinder")) else ("Your faction cannot field it" if r.get("gate") != null else "No command points left"))], ["strip", "Strip", sm2 + C.numstr(r["o"]["strip"]["cred"]) + " credits"], ["ransom", "Ransom", C.numstr(r["o"]["ransom"]) + " credits"]]:
 					var b = choice(opt[1], opt[2], "prizeSet", str(i) + ":" + opt[0], acts, null, "", BONE2, r["k"] == opt[0])
 					if b != null: b.custom_minimum_size.x = px(210); g.add_child(b)
 				pv.add_child(g); v.add_child(pp)
