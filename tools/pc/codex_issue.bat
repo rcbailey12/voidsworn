@@ -67,7 +67,9 @@ if "%PC_RUNNER_TEST%"=="1" set "PROBE=%CODEX_TEST_AGENT%"
 %COMMON% preflight "%O%" "%R%" codex "%PROBE%" gpt-6.1-sol ""
 if errorlevel 1 goto :probefail
 if defined CODEX_TEST_ROOT if defined CODEX_TEST_AGENT goto :testagent
-call "%TP%tmo.bat" 3600 "%APPDATA%\npm\codex.cmd" exec -m gpt-6.1-sol -c model_reasoning_effort=%EFF% --approve-for-me --ephemeral --color never -C "%R%" -o "%O%\last.md" "Read CODEX_TASK.md in this folder and do exactly what it says. Do not commit." > "%O%\log.txt" 2>&1
+rem CODEX_CAP (seconds) lets a launcher give a GPU or paint job more than the default hour (Board, Nov 15).
+if not defined CODEX_CAP set "CODEX_CAP=3600"
+call "%TP%tmo.bat" %CODEX_CAP% "%APPDATA%\npm\codex.cmd" exec -m gpt-6.1-sol -c model_reasoning_effort=%EFF% --approve-for-me --ephemeral --color never -C "%R%" -o "%O%\last.md" "Read CODEX_TASK.md in this folder and do exactly what it says. Do not commit." > "%O%\log.txt" 2>&1
 set "CX=%ERRORLEVEL%"
 goto :ran
 :testagent
