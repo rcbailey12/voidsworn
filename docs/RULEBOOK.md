@@ -71,8 +71,8 @@ the level of design and setup, not patches (R225).
 0.10 **How the repo carries memory (R251).** A standing rule comes only from Ryan's words, quoted in FINDINGS and landed here; a row
 that stretches his words past what he named says so and asks him. Board choices for one day or one job (effort, caps, job order,
 wrappers, which seat took a job) are operating notes in LOOP.md, never rules. A new ruling names what it replaces and the old row is
-marked SUPERSEDED, so no two live rules conflict. One live place per kind: rules in this book, status in LOOP.md's newest LATEST
-lines and The seats, the hand-over in HANDOFF section 0 (about one page; older sections go to docs/archive), history in FINDINGS.
+marked SUPERSEDED, so no two live rules conflict. One live place per kind: rules in this book, what is open and who has it on GitHub itself
+(checked live before any dispatch; contrib/opus/OPEN_WORK.md is only a timestamped nightly index of it, issue 890), what runs on the PC in LOOP.md's newest LATEST lines and The seats, the hand-over in HANDOFF section 0 (about one page; older sections go to docs/archive), history in FINDINGS.
 LOOP.md's LATEST lines roll into a dated summary once they pass about 15. Muse audits for stale or conflicting docs now and then.
 Why: several models and fresh chats read the repo cold; on Nov 14 a one-day choice nearly became a rule, an A20 note was stretched to
 every ship before Ryan ratified it (R244), and a summary line inverted Ryan's call on A18 and A19.
@@ -152,7 +152,7 @@ as a rerun of run 2. Set: Board (R281).
 
 An open issue is not proof the work is undone. Issues here stay open after their pull requests merge (2.5), so before
 queueing or relabelling an issue, search for a merged pull request that names it; on every merge, close the issue in the
-same step when its scope is done, and where a merge is partial, say what scope remains. The ChatGPT dot's dispatch sweep
+same step when its scope is done, and where a merge is partial, say what scope remains. Artoo's dispatch sweep (2.7)
 lists open issues with merged pull requests before each queueing round; the sweep is the audit, not the mechanism. Why:
 780, 781, 783 and 824 were queued again after pull requests 796, 787, 825 and 832 had merged (Ryan: "Why did you miss all
 those old jobs were already merged? That's a big miss."). Set: Board (R288).
@@ -185,7 +185,7 @@ credit is live, is status and lives in LOOP.md "The seats"):
   ended by R264 the same day).
 - The API arms (opus, sonnet) run on the Max plan's monthly API credit (Ryan, Nov 12); same model family as the Board, so never
   the different-model check of Opus work (R219).
-- The Board thread may use the Fable advisor (R252: "this chat stands"); no Fable helpers (R180); not taken: Gemini 4 Hydrogen
+- The Board thread may use the Fable advisor (R252: "this chat stands"; none is visible in the Project Board thread on Nov 16, so no document claims it is on); no Fable helpers (R180); not taken: Gemini 4 Hydrogen
   (R250).
 Superseded, kept so nobody follows them: "Kimi on its own subscription only, no API route (R238), through the Kimi Code CLI
 arm; it stays (R250 item 4)" (SUPERSEDED by R257); "the Kimi Code plan holds about 30 minutes of agent work per 5-hour window, so it takes
@@ -199,9 +199,17 @@ jobs run on a third local lane on the PC instead (lane C, R268, Ryan Nov 15: "ye
 If OpenAI lets cloud tasks pin a model, this can be asked again.
 Why: "We don't want to force using Astra or something. Just not accidentally run Luna or something, that's why we usually
 use Sol 6.1" (R216). Ends when Ryan picks another model. Set: Ryan, Nov 2 (R75), Nov 11 (R216) and Nov 15 (R268). Ids: R75b, R268, agents-07.
-Exception (R270, Ryan Nov 15: "Your ChatGPT dot"): Ryan's ChatGPT dot is the repo librarian. It runs in OpenAI's cloud, but
-read-only: it reads main, GitHub issues and PRs, and reports findings to Ryan (later to one standing librarian issue); it never
-pushes, edits, merges, closes or decides a rule. Every finding is checked by the Board against live main before anything changes.
+Exception (R270, R295): Artoo, Ryan's ChatGPT dot, is an independent technical reviewer. It runs in OpenAI's cloud and
+comments by itself, with no approval from Ryan per post, on pull requests and issues (one PR's findings on that PR; general
+sweeps on the standing issue 906). Its scope is merge issues, bugs and other technical problems, never design or taste. Every
+comment starts with "Artoo (technical review):", because it posts through Ryan's account and must never be read as his words,
+and names the commit it read. It never pushes, edits files, merges, closes, relabels or decides a rule; every finding is checked
+by the Board against live main before anything changes (0.10), and the Board replies with what it did. Before each merge the
+Board reads the PR's Artoo comments on its current head commit and settles each one first. Artoo went live Nov 16 (it wakes on
+PR events and checks issues about hourly). Why: "i want artoo
+commenting independently by itself for those comments and reviews. it shouldn't impact design or taste designs but looking for
+merge issues, bugs or other technical issues, absolutely should be independent" (Ryan, Nov 16, R295; replaces R270's read-only
+librarian clause).
 
 2.8 **Muse: a blind Rey leg written before Rey reads the others, on research, design and review jobs** (not on low-code fix
 jobs). Why: "Let's ensure muse is running its own blind leg room not just chairing." Set: Ryan, Nov 3 (R89). Ids: R89,
