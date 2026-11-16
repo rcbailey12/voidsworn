@@ -78,5 +78,7 @@
     }
    ]
   }
- ]
+ ],
+ "game_ship": "h_boss",
+ "variant": ""
 }

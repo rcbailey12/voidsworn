@@ -191,6 +191,77 @@ def inside_ok(p, inset=SHELL):
     return best
 
 
+def ion_trench(K, root, depth, w, h, coils=6, r=0.35):
+    """Issue 870: dress the kit's trench as a field accelerator, inside its existing opening.
+
+    Both Hegemony sheets use this design. The kit still supplies the liners, feed conduits,
+    muzzle and firing lane; the larger lens ends at that same registered muzzle.
+    """
+    import kit
+    from mathutils import Vector
+    HP = kit.HP
+    part = HP.spinal(depth, r, w=w, h=h, coils=coils)
+    part.comps = [c for c in part.comps if not c['name'].startswith(('coil', 'emitter', 'lens'))]
+    hw, hh = w / 2, h / 2
+    ex = depth * 0.24
+
+    def frame(x0, x1, outer, inner):
+        # Closed chamfered ring with an actual hole, including its front and rear annuli.
+        loops = [HP.octa(*outer, min(outer) * 0.35), HP.octa(*inner, min(inner) * (2 - math.sqrt(2)))]
+        verts = [(x, y, z) for x in (x0, x1) for loop in loops for y, z in loop]
+        faces = []
+        for i in range(8):
+            j = (i + 1) % 8
+            faces += [(i, j, 16 + j, 16 + i), (8 + j, 8 + i, 24 + i, 24 + j),
+                      (j, i, 8 + i, 8 + j), (16 + i, 16 + j, 24 + j, 24 + i)]
+        return verts, faces
+
+    # The block fills the rear of the trench. Its broad blue lens replaces the tiny disc.
+    part.add('emitter', 'mount', 'hmetal', HP.block(-0.02, ex + 0.035, hw * 0.82, hh * 0.82, hh * 0.22))
+    part.add('emitter_bezel', 'body', 'htrim', frame(ex + 0.035, ex + 0.065,
+             (hw * 0.77, hh * 0.77), (hw * 0.59, hh * 0.59)))
+    part.add('lens', 'body', 'hblue', HP.block(ex + 0.04, ex + 0.1, hw * 0.58, hh * 0.58, hh * 0.2))
+    # The emitter's recessed skirt casts blue onto the accelerator. All new light belongs
+    # to the emitter, using existing stack zones; the metal coils and muzzle stay unlit.
+    part.add('emitter_glow', 'body', 'hlining', frame(ex + 0.02, ex + 0.045,
+             (hw * 0.91, hh * 0.88), (hw * 0.79, hh * 0.79)))
+    for side in (-1, 1):
+        part.add('emitter_bus%d' % (side > 0), 'body', 'hlining',
+                 HP.block(ex + 0.08, depth - 0.06, hw * 0.035, hh * 0.12,
+                          hh * 0.04, yo=side * hw * 0.90))
+    # Nested octagonal capacitor bands get larger toward the mouth, with dark gaps between.
+    # A raised floor and chamfered corners remove the flat loading-deck read.
+    for i in range(coils):
+        t = i / max(1, coils - 1)
+        x = (ex + 0.16) * (1 - t) + (depth - 0.10) * t
+        outer = (hw - 0.065, hh - 0.065)
+        inner = (hw * (0.63 + 0.11 * t), hh * (0.62 + 0.08 * t))
+        part.add('coil%d' % i, 'body', 'hmetal', frame(x - 0.025, x + 0.025, outer, inner))
+        # Recessed emitter field contacts between the dark metal bands, not deck lamps.
+        part.add('emitter_field%d' % i, 'body', 'hlining', frame(x - 0.04, x - 0.026,
+                 (inner[0] + hw * 0.035, inner[1] + hh * 0.035), inner))
+    part.add('muzzle_lip', 'body', 'htrim', frame(depth - 0.055, depth - 0.005,
+             (hw - 0.055, hh - 0.055), (hw * 0.76, hh * 0.72)))
+
+    part = K.emit('I1', part, HP.frame(Vector(root), (1, 0, 0), (0, 0, 1)), 'ion_trench', keep=False)
+    fd = part.fit
+    for ob in K.coll.objects:
+        if ob.get('grp') == 'I1' and ob.get('role') != 'mount':
+            ob['gun_fixed'] = 1
+            ob['turret'] = 0
+    # Keep the kit's single forward slot, muzzle and mouth-origin firing lane (K.spinal).
+    lane = dict(apex=tuple(fd['lane_from'][1]), dir=(1.0, 0.0, 0.0), u=(0.0, 1.0, 0.0), w=(0.0, 0.0, 1.0),
+                hu=fd['radius'], hw=fd['radius'], half=4.0, length=K.length * 0.8, what='firing lane')
+    K.fitdata.append(dict(id='I1', kind='gun', slot='F', pivot=tuple(fd['pivot'][1]), up=(0, 0, 1), mount='spinal',
+                         ring=tuple(root), rest_yaw=0.0, reach=fd['reach'], band=(-10, 0, 10, 20),
+                         muzzles=[tuple(m[1]) for m in fd['muzzles']], cal=r, hous_r=fd['radius'], rest_pitch=0.0,
+                         lanes=[lane], aim=tuple(fd['aim'][1]), bore=fd['bore']))
+    K.features.append(dict(id='I1', kind='gun', what='ion cannon, stepped accelerator and blue emitter (fixed)', count=1,
+                           pos=tuple(root), aim=(0.0, 0.0), slot='F', weapon='ion', src='designed',
+                           note='R287, R289: broad blue emitter lens at the back, nested capacitor rings, inner glow and a framed muzzle lip, all inside the bow face',
+                           muzzle=[tuple(m[1]) for m in fd['muzzles']], normal=(1, 0, 0), fixed=True, inv=['ion_trench']))
+
+
 def build(K):
     import bpy
     import kit as _k
@@ -259,9 +330,7 @@ def build(K):
     K.box('H10_bowtrim_b', 10.5, 10.58, -tw - 0.04, tw + 0.04, tz - th - 0.04, tz - th, 'htrim', grp='hull')
     for s_ in (1, -1):
         K.box('H10_bowtrim_%s' % ('p' if s_ > 0 else 's'), 10.5, 10.58, s_ * tw if s_ > 0 else -tw - 0.04, tw + 0.04 if s_ > 0 else -tw, tz - th, tz + th, 'htrim', grp='hull')
-    K.spinal('I1', (XB, 0.0, tz), 10.5 - XB, r=0.35, slot='F', weapon='ion', inv='ion_trench', w=TRENCH['w'], h=TRENCH['h'],
-             note='the ion cannon (ion F, 1 shot): an emitter trench recessed in the blunt bow face, coil-lined walls, a blue lens on the emitter block at its back')
-    K.features[-1]['what'] = 'ion cannon, emitter trench in the bow face (fixed)'
+    ion_trench(K, (XB, 0.0, tz), 10.5 - XB, TRENCH['w'], TRENCH['h'])
 
     # ---------------- the twin rails, the drone bay block between them ----------------
     xr = [RX0] + [RX0 - 0.25 * i for i in range(1, 40) if RX0 - 0.25 * i > RX1] + [RX1]
@@ -573,8 +642,8 @@ def build(K):
              'Ryan, R185 (4): "The hegemony guns look weird and almost cartoonish"; factions.md: low armoured mounts sunk into the shoulder armour, short thick barrels, never tall round turrets with long thin barrels. The turret top stands 0.1 over the deck; the barrels sit at deck level')
     K.change('One shoulder turret a side, each one data.js slot: the port turret is hturbo P, the starboard hturbo S; each turns through its own broadside arc (30 to 150 degrees off the bow)',
              'data.js h_dominion carries hturbo P and hturbo S (3 shots each); two barrels a turret fire on every volley (weapon_match SPLIT). H10\'s turret count and places are kept')
-    K.change('H10\'s glowing bow panel becomes the ion cannon: an emitter trench recessed in the blunt bow face, coil-lined walls, an emitter block with a blue lens at its back',
-             'R183 (1): the ion weapon is a recessed emitter trench in a blunt bow face, never prongs or a barrel on the nose; data.js ion F (1 shot)')
+    K.change('H10\'s glowing bow panel becomes a recessed ion accelerator: a broad blue lens block at the back, stepped octagonal capacitor rings, an emitter glow skirt and a thick inner muzzle lip',
+             'Ryan R287: the opening read as a carrier bay; R289: the same correction on IM5. All details stay inside the existing bow opening; data.js ion F (1 shot), its muzzle, hull outline and insides stay unchanged')
     K.change('H10\'s small twin-tube fitting on the centreline is removed; the picket lasers (flak T) are two small twin turrets on the belly',
              'R241: no decorative or extra guns (the little twin tubes read as a gun with no data.js slot); the picket lasers on the belly keep the deck clear for the sensor fin (R240: no gun behind or aiming through a sensor) and cover the underside, where craft come from below')
     K.change('H10\'s oval sensor panel becomes the one low sensor fin on the centreline between the turrets (0.4 tall, 2.4 long, its leading edge raked)',

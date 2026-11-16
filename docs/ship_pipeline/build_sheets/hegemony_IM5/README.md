@@ -1,5 +1,30 @@
 # hegemony_IM5 build sheet: The Iron Mandate, the Hegemony Navy super-dreadnought (the boss, first sheet)
 
+## Current bow correction: issue 870, 2026-11-16
+
+[Concept, before and after](ion_weapon_before_after.jpg) | [Camera 170](ion_weapon_cam170.jpg) | [Ion close view](weapon_ion.jpg) | [Checks and source hashes](ion_weapon_checks.json).
+
+Ryan R287 and R289: the bow opening must read as an ion weapon. The existing mouth now contains a broad blue emitter lens,
+eight stepped octagonal capacitor bands, recessed blue emitter field contacts and a thick inner muzzle lip. Metal bands stay
+unlit. Every new light is part of I1 and uses the existing Hegemony stack zones (`hblue`, `hlining`); no stack values changed.
+The single ion F slot, rear-lens muzzle, firing lane, hull outline, seams and insides are retained. The Dominion drone bay keeps
+its original separate flush doors and deck guide lights; IM5 has no hangar.
+
+Method: the ship-local `ion_trench()` design in `tools/blender/build_sheets/ships/hegemony_H10.py` dresses the Hegemony kit's
+spinal part; IM5 calls the same design at its existing size. [Manifest](manifest.json), [feature table](feature_table.md),
+[fit record](fit.json) and [weapon match](weapon_match.json) are current. Blender 4.5.14 CPU: contract PASS, weapon match PASS,
+zero clash, mount, arc, sensor, sweep, exhaust, exit or lane findings. Interior vertex hashes match before and after.
+
+Budget, evaluated sheet geometry: **105,992 outside + 7,944 inside = 113,936 triangles**
+(+72 outside against this checkout's before build), 11 outside materials, 489 outside mesh objects.
+Costs are reported, never capped. No game install, new texture bake or scene frame-time claim is part of this sheet job.
+The pictures use the Hegemony stack's actual light strengths over unpainted sheet metal, with identical CPU lighting before
+and after; they are labelled with base revision `0e9c791d`, source signature and stage. The high H10 concept camera hides much
+of the recessed emitter behind the bow roof; the bow close view shows it directly. At camera 170 the standard side view
+hides the bow face, so the second row gives the same range and pixel scale from the bow quarter.
+
+The original full-sheet gallery below predates issue 870. Use the current bow correction pictures above for I1.
+
 Issue 768. Hegemony super-dreadnought, class Super-dreadnought, **31.0 world units** (godot/render/hull_table.gd
 CLS_LEN['Super-dreadnought']; data.js `h_boss`: hturbo P, hturbo S, turbo T, ion F, flak T; ability nova, no mount; no hangar).
 Shape of record: IM5 (contrib/muse/design/iron_mandate_2026_11/round_2/IM5.jpg and IM5_top.jpg; Ryan, Nov 14 2026: "Im5 is my
@@ -37,7 +62,8 @@ turned so the bow is on the left for the sheet tools (they crop and flip only): 
    on both ledges, the engine room's control windows at the canyon's aft end. The banks and exchangers are machines and sit whole
    in one module; the trunks and lines are structure and stop at flanged couplings short of every module band.
 5. **The ion trench** (ion F): a 2.6 by 1.25 emitter trench recessed 2.5 deep in the blunt bow face at the canyon's mouth, under
-   the low bow deck, coil-lined, a blue lens on the emitter block at its back (R183 (1)). Retro thrusters either side of it.
+   the low bow deck, with a broad blue emitter lens, eight stepped octagonal capacitor bands, lit field contacts and an inset muzzle lip
+   (issue 870, R289). Retro thrusters either side.
 6. **The heavy plasma lances** (hturbo P and S): low twin turrets sunk in shoulder pits on the ridges' outer shoulders at -3.4,
    abreast of the midships bridge; roofs 0.06 over the deck, barrels at deck level (R185 (4)); each turns through its own
    broadside arc.
@@ -64,7 +90,7 @@ turned so the bow is on the left for the sheet tools (they crop and flip only): 
 |---|---|---|---|
 | ![](weapon_hturbo.jpg) Heavy plasma lance (hturbo) | HP (slot P), HS (slot S) | 3 shots, 9 damage, range 6, plasma; lore 3.8 | the Hegemony lance turret (size 1.15), sunk in a shoulder pit: flush ring, faceted housing, sloped glacis, cheeks, capacitor bustle, two short thick coil barrels; each turns 30 to 150 off the bow |
 | ![](weapon_turbo.jpg) Plasma lance (turbo) | T1 (slot T) | 2 shots, 9 damage, range 5, plasma; lore 3.8 | the same lance mount at size 0.95 on the midships bridge, two barrels, all round |
-| ![](weapon_ion.jpg) Ion cannon (ion) | I1 (slot F) | 1 shot, 12 damage, range 6, strips shields; lore 3.1 | the emitter trench in the bow face at the canyon's mouth: liners, eight coil frames, an emitter block with a blue lens (the muzzle), feed conduits |
+| ![](weapon_ion.jpg) Ion cannon (ion) | I1 (slot F) | 1 shot, 12 damage, range 6, strips shields; lore 3.1 | rear blue emitter block, stepped octagonal accelerator bands, blue field contacts and an inset muzzle lip |
 | ![](weapon_flak.jpg) Picket lasers (flak) | F1 (slot T) | 3 shots, 3 damage, range 2, point defence | a small low eight-sided turret on the stern bridge, a sensor eye, two short emitters, elevating to 60 |
 
 Weapon match (`weapon_match.json`): **PASS**, 0 problems. Slot 0 hturbo P, 3 shots: HP (2 barrels). Slot 1 hturbo S, 3 shots:

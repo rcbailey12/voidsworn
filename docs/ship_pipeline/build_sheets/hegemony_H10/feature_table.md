@@ -41,7 +41,7 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 
 | ID | Fitting | Count | Station % | Offset | Height | Points | Game slot | Source | Note |
 |---|---|---:|---:|---:|---:|---|---|---|---|
-| I1 | ion cannon, emitter trench in the bow face (fixed) | 1 barrel | 6.5 | 0.00 | -0.17 | forward | F ion | picture | the ion cannon (ion F, 1 shot): an emitter trench recessed in the blunt bow face, coil-lined walls, a blue lens on the emitter block at its back |
+| I1 | ion cannon, stepped accelerator and blue emitter (fixed) | 1 barrel | 6.5 | 0.00 | -0.17 | forward | F ion | designed | R287, R289: broad blue emitter lens at the back, nested capacitor rings, inner glow and a framed muzzle lip, all inside the bow face |
 | B1 | flush armoured drone doors 3.2 x 1.0 | 1 | 61.9 | 0.00 | 0.50 | - | - | picture | data.js hangar 1: the drone bay's flush armoured doors, a seam line only on the intact ship (R232); the drones launch up out of the trough |
 | E1 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | 2.66 | -0.36 | exhaust aft | - | picture | port rail, outer nozzle: a rectangular nozzle pod, blue-white throat |
 | E2 | engine, rectangular nozzle 1.1 x 1.45 | 1 | 99.9 | 1.24 | -0.36 | exhaust aft | - | picture | port rail, inner nozzle: a rectangular nozzle pod, blue-white throat |
@@ -220,7 +220,7 @@ Full interiors throughout the hull (R215), hidden until a piece breaks: white co
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 355 objects, 80 parts, 615 close pairs, 398 rays, 5 guns, 30 sensor pairs, 4 turrets swept, 10 cones, 43 apertures, 1 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 356 objects, 80 parts, 616 close pairs, 398 rays, 5 guns, 30 sensor pairs, 4 turrets swept, 10 cones, 43 apertures, 1 lanes. Issue 870 CPU rebuild; [current bow proof](ion_weapon_before_after.jpg); [fit report](fit_report.md).
 
 ## Parts inventory (R218)
 
@@ -230,7 +230,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 
 - **H10's two tall box turrets with long thin twin barrels become low wide lance mounts sunk in shoulder terraces: a faceted housing with a sloped glacis, armoured cheeks, a capacitor bustle, two short thick containment barrels with coil rings and vented shrouds.** Ryan, R185 (4): "The hegemony guns look weird and almost cartoonish"; factions.md: low armoured mounts sunk into the shoulder armour, short thick barrels, never tall round turrets with long thin barrels. The turret top stands 0.1 over the deck; the barrels sit at deck level.
 - **One shoulder turret a side, each one data.js slot: the port turret is hturbo P, the starboard hturbo S; each turns through its own broadside arc (30 to 150 degrees off the bow).** data.js h_dominion carries hturbo P and hturbo S (3 shots each); two barrels a turret fire on every volley (weapon_match SPLIT). H10's turret count and places are kept.
-- **H10's glowing bow panel becomes the ion cannon: an emitter trench recessed in the blunt bow face, coil-lined walls, an emitter block with a blue lens at its back.** R183 (1): the ion weapon is a recessed emitter trench in a blunt bow face, never prongs or a barrel on the nose; data.js ion F (1 shot).
+- **H10's glowing bow panel becomes a recessed ion accelerator: a broad blue lens block at the back, stepped octagonal capacitor rings, an emitter glow skirt and a thick inner muzzle lip.** Ryan R287: the opening read as a carrier bay; R289: the same correction on IM5. All details stay inside the existing bow opening; data.js ion F (1 shot), its muzzle, hull outline and insides stay unchanged.
 - **H10's small twin-tube fitting on the centreline is removed; the picket lasers (flak T) are two small twin turrets on the belly.** R241: no decorative or extra guns (the little twin tubes read as a gun with no data.js slot); the picket lasers on the belly keep the deck clear for the sensor fin (R240: no gun behind or aiming through a sensor) and cover the underside, where craft come from below.
 - **H10's oval sensor panel becomes the one low sensor fin on the centreline between the turrets (0.4 tall, 2.4 long, its leading edge raked).** factions.md: "One low sensor fin, not a tower"; a taller first fin read as a submarine's sail from the beam (factions.md: H7 to H10 read as yachts or submarines); R240: no gun sits behind it or fires through it (the turrets fire outboard, the pickets below).
 - **H10's open hangar recess between the rails becomes flush armoured drone doors in a trough between the rails (a seam line only), with blue guide lamps.** R232 (pack.md question 2): flush armoured drone doors on the Dominion; data.js hangar 1; the drones launch up out of the trough.

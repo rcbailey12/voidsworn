@@ -48,9 +48,9 @@ also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on t
 
 The table above is every finding, in the order the check made them. Beyond the fit check, the sheet's own looks sent back: the first lance turrets (size 0.9, barrels 0.92) read small beside H10's big shoulder turrets and their barrels hid behind the glacis, so they grew to 1.1 with 1.25 barrels in a wider, longer pit; the first sensor fin (0.62 tall, 1.8 long) read as a sail from the beam, so it came down to 0.42 and ran out to 2.4; the first panel grid (0.8 by 0.62) left the hull at a seventh of the guns' triangle density, so it went to 0.6 by 0.45.
 
-## The sheet as delivered (after)
+## Current sheet: issue 870 CPU rebuild, 2026-11-16
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 355 objects, 80 parts, 615 close pairs, 398 rays, 5 guns, 30 sensor pairs, 4 turrets swept, 10 cones, 43 apertures, 1 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 356 objects, 80 parts, 616 close pairs, 398 rays, 5 guns, 30 sensor pairs, 4 turrets swept, 10 cones, 43 apertures, 1 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 

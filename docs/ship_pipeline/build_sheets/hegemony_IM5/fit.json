@@ -12,9 +12,9 @@
   "LANE": 0
  },
  "tested": {
-  "objects": 488,
+  "objects": 489,
   "parts": 114,
-  "close_pairs": 1394,
+  "close_pairs": 1395,
   "rays": 427,
   "guns": 5,
   "sensor_pairs": 30,

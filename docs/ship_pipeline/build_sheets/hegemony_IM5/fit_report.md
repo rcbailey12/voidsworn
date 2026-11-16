@@ -44,9 +44,9 @@ also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on t
 
 The table above is every finding, in the order the check made them. Beyond the fit check: the inside check sent back four rooms set below the belly skin and frames F1 and F2 outside the skin at the tapering bow (frames inset 0.08 more); the first battle-camera look sent back the shoulder swell (0.4 out over 0.15, a box sticking out of the flank), now 0.3 over two long ramps; the first look beside IM5 sent back a small trench mouth (2.2 by 1.0, now 2.6 by 1.25) and a bare canyon (coolant lines on the ledges and the engine room's control windows at the canyon's end added).
 
-## The sheet as delivered (after)
+## Current sheet: issue 870 CPU rebuild, 2026-11-16
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 488 objects, 114 parts, 1394 close pairs, 427 rays, 5 guns, 30 sensor pairs, 4 turrets swept, 12 cones, 41 apertures, 1 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 489 objects, 114 parts, 1395 close pairs, 427 rays, 5 guns, 30 sensor pairs, 4 turrets swept, 12 cones, 41 apertures, 1 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 

@@ -1,0 +1,160 @@
+{
+  "issue": 870,
+  "base_revision": "0e9c791d",
+  "source_sha256": {
+    "hegemony_H10": "eae2c20c970affdbf37057f5e3452b0541d9e5ce7020e0c79f2d550b11a06639",
+    "hegemony_IM5": "92a6e406f11657b62aaf802e0681c5d0203a98dce5b233d1bdab1966a66acf85"
+  },
+  "stage": "sheet built; Hegemony stack light strengths; CPU",
+  "method": "Hegemony kit spinal liners and registered muzzle; ship-local ion accelerator shared by H10 and IM5; existing Hegemony stack zones",
+  "before": {
+    "tris_outside": 54228,
+    "tris_inside": 5432,
+    "objects_outside": 355,
+    "objects_inside": 60,
+    "mats_outside": [
+      "dark",
+      "hblue",
+      "hgrey",
+      "hgrey2",
+      "hlens",
+      "hlining",
+      "hmetal",
+      "hnozzle",
+      "hpanel",
+      "htrim",
+      "hwin"
+    ],
+    "mats_inside": [
+      "bridge",
+      "core",
+      "deck",
+      "engroom",
+      "frame",
+      "hangar",
+      "hcorr",
+      "hemerg",
+      "hold",
+      "hrack",
+      "machinery",
+      "magazine"
+    ],
+    "inside_sha256": "9450862c907c7e73f29f9b44f308f3340b0859ccb43ab3065fb6eb8a8b18c7f2"
+  },
+  "after": {
+    "tris_outside": 54324,
+    "tris_inside": 5432,
+    "objects_outside": 356,
+    "objects_inside": 60,
+    "mats_outside": [
+      "dark",
+      "hblue",
+      "hgrey",
+      "hgrey2",
+      "hlens",
+      "hlining",
+      "hmetal",
+      "hnozzle",
+      "hpanel",
+      "htrim",
+      "hwin"
+    ],
+    "mats_inside": [
+      "bridge",
+      "core",
+      "deck",
+      "engroom",
+      "frame",
+      "hangar",
+      "hcorr",
+      "hemerg",
+      "hold",
+      "hrack",
+      "machinery",
+      "magazine"
+    ],
+    "inside_sha256": "9450862c907c7e73f29f9b44f308f3340b0859ccb43ab3065fb6eb8a8b18c7f2"
+  },
+  "interior_geometry_unchanged": true,
+  "fit": {
+    "CLASH": 0,
+    "MOUNT": 0,
+    "ARC": 0,
+    "SENSOR": 0,
+    "SWEEP": 0,
+    "EXHAUST": 0,
+    "EXIT": 0,
+    "LANE": 0
+  },
+  "tested": {
+    "objects": 356,
+    "parts": 80,
+    "close_pairs": 616,
+    "rays": 398,
+    "guns": 5,
+    "sensor_pairs": 30,
+    "turrets_swept": 4,
+    "cones": 10,
+    "apertures": 43,
+    "lanes": 1
+  },
+  "weapon_match": "PASS",
+  "contract": "PASS sheet_contract_selftest.py",
+  "concept_camera": {
+    "az": 309.9696222547733,
+    "el": 52.660666434226236,
+    "roll": -17.215275909741514,
+    "dist": 63.68801204615649,
+    "mm": 103.38772593663694,
+    "target": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "sx": -0.013617610117255737,
+    "sy": 0.08365400013594429,
+    "res": [
+      1920,
+      1280
+    ],
+    "iou": 0.9346,
+    "body_iou": 0.9357,
+    "note": "H10 beauty: view angles from a coarse grid over azimuth, elevation and roll (contrib/opus/tools/issue738/grid.py: the blockout outline scaled onto the mask box), then fit.py refined all seven camera numbers (never the ship); concept mask: contrib/opus/tools/issue738/mask.py (edges or luminance over the blurred picture, closed, holes filled, largest shape: the small escort lower left left out)"
+  },
+  "cam170": {
+    "distance": 170,
+    "pitch": 0.98,
+    "screen": "1920x1080 centre 640x360",
+    "model_scale": 1.0
+  },
+  "limitations": [
+    "No new texture bake, game install or scene performance run; sheet deliverable only.",
+    "H10 fitted concept camera looks down over the bow roof; use the labelled bow view for the recessed lens.",
+    "The standard side camera does not face the bow."
+  ],
+  "standing_checks": {
+    "command": "node contrib/opus/tools/run_all_checks.js",
+    "initial_rows": {
+      "PASS": 57,
+      "KNOWN": 2,
+      "FAIL": 1
+    },
+    "known_baseline_rows": [
+      "findings_tests: 7 listed failures",
+      "oracle_drift_guard: 12 constant differences"
+    ],
+    "permission_retry": {
+      "check": "gpu_slots_tests",
+      "initial_failure": "Sandbox denied a hard link from Node to a temporary watchdog fixture",
+      "result": "PASS outside sandbox, 11 groups"
+    },
+    "skipped": []
+  },
+  "other_checks": [
+    "weapon_match_selftest.py: PASS, 36 planted faults, 19 sheets",
+    "build_manifest_tests.js: PASS, 19 sheets",
+    "sheet_fixture_hash.py --check: PASS",
+    "doc_check_tests.js: PASS",
+    "git diff --check: PASS"
+  ]
+}

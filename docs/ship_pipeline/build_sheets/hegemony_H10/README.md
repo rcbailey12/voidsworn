@@ -1,5 +1,30 @@
 # hegemony_H10 build sheet: the Dominion-class dreadnought, the Hegemony Navy line flagship (first sheet)
 
+## Current bow correction: issue 870, 2026-11-16
+
+[Concept, before and after](ion_weapon_before_after.jpg) | [Camera 170](ion_weapon_cam170.jpg) | [Ion close view](weapon_ion.jpg) | [Checks and source hashes](ion_weapon_checks.json).
+
+Ryan R287 and R289: the bow opening must read as an ion weapon. The existing mouth now contains a broad blue emitter lens,
+six stepped octagonal capacitor bands, recessed blue emitter field contacts and a thick inner muzzle lip. Metal bands stay
+unlit. Every new light is part of I1 and uses the existing Hegemony stack zones (`hblue`, `hlining`); no stack values changed.
+The single ion F slot, rear-lens muzzle, firing lane, hull outline, seams and insides are retained. The Dominion drone bay keeps
+its original separate flush doors and deck guide lights; IM5 has no hangar.
+
+Method: the ship-local `ion_trench()` design in `tools/blender/build_sheets/ships/hegemony_H10.py` dresses the Hegemony kit's
+spinal part; IM5 calls the same design at its existing size. [Manifest](manifest.json), [feature table](feature_table.md),
+[fit record](fit.json) and [weapon match](weapon_match.json) are current. Blender 4.5.14 CPU: contract PASS, weapon match PASS,
+zero clash, mount, arc, sensor, sweep, exhaust, exit or lane findings. Interior vertex hashes match before and after.
+
+Budget, evaluated sheet geometry: **54,324 outside + 5,432 inside = 59,756 triangles**
+(+96 outside against this checkout's before build), 11 outside materials, 356 outside mesh objects.
+Costs are reported, never capped. No game install, new texture bake or scene frame-time claim is part of this sheet job.
+The pictures use the Hegemony stack's actual light strengths over unpainted sheet metal, with identical CPU lighting before
+and after; they are labelled with base revision `0e9c791d`, source signature and stage. The high H10 concept camera hides much
+of the recessed emitter behind the bow roof; the bow close view shows it directly. At camera 170 the standard side view
+hides the bow face, so the second row gives the same range and pixel scale from the bow quarter.
+
+The original full-sheet gallery below predates issue 870. Use the current bow correction pictures above for I1.
+
 Issue 759. Hegemony dreadnought, class Battleship, **21.0 world units** (godot/render/hull_table.gd CLS_LEN['Battleship'];
 data.js `h_dominion`: hturbo P, hturbo S, ion F, flak T; ability launch, hangar 1). Shape of record: H10
 (contrib/muse/design/concept_round7_2026_11/hegemony_H10_sheet.jpg and _beauty.jpg; picked and settled, R198), dressed in the
@@ -28,8 +53,8 @@ Files: design `tools/blender/build_sheets/ships/hegemony_H10.py`, inventory `heg
 2. **The shoulder terraces**: at 38 to 46 percent the deck steps down 0.34 into an octagonal terrace each side (H10's turret bays)
    and the knuckle swells out over it. The two heavy plasma lance turrets sit low in them: their roofs stand 0.1 over the deck,
    their barrels at deck level (R185 (4)).
-3. **The ion trench** (ion F): a 1.3 by 0.7 trench recessed 1.2 deep in the blunt bow face, coil-lined, a blue lens on the emitter
-   block at its back (R183 (1): never prongs or a barrel on the nose). Retro thrusters on the bow face either side.
+3. **The ion trench** (ion F): a 1.3 by 0.7 trench recessed 1.2 deep in the blunt bow face, with a broad blue emitter lens,
+   six stepped octagonal capacitor bands, lit emitter field contacts and an inset muzzle lip (issue 870, R287). Retro thrusters either side.
 4. **The twin rails** (the aft half): two chamfered blocks 2.66 wide in two module tiers (a recessed band at mid height carries the
    blue line), a gap 1.24 wide between them; the drone bay block between their roots with flush armoured doors in its roof (R232).
 5. **Four rectangular nozzle pods in one flat row**, two a rail: thick lips, blue-white throats, guide vanes (factions.md).
@@ -51,7 +76,7 @@ Files: design `tools/blender/build_sheets/ships/hegemony_H10.py`, inventory `heg
 | Weapon | Mounts | data.js and lore | Built as |
 |---|---|---|---|
 | ![](weapon_hturbo.jpg) Heavy plasma lance (hturbo) | HP (slot P), HS (slot S) | 3 shots, 9 damage, range 6, plasma; lore 3.8, light blue; look plasma (slow fat bolts with a corona) | a low wide mount sunk in the shoulder terrace: a flush ring, a faceted housing with a sloped glacis, armoured cheeks, a capacitor bustle with a blue charge strip, a deep mantlet, two short thick containment barrels (breech sleeve, four coil rings with blue glow, a vented muzzle shroud, a blue-lit bore). Each turns through its own broadside arc, 30 to 150 off the bow |
-| ![](weapon_ion.jpg) Ion cannon (ion) | I1 (slot F) | 1 shot, 12 damage, range 6, strips shields; lore 3.1 (Vyre's ion tech); look ion | the emitter trench in the bow face: wall liners, six field coil frames, an emitter block with a blue lens (the muzzle), feed conduits |
+| ![](weapon_ion.jpg) Ion cannon (ion) | I1 (slot F) | 1 shot, 12 damage, range 6, strips shields; lore 3.1 (Vyre's ion tech); look ion | rear blue emitter block, stepped octagonal accelerator bands, blue field contacts and an inset muzzle lip |
 | ![](weapon_flak.jpg) Picket lasers (flak) | F1, F2 (slot T) | 3 shots, 3 damage, range 2, point defence | small low eight-sided turrets on the belly, a sensor eye, two short emitters with coil collars and lens tips, elevating to 60 |
 
 Weapon match (`weapon_match.json`): **PASS**, 0 problems. Slot 0 hturbo P, 3 shots: HP (2 barrels). Slot 1 hturbo S, 3 shots:

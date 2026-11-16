@@ -7,10 +7,10 @@
   {
    "id": "I1",
    "kind": "gun",
-   "what": "ion cannon, emitter trench in the bow face (fixed)",
+   "what": "ion cannon, stepped accelerator and blue emitter (fixed)",
    "count": 1,
    "route": "kit",
-   "source": "picture",
+   "source": "designed",
    "inventory": [
     "ion_trench"
    ],

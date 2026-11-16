@@ -1,0 +1,158 @@
+{
+  "issue": 870,
+  "base_revision": "0e9c791d",
+  "source_sha256": {
+    "hegemony_H10": "eae2c20c970affdbf37057f5e3452b0541d9e5ce7020e0c79f2d550b11a06639",
+    "hegemony_IM5": "92a6e406f11657b62aaf802e0681c5d0203a98dce5b233d1bdab1966a66acf85"
+  },
+  "stage": "sheet built; Hegemony stack light strengths; CPU",
+  "method": "Hegemony kit spinal liners and registered muzzle; ship-local ion accelerator shared by H10 and IM5; existing Hegemony stack zones",
+  "before": {
+    "tris_outside": 105920,
+    "tris_inside": 7944,
+    "objects_outside": 488,
+    "objects_inside": 70,
+    "mats_outside": [
+      "dark",
+      "hblue",
+      "hgrey",
+      "hgrey2",
+      "hlens",
+      "hlining",
+      "hmetal",
+      "hnozzle",
+      "hpanel",
+      "htrim",
+      "hwin"
+    ],
+    "mats_inside": [
+      "bridge",
+      "core",
+      "deck",
+      "engroom",
+      "frame",
+      "hcorr",
+      "hemerg",
+      "hold",
+      "hrack",
+      "machinery",
+      "magazine"
+    ],
+    "inside_sha256": "211e544517c9af2ddc61bf578838b11f29f4465a869e5a47e9ad87df82a58b8b"
+  },
+  "after": {
+    "tris_outside": 105992,
+    "tris_inside": 7944,
+    "objects_outside": 489,
+    "objects_inside": 70,
+    "mats_outside": [
+      "dark",
+      "hblue",
+      "hgrey",
+      "hgrey2",
+      "hlens",
+      "hlining",
+      "hmetal",
+      "hnozzle",
+      "hpanel",
+      "htrim",
+      "hwin"
+    ],
+    "mats_inside": [
+      "bridge",
+      "core",
+      "deck",
+      "engroom",
+      "frame",
+      "hcorr",
+      "hemerg",
+      "hold",
+      "hrack",
+      "machinery",
+      "magazine"
+    ],
+    "inside_sha256": "211e544517c9af2ddc61bf578838b11f29f4465a869e5a47e9ad87df82a58b8b"
+  },
+  "interior_geometry_unchanged": true,
+  "fit": {
+    "CLASH": 0,
+    "MOUNT": 0,
+    "ARC": 0,
+    "SENSOR": 0,
+    "SWEEP": 0,
+    "EXHAUST": 0,
+    "EXIT": 0,
+    "LANE": 0
+  },
+  "tested": {
+    "objects": 489,
+    "parts": 114,
+    "close_pairs": 1395,
+    "rays": 427,
+    "guns": 5,
+    "sensor_pairs": 30,
+    "turrets_swept": 4,
+    "cones": 12,
+    "apertures": 41,
+    "lanes": 1
+  },
+  "weapon_match": "PASS",
+  "contract": "PASS sheet_contract_selftest.py",
+  "concept_camera": {
+    "az": 14.929016283553768,
+    "el": 14.445477601693069,
+    "roll": 4.849045218148474,
+    "dist": 61.82715982180175,
+    "mm": 115.2098127452902,
+    "target": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "sx": 0.03957945610402217,
+    "sy": 0.0453047477045949,
+    "res": [
+      1080,
+      720
+    ],
+    "iou": 0.9189,
+    "body_iou": 0.9187,
+    "note": "IM5 beauty: view angles from a coarse grid over azimuth, elevation and roll (contrib/opus/tools/issue738/grid.py: the blockout outline scaled onto the mask box), then fit.py refined all seven camera numbers (never the ship); concept mask: contrib/opus/tools/issue738/mask.py on IM5.jpg with its IM5 label blanked, the engine plumes above the stern edge cut out (contrib/opus/tools/issue768/mask_im5.py)"
+  },
+  "cam170": {
+    "distance": 170,
+    "pitch": 0.98,
+    "screen": "1920x1080 centre 640x360",
+    "model_scale": 1.0
+  },
+  "limitations": [
+    "No new texture bake, game install or scene performance run; sheet deliverable only.",
+    "H10 fitted concept camera looks down over the bow roof; use the labelled bow view for the recessed lens.",
+    "The standard side camera does not face the bow."
+  ],
+  "standing_checks": {
+    "command": "node contrib/opus/tools/run_all_checks.js",
+    "initial_rows": {
+      "PASS": 57,
+      "KNOWN": 2,
+      "FAIL": 1
+    },
+    "known_baseline_rows": [
+      "findings_tests: 7 listed failures",
+      "oracle_drift_guard: 12 constant differences"
+    ],
+    "permission_retry": {
+      "check": "gpu_slots_tests",
+      "initial_failure": "Sandbox denied a hard link from Node to a temporary watchdog fixture",
+      "result": "PASS outside sandbox, 11 groups"
+    },
+    "skipped": []
+  },
+  "other_checks": [
+    "weapon_match_selftest.py: PASS, 36 planted faults, 19 sheets",
+    "build_manifest_tests.js: PASS, 19 sheets",
+    "sheet_fixture_hash.py --check: PASS",
+    "doc_check_tests.js: PASS",
+    "git diff --check: PASS"
+  ]
+}
