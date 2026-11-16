@@ -73,6 +73,10 @@ if errorlevel 1 exit /b 14
 %COMMON% model "%O%" "gpt-6.1-sol" "gpt-6.1-sol"
 %COMMON% wait "%O%"
 if errorlevel 1 exit /b 14
+rem Validate and claim before checkout, Base/resume merges, preflight or agent work (issue 888).
+if not defined CODEX_CAP set "CODEX_CAP=21600"
+%COMMON% announce "%O%" "%N%" codex "%R%" "%CODEX_CAP%" "codex_issue.bat %N%" "%PUSHMODE%"
+if errorlevel 1 exit /b 14
 set "SPARSE="
 if defined CODEX_TEST_ROOT set "SPARSE=%CODEX_TEST_SPARSE%"
 %COMMON% checkout "%R%" "%O%" "%BR%" "%SPARSE%"
@@ -92,7 +96,6 @@ set "TMO_LOG=%O%\log.txt"
 set "TMO_ERR_LOG="
 rem CODEX_CAP is a hard ceiling in seconds; STALL_MIN defaults to 30 in the watchdog.
 if not defined CODEX_CAP set "CODEX_CAP=21600"
-%COMMON% announce "%O%" "%N%" codex "%R%" "%CODEX_CAP%" "codex_issue.bat %N%" "%PUSHMODE%"
 if defined CODEX_TEST_ROOT if defined CODEX_TEST_AGENT goto :testagent
 call "%TP%tmo.bat" %CODEX_CAP% "%APPDATA%\npm\codex.cmd" exec -m gpt-6.1-sol -c model_reasoning_effort=%EFF% --approve-for-me --ephemeral --color never -C "%R%" -o "%O%\last.md" "Read CODEX_TASK.md in this folder and do exactly what it says. Do not commit." > "%O%\log.txt" 2>&1
 set "CX=%ERRORLEVEL%"

@@ -142,7 +142,7 @@ The PC runner merges `origin/<branch>` from the optional Base line and commits t
 a conflict stops before the agent with the checkout kept. Briefs name Base instead of asking an agent to merge while
 also forbidding commits. The runner sets the running label and one status comment per job branch (edited in place on
 retries and at the end), naming seat, machine, lane folder, branch, start time, ceiling, last commit and how to resume.
-It clears running at the end; a GitHub reporting failure is logged and never fails the job. Why: merge-left partials
+Before checkout or model calls, every PC runner refuses closed or running jobs and a delivery branch or open PR for the job from another seat prefix (same-prefix reruns are allowed); a body with exactly one fixed block and no run history needs no marker and is passed whole, otherwise exactly one line outside code fences containing `THIS IS THE JOB NOW` in heading, bold or plain form selects the fixed block plus that run; Effort (Codex) is required only for Codex, and the label and status comment must be set and read back before work, while later reporting failures are logged without changing the result (R291, issue 888). It clears its own running claim at the end. Why: merge-left partials
 on 800, 815 and 44, and jobs with no visible running seat. Set: Ryan R270, issue 846 (788 step 3).
 
 One current instruction. A job's current run brief sits at the top of its issue body, under the fixed block, marked as the
@@ -180,8 +180,8 @@ credit is live, is status and lives in LOOP.md "The seats"):
 - Codex only for what no other seat can do (R234: "use it when it can only do something others can't"); GPT 6.1 Sol (2.7).
 - Kimi is no longer a seat (R257, Ryan, Nov 15: "Kimi is maxed out until 12/12. I just cancelled. I don't think it's worth
   continuing given the usage issues"). Its jobs go to DeepSeek (mid-size code) or an Opus worker; nothing is sent to Kimi.
-- Codex is on the Pro plan (R264, Ryan, Nov 15: "it's on the pro plan, so significant usage upgrade") and runs up to three local
-  lanes (R268). SUPERSEDED, kept so nobody follows it: "Codex is near its weekly limit ... the Board runs the PC GPU steps" (R257,
+- Codex is on the Pro plan (R264, Ryan, Nov 15: "it's on the pro plan, so significant usage upgrade") and runs up to four local
+  lanes (R268; the fourth, lane D, is code only: R301, Nov 16). SUPERSEDED, kept so nobody follows it: "Codex is near its weekly limit ... the Board runs the PC GPU steps" (R257,
   ended by R264 the same day).
 - The API arms (opus, sonnet) run on the Max plan's monthly API credit (Ryan, Nov 12); same model family as the Board, so never
   the different-model check of Opus work (R219).
@@ -267,7 +267,7 @@ watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md,
 (project instructions: never delete); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
 
 3.4 **GPU work is sized to the job and to what the RTX 5080 can hold, not to a fixed job count; frame-time measurements run
-solo. Lane C stays code only.** The Board decides per job how many share the card: light captures and probes can run side by
+solo. Lanes C and D stay code only.** The Board decides per job how many share the card: light captures and probes can run side by
 side, heavy bakes and Blender renders take more of it, and nothing is started that would run the card out of its 16 GB of
 graphics memory. The launchers take and release claims themselves through tools/pc/gpu_slots.js (shared capacity from
 Downloads\voidsworn_test\gpu_slots.json, {"sharedSlots":2} by default, raised by the Board; captures weigh 1, Blender and heavy
