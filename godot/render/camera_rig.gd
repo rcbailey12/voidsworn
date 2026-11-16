@@ -191,9 +191,13 @@ func _process(dt: float) -> void:
 
 
 func _apply() -> void:
-	# Issue 368 route comparison only. Fixed zoom bands reserve froxels for the board.
-	if OS.get_environment("VS_NEBULA_ROUTE") in ["fog", "cards"]:
+	# Issue 368: fixed zoom bands reserve froxels for the board.
+	if OS.get_environment("VS_NEBULA_ROUTE") != "today":
 		near = 15.0 if _cr >= 100.0 else (5.0 if _cr >= 45.0 else 1.0)
+	# Keep the far side of a cloud in range as the player zooms out.
+	var env := get_world_3d().environment if is_inside_tree() else null
+	if env != null and env.volumetric_fog_enabled and OS.get_environment("VS_NEBULA_ROUTE") != "today":
+		env.volumetric_fog_length = maxf(250.0, _cr + 200.0)
 	var tg := _ct + shake
 	var p := tg + Vector3(cos(_ca) * sin(_cb), cos(_cb), -sin(_ca) * sin(_cb)) * _cr
 	var up := Vector3.UP if _cb > 0.02 else Vector3(-cos(_ca), 0, sin(_ca))

@@ -4,9 +4,9 @@ extends Node3D
 #   nebula      soft gas: billboards that sample one continuous 3D noise field in world space, so neighbouring puffs read
 #               as one body; lit on the sun's side, dense cores glowing, soft where they meet hulls and rocks. Step 2:
 #               shaped by a soft footprint of its own hexes (_mask) worn by the noise, so it has no hex outline and no
-#               hex-shaped blobs, and never spills out of its hexes
+#               hex-shaped blobs, and spills softly beyond the marked hexes
 #   ion storm   the same gas, darker than the sky behind it with yellow-white electric veins, and lightning: jagged bolts that flash
-#               now and then, each with a light that catches the ships, rocks and the gas round it (never the fog)
+#               now and then, each with a light that catches the ships, rocks and the gas round it, including max-tier fog
 #   debris      dense rock and wreck clusters: many more rocks of mixed size, wreckage (torn hull plates with their
 #               frames, snapped hull frames, broken truss spars, gutted hull sections; some torn edges still hot, every
 #               piece tumbling slowly), and a haze of fine dust
@@ -33,11 +33,19 @@ var _tick_presenter: Node = null
 var bolts: Array = []        # {mi, light, pos, next, start}
 var clock := 0.0
 
-# Issue 368 step 1 only: explicit bench variants. Ryan picks before a route becomes the default.
-var gas_route := OS.get_environment("VS_NEBULA_ROUTE")
+# Issue 368, R270: route A is the default. today is retained only for historical bench pairs.
+var gas_route := selected_route()
+
+
+static func selected_route() -> String:
+	var route := OS.get_environment("VS_NEBULA_ROUTE")
+	return "today" if route == "today" else "fog"
+
 var fog_mats: Array[ShaderMaterial] = []
 var _fog_noise: ImageTexture3D = null
 const GAS_HEIGHT := 1.75
+const GAS_CLOUD_SCALE := 3.0
+const GAS_CLOUD_MARGIN := 48.0
 const FOG_SHADER := """
 shader_type fog;
 uniform sampler3D noise_tex : filter_linear, repeat_enable;
@@ -54,10 +62,13 @@ void fog() {
 	vec3 p = WORLD_POSITION * 0.012 + vec3(0.0006, 0.0002, 0.00035) * gas_time;
 	float warp = texture(noise_tex, p * 0.55 + 0.31).r;
 	float n = texture(noise_tex, p + vec3(warp * 0.12)).r;
-	vec2 foot = texture(mask_tex, (WORLD_POSITION.xz - mask_box.xy) * mask_box.zw).rg;
+	n = mix(n, texture(noise_tex, p * 3.1 - vec3(warp * 0.18)).r, 0.18);
+	vec2 uv = (WORLD_POSITION.xz - mask_box.xy) * mask_box.zw;
+	vec2 foot = texture(mask_tex, uv).rg;
+	foot *= step(vec2(0.0), uv).x * step(vec2(0.0), uv).y * step(uv, vec2(1.0)).x * step(uv, vec2(1.0)).y;
 	float height = smoothstep(-7.0, -2.0, WORLD_POSITION.y) * (1.0 - smoothstep(23.0, 31.5, WORLD_POSITION.y));
 	float shape = foot.g * smoothstep(0.08, 0.65, foot.r) * height;
-	DENSITY = smoothstep(0.32, 0.68, n) * shape * 0.055 * gain_a;
+	DENSITY = smoothstep(0.32, 0.68, n) * shape * 0.045 * gain_a;
 	ALBEDO = mix(c_lit, c_glow, smoothstep(0.58, 0.85, n));
 	EMISSION = mix(c_dark, c_shadow, n) * 0.65;
 	EMISSION += c_glow * smoothstep(0.7, 0.9, n) * (0.2 + storm * 0.25);
@@ -76,7 +87,7 @@ const GAS_MASK_MARGIN := 24.0    # the gas footprint reaches this far past its o
 const DEBRIS_ROCK_MIN := 0.3     # a debris field's own rock, at scale 1 a library rock is 2 units long
 const DEBRIS_ROCK_MAX := 2.8
 # Issue 232 E17/NB5 sheet: the live weight, overridable for the three-weight capture (default is the shipped 0.25).
-var faction_end_weight := float(OS.get_environment("VS_NEB_W")) if OS.get_environment("VS_NEB_W") != "" else NEBULA_FACTION_END_WEIGHT
+var faction_end_weight := clampf(float(OS.get_environment("VS_NEB_W")), 0.0, NEBULA_FACTION_END_WEIGHT) if OS.get_environment("VS_NEB_W") != "" else NEBULA_FACTION_END_WEIGHT
 
 const GAS_SHADER := """
 shader_type spatial;
@@ -331,13 +342,13 @@ func _patches(ps: Array) -> Array:
 
 func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	var low: bool = W.quality == "low"
-	var prototype := gas_route in ["fog", "cards"]
+	var expanded := gas_route != "today"
 	var volume: bool = gas_route == "fog" and W.quality == "max"
 	# step 2: fewer, broader, softer puffs; their shape comes from one noise field and the patch's footprint (_mask), so
 	# the patch reads as one body of gas, not a row of cotton balls on hex tiles
 	var per := 3 if low else 5
-	if prototype:
-		per = 2 if volume else (5 if low else 12)
+	if expanded:
+		per = 2 if volume else (3 if low else 5)
 	var n_big := ps.size() / 3 if broad_count < 0 else broad_count
 	var mm := _quad_mm(ps.size() * per + n_big)
 	var i := 0
@@ -348,14 +359,14 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 			# Preserve the count and size; split the existing puffs into height bands.
 			var layer: int = [0, 1, 2, 1, 2][k % 5]
 			var y := rng.randf_range(-2.5, 0.5) if layer == 0 else (rng.randf_range(2.5, 6.5) if layer == 1 else rng.randf_range(8.0, 12.0))
-			if prototype:
+			if expanded:
 				y *= GAS_HEIGHT
 			mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, (p as Vector3) + Vector3(cos(a) * rr, y, sin(a) * rr)))
 			mm.set_instance_custom_data(i, Color(rng.randf_range(GAS_PUFF_MIN, GAS_PUFF_MAX), rng.randf(), rng.randf_range(0.55, 0.85), layer + rng.randf() * 0.9))
-			if prototype:
+			if expanded:
 				var cd := mm.get_instance_custom_data(i)
-				cd.r *= 1.4
-				cd.b *= 0.55 if volume else 1.25
+				cd.r *= GAS_CLOUD_SCALE
+				cd.b *= 0.55 if volume else 1.0
 				mm.set_instance_custom_data(i, cd)
 			i += 1
 	# One or two existing broad puffs become a very faint high tying veil.
@@ -363,13 +374,13 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 		var p: Vector3 = ps[rng.randi() % ps.size()]
 		mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, p + Vector3(rng.randf_range(-4, 4), rng.randf_range(13.5, 16.5) if k < 2 else rng.randf_range(2.5, 6.5), rng.randf_range(-4, 4))))
 		mm.set_instance_custom_data(i, Color(rng.randf_range(GAS_VEIL_MIN, GAS_VEIL_MAX), rng.randf(), rng.randf_range(0.3, 0.4), (3 if k < 2 else 1) + rng.randf() * 0.9))
-		if prototype:
+		if expanded:
 			var transform := mm.get_instance_transform(i)
 			transform.origin.y *= GAS_HEIGHT
 			mm.set_instance_transform(i, transform)
 			var custom := mm.get_instance_custom_data(i)
-			custom.r *= 1.4
-			custom.b *= 0.55 if volume else 1.25
+			custom.r *= GAS_CLOUD_SCALE
+			custom.b *= 0.55 if volume else 1.0
 			mm.set_instance_custom_data(i, custom)
 		i += 1
 	var mi := MultiMeshInstance3D.new()
@@ -379,7 +390,7 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	var sh := Shader.new()
 	sh.code = GAS_SHADER.replace("%NOISE%", WS.NOISE)
 	m.shader = sh
-	if prototype:
+	if expanded:
 		m.set_shader_parameter("height_scale", GAS_HEIGHT)
 	m.set_shader_parameter("sun_v", Vector3(0.45, 0.70, 0.55))   # world.gd SUN
 	if OS.get_environment("VS_GAS_FLAT") == "1":
@@ -423,7 +434,8 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	gas_mats.append([m, g])
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	mi.extra_cull_margin = 30.0
+	# Vertex-expanded cards need bounds that include their scaled visible radius.
+	mi.extra_cull_margin = GAS_VEIL_MAX * GAS_CLOUD_SCALE * 0.5 + GAS_PUFF_REACH if expanded else 30.0
 	add_child(mi)
 	if volume:
 		_fog_patch(ps, m, mk, storm)
@@ -442,7 +454,7 @@ func _fog_patch(ps: Array, card: ShaderMaterial, mk: Array, storm: bool) -> void
 	var volume := FogVolume.new()
 	volume.name = "StormFog368" if storm else "NebulaFog368"
 	volume.shape = RenderingServer.FOG_VOLUME_SHAPE_BOX
-	volume.size = Vector3(hi.x - lo.x + 48.0, 38.5, hi.z - lo.z + 48.0)
+	volume.size = Vector3(hi.x - lo.x + GAS_CLOUD_MARGIN * 2.0, 38.5, hi.z - lo.z + GAS_CLOUD_MARGIN * 2.0)
 	volume.position = Vector3((hi.x + lo.x) * 0.5, 12.25, (hi.z + lo.z) * 0.5)
 	var mat := ShaderMaterial.new()
 	var shader := Shader.new()
@@ -476,8 +488,10 @@ func _mask(ps: Array, feather := 2.0) -> Array:
 	for p in ps:
 		lo = lo.min(Vector2((p as Vector3).x, (p as Vector3).z))
 		hi = hi.max(Vector2((p as Vector3).x, (p as Vector3).z))
-	lo -= Vector2(GAS_MASK_MARGIN, GAS_MASK_MARGIN)
-	hi += Vector2(GAS_MASK_MARGIN, GAS_MASK_MARGIN)
+	var expanded := gas_route != "today"
+	var margin := GAS_CLOUD_MARGIN if expanded else GAS_MASK_MARGIN
+	lo -= Vector2(margin, margin)
+	hi += Vector2(margin, margin)
 	var w := int(ceil((hi.x - lo.x) / STEP)) + 1
 	var h := int(ceil((hi.y - lo.y) / STEP)) + 1
 	var f := PackedFloat32Array()
@@ -487,15 +501,17 @@ func _mask(ps: Array, feather := 2.0) -> Array:
 		f[j * 2 + 1] = 2.0
 	for p in ps:
 		var c := Vector2((p as Vector3).x, (p as Vector3).z)
-		var x0 := int((c.x - 14.0 - lo.x) / STEP)
-		var z0 := int((c.y - 14.0 - lo.y) / STEP)
-		for zi in range(maxi(z0, 0), mini(z0 + int(28.0 / STEP) + 2, h)):
+		var reach := 14.0 * GAS_CLOUD_SCALE if expanded else 14.0
+		var x0 := int((c.x - reach - lo.x) / STEP)
+		var z0 := int((c.y - reach - lo.y) / STEP)
+		for zi in range(maxi(z0, 0), mini(z0 + int(reach * 2.0 / STEP) + 2, h)):
 			var dz := absf(lo.y + zi * STEP - c.y)
-			for xi in range(maxi(x0, 0), mini(x0 + int(28.0 / STEP) + 2, w)):
+			for xi in range(maxi(x0, 0), mini(x0 + int(reach * 2.0 / STEP) + 2, w)):
 				var dx := absf(lo.x + xi * STEP - c.x)
 				var j := (zi * w + xi) * 2
-				f[j] += exp(-(dx * dx + dz * dz) / (84.0 if gas_route in ["fog", "cards"] else SIG2))
+				f[j] += exp(-(dx * dx + dz * dz) / (84.0 * GAS_CLOUD_SCALE * GAS_CLOUD_SCALE if expanded else SIG2))
 				var d := maxf(dx, 0.5 * dx + 0.8660254 * dz) / HIN
+				if expanded: d /= GAS_CLOUD_SCALE
 				if d < f[j + 1]:
 					f[j + 1] = d
 	# Shared edges are not boundaries. Feather inward from only the union's outside.
@@ -516,7 +532,7 @@ func _mask(ps: Array, feather := 2.0) -> Array:
 	for zi in h:
 		for xi in w:
 			var j := (zi * w + xi) * 2 + 1
-			if gas_route in ["fog", "cards"]:
+			if gas_route != "today":
 				# The marked hex samples a larger cloud. Feather past the union, including its outside.
 				f[j] = 1.0 - smoothstep(0.65, 1.6, f[j])
 				continue
@@ -533,6 +549,18 @@ func _mask(ps: Array, feather := 2.0) -> Array:
 			f[j] = smoothstep(0.0, feather, distance_to_edge)
 	var img := Image.create_from_data(w, h, false, Image.FORMAT_RGF, f.to_byte_array())
 	return [ImageTexture.create_from_image(img), Vector4(lo.x - 0.5 * STEP, lo.y - 0.5 * STEP, 1.0 / (w * STEP), 1.0 / (h * STEP)), img]
+
+
+func cloud_span() -> float:
+	var mask: Array = _mask([Vector3.ZERO])
+	var image: Image = mask[2]
+	var first := image.get_width()
+	var last := -1
+	for x in image.get_width():
+		if image.get_pixel(x, image.get_height() / 2).g > 0.001:
+			first = mini(first, x)
+			last = maxi(last, x)
+	return float(last - first + 1) / (mask[1].z * image.get_width())
 
 
 func _set_flashes(fs: Array) -> void:
