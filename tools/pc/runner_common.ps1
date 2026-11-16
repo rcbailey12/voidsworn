@@ -171,8 +171,27 @@ function Invoke-Gh($method, $endpoint, $payload = $null, $pages = $false) {
       $exe = $env:PC_TEST_GH
     }
     $command = Get-Command $exe -ErrorAction SilentlyContinue
+    if (-not $command -and -not $test) {
+      # Chain windows opened before installation still have the old PATH.
+      foreach ($install in @(
+        @{ root = $env:ProgramFiles; relative = 'GitHub CLI/gh.exe' },
+        @{ root = $env:LOCALAPPDATA; relative = 'Programs/GitHub CLI/gh.exe' }
+      )) {
+        if (-not $install.root) { continue }
+        $candidate = Join-Path $install.root $install.relative
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+          $exe = $candidate
+          $command = Get-Command $exe -ErrorAction SilentlyContinue
+          if ($command) { break }
+        }
+      }
+    }
     if (-not $command -and $script:boardReadOnly -and -not $test -and $method -eq 'GET') {
       # The public board audit works before gh is installed. Claims always require authenticated gh.
+      if (-not $script:ghMissingLogged) {
+        Log 'GitHub CLI gh is missing: claims will fail closed; this read-only audit uses public REST'
+        $script:ghMissingLogged = $true
+      }
       $items = @(); $page = 1
       do {
         $url = "https://api.github.com/repos/rcbailey12/voidsworn/$endpoint"
@@ -185,6 +204,8 @@ function Invoke-Gh($method, $endpoint, $payload = $null, $pages = $false) {
       return ('[' + (ConvertTo-Json -InputObject @($items) -Depth 30 -Compress) + ']')
     }
     if (-not $command) { throw 'GitHub CLI gh is missing; install it and run gh auth login before starting PC jobs' }
+    if ($command.CommandType -eq 'Application') { $exe = $command.Source }
+    if ($script:ghExeLogged -ne $exe) { Log "GitHub CLI: $exe"; $script:ghExeLogged = $exe }
     $words = @('api','--method',$method,"repos/rcbailey12/voidsworn/$endpoint")
     if ($pages) { $words += @('--paginate','--slurp') }
     if ($null -ne $payload) {
@@ -466,9 +487,6 @@ try {
     $null = New-Item -ItemType Directory -Force -Path $out
     $script:boardReadOnly = $true
     if ($test -and (-not $env:PC_TEST_GH -or -not $env:PC_TEST_GH_DB)) { throw 'test board audit requires fake gh and PC_TEST_GH_DB' }
-    if (-not $test -and -not (Get-Command gh -ErrorAction SilentlyContinue)) {
-      Log 'GitHub CLI gh is missing: claims will fail closed; this read-only audit uses public REST'
-    }
     $issues = @(Gh-Pages 'issues?state=open&per_page=100')
     $pulls = @(Gh-Pages 'pulls?state=open&per_page=100')
     $branches = @(Gh-Pages 'branches?per_page=100')
