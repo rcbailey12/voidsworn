@@ -49,7 +49,10 @@ function Git([string[]]$words) {
   if ($test -and $env:PC_TEST_GIT) { $exe = $env:PC_TEST_GIT }
   $lines = @(& $exe @words 2>&1); $script:gitExit = $LASTEXITCODE
   $ErrorActionPreference = $ea
-  foreach ($line in $lines) { Add-Content -LiteralPath (Join-Path $script:out 'git_log.txt') -Value ([string]$line) -Encoding UTF8 }
+  # Writing the log must never fail the job (Nov 16: four starts died when another process briefly held git_log.txt,
+  # 'The process cannot access the file because it is being used by another process'). One append, retried, never thrown.
+  $gl = Join-Path $script:out 'git_log.txt'; $text = (@($lines | ForEach-Object { [string]$_ }) -join "`r`n")
+  if ($text) { for ($t = 0; $t -lt 40; $t++) { try { [IO.File]::AppendAllText($gl, $text + "`r`n", (New-Object Text.UTF8Encoding($false))); break } catch { Start-Sleep -Milliseconds 500 } } }
   return @($lines | ForEach-Object { [string]$_ })
 }
 function Must-Git([string[]]$words) {
