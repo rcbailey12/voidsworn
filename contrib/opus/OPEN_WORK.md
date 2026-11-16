@@ -1,6 +1,6 @@
 # Open work (generated from GitHub; FINDINGS R194, issue 788)
 
-GENERATED Nov 16 2026 16:14 UTC from the GitHub API by contrib/opus/tools/gen_open_work.js. Do not hand-edit rows: GitHub is the record for what is open and who has it, LOOP.md's newest LATEST line for what is running on the PC. The hand-kept ledger it replaces (stale by Nov 15 evening, found by Ryan's dot) is docs/archive/OPEN_WORK_2026-11-15.md. The open work nightly workflow (.github/workflows/open_work_nightly.yml, issue 890) regenerates this page every night.
+GENERATED Nov 16 2026 17:18 UTC from the GitHub API by contrib/opus/tools/gen_open_work.js. Do not hand-edit rows: GitHub is the record for what is open and who has it, LOOP.md's newest LATEST line for what is running on the PC. The hand-kept ledger it replaces (stale by Nov 15 evening, found by Ryan's dot) is docs/archive/OPEN_WORK_2026-11-15.md. The open work nightly workflow (.github/workflows/open_work_nightly.yml, issue 890) regenerates this page every night.
 
 ## Live status
 
@@ -8,9 +8,9 @@ GENERATED Nov 16 2026 16:14 UTC from the GitHub API by contrib/opus/tools/gen_op
 
 The seat label says who has the job; running means a seat has claimed it and is working on it now.
 
-- codex: 15 open. Running now: none. Not running: 889, 888, 882, 876, 873, 870, 869, 868, 863, 860, 726, 373, 372, 368, 100.
-- muse: 2 open. Running now: none. Not running: 881, 256.
-- opus: 6 open. Running now: none. Not running: 890, 545, 507, 405, 371, 211.
+- codex: no open jobs.
+- muse: no open jobs.
+- opus: no open jobs.
 - ryan: no open jobs.
 
 ### Pull requests waiting on the Board
@@ -24,30 +24,25 @@ Open, not drafts, and their issue does not carry running.
 - PR 855: Issue 372: Shield surface look: energy with depth instead of flat line art
 - PR 864: Issue 860: Runner: stop piling up repo-kept copies (PC disk filled, Nov 16)
 - PR 867: Issue 371: Shield model: one pool, per-side coverage, lossy routing (R246); rules and balance (DeepSeek)
-- PR 874: Issue 868: Fleet screen: build FL5, The Manifest (Ryan R285)
 - PR 878: Issue 726: Hullbreaker paint: trophy patches bigger and dark grey metal on every ship (R252 size, R274 colour)
-- PR 884: Issue 876: A17: restore the raised section under the rocket pod (Ryan R289)
 - PR 891: Issue 881: Ship look audit: every sheet ship beside its concept, ranked misses (Nov 16)
+- PR 893: Issue 888: Runner contract: refuse closed, claimed or ambiguous jobs; claim before work (issue 880 causes 2 and 6)
+- PR 898: Issue 875: Hullbreaker patchwork: A18, A19, A20 and KB1CC to match A16 and A17 (Ryan R289)
 
 ### Open issues that a merged pull request names
 
 From the last 100 closed pull requests ("Issue N" in the title or "#N" in the body). Check whether the scope is done, then close the issue (RULEBOOK 2.4).
 
-- Issue 256: Outside check: Opus-coded PRs, starting with #231 (R132) (merged PR 692, 743, 760, 774, 778, 802)
-- Issue 371: Shield model: one pool, per-side coverage, lossy routing (R246); rules and balance (DeepSeek) (merged PR 821)
-- Issue 507: Audit builds still to file: hits, sound weight, the kill moment (the rest of Ryan's order) (merged PR 773)
-- Issue 545: Sweep follow-ups: every dropped or partly carried item from issue 540, with the Board's disposition (merged PR 770, 777, 779, 799, 806, 807, 813)
-- Issue 726: Hullbreaker paint: trophy patches bigger and dark grey metal on every ship (R252 size, R274 colour) (merged PR 791, 842)
-- Issue 882: Runner: a job started right after another must not die on a held file (wait and retry) (merged PR 887)
+- none
 
 ## Open pull requests
 
 | PR | Branch | Title |
 |---|---|---|
+| 898 | codex/issue-875 | Issue 875: Hullbreaker patchwork: A18, A19, A20 and KB1CC to match A16 and A17 (Ryan R289) |
+| 893 | codex/issue-888 | Issue 888: Runner contract: refuse closed, claimed or ambiguous jobs; claim before work (issue 880 causes 2 and 6) |
 | 891 | muse/issue-881 | Issue 881: Ship look audit: every sheet ship beside its concept, ranked misses (Nov 16) |
-| 884 | codex/issue-876 | Issue 876: A17: restore the raised section under the rocket pod (Ryan R289) |
 | 878 | codex/issue-726 | Issue 726: Hullbreaker paint: trophy patches bigger and dark grey metal on every ship (R252 size, R274 colour) |
-| 874 | codex/issue-868 | Issue 868: Fleet screen: build FL5, The Manifest (Ryan R285) |
 | 867 | opus/issue-371 | Issue 371: Shield model: one pool, per-side coverage, lossy routing (R246); rules and balance (DeepSeek) |
 | 864 | opus/issue-860 | Issue 860: Runner: stop piling up repo-kept copies (PC disk filled, Nov 16) |
 | 855 | codex/issue-372 | Issue 372: Shield surface look: energy with depth instead of flat line art |
@@ -60,26 +55,3 @@ From the last 100 closed pull requests ("Issue N" in the title or "#N" in the bo
 
 | Issue | Seat labels | Title |
 |---|---|---|
-| 100 | codex, blocked | Terrain fx 2: debris, dead star well, old looks and the quality ladder |
-| 211 | opus | HunyuanVideo-Foley probe: generated Foley for captured sequences (Ryan, via Rey, Nov 6 2026) |
-| 256 | muse | Outside check: Opus-coded PRs, starting with #231 (R132) |
-| 368 | codex, blocked | Nebula and ion storm hexes with depth: measure two routes against the gate, pick, build (replaces issue 139) |
-| 371 | opus, blocked | Shield model: one pool, per-side coverage, lossy routing (R246); rules and balance (DeepSeek) |
-| 372 | codex, blocked | Shield surface look: energy with depth instead of flat line art |
-| 373 | codex, blocked | The station as one built set piece through the ship recipe (replaces issue 199) |
-| 405 | opus | Fable program: one finished battle, and a playbook per area that other models can run |
-| 507 | opus | Audit builds still to file: hits, sound weight, the kill moment (the rest of Ryan's order) |
-| 545 | opus | Sweep follow-ups: every dropped or partly carried item from issue 540, with the Board's disposition |
-| 726 | codex, blocked | Hullbreaker paint: trophy patches bigger and dark grey metal on every ship (R252 size, R274 colour) |
-| 860 | codex, blocked | Runner: stop piling up repo-kept copies (PC disk filled, Nov 16) |
-| 863 | codex, blocked | Station debris field off the damaged side (Ryan R284, after 373) |
-| 868 | codex, blocked | Fleet screen: build FL5, The Manifest (Ryan R285) |
-| 869 | codex, blocked | Career screen: build CR4, The Honours Board (Ryan R286) |
-| 870 | codex, blocked | Dominion (H10) and IM5: bow openings read as weapons, not carrier bays (Ryan R287, R289) |
-| 873 | codex, blocked | Failure reporting: stage 5 paint bake and the 207 scene gate stop on any failed step (Artoo audit) |
-| 876 | codex, blocked | A17: restore the raised section under the rocket pod (Ryan R289) |
-| 881 | muse | Ship look audit: every sheet ship beside its concept, ranked misses (Nov 16) |
-| 882 | codex, blocked | Runner: a job started right after another must not die on a held file (wait and retry) |
-| 888 | codex, blocked | Runner contract: refuse closed, claimed or ambiguous jobs; claim before work (issue 880 causes 2 and 6) |
-| 889 | codex, blocked | Picture provenance stamped by the tools (revision and stage on every picture, repo links only) |
-| 890 | opus, blocked | One generated live status page; HANDOFF links to it; ruling-to-document check (dot sweep) |
