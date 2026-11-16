@@ -62,6 +62,7 @@ Auditing from outside? Follow `docs/REVIEW_PROTOCOL.md` exactly (RULEBOOK 2.11) 
   on the same morning because nothing enforced the owner label.
 - **A ruling lands with its document.** A ruling that changes a working method is not landed until the same pull request edits
   the rulebook or the working document a worker reads for that area (the playbook, RECIPE.md, this file) (R214, RULEBOOK 0.2).
+  Its FINDINGS row says "landed in <repo path>" or "one-off job decision"; the memory lint fails it otherwise (R291).
 - Commits say "Refs #N", never a GitHub closing word before an issue number; use `gh api` REST, never GraphQL (RULEBOOK 2.5).
 
 ## If you are not the main agent: work in your own folder (RULEBOOK 2.12)
