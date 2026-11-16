@@ -216,7 +216,7 @@ def build(K):
               U(hw_ - 0.006) if side > 0 else U(-0.142), U(zb_ + 0.006), U(0.074), 'iron', ch=U(0.003), grp='hull')
     K.box('KB1CC_banksill', U(X_END - 0.03), U(X_END + 0.004), U(-0.142), U(0.136), U(zb_ + 0.006), U(-0.018), 'soot2', ch=U(0.003), grp='hull')
     K.mark('bank_recess', 'pylon', ['web', 'plate'])
-    K.fix('The corner pods hung below the belly (the collars\' bottoms at -0.07 against a belly of -0.04): side-on they read as front rollers (the Board\'s look, not the fit check)',
+    K.fix('The corner pods hung below the belly (the collars\' bottoms at -0.07 against a belly of -0.04): side-on they read as front rollers (seen on the sheet\'s side view, not the fit check)',
           'the mouths a step smaller (0.08 across) and raised to mid-height on the corners, the collars\' bottoms on the belly line, the bow\'s belly a touch deeper; nothing hangs under the hull')
     K.fix('E2, E3 and E4: neighbouring bells touching at their lips, each in the next one\'s exhaust cone (CLASH 2, EXHAUST 3)',
           'the bells shrunk a step (the centre one 0.045 across, still the largest) and spread so each lip clears the next by 0.008')

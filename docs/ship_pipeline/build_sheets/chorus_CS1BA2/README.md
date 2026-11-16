@@ -63,7 +63,7 @@ gland, a bomb tube standing in for a sac, two sacs far apart in size), each refu
 | Fit check (clash.py) | 0 of every kind; 44 objects, 6 parts, 62 rays, 4 exhaust cones, 2 apertures, 4 lanes ([fit_report.md](fit_report.md)); the first layouts' sac mouths sat in the skin (fixed) |
 | Weapon match and `weapon_match_selftest.py` | PASS; self-test PASS (36 planted faults, 7 of them craft faults, 3 of them this craft's) |
 | Build contract (`sheet_contract_selftest.py`) | PASS: length 1.6, 1 transverse seam, 2 muzzles in slot 0, 4 engines, 5 inside objects, the skin; its three broken inputs refused |
-| Stage 4 audit (`audit.py` on the sheet_hull build) and `audit_selftest.py` | PASS: 34 parts, none across the seam (the first seam, at -0.31, ran through both sacs and was moved aft to -0.375); self-test PASS (E1 moved onto the seam is refused) |
+| Stage 4 audit (`audit.py` on the sheet_hull build) and `audit_selftest.py` | PASS: 34 parts, none across the seam (the first seam, at -0.50, ran through both sacs and was moved aft to -0.60); self-test PASS (E1 moved onto the seam is refused) |
 | Inventory (R218, R221) | 0 failing; every built part has a job ([inventory.md](inventory.md)) |
 | Outline overlap at the camera fitted to CS1B-A2 | 83.4 percent, mass outline 83.2 (reported, not a bar; [outline_check.jpg](outline_check.jpg)); the render's stern spike is the gap |
 | Detail density, mesh (R224) | nothing flagged: the sacs 1.24 of the hull's triangles per square unit, the orifices 4.8 ([density_mesh.json](density_mesh.json)) |

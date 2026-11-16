@@ -33,7 +33,7 @@ also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on t
 
 | Clash (before) | Fix |
 |---|---|
-| The corner pods hung below the belly (the collars' bottoms at -0.07 against a belly of -0.04): side-on they read as front rollers (the Board's look, not the fit check) | the mouths a step smaller (0.08 across) and raised to mid-height on the corners, the collars' bottoms on the belly line, the bow's belly a touch deeper; nothing hangs under the hull |
+| The corner pods hung below the belly (the collars' bottoms at -0.07 against a belly of -0.04): side-on they read as front rollers (seen on the sheet's side view, not the fit check) | the mouths a step smaller (0.08 across) and raised to mid-height on the corners, the collars' bottoms on the belly line, the bow's belly a touch deeper; nothing hangs under the hull |
 | E2, E3 and E4: neighbouring bells touching at their lips, each in the next one's exhaust cone (CLASH 2, EXHAUST 3) | the bells shrunk a step (the centre one 0.045 across, still the largest) and spread so each lip clears the next by 0.008 |
 
 The table above is every finding, in the order the check made them.
