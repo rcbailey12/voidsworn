@@ -204,7 +204,9 @@ comments by itself, with no approval from Ryan per post, on pull requests and is
 sweeps on the standing issue 906). Its scope is merge issues, bugs and other technical problems, never design or taste. Every
 comment starts with "Artoo (technical review):", because it posts through Ryan's account and must never be read as his words,
 and names the commit it read. It never pushes, edits files, merges, closes, relabels or decides a rule; every finding is checked
-by the Board against live main before anything changes (0.10), and the Board replies with what it did. Why: "i want artoo
+by the Board against live main before anything changes (0.10), and the Board replies with what it did. Before each merge the
+Board reads the PR's Artoo comments on its current head commit and settles each one first. Artoo went live Nov 16 (it wakes on
+PR events and checks issues about hourly). Why: "i want artoo
 commenting independently by itself for those comments and reviews. it shouldn't impact design or taste designs but looking for
 merge issues, bugs or other technical issues, absolutely should be independent" (Ryan, Nov 16, R295; replaces R270's read-only
 librarian clause).
