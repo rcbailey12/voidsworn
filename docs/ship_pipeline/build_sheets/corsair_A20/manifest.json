@@ -515,19 +515,11 @@
    "route": "hand-built"
   },
   {
-   "name": "Hangar cheek, port",
-   "route": "hand-built"
-  },
-  {
    "name": "Hangar sill, starboard",
    "route": "hand-built"
   },
   {
    "name": "Hangar lintel, starboard",
-   "route": "hand-built"
-  },
-  {
-   "name": "Hangar cheek, starboard",
    "route": "hand-built"
   },
   {
@@ -564,6 +556,14 @@
   },
   {
    "name": "Violet bell housing",
+   "route": "hand-built"
+  },
+  {
+   "name": "Hangar cheek, port",
+   "route": "hand-built"
+  },
+  {
+   "name": "Hangar cheek, starboard",
    "route": "hand-built"
   }
  ],
