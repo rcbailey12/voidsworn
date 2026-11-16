@@ -1,0 +1,34 @@
+{
+  "result": "PASS",
+  "game_ship": "i_boss",
+  "cls": "Ark",
+  "faction": "ithar",
+  "size": 1.26,
+  "weapons": [
+    [
+      "pulsar",
+      "F"
+    ],
+    [
+      "pulsar",
+      "F"
+    ],
+    [
+      "pulsar",
+      "T"
+    ],
+    [
+      "turret",
+      "T"
+    ],
+    [
+      "flak",
+      "T"
+    ]
+  ],
+  "sources": [
+    "data.js",
+    "godot/rules/data/tables.json",
+    "godot/render/hull_table.gd"
+  ]
+}

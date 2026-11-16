@@ -1,0 +1,983 @@
+{
+  "code": "ithar_CD5",
+  "name": "The Unfinished / Glasswright flagship CD5",
+  "game_ship": "i_boss",
+  "cls": "Ark",
+  "length": 26.0,
+  "camera": {
+    "az": 240.0,
+    "el": 29.0,
+    "roll": -10.0,
+    "scale": 30.6
+  },
+  "features": [
+    {
+      "id": "L1",
+      "kind": "gun",
+      "what": "long pulled-glass forward Prism lance",
+      "count": 1,
+      "pos": [
+        3.0,
+        2.049999952316284,
+        0.9200000166893005
+      ],
+      "aim": [
+        0,
+        0.0
+      ],
+      "slot": "F",
+      "weapon": "pulsar",
+      "src": "picture",
+      "note": "One of Ryan's two long forward lances. Pulled-glass waveguide, not a metal barrel; F arc +/-60.",
+      "muzzle": [
+        [
+          13.0,
+          2.8499999046325684,
+          0.7000000476837158
+        ]
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "inv": [
+        "forward_lances"
+      ]
+    },
+    {
+      "id": "L2",
+      "kind": "gun",
+      "what": "long pulled-glass forward Prism lance",
+      "count": 1,
+      "pos": [
+        3.0,
+        -2.049999952316284,
+        0.9200000166893005
+      ],
+      "aim": [
+        0,
+        0.0
+      ],
+      "slot": "F",
+      "weapon": "pulsar",
+      "src": "picture",
+      "note": "One of Ryan's two long forward lances. Pulled-glass waveguide, not a metal barrel; F arc +/-60.",
+      "muzzle": [
+        [
+          13.0,
+          -2.8499999046325684,
+          0.7000000476837158
+        ]
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "inv": [
+        "forward_lances"
+      ]
+    },
+    {
+      "id": "O1",
+      "kind": "gun",
+      "what": "amber grown optic / pulsar",
+      "count": 1,
+      "pos": [
+        -6.0,
+        0.0,
+        2.559999942779541
+      ],
+      "aim": [
+        0,
+        0.0
+      ],
+      "slot": "T",
+      "weapon": "pulsar",
+      "src": "picture",
+      "note": "Grown amber optic; inner lens rotates under unbroken clear skin, 360 degrees; pulsar slot.",
+      "muzzle": [
+        [
+          -5.659999847412109,
+          0.0,
+          2.929999828338623
+        ]
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "inv": [
+        "secondary_optics"
+      ]
+    },
+    {
+      "id": "O2",
+      "kind": "gun",
+      "what": "violet grown optic / turret",
+      "count": 1,
+      "pos": [
+        0.0,
+        0.0,
+        2.559999942779541
+      ],
+      "aim": [
+        0,
+        0.0
+      ],
+      "slot": "T",
+      "weapon": "turret",
+      "src": "picture",
+      "note": "Grown violet optic; inner lens rotates under unbroken clear skin, 360 degrees; turret slot.",
+      "muzzle": [
+        [
+          0.3400000035762787,
+          0.0,
+          2.929999828338623
+        ]
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "inv": [
+        "secondary_optics"
+      ]
+    },
+    {
+      "id": "O3",
+      "kind": "gun",
+      "what": "green grown optic / flak",
+      "count": 1,
+      "pos": [
+        6.0,
+        0.0,
+        2.559999942779541
+      ],
+      "aim": [
+        0,
+        0.0
+      ],
+      "slot": "T",
+      "weapon": "flak",
+      "src": "picture",
+      "note": "Grown green optic; inner lens rotates under unbroken clear skin, 360 degrees; flak slot.",
+      "muzzle": [
+        [
+          6.340000152587891,
+          0.0,
+          2.929999828338623
+        ]
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "inv": [
+        "secondary_optics"
+      ]
+    },
+    {
+      "id": "E1",
+      "kind": "engine",
+      "what": "grown stern drive optic, white bloom",
+      "count": 1,
+      "pos": [
+        -13,
+        -1.04,
+        -0.02
+      ],
+      "exit": [
+        -13,
+        -1.04,
+        -0.02
+      ],
+      "radius": 0.43,
+      "aim": [
+        180,
+        0
+      ],
+      "src": "picture",
+      "note": "Drive lens only; no flame, exhaust mesh or weapon.",
+      "inv": [
+        "stern_cluster"
+      ]
+    },
+    {
+      "id": "E2",
+      "kind": "engine",
+      "what": "grown stern drive optic, white bloom",
+      "count": 1,
+      "pos": [
+        -13,
+        0.0,
+        -0.02
+      ],
+      "exit": [
+        -13,
+        0.0,
+        -0.02
+      ],
+      "radius": 0.43,
+      "aim": [
+        180,
+        0
+      ],
+      "src": "picture",
+      "note": "Drive lens only; no flame, exhaust mesh or weapon.",
+      "inv": [
+        "stern_cluster"
+      ]
+    },
+    {
+      "id": "E3",
+      "kind": "engine",
+      "what": "grown stern drive optic, white bloom",
+      "count": 1,
+      "pos": [
+        -13,
+        1.04,
+        -0.02
+      ],
+      "exit": [
+        -13,
+        1.04,
+        -0.02
+      ],
+      "radius": 0.43,
+      "aim": [
+        180,
+        0
+      ],
+      "src": "picture",
+      "note": "Drive lens only; no flame, exhaust mesh or weapon.",
+      "inv": [
+        "stern_cluster"
+      ]
+    }
+  ],
+  "inside": [
+    {
+      "kind": "deck",
+      "name": "lower",
+      "z": -0.55,
+      "x": [
+        -11.8,
+        8.6
+      ],
+      "note": "layered glass deck follows the leaf"
+    },
+    {
+      "kind": "deck",
+      "name": "upper",
+      "z": 0.2,
+      "x": [
+        -11.8,
+        8.6
+      ],
+      "note": "layered glass deck follows the leaf"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "annealed frame 00",
+      "x": -11.6,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "annealed frame 01",
+      "x": -10.25,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "annealed frame 02",
+      "x": -8.899999999999999,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "annealed frame 03",
+      "x": -7.549999999999999,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "annealed frame 04",
+      "x": -6.199999999999999,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "annealed frame 05",
+      "x": -4.85,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "annealed frame 06",
+      "x": -3.4999999999999982,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "annealed frame 07",
+      "x": -2.1499999999999986,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "annealed frame 08",
+      "x": -0.7999999999999989,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "annealed frame 09",
+      "x": 0.5500000000000007,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "annealed frame 10",
+      "x": 1.9000000000000004,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "annealed frame 11",
+      "x": 3.2500000000000018,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "annealed frame 12",
+      "x": 4.600000000000003,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "annealed frame 13",
+      "x": 5.950000000000001,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "bulkhead",
+      "name": "annealed frame 14",
+      "x": 7.3000000000000025,
+      "note": "open structural glass frame"
+    },
+    {
+      "kind": "space",
+      "name": "O1 light reservoir",
+      "x": [
+        -6.9,
+        -5.1
+      ],
+      "y": [
+        -0.75,
+        0.75
+      ],
+      "z": [
+        0.05,
+        1.05
+      ],
+      "mat": "cd5_amber",
+      "note": "optic power and steering chamber"
+    },
+    {
+      "kind": "space",
+      "name": "O2 light reservoir",
+      "x": [
+        -0.9,
+        0.9
+      ],
+      "y": [
+        -0.75,
+        0.75
+      ],
+      "z": [
+        0.05,
+        1.05
+      ],
+      "mat": "cd5_violet",
+      "note": "optic power and steering chamber"
+    },
+    {
+      "kind": "space",
+      "name": "O3 light reservoir",
+      "x": [
+        5.1,
+        6.9
+      ],
+      "y": [
+        -0.75,
+        0.75
+      ],
+      "z": [
+        0.05,
+        1.05
+      ],
+      "mat": "cd5_green",
+      "note": "optic power and steering chamber"
+    },
+    {
+      "kind": "space",
+      "name": "continuous light core and stern drive chamber",
+      "x": [
+        -12,
+        9
+      ],
+      "y": [
+        -0.8,
+        0.8
+      ],
+      "z": [
+        -0.6,
+        0.9
+      ],
+      "mat": "layered glass and light",
+      "note": "three braided waveguides throughout the hull"
+    },
+    {
+      "kind": "armour",
+      "name": "annealed outer glass",
+      "t": 0.065,
+      "note": "actual shell thickness; layered blown glass, no armour plates"
+    },
+    {
+      "kind": "break",
+      "name": "B1",
+      "x": -11.35,
+      "note": "ragged shatter path at the lens bay; whole optics, never a straight saw cut",
+      "path": [
+        [
+          -11.35,
+          -6
+        ],
+        [
+          -11.219999999999999,
+          -3
+        ],
+        [
+          -11.469999999999999,
+          -1.4
+        ],
+        [
+          -11.26,
+          0
+        ],
+        [
+          -11.49,
+          1.3
+        ],
+        [
+          -11.23,
+          3
+        ],
+        [
+          -11.35,
+          6
+        ]
+      ],
+      "orient": "trans"
+    },
+    {
+      "kind": "break",
+      "name": "B2",
+      "x": -7.45,
+      "note": "ragged shatter path at the lens bay; whole optics, never a straight saw cut",
+      "path": [
+        [
+          -7.45,
+          -6
+        ],
+        [
+          -7.32,
+          -3
+        ],
+        [
+          -7.57,
+          -1.4
+        ],
+        [
+          -7.36,
+          0
+        ],
+        [
+          -7.59,
+          1.3
+        ],
+        [
+          -7.33,
+          3
+        ],
+        [
+          -7.45,
+          6
+        ]
+      ],
+      "orient": "trans"
+    },
+    {
+      "kind": "break",
+      "name": "B3",
+      "x": -4.55,
+      "note": "ragged shatter path at the lens bay; whole optics, never a straight saw cut",
+      "path": [
+        [
+          -4.55,
+          -6
+        ],
+        [
+          -4.42,
+          -3
+        ],
+        [
+          -4.67,
+          -1.4
+        ],
+        [
+          -4.46,
+          0
+        ],
+        [
+          -4.6899999999999995,
+          1.3
+        ],
+        [
+          -4.43,
+          3
+        ],
+        [
+          -4.55,
+          6
+        ]
+      ],
+      "orient": "trans"
+    },
+    {
+      "kind": "break",
+      "name": "B4",
+      "x": -1.45,
+      "note": "ragged shatter path at the lens bay; whole optics, never a straight saw cut",
+      "path": [
+        [
+          -1.45,
+          -6
+        ],
+        [
+          -1.3199999999999998,
+          -3
+        ],
+        [
+          -1.5699999999999998,
+          -1.4
+        ],
+        [
+          -1.3599999999999999,
+          0
+        ],
+        [
+          -1.5899999999999999,
+          1.3
+        ],
+        [
+          -1.33,
+          3
+        ],
+        [
+          -1.45,
+          6
+        ]
+      ],
+      "orient": "trans"
+    },
+    {
+      "kind": "break",
+      "name": "B5",
+      "x": 1.45,
+      "note": "ragged shatter path at the lens bay; whole optics, never a straight saw cut",
+      "path": [
+        [
+          1.45,
+          -6
+        ],
+        [
+          1.58,
+          -3
+        ],
+        [
+          1.33,
+          -1.4
+        ],
+        [
+          1.54,
+          0
+        ],
+        [
+          1.31,
+          1.3
+        ],
+        [
+          1.5699999999999998,
+          3
+        ],
+        [
+          1.45,
+          6
+        ]
+      ],
+      "orient": "trans"
+    },
+    {
+      "kind": "break",
+      "name": "O3-peel",
+      "x": 6.0,
+      "note": "whole fore optic above the flowing skin; one compartment",
+      "path": [
+        [
+          4.6,
+          1.66
+        ],
+        [
+          7.4,
+          1.66
+        ]
+      ],
+      "orient": "long"
+    },
+    {
+      "kind": "colour",
+      "name": "clear and milky blown glass, silver veins",
+      "x": [
+        10.25,
+        -13
+      ],
+      "where": "continuous hull, underside and drawn forward lances",
+      "note": ""
+    },
+    {
+      "kind": "colour",
+      "name": "amber, violet, green inner panes",
+      "x": [
+        10.0,
+        -12.6
+      ],
+      "where": "beneath the clear skin; emissive stored light",
+      "note": ""
+    },
+    {
+      "kind": "colour",
+      "name": "soft white bloom",
+      "x": [
+        -12.7,
+        -13
+      ],
+      "where": "three stern drive optics, no flame",
+      "note": ""
+    }
+  ],
+  "points": [
+    {
+      "kind": "core",
+      "name": "hp_core",
+      "pos": [
+        -0.4,
+        0,
+        0.1
+      ],
+      "side": "",
+      "section": "",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "breach",
+      "name": "hp_breach_0",
+      "pos": [
+        -8.8,
+        2.324681510876897,
+        0.26646686186171264
+      ],
+      "side": "port",
+      "section": "eng",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "breach",
+      "name": "hp_breach_1",
+      "pos": [
+        -8.8,
+        -2.324681510876897,
+        0.26646686186171276
+      ],
+      "side": "stbd",
+      "section": "eng",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "breach",
+      "name": "hp_breach_2",
+      "pos": [
+        -3.1,
+        4.043986386348278,
+        0.3812788693963157
+      ],
+      "side": "port",
+      "section": "mid",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "breach",
+      "name": "hp_breach_3",
+      "pos": [
+        -3.1,
+        -4.043986386348278,
+        0.38127886939631594
+      ],
+      "side": "stbd",
+      "section": "mid",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "breach",
+      "name": "hp_breach_4",
+      "pos": [
+        4,
+        3.05838372013604,
+        0.3121146708299715
+      ],
+      "side": "port",
+      "section": "prow",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "breach",
+      "name": "hp_breach_5",
+      "pos": [
+        4,
+        -3.0583837201360407,
+        0.3121146708299717
+      ],
+      "side": "stbd",
+      "section": "prow",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "breach",
+      "name": "hp_breach_6",
+      "pos": [
+        8,
+        1.7930054388388417,
+        0.2474839008096731
+      ],
+      "side": "port",
+      "section": "prow",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "rcs",
+      "name": "hp_rcs_0",
+      "pos": [
+        -9,
+        2.6412373851842457,
+        0.0
+      ],
+      "side": "",
+      "section": "",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "board",
+      "name": "hp_board_0",
+      "pos": [
+        -9,
+        2.6412373851842457,
+        0.0
+      ],
+      "side": "",
+      "section": "",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "rcs",
+      "name": "hp_rcs_1",
+      "pos": [
+        6,
+        -2.414061882705225,
+        1.309473363446405e-16
+      ],
+      "side": "",
+      "section": "",
+      "note": "",
+      "dir": null
+    },
+    {
+      "kind": "board",
+      "name": "hp_board_1",
+      "pos": [
+        6,
+        -2.414061882705225,
+        1.309473363446405e-16
+      ],
+      "side": "",
+      "section": "",
+      "note": "",
+      "dir": null
+    }
+  ],
+  "changes": [
+    [
+      "Three secondary optics at x=-6, 0, +6 on the centreline, raised above the skin",
+      "R298: even, balanced spacing and all-direction arcs; amber = pulsar T, violet = turret T, green = flak T. The stern cluster is propulsion."
+    ],
+    [
+      "Two separate long drawn-glass lances, one per forward pulsar slot",
+      "Keep Ryan's loved long forward lances; the model uses the game's two F slots and visible optical exits."
+    ],
+    [
+      "True mirrored leaf, a worked belly, continuous layered skin and full glass insides",
+      "The single three-quarter concept cannot settle the underside or depths; faction symmetry and R215 supply them."
+    ],
+    [
+      "Breaks bracket the lens bays; O3 is an upper peel clear of both lances",
+      "Glasswrights shatter; each large optic remains a whole part. The forward lances cannot be cut by a new transverse seam."
+    ]
+  ],
+  "budget": {
+    "outside": {
+      "triangles": 232002,
+      "unjoined_surfaces": 120,
+      "material_surfaces": 13,
+      "materials": [
+        "cd5_amber",
+        "cd5_amber_deep",
+        "cd5_amber_hot",
+        "cd5_clear",
+        "cd5_green",
+        "cd5_green_deep",
+        "cd5_green_hot",
+        "cd5_pearl",
+        "cd5_silver",
+        "cd5_violet",
+        "cd5_violet_deep",
+        "cd5_violet_hot",
+        "cd5_white"
+      ]
+    },
+    "inside": {
+      "triangles": 37312,
+      "unjoined_surfaces": 23,
+      "material_surfaces": 4,
+      "materials": [
+        "cd5_amber",
+        "cd5_frame",
+        "cd5_green",
+        "cd5_violet"
+      ]
+    },
+    "note": "unjoined material surfaces are draw submissions; joined-by-material is an estimate only; no game frame measurement"
+  },
+  "mesh_groups": {
+    "L1": [
+      "L1_mount_cd5_clear",
+      "L1_mount_cd5_silver",
+      "L1_mount_cd5_amber",
+      "L1_mount_cd5_violet",
+      "L1_mount_cd5_green",
+      "L1_mount_cd5_white"
+    ],
+    "L2": [
+      "L2_mount_cd5_clear",
+      "L2_mount_cd5_silver",
+      "L2_mount_cd5_amber",
+      "L2_mount_cd5_violet",
+      "L2_mount_cd5_green",
+      "L2_mount_cd5_white"
+    ],
+    "O1": [
+      "O1_mount_cd5_clear",
+      "O1_turn_cd5_clear",
+      "O1_turn_cd5_amber"
+    ],
+    "O2": [
+      "O2_mount_cd5_clear",
+      "O2_turn_cd5_clear",
+      "O2_turn_cd5_violet"
+    ],
+    "O3": [
+      "O3_mount_cd5_clear",
+      "O3_turn_cd5_clear",
+      "O3_turn_cd5_green"
+    ],
+    "E1": [
+      "E1_grown_stern",
+      "E1_deep_lens",
+      "E1_white_bloom",
+      "E1_silver_flow_00",
+      "E1_silver_flow_01",
+      "E1_silver_flow_02",
+      "E1_silver_flow_03",
+      "E1_silver_flow_04",
+      "E1_silver_flow_05",
+      "E1_silver_flow_06",
+      "E1_silver_flow_07",
+      "E1_silver_flow_08",
+      "E1_silver_flow_09",
+      "E1_silver_flow_10"
+    ],
+    "E2": [
+      "E2_grown_stern",
+      "E2_deep_lens",
+      "E2_white_bloom",
+      "E2_silver_flow_00",
+      "E2_silver_flow_01",
+      "E2_silver_flow_02",
+      "E2_silver_flow_03",
+      "E2_silver_flow_04",
+      "E2_silver_flow_05",
+      "E2_silver_flow_06",
+      "E2_silver_flow_07",
+      "E2_silver_flow_08",
+      "E2_silver_flow_09",
+      "E2_silver_flow_10",
+      "E2_internal_feed"
+    ],
+    "E3": [
+      "E3_grown_stern",
+      "E3_deep_lens",
+      "E3_white_bloom",
+      "E3_silver_flow_00",
+      "E3_silver_flow_01",
+      "E3_silver_flow_02",
+      "E3_silver_flow_03",
+      "E3_silver_flow_04",
+      "E3_silver_flow_05",
+      "E3_silver_flow_06",
+      "E3_silver_flow_07",
+      "E3_silver_flow_08",
+      "E3_silver_flow_09",
+      "E3_silver_flow_10"
+    ]
+  },
+  "dimensions": [
+    26.01854705810547,
+    8.914787292480469,
+    4.77040708065033
+  ],
+  "design_sha256": "7c4353371a43238f15d6f3e8403205ffa7e98cf4ca76d940275e6190d18a0462"
+}

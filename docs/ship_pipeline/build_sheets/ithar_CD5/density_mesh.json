@@ -1,0 +1,28 @@
+{
+ "rule": "R224: a part kind more than 25 percent under the hull is flagged (mesh half; the paint half is stage 5)",
+ "types": {
+  "hull": {
+   "area": 727.16,
+   "triangles": 114276,
+   "tris_per_unit2": 157.2,
+   "edges_per_unit2": 45.4
+  },
+  "gun": {
+   "area": 86.53,
+   "triangles": 52456,
+   "tris_per_unit2": 606.2,
+   "edges_per_unit2": 152.4,
+   "tris_per_unit2_vs_hull": 3.86,
+   "edges_per_unit2_vs_hull": 3.36
+  },
+  "engine": {
+   "area": 26.38,
+   "triangles": 29558,
+   "tris_per_unit2": 1120.4,
+   "edges_per_unit2": 335.2,
+   "tris_per_unit2_vs_hull": 7.13,
+   "edges_per_unit2_vs_hull": 7.38
+  }
+ },
+ "mesh_flags": []
+}

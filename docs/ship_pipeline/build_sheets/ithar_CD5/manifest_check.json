@@ -1,0 +1,9 @@
+{
+  "result": "PASS",
+  "parts": 8,
+  "weapon_mounts": 5,
+  "drive_optics": 3,
+  "breach_anchors": 7,
+  "all_routes_hand_built": true,
+  "design_hash_matches": true
+}

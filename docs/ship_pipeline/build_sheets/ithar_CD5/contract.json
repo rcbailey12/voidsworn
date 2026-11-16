@@ -1,0 +1,45 @@
+{
+  "sheet": "ithar_CD5",
+  "game_ship": "i_boss",
+  "variant": "",
+  "model_length": 26.01855,
+  "scale": 0.03843412154286584,
+  "length_world": 26.0,
+  "t_lines": [
+    -0.43623,
+    -0.28633,
+    -0.17488,
+    -0.05573,
+    0.05573
+  ],
+  "l_line": [
+    0.06380064176115728,
+    0.17679695909718285,
+    0.2844124994172072
+  ],
+  "l_lines": [
+    [
+      0.06380064176115728,
+      0.17679695909718285,
+      0.2844124994172072
+    ]
+  ],
+  "muzzles": 5,
+  "guns": 5,
+  "engines": 3,
+  "bays": 0,
+  "points": 12,
+  "turrets": [
+    "O1_turret",
+    "O2_turret",
+    "O3_turret"
+  ],
+  "interior_objects": 23,
+  "slots": [
+    "0 pulsar F",
+    "1 pulsar F",
+    "2 pulsar T",
+    "3 turret T",
+    "4 flak T"
+  ]
+}
