@@ -1,0 +1,231 @@
+{
+ "issue": 876,
+ "run": 2,
+ "ruling": "R292",
+ "stage": "unpainted build sheet, CPU",
+ "checkout_base": "2ca44f51",
+ "run1_base": "ed59692f (PR 884)",
+ "design_sha256": "0697ce59f10d59019541748f83750c1a530f01ba3b29c324b03c1cac408aa090",
+ "method": {
+  "design": "tools/blender/build_sheets/ships/corsair_A17.py",
+  "sheet": "docs/ship_pipeline/build_sheets/corsair_A17/sheet.jpg",
+  "manifest": "manifest.json",
+  "renderer": "Blender 4.5.14, Cycles CPU, 16 samples",
+  "camera": "tools/blender/build_sheets/ships/corsair_A17_camera.json",
+  "camera_changed": false,
+  "paint_changed": false,
+  "interior_changed": false,
+  "weapons_changed": false,
+  "route": "A17 build sheet only",
+  "changed": "U2 roof 1.20 to 1.56, broad plated terraces at 1.12 and 1.32, rear step 1.40; roof patches follow U2. Run 1 support joins and slit positions retained.",
+  "picture_bake": "r292_review.py RUN0 RUN1 RUN2 REPO OUT --label-sheet",
+  "geometry_check": "r292_geometry.py REPO RUN0.py RUN1.py OUT.json"
+ },
+ "geometry": {
+  "stage": "unpainted sheet",
+  "budgets": [
+   {
+    "exterior_triangles": 85616,
+    "interior_triangles": 592,
+    "total_triangles": 86208,
+    "exterior_objects": 370,
+    "interior_objects": 20,
+    "materials": 22
+   },
+   {
+    "exterior_triangles": 85928,
+    "interior_triangles": 592,
+    "total_triangles": 86520,
+    "exterior_objects": 371,
+    "interior_objects": 20,
+    "materials": 22
+   },
+   {
+    "exterior_triangles": 85888,
+    "interior_triangles": 592,
+    "total_triangles": 86480,
+    "exterior_objects": 372,
+    "interior_objects": 20,
+    "materials": 22
+   }
+  ],
+  "source_sha256": [
+   "8864b3e3b7ca7f20d3a17e3f10ae460897cf751691fe21ea09fa5acf3ab5ff9b",
+   "77f3de3041c1ab922fb9925992c96f0505b1ea2e224200aef4c8755e6974893b",
+   "0697ce59f10d59019541748f83750c1a530f01ba3b29c324b03c1cac408aa090"
+  ],
+  "run0_to_run2": {
+   "result": "PASS",
+   "checks": {
+    "interior_meshes_unchanged": true,
+    "inside_records_unchanged": true,
+    "weapon_meshes_unchanged": true,
+    "weapons_unchanged": true,
+    "hardpoints_unchanged": true,
+    "weapon_fit_records_unchanged": true,
+    "other_features_unchanged": true,
+    "exterior_changes_local": true
+   },
+   "changed_objects": [
+    "A17_U2",
+    "A17_U2_plates_iron",
+    "A17_U2_plates_pale",
+    "A17_U2_plates_rust",
+    "A17_U2_plates_soot",
+    "A17_U2_rivets",
+    "A17_U3",
+    "A17_spine_step_lower",
+    "A17_spine_step_upper",
+    "PT0_rivets",
+    "PT0_slab",
+    "PT3_rivets",
+    "PT3_slab",
+    "RS0p_rivets",
+    "RS0p_slab",
+    "RS0s_rivets",
+    "RS0s_slab",
+    "RS1p_rivets",
+    "RS1p_slab",
+    "RS1s_rivets",
+    "RS1s_slab",
+    "SL1_body_dark",
+    "SL1_mount_iron",
+    "SL2_body_dark",
+    "SL2_mount_iron",
+    "corsair_A17_hull_plates_soot",
+    "corsair_A17_hull_rivets"
+   ],
+   "changed_triangle_bounds": {
+    "lo": [
+     -0.69555,
+     -2.04157,
+     0.4
+    ],
+    "hi": [
+     2.78,
+     2.21516,
+     1.6508
+    ]
+   },
+   "triangle_delta": 272
+  },
+  "run1_to_run2": {
+   "result": "PASS",
+   "checks": {
+    "interior_meshes_unchanged": true,
+    "inside_records_unchanged": true,
+    "weapon_meshes_unchanged": true,
+    "weapons_unchanged": true,
+    "hardpoints_unchanged": true,
+    "weapon_fit_records_unchanged": true,
+    "other_features_unchanged": true,
+    "exterior_changes_local": true
+   },
+   "changed_objects": [
+    "A17_U2",
+    "A17_U2_plates_iron",
+    "A17_U2_plates_pale",
+    "A17_U2_plates_soot",
+    "A17_U2_plates_soot2",
+    "A17_U2_rivets",
+    "A17_spine_step_lower",
+    "A17_spine_step_upper",
+    "RS0p_rivets",
+    "RS0p_slab",
+    "RS0s_rivets",
+    "RS0s_slab",
+    "RS1p_rivets",
+    "RS1p_slab",
+    "RS1s_rivets",
+    "RS1s_slab"
+   ],
+   "changed_triangle_bounds": {
+    "lo": [
+     0.6,
+     -1.98692,
+     0.4
+    ],
+    "hi": [
+     2.78,
+     2.0933,
+     1.6508
+    ]
+   },
+   "triangle_delta": -40
+  }
+ },
+ "checks": {
+  "weapon_match": "PASS",
+  "fit_counts": {
+   "CLASH": 0,
+   "MOUNT": 0,
+   "ARC": 0,
+   "SENSOR": 0,
+   "SWEEP": 0,
+   "EXHAUST": 0,
+   "EXIT": 0,
+   "LANE": 0
+  },
+  "sheet_contract_pass": true,
+  "sheet_contract_rows": [
+   "ok   the outside is one ship length long (1.000000)",
+   "ok   the class length is the sheet's (14.6 = LENGTH 14.6)",
+   "ok   2 transverse seams at the sheet's stations",
+   "ok   0 longitudinal seams at the sheet's heights and spans",
+   "ok   18 muzzles are the kit's own, each in the data.js slot of its weapon and arc",
+   "ok   every data.js slot (4) has muzzles of its own",
+   "ok   6 turret pivots kept, each with its turning meshes and a data.js slot",
+   "ok   6 engine exits and bell radii are the sheet's",
+   "ok   20 inside objects are visible role interior",
+   "ok   the hull thickness is the sheet's, scaled, on 1 skin modifiers",
+   "ok   a ship whose weapon list lacks a sheet weapon (scatter P) was refused: P1: weapon 'scatter' arc 'P' names 0 slots of the data.js list [('scatter', 'S'), ('torp', 'F'), ('flak', 'T')]",
+   "ok   a longitudinal seam across a transverse seam was refused: longitudinal seam L-x (-3.85 to -2.85) runs across the transverse seam B-2: one compartment each",
+   "ok   a decorative gun with no data.js slot was refused: weapon match: 1 problems (R241): EXTRA X9: a visible gun that is no mount of any data.js weapon slot (no decorative or extra guns, R241)"
+  ],
+  "sheet_dimensions_pass": true,
+  "inventory_failing": 0,
+  "standing_suite": {
+   "command": "node contrib/opus/tools/run_all_checks.js",
+   "exit_code": 0,
+   "pass_rows": 58,
+   "known_rows": [
+    "findings_tests: 7 listed failures (KIT-1, KIT-3, ROS-9, MOD-2, EVT-1, NEM-6, UI-5)",
+    "oracle_drift_guard: 12 constant differences within baseline"
+   ]
+  },
+  "manifest": "PASS: build_manifest_tests.js after publication",
+  "documentation": "PASS: doc_check_tests.js after publication",
+  "diff_check": "PASS: git diff --check",
+  "scope": "PASS: only the A17 design file and sheet outputs changed",
+  "em_dashes": "PASS: none in changed or added text"
+ },
+ "outline": [
+  {
+   "run": 0,
+   "iou": 0.6282,
+   "body_iou": 0.602
+  },
+  {
+   "run": 1,
+   "iou": 0.6324,
+   "body_iou": 0.6064
+  },
+  {
+   "run": 2,
+   "iou": 0.6345,
+   "body_iou": 0.6086
+  }
+ ],
+ "outline_method": "Original 1920x1280 beauty, unchanged saved camera. Recipe cutout: luminance >28, closing, holes filled, largest component. Report only; old cached 73.8 percent was not a fresh score.",
+ "history": {
+  "pr_682": "737c8cf0: barbettes raised and antennas shortened; no rocket section removed",
+  "pr_676": "069b4930: two flank casemates P3 and S3 removed; no rocket section removed",
+  "low_outer_fore_block": "8bbcd8dc: round 3b introduced roof 0.9 and half-width 1.85",
+  "interior_fit": "ec258053: internal top deck lowered 0.9 to 0.3 and rooms reduced; the outer fore block did not change"
+ },
+ "visual_comparison": "A broad raised block and two plated forward terraces are now visible under the pod; the support joins the foredeck and ramp. Finer concept recesses and weathered finish differ.",
+ "skipped": [
+  "Paint bake and game install: outside this A17 sheet repair; issue 726 carries repaint.",
+  "Godot runtime and scene-gate timing: no game assets were changed or installed."
+ ]
+}

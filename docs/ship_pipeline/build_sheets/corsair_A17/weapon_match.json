@@ -84,5 +84,7 @@
     }
    ]
   }
- ]
+ ],
+ "game_ship": "c_marauder",
+ "variant": ""
 }
