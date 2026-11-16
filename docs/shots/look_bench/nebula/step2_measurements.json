@@ -1,0 +1,480 @@
+{
+  "timings": [
+    {
+      "map": "nebula",
+      "tier": "max",
+      "frame_1080p_ms": 8.116,
+      "gpu_4k_ms": 6.55499982833862,
+      "frame_sessions": [
+        7.742,
+        9.464,
+        8.116
+      ],
+      "gpu_sessions": [
+        6.52600002288818,
+        6.69199991226196,
+        6.55499982833862
+      ],
+      "draw_calls": 409,
+      "visible_primitives": 7969176,
+      "vram_mb": 3588.1496887207,
+      "camera": {
+        "near": 15.0,
+        "r": 367.755004882813,
+        "t": [
+          2.16506457328796,
+          0.0,
+          15.0
+        ]
+      },
+      "patches": {
+        "neb": {
+          "hexes": 6,
+          "patches": [
+            1,
+            4,
+            1
+          ]
+        },
+        "storm": {
+          "hexes": 0,
+          "patches": []
+        }
+      },
+      "adapter": "NVIDIA GeForce RTX 5080",
+      "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-368\\shots\\step2_nebula_max_keep\\scene_gate.json",
+      "terrain_rendering": {
+        "cards": 14,
+        "fog_enabled": true,
+        "volumes": 3
+      },
+      "source_sha256": {
+        "render/backdrop.gd": "df9433f2a461867bf845a204bfc4c36667bc9a6ba22a68b52b250f8c031681aa",
+        "render/camera_rig.gd": "c0a19f42a1ab4892e408369f465e0f9130fbe2cf42886344193ef0a499819e82",
+        "scenes/battle/battle.gd": "6962e1988cf6ba64d6a56b888b02f35127c8712f13434d88ba524ee0e1e1d6f9",
+        "world/nebula_hulls.gd": "0f9c594b2cfc9db6b604f260d4ca07181ce753988acb0851de5c366b679cb36b",
+        "world/world_living.gd": "8f58b63164c0aa8f11a15c9f6dfaada5088b0624f62a63b0509c182d5ddf52b9"
+      },
+      "adapter_sha256": "783b3231aebb7169b857c3e84fc2c5ac5392b78ab67d2356be8afef9ea2b6891",
+      "gate_sha256": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538",
+      "gate_pass": true
+    },
+    {
+      "map": "nebula",
+      "tier": "high",
+      "frame_1080p_ms": 6.815,
+      "gpu_4k_ms": 5.20900011062622,
+      "frame_sessions": [
+        6.815,
+        9.01,
+        6.679
+      ],
+      "gpu_sessions": [
+        5.20900011062622,
+        5.28499984741211,
+        5.17799997329712
+      ],
+      "draw_calls": 402,
+      "visible_primitives": 7936798,
+      "vram_mb": 2914.20878601074,
+      "camera": {
+        "near": 15.0,
+        "r": 367.755004882813,
+        "t": [
+          2.16506457328796,
+          0.0,
+          15.0
+        ]
+      },
+      "patches": {
+        "neb": {
+          "hexes": 6,
+          "patches": [
+            1,
+            4,
+            1
+          ]
+        },
+        "storm": {
+          "hexes": 0,
+          "patches": []
+        }
+      },
+      "adapter": "NVIDIA GeForce RTX 5080",
+      "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-368\\shots\\step2_nebula_high_keep\\scene_gate.json",
+      "terrain_rendering": {
+        "cards": 32,
+        "fog_enabled": false,
+        "volumes": 0
+      },
+      "source_sha256": {
+        "render/backdrop.gd": "df9433f2a461867bf845a204bfc4c36667bc9a6ba22a68b52b250f8c031681aa",
+        "render/camera_rig.gd": "c0a19f42a1ab4892e408369f465e0f9130fbe2cf42886344193ef0a499819e82",
+        "scenes/battle/battle.gd": "6962e1988cf6ba64d6a56b888b02f35127c8712f13434d88ba524ee0e1e1d6f9",
+        "world/nebula_hulls.gd": "0f9c594b2cfc9db6b604f260d4ca07181ce753988acb0851de5c366b679cb36b",
+        "world/world_living.gd": "8f58b63164c0aa8f11a15c9f6dfaada5088b0624f62a63b0509c182d5ddf52b9"
+      },
+      "adapter_sha256": "783b3231aebb7169b857c3e84fc2c5ac5392b78ab67d2356be8afef9ea2b6891",
+      "gate_sha256": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538",
+      "gate_pass": true
+    },
+    {
+      "map": "nebula",
+      "tier": "low",
+      "frame_1080p_ms": 3.6,
+      "gpu_4k_ms": 3.65499997138977,
+      "frame_sessions": [
+        3.409,
+        4.356,
+        3.6
+      ],
+      "gpu_sessions": [
+        3.64299988746643,
+        3.65499997138977,
+        3.74000000953674
+      ],
+      "draw_calls": 402,
+      "visible_primitives": 6975098,
+      "vram_mb": 2370.52198791504,
+      "camera": {
+        "near": 15.0,
+        "r": 367.755004882813,
+        "t": [
+          2.16506457328796,
+          0.0,
+          15.0
+        ]
+      },
+      "patches": {
+        "neb": {
+          "hexes": 6,
+          "patches": [
+            1,
+            4,
+            1
+          ]
+        },
+        "storm": {
+          "hexes": 0,
+          "patches": []
+        }
+      },
+      "adapter": "NVIDIA GeForce RTX 5080",
+      "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-368\\shots\\step2_nebula_low_keep\\scene_gate.json",
+      "terrain_rendering": {
+        "cards": 20,
+        "fog_enabled": false,
+        "volumes": 0
+      },
+      "source_sha256": {
+        "render/backdrop.gd": "df9433f2a461867bf845a204bfc4c36667bc9a6ba22a68b52b250f8c031681aa",
+        "render/camera_rig.gd": "c0a19f42a1ab4892e408369f465e0f9130fbe2cf42886344193ef0a499819e82",
+        "scenes/battle/battle.gd": "6962e1988cf6ba64d6a56b888b02f35127c8712f13434d88ba524ee0e1e1d6f9",
+        "world/nebula_hulls.gd": "0f9c594b2cfc9db6b604f260d4ca07181ce753988acb0851de5c366b679cb36b",
+        "world/world_living.gd": "8f58b63164c0aa8f11a15c9f6dfaada5088b0624f62a63b0509c182d5ddf52b9"
+      },
+      "adapter_sha256": "783b3231aebb7169b857c3e84fc2c5ac5392b78ab67d2356be8afef9ea2b6891",
+      "gate_sha256": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538",
+      "gate_pass": true
+    },
+    {
+      "map": "storm",
+      "tier": "max",
+      "frame_1080p_ms": 4.558,
+      "gpu_4k_ms": 7.54699993133545,
+      "frame_sessions": [
+        4.558,
+        4.706,
+        4.531
+      ],
+      "gpu_sessions": [
+        7.47599983215332,
+        7.5479998588562,
+        7.54699993133545
+      ],
+      "draw_calls": 430,
+      "visible_primitives": 3993565,
+      "vram_mb": 3679.59454345703,
+      "camera": {
+        "near": 15.0,
+        "r": 367.755004882813,
+        "t": [
+          2.16506457328796,
+          0.0,
+          15.0
+        ]
+      },
+      "patches": {
+        "neb": {
+          "hexes": 4,
+          "patches": [
+            4
+          ]
+        },
+        "storm": {
+          "hexes": 23,
+          "patches": [
+            13,
+            5,
+            5
+          ]
+        }
+      },
+      "adapter": "NVIDIA GeForce RTX 5080",
+      "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-368\\shots\\step2_storm_max_keep\\scene_gate.json",
+      "terrain_rendering": {
+        "cards": 62,
+        "fog_enabled": true,
+        "volumes": 4
+      },
+      "source_sha256": {
+        "render/backdrop.gd": "df9433f2a461867bf845a204bfc4c36667bc9a6ba22a68b52b250f8c031681aa",
+        "render/camera_rig.gd": "c0a19f42a1ab4892e408369f465e0f9130fbe2cf42886344193ef0a499819e82",
+        "scenes/battle/battle.gd": "6962e1988cf6ba64d6a56b888b02f35127c8712f13434d88ba524ee0e1e1d6f9",
+        "world/nebula_hulls.gd": "0f9c594b2cfc9db6b604f260d4ca07181ce753988acb0851de5c366b679cb36b",
+        "world/world_living.gd": "8f58b63164c0aa8f11a15c9f6dfaada5088b0624f62a63b0509c182d5ddf52b9"
+      },
+      "adapter_sha256": "783b3231aebb7169b857c3e84fc2c5ac5392b78ab67d2356be8afef9ea2b6891",
+      "gate_sha256": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538",
+      "gate_pass": true
+    },
+    {
+      "map": "storm",
+      "tier": "high",
+      "frame_1080p_ms": 4.107,
+      "gpu_4k_ms": 5.05499982833862,
+      "frame_sessions": [
+        4.334,
+        4.107,
+        3.896
+      ],
+      "gpu_sessions": [
+        5.05499982833862,
+        5.16200017929077,
+        4.9850001335144
+      ],
+      "draw_calls": 257,
+      "visible_primitives": 2797216,
+      "vram_mb": 2791.62953186035,
+      "camera": {
+        "near": 15.0,
+        "r": 367.755004882813,
+        "t": [
+          2.16506457328796,
+          0.0,
+          15.0
+        ]
+      },
+      "patches": {
+        "neb": {
+          "hexes": 4,
+          "patches": [
+            4
+          ]
+        },
+        "storm": {
+          "hexes": 23,
+          "patches": [
+            13,
+            5,
+            5
+          ]
+        }
+      },
+      "adapter": "NVIDIA GeForce RTX 5080",
+      "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-368\\shots\\step2_storm_high_keep\\scene_gate.json",
+      "terrain_rendering": {
+        "cards": 143,
+        "fog_enabled": false,
+        "volumes": 0
+      },
+      "source_sha256": {
+        "render/backdrop.gd": "df9433f2a461867bf845a204bfc4c36667bc9a6ba22a68b52b250f8c031681aa",
+        "render/camera_rig.gd": "c0a19f42a1ab4892e408369f465e0f9130fbe2cf42886344193ef0a499819e82",
+        "scenes/battle/battle.gd": "6962e1988cf6ba64d6a56b888b02f35127c8712f13434d88ba524ee0e1e1d6f9",
+        "world/nebula_hulls.gd": "0f9c594b2cfc9db6b604f260d4ca07181ce753988acb0851de5c366b679cb36b",
+        "world/world_living.gd": "8f58b63164c0aa8f11a15c9f6dfaada5088b0624f62a63b0509c182d5ddf52b9"
+      },
+      "adapter_sha256": "783b3231aebb7169b857c3e84fc2c5ac5392b78ab67d2356be8afef9ea2b6891",
+      "gate_sha256": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538",
+      "gate_pass": true
+    },
+    {
+      "map": "storm",
+      "tier": "low",
+      "frame_1080p_ms": 4.32,
+      "gpu_4k_ms": 3.49300003051758,
+      "frame_sessions": [
+        3.865,
+        4.32,
+        4.985
+      ],
+      "gpu_sessions": [
+        3.49300003051758,
+        3.50399994850159,
+        3.45900011062622
+      ],
+      "draw_calls": 247,
+      "visible_primitives": 2335863,
+      "vram_mb": 2283.37216186523,
+      "camera": {
+        "near": 15.0,
+        "r": 367.755004882813,
+        "t": [
+          2.16506457328796,
+          0.0,
+          15.0
+        ]
+      },
+      "patches": {
+        "neb": {
+          "hexes": 4,
+          "patches": [
+            4
+          ]
+        },
+        "storm": {
+          "hexes": 23,
+          "patches": [
+            13,
+            5,
+            5
+          ]
+        }
+      },
+      "adapter": "NVIDIA GeForce RTX 5080",
+      "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-368\\shots\\step2_storm_low_keep\\scene_gate.json",
+      "terrain_rendering": {
+        "cards": 89,
+        "fog_enabled": false,
+        "volumes": 0
+      },
+      "source_sha256": {
+        "render/backdrop.gd": "df9433f2a461867bf845a204bfc4c36667bc9a6ba22a68b52b250f8c031681aa",
+        "render/camera_rig.gd": "c0a19f42a1ab4892e408369f465e0f9130fbe2cf42886344193ef0a499819e82",
+        "scenes/battle/battle.gd": "6962e1988cf6ba64d6a56b888b02f35127c8712f13434d88ba524ee0e1e1d6f9",
+        "world/nebula_hulls.gd": "0f9c594b2cfc9db6b604f260d4ca07181ce753988acb0851de5c366b679cb36b",
+        "world/world_living.gd": "8f58b63164c0aa8f11a15c9f6dfaada5088b0624f62a63b0509c182d5ddf52b9"
+      },
+      "adapter_sha256": "783b3231aebb7169b857c3e84fc2c5ac5392b78ab67d2356be8afef9ea2b6891",
+      "gate_sha256": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538",
+      "gate_pass": true
+    }
+  ],
+  "hull_contrast": [
+    {
+      "map": "nebula",
+      "camera": 170,
+      "hull_pixels": 9895,
+      "srgb_luma_contrast_ratio": 0.9478650548833418,
+      "srgb_edge_contrast_ratio": 0.9924207049246978,
+      "mean_abs_rgb_delta_255": 0.5744315310763012,
+      "mean_rgb_delta_255": [
+        -0.38908539666498176,
+        -0.7839312784234452,
+        -0.4383021728145522
+      ],
+      "files": {
+        "nebula_fog_c170_4k.png": "aa8dec02a4739296a6d4c0c3acbde1dac5b9039c29d730756b38118ff06c9ac6",
+        "nebula_fog_c170_4k_clear.png": "4ea809acf872741b34ddfe23406fa2b433cf742c6fedc94cd9bd8f205f48acdc",
+        "nebula_fog_c170_4k_mask.png": "0be49afa388e2f29397622b07bb2990d92de0efc001f52e606354f10a6aa8d0c"
+      }
+    },
+    {
+      "map": "nebula",
+      "camera": 60,
+      "hull_pixels": 85940,
+      "srgb_luma_contrast_ratio": 0.982917968939284,
+      "srgb_edge_contrast_ratio": 0.9993318616090616,
+      "mean_abs_rgb_delta_255": 0.6029555503839887,
+      "mean_rgb_delta_255": [
+        -0.4321852455201339,
+        -0.7984989527577494,
+        -0.429590411915301
+      ],
+      "files": {
+        "nebula_fog_c60_4k.png": "c724b032df081289ef47bc2215a509764ff45fe9ccd6959693b14c8609d6cbaf",
+        "nebula_fog_c60_4k_clear.png": "4c4b0391d1a8f43a5b44e3b5ef89f9009254be5b210ae662bbe005aa3df57041",
+        "nebula_fog_c60_4k_mask.png": "14e63a6dfec7af09378d5d96d114447ad5aff2cf006f6c414e5319815507f19b"
+      }
+    },
+    {
+      "map": "nebula",
+      "camera": 26,
+      "hull_pixels": 469321,
+      "srgb_luma_contrast_ratio": 0.9883713093521808,
+      "srgb_edge_contrast_ratio": 0.9995980568849735,
+      "mean_abs_rgb_delta_255": 0.2656035705483738,
+      "mean_rgb_delta_255": [
+        -0.24836945289046042,
+        -0.32409374394068724,
+        -0.2097263919577566
+      ],
+      "files": {
+        "nebula_fog_c26_4k.png": "312633dd13578254cff8e04a9bfb98e906bc5e7cbc229512cef9844bde76ea4f",
+        "nebula_fog_c26_4k_clear.png": "eab4f96360ac2532bfc20ca72f4fe6f1ff981d54e454e52e56f0d2931718a44e",
+        "nebula_fog_c26_4k_mask.png": "dfb32d5bad14a2abf29f39b92585b99efeaefd214ecfa6bda09286013a456575"
+      }
+    },
+    {
+      "map": "storm",
+      "camera": 170,
+      "hull_pixels": 9860,
+      "srgb_luma_contrast_ratio": 0.9533134030078346,
+      "srgb_edge_contrast_ratio": 0.9919202591010519,
+      "mean_abs_rgb_delta_255": 0.6617308992562542,
+      "mean_rgb_delta_255": [
+        -0.6685598377281933,
+        -0.6633874239350899,
+        -0.6526369168356985
+      ],
+      "files": {
+        "storm_fog_c170_4k.png": "eacb1119123f6ce10894527c19ef547cae8e5e27a53f83075e2a3a1418a1f3a9",
+        "storm_fog_c170_4k_clear.png": "466479557a8a7a788720d1c632d6f6c7c246e2bb5b74d085e26f169e35c23871",
+        "storm_fog_c170_4k_mask.png": "d2f72414f995b6373d6cb39c98a36ad8e6efd62ffb0c108015bba588f8ea6f11"
+      }
+    },
+    {
+      "map": "storm",
+      "camera": 60,
+      "hull_pixels": 85800,
+      "srgb_luma_contrast_ratio": 0.9859035211000114,
+      "srgb_edge_contrast_ratio": 0.9997980960804888,
+      "mean_abs_rgb_delta_255": 0.6174203574203575,
+      "mean_rgb_delta_255": [
+        -0.659382284382271,
+        -0.6004079254079197,
+        -0.591258741258737
+      ],
+      "files": {
+        "storm_fog_c60_4k.png": "affa99e68b67fa79658aeb6ce00e9747a3c0e176e14074aea7f68c449f454cd3",
+        "storm_fog_c60_4k_clear.png": "8a71e4bb97d0d4879333a2aae914eaeb215b48148d0055056fe717bc5036a041",
+        "storm_fog_c60_4k_mask.png": "036fe7005203af819a65d020f316c38d2fa797a06ea3dfb6dadd749f1b77ea8c"
+      }
+    },
+    {
+      "map": "storm",
+      "camera": 26,
+      "hull_pixels": 468711,
+      "srgb_luma_contrast_ratio": 0.9935882612933532,
+      "srgb_edge_contrast_ratio": 0.9997900659902214,
+      "mean_abs_rgb_delta_255": 0.3010312680237218,
+      "mean_rgb_delta_255": [
+        -0.33876311842477697,
+        -0.28094710813271545,
+        -0.2817023709705839
+      ],
+      "files": {
+        "storm_fog_c26_4k.png": "958400c8716a65d1096ef88ac1e32fa4012b047f79a0678761d9d48af55ef888",
+        "storm_fog_c26_4k_clear.png": "f4b016973d7c5c54edd422f542e2fbfece03d815b43be22aa4dd4ced7f88ae45",
+        "storm_fog_c26_4k_mask.png": "6fee038ec9272d3a42dae8c106ce9dba4f682e07f3c3cfbfd47e7db63593d68d"
+      }
+    }
+  ],
+  "storm_light": {
+    "ribbons_hidden_in_both": true,
+    "pixels_changed_by_more_than_2": 84105,
+    "max_channel_delta_255": 140.0,
+    "mean_abs_rgb_delta_255": 0.6305592528292181
+  }
+}

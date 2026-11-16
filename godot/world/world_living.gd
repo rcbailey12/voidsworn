@@ -1,7 +1,8 @@
 extends Node3D
 # B "living terrain" for the board look trial (world/board_look.gd): each kind of special hex becomes a thing in space
 # rather than a tinted hex (the board draws only a faint edge round it).
-#   nebula      soft gas: billboards that sample one continuous 3D noise field in world space, so neighbouring puffs read
+#   nebula      max-tier baked-noise volumes with soft edge cards; high/low use cards that sample one continuous
+#               3D noise field in world space, so neighbouring puffs read
 #               as one body; lit on the sun's side, dense cores glowing, soft where they meet hulls and rocks. Step 2:
 #               shaped by a soft footprint of its own hexes (_mask) worn by the noise, so it has no hex outline and no
 #               hex-shaped blobs, and spills softly beyond the marked hexes
@@ -613,8 +614,8 @@ func _bolts(ps: Array) -> void:
 			light.omni_range = 40.0
 			light.omni_attenuation = 1.4
 			light.shadow_enabled = false
-			# step 2: the strike lights ships, rocks and the gas, never the scene's thin volumetric fog (r1 and r2 on the PC:
-			# the fog's cells lit up round each bolt as pale, square lavender blocks, the "pale blue storm" of the trial)
+			# Max: two lights scatter inside the gas on the 128-cubed grid. High/low keep the
+			# card shader's local flash, avoiding the old coarse froxel blocks.
 			light.light_volumetric_fog_energy = 1.0 if gas_route == "fog" and W.quality == "max" and b < 2 else 0.0
 			light.light_energy = 0.0
 			light.position = (a + z) * 0.5

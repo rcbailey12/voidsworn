@@ -1,3 +1,81 @@
+# Issue 368: route A built, awaiting Ryan's look approval
+
+Refs #368. Continued the merged partial after Ryan picked A, fog (R270). Max now uses baked-noise FogVolumes with reduced edge cards. High and low use cards. The 83-unit soft footprint and 38.5-unit height pass the shared scale check; the default gas rows have left KNOWN. No route B work was done in this round.
+
+Start with [nebula at camera 170](N368A_nebula_c170.jpg) and [storm at camera 170](N368A_storm_c170.jpg). Each sheet puts step 1's Today beside the built route, with native 4K gas-on and gas-hidden hull crops below. The other views are [nebula 60](N368A_nebula_c60.jpg), [nebula 26](N368A_nebula_c26.jpg), [storm 60](N368A_storm_c60.jpg), [storm 26](N368A_storm_c26.jpg), [top-down](N368A_topdown.jpg), and the unchanged [campaign sector context](N368_campaign.jpg). All new sheets are 1280 by 720.
+
+The shared evidence root is `C:/Users/rcbai/Downloads/voidsworn_test/board/issue-368/shots/`. Every N368A sheet and this report are copied there for the Board. Native captures and poses are in `step2_<map>_<tier>_keep_captures`; raw timing sessions are in `step2_<map>_<tier>_keep/scene_gate.json`. The first invocation for each map and tier is discarded in the matching `warm` folder.
+
+GPU: Ryan's RTX 5080, Godot 4.7.2 Forward+, vsync off. Each kept row is the median of three session medians, 120 warmup frames and 720 measured frames per mode. Session 2 reverses the mode order. The engagement camera is the real scene gate camera, not the presentation camera. 4K is the gate's `res_2160` mode, 3D at 3840 by 2160 in a 1080p window. Stills use a native 3840 by 2160 window. GPU jobs ran one at a time after checking the Board go file.
+
+| Map | Tier | 1080p frame ms | 4K GPU ms | Gate 12.5 ms |
+|---|---|---:|---:|---|
+| nebula | max | 8.116 | 6.555 | PASS |
+| nebula | high | 6.815 | 5.209 | PASS |
+| nebula | low | 3.600 | 3.655 | PASS |
+| storm | max | 4.558 | 7.547 | PASS |
+| storm | high | 4.107 | 5.055 | PASS |
+| storm | low | 4.320 | 3.493 | PASS |
+
+Max-tier deltas against the saved step 1 Today reference (historical, not a paired cost isolation on this revision):
+- nebula: 1080p frame +3.391 ms; 4K GPU +0.335 ms.
+- storm: 1080p frame -0.495 ms; 4K GPU +1.876 ms.
+
+The [measurement file](step2_measurements.json) retains every session, actual fog/card counts, draw calls, visible primitives, VRAM, camera, adapter and source hashes. Draw calls and triangles are reported, not capped. The real generated multi-patch fixtures and fleet are unchanged: nebula seed 4207 has six nebula hexes in three patches; storm has 23 storm hexes in three patches and four nebula hexes. The gate uses live volleys. Before/after views can differ in incidental debris placement because each route consumes the living-terrain RNG differently. The gas/clear hull pair instead uses one fixed scene. The raw logs retain the existing late `exterior_alpha` compile notice (issue 376); this report measures the frame and GPU medians, not a claim that compilation stalls are gone.
+
+R82 hull check: hull materials skip volumetric fog, including shared damage shaders, and foreground cards reject opaque hull pixels. Paired stills hold pose, direct lights and debris fixed while hiding only gas. A separate render of the real hull triangles supplies the pixel mask; the measurement erodes its silhouette by one pixel. sRGB luma contrast is the hull's 95th minus 5th percentile; edge contrast is the mean adjacent-pixel sRGB luma difference inside that mask. Ratios compare inside gas with the same hull outside gas. No enlargement, sharpening or recolouring enters the measurement.
+
+| Map | Camera | sRGB luma contrast retained | Edge contrast retained | Mean RGB difference / 255 |
+|---|---:|---:|---:|---:|
+| nebula | 170 | 94.79% | 99.24% | 0.574 |
+| nebula | 60 | 98.29% | 99.93% | 0.603 |
+| nebula | 26 | 98.84% | 99.96% | 0.266 |
+| storm | 170 | 95.33% | 99.19% | 0.662 |
+| storm | 60 | 98.59% | 99.98% | 0.617 |
+| storm | 26 | 99.36% | 99.98% | 0.301 |
+
+The cruiser no longer has the prototype's violet wash. Faction ramp-end tint remains clamped to 0.25. Some background glow still reaches hull pixels through postprocessing; the measured differences above expose that remaining contribution.
+
+The [storm-light pair](N368A_storm_light.jpg) hides ribbons and suppresses card flashes in both frames, with identical direct light. Only fog scattering toggles: 84,105 pixels change by more than 2/255, with a peak channel difference of 140/255. Two bolt lights can enter max-tier fog. The 128-cubed froxel grid has temporal reprojection off so short flashes leave no history trail.
+
+[Nebula tier sheet](N368A_nebula_tiers.jpg) and [storm tier sheet](N368A_storm_tiers.jpg) show the fallbacks. The JSON asserts that actual max scenes contain volumes with fog enabled, and high/low scenes contain no volumes with fog disabled. The camera near plane uses 15, 5 and 1 unit zoom bands; fog length follows the camera to keep distant clouds in range.
+
+Class scale, with the asset code printed on each sheet:
+
+| Class | Camera 170 | Camera 60 |
+|---|---|---|
+| Frigate (V14_23) | [170](N368A_scale_frigate_c170.jpg) | [60](N368A_scale_frigate_c60.jpg) |
+| Destroyer (V15_37) | [170](N368A_scale_destroyer_c170.jpg) | [60](N368A_scale_destroyer_c60.jpg) |
+| Cruiser (V16_37) | [170](N368A_scale_cruiser_c170.jpg) | [60](N368A_scale_cruiser_c60.jpg) |
+| Carrier (V18_51) | [170](N368A_scale_carrier_c170.jpg) | [60](N368A_scale_carrier_c60.jpg) |
+| Battleship (V17_37) | [170](N368A_scale_battleship_c170.jpg) | [60](N368A_scale_battleship_c60.jpg) |
+| Dreadnought (V1b_r_23) | [170](N368A_scale_dreadnought_c170.jpg) | [60](N368A_scale_dreadnought_c60.jpg) |
+| Super-dreadnought (H4_11) | [170](N368A_scale_super-dreadnought_c170.jpg) | [60](N368A_scale_super-dreadnought_c60.jpg) |
+| Battle-barge (C19_51) | [170](N368A_scale_battle-barge_c170.jpg) | [60](N368A_scale_battle-barge_c60.jpg) |
+| Bio-titan (B16_23) | [170](N368A_scale_bio-titan_c170.jpg) | [60](N368A_scale_bio-titan_c60.jpg) |
+| Ark (I8_37) | [170](N368A_scale_ark_c170.jpg) | [60](N368A_scale_ark_c60.jpg) |
+| Tomb-ark (D22_23) | [170](N368A_scale_tomb-ark_c170.jpg) | [60](N368A_scale_tomb-ark_c60.jpg) |
+| Squadron_bomber (voidsworn|bomber) | [170](N368A_scale_squadron_bomber_c170.jpg) | [60](N368A_scale_squadron_bomber_c60.jpg) |
+| Squadron_spore (chorus|spore) | [170](N368A_scale_squadron_spore_c170.jpg) | [60](N368A_scale_squadron_spore_c60.jpg) |
+| Transport (O2_37) | [170](N368A_scale_transport_c170.jpg) | [60](N368A_scale_transport_c60.jpg) |
+
+These use real scenario-generated units, with presentation placement only. Transport is the built O2_37 objective prop at the hull table length. The existing N368_context class sheets below retain the unchanged asteroid, debris and wreck sizes; fresh context captures are also retained in the new max capture folders. Station and asteroid scale work stays with issues 373 and 369.
+
+PC assets: copied gen, built ship files and the existing import cache from `C:/Users/rcbai/Downloads/voidsworn_test/build/godot` before import; all 252 manifest files match. Captures stop on placeholder hulls. No ship assets, gen files, UID files or rewritten import metadata are delivered. The existing 128-cubed R8 noise bake is unchanged, SHA256 `92c69b3254aa015cd577bced12f694bfa764e4b8d3d5e2b2a332628f11dc5691`; its source is `godot/world/nebula_noise_bake.gd`.
+
+Checks: required Node standing suite exits 0 (51 PASS, two KNOWN baseline rows: seven findings and 12 oracle differences). Scale check exits 0 (53 objects, four unrelated KNOWN rows). Both headless map dry runs exit 0 and prove the 83-unit footprint, 38.5-unit height and max/high/low route split. All retained GPU invocations exit 0 without shader errors or placeholders. Evidence logs and the CPU dry-run JSON are in the shared folder. Import completed; its sandbox-only certificate/settings-write notices did not prevent import or the later elevated GPU runs.
+
+R129: world build callers and rules APIs are unchanged. No saves, JS rules, oracle copies or exported tables changed, so no oracle refresh was needed. Existing Graphics choices remain, with fog at max and cards at high/low. GitHub runs standing checks, the em-dash scan, rules parity and Godot game checks; the manual GPU bench is outside test folders.
+
+Reproduction for workers: run `res://world/nebula_bench.tscn` with Forward+, `--go-file <PC gpu_go.txt> --map-case nebula --terrain-tier max --sessions 3 --warmup 120 --frames 720 --modes base,res_2160 --out <folder>`, then repeat for storm and the other tiers. Leave VS_NEBULA_ROUTE unset for the shipped default. Discard the first invocation and keep the second. For stills run `res://world/nebula_capture.tscn` with `--captures --four-k --scale-captures`; use `--captures` alone for high/low. Compose with `python docs/shots/look_bench/nebula/render_step2.py --source <shared shots root>`. The go file must start with `GPU cleared`; headless timing is refused.
+
+Stopped for Ryan's final look approval. The outside check on issue 256 is still required before merge. No hand-play recording or route B rebuild was made; acceptance here uses the requested still sheets and live scene-gate timings. No commit or push was made by the agent.
+
+---
+
+## Historical step 1 evidence
+
+The following comparison records the prior route pick. Its default/status statements and route B commands apply to that earlier revision only; the live route is A as documented above.
 # Issue 368: route comparison before Ryan's pick
 
 Refs #368. Step 1 compares two opt-in prototypes against today's gas. No route has been selected and the shipped default is unchanged. The route build and Ryan's final approval remain step 2.

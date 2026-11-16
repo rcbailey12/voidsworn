@@ -6,6 +6,7 @@ var map_case := "storm"
 var route := "today"
 var patch_rows := {}
 var measured_camera := {}
+var measured_terrain := {}
 
 func _run() -> void:
 	map_case = str(args.get("map-case", "storm"))
@@ -37,6 +38,10 @@ func _run() -> void:
 func _save() -> void:
 	report["terrain_case"] = map_case
 	report["route"] = route
+	report["terrain_tier"] = str(args.get("terrain-tier", "max"))
+	report["source_sha256"] = {}
+	for path in ["world/world_living.gd", "world/nebula_hulls.gd", "render/camera_rig.gd", "render/backdrop.gd", "scenes/battle/battle.gd"]:
+		report["source_sha256"][path] = FileAccess.get_sha256("res://" + path)
 	report["adapter_sha256"] = FileAccess.get_sha256("res://world/nebula_bench.gd")
 	report["map"] = "graveyard with nebula condition" if map_case == "nebula" else "storm"
 	super._save()
@@ -181,6 +186,13 @@ func _build(mode: String, seed: int) -> void:
 	if route == "fog": b.env.volumetric_fog_length = maxf(250.0, b.cam.r + 200.0)
 	patch_rows = _patch_metadata(b.api)
 	measured_camera = {"r": b.cam.r, "near": b.cam.near, "t": [b.cam.t.x, b.cam.t.y, b.cam.t.z]}
+	measured_terrain = {"fog_enabled": b.env.volumetric_fog_enabled, "volumes": 0, "cards": 0}
+	var gas_materials: Array = []
+	for entry in b.world._living.gas_mats: gas_materials.append(entry[0])
+	for child in b.world._living.get_children():
+		if child is FogVolume: measured_terrain.volumes += 1
+		if child is MultiMeshInstance3D and gas_materials.has(child.material_override):
+			measured_terrain.cards += child.multimesh.instance_count
 
 
 func _mode(mode: String, session: int) -> Dictionary:
@@ -188,6 +200,8 @@ func _mode(mode: String, session: int) -> Dictionary:
 	row["terrain_case"] = map_case
 	row["route"] = route
 	row["patches"] = patch_rows
+	row["terrain_tier"] = str(args.get("terrain-tier", "max"))
+	row["terrain_rendering"] = measured_terrain.duplicate(true)
 	row["gate_ms"] = 12.5
 	row["camera"] = measured_camera.duplicate(true)
 	if mode == "base": row["gate_pass"] = float(row.get("frame_median", INF)) <= 12.5
@@ -244,18 +258,21 @@ func _capture_routes() -> void:
 		var label := "top" if radius < 0 else "c%d" % int(radius)
 		await _shot("%s_%s_%s.png" % [map_case, route, label])
 		if radius == 60.0 and map_case == "storm" and route == "fog":
-			# Hold the same gas and hide the ribbons in both frames: only actual light injection differs.
+			# Same gas, direct light and pose in both frames. Only fog scattering differs.
 			for bolt in living.bolts:
 				bolt.mi.visible = false
 				bolt.start = -10.0
-			living._process(0.0)
-			await _shot("storm_fog_c60_light_off.png")
 			var nearest = null
 			for bolt in living.bolts:
 				if bolt.light == null or bolt.light.light_volumetric_fog_energy <= 0.0: continue
 				if nearest == null or bolt.pos.distance_to(center) < nearest.pos.distance_to(center): nearest = bolt
 			if nearest != null: nearest.start = living.clock - 0.025
 			living._process(0.0)
+			# Suppress the card shader's local flash in both, isolating the FogVolume light.
+			living._set_flashes([])
+			if nearest != null: nearest.light.light_volumetric_fog_energy = 0.0
+			await _shot("storm_fog_c60_light_off.png")
+			if nearest != null: nearest.light.light_volumetric_fog_energy = 1.0
 			await _shot("storm_fog_c60_light_on.png")
 			for i in living.bolts.size():
 				living.bolts[i].mi.visible = true

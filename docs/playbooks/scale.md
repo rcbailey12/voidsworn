@@ -85,6 +85,8 @@ How today's values are read (the check reads the same constants):
   `GAS_VEIL_MAX * GAS_CLOUD_SCALE` is the enclosing veil width (godot/world/world_living.gd).
   The fog box is 96 units wide and 38.5 high, from y -7 to 31.5 (about two hex corner diameters).
   Route A is the default after Ryan's R270 pick. `VS_NEBULA_ROUTE=today` is historical bench reproduction only.
+  The route A camera, class-scale and 4K hull evidence is indexed in
+  [the nebula bench report](../shots/look_bench/nebula/README.md). High and low use the same footprint with cards.
 - Asteroid: `BLOCKER_SCALE_MAX * rock long axis`; the rock library's longest axis is 2.0 (godot/world/world.gd,
   godot/world/rocks/rocks.json).
 - Debris: `DEBRIS_ROCK_MAX * rock long axis` (godot/world/world_living.gd).
