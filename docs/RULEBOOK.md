@@ -244,6 +244,12 @@ R111a, R111b, R113, R116, R121a, R121b.
 3.10 **The repo stays public.** Why: the outside tools (Muse and its models) read it without logins (R216). Set: Ryan (R10,
 R216).
 
+3.11 **A pause never loses or deletes work.** When Ryan wants the PC (GPU or CPU), the Board runs tools/pc/pause_all.bat
+(now, or at a time): it withdraws the GPU go, closes only chain windows still waiting to start, and ends the AI processes, so
+each running job's runner commits and pushes its work to the issue's -partial branch; job windows mid-run are never closed and
+nothing is deleted. On Ryan's go the Board restarts every paused job from its -partial branch. Why: "I don't want to cause
+anything to get lost or deleted with the pauses as well, so let's bake that in" (R272). Set: Ryan, Nov 15.
+
 ## 4. Ships and concepts
 
 4.1 **Space ships, never sea ships, in the whole shape.** No boat profile, keel, raked prow, deck house, mast, funnel, crane,
