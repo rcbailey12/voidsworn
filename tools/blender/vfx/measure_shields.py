@@ -4,8 +4,8 @@ The source images come from shield_bench.tscn and actual BattleAPI units.
 Readability uses 12 interior samples and eight silhouette edge pairs,
 selected from the shield-off image and the real hull mask before reading lit.
 The cap capture uses the production shader, an unlit black hull, linear tone
-mapping, exposure 0.25, no bloom, six overlapping hits and over-range tint.
-A shader-written 0.65 reference calibrates the linear measurement.
+mapping, exposure 0.02, no bloom, six overlapping hits and over-range tint.
+A shader-written reference at the production light cap calibrates the measurement.
 """
 import argparse
 import json
@@ -112,21 +112,22 @@ def font(size):
         return ImageFont.load_default()
 
 
-def sheets(before, after, out, stats, metadata):
+def sheets(before, after, out, stats, metadata, previous=None):
     for faction, display in FACTIONS.items():
         for camera in [170, 60, 26]:
-            sheet = Image.new("RGB", (1200, 600), "#111318")
+            sheet = Image.new("RGB", (1200, 720 if previous else 600), "#111318")
             draw = ImageDraw.Draw(sheet)
             code = next(r["code"] for r in metadata["captures"] if r["faction"] == faction)
             draw.text((24, 10), f"SH372 / {code} / {display} / camera {camera}", font=font(23), fill="white")
-            draw.text((24, 45), "170: source pixels   |   60: half-size crop   |   26: third-size crop", font=font(16), fill="#b8bfca")
-            for label, folder, y in [("BEFORE", before, 100), ("AFTER", after, 350)]:
-                draw.text((24, y-26), label, font=font(18), fill="#ffb26d")
+            rows = [("MAIN / original SH372 before", before, 42), ("PR 855 / faint hit", previous, 258),
+                    ("RUN 3 / fitted skin, full pulse", after, 474)] if previous else [("BEFORE", before, 100), ("AFTER", after, 350)]
+            for label, folder, y in rows:
                 strip = Image.open(folder / f"{faction}_c{camera}_strip.png")
                 for index, frame in enumerate([0, 2, 5]):
                     sheet.paste(strip.crop((frame*384, 0, (frame+1)*384, 216)), (24+index*384, y))
+                draw.text((30, y+4 if previous else y-26), label, font=font(17), fill="#ffb26d")
             for index, text in enumerate(["REST: Rim and Gap", "HIT +0.08 s", "FADE +0.42 s"]):
-                draw.text((24+index*384, 575), text, font=font(16), fill="white")
+                draw.text((24+index*384, 695 if previous else 575), text, font=font(16), fill="white")
             sheet.save(out / f"SH372_{faction}_c{camera}.jpg", quality=94)
     # Same frozen frame with one mechanism removed: visual evidence of the effect itself.
     for faction in ["voidsworn", "hegemony"]:
@@ -149,29 +150,59 @@ def main():
     for name in ["before", "after", "out"]:
         parser.add_argument("--" + name, type=Path, required=True)
     parser.add_argument("--bursts", type=Path)
+    parser.add_argument("--previous", type=Path, help="PR 855 surface captures, for three-row run 3 sheets")
+    parser.add_argument("--bursts-before", type=Path)
+    parser.add_argument("--bursts-previous", type=Path)
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     metadata = json.loads((args.after / "shield_bench.json").read_text())
-    stats = {"linear_rgb_ceiling": .65, "readability": {}, "mechanisms": {}, "cap_stress": {}}
+    ceiling = float(metadata.get("light_cap", .65))
+    stats = {"linear_rgb_ceiling": ceiling, "readability": {}, "mechanisms": {}, "cap_stress": {}, "hit_strength": {}}
     for faction in FACTIONS:
         cap = linear(pixels(args.after / f"{faction}_linear_cap_stress.png"))
         reference = linear(pixels(args.after / f"{faction}_linear_cap_reference.png"))[0, 0]
-        measured = cap / np.maximum(reference, 1e-6) * .65
+        measured = cap / np.maximum(reference, 1e-6) * ceiling
         stats["cap_stress"][faction] = {"max_channel_linear": float(measured.max()),
                                        "reference_srgb": pixels(args.after / f"{faction}_linear_cap_reference.png")[0, 0].tolist(),
-                                       "cap_met": bool(measured.max() <= .66)}
+                                       "cap_met": bool(measured.max() <= ceiling * 1.015)}
         for camera in [170, 60, 26]:
             name = f"{faction}_c{camera}"
             stats["readability"][name] = readability(args.after, name)
             stats["mechanisms"][name] = {key: delta(args.after / f"{name}_diagnostic.png", args.after / f"{name}_no_{key}.png")
-                                         for key in ["bend", "contact", "pattern"]}
+                                         for key in ["bend", "contact", "pattern", "pulse"]}
+            versions = [("main", args.before), ("run3", args.after)]
+            if args.previous:
+                versions.insert(1, ("pr855", args.previous))
+            stats["hit_strength"][name] = {}
+            for version, folder in versions:
+                strip = luma(pixels(folder / f"{name}_strip.png"))
+                rest = strip[:, :384]
+                light = np.maximum(strip[:, 2*384:3*384] - rest, 0)
+                ys, xs = np.where(light > .02)
+                stats["hit_strength"][name][version] = {
+                    "added_luminance_sum": float(light.sum()),
+                    "peak_added_luminance": float(light.max()),
+                    "pixels_above_002": int((light > .02).sum()),
+                    "flash_width_px": int(xs.max()-xs.min()+1) if len(xs) else 0}
         stats["mechanisms"][faction + "_rock_contact"] = delta(args.after / f"{faction}_rock_contact.png", args.after / f"{faction}_rock_no_contact.png")
-    sheets(args.before, args.after, args.out, stats, metadata)
+    sheets(args.before, args.after, args.out, stats, metadata, args.previous)
     if args.bursts:
         for camera in [170, 60, 26]:
-            sheet = Image.new("RGB", (1200, 600), "#111318")
+            sheet = Image.new("RGB", (1200, 720 if args.bursts_previous else 600), "#111318")
             draw = ImageDraw.Draw(sheet)
             draw.text((24, 10), f"SH372 / V16_37 / same torpedo, same Sunward cruiser / camera {camera}", font=font(22), fill="white")
+            if args.bursts_previous:
+                for folder, label, y in [(args.bursts_before, "MAIN / original SH372 before", 42),
+                                         (args.bursts_previous, "PR 855 / fitted skin, faint hit", 258),
+                                         (args.bursts, "RUN 3 / fitted skin, full pulse", 474)]:
+                    for column, (on, frame) in enumerate([("shield", 2), ("shield", 9), ("hull", 9)]):
+                        strip = Image.open(folder / "moments" / f"w_torp_void_{on}__c{camera}.png")
+                        sheet.paste(strip.crop((frame*384, 0, (frame+1)*384, 216)), (24+column*384, y))
+                    draw.text((30, y+4), label, font=font(17), fill="#ffb26d")
+                for column, label in enumerate(["SHIELD / impact +0.04 s", "SHIELD / +0.27 s", "HULL / +0.27 s"]):
+                    draw.text((24+column*384, 695), label, font=font(16), fill="white")
+                sheet.save(args.out / f"SH372_hit_pair_c{camera}.jpg", quality=94)
+                continue
             for on, label, y in [("shield", "SHIELD: energy discharge", 100), ("hull", "HULL: hot core, gas and thrown matter", 350)]:
                 draw.text((24, y-27), label, font=font(18), fill="#ffb26d")
                 strip = Image.open(args.bursts / "moments" / f"w_torp_void_{on}__c{camera}.png")

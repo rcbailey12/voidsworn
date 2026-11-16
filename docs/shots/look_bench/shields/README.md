@@ -1,14 +1,12 @@
-# SH372: shield surface
+# SH372 run 3: the full shield hit on a fitted skin
 
-Refs #372. Before is unchanged main at `d32713f288`. The accepted look-bench baseline is not changed.
+Refs #372. This completes the resumed PR 855 work to Ryan's R282 direction: keep the closed hull-derived skin and small gap, bring back main's bright impact and visible patterned shield, and keep shield hits free of smoke. The original local-only pattern requirement is superseded by run 3's whole-shield pulse. Ryan's look approval and the issue 256 outside check remain pending.
 
-The shield now uses a closed skin sampled from the actual hull BVH, with a small outward gap. Hits and the drawing use the same skin. A resting ship has only its faint faction rim. The real BattleAPI view supplies `shp`, `shMax` and the four derived catches; an empty pool opens every side. Routing already changes those catches. Recharging the pool, rather than a rise in their sum, triggers the closing shimmer.
-
-The four existing faction patterns are local masks. Three soft wave fronts, a depth contact glow and the baked charge discharge appear around the hit. The active material refracts the opaque background and composes bounded light over it. It does not repeatedly add light from overlapping folds of the skin. Faint light is feathered at the silhouette; nearby hull detail is protected from refraction. Rest and low-quality shader variants omit screen reads. Low also omits depth contact glow. Hull hits keep their existing gas and thrown matter. The Hullbreaker shield break no longer emits its old dirty smoke puff.
+The shader now uses main's impact core, three expanding waves and short whole-shield pulse on PR 855's fitted skin. It restores the four faction mask strengths and removes the normal/depth suppression that reduced PR 855 to a pale patch. Pattern and fill fade after a hit. Rest remains Rim and Gap. The skin, matching hit BVH, BattleAPI pool/catch/routing synchronization, recharge detection, background bend, contact glow and smoke-free discharge are retained.
 
 ## Pictures
 
-Each sheet is 1200 pixels wide and at most 660 pixels high. Camera 170 comes first and uses source pixels. Camera 60 is a half-size crop; camera 26 is a third-size crop, as on the standing bench. The strips show rest, hit +0.08 s and fade +0.42 s. Raw strips retain all eight captured times, including +0.03 s.
+All faction and hit-pair sheets have three rows: original SH372 main, PR 855, run 3. Each is 1200 by 720 pixels. Camera 170 uses source pixels; camera 60 is a half-size crop and 26 is a third-size crop, matching the standing bench. The faction columns are rest, hit +0.08 s and fade +0.42 s. Raw strips retain all eight times through +1.0 s.
 
 | Hull and faction | Battle 170 | Middle 60 | Closest 26 |
 | --- | --- | --- | --- |
@@ -17,37 +15,38 @@ Each sheet is 1200 pixels wide and at most 660 pixels high. Camera 170 comes fir
 | C15s_23, Ashfall Hullbreakers | [170](SH372_corsair_c170.jpg) | [60](SH372_corsair_c60.jpg) | [26](SH372_corsair_c26.jpg) |
 | I15_11, Glasswrights | [170](SH372_ithar_c170.jpg) | [60](SH372_ithar_c60.jpg) | [26](SH372_ithar_c26.jpg) |
 
-The frozen-frame controls show the effect itself: [Sunward bend and contact](SH372_voidsworn_mechanisms.jpg), [Hegemony bend and contact](SH372_hegemony_mechanisms.jpg). The lower pair introduces the game's rock mesh at the shield intersection. The diagnostic checker is an opaque background used only for the controls, not the readability samples.
+The same V16_37 cruiser and torpedo, shield versus hull: [170](SH372_hit_pair_c170.jpg), [60](SH372_hit_pair_c60.jpg), [26](SH372_hit_pair_c26.jpg). Each version shows shield impact +0.04 s, shield +0.27 s, then hull +0.27 s. The run 3 fixture uses real battle units and the rules weapon factory. It applies one-point torpedo contacts for the shield-only control, where armoured pierce rounds to zero, and depletes the pool through real hits for the hull control. Earlier rows retain the original standing-bench fixture, so control state and damage numbers differ. Timing, cameras, hull codes and production effect paths are the same. The run 3 capture now exits cleanly; the earlier main and PR 855 captures had the already-recorded native shutdown fault.
 
-The same torpedo and V16_37 cruiser, shield versus hull: [170](SH372_hit_pair_c170.jpg), [60](SH372_hit_pair_c60.jpg), [26](SH372_hit_pair_c26.jpg).
+The frozen-clock controls show [Sunward bend and contact](SH372_voidsworn_mechanisms.jpg) and [Hegemony bend and contact](SH372_hegemony_mechanisms.jpg). Pattern and whole-pulse ablations are retained in the raw captures. The whole-pulse toggle changes pixels across the fitted skin, rather than only at the impact. Contact controls include a real game rock mesh. Refraction protects nearby hull detail; the bend appears over the diagnostic background. Hegemony's camera-170 bend changes no pixels because the opaque hull fills that ripple; cameras 60 and 26 show the bend.
 
-## Brightness and readability
+## Brightness and hull visibility
 
-The total added shield light is capped at **0.65 per linear RGB channel, after faction tint and fx_gain, before tonemapping**. Core, ripple, rim and contact share this ceiling. It applies even when six hits and several folds overlap. Refraction moves existing scenery light; it is not added shield light.
+The shield surface's added light is capped at **8.0 per linear RGB channel after faction tint and fx_gain, before blending and tonemapping**. All six hit slots, ripples, contact and rim share the cap. Composition against the opaque screen bounds overlapping skin faces. Rest uses its separate faint-rim material. The low tier keeps bounded alpha and omits screen and depth reads. Other production point sparks and bloom are separate effects, as on main.
 
-The production material was rendered with six overlapping hits, over-range tint, an unlit black hull, no bloom and linear tonemapping. Exposure 0.25 avoids clipped measurement pixels. A second render writes a known 0.65 directly from a reference shader through the same pipeline. This avoids confusing Environment's UI colour conversion with linear shader output. All four faction cases reached 0.650 without exceeding the reference.
+The production material was measured with six overlapping hits, over-range tint, an unlit black hull, no bloom, linear tonemapping and exposure 0.02. A shader-written reference at the actual material cap uses the same pipeline. All four faction cases reached **8.000** without exceeding that reference. The lower 0.65 ceiling was not retained because it suppressed the requested hit.
 
-At each camera, the shield-off and shield-lit samples hold the same effect clock, hull pose and other materials. Twelve interior feature patches and eight baseline-qualified silhouette pairs are chosen from the unshielded image and the rendered hull mask before inspecting the lit image. All 12 cases retained at least 30 percent of local contrast at all 12 interior samples, and all 96 edge pairs exceeded 1.25:1. The lowest measured edge contrast was 1.257:1. The 170 cases' minima were 2.036, 2.004, 1.589 and 4.722 respectively. Pixel coordinates, contrasts, cap calibration and the bend/contact/pattern ablations are in [measurements.json](measurements.json).
+Readability now samples the stronger +0.08 s frame, with shield-off and shield-on clocks held equal. The old report sampled +0.16 s. The unchanged diagnostic selects twelve interior patches and eight baseline-qualified silhouette pairs before looking at the lit image. Across twelve cases, **124/144 interior patches retain at least 30 percent of local contrast and 80/96 edge pairs exceed 1.25:1**. Six of twelve cases meet every old per-case diagnostic threshold. At camera 170 the interior counts are 9, 12, 12 and 11 out of twelve; edge minima are 1.788, 1.631, 1.569 and 1.177 respectively. The strong core temporarily washes out local details, especially on Glasswrights and at close zoom. These losses are reported for Ryan's review, not described as an all-pass readability result.
 
-## Cost and verification
+[measurements.json](measurements.json) records every sample, cap calibration, ablation and rest-to-hit crop measurement for all three versions. Peak added crop luminance at camera 170, main/run 3, is 0.921/0.919 Sunward, 0.998/0.935 Hegemony, 0.862/0.700 Hullbreakers and 0.992/0.952 Glasswrights. These full-crop measurements include bloom and engine animation and are supporting evidence, not a substitute for judging the smaller fitted shape in the sheets.
 
-[performance.json](performance.json) contains the binding #207 comparison: 1080p frame time and 4K GPU time against 12.5 ms. Each number is the median of three session medians, with 120 warm-up and 720 measured frames per session. Both versions were run twice and the second run kept. The additional isolation uses 20 real shielded ships at rest and hit together, at 1080p and 4K; it is not substituted for the full storm battle, HUD, mixed fleet and running volleys.
+## Checks and cost
 
-The exact final check outcomes are in [verification.json](verification.json). The pixel bench creates units with `BattleAPI.new_battle_scenario`, applies real hits and turns, and synchronizes through `BattleAPI.view`. It checks pool depletion, the shader's four zero catches, and recharge. No run, battle, save or pick state is typed as a fixture. Ship files were copied from `build/godot` before import; all 252 tracked manifest entries matched. No placeholder hull was accepted.
+[performance.json](performance.json) gives the fresh main/run 3 comparison on the complete #207 scene: 1080p frame median and 4K GPU median against 12.5 ms. Each is the median of three session medians with 120 warm-up and 720 measured frames. Each version is launched twice and the second kept. Every measurement takes a solo GPU claim through tools/pc/tmo.bat. Photos retain the original SH372 main baseline d32713f288; the new timing baseline is main ba153932, with the same current world and PC assets as run 3.
 
-The hit-pair capture has a recorded limitation: it saves all six 18-frame strips, then Godot exits with `0xC0000005` and reports five unreleased shaders. Restoring both production files from unchanged main and using the same capture driver produces the same fault. The kept second run still supplies the actual rendered pixels, but its process exit is **not** counted as a passed check. The cause of that shutdown fault is not claimed to be repaired here. The regular surface probe and the #207 runs exit normally.
+The binding medians pass: **1080p frame 5.251 to 5.167 ms; 4K GPU 5.584 to 5.579 ms**. The other measured medians are 1080p GPU 2.539 to 2.569 ms and 4K frame 5.954 to 6.019 ms. These small differences are reported without claiming a speed improvement.
 
-## Sources and repeat
+[verification.json](verification.json) records the checks run this time, their exits and the remaining reviews. The surface bench creates units through BattleAPI.new_battle_scenario, applies real hits and turns, and reads BattleAPI.view. It proves pool depletion, all four shader catches opening, and recharge closing the rim. The hit-pair hooks now also use real units, mkWeapon and applyHit. All 252 ship files matched the tracked manifest after copy-only refresh from build/godot. No placeholder hull was accepted.
 
-- `godot/fx/fx_ship.gd`: skin, matching hit BVH, faction material data and pool/view synchronization.
-- `godot/fx/fx_shaders.gd`: local masks, ripples, depth contact, bounded composition and lower variants.
-- `godot/fx/textures/shield_crackle.png`: 16 frames, four by four; R is the hot filament and G its corona.
-- `tools/blender/vfx/bake_shield_crackle.py`: deterministic Pillow bake, seed 372; no smoke and no external art.
-- `godot/fx/textures/shield_bench.gd` and `.tscn`: real-state surface proof, cap calibration, controls, low variant and 20-ship isolation. `--bursts` reuses the standing bench's production moment driver and lighting with `moments.json` from this folder.
-- `tools/blender/vfx/measure_shields.py`: measurements and labelled sheets.
+## Files and repeat
 
-Worker commands use the installed Godot console executable and the PC's ComfyUI Python. Wrap GPU runs in `tools/pc/tmo.bat`, one at a time, with the GPU go still cleared. Run the surface scene with `--out DIR`, repeat into a second directory, and keep the second. Add `--quality low` for the fallback, `--stress` for isolation, or `--bursts ABSOLUTE_MOMENTS_JSON` for the hit pair. `--headless ... --state-only` runs the state check. Measure with `measure_shields.py --before BEFORE --after AFTER --bursts HIT_PAIR --out SHEETS`. Frame-gate arguments are `--modes base,res_2160 --sessions 3 --warmup 120 --frames 720`.
+- godot/fx/fx_shaders.gd: restored core, waves, whole-skin pulse and faction mask strengths, with bounded composition.
+- godot/fx/fx_ship.gd: the new surface light ceiling; the fitted skin and pool sync are retained.
+- godot/fx/textures/shield_bench.gd: peak-frame samples, whole-pulse control, cap calibration, complete-capture checks and real-state hit-pair hooks.
+- tools/blender/vfx/measure_shields.py: three-row sheets, cap read from the actual material, peak/readability/ablation measurements and three-version hit pairs.
+- docs/shots/look_bench/shields/: the sheets and evidence. The shield_crackle.png atlas and bake_shield_crackle.py source from PR 855 remain unchanged.
 
-All linked pictures and measurement reports are also copied into `C:/Users/rcbai/Downloads/voidsworn_test/board/issue-372/shots`. Raw kept folders there are `before_final`, `proof`, `hit_kept`, `gate_before`, `gate_final`, `stress_before` and `stress_delivered`. Logs and scratch remain in TEMP.
+Wrap Godot launches in tools/pc/tmo.bat with gpu_go.txt still cleared. Run res://fx/textures/shield_bench.tscn with --out DIR twice and keep the second. Use --state-only with --headless, --quality low for the fallback, --faction ID for tuning, or --bursts ABSOLUTE_MOMENTS_JSON for the hit pair. Measure with measure_shields.py --before MAIN --previous PR855 --after RUN3 --bursts RUN3_PAIR --bursts-before MAIN_PAIR --bursts-previous PR855_PAIR --out SHEETS. The scene gate uses --modes base,res_2160 --sessions 3 --warmup 120 --frames 720.
 
-R129: callers retain the same hit-point dictionary and function signatures; the skin follows hull motion. No saves, rules, browser oracle, exported tables, UI or ship assets were edited, and no oracle refresh is due. GitHub will still run standing checks, Godot rules parity and Godot game checks. Ryan's visual approval and the issue 256 outside check remain pending. Nothing was committed or pushed by this run.
+All report-linked pictures and evidence are copied to C:/Users/rcbai/Downloads/voidsworn_test/board/issue-372/shots. The new raw kept folders there are run3_surface, run3_hit_pair, run3_low, run3_gate_main and run3_gate_final. Logs and scratch stay in TEMP. The accepted look-bench baseline is unchanged.
+
+R129: production hit-point dictionaries, callers and signatures are unchanged; the same fitted skin follows hull motion. No saves, old-profile logic, rules, browser oracle, exported tables, UI or ship assets were edited. No oracle refresh is due. GitHub still runs standing checks, Godot rules parity and Godot game checks. Full rules/campaign parity was not repeated locally for this look-only change. No commit, push or merge was made by the worker.

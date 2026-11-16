@@ -1,10 +1,45 @@
 {
-  "baseline_commit": "d32713f288",
+  "baseline_commit": "ba153932",
+  "photo_baseline_commit": "d32713f288",
   "adapter": "NVIDIA GeForce RTX 5080",
   "renderer": "forward_plus",
-  "method": "second full launch; median of three session medians; warmup 120 frames, measure 720 frames",
+  "method": "Both versions launched twice, second kept; median of three session medians; 120 warmup and 720 measured frames; solo GPU claim for each launch",
   "gate_ms": 12.5,
   "scene_207": [
+    {
+      "measurement": "1080p frame",
+      "before_ms": 5.251,
+      "after_ms": 5.167,
+      "delta_ms": -0.084,
+      "binding_gate": true,
+      "within_12_5_ms": true
+    },
+    {
+      "measurement": "1080p GPU",
+      "before_ms": 2.539,
+      "after_ms": 2.569,
+      "delta_ms": 0.03,
+      "binding_gate": false,
+      "within_12_5_ms": true
+    },
+    {
+      "measurement": "4K frame",
+      "before_ms": 5.954,
+      "after_ms": 6.019,
+      "delta_ms": 0.065,
+      "binding_gate": false,
+      "within_12_5_ms": true
+    },
+    {
+      "measurement": "4K GPU",
+      "before_ms": 5.584,
+      "after_ms": 5.579,
+      "delta_ms": -0.005,
+      "binding_gate": true,
+      "within_12_5_ms": true
+    }
+  ],
+  "previous_pr855_scene_207": [
     {
       "measurement": "1080p frame",
       "before_ms": 5.819,
@@ -38,64 +73,8 @@
       "within_12_5_ms": true
     }
   ],
-  "isolation_20_ships": {
-    "before": {
-      "rows": [
-        {
-          "frame_median": 2.827,
-          "gpu_median": 2.52999997138977,
-          "mode": "rest",
-          "pixels": "1080p"
-        },
-        {
-          "frame_median": 3.078,
-          "gpu_median": 2.5789999961853,
-          "mode": "hit",
-          "pixels": "1080p"
-        },
-        {
-          "frame_median": 4.62,
-          "gpu_median": 4.18100023269653,
-          "mode": "rest",
-          "pixels": "4K"
-        },
-        {
-          "frame_median": 4.648,
-          "gpu_median": 4.26599979400635,
-          "mode": "hit",
-          "pixels": "4K"
-        }
-      ],
-      "ships": 20
-    },
-    "after": {
-      "rows": [
-        {
-          "frame_median": 2.833,
-          "gpu_median": 2.53299999237061,
-          "mode": "rest",
-          "pixels": "1080p"
-        },
-        {
-          "frame_median": 3.231,
-          "gpu_median": 2.57100009918213,
-          "mode": "hit",
-          "pixels": "1080p"
-        },
-        {
-          "frame_median": 4.591,
-          "gpu_median": 4.18800020217896,
-          "mode": "rest",
-          "pixels": "4K"
-        },
-        {
-          "frame_median": 4.629,
-          "gpu_median": 4.22399997711182,
-          "mode": "hit",
-          "pixels": "4K"
-        }
-      ],
-      "ships": 20
-    }
+  "source_sha256": {
+    "fx_shaders.gd": "17ebcf68363daa59bf96af62f9d1ccce509a72e83a8f56b96f34def4311f7640",
+    "fx_ship.gd": "675de07a0132fe6fb5f7991418f0eef64895953d58a21518b33f77121be5dfa5"
   }
 }

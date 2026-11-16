@@ -469,6 +469,9 @@ func _shield_skin() -> ArrayMesh:
 
 func _shield_material(material: ShaderMaterial) -> void:
 	var sc: Color = fac["shield"]
+	# Shared linear RGB ceiling after tint and fx_gain, before tonemapping.
+	# Run 3 restores main's flash while bounding overlap on the fitted skin.
+	material.set_shader_parameter("light_cap", 8.0)
 	material.set_shader_parameter("col", Vector3(sc.r, sc.g, sc.b) * 2.2)
 	material.set_shader_parameter("rad", hull.shield_radii())
 	material.set_shader_parameter("style", int(fac["shield_style"]))

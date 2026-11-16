@@ -39,54 +39,235 @@
   "surface_capture": {
     "warm_exit": 0,
     "kept_exit": 0,
-    "readability_cases": 12,
-    "interior_samples_pass": 144,
-    "edge_samples_pass": 96,
-    "cap_linear_rgb": 0.65
+    "cases": 12,
+    "sample_time_after_hit_s": 0.08,
+    "linear_rgb_cap": 8.0,
+    "cap_cases": {
+      "voidsworn": {
+        "max_channel_linear": 8.0,
+        "reference_srgb": [
+          0.43529411764705883,
+          0.43529411764705883,
+          0.43529411764705883
+        ],
+        "cap_met": true
+      },
+      "hegemony": {
+        "max_channel_linear": 8.0,
+        "reference_srgb": [
+          0.43529411764705883,
+          0.43529411764705883,
+          0.43529411764705883
+        ],
+        "cap_met": true
+      },
+      "corsair": {
+        "max_channel_linear": 8.0,
+        "reference_srgb": [
+          0.43529411764705883,
+          0.43529411764705883,
+          0.43529411764705883
+        ],
+        "cap_met": true
+      },
+      "ithar": {
+        "max_channel_linear": 8.0,
+        "reference_srgb": [
+          0.43529411764705883,
+          0.43529411764705883,
+          0.43529411764705883
+        ],
+        "cap_met": true
+      }
+    },
+    "interior_samples_retaining_30pct": 124,
+    "interior_samples_total": 144,
+    "edge_samples_at_least_1_25": 80,
+    "edge_samples_total": 96,
+    "cases_meeting_all_old_diagnostic_thresholds": 6,
+    "readability_all_pass": false,
+    "limitation": "Bright peak temporarily washes out local features, especially Glasswrights and close zoom. Retained for the R282 flash and explicitly reported for owner review."
   },
   "low_shader": {
-    "voidsworn": {
-      "low_shader_rendered": true,
-      "bend_toggle_has_zero_pixel_effect": true
-    },
-    "hegemony": {
-      "low_shader_rendered": true,
-      "bend_toggle_has_zero_pixel_effect": true
-    },
-    "corsair": {
-      "low_shader_rendered": true,
-      "bend_toggle_has_zero_pixel_effect": true
-    },
-    "ithar": {
-      "low_shader_rendered": true,
-      "bend_toggle_has_zero_pixel_effect": true
-    }
-  },
-  "scene_gate": {
     "warm_exit": 0,
     "kept_exit": 0,
+    "factions": {
+      "voidsworn": {
+        "rendered": true,
+        "bend_changed_pixels": {
+          "170": 0,
+          "60": 0,
+          "26": 0
+        },
+        "maximum_linear_channel": 6.686845675058551,
+        "within_cap": true
+      },
+      "hegemony": {
+        "rendered": true,
+        "bend_changed_pixels": {
+          "170": 0,
+          "60": 0,
+          "26": 0
+        },
+        "maximum_linear_channel": 5.886766647329815,
+        "within_cap": true
+      },
+      "corsair": {
+        "rendered": true,
+        "bend_changed_pixels": {
+          "170": 0,
+          "60": 0,
+          "26": 0
+        },
+        "maximum_linear_channel": 6.01599396191212,
+        "within_cap": true
+      },
+      "ithar": {
+        "rendered": true,
+        "bend_changed_pixels": {
+          "170": 0,
+          "60": 0,
+          "26": 0
+        },
+        "maximum_linear_channel": 5.886766647329815,
+        "within_cap": true
+      }
+    }
+  },
+  "hit_pair_capture": {
+    "warm_exit": 0,
+    "kept_exit": 0,
+    "script_failures": 0,
+    "stills": 6,
+    "frames_per_strip": 18,
+    "real_hit_results": [
+      {
+        "hit": {
+          "crit": false,
+          "hull": 3.0,
+          "section": "prow",
+          "shield": 0.0
+        },
+        "on": "hull",
+        "pool_after": 0,
+        "pool_before": 0.0,
+        "weapon": "torp"
+      },
+      {
+        "hit": {
+          "crit": false,
+          "hull": 0.0,
+          "section": "prow",
+          "shield": 1.0
+        },
+        "on": "shield",
+        "pool_after": 39.3,
+        "pool_before": 40.0,
+        "weapon": "torp"
+      },
+      {
+        "hit": {
+          "crit": false,
+          "hull": 3.0,
+          "section": "prow",
+          "shield": 0.0
+        },
+        "on": "hull",
+        "pool_after": 0,
+        "pool_before": 0.0,
+        "weapon": "torp"
+      },
+      {
+        "hit": {
+          "crit": false,
+          "hull": 3.0,
+          "section": "prow",
+          "shield": 0.0
+        },
+        "on": "hull",
+        "pool_after": 0,
+        "pool_before": 0.0,
+        "weapon": "torp"
+      },
+      {
+        "hit": {
+          "crit": false,
+          "hull": 3.0,
+          "section": "prow",
+          "shield": 0.0
+        },
+        "on": "hull",
+        "pool_after": 0,
+        "pool_before": 0.0,
+        "weapon": "torp"
+      },
+      {
+        "hit": {
+          "crit": false,
+          "hull": 0.0,
+          "section": "prow",
+          "shield": 1.0
+        },
+        "on": "shield",
+        "pool_after": 39.3,
+        "pool_before": 40.0,
+        "weapon": "torp"
+      },
+      {
+        "hit": {
+          "crit": false,
+          "hull": 0.0,
+          "section": "prow",
+          "shield": 1.0
+        },
+        "on": "shield",
+        "pool_after": 39.3,
+        "pool_before": 40.0,
+        "weapon": "torp"
+      },
+      {
+        "hit": {
+          "crit": false,
+          "hull": 0.0,
+          "section": "prow",
+          "shield": 1.0
+        },
+        "on": "shield",
+        "pool_after": 39.3,
+        "pool_before": 40.0,
+        "weapon": "torp"
+      }
+    ],
+    "old_rows_use_original_standing_fixture": true,
+    "old_main_and_pr855_shutdown_fault_remains_recorded_for_those_old_captures": true
+  },
+  "scene_gate": {
+    "main_warm_exit": 0,
+    "main_kept_exit": 0,
+    "run3_warm_exit": 0,
+    "run3_kept_exit": 0,
     "modes": [
       "base",
       "res_2160"
     ],
-    "sessions": 3
+    "sessions": 3,
+    "warmup_frames": 120,
+    "measured_frames": 720,
+    "gpu_claim": "solo",
+    "within_12_5_ms": true,
+    "final_source_restored_and_sha256_checked": true
   },
-  "hit_pair_capture": {
-    "script_failures": 0,
-    "stills": 6,
-    "frames_per_strip": 18,
-    "native_exit": -1073741819,
-    "native_exit_hex": "0xC0000005",
-    "unchanged_production_files_same_native_exit": true,
-    "baseline_capture": "baseline_hit_shutdown",
-    "kept_capture": "hit_kept",
-    "not_counted_as_passed_process": true
+  "ship_files": {
+    "source": "C:/Users/rcbai/Downloads/voidsworn_test/build/godot",
+    "matched": 252,
+    "mismatches": 0,
+    "placeholder_hulls_accepted": 0
   },
   "not_run": {
-    "full_rules_and_campaign_parity": "No rules, saves, tables or oracle files changed. CI still runs the full parity job."
+    "full_rules_and_campaign_parity": "Look-only change. No rules, saves, tables or oracle files changed; CI still runs full parity."
   },
   "pending": [
-    "Ryan visual approval",
+    "Ryan visual approval, including the peak-frame readability tradeoff",
     "issue 256 outside check"
   ],
   "committed": false,
