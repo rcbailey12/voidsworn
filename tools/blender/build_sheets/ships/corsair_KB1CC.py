@@ -35,8 +35,8 @@ CONCEPT_SHEET = BEAUTY
 CONCEPT_VIEWS = dict(top=dict(box=(20, 120, 1070, 600)), side=dict(box=(20, 120, 1070, 600)))
 CROPS = [('bow (the glacis and the two corner mouths)', (20, 200, 620, 600)), ('midships (the ramp, the rails, the flank bays)', (250, 130, 900, 500)),
          ('stern (the thruster bank)', (520, 110, 1070, 420))]
-SHEET = dict(version=2, round='R275 shape pass', date='2026-11-15', blend='opus793', px_per_unit=900, view_pad=0.12, label_scale=1.5, bar_units=0.5,
-             blend_where='rendered in the issue 793 sandbox (Blender 5.3, Cycles CPU); not on the PC: `build.py corsair_KB1CC <out> render` rebuilds it from this file',
+SHEET = dict(version=3, round='R294 shape restoration, issue 903', date='2026-11-16', blend='issue903', px_per_unit=900, view_pad=0.12, label_scale=1.5, bar_units=0.5, tq_zoom=0.70,
+             blend_where='rebuilt on Ryan\'s PC; docs/shots/look_bench/corsair_KB1CC/shape_r294/reproduce.py records the sheet and paint proof',
              before='First full layout', before_note='The first complete layout, built with the Hullbreaker kit\'s plating and the new craft parts (craft.py), run through the fit check before any fix. R275 reshaped the top into the glacis ramp and replaced the course plating with the patchwork; the fit check found nothing new.',
              during='The table above is every finding, in the order the check made them.')
 
@@ -48,16 +48,15 @@ def U(v):
 
 # ---------------------------------------------------------------------------------------------------- the masses
 # The central body (the sheet kit's octagon loft, shares of LENGTH): (n, half-beam, belly, top, top chamfer, belly chamfer). R275
-# (Ryan, Nov 15 2026 21:28 CST, sending the wide sheet back: the top must be the concept's sloped glacis): its top is one long
-# glacis ramp, low at the bow lip and rising all the way aft to the armoured lip and the stern housing that holds the thruster bank.
+# R294 corrects the R275 interpretation: a tapered toe, a rising glacis, then a substantial level upper deck.
 BODY = [
-    (0.500, 0.319, -0.036, -0.008, 0.004, 0.006),
-    (0.465, 0.324, -0.046, 0.004, 0.006, 0.010),
-    (0.300, 0.314, -0.048, 0.033, 0.010, 0.012),
-    (0.100, 0.306, -0.050, 0.069, 0.012, 0.014),
-    (-0.100, 0.296, -0.050, 0.104, 0.014, 0.014),
-    (-0.300, 0.282, -0.049, 0.140, 0.016, 0.014),
-    (-0.355, 0.276, -0.049, 0.150, 0.016, 0.014),
+    (0.500, 0.205, -0.028, -0.008, 0.004, 0.006),
+    (0.445, 0.245, -0.044, 0.004, 0.006, 0.010),
+    (0.300, 0.302, -0.048, 0.045, 0.010, 0.012),
+    (0.100, 0.306, -0.050, 0.104, 0.012, 0.014),
+    (-0.035, 0.300, -0.050, 0.144, 0.014, 0.014),
+    (-0.100, 0.296, -0.050, 0.144, 0.014, 0.014),
+    (-0.355, 0.276, -0.049, 0.144, 0.016, 0.014),
     (-0.372, 0.272, -0.049, 0.168, 0.020, 0.014),
     (-0.460, 0.246, -0.046, 0.168, 0.022, 0.014),
 ]
@@ -69,8 +68,8 @@ BODY = [
 SHOULDER = [(0.270, 0.064), (0.499, 0.031), (0.585, 0.013), (0.600, 0.001), (0.600, -0.022), (0.546, -0.046), (0.270, -0.048)]
 # (n, k: the slope's height as a share of its full height, w: the shoulder's reach out from the body as a share): in plan the
 # craft tapers aft from the wide front (the two corner mouths) to the narrower stern housing, a wedge, never a rectangle
-SHOULDER_X = {1: [(0.494, 0.55, 0.92), (0.455, 1.0, 1.0), (-0.230, 1.0, 1.0), (-0.370, 0.92, 0.74), (-0.440, 0.66, 0.6)],
-              -1: [(0.494, 0.5, 0.92), (0.455, 0.93, 1.0), (-0.230, 0.93, 1.0), (-0.350, 0.86, 0.76), (-0.425, 0.62, 0.62)]}
+SHOULDER_X = {1: [(0.430, 0.55, 0.45), (0.330, 1.0, 1.0), (-0.230, 1.0, 1.0), (-0.360, 0.92, 0.86)],
+              -1: [(0.420, 0.5, 0.45), (0.320, 0.93, 1.0), (-0.230, 0.93, 1.0), (-0.350, 0.86, 0.86)]}
 
 
 def shoulder_in(n):
@@ -129,10 +128,11 @@ def patchwork(K, HP, name, rings, spec):
 def build(K):
     import bpy
     import kit as _k
-    from mathutils import Vector
+    from mathutils import Vector, Matrix
     HP = _k.HP
     sp = importlib.util.spec_from_file_location('hb_craft', os.path.join(_k._KITS, 'hullbreakers', 'craft.py'))
     CR = importlib.util.module_from_spec(sp); sp.loader.exec_module(CR)
+    from geom import Part, block, revolve, moved
     CR.install(HP)
     K.hull_sections = [(U(r[0]), U(r[1]), U(r[1]), U(r[2]), U(r[3]), U(r[4]), U(r[5])) for r in BODY]
     # R275: the Hullbreaker patchwork (patchwork() above): fewer, bigger, uneven plates of mixed size and angle, never small even
@@ -142,7 +142,7 @@ def build(K):
     # skin. The old 0.5 to 1.4 percent relief made these small plates look loose.
     PL = dict(size=(U(0.075), U(0.19)), thick=(U(0.002), U(0.005)), gap=U(0.0016), skip=0.06, turn=12.0, hard=0.35, stack=0.45,
               rivets_share=0.07, rivet_r=U(0.0018),
-              mats={'rust': 5, 'soot': 4, 'blood': 3, 'iron': 2, 'soot2': 2, 'pale': 0.6, 'violet': 0.4})
+              mats={'rust': 5, 'soot': 4, 'blood': 3.4, 'iron': 2, 'soot2': 2, 'steel': 0.6})
     PATCH = []   # (name, rings, spec): plated last, once every mount has claimed its keep-out
     ns = sorted({r[0] for r in BODY} | {round(0.46 - 0.04 * i, 3) for i in range(24) if 0.46 - 0.04 * i > X_END}, reverse=True)
     bsecs = [(U(r[0]), U(r[1]), U(r[1]), U(r[2]), U(r[3]), U(r[4]), U(r[5])) for r in [sec(BODY, n) for n in ns]]
@@ -150,20 +150,22 @@ def build(K):
     PATCH.append((CODE + '_body', [[(s_[0], y, z) for (y, z) in _k._octa(*s_[1:7])] for s_ in bsecs],
                   dict(PL, seed=31, faces=[1, 3, 7, 5], inv=['glacis_plates', 'belly_plates'])))
     K.mass('Hull: the central body (the glacis ramp and the stern housing)', body, 'soot and patched plate',
-           note='one wide low body: its top one long glacis ramp, low at the bow lip and rising aft to the armoured lip and the stern housing that holds the thruster bank; flat belly with chines')
+           note='R294: a narrower tapered bow toe, a rising glacis ending at station -0.035, a level upper deck through -0.355, then the stern bank housing; flat belly with chines')
     K.mark('body', 'hull', ['bevel', 'step', 'overhang'])
+    shoulders = {}
     for side in (1, -1):
         nm = 'port' if side > 0 else 'starboard'
         rs = [shoulder_ring(side, n, k, w) for (n, k, w) in SHOULDER_X[side]]
         ob = K.loft_rings('KB1CC_shoulder_%s' % nm[0], rs, 'soot2')
         PATCH.append(('KB1CC_shoulder_%s' % nm[0], rs, dict(PL, seed=40 + side, faces=[0, 1, 5], inv='shoulder_plates')))
         md = ob.modifiers.new('shell', 'SOLIDIFY'); md.thickness = U(0.004); md.offset = -1; md.use_rim = True
+        shoulders[side] = ob
         K.mass('Shoulder, %s' % nm, ob, 'dark soot and patched plate', note='the %s side body behind the corner pod, its top sloping down and out to a thin edge: the bomb row\'s magazine and the hoist bay%s' % (
             nm, '' if side > 0 else '; a touch lower and shorter than the port one (lopsided)'))
     K.mark('shoulders', 'tier', ['face', 'roof', 'opening'])
 
     # ---------------- the glacis rails: armoured edge frames running diagonally up the ramp's two edges ----------------
-    RW, RH = 0.011, 0.012
+    RW, RH = 0.014, 0.026
     for side in (1, -1):
         nm = 'p' if side > 0 else 's'
         rs = []
@@ -184,7 +186,7 @@ def build(K):
 
     # ---------------- the armoured lip at the top of the ramp, against the stern housing, and the crew's vision slit in its face ----------------
     # R275: the lip moves from mid-body to the ramp's top end, where the glacis meets the stern housing; its face looks forward down the ramp
-    LX0, LX1, LTOP = -0.288, -0.372, 0.173
+    LX0, LX1, LTOP = -0.330, -0.372, 0.173
     secs = []
     for n, zt_ in ((LX0, top(LX0) / LENGTH + 0.002), (LX0 - 0.014, LTOP - 0.002), (LX1, LTOP)):
         hw = sec(BODY, n)[1] - 0.006 - sec(BODY, n)[4] * 0.6 - 2 * RW - 0.002
@@ -201,10 +203,10 @@ def build(K):
                     'the crew\'s vision slit in the lip\'s face, a little to port, looking forward down the ramp (the bombardier aims the craft at its target)', aperture=U(0.2))
 
     # ---------------- the two bomb tubes: one in each front corner pod, at the glacis's extreme corners ----------------
-    R_M = 0.04
+    R_M = 0.026
     for side, fid in ((1, 'BT1'), (-1, 'BT2')):
-        y = side * 0.535
-        K.launcher(fid, (U(0.5 - 0.004), U(y), U(0.019 if side > 0 else 0.017)), 1, 1, cell=U(R_M / 0.3), depth=U(0.215), yaw=0.0, pitch=0.0,
+        y = side * 0.520
+        K.launcher(fid, (U(0.430), U(y), U(0.010 if side > 0 else 0.007)), 1, 1, cell=U(R_M / 0.3), depth=U(0.13), yaw=0.0, pitch=0.0,
                    slot='T', weapon='bombs', inv='bomb_tubes', variant='bomb%d' % (1 if side > 0 else 2),
                    note='the bomb payload (data.js bombs T, 2 shots): the %s bomb tube in its corner pod, a dark armoured collar round the mouth; one bomb from each tube every volley' % (
                        'port' if side > 0 else 'starboard'))
@@ -212,22 +214,60 @@ def build(K):
         c_, r_ = K.keepouts[-1]
         K.keepouts[-1] = (c_, U(0.07))   # the pod's own plate keep-out (the kit's default reaches its whole drum)
 
-    # ---------------- the hoist bays: the bomb hoists, behind armoured doors, in the shoulders' sloped tops ----------------
+    # R294: actual cut-out wells, not the old depth=0.004 panels on an uncut shoulder.
+    # The kit's Part format keeps the bay in the normal inventory, paint and contract routes.
     for side, fid in ((1, 'Y1'), (-1, 'Y2')):
-        n0, n1 = -0.0, -0.215
+        n0, n1 = 0.205, -0.180
         nc = (n0 + n1) / 2
         (y0_, z0_), (y1_, z1_) = (shoulder_in(nc), SHOULDER[0][1]), SHOULDER[1]
-        yc = 0.39
+        yc = 0.408
         nrm = Vector((0.0, side * (z0_ - z1_), (y1_ - y0_))).normalized()
-        wid = (Vector((y1_ - y0_, z1_ - z0_)).length) * 0.62
-        K._surface_part(fid, CR.machbay(U(n0 - n1), U(wid), U(0.004), door=0.42 if side > 0 else 0.5, seed=1 if side > 0 else 2),
-                        (U(nc), side * U(yc), shoulder_top(side, yc, nc) + U(0.0005)), tuple(nrm), (1, 0, 0), 'hoist_bays',
-                        'hoist bay %.2f x %.2f, armoured door' % (U(n0 - n1), U(wid)), 'bay', 'picture',
-                        'the %s bomb hoist: the machinery that walks the next bomb from the shoulder\'s magazine row into its tube, behind an armoured door (the concept\'s recessed side bay)' % (
-                            'port' if side > 0 else 'starboard'))
-        c_, r_ = K.keepouts.pop()   # the bay is long and narrow: three small keep-outs along it instead of one circle round it all
-        for f_ in (-0.32, 0.0, 0.32):
-            K.keepouts.append((c_ + Vector((U((n0 - n1) * f_), 0, 0)), U(0.05)))
+        wid = 0.145
+        w, h, d, f = U(n0 - n1), U(wid), U(0.071), U(0.009)
+        p = Part('machbay'); p.type = 'machbay'
+        def slab(name, mat, x0, x1, y0, y1, z0, z1):
+            p.add(name, 'mount', mat, block(x0, x1, (y1-y0)/2, (z1-z0)/2,
+                                         min(f*.25, (z1-z0)*.2), yo=(y0+y1)/2, zo=(z0+z1)/2))
+        slab('back', 'dark', -w/2, w/2, -h/2, h/2, -d-f, -d)
+        for ya, yb in ((-h/2-f, -h/2), (h/2, h/2+f)):
+            slab('frame', 'soot2', -w/2-f, w/2+f, ya, yb, -d-f, f)
+        for xa, xb in ((-w/2-f, -w/2), (w/2, w/2+f)):
+            slab('frame', 'iron', xa, xb, -h/2, h/2, -d-f, f)
+        for j, yy in enumerate((-h*.30, h*.06, h*.32)):
+            rr = U(.006 if j != 1 else .009)
+            p.add('pipe', 'mount', 'steel' if j != 1 else 'iron',
+                  moved(revolve([(-w*.46, rr), (w*.45, rr)], 10, cap0=True, cap1=True), Matrix.Translation((0, yy, -d*.46))))
+            for xx in (-w*.30, w*.10, w*.32):
+                p.add('pipe_collar', 'mount', 'iron', moved(revolve([(xx-f*.25, rr*1.35), (xx+f*.25, rr*1.35)], 10, cap0=True, cap1=True), Matrix.Translation((0, yy, -d*.46))))
+        slab('hoist', 'soot', -w*.29, -w*.02, -h*.37, h*.36, -d*.9, -d*.16)
+        slab('hoistarm', 'iron', -w*.10, w*.21, -h*.14, h*.08, -d*.27, -d*.13)
+        slab('door', 'blood' if side > 0 else 'rust', w*.29, w*.48, -h*.47, h*.47, f, f*1.5)
+        for yy in (-h*.29, h*.29):
+            slab('hinge', 'iron', w*.28, w*.34, yy-f/2, yy+f/2, f*1.5, f*2)
+        pos = Vector((U(nc), side*U(yc), shoulder_top(side, yc, nc)))
+        M = HP.frame(pos, (1, 0, 0), nrm)
+        # Apply the thin shell before cutting it. The well's own back and walls close the opening.
+        ob = shoulders[side]
+        bpy.context.view_layer.objects.active = ob
+        bpy.ops.object.modifier_apply(modifier='shell')
+        cutter = K._obj('bay_cut', *moved(block(-w/2, w/2, h/2, d, 0, zo=-d*.35), M), 'dark')
+        md = ob.modifiers.new('R294 real bay opening', 'BOOLEAN'); md.operation = 'DIFFERENCE'; md.solver = 'EXACT'; md.object = cutter
+        bpy.context.view_layer.objects.active = ob
+        bpy.ops.object.modifier_apply(modifier=md.name)
+        bpy.data.objects.remove(cutter, do_unlink=True)
+        K._surface_part(fid, p, tuple(pos), tuple(nrm), (1, 0, 0), 'hoist_bays',
+                        'sunken machinery well, pipes and bomb hoist', 'bay', 'picture',
+                        'R294: real opening through the shoulder skin, dark floor and walls, three coupled pipes, hoist and hinged partial cover')
+        c_, r_ = K.keepouts.pop()
+        for f_ in (-.43, -.22, 0, .22, .43):
+            K.keepouts.append((c_ + Vector((w*f_, 0, 0)), U(.100)))
+
+    # R294: the large round nacelles were omitted when the original sheet interpreted both concept mouths as weapons.
+    # Keep the two small forward bomb tubes. These two main drives face aft, with visible shells, rings and deep lit throats.
+    for side, fid, radius in ((1, 'E6', .096), (-1, 'E7', .090)):
+        K.engine(fid, (U(-.494), U(side*.489), U(.066 if side > 0 else .060)), U(radius), U(.150), bell=1,
+                 kw=dict(craft=True, craft_len=U(.090), seed=6 if side > 0 else 7), inv='nacelles',
+                 note='R294: large round aft-facing main drive, dark armoured drum, cooling bands and a red-orange throat; the housing is welded into the shoulder')
 
     # ---------------- the thruster bank: five mismatched drives in a recess in the stern housing ----------------
     BANK = [(0.104, 0.117, 0.017), (0.057, 0.121, 0.021), (-0.003, 0.115, 0.028), (-0.062, 0.12, 0.02), (-0.107, 0.112, 0.016)]   # (y, z, bell radius); R275: raised to the top of the housing, at the top of the ramp
@@ -255,8 +295,8 @@ def build(K):
 
     # ---------------- colour zones ----------------
     K.colour('rust and dried-blood plate in a patchwork of big uneven plates, soot and bare iron between', U(0.5), U(-0.5), 'whole hull')
-    K.colour('trophy patches: pale Hegemony grey, violet Eclipse plate', U(0.5), U(-0.5), 'scattered, big (R252; R274: the Hullbreaker paint stack turns the pale ones dark grey metal, issue 726)')
-    K.colour('red-orange glow only in the five bells; the mouths dark; no bright light', U(-0.46), U(-0.5), 'the thruster bank; factions.md: runs dark')
+    K.colour('weathered steel, iron and blood-red salvage patches', U(0.5), U(-0.5), 'R294: the small pale and violet squares reassigned to the existing weathered zones')
+    K.colour('red-orange glow in the two large nacelles and five stern bells; forward bomb mouths dark', U(-0.46), U(-0.5), 'main drives and thruster bank; factions.md: runs dark')
 
     # ---------------- INSIDE: the magazine rows (the bomber's story), kept small ----------------
     def room(name, kind, n0, n1, y0, y1, z0, z1, note=''):
@@ -270,7 +310,7 @@ def build(K):
     room('drive_room', 'engroom', -0.37, -0.44, -0.13, 0.13, -0.035, 0.14, note='the drive room and the bank\'s feeds, in the stern housing')
     K.armour('glacis', U(0.008), 'the heaviest plate, over the crew and the bow')
     K.armour('body and shoulders', U(0.004), 'patched plate')
-    reach = 0.4
+    reach = 0.61
     K.break_line('B-1', U(-0.237), 'the crew and stern block tears from the body at a weld (Hullbreakers: at the seams; only for the recipe\'s records: the game never breaks a craft)',
                  path=[(U(-0.237), U(reach)), (U(-0.237), U(0.2)), (U(-0.229), U(0.12)), (U(-0.245), U(0.04)), (U(-0.23), U(-0.05)), (U(-0.246), U(-0.14)),
                        (U(-0.237), U(-0.2)), (U(-0.237), U(-reach))])
@@ -280,24 +320,39 @@ def build(K):
     # ---------- the patchwork, last: every mount has claimed its keep-out by now ----------
     for nm_, rings_, spec_ in PATCH:
         patchwork(K, HP, nm_, rings_, spec_)
+    # The small pale cover on the port bomb drum also read as a loose note (R294).
+    # Reassign only this craft's pale material slots to the existing weathered iron zone.
+    for ob in K.coll.objects:
+        if ob.type == 'MESH':
+            for slot in ob.material_slots:
+                if slot.material and slot.material.name == 'pale':
+                    slot.material = _k.mat('iron')
 
     # ---------- changed from the picture (designer's decisions, R207, R233, R236) ----------
     K.change('Length 1.6 (CLS_LEN Squadron; drawn 3.84 on the board), the same as every craft; beam about 1.2 of the length, the render\'s width',
              'docs/playbooks/scale.md, Squadron rows, binding; R273, Ryan, Nov 15: "Wider for sure": the round 3 beam guard (60 to 65 percent) is lifted for this craft. The first sheet held it at 0.61 and read far narrower than the render')
-    K.change('The two round mouths at the front corners are bomb tubes: dark armoured collars round dark bores with the next bomb\'s nose seated deep inside, no glow',
-             'the round 3 sheet: the mouths at the glacis\'s extreme corners, each in a dark armoured collar; the render lights them red like engines, which would read as drives facing forward; the glow belongs to the bank aft')
+    K.change('Two small dark bomb tubes at the forward shoulder corners, the next bomb\'s nose deep inside; separate large main-drive nacelles aft',
+             'R294 restores the omitted main drives while retaining bombs T, two shots. Forward weapon mouths stay dark; all drive mouths face aft')
     K.change('The tubes are fixed forward in their pods, not on a turning mount',
              'a craft turns onto its target on a strafing run; weapon_match.py FITS bombs: a bomb tube on a launcher (the Board\'s reading of rule 11 for craft); two tubes for the 2 shots, both fire every volley')
-    K.change('The top is one long glacis ramp, low at the bow and rising aft to an armoured lip against the stern housing, with the crew\'s vision slit in the lip\'s face; the ramp is framed by armoured edge rails with bolted clamps that run diagonally up it',
-             'R275 (Ryan, Nov 15 2026 21:28 CST, sending the wide sheet back): the top must be the concept\'s sloped glacis, not a flat slab; the round 3 sheet (DeepSeek) put the lip where the slope ends so it reads as armour on a hull; no canopy (R254), so the crew looks out through a slit; the rails are the concept\'s raised glacis edges')
-    K.change('The flank bays are the bomb hoists, one a side in the shoulder\'s sloped top: a heavy frame, a dark back, pipes and the hoist block inside, an armoured door in a second tone over the fore part',
+    K.change('R294: in shares of LENGTH, the bow narrows from 0.302 half-beam to 0.205 at its toe; the glacis rises to x=-0.035, then stays level to x=-0.355; raised edge frames follow both planes',
+             'R275 was interpreted as one slope all the way aft and kept a full-width bow station. That simplified away the concept\'s taper and plateau; R294 restores both')
+    K.change('The flank bays are the bomb hoists, one a side in the shoulder\'s sloped top: a heavy frame, a dark back, pipes and the hoist block inside, an armoured door over the fore part',
              'every part has a job (R221): the hoist walks the next bomb from the shoulder\'s magazine row into its tube; on the slope they face the battle camera; the doors carry a two-tone value shift so they survive 32 px (Qwen)')
     K.change('The stern thruster bank is five mismatched salvaged bells, the centre one the largest, in a recess (a hood, cheeks and a sill) in the stern housing',
              'the concept\'s row of stern thrusters; factions.md: mismatched bells with a red-orange glow, one often larger than the rest; the owner\'s rule for craft: nozzle clusters inside armoured blocks')
     K.change('The starboard shoulder sits a touch lower and shorter than the port one; the plating is a patchwork of fewer, bigger, uneven plates of mixed size and angle (rust, dried blood, soot and iron with big trophy patches), laid by the faction kit\'s welded plater, never courses',
-             'factions.md: lopsided, bolted, patched, plates torn from every other faction; R240 and R275: the patchwork never reads even or in rows (the kit\'s courses read as tidy squares on a craft); R252: big trophy patches (R274: the pale ones become dark grey metal in the Hullbreaker paint stack for every ship, issue 726; the sheet keeps the pale zone)')
-    K.change('Issue 875 (R289, R292): mixed-size turned plates and welded laps, bedded close to the skin; dark iron, weathered rust red and grey trophies from the faction stack; material weights unchanged',
+             'factions.md: lopsided, bolted, patched; R240 and R275: the patchwork never reads even or in rows. R294 reassigns this craft\'s isolated pale and violet squares to weathered metal and blood red without changing the faction stack')
+    K.change('Issue 875 (R289, R292): mixed-size turned plates and welded laps, bedded close to the skin; dark iron and weathered rust red from the faction stack',
              'The first patchwork proof still read as clean salmon slabs. The craft-only bright palette and reduced dirt hid its seams and wear; thicker relief made the small patches stand off the hull')
+    K.change('R294: two large round main-drive nacelles aft, plus the five stern thrusters; the two forward bomb tubes remain the only weapons',
+             'The old sheet interpreted the concept\'s large glowing corner mouths as dark weapon tubes and built only small drives aft. Main-drive mouths now face aft so thrust works; the front paint_full view shows their housings, and the rear proof shows the lit throats')
+    K.change('R294: the nacelle drums end aft of B-1; the same ragged seam extends to the shoulders\' full beam',
+             'a drive must ride whole with its piece (R226). The first long nacelle drum crossed the seam; shortening its mounting drum keeps the engine whole without moving the existing inside rooms')
+    K.change('R294: the side machinery bays are cut through the shoulder skin, with sunken floors, coupled pipes, hoists and partial hinged doors',
+             'The old machbay depth of 0.004 length and the uncut skin made the pipes look like flat slats on a panel. The openings now have actual depth and their own dark lining')
+    K.change('R294: isolated small pale and violet plate zones become weathered steel and blood red; the little pale bomb-drum cover becomes iron',
+             'Ryan named the remaining light grey and purple squares as stuck-on notes. The PR 898 craft paint stack, its geometry masks, wear and colours are unchanged; only this design\'s zone assignments change')
     K.change('No dishes, claws, antennas, lamps or hangar', 'below what the battle camera shows on a 3.84 unit craft, and nothing hangs off (factions.md); bold and simple')
     K.change('A small inside: two magazine rows in the shoulders, the crew cell, the reactor, the drive room; one seam (B-1)',
              'the game shows a craft\'s death as a spark and hides it (fx_death.gd _wing_death), so nothing breaks open; the build contract needs an inside and a seam')

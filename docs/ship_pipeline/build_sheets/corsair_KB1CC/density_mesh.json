@@ -1,44 +1,55 @@
 {
+ "rule": "R224: a part kind more than 25 percent under the hull is flagged (mesh half; the paint half is stage 5)",
  "types": {
+  "lamp": {
+   "area": 0.03,
+   "triangles": 1408,
+   "tris_per_unit2": 46846.8,
+   "edges_per_unit2": 31641.5,
+   "tris_per_unit2_vs_hull": 17.07,
+   "edges_per_unit2_vs_hull": 15.27
+  },
   "hull": {
-   "triangles": 8332,
-   "area": 9.2337,
-   "tris_per_unit2": 902.3,
-   "edges_per_unit2": 764.6
+   "area": 17.01,
+   "triangles": 46688,
+   "tris_per_unit2": 2744.9,
+   "edges_per_unit2": 2072.4
   },
   "slit": {
+   "area": 0.01,
    "triangles": 140,
-   "area": 0.0024,
-   "tris_per_unit2": 58230.0,
-   "edges_per_unit2": 49911.4,
-   "tris_per_unit2_vs_hull": 64.54,
-   "edges_per_unit2_vs_hull": 65.28
+   "tris_per_unit2": 22872.0,
+   "edges_per_unit2": 19604.6,
+   "tris_per_unit2_vs_hull": 8.33,
+   "edges_per_unit2_vs_hull": 9.46
   },
   "launcher": {
+   "area": 0.42,
    "triangles": 1676,
-   "area": 0.40773,
-   "tris_per_unit2": 4110.5,
-   "edges_per_unit2": 3139.3,
-   "tris_per_unit2_vs_hull": 4.56,
-   "edges_per_unit2_vs_hull": 4.11
+   "tris_per_unit2": 4013.6,
+   "edges_per_unit2": 3065.3,
+   "tris_per_unit2_vs_hull": 1.46,
+   "edges_per_unit2_vs_hull": 1.48
   },
   "machbay": {
-   "triangles": 752,
-   "area": 0.23162,
-   "tris_per_unit2": 3246.6,
-   "edges_per_unit2": 2694.0,
-   "tris_per_unit2_vs_hull": 3.6,
-   "edges_per_unit2_vs_hull": 3.52
+   "area": 2.39,
+   "triangles": 1520,
+   "tris_per_unit2": 636.7,
+   "edges_per_unit2": 502.7,
+   "tris_per_unit2_vs_hull": 0.23,
+   "edges_per_unit2_vs_hull": 0.24
   },
   "engine": {
-   "triangles": 6460,
-   "area": 0.12449,
-   "tris_per_unit2": 51893.5,
-   "edges_per_unit2": 19841.6,
-   "tris_per_unit2_vs_hull": 57.51,
-   "edges_per_unit2_vs_hull": 25.95
+   "area": 2.04,
+   "triangles": 9044,
+   "tris_per_unit2": 4432.6,
+   "edges_per_unit2": 1686.0,
+   "tris_per_unit2_vs_hull": 1.61,
+   "edges_per_unit2_vs_hull": 0.81
   }
  },
- "flags": [],
- "rule": "R224: a part type more than 25 percent under the hull is flagged (mesh half; the paint half runs at stage 5)"
+ "mesh_flags": [
+  "machbay: tris_per_unit2 636.7 is 0.23 of the hull's 2744.9",
+  "machbay: edges_per_unit2 502.7 is 0.24 of the hull's 2072.4"
+ ]
 }

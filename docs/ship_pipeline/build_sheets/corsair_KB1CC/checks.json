@@ -1,24 +1,24 @@
 {
  "length_from_game": 1.6,
- "model_length": 1.596,
- "length_side": 1.598,
- "length_top": 1.598,
+ "model_length": 1.6,
+ "length_side": 1.602,
+ "length_top": 1.602,
  "length_disagreement_percent": 0.0,
- "model_vs_game_percent": 0.25,
+ "model_vs_game_percent": 0.0,
  "beam_top": 1.922,
  "beam_bow": 1.922,
  "beam_disagreement_percent": 0.0,
- "height_side": 0.381,
- "height_bow": 0.381,
- "height_disagreement_percent": 0.0,
- "widest_at_station_percent": 4.5,
- "hull_beam": 1.04,
+ "height_side": 0.397,
+ "height_bow": 0.398,
+ "height_disagreement_percent": 0.07,
+ "widest_at_station_percent": 18.1,
+ "hull_beam": 0.98,
  "hull_depth": 0.35,
- "L_to_B_hull": 1.54,
+ "L_to_B_hull": 1.63,
  "L_to_H_hull": 4.57,
  "PASS": true,
- "outline_iou_percent": 81.3,
- "mass_outline_iou_percent": 81.6,
+ "outline_iou_percent": 77.2,
+ "mass_outline_iou_percent": 77.4,
  "concept_camera": {
   "az": 1.329733475354416,
   "el": 19.041276321265514,
@@ -28,5 +28,5 @@
   "sx": 0.029570289344652143,
   "sy": -0.003479649960997249
  },
- "prow_overhang": 0.0
+ "outline_note": "R294 geometry, fixed historical outline camera; reported, not gated"
 }
