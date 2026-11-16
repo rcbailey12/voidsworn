@@ -13,6 +13,7 @@ concurrency:
   cancel-in-progress: false
 permissions:
   contents: write
+  issues: read          # without it the issues list holds only pull requests and every seat reads empty (Nov 16)
   pull-requests: write
 jobs:
   regenerate:
