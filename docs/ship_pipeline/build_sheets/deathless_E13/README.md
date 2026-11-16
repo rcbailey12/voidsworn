@@ -12,6 +12,41 @@ Start here: **[whole_compare.jpg](whole_compare.jpg)** (the whole beauty, the pl
 then [side_by_side.jpg](side_by_side.jpg), [fit_view.jpg](fit_view.jpg), [cells.jpg](cells.jpg) and
 [weapon_review.jpg](weapon_review.jpg).
 
+## Even side to side (issue 783, R256)
+
+Ryan, Nov 15 07:02 CST: "let's make sure that the paint actually is even on each side, it's not consistent now". Measured on a
+top view with the port half mirrored onto the starboard ([even_side_to_side.json](even_side_to_side.json),
+`tools/blender/build_sheets/studies/mirror_check.py`):
+
+| Top view | Mean difference (of 255) | Pixels over 24 | Corona light with no twin |
+|---|---:|---:|---:|
+| Painted (Eclipse stack), before | 13.0 | 11.3% | 30.6% |
+| Painted (Eclipse stack), after | 2.8 | 0.8% | 6.6% |
+| Blockout (sheet colours), before | 7.5 | 4.5% | 19.8% |
+| Blockout (sheet colours), after | 2.2 | 0.9% | 1.3% |
+
+Pictures: [even_top_before.jpg](even_top_before.jpg), [even_top_after.jpg](even_top_after.jpg),
+[even_battle_cam.jpg](even_battle_cam.jpg). What made the sides differ, and the fix at each cause:
+
+1. **The layer corona lines** (this sheet): each plate's stepped layer took its green line from ring point 2 on port (the top
+   outer edge) and point 1 on starboard (the bottom edge, half buried), so the starboard lines sat low and broken; the crest's
+   layer had a line on its starboard edge only. Now point 2 on both sides, and the crest's layer carries both top edges.
+2. **The panel rows** (this sheet): the row pitch was read off ring point 0, the inner edge on port and the outer edge on
+   starboard, so the inner plates got rows of 0.48 (port) and 0.32 (starboard). Now read off the inner edge on both.
+3. **The fasteners** (Eclipse kit, `plate_slab`): the long axis came from one edge, which on a tapered plate depends on which
+   corner a twin lists first. Now from both pairs of opposite edges.
+4. **The engine housing plates** (Eclipse kit, `panels`): tone and thickness went round the drum by face number. Now a plate and
+   its mirror twin share them.
+5. **The paint** (Eclipse stack, every Eclipse ship): every pattern read the true position and each plate its own island random,
+   so a plate and its twin took unrelated tones, and the corona arcs and breaks differed. The stack now asks for a mirrored paint
+   (`LAYERS mirror`): patterns read (x, |y|, z), twins share one plate random (`paint_stack.mirror_islands`), the starboard marks
+   copy the port ones (the starboard band ticks were missing) and the top sigil sits on the centre line. Colours, shares and
+   the corona's look are unchanged (R237, R243); the engine rings keep their own pattern each.
+
+Left: the four attitude thrusters turn by a different angle on each side (kit.py `thruster` builds its frame from
+`normal.orthogonal()`, which is not mirrored; shared by every faction and hashed into the A16 fixture, so not changed here), and
+the core's cage bars twist 0.0075 units differently per side. Both are a few pixels at the dart's flanks and the core.
+
 ## Checks (sandbox, this sheet)
 
 | Check | Result |
@@ -36,7 +71,7 @@ and only the framing is fitted (`ships/deathless_E13_camera.json`).
 
 | Ship | Triangles (readback) | Ship mesh surfaces | Turret triangles | Insides |
 |---|---:|---:|---:|---|
-| **E13 mote** | **20,288** | **10** | 4,604 (1 turret) | 624 triangles, 7 surfaces |
+| **E13 mote** | **20,036** (20,288 before issue 783) | **10** | 4,604 (1 turret) | 624 triangles, 7 surfaces |
 | E12 zenith | 51,502 | 9 | 10,938 (3 turrets) | 488 triangles, 7 surfaces |
 | E11 The Unsetting | 115,530 | 10 | 12,590 (3 turrets) | 1,768 triangles, 8 surfaces |
 
@@ -95,6 +130,6 @@ All in [feature_table.md](feature_table.md); the design calls the Board should l
 [fit.json](fit.json), [manifest.json](manifest.json), [checks.json](checks.json), [outline_check.jpg](outline_check.jpg), the views,
 the weapon picture [weapon_gauss.jpg](weapon_gauss.jpg). Design source: `tools/blender/build_sheets/ships/deathless_E13.py`; inventory
 `ships/deathless_E13_inv.py`; camera `ships/deathless_E13_camera.json`; recipe entry `tools/recipe/ships/deathless_E13.json` (game
-folder D9_23, `"bake": "stack"`, the Eclipse stack unchanged: every (part kind, zone) pair is one the stack already paints on
+folder D9_23, `"bake": "stack"`, the Eclipse stack (its paint mirrored side to side since issue 783): every (part kind, zone) pair is one the stack already paints on
 E11 and E12). Pictures not made by the sheet tools: `tools/blender/build_sheets/studies/whole_compare.py` (whole_compare.jpg) and
 `studies/mesh_density.py` (mesh_density.json).
