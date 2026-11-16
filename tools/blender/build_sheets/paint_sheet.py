@@ -68,6 +68,20 @@ for o in sc.objects:
 fc = json.load(open(os.path.join(HERE, 'ships', SHEET + '_camera.json')))
 
 
+def scene_clip(loc, forward):
+    """Keep the visible model's evaluated bounds between the beauty camera's clip planes."""
+    dg = bpy.context.evaluated_depsgraph_get(); depths = []
+    for obj in sc.objects:
+        if obj.type != 'MESH' or obj.hide_render: continue
+        evaluated = obj.evaluated_get(dg)
+        depths.extend((evaluated.matrix_world @ Vector(corner) - loc).dot(forward) for corner in evaluated.bound_box)
+    if not depths: raise ValueError('beauty camera needs a visible mesh')
+    near, far = min(depths), max(depths)
+    # A little space beyond both bounds avoids clipping faces on a plane, at any recipe scale (issue 844).
+    pad = max((far - near) * .05, abs(far) * 1e-6, 1e-6)
+    return max(1e-6, near - pad), max(2e-6, far + pad)
+
+
 def look_cam(az, el, dist, mm, res, target, roll=0.0, shift=(0, 0)):
     """the build sheet's beauty camera (build.py look_cam), in the recipe frame"""
     a_, e = math.radians(az), math.radians(el)
@@ -78,7 +92,8 @@ def look_cam(az, el, dist, mm, res, target, roll=0.0, shift=(0, 0)):
     c = bpy.data.cameras.new('beauty'); o = bpy.data.objects.new('beauty', c); sc.collection.objects.link(o)
     r = right.normalized(); u = up.normalized(); b = r.cross(u)
     o.matrix_world = Matrix(((r.x, u.x, b.x, loc[0]), (r.y, u.y, b.y, loc[1]), (r.z, u.z, b.z, loc[2]), (0, 0, 0, 1)))
-    c.lens = mm; c.sensor_width = 36; c.sensor_fit = 'HORIZONTAL'; c.clip_start = .001; c.clip_end = 20
+    c.lens = mm; c.sensor_width = 36; c.sensor_fit = 'HORIZONTAL'
+    c.clip_start, c.clip_end = scene_clip(loc, f)
     c.shift_x, c.shift_y = shift
     sc.render.resolution_x, sc.render.resolution_y = res
     return o
