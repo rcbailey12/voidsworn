@@ -90,6 +90,14 @@ def panels(p, tag, role, mats, x0, x1, r, n, phase, skip=(), th=0.022, size=PANE
     across = max(1, int(round(fw / size[0]))); along = max(1, int(round((x1 - x0) / size[1])))
     g = min(0.025, fw / across * 0.12, (x1 - x0) / along * 0.12)
     acc = {m: ([], []) for m in mats}
+
+    def twin(k, j):
+        """issue 783: the plate's mirror twin across the part's own y = 0 plane (face pi - a, its across order reversed). Tone and
+        thickness are read off the lesser of the two, so the courses match side to side (Eclipse panels dead even, R243)"""
+        a = 2 * math.pi * (k + 0.5) / n + phase
+        f = ((math.pi - a - phase) / (2 * math.pi)) * n - 0.5
+        if abs(f - round(f)) > 1e-6: return (k, j)      # a revolve whose faces are not mirror pairs keeps its own order
+        return min((k, j), (int(round(f)) % n, across - 1 - j))
     for k in range(n):
         if k in skip: continue
         a = 2 * math.pi * (k + 0.5) / n + phase
@@ -98,13 +106,14 @@ def panels(p, tag, role, mats, x0, x1, r, n, phase, skip=(), th=0.022, size=PANE
             xa = x0 + (x1 - x0) * i / along + g; xb = x0 + (x1 - x0) * (i + 1) / along - g
             for j in range(across):
                 ta = -fw / 2 + fw * j / across + g; tb = -fw / 2 + fw * (j + 1) / across - g
-                h = th * (0.7 + 0.6 * (((k * 7 + i * 13 + j * 5 + seed) * 2654435761) % 1000) / 1000.0)
+                kc, jc = twin(k, j)
+                h = th * (0.7 + 0.6 * (((kc * 7 + i * 13 + jc * 5 + seed) * 2654435761) % 1000) / 1000.0)
                 e = min(h * 0.8, (xb - xa) * 0.2, (tb - ta) * 0.2)
                 base = [(xa, ta), (xb, ta), (xb, tb), (xa, tb)]
                 top = [(xa + e, ta + e), (xb - e, ta + e), (xb - e, tb - e), (xa + e, tb - e)]
                 V = [Vector((x, 0, 0)) + nv * (ap - 0.004) + tv * t for x, t in base] + [Vector((x, 0, 0)) + nv * (ap + h) + tv * t for x, t in top]
                 F = [(3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
-                m = mats[(i + j + k + seed) % len(mats)]
+                m = mats[(i + jc + kc + seed) % len(mats)]
                 VV, FF = acc[m]; o = len(VV); VV.extend(tuple(v) for v in V); FF.extend(tuple(q + o for q in f) for f in F)
     for m, (VV, FF) in acc.items():
         if FF: p.add('%s_plate_%s' % (tag, m), role, m, (VV, FF))
@@ -781,8 +790,14 @@ def plate_slab(bot, nrm, t, bevel=0.35, rivets=True, lift=0.0, rr=0.03):
     F = [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
     RV, RF = [], []
     if rivets:
-        e0 = (top[1] - top[0]); e1 = (top[3] - top[0])
-        ax = e0 if e0.length > e1.length else e1
+        # the plate's long axis from both pairs of opposite edges, so it does not depend on which corner comes first: a mirrored
+        # twin lists its corners in the other order, and on a tapered plate one edge alone put its fasteners elsewhere (issue
+        # 783); a near tie goes to the axis that runs more along the ship, the same choice on both sides
+        e0 = ((top[1] - top[0]) + (top[2] - top[3])) / 2; e1 = ((top[3] - top[0]) + (top[2] - top[1])) / 2
+        if abs(e0.length - e1.length) > 0.02 * max(e0.length, e1.length):
+            ax = e0 if e0.length > e1.length else e1
+        else:
+            ax = e0 if abs(e0.x) >= abs(e1.x) else e1
         c0 = mid + nrm * t
         for sgn in (1, -1):
             c = c0 + ax * 0.3 * sgn
