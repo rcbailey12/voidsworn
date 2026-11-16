@@ -165,7 +165,7 @@ A playbook is done when a model that has never seen this repo ships the next ite
 
 - Ryan's Fable resets are all used (R180). The Board and Opus workers draw the Claude plan: two Opus workers at most while the
   Board thread is active (the five-hour limit was hit on Nov 11 with three; LOOP.md duties item 9).
-- Codex gives about 100 minutes of work per five-hour window; one Codex job and one GPU job at a time on the PC.
+- Codex gives about 100 minutes of work per five-hour window; one Codex job per lane; GPU work sized to the job (RULEBOOK 3.4, R293).
 - If a limit is hit, nothing stops: DeepSeek, Muse and Codex keep running the rows that are theirs, and the Board's picks wait
   in LOOP.md.
 

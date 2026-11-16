@@ -258,14 +258,17 @@ disk check.** Why: the PC disk filled on Nov 11 (C: 0.0 GB free, 550 GB in voids
 watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md, Nov 12 02:15 and 02:20 UTC). Set: Ryan
 (project instructions: never delete); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
 
-3.4 **Up to two GPU jobs at once across the main lane and lane B; frame-time measurements run solo. Lane C stays code only.**
-The launchers take and release claims themselves: two shared slots, or a solo claim that waits for both slots to empty and
-blocks new GPU work while it measures. Dead process claims are reclaimed. `gpu_go.txt` still wins: no new GPU work starts
-unless its first line is `GPU cleared` (optionally followed by `: reason`); the gaming pause in 3.11 is unchanged. Why: Ryan
-asked "can we run multiple jobs to speed things up?" and approved the Board's two-job, solo-measurement pick:
-"merge and make those changes to gpu jobs"
-(R276). The RTX 5080 has 16 GB: two jobs fit, three heavy jobs risk running out of graphics memory. Solo measurements keep
-speed numbers honest. Replaces the one-job limit (R173b, effects-09); the gaming pause (R173) remains. Set: Ryan, Nov 15 (R276).
+3.4 **GPU work is sized to the job and to what the RTX 5080 can hold, not to a fixed job count; frame-time measurements run
+solo. Lane C stays code only.** The Board decides per job how many share the card: light captures and probes can run side by
+side, heavy bakes and Blender renders take more of it, and nothing is started that would run the card out of its 16 GB of
+graphics memory. The launchers take and release claims themselves through tools/pc/gpu_slots.js (today two shared slots;
+issue 896 makes the slot count a setting and lets a job weigh more than one slot), or a solo claim that waits for every slot
+to empty and blocks new GPU work while it measures. Dead process claims are reclaimed. `gpu_go.txt` still wins: no new GPU
+work starts unless its first line is `GPU cleared` (optionally followed by `: reason`); the gaming pause in 3.11 is
+unchanged. Why: "that one GPU job at a time is an outdated rule, we should be flexible based on the task and what my
+graphicsa card can actually handle as a 5080. we don't want to overwhelm it but we don't want to artificially restrict small
+jobs and extend things out" (Ryan, Nov 16, R293). Solo measurements keep speed numbers honest. Replaces the two-job cap
+(R276, Nov 15) and the one-job limit before it (R173b, effects-09); the gaming pause (R173) remains. Set: Ryan, Nov 16 (R293).
 
 3.5 **Every PC queue job is wrapped in the tmo.bat watchdog, ends with exit /b, and carries no |, &, < or > in its
 arguments.** Agent runs stop after STALL_MIN minutes without progress (default 30), or at a hard ceiling (default six
