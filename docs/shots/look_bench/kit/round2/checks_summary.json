@@ -1,0 +1,47 @@
+{
+ "standing": {
+  "PASS": 49,
+  "KNOWN": 2,
+  "FAIL": 1
+ },
+ "standing_exit": 1,
+ "standing_failure": "Untouched HANDOFF.md says R236 to R257; newest FINDINGS is R263. git diff HEAD for both files is empty.",
+ "load_all": "187 scripts, 11 scenes, zero failed",
+ "raster": "Caps pass at cameras 170/60/26, 1080p and 4K; max/low gauss exactly two frames, head green FWHM 8 px at 1080 at cameras 170/60.",
+ "measurements": {
+  "intended_changed_rows": [
+   "doom",
+   "gauss",
+   "gflak",
+   "p_gauss_exit"
+  ],
+  "rows_within_one_channel_value": 30,
+  "sparse_variance_reviewed": [
+   "auto",
+   "bioplasma",
+   "flak",
+   "guns",
+   "macro",
+   "moving_trail",
+   "p_missile_launch",
+   "rocket_intercept",
+   "rockets",
+   "scatter",
+   "sporeb",
+   "spores"
+  ],
+  "frame_1080_ms": 4.617,
+  "gpu_4k_ms": 5.42799997329712,
+  "current_control_frame_1080_ms": 4.097,
+  "current_control_gpu_1080_ms": 2.42000007629395,
+  "gpu_1080_ms": 2.42899990081787,
+  "current_control_gpu_4k_ms": 5.46500015258789,
+  "kit_baseline_ms": 2.989,
+  "historical_frame_margin_ms": 1.71,
+  "gpu_change_allowance_ms": 0.3,
+  "final_sources_match": true
+ },
+ "full_destruction_suite": "PASS: real-hull spawn, geometry, plane, staging, smoke, flash area, recipes, batch 1, blockers, GPU box and fleet probes",
+ "identical_source_repeat": "Flak and rockets, both cameras, bit identical",
+ "source_formatting": "Removed one trailing LF outside shader strings after captures. Verifier accepts only the exact captured hash recovered by re-adding that LF."
+}
