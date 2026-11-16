@@ -1,6 +1,6 @@
 extends RefCounted
 # One ship's effects: engines (hot cores, plumes and cooling exhaust left in world space), the shield
-# bubble (faction colour and style, hits, breaks, regen), and the staged damage ladder per section (A5 sheets 5):
+# skin (faction colour and style, hits, breaks, regen), and the staged damage ladder per section (A5 sheets 5):
 #   0 intact, 1 scorched, 2 smoking, 3 severe surface damage, 4 hull breach (5 wreck is fx_death.gd).
 # Attached effects follow the hull; emitted engine trails stay in world space.
 
@@ -47,6 +47,10 @@ var _last_pos = Vector3.INF
 var _moving = 0.0
 var _shield_mi: MeshInstance3D = null
 var _shield_mat: ShaderMaterial = null
+var _shield_rest_mat: ShaderMaterial = null
+var _shield_tm: TriangleMesh = null
+var _shield_levels := Vector4.ONE
+var _shield_routing := Vector4.ZERO
 var _hit_i = 0
 var _hits = PackedVector4Array()
 var _hitw = PackedVector4Array()
@@ -307,8 +311,9 @@ func update(fx, dt: float) -> void:
 	_react_step(fx, dt)
 	_hide_placeholder_engines()
 	var hm := hull_motion()
-	if _shield_mi != null and _shield_mi.visible:
-		_shield_mi.transform = hm * Transform3D(Basis.from_scale(hull.shield_radii()), hull.shield_centre())
+	if _shield_mi != null:
+		var skin_xf := hm * Transform3D(Basis.IDENTITY, hull.shield_centre())
+		_shield_mi.transform = skin_xf
 	var pos = root.global_position - root.get_parent_node_3d().global_transform.basis * _app_pos if root.get_parent_node_3d() != null else root.global_position
 	var moved = pos.distance_to(_last_pos) if _last_pos != Vector3.INF else 0.0
 	_last_pos = pos
@@ -335,7 +340,8 @@ func update(fx, dt: float) -> void:
 		_eng_rib_mat.set_shader_parameter("lenk", clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8))
 	_update_trails(fx, moved > 1e-4)
 	if _shield_mi != null:
-		_shield_mi.visible = fx.now < _shield_until
+		_shield_mi.visible = not dead and _shield_levels.length_squared() > 0.00001
+		_shield_mi.material_override = _shield_mat if fx.now < _shield_until else _shield_rest_mat
 
 
 func _update_trails(fx, moved: bool) -> void:
@@ -408,22 +414,75 @@ func _trail_mesh(fx, t: Dictionary, eng: Color) -> void:
 # ---------------------------------------------------------------- shields
 
 func _build_shield(fx) -> void:
+	var skin := _shield_skin()
+	_shield_mat = fx.mat(SH.SHIELD, 2, "#define COMPAT\n" if fx.compat or fx.quality == "low" else "")
+	_shield_mat.set_shader_parameter("splash", load("res://fx/textures/shield_crackle.png"))
+	_shield_material(_shield_mat)
+	_shield_rest_mat = fx.mat(SH.SHIELD, 2, "#define REST\n")
+	_shield_material(_shield_rest_mat)
+	_shield_mi = MeshInstance3D.new()
+	_shield_mi.name = "fx_shield"
+	_shield_mi.mesh = skin
+	_shield_mi.material_override = _shield_mat
+	_shield_mi.position = hull.shield_centre()
+	_shield_mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	root.add_child(_shield_mi)
+	# Rest has a separate shader variant with no screen or depth samplers.
+
+
+func _shield_skin() -> ArrayMesh:
+	# One closed, low-detail envelope sampled from the actual hull BVH. Unlike an
+	# offset of every armour plate, this does not layer light over interior faces.
+	# The collision BVH below uses these very same vertices, so hits sit on the skin.
 	var sph = SphereMesh.new()
 	sph.radius = 1.0
 	sph.height = 2.0
 	sph.radial_segments = 64
 	sph.rings = 32
-	_shield_mat = fx.mat(SH.SHIELD, 2)
+	var a: Array = sph.surface_get_arrays(0)
+	var positions: PackedVector3Array = a[Mesh.ARRAY_VERTEX]
+	var extent: float = hull.box.size.length() * 2.0 + 2.0
+	var gap := clampf(hull.W * 0.025, 0.15, 0.5)
+	var missing := 0
+	for i in positions.size():
+		var direction := positions[i].normalized()
+		var hit: Dictionary = hull.ray(hull.core + direction * extent, -direction)
+		if hit.is_empty():
+			missing += 1
+			positions[i] *= hull.shield_radii()
+		else:
+			positions[i] = direction * ((hit["p"] as Vector3).distance_to(hull.core) + gap)
+	if missing > 0:
+		# A missing core ray is an explicit exception, never a silent bubble default.
+		push_warning("SHIELD_SKIN %s: %d/%d core rays missed; those directions use the enclosing radii" % [hull.code, missing, positions.size()])
+	a[Mesh.ARRAY_VERTEX] = positions
+	var raw := ArrayMesh.new()
+	raw.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, a)
+	var st := SurfaceTool.new()
+	st.create_from(raw, 0)
+	st.generate_normals()
+	var skin := st.commit()
+	_shield_tm = TriangleMesh.new()
+	_shield_tm.create_from_faces(skin.get_faces())
+	return skin
+
+
+func _shield_material(material: ShaderMaterial) -> void:
 	var sc: Color = fac["shield"]
-	_shield_mat.set_shader_parameter("col", Vector3(sc.r, sc.g, sc.b) * 2.2)
-	_shield_mat.set_shader_parameter("rad", hull.shield_radii())
-	_shield_mat.set_shader_parameter("style", int(fac["shield_style"]))
+	material.set_shader_parameter("col", Vector3(sc.r, sc.g, sc.b) * 2.2)
+	material.set_shader_parameter("rad", hull.shield_radii())
+	material.set_shader_parameter("style", int(fac["shield_style"]))
+	material.set_shader_parameter("stb_sign", hull.stb_z)
+	material.set_shader_parameter("levels", _shield_levels)
+	# The impact gain must never brighten a faction's resting rim.
+	material.set_shader_parameter("edge_mode", 1)
+	material.set_shader_parameter("edge_col", Vector3(sc.r, sc.g, sc.b))
 	var se = fac.get("shield_edge")
 	if se is Color:
-		_shield_mat.set_shader_parameter("edge_mode", 1)
-		_shield_mat.set_shader_parameter("edge_col", Vector3(se.r, se.g, se.b))
+		material.set_shader_parameter("edge_mode", 1)
+		material.set_shader_parameter("edge_col", Vector3(se.r, se.g, se.b))
 	elif se is String and se == "rainbow":
-		_shield_mat.set_shader_parameter("edge_mode", 2)
+		material.set_shader_parameter("edge_mode", 2)
 	var hits = PackedVector4Array()
 	var hw = PackedVector4Array()
 	for i in 6:
@@ -431,17 +490,8 @@ func _build_shield(fx) -> void:
 		hw.append(Vector4(0, 1, 1, 0))
 	_hits = hits
 	_hitw = hw
-	_shield_mat.set_shader_parameter("hits", hits)
-	_shield_mat.set_shader_parameter("hitw", hw)
-	_shield_mi = MeshInstance3D.new()
-	_shield_mi.name = "fx_shield"
-	_shield_mi.mesh = sph
-	_shield_mi.material_override = _shield_mat
-	_shield_mi.position = hull.shield_centre()
-	_shield_mi.scale = hull.shield_radii()
-	_shield_mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_shield_mi.visible = false
-	root.add_child(_shield_mi)
+	material.set_shader_parameter("hits", hits)
+	material.set_shader_parameter("hitw", hw)
 
 
 # Where a shot from `from_world` meets the bubble (world point and outward normal).
@@ -451,6 +501,15 @@ func shield_point(from_world: Vector3, aim_local := Vector3.INF) -> Dictionary:
 	var o = (inv * from_world) - hull.shield_centre()
 	var tgt = (aim_local - hull.shield_centre()) if aim_local != Vector3.INF else Vector3.ZERO
 	var d = (tgt - o).normalized()
+	if _shield_tm != null:
+		var hit := _shield_tm.intersect_ray(o, d)
+		if hit.is_empty():
+			hit = _shield_tm.intersect_ray(o, -o.normalized())
+		if not hit.is_empty():
+			var hp: Vector3 = hit["position"]
+			var hn: Vector3 = hit["normal"]
+			if hn.dot(d) > 0.0: hn = -hn
+			return {"p": xf() * (hp + hull.shield_centre()), "n": (xf().basis * hn).normalized(), "local": hp}
 	# ray against the unit sphere in scaled space
 	var os = o / rad
 	var ds = (d / rad)
@@ -488,7 +547,8 @@ func shield_break(fx, quad: int) -> void:
 	_shield_mat.set_shader_parameter("brk_dir", qd)
 	_shield_until = maxf(_shield_until, T + 1.45)
 	var rad = hull.shield_radii()
-	var lp = qd * rad
+	var lp: Vector3 = shield_point(to_world(hull.shield_centre() + qd * rad.length() * 2.0))["local"]
+	shield_hit(fx, lp, T, 1.5, hull.L * 0.2, 0.55)
 	var wp = to_world(lp + hull.shield_centre())
 	var wn = dir_world(qd)
 	var sc: Color = fac["shield"]
@@ -515,15 +575,13 @@ func shield_break(fx, quad: int) -> void:
 					fx.rcone(wn, 0.9) * (6 + fx.rng.randf() * 10) * k, 0.8)
 			fx.ring(wp, wn, T + 0.03, 0.7, sc, 0.8, 1.0 * k, 12.0 * k, 3)
 		2:
-			# Corsair: it sputters, flickers and dies in patches, with sparks and a dirty puff
+			# Corsair: sputtering discharge, with sparks and no hull smoke.
 			for j in 5:
 				var tj = T + j * 0.12 + fx.rng.randf() * 0.05
 				var pj = wp + fx.rdir() * 4.0 * k
 				fx.pop(pj, tj, sc.lerp(Color(1, 0.6, 0.3), 0.4), 3.0 * k, 4.0, wn, 0.1)
 				for i in 8:
 					fx.stk(pj, tj, 0.3 + fx.rng.randf() * 0.3, Color(1, 0.6, 0.25), 6.0, 0.05, 0.12, 1, fx.rcone(wn, 1.0) * (8 + fx.rng.randf() * 12) * k, 2.0)
-			for i in 4:
-				fx.spr(wp + fx.rdir() * 3.0 * k, T + 0.1 + i * 0.1, 2.0, Color(0.1, 0.08, 0.07), 0.5, 2.0 * k, 7.0 * k, 3, fx.rcone(wn, 0.6) * 2.0, 0.6)
 		_:
 			# Ithar: the mint veil folds and sheets away in prismatic glints
 			for i in 30:
@@ -537,6 +595,7 @@ func _regen(fx) -> void:
 	if _shield_mat == null:
 		return
 	_shield_mat.set_shader_parameter("regen_t", fx.now)
+	_shield_rest_mat.set_shader_parameter("regen_t", fx.now)
 	_shield_until = maxf(_shield_until, fx.now + 1.05)
 
 
@@ -767,12 +826,25 @@ func sync(fx, u: Dictionary) -> void:
 		fx.later(busy_until + 0.05, func l_stages() -> void: _apply_stages(fx, w))
 	else:
 		_apply_stages(fx, want)
-	# shields: a rise means regen
+	# R246: the universal pool is the health source. sh[] is already the rules'
+	# derived per-side catch, including coverage and routing; do not sum it as health.
 	var shs = 0.0
 	var sh_list = u.get("sh")
 	if sh_list is Array:
 		for v in sh_list:
 			shs += float(v) if v != null else 0.0
+		if _shield_mat != null and sh_list.size() >= 4:
+			var pool: float = float(u.get("shp", sh_list.max()))
+			var maximum: float = maxf(float(u.get("shMax", pool)), 1.0)
+			var routes = u.get("route")
+			for i in 4:
+				_shield_levels[i] = clampf(float(sh_list[i]) / maximum, 0.0, 1.0) if sh_list[i] != null else 0.0
+				_shield_routing[i] = 1.0 if routes is Array and routes.size() > i and routes[i] else 0.0
+			_shield_mat.set_shader_parameter("levels", _shield_levels)
+			_shield_mat.set_shader_parameter("routing", _shield_routing)
+			_shield_rest_mat.set_shader_parameter("levels", _shield_levels)
+			_shield_rest_mat.set_shader_parameter("routing", _shield_routing)
+			if u.has("shp"): shs = pool
 	if _last_sh >= 0.0 and shs > _last_sh + 0.5:
 		_regen(fx)
 	_last_sh = shs
