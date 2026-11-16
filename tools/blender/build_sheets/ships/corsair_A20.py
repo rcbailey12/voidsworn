@@ -15,6 +15,7 @@
 # widest Hullbreaker for its length, a broad heavy slab with the bow block standing out ahead of it between the two mouths,
 # lopsided by its uneven mouths and stepped starboard armour. Issue 688 (R244) opens the bow housing behind the intake
 # lips and shapes the slab with broad shoulder facets, lower chines and a recessed waist in plan.
+# Issue 861 (R283) replaces only the two flat outer hangar cheeks with bevelled, plated shoulders and faceted lower lips.
 # It is never a small A16 (the barge's long body, gun rows and stern pods) or a stretched A17 (the cruiser's boxy head).
 # +X bow, +Y port, +Z up. Grabber tips about x = +8.25, engine exits about x = -8.2. Flat belly z = -1.05, deck 1.0.
 CODE = 'corsair_A20'
@@ -28,8 +29,8 @@ CONCEPT_SHEET = 'contrib/muse/design/class_family_corsair_2026_11/corsair_A20_sh
 CONCEPT_VIEWS = dict(top=dict(box=(180, 30, 1800, 520), largest=True, flip=False), side=dict(box=(120, 530, 1850, 830), largest=True, flip=False))
 CROPS = [('bow (the bow block, intakes, port shoulder)', (40, 520, 980, 1240)), ('the bow face and the port hangar mouth', (820, 560, 1440, 1060)),
          ('stern (the bell row and the aft deck)', (1060, 60, 1920, 620))]
-SHEET = dict(version=3, round='issue 688: open intakes and angular flanks (R244)', date='2026-11-14', blend='board\\issue-688\\shots',
-             before='Before R244', before_note='The existing A20 on main, with capped intake housings and straight slab flanks; captured at the same cameras and light.',
+SHEET = dict(version=3, round='issue 861: faceted hangar cheeks (R283)', date='2026-11-16', blend='board_b\\issue-861\\shots',
+             before='Before R283', before_note='The merged R244 A20, with flat outer walls beside the hangar mouths; captured at the same cameras and light.',
              during='While designing, the check also caught (and the design fixed): see the fit report\'s fix column.')
 
 import math, random
@@ -44,6 +45,41 @@ LINER = 0.3          # the dark liner slab on the back wall
 MZ0, MZ1 = -0.92, 0.8                                   # mouth floor and ceiling: 0.84 of the face's height (issue 651's taller mouths)
 CHEEK = {1: 0.12, -1: 0.16}                             # the outer wall of each mouth (port thin, starboard under its bricks)
 MOUTHS = [('H1', 1), ('H2', -1)]                        # (id, side): H1 the port mouth (the fighter noses out), H2 starboard
+
+
+def cheek_rings(side):
+    """R283: a deep shoulder bevel and three lower facets outside the unchanged bay liner.
+
+    The face flares down and outward from the old deck edge. Its fore ring is
+    inset, and its aft ring tapers back into the existing hull and armour.
+    """
+    inner = HB - CHEEK[side]
+    rings = []
+    for x, flare, top, bottom in ((X_MF, 0.80, DECK - 0.06, MZ0),
+                                  (X_MF - 0.22, 1.0, DECK, MZ0 - 0.04),
+                                  (X_MB + 0.42, 0.88, DECK, MZ0 - 0.04),
+                                  (X_MB - 0.05, 0.12, DECK, MZ0 - 0.04)):
+        profile = [(inner, top), (HB - 0.02, top),
+                   (HB + 0.64 * flare, -0.16), (HB + 0.62 * flare, -0.50),
+                   (HB + 0.32 * flare, -0.84), (HB + 0.10 * flare, bottom),
+                   (inner, bottom)]
+        rings.append([(x, side * y, z) for y, z in profile])
+    return rings
+
+
+def cheek_width(x, z, side):
+    """Read the same cheek sections for the two existing flank lamps."""
+    rings = cheek_rings(side)
+    for front, back in zip(rings, rings[1:]):
+        if back[0][0] <= x <= front[0][0]:
+            t = (front[0][0] - x) / (front[0][0] - back[0][0])
+            section = [(abs(a[1]) * (1 - t) + abs(b[1]) * t, a[2] * (1 - t) + b[2] * t)
+                       for a, b in zip(front, back)]
+            for a, b in zip(section[1:5], section[2:6]):
+                if b[1] <= z <= a[1]:
+                    f = (a[1] - z) / (a[1] - b[1])
+                    return a[0] * (1 - f) + b[0] * f
+    return HB
 def mouth_y(side):
     # (inner y, outer y, centre y, width) of a mouth: port 1.72 to 3.08 (1.36 wide), starboard 1.72 to 3.04 (1.32)
     yi, yo = side * HC, side * (HB - CHEEK[side])
@@ -91,14 +127,14 @@ def build(K):
     HP = _k.HP
     sy = lambda x, side: _k.sec_at(HULL, x)[1 if side > 0 else 2] * side  # noqa: E731
 
-    def skin_y(x, side, z):
+    def skin_y(x, side, z, cheeks=True):
         """Actual faceted skin, including starboard armour, for fittings and hard points."""
         def width(section):
             _, wp, ws, zb, zt, ct, cb = section[:7]
             ct = min(ct, (wp + ws) * 0.49, (zt - zb) * 0.49)
             cb = min(cb, (wp + ws) * 0.49, (zt - zb) * 0.49)
             return (wp if side > 0 else ws) - max(0, z - (zt - ct), zb + cb - z)
-        w = width(_k.sec_at(HULL, x)) if x < X_MB else HB
+        w = width(_k.sec_at(HULL, x)) if x < X_MB else (cheek_width(x, z, side) if cheeks else HB)
         if side < 0:
             for brick in BRICKS:
                 if brick[1] <= x <= brick[0]:
@@ -152,11 +188,27 @@ def build(K):
                                                                       (X_MB - 0.05, span[0], span[1], MZ1, DECK, 0.3, 0.0)],
                                            'soot2', plates=dict(PL, seed=23 + (side < 0) * 10, faces=fs([0, 1, 7], [1, 2, 3]), inv='hangar_plates')),
                'dark soot', note='the roof of the %s mouth, the deck over it' % sd)
-        ch = (HB, -(HB - CHEEK[side])) if side > 0 else (-(HB - CHEEK[side]), HB)
-        K.mass('Hangar cheek, %s' % sd, K.loft('A20_cheek_%s' % hid, [(X_MF, ch[0], ch[1], MZ0 - 0.02, MZ1 + 0.02, 0.0, 0.0),
-                                                                    (X_MB - 0.05, ch[0], ch[1], MZ0 - 0.02, MZ1 + 0.02, 0.0, 0.0)],
-                                         'iron', plates=dict(PL, seed=24 + (side < 0) * 10, faces=fs([7], [3]), inv='hangar_plates', size=(0.25, 0.5))),
-               'bare iron, patched', note='the outer wall of the %s mouth' % sd)
+    def build_cheek(hid, side):
+        sd = 'port' if side > 0 else 'starboard'
+        rings = cheek_rings(side)
+        K.mass('Hangar cheek, %s' % sd, K.loft_rings('A20_cheek_%s' % hid, rings, 'iron',
+               plates=dict(PL, seed=24 + (side < 0) * 10, faces=[1, 2, 3, 4], inv='hangar_plates', size=(0.25, 0.5))),
+               'bare iron, patched', note='R283: broad deck-to-flank bevel, stepped angled plates, inset fore rim and three chamfered lower lip facets outside the unchanged %s bay' % sd)
+        # Three armour courses wrap the fore corner. Each one is a solid strap
+        # following the actual bevel, with an offset joint and a thickness step.
+        for i, (xf, xa) in enumerate(((X_MF + 0.025, X_MF - 0.14),
+                                      (X_MF - 0.24, X_MF - 0.45),
+                                      (X_MF - 0.76, X_MF - 0.94))):
+            profile = []
+            for y, z in ((HB - 0.055, DECK - 0.015), (HB + 0.64, -0.16),
+                         (HB + 0.62, -0.50), (HB + 0.32, -0.84), (HB + 0.10, MZ0 - 0.04)):
+                # Tuck the forward course onto the inset nose ring.
+                scale = 0.80 if i == 0 else 1.0
+                profile.append((xf, side * (HB + (y - HB) * scale), z))
+            K.strip('A20_cheek_%s_wrap%d' % (hid, i), profile, w=abs(xf - xa), t=0.045 + i * 0.012,
+                    normals=[(0, side * 0.85, 0.53), (0, side, 0.1), (0, side, -0.25),
+                             (0, side * 0.6, -0.8), (0, side * 0.3, -0.95)],
+                    m=('steel', 'soot2', 'iron')[i])
     K.mark('hangar_block', 'tier', ['face', 'roof', 'opening'])
     # Uneven salvage armour wedges with bevelled shoulders, lower undercuts and offset ledges (R244).
     for i, brick in enumerate(BRICKS):
@@ -205,11 +257,20 @@ def build(K):
         K.keepouts.append((Vector(p_), 0.5))
     K.keepouts.append((Vector((1.45, 1.15, DECK)), 0.95))           # the spare bell
     for (x, y, z, n) in flank_lamps:
-        K.keepouts.append((Vector((x, y, z)), 0.15))
+        # Keep every existing hull and wedge plate unchanged. Only the new cheeks
+        # need the lamps' new mount clearances, after the original plating pass.
+        old_y = skin_y(x, n, z, cheeks=False) if x < X_MF else y
+        K.keepouts.append((Vector((x, old_y, z)), 0.15))
     for side in (1, -1):                                             # the bow grabbers' shoulders and the grapples under the belly
         K.keepouts.append((Vector((6.8, 0.68 * side, -1.05)), 0.45))
         for x in (-6.85, -6.0, -5.2):
             K.keepouts.append((Vector((x, 2.1 * side, BELLY)), 0.55))
+    K.finish()
+    for (x, y, z, n) in flank_lamps:
+        if X_MB <= x <= X_MF:
+            K.keepouts.append((Vector((x, y, z)), 0.15))
+    for hid, side in MOUTHS:
+        build_cheek(hid, side)
     K.finish()
 
     # ---------------- the hangar mouths: the dressing that makes each recess read as a launch bay with depth ----------------
@@ -361,6 +422,8 @@ def build(K):
                 note='launch forward out of the %s mouth, on its floor at the lip (the recipe: a hard point sits on the mesh, the mouth itself is open air)' % hid, dir=(1, 0, 0))
 
     # ---------- changed from the picture (designer's decisions, R207, R233) ----------
+    K.change('Issue 861 (R283): both outer hangar cheeks flare down and outward from the deck in a broad bevel, with an inset fore ring, irregular stepped plates, three wrapping armour courses and a faceted lower lip; the two nearby lamps follow the new skin',
+             'Ryan, Nov 16: there is still a flat side wall near the carrier entrance/exit; his marked concept shows a large shoulder bevel, layered angled plates and a stepped lower corner. The opening dimensions, dark liner, craft, insides, weapons, other hull masses and Carrier class length 16.5 stay as on the merged R244 sheet')
     K.change('Issue 688 (R244): the two bow intakes are blind wells through the bow housing, with the kit\'s rolled lips, lip bolts, three inset rings and dark rear baffles exposed; the redundant smooth liners are removed and the bow loot locker sits behind the wells',
              'Ryan, Nov 14: the front circles should be open holes with detail, never just circles. The solid bow block had capped both kit tubes immediately behind their lips. They remain fuel and dust intakes, not extra weapons (data.js c_hulk has only the two turrets)')
     K.change('Issue 688 (R244): the slab has 0.7 to 0.92 upper chamfers, lower chines, diagonal shoulders into a 0.3-per-side recessed waist, and four tapered starboard armour wedges with offset ledges; flank fittings and hard points follow the new skin',
@@ -390,6 +453,7 @@ def build(K):
              'the Board on round 1 (Nov 13): the faces read as big smooth grey planes with a few greebles; the concept is scrap brick, plates over plates on every face (R196, R197). Kit: the sheet kit\'s courses plating (kit.py, opt-in, issue 633)')
 
     K.fix('SENSOR: T1 aiming through the dishes D1 and D2, T2 through the antenna AN1', 'R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): both turrets lifted onto barbettes (rings at deck height plus 1.05 fore and 0.92 aft), AN1 moved off the aft deck tier onto the deck beside it and cut from 1.3 to 1.0 tall')
+    K.fix('R283 design check: port cheek wrap touching the L0 lamp', 'The third wrapping course sits aft of L0, with a clear gap; L0 and L3 mount on the new cheek skin. No sensor, weapon, bay or inside moves')
     K.change('Insides: two hangar deck levels behind each mouth, loot holds in the bow and in the core between the mouths, a kennel deck, the core between the hangar decks, machinery and the engine room aft',
              'designs.md; R209, R215')
     K.open_item('Belly detail between the bow grabbers and the stern grapples is designed here; the picture does not show the underside')

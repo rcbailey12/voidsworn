@@ -1,4 +1,4 @@
-# corsair_A20 fit report (issue 688: open intakes and angular flanks (R244); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
+# corsair_A20 fit report (issue 861: faceted hangar cheeks (R283); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
 
 Made by `tools/blender/build_sheets/clash.py` on the built blockout (it runs inside every `build.py ... render` and on its own
 with `build.py <code> <out> fit`). What it tests, on every part of every type:
@@ -28,24 +28,25 @@ core.js inArc), `rest_yaw`, `rest_pitch`; its turning meshes `<id>_turn_<materia
 also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on the hull. Casemates are single fixed parts
 (`turret=0`, `gun_fixed=1`).
 
-## Before R244, checked (before)
+## Before R283, checked (before)
 
-The existing A20 on main, with capped intake housings and straight slab flanks; captured at the same cameras and light. Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0.
+The merged R244 A20, with flat outer walls beside the hangar mouths; captured at the same cameras and light. Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0.
 
 | Check | Part | Against | Hits | What |
 |---|---|---|---:|---|
 
-## How issue 688: open intakes and angular flanks (R244) fixed them
+## How issue 861: faceted hangar cheeks (R283) fixed them
 
 | Clash (before) | Fix |
 |---|---|
 | SENSOR: T1 aiming through the dishes D1 and D2, T2 through the antenna AN1 | R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): both turrets lifted onto barbettes (rings at deck height plus 1.05 fore and 0.92 aft), AN1 moved off the aft deck tier onto the deck beside it and cut from 1.3 to 1.0 tall |
+| R283 design check: port cheek wrap touching the L0 lamp | The third wrapping course sits aft of L0, with a clear gap; L0 and L3 mount on the new cheek skin. No sensor, weapon, bay or inside moves |
 
 While designing, the check also caught (and the design fixed): see the fit report's fix column.
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 368 objects, 44 parts, 1214 close pairs, 302 rays, 2 guns, 18 sensor pairs, 2 turrets swept, 9 cones, 17 apertures, 0 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 374 objects, 44 parts, 1172 close pairs, 302 rays, 2 guns, 18 sensor pairs, 2 turrets swept, 9 cones, 17 apertures, 0 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 
