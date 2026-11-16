@@ -121,11 +121,17 @@ job has finished. Why: a merged change left existing profiles with Heat closed (
 ended (LOOP, Nov 12). Set: Board (R129); Ryan's project instructions. Ids: R129a, loop-03.
 
 2.4 **The job board is GitHub issues with owner labels, each opening with the fixed block** (Owner, Brief, Deliver to, Branch,
-Effort or Models, Done when; ship builds add Route per part, Inside, Paint stack, Budget, R214). Agents deliver on
+Effort or Models, Done when; optional `Base: <branch>`; ship builds add Route per part, Inside, Paint stack, Budget, R214). Agents deliver on
 `codex/`, `muse/`, `work/` or `opus/issue-N` branches; nobody pushes to main except LOOP.md and FINDINGS. Why: any agent can
 pick up a job without asking, and main stays reviewed. Set: Ryan, Nov 2 and 4 (R75, R102). Ids: agents-04, agents-05,
 agents-09. A run brief for a PC job goes into the issue body (under the fixed block, marked as the job now): the runner
 builds the task from the body only and never reads comments (R281).
+The PC runner merges `origin/<branch>` from the optional Base line and commits that merge before starting the agent;
+a conflict stops before the agent with the checkout kept. Briefs name Base instead of asking an agent to merge while
+also forbidding commits. The runner sets the running label and one status comment per job branch (edited in place on
+retries and at the end), naming seat, machine, lane folder, branch, start time, ceiling, last commit and how to resume.
+It clears running at the end; a GitHub reporting failure is logged and never fails the job. Why: merge-left partials
+on 800, 815 and 44, and jobs with no visible running seat. Set: Ryan R270, issue 846 (788 step 3).
 
 2.5 **Never write a GitHub closing word before an issue number in a commit; use `gh api` REST, never GraphQL.** Why: commit
 1429ca3 closed PR 320 by accident; GraphQL is blocked here (ends when it is unblocked). Set: Board. Ids: loop-15, loop-20.

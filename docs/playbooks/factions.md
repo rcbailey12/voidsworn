@@ -181,6 +181,7 @@ violet-white): the green stays, as the light of an eclipse.
   dark decks, the core's light. Breach anchors sit on the shade's bands.
 - **Never:** a disc or cone on a vertical spindle (the spinning top), a spire through the centre of a disc, bone, ribs,
   skulls, green pooled in hollows, flame.
+- **The E14 exception (R256, PR 804):** E14 is the accepted flare redesign, its ring standing upright around one fixed lance through the centre.
 
 ## The Chorus (`chorus`)
 
