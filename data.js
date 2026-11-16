@@ -68,7 +68,7 @@ const CLS_NAME={'Battle-barge':'War-barge','Bio-titan':'Colossus','Ark':'Lattice
 // pool x2 and regen x1.25 put the share of damage shields stop back at main's level (balance pack in the issue 371 pull request).
 const SHIELD_POOL_MULT=2;
 const SHIELD_REGEN_MULT=1.25;
-const SHIELD_POOL_FAC={ithar:.8}; // the Glasswrights' prism refills a whole pool, so their pool is smaller (x1.6): glass, not a wall
+const SHIELD_POOL_FAC={ithar:.5}; // the Glasswrights' prism refills the whole pool, so their pool is one old facing's worth (x1): glass, not a wall
 const SHIELD_ROUTE_LOSS=.3;
 const SHIELD_ROUTE_BOOST=.2;
 const SHIELD_COV_MAX=.95;
