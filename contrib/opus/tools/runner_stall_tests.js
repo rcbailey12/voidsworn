@@ -139,7 +139,7 @@ for (const busy of [false, true]) {
   const run = spawnSync('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(pc, 'run_timeout.ps1')], {
     cwd: folder, env: { ...process.env, TMO_ARGS: `4 "${process.execPath}" "${fake}"`,
       TMO_REPO: path.join(root, 'repo'), TMO_OUT: folder, TMO_LOG: log, TMO_ERR_LOG: '',
-      STALL_MIN: '0.02', PC_RUNNER_TEST: '1', PC_TEST_POLL_MS: '100', PC_TEST_TIMEOUT_LOG: path.join(root, 'timeouts.log') },
+      STALL_MIN: '0.02', PC_RUNNER_TEST: '1', PC_TEST_POLL_MS: '100', PC_TEST_SCAN_S: '0.1', PC_TEST_TIMEOUT_LOG: path.join(root, 'timeouts.log') },
     stdio: ['ignore', fd, fd], windowsHide: true, timeout: 20000
   });
   fs.closeSync(fd);
@@ -155,7 +155,7 @@ const ordinary = path.join(root, 'ordinary.js');
 fs.writeFileSync(ordinary, 'setTimeout(()=>process.exit(7),500);');
 const normal = spawnSync('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(pc, 'run_timeout.ps1')], {
   env: { ...process.env, TMO_ARGS: `4 "${process.execPath}" "${ordinary}"`, TMO_REPO: '', TMO_OUT: '', TMO_LOG: '', TMO_ERR_LOG: '',
-    STALL_MIN: '0.001', PC_RUNNER_TEST: '1', PC_TEST_POLL_MS: '100', PC_TEST_TIMEOUT_LOG: path.join(root, 'timeouts.log') },
+    STALL_MIN: '0.001', PC_RUNNER_TEST: '1', PC_TEST_POLL_MS: '100', PC_TEST_SCAN_S: '0.1', PC_TEST_TIMEOUT_LOG: path.join(root, 'timeouts.log') },
   encoding: 'utf8', windowsHide: true, timeout: 15000
 });
 assert.equal(normal.status, 7, normal.stdout + normal.stderr);

@@ -113,6 +113,9 @@ while ((-not $noWait) -and (Test-RyanPlaying) -and ((Get-Date) - $w0).TotalHours
 if ($said) { "$(Get-Date -Format s) RESUME after $([int]((Get-Date) - $w0).TotalMinutes) min: $Exe" | Out-File $log -Append -Encoding utf8 }
 $timer = [Diagnostics.Stopwatch]::StartNew()
 $lastProgress = 0.0
+$scanEvery = 60.0
+if ($env:PC_RUNNER_TEST -eq '1' -and $env:PC_TEST_SCAN_S) { $scanEvery = [double]$env:PC_TEST_SCAN_S }
+$nextScan = $scanEvery
 # Child commands may use tmo.bat too. Their own timeout must never overwrite this agent's resume note.
 $env:TMO_REPO = ''; $env:TMO_OUT = ''; $env:TMO_LOG = ''; $env:TMO_ERR_LOG = ''
 try {
@@ -130,9 +133,14 @@ while ($true) {
   $remaining = [Math]::Max(1, [Math]::Min($poll, ($Seconds - $timer.Elapsed.TotalSeconds) * 1000))
   if ($p.WaitForExit([int]$remaining)) { $p.WaitForExit(); exit $p.ExitCode }
   if ($watch) {
-    $after = Get-RunProgress $watchRepo $logs
-    if (Test-RunProgress $before $after) { $lastProgress = $timer.Elapsed.TotalSeconds }
-    $before = $after
+    # Scan the checkout once a minute, not every poll: a full walk of a big checkout every 5 s would load Ryan's PC for hours,
+    # and a 30 minute stall window does not need finer steps (Board review, Nov 15).
+    if ($timer.Elapsed.TotalSeconds -ge $nextScan) {
+      $after = Get-RunProgress $watchRepo $logs
+      if (Test-RunProgress $before $after) { $lastProgress = $timer.Elapsed.TotalSeconds }
+      $before = $after
+      $nextScan = $timer.Elapsed.TotalSeconds + $scanEvery
+    }
     $reason = Get-StopReason $timer.Elapsed.TotalSeconds ($timer.Elapsed.TotalSeconds - $lastProgress) $Seconds $stall
   } else {
     $reason = if ($timer.Elapsed.TotalSeconds -ge $Seconds) { 'CEILING' } else { '' }
