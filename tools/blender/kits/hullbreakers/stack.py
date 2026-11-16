@@ -15,6 +15,7 @@
 # Where each colour zone sits on a ship is the build sheet's decision (its materials soot, rust, iron, blood, pale, violet, ...);
 # this file says what each zone is made of.
 import os, sys, json, math
+from copy import deepcopy
 import numpy as np
 import bpy
 
@@ -169,6 +170,39 @@ TROPHY = dict(cell=(.130, .085, .060), share=.32, cluster=(2.2, .45, 1.55), warp
 # gain: the later layers (grime, rust, ambient occlusion, side darkening) take a plate's value down after the patchwork; at gain 1
 # the sandbox render of A20 showed the then pale patches at a median value of 141 against the concept's 172 (contrib/opus/tools/
 # issue726/measure.py), so the trophy tones are painted lighter by this factor (linear albedo) to read as the concept's.
+
+# Issue 853: the capital pattern made tiny tiles on KB1CC and its edge wear washed
+# the grey trophy plates pale. The build contract supplies the sheet's LENGTH.
+# All larger ships retain the original dictionaries, including the A16 fixture.
+CRAFT_SIZE = dict(max_length=1.6, patches=3.0, trophies=1.5, marks=2.0,
+                  trophy_gain=1.0, wear=.55, grey_wear=.25)
+_SHIP_LAYERS = deepcopy(LAYERS)
+_SHIP_TROPHY = deepcopy(TROPHY)
+_SHIP_ZONES = deepcopy(ZONES)
+
+
+def configure_size(length=None):
+    """Select craft pattern sizes from the sheet length; reset before every bake."""
+    length = float(bpy.context.scene.get('r209_length_world', 0) if length is None else length)
+    LAYERS.clear(); LAYERS.update(deepcopy(_SHIP_LAYERS))
+    TROPHY.clear(); TROPHY.update(deepcopy(_SHIP_TROPHY))
+    ZONES.clear(); ZONES.update(deepcopy(_SHIP_ZONES))
+    craft = 0 < length <= CRAFT_SIZE['max_length'] + 1e-6
+    if craft:
+        for key in ('patch_big', 'patch_small', 'patch_over'):
+            LAYERS[key] = tuple(v * CRAFT_SIZE['patches'] for v in LAYERS[key])
+        LAYERS['patch_parts'] = tuple(tuple(v * CRAFT_SIZE['patches'] for v in cell)
+                                     for cell in LAYERS['patch_parts'])
+        TROPHY['cell'] = tuple(v * CRAFT_SIZE['trophies'] for v in TROPHY['cell'])
+        TROPHY['gain'] = CRAFT_SIZE['trophy_gain']
+        for key in ('scuff_size', 'rivet_pitch'):
+            LAYERS[key] *= CRAFT_SIZE['marks']
+        for key in ('mottle_scale', 'rust_blot', 'wear_scale'):
+            LAYERS[key] /= CRAFT_SIZE['marks']
+        LAYERS['wear'] = CRAFT_SIZE['wear']
+        ZONES['pale']['wear'] = CRAFT_SIZE['grey_wear']
+    print('[853] Hullbreaker paint size:', 'craft' if craft else 'ship', 'sheet length', length, flush=True)
+    return craft
 
 
 def panel_nodes(c, col, amount, families=None, cells=None):
@@ -411,6 +445,9 @@ def _tile_noise(n, k, rng):
 def trim_sheet():
     """the faction's trim tiles, each RGBA in 0..1 (alpha is the tile's mask and height): drawn here (own work). Written to the job
     as one trim sheet image, rows top to bottom in this order."""
+    # The shared bake asks for trim first, after building the sheet and before
+    # masks or materials read LAYERS. Keep size selection inside this faction.
+    configure_size()
     rng = np.random.default_rng(209)
     T = {}
     # rivets: one domed rivet head per tile, a dark ring of grime round it

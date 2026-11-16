@@ -40,6 +40,16 @@ the hull's plate size both ways, patches over joints and over plates, upward fac
 
 ## Squadron craft (issue 793: corsair_KB1CC, the bomber)
 
+Craft paint (issue 853): `stack.py` reads the build contract's `r209_length_world`
+(the sheet's `LENGTH`) when the shared bake requests its trim sheet, before baking
+the masks and materials. At length 1.6 or smaller, `CRAFT_SIZE` enlarges the plain
+patch cells three times, trophy cells 1.5 times, scuffs and rivet pitch twice;
+mottle, rust blooms and wear marks are coarser. Grey trophy plates keep less bare
+edge wear and omit the capital ships' trophy brightening. This lets the accepted
+KB1CC plates read as dark salvaged metal at craft size. Larger ships keep every
+original layer, trophy and zone setting. Selection resets the settings each time,
+so painting a craft cannot carry its settings into a later capital bake.
+
 The craft parts live in `craft.py`, not in `parts.py`: `parts.py` is hashed into the A16 fixture (tools/recipe/sheet_fixture_hash.py),
 so a part added there would mark the fixture stale. The craft's ship file calls `craft.install(HP)` on the kit module it was given;
 that adds the parts below beside the kit's own for that build only, and changes nothing the kit already builds (`rocket_rack` and
