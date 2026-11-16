@@ -43,6 +43,7 @@ also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on t
 | SENSOR: P1 and S1 aiming through the ear dishes D1 and D2 at their forward bearings | R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): the neck turret barbettes raised 0.14 (top 1.78 to 1.92), so the lowest line of fire of P1 and S1 passes over the ears |
 | SENSOR: T1 (flak, all round) aiming through the saddle antennas AN1 and AN2 | R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): T1 lifted onto a 0.55 barbette and the antennas cut (1.3 to 0.75, 1.0 to 0.6 tall), so the crest gun fires over them |
 | Crest and belly turret housings sunk in the crest and the belly | turrets sit on their rings on block tops and the belly band, plates cleared under each mount |
+| Rocket pod reads as a narrow plinth above a sunken foredeck, with gaps to the next blocks | R289: the broad fore block rises to 1.2 and overlaps the neck and ramp; the ramp overlaps the mid block, with the insides kept at their fitted positions |
 
 While designing round 3 the check also caught (and the design fixed) plates swallowing slits and lamps, casemate breeches pushed
 into the hull, a pipe through a pod, chains through casemates, dishes too low on their posts, and, once turrets turned (R219),
@@ -51,7 +52,7 @@ turret's swept circle (moved out).
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 370 objects, 54 parts, 938 close pairs, 451 rays, 6 guns, 72 sensor pairs, 6 turrets swept, 10 cones, 28 apertures, 2 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 371 objects, 54 parts, 936 close pairs, 451 rays, 6 guns, 72 sensor pairs, 6 turrets swept, 10 cones, 28 apertures, 2 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 

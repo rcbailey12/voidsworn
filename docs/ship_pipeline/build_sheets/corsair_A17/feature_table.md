@@ -33,17 +33,17 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | L to B hull | 3.14 |
 | L to H hull | 4.68 |
 | prow overhang | 1.06 |
-| outline iou percent | 73.8 |
-| mass outline iou percent | 75.5 |
+| outline iou percent | 63.2 |
+| mass outline iou percent | 60.6 |
 | PASS | True |
 
 ## Feature table (every gun, launcher, engine, dish, claw, chain and major fitting)
 
 | ID | Fitting | Count | Station % | Offset | Height | Points | Game slot | Source | Note |
 |---|---|---:|---:|---:|---:|---|---|---|---|
-| SL1 | vision slit 0.6 x 0.12 | 1 | 46.9 | 0.65 | 1.02 | - | - | picture | slit in the ramp block slope |
+| SL1 | vision slit 0.6 x 0.12 | 1 | 48.4 | 1.75 | 0.92 | - | - | picture | slit on the raised ramp block flank, clear of the joined fore block (R289) |
 | HS1 | square hatch 0.4 | 1 | 80.0 | 2.15 | 0.98 | - | - | picture | hatch on the aft block flank |
-| SL2 | vision slit 0.6 x 0.12 | 1 | 46.9 | -0.75 | 1.02 | - | - | picture | slit in the ramp block slope |
+| SL2 | vision slit 0.6 x 0.12 | 1 | 48.4 | -1.85 | 0.92 | - | - | picture | slit on the raised ramp block flank, clear of the joined fore block (R289) |
 | HS2 | square hatch 0.4 | 1 | 80.0 | -2.05 | 0.98 | - | - | picture | hatch on the aft block flank |
 | I1 | scoop drum with a grille, 0.8 across, 2.1 deep | 1 | 6.6 | 1.88 | -0.42 | forward | - | picture | port scoop drum on the head flank, the larger |
 | D1 | listening dish, 1.6 across | 1 | 17.6 | 2.40 | 0.30 | 40 deg off the bow to port, +8 elev | - | picture | port ear, a listening dish on the head's shoulder, turned forward and outward |
@@ -128,8 +128,8 @@ No gun rests facing aft: every gun row above points forward or out to the side (
 | Flank block 4 starboard | 59.8 to 70.4 | -2.63 to -1.95 | -0.72 to 0.30 | patched plate | armour block on the flank tier |
 | Flank block 5 starboard | 71.8 to 81.0 | -2.59 to -1.95 | -0.72 to 0.27 | patched plate | armour block on the flank tier |
 | U1 neck block | 22.7 to 33.0 | -1.50 to 1.50 | 0.40 to 1.12 | soot with dried-blood patches | stepped top block, top 1.12, undercut base |
-| U2 fore block | 34.0 to 44.3 | -1.77 to 1.93 | 0.40 to 0.90 | soot with dried-blood patches | stepped top block, top 0.90, undercut base |
-| U3 ramp block | 45.0 to 51.2 | -1.85 to 1.75 | 0.40 to 1.20 | soot with dried-blood patches | stepped top block, top 1.20, undercut base |
+| U2 fore block | 32.3 to 46.0 | -1.87 to 2.03 | 0.40 to 1.20 | soot with dried-blood patches | stepped top block, top 1.20, undercut base |
+| U3 ramp block | 45.0 to 52.9 | -1.85 to 1.75 | 0.40 to 1.20 | soot with dried-blood patches | stepped top block, top 1.20, undercut base |
 | U4 mid block | 52.1 to 62.8 | -1.93 to 2.13 | 0.40 to 1.30 | soot with dried-blood patches | stepped top block, top 1.30, undercut base |
 | U5 saddle block | 63.7 to 71.1 | -1.82 to 1.58 | 0.40 to 1.40 | soot with dried-blood patches | stepped top block, top 1.40, undercut base |
 | U6 aft block | 72.0 to 88.2 | -2.05 to 2.15 | 0.40 to 1.52 | soot with dried-blood patches | stepped top block, top 1.52, undercut base |
@@ -190,7 +190,7 @@ Full interiors throughout the hull (R215), hidden until a piece breaks. Deaths b
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 370 objects, 54 parts, 938 close pairs, 451 rays, 6 guns, 72 sensor pairs, 6 turrets swept, 10 cones, 28 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 371 objects, 54 parts, 936 close pairs, 451 rays, 6 guns, 72 sensor pairs, 6 turrets swept, 10 cones, 28 apertures, 2 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 
@@ -218,6 +218,7 @@ Written from the concept before modelling; ticked per blob-sweep cell (present, 
 - **Aft seam B-2 moved forward to the weld between the saddle and aft blocks, kinked round the antennas, T1 and the stern thrusters.** R226 (RULEBOOK 5.17): a machine never crosses a seam; at -4.75 the seam cut T1, Q3 and Q4 (A17 build, issue 532).
 - **Mid turrets P2 and S2 rest at 35 degrees (were 25).** their data.js arc is 30 to 150; a rest outside it failed the export check (A17 build, issue 532).
 - **Rooms in the top blocks kept under their roofs; the top deck lowered to 0.3.** about 70 inside triangles sat outside the intact plating, above the low top blocks and in the gaps between them (issue 532 note from PR 608).
+- **Rocket fore block raised and widened, joining the neck and ramp; the ramp extends into the mid block.** R289 (issue 876): restore the concept's continuous raised spine under the pod. Outer blocks, red roof plates and two ramp slits follow the raised support; the fitted insides, rack plinth, launcher and every weapon stay in place.
 
 ## Designed here, not shown in the picture
 
