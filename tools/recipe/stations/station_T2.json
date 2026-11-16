@@ -1,0 +1,24 @@
+{
+  "asset": "station_T2",
+  "kind": "fleet station",
+  "faction": "hegemony",
+  "state": "damaged, abandoned",
+  "kit": "tools/blender/kits/hegemony_station",
+  "design": "tools/blender/kits/hegemony_station/design.py",
+  "concept": "contrib/muse/design/station_concept_2026_11/station_T2_beauty.jpg",
+  "concept_plan": "contrib/muse/design/station_concept_2026_11/station_T2_scale.jpg",
+  "design_pack": "contrib/muse/design/station_pack_2026_11/pack.md",
+  "sheet": "docs/shots/look_bench/station",
+  "status": "build sheet awaiting Board review",
+  "recipe_stages": {
+    "1": "accepted T2 beauty and plan named above",
+    "2": "pending: accepted concept AI shape reference; CPU-only Blender run",
+    "3": "sheet design is authority, never trace the sheet again",
+    "4": "draft station kit and module insides; footprint and 49 motion poses checked; static fit and production seam export pending",
+    "5": "pending: production geometry-mask and trim bake after sheet approval",
+    "6": "review GLB cost in cost.json; CPU sheets at real camera170 FOV and low camera beside real cruiser; station-map scene gate pending GPU slot",
+    "7": "review GLB only; no install before gate and Ryan look"
+  },
+  "install": false,
+  "notes": "A station is not a data.js ship. Do not pass this entry to the ship launchers or invent weapon, engine or RCS hard points. This review entry records the same ship-recipe gates at station scale; it does not claim that the ship export contract already supports stations. T1 is a later state of this kit; refinery T3 is separate."
+}
