@@ -119,7 +119,7 @@ function makeUnit(side, tpl, opts={}){
   if(opts.ship) s=derive(opts.ship);
   else {
     const sc=opts.scale||1;
-    s={maxHp:Math.round(t.hp*sc*(opts.elite?1.1:1)), shMax:Math.round(t.sh*sc*SHIELD_POOL_MULT), regen:Math.round(t.rg*sc*SHIELD_REGEN_MULT), armor:t.ar, speed:t.sp, turns:t.tn, ev:t.ev,
+    s={maxHp:Math.round(t.hp*sc*(opts.elite?1.1:1)), shMax:Math.round(t.sh*sc*SHIELD_POOL_MULT*(SHIELD_POOL_FAC[t.fac]||1)), regen:Math.round(t.rg*sc*SHIELD_REGEN_MULT), armor:t.ar, speed:t.sp, turns:t.tn, ev:t.ev,
       aim:(opts.elite?6:0), crit:opts.elite?5:0, dmg:opts.dmg||1, fx:opts.fx||{}, hangar:t.hangar||0,
       hullRegen:Math.round((t.regen||0)*sc), weapons:nameWeapons(t.fac,t.w.map(([id,arc])=>mkWeapon(id,arc,opts.fx||{})))};
   }
