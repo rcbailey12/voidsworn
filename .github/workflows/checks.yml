@@ -109,9 +109,9 @@ jobs:
   # The load step is the gate: when a script or scene does not load, the job fails there in seconds and names the file,
   # and the steps after it do not run (they would only repeat the same error, some by waiting out their time limits).
   # When everything loads, the list step and the bot battle each run even if the other fails. Every step has its own
-  # time limit: load 120 s, import 300 s, the list 780 s, the bot battle 360 s and the fixture 2 minutes, 28 minutes in all
-  # before setup and the Godot download, so the job can still be cut off (shown as "cancelled") by the 30 minute limit
-  # when every step runs to its cap, as on the broken test commit 138ff38; the load gate makes that rare (audit 706, 9c).
+  # time limit. Step caps total 29 minutes: checkout 1, merge 1, Node 1, download 2, load 3, import 4, list 9, bot 6,
+  # fixture 2. This leaves a minute for job overhead under the 30 minute limit, including timeout kill grace within
+  # each step. Three bot runs would not fit at their real caps, so rotate one seed each UTC week (issue 732).
   godot-game:
     name: Godot game checks
     runs-on: ubuntu-latest
@@ -120,11 +120,13 @@ jobs:
       XDG_DATA_HOME: ${{ github.workspace }}/.godot_user   # user:// for every Godot run here; never a real profile
     steps:
       - uses: actions/checkout@v4
+        timeout-minutes: 1
         with:
           fetch-depth: 0
       # Test what would land: main merged into the branch. If they conflict, the checks run on the branch alone and say so
       # (GitHub will not merge a conflicting pull request anyway; merging main into the branch and pushing runs them again).
       - name: Merge main in (test the branch as it would land)
+        timeout-minutes: 1
         if: github.ref != 'refs/heads/main'
         run: |
           git config user.name "checks"; git config user.email "checks@users.noreply.github.com"
@@ -135,10 +137,12 @@ jobs:
             echo "::warning::main could not be merged into this branch (a conflict), so these checks ran on the branch alone. Merge main into the branch and push again."
           fi
       - uses: actions/setup-node@v4
+        timeout-minutes: 1
         with:
           node-version: 22
       - name: Get Godot 4.7.2 (headless)
         id: godot
+        timeout-minutes: 2
         run: |
           curl -sSL --retry 3 --retry-all-errors -o godot.zip https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
           unzip -q godot.zip -d "$RUNNER_TEMP/godot"
@@ -147,6 +151,7 @@ jobs:
       # needed: no script or scene preloads a texture or sound. Fails on any file that does not load and on any SCRIPT ERROR.
       - name: Load every Godot script and scene (typo check)
         id: load
+        timeout-minutes: 3
         if: ${{ !cancelled() && steps.godot.outcome == 'success' }}
         run: |
           timeout -k 10 120 "$GODOT" --headless --path godot --script res://tools/ci/load_all.gd 2>&1 | tee "$RUNNER_TEMP/load_all.log"; code=${PIPESTATUS[0]}
@@ -163,29 +168,38 @@ jobs:
       # music, audio, the painted portraits and fx/test results. This step never fails the job by itself.
       - name: Import the game's fonts and textures (headless)
         id: import
+        timeout-minutes: 4
         if: ${{ !cancelled() && steps.load.outcome == 'success' }}
         continue-on-error: true
         run: |
           skip="godot/music godot/audio godot/fx/test godot/portraits/nemesis godot/portraits/alts godot/portraits/sheets godot/portraits/painted"
           for d in $skip; do touch "$d/.gdignore"; done
-          timeout -k 10 300 "$GODOT" --headless --path godot --import > "$RUNNER_TEMP/import.log" 2>&1 || echo "import exit code $?"
+          timeout -k 10 220 "$GODOT" --headless --path godot --import > "$RUNNER_TEMP/import.log" 2>&1 || echo "import exit code $?"
           for d in $skip; do rm -f "$d/.gdignore"; done
           echo "imported files: $(find godot/.godot/imported -type f | wc -l)"
       # (b) every headless check named in godot/tools/ci/godot_checks.txt (the list also proves it names every test script).
-      # run_checks.sh keeps the whole list inside a 780 s budget; a check the budget never reached counts as failed.
+      # 480 s for checks (a healthy run takes about 200 s), with a 500 s backstop for setup and shell overhead.
+      # A check the budget never reached counts as failed, so a short budget cannot hide an unrun check.
       - name: Headless Godot checks from the list (godot/tools/ci/godot_checks.txt)
+        timeout-minutes: 9
         if: ${{ !cancelled() && steps.load.outcome == 'success' }}
         run: |
-          sh godot/tools/ci/run_checks.sh 2>&1 | tee "$RUNNER_TEMP/run_checks.log"; code=${PIPESTATUS[0]}
+          timeout -k 10 500 env GODOT_CHECKS_BUDGET=480 sh godot/tools/ci/run_checks.sh 2>&1 | tee "$RUNNER_TEMP/run_checks.log"; code=${PIPESTATUS[0]}
           { echo '### Godot checks from the list'; echo '```'; grep -E '^  [a-z0-9_]+: |^  list: |^Ran |^PASS|^FAIL' "$RUNNER_TEMP/run_checks.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           exit $code
       # (c) one battle reached from a real campaign start, played to its end by the game's AI on both sides in the real
-      # battle scene. Fails on any script error and on any "unknown event" line. Fixed seed, no retry. The driver stops
-      # itself at the first script error and at 300 s; the 360 s limit here is the backstop.
-      - name: Bot battle from a real campaign start (seed 359)
+      # battle scene. Fails on any script error and on any "unknown event" line. Seeds 359, 360 and 361 rotate on UTC
+      # Mondays, with the week and seed in the summary for replay. No retry. The driver's watchdog stops at 305 s;
+      # the 320 s limit here is the backstop, with 10 s kill grace inside this step's 6 minute cap.
+      - name: Bot battle from a real campaign start (weekly seed rotation)
+        timeout-minutes: 6
         if: ${{ !cancelled() && steps.load.outcome == 'success' }}
         run: |
-          timeout -k 10 360 "$GODOT" --headless --path godot --script res://tools/ci/bot_battle.gd -- --seed 359 2>&1 | tee "$RUNNER_TEMP/bot_battle.log"; code=${PIPESTATUS[0]}
+          now=$(date -u +%s)
+          week=$(date -u -d "@$now" +%G-W%V)
+          seed=$((359 + ((now + 259200) / 604800) % 3))
+          echo "UTC week $week: seed $seed (rotation: 359, 360, 361)" | tee -a "$GITHUB_STEP_SUMMARY"
+          timeout -k 10 320 "$GODOT" --headless --path godot --script res://tools/ci/bot_battle.gd -- --seed "$seed" 2>&1 | tee "$RUNNER_TEMP/bot_battle.log"; code=${PIPESTATUS[0]}
           { echo '### Bot battle'; echo '```'; grep '^bot battle:' "$RUNNER_TEMP/bot_battle.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           if grep -qE 'SCRIPT ERROR|unknown event' "$RUNNER_TEMP/bot_battle.log"; then echo "SCRIPT ERROR or unknown event lines above"; exit 1; fi
           exit $code
