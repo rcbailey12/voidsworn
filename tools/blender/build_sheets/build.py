@@ -1,3 +1,11 @@
+
+# Issue 889: stamp every newly rendered picture at its save step.
+from pathlib import Path as _PicturePath
+import sys
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
+from picture_provenance import stamp_file as _stamp_picture
+
 # Build sheet driver (issue 532). Usage, inside Blender or with the bpy module:
 #   blender -b -P tools/blender/build_sheets/build.py -- <code> <outdir> [render|mesh|blend] [--quick]
 # render: builds the blockout, saves <outdir>/<code>_blockout.blend, renders every view (side, top, underside, bow, stern,
@@ -200,7 +208,7 @@ def render(o, res, path, inside=False, outside=True):
     for ob in K.coll.objects:
         ob.hide_render = not outside
     sc.render.filepath = path
-    bpy.ops.render.render(write_still=True)
+    bpy.ops.render.render(write_still=True); _stamp_picture(sc.render.filepath, 'sheet built', new_render=True)
 
 
 def look_cam(name, az, el, dist, mm, res, target, roll=0.0, shift=(0, 0)):
@@ -243,7 +251,7 @@ def weapon_shots():
             ob.hide_render = True
         sc.camera = o; sc.render.resolution_x, sc.render.resolution_y = (800, 560) if not QUICK else (400, 280)
         sc.render.filepath = os.path.join(OUT, 'weapon_%s.png' % w)
-        bpy.ops.render.render(write_still=True)
+        bpy.ops.render.render(write_still=True); _stamp_picture(sc.render.filepath, 'sheet built', new_render=True)
         for ob in K.coll.objects:
             ob.hide_render = False
         d = dict(W_.get(w, {}))

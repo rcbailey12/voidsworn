@@ -1,4 +1,13 @@
 """Make review sheets and motion loops from unaltered Godot captures."""
+
+# Issue 889: keep source revisions through crops and sheet composition.
+import sys
+from pathlib import Path as _PicturePath
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
+from picture_provenance import Review
+PICTURES = Review('installed in game')
+
 from pathlib import Path
 import sys
 from PIL import Image
@@ -10,20 +19,20 @@ def main():
     for view in ['close', 'battle']:
         sheet = Image.new('RGB', (1920, 720), '#05070d')
         for i, faction in enumerate(factions):
-            with Image.open(out / f'{faction}_{view}.png') as shot:
+            with PICTURES.open(out / f'{faction}_{view}.png') as shot:
                 shot = shot.convert('RGB').resize((640, 360), Image.Resampling.LANCZOS)
                 sheet.paste(shot, ((i % 3) * 640, (i // 3) * 360))
-        sheet.save(out / f'{view}_sheet.jpg', quality=95)
+        PICTURES.save(sheet, out / f'{view}_sheet.jpg', quality=95)
     for faction in factions[:-1]:
         frames = []
         paths = sorted(out.glob(f'{faction}_motion_*.png'))
         if len(paths) != 36:
             raise RuntimeError(f'{faction}: expected 36 motion frames, got {len(paths)}')
         for path in paths:
-            with Image.open(path) as frame:
+            with PICTURES.open(path) as frame:
                 frames.append(frame.convert('RGB').resize((1280, 720), Image.Resampling.LANCZOS))
         # Fixed time steps in the probe, played back at the same 12 fps.
-        frames[0].save(out / f'{faction}_motion.gif', save_all=True,
+        PICTURES.save(frames[0], out / f'{faction}_motion.gif', save_all=True,
                        append_images=frames[1:], duration=83, loop=0, optimize=True)
     names = ['Sunward Crusade', 'Hegemony Navy', 'Ashfall Hullbreakers',
              'The Chorus', 'The Glasswrights', 'Eclipse']

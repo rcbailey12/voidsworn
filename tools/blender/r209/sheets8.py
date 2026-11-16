@@ -1,3 +1,12 @@
+
+# Issue 889: keep source revisions through crops and sheet composition.
+import sys
+from pathlib import Path as _PicturePath
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
+from picture_provenance import Review
+PICTURES = Review('paint proof')
+
 # Issue 209 round 8: the sheets from the PC renders (out8b Ab8 = the second bake, out7 Ab7), the battle captures (out8b fire, round 7's
 # out7b) and the far side stills (out8b, round 7's out7c); out8 (the first bake, bow deck olive) only for the before and after, about 2000 px wide, battle camera first (outside audit pass 2, finding 4). Made from sheets7pc.py.
 # The bow sheet adds the traced deck line, the two fit tries and the battle camera outline (SIL holds outline_thirds.json,
@@ -30,8 +39,8 @@ VIEW = (0, 250, 1024, 800)
 
 def flat(im, bg=BG):
     im = im.convert('RGBA'); b = Image.new('RGBA', im.size, bg + (255,)); b.alpha_composite(im); return b.convert('RGB')
-def P(d, n): return flat(Image.open(os.path.join(d, n)))
-def concept(bg=BG): return flat(Image.open(CONCEPT), bg).resize((1024, 1024), Image.LANCZOS)
+def P(d, n): return flat(PICTURES.open(os.path.join(d, n)))
+def concept(bg=BG): return flat(PICTURES.open(CONCEPT, reference=True), bg).resize((1024, 1024), Image.LANCZOS)
 def head(title, sub, lines=()):
     h = 130 + 34 * len(lines); im = Image.new('RGB', (W, h), BG); d = ImageDraw.Draw(im)
     d.text((28, 18), title, font=F(46, True), fill=FG); d.text((28, 80), sub, font=F(27), fill=DIM)
@@ -49,27 +58,29 @@ def text(lines, size=26, color=DIM):
     im = Image.new('RGB', (W, 20 + (size + 12) * len(lines)), BG); d = ImageDraw.Draw(im)
     for k, t in enumerate(lines): d.text((28, 10 + (size + 12) * k), t, font=F(size), fill=color)
     return im
-def stack(parts, name, q=86):
+def stack(parts, name, q=86, sources=()):
     h = sum(p.height for p in parts); out = Image.new('RGB', (W, h), BG); y = 0
     for p in parts: out.paste(p, ((W - p.width) // 2 if p.width < W else 0, y)); y += p.height
-    out.save(os.path.join(OUT, name), quality=q, optimize=True); print('wrote', name, out.size, flush=True)
+    PICTURES.save(out, os.path.join(OUT, name), sources=sources, quality=q, optimize=True); print('wrote', name, out.size, flush=True)
 def crop1024(im, b): s = im.width / 1024; return im.crop(tuple(int(v * s) for v in b))
 
-C = concept()
-a6, a7 = P(R7 + '/r', 'Ab7_concept_cl.png'), P(R8 + '/r', 'Ab8_concept_cl.png')
-a6s, a7s = P(R7 + '/r', 'Ab7_concept.png'), P(R8 + '/r', 'Ab8_concept.png')
+C = concept(); concept_sources = PICTURES.take_sources()
+a6 = P(R7 + '/r', 'Ab7_concept_cl.png'); older_sources = PICTURES.take_sources()
+a7 = P(R8 + '/r', 'Ab8_concept_cl.png'); newer_sources = PICTURES.take_sources()
+base_sources = concept_sources + older_sources + newer_sources
+a7s = P(R8 + '/r', 'Ab8_concept.png'); studio_sources = PICTURES.take_sources()
 thirds = json.load(open(os.path.join(SIL, 'outline_thirds.json')))['cells']
 whole = json.load(open(os.path.join(SIL, 'silhouette_scores.json')))
 
 # ---- (a) battle distance: both ships in the game at the default camera, true pixel size, then 2x crops and the studio battle camera
 cx, cy = 950, 605
-def gframe(fire): return Image.open(os.path.join(fire, 'raw_after_game', 'frame_00000.jpg')).convert('RGB')
+def gframe(fire): return PICTURES.open(os.path.join(fire, 'raw_after_game', 'frame_00000.jpg')).convert('RGB')
 g7, g8 = gframe(FIRE7), gframe(FIRE)
 one = lambda g: g.crop((cx - 480, cy - 270, cx + 480, cy + 270))                                  # 1:1, true pixel size
 two_ = lambda g: g.crop((cx - 240, cy - 160, cx + 240, cy + 110)).resize((960, 540), Image.LANCZOS)
 top = Image.new('RGB', (W, 560), BG); top.paste(lab(one(g7), 'Ab7 (round 7), game camera 1:1', 26), (20, 10)); top.paste(lab(one(g8), 'Ab8 (round 8), game camera 1:1', 26), (1020, 10))
 top2 = Image.new('RGB', (W, 560), BG); top2.paste(lab(two_(g7), 'Ab7, 2x', 26), (20, 10)); top2.paste(lab(two_(g8), 'Ab8, 2x', 26), (1020, 10))
-gs = Image.open(os.path.join(FIRE, 'stills', 'after_game_fire0_smoke.png')).convert('RGB')
+gs = PICTURES.open(os.path.join(FIRE, 'stills', 'after_game_fire0_smoke.png')).convert('RGB')
 fire2 = Image.new('RGB', (W, 560), BG); fire2.paste(lab(two_(gs), 'Ab8 firing, 2x', 26), (520, 10))
 def bat(d, c):
     b = P(d + '/r', f'{c}_battle.png'); return b, b.resize((800, 520), Image.LANCZOS)
@@ -127,13 +138,13 @@ if os.path.exists(os.path.join(R8A, 'r', 'Ab8_concept_cl.png')):
     a8a = P(R8A + '/r', 'Ab8_concept_cl.png'); bb8 = (0, 420, 420, 640)
     parts.append(text(['The two PC bakes of Ab8 at the concept camera: the first (out8) baked the bow deck olive from a UV overlap; the second (out8b) after the repair.'], 23, FG))
     parts.append(row([lab(crop1024(a8a, bb8), 'Ab8, first bake (out8)', 13), lab(crop1024(a7, bb8), 'Ab8, second bake (out8b), adopted', 13)]))
-stack(parts, 'paint.jpg')
+stack(parts, 'paint.jpg', sources=base_sources + studio_sources)
 
 # ---- (c) hull side close
 hb = (60, 470, 520, 700)
 stack([head('Hull side, close', 'The bow side at the concept camera, where round 6 read as one flat red. 2x of the 1024 frame, then the 4x close-up renders.'),
        row([lab(crop1024(C, hb), 'Concept'), lab(crop1024(a6, hb), 'Ab7')]), row([lab(crop1024(a7, hb), 'Ab8, concept rig'), lab(crop1024(a7s, hb), 'Ab8, studio rig')]),
-       row([lab(P(R7 + '/close', 'Ab7_cas_concept.png'), 'Ab7, 4x render'), lab(P(R8 + '/close', 'Ab8_cas_concept.png'), 'Ab8, 4x render')])], 'hull_side.jpg')
+       row([lab(P(R7 + '/close', 'Ab7_cas_concept.png'), 'Ab7, 4x render'), lab(P(R8 + '/close', 'Ab8_cas_concept.png'), 'Ab8, 4x render')])], 'hull_side.jpg', sources=base_sources + studio_sources)
 
 # ---- (d) the bow
 bb = (0, 330, 640, 740)
@@ -153,8 +164,8 @@ if t1: tab.append('Try 1 (not adopted): bow %s, whole %s, bow edges %s%%, deck e
 sd6, sd7 = P(R7 + '/r', 'Ab7_side.png'), P(R8 + '/r', 'Ab8_side.png')
 sc6, sc7 = P(R7 + '/r', 'Ab7_side_clay.png'), P(R8 + '/r', 'Ab8_side_clay.png')
 sb = (160, 300, 1100, 950)
-th = lambda n: Image.open(os.path.join(SIL, n)).convert('RGB').crop(bb)
-tv = Image.open(TRY).convert('RGB')
+th = lambda n: PICTURES.open(os.path.join(SIL, n)).convert('RGB').crop(bb)
+tv = PICTURES.open(TRY).convert('RGB')
 tryrow = [lab(tv.crop((900 * k, 0, 900 * k + 900, 1440)), t, 26) for k, t in enumerate(('Ab7', 'try 1 (outline only)', 'try 2 = Ab8 (outline + deck line)'))]
 stack([head('The bow', 'Concept camera (paint under the concept rig, then clay), then straight from the side. Bow on the left.',
             ['Bow third 90.3 to %s, whole %s to %s; the bow inner edges did not reach 55 percent (see the README, step 1).' % (t7['bow']['overlap'], t6['whole']['overlap'], t7['whole']['overlap'])]),
@@ -167,13 +178,13 @@ stack([head('The bow', 'Concept camera (paint under the concept rig, then clay),
        text(['Green both, red concept only, yellow model only; white lines split bow, midship and stern (x = +1/6 and -1/6 of the length).'], 23),
        row([lab(th('edges_Ab7.png'), 'Ab7 inner edges'), lab(th('edges_Ab8.png'), 'Ab8 inner edges')]),
        text(['Cyan: the concept\'s edges. Magenta: the model\'s (flat-shaded, so paint does not count). White: both.'], 23),
-       row([Image.open(os.path.join(SIL, 'deckline.png')).convert('RGB')]),
+       row([PICTURES.open(os.path.join(SIL, 'deckline.png')).convert('RGB')]),
        text(['Near deck edge at the concept camera: concept trace (white), Ab7 (yellow), try 1 (orange), Ab8 = try 2 (green).'], 23),
-       text(['The two fit tries, flat-shaded (sandbox): over the concept at its camera, from the side, from above.'], 23), row(tryrow)], 'bow.jpg')
+       text(['The two fit tries, flat-shaded (sandbox): over the concept at its camera, from the side, from above.'], 23), row(tryrow)], 'bow.jpg', sources=base_sources)
 bl = [crop1024(C, bb), crop1024(a7, bb)]
-bl[0].save(os.path.join(OUT, 'bow_blink.gif'), save_all=True, append_images=[bl[1]], duration=700, loop=0); print('wrote bow_blink.gif')
+PICTURES.save(bl[0], os.path.join(OUT, 'bow_blink.gif'), sources=concept_sources + newer_sources, save_all=True, append_images=[bl[1]], duration=700, loop=0); print('wrote bow_blink.gif')
 if os.path.exists(os.path.join(SIL, 'battle_game_Ab8.png')):
-    bm = [Image.open(os.path.join(SIL, f'battle_{c}_{n}.png')).convert('RGB') for c in ('game', 'studio') for n in ('Ab7', 'Ab8')]
+    bm = [PICTURES.open(os.path.join(SIL, f'battle_{c}_{n}.png')).convert('RGB') for c in ('game', 'studio') for n in ('Ab7', 'Ab8')]
     stack([head('Outline at the battle cameras', 'Against B0, the shape reference made from the concept (the concept has one camera only). Green both, red B0 only, yellow model only.'),
            row([lab(bm[0], 'game camera, Ab7'), lab(bm[1], 'game camera, Ab8')]), row([lab(bm[2], 'studio battle camera, Ab7'), lab(bm[3], 'studio battle camera, Ab8')])], 'outline_battle.jpg')
 
@@ -197,7 +208,7 @@ for k, (b, t) in CLOSE.items():
     ims = [lab(crop1024(C, b), 'concept', 12), lab(P(R7 + '/close', f'Ab7_{k}_concept.png'), 'Ab7', 26), lab(P(R8 + '/close', f'Ab8_{k}_concept.png'), 'Ab8', 26)]
     if cl: ims.append(lab(cl(R8, 'Ab8'), 'Ab8 clay', 26))
     wp.append(row(ims))
-stack(wp, 'weapons.jpg')
+stack(wp, 'weapons.jpg', sources=concept_sources)
 
 # ---- (g) overview
 ov = [head('Ab8 overview', 'Concept camera (concept rig), hero, side, top, below (studio rig); paint and clay.')]
@@ -205,10 +216,10 @@ ov.append(row([lab(a7.crop(VIEW), 'concept camera'), lab(P(R8 + '/r', 'Ab8_conce
 ov.append(row([lab(P(R8 + '/r', 'Ab8_hero.png'), 'hero'), lab(P(R8 + '/r', 'Ab8_hero_clay.png') if os.path.exists(R8 + '/r/Ab8_hero_clay.png') else P(R8 + '/r', 'Ab8_hero.png'), 'hero clay')]))
 for v in ('side', 'top', 'below'):
     ov.append(row([lab(P(R8 + '/r', f'Ab8_{v}.png').crop((0, 250, 2400, 950)), v), lab(P(R8 + '/r', f'Ab8_{v}_clay.png').crop((0, 250, 2400, 950)), v + ' clay')]))
-stack(ov, 'overview.jpg')
+stack(ov, 'overview.jpg', sources=newer_sources)
 
 # ---- (h) firing
-st = os.path.join(FIRE, 'stills'); S = lambda n: Image.open(os.path.join(st, n)).convert('RGB')
+st = os.path.join(FIRE, 'stills'); S = lambda n: PICTURES.open(os.path.join(st, n)).convert('RGB')
 rep = [l.strip() for l in open(os.path.join(FIRE, 'fire_report.txt')) if 'SMOKE_OFFSET' in l][:1]
 fr = [head('Ab8 firing its port casemates (step 5)', 'The game\'s own effects, unchanged. Two broadsides at a Hegemony destroyer. Game camera first, then close.',
            ['Where the smoke starts (not in this round, issues 363 and 370): the probe puts the effect mounts 5.9 world units (mean; worst 6.1,',

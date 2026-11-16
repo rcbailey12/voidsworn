@@ -334,7 +334,7 @@ func _snap(name: String) -> void:
 	await RenderingServer.frame_post_draw
 	var img := get_viewport().get_texture().get_image()
 	var p := out.path_join(("%s_%s.jpg" % [tag, name]) if tag != "" else ("%s.jpg" % name))
-	img.save_jpg(p, 0.9)
+	preload("res://tools/picture_provenance.gd").save_jpg(img, p, 0.9)
 	print("[a4shots] ", p)
 
 

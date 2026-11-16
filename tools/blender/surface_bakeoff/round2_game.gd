@@ -39,7 +39,7 @@ func maps(ship) -> void:
 
 func snap(name0: String) -> void:
 	await RenderingServer.frame_post_draw
-	assert(root.get_texture().get_image().save_png(str(cfg["shots"]).path_join(name0+".png"))==OK)
+	assert(preload("../../../godot/tools/picture_provenance.gd").save_png(root.get_texture().get_image(), str(cfg["shots"]).path_join(name0+".png"))==OK)
 	print("[surface111] game shot ",name0)
 
 

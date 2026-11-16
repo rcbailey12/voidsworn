@@ -1,3 +1,11 @@
+
+# Issue 889: stamp every newly rendered picture at its save step.
+from pathlib import Path as _PicturePath
+import sys
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
+from picture_provenance import stamp_file as _stamp_picture
+
 # Issue 209 round 1: the same cameras, lights and exposure for every cell.
 # usage: blender -b CELL.blend -P render.py -- OUT_DIR CELL [--preview]
 # Views (bow on the left in all of them, like the concept; round 4 adds 'concept', the concept's own fitted camera):
@@ -48,7 +56,7 @@ def cam(name, loc, look, ortho=None, lens=50, res=(1600, 900)):
 
 def shot(name):
     sfx = '' if LIGHT == 'studio' else '_cl'
-    sc.render.filepath = os.path.join(OUT, f'{CELL}_{name}{sfx}.png'); bpy.ops.render.render(write_still=True); print('[209] shot', name, flush=True)
+    sc.render.filepath = os.path.join(OUT, f'{CELL}_{name}{sfx}.png'); bpy.ops.render.render(write_still=True); _stamp_picture(sc.render.filepath, 'paint proof', new_render=True); print('[209] shot', name, flush=True)
 
 def clay(on):
     vl = bpy.context.view_layer; vl.material_override = bpy.data.materials.get('clay') if on else None

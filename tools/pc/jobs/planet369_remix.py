@@ -3,6 +3,12 @@
 Pillow and NumPy are already installed in the PC's recorded Python.
 Inputs and source receipts are made by planet369_download.bat. No deletion.
 """
+import sys
+from pathlib import Path as _PicturePath
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(_PicturePath(__file__).resolve().parents[3] / 'tools'))
+from picture_provenance import save_picture
+
 import argparse
 import hashlib
 import json
@@ -135,7 +141,7 @@ def planet(width):
         draw.text((x0, 260), 'Terrain detail', fill='white', font=font)
     dest = ROOT/'docs/shots/look_bench/planets'
     dest.mkdir(parents=True, exist_ok=True)
-    sheet.save(dest/'R01_sources.jpg', quality=93)
+    save_picture(sheet, dest/'R01_sources.jpg', 'sheet built', quality=93)
     print('R01', metadata['size'], 'cold CPU remix seconds', metadata['cold_remix_seconds'], flush=True)
 
 

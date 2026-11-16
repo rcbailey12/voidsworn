@@ -402,7 +402,7 @@ func _motion(b, name: String, home: Dictionary) -> void:
 		if frames.size() > 1:
 			_sheet(frames, out.path_join(base + "_sheet.jpg"))
 			_diff(frames[0], frames[frames.size() - 1], out.path_join(base + "_diff.jpg"))
-			(frames[0] as Image).save_jpg(out.path_join(base + "_first.jpg"), 0.92)
+			preload("res://tools/picture_provenance.gd").save_jpg((frames[0] as Image), out.path_join(base + "_first.jpg"), 0.92)
 	BL.set_look("today", false)
 
 
@@ -430,7 +430,7 @@ func _sheet(frames: Array, path: String) -> void:
 		im.convert(Image.FORMAT_RGB8)
 		im.resize(w, h, Image.INTERPOLATE_BILINEAR)
 		sheet.blit_rect(im, Rect2i(0, 0, w, h), Vector2i((i % 3) * (w + 4), (i / 3) * (h + 4)))
-	sheet.save_jpg(path, 0.92)
+	preload("res://tools/picture_provenance.gd").save_jpg(sheet, path, 0.92)
 	print("[world_shots] ", path)
 
 
@@ -453,7 +453,7 @@ func _diff(a: Image, z: Image, path: String) -> void:
 			if dc.r + dc.g + dc.b > 0.3:
 				moved += 1
 			d.set_pixel(x, y, dc)
-	d.save_jpg(path, 0.92)
+	preload("res://tools/picture_provenance.gd").save_jpg(d, path, 0.92)
 	print("[world_shots] %s (%.2f%% of pixels changed)" % [path, 100.0 * moved / float(w * h)])
 
 
@@ -497,5 +497,5 @@ func _snap(n: String) -> void:
 	await RenderingServer.frame_post_draw
 	var img := get_viewport().get_texture().get_image()
 	var p := out.path_join(n + ".jpg")
-	img.save_jpg(p, 0.92)
+	preload("res://tools/picture_provenance.gd").save_jpg(img, p, 0.92)
 	print("[world_shots] ", p)

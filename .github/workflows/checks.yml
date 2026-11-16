@@ -51,6 +51,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Picture provenance self-test dependency
+        run: python -m pip install Pillow
       - name: No em dashes in changed text files (house rule)
         run: |
           files=$(git diff --name-only --diff-filter=AM origin/main...HEAD | grep -E '\.(md|txt|js|gd|json|bat|py)$' || true)

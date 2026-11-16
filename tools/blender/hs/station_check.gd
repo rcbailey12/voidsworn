@@ -169,7 +169,7 @@ func review(folder: String, source: String, suffix: String, paint_height: int = 
 				var file := "%s_%s_%d_%s_4k.png" % [variant, suffix, int(length), shot]
 				if paint_height > 0:
 					file = "%s_%s_%d_%s_%dp.png" % [variant, suffix, int(length), shot, paint_height]
-				assert(vp.get_texture().get_image().save_png(folder.path_join(file)) == OK)
+				assert(preload("../../../godot/tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), folder.path_join(file), "paint proof") == OK)
 				captures.append({"image": file, "length": length, "radius": distance,
 					"fov": camera.fov, "beta": 0.98, "real_ships": [33.6, 10.4]})
 				if paint_height > 0 and shot == "battle":
@@ -179,7 +179,7 @@ func review(folder: String, source: String, suffix: String, paint_height: int = 
 						if child != station: child.hide()
 					for frame in 4: await process_frame
 					await RenderingServer.frame_post_draw
-					assert(vp.get_texture().get_image().save_png(folder.path_join(file.replace(".png", "_isolated.png"))) == OK)
+					assert(preload("../../../godot/tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), folder.path_join(file.replace(".png", "_isolated.png")), "paint proof") == OK)
 					var white := StandardMaterial3D.new()
 					white.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 					var overrides := {}
@@ -197,7 +197,7 @@ func review(folder: String, source: String, suffix: String, paint_height: int = 
 					camera.look_at_from_position(target + direction * 75, target, Vector3.FORWARD if shot == "plan" else Vector3.UP)
 					for frame in 12: await process_frame
 					await RenderingServer.frame_post_draw
-					assert(vp.get_texture().get_image().save_png(folder.path_join(variant + "_" + suffix + "_isolated_" + shot + ".png")) == OK)
+					assert(preload("../../../godot/tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), folder.path_join(variant + "_" + suffix + "_isolated_" + shot + ".png"), "paint proof") == OK)
 					for child in assembly.get_children(): child.show()
 			assembly.free()
 		if suffix == "detail" and paint_height == 0:
@@ -212,7 +212,7 @@ func review(folder: String, source: String, suffix: String, paint_height: int = 
 				camera.look_at_from_position(Vector3(25, 42, 55), Vector3(0, 3, 0))
 				for frame in 24: await process_frame
 				await RenderingServer.frame_post_draw
-				assert(vp.get_texture().get_image().save_png(folder.path_join(variant + "_break_" + line + "_4k.png")) == OK)
+				assert(preload("../../../godot/tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), folder.path_join(variant + "_break_" + line + "_4k.png"), "paint proof") == OK)
 				var cap_target := Vector3(19.5, 3, 3) if variant == "fleet" and line == "b" else Vector3(13, 3, -5)
 				if variant == "refinery": cap_target = Vector3(16, 3, 2) if line == "a" else Vector3(-13, 3, -5)
 				camera.look_at_from_position(cap_target + Vector3(14, 10, 18), cap_target)
@@ -222,7 +222,7 @@ func review(folder: String, source: String, suffix: String, paint_height: int = 
 				inspection.light_energy = 1.3
 				for frame in 24: await process_frame
 				await RenderingServer.frame_post_draw
-				assert(vp.get_texture().get_image().save_png(folder.path_join(variant + "_break_" + line + "_close_4k.png")) == OK)
+				assert(preload("../../../godot/tools/picture_provenance.gd").save_png(vp.get_texture().get_image(), folder.path_join(variant + "_break_" + line + "_close_4k.png"), "paint proof") == OK)
 				inspection.free()
 				wreck.free()
 	var capture_report := suffix + ("_%dp" % paint_height if paint_height > 0 else "") + "_captures.json"
@@ -320,7 +320,7 @@ func measure(folder: String, source: String, suffix: String) -> void:
 			"paired_range_ms": [deltas[0], deltas[4]], "target_ms": 0.35, "ceiling_ms": 1.0,
 			"interpretation": "Below timing noise if the paired range crosses zero"})
 		var capture := vp.get_texture().get_image()
-		assert(capture.save_png(folder.path_join(variant + "_" + suffix + "_20ships_4k.png")) == OK)
+		assert(preload("../../../godot/tools/picture_provenance.gd").save_png(capture, folder.path_join(variant + "_" + suffix + "_20ships_4k.png"), "paint proof") == OK)
 		station.free()
 	var result := {"adapter": RenderingServer.get_video_adapter_name(),
 		"renderer": RenderingServer.get_current_rendering_method(), "resolution": [3840, 2160],

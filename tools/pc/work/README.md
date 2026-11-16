@@ -94,7 +94,7 @@ cost several runs. Both entry points, `work_issue.bat` and `codex_issue.bat`, us
   preflight, preserving the checkout for the Board. Existing Codex checkouts are renamed and kept instead of reset or cleaned.
   Already committed resumed work can still reach a checked push when the agent needs no further edits.
 
-Deploy work_issue.bat/.ps1, codex_issue.bat/.ps1, runner_common.ps1, run_timeout.ps1, tmo.bat, gpu_slots.js,
+Deploy work_issue.bat/.ps1, codex_issue.bat/.ps1, runner_common.ps1, review_evidence.ps1, run_timeout.ps1, tmo.bat, gpu_slots.js,
 chain_issue.bat and work/mock_llm.js together to each runner tools folder only when EVERY lane is idle (issue 847),
 then write the lane's work217\runner_hashes.txt with `runner_common.ps1
 hashwrite <tools folder> <hash file>` so the issue 722 checks below can guard the copies. Existing settings and
@@ -137,7 +137,7 @@ wait, the mirror fetch and any model call:
 - **Board hashes.** When the Board copies the runner files to a PC tools folder it writes work217\runner_hashes.txt:
   `powershell -NoProfile -ExecutionPolicy Bypass -File runner_common.ps1 hashwrite <tools folder> <hash file>`. At
   start each runner compares the SHA-256 of its own folder's work_issue.bat, work_issue.ps1, codex_issue.bat,
-  codex_issue.ps1, runner_common.ps1, run_timeout.ps1, tmo.bat and gpu_slots.js against that file. A mismatch, a missing file or an empty file is a warning
+  codex_issue.ps1, runner_common.ps1, review_evidence.ps1, run_timeout.ps1, tmo.bat and gpu_slots.js against that file. A mismatch, a missing file or an empty file is a warning
   in result.txt, never a stop, so a run never dies because the Board has not hashed a fresh copy yet. Both lanes read
   that one work217 file.
 

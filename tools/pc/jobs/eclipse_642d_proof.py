@@ -2,6 +2,15 @@
 Run with Blender's Python: eclipse_642d_proof.py REPO NEW_TEMP_DIR.
 The Board's GPU job is E11_E12_PAINT_642d.bat. This proof is deliberately separate.
 """
+
+# Issue 889: keep source revisions through crops and sheet composition.
+import sys
+from pathlib import Path as _PicturePath
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
+from picture_provenance import Review
+PICTURES = Review('paint proof')
+
 import hashlib
 import json
 import os
@@ -19,9 +28,9 @@ def camera_pairs(sheets, concept, paint, pictures, cell):
         image = Image.new('RGB', (1280, 420), pc.BG)
         pc.head(image, f'{cell}, camera {radius}: concept (left), CPU game-light preview (right)',
                 'Blender 4.5 CPU, lift 2.2, true game pixel size; actual in-game capture awaits the Board GPU job')
-        image.paste(pc.fit(Image.open(concept).convert('RGB'), 636, 360), (0, 60))
-        image.paste(Image.open(paint / f'paint_cam{radius}.png').convert('RGB'), (640, 60))
-        image.save(pictures / f'{cell}_paint_cam{radius}.jpg', quality=95)
+        image.paste(pc.fit(PICTURES.open(concept, reference=True).convert('RGB'), 636, 360), (0, 60))
+        image.paste(PICTURES.open(paint / f'paint_cam{radius}.png').convert('RGB'), (640, 60))
+        PICTURES.save(image, pictures / f'{cell}_paint_cam{radius}.jpg', quality=95)
 
 
 def main():
