@@ -13,8 +13,6 @@ set /p G=<"%VT%\godot_path.txt"
 if not exist "%L%" mkdir "%L%"
 if not exist "%O%" mkdir "%O%"
 if not exist "%R%\godot\world\world_shots.tscn" exit /b 2
-powershell -NoProfile -Command "$ErrorActionPreference='Stop'; if (Get-CimInstance Win32_Process | Where-Object { ($_.Name -like 'Godot*.exe' -and $_.CommandLine -notmatch '--headless') -or $_.Name -in @('blender.exe','ffmpeg.exe') }) { Write-Output 'GPU job already running; stop and wait'; exit 1 }"
-if errorlevel 1 exit /b 3
 nvidia-smi > "%L%\gpu_before.txt" 2>&1
 set "TMO=%R%\tools\pc\tmo.bat"
 git -C "%R%" rev-parse HEAD > "%L%\head.txt"
@@ -67,8 +65,6 @@ echo all five runs complete
 exit /b 0
 
 :run
-powershell -NoProfile -Command "$ErrorActionPreference='Stop'; if (Get-CimInstance Win32_Process | Where-Object { ($_.Name -like 'Godot*.exe' -and $_.CommandLine -notmatch '--headless') -or $_.Name -in @('blender.exe','ffmpeg.exe') }) { Write-Output 'Another job is running; resume this run after it finishes'; exit 1 }"
-if errorlevel 1 exit /b 1
 set "ONLY=%CASES%"
 if not "%~2"=="" set "ONLY=%~2"
 if not exist "%O%\%~1" mkdir "%O%\%~1"

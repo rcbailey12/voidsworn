@@ -39,7 +39,7 @@ rem  (space) Before anything else the run refuses to start (one line in result.t
 rem      holding Downloads\voidsworn_test has less than min_free_gb free; the floor is a tuning value in
 rem      work217\runner_settings.txt, seeded at 60 when the runner creates the file.
 rem  (hashes) At start the runner compares the SHA-256 of its own tools folder's work_issue.bat, work_issue.ps1,
-rem      codex_issue.bat, codex_issue.ps1, runner_common.ps1, run_timeout.ps1 and tmo.bat against work217\runner_hashes.txt, which the Board
+rem      codex_issue.bat, codex_issue.ps1, runner_common.ps1, run_timeout.ps1, tmo.bat and gpu_slots.js against work217\runner_hashes.txt, which the Board
 rem      writes (runner_common.ps1 hashwrite) when it copies the files to the PC. A mismatch or a missing file is a
 rem      warning in result.txt, never a stop.
 rem Dry-run test knobs (ignored unless the third argument is dryrun): WORK_DRY_SCENARIO picks the stand-in model's script;
@@ -140,6 +140,11 @@ set "O=%A%\out"
 set "RC=0"
 set "OK=0"
 set "CHECKS_OK=0"
+rem R276: all nested GPU launchers inherit the issue and the code-only lane.
+set "PC_GPU_ISSUE=%N%"
+set "PC_GPU_LANE="
+echo %R%| findstr /i /c:"board_c" >nul
+if not errorlevel 1 set "PC_GPU_LANE=C"
 mkdir "%O%"
 echo %A%> "%WORK_ROOT%\%K%\latest.txt"
 echo started %date% %time% (%MODE%) > "%O%\result.txt"

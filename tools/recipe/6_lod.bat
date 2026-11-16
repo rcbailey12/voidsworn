@@ -11,7 +11,7 @@ if "%LEN%"=="" (echo Stage 6 FAILED: ships\%SHIP%.json gives no class length ^(l
 if not exist "%JOB%\%CELL%.blend" (echo Stage 6 FAILED: no baked ship at %JOB%\%CELL%.blend. Run stage 5 first. & goto bad)
 if not exist "%JOB%\glb" mkdir "%JOB%\glb"
 if not exist "%JOB%\godot\proj" mkdir "%JOB%\godot\proj"
-"%B%" -b "%JOB%\%CELL%.blend" -P "%R%\export3.py" -- "%JOB%\glb\%CELL%.glb" > "%JOB%\log_lod.txt" 2>&1
+call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b "%JOB%\%CELL%.blend" -P "%R%\export3.py" -- "%JOB%\glb\%CELL%.glb" > "%JOB%\log_lod.txt" 2>&1
 findstr /L /c:"[209] export" "%JOB%\log_lod.txt" > nul || (echo Stage 6 FAILED: the LOD export wrote nothing. See %JOB%\log_lod.txt & goto bad)
 copy /y "%R%\godot\project.godot" "%JOB%\godot\proj\" > nul
 copy /y "%R%\godot\bench209r3.gd" "%JOB%\godot\proj\" > nul

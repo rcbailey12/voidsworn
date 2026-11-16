@@ -21,11 +21,11 @@ set A2_ROOT=%CD%
 set CHECK_SAMPLES=32
 for %%C in (V1b_r_23 H4_11 B16_23 I8_37 D22_23) do (
   echo a2_detail: %%C >> %L%
-  %BL% -b --factory-startup -P a2detail\a2_ship.py -- %%C "%A2%" %RES% --samples 24 --checks "%CHK%" > "%A2%\%%C_log.txt" 2>&1
+  call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P a2detail\a2_ship.py -- %%C "%A2%" %RES% --samples 24 --checks "%CHK%" > "%A2%\%%C_log.txt" 2>&1
   type "%A2%\%%C_log.txt" | findstr /l /c:"[a2]" /c:"dress " /c:"spires" /c:"Error" /c:"Traceback" >> %L%
   %PY% -s a2detail\pack_glb.py "%A2%\%%C_meta.json" >> %L% 2>&1
   %PY% -s a2detail\pack_glb.py --sheets "%CHK%" %%C >> %L% 2>&1
-  %BL% -b --factory-startup -P a2detail\reimport.py -- "%A2%\%%C.glb" 2>nul | findstr /l /c:"[reimport]" >> %L%
+  call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P a2detail\reimport.py -- "%A2%\%%C.glb" 2>nul | findstr /l /c:"[reimport]" >> %L%
   if exist "%A2%\%%C.glb" copy /y "%A2%\%%C.glb" "%OUT%\%%C.glb" >nul
 )
 echo --- a2_detail: barge re-bake at %RES% (project_paint PAINT=proc, as c19_v15d) --- >> %L%
@@ -33,23 +33,23 @@ set PAINT=proc
 set PATCH=
 set OCC=%IO%\v15_kit.glb
 set EXPORT=%A2%\barge\shell_painted.glb
-%BL% -b --factory-startup -P project_paint.py -- "%IO%\v15_shell.glb" "%A2%\barge\shell_albproj.png" %RES% > "%A2%\barge\shellproj_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P project_paint.py -- "%IO%\v15_shell.glb" "%A2%\barge\shell_albproj.png" %RES% > "%A2%\barge\shellproj_log.txt" 2>&1
 type "%A2%\barge\shellproj_log.txt" | findstr /i /c:"baked" /c:"Error" /c:"Traceback" >> %L%
 set OCC=%IO%\v15_shell.glb
 set EXPORT=%A2%\barge\kit_painted.glb
 set AOD=.015
-%BL% -b --factory-startup -P project_paint.py -- "%IO%\v15_kit.glb" "%A2%\barge\kit_albproj.png" %RES% > "%A2%\barge\kitproj_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P project_paint.py -- "%IO%\v15_kit.glb" "%A2%\barge\kit_albproj.png" %RES% > "%A2%\barge\kitproj_log.txt" 2>&1
 type "%A2%\barge\kitproj_log.txt" | findstr /i /c:"baked" /c:"Error" /c:"Traceback" >> %L%
 set OCC=
 set EXPORT=
 set AOD=
 set PAINT=
 set PATCH=
-%BL% -b --factory-startup -P a2detail\a2_barge.py -- "%A2%\barge" "%A2%" %RES% --checks "%CHK%" > "%A2%\barge_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P a2detail\a2_barge.py -- "%A2%\barge" "%A2%" %RES% --checks "%CHK%" > "%A2%\barge_log.txt" 2>&1
 type "%A2%\barge_log.txt" | findstr /l /c:"[a2b]" /c:"Error" /c:"Traceback" >> %L%
 %PY% -s a2detail\pack_glb.py "%A2%\C19_51_shell_meta.json" "%A2%\C19_51_kit_meta.json" >> %L% 2>&1
 %PY% -s a2detail\pack_glb.py --sheets "%CHK%" C19_51 >> %L% 2>&1
-%BL% -b --factory-startup -P a2detail\reimport.py -- "%A2%\C19_51_shell.glb" "%A2%\C19_51_kit.glb" 2>nul | findstr /l /c:"[reimport]" >> %L%
+call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P a2detail\reimport.py -- "%A2%\C19_51_shell.glb" "%A2%\C19_51_kit.glb" 2>nul | findstr /l /c:"[reimport]" >> %L%
 if exist "%A2%\C19_51_shell.glb" copy /y "%A2%\C19_51_shell.glb" "%OUT%\C19_51_shell.glb" >nul
 if exist "%A2%\C19_51_kit.glb" copy /y "%A2%\C19_51_kit.glb" "%OUT%\C19_51_kit.glb" >nul
 set A2_ROOT=

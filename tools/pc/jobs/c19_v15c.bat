@@ -9,12 +9,12 @@ set PAINT=proc
 set PATCH=
 set OCC=%IO%\v15_kit.glb
 set EXPORT=%IO%\shell_painted.glb
-%BL% -b --factory-startup -P project_paint.py -- "%IO%\v15_shell.glb" "%IO%\shell_albproj.png" 4096 > "%IO%\shellproj_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P project_paint.py -- "%IO%\v15_shell.glb" "%IO%\shell_albproj.png" 4096 > "%IO%\shellproj_log.txt" 2>&1
 type "%IO%\shellproj_log.txt" | findstr /i /c:"baked" /c:"Error" /c:"Traceback" >> %L%
 set OCC=%IO%\v15_shell.glb
 set EXPORT=%IO%\kit_painted.glb
 set AOD=.015
-%BL% -b --factory-startup -P project_paint.py -- "%IO%\v15_kit.glb" "%IO%\kit_albproj.png" 4096 > "%IO%\kitproj_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P project_paint.py -- "%IO%\v15_kit.glb" "%IO%\kit_albproj.png" 4096 > "%IO%\kitproj_log.txt" 2>&1
 type "%IO%\kitproj_log.txt" | findstr /i /c:"baked" /c:"Error" /c:"Traceback" >> %L%
 set OCC=
 set EXPORT=

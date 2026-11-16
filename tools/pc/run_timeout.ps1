@@ -111,6 +111,30 @@ while ((-not $noWait) -and (Test-RyanPlaying) -and ((Get-Date) - $w0).TotalHours
   Start-Sleep -Seconds 20
 }
 if ($said) { "$(Get-Date -Format s) RESUME after $([int]((Get-Date) - $w0).TotalMinutes) min: $Exe" | Out-File $log -Append -Encoding utf8 }
+# R276: acquire only around the GPU command, never the whole model session.
+# A pending solo claim drains both shared slots and blocks new workers.
+$gpuHelper = Join-Path $PSScriptRoot 'gpu_slots.js'
+$gpuNode = 'node.exe'
+$bundledNode = Join-Path $root 'node\node.exe'
+if (Test-Path -LiteralPath $bundledNode) { $gpuNode = $bundledNode }
+$gpuRoot = $root
+if ($env:PC_RUNNER_TEST -eq '1' -and $env:PC_TEST_GPU_ROOT) { $gpuRoot = $env:PC_TEST_GPU_ROOT }
+$gpuToken = ''
+try {
+$classify = @{ exe = $Exe; args = $argLine; cwd = (Get-Location).Path; requested = [string]$env:PC_GPU_MODE } | ConvertTo-Json -Compress
+$gpuMode = ($classify | & $gpuNode $gpuHelper classify) -join ''
+if ($LASTEXITCODE -ne 0) { throw 'GPU command classification failed' }
+if ($gpuMode) {
+  Write-Output "GPU: waiting for $gpuMode claim (issue $env:PC_GPU_ISSUE)"
+  & $gpuNode $gpuHelper acquire $gpuRoot ([string]$env:PC_GPU_ISSUE + ':gpu') $PID $gpuMode | ForEach-Object {
+    if ($_ -eq 'WAIT') { Write-Host "GPU: still waiting for $gpuMode claim" }
+    else { $gpuToken = [string]$_ }
+  }
+  if ($LASTEXITCODE -ne 0 -or -not $gpuToken) { throw 'GPU claim failed; command was not started' }
+  Write-Output "GPU: acquired $gpuMode claim $gpuToken"
+}
+# A forced claim applies to this command only, never a nested watchdog.
+$env:PC_GPU_MODE = ''
 $timer = [Diagnostics.Stopwatch]::StartNew()
 $lastProgress = 0.0
 $scanEvery = 60.0
@@ -154,3 +178,9 @@ if ($watch) { Save-RunResume $watchRepo $watchOut $logs $reason $base }
 "$(Get-Date -Format s) TIMEOUT $reason after $secs s (ceiling $Seconds s), killed tree of PID $($p.Id): $Exe $argLine" | Out-File $log -Append -Encoding utf8
 Write-Output "run_timeout: TIMEOUT $reason after $secs s, killed $Exe (PID $($p.Id)) and its children"
 exit 124
+} finally {
+  if ($gpuToken) {
+    & $gpuNode $gpuHelper release $gpuRoot $gpuToken
+    if ($LASTEXITCODE -ne 0) { Write-Output "GPU: release failed; dead owner PID $PID will be reclaimed" }
+  }
+}

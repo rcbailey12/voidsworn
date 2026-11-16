@@ -18,17 +18,17 @@ if not exist "%ET%\godot\bfx.gd" echo a3_godot_fx: enginetest\godot\bfx.gd is mi
 if not exist "%ET%\godot\bfx.gd" goto done
 cd /d "%ET%"
 rem stills: main, max (plus the six hero close-ups), board
-"%G%" --path godot --rendering-method forward_plus --resolution 3840x2160 --fixed-fps 60 -- --shots "%SH%\g_main" --res 3840x2160 > "%RES%\shots_main_log.txt" 2>&1
-"%G%" --path godot --rendering-method forward_plus --resolution 3840x2160 --fixed-fps 60 -- --shots "%SH%\g_max" --res 3840x2160 --max > "%RES%\shots_max_log.txt" 2>&1
-"%G%" --path godot --rendering-method forward_plus --resolution 3840x2160 --fixed-fps 60 -- --shots "%SH%\g_board" --res 3840x2160 --board > "%RES%\shots_board_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%G%" --path godot --rendering-method forward_plus --resolution 3840x2160 --fixed-fps 60 -- --shots "%SH%\g_main" --res 3840x2160 > "%RES%\shots_main_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%G%" --path godot --rendering-method forward_plus --resolution 3840x2160 --fixed-fps 60 -- --shots "%SH%\g_max" --res 3840x2160 --max > "%RES%\shots_max_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%G%" --path godot --rendering-method forward_plus --resolution 3840x2160 --fixed-fps 60 -- --shots "%SH%\g_board" --res 3840x2160 --board > "%RES%\shots_board_log.txt" 2>&1
 rem frame times (20 s each after the 3 s warm-up)
 for %%M in (main max board stress) do (
-  "%G%" --path godot --rendering-method forward_plus --resolution 3840x2160 --disable-vsync -- --bench "%RES%\g_%%M_2160.json" --seconds 20 --res 3840x2160 --%%M > "%RES%\bench_%%M_2160_log.txt" 2>&1
-  "%G%" --path godot --rendering-method forward_plus --resolution 2560x1440 --disable-vsync -- --bench "%RES%\g_%%M_1440.json" --seconds 20 --res 2560x1440 --%%M > "%RES%\bench_%%M_1440_log.txt" 2>&1
+  call "%~dp0..\tmo.bat" 21600 "%G%" --path godot --rendering-method forward_plus --resolution 3840x2160 --disable-vsync -- --bench "%RES%\g_%%M_2160.json" --seconds 20 --res 3840x2160 --%%M > "%RES%\bench_%%M_2160_log.txt" 2>&1
+  call "%~dp0..\tmo.bat" 21600 "%G%" --path godot --rendering-method forward_plus --resolution 2560x1440 --disable-vsync -- --bench "%RES%\g_%%M_1440.json" --seconds 20 --res 2560x1440 --%%M > "%RES%\bench_%%M_1440_log.txt" 2>&1
 )
-"%G%" --path godot --rendering-method forward_plus --resolution 3840x2160 --disable-vsync -- --bench "%RES%\g_ships40_2160.json" --seconds 20 --res 3840x2160 --ships 40 > "%RES%\bench_ships40_2160_log.txt" 2>&1
-"%G%" --path godot --rendering-method forward_plus --resolution 3840x2160 -- --bench "%RES%\g_max_2160_vsync.json" --seconds 20 --res 3840x2160 --max --vsync > "%RES%\bench_max_vsync_log.txt" 2>&1
-"%G%" --path godot --rendering-method gl_compatibility --resolution 3840x2160 --disable-vsync -- --bench "%RES%\g_gl_main_2160.json" --seconds 20 --res 3840x2160 > "%RES%\bench_gl_main_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%G%" --path godot --rendering-method forward_plus --resolution 3840x2160 --disable-vsync -- --bench "%RES%\g_ships40_2160.json" --seconds 20 --res 3840x2160 --ships 40 > "%RES%\bench_ships40_2160_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%G%" --path godot --rendering-method forward_plus --resolution 3840x2160 -- --bench "%RES%\g_max_2160_vsync.json" --seconds 20 --res 3840x2160 --max --vsync > "%RES%\bench_max_vsync_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%G%" --path godot --rendering-method gl_compatibility --resolution 3840x2160 --disable-vsync -- --bench "%RES%\g_gl_main_2160.json" --seconds 20 --res 3840x2160 > "%RES%\bench_gl_main_log.txt" 2>&1
 dir /b "%SH%\g_main" "%SH%\g_max" "%SH%\g_board" >> %L% 2>&1
 dir /b "%RES%\*.json" >> %L% 2>&1
 findstr /i /c:"SCRIPT ERROR" /c:"SHADER ERROR" "%RES%\*_log.txt" >> %L% 2>&1

@@ -8,7 +8,7 @@ if not exist node_modules\meshoptimizer mkdir node_modules\meshoptimizer
 copy /y mo\*.* node_modules\meshoptimizer\ >nul
 if not exist "%IO%\lod" mkdir "%IO%\lod"
 echo --- v54 test: Pixal3D Pyre-Barge in game --- >> %L%
-%BL% -b --factory-startup -P lod_make.py -- "%IO%\mesh\C19_51E2_pixal_tex_00001_.glb" "%IO%\lod\E2" 250000 > "%IO%\lod\lod_log.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 %BL% -b --factory-startup -P lod_make.py -- "%IO%\mesh\C19_51E2_pixal_tex_00001_.glb" "%IO%\lod\E2" 250000 > "%IO%\lod\lod_log.txt" 2>&1
 set ALB=%IO%\proj\E2_albproj.png
 %PY% -s pixal_to_game.py "%IO%\mesh\C19_51E2_pixal_tex_00001_.glb" hulls_hi C19_51 left 4096 >> %L% 2>&1
 %PY% -s pixal_to_game.py "%IO%\lod\E2_250000.glb" hulls C19_51 left 2048 >> %L% 2>&1

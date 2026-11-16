@@ -74,7 +74,11 @@ effect: a weapon hit, a shield response, a trail, a death.
 - Small death spin (issue 463): `s.xf()` already follows the spinning mesh. Applying the spin again moves the jet off
   its plating. Keep the hull's analysis pose from the kill frame and apply the spin once; record that frame with each
   trail sample. A one-frame wing spark starts on the next effects step so it cannot expire before its first draw.
-- One GPU job at a time on the PC, and the queue is single file: a long bake holds every later job.
+- Up to two GPU jobs at once on the PC (R276). Use `tools/pc/tmo.bat <seconds> <exe> [args]` for GPU launches. It claims a
+  shared slot for captures and Blender, solo for frame-time scripts, and releases on exit or timeout.
+  A solo waiter blocks new GPU work until both shared slots finish; gpu_go.txt must still say `GPU cleared`.
+  For a new timing script, set `PC_GPU_MODE=solo` before its tmo call. The watchdog also detects timing code in scripts and
+  scenes automatically. Lane C is code only. Never use a GPU-idle timeout as permission to start a measurement.
 - Editor .import files beside baked pictures are churn: commit them only when the game needs them to load.
 
 ## 6. Worked example
