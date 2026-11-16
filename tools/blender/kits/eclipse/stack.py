@@ -225,7 +225,8 @@ def glow_material(zone, hull=False):
 def glow_vertex(o):
     """the per-vertex inputs of a light that is not an engine ring (shared bake_engine_glow calls this): colour attribute ps_glow
     R the place across a corona strip (0 and 1 its two edges, 0.5 its middle), G the light's own random, B the distance from a
-    core's centre over its radius; float attribute ps_kind 1 a corona line, 2 the core or the lens. The sheet's rim strips
+    core's centre over its radius; float attribute ps_kind 1 a corona line, 2 the core or the lens, 3 a faceted reactor.
+    The reactor uses R for seam heat: cool face centres, hot face boundaries (R289). The sheet's rim strips
     (kit.strip) are four vertices per station: the base edges and the top edges, left, right, right, left."""
     me = o.data; z = me.materials[0].name if me.materials else ''
     # Both attributes are made first and only then looked up again by name and written in one call each. Adding an attribute
@@ -249,6 +250,14 @@ def glow_vertex(o):
         col[:, 0] = 0.5
         col[:, 2] = [min(1.0, math.hypot(*[(v - c)[k] for k in range(3) if k != thin]) / R) for v in W]
         kind = 2.0
+        if z == 'ecore' and o.get('role') == 'reactor':
+            degree = np.zeros(n, np.int32)
+            for edge in me.edges:
+                for index in edge.vertices: degree[index] += 1
+            # reactor_core makes a four-edge centre in each flat facet; shared boundary
+            # vertices meet more edges. Heat is interpolated over those actual facets.
+            col[:, 0] = np.where(degree == 4, .18, 1.0)
+            kind = 3.0
         if z == 'ecore': o['ps_close'] = 'core'
     me.color_attributes['ps_glow'].data.foreach_set('color', col.ravel())
     me.attributes['ps_kind'].data.foreach_set('value', np.full(n, kind, np.float32))
@@ -309,7 +318,11 @@ def engine_glow_nodes(nt, r, e, d, a, tc, H):
     core = mulc(nt, mixc(nt, lin_raw(CORE_EDGE), lin_raw(CORE_HOT), k), math_(nt, 'ADD', CORE['edge'], math_(nt, 'MULTIPLY', k, 1 - CORE['edge'])))
     kd = H['kind']
     out = mixc(nt, ring, line, math_(nt, 'GREATER_THAN', kd, .5))
-    return mixc(nt, out, core, math_(nt, 'GREATER_THAN', kd, 1.5))
+    out = mixc(nt, out, core, math_(nt, 'GREATER_THAN', kd, 1.5))
+    heat = math_(nt, 'POWER', r, 2.5)
+    reactor = mulc(nt, mixc(nt, lin_raw(CORE_EDGE), lin_raw(CORE_HOT), heat),
+                   math_(nt, 'ADD', .28, math_(nt, 'MULTIPLY', heat, .92)))
+    return mixc(nt, out, reactor, math_(nt, 'GREATER_THAN', kd, 2.5))
 
 
 # ------------------------------------------------------------------------------------------------------------ insides

@@ -1,4 +1,31 @@
-# deathless_E12 build sheet: Eclipse zenith, the ring cruiser (fourth sheet: R221 weapons, pass 2)
+# deathless_E12 build sheet: Eclipse zenith, the ring cruiser (R289 armoured core, sheet 5)
+
+**Issue 877, Nov 16 2026.** The core is a faceted reactor with cooling bands, hot seams and three aligned courses of
+shade armour on eight matched petals. Projected reactor exposure is 21.49 percent at the beauty angle and 22.26 percent
+at camera 170, measured against the same reactor with its cage and armour removed. The Eclipse colours are unchanged.
+The base and [turreted zenith](variants/d_harvester_t/README.md) were rebuilt and painted from this sheet.
+
+Review: [concept / before / after, beauty camera](paint/E12_core_beauty.jpg),
+[camera 170 at true pixels](paint/E12_core_cam170.jpg), [reactor close-up](paint/E12_core_close.jpg).
+The camera-170 pictures are Blender game-light previews. They are not captures from an installed game asset.
+
+Method: `ships/deathless_E12.py` uses the Eclipse kit's `reactor_core()` through `Kit.core(part=...)`; the existing paint
+stack bakes each facet's cooler centre and hotter boundaries with the existing core colours. Cycles CPU sheet renders:
+24 samples. Eclipse stack: 2048 hull/parts atlases, 1024 emission map, 32 bake samples; game-light pictures: 64 samples,
+lift 2.2. The [manifest](manifest.json) and [revision record](core_revision.json) carry the method and measured costs.
+
+| Measurement | Base E12 | Turreted E12 |
+|---|---:|---:|
+| Assembled sheet triangles, including insides | 55,006 | 50,402 |
+| Painted exterior triangles | 54,610 | 50,006 |
+| Exterior material surfaces if merged | 4 | 4 |
+| Core assembly triangles, before / after | 2,200 / 5,216 | 2,200 / 5,216 |
+
+Both versions pass weapon matching, fit (zero clashes), the sheet contract, recipe audit and six-view paint surface check
+(zero bare or room-colour pixels). The base inventory has zero failing lines. Exact mesh hashes confirm that every
+non-core mesh is unchanged; insides, hard points and weapon fit records also match the previous build. The existing
+45.5 percent outline reference and both camera files are retained, without a new camera fit. No game export, install or
+frame-time measurement was requested. Historical proofs below describe their own earlier geometry.
 
 **Issue 676 recipe proof:** [record](weapon_proof.json). Stage 4 contract, audit and audit self-test PASS; stage 5 unpainted geometry carried unchanged; stage 6 four LOD meshes exported and read back in Godot; stage 7 export, readback and planted-fault self-test PASS. Real Godot firing/turning, authored interiors and destruction PASS: 11 machines, zero split, zero inside triangles beyond their piece. Budget: 51990 triangles, 12 surfaces, 1808 inside triangles. Costs reported; the scene gate was not measured.
 
@@ -45,7 +72,10 @@ Start here: **[side_by_side.jpg](side_by_side.jpg)**, then [fit_view.jpg](fit_vi
 `"bake": "stack"`: stage 5 paints this ship with the Eclipse kit's paint stack (`tools/blender/kits/eclipse/stack.py` on
 `tools/blender/kits/shared/paint_stack.py`; RECIPE.md "The paint stack for sheet ships", ships.md section 0 item 2 "The Eclipse
 paint"). Masks from the ship's own geometry, a drawn trim sheet and decals, colours sampled from the concepts, never projected.
-Latest: [round 3 method, checks and budget](paint/round3.md), Nov 14 2026. Blender 4.5.14 CPU, **2048 hull/parts atlases**, 1024 emission, 6 bake samples; game-light previews at lift 2.2. [Camera 170 beside concept](paint/E12_paint_cam170.jpg), [camera 60 beside concept](paint/E12_paint_cam60.jpg), [whole ship](paint/E12_paint_full.jpg), [rim and core close](paint/E12_paint_close.jpg), [views](paint/E12_paint_views.jpg), [engines](paint/E12_paint_engines.jpg). These replace the pass 2 previews. Surface check: 0 bare and 0 room pixels. R224 density: 0 flags. Budget: triangles 41,052 unchanged; root surfaces 10 to 11, all mesh surfaces 16 to 17; one new material, no added mesh or image. GPU cost and actual game pictures await the Board's new `E11_E12_PAINT_642d.bat` run.
+Latest: issue 877's armoured reactor, method and costs above. [Camera 170](paint/E12_paint_cam170.jpg),
+[camera 60](paint/E12_paint_cam60.jpg), [whole ship](paint/E12_paint_full.jpg),
+[rim and core close](paint/E12_paint_close.jpg), [views](paint/E12_paint_views.jpg), [engines](paint/E12_paint_engines.jpg).
+These pictures show the current sheet. The [round 3 record](paint/round3.md) is an earlier paint proof with the old core.
 
 **Colour, judged at the battle lift.** The game lifts an Eclipse hull's albedo by 2.2 (R227, `godot/render/look.gd`; Ryan: "a bit
 darker for eclipse"); unpainted, this ship rendered glowing white in the game. The stack's colours are the tones the plates must

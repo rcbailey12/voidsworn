@@ -15,7 +15,7 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 | emitter | the corona arc (doom F): one heavy blow every other turn, fired through the ring's bow gap | corona_arc | the bow emitter: a collared housing with a green lens (data.js doom F, the corona arc) | 1 | bow/top, bow/side | breech collars, a capacitor column (segments, disc banks, conduits), an emitter head with a black shade disc in a thin corona ring, a small lens, six electrode horns (R221) | picture |
 | main_guns | the two null cannons (gauss T, gauss T): armour-piercing rail guns either side of the core | nullcannon | two twin turrets on oval saddles on the spine, one either side of the core (data.js gauss T, gauss T) | 2 | bow/top, bow/side, mid/top, mid/side | a thin round foot, a small oval shell, an arched crescent shade of seamed bevelled plates with a second layer and a corona crest, rod yokes, crescent capacitor fins, two slim round rail pairs with banded collars and shock rings (R221) | picture |
 | saddles | seat the batteries on the thin spine and carry their feeds | pylon | the oval saddles the turrets stand on | 2 | bow/side, mid/side | a stepped web, plates | picture |
-| core | the trapped light core: powers the ship and the reclaim (repair) ability | core | the caged green core at the centre of the ring | 1 | mid/top, mid/side, mid/below | hub collars, a bright sphere, gimbal rings, meridian bars | picture |
+| core | the trapped light core: powers the ship and the reclaim (repair) ability | core | the caged green core at the centre of the ring | 1 | mid/top, mid/side, mid/below | hub collars, faceted reactor, cooling vents and bright seams, gimbal rings, load bars, three aligned armour courses with narrow viewing slots (R289) | picture |
 | stern_block | holds the engines, the engine room and the sentry | tier | the stern block: a narrow faceted block stepping down to the spine, the engines stacked on its face (issue 618) | 1 | stern/top, stern/side, stern/below | faceted faces, a stepped roof, openings (lights, vents, hatches) | picture |
 | engines | drive (sp 2): three eclipse-ring engines, no flame | engine | three engines stacked one over another on the stern block (issue 618) | 3 | stern/top, stern/side, stern/below | faceted ribbed drums, mount collars, vanes, short bells, a corona ring round a black shade disc (no flame) | picture |
 | sentry | the null spire (gsentry T): point defence against craft, standing high to see over the hull | spire | the small turret on the stern block roof with green sights (data.js gsentry T, the null spire) | 1 | stern/top, stern/side | a thin round foot, a tall slim round spire with banded collars and green sight slits, an oval head pod, a layered crescent fin with a corona crest, two thin needle rails with banded collars (R221) | picture |
@@ -173,6 +173,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 1.77 | 5.94 | 1.94 | 15.57 |
-| build | 1.72 | 5.32 | 1.90 | 11.54 |
+| build | 1.72 | 5.32 | 1.89 | 11.43 |
 
 Lines not present, shaped and detailed without a reason: 0.
