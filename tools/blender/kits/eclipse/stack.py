@@ -23,23 +23,20 @@
 #
 # Where each colour zone sits on a ship is the build sheet's decision (its materials shade, shade2, violet, mauve, lilac, gunv,
 # steel, iron, dark; glow zones corona, ecore, lens: tools/blender/build_sheets/kit.py MATS); this file says what each is made of.
-import os, re, json, math
+import os, sys, json, math
+from functools import partial
 import numpy as np
 import bpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, '..', '..', '..', '..'))
+SHARED = os.path.normpath(os.path.join(HERE, '..', 'shared'))
+if SHARED not in sys.path: sys.path.insert(0, SHARED)
+from paint_colors import LIGHT_GAIN, battle_lift, lin, lin_raw
 FACTION = 'deathless'
 
 
-def battle_lift():
-    """the game's Eclipse battle lift (godot/render/look.gd READ, the one home; R227)"""
-    p = os.path.join(REPO, 'godot', 'render', 'look.gd')
-    m = re.search(r'"%s":\s*\{[^}]*"lift":\s*([0-9.]+)' % FACTION, open(p, encoding='utf-8').read())
-    if not m: raise SystemExit('eclipse stack: no %s lift in godot/render/look.gd READ' % FACTION)
-    return float(m.group(1))
-
-
+battle_lift = partial(battle_lift, FACTION)
 LIFT = battle_lift()
 
 # ------------------------------------------------------------------------------------------------------------ concept colours
@@ -71,9 +68,6 @@ CONCEPT = dict(
     bare=((76, 68, 92), (124, 112, 144)),      # worn edges on rims and plate lips: the machined metal under the dark coat
     grime=((5, 4, 7), (10, 8, 12)),             # the dark of seams and deep recesses (the concepts' darkest 3,7,10 to 17,12,17)
 )
-# The game's light on a face at about 45 degrees to the key (godot/render/look.gd: key 2.0, ambient 0.25 x key): the factor
-# between an albedo and the tone the face shows (the Hullbreaker stack's figure, checked again by this job's preview).
-LIGHT_GAIN = 1.45
 # The light (pass 2, Ryan: "that green looks so plain and stark, just like neon paint"): the corona is light, not paint, the faint
 # green ring of a real eclipse. Cold green-white at its hottest (the hue of the concepts' brightest rim pixels, E12 132,228,88,
 # whitened), a deeper green where it is dim (E12 48,92,49 and 84,136,82, brightened to read as light).
@@ -93,18 +87,7 @@ CORE_RGB = (44, 255, 24)
 SAT = 2.6
 
 
-def lin(srgb):
-    """the tone to show in the game (sRGB 0..255) to the albedo to paint: linear, over the light gain and the battle lift, with
-    the hue held (SAT)"""
-    c = np.asarray(srgb, np.float64) / 255.0
-    c = np.where(c <= .04045, c / 12.92, ((c + .055) / 1.055) ** 2.4)
-    y = float(c @ np.array((.2126, .7152, .0722))); c = np.clip(y + (c - y) * SAT, y * .15, None)
-    return tuple(float(x) / (LIGHT_GAIN * LIFT) for x in c)
-
-
-def lin_raw(srgb):
-    c = np.asarray(srgb, np.float64) / 255.0
-    return tuple(float(x) for x in np.where(c <= .04045, c / 12.92, ((c + .055) / 1.055) ** 2.4))
+lin = partial(lin, lift=LIFT, saturation=SAT)
 
 
 def pair(k):
@@ -130,6 +113,12 @@ LAYERS = dict(
     streak_scale=4.0, streak_stretch=60.0, rust_blot=26.0,                # no rust on the Eclipse (every zone's rust is 0)
     grime_z=(-.12, -.04), soot_x=(-.50, -.30), soot_aft=.10,              # a little grime low and toward the engines; no soot (no flame)
     wear_scale=40.0, wear_patch=3.0, bump_distance=.0008, bump_strength=.50, panel_relief=.95,
+    # issue 783 (Ryan, Nov 15 2026 07:02 CST, R256: "let's make sure that the paint actually is even on each side, it's not
+    # consistent now"): the paint mirrors across the centre line. Every pattern reads the ship's position folded to the port side
+    # (x, |y|, z), each plate's own random is shared with its mirror twin (shared paint_stack.mirror_islands), the starboard marks
+    # are the port marks mirrored and the top mark sits on the centre line; the corona line's arcs and breaks mirror too. The
+    # engine rings keep their own pattern each (item 4 below): an engine is not a port and starboard pair of plates.
+    mirror=True,
 )
 # pass 2: the shade plates, the body behind them and the machinery differ in finish, not only colour: the shades a matte heat
 # shield, the body a satin metal, the machines (guns, engines, saddles, rails) a brighter worked metal
@@ -300,7 +289,10 @@ def engine_glow_nodes(nt, r, e, d, a, tc, H):
     ring = mulc(nt, col, math_(nt, 'MULTIPLY', heat, E['norm'], clamp=True))
     # the corona line: brighter arcs and dimmer stretches along it (noise on the ship's own position), a few short breaks, a soft
     # falloff from the middle of the strip to its edges; the bright middle widens only where the arc is bright
-    C = CORONA; pos = tc.outputs['Object']
+    # issue 783: the arcs and breaks read the position folded to the port side, so each port line matches its starboard twin
+    C = CORONA; sp_ = node(nt, 'ShaderNodeSeparateXYZ'); nt.links.new(tc.outputs['Object'], sp_.inputs[0])
+    fo = node(nt, 'ShaderNodeCombineXYZ'); nt.links.new(sp_.outputs[0], fo.inputs[0]); nt.links.new(sp_.outputs[2], fo.inputs[2])
+    nt.links.new(math_(nt, 'ABSOLUTE', sp_.outputs[1]), fo.inputs[1]); pos = fo.outputs[0] if LAYERS.get('mirror') else tc.outputs['Object']
     an = node(nt, 'ShaderNodeTexNoise'); an.inputs['Scale'].default_value = C['arc_scale']; an.inputs['Detail'].default_value = 2
     an.inputs['Roughness'].default_value = .5; nt.links.new(pos, an.inputs['Vector'])
     arc = ramp(nt, an.outputs['Fac'], C['arc_band'][0], C['arc_band'][1])

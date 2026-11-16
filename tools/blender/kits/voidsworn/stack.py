@@ -16,23 +16,20 @@
 #
 # Where each colour zone sits on a ship is the build sheet's decision (the kit's materials siron, siron2, sworn, dark; glow zones
 # glow, ember, embar, frost: tools/blender/kits/voidsworn/parts.py MATS); this file says what each is made of.
-import os, re, json, math
+import os, sys, json, math
+from functools import partial
 import numpy as np
 import bpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, '..', '..', '..', '..'))
+SHARED = os.path.normpath(os.path.join(HERE, '..', 'shared'))
+if SHARED not in sys.path: sys.path.insert(0, SHARED)
+from paint_colors import LIGHT_GAIN, battle_lift, lin, lin_raw
 FACTION = 'voidsworn'
 
 
-def battle_lift():
-    """the game's Sunward battle lift (godot/render/look.gd READ, the one home; R227), never copied here"""
-    p = os.path.join(REPO, 'godot', 'render', 'look.gd')
-    m = re.search(r'"%s":\s*\{[^}]*"lift":\s*([0-9.]+)' % FACTION, open(p, encoding='utf-8').read())
-    if not m: raise SystemExit('sunward stack: no %s lift in godot/render/look.gd READ' % FACTION)
-    return float(m.group(1))
-
-
+battle_lift = partial(battle_lift, FACTION)
 LIFT = battle_lift()
 
 # ------------------------------------------------------------------------------------------------------------ concept colours
@@ -58,34 +55,61 @@ CONCEPT = dict(
 SPIRE_DEEP = (169, 73, 17)      # #a94911, the radiator bar at its root
 SPIRE_MID = (218, 111, 21)      # #da6f15
 SPIRE_HOT = (252, 171, 59)      # #fcab3b, the bar tip
-# The game's light on a face at about 45 degrees to the key (godot/render/look.gd: key 2.0, ambient 0.25 x key): the factor
-# between an albedo and the tone the face shows (the Hullbreaker stack's figure).
-LIGHT_GAIN = 1.45
 
 
-def lin(srgb):
-    """the tone to show in the game (sRGB 0..255) to the albedo to paint: linear, over the light gain and the battle lift (read
-    from look.gd). Black iron is near neutral, so no hue boost (the Eclipse's SAT) is needed: the lift is a plain multiply in the
-    game and swings no hue"""
-    c = np.asarray(srgb, np.float64) / 255.0
-    c = np.where(c <= .04045, c / 12.92, ((c + .055) / 1.055) ** 2.4)
-    return tuple(float(x) / (LIGHT_GAIN * LIFT) for x in c)
+# Black iron needs no hue boost; compensate only for this faction's battle lift.
+lin = partial(lin, lift=LIFT)
 
 
-def lin_raw(srgb):
-    c = np.asarray(srgb, np.float64) / 255.0
-    return tuple(float(x) for x in np.where(c <= .04045, c / 12.92, ((c + .055) / 1.055) ** 2.4))
+# R256 (Ryan, Nov 15 2026, on the painted S8: "Lighten a step") and R258 (Ryan, Nov 15 2026: "the x1.85 column"; issue 781): the
+# whole painted map about x1.85 lighter in linear, toward the concept's grey at the battle camera (the S8 already matched the
+# concept's median at the fitted camera and read dark only at 34 degrees). Not the lift and not the light (LIFT and LIGHT_GAIN are
+# unchanged). CONCEPT above keeps the tones as sampled (sunward.md section 2; the battle median audit reads its iron band); the
+# steps below are applied where the tones are painted:
+#   WEAR_STEP  the wear tones (edge wear, scuffs and the painted rivet heads all mix toward BARE, the wear pair's light end) times
+#              WEAR_STEP in linear, so the bright edges rise with the plates and still read lighter than them (sunward.md 4)
+#   IRON_STEP  the iron family (pair()): each tone's brightest channel x moves up as WEAR_FLOOR * (x / WEAR_FLOOR) ** IRON_STEP,
+#              WEAR_FLOOR the stepped wear pair's dark end, and its other channels scale with it in linear, so its hue holds: the
+#              dark ends rise most, the light ends less, the family order (shade, dark, iron, cast and worked) holds, and every
+#              plate stays under the wear tones (sunward.md 4: wear tones only, never plate tones)
+# Soot, liner and frost do not move. IRON_STEP 1.0 and WEAR_STEP 1.0 give the sampled tones back.
+WEAR_STEP = 1.85
+IRON_STEP = .60
+IRON_STEP_KEYS = ('iron', 'iron_shade', 'iron_dark', 'iron_cast', 'worked')
+
+
+def _to_srgb255(c):
+    c = np.clip(np.asarray(c, np.float64), 0, 1)
+    return tuple(float(v) * 255.0 for v in np.where(c <= .0031308, c * 12.92, 1.055 * c ** (1 / 2.4) - .055))
+
+
+def wear_tone(srgb):
+    """a wear tone (sRGB show-tone) after the R258 wear step, as sRGB floats"""
+    return _to_srgb255(np.asarray(lin_raw(srgb)) * WEAR_STEP)
+
+
+WEAR_FLOOR = float(min(wear_tone(CONCEPT['wear'][0])))
+
+
+def stepped(srgb):
+    """an iron tone (sRGB show-tone) after the R256 and R258 iron step, as sRGB floats"""
+    x = float(max(srgb))
+    if x <= 0 or x >= WEAR_FLOOR: return tuple(float(c) for c in srgb)
+    k = lin_raw((WEAR_FLOOR * (x / WEAR_FLOOR) ** IRON_STEP,))[0] / lin_raw((x,))[0]
+    return _to_srgb255(np.asarray(lin_raw(srgb)) * k)
 
 
 def pair(k):
-    lo, hi = CONCEPT[k]; return lin(lo), lin(hi)
+    lo, hi = CONCEPT[k]
+    if k in IRON_STEP_KEYS: lo, hi = stepped(lo), stepped(hi)
+    return lin(lo), lin(hi)
 
 
 # ------------------------------------------------------------------------------------------------------------ the layers
 SCALE = 1.0          # every size below is in ship lengths (the recipe's frame: the ship is 1.0 long)
 LAYERS = dict(
     ao_short=.004, ao_long=.025, edge_radius=.0012, edge_gain=16.0,
-    # sunward.md 1: forged variation by plate (plate_var, island_tone), no fine mottle and no grain (R237: "grainy paint")
+    # sunward.md 1: forged variation by hull panel cell (panel_nodes), no fine mottle and no grain (R237: "grainy paint")
     patch_scale=4.0, plate_var=.22, island_tone=.50, side_dark=.25, grain_scale=260.0, mottle_scale=40.0, mottle=.05, grain=0.0,
     rough=.68, metal=.48, wear=1.0, grime=.55, ao_dark=.90, red_tone=0.0,
     rough_floor=.55,     # sunward.md 3: the roughness floor in every zone (no white specular glare at the game's key light)
@@ -96,8 +120,9 @@ LAYERS = dict(
     # R243 (Ryan, Nov 13 2026: "Sunward could have more triangle sleek panels"; a hull's order follows its faction's lore): the
     # Sunward plates are FORGED, not scavenged, so their order is deliberate and stays exact. patch_warp, patch_band and
     # patch_split are 0 and stay 0: the uneven warped grid is the Hullbreakers' opt-in only (R240, PR 682), never "fix" this order
-    # into warp. plate_var and island_tone carry the forged variation instead. The Sunward panels are drawn by panel_nodes below
-    # (the shared patchwork hands them over before it reads any of these three), so the shared _grid never sees these zeros.
+    # into warp. The forged variation comes instead from each hull panel cell taking one calm tone of its own: the Sunward
+    # panels are drawn by panel_nodes below (the shared patchwork hands them over before it reads any of these three), so the
+    # shared _grid never sees these zeros. plate_var and island_tone do not carry the hull variation; their values stay in LAYERS.
     patch_warp=0, patch_band=0, patch_split=0,
     cavity_pow=1.6, wear_lo=.22, wear_hi=.46,
     scuff=.35, scuff_size=.050,
@@ -129,7 +154,8 @@ for _kind, _g in _BY_KIND.items():
 for _k, _z in ZONES.items():
     _z['lo'], _z['hi'] = pair(_BASE[_k])
 FALLBACK = 'siron'
-BARE = lin(CONCEPT['wear'][1])        # the wear tone, dulled bright iron (the shared wear and scuff layers mix toward it)
+BARE = lin(wear_tone(CONCEPT['wear'][1]))   # the wear tone, dulled bright iron (the shared wear and scuff layers and the
+#                                              rivet heads mix toward it), after the R258 wear step
 GRIME = lin(CONCEPT['soot'][0])       # carbon soot
 RUST = RUST_DARK = GRIME              # read by the shared rust layer only where a zone has rust, and no Sunward zone has
 RED_PLATE = pair('iron')              # read only where a zone has a red_share, and no Sunward zone has

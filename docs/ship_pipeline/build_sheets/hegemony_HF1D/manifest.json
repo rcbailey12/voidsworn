@@ -1,0 +1,78 @@
+{
+ "code": "hegemony_HF1D",
+ "sheet_version": 1,
+ "routes_note": "kit = the Hegemony parts kit (tools/blender/kits/hegemony/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
+ "turret_marking": "R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).",
+ "parts": [
+  {
+   "id": "G1",
+   "kind": "gun",
+   "what": "interceptor guns, triple turret",
+   "count": 3,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "guns"
+   ],
+   "turret": true,
+   "pivot_object": "G1_turret",
+   "arc_lo": -180.0,
+   "arc_hi": 180.0
+  },
+  {
+   "id": "W1",
+   "kind": "slit",
+   "what": "sensor slit 0.054 x 0.009",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "sensor_slit"
+   ]
+  },
+  {
+   "id": "E1",
+   "kind": "engine",
+   "what": "drive, rectangular slit 0.26 x 0.05, three cells",
+   "count": 1,
+   "route": "kit",
+   "source": "picture",
+   "inventory": [
+    "drive"
+   ]
+  }
+ ],
+ "masses": [
+  {
+   "name": "Hull: the machined wedge",
+   "route": "hand-built"
+  },
+  {
+   "name": "The spine ridge",
+   "route": "hand-built"
+  },
+  {
+   "name": "The stern block",
+   "route": "hand-built"
+  }
+ ],
+ "break_pieces": [
+  {
+   "name": "bow piece",
+   "stations": "0.0 to 60.1 percent",
+   "bounded_by": [
+    "B-1"
+   ],
+   "full_interior": true
+  },
+  {
+   "name": "stern piece",
+   "stations": "60.1 to 100.0 percent",
+   "bounded_by": [
+    "B-1"
+   ],
+   "full_interior": true
+  }
+ ],
+ "insides": "full interiors throughout the hull, hidden until a piece breaks (R215); every break piece carries its share"
+}

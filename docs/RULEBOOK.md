@@ -149,9 +149,9 @@ credit is live, is status and lives in LOOP.md "The seats"):
 - Codex only for what no other seat can do (R234: "use it when it can only do something others can't"); GPT 6.1 Sol (2.7).
 - Kimi is no longer a seat (R257, Ryan, Nov 15: "Kimi is maxed out until 12/12. I just cancelled. I don't think it's worth
   continuing given the usage issues"). Its jobs go to DeepSeek (mid-size code) or an Opus worker; nothing is sent to Kimi.
-- Codex is near its weekly limit (R257, Ryan, Nov 15: "We probably have like one full session with codex left ... You might need
-  to start taking some of those GPU jobs"): Opus workers take Blender and paint jobs, DeepSeek takes code, and the Board runs the
-  PC GPU steps; Codex's session goes to the jobs that need its whole loop.
+- Codex is on the Pro plan (R264, Ryan, Nov 15: "it's on the pro plan, so significant usage upgrade") and runs up to three local
+  lanes (R268). SUPERSEDED, kept so nobody follows it: "Codex is near its weekly limit ... the Board runs the PC GPU steps" (R257,
+  ended by R264 the same day).
 - The API arms (opus, sonnet) run on the Max plan's monthly API credit (Ryan, Nov 12); same model family as the Board, so never
   the different-model check of Opus work (R219).
 - The Board thread may use the Fable advisor (R252: "this chat stands"); no Fable helpers (R180); not taken: Gemini 4 Hydrogen
@@ -162,9 +162,15 @@ short reviews only, never builds" (Nov 12, the OpenCode route; SUPERSEDED by R25
 included" (Nov 14; SUPERSEDED by R253). Ids: R128, R180e, R205, R206, R219, R234, R238, R242, R250, R252, R253, R257, agents-12.
 
 2.7 **Codex runs the model Ryan picked: GPT 6.1 Sol today, pinned by name in tools/pc/codex_issue.bat.** Never a weaker
-model by accident (Luna) and never switched to another one (Astra) without his yes; no Codex cloud tasks or cloud reviews.
+model by accident (Luna) and never switched to another one (Astra) without his yes; no Codex cloud tasks or cloud reviews,
+because a cloud task runs the default model OpenAI picks and cannot be pinned (OpenAI's Codex models page, Nov 2026). Code-only
+jobs run on a third local lane on the PC instead (lane C, R268, Ryan Nov 15: "yeah lane c is fine"), pinned like the others.
+If OpenAI lets cloud tasks pin a model, this can be asked again.
 Why: "We don't want to force using Astra or something. Just not accidentally run Luna or something, that's why we usually
-use Sol 6.1" (R216). Ends when Ryan picks another model. Set: Ryan, Nov 2 (R75) and Nov 11 (R216). Ids: R75b, agents-07.
+use Sol 6.1" (R216). Ends when Ryan picks another model. Set: Ryan, Nov 2 (R75), Nov 11 (R216) and Nov 15 (R267). Ids: R75b, R267, agents-07.
+Exception (R270, Ryan Nov 15: "Your ChatGPT dot"): Ryan's ChatGPT dot is the repo librarian. It runs in OpenAI's cloud, but
+read-only: it reads main, GitHub issues and PRs, and reports findings to Ryan (later to one standing librarian issue); it never
+pushes, edits, merges, closes or decides a rule. Every finding is checked by the Board against live main before anything changes.
 
 2.8 **Muse: a blind Rey leg written before Rey reads the others, on research, design and review jobs** (not on low-code fix
 jobs). Why: "Let's ensure muse is running its own blind leg room not just chairing." Set: Ryan, Nov 3 (R89). Ids: R89,
@@ -191,8 +197,9 @@ not drift (R155b). Set: Ryan, Nov 2 (R81). Ids: R81, agents-15, muse-06.
 2.13 **A job's scope lists every folder its earlier runs touched, and every baked picture keeps its bake script in the repo.**
 Why: PR 327 merged without its bake scripts (R157). Set: Board.
 
-2.14 **Effort follows the kind of job**: high for the Board, audits and design passes; medium for first builds judged by eye;
-low for well-specified code. Why: a miss on a look costs a whole extra round (R168). Set: Board.
+2.14 **Effort follows the kind of job** (an operating note, not a rule, under 0.10 and R251: the Board may change it in LOOP.md):
+high for the Board, audits and design passes; medium for first builds judged by eye; low for well-specified code. Why: a miss on
+a look costs a whole extra round (R168). Set: Board.
 
 2.15 **The repo is the record.** Rulings go to FINDINGS with Ryan's words and the problem he was reacting to; board state to
 LOOP.md; rules to this book. Why: the other models only see the repo. Set: Ryan (project instructions; R189).
@@ -214,12 +221,25 @@ disk check.** Why: the PC disk filled on Nov 11 (C: 0.0 GB free, 550 GB in voids
 watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md, Nov 12 02:15 and 02:20 UTC). Set: Ryan
 (project instructions: never delete); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
 
-3.4 **One GPU job at a time, and check Ryan is not using the GPU first.** Why: a long bake holds every later job, and he uses
-the GPU himself ("can we have codex pause gpu usage?", R173). Set: Ryan (R173); Board (queue). Ids: R173b, effects-09.
+3.4 **Up to two GPU jobs at once across the main lane and lane B; frame-time measurements run solo. Lane C stays code only.**
+The launchers take and release claims themselves: two shared slots, or a solo claim that waits for both slots to empty and
+blocks new GPU work while it measures. Dead process claims are reclaimed. `gpu_go.txt` still wins: no new GPU work starts
+unless its first line is `GPU cleared` (optionally followed by `: reason`); the gaming pause in 3.11 is unchanged. Why: Ryan
+asked "can we run multiple jobs to speed things up?" and approved the Board's two-job, solo-measurement pick:
+"merge and make those changes to gpu jobs"
+(R276). The RTX 5080 has 16 GB: two jobs fit, three heavy jobs risk running out of graphics memory. Solo measurements keep
+speed numbers honest. Replaces the one-job limit (R173b, effects-09); the gaming pause (R173) remains. Set: Ryan, Nov 15 (R276).
 
 3.5 **Every PC queue job is wrapped in the tmo.bat watchdog, ends with exit /b, and carries no |, &, < or > in its
-arguments.** Why: hung Godot windows blocked the queue for about three hours (G-3). Set: Board. Ids: G-3, feel-06,
-skill-pb-05.
+arguments.** Agent runs stop after STALL_MIN minutes without progress (default 30), or at a hard ceiling (default six
+hours; CODEX_CAP and WORK_CAP override the ceiling in seconds). Progress is a changed file write time in the run repo,
+a new commit, or new bytes in log.txt (also stderr for workhorse runs). Git housekeeping does not count. A stall or ceiling
+stop writes its reason, changed files and last log lines to the out folder's resume.txt and the -partial commit message;
+the next run reads that note. timeouts.log records STALLED after N min or CEILING. Short queue commands and runner checks
+keep their explicit time limits. Why: hung Godot windows blocked the queue for about three hours (G-3), but the old two-hour
+agent cap killed jobs that were still working (367 and 371). Ryan, Nov 15: "do we need to get rid of that random 2 hour rule
+if it's timing out actual work?" He took up a stall check, a high backstop and a saved resume note (issue 818). Set: Board
+(G-3), Ryan (issue 818). Ids: G-3, feel-06, skill-pb-05.
 
 3.6 **The Board may double-click .bat files on the PC itself by computer use, a few clicks at a time, releasing the lock at
 once, never while Ryan is playing; it never drives the PC by remote clicks to unstick a job.** Why: "can't you use computer
@@ -240,6 +260,13 @@ R111a, R111b, R113, R116, R121a, R121b.
 3.10 **The repo stays public.** Why: the outside tools (Muse and its models) read it without logins (R216). Set: Ryan (R10,
 R216).
 
+3.11 **A pause never loses or deletes work.** When Ryan wants the PC (GPU or CPU), the Board runs tools/pc/pause_all.bat
+(now, or at a time): it withdraws the GPU go, closes only chain windows still waiting to start, and ends the Board's own AI
+processes (only those whose command line names the voidsworn_test job folders; never Ryan's own apps), so
+each running job's runner commits and pushes its work to the issue's -partial branch; job windows mid-run are never closed and
+nothing is deleted. On Ryan's go the Board restarts every paused job from its -partial branch. Why: "I don't want to cause
+anything to get lost or deleted with the pauses as well, so let's bake that in" (R272). Set: Ryan, Nov 15.
+
 ## 4. Ships and concepts
 
 4.1 **Space ships, never sea ships, in the whole shape.** No boat profile, keel, raked prow, deck house, mast, funnel, crane,
@@ -248,8 +275,9 @@ obvious naval-looking ships. again, these are SPACE ships"; Nov 11: "I don't und
 as naval. We need to do a full pass across all ships and factions so not naval" (R185). Set: Ryan (Oct 22, Oct 24, R185). Ids:
 agents-19, agents-25, R8b, R185a, concepts-16. Detail: docs/playbooks/concepts_round2.md gate line 11.
 
-4.2 **No gun faces backward or into the ship.** Why: "no ship in the game fires backward" (Oct 22). Set: Ryan. Ids: agents-17,
-blob-03.
+4.2 **No gun faces backward or into the ship at rest; a turret may turn aft only to follow a target its rules arc lets it hit
+(6.16, R222).** Why: "no ship in the game fires backward" (Oct 22). Set: Ryan (Oct 22; the turret line Nov 12, R222).
+Ids: agents-17, blob-03, R222.
 
 4.3 **Parts look like they belong: snapped to the real hull on a visible mount, in matched pairs at sensible hard points; the
 Hullbreakers may be junky.** Why: bolt-ons on the AI hulls floated, sank or sat anywhere (Oct 21). Set: Ryan, Oct 21. Ids:
@@ -437,9 +465,10 @@ always reads as a death.** Why: every faction died the same faint puff (deaths_a
 staging table; the sizes and times are tuning values (0.4). Ids: deaths-03, deaths-10. Detail:
 docs/playbooks/deaths_and_hits.md.
 
-6.11 **Shields in space keep their faction colours; at rest invisible, a faint edge glow on zoom, hover or a recent hit, a
-downed side a dark gap.** Why: his Oct 24 ruling (the cyan-only rule retired) and his yes to the Board's resting pick (R163).
-Set: Ryan (R3, R163). Ids: R3a, R163a, effects-04.
+6.11 **Shields in space keep their faction colours; at rest, Rim and Gap: a faint rim in the faction edge colour on live
+sides, a dark gap where a side is open, nothing else** (R246, Nov 14). Why: his Oct 24 ruling (the cyan-only rule retired) and his
+Rim and Gap pick with Muse (R246). Set: Ryan (R3, R246). SUPERSEDED, kept so nobody follows it: "at rest invisible, a faint edge
+glow on zoom, hover or a recent hit" (R163, ended by R246). Ids: R3a, R163a, R246, effects-04.
 
 6.12 **Effects may spend the RTX 5080's headroom inside the scene gate, with a lower setting kept.** Set: Ryan (R88c). See
 3.9.

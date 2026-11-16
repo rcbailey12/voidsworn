@@ -111,6 +111,9 @@ Rules:
 - Do exactly what the job below asks. Change nothing else. Read the brief it names first.
 - No em dashes in anything you write. Plain words, plain ASCII.
 - Do not commit and do not push: the runner does that after you finish.
+- GPU work must use tools/pc/tmo.bat <seconds> <exe> [args]. It takes one of two shared GPU slots;
+  frame-time scripts take solo automatically. For a new timing script set PC_GPU_MODE=solo before calling tmo.bat.
+  gpu_go.txt must say GPU cleared. Lane C is code only. Never launch GPU executables directly.
 - Keep scratch output (logs, temp files) out of this folder, in the system temp folder.
 - Save the screenshots your report links to in $out\shots (create it). The reviewer sees that folder.
 - Finish with a short report: what you changed (files), each check you ran and its result (paste the PASS or FAIL lines),
@@ -225,6 +228,7 @@ elseif ($mode -eq 'msg') {
   if (-not $checks) { $checks = '(the runner wrote no check output for this run; see the run folder on the PC)' }
   $fence = '```'
   $msg = "Workhorse $arm arm (issue #$n): $title`n`n$last`n`n## Checks run by the runner`n`n$fence`n$checks`n$fence`n`n## Run stats (runner)`n`n$fence`n$stats`n$fence`n`nRefs #$n`n"
+  if (Read-Txt (Join-Path $out 'stop_reason.txt')) { $msg += "`n" + (Read-Txt (Join-Path $out 'resume.txt')) + "`n" }
   [IO.File]::WriteAllText((Join-Path $out 'commit.txt'), $msg, $utf8)
 }
 elseif ($mode -eq 'guard') {
@@ -321,7 +325,8 @@ elseif ($mode -eq 'commit') {
     $base = Read-Txt (Join-Path $out 'base_commit.txt')
     $resumed = Read-Txt (Join-Path $out 'resume.txt')
     & git diff --quiet $base HEAD 2>$null
-    if (-not $resumed -or $LASTEXITCODE -eq 0) { Write-Host 'nothing left to commit after the refuse list'; Pop-Location; exit 7 }
+    $partial = Read-Txt (Join-Path $out 'partial.txt')
+    if (-not $partial -and (-not $resumed -or $LASTEXITCODE -eq 0)) { Write-Host 'nothing left to commit after the refuse list'; Pop-Location; exit 7 }
     Write-Host 'resumed work is already committed; carry it through the checked push'
   }
   $num = @(Git-Lines -c core.quotepath=off diff --cached --numstat --no-renames)

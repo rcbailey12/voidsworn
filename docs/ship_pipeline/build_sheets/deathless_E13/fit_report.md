@@ -1,4 +1,4 @@
-# deathless_E13 fit report (first sheet (issue 739); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
+# deathless_E13 fit report (first sheet (issue 739); even side to side (issue 783); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
 
 Made by `tools/blender/build_sheets/clash.py` on the built blockout (it runs inside every `build.py ... render` and on its own
 with `build.py <code> <out> fit`). What it tests, on every part of every type:
@@ -29,7 +29,7 @@ also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on t
 (`turret=0`, `gun_fixed=1`).
 
 
-## How first sheet (issue 739) fixed them
+## How first sheet (issue 739); even side to side (issue 783) fixed them
 
 | Clash (before) | Fix |
 |---|---|
@@ -42,7 +42,7 @@ While designing, the check caught (and the design fixed): the core's gimbal ring
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 96 objects, 15 parts, 83 close pairs, 146 rays, 1 guns, 0 sensor pairs, 1 turrets swept, 5 cones, 8 apertures, 0 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 97 objects, 15 parts, 83 close pairs, 146 rays, 1 guns, 0 sensor pairs, 1 turrets swept, 5 cones, 8 apertures, 0 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 

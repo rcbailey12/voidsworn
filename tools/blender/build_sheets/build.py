@@ -7,6 +7,7 @@
 # fit:    builds, runs the fit check (clash.py) and writes <code>_fit.json and <code>_model.json, no renders.
 # match:  builds and runs only the weapon-match check (weapon_match.py, R241); exit 1 when it fails. Every mode that builds
 #         runs it and writes <code>_weapon_match.json.
+# --variant=<data.js id>: build that sheet's named variant into <outdir>/<data.js id>/.
 # render runs the fit check too (round 3, R217).
 import sys, os, json, math, importlib.util
 import bpy
@@ -15,11 +16,16 @@ from mathutils import Vector, Matrix
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import kit  # noqa: E402
+import variants  # noqa: E402
 
 argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
 CODE, OUT = argv[0], argv[1]
-MODE = argv[2] if len(argv) > 2 else 'render'
+MODE = next((arg for arg in argv[2:] if not arg.startswith('--')), 'render')
 QUICK = '--quick' in argv
+# Named variants get their own output folder, so a preview cannot replace the base sheet.
+GAME = next((arg.split('=', 1)[1] for arg in argv[2:] if arg.startswith('--variant=')), None)
+if GAME:
+    OUT = os.path.join(OUT, GAME)
 os.makedirs(OUT, exist_ok=True)
 
 spec = importlib.util.spec_from_file_location(CODE, os.environ.get('SHIP_FILE') or os.path.join(HERE, 'ships', CODE + '.py'))
@@ -27,10 +33,7 @@ ship = importlib.util.module_from_spec(spec); spec.loader.exec_module(ship)
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 sc = bpy.context.scene
-kit.use_kit(getattr(ship, 'KIT', 'hullbreakers'))
-K = kit.Kit(CODE, ship.LENGTH)
-ship.build(K)
-K.finish()
+K = variants.build(ship, GAME)
 bpy.context.view_layer.update()
 import clash  # noqa: E402
 
@@ -72,7 +75,9 @@ def r3(v):
 
 
 def write_model():
-    model = dict(code=CODE, name=ship.NAME, faction=ship.FACTION, cls=ship.CLASS, length=ship.LENGTH, game=ship.GAME,
+    game_line = 'data.js %s (variant of %s)' % (K.game_ship, variants.base_game(ship)) if K.variant else ship.GAME
+    model = dict(code=CODE, name=ship.NAME, faction=ship.FACTION, cls=ship.CLASS, length=ship.LENGTH, game=game_line,
+                 game_ship=K.game_ship, variant=K.variant,
                  beauty=ship.BEAUTY, model_length=round(MODEL_LEN, 3), x_tip=round(XTIP, 3), lo=r3(LO), hi=r3(HI), views=views,
                  features=[], masses=[], inside=K.inside, points=[], changes=K.changes, tbd=K.tbd, kit=kit.KIT_NAME,
                  sheet=getattr(ship, 'SHEET', dict(version=3, round='round 3', date='2026-11-11', blend='opus532\\r3b')),
@@ -104,18 +109,12 @@ def write_model():
 views = {}
 # issue 676 (R241): the weapon-match check on every build: every weapon the ship shows is one of its data.js weapons, tied to
 # that slot's hard point, of a kind that fits it, facing its arc, a turret turning under its own node (weapon_match.py)
-import re as _re  # noqa: E402
 import weapon_match  # noqa: E402
-_gm = _re.search(r'data\.js\s+([A-Za-z0-9_]+)', str(getattr(ship, 'GAME', '')))
-if _gm:
-    MATCH, _mp = weapon_match.run(K, _gm.group(1))
-    json.dump(MATCH, open(os.path.join(OUT, CODE + '_weapon_match.json'), 'w'), indent=1)
-    print('%s weapon match %s (%d problems)' % ('PASS' if not _mp else 'FAIL', CODE, len(_mp)))
-    for _p in _mp:
-        print('  ', _p)
-else:
-    MATCH = dict(code=CODE, result='FAIL', problems=['the sheet GAME line names no data.js ship'])
-    print('FAIL weapon match %s: the sheet GAME line names no data.js ship' % CODE)
+MATCH, _mp = weapon_match.run(K, K.game_ship)
+json.dump(MATCH, open(os.path.join(OUT, CODE + '_weapon_match.json'), 'w'), indent=1)
+print('%s weapon match %s (%d problems)' % ('PASS' if not _mp else 'FAIL', CODE, len(_mp)))
+for _p in _mp:
+    print('  ', _p)
 if MATCH.get('result') != 'PASS':
     sys.exit(1)
 if MODE == 'match':
@@ -313,7 +312,8 @@ render(o, res, os.path.join(OUT, 'stern.png'))
 
 
 # standard three-quarter: 45 degrees off the bow toward port, 30 above, bow left
-o = look_cam('threequarter', 45, 30, 120, 50 * 120 / (1.5 * ship.LENGTH) * 0.9, (1600, 1000), (cx, cy, cz))
+# a ship taller than its length allows (E14's upright ring, issue 782) widens the frame with its SHEET 'tq_zoom' (default 1)
+o = look_cam('threequarter', 45, 30, 120, 50 * 120 / (1.5 * ship.LENGTH) * 0.9 * float(_SH.get('tq_zoom', 1.0)), (1600, 1000), (cx, cy, cz))
 render(o, (int(1600 * (0.5 if QUICK else 1)), int(1000 * (0.5 if QUICK else 1))), os.path.join(OUT, 'threequarter.png'))
 # the fitted beauty camera (written by fit.py), for the outline check
 fitp = os.path.join(HERE, 'ships', CODE + '_camera.json')

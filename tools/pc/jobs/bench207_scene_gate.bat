@@ -29,7 +29,8 @@ if not exist "%R%\godot\bench\scene_gate.tscn" (
   echo clone failed >> "%O%\status.txt"
   exit /b 1
 )
-set "TMO=%R%\tools\pc\tmo.bat"
+rem Use the installed watchdog, never the old checkout being measured.
+set "TMO=%~dp0..\tmo.bat"
 nvidia-smi > "%O%\gpu_before.txt" 2>&1
 robocopy "%VT%\build\godot\assets\ships" "%R%\godot\assets\ships" /E /XF manifest.json README.md a4_props.gd *.uid /XD test previews /NP /NDL /R:1 /W:1 > "%O%\a4copy_log.txt" 2>&1
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-ChildItem -Recurse -File '%R%\godot\assets\ships' -Include *.glb,*.jpg,*.png | Get-FileHash -Algorithm SHA256 | ForEach-Object { $_.Hash.ToLower() + ' ' + (Split-Path $_.Path -Leaf) + ' ' + (Get-Item $_.Path).Length } | Set-Content '%O%\a4copy_sha256.txt'"

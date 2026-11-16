@@ -133,6 +133,37 @@ static func sheet_theme(k: float) -> Theme:
 	for state in ["grabber", "grabber_highlight", "grabber_pressed"]: th.set_stylebox(state, "VScrollBar", thumb)
 	return th
 
+# DB1 spans the page, so its smooth veil holds at least 94% black under every word.
+const LEDGER_VEIL_MIN := 0.94
+static func ledger_veil() -> Texture2D:
+	var g := Gradient.new()
+	g.offsets = PackedFloat32Array([0.0, 0.5, 1.0])
+	g.colors = PackedColorArray([Color(0, 0, 0, 0.96), Color(0, 0, 0, LEDGER_VEIL_MIN), Color(0, 0, 0, 0.96)])
+	var t := GradientTexture2D.new(); t.gradient = g; t.width = 1024; t.height = 1
+	t.fill_from = Vector2.ZERO; t.fill_to = Vector2.RIGHT
+	return t
+
+static func ledger_card(k: float, picked: bool) -> StyleBoxFlat:
+	var s := flat(Color.TRANSPARENT, 0, 0, k)
+	if picked:
+		s.border_color = SHEET_HAIR; s.set_border_width_all(maxi(1, px(1, k)))
+	return s
+
+static func ledger_focus(k: float) -> StyleBoxFlat:
+	var s := flat(Color.TRANSPARENT, 0, 0, k)
+	s.border_color = TEXT2; s.border_width_bottom = maxi(1, px(1, k))
+	return s
+
+static func ledger_theme(k: float) -> Theme:
+	var th := sheet_theme(k)
+	th.set_stylebox("panel", "TooltipPanel", tip(k))
+	th.set_color("font_color", "TooltipLabel", TEXT)
+	for state in ["font_color", "font_hover_color", "font_focus_color", "font_pressed_color"]: th.set_color(state, "Button", TEXT)
+	th.set_color("font_disabled_color", "Button", TEXT3)
+	th.set_color("font_color", "Label", TEXT)
+	th.set_color("default_color", "RichTextLabel", TEXT)
+	return th
+
 # ---------------------------------------------------------------- type (OFL, godot/ui/theme/fonts)
 # Chakra Petch (angular) for every word, Azeret Mono for numbers that decide something (odds, damage, hull, keys).
 const FONT_DIR := "res://ui/theme/fonts/"

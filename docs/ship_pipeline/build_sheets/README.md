@@ -20,6 +20,9 @@ construction. The feature table is written by the same model, and on counts it o
 | voidsworn_S8, Daybreak-class dreadnought (Sunward flagship), issue 738 | [sheet](voidsworn_S8/sheet.jpg) | [feature_table.md](voidsworn_S8/feature_table.md) |
 | hegemony_H10, Dominion-class dreadnought (Hegemony line flagship), issue 759 | [sheet](hegemony_H10/sheet.jpg) | [feature_table.md](hegemony_H10/feature_table.md) |
 | hegemony_IM5, The Iron Mandate (Hegemony super-dreadnought, the boss), issue 768 | [sheet](hegemony_IM5/sheet.jpg) | [feature_table.md](hegemony_IM5/feature_table.md) |
+| hegemony_HF1D, Spined Shield (Hegemony fighter wing craft), issue 793 | [sheet](hegemony_HF1D/sheet.jpg) | [feature_table.md](hegemony_HF1D/feature_table.md) |
+| corsair_KB1CC, Wide Glacis (Hullbreaker bomber wing craft), issue 793 | [sheet](corsair_KB1CC/sheet.jpg) | [feature_table.md](corsair_KB1CC/feature_table.md) |
+| chorus_CS1BA2, Sealed Gills (Chorus spore swarm craft), issue 793 | [sheet](chorus_CS1BA2/sheet.jpg) | [feature_table.md](chorus_CS1BA2/feature_table.md) |
 
 The Eclipse fleet from above at one scale: [eclipse_lineup.jpg](eclipse_lineup.jpg) (`tools/blender/build_sheets/studies/eclipse_lineup.py`).
 

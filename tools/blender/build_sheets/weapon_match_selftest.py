@@ -127,7 +127,14 @@ def plant_split_launchers(s):
 
 
 def craft(kind):
-    """a squadron craft as data.js fighter (guns T: one three-barrel turret) or bomber (bombs T: one two-tube bomb cassette)"""
+    """a squadron craft as data.js fighter (guns T: one three-barrel turret), bomber (bombs T: one two-tube bomb cassette) or spore
+    (sporeb T, issue 793: two acid sacs, one per flank, fixed)"""
+    if kind == 'spore':
+        weapons = [('sporeb', 'T')]
+        ms = [dict(id=fid, weapon='sporeb', letter='T', type='acid_sac', mount='launcher', barrels=1, size=0.05, rest_yaw=0.0,
+                   muzzles=[muz(0.3, y, aim=(0.99, 0.1 * (1 if y > 0 else -1), 0.0))], turret=None) for fid, y in (('S1', 0.2), ('S2', -0.2))]
+        stats = {w: gamedata.weapon_stats(w) for w, _ in weapons}
+        return dict(code='SPORE', weapons=weapons, stats=stats, parts=[dict(id=m['id'], kind='launcher', type='acid_sac') for m in ms], mounts=ms)
     if kind == 'fighter':
         weapons = [('guns', 'T')]
         m = turret('G1', 'guns', 'T', n=3, rest=0.0)
@@ -159,11 +166,32 @@ def plant_craft_extra_tube(s):
     s['parts'].append(dict(id='BX', kind='launcher', type='bomb_tube'))            # a second, silent bomb cassette
 
 
+def plant_spore_turret(s):
+    m = s['mounts'][0]; lo, hi = WM.ARCS['T']
+    m.update(type='spore', mount='turret', turret=dict(arc_lo=lo, arc_hi=hi, letter='T', under=True))   # an acid sac shown as a spore gland turret
+    s['parts'][0].update(kind='gun', type='spore')
+
+
+def plant_spore_one_sac(s):
+    s['mounts'].pop(); s['parts'].pop()
+    s['mounts'][0]['muzzles'] = s['mounts'][0]['muzzles'] + [muz(0.3, 0.0)]          # both bursts from one sac, the other flank bare
+    s['mounts'].append(dict(s['mounts'][0], id='S9', type='bomb_tube'))               # and a bomb tube where the second sac was
+    s['parts'].append(dict(id='S9', kind='launcher', type='bomb_tube'))
+
+
+def plant_spore_bigger(s):
+    s['mounts'][1]['size'] = 0.09                                                     # the starboard sac far bigger than the port one
+
+
 CRAFT_CASES = [
     ('KIND', 'bomber', 'a bomber\'s bombs shown as a gun turret', plant_craft_bombs_turret),
     ('TURRET', 'fighter', 'a fighter\'s all-round guns in a fixed casemate', plant_craft_guns_casemate),
     ('KIND', 'fighter', 'a fighter\'s guns shown as bomb tubes', plant_craft_guns_cassette),
     ('EXTRA', 'bomber', 'a second bomb cassette with no slot', plant_craft_extra_tube),
+    # issue 793: the Chorus spore swarm (data.js spore: sporeb T, two acid sacs, fixed)
+    ('KIND', 'spore', 'a spore swarm\'s acid sacs shown as a turning spore gland', plant_spore_turret),
+    ('KIND', 'spore', 'a bomb tube standing in for the second acid sac', plant_spore_one_sac),
+    ('SAME', 'spore', 'the two acid sacs of one slot far apart in size', plant_spore_bigger),
 ]
 
 
@@ -243,6 +271,42 @@ HEG_CASES = [
 ]
 
 
+def spinal(fid, weapon='nlance', letter='F'):
+    """the Eclipse null lance as a fixed forward gun: one bore firing over the bow (issue 784; the E14 sheet is issue 782)"""
+    return dict(id=fid, weapon=weapon, letter=letter, type='nullcannon', mount='fixed', barrels=1, size=1.0, rest_yaw=0.0,
+                muzzles=[muz(2.0, 0.0)], turret=None)
+
+
+def clean_flare():
+    """an Eclipse ship as data.js d_jackal after issue 784: one null lance, F, nothing else"""
+    weapons = [('nlance', 'F')]
+    stats = {w: gamedata.weapon_stats(w) for w, _ in weapons}
+    mounts = [spinal('L1')]
+    parts = [dict(id='L1', kind='spinal', type='nullcannon')]
+    return dict(code='TESTE', weapons=weapons, stats=stats, parts=parts, mounts=mounts)
+
+
+def plant_lance_turret(s):
+    s['mounts'] = [turret('L1', 'nlance', 'F', n=1, typ='nullcannon')]
+    s['parts'] = [dict(id='L1', kind='turret', type='nullcannon')]
+
+
+def plant_flare_old_turret(s):
+    s['mounts'].append(turret('T1', 'gauss', 'T', typ='nullcannon'))               # the old aft null cannon left on the ship
+    s['parts'].append(dict(id='T1', kind='turret', type='nullcannon'))
+
+
+def plant_lance_abeam(s):
+    s['mounts'][0]['muzzles'] = [muz(2.0, 0.0, aim=(0.0, 1.0, 0.0))]                # the fixed lance laid along the beam (issue 782)
+
+
+# the Eclipse flare row of FITS (issue 784): the null lance is fixed, and the old turret is no slot any more
+FLARE_CASES = [
+    ('KIND', 'a null lance built on a turning turret', plant_lance_turret),
+    ('COUNT', 'the old aft null cannon turret kept on the flare', plant_flare_old_turret),
+    ('ARC', 'the fixed null lance aimed along the beam', plant_lance_abeam),
+]
+
 def sheet_games():
     """(code, data.js ship id) for every sheet ship design file"""
     out = []
@@ -272,12 +336,13 @@ def main():
         else:
             print(f'ok   {rule:<6} {what}: {hits[0][:110]}')
     # squadron craft (issue 769): a clean fighter and bomber pass; each planted craft fault is named by its rule
-    for kind in ('fighter', 'bomber'):
+    for kind in ('fighter', 'bomber', 'spore'):
         probs = WM.check(craft(kind))
         if probs:
             bad.append(f'the clean {kind} fails: ' + '; '.join(probs))
         else:
-            print(f'ok   clean {kind} (data.js {kind}: ' + ('one three-barrel guns turret' if kind == 'fighter' else 'one two-tube bomb cassette') + '): PASS')
+            print(f'ok   clean {kind} (data.js {kind}: ' + {'fighter': 'one three-barrel guns turret', 'bomber': 'one two-tube bomb cassette',
+                                                          'spore': 'two fixed acid sacs, one per flank'}[kind] + '): PASS')
     for rule, kind, what, plant in CRAFT_CASES:
         s_ = craft(kind); plant(s_)
         probs = WM.check(s_)
@@ -293,6 +358,19 @@ def main():
         print('ok   clean Hegemony ship (h_boss: two shoulder lances, a bridge lance, the ion trench, a picket turret): PASS')
     for rule, what, plant in HEG_CASES:
         s = clean_heg(); plant(s)
+        probs = WM.check(s)
+        hits = [p for p in probs if p.startswith(rule + ' ')]
+        if not hits:
+            bad.append(f'{rule} not raised for {what}: got {probs}')
+        else:
+            print(f'ok   {rule:<6} {what}: {hits[0][:110]}')
+    probs = WM.check(clean_flare())
+    if probs:
+        bad.append('the clean Eclipse flare fails: ' + '; '.join(probs))
+    else:
+        print('ok   clean Eclipse flare (d_jackal: one fixed null lance firing forward): PASS')
+    for rule, what, plant in FLARE_CASES:
+        s = clean_flare(); plant(s)
         probs = WM.check(s)
         hits = [p for p in probs if p.startswith(rule + ' ')]
         if not hits:
@@ -321,7 +399,7 @@ def main():
     print(f'ok   table: {len(games)} sheet ships, every data.js weapon has a FITS row and a shot count' if not any('FITS' in b or 'shot' in b for b in bad) else 'FAIL table')
     for b in bad:
         print('  ' + b)
-    print(('FAIL' if bad else 'PASS') + f' weapon match self-test ({len(CASES) + len(CRAFT_CASES) + len(HEG_CASES)} planted faults, {len(games)} sheet ships in the table)')
+    print(('FAIL' if bad else 'PASS') + f' weapon match self-test ({len(CASES) + len(CRAFT_CASES) + len(HEG_CASES) + len(FLARE_CASES)} planted faults, {len(games)} sheet ships in the table)')
     return 1 if bad else 0
 
 

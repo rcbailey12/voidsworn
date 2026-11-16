@@ -57,12 +57,13 @@ function tree(files) {
   return object('tree', Buffer.concat(Object.entries(files).sort(([a], [b]) => a.localeCompare(b)).map(([name, value]) =>
     Buffer.concat([Buffer.from('100644 ' + name + '\0'), Buffer.from(object('blob', value), 'hex')]))));
 }
-function fixtureCommit(files, parent) {
+function fixtureCommit(files, parent, note = '') {
   return object('commit', 'tree ' + tree(files) + '\n' + (parent ? 'parent ' + parent + '\n' : '') +
-    'author Runner fixture <fixture@example.invalid> 1700000000 +0000\ncommitter Runner fixture <fixture@example.invalid> 1700000000 +0000\n\nTest fixture\n');
+    'author Runner fixture <fixture@example.invalid> 1700000000 +0000\ncommitter Runner fixture <fixture@example.invalid> 1700000000 +0000\n\nTest fixture\n' + note);
 }
 const base = fixtureCommit({ 'progress.txt': 'base\n' });
-const partial = fixtureCommit({ 'progress.txt': 'from partial\n' }, base);
+const partial = fixtureCommit({ 'progress.txt': 'from partial\n' }, base,
+  '\n## Runner resume note (issue 818)\nStop reason: STALLED after 30 min\nChanged files: progress.txt\nLast log lines: saved work before stopping\n## End runner resume note\n');
 const conflicting = fixtureCommit({ 'progress.txt': 'conflicting main\n' }, base);
 write(path.join(source, 'HEAD'), 'ref: refs/heads/main\n');
 write(path.join(source, 'refs/heads/main'), base + '\n');
@@ -88,6 +89,7 @@ if (probe) {
 } else {
   const task = fs.existsSync('CODEX_TASK.md') ? 'CODEX_TASK.md' : 'WORK_TASK.md';
   if (!fs.readFileSync(task,'utf8').includes('Resumed by merging')) process.exit(31);
+  if (!fs.readFileSync(task,'utf8').includes('saved work before stopping')) process.exit(33);
   if (fs.readFileSync('progress.txt','utf8') !== 'from partial\\n') process.exit(32);
   fs.writeFileSync('agent_started.txt', 'resumed work verified');
   console.log(JSON.stringify({type:'text',part:{text:'Stub completed from partial'}}));
@@ -283,19 +285,19 @@ function job(arm, label, extra = {}) {
   assert(!fs.existsSync(noStart.env.PC_TEST_TRACE));
   assert(!fs.existsSync(noStart.repo));
   pass('a low-disk run stops before the mirror, the model probe and the agent');
-  // The Board writes work217\runner_hashes.txt with hashwrite after copying the five runner files; hashcheck then
+  // The Board writes work217\runner_hashes.txt with hashwrite after copying the runner and watchdog files; hashcheck then
   // guards the running copies. A mismatch or a missing file is a warning, never a stop.
-  const five = ['codex_issue.bat', 'codex_issue.ps1', 'runner_common.ps1', 'work_issue.bat', 'work_issue.ps1'];
+  const runnerFiles = ['codex_issue.bat', 'codex_issue.ps1', 'runner_common.ps1', 'work_issue.bat', 'work_issue.ps1', 'run_timeout.ps1', 'tmo.bat', 'gpu_slots.js'];
   const hashesGood = path.join(root, 'board_hashes_good.txt');
-  write(hashesGood, five.map(n => crypto.createHash('sha256').update(fs.readFileSync(path.join(here, n))).digest('hex') + '  ' + n).join('\n') + '\n');
+  write(hashesGood, runnerFiles.map(n => crypto.createHash('sha256').update(fs.readFileSync(path.join(here, n))).digest('hex') + '  ' + n).join('\n') + '\n');
   const hashOut = path.join(root, 'hashcheck'); fs.mkdirSync(hashOut); write(path.join(hashOut, 'result.txt'), '');
   assert.equal(ps(['init', hashOut, 'fixture/hash'], defaults).code, 0);
   const hashesWritten = path.join(root, 'board_hashes_written.txt');
   assert.equal(ps(['hashwrite', here, hashesWritten], defaults).code, 0);
   assert.equal(read(hashesWritten), read(hashesGood));
   assert.equal(ps(['hashcheck', hashOut, here, hashesGood], defaults).code, 0);
-  assert(read(path.join(hashOut, 'result.txt')).includes('runner files match the Board hashes (5 checked)'));
-  pass('hashwrite and hashcheck agree on the five runner files');
+  assert(read(path.join(hashOut, 'result.txt')).includes(`runner files match the Board hashes (${runnerFiles.length} checked)`));
+  pass('hashwrite and hashcheck agree on the runner and watchdog files');
   const hashesBad = path.join(root, 'board_hashes_bad.txt');
   write(hashesBad, read(hashesGood).split('\n').map(l => l.endsWith('runner_common.ps1') ? '0'.repeat(64) + '  runner_common.ps1' : l).join('\n'));
   assert.equal(ps(['hashcheck', hashOut, here, hashesBad], defaults).code, 0);

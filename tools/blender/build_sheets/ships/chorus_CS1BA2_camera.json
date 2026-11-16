@@ -1,0 +1,21 @@
+{
+ "az": 44.134818857366824,
+ "el": 44.64881845110026,
+ "roll": 7.920584539461101,
+ "dist": 62.51327960890415,
+ "mm": 1518.7079291572145,
+ "target": [
+  0.0,
+  0.0,
+  0.0
+ ],
+ "sx": -0.0420881661852236,
+ "sy": -0.03362599524902354,
+ "res": [
+  1080,
+  720
+ ],
+ "iou": 0.8338,
+ "body_iou": 0.8322,
+ "note": "CS1B-A2 (one three-quarter picture from above, no true views): a coarse grid over the view angles (contrib/opus/tools/issue738/grid.py), then fit.py refined all seven camera numbers (never the craft); concept mask: contrib/opus/tools/issue738/mask.py on the picture with its name label blanked"
+}

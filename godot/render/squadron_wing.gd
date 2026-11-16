@@ -1,8 +1,16 @@
 extends Node3D
-# Local flight stays inside the wing's hex. Only ShipView moves the rules unit.
+# Local flight stays around the wing's anchor. Only ShipView moves the rules unit.
 # Each ribbon samples its own craft's stern in world space, including turns.
 const CRAFT := preload("res://render/squadron_craft.gd")
 const LOOK := preload("res://fx/faction_look.gd")
+# Local flight amplitudes, in craft lengths and radians. Formation clearance
+# includes the whole weave, bank and (for spores) breathing cycle.
+const WEAVE := Vector3(0.12, 0.09, 0.14)
+const SPORE_SWAY := 0.24
+const BANK := Vector3(0.22, 0.12, 0.065)
+const SPORE_BANK := 0.29
+const BREATH := 0.025
+const CLEARANCE := 0.04 # visible air between swept hull bounds, in craft lengths
 var craft: Array = []
 var trails: Array = []
 var rests: Array = []
@@ -58,10 +66,6 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 		add_child(n)
 		n.scale = Vector3.ONE * size * (0.83 if fac == "chorus" and i % 2 else 1.0)
 		craft.append(n)
-		var off := Vector3.ZERO
-		if i > 0:
-			off = Vector3(-0.95 * (1 + (i - 1) / 2), (0.12 if i % 2 else -0.09), (0.95 if i % 2 else -1.02) * (1 + (i - 1) / 2)) * size
-		rests.append(off)
 		var ribbon := MeshInstance3D.new()
 		ribbon.name = "fx_craft_trail_%d" % i
 		ribbon.top_level = true
@@ -72,7 +76,100 @@ func setup(fac: String, kind: String, size: float, count := 4, seed_value := 0.0
 		add_child(ribbon)
 		ribbon.global_transform = Transform3D.IDENTITY
 		trails.append({"node": ribbon, "hist": []})
+	fit_formation()
 	step(0.0)
+
+# Measure in each craft's local frame, including nested mesh transforms and
+# off-centre hulls. Never measure the ribbons or the current animated root.
+func _mesh_bounds(n: Node3D, xf := Transform3D.IDENTITY) -> AABB:
+	var box := AABB()
+	if n is MeshInstance3D and n.mesh != null:
+		box = xf * n.get_aabb()
+	for child in n.get_children():
+		if child is Node3D and not String(child.name).begins_with("fx_"):
+			var other := _mesh_bounds(child, xf * child.transform)
+			if other.size != Vector3.ZERO:
+				box = box.merge(other) if box.size != Vector3.ZERO else other
+	return box
+
+func _flight_extent(r: Vector3) -> Vector3:
+	# Godot's YXZ Euler order applies Z, then X, then Y. Absolute sine
+	# bounds cover every rotation in step(), with cosines bounded by one.
+	var z := sin(BANK.z)
+	var x := sin(SPORE_BANK if faction == "chorus" else BANK.x)
+	var y := sin(BANK.y)
+	var rz := Vector3(r.x + r.y * z, r.y + r.x * z, r.z)
+	var rx := Vector3(rz.x, rz.y + rz.z * x, rz.z + rz.y * x)
+	return Vector3(rx.x + rx.z * y, rx.y, rx.z + rx.x * y)
+
+func _side_reach(a: Vector3, b: Vector3, delta: float) -> float:
+	var bank_x := SPORE_BANK if faction == "chorus" else BANK.x
+	var sway := length * (SPORE_SWAY if faction == "chorus" else WEAVE.z)
+	var ca := a.y * bank_x + a.x * BANK.y
+	var cb := b.y * bank_x + b.x * BANK.y
+	# Bank and sway share t. Maximise their combined sinusoid for each sign
+	# of the absolute cosine terms, rather than adding impossible extremes.
+	# This keeps slim craft (including SB4) at their original offsets.
+	var peak := 0.0
+	for sa in [-1.0, 1.0]:
+		for sb in [-1.0, 1.0]:
+			for sw in [-1.0, 1.0]:
+				var c: float = ca * sa + cb * sb * cos(delta) - sway * sw * sin(delta)
+				var s: float = -cb * sb * sin(delta) + sway * sw * (1.0 - cos(delta))
+				peak = maxf(peak, Vector2(c, s).length())
+	# sin(angle) <= abs(angle); cos(angle) <= 1. The two small product
+	# terms cover roll feeding into pitch and yaw, at every flight phase.
+	return a.z + b.z + peak + ((a.x + b.x) * bank_x + (a.y + b.y) * BANK.y) * BANK.z
+
+# Also callable after replacing a preview's craft meshes. Normal play measures
+# CRAFT.make's actual geometry once at setup, without per-frame mesh walks.
+func fit_formation() -> void:
+	rests.clear()
+	var extents: Array[Vector3] = []
+	var radii: Array[Vector3] = []
+	var row_length := length
+	for i in craft.size():
+		var box := _mesh_bounds(craft[i])
+		row_length = maxf(row_length, box.size.x * length)
+		var scale_k := length * (0.83 if faction == "chorus" and i % 2 else 1.0)
+		var r := box.position.abs().max(box.end.abs()) * scale_k * (1.0 + BREATH if faction == "chorus" else 1.0)
+		radii.append(r)
+		extents.append(_flight_extent(r))
+	# A symmetric arrowhead (R280): the leader at the origin, then row 1 holds
+	# two craft, row 2 three, and so on, every row centred on the leader's line
+	# and spread by the same lateral step. Counts 3 and 6 read as a clean
+	# triangle; any other count fills the rows in order (setup accepts any).
+	rests.resize(craft.size())
+	rests.fill(Vector3.ZERO)
+	var idx := 1
+	var row := 1
+	while idx < craft.size():
+		var in_row := row + 1
+		for k in in_row:
+			if idx >= craft.size():
+				break
+			var lateral := (float(in_row - 1) * 0.5 - float(k)) * 1.9 * length
+			rests[idx] = Vector3(-0.95 * float(row) * row_length,
+				(0.12 if idx % 2 else -0.09) * length, lateral)
+			idx += 1
+		row += 1
+	var width_k := 1.0
+	var depth_k := 1.0
+	for i in craft.size():
+		for j in i:
+			var apart: Vector3 = (rests[i] - rests[j]).abs()
+			var need_x: float = extents[i].x + extents[j].x + (2.0 * WEAVE.x + CLEARANCE) * length
+			if is_zero_approx(apart.z):
+				# Same lateral line: the leader against an even row's centre
+				# craft (R280's wedge). Only more depth can separate them.
+				if apart.x > 1e-6:
+					depth_k = maxf(depth_k, need_x / apart.x)
+			elif apart.x < need_x:
+				var reach := _side_reach(radii[i], radii[j], (j - i) * 1.73)
+				width_k = maxf(width_k, (reach + CLEARANCE * length) / apart.z)
+	for i in rests.size():
+		rests[i].z *= width_k
+		rests[i].x *= depth_k
 
 func _process(dt: float) -> void:
 	step(dt)
@@ -87,12 +184,12 @@ func step(dt: float) -> void:
 		var n: Node3D = craft[i]
 		if active:
 			var t := clock * (1.8 if faction == "chorus" else 1.25) + phase + i * 1.73
-			var sway := 0.24 if faction == "chorus" else 0.14
-			n.position = rests[i] + length * Vector3(sin(t * 0.77) * 0.12, sin(t * 1.19) * 0.09, sin(t) * sway)
+			var sway := SPORE_SWAY if faction == "chorus" else WEAVE.z
+			n.position = rests[i] + length * Vector3(sin(t * 0.77) * WEAVE.x, sin(t * 1.19) * WEAVE.y, sin(t) * sway)
 			# Bow follows the weave; roll anticipates the next turn.
-			n.rotation = Vector3(-cos(t) * (0.29 if faction == "chorus" else 0.22), -cos(t) * 0.12, cos(t * 1.19) * 0.065)
+			n.rotation = Vector3(-cos(t) * (SPORE_BANK if faction == "chorus" else BANK.x), -cos(t) * BANK.y, cos(t * 1.19) * BANK.z)
 			if faction == "chorus":
-				n.scale = Vector3.ONE * length * (0.83 if i % 2 else 1.0) * (1.0 + 0.025 * sin(t * 2.0))
+				n.scale = Vector3.ONE * length * (0.83 if i % 2 else 1.0) * (1.0 + BREATH * sin(t * 2.0))
 		var tr: Dictionary = trails[i]
 		var hist: Array = tr.hist
 		var stern := n.to_global(Vector3(-0.47, 0.0, 0.0))

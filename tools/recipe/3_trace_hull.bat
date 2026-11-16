@@ -12,7 +12,7 @@ if not exist "%B0%" (echo Stage 3 FAILED: no shape reference at %B0%. Run stage 
 if "%HULL%"=="" (echo Stage 3 FAILED: no hull module in ships\%SHIP%.json. Copy tools\blender\r209\armA5.py as the ship's hull module, set its block table to the concept's blocks, and name it in the json. & goto bad)
 "%BPY%" "%RC%\ship.py" %SHIP% concept "%JOB%\concept.png"
 if errorlevel 1 (echo Stage 3 FAILED: the concept PNG was not written. & goto bad)
-"%B%" -b -P "%R%\sil_dump.py" -- "%JOB%\b0.npz" b0 "%B0%" > "%JOB%\log_b0dump.txt" 2>&1
+call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b -P "%R%\sil_dump.py" -- "%JOB%\b0.npz" b0 "%B0%" > "%JOB%\log_b0dump.txt" 2>&1
 findstr /L /c:"[sil] dumped" "%JOB%\log_b0dump.txt" > nul || (echo Stage 3 FAILED: the shape reference could not be read. See %JOB%\log_b0dump.txt & goto bad)
 rem issue 618 PC run: a job that runs two ships in one window kept the first ship's CAMJ, so the second skipped its camera fit
 rem and scored against a file that was never written; clear it first, as stages 4 and 5 do
@@ -25,14 +25,14 @@ if errorlevel 1 (echo Stage 3 FAILED: the trace failed. See %JOB%\log_trace.txt 
 if not "%SHEET%"=="" (echo The hull is the build sheet %SHEET%: no tune. & goto tuned)
 if not "%R209_TUNE_JSON%"=="" goto tuned
 echo Tuning the hull on the concept outline (about 10 minutes)...
-"%B%" -b -P "%R%\tune5.py" -- "%JOB%\concept.png" "%CAMJ%" "%JOB%\b0.npz" "%JOB%\tune.json" 2 512 .25 > "%JOB%\log_tune.txt" 2>&1
+call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b -P "%R%\tune5.py" -- "%JOB%\concept.png" "%CAMJ%" "%JOB%\b0.npz" "%JOB%\tune.json" 2 512 .25 > "%JOB%\log_tune.txt" 2>&1
 if not exist "%JOB%\tune.json" (echo Stage 3 FAILED: the tune wrote nothing. See %JOB%\log_tune.txt & goto bad)
 set R209_TUNE_JSON=%JOB%\tune.json
 echo Tuned numbers: %JOB%\tune.json (commit it beside the hull module and name it as "tune" in ships\%SHIP%.json to keep it)
 :tuned
 rem issue 592 PC run: the sil folder was made only by the tune step, so a build-sheet ship (no tune) had none and scoring failed
 if not exist "%JOB%\sil" mkdir "%JOB%\sil"
-"%B%" -b -P "%R%\sil_dump.py" -- "%JOB%\%CELL%.npz" build %HULL% %CELL% > "%JOB%\log_sildump.txt" 2>&1
+call "%REPO%\tools\pc\tmo.bat" 21600 "%B%" -b -P "%R%\sil_dump.py" -- "%JOB%\%CELL%.npz" build %HULL% %CELL% > "%JOB%\log_sildump.txt" 2>&1
 findstr /L /c:"[sil] dumped" "%JOB%\log_sildump.txt" > nul || (echo Stage 3 FAILED: the hull could not be built. See %JOB%\log_sildump.txt & goto bad)
 "%BPY%" "%R%\silhouette4.py" score "%JOB%\concept.png" "%CAMJ%" "%JOB%\sil" %CELL%="%JOB%\%CELL%.npz" > "%JOB%\log_sil.txt" 2>&1
 if errorlevel 1 (echo Stage 3 FAILED: the outline could not be scored. See %JOB%\log_sil.txt & goto bad)

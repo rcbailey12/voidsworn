@@ -125,7 +125,7 @@ const g = (n) => global[n];
       const s = T.B.units.find(x => x.isSq && x.extra && !x.dead), [e1, e2] = T.E();
       T.near(s, e2, 1); // setup: place the swarm next to the second enemy
       for (const x of T.B.units) if (x.side === 'enemy') x.intercepts = 0; // setup: no flak, so both runs roll only the strike
-      const lostOf = t => (t.maxHp - t.hp) + t.sh.reduce((a, v) => a + (t.shMax - v), 0); // hull lost plus shield lost
+      const lostOf = t => (t.maxHp - t.hp) + (t.shMax - (t.shp || 0)); // hull lost plus shield pool lost (R246: one pool)
       const lost0 = lostOf(e2);
       g('rndSeed')(4242);
       if (half) { await g('killUnit')(e1, s); await g('treeNoStop')(s); }

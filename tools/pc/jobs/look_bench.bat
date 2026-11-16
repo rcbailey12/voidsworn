@@ -5,8 +5,8 @@ rem   look_bench.bat AFTER            bench AFTER (a commit, branch or origin/br
 rem   look_bench.bat AFTER BEFORE     bench both and compare them side by side (BEFORE "none": AFTER's sheets only)
 rem   add "go" as a third word to wait for Downloads\voidsworn_test\look_bench\go.txt first (the Board's GPU window file)
 rem Each commit is benched once (runs\<commit>\, reused next time). Sheets land in sheets\<before>_vs_<after>\ and the
-rem folder opens when it is done. Nothing on the PC is deleted. One GPU job at a time: waits (up to 60 minutes) until the
-rem graphics card is idle before each bench run.
+rem folder opens when it is done. Nothing on the PC is deleted. The watchdog takes a shared GPU
+rem claim for each capture run and obeys gpu_go.txt. Frame-time measurements take solo.
 rem Settings a job may set first (all optional):
 rem   LB_HOME      the bench folder (default Downloads\voidsworn_test\look_bench)
 rem   LB_TOOL_REF  where the bench script itself comes from (default origin/main): the bench runs from that version on
@@ -49,7 +49,8 @@ if not exist "%TOOL%\godot\bench\look_bench.gd" (
   goto finish
 )
 if "%BEFORE%"=="" set /p BEFORE=<"%TOOL%\docs\shots\look_bench\BASELINE.txt"
-set "TMO=%TOOL%\tools\pc\tmo.bat"
+rem Use the installed watchdog, never the old checkout being measured.
+set "TMO=%~dp0..\tmo.bat"
 
 rem ---- the game checkout under test
 set "R=%LB_HOME%\repo"
@@ -136,18 +137,7 @@ copy /y "%TOOL%\godot\bench\look_moments.json" "%R%\godot\bench\look_moments.jso
 if not "%PRE%"=="" call "%PRE%" "%R%" > "%RUNDIR%\pre_run.txt" 2>&1
 call "%TMO%" 1800 "%G%" --headless --path "%R%\godot" --import > "%RUNDIR%\import.txt" 2>&1
 echo imported %REF% %SHA% %date% %time% >> "%ST%"
-rem one GPU job at a time: wait until the graphics card is idle (under 15 percent), up to 60 minutes
-set /a GW=0
-:gpuwait
-set U=0
-for /f %%U in ('nvidia-smi --query-gpu^=utilization.gpu --format^=csv^,noheader^,nounits 2^>nul') do set U=%%U
-if %U% LSS 15 goto gpufree
-set /a GW+=1
-if %GW% GEQ 60 goto gpufree
-timeout /t 60 /nobreak > nul
-goto gpuwait
-:gpufree
-echo gpu free after %GW% min, bench %REF% %date% %time% >> "%ST%"
+rem R276: tmo claims a shared slot for these stills; timing scripts claim solo automatically.
 call "%TMO%" 3600 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 res://bench/look_bench.tscn -- --out "%RUNDIR%" --commit %SHA% > "%RUNDIR%\bench_log.txt" 2>&1
 set "BX=%ERRORLEVEL%"
 echo bench exit %BX% %REF% %date% %time% >> "%ST%"

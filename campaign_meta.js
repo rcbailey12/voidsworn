@@ -199,7 +199,7 @@ function helpScreen(){
     <h3 class="gilt" style="margin:18px 0 6px">Firing arcs</h3>
     <p>Weapons only fire into their arc. Prow weapons cover the 120\u00b0 in front, port and starboard broadsides each cover a wide 120\u00b0 cone to the side, and turrets fire anywhere. The tinted hexes around a selected ship show where its guns reach: amber for the prow, teal for broadsides. Click an enemy to fire everything that can reach it, or press a number key to fire a single weapon.</p>
     <h3 class="gilt" style="margin:18px 0 6px">Shields and flanking</h3>
-    <p>Each ship has four shield facings: prow, port, starboard and rear. Damage hits the facing that points at the attacker, and shields regenerate at the start of each of your turns. Rear hits halve armor and are far more likely to crit, so getting behind a battleship matters. Lances and bombers punch partly or fully through shields. Ion cannons shred shields; null weapons mostly ignore them.</p>
+    <p>Each ship has one shield pool that covers four sides: prow, port, starboard and rear. A hit drains the pool through the side that points at the attacker, and each side catches only its share (the prow the most, the rear the least). A side hit again draws extra power at a loss, and when the pool runs dry every side drops at once. Shields regenerate at the start of each of your turns. Rear hits halve armor and are far more likely to crit, so getting behind a battleship matters. Lances and bombers punch partly or fully through shields. Ion cannons shred shields; null weapons mostly ignore them.</p>
     <h3 class="gilt" style="margin:18px 0 6px">Different fights</h3>
     <p>Each fight on the sector map is labelled with its goal. Engagements and ambushes end when one fleet breaks. In <b>Hold the station</b> you keep enemies off a friendly station until round 6 ends. In a <b>Hunt</b> their flagship runs and jumps out after round 6. In an <b>Intercept</b> you destroy transports before they cross the field. In a <b>Breakthrough</b> you get half your fleet off the far edge. Missing a Hunt or Intercept still pays half; losing the station or a breakthrough means a retreat, not the end of the run. Tap the chip under the top bar in battle for the rules and the coloured hexes.</p>
     <p>Some fights change partway through: reinforcements for either side, or a solar flare that knocks out every shield for a round. You always get a round of warning.</p>
@@ -226,11 +226,29 @@ function runRecap(victory){ const s=RUN.stats, mins=RUN.t0?Math.max(1,Math.round
   const stand=best&&score(best)>0?`<p class="standout">Standout ship: <b class="gilt">${esc(best.name)}</b>, ${best.car.kills} kills and ${best.car.dealt} damage across ${best.car.battles} battle${best.car.battles>1?'s':''}.</p>`:'';
   const fleet=fl.length?`<h3 class="rhead">${victory?'The fleet that finished it':'Still flying'}</h3><div class="rfleet">${fl.sort((a,b)=>score(b)-score(a)).map(row).join('')}</div>`:'';
   return tiles+stand+fleet; }
-function nextFacPick(){ const won=(META.stats.wonFacs||[]), pool=RUN_FACTIONS.filter(f=>f!==RUN.fac&&!won.includes(f)); return pick(pool.length?pool:RUN_FACTIONS.filter(f=>f!==RUN.fac)); }
+function facProgress(fac){ let total=0; for(const id of Object.keys(ADMIRALS)) if((ADMIRALS[id].fac||'voidsworn')===fac) total+=masteryXP(id); return total; }
+function nextFacPick(){ const won=(META.stats.wonFacs||[]); let pool=RUN_FACTIONS.filter(f=>f!==RUN.fac&&!won.includes(f)); if(!pool.length) pool=RUN_FACTIONS.filter(f=>f!==RUN.fac); if(!pool.length) return null;
+  let best=pool[0], bestv=facProgress(best); for(const f of pool){ const v=facProgress(f); if(v>bestv){ best=f; bestv=v; } } return best; }
 // Shadow learning is per line. A full line sends its excess to the faction's
 // shadow balance; distribute it among uncapped benched lines, keeping any rest.
 function shadowAdmirals(fac, flown){ return Object.keys(ADMIRALS).filter(id=>(ADMIRALS[id].fac||'voidsworn')===fac&&id!==flown); }
 function shadowRate(id){ return META.heirs[(ADMIRALS[id].fac||'voidsworn')]===id?.5:.25; }
+// Design 4.5: the heir row names the candidate then their rank. A name that already opens with a
+// rank word keeps that word in the rank slot; otherwise the candidate holds their faction's top rank.
+let ADMIRAL_RANK_WORDS=null;
+function admiralRankWords(){
+  if(ADMIRAL_RANK_WORDS) return ADMIRAL_RANK_WORDS;
+  const out=[];
+  for(const f of Object.keys(CAPTAINS)) for(const r of CAPTAINS[f].ranks) if(!out.includes(r)) out.push(r);
+  for(const w of ['High Admiral','First Admiral','Line Admiral','Fleet Marshal','Oath-Captain','Admiral']) if(!out.includes(w)) out.push(w);
+  ADMIRAL_RANK_WORDS=out.sort((a,b)=>b.length-a.length); return ADMIRAL_RANK_WORDS;
+}
+function heirLabel(id){
+  const nm=ADMIRALS[id].n;
+  for(const w of admiralRankWords()) if(nm.indexOf(w+' ')===0) return nm.slice(w.length+1)+', '+w;
+  const ranks=CAPTAINS[ADMIRALS[id].fac||'voidsworn'].ranks;
+  return nm+', '+ranks[ranks.length-1];
+}
 function masteryCredit(id, xp){
   const cap=masteryXPCap(id), old=masteryXP(id), total=old+xp;
   META.mastery[id]=Math.max(old,Math.min(cap,total)); // a reset evolution keeps its earned XP even when the cap drops back to 230
@@ -257,7 +275,7 @@ function heirChoiceHtml(fac, flown){
     ${!ids.length?'<p>No benched admirals of this faction to name.</p>':`
     ${heir?`<button onclick="debriefHeirOpen=true;refreshDebriefHeir()">Change heir</button>`:''}
     <div ${heir&&!debriefHeirOpen?'hidden':''}><p>Name an heir to the ${esc(FACTIONS[fac].n)} line?</p>
-    ${ids.map(id=>`<button onclick="event.stopPropagation();debriefHeirPick='${id}';refreshDebriefHeir()" data-act="nameHeir" data-arg="${id}" ${heir===id?'disabled':''} aria-pressed="${debriefHeirPick===id}">${esc(ADMIRALS[id].n)}. Shadow ${fmt(masteryXP(id))} XP. Double earnings for this line.</button>`).join(' ')}
+    ${ids.map(id=>`<button onclick="event.stopPropagation();debriefHeirPick='${id}';refreshDebriefHeir()" data-act="nameHeir" data-arg="${id}" ${heir===id?'disabled':''} aria-pressed="${debriefHeirPick===id}">${esc(heirLabel(id))}. Shadow ${fmt(masteryXP(id))} XP. Double earnings for this line.</button>`).join(' ')}
     <button onclick="debriefHeirPick='';refreshDebriefHeir()">${heir?'Keep current heir.':'No heir this run.'}</button>
     <button onclick="confirmDebriefHeir()">Confirm heir</button></div>`}`;
 }
@@ -343,7 +361,7 @@ function inheritanceHtml(run,victory,abandoned){
     ${receipt.shadow.filter(r=>r.xp>0).map(r=>`<p class="muted" title="Total ${fmt(r.total)} XP. ${r.next==null?'Fully mastered.':fmt(r.remaining)+' XP to '+(r.hasCap?'capstone mastery '+roman(r.capLevel+1):'level '+(r.level+1))+'.'}">${esc(ADMIRALS[r.id].n)}: +${fmt(r.xp)} shadow XP (Level ${r.level}).${r.rate===.5?' Heir: double rate.':''}</p>`).join('')}
     ${cy.mxOverflow?`<p class="muted">${fmt(cy.mxOverflow)} XP past this line's cap went to shadow learning.</p>`:''}${cy.shadowBank?`<p class="muted">${fmt(cy.shadowBank)} shadow XP saved for an uncapped benched line.</p>`:''}
     ${cy.hl?`<p class="muted">Heat ${cy.hl} paid ${cy.hl*2} XP to ${esc(ADMIRALS[run.admiral].n)} and ${cy.hl} XP to the faction shadow pool.</p>`:''}`)}
-    ${row('Core sync',receipt.cores.length?receipt.cores.slice().sort((a,b)=>+b.tierUp-+a.tierUp).map(r=>`${r.tierUp?`<p>${esc(PATRONS[r.id].n)}: crossed into ${esc(FAVOUR_TIERS[r.tier].n)} this run at ${r.total} protocols.</p>`:''}<p class="muted">${esc(PATRONS[r.id].n)}: ${r.next==null?`Full sync, ${r.total} protocols.`:`${r.total} of ${r.next} to ${esc(FAVOUR_TIERS[r.tier+1].n)}.`}</p>`).join(''):'<p class="muted">No protocols taken this run.</p>')}
+    ${row('Core sync',receipt.cores.length?receipt.cores.slice().sort((a,b)=>+b.tierUp-+a.tierUp).map(r=>`${r.tierUp?`<p><span style="color:${PATRONS[r.id].col}">${esc(PATRONS[r.id].n)}</span>: crossed into ${esc(FAVOUR_TIERS[r.tier].n)} this run at ${r.total} protocols.</p>`:''}<p class="muted"><span style="color:${PATRONS[r.id].col}">${esc(PATRONS[r.id].n)}</span>: ${r.next==null?`Full sync, ${r.total} protocols.`:`${r.total} of ${r.next} to ${esc(FAVOUR_TIERS[r.tier+1].n)}.`}</p>`).join(''):'<p class="muted">No protocols taken this run.</p>')}
     ${row('Nemesis lesson',nemLessonHtml(receipt.nem,run))}
     ${row('The record',`<p>${esc(STORY_BEAT3[run.fac].learning)}</p>${run.eatenCore&&PATRONS[run.eatenCore]?`<p class="muted">The swarm ate ${esc(PATRONS[run.eatenCore].n)}.</p>`:''}`)}</section>
     <section id="heirChoice" class="inherit-row">${heirChoiceHtml(run.fac,run.admiral)}</section>`;
@@ -362,11 +380,13 @@ const debriefStyle=`<style>
 .debrief .inner{width:calc(960px * var(--k));max-width:calc(100vw - 40px);text-align:left;margin:calc(20px * var(--k)) auto;padding:0}
 .debrief h1{font-family:DebriefName,Barlow,sans-serif;font-size:calc(62px * var(--k));line-height:1.1;text-align:center;text-transform:uppercase;color:#f0eade;margin:0 0 calc(10px * var(--k));text-shadow:none}
 .debrief .sub{font-size:calc(20px * var(--k));text-align:center;color:#c4beb0;margin:0 0 calc(10px * var(--k))}
+.debrief .storyline{font-size:calc(18px * var(--k));text-align:center;color:var(--gilt);margin:0 0 calc(10px * var(--k))}
 .debrief p{margin:calc(4px * var(--k)) 0;line-height:1.35}.debrief h2{font-size:calc(24px * var(--k));margin:calc(10px * var(--k)) 0}.debrief h3{font-size:calc(17px * var(--k));text-transform:uppercase;color:#c4beb0;margin:0 0 calc(4px * var(--k))}
 .debrief .muted,.debrief .dim{color:#c4beb0}.debrief .nem{color:#ff6050}.debrief .inherit-row{border-top:1px solid #48443c;padding-top:calc(10px * var(--k));margin-top:calc(10px * var(--k))}
 .debrief button{font-family:DebriefBody,Barlow,sans-serif;font-size:calc(17px * var(--k));border:0;border-radius:0;background:transparent;color:#f0eade;box-shadow:none;padding:calc(10px * var(--k));min-height:calc(40px * var(--k))}.debrief button:hover,.debrief button:focus-visible,.debrief button[aria-pressed=true]{text-decoration:underline;outline:1px solid #c4beb0}.debrief button.primary{border:2px solid #ff8a3a;color:#ff8a3a;min-height:calc(56px * var(--k));background:transparent}.debrief button.primary:hover{background:#ff8a3a;color:#100c08}
 .debrief .mastery-track{height:calc(6px * var(--k));background:#48443c}.debrief .mastery-track>div{height:100%;background:#c4beb0}.debrief .rtiles{display:flex;flex-wrap:wrap;gap:calc(8px * var(--k));margin-top:calc(10px * var(--k))}.debrief .rtile{min-width:calc(150px * var(--k));background:none;border:0;padding:calc(8px * var(--k))}.debrief .rtile b{font-family:DebriefNumber,monospace;font-size:calc(26px * var(--k));color:#f0eade}.debrief .rtile span{display:block;max-width:calc(134px * var(--k));overflow-wrap:normal;font-size:calc(17px * var(--k))}.debrief .rrow,.debrief .rrow.star,.debrief .nextfac{background:none;border:0;border-radius:0;color:#f0eade}.debrief .rrow .dim{font-size:calc(17px * var(--k))!important}.debrief .nextfac{padding:calc(12px * var(--k)) 0}.debrief .menu{display:flex;flex-wrap:wrap;justify-content:center}.debrief [hidden]{display:none}
 </style>`;
+function debriefStoryLine(){ try{ return typeof storyText==='function'?String(storyText()||''):''; }catch(e){ return ''; } }
 function endRun(victory, abandoned){
   if(!RUN||RUN.over) return;
   const s=RUN.stats;
@@ -390,6 +410,7 @@ function endRun(victory, abandoned){
   const nf=victory?nextFacPick():null, NF=nf&&FACTIONS[nf];
   debriefHeirOpen=false; debriefHeirPick=''; debriefHeirNamed='';
   const first=debriefFirstLoss(RUN,victory,abandoned);
+  const story=debriefStoryLine(), payoff=STORY_BEAT3[RUN.fac].learning;
   const lines=`${first.first?`<p>${first.body}</p>`:''}${inheritanceHtml(RUN,victory,abandoned)}${runRecap(victory)}
     ${RUN.fallen.length?`<p class="muted">Captains lost this run: ${RUN.fallen.map(f=>esc(f.name)).join(', ')}.</p>`:''}
     ${victory?`<p class="gilt num" style="font-size:18px">${META.stats.wins>1?`Victories so far: ${META.stats.wins}`:'Your first victory.'} Won with: ${(META.stats.wonFacs||[]).map(f=>esc(FACTIONS[f].n)).join(', ')}.</p>`:`<p class="gilt num" style="font-size:20px">${RUN.sector>prevBest?`New best: sector ${roman(RUN.sector)}`:`Best so far: sector ${roman(Math.min(3,META.stats.best))}`}</p>`}
@@ -398,6 +419,7 @@ function endRun(victory, abandoned){
   show(`${debriefStyle}<div class="screen title recap debrief"><div class="inner">${first.first?`<p class="sub">${first.kicker}</p>`:''}
     <h1>${victory?(WIN_TITLE[RUN.fac]||'Victory'):abandoned?'Run abandoned':'The fleet is lost'}</h1>
     <div class="sub">${sub}</div>
+    ${story&&story!==payoff?`<p class="storyline">${esc(story)}</p>`:''}
     ${lines}
     <div class="menu" style="margin-top:22px">${NF?`<button class="primary" data-act="nextFac" data-arg="${nf}">Play as ${esc(NF.n)}</button><button data-act="newRunScreen">Pick a faction</button>`:`<button class="primary" data-act="newRunScreen">New run</button>`}<button data-act="title">Title screen</button></div></div></div>`);
   heirDebrief={fac:RUN.fac,admiral:RUN.admiral}; RUN=null;

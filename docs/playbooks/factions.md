@@ -19,7 +19,7 @@ Ryan, Nov 10 2026 (R164), on hard points: "It should vary by size of ship, facti
 - Space ships, not sea ships (owner, Oct 22 and Oct 24). No keels or keel fins, raked stems, porthole rows, lattice masts,
   cranes, crossbar masts, funnels, railings or stepped yacht decks. Use the space version: flat armoured bellies with chines,
   sensor housings, antenna arrays, heat radiators, engine bells, docking hatches.
-- No gun ever faces backward. Bow guns face forward, side guns face out.
+- No gun faces backward at rest; a turret may turn aft only to follow a target its arc allows (RULEBOOK 4.2, R222). Bow guns face forward, side guns face out.
 - Matched symmetric pairs at sensible hard points, on visible mounts. The Hullbreakers are the one exception.
 - The ship must read at the battle camera (camera 170): one clear silhouette, one main colour, one accent light. Detail that
   only shows up close is a bonus, never the identity.
@@ -104,12 +104,15 @@ class and faction (issue 363), never from a constant.
   off the ship: no loose chains, cages or dangling cargo; trophies and cargo are bolted flat (R185 (3); Ryan: "I don't
   understand the random things hanging off, it reads as naval"). Rocket racks sit on the top deck as big mismatched
   bolted-on launchers (R183 (4); Ryan: "rockets need to be on top to fit the scrapped together theme").
-- **Patch size (R252, Ryan, Nov 14: "agree"):** the trophy patches read big and pale like the A20 concept, not small dark
-  plates; still uneven in size, rows and offsets (R240).
-- **Colours:** soot black, rust, dried-blood red, patches of trophy colour (pale Hegemony grey, violet Eclipse plate), dim
+- **Patch size (R252, Ryan, Nov 14: "agree"):** the trophy patches read big like the A20 concept, not small dark plates; still
+  uneven in size, rows and offsets (R240). **Their tone (R274, Ryan, Nov 15: "those should be a global rule for all of the bigger
+  paler patches too. The white looks unfinished"):** dark grey salvaged metal, clearly lighter than the soot plate, never white or
+  chalky; the violet Eclipse trophy plates stay. SUPERSEDED, kept so nobody follows it: "big and pale" (R252's tone, ended by R274). In the stack: `TROPHY` in `tools/blender/kits/hullbreakers/stack.py`
+  (issue 726; RECIPE.md, the paint stack).
+- **Colours:** soot black, rust, dried-blood red, patches of trophy colour (dark grey salvaged metal, R274; violet Eclipse plate), dim
   red running lights. No crystal shard: it came off A16 and A17 (R197; Ryan: "Not sure why there is a weird crystal in there
   but we can get rid of that").
-- **Guns sit:** wherever they could be bolted: mismatched calibres, off-centre, still never facing backward. Casemates in the
+- **Guns sit:** wherever they could be bolted: mismatched calibres, off-centre, never facing backward at rest (RULEBOOK 4.2). Casemates in the
   bow, tube racks on the deck.
 - **Engines:** mismatched bells with a red-orange glow, one often larger than the rest.
 - **How it breaks:** at the seams. Patch plates tear off first, then the hull parts where sections are welded together,
@@ -263,7 +266,7 @@ Retired from this list: "Codex's built-in image tool is the tool for finals" (th
 style, R197 (3); concept rounds now run through Muse's image to image, and every Blender step is Opus's, R205).
 
 **Next.** The finished battle is Sunward against Eclipse (R180). Eclipse's flagship and cruiser are accepted; Sunward's
-flagship needs its build sheet. Then a fleet brief per faction (every class in data.js, each derived from the flagship's
+flagship sheet is accepted (R254) and painted (R258). Then a fleet brief per faction (every class in data.js, each derived from the flagship's
 grammar: what it keeps, what it drops, its weapons), pictures in the style, Ryan's yes, build sheets, then builds through
 tools/recipe (docs/playbooks/ships.md).
 

@@ -87,7 +87,15 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    black shade disc, in the game's Eclipse engine colour paled toward white, each engine its own brightness, tint, hot spots and
    dim gaps, no flame; (5) no added running lamps (the red lamps are a Hullbreaker rule; the Eclipse show only the corona, the
    core and the rings, and the sheet's corona strip lights; Board accepted, R236); (6) the stack's surfaces are rim_soft, parts
-   carry the hull's plates and seams (R224 in paint), the liner is dark violet-black, and stage 5's surface check is 0 px.
+   carry the hull's plates and seams (R224 in paint), the liner is dark violet-black, and stage 5's surface check is 0 px;
+   (7) even side to side (Ryan, Nov 15 2026 07:02 CST, R256, on E13: "let's make sure that the paint actually is even on each
+   side, it's not consistent now"; issue 783): the paint mirrors across the centre line (stack LAYERS mirror: every pattern reads
+   (x, |y|, z), a plate and its mirror twin share one random, shared paint_stack.mirror_islands; the starboard marks copy the port
+   ones, the top mark on the centre line; the corona's arcs and breaks mirror), and the sheet and the kit build twins alike: a
+   mirrored part reads its corners, rows and strips the same way on both sides, never from ring point 0 or one edge of a plate
+   (E13's layer lines and panel rows, the kit's plate_slab fasteners and housing panels). Measured on a top view with the port
+   half mirrored onto the starboard (tools/blender/build_sheets/studies/mirror_check.py), reported, not a bar (RULEBOOK 0.4).
+   Each engine ring keeps its own pattern.
    Judge the paint at 2048 maps or more (the PC bakes 4096) and at the camera 170 pixel size as well as close.
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
@@ -130,9 +138,60 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    "consistent and line up with the in game behavior" (Nov 15, ratified on PR 691), not his words: change them if he rules otherwise.
    Squadron craft (issue 769, R253): a fighter's guns (data.js `guns`, arc T) turn on a traverse ring like any turret; a bomber's
    bomb tubes (`bombs`, arc T) may sit fixed forward in a launcher, because a craft turns onto its target on a strafing run
-   (weapon_match.py FITS rows `guns` and `bombs`, with self-test faults). This is the Board's reading for craft, not Ryan's
+   (weapon_match.py FITS rows `guns` and `bombs`, with self-test faults). The Chorus spore swarm (data.js `spore`, `sporeb` arc T,
+   a bomber-role craft) shows its two acid sacs fixed on its flanks the same way (FITS row `sporeb`: type acid_sac on a launcher,
+   with self-test faults; issue 793). This is the Board's reading for craft, not Ryan's
    words: change it if he rules otherwise. A craft sheet is LENGTH 1.6 (CLS_LEN Squadron, drawn 3.84, scale.md) and carries a
    small inside only because the build contract needs one: the game shows a craft's death as a spark (fx_death.gd _wing_death).
+12. **Openings have depth; big flanks have shape (R244, Ryan, Nov 14 2026).** A round opening is a real recess with a lip,
+   depth and working detail (a tube, launcher or thruster throat, lit or dark as its job says), never a flat painted disc.
+   Cut the housing behind the opening too: a detailed tube embedded in a closed hull still reads as a disc. Big hull flanks
+   carry angled facets, chamfers and stepped planes as their concept shows. Why: on A20 Ryan saw "just circles" at the bow
+   and "flat walls" where the concept was angular. A20 is the first correction (issue 688); this binds every sheet ship.
+
+### Named variant parts (issue 812)
+
+A sheet can build a data.js variant without adding its weapons to the base hull. Its `VARIANTS` dictionary maps the exact
+data.js id to a callback, for example `{'d_jackal_h': build_guard}` in `ships/deathless_E14.py`. The common entry point is
+`tools/blender/build_sheets/variants.py`: it checks the variant's data.js base, sets `K.game_ship` and `K.variant`, calls the
+base `build(K)`, calls that variant's callback, then finishes the deferred plates. A missing or wrong-family variant fails
+before any build. Callbacks use the normal kit helpers, so the parts, turret nodes, fit records and hard points have one home.
+For a replacement, the base builder reads `K.variant` to omit the replaced weapon before the callback adds its replacement;
+never delete meshes after building and leave their muzzle or fit records behind.
+
+Preview a variant with `build.py deathless_E14 OUT fit --variant=d_jackal_h` inside Blender. Every build mode runs weapon
+matching against that selected id, and writes into `OUT/d_jackal_h/`, keeping the base sheet's output separate. `render` also
+renders it. A variant recipe JSON names the same `sheet`, its own `game_ship`, and a `game_code` equal to that data.js id.
+Use the normal seven recipe stages with that JSON: `sheet_hull` builds the selection, the contract writes its identity into
+the blend, and stage 7 refuses a blend for a different ship or a variant aimed at a base hull folder. Class, faction and
+hangar values inherit from the data.js base when absent on the variant. The existing paint stack paints the selected parts.
+
+Install the separate variant folder with stage 7 as usual. ShipView selects the installed folder by the unit's `tpl` id from
+the rules view, with no second variant table. If that folder is absent it keeps the faction/class hull. The variant inherits
+the base hull's board clearance, so the Archive guard's upright E14 ring stays above the board.
+
+Worked cases: `deathless_E14_guard.json` adds the Archive guard's stern null spire; `deathless_E13_sentinel.json` adds the
+Mote sentinel's belly spire opposite its dorsal cannon (a roof spire blocked traverse); `deathless_E12_turreted.json` replaces
+the fore cannon and fixed arc with the kit's existing corona arc on a turning foot on the fore saddle. Its aft cannon and
+spire remain. `variant_parts.py` assembles that foot and projector from the Eclipse kit, without copying their shapes. All
+three pass weapon matching, fit and sweep clearance, and their actual exported GLBs pass the export check. The E11 to E14
+base builds have identical evaluated world-space triangles to their pre-change snapshots, including insides and shell
+modifiers. These are geometry proofs with unbaked exports; full paint bakes and the normal installed scene gate still belong
+to the ship build that ships those assets.
+
+Reproduce the geometry and export proof with Blender:
+
+```
+blender -b -t 4 --python-exit-code 1 -P tools/blender/build_sheets/variant_selftest.py -- OUT --baseline=BEFORE.json
+```
+
+`BEFORE.json` is an optional pre-change snapshot from the self-test's `bases` triangle counts and SHA256 values (only
+`triangles` and `sha256` per sheet). The self-test builds E11 to E14 and all three variants, tests wrong selections, exports
+unbaked GLBs, and runs `check_export.py` on each. Set `VARIANT_EXPORTS=OUT`, then run Godot headless with
+`--path godot --script res://render/test/variant_ship_check.gd` to run the real GLB cache builder and load the variants through
+ShipView. Without the environment variable the same check uses small CI fixtures. `variant_review.py -- OUT SHOTS` inside
+Blender makes one labelled 1280 by 720 comparison per variant from those exported GLBs, on the CPU. Keep scratch in TEMP and
+review sheets in the job's shots folder. No test export is installed into the live game by these checks.
 
 ## 1. Target
 
@@ -323,6 +382,11 @@ hard points.
 
 ## 5. Traps
 
+- A model-space height is undone by ShipView's fit and centring. For board clearance use `HULL_LIFT` in
+  `godot/render/hull_table.gd`, in drawn game units after fitting (E14, D20_23: R266, issue 811). Unlisted hulls keep zero
+  lift. Keep the rules root on its hex; the hull, markers and visual centre carry the lift. Camera framing and fallback
+  effects use that visual centre; authored hard points, weapons and shields follow the fitted mesh. Check at camera 170
+  and at the lowest idle bob before changing the height.
 - One three-quarter concept is not enough: rounds 7 and 8 could not fit the bow from it (R162). Three views, always.
 - Generated sheets hold identity, palette and view angle, and never counts or aspect (Muse's C15s trial). Write the table first.
 - Sea-ship parts creep back in every generated picture: porthole rows, lattice masts, cranes, keel fins, stepped decks. Check

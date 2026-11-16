@@ -23,11 +23,11 @@ set RECIPE_NOPAUSE=1
 set INSTALL_TO=%C%\godot
 set GD=%V%\godot\Godot_v4.7.2-stable_win64_console.exe
 cd /d "%C%"
-"%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
 echo import exit %ERRORLEVEL% >> "%RES%"
 call :ship deathless_E11 D22_23
 call :ship deathless_E12 D21_23
-"%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%O%\shots" --facs deathless --sets battle,close --codes D22_23,D21_23 > "%O%\log_shots.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%O%\shots" --facs deathless --sets battle,close --codes D22_23,D21_23 > "%O%\log_shots.txt" 2>&1
 echo shots exit %ERRORLEVEL% >> "%RES%"
 echo done %DATE% %TIME% >> "%RES%"
 exit /b 0
@@ -36,11 +36,11 @@ exit /b 0
 set SHIP=%1
 set CODE=%2
 for %%S in (1_concept_in 2_shape_ref 3_trace_hull 4_parts_kit 5_paint_bake 6_lod 7_export) do call :stage %%S
-"%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODE% > "%O%\log_%SHIP%_readback_gpu.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODE% > "%O%\log_%SHIP%_readback_gpu.txt" 2>&1
 echo %SHIP% gpu readback exit %ERRORLEVEL% >> "%RES%"
-"%GD%" --headless --path "%C%\godot" --script res://fx/test/authored_interiors_check.gd -- "%C%\godot\assets\ships\%CODE%\%CODE%.glb" > "%O%\log_%SHIP%_interiors.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/authored_interiors_check.gd -- "%C%\godot\assets\ships\%CODE%\%CODE%.glb" > "%O%\log_%SHIP%_interiors.txt" 2>&1
 echo %SHIP% authored interiors exit %ERRORLEVEL% >> "%RES%"
-"%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%C%\godot\assets\ships\%CODE%\%CODE%.glb" > "%O%\log_%SHIP%_death_seam.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%C%\godot\assets\ships\%CODE%\%CODE%.glb" > "%O%\log_%SHIP%_death_seam.txt" 2>&1
 echo %SHIP% death seam exit %ERRORLEVEL% >> "%RES%"
 exit /b 0
 

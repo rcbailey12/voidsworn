@@ -1,0 +1,610 @@
+[
+ {
+  "id": "auto",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "bay",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "bioplasma",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "bombs",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "doom",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 10.805151796689483,
+  "different_above_1": 2565545,
+  "max_delta": 221
+ },
+ {
+  "id": "doom",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 1.829565135546731,
+  "different_above_1": 63420,
+  "max_delta": 178
+ },
+ {
+  "id": "flak",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "flakes_corsair",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "flakes_hegemony",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "flakes_ithar",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "flakes_voidsworn",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "gauss",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 5.807933346386442,
+  "different_above_1": 375705,
+  "max_delta": 212
+ },
+ {
+  "id": "gauss",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 1.4407025842812007,
+  "different_above_1": 47757,
+  "max_delta": 214
+ },
+ {
+  "id": "gflak",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 11.291899312477193,
+  "different_above_1": 1376839,
+  "max_delta": 215
+ },
+ {
+  "id": "gflak",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 2.8840493461025125,
+  "different_above_1": 62641,
+  "max_delta": 211
+ },
+ {
+  "id": "guns",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "ion",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "ion",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "lance",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "lance",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "las",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "macro",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "mflak",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "moving_trail",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "moving_trail",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "needle",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "needle",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "p_bile_hit",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "p_crit",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "p_gauss_exit",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 3.5870218647616814,
+  "different_above_1": 23086,
+  "max_delta": 211
+ },
+ {
+  "id": "p_lance_burn",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 0.0012028130608117203,
+  "different_above_1": 3,
+  "max_delta": 2
+ },
+ {
+  "id": "p_lance_burn",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "p_las_muzzle",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "p_missile_launch",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "p_prism_muzzle",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "p_torp_shield",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 22.412372900534212,
+  "different_above_1": 1351345,
+  "max_delta": 205
+ },
+ {
+  "id": "p_torp_shield",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 2.770182626648439,
+  "different_above_1": 39739,
+  "max_delta": 203
+ },
+ {
+  "id": "pflak",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "plasma",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "prism",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "pulsar",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "pulsar",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "ribbon_0",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "ribbon_0",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "ribbon_1",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "ribbon_1",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "ribbon_3",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "ribbon_3",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "rocket_intercept",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "rockets",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "scatter",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "shield_doom_corsair",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 4.5544878703101705,
+  "different_above_1": 876773,
+  "max_delta": 194
+ },
+ {
+  "id": "shield_doom_corsair",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 1.6259443105004028,
+  "different_above_1": 61600,
+  "max_delta": 188
+ },
+ {
+  "id": "shield_doom_hegemony",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 4.782617980892621,
+  "different_above_1": 1570786,
+  "max_delta": 200
+ },
+ {
+  "id": "shield_doom_hegemony",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 1.6277261122245703,
+  "different_above_1": 81955,
+  "max_delta": 180
+ },
+ {
+  "id": "shield_doom_ithar",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 1.473335494742074,
+  "different_above_1": 593129,
+  "max_delta": 179
+ },
+ {
+  "id": "shield_doom_ithar",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 1.4512254557990392,
+  "different_above_1": 77481,
+  "max_delta": 181
+ },
+ {
+  "id": "shield_doom_voidsworn",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 4.558434695281043,
+  "different_above_1": 1539561,
+  "max_delta": 202
+ },
+ {
+  "id": "shield_doom_voidsworn",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 1.6561826260348076,
+  "different_above_1": 84477,
+  "max_delta": 183
+ },
+ {
+  "id": "shield_torp_corsair",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 6.836644220817103,
+  "different_above_1": 1441200,
+  "max_delta": 224
+ },
+ {
+  "id": "shield_torp_corsair",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.8994973211491445,
+  "different_above_1": 28334,
+  "max_delta": 227
+ },
+ {
+  "id": "shield_torp_hegemony",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 9.435766704572139,
+  "different_above_1": 2106982,
+  "max_delta": 205
+ },
+ {
+  "id": "shield_torp_hegemony",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 1.1372030313623485,
+  "different_above_1": 47925,
+  "max_delta": 203
+ },
+ {
+  "id": "shield_torp_ithar",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 3.161449477025039,
+  "different_above_1": 507149,
+  "max_delta": 208
+ },
+ {
+  "id": "shield_torp_ithar",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.85671623994716,
+  "different_above_1": 47209,
+  "max_delta": 143
+ },
+ {
+  "id": "shield_torp_voidsworn",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 5.634236789152978,
+  "different_above_1": 1492933,
+  "max_delta": 187
+ },
+ {
+  "id": "shield_torp_voidsworn",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.707995292290659,
+  "different_above_1": 35505,
+  "max_delta": 137
+ },
+ {
+  "id": "sporeb",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "spores",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "star",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "star_intercept",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "tendril",
+  "camera": 60,
+  "view": "native_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "tendril",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "torp",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "torp_intercept",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "torp_lane",
+  "camera": 170,
+  "view": "phone_file",
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ }
+]

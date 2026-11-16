@@ -63,6 +63,10 @@ FAC = gamedata.ship_attr(GAME, 'fac', default=ship.get('faction'))
 HANGAR = int(gamedata.ship_attr(GAME, 'hangar', default=0) or 0)
 EXPECTED_BREACH = HP_CONTRACT.expected_breach(CLS, FAC)
 sc = bpy.context.scene
+if gamedata.ship_attr(GAME, 'base') and (sc.get('r209_game_ship') != GAME or CODE != GAME):
+    die('a named variant needs its own built blend and game_code equal to its data.js id')
+if sc.get('r209_game_ship') and sc['r209_game_ship'] != GAME:
+    die(f'this blend was built for {sc["r209_game_ship"]}, not {GAME}: rebuild the selected variant')
 if 'r209_hp' not in sc: die('this blend has no hard point data (scene r209_hp): rebuild it with the current hull module')
 # the class length: a build sheet writes it into the blend (r209_length_world, its one home); other ships keep it in the json
 LENGTH_WORLD = float(sc.get('r209_length_world') or ship.get('length_world', 0) or 0)
@@ -481,6 +485,7 @@ for fn in sorted(os.listdir(OUT)):
     if os.path.isfile(p) and fn.startswith(CODE) and not fn.endswith(('_export.json', '_check.json')):
         files[fn] = dict(bytes=os.path.getsize(p), sha256=hashlib.sha256(open(p, 'rb').read()).hexdigest())
 manifest = dict(name=ship.get('name') or CODE, faction=FAC, cls=CLS, band=HP_CONTRACT.band(CLS),
+                game_ship=GAME,
                 length_world=LENGTH_WORLD, hardpoints={k: v for k, v in counts.items() if v},
                 breaches=counts['breach'], turrets=len(TURRET_NODES), files=files, pc_path=f'godot/assets/ships/{CODE}/')
 json.dump(manifest, open(os.path.join(OUT, 'manifest_entry.json'), 'w'), indent=1)

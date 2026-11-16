@@ -56,3 +56,7 @@ Unanimous among the seated legs, and the renders bear the picks out. SF3 is the 
 ## Ruling (added Nov 14, 2026)
 
 Ryan ruled SF4 and SB4 (Nov 14, 2026, about 23:51 CST) as his picks from this round's six. SB4 confirms the council's unanimous pick. SF4 is his call over the council's fighter pick: the Hammerhead Wedge takes the fighter slot from this set, and SF3 and SF5 stand as unpicked directions, as do SB3 and SB5. His round 2 picks from issue 742 (SF2 and SB2) stand as recorded there; he did not say whether SF4 and SB4 supersede them, so both pairs stand on the record for the Board to reconcile.
+
+## Ruling superseded in part (added Nov 15, 2026)
+
+Ryan settled the fighter in Muse's chat on Nov 15, 2026 at 09:04 CST: "Sf3 is right." SF3 takes the fighter slot from this set, superseding the SF4 pick recorded above; SB4 stands as the bomber pick, unchanged. SF4 stands as an unpicked direction alongside SF5. The earlier question of whether these picks supersede the issue 742 round 2 picks (SF2 and SB2) is unaffected by this ruling and remains for the Board to reconcile.
