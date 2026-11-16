@@ -57,12 +57,14 @@ check('Hegemony sync does not stack with Anchored Volley (the larger bonus appli
   s1.fx = Object.assign({}, s1.fx, { stillPct: .25 }); s1.hexMoved = 0; const w = s1.weapons.find(x => x.k === 'battery'); const still = T.dmgMult(s1, w, t, false);
   B.syncMark.player[t.id] = { r: B.round, ids: [a.id] }; const both = T.dmgMult(s1, w, t, false); return T.syncOn(s1, t) && Math.abs(both - still) < 1e-6; });
 // ---- Ithar prism charge ----
-check('Ithar prism charge: an unhit facing refills to full, a struck facing regenerates twice', () => {
-  battle('ithar', ['i_song'], 'hegemony', ['h_picket']); const u = P()[0]; u.regen = 2; u.sh = [5, 5, 5, 5]; u.shHit = [1, 0, 0, 0];
-  T.startSideTurn('player'); return u.sh[0] === 9 && u.sh[1] === u.shMax && u.sh[2] === u.shMax && u.sh[3] === u.shMax && u.shHit.every(x => !x); });
+check('Ithar prism charge: an untouched pool snaps to full, a struck pool recharges twice', () => {
+  battle('ithar', ['i_song'], 'hegemony', ['h_picket']); const u = P()[0]; u.regen = 2; u.shp = u.shMax - 5; syncShields(u); u.shHit = [1, 0, 0, 0];
+  T.startSideTurn('player'); const struck = u.shp === u.shMax - 1 && u.shHit.every(x => !x);
+  battle('ithar', ['i_song'], 'hegemony', ['h_picket']); const v = P()[0]; v.regen = 2; v.shp = v.shMax - 5; syncShields(v);
+  T.startSideTurn('player'); return struck && v.shp === v.shMax; });
 check('Ithar prism charge stays off while the shield generator is down; other factions get no charge', () => {
-  battle('ithar', ['i_song'], 'hegemony', ['h_dominion']); const u = P()[0], h = E()[0]; u.sh = [0, 0, 0, 0]; u.st.shieldOff = 2; h.sh = [1, 1, 1, 1]; h.regen = 0;
-  T.startSideTurn('player'); T.startSideTurn('enemy'); return u.sh.every(x => x === 0) && h.sh.every(x => x === 1); });
+  battle('ithar', ['i_song'], 'hegemony', ['h_dominion']); const u = P()[0], h = E()[0]; u.shp = 0; syncShields(u); u.st.shieldOff = 2; h.shp = 1; syncShields(h); h.regen = 0;
+  T.startSideTurn('player'); T.startSideTurn('enemy'); return u.shp === 0 && h.shp === 1; });
 // ---- Chorus feed ----
 check('Chorus feed: the killer regrows 15%, a Chorus ship within 2 hexes 8%, capped at 25% a round', async () => {
   battle('chorus', ['b_razor', 'b_spitter'], 'hegemony', ['h_picket', 'h_picket', 'h_picket', 'h_picket']); const [k, n] = P(), es = E();

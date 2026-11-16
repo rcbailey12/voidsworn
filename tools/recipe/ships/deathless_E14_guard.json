@@ -1,0 +1,14 @@
+{
+ "ship": "deathless_E14_guard",
+ "name": "Archive guard flare (E14)",
+ "faction": "eclipse",
+ "game_ship": "d_jackal_h",
+ "game_code": "d_jackal_h",
+ "sheet": "deathless_E14",
+ "concept": "contrib/muse/design/class_family_deathless_2026_11/deathless_E14_flare.jpg",
+ "hull": "sheet_hull",
+ "bake": "stack",
+ "cell": "E14_guard",
+ "parts": [],
+ "notes": "Variant parts, seams, points and length come from the E14 sheet through variants.build. Separate export folder: d_jackal_h. The base D20_23 is unchanged."
+}

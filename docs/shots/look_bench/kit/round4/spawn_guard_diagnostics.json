@@ -1,0 +1,10 @@
+{
+ "exit": 0,
+ "errors": [
+  "ERROR: The object does not have any 'meta' values with the key 'spawn_frame'.",
+  "ERROR: The object does not have any 'meta' values with the key 'spawn_frame'."
+ ],
+ "source": "original round-3 shader",
+ "test": "fx/test/death_spawn_check.gd:132",
+ "cause": "get_meta with a null default reports missing metadata on two pictures"
+}

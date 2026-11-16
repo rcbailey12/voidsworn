@@ -65,6 +65,18 @@ BLADES = {
 N_BLADE = 28
 
 
+def build_sentinel(K):
+    # The worked belly keeps the two all-round weapons on opposite faces, with clear traverse.
+    K.gun('G1', (-1.98, 0.0, -0.39), 0, 6, barrels=2, cal=0.025, blen=0.4,
+          size=0.28, slot='T', weapon='gsentry', inv='sentinel_spire', src='designed', normal=(0, 0, -1),
+          note='Mote sentinel only: a null spire on the stern block belly, clear of the dorsal null cannon')
+    K.change('Mote sentinel adds a belly null spire opposite the dorsal null cannon',
+             'data.js d_scythe_s adds gsentry T; the first roof placement blocked the cannon during traverse')
+
+
+VARIANTS = {'d_scythe_s': build_sentinel}
+
+
 def lerp_tab(tab, x):
     if x <= tab[0][0]:
         return tab[0][1]

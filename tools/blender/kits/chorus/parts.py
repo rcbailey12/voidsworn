@@ -924,3 +924,138 @@ def bone_crest(length, h, w=None, knuckles=3, seed=0, jagged=0.0):
             p.add('growth%d%d' % (g, sg > 0), 'body', 'chitin', tube(pts, [h * 0.018] * 3, n=4))
     p.fit = dict(top=P((0, 0, h)), radius=length / 2)
     return p
+
+
+# ------------------------------------------------------------------------------------------------ squadron craft (issue 793)
+# The Chorus spore swarm, chorus_CS1BA2 (data.js spore: sporeb T, "Acid sacs", 2 shots; R253: each faction its own craft; R259:
+# CS1B-A2, the sealed gills, sleek: "the closed-hull Chorus direction is much better"; nothing open, no exposed fluid). A craft is
+# about a seventeenth of the Ninefold Maw's length, so every size below comes from the arguments (no fixed world sizes), and it
+# stays bold and simple. Ryan (R254): no canopy, no swept aero wings, no tail fins, nothing hung under a hull.
+MATS = {
+    'amber': ((0.14, 0.075, 0.02), 0),      # the sealed sacs' acid seen through the thinnest skin: a matte translucent blush, never a glow
+}
+MACHINES = MACHINES + ('launcher',)   # an acid sac fires: it rides whole with one piece (R226), as the throats and vents do
+SUBPARTS['acid_sac'] = ['root', 'sac', 'band', 'blush', 'sphincter', 'pucker']
+WEAPONS['sporeb'] = dict(
+    name='Acid sacs', rules='data.js sporeb (Spore burst): 2 shots, 10 damage, range 1 (k sq), pierce 0.6, crit 8, x0.3 against squadrons; Chorus trait acid',
+    lore='Lore 5.5: acid that eats through shields and armour; the swarm is grown, not built. Battle look: acid.',
+    design=('Two sealed gill bladders, one per flank (CS1B-A2): each a long low swell of the flank, closed skin over it, raised gill '
+            'bands across it in a slow rhythm, a muted matte amber blush in the shallow valleys between the bands (never an open '
+            'groove, never a glow), and at its front a closed muscular sphincter, puckered shut, that squeezes the burst out. Fixed: '
+            'the swarm turns onto its prey on a strafing run, as a bomber does.'))
+
+
+def rocket_rack(rows, cols, cell, depth, variant=0):
+    """the Chorus acid sac (data.js sporeb). The sheet kit's K.launcher asks every faction kit for rocket_rack(rows, cols, cell,
+    depth); the Chorus answer is no rack but a sealed gill bladder lying along the upper flank: cell is its width across the
+    flank, depth its length running back from the mouth, variant (side, tilt, bulge): its side (+1 port, -1 starboard), the
+    angle of its outward axis above the horizontal (degrees: the flank's own normal there), and how far it swells out of its
+    axis (world units; the ship file adds the hull's own curve). Local +X the firing direction, origin at the closed
+    sphincter's centre at the bladder's front. Every piece is mount: the bladder is a swell of the flank and grows into it."""
+    p = Part('launcher')
+    p.type = 'acid_sac'
+    if isinstance(variant, (tuple, list)):
+        side, tilt, bulge = variant
+    else:
+        side, tilt, bulge = (1 if (variant or 1) > 0 else -1), 0.0, cell * 0.5
+    side = 1 if side > 0 else -1
+    ph = math.radians(tilt)
+    o_ = Vector((0, side * math.cos(ph), math.sin(ph)))        # out of the flank
+    t_ = Vector((0, -side * math.sin(ph), math.cos(ph)))       # across the flank, toward the back
+    w_ = cell * 0.5
+    rz = w_
+    L = depth
+    cx = -L * 0.5
+    nf = _noise(7 + (side > 0))
+
+    def S(a, th):
+        """a point on the bladder: a along its length (0 front, 1 back), th round its axis (0 = straight out of the flank)"""
+        x = cx + (0.5 - a) * L
+        k = max(0.0, 1 - (2 * a - 1) ** 2) ** 0.55
+        k = k * (1 - 0.12 * a)
+        return Vector((x, 0, 0)) + (o_ * (bulge * math.cos(th)) + t_ * (w_ * math.sin(th))) * k
+
+    # the bladder: a long low ellipsoid, a little fuller forward, lumpy
+    nu, nv = 28, 18
+    V = []
+    for j in range(nv + 1):
+        a = j / nv
+        for i in range(nu):
+            th = 2 * math.pi * i / nu
+            q = S(a, th)
+            if 0 < j < nv:
+                xq = q.x; q = q * (1 + 0.03 * nf(Vector((a, math.cos(th), math.sin(th))))); q.x = xq
+            V.append(tuple(q))
+    F = []
+    for j in range(nv):
+        for i in range(nu):
+            a_, b_ = j * nu + i, j * nu + (i + 1) % nu
+            F.append((a_, b_, b_ + nu, a_ + nu))
+    p.add('sac', 'mount', 'flesh', (V, F))
+    # the root: a soft roll of flesh where the bladder swells out of the flank (its inner rim)
+    for k_, thr in enumerate((math.pi * 0.6, -math.pi * 0.6)):
+        pts = [S(a, thr) for a in [0.06 + 0.88 * i / 16 for i in range(17)]]
+        p.add('root%d' % k_, 'mount', 'flesh2', tube(pts, [rz * 0.08] * len(pts), n=6))
+    # the gill bands: raised rounded bands across the outer side, fewer and longer, following the bladder's taper
+    nb = 6
+    for b in range(nb):
+        a = 0.12 + 0.74 * b / (nb - 1)
+        ths = [-math.pi * 0.55 + math.pi * 1.1 * i / 12 for i in range(13)]
+        pts = [S(a - 0.025 * th / math.pi, th) for th in ths]   # each band leans a little aft toward the back, following the swell
+        nrm = [((q - Vector((q.x, 0, 0))).normalized() if (q - Vector((q.x, 0, 0))).length > 1e-9 else o_) for q in pts]
+        p.add('band%d' % b, 'mount', 'flesh2' if b % 2 else 'flesh', welt(pts, nrm, L * 0.04, bulge * 0.22, n=5))
+    # the valleys between the bands: a muted amber blush through the thinnest skin (colour only, laid just on the surface)
+    for b in range(nb - 1):
+        a = 0.12 + 0.74 * (b + 0.5) / (nb - 1)
+        ths = [-math.pi * 0.35 + math.pi * 0.7 * i / 8 for i in range(9)]
+        pts = [S(a, th) for th in ths]
+        nrm = [((q - Vector((q.x, 0, 0))).normalized() if (q - Vector((q.x, 0, 0))).length > 1e-9 else o_) for q in pts]
+        p.add('blush%d' % b, 'mount', 'amber', welt(pts, nrm, L * 0.05, bulge * 0.05, n=4))
+    # the sphincter: a closed muscle ring at the bladder's front, its centre puckered shut (nothing open, no exposed fluid)
+    rs = min(w_, bulge) * 0.55
+    ring = [Vector((rs * 0.15, rs * math.cos(2 * math.pi * k / 20), rs * math.sin(2 * math.pi * k / 20))) for k in range(21)]
+    p.add('sphincter', 'mount', 'tissue', tube(ring, [rs * 0.3] * 21, n=6, cap0=False, cap1=False))
+    for k in range(6):
+        a = 2 * math.pi * k / 6 + 0.25
+        q0 = Vector((rs * 0.3, rs * 0.15 * math.cos(a), rs * 0.15 * math.sin(a))); q1 = Vector((rs * 0.22, rs * 0.85 * math.cos(a), rs * 0.85 * math.sin(a)))
+        p.add('pucker%d' % k, 'mount', 'flesh2', tube([q0, (q0 + q1) / 2 + Vector((rs * 0.08, 0, 0)), q1], [rs * 0.12, rs * 0.16, rs * 0.12], n=5))
+    p.add('puckerc', 'mount', 'maw', blob(rs * 0.12, rs * 0.22, rs * 0.22, centre=(rs * 0.22, 0, 0), nu=10, nv=6, seed=3, amp=0.05))
+    p.fit = dict(exits=[dict(pos=P((rs * 0.35, 0.0, 0.0)), axis=D((1, 0, 0)), radius=rs * 0.4)])   # the burst leaves through the pucker's centre
+    return p
+
+
+def craft_vent(r, body_len, seed=0):
+    """one orifice of the craft's muscle-ringed orifice cluster (the drive: no nozzle): exhaust along -X, origin at the mouth's
+    centre. root: a muscle cone running forward into the hull (mount); fold: radial muscle folds round the mouth; sphincter: the
+    muscle ring that squeezes each pulse; membrane: an inner iris of membrane; throat: the dark funnel; glow: bile light deep
+    in it (the drive's pulse, yellow-green)."""
+    p = Part('engine')
+    nf = _noise(seed)
+    br = r * 1.4
+    prof = [(-r * 0.12, r * 1.05), (r * 0.3, r * 1.3), (r * 0.9, br), (body_len * 0.7, br * 1.02), (body_len, br * 0.85), (body_len + br * 0.2, 0.0001)]
+    V, F = revolve(prof, 16, cap0=False)
+    V = [(x, y * (1 + 0.06 * nf(Vector((x, y, z)).normalized())), z * (1 + 0.06 * nf(Vector((z, x, y)).normalized()))) for (x, y, z) in V]
+    p.add('root', 'mount', 'flesh', (V, F))
+    for k in range(8):
+        a = 2 * math.pi * k / 8
+        pts = [Vector((-r * 0.1, r * 1.08 * math.cos(a), r * 1.08 * math.sin(a))), Vector((r * 0.3, r * 1.32 * math.cos(a + 0.06), r * 1.32 * math.sin(a + 0.06))),
+               Vector((r * 0.85, br * 1.0 * math.cos(a + 0.1), br * 1.0 * math.sin(a + 0.1)))]
+        p.add('fold%d' % k, 'mount', 'flesh2', tube(pts, [r * 0.1, r * 0.12, r * 0.06], n=5))
+    p.add('sphincter', 'body', 'tissue', revolve([(r * 0.05, r * 1.04), (-r * 0.12, r * 0.98), (-r * 0.14, r * 0.8), (r * 0.02, r * 0.72), (r * 0.1, r * 0.9)], 16, closed=True))
+    p.add('membrane', 'body', 'membrane', revolve([(r * 0.2, r * 0.74), (r * 0.32, r * 0.5)], 16))
+    p.add('throat', 'body', 'maw', revolve([(r * 0.3, r * 0.52), (r * 0.6, r * 0.42), (r * 1.0, r * 0.25)], 16, cap1=True))
+    p.add('glow', 'body', 'bile', blob(r * 0.2, r * 0.3, r * 0.3, centre=(r * 0.82, 0, 0), nu=10, nv=6, seed=seed + 1, amp=0.1))
+    p.fit = dict(exit=P((0, 0, 0)), axis=D((-1, 0, 0)), radius=r * 1.05, front=P((body_len, 0, 0)), body_r=br)
+    return p
+
+
+_base_engine_bell = engine_bell
+
+
+def engine_bell(r_exit, body_len, bell_len=None, body_r=None, throat=0.6, rings=3, nose='flat', seg=24, trail='membrane',
+                trails=3, trail_len=None, out_dir=None, seed=0, craft=False):
+    """the pulse vent (above); craft=True (issue 793): one orifice of a craft's orifice cluster, craft_vent (sizes from r_exit)"""
+    if craft:
+        return craft_vent(r_exit, body_len, seed=seed)
+    return _base_engine_bell(r_exit, body_len, bell_len=bell_len, body_r=body_r, throat=throat, rings=rings, nose=nose, seg=seg, trail=trail,
+                             trails=trails, trail_len=trail_len, out_dir=out_dir, seed=seed)

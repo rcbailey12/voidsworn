@@ -174,6 +174,9 @@ jobs run on a third local lane on the PC instead (lane C, R268, Ryan Nov 15: "ye
 If OpenAI lets cloud tasks pin a model, this can be asked again.
 Why: "We don't want to force using Astra or something. Just not accidentally run Luna or something, that's why we usually
 use Sol 6.1" (R216). Ends when Ryan picks another model. Set: Ryan, Nov 2 (R75), Nov 11 (R216) and Nov 15 (R267). Ids: R75b, R267, agents-07.
+Exception (R270, Ryan Nov 15: "Your ChatGPT dot"): Ryan's ChatGPT dot is the repo librarian. It runs in OpenAI's cloud, but
+read-only: it reads main, GitHub issues and PRs, and reports findings to Ryan (later to one standing librarian issue); it never
+pushes, edits, merges, closes or decides a rule. Every finding is checked by the Board against live main before anything changes.
 
 2.8 **Muse: a blind Rey leg written before Rey reads the others, on research, design and review jobs** (not on low-code fix
 jobs). Why: "Let's ensure muse is running its own blind leg room not just chairing." Set: Ryan, Nov 3 (R89). Ids: R89,
@@ -258,7 +261,8 @@ R111a, R111b, R113, R116, R121a, R121b.
 R216).
 
 3.11 **A pause never loses or deletes work.** When Ryan wants the PC (GPU or CPU), the Board runs tools/pc/pause_all.bat
-(now, or at a time): it withdraws the GPU go, closes only chain windows still waiting to start, and ends the AI processes, so
+(now, or at a time): it withdraws the GPU go, closes only chain windows still waiting to start, and ends the Board's own AI
+processes (only those whose command line names the voidsworn_test job folders; never Ryan's own apps), so
 each running job's runner commits and pushes its work to the issue's -partial branch; job windows mid-run are never closed and
 nothing is deleted. On Ryan's go the Board restarts every paused job from its -partial branch. Why: "I don't want to cause
 anything to get lost or deleted with the pauses as well, so let's bake that in" (R272). Set: Ryan, Nov 15.

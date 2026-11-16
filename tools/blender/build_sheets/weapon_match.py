@@ -46,7 +46,7 @@ FITS = {
     'spores': ({'spore'}, {'turret'}),                        # flak: the Chorus spore organ
     'gauss': ({'nullcannon'}, {'turret'}),                    # gauss: the Eclipse null cannon
     'nlance': ({'nullcannon'}, {'fixed'}),                    # gauss: the Eclipse null lance, the flare's one forward gun, fixed (issue 784, R256)
-    'doom': ({'corona_arc'}, {'fixed'}),                      # lance: the Eclipse corona arc projector, spinal
+    'doom': ({'corona_arc'}, {'fixed', 'turret'}),            # spinal, or the Turreted zenith's turning projector (issue 812)
     'torp': ({'rack', 'bow_launcher'}, {'launcher'}),         # torp: a rocket rack or a bow launcher
     'htorp': ({'rack', 'bow_launcher'}, {'launcher'}),        # torp
     'bioplasma': ({'throat'}, {'fixed'}),                     # bio: the Chorus throat, fixed forward
@@ -57,10 +57,14 @@ FITS = {
     # squadron craft (issue 769, R253: own fighter and bomber models per faction; data.js fighter and bomber, both arc T)
     'guns': ({'gun'}, {'turret'}),                            # sq: a fighter's interceptor guns turn on a traverse ring
     'bombs': ({'bomb_tube'}, {'launcher'}),                   # sq: a bomber's bomb tubes, fixed forward in the bow cassette
+    'sporeb': ({'acid_sac'}, {'launcher'}),                   # sq: the Chorus spore swarm's acid sacs, fixed organs that fire forward (issue 793)
 }
 # Why a fixed bomb cassette may show an all-round (T) weapon: a craft is not a ship that keeps its heading while its guns turn;
 # the whole craft turns onto its target on a strafing run (godot/fx/fx_weapons.gd, look 'bombs'), so the tubes point where the
 # craft flies. The table allows it for 'bombs' only, and only on a launcher (the Board's reading of rule 11 for craft, issue 769).
+# Issue 793: the Chorus spore swarm (data.js spore) is a bomber-role craft (sq 'bomber') whose weapon, sporeb (Acid sacs, arc T),
+# is a pair of sealed gill bladders on its flanks; the same reading lets them sit fixed (a launcher, type acid_sac): the swarm turns
+# onto its prey as a bomber does.
 
 
 def tie_tol(radius):
@@ -275,4 +279,6 @@ def run(K, game):
         stats[wk] = gamedata.weapon_stats(wk)
     ship = collect(K, weapons, stats)
     probs = check(ship)
-    return summary(ship, probs), probs
+    result = summary(ship, probs)
+    result.update(game_ship=game, variant=K.variant)
+    return result, probs

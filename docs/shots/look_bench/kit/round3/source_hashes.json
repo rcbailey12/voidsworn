@@ -1,0 +1,14 @@
+{
+ "before": {
+  "fx\\fx.gd": "e8cd57f3b38ae3fbfda7800f3ba7a0270eb0269f5b42b11ebcababe7ac6cfee2",
+  "fx\\fx_shaders.gd": "e052524cba5253da86c389306c4daf08fc33352949638e00adbbcce1b58bcc19",
+  "fx\\fx_weapons.gd": "97592f209ee9df3214d3905df0a3952f8bfe139f7a0dfe61874d923a2e6fc82a",
+  "fx\\faction_looks.json": "0cf30e2b60d5bc614d18ad04d2322fe6a294d5226fcc7808243c0ac0dff0a100"
+ },
+ "after": {
+  "fx\\fx.gd": "6b49b911e1503817a3e1703386c4dc1d3ebf79d4ee95be70fa98ddb4b614e7d6",
+  "fx\\fx_shaders.gd": "de2c36ab9c6f94ec5beea19e95da74dde4e437e2ba5c16463e9bb1fe53a8b3e5",
+  "fx\\fx_weapons.gd": "885abe0f56e8b4642c9a23231c8e3beb8b1cb3fbb9a96c7e9947ab91a5b058ee",
+  "fx\\faction_looks.json": "17eacdecede1845daebc4055dc585dab14d81fb882a7a627aa5a8efc630d8efc"
+ }
+}

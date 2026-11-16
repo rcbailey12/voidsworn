@@ -180,12 +180,17 @@ jobs:
           { echo '### Godot checks from the list'; echo '```'; grep -E '^  [a-z0-9_]+: |^  list: |^Ran |^PASS|^FAIL' "$RUNNER_TEMP/run_checks.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           exit $code
       # (c) one battle reached from a real campaign start, played to its end by the game's AI on both sides in the real
-      # battle scene. Fails on any script error and on any "unknown event" line. Fixed seed, no retry. The driver stops
-      # itself at the first script error and at 300 s; the 360 s limit here is the backstop.
-      - name: Bot battle from a real campaign start (seed 359)
+      # battle scene. Fails on any script error and on any "unknown event" line. Seeds 359, 360 and 361 rotate on UTC
+      # Mondays, with the week and seed in the summary for replay (issue 732). No retry. The driver stops itself at the
+      # first script error and at 300 s; the 360 s limit here is the backstop.
+      - name: Bot battle from a real campaign start (weekly seed rotation)
         if: ${{ !cancelled() && steps.load.outcome == 'success' }}
         run: |
-          timeout -k 10 360 "$GODOT" --headless --path godot --script res://tools/ci/bot_battle.gd -- --seed 359 2>&1 | tee "$RUNNER_TEMP/bot_battle.log"; code=${PIPESTATUS[0]}
+          now=$(date -u +%s)
+          week=$(date -u -d "@$now" +%G-W%V)
+          seed=$((359 + ((now + 259200) / 604800) % 3))
+          echo "UTC week $week: seed $seed (rotation: 359, 360, 361)" | tee -a "$GITHUB_STEP_SUMMARY"
+          timeout -k 10 360 "$GODOT" --headless --path godot --script res://tools/ci/bot_battle.gd -- --seed "$seed" 2>&1 | tee "$RUNNER_TEMP/bot_battle.log"; code=${PIPESTATUS[0]}
           { echo '### Bot battle'; echo '```'; grep '^bot battle:' "$RUNNER_TEMP/bot_battle.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           if grep -qE 'SCRIPT ERROR|unknown event' "$RUNNER_TEMP/bot_battle.log"; then echo "SCRIPT ERROR or unknown event lines above"; exit 1; fi
           exit $code

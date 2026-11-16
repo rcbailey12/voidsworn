@@ -1,4 +1,4 @@
-# corsair_A20 fit report (issue 668: the bow mouths (R239); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
+# corsair_A20 fit report (issue 688: open intakes and angular flanks (R244); RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
 
 Made by `tools/blender/build_sheets/clash.py` on the built blockout (it runs inside every `build.py ... render` and on its own
 with `build.py <code> <out> fit`). What it tests, on every part of every type:
@@ -28,8 +28,14 @@ core.js inArc), `rest_yaw`, `rest_pitch`; its turning meshes `<id>_turn_<materia
 also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on the hull. Casemates are single fixed parts
 (`turret=0`, `gun_fixed=1`).
 
+## Before R244, checked (before)
 
-## How issue 668: the bow mouths (R239) fixed them
+The existing A20 on main, with capped intake housings and straight slab flanks; captured at the same cameras and light. Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0.
+
+| Check | Part | Against | Hits | What |
+|---|---|---|---:|---|
+
+## How issue 688: open intakes and angular flanks (R244) fixed them
 
 | Clash (before) | Fix |
 |---|---|
@@ -39,7 +45,7 @@ While designing, the check also caught (and the design fixed): see the fit repor
 
 ## The sheet as delivered (after)
 
-Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 369 objects, 44 parts, 1104 close pairs, 302 rays, 2 guns, 18 sensor pairs, 2 turrets swept, 9 cones, 17 apertures, 0 lanes.
+Counts: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 368 objects, 44 parts, 1214 close pairs, 302 rays, 2 guns, 18 sensor pairs, 2 turrets swept, 9 cones, 17 apertures, 0 lanes.
 
 **Zero clashes left.** No clash is left in as intended.
 

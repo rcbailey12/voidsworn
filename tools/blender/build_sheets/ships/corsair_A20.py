@@ -13,7 +13,8 @@
 # of one, a flat salvage deck with a spare engine bell and junk bolted down, a row of mismatched bells along the top of the stern.
 # The Board is the final designer (R233): the build keeps that mass and gives the carrier its own outline from above: the
 # widest Hullbreaker for its length, a broad heavy slab with the bow block standing out ahead of it between the two mouths,
-# flat-sided, lopsided by its uneven mouths and the armour bricks on its starboard wall only.
+# lopsided by its uneven mouths and stepped starboard armour. Issue 688 (R244) opens the bow housing behind the intake
+# lips and shapes the slab with broad shoulder facets, lower chines and a recessed waist in plan.
 # It is never a small A16 (the barge's long body, gun rows and stern pods) or a stretched A17 (the cruiser's boxy head).
 # +X bow, +Y port, +Z up. Grabber tips about x = +8.25, engine exits about x = -8.2. Flat belly z = -1.05, deck 1.0.
 CODE = 'corsair_A20'
@@ -27,8 +28,8 @@ CONCEPT_SHEET = 'contrib/muse/design/class_family_corsair_2026_11/corsair_A20_sh
 CONCEPT_VIEWS = dict(top=dict(box=(180, 30, 1800, 520), largest=True, flip=False), side=dict(box=(120, 530, 1850, 830), largest=True, flip=False))
 CROPS = [('bow (the bow block, intakes, port shoulder)', (40, 520, 980, 1240)), ('the bow face and the port hangar mouth', (820, 560, 1440, 1060)),
          ('stern (the bell row and the aft deck)', (1060, 60, 1920, 620))]
-SHEET = dict(version=2, round='issue 668: the bow mouths (R239)', date='2026-11-13', blend='opus668\\corsair_A20',
-             before='First full layout', before_note='The first complete A20 layout, built with the Hullbreaker kit and run through the check before any fix.',
+SHEET = dict(version=3, round='issue 688: open intakes and angular flanks (R244)', date='2026-11-14', blend='board\\issue-688\\shots',
+             before='Before R244', before_note='The existing A20 on main, with capped intake housings and straight slab flanks; captured at the same cameras and light.',
              during='While designing, the check also caught (and the design fixed): see the fit report\'s fix column.')
 
 import math, random
@@ -53,10 +54,26 @@ HULL = [
     (5.75, HC - 0.1, HC - 0.1, BELLY + 0.15, DECK - 0.1, 0.12, 0.25),
     (5.5, HC, HC, BELLY, DECK, 0.12, 0.28),
     (X_MB + 0.02, HC, HC, BELLY, DECK, 0.12, 0.28),
-    (X_MB - 0.02, HB, HB, BELLY, DECK, 0.3, 0.28),
-    (-7.2, HB, HB, BELLY, DECK, 0.3, 0.28),
-    (-7.45, HB - 0.2, HB - 0.2, BELLY + 0.1, DECK - 0.08, 0.26, 0.24),
+    (X_MB - 0.02, HB, HB, BELLY, DECK, 0.72, 0.52),
+    (1.65, HB, HB - 0.06, BELLY, DECK, 0.82, 0.58),
+    (0.55, HB - 0.3, HB - 0.22, BELLY, DECK, 0.7, 0.48),
+    (-1.65, HB - 0.3, HB - 0.22, BELLY, DECK, 0.7, 0.48),
+    (-2.95, HB, HB - 0.06, BELLY, DECK, 0.92, 0.62),
+    (-4.8, HB - 0.08, HB, BELLY, DECK, 0.86, 0.56),
+    (-6.8, HB, HB, BELLY, DECK, 0.35, 0.48),
+    (-7.2, HB - 0.12, HB - 0.12, BELLY, DECK, 0.58, 0.5),
+    (-7.45, HB - 0.35, HB - 0.35, BELLY + 0.1, DECK - 0.08, 0.45, 0.4),
 ]
+# Four salvage armour wedges, stepped in plan and bevelled top and bottom.
+# (fore, aft, bottom, top, outer half-beam fore, outer half-beam aft)
+BRICKS = [(5.1, 3.2, -0.55, 0.45, 3.34, 3.22), (2.6, 0.2, -0.7, 0.3, 3.48, 3.2),
+          (-0.4, -2.9, -0.5, 0.55, 3.26, 3.52), (-3.5, -6.6, -0.7, 0.35, 3.46, 3.1)]
+
+
+def brick_sections(brick):
+    x0, x1, z0, z1, w0, w1 = brick
+    return [(x0, -(w0 - 0.65), w0, z0, z1, 0.28, 0.2),
+            (x1, -(w1 - 0.65), w1, z0 + 0.08, z1 - 0.08, 0.28, 0.2)]
 PL = dict(keep3d=True, courses=True, size=(0.4, 0.9), thick=(0.035, 0.08), step=0.045, gap=0.03, over=0.22, skip=0.05, stack=0.22, rivets_share=0.3, mats={'soot': 4, 'iron': 3, 'pale': 3, 'rust': 2, 'soot2': 2, 'violet': 2, 'steel': 2})
 ENG = [('E1', -2.1, 0.46, 0.38, ''), ('E2', -1.06, 0.42, 0.33, ''), ('E3', 0.02, 0.44, 0.47, 'the largest'),
        ('E4', 1.1, 0.4, 0.35, 'in a violet Eclipse trophy housing'), ('E5', 2.12, 0.48, 0.4, '')]   # (id, y, z, r, note)
@@ -68,22 +85,56 @@ DECK_TIERS = [('D1 fore deck tier', 5.35, 2.05, -1.95, 0.9, 0.34), ('D2 mid deck
 
 
 def build(K):
+    import bpy
     import kit as _k
     from mathutils import Vector, Matrix
     HP = _k.HP
     sy = lambda x, side: _k.sec_at(HULL, x)[1 if side > 0 else 2] * side  # noqa: E731
+
+    def skin_y(x, side, z):
+        """Actual faceted skin, including starboard armour, for fittings and hard points."""
+        def width(section):
+            _, wp, ws, zb, zt, ct, cb = section[:7]
+            ct = min(ct, (wp + ws) * 0.49, (zt - zb) * 0.49)
+            cb = min(cb, (wp + ws) * 0.49, (zt - zb) * 0.49)
+            return (wp if side > 0 else ws) - max(0, z - (zt - ct), zb + cb - z)
+        w = width(_k.sec_at(HULL, x)) if x < X_MB else HB
+        if side < 0:
+            for brick in BRICKS:
+                if brick[1] <= x <= brick[0]:
+                    section = _k.sec_at(brick_sections(brick), x)
+                    if section[3] <= z <= section[4]:
+                        w = max(w, width(section))
+        return side * w
+
+    def skin_normal(x, side, z):
+        dx = (skin_y(x + 0.01, side, z) - skin_y(x - 0.01, side, z)) / 0.02
+        dz = (skin_y(x, side, z + 0.01) - skin_y(x, side, z - 0.01)) / 0.02
+        return tuple(Vector((-side * dx, side, -side * dz)).normalized())
+
+    flank_lamps = [(x, skin_y(x, n, z) if x < X_MF else y, z, n) for x, y, z, n in LAMPS]
+    thrusters = [(x, skin_y(x, 1 if y > 0 else -1, z) if x < 0 else y, z) for x, y, z in THR]
     # the mouths' inner walls are the core's flanks: no hull plate there (the dark liner covers them; issue 668)
     for side in (1, -1):
         for k in range(7):
             for z_ in (-0.45, 0.35):
                 K.keepouts.append((Vector((X_MB + 0.25 + k * 0.45, side * (HC + 0.3), z_)), 0.45))
-    K.mass('Base hull (the slab, its core between the two bow mouths)', K.hull(HULL, 'soot', shell=0.14, plates=dict(PL, seed=20, inv=['hull_plates', 'belly_plates'])),
-           'soot and patched plate', note='the broad flat slab; forward of the mouths\' back wall it is the core between the two mouths')
+    K.mass('Base hull (faceted slab, recessed waist, core between bow mouths)', K.hull(HULL, 'soot', shell=0.14, plates=dict(PL, seed=20, inv=['hull_plates', 'belly_plates'])),
+           'soot and patched plate', note='broad shoulder facets and lower chines; diagonal plan shoulders into a narrower waist (R244); forward of the mouths\' back wall it is the core between the mouths')
     K.mark('hull_form', 'hull', ['bevel', 'step', 'overhang'])
     # the bow block: narrower than the body, a little lower, the two intake tubes in its face
-    K.mass('Bow block', K.loft('A20_bowblock', [(8.0, 1.5, 1.5, -1.0, 0.8, 0.22, 0.2), (7.8, 1.58, 1.58, -1.05, 0.86, 0.26, 0.22),
+    bow_block = K.mass('Bow block', K.loft('A20_bowblock', [(8.0, 1.5, 1.5, -1.0, 0.8, 0.22, 0.2), (7.8, 1.58, 1.58, -1.05, 0.86, 0.26, 0.22),
                                                  (5.3, 1.62, 1.62, -1.05, 0.9, 0.26, 0.22)], 'soot2', plates=dict(PL, seed=21, inv='bow_plates')),
            'dark soot', note='the bow block in front of the body, as tall as the slab and about half its beam: a housing for the two huge intake tubes (the beauty)')
+    # R244: a tube sunk into a capped loft still renders as a flat circle. Open its housing as well as its own bore.
+    # Clearance includes the kit tube's wall. These blind fuel intakes do not add weapons or engine hard points.
+    for i, (y, r) in enumerate(((0.73, 0.56), (-0.73, 0.54))):
+        cutter = K.cyl('A20_intake_cut_%d' % i, (8.4, y, -0.12), (5.75, y, -0.12), r * 1.16, 'dark', n=48)
+        bpy.context.view_layer.objects.active = bow_block
+        cut = bow_block.modifiers.new('R244 intake well %d' % (i + 1), 'BOOLEAN')
+        cut.operation = 'DIFFERENCE'; cut.solver = 'EXACT'; cut.object = cutter
+        bpy.ops.object.modifier_apply(modifier=cut.name)
+        bpy.data.objects.remove(cutter, do_unlink=True)
     K.mark('bow_block', 'tier', ['face', 'roof', 'opening'])
     # the two hangar blocks either side of the core (issue 668): per mouth the sill under it, the lintel over it and the outer
     # cheek, from the bow face back into the full-beam body; the core's flank is each mouth's inner wall
@@ -107,12 +158,11 @@ def build(K):
                                          'iron', plates=dict(PL, seed=24 + (side < 0) * 10, faces=fs([7], [3]), inv='hangar_plates', size=(0.25, 0.5))),
                'bare iron, patched', note='the outer wall of the %s mouth' % sd)
     K.mark('hangar_block', 'tier', ['face', 'roof', 'opening'])
-    # the closed starboard wall: big bolted bricks, a patchwork
-    for i, (x0, x1, z0, z1) in enumerate(((5.1, 3.2, -0.55, 0.45), (2.6, 0.2, -0.7, 0.3), (-0.4, -2.9, -0.5, 0.55), (-3.5, -6.6, -0.7, 0.35))):
-        hw = HB
-        ob = K.loft('A20_brick_%d' % i, [(x0, -(hw - 0.3), hw + 0.14, z0, z1, 0.08, 0.08), (x1, -(hw - 0.3), hw + 0.14, z0, z1, 0.08, 0.08)],
+    # Uneven salvage armour wedges with bevelled shoulders, lower undercuts and offset ledges (R244).
+    for i, brick in enumerate(BRICKS):
+        ob = K.loft('A20_brick_%d' % i, brick_sections(brick),
                     ('soot', 'iron', 'soot2', 'iron')[i], plates=dict(PL, seed=340 + i, faces=[2, 3, 4], size=(0.3, 0.7)))
-        K.mass('Starboard brick %d' % (i + 1), ob, 'patched plate', note='armour brick on the closed starboard wall')
+        K.mass('Starboard armour wedge %d' % (i + 1), ob, 'patched plate', note='tapered salvage armour with a bevelled shoulder, lower undercut and an offset ledge (R244)')
     K.mark('wall_bricks', 'tier', ['face', 'roof', 'opening'])
     # the salvage deck: low tiers of plate stacked on the deck, uneven
     for (nm, x0, x1, y0, y1, h) in DECK_TIERS:
@@ -130,30 +180,31 @@ def build(K):
                                         plates=dict(PL, seed=381, size=(0.2, 0.4), mats={'violet': 4, 'lilac': 1})),
            'violet Eclipse plate', note='a trophy housing torn from an Eclipse hull, round one bell (designs.md)')
     # flat trophies and patches on the deck and the walls
-    K.patch('TP1', (-1.4, -HB - 0.141, -0.1), (0, -1, 0), 2.2, 0.62, ang=0.03, lift=0.05, t=0.06, m='pale', inv='trophy')
+    K.patch('TP1', (-1.4, skin_y(-1.4, -1, -0.1) - 0.005, -0.1), skin_normal(-1.4, -1, -0.1), 2.2, 0.62, ang=0.03, lift=0.05, t=0.06, m='pale', inv='trophy')
     K.patch('TP2', (4.1, -0.3, DECK + 0.345), (0, 0, 1), 1.0, 0.7, ang=0.2, lift=0.04, t=0.05, m='violet', inv='trophy')
     K.patch('TP3', (-5.2, 0.4, DECK + 0.365), (0, 0, 1), 1.2, 0.8, ang=-0.15, lift=0.04, t=0.05, m='pale', inv='trophy')
     K.patch('TP4', (-1.65, 1.35, DECK + 0.005), (0, 0, 1), 1.1, 0.75, ang=0.1, lift=0.04, t=0.05, m='blood', inv='trophy')
     K.patch('TP5', (6.2, 0.0, 0.705), (0, 0, 1), 0.8, 0.6, ang=0.05, lift=0.03, t=0.05, m='pale', inv='trophy')
-    K.patch('TP6', (-5.4, HB + 0.005, 0.3), (0, 1, 0), 1.0, 0.45, ang=-0.04, lift=0.04, t=0.05, m='violet', inv='trophy')
+    K.patch('TP6', (-5.4, skin_y(-5.4, 1, 0.3) + 0.005, 0.3), skin_normal(-5.4, 1, 0.3), 1.0, 0.45, ang=-0.04, lift=0.04, t=0.05, m='violet', inv='trophy')
     for i, (x, y, z, w, l, h) in enumerate([(4.6, -1.3, DECK + 0.34, 0.5, 0.6, 0.18), (2.7, 0.0, DECK + 0.34, 0.45, 0.5, 0.15), (-1.0, -1.15, DECK + 0.4, 0.55, 0.7, 0.2),
                                             (-2.2, -0.75, DECK + 0.4, 0.4, 0.45, 0.16), (-3.9, 1.1, DECK + 0.36, 0.5, 0.55, 0.18), (-6.3, -0.9, DECK + 0.36, 0.45, 0.6, 0.16)]):
         K.hatchbox('HB%d' % (i + 1), (x, y, z), w, l, h, inv='salvage', note='salvage locker bolted down on the deck')
     K.hatch('HS1', (4.9, 1.3, DECK + 0.002), (0, 0, 1), 0.5, 0.5, round_=True, inv='deck_hatches', note='round deck hatch on the port deck behind the bow')
     K.hatch('HS2', (0.1, 1.55, DECK + 0.002), (0, 0, 1), 0.55, 0.55, inv='deck_hatches', note='square deck hatch over the hangar decks')
     for i, x in enumerate((-4.6, -5.8)):
-        K.vent('VS%d' % i, (x, -HB - 0.141, 0.0) if i == 0 else (x, -HB - 0.141, -0.15), (0, -1, 0), 0.6, 0.4, slats=5, inv='vents', note='engine room louvre in the starboard wall')
+        z = 0.0 if i == 0 else -0.15
+        K.vent('VS%d' % i, (x, skin_y(x, -1, z) - 0.005, z), skin_normal(x, -1, z), 0.6, 0.4, slats=5, inv='vents', note='engine room louvre mounted on the sloping starboard armour')
     K.antenna('AN1', (-6.6, 2.76, DECK), 1.0, whips=3, inv='antenna', note='comms array on the aft deck, down beside the aft deck tier: calls the squadrons home')
 
     # the plates go on now, before the machines claim their mounts (issue 633: the kit's default keep-outs would strip the deck)
-    for (x, y, z) in THR:
+    for (x, y, z) in thrusters:
         K.keepouts.append((Vector((x, y, z)), 0.3))
     for p_ in ((3.6, -0.7, DECK + 0.34), (-4.9, 0.1, DECK + 0.36)):
         K.keepouts.append((Vector(p_), 0.85))
     for p_ in ((5.2, 2.4, DECK), (5.2, -2.35, DECK)):
         K.keepouts.append((Vector(p_), 0.5))
     K.keepouts.append((Vector((1.45, 1.15, DECK)), 0.95))           # the spare bell
-    for (x, y, z, n) in LAMPS:
+    for (x, y, z, n) in flank_lamps:
         K.keepouts.append((Vector((x, y, z)), 0.15))
     for side in (1, -1):                                             # the bow grabbers' shoulders and the grapples under the belly
         K.keepouts.append((Vector((6.8, 0.68 * side, -1.05)), 0.45))
@@ -196,8 +247,8 @@ def build(K):
     for i, (y, r) in enumerate(((0.73, 0.56), (-0.73, 0.54))):
         K.tube('I%d' % (i + 1), (8.13, y, -0.12), r, 2.25, hood=0.18, bands=3, inv='intakes', what='intake tube',
                note='%s intake: the family\'s face (designs.md "two low intake tubes")' % ('port' if y > 0 else 'starboard'))
-        # a soot-black liner down the bore, so each mouth reads as a deep dark hole from the beauty camera (round 2)
-        K.cyl('A20_I%d_liner' % (i + 1), (8.07, y, -0.12), (6.05, y, -0.12), r * 0.985, 'dark', cap=False)
+        # The open housing exposes the kit's dark bore and three stepped iron rings.
+        # No extra smooth liner: it used to hide the internal rings and the capped bow face.
     # the bow face round the tubes: torn plates bolted over the block's face, not one smooth plane (round 2)
     for k, (y, z, w, h, m) in enumerate(((0.0, 0.66, 1.9, 0.22, 'iron'), (1.42, 0.3, 0.22, 0.62, 'soot2'), (-1.42, 0.25, 0.22, 0.7, 'rust'),
                                           (0.95, -0.95, 0.75, 0.16, 'soot2'), (-0.9, -0.95, 0.7, 0.16, 'iron'), (0.0, 0.42, 0.24, 0.3, 'pale'))):
@@ -235,10 +286,11 @@ def build(K):
     for (fid, y, z, r, note) in ENG:
         K.engine(fid, (-8.23, y, z), r, 0.75, bell=1.1, rings=3 if r > 0.33 else 2, body_r=r * 1.08, nose='flat', inv='engines', src='picture',
                  note=('stern bell, ' + note) if note else 'stern bell')
-    for i, (x, y, z) in enumerate(THR):
+    for i, (x, y, z) in enumerate(thrusters):
         K.thruster('Q%d' % (i + 1), (x, y, z), (0, 1 if y > 0 else -1, 0), r=0.28, inv='thrusters', note='bow' if x > 0 else 'stern')
-    for i, (x, y, z, n) in enumerate(LAMPS):
-        K.lamp('L%d' % i, (x, y + 0.01 * n, z), (0, n, 0), inv='lamps')
+    for i, (x, y, z, n) in enumerate(flank_lamps):
+        normal = skin_normal(x, n, z) if x < X_MF else (0, n, 0)
+        K.lamp('L%d' % i, (x, y + 0.01 * n, z), normal, inv='lamps')
 
     # ---- colour zones ----
     K.colour('soot and weathered plate', 8.25, -8.25, 'whole hull')
@@ -260,7 +312,7 @@ def build(K):
         y0_, y1_ = sorted((side * 0.25, side * (HB - 0.4)))
         K.room('%s_hangar_lower' % hid, 'hangar', 0.7, 2.05, y0_, y1_, -0.75, -0.2, note='lower hangar deck behind the %s mouth: half-built fighters on scavenged frames' % hid)
         K.room('%s_hangar_upper' % hid, 'hangar', 0.7, 2.05, y0_, y1_, -0.04, 0.4, note='upper hangar deck behind the %s mouth: bombers and spares' % hid)
-    K.room('loot_hold_fore', 'hold', 5.45, 7.6, -0.8, 0.8, -0.6, 0.0, note='loot hold in the bow block (designs.md)')
+    K.room('loot_hold_fore', 'hold', 5.4, 5.8, -1.25, 1.25, -0.75, 0.6, note='crosswise salvage locker behind the intake wells, clear of both dark bores (R244)')
     K.room('loot_hold_body', 'hold', 3.45, 5.2, -(HC - 0.35), HC - 0.35, -0.75, -0.2, note='loot hold in the core between the mouths')
     K.room('kennel_deck', 'crew', 3.45, 5.2, -(HC - 0.35), HC - 0.35, -0.04, 0.6, note='kennel deck for the boarding crews, in the core between the mouths')
     K.room('turret_magazine_fore', 'magazine', 2.95, 4.25, -(HC - 0.35), -0.1, 0.55, 0.82, note='under the fore turret')
@@ -296,17 +348,23 @@ def build(K):
     for i, (x, y, z, sec, side) in enumerate([(3.65, 0.9, DECK + 0.22, 'prow', 'port'), (6.39, -1.6, 0.83, 'prow', 'stbd'), (-0.65, HB, -0.06, 'mid', 'port'),
                                               (1.0, -HB, -0.25, 'mid', 'stbd'), (-3.2, -HB, -0.05, 'mid', 'stbd'), (-6.4, HB, 0.35, 'eng', 'port'),
                                               (-7.0, -HB, -0.45, 'eng', 'stbd')]):
+        if x < X_MB:
+            y = skin_y(x, 1 if y > 0 else -1, z)
         K.point('breach', 'hp_breach_%d' % i, (x, y, z), side=side, section=sec)
     K.point('rcs', 'hp_rcs_0', (6.6, 1.61, -0.6), side='port')
     K.point('rcs', 'hp_rcs_1', (6.6, -1.61, -0.6), side='stbd')
-    K.point('board', 'hp_board_0', (-0.65, HB, -0.4), side='port')
-    K.point('board', 'hp_board_1', (-0.9, -HB, -0.3), side='stbd')
+    K.point('board', 'hp_board_0', (-0.65, skin_y(-0.65, 1, -0.4), -0.4), side='port')
+    K.point('board', 'hp_board_1', (-0.9, skin_y(-0.9, -1, -0.3), -0.3), side='stbd')
     for i, (hid, side) in enumerate(MOUTHS):
         yi, yo, yc, W = mouth_y(side)
         K.point('bay', 'hp_bay_%d' % i, (X_MF - 0.2, yc, MZ0 + 0.012), side='port' if side > 0 else 'stbd',
                 note='launch forward out of the %s mouth, on its floor at the lip (the recipe: a hard point sits on the mesh, the mouth itself is open air)' % hid, dir=(1, 0, 0))
 
     # ---------- changed from the picture (designer's decisions, R207, R233) ----------
+    K.change('Issue 688 (R244): the two bow intakes are blind wells through the bow housing, with the kit\'s rolled lips, lip bolts, three inset rings and dark rear baffles exposed; the redundant smooth liners are removed and the bow loot locker sits behind the wells',
+             'Ryan, Nov 14: the front circles should be open holes with detail, never just circles. The solid bow block had capped both kit tubes immediately behind their lips. They remain fuel and dust intakes, not extra weapons (data.js c_hulk has only the two turrets)')
+    K.change('Issue 688 (R244): the slab has 0.7 to 0.92 upper chamfers, lower chines, diagonal shoulders into a 0.3-per-side recessed waist, and four tapered starboard armour wedges with offset ledges; flank fittings and hard points follow the new skin',
+             'Ryan, Nov 14: the sides were flat walls, unlike the angular concept. The carrier keeps its broad deck, forward hangar mouths (R239), two raised turrets clear of sensors (R240), five stern engines and Carrier class length 16.5')
     K.change('Issue 668 (R239): both hangar mouths open forward in the bow face, one either side of the bow block beside the twin tubes (port 1.36 wide, starboard 1.32; 1.72 high; 3.0 deep to the back wall, 2.7 to the blast door), framed by a sill, a lintel and an outer cheek each; the port flank is closed plate now',
              'Ryan, Nov 13 2026 (R239), on A20 painted and widened: "on the hullbreakers carrier, I was wrong. I prefer the concepts version of the bays facing forward now that I see it built." '
              'The beauty and the sheet\'s bow-on view draw the two mouths in the bow face beside the twin tubes with a craft visible inside; this replaces his Nov 12 port-flank ruling (issue 633). The layout is the closed PR 658\'s (commit 98e39958), on issue 651\'s 3.2 half-beam; data.js c_hulk (launch, hangar 2) is met either way')

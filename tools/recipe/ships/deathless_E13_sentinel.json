@@ -1,0 +1,14 @@
+{
+ "ship": "deathless_E13_sentinel",
+ "name": "Mote sentinel (E13)",
+ "faction": "eclipse",
+ "game_ship": "d_scythe_s",
+ "game_code": "d_scythe_s",
+ "sheet": "deathless_E13",
+ "concept": "contrib/muse/design/class_family_deathless_2026_11/deathless_E13_mote.jpg",
+ "hull": "sheet_hull",
+ "bake": "stack",
+ "cell": "E13_sentinel",
+ "parts": [],
+ "notes": "The E13 sheet adds its belly null spire only for d_scythe_s, clear of the dorsal cannon. The base D9_23 is unchanged."
+}

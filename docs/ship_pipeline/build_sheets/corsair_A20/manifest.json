@@ -1,6 +1,6 @@
 {
  "code": "corsair_A20",
- "sheet_version": 2,
+ "sheet_version": 3,
  "routes_note": "kit = the Hullbreakers parts kit (tools/blender/kits/hullbreakers/parts.py, the same builders the build uses); hand-built = modelled for this hull; generated = from a reviewed part-library entry",
  "turret_marking": "R219: a turret is an empty <id>_turret at the ring centre (local +Z = mount normal) with custom properties turret=1, slot, weapon, arc_lo, arc_hi, arc_deg (bearings from the bow, + to port, core.js inArc), rest_yaw, rest_pitch; its turning meshes <id>_turn_<material> are its children; the ring <id>_mount_<material> stays on the hull. Casemates are single fixed parts (turret=0, gun_fixed=1).",
  "parts": [
@@ -499,7 +499,7 @@
  ],
  "masses": [
   {
-   "name": "Base hull (the slab, its core between the two bow mouths)",
+   "name": "Base hull (faceted slab, recessed waist, core between bow mouths)",
    "route": "hand-built"
   },
   {
@@ -531,19 +531,19 @@
    "route": "hand-built"
   },
   {
-   "name": "Starboard brick 1",
+   "name": "Starboard armour wedge 1",
    "route": "hand-built"
   },
   {
-   "name": "Starboard brick 2",
+   "name": "Starboard armour wedge 2",
    "route": "hand-built"
   },
   {
-   "name": "Starboard brick 3",
+   "name": "Starboard armour wedge 3",
    "route": "hand-built"
   },
   {
-   "name": "Starboard brick 4",
+   "name": "Starboard armour wedge 4",
    "route": "hand-built"
   },
   {
