@@ -378,6 +378,8 @@ func play_api(a, opts := {}) -> Dictionary:
 	b.in_campaign = true
 	if campaign != null and campaign.C.RUN != null:
 		b.args["sector_setting"] = load("res://world/world.gd").sector_setting(campaign.C.RUN)
+		# R78 Q18: only the fifth run's final boss gets dawn. Keep this visual flag out of the rules and saves.
+		b.args["finale"] = int(campaign.C.META.get("stats", {}).get("runs", 0)) == 5
 	b.args["quality"] = str(settings["quality"])
 	b.args["taa"] = bool(settings.get("taa", false))
 	add_child(b)

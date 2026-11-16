@@ -26,7 +26,7 @@ Weapon callouts: (1) the two bomb tube mouths at the glacis's extreme corners in
 
 ## Chair's lean
 
-KB1C-A, unanimous among the seated legs and the blind leg: the channel is the clearest flight-axis structure any low barge in the field carries, and it separates the craft from KB1C itself at a glance. KB1C-C is the bold second. KB1C-B remains the risk the council named: its delivered render does lean toward a tracked vehicle from some angles, and if the owner keeps it, the strengthened brow and thruster banks in the sheet are load-bearing.
+KB1C-A, the lean of DeepSeek, Qwen and the blind leg (Flash kept A and C and stated no lean): the channel is the clearest flight-axis structure any low barge in the field carries, and it separates the craft from KB1C itself at a glance. KB1C-C is the bold second. KB1C-B remains the risk the council named: its delivered render does lean toward a tracked vehicle from some angles, and if the owner keeps it, the strengthened brow and thruster banks in the sheet are load-bearing.
 
 ## Production notes (render drift; the written sheet governs)
 
@@ -36,7 +36,9 @@ KB1C-A, unanimous among the seated legs and the blind leg: the channel is the cl
 
 ## Owner's ruling (Nov 15, 2026)
 
-KB1C-C, the Wide Glacis, is the pick of the KB1C variations, in the owner's words "the best by far". The council's unanimous lean for KB1C-A is recorded above and was not taken. KB1C-C's sheet terms (extreme-corner mouths in dark collars, the armoured lip, the beam guard) stand as written.
+KB1C-C, the Wide Glacis, is the pick of the KB1C variations, in the owner's words "the best by far". The council's lean for KB1C-A is recorded above and was not taken. KB1C-C's sheet terms (extreme-corner mouths in dark collars, the armoured lip, the beam guard) stand as written.
+
+The owner has not ruled whether this winner replaces the base design or stands alongside it as a variant; that decision remains open.
 
 ## Owner's ruling (Nov 15, 2026, 18:46 CST, R273)
 
@@ -55,3 +57,9 @@ size and angle, never small even squares in tidy rows (R240). The width (R273), 
 bays, the stern bells and the plate colours stay. On the sheet: the body's top is one ramp from the bow to an armoured lip
 against the stern housing (the vision slit in the lip's face), the five bells sit at the top of the ramp, and the plates are
 laid by the sheet's own patchwork plater (cut at random into mixed sizes, turned a few degrees, lapping one another).
+
+## Owner's ruling (Nov 16, 2026, 01:03 CST, R279)
+
+On the shape pass (corsair_KB1CC_compare.jpg at PR 830 head 6970a0bb6, the sloped glacis and the patchwork): "bomber on to
+paint". The KB1C-C shape is accepted as built; the craft goes to the Hullbreaker paint stack (with the R274 dark grey trophy
+patches) through the recipe (issue 853).

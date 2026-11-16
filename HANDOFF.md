@@ -20,21 +20,11 @@ otherwise (gpu_go.txt, read back). Every PC write is read back before it is reli
 (merged) and the brief edits on 41, 372, 507. Board pick: the dot as the nightly read-only librarian, a script for mechanical
 checks, Muse for audits; part of the issue 788 plan.
 
-**Running now.** Codex main chain 15F: 800 (doom arc and gauss, R263; mid-run on codex/issue-800-partial), then 368, 369, 688,
-373 (their old PRs 717, 725, 696, 700 get the new pushes). Lane B: 805 delivered as PR 809, Godot game checks FAILED: read the
-log, send it back or fix. Lane C: 733 delivered as PR 810 (one home for the paint colour helpers), checks running.
-DeepSeek: 41 delivered as PR 808 (all green, review the diff); 371 needs a run 3 (work/issue-371-deepseek-partial).
-Opus workers: none live. 784 (d_jackal_h lance sidegrade) and 780 (Hegemony) pushed their branches; check and close.
+**Running now and just landed.** Live status is in contrib/opus/LOOP.md (the newest LATEST line) and on GitHub (open PRs, issue labels); this file no longer restates it, so it cannot go stale (the dot's librarian check of Nov 15 found PRs 804 and 810 described here as pending after both merged).
 
-**Just landed.** E14 round 2 accepted (R269): PR 797 (flare rules, R265) merged; PR 804 (E14 rebuild) merges on green, the
-branch was just brought up to main. New issues: 811 (Codex lane B: lift E14 in the game with a per-hull height, R266), 812
-(backlog: per-variant parts in the ship pipeline, the guard flare spire).
+**Next in the queue.** The issue 788 plan is decided (R270: the dot as nightly librarian, Muse at hand-overs, all seven
+steps; contrib/opus/reviews/repo_memory_788_synthesis.md). Everything else queued or running is in LOOP's newest LATEST line
+and contrib/opus/OPEN_WORK.md (generated from GitHub).
 
-**Next in the queue.** Board: the issue 788 synthesis (legs: PR 801 Board, 790 Muse merged, PR 803 DeepSeek), then the one-page
-plan for Ryan. Opus: 793 (squadron craft builds; R259), 783 (E13 paint even side to side; R256). PC runs by the Board: S8 recipe
-(x1.85 paint), Hullbreaker paint after 688, Hegemony recipe, E13 and E14 recipe after 804; re-render the H10 and IM5 sheet
-pictures; fix the UI audit's blank campaign captures. Muse (Ryan starts it): 794 fleet hybrid, Career, event screens; 256
-checks. Note: the Board sandbox clone /home/claude/voidsworn has uncommitted edits to tools/pc runner files from the lane setup;
-check them against main before discarding.
-
-**Ryan's open picks.** The fleet screen (FL1 and FL2 hybrid, in Muse's chat). The 788 plan.
+**Ryan's open picks.** The fleet screen (FL1 and FL2 hybrid, in Muse's chat). Looks to come: effects round 3 (815), the fog
+nebula (368 step 2).

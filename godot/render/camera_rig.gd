@@ -1,5 +1,5 @@
 extends Camera3D
-# The game's RTS camera (scene3d.js CamCtl): orbit about a target on the board plane, smoothed.
+# The game's RTS camera (scene3d.js CamCtl): orbit about a target on or above the board, smoothed.
 # Right-drag orbits, left-drag or WASD / arrow keys pan, the wheel zooms, T toggles top-down, Home resets, F focuses.
 # Angles as in the game's Babylon ArcRotateCamera (alpha around, beta down from straight up), with the world's z mirrored
 # (Godot is right-handed, the game's Babylon scene left-handed), so the board looks the same way round.
@@ -55,15 +55,15 @@ func snap() -> void:
 
 
 func focus(p: Vector3, rr := -1.0) -> void:
-	t = Vector3(p.x, 0, p.z)
+	t = p
 	if rr > 0.0:
 		r = rr
 
 
-# F1: a slow glide to a point on the board (the next ship handed over, a reinforcement arriving): the target moves
+# F1: a slow glide to a point or ship above the board (the next ship handed over, a reinforcement arriving): the target moves
 # there with the camera's slow easing for dur seconds; the zoom is kept unless rr is given (then only pulled in, never out)
 func glide(p: Vector3, dur := 1.1, rr := -1.0) -> void:
-	t = Vector3(clampf(p.x, -bounds.x, bounds.x), 0, clampf(p.z, -bounds.y, bounds.y))
+	t = Vector3(clampf(p.x, -bounds.x, bounds.x), p.y, clampf(p.z, -bounds.y, bounds.y))
 	if rr > 0.0 and rr < r:
 		r = rr
 	slow_until = _clock + dur

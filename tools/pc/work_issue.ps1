@@ -225,6 +225,7 @@ elseif ($mode -eq 'msg') {
   if (-not $checks) { $checks = '(the runner wrote no check output for this run; see the run folder on the PC)' }
   $fence = '```'
   $msg = "Workhorse $arm arm (issue #$n): $title`n`n$last`n`n## Checks run by the runner`n`n$fence`n$checks`n$fence`n`n## Run stats (runner)`n`n$fence`n$stats`n$fence`n`nRefs #$n`n"
+  if (Read-Txt (Join-Path $out 'stop_reason.txt')) { $msg += "`n" + (Read-Txt (Join-Path $out 'resume.txt')) + "`n" }
   [IO.File]::WriteAllText((Join-Path $out 'commit.txt'), $msg, $utf8)
 }
 elseif ($mode -eq 'guard') {
@@ -321,7 +322,8 @@ elseif ($mode -eq 'commit') {
     $base = Read-Txt (Join-Path $out 'base_commit.txt')
     $resumed = Read-Txt (Join-Path $out 'resume.txt')
     & git diff --quiet $base HEAD 2>$null
-    if (-not $resumed -or $LASTEXITCODE -eq 0) { Write-Host 'nothing left to commit after the refuse list'; Pop-Location; exit 7 }
+    $partial = Read-Txt (Join-Path $out 'partial.txt')
+    if (-not $partial -and (-not $resumed -or $LASTEXITCODE -eq 0)) { Write-Host 'nothing left to commit after the refuse list'; Pop-Location; exit 7 }
     Write-Host 'resumed work is already committed; carry it through the checked push'
   }
   $num = @(Git-Lines -c core.quotepath=off diff --cached --numstat --no-renames)

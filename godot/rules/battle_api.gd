@@ -120,7 +120,7 @@ func _i_new_battle_scenario(sc, seed_override: int = -1) -> void:
 	if S.get("nemesis") != null: cfg["nemesis"] = S.nemesis.duplicate(true)
 	if R.jt(S.get("verb")): cfg["verb"] = S.verb
 	if R.jt(S.get("noStar")): cfg["noStar"] = true   # R1: campaign sector 1 never fields the dead star
-	for key in ["teachingGate", "teachingBattle", "edgeFeature", "arena", "storyMods"]:
+	for key in ["teachingGate", "teachingBattle", "edgeFeature", "arena", "storyMods", "finale"]:
 		if S.has(key): cfg[key] = S[key]
 	if S.get("treeChoices") != null: cfg["treeChoices"] = S.treeChoices.duplicate(true)   # issue #305: H1 answers for a fixture
 	if S.get("cmdRound") != null: cfg["cmdRound"] = S.cmdRound   # issue #305: pin the round the fixture uses the Command
@@ -221,7 +221,7 @@ func _i_view() -> Dictionary:
 			var w = u["weapons"][i]
 			ws.append({"i": i, "id": w["id"], "name": w.get("n"), "kind": w["k"], "arc": w["arc"], "range": w["r"], "ready": R.weaponReady(w), "cd": w.get("cdLeft"), "off": w.get("off")})   # get(): B-20 refits lack them
 		us.append({"id": u["id"], "side": u["side"], "tpl": u["tpl"], "name": u["name"], "cls": u.get("cls"), "fac": u["fac"], "size": u["size"], "squadron": R.jt(u.get("isSq")),
-			"q": int(u["q"]), "r": int(u["r"]), "facing": int(u["facing"]), "hp": u["hp"], "maxHp": u["maxHp"], "sh": u["sh"].duplicate(), "shMax": u["shMax"],
+			"q": int(u["q"]), "r": int(u["r"]), "facing": int(u["facing"]), "hp": u["hp"], "maxHp": u["maxHp"], "sh": u["sh"].duplicate(), "shMax": u["shMax"], "shp": u.get("shp"),
 			"sec": u.get("sec").duplicate(true) if u.get("sec") != null else null, "crew": u.get("crew"), "crewMax": u.get("crewMax"), "dead": R.jt(u.get("dead")), "fled": R.jt(u.get("fled")),
 			"activated": R.jt(u.get("activated")), "active": B.get("activeUnit") != null and is_same(B["activeUnit"], u), "braced": R.jt(u.get("braced")), "mp": u["mp"], "turnsLeft": u["turnsLeft"],
 			"ab": u.get("ab"), "abCd": u["abCd"], "abReady": R.canAbility(u) if not R.jt(u.get("dead")) else false, "burning": R.z0(u["st"].get("fire")) > 0, "flagship": R.jt(u.get("flagship")) or R.jt(u.get("boss")), "weapons": ws,

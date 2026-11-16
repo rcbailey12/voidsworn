@@ -1,6 +1,6 @@
 # Issue 785, round 4: the Chorus sleekness pass (CS1B-A2, CS1B-C2)
 
-Owner's ruling (Nov 15, 2026): the closed-hull Chorus direction is much better; CS1B-A and CS1B-C are very close to right, but the craft needs to be a bit sleeker. This round is a proportion pass on those two only; CS1B-B is out. Data unchanged: spore swarm, sporeb T ("Acid sacs", 2 shots, pierce, acid), hp 26, speed 5, evasion 25; size 1.6, drawn 3.84. Colours unchanged (flesh #57364c, bone #a4913a, amber sacs). The closed hull stays absolute: no open grooves, no exposed fluid, no round clear domes; amber is translucent fluid colour only, no glow, no bloom.
+Owner's direction after round 3 (Nov 15, 2026): the closed-hull Chorus direction is much better; CS1B-A and CS1B-C are very close to right, but the craft needs to be a bit sleeker. This round is a proportion pass on those two only; CS1B-B is out. The owner's final ruling on this round is recorded at the end of this file: CS1B-A2, the Sealed Gills sleek, is the pick. Data unchanged: spore swarm, sporeb T ("Acid sacs", 2 shots, pierce, acid), hp 26, speed 5, evasion 25; size 1.6, drawn 3.84. Colours unchanged (flesh #57364c, bone #a4913a, amber sacs). The closed hull stays absolute: no open grooves, no exposed fluid, no round clear domes; amber is translucent fluid colour only, no glow, no bloom.
 
 "Sleeker" as specified for this pass: the pod drawn out along its flight axis (longer against beam and depth), lower in profile, the bow tapering to a smoother point and the stern tapering behind the orifice cluster, the flank features stretched lengthwise and tightened against the body. Two proportion guards from the council are part of the sheet: the flank swell still breaks the silhouette after narrowing (the weapon source must stay legible), and the stern taper never reduces the orifice cluster; only the hull behind the cluster tapers.
 
@@ -36,3 +36,5 @@ CS1B-A2. DeepSeek, Flash and the blind leg all land there, and the reasoning is 
 ## Owner's ruling (Nov 15, 2026)
 
 CS1B-A2, the Sealed Gills sleek, is the pick. The Chorus spore swarm direction settles on the sleek sealed-gill craft as written in this sheet, proportion guards included. CS1B-C2 stands as the recorded second.
+
+The owner has not ruled whether this winner replaces the base design or stands alongside it as a variant; that decision remains open.
