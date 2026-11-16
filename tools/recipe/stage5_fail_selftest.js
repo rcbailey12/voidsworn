@@ -180,9 +180,13 @@ if (built.status !== 0) throw new Error('fake executable compile failed: ' + (bu
 function fakeCopy(dest) { fs.mkdirSync(path.dirname(dest), { recursive: true }); fs.copyFileSync(fakeExe, dest); }
 console.log('Evidence: ' + root);
 
+// Issue 916: the fake Blender and Godot are not GPU work, but tmo.bat classifies them by exe name. Run the bats from the
+// TEMP fixture, not the checkout: on a code-only lane the checkout path holds a "board_c" segment and the watchdog would
+// refuse (tools/pc/gpu_slots.js checks both PC_GPU_LANE and the working directory). The fixture also has a space in its
+// path, which must keep working.
 function runBat(bat, env) {
   const r = spawnSync(COMSPEC, ['/d', '/s', '/c', '""' + bat + '""'], {
-    cwd: ROOT, env, encoding: 'utf8', timeout: 180000, windowsHide: true, windowsVerbatimArguments: true
+    cwd: root, env, encoding: 'utf8', timeout: 180000, windowsHide: true, windowsVerbatimArguments: true
   });
   if (r.error) throw r.error;
   return { code: r.status, text: (r.stdout || '') + (r.stderr || '') };
@@ -212,6 +216,9 @@ function stage5Home(label) {
     LOCALAPPDATA: path.join(home, 'AppData', 'Local'), APPDATA: path.join(home, 'AppData', 'Roaming'),
     TEMP: path.join(home, 'Temp'), TMP: path.join(home, 'Temp'),
     PC_RUNNER_TEST: '1', PC_TEST_TIMEOUT_LOG: path.join(root, 'timeouts-s5-' + label + '.log'),
+    // Issue 916: the runner exports PC_GPU_LANE=C on a code-only lane. The fakes do no GPU work, so drop the lane flag
+    // here or tmo.bat refuses the bake and the success case looks like a failed bake.
+    PC_GPU_LANE: '',
     PC_TEST_GPU_ROOT: gpu, FAKE_STATE: state,
     FAKE_SHIP_HULL: 'armA7', FAKE_SHIP_CELL: 'C873', FAKE_SHIP_CODE: 'C873G', FAKE_SHIP_BAKE: 'bakeAb6.py'
   };
@@ -302,6 +309,8 @@ function benchHome(label, settings, extra) {
     LOCALAPPDATA: path.join(home, 'AppData', 'Local'), APPDATA: path.join(home, 'AppData', 'Roaming'),
     TEMP: path.join(home, 'Temp'), TMP: path.join(home, 'Temp'),
     PC_RUNNER_TEST: '1', PC_TEST_TIMEOUT_LOG: path.join(root, 'timeouts-b207-' + label + '.log'),
+    // Issue 916: same as the stage 5 env: no code-only lane flag for the fakes (the bench's GPU launches are faked too).
+    PC_GPU_LANE: '',
     PC_TEST_GPU_ROOT: gpu, FAKE_STATE: path.join(root, 'state-b207-' + label)
   };
   Object.assign(env, extra || {});
