@@ -23,7 +23,9 @@ def load(name, source):
 old = load('old_hullbreaker_stack', subprocess.check_output(['git', 'show', BASELINE + ':' + relative], cwd=repo))
 new = load('new_hullbreaker_stack', path.read_bytes())
 assert new.CONCEPT == old.CONCEPT
-assert new.CRAFT_PLATES == old.CRAFT_PLATES
+assert new.CRAFT_PLATES['pale'] == old.CRAFT_PLATES['pale']
+for zone in ('soot', 'soot2', 'rust', 'blood', 'violet'):
+    assert new.CRAFT_PLATES[zone] == new.CONCEPT[zone], ('craft faction palette', zone)
 for length in (26, 14.6, 1.6, 6.5, 9.5, 16.5, 26, 14.6):
     old.configure_size(length); new.configure_size(length)
     assert old.TROPHY == new.TROPHY, ('trophies', length)
@@ -36,4 +38,4 @@ for length in (26, 14.6, 1.6, 6.5, 9.5, 16.5, 26, 14.6):
             if zone != 'pale':
                 assert new.ZONES[zone]['wear'] > old.ZONES[zone]['wear']
                 assert new.ZONES[zone]['plate_var'] > old.ZONES[zone]['plate_var']
-print('PASS stack: capital settings and resets match pre-job commit; palette, trophy share and grey zone unchanged', flush=True)
+print('PASS stack: capital settings and resets match pre-job commit; faction palette, trophy share and grey zone unchanged; craft reads faction colours', flush=True)

@@ -296,10 +296,10 @@
   "KB1CC": {
     "geometry": {
       "ship": "KB1CC",
-      "plates": 151,
-      "welded_edges": 330,
-      "stacked": 72,
-      "triangles": 46712,
+      "plates": 157,
+      "welded_edges": 342,
+      "stacked": 71,
+      "triangles": 82464,
       "fit": {
         "CLASH": 0,
         "MOUNT": 0,
@@ -312,23 +312,23 @@
       },
       "weapon_match": "PASS",
       "area_percentiles_world_squared": [
-        0.005934869931059359,
-        0.015984050997249737,
-        0.04165519482789708
+        0.0064932122983954324,
+        0.01705456782187499,
+        0.04527229569575244
       ],
       "angle_percentiles_degrees": [
-        -16.263324437674818,
-        0.505196721772772,
-        15.757645407907637
+        -12.954217918443108,
+        0.11754732383878182,
+        12.97266719863535
       ],
       "size_note": "Measured, for review; no visual cap. Material weights remain in the sheet."
     },
-    "triangles": 48432,
+    "triangles": 84184,
     "objects": 136,
     "surfaces": 4,
     "paint_device": "OPTIX",
     "maps": 2048,
-    "paint_seconds": 51.6,
+    "paint_seconds": 59.0,
     "stack_regression": "PASS",
     "licences": "PASS",
     "lights": "PASS",
@@ -340,43 +340,43 @@
       },
       "views": {
         "top": {
-          "stack": 180080,
-          "glow": 193,
+          "stack": 180175,
+          "glow": 192,
           "liner": 0,
           "room": 0,
           "bare": 0
         },
         "below": {
-          "stack": 180273,
+          "stack": 180367,
           "glow": 0,
           "liner": 0,
           "room": 0,
           "bare": 0
         },
         "port": {
-          "stack": 56411,
-          "glow": 104,
+          "stack": 52718,
+          "glow": 99,
           "liner": 0,
           "room": 0,
           "bare": 0
         },
         "starboard": {
-          "stack": 56379,
-          "glow": 135,
+          "stack": 52689,
+          "glow": 128,
           "liner": 0,
           "room": 0,
           "bare": 0
         },
         "bow": {
-          "stack": 66844,
-          "glow": 37,
+          "stack": 62517,
+          "glow": 42,
           "liner": 0,
           "room": 0,
           "bare": 0
         },
         "stern": {
-          "stack": 65345,
-          "glow": 1536,
+          "stack": 61014,
+          "glow": 1544,
           "liner": 0,
           "room": 0,
           "bare": 0
@@ -389,6 +389,86 @@
         "liner": 5
       },
       "res": 640
+    },
+    "revision": {
+      "label": "9fefabe2+875-r2-e0de07e8a6",
+      "base": "9fefabe2",
+      "source_sha256": {
+        "tools/blender/kits/hullbreakers/stack.py": "f0d06ff6d50cb30cf33e43625f7b3446ca6a8284832573d2e56ebc79db9e308b",
+        "tools/blender/kits/hullbreakers/plating.py": "ea54660cfc0abfeba4b0ca1f36d1307b52542455d617932da6b1d41a7e3e78e2",
+        "tools/blender/kits/hullbreakers/review_patchwork.py": "d796dc9823afdb659548c64314e60c892a012d06dd44b7797ff9887a09129e43",
+        "tools/blender/kits/hullbreakers/render_patchwork_close.py": "223c254c380d0b38f4c3791bc090705125ac7b929c638fce9bfff5e34460a2fa",
+        "tools/blender/build_sheets/ships/corsair_KB1CC.py": "0f281516e1c06ceeb84326d3ddfbce6d08ffc148cdea0ab9d14b275583563224"
+      }
+    },
+    "stage": "paint proof, not installed or accepted",
+    "painted_tones": {
+      "method": "sRGB luma 0.2126R+0.7152G+0.0722B, pixels with max(R,G,B)>20; red R>1.2G and R>1.15B. Different shapes and framing: review evidence, no gate.",
+      "KB1CC": {
+        "luma_p10_p50_p90": [
+          35.0,
+          57.8,
+          75.8
+        ],
+        "red_pixel_percent": 26.8
+      },
+      "A18_accepted": {
+        "luma_p10_p50_p90": [
+          23.6,
+          41.6,
+          86.1
+        ],
+        "red_pixel_percent": 12.5
+      },
+      "A16_accepted": {
+        "luma_p10_p50_p90": [
+          23.5,
+          43.0,
+          78.0
+        ],
+        "red_pixel_percent": 14.3
+      }
+    },
+    "capture": {
+      "sheet_length": 1.6,
+      "drawn_length": 3.8400000000000007,
+      "battle_radius": 170,
+      "vertical_fov": 45,
+      "pitch_from_up": 0.98,
+      "full_frame": [
+        1920,
+        1080
+      ],
+      "unscaled_crop": [
+        640,
+        360
+      ],
+      "beauty_clip": [
+        1.6251091957092285,
+        3.0704257488250732
+      ],
+      "concept_camera": {
+        "az": 35,
+        "el": 30,
+        "dist": 3.8,
+        "mm": 52,
+        "res": [
+          1080,
+          720
+        ],
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "roll": 0,
+        "sx": 0,
+        "sy": 0
+      },
+      "sky_spec": 0,
+      "camera_method": "Three-quarter above, matched by eye to the concept; not the head-on outline fit.",
+      "source_blend": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_875_r2_final\\KB1CC\\KB1CC.blend",
+      "note": "Painted preview only; no stage 7 export or game install."
     }
   }
 }
