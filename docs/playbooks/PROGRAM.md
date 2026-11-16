@@ -57,6 +57,11 @@ His scope answers:
 6. **Roll out.** The rest of that kind (the other 34 hulls, the other weapons, the other hexes) becomes jobs written from the
    playbook's template, for DeepSeek, Codex or Opus. Fable only reviews their pictures.
 
+Standing rules for every flow (Nov 16 2026, issue 880): the run brief lives in the issue body, one current instruction
+(R281); an open issue is not proof of undone work, and a merge closes its issue in the same step when its scope is done
+(R288); every picture carries its revision and stage; and visual work is compared with its concept and ruling, with the
+misses stated plainly, before it merges (RULEBOOK 2.3 and 2.4).
+
 ## Who does what (rewritten Nov 11 2026 evening; the live list is contrib/opus/LOOP.md "The seats")
 
 Ryan, Nov 11, 06:43 CST: "I just used the final fable reset, so let's cool it on fable usage outside of this chat. Opus worker

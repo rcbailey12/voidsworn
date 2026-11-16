@@ -120,6 +120,15 @@ both rule twins, every UI path, which tests really ran), then the pictures. Merg
 job has finished. Why: a merged change left existing profiles with Heat closed (R129); PR 542 merged before its parity jobs
 ended (LOOP, Nov 12). Set: Board (R129); Ryan's project instructions. Ids: R129a, loop-03.
 
+Pictures carry their revision and stage. Every picture shown to Ryan is labelled with the revision that produced it and its
+stage (sheet built, paint proof, installed in game, Ryan accepted); a stale picture is never shown as current, and if the
+picture is stale the review stops there rather than judging it. A visual pull request merges only after its picture has been
+compared with the concept and the ruling it answers, in a view that actually shows the feature being judged, and the Board
+says plainly in the pull request where it misses. What a ruling can measure is measured on the painted output and reported
+(the plate-character measure, issue 875); passing the countable checks is not visual acceptance. Why: the painted ships
+passed fit, weapon match, triangles and density while missing their rulings, and a pre-fix picture was shown as the fix
+(R289). Set: Board, Nov 16 2026 (issue 880).
+
 2.4 **The job board is GitHub issues with owner labels, each opening with the fixed block** (Owner, Brief, Deliver to, Branch,
 Effort or Models, Done when; optional `Base: <branch>`; ship builds add Route per part, Inside, Paint stack, Budget, R214). Agents deliver on
 `codex/`, `muse/`, `work/` or `opus/issue-N` branches; nobody pushes to main except LOOP.md and FINDINGS. Why: any agent can
@@ -131,6 +140,18 @@ also forbidding commits. The runner sets the running label and one status commen
 retries and at the end), naming seat, machine, lane folder, branch, start time, ceiling, last commit and how to resume.
 It clears running at the end; a GitHub reporting failure is logged and never fails the job. Why: merge-left partials
 on 800, 815 and 44, and jobs with no visible running seat. Set: Ryan R270, issue 846 (788 step 3).
+
+One current instruction. A job's current run brief sits at the top of its issue body, under the fixed block, marked as the
+job now; older runs are marked done in the body. A brief in a comment is not an instruction: the PC runner builds the task
+from the body only, so a comment brief silently reruns the old job. Why: 373 run 3 was briefed in a comment and came back
+as a rerun of run 2. Set: Board (R281).
+
+An open issue is not proof the work is undone. Issues here stay open after their pull requests merge (2.5), so before
+queueing or relabelling an issue, search for a merged pull request that names it; on every merge, close the issue in the
+same step when its scope is done, and where a merge is partial, say what scope remains. The ChatGPT dot's dispatch sweep
+lists open issues with merged pull requests before each queueing round; the sweep is the audit, not the mechanism. Why:
+780, 781, 783 and 824 were queued again after pull requests 796, 787, 825 and 832 had merged (Ryan: "Why did you miss all
+those old jobs were already merged? That's a big miss."). Set: Board (R288).
 
 2.5 **Never write a GitHub closing word before an issue number in a commit; use `gh api` REST, never GraphQL.** Why: commit
 1429ca3 closed PR 320 by accident; GraphQL is blocked here (ends when it is unblocked). Set: Board. Ids: loop-15, loop-20.
