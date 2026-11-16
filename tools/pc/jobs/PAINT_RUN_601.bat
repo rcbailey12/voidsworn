@@ -27,7 +27,7 @@ set GD=%V%\godot\Godot_v4.7.2-stable_win64_console.exe
 set B=%V%\blender\blender-4.5.14-windows-x64\blender.exe
 set BPY=%V%\blender\blender-4.5.14-windows-x64\4.5\python\bin\python.exe
 cd /d "%C%"
-"%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
 echo import exit %ERRORLEVEL% >> "%RES%"
 call :ship corsair_A16 A16 C19_51
 call :ship corsair_A17 A17 C15s_23
@@ -43,11 +43,11 @@ set OS_=%O%\%2
 if not exist "%OS_%" mkdir "%OS_%"
 echo === %SHIP% %TIME% >> "%RES%"
 for %%S in (4_parts_kit 5_paint_bake 6_lod 7_export) do call :stage %%S
-"%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%OS_%\shots" --facs corsair --sets battle,close,cams --codes %CODEX% > "%OS_%\log_shots.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%OS_%\shots" --facs corsair --sets battle,close,cams --codes %CODEX% > "%OS_%\log_shots.txt" 2>&1
 echo %SHIP% shots exit %ERRORLEVEL% >> "%RES%"
-"%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODEX% > "%OS_%\log_readback_gpu.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODEX% > "%OS_%\log_readback_gpu.txt" 2>&1
 echo %SHIP% gpu readback exit %ERRORLEVEL% >> "%RES%"
-"%B%" -b "%JOBX%\%CELLX%.blend" -P "%C%\tools\blender\build_sheets\paint_sheet.py" -- "%OS_%\paint" %SHIP% "%C%\contrib\muse\design\concept_round8_2026_11\%SHIP%_beauty.jpg" lift=1.25 samples=64 scale=1.0 gpu=1 > "%OS_%\log_paint_sheet.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%B%" -b "%JOBX%\%CELLX%.blend" -P "%C%\tools\blender\build_sheets\paint_sheet.py" -- "%OS_%\paint" %SHIP% "%C%\contrib\muse\design\concept_round8_2026_11\%SHIP%_beauty.jpg" lift=1.25 samples=64 scale=1.0 gpu=1 > "%OS_%\log_paint_sheet.txt" 2>&1
 echo %SHIP% paint sheet exit %ERRORLEVEL% >> "%RES%"
 "%BPY%" "%C%\tools\blender\build_sheets\paint_compare.py" "%OS_%\paint" "%C%\contrib\muse\design\concept_round8_2026_11\%SHIP%_beauty.jpg" "%OS_%\shots" %CODEX% "%OS_%\pictures" name=%CELLX% > "%OS_%\log_compare.txt" 2>&1
 echo %SHIP% compare exit %ERRORLEVEL% >> "%RES%"

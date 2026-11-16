@@ -32,7 +32,7 @@ set GD=%V%\godot\Godot_v4.7.2-stable_win64_console.exe
 set B=%V%\blender\blender-4.5.14-windows-x64\blender.exe
 set BPY=%V%\blender\blender-4.5.14-windows-x64\4.5\python\bin\python.exe
 cd /d "%C%"
-"%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --import > "%O%\log_import.txt" 2>&1
 echo import exit %ERRORLEVEL% >> "%RES%"
 rem each ship in a fresh cmd: the variables its stages set end with it
 cmd /c ""%~f0" ship deathless_E11 E11 D22_23"
@@ -66,19 +66,19 @@ if defined FAILED (
   echo %SHIP% checks, shots and pictures SKIPPED: stage %FAILED% failed, so the installed glb is not this run's >> "%RES%"
   exit /b 1
 )
-"%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODEX% > "%OS_%\log_readback_gpu.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --script res://render/test/installed_ship_check.gd -- %CODEX% > "%OS_%\log_readback_gpu.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo %SHIP% gpu readback exit %EL% >> "%RES%"
-"%GD%" --headless --path "%C%\godot" --script res://fx/test/authored_interiors_check.gd -- "%C%\godot\assets\ships\%CODEX%\%CODEX%.glb" > "%OS_%\log_interiors.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/authored_interiors_check.gd -- "%C%\godot\assets\ships\%CODEX%\%CODEX%.glb" > "%OS_%\log_interiors.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo %SHIP% authored interiors exit %EL% >> "%RES%"
-"%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%C%\godot\assets\ships\%CODEX%\%CODEX%.glb" > "%OS_%\log_death_seam.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --headless --path "%C%\godot" --script res://fx/test/death_seam_check.gd -- "%C%\godot\assets\ships\%CODEX%\%CODEX%.glb" > "%OS_%\log_death_seam.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo %SHIP% death seam exit %EL% >> "%RES%"
-"%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%OS_%\shots" --facs deathless --sets battle,close,cams --codes %CODEX% > "%OS_%\log_shots.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%GD%" --path "%C%\godot" --resolution 1920x1080 res://assets/ships/test/a4_shots.tscn -- --out "%OS_%\shots" --facs deathless --sets battle,close,cams --codes %CODEX% > "%OS_%\log_shots.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo %SHIP% shots exit %EL% >> "%RES%"
-"%B%" -b "%JOBX%\%CELLX%.blend" -P "%C%\tools\blender\build_sheets\paint_sheet.py" -- "%OS_%\paint" %SHIP% "%C%\contrib\muse\design\concept_round8c_2026_11\%SHIP%_beauty.jpg" lift=2.2 samples=64 scale=1.0 gpu=1 sky_spec=0 cam170=1 > "%OS_%\log_paint_sheet.txt" 2>&1
+call "%~dp0..\tmo.bat" 21600 "%B%" -b "%JOBX%\%CELLX%.blend" -P "%C%\tools\blender\build_sheets\paint_sheet.py" -- "%OS_%\paint" %SHIP% "%C%\contrib\muse\design\concept_round8c_2026_11\%SHIP%_beauty.jpg" lift=2.2 samples=64 scale=1.0 gpu=1 sky_spec=0 cam170=1 > "%OS_%\log_paint_sheet.txt" 2>&1
 set EL=%ERRORLEVEL%
 echo %SHIP% paint sheet exit %EL% >> "%RES%"
 "%BPY%" "%C%\tools\blender\build_sheets\paint_compare.py" "%OS_%\paint" "%C%\contrib\muse\design\concept_round8c_2026_11\%SHIP%_beauty.jpg" "%OS_%\shots" %CODEX% "%OS_%\pictures" name=%CELLX% stack=Eclipse issue=642 > "%OS_%\log_compare.txt" 2>&1

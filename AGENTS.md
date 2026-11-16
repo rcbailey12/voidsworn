@@ -69,8 +69,10 @@ Auditing from outside? Follow `docs/REVIEW_PROTOCOL.md` exactly (RULEBOOK 2.11) 
 - Before anything bigger than a quick fix, ask 3 to 5 plain multiple-choice scope questions in one batch.
 - Questions for Ryan go to him in your own chat, never as GitHub tags or comments; message him only when something lands or
   needs him.
-- Heavy work (AI models, Blender, Godot captures) runs on Ryan's PC through the queue, one GPU job at a time; keep your PC folder
-  lean; never delete anything on his PC (RULEBOOK section 3).
+- Heavy work (AI models, Blender, Godot captures) runs on Ryan's PC through the queue, up to two GPU jobs at once across the
+  main lane and lane B; frame-time measurements claim the GPU solo, lane C stays code only, and gpu_go.txt still wins.
+  Ryan: "can we run multiple jobs to speed things up?", then "merge and make those changes to gpu jobs" (R276).
+  Keep your PC folder lean; never delete anything on his PC (RULEBOOK section 3).
 
 `CLAUDE.md` is a short pointer to this file plus Claude-only notes. Keep the two in step. The fuller AGENTS.md of Nov 8 to 11
 (seat table, ship sections, PC notes) is archived at docs/archive/AGENTS_2026-11-11.md; every rule it held is in the rulebook.

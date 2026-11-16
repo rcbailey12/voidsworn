@@ -15,7 +15,8 @@ echo repeat start %date% %time% >> "%O%\status.txt"
 git -C "%R%" fetch --depth 1 origin opus/issue-207 > "%O%\git_log_repeat.txt" 2>&1
 git -C "%R%" reset --hard FETCH_HEAD >> "%O%\git_log_repeat.txt" 2>&1
 git -C "%R%" log -1 --format=%%H > "%O%\commit_repeat.txt" 2>&1
-set "TMO=%R%\tools\pc\tmo.bat"
+rem Use the installed watchdog, never the old checkout being measured.
+set "TMO=%~dp0..\tmo.bat"
 set "Q=--query-gpu=name,driver_version,utilization.gpu,clocks.gr,clocks.mem,temperature.gpu,power.draw,pstate,memory.used"
 nvidia-smi %Q% --format=csv,noheader >> "%O%\gpu_state.txt" 2>&1
 call "%TMO%" 2400 "%G%" --path "%R%\godot" --rendering-method forward_plus --windowed --resolution 1920x1080 res://bench/scene_gate.tscn -- --out "%O%\run4" > "%O%\run4_log.txt" 2>&1

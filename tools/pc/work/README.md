@@ -94,12 +94,24 @@ cost several runs. Both entry points, `work_issue.bat` and `codex_issue.bat`, us
   preflight, preserving the checkout for the Board. Existing Codex checkouts are renamed and kept instead of reset or cleaned.
   Already committed resumed work can still reach a checked push when the agent needs no further edits.
 
-Deploy work_issue.bat/.ps1, codex_issue.bat/.ps1, runner_common.ps1, chain_issue.bat and work/mock_llm.js together to each
-runner tools folder while its lane is idle, then write the lane's work217\runner_hashes.txt with `runner_common.ps1
+Deploy work_issue.bat/.ps1, codex_issue.bat/.ps1, runner_common.ps1, run_timeout.ps1, tmo.bat, gpu_slots.js,
+chain_issue.bat and work/mock_llm.js together to each runner tools folder only when EVERY lane is idle (issue 847),
+then write the lane's work217\runner_hashes.txt with `runner_common.ps1
 hashwrite <tools folder> <hash file>` so the issue 722 checks below can guard the copies. Existing settings and
 refused-file guards still apply. status.json records a run
 id, branch, state, reason and commit; updates are atomic, with previous versions kept. Unexpected stops stay running and a
 chain times out instead of guessing success. Helper failures use exit 14; other runner exit codes keep their earlier meaning.
+
+GPU claims (R276, issue 847): `tmo.bat` uses `gpu_slots.js` for Godot rendering, Blender and explicit
+`PC_GPU_MODE=shared|solo` launches. Two holders live in `voidsworn_test\gpu_slot_1` and `gpu_slot_2` (JSON: issue, PID,
+start time, mode, token); `gpu_solo` reserves priority for a solo waiter. Empty files mean released, dead PIDs are
+reclaimed, and files are never deleted. A short exclusive localhost bind on port 47847 serializes updates across tools
+copies; no client connects or sends data, and the OS releases it on process exit. A busy port waits rather than overbooking.
+The go file accepts `GPU cleared` or `GPU cleared: reason` on its first line; anything else waits. GPU waits do not spend
+the child timeout, and a one-minute heartbeat keeps the outer agent's stall watch informed. Lane C refuses GPU work.
+Deploy the changed `jobs\` and `tools\recipe\` launchers too. Run jobs from this installed tools tree with its adjacent
+watchdog and helper; do not borrow a watchdog from an old benchmark checkout. No real GPU run or deployment is part of
+lane C's code-only check: the Board does that only when every lane is idle.
 
 Free proof: double-click `tools\pc\runner_selftest.bat`. It makes tiny Git fixture data and stub agents under TEMP, runs all
 five arms, and prints its evidence folder. It makes no commits, pushes or model calls. Standing checks call the JS test too;
@@ -125,7 +137,7 @@ wait, the mirror fetch and any model call:
 - **Board hashes.** When the Board copies the runner files to a PC tools folder it writes work217\runner_hashes.txt:
   `powershell -NoProfile -ExecutionPolicy Bypass -File runner_common.ps1 hashwrite <tools folder> <hash file>`. At
   start each runner compares the SHA-256 of its own folder's work_issue.bat, work_issue.ps1, codex_issue.bat,
-  codex_issue.ps1 and runner_common.ps1 against that file. A mismatch, a missing file or an empty file is a warning
+  codex_issue.ps1, runner_common.ps1, run_timeout.ps1, tmo.bat and gpu_slots.js against that file. A mismatch, a missing file or an empty file is a warning
   in result.txt, never a stop, so a run never dies because the Board has not hashed a fresh copy yet. Both lanes read
   that one work217 file.
 
