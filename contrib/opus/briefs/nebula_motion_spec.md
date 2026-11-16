@@ -1,16 +1,17 @@
-# Nebula and storm motion specification (#230, NB8 and NB11; Opus, Nov 9 2026)
+# Nebula and storm motion specification (#230, NB8 and NB11; updated #368 R289, Nov 16 2026)
 
 One spec for how the on-board gas moves: the nebula and ion storm on the living path (looks B and C), their storm
 activity, the old clouds path (looks today and holo), the far gas wisps, the gravity well and the debris dust. It
 settles NB8 of the Nov 6 environment audit (the layer multipliers sat on a base drift rate that was never numbered)
-and NB11 (the storm flash radius was given in units beside neighbours given in hexes). Builders of #139 (nebula
-volumes) and #100 (terrain fx 2) read this file; the terrain fx synthesis (contrib/muse/research/terrain_fx_2026_11/
+and NB11 (the storm flash radius was given in units beside neighbours given in hexes). Builders of #368 (nebula
+and storm volumes) and #100 (terrain fx 2) read this file; the terrain fx synthesis (contrib/muse/research/terrain_fx_2026_11/
 synthesis.md sections 2.1 and 2.3) stays as the history of why.
 
-Every number below is the shipped value on main, read from the code named beside it, unless marked otherwise. None of
-them has been judged in motion against an alternative yet: the #230 motion capture (section 7) is the first look, and
-NB8's flattened-rate variant is part of it. Provenance labels follow the audit: SHIPPED (in code), DERIVED (arithmetic
-on shipped values), SPEC (written in the synthesis, not built).
+Every number below is read from the code named beside it, unless marked otherwise.
+R289's current pictures and motion studies are in `docs/shots/look_bench/nebula/RUN4.md`,
+pending Ryan's approval. Section 7 records the earlier #230 capture route.
+Provenance labels follow the audit: SHIPPED (in code), DERIVED (arithmetic on shipped
+values), SPEC (written in the synthesis, not built).
 
 ## 0. Units
 
@@ -30,60 +31,71 @@ Source: `GAS_SHADER`, world_living.gd: `drift = vec3(0.012, 0.004, 0.007) * gas_
 | Base drift, noise space | (0.012, 0.004, 0.007) a second | SHIPPED |
 | Base drift, world space | (0.160, 0.053, 0.093) units a second | DERIVED (divide by 0.075) |
 | **Base drift rate** | **0.193 units a second, about 0.011 hex a second (one hex in about 90 s)** | DERIVED |
-| Direction | mostly along +x, a little up (+y) and toward +z, the same on every map | SHIPPED |
+| Pattern direction | mostly along -x, a little down (-y) and toward -z; the positive noise offset moves fixed noise features in the opposite world direction | DERIVED |
 
 The whole body pattern and its warp field (`w`, sampled at 0.55 of the frequency) translate together at the layer
 rate: the interior slides as one, while the footprint mask stays fixed in world space (synthesis 2.1, "the mask stays
 fixed; only the interior moves"). The edge still moves: the mask is read through the moving warp (`foot_at(vW.xz +
 wv)`), so the boundary wobbles as the pattern passes it. Churn inside the body comes from the breathing (section 3)
-and from the finer filament layer moving at a different speed (section 2).
+and the layered world-space field. R289 removes the finer electrical-looking filament layer from nebula gas.
 
 ## 2. Each layer's rate
 
-The layer multipliers are synthesis 2.1's, now built (`rate` in `GAS_SHADER`). Heights are the shader's band windows
-(`lo`, `hi`), which are the spec's four bands; the puff centres that feed them are NB1's three shipped bands (y -2.5
-to 0.5, 2.5 to 6.5 and 8 to 12, plus the veil at 13.5 to 16.5) and are #139's to judge.
+The calm nebula uses `GAS_SHADER` in `world_living.gd`. The windows below are before
+route A's 1.75 height scale; the patch footprint stays fixed. Max also has the
+accepted 38.5-unit-tall volume. Its drift is unchanged by R289.
 
-| Layer (band) | Height window (y) | Multiplier | Body drift | Filament drift | Provenance |
-|---|---|---|---|---|---|
-| Ground haze (0) | -4 to 2 | 0.6 | 0.116 u/s (0.0067 hex/s) | 0.196 u/s | SHIPPED, DERIVED |
-| Main body (1) | 1 to 8 | 1.0 | 0.193 u/s (0.011 hex/s) | 0.327 u/s | SHIPPED, DERIVED |
-| Wisps (2) | 6 to 14 | 1.6 | 0.308 u/s (0.018 hex/s) | 0.523 u/s | SHIPPED, DERIVED |
-| Tying veil (3) | 12 to 18 | 0.4 | 0.077 u/s (0.0045 hex/s) | 0.131 u/s | SHIPPED, DERIVED |
+| Layer (band) | Height window (y) | Multiplier | Body drift | Provenance |
+|---|---|---|---|---|
+| Ground haze (0) | -4 to 2 | 0.6 | 0.116 u/s (0.0067 hex/s) | SHIPPED, DERIVED |
+| Main body (1) | 1 to 8 | 1.0 | 0.193 u/s (0.011 hex/s) | SHIPPED, DERIVED |
+| Wisps (2) | 6 to 14 | 1.6 | 0.308 u/s (0.018 hex/s) | SHIPPED, DERIVED |
+| Tying veil (3) | 12 to 18 | 0.4 | 0.077 u/s (0.0045 hex/s) | SHIPPED, DERIVED |
 
-- Filaments (veins and bright knots) are the same field at 3.6 times the frequency with an extra 2.5 times the drift
-  (`fine`), which makes them move 1.69 times as fast as the body of their own layer (DERIVED: 6.1 x drift over 0.27
-  cycles a unit, against drift over 0.075). This difference is the visible churn.
-- Ion storm (`storm` 1): every layer runs 1.7 times faster, and the veil runs backward (-1.7 x 0.4 = -0.68), so the
-  top twists against the body (synthesis 2.3: "storm churn is faster than nebula churn and its veil twists against
-  the body drift"). Storm body drift 0.328 u/s (0.019 hex/s); storm wisps 0.524 u/s; storm veil 0.131 u/s the other
-  way. SHIPPED, DERIVED.
-- Capture variant (NB8's settle): `VS_GAS_FLAT=1` sets every layer to the base rate (multiplier 1.0, the storm's 1.7
-  and the veil's reversal kept). On a storm map the flat assignment runs before the storm multiplier, so the veil runs
-  at -1.7 x base (-0.328 u/s) the other way, not at its shipped storm speed of 0.131 u/s. Shipped play never sets it.
+- Nebula has no fine filament field or electrical contour lines. Broad soft
+  radiance uses the body density, so it moves with the calm gas.
+- Storms use `CARDS` and `FOG` in `godot/world/ion_storm.gd`, selected explicitly
+  by the world builder. R282 moved storms out of the shared nebula shader;
+  R289 keeps that charged cloud and makes it steel-blue/cyan, darker between
+  strikes, with three times Run 3's drift.
+- Storm card noise is scaled by `(0.055, 0.075, 0.055)` per world unit and drifts
+  by `(0.027, 0.009, 0.015)` per second. Dividing each component gives a body
+  speed of **0.574 u/s** (0.033 hex/s). Layer multipliers are 0.6, 1.0, 1.6 and
+  -0.4: ground 0.344, body 0.574, wisps 0.918 and veil 0.230 u/s backward.
+- Storm volume noise is scaled by `(0.016, 0.022, 0.016)` and drifts by
+  `(0.0021, 0.00075, 0.0012)` per second: **0.155 u/s** (0.0089 hex/s).
+  The calm volume remains at 0.060 u/s. Both storm paths move faster than
+  their nebula counterpart; cards and volume have different noise scales.
+- Capture variant: `VS_GAS_FLAT=1` flattens nebula cards only. It does not
+  override the separate storm module. Shipped play never sets it.
 
 ## 3. Breathing and pulses
 
 | Motion | Value | Provenance |
 |---|---|---|
-| Body breathing (band 1 only) | the density threshold moves by plus or minus 0.025 (about 6 percent of its 0.27 to 0.70 ramp), period 8.0 s (`sin(gas_time * 0.785398 + phase)`) | SHIPPED |
-| Breathing phase spread | 0 to 0.9 rad between puffs (`fract(w)` of a 0 to 0.9 roll): the patch breathes almost in step | SHIPPED; flagged for #139 (a full 0 to 6.28 spread would read as churn rather than one breath) |
-| Whole-patch alpha pulse | none (synthesis 2.1: pulsing reads as a state change) | SHIPPED |
-| Storm glow pulse | plus or minus 10 percent on cores and veins, period 2.0 s (`0.90 + 0.10 * sin(gas_time * 3.14159 + phase)`) | SHIPPED (spec 1.5 to 2.5 s) |
+| Nebula body breathing (band 1 only) | density threshold moves by plus or minus 0.025, period 8.0 s (`sin(gas_time * 0.785398 + phase)`) | SHIPPED |
+| Breathing phase spread | 0 to 0.9 rad between puffs | SHIPPED |
+| Whole-patch alpha pulse | none | SHIPPED |
+| Storm card charge | broad cloud lobes modulated by 0.35 plus or minus 0.04, period 2.244 s; no persistent electrical filaments | SHIPPED, DERIVED from `sin(gas_time * 2.8 + cloud.y * 6.28)` |
+| Storm volume charge | advected cloud density and actual lightning/tick flashes, no idle sine pulse | SHIPPED |
 
-## 4. Storm activity between and during bolts (NB11, now in hexes)
+## 4. Storm activity between and during bolts (NB11, in hexes)
+
+R289 replaces the old shared-shader 1.7 multiplier, fine veins, 2-second vein
+pulse, Gaussian denominator 500 and 8-to-12-unit spot response. The live storm
+module supplies broad charge; only the intermittent bolt meshes draw branches.
 
 | Element | Value | Provenance |
 |---|---|---|
-| Electric filaments | always on; the vein pattern moves 0.555 u/s in the storm body and 0.889 u/s in the storm wisps, so one 3.7-unit filament cell passes in about 4 to 7 s | SHIPPED, DERIVED (spec 3 to 6 s) |
-| Sheet glow round a bolt | a Gaussian lift `exp(-d^2 / 500)` at weight 0.10: 1/e (about a third) at **1.3 hexes** (22.4 u), a tenth at **2.0 hexes** (33.9 u) | SHIPPED, DERIVED (spec 1 to 2 hexes) |
-| Flash response round a bolt | the emissive boost of 0.3 is full within **0.46 hex** (8 u) and gone at **0.69 hex** (12 u) | SHIPPED; **NB11 denomination fixed**: the synthesis's "about 12 units" is 0.7 hex, under one hex, so the flash response is the bolt's own spot and the sheet glow (1.3 to 2 hexes) is what reaches the neighbours |
-| Flashes the gas can see at once | 4 (`flashes[4]`) | SHIPPED |
-| Bolt count | one per two storm hexes, at least 1 and at most 6 (`clampi(n / 2, 1, 6)`) | SHIPPED |
+| Electric filaments | absent in both gas shaders; only storm has bolt meshes | SHIPPED, R289 |
+| Glow around a bolt | `exp(-d^2 / 240)` in cards and volume; 1/e at 0.89 hex (15.5 u), one tenth at 1.36 hex (23.5 u) | SHIPPED, DERIVED |
+| Shader response | card flash colour times field and 0.5; volume flash colour times field; both use the same Gaussian | SHIPPED |
+| Flashes the gas can see at once | 4 (`flashes[4]`) in each storm shader, none in calm gas | SHIPPED |
+| Bolt count | one per two storm hexes, at least 1 and at most 6 | SHIPPED |
 | Bolt cadence | each bolt waits 2.2 to 6.5 s between flashes | SHIPPED |
 | Bolt envelope | 0.42 s (bright 0.05 s, dip, second peak, tail; `_flash`) | SHIPPED |
-| Bolt light | energy up to 3.2 (`light_energy = v * 3.2`) | SHIPPED |
-| Shield-tick flare | on each presented storm tick (a ship inside the storm, within 10 u of a storm hex centre), the veins gain an extra 1.5 x tick of energy (about double their resting glow) that fades linearly over 0.45 s (`tick` decays by dt / 0.45) | SHIPPED |
+| Bolt light | energy up to 3.2; first two lights scatter into Max fog at weight 0.7 | SHIPPED, R282 |
+| Shield-tick flare | real positioned tick adds 0.12 to card flash or 0.10 to volume flash; fades linearly over 0.45 s (`tick` decays by dt / 0.45) | SHIPPED |
 
 ## 5. Other gas and on-board motion
 
@@ -98,13 +110,18 @@ to 0.5, 2.5 to 6.5 and 8 to 12, plus the veil at 13.5 to 16.5) and are #139's to
 
 ## 6. Rules for builders
 
-- The base drift rate is 0.193 world units a second; any new gas layer states its rate as a multiple of it.
+- The calm card base drift is 0.193 world units a second. Each gas path states its noise scale and derived world speed.
 - Distances on the board are stated in hexes (17.32 units each) with units in brackets.
 - A change to any value in sections 1 to 4 changes this file and `contrib/opus/tools/env_reconcile_tests.js` in the
   same PR; the test fails when the shader and this file disagree (the audit's "silent disagreement" pattern).
-- The #139 volume rebuild keeps these rates unless its recordings show a better set; it then records the new set here.
+- The #368 R289 captures and motion studies are in `docs/shots/look_bench/nebula/RUN4.md`. Ryan approval is pending.
+  No older numerical look target overrides that ruling; the storm module is the active source for storm motion.
 
-## 7. The motion capture (judges sections 1 to 4 for the first time)
+## 7. The earlier #230 motion capture
+
+This is the pre-R282/R289 capture route. Current calm/storm evidence uses the
+same-board Run 4 harness linked above; the flat-rate variant now affects nebula
+cards only.
 
 `godot/world/world_shots.gd --motion` holds the camera still on the nearest nebula, ion storm and debris hex and on a
 low view of the rock fields, and writes a contact sheet (a frame every 5 s for 30 s) and a first-to-last difference
