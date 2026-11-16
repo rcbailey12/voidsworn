@@ -1,0 +1,13 @@
+--- a/godot/render/board.gd
++++ b/godot/render/board.gd
+@@ -893,6 +893,10 @@
+ 	shell.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+ 	shell.position = mi.position
+ 	props.add_child(shell)
++	# Issue 369: only the first rocky look. Other planet kinds keep their shaders.
++	var rocky = preload("res://world/world_planet.gd")
++	if int(look[0]) == 0 and rocky.rocky_available():
++		rocky.install_rocky(mi, shell, sun)
+ 
+ 
+ func show_blockers(hexes: Array) -> void:

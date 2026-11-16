@@ -52,6 +52,20 @@ static func clear_static() -> void:
 	_textures.clear()
 	_cache.clear()
 
+# Authored R01 maps use the same shared worker and texture cache as the GPU
+# bakes. Decode and mip generation never block the battle's main thread.
+func authored(path: String, size: Vector2i) -> Image:
+	var owner := service(get_tree())
+	var key := (path + "|" + str(FileAccess.get_modified_time(path))).sha256_text()
+	if _cache.has(key): return _cache[key]
+	if not owner._jobs.has(key):
+		owner._jobs[key] = {"path": path, "size": size, "done": false,
+			"image": null, "started": Time.get_ticks_msec(), "compute": false}
+		owner._queue.append(key)
+	var job: Dictionary = owner._jobs[key]
+	while not job.done: await get_tree().process_frame
+	return job.image
+
 func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips: int) -> Image:
 	var owner := service(get_tree())
 	key = cache_key(key, code, params, size)
@@ -71,7 +85,7 @@ func _process(_dt: float) -> void:
 		var result: Dictionary = _thread.wait_to_finish()
 		_thread = null
 		var job: Dictionary = _jobs[_active]
-		if result.image == null and not job.compute and DisplayServer.get_name() != "headless" and not job.get("raster_done", false):
+		if result.image == null and not job.has("path") and not job.compute and DisplayServer.get_name() != "headless" and not job.get("raster_done", false):
 			job.raster_done = true
 			var img: Image = await _canvas(job.code, job.params, job.size)
 			_thread = Thread.new()
@@ -106,6 +120,12 @@ func _exit_tree() -> void:
 	clear_static()
 
 static func _work(key: String, job: Dictionary) -> Dictionary:
+	if job.has("path"):
+		var authored_image := Image.load_from_file(job.path)
+		if authored_image == null or authored_image.get_size() != job.size:
+			return {"image": null, "error": "Missing or wrong-size R01 map: " + str(job.path)}
+		authored_image.generate_mipmaps()
+		return {"image": authored_image, "source": "authored"}
 	var folder := OS.get_environment("VS_WORLD_CACHE") if OS.has_environment("VS_WORLD_CACHE") else CACHE_DIR
 	var path := folder.path_join(key + ".png")
 	var img: Image = null
