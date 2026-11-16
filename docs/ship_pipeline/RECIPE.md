@@ -161,13 +161,13 @@ and trim lights. Plate patchwork, seams and brick rust (R228) are the faction st
 axis, lays rows in bands whose edges step every few columns, shifts every column and strip by its own amount and splits a share
 of the cells once more; the faction stack sets how much (`patch_warp`, `patch_band`, `patch_split` in `LAYERS`; zero for all
 three gives the old even grid). Over that patchwork the Hullbreaker stack lays its trophy patches (issue 726, R252: big like
-the A20 concept; R274: dark grey salvaged metal, never white): `TROPHY` in `kits/hullbreakers/stack.py`, through the shared `panel_nodes` hook, which runs the shared patchwork
-unchanged first. One more uneven grid at the concept's trophy plate size (`cell`, about 0.13 by 0.085 ship lengths, warped, banded
+the A20 concept; R274: dark grey salvaged metal, never white): `TROPHY` in `kits/hullbreakers/stack.py`, through the shared `panel_nodes` hook. `panel_nodes` runs the shared patchwork
+unchanged first on the ordinary hull zones; the exception is a zone with its own `trophy_share` (the sheet's `pale` zone), where the patchwork call is skipped and the trophy layer mixes over the zone's own colour. One more uneven grid at the concept's trophy plate size (`cell`, about 0.13 by 0.085 ship lengths, warped, banded
 and split as above); a share of its cells (`share` times the zone's patchwork amount, more in some broad regions, `cluster`) takes
 dark grey salvaged metal or violet Eclipse plate (`families`, sampled from the KB1C-C and A20 concepts), one colour per trophy cell, never per mesh
-island; parts keep the plain patchwork. The sheet's `pale` zone keeps its own
+island; parts keep the plain patchwork. The sheet's `pale` zone is the trophy layer (R252, dark grey under R274): it keeps its own
 dark grey with no dark plate families over it, and the trophy layer covers about 65 percent of it (`trophy_share`), a third of
-that in violet, so a sheet-placed pale patch reads dark grey metal or violet (the zone itself is a weathered dark grey with a little metallic sheen, R274). The game's rim light (`godot/render/look_rim.gd`, issue 362, specular x8) flared white on the stack's surfaces at the close
+that in violet, so a sheet-placed pale patch reads dark grey metal or violet (the zone itself is a weathered dark grey with a little metallic sheen, R274). The pale entry was retuned with `trophy_share` in PR 791: rust .25 to .20, `plate_var` .30 to .22, grime 1.0 to .70 and patchwork .5 to 1.0 (rough .74 and metal .25 unchanged), so the zone's read is not the trophy layer alone. The game's rim light (`godot/render/look_rim.gd`, issue 362, specular x8) flared white on the stack's surfaces at the close
 cameras (PC run out3): they carry real roughness, which the old flat-colour hulls did not. The stack marks its textured and engine
 glow materials `rim_soft` (glTF material extras); `look.gd` puts such surfaces on their own layer, lit by a second rim light with
 `RIM soft` (0.25) of the specular. Every other hull keeps the full rim light, pixel for pixel (sandbox probe

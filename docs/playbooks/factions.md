@@ -109,6 +109,17 @@ class and faction (issue 363), never from a constant.
   paler patches too. The white looks unfinished"):** dark grey salvaged metal, clearly lighter than the soot plate, never white or
   chalky; the violet Eclipse trophy plates stay. SUPERSEDED, kept so nobody follows it: "big and pale" (R252's tone, ended by R274). In the stack: `TROPHY` in `tools/blender/kits/hullbreakers/stack.py`
   (issue 726; RECIPE.md, the paint stack).
+- **Patchwork cause and repair (R289, issue 875):** A16 and A17 have real mixed-size slabs, varied thickness and stacked
+  patches in their design files, on the shared sheet kit's original plater. A18 to A20 selected the later `courses=True`
+  builder (issue 633): small rectangular plates in brick rows and stepped terraces. The same paint stack could not remove
+  that ordered geometry; R240 changed shader cells, not those slabs. KB1CC already split faces without courses, but its
+  shallow slabs, small turns and reduced craft paint wear still read as flat notes. Those four sheets now use `kits/hullbreakers/plating.py`:
+  mixed-size cuts across each face, skewed corners, turned and overlapping slabs, thickness steps and welded lap joints.
+  Material weights, the trophy share and the R274 dark grey palette stay unchanged. Craft red plates regain varied tones
+  and broken edge wear; grey trophies keep their low wear. A16, A17, capital paint settings and the shared kit stay unchanged,
+  including the A16 fixture record. Judge the painted result beside its concept and A16 at the saved
+  `paint_full` camera, not by plate counts. Proof and the repeatable bake script are linked in
+  `docs/shots/look_bench/hullbreaker_patchwork/README.md`.
 - **Colours:** soot black, rust, dried-blood red, patches of trophy colour (dark grey salvaged metal, R274; violet Eclipse plate), dim
   red running lights. No crystal shard: it came off A16 and A17 (R197; Ryan: "Not sure why there is a weird crystal in there
   but we can get rid of that").
@@ -181,6 +192,7 @@ violet-white): the green stays, as the light of an eclipse.
   dark decks, the core's light. Breach anchors sit on the shade's bands.
 - **Never:** a disc or cone on a vertical spindle (the spinning top), a spire through the centre of a disc, bone, ribs,
   skulls, green pooled in hollows, flame.
+- **The E14 exception (R256, PR 804):** E14 is the accepted flare redesign, its ring standing upright around one fixed lance through the centre.
 
 ## The Chorus (`chorus`)
 

@@ -11,13 +11,17 @@
 # clusters inside armoured blocks; bombers chunkier and visibly built around what they carry; each faction its own bomber (R253).
 # Size: docs/playbooks/scale.md, Squadron row (binding): CLS_LEN['Squadron'] 1.6 long, drawn x SHIP_K 1.6 x SQUADRON_K 1.5 = 3.84.
 # Every station and size below is a share of LENGTH (the U() helper). +X bow, +Y port, +Z up. Bow toe x = +0.8, the bells x = -0.8.
-# The plating is this file's own patchwork plater (patchwork(), R275) using the Hullbreaker kit's plate slab
+# The plating uses the faction kit's mixed-size welded patchwork (plating.py, R289) and plate slab
 # (tools/blender/kits/hullbreakers/parts.py); the craft parts (the bomb tubes, the drives, the bays, the slit) are
 # tools/blender/kits/hullbreakers/craft.py, added to the kit for this build by craft.install. R275 (Nov 15 2026 21:28 CST)
 # sent the wide sheet back for one shape pass: the sloped glacis ramp and the patchwork plating.
 import math
 import os
 import importlib.util
+
+_ps = importlib.util.spec_from_file_location('hullbreaker_plating',
+    os.path.join(os.path.dirname(__file__), '..', '..', 'kits', 'hullbreakers', 'plating.py'))
+_plating = importlib.util.module_from_spec(_ps); _ps.loader.exec_module(_plating)
 
 CODE = 'corsair_KB1CC'
 NAME = 'Wide Glacis bomber (Ashfall Hullbreaker bomber wing craft)'
@@ -119,137 +123,7 @@ HULL = [(U(r[0]), U(r[1]), U(r[1]), U(r[2]), U(r[3]), 0.0, 0.0) for r in BODY]
 
 
 def patchwork(K, HP, name, rings, spec):
-    """R275 (Ryan, Nov 15 2026 21:28 CST; R240: "super even and ordered" is wrong for the Hullbreakers): the Hullbreaker
-    patchwork on a mass's faces, in this ship file so the kit's own plating (kit.py, the A16 fixture) stays as it is. Each face
-    strip (one ring edge followed the mass's whole length) is cut by random guillotine splits into cells of mixed size (world
-    units, spec size), so no seam runs in courses or rows; each plate is turned a few degrees (a share of them hard), its
-    corners pushed out of square, set a touch bigger than its cell so neighbours lap over each other at their own heights,
-    and a share of cells is left bare (the soot hull between). Rivets on a few plates only; a smaller patch on some.
-    spec: seed, size=(lo, hi), thick=(lo, hi), faces=[ring edge indices], mats={mat: weight}, skip, turn (degrees), hard (share
-    turned hard), stack, rivets_share, rivet_r, gap, inv"""
-    import random
-    from mathutils import Vector
-    rnd = random.Random(spec.get('seed', 1))
-    lo, hi = spec['size']; tlo, thi = spec['thick']; g = spec.get('gap', 0.004)
-    mats = spec['mats']; names = list(mats); wts = [mats[k] for k in names]
-    n = len(rings[0]); R = [[Vector(v) for v in r] for r in rings]
-    cen = [sum(r, Vector()) / n for r in R]
-    buckets = {k: ([], []) for k in names}
-    RV, RF = [], []
-    kept = 0
-    for j in spec['faces']:
-        A = [r[j] for r in R]; B = [r[(j + 1) % n] for r in R]
-        mids = [(a + b) / 2 for a, b in zip(A, B)]
-        S = [0.0]
-        for p0, p1 in zip(mids, mids[1:]):
-            S.append(S[-1] + (p1 - p0).length)
-        L = S[-1]
-        W = [(b - a).length for a, b in zip(A, B)]
-        if L < lo * 0.5 or max(W) < lo * 0.45:
-            continue
-
-        def at(s):
-            # the ring interval and fraction at arc length s
-            s = max(0.0, min(L, s))
-            for i in range(len(S) - 1):
-                if s <= S[i + 1] or i == len(S) - 2:
-                    f = (s - S[i]) / max(S[i + 1] - S[i], 1e-9)
-                    return i, max(0.0, min(1.0, f))
-
-        def P(s, v):
-            i, f = at(s)
-            return A[i].lerp(A[i + 1], f).lerp(B[i].lerp(B[i + 1], f), v)
-
-        def width(s):
-            i, f = at(s)
-            return W[i] + (W[i + 1] - W[i]) * f
-
-        def normal(s):
-            i, f = at(s)
-            nrm = (B[i] - A[i]).cross(A[i + 1] - A[i])
-            if nrm.length < 1e-9:
-                nrm = (B[i + 1] - A[i + 1]).cross(A[i + 1] - A[i])
-            nrm.normalize()
-            if nrm.dot((A[i] + B[i + 1]) / 2 - (cen[i] + cen[i + 1]) / 2) < 0:
-                nrm = -nrm
-            return nrm
-        # the guillotine: split the longer side of a cell at a random point until it is under its own drawn size
-        cells, todo = [], [(0.0, L, 0.0, 1.0)]
-        while todo:
-            s0, s1, v0, v1 = todo.pop()
-            ds = s1 - s0; dw = (v1 - v0) * max(width((s0 + s1) / 2), 1e-6); m = rnd.uniform(lo, hi)
-            if max(ds, dw) <= m:
-                cells.append((s0, s1, v0, v1)); continue
-            f = rnd.uniform(0.3, 0.7)
-            if min(ds, dw) < lo * 0.5 and max(ds, dw) < hi * 1.4:
-                cells.append((s0, s1, v0, v1)); continue   # no slivers: a narrow cell stays one long plate
-            if ds * rnd.uniform(0.8, 1.25) >= dw:
-                sm = s0 + ds * f; todo += [(s0, sm, v0, v1), (sm, s1, v0, v1)]
-            else:
-                vm = v0 + (v1 - v0) * f; todo += [(s0, s1, v0, vm), (s0, s1, vm, v1)]
-        rank = list(range(len(cells))); rnd.shuffle(rank)
-        # the colours by shuffled quota from the weights, so each face carries the sheet's mix and no seed runs dark
-        tot = sum(wts); quota = []
-        for k_, w_k in zip(names, wts):
-            quota += [k_] * int(round(len(cells) * w_k / tot))
-        while len(quota) < len(cells):
-            quota.append(rnd.choices(names, wts)[0])
-        rnd.shuffle(quota)
-        tally = dict(cells=len(cells), kept=0, keepout=0, skip=0)
-        dt = (thi - tlo) / max(1, len(cells))
-        for c_i, (s0, s1, v0, v1) in enumerate(cells):
-            r_skip, r_turn, r_hard, r_stack, r_riv = rnd.random(), rnd.uniform(-1, 1), rnd.random(), rnd.random(), rnd.random()
-            k = quota[c_i]; grow = rnd.uniform(1.0, 1.14)
-            jit = [(rnd.uniform(-1, 1), rnd.uniform(-1, 1)) for _ in range(4)]
-            sc, vc = (s0 + s1) / 2, (v0 + v1) / 2
-            w_ = width(sc)
-            if r_skip < spec.get('skip', 0.08) or w_ < 1e-6:
-                tally['skip'] += 1; continue
-            hs = max(0.0, (s1 - s0) / 2 * grow - g); hw = max(0.0, (v1 - v0) * w_ / 2 * grow - g)
-            if hs < g or hw < g:
-                continue
-            pc = P(sc, vc)
-            # a plate near a mount shrinks off it before it is dropped (big plates would otherwise clear wide rings round every mount)
-            for _ in range(3):
-                if not any((pc - c).length < r + 0.7 * min(hs, hw) for c, r in K.keepouts):
-                    break
-                hs, hw = hs * 0.6, hw * 0.6
-            else:
-                tally['keepout'] += 1; continue
-            if hs < g or hw < g:
-                tally['keepout'] += 1; continue
-            ang = math.radians(spec.get('turn', 6) * r_turn * (2.6 if r_hard < spec.get('hard', 0.3) else 1.0))
-            ca, sa = math.cos(ang), math.sin(ang)
-            bot = []
-            for (qs, qw), (js, jw) in zip(((-hs, -hw), (hs, -hw), (hs, hw), (-hs, hw)), jit):
-                qs += js * hs * 0.1; qw += jw * hw * 0.1
-                rs_, rw_ = qs * ca - qw * sa, qs * sa + qw * ca
-                ss = min(L - g, max(g, sc + rs_)); vv = min(1.0 - g / w_, max(g / w_, vc + rw_ / w_))
-                bot.append(P(ss, vv))
-            nrm = normal(sc)
-            t = tlo + rank[c_i] * dt
-            riv = r_riv < spec.get('rivets_share', 0.15)
-            (V, F), (rv, rf) = HP.plate_slab(bot, nrm, t, rivets=riv, rr=spec.get('rivet_r', 0.035))
-            bv, bf = buckets[k]; o = len(bv); bv.extend(V); bf.extend([tuple(x + o for x in f) for f in F])
-            if riv:
-                o = len(RV); RV.extend(rv); RF.extend([tuple(x + o for x in f) for f in rf])
-            kept += 1; tally['kept'] += 1; tally[k] = tally.get(k, 0) + 1
-            if r_stack < spec.get('stack', 0.15):
-                # a smaller patch bolted over part of this plate, a second thickness step
-                fu, fv = rnd.uniform(0.3, 0.55), rnd.uniform(0.3, 0.6)
-                cu, cv = rnd.uniform(-0.5 + fu / 2, 0.5 - fu / 2), rnd.uniform(-0.5 + fv / 2, 0.5 - fv / 2)
-                q = [bot[0].lerp(bot[1], 0.5 + cu + du).lerp(bot[3].lerp(bot[2], 0.5 + cu + du), 0.5 + cv + dv) + nrm * t
-                     for du, dv in ((-fu / 2, -fv / 2), (fu / 2, -fv / 2), (fu / 2, fv / 2), (-fu / 2, fv / 2))]
-                (V, F), _ = HP.plate_slab(q, nrm, tlo * 0.8, rivets=False)
-                k2 = quota[(c_i + 7) % len(quota)]; bv, bf = buckets[k2]; o = len(bv); bv.extend(V); bf.extend([tuple(x + o for x in f) for f in F])
-    for k, (V, Fc) in buckets.items():
-        if V:
-            K._obj('%s_plates_%s' % (name, k), V, Fc, k, grp='hull')
-    if RV:
-        K._obj('%s_rivets' % name, RV, RF, 'iron', grp='hull')
-    for iid in ([spec['inv']] if isinstance(spec.get('inv'), str) else spec.get('inv', [])):
-        K.built.append(dict(id=name + '_plates', kind='plate', inv=[iid], shaped=True, detailed=kept > 0, subs=['slab', 'step', 'bevel', 'rivet']))
-    return kept
+    return _plating.patchwork(K, HP, name, rings, spec)
 
 
 def build(K):
@@ -264,7 +138,7 @@ def build(K):
     # R275: the Hullbreaker patchwork (patchwork() above): fewer, bigger, uneven plates of mixed size and angle, never small even
     # squares in rows; big trophy patches among them (R252), rust and dried blood the main tones (the concept's red), soot and
     # bare iron between; the colours as the sheet had them before R275
-    PL = dict(size=(U(0.075), U(0.19)), thick=(U(0.0022), U(0.0052)), gap=U(0.0016), skip=0.06, turn=5.0, hard=0.3, stack=0.14,
+    PL = dict(size=(U(0.075), U(0.19)), thick=(U(0.005), U(0.014)), gap=U(0.0016), skip=0.06, turn=12.0, hard=0.35, stack=0.45,
               rivets_share=0.07, rivet_r=U(0.0018),
               mats={'rust': 5, 'soot': 4, 'blood': 3, 'iron': 2, 'soot2': 2, 'pale': 0.6, 'violet': 0.4})
     PATCH = []   # (name, rings, spec): plated last, once every mount has claimed its keep-out
@@ -418,8 +292,10 @@ def build(K):
              'every part has a job (R221): the hoist walks the next bomb from the shoulder\'s magazine row into its tube; on the slope they face the battle camera; the doors carry a two-tone value shift so they survive 32 px (Qwen)')
     K.change('The stern thruster bank is five mismatched salvaged bells, the centre one the largest, in a recess (a hood, cheeks and a sill) in the stern housing',
              'the concept\'s row of stern thrusters; factions.md: mismatched bells with a red-orange glow, one often larger than the rest; the owner\'s rule for craft: nozzle clusters inside armoured blocks')
-    K.change('The starboard shoulder sits a touch lower and shorter than the port one; the plating is a patchwork of fewer, bigger, uneven plates of mixed size and angle (rust, dried blood, soot and iron with big trophy patches), laid by the sheet\'s own plater, never courses',
+    K.change('The starboard shoulder sits a touch lower and shorter than the port one; the plating is a patchwork of fewer, bigger, uneven plates of mixed size and angle (rust, dried blood, soot and iron with big trophy patches), laid by the faction kit\'s welded plater, never courses',
              'factions.md: lopsided, bolted, patched, plates torn from every other faction; R240 and R275: the patchwork never reads even or in rows (the kit\'s courses read as tidy squares on a craft); R252: big trophy patches (R274: the pale ones become dark grey metal in the Hullbreaker paint stack for every ship, issue 726; the sheet keeps the pale zone)')
+    K.change('Issue 875 (R289): thicker slabs, stronger turns, more second layers and welded lap joints; the material weights and craft paint settings stay unchanged',
+             'The shallow, mostly aligned R275 slabs read as flat notes; the A16/A17 character comes from physical plate relief as well as the paint')
     K.change('No dishes, claws, antennas, lamps or hangar', 'below what the battle camera shows on a 3.84 unit craft, and nothing hangs off (factions.md); bold and simple')
     K.change('A small inside: two magazine rows in the shoulders, the crew cell, the reactor, the drive room; one seam (B-1)',
              'the game shows a craft\'s death as a spark and hides it (fx_death.gd _wing_death), so nothing breaks open; the build contract needs an inside and a seam')
