@@ -90,5 +90,74 @@
     "issue 256 outside check"
   ],
   "committed": false,
-  "pushed": false
+  "pushed": false,
+  "resume_validation": {
+    "inherited_surface_commit": "89bb41a07a619c396825f8e29d908b7a460f91e6",
+    "production_files_changed_on_resume": false,
+    "godot_import_exit": 0,
+    "real_state_exit": 0,
+    "ship_manifest_files": 252,
+    "ship_manifest_mismatches": 0,
+    "measurements_exit": 0,
+    "negative_bend_control_exit": 1,
+    "negative_bend_control_message": "hegemony_c170: bend has no measured pixel effect",
+    "crackle_bake_identical": true,
+    "crackle_sha256": "6a14454137fd40d08be8e812049f87d5f7012585548384671210a71686bd3425",
+    "standing_rows": {
+      "KNOWN": 2,
+      "PASS": 56,
+      "FAIL": 0,
+      "SKIP": 0
+    },
+    "fresh_gpu_runs": false,
+    "gpu_skip_reason": "Lane C is code-only; other Godot jobs were active. Retained the partial run captures and gate reports.",
+    "shots": "C:/Users/rcbai/Downloads/voidsworn_test/board_c/issue-372/shots",
+    "headless_regressions": [
+      {
+        "exit": 0,
+        "script_errors": 0,
+        "check": "fx/test/destruction_steps_check.gd"
+      },
+      {
+        "exit": 0,
+        "script_errors": 0,
+        "check": "fx/test/death_plane_check.gd"
+      },
+      {
+        "exit": 0,
+        "script_errors": 0,
+        "check": "fx/test/destruction_staging_check.gd"
+      },
+      {
+        "exit": 0,
+        "script_errors": 0,
+        "check": "fx/test/fx_smoke.gd"
+      },
+      {
+        "exit": 0,
+        "script_errors": 0,
+        "check": "fx/test/flash_area_check.gd"
+      },
+      {
+        "exit": 0,
+        "script_errors": 0,
+        "check": "fx/test/hit_recipe_check.gd"
+      },
+      {
+        "exit": 0,
+        "script_errors": 0,
+        "check": "fx/test/death_spawn_check.gd"
+      },
+      {
+        "exit": 0,
+        "script_errors": 0,
+        "check": "fx/test/playtest_batch1_check.gd"
+      },
+      {
+        "exit": 0,
+        "script_errors": 0,
+        "check": "world/test_blockers.gd"
+      }
+    ]
+  }
 }

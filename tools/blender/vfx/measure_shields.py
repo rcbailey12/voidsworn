@@ -88,7 +88,7 @@ def readability(folder, name):
                                         "after": contrast(lit[inside_y, x], lit[outside_y, x])})
     # Eight evenly spaced baseline-qualified edge pairs, independent of lit.
     edge_candidates.sort(key=lambda e: (e["inside"][0], e["inside"][1]))
-    edges = [edge_candidates[int((len(edge_candidates)-1)*i/7)] for i in range(8)] if edge_candidates else []
+    edges = [edge_candidates[int((len(edge_candidates)-1)*i/7)] for i in range(8)] if len(edge_candidates) >= 8 else []
     return {"interior": interior, "edges": edges,
             "interior_kept_30pct": sum(s["retained"] >= .3 for s in interior),
             "edges_at_least_1_25": sum(s["after"] >= 1.25 for s in edges),
@@ -112,6 +112,26 @@ def font(size):
         return ImageFont.load_default()
 
 
+def verification_failures(stats):
+    failures = []
+    for faction in FACTIONS:
+        cap = stats["cap_stress"][faction]
+        if not cap["calibration_valid"] or cap["max_channel_linear"] <= 0:
+            failures.append(f"{faction}: invalid cap calibration or no shield light")
+        if not cap["cap_met"]:
+            failures.append(f"{faction}: shield light exceeds the calibrated ceiling")
+        for camera in [170, 60, 26]:
+            name = f"{faction}_c{camera}"
+            if not stats["readability"][name].get("pass", False):
+                failures.append(f"{name}: hull readability failed")
+            for mechanism in ["bend", "contact", "pattern"]:
+                if stats["mechanisms"][name][mechanism]["changed_pixels_over_1_level"] == 0:
+                    failures.append(f"{name}: {mechanism} has no measured pixel effect")
+        if stats["mechanisms"][faction + "_rock_contact"]["changed_pixels_over_1_level"] == 0:
+            failures.append(f"{faction}: rock contact has no measured pixel effect")
+    return failures
+
+
 def sheets(before, after, out, stats, metadata):
     for faction, display in FACTIONS.items():
         for camera in [170, 60, 26]:
@@ -132,7 +152,8 @@ def sheets(before, after, out, stats, metadata):
     for faction in ["voidsworn", "hegemony"]:
         sheet = Image.new("RGB", (1200, 660), "#111318")
         draw = ImageDraw.Draw(sheet)
-        draw.text((24, 10), f"SH372 / {FACTIONS[faction]} / mechanism A-B / camera 60", font=font(23), fill="white")
+        code = next(r["code"] for r in metadata["captures"] if r["faction"] == faction)
+        draw.text((24, 10), f"SH372 / {code} / {FACTIONS[faction]} / mechanism A-B / camera 60", font=font(23), fill="white")
         for index, (suffix, label) in enumerate([("no_bend", "Bend OFF"), ("diagnostic", "Production shield"), ("no_contact", "Contact OFF")]):
             im = Image.open(after / f"{faction}_c60_{suffix}.png").resize((384, 288), Image.Resampling.LANCZOS)
             sheet.paste(im, (24+384*index, 72))
@@ -158,6 +179,7 @@ def main():
         reference = linear(pixels(args.after / f"{faction}_linear_cap_reference.png"))[0, 0]
         measured = cap / np.maximum(reference, 1e-6) * .65
         stats["cap_stress"][faction] = {"max_channel_linear": float(measured.max()),
+                                       "calibration_valid": bool(np.all(reference > 0)),
                                        "reference_srgb": pixels(args.after / f"{faction}_linear_cap_reference.png")[0, 0].tolist(),
                                        "cap_met": bool(measured.max() <= .66)}
         for camera in [170, 60, 26]:
@@ -179,8 +201,13 @@ def main():
                     sheet.paste(strip.crop((frame*384, 0, (frame+1)*384, 216)), (24+384*index, y))
             draw.text((24, 576), "Standing look-bench moments; one shot; source pixels at 170, half at 60, third at 26.", font=font(16), fill="white")
             sheet.save(args.out / f"SH372_hit_pair_c{camera}.jpg", quality=94)
+    failures = verification_failures(stats)
+    stats["verification"] = {"passed": not failures, "failures": failures}
     (args.out / "measurements.json").write_text(json.dumps(stats, indent=2) + "\n")
     print(json.dumps({"cap": stats["cap_stress"], "readability": {k: {x: v.get(x) for x in ["pass", "interior_kept_30pct", "minimum_edge_contrast"]} for k, v in stats["readability"].items()}}, indent=2))
+    if failures:
+        raise SystemExit("SHIELD_MEASURE FAIL: " + "; ".join(failures))
+    print("SHIELD_MEASURE PASS: cap, hull readability, bend, contact and faction masks")
 
 
 if __name__ == "__main__":

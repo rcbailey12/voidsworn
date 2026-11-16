@@ -3039,6 +3039,7 @@
   "cap_stress": {
     "voidsworn": {
       "max_channel_linear": 0.65,
+      "calibration_valid": true,
       "reference_srgb": [
         0.4392156862745098,
         0.4392156862745098,
@@ -3048,6 +3049,7 @@
     },
     "hegemony": {
       "max_channel_linear": 0.65,
+      "calibration_valid": true,
       "reference_srgb": [
         0.4392156862745098,
         0.4392156862745098,
@@ -3057,6 +3059,7 @@
     },
     "corsair": {
       "max_channel_linear": 0.65,
+      "calibration_valid": true,
       "reference_srgb": [
         0.4392156862745098,
         0.4392156862745098,
@@ -3066,6 +3069,7 @@
     },
     "ithar": {
       "max_channel_linear": 0.65,
+      "calibration_valid": true,
       "reference_srgb": [
         0.4392156862745098,
         0.4392156862745098,
@@ -3073,5 +3077,9 @@
       ],
       "cap_met": true
     }
+  },
+  "verification": {
+    "passed": true,
+    "failures": []
   }
 }
