@@ -138,7 +138,9 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    "consistent and line up with the in game behavior" (Nov 15, ratified on PR 691), not his words: change them if he rules otherwise.
    Squadron craft (issue 769, R253): a fighter's guns (data.js `guns`, arc T) turn on a traverse ring like any turret; a bomber's
    bomb tubes (`bombs`, arc T) may sit fixed forward in a launcher, because a craft turns onto its target on a strafing run
-   (weapon_match.py FITS rows `guns` and `bombs`, with self-test faults). This is the Board's reading for craft, not Ryan's
+   (weapon_match.py FITS rows `guns` and `bombs`, with self-test faults). The Chorus spore swarm (data.js `spore`, `sporeb` arc T,
+   a bomber-role craft) shows its two acid sacs fixed on its flanks the same way (FITS row `sporeb`: type acid_sac on a launcher,
+   with self-test faults; issue 793). This is the Board's reading for craft, not Ryan's
    words: change it if he rules otherwise. A craft sheet is LENGTH 1.6 (CLS_LEN Squadron, drawn 3.84, scale.md) and carries a
    small inside only because the build contract needs one: the game shows a craft's death as a spark (fx_death.gd _wing_death).
 

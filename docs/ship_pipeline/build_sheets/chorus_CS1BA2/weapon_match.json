@@ -1,0 +1,29 @@
+{
+ "code": "chorus_CS1BA2",
+ "result": "PASS",
+ "problems": [],
+ "slots": [
+  {
+   "slot": 0,
+   "weapon": "sporeb",
+   "arc": "T",
+   "shots": 2,
+   "mounts": [
+    {
+     "id": "S1",
+     "type": "acid_sac",
+     "mount": "launcher",
+     "barrels": 1,
+     "muzzles": 1
+    },
+    {
+     "id": "S2",
+     "type": "acid_sac",
+     "mount": "launcher",
+     "barrels": 1,
+     "muzzles": 1
+    }
+   ]
+  }
+ ]
+}
