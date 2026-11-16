@@ -1205,7 +1205,7 @@ func _play_batch(bt: Dictionary) -> void:
 
 func _pos(id) -> Vector3:
 	if views.has(id):
-		return (views[id] as Node3D).position
+		return (views[id] as ShipView).visual_position()
 	return Vector3.ZERO
 
 
@@ -1294,7 +1294,7 @@ func _play_event(e: Dictionary) -> void:
 					gfx.add_ship(str(e["unit"]), sv, {"faction": str(ru.get("fac", "deathless")), "meshes": sv.meshes, "cls": str(ru.get("cls", "")), "size": float(ru.get("size", 0.5)), "squadron": false, "flagship": bool(ru.get("flagship", false))})
 					sv.fx_engines = true
 				wrecked.erase(e["unit"])
-				_flash(sv.position + Vector3(0, 2, 0), 16.0, Color(0.2, 1.0, 0.4), 0.8)
+				_flash(sv.visual_position() + Vector3(0, 2, 0), 16.0, Color(0.2, 1.0, 0.4), 0.8)
 			_float(e["unit"], "Risen", Color("#7dff9b"), -30)
 			await wait(600.0)
 		"stance":
@@ -1303,11 +1303,11 @@ func _play_event(e: Dictionary) -> void:
 			var sv = views.get(e["unit"])
 			if sv != null:
 				var c: Color = HT.FAC3D.get(str(VU.get(e["unit"], {}).get("fac", "ithar")), HT.FAC3D["ithar"])["eng"]
-				_flash(sv.position + Vector3(0, 2, 0), 18.0, c, 0.5)
-				sfx.play("phase", {"pos": sv.position})
+				_flash(sv.visual_position() + Vector3(0, 2, 0), 18.0, c, 0.5)
+				sfx.play("phase", {"pos": sv.visual_position()})
 				await wait(250.0)
 				sv.position = board.hex_world(int(e["to"]["q"]), int(e["to"]["r"]))
-				_flash(sv.position + Vector3(0, 2, 0), 18.0, c, 0.5)
+				_flash(sv.visual_position() + Vector3(0, 2, 0), 18.0, c, 0.5)
 				await wait(250.0)
 		"side":
 			if e["side"] == "player":
@@ -1327,7 +1327,7 @@ func _play_event(e: Dictionary) -> void:
 					if follow and not bot:
 						if cam_saved.is_empty():
 							cam_saved = {"t": cam.t, "r": cam.r}
-						cam.t = cam.t.lerp(Vector3(_pos(e["unit"]).x, 0, _pos(e["unit"]).z), 0.6)
+						cam.t = cam.t.lerp(_pos(e["unit"]), 0.6)
 				await wait(float(PACE["aiGap"]))
 		"move":
 			await _play_move(e["unit"], e["path"], false)
@@ -1377,7 +1377,7 @@ func _play_event(e: Dictionary) -> void:
 				var sv = views.get(e["unit"])
 				if sv != null:
 					sv.position = board.hex_world(e["hex"]["q"], e["hex"]["r"])
-					_flash(sv.position + Vector3(0, 2, 0), 18.0, c, 0.5)
+					_flash(sv.visual_position() + Vector3(0, 2, 0), 18.0, c, 0.5)
 			elif ab == "nova" and e.get("hex") != null:
 				sfx.play("charge", {"pos": _pos(e["unit"])})
 				await wait(500.0)
@@ -1551,7 +1551,7 @@ func _play_move(id, path: Array, charge: bool) -> void:
 			n_rot += 1 if _jt(st.get("rot")) else 0
 		print("[move] %s %s %s size %.2f hexes %d turns %d dur %.2f s, %.0f ms a hex, speed %.2f" % [str(id), _side(id), str(u.get("cls", "")), size, path.size() - n_rot, n_rot, dur * mv_speed, per * mv_speed, mv_speed])
 	if size > 0.3:
-		sfx.play("engine", {"pos": sv.position, "gain": minf(1.0, 0.55 + size * 0.6)})
+		sfx.play("engine", {"pos": sv.visual_position(), "gain": minf(1.0, 0.55 + size * 0.6)})
 	var eng_on: bool = gfx != null and gfx.has_method("set_engine")
 	while sv.burning() and not sv.dead:
 		if skip:
@@ -1821,7 +1821,6 @@ func _cine_frame(a_id, t_id) -> void:
 	var pa := _pos(a_id)
 	var pt := _pos(t_id)
 	var mid := (pa + pt) * 0.5
-	mid.y = 0
 	var dist := Vector2(pt.x - pa.x, pt.z - pa.z).length()
 	# Godot camera azimuth: side-on to the line of fire, the side nearer the current view
 	var base := atan2(-(pt.z - pa.z), pt.x - pa.x)
@@ -2069,7 +2068,7 @@ func _schedule_impact(t_id, h: Dictionary, delay: float, L: float, shield_col: C
 		var sv = views.get(t_id)
 		if sv == null:
 			return
-		var p: Vector3 = sv.position + Vector3(randf_range(-0.3, 0.3) * L, 1.0, randf_range(-0.12, 0.12) * L)
+		var p: Vector3 = sv.visual_position() + Vector3(randf_range(-0.3, 0.3) * L, 1.0, randf_range(-0.12, 0.12) * L)
 		if float(h["shield"]) > 0 and float(h["hull"]) <= 0:
 			fx.shield(sv, L, int(h["quad"]), shield_col)
 			_flash(p, 4.0 + L * 0.25, shield_col, 0.25, 0.0, false)
@@ -2097,8 +2096,8 @@ func _impact(t_id, h: Dictionary, col: Color) -> void:
 	var sv = views.get(t_id)
 	if sv == null:
 		return
-	_flash(sv.position + Vector3(0, 1.5, 0), 6.0 + sv.L * 0.3, col, 0.3)
-	sfx.hit(sv.position, h.get("crit", false))
+	_flash(sv.visual_position() + Vector3(0, 1.5, 0), 6.0 + sv.L * 0.3, col, 0.3)
+	sfx.hit(sv.visual_position(), h.get("crit", false))
 
 
 # Issue 521 (audit item 7; R193, Ryan's pick "Hold and slow", which replaces the Board's R123): the cut-in for a kill
@@ -2130,7 +2129,7 @@ func _kill_frame(id) -> void:
 	var fill: float = KILL_FILL[1] if cap else KILL_FILL[0]
 	var span := 2.0 * tan(deg_to_rad(cam.fov) * 0.5)   # screen height per unit of distance
 	var rr := clampf(maxf(float(sv.L), 6.0) / (fill * span), cam.min_r, 200.0)
-	var tp := Vector3(sv.position.x, 0.0, sv.position.z)
+	var tp: Vector3 = sv.visual_position()
 	# the four three-quarter views (bow and stern quarters, either side): one with no other hull between the camera and
 	# the dying ship, nearest the current view (so the camera never swings far)
 	var cur: float = cam.a
@@ -2144,7 +2143,7 @@ func _kill_frame(id) -> void:
 			var ov = views[oid]
 			if oid == id or ov == null or ov.dead or not ov.visible:
 				continue
-			var o: Vector3 = ov.position
+			var o: Vector3 = ov.visual_position()
 			var seg := tp - eye
 			var k := clampf((o - eye).dot(seg) / maxf(seg.length_squared(), 1e-4), 0.0, 1.0)
 			if (eye + seg * k).distance_to(o) < float(ov.L) * 0.6 + float(sv.L) * 0.15 and k < 0.92:
@@ -2204,7 +2203,7 @@ func _play_death(e: Dictionary) -> void:
 	if sv == null:
 		return
 	var L: float = sv.L
-	var p: Vector3 = sv.position + Vector3(0, 2, 0)
+	var p: Vector3 = sv.visual_position() + Vector3(0, 2, 0)
 	var big := L >= 14.0
 	if gfx != null and gfx.has_method("death"):
 		if "kill_slowmo" in gfx:
@@ -4679,7 +4678,7 @@ func _process(dt: float) -> void:
 		if u.is_empty() or sv.dead or not sv.visible or not cine_saved.is_empty():
 			hud.set_plate(str(id), Vector2.ZERO, false, "", true, false, 0, 1, 0, 0)
 			continue
-		var wp: Vector3 = sv.position + Vector3(0, 3.0 + sv.L * 0.18, 0)
+		var wp: Vector3 = sv.visual_position() + Vector3(0, 3.0 + sv.L * 0.18, 0)
 		var on := not cam.is_position_behind(wp)
 		var sp := cam.unproject_position(wp)
 		on = on and sp.x > -50 and sp.y > -50 and sp.x < vs.x + 50 and sp.y < vs.y + 50
@@ -5483,7 +5482,7 @@ func _closeups(id: String, tag: String) -> void:
 	var rr := clampf(float(sv.L) * 1.5, cam.min_r, 140.0)
 	var nm := "%s_%s_%s" % [tag, str(VU.get(id, {}).get("cls", "ship")).replace(" ", ""), id]
 	for v in [[yaw + PI / 2.0, 0.35, "port"], [yaw - PI / 2.0, 0.35, "starboard"], [yaw + PI * 0.75, 0.9, "above"]]:
-		cam.a = float(v[0]); cam.b = float(v[1]); cam.r = rr; cam.t = Vector3(sv.position.x, 0, sv.position.z)
+		cam.a = float(v[0]); cam.b = float(v[1]); cam.r = rr; cam.t = sv.visual_position()
 		cam.snap()
 		await get_tree().create_timer(0.5).timeout
 		await _snap(nm + "_" + str(v[2]))
