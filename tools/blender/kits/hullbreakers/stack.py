@@ -7,8 +7,8 @@
 # projected onto the ship. No downloaded asset: the trim sheet and the decal atlas are drawn by this file (own work dedicated CC0,
 # written into the job's textures folder with their licence lines, RULEBOOK 5.13).
 #
-# The faction (docs/playbooks/factions.md): soot black, rust, dried-blood red, patches of trophy colour (pale Hegemony grey,
-# violet Eclipse plate), dim red running lights. Never clean symmetry, bright light or fresh paint. Lore round 8: the
+# The faction (docs/playbooks/factions.md): soot black, rust, dried-blood red, patches of trophy colour (dark grey salvaged metal,
+# R274; violet Eclipse plate), dim red running lights. Never clean symmetry, bright light or fresh paint. Lore round 8: the
 # Hullbreakers run dark. The game lifts this faction's albedo by 1.25 at the battle camera (R227, godot/render/look.gd): the
 # lift lives in the game, not here, so these colours are the concept's own read under the game's light without it.
 #
@@ -35,7 +35,7 @@ CONCEPT = dict(
     iron=((24, 25, 29), (58, 55, 60)),          # iron plate and belts: dark gunmetal (the dark and low mid-tone clusters)
     rust=((44, 20, 16), (98, 44, 31)),          # the rust plate: dark brick red (the red clusters, blue held under green: never pink)
     blood=((58, 20, 18), (100, 28, 24)),        # dried-blood red plate and bands
-    pale=((52, 51, 52), (88, 85, 84)),          # Hegemony grey plate, weathered dark (pass 5); the trophy layer lays trophy_pale over most of it (R252)
+    pale=((52, 51, 52), (88, 85, 84)),          # Hegemony grey plate, weathered dark (pass 5); the trophy layer lays trophy_grey over most of it (R252, R274)
     violet=((57, 29, 53), (110, 78, 140)),      # violet Eclipse trophy plate (violet clusters)
     steel=((20, 21, 24), (52, 50, 56)),         # gun metal, machinery: dark, its bare edges carry the light
     rust_streak=((34, 15, 11), (84, 40, 26)),   # rust run-off and blooms: the deep red-brown dark cluster, brick, not pink
@@ -55,7 +55,14 @@ CONCEPT = dict(
     # darkest is the plates' shadow side, so the pair is the second cluster and the mean of the two lightest. Violet the same
     # way (blue over green above 1.15, blue at least 0.95 of red, brightest channel over 55): (51, 50, 67) 23 percent, (74, 72, 94)
     # 20, (96, 91, 121) 32, (116, 110, 142) 25; the pair is a little under the third cluster and the fourth.
-    trophy_pale=((132, 128, 127), (177, 174, 170)),
+    # R274 (Ryan, Nov 15 2026 18:50 CST: "those should be a global rule for all of the bigger paler patches too. The white looks
+    # unfinished"): the grey trophy plates are dark grey salvaged metal, not pale. Was trophy_pale ((132, 128, 127), (177, 174, 170)).
+    # Sampled the same way from the two concepts Ryan pointed at, k-means (4) of their grey pixels (saturation under 0.16, brightest
+    # channel 45 to 170): KB1C-C (squadron_concepts_2026_11/hullbreakers/round_3/KB1CC.jpg, the name label left out) (56, 51, 49) 31
+    # percent, (78, 70, 68) 33, (110, 99, 96) 19, (150, 136, 132) 17; A20 (56, 56, 56) 20, (83, 82, 82) 35, (110, 108, 108) 28,
+    # (151, 148, 145) 17. The darkest cluster is the plates' shadow and the lightest their worn edges and highlights; the pair is the
+    # mean of the second clusters and the mean of the third: clearly lighter than the soot plate (41, 39, 43), never white or chalky.
+    trophy_grey=((80, 76, 75), (110, 104, 102)),
     trophy_violet=((88, 84, 112), (116, 110, 142)),
 )
 
@@ -101,7 +108,9 @@ ZONES = dict(
     # R252 (issue 726): the sheet's pale zone (A20's big modelled trophy patches TP1, TP3, TP5 and a share of its plate courses)
     # takes no dark plate families; the trophy layer alone covers most of it (trophy_share) in the big pale and violet trophy
     # plates, so a pale course plate reads pale with its neighbours in a big patch and never as a lone small chalky plate
-    pale=dict(rust=.20, rough=.74, metal=.25, plate_var=.22, grime=.70, patchwork=1.0, trophy_share=.65),
+    # R274: the trophy plates are salvaged metal, so the pale zone (mostly trophy plates) takes a little metallic sheen (was metal
+    # .25, rough .74)
+    pale=dict(rust=.20, rough=.64, metal=.45, plate_var=.22, grime=.70, patchwork=1.0, trophy_share=.65),
     violet=dict(rust=.10, rough=.62, metal=.20, plate_var=.20),
     lilac=dict(rust=.10, rough=.66, metal=.20, plate_var=.20),     # issue 651: kept clean of new rust, as violet
     steel=dict(rust=.25, metal=.65, rough=.50, wear=1.0, patchwork_parts=.8),
@@ -143,11 +152,12 @@ PATCH_FAMILIES = [(.30, pair('soot2')), (.24, pair('gunmetal')), (.20, pair('red
 # on part faces (R224 in paint): the same kind of plates, mostly metal, a little soot and rust, rare scrapes
 PATCH_FAMILIES_PARTS = [(.30, pair('gunmetal')), (.25, pair('soot2')), (.08, pair('red_plate')), (.015, pair('scrape'), 'small')]
 
-# The trophy patches (issue 726; R252, Ryan Nov 14 2026: "agree" that the patch plates read bigger and paler like the A20 concept,
-# big pale grey and violet trophy patches, not small dark plates; R240: still uneven, no repeated tiles or aligned rows). Over the
+# The trophy patches (issue 726; R252, Ryan Nov 14 2026: "agree" that the patch plates read bigger like the A20 concept, not small
+# dark plates; R274, Nov 15: dark grey salvaged metal, not pale, "The white looks unfinished"; R240: still uneven, no repeated
+# tiles or aligned rows). Over the
 # hull's patchwork (hull atlas only) lies one more uneven grid at the concept's trophy plate size (cell in ship lengths, about
 # 2.1 by 1.4 units on the 16.5 unit A20, each cell two thirds to twice that by the shared warp, a share split once more); a
-# share of its cells, more in some broad regions than others (cluster), takes a trophy colour: pale Hegemony grey or violet
+# share of its cells, more in some broad regions than others (cluster), takes a trophy colour: dark grey salvaged metal or violet
 # Eclipse plate (families, as PATCH_FAMILIES). The pick is per trophy cell only, never per mesh island, so a trophy plate reads as
 # one plate across the sheet's small modelled plates. Each plate keeps its own tone and a little dirt (the rust, grime, scuffs and
 # edge wear of the later layers still mark it), and its own dark seam. share scales with the zone's patchwork amount, so the
@@ -155,9 +165,9 @@ PATCH_FAMILIES_PARTS = [(.30, pair('gunmetal')), (.25, pair('soot2')), (.08, pai
 # pale zone) takes only the trophy layer, at that share, over its own tones.
 TROPHY = dict(cell=(.130, .085, .060), share=.32, cluster=(2.2, .45, 1.55), warp=.55, band=2.0, split=.22, seam=.0013,
               dirt=.15, dirt_scale=34.0, gain=1.5,
-              families=[(.65, pair('trophy_pale')), (.35, pair('trophy_violet'))])
+              families=[(.65, pair('trophy_grey')), (.35, pair('trophy_violet'))])
 # gain: the later layers (grime, rust, ambient occlusion, side darkening) take a plate's value down after the patchwork; at gain 1
-# the sandbox render of A20 showed the pale patches at a median value of 141 against the concept's 172 (contrib/opus/tools/
+# the sandbox render of A20 showed the then pale patches at a median value of 141 against the concept's 172 (contrib/opus/tools/
 # issue726/measure.py), so the trophy tones are painted lighter by this factor (linear albedo) to read as the concept's.
 
 
