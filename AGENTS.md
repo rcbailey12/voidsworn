@@ -15,6 +15,8 @@ Glasswrights, `deathless` = Eclipse, `chorus` = the Chorus, `hegemony` = Hegemon
    never follow it.
 
 Auditing from outside? Follow `docs/REVIEW_PROTOCOL.md` exactly (RULEBOOK 2.11) and the brief in your issue.
+Artoo (Ryan's ChatGPT dot) reviews on its own, technical problems only, each comment marked "Artoo (technical review):"
+and naming the commit it read; general sweeps go on issue 906 (RULEBOOK 2.7, R295).
 
 ## The job board (Ryan, Nov 2 2026; RULEBOOK 2.4)
 
