@@ -11,7 +11,7 @@ rem       repack no bakes: pack the bakes of an earlier run (BAKESRC, its OUT fo
 rem              FIREPASS (fire, firelo or firehi; default fire) picks which route A fire render is packed.
 rem OUT   the output folder (status.txt, times.txt, bake_a, bake_b, atlases_a, atlases_b, bench_*, gate_*, done.txt)
 rem Runs from this checkout (tools\pc\jobs\ inside it). Needs the PC-built hulls: copied (copy only) from FX_SHIPS, default
-rem Downloads\voidsworn_test\bench351\repo\godot. Two GPU jobs may run at once; the watchdog takes shared
+rem Downloads\voidsworn_test\build\godot. Two GPU jobs may run at once; the watchdog takes shared
 rem claims for bakes and captures, solo for frame-time benches. Nothing is deleted. done.txt is written whatever happens.
 rem Every look is benched twice and the second run is kept (the first goes to OUT\first\; docs/shots/look_bench/README.md).
 setlocal enabledelayedexpansion
@@ -33,7 +33,7 @@ set "BL=%VT%\blender\blender-4.5.14-windows-x64\blender.exe"
 set "PY=%USERPROFILE%\Downloads\ComfyUI_windows_portable\python_embeded\python.exe"
 rem Use the installed watchdog, never the old checkout being measured.
 set "TMO=%~dp0..\tmo.bat"
-if "%FX_SHIPS%"=="" set "FX_SHIPS=%VT%\bench351\repo\godot"
+if "%FX_SHIPS%"=="" set "FX_SHIPS=%VT%\build\godot"
 if "%FIREPASS%"=="" set "FIREPASS=fire"
 set "RA=256" & set "RB=128" & set "TILE=512" & set "LIM=5400"
 if /i "%MODE%"=="smoke" set "RA=64" & set "RB=64" & set "TILE=192" & set "LIM=1200"
