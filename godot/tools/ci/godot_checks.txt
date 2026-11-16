@@ -76,6 +76,7 @@ headless|ui/campaign/test/map_key_halo_test.gd|-|-|issue 678: the campaign map's
 headless|ui/battle/test/battle_log_cap_test.gd|-|-|issue 588: the battle log view keeps the newest 200 entries like the browser, the oldest leave the view only, and the rules log array is untouched
 headless|ui/battle/test/ledger_readability_test.gd|-|-|issue 271: the battle screen orders sheet (E1) at 1080 and 1440: 17 px, Big Shoulders 28, three strengths, 4.5 to 1 over white and black boards, no overlaps, every function reachable, nothing lime
 headless|ui/career/test/career_readability_test.gd|-|-|issue 729: the Career screen's dim BONE3 labels are 4.5 to 1 or better on their card, the panels and the screen behind them at 1080 and 1440, measured like ledger_readability_test.gd
+headless|ui/career/test/career_honours_test.gd|-|-|issue 869: CR4 opens without writing saves, word tab keys, six labelled figures, Sunward crests, all factions, fourth hero row and long records at 1080 1440 and 2160
 headless|scenes/battle/test/nose_first_check.gd|-|-|issue 521: a run of two hexes or more is flown nose first on the main engine through battle.gd _glide_steps; ends on the rules hex and facing, passes inside every route hex, a one-hex slide is slower than a burn
 gpu|assets/ships/test/a4_shots.gd|scene:res://assets/ships/test/a4_shots.tscn|--out {out}|in-game ship sheet: needs the built ship files and a window
 gpu|campaign/test/capstone_mastery_shots.gd|-|{out}|campaign screenshots: needs a window

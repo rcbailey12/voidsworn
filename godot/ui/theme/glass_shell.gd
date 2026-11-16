@@ -85,6 +85,9 @@ const TEXT3 := Color("#969084")
 const NEM := Color("#ff6050")
 const ON_EMBER := Color("#100c08")
 const SHEET_HAIR := Color("#48443c")
+# CR4 uses an opaque reading page, with a neutral picture slot for missing flagship art.
+const CAREER_INK := Color("#0a0d10")
+const CAREER_PICTURE := Color("#171b20")
 # Glacier: shield readouts and nothing else, on every screen that moves to the orders sheet (R191, Ryan's pick R210). The
 # shields drawn around ships in space keep their faction colours (owner, Oct 24); this is the interface's shield colour.
 const GLACIER := Color("#92b8e8")

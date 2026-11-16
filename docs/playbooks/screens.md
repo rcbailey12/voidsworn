@@ -138,6 +138,30 @@ read-only drawing, moved-content routes, progression returns and heir gates, and
 the same scenarios with a renderer. Keep 1920x1080 originals in the issue's shots folder and comparison sheets at no taller
 than 720 px in docs/shots/debrief_db1/. Stage the installed model cache before captures; a missing model fails the capture.
 
+### Career (CR4, issue 869)
+
+Ryan settled CR4, The Honours Board (R286). Its source notes and CR4.png are on the design branch muse/issue-794 at
+609262f9, under contrib/muse/design/ui_upgrade_2026_11/career/. Review pictures live in docs/shots/ui/career_cr4/.
+Recognition is the page's job: seven lifetime figures without boxes, served admirals first, then the unserved roster.
+Every served admiral has a picture band and six labelled figures: runs, won, best sector, battles, kills and ships lost.
+Vex uses his chosen portrait; other bands carry the recorded flagship name in display type until flagship art exists.
+All earned titles and counts, arc honours and flagship names stay on the surface. The unserved Sunward admirals use the
+same crests as the debrief's heirs. Other unserved admirals remain text, with their doctrine under their full name.
+
+The hero grid has three columns and grows by rows. A fourth served admiral starts the next row. The original 12-admiral
+reference profile fits on one page; the current six-faction, 24-admiral roster and longer careers scroll below the fixed
+heading, word tabs and lifetime band. No admiral or faction is dropped. Tabs use 1 to 5 and a neutral active underline;
+Close is the one ember box, with Esc on the right. The other four tabs retain their existing content and actions in the
+same neutral orders-sheet frame. The scale is 17 detail and keys, 18 links and unserved names, 28 section heads and honours,
+34 admiral and flagship names and service figures, 40 lifetime figures, 52 page title, all at 1080.
+
+Check: godot --headless --path godot --script res://ui/career/test/career_honours_test.gd, plus career_readability_test.gd
+and story/test/story_test.gd. The new check opens through Story, browses all five tabs, verifies figures against the saved
+record, checks the fourth row and the full roster, measures bounds at 1080, 1440 and 2160, and proves browsing leaves the
+profile, campaign run and meta unchanged without writing a save. For GPU captures, omit --headless and add -- --shots DIR.
+Capture the original 12-admiral reference, current roster, fourth row, long names, empty state, tabs and Close hover. Rules
+and save data are unchanged.
+
 ## 3. Steps
 
 1. **Name the decision.** One sentence: what does the player decide on this screen? Everything is ranked by how much it

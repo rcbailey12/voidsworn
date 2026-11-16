@@ -89,7 +89,16 @@ check(gs.some(r => r.how === 'theme default'), 'text floor scan reads the theme 
 // luminance and contrast functions as ledger_readability_test.gd.
 {
   const cs = read('godot/ui/career/career_screen.gd');
-  const hx = n => { const m = new RegExp('const ' + n + ' := Color\\("#([0-9a-fA-F]{6})"\\)').exec(cs); return m ? m[1] : ''; };
+  // CR4 takes the orders-sheet colours from the shared theme. Resolve aliases so
+  // the source guard still measures the same live colours as the Godot check.
+  const theme = read('godot/ui/theme/glass_shell.gd');
+  const hx = (n, source = cs, depth = 0) => {
+    if (depth > 4) return '';
+    const m = new RegExp('const ' + n + ' := Color\\("#([0-9a-fA-F]{6})"\\)').exec(source);
+    if (m) return m[1];
+    const alias = new RegExp('const ' + n + ' := (GS\\.)?([A-Z_0-9]+)').exec(source);
+    return alias ? hx(alias[2], alias[1] ? theme : source, depth + 1) : '';
+  };
   const lin = v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
   const lum = h => { const [r, g, b] = [0, 2, 4].map(i => lin(parseInt(h.slice(i, i + 2), 16) / 255)); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
   const ratio = (a, b) => { const la = lum(a), lb = lum(b); return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05); };
