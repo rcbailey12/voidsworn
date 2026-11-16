@@ -39,3 +39,27 @@ KB1C-A, the lean of DeepSeek, Qwen and the blind leg (Flash kept A and C and sta
 KB1C-C, the Wide Glacis, is the pick of the KB1C variations, in the owner's words "the best by far". The council's lean for KB1C-A is recorded above and was not taken. KB1C-C's sheet terms (extreme-corner mouths in dark collars, the armoured lip, the beam guard) stand as written.
 
 The owner has not ruled whether this winner replaces the base design or stands alongside it as a variant; that decision remains open.
+
+## Owner's ruling (Nov 15, 2026, 18:46 CST, R273)
+
+On the first build sheet (corsair_KB1CC, issue 793), which held the beam guard at 0.61 of the length and read far narrower than
+this render: "Yes, I agree with your take on the bomber. Wider for sure." The beam guard (60 to 65 percent) is lifted for KB1C-C;
+the craft takes the render's width (about 1.2 of its length on the sheet). The other sheet terms stand (the mouths at the glacis's
+extreme corners in dark collars, the armoured lip). His note on the white plates in the same message became a rule for every
+Hullbreaker ship in the paint stack (R274, issue 726), not a change to this sheet.
+
+## Owner's ruling (Nov 15, 2026, 21:28 CST, R275)
+
+On the widened sheet (corsair_KB1CC_compare.jpg), sent back for one shape pass: "Yes, send it back for those." The top must be
+this render's sloped glacis, low at the bow lip and rising toward the stern bells, with the long diagonal ramp rails running up
+it (the widened sheet read as a flat slab). The plating must be the Hullbreaker patchwork: fewer, bigger, uneven plates of mixed
+size and angle, never small even squares in tidy rows (R240). The width (R273), the corner bomb tubes in dark collars, the side
+bays, the stern bells and the plate colours stay. On the sheet: the body's top is one ramp from the bow to an armoured lip
+against the stern housing (the vision slit in the lip's face), the five bells sit at the top of the ramp, and the plates are
+laid by the sheet's own patchwork plater (cut at random into mixed sizes, turned a few degrees, lapping one another).
+
+## Owner's ruling (Nov 16, 2026, 01:03 CST, R279)
+
+On the shape pass (corsair_KB1CC_compare.jpg at PR 830 head 6970a0bb6, the sloped glacis and the patchwork): "bomber on to
+paint". The KB1C-C shape is accepted as built; the craft goes to the Hullbreaker paint stack (with the R274 dark grey trophy
+patches) through the recipe (issue 853).

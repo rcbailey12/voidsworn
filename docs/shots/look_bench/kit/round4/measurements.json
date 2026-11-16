@@ -1,0 +1,68 @@
+{
+ "cost": {
+  "before": {
+   "frame_1080": 3.473,
+   "gpu_1080": 2.44199991226196,
+   "gpu_4k": 5.60599994659424
+  },
+  "after": {
+   "frame_1080": 3.414,
+   "gpu_1080": 2.46300005912781,
+   "gpu_4k": 5.61100006103516
+  }
+ },
+ "budget": {
+  "round3_frame_median_ms": 3.522,
+  "declared_frame_margin_ms": 0.8,
+  "frame_limit_ms": 4.322,
+  "gpu_delta_margin_ms": 0.3,
+  "binding_scene_limit_ms": 12.5
+ },
+ "coverage": {
+  "before": {
+   "views": 108,
+   "warnings": [],
+   "late_shader_names": [
+    "exterior_alpha frame 3114 97042.4 ms"
+   ]
+  },
+  "after": {
+   "views": 108,
+   "warnings": [],
+   "late_shader_names": [
+    "exterior_alpha frame 3114 75876.7 ms"
+   ]
+  }
+ },
+ "standing": {
+  "PASS": 56,
+  "KNOWN": 2
+ },
+ "load_all": "load all: 196 scripts, 11 scenes, 0 failed",
+ "round3_guard": "112 cases, 0 failures",
+ "destruction": "exit 0, full batch including GPU box and fleet probes",
+ "regression": {
+  "rows": 54,
+  "unchanged_rows": 49,
+  "unchanged_max_delta": 1,
+  "unchanged_peak_rms": 0.00014805605302472947,
+  "differences_over_one": []
+ },
+ "source_hashes": {
+  "fx\\fx.gd": "6b49b911e1503817a3e1703386c4dc1d3ebf79d4ee95be70fa98ddb4b614e7d6",
+  "fx\\fx_shaders.gd": "2639d853fbfae41a558b52dac0574d1cef5683f026f8096e9dd85f605f900eba",
+  "fx\\fx_weapons.gd": "885abe0f56e8b4642c9a23231c8e3beb8b1cb3fbb9a96c7e9947ab91a5b058ee",
+  "fx\\faction_looks.json": "17eacdecede1845daebc4055dc585dab14d81fb882a7a627aa5a8efc630d8efc"
+ },
+ "spawn_guard_diagnostics": {
+  "exit": 0,
+  "errors": [
+   "ERROR: The object does not have any 'meta' values with the key 'spawn_frame'.",
+   "ERROR: The object does not have any 'meta' values with the key 'spawn_frame'."
+  ],
+  "source": "original round-3 shader",
+  "test": "fx/test/death_spawn_check.gd:132",
+  "cause": "get_meta with a null default reports missing metadata on two pictures"
+ },
+ "scope": "ECLIPSE_ARC sheath only; filament and tendril expressions unchanged; all other FX sources unchanged"
+}

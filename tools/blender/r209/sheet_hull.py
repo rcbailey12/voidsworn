@@ -26,13 +26,12 @@ def load_ship():
 
 def build_geometry(hero=(), G=None):
     """build the sheet and apply the contract; returns (hull objects, [], parts, [], notes, []) as the other hull modules"""
-    import kit, contract
+    import kit, contract, variants
     ship = load_ship(); code = ship['sheet']
     bpy.ops.wm.read_factory_settings(use_empty=True)
     sp = importlib.util.spec_from_file_location(code, os.path.join(SHEETS, 'ships', code + '.py'))
     design = importlib.util.module_from_spec(sp); sp.loader.exec_module(design)
-    kit.use_kit(getattr(design, 'KIT', 'hullbreakers'))
-    K = kit.Kit(code, design.LENGTH); design.build(K); K.finish(); bpy.context.view_layer.update()
+    K = variants.build(design, ship.get('game_ship')); bpy.context.view_layer.update()
     rec = contract.to_recipe(K, ship); RECORD.clear(); RECORD.update(rec)
     sc = bpy.context.scene
     GUNS[:] = [tuple(g) for g in json.loads(sc['r209_guns'])]

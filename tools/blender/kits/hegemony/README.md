@@ -63,3 +63,17 @@ the nozzle glow, `hwin` windows; insides add `hcorr` (white corridors), `hrack` 
 module sizes, the module band at each `*_bandseam_*` joint, the blue line and the nozzle glow under the 0.8 threshold, the
 stencil decals). The direction is contrib/muse/design/paint_direction_2026_11/hegemony.md; the method is RECIPE.md, "The
 Hegemony stack". A sheet that has no `*_bandseam_*` object stops the stack: the direction puts a band at every module joint.
+
+## Squadron craft (issue 793: hegemony_HF1D, the fighter)
+
+A craft is about a twentieth of the Iron Mandate's length, so its parts take every size from their arguments (no fixed world
+sizes) and stay bold and simple (fine greeble reads as a shrunken capital ship). Ryan (R254): no canopy, no swept aero wings, no
+tail fins, nothing hung under a hull; drives are nozzle clusters inside armoured blocks.
+
+| Part | data.js | What it is |
+|---|---|---|
+| `gun(..., weapon='guns')` (`_cassette`) | `guns` T, Interceptor guns, 3 shots | three short containment barrels grouped tight in one machined cassette box (coil bands, a trim mouth, blue lenses deep in the bores), on a low flat housing over a flush ring sunk in a framed recess; it turns (arc T) and rests facing forward out of its frame |
+| `craft_drive` (`engine_bell(..., craft=True, w=, h=, cells=3)`) | | one wide rectangular slit split by upright guide vanes into a row of cells (the faction's flat row of nozzles), a thick machined lip, a blue lining tapering to a blue-white throat plate, an armoured pod with a trim band |
+
+Scale hooks with unchanged defaults (every capital sheet builds the same): `module_panels(unit=)` (the smallest face that takes
+panels and the panels' sink), `panel_slab(sink=)`, `slit(fr=, back=, pane=)`.
