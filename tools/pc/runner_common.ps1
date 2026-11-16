@@ -45,7 +45,7 @@ function Git([string[]]$words) {
   $ea = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
   # 'git.exe', never 'git': PowerShell finds this Git function before the program, so 'git' called itself until the
   # call depth overflowed (first live run, Nov 15). The test stub path never hit it.
-  $exe = 'git.exe'; if ($PSVersionTable.Platform -eq 'Unix') { $exe = (Get-Command git -CommandType Application -ErrorAction Stop).Source }
+  $exe = 'git.exe'; if ($PSVersionTable.Platform -eq 'Unix') { $exe = @(Get-Command git -CommandType Application -ErrorAction Stop)[0].Source }
   if ($test -and $env:PC_TEST_GIT) { $exe = $env:PC_TEST_GIT }
   $lines = @(& $exe @words 2>&1); $script:gitExit = $LASTEXITCODE
   $ErrorActionPreference = $ea
