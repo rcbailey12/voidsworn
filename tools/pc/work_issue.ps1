@@ -92,10 +92,10 @@ function Save-Patch($out, $pre) { & git diff --cached --binary "--output=$(Join-
 
 if ($mode -eq 'prep') {
   $n = $args[1]; $arm = $args[2]; $repo = $args[3]; $out = $args[4]; $godot = $args[5]
-  if ($env:PC_RUNNER_TEST -eq '1') {
-    $i = Get-Content -LiteralPath $env:PC_TEST_ISSUE -Raw | ConvertFrom-Json
-  } else {
-    $i = Invoke-RestMethod -UseBasicParsing -Headers @{ 'User-Agent' = 'voidsworn-workhorse' } -Uri "https://api.github.com/repos/rcbailey12/voidsworn/issues/$n"
+  $i = Get-Content -LiteralPath (Join-Path $out 'validated_issue.json') -Raw | ConvertFrom-Json
+  $state = Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
+  if ($i.number -ne $n -or $i.run -ne $state.run -or $state.instruction_run -ne $state.run -or $state.status -ne 'running') {
+    throw 'job preparation refused: no validated current instruction for this run; no agent started'
   }
   $bodyFile = Join-Path $out 'issue_body.txt'
   [IO.File]::WriteAllText($bodyFile, [string]$i.body, $utf8)
