@@ -111,6 +111,9 @@ func _case(c: Array) -> void:
 	if c.size() > 6:
 		for k in c[6]:
 			sc[k] = c[6][k]
+	# R78 Q18: the run 5 finale, one capture per stage of the dawn sweep (the dead-star case reads best).
+	if args.has("finale"):
+		sc["finale"] = true
 	var api = API.new()
 	var e: String = api.load_rules()
 	if e != "":
@@ -140,6 +143,12 @@ func _case(c: Array) -> void:
 	print("[world_shots] %s: scene build %.0f ms; %s" % [name, t_build, notes])
 	var cam = b.cam
 	var home := {"a": cam.a, "b": cam.b, "r": cam.r, "t": cam.t}
+	if args.has("finale"):
+		await _finale(b, name, home)
+		b.queue_free()
+		await get_tree().process_frame
+		await get_tree().process_frame
+		return
 	if args.has("motion"):
 		await _motion(b, name, home)
 		b.queue_free()
@@ -217,6 +226,30 @@ func _case(c: Array) -> void:
 	b.queue_free()
 	await get_tree().process_frame
 	await get_tree().process_frame
+
+
+# R78 Q18: one capture per stage of the finale dawn, from the default battle camera, then a wide shot at full dawn.
+func _finale(b, name: String, home: Dictionary) -> void:
+	var w = b.world
+	if w == null or not w.has_method("finale_stage"):
+		push_error("finale capture: the battle world has no finale_stage")
+		return
+	var cam = b.cam
+	cam.a = home["a"]
+	cam.b = home["b"]
+	cam.r = home["r"]
+	cam.t = home["t"]
+	cam.snap()
+	for i in 6:
+		w.finale_stage(i)
+		await _settle()
+		await _snap("%s_finale_%d_of_6" % [name, i + 1])
+	w.finale_stage(5)
+	cam.r = 640.0
+	cam.t = Vector3.ZERO
+	cam.snap()
+	await _settle()
+	await _snap(name + "_finale_wide")
 
 
 # the board look trial: every look on the same battle, a move hex two or three out hovered so the planned-move state shows

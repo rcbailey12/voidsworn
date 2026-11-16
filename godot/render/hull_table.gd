@@ -17,6 +17,9 @@ const AI_HULLS := {
 }
 # meshed side-on in the source (spike prow along z): +1 turns -z to the bow, -1 turns +z
 const AI_HULL_YAW := {"I14_23": 1, "I15_11": -1}
+# Height above the board after fitting, in drawn game units. R266: E14's upright ring must clear the board,
+# including the 0.25-unit idle bob. A model-space offset would be undone by ShipView's centring.
+const HULL_LIFT := {"D20_23": 5.15}
 # the six flagships have max-detail 8K versions (enginetest assets/hi); the barge is a shell plus a kit
 const HI_FILES := {"V1b_r_23": ["V1b_r_23.glb"], "H4_11": ["H4_11.glb"], "C19_51": ["C19_51_shell.glb", "C19_51_kit.glb"],
 	"B16_23": ["B16_23.glb"], "I8_37": ["I8_37.glb"], "D22_23": ["D22_23.glb"]}

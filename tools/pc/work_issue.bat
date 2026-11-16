@@ -15,7 +15,7 @@ rem Keys: DEEPSEEK_API_KEY and MOONSHOT_API_KEY, saved by work_setup.bat as user
 rem window that was open before setup (the watcher) still finds them.
 rem
 rem Runner 2 (issue 377, Opus, Nov 12 2026):
-rem  (a) An agent exit code that is not 0 (the time cap gives 124), or a merge the agent left unfinished, makes a PARTIAL run:
+rem  (a) An agent exit code that is not 0 (stall or ceiling gives 124), or a merge the agent left unfinished, makes a PARTIAL run:
 rem      it pushes to work/issue-<n>-<arm>-partial, which opens no pull request (tools/pc/issue-377-auto_pr.patch), and skips
 rem      the runner checks.
 rem  (b) After git add -A the guard step (work_issue.ps1 guard) refuses files over WORK_MAX_FILE_MB (default 8), anything
@@ -39,7 +39,7 @@ rem  (space) Before anything else the run refuses to start (one line in result.t
 rem      holding Downloads\voidsworn_test has less than min_free_gb free; the floor is a tuning value in
 rem      work217\runner_settings.txt, seeded at 60 when the runner creates the file.
 rem  (hashes) At start the runner compares the SHA-256 of its own tools folder's work_issue.bat, work_issue.ps1,
-rem      codex_issue.bat, codex_issue.ps1 and runner_common.ps1 against work217\runner_hashes.txt, which the Board
+rem      codex_issue.bat, codex_issue.ps1, runner_common.ps1, run_timeout.ps1 and tmo.bat against work217\runner_hashes.txt, which the Board
 rem      writes (runner_common.ps1 hashwrite) when it copies the files to the PC. A mismatch or a missing file is a
 rem      warning in result.txt, never a stop.
 rem Dry-run test knobs (ignored unless the third argument is dryrun): WORK_DRY_SCENARIO picks the stand-in model's script;
@@ -84,8 +84,8 @@ set "PATH=%USERPROFILE%\Downloads\voidsworn_test\node;C:\Program Files\nodejs;C:
 rem The same bundled Node 22 for the runner's own check step (a quoted full path survives the time-limit wrapper)
 set "NODE=node"
 if exist "%USERPROFILE%\Downloads\voidsworn_test\node\node.exe" set "NODE=%USERPROFILE%\Downloads\voidsworn_test\node\node.exe"
-rem WORK_CAP: the run's cap in seconds (default one hour; set it before calling for a bigger job)
-if not defined WORK_CAP set "WORK_CAP=3600"
+rem WORK_CAP: hard ceiling in seconds (default six hours). STALL_MIN defaults to 30 in the watchdog.
+if not defined WORK_CAP set "WORK_CAP=21600"
 rem CHECK_CAP and PARITY_CAP: each runner check gets its own time limit (#356). A check that hangs is killed and its
 rem timeout is written into the commit text instead of eating the run.
 if not defined CHECK_CAP set "CHECK_CAP=900"
@@ -242,6 +242,10 @@ if defined WORK_SHIPS call "%T%get_ship_files.bat" "%VT%\build\godot" "%R%" "%R%
 if /i "%MODE%"=="dryrun" (echo dry> "%O%\balance_before.txt") else (%PS% balance %ARM% "%O%\balance_before.txt" > nul)
 powershell -NoProfile -Command "(Get-Date).ToString('s')" > "%O%\time_start.txt"
 echo agent running %time% >> "%O%\result.txt"
+set "TMO_REPO=%R%"
+set "TMO_OUT=%O%"
+set "TMO_LOG=%O%\log.txt"
+set "TMO_ERR_LOG=%O%\stderr.txt"
 if "%PC_RUNNER_TEST%"=="1" goto :testagent
 if /i "%MODE%"=="dryrun" goto :agent_oc
 rem The kimicode arm uses Kimi Code CLI and the PC user's plan login, matching its preflight.
@@ -264,17 +268,23 @@ exit /b 0
 :kimiagent
 echo harness: Kimi Code CLI %KIMIEXE% -m %KMODEL% >> "%O%\result.txt"
 echo kimi-cli %KMODEL%> "%O%\model.txt"
-call "%T%tmo.bat" %WORK_CAP% "%KIMIEXE%" -m %KMODEL% --output-format stream-json -p "Read WORK_TASK.md in this folder and do exactly what it says. Do not commit and do not push." > "%O%\events.jsonl" 2> "%O%\stderr.txt"
+call "%T%tmo.bat" %WORK_CAP% "%KIMIEXE%" -m %KMODEL% --output-format stream-json -p "Read WORK_TASK.md in this folder and do exactly what it says. Do not commit and do not push." > "%O%\log.txt" 2> "%O%\stderr.txt"
 > "%O%\exit.txt" echo %ERRORLEVEL%
 goto :agent_end
 :testagent
-call "%WORK_TEST_AGENT%" > "%O%\events.jsonl" 2> "%O%\stderr.txt"
+call "%T%tmo.bat" %WORK_CAP% "%COMSPEC%" /d /s /c ""%WORK_TEST_AGENT%"" > "%O%\log.txt" 2> "%O%\stderr.txt"
 > "%O%\exit.txt" echo %ERRORLEVEL%
 goto :agent_end
 :agent_oc
-call "%T%tmo.bat" %WORK_CAP% "%OC%" run --auto --format json -m %MODEL% %VARIANT% --dir "%R%" "Read WORK_TASK.md in this folder and do exactly what it says. Do not commit and do not push." > "%O%\events.jsonl" 2> "%O%\stderr.txt"
+call "%T%tmo.bat" %WORK_CAP% "%OC%" run --auto --format json -m %MODEL% %VARIANT% --dir "%R%" "Read WORK_TASK.md in this folder and do exactly what it says. Do not commit and do not push." > "%O%\log.txt" 2> "%O%\stderr.txt"
 > "%O%\exit.txt" echo %ERRORLEVEL%
 :agent_end
+set "TMO_REPO="
+set "TMO_OUT="
+set "TMO_LOG="
+set "TMO_ERR_LOG="
+rem Keep the event reader's existing input as well as the watchdog's log.txt.
+copy /y "%O%\log.txt" "%O%\events.jsonl" >nul
 powershell -NoProfile -Command "(Get-Date).ToString('s')" > "%O%\time_agent_end.txt"
 set /p OCX=<"%O%\exit.txt"
 echo opencode exit %OCX% at %time% >> "%O%\result.txt"
@@ -282,7 +292,7 @@ rem (a) A run that did not end cleanly is PARTIAL: its own branch, no pull reque
 set "PB=%BR%"
 set "PARTIAL="
 if not "%OCX%"=="0" set "PARTIAL=agent exit %OCX%"
-if "%OCX%"=="124" set "PARTIAL=stopped at the time cap of %WORK_CAP% s"
+if "%OCX%"=="124" if exist "%O%\stop_reason.txt" set /p PARTIAL=<"%O%\stop_reason.txt"
 git rev-parse -q --verify MERGE_HEAD > nul 2>&1
 if not errorlevel 1 set "PARTIAL=the agent left a merge unfinished"
 if defined PARTIAL set "PB=%BR%-partial"
@@ -306,6 +316,7 @@ rem (b) The refuse list and the Deliver to warning (issue 377).
 if errorlevel 1 goto :guardfail
 git diff --cached --quiet
 if errorlevel 1 goto :haschange
+if defined PARTIAL goto :haschange
 findstr /c:"Resumed by merging" "%O%\resume.txt" >nul
 if errorlevel 1 goto :nochange
 :haschange

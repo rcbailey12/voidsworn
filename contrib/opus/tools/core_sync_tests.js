@@ -45,6 +45,8 @@ globalThis.coreSyncTest = () => {
       ok.equal(row.tier,tier); ok.equal(row.next,next?next.at:null); ok.equal(row.remaining,next?next.at-row.total:0);
       ok.equal(row.tierUp,before[row.id]<FAVOUR_TIERS[tier].at);
       ok.ok(html.includes(esc(PATRONS[row.id].n)) && html.includes(esc(FAVOUR_TIERS[row.tierUp||!next?tier:tier+1].n)),'the crossed tier, or the next one, on this debrief');
+      // issue 817, condition 5: the copy check below strips the markup, so assert the PATRONS colour on the core name span here
+      ok.ok(html.includes('<span style="color:'+PATRONS[row.id].col+'">'+esc(PATRONS[row.id].n)+'</span>'),'the core name carries its PATRONS colour');
       // issue 92 (Muse debrief design 4.6): '(n) of (threshold) to (next tier).' or 'Full sync, (n) protocols.'; a tier-up line first
       ok.ok(html.includes(next?row.total+' of '+next.at+' to '+esc(FAVOUR_TIERS[tier+1].n)+'.':'Full sync, '+row.total+' protocols.'));
       if(row.tierUp) ok.ok(text.includes(esc(PATRONS[row.id].n)+': crossed into '+esc(FAVOUR_TIERS[tier].n)+' this run at '+row.total+' protocols.'),'tier-up line');

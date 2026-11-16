@@ -30,3 +30,5 @@ Slim render note (Nov 15, 2026): the replacement render sets the cassette recess
 ## Owner's final ruling (Nov 15, 2026)
 
 HF1D with the slimmed prow is good to go. The Hegemony fighter direction is settled on this craft and this sheet, slim render included.
+
+The owner has not ruled whether this winner replaces the base design or stands alongside it as a variant; that decision remains open.
