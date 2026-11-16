@@ -1,0 +1,11 @@
+{
+  "pulls": [
+    { "number": 9, "head": { "ref": "codex/issue-9" }, "title": "Fix \\| path\u2014then retry" },
+    { "number": 12, "head": { "ref": "work/table|fix" }, "title": "Pipe | title\nsecond line" }
+  ],
+  "issues": [
+    { "number": 12, "title": "Exclude this PR", "labels": [], "pull_request": { "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/12" } },
+    { "number": 7, "title": "Unlabelled", "labels": [] },
+    { "number": 3, "title": "A | B\u2014C\r\nnext\tword", "labels": [ { "name": "codex" }, { "name": "blocked|waiting\u2014now" } ] }
+  ]
+}
