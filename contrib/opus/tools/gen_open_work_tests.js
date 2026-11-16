@@ -108,16 +108,21 @@ async function main() {
     assertPageVisits(calls, edges, 2); // Exactly full PR page requires a final empty page.
   });
 
-  await check('empty endpoints still produce both table headers', async () => {
-    const calls = [];
-    const output = await generateOpenWork({
-      env: { GH_TOKEN: 'test-token' }, now,
-      fetchImpl: async url => ({ ok: true, json: async () => replyPage(url, { pulls: [], issues: [] }, 100, calls) }),
-    });
-    assert.equal(output, renderOpenWork([], [], now));
+  await check('empty lists still render both table headers', async () => {
+    const output = renderOpenWork([], [], now);
     assert.equal(output.split('\n').filter(line => line.startsWith('|')).length, 4);
     assert.ok(output.includes('- codex: no open jobs.'));
     assert.equal(output.split('\n').filter(line => line === '- none').length, 2);
+  });
+
+  await check('no open issues from GitHub fails loudly (a token without issues: read, Nov 16)', async () => {
+    const calls = [];
+    // Without issues: read the issues list holds only pull requests; the page must not say every seat is empty.
+    const onlyPulls = [{ number: 12, title: 'A PR', labels: [], pull_request: {} }];
+    await assert.rejects(generateOpenWork({
+      env: { GH_TOKEN: 'test-token' }, now,
+      fetchImpl: async url => ({ ok: true, json: async () => replyPage(url, { pulls: [], issues: onlyPulls }, 100, calls) }),
+    }), /no open issues came back: the token cannot read issues/);
     assert.deepEqual(calls, ['pulls:1', 'issues:1', 'closed:1']);
   });
 
