@@ -352,7 +352,7 @@ func render() -> void:
 		"admiral": body = _wrap_page(_admiral())
 		"aspect": body = _wrap_page(_aspect())
 		"map": body = _map()
-		"fleet": body = _wrap_page(_fleet(pg["data"]))
+		"fleet": body = _fleet(pg["data"])
 		"shipyard": body = _wrap_page(_shipyard())
 		"battle":   # the test battle's panel; a dialog over the battle (the rewards) shows over the scene alone, as in the game shell
 			body = _battle_stub(pg["data"]) if (C.modal_d == null or C.modal_d["kind"] == "retreat") else Control.new()
@@ -391,6 +391,9 @@ func _teaching_screen() -> void:
 	teaching.open_screen(kind + "|" + sector + "|" + pos + "|" + modal, ids)
 
 func _focus_first() -> void:
+	if C.modal_d == null and C.page.get("kind") == "fleet":
+		get_viewport().gui_release_focus()
+		return
 	# the map page: the keys go to the chart (arrows, Enter, zoom), so no button wears a ring when the screen opens;
 	# with a slide-over open they go to its Close
 	if modal_box.get_child_count() == 0 and C.page.get("kind") == "map" and use_3d_map and map3d != null and map3d.visible:
@@ -434,7 +437,6 @@ func _wrap_page(inner: Control, maxw: float = 1440) -> Control:
 func _page_finish(kind: String) -> void:
 	var b: Button = null
 	match kind:
-		"fleet": b = fin("Done", "backShipyard" if C.page["data"].get("back") == "shipyard" else "backMap")
 		"shipyard": b = fin("Leave shipyard", "leaveYard")
 	if b == null: return
 	b.anchor_left = 1.0; b.anchor_top = 1.0; b.anchor_right = 1.0; b.anchor_bottom = 1.0
@@ -1243,34 +1245,15 @@ func _ship_card(s: Dictionary, refit: bool, extra: Array = []) -> Control:
 		for b in extra: add(ex, b)
 		v.add_child(HSeparator.new()); v.add_child(ex)
 	return cv[0]
+const FleetManifest = preload("res://ui/campaign/fleet_manifest.gd")
+var fleet_manifest: Control
+var fleet_state := {"uid": "", "mode": "", "held": {}}
+var _fleet_run = null
 func _fleet(d: Dictionary) -> Control:
-	var v = vbox(10)
-	var head = hbox(); head.add_child(gothic("Fleet")); head.add_child(spacer())
-	var st = _story()
-	if st != null and C.flagshipOf() != null:   # story layer: name your flagship
-		var rb = Button.new(); rb.text = "Rename flagship"; rb.focus_mode = Control.FOCUS_ALL; rb.pressed.connect(func(): st.open_rename()); head.add_child(rb)
-	v.add_child(head)   # Done is the finishing action, fixed at the bottom right of the screen (_page_finish)
-	v.add_child(lbl("Refits can be moved between ships freely. Mark upgrades and repairs happen at shipyards and drydocks.", 18, BONE2))
-	var R = C.RUN
-	var FA = View.faction_action(C)
-	if not FA.is_empty(): v.add_child(_action_line(FA))
-	if R["inventory"].size() > 0:
-		v.add_child(sec_head("In the hold"))
-		var inv = flow()
-		for i in range(R["inventory"].size()):
-			var m = R["inventory"][i]; var cv = card(false, 300)
-			cv[1].add_child(lbl(C.modName(m), 20, BONE, font_semi)); cv[1].add_child(lbl(C.MODULES[m]["d"], 18, BONE2))
-			var fr = flow(6); var any = false
-			for s in R["fleet"]:
-				var b = abtn("Fit to " + str(s["name"]), "equip", str(i) + ":" + s["uid"], false, true)
-				if b != null: fr.add_child(b); any = true
-			if not any: fr.add_child(lbl("No free compatible slot. Remove a refit first.", 17, BONE3))
-			cv[1].add_child(fr); inv.add_child(cv[0])
-		v.add_child(inv)
-	var cards = flow()
-	for s in R["fleet"]: cards.add_child(_ship_card(s, true))
-	v.add_child(cards)
-	return v
+	if not is_same(_fleet_run, C.RUN):
+		_fleet_run = C.RUN; fleet_state = {"uid": "", "mode": "", "held": {}}
+	fleet_manifest = FleetManifest.new(); fleet_manifest.setup(self, d, fleet_state)
+	return fleet_manifest
 func _shipyard() -> Control:
 	var v = vbox(10); var R = C.RUN; var n = C.page["data"]["node"]; var st = n["stock"]; var pm = C.priceMult(); var cp = C.fleetCP()
 	var head = hbox(); head.add_child(gothic("Shipyard")); head.add_child(spacer())
@@ -1986,6 +1969,8 @@ func _well_text(v: VBoxContainer) -> void:
 
 func _unhandled_input(e: InputEvent) -> void:
 	if C == null or not root.visible or not (e is InputEventKey) or not e.pressed or e.echo: return
+	if C.modal_d == null and C.page.get("kind") == "fleet" and is_instance_valid(fleet_manifest):
+		if fleet_manifest.handle_key(e): get_viewport().set_input_as_handled(); return
 	if C.modal_d == null and C.page.get("kind") == "map":   # the map: Esc shuts a slide-over, 1 to 9 pick a route, Enter flies it
 		if _overlay != "":
 			if e.keycode == KEY_ESCAPE: _close_overlay(); get_viewport().set_input_as_handled()
