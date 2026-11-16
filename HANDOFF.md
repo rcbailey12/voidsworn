@@ -21,7 +21,7 @@ included; Kimi is gone (R257); Muse does design, checks and audits when Ryan sta
 issues (general sweeps on issue 906), on merge issues, bugs and technical problems only, never design or taste, each comment
 marked "Artoo (technical review):" and naming the commit it read. The Board checks each finding against live main and replies.
 
-**Running now.** See [contrib/opus/OPEN_WORK.md](contrib/opus/OPEN_WORK.md) (live status, regenerated nightly from GitHub).
+**Running now.** See [contrib/opus/OPEN_WORK.md](contrib/opus/OPEN_WORK.md) (a timestamped nightly index of GitHub; check live GitHub before dispatch, and LOOP's newest LATEST line for what runs on the PC).
 
 **Next in the queue.** Everything else queued or running is in LOOP's newest LATEST line
 and contrib/opus/OPEN_WORK.md (generated from GitHub).
