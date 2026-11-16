@@ -20,7 +20,7 @@ otherwise (gpu_go.txt, read back). Every PC write is read back before it is reli
 (merged) and the brief edits on 41, 372, 507. Board pick: the dot as the nightly read-only librarian, a script for mechanical
 checks, Muse for audits; part of the issue 788 plan.
 
-**Running now and just landed.** Live status is in contrib/opus/LOOP.md (the newest LATEST line) and on GitHub (open PRs, issue labels); this file no longer restates it, so it cannot go stale (the dot's librarian check of Nov 15 found PRs 804 and 810 described here as pending after both merged).
+**Running now.** See [contrib/opus/OPEN_WORK.md](contrib/opus/OPEN_WORK.md) (live status, regenerated nightly from GitHub).
 
 **Next in the queue.** The issue 788 plan is decided (R270: the dot as nightly librarian, Muse at hand-overs, all seven
 steps; contrib/opus/reviews/repo_memory_788_synthesis.md). Everything else queued or running is in LOOP's newest LATEST line

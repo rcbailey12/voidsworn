@@ -20,7 +20,10 @@ Ryan, Nov 11 (R189, R190). A rule nobody can give a reason for does not go in th
 
 0.2 **A ruling is landed only when the same pull request edits this book or the working document for its area** (the
 playbook, RECIPE.md, AGENTS.md). Why: rulings filed in FINDINGS never reached the documents builders read (R209, R211). Set:
-Ryan, Nov 11 (R214). FINDINGS stays as the dated history; this book is the live source.
+Ryan, Nov 11 (R214). FINDINGS stays as the dated history; this book is the live source. Each FINDINGS row from R281 on
+says where it landed ("landed in <repo path>") or says "one-off job decision"; the memory lint
+(contrib/opus/tools/memory_lint_tests.js) fails a row that says neither, so a ruling cannot sit in FINDINGS alone (R291,
+issue 890).
 
 0.3 **Which document wins.** This book; then the playbook for the area; then AGENTS.md; then briefs. HANDOFF.md and LOOP.md
 win for current status only. Between two of Ryan's rulings the later one wins, and the entry here is edited, never only a new
@@ -212,6 +215,12 @@ had read and the Board's later edit was lost (R200). Set: Board, Nov 11.
 2.10 **Every outside finding is checked against the repo before anything is built on it; name the root cause, and check the
 arithmetic yourself.** Why: the Board told Ryan the flash counter was "13 times" too strict; by viewing angle it was 5 to 7
 (R193). Set: Ryan (R45, Oct 26); Board (R193). Ids: R45a, X22.
+Fix the cause for every future thread, not the one case: an audit or a fix names the system cause and changes the tool,
+workflow or document that let it happen (a tool or workflow before a new rule); one-off patches are listed and removed once
+a global fix covers them. Why: "I don't want to overly respond to one time issues with patch, I want to address the core
+underlying issue so it doesn't happen for future threads or work streams. Global fixes" (Ryan, Nov 16). Example: stale
+status lines in HANDOFF and LOOP were hand-fixed again and again until contrib/opus/OPEN_WORK.md was regenerated nightly
+from GitHub (issue 890). Set: Ryan (R291).
 
 2.11 **Outside audits follow docs/REVIEW_PROTOCOL.md**: a fresh session, symptoms not theories, file, line and a short exact
 quote per finding, OBSERVED or INFERRED. Findings come ranked, most important first; the job may set the count (reworded from
