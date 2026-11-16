@@ -9,6 +9,40 @@ static var _wreck_meshes: Array = []
 static var _wreck_mat: ShaderMaterial
 var visuals := {}   # hex key -> actual solid node, used by the coverage check
 
+# Review-only station footprint, read from the real view. No live asset swap here:
+# issue 373 requires the build sheet, scene gate and Ryan's look first. The main
+# seven-cell terrain station is separate from station-kind holes elsewhere.
+static func station_review_footprint(view: Dictionary, hw: Callable) -> Dictionary:
+	var terrain: Dictionary = view.get("terrain", {})
+	var cells: Array = []
+	var centre := Vector3.ZERO
+	var station = view.get("map", {}).get("station")
+	if not station is Dictionary:
+		return {}
+	var seed_key := "%d,%d" % [int(station.q), int(station.r)]
+	if terrain.get(seed_key) != "station":
+		return {}
+	var todo: Array = [seed_key]
+	var seen := {seed_key: true}
+	while not todo.is_empty():
+		var key: String = str(todo.pop_back())
+		var qr := key.split(",")
+		var q := int(qr[0]); var r := int(qr[1])
+		var p: Vector3 = hw.call(q, r)
+		cells.append({"q": q, "r": r, "x": p.x, "z": p.z})
+		centre += p
+		for d in [[1, 0], [0, 1], [-1, 1], [-1, 0], [0, -1], [1, -1]]:
+			var next_key := "%d,%d" % [q + int(d[0]), r + int(d[1])]
+			if terrain.get(next_key) == "station" and not seen.has(next_key):
+				seen[next_key] = true
+				todo.append(next_key)
+	centre /= float(cells.size())
+	# Read the cell spacing through the board's callable, never the old 14-unit prop.
+	var origin: Vector3 = hw.call(int(station.q), int(station.r))
+	var neighbour: Vector3 = hw.call(int(station.q) + 1, int(station.r))
+	var radius := origin.distance_to(neighbour) / sqrt(3.0)
+	return {"cells": cells, "centre": [centre.x, centre.y, centre.z], "hex_radius": radius}
+
 func build(view: Dictionary, hw: Callable) -> void:
 	var rng := RandomNumberGenerator.new()
 	# The board already has the world's seed and biome. Read them through the
