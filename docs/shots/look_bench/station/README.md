@@ -1,57 +1,59 @@
-# station_T2: review sheet, not an installed station
+# station_T2: run 4 towers and fine detail
 
-Refs #373. The first kind is the fleet station, T2 damaged. This is a partial delivery at the required build-sheet
-review step, not completion of issue 373. The live station is unchanged.
+Refs #373. Fleet station first. Ryan R284 asks for towers spread around the hub, varied heights, fine surface clutter,
+varied core drums and exactly one large observation window. Run 3 damage and uniform R247 scale are retained.
 
-Reproduce on the PC by double-clicking `tools/recipe/station_review.bat`. Its bake and layout scripts are kept under
-`tools/blender/kits/hegemony_station/`. All pictures, model files and measured reports are in
-`C:/Users/rcbai/Downloads/voidsworn_test/board/issue-373/shots/review3/`. Earlier review folders are preserved.
+Review camera 170 at native size first, then the concept comparisons and camera 60:
 
-Review the camera170 pictures at true pixel size first, then the low camera beside the real cruiser, then the
-orthographic views. Every image is labelled station_T2 and is 1280 x 720. These are CPU studio renders with the real
-game camera radius, beta and vertical FOV; they are not in-game captures. The cruiser is actual fitted ShipView
-geometry with neutral studio material. The four orthographic views share one scale and a 10-unit scale bar.
+- [Camera 170 beside a cruiser](game_compare170_cruiser.png).
+- [Accepted T2 beauty beside the build](T2_beauty_compare.png). The camera direction is matched by eye; the concept has no calibrated lens.
+- [Directly above beside the accepted plan](T2_plan_compare.png).
+- [Camera 60 close detail](game_detail60.png), a partial view at the actual game zoom radius.
+- [Low camera beside a cruiser](game_compare_low.png) and [open insides](sheet_inside.png).
 
-| Evidence | Filename in the review3 folder |
-|---|---|
-| Battle camera first | sheet_camera170.png |
-| Battle camera beside cruiser | sheet_compare170.png |
-| Low camera beside cruiser | sheet_compare_low.png |
-| True top, side, end and underside | sheet_top.png, sheet_side.png, sheet_front.png, sheet_underside.png |
-| Insides, skins and liners hidden | sheet_inside.png |
-| Overview | sheet_threequarter.png |
-| Feature table and departures | feature_table.md |
-| Counts, source hashes, fitted joints | manifest.json |
-| Real rules footprint and 30 fitted hulls | game_inputs.json |
-| Mesh footprint and sampled movement | fit.json, review_checks.json |
-| Cost, including insides and moving arm | cost.json |
-| Editable review scene and GLB | station_T2_sheet.blend, station_T2_review.glb |
+The five towers now have individual radial service bridges around the hub, five different heights and five different
+caps. Only the tallest leans five degrees. Nine core drums vary in radius and height, with stepped shoulders and dark
+glazing bands. One continuous curved observation pane is the only large lit window. Small vented plant pallets, pipes,
+pressure hatches, conduits, junction boxes, antennas and panel fittings cover core, ring and arms. Six short ring service
+fingers include three small cooling combs. No debris field is added. The three held pods and folded plate remain from run 3.
 
-The seven blocked cells span three hex columns. The measured draft is 51.59 units wide and 52.13 units tall, above
-the tallest loaded flagship at 51.13. It contains 325,900 triangles, including 55,092 inside triangles. The review
-GLB has 20 material primitives, 11 materials and two mesh nodes. These are reported geometry costs; actual GPU draws
-and frame time remain unmeasured. No triangle cap was imposed.
+The seized ring keeps its 40-degree gap over the bent stub, five sprung plates and one buckled spoke. Four side holes
+and the torn top expose real decks, frames and machinery. Four main radiator banks remain; radiator 4 on one surviving
+hinge swings +/-3 degrees over 240 seconds. It is the only moving part. Six scattered clusters retain 90 small blue
+emission markers, with five dull orange battery strips at torn frames. Preview materials only.
 
-The existing audit images map_03, map_04 and map_15 were opened before the draft. They confirm the low pale mass,
-weak height read and orange outlines described by finding P12. This draft establishes a readable silhouette and
-inventory for review. It still needs the production surface detail, damage shaping and paint treatment of the
-accepted T2 concept. The height fit is a provisional design departure and needs the Board's judgement.
+Reproduce with `tools/recipe/station_review.bat`, which calls the station kit's `review_run.bat`. Blender uses Cycles on
+CPU, eight threads, SHEET_DEVICE=CPU. The watchdog handles PC GPU claims for the Godot captures. The launcher runs the
+real-rules/ShipView probe, build and mesh measurements, export checks, both scale rejection cases, then captures twice
+and keeps the second set. Source and bake scripts are under `tools/blender/kits/hegemony_station/`.
 
-The generated feature table, manifest, cost and review check reports are copied beside this README for diff review.
-The source-hashed model and all pictures stay in the required PC shots folder. No new look-bench baseline is accepted.
+All linked reports, pictures, editable blend and review GLB are saved in
+`C:/Users/rcbai/Downloads/voidsworn_test/board_b/issue-373/shots/review7/`. Earlier reviews are preserved. Labelled pictures
+and measured reports are copied beside this README; no image is taller than 720 px. Godot pictures use real fitted hulls,
+the game camera and battle lighting in an isolated studio. They are not station-map battle or performance evidence.
 
-Validation: the double-click review launcher ran successfully on the PC, CPU only. All 21 review checks passed,
-including the actual GLB light geometry, animation duration, fitted joint metadata and triangle total. The real
-headless probe loaded 30 hulls with no placeholders. The standing command `node contrib/opus/tools/run_all_checks.js`
-ran under bundled Node 22 and returned 0: 48 PASS rows and two existing KNOWN rows (seven listed findings and twelve
-constant differences). The document check, whitespace check and no-em-dash scan passed. Scratch logs are in `%TEMP%`.
+Method and budget: [build sheet](feature_table.md), [source-hashed manifest](manifest.json), [mesh and motion report](fit.json),
+[export cost](cost.json), [review checks](review_checks.json), [scale rejection proof](range_selftest.json),
+[real inputs](game_inputs.json) and [camera framing](captures.json). The cost includes insides and the moving radiator.
+Triangles are reported without a cap. GPU draws and station-map frame time remain unmeasured.
 
-R129 impact sweep: the new footprint helper is called only by the review probe. The existing live build path has
-no behavior change. Saves, profiles, rule twins and UI paths are untouched; no oracle copy or table refresh is needed.
-The branch shape will run standing checks, Godot rules parity and Godot game checks on GitHub when the runner pushes.
-Those GitHub jobs have not run during this no-commit task, and are not claimed as PC validation here.
+Measured cost: 860,992 triangles, including 111,148 inside triangles; 16 GLB material primitives, 13 materials and 2 mesh nodes. Plan span 99.200 x 70.927 units, height 69.268; uniform scale 1.922853 on all axes. No axis stretch.
 
-RULEBOOK 5.1 requires the build sheet to pass before a production build. This sheet has no approval. Full static
-fit, production break paths and tear checks, the concept shape reference, the mask/trim paint bake, station support
-in the production recipe/export, and the station-map scene gate remain pending. The CPU-only job did not run a
-GPU capture or gate. After those pass, the outside check and Ryan's look are required before any live swap.
+Validation: all 38 station review checks pass, including actual exported glazing connectivity, tower separation, varied drum dimensions, five open shell apertures and 49 motion poses. Both deliberately altered GLB sizes are rejected. Two final Godot capture runs pass for all 11 combat classes, the low view and camera 60. Standing suite: exit 0, 57 PASS rows and two existing KNOWN rows. Godot scale check: exit 0, 53 objects checked with six existing KNOWN rows. The fresh rules probe loads 30 actual hulls. Documentation, whitespace and em-dash checks pass. The initial fresh-checkout import hit its 600-second watchdog at 81 percent; a resumed import completed with no script errors. Scratch logs stay in TEMP. GitHub CI awaits the runner.
+
+This checkout arrived with the first partial review. The completed run 3 station files were recovered from ecc91038
+before run 4 changes. Only task files were restored. PC hulls were copied from build/godot before importing, and all 252
+files matched the tracked manifest. The placeholder guard remains enabled for every real ShipView capture.
+
+The source plan fits the seven real blocked cells. Uniform R247 scale overhangs that old live footprint, so footprint
+integration remains open. Live board constants and scale_check KNOWN rows stay unchanged. Forty-nine sampled radiator
+poses allow its own hinge contact; they do not certify a continuous sweep or full static fit. The review GLB joins
+static modules and does not prove production tearing.
+
+R129 sweep: callers are confined to the station review kit and launcher. Saves, old profiles, rule twins and UI paths
+are untouched, so no oracle copy or table refresh is needed. The runner's eventual push will run standing checks,
+Godot rules parity and Godot game checks. No commit or push was made by this task.
+
+Review only. Production mask/trim paint, production recipe/export support, full fit and tear checks, live footprint
+integration, station-map scene gate, outside check and Ryan's look remain pending before installation. Ryan has not
+reviewed run 4 during this task. The separate debris job remains later.

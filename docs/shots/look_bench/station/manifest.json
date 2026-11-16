@@ -8,30 +8,68 @@
   "units": "world units; Blender Z up; glTF Y up",
   "bounds": {
     "min": [
-      -25.795000076293945,
-      -17.069190979003906,
-      -21.085634231567383
+      -49.599998474121094,
+      -31.556882858276367,
+      -26.919944763183594
     ],
     "max": [
-      25.795000076293945,
-      20.474483489990234,
-      31.043649673461914
+      49.599998474121094,
+      39.369834899902344,
+      42.347984313964844
     ],
     "size": [
-      51.59000015258789,
-      37.54367446899414,
-      52.1292839050293
+      99.19999694824219,
+      70.92671966552734,
+      69.26792907714844
     ]
   },
   "triangles": {
-    "exterior": 270808,
-    "inside": 55092,
-    "total": 325900
+    "exterior": 749844,
+    "inside": 111148,
+    "total": 860992
   },
-  "height_fit": {
-    "scale": 1.5061167160480835,
-    "source": "game_inputs.json max_ship_height",
-    "note": "Vertical sizing is provisional for Board review; the plan stays in the real blocked cells."
+  "uniform_fit": {
+    "scale": 1.9228532604496198,
+    "axes": [
+      1.9228532604496198,
+      1.9228532604496198,
+      1.9228532604496198
+    ],
+    "source_bounds": {
+      "min": [
+        -25.795000076293945,
+        -16.411487579345703,
+        -14.0
+      ],
+      "max": [
+        25.795000076293945,
+        20.474695205688477,
+        22.023513793945312
+      ],
+      "size": [
+        51.59000015258789,
+        36.88618469238281,
+        36.02351379394531
+      ]
+    },
+    "contract": {
+      "range": [
+        99.2,
+        297.6
+      ],
+      "table": "docs/playbooks/scale.md",
+      "table_sha256": "ef5e12a37e3cf9ad65cdd8e4223b482b7af3d1ee7c8fecae17092be23a68b7ef",
+      "live_source": "godot/render/board.gd",
+      "live_constants": {
+        "STATION_BASE_LEN": 22.0,
+        "STATION_PER_HEX": 4.0,
+        "STATION_BIG_LEN": 46.0,
+        "STATION_BIG_HEXES": 5.0
+      },
+      "live_one_hex": 26.0,
+      "live_large": 46.0
+    },
+    "note": "Uniform review scale. Live footprint integration pending; no swap."
   },
   "modules": [
     {
@@ -112,6 +150,15 @@
       "route": "hand-built",
       "kit": "hegemony_station",
       "purpose": "upper service deck",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "observation_window",
+      "kind": "viewport",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "one large lit curved observation pane in its pressure-frame reveal",
       "inside": "deck, frames, service racks",
       "parent": null
     },
@@ -296,7 +343,7 @@
       "parent": null
     },
     {
-      "id": "bearing_11",
+      "id": "bearing_10",
       "kind": "bearing_track",
       "route": "hand-built",
       "kit": "hegemony_station",
@@ -305,7 +352,7 @@
       "parent": null
     },
     {
-      "id": "habitat_6_slot_11",
+      "id": "habitat_6_slot_10",
       "kind": "habitat_arc",
       "route": "hand-built",
       "kit": "hegemony_station",
@@ -333,15 +380,6 @@
     },
     {
       "id": "spoke_3",
-      "kind": "spoke",
-      "route": "hand-built",
-      "kit": "hegemony_station",
-      "purpose": "bearing support and service corridor",
-      "inside": "deck, frames, service racks",
-      "parent": null
-    },
-    {
-      "id": "spoke_4",
       "kind": "spoke",
       "route": "hand-built",
       "kit": "hegemony_station",
@@ -386,20 +424,56 @@
       "parent": null
     },
     {
-      "id": "tethered_arm",
-      "kind": "docking_arm",
+      "id": "service_finger_1",
+      "kind": "service_finger",
       "route": "hand-built",
       "kit": "hegemony_station",
-      "purpose": "one passive moving section; no power",
+      "purpose": "short ring tender dock",
       "inside": "deck, frames, service racks",
-      "parent": "arm_4"
+      "parent": null
     },
     {
-      "id": "tethers",
-      "kind": "conduits",
+      "id": "service_finger_2",
+      "kind": "service_finger",
       "route": "hand-built",
       "kit": "hegemony_station",
-      "purpose": "torn flexible conduits joining the loose arm to its stub",
+      "purpose": "short ring maintenance dock and cooling comb",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "service_finger_3",
+      "kind": "service_finger",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "short ring tender dock",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "service_finger_4",
+      "kind": "service_finger",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "short ring maintenance dock and cooling comb",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "service_finger_5",
+      "kind": "service_finger",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "short ring maintenance dock and cooling comb",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "service_finger_6",
+      "kind": "service_finger",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "short ring tender dock",
       "inside": "deck, frames, service racks",
       "parent": null
     },
@@ -408,7 +482,7 @@
       "kind": "platform",
       "route": "hand-built",
       "kit": "hegemony_station",
-      "purpose": "connected tower bases; services and blue emergency cluster",
+      "purpose": "five separate radial tower bridges with core and ring connections",
       "inside": "deck, frames, service racks",
       "parent": null
     },
@@ -417,7 +491,7 @@
       "kind": "tower_cap",
       "route": "hand-built",
       "kit": "hegemony_station",
-      "purpose": "array; dead; whole machine on its module joint",
+      "purpose": "pad; dead; whole machine on its module joint",
       "inside": "deck, frames, service racks",
       "parent": null
     },
@@ -453,7 +527,7 @@
       "kind": "tower_cap",
       "route": "hand-built",
       "kit": "hegemony_station",
-      "purpose": "antenna; dead; whole machine on its module joint",
+      "purpose": "beacon; dead; whole machine on its module joint",
       "inside": "deck, frames, service racks",
       "parent": null
     },
@@ -462,8 +536,8 @@
       "kind": "radiator",
       "route": "hand-built",
       "kit": "hegemony_station",
-      "purpose": "cold grooved heat rejection bank, header and pump",
-      "inside": "header channels and manifold; no fire",
+      "purpose": "cold grooved bank and header",
+      "inside": "header channels and manifold",
       "parent": null
     },
     {
@@ -471,8 +545,8 @@
       "kind": "radiator",
       "route": "hand-built",
       "kit": "hegemony_station",
-      "purpose": "cold grooved heat rejection bank, header and pump",
-      "inside": "header channels and manifold; no fire",
+      "purpose": "cold grooved bank and header",
+      "inside": "header channels and manifold",
       "parent": null
     },
     {
@@ -480,8 +554,8 @@
       "kind": "radiator",
       "route": "hand-built",
       "kit": "hegemony_station",
-      "purpose": "cold grooved heat rejection bank, header and pump",
-      "inside": "header channels and manifold; no fire",
+      "purpose": "cold grooved bank and header",
+      "inside": "header channels and manifold",
       "parent": null
     },
     {
@@ -489,8 +563,8 @@
       "kind": "radiator",
       "route": "hand-built",
       "kit": "hegemony_station",
-      "purpose": "cold grooved heat rejection bank, header and pump",
-      "inside": "header channels and manifold; no fire",
+      "purpose": "cold grooved bank; single surviving hinge",
+      "inside": "header channels and manifold",
       "parent": null
     },
     {
@@ -498,7 +572,7 @@
       "kind": "cargo_pod",
       "route": "hand-built",
       "kit": "hegemony_station",
-      "purpose": "dead cargo pod; one clamped and one lodged",
+      "purpose": "held dead cargo: arm cradle",
       "inside": "deck, frames, service racks",
       "parent": null
     },
@@ -507,17 +581,26 @@
       "kind": "cargo_pod",
       "route": "hand-built",
       "kit": "hegemony_station",
-      "purpose": "dead cargo pod; one clamped and one lodged",
+      "purpose": "held dead cargo: arm cradle",
       "inside": "deck, frames, service racks",
       "parent": null
     },
     {
-      "id": "lodged_debris",
+      "id": "cargo_3",
+      "kind": "cargo_pod",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "held against ring outer face",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "folded_plate",
       "kind": "debris",
       "route": "hand-built",
       "kit": "hegemony_station",
-      "purpose": "twelve irregular torn structural remnants; no orbiting particles",
-      "inside": "torn frames",
+      "purpose": "one torn plate folded over arm walkway; two thick bent leaves",
+      "inside": "torn frame",
       "parent": null
     },
     {
@@ -525,39 +608,133 @@
       "kind": "lights",
       "route": "hand-built",
       "kit": "hegemony_station",
-      "purpose": "90 implant-blue lights in seven clusters; five static dull battery strips",
+      "purpose": "90 implant-blue markers in six scattered clusters; five dull battery strips",
       "inside": "module-local batteries",
       "parent": null
     }
   ],
   "joints": {
     "core": [
-      -4.668961819749058,
-      -0.9036700296288496,
-      2.861621760491359,
-      6.626913550611568,
-      10.392205340731778,
-      14.157497130851986,
-      17.922788920972195,
-      21.688080711092404
+      -7.4991277157535166,
+      -3.268850542764352,
+      2.595851901606988,
+      5.4801317922814174,
+      11.44097689967524,
+      15.28668342057448,
+      20.28610189774349,
+      23.458809777485364
     ],
     "ring": [
-      0.0,
-      0.5235987755982988,
-      1.0471975511965976,
-      1.5707963267948966,
-      2.0943951023931953,
-      2.6179938779914944,
-      3.141592653589793,
-      3.6651914291880923,
-      4.1887902047863905,
-      4.71238898038469,
-      5.235987755982989,
-      5.759586531581287
+      5.061454830783556,
+      5.569186976818269,
+      6.076919122852984,
+      6.584651268887698,
+      7.092383414922412,
+      7.600115560957127,
+      8.107847706991839,
+      8.615579853026555,
+      9.123311999061269,
+      9.63104414509598,
+      10.138776291130698,
+      10.64650843716541
     ],
     "arms": "module collars; torn root and collar stay separate",
     "towers": "base ring, mast module rings, whole cap",
     "radiators": "header manifolds"
+  },
+  "towers": [
+    {
+      "x": -11.8,
+      "y": 1.0,
+      "base": 2.0,
+      "height": 19.8,
+      "cap": "pad",
+      "lean": -0.08726646259971647
+    },
+    {
+      "x": 10.8,
+      "y": -5.3,
+      "base": 1.9,
+      "height": 9.2,
+      "cap": "dishes",
+      "lean": 0.0
+    },
+    {
+      "x": -5.0,
+      "y": 10.8,
+      "base": 1.9,
+      "height": 16.0,
+      "cap": "dome",
+      "lean": 0.0
+    },
+    {
+      "x": 8.6,
+      "y": 7.0,
+      "base": 1.9,
+      "height": 12.2,
+      "cap": "crane",
+      "lean": 0.0
+    },
+    {
+      "x": -5.4,
+      "y": -10.3,
+      "base": 1.9,
+      "height": 5.4,
+      "cap": "beacon",
+      "lean": 0.0
+    }
+  ],
+  "drums": [
+    {
+      "bottom": -5.6,
+      "height": 1.5999999999999999,
+      "radius": 4.85
+    },
+    {
+      "bottom": -3.8999999999999995,
+      "height": 2.1,
+      "radius": 5.45
+    },
+    {
+      "bottom": -1.6999999999999993,
+      "height": 2.9499999999999997,
+      "radius": 6.25
+    },
+    {
+      "bottom": 1.3500000000000005,
+      "height": 1.4,
+      "radius": 5.65
+    },
+    {
+      "bottom": 2.8500000000000005,
+      "height": 3.0,
+      "radius": 6.05
+    },
+    {
+      "bottom": 5.950000000000001,
+      "height": 1.9,
+      "radius": 5.45
+    },
+    {
+      "bottom": 7.950000000000001,
+      "height": 2.5,
+      "radius": 5.95
+    },
+    {
+      "bottom": 10.55,
+      "height": 1.5499999999999998,
+      "radius": 5.2
+    },
+    {
+      "bottom": 12.200000000000001,
+      "height": 3.0,
+      "radius": 5.65
+    }
+  ],
+  "viewport": {
+    "deck": 5,
+    "angle": -108,
+    "degrees": 54
   },
   "lights": {
     "blue": 90,
@@ -565,41 +742,51 @@
   },
   "motion": {
     "pivot": [
-      0.0,
-      -10.0,
-      -5.422019958496094
+      8.712480545043945,
+      -10.711153030395508,
+      -10.575693130493164
     ],
-    "length": 6.0,
     "period": 240.0,
     "swing_degrees": 3.0,
-    "swing_period": 40.0,
-    "clearance_radius": 4.0
+    "swing_period": 240.0,
+    "rest_degrees": 27,
+    "part": "radiator_4",
+    "axis": "local Y"
   },
   "changes": [
-    "The rules main station occupies seven cells (centre plus its six neighbours), not three cells. The plan is fitted inside their union; the full footprint is three hex columns wide.",
+    "Run 4 follows Ryan R284: five towers spread around individual hub bridges, five distinct heights, only the tallest leaning five degrees; no common slab or rear tower bunch.",
+    "Nine core drums now vary in height and radius, with stepped shoulders, dark glazing bands and sparse lit markers. The four torn holes and torn top stay open. One continuous large observation pane faces the damage-side camera.",
+    "Fine service pallets, small pipes, conduits, vents, hatches, antenna heads and panel fittings cover core, ring and arms. Six short ring service fingers include three small cooling combs; the four main radiators remain. No debris field added.",
+    "The rules main station occupies seven cells (centre plus its six neighbours), not three cells. The source plan fits inside their union; the source footprint is three hex columns wide. R247 uniform review scaling now exceeds that live union; footprint integration remains open before a swap.",
     "The secondary spokes are offset from the docking arms; each tower has a bridge to a spoke or the bearing deck.",
     "The drum stack rises above the ring, toward the accepted beauty silhouette. Nine drums share one service shaft; the station does not gain a second core.",
-    "The upper arm is angled 60 degrees into a blocked outer cell; a straight 90-degree arm would enter the unblocked notch between two cells. The real footprint outranks the concept plan.",
-    "The loose arm is the six-unit fallback from the pack. Its collar sweeps in an isolated corridor below the ring and outside the core, on two torn conduits. A complete swept-volume check is still required before approval.",
-    "The ring has six habitat modules over twelve bearing slots; slot 10 is open in the lower-right plan quadrant.",
+    "The upper arm is angled 60 degrees into a blocked outer cell; a straight 90-degree arm would enter the unblocked notch between two cells in the source plan. The larger review still needs a matching live footprint.",
+    "Run 3 replaces the old tethered arm animation with radiator 4 on one surviving hinge. The torn arm has no berth collar.",
+    "The ring gap is 40 degrees centred on the stub arm at 270 degrees, seized 30 degrees from its service angle. Eleven bearing sectors occupy the remaining 320 degrees; five joint plates are sprung open.",
+    "The concept inventory governs run 3: three spokes, one bent stub, three held pods, four side holes plus a torn top drum, five dead caps, four cold radiators and six scattered light clusters. The older pack called for four spokes and a tethered arm.",
     "Radiators use dense grooves and root manifolds, without a solar-cell grid.",
     "The design carries no weapons. lore_bible_r8.md describes the Reach and Hegemony but gives no station battery layout. The live defend objective has rules batteries; it is not the abandoned T2 visual target.",
     "The cause of the write-off stays off the player-facing sheet. The damage is permanent, not a running fire effect."
   ],
-  "orthographic_scale": 125.11028137207032,
+  "orthographic_scale": 170.22412719726563,
   "method": "hand-built station kit; schematic AO material; production mask/trim bake pending sheet approval",
   "scripts": {
-    "design.py": "e20770dfda3879129fd5a2c1ffacaf273a07fde230b6d6a80a660b6541a5b5da",
-    "parts.py": "11731149d999bfe6ff4bc5826e815710d718af73a03836bf860477e09609934e",
-    "stack.py": "759c45de409956050d17208dc0056d9a953f1705e825898652485392e5529741",
-    "review.py": "88425da32ae392c0b6a65117baf4fbcb1a46a83d04b55ff86bd2ad8d9e1a611a",
-    "inspect.gd": "2c1f470b2e44547f732a05c9a110db39136dff0863c8a3e2015358dc402fc89e",
-    "check.py": "0ae574e10bf5d99ec258729bd5e5f253e5098aaffef870bfbad0c7c8e7c96634",
-    "sheets.py": "ea01358ba71aea4cdeb3c3eb3e2d8afc555280fd473625b8f26439333e36c82b"
+    "design.py": "26979ddbc892808058e08f32488da435d720f35d6cdd0f0558c7a2a7f15e53ad",
+    "parts.py": "666fc397b94c9ed6ff25f6c3167482da341ed744c8e481d96c07c10cb2824025",
+    "stack.py": "0095346260e6d3cc4e1c8366b4f80f033dc58bb3e4b6ab31e3d514fb4c12d85b",
+    "review.py": "81b3102aed7f95c951c79da9ad1bbbb4a7b70b3ed28ec7c94fc3bf97d80dc183",
+    "inspect.gd": "4cf8d13fb6f3e6dd3739c0c31ab320dd349e7ec60df5d6fcf96aa5ee3853726c",
+    "check.py": "18879f75f67979f6a6e99151b2d94c1f053f92b33168bb0c82fa54103f8f62c5",
+    "sheets.py": "ceed8f5fc62b35c7b0f2516da9038a6280a76a75c03e36dd40fa05e1a986fdd4",
+    "scale.py": "0bb6b68ac437faa8862835d347ba5e8cb155892ce6cef5ba0386451f953a1a92",
+    "capture.gd": "e2a929ea1efbe310465f0eebefd473a6b0c42062361e793ea2bc3ffa77d438d2",
+    "range_selftest.py": "90dd42d908c2cf8ed5dd7ec7da322218b17382922533fa01d49e4362d79602f2",
+    "review_run.bat": "510263d7a581ddc783c0f7529c70f4df541a8098459621049876585637ffee70"
   },
   "pending": [
     "Board sheet review",
-    "AI shape reference (CPU-only job)",
+    "live footprint integration at R247 scale",
+    "AI shape reference",
     "production geometry-mask/trim paint bake",
     "full fit and swept-volume audit",
     "station-map 1080p and 4K scene gate",

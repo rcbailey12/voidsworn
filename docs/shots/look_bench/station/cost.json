@@ -1,9 +1,9 @@
 {
-  "triangles": 325900,
-  "primitives": 20,
-  "materials": 11,
+  "triangles": 860992,
+  "primitives": 16,
+  "materials": 13,
   "mesh_nodes": 2,
-  "glb_bytes": 17826080,
-  "frame_gate": "NOT RUN; requires a GPU window and a station-map game scene",
+  "glb_bytes": 51079300,
+  "frame_gate": "NOT RUN; production station-map gate remains outside this review-only run",
   "draw_calls": "NOT MEASURED; GLB primitives are potential surface draws, not GPU draw measurements"
 }

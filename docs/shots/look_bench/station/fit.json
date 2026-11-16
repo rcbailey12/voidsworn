@@ -1,0 +1,1550 @@
+{
+  "modules": {
+    "core_01": {
+      "vertices": 24088,
+      "inside_triangles": 8068,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -10.224771499633789,
+        -10.542903900146484,
+        -11.085729598999023
+      ],
+      "max": [
+        10.521023750305176,
+        10.224771499633789,
+        -7.345299243927002
+      ]
+    },
+    "core_02": {
+      "vertices": 24088,
+      "inside_triangles": 8068,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -11.371623039245605,
+        -11.371623039245605,
+        -7.653436183929443
+      ],
+      "max": [
+        11.871499061584473,
+        11.640421867370605,
+        -3.1150221824645996
+      ]
+    },
+    "core_03": {
+      "vertices": 22844,
+      "inside_triangles": 7792,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -12.916766166687012,
+        -13.236380577087402,
+        -3.4034502506256104
+      ],
+      "max": [
+        13.130633354187012,
+        12.916766166687012,
+        2.7496800422668457
+      ]
+    },
+    "core_04": {
+      "vertices": 24088,
+      "inside_triangles": 8068,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -11.75588607788086,
+        -11.75588607788086,
+        2.21272349357605
+      ],
+      "max": [
+        11.908751487731934,
+        11.75588607788086,
+        5.633960247039795
+      ]
+    },
+    "core_05": {
+      "vertices": 22332,
+      "inside_triangles": 7708,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -12.532196044921875,
+        -12.532196044921875,
+        5.345531940460205
+      ],
+      "max": [
+        12.607684135437012,
+        12.55435848236084,
+        11.594805717468262
+      ]
+    },
+    "core_06": {
+      "vertices": 22984,
+      "inside_triangles": 7636,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -11.371623039245605,
+        -11.371623039245605,
+        11.22128963470459
+      ],
+      "max": [
+        11.837228775024414,
+        11.371623039245605,
+        15.440510749816895
+      ]
+    },
+    "core_07": {
+      "vertices": 22780,
+      "inside_triangles": 7768,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -12.339910507202148,
+        -12.619086265563965,
+        15.152083396911621
+      ],
+      "max": [
+        12.885649681091309,
+        12.339910507202148,
+        20.439929962158203
+      ]
+    },
+    "core_08": {
+      "vertices": 22480,
+      "inside_triangles": 7660,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -11.264494895935059,
+        -10.891294479370117,
+        19.952007293701172
+      ],
+      "max": [
+        11.079148292541504,
+        10.891294479370117,
+        23.61263656616211
+      ]
+    },
+    "core_09": {
+      "vertices": 21272,
+      "inside_triangles": 7528,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -11.763053894042969,
+        -12.1659517288208,
+        23.324209213256836
+      ],
+      "max": [
+        12.206291198730469,
+        11.763053894042969,
+        31.795650482177734
+      ]
+    },
+    "observation_window": {
+      "vertices": 332,
+      "inside_triangles": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -7.932142734527588,
+        -10.844304084777832,
+        12.31266975402832
+      ],
+      "max": [
+        2.1255226135253906,
+        -6.831619739532471,
+        14.831607818603516
+      ]
+    },
+    "bearing_00": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        9.108818054199219,
+        -30.763877868652344,
+        -2.4880528450012207
+      ],
+      "max": [
+        24.92949867248535,
+        -17.987802505493164,
+        4.262969017028809
+      ]
+    },
+    "habitat_1_slot_00": {
+      "vertices": 8348,
+      "inside_triangles": 396,
+      "outside_vertices": 8348,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        9.039237022399902,
+        -31.556882858276367,
+        -2.103482484817505
+      ],
+      "max": [
+        24.92949867248535,
+        -17.85039710998535,
+        5.180341720581055
+      ]
+    },
+    "bearing_01": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        21.142093658447266,
+        -21.10843276977539,
+        -2.115138530731201
+      ],
+      "max": [
+        31.91295051574707,
+        -5.995718955993652,
+        3.9610774517059326
+      ]
+    },
+    "habitat_1_slot_01": {
+      "vertices": 8240,
+      "inside_triangles": 396,
+      "outside_vertices": 8240,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        20.514863967895508,
+        -21.60593032836914,
+        -2.103482484817505
+      ],
+      "max": [
+        32.28379440307617,
+        -5.383751392364502,
+        4.996971607208252
+      ]
+    },
+    "bearing_02": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        26.53712272644043,
+        -6.310403823852539,
+        -2.115138530731201
+      ],
+      "max": [
+        32.68849563598633,
+        9.330621719360352,
+        3.9610774517059326
+      ]
+    },
+    "habitat_2_slot_02": {
+      "vertices": 8288,
+      "inside_triangles": 396,
+      "outside_vertices": 8288,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        26.181528091430664,
+        -7.091298580169678,
+        -2.103482484817505
+      ],
+      "max": [
+        34.41303634643555,
+        10.035701751708984,
+        5.210574626922607
+      ]
+    },
+    "bearing_03": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        19.346750259399414,
+        8.538138389587402,
+        -2.115138530731201
+      ],
+      "max": [
+        31.095609664916992,
+        23.385395050048828,
+        3.9610774517059326
+      ]
+    },
+    "habitat_2_slot_03": {
+      "vertices": 8240,
+      "inside_triangles": 396,
+      "outside_vertices": 8240,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        18.82415199279785,
+        7.794333457946777,
+        -2.103482484817505
+      ],
+      "max": [
+        31.742273330688477,
+        23.89520263671875,
+        5.442171096801758
+      ]
+    },
+    "bearing_04": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        7.275169372558594,
+        20.267377853393555,
+        -2.115138530731201
+      ],
+      "max": [
+        22.272140502929688,
+        31.54000473022461,
+        3.9610774517059326
+      ]
+    },
+    "habitat_3_slot_04": {
+      "vertices": 8340,
+      "inside_triangles": 396,
+      "outside_vertices": 8340,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        6.670009613037109,
+        19.621829986572266,
+        -2.103482484817505
+      ],
+      "max": [
+        22.735197067260742,
+        32.016937255859375,
+        5.495213985443115
+      ]
+    },
+    "bearing_05": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -7.829380512237549,
+        26.883132934570312,
+        -2.115138530731201
+      ],
+      "max": [
+        7.829380512237549,
+        32.68850326538086,
+        3.9610774517059326
+      ]
+    },
+    "habitat_3_slot_05": {
+      "vertices": 8248,
+      "inside_triangles": 396,
+      "outside_vertices": 8248,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -8.544068336486816,
+        26.498714447021484,
+        -2.103482484817505
+      ],
+      "max": [
+        8.791401863098145,
+        34.31760787963867,
+        5.518765449523926
+      ]
+    },
+    "bearing_06": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -22.272140502929688,
+        20.267377853393555,
+        -2.115138530731201
+      ],
+      "max": [
+        -7.275169372558594,
+        31.54000473022461,
+        3.9610774517059326
+      ]
+    },
+    "habitat_4_slot_06": {
+      "vertices": 8280,
+      "inside_triangles": 396,
+      "outside_vertices": 8280,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -22.806774139404297,
+        19.75526237487793,
+        -2.103482484817505
+      ],
+      "max": [
+        -6.531773090362549,
+        32.4474983215332,
+        4.996971607208252
+      ]
+    },
+    "bearing_07": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -31.095609664916992,
+        8.538138389587402,
+        -2.115138530731201
+      ],
+      "max": [
+        -19.346750259399414,
+        23.385395050048828,
+        3.9610774517059326
+      ]
+    },
+    "habitat_4_slot_07": {
+      "vertices": 8240,
+      "inside_triangles": 396,
+      "outside_vertices": 8240,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -31.315303802490234,
+        7.941157817840576,
+        -2.103482484817505
+      ],
+      "max": [
+        -18.684349060058594,
+        23.81296157836914,
+        5.293895721435547
+      ]
+    },
+    "bearing_08": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -32.68849563598633,
+        -6.310403823852539,
+        -2.115138530731201
+      ],
+      "max": [
+        -26.53712272644043,
+        9.330621719360352,
+        3.9610774517059326
+      ]
+    },
+    "habitat_5_slot_08": {
+      "vertices": 8348,
+      "inside_triangles": 396,
+      "outside_vertices": 8348,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -34.27796173095703,
+        -7.033079624176025,
+        -2.103482484817505
+      ],
+      "max": [
+        -26.12283706665039,
+        10.071832656860352,
+        5.210574626922607
+      ]
+    },
+    "bearing_09": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -31.91295051574707,
+        -21.10843276977539,
+        -2.115138530731201
+      ],
+      "max": [
+        -21.142093658447266,
+        -5.995718955993652,
+        3.9610774517059326
+      ]
+    },
+    "habitat_5_slot_09": {
+      "vertices": 8240,
+      "inside_triangles": 396,
+      "outside_vertices": 8240,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -32.6533203125,
+        -21.66668128967285,
+        -2.103482484817505
+      ],
+      "max": [
+        -20.641620635986328,
+        -5.254415988922119,
+        5.210574626922607
+      ]
+    },
+    "bearing_10": {
+      "vertices": 88,
+      "inside_triangles": 0,
+      "outside_vertices": 88,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -24.794099807739258,
+        -30.83375358581543,
+        -2.4880528450012207
+      ],
+      "max": [
+        -9.290627479553223,
+        -17.840824127197266,
+        4.262969017028809
+      ]
+    },
+    "habitat_6_slot_10": {
+      "vertices": 8288,
+      "inside_triangles": 396,
+      "outside_vertices": 8288,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -25.15046501159668,
+        -30.83375358581543,
+        -2.103482484817505
+      ],
+      "max": [
+        -9.194315910339355,
+        -17.704540252685547,
+        5.308944225311279
+      ]
+    },
+    "spoke_1": {
+      "vertices": 3412,
+      "inside_triangles": 192,
+      "outside_vertices": 1326,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        9.132843971252441,
+        5.872264385223389,
+        -1.1971887350082397
+      ],
+      "max": [
+        23.317947387695312,
+        16.802833557128906,
+        1.6095824241638184
+      ]
+    },
+    "spoke_2": {
+      "vertices": 3412,
+      "inside_triangles": 192,
+      "outside_vertices": 1294,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -23.317951202392578,
+        5.872261047363281,
+        -1.1971886157989502
+      ],
+      "max": [
+        -9.13284683227539,
+        16.802827835083008,
+        1.6095824241638184
+      ]
+    },
+    "spoke_3": {
+      "vertices": 352,
+      "inside_triangles": 88,
+      "outside_vertices": 40,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        5.067273139953613,
+        -24.565824508666992,
+        -4.177750110626221
+      ],
+      "max": [
+        14.673477172851562,
+        -9.624463081359863,
+        0.7166144251823425
+      ]
+    },
+    "arm_1": {
+      "vertices": 17448,
+      "inside_triangles": 1004,
+      "outside_vertices": 10684,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        9.104710578918457,
+        -4.84144401550293,
+        0.13459965586662292
+      ],
+      "max": [
+        49.599998474121094,
+        4.84144401550293,
+        7.5568132400512695
+      ]
+    },
+    "arm_2": {
+      "vertices": 17448,
+      "inside_triangles": 1004,
+      "outside_vertices": 9608,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        2.9829156398773193,
+        6.999930381774902,
+        -7.319340705871582
+      ],
+      "max": [
+        23.89430809020996,
+        39.369834899902344,
+        -2.5884909629821777
+      ]
+    },
+    "arm_3": {
+      "vertices": 17448,
+      "inside_triangles": 1004,
+      "outside_vertices": 10760,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -49.599998474121094,
+        -6.402797222137451,
+        -1.5704491138458252
+      ],
+      "max": [
+        -9.104710578918457,
+        6.402804374694824,
+        9.264691352844238
+      ]
+    },
+    "arm_4": {
+      "vertices": 6380,
+      "inside_triangles": 468,
+      "outside_vertices": 120,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -3.5679855346679688,
+        -27.69500732421875,
+        -8.393844604492188
+      ],
+      "max": [
+        5.466176986694336,
+        -9.104710578918457,
+        -2.6708433628082275
+      ]
+    },
+    "service_finger_1": {
+      "vertices": 2028,
+      "inside_triangles": 120,
+      "outside_vertices": 2028,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        29.0548038482666,
+        11.31200122833252,
+        0.16130708158016205
+      ],
+      "max": [
+        35.8404426574707,
+        15.254022598266602,
+        2.0291292667388916
+      ]
+    },
+    "service_finger_2": {
+      "vertices": 2136,
+      "inside_triangles": 120,
+      "outside_vertices": 2136,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -15.739354133605957,
+        29.05480194091797,
+        -1.826710820198059
+      ],
+      "max": [
+        -10.948270797729492,
+        36.5535774230957,
+        2.0291292667388916
+      ]
+    },
+    "service_finger_3": {
+      "vertices": 2008,
+      "inside_triangles": 120,
+      "outside_vertices": 2008,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -35.48387145996094,
+        11.312005043029785,
+        0.16130699217319489
+      ],
+      "max": [
+        -29.05480194091797,
+        15.109963417053223,
+        2.0291292667388916
+      ]
+    },
+    "service_finger_4": {
+      "vertices": 2136,
+      "inside_triangles": 120,
+      "outside_vertices": 2136,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -35.8404426574707,
+        -15.451227188110352,
+        -1.826710820198059
+      ],
+      "max": [
+        -29.05480194091797,
+        -10.948269844055176,
+        2.0291292667388916
+      ]
+    },
+    "service_finger_5": {
+      "vertices": 2156,
+      "inside_triangles": 120,
+      "outside_vertices": 2156,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -23.853477478027344,
+        -30.1418399810791,
+        -1.826710820198059
+      ],
+      "max": [
+        -19.07530975341797,
+        -24.577831268310547,
+        2.0291292667388916
+      ]
+    },
+    "service_finger_6": {
+      "vertices": 2008,
+      "inside_triangles": 120,
+      "outside_vertices": 2008,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        28.378629684448242,
+        -17.230575561523438,
+        0.16130712628364563
+      ],
+      "max": [
+        35.436546325683594,
+        -12.8711576461792,
+        2.0291292667388916
+      ]
+    },
+    "equipment_deck": {
+      "vertices": 9280,
+      "inside_triangles": 0,
+      "outside_vertices": 1320,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -27.724145889282227,
+        -25.25979232788086,
+        1.458695888519287
+      ],
+      "max": [
+        25.556121826171875,
+        25.793397903442383,
+        3.8871800899505615
+      ]
+    },
+    "tower_1": {
+      "vertices": 19028,
+      "inside_triangles": 6320,
+      "outside_vertices": 3160,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -29.314592361450195,
+        -1.057569146156311,
+        2.5839009284973145
+      ],
+      "max": [
+        -20.190038681030273,
+        4.903275489807129,
+        42.347984313964844
+      ]
+    },
+    "tower_2": {
+      "vertices": 20500,
+      "inside_triangles": 6320,
+      "outside_vertices": 20438,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        17.344135284423828,
+        -12.30626106262207,
+        2.5958516597747803
+      ],
+      "max": [
+        24.189495086669922,
+        -8.075984001159668,
+        23.359922409057617
+      ]
+    },
+    "tower_3": {
+      "vertices": 20616,
+      "inside_triangles": 6320,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -11.72940444946289,
+        18.651676177978516,
+        2.5958516597747803
+      ],
+      "max": [
+        -7.4991278648376465,
+        22.881954193115234,
+        38.26477813720703
+      ]
+    },
+    "tower_4": {
+      "vertices": 19796,
+      "inside_triangles": 6320,
+      "outside_vertices": 6276,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        14.42140007019043,
+        11.344834327697754,
+        2.5958516597747803
+      ],
+      "max": [
+        22.7437744140625,
+        15.575112342834473,
+        31.059829711914062
+      ]
+    },
+    "tower_5": {
+      "vertices": 20180,
+      "inside_triangles": 6320,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -12.690832138061523,
+        -22.112812042236328,
+        2.5958516597747803
+      ],
+      "max": [
+        -8.079229354858398,
+        -17.49796485900879,
+        17.113393783569336
+      ]
+    },
+    "radiator_1": {
+      "vertices": 464,
+      "inside_triangles": 56,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        8.480741500854492,
+        5.681365966796875,
+        -26.919944763183594
+      ],
+      "max": [
+        12.732463836669922,
+        10.892208099365234,
+        -8.501535415649414
+      ]
+    },
+    "radiator_2": {
+      "vertices": 464,
+      "inside_triangles": 56,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -12.732465744018555,
+        5.6813645362854,
+        -26.919944763183594
+      ],
+      "max": [
+        -8.480741500854492,
+        10.892207145690918,
+        -8.501535415649414
+      ]
+    },
+    "radiator_3": {
+      "vertices": 464,
+      "inside_triangles": 56,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -12.732468605041504,
+        -10.892203330993652,
+        -26.919944763183594
+      ],
+      "max": [
+        -8.480746269226074,
+        -5.68135929107666,
+        -8.501535415649414
+      ]
+    },
+    "radiator_4": {
+      "vertices": 480,
+      "inside_triangles": 56,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        5.051992416381836,
+        -11.279853820800781,
+        -24.85805892944336
+      ],
+      "max": [
+        13.040021896362305,
+        1.050938606262207,
+        -8.501535415649414
+      ]
+    },
+    "cargo_1": {
+      "vertices": 160,
+      "inside_triangles": 0,
+      "outside_vertices": 160,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        31.668357849121094,
+        1.49470853805542,
+        3.6387295722961426
+      ],
+      "max": [
+        37.554359436035156,
+        7.264974594116211,
+        7.902926921844482
+      ]
+    },
+    "cargo_2": {
+      "vertices": 160,
+      "inside_triangles": 0,
+      "outside_vertices": 160,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        36.01317596435547,
+        2.4561352729797363,
+        4.0233001708984375
+      ],
+      "max": [
+        42.05466079711914,
+        8.433141708374023,
+        8.287497520446777
+      ]
+    },
+    "cargo_3": {
+      "vertices": 160,
+      "inside_triangles": 0,
+      "outside_vertices": 160,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -36.35374450683594,
+        -9.465555191040039,
+        -0.5915474891662598
+      ],
+      "max": [
+        -31.3306884765625,
+        -2.69899320602417,
+        3.67264986038208
+      ]
+    },
+    "folded_plate": {
+      "vertices": 16,
+      "inside_triangles": 0,
+      "outside_vertices": 8,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -27.217592239379883,
+        -7.2136688232421875,
+        6.638308525085449
+      ],
+      "max": [
+        -20.85373878479004,
+        -1.052977204322815,
+        9.632608413696289
+      ]
+    },
+    "emergency_lights": {
+      "vertices": 760,
+      "inside_triangles": 0,
+      "outside_vertices": 496,
+      "source_footprint_outside_vertices": 0,
+      "min": [
+        -31.02338981628418,
+        -28.95816993713379,
+        -4.829619884490967
+      ],
+      "max": [
+        29.056720733642578,
+        32.986629486083984,
+        14.481813430786133
+      ]
+    }
+  },
+  "motion_samples": [
+    {
+      "seconds": 0,
+      "tracked_vertex": [
+        5.138279914855957,
+        -3.405655860900879,
+        -24.697715759277344
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 5,
+      "tracked_vertex": [
+        5.041849613189697,
+        -3.405655860900879,
+        -24.672958374023438
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 10,
+      "tracked_vertex": [
+        4.947236061096191,
+        -3.405655860900879,
+        -24.647981643676758
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 15,
+      "tracked_vertex": [
+        4.856049537658691,
+        -3.405655860900879,
+        -24.623266220092773
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 20,
+      "tracked_vertex": [
+        4.769833087921143,
+        -3.405655860900879,
+        -24.599313735961914
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 25,
+      "tracked_vertex": [
+        4.690036773681641,
+        -3.405655860900879,
+        -24.57663345336914
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 30,
+      "tracked_vertex": [
+        4.61799430847168,
+        -3.405655860900879,
+        -24.555736541748047
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 35,
+      "tracked_vertex": [
+        4.554904937744141,
+        -3.405655860900879,
+        -24.53710174560547
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 40,
+      "tracked_vertex": [
+        4.501810073852539,
+        -3.405655860900879,
+        -24.521183013916016
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 45,
+      "tracked_vertex": [
+        4.459585189819336,
+        -3.405655860900879,
+        -24.50836181640625
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 50,
+      "tracked_vertex": [
+        4.428922653198242,
+        -3.405655860900879,
+        -24.498966217041016
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 55,
+      "tracked_vertex": [
+        4.410322189331055,
+        -3.405655860900879,
+        -24.49323081970215
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 60,
+      "tracked_vertex": [
+        4.404088497161865,
+        -3.405655860900879,
+        -24.491302490234375
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 65,
+      "tracked_vertex": [
+        4.410322189331055,
+        -3.405655860900879,
+        -24.49323081970215
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 70,
+      "tracked_vertex": [
+        4.428922653198242,
+        -3.405655860900879,
+        -24.498966217041016
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 75,
+      "tracked_vertex": [
+        4.459585189819336,
+        -3.405655860900879,
+        -24.50836181640625
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 80,
+      "tracked_vertex": [
+        4.501810073852539,
+        -3.405655860900879,
+        -24.521183013916016
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 85,
+      "tracked_vertex": [
+        4.554904937744141,
+        -3.405655860900879,
+        -24.53710174560547
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 90,
+      "tracked_vertex": [
+        4.61799430847168,
+        -3.405655860900879,
+        -24.555736541748047
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 95,
+      "tracked_vertex": [
+        4.690036773681641,
+        -3.405655860900879,
+        -24.57663345336914
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 100,
+      "tracked_vertex": [
+        4.769833087921143,
+        -3.405655860900879,
+        -24.599313735961914
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 105,
+      "tracked_vertex": [
+        4.856049537658691,
+        -3.405655860900879,
+        -24.623266220092773
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 110,
+      "tracked_vertex": [
+        4.947236061096191,
+        -3.405655860900879,
+        -24.647981643676758
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 115,
+      "tracked_vertex": [
+        5.041849613189697,
+        -3.405655860900879,
+        -24.672958374023438
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 120,
+      "tracked_vertex": [
+        5.138279914855957,
+        -3.405655860900879,
+        -24.697715759277344
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 125,
+      "tracked_vertex": [
+        5.234877109527588,
+        -3.405655860900879,
+        -24.721811294555664
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 130,
+      "tracked_vertex": [
+        5.329980373382568,
+        -3.405655860900879,
+        -24.74485206604004
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 135,
+      "tracked_vertex": [
+        5.421945095062256,
+        -3.405655860900879,
+        -24.76649284362793
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 140,
+      "tracked_vertex": [
+        5.509175777435303,
+        -3.405655860900879,
+        -24.78643798828125
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 145,
+      "tracked_vertex": [
+        5.590153694152832,
+        -3.405655860900879,
+        -24.8044490814209
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 150,
+      "tracked_vertex": [
+        5.663464069366455,
+        -3.405655860900879,
+        -24.820337295532227
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 155,
+      "tracked_vertex": [
+        5.727821350097656,
+        -3.405655860900879,
+        -24.833961486816406
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 160,
+      "tracked_vertex": [
+        5.782096862792969,
+        -3.405655860900879,
+        -24.84521484375
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 165,
+      "tracked_vertex": [
+        5.825336456298828,
+        -3.405655860900879,
+        -24.854026794433594
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 170,
+      "tracked_vertex": [
+        5.856777191162109,
+        -3.405655860900879,
+        -24.860347747802734
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 175,
+      "tracked_vertex": [
+        5.875866889953613,
+        -3.405655860900879,
+        -24.864151000976562
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 180,
+      "tracked_vertex": [
+        5.882267475128174,
+        -3.405655860900879,
+        -24.865419387817383
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 185,
+      "tracked_vertex": [
+        5.875866889953613,
+        -3.405655860900879,
+        -24.864151000976562
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 190,
+      "tracked_vertex": [
+        5.856777191162109,
+        -3.405655860900879,
+        -24.860347747802734
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 195,
+      "tracked_vertex": [
+        5.825336456298828,
+        -3.405655860900879,
+        -24.854026794433594
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 200,
+      "tracked_vertex": [
+        5.782096862792969,
+        -3.405655860900879,
+        -24.84521484375
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 205,
+      "tracked_vertex": [
+        5.727821350097656,
+        -3.405655860900879,
+        -24.833961486816406
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 210,
+      "tracked_vertex": [
+        5.663464069366455,
+        -3.405655860900879,
+        -24.820337295532227
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 215,
+      "tracked_vertex": [
+        5.590153694152832,
+        -3.405655860900879,
+        -24.8044490814209
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 220,
+      "tracked_vertex": [
+        5.509175777435303,
+        -3.405655860900879,
+        -24.78643798828125
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 225,
+      "tracked_vertex": [
+        5.421945095062256,
+        -3.405655860900879,
+        -24.76649284362793
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 230,
+      "tracked_vertex": [
+        5.329980373382568,
+        -3.405655860900879,
+        -24.74485206604004
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 235,
+      "tracked_vertex": [
+        5.234877109527588,
+        -3.405655860900879,
+        -24.721811294555664
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    },
+    {
+      "seconds": 240,
+      "tracked_vertex": [
+        5.138279914855957,
+        -3.405655860900879,
+        -24.697715759277344
+      ],
+      "intersecting_triangle_pairs": 0,
+      "outside_vertices": 0,
+      "source_footprint_outside_vertices": 0
+    }
+  ],
+  "damage_apertures": [
+    {
+      "module": "core_03",
+      "open_through_shell": true,
+      "nominal_width": 5.768559781348859,
+      "top_tear": false
+    },
+    {
+      "module": "core_05",
+      "open_through_shell": true,
+      "nominal_width": 6.922271737618631,
+      "top_tear": false
+    },
+    {
+      "module": "core_07",
+      "open_through_shell": true,
+      "nominal_width": 5.383989129258935,
+      "top_tear": false
+    },
+    {
+      "module": "core_08",
+      "open_through_shell": true,
+      "nominal_width": 6.345415759483745,
+      "top_tear": false
+    },
+    {
+      "module": "core_09",
+      "open_through_shell": true,
+      "nominal_width": 9.229695650158174,
+      "top_tear": true
+    }
+  ],
+  "motion_envelope": {
+    "min": [
+      4.314696788787842,
+      -10.847834587097168,
+      -25.022066116333008
+    ],
+    "max": [
+      13.095230102539062,
+      1.050938606262207,
+      -9.091965675354004
+    ]
+  },
+  "note": "Built triangles, 49 poses across 240 seconds; radiator hinge contact allowed. Discrete samples are not a continuous swept-volume certification."
+}

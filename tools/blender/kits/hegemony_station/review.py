@@ -7,6 +7,7 @@ import argparse
 import json
 import math
 import os
+import random
 from pathlib import Path
 import sys
 import hashlib
@@ -21,6 +22,7 @@ sys.path.insert(0,str(HERE))
 import design as D
 from parts import Parts
 import stack
+from scale import contract
 
 
 def empty(name, parent=None, pos=(0,0,0)):
@@ -35,31 +37,47 @@ def build():
     root['status']='BUILD SHEET - AWAITING BOARD REVIEW'
     root['station_kind']='fleet'; root['state']='T2 damaged'
     root['joints_json']=json.dumps(D.JOINTS)
-    move=empty('T2_tethered_arm',root,D.MOTION['pivot'])
+    move=empty('T2_hanging_radiator',root,D.MOTION['pivot'])
     move['period_seconds']=D.MOTION['period']; move['swing_period_seconds']=D.MOTION['swing_period']
     move['swing_degrees']=D.MOTION['swing_degrees']
     p=Parts(stack.materials())
     c=D.CORE
-    for i in range(c['decks']):
-        z=c['bottom']+i*c['pitch']
+    for i,drum in enumerate(D.DRUMS):
+        z=drum['bottom']; radius=drum['radius']; height=drum['height']
         p.record('core_%02d'%(i+1),'deck_drum',
                  ['command','medical','stores','power distribution','machinery',
                   'coolant plant','habitat support','stores','upper service deck'][i])
-        p.drum(c['radius']*(1.0 if i<7 else .94),z,c['pitch']-.06,
-               breach=i in (4,8))
+        p.damaged_drum(radius,z,height,hole=D.BREACHES.get(i),top_tear=i==8,
+                       viewport=D.VIEWPORT if i==D.VIEWPORT['deck'] else None)
         # Eight distinct inter-module bulkhead joints.
         if i<8:
-            p.band(c['radius']-.1,c['radius']+.22,z+c['pitch']-.10,z+c['pitch']+.02,
-                   steps=64,zone='trim')
-        empty('joint_core_%02d'%(i+1),root,(0,0,z+c['pitch']))
+            neck=min(radius,D.DRUMS[i+1]['radius'])-.15
+            p.band(neck-.18,neck,z+height-.08,D.DRUMS[i+1]['bottom']+.08,steps=64,zone='trim')
+        empty('joint_core_%02d'%(i+1),root,(0,0,z+height+.10))
+        # Metre-scale equipment stays on each drum's own shoulder and shell.
+        for j in range(20):
+            a=math.tau*j/20+.04*(i%2)
+            hole=D.BREACHES.get(i,(-70,4.8) if i==8 else None)
+            if hole and abs(math.atan2(math.sin(a-math.radians(hole[0])),math.cos(a-math.radians(hole[0]))))*radius < hole[1]*.65: continue
+            old=p.matrix.copy()
+            p.matrix=Matrix.Translation(Vector(((radius+.10)*math.cos(a),(radius+.10)*math.sin(a),z+height*.17))) @ Matrix.Rotation(a,4,'Z') @ Matrix.Rotation(math.pi/2,4,'Y')
+            p.service_pallet(i*20+j,.53)
+            p.matrix=old
+        if i<8:
+            for j in range(24):
+                a=math.tau*j/24
+                p.rod(((radius-.20)*math.cos(a),(radius-.20)*math.sin(a),z+height+.02),
+                      ((radius+.28)*math.cos(a),(radius+.28)*math.sin(a),z+height+.02),.055,'edge',n=6)
+    p.record('observation_window','viewport','one large lit curved observation pane in its pressure-frame reveal')
+    p.observation_window(D.DRUMS[D.VIEWPORT['deck']],D.VIEWPORT)
     r=D.RING
     for i in range(r['slots']):
-        if i==r['gap']: continue
         p.record('bearing_%02d'%i,'bearing_track','seized bearing slot; supports habitat module %d'%(i//2+1))
-        a0=math.radians(i*30)+.012; a1=math.radians((i+1)*30)-.012
+        start=r['service_angle']+r['seized_offset']+r['gap_degrees']/2
+        a0=math.radians(start+i*320/11)+.012; a1=math.radians(start+(i+1)*320/11)-.012
         z=r['bottom']; top=z+r['height']
-        p.band(r['inner'],r['outer'],z-.20,z, a0,a1,10,'edge',torn=i in (9,11))
-        p.band(r['inner'],r['outer'],top,top+.16,a0,a1,10,'edge',torn=i in (9,11))
+        p.band(r['inner'],r['outer'],z-.20,z, a0,a1,10,'edge',torn=i in (0,10))
+        p.band(r['inner'],r['outer'],top,top+.16,a0,a1,10,'edge',torn=i in (0,10))
         p.record('habitat_%d_slot_%02d'%(i//2+1,i),'habitat_arc',
                  'habitat module %d; corridor, cross frames, equipment racks'%(i//2+1))
         # Both walls, with separately modelled window recesses and flush plates.
@@ -72,6 +90,11 @@ def build():
                 a=(aa+bb)*.5
                 p.box((radius*math.cos(a),radius*math.sin(a),z+1.2),(.09,.32,.40),
                       'recess',rotation=a)
+                if j%2==0:
+                    old=p.matrix.copy()
+                    p.matrix=Matrix.Translation(Vector(((radius+.12)*math.cos(a),(radius+.12)*math.sin(a),z+.60))) @ Matrix.Rotation(a,4,'Z') @ Matrix.Rotation(math.pi/2,4,'Y')
+                    p.service_pallet(i*10+j,.43)
+                    p.matrix=old
         for j in range(6):
             a=a0+(a1-a0)*j/5
             rm=(r['inner']+r['outer'])/2
@@ -83,45 +106,81 @@ def build():
                   (.48,.65,.9),'rack',True,a)
         # Each half of an arc has its own corridor deck; the gap has no hidden cap.
         p.band(r['inner']+.12,r['outer']-.12,z+.2,z+.3,a0,a1,10,'deck',True)
+        # Connected conduits, hatches and small plant packages across both ring shoulders.
+        for radius in (r['inner']+.25,r['outer']-.30):
+            p.band(radius-.055,radius+.055,top+.12,top+.23,a0,a1,16,'trim')
+        for j in range(5):
+            a=a0+(a1-a0)*(j+.5)/5
+            old=p.matrix.copy()
+            p.matrix=Matrix.Translation(Vector((rm*math.cos(a),rm*math.sin(a),top+.18))) @ Matrix.Rotation(a+math.pi/2,4,'Z')
+            p.service_pallet(i*5+j,.65)
+            p.matrix=old
+            for rr in (r['inner']+.50,r['outer']-.55):
+                aa=a+.025
+                p.matrix=Matrix.Translation(Vector((rr*math.cos(aa),rr*math.sin(aa),top+.18))) @ Matrix.Rotation(aa+math.pi/2,4,'Z')
+                p.service_pallet(i+j,.38)
+            p.matrix=old
         empty('joint_ring_%02d'%i,root,(rm*math.cos(a0),rm*math.sin(a0),z))
-    for i,a in enumerate((32,138,225,322)):
-        p.record('spoke_%d'%(i+1),'spoke','bearing support and service corridor; buckled' if i==3 else 'bearing support and service corridor')
-        old=p.matrix.copy(); p.matrix=Matrix.Rotation(math.radians(a),4,'Z') @ Matrix.Translation(Vector((4.8,0,0)))
-        if i==3:
-            p.rod((0,0,0),(4.1,0,-1.3),.40,'liner',n=12,inside=True)
-            p.rod((4.1,0,-1.3),(9.8,0,0),.40,'liner',n=12,inside=True)
+        # Sprung bearing joint plates are physically lifted from the track.
+        if i in (0,2,5,8,10):
+            old=p.matrix.copy()
+            p.matrix=Matrix.Translation(Vector((rm*math.cos(a0),rm*math.sin(a0),top+.3))) @ Matrix.Rotation(a0,4,'Z') @ Matrix.Rotation(.7 if i%2 else -.6,4,'X')
+            p.box((0,0,.25),(r['outer']-r['inner'],.8,.15),'edge')
+            p.matrix=old
+    for i,a in enumerate(D.SPOKES):
+        p.record('spoke_%d'%(i+1),'spoke','bearing support and service corridor; buckled' if i==2 else 'bearing support and service corridor')
+        old=p.matrix.copy(); p.matrix=Matrix.Rotation(math.radians(a),4,'Z') @ Matrix.Translation(Vector((6.3,0,0)))
+        if i==2:
+            p.rod((0,0,0),(3.7,-1.4,-1.8),.40,'liner',n=12,inside=True)
+            p.rod((3.7,-1.4,-1.8),(8.1,0,0),.40,'liner',n=12,inside=True)
             for s in (-1,1):
-                p.rod((0,s*.42,.15),(4.1,s*.42,-1.1),.10)
-                p.rod((4.1,s*.42,-1.1),(9.8,s*.42,.15),.10)
+                p.rod((0,s*.42,.15),(3.7,-1.4+s*.42,-1.6),.10)
+                p.rod((3.7,-1.4+s*.42,-1.6),(8.1,s*.42,.15),.10)
             for k in range(10):
-                x=k*.98; zz=-1.3*(x/4.1 if x<4.1 else (9.8-x)/5.7)
-                p.box((x,0,zz),(.55,.9,.12),'plate2')
+                x=k*.81; f=(x/3.7 if x<3.7 else (8.1-x)/4.4); zz=-1.8*f
+                p.box((x,-1.4*f,zz),(.55,.9,.12),'plate2')
         else:
-            p.arm(9.8,1.1,4,cap=False)
+            p.arm(8.1,1.1,4,cap=False)
         p.matrix=old
     for i,arm in enumerate(D.ARMS):
         p.record('arm_%d'%(i+1),'docking_arm','dead berth corridor' if i<3 else 'torn arm root; exposed deck and rack rows')
         a=math.radians(arm['angle'])
         p.matrix=Matrix.Rotation(a,4,'Z') @ Matrix.Translation(Vector((arm['root'],0,arm['z'])))
-        p.arm(arm['tip']-arm['root']-1.2,arm['width'],arm['modules'],i==3,i<3)
+        if i==3: p.bent_stub(arm['tip']-arm['root'],arm['width'])
+        else: p.arm(arm['tip']-arm['root']-1.2,arm['width'],arm['modules'],cap=True)
         for j in range(arm['modules']):
             x=arm['root']+j*(arm['tip']-arm['root'])/arm['modules']
             empty('joint_arm_%d_%d'%(i+1,j),root,(x*math.cos(a),x*math.sin(a),arm['z']))
         p.matrix=Matrix.Identity(4)
-    # The review uses the shorter, six-unit fall-back: no invented ring animation.
-    p.record('tethered_arm','docking_arm','one passive moving section; no power',parent='arm_4')
-    p.moving=True
-    p.matrix=Matrix.Rotation(-math.pi/2,4,'Z')
-    p.arm(D.MOTION['length']-1.2,1.65,2,broken=True)
-    p.matrix=Matrix.Identity(4); p.moving=False
-    p.record('tethers','conduits','torn flexible conduits joining the loose arm to its stub')
-    for x in (-.38,.38):
-        p.rod((x,-8.2,-2.7),(x,-10.0,-2.7),.045,'trim')
-    # Towers are all on a connected equipment deck, supported down to the ring.
-    p.record('equipment_deck','platform','connected tower bases; services and blue emergency cluster')
-    p.box((-3.7,7.8,1.3),(15.5,4.2,.65),'plate2')
-    for x in (-10,-5,0,3):
-        p.rod((x,6.4,1.1),(x,4.4,.1),.18,'trim')
+    # Extra short docking fingers and small cooling combs, not new major limbs.
+    for i,finger in enumerate(D.SERVICE_ARMS):
+        p.record('service_finger_%d'%(i+1),'service_finger','short ring maintenance dock and cooling comb' if finger['cooling'] else 'short ring tender dock')
+        a=math.radians(finger['angle']); old=p.matrix.copy()
+        p.matrix=Matrix.Rotation(a,4,'Z') @ Matrix.Translation(Vector((r['outer']-.25,0,.45)))
+        p.arm(finger['length'],.65,2,cap=False)
+        p.box((finger['length'],0,0),(.30,1.05,.6),'trim')
+        p.service_pallet(i,.45)
+        if finger['cooling']:
+            for j in range(10):
+                x=.4+j*(finger['length']-.65)/9
+                p.box((x,0,-.85),(.065,1.55,1.1),'edge')
+            p.rod((.3,0,-.3),(finger['length'],0,-.3),.10,'trim')
+        p.matrix=old
+    # Every tower has a radial structural bridge and individual pedestal.
+    p.record('equipment_deck','platform','five separate radial tower bridges with core and ring connections')
+    for t in D.TOWERS:
+        a=math.atan2(t['y'],t['x']); old=p.matrix.copy()
+        p.matrix=Matrix.Rotation(a,4,'Z') @ Matrix.Translation(Vector((5.9,0,t['base']-.65)))
+        length=r['inner']-5.9
+        p.box((length/2,0,0),(length,1.7,.23),'plate2')
+        for yy in (-.68,.68):
+            p.rod((0,yy,-.4),(length,yy,-.4),.10,'trim')
+            p.rod((0,yy,-.4),(length/2,yy,.05),.08,'edge')
+            p.rod((length/2,yy,.05),(length,yy,-.4),.08,'edge')
+        for j in range(6):
+            p.matrix=old @ Matrix.Rotation(a,4,'Z') @ Matrix.Translation(Vector((6.5+j*1.2,0,t['base']-.5)))
+            p.service_pallet(j,.50)
+        p.matrix=old
     for i,t in enumerate(D.TOWERS):
         p.record('tower_%d'%(i+1),'tower_cap',t['cap']+'; dead; whole machine on its module joint')
         old=p.matrix.copy()
@@ -130,8 +189,6 @@ def build():
         # A visible pedestal reaches the support, including the outboard dome
         # tower whose base is beyond the equipment deck edge.
         p.band(.30,rad*1.2,-.55,.14,steps=32,zone='trim')
-        if i==2:
-            p.box((0,-1.2,-.35),(2.1,2.8,.35),'plate2')
         # Stepped mast with repeated equipment rings and internal cable trunk.
         for j in range(4):
             rr=rad*(1-.085*j)
@@ -139,20 +196,24 @@ def build():
             for a in (0,math.pi/2,math.pi,math.pi*1.5):
                 p.rod((rr*math.cos(a),rr*math.sin(a),j*h/4+.15),
                       (rr*math.cos(a),rr*math.sin(a),(j+1)*h/4-.25),.045,'trim')
+            p.band(rr-.10,rr+.20,j*h/4+.10,j*h/4+.26,steps=32,zone='plate2')
         p.band(.2,rad*1.1,h-.08,h+.10,steps=32,zone='edge')
-        if t['cap']=='array':
-            for j in range(7):
-                yy=(j-3)*.42
-                p.rod((-1.8,yy,h+.35),(1.8,yy,h+.35),.04)
-            for x in (-1.5,0,1.5): p.rod((x,-1.6,h+.35),(x,1.6,h+.35),.045,'trim')
-            p.rod((0,0,h),(0,0,h+1.2),.07,'trim')
+        if t['cap']=='pad':
+            # Landing pad split across two buckled plates, not an intact array.
+            p.box((-.85,0,h+.22),(1.7,3.1,.16),'edge')
+            saved=p.matrix.copy()
+            p.matrix=saved @ Matrix.Translation(Vector((0,0,h+.22))) @ Matrix.Rotation(.30,4,'Y')
+            p.box((.85,0,0),(1.6,3.1,.16),'plate2')
+            for yy in (-1.2,0,1.2): p.rod((-.6,yy,-.22),(1.6,yy,-.22),.07,'frame')
+            p.matrix=saved
         elif t['cap']=='dishes':
             p.rod((-1.1,0,h+.1),(1.1,0,h+.1),.12)
-            for x in (-.95,.95): p.dish((x,0,h+.35),.78,.7)
+            for x in (-1.1,0,1.1): p.dish((x,0,h+.35),.68,.7)
         elif t['cap']=='dome':
             for j in range(6):
                 rr=rad*math.sqrt(max(.01,1-(j/6)**2))
-                p.band(max(.02,rr-.10),rr,h+j*.15,h+(j+1)*.15,steps=24,zone='plate2')
+                p.band(max(.02,rr-.10),rr,h+j*.15,h+(j+1)*.15,
+                       start=.18+j*.04,end=math.tau-.13-j*.035,steps=24,zone='plate2',torn=True)
             for x in (-.7,.7): p.rod((x,0,h),(x,0,h+2),.035,'trim')
         elif t['cap']=='crane':
             # Station maintenance machinery, explicitly permitted by the station brief.
@@ -163,68 +224,78 @@ def build():
                           ((j+1)*.64,-side*.15,h+.3+(j+1)*.34),.03,'trim')
             p.rod((3.2,0,h+2),(3.2,0,h+.9),.025,'trim')
         else:
+            # Beacon lenses are dark recesses; no emission on any dead cap.
             for zz in (.1,.45,.8): p.band(.6,1.2,h+zz,h+zz+.11,steps=32,zone='trim')
             for a in range(8):
                 x=.8*math.cos(a*math.tau/8); y=.8*math.sin(a*math.tau/8)
                 p.rod((x,y,h),(x,y,h+1.6),.025)
         p.matrix=old
     for i,rad in enumerate(D.RADIATORS):
-        p.record('radiator_%d'%(i+1),'radiator','cold grooved heat rejection bank, header and pump',
-                 inside='header channels and manifold; no fire')
+        p.record('radiator_%d'%(i+1),'radiator','cold grooved bank; single surviving hinge' if i==3 else 'cold grooved bank and header',
+                 inside='header channels and manifold')
         a=math.radians(rad['angle']); h=rad['top']-rad['bottom']
-        p.matrix=Matrix.Rotation(a,4,'Z') @ Matrix.Translation(Vector((rad['radius'],0,rad['bottom'])))
-        p.box((0,0,h/2),(.16,rad['width'],h),'trim')
+        xf=Matrix.Rotation(a,4,'Z') @ Matrix.Translation(Vector((rad['radius'],0,rad['top'])))
+        p.matrix=xf
+        p.rod((0,-rad['width']/2,0),(0,rad['width']/2,0),.18,'trim')
+        p.box((0,0,.3),(.6,.7,.6),'rack')
+        p.rod((0,0,0),(c['radius']-rad['radius'],0,1.0),.18,'trim')
+        if i==3:
+            p.rod((0,-rad['width']/2-.18,0),(0,-rad['width']/2+.18,0),.25,'edge')
+            p.moving=True
+            # Pivot is in the station frame; geometry is local to that hinge.
+            p.matrix=Matrix.Rotation(a,4,'Z') @ Matrix.Rotation(math.radians(D.MOTION['rest_degrees']),4,'Y') @ Matrix.Rotation(.22,4,'X') @ Matrix.Translation(Vector((0,rad['width']/2,0)))
+        p.box((0,0,-h/2),(.16,rad['width'],h),'trim')
         for y in (-rad['width']/2,rad['width']/2):
-            p.rod((0,y,0),(0,y,h),.08,'edge')
+            p.rod((0,y,-h),(0,y,0),.08,'edge')
         for j in range(34):
             y=(j/33-.5)*(rad['width']-.2)
-            p.box((.10,y,h/2),(.055,.025,h-.2),'edge')
-        p.rod((0,-rad['width']/2,h),(0,rad['width']/2,h),.18,'trim')
+            p.box((.10,y,-h/2),(.055,.025,h-.2),'edge')
         for yy in (-.12,.12):
-            p.rod((0,-rad['width']/2,h+yy),(0,rad['width']/2,h+yy),.055,'liner',inside=True)
-        p.box((0,0,h+.3),(.6,.7,.6),'rack')
-        p.rod((0,0,h),(D.CORE['radius']-rad['radius'],0,h+1.0),.18,'trim')
-        p.matrix=Matrix.Identity(4)
-    # Two cargo pods. Neither is a live berth or a ship substitute.
-    for i,(x,y,z) in enumerate(((20,1.9,3.0),(-8,-9,-1.4))):
-        p.record('cargo_%d'%(i+1),'cargo_pod','dead cargo pod; one clamped and one lodged')
-        p.box((x,y,z),(2.3,1.1,1.2),'plate2')
-        for j in range(5): p.box((x+(j-2)*.43,y,z),(.07,1.18,1.3),'trim')
-    p.record('lodged_debris','debris','twelve irregular torn structural remnants; no orbiting particles',inside='torn frames')
-    for i in range(12):
-        a=math.radians(205+i*5); rr=11+(i%3)*1.8
-        pos=(rr*math.cos(a),rr*math.sin(a),-1.8+(i%4)*.28)
-        # Folded two-panel shards carry thickness, not a single flat polygon.
-        p.box(pos,(.65+(i%4)*.38,.55,.12),'edge',rotation=a+.3)
-        p.rod(pos,(pos[0]+.6,pos[1]+.1,pos[2]+.5),.08,'frame')
-    p.record('emergency_lights','lights','90 implant-blue lights in seven clusters; five static dull battery strips',inside='module-local batteries')
+            p.rod((0,-rad['width']/2,yy-.35),(0,rad['width']/2,yy-.35),.055,'liner',inside=True)
+        p.matrix=Matrix.Identity(4); p.moving=False
+    # Held debris makes the arm cradle and ring edge visibly wider in plan.
+    for i,(x,y,z,angle) in enumerate(((18,2.7,3.2,12),(20.3,3.2,3.4,-18),(-17.6,-3,1.0,65))):
+        p.record('cargo_%d'%(i+1),'cargo_pod','held dead cargo: arm cradle' if i<2 else 'held against ring outer face')
+        old=p.matrix.copy(); p.matrix=Matrix.Translation(Vector((x,y,z))) @ Matrix.Rotation(math.radians(angle),4,'Z')
+        p.box((0,0,0),(2.8,1.6,1.7),'plate2')
+        for j in range(5): p.box(((j-2)*.56,0,0),(.09,1.72,1.82),'trim')
+        p.matrix=old
+        p.rod((x,y,z-.8),(x,y-1.9,z-1.2),.11,'frame')
+    p.record('folded_plate','debris','one torn plate folded over arm walkway; two thick bent leaves',inside='torn frame')
+    p.box((-12.5,-1.8,3.7),(3.0,2.0,.16),'edge',rotation=.18)
+    old=p.matrix.copy(); p.matrix=Matrix.Translation(Vector((-12.4,-2.6,3.65))) @ Matrix.Rotation(-.95,4,'X')
+    p.box((0,-.8,-.12),(2.7,1.8,.16),'edge')
+    p.matrix=old
+    p.record('emergency_lights','lights','90 implant-blue markers in six scattered clusters; five dull battery strips',inside='module-local batteries')
+    rng=random.Random(373)
     for cl in D.LIGHT_CLUSTERS:
         for j in range(cl['count']):
+            # Jittered two-dimensional clusters, never a dotted running row.
             if cl['kind']=='core':
-                a=math.radians(cl['angle']+(j%7-3)*4)
-                z=c['bottom']+cl['deck']*c['pitch']+.65+(j//7)*.30
-                rr=c['radius']+.11
-                p.box((rr*math.cos(a),rr*math.sin(a),z),(.11,.16,.16),'blue',rotation=a)
+                a=math.radians(cl['angle']+rng.uniform(-8,8))
+                drum=D.DRUMS[cl['deck']]
+                z=drum['bottom']+drum['height']*(.69+rng.uniform(0,.10))
+                rr=drum['radius']+.11
+                p.box((rr*math.cos(a),rr*math.sin(a),z),(.11,.17,.17),'blue',rotation=a)
             elif cl['kind']=='ring':
-                a=math.radians(cl['slot']*30+5+(j%5)*4)
-                rr=r['outer']+.10; z=-.25+(j//5)*.34
+                a=math.radians(cl['angle']+rng.uniform(-7,7))
+                rr=r['outer']+.10; z=r['bottom']+rng.uniform(.35,2.4)
                 p.box((rr*math.cos(a),rr*math.sin(a),z),(.11,.17,.17),'blue',rotation=a)
             else:
-                p.box((-7+j*.7,5.67,1.30),(.20,.12,.14),'blue')
+                a=math.radians(155+rng.uniform(-4,4)); rr=r['inner']-.10
+                p.box((rr*math.cos(a),rr*math.sin(a),r['bottom']+rng.uniform(.3,1.5)),(.12,.18,.14),'blue',rotation=a)
     for pos in D.BATTERIES: p.box(pos,(.65,.12,.10),'battery')
     objs=p.finish(root,move)
     # Passive animation only, with a separate transform preserved in the export.
     move.rotation_mode='XYZ'
     fps=24; bpy.context.scene.render.fps=fps
     period=int(D.MOTION['period'])
-    for fr in (1,period*fps+1):
-        move.rotation_euler.y=math.tau*(fr-1)/(period*fps)
-        move.keyframe_insert(data_path='rotation_euler',index=1,frame=fr)
-    for seconds in range(0,period+1,10):
-        move.rotation_euler.x=math.radians(D.MOTION['swing_degrees'])*math.sin(seconds*math.tau/D.MOTION['swing_period'])
-        move.keyframe_insert(data_path='rotation_euler',index=0,frame=seconds*fps+1)
+    # One unpowered radiator swings +/-3 degrees, returning without a snap.
+    for seconds in range(0,period+1,5):
+        move.rotation_euler.y=math.radians(D.MOTION['swing_degrees'])*math.sin(seconds*math.tau/period)
+        move.keyframe_insert(data_path='rotation_euler',index=1,frame=seconds*fps+1)
     if move.animation_data:
-        move.animation_data.action.name='T2_passive_tumble'
+        move.animation_data.action.name='T2_radiator_swing'
         for curve in move.animation_data.action.fcurves:
             for key in curve.keyframe_points: key.interpolation='LINEAR'
     bpy.context.scene.frame_set(1)
@@ -238,7 +309,7 @@ def bounds(objects):
     return dict(min=list(lo),max=list(hi),size=list(hi-lo))
 
 
-def geometry_report(scene, objects, moving, inputs):
+def geometry_report(scene, objects, moving, inputs, uniform_scale):
     """Measure the built triangles, including the whole passive motion cycle.
 
     This is a review fit probe. The conduit attachment is intentionally allowed;
@@ -250,20 +321,30 @@ def geometry_report(scene, objects, moving, inputs):
     def in_cell(x,y,c):
         dx=abs(x-c[0]); dy=abs(y-c[1])
         return dx <= math.sqrt(3)*radius/2+.002 and dy <= radius+.002 and dx/math.sqrt(3)+dy <= radius+.002
-    def outside(vertices):
-        return sum(not any(in_cell(v.x,v.y,c) for c in cells) for v in vertices)
+    def outside(vertices, scale=1.0):
+        return sum(not any(in_cell(v.x/scale,v.y/scale,c) for c in cells) for v in vertices)
     deps=bpy.context.evaluated_depsgraph_get()
-    fixed_v=[]; fixed_f=[]; move_v=[]; move_f=[]; modules={}
+    fixed_v=[]; fixed_f=[]; move_v=[]; move_f=[]; modules={}; shells={}
     for ob in objects:
         ev=ob.evaluated_get(deps); me=ev.to_mesh(); me.calc_loop_triangles()
         vv=[ob.matrix_world@v.co for v in me.vertices]
-        entry=modules.setdefault(ob['module'],dict(vertices=0,inside_triangles=0,outside_vertices=0))
+        entry=modules.setdefault(ob['module'],dict(vertices=0,inside_triangles=0,outside_vertices=0,
+                                                 source_footprint_outside_vertices=0,
+                                                 min=[1e9]*3,max=[-1e9]*3))
         entry['vertices']+=len(vv)
         entry['inside_triangles']+=len(me.loop_triangles) if ob['inside'] else 0
         entry['outside_vertices']+=outside(vv)
+        entry['source_footprint_outside_vertices']+=outside(vv,uniform_scale)
+        for axis in range(3):
+            entry['min'][axis]=min(entry['min'][axis],min(v[axis] for v in vv))
+            entry['max'][axis]=max(entry['max'][axis],max(v[axis] for v in vv))
+        if ob['module'].startswith('core_') and ob['zone'] in ('plate','plate2','liner'):
+            verts0,faces0=shells.setdefault(ob['module'],([],[]))
+            off=len(verts0); verts0.extend(vv)
+            faces0.extend(tuple(off+i for i in t.vertices) for t in me.loop_triangles)
         if ob.parent==moving:
             vv=[moving.matrix_world.inverted()@v for v in vv]; verts,faces=move_v,move_f
-        elif ob['module']=='tethers':
+        elif ob['module']=='radiator_4':
             ev.to_mesh_clear(); continue
         else: verts,faces=fixed_v,fixed_f
         offset=len(verts); verts.extend(vv)
@@ -277,13 +358,27 @@ def geometry_report(scene, objects, moving, inputs):
         vv=[moving.matrix_world@v for v in move_v]
         tree=BVHTree.FromPolygons(vv,move_f,all_triangles=True)
         overlaps=tree.overlap(fixed)
-        samples.append(dict(seconds=seconds,intersecting_triangle_pairs=len(overlaps),outside_vertices=outside(vv)))
+        samples.append(dict(seconds=seconds,tracked_vertex=list(vv[0]),
+                            intersecting_triangle_pairs=len(overlaps),outside_vertices=outside(vv),
+                            source_footprint_outside_vertices=outside(vv,uniform_scale)))
         envelope.extend(vv)
     scene.frame_set(1); bpy.context.view_layer.update()
-    return dict(modules=modules,motion_samples=samples,
+    # Cast through the actual shell at each authored opening. Decks/racks behind
+    # the removed shell are measured separately as inside triangles, not a cap.
+    apertures=[]
+    for deck,hole in list(D.BREACHES.items())+[(8,(-70,4.8))]:
+        tree=BVHTree.FromPolygons(*shells['core_%02d'%(deck+1)],all_triangles=True)
+        drum=D.DRUMS[deck]; radius=drum['radius']
+        angle=math.radians(hole[0]); z=drum['bottom']+drum['height']*(.8 if deck==8 else .53)
+        a=Vector(((radius+.5)*math.cos(angle),(radius+.5)*math.sin(angle),z))*uniform_scale
+        direction=Vector((-math.cos(angle),-math.sin(angle),0))
+        hit=tree.ray_cast(a,direction,.9*uniform_scale)[0]
+        apertures.append(dict(module='core_%02d'%(deck+1),open_through_shell=hit is None,
+                              nominal_width=hole[1]*uniform_scale,top_tear=deck==8))
+    return dict(modules=modules,motion_samples=samples,damage_apertures=apertures,
                 motion_envelope=dict(min=[min(v[i] for v in envelope) for i in range(3)],
                                      max=[max(v[i] for v in envelope) for i in range(3)]),
-                note='Built triangles, 49 poses across 240 seconds; conduit contact allowed. '
+                note='Built triangles, 49 poses across 240 seconds; radiator hinge contact allowed. '
                      'Discrete samples are not a continuous swept-volume certification.')
 
 
@@ -351,15 +446,13 @@ def main():
     inputs=json.loads((out/'game_inputs.json').read_text(encoding='utf-8'))
     root,move,objs,rows=build()
     bpy.context.view_layer.update()
-    # The pack's 32-unit height is a starting point. The actual loaded capital
-    # hulls decide the required height. Keep the plan in the blocker footprint.
+    # R247: use the table's minimum long axis, preserving the concept's proportions.
+    # The old seven-cell footprint remains measured, not silently enlarged.
     initial=bounds(objs)
-    height_scale=max(1.0,(inputs['max_ship_height']+1.0)/initial['size'][2])
-    for ob in objs:
-        for v in ob.data.vertices: v.co.z*=height_scale
-    for ob in root.children:
-        if ob.type=='EMPTY': ob.location.z*=height_scale
-    joints=dict(D.JOINTS,core=[z*height_scale for z in D.JOINTS['core']])
+    sizing=contract()
+    uniform_scale=sizing['range'][0]/max(initial['size'])
+    root.scale=(uniform_scale,)*3
+    joints=dict(D.JOINTS,core=[z*uniform_scale for z in D.JOINTS['core']])
     root['joints_json']=json.dumps(joints)
     bpy.context.view_layer.update()
     bb=bounds(objs)
@@ -370,25 +463,32 @@ def main():
         counts['inside' if ob.get('inside') else 'exterior']+=len(me.loop_triangles)
         ev.to_mesh_clear()
     counts['total']=sum(counts.values())
-    fit=geometry_report(bpy.context.scene,objs,move,inputs)
+    fit=geometry_report(bpy.context.scene,objs,move,inputs,uniform_scale)
     (out/'fit.json').write_text(json.dumps(fit,indent=2)+'\n',encoding='utf-8')
-    src=[HERE/n for n in ('design.py','parts.py','stack.py','review.py','inspect.gd','check.py','sheets.py')]
+    src=[HERE/n for n in ('design.py','parts.py','stack.py','review.py','inspect.gd','check.py','sheets.py','scale.py','capture.gd','range_selftest.py','review_run.bat')]
     manifest=dict(code=D.CODE,status='BUILD SHEET - NOT APPROVED FOR INSTALL',
                   station_kind='fleet',concept=D.CONCEPT,plan=D.PLAN,pack=D.PACK,
                   units='world units; Blender Z up; glTF Y up',bounds=bb,triangles=counts,
-                  height_fit=dict(scale=height_scale,source='game_inputs.json max_ship_height',
-                                  note='Vertical sizing is provisional for Board review; the plan stays in the real blocked cells.'),
-                  modules=rows,joints=joints,lights=dict(blue=sum(c['count'] for c in D.LIGHT_CLUSTERS),
-                  battery=len(D.BATTERIES)),motion=dict(D.MOTION,pivot=list(move.location)),changes=D.CHANGES,
+                  uniform_fit=dict(scale=uniform_scale,axes=[uniform_scale]*3,source_bounds=initial,
+                                   contract=sizing,note='Uniform review scale. Live footprint integration pending; no swap.'),
+                  modules=rows,joints=joints,towers=D.TOWERS,drums=D.DRUMS,viewport=D.VIEWPORT,
+                  lights=dict(blue=sum(c['count'] for c in D.LIGHT_CLUSTERS),
+                  battery=len(D.BATTERIES)),motion=dict(D.MOTION,pivot=list(move.matrix_world.translation)),changes=D.CHANGES,
                   orthographic_scale=1.35*max(bb['size'][0],bb['size'][1]*16/9,bb['size'][2]*16/9),
                   method='hand-built station kit; schematic AO material; production mask/trim bake pending sheet approval',
                   scripts={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in src},
-                  pending=['Board sheet review','AI shape reference (CPU-only job)',
+                  pending=['Board sheet review','live footprint integration at R247 scale','AI shape reference',
                            'production geometry-mask/trim paint bake','full fit and swept-volume audit',
                            'station-map 1080p and 4K scene gate','Ryan look before live swap'])
     (out/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8')
     print('T2 COST',json.dumps(counts),'BOUNDS',json.dumps(bb),flush=True)
     scene=bpy.context.scene; lighting(scene)
+    # Preserve the same illumination after the uniform change of scale.
+    for lamp in scene.objects:
+        if lamp.type=='LIGHT':
+            lamp.location*=uniform_scale
+            lamp.data.energy*=uniform_scale**2
+            lamp.data.size*=uniform_scale
     scene['review_fov']=inputs['camera']['fov']
     bpy.ops.wm.save_as_mainfile(filepath=str(out/'station_T2_sheet.blend'))
     if not a.no_render:
@@ -401,7 +501,9 @@ def main():
                ('side',(0,-100,cz),(0,0,cz),ortho),
                ('underside',(0,0,-100),(0,0,0),ortho),
                ('front',(100,0,cz),(0,0,cz),ortho),
-               ('threequarter',(65,-85,55),(0,0,2),None)]
+               ('threequarter',(110,-175,125),(0,0,7),None),
+               ('concept_beauty',(-95,-150,105),(0,0,8),None),
+               ('damage_detail',(65,-100,70),(0,0,15),None)]
         for name,pos,target,ortho in views:
             camera(scene,name,pos,target,ortho)
             scene.render.filepath=str(out/(name+'.png')); bpy.ops.render.render(write_still=True)
@@ -411,10 +513,10 @@ def main():
         bpy.ops.wm.obj_import(filepath=str(out/inputs['cruiser_mesh']),forward_axis='Y',up_axis='Z')
         cruiser=list(bpy.context.selected_objects)
         for ob in cruiser:
-            ob.location+=Vector((0,-29,0))
+            ob.location+=Vector((0,-53,0))
             ob.data.materials.clear(); ob.data.materials.append(stack.materials()['plate2'])
         for name,pos,target in [('compare170',(0,-5-rr*math.sin(beta),rr*math.cos(beta)),(0,-5,0)),
-                                ('compare_low',(72,-103,38),(0,-5,1))]:
+                                ('compare_low',(140,-200,70),(0,-5,1))]:
             camera(scene,name,pos,target)
             scene.render.filepath=str(out/(name+'.png')); bpy.ops.render.render(write_still=True)
             print('T2 VIEW',name,flush=True)
@@ -422,7 +524,7 @@ def main():
         # Cutaway is a build check: the real decks, frame stations and rack rows.
         for ob in objs:
             ob.hide_render=not bool(ob.get('inside')) or ob.get('zone')=='liner'
-        camera(scene,'inside',(55,-65,42+cz),(0,0,cz),ortho)
+        camera(scene,'inside',(110,-130,84+cz),(0,0,cz),manifest['orthographic_scale'])
         scene.view_settings.exposure=1.5
         scene.render.filepath=str(out/'inside.png'); bpy.ops.render.render(write_still=True)
         scene.view_settings.exposure=0

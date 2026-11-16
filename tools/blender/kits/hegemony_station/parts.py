@@ -105,6 +105,11 @@ class Parts:
             for i in range(steps):
                 a=j*steps+i; b=j*steps+(i+1)%steps
                 ff.append((a,b,b+rings*steps,a+rings*steps))
+        # Missing bowl cells and their inner/outer skins expose pitted dishes.
+        # Keep the feed and rim as machinery, rather than painting dark spots.
+        ff=[face for face in ff if not (len(face)==4 and
+            any((index%steps) in (5,6,19) and (index//steps)%rings in (2,3)
+                for index in face))]
         self.mesh('dish',vv,ff,'edge')
         for a in (0,TAU/3,TAU*2/3):
             self.rod((radius*0.8*math.cos(a),radius*0.8*math.sin(a),radius*.3),
@@ -154,6 +159,116 @@ class Parts:
         self.band(.02,radius*.71,-1.64,-1.57,steps=48,zone='recess',inside=True)
         self.matrix=old
 
+    def service_pallet(self, seed=0, width=1.0):
+        """Small connected utility fittings, local deck at Z=0, long axis X."""
+        rng=random.Random(3730+seed)
+        self.box((0,0,.045),(width*1.65,width,.09),'trim')
+        self.box((-.25*width,.12*width,.19),(.52*width,.53*width,.25),'plate2')
+        self.box((-.25*width,.12*width,.325),(.39*width,.40*width,.025),'recess')
+        for j in range(5):
+            self.box(((-.40+j*.075)*width,.12*width,.35),(.025*width,.35*width,.035),'edge')
+        for yy in (-.34,-.19):
+            self.rod((-.65*width,yy*width,.15),(.61*width,yy*width,.15),.045,'edge',n=6)
+            self.rod((.61*width,yy*width,.15),(.61*width,yy*width,.30),.045,'trim',n=6)
+        self.box((.43*width,.22*width,.16),(.40*width,.48*width,.22),'plate')
+        self.box((.43*width,.22*width,.29),(.24*width,.31*width,.04),'edge')
+        for xx in (-.72,.72):
+            for yy in (-.4,.4):
+                self.rod((xx*width,yy*width,.06),(xx*width,yy*width,.12),.04,'edge',n=6)
+        if seed%4==0:
+            h=.35+rng.random()*.4
+            self.rod((.55*width,-.32*width,.15),(.55*width,-.32*width,h),.025,'edge',n=6)
+            self.box((.55*width,-.32*width,h),(.20,.06,.10),'recess')
+
+    def damaged_drum(self, radius, bottom, height, hole=None, top_tear=False, viewport=None):
+        """Open thick shell with irregular missing cells and exposed deck structure.
+
+        The holes remove plates AND liner. Nothing closes them with a dark disc.
+        Sizes and positions come from the design, not a damage-coloured overlay.
+        """
+        centre=math.radians(hole[0] if hole else -70)
+        width=hole[1] if hole else 4.8
+        def missing(a, z):
+            delta=abs(math.atan2(math.sin(a-centre),math.cos(a-centre)))
+            if top_tear:
+                return delta*radius < width*.5*(.85+.18*math.sin(a*29)) and z>bottom+height*.28
+            return hole and (delta*radius/(width*.5))**2+((z-bottom-height*.53)/(height*.43))**2 < 1.0+.17*math.sin(a*41+z*13)
+        steps=80; tiers=6
+        for j in range(steps):
+            a0=TAU*j/steps; a1=TAU*(j+1)/steps
+            a=(a0+a1)/2
+            for k in range(tiers):
+                lo=bottom+k*height/tiers; hi=bottom+(k+1)*height/tiers
+                if missing(a,(lo+hi)/2): continue
+                if viewport:
+                    delta=abs(math.atan2(math.sin(a-math.radians(viewport['angle'])),
+                                         math.cos(a-math.radians(viewport['angle']))))
+                    if delta < math.radians(viewport['degrees']/2) and k in (2,3,4): continue
+                self.band(radius-.22,radius,lo,hi,a0,a1,1,'liner',True)
+                self.band(radius,radius+.075,lo+.025,hi-.025,a0+.003,a1-.003,1,
+                          'glazing' if k==4 else ('plate2' if j%7==0 else 'plate'))
+                if k==4:
+                    self.rod((radius*math.cos(a0),radius*math.sin(a0),lo),
+                             (radius*math.cos(a0),radius*math.sin(a0),hi),.035,'edge',n=6)
+            for z in (bottom,bottom+height):
+                if missing(a,z): continue
+                self.band(radius-.25,radius+.14,z-.07,z+.07,a0,a1,1,'edge')
+            # Thin inward deck strips, with the top tear also cut through the deck lip.
+            if not (top_tear and missing(a,bottom+height)):
+                self.band(.9,radius-.24,bottom+.11,bottom+.22,a0,a1,1,'deck',True)
+        self.band(.7,.9,bottom+.12,bottom+height-.1,steps=32,zone='liner',inside=True)
+        for j in range(16):
+            a=TAU*j/16
+            self.rod((1.0*math.cos(a),1.0*math.sin(a),bottom+.3),
+                     ((radius-.35)*math.cos(a),(radius-.35)*math.sin(a),bottom+.3),.085,'frame',inside=True)
+            self.rod(((radius-.42)*math.cos(a),(radius-.42)*math.sin(a),bottom+.25),
+                     ((radius-.42)*math.cos(a),(radius-.42)*math.sin(a),bottom+height-.2),.085,'frame',inside=True)
+            self.box(((radius-1.0)*math.cos(a),(radius-1.0)*math.sin(a),bottom+.65),
+                     (.45,.65,.85),'rack',True,a)
+        if hole or top_tear:
+            # Peeled teeth are thickness-bearing panels, with narrow bent ribs behind.
+            for side in (-1,1):
+                a=centre+side*width*.49/radius
+                old=self.matrix.copy()
+                self.matrix=old @ Matrix.Translation(Vector((radius*math.cos(a),radius*math.sin(a),bottom+height*.7))) @ Matrix.Rotation(a,4,'Z') @ Matrix.Rotation(side*.65,4,'Y')
+                self.box((.35,0,0),(.9,.45,.13),'edge')
+                self.matrix=old
+            if top_tear:
+                for j in range(5):
+                    a=centre+(j-2)*.12
+                    self.rod(((radius-.6)*math.cos(a),(radius-.6)*math.sin(a),bottom+.5),
+                             ((radius+.4+j*.16)*math.cos(a),(radius+.4+j*.16)*math.sin(a),bottom+height+.5+j*.2),.09,'frame')
+
+    def observation_window(self, drum, viewport):
+        """Exactly one broad, continuous curved pane in a sealed stepped reveal."""
+        r=drum['radius']; z=drum['bottom']; h=drum['height']
+        a0=math.radians(viewport['angle']-viewport['degrees']/2)
+        a1=math.radians(viewport['angle']+viewport['degrees']/2)
+        lo=z+h/3; hi=z+h*5/6
+        self.band(r-.12,r+.03,lo,hi,a0,a1,16,'viewport')
+        for zz in (lo-.10,hi+.10):
+            self.band(r-.24,r+.19,zz-.08,zz+.08,a0-.035,a1+.035,20,'edge')
+        for a in (a0-.025,a1+.025):
+            self.rod(((r+.10)*math.cos(a),(r+.10)*math.sin(a),lo-.16),
+                     ((r+.10)*math.cos(a),(r+.10)*math.sin(a),hi+.16),.11,'trim')
+
+    def bent_stub(self, length, width):
+        """Half arm with a sideways kink and a stripped, open frame at its end."""
+        first=length*.58
+        self.arm(first,width,2,cap=False)
+        old=self.matrix.copy()
+        self.matrix=old @ Matrix.Translation(Vector((first,0,-.15))) @ Matrix.Rotation(math.radians(24),4,'Z') @ Matrix.Rotation(.16,4,'Y')
+        tail=length-first
+        self.box((tail*.5,0,-width*.22),(tail,width*.88,.13),'deck',True)
+        for side in (-1,1):
+            for zz in (-width*.24,width*.24):
+                self.rod((0,side*width*.45,zz),(tail+.25,side*width*.5,zz+.22*side),.10,'frame',inside=True)
+            for j in range(4):
+                x=j*tail/3
+                self.rod((x,side*width*.45,-width*.24),(x,side*width*.45,width*.24),.08,'frame',inside=True)
+            self.box((tail*.18,side*width*.48,0),(tail*.36,.12,width*.55),'edge')
+        self.matrix=old
+
     def arm(self, length, width, modules, broken=False, cap=True):
         h=width*.62
         # Deck and side corridors are shared structure, broken shell stops at its own joint.
@@ -180,6 +295,24 @@ class Parts:
                 self.box((x+(t-1)*step*.28,0,h*.5),
                          (step*.25,width*.98,.10),'plate2' if (k+t)%4==0 else 'plate')
             self.box((x,width*.1,h*.60),(step*.3,width*.35,.22),'trim')
+            old=self.matrix.copy()
+            sites=[(x,-width*.18,.55)] if width>1 else [(x,0,.28)]
+            if width>1.5:
+                sites += [(x-step*.29,width*.27,.45),(x+step*.28,width*.27,.40)]
+            for j,(xx,yy,ww) in enumerate(sites):
+                self.matrix=old @ Matrix.Translation(Vector((xx,yy,h*.59)))
+                self.service_pallet(k*3+j+modules,ww)
+            self.matrix=old
+            if width>1.5:
+                for side in (-1,1):
+                    for j in range(3):
+                        self.matrix=old @ Matrix.Translation(Vector((x+(j-1)*step*.27,side*width*.58,h*.12))) @ Matrix.Rotation(-side*math.pi/2,4,'X')
+                        self.service_pallet(k*6+j,.40)
+                self.matrix=old
+            for side in (-1,1):
+                for tier in (0,1):
+                    self.rod((k*step+.15,side*width*.57,-h*.1+tier*.18),
+                             ((k+1)*step-.15,side*width*.57,-h*.1+tier*.18),.04,'edge',n=6)
             self.box((k*step,0,0),(.12,width*.94,h*.9),'frame',True)
             for side in (-1,1):
                 self.box((x,side*width*.28,-h*.07),(.50,.35,h*.40),'rack',True)
