@@ -11,12 +11,14 @@
 # model <out> <resolved> <default>: stamp the resolved model into status.json and result.txt, and warn when it
 #   differs from the arm default, whatever the provider.
 # base <repo> <out> <issue body file>: parse the optional Base line, fetch and commit its merge before the agent.
-# announce <out> <issue> <seat> <repo> <ceiling seconds> <resume command> <push mode>: best-effort GitHub status.
-# Test announcements require PC_TEST_GH; dry runs never contact GitHub. Linux probes use pwsh and real git.
+# announce <out> <issue> <seat> <repo> <ceiling seconds> <resume command> <push mode>: validate and claim before work.
+# board-dryrun <out>: list ACCEPT or REFUSE for every open codex or opus issue, without claims or agent calls.
+# Test claims require PC_TEST_GH and PC_TEST_GH_DB; real dry runs validate read-only. Linux probes use pwsh and real git.
 $ErrorActionPreference = 'Stop'
 $mode = $args[0]
 $utf8 = New-Object Text.UTF8Encoding($false)
 $test = $env:PC_RUNNER_TEST -eq '1'
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 function Put($path, $value) { [IO.File]::WriteAllText($path, [string]$value, $utf8) }
 function Read($path) { if (Test-Path -LiteralPath $path) { return [IO.File]::ReadAllText($path).Trim() }; return '' }
 # result.txt may be held open by the .bat that redirects a step's output into it (work_issue.ps1 commit runs under
@@ -80,16 +82,31 @@ function Keep-Repo($repo, $tag) {
 }
 # Windows command line quoting, including trailing backslashes. Inputs are argument values, never shell snippets.
 function Quote($value) { return '"' + ([regex]::Replace(([string]$value), '(\\*)"', '$1$1\"') -replace '(\\+)$', '$1$1') + '"' }
-# GitHub is reporting only: neither a missing gh nor an API, JSON or file error may stop a run.
+# Final reporting is best effort. Start validation and claiming must fail closed.
 function Invoke-Gh($method, $endpoint, $payload = $null, $pages = $false) {
   $script:ghOK = $false
+  $script:ghError = ''
   try {
     $exe = 'gh'
     if ($test) {
       if (-not $env:PC_TEST_GH) { Log 'GitHub status skipped: test has no fake gh'; return '' }
       $exe = $env:PC_TEST_GH
     }
-    $null = Get-Command $exe -ErrorAction Stop
+    $command = Get-Command $exe -ErrorAction SilentlyContinue
+    if (-not $command -and $script:boardReadOnly -and -not $test -and $method -eq 'GET') {
+      # The public board audit works before gh is installed. Claims always require authenticated gh.
+      $items = @(); $page = 1
+      do {
+        $url = "https://api.github.com/repos/rcbailey12/voidsworn/$endpoint"
+        if ($pages) { $url += "&page=$page" }
+        $reply = Invoke-RestMethod -UseBasicParsing -TimeoutSec 30 -Headers @{ 'User-Agent' = 'voidsworn-runner-board-audit' } -Uri $url
+        if (-not $pages) { $script:ghOK = $true; return (ConvertTo-Json -InputObject $reply -Depth 30) }
+        $items += @($reply); $page++
+      } while (@($reply).Count -eq 100)
+      $script:ghOK = $true
+      return ('[' + (ConvertTo-Json -InputObject @($items) -Depth 30 -Compress) + ']')
+    }
+    if (-not $command) { throw 'GitHub CLI gh is missing; install it and run gh auth login before starting PC jobs' }
     $words = @('api','--method',$method,"repos/rcbailey12/voidsworn/$endpoint")
     if ($pages) { $words += @('--paginate','--slurp') }
     if ($null -ne $payload) {
@@ -105,7 +122,7 @@ function Invoke-Gh($method, $endpoint, $payload = $null, $pages = $false) {
     if ($code -ne 0) { throw "exit $code $($lines -join ' ')" }
     $script:ghOK = $true
     return ($lines -join "`n")
-  } catch { Log "WARNING: GitHub status $method $endpoint failed: $($_.Exception.Message)"; return '' }
+  } catch { $script:ghError = $_.Exception.Message; Log "WARNING: GitHub status $method $endpoint failed: $script:ghError"; return '' }
 }
 function Status-Body($s, $label, $reason) {
   $g = $s.github
@@ -117,6 +134,7 @@ $($g.marker)
 Runner status: $label
 
 - Seat: $($g.seat)
+- Run: $($s.run)
 - Machine: $($g.machine)
 - Lane folder: $($g.folder)
 - Branch: $branch
@@ -128,17 +146,113 @@ Runner status: $label
 - Result: $reason
 "@
 }
+function Require-Gh($method, $endpoint, $payload = $null, $pages = $false) {
+  $raw = Invoke-Gh $method $endpoint $payload $pages
+  if (-not $script:ghOK) { throw "cannot validate or claim job: $method $endpoint failed ($script:ghError); no agent started" }
+  try { return (ConvertFrom-Json $raw) }
+  catch { throw "cannot validate or claim job: invalid JSON from $method $endpoint; no agent started" }
+}
+function Gh-Pages($endpoint) {
+  $pages = Require-Gh 'GET' $endpoint $null $true
+  foreach ($page in $pages) { foreach ($item in $page) { $item } }
+}
+function Current-Body($body, $prefix) {
+  # A marker is a line, not a heading or an occurrence: bold and plain run lines work too.
+  $current = @(); $runs = @(); $fence = ''; $offset = 0
+  foreach ($line in ([regex]::Split($body, '(?<=\n)'))) {
+    $text = $line.TrimEnd("`r", "`n")
+    if ($text -match '^ {0,3}(`{3,}|~{3,})') {
+      $mark = $Matches[1]
+      if (-not $fence) { $fence = $mark }
+      elseif ($mark[0] -eq $fence[0] -and $mark.Length -ge $fence.Length -and $text -match '^ {0,3}(`{3,}|~{3,})[ \t]*$') { $fence = '' }
+    } elseif (-not $fence) {
+      $entry = @{ start = $offset; end = $offset + $line.Length; text = $text }
+      if ($text.Contains('THIS IS THE JOB NOW')) { $current += $entry }
+      if ($text -match '(?i)^[ \t#*_]*(run[ \t]+[0-9]+|(?:earlier|previous|old)[ \t]+run)\b') { $runs += $entry }
+    }
+    $offset += $line.Length
+  }
+  if ($current.Count -ne 1) { throw "current instruction refused: expected one line containing THIS IS THE JOB NOW outside code fences, found $($current.Count); no agent started" }
+  $h = $current[0]
+  # Take only the opening fixed block, whether it is plain text or fenced for display.
+  $fixed = [regex]::Match($body, '(?im)^[ \t]*Owner:[^\r\n]*(?:\r?\n(?![ \t]*(?:\r?$|`{3,}|~{3,}))[^\r\n]+)*').Value
+  foreach ($field in @('Owner','Brief','Deliver to','Branch','Done when')) {
+    $pattern = [regex]::Escape($field)
+    if ($field -eq 'Done when') { $pattern += '(?:[ \t]+\([^\r\n]*?\))?' }
+    if ([regex]::Matches($fixed, "(?im)^[ \t]*${pattern}:[ \t]*\S[^\r\n]*").Count -ne 1) {
+      throw "current instruction refused: fixed block needs one ${field}: line; no agent started"
+    }
+  }
+  if ($prefix -eq 'codex' -and $fixed -notmatch '(?im)\bEffort \(Codex\):[ \t]*(xhigh|high|medium)\b') {
+    throw 'current instruction refused: Codex fixed block needs Effort (Codex): high or xhigh; no agent started'
+  }
+  $end = $body.Length
+  foreach ($next in $runs) {
+    if ($next.start -gt $h.start) { $end = $next.start; break }
+  }
+  $fixedMatch = [regex]::Match($body, [regex]::Escape($fixed))
+  if ($h.start -lt $fixedMatch.Index) { throw 'current instruction refused: put the fixed block before the current run; no agent started' }
+  $inline = $h.text -creplace '^.*?THIS IS THE JOB NOW[\W_]*', ''
+  if (-not $inline.Trim() -and -not $body.Substring($h.end, $end - $h.end).Trim()) { throw 'current instruction refused: the current block is empty; no agent started' }
+  if ($h.start -lt $fixedMatch.Index + $fixed.Length) {
+    # Some current jobs put their marker and the entire instruction on Done when itself.
+    return $body.Substring($fixedMatch.Index, $end - $fixedMatch.Index).Trim()
+  }
+  return ($fixed.Trim() + "`n`n" + $body.Substring($h.start, $end - $h.start).Trim())
+}
+function Seat-Prefix($seat, $branch) {
+  if ($branch -match '^(codex|work|muse|opus)/') { return $Matches[1] }
+  if ($seat -in @('codex','opus','muse')) { return $seat }
+  return 'work'
+}
+function Validate-Job($i, $issue, $prefix, $pulls, $branches) {
+  if ($i.state -ne 'open' -or $i.pull_request) { throw "job refused: issue #$issue is not an open job (state: $($i.state)); no agent started" }
+  if (@($i.labels | Where-Object { $_.name -eq 'running' -or $_ -eq 'running' }).Count) { throw "job refused: issue #$issue already carries running; another run owns the claim; no agent started" }
+  $body = Current-Body ([string]$i.body) $prefix
+  $jobBranch = "^(codex|work|muse|opus)/issue-$issue(?:-|$)"
+  foreach ($pr in $pulls) {
+    $ref = [string]$pr.head.ref
+    if ($ref -match $jobBranch -or "$($pr.title)`n$($pr.body)" -match "(?im)(?:\b(?:issue|refs)\s+#$issue\b|/issues/$issue\b)") {
+      if (($ref -split '/')[0] -ne $prefix) { throw "job refused: open PR #$($pr.number) from other seat $ref covers issue #$issue; no agent started" }
+    }
+  }
+  foreach ($branch in $branches) {
+    if ($branch.name -match $jobBranch -and ([string]$branch.name -split '/')[0] -ne $prefix) {
+      throw "job refused: delivery branch $($branch.name) from another seat exists for issue #$issue; no agent started"
+    }
+  }
+  return $body
+}
+function Issue-Lock($issue) {
+  # All PC lanes and seats use the same OS temp folder. Hold this only through validation and the claim, not agent work.
+  $path = Join-Path ([IO.Path]::GetTempPath()) "voidsworn-runner-issue-$issue.lock"
+  if ($test) { $path = Join-Path (Split-Path -Parent $env:PC_TEST_GH_DB) "issue-$issue.lock" }
+  $deadline = [DateTime]::UtcNow.AddSeconds(30)
+  while ($true) {
+    try { return [IO.File]::Open($path, 'OpenOrCreate', 'ReadWrite', 'None') }
+    catch [IO.IOException] {
+      if ([DateTime]::UtcNow -ge $deadline) { throw 'job claim stayed locked for 30 seconds; no agent started' }
+      Start-Sleep -Milliseconds 100
+    }
+  }
+}
 function End-Announcement($s, $code) {
-  if (-not $s.github) { return }
+  if (-not $s.github -or -not $s.github.claimed) { return }
   try {
     $g = $s.github
+    # Never edit or clear a claim replaced by another run, even on the same branch or seat.
+    $raw = Invoke-Gh 'GET' "issues/comments/$($g.comment)"
+    if (-not $ghOK) { return }
+    $comment = ConvertFrom-Json $raw
+    if (-not ([string]$comment.body).Contains("- Run: $($s.run)")) { Log 'GitHub finish skipped: status comment belongs to another run'; return }
     $label = 'failed'
     if ($code -eq '0' -and $s.status -in @('checked_push','unverified')) { $label = 'finished' }
     if ($s.status -eq 'partial') { $label = 'partial' }
     if ($g.comment) { $null = Invoke-Gh 'PATCH' "issues/comments/$($g.comment)" @{ body = (Status-Body $s $label $s.reason) } }
-  } catch { Log "WARNING: GitHub final comment failed: $($_.Exception.Message)" }
-  # Clearing the label must still be attempted when editing the comment fails.
-  $null = Invoke-Gh 'DELETE' "issues/$($s.github.issue)/labels/running"
+    # Clearing the owned label must still be attempted when editing the comment fails.
+    $null = Invoke-Gh 'DELETE' "issues/$($g.issue)/labels/running"
+    if ($ghOK) { $g.claimed = $false; Save-State $s }
+  } catch { Log "WARNING: GitHub final status failed: $($_.Exception.Message)" }
 }
 try {
   if ($mode -eq 'init') {
@@ -250,37 +364,88 @@ try {
     Put (Join-Path $out 'resume.txt') ("$resume`n$note".Trim())
     Log $note
   }
+  elseif ($mode -eq 'board-dryrun') {
+    $script:out = $args[1]
+    $null = New-Item -ItemType Directory -Force -Path $out
+    $script:boardReadOnly = $true
+    if ($test -and (-not $env:PC_TEST_GH -or -not $env:PC_TEST_GH_DB)) { throw 'test board audit requires fake gh and PC_TEST_GH_DB' }
+    if (-not $test -and -not (Get-Command gh -ErrorAction SilentlyContinue)) {
+      Log 'GitHub CLI gh is missing: claims will fail closed; this read-only audit uses public REST'
+    }
+    $issues = @(Gh-Pages 'issues?state=open&per_page=100')
+    $pulls = @(Gh-Pages 'pulls?state=open&per_page=100')
+    $branches = @(Gh-Pages 'branches?per_page=100')
+    $report = @("Board dry run (UTC): $([DateTime]::UtcNow.ToString('o')); no claims or agent calls")
+    foreach ($i in ($issues | Sort-Object number)) {
+      if ($i.pull_request -or $i.state -ne 'open') { continue }
+      $seats = @($i.labels | ForEach-Object { if ($_ -is [string]) { $_ } else { $_.name } } | Where-Object { $_ -in @('codex','opus') })
+      foreach ($prefix in $seats) {
+        try {
+          $null = Validate-Job $i ([string]$i.number) $prefix $pulls $branches
+          $report += "#$($i.number) [$prefix] ACCEPT"
+        } catch { $report += "#$($i.number) [$prefix] REFUSE: $($_.Exception.Message)" }
+      }
+    }
+    Put (Join-Path $out 'board_audit.txt') (($report -join "`n") + "`n")
+    $report | ForEach-Object { Log $_ }
+    exit 0
+  }
   elseif ($mode -eq 'announce') {
     $script:out = $args[1]
-    # Real dry runs must never label or comment on real issues. Test runs can only call their fake gh.
-    if ($args[7] -ne 'real' -and -not ($test -and $env:PC_TEST_GH)) { exit 0 }
+    $issue = $args[2]
+    if ($issue -notmatch '^[1-9][0-9]*$') { throw 'invalid job issue number; no agent started' }
+    if ($test -and (-not $env:PC_TEST_GH -or -not $env:PC_TEST_GH_DB)) { throw 'test claim requires fake gh and PC_TEST_GH_DB (no live GitHub); no agent started' }
+    $lock = Issue-Lock $issue
     try {
       $s = Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
       $repo = $args[4]
-      $head = @(Git @('-C',$repo,'rev-parse','HEAD')) -join ''
-      $g = @{ issue = $args[2]; seat = $args[3]; folder = $repo; machine = [Environment]::MachineName;
+      $i = Require-Gh 'GET' "issues/$issue"
+      if ($i.state -ne 'open' -or $i.pull_request) { throw "job refused: issue #$issue is not an open job (state: $($i.state)); no agent started" }
+      if (@($i.labels | Where-Object { $_.name -eq 'running' -or $_ -eq 'running' }).Count) { throw "job refused: issue #$issue already carries running; another run owns the claim; no agent started" }
+      $prefix = Seat-Prefix $args[3] $s.branch
+      $body = Current-Body ([string]$i.body) $prefix
+      $pulls = @(Gh-Pages 'pulls?state=open&per_page=100')
+      $branches = @(Gh-Pages 'branches?per_page=100')
+      $body = Validate-Job $i $issue $prefix $pulls $branches
+      $comments = @(Gh-Pages "issues/$issue/comments?per_page=100")
+      # Snapshot exactly what was validated. Prep must never re-fetch a possibly changed or older brief.
+      Put (Join-Path $out 'validated_issue.json') (@{ number = $issue; title = $i.title; body = $body; run = $s.run } | ConvertTo-Json)
+      $s | Add-Member -NotePropertyName instruction_run -NotePropertyValue $s.run -Force
+      Save-State $s
+      # Dry runs validate read-only. Only fixture tests may write to their fake GitHub.
+      if ($args[7] -ne 'real' -and -not $test) { Log "job validated: issue #$issue (dry run, no claim written)"; exit 0 }
+      $head = @($branches | Where-Object { $_.name -eq 'main' } | ForEach-Object { $_.commit.sha }) -join ''
+      $g = @{ issue = $issue; seat = $args[3]; folder = $repo; machine = [Environment]::MachineName;
         started = [DateTime]::UtcNow.ToString('o'); ceiling = $args[5]; resume = $args[6]; comment = 0;
-        start_commit = $head; marker = "<!-- voidsworn-runner-status branch=$($s.branch) -->" }
+        start_commit = $head; claimed = $false; marker = "<!-- voidsworn-runner-status branch=$($s.branch) -->" }
       $s | Add-Member -NotePropertyName github -NotePropertyValue $g -Force
       Save-State $s
       $null = Invoke-Gh 'GET' 'labels/running'
-      if (-not $ghOK) { $null = Invoke-Gh 'POST' 'labels' @{ name = 'running'; color = '1D76DB'; description = 'An agent is working this issue' } }
-      $null = Invoke-Gh 'POST' "issues/$($g.issue)/labels" @{ labels = @('running') }
+      if (-not $ghOK) { $null = Require-Gh 'POST' 'labels' @{ name = 'running'; color = '1D76DB'; description = 'An agent is working this issue' } }
+      $null = Require-Gh 'POST' "issues/$issue/labels" @{ labels = @('running') }
+      $g.claimed = $true
       # Reuse this branch's comment on retries instead of adding a new comment every run.
-      $raw = Invoke-Gh 'GET' "issues/$($g.issue)/comments?per_page=100" $null $true
-      if ($ghOK) {
-        foreach ($page in (ConvertFrom-Json $raw)) {
-          foreach ($comment in $page) { if ([string]$comment.body -like "$($g.marker)*") { $g.comment = $comment.id } }
-        }
-        $payload = @{ body = (Status-Body $s 'running' 'agent started') }
-        if ($g.comment) { $null = Invoke-Gh 'PATCH' "issues/comments/$($g.comment)" $payload }
-        else {
-          $raw = Invoke-Gh 'POST' "issues/$($g.issue)/comments" $payload
-          if ($ghOK) { $g.comment = (ConvertFrom-Json $raw).id }
+      try {
+        foreach ($comment in $comments) { if (([string]$comment.body).StartsWith($g.marker)) { $g.comment = $comment.id } }
+        $payload = @{ body = (Status-Body $s 'running' 'claimed before checkout and model calls') }
+        if ($g.comment) { $null = Require-Gh 'PATCH' "issues/comments/$($g.comment)" $payload }
+        else { $reply = Require-Gh 'POST' "issues/$issue/comments" $payload; $g.comment = $reply.id }
+        if (-not $g.comment) { throw 'claim comment has no id; no agent started' }
+        $claimedIssue = Require-Gh 'GET' "issues/$issue"
+        $claimedComment = Require-Gh 'GET' "issues/comments/$($g.comment)"
+        if (-not @($claimedIssue.labels | Where-Object { $_.name -eq 'running' -or $_ -eq 'running' }).Count -or
+          -not ([string]$claimedComment.body).StartsWith($g.marker) -or -not ([string]$claimedComment.body).Contains("- Run: $($s.run)")) {
+          throw 'claim did not land: running label and owned status comment must read back; no agent started'
         }
         Save-State $s
+      } catch {
+        # Still under the issue lock: no other local seat can have acquired this label in between.
+        $null = Invoke-Gh 'DELETE' "issues/$issue/labels/running"
+        $g.claimed = $false; Save-State $s
+        throw
       }
-    } catch { Log "WARNING: GitHub start status failed: $($_.Exception.Message)" }
+      Log "job claimed: issue #$issue by $($g.seat), run $($s.run); current instruction validated"
+    } finally { $lock.Dispose() }
     exit 0
   }
   elseif ($mode -eq 'fetch') {
@@ -432,7 +597,14 @@ try {
   }
   else { throw "unknown runner step $mode" }
 } catch {
-  if ($script:out) { Log $_.Exception.Message; if (Test-Path (Join-Path $out 'status.json')) { State 'failed' $_.Exception.Message } }
+  if ($script:out) {
+    Log $_.Exception.Message
+    if (Test-Path (Join-Path $out 'status.json')) {
+      State 'failed' $_.Exception.Message
+      End-Announcement (Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json) '14'
+    }
+  }
   else { Write-Host $_.Exception.Message }
   exit 14
 }
+exit 0

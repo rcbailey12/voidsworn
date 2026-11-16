@@ -18,7 +18,8 @@ function pass(s) { passed++; console.log('PASS ' + s); }
 // Run on every CI host: both entry points must use all five shared steps, and the task must carry resume context.
 for (const name of ['work_issue', 'codex_issue']) {
   const bat = read(path.join(here, name + '.bat'));
-  for (const step of ['init', 'wait', 'checkout', 'preflight', 'finish']) assert(bat.includes('%COMMON% ' + step + ' '), name + ' missing ' + step);
+  for (const step of ['init', 'wait', 'announce', 'checkout', 'preflight', 'finish']) assert(bat.includes('%COMMON% ' + step + ' '), name + ' missing ' + step);
+  assert(bat.indexOf('%COMMON% announce ') < bat.indexOf('%COMMON% checkout '), name + ' must claim before checkout');
   for (const step of ['space', 'hashcheck', 'model']) assert(bat.includes('%COMMON% ' + step + ' '), name + ' missing issue 722 step ' + step);
   assert(!/git clone .*https:|git clean -fd/.test(bat), name + ' bypasses safe checkout');
   assert(read(path.join(here, name + '.ps1')).includes('$resume'), name + ' missing task resume note');
@@ -37,6 +38,7 @@ if (process.platform !== 'win32') {
   process.exit(0);
 }
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'runner687 proof '));
+const gh = require('./runner_claim_fixture')(root);
 console.log('Evidence: ' + root);
 function run(exe, args, env = {}, cwd = root) {
   const p = spawnSync(exe, args, { cwd, env: { ...process.env, ...env }, encoding: 'utf8', windowsHide: true, windowsVerbatimArguments: /cmd\.exe$/i.test(exe), timeout: 90000 });
@@ -67,16 +69,16 @@ const partial = fixtureCommit({ 'progress.txt': 'from partial\n' }, base,
 const conflicting = fixtureCommit({ 'progress.txt': 'conflicting main\n' }, base);
 write(path.join(source, 'HEAD'), 'ref: refs/heads/main\n');
 write(path.join(source, 'refs/heads/main'), base + '\n');
-const arms = ['opus', 'sonnet', 'deepseek', 'kimicode', 'codex'];
+const arms = ['opus', 'sonnet', 'deepseek', 'kimi', 'kimicode', 'codex'];
 for (const arm of arms) write(path.join(source, 'refs/heads', (arm === 'codex' ? 'codex/issue-687' : 'work/issue-687-' + arm) + '-partial'), partial + '\n');
-const issue = path.join(root, 'issue.json');
-write(issue, JSON.stringify({ title: 'Stub runner job', body: 'Owner: codex\nDeliver to: tools/pc/\nEffort (Codex): high\nDone when: stub finishes' }));
 const agent = path.join(root, 'stub agent.bat');
 const gitStub = path.join(root, 'stub git.bat');
 write(agent, '@echo off\r\n"' + process.execPath + '" "' + path.join(root, 'agent.js') + '" %*\r\nexit /b %ERRORLEVEL%\r\n');
 write(path.join(root, 'agent.js'), `
 const fs = require('fs'), path = require('path');
 const a = process.argv.slice(2), probe = a.some(s => s.includes('Reply with exactly RUNNER_READY.'));
+const db = JSON.parse(fs.readFileSync(process.env.PC_TEST_GH_DB, 'utf8'));
+if (!db.running || !db.comments.some(c => c.body.includes('Runner status: running') && c.body.includes('- Run: '))) process.exit(34);
 if (probe) {
   fs.appendFileSync(process.env.PC_TEST_TRACE, JSON.stringify(a) + '\\n');
   if (process.env.STUB_AUTH_FAIL === '1') {
@@ -88,6 +90,7 @@ if (probe) {
   else console.log('RUNNER_READY');
 } else {
   const task = fs.existsSync('CODEX_TASK.md') ? 'CODEX_TASK.md' : 'WORK_TASK.md';
+  if (fs.readFileSync(task,'utf8').includes('OLD BRIEF MUST NOT REACH AGENT')) process.exit(35);
   if (!fs.readFileSync(task,'utf8').includes('Resumed by merging')) process.exit(31);
   if (!fs.readFileSync(task,'utf8').includes('saved work before stopping')) process.exit(33);
   if (fs.readFileSync('progress.txt','utf8') !== 'from partial\\n') process.exit(32);
@@ -115,7 +118,7 @@ const p = cp.spawnSync(process.env.PC_REAL_GIT,a,{stdio:'inherit',windowsHide:tr
 const gitPath = run('where.exe', ['git.exe']).text.trim().split(/\r?\n/)[0];
 const mirror = path.join(root, 'shared mirror.git');
 const defaults = {
-  PC_RUNNER_TEST: '1', PC_TEST_SOURCE: source, PC_TEST_MIRROR: mirror, PC_TEST_ISSUE: issue,
+  PC_RUNNER_TEST: '1', PC_TEST_SOURCE: source, PC_TEST_MIRROR: mirror,
   PC_TEST_PREFLIGHT: agent, PC_TEST_GIT: gitStub, PC_REAL_GIT: gitPath, PC_TEST_RETRY_SECONDS: '0',
   PC_TEST_STOP_BEFORE_PUBLISH: '1', WORK_TEST_AGENT: agent, CODEX_TEST_AGENT: agent, WORK_SKIP_CHECKS: '1',
   PC_WAIT_FOR: '', PC_WAIT_RUN: '', PC_WAIT_SECONDS: '2', STUB_GIT_FAULT: '', STUB_AUTH_FAIL: '',
@@ -123,11 +126,31 @@ const defaults = {
   // Issue 722: about 68 GB fake free space, above the 60 GB floor, so fixture runs pass the space check on any host;
   // the dedicated floor tests force 100 MB instead. Settings and hashes fixtures stay unset unless a test names them.
   PC_TEST_SPACE_FREE_MB: '70000', PC_TEST_SETTINGS: '', PC_TEST_HASHES: '',
+  PC_TEST_GH: gh.fake, PC_TEST_GH_FAIL: '', PC_TEST_GH_HOLD: '',
   GIT_AUTHOR_NAME: 'Fixture', GIT_AUTHOR_EMAIL: 'fixture@example.invalid', GIT_COMMITTER_NAME: 'Fixture', GIT_COMMITTER_EMAIL: 'fixture@example.invalid'
 };
 function job(arm, label, extra = {}) {
   const home = path.join(root, arm + '-' + label); fs.mkdirSync(home, { recursive: true });
-  const env = { ...defaults, WORK_ROOT: home, CODEX_TEST_ROOT: home, PC_TEST_TRACE: path.join(home, 'probe_args.txt'), PC_TEST_COUNTER: path.join(home, 'tries'), ...extra };
+  const env = { ...defaults, WORK_ROOT: home, CODEX_TEST_ROOT: home, PC_TEST_TRACE: path.join(home, 'probe_args.txt'), PC_TEST_COUNTER: path.join(home, 'tries'),
+    PC_TEST_GH_DB: path.join(home, 'gh-db.json'), PC_TEST_GH_TRACE: path.join(home, 'gh.jsonl'), ...extra };
+  if (!fs.existsSync(env.PC_TEST_GH_DB)) {
+    const db = gh.database(687, base);
+    const prefix = arm === 'codex' ? 'codex' : 'work';
+    if (label === 'same-seat') {
+      db.branches.push({ name: prefix + '/issue-687' + (prefix === 'work' ? '-deepseek' : '') });
+      db.pulls = [{ number: 700, head: { ref: prefix + '/issue-687' } }];
+    }
+    if (arm !== 'codex') db.issue.body = db.issue.body.replace('Effort (Codex): high\n', '');
+    if (label === 'same-seat') db.issue.body = db.issue.body.replace('## THIS IS THE JOB NOW', '**Run 2: THIS IS THE JOB NOW.** Inline instructions.').replace('## Earlier run (DONE)', 'Run 1 (DONE):');
+    if (label === 'closed') db.issue.state = 'closed';
+    if (label === 'claimed') db.running = true;
+    if (label === 'other-pr') db.pulls = [{ number: 700, head: { ref: 'opus/issue-687' } }];
+    if (label === 'other-branch') db.branches.push({ name: 'opus/issue-687' });
+    if (label === 'no-effort') db.issue.body = db.issue.body.replace('Effort (Codex): high\n', '');
+    if (label === 'no-current') db.issue.body = db.issue.body.replace('## THIS IS THE JOB NOW', '## Old job');
+    if (label === 'two-current') db.issue.body += '\n## Run 2 THIS IS THE JOB NOW\nAnother job.\n';
+    write(env.PC_TEST_GH_DB, JSON.stringify(db)); write(env.PC_TEST_GH_TRACE, '');
+  }
   const bat = path.join(here, arm === 'codex' ? 'codex_issue.bat' : 'work_issue.bat');
   const cmd = '""' + bat + '" 687' + (arm === 'codex' ? '' : ' ' + arm + ' dryrun') + '"';
   const r = run(process.env.COMSPEC, ['/d', '/s', '/c', cmd], env);
@@ -140,6 +163,41 @@ function job(arm, label, extra = {}) {
   return { ...r, out, repo, env, result: read(path.join(out, 'result.txt')), state: JSON.parse(read(path.join(out, 'status.json'))) };
 }
 (async () => { try {
+  for (const arm of ['codex', 'deepseek', 'kimi', 'kimicode']) {
+    for (const [scenario, reason] of [['closed', 'not an open job'], ['claimed', 'already carries running'],
+      ['other-pr', 'open PR #700'], ['other-branch', 'delivery branch opus/issue-687'], ['no-current', 'found 0'], ['two-current', 'found 2']]) {
+      const r = job(arm, scenario);
+      assert.equal(r.code, 14, r.text + '\n' + r.result);
+      assert.equal(r.state.status, 'failed'); assert(r.result.includes(reason), r.result);
+      assert(!fs.existsSync(r.repo), 'refusal before checkout');
+      assert(!fs.existsSync(r.env.PC_TEST_TRACE), 'refusal before model probe');
+      const calls = read(r.env.PC_TEST_GH_TRACE).trim().split(/\r?\n/).filter(Boolean).map(l => JSON.parse(l));
+      assert(calls.every(c => c.method === 'GET'), 'refusal cannot change another claim');
+      assert.equal(JSON.parse(read(r.env.PC_TEST_GH_DB)).running, scenario === 'claimed');
+      pass(arm + ': ' + scenario + ' refuses before checkout, probe or agent, with no GitHub writes');
+    }
+    const rerun = job(arm, 'same-seat');
+    assert.equal(rerun.code, 0, rerun.text + '\n' + rerun.result);
+    assert(fs.existsSync(path.join(rerun.repo, 'agent_started.txt')), rerun.result);
+    const task = read(path.join(rerun.out, arm === 'codex' ? 'CODEX_TASK.md' : 'WORK_TASK.md'));
+    assert(task.includes('Inline instructions.') && !task.includes('OLD BRIEF'), task);
+    const calls = read(rerun.env.PC_TEST_GH_TRACE).trim().split(/\r?\n/).filter(Boolean).map(l => JSON.parse(l));
+    assert(calls.some(c => c.method === 'POST' && /\/labels$/.test(c.endpoint)), 'successful claim sets running');
+    assert(calls.some(c => c.payload?.body?.includes('claimed before checkout and model calls')), 'successful claim writes its status comment');
+    pass(arm + ': same-seat branch and PR rerun starts with a bold marker, current brief only and Codex-only Effort');
+  }
+  const effortMissing = job('codex', 'no-effort');
+  assert.equal(effortMissing.code, 14); assert(!fs.existsSync(effortMissing.repo));
+  assert(effortMissing.result.includes('Codex fixed block needs Effort'), effortMissing.result);
+  pass('Codex alone refuses a missing Effort line before checkout');
+  for (const arm of ['codex', 'deepseek', 'kimicode']) {
+    const failure = job(arm, 'claim-failure', { PC_TEST_GH_FAIL: 'POST repos/rcbailey12/voidsworn/issues/687/comments' });
+    assert.equal(failure.code, 14, failure.text + failure.result);
+    assert(!fs.existsSync(failure.repo)); assert(!fs.existsSync(failure.env.PC_TEST_TRACE));
+    assert(!JSON.parse(read(failure.env.PC_TEST_GH_DB)).running, 'failed comment claim rolls back its label');
+    assert(failure.result.includes('cannot validate or claim job'), failure.result);
+    pass(arm + ': failed status-comment claim stops before checkout or model calls and releases only its label');
+  }
   for (const arm of arms) {
     const r = job(arm, 'resume');
     assert.equal(r.code, 0, r.text + '\n' + r.result);
@@ -150,11 +208,12 @@ function job(arm, label, extra = {}) {
     const probe = JSON.parse(read(r.env.PC_TEST_TRACE).trim());
     assert.equal(probe[0], arm === 'codex' ? 'exec' : arm === 'kimicode' ? '-m' : 'run');
     assert.equal(r.state.status, 'unverified');
-    const expectModel = arm === 'codex' ? 'gpt-6.1-sol' : arm === 'kimicode' ? 'kimi-code/kimi-for-coding' : arm === 'opus' ? 'anthropic/claude-opus-5-5' : arm === 'sonnet' ? 'anthropic/claude-sonnet-5-5' : 'deepseek/deepseek-flash';
+    const expectModel = arm === 'codex' ? 'gpt-6.1-sol' : arm === 'kimicode' ? 'kimi-code/kimi-for-coding' : arm === 'kimi' ? 'moonshotai/kimi-k3.1-pro' : arm === 'opus' ? 'anthropic/claude-opus-5-5' : arm === 'sonnet' ? 'anthropic/claude-sonnet-5-5' : 'deepseek/deepseek-flash';
     assert(r.result.includes('model: ' + expectModel), r.result);
     assert.equal(r.state.model, expectModel);
     assert(!r.result.includes('differs from the arm default'), r.result);
-    pass(arm + ': local mirror clone, partial merged, task note, correct preflight and stub agent, model stamped, no publish');
+    assert(!JSON.parse(read(r.env.PC_TEST_GH_DB)).running, 'finished run releases its claim');
+    pass(arm + ': claim before probe and agent, only current brief, partial resumed, model stamped, claim released, no publish');
     const why = arm === 'kimicode' ? 'provider managed:kimi-code has no credential configured (expired login)' : arm === 'codex' ? 'quota exhausted' : 'credit balance is too low';
     const bad = job(arm, 'auth', { STUB_AUTH_FAIL: '1', STUB_REASON: why });
     assert.notEqual(bad.code, 0); assert(bad.result.includes(why), bad.result);
