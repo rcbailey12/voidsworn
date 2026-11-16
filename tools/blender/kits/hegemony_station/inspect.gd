@@ -12,7 +12,27 @@ const CAM = preload("res://render/camera_rig.gd")
 func _init() -> void:
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
-func mesh_bounds(node: Node3D, relative: Node3D) -> AABB:
+static func imports_ready() -> bool:
+	# A PackedScene can load with missing textures without triggering the block guard.
+	# Refuse that incomplete import too, before measuring or saving a picture.
+	var manifest: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://assets/ships/manifest.json"))
+	for code in manifest.get("ships", {}):
+		for filename in manifest.ships[code].get("files", {}):
+			if not str(filename).get_extension().to_lower() in ["jpg", "jpeg", "png"]: continue
+			var path: String = "res://assets/ships/" + str(code) + "/" + str(filename)
+			var config := ConfigFile.new()
+			if config.load(path + ".import") != OK:
+				printerr("T2 missing texture import: ", path); return false
+			var have := false
+			for key in config.get_section_keys("remap"):
+				if str(key).begins_with("path"):
+					have = true
+					if not FileAccess.file_exists(str(config.get_value("remap", key))):
+						printerr("T2 incomplete texture cache: ", path); return false
+			if not have: printerr("T2 texture import has no remap: ", path); return false
+	return true
+
+static func mesh_bounds(node: Node3D, relative: Node3D) -> AABB:
 	var result := AABB()
 	var have := false
 	for child in node.find_children("*", "MeshInstance3D", true, false):
@@ -48,6 +68,7 @@ func cruiser_mesh(node: Node3D, relative: Node3D, path: String) -> bool:
 func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	if args.is_empty(): printerr("Expected output JSON path"); quit(1); return
+	if not imports_ready(): quit(1); return
 	var api = API.new()
 	var error: String = api.load_rules()
 	if error != "": printerr(error); quit(1); return
@@ -61,10 +82,12 @@ func _run() -> void:
 	var cam := CAM.new()
 	root.add_child(cam)
 	var report := {"scenario_seed": 373, "footprint": footprint, "ships": [], "max_ship_height": 0.0,
+		"comparisons": [],
 		"camera": {"radius": cam.r, "beta": cam.b, "fov": cam.fov, "min_radius": cam.min_r},
 		"cruiser_mesh": "cruiser.obj", "cruiser_source": "corsair|Cruiser; real ShipView geometry, studio material"}
 	cam.free()
 	var seen := {}
+	var classes := {}
 	for fac in api.R.FACTIONS:
 		var roster: Array = api.R.FACTIONS[fac].get("roster", []).duplicate()
 		var boss: String = str(api.R.FACTIONS[fac].get("boss", ""))
@@ -84,6 +107,10 @@ func _run() -> void:
 			if PG.stop_if_any(): return
 			var box := mesh_bounds(sv.hull, sv)
 			report.ships.append({"code": sv.code, "faction_class": id, "height": box.size.y, "length": sv.L})
+			var cls := str(unit.get("cls"))
+			if not classes.has(cls):
+				classes[cls] = true
+				report.comparisons.append({"code": sv.code, "class": cls, "length": sv.L, "unit": unit.duplicate(true)})
 			report.max_ship_height = maxf(float(report.max_ship_height), box.size.y)
 			if id == "corsair|Cruiser":
 				if not cruiser_mesh(sv.hull, sv, args[0].get_base_dir().path_join("cruiser.obj")):

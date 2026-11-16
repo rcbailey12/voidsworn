@@ -1,51 +1,206 @@
 {
   "status": "PASS",
-  "scope": "CPU review sheet only. Not approval for production, install or performance.",
+  "scope": "Review sheet only. Not approval for production, install or performance.",
   "checks": [
     {
       "name": "source design.py",
       "pass_": true,
-      "evidence": "e20770dfda3879129fd5a2c1ffacaf273a07fde230b6d6a80a660b6541a5b5da"
+      "evidence": "427919c5f4bf9ecbdc12658fa212844e2fddc043625be9c4cf2d47112dfc06b1"
     },
     {
       "name": "source parts.py",
       "pass_": true,
-      "evidence": "11731149d999bfe6ff4bc5826e815710d718af73a03836bf860477e09609934e"
+      "evidence": "97d4c63ff76482dfa66c5b1a2a21e71ad03a97bdcce748d708003c11e56d5b2c"
     },
     {
       "name": "source stack.py",
       "pass_": true,
-      "evidence": "759c45de409956050d17208dc0056d9a953f1705e825898652485392e5529741"
+      "evidence": "0095346260e6d3cc4e1c8366b4f80f033dc58bb3e4b6ab31e3d514fb4c12d85b"
     },
     {
       "name": "source review.py",
       "pass_": true,
-      "evidence": "88425da32ae392c0b6a65117baf4fbcb1a46a83d04b55ff86bd2ad8d9e1a611a"
+      "evidence": "bdb2bfdb8178f194959f7d5f5d91fff3d0ab170a38e68147ef1c8f3cc1843956"
     },
     {
       "name": "source inspect.gd",
       "pass_": true,
-      "evidence": "2c1f470b2e44547f732a05c9a110db39136dff0863c8a3e2015358dc402fc89e"
+      "evidence": "4cf8d13fb6f3e6dd3739c0c31ab320dd349e7ec60df5d6fcf96aa5ee3853726c"
     },
     {
       "name": "source check.py",
       "pass_": true,
-      "evidence": "0ae574e10bf5d99ec258729bd5e5f253e5098aaffef870bfbad0c7c8e7c96634"
+      "evidence": "bf4f89583c9a6375bccd832dedc32cbeddbc5814b0884dd4dfa2b8c8b5588fa5"
     },
     {
       "name": "source sheets.py",
       "pass_": true,
-      "evidence": "ea01358ba71aea4cdeb3c3eb3e2d8afc555280fd473625b8f26439333e36c82b"
+      "evidence": "9ca93045bb48c349fb3315a9d409d261238c9521a1ed51a249ce7a15437b49e0"
+    },
+    {
+      "name": "source scale.py",
+      "pass_": true,
+      "evidence": "0bb6b68ac437faa8862835d347ba5e8cb155892ce6cef5ba0386451f953a1a92"
+    },
+    {
+      "name": "source capture.gd",
+      "pass_": true,
+      "evidence": "3d8aa7daa802e8785df2e55b07e95e74cde8672424922eed4429b66659522473"
+    },
+    {
+      "name": "source range_selftest.py",
+      "pass_": true,
+      "evidence": "90dd42d908c2cf8ed5dd7ec7da322218b17382922533fa01d49e4362d79602f2"
+    },
+    {
+      "name": "source review_run.bat",
+      "pass_": true,
+      "evidence": "7686e6b6704df3499884d268a9fa86365a3df760708266a536bf5bed1e5c26f3"
     },
     {
       "name": "core and arms",
       "pass_": true,
-      "evidence": "9 core drums; 4 attached arms including stub; 1 tethered section"
+      "evidence": "9 core drums; 3 intact arms and 1 bent open stub without collar"
     },
     {
       "name": "towers and gap",
       "pass_": true,
-      "evidence": "5 towers, 11 of 12 bearing slots occupied"
+      "evidence": "5 towers, 11 bearing sectors across 320 degrees; 40 degree open gap"
+    },
+    {
+      "name": "separate towers around hub",
+      "pass_": true,
+      "evidence": {
+        "overlapping_plan_boxes": [],
+        "largest_empty_arc_degrees": 91.52768871384876,
+        "measured_tower_heights": [
+          39.63010215759277,
+          20.723901748657227,
+          35.599924087524414,
+          28.408912658691406,
+          14.489456176757812
+        ]
+      }
+    },
+    {
+      "name": "exported tower axes upright",
+      "pass_": true,
+      "evidence": {
+        "GLB_axis_tilt_degrees": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "name": "varied core drums",
+      "pass_": true,
+      "evidence": {
+        "measured_drum_sizes": [
+          [
+            19.667823791503906,
+            19.152950286865234,
+            3.5503969192504883
+          ],
+          [
+            22.008424758911133,
+            21.45591163635254,
+            4.509963512420654
+          ],
+          [
+            25.041397094726562,
+            25.474035263061523,
+            6.141226291656494
+          ],
+          [
+            22.762940406799316,
+            22.22356414794922,
+            3.1665701866149902
+          ],
+          [
+            24.273744583129883,
+            23.75887107849121,
+            6.237184047698975
+          ],
+          [
+            21.99590015411377,
+            21.45591163635254,
+            4.12613582611084
+          ],
+          [
+            23.88991928100586,
+            23.375043869018555,
+            5.277616500854492
+          ],
+          [
+            21.761253356933594,
+            20.4963436126709,
+            3.454439163208008
+          ],
+          [
+            22.73843765258789,
+            23.254197120666504,
+            8.45505142211914
+          ]
+        ]
+      }
+    },
+    {
+      "name": "one continuous large viewport",
+      "pass_": true,
+      "evidence": {
+        "exported_connected_glazing_shells": 1,
+        "module": "observation_window"
+      }
+    },
+    {
+      "name": "four holes and torn top",
+      "pass_": true,
+      "evidence": [
+        {
+          "module": "core_03",
+          "open_through_shell": true,
+          "nominal_width": 5.757400036885002,
+          "top_tear": false
+        },
+        {
+          "module": "core_05",
+          "open_through_shell": true,
+          "nominal_width": 6.908880044262002,
+          "top_tear": false
+        },
+        {
+          "module": "core_07",
+          "open_through_shell": true,
+          "nominal_width": 5.3735733677593345,
+          "top_tear": false
+        },
+        {
+          "module": "core_08",
+          "open_through_shell": true,
+          "nominal_width": 6.333140040573501,
+          "top_tear": false
+        },
+        {
+          "module": "core_09",
+          "open_through_shell": true,
+          "nominal_width": 9.211840059016003,
+          "top_tear": true
+        }
+      ]
+    },
+    {
+      "name": "held cargo and folded plate",
+      "pass_": true,
+      "evidence": "three held pods and one folded plate, built as kit geometry"
+    },
+    {
+      "name": "three spokes and four radiators",
+      "pass_": true,
+      "evidence": "one spoke buckled inward; one cold radiator hanging open"
     },
     {
       "name": "light map",
@@ -61,17 +216,41 @@
       "evidence": 7
     },
     {
-      "name": "static footprint",
+      "name": "source plan footprint",
       "pass_": true,
       "evidence": {
-        "vertices_outside_real_hex_union": 0
+        "source_vertices_outside_real_hex_union": 0,
+        "scaled_vertices_outside_live_footprint": 99863,
+        "live_footprint_integration": "PENDING; review only"
       }
+    },
+    {
+      "name": "R247 exported station range",
+      "pass_": true,
+      "evidence": {
+        "GLB_long_axis": 99.19999060741884,
+        "target_from_table": [
+          99.2,
+          297.6
+        ],
+        "live_board_one_hex": 26.0,
+        "live_board_large": 46.0
+      }
+    },
+    {
+      "name": "uniform proportions",
+      "pass_": true,
+      "evidence": [
+        1.919133345628334,
+        1.919133345628334,
+        1.919133345628334
+      ]
     },
     {
       "name": "taller than ships",
       "pass_": true,
       "evidence": {
-        "station": 52.1292839050293,
+        "station": 69.28071594238281,
         "tallest_loaded_ship": 51.1292686462402,
         "hulls": 30
       }
@@ -86,7 +265,7 @@
       "pass_": true,
       "evidence": {
         "modules_without_inside_geometry": [],
-        "inside_triangles": 55092
+        "inside_triangles": 110428
       }
     },
     {
@@ -103,10 +282,18 @@
       }
     },
     {
-      "name": "only passive arm animates",
+      "name": "radiator moves and returns",
+      "pass_": true,
+      "evidence": {
+        "maximum_vertex_displacement": 0.7611798204544494,
+        "cycle_end_displacement": 0.0
+      }
+    },
+    {
+      "name": "only hanging radiator animates",
       "pass_": true,
       "evidence": [
-        "T2_tethered_arm"
+        "T2_hanging_radiator"
       ]
     },
     {
@@ -127,24 +314,112 @@
     {
       "name": "fitted joint metadata",
       "pass_": true,
-      "evidence": "exported joints agree with the fitted build, including the vertical height fit"
+      "evidence": "exported joints agree with the uniformly scaled build"
+    },
+    {
+      "name": "exported uniform scale",
+      "pass_": true,
+      "evidence": [
+        [
+          1.9191333055496216,
+          1.9191333055496216,
+          1.9191333055496216
+        ]
+      ]
     },
     {
       "name": "export geometry count",
       "pass_": true,
       "evidence": {
-        "GLB": 325900,
-        "built_scene": 325900
+        "GLB": 697088,
+        "built_scene": 697088
+      }
+    },
+    {
+      "name": "all combat classes captured",
+      "pass_": true,
+      "evidence": {
+        "expected": [
+          "Ark",
+          "Battle-barge",
+          "Battleship",
+          "Bio-titan",
+          "Carrier",
+          "Cruiser",
+          "Destroyer",
+          "Dreadnought",
+          "Frigate",
+          "Super-dreadnought",
+          "Tomb-ark"
+        ],
+        "captured": [
+          "Ark",
+          "Battle-barge",
+          "Battleship",
+          "Bio-titan",
+          "Carrier",
+          "Cruiser",
+          "Destroyer",
+          "Dreadnought",
+          "Frigate",
+          "Super-dreadnought",
+          "Tomb-ark"
+        ]
+      }
+    },
+    {
+      "name": "GPU review images",
+      "pass_": true,
+      "evidence": {
+        "pictures": 12,
+        "bad": [],
+        "renderer": "forward_plus"
+      }
+    },
+    {
+      "name": "camera 60 close views",
+      "pass_": true,
+      "evidence": {
+        "pictures": 5,
+        "bad": [],
+        "radius": 60
+      }
+    },
+    {
+      "name": "visible named fitting samples",
+      "pass_": true,
+      "evidence": {
+        "visible": [
+          "airlock",
+          "cargo_crane",
+          "cargo_pod",
+          "cold_radiator",
+          "coolant_manifold",
+          "dish_array",
+          "docking_port",
+          "handrail",
+          "hangar_door",
+          "maintenance_hatch",
+          "maintenance_truss",
+          "radiator",
+          "sensor_mast",
+          "service_pipe",
+          "solar_panel",
+          "thruster_quad",
+          "viewport"
+        ],
+        "missing": [],
+        "method": "face-centre anchors, visibility rays against the actual loaded GLB"
       }
     }
   ],
   "cost": {
-    "triangles": 325900,
-    "primitives": 20,
-    "materials": 11,
+    "triangles": 697088,
+    "primitives": 16,
+    "materials": 13,
     "mesh_nodes": 2,
-    "glb_bytes": 17826080,
-    "frame_gate": "NOT RUN; requires a GPU window and a station-map game scene",
+    "glb_bytes": 40506268,
+    "frame_gate": "NOT RUN; production station-map gate remains outside this review-only run",
     "draw_calls": "NOT MEASURED; GLB primitives are potential surface draws, not GPU draw measurements"
   }
 }

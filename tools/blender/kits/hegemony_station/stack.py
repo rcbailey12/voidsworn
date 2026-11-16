@@ -9,7 +9,8 @@ import bpy
 ZONES = {'plate':(.30,.33,.35), 'plate2':(.40,.43,.44), 'trim':(.085,.14,.19),
          'edge':(.22,.25,.27), 'liner':(.018,.024,.030), 'deck':(.10,.12,.13),
          'frame':(.19,.22,.24), 'rack':(.045,.065,.085), 'recess':(.009,.015,.019),
-         'blue':(.18,.52,1.0), 'battery':(.28,.105,.025), 'frost':(.40,.45,.47)}
+         'blue':(.18,.52,1.0), 'battery':(.28,.105,.025), 'frost':(.40,.45,.47),
+         'glazing':(.025,.055,.075), 'viewport':(.16,.39,.55)}
 
 
 def materials():
@@ -22,9 +23,9 @@ def materials():
         bs.inputs['Base Color'].default_value=(*rgb,1)
         bs.inputs['Metallic'].default_value=.45
         bs.inputs['Roughness'].default_value=.72
-        if zone in ('blue','battery'):
+        if zone in ('blue','battery','viewport'):
             bs.inputs['Emission Color'].default_value=(*rgb,1)
-            bs.inputs['Emission Strength'].default_value=1.4 if zone=='blue' else .45
+            bs.inputs['Emission Strength'].default_value=1.4 if zone=='blue' else (.65 if zone=='viewport' else .45)
             bs.inputs['Metallic'].default_value=.0
         elif zone not in ('liner','recess'):
             ao=nodes.new('ShaderNodeAmbientOcclusion'); ao.inputs['Distance'].default_value=.65

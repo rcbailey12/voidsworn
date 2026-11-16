@@ -8,6 +8,39 @@ import json
 from pathlib import Path
 import struct
 import sys
+import itertools
+import math
+from scale import contract
+
+
+def exported_bounds(glb):
+    """Accessor bounds through the actual GLB node transforms, independent of fit output."""
+    identity = [[float(i == j) for j in range(4)] for i in range(4)]
+    def mul(a, b):
+        return [[sum(a[i][k]*b[k][j] for k in range(4)) for j in range(4)] for i in range(4)]
+    def local(node):
+        if 'matrix' in node:
+            return [[node['matrix'][j*4+i] for j in range(4)] for i in range(4)]
+        x,y,z,w = node.get('rotation', [0,0,0,1])
+        r = [[1-2*(y*y+z*z),2*(x*y-z*w),2*(x*z+y*w),0],
+             [2*(x*y+z*w),1-2*(x*x+z*z),2*(y*z-x*w),0],
+             [2*(x*z-y*w),2*(y*z+x*w),1-2*(x*x+y*y),0], [0,0,0,1]]
+        for i in range(3):
+            for j in range(3): r[i][j] *= node.get('scale',[1,1,1])[j]
+            r[i][3] = node.get('translation',[0,0,0])[i]
+        return r
+    points = []
+    def visit(index, parent):
+        node = glb['nodes'][index]
+        xf = mul(parent, local(node))
+        if 'mesh' in node:
+            for primitive in glb['meshes'][node['mesh']]['primitives']:
+                acc = glb['accessors'][primitive['attributes']['POSITION']]
+                for v in itertools.product(*zip(acc['min'], acc['max'])):
+                    points.append([sum(xf[i][j]*v[j] for j in range(3))+xf[i][3] for i in range(3)])
+        for child in node.get('children',[]): visit(child, xf)
+    for index in glb['scenes'][glb.get('scene',0)]['nodes']: visit(index, identity)
+    return [max(p[i] for p in points)-min(p[i] for p in points) for i in range(3)]
 
 
 def glb_json(path):
@@ -21,7 +54,35 @@ def glb_json(path):
         return json.loads(f.read(length))
 
 
-def run(out):
+def pane_components(path, glb):
+    """Count connected glazing shells in exported positions, welding normal splits."""
+    raw=path.read_bytes(); length=struct.unpack_from('<I',raw,12)[0]
+    binary=raw[28+length:]
+    def values(index):
+        acc=glb['accessors'][index]; view=glb['bufferViews'][acc['bufferView']]
+        n={'SCALAR':1,'VEC3':3}[acc['type']]
+        fmt='<'+{5121:'B',5123:'H',5125:'I',5126:'f'}[acc['componentType']]*n
+        stride=view.get('byteStride',struct.calcsize(fmt))
+        start=view.get('byteOffset',0)+acc.get('byteOffset',0)
+        return [struct.unpack_from(fmt,binary,start+i*stride) for i in range(acc['count'])]
+    parent={}
+    def root(p):
+        parent.setdefault(p,p)
+        while parent[p]!=p:
+            parent[p]=parent[parent[p]]; p=parent[p]
+        return p
+    for mesh in glb['meshes']:
+        for primitive in mesh['primitives']:
+            if glb['materials'][primitive['material']]['name']!='T2_viewport': continue
+            points=[tuple(round(v,5) for v in row) for row in values(primitive['attributes']['POSITION'])]
+            indices=[row[0] for row in values(primitive['indices'])]
+            for i in range(0,len(indices),3):
+                a,b,c=[points[j] for j in indices[i:i+3]]
+                parent[root(b)]=root(a); parent[root(c)]=root(a)
+    return len({root(p) for p in parent})
+
+
+def run(out, gpu=False):
     here = Path(__file__).resolve().parent
     manifest = json.loads((out/'manifest.json').read_text())
     game = json.loads((out/'game_inputs.json').read_text())
@@ -35,16 +96,58 @@ def run(out):
         check('source '+name,hashlib.sha256((here/name).read_bytes()).hexdigest()==digest,digest)
     rows=manifest['modules']
     count=lambda kind: sum(r['kind']==kind for r in rows)
-    check('core and arms',count('deck_drum')==9 and count('docking_arm')==5,
-          '9 core drums; 4 attached arms including stub; 1 tethered section')
+    check('core and arms',count('deck_drum')==9 and count('docking_arm')==4,
+          '9 core drums; 3 intact arms and 1 bent open stub without collar')
     check('towers and gap',count('tower_cap')==5 and count('bearing_track')==11,
-          '5 towers, 11 of 12 bearing slots occupied')
+          '5 towers, 11 bearing sectors across 320 degrees; 40 degree open gap')
+    towers=[fit['modules']['tower_%d'%i] for i in range(1,6)]
+    angles=sorted(math.atan2((t['min'][1]+t['max'][1])/2,(t['min'][0]+t['max'][0])/2) for t in towers)
+    gaps=[(angles[(i+1)%5]-angles[i])%math.tau for i in range(5)]
+    overlap=[(i+1,j+1) for i,a in enumerate(towers) for j,b in enumerate(towers) if i<j
+             and all(a['min'][k]<b['max'][k] and b['min'][k]<a['max'][k] for k in (0,1))]
+    heights=[t['max'][2]-t['min'][2] for t in towers]
+    check('separate towers around hub',not overlap and max(gaps)<math.pi and len({round(h,2) for h in heights})==5,
+          {'overlapping_plan_boxes':overlap,'largest_empty_arc_degrees':math.degrees(max(gaps)),
+           'measured_tower_heights':heights})
+    tilts=[]
+    for i in range(1,6):
+        nodes=[next(n for n in glb['nodes'] if n.get('name')=='tower_axis_%d_%s'%(i,end))
+               for end in ('base','tip')]
+        axis=[nodes[1].get('translation',[0,0,0])[k]-nodes[0].get('translation',[0,0,0])[k]
+              for k in range(3)]
+        tilts.append(math.degrees(math.atan2(math.hypot(axis[0],axis[2]),abs(axis[1]))))
+    check('exported tower axes upright',max(tilts)<=3.001 and sum(t>.01 for t in tilts)<=1,
+          {'GLB_axis_tilt_degrees':tilts})
+    drums=[fit['modules']['core_%02d'%i] for i in range(1,10)]
+    sizes=[[d['max'][i]-d['min'][i] for i in range(3)] for d in drums]
+    check('varied core drums',len({round(s[0],2) for s in sizes})>1 and len({round(s[2],2) for s in sizes})>1,
+          {'measured_drum_sizes':sizes})
+    components=pane_components(out/'station_T2_review.glb',glb)
+    check('one continuous large viewport',count('viewport')==1 and components==1,
+          {'exported_connected_glazing_shells':components,'module':'observation_window'})
+    apertures=fit['damage_apertures']
+    check('four holes and torn top',len(apertures)==5 and all(a['open_through_shell'] for a in apertures),apertures)
+    check('held cargo and folded plate',count('cargo_pod')==3 and any(r['id']=='folded_plate' for r in rows),
+          'three held pods and one folded plate, built as kit geometry')
+    check('three spokes and four radiators',count('spoke')==3 and count('radiator')==4,
+          'one spoke buckled inward; one cold radiator hanging open')
     check('light map',manifest['lights']==dict(blue=90,battery=5),manifest['lights'])
     # The footprint comes from BattleAPI and Board.hex_world, not a typed fixture.
     cells=game['footprint']['cells']
     check('three hex columns',len({c['q'] for c in cells})>=3,len(cells))
-    inside=sum(m['outside_vertices'] for m in fit['modules'].values())
-    check('static footprint',inside==0,{'vertices_outside_real_hex_union':inside})
+    original=sum(m['source_footprint_outside_vertices'] for m in fit['modules'].values())
+    spill=sum(m['outside_vertices'] for m in fit['modules'].values())
+    check('source plan footprint',original==0,{'source_vertices_outside_real_hex_union':original,
+          'scaled_vertices_outside_live_footprint':spill,'live_footprint_integration':'PENDING; review only'})
+    sizing=contract()  # Read the table and board source afresh, never the fitted range.
+    span=max(exported_bounds(glb))
+    check('R247 exported station range',sizing['range'][0]-.001<=span<=sizing['range'][1]+.001,
+          {'GLB_long_axis':span,'target_from_table':sizing['range'],
+           'live_board_one_hex':sizing['live_one_hex'],'live_board_large':sizing['live_large']})
+    axes=manifest['uniform_fit']['axes']
+    check('uniform proportions',max(axes)-min(axes)<1e-6 and all(abs(
+          manifest['bounds']['size'][i]/manifest['uniform_fit']['source_bounds']['size'][i]-axes[i])<1e-5
+          for i in range(3)),axes)
     height=manifest['bounds']['size'][2]
     check('taller than ships',height>game['max_ship_height'],
           {'station':height,'tallest_loaded_ship':game['max_ship_height'],'hulls':len(game['ships'])})
@@ -58,13 +161,17 @@ def run(out):
     check('modelled insides',not missing,{'modules_without_inside_geometry':missing,
           'inside_triangles':manifest['triangles']['inside']})
     samples=fit['motion_samples']
-    collisions=[s for s in samples if s['intersecting_triangle_pairs'] or s['outside_vertices']]
+    collisions=[s for s in samples if s['intersecting_triangle_pairs'] or s['source_footprint_outside_vertices']]
     check('motion samples',not collisions and len(samples)==49,
           {'poses':len(samples),'bad_poses':collisions,'seconds':[0,240],
            'scope':'sampled mesh intersections; continuous sweep still pending'})
+    distances=[sum((s['tracked_vertex'][i]-samples[0]['tracked_vertex'][i])**2 for i in range(3))**.5
+               for s in samples]
+    check('radiator moves and returns',max(distances)>.05 and distances[-1]<.0001,
+          {'maximum_vertex_displacement':max(distances),'cycle_end_displacement':distances[-1]})
     targets=[glb['nodes'][c['target']['node']]['name'] for a in glb.get('animations',[])
              for c in a['channels']]
-    check('only passive arm animates',bool(targets) and set(targets)=={'T2_tethered_arm'},targets)
+    check('only hanging radiator animates',bool(targets) and set(targets)=={'T2_hanging_radiator'},targets)
     prims=[p for m in glb['meshes'] for p in m['primitives']]
     triangles=sum(glb['accessors'][p['indices']]['count']//3 for p in prims)
     light_triangles={name:sum(glb['accessors'][p['indices']]['count']//3 for p in prims
@@ -79,17 +186,56 @@ def run(out):
     roots=[n for n in glb['nodes'] if n.get('name')==manifest['code']]
     check('fitted joint metadata',len(roots)==1 and
           json.loads(roots[0].get('extras',{}).get('joints_json','null'))==manifest['joints'],
-          'exported joints agree with the fitted build, including the vertical height fit')
+          'exported joints agree with the uniformly scaled build')
+    scale_nodes=[n.get('scale',[1,1,1]) for n in roots]
+    check('exported uniform scale',len(scale_nodes)==1 and max(scale_nodes[0])-min(scale_nodes[0])<1e-5
+          and abs(scale_nodes[0][0]-axes[0])<1e-5,scale_nodes)
     check('export geometry count',triangles==manifest['triangles']['total'],
           {'GLB':triangles,'built_scene':manifest['triangles']['total']})
+    if gpu:
+        from PIL import Image
+        captures=json.loads((out/'captures.json').read_text())
+        rows=captures['comparisons']
+        # Combat classes are read from actual real-rule hull definitions, not a typed pick list.
+        table=json.loads((here.parents[3]/'godot/rules/data/tables.json').read_text(encoding='utf-8'))
+        expected={r['cls'] for r in table['tables']['HULLS'].values() if r['cls']!='Squadron'}
+        actual={r['class'] for r in rows if r['file'].startswith('game_compare170_')}
+        check('all combat classes captured',actual==expected,{'expected':sorted(expected),'captured':sorted(actual)})
+        bad=[]
+        for row in rows:
+            picture=out/row['file']
+            with Image.open(picture) as im:
+                if im.size!=(1280,720) or im.convert('RGB').getextrema()==((0,0),(0,0),(0,0)): bad.append(row['file'])
+            if abs(row['camera_radius']-game['camera']['radius'])>.001: bad.append(row['file']+' radius')
+            for key in ('station_pixels','ship_pixels'):
+                x0,y0,x1,y1=row[key]
+                if x0<0 or x1>1280 or y0<78 or y1>665: bad.append(row['file']+' clipped '+key)
+        check('GPU review images',not bad and captures['renderer']=='forward_plus',
+              {'pictures':len(rows),'bad':bad,'renderer':captures['renderer']})
+        details=captures['details']; bad=[]; visible_kinds=set()
+        for detail in details:
+            with Image.open(out/detail['file']) as im:
+                if im.size!=(1280,720) or im.convert('RGB').getextrema()==((0,0),(0,0),(0,0)): bad.append(detail['file'])
+            if detail['camera_radius']!=60 or detail['camera_radius']<game['camera']['min_radius']: bad.append(detail['file']+' camera')
+            for annotation in detail['annotations']:
+                if not annotation.get('visible_surface'): bad.append(detail['file']+' hidden anchor')
+                visible_kinds.add(annotation['kind'])
+        check('camera 60 close views',not bad and len(details)==5,
+              {'pictures':len(details),'bad':bad,'radius':60})
+        expected={'airlock','maintenance_hatch','service_pipe','handrail','viewport','thruster_quad',
+                  'docking_port','cargo_crane','hangar_door','solar_panel','cold_radiator','radiator',
+                  'sensor_mast','dish_array','cargo_pod','maintenance_truss','coolant_manifold'}
+        check('visible named fitting samples',expected<=visible_kinds,
+              {'visible':sorted(visible_kinds),'missing':sorted(expected-visible_kinds),
+               'method':'face-centre anchors, visibility rays against the actual loaded GLB'})
     budget=dict(triangles=triangles,primitives=len(prims),materials=len(glb.get('materials',[])),
                 mesh_nodes=sum('mesh' in n for n in glb['nodes']),
                 glb_bytes=(out/'station_T2_review.glb').stat().st_size,
-                frame_gate='NOT RUN; requires a GPU window and a station-map game scene',
+                frame_gate='NOT RUN; production station-map gate remains outside this review-only run',
                 draw_calls='NOT MEASURED; GLB primitives are potential surface draws, not GPU draw measurements')
     (out/'cost.json').write_text(json.dumps(budget,indent=2)+'\n')
     result=dict(status='PASS' if all(c['pass_'] for c in checks) else 'FAIL',
-                scope='CPU review sheet only. Not approval for production, install or performance.',
+                scope='Review sheet only. Not approval for production, install or performance.',
                 checks=checks,cost=budget)
     (out/'review_checks.json').write_text(json.dumps(result,indent=2)+'\n')
     return result['status']=='PASS'
@@ -97,7 +243,7 @@ def run(out):
 
 if __name__=='__main__':
     try:
-        success=run(Path(sys.argv[1]))
+        success=run(Path(sys.argv[1]),'--gpu' in sys.argv)
     except (OSError,ValueError,KeyError) as exc:
         print('FAIL review inputs: '+str(exc)); success=False
     sys.exit(0 if success else 1)
