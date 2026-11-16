@@ -1,0 +1,608 @@
+{
+  "code": "station_T2",
+  "status": "BUILD SHEET - NOT APPROVED FOR INSTALL",
+  "station_kind": "fleet",
+  "concept": "contrib/muse/design/station_concept_2026_11/station_T2_beauty.jpg",
+  "plan": "contrib/muse/design/station_concept_2026_11/station_T2_scale.jpg",
+  "pack": "contrib/muse/design/station_pack_2026_11/pack.md",
+  "units": "world units; Blender Z up; glTF Y up",
+  "bounds": {
+    "min": [
+      -25.795000076293945,
+      -17.069190979003906,
+      -21.085634231567383
+    ],
+    "max": [
+      25.795000076293945,
+      20.474483489990234,
+      31.043649673461914
+    ],
+    "size": [
+      51.59000015258789,
+      37.54367446899414,
+      52.1292839050293
+    ]
+  },
+  "triangles": {
+    "exterior": 270808,
+    "inside": 55092,
+    "total": 325900
+  },
+  "height_fit": {
+    "scale": 1.5061167160480835,
+    "source": "game_inputs.json max_ship_height",
+    "note": "Vertical sizing is provisional for Board review; the plan stays in the real blocked cells."
+  },
+  "modules": [
+    {
+      "id": "core_01",
+      "kind": "deck_drum",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "command",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "core_02",
+      "kind": "deck_drum",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "medical",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "core_03",
+      "kind": "deck_drum",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "stores",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "core_04",
+      "kind": "deck_drum",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "power distribution",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "core_05",
+      "kind": "deck_drum",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "machinery",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "core_06",
+      "kind": "deck_drum",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "coolant plant",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "core_07",
+      "kind": "deck_drum",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "habitat support",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "core_08",
+      "kind": "deck_drum",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "stores",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "core_09",
+      "kind": "deck_drum",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "upper service deck",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "bearing_00",
+      "kind": "bearing_track",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "seized bearing slot; supports habitat module 1",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "habitat_1_slot_00",
+      "kind": "habitat_arc",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "habitat module 1; corridor, cross frames, equipment racks",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "bearing_01",
+      "kind": "bearing_track",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "seized bearing slot; supports habitat module 1",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "habitat_1_slot_01",
+      "kind": "habitat_arc",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "habitat module 1; corridor, cross frames, equipment racks",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "bearing_02",
+      "kind": "bearing_track",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "seized bearing slot; supports habitat module 2",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "habitat_2_slot_02",
+      "kind": "habitat_arc",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "habitat module 2; corridor, cross frames, equipment racks",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "bearing_03",
+      "kind": "bearing_track",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "seized bearing slot; supports habitat module 2",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "habitat_2_slot_03",
+      "kind": "habitat_arc",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "habitat module 2; corridor, cross frames, equipment racks",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "bearing_04",
+      "kind": "bearing_track",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "seized bearing slot; supports habitat module 3",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "habitat_3_slot_04",
+      "kind": "habitat_arc",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "habitat module 3; corridor, cross frames, equipment racks",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "bearing_05",
+      "kind": "bearing_track",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "seized bearing slot; supports habitat module 3",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "habitat_3_slot_05",
+      "kind": "habitat_arc",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "habitat module 3; corridor, cross frames, equipment racks",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "bearing_06",
+      "kind": "bearing_track",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "seized bearing slot; supports habitat module 4",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "habitat_4_slot_06",
+      "kind": "habitat_arc",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "habitat module 4; corridor, cross frames, equipment racks",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "bearing_07",
+      "kind": "bearing_track",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "seized bearing slot; supports habitat module 4",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "habitat_4_slot_07",
+      "kind": "habitat_arc",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "habitat module 4; corridor, cross frames, equipment racks",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "bearing_08",
+      "kind": "bearing_track",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "seized bearing slot; supports habitat module 5",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "habitat_5_slot_08",
+      "kind": "habitat_arc",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "habitat module 5; corridor, cross frames, equipment racks",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "bearing_09",
+      "kind": "bearing_track",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "seized bearing slot; supports habitat module 5",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "habitat_5_slot_09",
+      "kind": "habitat_arc",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "habitat module 5; corridor, cross frames, equipment racks",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "bearing_11",
+      "kind": "bearing_track",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "seized bearing slot; supports habitat module 6",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "habitat_6_slot_11",
+      "kind": "habitat_arc",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "habitat module 6; corridor, cross frames, equipment racks",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "spoke_1",
+      "kind": "spoke",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "bearing support and service corridor",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "spoke_2",
+      "kind": "spoke",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "bearing support and service corridor",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "spoke_3",
+      "kind": "spoke",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "bearing support and service corridor",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "spoke_4",
+      "kind": "spoke",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "bearing support and service corridor; buckled",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "arm_1",
+      "kind": "docking_arm",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "dead berth corridor",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "arm_2",
+      "kind": "docking_arm",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "dead berth corridor",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "arm_3",
+      "kind": "docking_arm",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "dead berth corridor",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "arm_4",
+      "kind": "docking_arm",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "torn arm root; exposed deck and rack rows",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "tethered_arm",
+      "kind": "docking_arm",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "one passive moving section; no power",
+      "inside": "deck, frames, service racks",
+      "parent": "arm_4"
+    },
+    {
+      "id": "tethers",
+      "kind": "conduits",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "torn flexible conduits joining the loose arm to its stub",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "equipment_deck",
+      "kind": "platform",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "connected tower bases; services and blue emergency cluster",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "tower_1",
+      "kind": "tower_cap",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "array; dead; whole machine on its module joint",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "tower_2",
+      "kind": "tower_cap",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "dishes; dead; whole machine on its module joint",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "tower_3",
+      "kind": "tower_cap",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "dome; dead; whole machine on its module joint",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "tower_4",
+      "kind": "tower_cap",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "crane; dead; whole machine on its module joint",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "tower_5",
+      "kind": "tower_cap",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "antenna; dead; whole machine on its module joint",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "radiator_1",
+      "kind": "radiator",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "cold grooved heat rejection bank, header and pump",
+      "inside": "header channels and manifold; no fire",
+      "parent": null
+    },
+    {
+      "id": "radiator_2",
+      "kind": "radiator",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "cold grooved heat rejection bank, header and pump",
+      "inside": "header channels and manifold; no fire",
+      "parent": null
+    },
+    {
+      "id": "radiator_3",
+      "kind": "radiator",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "cold grooved heat rejection bank, header and pump",
+      "inside": "header channels and manifold; no fire",
+      "parent": null
+    },
+    {
+      "id": "radiator_4",
+      "kind": "radiator",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "cold grooved heat rejection bank, header and pump",
+      "inside": "header channels and manifold; no fire",
+      "parent": null
+    },
+    {
+      "id": "cargo_1",
+      "kind": "cargo_pod",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "dead cargo pod; one clamped and one lodged",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "cargo_2",
+      "kind": "cargo_pod",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "dead cargo pod; one clamped and one lodged",
+      "inside": "deck, frames, service racks",
+      "parent": null
+    },
+    {
+      "id": "lodged_debris",
+      "kind": "debris",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "twelve irregular torn structural remnants; no orbiting particles",
+      "inside": "torn frames",
+      "parent": null
+    },
+    {
+      "id": "emergency_lights",
+      "kind": "lights",
+      "route": "hand-built",
+      "kit": "hegemony_station",
+      "purpose": "90 implant-blue lights in seven clusters; five static dull battery strips",
+      "inside": "module-local batteries",
+      "parent": null
+    }
+  ],
+  "joints": {
+    "core": [
+      -4.668961819749058,
+      -0.9036700296288496,
+      2.861621760491359,
+      6.626913550611568,
+      10.392205340731778,
+      14.157497130851986,
+      17.922788920972195,
+      21.688080711092404
+    ],
+    "ring": [
+      0.0,
+      0.5235987755982988,
+      1.0471975511965976,
+      1.5707963267948966,
+      2.0943951023931953,
+      2.6179938779914944,
+      3.141592653589793,
+      3.6651914291880923,
+      4.1887902047863905,
+      4.71238898038469,
+      5.235987755982989,
+      5.759586531581287
+    ],
+    "arms": "module collars; torn root and collar stay separate",
+    "towers": "base ring, mast module rings, whole cap",
+    "radiators": "header manifolds"
+  },
+  "lights": {
+    "blue": 90,
+    "battery": 5
+  },
+  "motion": {
+    "pivot": [
+      0.0,
+      -10.0,
+      -5.422019958496094
+    ],
+    "length": 6.0,
+    "period": 240.0,
+    "swing_degrees": 3.0,
+    "swing_period": 40.0,
+    "clearance_radius": 4.0
+  },
+  "changes": [
+    "The rules main station occupies seven cells (centre plus its six neighbours), not three cells. The plan is fitted inside their union; the full footprint is three hex columns wide.",
+    "The secondary spokes are offset from the docking arms; each tower has a bridge to a spoke or the bearing deck.",
+    "The drum stack rises above the ring, toward the accepted beauty silhouette. Nine drums share one service shaft; the station does not gain a second core.",
+    "The upper arm is angled 60 degrees into a blocked outer cell; a straight 90-degree arm would enter the unblocked notch between two cells. The real footprint outranks the concept plan.",
+    "The loose arm is the six-unit fallback from the pack. Its collar sweeps in an isolated corridor below the ring and outside the core, on two torn conduits. A complete swept-volume check is still required before approval.",
+    "The ring has six habitat modules over twelve bearing slots; slot 10 is open in the lower-right plan quadrant.",
+    "Radiators use dense grooves and root manifolds, without a solar-cell grid.",
+    "The design carries no weapons. lore_bible_r8.md describes the Reach and Hegemony but gives no station battery layout. The live defend objective has rules batteries; it is not the abandoned T2 visual target.",
+    "The cause of the write-off stays off the player-facing sheet. The damage is permanent, not a running fire effect."
+  ],
+  "orthographic_scale": 125.11028137207032,
+  "method": "hand-built station kit; schematic AO material; production mask/trim bake pending sheet approval",
+  "scripts": {
+    "design.py": "e20770dfda3879129fd5a2c1ffacaf273a07fde230b6d6a80a660b6541a5b5da",
+    "parts.py": "11731149d999bfe6ff4bc5826e815710d718af73a03836bf860477e09609934e",
+    "stack.py": "759c45de409956050d17208dc0056d9a953f1705e825898652485392e5529741",
+    "review.py": "88425da32ae392c0b6a65117baf4fbcb1a46a83d04b55ff86bd2ad8d9e1a611a",
+    "inspect.gd": "2c1f470b2e44547f732a05c9a110db39136dff0863c8a3e2015358dc402fc89e",
+    "check.py": "0ae574e10bf5d99ec258729bd5e5f253e5098aaffef870bfbad0c7c8e7c96634",
+    "sheets.py": "ea01358ba71aea4cdeb3c3eb3e2d8afc555280fd473625b8f26439333e36c82b"
+  },
+  "pending": [
+    "Board sheet review",
+    "AI shape reference (CPU-only job)",
+    "production geometry-mask/trim paint bake",
+    "full fit and swept-volume audit",
+    "station-map 1080p and 4K scene gate",
+    "Ryan look before live swap"
+  ]
+}
