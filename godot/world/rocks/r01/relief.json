@@ -1,0 +1,164 @@
+{
+  "size": [
+    8192,
+    4096
+  ],
+  "format": 5,
+  "encoding": "webp_resource_v1",
+  "tiles": [
+    {
+      "file": "relief_0_0.res",
+      "x": 0,
+      "y": 0,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "relief_1_0.res",
+      "x": 2048,
+      "y": 0,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "relief_2_0.res",
+      "x": 4096,
+      "y": 0,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "relief_3_0.res",
+      "x": 6144,
+      "y": 0,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "relief_0_1.res",
+      "x": 0,
+      "y": 1024,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "relief_1_1.res",
+      "x": 2048,
+      "y": 1024,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "relief_2_1.res",
+      "x": 4096,
+      "y": 1024,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "relief_3_1.res",
+      "x": 6144,
+      "y": 1024,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "relief_0_2.res",
+      "x": 0,
+      "y": 2048,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "relief_1_2.res",
+      "x": 2048,
+      "y": 2048,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "relief_2_2.res",
+      "x": 4096,
+      "y": 2048,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "relief_3_2.res",
+      "x": 6144,
+      "y": 2048,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "relief_0_3.res",
+      "x": 0,
+      "y": 3072,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "relief_1_3.res",
+      "x": 2048,
+      "y": 3072,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "relief_2_3.res",
+      "x": 4096,
+      "y": 3072,
+      "size": [
+        2048,
+        1024
+      ]
+    },
+    {
+      "file": "relief_3_3.res",
+      "x": 6144,
+      "y": 3072,
+      "size": [
+        2048,
+        1024
+      ]
+    }
+  ],
+  "pixel_sha256": "2f75b46dcb9b17e025030e67509fcf580a56f983ca2330e87cd10ce07b29ca5d",
+  "source_pixel_sha256": "d640b4cade3c71b7526dcbe1671d6c854bac3f0c6dc8330e0aac35b6d85a4096",
+  "max_channel_error": [
+    1,
+    255,
+    2,
+    2
+  ],
+  "max_height_error_steps": 16,
+  "height_error_note": "RG is one 16-bit value. Low-byte differences include carries; compare decoded height."
+}
