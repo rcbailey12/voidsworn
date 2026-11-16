@@ -1,0 +1,77 @@
+{
+  "source_commit": "ec64d9ec4735fe872b7cf46f2cefe8e5378a83e1",
+  "source_diff_sha256": "",
+  "source_dirty": false,
+  "stage": "installed in game",
+  "schema": 1,
+  "picture_name": "C15s_23_collapse_before_after_c170.png",
+  "date": "2026-11-16T22:03:11Z",
+  "sources": [
+    {
+      "source_commit": "ec64d9ec4735fe872b7cf46f2cefe8e5378a83e1",
+      "source_diff_sha256": "",
+      "source_dirty": false,
+      "stage": "installed in game"
+    },
+    {
+      "source_commit": "ec64d9ec4735fe872b7cf46f2cefe8e5378a83e1",
+      "source_diff_sha256": "f198c1cdd3981263bd375f566473a34c970a80fa1844260a7ee6892cd11f0afb",
+      "source_dirty": true,
+      "stage": "installed in game"
+    }
+  ],
+  "inputs": [
+    {
+      "picture_name": "corsair_break__c170.png",
+      "source_commit": "ec64d9ec4735fe872b7cf46f2cefe8e5378a83e1",
+      "source_dirty": false,
+      "source_diff_sha256": "",
+      "stage": "installed in game",
+      "date": "2026-11-16T21:25:31Z",
+      "image_sha256": "e251cd727ae9baa6dfb11eb153396e2cb9547997157fdeac31acbac4c93533c1",
+      "sources": [
+        {
+          "source_commit": "ec64d9ec4735fe872b7cf46f2cefe8e5378a83e1",
+          "source_diff_sha256": "",
+          "source_dirty": false,
+          "stage": "installed in game"
+        }
+      ]
+    },
+    {
+      "picture_name": "corsair_break__c170.png",
+      "source_commit": "ec64d9ec4735fe872b7cf46f2cefe8e5378a83e1",
+      "source_dirty": true,
+      "source_diff_sha256": "f198c1cdd3981263bd375f566473a34c970a80fa1844260a7ee6892cd11f0afb",
+      "stage": "installed in game",
+      "date": "2026-11-16T21:44:23Z",
+      "image_sha256": "3fe25ee4d8ae4ad7bdd441f76120ecab82d688bd744241e5a5e8f20a187f8ab6",
+      "sources": [
+        {
+          "source_commit": "ec64d9ec4735fe872b7cf46f2cefe8e5378a83e1",
+          "source_diff_sha256": "f198c1cdd3981263bd375f566473a34c970a80fa1844260a7ee6892cd11f0afb",
+          "source_dirty": true,
+          "stage": "installed in game"
+        }
+      ]
+    }
+  ],
+  "stamp_box": [
+    0,
+    596,
+    636,
+    720
+  ],
+  "strip_size": [
+    636,
+    124
+  ],
+  "strip_sha256": [
+    "54c371e7707e944f00e9ee099e052d5a42e51a7cd28667c716ec85e167e01938"
+  ],
+  "stamp_template_sha256": "54c371e7707e944f00e9ee099e052d5a42e51a7cd28667c716ec85e167e01938",
+  "covered_pixels": [
+    "iVBORw0KGgoAAAANSUhEUgAAAnwAAAB8CAIAAAB8EPooAAACA0lEQVR4nO3XMREAIQADQXgFNLT4l/kquILZNZDyJnPtMwCA+75gAwAQXQDoeLoAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AiIguAEREFwAiogsAEdEFgIjoAkBEdAEgIroAEBFdAIiILgBERBcARBcA3uLpAkBEdAEgIroAEBFdAIiILgBERBcAIqILABHRBYCI6AJARHQBICK6ABARXQCIiC4AREQXACKiCwAR0QWAiOgCQER0ASAiugAQEV0AGI0fqQcBO/eunywAAAAASUVORK5CYII="
+  ],
+  "image_sha256": "56d5ec9ce5f71c48685b42c0d24265de2cac291377a2132071b8009c9c5d1c71"
+}
