@@ -3118,7 +3118,7 @@
   "kind": "battle",
   "rounds": 7,
   "bot": "full",
-  "seed": 31520,
+  "seed": 37100,
   "admiral": "ashgrove",
   "fleet": [
    "reliquary",
@@ -5463,7 +5463,7 @@
   "kind": "battle",
   "rounds": 12,
   "bot": "full",
-  "seed": 15838,
+  "seed": 37100,
   "admiral": "sable",
   "fleet": [
    "c_raider",
@@ -5957,7 +5957,7 @@
   "kind": "battle",
   "rounds": 9,
   "bot": "full",
-  "seed": 7919,
+  "seed": 37104,
   "admiral": "vesh",
   "fleet": [
    "c_reaver",
@@ -5988,7 +5988,7 @@
   "kind": "battle",
   "rounds": 10,
   "bot": "full",
-  "seed": 33031,
+  "seed": 37100,
   "admiral": "vesh",
   "fleet": [
    "c_reaver",
@@ -6110,7 +6110,7 @@
   "kind": "battle",
   "rounds": 6,
   "bot": "full",
-  "seed": 97794,
+  "seed": 37264,
   "admiral": "grax",
   "fleet": [
    "c_raider",
@@ -8250,7 +8250,7 @@
   ],
   "cmdRound": 2,
   "rounds": 4,
-  "seed": 38207,
+  "seed": 37103,
   "lineage": {
    "id": "sekhmar",
    "picks": [
