@@ -6,11 +6,10 @@ $ErrorActionPreference = 'Stop'
 $mode = $args[0]; $n = $args[1]; $repo = $args[2]; $out = $args[3]
 $utf8 = New-Object System.Text.UTF8Encoding($false)
 if ($mode -eq 'prep') {
-  if ($env:PC_RUNNER_TEST -eq '1') {
-    $i = Get-Content -LiteralPath $env:PC_TEST_ISSUE -Raw | ConvertFrom-Json
-  } else {
-    $i = Invoke-RestMethod -UseBasicParsing -Headers @{ 'User-Agent' = 'voidsworn-codex-board' } `
-      -Uri "https://api.github.com/repos/rcbailey12/voidsworn/issues/$n"
+  $i = Get-Content -LiteralPath (Join-Path $out 'validated_issue.json') -Raw | ConvertFrom-Json
+  $state = Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
+  if ($i.number -ne $n -or $i.run -ne $state.run -or $state.instruction_run -ne $state.run -or $state.status -ne 'running') {
+    throw 'job preparation refused: no validated current instruction for this run; no agent started'
   }
   $body = [string]$i.body
   $bodyFile = Join-Path $out 'issue_body.txt'
@@ -21,7 +20,7 @@ if ($mode -eq 'prep') {
   if (Test-Path -LiteralPath $rp) { $resume = [IO.File]::ReadAllText($rp) }
   $body = [string]$i.body
   $effort = 'high'
-  if ($body -match '(?im)^\s*Effort \(Codex\):\s*(xhigh|high|medium)') { $effort = $Matches[1].ToLower() }
+  if ($body -match '(?im)\bEffort \(Codex\):[ \t]*(xhigh|high|medium)\b') { $effort = $Matches[1].ToLower() }
   $godot = Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe'
   $task = @"
 # Codex job: issue #$n, "$($i.title)"
@@ -36,14 +35,15 @@ Rules:
   Godot, if a check needs it: $godot (use --headless).
 - No em dashes in anything you write. Plain words.
 - Do not commit and do not push: the runner does that after you finish.
+- Never edit anything under .github/workflows (the PC token has no workflow scope, so the push is refused): if CI needs a change, say exactly what in your report.
 - The runner handles Base and resume merges before you start. Do not run git merge; report a missing base in your report.
 - GPU work must use tools/pc/tmo.bat <seconds> <exe> [args]. Shared capacity comes from Downloads\voidsworn_test\gpu_slots.json (default 2).
   Captures weigh 1, Blender weighs 2; set PC_GPU_WEIGHT=2 for other heavy bakes, or the Board's chosen weight;
   frame-time scripts take solo automatically. For a new timing script set PC_GPU_MODE=solo before calling tmo.bat.
   gpu_go.txt must say GPU cleared. Lane C is code only. Never launch GPU executables directly.
 - Keep scratch output (logs, temp checks) in %TEMP%, not in this folder.
-- Save the screenshots, sheets and recordings your report links to in $out\shots (create it). Opus can only see that folder,
-  not %TEMP%; link them there in your report.
+- Save review pictures and their .provenance.json sidecars in $out\shots (create it). The runner copies linked stamped
+  pictures into docs/shots/issue-$n-codex and rewrites links to repo paths before publishing. Never link other PC paths.
 - Finish with a short report: what you changed (files), the checks you ran and their result, anything you skipped and why.
   That report becomes the pull request description, so write it for a reviewer.
 

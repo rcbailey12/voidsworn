@@ -7,6 +7,13 @@
 Reads <dir>/summary.json (scene_gate_report.py) and <dir>/scene_engagement.webp; writes <dir>/headroom_sheet.png.
 Colours: the reference dark palette (dataviz skill): blue for whole-frame time, aqua for GPU time, white for the ruled gate.
 """
+import sys
+from pathlib import Path as _PicturePath
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(_PicturePath(__file__).resolve().parents[3] / 'tools'))
+from picture_provenance import Review, save_picture
+PICTURES = Review('installed in game')
+
 import argparse
 import json
 import os
@@ -59,7 +66,7 @@ def main():
 
     fig = plt.figure(figsize=(10.8, 15.6), dpi=100, facecolor=PLANE)
     # 1. the scene
-    shot = Image.open(os.path.join(a.folder, "scene_engagement.webp")).convert("RGB")
+    shot = PICTURES.open(os.path.join(a.folder, "scene_engagement.webp")).convert("RGB")
     ax0 = fig.add_axes([0.03, 0.565, 0.94, 0.94 * 1080 / 1920 * 10.8 / 15.6])
     ax0.imshow(shot)
     ax0.set_axis_off()
@@ -137,6 +144,7 @@ def main():
              color=MUTED, fontsize=12)
     out = os.path.join(a.folder, "headroom_sheet.png")
     fig.savefig(out, facecolor=PLANE)
+    save_picture(Image.open(out), out, 'installed in game', sources=PICTURES.sources)
     print(out)
 
 

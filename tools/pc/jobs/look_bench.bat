@@ -16,6 +16,7 @@ rem   LB_PRE_RUN   a .bat called with the game checkout's folder after checkout 
 rem   LB_RUN_NAME  the run folder name for AFTER instead of its commit (use with LB_PRE_RUN)
 rem   LB_QUIET     1: do not open the sheets folder at the end
 setlocal enabledelayedexpansion
+set "LB_EXIT=1"
 set "VT=%USERPROFILE%\Downloads\voidsworn_test"
 if "%LB_HOME%"=="" set "LB_HOME=%VT%\look_bench"
 if "%LB_TOOL_REF%"=="" set "LB_TOOL_REF=origin/main"
@@ -95,6 +96,8 @@ if "%RUN_B%"=="" (
 )
 if not exist "%S%" mkdir "%S%"
 %PY% "%TOOL%\tools\pc\jobs\look_bench_sheets.py" %SARGS% > "%S%\sheets_log.txt" 2>&1
+if errorlevel 1 goto finish
+set "LB_EXIT=0"
 echo sheets exit %ERRORLEVEL% %date% %time% %S% >> "%ST%"
 if exist "%S%\summary.txt" type "%S%\summary.txt"
 if not "%LB_QUIET%"=="1" start "" explorer "%S%"
@@ -102,8 +105,7 @@ if not "%LB_QUIET%"=="1" start "" explorer "%S%"
 :finish
 echo look bench done %date% %time% >> "%ST%"
 echo done > "%LB_HOME%\done.txt"
-endlocal
-exit /b 0
+endlocal & exit /b %LB_EXIT%
 
 rem ---------------------------------------------------------------- one bench run: :bench REF [RUNNAME] [PRE_RUN]
 :bench
@@ -134,12 +136,18 @@ if not exist "%R%\godot\bench" mkdir "%R%\godot\bench"
 copy /y "%TOOL%\godot\bench\look_bench.gd" "%R%\godot\bench\look_bench.gd" > nul
 copy /y "%TOOL%\godot\bench\look_bench.tscn" "%R%\godot\bench\look_bench.tscn" > nul
 copy /y "%TOOL%\godot\bench\look_moments.json" "%R%\godot\bench\look_moments.json" > nul
+rem The current capture tool stamps the game checkout's revision, including older baselines.
+if not exist "%R%\godot\tools" mkdir "%R%\godot\tools"
+copy /y "%TOOL%\godot\tools\picture_provenance.gd" "%R%\godot\tools\picture_provenance.gd" > nul
+set "PICTURE_STAMP_TOOL=%TOOL%\tools\picture_provenance.py"
+set "PICTURE_SOURCE_REPO=%R%"
 if not "%PRE%"=="" call "%PRE%" "%R%" > "%RUNDIR%\pre_run.txt" 2>&1
 call "%TMO%" 1800 "%G%" --headless --path "%R%\godot" --import > "%RUNDIR%\import.txt" 2>&1
 echo imported %REF% %SHA% %date% %time% >> "%ST%"
 rem R276: tmo claims a shared slot for these stills; timing scripts claim solo automatically.
 call "%TMO%" 3600 "%G%" --path "%R%\godot" --rendering-method forward_plus --fixed-fps 60 --disable-vsync --windowed --resolution 1920x1080 res://bench/look_bench.tscn -- --out "%RUNDIR%" --commit %SHA% > "%RUNDIR%\bench_log.txt" 2>&1
 set "BX=%ERRORLEVEL%"
+if not "%BX%"=="0" exit /b 1
 echo bench exit %BX% %REF% %date% %time% >> "%ST%"
 rem put the checkout back as the commit has it (the bench files copied in are not part of it)
 git -C "%R%" checkout -f --detach %SHA% > nul 2>&1

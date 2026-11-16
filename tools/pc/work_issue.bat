@@ -163,6 +163,9 @@ rem (722) Stamp the resolved model before the wait so every later state of the r
 %COMMON% model "%O%" "%RESOLVED%" "%DEFAULT_MODEL%"
 %COMMON% wait "%O%"
 if errorlevel 1 exit /b 14
+rem Every work arm, including Kimi, validates and claims before tools, checkout or model calls (issue 888).
+%COMMON% announce "%O%" "%N%" "%ARM%" "%R%" "%WORK_CAP%" "work_issue.bat %N% %ARM%" "%PUSHMODE%"
+if errorlevel 1 exit /b 14
 if defined VARIANT (echo %MODEL% %VARIANT%> "%O%\model.txt") else (echo %MODEL%> "%O%\model.txt")
 if "%PC_RUNNER_TEST%"=="1" goto :toolsready
 if /i "%ARM%"=="kimicode" goto :toolsready
@@ -251,7 +254,6 @@ set "TMO_REPO=%R%"
 set "TMO_OUT=%O%"
 set "TMO_LOG=%O%\log.txt"
 set "TMO_ERR_LOG=%O%\stderr.txt"
-%COMMON% announce "%O%" "%N%" "%ARM%" "%R%" "%WORK_CAP%" "work_issue.bat %N% %ARM%" "%PUSHMODE%"
 if "%PC_RUNNER_TEST%"=="1" goto :testagent
 if /i "%MODE%"=="dryrun" goto :agent_oc
 rem The kimicode arm uses Kimi Code CLI and the PC user's plan login, matching its preflight.
@@ -310,9 +312,10 @@ if /i "%MODE%"=="dryrun" (echo dry> "%O%\balance_after.txt") else (%PS% balance 
 %PS% stats %N% %ARM% "%O%" > nul
 move /y WORK_TASK.md "%O%\WORK_TASK.md" > nul
 if "%PC_RUNNER_TEST%"=="1" if "%PC_TEST_STOP_BEFORE_PUBLISH%"=="1" goto :testfinish
-if exist "%O%\shots\*.png" (
-  if not exist "docs\shots\issue-%N%-%ARM%" mkdir "docs\shots\issue-%N%-%ARM%"
-  copy /y "%O%\shots\*.png" "docs\shots\issue-%N%-%ARM%\" > nul
+rem Issue 889: validate and copy linked pictures with sidecars, including JPG, WebP and GIF.
+if not defined PARTIAL (
+  powershell -NoProfile -ExecutionPolicy Bypass -File "%T%review_evidence.ps1" prepare "%R%" "%O%" "docs/shots/issue-%N%-%ARM%" >> "%O%\result.txt" 2>&1
+  if errorlevel 1 goto :guardfail
 )
 rem #357 / R144: a capture run can re-save tracked .import files; restore them before the commit.
 for /f "usebackq delims=" %%F in (`git ls-files "*.import"`) do git checkout -q -- "%%F"

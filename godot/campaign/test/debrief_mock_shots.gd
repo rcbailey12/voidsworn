@@ -47,7 +47,7 @@ func _shot(name: String) -> void:
 		print("built ", name); return
 	await RenderingServer.frame_post_draw
 	var img = root.get_texture().get_image()
-	img.save_png(dir.path_join(name + ".png")); print("shot ", name)
+	preload("res://tools/picture_provenance.gd").save_png(img, dir.path_join(name + ".png")); print("shot ", name)
 
 func _scroll_of(n: Node) -> ScrollContainer:
 	if n is ScrollContainer: return n

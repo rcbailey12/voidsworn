@@ -113,6 +113,17 @@ For CPU-only review renders on Windows set `SHEET_DEVICE=CPU` before running `bu
 uses the stage 4 build unchanged at stage 5, exports the stage 6 LOD chain, then runs the stage 7 unbaked export and
 readback/self-test. It does not replace the faction's queued paint bake or the measured scene gate.
 
+Every review picture is stamped at its save step by `tools/picture_provenance.py` (Godot uses
+`godot/tools/picture_provenance.gd`): its name, full source commit in the `.provenance.json` sidecar, short revision on the
+picture, working-change digest when needed, stage (`sheet built`, `paint proof`, or `installed in game`) and UTC date.
+The stage 6 LOD studio preview is `paint proof`; only captures of the installed game say `installed in game`.
+Sheet helpers read stamped inputs and keep their source revisions, including both sides of a comparison; they refuse
+unstamped captures rather than relabel old files. The sidecar preserves the corner pixels hidden by the strip, so sheet
+measurements use `open_picture`/`Review.open` and retain their original alpha and dimensions. Keep each review picture and
+its sidecar in the PR and link by relative repo path. The PC runners can copy linked, stamped files from the run's `shots`
+folder and rewrite those links; before committing they refuse PC/web picture links, missing stamps, altered pictures, and
+picture/sidecar pairs absent from the staged PR tree. Rerun a capture with its source revision to replace missing evidence.
+
 ## The paint stack for sheet ships (issue 601; ships.md section 0 item 2)
 
 The method is R96 Q1, binding: procedural materials driven by masks baked from the ship's own geometry, plus a trim sheet and

@@ -92,10 +92,10 @@ function Save-Patch($out, $pre) { & git diff --cached --binary "--output=$(Join-
 
 if ($mode -eq 'prep') {
   $n = $args[1]; $arm = $args[2]; $repo = $args[3]; $out = $args[4]; $godot = $args[5]
-  if ($env:PC_RUNNER_TEST -eq '1') {
-    $i = Get-Content -LiteralPath $env:PC_TEST_ISSUE -Raw | ConvertFrom-Json
-  } else {
-    $i = Invoke-RestMethod -UseBasicParsing -Headers @{ 'User-Agent' = 'voidsworn-workhorse' } -Uri "https://api.github.com/repos/rcbailey12/voidsworn/issues/$n"
+  $i = Get-Content -LiteralPath (Join-Path $out 'validated_issue.json') -Raw | ConvertFrom-Json
+  $state = Get-Content -LiteralPath (Join-Path $out 'status.json') -Raw | ConvertFrom-Json
+  if ($i.number -ne $n -or $i.run -ne $state.run -or $state.instruction_run -ne $state.run -or $state.status -ne 'running') {
+    throw 'job preparation refused: no validated current instruction for this run; no agent started'
   }
   $bodyFile = Join-Path $out 'issue_body.txt'
   [IO.File]::WriteAllText($bodyFile, [string]$i.body, $utf8)
@@ -121,7 +121,8 @@ Rules:
   frame-time scripts take solo automatically. For a new timing script set PC_GPU_MODE=solo before calling tmo.bat.
   gpu_go.txt must say GPU cleared. Lane C is code only. Never launch GPU executables directly.
 - Keep scratch output (logs, temp files) out of this folder, in the system temp folder.
-- Save the screenshots your report links to in $out\shots (create it). The reviewer sees that folder.
+- Save review pictures and their .provenance.json sidecars in $out\shots (create it). The runner copies linked stamped
+  pictures into docs/shots/issue-$n-$arm and rewrites links to repo paths before publishing. Never link other PC paths.
 - Finish with a short report: what you changed (files), each check you ran and its result (paste the PASS or FAIL lines),
   anything you skipped and why. Your report goes at the top of the pull request description; the runner runs the standing
   checks and parity itself after you stop and adds their real rows under it, so write it for a reviewer.
@@ -325,6 +326,14 @@ elseif ($mode -eq 'commit') {
   $fault = ''; if ($push -ne 'real' -and $env:WORK_TEST_FAULT) { $fault = $env:WORK_TEST_FAULT }
   Push-Location $repo
   $pre = Git-One rev-parse HEAD
+  # Issue 889: check the exact PR body and the full report before truncation can hide a bad link.
+  # Partial branches preserve interrupted work and never open a PR.
+  if (-not (Read-Txt (Join-Path $out 'partial.txt'))) {
+    foreach ($bodyName in @('last.md', 'commit.txt')) {
+      & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'review_evidence.ps1') check $repo (Join-Path $out $bodyName)
+      if ($LASTEXITCODE -ne 0) { Write-Host 'PR body refused: review picture evidence failed; work kept, nothing committed or pushed'; Pop-Location; exit 13 }
+    }
+  }
   [IO.File]::WriteAllText((Join-Path $out 'pre_commit.txt'), $pre, [Text.Encoding]::ASCII)
   & git diff --cached --quiet 2>$null
   if ($LASTEXITCODE -eq 0) {

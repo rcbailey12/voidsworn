@@ -1,3 +1,10 @@
+
+import sys
+from pathlib import Path as _PicturePath
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
+from picture_provenance import open_picture as _open_picture, save_picture as _save_picture
+
 # Outline fit for build sheets (issue 532). Plain python with numpy, scipy and Pillow (no Blender).
 #   python fit.py <tris.npz> <beauty mask png> <beauty jpg> <out prefix> [camera json to start from] [--fit]
 # Projects the blockout's triangles through a pinhole camera (the same camera build.py's look_cam makes), fills them,
@@ -11,7 +18,7 @@ from scipy.optimize import minimize
 trisf, maskf, beautyf, outp = sys.argv[1:5]
 start = sys.argv[5] if len(sys.argv) > 5 and not sys.argv[5].startswith('--') else None
 T = np.load(trisf)['tris'].astype(float)
-mask_full = Image.open(maskf).convert('L')
+mask_full = _open_picture(maskf).convert('L')
 W, H = mask_full.size
 S = 4  # work at a quarter size
 mask = np.asarray(mask_full.resize((W // S, H // S))) > 127
@@ -77,7 +84,7 @@ c['iou'] = round(float(score), 4); c['body_iou'] = round(float(body), 4)
 print('IOU %.4f' % score, json.dumps({k: (round(v, 4) if isinstance(v, float) else v) for k, v in c.items()}))
 json.dump(c, open(outp + '_camera.json', 'w'), indent=1)
 # overlay: beauty dimmed, concept outline cyan, blockout outline orange
-b = Image.open(beautyf).convert('RGB')
+b = _open_picture(beautyf).convert('RGB')
 rb = Image.fromarray((raster(c, W, H) * 255).astype('uint8'))
 from PIL import ImageFilter
 edge = np.asarray(rb.filter(ImageFilter.FIND_EDGES)) > 0
@@ -99,7 +106,7 @@ if os.path.exists(mk):
         (u0, v0), (u1, v1), _ = project(c, W, H, np.array([[f['pos'], f['tip'], f['tip']]], dtype=float))[0]
         dr.line([(u0, v0), (u1, v1)], fill=(255, 255, 0), width=2)
         dr.text((u0 + 4, v0 - 12), f['id'], fill=(255, 255, 0))
-o.save(outp + '_overlay.jpg', quality=88)
+_save_picture(o, outp + '_overlay.jpg', 'sheet built', quality=88)
 full = raster(c, W, H); mk2 = np.asarray(mask_full) > 127
 dif = np.zeros((H, W, 3), 'uint8'); dif[full & mk2] = (90, 90, 90); dif[mk2 & ~full] = (0, 200, 255); dif[full & ~mk2] = (255, 140, 0)
-Image.fromarray(dif).save(outp + '_diff.png')
+_save_picture(Image.fromarray(dif), outp + '_diff.png', 'sheet built')

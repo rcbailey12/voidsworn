@@ -1,3 +1,10 @@
+
+from pathlib import Path as _PicturePath
+import sys
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
+from picture_provenance import stamp_file as _stamp_picture
+
 # Clay render of a mesh for the shape bake-off: same light, camera and grey material for every entry.
 # usage: python3 render.py in.(glb|obj) out.png [az_deg] [el_deg]
 import sys, math, bpy, mathutils
@@ -24,5 +31,5 @@ cam.location = ctr + mathutils.Vector((math.cos(a) * math.cos(e), -math.sin(a) *
 cam.rotation_euler = (ctr - cam.location).to_track_quat('-Z', 'Y').to_euler()
 for (en, rot) in ((4.0, (math.radians(50), 0, math.radians(30))), (1.2, (math.radians(70), 0, math.radians(200)))):
     l = bpy.data.objects.new('sun', bpy.data.lights.new('sun', 'SUN')); l.data.energy = en; l.rotation_euler = rot; sc.collection.objects.link(l)
-sc.render.filepath = out; bpy.ops.render.render(write_still=True)
+sc.render.filepath = out; bpy.ops.render.render(write_still=True); _stamp_picture(sc.render.filepath, 'sheet built', new_render=True)
 print('faces', sum(len(o.data.polygons) for o in ms), 'size', [round(x, 3) for x in (mx - mn)])

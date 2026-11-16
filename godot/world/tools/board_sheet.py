@@ -12,6 +12,15 @@ SHOTS_DIR holds world_shots.gd --looks captures (<setting>_<look>_1_default.jpg 
 setting, <setting>_looks.jpg (five rows: today, A, B, C, C tactical; close, battle camera, zoomed out) and
 all_battle_camera.jpg (every setting side by side, battle camera only).
 """
+
+# Issue 889: keep source revisions through crops and sheet composition.
+import sys
+from pathlib import Path as _PicturePath
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
+from picture_provenance import Review
+PICTURES = Review('installed in game')
+
 import os
 import sys
 
@@ -45,7 +54,7 @@ def label(im, text, size):
 
 def cell(path, w, h):
     if os.path.exists(path):
-        return Image.open(path).convert("RGB").resize((w, h), Image.LANCZOS)
+        return PICTURES.open(path).convert("RGB").resize((w, h), Image.LANCZOS)
     im = Image.new("RGB", (w, h), (40, 0, 0))
     label(im, "missing: " + os.path.basename(path), 20)
     return im
@@ -62,7 +71,7 @@ def before_after(bdir, adir, out, sets):
                 im = cell(os.path.join(d, "%s_%s.jpg" % (s, sh)), W, H)
                 label(im, "%s  %s  %s" % (tag, NICE.get(s, s), cam), 18)
                 sheet.paste(im, (col * W, row * H))
-        sheet.save(os.path.join(out, "%s_ba.jpg" % s), quality=86)
+        PICTURES.save(sheet, os.path.join(out, "%s_ba.jpg" % s), quality=86)
     w, h = 640, 360
     sheet = Image.new("RGB", (w * 2, h * len(sets)))
     for row, s in enumerate(sets):
@@ -70,7 +79,7 @@ def before_after(bdir, adir, out, sets):
             im = cell(os.path.join(d, "%s_cine_1_default.jpg" % s), w, h)
             label(im, "%s  %s" % (tag, NICE.get(s, s)), 16)
             sheet.paste(im, (col * w, row * h))
-    sheet.save(os.path.join(out, "all_before_after.jpg"), quality=86)
+    PICTURES.save(sheet, os.path.join(out, "all_before_after.jpg"), quality=86)
     tiles = []
     for s in sets:
         for kind, nm in [("neb", "nebula"), ("storm", "ion storm"), ("debris", "debris")]:
@@ -84,7 +93,7 @@ def before_after(bdir, adir, out, sets):
             im = cell(f, W, H)
             label(im, t, 18)
             sheet.paste(im, ((i % n) * W, (i // n) * H))
-        sheet.save(os.path.join(out, "terrain_close.jpg"), quality=86)
+        PICTURES.save(sheet, os.path.join(out, "terrain_close.jpg"), quality=86)
 
 
 def main():
@@ -103,7 +112,7 @@ def main():
                 im = cell(os.path.join(src, "%s_%s_%s.jpg" % (s, lk, sh)), W, H)
                 label(im, "%s   %s" % (name.split("(")[0].strip(), cam), 20)
                 sheet.paste(im, (col * W, row * H))
-        sheet.save(os.path.join(out, "%s_looks.jpg" % s), quality=88)
+        PICTURES.save(sheet, os.path.join(out, "%s_looks.jpg" % s), quality=88)
     w, h = 640, 360
     sheet = Image.new("RGB", (w * len(sets), h * len(LOOKS)))
     for col, s in enumerate(sets):
@@ -111,7 +120,7 @@ def main():
             im = cell(os.path.join(src, "%s_%s_1_default.jpg" % (s, lk)), w, h)
             label(im, "%s  %s" % (NICE.get(s, s), name.split("(")[0].strip()), 17)
             sheet.paste(im, (col * w, row * h))
-    sheet.save(os.path.join(out, "all_battle_camera.jpg"), quality=88)
+    PICTURES.save(sheet, os.path.join(out, "all_battle_camera.jpg"), quality=88)
 
 
 if __name__ == "__main__":

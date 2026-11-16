@@ -1,3 +1,12 @@
+
+# Issue 889: keep source revisions through crops and sheet composition.
+import sys
+from pathlib import Path as _PicturePath
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(next(p for p in _PicturePath(__file__).resolve().parents if (p / 'tools/picture_provenance.py').is_file()) / 'tools'))
+from picture_provenance import Review
+PICTURES = Review('sheet built')
+
 # Round 3 sheet extras (issue 532; R217, R218, R219). Plain python with Pillow and numpy (no Blender).
 #   python sheet_extras.py <code> <render dir> <repo> <out dir> [<round 2 fit json>]
 # Reads <render dir>/<code>_model.json, <code>_fit.json and the renders build.py wrote, and writes into <out dir>:
@@ -36,7 +45,7 @@ F_S, F_M, F_L = font(22), font(30), font(44)
 
 
 def flat(name, bg=GREY):
-    im = Image.open(os.path.join(RD, name + '.png')).convert('RGBA')
+    im = PICTURES.open(os.path.join(RD, name + '.png')).convert('RGBA')
     b = Image.new('RGBA', im.size, bg + (255,)); b.alpha_composite(im)
     return b.convert('RGB'), np.asarray(im)[..., 3] > 8
 
@@ -158,7 +167,7 @@ def fit_view():
     sh.paste(t2, (20, 195)); sh.paste(s2, (t2.width + 40, 195))
     d.text((20, 195 + t2.height + 10), 'TOP (bow up, port left)', font=F_M, fill=INK)
     d.text((t2.width + 40, 195 + s2.height + 10), 'SIDE (port beam, bow left): elevation fans at each arc limit, cones, exits', font=F_M, fill=INK)
-    sh.save(os.path.join(OUT, 'fit_view.jpg'), quality=88)
+    PICTURES.save(sh, os.path.join(OUT, 'fit_view.jpg'), quality=88)
 
 
 # ---------------------------------------------------------------- fit report
@@ -248,8 +257,8 @@ RND = SH.get('round', 'round 3')
 
 
 def side_by_side():
-    con = Image.open(os.path.join(REPO, M['beauty'])).convert('RGB')
-    b = Image.open(os.path.join(RD, 'beauty_cam.png')).convert('RGBA')
+    con = PICTURES.open(os.path.join(REPO, M['beauty']), reference=True).convert('RGB')
+    b = PICTURES.open(os.path.join(RD, 'beauty_cam.png')).convert('RGBA')
     bg = Image.new('RGBA', b.size, (14, 14, 16, 255)); bg.alpha_composite(b); bld = bg.convert('RGB').resize(con.size)
     W = 1920; half = W // 2
     rows = [('full view', con.resize((half, half * con.height // con.width)), bld.resize((half, half * con.height // con.width)))]
@@ -259,7 +268,7 @@ def side_by_side():
         rows.append((nm, a.resize((half, h)), c.resize((half, h))))
     for alt in sorted(glob.glob(os.path.join(RD, 'beauty_cam_*.png'))):
         # a second camera on the same concept (the sheet's README says why)
-        b2 = Image.open(alt).convert('RGBA'); bg2 = Image.new('RGBA', b2.size, (14, 14, 16, 255)); bg2.alpha_composite(b2)
+        b2 = PICTURES.open(alt).convert('RGBA'); bg2 = Image.new('RGBA', b2.size, (14, 14, 16, 255)); bg2.alpha_composite(b2)
         b2 = bg2.convert('RGB').resize(con.size)
         lab = (SH.get('alt_cameras') or {}).get(os.path.basename(alt)[len('beauty_cam_'):-4], os.path.basename(alt))
         rows.append(('full view, second camera: ' + lab, con.resize((half, half * con.height // con.width)), b2.resize((half, half * con.height // con.width))))
@@ -273,7 +282,7 @@ def side_by_side():
         d.text((10, y + 8), nm, font=F_M, fill=YELLOW)
         out.paste(a, (10, y + 45)); out.paste(c, (20 + half, y + 45))
         y += a.height + 50
-    out.save(os.path.join(OUT, 'side_by_side.jpg'), quality=88)
+    PICTURES.save(out, os.path.join(OUT, 'side_by_side.jpg'), quality=88)
 
 
 # ---------------------------------------------------------------- nine cells
@@ -288,7 +297,7 @@ def ship_box(im, bg):
 
 
 def cells():
-    sheet = Image.open(os.path.join(REPO, M.get('concept_sheet') or M['beauty'].replace('_beauty.jpg', '_sheet.jpg'))).convert('RGB')
+    sheet = PICTURES.open(os.path.join(REPO, M.get('concept_sheet') or M['beauty'].replace('_beauty.jpg', '_sheet.jpg')), reference=True).convert('RGB')
     cview = {}
     if M.get('concept_views'):
         # per-ship boxes round each true view (the escort left out); flip: the sheet draws the bow on the right
@@ -306,7 +315,7 @@ def cells():
             cview[nm] = sheet.crop((o[1].start, o[0].start, o[1].stop, o[0].stop))
 
     def build_view(name, rot):
-        im = Image.open(os.path.join(RD, name + '.png')).convert('RGBA')
+        im = PICTURES.open(os.path.join(RD, name + '.png')).convert('RGBA')
         if rot:
             im = im.rotate(90, expand=True)
         al = np.asarray(im)[..., 3] > 8
@@ -355,7 +364,7 @@ def cells():
             ty += 8
         y = max(y + 60, ty + 20)
     out = out.crop((0, 0, out.width, y + 20))
-    out.save(os.path.join(OUT, 'cells.jpg'), quality=86)
+    PICTURES.save(out, os.path.join(OUT, 'cells.jpg'), quality=86)
 
 
 fit_view()
