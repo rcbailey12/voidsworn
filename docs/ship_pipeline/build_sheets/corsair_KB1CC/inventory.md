@@ -139,15 +139,15 @@ Concept counts read off the concept sheet by eye (KB1C-C render, by eye (no true
 
 | Cell | Concept | Build | Build masses |
 |---|---:|---:|---|
-| bow/top | 4 | 3 | Hull: the central body (the glacis, the lid, the stern housing); Shoulder, port; Shoulder, starboard |
-| bow/side | 3 | 2 | Hull: the central body (the glacis, the lid, the stern housing); Shoulder, port |
-| bow/below | no view | 3 | Hull: the central body (the glacis, the lid, the stern housing); Shoulder, port; Shoulder, starboard |
-| mid/top | 4 | 4 | Hull: the central body (the glacis, the lid, the stern housing); Shoulder, port; Shoulder, starboard; The armoured lip |
-| mid/side | 3 | 3 | Hull: the central body (the glacis, the lid, the stern housing); Shoulder, port; The armoured lip |
-| mid/below | no view | 4 | Hull: the central body (the glacis, the lid, the stern housing); Shoulder, port; Shoulder, starboard; The armoured lip |
-| stern/top | 3 | 3 | Hull: the central body (the glacis, the lid, the stern housing); Shoulder, port; Shoulder, starboard |
-| stern/side | 3 | 2 | Hull: the central body (the glacis, the lid, the stern housing); Shoulder, port |
-| stern/below | no view | 3 | Hull: the central body (the glacis, the lid, the stern housing); Shoulder, port; Shoulder, starboard |
+| bow/top | 4 | 3 | Hull: the central body (the glacis ramp and the stern housing); Shoulder, port; Shoulder, starboard |
+| bow/side | 3 | 2 | Hull: the central body (the glacis ramp and the stern housing); Shoulder, port |
+| bow/below | no view | 3 | Hull: the central body (the glacis ramp and the stern housing); Shoulder, port; Shoulder, starboard |
+| mid/top | 4 | 3 | Hull: the central body (the glacis ramp and the stern housing); Shoulder, port; Shoulder, starboard |
+| mid/side | 3 | 2 | Hull: the central body (the glacis ramp and the stern housing); Shoulder, port |
+| mid/below | no view | 3 | Hull: the central body (the glacis ramp and the stern housing); Shoulder, port; Shoulder, starboard |
+| stern/top | 3 | 4 | Hull: the central body (the glacis ramp and the stern housing); Shoulder, port; Shoulder, starboard; The armoured lip |
+| stern/side | 3 | 3 | Hull: the central body (the glacis ramp and the stern housing); Shoulder, port; The armoured lip |
+| stern/below | no view | 4 | Hull: the central body (the glacis ramp and the stern housing); Shoulder, port; Shoulder, starboard; The armoured lip |
 
 ## Proportions: length to beam and length to height, concept against build (the Board on round 3)
 
@@ -156,6 +156,6 @@ Measured the same way on both: the concept sheet's top and side views and the bl
 | | Envelope L:B | Envelope L:H | Hull L:B | Hull L:H |
 |---|---:|---:|---:|---:|
 | concept | 2.10 | 2.10 | 2.54 | 2.54 |
-| build | 0.82 | 5.92 | 0.83 | 6.45 |
+| build | 0.83 | 4.21 | 0.83 | 6.47 |
 
 Lines not present, shaped and detailed without a reason: 0.

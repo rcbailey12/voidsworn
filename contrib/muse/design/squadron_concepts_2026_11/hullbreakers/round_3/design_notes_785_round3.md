@@ -45,3 +45,13 @@ this render: "Yes, I agree with your take on the bomber. Wider for sure." The be
 the craft takes the render's width (about 1.2 of its length on the sheet). The other sheet terms stand (the mouths at the glacis's
 extreme corners in dark collars, the armoured lip). His note on the white plates in the same message became a rule for every
 Hullbreaker ship in the paint stack (R274, issue 726), not a change to this sheet.
+
+## Owner's ruling (Nov 15, 2026, 21:28 CST, R275)
+
+On the widened sheet (corsair_KB1CC_compare.jpg), sent back for one shape pass: "Yes, send it back for those." The top must be
+this render's sloped glacis, low at the bow lip and rising toward the stern bells, with the long diagonal ramp rails running up
+it (the widened sheet read as a flat slab). The plating must be the Hullbreaker patchwork: fewer, bigger, uneven plates of mixed
+size and angle, never small even squares in tidy rows (R240). The width (R273), the corner bomb tubes in dark collars, the side
+bays, the stern bells and the plate colours stay. On the sheet: the body's top is one ramp from the bow to an armoured lip
+against the stern housing (the vision slit in the lip's face), the five bells sit at the top of the ramp, and the plates are
+laid by the sheet's own patchwork plater (cut at random into mixed sizes, turned a few degrees, lapping one another).

@@ -40,7 +40,7 @@
   {
    "id": "Y1",
    "kind": "bay",
-   "what": "hoist bay 0.34 x 0.23, armoured door",
+   "what": "hoist bay 0.34 x 0.21, armoured door",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -51,7 +51,7 @@
   {
    "id": "Y2",
    "kind": "bay",
-   "what": "hoist bay 0.34 x 0.23, armoured door",
+   "what": "hoist bay 0.34 x 0.21, armoured door",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -117,7 +117,7 @@
  ],
  "masses": [
   {
-   "name": "Hull: the central body (the glacis, the lid, the stern housing)",
+   "name": "Hull: the central body (the glacis ramp and the stern housing)",
    "route": "hand-built"
   },
   {
@@ -136,7 +136,7 @@
  "break_pieces": [
   {
    "name": "bow piece",
-   "stations": "0.0 to 77.2 percent",
+   "stations": "0.0 to 73.9 percent",
    "bounded_by": [
     "B-1"
    ],
@@ -144,7 +144,7 @@
   },
   {
    "name": "stern piece",
-   "stations": "77.2 to 100.0 percent",
+   "stations": "73.9 to 100.0 percent",
    "bounded_by": [
     "B-1"
    ],

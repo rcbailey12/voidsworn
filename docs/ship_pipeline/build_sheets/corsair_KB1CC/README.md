@@ -1,4 +1,4 @@
-# corsair_KB1CC build sheet: the Wide Glacis, the Ashfall Hullbreaker bomber wing craft (first sheet)
+# corsair_KB1CC build sheet: the Wide Glacis, the Ashfall Hullbreaker bomber wing craft (R275 shape pass)
 
 Issue 793. Hullbreaker bomber, data.js `bomber` (cls Squadron, `bombs` T: Bomb payload, 2 shots; hp 28, sp 5; the Hullbreakers
 launch bombers, data.js FACTIONS corsair sq 'bomber'). Concept of record: KB1C-C, the Wide Glacis
@@ -6,7 +6,9 @@ launch bombers, data.js FACTIONS corsair sq 'bomber'). Concept of record: KB1C-C
 bomber, never a boat, barge, platform or ground vehicle). KB1C-C's written terms stand (the mouths at the glacis's extreme corners
 in dark collars, the armoured lip), except its beam guard: R273 (Ryan, Nov 15 18:46 CST, on this sheet's first version, held at
 0.61 of the length: "Yes, I agree with your take on the bomber. Wider for sure.") lifts it, so the craft now takes the render's
-width. Elsewhere, where the render drifts from the written sheet (design_notes_785_round3.md), the written sheet governs. Designer of record: the Opus builder; the Board is the
+width. R275 (Ryan, Nov 15 21:28 CST, on the widened sheet: "Yes, send it back for those") sent it back for one shape pass: the
+top is now the render's sloped glacis, low at the bow lip and rising to the stern bells with the edge rails running diagonally up
+it, and the plating is the Hullbreaker patchwork (fewer, bigger, uneven plates of mixed size and angle, never rows; R240). Elsewhere, where the render drifts from the written sheet (design_notes_785_round3.md), the written sheet governs. Designer of record: the Opus builder; the Board is the
 final designer and KB1C-C is a base (R233, R236). Rendered in the issue 793 sandbox (Blender 5.3, Cycles CPU). No paint stack
 (the Hullbreaker stack applies later) and no PC recipe run in this job.
 
@@ -28,27 +30,32 @@ hashed into the A16 fixture), the sandbox helpers in `contrib/opus/tools/issue79
 
 LENGTH 1.6, the hull table's CLS_LEN['Squadron']; the board draws a craft at 1.6 x SHIP_K 1.6 x SQUADRON_K 1.5 = 3.84
 (docs/playbooks/scale.md, Squadron rows, binding). Every station in the design file is a share of LENGTH. Measured off the views:
-1.60 long, 1.94 across the corner pods (1.21 of the length: the render's width, R273), 0.27 tall. The first sheet held 0.98
-(0.61, the old beam guard).
+1.60 long, 1.92 across the corner pods (1.20 of the length: the render's width, R273), 0.38 tall at the stern housing (the
+ramp's top; 0.27 before R275, when the top was flat). The first sheet held 0.98 across (0.61, the old beam guard).
 
 ## The design, in short
 
-1. **The central body**: its top one continuous shallow glacis from the bow toe up to an armoured lip, the flat lid behind it, a
-   step up to the stern housing; a flat belly with chines. Armoured edge rails with bolted clamps frame the glacis and the lid.
-2. **The armoured lip** across the top of the glacis ends the slope (so it reads as armour on a hull, never a ramp) and carries
-   the crew's vision slit (no canopy).
+1. **The central body** (R275): its top one long glacis ramp, low at the bow lip and rising aft (about 10 degrees) to an armoured
+   lip against the stern housing; a flat belly with chines. Armoured edge rails with bolted clamps run diagonally up the ramp's two
+   edges. At the bow the ramp sits below the shoulders, the rails at the foot of the shoulders' inner walls; aft it stands above
+   them.
+2. **The armoured lip** across the top of the ramp, against the stern housing, ends the slope (so it reads as armour on a hull)
+   and carries the crew's vision slit in its face, looking forward down the ramp (no canopy).
 3. **Two bomb tubes** (bombs T) at the glacis's extreme corners, the widest-separated pair in the field: each a dark armoured
    collar with welded bolts round a dark bore, the next salvaged bomb's nose seated deep inside, on an eight-sided armoured drum
    that runs back into the flank. Fixed forward: the bomber turns onto its target. Both fire every volley.
 4. **Two shoulders** behind the pods, their tops sloping down and out to a thin edge (a flattened six-sided section, never a box on
    two track-like sponsons), each holding a bomb row; the starboard one a touch lower and shorter (lopsided). In each shoulder's
    slope a **hoist bay**: a heavy frame, pipes and the hoist block, an armoured door in a second tone.
-5. **The thruster bank**: five mismatched salvaged bells, the centre one the largest, in a recess (a hood, cheeks and a sill) in
-   the stern housing's aft face.
-6. **Plating**: the Hullbreaker courses (scrap brick at the craft's own plate size, patches over joints, terraced tops), rust and
-   dried blood the main tones with soot and iron between and a few big trophy patches (R240, R252).
+5. **The thruster bank**: five mismatched salvaged bells, the centre one the largest, in a recess (a hood, cheeks and a sill) high
+   in the stern housing's aft face, at the top of the ramp.
+6. **Plating** (R275): the Hullbreaker patchwork, laid by the sheet's own plater (`patchwork()` in the design file, so the kit's
+   course plating and the A16 fixture stay as they are): each face cut at random into plates of mixed size (about 0.12 to 0.30
+   across), each turned a few degrees (a third of them hard), its corners out of square, lapping its neighbours at its own height,
+   a few left bare; rivets on a few plates only. The colours as before: rust and dried blood the main tones with soot and iron
+   between and a few big trophy patches (R240, R252), by a shuffled share per face so no face runs dark.
 7. **INSIDE** (small, for the build contract only): the two magazine rows in the shoulders, the crew cell under the lip, the
-   reactor, the drive room; one seam (B-1) at a weld ahead of the stern housing. The game shows a craft's death as a spark
+   reactor under the ramp, the drive room in the stern housing; one seam (B-1) at a weld between the reactor and the crew cell. The game shows a craft's death as a spark
    (godot/fx/fx_death.gd `_wing_death`), so nothing breaks open.
 
 ## Weapons (R221, R241)
@@ -64,28 +71,29 @@ mount and size; both fire every volley. The table already allows bombs on a fixe
 
 | Check | Result |
 |---|---|
-| Fit check (clash.py) | 0 of every kind; 107 objects, 10 parts, 76 rays, 5 exhaust cones, 3 apertures, 4 lanes ([fit_report.md](fit_report.md)); the first layout's bells touched (fixed, see the report) |
+| Fit check (clash.py) | 0 of every kind; 116 objects, 10 parts, 76 rays, 5 exhaust cones, 3 apertures, 4 lanes ([fit_report.md](fit_report.md)); the first layout's bells touched (fixed, see the report); the R275 pass found nothing new |
 | Weapon match and `weapon_match_selftest.py` | PASS; self-test PASS (36 planted faults, 7 of them craft faults) |
 | Build contract (`sheet_contract_selftest.py`) | PASS: length 1.6, 1 transverse seam, 2 muzzles in slot 0, 5 engines, 5 inside objects, the skins; its three broken inputs refused |
-| Stage 4 audit (`audit.py` on the sheet_hull build) and `audit_selftest.py` | PASS: 61 parts, none across the seam; self-test PASS (BT1 moved onto the seam is refused, W1 the slit allowed as structure) |
+| Stage 4 audit (`audit.py` on the sheet_hull build) and `audit_selftest.py` | PASS: 61 parts, none across the seam (B-1 at -0.238); self-test PASS (BT1 moved onto the seam is refused, W1 the slit allowed as structure) |
 | Inventory (R218, R221) | 0 failing; every built part has a job ([inventory.md](inventory.md)) |
-| Outline overlap at the camera fitted to KB1C-C | 84.6 percent, mass outline 85.0 (reported, not a bar; [outline_check.jpg](outline_check.jpg)); the first sheet, at 0.61 of the length, scored 51 |
-| Detail density, mesh (R224) | flagged: the hoist bays 0.72 of the hull's triangles per square unit and 0.71 of its edges (wider bays, the same parts); the tubes 1.0, the drives 12.6 ([density_mesh.json](density_mesh.json)) |
+| Outline overlap at the camera fitted to KB1C-C | 81.3 percent, mass outline 81.6 (reported, not a bar; [outline_check.jpg](outline_check.jpg)); 84.6 before R275: from the fitted view ahead the ramp's raised stern stands above the picture's outline (a shallower ramp scored 83.3 but read flat); the first sheet, at 0.61 of the length, scored 51 |
+| Detail density, mesh (R224) | no flags: the hoist bays 3.6 times the hull's triangles per square unit (0.72 before R275: the bigger plates made the hull plainer, so the bays now stand out), the tubes 4.6, the slit 65 ([density_mesh.json](density_mesh.json)) |
 
 ## Budget (the stage 4 sheet_hull build)
 
-53,988 triangles outside, 140 inside; 13 outside materials (soot, soot2, rust, blood, iron, steel, pale, violet, dark, ember,
-glow, warhead, brass), so about 13 draw calls a craft once joined by material, against 5 surfaces for today's code-built craft. A
-wing of four: about 216,500 triangles. Against the Sunward pair: SF3 18,606 outside and 7 materials, SB4 20,516 and 6; the first,
-narrower KB1CC sheet was 30,828. The courses plating is most of it (the hull 44,352), and doubling the area doubled it; the paint
-stack would fold the plate tones into one textured surface, and the plate size could grow on this craft if the cost matters.
+17,936 triangles outside, 140 inside (R275; 53,988 before, with the course plating); 13 outside materials (soot, soot2, rust,
+blood, iron, steel, pale, violet, dark, ember, glow, warhead, brass), so about 13 draw calls a craft once joined by material,
+against 5 surfaces for today's code-built craft. A wing of four: about 71,700 triangles. Against the Sunward pair: SF3 18,606
+outside and 7 materials, SB4 20,516 and 6, so KB1CC is now under both in triangles and over both in materials. The plates are
+about 4,000 triangles and their rivets about 2,700; the paint stack would fold the plate tones into one textured surface.
 Reported, not capped; the scene gate is not measured here.
 
 ## Changed from KB1C-C (every change, with its reason)
 
 The full list is in [feature_table.md](feature_table.md), "Changed from the picture"; the same list is on the sheet. In short: the
-craft widened to the render's proportions, about 1.2 of its length (R273); the corner mouths are dark bomb tubes, not lit like engines, and
-fixed forward; an armoured lip with a vision slit ends the glacis; the side bays are the bomb hoists in the shoulders' slopes; the
+craft widened to the render's proportions, about 1.2 of its length (R273); its top the render's glacis ramp rising aft, the
+patchwork plating (R275); the corner mouths are dark bomb tubes, not lit like engines, and
+fixed forward; an armoured lip with a vision slit ends the glacis at the stern housing; the side bays are the bomb hoists in the shoulders' slopes; the
 shoulders slope to a thin edge and the pods sit at mid-height on the corners, so nothing hangs under the hull and nothing reads as
 track or roller; the stern row is five mismatched bells in a recess; no dishes, claws, antennas or lamps at this size.
 

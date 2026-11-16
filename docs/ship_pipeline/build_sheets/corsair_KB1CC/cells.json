@@ -399,32 +399,32 @@
   {
    "cell": "mid/top",
    "concept": 4,
-   "build": 4
+   "build": 3
   },
   {
    "cell": "mid/side",
    "concept": 3,
-   "build": 3
+   "build": 2
   },
   {
    "cell": "mid/below",
    "concept": null,
-   "build": 4
+   "build": 3
   },
   {
    "cell": "stern/top",
    "concept": 3,
-   "build": 3
+   "build": 4
   },
   {
    "cell": "stern/side",
    "concept": 3,
-   "build": 2
+   "build": 3
   },
   {
    "cell": "stern/below",
    "concept": null,
-   "build": 3
+   "build": 4
   }
  ],
  "ratios": {
@@ -435,10 +435,10 @@
    "hull_LH": 2.54
   },
   "build": {
-   "env_LB": 0.82,
-   "env_LH": 5.92,
+   "env_LB": 0.83,
+   "env_LH": 4.21,
    "hull_LB": 0.83,
-   "hull_LH": 6.45
+   "hull_LH": 6.47
   }
  }
 }
