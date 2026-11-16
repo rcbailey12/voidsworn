@@ -168,6 +168,9 @@ jobs run on a third local lane on the PC instead (lane C, R268, Ryan Nov 15: "ye
 If OpenAI lets cloud tasks pin a model, this can be asked again.
 Why: "We don't want to force using Astra or something. Just not accidentally run Luna or something, that's why we usually
 use Sol 6.1" (R216). Ends when Ryan picks another model. Set: Ryan, Nov 2 (R75), Nov 11 (R216) and Nov 15 (R267). Ids: R75b, R267, agents-07.
+Exception (R270, Ryan Nov 15: "Your ChatGPT dot"): Ryan's ChatGPT dot is the repo librarian. It runs in OpenAI's cloud, but
+read-only: it reads main, GitHub issues and PRs, and reports findings to Ryan (later to one standing librarian issue); it never
+pushes, edits, merges, closes or decides a rule. Every finding is checked by the Board against live main before anything changes.
 
 2.8 **Muse: a blind Rey leg written before Rey reads the others, on research, design and review jobs** (not on low-code fix
 jobs). Why: "Let's ensure muse is running its own blind leg room not just chairing." Set: Ryan, Nov 3 (R89). Ids: R89,
@@ -222,8 +225,15 @@ watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md,
 the GPU himself ("can we have codex pause gpu usage?", R173). Set: Ryan (R173); Board (queue). Ids: R173b, effects-09.
 
 3.5 **Every PC queue job is wrapped in the tmo.bat watchdog, ends with exit /b, and carries no |, &, < or > in its
-arguments.** Why: hung Godot windows blocked the queue for about three hours (G-3). Set: Board. Ids: G-3, feel-06,
-skill-pb-05.
+arguments.** Agent runs stop after STALL_MIN minutes without progress (default 30), or at a hard ceiling (default six
+hours; CODEX_CAP and WORK_CAP override the ceiling in seconds). Progress is a changed file write time in the run repo,
+a new commit, or new bytes in log.txt (also stderr for workhorse runs). Git housekeeping does not count. A stall or ceiling
+stop writes its reason, changed files and last log lines to the out folder's resume.txt and the -partial commit message;
+the next run reads that note. timeouts.log records STALLED after N min or CEILING. Short queue commands and runner checks
+keep their explicit time limits. Why: hung Godot windows blocked the queue for about three hours (G-3), but the old two-hour
+agent cap killed jobs that were still working (367 and 371). Ryan, Nov 15: "do we need to get rid of that random 2 hour rule
+if it's timing out actual work?" He took up a stall check, a high backstop and a saved resume note (issue 818). Set: Board
+(G-3), Ryan (issue 818). Ids: G-3, feel-06, skill-pb-05.
 
 3.6 **The Board may double-click .bat files on the PC itself by computer use, a few clicks at a time, releasing the lock at
 once, never while Ryan is playing; it never drives the PC by remote clicks to unstick a job.** Why: "can't you use computer
@@ -245,7 +255,8 @@ R111a, R111b, R113, R116, R121a, R121b.
 R216).
 
 3.11 **A pause never loses or deletes work.** When Ryan wants the PC (GPU or CPU), the Board runs tools/pc/pause_all.bat
-(now, or at a time): it withdraws the GPU go, closes only chain windows still waiting to start, and ends the AI processes, so
+(now, or at a time): it withdraws the GPU go, closes only chain windows still waiting to start, and ends the Board's own AI
+processes (only those whose command line names the voidsworn_test job folders; never Ryan's own apps), so
 each running job's runner commits and pushes its work to the issue's -partial branch; job windows mid-run are never closed and
 nothing is deleted. On Ryan's go the Board restarts every paused job from its -partial branch. Why: "I don't want to cause
 anything to get lost or deleted with the pauses as well, so let's bake that in" (R272). Set: Ryan, Nov 15.

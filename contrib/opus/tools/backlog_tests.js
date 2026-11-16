@@ -37,7 +37,7 @@ check('v54: a Command barrage (free volley) leaves movement as it was', async ()
   battle('voidsworn', ['penitent', 'harrow'], 'hegemony', ['h_dominion']); const [u] = P(), t = E()[0]; put(u, 8, 10, 0); put(t, 11, 10, 3); T.B.round = 3;
   await T.runCommand('player', { id: 'barrage', n: 'Fire for effect' }, 2); return !u.postFire && T.computeReach(u).map.size > 0; });
 check('v54: Chorus hulls regrow a share of the hull damage they deal at 1 to 2 hexes, inside the feed cap', async () => {
-  battle('chorus', ['b_razor'], 'hegemony', ['h_dominion']); const u = P()[0], t = E()[0]; put(u, 8, 10, 0); put(t, 10, 10, 3); u.hp = 40; t.sh = [0, 0, 0, 0];
+  battle('chorus', ['b_razor'], 'hegemony', ['h_dominion']); const u = P()[0], t = E()[0]; put(u, 8, 10, 0); put(t, 10, 10, 3); u.hp = 40; t.shp = 0; syncShields(t);
   const res = { shield: 0, hull: 0, crits: 0, hits: 0, misses: 0 }; await T.landVolley(u, u.weapons[0], t, { quad: 0, shBefore: 0, shots: [true, true], called: null, res });
   return res.hull > 0 && u.hp === 40 + Math.min(Math.round(res.hull * T.CHORUS_BITE), Math.round(u.maxHp * T.FEED_CAP)); });
 check('v54: a bracing Voidsworn hull covers one adjacent ally facing the same way; Shield Wall covers every neighbour', () => {
@@ -45,9 +45,9 @@ check('v54: a bracing Voidsworn hull covers one adjacent ally facing the same wa
   T.giveOrder(a, 'brace'); const one = T.braceMul(b) < 1 && T.braceMul(c) === 1;
   battle('hegemony', ['h_vanguard', 'h_picket', 'h_picket'], 'corsair', ['c_hulk'], ['i_wall']); const [x, y, z] = P(); put(x, 8, 10, 0); put(y, 9, 10, 0); put(z, 8, 11, 3);
   T.giveOrder(x, 'brace'); const all = T.braceMul(y) < 1 && T.braceMul(z) < 1; return one && all; });
-check('v54: a Hegemony ion hit stops that facing regenerating at the next turn start', () => {
-  battle('voidsworn', ['penitent'], 'hegemony', ['h_interdictor']); const t = P()[0], h = E()[0]; const ion = h.weapons.find(w => w.ion); t.sh = [1, 1, 1, 1]; t.regen = 5;
-  T.applyHit(h, ion, t, 5, 0); const s0 = t.sh.slice(); T.startSideTurn('player'); return t.sh[0] === s0[0] && t.sh[1] === Math.min(t.shMax, s0[1] + 5); });
+check('v54: a Hegemony ion hit stops the shield pool regenerating at the next turn start', () => {
+  battle('voidsworn', ['penitent'], 'hegemony', ['h_interdictor']); const t = P()[0], h = E()[0]; const ion = h.weapons.find(w => w.ion); t.shp = Math.max(1, t.shMax - 6); syncShields(t); t.regen = 5;
+  T.applyHit(h, ion, t, 5, 0); const p0 = t.shp; T.startSideTurn('player'); return t.shp === p0; });
 check('boons: decline pays credits; reroll costs credits, once per reward, and the price grows', () => {
   T.RUN = T.migrateRun(base({ credits: 100 })); T.RUN.reward = { boonOffer: T.rollBoonOffer('iron', 0) }; const c0 = T.boonRerollCost(); const r1 = T.boonReroll('iron', 0), r2 = T.boonReroll('iron', 0);
   const paid = T.RUN.credits === 100 - c0, grew = T.boonRerollCost() > c0; const cr = T.boonDecline(); return !!r1 && r2 === null && paid && grew && cr === T.boonDeclineCred(); });
@@ -57,8 +57,8 @@ check('legendaries: offered only at elite or flagship rewards, once two boons of
   let normal = 0; for (let k = 0; k < 40; k++) normal += T.rollBoonOffer('storm', 0).filter(o => T.BOONS[o.id].leg).length;
   return !a && b && b.id === 'L_iron' && b.r === 3 && !c && normal === 0; });
 check('rule boons: Chain Lightning, Marked for Death, Slip the Net, Spread Pattern, Brood Tithe all do what they say', async () => {
-  battle('voidsworn', ['penitent'], 'hegemony', ['h_dominion'], ['s_chain']); let u = P()[0], t = E()[0]; t.sh = [1, 30, 30, 30]; const res = { shield: 0, hull: 0, crits: 0, hits: 0, misses: 0 };
-  await T.landVolley(u, u.weapons[0], t, { quad: 0, shBefore: 1, shots: [true], called: null, res }); const chain = t.sh[1] === 20 && t.sh[3] === 20 && t.sh[2] === 30;
+  battle('voidsworn', ['penitent'], 'hegemony', ['h_dominion'], ['s_chain']); let u = P()[0], t = E()[0]; t.shp = 1; syncShields(t); const res = { shield: 0, hull: 0, crits: 0, hits: 0, misses: 0 };
+  await T.landVolley(u, u.weapons[0], t, { quad: 0, shBefore: 1, shots: [true], called: null, res }); const chain = t.shp === 0 && (T.B.boonStats || {}).s_chain === 1;
   battle('voidsworn', ['penitent', 'harrow'], 'hegemony', ['h_dominion'], ['a_mark']); u = P()[0]; t = E()[0]; const w = u.weapons.find(x => x.k === 'lance'); const h0 = T.hitChance(P()[1], P()[1].weapons[1], t);
   await T.landVolley(u, w, t, { quad: 0, shBefore: 0, shots: [true], called: null, res: { shield: 0, hull: 0, crits: 0, hits: 0, misses: 0 } }); const h1 = T.hitChance(P()[1], P()[1].weapons[1], t); const mark = h1 - h0 === 10 || h1 === 95;
   battle('voidsworn', ['penitent'], 'hegemony', ['h_dominion'], ['r_slip']); u = P()[0]; t = E()[0]; put(u, 8, 10, 0); put(t, 11, 10, 3); u.mp = 4; await T.fireWeapon(u, gun(u, t), t); const slip = u.postMp === 2 && T.computeReach(u).map.size > 0;

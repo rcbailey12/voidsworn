@@ -1,0 +1,758 @@
+[
+ {
+  "id": "auto",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "auto",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "bay",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "bay",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "bioplasma",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "bioplasma",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "bombs",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "bombs",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "doom",
+  "camera": 60,
+  "rms": 4.600703683047709,
+  "different_above_1": 690935,
+  "max_delta": 224
+ },
+ {
+  "id": "doom",
+  "camera": 170,
+  "rms": 6.955063878494733,
+  "different_above_1": 1378487,
+  "max_delta": 219
+ },
+ {
+  "id": "flak",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "flak",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "flakes_corsair",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "flakes_corsair",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "flakes_hegemony",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "flakes_hegemony",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "flakes_ithar",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "flakes_ithar",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "flakes_voidsworn",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "flakes_voidsworn",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "gauss",
+  "camera": 60,
+  "rms": 3.103200208141777,
+  "different_above_1": 346637,
+  "max_delta": 233
+ },
+ {
+  "id": "gauss",
+  "camera": 170,
+  "rms": 5.432829976177159,
+  "different_above_1": 547000,
+  "max_delta": 219
+ },
+ {
+  "id": "gflak",
+  "camera": 60,
+  "rms": 5.042154404208546,
+  "different_above_1": 502821,
+  "max_delta": 224
+ },
+ {
+  "id": "gflak",
+  "camera": 170,
+  "rms": 9.892442722787894,
+  "different_above_1": 934056,
+  "max_delta": 217
+ },
+ {
+  "id": "guns",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "guns",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "ion",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "ion",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "lance",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "lance",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "las",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "las",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "macro",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "macro",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "mflak",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "mflak",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "moving_trail",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "moving_trail",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "needle",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "needle",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "p_bile_hit",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "p_bile_hit",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "p_crit",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "p_crit",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "p_gauss_exit",
+  "camera": 60,
+  "rms": 5.696059867833186,
+  "different_above_1": 121433,
+  "max_delta": 240
+ },
+ {
+  "id": "p_gauss_exit",
+  "camera": 170,
+  "rms": 10.021893670560473,
+  "different_above_1": 193016,
+  "max_delta": 221
+ },
+ {
+  "id": "p_lance_burn",
+  "camera": 60,
+  "rms": 0.00034722222222222224,
+  "different_above_1": 0,
+  "max_delta": 1
+ },
+ {
+  "id": "p_lance_burn",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "p_las_muzzle",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "p_las_muzzle",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "p_missile_launch",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "p_missile_launch",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "p_prism_muzzle",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "p_prism_muzzle",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "p_torp_shield",
+  "camera": 60,
+  "rms": 7.457734156953239,
+  "different_above_1": 165735,
+  "max_delta": 205
+ },
+ {
+  "id": "p_torp_shield",
+  "camera": 170,
+  "rms": 8.374894385908144,
+  "different_above_1": 960937,
+  "max_delta": 201
+ },
+ {
+  "id": "pflak",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "pflak",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "plasma",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "plasma",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "prism",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "prism",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "pulsar",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "pulsar",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "ribbon_0",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "ribbon_0",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "ribbon_1",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "ribbon_1",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "ribbon_3",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "ribbon_3",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "rocket_intercept",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "rocket_intercept",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "rockets",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "rockets",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "scatter",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "scatter",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "shield_doom_corsair",
+  "camera": 60,
+  "rms": 3.2567671810720245,
+  "different_above_1": 393412,
+  "max_delta": 229
+ },
+ {
+  "id": "shield_doom_corsair",
+  "camera": 170,
+  "rms": 4.96284695904625,
+  "different_above_1": 978784,
+  "max_delta": 218
+ },
+ {
+  "id": "shield_doom_hegemony",
+  "camera": 60,
+  "rms": 3.2560384139174983,
+  "different_above_1": 467778,
+  "max_delta": 224
+ },
+ {
+  "id": "shield_doom_hegemony",
+  "camera": 170,
+  "rms": 4.879458642200639,
+  "different_above_1": 1474426,
+  "max_delta": 217
+ },
+ {
+  "id": "shield_doom_ithar",
+  "camera": 60,
+  "rms": 2.709679630362725,
+  "different_above_1": 411237,
+  "max_delta": 225
+ },
+ {
+  "id": "shield_doom_ithar",
+  "camera": 170,
+  "rms": 4.1349622149773175,
+  "different_above_1": 1380537,
+  "max_delta": 215
+ },
+ {
+  "id": "shield_doom_voidsworn",
+  "camera": 60,
+  "rms": 3.267066427554308,
+  "different_above_1": 465955,
+  "max_delta": 230
+ },
+ {
+  "id": "shield_doom_voidsworn",
+  "camera": 170,
+  "rms": 5.005872856254296,
+  "different_above_1": 1541085,
+  "max_delta": 219
+ },
+ {
+  "id": "shield_torp_corsair",
+  "camera": 60,
+  "rms": 2.2589563112763256,
+  "different_above_1": 176199,
+  "max_delta": 229
+ },
+ {
+  "id": "shield_torp_corsair",
+  "camera": 170,
+  "rms": 2.8054575896216356,
+  "different_above_1": 615264,
+  "max_delta": 224
+ },
+ {
+  "id": "shield_torp_hegemony",
+  "camera": 60,
+  "rms": 3.121471204632982,
+  "different_above_1": 266818,
+  "max_delta": 205
+ },
+ {
+  "id": "shield_torp_hegemony",
+  "camera": 170,
+  "rms": 3.5374911819714434,
+  "different_above_1": 1073745,
+  "max_delta": 201
+ },
+ {
+  "id": "shield_torp_ithar",
+  "camera": 60,
+  "rms": 2.9921850290500065,
+  "different_above_1": 258143,
+  "max_delta": 217
+ },
+ {
+  "id": "shield_torp_ithar",
+  "camera": 170,
+  "rms": 2.71291610730932,
+  "different_above_1": 1051707,
+  "max_delta": 150
+ },
+ {
+  "id": "shield_torp_voidsworn",
+  "camera": 60,
+  "rms": 1.8535159291226273,
+  "different_above_1": 182398,
+  "max_delta": 196
+ },
+ {
+  "id": "shield_torp_voidsworn",
+  "camera": 170,
+  "rms": 2.266552050649283,
+  "different_above_1": 789868,
+  "max_delta": 145
+ },
+ {
+  "id": "sporeb",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "sporeb",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "spores",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "spores",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "star",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "star",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "star_intercept",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "star_intercept",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "tendril",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "tendril",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "torp",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "torp",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "torp_intercept",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "torp_intercept",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "torp_lane",
+  "camera": 60,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ },
+ {
+  "id": "torp_lane",
+  "camera": 170,
+  "rms": 0.0,
+  "different_above_1": 0,
+  "max_delta": 0
+ }
+]

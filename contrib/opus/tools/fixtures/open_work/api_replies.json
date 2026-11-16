@@ -1,0 +1,729 @@
+{
+  "pulls": [
+    {
+      "number": 836,
+      "title": "Issue 788: Repo memory: one-time three-way review (Board, Muse, Codex) of how decisions travel, then the three layers and a librarian [dotline arm]",
+      "head": {
+        "ref": "opus/issue-788-dotline"
+      }
+    },
+    {
+      "number": 835,
+      "title": "Issue 44: Run 5 finale board brightens as the new sun catches (R78 Q18)",
+      "head": {
+        "ref": "codex/issue-44"
+      }
+    },
+    {
+      "number": 834,
+      "title": "Issue 815: Effects kit round 3: a cinematic doom arc, a null cannon tracer you can follow, no smoke on shield hits (Ryan R271)",
+      "head": {
+        "ref": "codex/issue-815"
+      }
+    },
+    {
+      "number": 833,
+      "title": "Issue 818: Runner: stop a job only when it stalls, not at a fixed 2 hours; always leave a resume note (Ryan, Nov 15) [pause2 arm]",
+      "head": {
+        "ref": "opus/issue-818-pause2"
+      }
+    },
+    {
+      "number": 832,
+      "title": "Issue 824: Re-render the Hegemony H10 and IM5 sheet pictures (engines now open, R262)",
+      "head": {
+        "ref": "opus/issue-824"
+      }
+    },
+    {
+      "number": 831,
+      "title": "Issue 732: Commit-message closing-word lint on main, and more bot-battle seeds (audit 706 findings 4 and 8)",
+      "head": {
+        "ref": "codex/issue-732"
+      }
+    },
+    {
+      "number": 830,
+      "title": "Issue 793: Squadron craft build sheets: Hegemony HF1D, Hullbreaker KB1C-C, Chorus CS1B-A2 (Opus worker, R259)",
+      "head": {
+        "ref": "opus/issue-793"
+      }
+    },
+    {
+      "number": 829,
+      "title": "Issue 812: Ship pipeline: per-variant parts (E14 guard spire, E13 and E12 variants)",
+      "head": {
+        "ref": "codex/issue-812"
+      }
+    },
+    {
+      "number": 828,
+      "title": "Issue 817: Record and test fixes from Muse's checks of PRs 786, 789 and 787 [deepseek arm]",
+      "head": {
+        "ref": "work/issue-817-deepseek"
+      }
+    },
+    {
+      "number": 826,
+      "title": "Issue 818: Runner: stop a job only when it stalls, not at a fixed 2 hours; always leave a resume note (Ryan, Nov 15)",
+      "head": {
+        "ref": "codex/issue-818"
+      }
+    },
+    {
+      "number": 821,
+      "title": "Issue 371: shield pool, per-side coverage, lossy routing (R246); rules change, held for Ryan",
+      "head": {
+        "ref": "opus/issue-371"
+      }
+    },
+    {
+      "number": 820,
+      "title": "Issue 811: E14 lift: per-hull height in the game so the Eclipse flagship sits higher (R266)",
+      "head": {
+        "ref": "codex/issue-811"
+      }
+    },
+    {
+      "number": 819,
+      "title": "Issue 256: Outside check: Opus-coded PRs, starting with #231 (R132)",
+      "head": {
+        "ref": "muse/issue-256"
+      }
+    },
+    {
+      "number": 814,
+      "title": "Issue 800: Effects kit round 2: Eclipse doom arc as a weapon in its colours, a visible null cannon shot (Ryan R263)",
+      "head": {
+        "ref": "codex/issue-800"
+      }
+    },
+    {
+      "number": 798,
+      "title": "Issue 794: UI upgrade: audit every text-heavy screen, then mockups worst first, starting with the after-run screen (R260)",
+      "head": {
+        "ref": "muse/issue-794"
+      }
+    },
+    {
+      "number": 725,
+      "title": "Issue 369: Board planet and rocks from real data (replaces issue 140)",
+      "head": {
+        "ref": "codex/issue-369"
+      }
+    },
+    {
+      "number": 717,
+      "title": "Issue 368: Nebula and ion storm hexes with depth: measure two routes against the gate, pick, build (replaces issue 139)",
+      "head": {
+        "ref": "codex/issue-368"
+      }
+    },
+    {
+      "number": 716,
+      "title": "Issue 367: One kit of trails, beams and flares: no bare hairlines, plain cones, bars or tubes",
+      "head": {
+        "ref": "codex/issue-367"
+      }
+    },
+    {
+      "number": 705,
+      "title": "Issue 44: Run 5 finale board brightens as the new sun catches (R78 Q18) [deepseek arm]",
+      "head": {
+        "ref": "work/issue-44-deepseek"
+      }
+    },
+    {
+      "number": 700,
+      "title": "Issue 373: The station as one built set piece through the ship recipe (replaces issue 199)",
+      "head": {
+        "ref": "codex/issue-373"
+      }
+    },
+    {
+      "number": 696,
+      "title": "Issue 688: A20 carrier: real bow openings and angular flanks (R244)",
+      "head": {
+        "ref": "codex/issue-688"
+      }
+    }
+  ],
+  "issues": [
+    {
+      "number": 838,
+      "title": "Generate OPEN_WORK.md from GitHub with a script (issue 788 step 5)",
+      "labels": [
+        {
+          "name": "codex"
+        },
+        {
+          "name": "blocked"
+        }
+      ]
+    },
+    {
+      "number": 837,
+      "title": "Memory lint: ruling citations exist, are not superseded, no ruling ranges (issue 788 step 2)",
+      "labels": [
+        {
+          "name": "deepseek"
+        }
+      ]
+    },
+    {
+      "number": 836,
+      "title": "Issue 788: Repo memory: one-time three-way review (Board, Muse, Codex) of how decisions travel, then the three layers and a librarian [dotline arm]",
+      "labels": [],
+      "pull_request": {
+        "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/836",
+        "html_url": "https://github.com/rcbailey12/voidsworn/pull/836",
+        "diff_url": "https://github.com/rcbailey12/voidsworn/pull/836.diff",
+        "patch_url": "https://github.com/rcbailey12/voidsworn/pull/836.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "number": 835,
+      "title": "Issue 44: Run 5 finale board brightens as the new sun catches (R78 Q18)",
+      "labels": [],
+      "pull_request": {
+        "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/835",
+        "html_url": "https://github.com/rcbailey12/voidsworn/pull/835",
+        "diff_url": "https://github.com/rcbailey12/voidsworn/pull/835.diff",
+        "patch_url": "https://github.com/rcbailey12/voidsworn/pull/835.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "number": 834,
+      "title": "Issue 815: Effects kit round 3: a cinematic doom arc, a null cannon tracer you can follow, no smoke on shield hits (Ryan R271)",
+      "labels": [],
+      "pull_request": {
+        "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/834",
+        "html_url": "https://github.com/rcbailey12/voidsworn/pull/834",
+        "diff_url": "https://github.com/rcbailey12/voidsworn/pull/834.diff",
+        "patch_url": "https://github.com/rcbailey12/voidsworn/pull/834.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "number": 833,
+      "title": "Issue 818: Runner: stop a job only when it stalls, not at a fixed 2 hours; always leave a resume note (Ryan, Nov 15) [pause2 arm]",
+      "labels": [],
+      "pull_request": {
+        "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/833",
+        "html_url": "https://github.com/rcbailey12/voidsworn/pull/833",
+        "diff_url": "https://github.com/rcbailey12/voidsworn/pull/833.diff",
+        "patch_url": "https://github.com/rcbailey12/voidsworn/pull/833.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "number": 832,
+      "title": "Issue 824: Re-render the Hegemony H10 and IM5 sheet pictures (engines now open, R262)",
+      "labels": [],
+      "pull_request": {
+        "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/832",
+        "html_url": "https://github.com/rcbailey12/voidsworn/pull/832",
+        "diff_url": "https://github.com/rcbailey12/voidsworn/pull/832.diff",
+        "patch_url": "https://github.com/rcbailey12/voidsworn/pull/832.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "number": 831,
+      "title": "Issue 732: Commit-message closing-word lint on main, and more bot-battle seeds (audit 706 findings 4 and 8)",
+      "labels": [],
+      "pull_request": {
+        "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/831",
+        "html_url": "https://github.com/rcbailey12/voidsworn/pull/831",
+        "diff_url": "https://github.com/rcbailey12/voidsworn/pull/831.diff",
+        "patch_url": "https://github.com/rcbailey12/voidsworn/pull/831.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "number": 830,
+      "title": "Issue 793: Squadron craft build sheets: Hegemony HF1D, Hullbreaker KB1C-C, Chorus CS1B-A2 (Opus worker, R259)",
+      "labels": [],
+      "pull_request": {
+        "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/830",
+        "html_url": "https://github.com/rcbailey12/voidsworn/pull/830",
+        "diff_url": "https://github.com/rcbailey12/voidsworn/pull/830.diff",
+        "patch_url": "https://github.com/rcbailey12/voidsworn/pull/830.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "number": 829,
+      "title": "Issue 812: Ship pipeline: per-variant parts (E14 guard spire, E13 and E12 variants)",
+      "labels": [],
+      "pull_request": {
+        "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/829",
+        "html_url": "https://github.com/rcbailey12/voidsworn/pull/829",
+        "diff_url": "https://github.com/rcbailey12/voidsworn/pull/829.diff",
+        "patch_url": "https://github.com/rcbailey12/voidsworn/pull/829.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "number": 828,
+      "title": "Issue 817: Record and test fixes from Muse's checks of PRs 786, 789 and 787 [deepseek arm]",
+      "labels": [],
+      "pull_request": {
+        "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/828",
+        "html_url": "https://github.com/rcbailey12/voidsworn/pull/828",
+        "diff_url": "https://github.com/rcbailey12/voidsworn/pull/828.diff",
+        "patch_url": "https://github.com/rcbailey12/voidsworn/pull/828.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "number": 826,
+      "title": "Issue 818: Runner: stop a job only when it stalls, not at a fixed 2 hours; always leave a resume note (Ryan, Nov 15)",
+      "labels": [],
+      "pull_request": {
+        "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/826",
+        "html_url": "https://github.com/rcbailey12/voidsworn/pull/826",
+        "diff_url": "https://github.com/rcbailey12/voidsworn/pull/826.diff",
+        "patch_url": "https://github.com/rcbailey12/voidsworn/pull/826.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "number": 824,
+      "title": "Re-render the Hegemony H10 and IM5 sheet pictures (engines now open, R262)",
+      "labels": [
+        {
+          "name": "opus"
+        }
+      ]
+    },
+    {
+      "number": 823,
+      "title": "Shots that do not keep perfect time: seeded unevenness in every volley (cinematic audit item 10, weapon half, R193)",
+      "labels": [
+        {
+          "name": "codex"
+        },
+        {
+          "name": "blocked"
+        }
+      ]
+    },
+    {
+      "number": 821,
+      "title": "Issue 371: shield pool, per-side coverage, lossy routing (R246); rules change, held for Ryan",
+      "labels": [],
+      "pull_request": {
+        "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/821",
+        "html_url": "https://github.com/rcbailey12/voidsworn/pull/821",
+        "diff_url": "https://github.com/rcbailey12/voidsworn/pull/821.diff",
+        "patch_url": "https://github.com/rcbailey12/voidsworn/pull/821.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "number": 820,
+      "title": "Issue 811: E14 lift: per-hull height in the game so the Eclipse flagship sits higher (R266)",
+      "labels": [],
+      "pull_request": {
+        "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/820",
+        "html_url": "https://github.com/rcbailey12/voidsworn/pull/820",
+        "diff_url": "https://github.com/rcbailey12/voidsworn/pull/820.diff",
+        "patch_url": "https://github.com/rcbailey12/voidsworn/pull/820.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "number": 819,
+      "title": "Issue 256: Outside check: Opus-coded PRs, starting with #231 (R132)",
+      "labels": [],
+      "pull_request": {
+        "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/819",
+        "html_url": "https://github.com/rcbailey12/voidsworn/pull/819",
+        "diff_url": "https://github.com/rcbailey12/voidsworn/pull/819.diff",
+        "patch_url": "https://github.com/rcbailey12/voidsworn/pull/819.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "number": 818,
+      "title": "Runner: stop a job only when it stalls, not at a fixed 2 hours; always leave a resume note (Ryan, Nov 15)",
+      "labels": [
+        {
+          "name": "codex"
+        },
+        {
+          "name": "blocked"
+        }
+      ]
+    },
+    {
+      "number": 817,
+      "title": "Record and test fixes from Muse's checks of PRs 786, 789 and 787",
+      "labels": [
+        {
+          "name": "deepseek"
+        }
+      ]
+    },
+    {
+      "number": 815,
+      "title": "Effects kit round 3: a cinematic doom arc, a null cannon tracer you can follow, no smoke on shield hits (Ryan R271)",
+      "labels": [
+        {
+          "name": "codex"
+        },
+        {
+          "name": "blocked"
+        }
+      ]
+    },
+    {
+      "number": 814,
+      "title": "Issue 800: Effects kit round 2: Eclipse doom arc as a weapon in its colours, a visible null cannon shot (Ryan R263)",
+      "labels": [],
+      "pull_request": {
+        "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/814",
+        "html_url": "https://github.com/rcbailey12/voidsworn/pull/814",
+        "diff_url": "https://github.com/rcbailey12/voidsworn/pull/814.diff",
+        "patch_url": "https://github.com/rcbailey12/voidsworn/pull/814.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "number": 812,
+      "title": "Ship pipeline: per-variant parts (E14 guard spire, E13 and E12 variants)",
+      "labels": [
+        {
+          "name": "codex"
+        },
+        {
+          "name": "blocked"
+        }
+      ]
+    },
+    {
+      "number": 811,
+      "title": "E14 lift: per-hull height in the game so the Eclipse flagship sits higher (R266)",
+      "labels": [
+        {
+          "name": "codex"
+        },
+        {
+          "name": "blocked"
+        }
+      ]
+    },
+    {
+      "number": 800,
+      "title": "Effects kit round 2: Eclipse doom arc as a weapon in its colours, a visible null cannon shot (Ryan R263)",
+      "labels": [
+        {
+          "name": "codex"
+        },
+        {
+          "name": "blocked"
+        }
+      ]
+    },
+    {
+      "number": 798,
+      "title": "Issue 794: UI upgrade: audit every text-heavy screen, then mockups worst first, starting with the after-run screen (R260)",
+      "labels": [],
+      "pull_request": {
+        "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/798",
+        "html_url": "https://github.com/rcbailey12/voidsworn/pull/798",
+        "diff_url": "https://github.com/rcbailey12/voidsworn/pull/798.diff",
+        "patch_url": "https://github.com/rcbailey12/voidsworn/pull/798.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "number": 793,
+      "title": "Squadron craft build sheets: Hegemony HF1D, Hullbreaker KB1C-C, Chorus CS1B-A2 (Opus worker, R259)",
+      "labels": [
+        {
+          "name": "opus"
+        }
+      ]
+    },
+    {
+      "number": 783,
+      "title": "E13 fan ship: paint and edge light even side to side (Ryan R256)",
+      "labels": [
+        {
+          "name": "opus"
+        }
+      ]
+    },
+    {
+      "number": 781,
+      "title": "Sunward S8 paint: hull a step lighter toward the concept (Opus worker, R256)",
+      "labels": [
+        {
+          "name": "opus"
+        }
+      ]
+    },
+    {
+      "number": 780,
+      "title": "Hegemony paint stack: H10 and IM5 painted in the sandbox (Opus worker, R256)",
+      "labels": [
+        {
+          "name": "opus"
+        }
+      ]
+    },
+    {
+      "number": 732,
+      "title": "Commit-message closing-word lint on main, and more bot-battle seeds (audit 706 findings 4 and 8)",
+      "labels": [
+        {
+          "name": "codex"
+        },
+        {
+          "name": "blocked"
+        }
+      ]
+    },
+    {
+      "number": 726,
+      "title": "Hullbreaker paint: trophy patches bigger and dark grey metal on every ship (R252 size, R274 colour)",
+      "labels": [
+        {
+          "name": "opus"
+        },
+        {
+          "name": "blocked"
+        }
+      ]
+    },
+    {
+      "number": 725,
+      "title": "Issue 369: Board planet and rocks from real data (replaces issue 140)",
+      "labels": [],
+      "pull_request": {
+        "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/725",
+        "html_url": "https://github.com/rcbailey12/voidsworn/pull/725",
+        "diff_url": "https://github.com/rcbailey12/voidsworn/pull/725.diff",
+        "patch_url": "https://github.com/rcbailey12/voidsworn/pull/725.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "number": 717,
+      "title": "Issue 368: Nebula and ion storm hexes with depth: measure two routes against the gate, pick, build (replaces issue 139)",
+      "labels": [],
+      "pull_request": {
+        "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/717",
+        "html_url": "https://github.com/rcbailey12/voidsworn/pull/717",
+        "diff_url": "https://github.com/rcbailey12/voidsworn/pull/717.diff",
+        "patch_url": "https://github.com/rcbailey12/voidsworn/pull/717.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "number": 716,
+      "title": "Issue 367: One kit of trails, beams and flares: no bare hairlines, plain cones, bars or tubes",
+      "labels": [],
+      "pull_request": {
+        "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/716",
+        "html_url": "https://github.com/rcbailey12/voidsworn/pull/716",
+        "diff_url": "https://github.com/rcbailey12/voidsworn/pull/716.diff",
+        "patch_url": "https://github.com/rcbailey12/voidsworn/pull/716.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "number": 705,
+      "title": "Issue 44: Run 5 finale board brightens as the new sun catches (R78 Q18) [deepseek arm]",
+      "labels": [],
+      "pull_request": {
+        "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/705",
+        "html_url": "https://github.com/rcbailey12/voidsworn/pull/705",
+        "diff_url": "https://github.com/rcbailey12/voidsworn/pull/705.diff",
+        "patch_url": "https://github.com/rcbailey12/voidsworn/pull/705.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "number": 700,
+      "title": "Issue 373: The station as one built set piece through the ship recipe (replaces issue 199)",
+      "labels": [],
+      "pull_request": {
+        "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/700",
+        "html_url": "https://github.com/rcbailey12/voidsworn/pull/700",
+        "diff_url": "https://github.com/rcbailey12/voidsworn/pull/700.diff",
+        "patch_url": "https://github.com/rcbailey12/voidsworn/pull/700.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "number": 696,
+      "title": "Issue 688: A20 carrier: real bow openings and angular flanks (R244)",
+      "labels": [],
+      "pull_request": {
+        "url": "https://api.github.com/repos/rcbailey12/voidsworn/pulls/696",
+        "html_url": "https://github.com/rcbailey12/voidsworn/pull/696",
+        "diff_url": "https://github.com/rcbailey12/voidsworn/pull/696.diff",
+        "patch_url": "https://github.com/rcbailey12/voidsworn/pull/696.patch",
+        "merged_at": null
+      }
+    },
+    {
+      "number": 688,
+      "title": "A20 carrier: real bow openings and angular flanks (R244)",
+      "labels": [
+        {
+          "name": "codex"
+        },
+        {
+          "name": "blocked"
+        }
+      ]
+    },
+    {
+      "number": 545,
+      "title": "Sweep follow-ups: every dropped or partly carried item from issue 540, with the Board's disposition",
+      "labels": [
+        {
+          "name": "opus"
+        }
+      ]
+    },
+    {
+      "number": 507,
+      "title": "Audit builds still to file: hits, sound weight, the kill moment (the rest of Ryan's order)",
+      "labels": [
+        {
+          "name": "opus"
+        }
+      ]
+    },
+    {
+      "number": 405,
+      "title": "Fable program: one finished battle, and a playbook per area that other models can run",
+      "labels": [
+        {
+          "name": "opus"
+        }
+      ]
+    },
+    {
+      "number": 373,
+      "title": "The station as one built set piece through the ship recipe (replaces issue 199)",
+      "labels": [
+        {
+          "name": "codex"
+        },
+        {
+          "name": "blocked"
+        }
+      ]
+    },
+    {
+      "number": 372,
+      "title": "Shield surface look: energy with depth instead of flat line art",
+      "labels": [
+        {
+          "name": "opus"
+        },
+        {
+          "name": "blocked"
+        }
+      ]
+    },
+    {
+      "number": 371,
+      "title": "Shield model: one pool, per-side coverage, lossy routing (R246); rules and balance (DeepSeek)",
+      "labels": [
+        {
+          "name": "opus"
+        },
+        {
+          "name": "blocked"
+        }
+      ]
+    },
+    {
+      "number": 369,
+      "title": "Board planet and rocks from real data (replaces issue 140)",
+      "labels": [
+        {
+          "name": "codex"
+        },
+        {
+          "name": "blocked"
+        }
+      ]
+    },
+    {
+      "number": 368,
+      "title": "Nebula and ion storm hexes with depth: measure two routes against the gate, pick, build (replaces issue 139)",
+      "labels": [
+        {
+          "name": "codex"
+        },
+        {
+          "name": "blocked"
+        }
+      ]
+    },
+    {
+      "number": 367,
+      "title": "One kit of trails, beams and flares: no bare hairlines, plain cones, bars or tubes",
+      "labels": [
+        {
+          "name": "codex"
+        },
+        {
+          "name": "blocked"
+        }
+      ]
+    },
+    {
+      "number": 256,
+      "title": "Outside check: Opus-coded PRs, starting with #231 (R132)",
+      "labels": [
+        {
+          "name": "muse"
+        }
+      ]
+    },
+    {
+      "number": 211,
+      "title": "HunyuanVideo-Foley probe: generated Foley for captured sequences (Ryan, via Rey, Nov 6 2026)",
+      "labels": [
+        {
+          "name": "opus"
+        }
+      ]
+    },
+    {
+      "number": 100,
+      "title": "Terrain fx 2: debris, dead star well, old looks and the quality ladder",
+      "labels": [
+        {
+          "name": "codex"
+        },
+        {
+          "name": "blocked"
+        }
+      ]
+    },
+    {
+      "number": 44,
+      "title": "Run 5 finale board brightens as the new sun catches (R78 Q18)",
+      "labels": [
+        {
+          "name": "codex"
+        },
+        {
+          "name": "blocked"
+        }
+      ]
+    }
+  ]
+}
