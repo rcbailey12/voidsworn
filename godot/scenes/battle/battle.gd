@@ -344,6 +344,9 @@ func _build_world() -> void:
 # the Graphics setting: max (everything), high (no SSIL, smaller shadows), low (no MSAA, SSAO or volumetric haze)
 func _apply_quality(q: String) -> void:
 	var vp := get_viewport()
+	# Issue 368 step 1: max-tier fog candidate only; no shipped quality default changes before the pick.
+	if OS.get_environment("VS_NEBULA_ROUTE") == "fog" and q == "max":
+		RenderingServer.environment_set_volumetric_fog_volume_size(128, 128)
 	match q:
 		"low":
 			vp.msaa_3d = Viewport.MSAA_DISABLED
@@ -360,6 +363,11 @@ func _apply_quality(q: String) -> void:
 
 
 func _post_quality(q: String) -> void:
+	if OS.get_environment("VS_NEBULA_ROUTE") == "fog" and q == "max":
+		env.volumetric_fog_enabled = true
+		env.volumetric_fog_density = 0.0001
+		env.volumetric_fog_length = 250.0
+		env.volumetric_fog_temporal_reprojection_enabled = true
 	if q == "low":
 		env.ssao_enabled = false
 		env.ssil_enabled = false

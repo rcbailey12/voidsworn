@@ -191,6 +191,9 @@ func _process(dt: float) -> void:
 
 
 func _apply() -> void:
+	# Issue 368 route comparison only. Fixed zoom bands reserve froxels for the board.
+	if OS.get_environment("VS_NEBULA_ROUTE") in ["fog", "cards"]:
+		near = 15.0 if _cr >= 100.0 else (5.0 if _cr >= 45.0 else 1.0)
 	var tg := _ct + shake
 	var p := tg + Vector3(cos(_ca) * sin(_cb), cos(_cb), -sin(_ca) * sin(_cb)) * _cr
 	var up := Vector3.UP if _cb > 0.02 else Vector3(-cos(_ca), 0, sin(_ca))

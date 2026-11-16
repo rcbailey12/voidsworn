@@ -51,6 +51,8 @@ func build(board_bounds: Vector2, env: Environment) -> void:
 		env.volumetric_fog_density = 0.0001
 		env.volumetric_fog_albedo = Color(0.42, 0.44, 0.5)
 		env.volumetric_fog_length = 400.0
+		if OS.get_environment("VS_NEBULA_ROUTE") in ["fog", "cards"]:
+			env.volumetric_fog_length = 250.0
 		env.volumetric_fog_anisotropy = 0.6
 		env.volumetric_fog_sky_affect = 0.15
 
