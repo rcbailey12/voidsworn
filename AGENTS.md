@@ -52,6 +52,14 @@ Auditing from outside? Follow `docs/REVIEW_PROTOCOL.md` exactly (RULEBOOK 2.11) 
   Route per part, Inside, Paint stack, Budget. Every build pull request body carries its done-when evidence and a method line
   (build sheet link, manifest, budget numbers, changes made to the sheet); the outside check (issue 256) returns a build PR
   without them as BLOCKING (RULEBOOK 5.14).
+- One current instruction per job: the current run brief sits at the top of the issue body under the fixed block, older
+  runs marked done. The PC runner reads the body only; a brief in a comment never reaches the worker (R281, RULEBOOK 2.4).
+- Before queueing or relabelling an issue, check for a merged pull request that names it; issues stay open after merges
+  here, so open is not proof of undone work. Close an issue in the same step as its merge when its scope is done
+  (R288, RULEBOOK 2.4).
+- Claim before you run: a seat starting a job sets the running label and its status comment first (RULEBOOK 2.4). If a
+  job is already claimed, or its delivery branch already exists, do not run it; tell the Board. Two seats ran issue 872
+  on the same morning because nothing enforced the owner label.
 - **A ruling lands with its document.** A ruling that changes a working method is not landed until the same pull request edits
   the rulebook or the working document a worker reads for that area (the playbook, RECIPE.md, this file) (R214, RULEBOOK 0.2).
 - Commits say "Refs #N", never a GitHub closing word before an issue number; use `gh api` REST, never GraphQL (RULEBOOK 2.5).
