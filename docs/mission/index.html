@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="referrer" content="no-referrer">
+<title>Mission Control | Voidsworn</title>
+<style>
+#demo-label{position:sticky;top:0;z-index:3;background:#101821;padding:10px 12px;white-space:pre-line}
+:root{color-scheme:dark;--bg:#090e15;--ink:#f1f2ed;--muted:#b2bec9;--line:#3c4650;--ember:#ffab68;--blue:#a8d3ef;--green:#b9d8b0;--red:#ffaba4;--yellow:#f6d28a;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:17px}
+*{box-sizing:border-box}body{margin:0;color:var(--ink);background:radial-gradient(ellipse at 95% 0%,#27314255,transparent 58%),radial-gradient(circle at 8% 13%,#b7682920,transparent 30%),var(--bg);min-height:100vh}body:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:radial-gradient(1px 1px at 28px 51px,#a8c4d075 50%,transparent),radial-gradient(1px 1px at 145px 190px,#a8c4d050 50%,transparent);background-size:233px 257px,317px 283px}main{max-width:680px;margin:auto;padding:26px 20px 36px}a{color:inherit;text-decoration-thickness:1px;text-underline-offset:4px}a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--ember);outline-offset:4px}button,.button{font:inherit;color:var(--ink);background:#1b2631;border:1px solid #71808c;min-height:48px;padding:10px 14px;cursor:pointer;text-decoration:none}button:hover{border-color:var(--ember)}.eyebrow{color:var(--ember);font-size:1rem;letter-spacing:.12em;margin:0 0 8px}.mast{display:flex;gap:16px;justify-content:space-between;align-items:center}.orbit{width:64px;height:64px;flex:none;border:1px solid #af8c6690;border-radius:50%;position:relative;transform:rotate(-24deg)}.orbit:before{content:"";position:absolute;inset:14px;border:1px solid var(--ember);border-radius:50%;box-shadow:0 0 18px #ff8a3a25}.orbit:after{content:"";position:absolute;left:-6px;right:-6px;top:30px;border-top:1px solid var(--ember)}h1{font-weight:550;font-size:2.118rem;line-height:1.06;letter-spacing:-.04em;margin:0}h1 span{display:block;color:var(--muted);font-size:1.176rem;letter-spacing:0;font-weight:400;margin-top:10px}.signal{margin-top:24px;border-top:1px solid var(--ember);border-bottom:1px solid var(--line);padding:14px 0}.signal strong{display:flex;align-items:center;gap:10px;font-size:1.059rem;font-weight:600}.signal small{display:block;color:var(--muted);font-size:1rem;margin-top:6px;line-height:1.4}.light{width:8px;height:8px;background:currentColor;box-shadow:0 0 9px currentColor;flex:none}.online{color:var(--green)}.offline{color:var(--yellow)}.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:16px 0 24px}.toolbar p{flex:1;margin:0;color:var(--muted);font-size:1rem}.toolbar button{padding:8px 12px}#demo-label{margin:16px 0;color:var(--yellow);border-left:2px solid var(--yellow);padding-left:12px;line-height:1.4}#demo-label:empty{display:none}.section-title{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:12px;color:var(--muted);font-size:1rem;font-weight:500;margin:0}.section-title span:last-child{color:var(--ember)}.lane{--state:var(--muted);position:relative;padding:20px 0 18px 16px;border-bottom:1px solid var(--line);border-left:1px solid #626e7860;margin-top:0}.lane:before{content:"";position:absolute;left:-2px;top:24px;width:3px;height:28px;background:var(--state);box-shadow:0 0 10px color-mix(in srgb,var(--state) 35%,transparent)}.lane[data-state=running]{--state:var(--blue)}.lane[data-state=waiting],.lane[data-state=stale]{--state:var(--yellow)}.lane[data-state=blocked],.lane[data-state=failed]{--state:var(--red)}.lane[data-state=finished]{--state:var(--green)}.lane-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.lane h3{font-size:1.118rem;font-weight:600;margin:0}.state{font-size:1rem;display:flex;align-items:center;gap:7px;color:var(--state);white-space:nowrap}.state:before{content:"";width:6px;height:6px;background:currentColor}.job{display:block;font-size:1.235rem;line-height:1.35;font-weight:520;margin:12px 0 6px;text-decoration:none;overflow-wrap:anywhere;min-height:44px}.job .number{color:var(--ember);font-variant-numeric:tabular-nums;margin-right:6px}.job:hover{text-decoration:underline}.idle{color:var(--muted);font-size:1.118rem;margin:12px 0}.times{color:var(--muted);font-size:1rem;line-height:1.6;margin:0}.reason{font-size:1rem;line-height:1.45;color:var(--state);margin:10px 0}.next{font-size:1rem;color:var(--muted);margin:10px 0 0;line-height:1.5}.queue-link{display:inline-flex;align-items:center;min-height:44px;padding:0 8px;color:var(--ink)}.source{font-size:1rem;line-height:1.45;color:var(--muted);margin:10px 0 0;overflow-wrap:anywhere}.source b{font-weight:500;color:var(--ink)}details{margin-top:8px}summary{min-height:44px;cursor:pointer;padding:10px 0;color:var(--muted);font-size:1rem}details p{font-size:1rem;line-height:1.5;color:var(--muted);margin:6px 0}.pr{display:inline-flex;align-items:center;min-height:44px;color:var(--ember)}.notice{color:var(--yellow);font-size:1rem;line-height:1.5}footer{font-size:1rem;line-height:1.5;color:var(--muted);padding-top:24px}footer strong{color:var(--ember);font-weight:500}.hidden{display:none!important}@media(max-width:360px){main{padding:20px 14px}.lane{padding-left:12px}.lane h3{font-size:1rem}.state{font-size:1rem}.orbit{display:none}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<main>
+<header class="mast"><div><p class="eyebrow">VOIDSWORN / PC TELEMETRY</p><h1>Mission control<span>Embers of the Hollow Sun</span></h1></div><div class="orbit" aria-hidden="true"></div></header>
+<div id="demo-label"></div>
+<section class="signal" aria-live="polite" aria-atomic="true"><strong id="signal-title" class="offline"><i class="light" aria-hidden="true"></i><span>Waiting for PC status</span></strong><small id="signal-detail">Reading the local publisher.</small></section>
+<div class="toolbar"><p id="counts">5 seats / awaiting signal</p><button id="refresh" type="button">Refresh</button></div>
+<h2 class="section-title"><span>PC LANES</span><span id="clock">LOCAL PILOT</span></h2>
+<div id="lanes"></div>
+<p id="warning" class="notice" role="status"></p>
+<footer><strong>Local pilot / status only</strong><br>No remote access is enabled.<br><button id="open-file" type="button" style="margin-top:16px">Open a status file</button><input id="file" type="file" accept=".json,application/json" class="hidden"><p id="file-note">Updates once a minute. Close the publisher window to stop it.</p><p id="proof"></p></footer>
+</main>
+<script>
+'use strict';
+(() => {
+  const repo = 'https://github.com/rcbailey12/voidsworn';
+  const seats = [['main','Codex main'],['b','Codex lane B'],['c','Codex lane C'],['d','Codex lane D'],['deepseek','DeepSeek']];
+  const params = new URLSearchParams(location.search);
+  const fixture = params.get('fixture');
+  const demo = /^(overview|running|waiting|blocked|failed|finished|stale|offline|unknown)$/.test(fixture || '');
+  const endpoint = demo ? `fixtures/${fixture}.json` : 'status.json';
+  let data = null, lastFailure = false, imported = false, fetching = false;
+  const $ = id => document.getElementById(id);
+  const validTime = s => typeof s === 'string' && Number.isFinite(Date.parse(s));
+  const clock = s => validTime(s) ? new Date(s).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',hour12:false}) : 'unknown';
+  const stamp = s => validTime(s) ? new Date(s).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}) : 'unknown';
+  const age = (s, now) => !validTime(s) ? 'unknown' : Math.max(0, Math.floor((now-Date.parse(s))/60000)) < 1 ? 'just now' : `${Math.max(0, Math.floor((now-Date.parse(s))/60000))}m ago`;
+  const el = (tag, cls, text) => { const node = document.createElement(tag); if(cls) node.className=cls; if(text !== undefined) node.textContent=text; return node; };
+  const isIssue = n => Number.isSafeInteger(n) && n > 0;
+  const emptyLane = ([id,label]) => ({id,label,state:'unknown',current:null,next:[],source:{},warnings:[]});
+  function validate(value) {
+    if (!value || value.schemaVersion !== 1 || !validTime(value.generatedAt) || !Array.isArray(value.lanes)) throw Error('Invalid status file');
+    if (Date.parse(value.generatedAt) > Date.now()+120000 && !demo) throw Error('PC clock is ahead; freshness cannot be confirmed');
+    return value;
+  }
+  function render() {
+    // Fixture time is fixed to the publisher's test clock; real and imported snapshots always age in real time.
+    const now = demo && data && validTime(data.fixtureNow) ? Date.parse(data.fixtureNow) : Date.now();
+    const offline = data && now-Date.parse(data.generatedAt) >= 180000;
+    const title = $('signal-title'); title.className = data && !offline && !lastFailure && !imported ? 'online' : 'offline';
+    title.replaceChildren(el('i','light'), el('span','',!data ? 'Waiting for PC status' : offline ? `PC offline (last heard ${clock(data.generatedAt)})` : lastFailure ? 'Connection interrupted' : imported ? 'Saved PC snapshot' : 'PC signal online'));
+    $('signal-detail').textContent = !data ? 'No snapshot received. Start the local publisher or open a status file.' : `${imported ? 'File time' : 'Last report'} ${stamp(data.generatedAt)} / ${age(data.generatedAt,now)}${offline ? '. Last known jobs below.' : ''}`;
+    $('clock').textContent = data ? clock(data.generatedAt) : 'LOCAL PILOT';
+    $('demo-label').textContent = demo ? `MC-918 / ${fixture.toUpperCase()} / SAMPLE\n${data && data.fixtureRevision || 'working tree'}\nFixture proof / sheet built` : '';
+    $('proof').textContent = demo && data ? `MC-918 / ${data.fixtureRevision || 'working tree'} / fixture proof` : '';
+    const rows = seats.map(s => data && data.lanes.find(l => l && l.id === s[0]) || emptyLane(s));
+    const running = rows.filter(l => l.state==='running' && !l.stale && validTime(l.lastActivityAt) && now-Date.parse(l.lastActivityAt)<1800000).length;
+    $('counts').textContent = `5 seats / ${running} running${offline ? ' (last report)' : ''}`;
+    // Preserve expanded details and focus across minute refreshes.
+    const expanded = new Set([...document.querySelectorAll('details[open]')].map(n=>n.dataset.id));
+    const focused=document.activeElement, focusedLane=focused && focused.closest('.lane');
+    const focusKey=focusedLane ? {lane:focusedLane.id,tag:focused.tagName,href:focused.getAttribute('href')} : null;
+    const frag = document.createDocumentFragment();
+    for (let i=0; i<rows.length; i++) {
+      const lane=rows[i], source=lane.source || {}, job=lane.current;
+      const stale = !!lane.stale || job && ['running','waiting'].includes(lane.state) && (validTime(lane.lastActivityAt) ? now-Date.parse(lane.lastActivityAt)>=1800000 : validTime(lane.startedAt) && now-Date.parse(lane.startedAt)>=1800000);
+      const state = stale ? 'stale' : ['running','waiting','blocked','failed','finished'].includes(lane.state) ? lane.state : 'unknown';
+      const card=el('article','lane'); card.dataset.state=state; card.id=`lane-${seats[i][0]}`;
+      const top=el('div','lane-top'); top.append(el('h3','',seats[i][1]),el('span','state',state[0].toUpperCase()+state.slice(1))); card.append(top);
+      if (job && isIssue(job.issue)) {
+        const link=el('a','job'); link.href=`${repo}/issues/${job.issue}`;
+        link.append(el('span','number',`#${job.issue}`),document.createTextNode(typeof job.title==='string' ? job.title : 'Title unavailable')); card.append(link);
+      } else card.append(el('p','idle',state==='waiting' ? 'Queued behind another chain' : 'No current job confirmed'));
+      card.append(el('p','times',!job && state==='waiting' ? 'Not started\nActivity: awaiting runner' : `Started ${stamp(lane.startedAt)}\nActivity ${age(lane.lastActivityAt,now)}`));
+      card.lastChild.style.whiteSpace='pre-line';
+      if(stale) card.append(el('p','reason','No sign of life for 30 minutes. The runner has not confirmed a stop.'));
+      else if(lane.reason && !(!job && state==='waiting')) card.append(el('p','reason',String(lane.reason)));
+      const queue=Array.isArray(lane.next) ? lane.next.filter(j=>j && isIssue(j.issue)) : [];
+      const next=el('p','next',queue.length ? 'Next' : 'Next: no queued jobs confirmed');
+      for(const j of queue.slice(0,2)){const a=el('a','queue-link',`#${j.issue}`);a.href=`${repo}/issues/${j.issue}`;a.title=typeof j.title==='string'?j.title:'';next.append(a);}
+      if(queue.length>2) next.append(document.createTextNode(` +${queue.length-2} more`)); card.append(next);
+      const names=Array.isArray(source.lanes) ? source.lanes.filter(s=>typeof s==='string') : [];
+      card.append(el('p','source',`Source: ${names[0] || source.runner || 'no feed'}\nRefreshed ${clock(source.refreshedAt)}`));card.lastChild.style.whiteSpace='pre-line';
+      const details=el('details');details.dataset.id=lane.id;details.open=expanded.has(lane.id);details.append(el('summary','', 'Evidence and links'));
+      details.append(el('p','',`Source files: ${[...names,...(Array.isArray(source.files)?source.files:[])].join(', ') || 'none'}`),el('p','',`Source last changed: ${stamp(source.updatedAt)}`),el('p','',`Last sign of life: ${stamp(lane.lastActivityAt)}`));
+      if(queue.length>2){const p=el('p','', 'All next jobs: ');for(const j of queue){const a=el('a','queue-link',`#${j.issue}`);a.href=`${repo}/issues/${j.issue}`;p.append(a);}details.append(p);}
+      if(job && isIssue(job.issue)){const a=el('a','pr','Find pull request');const branch=seats[i][0]==='deepseek'?`work/issue-${job.issue}-deepseek`:`codex/issue-${job.issue}`;a.href=`${repo}/pulls?q=${encodeURIComponent('is:pr head:'+branch)}`;if(typeof job.prUrl==='string' && job.prUrl.startsWith(repo+'/pulls?q='))a.href=job.prUrl;details.append(a);}
+      if(Array.isArray(lane.warnings)) for(const warning of lane.warnings) details.append(el('p','notice',String(warning)));
+      card.append(details);frag.append(card);
+    }
+    $('lanes').replaceChildren(frag);
+    if(focusKey){const row=document.getElementById(focusKey.lane);const target=row && [...row.querySelectorAll('a,summary')].find(n=>n.tagName===focusKey.tag && n.getAttribute('href')===focusKey.href);if(target)target.focus({preventScroll:true});}
+    $('warning').textContent=lastFailure ? 'Cannot refresh the publisher. The last good report stays visible and will show PC offline after 3 minutes.' : data && Array.isArray(data.warnings) ? data.warnings.join(' ') : '';
+    $('file-note').textContent=imported ? 'Saved file only. Open a newer file to update it, or Refresh to reconnect to the publisher.' : 'Updates once a minute. Close the publisher window to stop it.';
+  }
+  async function refresh(){
+    if(fetching)return;fetching=true;
+    const controller=new AbortController(), timeout=setTimeout(()=>controller.abort(),8000);
+    try{const r=await fetch(endpoint,{cache:'no-store',signal:controller.signal});if(!r.ok)throw Error('No snapshot');data=validate(await r.json());lastFailure=false;imported=false;}
+    catch(_){lastFailure=true;}finally{clearTimeout(timeout);fetching=false;render();}
+  }
+  $('refresh').addEventListener('click',refresh);
+  $('open-file').addEventListener('click',()=>$('file').click());
+  $('file').addEventListener('change',async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>1024*1024)throw Error('Too large');data=validate(JSON.parse(await file.text()));imported=true;lastFailure=false;render();}catch(_){$('warning').textContent='Cannot open this status file. Choose a publisher status.json file under 1 MB.';}finally{e.target.value='';}});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){render();if(!imported)refresh();}});
+  render();refresh();setInterval(()=>{if(!imported)refresh();},60000);setInterval(render,10000);
+})();
+</script>
+</body>
+</html>

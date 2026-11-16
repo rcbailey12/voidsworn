@@ -1,0 +1,36 @@
+{
+  "source_commit": "311dc5967498386576b40539a18779e7b8ef67ff",
+  "source_dirty": true,
+  "source_diff_sha256": "e1849e24f4a952ed14224a983673147990f7ae0dde86d46d99071785e6e9dc58",
+  "stage": "sheet built",
+  "schema": 1,
+  "picture_name": "MC-918-finished.png",
+  "date": "2026-11-16T22:50:55Z",
+  "sources": [
+    {
+      "source_commit": "311dc5967498386576b40539a18779e7b8ef67ff",
+      "source_dirty": true,
+      "source_diff_sha256": "e1849e24f4a952ed14224a983673147990f7ae0dde86d46d99071785e6e9dc58",
+      "stage": "sheet built"
+    }
+  ],
+  "inputs": [],
+  "stamp_box": [
+    0,
+    671,
+    282,
+    720
+  ],
+  "strip_size": [
+    282,
+    49
+  ],
+  "strip_sha256": [
+    "dcdd99ce4e46ede0f3373b2bcbf3c5cd34d876f36c2e89de38cf897721fc0c33"
+  ],
+  "stamp_template_sha256": "dcdd99ce4e46ede0f3373b2bcbf3c5cd34d876f36c2e89de38cf897721fc0c33",
+  "covered_pixels": [
+    "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"
+  ],
+  "image_sha256": "25efcbc8fb753b2fcf09245978ed045752654c4fc2a076005670630e86a8f25e"
+}
