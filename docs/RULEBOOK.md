@@ -222,8 +222,15 @@ watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md,
 the GPU himself ("can we have codex pause gpu usage?", R173). Set: Ryan (R173); Board (queue). Ids: R173b, effects-09.
 
 3.5 **Every PC queue job is wrapped in the tmo.bat watchdog, ends with exit /b, and carries no |, &, < or > in its
-arguments.** Why: hung Godot windows blocked the queue for about three hours (G-3). Set: Board. Ids: G-3, feel-06,
-skill-pb-05.
+arguments.** Agent runs stop after STALL_MIN minutes without progress (default 30), or at a hard ceiling (default six
+hours; CODEX_CAP and WORK_CAP override the ceiling in seconds). Progress is a changed file write time in the run repo,
+a new commit, or new bytes in log.txt (also stderr for workhorse runs). Git housekeeping does not count. A stall or ceiling
+stop writes its reason, changed files and last log lines to the out folder's resume.txt and the -partial commit message;
+the next run reads that note. timeouts.log records STALLED after N min or CEILING. Short queue commands and runner checks
+keep their explicit time limits. Why: hung Godot windows blocked the queue for about three hours (G-3), but the old two-hour
+agent cap killed jobs that were still working (367 and 371). Ryan, Nov 15: "do we need to get rid of that random 2 hour rule
+if it's timing out actual work?" He took up a stall check, a high backstop and a saved resume note (issue 818). Set: Board
+(G-3), Ryan (issue 818). Ids: G-3, feel-06, skill-pb-05.
 
 3.6 **The Board may double-click .bat files on the PC itself by computer use, a few clicks at a time, releasing the lock at
 once, never while Ryan is playing; it never drives the PC by remote clicks to unstick a job.** Why: "can't you use computer
