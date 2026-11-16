@@ -1,21 +1,21 @@
 {
- "az": 12,
- "el": 36,
- "roll": 0.0,
- "dist": 46.667473858867936,
- "mm": 765.8889069779973,
+ "az": -1.005626943790799,
+ "el": 21.344632872471134,
+ "roll": -0.3972531292915502,
+ "dist": 61.13904150000124,
+ "mm": 1031.6894728078412,
  "target": [
   0.0,
   0.0,
   0.0
  ],
- "sx": 0.01,
- "sy": 0.0,
+ "sx": 0.02307775959270983,
+ "sy": 0.005932214638980917,
  "res": [
   1080,
   720
  ],
- "iou": 0.5143,
- "body_iou": 0.5162,
- "note": "KB1C-C (one three-quarter picture from ahead and above, no true views). The outline alone is ambiguous here: a free fit (contrib/opus/tools/issue738/grid.py, then fit.py) turns the craft side-on to 84 percent, because the render draws the craft far wider than the sheet's beam guard (60 to 65 percent of the length; the round 3 notes: the render flatters the platform read). So the view angles are set by eye to the picture's own view (from ahead, 12 degrees to port, 36 up: the corner mouths toward the viewer, the thruster row at the back), fit.py --fix-angles fitted the framing, and the lens was then pulled back so the whole craft sits in the frame (R229: the whole concept beside the whole build); never the craft. The overlap at this camera is low (51 percent) because the craft is narrower than the render, as the sheet asks. Concept mask: contrib/opus/tools/issue738/mask.py on the picture with its name label blanked."
+ "iou": 0.8459,
+ "body_iou": 0.8496,
+ "note": "KB1C-C (one three-quarter picture from ahead and above, no true views). Widened to the render's proportions by R273 (Ryan, Nov 15 2026: \"Wider for sure\"). Issue 793's grid_window.py held the grid to views from ahead (azimuth -30 to 30, elevation 26 to 58), then fit.py refined all seven camera numbers (never the craft); it settled at the picture's own view: the corner mouths at the picture's mouths, the stern row at the back. Concept mask: contrib/opus/tools/issue738/mask.py on the picture with its name label blanked."
 }

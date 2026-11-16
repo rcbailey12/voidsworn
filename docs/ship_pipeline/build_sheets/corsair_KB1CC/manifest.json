@@ -40,7 +40,7 @@
   {
    "id": "Y1",
    "kind": "bay",
-   "what": "hoist bay 0.34 x 0.11, armoured door",
+   "what": "hoist bay 0.34 x 0.23, armoured door",
    "count": 1,
    "route": "kit",
    "source": "picture",
@@ -51,7 +51,7 @@
   {
    "id": "Y2",
    "kind": "bay",
-   "what": "hoist bay 0.34 x 0.11, armoured door",
+   "what": "hoist bay 0.34 x 0.23, armoured door",
    "count": 1,
    "route": "kit",
    "source": "picture",

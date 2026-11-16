@@ -27,11 +27,11 @@ CRAFT = {
                           title='corsair_KB1CC | Wide Glacis bomber (data.js bomber), first sheet (issue 793)',
                           lines=['One wide low wedge: the glacis, the lid, the stern housing', 'Bombs: two tubes at the glacis\'s extreme corners, in',
                                  '  dark armoured collars (bombs T, both every volley)', 'The armoured lip, the edge rails, two hoist bays with doors',
-                                 'Five mismatched drives in a recessed stern bank', 'Beam 0.6 of the length (the sheet\'s beam guard)'],
-                          notes=['Kept: the wide continuous glacis, the two corner mouths in dark collars, the raised edge rails, the recessed side bays',
-                                 'with armoured doors, the stern thruster row. Changed: the mouths are dark bomb tubes (the render lights them like',
-                                 'engines); an armoured lip and a vision slit end the glacis (never a ramp); the shoulders slope to a thin edge.',
-                                 'Rust, soot, trophy colours and the red running lights are the Hullbreaker stack, applied later.']),
+                                 'Five mismatched drives in a recessed stern bank', 'Beam 1.2 of the length: the render\'s width (R273)'],
+                          notes=['Widened to the render\'s proportions (R273, Ryan: "Wider for sure"): about 1.2 times as wide as long. Kept: the wide',
+                                 'glacis, the two corner mouths in dark collars, the raised edge rails, the side bays with armoured doors, the stern row.',
+                                 'Changed: the mouths are dark bomb tubes (the render lights them like engines); an armoured lip and a vision slit end the',
+                                 'glacis. Colours are the Hullbreaker stack, applied later (R274: its pale patches become dark grey metal, issue 726).']),
     'chorus_CS1BA2': dict(con='contrib/muse/design/squadron_concepts_2026_11/chorus/round_4/CS1BA2.jpg', cname='CS1B-A2',
                           title='chorus_CS1BA2 | Sealed Gills spore swarm (data.js spore), first sheet (issue 793)',
                           lines=['One grown spindle, drawn out and low (sleeker, R259)', 'Acid sacs: two sealed gill bladders, one a flank, a',
@@ -113,8 +113,11 @@ def scale(out, paths):
         sc, big = blobs(p, 6)
         ppu = sc.width / ortho
         ship = max(big, key=lambda o: o[1].stop - o[1].start)
-        crafts = [o for o in big if o is not ship and (o[1].stop - o[1].start) / ppu < 6.0]
-        meas.append(((ship[1].stop - ship[1].start) / ppu, max(((o[1].stop - o[1].start) / ppu for o in crafts), default=0.0)))
+        crafts = [o for o in big if o is not ship and o[1].start > ship[1].stop]   # the wing, right of its flagship
+        alone = [(o[1].stop - o[1].start) / ppu for o in crafts if (o[1].stop - o[1].start) / ppu < 6.0]
+        # a wide craft can touch its wingmates in the game's formation (corsair_KB1CC, R273): then the blobs merge and the length is
+        # measured on the craft that stands alone, or not at all
+        meas.append(((ship[1].stop - ship[1].start) / ppu, max(alone, default=0.0)))
         allo = [ship] + crafts
         y0 = min(o[0].start for o in allo) - 6; y1 = max(o[0].stop for o in allo) + 6
         x0 = min(o[1].start for o in allo) - 10; x1 = max(o[1].stop for o in allo) + 10
@@ -127,7 +130,8 @@ def scale(out, paths):
     for (fl, cr), (sc, x0, y0, x1, y1), (Ls, Lc) in zip(names, bands, meas):
         band = sc.crop((x0, y0, x1, y1))
         band = band.resize((max(1, int(band.width * k)), max(1, int(band.height * k))), Image.Resampling.LANCZOS)
-        d.text((22, y), '%s and a %s: measured here %.1f and %.1f long (game: the craft 3.84, scale.md)' % (fl, cr, Ls, Lc), fill=ACC, font=F(15))
+        d.text((22, y), ('%s and a %s: measured here %.1f and %.1f long (game: the craft 3.84, scale.md)' % (fl, cr, Ls, Lc)) if Lc else
+               ('%s and a %s: measured here %.1f; the wide bombers touch in the game\'s wing formation' % (fl, cr, Ls)), fill=ACC, font=F(15))
         im.paste(band, (20 + int(x0 * k), y + 22))
         w_ = wings.pop(0); ke = min(470 / w_.width, 160 / w_.height)
         w_ = w_.resize((int(w_.width * ke), int(w_.height * ke)), Image.Resampling.LANCZOS)

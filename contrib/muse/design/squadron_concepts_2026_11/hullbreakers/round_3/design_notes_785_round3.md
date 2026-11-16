@@ -37,3 +37,11 @@ KB1C-A, unanimous among the seated legs and the blind leg: the channel is the cl
 ## Owner's ruling (Nov 15, 2026)
 
 KB1C-C, the Wide Glacis, is the pick of the KB1C variations, in the owner's words "the best by far". The council's unanimous lean for KB1C-A is recorded above and was not taken. KB1C-C's sheet terms (extreme-corner mouths in dark collars, the armoured lip, the beam guard) stand as written.
+
+## Owner's ruling (Nov 15, 2026, 18:46 CST, R273)
+
+On the first build sheet (corsair_KB1CC, issue 793), which held the beam guard at 0.61 of the length and read far narrower than
+this render: "Yes, I agree with your take on the bomber. Wider for sure." The beam guard (60 to 65 percent) is lifted for KB1C-C;
+the craft takes the render's width (about 1.2 of its length on the sheet). The other sheet terms stand (the mouths at the glacis's
+extreme corners in dark collars, the armoured lip). His note on the white plates in the same message became a rule for every
+Hullbreaker ship in the paint stack (R274, issue 726), not a change to this sheet.

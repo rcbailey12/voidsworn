@@ -1,8 +1,11 @@
 # corsair_KB1CC: the Ashfall Hullbreaker bomber wing craft, the Wide Glacis (data.js bomber: cls 'Squadron', bombs T; hp 28, sp 5).
-# Issue 793. Concept of record: contrib/muse/design/squadron_concepts_2026_11/hullbreakers/round_3/KB1CC.jpg (design_notes_785_round3.md;
+# Issue 793; widened by R273 (Ryan, Nov 15 2026 18:46 CST: "Yes, I agree with your take on the bomber. Wider for sure."). His
+# white-plates call widened into R274 (18:50 CST), a rule for every Hullbreaker ship in the paint stack (issue 726), not this sheet.
+# Concept of record: contrib/muse/design/squadron_concepts_2026_11/hullbreakers/round_3/KB1CC.jpg (design_notes_785_round3.md;
 # Ryan, Nov 15 2026, R259: KB1C-C "the best by far"; still a space bomber, never a boat, barge, platform or ground vehicle). The
-# written sheet governs where the render drifts: the render is taken from above and flatters the platform read; the sheet's terms
-# (the mouths at the glacis's extreme corners in dark collars, the armoured lip, the beam guard of 60 to 65 percent) stand.
+# written sheet governs where the render drifts, except where Ryan ruled for the render: the sheet's terms (the mouths at the
+# glacis's extreme corners in dark collars, the armoured lip) stand; its beam guard (60 to 65 percent) is lifted by R273, so the
+# craft takes the render's width.
 # Designer of record: the Opus builder, the Board the final designer (R205, R207, R233, R236): KB1C-C is a base, not a trace.
 # Ryan's words that bind (R254, R259): no canopy, no swept aero wings, no tail fins, nothing hung under a hull; drives are nozzle
 # clusters inside armoured blocks; bombers chunkier and visibly built around what they carry; each faction its own bomber (R253).
@@ -42,25 +45,26 @@ def U(v):
 # is one continuous shallow glacis from the bow toe up to the armoured lip, the lid behind it, then a step up to the stern housing
 # that holds the thruster bank.
 BODY = [
-    (0.500, 0.168, -0.036, -0.012, 0.004, 0.006),
-    (0.465, 0.172, -0.046, 0.004, 0.006, 0.010),
-    (0.300, 0.172, -0.048, 0.044, 0.010, 0.012),
-    (0.120, 0.170, -0.050, 0.083, 0.014, 0.014),
-    (0.080, 0.168, -0.050, 0.087, 0.016, 0.014),
-    (-0.200, 0.165, -0.050, 0.091, 0.018, 0.014),
-    (-0.380, 0.161, -0.049, 0.093, 0.018, 0.014),
-    (-0.395, 0.160, -0.049, 0.102, 0.020, 0.014),
-    (-0.460, 0.152, -0.046, 0.102, 0.022, 0.014),
+    (0.500, 0.319, -0.036, -0.012, 0.004, 0.006),
+    (0.465, 0.324, -0.046, 0.004, 0.006, 0.010),
+    (0.300, 0.314, -0.048, 0.044, 0.010, 0.012),
+    (0.120, 0.306, -0.050, 0.083, 0.014, 0.014),
+    (0.080, 0.304, -0.050, 0.087, 0.016, 0.014),
+    (-0.200, 0.293, -0.050, 0.091, 0.018, 0.014),
+    (-0.380, 0.276, -0.049, 0.093, 0.018, 0.014),
+    (-0.395, 0.271, -0.049, 0.102, 0.020, 0.014),
+    (-0.460, 0.246, -0.046, 0.102, 0.022, 0.014),
 ]
 # a shoulder either side (the side bodies behind the corner pods): its top slopes down and out from the body's wall to a thin
 # outer edge, so the craft's section is a flattened six-sided wedge, never a box on two track-like sponsons. Port half points
 # (y, z) of its section, shares of LENGTH, and the stations (n, scale of the slope's height). The starboard shoulder sits a touch
 # lower and shorter: the Hullbreakers are lopsided (factions.md), never mirror-even.
-SHOULDER = [(0.140, 0.062), (0.250, 0.031), (0.291, 0.013), (0.299, 0.001), (0.299, -0.022), (0.272, -0.046), (0.140, -0.048)]
+# R273 (Ryan, Nov 15 2026: "Wider for sure"): the shoulders reach out to the render's width, the craft about a fifth wider than it is long
+SHOULDER = [(0.270, 0.064), (0.499, 0.031), (0.585, 0.013), (0.600, 0.001), (0.600, -0.022), (0.546, -0.046), (0.270, -0.048)]
 # (n, k: the slope's height as a share of its full height, w: the shoulder's reach out from the body as a share): in plan the
 # craft tapers aft from the wide front (the two corner mouths) to the narrower stern housing, a wedge, never a rectangle
-SHOULDER_X = {1: [(0.420, 0.55, 0.9), (0.392, 1.0, 1.0), (-0.230, 1.0, 1.0), (-0.370, 0.92, 0.74), (-0.440, 0.66, 0.6)],
-              -1: [(0.420, 0.5, 0.9), (0.392, 0.93, 1.0), (-0.230, 0.93, 1.0), (-0.350, 0.86, 0.76), (-0.425, 0.62, 0.62)]}
+SHOULDER_X = {1: [(0.494, 0.55, 0.92), (0.455, 1.0, 1.0), (-0.230, 1.0, 1.0), (-0.370, 0.92, 0.74), (-0.440, 0.66, 0.6)],
+              -1: [(0.494, 0.5, 0.92), (0.455, 0.93, 1.0), (-0.230, 0.93, 1.0), (-0.350, 0.86, 0.76), (-0.425, 0.62, 0.62)]}
 
 
 def shoulder_ring(side, n, k, w):
@@ -69,7 +73,7 @@ def shoulder_ring(side, n, k, w):
     pts = []
     for (y, z) in SHOULDER:
         zz = zb + (z - zb) * k - (0.0 if side > 0 else 0.003)
-        yy = 0.14 + (y - 0.14) * w
+        yy = SHOULDER[0][0] + (y - SHOULDER[0][0]) * w
         pts.append((U(n), U(side * yy), U(zz)))
     return pts
 
@@ -173,7 +177,7 @@ def build(K):
     # ---------------- the two bomb tubes: one in each front corner pod, at the glacis's extreme corners ----------------
     R_M = 0.04
     for side, fid in ((1, 'BT1'), (-1, 'BT2')):
-        y = side * 0.236
+        y = side * 0.535
         K.launcher(fid, (U(0.5 - 0.004), U(y), U(0.019 if side > 0 else 0.017)), 1, 1, cell=U(R_M / 0.3), depth=U(0.215), yaw=0.0, pitch=0.0,
                    slot='T', weapon='bombs', inv='bomb_tubes', variant='bomb%d' % (1 if side > 0 else 2),
                    note='the bomb payload (data.js bombs T, 2 shots): the %s bomb tube in its corner pod, a dark armoured collar round the mouth; one bomb from each tube every volley' % (
@@ -187,7 +191,7 @@ def build(K):
     for side, fid in ((1, 'Y1'), (-1, 'Y2')):
         n0, n1 = -0.0, -0.215
         nc = (n0 + n1) / 2
-        yc = 0.197
+        yc = 0.39
         nrm = Vector((0.0, side * (z0_ - z1_), (y1_ - y0_))).normalized()
         wid = (Vector((y1_ - y0_, z1_ - z0_)).length) * 0.62
         K._surface_part(fid, CR.machbay(U(n0 - n1), U(wid), U(0.004), door=0.42 if side > 0 else 0.5, seed=1 if side > 0 else 2),
@@ -223,14 +227,14 @@ def build(K):
 
     # ---------------- colour zones ----------------
     K.colour('rust and dried-blood plate in uneven courses, soot and bare iron between', U(0.5), U(-0.5), 'whole hull')
-    K.colour('trophy patches: pale Hegemony grey, violet Eclipse plate', U(0.5), U(-0.5), 'scattered, big (R252)')
+    K.colour('trophy patches: pale Hegemony grey, violet Eclipse plate', U(0.5), U(-0.5), 'scattered, big (R252; R274: the Hullbreaker paint stack turns the pale ones dark grey metal, issue 726)')
     K.colour('red-orange glow only in the five bells; the mouths dark; no bright light', U(-0.46), U(-0.5), 'the thruster bank; factions.md: runs dark')
 
     # ---------------- INSIDE: the magazine rows (the bomber's story), kept small ----------------
     def room(name, kind, n0, n1, y0, y1, z0, z1, note=''):
         K.room(name, kind, U(min(n0, n1)), U(max(n0, n1)), U(y0), U(y1), U(z0), U(z1), note=note)
     for side in (1, -1):
-        y = side * 0.228
+        y = side * 0.42
         room('magazine_%s' % ('p' if side > 0 else 's'), 'magazine', 0.26, -0.1, y - 0.04, y + 0.04, -0.036, 0.014,
              note='the %s bomb row in the shoulder: salvaged bombs racked nose forward, fed by the hoist to the tube' % ('port' if side > 0 else 'starboard'))
     room('crew', 'crew', 0.07, -0.05, -0.06, 0.06, -0.02, 0.07, note='the pilot and the bombardier under the lip, behind the vision slit')
@@ -246,8 +250,8 @@ def build(K):
     K.point('core', 'hp_core', (U(-0.18), 0.0, U(0.01)))
 
     # ---------- changed from the picture (designer's decisions, R207, R233, R236) ----------
-    K.change('Length 1.6 (CLS_LEN Squadron; drawn 3.84 on the board), the same as every craft; beam about 0.6 of the length (the sheet\'s beam guard)',
-             'docs/playbooks/scale.md, Squadron rows, binding; the round 3 notes: the beam stays 60 to 65 percent of the length at most, so it stays a bomber and never a platform')
+    K.change('Length 1.6 (CLS_LEN Squadron; drawn 3.84 on the board), the same as every craft; beam about 1.2 of the length, the render\'s width',
+             'docs/playbooks/scale.md, Squadron rows, binding; R273, Ryan, Nov 15: "Wider for sure": the round 3 beam guard (60 to 65 percent) is lifted for this craft. The first sheet held it at 0.61 and read far narrower than the render')
     K.change('The two round mouths at the front corners are bomb tubes: dark armoured collars round dark bores with the next bomb\'s nose seated deep inside, no glow',
              'the round 3 sheet: the mouths at the glacis\'s extreme corners, each in a dark armoured collar; the render lights them red like engines, which would read as drives facing forward; the glow belongs to the bank aft')
     K.change('The tubes are fixed forward in their pods, not on a turning mount',
@@ -259,7 +263,7 @@ def build(K):
     K.change('The stern thruster bank is five mismatched salvaged bells, the centre one the largest, in a recess (a hood, cheeks and a sill) in the stern housing',
              'the concept\'s row of stern thrusters; factions.md: mismatched bells with a red-orange glow, one often larger than the rest; the owner\'s rule for craft: nozzle clusters inside armoured blocks')
     K.change('The starboard shoulder sits a touch lower and shorter than the port one; the plating is uneven courses of rust, dried blood, soot and iron with big trophy patches',
-             'factions.md: lopsided, bolted, patched, plates torn from every other faction; R240: the patchwork never reads even; R252: big pale trophy patches')
+             'factions.md: lopsided, bolted, patched, plates torn from every other faction; R240: the patchwork never reads even; R252: big trophy patches (R274: the pale ones become dark grey metal in the Hullbreaker paint stack for every ship, issue 726; the sheet keeps the pale zone)')
     K.change('No dishes, claws, antennas, lamps or hangar', 'below what the battle camera shows on a 3.84 unit craft, and nothing hangs off (factions.md); bold and simple')
     K.change('A small inside: two magazine rows in the shoulders, the crew cell, the reactor, the drive room; one seam (B-1)',
              'the game shows a craft\'s death as a spark and hides it (fx_death.gd _wing_death), so nothing breaks open; the build contract needs an inside and a seam')

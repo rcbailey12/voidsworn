@@ -1,44 +1,47 @@
 {
  "types": {
   "hull": {
-   "triangles": 21192,
-   "area": 5.56782,
-   "tris_per_unit2": 3806.2,
-   "edges_per_unit2": 3209.5
+   "triangles": 44352,
+   "area": 10.7569,
+   "tris_per_unit2": 4123.1,
+   "edges_per_unit2": 3465.8
   },
   "slit": {
    "triangles": 140,
    "area": 0.0024,
-   "tris_per_unit2": 58284.0,
-   "edges_per_unit2": 49957.7,
-   "tris_per_unit2_vs_hull": 15.31,
-   "edges_per_unit2_vs_hull": 15.57
+   "tris_per_unit2": 58390.0,
+   "edges_per_unit2": 50048.6,
+   "tris_per_unit2_vs_hull": 14.16,
+   "edges_per_unit2_vs_hull": 14.44
   },
   "launcher": {
    "triangles": 1676,
-   "area": 0.40736,
-   "tris_per_unit2": 4114.3,
-   "edges_per_unit2": 3142.2,
-   "tris_per_unit2_vs_hull": 1.08,
-   "edges_per_unit2_vs_hull": 0.98
+   "area": 0.40662,
+   "tris_per_unit2": 4121.8,
+   "edges_per_unit2": 3147.9,
+   "tris_per_unit2_vs_hull": 1.0,
+   "edges_per_unit2_vs_hull": 0.91
   },
   "machbay": {
    "triangles": 752,
-   "area": 0.13136,
-   "tris_per_unit2": 5724.5,
-   "edges_per_unit2": 4750.1,
-   "tris_per_unit2_vs_hull": 1.5,
-   "edges_per_unit2_vs_hull": 1.48
+   "area": 0.25311,
+   "tris_per_unit2": 2971.1,
+   "edges_per_unit2": 2465.4,
+   "tris_per_unit2_vs_hull": 0.72,
+   "edges_per_unit2_vs_hull": 0.71
   },
   "engine": {
    "triangles": 6460,
-   "area": 0.12437,
-   "tris_per_unit2": 51941.5,
-   "edges_per_unit2": 19860.0,
-   "tris_per_unit2_vs_hull": 13.65,
-   "edges_per_unit2_vs_hull": 6.19
+   "area": 0.12414,
+   "tris_per_unit2": 52036.0,
+   "edges_per_unit2": 19896.1,
+   "tris_per_unit2_vs_hull": 12.62,
+   "edges_per_unit2_vs_hull": 5.74
   }
  },
- "flags": [],
+ "flags": [
+  "machbay: tris_per_unit2 0.72 of the hull",
+  "machbay: edges_per_unit2 0.71 of the hull"
+ ],
  "rule": "R224: a part type more than 25 percent under the hull is flagged (mesh half; the paint half runs at stage 5)"
 }
