@@ -70,5 +70,7 @@
     }
    ]
   }
- ]
+ ],
+ "game_ship": "h_dominion",
+ "variant": ""
 }
