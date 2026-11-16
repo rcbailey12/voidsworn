@@ -63,8 +63,11 @@ const CLS_NAME={'Battle-barge':'War-barge','Bio-titan':'Colossus','Ark':'Lattice
 // The pool holds shMax = sh * SHIELD_POOL_MULT points; each side catches up to pool * coverage of a hit;
 // when a side is hit the ship routes power to it (coverage +SHIELD_ROUTE_BOOST) but routed absorption
 // drains (1 + SHIELD_ROUTE_LOSS) pool per point, so reinforcing the struck side burns the pool.
-// When the pool empties, shields drop on every side at once. Coverage: [prow, starboard, rear, port].
-const SHIELD_POOL_MULT=1.5;
+// When the pool empties (under 1 point), shields drop on every side at once. Coverage: [prow, starboard, rear, port].
+// The pool regenerates rg * SHIELD_REGEN_MULT a turn. Every number here is the Board's tuning value (issue 371), not an owner rule:
+// pool x2 and regen x1.25 put the share of damage shields stop back at main's level (balance pack in the issue 371 pull request).
+const SHIELD_POOL_MULT=2;
+const SHIELD_REGEN_MULT=1.25;
 const SHIELD_ROUTE_LOSS=.3;
 const SHIELD_ROUTE_BOOST=.2;
 const SHIELD_COV_MAX=.95;

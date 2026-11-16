@@ -244,7 +244,7 @@ function derive(ship){
   const eat=RUN&&RUN.eatenCore&&factionOfTpl(ship.tpl)==='chorus'?CORE_EAT_HULL:0; // R78 Q15: an eaten core grows every Chorus ship for the run, new ships included
   const maxHp=Math.round(t.hp*mm*(1+(fx.hpPct||0)+.06*tr+eat));
   return {
-    maxHp, shMax:Math.round(t.sh*mm*(1+(fx.shPct||0))*SHIELD_POOL_MULT), regen:Math.round(t.rg*mm*(1+(fx.regenPct||0))),
+    maxHp, shMax:Math.round(t.sh*mm*(1+(fx.shPct||0))*SHIELD_POOL_MULT), regen:Math.round(t.rg*mm*(1+(fx.regenPct||0))*SHIELD_REGEN_MULT),
     armor:Math.min(.6,t.ar+(fx.armor||0)), speed:t.sp+(fx.speed||0), turns:t.tn+(fx.turns||0), ev:t.ev+(fx.ev||0),
     aim:fx.aim||0, crit:fx.crit||0, dmg:1+.15*(mk-1)+(fx.dmgPct||0)+.06*tr, fx,
     hangar:t.hangar?t.hangar+(fx.hangar||0)+(fx.hive||0):(fx.hive||0),

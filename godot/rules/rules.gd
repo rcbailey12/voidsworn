@@ -431,7 +431,7 @@ func derive(ship: Dictionary) -> Dictionary:
 	var ws = []
 	for e in t["w"]: ws.append(mkWeapon(e[0], e[1], fx))
 	return {
-		"maxHp": maxHp, "shMax": JSM.jsround(float(t["sh"]) * mm * (1.0 + float(z0(fx.get("shPct")))) * float(TB.SHIELD_POOL_MULT)), "regen": JSM.jsround(float(t["rg"]) * mm * (1.0 + float(z0(fx.get("regenPct"))))),
+		"maxHp": maxHp, "shMax": JSM.jsround(float(t["sh"]) * mm * (1.0 + float(z0(fx.get("shPct")))) * float(TB.SHIELD_POOL_MULT)), "regen": JSM.jsround(float(t["rg"]) * mm * (1.0 + float(z0(fx.get("regenPct")))) * float(TB.SHIELD_REGEN_MULT)),
 		"armor": min(0.6, float(t["ar"]) + float(z0(fx.get("armor")))), "speed": float(t["sp"]) + float(z0(fx.get("speed"))), "turns": float(t["tn"]) + float(z0(fx.get("turns"))), "ev": float(t["ev"]) + float(z0(fx.get("ev"))),
 		"aim": z0(fx.get("aim")), "crit": z0(fx.get("crit")), "dmg": 1.0 + 0.15 * (float(mk) - 1.0) + float(z0(fx.get("dmgPct"))) + 0.06 * tr, "fx": fx,
 		"hangar": (float(t["hangar"]) + float(z0(fx.get("hangar"))) + float(z0(fx.get("hive")))) if jt(t.get("hangar")) else z0(fx.get("hive")),
@@ -1093,7 +1093,7 @@ func makeUnit(side, tpl, opts: Dictionary = {}) -> Dictionary:
 		var fx = opts["fx"] if jt(opts.get("fx")) else {}
 		var ws = []
 		for e in t["w"]: ws.append(mkWeapon(e[0], e[1], fx))
-		s = {"maxHp": JSM.jsround(float(t["hp"]) * sc * (1.1 if jt(opts.get("elite")) else 1.0)), "shMax": JSM.jsround(float(t["sh"]) * sc * float(TB.SHIELD_POOL_MULT)), "regen": JSM.jsround(float(t["rg"]) * sc), "armor": t["ar"], "speed": t["sp"], "turns": t["tn"], "ev": t["ev"],
+		s = {"maxHp": JSM.jsround(float(t["hp"]) * sc * (1.1 if jt(opts.get("elite")) else 1.0)), "shMax": JSM.jsround(float(t["sh"]) * sc * float(TB.SHIELD_POOL_MULT)), "regen": JSM.jsround(float(t["rg"]) * sc * float(TB.SHIELD_REGEN_MULT)), "armor": t["ar"], "speed": t["sp"], "turns": t["tn"], "ev": t["ev"],
 			"aim": 6 if jt(opts.get("elite")) else 0, "crit": 5 if jt(opts.get("elite")) else 0, "dmg": opts["dmg"] if jt(opts.get("dmg")) else 1, "fx": fx, "hangar": z0(t.get("hangar")),
 			"hullRegen": JSM.jsround(float(z0(t.get("regen"))) * sc), "weapons": nameWeapons(t.get("fac"), ws)}
 	var ship = opts.get("ship")
