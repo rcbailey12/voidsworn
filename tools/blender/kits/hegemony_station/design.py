@@ -40,12 +40,13 @@ JOINTS = dict(core=[CORE['bottom'] + i * CORE['pitch'] for i in range(1, 9)],
               radiators='header manifolds')
 CHANGES = [
     'The rules main station occupies seven cells (centre plus its six neighbours), not three cells. '
-    'The plan is fitted inside their union; the full footprint is three hex columns wide.',
+    'The source plan fits inside their union; the source footprint is three hex columns wide. '
+    'R247 uniform review scaling now exceeds that live union; footprint integration remains open before a swap.',
     'The secondary spokes are offset from the docking arms; each tower has a bridge to a spoke or the bearing deck.',
     'The drum stack rises above the ring, toward the accepted beauty silhouette. Nine drums share one service shaft; '
     'the station does not gain a second core.',
     'The upper arm is angled 60 degrees into a blocked outer cell; a straight 90-degree arm would enter the '
-    'unblocked notch between two cells. The real footprint outranks the concept plan.',
+    'unblocked notch between two cells in the source plan. The larger review still needs a matching live footprint.',
     'The loose arm is the six-unit fallback from the pack. Its collar sweeps in an isolated corridor below the ring '
     'and outside the core, on two torn conduits. A complete swept-volume check is still required before approval.',
     'The ring has six habitat modules over twelve bearing slots; slot 10 is open in the lower-right plan quadrant.',

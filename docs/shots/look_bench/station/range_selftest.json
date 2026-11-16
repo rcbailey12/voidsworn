@@ -1,0 +1,32 @@
+{
+  "status": "PASS",
+  "method": "Changed actual GLB root scale; manifest and fit stayed unchanged",
+  "cases": [
+    {
+      "fault": "undersized",
+      "rejected": true,
+      "evidence": {
+        "GLB_long_axis": 39.68000526923461,
+        "target_from_table": [
+          99.2,
+          297.6
+        ],
+        "live_board_one_hex": 26.0,
+        "live_board_large": 46.0
+      }
+    },
+    {
+      "fault": "oversized",
+      "rejected": true,
+      "evidence": {
+        "GLB_long_axis": 396.80005269234607,
+        "target_from_table": [
+          99.2,
+          297.6
+        ],
+        "live_board_one_hex": 26.0,
+        "live_board_large": 46.0
+      }
+    }
+  ]
+}

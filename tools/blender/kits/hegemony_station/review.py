@@ -21,6 +21,7 @@ sys.path.insert(0,str(HERE))
 import design as D
 from parts import Parts
 import stack
+from scale import contract
 
 
 def empty(name, parent=None, pos=(0,0,0)):
@@ -238,7 +239,7 @@ def bounds(objects):
     return dict(min=list(lo),max=list(hi),size=list(hi-lo))
 
 
-def geometry_report(scene, objects, moving, inputs):
+def geometry_report(scene, objects, moving, inputs, uniform_scale):
     """Measure the built triangles, including the whole passive motion cycle.
 
     This is a review fit probe. The conduit attachment is intentionally allowed;
@@ -250,17 +251,19 @@ def geometry_report(scene, objects, moving, inputs):
     def in_cell(x,y,c):
         dx=abs(x-c[0]); dy=abs(y-c[1])
         return dx <= math.sqrt(3)*radius/2+.002 and dy <= radius+.002 and dx/math.sqrt(3)+dy <= radius+.002
-    def outside(vertices):
-        return sum(not any(in_cell(v.x,v.y,c) for c in cells) for v in vertices)
+    def outside(vertices, scale=1.0):
+        return sum(not any(in_cell(v.x/scale,v.y/scale,c) for c in cells) for v in vertices)
     deps=bpy.context.evaluated_depsgraph_get()
     fixed_v=[]; fixed_f=[]; move_v=[]; move_f=[]; modules={}
     for ob in objects:
         ev=ob.evaluated_get(deps); me=ev.to_mesh(); me.calc_loop_triangles()
         vv=[ob.matrix_world@v.co for v in me.vertices]
-        entry=modules.setdefault(ob['module'],dict(vertices=0,inside_triangles=0,outside_vertices=0))
+        entry=modules.setdefault(ob['module'],dict(vertices=0,inside_triangles=0,outside_vertices=0,
+                                                 source_footprint_outside_vertices=0))
         entry['vertices']+=len(vv)
         entry['inside_triangles']+=len(me.loop_triangles) if ob['inside'] else 0
         entry['outside_vertices']+=outside(vv)
+        entry['source_footprint_outside_vertices']+=outside(vv,uniform_scale)
         if ob.parent==moving:
             vv=[moving.matrix_world.inverted()@v for v in vv]; verts,faces=move_v,move_f
         elif ob['module']=='tethers':
@@ -277,7 +280,8 @@ def geometry_report(scene, objects, moving, inputs):
         vv=[moving.matrix_world@v for v in move_v]
         tree=BVHTree.FromPolygons(vv,move_f,all_triangles=True)
         overlaps=tree.overlap(fixed)
-        samples.append(dict(seconds=seconds,intersecting_triangle_pairs=len(overlaps),outside_vertices=outside(vv)))
+        samples.append(dict(seconds=seconds,intersecting_triangle_pairs=len(overlaps),outside_vertices=outside(vv),
+                            source_footprint_outside_vertices=outside(vv,uniform_scale)))
         envelope.extend(vv)
     scene.frame_set(1); bpy.context.view_layer.update()
     return dict(modules=modules,motion_samples=samples,
@@ -351,15 +355,13 @@ def main():
     inputs=json.loads((out/'game_inputs.json').read_text(encoding='utf-8'))
     root,move,objs,rows=build()
     bpy.context.view_layer.update()
-    # The pack's 32-unit height is a starting point. The actual loaded capital
-    # hulls decide the required height. Keep the plan in the blocker footprint.
+    # R247: use the table's minimum long axis, preserving the concept's proportions.
+    # The old seven-cell footprint remains measured, not silently enlarged.
     initial=bounds(objs)
-    height_scale=max(1.0,(inputs['max_ship_height']+1.0)/initial['size'][2])
-    for ob in objs:
-        for v in ob.data.vertices: v.co.z*=height_scale
-    for ob in root.children:
-        if ob.type=='EMPTY': ob.location.z*=height_scale
-    joints=dict(D.JOINTS,core=[z*height_scale for z in D.JOINTS['core']])
+    sizing=contract()
+    uniform_scale=sizing['range'][0]/max(initial['size'])
+    root.scale=(uniform_scale,)*3
+    joints=dict(D.JOINTS,core=[z*uniform_scale for z in D.JOINTS['core']])
     root['joints_json']=json.dumps(joints)
     bpy.context.view_layer.update()
     bb=bounds(objs)
@@ -370,25 +372,31 @@ def main():
         counts['inside' if ob.get('inside') else 'exterior']+=len(me.loop_triangles)
         ev.to_mesh_clear()
     counts['total']=sum(counts.values())
-    fit=geometry_report(bpy.context.scene,objs,move,inputs)
+    fit=geometry_report(bpy.context.scene,objs,move,inputs,uniform_scale)
     (out/'fit.json').write_text(json.dumps(fit,indent=2)+'\n',encoding='utf-8')
-    src=[HERE/n for n in ('design.py','parts.py','stack.py','review.py','inspect.gd','check.py','sheets.py')]
+    src=[HERE/n for n in ('design.py','parts.py','stack.py','review.py','inspect.gd','check.py','sheets.py','scale.py','capture.gd','range_selftest.py','review_run.bat')]
     manifest=dict(code=D.CODE,status='BUILD SHEET - NOT APPROVED FOR INSTALL',
                   station_kind='fleet',concept=D.CONCEPT,plan=D.PLAN,pack=D.PACK,
                   units='world units; Blender Z up; glTF Y up',bounds=bb,triangles=counts,
-                  height_fit=dict(scale=height_scale,source='game_inputs.json max_ship_height',
-                                  note='Vertical sizing is provisional for Board review; the plan stays in the real blocked cells.'),
+                  uniform_fit=dict(scale=uniform_scale,axes=[uniform_scale]*3,source_bounds=initial,
+                                   contract=sizing,note='Uniform review scale. Live footprint integration pending; no swap.'),
                   modules=rows,joints=joints,lights=dict(blue=sum(c['count'] for c in D.LIGHT_CLUSTERS),
-                  battery=len(D.BATTERIES)),motion=dict(D.MOTION,pivot=list(move.location)),changes=D.CHANGES,
+                  battery=len(D.BATTERIES)),motion=dict(D.MOTION,pivot=list(move.matrix_world.translation)),changes=D.CHANGES,
                   orthographic_scale=1.35*max(bb['size'][0],bb['size'][1]*16/9,bb['size'][2]*16/9),
                   method='hand-built station kit; schematic AO material; production mask/trim bake pending sheet approval',
                   scripts={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in src},
-                  pending=['Board sheet review','AI shape reference (CPU-only job)',
+                  pending=['Board sheet review','live footprint integration at R247 scale','AI shape reference',
                            'production geometry-mask/trim paint bake','full fit and swept-volume audit',
                            'station-map 1080p and 4K scene gate','Ryan look before live swap'])
     (out/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8')
     print('T2 COST',json.dumps(counts),'BOUNDS',json.dumps(bb),flush=True)
     scene=bpy.context.scene; lighting(scene)
+    # Preserve the same illumination after the uniform change of scale.
+    for lamp in scene.objects:
+        if lamp.type=='LIGHT':
+            lamp.location*=uniform_scale
+            lamp.data.energy*=uniform_scale**2
+            lamp.data.size*=uniform_scale
     scene['review_fov']=inputs['camera']['fov']
     bpy.ops.wm.save_as_mainfile(filepath=str(out/'station_T2_sheet.blend'))
     if not a.no_render:
@@ -401,7 +409,7 @@ def main():
                ('side',(0,-100,cz),(0,0,cz),ortho),
                ('underside',(0,0,-100),(0,0,0),ortho),
                ('front',(100,0,cz),(0,0,cz),ortho),
-               ('threequarter',(65,-85,55),(0,0,2),None)]
+               ('threequarter',(125,-160,105),(0,0,2),None)]
         for name,pos,target,ortho in views:
             camera(scene,name,pos,target,ortho)
             scene.render.filepath=str(out/(name+'.png')); bpy.ops.render.render(write_still=True)
@@ -411,10 +419,10 @@ def main():
         bpy.ops.wm.obj_import(filepath=str(out/inputs['cruiser_mesh']),forward_axis='Y',up_axis='Z')
         cruiser=list(bpy.context.selected_objects)
         for ob in cruiser:
-            ob.location+=Vector((0,-29,0))
+            ob.location+=Vector((0,-53,0))
             ob.data.materials.clear(); ob.data.materials.append(stack.materials()['plate2'])
         for name,pos,target in [('compare170',(0,-5-rr*math.sin(beta),rr*math.cos(beta)),(0,-5,0)),
-                                ('compare_low',(72,-103,38),(0,-5,1))]:
+                                ('compare_low',(140,-200,70),(0,-5,1))]:
             camera(scene,name,pos,target)
             scene.render.filepath=str(out/(name+'.png')); bpy.ops.render.render(write_still=True)
             print('T2 VIEW',name,flush=True)
@@ -422,7 +430,7 @@ def main():
         # Cutaway is a build check: the real decks, frame stations and rack rows.
         for ob in objs:
             ob.hide_render=not bool(ob.get('inside')) or ob.get('zone')=='liner'
-        camera(scene,'inside',(55,-65,42+cz),(0,0,cz),ortho)
+        camera(scene,'inside',(110,-130,84+cz),(0,0,cz),manifest['orthographic_scale'])
         scene.view_settings.exposure=1.5
         scene.render.filepath=str(out/'inside.png'); bpy.ops.render.render(write_still=True)
         scene.view_settings.exposure=0

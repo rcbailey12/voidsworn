@@ -1,0 +1,23 @@
+{
+  "source_commit": "6e304b787a1b68cc6a58709246bc942e0ff70e81",
+  "source_folder": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\board\\issue-373\\shots\\review4",
+  "retained_capture_pass": "second, after GPU warm-up",
+  "station_glb_sha256": "723b19e2aa744a673e24ee016a93b1213991f0cdfa9d6ea02646bed7d2e3f781",
+  "rebuilt_glb_identical": true,
+  "CPU_sheets_reproduced": 9,
+  "capture_refresh": "Not repeated: current GPU occupied, and the resumed model is byte-for-byte identical.",
+  "captures": {
+    "game_compare170_destroyer.png": "b127d305254bce9a294d3cbad04e52d8949ca6b222cab27728dc975529a612b0",
+    "game_compare170_frigate.png": "ff68a69e50083b9e73fb6e90923115398b0bc4d6f947f0229147ca95ada79aa4",
+    "game_compare170_cruiser.png": "e03ea4a9e88daada296e674de6002dd813b4b1855a7a65ab6584bbc12d1dfac1",
+    "game_compare_low.png": "cb8181e1f920076383136f5cc49288b267802f57d4b92e7d85dce29063d6d6e7",
+    "game_compare170_carrier.png": "461c86f1ccc2fbb628b98ec01290581ade7fbae8acc5a61244c0b0311badd772",
+    "game_compare170_battleship.png": "277e16eace0ff492acf006c32e9277347320e6a238f75d6d3fc0612f4f70b546",
+    "game_compare170_dreadnought.png": "3df4f54fea71e4127a76f4f805a6ba603ab71702356713190a9e30969eb18a02",
+    "game_compare170_super_dreadnought.png": "fd734338e4435eca01955ffc6ab6d791fc80004d98d5100581c63068447998ea",
+    "game_compare170_battle_barge.png": "16e2c84be334186f8755b5a6f4b33fea36cc810e25174c8a1e80435f5e2fb63d",
+    "game_compare170_bio_titan.png": "a1dc0ae3b5aa84889c3b71be2c0c78dd44232629f0dea6df3876599395248e14",
+    "game_compare170_ark.png": "59a532733db4ccf61d52cc40daeedd465b03cd15da5b282c28f31a97d72969eb",
+    "game_compare170_tomb_ark.png": "cf0810d8b9a78f10b1494badbd48867688c46b858c5ca8fda78dc3bc6c132772"
+  }
+}

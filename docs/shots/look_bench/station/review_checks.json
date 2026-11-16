@@ -1,11 +1,11 @@
 {
   "status": "PASS",
-  "scope": "CPU review sheet only. Not approval for production, install or performance.",
+  "scope": "Review sheet only. Not approval for production, install or performance.",
   "checks": [
     {
       "name": "source design.py",
       "pass_": true,
-      "evidence": "e20770dfda3879129fd5a2c1ffacaf273a07fde230b6d6a80a660b6541a5b5da"
+      "evidence": "23da8e909b2f07e7c47d6812ddad196bf604cfe8bb15aa1afc10bf138d70e3d7"
     },
     {
       "name": "source parts.py",
@@ -20,22 +20,42 @@
     {
       "name": "source review.py",
       "pass_": true,
-      "evidence": "88425da32ae392c0b6a65117baf4fbcb1a46a83d04b55ff86bd2ad8d9e1a611a"
+      "evidence": "9ebb397243836361e14790285703202141eabc802c745c3b9190d90df69862c5"
     },
     {
       "name": "source inspect.gd",
       "pass_": true,
-      "evidence": "2c1f470b2e44547f732a05c9a110db39136dff0863c8a3e2015358dc402fc89e"
+      "evidence": "4cf8d13fb6f3e6dd3739c0c31ab320dd349e7ec60df5d6fcf96aa5ee3853726c"
     },
     {
       "name": "source check.py",
       "pass_": true,
-      "evidence": "0ae574e10bf5d99ec258729bd5e5f253e5098aaffef870bfbad0c7c8e7c96634"
+      "evidence": "dc2c3ba8f834dddde38ef5b27461487367a6957d0f21eda7ca74ed33b955be4e"
     },
     {
       "name": "source sheets.py",
       "pass_": true,
-      "evidence": "ea01358ba71aea4cdeb3c3eb3e2d8afc555280fd473625b8f26439333e36c82b"
+      "evidence": "82b98106a1a2d6efd2898595c62f18b7632d9be6848dcc1766594770279b0deb"
+    },
+    {
+      "name": "source scale.py",
+      "pass_": true,
+      "evidence": "0bb6b68ac437faa8862835d347ba5e8cb155892ce6cef5ba0386451f953a1a92"
+    },
+    {
+      "name": "source capture.gd",
+      "pass_": true,
+      "evidence": "fb40254e209feb55143cf1bb78186b5b22a0c2a3d31788324c7121201b0e7eaa"
+    },
+    {
+      "name": "source range_selftest.py",
+      "pass_": true,
+      "evidence": "90dd42d908c2cf8ed5dd7ec7da322218b17382922533fa01d49e4362d79602f2"
+    },
+    {
+      "name": "source review_run.bat",
+      "pass_": true,
+      "evidence": "4ef27d0b122a675695b91a0779c9863aa7966fab3f81ef11eca39b930e989531"
     },
     {
       "name": "core and arms",
@@ -61,17 +81,41 @@
       "evidence": 7
     },
     {
-      "name": "static footprint",
+      "name": "source plan footprint",
       "pass_": true,
       "evidence": {
-        "vertices_outside_real_hex_union": 0
+        "source_vertices_outside_real_hex_union": 0,
+        "scaled_vertices_outside_live_footprint": 65530,
+        "live_footprint_integration": "PENDING; review only"
       }
+    },
+    {
+      "name": "R247 exported station range",
+      "pass_": true,
+      "evidence": {
+        "GLB_long_axis": 99.20001317308652,
+        "target_from_table": [
+          99.2,
+          297.6
+        ],
+        "live_board_one_hex": 26.0,
+        "live_board_large": 46.0
+      }
+    },
+    {
+      "name": "uniform proportions",
+      "pass_": true,
+      "evidence": [
+        1.9228532604496198,
+        1.9228532604496198,
+        1.9228532604496198
+      ]
     },
     {
       "name": "taller than ships",
       "pass_": true,
       "evidence": {
-        "station": 52.1292839050293,
+        "station": 66.55323028564453,
         "tallest_loaded_ship": 51.1292686462402,
         "hulls": 30
       }
@@ -127,24 +171,76 @@
     {
       "name": "fitted joint metadata",
       "pass_": true,
-      "evidence": "exported joints agree with the fitted build, including the vertical height fit"
+      "evidence": "exported joints agree with the uniformly scaled build"
+    },
+    {
+      "name": "exported uniform scale",
+      "pass_": true,
+      "evidence": [
+        [
+          1.9228532314300537,
+          1.9228532314300537,
+          1.9228532314300537
+        ]
+      ]
     },
     {
       "name": "export geometry count",
       "pass_": true,
       "evidence": {
-        "GLB": 325900,
-        "built_scene": 325900
+        "GLB": 325652,
+        "built_scene": 325652
+      }
+    },
+    {
+      "name": "all combat classes captured",
+      "pass_": true,
+      "evidence": {
+        "expected": [
+          "Ark",
+          "Battle-barge",
+          "Battleship",
+          "Bio-titan",
+          "Carrier",
+          "Cruiser",
+          "Destroyer",
+          "Dreadnought",
+          "Frigate",
+          "Super-dreadnought",
+          "Tomb-ark"
+        ],
+        "captured": [
+          "Ark",
+          "Battle-barge",
+          "Battleship",
+          "Bio-titan",
+          "Carrier",
+          "Cruiser",
+          "Destroyer",
+          "Dreadnought",
+          "Frigate",
+          "Super-dreadnought",
+          "Tomb-ark"
+        ]
+      }
+    },
+    {
+      "name": "GPU review images",
+      "pass_": true,
+      "evidence": {
+        "pictures": 12,
+        "bad": [],
+        "renderer": "forward_plus"
       }
     }
   ],
   "cost": {
-    "triangles": 325900,
+    "triangles": 325652,
     "primitives": 20,
     "materials": 11,
     "mesh_nodes": 2,
-    "glb_bytes": 17826080,
-    "frame_gate": "NOT RUN; requires a GPU window and a station-map game scene",
+    "glb_bytes": 17801940,
+    "frame_gate": "NOT RUN; production station-map gate remains outside this review-only run",
     "draw_calls": "NOT MEASURED; GLB primitives are potential surface draws, not GPU draw measurements"
   }
 }
