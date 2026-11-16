@@ -101,36 +101,43 @@ def blobs(path, k=3):
 
 
 def scale(out, paths):
-    """the three craft each beside its faction's flagship, orthographic, every length to scale (one ortho width for all three)"""
+    """the three craft each beside its faction's flagship, orthographic, every length to scale (one ortho width and one picture
+    scale for all three bands)"""
     ortho = float(os.environ.get('GV_ORTHO', 80))
     im = Image.new('RGB', (1280, 720), GREY); d = ImageDraw.Draw(im)
     d.text((18, 8), 'hegemony_HF1D, corsair_KB1CC, chorus_CS1BA2 beside their flagships at true game scale (orthographic, one scale)', fill=INK, font=F(19))
     names = [('hegemony_IM5 (the Iron Mandate, 49.6)', 'hegemony_HF1D wing'), ('corsair_A16 (the Pyre-Barge, 41.6)', 'corsair_KB1CC wing'),
              ('chorus_C10 (the Ninefold Maw, 44.8)', 'chorus_CS1BA2 wing')]
-    y = 40; meas = []
-    for (fl, cr), p in zip(names, paths):
+    bands = []; meas = []; wings = []
+    for p in paths:
         sc, big = blobs(p, 6)
         ppu = sc.width / ortho
         ship = max(big, key=lambda o: o[1].stop - o[1].start)
         crafts = [o for o in big if o is not ship and (o[1].stop - o[1].start) / ppu < 6.0]
-        Ls = (ship[1].stop - ship[1].start) / ppu
-        Lc = max(((o[1].stop - o[1].start) / ppu for o in crafts), default=0.0)
-        meas.append((Ls, Lc))
+        meas.append(((ship[1].stop - ship[1].start) / ppu, max(((o[1].stop - o[1].start) / ppu for o in crafts), default=0.0)))
         allo = [ship] + crafts
         y0 = min(o[0].start for o in allo) - 6; y1 = max(o[0].stop for o in allo) + 6
         x0 = min(o[1].start for o in allo) - 10; x1 = max(o[1].stop for o in allo) + 10
-        band = sc.crop((max(0, x0), max(0, y0), min(sc.width, x1), min(sc.height, y1)))
-        k = 1240 / sc.width   # one scale for all three bands
+        bands.append((sc, max(0, x0), max(0, y0), min(sc.width, x1), min(sc.height, y1)))
+        cx0 = min(o[1].start for o in crafts) - 8; cx1 = max(o[1].stop for o in crafts) + 8
+        cy0 = min(o[0].start for o in crafts) - 8; cy1 = max(o[0].stop for o in crafts) + 8
+        wings.append(sc.crop((cx0, cy0, cx1, cy1)))
+    k = min(min(1240 / b[0].width for b in bands), min(170.0 / (b[4] - b[2]) for b in bands))   # one scale for every band
+    y = 40
+    for (fl, cr), (sc, x0, y0, x1, y1), (Ls, Lc) in zip(names, bands, meas):
+        band = sc.crop((x0, y0, x1, y1))
         band = band.resize((max(1, int(band.width * k)), max(1, int(band.height * k))), Image.Resampling.LANCZOS)
-        hmax = 200
-        if band.height > hmax:
-            band = band.crop((0, (band.height - hmax) // 2, band.width, (band.height - hmax) // 2 + hmax))
-        im.paste(band, (20 + int((max(0, x0)) * k), y + 22))
         d.text((22, y), '%s and a %s: measured here %.1f and %.1f long (game: the craft 3.84, scale.md)' % (fl, cr, Ls, Lc), fill=ACC, font=F(15))
-        y += 22 + band.height + 12
-    d.text((22, 690), 'Unpainted blockouts. A craft is about a twelfth of its flagship\'s length; wings fly in fours (godot/render/squadron_wing.gd).', fill=DIM, font=F(15))
+        im.paste(band, (20 + int(x0 * k), y + 22))
+        w_ = wings.pop(0); ke = min(470 / w_.width, 160 / w_.height)
+        w_ = w_.resize((int(w_.width * ke), int(w_.height * ke)), Image.Resampling.LANCZOS)
+        im.paste(w_, (790, y + 22)); d.rectangle((789, y + 21, 790 + w_.width, y + 22 + w_.height), outline=ACC, width=1)
+        d.text((1080, y + 26 + w_.height - 20), 'the wing x%.1f' % (ke / k), fill=ACC, font=F(13))
+        y += 22 + band.height + 10
+    d.text((22, 694), 'Unpainted blockouts, one picture scale for all three bands. A craft is about a twelfth of its flagship\'s length; wings fly in fours.',
+           fill=DIM, font=F(14))
     im.save(out, quality=90)
-    print('scale:', meas)
+    print('scale:', meas, 'k', k)
 
 
 def battle(out, path):
@@ -153,10 +160,11 @@ def battle(out, path):
         im.paste(crop, (X, Y + 22)); d.rectangle((X - 1, Y + 21, X + crop.width, Y + 22 + crop.height), outline=ACC, width=1)
         d.text((X, Y), lab, fill=ACC, font=F(15))
     y = 572
-    for line in ('Hegemony: a pale machined wedge, its blue line along the edge and one blue drive slit.',
-                 'Hullbreakers: a broad patched block, two dark corner mouths, five red-orange drives aft.',
-                 'Chorus: a grown olive spindle, the sealed bladders swelling either side of the bone line.',
-                 'Each reads as its own faction\'s craft; none as a jet, a boat or a ground vehicle.'):
+    for line in ('Hegemony: a pale grey dart with flecks of its blue line.',
+                 'Hullbreakers: a broad rust-red block, red-orange drives aft.',
+                 'Chorus: a long olive spindle with its pale bone line.',
+                 'Each reads apart by outline and colour at game size and as',
+                 'its own faction; the mouths, sacs and guns show up close.'):
         d.text((480, y), line, fill=INK, font=F(15)); y += 30
     im.save(out, quality=92)
     print('battle written', out)
