@@ -29,6 +29,11 @@ SHEET = dict(version=1, round='first sheet (issue 633)', date='2026-11-12', blen
              during='While designing, the check also caught (and the design fixed): see the fit report\'s fix column.')
 
 import math, random
+import os, importlib.util
+
+_ps = importlib.util.spec_from_file_location('hullbreaker_plating',
+    os.path.join(os.path.dirname(__file__), '..', '..', 'kits', 'hullbreakers', 'plating.py'))
+_plating = importlib.util.module_from_spec(_ps); _ps.loader.exec_module(_plating)
 
 # (x, half-beam port, half-beam starboard, bottom, top, top chamfer, bottom chamfer): the wedge bow over a cut-in chin, the
 # body, the aft taper into the engine block. Issue 668 (R239, Ryan Nov 13: "a18 and a19 are much slimmer than concept. It's
@@ -45,7 +50,7 @@ HULL = [
     (-2.25, 0.74 + WIDEN, 0.74 + WIDEN, -0.53, 0.45, 0.16, 0.15),
     (-2.78, 0.65 + WIDEN, 0.65 + WIDEN, -0.46, 0.4, 0.14, 0.14),
 ]
-PL = dict(keep3d=True, courses=True, size=(0.16, 0.36), thick=(0.02, 0.05), step=0.025, gap=0.018, over=0.2, skip=0.04, stack=0.2, rivets_share=0.25, rivet_r=0.02, mats={'soot': 3, 'iron': 4, 'pale': 2, 'rust': 3, 'soot2': 2, 'violet': 1, 'steel': 2})
+PL = dict(keep3d=True, size=(0.16, 0.36), thick=(0.02, 0.05), gap=0.018, skip=0.04, stack=0.2, rivets_share=0.25, rivet_r=0.02, mats={'soot': 3, 'iron': 4, 'pale': 2, 'rust': 3, 'soot2': 2, 'violet': 1, 'steel': 2})
 # the spine, bow to stern: stacked blocks (name, x fore, x aft, half-beam, top, front slope, y offset), with gaps between them
 SPINE = [
     ('S1 fore spine block', 1.45, 0.78, 0.53, 0.6, 0.22, 0.0),
@@ -72,6 +77,7 @@ def small_antenna(K, fid, pos, h, whips, k, inv, note):
 
 def build(K):
     import kit as _k
+    _plating.install(K, _k.HP)
     from mathutils import Vector
     sy = lambda x, side: _k.sec_at(HULL, x)[1 if side > 0 else 2] * side  # noqa: E731
     K.mass('Base hull (wedge bow, body, aft taper)', K.hull(HULL, 'soot', shell=0.08, plates=dict(PL, seed=18, inv=['hull_plates', 'belly_plates'])),
@@ -242,8 +248,8 @@ def build(K):
     K.change('The spine is five stacked blocks with gaps, the gun block and the sensor block the tallest', 'the picture\'s raised spine; stacked and bolted scrap brick (R196, R197), not one smooth deckhouse')
     K.change('Armour bricks bolted on the flanks, two to port and three to starboard; the port flank keeps a pale Hegemony trophy plate', 'the picture\'s patchwork flank; designs.md\'s trophy plate')
     K.change('The antenna array is the kit\'s at 65 percent of its size', 'R224: at full size its base block, sized for the barge, carried half the frigate\'s hull detail per square unit (issue 618: detail scales with the part\'s size)')
-    K.change('Every face is plated in courses at the hull\'s plate size (0.16 to 0.36), each course jointed on its own (a brick bond), patches laid over joints and offset patches over plates; upward faces stepped in terraces of one to three plate thicknesses',
-             'the Board on round 1 (Nov 13): the faces read as big smooth grey planes with a few greebles; the concept is scrap brick, plates over plates on every face (R196, R197). Kit: the sheet kit\'s courses plating (kit.py, opt-in, issue 633)')
+    K.change('Issue 875 (R289): mixed-size, skewed slabs, overlapping patches, varied thickness and welded lap joints on every plated mass',
+             'The issue 633 course builder made ordered rows; the faction kit\'s plating.py restores the irregular A16/A17 character without changing the trophy mix or paint stack')
 
     K.fix('SENSOR: T1 (all round) aiming through the dish D1 and the antenna AN1', 'R240 (Ryan, Nov 13: guns right behind or facing dishes and antennae): T1 lifted onto a 0.4 barbette on the gun block and AN1 cut from 0.66 to 0.45 tall, so the gun fires over both')
     K.change('Four small attitude thrusters', 'a ship in space needs them to turn (the overburn raider turns hard)')

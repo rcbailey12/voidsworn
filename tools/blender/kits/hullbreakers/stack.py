@@ -233,6 +233,13 @@ def configure_size(length=None):
             if name in CRAFT_PLATES:
                 zone['lo'], zone['hi'] = map(lin, CRAFT_PLATES[name])
                 zone.update(plate_var=.16, metal=.25, rough=.78)
+                if name != 'pale':
+                    # R289: shallow relief plus the craft's low wear/variation
+                    # made the red slabs read as fresh paper squares. Keep the
+                    # accepted red pairs, but give them salvaged plate tone and
+                    # broken bare edges. Grey trophy paint keeps R274's low
+                    # wear so it cannot wash white; its colour/share stay put.
+                    zone.update(plate_var=.40, wear=.65, scuff=.45)
             elif name in ('iron', 'iron_bay', 'iron_edge', 'steel', 'bell'):
                 zone['lo'], zone['hi'] = pair('iron')
                 zone.update(plate_var=.12, metal=.45, rough=.68)
