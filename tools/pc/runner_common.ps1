@@ -133,6 +133,73 @@ public static class RunnerFileHolders {
     if (-not $holders.Count -and -not $candidates.Count) { Log 'Windows could not name the checkout holder (directory handles may not be reported)' }
   } catch { Log "Windows holder lookup unavailable: $($_.Exception.Message)" }
 }
+# Refuse links anywhere in a removal target, including its ancestors. Walk one directory at a time so PowerShell
+# 5.1 never recurses through a junction before noticing it. A failed inspection always keeps the copy.
+function Assert-PlainDirectory($path) {
+  $item = Get-Item -LiteralPath $path -Force -ErrorAction Stop
+  if (-not $item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+    throw "not a plain directory: $path"
+  }
+}
+function Assert-PlainTree($path) {
+  $ancestor = [IO.DirectoryInfo]$path
+  while ($ancestor) { Assert-PlainDirectory $ancestor.FullName; $ancestor = $ancestor.Parent }
+  $pending = New-Object 'Collections.Generic.Stack[string]'
+  $pending.Push($path)
+  while ($pending.Count) {
+    foreach ($item in @(Get-ChildItem -LiteralPath $pending.Pop() -Force -ErrorAction Stop)) {
+      if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "link in kept copy: $($item.FullName)" }
+      if ($item.PSIsContainer) { $pending.Push($item.FullName) }
+    }
+  }
+}
+function Prune-KeptRepos($repo, $mirror) {
+  $full = [IO.Path]::GetFullPath($repo).TrimEnd('\')
+  if ([IO.Path]::GetFileName($full) -ne 'repo') { throw "refusing kept-copy cleanup beside unexpected checkout $full" }
+  $board = Split-Path -Parent $full
+  # Reserve a slot for the checkout about to be set aside, so a normal start ends with two, not three.
+  $keep = 2; if (Test-Path -LiteralPath $full) { $keep = 1 }
+  try {
+    Assert-PlainDirectory $board
+    $copies = @(Get-ChildItem -LiteralPath $board -Directory -Force -ErrorAction Stop |
+      Where-Object { $_.Name -match '^repo-kept-.+$' } | Sort-Object -Property @{Expression='LastWriteTimeUtc';Descending=$true},Name)
+    $older = @($copies | Select-Object -Skip $keep)
+    if (-not $older.Count) { return }
+    # The mirror was just fetched from origin. Object presence or stale refs in an old checkout are not push proof.
+    # Include partial branches and tags, but not the mirror's unreachable objects or reflogs.
+    $remoteHistory = @(Git @('--git-dir',$mirror,'rev-list','--branches','--tags'))
+    if ($gitExit -ne 0 -or -not $remoteHistory.Count) { throw 'could not verify pushed history from the refreshed mirror' }
+    $pushed = New-Object 'Collections.Generic.HashSet[string]'
+    foreach ($id in $remoteHistory) { [void]$pushed.Add($id) }
+  } catch { Log "kept-copy cleanup skipped: $($_.Exception.Message)"; return }
+  foreach ($copy in $older) {
+    try {
+      # Only direct siblings of this lane's repo are eligible. Never pass a computed path to another shell.
+      $target = [IO.Path]::GetFullPath($copy.FullName).TrimEnd('\')
+      if ((Split-Path -Parent $target) -ne $board -or [IO.Path]::GetFileName($target) -notmatch '^repo-kept-.+$') {
+        throw 'target is outside the kept-copy scope'
+      }
+      Assert-PlainTree $target
+      Assert-PlainDirectory (Join-Path $target '.git')
+      $top = @(Git @('-C',$target,'rev-parse','--show-toplevel'))
+      if ($gitExit -ne 0 -or $top.Count -ne 1 -or [IO.Path]::GetFullPath($top[0]).TrimEnd('\') -ne $target) {
+        throw 'not a standalone checkout'
+      }
+      $changes = @(Git @('-C',$target,'status','--porcelain=v1','--untracked-files=all','--ignore-submodules=none'))
+      if ($gitExit -ne 0) { throw 'could not inspect working changes' }
+      if ($changes.Count) { throw 'uncommitted or untracked work' }
+      $index = @(Git @('-C',$target,'ls-files','--stage'))
+      if ($gitExit -ne 0) { throw 'could not inspect the index' }
+      if (@($index | Where-Object { $_ -match '^160000 ' }).Count) { throw 'submodule work needs separate inspection' }
+      # Check every local branch, stash, detached HEAD and reflog, not just the current branch's upstream.
+      $history = @(Git @('-C',$target,'rev-list','--all','--reflog','HEAD'))
+      if ($gitExit -ne 0 -or -not $history.Count) { throw 'could not inspect local history' }
+      foreach ($id in $history) { if (-not $pushed.Contains($id)) { throw "unpushed local history ($id)" } }
+      Remove-Item -LiteralPath $target -Recurse -Force -ErrorAction Stop
+      Log "removed safe older kept checkout: $target"
+    } catch { Log "kept checkout preserved: $($copy.FullName): $($_.Exception.Message)" }
+  }
+}
 function Keep-Repo($repo, $tag) {
   if (-not (Test-Path -LiteralPath $repo)) { return }
   $full = [IO.Path]::GetFullPath($repo).TrimEnd('\')
@@ -156,6 +223,9 @@ function Keep-Repo($repo, $tag) {
       Start-Sleep -Milliseconds ([int][Math]::Min($pause, [Math]::Ceiling($left * 1000)))
     }
   }
+  # Rename preserves the old directory's timestamps. Retention uses the time it was set aside instead.
+  try { [IO.Directory]::SetLastWriteTimeUtc((Join-Path (Split-Path -Parent $full) $name), [DateTime]::UtcNow) }
+  catch { Log "could not stamp kept checkout time: $($_.Exception.Message)" }
   Log "earlier checkout kept beside repo as $name"
 }
 # Windows command line quoting, including trailing backslashes. Inputs are argument values, never shell snippets.
@@ -401,6 +471,7 @@ try {
       Must-Git @('--git-dir',$mirror,'symbolic-ref','HEAD','refs/heads/main')
     } finally { $lock.Dispose() }
     # A pinned lane must not hold the shared mirror lock for the ten-minute preservation wait.
+    Prune-KeptRepos $repo $mirror
     Keep-Repo $repo 'kept'
     $delay = 120; if ($test -and $env:PC_TEST_RETRY_SECONDS) { $delay = [int]$env:PC_TEST_RETRY_SECONDS }
     for ($attempt = 1; $attempt -le 3; $attempt++) {

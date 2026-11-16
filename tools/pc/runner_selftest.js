@@ -123,6 +123,7 @@ if (op && mode.startsWith(op)) {
     console.error('stub network drop'); process.exit(55);
   }
 }
+if (mode === 'status-dead' && a.includes('status')) { console.error('stub status failure'); process.exit(55); }
 const p = cp.spawnSync(process.env.PC_REAL_GIT,a,{stdio:'inherit',windowsHide:true}); process.exit(p.status ?? 99);
 `);
 const gitPath = run('where.exe', ['git.exe']).text.trim().split(/\r?\n/)[0];
@@ -265,6 +266,84 @@ function job(arm, label, extra = {}) {
   assert.equal(rerun.code,0); assert.equal(kept.length,1);
   assert(fs.existsSync(path.join(path.dirname(rerun.repo),kept[0],'agent_started.txt')));
   pass('Codex restart keeps the earlier checkout and its untracked work');
+  // Issue 860: use real Git state and local fixture refs, never git commit/push or any live board folders.
+  function keptCopy(home, name, age, change = () => {}) {
+    const repo = path.join(home, 'repo-kept-' + name);
+    assert.equal(run('git', ['clone', '-q', '--local', source, repo]).code, 0);
+    change(repo);
+    const when = new Date(Date.now() - age * 60000);
+    fs.utimesSync(repo, when, when);
+    return repo;
+  }
+  function gitFixture(repo, args) {
+    const r = run('git', ['-C', repo, ...args]); assert.equal(r.code, 0, r.text);
+  }
+  function checkoutFixture(home, extra = {}) {
+    const out = path.join(home, 'out'); write(path.join(out, 'result.txt'), '');
+    const env = { ...defaults, ...extra };
+    assert.equal(ps(['init', out, 'fixture/retention'], env).code, 0);
+    const r = ps(['checkout', path.join(home, 'repo'), out, 'fixture/retention', ''], env);
+    assert.equal(r.code, 0, r.text);
+    return r;
+  }
+  const retentionHome = path.join(root, 'kept-retention');
+  const safeOld = keptCopy(retentionHome, 'old', 40);
+  const safePartial = keptCopy(retentionHome, 'pushed-partial', 39, repo => gitFixture(repo, ['checkout', '-q', '--detach', partial]));
+  const safeNewest = keptCopy(retentionHome, 'newest', 1);
+  const unsafe = [
+    keptCopy(retentionHome, 'dirty', 38, repo => write(path.join(repo, 'progress.txt'), 'uncommitted edit\n')),
+    keptCopy(retentionHome, 'staged', 37, repo => {
+      write(path.join(repo, 'progress.txt'), 'staged edit\n'); gitFixture(repo, ['add', 'progress.txt']);
+    }),
+    keptCopy(retentionHome, 'untracked', 36, repo => write(path.join(repo, 'new.txt'), 'untracked work')),
+    keptCopy(retentionHome, 'unpushed', 35, repo => {
+      gitFixture(repo, ['update-ref', 'refs/heads/main', conflicting]);
+      gitFixture(repo, ['reset', '--hard', conflicting]);
+      // A stale tracking ref (and an object present in the source) must never count as push proof.
+      gitFixture(repo, ['update-ref', 'refs/remotes/origin/pretend', conflicting]);
+    }),
+    keptCopy(retentionHome, 'detached', 34, repo => gitFixture(repo, ['checkout', '-q', '--detach', conflicting])),
+    keptCopy(retentionHome, 'other-branch', 33, repo => gitFixture(repo, ['update-ref', 'refs/heads/local-only', conflicting])),
+    keptCopy(retentionHome, 'stash', 32, repo => gitFixture(repo, ['update-ref', 'refs/stash', conflicting])),
+    keptCopy(retentionHome, 'reflog', 31, repo => {
+      gitFixture(repo, ['checkout', '-q', '--detach', conflicting]); gitFixture(repo, ['checkout', '-q', 'main']);
+    })
+  ];
+  const notGit = path.join(retentionHome, 'repo-kept-incomplete'); write(path.join(notGit, 'keep.txt'), 'not a valid checkout');
+  fs.utimesSync(notGit, new Date(1700000000000), new Date(1700000000000)); unsafe.push(notGit);
+  const linkedOutside = path.join(root, 'outside-kept-scope'); write(path.join(linkedOutside, 'keep.txt'), 'outside work');
+  unsafe.push(keptCopy(retentionHome, 'junction', 30, repo => fs.symlinkSync(linkedOutside, path.join(repo, 'external'), 'junction')));
+  const failedClone = path.join(retentionHome, 'repo-clone-failed-fixture'); write(path.join(failedClone, 'keep.txt'), 'failed clone');
+  const otherLane = keptCopy(path.join(root, 'other-lane'), 'old', 100);
+  // The active checkout becomes the newest kept copy even if its old timestamp predates every sibling.
+  const activeRepo = path.join(retentionHome, 'repo');
+  assert.equal(run('git', ['clone', '-q', '--local', source, activeRepo]).code, 0);
+  write(path.join(activeRepo, 'keep.txt'), 'active untracked work');
+  fs.utimesSync(activeRepo, new Date(1700000000000), new Date(1700000000000));
+  const retention = checkoutFixture(retentionHome);
+  assert(!fs.existsSync(safeOld)); assert(!fs.existsSync(safePartial)); assert(fs.existsSync(safeNewest));
+  for (const repo of unsafe) assert(fs.existsSync(repo), 'unsafe kept copy lost: ' + repo);
+  assert.equal(read(path.join(linkedOutside, 'keep.txt')), 'outside work');
+  assert(fs.existsSync(failedClone)); assert(fs.existsSync(otherLane));
+  const retained = fs.readdirSync(retentionHome).filter(n => n.startsWith('repo-kept-'));
+  assert.equal(retained.length, unsafe.length + 2, retention.text);
+  const activeKept = retained.find(n => ![path.basename(safeNewest), ...unsafe.map(p => path.basename(p))].includes(n));
+  assert.equal(read(path.join(retentionHome, activeKept, 'keep.txt')), 'active untracked work');
+  assert(fs.statSync(path.join(retentionHome, activeKept)).mtimeMs > Date.now() - 60000);
+  assert(retention.text.includes('unpushed local history') && retention.text.includes('uncommitted or untracked work'), retention.text);
+  pass('retention removes clean pushed copies, keeps the newest two including the active checkout, and preserves all unsafe copies and other lanes');
+  const noActiveHome = path.join(root, 'kept-without-active');
+  const withoutActive = [4, 3, 2, 1].map(age => keptCopy(noActiveHome, String(age), age));
+  checkoutFixture(noActiveHome);
+  assert(!fs.existsSync(withoutActive[0]) && !fs.existsSync(withoutActive[1]));
+  assert(fs.existsSync(withoutActive[2]) && fs.existsSync(withoutActive[3]));
+  pass('retention keeps two existing copies when there is no active checkout to set aside');
+  const unreadableHome = path.join(root, 'kept-status-failure');
+  const unreadable = [4, 3, 2, 1].map(age => keptCopy(unreadableHome, String(age), age));
+  const statusFailure = checkoutFixture(unreadableHome, { STUB_GIT_FAULT: 'status-dead' });
+  for (const repo of unreadable) assert(fs.existsSync(repo));
+  assert(statusFailure.text.includes('could not inspect working changes'), statusFailure.text);
+  pass('failed Git safety inspection preserves old copies and lets the next run start');
   // A previous agent's current directory pins repo on Windows. Run the real preservation path, then free it.
   async function holder(home) {
     const repo = path.join(home, 'repo'); write(path.join(repo, 'keep.txt'), 'untracked work must survive');
@@ -290,18 +369,20 @@ function job(arm, label, extra = {}) {
     return state;
   }
   const pinnedHome = path.join(root, 'held-checkout'), pin = await holder(pinnedHome);
+  const beforeRenameOld = keptCopy(pinnedHome, 'old', 5), beforeRenameNewest = keptCopy(pinnedHome, 'newest', 1);
   const waiting = startCheckout(pinnedHome);
   const waitDeadline = Date.now() + 20000;
   while (!waiting.text.includes('checkout rename held') && Date.now() < waitDeadline) await new Promise(resolve => setTimeout(resolve, 50));
   assert(waiting.text.includes('checkout rename held'), waiting.text);
+  assert(!fs.existsSync(beforeRenameOld) && fs.existsSync(beforeRenameNewest), 'retention must run before the active checkout is renamed');
   const other = startCheckout(path.join(root, 'other-lane'));
   assert.equal(await other.done, 0, other.text);
   assert.equal(pin.exitCode, null, 'test holder must still pin the first lane');
   pin.kill(); await new Promise(resolve => pin.once('exit', resolve));
   assert.equal(await waiting.done, 0, waiting.text);
   const preserved = fs.readdirSync(pinnedHome).filter(n => n.startsWith('repo-kept-'));
-  assert.equal(preserved.length, 1);
-  assert.equal(read(path.join(pinnedHome, preserved[0], 'keep.txt')), 'untracked work must survive');
+  assert.equal(preserved.length, 2);
+  assert.equal(read(path.join(pinnedHome, preserved.find(n => n !== path.basename(beforeRenameNewest)), 'keep.txt')), 'untracked work must survive');
   assert(fs.existsSync(path.join(pinnedHome, 'repo/progress.txt')));
   assert(waiting.text.includes('holder: PID ' + pin.pid) || /Windows (holder lookup unavailable|could not name)/.test(waiting.text), waiting.text);
   pass('held checkout retries, keeps untracked work, logs holder diagnostics and lets another lane use the mirror');

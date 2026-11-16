@@ -313,7 +313,12 @@ R216).
 (now, or at a time): it withdraws the GPU go, closes only chain windows still waiting to start, and ends the Board's own AI
 processes (only those whose command line names the voidsworn_test job folders; never Ryan's own apps), so
 each running job's runner commits and pushes its work to the issue's -partial branch; job windows mid-run are never closed and
-nothing is deleted. On Ryan's go the Board restarts every paused job from its -partial branch. Why: "I don't want to cause
+nothing is deleted by the pause. On Ryan's go the Board restarts every paused job from its -partial branch. Before setting
+aside a checkout on the next start, the runner retains the two newest repo-kept-* copies per board folder (including the
+new copy). This is the kept-checkout exception to 3.3: it removes older copies only with a clean Git working tree and all
+local history verified as pushed in the freshly fetched shared mirror; unsafe or unreadable copies stay, even above two
+(issue 860). This keeps old safe copies
+from filling the disk without losing paused work. Why: "I don't want to cause
 anything to get lost or deleted with the pauses as well, so let's bake that in" (R272). Set: Ryan, Nov 15.
 
 ## 4. Ships and concepts
