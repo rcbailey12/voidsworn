@@ -138,7 +138,9 @@ def build(K):
     # R275: the Hullbreaker patchwork (patchwork() above): fewer, bigger, uneven plates of mixed size and angle, never small even
     # squares in rows; big trophy patches among them (R252), rust and dried blood the main tones (the concept's red), soot and
     # bare iron between; the colours as the sheet had them before R275
-    PL = dict(size=(U(0.075), U(0.19)), thick=(U(0.005), U(0.014)), gap=U(0.0016), skip=0.06, turn=12.0, hard=0.35, stack=0.45,
+    # R292: keep the irregular cuts and overlaps, but bed them close to the
+    # skin. The old 0.5 to 1.4 percent relief made these small plates look loose.
+    PL = dict(size=(U(0.075), U(0.19)), thick=(U(0.002), U(0.005)), gap=U(0.0016), skip=0.06, turn=12.0, hard=0.35, stack=0.45,
               rivets_share=0.07, rivet_r=U(0.0018),
               mats={'rust': 5, 'soot': 4, 'blood': 3, 'iron': 2, 'soot2': 2, 'pale': 0.6, 'violet': 0.4})
     PATCH = []   # (name, rings, spec): plated last, once every mount has claimed its keep-out
@@ -294,8 +296,8 @@ def build(K):
              'the concept\'s row of stern thrusters; factions.md: mismatched bells with a red-orange glow, one often larger than the rest; the owner\'s rule for craft: nozzle clusters inside armoured blocks')
     K.change('The starboard shoulder sits a touch lower and shorter than the port one; the plating is a patchwork of fewer, bigger, uneven plates of mixed size and angle (rust, dried blood, soot and iron with big trophy patches), laid by the faction kit\'s welded plater, never courses',
              'factions.md: lopsided, bolted, patched, plates torn from every other faction; R240 and R275: the patchwork never reads even or in rows (the kit\'s courses read as tidy squares on a craft); R252: big trophy patches (R274: the pale ones become dark grey metal in the Hullbreaker paint stack for every ship, issue 726; the sheet keeps the pale zone)')
-    K.change('Issue 875 (R289): thicker slabs, stronger turns, more second layers and welded lap joints; the material weights and craft paint settings stay unchanged',
-             'The shallow, mostly aligned R275 slabs read as flat notes; the A16/A17 character comes from physical plate relief as well as the paint')
+    K.change('Issue 875 (R289, R292): mixed-size turned plates and welded laps, bedded close to the skin; dark iron, weathered rust red and grey trophies from the faction stack; material weights unchanged',
+             'The first patchwork proof still read as clean salmon slabs. The craft-only bright palette and reduced dirt hid its seams and wear; thicker relief made the small patches stand off the hull')
     K.change('No dishes, claws, antennas, lamps or hangar', 'below what the battle camera shows on a 3.84 unit craft, and nothing hangs off (factions.md); bold and simple')
     K.change('A small inside: two magazine rows in the shoulders, the crew cell, the reactor, the drive room; one seam (B-1)',
              'the game shows a craft\'s death as a spark and hides it (fx_death.gd _wing_death), so nothing breaks open; the build contract needs an inside and a seam')

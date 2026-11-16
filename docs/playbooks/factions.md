@@ -115,9 +115,15 @@ class and faction (issue 363), never from a constant.
   that ordered geometry; R240 changed shader cells, not those slabs. KB1CC already split faces without courses, but its
   shallow slabs, small turns and reduced craft paint wear still read as flat notes. Those four sheets now use `kits/hullbreakers/plating.py`:
   mixed-size cuts across each face, skewed corners, turned and overlapping slabs, thickness steps and welded lap joints.
-  Material weights, the trophy share and the R274 dark grey palette stay unchanged. Craft red plates regain varied tones
-  and broken edge wear; grey trophies keep their low wear. A16, A17, capital paint settings and the shared kit stay unchanged,
-  including the A16 fixture record. Judge the painted result beside its concept and A16 at the saved
+  Material weights, the trophy share and the R274 dark grey palette stay unchanged. Grey trophies keep their low wear.
+  **KB1CC follow-up (R292, issue 875 run 2):** the craft-only palette from issue 853 mapped even `soot` and `soot2` to bright
+  red, and its reduced grime and occlusion left broad clean salmon faces. The first repair's thicker relief made the small
+  patches look loose. Craft zones now read their colours from the same `CONCEPT` palette as the capitals: dark iron under
+  varied rust red, blood red and salvaged plates. Stronger seam occlusion, grime, scuffs and broken edge wear weather the real
+  geometry without another tile grid. KB1CC keeps mixed sizes and welded overlaps, with lower relief bedded against the skin.
+  Trophy colour and share stay unchanged. A16, A17, capital paint settings and the shared kit stay unchanged,
+  including the A16 fixture record. Judge the painted result beside its concept and the accepted capital reference
+  (A18 for KB1CC, A16 for the capitals) at the saved
   `paint_full` camera, not by plate counts. Proof and the repeatable bake script are linked in
   `docs/shots/look_bench/hullbreaker_patchwork/README.md`.
 - **Colours:** soot black, rust, dried-blood red, patches of trophy colour (dark grey salvaged metal, R274; violet Eclipse plate), dim
