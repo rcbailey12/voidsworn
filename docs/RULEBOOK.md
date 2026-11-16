@@ -252,7 +252,8 @@ R111a, R111b, R113, R116, R121a, R121b.
 R216).
 
 3.11 **A pause never loses or deletes work.** When Ryan wants the PC (GPU or CPU), the Board runs tools/pc/pause_all.bat
-(now, or at a time): it withdraws the GPU go, closes only chain windows still waiting to start, and ends the AI processes, so
+(now, or at a time): it withdraws the GPU go, closes only chain windows still waiting to start, and ends the Board's own AI
+processes (only those whose command line names the voidsworn_test job folders; never Ryan's own apps), so
 each running job's runner commits and pushes its work to the issue's -partial branch; job windows mid-run are never closed and
 nothing is deleted. On Ryan's go the Board restarts every paused job from its -partial branch. Why: "I don't want to cause
 anything to get lost or deleted with the pauses as well, so let's bake that in" (R272). Set: Ryan, Nov 15.
