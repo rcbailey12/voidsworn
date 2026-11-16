@@ -31,12 +31,15 @@ assert(read(path.join(here, 'runner_common.ps1')).includes('PC_TEST_SPACE_FREE_M
 // Log must never throw when result.txt is held open by the calling .bat's redirect (Nov 15, Kimi 371's push stopped).
 assert(/function Log\(\$line\) \{\s*try \{ Add-Content[^\n]*-ErrorAction Stop \} catch \{ \}/.test(read(path.join(here, 'runner_common.ps1'))), 'runner_common Log must not throw on a locked result.txt');
 assert(/\$exe = 'git\.exe'/.test(read(path.join(here, 'runner_common.ps1'))) && !/\$exe = 'git'[;\s]/.test(read(path.join(here, 'runner_common.ps1'))), 'runner_common Git helper must run git.exe');
+assert(/\$limit = 600\.0/.test(read(path.join(here, 'runner_common.ps1'))), 'checkout preservation must allow ten minutes');
 pass('shared runner contract, chain launcher and issue 722 start checks');
 if (process.platform !== 'win32') {
   console.log('SKIP Windows fault matrix: run tools/pc/runner_selftest.bat on the PC');
   process.exit(0);
 }
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'runner687 proof '));
+const testChildren = [];
+const testPidFiles = [];
 console.log('Evidence: ' + root);
 function run(exe, args, env = {}, cwd = root) {
   const p = spawnSync(exe, args, { cwd, env: { ...process.env, ...env }, encoding: 'utf8', windowsHide: true, windowsVerbatimArguments: /cmd\.exe$/i.test(exe), timeout: 90000 });
@@ -82,7 +85,10 @@ if (probe) {
   if (process.env.STUB_AUTH_FAIL === '1') {
     console.log(JSON.stringify({type:'error',error:{message:process.env.STUB_REASON}})); process.exit(0);
   }
-  if (process.env.STUB_PROBE_TIMEOUT === '1') Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,5000);
+  if (process.env.STUB_PROBE_TIMEOUT === '1') {
+    fs.writeFileSync(process.env.PC_TEST_TRACE + '.pid', String(process.pid));
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,60000);
+  }
   if (a[0] === 'run') console.log(JSON.stringify({type:'text',part:{text:'RUNNER_READY'}}));
   else if (a[0] === 'exec') { fs.writeFileSync(a[a.indexOf('-o') + 1], 'RUNNER_READY'); console.log('stub codex'); }
   else console.log('RUNNER_READY');
@@ -128,6 +134,7 @@ const defaults = {
 function job(arm, label, extra = {}) {
   const home = path.join(root, arm + '-' + label); fs.mkdirSync(home, { recursive: true });
   const env = { ...defaults, WORK_ROOT: home, CODEX_TEST_ROOT: home, PC_TEST_TRACE: path.join(home, 'probe_args.txt'), PC_TEST_COUNTER: path.join(home, 'tries'), ...extra };
+  testPidFiles.push(env.PC_TEST_TRACE + '.pid');
   const bat = path.join(here, arm === 'codex' ? 'codex_issue.bat' : 'work_issue.bat');
   const cmd = '""' + bat + '" 687' + (arm === 'codex' ? '' : ' ' + arm + ' dryrun') + '"';
   const r = run(process.env.COMSPEC, ['/d', '/s', '/c', cmd], env);
@@ -182,6 +189,55 @@ function job(arm, label, extra = {}) {
   assert.equal(rerun.code,0); assert.equal(kept.length,1);
   assert(fs.existsSync(path.join(path.dirname(rerun.repo),kept[0],'agent_started.txt')));
   pass('Codex restart keeps the earlier checkout and its untracked work');
+  // A previous agent's current directory pins repo on Windows. Run the real preservation path, then free it.
+  async function holder(home) {
+    const repo = path.join(home, 'repo'); write(path.join(repo, 'keep.txt'), 'untracked work must survive');
+    const child = spawn(process.execPath, ['-e', "const fs=require('fs'); fs.openSync('keep.txt','r'); console.log('READY'); setInterval(()=>{},1000);", repo], { cwd: repo, windowsHide: true });
+    testChildren.push(child);
+    await new Promise((resolve, reject) => { child.once('error', reject); child.stdout.once('data', resolve); child.once('exit', code => reject(new Error('holder exited: ' + code))); });
+    return child;
+  }
+  function startCheckout(home, env = {}) {
+    const out = path.join(home, 'out'); write(path.join(out, 'result.txt'), '');
+    assert.equal(ps(['init', out, 'fixture/held'], defaults).code, 0);
+    const child = spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(here, 'runner_common.ps1'), 'checkout', path.join(home, 'repo'), out, 'fixture/held', ''], {
+      cwd: root, windowsHide: true, env: { ...process.env, ...defaults, PC_TEST_KEEP_SECONDS: '30', PC_TEST_KEEP_POLL_MS: '100', ...env }
+    });
+    testChildren.push(child);
+    const state = { text: '', out, child };
+    state.done = new Promise((resolve, reject) => {
+      const timer = setTimeout(() => { child.kill(); reject(new Error('checkout test timed out: ' + state.text)); }, 45000);
+      child.stdout.on('data', b => state.text += b); child.stderr.on('data', b => state.text += b);
+      child.once('error', e => { clearTimeout(timer); reject(e); });
+      child.once('close', code => { clearTimeout(timer); write(path.join(out, 'console.txt'), state.text); resolve(code); });
+    });
+    return state;
+  }
+  const pinnedHome = path.join(root, 'held-checkout'), pin = await holder(pinnedHome);
+  const waiting = startCheckout(pinnedHome);
+  const waitDeadline = Date.now() + 20000;
+  while (!waiting.text.includes('checkout rename held') && Date.now() < waitDeadline) await new Promise(resolve => setTimeout(resolve, 50));
+  assert(waiting.text.includes('checkout rename held'), waiting.text);
+  const other = startCheckout(path.join(root, 'other-lane'));
+  assert.equal(await other.done, 0, other.text);
+  assert.equal(pin.exitCode, null, 'test holder must still pin the first lane');
+  pin.kill(); await new Promise(resolve => pin.once('exit', resolve));
+  assert.equal(await waiting.done, 0, waiting.text);
+  const preserved = fs.readdirSync(pinnedHome).filter(n => n.startsWith('repo-kept-'));
+  assert.equal(preserved.length, 1);
+  assert.equal(read(path.join(pinnedHome, preserved[0], 'keep.txt')), 'untracked work must survive');
+  assert(fs.existsSync(path.join(pinnedHome, 'repo/progress.txt')));
+  assert(waiting.text.includes('holder: PID ' + pin.pid) || /Windows (holder lookup unavailable|could not name)/.test(waiting.text), waiting.text);
+  pass('held checkout retries, keeps untracked work, logs holder diagnostics and lets another lane use the mirror');
+  const stuckHome = path.join(root, 'permanent-holder'), stuck = await holder(stuckHome);
+  const expired = startCheckout(stuckHome, { PC_TEST_KEEP_SECONDS: '0.3' });
+  assert.equal(await expired.done, 14, expired.text);
+  assert(expired.text.includes('checkout rename still held after 0.3 seconds'), expired.text);
+  assert.equal(JSON.parse(read(path.join(expired.out, 'status.json'))).status, 'failed');
+  assert.equal(read(path.join(stuckHome, 'repo/keep.txt')), 'untracked work must survive');
+  assert.equal(fs.readdirSync(stuckHome).filter(n => n.startsWith('repo-kept-')).length, 0);
+  stuck.kill(); await new Promise(resolve => stuck.once('exit', resolve));
+  pass('rename wait expires cleanly with failed status and the original checkout intact');
   // A conflicting partial stops before preflight and leaves MERGE_HEAD and conflicted files intact.
   write(path.join(source, 'refs/heads/main'), conflicting + '\n');
   const conflict = job('codex', 'conflict');
@@ -217,8 +273,13 @@ function job(arm, label, extra = {}) {
   assert.equal(ps(['wait', consumerOut], { ...defaults, PC_WAIT_FOR: path.join(stateOut, 'status.json'), PC_WAIT_SECONDS: '1' }).code, 14);
   assert.equal(ps(['wait', consumerOut], { ...defaults, PC_WAIT_FOR: path.join(stateOut, 'status.json'), PC_WAIT_RUN: 'older-run' }).code, 14);
   pass('unfinished predecessor times out; a stale run id stops the chain');
-  const slow = job('codex', 'preflight-timeout', { STUB_PROBE_TIMEOUT: '1', PC_TEST_PREFLIGHT_SECONDS: '1' });
+  const deniedKiller = path.join(root, 'denied taskkill.bat'); write(deniedKiller, '@echo off\r\necho Access denied\r\nexit /b 5\r\n');
+  const slow = job('codex', 'preflight-timeout', { STUB_PROBE_TIMEOUT: '1', PC_TEST_PREFLIGHT_SECONDS: '1', PC_TEST_TASKKILL: deniedKiller });
   assert.equal(slow.code, 14); assert(slow.result.includes('timed out after 1 seconds')); assert(!fs.existsSync(path.join(slow.repo, 'agent_started.txt')));
+  assert(read(path.join(slow.out, 'preflight_kill_log.txt')).includes('kill verified:'), slow.result);
+  const slowPid = Number(read(slow.env.PC_TEST_TRACE + '.pid'));
+  assert.throws(() => process.kill(slowPid, 0), e => e.code === 'ESRCH', 'preflight probe survived denied taskkill');
+  testPidFiles.splice(testPidFiles.indexOf(slow.env.PC_TEST_TRACE + '.pid'), 1);
   pass('preflight timeout kills the probe tree and stops the job');
   // Hold a real mirror fetch briefly so two simultaneous checkouts contend for the file lock.
   async function concurrentCheckout(n) {
@@ -312,4 +373,16 @@ function job(arm, label, extra = {}) {
   pass('a run whose tools folder drifts from the Board hashes still starts and warns');
   const note = 'PASS runner687+722: ' + passed + ' checks, Windows entry points, local Git and stub agents only. No commits, pushes or model usage.\nEvidence: ' + root + '\n';
   write(path.join(root, 'summary.txt'), note); console.log(note.trim());
-} catch (e) { write(path.join(root, 'failure.txt'), e.stack); console.error('FAIL runner687: ' + e.stack + '\nEvidence: ' + root); process.exitCode = 1; } })();
+} catch (e) { write(path.join(root, 'failure.txt'), e.stack); console.error('FAIL runner687: ' + e.stack + '\nEvidence: ' + root); process.exitCode = 1; }
+finally {
+  for (const file of testPidFiles.filter(file => fs.existsSync(file))) {
+    const pid = Number(read(file));
+    try { process.kill(pid, 'SIGKILL'); } catch (e) { if (e.code !== 'ESRCH') throw e; }
+  }
+  for (const child of testChildren) {
+    if (child.exitCode === null && child.signalCode === null) {
+      child.kill();
+      await new Promise(resolve => child.once('exit', resolve));
+    }
+  }
+} })();
