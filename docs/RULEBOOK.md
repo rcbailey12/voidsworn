@@ -316,6 +316,13 @@ each running job's runner commits and pushes its work to the issue's -partial br
 nothing is deleted. On Ryan's go the Board restarts every paused job from its -partial branch. Why: "I don't want to cause
 anything to get lost or deleted with the pauses as well, so let's bake that in" (R272). Set: Ryan, Nov 15.
 
+Before setting aside an earlier checkout, the runner reuses it only when its working tree, including ignored files outside
+Godot's `.godot` and `.import` caches, is clean and all local history (including reflogs) is in the freshly fetched mirror.
+It fetches and resets tracked files for the new branch, leaving ignored caches in place; a cache collision or an uncertain
+check keeps the earlier checkout beside repo instead. More than two `repo-kept-*` copies triggers a warning naming each
+copy and its size, never deletion. Why: repeated full copies filled C:, and deleting a supposedly clean checkout could lose
+unique ignored work (issue 860, run 2, Board Nov 16). The no-deletion rule in 3.3 still applies.
+
 ## 4. Ships and concepts
 
 4.1 **Space ships, never sea ships, in the whole shape.** No boat profile, keel, raked prow, deck house, mast, funnel, crane,

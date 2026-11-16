@@ -179,6 +179,102 @@ function job(arm, label, extra = {}) {
   return { ...r, out, repo, env, result: read(path.join(out, 'result.txt')), state: JSON.parse(read(path.join(out, 'status.json'))) };
 }
 (async () => { try {
+  // Issue 860 run 2: exercise the real checkout with local Git data, never publish or discard fixture files.
+  function checkoutFixture(label, prepare = () => {}, expectedKeep = false) {
+    const home = path.join(root, 'reuse-' + label), repo = path.join(home, 'repo'), out = path.join(home, 'out');
+    fs.mkdirSync(home, { recursive: true }); write(path.join(out, 'result.txt'), '');
+    assert.equal(run('git', ['clone', '-q', '-c', 'core.autocrlf=false', source, repo]).code, 0);
+    const git = args => {
+      const r = run('git', ['-C', repo, ...args]); assert.equal(r.code, 0, r.text); return r.text.trim();
+    };
+    prepare(repo, git);
+    const existing = fs.readdirSync(home).filter(n => n.startsWith('repo-kept-'));
+    const oldGit = fs.statSync(path.join(repo, '.git'));
+    assert.equal(ps(['init', out, 'fixture/reuse'], defaults).code, 0);
+    const r = ps(['checkout', repo, out, 'fixture/reuse', ''], defaults);
+    assert.equal(r.code, 0, r.text);
+    const kept = fs.readdirSync(home).filter(n => n.startsWith('repo-kept-') && !existing.includes(n));
+    for (const name of existing) assert(fs.existsSync(path.join(home, name)), 'existing kept copy survives');
+    assert.equal(kept.length, expectedKeep ? 1 : 0, r.text);
+    assert.equal(git(['symbolic-ref', '--short', 'HEAD']), 'fixture/reuse');
+    assert.equal(git(['rev-parse', 'HEAD']), read(path.join(source, 'refs/heads/main')).trim());
+    assert.equal(git(['remote', 'get-url', 'origin']), source);
+    assert.equal(read(path.join(repo, 'progress.txt')), 'base\n');
+    if (!expectedKeep) {
+      assert.equal(fs.statSync(path.join(repo, '.git')).ino, oldGit.ino, 'reuse keeps the Git directory');
+      assert(r.text.includes('earlier checkout reused in place'), r.text);
+      assert(!r.text.includes('local clone attempt'), r.text);
+    }
+    return { home, repo, old: expectedKeep ? path.join(home, kept[0]) : repo, text: r.text };
+  }
+  const refreshedMain = fixtureCommit({ 'progress.txt': 'base\n', 'upstream.txt': 'fresh upstream\n' }, base);
+  let clean;
+  try {
+    clean = checkoutFixture('clean-pushed', (repo, git) => {
+      git(['checkout', '-q', '-b', 'fixture/old-pushed', partial]);
+      write(path.join(source, 'refs/heads/main'), refreshedMain + '\n');
+      // These stand in for existing kept checkouts. Every byte must remain after the warning.
+      for (let i = 0; i < 3; i++) write(path.join(path.dirname(repo), 'repo-kept-old-' + i, 'proof.txt'), 'preserved-' + i);
+    });
+  } finally { write(path.join(source, 'refs/heads/main'), base + '\n'); }
+  assert.equal(read(path.join(clean.repo, 'upstream.txt')), 'fresh upstream\n');
+  assert(clean.text.includes('WARNING:') && clean.text.includes('3 repo-kept-* copies'), clean.text);
+  for (let i = 0; i < 3; i++) {
+    const copy = path.join(clean.home, 'repo-kept-old-' + i);
+    assert.equal(read(path.join(copy, 'proof.txt')), 'preserved-' + i);
+    assert(clean.text.includes(copy + ': 11 logical bytes'), clean.text);
+  }
+  pass('clean pushed checkout reuses the Git directory, switches from old branch to main, warns with kept names and sizes, removes nothing');
+  const ignored = checkoutFixture('unique-ignored', repo => {
+    write(path.join(repo, '.git/info/exclude'), 'unique work.blend\n');
+    write(path.join(repo, 'unique work.blend'), 'unique ignored work');
+  }, true);
+  assert.equal(read(path.join(ignored.old, 'unique work.blend')), 'unique ignored work');
+  pass('unique ignored file is kept aside and its bytes survive');
+  const cache = checkoutFixture('cache-only', repo => {
+    write(path.join(repo, '.git/info/exclude'), 'godot/.godot/\ngodot/*.import\n');
+    write(path.join(repo, 'godot/.godot/imported/cached.bin'), 'cached import');
+    write(path.join(repo, 'godot/texture.png.import'), 'import settings');
+  });
+  assert.equal(read(path.join(cache.repo, 'godot/.godot/imported/cached.bin')), 'cached import');
+  assert.equal(read(path.join(cache.repo, 'godot/texture.png.import')), 'import settings');
+  pass('cache-only ignored files allow reuse and both cache files survive');
+  const privateTip = fixtureCommit({ 'progress.txt': 'private commit\n' }, base);
+  const unpushed = checkoutFixture('unpushed', (repo, git) => {
+    git(['fetch', '-q', source, privateTip]);
+    git(['checkout', '-q', '-b', 'fixture/private', privateTip]);
+  }, true);
+  assert.equal(read(path.join(unpushed.old, 'progress.txt')), 'private commit\n');
+  assert.equal(run('git', ['-C', unpushed.old, 'rev-parse', 'HEAD']).text.trim(), privateTip);
+  pass('unpushed commit is kept aside with its branch and work intact');
+  const abandoned = checkoutFixture('reflog-only', (repo, git) => {
+    git(['fetch', '-q', source, privateTip]);
+    git(['checkout', '-q', '--detach', privateTip]);
+    git(['checkout', '-q', 'main']);
+  }, true);
+  assert(run('git', ['-C', abandoned.old, 'reflog', '--format=%H']).text.includes(privateTip));
+  pass('unpushed history reachable only from the reflog is kept aside');
+  const dirty = checkoutFixture('dirty-tracked', repo => write(path.join(repo, 'progress.txt'), 'uncommitted edits\n'), true);
+  assert.equal(read(path.join(dirty.old, 'progress.txt')), 'uncommitted edits\n');
+  pass('dirty tracked file is kept aside with edits intact');
+  const hidden = checkoutFixture('hidden-tracked', (repo, git) => {
+    git(['update-index', '--assume-unchanged', 'progress.txt']);
+    write(path.join(repo, 'progress.txt'), 'hidden edits\n');
+  }, true);
+  assert.equal(read(path.join(hidden.old, 'progress.txt')), 'hidden edits\n');
+  pass('index flags that hide tracked edits cause the checkout to be kept');
+  const collisionTip = fixtureCommit({ 'godot': 'incoming tracked file\n', 'progress.txt': 'base\n' }, base);
+  write(path.join(source, 'refs/heads/main'), collisionTip + '\n');
+  try {
+    const collision = checkoutFixture('cache-collision', (repo, git) => {
+      git(['checkout', '-q', '--detach', base]);
+      write(path.join(repo, '.git/info/exclude'), 'godot/.godot/\n');
+      write(path.join(repo, 'godot/.godot/cache.bin'), 'cache must survive collision');
+    }, true);
+    assert.equal(read(path.join(collision.old, 'godot/.godot/cache.bin')), 'cache must survive collision');
+    assert.equal(read(path.join(collision.repo, 'godot')), 'incoming tracked file\n');
+    pass('incoming tracked path that collides with an ignored cache keeps the old checkout and cache intact');
+  } finally { write(path.join(source, 'refs/heads/main'), base + '\n'); }
   for (const arm of ['codex', 'deepseek', 'kimi', 'kimicode']) {
     for (const [scenario, reason] of [['closed', 'not an open job'], ['claimed', 'already carries running'],
       ['other-pr', 'open PR #700'], ['other-branch', 'delivery branch opus/issue-687'], ['no-current', 'found 0'], ['two-current', 'found 2'],
@@ -447,7 +543,7 @@ function job(arm, label, extra = {}) {
   assert(fs.existsSync(path.join(hashWarn.repo, 'agent_started.txt')));
   assert(hashWarn.result.includes('WARNING: these runner files differ'), hashWarn.result);
   pass('a run whose tools folder drifts from the Board hashes still starts and warns');
-  const note = 'PASS runner687+722: ' + passed + ' checks, Windows entry points, local Git and stub agents only. No commits, pushes or model usage.\nEvidence: ' + root + '\n';
+  const note = 'PASS runner687+722+860: ' + passed + ' checks, Windows entry points, local Git and stub agents only. No commits, pushes or model usage.\nEvidence: ' + root + '\n';
   write(path.join(root, 'summary.txt'), note); console.log(note.trim());
 } catch (e) { write(path.join(root, 'failure.txt'), e.stack); console.error('FAIL runner687: ' + e.stack + '\nEvidence: ' + root); process.exitCode = 1; }
 finally {
