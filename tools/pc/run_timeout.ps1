@@ -111,8 +111,8 @@ while ((-not $noWait) -and (Test-RyanPlaying) -and ((Get-Date) - $w0).TotalHours
   Start-Sleep -Seconds 20
 }
 if ($said) { "$(Get-Date -Format s) RESUME after $([int]((Get-Date) - $w0).TotalMinutes) min: $Exe" | Out-File $log -Append -Encoding utf8 }
-# R276: acquire only around the GPU command, never the whole model session.
-# A pending solo claim drains both shared slots and blocks new workers.
+# R293: acquire only around the GPU command, never the whole model session.
+# A pending solo claim drains all shared slots and blocks new workers.
 $gpuHelper = Join-Path $PSScriptRoot 'gpu_slots.js'
 $gpuNode = 'node.exe'
 $bundledNode = Join-Path $root 'node\node.exe'
@@ -121,12 +121,14 @@ $gpuRoot = $root
 if ($env:PC_RUNNER_TEST -eq '1' -and $env:PC_TEST_GPU_ROOT) { $gpuRoot = $env:PC_TEST_GPU_ROOT }
 $gpuToken = ''
 try {
-$classify = @{ exe = $Exe; args = $argLine; cwd = (Get-Location).Path; requested = [string]$env:PC_GPU_MODE } | ConvertTo-Json -Compress
-$gpuMode = ($classify | & $gpuNode $gpuHelper classify) -join ''
+$classify = @{ exe = $Exe; args = $argLine; cwd = (Get-Location).Path; requested = [string]$env:PC_GPU_MODE; weight = [string]$env:PC_GPU_WEIGHT } | ConvertTo-Json -Compress
+$gpuClass = ($classify | & $gpuNode $gpuHelper classify) -join ''
 if ($LASTEXITCODE -ne 0) { throw 'GPU command classification failed' }
+$gpuClass = $gpuClass | ConvertFrom-Json
+$gpuMode = $gpuClass.mode
 if ($gpuMode) {
-  Write-Output "GPU: waiting for $gpuMode claim (issue $env:PC_GPU_ISSUE)"
-  & $gpuNode $gpuHelper acquire $gpuRoot ([string]$env:PC_GPU_ISSUE + ':gpu') $PID $gpuMode | ForEach-Object {
+  Write-Output "GPU: waiting for $gpuMode claim, weight $($gpuClass.weight) (issue $env:PC_GPU_ISSUE)"
+  & $gpuNode $gpuHelper acquire $gpuRoot ([string]$env:PC_GPU_ISSUE + ':gpu') $PID $gpuMode $gpuClass.weight | ForEach-Object {
     if ($_ -eq 'WAIT') { Write-Host "GPU: still waiting for $gpuMode claim" }
     else { $gpuToken = [string]$_ }
   }
@@ -135,6 +137,7 @@ if ($gpuMode) {
 }
 # A forced claim applies to this command only, never a nested watchdog.
 $env:PC_GPU_MODE = ''
+$env:PC_GPU_WEIGHT = ''
 $timer = [Diagnostics.Stopwatch]::StartNew()
 $lastProgress = 0.0
 $scanEvery = 60.0
