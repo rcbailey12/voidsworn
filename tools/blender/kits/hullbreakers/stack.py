@@ -14,12 +14,15 @@
 #
 # Where each colour zone sits on a ship is the build sheet's decision (its materials soot, rust, iron, blood, pale, violet, ...);
 # this file says what each zone is made of.
-import os, json, math
+import os, sys, json, math
 import numpy as np
 import bpy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, '..', '..', '..', '..'))
+SHARED = os.path.normpath(os.path.join(HERE, '..', 'shared'))
+if SHARED not in sys.path: sys.path.insert(0, SHARED)
+from paint_colors import LIGHT_GAIN, battle_lift, lin
 
 # ------------------------------------------------------------------------------------------------------------ concept colours
 # Sampled from contrib/muse/design/concept_round8_2026_11/corsair_A16_beauty.jpg (the accepted A16 concept; corsair_A.jpg is
@@ -32,7 +35,7 @@ CONCEPT = dict(
     iron=((24, 25, 29), (58, 55, 60)),          # iron plate and belts: dark gunmetal (the dark and low mid-tone clusters)
     rust=((44, 20, 16), (98, 44, 31)),          # the rust plate: dark brick red (the red clusters, blue held under green: never pink)
     blood=((58, 20, 18), (100, 28, 24)),        # dried-blood red plate and bands
-    pale=((52, 51, 52), (88, 85, 84)),          # Hegemony grey trophy plate, weathered dark (pass 5: never a chalky whole plate)
+    pale=((52, 51, 52), (88, 85, 84)),          # Hegemony grey plate, weathered dark (pass 5); the trophy layer lays trophy_pale over most of it (R252)
     violet=((57, 29, 53), (110, 78, 140)),      # violet Eclipse trophy plate (violet clusters)
     steel=((20, 21, 24), (52, 50, 56)),         # gun metal, machinery: dark, its bare edges carry the light
     rust_streak=((34, 15, 11), (84, 40, 26)),   # rust run-off and blooms: the deep red-brown dark cluster, brick, not pink
@@ -46,15 +49,18 @@ CONCEPT = dict(
     # k-means (4) of the violet pixels (b over g above 1.4, r over g above 1.1, b over r above 0.9, luminance over 30) of the whole
     # picture, the two lighter clusters (the darker two, (35, 30, 49) and (47, 42, 68), are the violet zone's own shadow tones)
     lilac=((74, 65, 98), (105, 93, 135)),
+    # issue 726 (R252, Ryan Nov 14 2026: the trophy patches read big and pale like the A20 concept): the big pale Hegemony grey
+    # and violet Eclipse trophy plates of the A20 beauty. k-means (4) of the whole picture's pale pixels (saturation under 0.16,
+    # brightest channel 95 to 235): (104, 102, 102) 37 percent, (132, 128, 127) 21, (165, 162, 158) 22, (189, 187, 183) 21; the
+    # darkest is the plates' shadow side, so the pair is the second cluster and the mean of the two lightest. Violet the same
+    # way (blue over green above 1.15, blue at least 0.95 of red, brightest channel over 55): (51, 50, 67) 23 percent, (74, 72, 94)
+    # 20, (96, 91, 121) 32, (116, 110, 142) 25; the pair is a little under the third cluster and the fourth.
+    trophy_pale=((132, 128, 127), (177, 174, 170)),
+    trophy_violet=((88, 84, 112), (116, 110, 142)),
 )
-# The game's light on a face at about 45 degrees to the key (godot/render/look.gd: key 2.0, ambient 0.25 x key), the factor
-# between an albedo and the lit tone the concept shows; checked by the sandbox preview under the game's light (issue 601).
-LIGHT_GAIN = 1.45
 
 
-def lin(srgb):
-    c = np.asarray(srgb, np.float64) / 255.0
-    return tuple(float(x) / LIGHT_GAIN for x in np.where(c <= .04045, c / 12.92, ((c + .055) / 1.055) ** 2.4))
+# The shared lin() defaults keep the game's battle lift uncompensated for this palette.
 
 
 def pair(k):
@@ -92,7 +98,10 @@ ZONES = dict(
     iron=dict(rust=.55, metal=.55, rough=.58, wear=1.0, red_share=.12, patchwork=1.0, patchwork_parts=.8),
     rust=dict(rust=.90, rough=.88, metal=.20, patchwork=.6),
     blood=dict(rust=.40, rough=.86, metal=.15, patchwork=.4),
-    pale=dict(rust=.25, rough=.74, metal=.25, plate_var=.30, patchwork=.5, grime=1.0),
+    # R252 (issue 726): the sheet's pale zone (A20's big modelled trophy patches TP1, TP3, TP5 and a share of its plate courses)
+    # takes no dark plate families; the trophy layer alone covers most of it (trophy_share) in the big pale and violet trophy
+    # plates, so a pale course plate reads pale with its neighbours in a big patch and never as a lone small chalky plate
+    pale=dict(rust=.20, rough=.74, metal=.25, plate_var=.22, grime=.70, patchwork=1.0, trophy_share=.65),
     violet=dict(rust=.10, rough=.62, metal=.20, plate_var=.20),
     lilac=dict(rust=.10, rough=.66, metal=.20, plate_var=.20),     # issue 651: kept clean of new rust, as violet
     steel=dict(rust=.25, metal=.65, rough=.50, wear=1.0, patchwork_parts=.8),
@@ -129,10 +138,72 @@ GRIME = lin(CONCEPT['grime'][0])
 RED_PLATE = pair('red_plate')    # a zone's red_share of its plates carry this worn red over-paint (the concept's scattered red plates)
 # the patchwork families (a hull zone with patchwork > 0): (share of panels, colour pair). The rest keep the zone's own tones.
 # Shares read off the concept's hull pixels (the k-means above): dark soot most, then gun-metal grey, brick red, a few scrapes.
-# a family marked 'small' only takes small plates (pass 5: light grey is for scrapes and small patches, never whole big plates)
+# a family marked 'small' only takes small plates (pass 5: light grey scrapes are small; the big pale plates are the trophy layer below, R252)
 PATCH_FAMILIES = [(.30, pair('soot2')), (.24, pair('gunmetal')), (.20, pair('red_plate')), (.025, pair('scrape'), 'small')]
 # on part faces (R224 in paint): the same kind of plates, mostly metal, a little soot and rust, rare scrapes
 PATCH_FAMILIES_PARTS = [(.30, pair('gunmetal')), (.25, pair('soot2')), (.08, pair('red_plate')), (.015, pair('scrape'), 'small')]
+
+# The trophy patches (issue 726; R252, Ryan Nov 14 2026: "agree" that the patch plates read bigger and paler like the A20 concept,
+# big pale grey and violet trophy patches, not small dark plates; R240: still uneven, no repeated tiles or aligned rows). Over the
+# hull's patchwork (hull atlas only) lies one more uneven grid at the concept's trophy plate size (cell in ship lengths, about
+# 2.1 by 1.4 units on the 16.5 unit A20, each cell two thirds to twice that by the shared warp, a share split once more); a
+# share of its cells, more in some broad regions than others (cluster), takes a trophy colour: pale Hegemony grey or violet
+# Eclipse plate (families, as PATCH_FAMILIES). The pick is per trophy cell only, never per mesh island, so a trophy plate reads as
+# one plate across the sheet's small modelled plates. Each plate keeps its own tone and a little dirt (the rust, grime, scuffs and
+# edge wear of the later layers still mark it), and its own dark seam. share scales with the zone's patchwork amount, so the
+# rust and blood zones carry fewer trophy plates and none goes half transparent. A zone with its own trophy_share (the sheet's
+# pale zone) takes only the trophy layer, at that share, over its own tones.
+TROPHY = dict(cell=(.130, .085, .060), share=.32, cluster=(2.2, .45, 1.55), warp=.55, band=2.0, split=.22, seam=.0013,
+              dirt=.15, dirt_scale=34.0, gain=1.5,
+              families=[(.65, pair('trophy_pale')), (.35, pair('trophy_violet'))])
+# gain: the later layers (grime, rust, ambient occlusion, side darkening) take a plate's value down after the patchwork; at gain 1
+# the sandbox render of A20 showed the pale patches at a median value of 141 against the concept's 172 (contrib/opus/tools/
+# issue726/measure.py), so the trophy tones are painted lighter by this factor (linear albedo) to read as the concept's.
+
+
+def panel_nodes(c, col, amount, families=None, cells=None):
+    """the shared patchwork as every Hullbreaker ship had it (shared/paint_stack.patchwork, unchanged), then, on the hull atlas,
+    the trophy patches (TROPHY above). Returns the colour and the seam mask, as the shared patchwork does."""
+    from types import SimpleNamespace
+    from paint_stack import node, math_, mixc, mulc, ramp, patchwork, _grid, _seams
+    T = TROPHY; nt = c.nt
+    own = ZONES.get(_zone_of(nt), {}).get('trophy_share') if cells is None else None
+    if own is None:
+        col, seam = patchwork(c, SimpleNamespace(LAYERS=LAYERS, PATCH_FAMILIES=PATCH_FAMILIES), col, amount, families, cells)
+    else:
+        seam = None; amount = own / T['share'] if T['share'] else 0.0
+    if cells is not None or not T['share']:      # parts keep the plain patchwork
+        return col, seam
+    LT = dict(LAYERS, patch_warp=T['warp'], patch_band=T['band'], patch_split=T['split'], patch_seam=T['seam'])
+    tid, tco = _grid(c, T['cell'], 113.0, (.017, .009, .006), LT)
+    wn = node(nt, 'ShaderNodeTexWhiteNoise', noise_dimensions='3D'); nt.links.new(tid, wn.inputs['Vector'])
+    sp = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(wn.outputs['Color'], sp.inputs[0])
+    cs, clo, chi = T['cluster']
+    local = math_(nt, 'MULTIPLY', T['share'] * amount,
+                  math_(nt, 'ADD', clo, math_(nt, 'MULTIPLY', ramp(nt, c.noise(cs, 2), .30, .70), chi - clo)))
+    on = math_(nt, 'LESS_THAN', wn.outputs['Value'], local)
+    r = sp.outputs[0]; tone = math_(nt, 'ADD', math_(nt, 'MULTIPLY', sp.outputs[1], .75), math_(nt, 'MULTIPLY', c.noise(LAYERS['patch_scale'] * 3, 2), .25))
+    tcol = None; lo = 0.0
+    for share, (flo, fhi) in T['families']:
+        g = T.get('gain', 1.0); fam = mixc(nt, tuple(min(1.0, v * g) for v in flo), tuple(min(1.0, v * g) for v in fhi), tone)
+        if tcol is None: tcol = fam
+        else: tcol = mixc(nt, tcol, fam, math_(nt, 'GREATER_THAN', r, lo))
+        lo += share
+    dirt = ramp(nt, c.noise(T['dirt_scale'], 4, .6), .40, .75)
+    tcol = mulc(nt, tcol, math_(nt, 'SUBTRACT', 1, math_(nt, 'MULTIPLY', dirt, T['dirt'])))
+    col = mixc(nt, col, tcol, on)
+    tseam = _seams(c, SimpleNamespace(LAYERS=LT), tco)
+    tseam = math_(nt, 'MULTIPLY', tseam, on)
+    seam = tseam if seam is None else math_(nt, 'MAXIMUM', math_(nt, 'MULTIPLY', seam, math_(nt, 'SUBTRACT', 1, on)), tseam, clamp=True)
+    return col, seam
+
+
+def _zone_of(nt):
+    """the zone of the material this node tree belongs to (the shared stack names it ps_<zone>_<group>)"""
+    for m in bpy.data.materials:
+        if m.node_tree is not None and m.node_tree == nt:
+            return m.name[3:].rsplit('_', 1)[0] if m.name.startswith('ps_') else m.name
+    return ''
 
 # glowing zones keep their own emissive surface: engine throat and bell lining in the faction's engine colour, running lights
 # in its accent (godot/fx/faction_looks.json corsair, the game's one home for them); dim, never bright (factions.md)

@@ -12,7 +12,7 @@ Two regions, one forged order:
 - Flat fields (the blade's flanks, the broadside decks, the spine base): sleek triangular plates, long edge on the hull axis, point forward, nested point-to-base so the rows run straight along the decks. The guide's broadside decks sit in long straight rows, so the triangles flatten on the deck bands and keep those rows straight.
 - Curved parts (spire roots, engine bell housings, the tapered edges): the shared stack's rectangular grid at the smaller patch size, because a triangular grid shears on compound curves. The two regions blend across a one-cell seam band, no hard switch.
 
-patch_warp is 0 and stays 0: Sunward plates are forged, not scavenged. Hullbreaker's warp is Hullbreaker opt-in only (R240, PR 682). A comment in the stack should say so, so a future editor does not "fix" the order into warp. plate_var and island_tone carry the forged variation instead: no two castings cool quite alike, but every plate is placed on purpose.
+patch_warp is 0 and stays 0: Sunward plates are forged, not scavenged. Hullbreaker's warp is Hullbreaker opt-in only (R240, PR 682). A comment in the stack should say so, so a future editor does not "fix" the order into warp. The forged variation comes instead from each hull panel cell taking one calm tone of its own, drawn from the plate families (section 2) or the zone's own pair: no two castings cool quite alike, but every plate is placed on purpose. plate_var and island_tone no longer carry the hull variation (the shared base's broad noise between the pair's ends read as camouflage blotches at the first 2048 bake). (Board, Nov 15 2026, opus_check_772; PR 772 calls 1 and 4)
 
 LAYERS (Sunward):
 
@@ -51,13 +51,14 @@ Sampled from S8 by the chair (k-means, 9 clusters, background excluded by corner
 - Rivet lines are the trim: rows along the triangles' long edges and the deck bands, pitch .011 to start. The builder A/B tests .013 at camera 170 (heavier forging may want the coarser pitch) and reports which reads.
 - Frost-white markings are decals only, never a plate family: a spine line, broadside deck row numbers, heat-shed marks at the spire roots. Cap: at most 6 percent of any visible face, so the black blade still reads black at camera 170.
 - Wear shows dulled bright iron at the edges, tones #656564 to #848382 (S8's lit-edge clusters). Those clusters are wear tones only, never plate tones.
+  The S8 paint is built one step lighter: the wear tones are painted x1.85 in linear, #878785 to #afadac (WEAR_STEP in the stack), and the iron pairs rise under that new wear floor (IRON_STEP .60), so the worn edges still read lighter than every plate and the whole map rises together. The sampled tones above stay the record of the concept. (Ryan, Nov 15 2026, R258: the x1.85 column)
 - Edge wear runs last, over the decals.
 
 ## 5. Lights and glow
 
 - Ember zones: spire bars, engine bell throats, window slits. Colours are the game's (faction_looks.json voidsworn engine and accent), read by the stack.
 - Thresholds: bell throats sit at about 0.75 of the game's 0.8 glow threshold, deep-set so the bloom stays contained; spire bar tips reach about 0.78, just under the threshold, with the gradient running deep #a94911 at the root to hot #fcab3b at the tip. The spires shed the reactor's heat (guide), so they are the ship's signature glow, but nothing on the intact ship crosses into bloom.
-- Frost markings are not emissive, but the blade's edge carries small frost-white running points (game accent colour, read from faction_looks.json) at about 0.72 of threshold: sparse, small, the ship's only cool light. This was Qwen's proposal in its leg; the chair had sided with markings only, and Ryan ruled for Qwen's version at the swatch review (Nov 14, 2026). The ember line stays the accent at camera 170; the frost points are a close and mid-range detail, never a second line of light.
+- Frost markings are not emissive, but the blade's edge carries small frost-white running points (game accent colour, read from faction_looks.json, with its blue held to its green: the raw accent (0.8, 0.9, 1.0) has blue over green and would fail this section's own no-blue check, so the stack's frost_rgb() clips it to (0.8, 0.9, 0.9)) (Board, Nov 15 2026, opus_check_772; PR 772 calls 1 and 4) at about 0.72 of threshold: sparse, small, the ship's only cool light. This was Qwen's proposal in its leg; the chair had sided with markings only, and Ryan ruled for Qwen's version at the swatch review (Nov 14, 2026). The ember line stays the accent at camera 170; the frost points are a close and mid-range detail, never a second line of light.
 - Never blue light (guide). The builder verifies no Sunward emissive has blue over green.
 
 ## 6. Camera 170 read
@@ -73,7 +74,7 @@ Checks for the builder: surface check at stage 5; camera 170 read; emissive audi
 - Rust in any layer: rejected by the guide.
 - Blue light: rejected by the guide.
 - Frost white as a plate family: rejected; the guide says markings, and S8 carries none.
-- #848382 and #656564 as plate tones: lit-edge clusters, wear tones only.
+- #848382 and #656564 as plate tones: lit-edge clusters, wear tones only. Since R258 the painted wear floor is #878785; the lightest plate (iron_cast's light end, about #686766) sits under it. (Ryan, Nov 15 2026, R258: the x1.85 column)
 - The S8 picture projected onto the hull: RECIPE forbids it; colours are sampled, the picture is never projected.
 - A battle lift number stated on this page: the stack reads look.gd.
 

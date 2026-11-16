@@ -87,7 +87,15 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    black shade disc, in the game's Eclipse engine colour paled toward white, each engine its own brightness, tint, hot spots and
    dim gaps, no flame; (5) no added running lamps (the red lamps are a Hullbreaker rule; the Eclipse show only the corona, the
    core and the rings, and the sheet's corona strip lights; Board accepted, R236); (6) the stack's surfaces are rim_soft, parts
-   carry the hull's plates and seams (R224 in paint), the liner is dark violet-black, and stage 5's surface check is 0 px.
+   carry the hull's plates and seams (R224 in paint), the liner is dark violet-black, and stage 5's surface check is 0 px;
+   (7) even side to side (Ryan, Nov 15 2026 07:02 CST, R256, on E13: "let's make sure that the paint actually is even on each
+   side, it's not consistent now"; issue 783): the paint mirrors across the centre line (stack LAYERS mirror: every pattern reads
+   (x, |y|, z), a plate and its mirror twin share one random, shared paint_stack.mirror_islands; the starboard marks copy the port
+   ones, the top mark on the centre line; the corona's arcs and breaks mirror), and the sheet and the kit build twins alike: a
+   mirrored part reads its corners, rows and strips the same way on both sides, never from ring point 0 or one edge of a plate
+   (E13's layer lines and panel rows, the kit's plate_slab fasteners and housing panels). Measured on a top view with the port
+   half mirrored onto the starboard (tools/blender/build_sheets/studies/mirror_check.py), reported, not a bar (RULEBOOK 0.4).
+   Each engine ring keeps its own pattern.
    Judge the paint at 2048 maps or more (the PC bakes 4096) and at the camera 170 pixel size as well as close.
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
@@ -128,6 +136,11 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    broken inputs. Why: Ryan wants the visible weapons to line up with firing, effects and turns, including shared batteries. The SAME rule (one slot's mounts match in kind,
    mount, barrels and size within x1.3) and SPLIT rule (every mount fires on every volley) are the Board's reading of Ryan's
    "consistent and line up with the in game behavior" (Nov 15, ratified on PR 691), not his words: change them if he rules otherwise.
+   Squadron craft (issue 769, R253): a fighter's guns (data.js `guns`, arc T) turn on a traverse ring like any turret; a bomber's
+   bomb tubes (`bombs`, arc T) may sit fixed forward in a launcher, because a craft turns onto its target on a strafing run
+   (weapon_match.py FITS rows `guns` and `bombs`, with self-test faults). This is the Board's reading for craft, not Ryan's
+   words: change it if he rules otherwise. A craft sheet is LENGTH 1.6 (CLS_LEN Squadron, drawn 3.84, scale.md) and carries a
+   small inside only because the build contract needs one: the game shows a craft's death as a spark (fx_death.gd _wing_death).
 12. **Openings have depth; big flanks have shape (R244, Ryan, Nov 14 2026).** A round opening is a real recess with a lip,
    depth and working detail (a tube, launcher or thruster throat, lit or dark as its job says), never a flat painted disc.
    Cut the housing behind the opening too: a detailed tube embedded in a closed hull still reads as a disc. Big hull flanks

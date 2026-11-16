@@ -37,6 +37,7 @@ globalThis.coreSyncTest = () => {
       }
     }
     const run=RUN; endRun(!!f.victory,!!f.abandoned); const cores=run.carry.inheritance.cores;
+    const text=html.replace(/<[^>]*>/g,''); // core names carry the core's colour markup (design 3.4)
     ok.deepEqual(cores.map(row=>row.id),Object.keys(before),'only cores that ticked this run');
     for(const row of cores){
       const tier=FAVOUR_TIERS.reduce((t,x,i)=>totals[row.id]>=x.at?i:t,0), next=FAVOUR_TIERS[tier+1];
@@ -46,7 +47,7 @@ globalThis.coreSyncTest = () => {
       ok.ok(html.includes(esc(PATRONS[row.id].n)) && html.includes(esc(FAVOUR_TIERS[row.tierUp||!next?tier:tier+1].n)),'the crossed tier, or the next one, on this debrief');
       // issue 92 (Muse debrief design 4.6): '(n) of (threshold) to (next tier).' or 'Full sync, (n) protocols.'; a tier-up line first
       ok.ok(html.includes(next?row.total+' of '+next.at+' to '+esc(FAVOUR_TIERS[tier+1].n)+'.':'Full sync, '+row.total+' protocols.'));
-      if(row.tierUp) ok.ok(html.includes(esc(PATRONS[row.id].n)+': crossed into '+esc(FAVOUR_TIERS[tier].n)+' this run at '+row.total+' protocols.'),'tier-up line');
+      if(row.tierUp) ok.ok(text.includes(esc(PATRONS[row.id].n)+': crossed into '+esc(FAVOUR_TIERS[tier].n)+' this run at '+row.total+' protocols.'),'tier-up line');
       const announced=notices.some(msg=>msg.includes('Core sync: '+PATRONS[row.id].n+' reached '));
       ok.equal(announced,row.tierUp,'announce tier crossings only');
     }

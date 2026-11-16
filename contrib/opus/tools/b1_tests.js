@@ -85,6 +85,7 @@ check('B-3 no run save or full save from battle-time code (battle.js, ui3d.js, c
 
 // ---- B-4 reload during the reward screens ----
 function rewardSetup() {
+  T.META.stats.runs = 3;   // R78 Q9 (issue 41): from run 3 the Crusade may keep a Hegemony or Eclipse prize; these fixtures keep one
   T.RUN = T.migrateRun({ fac: 'voidsworn', admiral: 'vex', credits: 100, cpCap: 10, sector: 1, relics: [], inventory: [], boons: [], map: { cols: [] },
     fleet: [{ uid: 1, tpl: 'warden', name: 'Warden', hp: 50, mods: [], mk: 1, cap: { fac: 'voidsworn', name: 'Ada Vey', xp: 0, rank: 0, perks: [], pending: 0 } }] });
   const R = T.RUN; R.map = T.genSector(1); const node = R.map.cols[1][0]; node.type = 'elite'; node.rw = { k: 'boon', p: Object.keys(T.PATRONS)[0] }; R.patrons = [node.rw.p];

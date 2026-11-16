@@ -1,14 +1,28 @@
-# Shared PC runner steps (issue 687). PowerShell 5.1. No model calls except preflight.
+# Shared PC runner steps (issue 687; issue 722 adds space, hashwrite, hashcheck and model). PowerShell 5.1.
+# No model calls except preflight.
 # init <out> <branch>; wait <out>; checkout <repo> <out> <branch> <sparse>;
 # preflight <out> <repo> <opencode|kimi|codex> <exe> <model> <variant>;
 # finish <out> <exit> <partial> <push mode> <checks ok>.
+# space <out> <settings file> <target path>: refuse to start when the target's drive has less than min_free_gb
+#   (default 60) free; one line in result.txt, status failed. Test knobs: PC_TEST_SETTINGS, PC_TEST_SPACE_FREE_MB.
+# hashwrite <tools dir> <hash file>: the Board writes SHA-256 of the five runner files after copying them.
+# hashcheck <out> <tools dir> <hash file>: warn in result.txt when the running copies differ (warn, never stop).
+#   Test knob: PC_TEST_HASHES.
+# model <out> <resolved> <default>: stamp the resolved model into status.json and result.txt, and warn when it
+#   differs from the arm default, whatever the provider.
 $ErrorActionPreference = 'Stop'
 $mode = $args[0]
 $utf8 = New-Object Text.UTF8Encoding($false)
 $test = $env:PC_RUNNER_TEST -eq '1'
 function Put($path, $value) { [IO.File]::WriteAllText($path, [string]$value, $utf8) }
 function Read($path) { if (Test-Path -LiteralPath $path) { return [IO.File]::ReadAllText($path).Trim() }; return '' }
-function Log($line) { Add-Content -LiteralPath (Join-Path $script:out 'result.txt') -Value $line -Encoding UTF8; Write-Host $line }
+# result.txt may be held open by the .bat that redirects a step's output into it (work_issue.ps1 commit runs under
+# '>> result.txt' and calls 'fetch' here): then Write-Host alone reaches result.txt through that redirect. Never throw
+# from Log: on Nov 15 the lock made the earlier-tip fetch report failure and stopped Kimi 371's push.
+function Log($line) {
+  try { Add-Content -LiteralPath (Join-Path $script:out 'result.txt') -Value $line -Encoding UTF8 -ErrorAction Stop } catch { }
+  Write-Host $line
+}
 function State($status, $reason) {
   $p = Join-Path $script:out 'status.json'
   $s = Get-Content -LiteralPath $p -Raw | ConvertFrom-Json
@@ -22,7 +36,9 @@ function State($status, $reason) {
 }
 function Git([string[]]$words) {
   $ea = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
-  $exe = 'git'; if ($test -and $env:PC_TEST_GIT) { $exe = $env:PC_TEST_GIT }
+  # 'git.exe', never 'git': PowerShell finds this Git function before the program, so 'git' called itself until the
+  # call depth overflowed (first live run, Nov 15). The test stub path never hit it.
+  $exe = 'git.exe'; if ($test -and $env:PC_TEST_GIT) { $exe = $env:PC_TEST_GIT }
   $lines = @(& $exe @words 2>&1); $script:gitExit = $LASTEXITCODE
   $ErrorActionPreference = $ea
   foreach ($line in $lines) { Add-Content -LiteralPath (Join-Path $script:out 'git_log.txt') -Value ([string]$line) -Encoding UTF8 }
@@ -172,7 +188,12 @@ try {
     $raw = $stdout.Result + "`n" + $stderr.Result
     Put (Join-Path $out 'preflight_log.txt') $raw
     $reply = Read (Join-Path $probe 'reply.txt')
-    if ($kind -eq 'kimi') { $reply = $stdout.Result.Trim() }
+    if ($kind -eq 'kimi') {
+      # Kimi Code prints its thinking and its answer as bullet lines, then a 'To resume this session' line (first live run,
+      # Nov 15): the reply is the answer line, bullet stripped.
+      $reply = ''
+      foreach ($line in ($stdout.Result -split '\r?\n')) { $t = ($line -replace '^[^A-Za-z0-9_]+','').Trim(); if ($t -eq 'RUNNER_READY') { $reply = $t } }
+    }
     if ($kind -eq 'opencode') {
       $reply = ''
       foreach ($line in ($stdout.Result -split '\r?\n')) {
@@ -186,6 +207,80 @@ try {
       throw "preflight failed: $kind exit $code; $why (see preflight_log.txt)"
     }
     Log "preflight passed: $kind $model"
+  }
+  elseif ($mode -eq 'space') {
+    # Issue 722 (audit 706 finding 7): never start a run the disk cannot hold. Runs before the chain wait, so a
+    # low disk also fails a chained child closed instead of burning a wait.
+    $script:out = $args[1]; $setf = $args[2]; $target = $args[3]
+    if ($test -and $env:PC_TEST_SETTINGS) { $setf = $env:PC_TEST_SETTINGS }
+    $floor = 60
+    if (Test-Path -LiteralPath $setf) {
+      foreach ($l in [IO.File]::ReadAllLines($setf)) {
+        $m = [regex]::Match($l, '^\s*min_free_gb\s*=\s*(\d+)\s*$')
+        if ($m.Success) { $floor = [int]$m.Groups[1].Value }
+      }
+    }
+    $root = [IO.Path]::GetPathRoot([IO.Path]::GetFullPath($target)).TrimEnd('\')
+    $free = (New-Object IO.DriveInfo($root)).AvailableFreeSpace
+    if ($test -and $env:PC_TEST_SPACE_FREE_MB) { $free = [int64]$env:PC_TEST_SPACE_FREE_MB * 1MB }
+    $freeGB = [math]::Round($free / 1GB, 1)
+    if ($free -lt ($floor * 1GB)) {
+      $why = "refusing to start: drive $root has $freeGB GB free, below the min_free_gb=$floor floor"
+      Log $why
+      State 'failed' $why
+      exit 14
+    }
+    Log "drive $root has $freeGB GB free (min_free_gb floor $floor)"
+  }
+  elseif ($mode -eq 'hashwrite') {
+    # The Board runs this right after copying the runner files to a PC tools folder; hashcheck then guards the copies.
+    $tools = $args[1]; $hashf = $args[2]
+    $names = @('codex_issue.bat','codex_issue.ps1','runner_common.ps1','work_issue.bat','work_issue.ps1')
+    $lines = @()
+    foreach ($n in $names) {
+      $p = Join-Path $tools $n
+      if (-not (Test-Path -LiteralPath $p)) { throw "hashwrite: $p is missing" }
+      $lines += ((Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLower() + "  $n")
+    }
+    Put $hashf (($lines -join "`n") + "`n")
+    Write-Host "hashes written to $hashf ($($names.Count) files)"
+  }
+  elseif ($mode -eq 'hashcheck') {
+    # Issue 722 (audit 706 finding 6): the running copies must be what the Board copied. A drift or a missing
+    # hashes file is a warning only: a run must never stop because the Board has not written hashes yet.
+    $script:out = $args[1]; $tools = $args[2]; $hashf = $args[3]
+    if ($test -and $env:PC_TEST_HASHES) { $hashf = $env:PC_TEST_HASHES }
+    if (-not (Test-Path -LiteralPath $hashf)) {
+      Log "WARNING: no Board hashes file at $hashf; the running runner copies are not checked"
+      exit 0
+    }
+    $want = @{}
+    foreach ($l in [IO.File]::ReadAllLines($hashf)) {
+      $m = [regex]::Match($l, '^([0-9a-fA-F]{64})\s+(\S+)\s*$')
+      if ($m.Success) { $want[$m.Groups[2].Value] = $m.Groups[1].Value.ToLower() }
+    }
+    if ($want.Count -eq 0) { Log "WARNING: the Board hashes file $hashf has no entries; the running runner copies are not checked"; exit 0 }
+    $bad = @()
+    foreach ($n in ($want.Keys | Sort-Object)) {
+      $p = Join-Path $tools $n
+      if (-not (Test-Path -LiteralPath $p)) { $bad += "$n (missing)"; continue }
+      if ((Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLower() -ne $want[$n]) { $bad += $n }
+    }
+    if ($bad.Count) { Log "WARNING: these runner files differ from the Board-copied hashes: $($bad -join ', ')" }
+    else { Log "runner files match the Board hashes ($($want.Count) checked)" }
+  }
+  elseif ($mode -eq 'model') {
+    # Issue 722 (audit 706 finding 6): stamp what will actually run. The bat passes the resolved id and the arm's
+    # built-in default, so a same-provider override (the gap the provider guard cannot see) warns here.
+    $script:out = $args[1]; $resolved = $args[2]; $default = $args[3]
+    $p = Join-Path $script:out 'status.json'
+    $s = Get-Content -LiteralPath $p -Raw | ConvertFrom-Json
+    $s | Add-Member -NotePropertyName model -NotePropertyValue $resolved -Force
+    $tmp = "$p.$([guid]::NewGuid().ToString('N')).tmp"
+    Put $tmp ($s | ConvertTo-Json)
+    [IO.File]::Replace($tmp, $p, "$tmp.previous")
+    Log "model: $resolved"
+    if ($resolved -ne $default) { Log "WARNING: resolved model $resolved differs from the arm default $default" }
   }
   elseif ($mode -eq 'finish') {
     $script:out = $args[1]; $code = $args[2]; $partial = $args[3]; $push = $args[4]; $checks = $args[5]

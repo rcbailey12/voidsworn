@@ -72,7 +72,7 @@ marked SUPERSEDED, so no two live rules conflict. One live place per kind: rules
 lines and The seats, the hand-over in HANDOFF section 0 (about one page; older sections go to docs/archive), history in FINDINGS.
 LOOP.md's LATEST lines roll into a dated summary once they pass about 15. Muse audits for stale or conflicting docs now and then.
 Why: several models and fresh chats read the repo cold; on Nov 14 a one-day choice nearly became a rule, an A20 note was stretched to
-every ship, and a summary line inverted Ryan's call on A18 and A19.
+every ship before Ryan ratified it (R244), and a summary line inverted Ryan's call on A18 and A19.
 
 ## 1. Working with Ryan
 
@@ -134,37 +134,40 @@ agents-09.
 | Work | Seat | Why |
 |---|---|---|
 | Board: reviews, merges, specs, visual calls, picks put to Ryan | One Claude thread, Opus 5.5 | judgement is the bottleneck (R128, R194) |
-| Every ship model in Blender (blockouts, build sheets, hulls, kits, the station); hard or open-ended builds; read-only code audits | Opus 5.5 workers, two at most while the Board runs | Ryan: "I think builds in blender should come from Opus" (R205); the five-hour limit was hit with three (R194) |
+| Every ship model in Blender (blockouts, build sheets, hulls, kits, the station); hard or open-ended builds; read-only code audits | Opus 5.5 workers, two or three at once | Ryan: "I think builds in blender should come from Opus" (R205); "keep it to 2 or 3 threads at once, and propose big threads before starting them" (project instructions) |
 | Well-specified code: rules, tests, scripts, screens to a spec | DeepSeek V4.1 Flash workhorse on the PC | merged on one review pass for nine cents (R127, R134) |
 | Pipeline and engine jobs that need Codex's depth (export, import, effects plumbing); captures and benches only when no cheaper seat can run them | Codex on the PC, one job at a time, while its weekly usage lasts | "Codex and deepseek should do other work to free you up on these crucial items" (R206); "We're starting to run low on codex usage ... We may just need to move other things to opus instead of codex being the workhorse with DeepSeek" (R219) |
 | Checks of a seat's own work: a different model checks it (Codex's pipeline work is traced or checked by Opus or Muse) | Opus worker or Muse | "It feels like that makes sense to be checked by a different model" (R219) |
 | Concept pictures by image to image, research, design text, outside checks | Muse (Rey chairs); Ryan starts every run | several models, an outside view (R128) |
 | Ideation and legs | Grok and Google Flash, through Muse: a leg in every Muse action, beside DeepSeek and Qwen (R231) | free and broad; Qwen's daily cap emptied three seats on Nov 12 |
 
-No Fable helpers: Ryan's Fable allowance is spent ("I just used the final fable reset", R180). Kimi was never fairly tested
-(only the pay-as-you-go tier, R164); Ryan took the Kimi Code plan on Nov 12, and it gets one head-to-head job against DeepSeek
-(arm kimicode, issue 597) before it holds a seat. Claude Opus 5.5 (arm opus, Ryan: "why not use it as another opus worker") and Sonnet 5.5 (arm sonnet) run as workhorse arms (issue 614) on the Max plan's $100 a month of API
-credits (Ryan, Nov 12): the credits do not roll over, so they are spent each month, Opus first, on jobs that would otherwise take an Opus
-worker seat; it is the same model family as the Board, so it never serves as the different-model check of Opus work (R219). Codex's weekly usage is watched at every board check (it was at 19 percent with
-six days to its reset on Nov 11, R219): when it runs low, code jobs go to the DeepSeek workhorse and Opus workers, and Codex
-keeps only what needs it. Codex gets only what no other seat can do (Ryan, Nov 12 22:58 CST: "codex doesn't have a ton of usage so
-use it when it can only do something others can't", R234): code and check jobs go to the API Opus arm or an Opus worker first.
-The Kimi Code plan holds about 30 minutes of agent work per 5-hour window, so it takes short reviews only, never builds (issue
-597 verdict, Nov 12). Ids: R128, R180e, R205, R206, R219, R234, agents-12.
-
-**Nov 14 (R242, R250), wins over the table and paragraph above where they differ:** the seat order is DeepSeek for small jobs, the
-Sonnet API arm for mid-size, Opus (API arm or a plan-side helper) for Blender and large work, Codex for what only it can do, Kimi by
-results (R242). While the API credit is spent (till its monthly refresh, about Nov 21; Ryan adds none) and the Board plan is low,
-Codex is the main builder, Blender builds included ("use codex aggressively", Nov 14; the Board sets effort per job); the Board judges
-every model by picture as before. Kimi now holds a seat through the Kimi Code CLI arm (kimicode, WORK_HARNESS=kimi): about 2.5 hours
-of agent time per 5 hour window on Nov 14 (a Board observation, revise with evidence), so mid-size code, rules and balance jobs
-(the 30 minute figure above was the OpenCode route). Muse also runs outside audits (issue 706). Not taken: Gemini 4 Hydrogen. The Board thread may use the Fable advisor
-(Ryan, Nov 14 18:28 CST: "this chat stands", R252, replacing R250's no).
+The standing seat rules (rewritten Nov 15 from Muse's opus_check_719; dated seat state, such as whether this month's API
+credit is live, is status and lives in LOOP.md "The seats"):
+- Seat order (R242): "DeepSeek for cheap, sonnet for mid size, opus via api or helpers for blender or other large work. Codex
+  for others that only it can do and then Kimi depending on results."
+- Blender ship builds are Opus's (R205: "I think builds in blender should come from Opus"), back on from Nov 14 evening (R253).
+- Codex only for what no other seat can do (R234: "use it when it can only do something others can't"); GPT 6.1 Sol (2.7).
+- Kimi is no longer a seat (R257, Ryan, Nov 15: "Kimi is maxed out until 12/12. I just cancelled. I don't think it's worth
+  continuing given the usage issues"). Its jobs go to DeepSeek (mid-size code) or an Opus worker; nothing is sent to Kimi.
+- Codex is on the Pro plan (R264, Ryan, Nov 15: "it's on the pro plan, so significant usage upgrade") and runs up to three local
+  lanes (R268). SUPERSEDED, kept so nobody follows it: "Codex is near its weekly limit ... the Board runs the PC GPU steps" (R257,
+  ended by R264 the same day).
+- The API arms (opus, sonnet) run on the Max plan's monthly API credit (Ryan, Nov 12); same model family as the Board, so never
+  the different-model check of Opus work (R219).
+- The Board thread may use the Fable advisor (R252: "this chat stands"); no Fable helpers (R180); not taken: Gemini 4 Hydrogen
+  (R250).
+Superseded, kept so nobody follows them: "Kimi on its own subscription only, no API route (R238), through the Kimi Code CLI
+arm; it stays (R250 item 4)" (SUPERSEDED by R257); "the Kimi Code plan holds about 30 minutes of agent work per 5-hour window, so it takes
+short reviews only, never builds" (Nov 12, the OpenCode route; SUPERSEDED by R250) and "Codex is the main builder, Blender builds
+included" (Nov 14; SUPERSEDED by R253). Ids: R128, R180e, R205, R206, R219, R234, R238, R242, R250, R252, R253, R257, agents-12.
 
 2.7 **Codex runs the model Ryan picked: GPT 6.1 Sol today, pinned by name in tools/pc/codex_issue.bat.** Never a weaker
-model by accident (Luna) and never switched to another one (Astra) without his yes; no Codex cloud tasks or cloud reviews.
+model by accident (Luna) and never switched to another one (Astra) without his yes; no Codex cloud tasks or cloud reviews,
+because a cloud task runs the default model OpenAI picks and cannot be pinned (OpenAI's Codex models page, Nov 2026). Code-only
+jobs run on a third local lane on the PC instead (lane C, R268, Ryan Nov 15: "yeah lane c is fine"), pinned like the others.
+If OpenAI lets cloud tasks pin a model, this can be asked again.
 Why: "We don't want to force using Astra or something. Just not accidentally run Luna or something, that's why we usually
-use Sol 6.1" (R216). Ends when Ryan picks another model. Set: Ryan, Nov 2 (R75) and Nov 11 (R216). Ids: R75b, agents-07.
+use Sol 6.1" (R216). Ends when Ryan picks another model. Set: Ryan, Nov 2 (R75), Nov 11 (R216) and Nov 15 (R267). Ids: R75b, R267, agents-07.
 
 2.8 **Muse: a blind Rey leg written before Rey reads the others, on research, design and review jobs** (not on low-code fix
 jobs). Why: "Let's ensure muse is running its own blind leg room not just chairing." Set: Ryan, Nov 3 (R89). Ids: R89,
@@ -191,8 +194,9 @@ not drift (R155b). Set: Ryan, Nov 2 (R81). Ids: R81, agents-15, muse-06.
 2.13 **A job's scope lists every folder its earlier runs touched, and every baked picture keeps its bake script in the repo.**
 Why: PR 327 merged without its bake scripts (R157). Set: Board.
 
-2.14 **Effort follows the kind of job**: high for the Board, audits and design passes; medium for first builds judged by eye;
-low for well-specified code. Why: a miss on a look costs a whole extra round (R168). Set: Board.
+2.14 **Effort follows the kind of job** (an operating note, not a rule, under 0.10 and R251: the Board may change it in LOOP.md):
+high for the Board, audits and design passes; medium for first builds judged by eye; low for well-specified code. Why: a miss on
+a look costs a whole extra round (R168). Set: Board.
 
 2.15 **The repo is the record.** Rulings go to FINDINGS with Ryan's words and the problem he was reacting to; board state to
 LOOP.md; rules to this book. Why: the other models only see the repo. Set: Ryan (project instructions; R189).
@@ -240,6 +244,12 @@ R111a, R111b, R113, R116, R121a, R121b.
 3.10 **The repo stays public.** Why: the outside tools (Muse and its models) read it without logins (R216). Set: Ryan (R10,
 R216).
 
+3.11 **A pause never loses or deletes work.** When Ryan wants the PC (GPU or CPU), the Board runs tools/pc/pause_all.bat
+(now, or at a time): it withdraws the GPU go, closes only chain windows still waiting to start, and ends the AI processes, so
+each running job's runner commits and pushes its work to the issue's -partial branch; job windows mid-run are never closed and
+nothing is deleted. On Ryan's go the Board restarts every paused job from its -partial branch. Why: "I don't want to cause
+anything to get lost or deleted with the pauses as well, so let's bake that in" (R272). Set: Ryan, Nov 15.
+
 ## 4. Ships and concepts
 
 4.1 **Space ships, never sea ships, in the whole shape.** No boat profile, keel, raked prow, deck house, mast, funnel, crane,
@@ -248,8 +258,9 @@ obvious naval-looking ships. again, these are SPACE ships"; Nov 11: "I don't und
 as naval. We need to do a full pass across all ships and factions so not naval" (R185). Set: Ryan (Oct 22, Oct 24, R185). Ids:
 agents-19, agents-25, R8b, R185a, concepts-16. Detail: docs/playbooks/concepts_round2.md gate line 11.
 
-4.2 **No gun faces backward or into the ship.** Why: "no ship in the game fires backward" (Oct 22). Set: Ryan. Ids: agents-17,
-blob-03.
+4.2 **No gun faces backward or into the ship at rest; a turret may turn aft only to follow a target its rules arc lets it hit
+(6.16, R222).** Why: "no ship in the game fires backward" (Oct 22). Set: Ryan (Oct 22; the turret line Nov 12, R222).
+Ids: agents-17, blob-03, R222.
 
 4.3 **Parts look like they belong: snapped to the real hull on a visible mount, in matched pairs at sensible hard points; the
 Hullbreakers may be junky.** Why: bolt-ons on the AI hulls floated, sank or sat anywhere (Oct 21). Set: Ryan, Oct 21. Ids:
@@ -437,9 +448,10 @@ always reads as a death.** Why: every faction died the same faint puff (deaths_a
 staging table; the sizes and times are tuning values (0.4). Ids: deaths-03, deaths-10. Detail:
 docs/playbooks/deaths_and_hits.md.
 
-6.11 **Shields in space keep their faction colours; at rest invisible, a faint edge glow on zoom, hover or a recent hit, a
-downed side a dark gap.** Why: his Oct 24 ruling (the cyan-only rule retired) and his yes to the Board's resting pick (R163).
-Set: Ryan (R3, R163). Ids: R3a, R163a, effects-04.
+6.11 **Shields in space keep their faction colours; at rest, Rim and Gap: a faint rim in the faction edge colour on live
+sides, a dark gap where a side is open, nothing else** (R246, Nov 14). Why: his Oct 24 ruling (the cyan-only rule retired) and his
+Rim and Gap pick with Muse (R246). Set: Ryan (R3, R246). SUPERSEDED, kept so nobody follows it: "at rest invisible, a faint edge
+glow on zoom, hover or a recent hit" (R163, ended by R246). Ids: R3a, R163a, R246, effects-04.
 
 6.12 **Effects may spend the RTX 5080's headroom inside the scene gate, with a lower setting kept.** Set: Ryan (R88c). See
 3.9.

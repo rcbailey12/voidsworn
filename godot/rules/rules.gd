@@ -200,7 +200,7 @@ var _guard := {}
 var _tc := {}      # terrain by packed hex, inside a scoring window (terrain cannot change there)
 var _ob := {}      # onBoard by packed hex, for the whole battle (the board and its cut-outs are fixed at setup)
 var _mr := {}      # moveRules by faction (read-only tables)
-var _hc := {}      # hitChance inside a scoring window, keyed by both ships' positions and hexes moved
+var _hc := {}      # hitChance inside a scoring window, keyed by both ships' positions and hexes moved (and the shooter's facing under Silent Archive)
 var _lw := {}      # evalThreatVet: each foe's live guns inside a scoring window
 var _slot := {}    # unit id -> small number, for the packed cache keys
 var _runfx = null
@@ -1086,6 +1086,7 @@ func makeUnit(side, tpl, opts: Dictionary = {}) -> Dictionary:
 		w["fired"] = false; w["cdLeft"] = 0; w["off"] = 0; wl.append(w)
 	u["weapons"] = wl
 	u["ab"] = t["ab"] if jt(t.get("ab")) else null; u["abCd"] = 0; u["isSq"] = jt(t.get("sq")); u["sqKind"] = t["sq"] if jt(t.get("sq")) else null; u["boss"] = jt(t.get("boss")); u["reanimate"] = jt(t.get("reanimate")); u["reanimated"] = false
+	u["ripped"] = jt(ship.get("ripped")) if jt(ship) else false   # R78 Q9: a captured hull kept through the Cinder Line yards, links ripped out
 	u["ship"] = ship if jt(ship) else null; u["parent"] = opts["parent"] if jt(opts.get("parent")) else null; u["sqPct"] = z0(opts.get("sqPct"))
 	u["mp"] = 0; u["turnsLeft"] = 0; u["order"] = null; u["braced"] = false; u["lockOn"] = false; u["focus"] = false; u["fullAhead"] = false; u["noTurn"] = false; u["evBuff"] = 0
 	u["pflag"] = jt(ship) and RUN != null and jt(RUN.get("flagUid")) and ship["uid"] == RUN["flagUid"]
@@ -1704,7 +1705,7 @@ func setupFactionRules() -> void:
 	for side in ["player", "enemy"]:
 		var heg = []
 		for u in B["units"]:
-			if u["side"] == side and not jt(u.get("isSq")) and not jt(u.get("transport")) and u["fac"] == "hegemony": heg.append(u)
+			if u["side"] == side and not jt(u.get("isSq")) and not jt(u.get("transport")) and u["fac"] == "hegemony" and not jt(u.get("ripped")): heg.append(u)   # R78 Q9: a captured hull with its links ripped out answers no Registry net
 		if heg.size() > 0:
 			var a = null
 			for u in heg:
@@ -1722,7 +1723,7 @@ func setupFactionRules() -> void:
 			a["anchor"] = true
 		var dl = 0
 		for u in B["units"]:
-			if u["side"] == side and not jt(u.get("isSq")) and u["fac"] == "deathless" and jt(u.get("t")) and jt(u["t"].get("reanimate")): dl += 1
+			if u["side"] == side and not jt(u.get("isSq")) and u["fac"] == "deathless" and not jt(u.get("ripped")) and jt(u.get("t")) and jt(u["t"].get("reanimate")): dl += 1
 		B["legion"][side]["max"] = 2 if dl >= 6 else (1 if dl >= 1 else 0)
 	if B.get("tree") != null and B["tree"].size() > 0 and (treeSkill("wideNet") != null or treeSkill("livingRelay") != null):
 		var sr = B["syncR"].duplicate() if B.get("syncR") is Dictionary else {}
@@ -1743,7 +1744,7 @@ func syncAnchor(side):
 func syncR(side): return B["syncR"][side] if (B != null and B.get("syncR") != null and jt(B["syncR"].get(side))) else TB.SYNC_R
 func syncDmg(side): return B["syncDmg"][side] if (B != null and B.get("syncDmg") != null and jt(B["syncDmg"].get(side))) else TB.SYNC_DMG
 func inSync(u) -> bool:
-	if u == null or jt(u.get("isSq")) or u.get("fac") != "hegemony" or jt(u.get("dead")): return false
+	if u == null or jt(u.get("isSq")) or u.get("fac") != "hegemony" or jt(u.get("dead")) or jt(u.get("ripped")): return false
 	if u["side"] == "player" and B["round"] == 1 and jt(B.get("cfg", {}).get("storyMods", {}).get("syncDown")): return false
 	var a = syncAnchor(u["side"])
 	return a != null and hdist(u, a) <= syncR(u["side"])
@@ -1767,7 +1768,7 @@ func syncLose(t) -> void:
 	if it != null and t["side"] == "player" and B.get("tr") != null and not jt(B["tr"].get("ironTempoUsed")):
 		var cands = []
 		for u in alive("player"):
-			if not is_same(u, t) and not jt(u.get("isSq")) and not jt(u.get("dead")) and u["fac"] == "hegemony": cands.append(u)
+			if not is_same(u, t) and not jt(u.get("isSq")) and not jt(u.get("dead")) and not jt(u.get("ripped")) and u["fac"] == "hegemony": cands.append(u)
 		JSM.ssort(cands, func(a, b):
 			var d = b["maxHp"] - a["maxHp"]
 			if d != 0: return d
@@ -1825,7 +1826,7 @@ func chorusBiteEst(u, t, hull) -> float:
 	if u != null and t != null and u["fac"] == "chorus" and not jt(u.get("isSq")) and hdist(u, t) <= 2: return JSM.jsround(hull * TB.CHORUS_BITE)
 	return 0.0
 func legionCan(t) -> bool:
-	if B == null or B.get("legion") == null or jt(t.get("isSq")) or t.get("fac") != "deathless" or not jt(t.get("t")) or not jt(t["t"].get("reanimate")) or jt(t.get("reanimated")) or jt(t.get("pyre")) or jt(t.get("boss")) or jt(t.get("pflag")) or jt(t.get("flagship")) or jt(t.get("transport")): return false
+	if B == null or B.get("legion") == null or jt(t.get("isSq")) or t.get("fac") != "deathless" or jt(t.get("ripped")) or not jt(t.get("t")) or not jt(t["t"].get("reanimate")) or jt(t.get("reanimated")) or jt(t.get("pyre")) or jt(t.get("boss")) or jt(t.get("pflag")) or jt(t.get("flagship")) or jt(t.get("transport")): return false
 	var L = B["legion"].get(t["side"])
 	return L != null and L["used"] < L["max"]
 func legionRiseHex(u):
@@ -2396,8 +2397,9 @@ func hitChance(u, w, t) -> float:
 			if is_same(ws[i], w):
 				wi = i; break
 		var hu = int(z0(u.get("hexMoved"))); var ht = int(z0(t.get("hexMoved")))
-		if su != null and st != null and su < 128 and st < 128 and wi >= 0 and wi < 16 and hu < 64 and ht < 64:
-			var k = ((((((((su * 16 + wi) * 128 + st) * 128 + (int(u["q"]) + 64)) * 128 + (int(u["r"]) + 64)) * 128 + (int(t["q"]) + 64)) * 128 + (int(t["r"]) + 64)) * 64 + hu) * 64 + ht)
+		var uf = int(z0(u.get("facing"))) if treeSkill("silentArchive") != null else 0   # Silent Archive's aim penalty reads the shooter's facing (issue 784)
+		if su != null and st != null and su < 128 and st < 128 and wi >= 0 and wi < 16 and hu < 64 and ht < 64 and uf >= 0 and uf < 8:
+			var k = ((((((((su * 16 + wi) * 128 + st) * 128 + (int(u["q"]) + 64)) * 128 + (int(u["r"]) + 64)) * 128 + (int(t["q"]) + 64)) * 128 + (int(t["r"]) + 64)) * 64 + hu) * 64 + ht) * 8 + uf
 			var c = _hc.get(k)
 			if c == null:
 				c = _hitChance_raw(u, w, t); _hc[k] = c
@@ -2651,7 +2653,9 @@ func dmgMult(u, w, t, rear) -> float:
 	return base * storyDamageMult(u)
 # Inside a scoring window (eval_begin to eval_end) nothing in the battle changes, so expectedVs depends only on the two ships, the gun,
 # the shooter's hex and hexes moved (hit chance, sync, rake), the target's hex, facing (shield quadrant) and hexes moved. Not on the
-# shooter's facing: arcs are checked by the callers. Callers only read the result.
+# shooter's facing: arcs are checked by the callers. Callers only read the result. The one exception is Ostrel's Silent Archive
+# (hitChance: an enemy shooting a ship outside its front arc loses aim), so while that skill is in force the shooter's facing is in
+# the key too (issue 784: the forward-only flare made the AI score one hex at two facings, and the cached aim leaked between them).
 var _ev := {}
 func expectedVs(u, w, t) -> Dictionary:
 	if _evc:
@@ -2662,8 +2666,9 @@ func expectedVs(u, w, t) -> Dictionary:
 				wi = i; break
 		var hu = int(z0(u.get("hexMoved"))); var ht = int(z0(t.get("hexMoved")))
 		var uq = int(u["q"]) + 64; var ur = int(u["r"]); var tq = int(t["q"]) + 64; var tr = int(t["r"]); var tf = int(t["facing"])
-		if su != null and st != null and su < 64 and st < 64 and wi >= 0 and wi < 16 and hu < 16 and ht < 16 and uq >= 0 and uq < 128 and tq >= 0 and tq < 128 and ur >= 0 and ur < 64 and tr >= 0 and tr < 64 and tf >= 0 and tf < 8:
-			var k = (((((((((su * 16 + wi) * 64 + st) * 128 + uq) * 64 + ur) * 128 + tq) * 64 + tr) * 16 + hu) * 16 + ht) * 8 + tf)
+		var uf = int(z0(u.get("facing"))) if treeSkill("silentArchive") != null else 0
+		if su != null and st != null and su < 64 and st < 64 and wi >= 0 and wi < 16 and hu < 16 and ht < 16 and uq >= 0 and uq < 128 and tq >= 0 and tq < 128 and ur >= 0 and ur < 64 and tr >= 0 and tr < 64 and tf >= 0 and tf < 8 and uf >= 0 and uf < 8:
+			var k = (((((((((su * 16 + wi) * 64 + st) * 128 + uq) * 64 + ur) * 128 + tq) * 64 + tr) * 16 + hu) * 16 + ht) * 8 + tf) * 8 + uf
 			var c = _ev.get(k)
 			if c == null:
 				c = _expectedVs_raw(u, w, t); _ev[k] = c

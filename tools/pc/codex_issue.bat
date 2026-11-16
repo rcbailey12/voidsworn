@@ -10,6 +10,10 @@ rem  a Codex exit code that is not 0 (124 is the time cap) pushes to codex/issue
 rem  the guard step refuses ship, gen, .uid, .import and oversized files (copies kept per run in board\issue-<n>\runs\<date_time>\refused) and warns
 rem  about files outside the issue's Deliver to; one checked commit keeps the branch's earlier tip as a parent, so the push
 rem  needs no force; GitHub's branch must then carry exactly out\diffstat.txt, or the run stops loudly (DIFF MISMATCH).
+rem Runner 3 (issue 722, audit 706 findings 6 and 7), the same start checks as work_issue.bat: refuse to start below
+rem the min_free_gb free-space floor (work217\runner_settings.txt, default 60), warn in result.txt when this tools
+rem folder's five runner files differ from the Board's work217\runner_hashes.txt, and stamp the resolved model
+rem (gpt-6.1-sol) into out\status.json and result.txt.
 rem Test mode (for the Board's dry runs): CODEX_TEST_ROOT moves repo and out folders there, CODEX_TEST_AGENT is a .bat run
 rem in place of Codex (no Codex usage), CODEX_TEST_BRANCH is the branch pushed to (it must not start with codex/, muse/,
 rem work/ or opus/), CODEX_TEST_SPARSE lists the only folders a lean test clone checks out.
@@ -22,6 +26,9 @@ if exist "%USERPROFILE%\Downloads\voidsworn_test\node\node.exe" set "PATH=%USERP
 set "ROOT=%USERPROFILE%\Downloads\voidsworn_test"
 set "B=%ROOT%\build_b"
 set "TP=%~dp0"
+rem %TPC% is %TP% without its trailing backslash, for passing the tools folder as a bare quoted argument (issue 722:
+rem cmd merges "%TP%" with the next quoted argument because of the backslash before the quote).
+set "TPC=%TP:~0,-1%"
 set "R=%ROOT%\board\repo"
 set "O=%ROOT%\board\issue-%N%"
 set "BR=codex/issue-%N%"
@@ -52,6 +59,13 @@ if not exist "%O%" mkdir "%O%"
 echo started %date% %time% > "%O%\result.txt"
 %COMMON% init "%O%" "%BR%"
 if errorlevel 1 exit /b 14
+rem (722) Free-space floor, Board hashes and the resolved model stamp, as in work_issue.bat.
+set "SETF=%ROOT%\work217\runner_settings.txt"
+set "HASHF=%ROOT%\work217\runner_hashes.txt"
+%COMMON% space "%O%" "%SETF%" "%ROOT%"
+if errorlevel 1 exit /b 14
+%COMMON% hashcheck "%O%" "%TPC%" "%HASHF%"
+%COMMON% model "%O%" "gpt-6.1-sol" "gpt-6.1-sol"
 %COMMON% wait "%O%"
 if errorlevel 1 exit /b 14
 set "SPARSE="
@@ -67,7 +81,9 @@ if "%PC_RUNNER_TEST%"=="1" set "PROBE=%CODEX_TEST_AGENT%"
 %COMMON% preflight "%O%" "%R%" codex "%PROBE%" gpt-6.1-sol ""
 if errorlevel 1 goto :probefail
 if defined CODEX_TEST_ROOT if defined CODEX_TEST_AGENT goto :testagent
-call "%TP%tmo.bat" 3600 "%APPDATA%\npm\codex.cmd" exec -m gpt-6.1-sol -c model_reasoning_effort=%EFF% --approve-for-me --ephemeral --color never -C "%R%" -o "%O%\last.md" "Read CODEX_TASK.md in this folder and do exactly what it says. Do not commit." > "%O%\log.txt" 2>&1
+rem CODEX_CAP (seconds) lets a launcher give a GPU or paint job more than the default hour (Board, Nov 15).
+if not defined CODEX_CAP set "CODEX_CAP=3600"
+call "%TP%tmo.bat" %CODEX_CAP% "%APPDATA%\npm\codex.cmd" exec -m gpt-6.1-sol -c model_reasoning_effort=%EFF% --approve-for-me --ephemeral --color never -C "%R%" -o "%O%\last.md" "Read CODEX_TASK.md in this folder and do exactly what it says. Do not commit." > "%O%\log.txt" 2>&1
 set "CX=%ERRORLEVEL%"
 goto :ran
 :testagent

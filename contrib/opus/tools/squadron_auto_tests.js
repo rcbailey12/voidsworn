@@ -12,13 +12,18 @@ globalThis.T={
   start(){ UID=1; rndSeed(134); RUN={admiral:'vex',fac:'voidsworn',sector:1,fleet:[newShip('reliquary'),newShip('harrow')],relics:[],boons:[],stats:{},fallen:[]};
     startBattle({kind:'battle',fac:'hegemony',seed:134,obj:'rout',shape:'open',map:'open',dep:'line',enemies:[{tpl:'h_picket'},{tpl:'h_interdictor'}]});
     for(const u of B.units) u.activated=false; return alive('player').find(u=>u.ab==='launch'); },
-  wings:squadronsOf, startSideTurn, swarmPhase, canAbility, useAbility, sqOrder, sqPlan, launchHexes, replaceWings,
+  wings:squadronsOf, startSideTurn, swarmPhase, canAbility, useAbility, sqOrder, sqPlan, launchHexes, replaceWings, FACTIONS,
   round(){ B.round++; startSideTurn('player'); },
   block(c){ for(const h of launchHexes(c)){ const x=makeUnit('player','warden'); x.q=h.q; x.r=h.r; B.units.push(x); } },
   foe(){ return alive('enemy')[0]; }
 };`, ctx);
 const T = ctx.T;
 async function main() {
+  for (const id of Object.keys(T.FACTIONS)) {
+    assert(Object.prototype.hasOwnProperty.call(T.FACTIONS[id], 'sq'), id + ' states its sq explicitly');
+    assert(['fighter', 'bomber', 'spore'].includes(T.FACTIONS[id].sq) || T.FACTIONS[id].sq === null, id + ' has a known sq value');
+  }
+  assert.strictEqual(T.FACTIONS.voidsworn.sq, 'fighter', 'Sunward Crusade states sq: fighter');
   let c = T.start(), wings = T.wings(c);
   assert.strictEqual(wings.length, c.hangar, 'full opening flight without clicks');
   const opening = wings.map(w => [w.q,w.r]);

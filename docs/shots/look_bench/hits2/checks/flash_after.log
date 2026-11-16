@@ -1,0 +1,77 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+[sfx] 67 cues, 67 clip sets, loaded in 317 ms
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.456, target 4.4; visual tuning (R191)
+[attach] hp_rcs missing on V1b_r_23; using the surface ray
+[attach] hp_rcs missing on V17_37; using the surface ray
+[attach] hp_rcs missing on V16_37; using the surface ray
+[attach] hp_rcs missing on V18_51; using the surface ray
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V15_37; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on V14_23; using the surface ray
+[attach] hp_rcs missing on C19_51; using the surface ray
+[attach] hp_rcs missing on C13s_23; using the surface ray
+[attach] hp_rcs missing on H8_23; using the surface ray
+[attach] hp_rcs missing on H7_23; using the surface ray
+[attach] hp_rcs missing on B20_11; using the surface ray
+[attach] hp_rcs missing on B19_11; using the surface ray
+[attach] hp_rcs missing on I11_37; using the surface ray
+[attach] hp_rcs missing on I14_23; using the surface ray
+[attach] hp_rcs missing on D21_23; using the surface ray
+[attach] hp_rcs missing on D20_23; using the surface ray
+[world] loaded 1f77c555e81b8e915e4f12c31782f7df9f5ac3cdb9e3935a726f7cc01cb6c8ad 4096x2048 in 4735 ms (worker)
+[world] loaded 3a53d4c1de8802eb7f6f22cb445a91546d0c5904348cb02af8f5ecd8ab2d04f6 4096x2048 in 4805 ms (worker)
+[world] loaded 2eaf33940d898a1406cb45bdb2eb973dd9ccf57a3016aee82d6732eae120d62c 1024x512 in 4796 ms (worker)
+[world] loaded 86c23eebfd907f18d3dd10f02a18a30e992e1b7417889412b0fb74e66521ad44 1024x512 in 4799 ms (worker)
+[world] loaded f8d6eb5a1f4a236c5bcfcfcc4e9285f7d5a49d9c848c831491d7ef2a313445f1 4096x2048 in 76 ms (worker)
+[world] loaded 10f1ba375a190ca53fc27b1f13edc2954f9885d10a331cea9c5889a9002736c4 1024x512 in 77 ms (worker)
+[world] loaded 8f4d2aea879b1d6e88095bbc5e91558b2c1a740fcccffe6d51ef22ff6f52c572 1024x512 in 74 ms (worker)
+[attach] flare on H7_23: placed on the plating (a surface sample; not a hard point type)
+[scene_gate] flash built in 14012 ms (ready after 14012 ms)
+[fx] late shader: exterior_alpha frame 342 17276.6 ms
+[attach] scorch on V1b_r_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on V1b_r_23: no authored point fits this request; using the surface ray
+[attach] scorch on V18_51: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on V18_51: no authored point fits this request; using the surface ray
+[attach] hp_breach on V14_23: no authored point fits this request; using the surface ray
+[attach] scorch on V14_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on V14_23: no authored point fits this request; using the surface ray
+[attach] scorch on V14_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on H8_23: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on B19_11: placed on the plating (a surface sample; not a hard point type)
+[attach] scorch on D21_23: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach on D21_23: no authored point fits this request; using the surface ray
+[attach] hp_w on V1b_r_23: no authored point fits this request; using the surface ray
+[attach] hp_w on H8_23: no authored point fits this request; using the surface ray
+[attach] hp_w on C19_51: no authored point fits this request; using the surface ray
+[attach] hp_w on B20_11: no authored point fits this request; using the surface ray
+[attach] hp_w on I11_37: no authored point fits this request; using the surface ray
+[fx] late shader: death power down 2457075824 frame 424 60354.7 ms
+[flash] mean_max_per_s 0 block_max_per_s 1 counted 12 refused 50 PASS true float_px 16
+[scene_gate] FLASH DONE
+[attach] battle x011 V1b_r_23: skipped 0; rcs hp 0 ray 92 centre 0 skip 0; breach hp 4 ray 1 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0; gun hp 42 ray 36 centre 0 skip 0
+[attach] battle x012 V17_37: skipped 0; rcs hp 0 ray 160 centre 0 skip 0
+[attach] battle x013 V16_37: skipped 0; rcs hp 0 ray 74 centre 0 skip 0
+[attach] battle x014 V18_51: skipped 0; rcs hp 0 ray 70 centre 0 skip 0; breach hp 4 ray 1 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] battle x015 V15_37: skipped 0; rcs hp 0 ray 80 centre 0 skip 0
+[attach] battle x016 V15_37: skipped 0; rcs hp 0 ray 76 centre 0 skip 0
+[attach] battle x017 V14_23: skipped 0; rcs hp 0 ray 82 centre 0 skip 0; breach hp 2 ray 1 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] battle x018 V14_23: skipped 0; rcs hp 0 ray 84 centre 0 skip 0
+[attach] battle x019 V14_23: skipped 0; rcs hp 0 ray 84 centre 0 skip 0
+[attach] battle x020 V14_23: skipped 0; rcs hp 0 ray 76 centre 0 skip 0; breach hp 2 ray 1 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] battle x021 C19_51: skipped 0; rcs hp 0 ray 92 centre 0 skip 0; gun hp 18 ray 9 centre 0 skip 0
+[attach] battle x022 C13s_23: skipped 0; rcs hp 0 ray 130 centre 0 skip 0
+[attach] battle x023 H8_23: skipped 0; rcs hp 0 ray 92 centre 0 skip 0; breach hp 3 ray 0 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0; gun hp 9 ray 27 centre 0 skip 0
+[attach] battle x024 H7_23: skipped 0; rcs hp 0 ray 154 centre 0 skip 0; flare hp 0 ray 1 centre 0 skip 0
+[attach] battle x025 B20_11: skipped 0; rcs hp 0 ray 92 centre 0 skip 0; gun hp 9 ray 18 centre 0 skip 0
+[attach] battle x026 B19_11: skipped 0; rcs hp 0 ray 150 centre 0 skip 0; breach hp 3 ray 0 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] battle x027 I11_37: skipped 0; rcs hp 0 ray 70 centre 0 skip 0; gun hp 0 ray 27 centre 0 skip 0
+[attach] battle x028 I14_23: skipped 0; rcs hp 0 ray 154 centre 0 skip 0
+[attach] battle x029 D21_23: skipped 0; rcs hp 0 ray 88 centre 0 skip 0; breach hp 3 ray 2 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0; gun hp 27 ray 0 centre 0 skip 0
+[attach] battle x030 D20_23: skipped 0; rcs hp 0 ray 154 centre 0 skip 0

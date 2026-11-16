@@ -126,6 +126,47 @@ def plant_split_launchers(s):
     s['mounts'].append(launcher('R2')); s['parts'].append(dict(id='R2', kind='launcher', type='rack'))   # two racks, 1 torp shot
 
 
+def craft(kind):
+    """a squadron craft as data.js fighter (guns T: one three-barrel turret) or bomber (bombs T: one two-tube bomb cassette)"""
+    if kind == 'fighter':
+        weapons = [('guns', 'T')]
+        m = turret('G1', 'guns', 'T', n=3, rest=0.0)
+    else:
+        weapons = [('bombs', 'T')]
+        m = dict(id='BT', weapon='bombs', letter='T', type='bomb_tube', mount='launcher', barrels=2, size=0.2, rest_yaw=0.0,
+                 muzzles=[muz(1.0, 0.1 * i) for i in range(2)], turret=None)
+    stats = {w: gamedata.weapon_stats(w) for w, _ in weapons}
+    parts = [dict(id=m['id'], kind='launcher' if m['mount'] == 'launcher' else 'gun', type=m['type'])]
+    return dict(code=kind.upper(), weapons=weapons, stats=stats, parts=parts, mounts=[m])
+
+
+def plant_craft_bombs_turret(s):
+    m = s['mounts'][0]; lo, hi = WM.ARCS['T']
+    m.update(type='gun', mount='turret', turret=dict(arc_lo=lo, arc_hi=hi, letter='T', under=True))   # bombs shown as a gun turret
+    s['parts'][0].update(kind='gun', type='gun')
+
+
+def plant_craft_guns_casemate(s):
+    m = s['mounts'][0]; m['mount'] = 'casemate'; m['turret'] = None                # the fighter's all-round guns fixed in a casemate
+
+
+def plant_craft_guns_cassette(s):
+    m = s['mounts'][0]; m.update(type='bomb_tube', mount='launcher', turret=None)  # the fighter's guns shown as bomb tubes
+    s['parts'][0].update(kind='launcher', type='bomb_tube')
+
+
+def plant_craft_extra_tube(s):
+    s['parts'].append(dict(id='BX', kind='launcher', type='bomb_tube'))            # a second, silent bomb cassette
+
+
+CRAFT_CASES = [
+    ('KIND', 'bomber', 'a bomber\'s bombs shown as a gun turret', plant_craft_bombs_turret),
+    ('TURRET', 'fighter', 'a fighter\'s all-round guns in a fixed casemate', plant_craft_guns_casemate),
+    ('KIND', 'fighter', 'a fighter\'s guns shown as bomb tubes', plant_craft_guns_cassette),
+    ('EXTRA', 'bomber', 'a second bomb cassette with no slot', plant_craft_extra_tube),
+]
+
+
 CASES = [
     ('EXTRA', 'a decorative gun on no slot', plant_extra),
     ('EXTRA', 'a decorative spore organ on no slot', plant_extra_organ),
@@ -150,6 +191,93 @@ CASES = [
     ('SPLIT', 'two launchers for a one-shot torpedo slot', plant_split_launchers),
 ]
 
+
+def trench(fid, weapon='ion', letter='F'):
+    """the Hegemony ion cannon as the kit builds it: an emitter trench in the bow face, fixed, its muzzle on the lens (issue 759)"""
+    return dict(id=fid, weapon=weapon, letter=letter, type='ion_trench', mount='fixed', barrels=1, size=1.3, rest_yaw=0.0,
+                muzzles=[muz(2.0, 0.0)], turret=None)
+
+
+def clean_heg():
+    """a Hegemony ship as data.js h_boss: hturbo P, hturbo S, turbo T, ion F, flak T (issue 768, hegemony_IM5)"""
+    weapons = [('hturbo', 'P'), ('hturbo', 'S'), ('turbo', 'T'), ('ion', 'F'), ('flak', 'T')]
+    stats = {w: gamedata.weapon_stats(w) for w, _ in weapons}
+    mounts = [turret('HP', 'hturbo', 'P'), turret('HS', 'hturbo', 'S'), turret('T1', 'turbo', 'T'), trench('I1'), turret('F1', 'flak', 'T')]
+    parts = [dict(id=m['id'], kind='spinal' if m['mount'] == 'fixed' else 'gun', type=m['type']) for m in mounts]
+    return dict(code='TESTH', weapons=weapons, stats=stats, parts=parts, mounts=mounts)
+
+
+def plant_ion_turret(s):
+    s['mounts'] = [m for m in s['mounts'] if m['id'] != 'I1'] + [turret('I1', 'ion', 'F', n=1)]
+    s['parts'] = [p for p in s['parts'] if p['id'] != 'I1'] + [dict(id='I1', kind='gun', type='gun')]
+
+
+def plant_hturbo_trench(s):
+    s['mounts'] = [m for m in s['mounts'] if m['id'] != 'HP'] + [trench('HP', 'hturbo', 'P')]
+    m_of(s, 'HP')['rest_yaw'] = 90.0; m_of(s, 'HP')['muzzles'][0]['aim'] = (0.0, 1.0, 0.0)
+    s['parts'] = [p for p in s['parts'] if p['id'] != 'HP'] + [dict(id='HP', kind='spinal', type='ion_trench')]
+
+
+def plant_hturbo_trench_turning(s):
+    m = m_of(s, 'HP'); m['type'] = 'ion_trench'
+    next(p for p in s['parts'] if p['id'] == 'HP')['type'] = 'ion_trench'
+
+
+def plant_ion_turning(s):
+    m = m_of(s, 'I1'); lo, hi = WM.ARCS['F']
+    m['mount'] = 'turret'; m['turret'] = dict(arc_lo=lo, arc_hi=hi, letter='F', under=True)   # the trench itself on a turning mount
+
+
+def plant_turbo_trench(s):
+    s['mounts'] = [m for m in s['mounts'] if m['id'] != 'T1'] + [trench('T1', 'turbo', 'T')]
+    s['parts'] = [p for p in s['parts'] if p['id'] != 'T1'] + [dict(id='T1', kind='spinal', type='ion_trench')]
+
+
+# the Hegemony rows of FITS (issues 759 and 768; Muse opus_check_767 condition 2): each row refuses the wrong build
+HEG_CASES = [
+    ('KIND', 'an ion cannon built as a turning gun turret', plant_ion_turret),
+    ('KIND', 'a heavy plasma lance built as a fixed emitter trench', plant_hturbo_trench),
+    ('KIND', 'a heavy plasma lance trench on a turning mount', plant_hturbo_trench_turning),
+    ('KIND', 'an ion emitter trench on a turning mount', plant_ion_turning),
+    ('KIND', 'a plasma lance built as a fixed emitter trench', plant_turbo_trench),
+]
+
+
+def spinal(fid, weapon='nlance', letter='F'):
+    """the Eclipse null lance as a fixed forward gun: one bore firing over the bow (issue 784; the E14 sheet is issue 782)"""
+    return dict(id=fid, weapon=weapon, letter=letter, type='nullcannon', mount='fixed', barrels=1, size=1.0, rest_yaw=0.0,
+                muzzles=[muz(2.0, 0.0)], turret=None)
+
+
+def clean_flare():
+    """an Eclipse ship as data.js d_jackal after issue 784: one null lance, F, nothing else"""
+    weapons = [('nlance', 'F')]
+    stats = {w: gamedata.weapon_stats(w) for w, _ in weapons}
+    mounts = [spinal('L1')]
+    parts = [dict(id='L1', kind='spinal', type='nullcannon')]
+    return dict(code='TESTE', weapons=weapons, stats=stats, parts=parts, mounts=mounts)
+
+
+def plant_lance_turret(s):
+    s['mounts'] = [turret('L1', 'nlance', 'F', n=1, typ='nullcannon')]
+    s['parts'] = [dict(id='L1', kind='turret', type='nullcannon')]
+
+
+def plant_flare_old_turret(s):
+    s['mounts'].append(turret('T1', 'gauss', 'T', typ='nullcannon'))               # the old aft null cannon left on the ship
+    s['parts'].append(dict(id='T1', kind='turret', type='nullcannon'))
+
+
+def plant_lance_abeam(s):
+    s['mounts'][0]['muzzles'] = [muz(2.0, 0.0, aim=(0.0, 1.0, 0.0))]                # the fixed lance laid along the beam (issue 782)
+
+
+# the Eclipse flare row of FITS (issue 784): the null lance is fixed, and the old turret is no slot any more
+FLARE_CASES = [
+    ('KIND', 'a null lance built on a turning turret', plant_lance_turret),
+    ('COUNT', 'the old aft null cannon turret kept on the flare', plant_flare_old_turret),
+    ('ARC', 'the fixed null lance aimed along the beam', plant_lance_abeam),
+]
 
 def sheet_games():
     """(code, data.js ship id) for every sheet ship design file"""
@@ -179,6 +307,47 @@ def main():
             bad.append(f'{rule} not raised for {what}: got {probs}')
         else:
             print(f'ok   {rule:<6} {what}: {hits[0][:110]}')
+    # squadron craft (issue 769): a clean fighter and bomber pass; each planted craft fault is named by its rule
+    for kind in ('fighter', 'bomber'):
+        probs = WM.check(craft(kind))
+        if probs:
+            bad.append(f'the clean {kind} fails: ' + '; '.join(probs))
+        else:
+            print(f'ok   clean {kind} (data.js {kind}: ' + ('one three-barrel guns turret' if kind == 'fighter' else 'one two-tube bomb cassette') + '): PASS')
+    for rule, kind, what, plant in CRAFT_CASES:
+        s_ = craft(kind); plant(s_)
+        probs = WM.check(s_)
+        hits = [p for p in probs if p.startswith(rule + ' ')]
+        if not hits:
+            bad.append(f'{rule} not raised for {what}: got {probs}')
+        else:
+            print(f'ok   {rule:<6} {what}: {hits[0][:110]}')
+    probs = WM.check(clean_heg())
+    if probs:
+        bad.append('the clean Hegemony ship fails: ' + '; '.join(probs))
+    else:
+        print('ok   clean Hegemony ship (h_boss: two shoulder lances, a bridge lance, the ion trench, a picket turret): PASS')
+    for rule, what, plant in HEG_CASES:
+        s = clean_heg(); plant(s)
+        probs = WM.check(s)
+        hits = [p for p in probs if p.startswith(rule + ' ')]
+        if not hits:
+            bad.append(f'{rule} not raised for {what}: got {probs}')
+        else:
+            print(f'ok   {rule:<6} {what}: {hits[0][:110]}')
+    probs = WM.check(clean_flare())
+    if probs:
+        bad.append('the clean Eclipse flare fails: ' + '; '.join(probs))
+    else:
+        print('ok   clean Eclipse flare (d_jackal: one fixed null lance firing forward): PASS')
+    for rule, what, plant in FLARE_CASES:
+        s = clean_flare(); plant(s)
+        probs = WM.check(s)
+        hits = [p for p in probs if p.startswith(rule + ' ')]
+        if not hits:
+            bad.append(f'{rule} not raised for {what}: got {probs}')
+        else:
+            print(f'ok   {rule:<6} {what}: {hits[0][:110]}')
     # the game's muzzle rotation (fx_hull.gd guns()): 5 shots over 6 muzzles of 3 twin mounts reaches every mount every volley
     v = WM.volleys(['a', 'a', 'b', 'b', 'c', 'c'], 5)
     if len(v) != 6 or any(x != {'a', 'b', 'c'} for x in v):
@@ -201,7 +370,7 @@ def main():
     print(f'ok   table: {len(games)} sheet ships, every data.js weapon has a FITS row and a shot count' if not any('FITS' in b or 'shot' in b for b in bad) else 'FAIL table')
     for b in bad:
         print('  ' + b)
-    print(('FAIL' if bad else 'PASS') + f' weapon match self-test ({len(CASES)} planted faults, {len(games)} sheet ships in the table)')
+    print(('FAIL' if bad else 'PASS') + f' weapon match self-test ({len(CASES) + len(CRAFT_CASES) + len(HEG_CASES) + len(FLARE_CASES)} planted faults, {len(games)} sheet ships in the table)')
     return 1 if bad else 0
 
 

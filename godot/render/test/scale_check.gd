@@ -181,6 +181,8 @@ func _run() -> void:
 			band = "capital"
 		elif c in FXS.DEATH_BIG_CLASSES:
 			band = "cruiser"
+		elif c == "Destroyer":
+			band = "destroyer"   # issue 463: destroyers have their own flash row
 		elif L >= 30.0:
 			band = "capital"
 		elif L >= 18.0:

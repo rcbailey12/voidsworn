@@ -12,6 +12,7 @@
 # args: what goes after "--"; {out} is the output folder (gpu), {repo} the clone root, {fixture} the fixture file; - for none
 headless|campaign/test/arc_hook_test.gd|-|-|story arc hook: arcs off or empty change nothing, test cards pay, flag and end; whole seeded runs, no window
 headless|campaign/test/capstone_mastery_test.gd|-|-|capstone mastery opens at 320, 440 and 600 XP; campaign data only
+headless|campaign/test/cinder_prizes_test.gd|-|-|issue 41 (R78 Q9): captured Hegemony and Eclipse hulls at the Crusade yards from run 3, links ripped out, Crusade prices; gate, stock, price, ripped buy, ripped battle rules
 headless|campaign/test/core_eat_test.gd|-|-|issue 42 (R78 Q15): the Chorus core-eating offer in sector 3, the growth, the lost protocols, refusing, the save round trip and other factions
 headless|campaign/test/core_sync_test.gd|fixture:core_sync_tests.js|{fixture}|core sync announcements match the browser fixtures; its optional second arg (shots) is not used here
 headless|campaign/test/free_exit_test.gd|fixture:free_exit_tests.js|{fixture}|free exits match the live browser at entry, result and map
@@ -38,10 +39,12 @@ headless|rules/test/tree_prompt_test.gd|-|-|issue 529: the you-may yes or no pro
 headless|rules/test/thread_test.gd|step:Rules parity against the browser game|-|run by godot/rules/test/run_parity.sh (threads: s4 and s23)
 headless|story/test/story_test.gd|-|-|story data, career records, battle voice over a real rules battle, story attached to whole campaign runs
 headless|portraits/test/portraits_check.gd|-|-|every admiral and Nemesis gets a face from the portrait index; Eclipse faces change with restoration level, other factions never do
+headless|portraits/test/campaign_face_check.gd|-|-|issue 737: the campaign screen's face hook passes an Eclipse admiral's level 0, 3 and 8 to portraits.face and the picture changes with level; C.ADMIRALS factions match crests/index.json for every admiral, by name
 headless|music/test/music_check.gd|-|-|music player and tracks walk title, map, battle and victory
 headless|audio/test/audio_check.gd|-|-|sound data, real player starts, variants and the separate mutes
 headless|audio/test/salvo_check.gd|-|-|salvo sounds: counts real player starts and keeps the caps
 headless|audio/test/smoke_lifetime_check.gd|-|-|sound and debris lifetimes leave no freed node behind; no ship files needed
+headless|audio/test/sound_weight_check.gd|-|-|issue 771: death bed length from the death beats, tail, sub-bass, core-flash duck, capital near-silence, heavy hit and shield tails, lance and torpedo charge, seeded death pitch, dry guns
 headless|fx/test/attach_check.gd|-|-|issue 370: every attach point (authored, surface ray) lies on the hull within 0.012 of its length; stand-in slab, ring and tower here, every ship file present on the PC; skips counted
 headless|fx/test/damage_surface_check.gd|-|-|R80 damage contracts on box ships: stages, emitters and their caps, marks
 headless|fx/test/death_leap_check.gd|-|-|death sections, tiers, lifetime, cleanup and drift (issue 137)
@@ -67,6 +70,7 @@ headless|scenes/battle/test/movement_flight_check.gd|-|-|issue 505 flown movemen
 headless|ui/campaign/test/map_key_halo_test.gd|-|-|issue 678: the campaign map's Map key and Save and quit carry the dark halo, 4.5 to 1 over any backdrop at 1080 and 1440; the same buttons off the chart are unchanged
 headless|ui/battle/test/battle_log_cap_test.gd|-|-|issue 588: the battle log view keeps the newest 200 entries like the browser, the oldest leave the view only, and the rules log array is untouched
 headless|ui/battle/test/ledger_readability_test.gd|-|-|issue 271: the battle screen orders sheet (E1) at 1080 and 1440: 17 px, Big Shoulders 28, three strengths, 4.5 to 1 over white and black boards, no overlaps, every function reachable, nothing lime
+headless|ui/career/test/career_readability_test.gd|-|-|issue 729: the Career screen's dim BONE3 labels are 4.5 to 1 or better on their card, the panels and the screen behind them at 1080 and 1440, measured like ledger_readability_test.gd
 headless|scenes/battle/test/nose_first_check.gd|-|-|issue 521: a run of two hexes or more is flown nose first on the main engine through battle.gd _glide_steps; ends on the rules hex and facing, passes inside every route hex, a one-hex slide is slower than a burn
 gpu|assets/ships/test/a4_shots.gd|scene:res://assets/ships/test/a4_shots.tscn|--out {out}|in-game ship sheet: needs the built ship files and a window
 gpu|campaign/test/capstone_mastery_shots.gd|-|{out}|campaign screenshots: needs a window
@@ -100,3 +104,4 @@ gpu|fx/test/fx_react_probe.gd|env:PROBE_OUT|-|hit reactions per weapon weight, s
 gpu|fx/test/ship_fire_probe.gd|env:VENT_OUT|-|a recipe ship firing its broadside, guns and gun smoke together (issue 209): needs the GPU and the ship built from its recipe export
 gpu|fx/test/squadron_probe.gd|env:SQUADRON_OUT|-|squadron close, reverse and battle camera evidence: needs the live renderer
 gpu|fx/test/vent_look_probe.gd|env:VENT_OUT|-|muzzle and vent gas recordings (issue 281): needs the GPU and the ship files
+headless|ui/campaign/test/debrief_ledger_test.gd|-|-|issue 805: DB1 receipt reachability, heir gating, real run timeline, read-only drawing, 17 px floor and contrast over black and white at 1080 and 1440

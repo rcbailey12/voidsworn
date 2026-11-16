@@ -45,12 +45,22 @@ FITS = {
     'gsentry': ({'spire'}, {'turret'}),                       # flak: the Eclipse null spire
     'spores': ({'spore'}, {'turret'}),                        # flak: the Chorus spore organ
     'gauss': ({'nullcannon'}, {'turret'}),                    # gauss: the Eclipse null cannon
+    'nlance': ({'nullcannon'}, {'fixed'}),                    # gauss: the Eclipse null lance, the flare's one forward gun, fixed (issue 784, R256)
     'doom': ({'corona_arc'}, {'fixed'}),                      # lance: the Eclipse corona arc projector, spinal
     'torp': ({'rack', 'bow_launcher'}, {'launcher'}),         # torp: a rocket rack or a bow launcher
     'htorp': ({'rack', 'bow_launcher'}, {'launcher'}),        # torp
     'bioplasma': ({'throat'}, {'fixed'}),                     # bio: the Chorus throat, fixed forward
+    'hturbo': ({'gun'}, {'turret', 'casemate'}),              # battery: the Hegemony heavy plasma lance (issue 759: low shoulder turrets)
+    'ion': ({'ion_trench'}, {'fixed'}),                       # lance: the Hegemony ion cannon, an emitter trench in the bow face (R183 (1))
+    'turbo': ({'gun'}, {'turret', 'casemate'}),               # battery: the Hegemony plasma lance (issue 768: the Iron Mandate's bridge turret)
     'tendril': ({'tendril', 'mane'}, {'turret', 'fixed'}),    # bio: a tendril crown turns; the mane is a fixed organ
+    # squadron craft (issue 769, R253: own fighter and bomber models per faction; data.js fighter and bomber, both arc T)
+    'guns': ({'gun'}, {'turret'}),                            # sq: a fighter's interceptor guns turn on a traverse ring
+    'bombs': ({'bomb_tube'}, {'launcher'}),                   # sq: a bomber's bomb tubes, fixed forward in the bow cassette
 }
+# Why a fixed bomb cassette may show an all-round (T) weapon: a craft is not a ship that keeps its heading while its guns turn;
+# the whole craft turns onto its target on a strafing run (godot/fx/fx_weapons.gd, look 'bombs'), so the tubes point where the
+# craft flies. The table allows it for 'bombs' only, and only on a launcher (the Board's reading of rule 11 for craft, issue 769).
 
 
 def tie_tol(radius):

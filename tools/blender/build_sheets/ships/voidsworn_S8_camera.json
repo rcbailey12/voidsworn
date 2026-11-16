@@ -1,0 +1,21 @@
+{
+ "az": 205.65026149240234,
+ "el": 35.62735559400008,
+ "roll": 36.7058305776132,
+ "dist": 57.49952996122622,
+ "mm": 98.29363635626784,
+ "target": [
+  0.0,
+  0.0,
+  0.0
+ ],
+ "sx": 0.06711707891491349,
+ "sy": 0.11146268164533166,
+ "res": [
+  1536,
+  1024
+ ],
+ "iou": 0.8617,
+ "body_iou": 0.8772,
+ "note": "S8 beauty: view angles from a coarse grid over azimuth, elevation and roll (the blockout outline scaled onto the mask's box), then fit.py refined all seven camera numbers (never the ship); concept mask: edges (Sobel over 28) or luminance 25 over the blurred picture, closed 15 px, holes filled, largest shape (the escort left out; the picture's background glow top left kept out by the edge test)"
+}

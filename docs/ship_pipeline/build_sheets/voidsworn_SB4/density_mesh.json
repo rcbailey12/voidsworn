@@ -1,0 +1,39 @@
+{
+ "types": {
+  "hull": {
+   "triangles": 13044,
+   "area": 4.0069,
+   "tris_per_unit2": 3255.4,
+   "edges_per_unit2": 3800.4
+  },
+  "launcher": {
+   "triangles": 1268,
+   "area": 0.87291,
+   "tris_per_unit2": 1452.6,
+   "edges_per_unit2": 1161.6,
+   "tris_per_unit2_vs_hull": 0.45,
+   "edges_per_unit2_vs_hull": 0.31
+  },
+  "engine": {
+   "triangles": 5424,
+   "area": 0.44715,
+   "tris_per_unit2": 12130.2,
+   "edges_per_unit2": 4687.5,
+   "tris_per_unit2_vs_hull": 3.73,
+   "edges_per_unit2_vs_hull": 1.23
+  },
+  "vent": {
+   "triangles": 424,
+   "area": 0.08982,
+   "tris_per_unit2": 4720.7,
+   "edges_per_unit2": 4275.4,
+   "tris_per_unit2_vs_hull": 1.45,
+   "edges_per_unit2_vs_hull": 1.12
+  }
+ },
+ "flags": [
+  "launcher: tris_per_unit2 0.45 of the hull",
+  "launcher: edges_per_unit2 0.31 of the hull"
+ ],
+ "rule": "R224: a part type more than 25 percent under the hull is flagged (mesh half; the paint half runs at stage 5)"
+}

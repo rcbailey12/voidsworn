@@ -14,7 +14,7 @@ func _check(ok: bool, message: String) -> void:
 		failures += 1
 		push_error(message)
 
-func _ship(world: Node3D, fx, cls: String, size: float, flagship := false):
+func _ship(world: Node3D, fx, cls: String, size: float, flagship := false, sid := "T"):
 	var r := Node3D.new()
 	world.add_child(r)
 	var mi := MeshInstance3D.new()
@@ -29,8 +29,8 @@ func _ship(world: Node3D, fx, cls: String, size: float, flagship := false):
 	mat.emission = Color(0.2, 0.4, 0.8)
 	mi.material_override = mat
 	r.add_child(mi)
-	fx.add_ship("T", r, {"faction": "voidsworn", "cls": cls, "size": size, "flagship": flagship, "meshes": [mi]})
-	return fx.ship("T")
+	fx.add_ship(sid, r, {"faction": "voidsworn", "cls": cls, "size": size, "flagship": flagship, "meshes": [mi]})
+	return fx.ship(sid)
 
 # Issue 484 (owner, Nov 11: "straight lines and even halves"): a big death's wreck is blown apart, not sliced. Fails
 # when the main pieces are near-equal, the bite of hull where the core went off is missing, or the break is one straight
@@ -85,7 +85,7 @@ func _advance(fx, seconds: float) -> void:
 		await process_frame
 
 func _run() -> void:
-	for spec in [["Frigate", 1.5, false, false], ["Destroyer", 1.5, false, false],
+	for spec in [["Frigate", 1.5, false, false], ["Escort", 0.5, false, false], ["Destroyer", 1.5, false, false],
 		["Cruiser", 0.4, false, true], ["Destroyer", 0.4, true, true], ["Battleship", 1.0, false, true], ["Squadron", 0.1, false, false]]:
 		for calm in [false, true]:
 			var world := Node3D.new()
@@ -94,6 +94,7 @@ func _run() -> void:
 			world.add_child(fx)
 			fx.manual = true
 			fx.setup({"quality": "high", "reduce_flashing": calm, "shake": 0.0})
+			fx.check_radius = true
 			# Issue 504: the beats are staged on bright-flash requests (flash_area_log); the safety checks (zero counted in
 			# calm mode, never more than three counted in a rolling second) stay on flash_log, the counted flashes.
 			fx.flash_area_logging = true
@@ -103,17 +104,39 @@ func _run() -> void:
 			await _advance(fx, 0.7)
 			var root_pose: Transform3D = s.root.transform
 			var mesh_pose: Transform3D = s.meshes[0].transform
-			var duration: float = fx.death("T", "big")
+			# The small jet starts on the killing frame, so measure requests before death().
 			var before: int = fx.flash_log.size()
 			var before_req: int = fx.flash_area_log.size()
+			var duration: float = fx.death("T", "big")
+			if s.squadron:
+				_check(duration > 0.0 and duration <= 0.25, "a wing dies as a brief spark")
+				_check(s.has_meta("death_hidden"), "a wing disappears on its spark")
+				await _advance(fx, 1.0 / 60.0)
+				var sparks := 0
+				for node in fx.get_children():
+					if node is MeshInstance3D and node.get_meta("fx_picture_kind", "") == "flash":
+						sparks += 1
+						var mat: ShaderMaterial = node.material_override
+						_check(float(mat.get_shader_parameter("min_pixels")) < 40.0, "wing spark uses the sub-40 px row")
+						_check(float(mat.get_shader_parameter("lifetime")) <= (0.70 if calm else 1.0 / 60.0), "wing flash keeps its one-frame normal life and softened twin")
+				_check(sparks == 1, "a wing emits one spark")
+				await _advance(fx, 0.4)
+				_check(fx.dstate.wrecks.is_empty() and fx.dstate.debris.is_empty(), "a wing has no wreck or physical debris")
+				_check(fx.stray_spawns().is_empty(), "a wing spark and puff start on a craft")
+				_check(fx._pauses.is_empty() and fx._death_slow_left == 0.0, "wing deaths never hold the battle")
+				print("DESTRUCTION_STAGE wing calm=%s duration=%.3f wrecks=0" % [calm, duration])
+				fx.release()
+				world.queue_free()
+				await process_frame
+				continue
 			# issue 462: a capital's tell runs to 2.0 s, so its death is longer (deaths_and_hits.md rule 3)
-			_check(duration >= 1.0 and duration < (2.8 if s.death_tier == "capital" else 2.1), "bounded staged death duration")
+			_check(duration >= (1.0 if s.death_big else 0.72) and duration < (2.8 if s.death_tier == "capital" else (2.1 if s.death_big else 1.0)), "bounded staged death duration")
 			await _advance(fx, 0.36)
 			_check(s.meshes[0].visible, "hull remains through power-down/death spin")
 			_check(s._eng_cur < 0.02, "engines extinguish before split")
 			for m in s.get_meta("death_power", []):
 				_check(float(m.get_shader_parameter("fx_power")) < 0.01, "running-light emission extinguishes")
-			# a big hull's vent waits for its first chain blast (one counted flash at 0.46 to 0.5 s); a small hull vents at 0.12
+			# A big hull waits for its first chain blast; a small hull vents on the kill frame.
 			_check(fx.flash_log.size() - before == 0 if calm else fx.flash_area_log.size() - before_req == (0 if s.death_big else 1), "one vent ignition before the split, none counted in calm mode")
 			if s.death_big:
 				_check(s._eng_cur < 0.02 and s.has_meta("death_flare_until"), "the drive flared once and is black by 0.36 s")
@@ -144,6 +167,7 @@ func _run() -> void:
 			else:
 				await _advance(fx, 0.55)
 				_check(fx.flash_log.size() - before == 0 if calm else fx.flash_area_log.size() - before_req >= 2, "vent and core flash sequence")
+				_check(s.get_meta("death_timeline").tier == ("destroyer" if spec[0] == "Destroyer" else "small"), "small hulls use their class row even at an oversized draw scale")
 			var warm := {}
 			for wreck in fx.dstate.wrecks:
 				for mat in wreck.mats: warm[mat] = float(mat.get_shader_parameter("heat"))
@@ -176,6 +200,7 @@ func _run() -> void:
 				_check(calm or late >= 2, "secondaries flash on the pieces after the core")
 				_check_blown_apart(s, w, capital)
 			var flashes: int = fx.flash_log.size() - before
+			_check(fx.stray_spawns().is_empty(), "death pictures start on the hull or their drifting piece")
 			_check(flashes == 0 if calm else fx.flash_area_log.size() - before_req >= 1, "calm has zero flashes; normal keeps its core")
 			for a in fx.flash_log:
 				var in_second := 0
@@ -184,6 +209,9 @@ func _run() -> void:
 				_check(in_second <= 3, "secondary explosions respect the rolling flash limit")
 			if s.weight > 0:
 				_check(not w["nodes"].is_empty(), "small ship retains a tumbling hull chunk")
+				if not s.death_big:
+					_check(w["nodes"].size() >= 2 and w["nodes"].size() <= 4, "small hull throws two to four chunks")
+					_check(w["mats"].size() == (0 if fx.quality == "low" else 1), "one small chunk keeps glowing coals")
 				for m in w["mats"]:
 					_check(float(m.get_shader_parameter("heat")) < float(warm.get(m, 1.0)), "wreck ember cools from its own release time")
 				for f in w["fires"]:
@@ -200,6 +228,29 @@ func _run() -> void:
 			fx.release()
 			world.queue_free()
 			await process_frame
+	# A mass wing loss stays tiny and leaves no lingering ship effects, in either comfort setting.
+	for calm in [false, true]:
+		var world := Node3D.new()
+		root.add_child(world)
+		var fx = FX.new()
+		world.add_child(fx)
+		fx.manual = true
+		fx.setup({"quality": "high", "reduce_flashing": calm})
+		for i in 20:
+			_ship(world, fx, "Squadron", 0.1, false, "wing%d" % i)
+		for id in fx.ships: fx.death(id, "blast")
+		fx.step(1.0 / 60.0)
+		for node in fx.get_children():
+			if node is MeshInstance3D and node.has_meta("fx_picture_kind"):
+				var mat: ShaderMaterial = node.material_override
+				_check(float(mat.get_shader_parameter("min_pixels")) < 40.0, "twenty wing sparks keep the sub-40 px row")
+		await _advance(fx, 0.5)
+		_check(fx.dstate.wrecks.is_empty() and fx.dstate.debris.is_empty(), "twenty wings leave no wrecks or debris")
+		_check(fx.flash_log.size() <= 3 and (not calm or fx.flash_log.is_empty()), "mass wing loss respects the flash counter")
+		print("DESTRUCTION_WINGS count=20 calm=%s wrecks=0 flashes=%d" % [calm, fx.flash_log.size()])
+		fx.release()
+		world.queue_free()
+		await process_frame
 	# The whole hulk is independent of the original root and has exactly one gas
 	# emitter, no lights/fire/core, bounded drift, and the same wreck cleanup.
 	for quality in ["high", "low"]:

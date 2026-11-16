@@ -1,0 +1,22 @@
+{
+ "code": "deathless_E13",
+ "result": "PASS",
+ "problems": [],
+ "slots": [
+  {
+   "slot": 0,
+   "weapon": "gauss",
+   "arc": "T",
+   "shots": 3,
+   "mounts": [
+    {
+     "id": "T1",
+     "type": "nullcannon",
+     "mount": "turret",
+     "barrels": 2,
+     "muzzles": 2
+    }
+   ]
+  }
+ ]
+}

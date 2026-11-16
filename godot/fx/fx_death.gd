@@ -3,7 +3,7 @@ extends RefCounted
 # holes, bent plates, venting plumes, debris bodies). Static functions; the state lives in fx.dstate.
 #
 # Four death beats: power loss, directional vent, staged cuts, drift and cooling.
-# Mantaflow flipbooks replace fire volumes. Small hulls have a short pop, no ribbon.
+# Mantaflow flipbooks replace fire volumes. Small hulls spin with a short hot trail before their pop; wings leave only a spark and puff.
 # Triangle buckets and recessed boundary caps are prepared on a worker before death;
 # the wrecks drift, tumble and cool. No worker wait blocks a death frame.
 
@@ -21,7 +21,7 @@ const WRECK_COOL := 14.0
 # A cruiser: the tell to 1.38 (lights die, engines flare and go black, a tear opens from the hit side with three chain
 # blasts walking along it), the break at 1.38, the core flash 0.28 later at the torn face, then ten secondaries on the
 # two halves and cooling faces. A capital: the tell to 2.0 with five chain blasts and a shudder, three pieces, a bigger
-# core, ten secondaries and 14 s of coals. Small hulls keep their short pop (issue 366c).
+# core, ten secondaries and 14 s of coals. Small hulls pop at 0.72 s and cool one chunk for six seconds (issue 463).
 class DeathTimeline:
 	var vent: float
 	var cut: float
@@ -39,12 +39,13 @@ class DeathTimeline:
 	var sec_to := 0.0
 	var cool := 14.0          # how long the torn faces take to go dark
 	func _init(big: bool, cut_count: int, tier_name := "", cause := "blast") -> void:
-		tier = tier_name if big else ""
+		tier = tier_name
 		cuts = cut_count if big else 1
 		if not big:
-			vent = 0.12
-			cut = 0.55
-			end = 1.15
+			vent = 0.0
+			cut = 0.72
+			end = 0.96
+			cool = 6.0
 			spacing = 0.0
 		elif tier == "capital":
 			vent = 0.46
@@ -84,7 +85,7 @@ const ATLAS_DIR := "res://fx/atlases/death/"
 # the world extent lets them grow naturally as the player zooms in.
 const STAGING_UNITS_PER_PIXEL := 2.0 * 170.0 * tan(PI / 8.0) / 1080.0
 # The one scale table's death core flash (issue 710, R247; docs/playbooks/scale.md), pixels at the staging camera.
-const CORE_FLASH_PX := {"small": 216.0, "cruiser": 302.0, "capital": 423.0}
+const CORE_FLASH_PX := {"small": 216.0, "destroyer": 255.0, "cruiser": 302.0, "capital": 423.0}
 
 # Issue 354: where the visible gas starts inside the baked vent picture. Measured on today's pictures
 # (godot/fx/atlases/death/{small,cruiser,capital}/vent_color.png): in frame 0 the gas runs down to row 0.90 of the crop,
@@ -267,12 +268,12 @@ static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life
 	mi.mesh = quad
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	mi.extra_cull_margin = size * 3.0 + velocity.length() * life
-	var m := flipbook_material(fx, kind, band)
+	var m := flipbook_material(fx, kind, "small" if band == "destroyer" else band)
 	if staged:
 		# Issue 461 (carried from issue 484, Board comment on 507): the core flash always uses the lopsided baked seed
 		# (s0), turned at random. Two of the three seeds are the round "flower" of equal puffs, which read as a ring of
 		# identical puffs at about 2.3 s on a capital death ("a little too even and weird", Ryan, Nov 11).
-		m = route_material(fx, SH.DEATH_FLIPBOOK, "death/" + band + "/flash_", true, 0)
+		m = route_material(fx, SH.DEATH_FLIPBOOK, "death/" + ("small" if band == "destroyer" else band) + "/flash_", true, 0)
 		m.set_shader_parameter("pic_spin", fx.rng.randf() * TAU)
 		m.set_shader_parameter("size_divisor", 0.80)
 		mi.extra_cull_margin = 100.0
@@ -618,6 +619,7 @@ static func seeds_for(s, cause: String, r: RandomNumberGenerator) -> PackedVecto
 		n = mini(n + 1, 7)
 	if cause == "melt" or cause == "dark":
 		n = maxi(2, n - 1)
+	if not s.death_big and s.faction != "chorus": n = clampi(n, 2, 4)
 	var out = PackedVector3Array()
 	if cause == "cut":
 		var count: int = int(s.get_meta("death_cut_count", 2)) + 1
@@ -1887,10 +1889,14 @@ static func _death_inner(fx, s, cause: String) -> float:
 	if s.has_meta("collider"):
 		var cb: Node = s.get_meta("collider")
 		if is_instance_valid(cb): cb.queue_free()
+	if s.squadron:
+		return _wing_death(fx, s)
 	var tint := Color(0.95, 0.34, 0.08) if cause != "melt" else Color(0.55, 0.65, 0.12)
 	_power_down(fx, s)
 	s.set_meta("death_start", T)
+	s.set_meta("death_hull_motion", s.hull_motion())
 	s.engine_level = 0.0
+	if not s.death_big: s._eng_cur = 0.0
 	if s.death_big:
 		# The tell starts inside the ship: the drive flares about a third brighter for two frames, then goes black.
 		s._eng_cur = maxf(s._eng_cur, 1.0) * 1.33
@@ -1933,15 +1939,64 @@ static func _death_inner(fx, s, cause: String) -> float:
 		axis = lines[0][1]
 	if s.death_big:
 		_tell(fx, s, T, timeline, cause, seeds, lines)
-	else:
-		_cracks(fx, s, T + 0.06, timeline.vent + 0.10, Color(0.62, 0.73, 0.91), at, axis)
-	var hit: Dictionary = s.hull.ray(at + Vector3.UP * s.hull.L, Vector3.DOWN)
+	var hit: Dictionary = s.hull.ray(at + Vector3.UP * s.hull.L, Vector3.DOWN) if s.death_big else _small_hit(fx, s)
 	var lp: Vector3 = hit.get("p", at)
 	var ln: Vector3 = hit.get("n", Vector3.UP)
 	s.set_meta("death_tear", [lp, ln])
 	fx.later(T + timeline.vent, func l_split_vent() -> void: _split_vent(fx, s, lp, ln))
 	fx.later(T + timeline.cut, func l_break_up() -> void: _break_up_when_ready(fx, s, cause, tint, T + timeline.end))
 	return timeline.end
+
+
+# Issue 463: all small-death starts are real surface points, including a wing formation's gaps.
+static func _small_hit(fx, s) -> Dictionary:
+	var last: Array = s.get_meta("last_hit", [])
+	if last.size() >= 3 and fx.now - float(last[2]) < 2.0:
+		var dir: Vector3 = (last[1] as Vector3).normalized()
+		var hit: Dictionary = s.hull.ray((last[0] as Vector3) - dir * s.hull.L, dir)
+		if not hit.is_empty(): return hit
+	return s.hull.surface_sample(-1, 2.0, "death")
+
+
+static func _wing_death(fx, s) -> float:
+	var hit := _small_hit(fx, s)
+	s.engine_level = 0.0
+	s._eng_cur = 0.0
+	s.set_meta("death_split", fx.now)
+	if not hit.is_empty():
+		var p: Vector3 = s.to_world(hit["p"])
+		# Birth on the next FX step: a one-frame picture born between steps could expire before its first draw.
+		fx.later(fx.now + 0.000001, _wing_spark.bind(fx, s, p, s.xf()))
+	_hide_ship(s)
+	return 1.0 / 60.0
+
+
+static func _wing_spark(fx, s, p: Vector3, frame: Transform3D) -> void:
+	var soft: bool = fx.reduce_flashing or not fx.flash_at(p, fx.now, 28.0 * STAGING_UNITS_PER_PIXEL, 28.0, 1.0 / 60.0)
+	_pic(fx, s, p, "weapons/impact/flash_", 28.0, 0.20 if soft else 1.0 / 60.0, 3.2, 1.25 if soft else 5.2, soft, "flash", frame, Vector3.ZERO, {"seed": 0})
+	fx.later(fx.now + 1.0 / 60.0, _smoke_one.bind(fx, s, p, 24.0, 0.22, frame, Vector3.ZERO, {"seed": 0}))
+
+
+# Samples leave the spinning hit point in world space. Each new normal turns with the hull, curling the trail.
+# Flame ends before 0.70 s from the hit; the final samples are dark gas. No trail pulse bypasses the flash counter.
+static func _small_pose(s, motion: Transform3D) -> Transform3D:
+	# The meshes already carry the spin. Apply it once to the analysis frame, never again through s.xf().
+	return s.root.global_transform * motion * s.get_meta("death_hull_motion", Transform3D.IDENTITY)
+
+
+static func _small_trail(fx, s, age: float, motion: Transform3D) -> void:
+	if fx.quality == "low" or age >= 0.70 or age < float(s.get_meta("death_trail_next", 0.10)): return
+	s.set_meta("death_trail_next", age + 0.10)
+	var site: Array = s.get_meta("death_tear", [])
+	if site.size() != 2: return
+	var pose := _small_pose(s, motion)
+	var p: Vector3 = pose * (site[0] as Vector3)
+	var n: Vector3 = (pose.basis * (site[1] as Vector3)).normalized()
+	var vel: Vector3 = s.get_meta("death_velocity", Vector3.ZERO) + n * s.hull.L * 0.35
+	if age < 0.45:
+		_pic(fx, s, p, "weapons/impact/impact_", 44.0, minf(0.30, 0.70 - age), 0.8, 1.0, false, "impact", pose, vel, {"seed": 0, "spin": age * 4.0, "shape": Vector2(0.65, 1.3)})
+	else:
+		flipbook(fx, p, n, s.hull.L * 0.25, "cool", 0.50, vel, 0.4, "small", s, false, false, pose)
 
 
 # Death-only variation of the existing surface adapter. No R80 surface state changes.
@@ -2046,6 +2101,9 @@ static func _power_surface(s, mi: MeshInstance3D, i: int, pose: Transform3D) -> 
 		mat.set_shader_parameter("death_steps", Vector3(4.0, 0.06, 0.12))
 	else:
 		mat.set_shader_parameter("death_span", Vector2(box.position.x, s.hull.L))
+		mat.set_shader_parameter("death_steps", Vector3(1.0, 0.0, 0.001))
+		mat.set_shader_parameter("death_age", 1.0)
+		mat.set_shader_parameter("fx_power", 0.0)
 	return mat
 
 
@@ -2062,14 +2120,14 @@ static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
 		var pose_b: Transform3D = s.xf() * s.get_meta("death_motion", Transform3D.IDENTITY)
 		tear_particles(fx, pose_b * (hit["p"] as Vector3), (pose_b.basis * (hit["n"] as Vector3)).normalized(), s.hull.L, s.get_meta("death_velocity", Vector3.ZERO), true)
 		return
-	var pose: Transform3D = s.xf() * s.get_meta("death_motion", Transform3D.IDENTITY)
+	var pose: Transform3D = _small_pose(s, s.get_meta("death_motion", Transform3D.IDENTITY))
 	var p: Vector3 = pose * (hit["p"] as Vector3)
 	var n: Vector3 = (pose.basis * (hit["n"] as Vector3)).normalized()
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
 	var jet := flipbook(fx, p, n, s.hull.L * (0.35 if s.death_big else 0.85), "vent", 0.65 if s.death_big else 0.30, inherited + n * s.hull.L * 0.12, 1.3, atlas_band(s.hull.L), s, true)
 	# The ignition and its light share one booking. Calm mode keeps dark gas. On a big hull the vent opens 0.04 s
 	# before the first chain blast, so the two are one counted flash (FLASH_WINDOW).
-	if fx.flash_ok(fx.now):
+	if fx.flash_at(p, fx.now, s.hull.L * 0.85, 44.0, 0.10):
 		(jet.material_override as ShaderMaterial).set_shader_parameter("ignition", 1.0)
 		fx.light(p, fx.now, 0.10, 5.0, Color(0.7, 0.81, 1.0), 0)
 	tear_particles(fx, p, n, s.hull.L, inherited)
@@ -2081,8 +2139,8 @@ static func _update_dying(fx, s) -> void:
 	var mats: Array = s.get_meta("death_power", [])
 	for i in mats.size():
 		var delay := float(i % 3) * 0.055
-		(mats[i] as ShaderMaterial).set_shader_parameter("fx_power", 1.0 - smoothstep(delay, delay + 0.18, age))
-		(mats[i] as ShaderMaterial).set_shader_parameter("death_age", age)
+		(mats[i] as ShaderMaterial).set_shader_parameter("fx_power", 1.0 - smoothstep(delay, delay + 0.18, age) if s.death_big else 0.0)
+		(mats[i] as ShaderMaterial).set_shader_parameter("death_age", age if s.death_big else 1.0)
 	if bool(s.get_meta("death_organic", false)):
 		if fx.now >= float(s.get_meta("death_spore_next", INF)):
 			s.set_meta("death_spore_next", fx.now + 0.06)
@@ -2092,7 +2150,7 @@ static func _update_dying(fx, s) -> void:
 		return
 	if bool(s.get_meta("death_hulk", false)): return
 	var velocity: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
-	var rot := Basis.IDENTITY if s.death_big else Basis.from_euler(Vector3(age * 0.22, age * 0.12, age * 0.18))
+	var rot := Basis.IDENTITY if s.death_big else Basis.from_euler(Vector3(age * 0.65, age * 0.38, age * 0.54))
 	var motion := Transform3D(rot, s.root.global_basis.inverse() * velocity * age + s.hull.c - rot * s.hull.c)
 	if s.death_tier == "capital":
 		# The capital's hull shudders through its tell (the ship itself, never the camera), harder after each blast.
@@ -2102,6 +2160,7 @@ static func _update_dying(fx, s) -> void:
 			var amp: float = s.hull.L * (0.0016 * smoothstep(0.2, 1.8, age) + 0.0035 * jolt)
 			motion.origin += Vector3(sin(age * 57.0), sin(age * 71.0 + 1.3) * 0.5, sin(age * 63.0 + 2.1)) * amp
 	s.set_meta("death_motion", motion)
+	if not s.death_big: _small_trail(fx, s, age, motion)
 	for pose in s.get_meta("death_poses", []):
 		if is_instance_valid(pose["mi"]): (pose["mi"] as Node3D).global_transform = s.root.global_transform * motion * (pose["pose"] as Transform3D)
 
@@ -2579,7 +2638,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 	var plan: Dictionary = job.get("plan", {})
 	var n_main: int = int(plan["n_main"]) if not plan.is_empty() else pieces.size()
 	n_main = mini(n_main, pieces.size())
-	var xf: Transform3D = s.xf() * s.get_meta("death_motion", Transform3D.IDENTITY)
+	var xf: Transform3D = s.xf() * s.get_meta("death_motion", Transform3D.IDENTITY) if s.death_big else _small_pose(s, s.get_meta("death_motion", Transform3D.IDENTITY))
 	center = xf * h.c
 	_hide_ship(s)
 	var R: float = h.L * 0.16
@@ -2647,7 +2706,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		node.set_meta("piece_cen", cen)
 		if s.death_big and not organic:
 			node.set_meta("sec_sites", pc["sec_sites"] if pc.has("sec_sites") else _piece_sites(h, seeds, cen, 5, plan, i))
-		wreck["scorch_mats"].append_array(pc.get("hull_mats", []))
+		if s.death_big or is_main: wreck["scorch_mats"].append_array(pc.get("hull_mats", []))
 		if not plan.is_empty() and not (plan["breaks"] as Array).is_empty():
 			# issue 484: the seam this piece's torn face belongs to (the bite's break where it has one)
 			var brs: Array = plan["breaks"]
@@ -2668,8 +2727,8 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		if pc.has("cap_mat"):
 			(pc["cap_mat"] as ShaderMaterial).set_shader_parameter("heat", 0.0)
 			# Issue 462: a big hull's torn face shows its decks glowing, not only the rim.
-			(pc["cap_mat"] as ShaderMaterial).set_shader_parameter("face_glow", 1.0 if s.death_big and not organic else 0.0)
-			if fx.quality != "low" and not organic: piece_mats.append(pc["cap_mat"])
+			(pc["cap_mat"] as ShaderMaterial).set_shader_parameter("face_glow", 1.0 if not organic and (s.death_big or is_main) else 0.0)
+			if fx.quality != "low" and not organic and (s.death_big or is_main): piece_mats.append(pc["cap_mat"])
 		wreck["mats"].append_array(piece_mats)
 		wreck["nodes"].append(node)
 		var face_view := Vector3(0, 1, 1).normalized()
@@ -2716,7 +2775,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 			for site in sites:
 				_organic_spill(fx, node.to_global(site), h.L * 0.35, tint)
 
-	if s.death_big and not organic and s.has_meta("death_timeline"):
+	if not organic and s.has_meta("death_timeline"):
 		wreck["cool"] = (s.get_meta("death_timeline") as DeathTimeline).cool
 	fx.dstate["wrecks"].append(wreck)
 	_cap_wrecks(fx)
@@ -2747,9 +2806,14 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 	if not wreck["nodes"].is_empty():
 		var lip: Node3D = wreck["nodes"][0]
 		flash_site = lip.to_global(lip.get_meta("tear_site", Vector3.ZERO))
-	_core_flash(fx, flash_site, R, 70.0, tint, null, Vector3.ZERO, s)
+	_core_flash(fx, flash_site, R, 70.0, tint, null, Vector3.ZERO, s, s.death_tier, xf)
+	# The pop is light first, then a short body. The 384 px cells cover both small rows without a rebake.
+	var body_px := 218.0 if s.death_tier == "destroyer" else 180.0
+	fx.later(T + 0.12, _smoke_one.bind(fx, s, flash_site, body_px, 1.0, xf, inherited * 0.5, {"seed": 0}))
 	if pieces.is_empty():
-		# Craft have no pre-cut job. Keep one pooled physical shard plus a visible ember.
+		# Restored by the Board (Muse opus_check_701 condition 1): a hull with no pre-cut pieces at the kill frame (a class
+		# without buckets, or a cut job not ready) still throws one pooled physical shard and a visible ember, never light
+		# and smoke alone.
 		spawn_debris(fx, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3))
 		fx.spr(center, T, 5.0, tint, 1.2, R * 0.3, R * 0.05, 19, xf.basis.x * 2.0, 0.25, 0.0, 0.0, 12.0)
 
@@ -2834,7 +2898,7 @@ static func _organic_spill(fx, p: Vector3, L: float, tint: Color) -> void:
 
 
 # Issue 461: how far a death's core flash lights the hulls round it (world units; hexes are 17.3 across).
-const CORE_LIGHT_REACH := {"small": 26.0, "cruiser": 35.0, "capital": 52.0}
+const CORE_LIGHT_REACH := {"small": 26.0, "destroyer": 30.0, "cruiser": 35.0, "capital": 52.0}
 
 
 static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: Node3D = null, local_p := Vector3.ZERO, src = null, band_override := "", frame = null) -> void:
@@ -2844,9 +2908,10 @@ static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: 
 	# (band_override), whatever its drawn length.
 	var staged: bool = px >= 70.0 and (src == null or not src.squadron)
 	var band := atlas_band(float(src.hull.L) if src != null else R / 0.16)
+	if src != null and not src.squadron: band = src.death_tier
 	if band_override != "": band = band_override
 	# Pixel targets, normal/soft life, then normal/soft size calibration including the battle look's bloom.
-	var row: Array = {"small": [CORE_FLASH_PX["small"], 0.18, 0.55, 2.45, 0.96], "cruiser": [CORE_FLASH_PX["cruiser"], 0.20, 0.60, 1.97, 0.96], "capital": [CORE_FLASH_PX["capital"], 0.22, 0.65, 1.37, 0.96]}[band]
+	var row: Array = {"small": [CORE_FLASH_PX["small"], 0.18, 0.55, 2.45, 0.884], "destroyer": [CORE_FLASH_PX["destroyer"], 0.19, 0.575, 2.31, 0.9175], "cruiser": [CORE_FLASH_PX["cruiser"], 0.20, 0.60, 1.97, 0.96], "capital": [CORE_FLASH_PX["capital"], 0.22, 0.65, 1.37, 0.96]}[band]
 	if staged: px = float(row[0])
 	var allowed: bool = fx.flash_ok(fx.now, p, px * STAGING_UNITS_PER_PIXEL if staged else R * 3.0, px, float(row[1]))
 	if staged:
@@ -2886,6 +2951,9 @@ static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, 
 	if wreck.get("organic", false): return
 	if fx.quality != "low":
 		flipbook(fx, node.to_global(node.get_meta("tear_site", Vector3.ZERO)), vel.normalized(), L * (0.35 if big else 0.5), "cool", 1.1, vel * 0.65, 0.4 if big else 0.7, atlas_band(L), src)
+	if not big and src != null and fx.quality != "low":
+		var p: Vector3 = node.to_global(node.get_meta("tear_site", Vector3.ZERO))
+		fx.stk(p, fx.now, 0.65, Color(1.0, 0.62, 0.30), 4.0, 0.05, 0.08, 1, vel + fx.rdir() * L * 0.55, 0.8, 0.0, 2.0, 8.0)
 	# Big hulls' secondaries are scheduled once per kill (_schedule_secondaries), never a per-piece fire loop.
 
 

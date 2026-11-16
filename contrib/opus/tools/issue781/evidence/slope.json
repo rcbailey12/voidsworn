@@ -1,0 +1,16 @@
+{
+ "note": "issue 781 sandbox, Blender 5.3 bpy CPU, 1024 maps, 6 bake samples, 16 render samples; S8 as on main 608fe532d",
+ "albedo_ratio_iron_step_060_over_main": {
+  "clean_plate_texels_hull": {"edge_under": 0.02, "ao_over": 0.9, "median": 1.392, "p10_p90": [1.19, 1.60]},
+  "clean_plate_texels_parts": {"edge_under": 0.02, "ao_over": 0.9, "median": 1.318, "p10_p90": [1.17, 1.60]},
+  "all_hull_texels_median": 1.09,
+  "all_parts_texels_median": 1.14,
+  "why": "the plates take the step (1.3 to 1.4 in linear), but edge wear, scuffs and rivet heads mix toward the fixed wear tone, which does not move, so the whole map moves about 1.1"
+ },
+ "battle_percentiles_p10_p25_p50_p75_p90": {
+  "main": [12.3, 17.0, 27.0, 52.0, 72.7],
+  "iron_step_060": [13.7, 19.0, 28.7, 54.0, 78.0],
+  "whatif_albedo_x1_85": [16.3, 23.0, 35.3, 62.3, 87.7]
+ },
+ "concept_median": {"beauty_fitted_camera_both_masks": [52, 47, 47], "sheet_own_flat_views_both": [59, 58, 58], "sheet_own_flat_side_view": [55, 53, 53]}
+}

@@ -22,11 +22,12 @@ effect: a weapon hit, a shield response, a trail, a death.
   it is a comfort rule for every player, not only under reduce flashing.
 - **Hits must read at camera 170 (R208 (1)).** Ryan picked "Merge, then push harder" on the first hits build; subtle is a
   fail. Light on neighbouring hulls stays faint for now (R208 (3)).
-- Shields: invisible at rest, a faint edge glow on zoom, hover or a recent hit, a downed side reads as a dark gap, and they
-  keep faction colours (R163; Oct 24).
-- Directions already researched for the next options sheets (contrib/muse/design/look_references_2026_11/synthesis.md):
-  shields Rim and Gap, Face Flash, Veil Then Local; trails Ribbons and Bloom, Flare and Dash, Gothic Weight; sky Regional
-  Colour Calmed, True Dark One Band, Planet Limb.
+- Shields (R246, Ryan, Nov 14): the resting look is Rim and Gap: a faint rim in the faction edge colour on live sides, a dark
+  gap where a side is open, nothing else at rest; shields keep faction colours (R163), with Glacier pale blue only for screen
+  readouts (R210). The rules are one pool per ship with per-side coverage and lossy routing (issue 371); the look is issue
+  372. A shield hit makes no smoke, only an energy crackle (R271, issue 815). Settled: do not reopen the options sheet.
+- Directions researched for the remaining options sheets (contrib/muse/design/look_references_2026_11/synthesis.md): sky
+  Regional Colour Calmed, True Dark One Band, Planet Limb. Trails and beams are being built (issues 367, 800, 815).
 
 ## 2. Inputs
 
@@ -70,6 +71,9 @@ effect: a weapon hit, a shield response, a trail, a death.
 - Deaths are faint in every route (run 3 of issue 353): the route is not the cure. Deaths need their three beats, issue 366.
 - Effects that float: the death vent sat 6.7 units off the hull until PR 404 rooted it with the hull ray. Anything that
   spawns near a ship uses the ray or a hard point.
+- Small death spin (issue 463): `s.xf()` already follows the spinning mesh. Applying the spin again moves the jet off
+  its plating. Keep the hull's analysis pose from the kill frame and apply the spin once; record that frame with each
+  trail sample. A one-frame wing spark starts on the next effects step so it cannot expire before its first draw.
 - One GPU job at a time on the PC, and the queue is single file: a long bake holds every later job.
 - Editor .import files beside baked pictures are churn: commit them only when the game needs them to load.
 
@@ -78,6 +82,9 @@ effect: a weapon hit, a shield response, a trail, a death.
 - Death puffs on the plating, issue 354, PR 404: a check that fails on main first, the repair, the before and after strip at
   cameras 170 and 26.
 - Explosion routes, issues 353 and 419: two bake routes on one sheet, Ryan's pick of route B with the hot core.
+- Small deaths, issue 463: `godot/bench/look_moments_deaths_small.json` captures the wing, frigate, destroyer and cruiser
+  with normal and reduced flashes at all three cameras. `godot/bench/death_small_measure.gd` isolates the production
+  pictures at 60 Hz for pixel and lifetime measurements.
 
 ## 7. Job template (one effect to its row)
 
@@ -96,8 +103,8 @@ One effect is one or two Codex runs (a rebake is the long step) plus one Ryan lo
 
 1. Issue 419: the up-to-date routes sheet, committed. 2. Issue 365: rebake every explosion by route B with the hot core, to
 the table. 3. Issue 370: the attach point service (after the hard point contract, issue 363). 4. Issue 366: deaths in three
-beats. 5. Shield options sheet from Muse's three directions, Ryan's pick, then issues 371 and 372. 6. Trails, beams and
-flares: options sheet, pick, issue 367. 7. Issue 362: every faction readable at the played camera.
+beats. 5. Shields: Ryan picked Rim and Gap (R246); issues 371 (rules) and 372 (look), smoke off shield hits in 815. 6. Trails,
+beams and flares: issue 367, then rounds 2 and 3 (800, 815). 7. Issue 362: every faction readable at the played camera.
 
 ## 9. Seat
 

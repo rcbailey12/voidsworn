@@ -1,0 +1,902 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+tmo.bat : ERROR: Failed to read the root certificate store.
+At line:2 char:337
++ ... TENDED='1'; & tools/pc/tmo.bat 1200 C:/Windows/System32/cmd.exe /c C: ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ERROR: Failed t...tificate store.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+DESTRUCTION_GEOMETRY mirror=false disconnected=false pieces=3
+DESTRUCTION_GEOMETRY mirror=false disconnected=true pieces=3
+DESTRUCTION_GEOMETRY mirror=true disconnected=false pieces=3
+DESTRUCTION_GEOMETRY mirror=true disconnected=true pieces=3
+DESTRUCTION_STEPS failures=0
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+[attach] hp_core missing on this hull (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DEATH_PLANE quality=high faction=voidsworn class=Cruiser cause=blast
+[attach] hp_core missing on this hull (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DEATH_PLANE quality=high faction=voidsworn class=Frigate cause=big
+DEATH_PLANE quality=high faction=voidsworn class=Squadron cause=big
+[attach] hp_core missing on this hull (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DEATH_PLANE quality=high faction=chorus class=Bio-titan cause=big
+[attach] hp_core missing on this hull (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DEATH_PLANE quality=high faction=chorus class=Frigate cause=blast
+[attach] hp_core missing on this hull (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DEATH_PLANE quality=high faction=voidsworn class=Cruiser cause=dark
+[attach] hp_core missing on this hull (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DEATH_PLANE quality=low faction=voidsworn class=Cruiser cause=blast
+[attach] hp_core missing on this hull (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DEATH_PLANE quality=low faction=voidsworn class=Frigate cause=big
+DEATH_PLANE quality=low faction=voidsworn class=Squadron cause=big
+[attach] hp_core missing on this hull (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DEATH_PLANE quality=low faction=chorus class=Bio-titan cause=big
+[attach] hp_core missing on this hull (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DEATH_PLANE quality=low faction=chorus class=Frigate cause=blast
+[attach] hp_core missing on this hull (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DEATH_PLANE quality=low faction=voidsworn class=Cruiser cause=dark
+DEATH_PLANE failures=0
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+[attach] hp_core missing on T (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DESTRUCTION_STAGE class=Frigate size=1.5 flagship=false calm=false duration=1.15 pieces=5 flashes=2
+[attach] hp_core missing on T (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DESTRUCTION_STAGE class=Frigate size=1.5 flagship=false calm=true duration=1.15 pieces=5 flashes=0
+[attach] hp_core missing on T (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DESTRUCTION_STAGE class=Destroyer size=1.5 flagship=false calm=false duration=1.15 pieces=5 flashes=2
+[attach] hp_core missing on T (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DESTRUCTION_STAGE class=Destroyer size=1.5 flagship=false calm=true duration=1.15 pieces=5 flashes=0
+[attach] hp_core missing on T (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DESTRUCTION_STAGE class=Cruiser size=0.4 flagship=false calm=false duration=2.05 pieces=2 flashes=10
+[attach] hp_core missing on T (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DESTRUCTION_STAGE class=Cruiser size=0.4 flagship=false calm=true duration=2.05 pieces=2 flashes=0
+[attach] hp_core missing on T (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DESTRUCTION_STAGE class=Destroyer size=0.4 flagship=true calm=false duration=2.05 pieces=2 flashes=10
+[attach] hp_core missing on T (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DESTRUCTION_STAGE class=Destroyer size=0.4 flagship=true calm=true duration=2.05 pieces=2 flashes=0
+[attach] hp_core missing on T (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DESTRUCTION_STAGE class=Battleship size=1.0 flagship=false calm=false duration=2.67 pieces=3 flashes=12
+[attach] hp_core missing on T (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DESTRUCTION_STAGE class=Battleship size=1.0 flagship=false calm=true duration=2.67 pieces=3 flashes=0
+DESTRUCTION_STAGE class=Squadron size=0.1 flagship=false calm=false duration=1.15 pieces=0 flashes=2
+DESTRUCTION_STAGE class=Squadron size=0.1 flagship=false calm=true duration=1.15 pieces=0 flashes=0
+[attach] hp_core missing on T (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DESTRUCTION_HULK quality=high cold_drift=ok cleanup=ok
+[attach] hp_core missing on T (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DESTRUCTION_HULK quality=low cold_drift=ok cleanup=ok
+DESTRUCTION_SLOWMO hz=30 real_seconds=0.633 hurry=ok
+DESTRUCTION_SLOWMO hz=60 real_seconds=0.550 hurry=ok
+DESTRUCTION_SLOWMO hz=144 real_seconds=0.514 hurry=ok
+DESTRUCTION_STAGING failures=0
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+[attach] hp_core missing on voidsworn_0 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on voidsworn_1 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on hegemony_0 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on hegemony_1 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on corsair_0 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on corsair_1 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on chorus_0 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on chorus_1 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on ithar_0 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on ithar_1 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on deathless_0 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on deathless_1 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_w missing on voidsworn_0; using the surface ray
+[attach] hp_w missing on voidsworn_1; using the surface ray
+[attach] hp_w missing on hegemony_0; using the surface ray
+[attach] hp_w missing on hegemony_1; using the surface ray
+[attach] hp_w missing on corsair_0; using the surface ray
+[attach] hp_w missing on corsair_1; using the surface ray
+[attach] hp_w missing on chorus_0; using the surface ray
+[attach] hp_w missing on chorus_1; using the surface ray
+[attach] hp_w missing on ithar_0; using the surface ray
+[attach] hp_w missing on ithar_1; using the surface ray
+[attach] hp_w missing on deathless_0; using the surface ray
+[attach] hp_rcs missing on ithar_0; using the surface ray
+[attach] hp_w missing on deathless_1; using the surface ray
+[attach] hp_rcs missing on deathless_0; using the surface ray
+[attach] hp_rcs missing on chorus_1; using the surface ray
+[attach] hp_rcs missing on hegemony_0; using the surface ray
+[attach] hp_rcs missing on voidsworn_0; using the surface ray
+[attach] hp_rcs missing on deathless_1; using the surface ray
+[attach] hp_rcs missing on corsair_0; using the surface ray
+[attach] hp_rcs missing on voidsworn_1; using the surface ray
+[attach] hp_rcs missing on chorus_0; using the surface ray
+[attach] hp_rcs missing on hegemony_1; using the surface ray
+[attach] hp_rcs missing on ithar_1; using the surface ray
+[attach] hp_breach missing on hegemony_1; using the surface ray
+[attach] scorch on hegemony_1: placed on the plating (a surface sample; not a hard point type)
+[attach] flare on chorus_0: placed on the plating (a surface sample; not a hard point type)
+[attach] flare on voidsworn_1: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_bay missing on voidsworn_1; using the surface ray
+[attach] battle corsair_0 corsair_0: skipped 0; gun hp 0 ray 6 centre 0 skip 0; rcs hp 0 ray 64 centre 0 skip 0
+[attach] hp_breach missing on chorus_0; using the surface ray
+[attach] scorch on chorus_0: placed on the plating (a surface sample; not a hard point type)
+FX_SMOKE flashes counted=22 worst_per_second=3 stray=0 spawns=1150
+FX_SMOKE particles=9379 lights=0 wrecks=6 errors=0
+[attach] battle voidsworn_0 voidsworn_0: skipped 0; gun hp 0 ray 9 centre 0 skip 0; rcs hp 0 ray 60 centre 0 skip 0
+[attach] battle voidsworn_1 voidsworn_1: skipped 0; gun hp 0 ray 9 centre 0 skip 0; rcs hp 0 ray 78 centre 0 skip 0; flare hp 0 ray 1 centre 0 skip 0; bay hp 0 ray 1 centre 0 skip 0
+[attach] battle hegemony_0 hegemony_0: skipped 0; gun hp 0 ray 11 centre 0 skip 0; rcs hp 0 ray 60 centre 0 skip 0
+[attach] battle hegemony_1 hegemony_1: skipped 0; gun hp 0 ray 6 centre 0 skip 0; rcs hp 0 ray 26 centre 0 skip 0; breach hp 0 ray 6 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] battle corsair_1 corsair_1: skipped 0; gun hp 0 ray 6 centre 0 skip 0
+[attach] battle chorus_0 chorus_0: skipped 0; gun hp 0 ray 6 centre 0 skip 0; rcs hp 0 ray 88 centre 0 skip 0; flare hp 0 ray 1 centre 0 skip 0; breach hp 0 ray 3 centre 0 skip 0; scorch hp 0 ray 6 centre 0 skip 0
+[attach] battle chorus_1 chorus_1: skipped 0; gun hp 0 ray 6 centre 0 skip 0; rcs hp 0 ray 66 centre 0 skip 0
+[attach] battle ithar_0 ithar_0: skipped 0; gun hp 0 ray 6 centre 0 skip 0; rcs hp 0 ray 134 centre 0 skip 0
+[attach] battle ithar_1 ithar_1: skipped 0; gun hp 0 ray 6 centre 0 skip 0; rcs hp 0 ray 48 centre 0 skip 0; core hp 0 ray 0 centre 1 skip 0
+[attach] battle deathless_0 deathless_0: skipped 0; gun hp 0 ray 6 centre 0 skip 0; rcs hp 0 ray 84 centre 0 skip 0
+[attach] battle deathless_1 deathless_1: skipped 0; gun hp 0 ray 6 centre 0 skip 0; rcs hp 0 ray 90 centre 0 skip 0
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+[attach] hp_core missing on CAP (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on CRU (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+FLASH_AREA_TIMES staging=together counted_at=[1.767, 1.901, 2.285, 2.935, 3.101, 3.735, 4.001, 4.701, 4.901, 5.518] refused_at=[]
+FLASH_AREA staging=together calm=false box_px=289 limit_px2=15606 requests=32 measured=22 counted=10 refused=0 worst_per_second=3 uncounted_over=0 over_counted=1 counter_below_brute=0 brute_max_share=1.57 torpedo_drawn_bright=1 counter_us_per_frame=2.3 counter_us_total=841 counter_us_worst_frame=56
+FLASH_AREA_REQ together t=0.517 x=961 y=554 d=85 lit=5675 counted=0 bright=1
+FLASH_AREA_REQ together t=0.867 x=981 y=540 d=85 lit=5675 counted=0 bright=1
+FLASH_AREA_REQ together t=1.133 x=1064 y=595 d=102 lit=8171 counted=0 bright=1
+FLASH_AREA_REQ together t=1.217 x=959 y=537 d=85 lit=13846 counted=0 bright=1
+FLASH_AREA_REQ together t=1.433 x=1062 y=582 d=103 lit=8332 counted=0 bright=1
+FLASH_AREA_REQ together t=1.567 x=979 y=529 d=85 lit=14007 counted=0 bright=1
+FLASH_AREA_REQ together t=1.733 x=1056 y=565 d=102 lit=8171 counted=0 bright=1
+FLASH_AREA_REQ together t=1.767 x=960 y=533 d=114 lit=18378 counted=1 bright=1
+FLASH_AREA_REQ together t=1.901 x=961 y=554 d=85 lit=15882 counted=1 bright=1
+FLASH_AREA_REQ together t=2.285 x=1060 y=591 d=310 lit=-1 counted=1 bright=1
+FLASH_AREA_REQ together t=2.285 x=-1 y=-1 d=-1 lit=-1 counted=1 bright=1
+FLASH_AREA_REQ together t=2.285 x=955 y=522 d=424 lit=-1 counted=1 bright=1
+FLASH_AREA_REQ together t=2.285 x=-1 y=-1 d=-1 lit=-1 counted=1 bright=1
+FLASH_AREA_REQ together t=2.918 x=969 y=531 d=104 lit=8495 counted=0 bright=1
+FLASH_AREA_REQ together t=2.935 x=1028 y=574 d=143 lit=24555 counted=1 bright=1
+FLASH_AREA_REQ together t=2.951 x=1126 y=574 d=83 lit=-1 counted=0 bright=1
+FLASH_AREA_REQ together t=3.035 x=1012 y=530 d=92 lit=-1 counted=0 bright=1
+FLASH_AREA_REQ together t=3.101 x=945 y=549 d=96 lit=19296 counted=1 bright=1
+FLASH_AREA_REQ together t=3.501 x=1036 y=575 d=87 lit=5945 counted=0 bright=1
+FLASH_AREA_REQ together t=3.701 x=1087 y=559 d=134 lit=14103 counted=0 bright=1
+FLASH_AREA_REQ together t=3.735 x=980 y=537 d=84 lit=19644 counted=1 bright=1
+FLASH_AREA_REQ together t=3.751 x=1009 y=530 d=97 lit=-1 counted=0 bright=1
+FLASH_AREA_REQ together t=3.768 x=936 y=542 d=137 lit=-1 counted=0 bright=1
+FLASH_AREA_REQ together t=4.001 x=1037 y=579 d=142 lit=15837 counted=1 bright=1
+FLASH_AREA_REQ together t=4.051 x=1123 y=574 d=134 lit=-1 counted=0 bright=1
+FLASH_AREA_REQ together t=4.701 x=1112 y=568 d=141 lit=15615 counted=1 bright=1
+FLASH_AREA_REQ together t=4.868 x=1024 y=582 d=107 lit=8992 counted=0 bright=1
+FLASH_AREA_REQ together t=4.901 x=931 y=536 d=101 lit=17004 counted=1 bright=1
+FLASH_AREA_REQ together t=4.985 x=968 y=536 d=135 lit=-1 counted=0 bright=1
+FLASH_AREA_REQ together t=5.385 x=1027 y=570 d=132 lit=13685 counted=0 bright=1
+FLASH_AREA_REQ together t=5.518 x=1117 y=575 d=91 lit=20189 counted=1 bright=1
+FLASH_AREA_REQ together t=5.901 x=971 y=533 d=140 lit=15394 counted=0 bright=1
+[attach] hp_core missing on CAP (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on CRU (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+FLASH_AREA_TIMES staging=together counted_at=[] refused_at=[]
+FLASH_AREA staging=together calm=true box_px=289 limit_px2=15606 requests=0 measured=0 counted=0 refused=0 worst_per_second=0 uncounted_over=0 over_counted=0 counter_below_brute=0 brute_max_share=0.00 torpedo_drawn_bright=-1 counter_us_per_frame=0.0 counter_us_total=0 counter_us_worst_frame=0
+[attach] hp_core missing on CAP (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on CRU (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on TGT (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+FLASH_AREA_TIMES staging=spread counted_at=[2.285, 2.951, 3.768, 4.051, 4.985, 5.518] refused_at=[]
+FLASH_AREA staging=spread calm=false box_px=289 limit_px2=15606 requests=32 measured=27 counted=6 refused=0 worst_per_second=2 uncounted_over=0 over_counted=0 counter_below_brute=0 brute_max_share=1.85 torpedo_drawn_bright=1 counter_us_per_frame=2.6 counter_us_total=929 counter_us_worst_frame=66
+FLASH_AREA_REQ spread t=0.517 x=961 y=554 d=85 lit=5675 counted=0 bright=1
+FLASH_AREA_REQ spread t=0.867 x=981 y=540 d=85 lit=5675 counted=0 bright=1
+FLASH_AREA_REQ spread t=1.133 x=201 y=624 d=100 lit=7854 counted=0 bright=1
+FLASH_AREA_REQ spread t=1.217 x=959 y=537 d=85 lit=5675 counted=0 bright=1
+FLASH_AREA_REQ spread t=1.433 x=195 y=610 d=100 lit=7854 counted=0 bright=1
+FLASH_AREA_REQ spread t=1.567 x=979 y=529 d=85 lit=5675 counted=0 bright=1
+FLASH_AREA_REQ spread t=1.733 x=195 y=594 d=100 lit=7854 counted=0 bright=1
+FLASH_AREA_REQ spread t=1.767 x=1639 y=344 d=112 lit=9852 counted=0 bright=1
+FLASH_AREA_REQ spread t=1.901 x=961 y=554 d=85 lit=5675 counted=0 bright=1
+FLASH_AREA_REQ spread t=2.285 x=192 y=620 d=302 lit=-1 counted=1 bright=1
+FLASH_AREA_REQ spread t=2.285 x=-1 y=-1 d=-1 lit=-1 counted=1 bright=1
+FLASH_AREA_REQ spread t=2.285 x=955 y=522 d=424 lit=-1 counted=1 bright=1
+FLASH_AREA_REQ spread t=2.285 x=-1 y=-1 d=-1 lit=-1 counted=1 bright=1
+FLASH_AREA_REQ spread t=2.918 x=969 y=531 d=104 lit=8495 counted=0 bright=1
+FLASH_AREA_REQ spread t=2.935 x=162 y=603 d=140 lit=15394 counted=0 bright=1
+FLASH_AREA_REQ spread t=2.951 x=271 y=602 d=82 lit=20675 counted=1 bright=1
+FLASH_AREA_REQ spread t=3.035 x=1012 y=528 d=92 lit=-1 counted=0 bright=1
+FLASH_AREA_REQ spread t=3.101 x=946 y=552 d=96 lit=13886 counted=0 bright=1
+FLASH_AREA_REQ spread t=3.501 x=170 y=604 d=85 lit=5675 counted=0 bright=1
+FLASH_AREA_REQ spread t=3.701 x=219 y=593 d=132 lit=13685 counted=0 bright=1
+FLASH_AREA_REQ spread t=3.735 x=979 y=536 d=84 lit=5542 counted=0 bright=1
+FLASH_AREA_REQ spread t=3.751 x=1008 y=527 d=97 lit=12932 counted=0 bright=1
+FLASH_AREA_REQ spread t=3.768 x=937 y=545 d=136 lit=27458 counted=1 bright=1
+FLASH_AREA_REQ spread t=4.001 x=169 y=608 d=138 lit=14957 counted=0 bright=1
+FLASH_AREA_REQ spread t=4.051 x=266 y=602 d=133 lit=28850 counted=1 bright=1
+FLASH_AREA_REQ spread t=4.701 x=249 y=599 d=140 lit=15394 counted=0 bright=1
+FLASH_AREA_REQ spread t=4.868 x=154 y=612 d=105 lit=8659 counted=0 bright=1
+FLASH_AREA_REQ spread t=4.901 x=932 y=539 d=101 lit=8012 counted=0 bright=1
+FLASH_AREA_REQ spread t=4.985 x=967 y=536 d=135 lit=22326 counted=1 bright=1
+FLASH_AREA_REQ spread t=5.385 x=158 y=599 d=130 lit=13273 counted=0 bright=1
+FLASH_AREA_REQ spread t=5.518 x=254 y=606 d=90 lit=19635 counted=1 bright=1
+FLASH_AREA_REQ spread t=5.901 x=970 y=532 d=140 lit=15394 counted=0 bright=1
+[attach] hp_core missing on CAP (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on CRU (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on TGT (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+FLASH_AREA_TIMES staging=spread counted_at=[] refused_at=[]
+FLASH_AREA staging=spread calm=true box_px=289 limit_px2=15606 requests=0 measured=0 counted=0 refused=0 worst_per_second=0 uncounted_over=0 over_counted=0 counter_below_brute=0 brute_max_share=0.00 torpedo_drawn_bright=-1 counter_us_per_frame=0.0 counter_us_total=0 counter_us_worst_frame=0
+[attach] hp_core missing on CAP (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on CRU (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+FLASH_AREA_TIMES staging=salvo counted_at=[] refused_at=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.317, 0.317, 0.317, 0.317, 0.317, 0.317, 0.317, 0.617, 0.617, 0.617, 0.617, 0.617, 0.617, 0.617, 0.917, 0.917, 0.917, 0.917, 0.917, 0.917, 0.917, 1.217, 1.217, 1.217, 1.217, 1.217, 1.217, 1.217]
+FLASH_AREA staging=salvo calm=false box_px=289 limit_px2=15606 requests=80 measured=80 counted=0 refused=35 worst_per_second=0 uncounted_over=0 over_counted=0 counter_below_brute=0 brute_max_share=0.92 torpedo_drawn_bright=-1 counter_us_per_frame=9.4 counter_us_total=3392 counter_us_worst_frame=790
+FLASH_AREA_REQ salvo t=0.000 x=891 y=492 d=45 lit=1590 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.000 x=937 y=492 d=45 lit=3181 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.000 x=983 y=492 d=45 lit=4771 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.000 x=1029 y=492 d=45 lit=6362 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.000 x=891 y=519 d=45 lit=7952 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.000 x=937 y=519 d=46 lit=9614 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.000 x=983 y=519 d=46 lit=11276 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.000 x=1029 y=519 d=45 lit=12866 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.000 x=890 y=546 d=46 lit=14528 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.000 x=937 y=546 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.000 x=983 y=546 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.000 x=1030 y=546 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.000 x=889 y=574 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.000 x=936 y=574 d=47 lit=16263 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.000 x=984 y=574 d=47 lit=16263 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.000 x=1031 y=574 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.317 x=891 y=492 d=45 lit=1590 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.317 x=937 y=492 d=45 lit=3181 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.317 x=983 y=492 d=45 lit=4771 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.317 x=1029 y=492 d=45 lit=6362 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.317 x=891 y=519 d=45 lit=7952 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.317 x=937 y=519 d=46 lit=9614 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.317 x=983 y=519 d=46 lit=11276 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.317 x=1029 y=519 d=45 lit=12866 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.317 x=890 y=546 d=46 lit=14528 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.317 x=937 y=546 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.317 x=983 y=546 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.317 x=1030 y=546 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.317 x=889 y=574 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.317 x=936 y=574 d=47 lit=16263 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.317 x=984 y=574 d=47 lit=16263 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.317 x=1031 y=574 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.617 x=891 y=492 d=45 lit=1590 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.617 x=937 y=492 d=45 lit=3181 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.617 x=983 y=492 d=45 lit=4771 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.617 x=1029 y=492 d=45 lit=6362 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.617 x=891 y=519 d=45 lit=7952 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.617 x=937 y=519 d=46 lit=9614 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.617 x=983 y=519 d=46 lit=11276 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.617 x=1029 y=519 d=45 lit=12866 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.617 x=890 y=546 d=46 lit=14528 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.617 x=937 y=546 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.617 x=983 y=546 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.617 x=1030 y=546 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.617 x=889 y=574 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.617 x=936 y=574 d=47 lit=16263 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.617 x=984 y=574 d=47 lit=16263 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.617 x=1031 y=574 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.917 x=891 y=492 d=45 lit=1590 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.917 x=937 y=492 d=45 lit=3181 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.917 x=983 y=492 d=45 lit=4771 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.917 x=1029 y=492 d=45 lit=6362 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.917 x=891 y=519 d=45 lit=7952 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.917 x=937 y=519 d=46 lit=9614 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.917 x=983 y=519 d=46 lit=11276 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.917 x=1029 y=519 d=45 lit=12866 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.917 x=890 y=546 d=46 lit=14528 counted=0 bright=1
+FLASH_AREA_REQ salvo t=0.917 x=937 y=546 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.917 x=983 y=546 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.917 x=1030 y=546 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.917 x=889 y=574 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.917 x=936 y=574 d=47 lit=16263 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.917 x=984 y=574 d=47 lit=16263 counted=0 bright=0
+FLASH_AREA_REQ salvo t=0.917 x=1031 y=574 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=1.217 x=891 y=492 d=45 lit=1590 counted=0 bright=1
+FLASH_AREA_REQ salvo t=1.217 x=937 y=492 d=45 lit=3181 counted=0 bright=1
+FLASH_AREA_REQ salvo t=1.217 x=983 y=492 d=45 lit=4771 counted=0 bright=1
+FLASH_AREA_REQ salvo t=1.217 x=1029 y=492 d=45 lit=6362 counted=0 bright=1
+FLASH_AREA_REQ salvo t=1.217 x=891 y=519 d=45 lit=7952 counted=0 bright=1
+FLASH_AREA_REQ salvo t=1.217 x=937 y=519 d=46 lit=9614 counted=0 bright=1
+FLASH_AREA_REQ salvo t=1.217 x=983 y=519 d=46 lit=11276 counted=0 bright=1
+FLASH_AREA_REQ salvo t=1.217 x=1029 y=519 d=45 lit=12866 counted=0 bright=1
+FLASH_AREA_REQ salvo t=1.217 x=890 y=546 d=46 lit=14528 counted=0 bright=1
+FLASH_AREA_REQ salvo t=1.217 x=937 y=546 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=1.217 x=983 y=546 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=1.217 x=1030 y=546 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=1.217 x=889 y=574 d=46 lit=16190 counted=0 bright=0
+FLASH_AREA_REQ salvo t=1.217 x=936 y=574 d=47 lit=16263 counted=0 bright=0
+FLASH_AREA_REQ salvo t=1.217 x=984 y=574 d=47 lit=16263 counted=0 bright=0
+FLASH_AREA_REQ salvo t=1.217 x=1031 y=574 d=46 lit=16190 counted=0 bright=0
+[attach] hp_core missing on CAP (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on CRU (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+FLASH_AREA_TIMES staging=salvo counted_at=[] refused_at=[]
+FLASH_AREA staging=salvo calm=true box_px=289 limit_px2=15606 requests=0 measured=0 counted=0 refused=0 worst_per_second=0 uncounted_over=0 over_counted=0 counter_below_brute=0 brute_max_share=0.00 torpedo_drawn_bright=-1 counter_us_per_frame=0.0 counter_us_total=0 counter_us_worst_frame=0
+FLASH_AREA failures=0
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+ladder px: las 40 macro 56 lance 78 torpedo 140 (body 140) torpedo on a shield ripple 156
+  ok  the ladder steps up plainly: las < macro < lance < torpedo
+  ok  a torpedo on a shield has the biggest body of any hit
+  ok  the gun sizes the hit: frigate 48, cruiser 56, capital 67 px
+  ok  the target sizes the hit too
+[attach] hp_core missing on Aturretvoidsworn (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tturretvoidsworn (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Ahbatteryvoidsworn (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Thbatteryvoidsworn (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Alancevoidsworn (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tlancevoidsworn (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Atorpvoidsworn (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Ttorpvoidsworn (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Abioplasmachorus (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tbioplasmachorus (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Agaussdeathless (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tgaussdeathless (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Aionhegemony (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tionhegemony (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Ahturbohegemony (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Thturbohegemony (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Ashardithar (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tshardithar (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Ahtorpcorsair (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Thtorpcorsair (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Astartorpithar (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tstartorpithar (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Adoomdeathless (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tdoomdeathless (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Aautocannonhegemony (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tautocannonhegemony (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Ascattercorsair (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tscattercorsair (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Aturretithar (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tturretithar (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Apulsarithar (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tpulsarithar (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Aflakvoidsworn (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tflakvoidsworn (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_w missing on Aturretvoidsworn; using the surface ray
+  ok  turret: the hit made its recipe
+  ok  turret: no flash outlives the 0.70 s flame cap
+  ok  turret: cooling sparks stay within their own lifetime, separate from flame
+  ok  turret: everything thrown leaves the plate outward (0 inward)
+  turret lives: { "flash": 0.08, "spark": 1.57423150539398, "ember": 6.74015808105469, "heat": 1.5 }
+[attach] hp_w missing on Ahbatteryvoidsworn; using the surface ray
+[attach] hp_rcs missing on Thbatteryvoidsworn; using the surface ray
+  ok  hbattery: the hit made its recipe
+  ok  hbattery: no flash outlives the 0.70 s flame cap
+  ok  hbattery: cooling sparks stay within their own lifetime, separate from flame
+  ok  hbattery: everything thrown leaves the plate outward (0 inward)
+  hbattery lives: { "flash": 0.12, "spark": 1.58250975608826, "debris": 9.61934661865234, "gas": 8.99863052368164, "ember": 6.87472534179688, "heat": 2.5 }
+[attach] hp_w missing on Alancevoidsworn; using the surface ray
+  ok  lance: the hit made its recipe
+  ok  lance: no flash outlives the 0.70 s flame cap
+  ok  lance: cooling sparks stay within their own lifetime, separate from flame
+  ok  lance: everything thrown leaves the plate outward (0 inward)
+  lance lives: { "flash": 0.16, "heat": 3.0, "spark": 1.56253743171692, "ember": 6.66572904586792, "debris": 9.53574752807617, "gas": 8.71626472473145 }
+[attach] hp_w missing on Atorpvoidsworn; using the surface ray
+[attach] hp_rcs missing on Ttorpvoidsworn; using the surface ray
+  ok  torp: the hit made its recipe
+  ok  torp: no flash outlives the 0.70 s flame cap
+  ok  torp: cooling sparks stay within their own lifetime, separate from flame
+  ok  torp: everything thrown leaves the plate outward (0 inward)
+  torp lives: { "flash": 0.16, "spark": 1.4922868013382, "debris": 9.97385406494141, "ember": 6.86988830566406, "gas": 8.74356079101563, "heat": 4.0 }
+[attach] hp_w missing on Abioplasmachorus; using the surface ray
+[attach] hp_rcs missing on Tbioplasmachorus; using the surface ray
+  ok  bioplasma: the hit made its recipe
+  ok  bioplasma: no flash outlives the 0.70 s flame cap
+  ok  bioplasma: cooling sparks stay within their own lifetime, separate from flame
+  ok  bioplasma: everything thrown leaves the plate outward (0 inward)
+  bioplasma lives: { "drop": 3.55163860321045, "gas": 8.42849922180176, "heat": 2.0 }
+[attach] hp_w missing on Agaussdeathless; using the surface ray
+[attach] hp_rcs missing on Tgaussdeathless; using the surface ray
+  ok  gauss: the hit made its recipe
+  ok  gauss: no flash outlives the 0.70 s flame cap
+  ok  gauss: cooling sparks stay within their own lifetime, separate from flame
+  ok  gauss: everything thrown leaves the plate outward (0 inward)
+  gauss lives: { "flash": 0.14, "spark": 1.57553291320801, "debris": 9.14506721496582, "gas": 7.87932109832764, "ember": 6.15853023529053, "heat": 2.5 }
+[attach] hp_w missing on Aionhegemony; using the surface ray
+  ok  ion: the hit made its recipe
+  ok  ion: no flash outlives the 0.70 s flame cap
+  ok  ion: cooling sparks stay within their own lifetime, separate from flame
+  ok  ion: everything thrown leaves the plate outward (0 inward)
+  ion lives: { "flash": 0.16, "heat": 3.0, "ember": 6.82933521270752, "gas": 7.90579795837402 }
+[attach] hp_w missing on Ahturbohegemony; using the surface ray
+[attach] hp_rcs missing on Thturbohegemony; using the surface ray
+  ok  hturbo: the hit made its recipe
+  ok  hturbo: no flash outlives the 0.70 s flame cap
+  ok  hturbo: cooling sparks stay within their own lifetime, separate from flame
+  ok  hturbo: everything thrown leaves the plate outward (0 inward)
+  hturbo lives: { "flash": 0.08, "spark": 1.59670519828796, "ember": 6.8429913520813, "debris": 9.51301002502441, "gas": 8.91161632537842, "heat": 1.5 }
+[attach] hp_w missing on Ashardithar; using the surface ray
+  ok  shard: the hit made its recipe
+  ok  shard: no flash outlives the 0.70 s flame cap
+  ok  shard: cooling sparks stay within their own lifetime, separate from flame
+  ok  shard: everything thrown leaves the plate outward (0 inward)
+  shard lives: { "flash": 0.08, "spark": 1.56738638877869, "ember": 6.35706567764282, "heat": 1.5 }
+[attach] hp_w missing on Ahtorpcorsair; using the surface ray
+[attach] hp_rcs missing on Thtorpcorsair; using the surface ray
+  ok  htorp: the hit made its recipe
+  ok  htorp: no flash outlives the 0.70 s flame cap
+  ok  htorp: cooling sparks stay within their own lifetime, separate from flame
+  ok  htorp: everything thrown leaves the plate outward (0 inward)
+  htorp lives: { "flash": 0.16, "spark": 1.59897696971893, "debris": 9.77232360839844, "ember": 6.64918661117554, "gas": 8.51964569091797, "heat": 4.0 }
+[attach] hp_w missing on Astartorpithar; using the surface ray
+[attach] hp_rcs missing on Tstartorpithar; using the surface ray
+  ok  startorp: the hit made its recipe
+  ok  startorp: no flash outlives the 0.70 s flame cap
+  ok  startorp: cooling sparks stay within their own lifetime, separate from flame
+  ok  startorp: everything thrown leaves the plate outward (0 inward)
+  startorp lives: { "flash": 0.16, "spark": 1.53203237056732, "debris": 9.25513362884521, "ember": 6.09290981292725, "gas": 8.962965965271, "heat": 4.0 }
+[attach] hp_w missing on Adoomdeathless; using the surface ray
+  ok  doom: the hit made its recipe
+  ok  doom: no flash outlives the 0.70 s flame cap
+  ok  doom: cooling sparks stay within their own lifetime, separate from flame
+  ok  doom: everything thrown leaves the plate outward (0 inward)
+  doom lives: { "flash": 0.16, "heat": 3.0, "spark": 1.58680307865143, "ember": 6.26402425765991, "debris": 9.68374824523926, "gas": 8.44808673858643 }
+[attach] hp_w missing on Aautocannonhegemony; using the surface ray
+  ok  autocannon: the hit made its recipe
+  ok  autocannon: no flash outlives the 0.70 s flame cap
+  ok  autocannon: cooling sparks stay within their own lifetime, separate from flame
+  ok  autocannon: everything thrown leaves the plate outward (0 inward)
+  autocannon lives: { "flash": 0.12, "spark": 1.59352016448975, "debris": 9.5997371673584, "gas": 8.21172332763672, "ember": 6.76352310180664, "heat": 2.5 }
+[attach] hp_w missing on Ascattercorsair; using the surface ray
+  ok  scatter: the hit made its recipe
+  ok  scatter: no flash outlives the 0.70 s flame cap
+  ok  scatter: cooling sparks stay within their own lifetime, separate from flame
+  ok  scatter: everything thrown leaves the plate outward (0 inward)
+  scatter lives: { "flash": 0.12, "spark": 1.40595316886902, "debris": 9.4700927734375, "gas": 8.53441619873047, "ember": 6.51096725463867, "heat": 2.5 }
+[attach] hp_w missing on Aturretithar; using the surface ray
+  ok  turret: the hit made its recipe
+  ok  turret: no flash outlives the 0.70 s flame cap
+  ok  turret: cooling sparks stay within their own lifetime, separate from flame
+  ok  turret: everything thrown leaves the plate outward (0 inward)
+  turret lives: { "flash": 0.16, "heat": 3.0, "spark": 1.57297229766846, "ember": 6.46659421920776, "debris": 9.50774002075195, "gas": 8.87372207641602 }
+[attach] hp_w missing on Apulsarithar; using the surface ray
+  ok  pulsar: the hit made its recipe
+  ok  pulsar: no flash outlives the 0.70 s flame cap
+  ok  pulsar: cooling sparks stay within their own lifetime, separate from flame
+  ok  pulsar: everything thrown leaves the plate outward (0 inward)
+  pulsar lives: { "flash": 0.16, "heat": 3.0, "spark": 1.54935598373413, "ember": 6.13747787475586, "debris": 9.11193084716797, "gas": 8.04723167419434 }
+[attach] hp_w missing on Aflakvoidsworn; using the surface ray
+  ok  flak: the hit made its recipe
+  ok  flak: no flash outlives the 0.70 s flame cap
+  ok  flak: cooling sparks stay within their own lifetime, separate from flame
+  ok  flak: everything thrown leaves the plate outward (0 inward)
+  flak lives: { "flash": 0.12, "spark": 1.57432389259338, "gas": 6.80626344680786, "ember": 5.30740213394165, "heat": 2.0 }
+  ok  a torpedo hit lights the hulls about two hexes round it (reach 31 units)
+[attach] battle Aturretvoidsworn Aturretvoidsworn: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Ahbatteryvoidsworn Ahbatteryvoidsworn: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Thbatteryvoidsworn Thbatteryvoidsworn: skipped 0; rcs hp 0 ray 44 centre 0 skip 0
+[attach] battle Alancevoidsworn Alancevoidsworn: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Atorpvoidsworn Atorpvoidsworn: skipped 0; gun hp 0 ray 2 centre 0 skip 0
+[attach] battle Ttorpvoidsworn Ttorpvoidsworn: skipped 0; rcs hp 0 ray 134 centre 0 skip 0
+[attach] battle Abioplasmachorus Abioplasmachorus: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Tbioplasmachorus Tbioplasmachorus: skipped 0; rcs hp 0 ray 18 centre 0 skip 0
+[attach] battle Agaussdeathless Agaussdeathless: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Tgaussdeathless Tgaussdeathless: skipped 0; rcs hp 0 ray 46 centre 0 skip 0
+[attach] battle Aionhegemony Aionhegemony: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Ahturbohegemony Ahturbohegemony: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Thturbohegemony Thturbohegemony: skipped 0; rcs hp 0 ray 28 centre 0 skip 0
+[attach] battle Ashardithar Ashardithar: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Ahtorpcorsair Ahtorpcorsair: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Thtorpcorsair Thtorpcorsair: skipped 0; rcs hp 0 ray 48 centre 0 skip 0
+[attach] battle Astartorpithar Astartorpithar: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Tstartorpithar Tstartorpithar: skipped 0; rcs hp 0 ray 64 centre 0 skip 0
+[attach] battle Adoomdeathless Adoomdeathless: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Aautocannonhegemony Aautocannonhegemony: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Ascattercorsair Ascattercorsair: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Aturretithar Aturretithar: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Apulsarithar Apulsarithar: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Aflakvoidsworn Aflakvoidsworn: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] hp_core missing on Aturretvoidsworn (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tturretvoidsworn (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Ahbatteryvoidsworn (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Thbatteryvoidsworn (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Alancevoidsworn (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tlancevoidsworn (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Atorpvoidsworn (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Ttorpvoidsworn (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Abioplasmachorus (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tbioplasmachorus (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Agaussdeathless (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tgaussdeathless (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Aionhegemony (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tionhegemony (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Ahturbohegemony (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Thturbohegemony (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Ashardithar (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tshardithar (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Ahtorpcorsair (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Thtorpcorsair (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Astartorpithar (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tstartorpithar (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Adoomdeathless (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tdoomdeathless (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Aautocannonhegemony (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tautocannonhegemony (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Ascattercorsair (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tscattercorsair (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Aturretithar (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tturretithar (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Apulsarithar (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tpulsarithar (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Aflakvoidsworn (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on Tflakvoidsworn (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_w missing on Aturretvoidsworn; using the surface ray
+[attach] hp_w missing on Ahbatteryvoidsworn; using the surface ray
+[attach] hp_rcs missing on Thbatteryvoidsworn; using the surface ray
+[attach] hp_w missing on Alancevoidsworn; using the surface ray
+[attach] hp_w missing on Atorpvoidsworn; using the surface ray
+[attach] hp_rcs missing on Ttorpvoidsworn; using the surface ray
+[attach] hp_w missing on Abioplasmachorus; using the surface ray
+[attach] hp_rcs missing on Tbioplasmachorus; using the surface ray
+[attach] hp_w missing on Agaussdeathless; using the surface ray
+[attach] hp_rcs missing on Tgaussdeathless; using the surface ray
+[attach] hp_w missing on Aionhegemony; using the surface ray
+[attach] hp_w missing on Ahturbohegemony; using the surface ray
+[attach] hp_rcs missing on Thturbohegemony; using the surface ray
+[attach] hp_w missing on Ashardithar; using the surface ray
+[attach] hp_w missing on Ahtorpcorsair; using the surface ray
+[attach] hp_rcs missing on Thtorpcorsair; using the surface ray
+[attach] hp_w missing on Astartorpithar; using the surface ray
+[attach] hp_rcs missing on Tstartorpithar; using the surface ray
+[attach] hp_w missing on Adoomdeathless; using the surface ray
+[attach] hp_w missing on Aautocannonhegemony; using the surface ray
+[attach] hp_w missing on Ascattercorsair; using the surface ray
+[attach] hp_w missing on Aturretithar; using the surface ray
+[attach] hp_w missing on Apulsarithar; using the surface ray
+[attach] hp_w missing on Aflakvoidsworn; using the surface ray
+  ok  reduce flashing: the new hits count and book no flash
+[attach] battle Aturretvoidsworn Aturretvoidsworn: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Ahbatteryvoidsworn Ahbatteryvoidsworn: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Thbatteryvoidsworn Thbatteryvoidsworn: skipped 0; rcs hp 0 ray 44 centre 0 skip 0
+[attach] battle Alancevoidsworn Alancevoidsworn: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Atorpvoidsworn Atorpvoidsworn: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Ttorpvoidsworn Ttorpvoidsworn: skipped 0; rcs hp 0 ray 70 centre 0 skip 0
+[attach] battle Abioplasmachorus Abioplasmachorus: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Tbioplasmachorus Tbioplasmachorus: skipped 0; rcs hp 0 ray 18 centre 0 skip 0
+[attach] battle Agaussdeathless Agaussdeathless: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Tgaussdeathless Tgaussdeathless: skipped 0; rcs hp 0 ray 46 centre 0 skip 0
+[attach] battle Aionhegemony Aionhegemony: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Ahturbohegemony Ahturbohegemony: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Thturbohegemony Thturbohegemony: skipped 0; rcs hp 0 ray 28 centre 0 skip 0
+[attach] battle Ashardithar Ashardithar: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Ahtorpcorsair Ahtorpcorsair: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Thtorpcorsair Thtorpcorsair: skipped 0; rcs hp 0 ray 48 centre 0 skip 0
+[attach] battle Astartorpithar Astartorpithar: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Tstartorpithar Tstartorpithar: skipped 0; rcs hp 0 ray 64 centre 0 skip 0
+[attach] battle Adoomdeathless Adoomdeathless: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Aautocannonhegemony Aautocannonhegemony: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Ascattercorsair Ascattercorsair: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Aturretithar Aturretithar: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Apulsarithar Apulsarithar: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle Aflakvoidsworn Aflakvoidsworn: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+  ok  shell: a spark cone and torn chips
+  ok  energy (las): a splash of drops, no torn plate
+  ok  lance: the burn crawls (8 glowing points along its line)
+  ok  torpedo: gas and thrown debris
+  ok  ion: a lance burn with arcs and no molten spray
+  ok  torpedo: debris, gas and the wound's glow outlive the flame ({ "flash": 0.16, "spark": 1.4922868013382, "debris": 9.97385406494141, "ember": 6.86988830566406, "gas": 8.74356079101563, "heat": 4.0 })
+  ok  shell sparks skip off the plate (mean outward share 0.94), the energy splash runs along it (0.12)
+  ok  gun hit flashes that would need counting are drawn soft
+  ok  the second's slots stay free for deaths' core flashes
+  ok  a gun hit under the limit stays bright
+  ok  still never more than three counted flashes in a second
+  ok  the first three soft gun flashes in a field keep their soft rise
+  ok  the fourth and later in the same second lose their peak (a slow, dim lift)
+  ok  a second later the field takes soft flashes again
+[attach] hp_core missing on A (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on T (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+  ok  the Hegemony box ship has its shield up
+[attach] hp_w missing on A; using the surface ray
+[attach] hp_rcs missing on T; using the surface ray
+  shield torpedo: row 75 px, booked 75 px, limit disc 141 px
+  ok  a torpedo on a shield books at its row's size, not bigger
+[attach] battle A A: skipped 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle T T: skipped 0; rcs hp 0 ray 28 centre 0 skip 0
+[attach] hp_core missing on T (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+  ok  a lance kill re-plans its cut on the beam's line
+  ok  the lance cut has no kink
+  ok  the lance cut lies on the beam's point (0.00 from it)
+  ok  the lance cut is not pitched
+  ok  the lance kill breaks up
+  ok  engine cores flicker 0.95 to 1.0 only
+  ok  the old 0.85 to 1.0 engine flicker is gone
+  ok  wounds stay: 24 marks a ship, 8 a section
+HIT_RECIPE failures=0
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+ERROR: The object does not have any 'meta' values with the key 'spawn_frame'.
+   at: get_meta (core/object/object.cpp:1053)
+   GDScript backtrace (most recent call first):
+       [0] _scan (res://fx/test/death_spawn_check.gd:132)
+       [1] _run (res://fx/test/death_spawn_check.gd:66)
+ERROR: The object does not have any 'meta' values with the key 'spawn_frame'.
+   at: get_meta (core/object/object.cpp:1053)
+   GDScript backtrace (most recent call first):
+       [0] _scan (res://fx/test/death_spawn_check.gd:132)
+       [1] _run (res://fx/test/death_spawn_check.gd:66)
+PASS flash root 0.315 from the hull (limit 1.856)
+PASS impact root 0.315 from the hull (limit 1.856)
+PASS impact root 0.315 from the hull (limit 1.856)
+PASS flash root 0.487 from the hull (limit 1.856)
+PASS impact root 0.487 from the hull (limit 1.856)
+PASS impact root 0.487 from the hull (limit 1.856)
+PASS flash root 0.305 from the hull (limit 1.856)
+PASS impact root 0.305 from the hull (limit 1.856)
+PASS impact root 0.305 from the hull (limit 1.856)
+PASS cool root 0.897 from the hull (limit 1.856)
+PASS cool root 0.839 from the hull (limit 1.856)
+PASS flash root 0.000 from the hull (limit 1.856)
+PASS cool root 0.000 from the hull (limit 1.856)
+PASS impact root 0.000 from the hull (limit 1.856)
+PASS impact root 0.000 from the hull (limit 1.856)
+PASS impact root 0.000 from the hull (limit 1.856)
+PASS flash root 0.000 from the hull (limit 1.856)
+PASS flash root 0.000 from the hull (limit 1.856)
+PASS impact root 0.000 from the hull (limit 1.856)
+PASS impact root 0.000 from the hull (limit 1.856)
+PASS flash root 0.000 from the hull (limit 1.856)
+PASS impact root 0.000 from the hull (limit 1.856)
+PASS impact root 0.000 from the hull (limit 1.856)
+PASS impact root 0.000 from the hull (limit 1.856)
+PASS flash root 0.000 from the hull (limit 1.856)
+PASS impact root 0.000 from the hull (limit 1.856)
+PASS impact root 0.000 from the hull (limit 1.856)
+PASS impact root 0.000 from the hull (limit 1.856)
+PASS impact root 0.000 from the hull (limit 1.856)
+PASS impact root 0.000 from the hull (limit 1.856)
+PASS impact root 0.000 from the hull (limit 1.856)
+PASS flash root 0.000 from the hull (limit 1.856)
+PASS impact root 0.000 from the hull (limit 1.856)
+DEATH_SPAWN pictures=33 vent=0 flash=9 cool=3 recorded=33 stray=0 errors=0
+DEATH_SPAWN PASS
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+[attach] hp_core missing on small_hit (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] scorch on small_hit: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach missing on small_hit; using the surface ray
+[attach] hp_core missing on heavy_hit (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] scorch on heavy_hit: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach missing on heavy_hit; using the surface ray
+[attach] hp_core missing on organic (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] scorch on organic: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach missing on organic; using the surface ray
+[attach] hp_core missing on crystal (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] scorch on crystal: placed on the plating (a surface sample; not a hard point type)
+[attach] hp_breach missing on crystal; using the surface ray
+[attach] hp_w missing on small_hit; using the surface ray
+[attach] hp_w missing on organic; using the surface ray
+[attach] battle organic organic: skipped 0; scorch hp 0 ray 3 centre 0 skip 0; breach hp 0 ray 1 centre 0 skip 0; gun hp 0 ray 1 centre 0 skip 0
+PLAYTEST_BATCH1 failures=0 chunks=8
+[attach] battle small_hit small_hit: skipped 0; scorch hp 0 ray 3 centre 0 skip 0; breach hp 0 ray 1 centre 0 skip 0; gun hp 0 ray 1 centre 0 skip 0
+[attach] battle heavy_hit heavy_hit: skipped 0; scorch hp 0 ray 3 centre 0 skip 0; breach hp 0 ray 1 centre 0 skip 0
+[attach] battle crystal crystal: skipped 0; scorch hp 0 ray 3 centre 0 skip 0; breach hp 0 ray 1 centre 0 skip 0
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.106, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.432, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.529, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.196, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.772, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.106, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.432, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.529, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.196, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.772, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.106, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.432, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.529, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.196, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.772, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.106, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.432, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.529, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.196, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.772, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.106, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.432, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.529, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.196, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.196, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.772, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.106, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.432, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.529, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.196, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.772, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.106, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.432, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.529, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.196, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.772, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.106, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.432, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.529, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.196, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.772, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.106, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.432, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.529, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.196, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.772, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.106, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.432, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.529, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.196, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.772, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.106, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.432, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.529, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.196, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.772, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.106, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.432, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.529, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.196, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.432, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.529, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.196, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.772, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.106, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.432, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.529, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.196, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.772, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.106, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.432, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.529, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.196, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.772, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.106, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.432, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.529, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.196, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.772, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.106, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.432, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.529, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter n/a (no planet or backdrop rocks), target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.106, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.432, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.529, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.196, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.772, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 6.106, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.432, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.529, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 5.196, target 4.4; visual tuning (R191)
+[world] AS1 largest backdrop rock 0.050000 rad, target 0.050 rad; PL8 planet/rock diameter 4.772, target 4.4; visual tuning (R191)
+BLOCKING_VISUALS battles=120 hexes=3068 kinds={ "rock": 1515, "station": 402, "asteroid": 343, "comet": 59, "planet": 232, "moon": 156, "hulk": 271, "deadstar": 90 } failures=0
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+[inside] renderer=forward_plus adapter=NVIDIA GeForce RTX 5080
+[attach] hp_core missing on C (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_breach missing on C; using the surface ray
+[attach] scorch on C: placed on the plating (a surface sample; not a hard point type)
+[inside] hegemony_superdreadnought L=24.00 holes=3 rebuild frames=474
+[inside] wrote hegemony_superdreadnought_hole_a0_front
+[inside] wrote hegemony_superdreadnought_hole_a0_side
+[inside] wrote hegemony_superdreadnought_hole_b0_front
+[inside] wrote hegemony_superdreadnought_hole_b0_side
+[inside] wrote hegemony_superdreadnought_hole_zoom
+[inside] wrote hegemony_superdreadnought_kill_power_down
+[inside] wrote hegemony_superdreadnought_kill_vent
+[inside] wrote hegemony_superdreadnought_kill_crack
+[inside] split=9.900 pieces=3 wait_frames=0
+[inside] wrote hegemony_superdreadnought_kill_battle
+[inside] wrote hegemony_superdreadnought_kill_close_a
+[inside] core age=0.333 counted_flashes=[8.4, 8.75000000000001, 9.10000000000003, 9.45000000000005, 9.80000000000007, 10.1833333333334]
+[inside] wrote hegemony_superdreadnought_kill_core
+[inside] wrote hegemony_superdreadnought_kill_inside
+[inside] wrote hegemony_superdreadnought_kill_close_b
+[inside] wrote hegemony_superdreadnought_kill_secondary
+[inside] wrote hegemony_superdreadnought_kill_close_c
+[inside] wrote hegemony_superdreadnought_kill_embers
+[attach] battle C C: skipped 0; breach hp 0 ray 6 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_core missing on C (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_breach missing on C; using the surface ray
+[attach] scorch on C: placed on the plating (a surface sample; not a hard point type)
+[inside] voidsworn_frigate L=10.40 holes=3 rebuild frames=150
+[inside] wrote voidsworn_frigate_hole_a0_front
+[inside] wrote voidsworn_frigate_hole_a0_side
+[inside] wrote voidsworn_frigate_hole_a1_front
+[inside] wrote voidsworn_frigate_hole_a1_side
+[inside] wrote voidsworn_frigate_hole_zoom
+[inside] wrote voidsworn_frigate_kill_ribbon_battle
+[inside] split=24.967 pieces=2 wait_frames=0
+[inside] wrote voidsworn_frigate_kill_battle
+[inside] wrote voidsworn_frigate_kill_close_a
+[inside] core age=0.333 counted_flashes=[8.4, 8.75000000000001, 9.10000000000003, 9.45000000000005, 9.80000000000007, 10.1833333333334, 10.8500000000001, 11.0000000000001, 11.5666666666668, 12.0333333333335, 12.5500000000002, 13.0666666666669, 13.7500000000003, 24.5333333333332, 24.9666666666665]
+[inside] wrote voidsworn_frigate_kill_core
+[inside] wrote voidsworn_frigate_kill_inside
+[inside] wrote voidsworn_frigate_kill_close_b
+[inside] wrote voidsworn_frigate_kill_secondary
+[inside] wrote voidsworn_frigate_kill_close_c
+[inside] wrote voidsworn_frigate_kill_embers
+[attach] battle C C: skipped 0; breach hp 0 ray 3 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[attach] hp_core missing on C (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_breach missing on C; using the surface ray
+[attach] scorch on C: placed on the plating (a surface sample; not a hard point type)
+[inside] corsair_battlebarge L=24.00 holes=3 rebuild frames=150
+[inside] wrote corsair_battlebarge_hole_a0_front
+[inside] wrote corsair_battlebarge_hole_a0_side
+[inside] wrote corsair_battlebarge_hole_b0_front
+[inside] wrote corsair_battlebarge_hole_b0_side
+[inside] wrote corsair_battlebarge_hole_zoom
+[inside] wrote corsair_battlebarge_kill_power_down
+[inside] wrote corsair_battlebarge_kill_vent
+[inside] wrote corsair_battlebarge_kill_crack
+[inside] split=41.483 pieces=3 wait_frames=0
+[inside] wrote corsair_battlebarge_kill_battle
+[inside] wrote corsair_battlebarge_kill_close_a
+[inside] core age=0.333 counted_flashes=[8.4, 8.75000000000001, 9.10000000000003, 9.45000000000005, 9.80000000000007, 10.1833333333334, 10.8500000000001, 11.0000000000001, 11.5666666666668, 12.0333333333335, 12.5500000000002, 13.0666666666669, 13.7500000000003, 24.5333333333332, 24.9666666666665, 39.9833333333323, 40.3333333333323, 40.6833333333323, 41.0333333333323, 41.3833333333323, 41.7666666666656]
+[inside] wrote corsair_battlebarge_kill_core
+[inside] wrote corsair_battlebarge_kill_inside
+[inside] wrote corsair_battlebarge_kill_close_b
+[inside] wrote corsair_battlebarge_kill_secondary
+[inside] wrote corsair_battlebarge_kill_close_c
+[inside] wrote corsair_battlebarge_kill_embers
+[attach] battle C C: skipped 0; breach hp 0 ray 6 centre 0 skip 0; scorch hp 0 ray 9 centre 0 skip 0
+[inside] done
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+[attach] hp_core missing on 0 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 1 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 2 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 3 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 4 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 5 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 6 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 7 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 8 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 9 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 10 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 11 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 12 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 13 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 14 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 15 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 16 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 17 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 18 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+[attach] hp_core missing on 19 (a load error, HARDPOINTS.md); the effects use the centre of volume of its triangles
+DESTRUCTION_FLEET ships=20 renderer=forward_plus adapter=NVIDIA GeForce RTX 5080 frames=660 avg_ms=1.587 p99_ms=5.821 one_percent_low_fps=110.6 max_ms=19.244 fx_p99_ms=3.565 particles=700 wrecks=20
+Checks finished. Logs and screenshots: C:\Users\rcbai\AppData\Local\Temp\voidsworn538_20261114_164319/destruction_final

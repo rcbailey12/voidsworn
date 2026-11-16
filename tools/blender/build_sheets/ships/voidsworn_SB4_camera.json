@@ -1,0 +1,21 @@
+{
+ "az": 30.64844384297882,
+ "el": 20.732385102942565,
+ "roll": 2.8791826294365945,
+ "dist": 62.59030631804277,
+ "mm": 1334.34054912829,
+ "target": [
+  0.0,
+  0.0,
+  0.0
+ ],
+ "sx": 0.011842407208301176,
+ "sy": 0.02996321114457663,
+ "res": [
+  1080,
+  720
+ ],
+ "iou": 0.9055,
+ "body_iou": 0.9091,
+ "note": "SB4 beauty (one three-quarter picture, no true views): a coarse grid over the view angles (contrib/opus/tools/issue738/grid.py), then fit.py refined all seven camera numbers (never the craft); started from the bow-port side, since the block's outline also fits back to front; concept mask: contrib/opus/tools/issue738/mask.py, largest shape (the name label left out)"
+}
