@@ -87,6 +87,7 @@ set "TMO_LOG=%O%\log.txt"
 set "TMO_ERR_LOG="
 rem CODEX_CAP is a hard ceiling in seconds; STALL_MIN defaults to 30 in the watchdog.
 if not defined CODEX_CAP set "CODEX_CAP=21600"
+%COMMON% announce "%O%" "%N%" codex "%R%" "%CODEX_CAP%" "codex_issue.bat %N%" "%PUSHMODE%"
 if defined CODEX_TEST_ROOT if defined CODEX_TEST_AGENT goto :testagent
 call "%TP%tmo.bat" %CODEX_CAP% "%APPDATA%\npm\codex.cmd" exec -m gpt-6.1-sol -c model_reasoning_effort=%EFF% --approve-for-me --ephemeral --color never -C "%R%" -o "%O%\last.md" "Read CODEX_TASK.md in this folder and do exactly what it says. Do not commit." > "%O%\log.txt" 2>&1
 set "CX=%ERRORLEVEL%"
@@ -125,7 +126,7 @@ if errorlevel 1 goto :guardfail
 git diff --cached --quiet
 if errorlevel 1 goto :haschange
 if defined PARTIAL goto :haschange
-findstr /c:"Resumed by merging" "%O%\resume.txt" >nul
+findstr /c:"Resumed by merging" /c:"Base already merged" "%O%\resume.txt" >nul
 if errorlevel 1 goto :nochange
 :haschange
 rem A chain needs green runner checks as well as a confirmed non-partial push.

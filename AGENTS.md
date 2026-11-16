@@ -38,11 +38,16 @@ Auditing from outside? Follow `docs/REVIEW_PROTOCOL.md` exactly (RULEBOOK 2.11) 
   Brief: <path to the brief, or "below">
   Deliver to: <folder or files>
   Branch: <agent>/issue-<number>
+  Base: <branch>
   Effort (Codex): high | xhigh   or   Models (Muse): <set>
   Done when: <the check that proves it, and what Ryan will see>
   ```
   Muse's Models line for research, design and review jobs: Rey writes a blind leg first, DeepSeek, Qwen, Grok and Flash each
   write a leg, Rey chairs (R89, R231, RULEBOOK 2.8). Muse's standing instructions: `contrib/opus/briefs/muse_standing_rule.md`.
+- Use the optional Base line for an earlier branch the job needs. The runner merges `origin/<branch>` and commits the
+  merge before the agent starts; a conflict stops the run with the checkout kept. Briefs never ask the agent to merge.
+  The PC runners set the running label and one status comment per job branch, edit it on retries and at the end, and
+  clear the label at the end. GitHub reporting failures are logged and never fail the job (RULEBOOK 2.4, issue 846).
 - Ship build issues add four lines to the block (Ryan, Nov 11 2026, R214; template in docs/playbooks/ships.md section 7):
   Route per part, Inside, Paint stack, Budget. Every build pull request body carries its done-when evidence and a method line
   (build sheet link, manifest, budget numbers, changes made to the sheet); the outside check (issue 256) returns a build PR

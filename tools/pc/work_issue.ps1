@@ -97,6 +97,10 @@ if ($mode -eq 'prep') {
   } else {
     $i = Invoke-RestMethod -UseBasicParsing -Headers @{ 'User-Agent' = 'voidsworn-workhorse' } -Uri "https://api.github.com/repos/rcbailey12/voidsworn/issues/$n"
   }
+  $bodyFile = Join-Path $out 'issue_body.txt'
+  [IO.File]::WriteAllText($bodyFile, [string]$i.body, $utf8)
+  & (Join-Path $PSScriptRoot 'runner_common.ps1') base $repo $out $bodyFile
+  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
   $resume = Read-Txt (Join-Path $out 'resume.txt')
   $task = @"
 # Workhorse job: issue #$n, "$($i.title)"
@@ -111,6 +115,7 @@ Rules:
 - Do exactly what the job below asks. Change nothing else. Read the brief it names first.
 - No em dashes in anything you write. Plain words, plain ASCII.
 - Do not commit and do not push: the runner does that after you finish.
+- The runner handles Base and resume merges before you start. Do not run git merge; report a missing base in your report.
 - Keep scratch output (logs, temp files) out of this folder, in the system temp folder.
 - Save the screenshots your report links to in $out\shots (create it). The reviewer sees that folder.
 - Finish with a short report: what you changed (files), each check you ran and its result (paste the PASS or FAIL lines),
@@ -368,7 +373,7 @@ elseif ($mode -eq 'commit') {
   if ($guard) { $block += "$guard`n`n" }
   if ($base -and $base -ne $pre) {
     $ac = @(Git-Lines log --format='%h %s' "$base..$pre")
-    if ($ac.Count) { $block += "Commits the agent made itself (merges included), under this one:`n" + (($ac | ForEach-Object { "- $_" }) -join "`n") + "`n`n" }
+    if ($ac.Count) { $block += "Earlier commits (runner Base and resume merges included), under this one:`n" + (($ac | ForEach-Object { "- $_" }) -join "`n") + "`n`n" }
   }
   if ($old) { $block += "Earlier tip of $br kept: $old is this commit's second parent, so the earlier run stays reachable. This commit's files are this run's alone.`n" }
   $block += "Run-Number: $runNo`n"

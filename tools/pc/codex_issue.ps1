@@ -12,6 +12,11 @@ if ($mode -eq 'prep') {
     $i = Invoke-RestMethod -UseBasicParsing -Headers @{ 'User-Agent' = 'voidsworn-codex-board' } `
       -Uri "https://api.github.com/repos/rcbailey12/voidsworn/issues/$n"
   }
+  $body = [string]$i.body
+  $bodyFile = Join-Path $out 'issue_body.txt'
+  [IO.File]::WriteAllText($bodyFile, $body, $utf8)
+  & (Join-Path $PSScriptRoot 'runner_common.ps1') base $repo $out $bodyFile
+  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
   $resume = ''; $rp = Join-Path $out 'resume.txt'
   if (Test-Path -LiteralPath $rp) { $resume = [IO.File]::ReadAllText($rp) }
   $body = [string]$i.body
@@ -31,6 +36,7 @@ Rules:
   Godot, if a check needs it: $godot (use --headless).
 - No em dashes in anything you write. Plain words.
 - Do not commit and do not push: the runner does that after you finish.
+- The runner handles Base and resume merges before you start. Do not run git merge; report a missing base in your report.
 - Keep scratch output (logs, temp checks) in %TEMP%, not in this folder.
 - Save the screenshots, sheets and recordings your report links to in $out\shots (create it). Opus can only see that folder,
   not %TEMP%; link them there in your report.
