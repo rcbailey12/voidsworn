@@ -152,6 +152,95 @@ Assert (-not (Get-Content $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json).running) '
 $env:PC_RUNNER_TEST = '1'
 Remove-Item Function:\gh
 Pass 'production dry runs validate the current brief without labels or comments'
+# Issue 914: exercise production lookup with real executable files under fake install roots.
+# The executable forwards only to the existing local REST fixture, never to GitHub.
+$savedPath = $env:PATH; $savedProgramFiles = $env:ProgramFiles; $savedLocal = $env:LOCALAPPDATA
+$lookup = Join-Path $root 'gh lookup'
+$program = Join-Path $lookup 'Program Files'
+$local = Join-Path $lookup 'Local App Data'
+$onPath = Join-Path $lookup 'bin'
+$empty = Join-Path $lookup 'empty'
+foreach ($p in @($program,$local,$onPath,$empty)) { $null = New-Item -ItemType Directory -Path $p -Force }
+$programGh = Join-Path $program 'GitHub CLI/gh.exe'
+$localGh = Join-Path $local 'Programs/GitHub CLI/gh.exe'
+$pathGh = Join-Path $onPath 'gh.exe'
+foreach ($p in @($programGh,$localGh)) { $null = New-Item -ItemType Directory -Path (Split-Path -Parent $p) -Force }
+if ($PSVersionTable.Platform -ne 'Unix') {
+  Add-Type -OutputAssembly $pathGh -OutputType ConsoleApplication -TypeDefinition @'
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Text;
+public class FakeGhLookup {
+  static string Literal(string value) { return "'" + value.Replace("'", "''") + "'"; }
+  public static int Main(string[] args) {
+    string command = "& " + Literal(Environment.GetEnvironmentVariable("PC_TEST_GH"));
+    foreach (string arg in args) command += " " + Literal(arg);
+    command += "; exit $LASTEXITCODE";
+    var start = new ProcessStartInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System),
+      @"WindowsPowerShell\\v1.0\\powershell.exe"), "-NoProfile -ExecutionPolicy Bypass -EncodedCommand " +
+      Convert.ToBase64String(Encoding.Unicode.GetBytes(command)));
+    start.UseShellExecute = false; start.CreateNoWindow = true;
+    start.RedirectStandardOutput = true; start.RedirectStandardError = true;
+    using (var child = Process.Start(start)) {
+      Console.Write(child.StandardOutput.ReadToEnd()); Console.Error.Write(child.StandardError.ReadToEnd());
+      child.WaitForExit(); return child.ExitCode;
+    }
+  }
+}
+'@
+} else {
+  $pwsh = (Get-Command pwsh -CommandType Application).Source
+  Put $pathGh ("#!/bin/sh" + [char]10 + 'exec "' + $pwsh + '" -NoProfile -File "$PC_TEST_GH" "$@"' + [char]10)
+  & chmod +x $pathGh
+  # Linux command lookup uses the extensionless name, while the standard install paths use gh.exe.
+  Copy-Item -LiteralPath $pathGh -Destination (Join-Path $onPath 'gh')
+}
+Copy-Item -LiteralPath $pathGh -Destination $programGh
+Copy-Item -LiteralPath $pathGh -Destination $localGh
+function Invoke-RestMethod { throw 'lookup fixture must use fake gh, never public REST' }
+try {
+  foreach ($case in @('path','program','local','missing')) {
+    Init ('gh-lookup-' + $case)
+    $env:ProgramFiles = if ($case -in @('path','program')) { $program } else { $empty }
+    $env:LOCALAPPDATA = $local
+    if ($case -eq 'missing') { $env:LOCALAPPDATA = $empty }
+    $env:PATH = if ($case -eq 'path') { $onPath } else { $empty }
+    Assert ([bool](Get-Command gh -ErrorAction SilentlyContinue) -eq ($case -eq 'path')) 'fixture PATH contains gh only for the PATH case'
+    $env:PC_RUNNER_TEST = '0'
+    & $common announce $out 846 codex $repo 21600 'resume' dry
+    $code = $LASTEXITCODE
+    $env:PC_RUNNER_TEST = '1'
+    $log = [IO.File]::ReadAllText((Join-Path $out 'result.txt'))
+    if ($case -eq 'missing') {
+      Assert ($code -eq 14) 'no executable still refuses before work'
+      Assert ($log.Contains('GitHub CLI gh is missing; install it and run gh auth login before starting PC jobs')) 'same missing gh message'
+      Assert (@(Calls).Count -eq 0) 'missing gh cannot call GitHub'
+    } else {
+      Assert ($code -eq 0) "production lookup failed: $case"
+      $selected = if ($case -eq 'program') { $programGh } elseif ($case -eq 'local') { $localGh } else { (Get-Command gh).Source }
+      Assert ($log.Contains("GitHub CLI: $selected")) "log the selected $case executable"
+      Assert (@(Calls).Count -gt 0) 'selected executable actually ran the REST fixture'
+      Assert (@(Calls | Where-Object { $_.method -ne 'GET' }).Count -eq 0) 'production dry lookup remains read-only'
+    }
+    Pass ("production gh lookup: " + $case)
+  }
+  Init 'gh-lookup-board'
+  $db = Get-Content $env:PC_TEST_GH_DB -Raw | ConvertFrom-Json
+  $db | Add-Member -NotePropertyName issues -NotePropertyValue @()
+  Put $env:PC_TEST_GH_DB ($db | ConvertTo-Json -Depth 12)
+  $env:ProgramFiles = $program; $env:LOCALAPPDATA = $local; $env:PATH = $empty
+  $env:PC_RUNNER_TEST = '0'
+  Shared @('board-dryrun',$out)
+  $log = [IO.File]::ReadAllText((Join-Path $out 'result.txt'))
+  Assert ($log.Contains("GitHub CLI: $programGh") -and -not $log.Contains('gh is missing')) 'board audit finds the install without a false missing-tool warning'
+  Assert (@(Calls).Count -eq 3 -and @(Calls | Where-Object { $_.method -ne 'GET' }).Count -eq 0) 'board fallback uses only the fake gh GETs'
+  Pass 'board dry run uses the same install-folder fallback'
+} finally {
+  $env:PATH = $savedPath; $env:ProgramFiles = $savedProgramFiles; $env:LOCALAPPDATA = $savedLocal
+  $env:PC_RUNNER_TEST = '1'
+  Remove-Item Function:\\Invoke-RestMethod
+}
 # The job checks exercise the shared start contract on every CI host; runner_selftest also drives real Windows .bat files.
 foreach ($case in @('closed','running','pr','linked-pr','branch','other-partial','missing','duplicate','empty','missing-field','missing-effort','quoted-marker','two-fixed','earlier-run','old-numbered-run')) {
   Init ("refuse-" + $case)
@@ -384,7 +473,7 @@ Write-Output "PASS runner job checks ($script:passed groups)"
 `);
 const ps = process.platform === 'win32' ? 'powershell.exe' : 'pwsh';
 r = spawnSync(ps, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path.join(root, 'probes.ps1'), pc, root], {
-  encoding: 'utf8', windowsHide: true, timeout: 90000,
+  cwd: root, encoding: 'utf8', windowsHide: true, timeout: 90000,
   env: { ...process.env, PC_RUNNER_TEST: '1', PC_TEST_GH: gh.fake, PC_TEST_GH_FAIL: '',
     // The Windows prep helper builds its Godot path from USERPROFILE, which Linux does not provide.
     USERPROFILE: root,
