@@ -49,7 +49,7 @@ specs described braking jets and slow motion the game did not have (issue 492). 
 
 0.8 **After a day with many rulings, the Board has an outside model check that each one landed in the document a worker reads
 (a dropped-context sweep).** Batch rulings that only set a rule (no working method) may land in this book alone. Why: the
-insides rule was recorded but never reached the builder's playbook (R209, R211); Muse's method audit of R201 to R218 found
+insides rule was recorded but never reached the builder's playbook (R209, R211); Muse's method audit found
 the screens half of R218 written nowhere (issue 558). Set: Board, Nov 12 (R211, issue 558).
 
 0.9 **How a route is set up (any multi-step pipeline: ships, effects, captures, installs).** (a) A method change is done
@@ -133,7 +133,8 @@ passed fit, weapon match, triangles and density while missing their rulings, and
 Effort or Models, Done when; optional `Base: <branch>`; ship builds add Route per part, Inside, Paint stack, Budget, R214). Agents deliver on
 `codex/`, `muse/`, `work/` or `opus/issue-N` branches; nobody pushes to main except LOOP.md and FINDINGS. Why: any agent can
 pick up a job without asking, and main stays reviewed. Set: Ryan, Nov 2 and 4 (R75, R102). Ids: agents-04, agents-05,
-agents-09.
+agents-09. A run brief for a PC job goes into the issue body (under the fixed block, marked as the job now): the runner
+builds the task from the body only and never reads comments (R281).
 The PC runner merges `origin/<branch>` from the optional Base line and commits that merge before starting the agent;
 a conflict stops before the agent with the checkout kept. Briefs name Base instead of asking an agent to merge while
 also forbidding commits. The runner sets the running label and one status comment per job branch (edited in place on
@@ -194,7 +195,7 @@ because a cloud task runs the default model OpenAI picks and cannot be pinned (O
 jobs run on a third local lane on the PC instead (lane C, R268, Ryan Nov 15: "yeah lane c is fine"), pinned like the others.
 If OpenAI lets cloud tasks pin a model, this can be asked again.
 Why: "We don't want to force using Astra or something. Just not accidentally run Luna or something, that's why we usually
-use Sol 6.1" (R216). Ends when Ryan picks another model. Set: Ryan, Nov 2 (R75), Nov 11 (R216) and Nov 15 (R267). Ids: R75b, R267, agents-07.
+use Sol 6.1" (R216). Ends when Ryan picks another model. Set: Ryan, Nov 2 (R75), Nov 11 (R216) and Nov 15 (R268). Ids: R75b, R268, agents-07.
 Exception (R270, Ryan Nov 15: "Your ChatGPT dot"): Ryan's ChatGPT dot is the repo librarian. It runs in OpenAI's cloud, but
 read-only: it reads main, GitHub issues and PRs, and reports findings to Ryan (later to one standing librarian issue); it never
 pushes, edits, merges, closes or decides a rule. Every finding is checked by the Board against live main before anything changes.
@@ -687,7 +688,7 @@ had to move (contrib/codex/reviews/rules_sweep_checks.md). Set: Board, Nov 11 (0
 
 12.2 **A check's state comes from the real functions, never typed by hand; missing things fail loudly; one source per fact.**
 Why: a fixture typed by hand let 137 checks pass while real play was broken (R155). Set: Board, after the outside audit
-(R154 to R161). Ids: R155a, handoff-08.
+(R154, R155). Ids: R155a, handoff-08.
 
 12.3 **Every push to an agent branch runs the checks once; every test script under godot/**/test/ has its line in
 godot/tools/ci/godot_checks.txt.** Why: a missing test must fail loudly (PR 400). Set: Board. Ids: handoff-07, loop-10.

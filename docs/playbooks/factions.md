@@ -222,7 +222,7 @@ execution is off" and "Start over with a new idea". So: the idea of grown, livin
 
 The order Ryan set: the build pipeline was proven first (ship rounds 7 and 8, PR 401); then every faction's concepts are redone
 from the current lore, direction first ("Direction first, then fleets"), and only then built. Eight rounds of pictures later
-(FINDINGS R172 to R206), this is the state. What makes a picture a build reference now:
+(the FINDINGS rows on the concept rounds), this is the state. What makes a picture a build reference now:
 
 - **It is in the one concept style (R197).** Ryan, Nov 11: "Generally that style and tone is exactly how we should look at the
   concepts for our ships across fsctions. Pretty realistic and detailed to help with the builds... this style is how it should

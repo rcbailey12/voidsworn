@@ -3,7 +3,7 @@
 Issue 405, ships track. Written by the Board (Fable 5.2), Nov 11 2026, after Ryan's review of the eighteen round 1 direction
 pictures (contrib/muse/design/concept_directions_2026_11/). Read docs/playbooks/factions.md first: this page narrows it.
 
-## Image rounds now (Nov 11 2026, R192 to R207): read this first
+## Image rounds now (Nov 11 2026, the FINDINGS rows on the concept rounds): read this first
 
 The gate below still holds for every picture. Rounds 3 to 8 added these rules for how a picture is made and judged:
 

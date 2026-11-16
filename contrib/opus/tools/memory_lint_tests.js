@@ -31,16 +31,9 @@ const FINDINGS = 'contrib/opus/FINDINGS.md';
 const HANDOFF_TARGET = 50; // "about one page" of markdown
 const LOOP_TARGET = 15;
 
-// On main today (Nov 15 2026). Each is listed in the pull request body with its reason.
-const KNOWN_BASELINE = [
-  // R267 was withdrawn by R268 the same hour; RULEBOOK 2.7 still names it in its Set line.
-  'superseded|docs/RULEBOOK.md|R267',
-  // Historical or descriptive ranges in prose, not live "these rules are in force" pointers.
-  'range|docs/RULEBOOK.md|R201 to R218',
-  'range|docs/RULEBOOK.md|R154 to R161',
-  'range|docs/playbooks/concepts_round2.md|R192 to R207',
-  'range|docs/playbooks/factions.md|R172 to R206',
-];
+// Empty: the five known items were cleared by issue 865 (Nov 16 2026). A baseline entry
+// that stops firing is an error, so the list can only shrink.
+const KNOWN_BASELINE = [];
 
 function readIf(root, rel) {
   const full = path.join(root, rel);
