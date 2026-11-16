@@ -1,6 +1,6 @@
 # corsair_KB1CC: Wide Glacis bomber (Ashfall Hullbreaker bomber wing craft), build sheet
 
-Ashfall Hullbreakers (corsair) | class Squadron | version 1 (first sheet), 2026-11-15 | blockout: rendered in the issue 793 sandbox (Blender 5.3, Cycles CPU); not on the PC: `build.py corsair_KB1CC <out> render` rebuilds it from this file
+Ashfall Hullbreakers (corsair) | class Squadron | version 2 (R275 shape pass), 2026-11-15 | blockout: rendered in the issue 793 sandbox (Blender 5.3, Cycles CPU); not on the PC: `build.py corsair_KB1CC <out> render` rebuilds it from this file
 
 **Length 1.6 world units** (data.js bomber (cls 'Squadron', the Hullbreaker wing: corsair sq 'bomber'); length from godot/render/hull_table.gd CLS_LEN['Squadron'] = 1.6 (drawn x SHIP_K 1.6 x SQUADRON_K 1.5 = 3.84 on the board, docs/playbooks/scale.md)). Frame: +X bow, +Y port, +Z up; station % from the prow tip; offset + port / - starboard; height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.
 

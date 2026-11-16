@@ -83,12 +83,28 @@ def overview(code, rd):
     d.text((18, 10), '%s | the whole concept beside the build (R229)' % code, fill=INK, font=F(26))
     paste(im, Image.open(os.path.join(REPO, c['con'])).convert('RGB'), 18, 90, 615, 420)
     b = Image.open(rd + '/beauty_cam.png').convert('RGBA'); bg = Image.new('RGBA', b.size, (14, 14, 16, 255)); bg.alpha_composite(b)
-    paste(im, bg.convert('RGB'), 647, 90, 615, 420)
     d.text((22, 62), '%s (concept of record, R259)' % c['cname'], fill=ACC, font=F(17))
-    d.text((651, 62), 'Build, unpainted, at the camera fitted to %s (outline overlap %d%%)' % (c['cname'].split(' (')[0], round(cam['iou'] * 100)), fill=ACC, font=F(15))
-    y = 530
-    for line in c['notes']:
-        d.text((22, y), line, fill=INK, font=F(16)); y += 28
+    fitted = 'Build, unpainted, at the camera fitted to %s (outline overlap %d%%)' % (c['cname'].split(' (')[0], round(cam['iou'] * 100))
+    if os.path.exists(rd + '/turned.png'):
+        # R275 (KB1CC): the fitted camera looks from almost dead ahead, where the glacis ramp foreshortens to a block; the big panel
+        # is the same build turned by eye to the picture's three-quarter (game_view.py, no fit), the fitted view small below
+        t_ = Image.open(rd + '/turned.png').convert('RGB'); a_ = np.asarray(t_).astype(int)
+        ys_, xs_ = np.where(np.abs(a_ - np.median(a_.reshape(-1, 3), axis=0)).sum(2) > 20)   # the craft on the sky, cropped to it
+        cx_, cy_ = (xs_.min() + xs_.max()) / 2, (ys_.min() + ys_.max()) / 2
+        hw_ = max(xs_.max() - xs_.min(), (ys_.max() - ys_.min()) * 615 / 420) * 0.56; hh_ = hw_ * 420 / 615
+        paste(im, t_.crop((int(cx_ - hw_), int(cy_ - hh_), int(cx_ + hw_), int(cy_ + hh_))), 647, 90, 615, 420)
+        d.text((651, 62), 'Build, unpainted, turned by eye to %s\'s three-quarter (no fit)' % c['cname'], fill=ACC, font=F(15))
+        paste(im, bg.convert('RGB'), 18, 528, 300, 176); d.rectangle((18, 528, 318, 704), outline=ACC, width=1)
+        d.text((22, 512), fitted.replace('Build, unpainted, at', 'At'), fill=ACC, font=F(12))
+        y = 528
+        for line in c['notes']:
+            d.text((336, y), line, fill=INK, font=F(15)); y += 26
+    else:
+        paste(im, bg.convert('RGB'), 647, 90, 615, 420)
+        d.text((651, 62), fitted, fill=ACC, font=F(15))
+        y = 530
+        for line in c['notes']:
+            d.text((22, y), line, fill=INK, font=F(16)); y += 28
     im.save(D + '/%s_compare.jpg' % code, quality=90)
     print('overview and compare written for', code)
 

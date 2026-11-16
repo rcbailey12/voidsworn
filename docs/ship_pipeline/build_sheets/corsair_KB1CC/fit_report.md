@@ -1,4 +1,4 @@
-# corsair_KB1CC fit report (first sheet; RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
+# corsair_KB1CC fit report (R275 shape pass; RULEBOOK 5.15 and 5.16, ships.md 2c, R217 to R219)
 
 Made by `tools/blender/build_sheets/clash.py` on the built blockout (it runs inside every `build.py ... render` and on its own
 with `build.py <code> <out> fit`). What it tests, on every part of every type:
@@ -29,7 +29,7 @@ also `turret=1`); its fixed ring and bolt ring `<id>_mount_<material>` stay on t
 (`turret=0`, `gun_fixed=1`).
 
 
-## How first sheet fixed them
+## How R275 shape pass fixed them
 
 | Clash (before) | Fix |
 |---|---|

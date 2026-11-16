@@ -15,7 +15,8 @@ final designer and KB1C-C is a base (R233, R236). Rendered in the issue 793 sand
 ![corsair_KB1CC overview](corsair_KB1CC_sheet_overview.jpg)
 
 Start here: [the overview](corsair_KB1CC_sheet_overview.jpg), [the whole concept beside the build](corsair_KB1CC_compare.jpg)
-(R229), [the three issue 793 craft beside their flagships at true game scale](../hegemony_HF1D/issue793_craft_true_scale.jpg),
+(R229; since R275 its big build panel is the craft turned by eye to the picture's three-quarter, because the fitted camera looks
+from almost dead ahead, where the ramp foreshortens to a block; the fitted view is the small panel), [the three issue 793 craft beside their flagships at true game scale](../hegemony_HF1D/issue793_craft_true_scale.jpg),
 [the three at the battle camera, game size](../hegemony_HF1D/issue793_craft_battle_cam.jpg), [the weapon review](weapon_review.jpg)
 (R241), then the full [sheet](sheet.jpg), [side_by_side.jpg](side_by_side.jpg), [fit_view.jpg](fit_view.jpg) and
 [cells.jpg](cells.jpg) (the concept is one three-quarter picture with no true views, so cells.jpg shows it in place of the top
@@ -101,6 +102,10 @@ track or roller; the stern row is five mismatched bells in a recess; no dishes, 
 
 - The colours are schematic zones; the Hullbreaker paint stack (rust, soot, trophy colours, the red running lights) paints the
   craft later.
+- The ramp's front third runs between the shoulders: by the design file's numbers the shoulders' tops (0.064 of the length at
+  their inner edge, the starboard one a touch lower) stand above the ramp from the bow back to about station 0.13 to 0.19, so the
+  rails start at the foot of the shoulders' inner walls and the ramp only stands clear of them a third of the way back. It keeps
+  the corner pods at their height; lowering the shoulders' fore stations would bring the whole ramp into view. A Board call.
 - At its new width the bombers touch their wingmates in the game's wing formation (godot/render/squadron_wing.gd sets the
   offsets from the craft's length, about 0.95 of it sideways; see the true-scale and battle pictures). The formation, or the craft
   data that sizes it, needs a wider spacing for this bomber; a Board call.

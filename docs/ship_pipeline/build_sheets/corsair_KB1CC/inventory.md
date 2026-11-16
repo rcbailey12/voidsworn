@@ -7,15 +7,15 @@ make it read as that thing, and its job: what it does on the ship (R221: a part 
 
 | ID | Job | Type | What | Count | Cells | Reads as (sub-parts) | Source |
 |---|---|---|---|---:|---|---|---|
-| body | the craft's main body: the glacis armour over the crew, the lid over the reactor, the stern housing over the drives | hull | one wide low body: a continuous shallow glacis from the bow toe up to the lip, the flat lid, a step up to the stern housing; a flat belly with chines | 1 | bow/top, bow/side, bow/below, mid/top, mid/side, mid/below, stern/top, stern/side, stern/below | the glacis slope and its step to the lid, the chamfers, the stern housing's step up | picture |
-| glacis_plates | the glacis and lid armour: scrap plate in uneven courses, patches over the joints | plate | patched plates in courses over the glacis, the lid and the flanks | 1 | bow/top, bow/side, mid/top, mid/side, stern/top | slabs with bevels, thickness steps, patches over joints, rivets on a share | picture |
+| body | the craft's main body: the glacis ramp armour over the reactor and the crew, the stern housing over the drives | hull | one wide body: its top one long glacis ramp, low at the bow lip and rising aft to the armoured lip and the stern housing (R275); a flat belly with chines | 1 | bow/top, bow/side, bow/below, mid/top, mid/side, mid/below, stern/top, stern/side, stern/below | the glacis ramp rising aft, the chamfers, the stern housing at its top | picture |
+| glacis_plates | the glacis ramp's armour: the Hullbreaker patchwork of big uneven plates (R275) | plate | a patchwork of big plates of mixed size and angle over the ramp and the flanks, lapping one another | 1 | bow/top, bow/side, mid/top, mid/side, stern/top | slabs with bevels, plates at their own heights and angles, patches on some, rivets on a few | picture |
 | belly_plates | the belly's armour | plate | patched plates over the flat belly (the concept shows no underside) | 1 | bow/below, mid/below, stern/below | slabs with bevels and steps | designed |
 | bomb_tubes | the bomb payload (data.js bombs T, 2 shots): the wing's only weapon, one tube a corner, both firing every volley | bomb_tube | two bomb tubes at the glacis's extreme corners, each in a dark armoured collar on an eight-sided drum (the concept's two round corner mouths) | 2 | bow/top, bow/side, bow/below | the dark collar with welded bolts, the bore, the bomb nose seated deep inside, the drum, two riveted bands, a welded patch (R221) | picture |
-| rails | the armoured edge frames that stiffen the glacis plate and guard the lid's edges | rib | a raised rail along each top edge of the body, from the bow toe up the glacis and along the lid, with bolted clamps (the concept's raised glacis edges) | 1 | bow/top, mid/top, stern/top | the rail, its clamp brackets | picture |
-| lip | the armoured lip that ends the glacis (against the ramp read) and carries the crew's vision slit | tier | a shallow armoured lip across the top of the glacis (the round 3 sheet (DeepSeek)) | 1 | bow/top, mid/top | its sloped face, its roof, the slit opening | picture |
-| vision_slit | the crew's view out (no canopy, R254): the bombardier aims the craft | slit | one vision slit in the lip's face, a little to port | 1 | bow/top | a welded frame round a dark pane | designed |
+| rails | the armoured edge frames that stiffen the glacis plate and guard the ramp's edges | rib | a raised rail along each top edge of the body, running diagonally up the ramp from the bow toe to the stern housing, with bolted clamps (the concept's raised glacis edges) | 1 | bow/top, mid/top, stern/top | the rail, its clamp brackets | picture |
+| lip | the armoured lip that ends the glacis (against the ramp read) and carries the crew's vision slit | tier | an armoured lip across the top of the glacis ramp, against the stern housing (the round 3 sheet (DeepSeek)) | 1 | stern/top | its sloped face, its roof, the slit opening | picture |
+| vision_slit | the crew's view out (no canopy, R254): the bombardier aims the craft | slit | one vision slit in the lip's face, a little to port, looking forward down the ramp | 1 | stern/top | a welded frame round a dark pane | designed |
 | shoulders | the side bodies behind the corner pods: each holds a bomb row (the magazine) and its hoist | tier | a shoulder either side, its top sloping down and out to a thin edge; the starboard one a touch lower and shorter (lopsided) | 1 | bow/top, mid/top, mid/side, mid/below, stern/top, stern/side | the sloped top, the thin outer edge, the chamfered belly | picture |
-| shoulder_plates | the shoulders' armour | plate | patched plates in courses over the shoulders | 1 | mid/top, mid/side, stern/top | slabs with bevels, thickness steps, patches over joints | picture |
+| shoulder_plates | the shoulders' armour | plate | a patchwork of big uneven plates over the shoulders | 1 | mid/top, mid/side, stern/top | slabs with bevels, plates at their own heights and angles, patches on some | picture |
 | hoist_bays | the bomb hoists: they walk the next bomb from the magazine row into its tube, behind armoured doors | machbay | one machinery bay in each shoulder's sloped top, a door in a second tone over its fore part (the concept's recessed side bays with armoured doors) | 2 | mid/top, mid/side | a heavy frame, a dark back, pipes, the hoist block, the door on hinges (two-tone so it survives 32 px, Qwen) | picture |
 | drives | drive (sp 5): the stern thruster bank, nozzle clusters inside an armoured block (the owner's rule for craft) | engine | five mismatched salvaged bells, the centre one the largest | 5 | stern/top, stern/side, stern/below | a bell with a lip, an ember lining, a glowing throat and plug, a cooling ring, a drum with a collar and a band, gimbal struts | picture |
 | bank_recess | the armoured recess round the thruster bank | pylon | a hood over the bank, cheeks at its sides, a sill under it (the concept's recessed stern bank) | 1 | stern/top, stern/side | the welded web plates and their faces | picture |
@@ -49,27 +49,25 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| body | one wide low body: a continuous shallow glacis from the bow toe up to  | 1 / 1 | Y | Y | Y |
-| glacis_plates | patched plates in courses over the glacis, the lid and the flanks | 1 / 1 | Y | Y | Y |
+| body | one wide body: its top one long glacis ramp, low at the bow lip and ri | 1 / 1 | Y | Y | Y |
+| glacis_plates | a patchwork of big plates of mixed size and angle over the ramp and th | 1 / 1 | Y | Y | Y |
 | bomb_tubes | two bomb tubes at the glacis's extreme corners, each in a dark armoure | 2 / 2 | Y | Y | Y |
-| rails | a raised rail along each top edge of the body, from the bow toe up the | 1 / 1 | Y | Y | Y |
-| lip | a shallow armoured lip across the top of the glacis | 1 / 1 | Y | Y | Y |
-| vision_slit | one vision slit in the lip's face, a little to port | 1 / 1 | Y | Y | Y |
+| rails | a raised rail along each top edge of the body, running diagonally up t | 1 / 1 | Y | Y | Y |
 | shoulders | a shoulder either side, its top sloping down and out to a thin edge; t | 1 / 1 | Y | Y | Y |
 
 ### bow/side
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| body | one wide low body: a continuous shallow glacis from the bow toe up to  | 1 / 1 | Y | Y | Y |
-| glacis_plates | patched plates in courses over the glacis, the lid and the flanks | 1 / 1 | Y | Y | Y |
+| body | one wide body: its top one long glacis ramp, low at the bow lip and ri | 1 / 1 | Y | Y | Y |
+| glacis_plates | a patchwork of big plates of mixed size and angle over the ramp and th | 1 / 1 | Y | Y | Y |
 | bomb_tubes | two bomb tubes at the glacis's extreme corners, each in a dark armoure | 2 / 2 | Y | Y | Y |
 
 ### bow/below
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| body | one wide low body: a continuous shallow glacis from the bow toe up to  | 1 / 1 | Y | Y | Y |
+| body | one wide body: its top one long glacis ramp, low at the bow lip and ri | 1 / 1 | Y | Y | Y |
 | belly_plates | patched plates over the flat belly | 1 / 1 | Y | Y | Y |
 | bomb_tubes | two bomb tubes at the glacis's extreme corners, each in a dark armoure | 2 / 2 | Y | Y | Y |
 
@@ -77,29 +75,28 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| body | one wide low body: a continuous shallow glacis from the bow toe up to  | 1 / 1 | Y | Y | Y |
-| glacis_plates | patched plates in courses over the glacis, the lid and the flanks | 1 / 1 | Y | Y | Y |
-| rails | a raised rail along each top edge of the body, from the bow toe up the | 1 / 1 | Y | Y | Y |
-| lip | a shallow armoured lip across the top of the glacis | 1 / 1 | Y | Y | Y |
+| body | one wide body: its top one long glacis ramp, low at the bow lip and ri | 1 / 1 | Y | Y | Y |
+| glacis_plates | a patchwork of big plates of mixed size and angle over the ramp and th | 1 / 1 | Y | Y | Y |
+| rails | a raised rail along each top edge of the body, running diagonally up t | 1 / 1 | Y | Y | Y |
 | shoulders | a shoulder either side, its top sloping down and out to a thin edge; t | 1 / 1 | Y | Y | Y |
-| shoulder_plates | patched plates in courses over the shoulders | 2 / 1 | Y | Y | Y |
+| shoulder_plates | a patchwork of big uneven plates over the shoulders | 2 / 1 | Y | Y | Y |
 | hoist_bays | one machinery bay in each shoulder's sloped top, a door in a second to | 2 / 2 | Y | Y | Y |
 
 ### mid/side
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| body | one wide low body: a continuous shallow glacis from the bow toe up to  | 1 / 1 | Y | Y | Y |
-| glacis_plates | patched plates in courses over the glacis, the lid and the flanks | 1 / 1 | Y | Y | Y |
+| body | one wide body: its top one long glacis ramp, low at the bow lip and ri | 1 / 1 | Y | Y | Y |
+| glacis_plates | a patchwork of big plates of mixed size and angle over the ramp and th | 1 / 1 | Y | Y | Y |
 | shoulders | a shoulder either side, its top sloping down and out to a thin edge; t | 1 / 1 | Y | Y | Y |
-| shoulder_plates | patched plates in courses over the shoulders | 2 / 1 | Y | Y | Y |
+| shoulder_plates | a patchwork of big uneven plates over the shoulders | 2 / 1 | Y | Y | Y |
 | hoist_bays | one machinery bay in each shoulder's sloped top, a door in a second to | 2 / 2 | Y | Y | Y |
 
 ### mid/below
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| body | one wide low body: a continuous shallow glacis from the bow toe up to  | 1 / 1 | Y | Y | Y |
+| body | one wide body: its top one long glacis ramp, low at the bow lip and ri | 1 / 1 | Y | Y | Y |
 | belly_plates | patched plates over the flat belly | 1 / 1 | Y | Y | Y |
 | shoulders | a shoulder either side, its top sloping down and out to a thin edge; t | 1 / 1 | Y | Y | Y |
 
@@ -107,11 +104,13 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| body | one wide low body: a continuous shallow glacis from the bow toe up to  | 1 / 1 | Y | Y | Y |
-| glacis_plates | patched plates in courses over the glacis, the lid and the flanks | 1 / 1 | Y | Y | Y |
-| rails | a raised rail along each top edge of the body, from the bow toe up the | 1 / 1 | Y | Y | Y |
+| body | one wide body: its top one long glacis ramp, low at the bow lip and ri | 1 / 1 | Y | Y | Y |
+| glacis_plates | a patchwork of big plates of mixed size and angle over the ramp and th | 1 / 1 | Y | Y | Y |
+| rails | a raised rail along each top edge of the body, running diagonally up t | 1 / 1 | Y | Y | Y |
+| lip | an armoured lip across the top of the glacis ramp, against the stern h | 1 / 1 | Y | Y | Y |
+| vision_slit | one vision slit in the lip's face, a little to port, looking forward d | 1 / 1 | Y | Y | Y |
 | shoulders | a shoulder either side, its top sloping down and out to a thin edge; t | 1 / 1 | Y | Y | Y |
-| shoulder_plates | patched plates in courses over the shoulders | 2 / 1 | Y | Y | Y |
+| shoulder_plates | a patchwork of big uneven plates over the shoulders | 2 / 1 | Y | Y | Y |
 | drives | five mismatched salvaged bells, the centre one the largest | 5 / 5 | Y | Y | Y |
 | bank_recess | a hood over the bank, cheeks at its sides, a sill under it | 1 / 1 | Y | Y | Y |
 
@@ -119,7 +118,7 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| body | one wide low body: a continuous shallow glacis from the bow toe up to  | 1 / 1 | Y | Y | Y |
+| body | one wide body: its top one long glacis ramp, low at the bow lip and ri | 1 / 1 | Y | Y | Y |
 | shoulders | a shoulder either side, its top sloping down and out to a thin edge; t | 1 / 1 | Y | Y | Y |
 | drives | five mismatched salvaged bells, the centre one the largest | 5 / 5 | Y | Y | Y |
 | bank_recess | a hood over the bank, cheeks at its sides, a sill under it | 1 / 1 | Y | Y | Y |
@@ -128,14 +127,14 @@ Y = yes, n = no. Counts are parts built with this inventory id against the count
 
 | ID | What | Built / listed | Present | Shaped | Detailed |
 |---|---|---|---|---|---|
-| body | one wide low body: a continuous shallow glacis from the bow toe up to  | 1 / 1 | Y | Y | Y |
+| body | one wide body: its top one long glacis ramp, low at the bow lip and ri | 1 / 1 | Y | Y | Y |
 | belly_plates | patched plates over the flat belly | 1 / 1 | Y | Y | Y |
 | drives | five mismatched salvaged bells, the centre one the largest | 5 / 5 | Y | Y | Y |
 
 
 ## Structure per cell: distinct masses (blocks, tiers, belts), concept against build
 
-Concept counts read off the concept sheet by eye (KB1C-C render, by eye (no true views): bow, the glacis, its two rails and the two corner mouths; midships, the lid, the rails, the side bays and the shoulders; stern, the lid, the raised housing and the thruster row); build counts are the model's registered masses whose station range overlaps the third (below: masses reaching within 0.8 of the belly).
+Concept counts read off the concept sheet by eye (KB1C-C render, by eye (no true views): bow, the glacis, its two rails and the two corner mouths; midships, the ramp, the rails, the side bays and the shoulders; stern, the top of the ramp, the raised housing and the thruster row); build counts are the model's registered masses whose station range overlaps the third (below: masses reaching within 0.8 of the belly).
 
 | Cell | Concept | Build | Build masses |
 |---|---:|---:|---|

@@ -13,6 +13,8 @@ The commands, in order, per craft: `mask.py` on the concept with its name label 
 (or `grid_window.py`) and `fit.py --fit` (KB1CC: `fit.py --fit --fix-angles` at angles set by eye, see its camera note);
 `build.py <code> <out> render`; `inventory.py`, `layout.py`, `sheet_extras.py`, `publish.py` (tools/blender/build_sheets);
 `sheet_contract_selftest.py`, `tools/blender/r209/sheet_hull.py`, then `run_blend.py` with `audit.py` and `audit_selftest.py`,
-`budget.py`, `density_mesh.py`; `launcher_shot.py` for a launcher's weapon close-up; `pictures.py overview`. For the three:
+`budget.py`, `density_mesh.py`; `launcher_shot.py` for a launcher's weapon close-up; `pictures.py overview` (KB1CC since R275:
+first `game_view.py` with GV_FULL=1 GV_DIST=13 GV_EL=30 GV_FOV=24 on `[["corsair_KB1CC", 0, 0, 245, 1, 2.4]]` at 1080 by 720,
+saved as `turned.png` in the render folder, which the compare shows as its big build panel). For the three:
 `game_view.py` once per faction with GV_FULL=1 and one GV_ORTHO (the flagship and a wing of four), then `pictures.py scale`;
 `game_view.py` plain (the battle camera) with the three wings, then `pictures.py battle`.

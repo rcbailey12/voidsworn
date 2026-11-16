@@ -38,6 +38,222 @@
   },
   {
    "cell": "bow/top",
+   "id": "shoulders",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "body",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "glacis_plates",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/side",
+   "id": "bomb_tubes",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/below",
+   "id": "body",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/below",
+   "id": "belly_plates",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "bow/below",
+   "id": "bomb_tubes",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "body",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "glacis_plates",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "rails",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "shoulders",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "shoulder_plates",
+   "built": 2,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/top",
+   "id": "hoist_bays",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "body",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "glacis_plates",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "shoulders",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "shoulder_plates",
+   "built": 2,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/side",
+   "id": "hoist_bays",
+   "built": 2,
+   "listed": 2,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/below",
+   "id": "body",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/below",
+   "id": "belly_plates",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "mid/below",
+   "id": "shoulders",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "body",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "glacis_plates",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
+   "id": "rails",
+   "built": 1,
+   "listed": 1,
+   "present": true,
+   "shaped": true,
+   "detailed": true
+  },
+  {
+   "cell": "stern/top",
    "id": "lip",
    "built": 1,
    "listed": 1,
@@ -46,233 +262,8 @@
    "detailed": true
   },
   {
-   "cell": "bow/top",
+   "cell": "stern/top",
    "id": "vision_slit",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "bow/top",
-   "id": "shoulders",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "bow/side",
-   "id": "body",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "bow/side",
-   "id": "glacis_plates",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "bow/side",
-   "id": "bomb_tubes",
-   "built": 2,
-   "listed": 2,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "bow/below",
-   "id": "body",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "bow/below",
-   "id": "belly_plates",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "bow/below",
-   "id": "bomb_tubes",
-   "built": 2,
-   "listed": 2,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/top",
-   "id": "body",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/top",
-   "id": "glacis_plates",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/top",
-   "id": "rails",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/top",
-   "id": "lip",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/top",
-   "id": "shoulders",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/top",
-   "id": "shoulder_plates",
-   "built": 2,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/top",
-   "id": "hoist_bays",
-   "built": 2,
-   "listed": 2,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/side",
-   "id": "body",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/side",
-   "id": "glacis_plates",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/side",
-   "id": "shoulders",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/side",
-   "id": "shoulder_plates",
-   "built": 2,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/side",
-   "id": "hoist_bays",
-   "built": 2,
-   "listed": 2,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/below",
-   "id": "body",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/below",
-   "id": "belly_plates",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "mid/below",
-   "id": "shoulders",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "stern/top",
-   "id": "body",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "stern/top",
-   "id": "glacis_plates",
-   "built": 1,
-   "listed": 1,
-   "present": true,
-   "shaped": true,
-   "detailed": true
-  },
-  {
-   "cell": "stern/top",
-   "id": "rails",
    "built": 1,
    "listed": 1,
    "present": true,

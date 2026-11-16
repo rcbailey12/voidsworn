@@ -31,7 +31,7 @@ CONCEPT_SHEET = BEAUTY
 CONCEPT_VIEWS = dict(top=dict(box=(20, 120, 1070, 600)), side=dict(box=(20, 120, 1070, 600)))
 CROPS = [('bow (the glacis and the two corner mouths)', (20, 200, 620, 600)), ('midships (the ramp, the rails, the flank bays)', (250, 130, 900, 500)),
          ('stern (the thruster bank)', (520, 110, 1070, 420))]
-SHEET = dict(version=1, round='first sheet', date='2026-11-15', blend='opus793', px_per_unit=900, view_pad=0.12, label_scale=1.5, bar_units=0.5,
+SHEET = dict(version=2, round='R275 shape pass', date='2026-11-15', blend='opus793', px_per_unit=900, view_pad=0.12, label_scale=1.5, bar_units=0.5,
              blend_where='rendered in the issue 793 sandbox (Blender 5.3, Cycles CPU); not on the PC: `build.py corsair_KB1CC <out> render` rebuilds it from this file',
              before='First full layout', before_note='The first complete layout, built with the Hullbreaker kit\'s plating and the new craft parts (craft.py), run through the fit check before any fix. R275 reshaped the top into the glacis ramp and replaced the course plating with the patchwork; the fit check found nothing new.',
              during='The table above is every finding, in the order the check made them.')
@@ -263,7 +263,7 @@ def build(K):
     K.hull_sections = [(U(r[0]), U(r[1]), U(r[1]), U(r[2]), U(r[3]), U(r[4]), U(r[5])) for r in BODY]
     # R275: the Hullbreaker patchwork (patchwork() above): fewer, bigger, uneven plates of mixed size and angle, never small even
     # squares in rows; big trophy patches among them (R252), rust and dried blood the main tones (the concept's red), soot and
-    # bare iron between; the colours as the first sheet had them
+    # bare iron between; the colours as the sheet had them before R275
     PL = dict(size=(U(0.075), U(0.19)), thick=(U(0.0022), U(0.0052)), gap=U(0.0016), skip=0.06, turn=5.0, hard=0.3, stack=0.14,
               rivets_share=0.07, rivet_r=U(0.0018),
               mats={'rust': 5, 'soot': 4, 'blood': 3, 'iron': 2, 'soot2': 2, 'pale': 0.6, 'violet': 0.4})
