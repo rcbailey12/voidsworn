@@ -1,0 +1,90 @@
+{
+  "gate_ms": 12.5,
+  "rows": {
+    "before": {
+      "sessions": 3,
+      "frames_per_mode": 720,
+      "frame_1080p_ms": 4.809,
+      "gpu_4k_ms": 7.45599985122681,
+      "base_visible_draw_calls": 419,
+      "base_visible_primitives": 6889443,
+      "base_shadow_draw_calls": 304,
+      "base_shadow_primitives": 3790930,
+      "frame_sessions_ms": [
+        4.461,
+        5.26,
+        4.809
+      ],
+      "gpu_sessions_ms": [
+        7.45599985122681,
+        7.50500011444092,
+        7.43400001525879
+      ],
+      "all_sessions_pass": true,
+      "source": "run3_gate_before_keep/scene_gate.json"
+    },
+    "max": {
+      "sessions": 3,
+      "frames_per_mode": 720,
+      "frame_1080p_ms": 6.669,
+      "gpu_4k_ms": 7.33099985122681,
+      "base_visible_draw_calls": 423,
+      "base_visible_primitives": 6887829,
+      "base_shadow_draw_calls": 304,
+      "base_shadow_primitives": 3791838,
+      "frame_sessions_ms": [
+        6.141,
+        8.07,
+        6.669
+      ],
+      "gpu_sessions_ms": [
+        7.31400012969971,
+        7.38500022888184,
+        7.33099985122681
+      ],
+      "all_sessions_pass": true,
+      "source": "run3_gate_max_keep/scene_gate.json"
+    },
+    "high": {
+      "sessions": 1,
+      "frames_per_mode": 720,
+      "frame_1080p_ms": 5.007,
+      "gpu_4k_ms": 5.00699996948242,
+      "base_visible_draw_calls": 246,
+      "base_visible_primitives": 5267960,
+      "base_shadow_draw_calls": 448,
+      "base_shadow_primitives": 5004461,
+      "frame_sessions_ms": [
+        5.007
+      ],
+      "gpu_sessions_ms": [
+        5.00699996948242
+      ],
+      "all_sessions_pass": true,
+      "source": "run3_gate_high_keep/scene_gate.json"
+    },
+    "low": {
+      "sessions": 1,
+      "frames_per_mode": 720,
+      "frame_1080p_ms": 3.103,
+      "gpu_4k_ms": 3.58100008964539,
+      "base_visible_draw_calls": 240,
+      "base_visible_primitives": 4089282,
+      "base_shadow_draw_calls": 453,
+      "base_shadow_primitives": 5004341,
+      "frame_sessions_ms": [
+        3.103
+      ],
+      "gpu_sessions_ms": [
+        3.58100008964539
+      ],
+      "all_sessions_pass": true,
+      "source": "run3_gate_low_keep/scene_gate.json"
+    }
+  },
+  "all_pass": true,
+  "adapter": "NVIDIA GeForce RTX 5080",
+  "renderer": "forward_plus",
+  "probe_sha256": "83327a848577a53eec6e616c2983269a1b192fdee26060f7263630930b3fb538",
+  "adapter_sha256": "790f21ceba810356fadab4fa3aee4ca0473957fb48bab8c2b2fb69bb493d4b8b"
+}

@@ -1,0 +1,59 @@
+{
+  "standing": {
+    "result": "PASS with listed baselines",
+    "rows": {
+      "PASS": 57,
+      "KNOWN": 2
+    },
+    "known_rows": [
+      "findings_tests | KNOWN | 1.26 | KNOWN: 7 listed failure(s): KIT-1, KIT-3, ROS-9, MOD-2, EVT-1, NEM-6, UI-5",
+      "oracle_drift_guard | KNOWN | 0.60 | KNOWN: 12 constant difference(s) within the baseline"
+    ]
+  },
+  "scale": {
+    "result": "PASS",
+    "objects": 53,
+    "known_exceptions": 4,
+    "unexpected_failures": 0
+  },
+  "geometry": {
+    "result": "PASS",
+    "source": "storm_geometry.json"
+  },
+  "nebula_inputs_sha256_unchanged": {
+    "godot/world/nebula_noise.res": "92c69b3254aa015cd577bced12f694bfa764e4b8d3d5e2b2a332628f11dc5691",
+    "godot/world/nebula_noise_bake.gd": "8b9b922ce59e346f0726cc3982a4a6b13a58024d45c8bd9b24e6dbb014af23d9",
+    "godot/world/nebula_noise_data.gd": "77c37aeaccd0425eca815eac6e50d5ed02d1ee11b988dfcc16ba9a2e154cebde",
+    "godot/world/nebula_hulls.gd": "0f9c594b2cfc9db6b604f260d4ca07181ce753988acb0851de5c366b679cb36b",
+    "godot/world/nebula_capture.gd": "66a1c727faacc9ce6571073519ff678dce8972dee4b811f5d0a03c86c9c71d63",
+    "godot/world/nebula_bench.gd": "790f21ceba810356fadab4fa3aee4ca0473957fb48bab8c2b2fb69bb493d4b8b",
+    "godot/render/camera_rig.gd": "d80946020bd2fbac97c86bb17baa515dd9ac2e8e3af296539f6688dfbb10fe40",
+    "godot/render/backdrop.gd": "df9433f2a461867bf845a204bfc4c36667bc9a6ba22a68b52b250f8c031681aa",
+    "godot/scenes/battle/battle.gd": "119175edc705d25624a9e4e969d1b002a96f27cd63e743513df2cab7cc2bd739"
+  },
+  "nebula_shader_checks": {
+    "GAS_SHADER": "unchanged",
+    "FOG_SHADER": "unchanged"
+  },
+  "nebula_mask": "unchanged",
+  "ship_manifest": {
+    "checked_files": 252,
+    "mismatches": 0
+  },
+  "source_head": "eadd88c2b65493e1835f65032cf876beaa25ef35",
+  "capture_logs": {
+    "before": "no errors or placeholder hulls",
+    "after": "no errors or placeholder hulls",
+    "capture_high_warm": "no errors or placeholder hulls",
+    "capture_high_keep": "no errors or placeholder hulls",
+    "capture_low_warm": "no errors or placeholder hulls",
+    "capture_low_keep": "no errors or placeholder hulls"
+  },
+  "sheets": {
+    "count": 34,
+    "dimensions": [
+      1280,
+      720
+    ]
+  }
+}

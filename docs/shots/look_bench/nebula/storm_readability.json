@@ -1,0 +1,69 @@
+{
+  "before": {
+    "170": {
+      "pixels": 9228,
+      "contrast_ratio": 0.9930590863948326,
+      "mean_luma_delta_255": -0.21075760728218462,
+      "p95_abs_rgb_delta_255": 0.0,
+      "hull_box": [
+        1744,
+        1055,
+        2094,
+        1106
+      ]
+    },
+    "60": {
+      "pixels": 84253,
+      "contrast_ratio": 0.9901437861680719,
+      "mean_luma_delta_255": -0.3654345483246887,
+      "p95_abs_rgb_delta_255": 0.0,
+      "hull_box": [
+        1412,
+        1002,
+        2417,
+        1160
+      ]
+    }
+  },
+  "after": {
+    "170": {
+      "pixels": 9238,
+      "contrast_ratio": 0.996814549427444,
+      "mean_luma_delta_255": -0.0697310023814678,
+      "p95_abs_rgb_delta_255": 0.0,
+      "hull_box": [
+        1744,
+        1054,
+        2094,
+        1105
+      ]
+    },
+    "60": {
+      "pixels": 84422,
+      "contrast_ratio": 0.9944147973664178,
+      "mean_luma_delta_255": -0.1510823505721257,
+      "p95_abs_rgb_delta_255": 0.0,
+      "hull_box": [
+        1412,
+        999,
+        2417,
+        1157
+      ]
+    }
+  },
+  "charge_after": {
+    "170": {
+      "hull_mean_luma_delta_255": 0.9746339467417189,
+      "hull_p95_luma_delta_255": 3.5065999999999997,
+      "scene_changed_pixels": 717302,
+      "hull_pixels": 9238
+    },
+    "60": {
+      "hull_mean_luma_delta_255": 0.9464273483215276,
+      "hull_p95_luma_delta_255": 3.0762,
+      "scene_changed_pixels": 3776642,
+      "hull_pixels": 84422
+    }
+  },
+  "fog_scattering_changed_pixels": 255878
+}

@@ -5,8 +5,8 @@ extends Node3D
 #               as one body; lit on the sun's side, dense cores glowing, soft where they meet hulls and rocks. Step 2:
 #               shaped by a soft footprint of its own hexes (_mask) worn by the noise, so it has no hex outline and no
 #               hex-shaped blobs, and spills softly beyond the marked hexes
-#   ion storm   the same gas, darker than the sky behind it with yellow-white electric veins, and lightning: jagged bolts that flash
-#               now and then, each with a light that catches the ships, rocks and the gas round it, including max-tier fog
+#   ion storm   layered blue-violet gas with pale cyan charge gathering in its cloud masses; raised, forked lightning
+#               now and then, with a faint light on ships inside and scattering in the max-tier fog (R282)
 #   debris      dense rock and wreck clusters: many more rocks of mixed size, wreckage (torn hull plates with their
 #               frames, snapped hull frames, broken truss spars, gutted hull sections; some torn edges still hot, every
 #               piece tumbling slowly), and a haze of fine dust
@@ -17,6 +17,7 @@ extends Node3D
 const WR := preload("res://world/world_rocks.gd")
 const WS := preload("res://world/world_shaders.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
+const ION := preload("res://world/ion_storm.gd")
 
 const HD := preload("res://world/hull_debris.gd")
 var _chunk_task := -1
@@ -204,7 +205,7 @@ const BOLT_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 instance uniform float flash = 0.0;
-uniform vec3 col = vec3(0.66, 0.66, 1.0);
+uniform vec3 col = vec3(0.48, 0.82, 1.0);
 varying vec4 vc;
 void vertex() { vc = COLOR; }
 // step 2: a thinner, dimmer glow and a capped core, so a strike seen end-on or stacked never blows out to a white blob
@@ -388,7 +389,7 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	mi.multimesh = mm
 	var m := ShaderMaterial.new()
 	var sh := Shader.new()
-	sh.code = GAS_SHADER.replace("%NOISE%", WS.NOISE)
+	sh.code = (ION.CARDS if storm else GAS_SHADER).replace("%NOISE%", WS.NOISE)
 	m.shader = sh
 	if expanded:
 		m.set_shader_parameter("height_scale", GAS_HEIGHT)
@@ -400,16 +401,7 @@ func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	m.set_shader_parameter("mask_box", mk[1])
 	var g := 1.0
 	if storm:
-		# a dark, heavy mass (it must stand out from bright blue skies) that the lightning lights from inside
-		# step 2: a body darker than the sky behind it (r3 on the PC: a dark violet still read pale and lavender over the
-		# near-black skies, because it was lighter than them), lit violet only in its dense cores and on its sun side
-		m.set_shader_parameter("c_dark", Vector3(0.003, 0.003, 0.006))
-		m.set_shader_parameter("c_lit", Vector3(0.035, 0.028, 0.06))
-		m.set_shader_parameter("c_glow", Vector3(0.3, 0.17, 0.62))
-		m.set_shader_parameter("bolt", Vector3(0.66, 0.6, 1.0))
-		m.set_shader_parameter("storm", 1.0)
-		m.set_shader_parameter("dens", 1.0)
-		m.set_shader_parameter("glow_from", 0.5)
+		# R282: the cloud carries broad cool charge, not the old warm contour veins.
 		storm_mats.append(m)
 		_storm_patches.append({"mat": m, "points": ps, "tick": 0.0})
 		_set_flashes([])
@@ -458,7 +450,7 @@ func _fog_patch(ps: Array, card: ShaderMaterial, mk: Array, storm: bool) -> void
 	volume.position = Vector3((hi.x + lo.x) * 0.5, 12.25, (hi.z + lo.z) * 0.5)
 	var mat := ShaderMaterial.new()
 	var shader := Shader.new()
-	shader.code = FOG_SHADER
+	shader.code = ION.FOG if storm else FOG_SHADER
 	mat.shader = shader
 	if _fog_noise == null:
 		_fog_noise = load(NOISE_PATH).texture()
@@ -466,12 +458,17 @@ func _fog_patch(ps: Array, card: ShaderMaterial, mk: Array, storm: bool) -> void
 	mat.set_shader_parameter("mask_tex", mk[0])
 	mat.set_shader_parameter("mask_box", mk[1])
 	for key in ["c_dark", "c_shadow", "c_lit", "c_glow"]:
+		if storm: continue
 		# Shader defaults are not returned by get_shader_parameter until set.
 		var value = card.get_shader_parameter(key)
 		if value == null:
 			value = Vector3(0.055, 0.012, 0.14) if key == "c_shadow" else Vector3(0.006, 0.002, 0.014)
 		mat.set_shader_parameter(key, value)
-	mat.set_shader_parameter("storm", 1.0 if storm else 0.0)
+	if storm:
+		storm_mats.append(mat)
+		_storm_patches.back()["fog_mat"] = mat
+	else:
+		mat.set_shader_parameter("storm", 0.0)
 	volume.material = mat
 	fog_mats.append(mat)
 	add_child(volume)
@@ -587,8 +584,9 @@ func _bolts(ps: Array) -> void:
 			if (q as Vector3).distance_to(a) < 19.0 and (q as Vector3).distance_to(a) > 1.0:
 				near.append(q)
 		var z: Vector3 = near[rng.randi() % near.size()] if not near.is_empty() else a + Vector3(rng.randf_range(-8, 8), 0, rng.randf_range(-8, 8))
-		a += Vector3(rng.randf_range(-3, 3), rng.randf_range(2.0, 5.0), rng.randf_range(-3, 3))
-		z += Vector3(rng.randf_range(-3, 3), rng.randf_range(-3.0, 0.5), rng.randf_range(-3, 3))
+		# Strikes cross cloud layers instead of lying across the board surface.
+		a += Vector3(rng.randf_range(-3, 3), rng.randf_range(8.0, 23.0), rng.randf_range(-3, 3))
+		z += Vector3(rng.randf_range(-3, 3), rng.randf_range(3.0, 17.0), rng.randf_range(-3, 3))
 		if a.distance_to(z) > 18.0:
 			z = a + (z - a).normalized() * 18.0
 		var st := SurfaceTool.new()
@@ -598,7 +596,7 @@ func _bolts(ps: Array) -> void:
 		for k in rng.randi_range(1, 2):
 			var j := rng.randi_range(2, path.size() - 3)
 			var from: Vector3 = path[j]
-			var to := from + (z - a).normalized().rotated(Vector3.UP, rng.randf_range(-1.2, 1.2)) * rng.randf_range(3.0, 6.0) + Vector3(0, rng.randf_range(-2, 1), 0)
+			var to := from + (z - a).normalized().rotated(Vector3.UP, rng.randf_range(-1.2, 1.2)) * rng.randf_range(3.0, 6.0) + Vector3(0, rng.randf_range(-3, 5), 0)
 			_ribbon(st, _jag(from, to, 5, 0.12), 0.07, 0.5)
 		var mi := MeshInstance3D.new()
 		mi.mesh = st.commit()
@@ -609,13 +607,12 @@ func _bolts(ps: Array) -> void:
 		var light: OmniLight3D = null
 		if b < 4:
 			light = OmniLight3D.new()
-			light.light_color = Color(0.7, 0.66, 1.0)
+			light.light_color = Color(0.56, 0.78, 1.0)
 			light.omni_range = 40.0
 			light.omni_attenuation = 1.4
 			light.shadow_enabled = false
-			# step 2: the strike lights ships, rocks and the gas, never the scene's thin volumetric fog (r1 and r2 on the PC:
-			# the fog's cells lit up round each bolt as pale, square lavender blocks, the "pale blue storm" of the trial)
-			light.light_volumetric_fog_energy = 1.0 if gas_route == "fog" and W.quality == "max" and b < 2 else 0.0
+			# Two lights scatter inside the max cloud. Direct hull light stays faint.
+			light.light_volumetric_fog_energy = 0.7 if gas_route == "fog" and W.quality == "max" and b < 2 else 0.0
 			light.light_energy = 0.0
 			light.position = (a + z) * 0.5
 			add_child(light)
@@ -703,6 +700,8 @@ func _present_storm_ticks(dt: float) -> void:
 	for patch in _storm_patches:
 		patch.tick = maxf(0.0, float(patch.tick) - dt / 0.45)
 		(patch.mat as ShaderMaterial).set_shader_parameter("tick_flare", Vector4(0, 0, 0, float(patch.tick)))
+		if patch.has("fog_mat"):
+			(patch.fog_mat as ShaderMaterial).set_shader_parameter("tick_flare", Vector4(0, 0, 0, float(patch.tick)))
 
 
 func _process(dt: float) -> void:

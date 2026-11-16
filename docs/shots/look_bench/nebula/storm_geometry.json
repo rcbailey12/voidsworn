@@ -1,0 +1,82 @@
+{
+  "frame_median": null,
+  "geometry": [
+    {
+      "cards": 121,
+      "edge_at_x11": 0.0,
+      "fog_height": null,
+      "fog_volumes": 0,
+      "one_hex_soft_span": 17.0000003483147,
+      "route": "today",
+      "tier": "max"
+    },
+    {
+      "cards": 121,
+      "edge_at_x11": 0.0,
+      "fog_height": null,
+      "fog_volumes": 0,
+      "one_hex_soft_span": 17.0000003483147,
+      "route": "today",
+      "tier": "high"
+    },
+    {
+      "cards": 75,
+      "edge_at_x11": 0.0,
+      "fog_height": null,
+      "fog_volumes": 0,
+      "one_hex_soft_span": 17.0000003483147,
+      "route": "today",
+      "tier": "low"
+    },
+    {
+      "cards": 52,
+      "edge_at_x11": 1.0,
+      "fog_height": 38.5,
+      "fog_volumes": 3,
+      "one_hex_soft_span": 83.0000025508926,
+      "route": "fog",
+      "tier": "max"
+    },
+    {
+      "cards": 121,
+      "edge_at_x11": 1.0,
+      "fog_height": null,
+      "fog_volumes": 0,
+      "one_hex_soft_span": 83.0000025508926,
+      "route": "fog",
+      "tier": "high"
+    },
+    {
+      "cards": 75,
+      "edge_at_x11": 1.0,
+      "fog_height": null,
+      "fog_volumes": 0,
+      "one_hex_soft_span": 83.0000025508926,
+      "route": "fog",
+      "tier": "low"
+    }
+  ],
+  "gpu_median": null,
+  "kind": "CPU preparation only",
+  "map_case": "storm",
+  "noise_bytes": 2097152,
+  "noise_sha256": "92c69b3254aa015cd577bced12f694bfa764e4b8d3d5e2b2a332628f11dc5691",
+  "patches": {
+    "neb": {
+      "hexes": 4,
+      "patches": [
+        4
+      ]
+    },
+    "storm": {
+      "hexes": 23,
+      "patches": [
+        13,
+        5,
+        5
+      ]
+    }
+  },
+  "route": "fog",
+  "seed": 4207
+}
