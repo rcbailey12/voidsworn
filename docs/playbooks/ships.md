@@ -149,6 +149,50 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    carry angled facets, chamfers and stepped planes as their concept shows. Why: on A20 Ryan saw "just circles" at the bow
    and "flat walls" where the concept was angular. A20 is the first correction (issue 688); this binds every sheet ship.
 
+### Named variant parts (issue 812)
+
+A sheet can build a data.js variant without adding its weapons to the base hull. Its `VARIANTS` dictionary maps the exact
+data.js id to a callback, for example `{'d_jackal_h': build_guard}` in `ships/deathless_E14.py`. The common entry point is
+`tools/blender/build_sheets/variants.py`: it checks the variant's data.js base, sets `K.game_ship` and `K.variant`, calls the
+base `build(K)`, calls that variant's callback, then finishes the deferred plates. A missing or wrong-family variant fails
+before any build. Callbacks use the normal kit helpers, so the parts, turret nodes, fit records and hard points have one home.
+For a replacement, the base builder reads `K.variant` to omit the replaced weapon before the callback adds its replacement;
+never delete meshes after building and leave their muzzle or fit records behind.
+
+Preview a variant with `build.py deathless_E14 OUT fit --variant=d_jackal_h` inside Blender. Every build mode runs weapon
+matching against that selected id, and writes into `OUT/d_jackal_h/`, keeping the base sheet's output separate. `render` also
+renders it. A variant recipe JSON names the same `sheet`, its own `game_ship`, and a `game_code` equal to that data.js id.
+Use the normal seven recipe stages with that JSON: `sheet_hull` builds the selection, the contract writes its identity into
+the blend, and stage 7 refuses a blend for a different ship or a variant aimed at a base hull folder. Class, faction and
+hangar values inherit from the data.js base when absent on the variant. The existing paint stack paints the selected parts.
+
+Install the separate variant folder with stage 7 as usual. ShipView selects the installed folder by the unit's `tpl` id from
+the rules view, with no second variant table. If that folder is absent it keeps the faction/class hull. The variant inherits
+the base hull's board clearance, so the Archive guard's upright E14 ring stays above the board.
+
+Worked cases: `deathless_E14_guard.json` adds the Archive guard's stern null spire; `deathless_E13_sentinel.json` adds the
+Mote sentinel's belly spire opposite its dorsal cannon (a roof spire blocked traverse); `deathless_E12_turreted.json` replaces
+the fore cannon and fixed arc with the kit's existing corona arc on a turning foot on the fore saddle. Its aft cannon and
+spire remain. `variant_parts.py` assembles that foot and projector from the Eclipse kit, without copying their shapes. All
+three pass weapon matching, fit and sweep clearance, and their actual exported GLBs pass the export check. The E11 to E14
+base builds have identical evaluated world-space triangles to their pre-change snapshots, including insides and shell
+modifiers. These are geometry proofs with unbaked exports; full paint bakes and the normal installed scene gate still belong
+to the ship build that ships those assets.
+
+Reproduce the geometry and export proof with Blender:
+
+```
+blender -b -t 4 --python-exit-code 1 -P tools/blender/build_sheets/variant_selftest.py -- OUT --baseline=BEFORE.json
+```
+
+`BEFORE.json` is an optional pre-change snapshot from the self-test's `bases` triangle counts and SHA256 values (only
+`triangles` and `sha256` per sheet). The self-test builds E11 to E14 and all three variants, tests wrong selections, exports
+unbaked GLBs, and runs `check_export.py` on each. Set `VARIANT_EXPORTS=OUT`, then run Godot headless with
+`--path godot --script res://render/test/variant_ship_check.gd` to run the real GLB cache builder and load the variants through
+ShipView. Without the environment variable the same check uses small CI fixtures. `variant_review.py -- OUT SHOTS` inside
+Blender makes one labelled 1280 by 720 comparison per variant from those exported GLBs, on the CPU. Keep scratch in TEMP and
+review sheets in the job's shots folder. No test export is installed into the live game by these checks.
+
 ## 1. Target
 
 - The faction's sheet in docs/playbooks/factions.md is the law for look: silhouette, shape language, colours, where guns
