@@ -171,7 +171,12 @@ var w = WORLD.new()
 world_node.add_child(w)
 w.build(view(), {"biome": biome, "fac": enemy_faction, "hex_world": func(q, r) -> Vector3, "camera": cam, "environment": env, "quality": "max", "fx": fx})
 w.update(delta)                        # or let it run its own _process (default)
+w.finale_stage(n)                      # optional: with opts.finale, move the dawn sweep to stage n (0 dark to 5 full)
 ```
+
+- The run 5 finale (R78 Q18): `opts.finale` adds a projected warm key light that catches the existing ships, rocks and wrecks sector by sector, plus a warmer sky and Hollow Sun disc. No extra board surface or grid is built. `finale_stage(0..FINALE_STAGES-1)` moves it one sector at a time; the battle calls `finale_for_round(round)` so round 1 preserves the normal battle lighting and round 6 is full dawn, then it holds. The campaign marks only run 5; earlier sector 3 bosses stay dark. It changes pictures only, never `view()` or the rules.
+- Capture proof: run `res://world/finale_shots.gd` twice with a 1280x720 window and `-- --out DIR`, retaining the second run. Copy the PC-built hulls and wreck props before importing. The harness uses the real battle with a stated mid-battle placement fixture, camera radius 170 and the placeholder guard. It stops on render errors, saves six named stages and a normal-battle control, and writes their round-1 image difference to `evidence.json`.
+- Six clearly named radius-520 overviews accompany the radius-170 pictures, to show the sweep over the parts of the board outside the played camera's frame.
 
 - Backdrop per battle: sky with nebula tinted per enemy faction (the game's BIOMES colours), one planet or moon at most (no twin moons), no stray traffic ships, no rocks over moons.
 - The dead-star board (`view().map.deadstar`): the black hole at that hex with gravitational lensing of the scene behind it, a photon ring and a turning accretion disc (R2, R24). The gravity-well rules stay as they are; this is only the picture.
