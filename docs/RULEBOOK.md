@@ -261,8 +261,9 @@ watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md,
 3.4 **GPU work is sized to the job and to what the RTX 5080 can hold, not to a fixed job count; frame-time measurements run
 solo. Lane C stays code only.** The Board decides per job how many share the card: light captures and probes can run side by
 side, heavy bakes and Blender renders take more of it, and nothing is started that would run the card out of its 16 GB of
-graphics memory. The launchers take and release claims themselves through tools/pc/gpu_slots.js (today two shared slots;
-issue 896 makes the slot count a setting and lets a job weigh more than one slot), or a solo claim that waits for every slot
+graphics memory. The launchers take and release claims themselves through tools/pc/gpu_slots.js (shared capacity from
+Downloads\voidsworn_test\gpu_slots.json, {"sharedSlots":2} by default, raised by the Board; captures weigh 1, Blender and heavy
+bakes 2, with PC_GPU_WEIGHT for the job's chosen weight), or a solo claim that waits for every slot
 to empty and blocks new GPU work while it measures. Dead process claims are reclaimed. `gpu_go.txt` still wins: no new GPU
 work starts unless its first line is `GPU cleared` (optionally followed by `: reason`); the gaming pause in 3.11 is
 unchanged. Why: "that one GPU job at a time is an outdated rule, we should be flexible based on the task and what my

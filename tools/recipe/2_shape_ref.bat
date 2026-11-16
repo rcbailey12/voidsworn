@@ -15,8 +15,10 @@ if not exist "%USERPROFILE%\Downloads\voidsworn_meshes\picks\%SHIP%_cut.png" "%B
 if not exist "%USERPROFILE%\Downloads\voidsworn_meshes\picks\%SHIP%_cut.png" (echo Stage 2 FAILED: no cut image for TRELLIS.2 & goto bad)
 set TRELLIS_CODES=%SHIP%
 set "PC_GPU_MODE=shared"
+set "PC_GPU_WEIGHT=2"
 call "%REPO%\tools\pc\tmo.bat" 21600 "%TPY%" "%REPO%\tools\pc\trellis_fleet.py"
 set "PC_GPU_MODE="
+set "PC_GPU_WEIGHT="
 if not exist "%B0%" (echo Stage 2 FAILED: no shape reference written. See Downloads\voidsworn_test\bakeoff\trellis_fleet.log & goto bad)
 echo Stage 2 done: %B0%
 if "%RECIPE_NOPAUSE%"=="" pause
