@@ -24,6 +24,10 @@ for (const name of ['work_issue', 'codex_issue']) {
   assert(!/git clone .*https:|git clean -fd/.test(bat), name + ' bypasses safe checkout');
   assert(read(path.join(here, name + '.ps1')).includes('$resume'), name + ' missing task resume note');
 }
+// Issue 873: the Codex task must forbid workflow edits, because the PC token has no workflow scope and a full run is
+// refused at push time. The CI change goes in the report instead.
+assert(read(path.join(here, 'codex_issue.ps1')).includes('Never edit anything under .github/workflows'), 'codex_issue.ps1 prompt must forbid .github/workflows edits');
+pass('Codex task prompt forbids .github/workflows edits (issue 873)');
 assert(read(path.join(here, 'chain_issue.bat')).includes('set "PC_WAIT_FOR=%~1"'));
 assert(read(path.join(here, 'work_issue.bat')).includes('min_free_gb=60'), 'work_issue.bat must seed the min_free_gb floor in runner_settings.txt');
 assert(read(path.join(here, 'runner_common.ps1')).includes('PC_TEST_SPACE_FREE_MB') && read(path.join(here, 'runner_common.ps1')).includes('PC_TEST_HASHES'), 'runner_common.ps1 must carry the 722 test knobs');
