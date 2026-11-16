@@ -168,8 +168,8 @@ Concept counts read off the concept sheet by eye (A17 sheet: bow, the head block
 
 | Cell | Concept | Build | Build masses |
 |---|---:|---:|---|
-| bow/top | 5 | 9 | Base hull (head and flank tier); Lower hull band; Head brow (step 1); Head crown (step 2); Flank block 1 port; Flank block 1 starboard; U1 neck block; Ear bracket port; Ear bracket starboard |
-| bow/side | 5 | 7 | Base hull (head and flank tier); Lower hull band; Head brow (step 1); Head crown (step 2); Flank block 1 port; U1 neck block; Ear bracket port |
+| bow/top | 5 | 10 | Base hull (head and flank tier); Lower hull band; Head brow (step 1); Head crown (step 2); Flank block 1 port; Flank block 1 starboard; U1 neck block; U2 fore block; Ear bracket port; Ear bracket starboard |
+| bow/side | 5 | 8 | Base hull (head and flank tier); Lower hull band; Head brow (step 1); Head crown (step 2); Flank block 1 port; U1 neck block; U2 fore block; Ear bracket port |
 | bow/below | no view | 2 | Base hull (head and flank tier); Lower hull band |
 | mid/top | 7 | 13 | Base hull (head and flank tier); Lower hull band; Flank block 2 port; Flank block 3 port; Flank block 4 port; Flank block 2 starboard; Flank block 3 starboard; Flank block 4 starboard; U2 fore block; U3 ramp block; U4 mid block; U5 saddle b |
 | mid/side | 7 | 10 | Base hull (head and flank tier); Lower hull band; Flank block 2 port; Flank block 3 port; Flank block 4 port; U2 fore block; U3 ramp block; U4 mid block; U5 saddle block; Rack plinth |

@@ -158,6 +158,11 @@ async function generateOpenWork({
   const pulls = await list('pulls');
   const issues = await list('issues');
   const closedPulls = await list('pulls', { state: 'closed', size: 100, onePage: true });
+  // A token that cannot read issues gets only pull requests back here, and the page would say every seat is empty
+  // (the first workflow run, Nov 16). The board is never truly empty, so fail loudly instead (RULEBOOK 12.2).
+  if (!issues.some(item => !item.pull_request)) {
+    throw new Error('no open issues came back: the token cannot read issues (the workflow needs issues: read)');
+  }
   return renderOpenWork(pulls, issues, now, closedPulls);
 }
 

@@ -70,12 +70,90 @@ function Retry-Git($label, [string[]]$words) {
   }
   throw "$label failed after 3 attempts; see git_log.txt"
 }
+# Restart Manager can name file holders without installing handle.exe. It cannot report directory-only handles,
+# and access may be denied in a sandbox; diagnostics must never prevent the preservation retry.
+function Get-RepoHolders($full) {
+  try {
+    if (-not ('RunnerFileHolders' -as [type])) {
+      Add-Type -TypeDefinition @'
+using System;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
+using System.Text;
+public static class RunnerFileHolders {
+  [StructLayout(LayoutKind.Sequential)] public struct UniqueProcess {
+    public uint id; public System.Runtime.InteropServices.ComTypes.FILETIME started;
+  }
+  [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)] public struct Info {
+    public UniqueProcess process;
+    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)] public string name;
+    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)] public string service;
+    public uint type, status, session;
+    [MarshalAs(UnmanagedType.Bool)] public bool restartable;
+  }
+  [DllImport("rstrtmgr.dll", CharSet = CharSet.Unicode)] static extern int RmStartSession(out uint session, uint flags, StringBuilder key);
+  [DllImport("rstrtmgr.dll", CharSet = CharSet.Unicode)] static extern int RmRegisterResources(uint session, uint files, string[] names, uint apps, IntPtr processes, uint services, IntPtr serviceNames);
+  [DllImport("rstrtmgr.dll")] static extern int RmGetList(uint session, out uint needed, ref uint count, [In, Out] Info[] info, ref uint reasons);
+  [DllImport("rstrtmgr.dll")] static extern int RmEndSession(uint session);
+  public static Info[] Find(string[] paths) {
+    uint session; int error = RmStartSession(out session, 0, new StringBuilder(33));
+    if (error != 0) throw new Win32Exception(error);
+    try {
+      error = RmRegisterResources(session, (uint)paths.Length, paths, 0, IntPtr.Zero, 0, IntPtr.Zero);
+      if (error != 0) throw new Win32Exception(error);
+      uint needed, count = 0, reasons = 0;
+      var info = new Info[0];
+      for (int attempt = 0; attempt < 4; attempt++) {
+        error = RmGetList(session, out needed, ref count, info, ref reasons);
+        if (error == 0) { Array.Resize(ref info, (int)count); return info; }
+        if (error != 234) throw new Win32Exception(error);
+        count = needed; info = new Info[count];
+      }
+      throw new Win32Exception(error);
+    } finally { RmEndSession(session); }
+  }
+}
+'@
+    }
+    # Register files, not the directory: RmGetList rejects directories with ERROR_ACCESS_DENIED.
+    $files = @(Get-ChildItem -LiteralPath $full -File -Force -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })
+    $gitDir = Join-Path $full '.git'
+    if (Test-Path -LiteralPath $gitDir -PathType Container) {
+      $files += @(Get-ChildItem -LiteralPath $gitDir -File -Force -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })
+    }
+    $holders = @(); if ($files.Count) { $holders = @([RunnerFileHolders]::Find([string[]]$files)) }
+    foreach ($holder in $holders) { Log "Windows file holder: PID $($holder.process.id) $($holder.name)" }
+  } catch { Log "Windows file holder lookup unavailable: $($_.Exception.Message)" }
+  try {
+    # Command lines are useful for an agent holding only its current directory. These are candidates, not proof.
+    $candidates = @(Get-CimInstance Win32_Process -ErrorAction Stop | Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -and $_.CommandLine.IndexOf($full, [StringComparison]::OrdinalIgnoreCase) -ge 0 })
+    foreach ($holder in $candidates) { Log "possible checkout holder: PID $($holder.ProcessId) $($holder.Name): $($holder.CommandLine)" }
+    if (-not $holders.Count -and -not $candidates.Count) { Log 'Windows could not name the checkout holder (directory handles may not be reported)' }
+  } catch { Log "Windows holder lookup unavailable: $($_.Exception.Message)" }
+}
 function Keep-Repo($repo, $tag) {
   if (-not (Test-Path -LiteralPath $repo)) { return }
   $full = [IO.Path]::GetFullPath($repo).TrimEnd('\')
   if ([IO.Path]::GetFileName($full) -ne 'repo') { throw "refusing to rename unexpected checkout path $full" }
   $name = "repo-$tag-$([guid]::NewGuid().ToString('N'))"
-  Rename-Item -LiteralPath $full -NewName $name
+  $limit = 600.0; $pause = 1000
+  if ($test -and $env:PC_TEST_KEEP_SECONDS) { $limit = [double]$env:PC_TEST_KEEP_SECONDS }
+  if ($test -and $env:PC_TEST_KEEP_POLL_MS) { $pause = [int]$env:PC_TEST_KEEP_POLL_MS }
+  $clock = [Diagnostics.Stopwatch]::StartNew(); $nextLog = 0.0
+  while ($true) {
+    try { Rename-Item -LiteralPath $full -NewName $name -ErrorAction Stop; break }
+    catch {
+      $failure = $_.Exception.Message
+      if ($clock.Elapsed.TotalSeconds -ge $nextLog) {
+        Log "checkout rename held; waiting up to $limit seconds: $full : $failure"
+        Get-RepoHolders $full
+        $nextLog = $clock.Elapsed.TotalSeconds + 60
+      }
+      $left = $limit - $clock.Elapsed.TotalSeconds
+      if ($left -le 0) { throw "checkout rename still held after $limit seconds; earlier checkout kept at ${full}: $failure" }
+      Start-Sleep -Milliseconds ([int][Math]::Min($pause, [Math]::Ceiling($left * 1000)))
+    }
+  }
   Log "earlier checkout kept beside repo as $name"
 }
 # Windows command line quoting, including trailing backslashes. Inputs are argument values, never shell snippets.
@@ -199,17 +277,28 @@ try {
       Retry-Git 'mirror fetch' @('--git-dir',$mirror,'-c','http.lowSpeedLimit=1000','-c','http.lowSpeedTime=60','fetch','--prune','origin')
       # The remote default branch may not yet be set by init --bare.
       Must-Git @('--git-dir',$mirror,'symbolic-ref','HEAD','refs/heads/main')
-      Keep-Repo $repo 'kept'
-      $delay = 120; if ($test -and $env:PC_TEST_RETRY_SECONDS) { $delay = [int]$env:PC_TEST_RETRY_SECONDS }
-      for ($attempt = 1; $attempt -le 3; $attempt++) {
+    } finally { $lock.Dispose() }
+    # A pinned lane must not hold the shared mirror lock for the ten-minute preservation wait.
+    Keep-Repo $repo 'kept'
+    $delay = 120; if ($test -and $env:PC_TEST_RETRY_SECONDS) { $delay = [int]$env:PC_TEST_RETRY_SECONDS }
+    for ($attempt = 1; $attempt -le 3; $attempt++) {
         Log "local clone attempt $attempt/3"
-        $null = Git @('clone','-q','-c','core.autocrlf=false','--local','--no-checkout',$mirror,$repo)
+        # Reacquire around each local clone: mirror fetch and hardlink cloning must still serialize.
+        $lock = $null
+        while (-not $lock) {
+          try { $lock = [IO.File]::Open("$mirror.lock", 'OpenOrCreate', 'ReadWrite', 'None') }
+          catch [IO.IOException] {
+            if ([DateTime]::UtcNow -ge $deadline) { throw 'shared repo copy stayed locked for 30 minutes' }
+            Start-Sleep -Milliseconds 500
+          }
+        }
+        try { $null = Git @('clone','-q','-c','core.autocrlf=false','--local','--no-checkout',$mirror,$repo) }
+        finally { $lock.Dispose() }
         if ($gitExit -eq 0) { break }
         Keep-Repo $repo 'clone-failed'
         if ($attempt -eq 3) { throw 'local clone failed after 3 attempts; see git_log.txt' }
         Log "local clone failed; retry in $delay seconds"; Start-Sleep -Seconds $delay
-      }
-    } finally { $lock.Dispose() }
+    }
     # Local hardlinks share immutable objects without alternates. All pushes go to GitHub, never to the mirror.
     Must-Git @('-C',$repo,'remote','set-url','origin',$source)
     if ($sparse) { Must-Git (@('-C',$repo,'sparse-checkout','set','--no-cone') + @($sparse -split '\s+')) }
@@ -304,15 +393,26 @@ try {
     if ($exe -match '\.(cmd|bat)$') { $psi.FileName = $env:COMSPEC; $psi.Arguments = '/d /s /c ""' + $exe + '" ' + $psi.Arguments + '"' }
     $psi.WorkingDirectory = $probe; $psi.UseShellExecute = $false; $psi.CreateNoWindow = $true
     $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true
+    # The probe must use the same verified kill as an agent, including when taskkill cannot enumerate its tree.
+    . (Join-Path $PSScriptRoot 'run_timeout.ps1') -LibraryOnly
+    Initialize-RunTree
     $p = New-Object Diagnostics.Process; $p.StartInfo = $psi
     $null = $p.Start(); $stdout = $p.StandardOutput.ReadToEndAsync(); $stderr = $p.StandardError.ReadToEndAsync()
+    $null = $p.Handle
+    $tree = @{}; $tree[$p.Id] = $p
+    try {
     $cap = 90; if ($test -and $env:PC_TEST_PREFLIGHT_SECONDS) { $cap = [int]$env:PC_TEST_PREFLIGHT_SECONDS }
     if (-not $p.WaitForExit($cap * 1000)) {
-      & taskkill.exe /PID $p.Id /T /F | Out-Null; $p.WaitForExit()
+      Stop-RunTree $p $tree (Join-Path $out 'preflight_kill_log.txt')
       Put (Join-Path $out 'preflight_log.txt') ($stdout.Result + "`n" + $stderr.Result)
       throw "preflight failed: $kind timed out after $cap seconds"
     }
     $p.WaitForExit(); $code = $p.ExitCode
+    } finally {
+      Update-RunTree $tree
+      if (@($tree.Values | Where-Object { -not $_.HasExited }).Count) { Stop-RunTree $p $tree (Join-Path $out 'preflight_kill_log.txt') }
+      foreach ($child in $tree.Values) { $child.Dispose() }
+    }
     $raw = $stdout.Result + "`n" + $stderr.Result
     Put (Join-Path $out 'preflight_log.txt') $raw
     $reply = Read (Join-Path $probe 'reply.txt')

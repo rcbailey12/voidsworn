@@ -71,8 +71,8 @@ the level of design and setup, not patches (R225).
 0.10 **How the repo carries memory (R251).** A standing rule comes only from Ryan's words, quoted in FINDINGS and landed here; a row
 that stretches his words past what he named says so and asks him. Board choices for one day or one job (effort, caps, job order,
 wrappers, which seat took a job) are operating notes in LOOP.md, never rules. A new ruling names what it replaces and the old row is
-marked SUPERSEDED, so no two live rules conflict. One live place per kind: rules in this book, status in LOOP.md's newest LATEST
-lines and The seats, the hand-over in HANDOFF section 0 (about one page; older sections go to docs/archive), history in FINDINGS.
+marked SUPERSEDED, so no two live rules conflict. One live place per kind: rules in this book, what is open and who has it on GitHub itself
+(checked live before any dispatch; contrib/opus/OPEN_WORK.md is only a timestamped nightly index of it, issue 890), what runs on the PC in LOOP.md's newest LATEST lines and The seats, the hand-over in HANDOFF section 0 (about one page; older sections go to docs/archive), history in FINDINGS.
 LOOP.md's LATEST lines roll into a dated summary once they pass about 15. Muse audits for stale or conflicting docs now and then.
 Why: several models and fresh chats read the repo cold; on Nov 14 a one-day choice nearly became a rule, an A20 note was stretched to
 every ship before Ryan ratified it (R244), and a summary line inverted Ryan's call on A18 and A19.
@@ -152,7 +152,7 @@ as a rerun of run 2. Set: Board (R281).
 
 An open issue is not proof the work is undone. Issues here stay open after their pull requests merge (2.5), so before
 queueing or relabelling an issue, search for a merged pull request that names it; on every merge, close the issue in the
-same step when its scope is done, and where a merge is partial, say what scope remains. The ChatGPT dot's dispatch sweep
+same step when its scope is done, and where a merge is partial, say what scope remains. Artoo's dispatch sweep (2.7)
 lists open issues with merged pull requests before each queueing round; the sweep is the audit, not the mechanism. Why:
 780, 781, 783 and 824 were queued again after pull requests 796, 787, 825 and 832 had merged (Ryan: "Why did you miss all
 those old jobs were already merged? That's a big miss."). Set: Board (R288).
@@ -185,7 +185,7 @@ credit is live, is status and lives in LOOP.md "The seats"):
   ended by R264 the same day).
 - The API arms (opus, sonnet) run on the Max plan's monthly API credit (Ryan, Nov 12); same model family as the Board, so never
   the different-model check of Opus work (R219).
-- The Board thread may use the Fable advisor (R252: "this chat stands"); no Fable helpers (R180); not taken: Gemini 4 Hydrogen
+- The Board thread may use the Fable advisor (R252: "this chat stands"; none is visible in the Project Board thread on Nov 16, so no document claims it is on); no Fable helpers (R180); not taken: Gemini 4 Hydrogen
   (R250).
 Superseded, kept so nobody follows them: "Kimi on its own subscription only, no API route (R238), through the Kimi Code CLI
 arm; it stays (R250 item 4)" (SUPERSEDED by R257); "the Kimi Code plan holds about 30 minutes of agent work per 5-hour window, so it takes
@@ -199,9 +199,17 @@ jobs run on a third local lane on the PC instead (lane C, R268, Ryan Nov 15: "ye
 If OpenAI lets cloud tasks pin a model, this can be asked again.
 Why: "We don't want to force using Astra or something. Just not accidentally run Luna or something, that's why we usually
 use Sol 6.1" (R216). Ends when Ryan picks another model. Set: Ryan, Nov 2 (R75), Nov 11 (R216) and Nov 15 (R268). Ids: R75b, R268, agents-07.
-Exception (R270, Ryan Nov 15: "Your ChatGPT dot"): Ryan's ChatGPT dot is the repo librarian. It runs in OpenAI's cloud, but
-read-only: it reads main, GitHub issues and PRs, and reports findings to Ryan (later to one standing librarian issue); it never
-pushes, edits, merges, closes or decides a rule. Every finding is checked by the Board against live main before anything changes.
+Exception (R270, R295): Artoo, Ryan's ChatGPT dot, is an independent technical reviewer. It runs in OpenAI's cloud and
+comments by itself, with no approval from Ryan per post, on pull requests and issues (one PR's findings on that PR; general
+sweeps on the standing issue 906). Its scope is merge issues, bugs and other technical problems, never design or taste. Every
+comment starts with "Artoo (technical review):", because it posts through Ryan's account and must never be read as his words,
+and names the commit it read. It never pushes, edits files, merges, closes, relabels or decides a rule; every finding is checked
+by the Board against live main before anything changes (0.10), and the Board replies with what it did. Before each merge the
+Board reads the PR's Artoo comments on its current head commit and settles each one first. Artoo went live Nov 16 (it wakes on
+PR events and checks issues about hourly). Why: "i want artoo
+commenting independently by itself for those comments and reviews. it shouldn't impact design or taste designs but looking for
+merge issues, bugs or other technical issues, absolutely should be independent" (Ryan, Nov 16, R295; replaces R270's read-only
+librarian clause).
 
 2.8 **Muse: a blind Rey leg written before Rey reads the others, on research, design and review jobs** (not on low-code fix
 jobs). Why: "Let's ensure muse is running its own blind leg room not just chairing." Set: Ryan, Nov 3 (R89). Ids: R89,
@@ -258,14 +266,18 @@ disk check.** Why: the PC disk filled on Nov 11 (C: 0.0 GB free, 550 GB in voids
 watcher stopped and every PC job waited until Ryan freed space himself (LOOP.md, Nov 12 02:15 and 02:20 UTC). Set: Ryan
 (project instructions: never delete); lean folders and the disk check Board, Nov 11. Ids: ships-10, loop-17.
 
-3.4 **Up to two GPU jobs at once across the main lane and lane B; frame-time measurements run solo. Lane C stays code only.**
-The launchers take and release claims themselves: two shared slots, or a solo claim that waits for both slots to empty and
-blocks new GPU work while it measures. Dead process claims are reclaimed. `gpu_go.txt` still wins: no new GPU work starts
-unless its first line is `GPU cleared` (optionally followed by `: reason`); the gaming pause in 3.11 is unchanged. Why: Ryan
-asked "can we run multiple jobs to speed things up?" and approved the Board's two-job, solo-measurement pick:
-"merge and make those changes to gpu jobs"
-(R276). The RTX 5080 has 16 GB: two jobs fit, three heavy jobs risk running out of graphics memory. Solo measurements keep
-speed numbers honest. Replaces the one-job limit (R173b, effects-09); the gaming pause (R173) remains. Set: Ryan, Nov 15 (R276).
+3.4 **GPU work is sized to the job and to what the RTX 5080 can hold, not to a fixed job count; frame-time measurements run
+solo. Lane C stays code only.** The Board decides per job how many share the card: light captures and probes can run side by
+side, heavy bakes and Blender renders take more of it, and nothing is started that would run the card out of its 16 GB of
+graphics memory. The launchers take and release claims themselves through tools/pc/gpu_slots.js (shared capacity from
+Downloads\voidsworn_test\gpu_slots.json, {"sharedSlots":2} by default, raised by the Board; captures weigh 1, Blender and heavy
+bakes 2, with PC_GPU_WEIGHT for the job's chosen weight), or a solo claim that waits for every slot
+to empty and blocks new GPU work while it measures. Dead process claims are reclaimed. `gpu_go.txt` still wins: no new GPU
+work starts unless its first line is `GPU cleared` (optionally followed by `: reason`); the gaming pause in 3.11 is
+unchanged. Why: "that one GPU job at a time is an outdated rule, we should be flexible based on the task and what my
+graphicsa card can actually handle as a 5080. we don't want to overwhelm it but we don't want to artificially restrict small
+jobs and extend things out" (Ryan, Nov 16, R293). Solo measurements keep speed numbers honest. Replaces the two-job cap
+(R276, Nov 15) and the one-job limit before it (R173b, effects-09); the gaming pause (R173) remains. Set: Ryan, Nov 16 (R293).
 
 3.5 **Every PC queue job is wrapped in the tmo.bat watchdog, ends with exit /b, and carries no |, &, < or > in its
 arguments.** Agent runs stop after STALL_MIN minutes without progress (default 30), or at a hard ceiling (default six
