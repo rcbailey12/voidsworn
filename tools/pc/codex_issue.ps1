@@ -65,5 +65,9 @@ $body
     if (Test-Path -LiteralPath $cp) { $checks += "`n$file`n" + [IO.File]::ReadAllText($cp) }
   }
   $msg = "Codex (issue #$n): $title`n`n$last`n`nRunner checks:`n$checks`n`nRefs #$n`n"
+  if (Test-Path -LiteralPath (Join-Path $out 'stop_reason.txt')) {
+    $reason = [IO.File]::ReadAllText((Join-Path $out 'stop_reason.txt')).Trim()
+    if ($reason) { $msg += "`n" + [IO.File]::ReadAllText((Join-Path $out 'resume.txt')) }
+  }
   [IO.File]::WriteAllText((Join-Path $out 'commit.txt'), $msg, $utf8)
 } else { Write-Host 'usage: codex_issue.ps1 prep|msg <n> <repo> <out>'; exit 2 }

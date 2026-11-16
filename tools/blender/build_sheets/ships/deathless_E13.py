@@ -24,7 +24,8 @@ CONCEPT_SHEET = 'contrib/muse/design/class_family_deathless_2026_11/deathless_E1
 CONCEPT_VIEWS = dict(top=dict(box=(28, 420, 650, 870), largest=True, flip=False), side=dict(box=(700, 560, 1365, 725), largest=True, flip=False))
 CROPS = [('bow (the plate tips and the nose)', (120, 560, 1020, 1160)), ('midships (the core gap and the crest plate)', (520, 300, 1260, 1000)),
          ('stern (the plates\' roots, the gun and the engine ring)', (900, 120, 1500, 940))]
-SHEET = dict(version=1, round='first sheet (issue 739)', date='2026-11-15', blend='sandbox w739run (Blender 5.3 bpy, Cycles CPU)',
+SHEET = dict(version=2, round='first sheet (issue 739); even side to side (issue 783)', date='2026-11-15', blend='sandbox w739run (Blender 5.3 bpy, Cycles CPU)',
+             blend_where='built in the cloud sandbox (Blender 5.3 bpy module, Cycles CPU), not kept; `build.py -- deathless_E13 <out> render` rebuilds it',
              before='First full layout', before_note='The first complete E13 layout, built with the Eclipse kit and run through the check before any fix.',
              during='While designing, the check caught (and the design fixed): the core\'s gimbal ring inside the dart and the stern block (both now end in its hub '
                     'collars, clear of the gimbal), the belly hatches inside the root collar (moved aft of it), and, once the plates were widened to the concept\'s leaf, '
@@ -159,7 +160,10 @@ def build(K):
             ob = K.loft_rings('E13_blade_%s%s' % (nm, sn), rings, 'shade')
             K.mass('Shade plate, %s%s' % (nm, {'': '', '_p': ' port', '_s': ' starboard'}[sn]), ob, 'violet-black shade',
                    note='a layered slab gathered at the root collar, its tip forward')
-            step = max(1, int(round(PANEL[1] / max(1e-6, abs(rings[1][0][0] - rings[0][0][0])))))   # one panel row per ring pair
+            # one panel row every `step` ring pairs, read off the plate's inner edge stations (the same numbers on both sides,
+            # issue 783: reading ring point 0 took the inner edge on port and the outer edge on starboard, so the inner twins got
+            # rows of 0.48 and 0.32; ceil, never round, so a pitch that lands on a half never flips with float noise)
+            step = max(1, math.ceil(PANEL[1] / ((ie[-1][0] - ie[0][0]) / N_BLADE) - 1e-6))
             pr = rings[::step] + ([rings[-1]] if (len(rings) - 1) % step else [])
             panel_jobs.append(('E13_blade_%s%s' % (nm, sn), pr, [2, 3, 4] if nm == 'crest' else [2], 'fan_plates', ('shade', 'shade2')))
             # the stepped second layer on the root half: a narrower slab on the plate's top, set in from both edges
@@ -173,7 +177,11 @@ def build(K):
                 up = Vector((0, 0, 0.03 if nm == 'crest' else 0.0))
                 lay.append([tuple(mid - half + up), tuple(mid + half + up), tuple(mid + half + up + Vector((0, 0, 0.04))), tuple(mid - half + up + Vector((0, 0, 0.04)))])
             K.loft_rings('E13_layer_%s%s' % (nm, sn), lay, 'shade2')
-            K.strip('E13_corona_layer_%s%s' % (nm, sn), [tuple(Vector(r[2 if (side > 0 or nm == 'crest') else 1]) + Vector((0, 0, 0.003))) for r in lay[1:]], w=0.016, t=0.012)
+            # the layer's corona on its outer top edge (ring point 2: lo to hi runs inner to outer on both sides, so the same
+            # point on port and starboard; issue 783: starboard took point 1, the bottom edge, and its line sat low and outboard);
+            # the crest's layer, on the spine, carries the line on both top edges (points 2 and 3), as the crest carries both rims
+            for k, tag in ((2, ''), (3, '_b')) if nm == 'crest' else ((2, ''),):
+                K.strip('E13_corona_layer_%s%s%s' % (nm, sn, tag), [tuple(Vector(r[k]) + Vector((0, 0, 0.003))) for r in lay[1:]], w=0.016, t=0.012)
             # the corona line along the outer rim (on the crest, both rims)
             K.strip('E13_corona_%s%s' % (nm, sn), rims[1:-1], w=0.02, t=0.014)
             if nm == 'crest':

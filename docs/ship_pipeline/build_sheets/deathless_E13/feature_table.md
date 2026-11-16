@@ -1,6 +1,6 @@
 # deathless_E13: Eclipse mote (the fan frigate), build sheet
 
-Eclipse (deathless) | class Frigate | version 1 (first sheet (issue 739)), 2026-11-15 | blockout: built in the cloud sandbox (Blender 5.3 bpy module, Cycles CPU), not kept; `build.py -- deathless_E13 <out> render` rebuilds it
+Eclipse (deathless) | class Frigate | version 2 (first sheet (issue 739); even side to side (issue 783)), 2026-11-15 | blockout: built in the cloud sandbox (Blender 5.3 bpy module, Cycles CPU), not kept; `build.py -- deathless_E13 <out> render` rebuilds it
 
 **Length 6.5 world units** (data.js d_scythe (cls 'Frigate'); length from godot/render/hull_table.gd CLS_LEN['Frigate'] = 6.5 (drawn x SHIP_K 1.6 = 10.4 on the board)). Frame: +X bow, +Y port, +Z up; station % from the prow tip; offset + port / - starboard; height from the hull datum (the hull centreline is z 0). Counts in this table outrank the pictures.
 
@@ -18,13 +18,13 @@ Weapon match (R241): **PASS**, 0 problems. [Full record](weapon_match.json).
 | length side | 6.537 |
 | length top | 6.537 |
 | length disagreement percent | 0.0 |
-| beam top | 3.688 |
+| beam top | 3.662 |
 | beam bow | 3.688 |
-| beam disagreement percent | 0.0 |
-| height side | 1.312 |
+| beam disagreement percent | 0.38 |
+| height side | 1.3 |
 | height bow | 1.325 |
-| height disagreement percent | 0.19 |
-| widest at station percent | 23.9 |
+| height disagreement percent | 0.38 |
+| widest at station percent | 23.4 |
 | hull beam | 0.8 |
 | hull depth | 0.49 |
 | L to B hull | 8.12 |
@@ -122,7 +122,7 @@ Eclipse breaks in layers (factions.md): one authored break for a frigate (factio
 
 ## Fit check (RULEBOOK 5.15, R217 to R219)
 
-Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 96 objects, 15 parts, 83 close pairs, 146 rays, 1 guns, 0 sensor pairs, 1 turrets swept, 5 cones, 8 apertures, 0 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
+Clashes left: CLASH 0, MOUNT 0, ARC 0, SENSOR 0, SWEEP 0, EXHAUST 0, EXIT 0, LANE 0. Tested: 97 objects, 15 parts, 83 close pairs, 146 rays, 1 guns, 0 sensor pairs, 1 turrets swept, 5 cones, 8 apertures, 0 lanes. Every clash found on the round 2 layout and how it was fixed: [fit_report.md](fit_report.md); picture: [fit_view.jpg](fit_view.jpg).
 
 ## Parts inventory (R218)
 

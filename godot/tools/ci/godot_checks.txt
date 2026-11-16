@@ -10,6 +10,7 @@
 # setup (gpu): - | env:<NAME> (NAME is set to the output folder) | envpng:<NAME> (NAME is set to <output folder>\shot.png)
 #   | scene:<res path> (run that scene instead of --script) | compat (gl_compatibility renderer); several split by commas
 # args: what goes after "--"; {out} is the output folder (gpu), {repo} the clone root, {fixture} the fixture file; - for none
+headless|world/test/finale_check.gd|-|-|issue 44: finale lighting preserves round 1, adds no floor and stays out of ordinary bosses
 headless|campaign/test/arc_hook_test.gd|-|-|story arc hook: arcs off or empty change nothing, test cards pay, flag and end; whole seeded runs, no window
 headless|campaign/test/capstone_mastery_test.gd|-|-|capstone mastery opens at 320, 440 and 600 XP; campaign data only
 headless|campaign/test/cinder_prizes_test.gd|-|-|issue 41 (R78 Q9): captured Hegemony and Eclipse hulls at the Crusade yards from run 3, links ripped out, Crusade prices; gate, stock, price, ripped buy, ripped battle rules
@@ -34,6 +35,7 @@ headless|campaign/test/story_beat3_test.gd|-|-|story beat 3 card text, choices a
 headless|campaign/test/tree_handoff_test.gd|step:Tree hand-off (campaign picks reach the battle)|-|already its own step (issue 335)
 headless|rules/test/api_smoke.gd|-|-|plays scenario s1 through the rules API the battle scene uses, to its end
 headless|rules/test/effect_caps_test.gd|fixture:effect_caps_tests.js|{fixture}|effect cap sums and derives match the JS fixtures
+headless|rules/test/shield_pool_test.gd|fixture:shield_pool_tests.js|{fixture}|R246 shield pool (issue 371): coverage of every shielded hull and scripted hit and turn sequences match the browser step by step
 headless|rules/test/parity_main.gd|step:Rules parity against the browser game|-|run by godot/rules/test/run_parity.sh in its own step
 headless|rules/test/tree_prompt_test.gd|-|-|issue 529: the you-may yes or no prompt and the Chorus role prompts through the rules API, answers and save shape
 headless|rules/test/thread_test.gd|step:Rules parity against the browser game|-|run by godot/rules/test/run_parity.sh (threads: s4 and s23)
@@ -65,6 +67,7 @@ headless|fx/test/squadron_check.gd|-|-|451 squadron and carrier checks on stand-
 headless|render/test/install_refresh_check.gd|-|-|issue 592: the stage 7 install route in user://: the real asset builder (--ships-only) rebuilds a replaced hull's cache entry, drops its old damage and wreck scenes, and ShipView draws the new hull
 headless|render/test/turret_check.gd|-|-|issue 560: on the exported turret test ship (render/test/fixtures/T560_fx) turrets turn smoothly to the target bearing inside their arc and clear of their own ship, fire from the turned muzzle, go back to rest; fixed guns never move; the same hits as fixed guns
 headless|render/test/scale_check.gd|-|-|issue 710 (R247): reads the live sizes of ships, fighters, station, terrain, planet, wrecks, explosions and the campaign map and fails when any object leaves its target range in docs/playbooks/scale.md
+headless|render/test/hull_lift_check.gd|-|-|issue 811: only E14 lifts after fitting; movement and revival keep its height; markers, camera, hard points and shields follow
 headless|scenes/battle/test/wing_cancel_test.gd|-|-|UI-5 (issue 387): the battle screen clears its armed wing on a ship pick, the roster, Escape and Cancel
 headless|scenes/battle/test/movement_flight_check.gd|-|-|issue 505 flown movement: ends on the rules hex and facing, no roll, no heading jump, slides hold heading, burn, coast and retro jets, turning jets start and stop turns, weight past battleship
 headless|ui/campaign/test/map_key_halo_test.gd|-|-|issue 678: the campaign map's Map key and Save and quit carry the dark halo, 4.5 to 1 over any backdrop at 1080 and 1440; the same buttons off the chart are unchanged

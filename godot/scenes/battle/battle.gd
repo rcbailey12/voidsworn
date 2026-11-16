@@ -62,7 +62,7 @@ const TIPS := [
 	["select", "Moving and facing", "This is the ship that is up. Click a blue hex to plan its move, and turn it with Q and E before you confirm. A ship that stays in the same hex is easier to hit: enemy shots against it get +10 to their hit chance. Moving 3 or more hexes gives -5 instead. Or Brace: the ship can move first, then digs in: it takes less hull damage and does not take the +10, but bracing ends its turn, so it cannot move or fire again this turn."],
 	["target", "Firing", "The red ring means this enemy can be hit from where your ship sits. Click it once to see the hit chance and the damage expected. Click again to fire every gun that bears. Keys 1 to 6 fire one gun at a time."],
 	["fired", "Taking turns", "Sides take turns, one ship at a time, until every ship has acted. That is one round. Press Space to end this ship early, or Tab for the next ship. A ship with nothing left to do ends itself."],
-	["move", "Shields and hull", "The cyan bars are shields, one for each side of the ship. Shields soak hits and come back each round. The amber bar is hull. Hull damage stays until you pay for repairs. Keep your strongest shield side facing the guns."],
+	["move", "Shields and hull", "The cyan arcs are shields: one pool feeds all four sides, and each side catches a share set by its coverage. Shields soak hits and come back each round. The amber bar is hull. Hull damage stays until you pay for repairs. Keep your strongest shield side facing the guns."],
 	["threat", "Threat map", "Press R for the threat map. It shades every hex enemy guns can reach next turn. Darker means more damage waiting there."],
 	["reinforce_warn", "More ships are coming", "More enemy ships are on their way. They arrive at the map edge, and a banner will name the ship and flash where it came in. A new arrival acts in the turn order like any other ship."],
 	["close", "Close action", "Up close you have two more attacks. Press X to ram an enemy dead ahead. Press G to board an enemy next to your ship. Win a boarding and the ship is yours for the rest of the fight."],
@@ -158,6 +158,7 @@ var in_campaign := false   # a campaign battle (no quit to title: the run decide
 var can_retreat := false   # campaign battles (not against a sector flagship): the top bar offers Retreat
 var showcase := false     # the title screen's decorative battle (campaign3d.js setupShowcase): no HUD, no turns, no input, slow orbit
 var boss_fight := false    # a sector flagship fight or the finale (battle kind "boss"): boss music and the champion fanfare
+var finale_fight := false  # R78 Q18: the run's final battle lights the new sun over the board, sector by sector
 var external := false      # run by godot/main (campaign or quick battle): no own restart, the end card says Continue
 var last_progress := 0.0   # real time of the last event batch (softlock watchdog for bot runs)
 var softlock_s := 60.0
@@ -499,6 +500,7 @@ func _begin(a) -> void:
 		_api_set_ai(ai_level)
 	PACE = TBL.get("PACE", {})
 	boss_fight = _api_battle_kind() == "boss"
+	finale_fight = _api_battle_finale()
 	ended = false
 	result = {}
 	errors.clear()
@@ -561,7 +563,7 @@ func _begin(a) -> void:
 		var vb: Dictionary = api.view()
 		var wi: Dictionary = api.world_info()
 		var world_opts := {"biome": wi.get("biome", {}) if wi.get("biome") is Dictionary else {}, "fac": _enemy_fac_of(vb), "hex_world": board.hex_world, "camera": cam, "environment": env,
-			"quality": str(args.get("quality", "max")), "pano": pano, "seed": int(wi.get("seed", 1)) if wi.get("seed") != null else 1}
+			"quality": str(args.get("quality", "max")), "pano": pano, "seed": int(wi.get("seed", 1)) if wi.get("seed") != null else 1, "finale": finale_fight}
 		if args.has("sector_setting"): world_opts["sector_setting"] = args["sector_setting"]
 		world.build(vb, world_opts)
 		for c in backdrop.get_children():
@@ -975,6 +977,20 @@ func _api_battle_kind() -> String:
 	return ""
 
 
+# R78 Q18: the campaign marks its fifth run in scene args, without adding a rule or save field. Only that run's
+# sector 3 boss gets dawn. A scenario may also ask for it outright (cfg.finale), for captures and fixtures.
+func _api_battle_finale() -> bool:
+	var B = api.R.B
+	if B is Dictionary and B.get("cfg") is Dictionary:
+		var c: Dictionary = B["cfg"]
+		if bool(c.get("finale", false)):
+			return true
+		var run = api.R.RUN
+		if str(c.get("kind", "")) == "boss" and run is Dictionary:
+			return bool(args.get("finale", false)) and int(run.get("sector", 0)) == 3
+	return false
+
+
 func _api_tables() -> Dictionary:
 	if api.has_method("tables"):
 		return api.tables()
@@ -1205,7 +1221,7 @@ func _play_batch(bt: Dictionary) -> void:
 
 func _pos(id) -> Vector3:
 	if views.has(id):
-		return (views[id] as Node3D).position
+		return (views[id] as ShipView).visual_position()
 	return Vector3.ZERO
 
 
@@ -1235,6 +1251,8 @@ func _play_event(e: Dictionary) -> void:
 				sfx.play("adapt_shift")
 		"round":
 			_log("Round %d." % int(e["round"]), "x")
+			if finale_fight and world != null and world.has_method("finale_for_round"):
+				world.finale_for_round(int(e["round"]))   # R78 Q18: one more sector catches the new sun
 			if not bot and not showcase:
 				hud.set_phase("", "")
 			fired_in_act.clear()
@@ -1294,7 +1312,7 @@ func _play_event(e: Dictionary) -> void:
 					gfx.add_ship(str(e["unit"]), sv, {"faction": str(ru.get("fac", "deathless")), "meshes": sv.meshes, "cls": str(ru.get("cls", "")), "size": float(ru.get("size", 0.5)), "squadron": false, "flagship": bool(ru.get("flagship", false))})
 					sv.fx_engines = true
 				wrecked.erase(e["unit"])
-				_flash(sv.position + Vector3(0, 2, 0), 16.0, Color(0.2, 1.0, 0.4), 0.8)
+				_flash(sv.visual_position() + Vector3(0, 2, 0), 16.0, Color(0.2, 1.0, 0.4), 0.8)
 			_float(e["unit"], "Risen", Color("#7dff9b"), -30)
 			await wait(600.0)
 		"stance":
@@ -1303,11 +1321,11 @@ func _play_event(e: Dictionary) -> void:
 			var sv = views.get(e["unit"])
 			if sv != null:
 				var c: Color = HT.FAC3D.get(str(VU.get(e["unit"], {}).get("fac", "ithar")), HT.FAC3D["ithar"])["eng"]
-				_flash(sv.position + Vector3(0, 2, 0), 18.0, c, 0.5)
-				sfx.play("phase", {"pos": sv.position})
+				_flash(sv.visual_position() + Vector3(0, 2, 0), 18.0, c, 0.5)
+				sfx.play("phase", {"pos": sv.visual_position()})
 				await wait(250.0)
 				sv.position = board.hex_world(int(e["to"]["q"]), int(e["to"]["r"]))
-				_flash(sv.position + Vector3(0, 2, 0), 18.0, c, 0.5)
+				_flash(sv.visual_position() + Vector3(0, 2, 0), 18.0, c, 0.5)
 				await wait(250.0)
 		"side":
 			if e["side"] == "player":
@@ -1327,7 +1345,7 @@ func _play_event(e: Dictionary) -> void:
 					if follow and not bot:
 						if cam_saved.is_empty():
 							cam_saved = {"t": cam.t, "r": cam.r}
-						cam.t = cam.t.lerp(Vector3(_pos(e["unit"]).x, 0, _pos(e["unit"]).z), 0.6)
+						cam.t = cam.t.lerp(_pos(e["unit"]), 0.6)
 				await wait(float(PACE["aiGap"]))
 		"move":
 			await _play_move(e["unit"], e["path"], false)
@@ -1377,7 +1395,7 @@ func _play_event(e: Dictionary) -> void:
 				var sv = views.get(e["unit"])
 				if sv != null:
 					sv.position = board.hex_world(e["hex"]["q"], e["hex"]["r"])
-					_flash(sv.position + Vector3(0, 2, 0), 18.0, c, 0.5)
+					_flash(sv.visual_position() + Vector3(0, 2, 0), 18.0, c, 0.5)
 			elif ab == "nova" and e.get("hex") != null:
 				sfx.play("charge", {"pos": _pos(e["unit"])})
 				await wait(500.0)
@@ -1551,7 +1569,7 @@ func _play_move(id, path: Array, charge: bool) -> void:
 			n_rot += 1 if _jt(st.get("rot")) else 0
 		print("[move] %s %s %s size %.2f hexes %d turns %d dur %.2f s, %.0f ms a hex, speed %.2f" % [str(id), _side(id), str(u.get("cls", "")), size, path.size() - n_rot, n_rot, dur * mv_speed, per * mv_speed, mv_speed])
 	if size > 0.3:
-		sfx.play("engine", {"pos": sv.position, "gain": minf(1.0, 0.55 + size * 0.6)})
+		sfx.play("engine", {"pos": sv.visual_position(), "gain": minf(1.0, 0.55 + size * 0.6)})
 	var eng_on: bool = gfx != null and gfx.has_method("set_engine")
 	while sv.burning() and not sv.dead:
 		if skip:
@@ -1821,7 +1839,6 @@ func _cine_frame(a_id, t_id) -> void:
 	var pa := _pos(a_id)
 	var pt := _pos(t_id)
 	var mid := (pa + pt) * 0.5
-	mid.y = 0
 	var dist := Vector2(pt.x - pa.x, pt.z - pa.z).length()
 	# Godot camera azimuth: side-on to the line of fire, the side nearer the current view
 	var base := atan2(-(pt.z - pa.z), pt.x - pa.x)
@@ -2069,7 +2086,7 @@ func _schedule_impact(t_id, h: Dictionary, delay: float, L: float, shield_col: C
 		var sv = views.get(t_id)
 		if sv == null:
 			return
-		var p: Vector3 = sv.position + Vector3(randf_range(-0.3, 0.3) * L, 1.0, randf_range(-0.12, 0.12) * L)
+		var p: Vector3 = sv.visual_position() + Vector3(randf_range(-0.3, 0.3) * L, 1.0, randf_range(-0.12, 0.12) * L)
 		if float(h["shield"]) > 0 and float(h["hull"]) <= 0:
 			fx.shield(sv, L, int(h["quad"]), shield_col)
 			_flash(p, 4.0 + L * 0.25, shield_col, 0.25, 0.0, false)
@@ -2097,8 +2114,8 @@ func _impact(t_id, h: Dictionary, col: Color) -> void:
 	var sv = views.get(t_id)
 	if sv == null:
 		return
-	_flash(sv.position + Vector3(0, 1.5, 0), 6.0 + sv.L * 0.3, col, 0.3)
-	sfx.hit(sv.position, h.get("crit", false))
+	_flash(sv.visual_position() + Vector3(0, 1.5, 0), 6.0 + sv.L * 0.3, col, 0.3)
+	sfx.hit(sv.visual_position(), h.get("crit", false))
 
 
 # Issue 521 (audit item 7; R193, Ryan's pick "Hold and slow", which replaces the Board's R123): the cut-in for a kill
@@ -2130,7 +2147,7 @@ func _kill_frame(id) -> void:
 	var fill: float = KILL_FILL[1] if cap else KILL_FILL[0]
 	var span := 2.0 * tan(deg_to_rad(cam.fov) * 0.5)   # screen height per unit of distance
 	var rr := clampf(maxf(float(sv.L), 6.0) / (fill * span), cam.min_r, 200.0)
-	var tp := Vector3(sv.position.x, 0.0, sv.position.z)
+	var tp: Vector3 = sv.visual_position()
 	# the four three-quarter views (bow and stern quarters, either side): one with no other hull between the camera and
 	# the dying ship, nearest the current view (so the camera never swings far)
 	var cur: float = cam.a
@@ -2144,7 +2161,7 @@ func _kill_frame(id) -> void:
 			var ov = views[oid]
 			if oid == id or ov == null or ov.dead or not ov.visible:
 				continue
-			var o: Vector3 = ov.position
+			var o: Vector3 = ov.visual_position()
 			var seg := tp - eye
 			var k := clampf((o - eye).dot(seg) / maxf(seg.length_squared(), 1e-4), 0.0, 1.0)
 			if (eye + seg * k).distance_to(o) < float(ov.L) * 0.6 + float(sv.L) * 0.15 and k < 0.92:
@@ -2204,7 +2221,7 @@ func _play_death(e: Dictionary) -> void:
 	if sv == null:
 		return
 	var L: float = sv.L
-	var p: Vector3 = sv.position + Vector3(0, 2, 0)
+	var p: Vector3 = sv.visual_position() + Vector3(0, 2, 0)
 	var big := L >= 14.0
 	if gfx != null and gfx.has_method("death"):
 		if "kill_slowmo" in gfx:
@@ -3662,7 +3679,7 @@ func _ship_tip(u: Dictionary) -> String:
 		var parts: Array = []
 		for i in 4:
 			parts.append(str(int(d["sh"][i])))
-		t += "   Shields [color=#92b8e8]%s[/color] / %d" % [" ".join(parts), int(u["shMax"])]
+		t += "   Shield pool [color=#92b8e8]%d[/color]/%d; sides [color=#92b8e8]%s[/color]" % [int(_z0(u.get("shp"))), int(u["shMax"]), " ".join(parts)]
 	if u["side"] == "player" and u["activated"]:
 		t += "\n[color=#7c8674]Already acted this round.[/color]"
 	return t
@@ -3718,7 +3735,7 @@ func _attack_tip(t_id: String) -> String:
 		rows += "%s  %s\n" % [str(vw["name"]), right]
 	var t := "[b][color=#ff8a72]%s[/color][/b]\n[color=#a7b09d]Hull %d/%d, armor %d%%, evasion %d[/color]\n" % [str(tv["name"]), int(tv["hp"]), int(tv["maxHp"]), int(round(float(tu.get("armor", 0)) * 100.0)), int(_z0(tu.get("ev"))) + int(_z0(tu.get("evBuff")))]
 	if float(tv["shMax"]) > 0:
-		t += "Hits the [color=#92b8e8][b]%s shield[/b] (%d/%d)[/color]%s." % [QUAD_NAME[quad], int(tv["sh"][quad]), int(tv["shMax"]), " [color=#ffad3b]down, straight to hull[/color]" if float(tv["sh"][quad]) < 1 else ""]
+		t += "Hits the [color=#92b8e8][b]%s shield[/b][/color] (pool [color=#92b8e8]%d[/color]/%d, this side catches %d)%s." % [QUAD_NAME[quad], int(_z0(tu.get("shp"))), int(tv["shMax"]), int(tv["sh"][quad]), " [color=#ffad3b]down, straight to hull[/color]" if float(_z0(tu.get("shp"))) < 1 else ""]
 	else:
 		t += "Target is unshielded: [color=#ffad3b]every hit lands on the hull[/color]."
 	if rear:
@@ -4100,7 +4117,7 @@ func _refresh_ui() -> void:
 			continue
 		var d: Dictionary = disp.get(u["id"], {"hp": u["hp"], "sh": u["sh"]})
 		var status := "Lost" if u["dead"] else ("Acting" if u["active"] else ("Done" if u["activated"] else ("Up" if u["id"] == sel and mine else "Ready")))
-		rows.append({"id": u["id"], "name": u["name"], "cls": u["cls"], "hp": d["hp"], "maxHp": u["maxHp"], "sh": d["sh"], "shMax": u["shMax"], "status": status, "sel": u["id"] == sel, "done": u["activated"] or u["dead"], "flag": u["flagship"],
+		rows.append({"id": u["id"], "name": u["name"], "cls": u["cls"], "hp": d["hp"], "maxHp": u["maxHp"], "sh": d["sh"], "shMax": u["shMax"], "shp": u.get("shp"), "status": status, "sel": u["id"] == sel, "done": u["activated"] or u["dead"], "flag": u["flagship"],
 			"new": arrived.has(str(u["id"])) and int(arrived[str(u["id"])]) >= int(V.get("round", 0)) - 1, "danger": 0 if u["dead"] else _danger_at(u)})
 	hud.set_roster(rows)
 	hud.set_panel(_panel_info())
@@ -4524,7 +4541,7 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 	# shields in words
 	if float(u["shMax"]) > 0.0:
 		var sh: Array = disp.get(u["id"], {"sh": u["sh"]})["sh"]
-		info["stats"] = str(info.get("stats", "")) + "\n[color=#92b8e8]Shields[/color] of %d each, +%d a turn: prow %d, port %d, starboard %d, rear %d" % [int(u["shMax"]), int(_z0(ru.get("regen"))), int(sh[0]), int(sh[3]), int(sh[1]), int(sh[2])]
+		info["stats"] = str(info.get("stats", "")) + "\n[color=#92b8e8]Shields[/color]: pool %d of %d, +%d a turn; sides catch prow %d, port %d, starboard %d, rear %d" % [int(_z0(ru.get("shp"))), int(u["shMax"]), int(_z0(ru.get("regen"))), int(sh[0]), int(sh[3]), int(sh[1]), int(sh[2])]
 	# state and faction lines (refreshPanel tr[] and battle.js factionTraitLines)
 	var tr: Array = R.storyModifierLines(ru)
 	if _jt(ru.get("hullRegen")):
@@ -4553,7 +4570,7 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 				if not (ru["side"] == "player" and Bs["round"] == 1 and _jt(Bs.get("cfg", {}).get("storyMods", {}).get("syncDown"))):
 					tr.append("Synchronized fire lost: the flagship is gone." if not _jt(anc) else ("Sync anchor: Hegemony ships within %d hexes fire as one." % sr if _jt(ru.get("anchor")) else ("In sync with the flagship." if R.inSync(ru) else "Out of sync: more than %d hexes from the flagship." % sr)))
 		if fac == "ithar" and float(u["shMax"]) > 0.0:
-			tr.append("Prism charge: facings not hit since its last turn refill to full; hit facings recharge twice.")
+			tr.append("Prism charge: an untouched pool snaps back to full; a pool struck since its last turn recharges twice.")
 		if fac == "chorus":
 			tr.append("Feeds on kills nearby (up to %d%% hull a round)." % int(round(float(TBL.get("FEED_CAP", 0.0)) * 100.0)))
 		if fac == "deathless" and _jt(T.get("reanimate")):
@@ -4679,7 +4696,7 @@ func _process(dt: float) -> void:
 		if u.is_empty() or sv.dead or not sv.visible or not cine_saved.is_empty():
 			hud.set_plate(str(id), Vector2.ZERO, false, "", true, false, 0, 1, 0, 0)
 			continue
-		var wp: Vector3 = sv.position + Vector3(0, 3.0 + sv.L * 0.18, 0)
+		var wp: Vector3 = sv.visual_position() + Vector3(0, 3.0 + sv.L * 0.18, 0)
 		var on := not cam.is_position_behind(wp)
 		var sp := cam.unproject_position(wp)
 		on = on and sp.x > -50 and sp.y > -50 and sp.x < vs.x + 50 and sp.y < vs.y + 50
@@ -4956,7 +4973,7 @@ func _target_info() -> Dictionary:
 		# no kill prediction (ui_spec S1 board ruling on the #314 check): the expected value only; the hatched ghost on the
 		# target's hull bar already shows the hull reaching zero
 		_tgt_plate[tid] = {"odds": "%d%% %d gun%s" % [best, set.size(), "" if set.size() == 1 else "s"], "ghost": maxf(0.0, float(d["hp"]) - eh)}
-	return {"name": str(tu["name"]), "flag": tu["flagship"], "nem": bool(tu.get("nemesis", false)), "hp": float(d["hp"]), "maxHp": float(tu["maxHp"]), "sh": d["sh"], "shMax": float(tu["shMax"]),
+	return {"name": str(tu["name"]), "flag": tu["flagship"], "nem": bool(tu.get("nemesis", false)), "hp": float(d["hp"]), "maxHp": float(tu["maxHp"]), "sh": d["sh"], "shMax": float(tu["shMax"]), "shp": float(_z0(tu.get("shp"))),
 		"exp_hull": eh, "exp_sh": es, "line": line}
 
 
@@ -5483,7 +5500,7 @@ func _closeups(id: String, tag: String) -> void:
 	var rr := clampf(float(sv.L) * 1.5, cam.min_r, 140.0)
 	var nm := "%s_%s_%s" % [tag, str(VU.get(id, {}).get("cls", "ship")).replace(" ", ""), id]
 	for v in [[yaw + PI / 2.0, 0.35, "port"], [yaw - PI / 2.0, 0.35, "starboard"], [yaw + PI * 0.75, 0.9, "above"]]:
-		cam.a = float(v[0]); cam.b = float(v[1]); cam.r = rr; cam.t = Vector3(sv.position.x, 0, sv.position.z)
+		cam.a = float(v[0]); cam.b = float(v[1]); cam.r = rr; cam.t = sv.visual_position()
 		cam.snap()
 		await get_tree().create_timer(0.5).timeout
 		await _snap(nm + "_" + str(v[2]))

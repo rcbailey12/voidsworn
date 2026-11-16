@@ -26,6 +26,7 @@ var bob_seed := 0.0
 var meshes: Array = []
 var fade := 1.0
 var hull_base := Vector3.ZERO
+var hull_lift := 0.0         # fitted hull's height above its rules hex; movement still owns the root
 var hull_basis := Basis.IDENTITY # the hull's fitted basis (scale, mirror, yaw fix); bank and pitch are laid over it
 var a4 := false              # an A4 kit ship (not mirrored)
 
@@ -196,12 +197,20 @@ func _fit() -> void:
 	var c := box.get_center()
 	hull.transform = Transform3D(Basis(Vector3.UP, yaw_fix).scaled(Vector3(k, k, k if a4 else -k)), Vector3.ZERO)
 	hull.position = -(hull.transform.basis * c)
+	hull_lift = float(HT.HULL_LIFT.get(code, 0.0))
+	hull.position.y += hull_lift
 	hull_base = hull.position
 	hull_basis = hull.transform.basis
 	# beam and height for where the RCS jets sit (the long axis is x)
 	var side := box.size.z if is_zero_approx(yaw_fix) else box.size.x
 	half_w = clampf(side * k * 0.5, L * 0.05, L * 0.3)
 	half_h = clampf(box.size.y * k * 0.5, 0.3, L * 0.2)
+
+
+# The ship's visual centre in the board's frame, for camera targets, labels and fallback effects.
+# Keep the rules root on its hex so a flown path, revive or hit reaction cannot reset the lift.
+func visual_position() -> Vector3:
+	return position + Vector3.UP * hull_lift
 
 
 func _rel(n: Node3D) -> Transform3D:
@@ -228,7 +237,7 @@ func _engines() -> void:
 		s.no_depth_test = false
 		s.render_priority = 1
 		var zoff := (float(i) - (n - 1) * 0.5) * L * 0.09
-		s.position = Vector3(-L * 0.52, 0.0, zoff)
+		s.position = Vector3(-L * 0.52, hull_lift, zoff)
 		add_child(s)
 		engines.append(s)
 
@@ -264,7 +273,7 @@ func _ring() -> void:
 	m.albedo_color = EMBER
 	m.emission_enabled = true
 	ring.material_override = m
-	ring.position.y = -0.3
+	ring.position.y = hull_lift - 0.3
 	ring.visible = false
 	ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(ring)
@@ -314,7 +323,7 @@ func set_marker(friend: bool) -> void:
 	m.albedo_color = Color(0.32, 0.94, 0.77, 0.85) if friend else Color(0.62, 0.22, 1.0, 0.9)
 	marker.material_override = m
 	marker.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	marker.position.y = -0.25
+	marker.position.y = hull_lift - 0.25
 	add_child(marker)
 
 
@@ -1323,7 +1332,7 @@ func _side_puffs(sgn: float, k: float) -> void:
 
 func _jets(kind: String, sgn: float, k: float) -> void:
 	for j in jet_aims(kind, sgn, L, half_w, half_h):
-		_puff(j[0], j[1], k * float(j[3]), j[2])
+		_puff((j[0] as Vector3) + Vector3.UP * hull_lift, j[1], k * float(j[3]), j[2])
 
 
 # Every movement jet, one row each: [aim, gas direction, the side it vents from, strength], in this node's frame.

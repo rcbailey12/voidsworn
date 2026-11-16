@@ -72,6 +72,34 @@ def unwrap(objs, margin):
     bpy.ops.object.mode_set(mode='OBJECT')
 
 
+def mirror_islands(o):
+    """issue 783: a per-plate random that a plate and its mirror twin share (point attribute ps_isl, 0..1), for a stack that asks
+    for a mirrored paint (LAYERS mirror). Blender's Random Per Island numbers islands in mesh order, so twins got unrelated tones;
+    here each island (vertices joined by edges) takes a hash of its centre folded to the port side, (x, |y|, z), on a 0.1 mm grid."""
+    me = o.data; n = len(me.vertices)
+    if not n: return 0
+    co = np.zeros(n * 3, np.float32); me.vertices.foreach_get('co', co); co = co.reshape(n, 3) @ np.asarray(o.matrix_world)[:3, :3].T + np.asarray(o.matrix_world)[:3, 3]
+    ev = np.zeros(len(me.edges) * 2, np.int64); me.edges.foreach_get('vertices', ev); ev = ev.reshape(-1, 2)
+    root = np.arange(n)
+    def find(a):
+        while root[a] != a:
+            root[a] = root[root[a]]; a = root[a]
+        return a
+    for a, b in ev:
+        ra, rb = find(a), find(b)
+        if ra != rb: root[max(ra, rb)] = min(ra, rb)
+    lab = np.array([find(i) for i in range(n)])
+    _, inv = np.unique(lab, return_inverse=True); k = inv.max() + 1
+    cen = np.zeros((k, 3)); np.add.at(cen, inv, co.astype(np.float64)); cen /= np.bincount(inv, minlength=k)[:, None]
+    cen[:, 1] = np.abs(cen[:, 1])
+    q = np.round(cen * 1e4).astype(np.int64)
+    h = (q[:, 0] * 73856093) ^ (q[:, 1] * 19349663) ^ (q[:, 2] * 83492791)
+    val = ((h * 2654435761) % 1000003) / 1000003.0
+    if me.attributes.get('ps_isl') is None: me.attributes.new('ps_isl', 'FLOAT', 'POINT')
+    me.attributes['ps_isl'].data.foreach_set('value', val[inv].astype(np.float32))
+    return int(k)
+
+
 def bake_copy(objs, name, zone_by_kind=None):
     """one joined copy of these objects (same UVs and material slots, world space, no modifiers), so Cycles syncs the scene once
     per bake instead of once per object (round 6 lesson, bakeAb6.py); the originals are hidden from the render meanwhile"""
@@ -134,20 +162,29 @@ def np_image(name, arr, colour=True):
 # ------------------------------------------------------------------------------------------------------------ shared node blocks
 class Ctx:
     """the inputs every layer reads, made once per material: masks, position, normal, per-plate random, edge bands"""
-    def __init__(self, nt, masks, scale):
+    def __init__(self, nt, masks, scale, mirror=False):
         self.nt = nt
         tc = node(nt, 'ShaderNodeTexCoord'); geo = node(nt, 'ShaderNodeNewGeometry'); self.tc, self.geo = tc, geo
         uv = node(nt, 'ShaderNodeUVMap')
         mk = node(nt, 'ShaderNodeTexImage'); mk.image = masks; mk.interpolation = 'Linear'; nt.links.new(uv.outputs[0], mk.inputs[0])
         sp = node(nt, 'ShaderNodeSeparateColor'); nt.links.new(mk.outputs[0], sp.inputs[0])
         self.ao, self.edge, self.aol = sp.outputs[0], sp.outputs[1], sp.outputs[2]
-        self.pos = tc.outputs['Object']
+        # wpos: the true ship position (decals, which sit on one side); pos: what every pattern reads. A stack that asks for a
+        # mirrored paint (LAYERS mirror, issue 783: the Eclipse, "the paint actually is even on each side") folds the starboard
+        # half onto the port, (x, |y|, z), so every noise, panel lattice and trim tile repeats mirrored across the centre line.
+        self.wpos = tc.outputs['Object']; self.pos = self.wpos
+        if mirror:
+            s = node(nt, 'ShaderNodeSeparateXYZ'); nt.links.new(self.wpos, s.inputs[0])
+            f = node(nt, 'ShaderNodeCombineXYZ'); nt.links.new(s.outputs[0], f.inputs[0]); nt.links.new(s.outputs[2], f.inputs[2])
+            nt.links.new(math_(nt, 'ABSOLUTE', s.outputs[1]), f.inputs[1]); self.pos = f.outputs[0]
         xyz = node(nt, 'ShaderNodeSeparateXYZ'); nt.links.new(self.pos, xyz.inputs[0]); self.x, self.y, self.z = xyz.outputs[0], xyz.outputs[1], xyz.outputs[2]
         nz = node(nt, 'ShaderNodeSeparateXYZ'); nt.links.new(geo.outputs['Normal'], nz.inputs[0]); self.nz = nz.outputs[2]
         self.up = math_(nt, 'MAXIMUM', self.nz, 0)
         self.down = math_(nt, 'MAXIMUM', math_(nt, 'MULTIPLY', self.nz, -1), 0)
         self.side = math_(nt, 'SUBTRACT', 1, math_(nt, 'ABSOLUTE', self.nz))
         self.isl = geo.outputs['Random Per Island'] if 'Random Per Island' in geo.outputs else None
+        if mirror:      # the plate's own random, the same for a plate and its mirror twin (mirror_islands writes it on the bake copy)
+            at = node(nt, 'ShaderNodeAttribute'); at.attribute_type = 'GEOMETRY'; at.attribute_name = 'ps_isl'; self.isl = at.outputs['Fac']
         if self.isl is None:
             oi = node(nt, 'ShaderNodeObjectInfo'); self.isl = oi.outputs['Random']
         self.scale = scale
@@ -192,7 +229,7 @@ def decal_layer(c, col, height, rough, decals, atlas, cells, wear):
     nt = c.nt
     for d in decals:
         cpos, n, t, b, w, h, cell, a = d['pos'], d['n'], d['t'], d['b'], d['w'], d['h'], d['cell'], d.get('alpha', 1.0)
-        rel = node(nt, 'ShaderNodeVectorMath', operation='SUBTRACT'); nt.links.new(c.pos, rel.inputs[0]); rel.inputs[1].default_value = cpos
+        rel = node(nt, 'ShaderNodeVectorMath', operation='SUBTRACT'); nt.links.new(c.wpos, rel.inputs[0]); rel.inputs[1].default_value = cpos
         def comp(axis, size):
             dp = node(nt, 'ShaderNodeVectorMath', operation='DOT_PRODUCT'); nt.links.new(rel.outputs[0], dp.inputs[0]); dp.inputs[1].default_value = axis
             return math_(nt, 'ADD', math_(nt, 'DIVIDE', dp.outputs['Value'], size), .5)
@@ -357,7 +394,7 @@ def zone_material(S, zone, group, masks, tiles, decals, decal_atlas):
     z = S.ZONES[zone]
     m = bpy.data.materials.new(f'ps_{zone}_{group}'); m.use_nodes = True; nt = m.node_tree; nt.nodes.clear()
     out = node(nt, 'ShaderNodeOutputMaterial'); bs = node(nt, 'ShaderNodeBsdfPrincipled'); nt.links.new(bs.outputs[0], out.inputs[0])
-    c = Ctx(nt, masks, S.SCALE)
+    c = Ctx(nt, masks, S.SCALE, mirror=S.LAYERS.get('mirror', False))
     L = S.LAYERS
     lo, hi = z['lo'], z['hi']
     # 1. base: two tones in broad patches, one tone per plate island (a scavenged hull: no two plates alike)
@@ -525,9 +562,16 @@ def place_decals(S, hull, others):
     recs, rep = [], []
     for rule in S.DECALS:
         sides = rule.get('sides', ('port', 'stbd')) if rule['face'] == 'side' else ('top',)
+        mirror = S.LAYERS.get('mirror', False); placed = {}
         for sd in sides:
             best = None
-            for fx in rule['x']:
+            if mirror and sd == 'stbd' and placed.get('port'):
+                # issue 783: a mirrored paint puts the starboard mark where the port one went, mirrored, when the hull is there
+                _, p_, n_ = placed['port']; p_ = Vector((p_.x, -p_.y, p_.z)); n_ = Vector((n_.x, -n_.y, n_.z))
+                hit = TA.ray_cast(p_ + n_ * .05, -n_); hh = TH.ray_cast(p_ + n_ * .05, -n_)
+                if hit[0] is not None and hh[0] is not None and (hit[0] - hh[0]).length < 1e-5 and (hh[0] - p_).length < .002:
+                    best = (_room(TA, hh[0], n_, rule['w'], rule['h']), hh[0], n_)
+            for fx in (() if best is not None else rule['x']):
                 x = x1 - fx * (x1 - x0)
                 if rule['face'] == 'side':
                     sy = 1 if sd == 'port' else -1
@@ -540,7 +584,7 @@ def place_decals(S, hull, others):
                         sc = _room(TA, hh[0], n, rule['w'], rule['h'])
                         if best is None or sc > best[0]: best = (sc, hh[0], n)
                 else:
-                    for fy in rule.get('y', (0.0,)):
+                    for fy in (rule.get('y', (0.0,))[:1] if mirror else rule.get('y', (0.0,))):     # mirrored: the centre line only
                         o = Vector((x, fy, zt + 1.0)); d = Vector((0, 0, -1))
                         hit = TA.ray_cast(o, d); hh = TH.ray_cast(o, d)
                         if hit[0] is None or hh[0] is None or (hit[0] - hh[0]).length > 1e-5: continue
@@ -550,7 +594,7 @@ def place_decals(S, hull, others):
                         if best is None or sc > best[0]: best = (sc, hh[0], n)
             if best is None or best[0] < rule.get('min_room', .7):
                 rep.append(dict(rule=rule['name'], side=sd, placed=False, room=None if best is None else round(best[0], 2))); continue
-            _, p, n = best
+            _, p, n = best; placed[sd] = best
             b = Vector((0, 0, 1)) if abs(n.z) < .7 else Vector((1, 0, 0))
             b = (b - n * b.dot(n)).normalized(); t = (-n).cross(b).normalized()      # text reads left to right to a viewer facing it
             recs.append(dict(name=rule['name'], pos=tuple(p), n=tuple(n), t=tuple(t), b=tuple(b), w=rule['w'], h=rule['h'], cell=rule['cell'],
@@ -838,6 +882,7 @@ def run(S, out, cell, res, parts_res, samples, textures_dir=None):
     maps = {}
     for group, objs, R in (('H', H, res), ('P', P, parts_res)):
         J = bake_copy(objs, f'{cell}_{group}_bake', getattr(S, 'ZONE_BY_KIND', None)); hid = {o.name: o.hide_render for o in objs}
+        if S.LAYERS.get('mirror'): INFO[f'mirror_islands_{group}'] = mirror_islands(J)
         for o in objs: o.hide_render = True
         for o in I: o.hide_render = True
         mm = mask_material(f'ps_mask_{group}', S)

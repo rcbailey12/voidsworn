@@ -118,6 +118,8 @@ func shield(ship: Node3D, L: float, quad: int, col: Color, delay := 0.0, broke :
 	mi.scale = Vector3(L * 1.3, L * 0.45, L * 0.75)
 	# quad: 0 prow (+x local), 1 starboard, 2 rear, 3 port; nudge the bubble toward the hit facing
 	var off: Vector3 = [Vector3(L * 0.12, 0, 0), Vector3(0, 0, L * 0.08), Vector3(-L * 0.12, 0, 0), Vector3(0, 0, -L * 0.08)][clampi(quad, 0, 3)]
+	if ship.has_method("visual_position"):
+		off += ship.visual_position() - ship.position
 	mi.position = off
 	mi.visible = delay <= 0.0
 	ship.add_child(mi)

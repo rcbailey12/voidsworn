@@ -1,0 +1,22 @@
+{
+ "rows": 54,
+ "raster_frames": 192,
+ "cost": {
+  "before": {
+   "frame_1080": 3.795,
+   "gpu_1080": 2.46199989318848,
+   "gpu_4k": 5.53200006484985
+  },
+  "after": {
+   "frame_1080": 3.522,
+   "gpu_1080": 2.44600009918213,
+   "gpu_4k": 5.49300003051758
+  }
+ },
+ "historical_frame_baseline_ms": 4.617,
+ "declared_frame_margin_ms": 0.8,
+ "gpu_margin_ms": 0.3,
+ "source_hashes_match": true,
+ "min_phone_peak": 255,
+ "min_bright_tail_fraction": 0.46625202993068177
+}

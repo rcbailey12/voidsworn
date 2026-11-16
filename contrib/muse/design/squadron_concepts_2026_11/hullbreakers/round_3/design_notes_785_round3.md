@@ -26,7 +26,7 @@ Weapon callouts: (1) the two bomb tube mouths at the glacis's extreme corners in
 
 ## Chair's lean
 
-KB1C-A, unanimous among the seated legs and the blind leg: the channel is the clearest flight-axis structure any low barge in the field carries, and it separates the craft from KB1C itself at a glance. KB1C-C is the bold second. KB1C-B remains the risk the council named: its delivered render does lean toward a tracked vehicle from some angles, and if the owner keeps it, the strengthened brow and thruster banks in the sheet are load-bearing.
+KB1C-A, the lean of DeepSeek, Qwen and the blind leg (Flash kept A and C and stated no lean): the channel is the clearest flight-axis structure any low barge in the field carries, and it separates the craft from KB1C itself at a glance. KB1C-C is the bold second. KB1C-B remains the risk the council named: its delivered render does lean toward a tracked vehicle from some angles, and if the owner keeps it, the strengthened brow and thruster banks in the sheet are load-bearing.
 
 ## Production notes (render drift; the written sheet governs)
 
@@ -36,4 +36,6 @@ KB1C-A, unanimous among the seated legs and the blind leg: the channel is the cl
 
 ## Owner's ruling (Nov 15, 2026)
 
-KB1C-C, the Wide Glacis, is the pick of the KB1C variations, in the owner's words "the best by far". The council's unanimous lean for KB1C-A is recorded above and was not taken. KB1C-C's sheet terms (extreme-corner mouths in dark collars, the armoured lip, the beam guard) stand as written.
+KB1C-C, the Wide Glacis, is the pick of the KB1C variations, in the owner's words "the best by far". The council's lean for KB1C-A is recorded above and was not taken. KB1C-C's sheet terms (extreme-corner mouths in dark collars, the armoured lip, the beam guard) stand as written.
+
+The owner has not ruled whether this winner replaces the base design or stands alongside it as a variant; that decision remains open.

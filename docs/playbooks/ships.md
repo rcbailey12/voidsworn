@@ -87,7 +87,15 @@ Each line below is a ruling Ryan made; the source is named so anyone can check i
    black shade disc, in the game's Eclipse engine colour paled toward white, each engine its own brightness, tint, hot spots and
    dim gaps, no flame; (5) no added running lamps (the red lamps are a Hullbreaker rule; the Eclipse show only the corona, the
    core and the rings, and the sheet's corona strip lights; Board accepted, R236); (6) the stack's surfaces are rim_soft, parts
-   carry the hull's plates and seams (R224 in paint), the liner is dark violet-black, and stage 5's surface check is 0 px.
+   carry the hull's plates and seams (R224 in paint), the liner is dark violet-black, and stage 5's surface check is 0 px;
+   (7) even side to side (Ryan, Nov 15 2026 07:02 CST, R256, on E13: "let's make sure that the paint actually is even on each
+   side, it's not consistent now"; issue 783): the paint mirrors across the centre line (stack LAYERS mirror: every pattern reads
+   (x, |y|, z), a plate and its mirror twin share one random, shared paint_stack.mirror_islands; the starboard marks copy the port
+   ones, the top mark on the centre line; the corona's arcs and breaks mirror), and the sheet and the kit build twins alike: a
+   mirrored part reads its corners, rows and strips the same way on both sides, never from ring point 0 or one edge of a plate
+   (E13's layer lines and panel rows, the kit's plate_slab fasteners and housing panels). Measured on a top view with the port
+   half mirrored onto the starboard (tools/blender/build_sheets/studies/mirror_check.py), reported, not a bar (RULEBOOK 0.4).
+   Each engine ring keeps its own pattern.
    Judge the paint at 2048 maps or more (the PC bakes 4096) and at the camera 170 pixel size as well as close.
 3. **The recipe.** Seven stages run in order from tools/recipe, one shared plumbing module with no look of its own, one kit
    per faction; the worked example is the Hullbreaker cruiser C15s_23 (issue 209 rounds 6 to 8; checks opus_check_336 and
@@ -351,6 +359,11 @@ hard points.
 
 ## 5. Traps
 
+- A model-space height is undone by ShipView's fit and centring. For board clearance use `HULL_LIFT` in
+  `godot/render/hull_table.gd`, in drawn game units after fitting (E14, D20_23: R266, issue 811). Unlisted hulls keep zero
+  lift. Keep the rules root on its hex; the hull, markers and visual centre carry the lift. Camera framing and fallback
+  effects use that visual centre; authored hard points, weapons and shields follow the fitted mesh. Check at camera 170
+  and at the lowest idle bob before changing the height.
 - One three-quarter concept is not enough: rounds 7 and 8 could not fit the bow from it (R162). Three views, always.
 - Generated sheets hold identity, palette and view angle, and never counts or aspect (Muse's C15s trial). Write the table first.
 - Sea-ship parts creep back in every generated picture: porthole rows, lattice masts, cranes, keel fins, stepped decks. Check

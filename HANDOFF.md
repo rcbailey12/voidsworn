@@ -22,11 +22,9 @@ checks, Muse for audits; part of the issue 788 plan.
 
 **Running now and just landed.** Live status is in contrib/opus/LOOP.md (the newest LATEST line) and on GitHub (open PRs, issue labels); this file no longer restates it, so it cannot go stale (the dot's librarian check of Nov 15 found PRs 804 and 810 described here as pending after both merged).
 
-**Next in the queue.** Board: the issue 788 synthesis (legs: PR 801 Board, 790 Muse merged, PR 803 DeepSeek), then the one-page
-plan for Ryan. Opus: 793 (squadron craft builds; R259), 783 (E13 paint even side to side; R256). PC runs by the Board: S8 recipe
-(x1.85 paint), Hullbreaker paint after 688, Hegemony recipe, E13 and E14 recipe after 804; re-render the H10 and IM5 sheet
-pictures; fix the UI audit's blank campaign captures. Muse (Ryan starts it): 794 fleet hybrid, Career, event screens; 256
-checks. Note: the Board sandbox clone /home/claude/voidsworn has uncommitted edits to tools/pc runner files from the lane setup;
-check them against main before discarding.
+**Next in the queue.** The issue 788 plan is decided (R270: the dot as nightly librarian, Muse at hand-overs, all seven
+steps; contrib/opus/reviews/repo_memory_788_synthesis.md). Everything else queued or running is in LOOP's newest LATEST line
+and contrib/opus/OPEN_WORK.md (generated from GitHub).
 
-**Ryan's open picks.** The fleet screen (FL1 and FL2 hybrid, in Muse's chat). The 788 plan.
+**Ryan's open picks.** The fleet screen (FL1 and FL2 hybrid, in Muse's chat). Looks to come: effects round 3 (815), the fog
+nebula (368 step 2).

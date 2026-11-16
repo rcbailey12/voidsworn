@@ -5,7 +5,7 @@
 # finish <out> <exit> <partial> <push mode> <checks ok>.
 # space <out> <settings file> <target path>: refuse to start when the target's drive has less than min_free_gb
 #   (default 60) free; one line in result.txt, status failed. Test knobs: PC_TEST_SETTINGS, PC_TEST_SPACE_FREE_MB.
-# hashwrite <tools dir> <hash file>: the Board writes SHA-256 of the five runner files after copying them.
+# hashwrite <tools dir> <hash file>: the Board writes SHA-256 of the runner and watchdog files after copying them.
 # hashcheck <out> <tools dir> <hash file>: warn in result.txt when the running copies differ (warn, never stop).
 #   Test knob: PC_TEST_HASHES.
 # model <out> <resolved> <default>: stamp the resolved model into status.json and result.txt, and warn when it
@@ -75,7 +75,7 @@ try {
     $s = @{ run = [guid]::NewGuid().ToString('N'); branch = $args[2]; status = 'running'; reason = ''; commit = ''; started = [DateTime]::UtcNow.ToString('o'); finished = '' }
     Put (Join-Path $out 'status.json') ($s | ConvertTo-Json)
     # Old run metadata must never turn a later failure into success or claim an old resume.
-    foreach ($f in @('resume.txt','run_commit.txt','confirmed_commit.txt','partial.txt','checks_node.txt','checks_parity.txt')) { Put (Join-Path $out $f) '' }
+    foreach ($f in @('resume.txt','stop_reason.txt','run_commit.txt','confirmed_commit.txt','partial.txt','checks_node.txt','checks_parity.txt')) { Put (Join-Path $out $f) '' }
   }
   elseif ($mode -eq 'wait') {
     $script:out = $args[1]
@@ -152,7 +152,11 @@ try {
       # Full mirror history makes the merge base available. A conflict stays on disk and stops before the model.
       $null = Git @('-C',$repo,'merge','--no-edit',$partial)
       if ($gitExit -ne 0) { throw "resume merge failed for $br-partial; checkout and conflict kept; no agent started" }
-      Put (Join-Path $out 'resume.txt') "Resumed by merging $br-partial ($($tip[0])). Inspect and finish this work; do not restart it from main."
+      $resume = "Resumed by merging $br-partial ($($tip[0])). Inspect and finish this work; do not restart it from main."
+      $message = (Git @('-C',$repo,'log','-1','--format=%B',$partial)) -join "`n"
+      $note = [regex]::Match($message, '(?ms)^## Runner resume note \(issue 818\)\r?\n.*?^## End runner resume note')
+      if ($note.Success) { $resume += "`n`n" + $note.Value }
+      Put (Join-Path $out 'resume.txt') $resume
     }
   }
   elseif ($mode -eq 'fetch') {
@@ -235,7 +239,7 @@ try {
   elseif ($mode -eq 'hashwrite') {
     # The Board runs this right after copying the runner files to a PC tools folder; hashcheck then guards the copies.
     $tools = $args[1]; $hashf = $args[2]
-    $names = @('codex_issue.bat','codex_issue.ps1','runner_common.ps1','work_issue.bat','work_issue.ps1')
+    $names = @('codex_issue.bat','codex_issue.ps1','runner_common.ps1','work_issue.bat','work_issue.ps1','run_timeout.ps1','tmo.bat')
     $lines = @()
     foreach ($n in $names) {
       $p = Join-Path $tools $n

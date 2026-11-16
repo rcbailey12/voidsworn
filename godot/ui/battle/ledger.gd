@@ -493,7 +493,7 @@ func _shield_plan(c: Vector2, sh: Array, shmax: float) -> void:
 	var lw := maxf(2.0, px(3))
 	var mids := [-PI / 2, 0.0, PI / 2, PI]   # prow, starboard, rear, port (screen angles, y down)
 	var words := ["prow", "starboard", "rear", "port"]
-	var tip := "Shields, %d each at full: " % int(round(shmax))
+	var tip := "Shield pool %d at full; the arcs show how much each side catches: " % int(round(shmax))
 	for q in 4:
 		var v := float(sh[q]) if q < sh.size() else 0.0
 		var f := clampf(v / maxf(shmax, 1.0), 0.0, 1.0)
@@ -605,7 +605,7 @@ func _target_tip() -> String:
 		var parts := PackedStringArray()
 		for i in 4:
 			parts.append("%s [color=#92b8e8]%d[/color]" % [words[i], int(round(float(sh[i]) if i < sh.size() else 0.0))])
-		s += "\nShields: " + ", ".join(parts) + "."
+		s += "\nShield pool %d of %d. Sides catch: " % [int(round(float(target.get("shp", 0)))), int(round(float(target.get("shMax", 0))))] + ", ".join(parts) + "."
 	if str(target.get("line", "")) != "":
 		s += "\n" + plain(str(target["line"]))
 	return s
