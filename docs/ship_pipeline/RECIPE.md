@@ -145,6 +145,24 @@ R225: one home per fact):
 5. bakes albedo and ORM for both atlases and the hull's detail normal (the layers' height through a bump), then puts the
    textured materials on the ship (`export7.py` reads them as before) and keeps glow, ember and light as their own emissive
    surfaces; the insides keep the sheet's own materials;
+   For a ship with a large normal input, the normal bake connects the existing bump normal to a simple surface and restores the original links in
+   `finally`. A20's normal input alone still exceeds Cycles' SVM stack (issue 726 run 3). Run 4 tried CPU OSL first: its
+   4096-pixel control baked, but a retry crashed in Windows LLVM. The retained route bakes the existing labelled patchwork
+   height term per large trophy material to a Raw, single-channel 16-bit PNG, reloads it as Non-Color, then samples it on the same
+   UVs for one combined normal pass. Only a hull material whose stack has the trophy layer opts in (`ps_height_bake`);
+   other factions keep their original path regardless of graph size. The 800 reachable-node budget selects this route; it is not a shader
+   validity test. Other height detail (rivets, wear, scuffs, decals) stays procedural. Smaller materials keep their original
+   normal inputs. A ship with no large input keeps the original full-surface bake, including Eclipse. Inactive materials
+   target a disposable image during each height pass, so no material's padding can
+   overwrite a neighbour's normal. The original image targets, surface and height links, and clear setting are restored
+   even on failure. Heights stay in TEMP; their paths, bit depths and times are recorded in the ship's paint report.
+   Albedo, ORM, faction stacks and Cycles device/shading settings are unchanged.
+   Stage 5 rejects compile errors, including `out of SVM stack space`, even if Blender exits zero and writes its completion
+   marker. Never install a bake that failed this guard. The repeatable OSL, height and restoration diagnostics are in
+   `contrib/codex/issue726/`; the five-ship PC route is `tools/pc/jobs/HB_PAINT_726.bat`.
+   Sheet-ship stage 5 selects concept, hero, side, top, below and battle views explicitly. The old four-piece break preview
+   assumes a longitudinal cut and cannot represent these authored seam layouts; the installed interior and death-seam
+   checks prove their actual breaks. All three paint render calls still have to finish.
 6. gives every inside the faction's dark liner (`inside_material`: one material per room, the liner's dark with a faint tint, the
    core keeps its light), so an inside seen through an opening or a gap never shows a sheet room colour (R99 Q1);
 7. measures R224 (`tools/recipe/density.py`): per part type, triangles and edge features per square unit, texels per square
@@ -469,6 +487,10 @@ reads the ship back the way the game draws it (`render/test/installed_ship_check
 installed files, no old damage or wreck entry, and ShipView loads the ship with every hard point and turret node of the glb).
 Either failing fails the stage. `render/test/install_refresh_check.gd` proves the route headless in user:// (an old hull with
 damage and wreck, then a new one installed over it).
+The target's install check also needs `tools/ci/check_guard.gd`, even when the playable build otherwise omits CI tools.
+The issue 726 paint helper supplies that file only when missing and verifies its copied hash before installation.
+It also backs up and refreshes the test-only `a4_shots.gd` and its scene in the playable build, so the requested camera 170
+capture cannot silently fall back to an older harness's close views. Gameplay scripts are retained.
 
 ### Authored insides and weak seams (issue 557)
 
